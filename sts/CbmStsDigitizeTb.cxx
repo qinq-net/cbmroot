@@ -72,14 +72,14 @@ CbmStsDigitizeTb::CbmStsDigitizeTb()
   fNDigisFront(0),
   fNDigisBack(0),
   fTime(0.),
-  fStepSize(0.),
+  fStepSize(0.001),
   fTimer(),
   fRealistic(kFALSE),
   fPairCreationEnergy(0.),
   fFNoiseWidth(0.1),
   fBNoiseWidth(0.1),
   fStripDeadTime(10),
-  fQMax(0.),
+  fQMax(40960.),
   fThreshold(0.),
   fNAdcBits(0),
   fNAdcChannels(0.),
@@ -173,9 +173,9 @@ void CbmStsDigitizeTb::DigitizePoint(const CbmStsPoint* point,
   Double_t zPair = point->GetZIn();
   for (Int_t iStep = 0; iStep <=nSteps; iStep++) {
     Int_t iFChan = sensor->GetFrontChannel(xPair, yPair, zPair);
-    frontSignals[iFChan] += stepCharge;
+    if ( iFChan >= 0 ) frontSignals[iFChan] += stepCharge;
     Int_t iBChan = sensor->GetBackChannel(xPair, yPair, zPair);
-    backSignals[iBChan] += stepCharge;
+    if ( iBChan >= 0 ) backSignals[iBChan] += stepCharge;
     xPair += deltaX / Double_t(nSteps);
     yPair += deltaY / Double_t(nSteps);
     zPair += deltaZ / Double_t(nSteps);
@@ -187,7 +187,7 @@ void CbmStsDigitizeTb::DigitizePoint(const CbmStsPoint* point,
     if ( (*it).second < fThreshold ) continue;
     Int_t iAdc = -1;
     if ( (*it).second >= fQMax ) iAdc = fNAdcChannels - 1;
-    else iAdc = Int_t( (*it).second / fQMax ) * fNAdcChannels;
+    else iAdc = Int_t( (*it).second / fQMax * fNAdcChannels );
     UInt_t address = CbmStsAddress::GetAddress(sensor->GetStationNr(),
     		                           0,               // ladder
     		                           0,               // halfladder
@@ -211,7 +211,7 @@ void CbmStsDigitizeTb::DigitizePoint(const CbmStsPoint* point,
     if ( (*it).second < fThreshold ) continue;
     Int_t iAdc = -1;
     if ( (*it).second >= fQMax ) iAdc = fNAdcChannels - 1;
-    else iAdc = Int_t( (*it).second / fQMax ) * fNAdcChannels;
+    else iAdc = Int_t( (*it).second / fQMax * fNAdcChannels );
     UInt_t address = CbmStsAddress::GetAddress(sensor->GetStationNr(),
     		                           0,               // ladder
     		                           0,               // halfladder
@@ -257,7 +257,7 @@ InitStatus CbmStsDigitizeTb::Init() {
   fPairCreationEnergy = 3.68e-9;
 
   // Number of ADC channels
-  fNAdcChannels = 1 << ( fNAdcBits + 1 );
+  fNAdcChannels = 1 << fNAdcBits;
 
   // Step size for ionisation points
   fStepSize = 0.001;

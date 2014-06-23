@@ -57,6 +57,7 @@ class CbmStsDigitizeTb : public FairTask
 
   void SetStripDeadTime  (Double_t  StripDeadTime=0.) {fStripDeadTime =  StripDeadTime;}
 
+  void SetQMax(Double_t qMax = 40960.) { fQMax = qMax; }
 
  private:
 
