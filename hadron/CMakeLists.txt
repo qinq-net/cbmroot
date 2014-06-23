@@ -17,6 +17,7 @@ ${CBMROOT_SOURCE_DIR}/KF
 ${CBMROOT_SOURCE_DIR}/KF/Interface
 
 ${CBMROOT_SOURCE_DIR}/hadron 
+${CBMROOT_SOURCE_DIR}/tof
 )
 
 include_directories( ${INCLUDE_DIRECTORIES})
@@ -34,6 +35,7 @@ CbmProduceDst.cxx
 CbmFillM2.cxx
 CbmFitM2.cxx
 CbmHadronSpectra.cxx
+CbmHadronAnalysis.cxx
 CbmHadronYields.cxx
 CbmMixedEventsProducer.cxx
 CbmEbefluctPYR.cxx
@@ -42,7 +44,7 @@ CbmEbefluctPYR.cxx
 set(LINKDEF HadronLinkDef.h)
 Set(LIBRARY_NAME Hadron)
 Set(DEPENDENCIES
-    KF CbmBase CbmData Base 
+    KF CbmBase CbmData Base Tof
 )
 
 GENERATE_LIBRARY()

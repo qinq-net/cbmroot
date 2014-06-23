@@ -10,6 +10,7 @@
 #pragma link C++ class CbmFitM2+;
 #pragma link C++ class CbmHadronYields+;
 #pragma link C++ class CbmHadronSpectra+;
+#pragma link C++ class CbmHadronAnalysis+;
 #pragma link C++ class CbmMixedEventsProducer+;
 #pragma link C++ class CbmEbefluctPYR+;
 
