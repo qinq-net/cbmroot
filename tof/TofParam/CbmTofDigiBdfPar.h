@@ -34,6 +34,9 @@ class CbmTofDigiBdfPar : public FairParGenericSet
     void putParams(FairParamList*);
     Bool_t getParams(FairParamList*);
     void printParams();
+    Bool_t LoadBeamtimeHistos();
+
+    void SetInputFile (TString FileName) { fsBeamInputFile = FileName; }
 
     // Fee properties
     Double_t GetFeeGainSigma()       const
@@ -42,7 +45,7 @@ class CbmTofDigiBdfPar : public FairParGenericSet
        { return fdFeeTotThr;};
     Double_t GetFeeTimeRes()         const
        { return fdTimeResElec;};
-    Double_t GetStartTimeRes()         const
+    Double_t GetStartTimeRes()       const
        { return fdTimeResStart;};
 
 

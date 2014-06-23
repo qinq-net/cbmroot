@@ -198,11 +198,14 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
    if ( ! l->fill("",   &) ) return kFALSE;
 */
    // Use Text_t as FairParamList does not seem to support TStrings yet
+
+   /*
    Int_t iMaxSizeFilename = 5000;
    Text_t *sTempText;
    sTempText = new Text_t[iMaxSizeFilename];
    if ( ! l->fill("BeamInputFile",   sTempText, iMaxSizeFilename ) ) return kFALSE;
    fsBeamInputFile = sTempText;
+   */
 
    if ( ! l->fill("ClusterRadiusModel", &fiClusterRadiusModel) ) return kFALSE;
 
@@ -232,7 +235,11 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
    fh1ClusterTot.resize(fiNbSmTypes);
 
    TDirectory * oldir = gDirectory;
+   return kTRUE;
+}
 
+Bool_t CbmTofDigiBdfPar::LoadBeamtimeHistos()
+{
    TFile * fBeamtimeInput = new TFile( fsBeamInputFile, "READ");
    if( kFALSE == fBeamtimeInput->IsOpen() )
    {
@@ -251,7 +258,6 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
    if( 0 == pInputRes)
    {
       LOG(ERROR)<<"CbmTofDigiBdfPar => Could not recover the Time Resolution array from the beamtime data file."<<FairLogger::endl;
-      gDirectory->cd( oldir->GetPath() );
       fBeamtimeInput->Close();
       return kFALSE;
    } // if( 0 == pInputEff)
@@ -259,7 +265,6 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
        pInputEff->GetSize() != pInputRes->GetSize() )
    {
       LOG(ERROR)<<"CbmTofDigiBdfPar => Efficiency or Time Resolution array from the beamtime data file have wrong size."<<FairLogger::endl;
-      gDirectory->cd( oldir->GetPath() );
       fBeamtimeInput->Close();
       return kFALSE;
    } // if wrong array size
@@ -297,7 +302,6 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
          {
             LOG(ERROR)<<"CbmTofDigiBdfPar => Could not recover the Cluster Size histogram for Sm Type "
                       <<iSmType<<", mapped to input type "<<fiSmTypeInpMapp[iSmType]<<FairLogger::endl;
-            gDirectory->cd( oldir->GetPath() );
             fBeamtimeInput->Close();
             return kFALSE;
          } // if( 0 == pH1Temp )
@@ -310,7 +314,6 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
          {
             LOG(ERROR)<<"CbmTofDigiBdfPar => Could not recover the Cluster Size histogram for Sm Type "
                       <<iSmType<<", mapped to input type "<<fiSmTypeInpMapp[iSmType]<<FairLogger::endl;
-            gDirectory->cd( oldir->GetPath() );
             fBeamtimeInput->Close();
             return kFALSE;
          } // if( 0 == pH1Temp )
@@ -320,7 +323,6 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
          {
             LOG(ERROR)<<"CbmTofDigiBdfPar => Wrong mapping index for Sm Type "
                       <<iSmType<<": Out of input boundaries"<<FairLogger::endl;
-            gDirectory->cd( oldir->GetPath() );
             fBeamtimeInput->Close();
             return kFALSE;
          }
@@ -329,7 +331,6 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
    {
       GetLandauParFromBeamDataFit();
    } // if( 2 == fiClusterRadiusModel )
-   gDirectory->cd( oldir->GetPath() );
    fBeamtimeInput->Close();
 
    return kTRUE;
