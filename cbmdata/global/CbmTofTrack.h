@@ -32,7 +32,8 @@ class CbmTofTrack : public TObject {
 	 ** @param trackPar     Parameters of track at TOF
 	 ** @param pidHypo      PID hypothesis for track extrapolation
 	 **/
-	CbmTofTrack(Int_t trackIndex, Int_t hitIndex, Double_t trackLength,
+
+	CbmTofTrack(Int_t trackIndex, Int_t hitIndex, Double_t trackLength, Float_t mass,
 			    const FairTrackParam& trackPar, Int_t pidHypo) 
 	  : TObject(),
 	  fGlbTrack(trackIndex),
@@ -50,6 +51,9 @@ class CbmTofTrack : public TObject {
 
 	/**  PID hypothesis for track extrapolation to TOF **/
 	Int_t    GetPidHypo() const { return fPidHypo; }
+
+	/**  mass hypothesis from TOF **/
+	Float_t  GetMass() const { return fMass; }
 
 	/**  Index of TOF hit **/
 	Int_t    GetTofHitIndex() const { return fTofHit; }
@@ -95,16 +99,20 @@ class CbmTofTrack : public TObject {
     /** Set PID hypothesis for track extrapolation to TOF **/
     void SetPidHypo(Int_t pid) { fPidHypo = pid; }
 
+    /** Set mass from TOF **/
+    void SetMass(Float_t mass) { fMass = mass; }
+
     /** Set normalized distance from hit to track **/
     void SetDistance(Double_t distance) { fDistance = distance; }
 
   private:
 
-   Int_t          fGlbTrack;     ///< Index of global track
+        Int_t          fGlbTrack;     ///< Index of global track
 	Int_t          fTofHit;       ///< Index of TofHit
 	Double32_t     fTrackLength;  ///< Track length from primary vertex to TOF [cm]
 	FairTrackParam fTrackPar;     ///< Track parameters at z of TofHit
 	Int_t          fPidHypo;      ///< PID hypothesis used for track extrapolation
+	Float_t        fMass;         ///< Mass from Tof
 	Double32_t     fDistance;     ///< Normalized distance from hit to track
 
 

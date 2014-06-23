@@ -11,6 +11,7 @@
 #define CBMTOFHIT_H_
 
 #include "CbmPixelHit.h"
+#include "TMath.h"
 
 class CbmTofHit : public CbmPixelHit
 {
@@ -54,6 +55,13 @@ public:
   Double_t GetTime() const { return fTime; }
   Int_t GetFlag() const { return fFlag; }
   Int_t GetCh() const { return fChannel; }
+
+  Double_t GetR()      const {return TMath::Sqrt(GetX()*GetX()+GetY()*GetY()+GetZ()*GetZ());}
+  Double_t GetRt()     const {return TMath::Sqrt(GetX()*GetX()+GetY()*GetY());}
+  Double_t GetCosThe() const {return GetZ()/GetR();}
+  Double_t GetSinThe() const {return TMath::Sqrt(GetX()*GetX()+GetY()*GetY())/GetR();}
+  Double_t GetCosPhi() const {return GetX()/GetRt();}
+  Double_t GetSinPhi() const {return GetY()/GetRt();}
 
   /** Modifiers **/
   void SetTime(Double_t time) { fTime = time; };
