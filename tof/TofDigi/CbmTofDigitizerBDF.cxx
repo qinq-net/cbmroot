@@ -38,6 +38,7 @@
 #include "TH2.h"
 #include "TDirectory.h"
 #include "TROOT.h"
+#include "TGeoManager.h"
 
 // C++ Classes and includes
 
@@ -349,6 +350,15 @@ Bool_t   CbmTofDigitizerBDF::InitParameters()
 }
 Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
 {
+   LOG(INFO)<<"CbmTofDigitizerBDF::LoadBeamtimeValues from "<<fsBeamInputFile
+ 	    <<FairLogger::endl;
+
+   fDigiBdfPar->SetInputFile(fsBeamInputFile);
+   if(kFALSE == fDigiBdfPar->LoadBeamtimeHistos()){
+     LOG(FATAL)<<"CbmTofDigitizerBDF::LoadBeamtimeValues "<<FairLogger::endl;
+     return kFATAL;
+   }
+
    // Printout option for crosscheck
    fDigiBdfPar->printParams();
 
@@ -1799,19 +1809,33 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
          } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
             else
             {
+
+	      TGeoNode *fNode=        // prepare global->local trafo
+			gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
+	      LOG(DEBUG)<<Form(" TofDigitizerBDF:: (%3d,%3d,%3d,%3d) - node at (%6.1f,%6.1f,%6.1f) : 0x%08x",
+			      iSmType,iSM,iRpc,iChannel,
+			      fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode)
+			<<FairLogger::endl;
+	      TGeoNode*	cNode= gGeoManager->GetCurrentNode();
+	      TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();
+	      Double_t hitpos[3]={fChannelInfo->GetX(),vPntPos.Y(),fChannelInfo->GetZ()};
+	      Double_t hitpos_local[3];
+	      gGeoManager->MasterToLocal(hitpos, hitpos_local);
                // Vertical channel: A = Top and B = Bottom of the channel
                dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                         + TMath::Abs( vPntPos.Y() - ( fChannelInfo->GetY() + fChannelInfo->GetSizey()/2.0 ) )
 #else
-                        + ( vPntPos.Y() - fChannelInfo->GetY() )
+		 //                        + ( vPntPos.Y() - fChannelInfo->GetY() )
+                        + hitpos_local[1]
 #endif
                           /fdSignalPropSpeed;
                dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                         + TMath::Abs( vPntPos.Y() - ( fChannelInfo->GetY() - fChannelInfo->GetSizey()/2.0 ) )
 #else
-                        - ( vPntPos.Y() - fChannelInfo->GetY() )
+		 //                        - ( vPntPos.Y() - fChannelInfo->GetY() )
+                        - hitpos_local[1]
 #endif
                           /fdSignalPropSpeed;
             } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
@@ -2061,19 +2085,33 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
             } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                else
                {
+		 TGeoNode *fNode=        // prepare global->local trafo
+			gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
+		 LOG(DEBUG)<<Form(" TofDigitizerBDF:: (%3.d,%3d,%3d,%3d)-node at (%6.1f,%6.1f,%6.1f) : 0x%08x",
+			      iSmType,iSM,iRpc,iChanInd,
+			      fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode)
+			<<FairLogger::endl;
+		 TGeoNode*	cNode= gGeoManager->GetCurrentNode();
+		 TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();
+		 Double_t hitpos[3]={fChannelInfo->GetX(),vPntPos.Y(),fChannelInfo->GetZ()};
+		 Double_t hitpos_local[3];
+		 gGeoManager->MasterToLocal(hitpos, hitpos_local);
+
                   // Vertical channel: A = Top and B = Bottom of the channel
                   dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                            + TMath::Abs( vPntPos.Y() - ( fChannelInfo->GetY() + fChannelInfo->GetSizey()/2.0 ) )
 #else
-                           + ( vPntPos.Y() - fChannelInfo->GetY() )
+		    //                           + ( vPntPos.Y() - fChannelInfo->GetY() )
+		           + hitpos_local[1]
 #endif
                              /fdSignalPropSpeed;
                   dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
                            + TMath::Abs( vPntPos.Y() - ( fChannelInfo->GetY() - fChannelInfo->GetSizey()/2.0 ) )
 #else
-                           - ( vPntPos.Y() - fChannelInfo->GetY() )
+		    //                           - ( vPntPos.Y() - fChannelInfo->GetY() )
+		           - hitpos_local[1]
 #endif
                              /fdSignalPropSpeed;
                } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )

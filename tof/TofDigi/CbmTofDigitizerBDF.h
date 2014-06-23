@@ -83,6 +83,7 @@ class CbmTofDigitizerBDF : public FairTask
        **/
       virtual void Finish();
 
+      void SetInputFileName (TString FileName) { fsBeamInputFile = FileName; }
    protected:
 
    private:
@@ -301,6 +302,8 @@ class CbmTofDigitizerBDF : public FairTask
       TTimeStamp fStop;
       Double_t   fdDigitizeTime;
       Double_t   fdMergeTime;
+
+      TString fsBeamInputFile;
 
    ClassDef(CbmTofDigitizerBDF, 1);
 };
