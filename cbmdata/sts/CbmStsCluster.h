@@ -30,6 +30,11 @@ public:
      **/
     virtual ~CbmStsCluster();
 
+    /** Get cluster centre
+     ** @param Cluster centre in channel units
+     **/
+    Double_t GetCentre() const { return fChannelMean; }
+
     /**   Sector number
      **    Kept for bacjwrad compatibility
      **/
@@ -63,10 +68,28 @@ public:
         return fSectorNr;
     }
 
+
+    /** Set charge, channel mean and channel mean square
+     ** @param charge  Total charge in cluster
+     ** @param channelMean  Charge-weighted mean channel number
+     ** @param channelMeanSq  Charge-weighted mean square channel number
+     **/
+    void SetProperties(Double_t charge, Double_t channelMean,
+    		               Double_t channelMeanSq) {
+    	fCharge        = charge;
+    	fChannelMean   = channelMean;
+    	fChannelMeanSq = channelMeanSq;
+    }
+
+
 private:
     // This two parameters are kept for backward compatibility only.
     Double_t fMean; // FIXME: Modify clustering algorithm and remove this parameter.
     Double_t fMeanError; // FIXME: Modify clustering algorithm and remove this parameter.
+
+    Double_t fCharge;  ///< Total charge
+    Double_t fChannelMean;   ///< Charge-weighted mean channel number
+    Double_t fChannelMeanSq; ///< Charge-weighted mean square channel number
 
     // TODO: fSectorNr is here for backward compatibility with classes
     // using CbmStsDigiScheme. Should be eventually removed.

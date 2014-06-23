@@ -32,8 +32,96 @@ CbmStsSensorTypeDssd::CbmStsSensorTypeDssd()
     : CbmStsSensorType(), 
       fDx(-1.), fDy(-1.), fDz(-1.),
       fPitch(), fStereo(), fIsSet(kFALSE),
-      fNofStrips(), fCosStereo(), fSinStereo(), fStripShift()
+      fNofStrips(), fTanStereo(), fStripShift()
 {
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Find hits   -----------------------------------------------------
+Int_t CbmStsSensorTypeDssd::FindHits(vector<CbmStsCluster*>& clusters,
+		                                 CbmStsSenzor* sensor) {
+
+	Int_t nHits = 0;
+	Int_t nClusters = clusters.size();
+
+	Int_t nClustersF = 0;
+	Int_t nClustersB = 0;
+	Double_t xF = -1.;   // Cluster position on sensor edge
+	Double_t xB = -1.;   // Cluster position on sensor edge
+
+	// --- Sort clusters into front and back side
+	vector<Double_t> frontClusters;
+	vector<Double_t> backClusters;
+	Double_t xCluster = -1.;  // cluster position on read-out edge
+	Int_t side  = -1;         // front or back side
+	for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
+		GetClusterPosition(clusters[iCluster]->GetCentre(), sensor->GetIndex(),
+				               xCluster, side);
+		if ( side == 0) {
+			frontClusters.push_back(xCluster);
+			nClustersF++;
+		}
+		else if ( side == 1 ) {
+			backClusters.push_back(xCluster);
+			nClustersB++;
+		}
+		else
+			LOG(FATAL) << GetName() << ": Illegal side qualifier "
+			           << side << FairLogger::endl;
+	}  // Loop over clusters in module
+
+	// --- Loop over front and back side clusters
+	for (Int_t iClusterF = 0; iClusterF < nClustersF; iClusterF++) {
+		for (Int_t iClusterB = 0; iClusterB < nClustersB;	iClusterB++) {
+
+			// --- Calculate intersection points
+			Int_t nOfHits = IntersectClusters(frontClusters[iClusterF],
+					                              backClusters[iClusterB],
+					                              sensor);
+			LOG(DEBUG4) << GetName() << ": Cluster front " << iClusterF
+					        << ", cluster back " << iClusterB
+					        << ", intersections " << nOfHits << FairLogger::endl;
+			nHits += nOfHits;
+
+		}  // back side clusters
+
+	}  // front side clusters
+
+  LOG(DEBUG3) << GetName() << ": Clusters " << nClusters << " ( "
+  		        << nClustersF << " / " << nClustersB << " ), hits: "
+  		        << nHits << FairLogger::endl;
+	return nHits;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Get cluster position at read-out edge   -------------------------
+// Same as GetStrip, but with float instead of channel number
+void CbmStsSensorTypeDssd::GetClusterPosition(Double_t centre,
+		                                          Int_t sensorId,
+                                              Double_t& xCluster,
+                                              Int_t& side) {
+
+	// Take integer channel
+	Int_t iChannel = Int_t(centre);
+	Double_t xDif = centre - Double_t(iChannel);
+
+	// Calculate corresponding strip on sensor
+	Int_t iStrip = -1;
+	GetStrip(iChannel, sensorId, iStrip, side);
+
+	// Re-add difference to integer channel. Convert channel to
+	// coordinate
+	xCluster = (Double_t(iStrip) + xDif + 0.5 ) * fPitch[side];
+
+	LOG(DEBUG4) << GetName() << ": Cluster centre " << centre
+			        << ", sensor index " << sensorId << ", side "
+			        << side << ", cluster position " << xCluster
+			        << FairLogger::endl;
+	return;
 }
 // -------------------------------------------------------------------------
 
@@ -93,7 +181,7 @@ Int_t CbmStsSensorTypeDssd::GetStripNumber(Double_t x, Double_t y,
 	}
 
   // Stereo angle and strip pitch
-  Double_t tanphi = fSinStereo[side] / fCosStereo[side];
+  Double_t tanphi = fTanStereo[side];
   Double_t pitch  = fPitch[side];
   Int_t nStrips   = fNofStrips[side];
 
@@ -150,10 +238,127 @@ void CbmStsSensorTypeDssd::GetStrip(Int_t channel, Int_t sensorId,
   while ( stripNr >= fNofStrips[side] ) stripNr -= fNofStrips[side];
 
   strip = stripNr;
-  return;
+
+ return;
 }
 // -------------------------------------------------------------------------
 
+
+
+// -----   Intersection of two lines along the strips   --------------------
+Bool_t CbmStsSensorTypeDssd::Intersect(Double_t xF, Double_t xB,
+		                                   Double_t& x, Double_t& y) {
+
+	// In the coordinate system with origin at the bottom left corner,
+	// a line along the strips with coordinate x0 at the top edge is
+	// given by the function y(x) = Dy - ( x - x0 ) / tan(phi), if
+	// the stereo angle phi does not vanish. Two lines yF(x), yB(x) with top
+	// edge coordinates xF, xB intersect at
+	// x = ( tan(phiB)*xF - tan(phiF)*xB ) / (tan(phiB) - tan(phiF)
+	// y = Dy + ( xB - xF ) / ( tan(phiB) - tan(phiF) )
+	// For the case that one of the stereo angles vanish (vertical strips),
+	// the calculation of the intersection is straightforward.
+
+	// --- First check whether stereo angles are different. Else there is
+	// --- no intersection.
+	if ( TMath::Abs(fStereo[0]-fStereo[1]) < 0.5 ) {
+		x = -1000.;
+		y = -1000.;
+		return kFALSE;
+	}
+
+	// --- Now treat vertical front strips
+	if ( TMath::Abs(fStereo[0]) < 0.001 ) {
+		x = xF;
+		y = fDy - ( xF - xB ) / fTanStereo[1];
+		return IsInside(x, y);
+	}
+
+	// --- Maybe the back side has vertical strips?
+	if ( TMath::Abs(fStereo[1]) < 0.001 ) {
+		x = xB;
+		y = fDy - ( xB - xF ) / fTanStereo[0];
+		return IsInside(x, y);
+	}
+
+	// --- OK, both sides have stereo angle
+	x = ( fTanStereo[1] * xF - fTanStereo[0] * xB ) /
+			( fTanStereo[1] - fTanStereo[0]);
+	y = fDy + ( xB - xF ) / ( fTanStereo[1] - fTanStereo[0]);
+	return IsInside(x, y);
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----  Intersect two clusters (front / back)   --------------------------
+Int_t CbmStsSensorTypeDssd::IntersectClusters(Double_t xF, Double_t xB,
+		                                          CbmStsSenzor* sensor) {
+
+	Int_t nHits = 0;
+
+	// --- Should be inside active area
+	if ( xF < 0. || xF > fDx) return 0;
+	if ( xB < 0. || xB > fDx) return 0;
+
+	// --- Calculate number of line segments due to horizontal
+	// --- cross-connection. If x(y=0) does not fall on the bottom edge,
+	// --- the strip is connected to the one corresponding to the line
+	// --- with top edge coordinate xF' = xF +/- Dx. For odd combinations
+	// --- of stereo angle and sensor dimensions, this could even happen
+	// --- multiple times. For each of these lines, the intersection with
+	// --- the line on the other side is calculated. If inside the active area,
+	// --- a hit is created.
+	Int_t nF = Int_t( (xF + fDy * fTanStereo[0]) / fDx );
+	Int_t nB = Int_t( (xB + fDy * fTanStereo[1]) / fDx );
+
+	// --- If n is positive, all lines from 0 to n must be considered,
+	// --- if it is negative (phi negative), all lines from n to 0.
+	Int_t nF1 = TMath::Min(0, nF);
+	Int_t nF2 = TMath::Max(0, nF);
+	Int_t nB1 = TMath::Min(0, nB);
+	Int_t nB2 = TMath::Max(0, nB);
+
+	// --- Double loop over possible lines
+	Double_t xC = -1.;   // x coordinate of intersection point
+	Double_t yC = -1.;   // y coordinate of intersection point
+	for (Int_t iF = nF1; iF <= nF2; iF++) {
+		Double_t xFi = xF - Double_t(iF) * fDx;
+		for (Int_t iB = nB1; iB <= nB2; iB++) {
+			Double_t xBi = xB - Double_t(iB) * fDx;
+
+			// --- Intersect the two lines
+			Bool_t found = Intersect(xFi, xBi, xC, yC);
+			LOG(DEBUG4) << GetName() << ": Trying " << xFi << ", " << xBi
+					        << ", intersection ( " << xC << ", " << yC
+					        << " ) " << ( found ? "TRUE" : "FALSE" )
+					        << FairLogger::endl;
+			if ( found ) {
+
+				// --- Transform into sensor system with origin at sensor centre
+				xC -= 0.5 * fDx;
+				yC -= 0.5 * fDy;
+				// --- Send hit information to sensor
+				sensor->CreateHit(xC, yC);
+				nHits++;
+
+			}  //? Intersection of lines
+		}  // lines on back side
+	}  // lines on front side
+
+	return nHits;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Check whether a point is inside the active area   ---------------
+Bool_t CbmStsSensorTypeDssd::IsInside(Double_t x, Double_t y) {
+	if ( x > 0. && x < fDx && y > 0. && y < fDy) return kTRUE;
+	return kFALSE;
+}
+// -------------------------------------------------------------------------
 
 
 
@@ -228,7 +433,7 @@ Int_t CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
   Double_t qtot = point->GetELoss() / kPairEnergy;
 
   // Stereo angle and strip pitch
-  Double_t tanphi = fSinStereo[side] / fCosStereo[side];
+  Double_t tanphi = fTanStereo[side];
   Double_t pitch  = fPitch[side];
   Int_t nStrips   = fNofStrips[side];
 
@@ -372,10 +577,8 @@ void CbmStsSensorTypeDssd::SetParameters(Double_t dx, Double_t dy,
   // --- Calculate parameters for front and back
   for (Int_t side = 0; side < 2; side++) {
     fPitch[side] = fDx / Double_t(fNofStrips[side]);
-    fCosStereo[side] = TMath::Cos( fStereo[side] * TMath::DegToRad() );
-    fSinStereo[side] = TMath::Sin( fStereo[side] * TMath::DegToRad() );
-    Double_t tanPhi = fSinStereo[side] / fCosStereo[side];
-    fStripShift[side] = TMath::Nint(fDy * tanPhi / fPitch[side]);
+    fTanStereo[side] = TMath::Tan( fStereo[side] * TMath::DegToRad() );
+    fStripShift[side] = TMath::Nint(fDy * fTanStereo[side] / fPitch[side]);
   }
 
   // --- Flag parameters to be set if test is ok

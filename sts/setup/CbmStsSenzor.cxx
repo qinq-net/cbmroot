@@ -8,9 +8,11 @@
 #include "CbmStsSenzor.h"
 
 // Includes from ROOT
+#include "TClonesArray.h"
 #include "TGeoMatrix.h"
 
 // Includes from CbmRoot
+#include "CbmStsHit.h"
 #include "CbmStsPoint.h"
 
 // Includes from STS
@@ -21,7 +23,7 @@
 
 
 // -----   Constructor   ---------------------------------------------------
-CbmStsSenzor::CbmStsSenzor() : CbmStsElement(), fType(NULL)
+CbmStsSenzor::CbmStsSenzor() : CbmStsElement(), fType(NULL), fHits(NULL)
 {
 }
 // -------------------------------------------------------------------------
@@ -32,8 +34,50 @@ CbmStsSenzor::CbmStsSenzor() : CbmStsElement(), fType(NULL)
 CbmStsSenzor::CbmStsSenzor(const char* name, const char* title,
                            TGeoPhysicalNode* node) :
                            CbmStsElement(name, title, kStsSensor, node),
-                           fType(NULL)
+                           fType(NULL), fHits(NULL)
 {
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Create a new hit   ----------------------------------------------
+void CbmStsSenzor::CreateHit(Double_t xLocal, Double_t yLocal) {
+
+	// --- Transform into global coordinate system
+	Double_t local[3] = { xLocal, yLocal, 0.};
+	Double_t global[3];
+	Double_t error[3] = { 0., 0., 0. };
+	fNode->GetMatrix()->LocalToMaster(local, global);
+
+	// --- Create hit
+	Int_t nHits = fHits->GetEntriesFast();
+	new ( (*fHits)[nHits] ) CbmStsHit(GetAddress(),   // address
+			                              global,         // coordinates
+			                              error,          // coord. error
+			                              0.,             // covariance xy
+			                              0,              // front cluster index
+			                              0,              // back cluster index
+			                              0,              // front digi index
+			                              0,              // back digi index
+			                              0);             // sector nr.
+
+	LOG(DEBUG2) << GetName() << ": Creating hit at (" << global[0] << ", "
+			        << global[1] << ", " << global[2] << ")" << FairLogger::endl;
+	return;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Find hits in sensor   -------------------------------------------
+Int_t CbmStsSenzor::FindHits(vector<CbmStsCluster*>& clusters,
+		                         TClonesArray* hitArray) {
+	fHits = hitArray;
+	Int_t nHits = fType->FindHits(clusters, this);
+	LOG(DEBUG2) << GetName() << ": Clusters " << clusters.size()
+			        << ", hits " << nHits << FairLogger::endl;
+	return nHits;
 }
 // -------------------------------------------------------------------------
 

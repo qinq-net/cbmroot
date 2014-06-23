@@ -9,9 +9,12 @@
 
 #include <map>
 #include <vector>
-#include "CbmStsElement.h"
-#include "CbmStsSenzor.h"
+#include "CbmStsCluster.h"
+#include "CbmStsDigi.h"
+#include "setup/CbmStsElement.h"
+#include "setup/CbmStsSenzor.h"
 
+class TClonesArray;
 
 
 /** @class CbmStsModule
@@ -50,6 +53,24 @@ class CbmStsModule : public CbmStsElement
     virtual ~CbmStsModule();
 
 
+    /** Convert ADC channel to charge
+     ** @param adcChannel  ADC channel number
+     ** @return analog charge [e]
+     **/
+    Double_t AdcToCharge(UShort_t adcChannel);
+
+
+    /** Add a cluster to its array **/
+    void AddCluster(CbmStsCluster* cluster) { fClusters.push_back(cluster); }
+
+
+    /** Add a digi to its array
+     ** @param digi Pointer to digi object
+     ** @param index Index of digi in input TClonesArray
+     **/
+    void AddDigi(CbmStsDigi* digi, Int_t index);
+
+
     /** Add an analogue signal to the buffer
      *
      * @param channel        channel number
@@ -63,7 +84,16 @@ class CbmStsModule : public CbmStsElement
     void AddSignal(Int_t channel, Double_t time, Double_t charge);
 
 
-    /** Clean the buffer
+    /** Convert charge to ADC channel.
+     ** @param charge  analog charge [e]
+     ** @return  ADC channel number
+     **
+     ** This must be the inverse of AdcToCharge
+     **/
+    Int_t ChargeToAdc(Double_t charge);
+
+
+    /** Clean the signal buffer
      ** @param time  Read-out time [ns]
      **
      ** All analogue signals in the buffer with time prior to the specified
@@ -72,33 +102,88 @@ class CbmStsModule : public CbmStsElement
      void CleanBuffer(Double_t time);
 
 
+     /** Clear the cluster vector **/
+     void ClearClusters() { fClusters.clear(); }
+
+
+     /** Clear the digi map **/
+     void ClearDigis() { fDigis.clear(); }
+
+
+     /** Create a cluster in the output array
+      ** @param clusterStart  First channel of cluster
+      ** @param clusterEnd    Last channel of cluster
+      ** @param clusterArray  Output TClonesArray
+      **/
+     void CreateCluster(Int_t clusterStart, Int_t clusterEnd,
+    		                TClonesArray* clusterArray);
+
+
+     /** Find hits from clusters
+      ** @param hitArray  Array where hits shall be registered
+      ** @return Number of created hits
+      **/
+     Int_t FindHits(TClonesArray* hitArray);
+
+
+     /** Get a digi in a channel
+      ** @param[in] channel Channel number
+      ** @param[out] index  Index of digi in TClonesArray
+      ** @return pointer to digi object. NULL if channel is inactive.
+      **/
+     CbmStsDigi* GetDigi(Int_t channel, Int_t& index);
+
+
+     /** Number of electronic channels **/
+     Int_t GetNofChannels() const { return fNofChannels; };
+
+
+     /** Current number of clusters  **/
+     Int_t GetNofClusters() const { return fClusters.size(); }
+
+
+     /** Current number of digis **/
+     Int_t GetNofDigis() const { return fDigis.size(); }
+
+
      /** Set the digitisation parameters
       ** @param dynRagne   Dynamic range [e]
       ** @param threshold  Threshold [e]
       ** @param nAdc       Number of ADC channels
       **/
-     void SetParameters(Double_t dynRange, Double_t threshold, Int_t nAdc) {
+     void SetParameters(Int_t nChannels, Double_t dynRange,
+    		                Double_t threshold, Int_t nAdc) {
+    	 fNofChannels    = nChannels;
     	 fDynRange       = dynRange;
     	 fThreshold      = threshold;
     	 fNofAdcChannels = nAdc;
     	 fIsSet = kTRUE;
      }
 
+     void Status() const;
+
 
   private:
 
-    Double_t fDynRange;        // dynamic range [e]
-    Double_t fThreshold;       // threshold [e]
-    Int_t    fNofAdcChannels;  // Number of ADC channels
-    Bool_t   fIsSet;           // Flag whether parameters are set
-
+    Double_t fNofChannels;     ///< Number of electronic channels
+    Double_t fDynRange;        ///< dynamic range [e]
+    Double_t fThreshold;       ///< threshold [e]
+    Int_t    fNofAdcChannels;  ///< Number of ADC channels
+    Bool_t   fIsSet;           ///< Flag whether parameters are set
 
     /** Buffer for the analogue signals
      ** This is a std::map from channel number to a pair
-     ** of time and analogue charge
+     ** of time and analogue charge. Used for digitisation.
      **/
     map<Int_t, pair<Double_t, Double_t> > fBuffer;
 
+    /** Map from channel number to pair of (digi, digiIndex).
+     ** Used for cluster finding.
+     **/
+    map<Int_t, pair<CbmStsDigi*, Int_t> > fDigis;
+
+    /** Vector of clusters. Used for hit finding. **/
+    vector<CbmStsCluster*> fClusters;
 
     /** Digitise an analog charge signal
      ** @param channel  Module readout channel number

@@ -28,11 +28,18 @@ set (SRCS_DIGITIZE
 digitize/CbmStsDigitizeIdeal.cxx
 digitize/CbmStsSensorTypeDssdIdeal.cxx;
 )
+# --- Sources in reco
+set (SRCS_RECO
+reco/CbmStsClusterFinderSimple.cxx
+reco/CbmStsFindClusters.cxx
+reco/CbmStsHitFinder.cxx
+)
 # --- All sources
 set(SRCS
 ${SRCS_SETUP}
 ${SRCS_MC}
 ${SRCS_DIGITIZE}
+${SRCS_RECO}
 CbmGeoSts.cxx 
 CbmGeoStsPar.cxx 
 CbmStsContFact.cxx 

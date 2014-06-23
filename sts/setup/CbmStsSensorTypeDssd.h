@@ -6,7 +6,7 @@
 #ifndef CBMSTSSENSORTYPEDSSD_H
 #define CBMSTSSENSORTYPEDSSD_H 1
 
-
+#include <vector>
 #include "CbmStsSensorType.h"
 
 
@@ -57,6 +57,13 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
     /** Destructor  **/
     virtual ~CbmStsSensorTypeDssd() { };
 
+    /** Find hits from clusters
+     ** Abstract from CbmStsSensorType
+     **/
+    virtual Int_t FindHits(std::vector<CbmStsCluster*>&,
+    		                   CbmStsSenzor* sensor);
+
+
 
     /** Print parameters **/
     virtual void Print(Option_t* opt = "") const;
@@ -98,9 +105,18 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
 
     /** Temporary variables to avoid frequent calculations **/
     Double_t fPitch[2];     //! Strip pitch front/back side [cm]
-    Double_t fCosStereo[2]; //! cos of stereo angle front/back side
-    Double_t fSinStereo[2]; //! sin if stereo angle front/back side
+    Double_t fTanStereo[2]; //! tangent of stereo angle front/back side
     Int_t   fStripShift[2]; //! Shift in number of strips from bottom to top
+
+
+    /** Get the cluster position at the top edge of the sensor.
+     ** @param[in]  centre    Cluster centre in (module) channel units
+     ** @param[in]  sensorId  Sensor index in module
+     ** @param[out] xCluster  Cluster position at readout edge
+     ** @param[out] side      Sensor side [0 = front, 1 = back]
+     **/
+    void GetClusterPosition(Double_t centre, Int_t sensorId,
+    		                    Double_t& xCluster, Int_t& side);
 
 
     /** Get the readout channel in the module for a given strip and side
@@ -108,6 +124,9 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** @param side      Side (0 = front, 1 = back)
      ** @param sensorId  Index of sensor within module
      ** @return  Channel number in module
+     **
+     ** Note: This encodes the mapping of sensor strip to module
+     ** channel, i.e. defines the physical meaning of the latter.
      **/
     Int_t GetModuleChannel(Int_t strip, Int_t side, Int_t sensorId) const;
 
@@ -117,6 +136,8 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** @param[in] sensorId  Sensor index in module
      ** @param[out]  strip   Strip number in sensor
      ** @param[out]  side    Sensor side [0 = front, 1 = back]
+     **
+     ** Note: This must be the inverse of GetModuleChannel.
      **/
     void GetStrip(Int_t channel, Int_t sensorId, Int_t& strip, Int_t& side);
 
@@ -128,6 +149,47 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** @return strip number on selected side
      **/
     Int_t GetStripNumber(Double_t x, Double_t y, Int_t side) const;
+
+
+    /** Intersection point of two strips / cluster centres
+     ** @param xF  x coordinate on read-out edge, front side [cm]
+     ** @param xB  x coordinate on read-out edge, back side  [cm]
+     ** @param x (return)  x coordinate of crossing
+     ** @param y (return)  y coordinate of crossing
+     ** @return kTRUE if intersection is inside active area.
+     **
+     ** This function calculates the intersection point of two
+     ** lines starting at xF and xB at the top edge with slopes
+     ** corresponding to the respective stereo angle.
+     **
+     ** All coordinates are in the sensor frame with the origin in the
+     ** bottom left corner of the active area.
+     **/
+    Bool_t Intersect(Double_t xF, Double_t xB, Double_t& x, Double_t& y);
+
+
+   /** Find the intersection points of two clusters defined by the
+     ** coordinates of the cluster centres at the top edge of the
+     ** active area. All coordinates in the sensor frame with origin
+     ** at the bottom left corner. For each intersection point,
+     ** a hit is created.
+     ** @param xF      Cluster centre on top edge, front side [cm]
+     ** @param xB      Cluster centre on top edge, back side  [cm]
+     ** @param sensor  Pointer to sensor object
+     ** @return Number of intersection points inside active area
+     **/
+    Int_t IntersectClusters(Double_t xF, Double_t xB, CbmStsSenzor* sensor);
+
+
+    /** Check whether a point (x,y) is inside the active area.
+     ** Note that the coordinates have to be given in w.r.t. the bottom
+     ** left corner of the active area of the sensor.
+     **
+     ** @param x  x coordinate in sensor frame (w.r.t. bottom left corner)
+     ** @param y  y coordinate in sensor frame (w.r.t. bottom left corner)
+     ** @return  kTRUE if inside active area.
+     **/
+    Bool_t IsInside(Double_t x, Double_t y);
 
 
     /** Produce charge on front or back side from a CbmStsSensorPoint

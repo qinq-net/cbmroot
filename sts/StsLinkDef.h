@@ -22,6 +22,11 @@
 #pragma link C++ class CbmStsDigitizeIdeal;
 #pragma link C++ class CbmStsSensorTypeDssdIdeal;
 
+// Reconstruction
+#pragma link C++ class CbmStsClusterFinderSimple;
+#pragma link C++ class CbmStsFindClusters;
+#pragma link C++ class CbmStsHitFinder;
+
 // Enumerators
 #pragma link C++ enum EStsElementLevel;
 

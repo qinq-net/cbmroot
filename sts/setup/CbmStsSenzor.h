@@ -11,9 +11,11 @@
 
 
 #include "CbmStsAddress.h"
+#include "CbmStsCluster.h"
 #include "setup/CbmStsElement.h"
 #include "setup/CbmStsSensorType.h"
 
+class TClonesArray;
 class TGeoPhysicalNode;
 class CbmStsModule;
 class CbmStsPoint;
@@ -59,14 +61,29 @@ class CbmStsSenzor : public CbmStsElement
     virtual ~CbmStsSenzor() { };
 
 
+    /** Create a new hit in the output array
+     ** @param xLocal   hit x coordinate in sensor system
+     ** @param yLocal   hit y coordinate in sensor system
+     **/
+    void CreateHit(Double_t xLocal, Double_t yLocal);
+
+
+    /** Find hits in sensor
+     ** @param clusters  Vector of clusters
+     ** @param hitArray  TClonesArray to store the hits in
+     ** @return Number of created hits
+     **/
+    Int_t FindHits(vector<CbmStsCluster*>& clusters,
+    		           TClonesArray* hitArray);
+
+
     /** Get mother module **/
     CbmStsModule* GetModule() const;
 
 
     /** Get the sensor Id within the module  **/
     Int_t GetSensorId() const {
-      return CbmStsAddress::GetElementId(fAddress, kStsSensor);
-    }
+      return CbmStsAddress::GetElementId(fAddress, kStsSensor); }
 
 
     /** Pointer to sensor type **/
@@ -99,6 +116,7 @@ class CbmStsSenzor : public CbmStsElement
   private:
 
     CbmStsSensorType* fType;    ///< Pointer to sensor type
+    TClonesArray* fHits;        ///< Output array for hits
 
     /** Prevent usage of copy constructor and assignment operator **/
     CbmStsSenzor(const CbmStsSenzor&);

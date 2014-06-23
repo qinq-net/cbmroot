@@ -19,6 +19,7 @@
 #include "CbmStsSector.h"
 #include "CbmStsStation.h"
 #include "TMath.h"
+#include "TStopwatch.h"
 
 using namespace std;
 
@@ -51,6 +52,10 @@ CbmStsClusterFinder::~CbmStsClusterFinder()
 
 void CbmStsClusterFinder::Exec(Option_t* opt)
 {
+
+	  TStopwatch timer;
+	  timer.Start();
+
     // Clear output arrays
     fClusters->Delete();
     fClusterCandidates->Delete();
@@ -86,8 +91,11 @@ void CbmStsClusterFinder::Exec(Option_t* opt)
 
     AnalyzeClusters();
 
+    timer.Stop();
+
     static Int_t eventNo = 0;
-    LOG(INFO) << "CbmStsClusterFinder::Exec: eventNo=" << eventNo++ << std::endl;
+    LOG(INFO) << "CbmStsClusterFinder::Exec: eventNo=" << eventNo++
+    		      << ", time " << timer.RealTime() << FairLogger::endl;
 }
 
 void CbmStsClusterFinder::SetParContainers()

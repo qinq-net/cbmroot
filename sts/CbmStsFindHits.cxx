@@ -21,6 +21,8 @@
 #include "TClonesArray.h"
 #include "TMath.h"
 
+#include "TStopwatch.h"
+
 using namespace std;
 
 CbmStsFindHits::CbmStsFindHits()
@@ -46,6 +48,11 @@ CbmStsFindHits::~CbmStsFindHits()
 
 void CbmStsFindHits::Exec(Option_t* opt)
 {
+
+	  LOG(INFO) << "Findhits:: exec" << FairLogger::endl;
+
+	  TStopwatch timer;
+	  timer.Start();
     // Clear output array
     fHits->Delete();
 
@@ -77,8 +84,10 @@ void CbmStsFindHits::Exec(Option_t* opt)
         } // Sector loop
     }     // Station loop
 
+    timer.Stop();
     static Int_t eventNo = 0;
-    LOG(INFO) << "CbmStsFindHits::Exec: eventNo=" << eventNo++ << std::endl;
+    LOG(INFO) << "CbmStsFindHits::Exec: eventNo=" << eventNo++
+    		      << ", time " << timer.RealTime() << FairLogger::endl;
 }
 
 void CbmStsFindHits::SetParContainers()

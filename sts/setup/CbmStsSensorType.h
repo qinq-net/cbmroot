@@ -6,8 +6,9 @@
 #ifndef CBMSTSSENSORTYPE_H
 #define CBMSTSSENSORTYPE_H 1
 
-
+#include <vector>
 #include "TNamed.h"
+#include "CbmStsCluster.h"
 
 class CbmStsSenzor;
 class CbmStsSensorPoint;
@@ -24,9 +25,6 @@ class CbmStsSensorPoint;
  ** traversing the sensor). The must implement the abstract
  ** method ProcessPoint.
  **/
-
-
-
 class CbmStsSensorType : public TNamed
 {
 
@@ -38,6 +36,19 @@ class CbmStsSensorType : public TNamed
 
     /** Destructor  **/
     virtual ~CbmStsSensorType() { };
+
+
+    /** Find hits from clusters
+     ** @param clusters  vector with clusters
+     ** @param sensor    pointer to sensor object
+     ** @return Number of found hits
+     **
+     ** Perform the hit finding operation on an array of clusters
+     ** and deliver the found hits to the sensor object. To be
+     ** implemented for each concrete sensor type.
+     **/
+    virtual Int_t FindHits(std::vector<CbmStsCluster*>& clusters,
+    		                   CbmStsSenzor* sensor) = 0;
 
 
     /** Type identifier **/

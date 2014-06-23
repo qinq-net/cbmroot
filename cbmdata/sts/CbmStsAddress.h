@@ -83,6 +83,22 @@ class CbmStsAddress : public CbmAddress
     static UInt_t GetAddress(Int_t* elementIds);
 
 
+
+    /** Construct the address of an element from the address of a
+     ** descendant element.
+     ** @param address Address of descendant element
+     ** @param level   Desired hierarchy level
+     ** @return Address of element at desired hierarchy level
+     **
+     ** This strips of the address information of all hierarchy levels
+     ** below the desired one.
+     **/
+    static UInt_t GetMotherAddress(UInt_t address, Int_t level) {;
+    	if ( level < 0 || level >= kStsNofLevels ) return 0;
+    	return ( address & ( ( 1 << fgkShift[level+1] ) - 1 ) ) ;
+    }
+
+
     /** Get the index of an element
      ** @param address Unique element address
      ** @param level Hierarchy level

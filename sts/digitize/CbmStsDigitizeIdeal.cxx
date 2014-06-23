@@ -138,8 +138,9 @@ void CbmStsDigitizeIdeal::Exec(Option_t* opt) {
   fNofDigisTot    += fNofDigis;
   fTimeTot        += fTimer.RealTime();
 
-  LOG(INFO) << "+ " << GetName() << ": time "  << fTimer.RealTime()
-  		      << "s, event " << iEvent << ", points: " << fNofPoints
+  LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
+  		      << right << iEvent << ", time " << fixed << setprecision(6)
+  		      << fTimer.RealTime() << " s, points: " << fNofPoints
   		      << ", signals: " << fNofSignalsF << " / " << fNofSignalsB
   		      << ", digis: " << fNofDigis << FairLogger::endl;
 }
@@ -167,7 +168,7 @@ void CbmStsDigitizeIdeal::Finish() {
 			      << fNofDigisTot / ( fNofSignalsFTot + fNofSignalsBTot )
 			      << FairLogger::endl;
 	LOG(INFO) << "Time per event   : " << fTimeTot / Double_t(fNofEvents)
-			      << FairLogger::endl;
+			      << " s" << FairLogger::endl;
 	LOG(INFO) << "=====================================" << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
@@ -269,7 +270,7 @@ void CbmStsDigitizeIdeal::Reset() {
 void CbmStsDigitizeIdeal::SetModuleParameters() {
 	Int_t nModules = fSetup->GetNofModules();
 	for (Int_t iModule = 0; iModule < nModules; iModule++) {
-		fSetup->GetModule(iModule)->SetParameters(fDynRange, fThreshold,
+		fSetup->GetModule(iModule)->SetParameters(2048, fDynRange, fThreshold,
 				                                      fNofAdcChannels);
 	}
 }
