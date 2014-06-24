@@ -1,5 +1,5 @@
 #!/bin/bash
-. /data6/cbm/software/cbmroot_trunk_20140515/build/config.sh > /dev/null
+. /data6/cbm/software/cbmroot_trunk_20140624/build/config.sh > /dev/null
 nEvents=$NEVENTS
 urqmd=$NURQMD
 centrality=mbias
