@@ -344,6 +344,21 @@ private:
     TH2F* fa_tm_glovtxb;
     TH2F* fa_tm_gloprimvtxb;
 
+    TH2F* fa_m2mom_glo;       
+    TH2F* fa_m2mom_glovtxb; 
+    TH2F* fa_m2mom_gloprim;       
+    TH2F* fa_m2mom_gloprimvtxb;             
+    TH2F* fa_m2mom_glo_pip;       
+    TH2F* fa_m2mom_glo_pim;       
+    TH2F* fa_m2mom_glo_kp;       
+    TH2F* fa_m2mom_glo_km;       
+    TH2F* fa_m2mom_glo_p;       
+    TH2F* fa_m2mom_glo_pbar;       
+    TH2F* fa_m2mom_glo_d;       
+    TH2F* fa_m2mom_glo_t;       
+    TH2F* fa_m2mom_glo_h;       
+    TH2F* fa_m2mom_glo_a;  
+
     TH2F* fa_pMCmom_glo;       
     TH2F* fa_pMCmom_glo_pip;       
     TH2F* fa_pMCmom_glo_pim;       

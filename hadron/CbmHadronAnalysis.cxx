@@ -371,6 +371,20 @@ void CbmHadronAnalysis::CreateHistogramms()
   fa_tm_glo_h = new TH2F("tm_glo_h","GlobalTrack(h); momentum (GeV/c); M_{ToF}*sign(Z) (GeV/c^{2});",100,0.,10.,TMYBIN,TMMIN,TMMAX);
   fa_tm_glo_a = new TH2F("tm_glo_a","GlobalTrack(a); momentum (GeV/c); M_{ToF}*sign(Z) (GeV/c^{2});",100,0.,10.,TMYBIN,TMMIN,TMMAX);
 
+  Double_t M2MIN=-0.4;
+  Double_t M2MAX=1.4;
+  Int_t    M2YBIN=360;
+  fa_m2mom_glo = new TH2F("m2mom_glo","GlobalTrack(all); p ^{.} sign(Z)(GeV); M_{ToF}^{2} (GeV^{2});",200,-10.,10.,M2YBIN,M2MIN,M2MAX);
+  fa_m2mom_glovtxb = new TH2F("m2mom_glovtxb","GlobalTrack(vtxb); p ^{.} sign(Z)(GeV); M_{ToF}^{2} (GeV^{2});",200,-10.,10.,M2YBIN,M2MIN,M2MAX);
+  fa_m2mom_gloprim = new TH2F("m2mom_gloprim","GlobalTrack(prim); p ^{.} sign(Z)(GeV); M_{ToF}^{2} (GeV^{2});",200,-10.,10.,M2YBIN,M2MIN,M2MAX);
+  fa_m2mom_gloprimvtxb = new TH2F("m2mom_gloprimvtxb","GlobalTrack(primvtxb); p ^{.} sign(Z)(GeV); M_{ToF}^{2} (GeV^{2});",200,-10.,10.,M2YBIN,M2MIN,M2MAX);
+  fa_m2mom_glo_pip = new TH2F("m2mom_glo_pip","GlobalTrack(pip); p ^{.} sign(Z)(GeV); M_{ToF}^{2} (GeV^{2});",200,-10.,10.,M2YBIN,M2MIN,M2MAX);
+  fa_m2mom_glo_pim = new TH2F("m2mom_glo_pim","GlobalTrack(pim); p ^{.} sign(Z)(GeV); M_{ToF}^{2} (GeV^{2});",200,-10.,10.,M2YBIN,M2MIN,M2MAX);
+  fa_m2mom_glo_kp  = new TH2F("m2mom_glo_kp","GlobalTrack(kp); p ^{.} sign(Z)(GeV); M_{ToF}^{2} (GeV^{2});",200,-10.,10.,M2YBIN,M2MIN,M2MAX);
+  fa_m2mom_glo_km  = new TH2F("m2mom_glo_km","GlobalTrack(km); p ^{.} sign(Z)(GeV); M_{ToF}^{2} (GeV^{2});",200,-10.,10.,M2YBIN,M2MIN,M2MAX);
+  fa_m2mom_glo_p   = new TH2F("m2mom_glo_p","GlobalTrack(p); p ^{.} sign(Z)(GeV); M_{ToF}^{2} (GeV^{2});",200,-10.,10.,M2YBIN,M2MIN,M2MAX);
+  fa_m2mom_glo_pbar = new TH2F("m2mom_glo_pbar","GlobalTrack(pbar); p ^{.} sign(Z)(GeV); M_{ToF}^{2} (GeV^{2});",200,-10.,10.,M2YBIN,M2MIN,M2MAX);
+
   fa_pMCmom_glo = new TH2F("pMCmom_glo","GlobalTrack(all); momentum; p_{MC};",100,0.,10.,100,0.,10.);
   fa_pMCmom_glo_pip = new TH2F("pMCmom_glo_pip","GlobalTrack(pip); momentum; p_{MC};",100,0.,10.,100,0.,10.);
   fa_pMCmom_glo_pim = new TH2F("pMCmom_glo_pim","GlobalTrack(pim); momentum; p_{MC};",100,0.,10.,100,0.,10.);
@@ -470,6 +484,7 @@ void CbmHadronAnalysis::CreateHistogramms()
   
   cout <<"CbmHadronAnalysis::CreateHistogramms: histograms booked in directory "<<gDirectory->GetName()<<endl;
   }
+
 // ------------------------------------------------------------------
 InitStatus CbmHadronAnalysis::ReadPdfFile()
 {   // Open PDF file and get histogramms for PID
@@ -2087,6 +2102,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
       Int_t NStsMCt=-1;
       if (s>-1) {   // STS Track analysis 
        StsTrack = (CbmStsTrack *) fStsTracks->At(s);
+
        FairTrackParam paramExtr;
        fTrackFitter.FitToVertex(StsTrack, fPrimVertex, &paramExtr);
        vtxb = fTrackFitter.GetChiToVertex(StsTrack, fPrimVertex); //impact paramter ???
@@ -2098,6 +2114,10 @@ void CbmHadronAnalysis::Exec(Option_t* option)
         CbmStsHit* hit = (CbmStsHit*) fStsHits->At(StsTrack->GetHitIndex(ih));
         Int_t sh = hit->GetRefId();
         if(sh>-1) {
+	 if(sh > fStsPoints->GetEntries()){
+	   cout<<"<E> Invalid index in StsPoints TClArray "<<sh<<"("<<fStsPoints->GetEntries()<<")"<<endl;
+	   break;
+	 }
          CbmStsPoint* poi =  (CbmStsPoint*) fStsPoints->At(sh);
          if(smc!=poi->GetTrackID()){
           smc = poi->GetTrackID();
@@ -2270,6 +2290,8 @@ void CbmHadronAnalysis::Exec(Option_t* option)
        if(mom<0.) mom=-mom;
        Float_t vel=TofHit->GetR()/TofHit->GetTime(); // GetR() instead of len
        Float_t bet = vel / clight;  
+       Double_t m2 = mom*mom*(1./bet/bet - 1.);
+
        if (bet > 0.99999) {bet=0.99999;} 
        Float_t tofmass =mom/bet*sqrt(1.-bet*bet)*TMath::Sign(1.,tpar->GetQp());
        Double_t chi2=0.;//(Double_t)(GlobTrack->GetChi2())/(GlobTrack->GetNDF());
@@ -2286,6 +2308,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
        fa_xy_glo1->Fill(TofHit->GetX(),TofHit->GetY());
        fa_pv_glo->Fill(vel,mom);
        fa_tm_glo->Fill(mom,tofmass);
+       fa_m2mom_glo->Fill(mom*TMath::Sign(1.,tpar->GetQp()),m2);
        fa_pMCmom_glo->Fill(mom,p_MC);
        fa_chi2_mom_glo->Fill(mom,vtxb);
        fa_w_mom_glo->Fill(mom,Weight_THMUL[i][0]);
@@ -2295,12 +2318,20 @@ void CbmHadronAnalysis::Exec(Option_t* option)
        fhTofTrkDxsel->Fill(TofTrack->GetTrackDx());
        fhTofTrkDysel->Fill(TofTrack->GetTrackDy());
 
-       if(vtxb<fVtxBMax) fa_tm_glovtxb->Fill(mom,tofmass);
+       if(vtxb<fVtxBMax) {
+	 fa_tm_glovtxb->Fill(mom,tofmass);
+	 fa_m2mom_glovtxb->Fill(mom*TMath::Sign(1.,tpar->GetQp()),m2);
+       }
 
        if (MCTrack->GetMotherId()==-1) { // select primaries 
         fa_tm_gloprim->Fill(mom,tofmass);
-	if(vtxb<fVtxBMax) fa_tm_gloprimvtxb->Fill(mom,tofmass);
+	fa_m2mom_gloprim->Fill(mom*TMath::Sign(1.,tpar->GetQp()),m2);
 	fa_chi2_mom_gloprim->Fill(mom,vtxb);
+
+	if(vtxb<fVtxBMax) {
+	  fa_tm_gloprimvtxb->Fill(mom,tofmass);
+	  fa_m2mom_gloprimvtxb->Fill(mom*TMath::Sign(1.,tpar->GetQp()),m2);
+	}
         Float_t Phip = RADDEG*atan2(MCTrack->GetPy(),MCTrack->GetPx());
         Float_t dphi = Phip - RADDEG*fMCEventHeader->GetPhi();
 	if(dphi<-180.) {dphi +=360.;};
@@ -2315,6 +2346,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
 	  fa_v2_rap_glo_pip->Fill((MCTrack->GetRapidity()-GetMidY())/GetMidY(),TMath::Cos(2*dphi));
           fa_xy_glo_pip->Fill(TofHit->GetX(),TofHit->GetY());
           fa_tm_glo_pip->Fill(mom,tofmass);
+	  fa_m2mom_glo_pip->Fill(mom*TMath::Sign(1.,tpar->GetQp()),m2);
 	  fa_pMCmom_glo_pip->Fill(mom,p_MC);
           fa_w_mom_glo_pip->Fill(mom,Weight_THMUL[i][0]);
 	  fa_LenDismom_glo_pip->Fill(mom,len-TofHit->GetR());
@@ -2337,6 +2369,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
 	  fa_v2_rap_glo_pim->Fill((MCTrack->GetRapidity()-GetMidY())/GetMidY(),TMath::Cos(2*dphi));
           fa_xy_glo_pim->Fill(TofHit->GetX(),TofHit->GetY());
           fa_tm_glo_pim->Fill(mom,tofmass);
+	  fa_m2mom_glo_pim->Fill(mom*TMath::Sign(1.,tpar->GetQp()),m2);
 	  fa_pMCmom_glo_pim->Fill(mom,p_MC);
           fa_w_mom_glo_pim->Fill(mom,Weight_THMUL[i][0]);
 	  fa_LenDismom_glo_pim->Fill(mom,len-TofHit->GetR());
@@ -2359,6 +2392,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
 	  fa_v2_rap_glo_kp->Fill((MCTrack->GetRapidity()-GetMidY())/GetMidY(),TMath::Cos(2*dphi));
           fa_xy_glo_kp->Fill(TofHit->GetX(),TofHit->GetY());
           fa_tm_glo_kp->Fill(mom,tofmass);
+	  fa_m2mom_glo_kp->Fill(mom*TMath::Sign(1.,tpar->GetQp()),m2);
 	  fa_pMCmom_glo_kp->Fill(mom,p_MC);
           fa_w_mom_glo_kp->Fill(mom,Weight_THMUL[i][0]);
 	  fa_LenDismom_glo_kp->Fill(mom,len-TofHit->GetR());
@@ -2371,6 +2405,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
 	  fa_v2_rap_glo_km->Fill((MCTrack->GetRapidity()-GetMidY())/GetMidY(),TMath::Cos(2*dphi));
           fa_xy_glo_km->Fill(TofHit->GetX(),TofHit->GetY());
           fa_tm_glo_km->Fill(mom,tofmass);
+	  fa_m2mom_glo_km->Fill(mom*TMath::Sign(1.,tpar->GetQp()),m2);
 	  fa_pMCmom_glo_km->Fill(mom,p_MC);
           fa_w_mom_glo_km->Fill(mom,Weight_THMUL[i][0]);
 	  fa_LenDismom_glo_km->Fill(mom,len-TofHit->GetR());
@@ -2383,6 +2418,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
 	  fa_v2_rap_glo_p->Fill((MCTrack->GetRapidity()-GetMidY())/GetMidY(),TMath::Cos(2*dphi));
           fa_xy_glo_p->Fill(TofHit->GetX(),TofHit->GetY());
           fa_tm_glo_p->Fill(mom,tofmass);
+	  fa_m2mom_glo_p->Fill(mom*TMath::Sign(1.,tpar->GetQp()),m2);
 	  fa_pMCmom_glo_p->Fill(mom,p_MC);
           fa_w_mom_glo_p->Fill(mom,Weight_THMUL[i][0]);
 	  fa_LenDismom_glo_p->Fill(mom,len-TofHit->GetR());
@@ -2406,6 +2442,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
 	  fa_v2_rap_glo_pbar->Fill((MCTrack->GetRapidity()-GetMidY())/GetMidY(),TMath::Cos(2*dphi));
           fa_xy_glo_pbar->Fill(TofHit->GetX(),TofHit->GetY());
           fa_tm_glo_pbar->Fill(mom,tofmass);
+	  fa_m2mom_glo_pbar->Fill(mom*TMath::Sign(1.,tpar->GetQp()),m2);
 	  fa_pMCmom_glo_pbar->Fill(mom,p_MC);
           fa_w_mom_glo_pbar->Fill(mom,Weight_THMUL[i][0]);
 	  fa_LenDismom_glo_pbar->Fill(mom,len-TofHit->GetR());
