@@ -230,6 +230,7 @@ void run_reco_plot(Int_t nEvents = 100, Int_t urqmd = 0000)
     trdhitdens->SetNeighbourTrigger(false);
     trdhitdens->SetPlotResults(true);
     trdhitdens->SetScaleCentral2mBias(1.0);
+    trdhitdens->SetTrigerMaxScale(150000);  // set max trigger range   
     run->AddTask(trdhitdens);
       
   }
