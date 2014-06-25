@@ -17,6 +17,8 @@
 #include "CbmMuchDigi.h"
 #include "CbmMuchAddress.h"
 #include <algorithm>
+#include <iostream>
+
 // -------------------------------------------------------------------------
 CbmMuchFindHitsGem::CbmMuchFindHitsGem(const char* digiFileName) 
   : FairTask("MuchFindHitsGem", 1) ,
@@ -74,6 +76,9 @@ void CbmMuchFindHitsGem::Exec(Option_t* opt) {
   else {
     for (Int_t iDigi = 0; iDigi < fDigis->GetEntriesFast(); iDigi++) {
       CbmMuchDigi* digi = (CbmMuchDigi*) fDigis->At(iDigi);
+      CbmMuchModule* module = fGeoScheme->GetModuleByDetId(digi->GetAddress()); //AZ
+      //std::cout << module->GetDetectorType() << std::endl; //AZ
+      if (module->GetDetectorType() == 2) continue; //AZ - skip 2-D straws
       fDigiData.push_back(*digi);
     }
   }

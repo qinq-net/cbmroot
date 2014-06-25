@@ -96,17 +96,20 @@ public:
 	/** Setters **/
 	Double_t GetTime() const { return fTime; }
 	Double_t GetDTime() const { return fDTime; }
+	Int_t GetFlag() const { return fFlag; }
 
 	/** Accessors **/
 	void SetTime(Double_t time) { fTime = time; }
 	void SetDTime(Double_t dtime) { fDTime = dtime; }
+	void SetFlag(Int_t flag) { fFlag = flag; }
 
 private:
    Int_t fPlaneId; // Plane number
    Double_t fTime; // Time since event start [ns]
    Double_t fDTime; // Time resolution [ns]
+   Int_t fFlag; // Flag
 
-	ClassDef(CbmMuchPixelHit, 1);
+	ClassDef(CbmMuchPixelHit, 2);
 };
 
 #endif /* CBMMUCHPIXELHIT_H_ */
