@@ -12,7 +12,7 @@
 using std::cout;
 using std::endl;
 
-void global_reco(Int_t nEvents = 100, // number of events
+void global_reco(Int_t nEvents = 10, // number of events
 		TString opt = "all")
 // if opt == "all" STS + hit producers + global tracking are executed
 // if opt == "hits" STS + hit producers are executed
@@ -23,7 +23,7 @@ void global_reco(Int_t nEvents = 100, // number of events
 	TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
 
    // Input and output data
-	TString dir = "events/sts_v13c/"; // Output directory
+	TString dir = "events/much_v13e/"; // Output directory
    TString mcFile = dir + "mc.0000.root"; // MC transport file
    TString parFile = dir + "param.0000.root"; // Parameters file
    TString globalRecoFile = dir + "global.reco.0000.root"; // Output file with reconstructed tracks and hits
@@ -34,7 +34,7 @@ void global_reco(Int_t nEvents = 100, // number of events
    TList* parFileList = new TList();
    TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
    TObjString trdDigiFile = parDir + "/trd/trd_v13p_3e.digi.par"; // TRD digi file
-   TString muchDigiFile = parDir + "/much/much_v12b.digi.root"; // MUCH digi file
+   TString muchDigiFile = parDir + "/much/much_v13f.digi.root"; // MUCH digi file
    TString stsMatBudgetFile = parDir + "/sts/sts_matbudget_v13d.root";
    TObjString tofDigiFile = parDir + "/tof/tof_v13b.digi.par";// TOF digi file
 
@@ -159,9 +159,11 @@ void global_reco(Int_t nEvents = 100, // number of events
 			run->AddTask(findHits);
 
 			CbmMuchDigitizeStraws* strawDigitize = new CbmMuchDigitizeStraws(muchDigiFile.Data());
+			strawDigitize->SetDimens(2);
 			run->AddTask(strawDigitize);
 			CbmMuchFindHitsStraws* strawFindHits = new CbmMuchFindHitsStraws(muchDigiFile.Data());
-			strawFindHits->SetMerge(1);
+			//strawFindHits->SetMerge(1);
+			strawFindHits->SetDimens(2);
 			run->AddTask(strawFindHits);
 			// -----------------------------------------------------------------
 		}

@@ -12,7 +12,7 @@ using std::endl;
 using std::vector;
 using std::string;
 
-void global_reco_qa(Int_t nEvents = 100,
+void global_reco_qa(Int_t nEvents = 10,
       TString opt = "reco")
 // opt == "reco" in case of one input file with all reconstructed data
 // opt == "ht" (hitas and tracks) in case of two input files with reconstructed hits and tracks
@@ -21,7 +21,7 @@ void global_reco_qa(Int_t nEvents = 100,
    TString script = TString(gSystem->Getenv("LIT_SCRIPT"));
    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
 
-	TString dir = "events/sts_v13c/"; // Output directory
+   TString dir = "events/much_v13e/";// Output directory
 	TString resultDir = "test/"; // Output directory for results
 	TString mcFile = dir + "mc.0000.root"; // MC transport file
 	TString parFile = dir + "param.0000.root"; // Parameter file
@@ -31,9 +31,9 @@ void global_reco_qa(Int_t nEvents = 100,
 	TString qaFile = dir + "qa.0000.root"; // Output file with histograms
 
    TList* parFileList = new TList();
-   TObjString stsDigiFile = parDir + "/sts/sts_v13c_std.digi.par"; // STS digi file
+   TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
    TObjString trdDigiFile = parDir + "/trd/trd_v13p_1e.digi.par"; // TRD digi file
-   TString muchDigiFile = parDir + "/much/much_v12b.digi.root"; // MUCH digi file
+   TString muchDigiFile = parDir + "/much/much_v13a.digi.root"; // MUCH digi file
    TString stsMatBudgetFile = parDir + "/sts/sts_matbudget_v13c.root";
    TObjString tofDigiFile = parDir + "/tof/tof_v13b.digi.par";// TOF digi file
 
