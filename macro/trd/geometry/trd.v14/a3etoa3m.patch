@@ -1,5 +1,5 @@
-*** Create_TRD_Geometry_v14a_3e.C	2014-06-25 11:09:36.506242588 +0200
---- Create_TRD_Geometry_v14a_3m.C	2014-06-25 11:13:01.635814400 +0200
+*** Create_TRD_Geometry_v14a_3e.C	2014-06-25 17:45:11.918076723 +0200
+--- Create_TRD_Geometry_v14a_3m.C	2014-06-25 17:52:54.128364321 +0200
 ***************
 *** 83,90 ****
   //const TString subVersion   = "_1h";
@@ -39,7 +39,7 @@
   // obsolete variants
   //Double_t LayerPosition[MaxLayers] = { 460. }; // start position - 2013-10-28 - DE - v13x3 - SIS 100 muon         ( 4 layers, z = 4600 )
 ***************
-*** 404,410 ****
+*** 405,411 ****
   void dump_digi_file();
   
   
@@ -47,7 +47,7 @@
     // Load the necessary FairRoot libraries 
     gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
     basiclibs();
---- 404,410 ----
+--- 405,411 ----
   void dump_digi_file();
   
   

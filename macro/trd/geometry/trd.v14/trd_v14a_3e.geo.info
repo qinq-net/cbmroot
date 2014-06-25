@@ -2,7 +2,7 @@
 ##   trd_v14a_3e information file
 #
 
-# created 20140624
+# created 20140625
 
 # envelope
  410 cm   start of TRD (z)
@@ -87,6 +87,9 @@ GBTX readout boards are : NOT included
        15       10        5        5        8        8        8        8            ASICs per FEB
        90       50       30       20       96       64       32       24            ASICs per module
      7200     3000     3000        0        0     4608     3200     7872    28880   number of ASICs
+# gbtx
+       14        8        5        0        0       10        5        3            GBTXs per module
+     1120      480      500        0        0      720      500      984     4304   number of GBTXs
 # channels
      2880     1600      960      640     3072     2048     1024      768            channels per module
       480      320      160      160      256      256      256      256            channels per feb

@@ -63,6 +63,9 @@ GBTX readout boards are : NOT included
        15       10        5        5        8        8        8        8            ASICs per FEB
        90       50       30       20       96       64       32       24            ASICs per module
      2880     1200     1200        0        0     1536     1024     1152     8992   number of ASICs
+# gbtx
+       14        8        5        0        0       10        5        3            GBTXs per module
+      448      192      200        0        0      240      160      144     1384   number of GBTXs
 # channels
      2880     1600      960      640     3072     2048     1024      768            channels per module
       480      320      160      160      256      256      256      256            channels per feb

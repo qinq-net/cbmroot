@@ -257,8 +257,9 @@ const Int_t NofModuleTypes = 8;
 const Int_t ModuleType[NofModuleTypes]    = {  0,  0,  0,  0,  1,  1,  1,  1 }; // 0 = small module, 1 = large module
 
 // GBTx ROB definitions
-const Int_t RobsPerModule[NofModuleTypes] = {  2,  2,  1,  1,  2,  1,  1,  1 }; // number of GBTx ROBs on module
-const Int_t GbtxPerRob[NofModuleTypes]    = {107,105,105,103,107,107,105,103 }; // number of GBTx ASICs on ROB
+const Int_t RobsPerModule[NofModuleTypes] = {  2,  2,  1,  1,  2,  2,  1,  1 }; // number of GBTx ROBs on module
+const Int_t GbtxPerRob[NofModuleTypes]    = {107,105,105,103,107,105,105,103 }; // number of GBTx ASICs on ROB
+const Int_t GbtxPerModule[NofModuleTypes] = { 14,  8,  5,  0,  0, 10,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
 
 // ultimate density - 540 mm
 const Int_t FebsPerModule[NofModuleTypes] = {  6,  5,  6,  4, 12,  8,  4,  3 }; // number of FEBs on backside - reduced FEBs (64 ch ASICs)
@@ -664,6 +665,7 @@ void dump_info_file()
   Int_t    total_modules[NofModuleTypes+1]       = { 0 };   // total number of modules
   Int_t    total_febs[NofModuleTypes+1]          = { 0 };   // total number of febs
   Int_t    total_asics[NofModuleTypes+1]         = { 0 };   // total number of asics
+  Int_t    total_gbtx[NofModuleTypes+1]          = { 0 };   // total number of gbtx
   Int_t    total_channels[NofModuleTypes+1]      = { 0 };   // total number of channels
 
   Int_t    total_channels_u = 0;  // total number of ultimate channels
@@ -818,6 +820,8 @@ void dump_info_file()
   fprintf(ifile," %8d", total_modules[NofModuleTypes]);
   fprintf(ifile,"   number of modules\n");
 
+  //------------------------------------------------------------------------------
+
   // number of FEBs
   //  fprintf(ifile,"\n#\n##   febs\n#\n\n");
   fprintf(ifile,"# febs\n");
@@ -896,6 +900,7 @@ void dump_info_file()
   fprintf(ifile," %8d", total_febs[NofModuleTypes]);
   fprintf(ifile,"   number of FEBs\n");
 
+  //------------------------------------------------------------------------------
 
   // number of ASICs
   //  fprintf(ifile,"\n#\n##   asics\n#\n\n");
@@ -924,6 +929,30 @@ void dump_info_file()
   }
   fprintf(ifile," %8d", total_asics[NofModuleTypes]);
   fprintf(ifile,"   number of ASICs\n");
+
+  //------------------------------------------------------------------------------
+
+  // number of GBTXs
+  //  fprintf(ifile,"\n#\n##   asics\n#\n\n");
+  fprintf(ifile,"# gbtx\n");
+
+  for (Int_t iModule = 0; iModule < NofModuleTypes; iModule++)
+  {
+    fprintf(ifile," %8d", GbtxPerModule[iModule]);
+  }
+  fprintf(ifile,"            GBTXs per module\n");
+
+  // GBTXs per module type
+  for (Int_t iModule = 0; iModule < NofModuleTypes; iModule++)
+  {
+    total_gbtx[iModule] = total_modules[iModule] * GbtxPerModule[iModule];
+    fprintf(ifile," %8d", total_gbtx[iModule]);
+    total_gbtx[NofModuleTypes] += total_gbtx[iModule];
+  }
+  fprintf(ifile," %8d", total_gbtx[NofModuleTypes]);
+  fprintf(ifile,"   number of GBTXs\n");
+
+  //------------------------------------------------------------------------------
 
   // number of channels
   fprintf(ifile,"# channels\n");
@@ -1009,6 +1038,8 @@ void dump_info_file()
 
   fprintf(ifile,"\n");
   fprintf(ifile,"%8.1f%%   channel efficiency\n", 1. * total_channels[NofModuleTypes] / (total_asics[NofModuleTypes] * 32) * 100);
+
+  //------------------------------------------------------------------------------
 
   // total surface of TRD
   for (Int_t iModule = 0; iModule < NofModuleTypes; iModule++)

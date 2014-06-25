@@ -1,5 +1,5 @@
-*** Create_TRD_Geometry_v14a_3e.C	2014-06-25 11:09:36.506242588 +0200
---- Create_TRD_Geometry_v14a_1h.C	2014-06-25 11:15:42.216369159 +0200
+*** Create_TRD_Geometry_v14a_3e.C	2014-06-25 17:45:11.918076723 +0200
+--- Create_TRD_Geometry_v14a_1h.C	2014-06-25 17:51:19.017362041 +0200
 ***************
 *** 80,89 ****
   
@@ -68,7 +68,7 @@
   //
   // obsolete variants
 ***************
-*** 404,410 ****
+*** 405,411 ****
   void dump_digi_file();
   
   
@@ -76,7 +76,7 @@
     // Load the necessary FairRoot libraries 
     gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
     basiclibs();
---- 404,410 ----
+--- 405,411 ----
   void dump_digi_file();
   
   
