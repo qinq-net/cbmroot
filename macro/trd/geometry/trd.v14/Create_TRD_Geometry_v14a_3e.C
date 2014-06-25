@@ -1,9 +1,11 @@
 ///                                             
-/// \file Create_TRD_Geometry_v13a.C
+/// \file Create_TRD_Geometry_v14a.C
 /// \brief Generates TRD geometry in Root format.
 ///                                             
 
-// 2014-05-02 - DE - v14a_3e - redesign inner part of station 3, now with 16x module type 2 instead of 8x module type 5
+// 2014-06-25 - DE - v14a_3e - consists of only 3 small and 3 large modules types (was 4+4 before)
+// 2014-06-25 - DE - v14a_3e - inner part of all 3 stations is now identical
+// 2014-05-02 - DE - v14a_3e - redesign inner part of station 3, now with 5x5-1 small modules, like in station 1 and station 2
 // 2014-05-02 - DE - v14a_3e - include optional GBTX readout boards on each module
 // 2014-05-02 - DE - v14a_3e - introduce 3x5=15 Spadic FEBs for ultimate density on module type 1
 //
@@ -156,13 +158,14 @@ const Int_t   LayerType[MaxLayers]        = { 10, 11, 10, 11, 20, 21, 20, 21, 30
 const Int_t   LayerNrInStation[MaxLayers] = { 1, 2, 3, 4, 1, 2, 3, 4, 1, 2 };
 
 // 5x z-positions from 260 till 550 cm
-//Double_t LayerPosition[MaxLayers] = { 260. }; // start position - 2013-10-28 - DE - v13x1 - SIS 100 hadron         ( 4 layers, z = 2600 )
-//Double_t LayerPosition[MaxLayers] = { 410. }; // start position - 2013-10-28 - DE - v13x2 - SIS 100 electron       ( 4 layers, z = 4100 )
-//Double_t LayerPosition[MaxLayers] = { 460. }; // start position - 2013-10-28 - DE - v13x3 - SIS 100 muon     3_abs ( 4 layers, z = 4600 )
-Double_t LayerPosition[MaxLayers] = { 410. }; // start position - 2013-10-28 - DE - v13x4 - SIS 300 electron       (10 layers, z = 4100 )
-//Double_t LayerPosition[MaxLayers] = { 550. }; // start position - 2013-10-28 - DE - v13x5 - SIS 300 muon     6_abs (10 layers, z = 5500 )
+//Double_t LayerPosition[MaxLayers] = { 260. }; // start position - 2013-10-28 - DE - v14_1h - SIS 100 hadron         ( 4 layers, z = 2600 )
+//Double_t LayerPosition[MaxLayers] = { 410. }; // start position - 2013-10-28 - DE - v14_1e - SIS 100 electron       ( 4 layers, z = 4100 )
+//Double_t LayerPosition[MaxLayers] = { 360. }; // start position - 2014-06-16 - DE - v14_1m - SIS 100 muon           ( 4 layers, z = 3600 ) was 460.
+Double_t LayerPosition[MaxLayers] = { 410. }; // start position - 2013-10-28 - DE - v14_3e - SIS 300 electron       (10 layers, z = 4100 )
+//Double_t LayerPosition[MaxLayers] = { 550. }; // start position - 2013-10-28 - DE - v14_3m - SIS 300 muon     6_abs (10 layers, z = 5500 )
 //
 // obsolete variants
+//Double_t LayerPosition[MaxLayers] = { 460. }; // start position - 2013-10-28 - DE - v13x3 - SIS 100 muon         ( 4 layers, z = 4600 )
 //Double_t LayerPosition[MaxLayers] = { 410. }; // start position - 2013-06-25 - DE - v13i trd100_rich             ( 2 layers, z = 4100 )
 //Double_t LayerPosition[MaxLayers] = { 410. }; // start position - 2013-06-25 - DE - v13j trd100_rich             ( 3 layers, z = 4100 )
 //Double_t LayerPosition[MaxLayers] = { 430. }; // start position - 2013-06-25 - DE - ---  trd100_much_2_absorbers ( 4 layers, z = 4300 )
