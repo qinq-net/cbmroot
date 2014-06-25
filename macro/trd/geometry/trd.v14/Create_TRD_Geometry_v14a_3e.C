@@ -148,6 +148,11 @@ const Int_t    ShowLayer[MaxLayers] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };  // SIS3
 Int_t    PlaneId[MaxLayers]; // automatically filled with layer ID
 
 const Int_t   LayerType[MaxLayers]        = { 10, 11, 10, 11, 20, 21, 20, 21, 30, 31 };  // ab: a [1-3] - layer type, b [0,1] - vertical/horizontal pads
+// ### Layer Type 11 is Layer Type 1 with detector modules rotated by 90°
+// ### Layer Type 21 is Layer Type 2 with detector modules rotated by 90°
+// ### Layer Type 31 is Layer Type 3 with detector modules rotated by 90°
+// In the subroutine creating the layers this is recognized automatically 
+
 const Int_t   LayerNrInStation[MaxLayers] = { 1, 2, 3, 4, 1, 2, 3, 4, 1, 2 };
 
 // 5x z-positions from 260 till 550 cm
@@ -173,113 +178,75 @@ const Double_t LayerOffset[MaxLayers] = {   0.,   0.,   0.,   0.,   5.,   0.,   
 const Int_t LayerArraySize[3][4] =  { { 5, 5, 9, 11 },    // for layer[1-3][i,o] below
                                       { 5, 5, 9, 11 },
                                       { 5, 5, 9, 11 } };
-// ### Layer Type 1
-// v12x - module types in the inner sector of layer1 - looking upstream
-const Int_t layer1i[5][5] = { { 423,  423,  321,  421,  421 },    // abc: a module type - b orientation (x90 deg) in odd - c even layers
-                              { 323,  123,  121,  121,  321 },  
-                              { 203,  103,    0,  101,  201 },  
-                              { 303,  103,  101,  101,  301 },  
-                              { 403,  403,  301,  401,  401 } };
-// number of modules 1x0, 8x1, 4x2, 8x3, 4x4
 
-// v12x - module types in the outer sector of layer1 - looking upstream
+
+// ### Layer Type 1
+// v14x - module types in the inner sector of layer type 1 - looking upstream
+const Int_t layer1i[5][5] = { { 323,  323,  321,  321,  321 },    // abc: a module type - b orientation (x90 deg) in odd - c even layers
+                              { 223,  123,  121,  121,  221 },  
+                              { 203,  103,    0,  101,  201 },  
+                              { 203,  103,  101,  101,  201 },  
+                              { 303,  303,  301,  301,  301 } };
+// number of modules: 24
+
+// v14x - module types in the outer sector of layer type 1 - looking upstream
 const Int_t layer1o[9][11]= { {  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0 },
                               {  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0 },
                               {  0,    0,  823,  823,  723,  721,  721,  821,  821,    0,    0 },
-                              {  0,    0,  823,  723,    0,    0,    0,  721,  821,    0,    0 },
+                              {  0,    0,  823,  623,    0,    0,    0,  621,  821,    0,    0 },
+                              {  0,    0,  703,  603,    0,    0,    0,  601,  701,    0,    0 },
                               {  0,    0,  803,  603,    0,    0,    0,  601,  801,    0,    0 },
-                              {  0,    0,  803,  703,    0,    0,    0,  701,  801,    0,    0 },
                               {  0,    0,  803,  803,  703,  701,  701,  801,  801,    0,    0 },
                               {  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0 },
                               {  0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0 } };
-// number of modules 73x0, 0x5, 0x6, 12x7, 14x8
-// Layer1 =  24 + 26;   // v12x
-
-// ### Layer Type 11 is Layer Type 1 with detector modules rotated by 90°
-// in the subroutine creating the layers, this is recognized automatically 
+// number of modules: 26
+// Layer1 =  24 + 26;   // v14a
 
 
 // ### Layer Type 2
-// v12x - module types in the inner sector of layer2 - looking upstream
-const Int_t layer2i[5][5] = { { 423,  423,  321,  421,  421 },    // abc: a module type - b orientation (x90 deg) in odd - c even layers 
-                              { 323,  223,  121,  221,  321 },
-                              { 203,  103,    0,  101,  201 },
-                              { 303,  203,  101,  201,  301 },
-                              { 403,  403,  301,  401,  401 } };
-// number of modules 1x0, 4x1, 4x2, 12x3, 4x4
-
-// v12x - module types in the outer sector of layer2 - looking upstream
-const Int_t layer2o[9][11]= { {   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0 },
-                              {   0,  823,  823,  823,  823,  821,  821,  821,  821,  821,    0 },
-                              {   0,  823,  823,  823,  623,  621,  621,  821,  821,  821,    0 },
-                              {   0,  823,  823,  623,    0,    0,    0,  621,  821,  821,    0 },
-                              {   0,  803,  803,  603,    0,    0,    0,  601,  801,  801,    0 },
-                              {   0,  803,  803,  603,    0,    0,    0,  601,  801,  801,    0 },
-                              {   0,  803,  803,  803,  603,  601,  601,  801,  801,  801,    0 },
-                              {   0,  803,  803,  803,  803,  801,  801,  801,  801,  801,    0 },
-                              {   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0 } };
-// number of modules 45x0, 0x5, 12x6, 0x7, 42x8
-// Layer2 =  78;   // v12x
-
-// ### Layer Type 21 is Layer Type 2 with detector modules rotated by 90°
-// In the subroutine creating the layers this is recognized automatically 
-
-
-// ### Layer Type 3
-// v12x - module types in the inner sector of layer2 - looking upstream
-//const Int_t layer3i[5][5] = { { 223,  223,  221,  221,  221 },    // abc: a module type - b orientation (x90 deg) in odd - c even layers 
-//                              { 223,    0,    0,    0,  221 },
-//                              { 203,    0,    0,    0,  201 },
-//                              { 203,    0,    0,    0,  201 },
-//                              { 203,  203,  201,  201,  201 } };
-const Int_t layer3i[5][5] = { { 223,  223,  221,  221,  221 },    // abc: a module type - b orientation (x90 deg) in odd - c even layers 
+// v14x - module types in the inner sector of layer type 2 - looking upstream
+const Int_t layer2i[5][5] = { { 323,  323,  321,  321,  321 },    // abc: a module type - b orientation (x90 deg) in odd - c even layers 
                               { 223,  123,  121,  121,  221 },
                               { 203,  103,    0,  101,  201 },
                               { 203,  103,  101,  101,  201 },
-                              { 203,  203,  201,  201,  201 } };
-// number of modules 25x0 
-// needed only for convenience in the function
+                              { 303,  303,  301,  301,  301 } };
+// number of modules: 24
 
-// v12x - module types in the outer sector of layer3 - looking upstream
+// v14x - module types in the outer sector of layer type 2 - looking upstream
+const Int_t layer2o[9][11]= { {   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0 },
+                              {   0,  823,  823,  823,  823,  821,  821,  821,  821,  821,    0 },
+                              {   0,  823,  823,  823,  723,  721,  721,  821,  821,  821,    0 },
+                              {   0,  823,  723,  623,    0,    0,    0,  621,  721,  821,    0 },
+                              {   0,  803,  703,  603,    0,    0,    0,  601,  701,  801,    0 },
+                              {   0,  803,  703,  603,    0,    0,    0,  601,  701,  801,    0 },
+                              {   0,  803,  803,  803,  703,  701,  701,  801,  801,  801,    0 },
+                              {   0,  803,  803,  803,  803,  801,  801,  801,  801,  801,    0 },
+                              {   0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0 } };
+// number of modules: 54
+// Layer2 =  24 + 54;   // v14a
+
+
+// ### Layer Type 3
+// v14x - module types in the inner sector of layer type 3 - looking upstream
+const Int_t layer3i[5][5] = { { 323,  323,  321,  321,  321 },    // abc: a module type - b orientation (x90 deg) in odd - c even layers 
+                              { 223,  123,  121,  121,  221 },
+                              { 203,  103,    0,  101,  201 },
+                              { 203,  103,  101,  101,  201 },
+                              { 303,  303,  301,  301,  301 } };
+// number of modules: 24
+
+// v14x - module types in the outer sector of layer type 3 - looking upstream
 const Int_t layer3o[9][11] = { { 823,  823,  823,  823,  823,  821,  821,  821,  821,  821,  821 },
-                               { 823,  823,  823,  723,  723,  721,  721,  721,  821,  821,  821 },
-                               { 823,  823,  723,  723,  623,  621,  621,  721,  721,  821,  821 },
+                               { 823,  823,  823,  823,  823,  821,  821,  821,  821,  821,  821 },
+                               { 823,  823,  823,  723,  623,  621,  621,  721,  821,  821,  821 },
                                { 823,  823,  723,  623,    0,    0,    0,  621,  721,  821,  821 },
                                { 803,  803,  703,  603,    0,    0,    0,  601,  701,  801,  801 },
                                { 803,  803,  703,  603,    0,    0,    0,  601,  701,  801,  801 },
-                               { 803,  803,  703,  703,  603,  601,  601,  701,  701,  801,  801 },
-                               { 803,  803,  803,  703,  703,  701,  701,  701,  801,  801,  801 },
+                               { 803,  803,  803,  703,  603,  601,  601,  701,  801,  801,  801 },
+                               { 803,  803,  803,  803,  803,  801,  801,  801,  801,  801,  801 },
                                { 803,  803,  803,  803,  803,  801,  801,  801,  801,  801,  801 } };
-// number of modules 1x0, 8x5, 12x6, 24x7, 54x8
-// Layer3 = 98;   // v12x
-
-/* only L type modules
-// ### Layer Type 3
-// v12x - module types in the inner sector of layer2 - looking upstream
-const Int_t layer3i[5][5] = { {  0,  0,  0,  0,  0 },     // abc: a module type - b orientation (x90 deg) in odd - c even layers
-                              {  0,  0,  0,  0,  0 },
-                              {  0,  0,  0,  0,  0 },
-                              {  0,  0,  0,  0,  0 },
-                              {  0,  0,  0,  0,  0 } };
-// number of modules 25x0 
-// needed only for convenience in the function
-
-// v12x - module types in the outer sector of layer3 - looking upstream
-const Int_t layer3o[9][11] = { { 823,  823,  823,  823,  823,  821,  821,  821,  821,  821,  821 },
-                               { 823,  823,  823,  723,  723,  721,  721,  721,  821,  821,  821 },
-                               { 823,  823,  723,  723,  623,  621,  621,  721,  721,  821,  821 },
-                               { 823,  823,  723,  623,  523,  521,  521,  621,  721,  821,  821 },
-                               { 803,  803,  703,  603,  503,    0,  501,  601,  701,  801,  801 },
-                               { 803,  803,  703,  603,  503,  501,  501,  601,  701,  801,  801 },
-                               { 803,  803,  703,  703,  603,  601,  601,  701,  701,  801,  801 },
-                               { 803,  803,  803,  703,  703,  701,  701,  701,  801,  801,  801 },
-                               { 803,  803,  803,  803,  803,  801,  801,  801,  801,  801,  801 } };
-// number of modules 1x0, 8x5, 12x6, 24x7, 54x8
-// Layer3 = 98;   // v12x
-*/
-
-// ### Layer Type 31 is Layer Type 3 with detector modules rotated by 90
-// In the subroutine creating the layers this is recognized automatically 
+// number of modules: 90
+// Layer2 =  24 + 90;   // v14a
 
 
 // Parameters defining the layout of the different detector modules
@@ -291,7 +258,7 @@ const Int_t RobsPerModule[NofModuleTypes] = {  2,  2,  1,  1,  2,  1,  1,  1 }; 
 const Int_t GbtxPerRob[NofModuleTypes]    = {107,105,105,103,107,107,105,103 }; // number of GBTx ASICs on ROB
 
 // ultimate density - 540 mm
-const Int_t FebsPerModule[NofModuleTypes] = {  6,  5,  6,  4, 12,  6,  4,  3 }; // number of FEBs on backside - reduced FEBs (64 ch ASICs)
+const Int_t FebsPerModule[NofModuleTypes] = {  6,  5,  6,  4, 12,  8,  4,  3 }; // number of FEBs on backside - reduced FEBs (64 ch ASICs)
 const Int_t AsicsPerFeb[NofModuleTypes]   = {315,210,105,105,108,108,108,108 }; //  %100 gives number of ASICs on FEB, /100 gives grouping
 //const Int_t FebsPerModule[NofModuleTypes] = {  6,  5,  3,  2,  6,  3,  4,  3 }; // min number of FEBs // number of FEBs on backside - reduced FEBs (64 ch ASICs)
 //const Int_t AsicsPerFeb[NofModuleTypes]   = {315,210,210,210,216,216,108,108 }; //  %100 gives number of ASICs on FEB, /100 gives grouping
@@ -538,8 +505,8 @@ void dump_digi_file()
           {  6.75,  6.75,  6.75 },   // module type 4 -  4.56 mm2
 
           {  3.75,  4.00,  3.75 },   // module type 5 -  2.84 mm2
-          {  7.50,  7.75,  7.50 },   // module type 6 -  5.51 mm2
-//          {  5.50,  5.75,  5.50 },   // module type 6 -  4.09 mm2
+//          {  7.50,  7.75,  7.50 },   // module type 6 -  5.51 mm2
+          {  5.50,  5.75,  5.50 },   // module type 6 -  4.09 mm2
           { 11.25, 11.50, 11.25 },   // module type 7 -  8.18 mm2
           { 15.00, 15.50, 15.00 } }; // module type 8 - 11.02 mm2
 
@@ -550,8 +517,8 @@ void dump_digi_file()
           {   2,   4,   2 },         // module type 4
 
           {  10,   4,  10 },         // module type 5
-          {   4,   4,   4 },         // module type 6
-//          {   2,  12,   2 },         // module type 6
+//          {   4,   4,   4 },         // module type 6
+          {   2,  12,   2 },         // module type 6
           {   2,   4,   2 },         // module type 7
           {   2,   2,   2 } };       // module type 8
 
