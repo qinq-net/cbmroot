@@ -259,7 +259,9 @@ const Int_t ModuleType[NofModuleTypes]    = {  0,  0,  0,  0,  1,  1,  1,  1 }; 
 // GBTx ROB definitions
 const Int_t RobsPerModule[NofModuleTypes] = {  2,  2,  1,  1,  2,  2,  1,  1 }; // number of GBTx ROBs on module
 const Int_t GbtxPerRob[NofModuleTypes]    = {107,105,105,103,107,105,105,103 }; // number of GBTx ASICs on ROB
+
 const Int_t GbtxPerModule[NofModuleTypes] = { 14,  8,  5,  0,  0, 10,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
+const Int_t RobTypeOnModule[NofModuleTypes] = { 77, 53,  5,  0,  0, 55,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
 
 // ultimate density - 540 mm
 const Int_t FebsPerModule[NofModuleTypes] = {  6,  5,  6,  4, 12,  8,  4,  3 }; // number of FEBs on backside - reduced FEBs (64 ch ASICs)
@@ -666,6 +668,9 @@ void dump_info_file()
   Int_t    total_febs[NofModuleTypes+1]          = { 0 };   // total number of febs
   Int_t    total_asics[NofModuleTypes+1]         = { 0 };   // total number of asics
   Int_t    total_gbtx[NofModuleTypes+1]          = { 0 };   // total number of gbtx
+  Int_t    total_rob3[NofModuleTypes+1]          = { 0 };   // total number of gbtx rob3
+  Int_t    total_rob5[NofModuleTypes+1]          = { 0 };   // total number of gbtx rob5
+  Int_t    total_rob7[NofModuleTypes+1]          = { 0 };   // total number of gbtx rob7
   Int_t    total_channels[NofModuleTypes+1]      = { 0 };   // total number of channels
 
   Int_t    total_channels_u = 0;  // total number of ultimate channels
@@ -951,6 +956,58 @@ void dump_info_file()
   }
   fprintf(ifile," %8d", total_gbtx[NofModuleTypes]);
   fprintf(ifile,"   number of GBTXs\n");
+
+  // GBTX ROB types per module type
+  for (Int_t iModule = 0; iModule < NofModuleTypes; iModule++)
+  {
+    fprintf(ifile," %8d", RobTypeOnModule[iModule]);
+  }
+  fprintf(ifile,"            GBTX ROB types on Module\n");
+
+  for (Int_t iModule = 0; iModule < NofModuleTypes; iModule++)
+  {
+    if ((RobTypeOnModule[iModule] % 10) == 7)
+      total_rob7[iModule]++;
+    if ((RobTypeOnModule[iModule] / 10) == 7)
+      total_rob7[iModule]++;
+
+    if ((RobTypeOnModule[iModule] % 10) == 5)
+      total_rob5[iModule]++;
+    if ((RobTypeOnModule[iModule] / 10) == 5)
+      total_rob5[iModule]++;
+
+    if ((RobTypeOnModule[iModule] % 10) == 3)
+      total_rob3[iModule]++;
+    if ((RobTypeOnModule[iModule] / 10) == 3)
+      total_rob3[iModule]++;
+  }
+
+  for (Int_t iModule = 0; iModule < NofModuleTypes; iModule++)
+  {
+    total_rob7[iModule] *= total_modules[iModule];
+    fprintf(ifile," %8d", total_rob7[iModule]);
+    total_rob7[NofModuleTypes] += total_rob7[iModule];
+  }
+  fprintf(ifile," %8d", total_rob7[NofModuleTypes]);
+  fprintf(ifile,"   number of GBTX ROB7\n");
+
+  for (Int_t iModule = 0; iModule < NofModuleTypes; iModule++)
+  {
+    total_rob5[iModule] *= total_modules[iModule];
+    fprintf(ifile," %8d", total_rob5[iModule]);
+    total_rob5[NofModuleTypes] += total_rob5[iModule];
+  }
+  fprintf(ifile," %8d", total_rob5[NofModuleTypes]);
+  fprintf(ifile,"   number of GBTX ROB5\n");
+
+  for (Int_t iModule = 0; iModule < NofModuleTypes; iModule++)
+  {
+    total_rob3[iModule] *= total_modules[iModule];
+    fprintf(ifile," %8d", total_rob3[iModule]);
+    total_rob3[NofModuleTypes] += total_rob3[iModule];
+  }
+  fprintf(ifile," %8d", total_rob3[NofModuleTypes]);
+  fprintf(ifile,"   number of GBTX ROB3\n");
 
   //------------------------------------------------------------------------------
 

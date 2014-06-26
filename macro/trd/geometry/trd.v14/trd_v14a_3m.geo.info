@@ -2,7 +2,7 @@
 ##   trd_v14a_3m information file
 #
 
-# created 20140625
+# created 20140626
 
 # envelope
  550 cm   start of TRD (z)
@@ -90,6 +90,10 @@ GBTX readout boards are : NOT included
 # gbtx
        14        8        5        0        0       10        5        3            GBTXs per module
      1120      480      500        0        0      720      500      984     4304   number of GBTXs
+       77       53        5        0        0       55        5        3            GBTX ROB types on Module
+      160        0        0        0        0        0        0        0      160   number of GBTX ROB7
+        0       60      100        0        0      144      100        0      404   number of GBTX ROB5
+        0       60        0        0        0        0        0      328      388   number of GBTX ROB3
 # channels
      2880     1600      960      640     3072     2048     1024      768            channels per module
       480      320      160      160      256      256      256      256            channels per feb
