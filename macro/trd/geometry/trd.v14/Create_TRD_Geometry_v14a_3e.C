@@ -1270,6 +1270,8 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
        TGeoBBox* trd_lattice_mod0  = new TGeoBBox("", sizeX /2., sizeY /2., lattice_thickness /2.);
        TGeoVolume* trdmod0_lattice = new TGeoVolume("lat_grid_mod0", trd_lattice_mod0, keepVolMed);
 
+       //       trdmod0_lattice->SetLineColor(kGreen);  // set color for keeping volume
+
        // outer frame
        trdmod0_lattice->AddNode(trd_lattice_mod0_vol_ho, 1, tv010);
        trdmod0_lattice->AddNode(trd_lattice_mod0_vol_ho, 2, tv015);
@@ -1362,6 +1364,8 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
 
        TGeoBBox* trd_lattice_mod1  = new TGeoBBox("", sizeX /2., sizeY /2., lattice_thickness /2.);
        TGeoVolume* trdmod1_lattice = new TGeoVolume("lat_grid_mod1", trd_lattice_mod1, keepVolMed);
+
+       //       trdmod1_lattice->SetLineColor(kGreen);  // set color for keeping volume
 
        // outer frame
        trdmod1_lattice->AddNode(trd_lattice_mod1_vol_ho, 1, tv110);
@@ -2655,6 +2659,9 @@ void create_box_supports()
       TGeoBBox* trd_I_vert_vol1_keep = new TGeoBBox("", I_width /2., I_height /2., ( (AperYbot[0]+I_height) + (AperY[0]+I_height) ) /2.);
       TGeoVolume* trd_I_vert_vol1    = new TGeoVolume("trd_I_y10", trd_I_vert_vol1_keep, keepVolMed);
 
+      // set green color for keeping volume of I profile, seen with gGeoManager->SetVisLevel(2)
+      trd_I_vert_vol1->SetLineColor(kGreen);
+
       // build I-bar trd_I_vert_vol1
       trd_I_vert_vol1->AddNode(trd_I_vert1, 1, ty01);
       trd_I_vert_vol1->AddNode(trd_I_vert2, 2, ty02);
@@ -2701,6 +2708,9 @@ void create_box_supports()
       TGeoBBox* trd_I_vert_vol1_keep = new TGeoBBox("", I_width /2., I_height /2., (BeamHeight + (AperY[1]+I_height) ) /2.);
       TGeoVolume* trd_I_vert_vol1    = new TGeoVolume("trd_I_y20", trd_I_vert_vol1_keep, keepVolMed);
 
+      // set green color for keeping volume of I profile, seen with gGeoManager->SetVisLevel(2)
+      trd_I_vert_vol1->SetLineColor(kGreen);
+
       // build I-bar trd_I_vert_vol1
       trd_I_vert_vol1->AddNode(trd_I_vert1, 1, ty01);
       trd_I_vert_vol1->AddNode(trd_I_vert2, 2, ty02);
@@ -2744,6 +2754,9 @@ void create_box_supports()
     
       TGeoBBox* trd_I_vert_vol1_keep = new TGeoBBox("", I_width /2., I_height /2., (BeamHeight + (AperY[2]+I_height) ) /2.);
       TGeoVolume* trd_I_vert_vol1    = new TGeoVolume("trd_I_y30", trd_I_vert_vol1_keep, keepVolMed);
+
+      // set green color for keeping volume of I profile, seen with gGeoManager->SetVisLevel(2)
+      trd_I_vert_vol1->SetLineColor(kGreen);
 
       // build I-bar trd_I_vert_vol1
       trd_I_vert_vol1->AddNode(trd_I_vert1, 1, ty01);
@@ -2794,6 +2807,9 @@ void create_box_supports()
       TGeoBBox* trd_I_hori_vol1_keep = new TGeoBBox("", I_width /2., I_height /2., AperX[0]);
       TGeoVolume* trd_I_hori_vol1    = new TGeoVolume("trd_I_x10", trd_I_hori_vol1_keep, keepVolMed);
 
+      // set red color for keeping volume of I profile, seen with gGeoManager->SetVisLevel(2)
+      trd_I_hori_vol1->SetLineColor(kRed);
+
       // build I-bar trd_I_hori_vol1
       trd_I_hori_vol1->AddNode(trd_I_hori1, 1, tx01);
       trd_I_hori_vol1->AddNode(trd_I_hori2, 2, tx02);
@@ -2827,6 +2843,9 @@ void create_box_supports()
       TGeoBBox* trd_I_hori_vol1_keep = new TGeoBBox("", I_width /2., I_height /2., AperX[1]);
       TGeoVolume* trd_I_hori_vol1    = new TGeoVolume("trd_I_x20", trd_I_hori_vol1_keep, keepVolMed);
 
+      // set red color for keeping volume of I profile, seen with gGeoManager->SetVisLevel(2)
+      trd_I_hori_vol1->SetLineColor(kRed);
+
       // build I-bar trd_I_hori_vol1
       trd_I_hori_vol1->AddNode(trd_I_hori1, 1, tx01);
       trd_I_hori_vol1->AddNode(trd_I_hori2, 2, tx02);
@@ -2859,6 +2878,9 @@ void create_box_supports()
     
       TGeoBBox* trd_I_hori_vol1_keep = new TGeoBBox("", I_width /2., I_height /2., AperX[2]);
       TGeoVolume* trd_I_hori_vol1    = new TGeoVolume("trd_I_x30", trd_I_hori_vol1_keep, keepVolMed);
+
+      // set red color for keeping volume of I profile, seen with gGeoManager->SetVisLevel(2)
+      trd_I_hori_vol1->SetLineColor(kRed);
 
       // build I-bar trd_I_hori_vol1
       trd_I_hori_vol1->AddNode(trd_I_hori1, 1, tx01);
@@ -2898,6 +2920,9 @@ void create_box_supports()
       TGeoBBox* trd_I_slope_vol1_keep = new TGeoBBox("", I_width /2., I_height /2., (PilPosZ[1]-PilPosZ[0]-I_width)/2.);
       TGeoVolume* trd_I_slope_vol1    = new TGeoVolume("trd_I_z10", trd_I_slope_vol1_keep, keepVolMed);
 
+      // set yellow color for keeping volume of I profile, seen with gGeoManager->SetVisLevel(2)
+      trd_I_slope_vol1->SetLineColor(kYellow);
+
       // build I-bar trd_I_slope_vol1
       trd_I_slope_vol1->AddNode(trd_I_slope1, 1, tz01);
       trd_I_slope_vol1->AddNode(trd_I_slope2, 2, tz02);
@@ -2933,6 +2958,9 @@ void create_box_supports()
       TGeoBBox* trd_I_slope_vol1_keep = new TGeoBBox("", I_width /2., I_height /2., (PilPosZ[3]-PilPosZ[2]-I_width)/2.);
       TGeoVolume* trd_I_slope_vol1    = new TGeoVolume("trd_I_z20", trd_I_slope_vol1_keep, keepVolMed);
 
+      // set yellow color for keeping volume of I profile, seen with gGeoManager->SetVisLevel(2)
+      trd_I_slope_vol1->SetLineColor(kYellow);
+
       // build I-bar trd_I_slope_vol1
       trd_I_slope_vol1->AddNode(trd_I_slope1, 1, tz01);
       trd_I_slope_vol1->AddNode(trd_I_slope2, 2, tz02);
@@ -2967,6 +2995,9 @@ void create_box_supports()
     
       TGeoBBox* trd_I_slope_vol1_keep = new TGeoBBox("", I_width /2., I_height /2., (PilPosZ[5]-PilPosZ[4]-I_width)/2.);
       TGeoVolume* trd_I_slope_vol1    = new TGeoVolume("trd_I_z30", trd_I_slope_vol1_keep, keepVolMed);
+
+      // set yellow color for keeping volume of I profile, seen with gGeoManager->SetVisLevel(2)
+      trd_I_slope_vol1->SetLineColor(kYellow);
 
       // build I-bar trd_I_slope_vol1
       trd_I_slope_vol1->AddNode(trd_I_slope1, 1, tz01);
