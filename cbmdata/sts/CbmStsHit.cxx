@@ -10,19 +10,24 @@ CbmStsHit::CbmStsHit()
     , fSectorNr(-1)
     , fFrontClusterId(-1)
     , fBackClusterId(-1)
+    , fTime(0.)
 {
 }
 
-CbmStsHit::CbmStsHit(Int_t address, const TVector3& pos, const TVector3& dpos, Double_t dxy, Int_t frontClusterId, Int_t backClusterId, Int_t frontDigiId, Int_t backDigiId, Int_t sectorNr)
+
+CbmStsHit::CbmStsHit(Int_t address, const TVector3& pos, const TVector3& dpos,
+		                 Double_t dxy, Int_t frontClusterId, Int_t backClusterId,
+		                 Int_t frontDigiId, Int_t backDigiId, Int_t sectorNr,
+		                 Double_t time)
     : CbmPixelHit(address, pos, dpos, dxy, -1)
     , fFrontDigiId(frontDigiId)
     , fBackDigiId(backDigiId)
     , fSectorNr(sectorNr)
     , fFrontClusterId(frontClusterId)
     , fBackClusterId(backClusterId)
+    , fTime(time)
 {
 }
-
 CbmStsHit::~CbmStsHit()
 {
 }

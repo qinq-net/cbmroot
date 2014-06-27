@@ -69,16 +69,21 @@ public:
     }
 
 
+    /** Time **/
+    Double_t GetTime() const { return fTime; }
+
+
     /** Set charge, channel mean and channel mean square
      ** @param charge  Total charge in cluster
      ** @param channelMean  Charge-weighted mean channel number
      ** @param channelMeanSq  Charge-weighted mean square channel number
      **/
     void SetProperties(Double_t charge, Double_t channelMean,
-    		               Double_t channelMeanSq) {
+    		               Double_t channelMeanSq, Double_t time = 0.) {
     	fCharge        = charge;
     	fChannelMean   = channelMean;
     	fChannelMeanSq = channelMeanSq;
+    	fTime          = time;
     }
 
 
@@ -87,15 +92,16 @@ private:
     Double_t fMean; // FIXME: Modify clustering algorithm and remove this parameter.
     Double_t fMeanError; // FIXME: Modify clustering algorithm and remove this parameter.
 
-    Double_t fCharge;  ///< Total charge
+    Double_t fCharge;        ///< Total charge
     Double_t fChannelMean;   ///< Charge-weighted mean channel number
     Double_t fChannelMeanSq; ///< Charge-weighted mean square channel number
+    Double_t fTime;          ///< Cluster time (average of digi times)
 
     // TODO: fSectorNr is here for backward compatibility with classes
     // using CbmStsDigiScheme. Should be eventually removed.
     Int_t fSectorNr; ///< Number of sector within station
 
-    ClassDef(CbmStsCluster, 2);
+    ClassDef(CbmStsCluster, 3);
 };
 
 #endif

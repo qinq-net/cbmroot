@@ -20,7 +20,10 @@ class CbmStsHit : public CbmPixelHit
 public:
     CbmStsHit();
 
-    CbmStsHit(Int_t address, const TVector3& pos, const TVector3& dpos, Double_t dxy, Int_t frontClusterId, Int_t backClusterId, Int_t frontDigiId, Int_t backDigiId, Int_t sectorNr);
+    CbmStsHit(Int_t address, const TVector3& pos, const TVector3& dpos,
+    		      Double_t dxy, Int_t frontClusterId, Int_t backClusterId,
+    		      Int_t frontDigiId, Int_t backDigiId, Int_t sectorNr,
+    		      Double_t time = 0.);
 
     virtual ~CbmStsHit();
 
@@ -61,7 +64,9 @@ private:
     Int_t fFrontClusterId; // Cluster number front side
     Int_t fBackClusterId;  // Cluster number back side
 
-    ClassDef(CbmStsHit, 2);
+    Double_t fTime;   ///< Hit time [ns]
+
+    ClassDef(CbmStsHit, 3);
 };
 
 #endif
