@@ -52,19 +52,18 @@ Int_t CbmStsSensorTypeDssd::FindHits(vector<CbmStsCluster*>& clusters,
 	Double_t xB = -1.;   // Cluster position on sensor edge
 
 	// --- Sort clusters into front and back side
-	vector<Double_t> frontClusters;
-	vector<Double_t> backClusters;
+	vector<Int_t> frontClusters;
+	vector<Int_t> backClusters;
 	Double_t xCluster = -1.;  // cluster position on read-out edge
 	Int_t side  = -1;         // front or back side
 	for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
-		GetClusterPosition(clusters[iCluster]->GetCentre(), sensor->GetIndex(),
-				               xCluster, side);
+		side = GetSide( clusters[iCluster]->GetCentre() );
 		if ( side == 0) {
-			frontClusters.push_back(xCluster);
+			frontClusters.push_back(iCluster);
 			nClustersF++;
 		}
 		else if ( side == 1 ) {
-			backClusters.push_back(xCluster);
+			backClusters.push_back(iCluster);
 			nClustersB++;
 		}
 		else
@@ -73,13 +72,15 @@ Int_t CbmStsSensorTypeDssd::FindHits(vector<CbmStsCluster*>& clusters,
 	}  // Loop over clusters in module
 
 	// --- Loop over front and back side clusters
+	Double_t xClusterF = -1.;  // Front cluster position at r/o edge
+	Double_t xClusterB = -1.;  // Back cluster position at r/o edge
 	for (Int_t iClusterF = 0; iClusterF < nClustersF; iClusterF++) {
+		CbmStsCluster* clusterF = clusters[frontClusters[iClusterF]];
 		for (Int_t iClusterB = 0; iClusterB < nClustersB;	iClusterB++) {
+			CbmStsCluster* clusterB = clusters[backClusters[iClusterB]];
 
 			// --- Calculate intersection points
-			Int_t nOfHits = IntersectClusters(frontClusters[iClusterF],
-					                              backClusters[iClusterB],
-					                              sensor);
+			Int_t nOfHits = IntersectClusters(clusterF, clusterB, sensor);
 			LOG(DEBUG4) << GetName() << ": Cluster front " << iClusterF
 					        << ", cluster back " << iClusterB
 					        << ", intersections " << nOfHits << FairLogger::endl;
@@ -293,14 +294,46 @@ Bool_t CbmStsSensorTypeDssd::Intersect(Double_t xF, Double_t xB,
 
 
 // -----  Intersect two clusters (front / back)   --------------------------
-Int_t CbmStsSensorTypeDssd::IntersectClusters(Double_t xF, Double_t xB,
+Int_t CbmStsSensorTypeDssd::IntersectClusters(CbmStsCluster* clusterF,
+		                                          CbmStsCluster* clusterB,
 		                                          CbmStsSenzor* sensor) {
 
-	Int_t nHits = 0;
+	// --- Check pointer validity
+	if ( ! clusterF ) {
+		LOG(FATAL) << GetName() << ": invalid front cluster pointer!"
+				        << FairLogger::endl;
+		return 0;
+	}
+	if ( ! clusterB ) {
+		LOG(FATAL) << GetName() << ": invalid back cluster pointer!"
+				        << FairLogger::endl;
+		return 0;
+	}
+	if ( ! sensor ) {
+		LOG(FATAL) << GetName() << ": invalid sensor pointer!"
+				        << FairLogger::endl;
+		return 0;
+	}
+
+	// --- Calculate cluster centre position on readout edge
+	Int_t side  = -1;
+	Double_t xF = -1.;
+	Double_t xB = -1.;
+	GetClusterPosition(clusterF->GetCentre(), sensor->GetIndex(), xF, side);
+	if ( side != 0 )
+		LOG(FATAL) << GetName() << ": Inconsistent side qualifier " << side
+		           << " for front side cluster! " << FairLogger::endl;
+	GetClusterPosition(clusterB->GetCentre(), sensor->GetIndex(), xB, side);
+	if ( side != 1 )
+		LOG(FATAL) << GetName() << ": Inconsistent side qualifier " << side
+		           << " for back side cluster! " << FairLogger::endl;
 
 	// --- Should be inside active area
-	if ( xF < 0. || xF > fDx) return 0;
-	if ( xB < 0. || xB > fDx) return 0;
+	if ( ! ( xF >= 0. || xF <= fDx) ) return 0;
+	if ( ! ( xB >= 0. || xB <= fDx) ) return 0;
+
+	// --- Hit counter
+	Int_t nHits = 0;
 
 	// --- Calculate number of line segments due to horizontal
 	// --- cross-connection. If x(y=0) does not fall on the bottom edge,
@@ -340,7 +373,7 @@ Int_t CbmStsSensorTypeDssd::IntersectClusters(Double_t xF, Double_t xB,
 				xC -= 0.5 * fDx;
 				yC -= 0.5 * fDy;
 				// --- Send hit information to sensor
-				sensor->CreateHit(xC, yC);
+				sensor->CreateHit(xC, yC, clusterF, clusterB);
 				nHits++;
 
 			}  //? Intersection of lines

@@ -42,13 +42,33 @@ CbmStsSenzor::CbmStsSenzor(const char* name, const char* title,
 
 
 // -----   Create a new hit   ----------------------------------------------
-void CbmStsSenzor::CreateHit(Double_t xLocal, Double_t yLocal) {
+void CbmStsSenzor::CreateHit(Double_t xLocal, Double_t yLocal,
+		                         CbmStsCluster* clusterF,
+		                         CbmStsCluster* clusterB) {
+
+  // ---  Check clusters and output array
+	if ( ! fHits ) {
+		LOG(FATAL) << GetName() << ": Hit output array not set!"
+				       << FairLogger::endl;
+		return;
+	}
+	if ( ! clusterF ) {
+		LOG(FATAL) << GetName() << ": Invalid pointer to front cluster!"
+				       << FairLogger::endl;
+	}
+	if ( ! clusterB ) {
+		LOG(FATAL) << GetName() << ": Invalid pointer to back cluster!"
+				       << FairLogger::endl;
+	}
 
 	// --- Transform into global coordinate system
 	Double_t local[3] = { xLocal, yLocal, 0.};
 	Double_t global[3];
 	Double_t error[3] = { 0., 0., 0. };
 	fNode->GetMatrix()->LocalToMaster(local, global);
+
+	// --- Calculate hit time (average of cluster times)
+	Double_t hitTime = 0.5 * ( clusterF->GetTime() + clusterB->GetTime());
 
 	// --- Create hit
 	Int_t nHits = fHits->GetEntriesFast();
@@ -60,7 +80,8 @@ void CbmStsSenzor::CreateHit(Double_t xLocal, Double_t yLocal) {
 			                              0,              // back cluster index
 			                              0,              // front digi index
 			                              0,              // back digi index
-			                              0);             // sector nr.
+			                              0,              // sectorNr
+			                              hitTime);       // hit time
 
 	LOG(DEBUG2) << GetName() << ": Creating hit at (" << global[0] << ", "
 			        << global[1] << ", " << global[2] << ")" << FairLogger::endl;

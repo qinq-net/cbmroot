@@ -4,6 +4,7 @@
  **/
 
 #include "TClonesArray.h"
+#include "TRandom.h"
 #include "FairLogger.h"
 #include "CbmStsAddress.h"
 #include "CbmStsCluster.h"
@@ -106,6 +107,14 @@ void CbmStsModule::AddDigi(CbmStsDigi* digi, Int_t index) {
 void CbmStsModule::AddSignal(Int_t channel, Double_t time,
                              Double_t charge) {
 
+	//TODO: This implementatiomn assumes that signals arrive ordered in time.
+	//This is not true, because a. MCPoints are not ordered in time if they
+	//come from event-by-event simulation and not from MCBuffer, and
+	//and b. there is principal guarantee for time ordering of signals from
+	//the same MCPoint (different drift times in the sensor). So, a better
+	//implementation is needed, in particular each channel has to hold
+	//more than one signal at a given state.
+
 	// --- Debug
 	LOG(DEBUG3) << GetName() << ": Receiving signal " << charge
 			        << " in channel " << channel << " at time "
@@ -128,7 +137,7 @@ void CbmStsModule::AddSignal(Int_t channel, Double_t time,
 
 		// --- Time separation large; no interference. Digitise the old signal,
 		// --- send it to the DAQ and write the new signal into the buffer.
-		if ( time - timeOld > 100. ) {  // 5 Mark in die Kasse fŸr hardcoded numbers
+		if (time - timeOld > fDeadTime ) {
 			Digitize(channel, chargeOld, timeOld);
 			fBuffer[channel] = pair<Double_t, Double_t>(charge, time);
 			LOG(DEBUG4) << GetName() << ": New signal " << charge << " at time "
@@ -208,6 +217,7 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 	Double_t sum1 = 0.;  // sum of charges
 	Double_t sum2 = 0.;  // sum of channel * charge
 	Double_t sum3 = 0.;  // sum of channel^2 * charge
+	Double_t tsum = 0.;  // sum of digi times
 	Int_t index = -1;
 	for (Int_t channel = clusterStart; channel <= clusterEnd; channel++) {
 		CbmStsDigi* digi = GetDigi(channel, index);
@@ -217,6 +227,7 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 		sum1 += charge;
 		sum2 += charge * Double_t(channel);
 		sum3 += charge * Double_t(channel) * Double_t(channel);
+		tsum += digi->GetTime();
 	}
 	if ( sum1 > 0. ) {
 		sum2 /= sum1;
@@ -226,12 +237,16 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 		sum2 = -1.;
 		sum3 = -1.;
 	}
-	cluster->SetProperties(sum1, sum2, sum3);
+	// --- Cluster time is average of all digi time
+	if ( cluster->GetNofDigis() ) tsum /= cluster->GetNofDigis();
+	else tsum = 0.;
+	cluster->SetProperties(sum1, sum2, sum3, tsum);
 	cluster->SetAddress(fAddress);
 
 	LOG(DEBUG2) << GetName() << ": Created new cluster from channel "
 			        << clusterStart << " to " << clusterEnd << ", charge "
-			        << sum1 << ", channel mean " << sum2 << FairLogger::endl;
+			        << sum1 << ", time " << tsum << "ns, channel mean "
+			        << sum2 << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
@@ -261,8 +276,11 @@ void CbmStsModule::Digitize(Int_t channel, Double_t charge, Double_t time) {
 				     * Double_t(fNofAdcChannels) );
 
 	// --- Digitise time
-	// TODO: Add Gaussian time resolution
-	ULong64_t dTime = ULong64_t(time);
+	// Note that the time is truncated at 0 to avoid negative times. This
+	// will show up in event-by-event simulations, since the digi times
+	// in this case are mostly below 1 ns.
+	ULong64_t dTime
+		= ULong64_t( TMath::Max(0., gRandom->Gaus(time, fTimeResolution)) );
 
 	// --- Send the message to the digitiser task
 	LOG(DEBUG4) << GetName() << ": charge " << charge << ", dyn. range "

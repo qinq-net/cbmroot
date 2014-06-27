@@ -271,7 +271,9 @@ void CbmStsDigitizeIdeal::SetModuleParameters() {
 	Int_t nModules = fSetup->GetNofModules();
 	for (Int_t iModule = 0; iModule < nModules; iModule++) {
 		fSetup->GetModule(iModule)->SetParameters(2048, fDynRange, fThreshold,
-				                                      fNofAdcChannels);
+				                                      fNofAdcChannels,
+				                                      fTimeResolution,
+				                                      fDeadTime);
 	}
 }
 // -------------------------------------------------------------------------

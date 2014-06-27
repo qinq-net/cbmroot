@@ -10,6 +10,7 @@
 #include "CbmStsSensorType.h"
 
 
+
 /** @class CbmStsSensorTypeDssd
  ** @brief Class describing double-sided silicon strip sensors.
  ** @author V.Friese <v.friese@gsi.de>
@@ -63,6 +64,16 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
     virtual Int_t FindHits(std::vector<CbmStsCluster*>&,
     		                   CbmStsSenzor* sensor);
 
+
+    /** Get the side of the sensor from the module channel number
+     ** The channel number can also be the cluster position, so it needs
+     ** not be integer.
+     ** @param channel  Channel number
+     ** @return Sensir side ( 0 = front, 1 = back)
+     **/
+    Int_t GetSide(Double_t channel) const {
+    	return ( channel < Double_t(fNofStrips[0]) ? 0 : 1 );
+    }
 
 
     /** Print parameters **/
@@ -168,17 +179,16 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
     Bool_t Intersect(Double_t xF, Double_t xB, Double_t& x, Double_t& y);
 
 
-   /** Find the intersection points of two clusters defined by the
-     ** coordinates of the cluster centres at the top edge of the
-     ** active area. All coordinates in the sensor frame with origin
-     ** at the bottom left corner. For each intersection point,
-     ** a hit is created.
-     ** @param xF      Cluster centre on top edge, front side [cm]
-     ** @param xB      Cluster centre on top edge, back side  [cm]
-     ** @param sensor  Pointer to sensor object
+    /** Find the intersection points of two clusters.
+     ** For each intersection point, a hit is created.
+     ** @param clusterF    Pointer to cluster on front side
+     ** @param clusterB    Pointer to cluster on back side
+     ** @param sensor      Pointer to sensor object
      ** @return Number of intersection points inside active area
      **/
-    Int_t IntersectClusters(Double_t xF, Double_t xB, CbmStsSenzor* sensor);
+    Int_t IntersectClusters(CbmStsCluster* clusterF,
+    		                    CbmStsCluster* clusterB,
+    		                    CbmStsSenzor* sensor);
 
 
     /** Check whether a point (x,y) is inside the active area.

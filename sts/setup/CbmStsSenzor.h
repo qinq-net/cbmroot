@@ -61,11 +61,14 @@ class CbmStsSenzor : public CbmStsElement
     virtual ~CbmStsSenzor() { };
 
 
-    /** Create a new hit in the output array
+    /** Create a new hit in the output array form two clusters
      ** @param xLocal   hit x coordinate in sensor system
      ** @param yLocal   hit y coordinate in sensor system
+     ** @param clusterF pointer to front side cluster
+     ** @param clusterB pointer to back side cluster
      **/
-    void CreateHit(Double_t xLocal, Double_t yLocal);
+    void CreateHit(Double_t xLocal, Double_t yLocal,
+    		           CbmStsCluster* clusterF, CbmStsCluster* clusterB);
 
 
     /** Find hits in sensor

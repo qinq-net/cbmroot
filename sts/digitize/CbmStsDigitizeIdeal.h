@@ -64,10 +64,13 @@ class CbmStsDigitizeIdeal : public FairTask
    ** @param threshold  Threshold [e]
    ** @param nAdc       Number of ADC channels
    **/
-  void SetParameters(Double_t dynRange, Double_t threshold, Int_t nAdc) {
+  void SetParameters(Double_t dynRange, Double_t threshold, Int_t nAdc,
+  		               Double_t timeResolution, Double_t deadTime) {
  	 fDynRange       = dynRange;
  	 fThreshold      = threshold;
  	 fNofAdcChannels = nAdc;
+ 	 fTimeResolution = timeResolution;
+ 	 fDeadTime       = deadTime;
    }
 
 
@@ -81,6 +84,8 @@ class CbmStsDigitizeIdeal : public FairTask
   Double_t fDynRange;         ///< Dynamic range [e]
   Double_t fThreshold;        ///< Threshold [e]
   Int_t    fNofAdcChannels;   ///< Number of ADC channels
+  Double_t fTimeResolution;   ///< Time resolution (sigma) [ns]
+  Double_t fDeadTime;         ///< Single-channel dead time [ns]
 
   CbmStsSetup*   fSetup;        ///< STS setup interface
   TClonesArray*  fPoints;       ///< Input array of CbmStsPoint
