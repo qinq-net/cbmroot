@@ -1,6 +1,7 @@
 //
 //   comments
 //
+// 2014-06-25 - DE - define digi files through tags for STS, TRD and TOF
 // 2013-11-05 - DE - switch to trd_v13p geometry
 // 2013-10-11 - DE - add empty string defining the platform
 // 2013-10-07 - DE - pipe_v13d.geo fixes overlap with TOF
@@ -23,6 +24,14 @@ static TString psdGeom;
 static Double_t psdZpos;
 static Double_t psdXpos;
 
+static TString stsTag;
+static TString trdTag;
+static TString tofTag;
+
+static TString stsDigi;
+static TString trdDigi;
+static TString tofDigi;
+
 static TString  fieldMap;
 static Double_t fieldZ;
 static Double_t fieldScale;
@@ -38,21 +47,32 @@ void sis100_electron_setup()
   fieldScale   =  1.;            // field scaling factor
   fieldSymType =  3;
 
+  // -----  Tags  -----------------------------------------------------------
+  stsTag       = "v13d";
+  trdTag       = "v14a_1e";
+  tofTag       = "v13-5b";
+
+  // -----  DigiFiles  ------------------------------------------------------
+  stsDigi      = "sts/sts_" + stsTag + "_std.digi.par";
+  trdDigi      = "trd/trd_" + trdTag + ".digi.par";
+  tofDigi      = "tof/tof_" + tofTag + ".digi.par";
+
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
-  pipeGeom     = "pipe/pipe_v13b.geo.root"; 
+  pipeGeom     = "pipe/pipe_v13b.geo.root";
   magnetGeom   = "magnet/magnet_v12b.geo.root";
   mvdGeom      = "";
-  stsGeom      = "sts/sts_v13d.geo.root";
+  stsGeom      = "sts/sts_" + stsTag + ".geo.root";
   richGeom     = "rich/rich_v08a.geo";
   muchGeom     = "";
   shieldGeom   = "";
   platformGeom = ""; // "passive/platform_v13a.geo";
-  trdGeom      = "trd/trd_v13p_1e.geo.root";
-  tofGeom      = "tof/tof_v13-5b.geo.root";
+  trdGeom      = "trd/trd_" + trdTag + ".geo.root";
+  tofGeom      = "tof/tof_" + tofTag + ".geo.root";
   ecalGeom     = "";
   psdGeom      = "psd_geo_xy.txt";
   psdZpos = 800.;
   psdXpos = 11.;
+
   cout<<"Reading geometry setup and magnetic field settings from "<< gSystem->UnixPathName(gInterpreter->GetCurrentMacroName())<<endl;
 }
