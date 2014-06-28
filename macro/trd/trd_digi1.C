@@ -8,34 +8,20 @@
 // 20130605 - checked by DE
 // --------------------------------------------------------------------------
 
-void trd_digi1(Int_t nEvents = 1) 
+void trd_digi1(Int_t nEvents = 1, const char* setup = "sis300_electron")
 {
 
   gStyle->SetPalette(1,0);
   gROOT->SetStyle("Plain");
   gStyle->SetPadTickX(1);
   gStyle->SetPadTickY(1);
-  // ========================================================================
-  // geometry selection for sim + reco  by Cyrano                            
-  // ========================================================================
-  ifstream whichTrdGeo;
-  whichTrdGeo.open("whichTrdGeo",ios::in);
-  TString selectGeo;
-  if (whichTrdGeo) whichTrdGeo >> selectGeo;
-  TString digipar = selectGeo(0,11);
-  digipar.ReplaceAll(".ge","");
-  cout << "selected geometry : >> " << selectGeo << " << (to select a different geometry, edit macro/trd/whichTrdGeo file)" << endl;
-  cout << "selected digipar  : >> " << digipar << " << " << endl;
-  whichTrdGeo.close();
-  if (digipar.Length() == 0) digipar = "trd_v13p_3e";
-  cout << "finally using     : >> " << digipar << " << " << endl;
 
   FairLogger *logger = FairLogger::GetLogger();
   logger->SetLogFileName("MyLog.log");
   logger->SetLogToScreen(kTRUE);
-//  //  logger->SetLogToFile(kFALSE);
-//  //  logger->SetLogVerbosityLevel("HIGH");
-//  //  logger->SetLogFileLevel("DEBUG4");
+  //  logger->SetLogToFile(kFALSE);
+  //  logger->SetLogVerbosityLevel("HIGH");
+  //  logger->SetLogFileLevel("DEBUG4");
   //  logger->SetLogScreenLevel("DEBUG2");
   logger->SetLogScreenLevel("INFO");
 
@@ -62,18 +48,26 @@ void trd_digi1(Int_t nEvents = 1)
   // the reconstruction.
   TList *parFileList = new TList();
 
-  TString workDir = gSystem->Getenv("VMCWORKDIR");
-  TString paramDir = workDir + "/parameters";
+  TString inDir = gSystem->Getenv("VMCWORKDIR");
+  TString paramDir = inDir + "/parameters";
 
-  TObjString stsDigiFile = paramDir + "/sts/sts_v13d_std.digi.par";
+  TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
+  TString setupFunct = setup;
+  setupFunct += "_setup()";
+  
+  gROOT->LoadMacro(setupFile);
+  gInterpreter->ProcessLine(setupFunct);
+
+  TObjString stsDigiFile = paramDir + "/" + stsDigi;
   parFileList->Add(&stsDigiFile);
 
-  //  TObjString trdDigiFile =  paramDir + "/trd/trd_v13o.digi.par";
-  //  parFileList->Add(&trdDigiFile);
-
-  TObjString trdDigiFile = paramDir + "/trd/" + digipar + ".digi.par";
+  TObjString trdDigiFile =  paramDir + "/" + trdDigi;
   parFileList->Add(&trdDigiFile);
 
+  TObjString tofDigiFile =  paramDir + "/" + tofDigi;
+  parFileList->Add(&tofDigiFile);
+
+  cout << "finally using     : >> " << trdDigi << " << " << endl;
 
   // In general, the following parts need not be touched
   // ========================================================================
