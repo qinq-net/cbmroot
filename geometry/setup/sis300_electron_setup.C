@@ -1,6 +1,8 @@
 //
 //   comments
 //
+// 2014-06-30 - DE - make RICH v14a the new default
+// 2014-06-30 - DE - make TRD v14a the new default
 // 2014-06-25 - DE - define digi files through tags for STS, TRD and TOF
 // 2013-11-05 - DE - switch to trd_v13p geometry
 // 2013-10-11 - DE - add empty string defining the platform
@@ -64,7 +66,7 @@ void sis300_electron_setup()
   magnetGeom   = "magnet/magnet_v12b.geo.root";
   mvdGeom      = "";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
-  richGeom     = "rich/rich_v08a.geo";
+  richGeom     = "rich/rich_v14a.root";
   muchGeom     = "";
   shieldGeom   = "";
   platformGeom = ""; // "passive/platform_v13b.geo";
