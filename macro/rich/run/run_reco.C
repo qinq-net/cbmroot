@@ -1,4 +1,4 @@
-void run_reco(Int_t nEvents = 2)
+void run_reco(Int_t nEvents = 20)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -253,7 +253,7 @@ void run_reco(Int_t nEvents = 2)
     Double_t ctime = timer.CpuTime();
     cout << endl << endl;
     cout << "Macro finished successfully." << endl;
-    cout << "Output file is "    << outFile << endl;
+    cout << "Output file is "    << recoFile << endl;
     cout << "Parameter file is " << parFile << endl;
     cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
     cout << endl;

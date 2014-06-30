@@ -1,4 +1,4 @@
-void run_sim(Int_t nEvents = 2)
+void run_sim(Int_t nEvents = 20)
 {
    TTree::SetMaxTreeSize(90000000000);
 	Int_t iVerbose = 0;
@@ -17,7 +17,7 @@ void run_sim(Int_t nEvents = 2)
 	TString magnetGeom = "magnet/magnet_v12a.geo";
 	TString mvdGeom = "";
 	TString stsGeom = "sts/sts_v13d.geo.root";
-	TString richGeom= "rich/rich_v13c_pipe_1_al_1.root";
+	TString richGeom= "rich/rich_v14b.root";
 	TString trdGeom = "trd/trd_v13g.geo.root";
 	TString tofGeom = "tof/tof_v13b.geo.root";
 	TString ecalGeom = "";
