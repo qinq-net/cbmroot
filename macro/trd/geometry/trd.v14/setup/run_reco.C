@@ -27,15 +27,10 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis300_electron")
   // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
   Int_t iVerbose = 0;
 
-  // Input file (MC events)
-  TString inFile = "data/test.mc.root";
-
-  // Parameter file
-  TString parFile = "data/params.root";
-
-  // Output file
-  TString outFile = "data/test.eds.root";
-
+  TString outDir  = "data/";
+  TString inFile  = outDir + setup + "_test.mc.root";   // Input file (MC events)
+  TString parFile = outDir + setup + "_params.root";    // Parameter file
+  TString outFile = outDir + setup + "_test.eds.root";  // Output file
 
   //  Digitisation files.
   // Add TObjectString containing the different file names to
@@ -46,23 +41,26 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis300_electron")
   TList *parFileList = new TList();
 
   TString inDir = gSystem->Getenv("VMCWORKDIR");
-  TString paramDir = inDir + "/parameters";
+  TString paramDir = inDir + "/parameters/";
 
   TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
   TString setupFunct = setup;
   setupFunct += "_setup()";
-  
+
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
 
-  TObjString stsDigiFile = paramDir + "/" + stsDigi;
+  TObjString stsDigiFile = paramDir + stsDigi;
   parFileList->Add(&stsDigiFile);
+  cout << "macro_run.C using: " << stsDigi << endl;
 
-  TObjString trdDigiFile =  paramDir + "/" + trdDigi;
+  TObjString trdDigiFile = paramDir + trdDigi;
   parFileList->Add(&trdDigiFile);
+  cout << "macro_run.C using: " << trdDigi << endl;
 
-  TObjString tofDigiFile =  paramDir + "/" + tofDigi;
+  TObjString tofDigiFile = paramDir + tofDigi;
   parFileList->Add(&tofDigiFile);
+  cout << "macro_run.C using: " << tofDigi << endl;
 
 
   // In general, the following parts need not be touched
