@@ -1,6 +1,7 @@
 //
 //   comments
 //
+// 2014-06-30 - DE - use PIPE v14d together with RICH v14a
 // 2014-06-30 - DE - make RICH v14a the new default
 // 2014-06-30 - DE - make TRD v14a the new default
 // 2014-06-25 - DE - define digi files through tags for STS, TRD and TOF
@@ -57,11 +58,12 @@ void sis100_electron_setup()
   // -----  DigiFiles  ------------------------------------------------------
   stsDigi      = "sts/sts_" + stsTag + "_std.digi.par";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
-  tofDigi      = "tof/tof_" + tofTag + ".digi.par";
+  //  tofDigi      = "tof/tof_" + tofTag + ".digi.par";
+  tofDigi      = "tof/tof_v13a.digi.par";
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
-  pipeGeom     = "pipe/pipe_v13b.geo.root";
+  pipeGeom     = "pipe/pipe_v14d.root";
   magnetGeom   = "magnet/magnet_v12b.geo.root";
   mvdGeom      = "";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
