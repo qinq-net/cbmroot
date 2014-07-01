@@ -473,6 +473,8 @@ void Create_TRD_Geometry_v14a_3e() {
 //  gGeoMan->PrintOverlaps();
   gGeoMan->Test();
 
+  //  top->Export(FileNameSim);   // an alternative way of writing the top volume
+
   TFile* outfile = new TFile(FileNameSim,"RECREATE");
   top->Write();      // use this as input to simulations (run_sim.C)
   outfile->Close();
