@@ -23,6 +23,9 @@ void run_reco(Int_t nEvents = 2) {
   // ========================================================================
   //          Adjust this part according to your requirements
 
+  TString logLevel = "INFO";
+  TString logVerbose = "LOW";
+
   // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
   Int_t iVerbose = 0;
 
@@ -76,6 +79,8 @@ void run_reco(Int_t nEvents = 2) {
   run->SetOutputFile(outFile);
   // ------------------------------------------------------------------------
 
+  gLogger->SetLogScreenLevel(logLevel.Data());
+  gLogger->SetLogVerbosityLevel(logVerbose.Data());
 
 
 

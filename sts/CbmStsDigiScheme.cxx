@@ -390,13 +390,18 @@ Bool_t CbmStsDigiScheme::InitNew(CbmGeoStsPar* geoPar,
       gGeoManager->CdUp();
       continue;
     }
-    Int_t statNr = stationNode->GetNumber();
+    //Int_t statNr = stationNode->GetNumber();
+    // The station number is the daughter number of the station node in the mother
+    // volume STS (starts from 0).
+    Int_t statNr = iNode;
 
     // Get station parameters
     CbmStsStationDigiPar* stationPar = NULL;
     for (Int_t iStation = 0; iStation < digiPar->GetNStations(); iStation++) {
       CbmStsStationDigiPar* partest1 = digiPar->GetStation(iStation);
-      if ( partest1->GetStationNr() == statNr ) {
+      // This patch corrects the station number on CbmStsDigiPar, which starts from 1.
+      // It should start from 0 to be compatible with CbmSetup.
+      if ( partest1->GetStationNr() == statNr + 1 ) {
 	stationPar = partest1;
 	break;
       }

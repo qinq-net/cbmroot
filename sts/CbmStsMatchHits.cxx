@@ -368,12 +368,12 @@ void CbmStsMatchHits::ExecReal(Option_t* opt)
     {
         CbmStsHit* stsHit = (CbmStsHit*)fHits->At(ihit);
         stsHit->SetRefId(-1);
-        if (hitStationLimits[0][CbmStsAddress::GetElementId(stsHit->GetAddress(), kStsStation) - 1] == -1)
-            hitStationLimits[0][CbmStsAddress::GetElementId(stsHit->GetAddress(), kStsStation) - 1] = ihit;
+        if (hitStationLimits[0][CbmStsAddress::GetElementId(stsHit->GetAddress(), kStsStation)] == -1)
+            hitStationLimits[0][CbmStsAddress::GetElementId(stsHit->GetAddress(), kStsStation)] = ihit;
         CbmStsHit* stsHitBack = (CbmStsHit*)fHits->At(nofStsHits - ihit - 1);
-        if (hitStationLimits[1][CbmStsAddress::GetElementId(stsHitBack->GetAddress(), kStsStation) - 1] == -1)
+        if (hitStationLimits[1][CbmStsAddress::GetElementId(stsHitBack->GetAddress(), kStsStation)] == -1)
         {
-            hitStationLimits[1][CbmStsAddress::GetElementId(stsHitBack->GetAddress(), kStsStation) - 1] = nofStsHits - ihit;
+            hitStationLimits[1][CbmStsAddress::GetElementId(stsHitBack->GetAddress(), kStsStation)] = nofStsHits - ihit;
         }
     }
     // for ( Int_t istat = 0 ; istat < fNStations ; istat++ )
