@@ -177,6 +177,7 @@ void CbmMuchDigitizeGem::Exec(Option_t* opt) {
     for (vector<CbmMuchModule*>::iterator i = modules.begin(); i != modules.end(); ++i)
     {
       CbmMuchModuleGemRadial* module = static_cast<CbmMuchModuleGemRadial*> (*i);
+      if (module->GetDetectorType() == 2) continue; //AZ - skip straws
 
       vector<CbmMuchPad*> pads = module->GetPads();
 
