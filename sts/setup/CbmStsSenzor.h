@@ -17,6 +17,7 @@
 
 class TClonesArray;
 class TGeoPhysicalNode;
+class CbmLink;
 class CbmStsModule;
 class CbmStsPoint;
 class CbmStsSensorType;
@@ -79,6 +80,11 @@ class CbmStsSenzor : public CbmStsElement
     Int_t FindHits(vector<CbmStsCluster*>& clusters,
     		           TClonesArray* hitArray);
 
+    /** Current link object
+     ** @return Pointer to current link object (to CbmStsPoint)
+     **/
+    CbmLink* GetCurrentLink() const { return fCurrentLink; }
+
 
     /** Get mother module **/
     CbmStsModule* GetModule() const;
@@ -100,7 +106,7 @@ class CbmStsSenzor : public CbmStsElement
      ** Perform the appropriate action for a particle trajectory in the
      ** sensor characterised by the CbmStsPoint object
      **/
-    Int_t ProcessPoint(CbmStsPoint* point) const;
+    Int_t ProcessPoint(CbmStsPoint* point, CbmLink* link = NULL);
 
 
     /** Set the sensor address
@@ -115,11 +121,15 @@ class CbmStsSenzor : public CbmStsElement
     void SetType(CbmStsSensorType* type) { fType = type; }
 
 
-
   private:
 
     CbmStsSensorType* fType;    ///< Pointer to sensor type
-    TClonesArray* fHits;        ///< Output array for hits
+
+    /** Link to CbmStsPoint currently processed. Used in digitisation. **/
+    CbmLink* fCurrentLink;
+
+    /** Output array for hits. Used in hit finding. **/
+    TClonesArray* fHits;
 
     /** Prevent usage of copy constructor and assignment operator **/
     CbmStsSenzor(const CbmStsSenzor&);

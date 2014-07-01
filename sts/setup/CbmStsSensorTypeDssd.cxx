@@ -543,9 +543,18 @@ void CbmStsSensorTypeDssd::RegisterCharge(const CbmStsSenzor* sensor,
               << " of module " << sensor->GetModule()->GetName()
               << FairLogger::endl;
 
-  // --- Send signal to module
-  sensor->GetModule()->AddSignal(channel, time, charge);
+  // --- Get the MC link information
+  Int_t index = -1;
+  Int_t entry = -1;
+  Int_t file  = -1;
+  if ( sensor->GetCurrentLink() ) {
+  	index = sensor->GetCurrentLink()->GetIndex();
+  	entry = sensor->GetCurrentLink()->GetEntry();
+  	file  = sensor->GetCurrentLink()->GetFile();
+  }
 
+  // --- Send signal to module
+  sensor->GetModule()->AddSignal(channel, time, charge, index, entry, file);
 
 }
 // -------------------------------------------------------------------------

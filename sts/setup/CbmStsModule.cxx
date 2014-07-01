@@ -6,6 +6,7 @@
 #include "TClonesArray.h"
 #include "TRandom.h"
 #include "FairLogger.h"
+#include "CbmMatch.h"
 #include "CbmStsAddress.h"
 #include "CbmStsCluster.h"
 #include "CbmStsDigi.h"
@@ -21,8 +22,10 @@ CbmStsModule::CbmStsModule() : CbmStsElement(),
 	                             fDynRange(0.),
 	                             fThreshold(0.),
 	                             fNofAdcChannels(0),
+	                             fTimeResolution(0),
+	                             fDeadTime(0.),
 	                             fIsSet(kFALSE),
-	                             fBuffer()
+	                             fAnalogBuffer()
 {
 }
 // -------------------------------------------------------------------------
@@ -37,8 +40,10 @@ CbmStsModule::CbmStsModule(const char* name, const char* title,
                            fDynRange(0.),
                            fThreshold(0.),
                            fNofAdcChannels(0),
+                           fTimeResolution(0),
+                           fDeadTime(0.),
                            fIsSet(0),
-                           fBuffer()
+                           fAnalogBuffer()
 {
 }
 // -------------------------------------------------------------------------
@@ -47,6 +52,18 @@ CbmStsModule::CbmStsModule(const char* name, const char* title,
 
 // --- Destructor   --------------------------------------------------------
 CbmStsModule::~CbmStsModule() {
+
+	// --- Clean analog buffer
+	map<Int_t, multiset<CbmStsSignal*> >::iterator chanIt;
+	multiset<CbmStsSignal*>::iterator sigIt;
+	for (chanIt = fAnalogBuffer.begin(); chanIt != fAnalogBuffer.end();
+			 chanIt++) {
+		for ( sigIt = (chanIt->second).begin(); sigIt != (chanIt->second).end();
+				  sigIt++) {
+			delete (*sigIt);
+		}
+	}
+
 }
 // -------------------------------------------------------------------------
 
@@ -105,57 +122,67 @@ void CbmStsModule::AddDigi(CbmStsDigi* digi, Int_t index) {
 
 // -----   Add a signal to the buffer   ------------------------------------
 void CbmStsModule::AddSignal(Int_t channel, Double_t time,
-                             Double_t charge) {
-
-	//TODO: This implementatiomn assumes that signals arrive ordered in time.
-	//This is not true, because a. MCPoints are not ordered in time if they
-	//come from event-by-event simulation and not from MCBuffer, and
-	//and b. there is principal guarantee for time ordering of signals from
-	//the same MCPoint (different drift times in the sensor). So, a better
-	//implementation is needed, in particular each channel has to hold
-	//more than one signal at a given state.
+                             Double_t charge, Int_t index, Int_t entry,
+                             Int_t file) {
 
 	// --- Debug
 	LOG(DEBUG3) << GetName() << ": Receiving signal " << charge
 			        << " in channel " << channel << " at time "
 			        << time << " s" << FairLogger::endl;
 
-	// --- If there is no signal in the buffer for this channel:
-	// --- write the signal into the buffer
-	if ( fBuffer.find(channel) == fBuffer.end() ) {
-		fBuffer[channel] = pair<Double_t, Double_t>(charge, time);
-		LOG(DEBUG4) << GetName() << ": New signal " << charge << " at time "
-				        << time << " in channel " << channel << FairLogger::endl;
-	}  //? No signal in buffer
+	// --- If the channel is not yet active: create a new set and insert
+	// --- new signal into it.
+	if ( fAnalogBuffer.find(channel) == fAnalogBuffer.end() ) {
+		CbmStsSignal* signal = new CbmStsSignal(time, charge,
+				                                    index, entry, file);
+		fAnalogBuffer[channel].insert(signal);
+		LOG(DEBUG4) << GetName() << ": Activating channel " << channel
+				        << FairLogger::endl;
+		return;
+	}  //? Channel not yet active
 
-	// --- If there is already a signal, compare the time of the two
-	else {
-		Double_t chargeOld = (fBuffer.find(channel)->second).first;
-		Double_t timeOld   = (fBuffer.find(channel)->second).second;
-		LOG(DEBUG4) << GetName() << ": old signal in channel " << channel
-				        << " at time " << timeOld << FairLogger::endl;
+	// --- The channel is active: there are already signals in.
+	// --- Loop over all signals in the channels and compare their time.
+	//TODO: Loop over all signals is not needed, since they are time-ordered.
+	Bool_t isMerged = kFALSE;
+	multiset<CbmStsSignal*>::iterator it;
+	for (it = fAnalogBuffer[channel].begin();
+			 it != fAnalogBuffer[channel].end(); it++) {
 
-		// --- Time separation large; no interference. Digitise the old signal,
-		// --- send it to the DAQ and write the new signal into the buffer.
-		if (time - timeOld > fDeadTime ) {
-			Digitize(channel, chargeOld, timeOld);
-			fBuffer[channel] = pair<Double_t, Double_t>(charge, time);
-			LOG(DEBUG4) << GetName() << ": New signal " << charge << " at time "
-					        << time << " in channel " << channel << FairLogger::endl;
-		}  //? No interference of signals
+		// Time between new and old signal smaller than dead time: merge signals
+		if ( TMath::Abs( (*it)->GetTime() - time ) < fDeadTime ) {
 
-		// --- Time separation small; interference.
-		// --- Current implementation: Add up charge in the buffer.
-		// --- Time is the one of the first signal.
-		else {
-			fBuffer[channel] =
-					pair<Double_t, Double_t>(chargeOld + charge, timeOld);
-			LOG(DEBUG4) << GetName() << ": New signal " << chargeOld + charge
-					        << " at time "<< timeOld << " in channel " << channel
+			// Current implementation of merging signals:
+			// Add charges, keep first signal time
+			// TODO: Check with STS electronics people on more realistic behaviour.
+			LOG(DEBUG4) << GetName() << ": channel " << channel
+					        << ", new signal at t = " << time
+					        << " ns is merged with present signal at t = "
+					        << (*it)->GetTime() << " ns" << FairLogger::endl;
+			(*it)->SetTime( TMath::Min( (*it)->GetTime(), time) );
+			(*it)->AddLink(charge, index, entry, file);
+			isMerged = kTRUE;  // mark new signal as merged
+			LOG(DEBUG4) << "    New signal: time " << (*it)->GetTime()
+					        << ", charge " << (*it)->GetCharge()
+					        << ", number of links " << (*it)->GetMatch().GetNofLinks()
 					        << FairLogger::endl;
-		}  //? Interference of signals
+			break;  // Merging should be necessary only for one buffer signal
 
-	}  //? Already signal in buffer
+		} //? Time difference smaller than dead time
+
+	} // Loop over signals in buffer for this channel
+
+	// --- If signal was merged: no further action
+	if ( isMerged ) return;
+
+	// --- Arriving here, the signal did not interfere with existing ones.
+	// --- So, it is added to the analog buffer.
+	CbmStsSignal* signal = new CbmStsSignal(time, charge,
+                                          index, entry, file);
+	fAnalogBuffer[channel].insert(signal);
+	LOG(DEBUG4) << GetName() << ": Adding signal at t = " << time
+			        << " ns, charge " << charge << " in channel " << channel
+			        << FairLogger::endl;
 
 }
 // -------------------------------------------------------------------------
@@ -168,37 +195,6 @@ Int_t CbmStsModule::ChargeToAdc(Double_t charge) {
 	Int_t adc = Int_t ( (charge - fThreshold) * Double_t(fNofAdcChannels)
 			        / fDynRange );
 	return ( adc < fNofAdcChannels ? adc : fNofChannels - 1 );
-}
-// -------------------------------------------------------------------------
-
-
-
-// -----   Clean the analog buffer   ---------------------------------------
-void CbmStsModule::CleanBuffer(Double_t readoutTime) {
-
-	map<Int_t, pair<Double_t, Double_t> >::iterator it = fBuffer.begin();
-
-	while ( it != fBuffer.end() ) {
-
-		// --- Compare signal time to readout time
-		Double_t signalTime = (it->second).second;
-		if ( readoutTime < 0 || signalTime < readoutTime ) {
-
-			// --- Digitise the signal and remove it from buffer
-			Double_t charge = (it->second).first;
-			Int_t channel = it->first;
-			LOG(DEBUG4) << GetName() << ": Clean Buffer " << channel << " "
-				        << signalTime << " " << charge << FairLogger::endl;
-			Digitize(channel, charge, signalTime);
-
-			// Next entry in buffer. Delete digitised buffer entry.
-			it++;
-			fBuffer.erase(channel);
-
-		} //? Signal before read-out time
-
-	}  // Iterator over buffer
-
 }
 // -------------------------------------------------------------------------
 
@@ -253,10 +249,10 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 
 
 // -----   Digitise an analog charge signal   ------------------------------
-void CbmStsModule::Digitize(Int_t channel, Double_t charge, Double_t time) {
+void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
 
 	// --- No action if charge is below threshold
-	if ( charge <= fThreshold ) return;
+	if ( signal->GetCharge() < fThreshold ) return;
 
 	// --- Construct channel address from module address and channel number
 	UInt_t address = CbmStsAddress::SetElementId(GetAddress(),
@@ -266,13 +262,12 @@ void CbmStsModule::Digitize(Int_t channel, Double_t charge, Double_t time) {
 	Int_t side = ( channel < 1024 ? 0 : 1);
 	address = CbmStsAddress::SetElementId(address, kStsSide, side);
 
-
 	// --- Digitise charge
 	// --- Prescription according to the information on the STS-XYTER
 	// --- by C. Schmidt.
 	UShort_t adc = 0;
-	if ( charge > fDynRange ) adc = fNofAdcChannels - 1;
-	else adc = UShort_t( (charge - fThreshold) / fDynRange
+	if ( signal->GetCharge() > fDynRange ) adc = fNofAdcChannels - 1;
+	else adc = UShort_t( (signal->GetCharge() - fThreshold) / fDynRange
 				     * Double_t(fNofAdcChannels) );
 
 	// --- Digitise time
@@ -280,17 +275,21 @@ void CbmStsModule::Digitize(Int_t channel, Double_t charge, Double_t time) {
 	// will show up in event-by-event simulations, since the digi times
 	// in this case are mostly below 1 ns.
 	ULong64_t dTime
-		= ULong64_t( TMath::Max(0., gRandom->Gaus(time, fTimeResolution)) );
+		= ULong64_t( TMath::Max(0., gRandom->Gaus(signal->GetTime(),
+				                                      fTimeResolution)) );
 
 	// --- Send the message to the digitiser task
-	LOG(DEBUG4) << GetName() << ": charge " << charge << ", dyn. range "
-			<< fDynRange << ", threshold " << fThreshold << ", # ADC channels "
-			<< fNofAdcChannels << FairLogger::endl;
+	LOG(DEBUG4) << GetName() << ": charge " << signal->GetCharge()
+			        << ", dyn. range " << fDynRange << ", threshold "
+			        << fThreshold << ", # ADC channels "
+			        << fNofAdcChannels << FairLogger::endl;
 	LOG(DEBUG3) << GetName() << ": Sending message. Address " << address
 			        << ", time " << dTime << ", adc " << adc << FairLogger::endl;
 	CbmStsDigitizeIdeal* digitiser = CbmStsSetup::Instance()->GetDigitizer();
-	if ( digitiser ) digitiser->CreateDigi(address, dTime, adc);
+	if ( digitiser ) digitiser->CreateDigi(address, dTime, adc,
+			                                   signal->GetMatch());
 
+	return;
 }
 // -------------------------------------------------------------------------
 
@@ -337,9 +336,50 @@ CbmStsDigi* CbmStsModule::GetDigi(Int_t channel, Int_t& index) {
 
 
 
+// -----   Process the analog buffer   -------------------------------------
+Int_t CbmStsModule::ProcessAnalogBuffer(Double_t readoutTime) {
+
+	// --- Counter
+	Int_t nDigis = 0;
+
+	// --- Iterate over active channels
+	map<Int_t, multiset<CbmStsSignal*> >::iterator chanIt;
+	for (chanIt = fAnalogBuffer.begin();
+			 chanIt != fAnalogBuffer.end(); chanIt++) {
+
+		// --- Digitise all signals up to the specified readout time
+		set<CbmStsSignal*>::iterator sigIt = (chanIt->second).begin();
+		set<CbmStsSignal*>::iterator oldIt = sigIt;
+		while ( sigIt != (chanIt->second).end() ) {
+
+			// --- Exit loop if signal time is larger than readout time
+			// --- N.b.: Readout time < 0 means digitise everything
+			if ( readoutTime >= 0. && (*sigIt)->GetTime() > readoutTime ) break;
+
+			// --- Digitise signal
+			Digitize( chanIt->first, (*sigIt) );
+			nDigis++;
+
+			// --- Increment iterator before it becomes invalid
+			oldIt = sigIt;
+			sigIt++;
+
+			// --- Delete digitised signal
+			delete (*oldIt);
+			(chanIt->second).erase(oldIt);
+
+		} // Iterate over signals in channel
+	}  // Iterate over channels
+
+	return nDigis;
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Status info   ---------------------------------------------------
 void CbmStsModule::Status() const {
-	LOG(INFO) << GetName() << ": Signals " << fBuffer.size()
+	LOG(INFO) << GetName() << ": Signals " << fAnalogBuffer.size()
 			      << ", digis " << fDigis.size()
 			      << ", clusters " << fClusters.size() << FairLogger::endl;
 }

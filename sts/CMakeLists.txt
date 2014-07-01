@@ -27,6 +27,7 @@ mc/CbmStsMC.cxx
 set (SRCS_DIGITIZE
 digitize/CbmStsDigitizeIdeal.cxx
 digitize/CbmStsSensorTypeDssdIdeal.cxx;
+digitize/CbmStsSignal.cxx;
 )
 # --- Sources in reco
 set (SRCS_RECO

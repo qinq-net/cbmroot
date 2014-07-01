@@ -71,7 +71,12 @@ CbmStsDigitizeIdeal::~CbmStsDigitizeIdeal() {
 // -----   Create a digi object   ------------------------------------------
 void CbmStsDigitizeIdeal::CreateDigi(UInt_t address,
 		              									 ULong64_t time,
-		              									 UShort_t adc) {
+		              									 UShort_t adc,
+		              									 const CbmMatch& match) {
+
+	// Copy match object
+	CbmMatch* digiMatch = new CbmMatch();
+	digiMatch->AddLink(match);
 
 	// Current implementation is for event-based only. Digi is created
 	// by placement in the respective TClonesArray
@@ -81,7 +86,9 @@ void CbmStsDigitizeIdeal::CreateDigi(UInt_t address,
 		return;
 	}
 	Int_t nDigis = fDigis->GetEntriesFast();
-	new ( (*fDigis)[nDigis] ) CbmStsDigi(address, time, adc);
+	CbmStsDigi* digi =
+			new ( (*fDigis)[nDigis] ) CbmStsDigi(address, time, adc);
+	digi->SetMatch(digiMatch);
 	fNofDigis++;
 	LOG(DEBUG3) << GetName() << ": created digi at " << time
 			        << " ns with ADC " << adc << " at address " << address
@@ -121,13 +128,15 @@ void CbmStsDigitizeIdeal::Exec(Option_t* opt) {
   // --- Loop over all StsPoints and execute the ProcessPoint method
   for (Int_t iPoint=0; iPoint<fPoints->GetEntriesFast(); iPoint++) {
    CbmStsPoint* point = (CbmStsPoint*) fPoints->At(iPoint);
-   ProcessPoint(point);
-    fNofPoints++;
+   CbmLink* link = new CbmLink(1., iPoint);
+   ProcessPoint(point, link);
+   fNofPoints++;
+   delete link;
   }  // StsPoint loop
 
-  // --- Clean buffers of all modules
+  // --- Process buffers of all modules
   for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++)
-  	fSetup->GetModule(iModule)->CleanBuffer(-1.);
+  	fSetup->GetModule(iModule)->ProcessAnalogBuffer(-1.);
 
   // --- Counters
   fTimer.Stop();
@@ -176,7 +185,7 @@ void CbmStsDigitizeIdeal::Finish() {
 
 
 // -----  Process a StsPoint   ---------------------------------------------
-void CbmStsDigitizeIdeal::ProcessPoint(CbmStsPoint* point) {
+void CbmStsDigitizeIdeal::ProcessPoint(CbmStsPoint* point, CbmLink* link) {
 
 	// Debug
 	if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG2) ) point->Print();
@@ -196,7 +205,7 @@ void CbmStsDigitizeIdeal::ProcessPoint(CbmStsPoint* point) {
 			        << " ) " << FairLogger::endl;
 
 	// --- Process the point on the sensor
-	Int_t status = sensor->ProcessPoint(point);
+	Int_t status = sensor->ProcessPoint(point, link);
 
 	// --- Statistics
 	Int_t nSignalsF = status / 1000;
@@ -275,6 +284,8 @@ void CbmStsDigitizeIdeal::SetModuleParameters() {
 				                                      fTimeResolution,
 				                                      fDeadTime);
 	}
+	LOG(INFO) << GetName() << ": Set parameters for " << nModules
+			      << " modules " << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 

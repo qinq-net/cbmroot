@@ -9,6 +9,7 @@
 #include <map>
 #include "TStopwatch.h"
 #include "FairTask.h"
+#include "CbmMatch.h"
 
 class TClonesArray;
 class CbmStsPoint;
@@ -51,8 +52,10 @@ class CbmStsDigitizeIdeal : public FairTask
    ** @param address   Unique channel address
    ** @param time      Absolute time [ns]
    ** @param adc       Digitised charge [ADC channels]
+   ** @param match    MC Match object
    **/
-  void CreateDigi(UInt_t address, ULong64_t time, UShort_t adc);
+  void CreateDigi(UInt_t address, ULong64_t time, UShort_t adc,
+  		            const CbmMatch& match);
 
 
   /** Execution **/
@@ -117,8 +120,9 @@ class CbmStsDigitizeIdeal : public FairTask
 
   /** Process one MCPoint
    ** @param point  Pointer to CbmStsPoint to be processed
+   ** @param link   Link to MCPoint
    **/
-  void ProcessPoint(CbmStsPoint*);
+  void ProcessPoint(CbmStsPoint* point, CbmLink* link = NULL);
 
 
   /** Re-initialisation **/

@@ -21,6 +21,7 @@
 // Digitization
 #pragma link C++ class CbmStsDigitizeIdeal;
 #pragma link C++ class CbmStsSensorTypeDssdIdeal;
+#pragma link C++ class CbmStsSignal;
 
 // Reconstruction
 #pragma link C++ class CbmStsClusterFinderSimple;

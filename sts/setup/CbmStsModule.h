@@ -8,9 +8,11 @@
 
 
 #include <map>
+#include <set>
 #include <vector>
 #include "CbmStsCluster.h"
 #include "CbmStsDigi.h"
+#include "digitize/CbmStsSignal.h"
 #include "setup/CbmStsElement.h"
 #include "setup/CbmStsSenzor.h"
 
@@ -72,16 +74,20 @@ class CbmStsModule : public CbmStsElement
 
 
     /** Add an analogue signal to the buffer
-     *
-     * @param channel        channel number
-     * @param time           time of signal [ns]
-     * @param charge         analogue charge [e]
-     *
-     * The signal will be added to the buffer. Interference with
-     * previous signals within the same channels is checked and the
-     * proper action is executed.
-     */
-    void AddSignal(Int_t channel, Double_t time, Double_t charge);
+     **
+     ** @param channel        channel number
+     ** @param time           time of signal [ns]
+     ** @param charge         analogue charge [e]
+     ** @param index          index of CbmStsPoint in TClonesArray
+     ** @param entry          MC entry (event number)
+     ** @param file           MC input file number
+     **
+     ** The signal will be added to the buffer. Interference with
+     ** previous signals within the same channels is checked and the
+     ** proper action is executed.
+     **/
+    void AddSignal(Int_t channel, Double_t time, Double_t charge,
+    		           Int_t index = 0, Int_t entry = 0, Int_t file = 0);
 
 
     /** Convert charge to ADC channel.
@@ -91,15 +97,6 @@ class CbmStsModule : public CbmStsElement
      ** This must be the inverse of AdcToCharge
      **/
     Int_t ChargeToAdc(Double_t charge);
-
-
-    /** Clean the signal buffer
-     ** @param time  Read-out time [ns]
-     **
-     ** All analogue signals in the buffer with time prior to the specified
-     ** read-out time are digitised and sent to the digitiser / DAQ.
-     **/
-     void CleanBuffer(Double_t time);
 
 
      /** Clear the cluster vector **/
@@ -146,6 +143,16 @@ class CbmStsModule : public CbmStsElement
      Int_t GetNofDigis() const { return fDigis.size(); }
 
 
+     /** Digitise signals in the analog buffer
+      ** @param time  readout time [ns]
+      ** @return Number of created digis
+      **
+      ** All signals with time less than the readout time will be
+      ** digitised and removed from the buffer.
+      **/
+     Int_t ProcessAnalogBuffer(Double_t readoutTime);
+
+
      /** Set the digitisation parameters
       ** @param dynRagne   Dynamic range [e]
       ** @param threshold  Threshold [e]
@@ -177,11 +184,14 @@ class CbmStsModule : public CbmStsElement
     Double_t fDeadTime;        ///< Channel dead time [ns]
     Bool_t   fIsSet;           ///< Flag whether parameters are set
 
-    /** Buffer for the analogue signals
-     ** This is a std::map from channel number to a pair
-     ** of time and analogue charge. Used for digitisation.
+    /** Buffer for analog signals, key is channel number.
+     ** Because signals do not, in general, arrive time-sorted,
+     ** the buffer must hold a (multi)set of signals for each channel
+     ** (multiset allowing for different signals at the same time).
+     ** Sorting in the multiset is with the less operator of CbmStsSignal,
+     ** which compares the time of the signals.
      **/
-    map<Int_t, pair<Double_t, Double_t> > fBuffer;
+    map<Int_t, multiset<CbmStsSignal*> > fAnalogBuffer;
 
     /** Map from channel number to pair of (digi, digiIndex).
      ** Used for cluster finding.
@@ -191,13 +201,12 @@ class CbmStsModule : public CbmStsElement
     /** Vector of clusters. Used for hit finding. **/
     vector<CbmStsCluster*> fClusters;
 
+
     /** Digitise an analog charge signal
-     ** @param channel  Module readout channel number
-     ** @param charge   Analog charge [e]
-     ** @param time     Absolute signal time [ns]
-     ** @return  Pointer to new digi
+     ** @param channel Channel number
+     ** @param signal  Pointer to signal object
      **/
-    void Digitize(Int_t channel, Double_t charge, Double_t time);
+    void Digitize(Int_t channel, CbmStsSignal* signal);
 
 
     /** Prevent usage of copy constructor and assignment operator **/

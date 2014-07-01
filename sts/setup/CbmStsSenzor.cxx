@@ -12,6 +12,7 @@
 #include "TGeoMatrix.h"
 
 // Includes from CbmRoot
+#include "CbmLink.h"
 #include "CbmStsHit.h"
 #include "CbmStsPoint.h"
 
@@ -23,7 +24,10 @@
 
 
 // -----   Constructor   ---------------------------------------------------
-CbmStsSenzor::CbmStsSenzor() : CbmStsElement(), fType(NULL), fHits(NULL)
+CbmStsSenzor::CbmStsSenzor() : CbmStsElement(),
+                               fType(NULL),
+                               fCurrentLink(NULL),
+                               fHits(NULL)
 {
 }
 // -------------------------------------------------------------------------
@@ -34,7 +38,9 @@ CbmStsSenzor::CbmStsSenzor() : CbmStsElement(), fType(NULL), fHits(NULL)
 CbmStsSenzor::CbmStsSenzor(const char* name, const char* title,
                            TGeoPhysicalNode* node) :
                            CbmStsElement(name, title, kStsSensor, node),
-                           fType(NULL), fHits(NULL)
+                           fType(NULL),
+                           fCurrentLink(NULL),
+                           fHits(NULL)
 {
 }
 // -------------------------------------------------------------------------
@@ -113,7 +119,7 @@ CbmStsModule* CbmStsSenzor::GetModule() const {
 
 
 // -----   Process a CbmStsPoint  ------------------------------------------
-Int_t CbmStsSenzor::ProcessPoint(CbmStsPoint* point) const {
+Int_t CbmStsSenzor::ProcessPoint(CbmStsPoint* point, CbmLink* link) {
 
 	// Check whether type is assigned
 	if ( ! fType ) {
@@ -122,8 +128,8 @@ Int_t CbmStsSenzor::ProcessPoint(CbmStsPoint* point) const {
 		return -1;
 	}
 
-  Double_t global[3];
-  Double_t local[3];
+	// --- Set current link
+	fCurrentLink = link;
 
   // --- Debug output of transformation matrix
   if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG4) ) {
@@ -133,6 +139,8 @@ Int_t CbmStsSenzor::ProcessPoint(CbmStsPoint* point) const {
   }
 
   // --- Transform entry coordinates into local C.S.
+  Double_t global[3];
+  Double_t local[3];
   global[0] = point->GetXIn();
   global[1] = point->GetYIn();
   global[2] = point->GetZIn();
@@ -159,7 +167,6 @@ Int_t CbmStsSenzor::ProcessPoint(CbmStsPoint* point) const {
   		        << " " << fType->GetTitle() << FairLogger::endl;
 
   // --- Call ProcessPoint method from sensor type
-
   return fType->ProcessPoint(sPoint, this);
 }
 // -------------------------------------------------------------------------

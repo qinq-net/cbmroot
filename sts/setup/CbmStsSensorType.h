@@ -59,6 +59,7 @@ class CbmStsSensorType : public TNamed
      **
      ** @param point   Pointer to CbmStsSensorPoint with relevant parameters
      ** @param sensor  Pointer to CbmStsSensor object
+     ** @param link    Link to MCPoint
      ** @return  Status variable, depends on concrete type
      **
      ** Perform the appropriate action for a particle trajectory in the
