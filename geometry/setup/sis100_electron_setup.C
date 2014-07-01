@@ -1,6 +1,7 @@
 //
 //   comments
 //
+// 2014-07-01 - DE - use PIPE v14f
 // 2014-06-30 - DE - use PIPE v14d together with RICH v14a
 // 2014-06-30 - DE - make RICH v14a the new default
 // 2014-06-30 - DE - make TRD v14a the new default
@@ -63,7 +64,7 @@ void sis100_electron_setup()
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
-  pipeGeom     = "pipe/pipe_v14d.root";
+  pipeGeom     = "pipe/pipe_v14f.root";
   magnetGeom   = "magnet/magnet_v12b.geo.root";
   mvdGeom      = "";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
