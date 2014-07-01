@@ -102,9 +102,8 @@ InitStatus CbmMuchFindHitsStraws::Init()
 // -------------------------------------------------------------------------
 void CbmMuchFindHitsStraws::Exec(Option_t* opt)
 {
-    // if (fHits) fHits->Clear();
-    if (fDimens == 1 && fHits)
-        fHits->Delete();
+
+  if (fHits) fHits->Delete();
 
     static Int_t first = 1;
     static Double_t radIn[6];
