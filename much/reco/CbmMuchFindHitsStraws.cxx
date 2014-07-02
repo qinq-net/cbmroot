@@ -316,8 +316,8 @@ void CbmMuchFindHitsStraws::ComputeErrors(Double_t phi,
     dxy = r11 * r21 * sigX * sigX + r12 * r22 * sigmaY * sigmaY;
     dx = TMath::Sqrt(dx);
     dy = TMath::Sqrt(dy);
-    dxy = TMath::Sign(TMath::Sqrt(TMath::Abs(dxy)), dxy);
-    // cout << phi << " " << dx << " " << dy << " " << dxy << endl;
+    //dxy = TMath::Sign(TMath::Sqrt(TMath::Abs(dxy)), dxy);
+    //cout << phi << " " << dx << " " << dy << " " << dxy << endl;
 }
 
 // ---------   Private method Effic   -------------------------------
@@ -488,6 +488,8 @@ void CbmMuchFindHitsStraws::StorePixels()
         nofClusters++;
         nofPixelHits++;
     }
+
+    fHits->Delete();
 }
 
 ClassImp(CbmMuchFindHitsStraws)
