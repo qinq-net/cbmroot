@@ -1532,7 +1532,7 @@
 <rotation name="RICH_gas_rot_Sens_plane_1" x="-0.000000" y="-0.000000" z="-0.000000" unit="degree"/>
 </physvol>
 </volume>
-<volume name="rich1">
+<volume name="rich_v14b">
 <materialref ref="air"/>
 <solidref ref="rich1_PartBody"/>
 <physvol>
@@ -1599,7 +1599,7 @@
 <!--
 <assembly name="TOP">
 <physvol>
-<volumeref ref="rich1"/>
+<volumeref ref="rich_v14b"/>
 <position name="TOP_pos_rich1_1" x="0.00000000" y="0.00000000" z="(RICH_position_from_IP+kapton_thickness+RICH_length/2-50)" unit="mm"/>
 <rotation name="TOP_rot_rich1_1" x="-0.000000" y="-0.000000" z="-0.000000" unit="degree"/>
 </physvol>
@@ -1608,7 +1608,7 @@
 </structure>
 
 <setup name="FAIRgeom" version="1.0">
-<world ref="rich1"/>
+<world ref="rich_v14b"/>
 <!--<world ref="TOP"/>-->
 </setup>
 
