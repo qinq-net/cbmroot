@@ -6,14 +6,14 @@ List(APPEND cbm_setup sis100_electron sis300_electron)
 
 ForEach(setup IN LISTS cbm_setup)
 
-  Set(testname run_sim_${setup})
+  Set(testname ${setup}_run_sim)
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_test.sh ${setup} sim)
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   
   Set(dep_sim ${testname})
 
-  Set(testname run_reco_${setup})
+  Set(testname ${setup}_run_reco)
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_test.sh ${setup} reco)
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
@@ -21,13 +21,13 @@ ForEach(setup IN LISTS cbm_setup)
 
   Set(dep_reco ${testname})
 
-  Set(testname run_digi_${setup})
+  Set(testname ${setup}_run_digi)
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_test.sh ${setup} digi)
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_sim})
 
-  Set(testname run_qa_${setup})
+  Set(testname ${setup}_run_qa)
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_test.sh ${setup} qa)
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
@@ -37,28 +37,28 @@ EndForEach(setup IN LISTS cbm_setup)
 # end of test CBM setups from geometry/setup
 
 
-GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_sim.C)
-add_test(run_sim ${CBMROOT_BINARY_DIR}/macro/run/run_sim.sh)
-SET_TESTS_PROPERTIES(run_sim PROPERTIES TIMEOUT "600")
-SET_TESTS_PROPERTIES(run_sim PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-
-GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_reco.C)
-add_test(run_reco ${CBMROOT_BINARY_DIR}/macro/run/run_reco.sh)
-SET_TESTS_PROPERTIES(run_reco PROPERTIES TIMEOUT "300")
-SET_TESTS_PROPERTIES(run_reco PROPERTIES DEPENDS run_sim)
-SET_TESTS_PROPERTIES(run_reco PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-
-GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_digi.C)
-add_test(run_digi ${CBMROOT_BINARY_DIR}/macro/run/run_digi.sh)
-SET_TESTS_PROPERTIES(run_digi PROPERTIES TIMEOUT "300")
-SET_TESTS_PROPERTIES(run_digi PROPERTIES DEPENDS run_sim)
-SET_TESTS_PROPERTIES(run_digi PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-
-GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_qa.C)
-add_test(run_qa ${CBMROOT_BINARY_DIR}/macro/run/run_qa.sh)
-SET_TESTS_PROPERTIES(run_qa PROPERTIES TIMEOUT "300")
-SET_TESTS_PROPERTIES(run_qa PROPERTIES DEPENDS run_reco)
-SET_TESTS_PROPERTIES(run_qa PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+#GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_sim.C)
+#add_test(run_sim ${CBMROOT_BINARY_DIR}/macro/run/run_sim.sh)
+#SET_TESTS_PROPERTIES(run_sim PROPERTIES TIMEOUT "600")
+#SET_TESTS_PROPERTIES(run_sim PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+#
+#GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_reco.C)
+#add_test(run_reco ${CBMROOT_BINARY_DIR}/macro/run/run_reco.sh)
+#SET_TESTS_PROPERTIES(run_reco PROPERTIES TIMEOUT "300")
+#SET_TESTS_PROPERTIES(run_reco PROPERTIES DEPENDS run_sim)
+#SET_TESTS_PROPERTIES(run_reco PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+#
+#GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_digi.C)
+#add_test(run_digi ${CBMROOT_BINARY_DIR}/macro/run/run_digi.sh)
+#SET_TESTS_PROPERTIES(run_digi PROPERTIES TIMEOUT "300")
+#SET_TESTS_PROPERTIES(run_digi PROPERTIES DEPENDS run_sim)
+#SET_TESTS_PROPERTIES(run_digi PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+#
+#GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_qa.C)
+#add_test(run_qa ${CBMROOT_BINARY_DIR}/macro/run/run_qa.sh)
+#SET_TESTS_PROPERTIES(run_qa PROPERTIES TIMEOUT "300")
+#SET_TESTS_PROPERTIES(run_qa PROPERTIES DEPENDS run_reco)
+#SET_TESTS_PROPERTIES(run_qa PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
 
 
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run.C)
