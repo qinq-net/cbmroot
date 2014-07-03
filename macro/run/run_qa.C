@@ -7,7 +7,7 @@
 // --------------------------------------------------------------------------
 
 
-run_qa()
+void run_qa(Int_t nEvents = 1, const char* setup = "sis300_electron")
 {
 
   // ========================================================================
@@ -16,24 +16,44 @@ run_qa()
   // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
   Int_t iVerbose = 1;
 
+  TString outDir  = "data/";
+
   // MC file
-  TString simFile = "data/test.mc.root";
+  TString simFile = outDir + setup + "_test.mc.root";   // Input file (MC events)
 
   // Reco file
-  TString recFile = "data/test.eds.root";
-
-  // Number of events to process
-  Int_t nEvents = 1;
+  TString recFile = outDir + setup + "_test.eds.root";  // Output file
 
   // Parameter file
-  TString parFile = "data/params.root";
+  TString parFile = outDir + setup + "_params.root";    // Parameter file
 
   // Output file
-  TString outFile = "data/test.qa.root";
+  TString outFile = outDir + setup + "_test.qa.root";   // Output file
   
-  
+  TList *parFileList = new TList();
+
+  TString inDir = gSystem->Getenv("VMCWORKDIR");
+  TString paramDir = inDir + "/parameters/";
+
+  TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
+  TString setupFunct = setup;
+  setupFunct += "_setup()";
+
+  gROOT->LoadMacro(setupFile);
+  gInterpreter->ProcessLine(setupFunct);
+
   // STS digitisation file
-  TString stsDigiFile = "sts_v13d_std.digi.par";
+  TObjString stsDigiFile = paramDir + stsDigi;
+  parFileList->Add(&stsDigiFile);
+  cout << "macro/run_qa.C using: " << stsDigi << endl;
+
+//  TObjString trdDigiFile = paramDir + trdDigi;
+//  parFileList->Add(&trdDigiFile);
+//  cout << "macro_run.C using: " << trdDigi << endl;
+//
+//  TObjString tofDigiFile = paramDir + tofDigi;
+//  parFileList->Add(&tofDigiFile);
+//  cout << "macro_run.C using: " << tofDigi << endl;
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -54,14 +74,11 @@ run_qa()
 
 
   // -----  Parameter database   --------------------------------------------
-  TString stsDigi = gSystem->Getenv("VMCWORKDIR");
-  stsDigi += "/parameters/sts/";
-  stsDigi += stsDigiFile;
   FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
   FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
   parIo1->open(parFile.Data());
-  parIo2->open(stsDigi.Data(),"in");
+  parIo2->open(parFileList, "in");
   rtdb->setFirstInput(parIo1);
   rtdb->setSecondInput(parIo2);
   rtdb->setOutput(parIo1);
@@ -89,6 +106,7 @@ run_qa()
 
   // -----   Intialise and run   --------------------------------------------
   fRun->Init();
+  cout << "Starting run" << endl;
   fRun->Run(0,nEvents);
   // ------------------------------------------------------------------------
 
@@ -106,5 +124,9 @@ run_qa()
   cout << endl;
   // ------------------------------------------------------------------------
 
+  //  delete run;
+
+  cout << " Test passed" << endl;
+  cout << " All ok " << endl;
 
 }
