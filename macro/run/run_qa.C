@@ -45,15 +45,15 @@ void run_qa(Int_t nEvents = 1, const char* setup = "sis300_electron")
   // STS digitisation file
   TObjString stsDigiFile = paramDir + stsDigi;
   parFileList->Add(&stsDigiFile);
-  cout << "macro/run_qa.C using: " << stsDigi << endl;
+  cout << "macro/run/run_qa.C using: " << stsDigi << endl;
 
 //  TObjString trdDigiFile = paramDir + trdDigi;
 //  parFileList->Add(&trdDigiFile);
-//  cout << "macro_run.C using: " << trdDigi << endl;
+//  cout << "macro/run/macro_qa.C using: " << trdDigi << endl;
 //
 //  TObjString tofDigiFile = paramDir + tofDigi;
 //  parFileList->Add(&tofDigiFile);
-//  cout << "macro_run.C using: " << tofDigi << endl;
+//  cout << "macro/run/macro_qa.C using: " << tofDigi << endl;
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -128,5 +128,4 @@ void run_qa(Int_t nEvents = 1, const char* setup = "sis300_electron")
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
-
 }
