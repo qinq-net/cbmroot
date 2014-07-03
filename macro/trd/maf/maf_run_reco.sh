@@ -1,5 +1,5 @@
 #!/bin/bash
-. /data6/cbm/software/cbmroot_trunk_20140624/build/config.sh > /dev/null
+. /data6/cbm/software/cbmroot_trunk_20140702/build/config.sh > /dev/null
 nEvents=$NEVENTS
 urqmd=$NURQMD
 echo "root -l -b -q run_reco_maf.C'('$nEvents,$urqmd')'"

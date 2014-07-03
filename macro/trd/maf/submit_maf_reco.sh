@@ -3,7 +3,7 @@
 ##   a reco job with 1000 events runs for about 00:30 h
 #
 
-CBMPATH=/data6/cbm/software/cbmroot_trunk_20140624/macro/trd/maf
+CBMPATH=/data6/cbm/software/cbmroot_trunk_20140702/macro/trd/maf
 
 # NEVENTS can be between 1 and 1000 - (limit is number of events in urqmd file)
 NEVENTS=1000
