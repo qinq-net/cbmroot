@@ -5,12 +5,13 @@
 //
 // V. Friese   22/02/2007
 //
-// 2013-10-30 - DE - introduce new geometry setup naming scheme:
-// 2013-10-30 - DE - CbmSetup = 1 - SIS 100 hadron                                                         
-// 2013-10-30 - DE - CbmSetup = 2 - SIS 100 electron                                                       
-// 2013-10-30 - DE - CbmSetup = 3 - SIS 100 muon                                                           
-// 2013-10-30 - DE - CbmSetup = 4 - SIS 300 electron                                                       
-// 2013-10-30 - DE - CbmSetup = 5 - SIS 300 muon         
+// 2014-06-30 - DE - available setups from geometry/setup:
+// 2014-06-30 - DE - sis100_hadron
+// 2014-06-30 - DE - sis100_electron
+// 2014-06-30 - DE - sis100_muon
+// 2014-06-30 - DE - sis300_electron
+// 2014-06-30 - DE - sis300_muon
+//
 // --------------------------------------------------------------------------
 
 void run_sim(Int_t nEvents = 2, const char* setup = "sis300_electron")
@@ -22,11 +23,12 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis300_electron")
   // ----- Paths and file names  --------------------------------------------
   TString inDir   = gSystem->Getenv("VMCWORKDIR");
   TString inFile  = inDir + "/input/urqmd.ftn14";
-  TString outDir  = "data";
-  TString outFile = outDir + "/test.mc.root";
-  TString parFile = outDir + "/params.root";
-  
-  
+
+  TString outDir  = "data/";
+  TString outFile = outDir + setup + "_test.mc.root";
+  TString parFile = outDir + setup + "_params.root";
+  TString geoFile = outDir + setup + "_geofile_full.root";
+
   TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
   TString setupFunct = setup;
   setupFunct += "_setup()";
@@ -163,7 +165,7 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis300_electron")
   fRun->SetField(magField);
   // ------------------------------------------------------------------------
 
-  // Use theexperiment specific MC Event header instead of the default one
+  // Use the experiment specific MC Event header instead of the default one
   // This one stores additional information about the reaction plane
   CbmMCEventHeader* mcHeader = new CbmMCEventHeader();
   fRun->SetMCEventHeader(mcHeader);
@@ -179,7 +181,7 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis300_electron")
   // ------------------------------------------------------------------------
 
  
-  // -Trajectories Visualization (TGeoManager Only )
+  // Trajectories Visualization (TGeoManager Only)
   // Switch this on if you want to visualize tracks in the
   // eventdisplay.
   // This is normally switch off, because of the huge files created
@@ -220,8 +222,7 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis300_electron")
   // -----   Start run   ----------------------------------------------------
   fRun->Run(nEvents);
   // ------------------------------------------------------------------------
-  fRun->CreateGeometryFile("data/geofile_full.root");
-
+  fRun->CreateGeometryFile(geoFile);
 
   // -----   Finish   -------------------------------------------------------
   timer.Stop();
