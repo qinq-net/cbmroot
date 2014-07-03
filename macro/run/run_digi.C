@@ -14,19 +14,15 @@
 // --------------------------------------------------------------------------
 
 
-void run_digi(Int_t nEvents = 10) {
-
+void run_digi(Int_t nEvents = 2, const char* setup = "sis300_electron")
+{
   // ========================================================================
   //          Adjust this part according to your requirements
 
-  // Specify input file (MC events)
-  TString inFile = "data/test.mc.root";
-
-  // Specify parameter file
-  TString parFile = "data/params.root";
-
-  // Specify output file
-  TString outFile = "data/test.raw.root";
+  TString outDir  = "data/";
+  TString inFile  = outDir + setup + "_test.mc.root";   // Input file (MC events)
+  TString parFile = outDir + setup + "_params.root";    // Parameter file
+  TString outFile = outDir + setup + "_test.raw.root";  // Output file
   
   // Specify interaction rate in 1/s
   Double_t eventRate = 1.e6;
@@ -49,12 +45,27 @@ void run_digi(Int_t nEvents = 10) {
   // the reconstruction.
   TList *parFileList = new TList();
 
-  TString paramDir = gSystem->Getenv("VMCWORKDIR");
-  paramDir += "/parameters";
+  TString inDir = gSystem->Getenv("VMCWORKDIR");
+  TString paramDir = inDir + "/parameters/";
 
-  TObjString stsDigiFile = paramDir + "/sts/sts_v13d_std.digi.par";
+  TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
+  TString setupFunct = setup;
+  setupFunct += "_setup()";
+
+  gROOT->LoadMacro(setupFile);
+  gInterpreter->ProcessLine(setupFunct);
+
+  TObjString stsDigiFile = paramDir + stsDigi;
   parFileList->Add(&stsDigiFile);
+  cout << "macro_run.C using: " << stsDigi << endl;
 
+//  TObjString trdDigiFile = paramDir + trdDigi;
+//  parFileList->Add(&trdDigiFile);
+//  cout << "macro_run.C using: " << trdDigi << endl;
+//
+//  TObjString tofDigiFile = paramDir + tofDigi;
+//  parFileList->Add(&tofDigiFile);
+//  cout << "macro_run.C using: " << tofDigi << endl;
   
 
   // In general, the following parts need not be touched
@@ -103,9 +114,6 @@ void run_digi(Int_t nEvents = 10) {
 
 
   // -----  Parameter database   --------------------------------------------
-  //  TString stsDigi = gSystem->Getenv("VMCWORKDIR");
-  // stsDigi += "/parameters/sts/";
-  //  stsDigi += stsDigiFile;
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
   FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
