@@ -33,6 +33,12 @@ ForEach(setup IN LISTS cbm_setup)
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_reco})
 
+  Set(testname ${setup}_overlap)
+  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_test.sh ${setup} overlap)
+  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
+  Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
+  Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_sim})
+
 EndForEach(setup IN LISTS cbm_setup)
 # end of test CBM setups from geometry/setup
 
