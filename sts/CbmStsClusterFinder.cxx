@@ -96,6 +96,10 @@ void CbmStsClusterFinder::Exec(Option_t* opt)
     static Int_t eventNo = 0;
     LOG(INFO) << "CbmStsClusterFinder::Exec: eventNo=" << eventNo++
     		      << ", time " << timer.RealTime() << FairLogger::endl;
+    LOG(INFO) << "CbmStsClusterFinder::Exec: fDigis.Size=" << fDigis->GetEntries() << FairLogger::endl;
+    LOG(INFO) << "CbmStsClusterFinder::Exec: fClusterCandidates.Size=" << fClusterCandidates->GetEntries() << FairLogger::endl;
+    LOG(INFO) << "CbmStsClusterFinder::Exec: fClusters.Size=" << fClusters->GetEntries() << FairLogger::endl;
+
 }
 
 void CbmStsClusterFinder::SetParContainers()
@@ -109,6 +113,7 @@ void CbmStsClusterFinder::SetParContainers()
 
 InitStatus CbmStsClusterFinder::Init()
 {
+
     // Get input array
     FairRootManager* ioman = FairRootManager::Instance();
     if (NULL == ioman)
@@ -202,9 +207,25 @@ void CbmStsClusterFinder::FindClusters(Int_t stationNr, Int_t sectorNr, Int_t iS
 
     set<Int_t>::const_iterator it = digiSet.begin();
     set<Int_t>::const_iterator it_end = digiSet.end();
+
+    map<Int_t, Int_t> m;
+    map<Int_t, Int_t>::const_iterator p;
     for (; it != it_end; ++it)
     {
         Int_t digiIndex = (*it);
+        const CbmStsDigi* digi = static_cast<const CbmStsDigi*>(fDigis->At(digiIndex));
+        Int_t channelId = CbmStsAddress::GetElementId(digi->GetAddress(), kStsChannel);
+        m[channelId]=digiIndex;
+      
+    }
+/*    
+    for (; it != it_end; ++it)
+    {
+        Int_t digiIndex = (*it);
+*/
+    for(p=m.begin();p!=m.end();++p)
+    {
+        Int_t digiIndex = p->second;
         const CbmStsDigi* digi = static_cast<const CbmStsDigi*>(fDigis->At(digiIndex));
 
         Int_t channelId = CbmStsAddress::GetElementId(digi->GetAddress(), kStsChannel);
