@@ -1,5 +1,12 @@
 # start of test CBM setups from geometry/setup
-GENERATE_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_test.sh)
+GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_sim.C)
+GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_digi.C)
+GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_reco.C)
+GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_qa.C)
+GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/check_overlaps.C)
+
+# Define the number of events to run
+Set(NumEvents 2)
 
 # Define the different setups to be tested
 List(APPEND cbm_setup sis100_electron sis300_electron)
@@ -7,14 +14,14 @@ List(APPEND cbm_setup sis100_electron sis300_electron)
 ForEach(setup IN LISTS cbm_setup)
 
   Set(testname ${setup}_run_sim)
-  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_test.sh ${setup} sim)
+  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_sim.sh ${NumEvents} \"${setup}\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   
   Set(dep_sim ${testname})
 
   Set(testname ${setup}_run_reco)
-  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_test.sh ${setup} reco)
+  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_reco.sh ${NumEvents} \"${setup}\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_sim})
@@ -22,50 +29,25 @@ ForEach(setup IN LISTS cbm_setup)
   Set(dep_reco ${testname})
 
   Set(testname ${setup}_run_digi)
-  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_test.sh ${setup} digi)
+  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_digi.sh ${NumEvents} \"${setup}\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_sim})
 
   Set(testname ${setup}_run_qa)
-  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_test.sh ${setup} qa)
+  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_qa.sh ${NumEvents} \"${setup}\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_reco})
 
   Set(testname ${setup}_overlap)
-  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_test.sh ${setup} overlap)
+  Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/check_overlaps.sh \"${setup}\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_sim})
 
 EndForEach(setup IN LISTS cbm_setup)
 # end of test CBM setups from geometry/setup
-
-
-#GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_sim.C)
-#add_test(run_sim ${CBMROOT_BINARY_DIR}/macro/run/run_sim.sh)
-#SET_TESTS_PROPERTIES(run_sim PROPERTIES TIMEOUT "600")
-#SET_TESTS_PROPERTIES(run_sim PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-#
-#GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_reco.C)
-#add_test(run_reco ${CBMROOT_BINARY_DIR}/macro/run/run_reco.sh)
-#SET_TESTS_PROPERTIES(run_reco PROPERTIES TIMEOUT "300")
-#SET_TESTS_PROPERTIES(run_reco PROPERTIES DEPENDS run_sim)
-#SET_TESTS_PROPERTIES(run_reco PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-#
-#GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_digi.C)
-#add_test(run_digi ${CBMROOT_BINARY_DIR}/macro/run/run_digi.sh)
-#SET_TESTS_PROPERTIES(run_digi PROPERTIES TIMEOUT "300")
-#SET_TESTS_PROPERTIES(run_digi PROPERTIES DEPENDS run_sim)
-#SET_TESTS_PROPERTIES(run_digi PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-#
-#GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run_qa.C)
-#add_test(run_qa ${CBMROOT_BINARY_DIR}/macro/run/run_qa.sh)
-#SET_TESTS_PROPERTIES(run_qa PROPERTIES TIMEOUT "300")
-#SET_TESTS_PROPERTIES(run_qa PROPERTIES DEPENDS run_reco)
-#SET_TESTS_PROPERTIES(run_qa PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-
 
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/run.C)
 add_test(run ${CBMROOT_BINARY_DIR}/macro/run/run.sh)
@@ -86,10 +68,4 @@ GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/checkFieldSym.C)
 add_test(checkFieldSym ${CBMROOT_BINARY_DIR}/macro/run/checkFieldSym.sh)
 SET_TESTS_PROPERTIES(checkFieldSym PROPERTIES TIMEOUT "60")
 #SET_TESTS_PROPERTIES(run_sim PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
-
-#GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/check_overlaps.C)
-#add_test(check_overlaps ${CBMROOT_BINARY_DIR}/macro/run/check_overlaps.sh)
-#SET_TESTS_PROPERTIES(check_overlaps PROPERTIES TIMEOUT "45")
-#SET_TESTS_PROPERTIES(check_overlaps PROPERTIES DEPENDS run_sim)
-#SET_TESTS_PROPERTIES(check_overlaps PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
 
