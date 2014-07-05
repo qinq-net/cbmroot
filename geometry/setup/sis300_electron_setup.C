@@ -1,7 +1,8 @@
 //
 //   comments
 //
-// 2014-07-03 - DE - use PIPE v14h together with RICH v14a
+// 2014-07-05 - DE - use PIPE v14y as interim solution
+// 2014-07-03 - DE - use PIPE v14h together with RICH v14a -> overlap with STS
 // 2014-06-30 - DE - make RICH v14a the new default
 // 2014-06-30 - DE - make TRD v14a the new default
 // 2014-06-25 - DE - define digi files through tags for STS, TRD and TOF
@@ -63,7 +64,7 @@ void sis300_electron_setup()
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
-  pipeGeom     = "pipe/pipe_v14h.root";
+  pipeGeom     = "pipe/pipe_v14y.geo.root"; // "pipe/pipe_v14h.root";
   magnetGeom   = "magnet/magnet_v12b.geo.root";
   mvdGeom      = "";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
