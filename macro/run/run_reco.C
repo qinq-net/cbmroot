@@ -302,7 +302,8 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis300_electron")
   // ===                        RICH reconstruction                        ===
   // =========================================================================
 
-
+  if (richGeom.Length() != 0)  // if RICH is defined
+    {
   // ---------------------RICH Hit Producer ----------------------------------
   CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
   richHitProd->SetDetectorType(4);
@@ -320,6 +321,7 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis300_electron")
   CbmRichMatchRings* matchRings = new CbmRichMatchRings();
   run->AddTask(matchRings);
   // -------------------------------------------------------------------------
+    }
   // ===                 End of RICH local reconstruction                  ===
   // =========================================================================
 

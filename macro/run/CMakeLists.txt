@@ -9,7 +9,7 @@ GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/run/check_overlaps.C)
 Set(NumEvents 2)
 
 # Define the different setups to be tested
-List(APPEND cbm_setup sis100_electron sis300_electron)
+List(APPEND cbm_setup sis100_hadron sis100_electron sis300_electron)
 
 ForEach(setup IN LISTS cbm_setup)
 
