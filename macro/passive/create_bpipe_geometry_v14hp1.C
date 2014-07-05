@@ -66,14 +66,14 @@ void create_bpipe_geometry_v14hp1()
   Double_t rout01[nSects01] = {  25., 25., 130., 130., 130., 130.,   130.,   130.,   130.,   130.   };
   TString pipe3name = "pipe3 - STS section";
   const Int_t nSects3 = 4;
-  Double_t z3[nSects3]    = { 220.,  500.,  1250.,   1700.   }; // mm
-  Double_t rin3[nSects3]  = {  17.4,  17.4,   53.17,   81.83 };
-  Double_t rout3[nSects3] = {  18.,   18.,    55.,     84.65 };
+  Double_t z3[nSects3]    = { 220.,  270.,  1600.,   1700.   }; // mm
+  Double_t rin3[nSects3]  = {  17.4,   9.7,   31.0,    81.83 };
+  Double_t rout3[nSects3] = {  18.,   10.,    32.,     84.65 };
   TString pipevac2name = "pipevac2";
   const Int_t nSects02 = 4;
-  Double_t z02[nSects02]    = { 220.,  500.,  1250.,   1700.   }; // mm
-  Double_t rin02[nSects02]  = {   0.,    0.,     0.,      0. };
-  Double_t rout02[nSects02] = {  17.4,  17.4,   53.17,   81.83 };
+  Double_t z02[nSects02]    = { 220.,  270.,  1600.,   1700.   }; // mm                                
+  Double_t rin02[nSects02]  = {   0.,    0.,     0.,      0.   };
+  Double_t rout02[nSects02] = {  17.4,   9.7,   31.0,   81.83 };
   /*
   TString pipe4name = "pipe4 - RICH section";
   const Int_t nSects4 = 2;
