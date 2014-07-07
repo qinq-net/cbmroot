@@ -22,7 +22,7 @@ ForEach(setup IN LISTS cbm_setup)
 
   Set(testname ${setup}_run_reco)
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_reco.sh ${NumEvents} \"${setup}\")
-  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
+  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_sim})
 
