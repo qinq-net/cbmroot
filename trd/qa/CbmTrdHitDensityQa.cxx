@@ -429,13 +429,23 @@ void CbmTrdHitDensityQa::Finish()
     //cout << histName << endl;
     if (fPlotResults){
       if (fRatioTwoFiles) {
-	fModuleHitMapIt->second = (TH2I*)tempFileNumerator->Get("TrdHitDensityQa/Module/" + histName);
-	if (NULL == fModuleHitMapIt->second)
-	  LOG(ERROR) << "CbmTrdHitRateFastQa:: data/result_Numerator.root " << histName.Data() << " not found" << FairLogger::endl;
+	fModuleHitMapIt->second = (TH2I*)tempFileNumerator->Get("TrdHitDensityQa/Module/" + histName)->Clone(histName+"_numerator");
+	// 	if (NULL == fModuleHitMapIt->second)
+	// 	  LOG(ERROR) << "CbmTrdHitRateFastQa:: data/result_Numerator.root " << histName.Data() << " not found" << FairLogger::endl;
 	fModuleHitMapIt->second->Scale(100);
-	fModuleHitMapIt->second->Divide((TH2I*)tempFileDenominator->Get("TrdHitDensityQa/Module/" + histName));
-	if (NULL == fModuleHitMapIt->second)
-	  LOG(ERROR) << "CbmTrdHitRateFastQa:: data/result_Denominator.root " << histName.Data() << " not found" << FairLogger::endl;
+	// 	//	fModuleHitMapIt->second->Scale(2);
+	fModuleHitMapIt->second->Divide((TH2I*)tempFileDenominator->Get("TrdHitDensityQa/Module/" + histName)->Clone(histName+"_denominator"));
+
+//	fModuleHitMapIt->second->Divide(
+//					(TH2I*)tempFileNumerator->Get("TrdHitDensityQa/Module/" + histName)->Clone(histName+"_numerator"),
+//					(TH2I*)tempFileDenominator->Get("TrdHitDensityQa/Module/" + histName)->Clone(histName+"_denominator"),
+//					1.,1.);  // need to be in the kHz range, therefore 100 * 1000
+	//					1000.,1.);  // need to be in the kHz range, therefore 100 * 1000
+
+        cout << histName << " " << fModuleHitMapIt->second->GetBinContent(fModuleHitMapIt->second->GetMaximumBin()) << endl;
+
+	//	if (NULL == fModuleHitMapIt->second)
+	//	  LOG(ERROR) << "CbmTrdHitRateFastQa:: data/result_Denominator.root " << histName.Data() << " not found" << FairLogger::endl;
       } else 
 	fModuleHitMapIt->second = (TH2I*)tempFile->Get("TrdHitDensityQa/Module/" + histName);
     } else
@@ -462,6 +472,8 @@ void CbmTrdHitDensityQa::Finish()
       Layer->SetXTitle("x-Coordinate [mm]");
       Layer->SetYTitle("y-Coordinate [mm]");
       Layer->SetZTitle("Trigger/Channel [kHz]");
+      if (fRatioTwoFiles)
+	Layer->SetZTitle("Trigger ratio [%]");
       Layer->SetStats(kFALSE);
       Layer->GetXaxis()->SetLabelSize(0.02);
       Layer->GetYaxis()->SetLabelSize(0.02);
@@ -473,6 +485,8 @@ void CbmTrdHitDensityQa::Finish()
       Layer->GetZaxis()->SetTitleSize(0.02);
       Layer->GetZaxis()->SetTitleOffset(-2);
       Layer->GetZaxis()->SetRangeUser(fmin/1000,fmax/1000);
+      if (fRatioTwoFiles)
+	Layer->GetZaxis()->SetRangeUser(fmin,fmax);
       LayerMap[LayerId]->cd()->SetLogz(flogScale);
       Layer->Fill(0.,0.,0);
       Layer->Draw("colz");
@@ -605,7 +619,7 @@ void CbmTrdHitDensityQa::Finish()
   }
   //Double_t dataPerModule = ratePerModule * 1e-6 * fBitPerHit * fScaleCentral2mBias;  // Mbit, incl. neighbor
   Double_t dataPerModule = TriggerRate2DataRate(ratePerModule) * 1e-6 * fScaleCentral2mBias;  // Mbit, incl. neighbor
-  Int_t    nOptLinks     = 1 + dataPerModule / 4000.; // 5000.; // 1 link plus 1 for each 4 Gbps (fill links to 80% max)
+  Int_t    nOptLinks     = (Int_t)(1 + dataPerModule / 4000.); // 5000.; // 1 link plus 1 for each 4 Gbps (fill links to 80% max)
   //h1DataModule->Fill(dataPerModule);
   //h1OptLinksModule->Fill(nOptLinks);
 
@@ -689,6 +703,8 @@ void CbmTrdHitDensityQa::Finish()
     return datarate / fBitPerHit;
   }
   Double_t CbmTrdHitDensityQa::TriggerCount2TriggerRate(Double_t count){
+//    if (fRatioTwoFiles)
+//      return count / Double_t(fEventCounter->GetEntries());
     return count / Double_t(fEventCounter->GetEntries()) * fEventRate;
   }
   Double_t CbmTrdHitDensityQa::TriggerRate2TriggerCount(Double_t rate){
