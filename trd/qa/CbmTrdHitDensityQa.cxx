@@ -399,7 +399,11 @@ void CbmTrdHitDensityQa::Finish()
     tempFile = new TFile(newpath,"update");
     if (fRatioTwoFiles) {
       tempFileNumerator   = new TFile("data/result_Numerator.root",  "read");
+      if (NULL == tempFileNumerator)
+	LOG(ERROR) << "CbmTrdHitRateFastQa:: data/result_Numerator.root not found"<< FairLogger::endl;
       tempFileDenominator = new TFile("data/result_Denominator.root","read");
+      if (NULL == tempFileDenominator)
+	LOG(ERROR) << "CbmTrdHitRateFastQa:: data/result_Denominator.root not found"<< FairLogger::endl;
     }
   } else
     tempFile = new TFile(newpath,"recreate");
@@ -426,8 +430,12 @@ void CbmTrdHitDensityQa::Finish()
     if (fPlotResults){
       if (fRatioTwoFiles) {
 	fModuleHitMapIt->second = (TH2I*)tempFileNumerator->Get("TrdHitDensityQa/Module/" + histName);
+	if (NULL == fModuleHitMapIt->second)
+	  LOG(ERROR) << "CbmTrdHitRateFastQa:: data/result_Numerator.root " << histName.Data() << " not found" << FairLogger::endl;
 	fModuleHitMapIt->second->Scale(100);
 	fModuleHitMapIt->second->Divide((TH2I*)tempFileDenominator->Get("TrdHitDensityQa/Module/" + histName));
+	if (NULL == fModuleHitMapIt->second)
+	  LOG(ERROR) << "CbmTrdHitRateFastQa:: data/result_Denominator.root " << histName.Data() << " not found" << FairLogger::endl;
       } else 
 	fModuleHitMapIt->second = (TH2I*)tempFile->Get("TrdHitDensityQa/Module/" + histName);
     } else
