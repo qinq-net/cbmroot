@@ -57,6 +57,7 @@ class CbmTrdHitDensityQa : public FairTask
   void SetTriggerMaxScale(Double_t max);
   void SetTriggerMinScale(Double_t min);
   void SetLogScale(Bool_t logScale);
+  void SetRatioTwoFiles(Bool_t ratioPlot);
  private:
 
   Double_t TriggerRate2DataRate(Double_t triggerrate);
@@ -74,6 +75,7 @@ class CbmTrdHitDensityQa : public FairTask
 
   Bool_t fNeighbourTrigger;
   Bool_t fPlotResults;
+  Bool_t fRatioTwoFiles;
 
   TClonesArray*     fDigis;       /** Input array of CbmTrdDigi **/
   TClonesArray*     fClusters; 

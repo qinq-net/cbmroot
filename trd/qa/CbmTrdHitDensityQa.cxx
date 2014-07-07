@@ -60,6 +60,7 @@ CbmTrdHitDensityQa::CbmTrdHitDensityQa()
    h1OptLinksModule(NULL),
    fNeighbourTrigger(true),
    fPlotResults(false),
+   fRatioTwoFiles(false),
    fDigis(NULL),
    fClusters(NULL),
    fDigiPar(NULL),
@@ -192,6 +193,11 @@ void CbmTrdHitDensityQa::SetTriggerMinScale(Double_t min){
 }
 void CbmTrdHitDensityQa::SetLogScale(Bool_t logScale){
   flogScale = logScale;
+}
+
+void CbmTrdHitDensityQa::SetRatioTwoFiles(Bool_t ratioPlot){
+  fRatioTwoFiles = ratioPlot;
+  fPlotResults = true;
 }
 
 void CbmTrdHitDensityQa::Exec(Option_t * option)
@@ -387,9 +393,15 @@ void CbmTrdHitDensityQa::Finish()
   }
   printf ("\n%s\n",newpath.Data());
   TFile *tempFile = NULL;
-  if (fPlotResults) 
+  TFile *tempFileNumerator = NULL;
+  TFile *tempFileDenominator = NULL;
+  if (fPlotResults) {
     tempFile = new TFile(newpath,"update");
-  else
+    if (fRatioTwoFiles) {
+      tempFileNumerator   = new TFile("data/result_Numerator.root",  "read");
+      tempFileDenominator = new TFile("data/result_Denominator.root","read");
+    }
+  } else
     tempFile = new TFile(newpath,"recreate");
   gDirectory = tempFile->CurrentDirectory();
   gDirectory->pwd();
@@ -411,9 +423,14 @@ void CbmTrdHitDensityQa::Finish()
        fModuleHitMapIt != fModuleHitMap.end(); ++fModuleHitMapIt) {
     TString histName = fModuleHitMapIt->second->GetName();
     //cout << histName << endl;
-    if (fPlotResults)
-      fModuleHitMapIt->second = (TH2I*)tempFile->Get("TrdHitDensityQa/Module/" + histName);
-    else
+    if (fPlotResults){
+      if (fRatioTwoFiles) {
+	fModuleHitMapIt->second = (TH2I*)tempFileNumerator->Get("TrdHitDensityQa/Module/" + histName);
+	fModuleHitMapIt->second->Scale(100);
+	fModuleHitMapIt->second->Divide((TH2I*)tempFileDenominator->Get("TrdHitDensityQa/Module/" + histName));
+      } else 
+	fModuleHitMapIt->second = (TH2I*)tempFile->Get("TrdHitDensityQa/Module/" + histName);
+    } else
       fModuleHitMapIt->second->Write("", TObject::kOverwrite);
     moduleAddress = fModuleHitMapIt->first;
     //printf("# ModuleAddress:     %8i",moduleAddress);
@@ -621,9 +638,11 @@ void CbmTrdHitDensityQa::Finish()
     LayerMapIt->second->Write("", TObject::kOverwrite);
     fStation =  LayerMapIt->first / 4 + 1;  // OK for SIS100 and SIS300
     fLayer   =  LayerMapIt->first % 4 + 1;  // 
-    if (fPlotResults)
+    if (fPlotResults){
       name.Form("pics/CbmTrdHitDensityQaFinal_S%i_L%i.png",fStation,fLayer);
-    else
+      if (fRatioTwoFiles)
+	name.Form("pics/CbmTrdHitDensityQaRatio_S%i_L%i.png",fStation,fLayer);
+    } else
       name.Form("pics/CbmTrdHitDensityQa_S%i_L%i.png",fStation,fLayer);
     LayerMapIt->second->SaveAs(name);
     name.ReplaceAll("png","pdf");
