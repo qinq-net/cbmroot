@@ -231,6 +231,7 @@ add_subdirectory (hadron)
 add_subdirectory (analysis)
 #add_subdirectory (vis)
 add_subdirectory (tracking)
+add_subdirectory (vc)
 
 Option(BUILD_UNITTESTS "Build all unit tests and add them as new tests" OFF)
 If(BUILD_UNITTESTS)
