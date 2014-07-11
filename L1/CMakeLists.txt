@@ -22,9 +22,12 @@ ${CBMROOT_SOURCE_DIR}/L1/L1Algo
 ${CBMROOT_SOURCE_DIR}/L1/OffLineInterface
 ${CBMROOT_SOURCE_DIR}/L1/ParticleFinder
 
+${CBMROOT_SOURCE_DIR}/vc/
+${CBMROOT_SOURCE_DIR}/vc/include/
+
 ${CBMROOT_SOURCE_DIR}/KF
 ${CBMROOT_SOURCE_DIR}/KF/KFQA
-${CBMROOT_SOURCE_DIR}/KF/KFParticlesFinder
+${CBMROOT_SOURCE_DIR}/KF/KFParticle
 ${CBMROOT_SOURCE_DIR}/KF/Interface
 
 ${CBMROOT_SOURCE_DIR}/sts
@@ -75,7 +78,6 @@ CbmL1ReadEvent.cxx
 
 CbmL1MCTrack.cxx
 
-CbmL1ParticlesFinder.cxx
 ParticleFinder/CbmL1PFFitter.cxx
 ParticleFinder/CbmL1PFMCParticle.cxx
 )
@@ -106,10 +108,9 @@ OffLineInterface/CbmL1StsTrackFinder.h
 #OffLineInterface/CbmL1SttTrackFinder.h
 #OffLineInterface/CbmL1SttTrack.h
 # L1Algo/L1Algo.h
-CbmL1PartEfficiencies.h
 )
 
-ADD_DEFINITIONS(-Wall -Wabi -Wsign-promo  -Wno-pmf-conversions -Wctor-dtor-privacy -Wreorder -Wno-deprecated -Wstrict-null-sentinel -Wno-non-template-friend  ) #   -Weffc++ -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast : wait for other parts of cbmroot\root. 
+ADD_DEFINITIONS(-Wall -Wabi -Wsign-promo  -Wno-pmf-conversions -Wctor-dtor-privacy -Wreorder -Wno-deprecated -Wstrict-null-sentinel -Wno-non-template-friend -Wno-parentheses ) #   -Weffc++ -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast : wait for other parts of cbmroot\root. 
 
 IF (SSE_FOUND)
   ADD_DEFINITIONS(-DHAVE_SSE)

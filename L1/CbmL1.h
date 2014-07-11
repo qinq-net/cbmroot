@@ -20,11 +20,7 @@
 #include "CbmL1Track.h"
 #include "CbmL1Vtx.h"
 
-#include "CbmKFParticle.h"
-
 #include "CbmL1MCTrack.h"
-#include "KFMCParticle.h"
-#include "KFParticleMatch.h"
 #include "CbmL1MCPoint.h"
 #include "CbmL1StsHit.h"
 
@@ -91,7 +87,6 @@ class CbmL1 : public FairTask
   public:
 
    L1Algo *algo; // for access to L1 Algorithm from L1::Instance
-   CbmL1ParticlesFinder *PF;
 
    vector<CbmL1Track> vRTracks; // reconstructed tracks
    
@@ -147,13 +142,8 @@ class CbmL1 : public FairTask
     /// Reconstruction Performance
    void TrackMatch();              // Procedure for match Reconstructed and MC Tracks. Should be called before Performances
    void EfficienciesPerformance(); // calculate efficiencies
-   void GetMCParticles();          // create MC particles from MC tracks
-   void FindReconstructableMCParticles();
-   void MatchParticles();          // Procedure for match Reconstructed and MC Particles. Should be called before Performances
-   void PartEffPerformance(); // calculate efficiencies
    void TrackFitPerformance();     // pulls & residuals. Can be called only after Performance()
    void HistoPerformance();        // fill some histograms and calculate efficiencies
-   void PartHistoPerformance();    // histograms for particle finder
 
       /// STandAlone Package service-functions
    void WriteSTAPGeoData(void *geo, int size); // create geo_algo.dat
@@ -199,19 +189,12 @@ class CbmL1 : public FairTask
    vector<CbmL1MCPoint> vMCPoints;
    vector<CbmL1MCTrack> vMCTracks;
    vector<int>          vHitMCRef; // indices of MCPoints in vMCPoints, indexed by index of hit in algo->vStsHits array. According to StsMatch. Used for IdealResponce
-
-  vector<CbmKFParticle>  vRParticles;      // reco particles
-  vector<KFMCParticle> vMCParticles;  // MC particles
-  vector<KFMatchParticles> MCtoRParticleId; // array for match
-  vector<KFMatchParticles> RtoMCParticleId; 
   
   TDirectory *histodir;
    
   static CbmL1 *fInstance;
 
  private:
-  void CheckMCParticleIsReconstructable(KFMCParticle &part); // recursive func, used in FindReconstructableMCParticles
-
   int fFindParticlesMode;
 
   TString fMatBudgetFileName;

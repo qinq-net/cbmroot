@@ -32,7 +32,7 @@
 #include "TDatabasePDG.h"
 
 #include "CbmKFVertex.h"
-#include "CbmKFParticleDatabase.h"
+#include "KFParticleDatabase.h"
 
 using std::vector;
 
@@ -963,7 +963,7 @@ void CbmL1PFFitter::GetChiToVertex(vector<CbmStsTrack> &Tracks, vector<L1FieldRe
       T.C43[iVec] = t[iVec]->GetParamFirst()->GetCovariance(4,3);
       T.C44[iVec] = t[iVec]->GetParamFirst()->GetCovariance(4,4);
 //      float mass = TDatabasePDG::Instance()->GetParticle(t[iVec]->GetPidHypo())->Mass();
-      const float mass = CbmKFParticleDatabase::Instance()->GetMass(t[iVec]->GetPidHypo());
+      const float mass = KFParticleDatabase::Instance()->GetMass(t[iVec]->GetPidHypo());
       mass2[iVec] = mass*mass;
 
       int nHitsTrackMvd = t[iVec]->GetNofMvdHits();

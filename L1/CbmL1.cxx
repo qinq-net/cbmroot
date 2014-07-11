@@ -31,8 +31,6 @@
 #include "CbmStsFindTracks.h"
 #include "CbmKF.h"
 
-#include "CbmL1ParticlesFinder.h"
-
 #include "TVector3.h"
 #include "TVectorD.h"
 #include "TMatrixD.h"
@@ -58,7 +56,6 @@ CbmL1 *CbmL1::fInstance = 0;
 
 CbmL1::CbmL1():
     algo(0), // for access to L1 Algorithm from L1::Instance
-    PF(0),
 vRTracks(), // reconstructed tracks
 vHitStore(),
 NStation(0), NMvdStations(0), NStsStations(0), // number of detector stations (all\sts\mvd)
@@ -87,23 +84,16 @@ vStsHits(),
 vMCPoints(),
 vMCTracks(),
 vHitMCRef(),
-vRParticles(),
-vMCParticles(),
-MCtoRParticleId(),
-RtoMCParticleId(),
 histodir(0),
     fFindParticlesMode(),
   fMatBudgetFileName(""),
   fExtrapolateToTheEndOfSTS(false)
 {
   if( !fInstance ) fInstance = this;
-  PF = new CbmL1ParticlesFinder();
 }
 
 CbmL1::CbmL1(const char *name, Int_t iVerbose, Int_t _fPerformance, int fSTAPDataMode_, TString fSTAPDataDir_, int findParticleMode_):FairTask(name,iVerbose),
-algo(0), // for access to L1 Algorithm from L1::Instance
-PF(0),
-                                                                                                                                      
+algo(0), // for access to L1 Algorithm from L1::Instance                                                                                                                                      
 vRTracks(), // reconstructed tracks
 vHitStore(),
 NStation(0), NMvdStations(0), NStsStations(0), // number of detector stations (all\sts\mvd)
@@ -132,17 +122,12 @@ vStsHits(),
 vMCPoints(),
 vMCTracks(),
 vHitMCRef(),
-vRParticles(),
-vMCParticles(),
-MCtoRParticleId(),
-RtoMCParticleId(),
 histodir(0),
     fFindParticlesMode(findParticleMode_),
   fMatBudgetFileName(""),
   fExtrapolateToTheEndOfSTS(false)
 {
   if( !fInstance ) fInstance = this;
-  PF = new CbmL1ParticlesFinder();
 }
 
 CbmL1::~CbmL1()
@@ -646,32 +631,17 @@ void CbmL1::Reconstruct()
   }
 
   //Find Primary vertex, Ks, Lambdas,...
-//  static CbmL1ParticlesFinder PF;
 
     // output performance
   if (fPerformance){
     if( fVerbose>1 ) cout<<"Performance..."<<endl;
     TrackMatch();
   }
-
-  if ( fFindParticlesMode ) {
-      //Find Primary vertex, Ks, Lambdas,...
-    PF->FindParticles(vRTracks);
-    vRParticles = PF->GetParticles();
-  }
   
   if (fPerformance){
     EfficienciesPerformance();
     HistoPerformance();
     TrackFitPerformance();
-
-    if ( fFindParticlesMode ) {
-      GetMCParticles();
-      FindReconstructableMCParticles();
-      MatchParticles();
-      PartEffPerformance();
-      PartHistoPerformance();
-    }
 ///    WriteSIMDKFData();
   }
   if( fVerbose>1 ) cout<<"End of L1"<<endl;
