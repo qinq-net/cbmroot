@@ -18,10 +18,7 @@
 #include "CbmL1Def.h"
 
 
-#include "KFParticleFinder.h"
-#include "KFParticleSIMD.h"
 #include "CbmKFVertex.h"
-#include "CbmKFTrack.h"
 #include "CbmStsTrack.h"
 
 #include "TClonesArray.h"
@@ -34,6 +31,8 @@
 #include "TSpline.h"
 
 #include "CbmVertex.h"
+
+#include "L1Field.h"
 
 #include "TStopwatch.h"
 #include <iostream>

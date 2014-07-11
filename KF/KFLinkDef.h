@@ -30,21 +30,24 @@
 #pragma link C++ class  CbmEcalTrackExtrapolationKF+;
 #pragma link C++ class  CbmTrdTrackFitterKF+;
 #pragma link C++ class  CbmGlobalTrackFitterKF+;
-#pragma link C++ class  CbmKFParticle+;
+// #pragma link C++ class  CbmKFParticle+;
 
-//KFParticle
-#pragma link C++ class  KFParticleBase+;
-#pragma link C++ class  KFParticle+;
+// //KFParticle
+// #pragma link C++ class  KFParticleBase+;
+// #pragma link C++ class  KFParticle+;
+#pragma link C++ class  KFPartEfficiencies+;
+
 
 #pragma link C++ class  CbmThermalModelNoFlow+;
-#pragma link C++ class  CbmKFParticlesFinder+;
 //KFQA
 #pragma link C++ class  CbmKFPartEfficiencies+;
+
 #pragma link C++ class  CbmKFTrErrMCPoints+;
 #pragma link C++ class  CbmKFTrackFitQA+;
-#pragma link C++ class  KFParticleMatch+;
-#pragma link C++ class  KFMCParticle+;
-#pragma link C++ class  CbmKFParticlesFinderQA+;
+
+#pragma link C++ class CbmKFParticleFinder+;
+#pragma link C++ class CbmKFParticleFinderPID+;
+#pragma link C++ class CbmKFParticleFinderQA+;
 
 #endif
 

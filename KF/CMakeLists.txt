@@ -20,6 +20,7 @@ ${CBMROOT_SOURCE_DIR}/KF/Interface
 ${CBMROOT_SOURCE_DIR}/KF/KFModelParameters
 ${CBMROOT_SOURCE_DIR}/KF/KFQA
 ${CBMROOT_SOURCE_DIR}/KF/KFParticle
+${CBMROOT_SOURCE_DIR}/KF/KFParticlePerformance
 ${CBMROOT_SOURCE_DIR}/KF/KFParticlesFinder
 
 ${CBMROOT_SOURCE_DIR}/sts 
@@ -38,6 +39,8 @@ ${CBMROOT_SOURCE_DIR}/tof/TofParam
 ${CBMROOT_SOURCE_DIR}/ecal
 ${CBMROOT_SOURCE_DIR}/stt
 
+${CBMROOT_SOURCE_DIR}/vc/
+${CBMROOT_SOURCE_DIR}/vc/include/
 )
 
 include_directories( ${INCLUDE_DIRECTORIES})
@@ -72,22 +75,32 @@ Interface/CbmStsKFTrackFitter.cxx
 Interface/CbmStsKFSecondaryVertexFinder.cxx 
 Interface/CbmTrdTrackFitterKF.cxx 
 Interface/CbmGlobalTrackFitterKF.cxx
-CbmKFParticle.cxx
-CbmKFParticle_simd.cxx
-CbmKFParticleInterface.cxx
+# CbmKFParticle.cxx
+# CbmKFParticle_simd.cxx
+# CbmKFParticleInterface.cxx
 KFModelParameters/CbmThermalModelNoFlow.cxx
 KFQA/CbmKFTrErrMCPoints.cxx
 KFQA/CbmKFTrackFitQA.cxx
-KFQA/KFParticleMatch.cxx
-KFQA/KFMCParticle.cxx
-KFQA/CbmKFParticlesFinderQA.cxx
-KFParticle/KFParticleBase.cxx
-KFParticle/KFParticle.cxx
-KFParticle/KFParticleBaseSIMD.cxx
-KFParticle/KFParticleSIMD.cxx
-KFParticle/KFParticleFinder.cxx
-KFParticlesFinder/CbmKFParticlesFinder.cxx
-KFParticlesFinder/CbmKFParticleDatabase.cxx
+# KFParticlesFinder/CbmKFParticleDatabase.cxx
+   KFParticle/KFParticleDatabase.cxx
+   KFParticle/KFParticleBase.cxx
+   KFParticle/KFParticle.cxx
+   KFParticle/KFPTrack.cxx
+   KFParticle/KFPVertex.cxx
+   KFParticle/KFPTrackVector.cxx
+   KFParticle/KFParticleBaseSIMD.cxx
+   KFParticle/KFParticleSIMD.cxx
+   KFParticle/KFVertex.cxx 
+   KFParticle/KFParticlePVReconstructor.cxx
+   KFParticle/KFParticleFinder.cxx
+   KFParticle/KFParticleTopoReconstructor.cxx
+   KFParticlePerformance/KFMCVertex.cxx
+   KFParticlePerformance/KFMCParticle.cxx
+   KFParticlePerformance/KFParticlePerformanceBase.cxx
+   KFParticlePerformance/KFTopoPerformance.cxx
+   CbmKFParticleFinder.cxx
+   CbmKFParticleFinderPID.cxx
+   CbmKFParticleFinderQA.cxx
 )
 
 
@@ -113,21 +126,26 @@ Interface/CbmStsKFTrackFitter.h
 Interface/CbmStsKFSecondaryVertexFinder.h
 Interface/CbmTrdTrackFitterKF.h
 Interface/CbmGlobalTrackFitterKF.h
-CbmKFParticle.h
+# CbmKFParticle.h
 KFModelParameters/CbmThermalModelNoFlow.h
 KFQA/CbmKFTrErrMCPoints.h
 KFQA/CbmKFTrackFitQA.h
-KFQA/KFParticleMatch.h
-KFQA/KFMCParticle.h
-KFQA/CbmKFParticlesFinderQA.h
 KFQA/CbmKFPartEfficiencies.h
-KFParticle/KFParticleBase.h
-KFParticle/KFParticle.h
-KFParticlesFinder/CbmKFParticlesFinder.h
-KFParticlesFinder/CbmKFParticleDatabase.h
+# KFParticlesFinder/CbmKFParticleDatabase.h
+   KFParticlePerformance/KFPartEfficiencies.h
+   KFParticlePerformance/KFPVEfficiencies.h
+   KFParticlePerformance/KFPartMatch.h
+   KFParticlePerformance/KFMCTrack.h
+   KFParticlePerformance/KFMCVertex.h
+   KFParticlePerformance/KFMCParticle.h
+   KFParticlePerformance/KFParticlePerformanceBase.h
+   KFParticlePerformance/KFTopoPerformance.h
+   CbmKFParticleFinder.h
+   CbmKFParticleFinderPID.h
+   CbmKFParticleFinderQA.h
 )
 
-ADD_DEFINITIONS(-Wall -Wabi -Wsign-promo  -Wno-pmf-conversions -Wctor-dtor-privacy -Wreorder -Wno-deprecated -Wstrict-null-sentinel -Wno-non-template-friend ) # -Weffc++ -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast   : wait for other parts of cbmroot\root.
+ADD_DEFINITIONS(-Wall -Wabi -Wsign-promo  -Wno-pmf-conversions -Wctor-dtor-privacy -Wreorder -Wno-deprecated -Wstrict-null-sentinel -Wno-non-template-friend -Wno-pragmas -Wno-parentheses -DDO_TPCCATRACKER_EFF_PERFORMANCE -DNonhomogeneousField -DCBM -DUSE_TIMERS) # -Weffc++ -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast   : wait for other parts of cbmroot\root.
 
 IF (SSE_FOUND)
   Message(STATUS "KF will be compiled with SSE support")
@@ -143,7 +161,7 @@ ENDIF (SSE_FOUND)
 set(LINKDEF KFLinkDef.h)
 Set(LIBRARY_NAME KF)
 Set(DEPENDENCIES
-    Ecal CbmBase CbmData Base
+    Ecal CbmBase CbmData Base Vc
 )
 
 GENERATE_LIBRARY()
