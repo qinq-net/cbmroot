@@ -13,7 +13,7 @@ class CbmKFVertex :public CbmKFVertexInterface {
  public:  
 
   CbmKFVertex(): fX(0), fY(0), fZ(0), fChi2(0), fNDF(0), fNTracks(0) { for( int i = 0; i < 6; ++i ) fC[i] = 0; };
-  CbmKFVertex(CbmVertex &v): fX(0), fY(0), fZ(0), fChi2(0), fNDF(0), fNTracks(0){ SetVertex(v); }
+  CbmKFVertex(CbmVertex &v): fX(0), fY(0), fZ(0), fChi2(-100), fNDF(0), fNTracks(0){ SetVertex(v); }
   ~CbmKFVertex(){}
 
   Double_t &GetRefX(){ return fX; } 

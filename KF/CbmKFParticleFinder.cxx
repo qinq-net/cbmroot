@@ -54,6 +54,8 @@ InitStatus CbmKFParticleFinder::Init()
     return kERROR;
   }
   
+  fPrimVtx = (CbmVertex*) ioman->GetObject("PrimaryVertex");
+
   return kSUCCESS;
 }
 
@@ -108,6 +110,9 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
   CbmL1PFFitter fitter;
   vector<float> vChiToPrimVtx;
   CbmKFVertex kfVertex;
+  if(fPrimVtx)
+    kfVertex = CbmKFVertex(*fPrimVtx);
+  
   vector<L1FieldRegion> vField;
   fitter.GetChiToVertex(vRTracks, vField, vChiToPrimVtx, kfVertex, 3);
   
@@ -216,10 +221,12 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
   //TODO replace with a real PV reconstruction
   {
     KFPVertex primVtx_tmp;
-    primVtx_tmp.SetXYZ(0, 0, 0);
-    primVtx_tmp.SetCovarianceMatrix( 0, 0, 0, 0, 0, 0 );
-    primVtx_tmp.SetNContributors(0);
-    primVtx_tmp.SetChi2(-100);
+    primVtx_tmp.SetXYZ(kfVertex.GetRefX(), kfVertex.GetRefY(), kfVertex.GetRefZ());
+    primVtx_tmp.SetCovarianceMatrix( kfVertex.GetCovMatrix()[0], kfVertex.GetCovMatrix()[1], 
+                                     kfVertex.GetCovMatrix()[2], kfVertex.GetCovMatrix()[3], 
+                                     kfVertex.GetCovMatrix()[4], kfVertex.GetCovMatrix()[5] );
+    primVtx_tmp.SetNContributors( kfVertex.GetRefNTracks() );
+    primVtx_tmp.SetChi2( kfVertex.GetRefChi2() );
 
     vector<short int> pvTrackIds;
     KFVertex pv(primVtx_tmp);

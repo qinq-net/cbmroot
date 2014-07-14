@@ -13,6 +13,7 @@
 class CbmKFParticleFinderPID;
 class KFParticleTopoReconstructor;
 class TClonesArray;
+class CbmVertex;
 
 class CbmKFParticleFinder : public FairTask {
  public:
@@ -37,7 +38,8 @@ class CbmKFParticleFinder : public FairTask {
 
   //input branches
   TClonesArray *fTrackArray;
- 
+  CbmVertex* fPrimVtx;
+
   //topology reconstructor
   KFParticleTopoReconstructor *fTopoReconstructor;
   
