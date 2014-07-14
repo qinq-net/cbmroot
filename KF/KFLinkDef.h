@@ -30,7 +30,7 @@
 #pragma link C++ class  CbmEcalTrackExtrapolationKF+;
 #pragma link C++ class  CbmTrdTrackFitterKF+;
 #pragma link C++ class  CbmGlobalTrackFitterKF+;
-#pragma link C++ class  CbmKFParticle+;
+// #pragma link C++ class  CbmKFParticle+;
 
 // //KFParticle
 // #pragma link C++ class  KFParticleBase+;

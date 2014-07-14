@@ -75,7 +75,7 @@ Interface/CbmStsKFTrackFitter.cxx
 Interface/CbmStsKFSecondaryVertexFinder.cxx 
 Interface/CbmTrdTrackFitterKF.cxx 
 Interface/CbmGlobalTrackFitterKF.cxx
-CbmKFParticle.cxx
+# CbmKFParticle.cxx
 # CbmKFParticle_simd.cxx
 # CbmKFParticleInterface.cxx
 KFModelParameters/CbmThermalModelNoFlow.cxx
@@ -126,7 +126,7 @@ Interface/CbmStsKFTrackFitter.h
 Interface/CbmStsKFSecondaryVertexFinder.h
 Interface/CbmTrdTrackFitterKF.h
 Interface/CbmGlobalTrackFitterKF.h
-CbmKFParticle.h
+# CbmKFParticle.h
 KFModelParameters/CbmThermalModelNoFlow.h
 KFQA/CbmKFTrErrMCPoints.h
 KFQA/CbmKFTrackFitQA.h
