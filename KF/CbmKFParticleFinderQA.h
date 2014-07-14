@@ -24,6 +24,7 @@ class CbmKFParticleFinderQA : public FairTask {
                         TString outFileName="CbmKFParticleFinderQA.root");
   ~CbmKFParticleFinderQA();
 
+  void SetEffFileName(const TString& name) { fEfffileName = name; }
   void SetMCTrackBranchName(const TString& name)   { fMCTracksBranchName = name;  }
   void SetTrackMatchBranchName(const TString& name)   { fTrackMatchBranchName = name;  }
 
