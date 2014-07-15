@@ -1266,7 +1266,7 @@ TGeoVolume* ConstructModule(const char* name,
 					     cableZ / 2.);
     // add color to cables
     cable->SetLineColor(kOrange);
-//    cable->SetTransparency(50);
+    //    cable->SetTransparency(80);
     Double_t cableXpos = 0.;
     Double_t cableYpos = sectorY + 0.5 * cableY - 0.5 * moduleY;
     Double_t cableZpos = 0.;
@@ -1564,7 +1564,9 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
   TString tubName(name);
   tubName += "_tub";
   TString expression = boxName + "-" + tubName;
-  TGeoTube* statTub = new TGeoTube(tubName, 0., rHole, statZ/2.);
+  //  TGeoTube* statTub = new TGeoTube(tubName, 0., rHole, statZ/2.);
+  //  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.);
+  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.+.1);  // .1 opens the hole
   statShape = new TGeoCompositeShape(name, expression.Data());
   TGeoVolume* station = new TGeoVolume(name, statShape, gStsMedium);
 
