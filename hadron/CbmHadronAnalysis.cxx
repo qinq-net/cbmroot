@@ -229,6 +229,13 @@ void CbmHadronAnalysis::CreateHistogramms()
 
   // GlobalTrack level
 
+  fa_plab_sts_pip  = new TH1F("plab_sts_pip","MCTrack-sts pi-plus; p_{Lab}(GeV/c)",100,0.,10.);
+  fa_plab_sts_pim  = new TH1F("plab_sts_pim","MCTrack-sts pi-minus; p_{Lab}(GeV/c)",100,0.,10.);
+  fa_plab_sts_kp   = new TH1F("plab_sts_kp","MCTrack-sts k-plus; p_{Lab}(GeV/c)",100,0.,10.);
+  fa_plab_sts_km   = new TH1F("plab_sts_km","MCTrack-sts k-minus; p_{Lab}(GeV/c)",100,0.,10.);
+  fa_plab_sts_p    = new TH1F("plab_sts_p","MCTrack-sts proton; p_{Lab}(GeV/c)",100,0.,10.);
+  fa_plab_sts_pbar = new TH1F("plab_sts_pbar","MCTrack-sts pbar; p_{Lab}(GeV/c)",100,0.,10.);
+
   fa_ptm_rap_sts_pip = new TH2F("ptm_rap_sts_pip","MCTrack-sts pi-plus; y; p_{T}/m",ptm_nbx,ymin,ymax,ptm_nby,0.,ptmmax);
   fa_ptm_rap_sts_pim = new TH2F("ptm_rap_sts_pim","MCTrack-sts pi-minus;y; p_{T}/m",ptm_nbx,ymin,ymax,ptm_nby,0.,ptmmax);
   fa_ptm_rap_sts_kp  = new TH2F("ptm_rap_sts_kp", "MCTrack-sts k-plus;  y; p_{T}/m",ptm_nbx,ymin,ymax,ptm_nby,0.,ptmmax);
@@ -639,6 +646,8 @@ void CbmHadronAnalysis::Exec(Option_t* option)
 {
     // Task execution
 
+  cout << "<D> HadronAnalysis::Exec starting "<<endl;
+
     // Declare variables outside the loop
     CbmMCTrack  *MCTrack;
     CbmStsTrack *StsTrack;
@@ -664,7 +673,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
     Int_t NMASS=3;
     Float_t refMass[3]={0.139, 0.494, 0.938};
   
-    Int_t verbose=0;
+    Int_t verbose=1;
 
     if(GetBSelMax()>0.) {
       if(fMCEventHeader->GetB()>GetBSelMax()){return;};
@@ -682,6 +691,16 @@ void CbmHadronAnalysis::Exec(Option_t* option)
     nTofTracks  = fTofTracks->GetEntriesFast();
     nGlobTracks = fGlobalTracks->GetEntriesFast();
 
+
+    if(verbose>0){ //nh-debug 
+      cout << "<D> HadronAnalysis::Exec starting with MCtrks "<<nMCTracks
+	   << ", TofPoi " << nTofPoints
+	   << ", TofHit " << nTofHits
+	   << ", TofTrk " << nTofTracks
+	   << ", GlbTrk " << nGlobTracks
+	   << endl;
+      cout << "-D- b = "<<fMCEventHeader->GetB()<< ", phi = " << fMCEventHeader->GetPhi() << endl; 
+    }
     // some local arrays 
 
     Int_t MAXNHT=50;
@@ -691,16 +710,6 @@ void CbmHadronAnalysis::Exec(Option_t* option)
     Int_t IndTofTracks[nGlobTracks][MAXNHT][MAXNHT]; // array of TofTrack Indices that selected TofHit is assigned to
     Int_t NTofHitTMul[nTofHits];                     // number of GlobalTracks assigned to a specific TofHit
     Int_t IndTofTrack_TofHit[nTofHits][MAXNHT];      // index of TofTracks assigned to specific TofHit
-
-    if(verbose>0){ //nh-debug 
-      cout << "<D> HadronAnalysis::Exec "<<nMCTracks
-	   << "," << nTofPoints
-	   << "," << nTofHits
-	   << "," << nTofTracks
-	   << "," << nGlobTracks
-	   << endl;
-      cout << "-D- b = "<<fMCEventHeader->GetB()<< ", phi = " << fMCEventHeader->GetPhi() << endl; 
-    }
 
     // generator level 
     fa_mul_b_gen->Fill(fMCEventHeader->GetB(),nMCTracks);
@@ -936,11 +945,11 @@ void CbmHadronAnalysis::Exec(Option_t* option)
       while(delrp<-180.) {delrp+=360.;}
       while(delrp>180.)  {delrp-=360.;}
       fa_drp_b_gen->Fill(fMCEventHeader->GetB(),delrp);
-    }
-    phirp=RADDEG*atan2(Qy1+Qy2,Qx1+Qx2);  // full reaction plane
-    while(phirp<-180.) {phirp+=360.;}
-    while(phirp>180.)  {phirp-=360.;}
-    if (fflowFile!=NULL) { // RP flattening 
+
+      phirp=RADDEG*atan2(Qy1+Qy2,Qx1+Qx2);  // full reaction plane
+      while(phirp<-180.) {phirp+=360.;}
+      while(phirp>180.)  {phirp-=360.;}
+      if (fflowFile!=NULL) { // RP flattening 
        TH1F *phirp_gen_fpar = (TH1F *)fflowFile->Get("phirp_gen_fpar");
        Float_t dphir=0.;
        for (int j=0; j<4; j++){
@@ -955,18 +964,18 @@ void CbmHadronAnalysis::Exec(Option_t* option)
        phirp+=dphir*RADDEG;
        while(phirp<-180.) {phirp+=360.;}
        while(phirp>180.)  {phirp-=360.;}
-    } // RP flattening end 
-    delrp=phirp - RADDEG*fMCEventHeader->GetPhi();
-    while(delrp<-180.) {delrp+=360.;}
-    while(delrp> 180.) {delrp-=360.;}
+      } // RP flattening end 
+      delrp=phirp - RADDEG*fMCEventHeader->GetPhi();
+      while(delrp<-180.) {delrp+=360.;}
+      while(delrp> 180.) {delrp-=360.;}
 
-    fa_phirp_gen->Fill(phirp);
-    fa_delrp_b_gen->Fill(fMCEventHeader->GetB(),delrp);
-    fa_cdelrp_b_gen->Fill(fMCEventHeader->GetB(),TMath::Cos(delrp/RADDEG));
-    fa_phirp_b_gen->Fill(fMCEventHeader->GetB(),phirp);
-    fa_phgrp_b_gen->Fill(fMCEventHeader->GetB(),RADDEG*fMCEventHeader->GetPhi());
-    fa_phphrp_gen->Fill(phirp,RADDEG*fMCEventHeader->GetPhi());
-
+      fa_phirp_gen->Fill(phirp);
+      fa_delrp_b_gen->Fill(fMCEventHeader->GetB(),delrp);
+      fa_cdelrp_b_gen->Fill(fMCEventHeader->GetB(),TMath::Cos(delrp/RADDEG));
+      fa_phirp_b_gen->Fill(fMCEventHeader->GetB(),phirp);
+      fa_phgrp_b_gen->Fill(fMCEventHeader->GetB(),RADDEG*fMCEventHeader->GetPhi());
+      fa_phphrp_gen->Fill(phirp,RADDEG*fMCEventHeader->GetPhi());
+    } // Np1 && Np2 end 
 
 // TofPoint level 
 
@@ -1319,20 +1328,21 @@ void CbmHadronAnalysis::Exec(Option_t* option)
      //cout << "Redo("<<nT0It<<"): T0MIN = "<<T0MIN << ", T0RMS = "<< T0RMS << ", nfh = "
      //     << nfh << " lmin = "<<lmin << ", lmax = "<<lmax <<endl;   
     }
-
+    Int_t lp=-1;
     for (Int_t j =0; j<nTofHits; j++) {
       //cout << "<D-hit> j= " << j << endl;
       TofHit   = (CbmTofHit*) fTofHits->At(j);
       Int_t l = TofHit->GetRefId();  // pointer to Digi
-      CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(l);
-      // take first digi's point link
-      CbmLink L0 = digiMatch->GetLink(0); 
-      Int_t iDigInd0=L0.GetIndex(); 
-      CbmMatch* poiMatch=(CbmMatch *)fTofDigiMatchPointsColl->At(iDigInd0);
-      CbmLink LP = poiMatch->GetLink(0); 
-      Int_t lp=LP.GetIndex();
-      /*
-      for (Int_t iLink=0; iLink<digiMatch->GetNofLinks(); iLink+=2){  // loop over digis
+      if(fTofDigiMatchColl != NULL) {
+       CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(l);
+       // take first digi's point link
+       CbmLink L0 = digiMatch->GetLink(0); 
+       Int_t iDigInd0=L0.GetIndex(); 
+       CbmMatch* poiMatch=(CbmMatch *)fTofDigiMatchPointsColl->At(iDigInd0);
+       CbmLink LP = poiMatch->GetLink(0); 
+       lp=LP.GetIndex();
+       /*
+       for (Int_t iLink=0; iLink<digiMatch->GetNofLinks(); iLink+=2){  // loop over digis
            CbmLink L0 = digiMatch->GetLink(iLink);   //vDigish.at(ivDigInd);
 	   Int_t iDigInd0=L0.GetIndex(); 
            Int_t iDigInd1=(digiMatch->GetLink(iLink+1)).GetIndex(); //vDigish.at(ivDigInd+1);
@@ -1342,9 +1352,11 @@ void CbmHadronAnalysis::Exec(Option_t* option)
             CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
             CbmTofDigiExp *pDig1 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd1));
 	   }
+       }
+       */
+      }else{
+	lp=l;
       }
-      */
- 
       TofPoint = (CbmTofPoint*) fTofPoints->At(lp);
       Int_t k = TofPoint->GetTrackID();
       //cout << "<D-hit> k= " << k << endl;
@@ -2166,26 +2178,32 @@ void CbmHadronAnalysis::Exec(Option_t* option)
 	switch(pdgCode) {
 	 case 211 : {
 	  fa_ptm_rap_sts_pip->Fill(MCTrack->GetRapidity(),MCTrack->GetPt()/MCTrack->GetMass());
+	  fa_plab_sts_pip->Fill(p_MC);
 	  break;
 	 };
 	 case -211 : {
 	  fa_ptm_rap_sts_pim->Fill(MCTrack->GetRapidity(),MCTrack->GetPt()/MCTrack->GetMass());
+	  fa_plab_sts_pim->Fill(p_MC);
 	  break;
 	 };
 	 case 321 : {
 	  fa_ptm_rap_sts_kp->Fill(MCTrack->GetRapidity(),MCTrack->GetPt()/MCTrack->GetMass());
+	  fa_plab_sts_kp->Fill(p_MC);
 	  break;
 	 };
 	 case -321 : {
 	  fa_ptm_rap_sts_km->Fill(MCTrack->GetRapidity(),MCTrack->GetPt()/MCTrack->GetMass());
+	  fa_plab_sts_km->Fill(p_MC);
 	  break;
 	 };
 	 case 2212 : {
 	  fa_ptm_rap_sts_p->Fill(MCTrack->GetRapidity(),MCTrack->GetPt()/MCTrack->GetMass());
+	  fa_plab_sts_p->Fill(p_MC);
           break;
 	 };
 	 case -2212 : {
 	  fa_ptm_rap_sts_pbar->Fill(MCTrack->GetRapidity(),MCTrack->GetPt()/MCTrack->GetMass());
+	  fa_plab_sts_pbar->Fill(p_MC);
 	  break;
 	 };
  	 case 1000010020 : {  // deuteron
@@ -2243,7 +2261,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
          Int_t iDigInd=L.GetIndex(); 
          CbmMatch* poiMatch=(CbmMatch *)fTofDigiMatchPointsColl->At(iDigInd);
          CbmLink LP = poiMatch->GetLink(0); 
-         Int_t lp=LP.GetIndex();
+         lp=LP.GetIndex();
 	 if(lp!=iPoiArr[iPoiMul]){
 	   //	   cout << Form("<D> HadronAnalysis: gt %d, Hit %d, Link %d, poi %d, lpoi %d, PoiMul %d",
 	   //		i,j,iLink,lp, iPoiArr[iPoiMul], iPoiMul)<<endl;
@@ -2563,6 +2581,9 @@ void CbmHadronAnalysis::Exec(Option_t* option)
        } 
       }
     }
+    if (verbose>10) {
+      cout << "<D> RP analysis " << Np1<<", "<<Np2<< endl;
+    }
     if (Np1>0 && Np2>0){
       phirp1=atan2(Qy1,Qx1);
       phirp2=atan2(Qy2,Qx2);
@@ -2593,11 +2614,11 @@ void CbmHadronAnalysis::Exec(Option_t* option)
       if(delrp<-180.) delrp+=360.;
       if(delrp>180.)  delrp-=360.;
       fa_drp_b_glo->Fill(fMCEventHeader->GetB(),delrp);
-    }
-    phirp=RADDEG*atan2(Qy1+Qy2,Qx1+Qx2);  // full reaction plane
-    while(phirp<-180.) {phirp+=360.;}
-    while(phirp>180.)  {phirp-=360.;}
-    if (fflowFile!=NULL) { // RP flattening 
+
+      phirp=RADDEG*atan2(Qy1+Qy2,Qx1+Qx2);  // full reaction plane
+      while(phirp<-180.) {phirp+=360.;}
+      while(phirp>180.)  {phirp-=360.;}
+      if (fflowFile!=NULL) { // RP flattening 
        TH1F *phirp_glo_fpar = (TH1F *)fflowFile->Get("phirp_glo_fpar");
        Float_t dphir=0.;
        for (int j=0; j<4; j++){
@@ -2612,20 +2633,21 @@ void CbmHadronAnalysis::Exec(Option_t* option)
        phirp+=dphir*RADDEG;
        while(phirp<-180.) {phirp+=360.;}
        while(phirp>180.)  {phirp-=360.;}
-    } // RP flattening end 
-    delrp=phirp - RADDEG*fMCEventHeader->GetPhi();
-    while(delrp<-180.) {delrp+=360.;}
-    while(delrp> 180.) {delrp-=360.;}
-    fa_phirp_glo->Fill(phirp);          // 1D histo
-    fa_delrp_b_glo->Fill(fMCEventHeader->GetB(),delrp);
-    fa_cdelrp_b_glo->Fill(fMCEventHeader->GetB(),TMath::Cos(delrp/RADDEG));
+      } // RP flattening end 
+      delrp=phirp - RADDEG*fMCEventHeader->GetPhi();
+      while(delrp<-180.) {delrp+=360.;}
+      while(delrp> 180.) {delrp-=360.;}
+      fa_phirp_glo->Fill(phirp);          // 1D histo
+      fa_delrp_b_glo->Fill(fMCEventHeader->GetB(),delrp);
+      fa_cdelrp_b_glo->Fill(fMCEventHeader->GetB(),TMath::Cos(delrp/RADDEG));
 
-    fa_mul_b_had->Fill(fMCEventHeader->GetB(),NGTofTrack);
+      fa_mul_b_had->Fill(fMCEventHeader->GetB(),NGTofTrack);
+    }
 
 // Hadron level 
 
 
-    if(0 == (fEvents%100)) {
+    if(0 == (fEvents%1)) {
 	cout << "-I- CbmHadronAnalysis::Exec : "
              << "event " << fEvents << " processed." << endl;
     }

@@ -70,6 +70,13 @@ private:
     TH2F *fa_ptm_rap_gen_a;
     TH2F *fa_ptm_rap_gen_imf;
 
+    TH1F *fa_plab_sts_pip;
+    TH1F *fa_plab_sts_pim;
+    TH1F *fa_plab_sts_kp;
+    TH1F *fa_plab_sts_km;
+    TH1F *fa_plab_sts_p;
+    TH1F *fa_plab_sts_pbar;
+
     TH2F *fa_ptm_rap_sts_pip;
     TH2F *fa_ptm_rap_sts_pim;
     TH2F *fa_ptm_rap_sts_kp;
