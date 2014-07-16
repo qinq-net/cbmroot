@@ -44,9 +44,10 @@ class CbmTrdDigitizerPRF : public FairTask {
   virtual void Exec(Option_t * option);
 
   void SetTriangularPads(Bool_t triangles);
-
+  void SetNCluster(Int_t nCluster);
   void SetNoiseLevel(Double_t sigma_keV);
   void SetTriggerThreshold(Double_t minCharge); //only for debugging. has no impact on the output!!!!
+  void SetPadPlaneScanArea(Int_t column, Int_t row);
  private:
 
   CbmTrdDigitizerPRF& operator=(const CbmTrdDigitizerPRF&);
@@ -73,6 +74,10 @@ class CbmTrdDigitizerPRF : public FairTask {
   TRandom3 *fNoise;
   Double_t fMinimumChargeTH;
   Double_t fTime;
+
+  Int_t fnClusterConst;
+  Int_t fnScanRowConst;
+  Int_t fnScanColConst;
   Int_t fnRow;
   Int_t fnCol;
   Int_t fLayerId;
