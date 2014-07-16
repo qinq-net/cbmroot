@@ -25,7 +25,7 @@
 using std::vector;
 
 CbmKFParticleFinder::CbmKFParticleFinder(const char* name, Int_t iVerbose):
-  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fPID(0)
+  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fPVFindMode(1), fPID(0)
 {
   fTopoReconstructor = new KFParticleTopoReconstructor;
 }
@@ -66,7 +66,7 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
   vector<CbmStsTrack> vRTracks(fTrackArray->GetEntriesFast());
   vector<int> pdg(fTrackArray->GetEntriesFast(), -1);
   vector<int> trackId(fTrackArray->GetEntriesFast(), -1);
-
+    
   for(int iTr=0; iTr<fTrackArray->GetEntriesFast(); iTr++)
   {
     CbmStsTrack* stsTrack = ( (CbmStsTrack*) fTrackArray->At(iTr));
@@ -114,7 +114,7 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
     kfVertex = CbmKFVertex(*fPrimVtx);
   
   vector<L1FieldRegion> vField;
-  fitter.GetChiToVertex(vRTracks, vField, vChiToPrimVtx, kfVertex, 3);
+  fitter.GetChiToVertex(vRTracks, vField, vChiToPrimVtx, kfVertex, -3);
   
   KFPTrackVector tracks;
   tracks.Resize(ntracks);
@@ -207,9 +207,14 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
     tracks.SetId(trackId[iTr], iTr);
     tracks.SetPDG(pdg[iTr], iTr);
     tracks.SetQ(q, iTr);
-    
-    if(vChiToPrimVtx[iTr] < 3)
-      tracks.SetPVIndex(0, iTr);
+
+    if(fPVFindMode == 0)
+    {    
+      if(vChiToPrimVtx[iTr] < 3)
+        tracks.SetPVIndex(0, iTr);
+      else
+        tracks.SetPVIndex(-1, iTr);
+    }
     else
       tracks.SetPVIndex(-1, iTr);
   }
@@ -218,26 +223,39 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
   timer.Start();
   
   fTopoReconstructor->Init(tracks);
-  //TODO replace with a real PV reconstruction
+  if(fPVFindMode == 0)
   {
     KFPVertex primVtx_tmp;
-    primVtx_tmp.SetXYZ(kfVertex.GetRefX(), kfVertex.GetRefY(), kfVertex.GetRefZ());
-    primVtx_tmp.SetCovarianceMatrix( kfVertex.GetCovMatrix()[0], kfVertex.GetCovMatrix()[1], 
-                                     kfVertex.GetCovMatrix()[2], kfVertex.GetCovMatrix()[3], 
-                                     kfVertex.GetCovMatrix()[4], kfVertex.GetCovMatrix()[5] );
-    primVtx_tmp.SetNContributors( kfVertex.GetRefNTracks() );
-    primVtx_tmp.SetChi2( kfVertex.GetRefChi2() );
+    primVtx_tmp.SetXYZ(0,0,0);
+    primVtx_tmp.SetCovarianceMatrix( 0,0,0,0,0,0 );
+    primVtx_tmp.SetNContributors( 0 );
+    primVtx_tmp.SetChi2( -100 );
 
     vector<short int> pvTrackIds;
     KFVertex pv(primVtx_tmp);
     fTopoReconstructor->AddPV(pv, pvTrackIds);
   }
-//   fTopoReconstructor->ReconstructPrimVertex();
-//   std::cout << "G1 " << std::endl;
+  else if(fPVFindMode == 1)
+    fTopoReconstructor->ReconstructPrimVertex();
+  else if(fPVFindMode == 2)
+    fTopoReconstructor->ReconstructPrimVertex(0);
+  
+//   {
+//     KFPVertex primVtx_tmp;
+//     primVtx_tmp.SetXYZ(kfVertex.GetRefX(), kfVertex.GetRefY(), kfVertex.GetRefZ());
+//     primVtx_tmp.SetCovarianceMatrix( kfVertex.GetCovMatrix()[0], kfVertex.GetCovMatrix()[1], 
+//                                      kfVertex.GetCovMatrix()[2], kfVertex.GetCovMatrix()[3], 
+//                                      kfVertex.GetCovMatrix()[4], kfVertex.GetCovMatrix()[5] );
+//     primVtx_tmp.SetNContributors( kfVertex.GetRefNTracks() );
+//     primVtx_tmp.SetChi2( kfVertex.GetRefChi2() );
+// 
+//     vector<short int> pvTrackIds;
+//     KFVertex pv(primVtx_tmp);
+//     fTopoReconstructor->AddPV(pv, pvTrackIds);
+//   }
+
   fTopoReconstructor->SortTracks();
-//   std::cout << "G2 " << std::endl;
   fTopoReconstructor->ReconstructParticles();
-//   std::cout << "G3 " << std::endl;
   
   timer.Stop();
   fTopoReconstructor->SetTime(timer.RealTime());

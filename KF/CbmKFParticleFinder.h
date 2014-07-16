@@ -22,6 +22,10 @@ class CbmKFParticleFinder : public FairTask {
   CbmKFParticleFinder(const char* name = "CbmKFParticleFinder", Int_t iVerbose = 0);
   ~CbmKFParticleFinder();
 
+  void SetPVToZero() { fPVFindMode = 0; }
+  void ReconstructSinglePV() { fPVFindMode = 1; }
+  void RconstructMultiplePV() { fPVFindMode = 2; }
+  
   void SetStsTrackBranchName(const TString& name)   { fStsTrackBranchName = name;  }
 
   virtual InitStatus Init();
@@ -42,6 +46,7 @@ class CbmKFParticleFinder : public FairTask {
 
   //topology reconstructor
   KFParticleTopoReconstructor *fTopoReconstructor;
+  int fPVFindMode;
   
   //PID information
   CbmKFParticleFinderPID* fPID;
