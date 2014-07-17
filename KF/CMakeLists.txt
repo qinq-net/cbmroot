@@ -133,6 +133,8 @@ KFQA/CbmKFTrErrMCPoints.h
 KFQA/CbmKFTrackFitQA.h
 KFQA/CbmKFPartEfficiencies.h
 # KFParticlesFinder/CbmKFParticleDatabase.h
+   KFParticle/KFParticleBase.h
+   KFParticle/KFParticle.h
    KFParticlePerformance/KFPartEfficiencies.h
    KFParticlePerformance/KFPVEfficiencies.h
    KFParticlePerformance/KFPartMatch.h

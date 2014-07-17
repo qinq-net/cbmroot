@@ -33,8 +33,8 @@
 // #pragma link C++ class  CbmKFParticle+;
 
 // //KFParticle
-// #pragma link C++ class  KFParticleBase+;
-// #pragma link C++ class  KFParticle+;
+#pragma link C++ class  KFParticleBase+;
+#pragma link C++ class  KFParticle+;
 #pragma link C++ class  KFPartEfficiencies+;
 
 
