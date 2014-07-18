@@ -298,7 +298,7 @@ void GetCoefs2DLaguerre32Legendre32(double ay, double by, std::vector<double> &x
 	  wlag[30] = 11.163013090768;
 	  wlag[31] = 15.390180415261;
 
-	  Double_t sum = 0.;
+	  //Double_t sum = 0.;
 
 	  //for(Int_t i = 0 ; i < 32 ; i++){
 		for(Int_t j = 0 ; j < 32 ; j++){
@@ -448,7 +448,7 @@ void GetCoefs2DLegendre32Legendre32(double ay, double by, double a2y, double b2y
 	  wlag[30] = 11.163013090768;
 	  wlag[31] = 15.390180415261;
 
-	  Double_t sum = 0.;
+	  //Double_t sum = 0.;
 
 	  //for(Int_t i = 0 ; i < 32 ; i++){
 		for(Int_t j = 0 ; j < 32 ; j++){
