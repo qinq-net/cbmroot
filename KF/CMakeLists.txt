@@ -83,26 +83,26 @@ KFModelParameters/CbmModelsQA.cxx
 KFQA/CbmKFTrErrMCPoints.cxx
 KFQA/CbmKFTrackFitQA.cxx
 # KFParticlesFinder/CbmKFParticleDatabase.cxx
-   KFParticle/KFParticleDatabase.cxx
-   KFParticle/KFParticleBase.cxx
-   KFParticle/KFParticle.cxx
-   KFParticle/KFPTrack.cxx
-   KFParticle/KFPVertex.cxx
-   KFParticle/KFPTrackVector.cxx
-   KFParticle/KFParticleBaseSIMD.cxx
-   KFParticle/KFParticleSIMD.cxx
-   KFParticle/KFVertex.cxx 
-   KFParticle/KFParticlePVReconstructor.cxx
-   KFParticle/KFParticleFinder.cxx
-   KFParticle/KFParticleTopoReconstructor.cxx
-   KFParticlePerformance/KFPartEfficiencies.cxx
-   KFParticlePerformance/KFMCVertex.cxx
-   KFParticlePerformance/KFMCParticle.cxx
-   KFParticlePerformance/KFParticlePerformanceBase.cxx
-   KFParticlePerformance/KFTopoPerformance.cxx
-   CbmKFParticleFinder.cxx
-   CbmKFParticleFinderPID.cxx
-   CbmKFParticleFinderQA.cxx
+KFParticle/KFParticleDatabase.cxx
+KFParticle/KFParticleBase.cxx
+KFParticle/KFParticle.cxx
+KFParticle/KFPTrack.cxx
+KFParticle/KFPVertex.cxx
+KFParticle/KFPTrackVector.cxx
+KFParticle/KFParticleBaseSIMD.cxx
+KFParticle/KFParticleSIMD.cxx
+KFParticle/KFVertex.cxx 
+KFParticle/KFParticlePVReconstructor.cxx
+KFParticle/KFParticleFinder.cxx
+KFParticle/KFParticleTopoReconstructor.cxx
+KFParticlePerformance/KFPartEfficiencies.cxx
+KFParticlePerformance/KFMCVertex.cxx
+KFParticlePerformance/KFMCParticle.cxx
+KFParticlePerformance/KFParticlePerformanceBase.cxx
+KFParticlePerformance/KFTopoPerformance.cxx
+CbmKFParticleFinder.cxx
+CbmKFParticleFinderPID.cxx
+CbmKFParticleFinderQA.cxx
 )
 
 
@@ -135,22 +135,22 @@ KFQA/CbmKFTrErrMCPoints.h
 KFQA/CbmKFTrackFitQA.h
 KFQA/CbmKFPartEfficiencies.h
 # KFParticlesFinder/CbmKFParticleDatabase.h
-   KFParticle/KFParticleBase.h
-   KFParticle/KFParticle.h
-   KFParticlePerformance/KFPartEfficiencies.h
-   KFParticlePerformance/KFPVEfficiencies.h
-   KFParticlePerformance/KFPartMatch.h
-   KFParticlePerformance/KFMCTrack.h
-   KFParticlePerformance/KFMCVertex.h
-   KFParticlePerformance/KFMCParticle.h
-   KFParticlePerformance/KFParticlePerformanceBase.h
-   KFParticlePerformance/KFTopoPerformance.h
-   CbmKFParticleFinder.h
-   CbmKFParticleFinderPID.h
-   CbmKFParticleFinderQA.h
+KFParticle/KFParticleBase.h
+KFParticle/KFParticle.h
+KFParticlePerformance/KFPartEfficiencies.h
+KFParticlePerformance/KFPVEfficiencies.h
+KFParticlePerformance/KFPartMatch.h
+KFParticlePerformance/KFMCTrack.h
+KFParticlePerformance/KFMCVertex.h
+KFParticlePerformance/KFMCParticle.h
+KFParticlePerformance/KFParticlePerformanceBase.h
+KFParticlePerformance/KFTopoPerformance.h
+CbmKFParticleFinder.h
+CbmKFParticleFinderPID.h
+CbmKFParticleFinderQA.h
 )
 
-ADD_DEFINITIONS(-Wall -Wabi -Wsign-promo  -Wno-pmf-conversions -Wctor-dtor-privacy -Wreorder -Wno-deprecated -Wstrict-null-sentinel -Wno-non-template-friend -Wno-pragmas -Wno-parentheses -DDO_TPCCATRACKER_EFF_PERFORMANCE -DNonhomogeneousField -DCBM -DUSE_TIMERS) # -Weffc++ -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast   : wait for other parts of cbmroot\root.
+ADD_DEFINITIONS(-Wall -Wabi -Wsign-promo  -Wno-pmf-conversions -Wctor-dtor-privacy -Wreorder -Wno-deprecated -Wstrict-null-sentinel -Wno-non-template-friend -Wno-pragmas -Wno-parentheses -DDO_TPCCATRACKER_EFF_PERFORMANCE -DNonhomogeneousField -DCBM -DUSE_TIMERS -fpermissive) # -Weffc++ -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast   : wait for other parts of cbmroot\root.
 
 IF (SSE_FOUND)
   Message(STATUS "KF will be compiled with SSE support")
