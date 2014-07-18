@@ -1,22 +1,27 @@
 /******************************************************************************
  ** Creation of beam pipe geometry in ROOT format (TGeo).
  **
- ** @file create_bpipe_geometry_v14e.C
+ ** @file create_bpipe_geometry_v14j.C
  ** @author Andrey Chernogorov <a.chernogorov@gsi.de>
- ** @date 04.06.2014
+ ** @date 11.07.2014
  **
- ** SIS-100
- ** The beam pipe is composed of aluminium with a thickness proportional to the
- ** diameter (D(z)mm/60). It is placed directly into the cave as mother volume.
- ** The beam pipe consists of few sections (including RICH/MUCH section). Each 
+ ** SIS-300
+ ** The beam pipe is composed of aluminium (excluding STS section (220-1700mm) 
+ ** made of beryllium with constant thickness 0.5mm) with a thickness 
+ ** proportional to the diameter (D(z)mm/60). It is placed directly into the 
+ ** cave as mother volume. The beam pipe consists of few sections excluding 
+ ** RICH section (1700-3700mm) because it is part of the RICH geometry. Each 
  ** section has a PCON shape (including windows). There are two windows: first 
- ** one @ 220mm with R600mm and 0.7mm thickness, second one of iron @ 6000mm 
+ ** one @ 220mm with R600mm and 0.7mm thickness, second one of iron @ 8800mm 
  ** with R600mm and 0.2mm thickness. The STS section is composed of cylinder 
- ** D(z=220-500mm)=36mm and cone (z=500-1700mm). All sections of the beam pipe 
- ** with conical shape have half opening angle 2.5deg. The PSD section of the 
- ** beam pipe is missing because it is planned that it will be part of PSD 
- ** geometry.
- *****************************************************************************/
+ ** D(z=220-500mm)=22mm and cone (z=500-1700mm). The STS (conical part) and 
+ ** RICH sections have half opening angle 1.6deg as a result of optimization. 
+ ** For downstream detectors the half opening angle of sections is left the 
+ ** same (2.5deg) as in SIS-100 and section have cylindrical shape at z=6000-
+ ** 8800mm - it must be regarded as an intermediate iteration, expecting 
+ ** feedback from subdetectors' groups. The PSD section of the beam pipe is 
+ ** missing because it is planned that it will be part of PSD geometry.
+  *****************************************************************************/
 
 
 
@@ -37,11 +42,11 @@ TString pipeMediumName = "aluminium"; // "beryllium" "carbon"
 
 // -------------   Other global variables   -----------------------------------
 // ---> Macros name to info file
-TString macrosname = "create_bpipe_geometry_v14e.C";
+TString macrosname = "create_bpipe_geometry_v14j.C";
 // ---> Geometry file name (output)
-TString rootFileName = "pipe_v14e.root";
+TString rootFileName = "pipe_v14j.root";
 // ---> Geometry name
-TString pipeName = "PIPE_v14e";
+TString pipeName = "PIPE_v14j";
 // ----------------------------------------------------------------------------
 
 
@@ -49,67 +54,67 @@ TString pipeName = "PIPE_v14e";
 // ======                         Main function                           =====
 // ============================================================================
 
-void create_bpipe_geometry_v14e()
+void create_bpipe_geometry_v14j()
 {
   // -----   Define beam pipe sections   --------------------------------------
-  /** For v14e:   **/
+  /** For v14j:   **/
   TString pipe1name = "pipe1 - vacuum chamber";
   const Int_t nSects1 = 6;
   Double_t z1[nSects1]    = { -50.,  25.,   35.,  230.17, 230.17, 230.87 }; // mm
   Double_t rin1[nSects1]  = {  25.,  25.,  130.,  130.,   110.,   110.   };
   Double_t rout1[nSects1] = {  25.7, 25.7, 130.7, 130.7,  130.7,  130.7  };
-  TString pipe2name = "pipe2 - first window @ 220mm, h=0.7mm, R=600mm";
+  TString pipe2name = "pipe2 - first window @ 220mm, h=0.5mm, R=600mm"; // beryllium !!!
   const Int_t nSects2 = 7;
-  Double_t z2[nSects2]    = { 220., 220.7, 221.45, 223.71, 227.49, 230.17, 230.87 }; // mm
-  Double_t rin2[nSects2]  = {  18.,  18.,   30.,    60.,    90.,   105.86, 110.   };
-  Double_t rout2[nSects2] = {  18.,  28.69, 39.3,   65.55,  94.14, 110.,   110.   };
+  Double_t z2[nSects2]    = { 220., 220.5, 221.25, 223.51, 227.29, 230.17, 230.67 }; // mm
+  Double_t rin2[nSects2]  = {  11.,  11.,   30.,    60.,    90.,   107.04, 110.   };
+  Double_t rout2[nSects2] = {  11.,  23.66, 36.66,  63.97,  92.96, 110.,   110.   };
   TString pipevac1name = "pipevac1";
   const Int_t nSects01 = 10;
-  Double_t z01[nSects01]    = { -50., 25.,  35., 220., 220., 220.7,  221.45, 223.71, 227.49, 230.17 }; // mm
-  Double_t rin01[nSects01]  = {   0.,  0.,   0.,   0.,  18.,  28.69,  39.3,   65.55,  94.14, 110.   };
+  Double_t z01[nSects01]    = { -50., 25.,  35., 220., 220., 220.5,  221.25, 223.51, 227.29, 230.17 }; // mm
+  Double_t rin01[nSects01]  = {   0.,  0.,   0.,   0.,  11.,  23.66,  36.66,  63.97,  92.96, 110.   };
   Double_t rout01[nSects01] = {  25., 25., 130., 130., 130., 130.,   130.,   130.,   130.,   130.   };
   
-  TString pipe3name = "pipe3 - STS section";
+  TString pipe3name = "pipe3 - STS section"; // beryllium !!! const h=0.5mm
   const Int_t nSects3 = 4;
-  Double_t z3[nSects3]    = { 220.,  500.,  1250.,   1700.  }; // mm
-  Double_t rout3[nSects3] = {  18.,   18.,    55.,     74.2 };
-  Double_t rin3[nSects3]; for(Int_t i=0; i<nSects3; i++) { rin3[i] = rout3[i] - rout3[i]/30.; }
+  Double_t z3[nSects3]    = { 220.,  530.,  1250.,  1700.   }; // mm
+  Double_t rout3[nSects3] = {  11.,   11.,    34.9,   47.5 };
+  Double_t rin3[nSects3]; for(Int_t i=0; i<nSects3; i++) { rin3[i] = rout3[i] - 0.5; } // rout3[i]/30.; }
   TString pipevac2name = "pipevac2";
   const Int_t nSects02 = nSects3;
-  Double_t z02[nSects02]    = { 220.,  500.,  1250.,   1700. }; // mm
+  Double_t z02[nSects02]    = { 220.,  530.,  1250.,   1700. }; // mm
   Double_t rin02[nSects02]  = {   0.,    0.,     0.,      0. };
   Double_t rout02[nSects02]; for(Int_t i=0; i<nSects02; i++) { rout02[i]=rin3[i]; }
-  
+  /*
   TString pipe4name = "pipe4 - RICH section";
   const Int_t nSects4 = 3;
-  Double_t z4[nSects4]    = { 1700.,   1800.,   3700.  }; // mm
-  Double_t rout4[nSects4] = {   74.2,    74.2,   161.6 };
+  Double_t z4[nSects4]    = { 1700.,   1800.,   3700.   }; // mm
+  Double_t rout4[nSects4] = {   47.5,    47.5,   103.35 };
   Double_t rin4[nSects4]; for(Int_t i=0; i<nSects4; i++) { rin4[i] = rout4[i] - rout4[i]/30.; }
   TString pipevac3name = "pipevac3";
   const Int_t nSects03 = nSects4;
   Double_t z03[nSects03]    = { 1700.,   1800.,   3700.   }; // mm
   Double_t rin03[nSects03]  = {    0.,      0.,      0.   };
   Double_t rout03[nSects03]; for(Int_t i=0; i<nSects03; i++) { rout03[i]=rin4[i]; }
-  
+  //*/
   TString pipe5name = "pipe5 - TRD & TOF section";
-  const Int_t nSects5 = 3;
-  Double_t z5[nSects5]    = { 3700.,   5999.8,  6000.   }; // mm
-  Double_t rout5[nSects5] = {  161.6,   261.96,  262.   };
-  Double_t rin5[nSects5]  = {  156.2,   253.23,  253.27 };
+  const Int_t nSects5 = 5;
+  Double_t z5[nSects5]    = { 3700.,  3702.,  3702.,  6000.,   8800.   }; // mm
+  Double_t rout5[nSects5] = {  161.6,  161.6,  161.6,  262.,    262.   };
+  Double_t rin5[nSects5]  = {   99.9,   99.9,  156.2,  253.27,  253.27 };
   //Double_t rin5[nSects5]; for(Int_t i=0; i<nSects5; i++) { rin5[i] = rout5[i] - rout5[i]/30.; }
   
   TString pipevac4name = "pipevac4";
-  const Int_t nSects04 = 7;
-  Double_t z04[nSects04]    = { 3700.,   5943.24, 5943.44, 5947.34, 5959.8,  5981.19, 5999.8  }; // mm
-  Double_t rin04[nSects04]  = {    0.,      0.,      3.42,   70.,    140.,    210.,    253.23 };
-  //Double_t rout04[nSects04] = {  156.2,   250.87,  250.88,  251.05,  251.57,  252.48,  253.23 };
-  Double_t rout04[nSects04] = {  156.2,   250.84,  250.85,  251.02,  251.54,  252.45,  253.23 };
+  const Int_t nSects04 = 10;
+  Double_t z04[nSects04]    = { 3700.,  3702.,  3702.,  6000.,  8743.24,  8743.44, 8747.34, 8759.8,  8781.19, 8799.8  }; // mm
+  Double_t rin04[nSects04]  = {    0.,     0.,     0.,     0.,     0.,       3.42,   70.,    140.,    210.,    253.23 };
+  Double_t rout04[nSects04] = {   99.9,   99.9,  156.17, 253.27,  253.27,   253.27,  253.27,  253.27,  253.27,  253.27 };
   
   TString pipe6name = "pipe6 - second window @ 6000mm, h=0.2mm, R=600mm"; // iron !!!
   const Int_t nSects6 = 7;
-  Double_t z6[nSects6]     = { 5943.24, 5943.44, 5947.34, 5959.8,  5981.19, 5999.8,  6000.  }; // mm
+  Double_t z6[nSects6]     = { 8743.24, 8743.44, 8747.34, 8759.8,  8781.19, 8799.8,  8800.   }; // mm
   Double_t rin6[nSects6]   = {    0.,      0.,     66.58,  138.88,  209.35,  252.28,  253.27 };
-  Double_t rout6[nSects6]  = {    0.,      3.42,   70.,    140.,    210.,    253.23,  253.27 };
+  Double_t rout6[nSects6]  = {    0.,      3.42,   70.,    140.,    210.,    253.27,  253.27 };
+
 
   // --------------------------------------------------------------------------
 
@@ -128,18 +133,23 @@ void create_bpipe_geometry_v14e()
   fstream infoFile;
   fstream infoFileEmpty;
   infoFile.open(infoFileName.Data(), fstream::out);
-  infoFile << "SIS-100. Beam pipe geometry created with " + macrosname << endl << endl;
+  infoFile << "SIS-300. Beam pipe geometry created with " + macrosname << endl << endl;
 
-  infoFile << " The beam pipe is composed of aluminium with a thickness proportional to the" << endl;
-  infoFile << " diameter (D(z)mm/60). It is placed directly into the cave as mother volume." << endl;
-  infoFile << " The beam pipe consists of few sections (including RICH/MUCH section). Each " << endl;
+  infoFile << " The beam pipe is composed of aluminium (excluding STS section (220-1700mm) " << endl;
+  infoFile << " made of beryllium with constant thickness 0.5mm) with a thickness " << endl;
+  infoFile << " proportional to the diameter (D(z)mm/60). It is placed directly into the " << endl;
+  infoFile << " cave as mother volume. The beam pipe consists of few sections excluding " << endl;
+  infoFile << " RICH section (1700-3700mm) because it is part of the RICH geometry. Each " << endl;
   infoFile << " section has a PCON shape (including windows). There are two windows: first " << endl;
-  infoFile << " one @ 220mm with R600mm and 0.7mm thickness, second one of iron @ 6000mm " << endl;
+  infoFile << " one @ 220mm with R600mm and 0.7mm thickness, second one of iron @ 8800mm " << endl;
   infoFile << " with R600mm and 0.2mm thickness. The STS section is composed of cylinder " << endl;
-  infoFile << " D(z=220-500mm)=36mm and cone (z=500-1700mm). All sections of the beam pipe " << endl;
-  infoFile << " with conical shape have half opening angle 2.5deg. The PSD section of the " << endl;
-  infoFile << " beam pipe is missing because it is planned that it will be part of PSD " << endl;
-  infoFile << " geometry." << endl << endl;
+  infoFile << " D(z=220-500mm)=22mm and cone (z=500-1700mm). The STS (conical part) and " << endl;
+  infoFile << " RICH sections have half opening angle 1.6deg as a result of optimization. " << endl;
+  infoFile << " For downstream detectors the half opening angle of sections is left the " << endl;
+  infoFile << " same (2.5deg) as in SIS-100 and section have cylindrical shape at z=6000-" << endl;
+  infoFile << " 8800mm - it must be regarded as an intermediate iteration, expecting " << endl;
+  infoFile << " feedback from subdetectors' groups. The PSD section of the beam pipe is " << endl;
+  infoFile << " missing because it is planned that it will be part of PSD geometry." << endl << endl;
   
   infoFile << "Material:  " << pipeMediumName << endl;
   infoFile << "Thickness: D(z)mm/60" << endl << endl;
@@ -176,6 +186,12 @@ void create_bpipe_geometry_v14e()
   geoBuild->createMedium(mIron);
   TGeoMedium* iron = gGeoMan->GetMedium("iron");
   if ( ! iron ) Fatal("Main", "Medium iron not found");
+  // ---> beryllium
+  FairGeoMedium* mBe = geoMedia->getMedium("beryllium");
+  if ( ! mIron ) Fatal("Main", "FairMedium beryllium not found");
+  geoBuild->createMedium(mIron);
+  TGeoMedium* be = gGeoMan->GetMedium("beryllium");
+  if ( ! iron ) Fatal("Main", "Medium beryllium not found");
   // ---> vacuum
   FairGeoMedium* mVacuum = geoMedia->getMedium("vacuum");
   if ( ! mVacuum ) Fatal("Main", "FairMedium vacuum not found");
@@ -203,24 +219,24 @@ void create_bpipe_geometry_v14e()
   pipe1->SetLineColor(kGray);
   pipe->AddNode(pipe1, 0);
   
-  infoFile << endl << "Beam pipe section: " << pipe2name << endl;
+  infoFile << endl << "Beam pipe section: " << pipe2name << ", material: beryllium" << endl;
   infoFile << setw(2) << "i" << setw(10) << "Z,mm" << setw(10) << "Rin,mm" << setw(10) << "Rout,mm" << setw(10) << "h,mm" << endl;
-  TGeoVolume* pipe2    = MakePipe  (2, nSects2,  z2,  rin2,  rout2,  pipeMedium, &infoFile); 
+  TGeoVolume* pipe2    = MakePipe  (2, nSects2,  z2,  rin2,  rout2,  be, &infoFile);
   pipe2->SetLineColor(kBlue);
   pipe->AddNode(pipe2, 0);
   TGeoVolume* pipevac1 = MakeVacuum(1, nSects01, z01, rin01, rout01, vacuum,     &infoFile); 
   pipevac1->SetLineColor(kCyan);
   pipe->AddNode(pipevac1, 0);
   
-  infoFile << endl << "Beam pipe section: " << pipe3name << endl;
+  infoFile << endl << "Beam pipe section: " << pipe3name << ", material: beryllium" << endl;
   infoFile << setw(2) << "i" << setw(10) << "Z,mm" << setw(10) << "Rin,mm" << setw(10) << "Rout,mm" << setw(10) << "h,mm" << endl;
-  TGeoVolume* pipe3    = MakePipe  (3, nSects3,  z3,  rin3,  rout3,  pipeMedium, &infoFile); 
+  TGeoVolume* pipe3    = MakePipe  (3, nSects3,  z3,  rin3,  rout3,  be, &infoFile);
   pipe3->SetLineColor(kGreen);
   pipe->AddNode(pipe3, 0);
   TGeoVolume* pipevac2 = MakeVacuum(2, nSects02, z02, rin02, rout02, vacuum,     &infoFile); 
   pipevac2->SetLineColor(kCyan);
   pipe->AddNode(pipevac2, 0);
-  
+  /*
   infoFile << endl << "Beam pipe section: " << pipe4name << endl;
   infoFile << setw(2) << "i" << setw(10) << "Z,mm" << setw(10) << "Rin,mm" << setw(10) << "Rout,mm" << setw(10) << "h,mm" << endl;
   TGeoVolume* pipe4    = MakePipe  (4, nSects4,  z4,  rin4,  rout4,  pipeMedium, &infoFile); 
@@ -229,7 +245,7 @@ void create_bpipe_geometry_v14e()
   TGeoVolume* pipevac3 = MakeVacuum(3, nSects03, z03, rin03, rout03, vacuum,     &infoFile); 
   pipevac3->SetLineColor(kCyan);
   pipe->AddNode(pipevac3, 0);
-  
+  //*/
   infoFile << endl << "Beam pipe section: " << pipe5name << endl;
   infoFile << setw(2) << "i" << setw(10) << "Z,mm" << setw(10) << "Rin,mm" << setw(10) << "Rout,mm" << setw(10) << "h,mm" << endl;
   TGeoVolume* pipe5    = MakePipe  (5, nSects5,  z5,  rin5,  rout5,  pipeMedium, &infoFile); 
