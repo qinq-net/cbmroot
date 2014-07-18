@@ -79,6 +79,7 @@ Interface/CbmGlobalTrackFitterKF.cxx
 # CbmKFParticle_simd.cxx
 # CbmKFParticleInterface.cxx
 KFModelParameters/CbmThermalModelNoFlow.cxx
+KFModelParameters/CbmModelsQA.cxx
 KFQA/CbmKFTrErrMCPoints.cxx
 KFQA/CbmKFTrackFitQA.cxx
 # KFParticlesFinder/CbmKFParticleDatabase.cxx
@@ -129,6 +130,7 @@ Interface/CbmTrdTrackFitterKF.h
 Interface/CbmGlobalTrackFitterKF.h
 # CbmKFParticle.h
 KFModelParameters/CbmThermalModelNoFlow.h
+KFModelParameters/CbmModelsQA.h
 KFQA/CbmKFTrErrMCPoints.h
 KFQA/CbmKFTrackFitQA.h
 KFQA/CbmKFPartEfficiencies.h
@@ -164,7 +166,7 @@ ENDIF (SSE_FOUND)
 set(LINKDEF KFLinkDef.h)
 Set(LIBRARY_NAME KF)
 Set(DEPENDENCIES
-    Ecal CbmBase CbmData Base Vc
+    Ecal CbmBase CbmData Base Vc Minuit2
 )
 
 GENERATE_LIBRARY()

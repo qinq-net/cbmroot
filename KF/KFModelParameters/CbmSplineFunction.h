@@ -13,7 +13,7 @@ public:
     SplineFunction() { vals.resize(0); }
     SplineFunction(vector<double> x, vector<double> y)
     {
-        for(int i=0;i<x.size();++i)
+        for(unsigned int i=0;i<x.size();++i)
         {
             vals.push_back(make_pair(x[i], y[i]));
         }
@@ -26,7 +26,7 @@ public:
     }
     double f(double arg) const
     {
-        int ind = 0;
+        unsigned int ind = 0;
         pair<double, double> op = make_pair(arg, 0.);
         vector< pair<double, double> >::const_iterator it = lower_bound(vals.begin(), vals.end(), op);
         ind = distance(vals.begin(), it);
@@ -65,7 +65,7 @@ public:
     void fill(vector<double> x, vector<double> y)
     {
         vals.resize(0);
-        for(int i=0;i<x.size();++i)
+        for(unsigned int i=0;i<x.size();++i)
         {
             vals.push_back(make_pair(x[i], y[i]));
         }

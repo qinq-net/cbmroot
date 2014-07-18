@@ -39,6 +39,7 @@
 
 
 #pragma link C++ class  CbmThermalModelNoFlow+;
+#pragma link C++ class  CbmModelsQA+;
 //KFQA
 #pragma link C++ class  CbmKFPartEfficiencies+;
 

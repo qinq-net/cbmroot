@@ -33,7 +33,7 @@ public:
 			xs.resize(0);
 			xspls.resize(0);
 			double cx = -1e50;
-			for(int i=0;i<x.size();++i) {
+			for(unsigned int i=0;i<x.size();++i) {
 				if (fabs(x[i]-cx)>1e-6) {
 					xspls.push_back(SplineFunction());
 					xs.push_back(x[i]);
@@ -48,7 +48,7 @@ public:
 	}
 	double Eval(double x, double y) const {
 		if (xs.size()<2) return -1.;
-		int indx = 0;
+		unsigned int indx = 0;
 		vector< double >::const_iterator it = lower_bound(xs.begin(), xs.end(), x);
         indx = distance(xs.begin(), it);
 		int ind1 = 0, ind2 = 0;

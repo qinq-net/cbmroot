@@ -53,7 +53,8 @@ int CbmKFTrErrMCPoints::GetNConsMCStations()
   std::sort(iStations.begin(),iStations.end());
 
   int nMaxConsStations = 1;
-  int nConsStations = 1;  
+  int nConsStations = 1; 
+  if (iStations.size()==0) return 0;
   int iPrevSt = iStations[0];
   for(unsigned int iP=1; iP<iStations.size(); iP++)
   {
@@ -165,7 +166,8 @@ int CbmKFTrErrMCPoints::GetNMaxMCPointsOnStation()
   std::sort(iStations.begin(),iStations.end());
 
   int nMaxMCPointsOnStation = 1;
-  int nMCPointsOnStation = 1;  
+  int nMCPointsOnStation = 1; 
+  if (iStations.size()==0) return 0;  
   int iPrevSt = iStations[0];
   for(unsigned int iP=1; iP<iStations.size(); iP++)
   {

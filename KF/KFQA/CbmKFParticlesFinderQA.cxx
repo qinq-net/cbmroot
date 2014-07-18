@@ -371,7 +371,7 @@ CbmKFParticlesFinderQA::CbmKFParticlesFinderQA(CbmKFParticlesFinder *pf, Int_t i
   int trackNumber = 1;
 //   ThermalNoFlow = NULL;
   //MSSModel = NULL;
-//   ThermalNoFlow = new CbmThermalModelNoFlow(ekin_, recoLevel, usePID, trackNumber, iVerbose);
+   ThermalNoFlow = new CbmThermalModelNoFlow(ekin_, recoLevel, usePID, trackNumber, iVerbose);
   //MSSModel = new CbmMSS(ekin_, recoLevel, usePID, trackNumber, iVerbose);
 }
 
@@ -384,7 +384,7 @@ CbmKFParticlesFinderQA::~CbmKFParticlesFinderQA()
     fMCParticles->Delete();
     fMatchParticles->Delete();
   }
-//   if (ThermalNoFlow!=NULL) delete ThermalNoFlow;
+   if (ThermalNoFlow!=NULL) delete ThermalNoFlow;
   //if (MSSModel!=NULL) delete ThermalNoFlow;
 }
 
@@ -437,7 +437,7 @@ InitStatus CbmKFParticlesFinderQA::Init()
     fManger->Register("KFParticleMatch", "KFParticle", fMatchParticles, kTRUE);
   }
   
-//   if (ThermalNoFlow!=NULL) ThermalNoFlow->ReInit(fManger);
+   if (ThermalNoFlow!=NULL) ThermalNoFlow->ReInit(fManger);
   //if (MSSModel!=NULL) MSSModel->ReInit(fManger);
 
   return kSUCCESS;
@@ -566,13 +566,13 @@ void CbmKFParticlesFinderQA::Exec(Option_t * option)
     }
   }
   
-//   if (ThermalNoFlow!=NULL) ThermalNoFlow->Exec();
+   if (ThermalNoFlow!=NULL) ThermalNoFlow->Exec();
   //if (MSSModel!=NULL) MSSModel->Exec();
 }
 
 void CbmKFParticlesFinderQA::Finish()
 {
-//   if (ThermalNoFlow!=NULL) ThermalNoFlow->Finish();
+   if (ThermalNoFlow!=NULL) ThermalNoFlow->Finish();
   //if (MSSModel!=NULL) MSSModel->Finish();
   if(!(outfileName == ""))
   {

@@ -90,12 +90,13 @@ namespace ThermalModelNoFlowNamespace {
 	public:
 
 	  ThermalDistributionFunction(int part, double T_, double R_, double ekin_, AcceptanceFunction *af_=NULL, ReconstructionEfficiencyFunction *rf_=NULL) : 
-		  fT(T_), fV(4./3.*TMath::Pi()*R_*R_*R_), af(af_), rf(rf_), ekin(ekin_)
+		  fT(T_), fV(4./3.*TMath::Pi()*R_*R_*R_), mass(0.), ekin(ekin_), af(af_), rf(rf_)
 	  {
 			mass = TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass();
-			double ss2 = 0.5*sqrt(2*kProtonMass*(ekin+2*kProtonMass));
-		    double v = sqrt(1.-kProtonMass*kProtonMass/ss2/ss2);
-			ycm = TMath::ATanH(v);
+			//double ss2 = 0.5*sqrt(2*kProtonMass*(ekin+2*kProtonMass));
+		    //double v = sqrt(1.-kProtonMass*kProtonMass/ss2/ss2);
+			double v = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
+			ycm = 0.5*log((1 + v)/(1 - v));//TMath::ATanH(v);
 	  }
 
 	  ~ThermalDistributionFunction() {}
@@ -128,7 +129,7 @@ namespace ThermalModelNoFlowNamespace {
 		  double ret = 0.;
 		  double ss2 = 0.5*sqrt(2*kProtonMass*(ekin+2*kProtonMass));
 		  double v = sqrt(1.-kProtonMass*kProtonMass/ss2/ss2);
-		  double tmpv = 0., tmpv2 = 0.;
+		  //double tmpv = 0., tmpv2 = 0.;
 		  //cout << y << " " << TMath::ATanH(v) << " " << ycm << " ";
 		  y = y - TMath::ATanH(v);
 
@@ -151,11 +152,9 @@ namespace ThermalModelNoFlowNamespace {
 	  
 	  double dndybinlab(double ymin, double ymax, int itery) const {
 		double dy = (ymax - ymin) / itery;
-		double ty = 0., tpt = 0., ret = 0., ret2 = 0.;
-		double tmpmt = 0.;
-		double tmpr = 0.;
-		double ss2 = 0.5*sqrt(2*kProtonMass*(ekin+2*kProtonMass));
-		double v = sqrt(1.-kProtonMass*kProtonMass/ss2/ss2);
+		double ty = 0., ret = 0., ret2 = 0.;
+		//double ss2 = 0.5*sqrt(2*kProtonMass*(ekin+2*kProtonMass));
+		//double v = sqrt(1.-kProtonMass*kProtonMass/ss2/ss2);
 		//ymin = ymin - TMath::ATanH(v);
 			for(int iy=0;iy<itery;++iy) {
 				ty = ymin + dy*iy + dy*0.5;
@@ -243,8 +242,8 @@ namespace ThermalModelNoFlowNamespace {
 			  int iterpt = 400;
 			  double dpt = (ptmax - ptmin) / iterpt;
 			  double ty = 0., tpt = 0., tmp = 0.;
-			  double v0 = sqrt(2*kProtonMass*ekin+ekin*ekin)/(2*kProtonMass+ekin);
-			  double ycm = 0.5*log((1 + v0)/(1 - v0));
+			  //double v0 = sqrt(2*kProtonMass*ekin+ekin*ekin)/(2*kProtonMass+ekin);
+			  //double ycm = 0.5*log((1 + v0)/(1 - v0));
 			  double tp = 0.;
 			  //std::cout << v0 << endl;
 			  for(int iy=0;iy<itery;++iy) {
@@ -268,12 +267,12 @@ namespace ThermalModelNoFlowNamespace {
 		 else {
 			  if (af->ys.size()==0) return -1.;
 			  double ret1 = 0., ret2 = 0.;
-			  double en = kProtonMass + ekin;
-			  double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
-			  double ycm = 0.5*log((1 + v0)/(1 - v0));
+			  //double en = kProtonMass + ekin;
+			  //double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
+			  //double ycm = 0.5*log((1 + v0)/(1 - v0));
 			  //std::cout << v0 <<  " " << ycm << endl;
 			  double tmp = 0., tp = 0.;
-			  for(int i=0;i<af->ys.size();++i) {
+			  for(unsigned int i=0;i<af->ys.size();++i) {
 				tp = sqrt(af->pts[i]*af->pts[i] + mass*mass) * cosh(af->ys[i]);
 				tp = sqrt(tp*tp - mass*mass);
 				tmp = af->pts[i] * sqrt(af->pts[i]*af->pts[i]+ mass*mass) * cosh(af->ys[i]-ycm) * exp(-sqrt(af->pts[i]*af->pts[i] + mass*mass)*cosh(af->ys[i]-ycm)/fT) 
@@ -298,8 +297,8 @@ namespace ThermalModelNoFlowNamespace {
 			  int iterpt = 400;
 			  double dpt = (ptmax - ptmin) / iterpt;
 			  double ty = 0., tpt = 0., tmp = 0.;
-			  double v0 = sqrt(2*kProtonMass*ekin+ekin*ekin)/(2*kProtonMass+ekin);
-			  double ycm = 0.5*log((1 + v0)/(1 - v0));
+			  //double v0 = sqrt(2*kProtonMass*ekin+ekin*ekin)/(2*kProtonMass+ekin);
+			  //double ycm = 0.5*log((1 + v0)/(1 - v0));
 			  double tp = 0.;
 			  //std::cout << v0 << endl;
 			  for(int iy=0;iy<itery;++iy) {
@@ -323,12 +322,12 @@ namespace ThermalModelNoFlowNamespace {
 		 else {
 			  if (af->ys.size()==0) return -1.;
 			  double ret1 = 0., ret2 = 0.;
-			  double en = kProtonMass + ekin;
-			  double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
-			  double ycm = 0.5*log((1 + v0)/(1 - v0));
+			  //double en = kProtonMass + ekin;
+			  //double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
+			  //double ycm = 0.5*log((1 + v0)/(1 - v0));
 			  //std::cout << v0 <<  " " << ycm << endl;
 			  double tmp = 0., tp = 0.;
-			  for(int i=0;i<af->ys.size();++i) {
+			  for(unsigned int i=0;i<af->ys.size();++i) {
 				tp = sqrt(af->pts[i]*af->pts[i] + mass*mass) * cosh(af->ys[i]);
 				tp = sqrt(tp*tp - mass*mass);
 				tmp = af->pts[i] * sqrt(af->pts[i]*af->pts[i]+ mass*mass) * cosh(af->ys[i]-ycm) * exp(-sqrt(af->pts[i]*af->pts[i] + mass*mass)*cosh(af->ys[i]-ycm)/fT) 
@@ -379,7 +378,7 @@ namespace ThermalModelNoFlowNamespace {
 		
 		//cout << "Calc chi2 1\n";
 
-		for(unsigned int n = 0; n < dndyHist->GetNbinsX(); n++) {
+		for(int n = 0; n < dndyHist->GetNbinsX(); n++) {
 		  tmpval = dndyHist->GetBinContent(n);
 		  if (tmpval>100.) {
 			iters++;
@@ -405,8 +404,8 @@ namespace ThermalModelNoFlowNamespace {
 		int iters = 0;
 		//cout << "Calc chi2 2\n";
 		double tmpval = 0., tmpval2 = 0., tmpvar = 0.;
-		for(unsigned int nx = 0; nx < dndydptHist->GetNbinsX(); nx++) {
-		  for(unsigned int ny = 0; ny < dndydptHist->GetNbinsY(); ny++) {
+		for(int nx = 0; nx < dndydptHist->GetNbinsX(); nx++) {
+		  for(int ny = 0; ny < dndydptHist->GetNbinsY(); ny++) {
 			  tmpval = dndydptHist->GetBinContent(nx, ny);
 			  if (tmpval>5.) {
 				iters++;
@@ -438,22 +437,26 @@ using namespace std;
 ClassImp(CbmThermalModelNoFlow)
 
 CbmThermalModelNoFlow::CbmThermalModelNoFlow(Float_t ekin_, Int_t recoLevel, Int_t usePID, Int_t trackNumber, Int_t iVerbose):
+  ekin(ekin_),
   fusePID(usePID),
   fRecoLevel(recoLevel),
   fTrackNumber(trackNumber),
+  flistStsTracksMatch(0),
   flistStsTracks(0),
   fPrimVtx(0),
-  flistStsTracksMatch(0),
-  histodir(0),
   flistMCTracks(0),
   flsitGlobalTracks(0),
   flistTofHits(0),
+  histodir(0)
 //  flistRichRings(0),
 //  flistTrdTracks(0),
-  ekin(ekin_)
 {
   NPrimGlobalMC = 0;
   NPrimGlobalReco = 0;
+  
+  double pbeam = sqrt((kProtonMass+ekin)*(kProtonMass+ekin)-kProtonMass*kProtonMass);
+  double betacm = pbeam / (2.*kProtonMass+ekin);
+  ycm = 0.5*log((1.+betacm)/(1.-betacm));
   
   /*mtTall = new TSpline3*[p_sz];
   mtTacc = new TSpline3*[p_sz];
@@ -503,7 +506,7 @@ CbmThermalModelNoFlow::CbmThermalModelNoFlow(Float_t ekin_, Int_t recoLevel, Int
   
   //std::cout << 0.128 << "\t" << mtTall->Eval(0.128) << endl;
   //gDirectory->mkdir("KFModelParameters");
-  gDirectory->cd("ModelParameters");
+  gDirectory->cd("Models");
   
   histodir = gDirectory;
   
@@ -782,10 +785,7 @@ CbmThermalModelNoFlow::CbmThermalModelNoFlow(Float_t ekin_, Int_t recoLevel, Int
   gDirectory->cd("..");
   
   gDirectory = currentDir;
-  
-  double pbeam = sqrt((kProtonMass+ekin)*(kProtonMass+ekin)-kProtonMass*kProtonMass);
-  double betacm = pbeam / (2.*kProtonMass+ekin);
-  ycm = 0.5*log((1.+betacm)/(1.-betacm));
+  //cout << "ycm = " << ycm;
   
   events = 0;
 }
@@ -895,7 +895,7 @@ void CbmThermalModelNoFlow::ReadAcceptanceFunction(AcceptanceFunction & func, TS
   func.probs.resize(0);
   ifstream fin(filename.Data());
   fin >> func.dy >> func.dpt;
-  double ty, tpt, prob, tmp;
+  double ty, tpt, prob;
   func.ys.resize(0);
   func.pts.resize(0);
   func.probs.resize(0);
@@ -1141,9 +1141,9 @@ void CbmThermalModelNoFlow::Exec()
     }
   }
   
-  int nTracksPrimMC = 0;
-  int nTracksPrimReco[recoLevels];
-  for(int i=0;i<recoLevels;++i) nTracksPrimReco[i] = 0;
+  //int nTracksPrimMC = 0;
+  //int nTracksPrimReco[recoLevels];
+  //for(int i=0;i<recoLevels;++i) nTracksPrimReco[i] = 0;
   
   static int NEv=0;
   NEv++;
@@ -1165,8 +1165,8 @@ void CbmThermalModelNoFlow::Exec()
      MCTrackSortedArray[TofPoint->GetTrackID()].TofArray.push_back(TofPoint);
   }
   
-  int allrec;
-  allrec = 0;
+  //int allrec;
+  //allrec = 0;
   int *TrRecons = new int[flistMCTracks->GetEntriesFast()+1];
   int iTr = 0;
  
@@ -1649,8 +1649,8 @@ Double_t CbmThermalModelNoFlow::ThermalMt(double T, double m) {
   }
   //std::cout << "T = " << T << "\tmT = " << ret2 / ret1 << endl;
   return ret2 / ret1;*/
-  double v0 = sqrt(2*kProtonMass*ekin+ekin*ekin)/(2*kProtonMass+ekin);
-  double ycm = 0.5*log((1 + v0)/(1 - v0));
+  //double v0 = sqrt(2*kProtonMass*ekin+ekin*ekin)/(2*kProtonMass+ekin);
+  //double ycm = 0.5*log((1 + v0)/(1 - v0));
   double ret1 = 0., ret2 = 0.;
   vector<double> xlag, wlag, xleg, wleg;
   //GetCoefs2DLaguerre32Legendre32(0., 6., xlag, wlag, xleg, wleg);
@@ -1677,8 +1677,8 @@ Double_t CbmThermalModelNoFlow::ThermalMt2(double T, double m) {
   int iterpt = 1200;
   double dpt = (ptmax - ptmin) / iterpt;
   double ty = 0., tpt = 0., tmp = 0.;
-  double v0 = sqrt(2*kProtonMass*ekin+ekin*ekin)/(2*kProtonMass+ekin);
-  double ycm = 0.5*log((1 + v0)/(1 - v0));
+  //double v0 = sqrt(2*kProtonMass*ekin+ekin*ekin)/(2*kProtonMass+ekin);
+  //double ycm = 0.5*log((1 + v0)/(1 - v0));
   //std::cout << v0 << endl;
   for(int iy=0;iy<itery;++iy) {
 	ty = ymin + (iy+0.5)*dy;
@@ -1720,9 +1720,9 @@ Double_t CbmThermalModelNoFlow::ThermalMtAcc(double T, double m, const Acceptanc
   }
   //std::cout << "T = " << T << "\tmT = " << ret2 / ret1 << endl;
   return ret2 / ret1;*/
-  double en = kProtonMass + ekin;
-  double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
-  double ycm = 0.5*log((1 + v0)/(1 - v0));
+  //double en = kProtonMass + ekin;
+  //double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
+  //double ycm = 0.5*log((1 + v0)/(1 - v0));
   /*  double dpt = 0.05;
 	
 	double dy = 0.05, tmpmt = 0.;
@@ -1744,6 +1744,7 @@ Double_t CbmThermalModelNoFlow::ThermalMtAcc(double T, double m, const Acceptanc
   vector<double> xlag, wlag, xleg, wleg;
   //GetCoefs2DLaguerre32Legendre32(0., 6., xlag, wlag, xleg, wleg);
   GetCoefs2DLegendre32Legendre32(0., 2.5, 0., 6., xlag, wlag, xleg, wleg);
+  //cout << ycm << "\n";
   for(Int_t i = 0 ; i < 32 ; i++){
 		for(Int_t j = 0 ; j < 32 ; j++){
 		  //if (xlag[i]>3.) break;
@@ -1763,12 +1764,12 @@ Double_t CbmThermalModelNoFlow::ThermalMtAcc(double T, double m, const Acceptanc
 Double_t CbmThermalModelNoFlow::ThermalMt2Acc(double T, double m, const AcceptanceFunction & accfunc) {
   if (accfunc.ys.size()==0) return -1.;
   double ret1 = 0., ret2 = 0.;
-  double en = kProtonMass + ekin;
-  double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
-  double ycm = 0.5*log((1 + v0)/(1 - v0));
+  //double en = kProtonMass + ekin;
+  //double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
+  //double ycm = 0.5*log((1 + v0)/(1 - v0));
   //std::cout << v0 <<  " " << ycm << endl;
   double tmp = 0., tp = 0.;
-  for(int i=0;i<accfunc.ys.size();++i) {
+  for(unsigned int i=0;i<accfunc.ys.size();++i) {
 	tp = sqrt(accfunc.pts[i]*accfunc.pts[i] + m*m) * cosh(accfunc.ys[i]);
 	tp = sqrt(tp*tp - m*m);
 	tmp = accfunc.pts[i] * sqrt(accfunc.pts[i]*accfunc.pts[i]+ m*m) * cosh(accfunc.ys[i]-ycm) * exp(-sqrt(accfunc.pts[i]*accfunc.pts[i] + m*m)*cosh(accfunc.ys[i]-ycm)/T) 
@@ -1802,11 +1803,11 @@ Double_t CbmThermalModelNoFlow::NFracAcc(double T, double m, const AcceptanceFun
   ret1 = T * m * m * TMath::BesselK(2, m/T) / 2. / TMath::Pi() / TMath::Pi();
   //std::cout << "T = " << T << "\tNfrac = " << ret2 / ret1 << endl;
   return ret2 / ret1;*/
-  double en = kProtonMass + ekin;
+  //double en = kProtonMass + ekin;
   //double gam = en / mass;
   //double v0 = sqrt(1. - 1./gam/gam);
-  double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
-  double ycm = 0.5*log((1. + v0)/(1. - v0));
+  //double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
+  //double ycm = 0.5*log((1. + v0)/(1. - v0));
   double ret1 = 0., ret2 = 0.;
   vector<double> xlag, wlag, xleg, wleg;
   //GetCoefs2DLaguerre32Legendre32(0., 6., xlag, wlag, xleg, wleg);
@@ -1893,7 +1894,8 @@ double CbmThermalModelNoFlow::getRadiusDerivNCor(double T, double N, double mo, 
 
 double CbmThermalModelNoFlow::getTemperature(double mt, double mo, int iters) {
   double left = 0., right = 1., center;
-  double valleft = tempFunction(left, mt, mo), valright = tempFunction(right, mt, mo), valcenter;
+  double valleft = tempFunction(left, mt, mo);//, valright = tempFunction(right, mt, mo)
+  double valcenter;
   for(int i=0;i<iters;++i) {
     center = (left+right)/2.;
     valcenter = tempFunction(center, mt, mo);
@@ -1905,7 +1907,8 @@ double CbmThermalModelNoFlow::getTemperature(double mt, double mo, int iters) {
 
 double CbmThermalModelNoFlow::getTemperatureAll(double mt, int part, int iters) {
   double left = 0., right = 0.45, center;
-  double valleft = mtTall[part]->Eval(left)-mt, valright = mtTall[part]->Eval(right)-mt, valcenter;
+  double valleft = mtTall[part]->Eval(left)-mt;//, valright = mtTall[part]->Eval(right)-mt, 
+  double valcenter;
   for(int i=0;i<iters;++i) {
     center = (left+right)/2.;
     valcenter = mtTall[part]->Eval(center)-mt;
@@ -1922,7 +1925,8 @@ double CbmThermalModelNoFlow::getTemperatureDerivAll(double mt, int part, int it
 
 double CbmThermalModelNoFlow::getTemperatureAllCor(double mt, int part, int iters, TSpline3 *mtT) {
   double left = 0., right = 0.45, center;
-  double valleft = mtT->Eval(left)-mt, valright = mtT->Eval(right)-mt, valcenter;
+  double valleft = mtT->Eval(left)-mt;//, valright = mtT->Eval(right)-mt, 
+  double valcenter;
   for(int i=0;i<iters;++i) {
     center = (left+right)/2.;
     valcenter = mtT->Eval(center)-mt;
@@ -1939,7 +1943,8 @@ double CbmThermalModelNoFlow::getTemperatureDerivAllCor(double mt, int part, int
 
 double CbmThermalModelNoFlow::getTemperatureRapidity(double mt, double mo, int iters, double y) {
   double left = 0., right = 1., center;
-  double valleft = tempFunction(left, mt, mo), valright = tempFunction(right, mt, mo), valcenter;
+  double valleft = tempFunction(left, mt, mo);//, valright = tempFunction(right, mt, mo), 
+  double valcenter;
   for(int i=0;i<iters;++i) {
     center = (left+right)/2.;
     valcenter = tempFunction(center, mt, mo);
@@ -1955,7 +1960,8 @@ double CbmThermalModelNoFlow::getInverseSlope(double mt, double mo, int iters) {
 
 double CbmThermalModelNoFlow::getDerivTemperature(double mt, double mo, double T, int iters) {
   double left = 0., right = 10., center;
-  double valleft = tempDerivFunction(T, left, mt, mo), valright = tempDerivFunction(T, right, mt, mo), valcenter;
+  double valleft = tempDerivFunction(T, left, mt, mo);//, valright = tempDerivFunction(T, right, mt, mo), 
+  double valcenter;
   for(int i=0;i<iters;++i) {
     center = (left+right)/2.;
     valcenter = tempDerivFunction(T, center, mt, mo);
@@ -2080,12 +2086,12 @@ void CbmThermalModelNoFlow::Finish(){
 			ThermalDistributionFunction pl(part, tmpT1, getRadius(tmpT1, globalnTracksMC[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()),
 											ekin, NULL, NULL);
 			  
-			  for(unsigned int n = 0; n < hfyMC[part]->GetNbinsX(); n++) {
+			  for(int n = 0; n < hfyMC[part]->GetNbinsX(); n++) {
 				  hfyMCmodel[part]->SetBinContent(n, pl.dndylab(hfyMC[part]->GetBinCenter(n)) * (double)events * (hfyMC[part]->GetXaxis()->GetBinUpEdge(n) - hfyMC[part]->GetXaxis()->GetBinLowEdge(n)));
 				}
 				
-			  for(unsigned int nx = 0; nx < hfdndydptMC[part]->GetNbinsX(); nx++) {
-				  for(unsigned int ny = 0; ny < hfdndydptMC[part]->GetNbinsY(); ny++) {
+			  for(int nx = 0; nx < hfdndydptMC[part]->GetNbinsX(); nx++) {
+				  for(int ny = 0; ny < hfdndydptMC[part]->GetNbinsY(); ny++) {
 					  //hfdndydptMCmodel[part]->SetBinContent(nx, ny, pl.dndydpt(hfdndydptMC[part]->GetXaxis()->GetBinCenter(nx), hfdndydptMC[part]->GetYaxis()->GetBinCenter(ny)) * globalmtavMC[0]);
 					  hfdndydptMCmodel[part]->SetBinContent(nx, ny, pl.dndydptbin(hfdndydptMC[part]->GetXaxis()->GetBinLowEdge(nx), hfdndydptMC[part]->GetXaxis()->GetBinUpEdge(nx), 
 						10, hfdndydptMC[part]->GetYaxis()->GetBinLowEdge(ny), hfdndydptMC[part]->GetYaxis()->GetBinUpEdge(ny), 10) * (double)events 
@@ -2096,12 +2102,12 @@ void CbmThermalModelNoFlow::Finish(){
 			ThermalDistributionFunction plR(part, tmpT2, getRadius(tmpT2, globalnTracksReco[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()),
 											ekin, NULL, NULL);
 			  
-			  for(unsigned int n = 0; n < hfyReco[part]->GetNbinsX(); n++) {
+			  for(int n = 0; n < hfyReco[part]->GetNbinsX(); n++) {
 				  hfyRecomodel[part]->SetBinContent(n, plR.dndylab(hfyReco[part]->GetBinCenter(n)) * (double)events * (hfyReco[part]->GetXaxis()->GetBinUpEdge(n) - hfyReco[part]->GetXaxis()->GetBinLowEdge(n)));
 				}
 				
-			  for(unsigned int nx = 0; nx < hfdndydptReco[part]->GetNbinsX(); nx++) {
-				  for(unsigned int ny = 0; ny < hfdndydptReco[part]->GetNbinsY(); ny++) {
+			  for(int nx = 0; nx < hfdndydptReco[part]->GetNbinsX(); nx++) {
+				  for(int ny = 0; ny < hfdndydptReco[part]->GetNbinsY(); ny++) {
 					  //hfdndydptMCmodel[part]->SetBinContent(nx, ny, pl.dndydpt(hfdndydptMC[part]->GetXaxis()->GetBinCenter(nx), hfdndydptMC[part]->GetYaxis()->GetBinCenter(ny)) * globalmtavMC[0]);
 					  hfdndydptRecomodel[part]->SetBinContent(nx, ny, plR.dndydptbin(hfdndydptReco[part]->GetXaxis()->GetBinLowEdge(nx), hfdndydptReco[part]->GetXaxis()->GetBinUpEdge(nx), 
 						10, hfdndydptReco[part]->GetYaxis()->GetBinLowEdge(ny), hfdndydptReco[part]->GetYaxis()->GetBinUpEdge(ny), 10) * (double)events 
@@ -2116,13 +2122,13 @@ void CbmThermalModelNoFlow::Finish(){
 			ThermalDistributionFunction plRC(part, tmpT3, getRadiusCor(tmpT3, globalnTracksReco[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass(), Npart[part]),
 											ekin, &AcceptanceSTS, &reff);
 			  
-			  for(unsigned int n = 0; n < hfyRecoCor[part]->GetNbinsX(); n++) {
+			  for(int n = 0; n < hfyRecoCor[part]->GetNbinsX(); n++) {
 				  hfyRecoCormodel[part]->SetBinContent(n, plRC.dndylab(hfyRecoCor[part]->GetBinCenter(n)) * (double)events * (hfyRecoCor[part]->GetXaxis()->GetBinUpEdge(n) - hfyRecoCor[part]->GetXaxis()->GetBinLowEdge(n)));
 				  //hfyRecoCormodel[part]->SetBinContent(n, plRC.dndybinlab(hfyRecoCor[part]->GetXaxis()->GetBinLowEdge(n), hfyRecoCor[part]->GetXaxis()->GetBinUpEdge(n), 10) * (double)events * (hfyRecoCor[part]->GetXaxis()->GetBinUpEdge(n) - hfyRecoCor[part]->GetXaxis()->GetBinLowEdge(n)));
 				}
 				
-			  for(unsigned int nx = 0; nx < hfdndydptRecoCor[part]->GetNbinsX(); nx++) {
-				  for(unsigned int ny = 0; ny < hfdndydptRecoCor[part]->GetNbinsY(); ny++) {
+			  for(int nx = 0; nx < hfdndydptRecoCor[part]->GetNbinsX(); nx++) {
+				  for(int ny = 0; ny < hfdndydptRecoCor[part]->GetNbinsY(); ny++) {
 					  //hfdndydptMCmodel[part]->SetBinContent(nx, ny, pl.dndydpt(hfdndydptMC[part]->GetXaxis()->GetBinCenter(nx), hfdndydptMC[part]->GetYaxis()->GetBinCenter(ny)) * globalmtavMC[0]);
 					  hfdndydptRecoCormodel[part]->SetBinContent(nx, ny, plRC.dndydptbin(hfdndydptRecoCor[part]->GetXaxis()->GetBinLowEdge(nx), hfdndydptRecoCor[part]->GetXaxis()->GetBinUpEdge(nx), 
 						10, hfdndydptRecoCor[part]->GetYaxis()->GetBinLowEdge(ny), hfdndydptRecoCor[part]->GetYaxis()->GetBinUpEdge(ny), 10) * (double)events 
