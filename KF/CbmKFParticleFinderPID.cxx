@@ -112,7 +112,11 @@ void CbmKFParticleFinderPID::SetMCPID()
     if(stsTrackMatch -> GetNofMCTracks() == 0) continue;
     const int mcTrackId = stsTrackMatch->GetMCTrackId();
     CbmMCTrack *cbmMCTrack = (CbmMCTrack*)fMCTrackArray->At(mcTrackId);
-    if(TMath::Abs(cbmMCTrack->GetPdgCode()) > 2500)
+    if(!(TMath::Abs(cbmMCTrack->GetPdgCode()) == 11 ||
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 13 ||
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 211 ||
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 321 ||
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 2212) )
       continue;
     fPID[iTr] = cbmMCTrack->GetPdgCode();
   }
