@@ -44,6 +44,7 @@ CbmTrdDigitizerPRF::CbmTrdDigitizerPRF(CbmTrdRadiator *radiator)
    fnClusterConst(0),
    fnScanRowConst(0),
    fnScanColConst(0),
+   fCbmLinkWeightDistance(false),
    fMCPointId(-1),
    fnRow(-1),
    fnCol(-1),
@@ -70,6 +71,10 @@ CbmTrdDigitizerPRF::~CbmTrdDigitizerPRF()
 void CbmTrdDigitizerPRF::SetNCluster(Int_t nCluster)
 {
   fnClusterConst = nCluster;
+}
+void CbmTrdDigitizerPRF::SetCbmLinkWeightDistance(Bool_t dist)
+{
+  fCbmLinkWeightDistance = dist;
 }
 void CbmTrdDigitizerPRF::SetPadPlaneScanArea(Int_t column, Int_t row)
 {
@@ -651,7 +656,18 @@ void CbmTrdDigitizerPRF::AddDigi(Int_t pointId, Int_t address, Double_t charge, 
 {
   //if (address < 0)
   //printf("DigiAddress:%u ModuleAddress:%i\n",address, CbmTrdAddress::GetModuleAddress(address));
-  const FairMCPoint* point = static_cast<const FairMCPoint*>(fPoints->At(pointId));
+  //const FairMCPoint* point = static_cast<const FairMCPoint*>(fPoints->At(pointId));
+  Double_t weighting = charge;
+
+  if (fCbmLinkWeightDistance) {
+    const CbmTrdPoint* point = static_cast<CbmTrdPoint*>(fPoints->At(pointId));
+    Double_t ref_pos[3] = {point->GetXOut(), point->GetYOut(), point->GetZOut()};
+    TVector3 padPos, padPosErr;
+    fModuleInfo->GetPadPosition(address, padPos, padPosErr);
+    Double_t distance = sqrt(pow(ref_pos[0] - padPos[0],2) + pow(ref_pos[1] - padPos[1],2));
+    weighting = 1. / distance;
+  }
+
   std::map<Int_t, pair<CbmTrdDigi*, CbmMatch*> >::iterator it = fDigiMap.find(address);
   if (it == fDigiMap.end()) { // Pixel not yet in map -> Add new pixel
     
@@ -661,12 +677,12 @@ void CbmTrdDigitizerPRF::AddDigi(Int_t pointId, Int_t address, Double_t charge, 
     }
 
     CbmMatch* digiMatch = new CbmMatch();
-    digiMatch->AddLink(CbmLink(charge, pointId));
+    digiMatch->AddLink(CbmLink(weighting, pointId));
     fDigiMap[address] = make_pair(new CbmTrdDigi(address, charge, time), digiMatch);
   } else { // Pixel already in map -> Add charge
     it->second.first->AddCharge(charge);
     it->second.first->SetTime(max(time, it->second.first->GetTime()));
-    it->second.second->AddLink(CbmLink(charge, pointId));
+    it->second.second->AddLink(CbmLink(weighting, pointId));
   }
 }
   ClassImp(CbmTrdDigitizerPRF)

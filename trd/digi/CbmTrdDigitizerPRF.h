@@ -48,6 +48,7 @@ class CbmTrdDigitizerPRF : public FairTask {
   void SetNoiseLevel(Double_t sigma_keV);
   void SetTriggerThreshold(Double_t minCharge); //only for debugging. has no impact on the output!!!!
   void SetPadPlaneScanArea(Int_t column, Int_t row);
+  void SetCbmLinkWeightDistance(Bool_t dist);
  private:
 
   CbmTrdDigitizerPRF& operator=(const CbmTrdDigitizerPRF&);
@@ -69,6 +70,7 @@ class CbmTrdDigitizerPRF : public FairTask {
 
   Bool_t fDebug;
   Bool_t fTrianglePads;
+  Bool_t fCbmLinkWeightDistance;
 
   Double_t fSigma_noise_keV;
   TRandom3 *fNoise;
