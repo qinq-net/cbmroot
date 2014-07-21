@@ -18,7 +18,7 @@
 #include <iostream>
 
 CbmKFParticleFinderPID::CbmKFParticleFinderPID(const char* name, Int_t iVerbose):
-  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fGlobalTrackBranchName("GlobalTrack"), fTofBranchName("TofHit"), fMCTracksBranchName("MCTrack"), fTrackMatchBranchName("StsTrackMatch"), fPIDMode(0)
+  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fGlobalTrackBranchName("GlobalTrack"), fTofBranchName("TofHit"), fMCTracksBranchName("MCTrack"), fTrackMatchBranchName("StsTrackMatch"), fPIDMode(0), fSisMode(0)
 {
 }
 
@@ -104,10 +104,11 @@ void CbmKFParticleFinderPID::Finish()
 }
 
 void CbmKFParticleFinderPID::SetMCPID()
-{ 
+{
   Int_t ntrackMatches=fTrackMatchArray->GetEntriesFast();
   for(int iTr=0; iTr<ntrackMatches; iTr++)
   {
+    fPID[iTr] = -2;
     CbmTrackMatch* stsTrackMatch = (CbmTrackMatch*) fTrackMatchArray->At(iTr);
     if(stsTrackMatch -> GetNofMCTracks() == 0) continue;
     const int mcTrackId = stsTrackMatch->GetMCTrackId();
@@ -133,30 +134,26 @@ void CbmKFParticleFinderPID::SetRecoPID()
   const Double_t m2K  = 0.245;
   const Double_t m2Pi = 0.019479835;
   
-  Double_t sP[3][5] = { {0.0337428,-0.013939,0.00567602,-0.000202229,4.07531e-06},
-                        {0.00717827,-0.00257353, 0.00389851,-9.83097e-05, 1.33011e-06},
-                        {0.001348,0.00220126,0.0023619,7.35395e-05,-4.06706e-06} };//SIS-300
-//    Double_t sP[3][5] = { {0.056908,-0.0470572,0.0216465,-0.0021016,8.50396e-05},
-//                          {0.00943075,-0.00635429,0.00998695,-0.00111527,7.77811e-05},
-//                          {0.00176298,0.00367263,0.00308013,0.000844013,-0.00010423} }; //SIS-100
-
-//     sP[0][0] =  0.0618927;
-//     sP[0][1] = -0.0719277;
-//     sP[0][2] =  0.0396255;
-//     sP[0][3] = -0.00583356;
-//     sP[0][4] =  0.000317072;
-// 
-//     sP[1][0] =  0.0291881;
-//     sP[1][1] = -0.0904978;
-//     sP[1][2] =  0.086161;
-//     sP[1][3] = -0.0229688;
-//     sP[1][4] =  0.00199382;
-// 
-//     sP[2][0] =  0.162171;
-//     sP[2][1] = -0.194007;
-//     sP[2][2] =  0.0893264;
-//     sP[2][3] = -0.014626;
-//     sP[2][4] =  0.00088203;
+  Double_t sP[3][5];
+  if(fSisMode == 0) //SIS-100
+  {
+    Double_t sPLocal[3][5] = { {0.056908,-0.0470572,0.0216465,-0.0021016,8.50396e-05},
+                               {0.00943075,-0.00635429,0.00998695,-0.00111527,7.77811e-05},
+                               {0.00176298,0.00367263,0.00308013,0.000844013,-0.00010423} }; 
+    for(Int_t iSp=0; iSp<3; iSp++)
+      for(Int_t jSp=0; jSp<5; jSp++)
+        sP[iSp][jSp] = sPLocal[iSp][jSp];
+  }
+  
+  if(fSisMode == 1) //SIS-300
+  {
+    Double_t sPLocal[3][5] = { {0.0337428,-0.013939,0.00567602,-0.000202229,4.07531e-06},
+                               {0.00717827,-0.00257353, 0.00389851,-9.83097e-05, 1.33011e-06},
+                               {0.001348,0.00220126,0.0023619,7.35395e-05,-4.06706e-06} };
+    for(Int_t iSp=0; iSp<3; iSp++)
+      for(Int_t jSp=0; jSp<5; jSp++)
+        sP[iSp][jSp] = sPLocal[iSp][jSp];
+  }
 
   const Int_t PdgHypo[4] = {2212, 321, 211, -11};
 
@@ -201,8 +198,11 @@ void CbmKFParticleFinderPID::SetRecoPID()
 //       }
 
     Double_t l = globalTrack->GetLength();
-    if( !((l>800.) && (l<1400.)) ) continue;//SIS 300
-//      if( !((l>580.) && (l<700.)) ) continue;//SIS 100
+    if(fSisMode==0) //SIS-100
+      if( !((l>580.) && (l<700.)) ) continue;
+    if(fSisMode==1) //SIS 300
+      if( !((l>800.) && (l<1400.)) ) continue;
+      
 
     Double_t time;
     Int_t tofHitIndex = globalTrack->GetTofHitIndex();
@@ -213,9 +213,11 @@ void CbmKFParticleFinderPID::SetRecoPID()
     }
     else
       continue;
-
-    if( !((time>29.) && (time<50.)) ) continue; //SIS 300
-//      if( !((time>19.) && (time<42.)) ) continue; //SIS 100
+    
+    if(fSisMode==0) //SIS-100
+      if( !((time>19.) && (time<42.)) ) continue;
+    if(fSisMode==1) //SIS 300
+      if( !((time>29.) && (time<50.)) ) continue;
 
     Double_t m2 = p*p*(1./((l/time/29.9792458)*(l/time/29.9792458))-1.);
 

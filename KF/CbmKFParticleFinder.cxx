@@ -95,9 +95,12 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
     ok = ok && stsTrack->GetChiSq() < 10*stsTrack->GetNDF();
     if(!ok) continue;
     
-    vRTracks[ntracks] = *stsTrack;
     if(fPID)
+    {
+      if(fPID->GetPID()[iTr] < -1) continue; 
       pdg[ntracks] = fPID->GetPID()[iTr];
+    }
+    vRTracks[ntracks] = *stsTrack;
     trackId[ntracks] = iTr;
     
     ntracks++;

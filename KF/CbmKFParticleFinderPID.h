@@ -32,6 +32,9 @@ class CbmKFParticleFinderPID : public FairTask {
   virtual void Finish();
   
   void SetPIDMode(int mode) { fPIDMode = mode; }
+  void SetSIS100() { fSisMode = 0; }
+  void SetSIS300() { fSisMode = 1; }
+  
   const std::vector<int>& GetPID() const { return fPID; }
   
  private:
@@ -55,6 +58,7 @@ class CbmKFParticleFinderPID : public FairTask {
   
   //PID variables
   Int_t fPIDMode;
+  Int_t fSisMode;
   std::vector<int> fPID;
   
   ClassDef(CbmKFParticleFinderPID,1);
