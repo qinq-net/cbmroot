@@ -97,7 +97,7 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
     
     if(fPID)
     {
-      if(fPID->GetPID()[iTr] < -1) continue; 
+      if(fPID->GetPID()[iTr] == -2) continue; 
       pdg[ntracks] = fPID->GetPID()[iTr];
     }
     vRTracks[ntracks] = *stsTrack;
