@@ -137,6 +137,7 @@ KFQA/CbmKFPartEfficiencies.h
 # KFParticlesFinder/CbmKFParticleDatabase.h
 KFParticle/KFParticleBase.h
 KFParticle/KFParticle.h
+KFParticle/KFVertex.h
 KFParticlePerformance/KFPartEfficiencies.h
 KFParticlePerformance/KFPVEfficiencies.h
 KFParticlePerformance/KFPartMatch.h
