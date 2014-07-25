@@ -11,7 +11,11 @@
 CbmStsCluster::CbmStsCluster()
     : CbmCluster()
     , fMean(0.)
-    , fMeanError(0)
+    , fMeanError(0.)
+    , fCharge(0.)
+    , fChannelMean(0.)
+    , fChannelMeanSq(0.)
+    , fTime(0.)
     , fSectorNr(0)
 {
 

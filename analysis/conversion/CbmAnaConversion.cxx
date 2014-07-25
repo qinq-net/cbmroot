@@ -35,9 +35,27 @@ using boost::assign::list_of;
 
 CbmAnaConversion::CbmAnaConversion()
   : FairTask("CbmAnaConversion"),
+    fhGammaZ(NULL),
+    fhGammaZ_selected(NULL),
+    fTest(NULL),
+    fhNofElPrim(NULL),
+    fhNofElSec(NULL),
+    fhNofElAll(NULL),
+    fhTomography(NULL),
+    fhTomography_XZ(NULL),
+    fhTomography_YZ(NULL),
+    fhTomography_RICH_beampipe(NULL),
+    fhConversion(NULL),
+    fhConversion_prob(NULL),
+    fhInvariantMass_test(NULL),
     fRichPoints(NULL),
     fMcTracks(NULL),
-    fEventNum(0)
+    fStsTracks(NULL),
+    fStsTrackMatches(NULL),
+    fGlobalTracks(NULL),
+    fEventNum(0),
+    testint(0),
+    fHistoList()
 {
 }
 

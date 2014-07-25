@@ -34,11 +34,15 @@ public:
     * \brief Constructor.
     */
    CbmLitMCTrack():
-   	   fNofRichHits(0),
-   	   fRingAaxis(0.),
-   	   fRingBaxis(0.),
-   	   fRingCenterX(0.),
-   	   fRingCenterY(0.) {
+  fPoints(),
+    fStationPoints(),
+    fStationIds(),
+    fMaxConsecutivePoints(),
+    fNofRichHits(0),
+    fRingAaxis(0.),
+    fRingBaxis(0.),
+    fRingCenterX(0.),
+    fRingCenterY(0.) {
       // Initialize all maps
       fPoints[kMVD];
       fPoints[kSTS];

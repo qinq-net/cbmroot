@@ -58,6 +58,9 @@ class CbmStsClusterFinderSimple : public TObject {
 
 		TClonesArray* fClusters;   ///< Output array of clusters
 
+                CbmStsClusterFinderSimple(const CbmStsClusterFinderSimple&);
+                CbmStsClusterFinderSimple operator=(const CbmStsClusterFinderSimple&);
+
 		ClassDef(CbmStsClusterFinderSimple,1);
 };
 

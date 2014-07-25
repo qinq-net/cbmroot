@@ -36,19 +36,26 @@
 // -----   Standard constructor   ------------------------------------------
 CbmStsDigitizeIdeal::CbmStsDigitizeIdeal(Int_t digiModel)
   : FairTask("StsDigitize"),
-  fDigiModel(digiModel),
-  fPoints(NULL),
-  fDigis(NULL),
-  fNofPoints(0),
-  fNofSignalsF(0),
-  fNofSignalsB(0),
-  fNofDigis(0),
-  fNofEvents(0),
-  fNofPointsTot(0),
-  fNofSignalsFTot(0),
-  fNofSignalsBTot(0),
-  fNofDigisTot(0),
-  fTimer()
+    fDigiModel(digiModel),
+    fDynRange(0.),
+    fThreshold(0.),
+    fNofAdcChannels(0),
+    fTimeResolution(0.),
+    fDeadTime(0.),
+    fSetup(NULL),
+    fPoints(NULL),
+    fDigis(NULL),
+    fTimer(),
+    fNofPoints(0),
+    fNofSignalsF(0),
+    fNofSignalsB(0),
+    fNofDigis(0),
+    fNofEvents(0),
+    fNofPointsTot(0.),
+    fNofSignalsFTot(0.),
+    fNofSignalsBTot(0.),
+    fNofDigisTot(0.),
+    fTimeTot()
 { 
   Reset();
 }

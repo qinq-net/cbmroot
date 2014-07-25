@@ -113,6 +113,9 @@ class CbmStsSetup : public CbmStsElement
     /** Default constructor  **/
     CbmStsSetup();
 
+    CbmStsSetup(const CbmStsSetup&);
+    CbmStsSetup operator=(const CbmStsSetup&);
+
     ClassDef(CbmStsSetup,1);
 
 };

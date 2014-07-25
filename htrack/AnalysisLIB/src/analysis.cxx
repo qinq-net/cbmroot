@@ -2292,7 +2292,7 @@ void analysis::evaluateMagnetfieldFactors(bool isFirstEvent, bool averagingFacto
 	prelutHoughBorder*             firstBorder;
 	lutHoughBorder*                secondBorder;
 	houghBorderPosition            actualHoughCoord;
-	double                         magnetfieldFactor;
+	double                         _magnetfieldFactor;
 
 	if (eventData == NULL)
 		throw cannotAccessEventDataError(ANALYSISLIB);
@@ -2483,12 +2483,12 @@ void analysis::evaluateMagnetfieldFactors(bool isFirstEvent, bool averagingFacto
 	/* this sets the magnetfield factors for each station for the computing of the hough transformation */
 	for (j = 0; j < (*eventData)->getNumberOfActiveStations(); j++) {
 	
-		magnetfieldFactor = magnetfieldFactorAnalyser->getMagnetfieldFactor(j);
+		_magnetfieldFactor = magnetfieldFactorAnalyser->getMagnetfieldFactor(j);
 
 		if (averagingFactors && !isFirstEvent)
-			magneticField->updateMagnetfieldFactor(j, magnetfieldFactor);
+			magneticField->updateMagnetfieldFactor(j, _magnetfieldFactor);
 		else
-			magneticField->setMagnetfieldFactor(j, magnetfieldFactor);
+			magneticField->setMagnetfieldFactor(j, _magnetfieldFactor);
 
 		if (analysisResultWarnings & MAGNETFIELDFACTORINFORMATION) {
 

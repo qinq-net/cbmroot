@@ -120,7 +120,8 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF():
    fStart(),
    fStop(),
    fdDigitizeTime(0.),
-   fdMergeTime(0.)
+   fdMergeTime(0.),
+   fsBeamInputFile("")
 {
 
 }
@@ -180,7 +181,8 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF(const char *name, Int_t verbose, Bool_t w
    fStart(),
    fStop(),
    fdDigitizeTime(0.),
-   fdMergeTime(0.)
+   fdMergeTime(0.),
+   fsBeamInputFile("")
 {
 
 }

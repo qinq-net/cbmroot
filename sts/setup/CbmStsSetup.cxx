@@ -41,7 +41,7 @@ const TString CbmStsSetup::fgkLevelName[] = { "sts",
 
 // -----   Constructor   ---------------------------------------------------
 CbmStsSetup::CbmStsSetup() : CbmStsElement("STS", "system", kStsSystem),
-		                         fDigitizer(NULL) {
+			     fDigitizer(NULL), fModules(), fSensors() {
 	if ( gGeoManager) Init(gGeoManager);
 }
 // -------------------------------------------------------------------------

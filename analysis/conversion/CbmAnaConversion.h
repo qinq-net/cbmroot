@@ -103,6 +103,7 @@ private:
    
    int testint;
 
+   vector<TH1*> fHistoList; //list of all histograms
 
 
    /**
@@ -110,8 +111,6 @@ private:
     */
    void InitHistograms();
    
-   vector<TH1*> fHistoList; //list of all histograms
-
 
    /**
     * \brief Copy constructor.

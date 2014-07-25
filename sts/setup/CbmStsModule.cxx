@@ -18,14 +18,16 @@
 
 // -----   Default constructor   -------------------------------------------
 CbmStsModule::CbmStsModule() : CbmStsElement(),
- 	                             fNofChannels(2048),
-	                             fDynRange(0.),
-	                             fThreshold(0.),
-	                             fNofAdcChannels(0),
-	                             fTimeResolution(0),
-	                             fDeadTime(0.),
-	                             fIsSet(kFALSE),
-	                             fAnalogBuffer()
+			         fNofChannels(2048),
+			         fDynRange(0.),
+			         fThreshold(0.),
+			         fNofAdcChannels(0),
+			         fTimeResolution(0),
+			         fDeadTime(0.),
+			         fIsSet(kFALSE),
+   			         fAnalogBuffer(),
+                                 fDigis(),
+                                 fClusters()
 {
 }
 // -------------------------------------------------------------------------
@@ -43,7 +45,9 @@ CbmStsModule::CbmStsModule(const char* name, const char* title,
                            fTimeResolution(0),
                            fDeadTime(0.),
                            fIsSet(0),
-                           fAnalogBuffer()
+                           fAnalogBuffer(),
+                           fDigis(),
+                           fClusters()
 {
 }
 // -------------------------------------------------------------------------

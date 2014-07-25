@@ -41,6 +41,7 @@ class CbmTofTrack : public TObject {
 	  fTrackPar(trackPar),
 	  fTrackLength(trackLength),
 	  fPidHypo(pidHypo),
+          fMass(mass),
 	  fDistance(0.) 
 	    {
 	    }

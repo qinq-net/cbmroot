@@ -211,7 +211,7 @@ void lutMath::evaluateHistogramBorderV1(trackfinderInputHit* hit, lutHoughBorder
 	double               thetaIncr;
 	double               q_p_xzIncr;
 	double               theta;
-	double               magnetfieldFactor;
+	double               _magnetfieldFactor;
 	double               q_p_xzPrev;
 	double               q_p_xz;
 	double               q_p_xzBorder;
@@ -239,7 +239,7 @@ void lutMath::evaluateHistogramBorderV1(trackfinderInputHit* hit, lutHoughBorder
 	thetaIncr         = (def.dim1Max  - def.dim1Min)  / def.dim1Step;
 	q_p_xzIncr        = (def.dim2Max - def.dim2Min) / def.dim2Step;
 
-	magnetfieldFactor = evaluateMagnetfieldFactor(hit);
+	_magnetfieldFactor = evaluateMagnetfieldFactor(hit);
 
 	correction        = true;
 	q_p_xzPrev        = def.dim2Min;
@@ -249,7 +249,7 @@ void lutMath::evaluateHistogramBorderV1(trackfinderInputHit* hit, lutHoughBorder
 
 	for (int i = 0; i < def.dim1Step; i++) {
 
-		q_p_xz                = formula.evaluateLut(posX, posZ, theta, magnetfieldFactor);
+		q_p_xz                = formula.evaluateLut(posX, posZ, theta, _magnetfieldFactor);
 
 		actualHoughCoord.pos1 = i;
 		q_p_xzBorder          = def.dim2Min;
@@ -315,7 +315,7 @@ void lutMath::evaluateHistogramBorderV2(trackfinderInputHit* hit, lutHoughBorder
 	double               posZ;
 	double               thetaIncr;
 	double               q_p_xzIncr;
-	double               magnetfieldFactor;
+	double               _magnetfieldFactor;
 	double               theta;
 	double               q_p_xz;
 	double               q_p_xz_previous;
@@ -354,11 +354,11 @@ void lutMath::evaluateHistogramBorderV2(trackfinderInputHit* hit, lutHoughBorder
 	thetaIncr         = (def.dim1Max  - def.dim1Min)  / (def.dim1Step - 1);
 	q_p_xzIncr        = (def.dim2Max - def.dim2Min) / (def.dim2Step - 1);
 
-	magnetfieldFactor = evaluateMagnetfieldFactor(hit);
+	_magnetfieldFactor = evaluateMagnetfieldFactor(hit);
 	theta             = def.dim1Min;
 	q_p_xz_previous   = def.dim2Min - 1;
 
-	if (magnetfieldFactor == 0)
+	if (_magnetfieldFactor == 0)
 		throw magneticFieldFactorCannotBeZero();
 
 	actualBorderPointer->houghCoord.clear();
@@ -366,7 +366,7 @@ void lutMath::evaluateHistogramBorderV2(trackfinderInputHit* hit, lutHoughBorder
 	for (int i = 0; i < def.dim1Step; i++) {
 
 		/* compute the value in the second dimension according to the value of the first dimension */
-		q_p_xz = formula.evaluateLut(posX, posZ, theta, magnetfieldFactor);
+		q_p_xz = formula.evaluateLut(posX, posZ, theta, _magnetfieldFactor);
 
 		/* the value of the second dimension must be in the range */
 		if ((def.dim2Min <= q_p_xz) && (q_p_xz <= def.dim2Max)) {

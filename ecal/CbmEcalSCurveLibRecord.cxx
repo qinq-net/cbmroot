@@ -27,7 +27,7 @@ CbmEcalSCurveLibRecord::CbmEcalSCurveLibRecord(const char* filename)
     fPoints(0),
     fEnergies(0),
     fE(NULL),
-    fThetas(NULL),
+    fThetas(),
     fTheta(NULL),
     fA(NULL),
     fX(NULL),

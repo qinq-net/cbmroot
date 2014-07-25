@@ -171,6 +171,9 @@ private:
    CbmStsDigiScheme* fStsDigiScheme;   // Digitisation scheme
 
    CbmRichRingFitterEllipseTau* fTauFit; // Ellipse fitter algorithm
+
+   CbmLitMCTrackCreator(const CbmLitMCTrackCreator&);
+   CbmLitMCTrackCreator operator=(const CbmLitMCTrackCreator&);
 };
 
 #endif /* CBMLITMCTRACKCREATOR_H_ */

@@ -33,6 +33,7 @@ CbmStsHitFinder::CbmStsHitFinder()
     , fNofClustersTot(0.)
     , fNofHitsTot(0.)
     , fTimeTot(0.)
+    , fActiveModules()
 {
 }
 // -------------------------------------------------------------------------

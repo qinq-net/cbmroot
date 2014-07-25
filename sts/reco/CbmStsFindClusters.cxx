@@ -36,6 +36,7 @@ CbmStsFindClusters::CbmStsFindClusters()
     , fNofDigisTot(0.)
     , fNofClustersTot(0.)
     , fTimeTot(0.)
+    , fActiveModules()
 {
 }
 // -------------------------------------------------------------------------
