@@ -136,6 +136,26 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
         "Fair"
         "base/source"
         "std::binary_function"
+
+        # -- VC warnings
+        "common/undomacros.h"
+        "common/macros.h"
+        "common/types.h"
+        "vc/avx/vectorhelper.h"
+        "vc/avx/mask.h"
+        "vc/avx/writemaskedvector.h"
+        "vc/sse/mask.h"
+        "vc/avx/writemaskedvector.tcc"
+        "vc/avx/writemaskedvector.tcc"
+        "vc/avx/limits.h"
+        "vc/sse/vector.h"
+        "vc/sse/limits.h"
+        "vc/common/vectortuple.h"
+        "vc/common/interleavedmemory.h"
+        "vc/sse/helperimpl.h"
+        "vc/avx/vector.h"
+        "common/storage.h"
+        "vc/sse/vector.tcc"
   )
 
 # -----------------------------------------------------------
