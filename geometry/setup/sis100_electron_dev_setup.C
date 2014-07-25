@@ -1,6 +1,7 @@
 //
 //   comments
 //
+// 2014-07-25 - DE - use STS v13x fitting with with PIPE v14?
 // 2014-07-05 - DE - use PIPE v14x as interim solution
 // 2014-07-01 - DE - use PIPE v14f -> overlap with STS
 // 2014-06-30 - DE - use PIPE v14d together with RICH v14a
@@ -53,7 +54,7 @@ void sis100_electron_dev_setup()
   fieldSymType =  3;
 
   // -----  Tags  -----------------------------------------------------------
-  stsTag       = "v14a";
+  stsTag       = "v13x";
   trdTag       = "v14a_1e";
   tofTag       = "v13-5b";
 

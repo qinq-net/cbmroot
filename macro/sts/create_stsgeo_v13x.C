@@ -1,11 +1,15 @@
 /******************************************************************************
  ** Creation of STS geometry in ROOT format (TGeo).
  **
- ** @file create_stsgeo_v13.C
+ ** @file create_stsgeo_v13x.C
  ** @author Volker Friese <v.friese@gsi.de>
  ** @since 15 June 2012
  ** @date 09.05.2014
  ** @author Tomas Balog <T.Balog@gsi.de>
+ **
+ ** @date 25.07.2014
+ ** @author David Emschermann <d.emschermann@gsi.de>
+ ** modify cutout in STS keeping volume to fit beampipes v14e,f,g,h,i,j
  **
  ** The geometry hierarachy is:
  **
@@ -89,11 +93,11 @@
 // was accepted.
 
 
-// Differences to v13:
-// Increased radius of cutout for the beam pipe in the station volumes. The values
-// are now adapted to the actual aperture of the station.
+// Differences between v13x and v13d:
+// Increased radius of cutout for the beam pipe in the station volumes. 
+// The values are now adapted to the actual aperture of the station.
 // Changed cutout for the beam pipe in the STS volume to follow the new
-// bema pipe design v14. The cutout is now a TGeoPcon instead of a TGeoCone.
+// beam pipe design v14. The cutout is now a TGeoPcon instead of a TGeoCone.
 
 
 #include <iomanip>
@@ -156,7 +160,7 @@ TGeoManager*   gGeoMan           = NULL;  // will be set later
 // ======                         Main function                           =====
 // ============================================================================
 
-void create_stsgeo_v14(const char* geoTag="v14a")
+void create_stsgeo_v13x(const char* geoTag="v13x")
 {
 
   // -------------  Load the necessary FairRoot libraries   -------------------
