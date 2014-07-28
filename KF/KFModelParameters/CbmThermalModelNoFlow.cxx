@@ -90,7 +90,7 @@ namespace ThermalModelNoFlowNamespace {
 	public:
 
 	  ThermalDistributionFunction(int part, double T_, double R_, double ekin_, AcceptanceFunction *af_=NULL, ReconstructionEfficiencyFunction *rf_=NULL) : 
-		  fT(T_), fV(4./3.*TMath::Pi()*R_*R_*R_), mass(0.), ekin(ekin_), af(af_), rf(rf_)
+		  fT(T_), fV(4./3.*TMath::Pi()*R_*R_*R_), mass(0.), ekin(ekin_), ycm(0.), af(af_), rf(rf_)
 	  {
 			mass = TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass();
 			//double ss2 = 0.5*sqrt(2*kProtonMass*(ekin+2*kProtonMass));
@@ -357,11 +357,11 @@ namespace ThermalModelNoFlowNamespace {
 	class ThermalChi2Func {
 
 	public:
-	  ThermalChi2Func(TH1F *dndyexp, TH2F *dndydptexp, double Norm_) : Norm(Norm_) 
+	  ThermalChi2Func(TH1F *dndyexp, TH2F *dndydptexp, double Norm_) : Norm(Norm_), dndyHist(dndyexp), dndydptHist(dndydptexp)
 	  { 
 		  //iter = 0; 
-		  dndyHist = dndyexp; 
-		  dndydptHist = dndydptexp; 
+// 		  dndyHist = dndyexp; 
+// 		  dndydptHist = dndydptexp; 
 		  //cout << "AAA\n";
 	  }
 
@@ -438,22 +438,31 @@ ClassImp(CbmThermalModelNoFlow)
 
 CbmThermalModelNoFlow::CbmThermalModelNoFlow(Float_t ekin_, Int_t recoLevel, Int_t usePID, Int_t trackNumber, Int_t iVerbose):
   ekin(ekin_),
+  ycm(0),
+  fUpdate(0),
   fusePID(usePID),
   fRecoLevel(recoLevel),
   fTrackNumber(trackNumber),
+  flistStsPts(0),
+  flistTofPts(0),
   flistStsTracksMatch(0),
   flistStsTracks(0),
   fPrimVtx(0),
+  outfileName(""),
+  fChiToPrimVtx(0),
+  NPrimGlobalMC(0),
+  NPrimGlobalReco(0),
   flistMCTracks(0),
   flsitGlobalTracks(0),
   flistTofHits(0),
-  histodir(0)
+  flistTofPoints(0),
+  histodir(0),
+  events(0),
+  AcceptanceSTS(),
+  AcceptanceSTSTOF()
 //  flistRichRings(0),
 //  flistTrdTracks(0),
-{
-  NPrimGlobalMC = 0;
-  NPrimGlobalReco = 0;
-  
+{  
   double pbeam = sqrt((kProtonMass+ekin)*(kProtonMass+ekin)-kProtonMass*kProtonMass);
   double betacm = pbeam / (2.*kProtonMass+ekin);
   ycm = 0.5*log((1.+betacm)/(1.-betacm));

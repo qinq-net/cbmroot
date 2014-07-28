@@ -332,7 +332,6 @@ void CbmKFTrackFitQA::FillHistoAtFirstPoint(CbmKFTrErrMCPoints *mc_points, CbmMC
 
   //Double_t StartX = track_kf -> GetHit(0)[];
   Bool_t nomvdpoint = 1;
-  Bool_t nostspoint = 1;
 
   FairMCPoint *MCFirstPoint;
 
@@ -368,7 +367,6 @@ void CbmKFTrackFitQA::FillHistoAtFirstPoint(CbmKFTrErrMCPoints *mc_points, CbmMC
 //"     MCID    " << track_mc->GetMotherId() << "  MCIDPart  " << MCFirstPoint->GetTrackID() << endl;
       if (fabs(MCFirstPoint->GetZ() - fT[5]) < 1.)
       {
-        nostspoint=0;
         break;
       }
     }
@@ -610,8 +608,7 @@ void CbmKFTrackFitQA::StsHitMatch()
 //          CbmMCTrack *MCTrack = dynamic_cast<CbmMCTrack*>( listMCTracks->At( pt->GetTrackID() ) );
 //            if ( !MCTrack ) continue;
 //            if ( abs(MCTrack->GetPdgCode()) >= 10000 ) continue;
-            bool save = 1;
-            for(unsigned int iP=0; iP < stsPointIds_hit.size(); iP ++) if(vStsHitMatch[iH] == stsPointIds_hit[iP]) save=0;
+
             stsPointIds_hit.push_back(stsPointId);
             vStsHitMatch[iH] = stsPointId;
             gggi++;

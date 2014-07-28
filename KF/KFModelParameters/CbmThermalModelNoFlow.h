@@ -34,9 +34,12 @@ class FairRootManager;
 namespace ThermalModelNoFlowNamespace {
 	
 	struct AcceptanceFunction {
-	  Double_t dy, dpt;
+          AcceptanceFunction():dy(0.),dpt(0.),ys(0),pts(0),probs(0),sfunc() {};
+	  
+          Double_t dy, dpt;
 	  vector<Double_t> ys, pts, probs;
 	  BilinearSplineFunction sfunc;
+          
 	  void setSpline() { sfunc.setData(ys, pts, probs); }
 	  Double_t getAcceptance(const Double_t & y, const Double_t & pt) const;
 	};

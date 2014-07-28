@@ -7,8 +7,8 @@ class BilinearSplineFunction
 	vector<double> xs;
 	vector<SplineFunction> xspls;
 public:
-	BilinearSplineFunction(void) { xs.resize(0); xspls.resize(0); }
-	BilinearSplineFunction(const vector<double> & x, const vector<double> & y, const vector<double> & vals)
+	BilinearSplineFunction(void):xs(0),xspls(0) { xs.resize(0); xspls.resize(0); }
+	BilinearSplineFunction(const vector<double> & x, const vector<double> & y, const vector<double> & vals):xs(0),xspls(0)
     {
 		/*if (x.size()>0) {
 			xs.resize(0);
