@@ -36,6 +36,7 @@
 #include "TGeoPgon.h"
 #include "TGeoTube.h"
 #include "TGeoMatrix.h"
+#include "TGeoCompositeShape.h"
 #include "TList.h"
 
 #include <iostream>
@@ -694,6 +695,9 @@ void CbmEcalDetailed::ConstructGeometry()
   FairGeoBuilder *geobuild=geoLoad->getGeoBuilder();
 
   TGeoVolume *volume;
+  TGeoCompositeShape* top;
+  TGeoBBox* bbox;
+  TGeoTube* tube;
   FairGeoMedium *CbmMedium;
   TGeoPgon *spl;
 
@@ -721,7 +725,12 @@ void CbmEcalDetailed::ConstructGeometry()
   par[1]=fEcalSize[1]/2.0+0.1;
   par[2]=moduleth/2.0+0.1;
 */
-  volume=gGeoManager->Volume("Ecal", "BOX",  gGeoManager->GetMedium("SensVacuum")->GetId(), par, 3);
+  bbox=new TGeoBBox("ecal_bbox",par[0], par[1], par[2]);
+  // 48 cm for beam pipe
+  tube=new TGeoTube("ecal_hole", 0, 48, par[2]);
+  top=new TGeoCompositeShape("ecal_top", "ecal_bbox-ecal_hole");
+//  volume=gGeoManager->Volume("Ecal", "BOX",  gGeoManager->GetMedium("SensVacuum")->GetId(), par, 3);
+  volume=new TGeoVolume("Ecal", top, gGeoManager->GetMedium("SensVacuum"));
   gGeoManager->Node("Ecal", 1, "cave", 0.0,0.0, fZEcal+par[2]-0.05, 0, kTRUE, buf, 0);
   // An ugly way!!!
   // Need to make a two volumes for each calorimeter arm 
