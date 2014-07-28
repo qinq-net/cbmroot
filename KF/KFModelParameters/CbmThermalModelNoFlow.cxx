@@ -344,6 +344,9 @@ namespace ThermalModelNoFlowNamespace {
 
 	  double T() const {return fT;}
 	  double V() const {return fV;}
+	  
+	  ThermalDistributionFunction(const ThermalDistributionFunction&);
+      ThermalDistributionFunction& operator=(const ThermalDistributionFunction&);
 
 	private:
 	  double fT, fV;
@@ -366,6 +369,9 @@ namespace ThermalModelNoFlowNamespace {
 	  }
 
 	  ~ThermalChi2Func() {}
+	  
+	  ThermalChi2Func(const ThermalChi2Func&);
+      ThermalChi2Func& operator=(const ThermalChi2Func&);
 	  
 	  double chi2dndy(int part, double T_, double R_, double ekin_, AcceptanceFunction *af_=NULL, ReconstructionEfficiencyFunction *rf_=NULL, double systerr = 0.) const {
 		//std::cout << iter << " " << par[0] << " " << par[1] << "\n";

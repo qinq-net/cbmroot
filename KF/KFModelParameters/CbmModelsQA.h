@@ -56,17 +56,17 @@ class CbmModelsQA :public FairTask
   void WriteHistos( TObject *obj );
   void WriteHistosCurFile( TObject *obj );
 
-  CbmVertex*    fPrimVtx;
+  //CbmVertex*    fPrimVtx;
 
 // Names of files
   TString outfileName;
 
   TDirectory* histodir;
 
-  std::vector<int> vStsHitMatch;
-  std::vector<int> vStsPointMatch;
-  std::vector<int> vMvdPointMatch;
-  std::vector<int> vMCTrackMatch;
+  //std::vector<int> vStsHitMatch;
+  //std::vector<int> vStsPointMatch;
+  //std::vector<int> vMvdPointMatch;
+  //std::vector<int> vMCTrackMatch;
 
   int fNEvents;
   
@@ -74,7 +74,7 @@ class CbmModelsQA :public FairTask
 
  private:
   CbmModelsQA(const CbmModelsQA&);
-  void operator=(const CbmModelsQA&);
+  CbmModelsQA& operator=(const CbmModelsQA&);
   CbmThermalModelNoFlow* ThermalNoFlow;
   //CbmMSS* MSSModel;
   TDirectory* histodirmod;
