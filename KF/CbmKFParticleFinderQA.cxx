@@ -5,7 +5,7 @@
 #include "CbmKFParticleFinderQA.h"
 #include "CbmTrack.h"
 #include "CbmMCTrack.h"
-#include "CbmTrackMatch.h"
+#include "CbmTrackMatchNew.h"
 
 #include "FairRunAna.h"
 
@@ -123,13 +123,31 @@ void CbmKFParticleFinderQA::Exec(Option_t* opt)
 
   for(int iTr=0; iTr<ntrackMatches; iTr++)
   {
-    CbmTrackMatch* stsTrackMatch = (CbmTrackMatch*) fTrackMatchArray->At(iTr);
-    if(stsTrackMatch -> GetNofMCTracks() == 0) continue;
-    int trId = stsTrackMatch->GetMCTrackId();
-    if(TMath::Abs(mcTracks[trId].PDG()) > 2500)
+    CbmTrackMatchNew* stsTrackMatch = (CbmTrackMatchNew*) fTrackMatchArray->At(iTr);
+    if(stsTrackMatch -> GetNofLinks() == 0) continue;
+    Float_t bestWeight = 0.f;
+    Float_t totalWeight = 0.f;
+    Int_t mcTrackId = -1;
+    for(int iLink=0; iLink<stsTrackMatch -> GetNofLinks(); iLink++)
+    {
+      totalWeight += stsTrackMatch->GetLink(iLink).GetWeight();
+      if( stsTrackMatch->GetLink(iLink).GetWeight() > bestWeight)
+      {
+        bestWeight = stsTrackMatch->GetLink(iLink).GetWeight();
+        mcTrackId = stsTrackMatch->GetLink(iLink).GetIndex();
+      }
+    }
+    if(bestWeight/totalWeight < 0.7) continue;
+    if(mcTrackId >= nMCTracks || mcTrackId < 0)
+    {
+      std::cout << "Sts Matching is wrong!    StsTackId = " << mcTrackId << " N mc tracks = " << nMCTracks << std::endl;
       continue;
-    mcTracks[trId].SetReconstructed();
-    trackMatch[iTr] = trId;
+    }
+    
+    if(TMath::Abs(mcTracks[mcTrackId].PDG()) > 2500)
+      continue;
+    mcTracks[mcTrackId].SetReconstructed();
+    trackMatch[iTr] = mcTrackId;
   }
 
   fTopoPerformance->SetMCTracks(mcTracks);

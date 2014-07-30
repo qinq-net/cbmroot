@@ -5,7 +5,7 @@
 #include "CbmKFParticleFinderPID.h"
 #include "CbmStsTrack.h"
 #include "CbmMCTrack.h"
-#include "CbmTrackMatch.h"
+#include "CbmTrackMatchNew.h"
 #include "CbmTofHit.h"
 #include "CbmGlobalTrack.h"
 
@@ -105,15 +105,31 @@ void CbmKFParticleFinderPID::Finish()
 
 void CbmKFParticleFinderPID::SetMCPID()
 {
-  Int_t ntrackMatches=fTrackMatchArray->GetEntriesFast();
+  Int_t nMCTracks = fMCTrackArray->GetEntriesFast();
+  Int_t ntrackMatches = fTrackMatchArray->GetEntriesFast();
   for(int iTr=0; iTr<ntrackMatches; iTr++)
   {
     fPID[iTr] = -2;
-    CbmTrackMatch* stsTrackMatch = (CbmTrackMatch*) fTrackMatchArray->At(iTr);
-    if(stsTrackMatch -> GetNofMCTracks() == 0) continue;
-    const int mcTrackId = stsTrackMatch->GetMCTrackId();
-    if(mcTrackId < 0 || mcTrackId >= fMCTrackArray->GetEntriesFast())
+    CbmTrackMatchNew* stsTrackMatch = (CbmTrackMatchNew*) fTrackMatchArray->At(iTr);
+    if(stsTrackMatch -> GetNofLinks() == 0) continue;
+    Float_t bestWeight = 0.f;
+    Float_t totalWeight = 0.f;
+    Int_t mcTrackId = -1;
+    for(int iLink=0; iLink<stsTrackMatch -> GetNofLinks(); iLink++)
+    {
+      totalWeight += stsTrackMatch->GetLink(iLink).GetWeight();
+      if( stsTrackMatch->GetLink(iLink).GetWeight() > bestWeight)
+      {
+        bestWeight = stsTrackMatch->GetLink(iLink).GetWeight();
+        mcTrackId = stsTrackMatch->GetLink(iLink).GetIndex();
+      }
+    }
+    if(bestWeight/totalWeight < 0.7) continue;
+    if(mcTrackId >= nMCTracks || mcTrackId < 0)
+    {
+      std::cout << "Sts Matching is wrong!    StsTackId = " << mcTrackId << " N mc tracks = " << nMCTracks << std::endl;
       continue;
+    }
     CbmMCTrack *cbmMCTrack = (CbmMCTrack*)fMCTrackArray->At(mcTrackId);
     if(!(TMath::Abs(cbmMCTrack->GetPdgCode()) == 11 ||
          TMath::Abs(cbmMCTrack->GetPdgCode()) == 13 ||
