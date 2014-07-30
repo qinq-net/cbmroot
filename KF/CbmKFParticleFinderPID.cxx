@@ -96,7 +96,7 @@ void CbmKFParticleFinderPID::Exec(Option_t* opt)
   if(fPIDMode==1)
     SetMCPID();
   if(fPIDMode==2)
-    SetRecoPID();
+    SetRecoPID(); 
 }
 
 void CbmKFParticleFinderPID::Finish()
@@ -213,27 +213,26 @@ void CbmKFParticleFinderPID::SetRecoPID()
 //         }
 //       }
 
-    Double_t l = globalTrack->GetLength();
+    Double_t l = globalTrack->GetLength();// l is calculated by global tracking
     if(fSisMode==0) //SIS-100
-      if( !((l>580.) && (l<700.)) ) continue;
+      if( !((l>400.) && (l<800.)) ) continue;
     if(fSisMode==1) //SIS 300
-      if( !((l>800.) && (l<1400.)) ) continue;
+      if( !((l>700.) && (l<1500.)) ) continue;
       
-
     Double_t time;
     Int_t tofHitIndex = globalTrack->GetTofHitIndex();
     if (tofHitIndex >= 0) {
-        const CbmTofHit* tofHit = static_cast<const CbmTofHit*>(fTofHitArray->At(tofHitIndex));
-        if(!tofHit) continue;
-        time = tofHit->GetTime();
+      const CbmTofHit* tofHit = static_cast<const CbmTofHit*>(fTofHitArray->At(tofHitIndex));
+      if(!tofHit) continue;
+      time = tofHit->GetTime();
     }
     else
       continue;
-    
+
     if(fSisMode==0) //SIS-100
-      if( !((time>19.) && (time<42.)) ) continue;
+      if( !((time>16.) && (time<42.)) ) continue;
     if(fSisMode==1) //SIS 300
-      if( !((time>29.) && (time<50.)) ) continue;
+      if( !((time>26.) && (time<52.)) ) continue;
 
     Double_t m2 = p*p*(1./((l/time/29.9792458)*(l/time/29.9792458))-1.);
 
