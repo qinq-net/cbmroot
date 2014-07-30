@@ -97,7 +97,7 @@ Int_t CbmL1StsTrackFinder::DoFind() {
       for (vector<int>::iterator ih = it->StsHits.begin(); ih != it->StsHits.end(); ++ih)
 	{
 	  CbmL1HitStore &h = L1->vHitStore[*ih];
-	  double zref = L1->algo->vStations[h.iStation].z[0];
+// 	  double zref = L1->algo->vStations[h.iStation].z[0];
 	  if( h.ExtIndex<0 ){
 	   // CbmMvdHit tmp;
 	   // tmp.SetZ(zref);

@@ -35,6 +35,17 @@ class CbmKFParticleFinder : public FairTask {
   
   void SetPIDInformation(CbmKFParticleFinderPID* pid) { fPID = pid; }
   
+  const CbmKFParticleFinder& operator = (const CbmKFParticleFinder& kfParticleFinder) 
+  { 
+    fStsTrackBranchName = kfParticleFinder.fStsTrackBranchName;
+    fTrackArray = kfParticleFinder.fTrackArray;
+    fPrimVtx = kfParticleFinder.fPrimVtx;
+    fTopoReconstructor = kfParticleFinder.fTopoReconstructor;
+    fPVFindMode = kfParticleFinder.fPVFindMode;
+    fPID = kfParticleFinder.fPID;
+    
+    return *this; 
+  }
  private:
    
   //names of input branches

@@ -25,7 +25,7 @@
 using std::vector;
 
 CbmKFParticleFinder::CbmKFParticleFinder(const char* name, Int_t iVerbose):
-  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fPVFindMode(1), fPID(0)
+  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fTrackArray(0), fPrimVtx(0), fTopoReconstructor(0), fPVFindMode(1), fPID(0)
 {
   fTopoReconstructor = new KFParticleTopoReconstructor;
 }

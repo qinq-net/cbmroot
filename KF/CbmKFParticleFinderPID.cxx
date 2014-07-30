@@ -18,7 +18,10 @@
 #include <iostream>
 
 CbmKFParticleFinderPID::CbmKFParticleFinderPID(const char* name, Int_t iVerbose):
-  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fGlobalTrackBranchName("GlobalTrack"), fTofBranchName("TofHit"), fMCTracksBranchName("MCTrack"), fTrackMatchBranchName("StsTrackMatch"), fPIDMode(0), fSisMode(0)
+  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fGlobalTrackBranchName("GlobalTrack"), 
+  fTofBranchName("TofHit"), fMCTracksBranchName("MCTrack"), fTrackMatchBranchName("StsTrackMatch"),
+  fTrackArray(0), fGlobalTrackArray(0), fTofHitArray(0), fMCTrackArray(0), fTrackMatchArray(0), 
+  fPIDMode(0), fSisMode(0), fPID(0)
 {
 }
 

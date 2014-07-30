@@ -27,7 +27,7 @@ class TimerInfo {
   TimerInfo():fName(""),fReal(0.),fCpu(0.){ };
   TimerInfo( const string& name ):fName(name),fReal(0.),fCpu(0.){ };
   
-  void operator =( TStopwatch& sw ) { fReal  = sw.RealTime(); fCpu  = sw.CpuTime(); };
+  const TimerInfo& operator =( TStopwatch& sw ) { fReal  = sw.RealTime(); fCpu  = sw.CpuTime(); return *this; };
   void operator+=( TStopwatch& sw ) { fReal += sw.RealTime(); fCpu += sw.CpuTime(); };
   void operator+=( const TimerInfo& t ){ fReal += t.fReal; fCpu += t.fCpu; }
   TimerInfo operator/( const float f ) const { TimerInfo r; r.fName = fName; r.fReal = fReal/f; r.fCpu = fCpu/f; return r; }
