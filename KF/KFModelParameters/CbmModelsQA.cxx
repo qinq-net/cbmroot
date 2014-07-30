@@ -59,7 +59,8 @@ CbmModelsQA::CbmModelsQA(Int_t iVerbose, int findParticlesMode, int perf, const 
   outfileName("CbmModelsQA.root"),
   histodir(0),
   fNEvents(0),
-  ThermalNoFlow(0)
+  ThermalNoFlow(0),
+  histodirmod(0)
 {
   TDirectory *currentDir = gDirectory;
   
