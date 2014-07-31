@@ -27,9 +27,14 @@ struct LxPoint
   Int_t hitId;
 
   LxPoint(Double_t X, Double_t Y, Double_t Z, Double_t Dx, Double_t Dy, Double_t Dz, LxLayer* lay, int hId, bool isArtificial = false) :
-      x(X), y(Y), z(Z), dx(Dx), dy(Dy), dz(Dz), layer(lay), used(false), valid(true), track(0), hitId(hId), artificial(isArtificial) {}
+  x(X), y(Y), z(Z), dx(Dx), dy(Dy), dz(Dz), used(false), valid(true), artificial(isArtificial), track(NULL), rays(), layer(lay), hitId(hId)  {}
   ~LxPoint();
   void CreateRay(LxPoint* lPoint);
+ 
+ private: 
+  LxPoint(const LxPoint&);
+  LxPoint operator=(const LxPoint&);
+
 };
 
 struct LxRay
@@ -41,6 +46,10 @@ struct LxRay
   LxStation* station;
   std::list<LxRay*> neighbours;
   LxRay(LxPoint* s, LxPoint* e);
+
+ private:
+  LxRay(const LxRay&);
+  LxRay operator=(const LxRay&);
 };
 
 struct LxLayer
@@ -64,6 +73,9 @@ struct LxLayer
   LxPoint* PickNearestPoint(LxRay* ray);// Used in track building.
   LxPoint* PickNearestPoint(Double_t x, Double_t y, Double_t deltaX, Double_t deltaY);// Used in middle point building.
   bool HasPointInRange(Double_t x, Double_t y, Double_t deltaX, Double_t deltaY);
+ private:
+  LxLayer(const LxLayer&);
+  LxLayer operator=(const LxLayer&);
 };
 
 struct LxStation
@@ -93,6 +105,10 @@ struct LxStation
   void RestoreMiddlePoints();
   void BuildRays();
   void ConnectNeighbours();
+
+ private:
+  LxStation(const LxStation&);
+  LxStation operator=(const LxStation&);
 };
 
 struct LxExtTrack

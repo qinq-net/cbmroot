@@ -95,6 +95,9 @@ private:
   Int_t mcPointsTriggered;
 #endif//CALC_MUCH_DETECTORS_EFF
 
+  LxFinder(const LxFinder&);
+  LxFinder operator=(const LxFinder&);
+
   ClassDef(LxFinder, 1);
 };
 

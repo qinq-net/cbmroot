@@ -45,8 +45,20 @@ struct LxTrackCandidate
 // LxTrack
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-LxTrack::LxTrack(LxTrackCandidate* tc) : matched(false), length(tc->length), chi2(tc->chi2), mcTrack(0),
-    aX(0), bX(0), aY(0), bY(0), restoredPoints(0)
+LxTrack::LxTrack(LxTrackCandidate* tc) 
+  : externalTrack(),
+    matched(false), 
+    mcTrack(NULL),
+#ifdef CALC_LINK_WITH_STS_EFF
+    mcTracks(),
+#endif//CALC_LINK_WITH_STS_EFF
+    length(tc->length), 
+    chi2(tc->chi2), 
+    aX(0), 
+    bX(0), 
+    aY(0), 
+    bY(0), 
+    restoredPoints(0)
 {
   memset(rays, 0, sizeof(rays));
   memset(points, 0, sizeof(points));
@@ -184,11 +196,15 @@ void LxPoint::CreateRay(LxPoint* lPoint)
 // LxRay
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-LxRay::LxRay(LxPoint* s, LxPoint* e) :
-      source(s), end(e), tx((e->x - s->x) / (e->z - s->z)), ty((e->y - s->y) / (e->z - s->z)),
-      dtx(sqrt(e->dx * e->dx + s->dx * s->dx) / (s->z - e->z)),
-      dty(sqrt(e->dy * e->dy + s->dy * s->dy) / (s->z - e->z)),
-      station(s->layer->station)
+LxRay::LxRay(LxPoint* s, LxPoint* e) 
+  : tx((e->x - s->x) / (e->z - s->z)), 
+    ty((e->y - s->y) / (e->z - s->z)),
+    dtx(sqrt(e->dx * e->dx + s->dx * s->dx) / (s->z - e->z)),
+    dty(sqrt(e->dy * e->dy + s->dy * s->dy) / (s->z - e->z)),
+    source(s), 
+    end(e), 
+    station(s->layer->station),
+    neighbours()
 {
 }
 
@@ -196,8 +212,11 @@ LxRay::LxRay(LxPoint* s, LxPoint* e) :
 // LxLayer
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-LxLayer::LxLayer(LxStation* st, int lNum) : station(st),
-    layerNumber(lNum), zCoord(0)
+LxLayer::LxLayer(LxStation* st, int lNum) 
+  : points(),
+    station(st),
+    layerNumber(lNum), 
+    zCoord(0)
 {
 }
 
@@ -330,10 +349,21 @@ static Double_t dispersions01Y[] = { 2.1, 2.5, 2.6, 2.8, 3.7, 5.0 };
 static Double_t dispersions02X[] = { 3.0, 3.0, 3.0, 2.5, 2.5, 3.0 };
 static Double_t dispersions02Y[] = { 2.0, 2.0, 1.5, 2.0, 2.0, 3.0 };
 
-LxStation::LxStation(LxSpace* sp, int stNum) : space(sp), stationNumber(stNum), zCoord(0), txLimit(txLimits[stNum]),
-    tyLimit(tyLimits[stNum]), txBreakLimit(txBreakLimits[stNum]), tyBreakLimit(tyBreakLimits[stNum]),
-    txBreakSigma(txBreakSigmas[stNum]), tyBreakSigma(tyBreakSigmas[stNum]), disp01X(dispersions01X[stNum]),
-    disp01Y(dispersions01Y[stNum]), disp02X(dispersions02X[stNum]), disp02Y(dispersions02Y[stNum])
+LxStation::LxStation(LxSpace* sp, int stNum) 
+  : layers(),
+    space(sp),
+    stationNumber(stNum),
+    zCoord(0),
+    txLimit(txLimits[stNum]),
+    tyLimit(tyLimits[stNum]),
+    txBreakLimit(txBreakLimits[stNum]),
+    tyBreakLimit(tyBreakLimits[stNum]),
+    txBreakSigma(txBreakSigmas[stNum]),
+    tyBreakSigma(tyBreakSigmas[stNum]),
+    disp01X(dispersions01X[stNum]),
+    disp01Y(dispersions01Y[stNum]),
+    disp02X(dispersions02X[stNum]),
+    disp02Y(dispersions02Y[stNum])
 {
   for (int i = 0; i < LXLAYERS; ++i)
     layers.push_back(new LxLayer(this, i));
@@ -493,6 +523,9 @@ void LxStation::ConnectNeighbours()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 LxSpace::LxSpace()
+  : stations(),
+    tracks(),
+    extTracks()
 {
   for (int i = 0; i < LXSTATIONS; ++i)
     stations.push_back(new LxStation(this, i));
