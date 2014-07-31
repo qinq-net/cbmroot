@@ -90,7 +90,7 @@ void L1Algo::KFTrackFitter_simple()  // TODO: Add pipe.
         fvec v2  = static_cast<fscal>( vStsStripsB[hit2.b] );
         fvec x2,y2;
         StripsToCoor(u2, v2, x2, y2, sta2);
-        fvec z2 = vStsZPos[hit2.iz];
+//         fvec z2 = vStsZPos[hit2.iz];
 
         fvec dzi = 1./(z1-z0);
 
@@ -223,9 +223,9 @@ void L1Algo::KFTrackFitter_simple()  // TODO: Add pipe.
         fvec v2  = static_cast<fscal>( vStsStripsB[hit2.b] );
         fvec x2,y2;
         StripsToCoor(u2, v2, x2, y2, sta2);
-        fvec z2 = vStsZPos[hit2.iz];
+//         fvec z2 = vStsZPos[hit2.iz];
 
-        fvec dzi = 1./(z1-z0);
+//         fvec dzi = 1./(z1-z0);
 
   //fvec qp0 = first_trip->GetQpOrig(MaxInvMom);
 
@@ -456,7 +456,6 @@ void L1Algo::L1KFTrackFitter( bool extrapolateToTheEndOfSTS )
         fB0.Combine( fB[i], w[i] );
         fld.Set( fB0, fz0, fB1, fz1, fB2, fz2 );
 
-        fvec zero = ZERO;
         fvec initialised = fvec(z[i] < z_end) & fvec(z_start <= z[i]);
           // cout << z_start << " " << z_end << " " << initialised << endl;
         fvec w1 = (w[i] & (initialised));
@@ -533,7 +532,6 @@ void L1Algo::L1KFTrackFitter( bool extrapolateToTheEndOfSTS )
         fB0.Combine( fB[i], w[i] );
         fld.Set( fB0, fz0, fB1, fz1, fB2, fz2 );
 
-        fvec zero = ZERO;
         fvec initialised = fvec(z[i] <= z_end) & fvec(z_start < z[i]);
         fvec w1  = (w[i] & (initialised));
         fvec wIn = (ONE  & (initialised));
@@ -578,7 +576,6 @@ void L1Algo::L1KFTrackFitter( bool extrapolateToTheEndOfSTS )
             fB0.Combine( fB[i], w[i] );
             fld.Set( fB0, fz0, fB1, fz1, fB2, fz2 );
 
-            fvec zero = ZERO;
             fvec initialised = fvec(z[i] > z_end);
             fvec wIn = (ONE  & (initialised));
             
