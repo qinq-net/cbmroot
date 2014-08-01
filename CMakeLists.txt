@@ -231,7 +231,17 @@ add_subdirectory (hadron)
 add_subdirectory (analysis)
 #add_subdirectory (vis)
 add_subdirectory (tracking)
-add_subdirectory (vc)
+
+Execute_Process(COMMAND ${ROOT_CONFIG_EXECUTABLE} --has-vc
+                OUTPUT_VARIABLE ROOT_HAS_VC
+               )
+String(STRIP ${ROOT_HAS_VC} ROOT_HAS_VC)
+
+If(NOT ${ROOT_HAS_VC})
+  Message(STATUS "Root does not support VC. Compile the internal version.")
+  add_subdirectory (vc)
+EndIf()
+
 
 Option(BUILD_UNITTESTS "Build all unit tests and add them as new tests" OFF)
 If(BUILD_UNITTESTS)
