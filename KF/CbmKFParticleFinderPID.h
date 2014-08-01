@@ -37,28 +37,10 @@ class CbmKFParticleFinderPID : public FairTask {
   
   const std::vector<int>& GetPID() const { return fPID; }
   
-  const CbmKFParticleFinderPID& operator = (const CbmKFParticleFinderPID& kfParticleFinderPid) 
-  { 
-    fStsTrackBranchName = kfParticleFinderPid.fStsTrackBranchName;
-    fGlobalTrackBranchName = kfParticleFinderPid.fGlobalTrackBranchName;
-    fTofBranchName = kfParticleFinderPid.fTofBranchName;
-    fMCTracksBranchName = kfParticleFinderPid.fMCTracksBranchName;
-    fTrackMatchBranchName = kfParticleFinderPid.fTrackMatchBranchName;
-    
-    fTrackArray = kfParticleFinderPid.fTrackArray;
-    fGlobalTrackArray = kfParticleFinderPid.fGlobalTrackArray;
-    fTofHitArray = kfParticleFinderPid.fTofHitArray;
-    fMCTrackArray = kfParticleFinderPid.fMCTrackArray;
-    fTrackMatchArray = kfParticleFinderPid.fTrackMatchArray;
-    
-    fPIDMode = kfParticleFinderPid.fPIDMode;
-    fSisMode = kfParticleFinderPid.fSisMode;
-    fPID = kfParticleFinderPid.fPID;
-    
-    return *this; 
-  }
-  
  private:
+  
+  const CbmKFParticleFinderPID& operator = (const CbmKFParticleFinderPID&);
+  CbmKFParticleFinderPID(const CbmKFParticleFinderPID&);
   
   void SetMCPID();
   void SetRecoPID();

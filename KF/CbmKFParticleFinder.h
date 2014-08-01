@@ -34,19 +34,11 @@ class CbmKFParticleFinder : public FairTask {
   const KFParticleTopoReconstructor * GetTopoReconstructor() const { return fTopoReconstructor; }
   
   void SetPIDInformation(CbmKFParticleFinderPID* pid) { fPID = pid; }
-  
-  const CbmKFParticleFinder& operator = (const CbmKFParticleFinder& kfParticleFinder) 
-  { 
-    fStsTrackBranchName = kfParticleFinder.fStsTrackBranchName;
-    fTrackArray = kfParticleFinder.fTrackArray;
-    fPrimVtx = kfParticleFinder.fPrimVtx;
-    fTopoReconstructor = kfParticleFinder.fTopoReconstructor;
-    fPVFindMode = kfParticleFinder.fPVFindMode;
-    fPID = kfParticleFinder.fPID;
-    
-    return *this; 
-  }
+   
  private:
+   
+  const CbmKFParticleFinder& operator = (const CbmKFParticleFinder&);
+  CbmKFParticleFinder(const CbmKFParticleFinder&);
    
   //names of input branches
   TString fStsTrackBranchName;      //! Name of the input TCA with reco tracks

@@ -34,25 +34,10 @@ class CbmKFParticleFinderQA : public FairTask {
   
   void SetPrintEffFrequency(Int_t n);
 
-  const CbmKFParticleFinderQA& operator = (const CbmKFParticleFinderQA& kfParticleFinderQA) 
-  { 
-    fMCTracksBranchName = kfParticleFinderQA.fMCTracksBranchName;
-    fTrackMatchBranchName = kfParticleFinderQA.fTrackMatchBranchName;
-    
-    fMCTrackArray = kfParticleFinderQA.fMCTrackArray;
-    fTrackMatchArray = kfParticleFinderQA.fTrackMatchArray;
-    
-    fOutFileName = kfParticleFinderQA.fOutFileName;
-    fOutFile = kfParticleFinderQA.fOutFile;
-    fEfffileName = kfParticleFinderQA.fEfffileName;
-    fTopoPerformance = kfParticleFinderQA.fTopoPerformance;
-    
-    fPrintFrequency = kfParticleFinderQA.fPrintFrequency;
-    fNEvents = kfParticleFinderQA.fNEvents;
-    
-    return *this; 
-  }
  private:
+  
+  const CbmKFParticleFinderQA& operator = (const CbmKFParticleFinderQA&);
+  CbmKFParticleFinderQA(const CbmKFParticleFinderQA&);
   
   void WriteHistosCurFile( TObject *obj );
   
