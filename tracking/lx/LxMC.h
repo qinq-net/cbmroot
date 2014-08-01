@@ -37,6 +37,34 @@ struct LxMCTrack
   : p(0.), q(0.), x(0.), y(0.), z(0.), px(0.), py(0.), pz(0.),
     mother_ID(0), pdg(0), Points(), fUniqueID(0), externalTrack(NULL) {}
 
+  // Only shallow copy needed
+  LxMCTrack(const LxMCTrack& rhs)
+  : p(rhs.p), q(rhs.q), x(rhs.x), y(rhs.y), z(rhs.z), 
+    px(rhs.px), py(rhs.py), pz(rhs.pz), mother_ID(rhs.mother_ID), 
+    pdg(rhs.pdg), Points(rhs.Points), fUniqueID(rhs.fUniqueID), 
+    externalTrack(rhs.externalTrack) {}
+
+  // Only shallow copy needed
+  LxMCTrack& operator=(const LxMCTrack& rhs) {
+    if (this != &rhs) {
+      p = rhs.p; 
+      q = rhs.q; 
+      x = rhs.x; 
+      y = rhs.y; 
+      z = rhs.z; 
+      px = rhs.px; 
+      py = rhs.py; 
+      pz = rhs.pz; 
+      mother_ID = rhs.mother_ID; 
+      pdg = rhs.pdg; 
+      Points = rhs.Points; 
+      fUniqueID = rhs.fUniqueID; 
+      externalTrack = rhs.externalTrack;
+    }
+    return *this;
+  }
+    
+
 };
 
 #endif//LXMC_INCLUDED
