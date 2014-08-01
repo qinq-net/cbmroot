@@ -218,7 +218,7 @@ void CbmKFParticleFinderPID::SetRecoPID()
 
     Double_t l = globalTrack->GetLength();// l is calculated by global tracking
     if(fSisMode==0) //SIS-100
-      if( !((l>400.) && (l<800.)) ) continue;
+      if( !((l>500.) && (l<900.)) ) continue;
     if(fSisMode==1) //SIS 300
       if( !((l>700.) && (l<1500.)) ) continue;
       
