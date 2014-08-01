@@ -47,9 +47,9 @@ Int_t mvd_qa2_transDelta()
   TString pipeGeom = "pipe/pipe_standard.geo";
 
   // Magnet geometry and field map
-  TString magnetGeom  =  "magnet/magnet_v09e.geo";
-  TString fieldMap    = "field_v10e";
-  Double_t fieldZ     = 50.;     // z position of field centre
+  TString magnetGeom  = "magnet/magnet_v12b.geo.root";
+  TString fieldMap    = "field_v12b";
+  Double_t fieldZ     = 40.;     // z position of field centre
   Double_t fieldScale = 1.;      // field scaling factor
 
   // MVD geometry
@@ -117,6 +117,8 @@ Int_t mvd_qa2_transDelta()
   else if ( fieldMap == "FieldAlligator" )
     magField = new CbmFieldMapSym2(fieldMap);
   else if ( fieldMap == "FieldMuonMagnet" )
+    magField = new CbmFieldMapSym3(fieldMap);
+  else if ( fieldMap == "field_v12b" )
     magField = new CbmFieldMapSym3(fieldMap);
   else {
     cout << "===> ERROR: Field map " << fieldMap << " unknown! " << endl;
