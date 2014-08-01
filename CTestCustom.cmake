@@ -143,6 +143,7 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
         "common/types.h"
         "common/storage.h"
         "common/aliasingentryhelper.h"
+        "common/logarithm.h"
         "vc/common/vectortuple.h"
         "vc/common/interleavedmemory.h"
         "vc/avx/vectorhelper.h"
