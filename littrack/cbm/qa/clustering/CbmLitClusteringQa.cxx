@@ -344,7 +344,7 @@ void CbmLitClusteringQa::FillResidualAndPullHistograms(
 	for (Int_t iHit = 0; iHit < nofHits; iHit++) {
       const CbmPixelHit* hit = static_cast<const CbmPixelHit*>(hits->At(iHit));
       const CbmMatch* match = static_cast<const CbmMatch*>(hitMatches->At(iHit));
-      if (isnan(hit->GetX()) || (isnan(hit->GetY()))) continue;
+      if (isnan(static_cast<Float_t>(hit->GetX())) || (isnan(static_cast<Float_t>(hit->GetY())))) continue;
       const FairMCPoint* point = static_cast<const FairMCPoint*>(points->At(match->GetMatchedLink().GetIndex()));
       if (point == NULL) continue;
       //Float_t xPoint = (muchPoint->GetXIn() + muchPoint->GetXOut()) / 2;
