@@ -147,7 +147,7 @@ else(CBMROOT_MINIMAL)
   # for boost.
   Unset(Boost_INCLUDE_DIR CACHE)
   Unset(Boost_LIBRARY_DIRS CACHE)
-  find_package(Boost 1.41)
+  find_package(Boost 1.48)
   If (Boost_FOUND)
     Set(Boost_Avail 1)
   Else (Boost_FOUND)
@@ -231,6 +231,23 @@ add_subdirectory (hadron)
 add_subdirectory (analysis)
 #add_subdirectory (vis)
 add_subdirectory (tracking)
+
+# Check if the compilation flag -std=c++11 is set
+# In this case the code is compiled with the new standard and it is possible
+# to compile the fles_ipc library
+If(NOT CMAKE_CXX_FLAGS)
+  Message(STATUS "No C++11 support found. FLES_IPC library will not be build.")
+Else()
+  String(FIND ${CMAKE_CXX_FLAGS} "-std=c++11" POS_C++11)
+  If(${POS_C++11} EQUAL -1)
+    Message(STATUS "No C++11 support found. FLES_IPC library will not be build.")
+  Else()
+    Message(STATUS "C++11 support found. Build FLES_IPC library.")
+    add_subdirectory(fles/ipc)
+  EndIf()
+EndIf()
+
+#add_subdirectory(fles/ipc)
 
 Execute_Process(COMMAND ${ROOT_CONFIG_EXECUTABLE} --has-vc
                 OUTPUT_VARIABLE ROOT_HAS_VC
