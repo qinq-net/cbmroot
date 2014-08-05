@@ -152,6 +152,7 @@ private:
    TH1D * fhMomentum_MCvsReco_diff;
    
    TH1D * fhInvariantMass_recoMomentum1;
+   TH1D * fhInvariantMass_recoMomentum2;
 
    TClonesArray* fRichPoints;
    TClonesArray* fMcTracks;

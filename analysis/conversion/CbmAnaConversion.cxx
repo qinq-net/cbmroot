@@ -174,7 +174,9 @@ void CbmAnaConversion::InitHistograms()
 	fHistoList.push_back(fhMomentum_MCvsReco_diff);
 	
 	fhInvariantMass_recoMomentum1 = new TH1D("fhInvariantMass_recoMomentum1","fhInvariantMass_recoMomentum1;mass;#", 2000, 0., 2.);
+	fhInvariantMass_recoMomentum2 = new TH1D("fhInvariantMass_recoMomentum2","fhInvariantMass_recoMomentum2;mass;#", 2000, 0., 2.);
 	fHistoList.push_back(fhInvariantMass_recoMomentum1);
+	fHistoList.push_back(fhInvariantMass_recoMomentum2);
 
 }
 
@@ -190,6 +192,7 @@ void CbmAnaConversion::Exec(Option_t* option)
    fMCTracklist_all.clear();
    fMCTracklist_omega.clear();
    fRecoTracklist.clear();
+   fRecoTracklistEPEM.clear();
    
    int countPrimEl = 0;
    int countSecEl = 0;
@@ -744,7 +747,7 @@ void CbmAnaConversion::FillRecoTracklist(CbmMCTrack* mctrack)
 		if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
 		if (mcMotherPdg == 111 || mcMotherPdg == 22) {	// pdg code 111 = pi0, 22 = gamma
 			fRecoTracklist.push_back(mctrack);
-			cout << "pdg " << mctrack->GetPdgCode() << "\t motherid " << motherId << endl;
+		//	cout << "pdg " << mctrack->GetPdgCode() << "\t motherid " << motherId << endl;
 			test++;
 		}
 		}
@@ -847,16 +850,109 @@ void CbmAnaConversion::InvariantMassTest()
 void CbmAnaConversion::InvariantMassTest_4epem()
 // Calculating invariant mass of 4 ep/em, using MC data AND reconstructed momentum
 {
+	cout << "4epem start" << endl;
+	cout << fRecoTracklistEPEM.size() << endl;
+	int fill = 0;
 	for(int i=0; i<fRecoTracklistEPEM.size(); i++) {
 		for(int j=i+1; j<fRecoTracklistEPEM.size(); j++) {
-			for(int k=j+1; i<fRecoTracklistEPEM.size(); k++) {
-				for(int l=k+1; j<fRecoTracklistEPEM.size(); l++) {
-					Double_t invmass = Invmass_4particlesRECO(fRecoMomentum[i], fRecoMomentum[j], fRecoMomentum[k], fRecoMomentum[l]);
-					fhInvariantMass_recoMomentum1->Fill(invmass);
+			for(int k=j+1; k<fRecoTracklistEPEM.size(); k++) {
+				for(int l=k+1; l<fRecoTracklistEPEM.size(); l++) {
+					if(fRecoTracklistEPEM[i]->GetPdgCode() + fRecoTracklistEPEM[j]->GetPdgCode() + fRecoTracklistEPEM[k]->GetPdgCode() + fRecoTracklistEPEM[l]->GetPdgCode() != 0) continue;
+					
+					
+					int motherId1 = fRecoTracklistEPEM[i]->GetMotherId();
+					int motherId2 = fRecoTracklistEPEM[j]->GetMotherId();
+					int motherId3 = fRecoTracklistEPEM[k]->GetMotherId();
+					int motherId4 = fRecoTracklistEPEM[l]->GetMotherId();
+					
+					if(motherId1 == motherId2 && motherId1 == motherId3 && motherId1 == motherId4) continue;
+					
+					if( (motherId1 == motherId2 && motherId3 == motherId4) ||
+						(motherId1 == motherId3 && motherId2 == motherId4) ||
+						(motherId1 == motherId4 && motherId2 == motherId3) ) {
+					
+						int grandmotherId1 = -1;
+						int grandmotherId2 = -1;
+						int grandmotherId3 = -1;
+						int grandmotherId4 = -1;
+						
+						int mcMotherPdg1  = -1;
+						int mcMotherPdg2  = -1;
+						int mcMotherPdg3  = -1;
+						int mcMotherPdg4  = -1;
+						int mcGrandmotherPdg1  = -1;
+						int mcGrandmotherPdg2  = -1;
+						int mcGrandmotherPdg3  = -1;
+						int mcGrandmotherPdg4  = -1;
+						
+						
+						if (motherId1 != -1) {
+							CbmMCTrack* mother1 = (CbmMCTrack*) fMcTracks->At(motherId1);
+							if (NULL != mother1) mcMotherPdg1 = mother1->GetPdgCode();
+							grandmotherId1 = mother1->GetMotherId();
+							if(grandmotherId1 != -1) {
+								CbmMCTrack* grandmother1 = (CbmMCTrack*) fMcTracks->At(grandmotherId1);
+								if (NULL != grandmother1) mcGrandmotherPdg1 = grandmother1->GetPdgCode();
+							}
+						}
+						if (motherId2 != -1) {
+							CbmMCTrack* mother2 = (CbmMCTrack*) fMcTracks->At(motherId2);
+							if (NULL != mother2) mcMotherPdg2 = mother2->GetPdgCode();
+							grandmotherId2 = mother2->GetMotherId();
+							if(grandmotherId2 != -1) {
+								CbmMCTrack* grandmother2 = (CbmMCTrack*) fMcTracks->At(grandmotherId2);
+								if (NULL != grandmother2) mcGrandmotherPdg2 = grandmother2->GetPdgCode();
+							}
+						}
+						if (motherId3 != -1) {
+							CbmMCTrack* mother3 = (CbmMCTrack*) fMcTracks->At(motherId3);
+							if (NULL != mother3) mcMotherPdg3 = mother3->GetPdgCode();
+							grandmotherId3 = mother3->GetMotherId();
+							if(grandmotherId3 != -1) {
+								CbmMCTrack* grandmother3 = (CbmMCTrack*) fMcTracks->At(grandmotherId3);
+								if (NULL != grandmother3) mcGrandmotherPdg3 = grandmother3->GetPdgCode();
+							}
+						}
+						if (motherId4 != -1) {
+							CbmMCTrack* mother4 = (CbmMCTrack*) fMcTracks->At(motherId4);
+							if (NULL != mother4) mcMotherPdg4 = mother4->GetPdgCode();
+							grandmotherId4 = mother4->GetMotherId();
+							if(grandmotherId4 != -1) {
+								CbmMCTrack* grandmother4 = (CbmMCTrack*) fMcTracks->At(grandmotherId4);
+								if (NULL != grandmother4) mcGrandmotherPdg4 = grandmother4->GetPdgCode();
+							}
+						}
+					
+					//if( (motherId_i == motherId_j && motherId_k == motherId_l) ||
+					//	(motherId_i == motherId_k && motherId_j == motherId_l) ||
+					//	(motherId_i == motherId_l && motherId_j == motherId_k) )
+					//	{
+					
+					if(grandmotherId1 == grandmotherId2 && grandmotherId1 == grandmotherId3 && grandmotherId1 == grandmotherId4) {
+						if(grandmotherId1 == -1) continue;
+						if(mcGrandmotherPdg1 != 111) continue;
+					Double_t invmass1 = Invmass_4particlesRECO(fRecoMomentum[i], fRecoMomentum[j], fRecoMomentum[k], fRecoMomentum[l]);
+					Double_t invmass2 = Invmass_4particles(fRecoTracklistEPEM[i], fRecoTracklistEPEM[j], fRecoTracklistEPEM[k], fRecoTracklistEPEM[l]);
+					
+					cout << "######################################################################" << endl;
+					cout << "index: " << i << "\t" << j << "\t" << k << "\t" << l << endl;
+					cout << "motherid: " << motherId1 << "\t" << motherId2 << "\t" << motherId3 << "\t" << motherId4 << endl;
+					cout << "motherpdf: " << mcMotherPdg1 << "\t" << mcMotherPdg2 << "\t" << mcMotherPdg3 << "\t" << mcMotherPdg4 << endl;
+					cout << "grandmotherid: " << grandmotherId1 << "\t" << grandmotherId2 << "\t" << grandmotherId3 << "\t" << grandmotherId4 << endl;
+					cout << "pdg: " << fRecoTracklistEPEM[i]->GetPdgCode() << "\t" << fRecoTracklistEPEM[j]->GetPdgCode() << "\t" << fRecoTracklistEPEM[k]->GetPdgCode() << "\t" << fRecoTracklistEPEM[l]->GetPdgCode() << endl;
+					cout << "invmass reco: " << invmass1 << "\t invmass mc: " << invmass2 << endl;
+					
+					fhInvariantMass_recoMomentum1->Fill(invmass1);
+					fhInvariantMass_recoMomentum2->Fill(invmass2);
+					fill++;
+					}
+					}
 				}
 			}
 		}
 	}
+	cout << "Filled events: " << fill << endl;
+	cout << "4epem end" << endl;
 }
 
 
@@ -999,6 +1095,7 @@ void CbmAnaConversion::InvariantMassTestReco()
 			}
 		}
 	}
+	cout << "InvariantMassTestReco - End!" << endl;
 }
 
 
