@@ -1,5 +1,12 @@
-void run_analysis(Int_t nEvents = 2)
+void run_analysis(Int_t nEvents = 2, Int_t mode = 0)
+	// mode 1 = tomography
+	// mode 2 = urqmd
+	// mode 3 = pluto
 {
+	if(mode == 0) {
+		cout << "ERROR: No mode specified! Exiting..." << endl;
+		exit();
+	}
    TTree::SetMaxTreeSize(90000000000);
 
 	Int_t iVerbose = 0;
@@ -10,10 +17,33 @@ void run_analysis(Int_t nEvents = 2)
 
 	gRandom->SetSeed(10);
 
-	TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.0001.root";
-	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.0001.root";
-	TString recoFile ="/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.0001.root";
-	TString analysisFile ="/Users/slebedev/Development/cbm/data/simulations/rich/richreco/analysis.0001.root";
+	TString mcFile = 		"";
+	TString parFile = 		"";
+	TString recoFile =		"";
+	TString analysisFile =	"";
+	
+	
+	TString outName = "urqmdtest";
+	if(mode == 1) {	// tomography
+		mcFile =		"/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".mc.0001.root";
+		parFile =		"/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".param.0001.root";
+		recoFile =		"/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".reco.0001.root";
+		analysisFile =	"/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".analysis.0001.root";
+	}
+	if(mode == 2) {	// urqmd
+		mcFile =		"/common/home/reinecke/CBM-Simulationen/outputs/urqmd." + outName + ".mc.00003.root";
+		parFile =		"/common/home/reinecke/CBM-Simulationen/outputs/urqmd." + outName + ".param.00003.root";
+		recoFile =		"/common/home/reinecke/CBM-Simulationen/outputs/urqmd." + outName + ".reco.00003.root";
+		analysisFile =	"/common/home/reinecke/CBM-Simulationen/outputs/urqmd." + outName + ".analysis.00003.root";
+	}
+	if(mode == 3) {	// pluto
+		mcFile =		"/common/home/reinecke/CBM-Simulationen/outputs/pluto." + outName + ".mc.0001.root";
+		parFile =		"/common/home/reinecke/CBM-Simulationen/outputs/pluto." + outName + ".param.0001.root";
+		recoFile =		"/common/home/reinecke/CBM-Simulationen/outputs/pluto." + outName + ".reco.0001.root";
+		analysisFile =	"/common/home/reinecke/CBM-Simulationen/outputs/pluto." + outName + ".analysis.0001.root";
+	}
+	
+	
 
 
 	if (script == "yes") {
@@ -58,6 +88,7 @@ void run_analysis(Int_t nEvents = 2)
 
 
    	CbmAnaConversion* conversionAna = new CbmAnaConversion();
+   	conversionAna->SetMode(mode);
    	run->AddTask(conversionAna);
 
     // =========================================================================
@@ -83,12 +114,19 @@ void run_analysis(Int_t nEvents = 2)
     run->Init();
     cout << "Starting run" << endl;
     run->Run(0,nEvents);
+    
+    cout << "\n\n" << endl;
+    cout << "######## RESULTS #########" << endl;
+    cout << "Test: " << conversionAna->GetTest() << endl;
+    cout << "Nof Events: " << conversionAna->GetNofEvents() << endl;
+    cout << "Fraction: " <<  1.0 * conversionAna->GetTest() / conversionAna->GetNofEvents() << endl;
 
     // -----   Finish   -------------------------------------------------------
     timer.Stop();
     Double_t rtime = timer.RealTime();
     Double_t ctime = timer.CpuTime();
     cout << endl << endl;
+    cout << "######## Finish ########" << endl;
     cout << "Macro finished successfully." << endl;
     cout << "Output file is "    << analysisFile << endl;
     cout << "Parameter file is " << parFile << endl;
@@ -97,4 +135,20 @@ void run_analysis(Int_t nEvents = 2)
 
     cout << " Test passed" << endl;
     cout << " All ok " << endl;
+	
+	Int_t analyseMode = mode;
+	ofstream outputfile("log.txt", mode = ios_base::app);
+	if(!outputfile) {
+		cout << "Error!" << endl;
+	}
+	else {
+		TTimeStamp testtime;
+		outputfile << "########## run_analysis.C ##########" << endl;
+		outputfile << "Date (of end): " << testtime.GetDate() << "\t Time (of end): " << testtime.GetTime() << " +2" << endl;
+		outputfile << "Output file is "    << analysisFile << endl;
+		outputfile << "Parameter file is " << parFile << endl;
+		outputfile << "Number of events: " << nEvents << "\t mode: " << analyseMode << endl;
+		outputfile << "Real time " << rtime << " s, CPU time " << ctime << "s" << endl << endl;
+		outputfile.close();
+	}
 }

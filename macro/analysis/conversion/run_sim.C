@@ -1,5 +1,12 @@
-void run_sim(Int_t nEvents = 2)
+void run_sim(Int_t nEvents = 2, Int_t mode = 0)
+	// mode 1 = tomography
+	// mode 2 = urqmd
+	// mode 3 = pluto
 {
+	if(mode == 0) {
+		cout << "ERROR: No mode specified! Exiting..." << endl;
+		exit();
+	}
    TTree::SetMaxTreeSize(90000000000);
 	Int_t iVerbose = 0;
 
@@ -7,31 +14,60 @@ void run_sim(Int_t nEvents = 2)
 	TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
 
 	//gRandom->SetSeed(10);
+	
+	TString urqmdfilenumber = "00004";
+	TString plutofilenumber = "0001";
 
-	TString inFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
-	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.0001.root";
-	TString outFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.0001.root";
+	TString inFile = "/common/cbma/simulations/gen/urqmd/25gev/centr/urqmd.auau.25gev.centr.00004.root";
+	TString plutoFile = "/common/cbma/simulations/gen/pluto/cktA/25gev/omega/epem/pluto.auau.25gev.omega.epem.0001.root";
+	TString parFile = "";
+	TString outFile = "";
 
 	TString caveGeom = "cave.geo";
 	TString pipeGeom = "pipe/pipe_standard.geo";
 	TString magnetGeom = "magnet/magnet_v12a.geo";
 	TString mvdGeom = "";
 	TString stsGeom = "sts/sts_v13d.geo.root";
-	TString richGeom= "rich/rich_v13c_pipe_1_al_1.root";
+	TString richGeom= "rich/rich_v14a.root";
 	TString trdGeom = "trd/trd_v13g.geo.root";
 	TString tofGeom = "tof/tof_v13b.geo.root";
 	TString ecalGeom = "";
 	TString fieldMap = "field_v12a";
 
-	TString electrons = "yes"; // If "yes" than primary electrons will be generated
-	Int_t NELECTRONS = 5; // number of e- to be generated
-	Int_t NPOSITRONS = 5; // number of e+ to be generated
-	TString urqmd = "yes"; // If "yes" than UrQMD will be used as background
-	TString pluto = "no"; // If "yes" PLUTO particles will be embedded
-	TString plutoFile = "";
+	TString electrons = "no"; 		// If "yes" than primary electrons will be generated
+	Int_t NELECTRONS = 5; 			// number of e- to be generated
+	Int_t NPOSITRONS = 5; 			// number of e+ to be generated
+	TString urqmd = "no"; 			// If "yes" than UrQMD will be used as background
+	TString pluto = "no"; 			// If "yes" PLUTO particles will be embedded
+	TString tomography = "yes"; 	// If "yes" gammas will be embedded with boxgenerator (for tomography)
 	TString plutoParticle = "";
-	Double_t fieldZ = 50.; // field center z position
-	Double_t fieldScale =  1.0; // field scaling factor
+	Double_t fieldZ = 50.; 			// field center z position
+	Double_t fieldScale =  1.0; 	// field scaling factor
+	
+	
+	TString outName = "urqmdtest";
+	if(mode == 1) {	// tomography
+		parFile = "/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".param.0001.root";
+		outFile = "/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".mc.0001.root";
+		urqmd = "no";
+		tomography = "yes";
+	
+	}
+	if(mode == 2) {	// urqmd
+		parFile = "/common/home/reinecke/CBM-Simulationen/outputs/urqmd." + outName + ".param.00003.root";
+		outFile = "/common/home/reinecke/CBM-Simulationen/outputs/urqmd." + outName + ".mc.00003.root";
+		urqmd = "yes";
+		tomography = "no";
+	}
+	if(mode == 3) {	// pluto
+		parFile = "/common/home/reinecke/CBM-Simulationen/outputs/pluto." + outName + ".param.0001.root";
+		outFile = "/common/home/reinecke/CBM-Simulationen/outputs/pluto." + outName + ".mc.0001.root";
+		urqmd = "no";
+		tomography = "no";
+		pluto = "yes";
+	}
+	
+	
 
 	if (script == "yes") {
 		inFile = TString(gSystem->Getenv("IN_FILE"));
@@ -173,6 +209,16 @@ void run_sim(Int_t nEvents = 2)
 //      polGen->Init();
 //      primGen->AddGenerator(polGen);
    }
+   
+	if (tomography == "yes") {
+		FairBoxGenerator* boxGen1 = new FairBoxGenerator(22, 300); //22 = gammas, nof = 400
+		boxGen1->SetPtRange(0.,3.);
+		boxGen1->SetPhiRange(0.,360.);
+		boxGen1->SetThetaRange(2.5,25.);
+		boxGen1->SetCosTheta();
+		boxGen1->Init();
+		primGen->AddGenerator(boxGen1);	
+	}
 
 	if (pluto == "yes") {
 		FairPlutoGenerator *plutoGen= new FairPlutoGenerator(plutoFile);
@@ -209,5 +255,23 @@ void run_sim(Int_t nEvents = 2)
 
 	cout << " Test passed" << endl;
 	cout << " All ok " << endl;
+	
+	Int_t analyseMode = mode;
+	ofstream outputfile("log.txt", mode = ios_base::app);
+	if(!outputfile) {
+		cout << "Error!" << endl;
+	}
+	else {
+		TTimeStamp testtime;
+		outputfile << "########## run_sim.C ##########" << endl;
+		outputfile << "Date (of end): " << testtime.GetDate() << "\t Time (of end): " << testtime.GetTime() << " +2" << endl;
+		outputfile << "Output file is "    << outFile << endl;
+		outputfile << "Parameter file is " << parFile << endl;
+		outputfile << "Number of events: " << nEvents << "\t mode: " << analyseMode << endl;
+		outputfile << "Real time " << rtime << " s, CPU time " << ctime << "s" << endl << endl;
+		outputfile.close();
+	}
+	
+	
 }
 

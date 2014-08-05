@@ -1,5 +1,12 @@
-void run_reco(Int_t nEvents = 2)
+void run_reco(Int_t nEvents = 2, Int_t mode = 0)
+	// mode 1 = tomography
+	// mode 2 = urqmd
+	// mode 3 = pluto
 {
+	if(mode == 0) {
+		cout << "ERROR: No mode specified! Exiting..." << endl;
+		exit();
+	}
    TTree::SetMaxTreeSize(90000000000);
 
 	Int_t iVerbose = 0;
@@ -10,10 +17,31 @@ void run_reco(Int_t nEvents = 2)
 
 	gRandom->SetSeed(10);
 
-	TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.0001.root";
-	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.0001.root";
-	TString recoFile ="/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.0001.root";
-	std::string resultDir = "recqa_0001/";
+	TString mcFile = "";
+	TString parFile = "";
+	TString recoFile ="";
+	
+	
+	TString outName = "urqmdtest";
+	if(mode == 1) {	// tomography
+		mcFile = "/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".mc.0001.root";
+		parFile = "/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".param.0001.root";
+		recoFile ="/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".reco.0001.root";
+	}
+	if(mode == 2) {	// urqmd
+		mcFile = "/common/home/reinecke/CBM-Simulationen/outputs/urqmd." + outName + ".mc.00003.root";
+		parFile = "/common/home/reinecke/CBM-Simulationen/outputs/urqmd." + outName + ".param.00003.root";
+		recoFile ="/common/home/reinecke/CBM-Simulationen/outputs/urqmd." + outName + ".reco.00003.root";
+	}
+	if(mode == 3) {	// pluto
+		mcFile = "/common/home/reinecke/CBM-Simulationen/outputs/pluto." + outName + ".mc.0001.root";
+		parFile = "/common/home/reinecke/CBM-Simulationen/outputs/pluto." + outName + ".param.0001.root";
+		recoFile ="/common/home/reinecke/CBM-Simulationen/outputs/pluto." + outName + ".reco.0001.root";
+	}
+	
+	
+	
+	std::string resultDir = "/common/home/reinecke/CBM-Simulationen/outputs/pics_reco/";
 	int nofNoiseHitsInRich = 220;
 	double collectionEff = 1.0;
 	double sigmaErrorRich = 0.06;
@@ -208,7 +236,7 @@ void run_reco(Int_t nEvents = 2)
    richCat.push_back("ElectronReference");
    trackingQa->SetTrackCategories(trackCat);
    trackingQa->SetRingCategories(richCat);
-   run->AddTask(trackingQa);
+   //run->AddTask(trackingQa);
 
    CbmLitFitQa* fitQa = new CbmLitFitQa();
    fitQa->SetMvdMinNofHits(0);
@@ -222,8 +250,9 @@ void run_reco(Int_t nEvents = 2)
    clusteringQa->SetOutputDir(resultDir);
   // run->AddTask(clusteringQa);
 
-   	CbmAnaConversion* conversionAna = new CbmAnaConversion();
-   	run->AddTask(conversionAna);
+   //	CbmAnaConversion* conversionAna = new CbmAnaConversion();
+   //	conversionAna->SetMode(mode);
+   //	run->AddTask(conversionAna);
 
     // =========================================================================
     // ===                        ECAL reconstruction                        ===
@@ -245,21 +274,39 @@ void run_reco(Int_t nEvents = 2)
     rtdb->setOutput(parIo1);
     rtdb->saveOutput();
 
+    cout << "Init run" << endl;
     run->Init();
     cout << "Starting run" << endl;
     run->Run(0,nEvents);
 
     // -----   Finish   -------------------------------------------------------
+    cout << "About to finish..." << endl;
     timer.Stop();
     Double_t rtime = timer.RealTime();
     Double_t ctime = timer.CpuTime();
     cout << endl << endl;
     cout << "Macro finished successfully." << endl;
-    cout << "Output file is "    << outFile << endl;
+    cout << "Output file is "    << recoFile << endl;
     cout << "Parameter file is " << parFile << endl;
     cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
     cout << endl;
 
     cout << " Test passed" << endl;
     cout << " All ok " << endl;
+	
+	Int_t analyseMode = mode;
+	ofstream outputfile("log.txt", mode = ios_base::app);
+	if(!outputfile) {
+		cout << "Error!" << endl;
+	}
+	else {
+		TTimeStamp testtime;
+		outputfile << "########## run_reco.C ##########" << endl;
+		outputfile << "Date (of end): " << testtime.GetDate() << "\t Time (of end): " << testtime.GetTime() << " +2" << endl;
+		outputfile << "Output file is "    << recoFile << endl;
+		outputfile << "Parameter file is " << parFile << endl;
+		outputfile << "Number of events: " << nEvents << "\t mode: " << analyseMode << endl;
+		outputfile << "Real time " << rtime << " s, CPU time " << ctime << "s" << endl << endl;
+		outputfile.close();
+	}
 }
