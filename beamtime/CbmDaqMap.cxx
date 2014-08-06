@@ -106,7 +106,7 @@ Int_t CbmDaqMap::GetStsSensorSide(Int_t rocId) {
 // ---------------------------------------------------------------------------
 
 
-
+/*
 // -----   Get STS channel number   ------------------------------------------
 Int_t CbmDaqMap::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
 	Int_t channel = -1;
@@ -115,7 +115,44 @@ Int_t CbmDaqMap::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
 	return channel;
 }
 // ---------------------------------------------------------------------------
+*/
 
+// -----   Get STS channel number   ------------------------------------------
+Int_t CbmDaqMap::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
+
+	Int_t channel = -1;
+
+	if (rocId == 7 ){ //sts0  p-side
+	    if (nxId == 0) channel = ((nxChannel < 64) ? (2 * nxChannel - 4 * (nxChannel % 2) + 3) : (2 * nxChannel + 1)); // even
+	    if (nxId == 2) channel = ((nxChannel < 64) ? (252 - 2 * nxChannel + 4 * (nxChannel % 2)) : (254 -2 * nxChannel)); // odd
+	}
+
+	if (rocId == 8 ){ //sts0 n-side
+	    if (nxId == 0) channel = ((nxChannel < 64) ? (253 - 2 * nxChannel + 4 * (nxChannel % 2)) : (255 - 2 * nxChannel)); // even
+	    if (nxId == 2) channel = ((nxChannel < 64) ? (2 * nxChannel + 2 - 4 * (nxChannel % 2)) : (2 * nxChannel)); // odd
+	}
+
+	if (rocId == 9){ //sts1 p-side
+	    if (nxId == 0) channel = 256 - ((nxChannel < 64) ? (2 * nxChannel - 4 * (nxChannel % 2) + 3) : (2 * nxChannel + 1)); // even
+	    if (nxId == 2) channel = 256 - ((nxChannel < 64) ? (252 - 2 * nxChannel + 4 * (nxChannel % 2)) : (254 -2 * nxChannel)); // odd
+	}
+
+	if (rocId == 10){ //sts1 n-side
+	    if (nxId == 0) channel = 256 - ((nxChannel < 64) ? (253 - 2 * nxChannel + 4 * (nxChannel % 2)) : (255 - 2 * nxChannel)); // even
+	    if (nxId == 2) channel = 256 - ((nxChannel < 64) ? (2 * nxChannel + 2 - 4 * (nxChannel % 2)) : (2 * nxChannel)); // odd
+	}
+
+	if (rocId == 11) { //sts2 p-side
+	  if (nxId == 0) channel = 128 - ((nxChannel < 64) ? (nxChannel + 2 * ((nxChannel + 1) % 2) - 1) : nxChannel);
+	}
+
+	if (rocId == 12) { //sts2 n-side
+	  if (nxId == 0) channel = 128 - ((nxChannel < 64) ? (127 - nxChannel) : (- nxChannel + 126 + 2 * (nxChannel % 2)));
+	}
+
+	return channel;
+}
+// ---------------------------------------------------------------------------
 
 
 // -----   Get STS channel number   ------------------------------------------
@@ -171,7 +208,7 @@ Bool_t CbmDaqMap::Map(Int_t iRoc, Int_t iNx, Int_t iId,
 			iStation = 0;
 			iSector  = 0;
 			iSide    = 8 - iRoc;
-			iChannel = iId + iNx / 2 * 127;
+		//	iChannel = iId + iNx / 2 * 127;
 		}
 
 		// --- STS station 1 (reference)
@@ -179,7 +216,7 @@ Bool_t CbmDaqMap::Map(Int_t iRoc, Int_t iNx, Int_t iId,
 			iStation = 1;
 			iSector  = 0;
 			iSide    = 10 - iRoc;
-			iChannel = iId + iNx / 2 * 127;
+		//	iChannel = iId + iNx / 2 * 127;
 		}
 
 		// --- STS station 2 (OUT)
@@ -187,7 +224,7 @@ Bool_t CbmDaqMap::Map(Int_t iRoc, Int_t iNx, Int_t iId,
 			iStation = 2;
 			iSector  = 0;
 			iSide    = 12 - iRoc;
-			iChannel = iId;
+		//	iChannel = iId;
 		}
 
 		else LOG(FATAL) << GetName() << ": Unknown ROC Id " << iRoc

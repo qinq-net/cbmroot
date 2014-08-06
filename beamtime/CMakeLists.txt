@@ -16,7 +16,6 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_BINARY_DIR}/roc/roc/roclib
   ${CBMROOT_SOURCE_DIR}/beamtime
   ${CBMROOT_SOURCE_DIR}/beamtime/fhodo
-  ${CBMROOT_SOURCE_DIR}/beamtime/reco_tasks
   ${CBMROOT_SOURCE_DIR}/beamtime/param
   ${CBMROOT_SOURCE_DIR}/sts/setup
   ${CBMROOT_SOURCE_DIR}/beamtime/reco
@@ -42,16 +41,14 @@ Set(SRCS
   CbmTbDaqBuffer.cxx
 
   fhodo/CbmFiberHodoClusterFinder.cxx
-  fhodo/CbmFiberHodoBLCalibrator.cxx
-
-#  reco_tasks/CbmBeamTimeExampleTask.cxx
-#  reco_tasks/CbmBeamTimeExampleTask2.cxx
-#  reco_tasks/CbmBeamTimeExampleTask3.cxx
 
   param/CbmBeamTimeContFact.cxx
   param/CbmBeamTimeFirstPar.cxx
 
-  reco/CbmStsBLCalibrator.cxx
+  reco/CbmStsCosyBL.cxx
+  reco/StsCosyClusterFinder.cxx
+  reco/StsCosyHitFinder.cxx
+  reco/StsCosyTrack.cxx
 )
 
 # Add artificial dependency which delays the compilation of the defined file

@@ -1,5 +1,4 @@
 /** CbmFiberHodoClusterFinder.h
- *@author Florian Uhlig <f.uhlig@gsi.de>
  **
  ** Task to find neighboring fibres which are above
  ** the base line.
@@ -14,13 +13,15 @@
 #include "CbmFiberHodoAddress.h"
 #include "CbmFiberHodoDigi.h"
 
+#include "TH1F.h"
+#include "TH2F.h"
+
 #include <map>
 #include <set>
 
 //don't know why forward declaration doesn't work here
 //class TClonesArray;
 #include "TClonesArray.h"
-
 
 
 struct classcomp {
@@ -57,13 +58,14 @@ class CbmFiberHodoClusterFinder : public FairTask
  private:
 
   TClonesArray*     fDigis;       /** Input array of CbmFiberHodoDigi **/
-  TClonesArray*     fClusters;    /** Output array of CbmFiberHodoCluster **/
+  TClonesArray*     fClusters;    /** candidates array of CbmFiberHodoCluster **/
+  TClonesArray*     finalClusters;    /** Output array of CbmFiberHodoCluster **/
 
   std::map<Int_t, std::set<CbmFiberHodoDigi*, classcomp> > fDigiMap;   /** digis per hodo layer **/ 
 
   CbmFiberHodoClusterFinder(const CbmFiberHodoClusterFinder&);
   CbmFiberHodoClusterFinder& operator=(const CbmFiberHodoClusterFinder&);
-
+  
   ClassDef(CbmFiberHodoClusterFinder,1);
   
 };
