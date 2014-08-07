@@ -41,12 +41,12 @@ CbmMvdGeo.cxx
 CbmMvdGeoPar.cxx 
 CbmMvdHitProducer.cxx 
 CbmMvdDigitizer.cxx  
-#CbmMvdDigitizeL.cxx   
+CbmMvdDigitizeL.cxx   
 CbmMvdPileupManager.cxx  
 CbmMvdPixelCharge.cxx  
-#CbmMvdFindHits.cxx 
+CbmMvdFindHits.cxx 
 CbmMvdHitfinder.cxx
-#CbmMvdStation.cxx 
+CbmMvdStation.cxx 
 MyG4UniversalFluctuationForSi.cxx
 CbmMvdDetector.cxx
 CbmMvdSensor.cxx
