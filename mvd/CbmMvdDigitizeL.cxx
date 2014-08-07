@@ -27,6 +27,7 @@
 #include "CbmMvdPileupManager.h"
 #include "CbmMvdPoint.h"
 #include "CbmMvdStation.h"
+
 //#include "omp.h"
 
 // Includes from base
@@ -169,7 +170,7 @@ CbmMvdDigitizeL::CbmMvdDigitizeL()
     h_LengthVsEloss(NULL),
     h_ElossVsMomIn(NULL)
 {    
-  SetPixelSize(18.4);
+  SetPixelSize(25.);
 }
 // -------------------------------------------------------------------------
 
@@ -270,7 +271,7 @@ CbmMvdDigitizeL::CbmMvdDigitizeL(const char* name, Int_t iMode,
     h_ElossVsMomIn(NULL)
 {
   cout << "Starting CbmMvdDigitizeL::CbmMvdDigitizeL() "<< endl;    
-  SetPixelSize(18.4);  
+  SetPixelSize(25.);  
 }
 
 
@@ -290,7 +291,9 @@ CbmMvdDigitizeL::~CbmMvdDigitizeL() {
     if ( fDeltaManager  ) delete fDeltaManager;
 
 }
+// -------------------------------------------------------------------------
 
+// ------------  SetPixelSize  ---------------------------------------------
 
 void CbmMvdDigitizeL::SetPixelSize(Double_t pixelSize) {
 
@@ -306,13 +309,7 @@ void CbmMvdDigitizeL::SetPixelSize(Double_t pixelSize) {
 	fLandauSigma = 2.e+02;
         fLandauGain=1.56;	
     }
-    else if( pixelSize == 18.4 ){
-	/*fPar0 = 3.30883e+02;
-	fPar1 = 9.35416e-01;
-	fPar2 = 0;
-        fLandauMPV   = 758.1;
-        fLandauSigma = 170.;// goal value: 145.3;*/
-	
+    else if( pixelSize == 18.4 ){	
 	
 	fPar0 = 4.12073e+02;
 	fPar1 = 0.8e+00;
@@ -331,13 +328,41 @@ void CbmMvdDigitizeL::SetPixelSize(Double_t pixelSize) {
         fLandauGain=1.56;
 
     }
+
+  else if( pixelSize == 11 ){  /** parameter set for Mimosa18-ahr Matrix A0 uniradiated**/
+	fPar0 = 1100.;
+	fPar1 = 0.19;
+	fPar2 = -3.5;
+	fLandauMPV   = 1043.04;
+	fLandauSigma = 249.77;
+        fLandauGain= 3.8;
+
+    }
+
+  else if( pixelSize == 25. ) /** paramter set for Mimosa18-ahr Matrix A2 uniradiated **/
+	{
+	fPar0 = 520.;
+	fPar1 = 0.34;
+	fPar2 = -1.2;
+	fLandauMPV   = 877.4;
+	fLandauSigma = 204.93;
+        fLandauGain= 3.3;
+
+	/** iradiated parameter set
+	fPar0 = 510.;
+	fPar1 = 0.22;
+	fPar2 = -1.3;
+	fLandauMPV   = 808.3;
+	fLandauSigma = 189.3;
+        fLandauGain= 5.; **/
+	}
     else {
 	cout << "-E- " << GetName() << " incorrect pixel size ! " <<endl;
 	//return kERROR;
     }
 
 }
-
+// -------------------------------------------------------------------------
   
 
 // -----------------------------------------------------------------------------
@@ -358,10 +383,10 @@ Int_t CbmMvdDigitizeL::BuildEvent() {
   // ----- First treat standard input file
   for (Int_t i=0; i<fInputPoints->GetEntriesFast(); i++) {
     point = (CbmMvdPoint*) fInputPoints->At(i);
-    point->SetPointId(i);
     iStation = point->GetStationNr();
+    point->SetPointId(i);
     if ( fStationMap.find(iStation) == fStationMap.end() )
-      Fatal("BuildEvent", "Station not found");
+     	 Fatal("BuildEvent", "Station not found");
     fStationMap[iStation]->AddPoint(point);
     nOrig++;
   }
@@ -487,11 +512,22 @@ void CbmMvdDigitizeL::Exec(Option_t* opt) {
 	for (Int_t iPoint=0; iPoint<station->GetNPoints(); iPoint++) {
 	    CbmMvdPoint* point = station->GetPoint(iPoint);
 
-	    if(TMath::Abs(point->GetZOut()-point->GetZ())<0.9* station->GetD()) continue;
+	    if(TMath::Abs(point->GetZOut()-point->GetZ())<0.9* station->GetD()) 
+		{
+		//cout << endl << " partical rejected, because its out of material"<< endl;
+		//point->Print(opt);
+		//cout << endl << " point enters at " << setprecision(6) << point->GetZ() << endl ;
+		//cout << endl << " point leaves at " << point->GetZOut() << endl;
+		//cout << endl << " Material thickness of " << station->GetD() << endl;
+		continue;
+		}
 
 	    // Reject for the time being light nuclei.
 	    // They have to be added in the data base...
-	    if ( point->GetPdgCode() > 100000) continue;
+	    if ( point->GetPdgCode() > 100000) 
+		{
+		//cout << endl << "partical rejected, because light nuclei"<< endl ;
+		continue;}
 
 	    // Produce charge in pixels
 	    ProduceIonisationPoints(point, station);
@@ -510,23 +546,26 @@ void CbmMvdDigitizeL::Exec(Option_t* opt) {
 	    if ( pixel->GetCharge()>fChargeThreshold )
 	    {
 		Int_t nDigis = fDigis->GetEntriesFast();
-		new ((*fDigis)[nDigis])
-		    CbmMvdDigi(station->GetStationNr(),
-			       pixel->GetX(), pixel->GetY(),
-			       pixel->GetCharge(),
-			       fPixelSizeX, fPixelSizeY,
-			       pixel->GetPointX(), pixel->GetPointY(),
-			       pixel->GetContributors(),
-			       pixel->GetMaxChargeContribution(),
-			       pixel->GetPointId(),
-			       pixel->GetTrackId());
+		new ((*fDigis)[nDigis]) 
+				CbmMvdDigi (station->GetStationNr(),
+				pixel->GetX(), pixel->GetY(), pixel->GetCharge(),
+			    	fPixelSizeX, fPixelSizeY, pixel->GetTime());
+
+
+		/*CbmMvdDigi* thisDigi = new CbmMvdDigi();
+		thisDigi = (CbmMvdDigi*) fDigis->At(nDigis);
+		cout << endl << "this Digi has "<< thisDigi->GetCharge() <<
+		" Charge and in Adc: " << thisDigi->GetAdcCharge(150, 0, 1) << endl;*/
+		
+
+
+		new ((*fDigiMatch)[nDigis]) CbmMvdDigiMatch(0. , 0, -1, -1);
 	    }
 	}
-	//------------------------------------------------------------------------------
-
+	
     }//loop on mvd stations
 
-    cout << "-I- " << GetName() << " Event " << fEvent << ", MvdPoints "
+    cout << endl << "-I- " << GetName() << " Event " << fEvent << ", MvdPoints "
 	<< nPoints << ", MvdDigis " << fDigis->GetEntriesFast() << endl;
 
 
@@ -539,9 +578,9 @@ void CbmMvdDigitizeL::Exec(Option_t* opt) {
 // -------------------------------------------------------------------------
 void CbmMvdDigitizeL::ProduceIonisationPoints(CbmMvdPoint* point,
 					      CbmMvdStation* station) {
-  /** Produces ionisation points along track segment within 
-   ** the active Silicon layer.
+  /** Produces ionisation points along track segment within the active Siliconlayer." 
    **/
+   
 
   if ( (! station) || (! point) )
     Fatal("ProduceIonisationPoints", "Invalid point or station pointer!");
@@ -831,11 +870,11 @@ void CbmMvdDigitizeL::ProducePixelCharge(CbmMvdPoint* point, CbmMvdStation* stat
 			fCurrentTotalCharge += sPoint->charge;
 			
 			//compute the charge distributed to this pixel by this segment 
-			Float_t totCharge = (
+			Float_t totCharge = ((
 				      sPoint->charge * fLorentzNorm *
 				      (0.5*fPar0*fPar1/TMath::Pi())/
 				      TMath::Max(1.e-10, ((xCurrent-xCentre)*(xCurrent-xCentre)+(yCurrent-yCentre)*
-				      (yCurrent-yCentre))/fPixelSize/fPixelSize+0.25*fPar1*fPar1)
+				      (yCurrent-yCentre))/fPixelSize/fPixelSize+0.25*fPar1*fPar1)+fPar2)
 				     );
 			
 			if(totCharge<1){continue;} //ignore negligible charge (< 1 electron)
@@ -849,7 +888,12 @@ void CbmMvdDigitizeL::ProducePixelCharge(CbmMvdPoint* point, CbmMvdStation* stat
     				// Pixel not yet in map -> Add new pixel
     				if ( fChargeMapIt == fChargeMap.end() ) {
 					pixel= new ((*fPixelCharge)[fPixelCharge->GetEntriesFast()])
-	    				  CbmMvdPixelCharge(totCharge, ix, iy, point->GetPointId(),point->GetTrackID());
+	    				  CbmMvdPixelCharge(totCharge, ix, iy, point->GetPointId(),point->GetTrackID(),
+							    (point->GetX()+point->GetXOut())/2, 
+							    (point->GetY()+point->GetXOut())/2, point->GetTime()
+							   );
+					    
+					
 					fChargeMap[a] = pixel;
 				}
 
@@ -992,7 +1036,7 @@ void CbmMvdDigitizeL::TransformPixelIndexToXY(Int_t ix, Int_t iy, Double_t & x, 
 Int_t CbmMvdDigitizeL::GetMvdGeometry() {
    
   cout << "-I- " << GetName() << " : Reading MVD geometry..." << endl;
-  Int_t iStation =  1;
+  Int_t iStation =  0;
   Int_t volId    = -1;
   fStationMap.clear();
 
@@ -1002,91 +1046,28 @@ Int_t CbmMvdDigitizeL::GetMvdGeometry() {
     TString volName  = Form("mvdstation%02i", iStation);
     volId = gGeoManager->GetUID(volName);
     if ( volId > -1 ) {
-      
+
       // Get shape parameters
       TGeoVolume* volume = gGeoManager->GetVolume(volName.Data());
       TGeoTube* tube = (TGeoTube*) volume->GetShape();
       Double_t rmin = tube->GetRmin();
       Double_t rmax = tube->GetRmax();
-      Double_t d    = 2. * tube->GetDz();
+      Double_t d    = tube->GetDz();
 
       // Full path to node 
-      // Since there are now different pipe and mvd geomteries  it is more 
-      // difficult to get the full path
-      //TString nodeName = "/cave_1/pipevac1_0/" + volName + "_0";
-      TString nodeName = ""; 
-      TGeoNode* node1 = gGeoManager->GetTopVolume()->FindNode("pipevac1_0");
-      if (node1) { // old ascii geometry for pipe
-        LOG(DEBUG) << "NodeName: " << nodeName << FairLogger::endl;
-	TObjArray* nodes = node1->GetNodes();
-	for (Int_t iNode = 0; iNode < nodes->GetEntriesFast(); iNode++) {
-	  TGeoNode* node = (TGeoNode*) nodes->At(iNode);
-          TString tmpnodeName = node->GetName();
-	  LOG(DEBUG) << "TmpNodeName: " << tmpnodeName << FairLogger::endl;
-	  LOG(DEBUG) << "volName: " << volName << FairLogger::endl;
-	  if (tmpnodeName.Contains(volName)) {
-            nodeName = "/cave_1/pipevac1_0/" + volName + "_0";
-	    LOG(DEBUG) << "NodeName: " << nodeName << FairLogger::endl;
-            goto Node_found;
-	  } else if (tmpnodeName.Contains("mvd_")) {
-            nodeName = "/cave_1/pipevac1_0/" + tmpnodeName 
-	      + "/" + volName + "_0";
-	    LOG(DEBUG) << "NodeName: " << nodeName << FairLogger::endl;
-            goto Node_found;
-	  }
-	}
-      } else {
-	// Find Pipe top node
-	nodeName = "/cave_1/";
-	TObjArray* nodes = gGeoManager->GetTopNode()->GetNodes();
-	for (Int_t iNode = 0; iNode < nodes->GetEntriesFast(); iNode++) {
-	  TGeoNode* node = (TGeoNode*) nodes->At(iNode);
-	  TString nodeName1 = node->GetName();
-	  LOG(DEBUG) << "Node: "<< nodeName1 <<FairLogger::endl;
-	  nodeName1.ToLower();
-	  if (nodeName1.Contains("pipe")) {
-            nodeName +=  node->GetName();
-            nodeName += "/";	  
-	    // find pipevac1
-	    TObjArray* nodes2 = node->GetNodes();
-	    for (Int_t iiNode = 0; iiNode < nodes2->GetEntriesFast(); iiNode++) {
-	      TGeoNode* node2 = (TGeoNode*) nodes2->At(iiNode);
-	      TString nodeName2 = node2->GetName();
-	      LOG(DEBUG) << "Node: "<< nodeName2 <<FairLogger::endl;
-	      nodeName2.ToLower();
-	      if (nodeName2.Contains("pipevac1")) {
-		nodeName +=  node2->GetName();
-		nodeName += "/";	  
-		LOG(DEBUG) << "I am here " <<FairLogger::endl;
-		// check if there is a volume with mvd in name in the pipevac
-		TObjArray* nodes3 = node2->GetNodes();
-		for (Int_t iiiNode = 0; iiiNode < nodes3->GetEntriesFast(); iiiNode++) {
-		  TGeoNode* node3 = (TGeoNode*) nodes3->At(iiiNode);
-		  TString nodeName3 = node3->GetName();
-		  LOG(DEBUG) << "Node: "<< nodeName3 <<FairLogger::endl;
-		  if (nodeName3.Contains(volName)) {
-		    nodeName += volName;
-		    nodeName +=  "_0";	  
-                    goto Node_found;
-		  } else if ( nodeName3.Contains("mvd") ) {
-		    nodeName +=  node3->GetName();
-		    nodeName += "/";	  
-		    nodeName += volName;
-		    nodeName +=  "_0";	  
-                    goto Node_found;
-		  }
-		}
-	      }
-	    }
-	  }
-	}
-      }
+      TString nodeName = Form("/cave_1/MVDo4oStationsoAloFPC_0/MBoAloCarbonoStationo%i_1/mvdstation%02ioPartAss_1/" + volName + "_1" , iStation , iStation);
 
-      Node_found:
-    
       // Get z position of node
       Bool_t nodeFound = gGeoManager->cd(nodeName.Data());
-      if ( ! nodeFound ) {
+
+      if ( ! nodeFound ) { // if no node found is found assume other Geometry
+      nodeName = Form("/cave_1/MVDo4oStationsoCuoFPC_0/MBoCuoCarbonoStationo%i_1/mvdstation%02ioPartAss_1/" + volName + "_1" , iStation , iStation);
+
+      // Get z position of node
+      nodeFound = gGeoManager->cd(nodeName.Data());
+	}
+
+      if ( ! nodeFound ) { // no node at all found
 	cout << "-E- " << GetName() << "::SetMvdGeometry: Node " << nodeName
 	     << " not found in geometry!" << endl;
 	Fatal("SetMvdGeometry", "Node not found");
@@ -1095,8 +1076,8 @@ Int_t CbmMvdDigitizeL::GetMvdGeometry() {
       Double_t global[3];                // Global centre of volume
       gGeoManager->LocalToMaster(local, global);
       Double_t z = global[2];
-      
-      
+
+
       // Check for already existing station with the same ID
       // (Just in case, one never knows...)
       if ( fStationMap.find(iStation) != fStationMap.end() ) {
@@ -1104,18 +1085,18 @@ Int_t CbmMvdDigitizeL::GetMvdGeometry() {
 	     << "Volume ID " << iStation << " already in map!" << endl;
 	Fatal("GetMvdGeometry", "Double station number in TGeoManager!");
       }
-      
+
       // Create new CbmMvdStation and add it to the map
       fStationMap[iStation] = new CbmMvdStation(volName.Data(), iStation, volId,
-						z, d, rmin, rmax);
+					     z, d, rmin, rmax);
       fStationMap[iStation]->Print();
       
       iStation++;
-      
+
     }     // Volume found
-    
+
   } while ( volId > -1 );
-  
+
    
   return iStation - 1;
 }
@@ -1157,7 +1138,7 @@ Int_t CbmMvdDigitizeL::GetMvdGeometry() {
 void CbmMvdDigitizeL::SetParContainers() {
     FairRunAna*    ana  = FairRunAna::Instance();
     FairRuntimeDb* rtdb = ana->GetRuntimeDb();
-    fGeoPar  = (CbmMvdGeoPar*)  (rtdb->getContainer("CbmMvdGeoPar"));
+   // fGeoPar  = (CbmMvdGeoPar*)  (rtdb->getContainer("CbmMvdGeoPar"));
 }
 // -------------------------------------------------------------------------
 
@@ -1210,7 +1191,9 @@ InitStatus CbmMvdDigitizeL::Init() {
 
     // **********  Register output array
     fDigis = new TClonesArray("CbmMvdDigi", 10000);
+    fDigiMatch = new TClonesArray("CbmMvdDigiMatch", 10000);
     ioman->Register("MvdDigi", "MVDRawData", fDigis, kTRUE);
+    ioman->Register("MvdDigiMatch", "MvdMCData", fDigiMatch, kTRUE);
 
     // *****  Get MVD geometry
     Int_t nStations = GetMvdGeometry();

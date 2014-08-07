@@ -22,18 +22,36 @@ ${FAIRROOT_LIBRARY_DIR}
 link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
+plugins/tasks/CbmMvdSensorTask.cxx
+plugins/tasks/CbmMvdSensorDigitizerTask.cxx
+plugins/tasks/CbmMvdSensorFindHitTask.cxx
+
+plugins/buffers/CbmMvdSensorBuffer.cxx
+plugins/buffers/CbmMvdSensorFrameBuffer.cxx
+plugins/buffers/CbmMvdSensorTrackingBuffer.cxx
+
+plugins/CbmMvdSensorPlugin.cxx
+
+SensorDataSheets/CbmMvdMimosa26AHR.cxx
+SensorDataSheets/CbmMvdSensorDataSheet.cxx  
+
 CbmMvd.cxx 
 CbmMvdContFact.cxx 
 CbmMvdGeo.cxx 
 CbmMvdGeoPar.cxx 
 CbmMvdHitProducer.cxx 
-CbmMvdDigitize.cxx   
-CbmMvdDigitizeL.cxx   
+CbmMvdDigitizer.cxx  
+#CbmMvdDigitizeL.cxx   
 CbmMvdPileupManager.cxx  
 CbmMvdPixelCharge.cxx  
-CbmMvdFindHits.cxx 
-CbmMvdStation.cxx 
-MyG4UniversalFluctuationForSi.cxx   
+#CbmMvdFindHits.cxx 
+CbmMvdHitfinder.cxx
+#CbmMvdStation.cxx 
+MyG4UniversalFluctuationForSi.cxx
+CbmMvdDetector.cxx
+CbmMvdSensor.cxx
+ 
+CbmMvdFullRun.cxx
 )
 #CbmMvdMatchTracks.cxx 
 

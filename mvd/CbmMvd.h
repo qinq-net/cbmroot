@@ -15,19 +15,27 @@
 #define CBMMVD_H 1
 
 
-
 #include <map>
 
 #include "TLorentzVector.h"
 #include "TVector3.h"
-
+#include "FairGeoMedia.h"
+#include "FairGeoBuilder.h"
 #include "FairDetector.h"
+#include "TKey.h"
+#include "TGeoVoxelFinder.h"
+
+#include "CbmMvdDetector.h"
+#include "SensorDataSheets/CbmMvdMimosa26AHR.h"
 
 
 class TClonesArray;
 class TList;
 class FairVolume;
 class CbmMvdPoint;
+
+using std::cout;
+using std::endl;
 
 
 
@@ -113,14 +121,19 @@ class CbmMvd : public FairDetector
 
   /** Virtual method Construct geometry
    **
-   ** Constructs the STS geometry
+   ** Constructs the MVD geometry
    **/
   virtual void ConstructGeometry();
 
   virtual void ConstructAsciiGeometry();
 
+  virtual void ConstructRootGeometry();
+
   virtual Bool_t CheckIfSensitive(std::string name);
 
+  virtual std::map<Int_t, Int_t> GetMap() {return fStationMap;};
+
+ 
   private:
 
 
@@ -156,6 +169,9 @@ class CbmMvd : public FairDetector
      ** Resets the private members for the track parameters
      **/
     void ResetParameters();
+
+    void SetDefaultMatrixName(TGeoMatrix* matrix);
+    void AssignMediumAtImport(TGeoVolume* v);
 
     CbmMvd(const CbmMvd&);
     CbmMvd& operator=(const CbmMvd&);

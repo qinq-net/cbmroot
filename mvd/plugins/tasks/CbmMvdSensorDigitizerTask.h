@@ -1,25 +1,29 @@
-// ------------------------------------------------------------------------------
-// -----                    CbmMvdDigitizeL header file                     -----
-// -----                    Created by C.Dritsa (2009)                      -----
-// -----                    Maintained by M.Deveaux (m.deveaux(att)gsi.de   -----
-// ------------------------------------------------------------------------------
+// ------------------------------------------------------------------------
+// -----                  CbmMvdSensorDigitizerTask header file       -----
+// -----                   Created 02/02/12  by M. Deveaux            -----
+// ------------------------------------------------------------------------
 
-
-/** CbmMvdDigitizeL header file
- ** Read "ReadmeMvdDigitizer.pdf" for instructions
+/**  CbmMvdSensorDigitizerTask.h
+ **  @author M.Deveaux <M.Deveaux@gsi.de>
+ **  Acknowlegments to: C.Dritsa
+ **
  **
  **/
 
+#ifndef CBMMVDSENSORDIGITIZERTASK_H
+#define CBMMVDSENSORDIGITIZERTASK_H 1
 
-#ifndef CBMMVDDIGITIZEL_H
-#define CBMMVDDIGITIZEL_H 1
 
+#include "FairTask.h"
+#include "CbmMvdSensor.h"
 //#include "omp.h"
 #include "FairTask.h"
 #include "CbmMvdPoint.h"
 #include "CbmMvdDigi.h"
 #include "CbmMvdDigiMatch.h"
-#include "MyG4UniversalFluctuationForSi.h"
+#include "CbmMvdSensorTask.h"
+#include "CbmMvdPileupManager.h"
+#include "CbmMvdGeoPar.h"
 
 #include "TRandom3.h"
 #include "TStopwatch.h"
@@ -38,86 +42,59 @@
 #include "TH2F.h"
 #include "TCanvas.h"
 
-
-
 class TClonesArray;
-class TRandom3;
-class CbmMvdGeoPar;
-class CbmMvdPileupManager;
-class CbmMvdStation;
-
-using namespace std;
 
 
-class CbmMvdDigitizeL : public FairTask
+class CbmMvdSensorDigitizerTask : public CbmMvdSensorTask
 {
- 
+
  public:
 
-  /** Default constructor **/  
-  CbmMvdDigitizeL();
-
-
-  /** Standard constructor 
-  *@param name  Task name
-  *@param mode  0 = MAPS, 1 = Ideal
-  **/
-  CbmMvdDigitizeL(const char* name, 
-		    Int_t mode = 0, Int_t iVerbose = 1);
-
+  /** Default constructor **/
+  CbmMvdSensorDigitizerTask();
+  CbmMvdSensorDigitizerTask(const char* name, Int_t iMode, Int_t iVerbose);
 
   /** Destructor **/
-  virtual ~CbmMvdDigitizeL();
-
-
-  /** Task execution **/
-  virtual void Exec(Option_t* opt);
-
-
-  /** Accessors **/
-  TString  GetBranchName()    const { return fBranchName; };
-
-
-  /** Added by CDritsa **/
-
-  void ProduceIonisationPoints(CbmMvdPoint* point, CbmMvdStation* station);
-  //void ProduceSignalPoints();
-  void ProducePixelCharge(CbmMvdPoint* point, CbmMvdStation* station);
-  void TransformXYtoPixelIndex(Double_t x, Double_t y,Int_t & ix, Int_t & iy);
-  void TransformPixelIndexToXY(Int_t ix, Int_t iy, Double_t & x, Double_t & y );
+  virtual ~CbmMvdSensorDigitizerTask();
+  
+    /** Intialisation **/
+  virtual void Init(CbmMvdSensor* mySensor);
+  
+  /** fill buffer **/
+  void SetInputArray (TClonesArray* inputStream);
+  void SetInput (CbmMvdPoint* point);
+  
+  /** Execute **/
+  void Exec();
+  void ExecChain();
+  
+  virtual TClonesArray* GetOutputArray() {return fOutputBuffer;};
+  virtual TClonesArray* GetMatchArray() {return fDigiMatch;};
+  virtual TClonesArray* GetWriteArray() {return fDigis;};
+  
+  InitStatus ReadSensorInformation();
+  void ProduceIonisationPoints(CbmMvdPoint* point);
+  void ProducePixelCharge(CbmMvdPoint* point);
   void PositionWithinCell(Double_t x, Double_t y,  Int_t & ix, Int_t & iy, Double_t & xCell, Double_t & yCell);
- // void AddChargeToPixel(Int_t channelX, Int_t channelY, Int_t charge, CbmMvdPoint* point);
-  Int_t BuildEvent();
-  Double_t GetDetectorGeometry(CbmMvdPoint* point);
 
   /** Modifiers **/
-  void SetEpiThickness(Double_t epiTh)              { fEpiTh = epiTh;                     }
   void SetSegmentLength(Double_t segmentLength)     { fSegmentLength = segmentLength;     }
   void SetDiffusionCoef(Double_t diffCoeff)         { fDiffusionCoefficient = diffCoeff;  }
   void SetElectronsPerKeV(Double_t electronsPerKeV) { fElectronsPerKeV = electronsPerKeV; }
   void SetWidthOfCluster(Double_t widthOfCluster)   { fWidthOfCluster = widthOfCluster;   }
-  void SetPixelSizeX(Double_t pixelSizeX)           { fPixelSizeX = pixelSizeX;           }
-  void SetPixelSizeY(Double_t pixelSizeY)           { fPixelSizeY = pixelSizeY;           }
   void SetCutOnDeltaRays(Double_t cutOnDeltaRays)   { fCutOnDeltaRays = cutOnDeltaRays;   }
-  void SetChargeThreshold(Double_t chargeThreshold) { fChargeThreshold = chargeThreshold; }
-  void SetPixelSize(Double_t pixelSize);
-  void SetMvdGeometry(Int_t detId);
-  void SetPileUp(Int_t pileUp)           { fNPileup         = pileUp;      }
-  void SetDeltaEvents(Int_t deltaEvents) { fNDeltaElect     = deltaEvents; }
-  void SetBgFileName(TString fileName)   { fBgFileName      = fileName;    }
-  void SetDeltaName(TString fileName)    { fDeltaFileName   = fileName;    }
-  void SetBgBufferSize(Int_t nBuffer)    { fBgBufferSize    = nBuffer;     }
-  void SetDeltaBufferSize(Int_t nBuffer) { fDeltaBufferSize = nBuffer;     }
-
+  void SetChargeThreshold(Float_t chargeThreshold) { fChargeThreshold = chargeThreshold; }
   void ShowDebugHistograms() {fShowDebugHistos = kTRUE;}
 
-
+  
 
 //protected:
 public:
 
     // ----------   Protected data members  ------------------------------------
 
+    Int_t fcurrentFrameNumber;
+  
     Double_t fEpiTh;
     Double_t fSegmentLength;
 
@@ -127,7 +104,7 @@ public:
     Double_t fPixelSizeX;
     Double_t fPixelSizeY;
     Double_t fCutOnDeltaRays;
-    Double_t fChargeThreshold;
+    Float_t fChargeThreshold;
     Double_t fFanoSilicium;
    
     Double_t fEsum;
@@ -148,6 +125,7 @@ public:
     TH1F* fTotalChargeHisto;
     TH1F* fTotalSegmentChargeHisto;
 
+    
 
     Double_t fLorentzY0;
     Double_t fLorentzXc; 
@@ -173,30 +151,36 @@ public:
     Int_t fCurrentLayer;
     Int_t fEvent;
     Int_t fVolumeId;
-
-    MyG4UniversalFluctuationForSi * fFluctuate;
-
-    TClonesArray* fDigis;
-    TClonesArray* fDigiMatch;
-    TClonesArray* fMCTracks;
+   
     TClonesArray* fPixelCharge;
+    
+    TClonesArray* fDigis;
+   
+    TClonesArray* fDigiMatch;
+    
     
     std::vector<CbmMvdPixelCharge*> fPixelChargeShort;
 
     TObjArray* fPixelScanAccelerator;
-    map<pair<Int_t, Int_t>, CbmMvdPixelCharge*> fChargeMap;
-    map<pair<Int_t, Int_t>, CbmMvdPixelCharge*>::iterator fChargeMapIt;
+    std::map<pair<Int_t, Int_t>, CbmMvdPixelCharge*> fChargeMap;
+    std::map<pair<Int_t, Int_t>, CbmMvdPixelCharge*>::iterator fChargeMapIt;
+    
+    
     
 
 
 private:
 
+ 
+  CbmMvdSensorDataSheet* fsensorDataSheet;
+  
   /** Hit producer mode (0 = MAPS, 1 = Ideal) **/
   Int_t fMode;
 
 
   /** MAPS properties **/
-  Double_t fSigmaX, fSigmaY;   // MAPS resolution in cm
+  Double_t fSigmaX, fSigmaY;   // MAPS resolution in [cm]
+  Double_t fReadoutTime;       // MAPS readout time in [s]
   Double_t fEfficiency;        // MAPS detection efficiency
   Double_t fMergeDist;         // Merging distance
   Double_t fFakeRate;          // Fake hit rate
@@ -206,16 +190,12 @@ private:
   Int_t    fBgBufferSize;
 
 
-  /** Map from station number to MvdStation **/
-  std::map<Int_t, CbmMvdStation*> fStationMap;                  //!   
-
-
-
-  /** IO arrays **/
+ /** IO arrays **/
   TString	fBranchName;     // Name of input branch (STSPoint)
   TString       fBgFileName;     // Name of background (pileup) file 
   TString       fDeltaFileName;  // Name of the file containing delta electrons
-  TClonesArray* fInputPoints;     // Array of MCPoints (input)
+  TClonesArray* fInputPoints;     // Array of MCPoints (input) 
+  
   TRefArray* fPoints;            // Array of all MCPoints (including background files)
 
 
@@ -266,12 +246,11 @@ private:
   virtual void SetParContainers();
   
 
-  /** Intialisation **/
-  virtual InitStatus Init();
+
 
 
   /** Reinitialisation **/
-  virtual InitStatus ReInit();
+  virtual void ReInit(CbmMvdSensor* mySensor);
 
 
   /** Virtual method Finish **/
@@ -302,13 +281,19 @@ private:
   TH2F* h_LengthVsAngle;
   TH2F* h_LengthVsEloss;
   TH2F* h_ElossVsMomIn;
+  
+  
+  
+  
+  
+  
+  
+  private:
 
-  CbmMvdDigitizeL(const CbmMvdDigitizeL&);
-  CbmMvdDigitizeL& operator=(const CbmMvdDigitizeL&);
+  
+  ClassDef(CbmMvdSensorDigitizerTask,1);
 
-  ClassDef(CbmMvdDigitizeL,1);
-    
 };
-    
-    
-#endif   		     
+
+
+#endif

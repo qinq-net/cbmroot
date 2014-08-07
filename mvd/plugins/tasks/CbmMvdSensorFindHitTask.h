@@ -1,12 +1,12 @@
 // -------------------------------------------------------------------------
-// -----                    CbmMvdFindHits header file                 -----
-// -----                   Created 08/11/06  by C.Dritsa               -----
+// -----                    CbmMvdSensorFindHitTask header file            -----
+// -----                   Created 11/09/13 P.Sitzmann                 -----
 // -------------------------------------------------------------------------
 
 
 
-#ifndef CBMMVDFINDHITS_H
-#define CBMMVDFINDHITS_H 1
+#ifndef CBMMVDSENSORFINDHITTASK_H
+#define CBMMVDSENSORFINDHITTASK_H 1
 
 #include "FairTask.h"
 #include "CbmMvdPoint.h"
@@ -31,37 +31,46 @@
 #include <map>
 #include <utility>
 
+#include "CbmMvdSensorTask.h"
+#include "CbmMvdSensor.h"
+
 class TClonesArray;
 class TRandom3;
 class CbmMvdGeoPar;
 class CbmMvdPileupManager;
-class CbmMvdStation;
 
-class CbmMvdFindHits : public FairTask
+
+using std::map;
+using std::pair;
+
+class CbmMvdSensorFindHitTask : public CbmMvdSensorTask
 {
 
 public:
 
     /** Default constructor **/
-    CbmMvdFindHits();
+    CbmMvdSensorFindHitTask();
 
 
     /** Standard constructor
      *@param name  Task name
      *@param mode  0 = no fake digis generation, 1 = generate fake digis
      **/
-    CbmMvdFindHits(const char* name,
+    CbmMvdSensorFindHitTask(const char* name,
 		   Int_t mode = 0, Int_t iVerbose = 1);
 
 
 
     /** Destructor **/
-    virtual ~CbmMvdFindHits();
+    virtual ~CbmMvdSensorFindHitTask();
 
 
     /** Task execution **/
-    virtual void Exec(Option_t* opt);
-
+    void ExecChain();
+    void Exec();
+    
+ /** Intialisation **/
+    void Init(CbmMvdSensor* mySensor);
 
     /** Accessors **/
     //Double_t GetSigmaX()        const { return fSigmaX;     };
@@ -172,28 +181,25 @@ private:
     Bool_t fAddNoise;
 
     /** Map of MC Volume Id to MvdStation **/
-    std::map<Int_t, CbmMvdStation*> fStationMap;                  //!
+            //!
 
 
 
 
     // -----   Private methods   ---------------------------------------------
 
-    /** Register the output arrays to the IOManager **/
-    void Register();
 
     /** Clear the arrays **/
     void Reset();
 
     /** Virtual method Finish **/
-    virtual void Finish();
+    void Finish();
 
-    /** Intialisation **/
-    virtual InitStatus Init();
+   
 
 
     /** Reinitialisation **/
-    virtual InitStatus ReInit();
+    InitStatus ReInit();
 
 
     /** Get MVD geometry parameters from database
@@ -205,18 +211,16 @@ private:
 
     void SetMvdGeometry(Int_t detId);
     void AddNoiseToDigis(CbmMvdDigi* digi);
-    void GenerateFakeDigis(CbmMvdStation* station, Double_t pixelSizeX, Double_t pixelSizeY);
+    void GenerateFakeDigis(Double_t pixelSizeX, Double_t pixelSizeY);
     void CheckForNeighbours(vector<Int_t>* clusterArray, Int_t clusterDigi, TArrayS* pixelUsed);
     
-    void CreateHit(vector<Int_t>* clusterArray, CbmMvdStation* station , TVector3& pos, TVector3 &dpos);
-    void ComputeCenterOfGravity(vector<Int_t>* clusterArray, TVector3& pos, TVector3& dpos, CbmMvdStation* station);
-    void UpdateDebugHistos(vector<Int_t>* clusterArray, CbmMvdStation* station,Int_t seedIndexX, Int_t seedIndexY);
-    void LabToIndex(Double_t labX, Double_t labY, Double_t pixelSizeX, Double_t pixelSizeY, Int_t& indexX, Int_t& indexY, CbmMvdStation* station);
-    void IndexToLab(Int_t indexX, Int_t indexY, Double_t pixelSizeX, Double_t pixelSizeY, Double_t& labX, Double_t& labY, CbmMvdStation* station);
+    void CreateHit(vector<Int_t>* clusterArray,  TVector3& pos, TVector3 &dpos);
+    void ComputeCenterOfGravity(vector<Int_t>* clusterArray, TVector3& pos, TVector3& dpos);
+    void UpdateDebugHistos(vector<Int_t>* clusterArray, Int_t seedIndexX, Int_t seedIndexY);
+    
 
 
-
-    ClassDef(CbmMvdFindHits,1);
+    ClassDef(CbmMvdSensorFindHitTask,1);
 
 };
 

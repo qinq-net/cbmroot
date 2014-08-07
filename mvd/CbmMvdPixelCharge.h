@@ -23,7 +23,8 @@ public:
 
     /** Constructor with all variables **/
 
-    CbmMvdPixelCharge(Float_t charge, Int_t channelNrX, Int_t channelNrY, Int_t hitId,Int_t trackId);
+    CbmMvdPixelCharge(Float_t charge, Int_t channelNrX, Int_t channelNrY, Int_t hitId,
+		      Int_t trackId,Float_t pointX, Float_t pointY, Float_t time=0.0, Int_t frame=0);
     virtual ~CbmMvdPixelCharge();
 
     Bool_t TestXY(Int_t channelNrX,Int_t channelNrY);
@@ -33,29 +34,28 @@ public:
     void AddCharge(Float_t charge){ fTrackCharge = fTrackCharge+charge; };
 
 
-    Float_t    GetCharge()   { return fCharge;           };
+    Float_t  GetCharge()   { return fCharge;           };
     Int_t    GetX()        { return fChannelNrX;       };
     Int_t    GetY()        { return fChannelNrY;       };
-    Float_t  GetPointX()   { return fDominatingPointX; };
-    Float_t  GetPointY()   { return fDominatingPointY; };
-    Float_t    GetMaxChargeContribution(){return fMaxChargeContribution;};
-    Short_t  GetContributors(){return fContributors;};
-    Int_t    GetTrackId()    {return fTrackId;}
-    Int_t    GetPointId(){return fPointId;}
+    Float_t  GetMaxChargeContribution()	{return fMaxChargeContribution;};
+    Short_t  GetNContributors()		{return fContributors;};
+    Int_t    GetDominatorIndex()	{return fDominatorIndex;}
+    Int_t*   GetTrackID()    		{return fTrackId;}
+    Int_t*   GetPointID()		{return fPointId;}
+    Float_t* GetPointX()		{return fPointX;}
+    Float_t* GetPointY()		{return fPointY;}
+    Float_t  GetTime()			{return fPixelTime;}
+    Int_t    GetFrame()			{return fFrame;}
+    
+   
 
-    void SetCharge(Float_t charge){fCharge = charge;};
-    void SetMaxChargeContribution(Int_t maxContribution){ fMaxChargeContribution = maxContribution; }
-    void SetDominatorXY(Float_t pointX,Float_t pointY){
-	fDominatingPointX = pointX;
-	fDominatingPointY = pointY;
-    };
-
-
-
+    
 
 
 private:
 
+    Int_t fFrame; 
+  
     Float_t fCharge;
     Float_t fMaxChargeContribution;
     Float_t fDominatingPointX;
@@ -64,8 +64,15 @@ private:
     Int_t fChannelNrX;
     Int_t fChannelNrY;
     Float_t fTrackCharge;
-    Int_t fTrackId;
-    Int_t fPointId;
+    Int_t fDominatorTrackId;
+    Int_t fDominatorPointId;
+    Int_t fTrackId[5];
+    Int_t fPointId[5];
+    Float_t fPointX[5];
+    Float_t fPointY[5];
+    Short_t fDominatorIndex;
+    Float_t fPixelTime;
+    
 
 
     ClassDef(CbmMvdPixelCharge,1);
