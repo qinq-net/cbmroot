@@ -26,6 +26,8 @@ class CbmKFParticleFinderPID : public FairTask {
   void SetTofBranchName(const TString& name)   { fTofBranchName = name;  }
   void SetMCTrackBranchName(const TString& name)   { fMCTracksBranchName = name;  }
   void SetTrackMatchBranchName(const TString& name)   { fTrackMatchBranchName = name;  }
+  void SetTrdBranchName (const TString& name)      {   fTrdBranchName = name;  }
+  void SetRichBranchName (const TString& name)      {   fRichBranchName = name;   }
   
   virtual InitStatus Init();
   virtual void Exec(Option_t* opt);
@@ -51,6 +53,8 @@ class CbmKFParticleFinderPID : public FairTask {
   TString fTofBranchName;      //! Name of the input TCA with tof hits
   TString fMCTracksBranchName;      //! Name of the input TCA with MC tracks
   TString fTrackMatchBranchName;      //! Name of the input TCA with track match
+  TString fTrdBranchName;
+  TString fRichBranchName;
 
   //input branches
   TClonesArray *fTrackArray; //input reco tracks
@@ -58,6 +62,8 @@ class CbmKFParticleFinderPID : public FairTask {
   TClonesArray *fTofHitArray; //input reco tracks
   TClonesArray *fMCTrackArray; //mc tracks
   TClonesArray *fTrackMatchArray; //track match
+  TClonesArray *fTrdTrackArray;
+  TClonesArray *fRichRingArray;
   
   //PID variables
   Int_t fPIDMode;
