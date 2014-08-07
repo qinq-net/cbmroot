@@ -17,7 +17,12 @@ public:
    * \brief Default constructor.
    */
   CbmFiberHodoCluster();
-  CbmFiberHodoCluster(Int_t index){AddDigi(index);}
+  CbmFiberHodoCluster(Int_t index)  
+    : CbmCluster()
+    , fTime(0.)
+    , fMean(0.)
+    , fMeanError(0)
+    {AddDigi(index);}
 
   /**
    * \brief Destructor.

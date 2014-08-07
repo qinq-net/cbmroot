@@ -7,6 +7,7 @@
 
 CbmFiberHodoCluster::CbmFiberHodoCluster()
   : CbmCluster()
+  , fTime(0.)
   , fMean(0.)
   , fMeanError(0)
 {
