@@ -1,4 +1,4 @@
-// --------------------------------------------------------------------------
+// -------------------------------------------------------------------------
 //
 // Macro for standard transport simulation using UrQMD input and GEANT3
 // CBM setup with MVD only
@@ -6,7 +6,7 @@
 // V. Friese   06/02/2007
 //
 // --------------------------------------------------------------------------
-
+void mvd_sim()
 {
   // ========================================================================
   //          Adjust this part according to your requirements
@@ -16,7 +16,7 @@
   TString inFile  = inDir + "/input/urqmd.ftn14";
   
   // Number of events
-  Int_t   nEvents = 3;
+  Int_t   nEvents = 5;
 
   // Output file name
   TString outFile = "data/mvd.mc.root";
@@ -31,16 +31,17 @@
   TString targetGeom = "target_au_250mu.geo";
 
   // Beam pipe geometry
-  TString pipeGeom = "pipe_standard.geo";
+  TString pipeGeom = "pipe/pipe_standard.geo";
 
   // Magnet geometry and field map
-  TString magnetGeom  = "magnet_electron_standard.geo";
-  TString fieldMap    = "field_electron_standard";
-  Double_t fieldZ     = 50.;     // z position of field centre
-  Double_t fieldScale = 1.;      // field scaling factor
+  TString magnetGeom  = "magnet/magnet_v12b.geo.root";
+  TString fieldMap    = "field_v12b";   // name of field map
+  Int_t fieldZ     = 40.;             // field centre z position
+  Int_t fieldScale =  1.;             // field scaling factor
+  Int_t fieldSymType = 3;
 
   // MVD geometry
-  TString mvdGeom = "mvd_standard.geo";
+  TString mvdGeom = "mvd/mvd_v14a.geo.root";
 
 
   // In general, the following parts need not be touched
@@ -102,35 +103,30 @@
   pipe->SetGeometryFileName(pipeGeom);
   fRun->AddModule(pipe);
   
-  FairModule* target= new CbmTarget("Target");
-  target->SetGeometryFileName(targetGeom);
+  FairModule* target= new CbmTarget(97, 0.25);
   fRun->AddModule(target);		
 
-  FairModule* magnet= new CbmMagnet("MAGNET");
+  FairModule* magnet = new CbmMagnet("MAGNET");
   magnet->SetGeometryFileName(magnetGeom);
   fRun->AddModule(magnet);
   
   FairDetector* mvd= new CbmMvd("MVD", kTRUE);
   mvd->SetGeometryFileName(mvdGeom); 
+  mvd->SetMotherVolume("pipevac1");
   fRun->AddModule(mvd);
   // ------------------------------------------------------------------------
 
 
 
   // -----   Create magnetic field   ---------------------------------------
-  if ( fieldMap == "field_electron_standard" )
-    magField = new CbmFieldMapSym2(fieldMap);
-  else if ( fieldMap == "field_muon_standard" )
-    magField = new CbmFieldMapSym2(fieldMap);
-  else if ( fieldMap == "FieldMuonMagnet" )
-    magField = new CbmFieldMapSym3(fieldMap);
-  else {
-    cout << "===> ERROR: Field map " << fieldMap << " unknown! " << endl;
-    exit;
-  }
+ /* if ( 2 == fieldSymType ) {
+    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+  }  else if ( 3 == fieldSymType ) {
+    CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
+  } 
   magField->SetPosition(0., 0., fieldZ);
   magField->SetScale(fieldScale);
-  fRun->SetField(magField);
+  fRun->SetField(magField);*/
   // ------------------------------------------------------------------------
 
 
@@ -139,7 +135,15 @@
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
   FairUrqmdGenerator*  urqmdGen = new FairUrqmdGenerator(inFile);
   primGen->AddGenerator(urqmdGen);
-  fRun->SetGenerator(primGen);       
+  fRun->SetGenerator(primGen);     
+
+  /*airBoxGenerator* boxGenerator=new FairBoxGenerator(211,1500);
+  boxGenerator->SetXYZ(0,0,0);
+  boxGenerator->SetPRange(120,121);
+  boxGenerator->SetPhiRange(0,360);
+  boxGenerator->SetThetaRange(0,180);
+  primGen->AddGenerator(boxGenerator); 
+  fRun->SetGenerator(primGen); */ 
   // ------------------------------------------------------------------------
 
 
@@ -167,6 +171,7 @@
  
   // -----   Start run   ----------------------------------------------------
   fRun->Run(nEvents);
+  fRun->CreateGeometryFile("data/fullgeometry.root");
   // ------------------------------------------------------------------------
 
 

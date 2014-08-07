@@ -3,20 +3,16 @@
 // Macro for local MVD reconstruction from MC data
 //
 // Tasks:  CbmMvdDigitiser
-//         CbmMvdFindHits
-// 
-// Alternative: CbmHitProducer (direct production of MvdHits from MvdPoints).
-//              Is obsolete but kept for reference.
+//         CbmMvdHitfinder
 // 
 //
 // V. Friese   23/04/2009
-//
+// Update: P. Sitzmann Juli 2014
 // --------------------------------------------------------------------------
 
 
-void mvd_reco(Int_t  nEvents = 3,
-              Int_t  iVerbose = 0, 
-              Bool_t useDigitisation = kTRUE)
+void mvd_reco(Int_t  nEvents = 5,
+              Int_t  iVerbose = 0)
 {
 
   // ========================================================================
@@ -35,25 +31,18 @@ void mvd_reco(Int_t  nEvents = 3,
   // Parameter file
   TString parFile = "data/params.root";
  
+  TString mvdGeom = "data/fullgeometry.root";
+
  
   // In general, the following parts need not be touched
   // ========================================================================
 
-
- 
   // ----    Debug option   -------------------------------------------------
   gDebug = 0;
   // ------------------------------------------------------------------------
-
- 
-  // -----   Timer   --------------------------------------------------------
-  TStopwatch timer;
-  timer.Start();
-  // ------------------------------------------------------------------------
-
   
   // ----  Load libraries   -------------------------------------------------
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
+  /*gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
   basiclibs();
   gSystem->Load("libGeoBase");
   gSystem->Load("libParBase");
@@ -64,47 +53,37 @@ void mvd_reco(Int_t  nEvents = 3,
   gSystem->Load("libGen");
   gSystem->Load("libPassive");
   gSystem->Load("libMvd");
-  gSystem->Load("libCLHEP");
+  gSystem->Load("libCLHEP");*/
   // ------------------------------------------------------------------------
-
 
 
   // -----   Reconstruction run   -------------------------------------------
   FairRunAna *run= new FairRunAna();
+
+  run->RunWithTimeStamps();
+  run->SetEventTimeInterval(10000.0, 10000.0);
+
   run->SetInputFile(inFile);
   run->SetOutputFile(outFile);
+  run->SetGeomFile(mvdGeom);
+
   // ------------------------------------------------------------------------
-  
-  
-  // ***** Case: Digitisation and hit finding *******************************
-  if ( useDigitisation ) {
-  
-    // -----   MVD Digitiser   ----------------------------------------------
-    FairTask* mvdDigitise = new CbmMvdDigitizeL("MVD Digitiser", 0, iVerbose);
-    run->AddTask(mvdDigitise);
-    // ----------------------------------------------------------------------
+ 
+  // -----   MVD Digitiser   ----------------------------------------------
+ /* FairTask* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose);
+  run->AddTask(mvdDigitise);
+  // ----------------------------------------------------------------------
 
-    // -----   MVD Hit Finder   ---------------------------------------------
-    FairTask* mvdFindHits = new CbmMvdFindHits("MVD Hit Finder", 0, iVerbose);
-    run->AddTask(mvdFindHits);
-    // ----------------------------------------------------------------------
-    
-  }
-  
-  // ***** Case: HitProducer ************************************************
-  else {
-  
-    // -----   MVD HitProducer   --------------------------------------------
-    FairTask* mvdHitProd = new CbmMvdHitProducer("MVD HitProducer", 0,
-                                                 iVerbose);
-    run->AddTask(mvdHitProd);
-    // ----------------------------------------------------------------------
-    
-  }
-  
-  
+  // -----   MVD Hit Finder   ---------------------------------------------
+  FairTask* mvdFindHits = new CbmMvdHitfinder("MVD Hit Finder", 0, iVerbose);
+  run->AddTask(mvdFindHits);*/
+  // ----------------------------------------------------------------------
 
-  
+  // -----     MVD FullRun     ---------------------------------------------
+  FairTask* mvdRun = new CbmMvdFullRun("Fullrun", 0, iVerbose);
+  run->AddTask(mvdRun);
+  // ----------------------------------------------------------------------
+    
   // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo*  parIo = new FairParRootFileIo();
@@ -115,19 +94,18 @@ void mvd_reco(Int_t  nEvents = 3,
   rtdb->print();
   // ------------------------------------------------------------------------
 
- 
   // -----   Run initialisation   -------------------------------------------
-  run->LoadGeometry();
   run->Init();
   // ------------------------------------------------------------------------
 
-  
+  // -----   Timer   --------------------------------------------------------
+  TStopwatch timer;
+  timer.Start();
+  // ------------------------------------------------------------------------
      
   // -----   Start run   ----------------------------------------------------
   run->Run(0,nEvents);
   // ------------------------------------------------------------------------
-
-
 
   // -----   Finish   -------------------------------------------------------
   timer.Stop();
