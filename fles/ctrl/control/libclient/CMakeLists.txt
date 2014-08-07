@@ -1,6 +1,9 @@
 Set(INCLUDE_DIRECTORIES
+${ROOT_INCLUDE_DIR}
 ${CBMROOT_CURRENT_SOURCE_DIR}
 ${CBMROOT_SOURCE_DIR}/fles/ctrl
+${CBMROOT_SOURCE_DIR}/fles/ctrl/control
+${CBMROOT_SOURCE_DIR}/fles/ctrl/control/libclient
 ${Boost_INCLUDE_DIR}
 ${ZMQ_INCLUDE_DIR}
 )
@@ -22,5 +25,21 @@ ListSeq.cpp
 
 Set(LIBRARY_NAME cbmnetcntlclient)
 Set(DEPENDENCIES boost_system zmq cbmnetutil)
+
+GENERATE_LIBRARY()
+
+SET(HEADERS
+ListSeqItem.hpp
+ListSeq.hpp
+ListParItem.hpp
+ListPar.hpp
+ControlClient.hpp
+${CBMROOT_SOURCE_DIR}/fles/ctrl/control/ControlProtocol.hpp
+)
+
+Set(LINKDEF ClientLinkDef.h)
+
+Set(LIBRARY_NAME cbmnetcntlclientroot)
+Set(DEPENDENCIES cbmnetcntlclient)
 
 GENERATE_LIBRARY()
