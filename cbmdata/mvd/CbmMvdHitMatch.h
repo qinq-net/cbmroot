@@ -1,16 +1,9 @@
 // -------------------------------------------------------------------------
-// -----                   CbmMvdHitMatch header file                  -----
-// -----                 Created 07/11/06  by V. Friese                -----
+// -----                    CbmMvdHitMatch source file                 -----
+// -----                  Created 07/11/06  by V. Friese               -----
+// -----            Based on CbmStsMapsHitInfo by M. Deveaux           -----
+// -----           Update to new CbmMatch Class by P. Sitzmann         -----
 // -------------------------------------------------------------------------
-
-
-/** CbmMvdHitMatch header file
- *@author Michael Deveaux <m.deveaux@gsi.de>
- **
- ** Former CbmStsMapsHitInfo
- ** Data class for connecting CbmMvdHit with MC information.
- ** Data level RECO
- **/
 
 
 #ifndef CBMMVDHITMATCH_H
@@ -19,8 +12,12 @@
 
 #include "TObject.h"
 
+#include "CbmMatch.h"
 
-class CbmMvdHitMatch: public TObject 
+#include <iostream>
+
+
+class CbmMvdHitMatch: public CbmMatch
 {
 
  public:
@@ -30,8 +27,10 @@ class CbmMvdHitMatch: public TObject
 
 
   /** Constructor with all parameters **/
-  CbmMvdHitMatch(Int_t fileNumber, Int_t eventNumber, Int_t trackId,
-		 Int_t pointId, Int_t nMerged);
+  CbmMvdHitMatch(Double_t weight, Int_t index, Int_t entry, Int_t file);
+
+  CbmMvdHitMatch(Int_t par1, Int_t par2, Int_t par3, Int_t par4, Int_t par5); //quick solution for error in CbmMvdHitProducer
+   
 
 
   /** Destructor **/
@@ -40,19 +39,17 @@ class CbmMvdHitMatch: public TObject
 
   /** Accessors **/
   Int_t  GetFileNumber()  const { return fFileNumber;  }
-  Int_t  GetEventNumber() const { return fEventNumber; }
-  Int_t  GetTrackId()     const { return fTrackId;     } 
-  Int_t  GetPointId()     const { return fPointId;     }
-  Int_t  GetNMerged()     const { return fNMerged;     }
-  Bool_t IsFake()         const { 
-    if ( fPointId == -1 ) return kTRUE;
-    else                  return kFALSE;
-  }
+  Int_t  GetIndexNumber() const { return fIndex; }
+  Int_t  GetEntryNumber() const { return fEntry; }
+  Float_t GetWeight()     const { return fWeight; }
 
-
-  /** Modifiers **/
-  void AddMerged()  { fNMerged++; }
-
+  Int_t GetPointId() const { return 0; }
+  Int_t GetTrackId() const { return 0; }
+  Int_t GetNMerged();
+  
+  void AddMerged();
+ 
+  
 
   /** Reset data members **/
   void Clear();
@@ -60,46 +57,10 @@ class CbmMvdHitMatch: public TObject
 
  private:
 
-  /** Indicates the file to which the corresponding point belongs.
-   ** -1    => no file (fake hit)
-   **  0    => data file
-   **  1    => background file (pileup)
-   **/
   Int_t fFileNumber;
-
-
-  /** Event number of the corresponding MCPoint.  Important to 
-   ** find it in background files due to the random access.
-   ** -1 => no corresponding MCPoint (fake hit)
-   **  0 => current event in data file
-   **  n => event in pileup file
-   **/
-  Int_t fEventNumber;
-
-
-  /** Index of the corresponding MCTrack in its TClonesArray.
-   ** Also true for background files.
-   ** -1 for fake hits
-   **/
-  Int_t fTrackId;
-
-
-  /** Index of the corresponding MCPoint in its TClonesArray.
-   ** Also true for background files.
-   ** -1 for fake hits
-   **/
-  Int_t fPointId;
-
-
-  /** Number of other hits this one is merged with
-   ** -1 => Hit was created without checking for merging
-   **  0 => Hit was not merged
-   **  n => Hit was merged with n other hits
-   **/
-  Int_t fNMerged;
-
-
-
+  Int_t fIndex; 
+  Double_t fWeight;
+  Int_t fEntry;
 
   ClassDef(CbmMvdHitMatch,1);
 
@@ -107,3 +68,4 @@ class CbmMvdHitMatch: public TObject
 
 
 #endif
+ 

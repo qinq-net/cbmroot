@@ -41,7 +41,7 @@ class CbmMvdDetectorId
   
   
   /** Destructor **/
-  virtual ~CbmMvdDetectorId()  {}
+  ~CbmMvdDetectorId()  {}
   
   
   /** Create unique detector ID from station number **/

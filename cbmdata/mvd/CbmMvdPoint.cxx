@@ -32,7 +32,7 @@ CbmMvdPoint::CbmMvdPoint()
 CbmMvdPoint::CbmMvdPoint(Int_t trackID, Int_t pdgCode, Int_t stationNr, 
 			 TVector3 posIn, TVector3 posOut, TVector3 momIn, 
 			 TVector3 momOut, Double_t tof, Double_t length, 
-			 Double_t eLoss) 
+			 Double_t eLoss, Int_t frame) 
   : FairMCPoint(trackID, stationNr, posIn, momIn, tof, length, eLoss),
     CbmMvdDetectorId(),
     fX_out(posOut.X()),
@@ -44,8 +44,16 @@ CbmMvdPoint::CbmMvdPoint(Int_t trackID, Int_t pdgCode, Int_t stationNr,
     fPdgCode(pdgCode),
     fPointId(-1)
 {
-  SetLink(FairLink(Cbm::kMCTrack, trackID));
-  fDetectorID = DetectorId(stationNr);
+FairRunSim* run = FairRunSim::Instance();
+FairPrimaryGenerator* gen = run->GetPrimaryGenerator();
+FairMCEventHeader* event = gen->GetEvent();
+
+fStartTime = event->GetT();
+fFrame = frame;
+
+    fPdgCode=pdgCode;
+    fDetectorID = DetectorId(stationNr);
+    fPointId=-1;
 }
 
 // -------------------------------------------------------------------------
@@ -72,6 +80,15 @@ void CbmMvdPoint::Print(const Option_t* opt) const {
 }
 // -------------------------------------------------------------------------
 
-
+// -----   Public method GetAbsTime   --------------------------------------
+Int_t CbmMvdPoint::GetAbsTime(){
+  
+  
+  Int_t absTime = fTime + fStartTime;
+  
+  return absTime;
+  
+}
+// -------------------------------------------------------------------------
 
 ClassImp(CbmMvdPoint)

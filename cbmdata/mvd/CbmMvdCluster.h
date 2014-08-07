@@ -16,12 +16,11 @@
 
 
 //#include "CbmHit.h"
-//#include "TVector3.h"
-#include "CbmMvdHit.h"
-
 #include "TVector3.h"
+//#include "CbmMvdHit.h"
+#include "TObject.h"
 
-class CbmMvdCluster : public CbmMvdHit
+class CbmMvdCluster : public TObject
 {
 
  public:    
@@ -37,41 +36,53 @@ class CbmMvdCluster : public CbmMvdHit
   *@param flag   Hit flag
   *@param chargeArray Array of charge of 49 pixels
   **/
-  CbmMvdCluster(Int_t statNr, TVector3& pos, TVector3& dpos, Int_t flag, 
-                 Short_t chargeArray[49] , Double_t pixelSizeX, Double_t pixelSizeY);
+  
+  CbmMvdCluster(Int_t* digiList, Short_t digisInThisObject, Short_t totalDigisInCluster, Int_t neighbourDown);
 
-
+  CbmMvdCluster(Int_t dummyInt1, TVector3 dummyVect1, TVector3 dummyVect2, Int_t dummyInt2, Short_t* dummyShort1, Float_t dummyFloat1, Float_t dummyFloat2){};
+  //this constructor is only for littrack error, littrack has to implement new clustertyp
+  
+  
   /** Destructor **/
   virtual ~CbmMvdCluster();
 
 
+  //these functions are only for littrack
+    Int_t GetDominatorX(){;};
+    Int_t GetDominatorY(){;};
+    Int_t GetTrackID(){;};
+    Int_t GetContributors(){;};
+    
+    void SetDebuggingInfo(Short_t* foo1, Float_t foo2[5], Float_t foo3[5]){;};
+    void SetContributors(Short_t short1){;};
+    void PrintCluster(){;};
+    //
+  
+  /** Setters **/
+  
+  void SetNeighbourUp(Int_t index){fNeighbourUp=index;};
+  void SetNeighbourDown(Int_t index){fNeighbourDown=index;};
+  
   /** Accessors **/
-  Short_t GetPointInfo(Int_t index){return fPointInfo[index];};
-  Float_t GetPointX(Int_t index){return fPointX[index];}; //MC-Information for debugging
-  Float_t GetPointY(Int_t index){return fPointY[index];}; //MC-Information for debugging
-  Short_t GetContributors(){return fContributors;};
-  Short_t* GetChargeArray(){return fChargeArray;}
-  Short_t* GetPointInfo(){return fPointInfo;} // MC-Information for debugging
-
-  /** Modifiers **/
-  void SetPointInfo(Short_t info, Int_t cell){fPointInfo[cell]=info;}
-  void SetPointXY (Float_t x, Float_t y, Int_t cell) {fPointX[cell]=x; fPointY[cell]=y;}
-  void SetDebuggingInfo(Short_t pointInfo[49], Float_t pointX[5],Float_t pointY[5]);
-  void SetContributors(Short_t contributors){fContributors=contributors;}
-
-
- //protected:
-
-     Short_t fChargeArray[49];
-     Float_t fPixelSizeX;
-     Float_t fPixelSizeY;
-     
-     //debugging parameters
-     Short_t fPointInfo[49];
-     Float_t fPointX[5];
-     Float_t fPointY[5];
-     Short_t fContributors;
-
+  
+  Int_t   GetNeighbourDown(){return fNeighbourDown;};
+  Int_t   GetNeighbourUp(){return fNeighbourUp;};
+  Short_t GetDigisInThisObject(){return fDigisInThisObject;};
+  Short_t GetTotalDigisInCluster(){return fTotalDigisInCluster;};
+  Short_t GetMaxDigisInThisObject(){return fMaxDigisInObject;};
+  
+  Int_t  GetDigiIndex(UInt_t index);
+  Int_t* GetDigiList(){return fDigiArray;};
+  
+   
+ protected:
+     static const Short_t fMaxDigisInObject=8;
+     Int_t fDigiArray[fMaxDigisInObject];
+     Int_t fNeighbourDown;
+     Int_t fNeighbourUp;
+     Short_t fDigisInThisObject;
+     Short_t fTotalDigisInCluster;
+       
   ClassDef(CbmMvdCluster,1);
 
 };

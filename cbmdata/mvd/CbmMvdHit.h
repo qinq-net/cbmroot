@@ -21,6 +21,8 @@
 
 #include "CbmHit.h"
 #include "CbmMvdDetectorId.h"
+#include "TClonesArray.h"
+#include <vector>
 
 #include "TVector3.h"
 
@@ -39,7 +41,8 @@ class CbmMvdHit : public CbmHit, public CbmMvdDetectorId
   *@param dpos   Errors in position coordinates [cm]
   *@param flag   Hit flag
   **/
-  CbmMvdHit(Int_t statNr, TVector3& pos, TVector3& dpos, Int_t flag);
+  CbmMvdHit(Int_t statNr, TVector3& pos, TVector3& dpos, Int_t indexCentralX, Int_t indexCentralY=0, Int_t fClusterIndex=0, Int_t flag=0);
+
 
 
   /** Destructor **/
@@ -51,16 +54,24 @@ class CbmMvdHit : public CbmHit, public CbmMvdDetectorId
 
 
   /** Accessors **/
-  Int_t GetSystemId()  const { return SystemId(fDetectorID); }
-  virtual Int_t GetStationNr() const { return StationNr(fDetectorID); }
-  Int_t GetFlag()      const { return fFlag; }; 
+  Int_t GetSystemId()   const { return SystemId(fDetectorID); };
+  virtual Int_t GetStationNr() const { return StationNr(fDetectorID); };
+  Int_t GetFlag()       const { return fFlag; };
+  Int_t GetClusterIndex() const { return fClusterIndex;};
+  Int_t GetIndexCentralX() const { return fIndexCentralX;}; // returns index of center of gravity
+  Int_t GetIndexCentralY() const { return fIndexCentralY;}; // returns index of center of gravity
+  void GetDigiIndexVector(TClonesArray* cbmMvdClusterArray, std::vector<Int_t>* digiIndexVector);
+  
+  
 
   
 
  protected:
 
   Int_t fFlag;     // Hit flag; to be used later
-
+  Int_t fClusterIndex;
+  Int_t fIndexCentralX;
+  Int_t fIndexCentralY;
     
   ClassDef(CbmMvdHit,1);
 

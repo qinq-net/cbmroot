@@ -13,66 +13,38 @@ using std::endl;
 
 
 // -----   Default constructor   -------------------------------------------
-CbmMvdCluster::CbmMvdCluster() 
-  : CbmMvdHit(), 
-    fChargeArray(),
-    fPixelSizeX(0.),
-    fPixelSizeY(0.),
-    fPointInfo(),
-    fPointX(),
-    fPointY(),
-    fContributors(-1)
-{
+CbmMvdCluster::CbmMvdCluster() {
+fNeighbourUp=-1;
+fNeighbourDown=-1;
+fDigisInThisObject=0;
+fTotalDigisInCluster=-1;
+for(Int_t i=0;i<fMaxDigisInObject; i++){fDigiArray[i]=-1;}
 }
 // -------------------------------------------------------------------------
 
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmMvdCluster::CbmMvdCluster(Int_t statNr, TVector3& pos, TVector3& dpos, Int_t flag, 
-                             Short_t chargeArray[49], Double_t pixelSizeX, Double_t pixelSizeY)
-  : CbmMvdHit(statNr, pos, dpos, flag), 
-    fChargeArray(),
-    fPixelSizeX(pixelSizeX),
-    fPixelSizeY(pixelSizeY),
-    fPointInfo(),
-    fPointX(),
-    fPointY(),
-    fContributors(-1)
-{
+CbmMvdCluster::CbmMvdCluster(Int_t* digiList, Short_t digisInThisObject, Short_t totalDigisInCluster, Int_t neighbourDown) {
 
-  //    fContributors=-1;
-
-    for (Int_t i=0;i<49;i++){
-	fChargeArray[i] = chargeArray[i];
-	fPointInfo[i]   = 0;
-    }
-
-    for(Int_t i=0;i<5;i++){
-
-	fPointX[i]=0;
-	fPointY[i]=0;
-    }
-
-    //    fPixelSizeX = ;
-    //    fPixelSizeY = ;
-
-
+    for(Int_t i=0;i<fMaxDigisInObject; i++){fDigiArray[i]=-1;}
+    for(Int_t i=0;i<digisInThisObject; i++){fDigiArray[i]=digiList[i];}
+    
+    fDigisInThisObject=digisInThisObject;
+    fTotalDigisInCluster=totalDigisInCluster;
+    fNeighbourDown=neighbourDown;
+    fNeighbourUp=-1;
 }
 // -------------------------------------------------------------------------
 
-// ----- SetDebuggingInfo --------------------------------------------------
-
-void CbmMvdCluster::SetDebuggingInfo(Short_t pointInfo[49], Float_t pointX[5],Float_t pointY[5])
-{
-    for( Int_t i=0; i<49; i++ ){
-	fPointInfo[i]=pointInfo[i];
-    };
-
-    for( Int_t i=0; i<5; i++ ){
-	fPointX[i] = pointX[i];
-	fPointY[i] = pointY[i];
-    }
+Int_t CbmMvdCluster::GetDigiIndex(UInt_t index){
+  
+ 
+  if (index<fDigisInThisObject){ return fDigiArray[index];}
+  else {cout << "-E- "<< GetName() <<"::GetDigiIndex(UInt_t entry) - You called for an invalid entry. Returning -1."<< endl;
+	return -1;
+  }
+  
 
 }
 

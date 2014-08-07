@@ -3,7 +3,7 @@
 // -----                    Created 02/04/08  by C.Dritsa              -----
 // -------------------------------------------------------------------------
 
-
+// TODO: Include GetAddress,  GetLinks, GetSystemId, GetTime
 
 #ifndef CBMMVDDIGI_H
 #define CBMMVDDIGI_H 1
@@ -28,41 +28,39 @@ public:
     /** Constructor with all variables **/
 
     CbmMvdDigi(Int_t iStation, Int_t iChannelNrX, Int_t iChannelNrY, Float_t charge, Float_t pixelSizeX,
-    Float_t pixelSizeY, Float_t dominatorX, Float_t dominatorY, Short_t contributors, 
-    Float_t maxChargeContribution, Int_t pointID, Int_t trackID);
+    Float_t pixelSizeY, Float_t time=0.0, Int_t frame = 0);
     /**
      charge     : of each fired pixel in electrons
      PixelSize  : in cm
     */
 
     /** Destructor **/
-    virtual ~CbmMvdDigi();
+    ~CbmMvdDigi();
 
     /** Accessors **/
-    Float_t GetCharge()   { return fCharge;     };
+    Double_t  GetCharge()   { return fCharge;     };
     Int_t    GetPixelX();
     Int_t    GetPixelY();
     Double_t GetPixelSizeX() { return  fPixelSizeX; };
     Double_t GetPixelSizeY() { return  fPixelSizeY; };
     Int_t    GetAdcCharge(Int_t adcDynamic, Int_t adcOffset, Int_t adcBits);
-    Int_t    GetFlag(){return fDigiFlag;}
-    Float_t  GetDominatorX(){return fDominatingPointX;}
-    Float_t  GetDominatorY(){return fDominatingPointY;}
-    Int_t    GetStationNr() { return StationNr(fDetectorId); }
-    Int_t    GetTrackID(){return fTrackID;}
-    Int_t    GetPointID(){return fPointID;}
-
-    /** Abstract methods from base class **/
-    Int_t GetAddress() const { return fDetectorId; }
-    Double_t GetTime() const { return 0.; }
-
-    /** Former methods from base class **/
-    Int_t GetDetectorId() const { return fDetectorId; }
-    Int_t GetChannelNr() const { return fChannelNr; }
-    Int_t GetSystemId() const { return kMVD; }
-   
- 
-
+    Int_t    GetFlag(){return fDigiFlag;};
+    Int_t    GetStationNr() { return StationNr(fDetectorId); };
+    Int_t    GetDetectorId() {return fDetectorId;};
+    Int_t    GetAddress() const; /** Unique channel address  **/
+    Int_t    GetSystemId() const; /** System (enum DetectorId) **/
+    Double_t GetTime() const;/** Absolute time [ns]  **/
+    Int_t    GetFrameNumber() {return fFrameNumber;};
+    
+    //these functions are only for littrack
+    Int_t GetDominatorX(){;};
+    Int_t GetDominatorY(){;};
+    Int_t GetTrackID(){;};
+    Int_t GetContributors(){;};
+    Int_t GetPointID(){;};
+    //
+    
+    
     /** Modifiers **/
     void SetCharge(Float_t charge) { fCharge     = charge; };
     void SetPixelX(Int_t xIndex) { fChannelNrX = xIndex; };
@@ -70,11 +68,8 @@ public:
     void SetPixelIndex(Int_t pixelIndex) { fChannelNr  = pixelIndex; };
     void SetDetectorId(Int_t detId)      { fDetectorId = detId;      };
     void SetFlag(Int_t flag)             { fDigiFlag   = flag;       }
-
+    void SetFrameNr(Int_t frame) {fFrameNumber = frame;};
 private:
-
-    Int_t fDetectorId;
-    Int_t fChannelNr;
 
 
     Float_t fCharge;
@@ -84,16 +79,12 @@ private:
     Int_t fPointID;
     Float_t fPixelSizeX;
     Float_t fPixelSizeY;
+    Int_t fDetectorId;
+    Int_t fChannelNr;
+    Double_t fDigiTime;
+    Int_t fFrameNumber;
 
     Int_t fDigiFlag; // Debugging and analysis information
-
-    Float_t fMaxChargeContribution;
-    Float_t fDominatingPointX;
-    Float_t fDominatingPointY;
-    Short_t fContributors;
-   
-
-
 
     ClassDef(CbmMvdDigi,1);
 

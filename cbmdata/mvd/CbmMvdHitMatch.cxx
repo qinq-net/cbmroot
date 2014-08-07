@@ -2,6 +2,7 @@
 // -----                    CbmMvdHitMatch source file                 -----
 // -----                  Created 07/11/06  by V. Friese               -----
 // -----            Based on CbmStsMapsHitInfo by M. Deveaux           -----
+// -----           Update to new CbmMatch Class by P. Sitzmann         -----
 // -------------------------------------------------------------------------
 
 
@@ -9,54 +10,35 @@
 #include "CbmMvdHitMatch.h"
 
 
+
 // -----   Default constructor   -------------------------------------------
-CbmMvdHitMatch::CbmMvdHitMatch() 
-  :TObject(),
-   fFileNumber(-1),
-   fEventNumber(-1),
-   fTrackId(-1),
-   fPointId(-1),
-   fNMerged(0)
-{
-  //  Clear();
+CbmMvdHitMatch::CbmMvdHitMatch() {
+  AddLink(0. , 0, -1 ,-1);
+  
+  fFileNumber = -1;
+  fIndex = 0; 
+  fWeight = 0.;
+  fEntry = -1;
 }
 // -------------------------------------------------------------------------
 
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmMvdHitMatch::CbmMvdHitMatch(Int_t fileNumber, Int_t eventNumber,
-				     Int_t trackId, Int_t pointId,
-				     Int_t nMerged) 
-  :TObject(),
-   fFileNumber(fileNumber),
-   fEventNumber(eventNumber),
-   fTrackId(trackId),
-   fPointId(pointId),
-   fNMerged(nMerged)
-{
+CbmMvdHitMatch::CbmMvdHitMatch(Double_t weight, Int_t index, Int_t entry, Int_t file) {
+  AddLink(weight, index, entry, file);
+ 
+  fFileNumber = file;
+  fIndex = index; 
+  fWeight = weight;
+  fEntry = entry;
 }
 // -------------------------------------------------------------------------
 
 
-
-// -----   Destructor   ----------------------------------------------------
-CbmMvdHitMatch::~CbmMvdHitMatch() { }
 // -------------------------------------------------------------------------
-
-
-
-// -----   Public method Clear   -------------------------------------------
-void CbmMvdHitMatch::Clear() {
-  fFileNumber  = -1;
-  fEventNumber = -1;
-  fTrackId     = -1;
-  fPointId     = -1;
-  fNMerged     =  0;
-}
+CbmMvdHitMatch::~CbmMvdHitMatch() {}
 // -------------------------------------------------------------------------
-
-
-
 
 ClassImp(CbmMvdHitMatch);
+ 

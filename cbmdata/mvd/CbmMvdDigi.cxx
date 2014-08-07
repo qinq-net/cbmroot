@@ -15,56 +15,65 @@ using std::endl;
 
 
 // -----   Default constructor   -------------------------------------------
-CbmMvdDigi::CbmMvdDigi()
-  : CbmDigi(),
-    CbmMvdDetectorId(),
-    fDetectorId(0),
-    fChannelNr(0),
-    fCharge(0.),
-    fChannelNrX(0),
-    fChannelNrY(0),
-    fTrackID(-1),
-    fPointID(-1),
-    fPixelSizeX(0.),
-    fPixelSizeY(0.),
-    fDigiFlag(0),
-    fMaxChargeContribution(0.),
-    fDominatingPointX(0.),
-    fDominatingPointY(0.),
-    fContributors(0)
-{
+CbmMvdDigi::CbmMvdDigi(){
+    fDetectorId   =  0;
+    fChannelNr    =  0;
+    fChannelNrX = 0;
+    fChannelNrY = 0;
+    fCharge     = 0;
+    
 }
 // -------------------------------------------------------------------------
 
 
 
-// -----   Constructor with parameters   -----------------------------------
+/*// -----   Constructor with parameters   -----------------------------------
 CbmMvdDigi::CbmMvdDigi(Int_t iStation, Int_t iChannelNrX, Int_t iChannelNrY, Float_t charge,
-                       Float_t pixelSizeX, Float_t pixelSizeY, Float_t dominatorX, Float_t dominatorY, Short_t contributors, Float_t maxChargeContribution, Int_t pointID, Int_t trackID)
-  : CbmDigi(),
-    CbmMvdDetectorId(),
-    fDetectorId(0),
-    fChannelNr(0),
-    fCharge(charge),
-    fChannelNrX(iChannelNrX),
-    fChannelNrY(iChannelNrY),
-    fTrackID(trackID),
-    fPointID(pointID),
-    fPixelSizeX(pixelSizeX),
-    fPixelSizeY(pixelSizeY),
-    fDigiFlag(-1),
-    fMaxChargeContribution(maxChargeContribution),
-    fDominatingPointX(dominatorX),
-    fDominatingPointY(dominatorY),
-    fContributors(contributors)
+                       Float_t pixelSizeX, Float_t pixelSizeY)
+:CbmDigi(kMVD, 0)
 {
     // Check range for station
     if ( ! ( iStation >= 0 && iStation <= 255 ) ) {
 	cout << "-E- CbmMvdDigi: Illegal station number " << iStation << endl;
 	Fatal("", "Illegal station number");
     }
+
     fDetectorId = DetectorId(iStation);
-    //    fChannelNrY = iChannelNrY;
+    fChannelNrY = iChannelNrY;
+    fCharge  = charge;
+    fChannelNrX=iChannelNrX;
+    fChannelNrY=iChannelNrY;
+    fPixelSizeX=pixelSizeX;
+    fPixelSizeY=pixelSizeY;
+    
+    fDigiFlag=-1;
+    
+}
+// -------------------------------------------------------------------------*/
+
+// -----   Constructor with parameters  --> used only due to error TODO include correct version -----------------------------------
+CbmMvdDigi::CbmMvdDigi(Int_t iStation, Int_t iChannelNrX, Int_t iChannelNrY, Float_t charge,
+                       Float_t pixelSizeX, Float_t pixelSizeY, Float_t time, Int_t frame)
+:CbmDigi()
+{
+    // Check range for station
+    if ( ! ( iStation >= 0 && iStation <= 600 ) ) {
+	cout << "-E- CbmMvdDigi: Illegal station number " << iStation << endl;
+	Fatal("", "Illegal station number");
+    }
+
+    fDetectorId = DetectorId(iStation);
+    fChannelNrY = iChannelNrY;
+    fCharge  = charge;
+    fChannelNrX=iChannelNrX;
+    fChannelNrY=iChannelNrY;
+    fPixelSizeX=pixelSizeX;
+    fPixelSizeY=pixelSizeY;
+    fDigiTime = time;
+    fFrameNumber = frame;
+    
+    fDigiFlag=-1;
+    
 }
 // -------------------------------------------------------------------------
 
@@ -121,6 +130,26 @@ Int_t CbmMvdDigi::GetPixelY(){
 }
 // -------------------------------------------------------------------------
 
+     /** Unique channel address  **/
+  Int_t    CbmMvdDigi::GetAddress() const{
+ return  0;
+
+}
+// -------------------------------------------------------------------------
+  /** System (enum DetectorId) **/
+  Int_t   CbmMvdDigi:: GetSystemId() const{
+ return  0;
+
+}
+// -------------------------------------------------------------------------
+
+  /** Absolute time [ns]  **/
+  Double_t CbmMvdDigi::GetTime() const{
+ return  fDigiTime;
+
+}
+ 
+  
 // -------------------------------------------------------------------------
 
 

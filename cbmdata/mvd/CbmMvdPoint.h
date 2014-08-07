@@ -3,7 +3,6 @@
 // -----                  Created 06/11/06  by V. Friese               -----
 // -------------------------------------------------------------------------
 
-
 /**  CbmMvdPoint.h
  *@author V.Friese <v.friese@gsi.de>
  *
@@ -19,6 +18,10 @@
 #define CBMMVDPOINT_H 1
 
 #include "FairMCPoint.h"
+#include "FairRunSim.h"
+#include "FairPrimaryGenerator.h"
+#include "FairMCEventHeader.h"
+
 #include "CbmMvdDetectorId.h"
 
 #include "TObject.h"
@@ -44,10 +47,11 @@ class CbmMvdPoint : public FairMCPoint, CbmMvdDetectorId
    *@param tof        Time since event start [ns]
    *@param length     Track length since creation [cm]
    *@param eLoss      Energy deposit [GeV]
+   *@param frame      Number of frame this point is registered in
    **/
   CbmMvdPoint(Int_t trackId, Int_t pdgCode, Int_t detId, TVector3 posIn, 
 	      TVector3 posOut, TVector3 momIn, TVector3 momOut,
-	      Double_t tof, Double_t length, Double_t eLoss);
+	      Double_t tof, Double_t length, Double_t eLoss, Int_t frame = 0);
 
 
   /** Copy constructor **/
@@ -72,15 +76,16 @@ class CbmMvdPoint : public FairMCPoint, CbmMvdDetectorId
 						// By default not filled. Used internally in the MvdDigitizer.
   void PositionOut(TVector3& pos) { pos.SetXYZ(fX_out,fY_out,fZ_out); }
   void MomentumOut(TVector3& mom) { mom.SetXYZ(fPx_out,fPy_out,fPz_out); }
-
+  Int_t GetFrame() const { return fFrame;}
+  Int_t GetAbsTime();
 
   /** Modifiers **/
   void SetPositionOut(TVector3 pos);
   void SetMomentumOut(TVector3 mom);
   void SetPdgCode(Int_t pdg){fPdgCode=pdg;}
   void SetPointId(Int_t myId) {fPointId=myId;}
-
-
+  void SetFrameNr(Int_t frame) {fFrame = frame;}
+  
 
   /** Output to screen **/
   virtual void Print(const Option_t* opt) const;
@@ -93,8 +98,8 @@ class CbmMvdPoint : public FairMCPoint, CbmMvdDetectorId
   Double32_t fPx_out, fPy_out, fPz_out;
   Int_t      fPdgCode; // index of the object in its TClonesArray. By default not filled => -1.
   Int_t      fPointId; // index of the object in its TClonesArray. By default not filled => -1.
-
-
+  Int_t      fFrame;
+  Double_t fStartTime;
 
   ClassDef(CbmMvdPoint,1)
 
