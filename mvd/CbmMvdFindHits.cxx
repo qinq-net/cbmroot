@@ -193,8 +193,8 @@ InitStatus CbmMvdFindHits::Init() {
     }
 
     fDigis = (TClonesArray*) ioman->GetObject(fBranchName);
-    fDigiMatch= (TClonesArray*) ioman->GetObject(fBranchNameMatch);
-    if(fDigiMatch){fUseMCInfo=kTRUE;} else {fUseMCInfo=kFALSE;};
+    /*fDigiMatch= (TClonesArray*) ioman->GetObject(fBranchNameMatch);
+    if(fDigiMatch){fUseMCInfo=kTRUE;} else {*/fUseMCInfo=kFALSE;
     
  
     Register();

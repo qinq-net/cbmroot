@@ -1083,7 +1083,7 @@ Int_t CbmMvdDigitizeL::GetMvdGeometry() {
       fStationMap[iStation] = new CbmMvdStation(volName.Data(), iStation, volId,
 					     z, d, rmin, rmax);
       fStationMap[iStation]->Print();
-      cout << endl << "new Station" << endl;
+
       iStation++;
 
     }     // Volume found
