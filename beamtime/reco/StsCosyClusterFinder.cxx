@@ -161,7 +161,7 @@ void StsCosyClusterFinder::Exec(Option_t * option)
 	      cluster = new ((*fClusters)[size]) CbmStsCluster();
 	      Int_t index = fIndices[(*j)];
 	      //----time----
-	      digi = static_cast<const CbmStsDigi*>(fDigis->At(index));
+	      digi = static_cast<CbmStsDigi*>(fDigis->At(index));
 	      timePrev = digi->GetTime();
 
 	      cluster->AddDigi(index);  
@@ -171,7 +171,7 @@ void StsCosyClusterFinder::Exec(Option_t * option)
 	  else 
 	    {
 	      Int_t index = fIndices[(*j)];
-	      digi = static_cast<const CbmStsDigi*>(fDigis->At(index));
+	      digi = static_cast<CbmStsDigi*>(fDigis->At(index));
 	      time = digi->GetTime();
 	      stripNr = CbmStsAddress::GetElementId((*j)->GetAddress(),kStsChannel);
 	      if (1 == stripNr-stripNrPrev && TMath::Abs(time - timePrev)< 40) 

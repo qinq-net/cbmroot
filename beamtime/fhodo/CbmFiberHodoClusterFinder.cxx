@@ -157,14 +157,14 @@ void CbmFiberHodoClusterFinder::Exec(Option_t * option)
 		CbmFiberHodoCluster(fIndices[*j]);
 	      fiberNrPrev = CbmFiberHodoAddress::GetStripId((*j)->GetAddress());
 	      newCluster = kFALSE;
-	      digi = static_cast<const CbmFiberHodoDigi*>(fDigis->At(fIndices[*j]));
+	      digi = static_cast<CbmFiberHodoDigi*>(fDigis->At(fIndices[*j]));
 	      timePrev = digi->GetTime();
 	    } 
 	  else 
 	    {
 	      // check if the next fiber is a direct neighbor of the previos one
 	      fiberNr = CbmFiberHodoAddress::GetStripId((*j)->GetAddress());
-	      digi = static_cast<const CbmFiberHodoDigi*>(fDigis->At(fIndices[*j]));
+	      digi = static_cast<CbmFiberHodoDigi*>(fDigis->At(fIndices[*j]));
 	      time = digi->GetTime();
 	      if (1 == fiberNr-fiberNrPrev && TMath::Abs(time -timePrev)< 40 ) 
 		{
