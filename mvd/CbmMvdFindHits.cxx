@@ -497,7 +497,7 @@ void CbmMvdFindHits::Exec(Option_t* opt) {
 Int_t CbmMvdFindHits::GetMvdGeometry() {
    
    cout << "-I- " << GetName() << " : Reading MVD geometry..." << endl;
-  Int_t iStation =  0;
+  Int_t iStation =  1;
   Int_t volId    = -1;
   fStationMap.clear();
 
