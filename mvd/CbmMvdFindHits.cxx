@@ -516,19 +516,12 @@ Int_t CbmMvdFindHits::GetMvdGeometry() {
       Double_t d    = tube->GetDz();
 
       // Full path to node 
-      TString nodeName = Form("/cave_1/MVDo4oStationsoAloFPC_0/MBoAloCarbonoStationo%i_1/mvdstation%02ioPartAss_1/" + volName + "_1" , iStation , iStation);
+      TString nodeName = "/cave_1/pipevac1_0/" + volName + "_0";
 
       // Get z position of node
       Bool_t nodeFound = gGeoManager->cd(nodeName.Data());
 
-      if ( ! nodeFound ) { // if no node found is found assume other Geometry
-      nodeName = Form("/cave_1/MVDo4oStationsoCuoFPC_0/MBoCuoCarbonoStationo%i_1/mvdstation%02ioPartAss_1/" + volName + "_1" , iStation , iStation);
-
-      // Get z position of node
-      nodeFound = gGeoManager->cd(nodeName.Data());
-	}
-
-      if ( ! nodeFound ) { // no node at all found
+	if ( ! nodeFound ) { // no node at all found
 	cout << "-E- " << GetName() << "::SetMvdGeometry: Node " << nodeName
 	     << " not found in geometry!" << endl;
 	Fatal("SetMvdGeometry", "Node not found");
