@@ -26,6 +26,7 @@ System.cpp
 TimesliceInputArchive.cpp
 TimesliceReceiver.cpp
 TimesliceView.cpp
+MicrosliceContents.cpp
 )
 
 
