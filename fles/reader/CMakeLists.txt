@@ -32,7 +32,7 @@ Set(SRCS
 Set(LINKDEF  FlibReaderLinkDef.h )
 Set(LIBRARY_NAME CbmFlibReader)
 Set(DEPENDENCIES
-    fles_ipc
+    Base fles_ipc
 )
 
 GENERATE_LIBRARY()

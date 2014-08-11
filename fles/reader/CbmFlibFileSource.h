@@ -9,13 +9,15 @@
 #define CBMFLIBFILESOURCE_H
 
 #include "TimesliceSource.hpp"
+#include "Timeslice.hpp"
 
-#include "TObject.h"
+#include "FairSource.h"
+
 #include "TString.h"
 
 #include <memory>
 
-class CbmFlibFileSource : public TObject
+class CbmFlibFileSource : public FairSource
 {
   public:
     CbmFlibFileSource();
@@ -35,6 +37,8 @@ class CbmFlibFileSource : public TObject
 
     //std::unique_ptr<fles::TimesliceSource> fSource;
     fles::TimesliceSource* fSource;
+
+    Bool_t CheckTimeslice(const fles::Timeslice& ts);
 
     ClassDef(CbmFlibFileSource, 1)
 };
