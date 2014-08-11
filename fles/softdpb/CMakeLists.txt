@@ -28,7 +28,7 @@ TimesliceAnalyzer.cpp
 TimesliceDebugger.cpp
 )
 
-Set(EXE_NAME tsclient)
+Set(EXE_NAME softdpb)
 If(UNIX AND NOT APPLE)
   Set(DEPENDENCIES fles_ipc boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} rt)
 Else()
