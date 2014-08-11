@@ -4,10 +4,15 @@
 #include "MicrosliceDescriptor.hpp"
 #include "TimesliceDescriptor.hpp"
 #include "TimesliceComponentDescriptor.hpp"
-#include <cstdint>
 #include <vector>
 #include <fstream>
+#ifndef __CINT__
+#include <cstdint>
 #include <boost/serialization/access.hpp>
+#else
+#include <stdint.h>
+#endif
+
 // Note: <fstream> has to precede boost/serialization includes for non-obvious
 // reasons to avoid segfault similar to
 // http://lists.debian.org/debian-hppa/2009/11/msg00069.html

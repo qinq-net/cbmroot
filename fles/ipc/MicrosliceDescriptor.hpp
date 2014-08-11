@@ -1,8 +1,12 @@
 // Copyright 2013 Jan de Cuveland <cmail@cuveland.de>
 #pragma once
 
+#ifndef __CINT__
 #include <cstdint>
 #include <boost/serialization/access.hpp>
+#else
+#include <stdint.h>
+#endif
 
 namespace fles
 {
@@ -23,7 +27,10 @@ struct MicrosliceDescriptor
     uint32_t size;   ///< Content size (bytes)
     uint64_t offset; ///< Offset in event buffer (bytes)
 
+    #ifndef __CINT__
     friend class boost::serialization::access;
+    #endif
+
     template <class Archive>
     void serialize(Archive& ar, const unsigned int /* version */)
     {
