@@ -168,24 +168,27 @@ void CbmKFParticleFinderPID::SetRecoPID()
   const Double_t m2P  = 0.885;
   const Double_t m2K  = 0.245;
   const Double_t m2Pi = 0.019479835;
+  const Double_t m2El = 0.;
   
-  Double_t sP[3][5];
+  Double_t sP[4][5];
   if(fSisMode == 0) //SIS-100
   {
-    Double_t sPLocal[3][5] = { {0.056908,-0.0470572,0.0216465,-0.0021016,8.50396e-05},
+    Double_t sPLocal[4][5] = { {0.056908,-0.0470572,0.0216465,-0.0021016,8.50396e-05},
                                {0.00943075,-0.00635429,0.00998695,-0.00111527,7.77811e-05},
-                               {0.00176298,0.00367263,0.00308013,0.000844013,-0.00010423} }; 
-    for(Int_t iSp=0; iSp<3; iSp++)
+                               {0.00176298,0.00367263,0.00308013,0.000844013,-0.00010423},
+                               {0.00218401,0.00152391,0.00895357,-0.000533423,3.70326e-05} }; 
+    for(Int_t iSp=0; iSp<4; iSp++)
       for(Int_t jSp=0; jSp<5; jSp++)
         sP[iSp][jSp] = sPLocal[iSp][jSp];
   }
   
   if(fSisMode == 1) //SIS-300
   {
-    Double_t sPLocal[3][5] = { {0.0337428,-0.013939,0.00567602,-0.000202229,4.07531e-06},
+    Double_t sPLocal[4][5] = { {0.0337428,-0.013939,0.00567602,-0.000202229,4.07531e-06},
                                {0.00717827,-0.00257353, 0.00389851,-9.83097e-05, 1.33011e-06},
-                               {0.001348,0.00220126,0.0023619,7.35395e-05,-4.06706e-06} };
-    for(Int_t iSp=0; iSp<3; iSp++)
+                               {0.001348,0.00220126,0.0023619,7.35395e-05,-4.06706e-06},
+                               {0.00218401,0.00152391,0.00895357,-0.000533423,3.70326e-05} };
+    for(Int_t iSp=0; iSp<4; iSp++)
       for(Int_t jSp=0; jSp<5; jSp++)
         sP[iSp][jSp] = sPLocal[iSp][jSp];
   }
@@ -198,9 +201,9 @@ void CbmKFParticleFinderPID::SetRecoPID()
     Int_t stsTrackIndex = globalTrack->GetStsTrackIndex();
     if( stsTrackIndex<0 ) continue;
 
-       Bool_t isElectronTRD = 0;
-       Bool_t isElectronRICH = 0;
-       Bool_t isElectron = 0;
+    Bool_t isElectronTRD = 0;
+    Bool_t isElectronRICH = 0;
+    Bool_t isElectron = 0;
 
     CbmStsTrack* cbmStsTrack = (CbmStsTrack*) fTrackArray->At(stsTrackIndex);
     const FairTrackParam *stsPar = cbmStsTrack->GetParamFirst();
@@ -210,62 +213,62 @@ void CbmKFParticleFinderPID::SetRecoPID()
     Double_t p = mom.Mag();
     Int_t q = stsPar->GetQp() > 0 ? 1 : -1;
 
-       if(fRichRingArray)
-       {
-         Int_t richIndex = globalTrack->GetRichRingIndex();
-         if (richIndex > -1)
-         {
-           CbmRichRing* richRing = (CbmRichRing*)fRichRingArray->At(richIndex);
-           if (richRing)
-           {
-              Double_t axisA = richRing->GetAaxis();
-              Double_t axisB = richRing->GetBaxis();
-              Double_t dist = richRing->GetDistance();
-	      
-              Double_t fMeanA = 4.95;
-              Double_t fMeanB = 4.54;
-              Double_t fRmsA = 0.30;
-              Double_t fRmsB = 0.22;
-              Double_t fRmsCoeff = 3.5;
-              Double_t fDistCut = 1.;
-  
+    if(fRichRingArray)
+    {
+      Int_t richIndex = globalTrack->GetRichRingIndex();
+      if (richIndex > -1)
+      {
+        CbmRichRing* richRing = (CbmRichRing*)fRichRingArray->At(richIndex);
+        if (richRing)
+        {
+          Double_t axisA = richRing->GetAaxis();
+          Double_t axisB = richRing->GetBaxis();
+          Double_t dist = richRing->GetDistance();
+          
+          Double_t fMeanA = 4.95;
+          Double_t fMeanB = 4.54;
+          Double_t fRmsA = 0.30;
+          Double_t fRmsB = 0.22;
+          Double_t fRmsCoeff = 3.5;
+          Double_t fDistCut = 1.;
 
- //            if(fElIdAnn->DoSelect(richRing, p) > -0.5) isElectronRICH = 1;
-              if (p<5.5){
-                if ( fabs(axisA-fMeanA) < fRmsCoeff*fRmsA &&
-                     fabs(axisB-fMeanB) < fRmsCoeff*fRmsB && 
-                     dist < fDistCut) isElectronRICH = 1;
-              }
-              else {
-          ///3 sigma
-                // Double_t polAaxis = 5.23463 - 1.65625 / (momentum - 4.49815);
-                // Double_t polBaxis = 4.8757 - 1.2958 / (momentum - 4.72537);
-          ///2 sigma          
-                Double_t polAaxis = 5.22648 - 2.39248 / (p - 4.15333);
-                Double_t polBaxis = 4.8908 - 2.06429 / (p - 4.3272);
-                if ( axisA < (fMeanA + fRmsCoeff*fRmsA) &&
-                     axisA > polAaxis &&
-                     axisB < (fMeanB + fRmsCoeff*fRmsB) && 
-                     axisB > polBaxis &&
-                     dist < fDistCut) isElectronRICH = 1;
-              }
-           }
-         }
-       }
- 
-       if(fTrdTrackArray)
-       {
-         Int_t trdIndex = globalTrack->GetTrdTrackIndex();
-         if (trdIndex > -1)
-         {
-           CbmTrdTrack* trdTrack = (CbmTrdTrack*)fTrdTrackArray->At(trdIndex);
-           if (trdTrack)
-           {
-             if (trdTrack->GetPidANN() > 0.5)
-               isElectronTRD = 1;
-           }
-         }
-       }
+
+      //            if(fElIdAnn->DoSelect(richRing, p) > -0.5) isElectronRICH = 1;
+          if (p<5.5){
+            if ( fabs(axisA-fMeanA) < fRmsCoeff*fRmsA &&
+            fabs(axisB-fMeanB) < fRmsCoeff*fRmsB && 
+            dist < fDistCut) isElectronRICH = 1;
+          }
+          else {
+            ///3 sigma
+            // Double_t polAaxis = 5.23463 - 1.65625 / (momentum - 4.49815);
+            // Double_t polBaxis = 4.8757 - 1.2958 / (momentum - 4.72537);
+            ///2 sigma          
+            Double_t polAaxis = 5.22648 - 2.39248 / (p - 4.15333);
+            Double_t polBaxis = 4.8908 - 2.06429 / (p - 4.3272);
+            if ( axisA < (fMeanA + fRmsCoeff*fRmsA) &&
+            axisA > polAaxis &&
+            axisB < (fMeanB + fRmsCoeff*fRmsB) && 
+            axisB > polBaxis &&
+            dist < fDistCut) isElectronRICH = 1;
+          }
+        }
+      }
+    }
+
+    if(fTrdTrackArray)
+    {
+      Int_t trdIndex = globalTrack->GetTrdTrackIndex();
+      if (trdIndex > -1)
+      {
+        CbmTrdTrack* trdTrack = (CbmTrdTrack*)fTrdTrackArray->At(trdIndex);
+        if (trdTrack)
+        {
+          if (trdTrack->GetPidANN() > 0.5)
+            isElectronTRD = 1;
+        }
+      }
+    }
 
     Double_t l = globalTrack->GetLength();// l is calculated by global tracking
     if(fSisMode==0) //SIS-100
@@ -290,32 +293,29 @@ void CbmKFParticleFinderPID::SetRecoPID()
 
     Double_t m2 = p*p*(1./((l/time/29.9792458)*(l/time/29.9792458))-1.);
 
-    Double_t sigma[3];
+    Double_t sigma[4];
     sigma[0] = sP[0][0] + sP[0][1]*p + sP[0][2]*p*p + sP[0][3]*p*p*p + sP[0][4]*p*p*p*p;
     sigma[1] = sP[1][0] + sP[1][1]*p + sP[1][2]*p*p + sP[1][3]*p*p*p + sP[1][4]*p*p*p*p;
     sigma[2] = sP[2][0] + sP[2][1]*p + sP[2][2]*p*p + sP[2][3]*p*p*p + sP[2][4]*p*p*p*p;
 
-    Double_t dm2[3];
+    Double_t dm2[4];
     dm2[0] = fabs(m2 - m2P)/sigma[0];
     dm2[1] = fabs(m2 - m2K)/sigma[1];
     dm2[2] = fabs(m2 - m2Pi)/sigma[2];
 
     int iPdg=2;
     Double_t dm2min = dm2[2];
-       if(isElectronRICH /*&& isElectronTRD*/) 
-	 isElectron = 1;
-/*      {
-         if (p >= 1.) {
-           if (m2 < (0.01 + (p - 1.) * 0.09))
-             isElectron = 1;
-         }
-         else {
-           if (m2 < 0.0)
-             isElectron = 1;
-         }
-       }*/
- 
-       if(!isElectron)
+    
+    if(isElectronRICH /*&& isElectronTRD*/)
+    {
+      sigma[3] = sP[3][0] + sP[3][1]*p + sP[3][2]*p*p + sP[3][3]*p*p*p + sP[3][4]*p*p*p*p;
+      dm2[3] = fabs(m2 - m2El)/sigma[3];
+      
+      if(dm2[3] < 3.)
+        isElectron = 1;
+    }
+    
+    if(!isElectron)
     {
       if(p>12.) continue;
       if(q>0)
@@ -336,8 +336,8 @@ void CbmKFParticleFinderPID::SetRecoPID()
       if(iPdg > -1)
         fPID[stsTrackIndex] = q*PdgHypo[iPdg];
     }
-       else
-         fPID[stsTrackIndex] = q*PdgHypo[3];
+    else
+      fPID[stsTrackIndex] = q*PdgHypo[3];
   }
 }
 
