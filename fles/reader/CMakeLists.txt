@@ -4,16 +4,19 @@
 
 Set(INCLUDE_DIRECTORIES
   ${BASE_INCLUDE_DIRECTORIES} 
-  ${Boost_INCLUDE_DIR}
 #  ${CBMROOT_SOURCE_DIR}/cbmbase
 #  ${CBMROOT_SOURCE_DIR}/cbmdata
   ${CBMROOT_SOURCE_DIR}/fles/ipc
+  ${CBMROOT_SOURCE_DIR}/fles/spadic
   ${CBMROOT_SOURCE_DIR}/fles/reader
 )
 
 Include_Directories( 
   ${INCLUDE_DIRECTORIES}
 )
+
+Include_Directories(SYSTEM ${Boost_INCLUDE_DIR})
+ 
 
 Set(LINK_DIRECTORIES
   ${ROOT_LIBRARY_DIR}
@@ -32,7 +35,7 @@ Set(SRCS
 Set(LINKDEF  FlibReaderLinkDef.h )
 Set(LIBRARY_NAME CbmFlibReader)
 Set(DEPENDENCIES
-    Base fles_ipc
+    Base fles_ipc spadicMessage
 )
 
 GENERATE_LIBRARY()

@@ -13,6 +13,9 @@
 #include "Timeslice.hpp"
 #include "MicrosliceContents.hpp"
 
+#include "Message.hpp"
+#include "message_reader.h"
+
 #include <iostream>
 
 CbmFlibFileSource::CbmFlibFileSource()
@@ -62,18 +65,20 @@ Int_t CbmFlibFileSource::ReadEvent()
         // TODO check ts.sys_id, ts.sys_version
         // TODO check same source address from different components
         flib_dpb::MicrosliceContents mc {p, desc.size};
-	//        for (auto& dtm : mc.dtms()) {
-	//  uint16_t cbmnet_src_addr = dtm.data[0];
-	//            uint16_t *spadic_buffer = dtm.data + 1;
-	//            size_t spadic_buffer_size = dtm.size - 1;
+	for (auto& dtm : mc.dtms()) {
+	  uint16_t cbmnet_src_addr = dtm.data[0];
+	  const uint16_t *spadic_buffer = dtm.data + 1;
+	  size_t spadic_buffer_size = dtm.size - 1;
             // TODO use a separate spadic::MessageReader for each cbmnet_src_addr
-	//            reader.add_buffer(spadic_buffer, spadic_buffer_size);
+          spadic::MessageReader reader;
+
+	  reader.add_buffer(spadic_buffer, spadic_buffer_size);
 	//            while (auto spadic_msg = reader.get_message()) {
-                // ???
+	  // ???
+	}
       }
     }
   }
-
 
 
 //  while (auto timeslice = fSource->get()) {

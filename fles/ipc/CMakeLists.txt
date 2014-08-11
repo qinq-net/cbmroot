@@ -9,10 +9,12 @@ Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Winit-self -Wun
 
 Set(INCLUDE_DIRECTORIES
 ${CBMROOT_CURRENT_SOURCE_DIR}
-${Boost_INCLUDE_DIR}
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
+
+Include_Directories(SYSTEM ${Boost_INCLUDE_DIR})
+ 
 
 Set(LINK_DIRECTORIES
 ${Boost_LIBRARY_DIRS}
