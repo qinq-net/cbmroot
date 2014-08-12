@@ -11,10 +11,7 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/fles/reader
 )
 
-Include_Directories( 
-  ${INCLUDE_DIRECTORIES}
-)
-
+Include_Directories(${INCLUDE_DIRECTORIES})
 Include_Directories(SYSTEM ${Boost_INCLUDE_DIR})
  
 

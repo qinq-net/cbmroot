@@ -36,6 +36,6 @@ MicrosliceContents.cpp
 
 
 Set(LIBRARY_NAME fles_ipc)
-Set(DEPENDENCIES boost_thread boost_system boost_serialization)
+Set(DEPENDENCIES boost_thread boost_system boost_serialization rt)
 
 GENERATE_LIBRARY()
