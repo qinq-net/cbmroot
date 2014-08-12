@@ -12,10 +12,6 @@ void Parameters::parse_options(int argc, char* argv[])
         "help,h", "produce help message")(
         "client-index,c", po::value<int32_t>(&_client_index),
         "index of this executable in the list of processor tasks")(
-        "analyze-pattern,a", po::value<bool>(&_analyze)->implicit_value(true),
-        "enable/disable pattern check")(
-        "dump-timslices,d", po::value<bool>(&_dump)->implicit_value(true),
-        "enable/disable timeslice dump")(
         "shm-identifier,s", po::value<std::string>(&_shm_identifier),
         "shared memory identifier used for receiving timeslices")(
         "input-archive,i", po::value<std::string>(&_input_archive),
@@ -33,7 +29,7 @@ void Parameters::parse_options(int argc, char* argv[])
     }
 
     if (vm.count("version")) {
-        std::cout << "tsclient, version 0.0" << std::endl;
+        std::cout << "softdpb, version 0.0" << std::endl;
         exit(EXIT_SUCCESS);
     }
 

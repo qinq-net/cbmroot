@@ -25,8 +25,7 @@ Set(SRCS
 main.cpp
 Application.cpp
 Parameters.cpp
-TimesliceAnalyzer.cpp
-TimesliceDebugger.cpp
+TransparentFilter.cpp
 )
 
 Set(EXE_NAME softdpb)

@@ -2,11 +2,11 @@
 #pragma once
 
 #include "Parameters.hpp"
+#include "MicrosliceFilter.hpp"
 #include "TimesliceSource.hpp"
 #include "TimesliceOutputArchive.hpp"
-#include "TimesliceAnalyzer.hpp"
-#include "TimesliceDebugger.hpp"
 #include <memory>
+#include <vector>
 
 /// %Application base class.
 class Application
@@ -25,8 +25,7 @@ private:
     Parameters const& _par;
 
     std::unique_ptr<fles::TimesliceSource> _source;
-    std::unique_ptr<TimesliceAnalyzer> _analyzer;
-    std::unique_ptr<TimesliceDebugger> _dump;
+    std::vector<std::unique_ptr<MicrosliceFilter>> _filters;
     std::unique_ptr<fles::TimesliceOutputArchive> _output;
 
     uint64_t _count = 0;
