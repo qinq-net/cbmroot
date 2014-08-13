@@ -80,6 +80,8 @@ struct MessageReader::MessageReader_ {
 };
 
 MessageReader::MessageReader() : r {new MessageReader_} {}
+MessageReader::MessageReader(MessageReader&& rhs ) : r { std::move( rhs.r ) } {} 
+    
 MessageReader::~MessageReader() {}
 
 void MessageReader::reset()
