@@ -36,6 +36,11 @@ MicrosliceContents.cpp
 
 
 Set(LIBRARY_NAME fles_ipc)
-Set(DEPENDENCIES boost_thread boost_system boost_serialization rt)
+If(UNIX AND NOT APPLE)
+  Set(DEPENDENCIES boost_thread boost_system boost_serialization rt)
+Else()
+  Set(DEPENDENCIES boost_thread boost_system boost_serialization)
+EndIf()
+
 
 GENERATE_LIBRARY()

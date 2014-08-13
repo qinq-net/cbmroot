@@ -10,7 +10,12 @@
 #include <cstdint>
 #include <boost/serialization/access.hpp>
 #else
+#ifdef __APPLE__
+#include <_types/_uint64_t.h>
+#include <_types/_uint8_t.h>
+#else
 #include <stdint.h>
+#endif
 #endif
 
 // Note: <fstream> has to precede boost/serialization includes for non-obvious

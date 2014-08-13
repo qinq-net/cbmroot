@@ -5,7 +5,14 @@
 #include <cstdint>
 #include <boost/serialization/access.hpp>
 #else
+#ifdef __APPLE__
+#include <_types/_uint8_t.h>
+#include <_types/_uint16_t.h>
+#include <_types/_uint32_t.h>
+#include <_types/_uint64_t.h>
+#else
 #include <stdint.h>
+#endif
 #endif
 
 namespace fles
