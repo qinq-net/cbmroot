@@ -62,7 +62,7 @@ Int_t CbmFlibFileSource::ReadEvent()
       for (size_t m {0}; m < ts.num_microslices(c); m++) {
         auto& desc = ts.descriptor(c, m);
         auto p = ts.content(c, m);
-        // TODO check ts.sys_id, ts.sys_version
+        // TODO check desc.sys_id, desc.sys_version
         // TODO check same source address from different components
         flib_dpb::MicrosliceContents mc {p, desc.size};
 	for (auto& dtm : mc.dtms()) {
