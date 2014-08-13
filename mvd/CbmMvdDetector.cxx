@@ -6,7 +6,7 @@
 #include "CbmMvdDetector.h"
 
 #include <iostream>
-#include <omp.h>
+//#include <omp.h>
 
 using std::cout;
 using std::endl;
