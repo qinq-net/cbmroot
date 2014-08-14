@@ -15,6 +15,7 @@
 
 #include "Message.hpp"
 #include "message_reader.h"
+#include "TimesliceReader.hpp"
 
 #include <iostream>
 
@@ -24,6 +25,7 @@ CbmFlibFileSource::CbmFlibFileSource()
     fSource(NULL)
 {
 }
+
 
 
 CbmFlibFileSource::CbmFlibFileSource(const CbmFlibFileSource& source)
@@ -46,7 +48,41 @@ Bool_t CbmFlibFileSource::Init()
   } else {
     // Open the input file
     fSource = new fles::TimesliceInputArchive(fFileName.Data());
+    //fSource.reset(new fles::TimesliceInputArchive(fFileName.Data()));
+
   }
+  if ( !fSource) { 
+    LOG(FATAL) << "Could not open input file." << FairLogger::endl;
+  } 
+
+  /*
+  auto timeslice = fSource->get();
+  const fles::Timeslice& ts = *timeslice;
+  for (size_t c {0}; c < ts.num_components(); c++) {
+    auto systemID = ts.descriptor(c, 0).sys_id;
+    auto& desc = ts.descriptor(c, 0);
+
+    LOG(INFO) << "Found subsystem with ID: " << std::hex << (int)desc.sys_id 
+	      << " and version " << (int)desc.sys_ver 
+	      << " for component " << c << FairLogger::endl;
+    
+    //    switch (desc.sys_id) {
+    switch (systemID) {
+    case 0xFA:
+      LOG(INFO) << "It is flesnet pattern generator data" << FairLogger::endl;
+      break;
+    case 0xF0:
+      LOG(INFO) << "It is flib pattern generator data" << FairLogger::endl;
+      break;
+    case 0xBC:
+      LOG(INFO) << "It is spadic data with wrong system ID" << FairLogger::endl;
+      break;
+    default:
+      LOG(INFO) << "Not known now" << FairLogger::endl;
+    }
+
+  }
+*/
   
   return kTRUE;
 
@@ -59,35 +95,53 @@ Int_t CbmFlibFileSource::ReadEvent()
   while (auto timeslice = fSource->get()) {
     const fles::Timeslice& ts = *timeslice;
     for (size_t c {0}; c < ts.num_components(); c++) {
-      for (size_t m {0}; m < ts.num_microslices(c); m++) {
-        auto& desc = ts.descriptor(c, m);
-        auto p = ts.content(c, m);
-        // TODO check desc.sys_id, desc.sys_version
-        // TODO check same source address from different components
-        flib_dpb::MicrosliceContents mc {p, desc.size};
-	for (auto& dtm : mc.dtms()) {
-	  uint16_t cbmnet_src_addr = dtm.data[0];
-	  const uint16_t *spadic_buffer = dtm.data + 1;
-	  size_t spadic_buffer_size = dtm.size - 1;
-            // TODO use a separate spadic::MessageReader for each cbmnet_src_addr
-          spadic::MessageReader reader;
-
-	  reader.add_buffer(spadic_buffer, spadic_buffer_size);
-	//            while (auto spadic_msg = reader.get_message()) {
-	  // ???
-	}
+      auto systemID = ts.descriptor(c, 0).sys_id;
+      
+      switch (systemID) {
+      case 0xFA:
+	LOG(INFO) << "It is flesnet pattern generator data" << FairLogger::endl;
+	break;
+      case 0xF0:
+	LOG(INFO) << "It is flib pattern generator data" << FairLogger::endl;
+	break;
+      case 0xBC:
+	LOG(INFO) << "It is spadic data with wrong system ID" 
+		  << FairLogger::endl;
+        UnpackSpadicCbmNetMessage(ts, c);
+	break;
+      default:
+	LOG(INFO) << "Not known now" << FairLogger::endl;
       }
     }
   }
 
-
-//  while (auto timeslice = fSource->get()) {
-//    CheckTimeslice(*timeslice);
-//    ++counter;
-//  }
-//  LOG(INFO) << "Processed " << counter << " timeslices"<<FairLogger::endl;
-
   return 1; // no more data; trigger end of run
+}
+    
+void CbmFlibFileSource::UnpackSpadicCbmNetMessage(const fles::Timeslice& ts, size_t component)
+{
+  spadic::TimesliceReader r;
+
+  r.add_timeslice_cbmroot(ts, component);
+
+  for (auto addr : r.sources()) {
+    std::cout << "---- reader " << addr << " ----" << std::endl;
+    while (auto mp = r.get_message(addr)) {
+      print_message(*mp);
+    }
+  }
+
+}
+
+void CbmFlibFileSource::print_message(const spadic::Message& m)
+{
+  std::cout << "v: " << (m.is_valid() ? "o" : "x");
+  std::cout << " / ts: " << m.timestamp();
+  std::cout << " / samples (" << m.samples().size() << "):";
+  for (auto x : m.samples()) {
+    std::cout << " " << x;
+  }
+  std::cout << std::endl;
 }
 
 

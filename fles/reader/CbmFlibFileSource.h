@@ -11,11 +11,16 @@
 #include "TimesliceSource.hpp"
 #include "Timeslice.hpp"
 
+#ifndef __CINT__
+#include "Message.hpp"
+#endif
+
 #include "FairSource.h"
 
 #include "TString.h"
 
 #include <memory>
+
 
 class CbmFlibFileSource : public FairSource
 {
@@ -31,14 +36,22 @@ class CbmFlibFileSource : public FairSource
 
     void SetFileName(TString name) { fFileName = name; }
 
-  public:
+  private:
   
     TString fFileName;
 
-    //std::unique_ptr<fles::TimesliceSource> fSource;
-    fles::TimesliceSource* fSource;
+    //#ifndef __CINT__
+    //    std::unique_ptr<fles::TimesliceSource> fSource; //!
+    //#else
+    fles::TimesliceSource* fSource; //!
+    //#endif
 
     Bool_t CheckTimeslice(const fles::Timeslice& ts);
+
+    void UnpackSpadicCbmNetMessage(const fles::Timeslice& ts, size_t component);
+#ifndef __CINT__
+    void print_message(const spadic::Message& m);
+#endif
 
     ClassDef(CbmFlibFileSource, 1)
 };

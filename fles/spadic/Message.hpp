@@ -59,7 +59,8 @@ struct Message {
 struct MessageReader {
     MessageReader();
     ~MessageReader();
-    MessageReader(MessageReader&& rhs ); 
+    MessageReader(MessageReader&& rhs); 
+
     void reset();
     void add_buffer(const uint16_t *buf, size_t len);
 

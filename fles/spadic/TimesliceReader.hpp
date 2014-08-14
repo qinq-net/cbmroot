@@ -17,18 +17,19 @@ namespace spadic {
 
 struct TimesliceReader
 {
-    TimesliceReader();
-    ~TimesliceReader();
-
-    void add_timeslice(const fles::Timeslice& ts);
-    std::unordered_set<uint16_t> sources() const;
-    std::unique_ptr<spadic::Message> get_message(uint16_t source_addr) const;
-
+  TimesliceReader();
+  ~TimesliceReader();
+  
+  void add_timeslice(const fles::Timeslice& ts);
+  void add_timeslice_cbmroot(const fles::Timeslice& ts, size_t c);
+  std::unordered_set<uint16_t> sources() const;
+  std::unique_ptr<spadic::Message> get_message(uint16_t source_addr) const;
+  
 private:
-    struct TimesliceReader_;
-    std::unique_ptr<TimesliceReader_> _t;
+  struct TimesliceReader_;
+  std::unique_ptr<TimesliceReader_> _t;
 };
-
+  
 } // namespace
 
 #endif
