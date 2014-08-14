@@ -23,7 +23,15 @@ CbmMvdDigitizer::CbmMvdDigitizer(): FairTask("MVDDigitizer"){
 // -------------------------------------------------------------------------
 
 // -----   Standard constructor   ------------------------------------------
-CbmMvdDigitizer::CbmMvdDigitizer(const char* name, Int_t iMode, Int_t iVerbose) : FairTask(name, iVerbose){
+CbmMvdDigitizer::CbmMvdDigitizer(const char* name, Int_t iMode, Int_t iVerbose) : FairTask(name, iVerbose),
+fMode(iMode),
+fPileupManager(NULL),
+fDeltaManager(NULL),
+fBranchName("MvdPoint")
+{
+fNPileup = 0;
+fNDeltaElect = 0;
+
 
 }
 // -------------------------------------------------------------------------
@@ -43,10 +51,10 @@ if ( fDigis)
 void CbmMvdDigitizer::Exec(Option_t* opt){
 
 fDigis->Clear();
-
+BuildEvent();
 if(fInputPoints->GetEntriesFast() > 0)
    {
-   cout << endl << "//----------------------------------------//";
+   cout << "//----------------------------------------//";
    cout << endl << "Send Input" << endl;
    fDetector->SendInput(fInputPoints);
    cout << "Execute DigitizerPlugin Nr. "<< fDigiPluginNr << endl;
@@ -54,6 +62,7 @@ if(fInputPoints->GetEntriesFast() > 0)
    cout << "End Chain" << endl;
    cout << "Start writing Digis" << endl;  
    fDigis->AbsorbObjects(fDetector->GetOutputDigis()); 
+   cout << "Total of " << fDigis->GetEntriesFast() << " digis in this Event" << endl;
    cout << "Start writing DigiMatchs" << endl;  
    fDigiMatch->AbsorbObjects(fDetector->GetOutputDigiMatchs()); 
     cout  << "//----------------------------------------//" << endl ;
@@ -101,6 +110,40 @@ InitStatus CbmMvdDigitizer::Init() {
 	}
 	}
 
+
+       // **********  Create pileup manager if necessary
+    if (fNPileup >= 1 && !(fPileupManager) && fMode == 0 ) {
+	if ( fBgFileName == "" ) {
+	    cout << "-E- " << GetName() << "::Init: Pileup events needed, but no "
+		<< " background file name given! " << endl;
+	    return kERROR;
+	}
+	fPileupManager = new CbmMvdPileupManager(fBgFileName,
+						 fBranchName, fBgBufferSize);
+	if(fPileupManager->GetNEvents()< 2* fNPileup) {
+	  cout <<"-E- "<< GetName() << ": The size of your BG-File is insufficient to perform the requested pileup" << endl;
+	  cout <<"    You need at least events > 2* fNPileup." << endl;
+	  cout <<"    Detected: fPileUp = " << fNPileup << ", events in file " << fPileupManager->GetNEvents() << endl; 
+	  Fatal("","");  
+	  return kERROR;}
+    }
+
+    // **********   Create delta electron manager if required
+    if (fNDeltaElect >= 1 && !(fDeltaManager) && fMode == 0 ) {
+	if ( fDeltaFileName == "" ) {
+	    cout << "-E- " << GetName() << "::Init: Pileup events needed, but no "
+		<< " background file name given! " << endl;
+	    return kERROR;
+	}
+	fDeltaManager = new CbmMvdPileupManager(fDeltaFileName,
+						fBranchName, fDeltaBufferSize);
+	if(fDeltaManager->GetNEvents()< 2* fNDeltaElect ) {
+	  cout <<"-E- "<< GetName() << ": The size of your Delta-File is insufficient to perform the requested pileup" << endl;
+	  cout <<"    You need at least events > 2* fNDeltaElect." << endl;
+	  cout <<"    Detected: fNDeltaElect = " << fNDeltaElect << ", events in file " << fDeltaManager->GetNEvents() << endl; 
+	  Fatal("","");
+	  return kERROR;}
+	}
     CbmMvdSensorDigitizerTask* digiTask = new CbmMvdSensorDigitizerTask();
    
     fDetector->AddPlugin(digiTask);
@@ -231,5 +274,97 @@ void CbmMvdDigitizer::PrintParameters() {
  
 }
 // -------------------------------------------------------------------------  
+
+// ---------------  Build Event  ------------------------------------------------------
+void CbmMvdDigitizer::BuildEvent() {
+
+  // Some frequently used variables
+  CbmMvdPoint*   point   = NULL;
+  Int_t nOrig = 0;
+  Int_t nPile = 0;
+  Int_t nElec = 0;
+
+  // ----- First treat standard input file
+  for (Int_t i=0; i<fInputPoints->GetEntriesFast(); i++) {
+    point = (CbmMvdPoint*) fInputPoints->At(i);
+    point->SetPointId(i);
+    nOrig++;
+  }
+
+
+  // ----- Then treat event pileup
+  if (fNPileup>0) {
+ 
+    // --- Vector of available background events from pile-up. 
+    // --- Each event is used only once.
+    Int_t nBuffer = fPileupManager->GetNEvents();
+    vector<Int_t> freeEvents(nBuffer);
+    for (Int_t i=0; i<nBuffer; i++) freeEvents[i] = i;
+
+    // --- Loop over pile-up events
+    for (Int_t iBg=0; iBg<fNPileup; iBg++) {
+
+      // Select random event from vector and remove it after usage
+      Int_t index = gRandom->Integer(freeEvents.size());
+      Int_t iEvent = freeEvents[index];
+      TClonesArray* points = fPileupManager->GetEvent(iEvent);
+      freeEvents.erase(freeEvents.begin() + index);
+
+      // Add points from this event to the input arrays
+      for (Int_t iPoint=0; iPoint<points->GetEntriesFast(); iPoint++) {
+	point = (CbmMvdPoint*) points->At(iPoint);
+	point->SetTrackID(-2);
+	point->SetPointId(-2);
+	nPile++;
+      }
+      fInputPoints->AbsorbObjects(points);
+	
+    }   // Pileup event loop
+
+  }    // Usage of pile-up
+
+			   
+  // ----- Finally, treat delta electrons
+  if (fNDeltaElect>0) {
+ 
+    // --- Vector of available delta events.
+    // --- Each event is used only once.
+    Int_t nDeltaBuffer = fDeltaManager->GetNEvents();
+    vector<Int_t> freeDeltaEvents(nDeltaBuffer);
+    for (Int_t i=0; i<nDeltaBuffer; i++) freeDeltaEvents[i] = i;
+
+    // --- Loop over delta events
+    for (Int_t it=0; it<fNDeltaElect; it++) {
+
+      // Select random event from vector and remove it after usage
+      Int_t indexD  = gRandom->Integer(freeDeltaEvents.size());
+      Int_t iEventD = freeDeltaEvents[indexD];
+      TClonesArray* pointsD = fDeltaManager->GetEvent(iEventD);
+      freeDeltaEvents.erase(freeDeltaEvents.begin() + indexD);
+
+      // Add points from this event to the input arrays
+      for (Int_t iPoint=0; iPoint<pointsD->GetEntriesFast(); iPoint++) {
+	point = (CbmMvdPoint*) pointsD->At(iPoint);
+	point->SetTrackID(-3); // Mark the points as delta electron
+	point->SetPointId(-3);
+      nElec++;
+      }
+     fInputPoints->AbsorbObjects(pointsD);
+
+    }  // Delta electron event loop
+
+  }    // Usage of delta
+
+
+  // ----- At last: Screen output
+  if ( fVerbose > 1 ) cout << endl << "-I- " << GetName() << "::BuildEvent: original "
+			   << nOrig << ", pileup " << nPile << ", delta "
+			   << nElec << ", total " << nOrig+nPile+nElec
+			   << " MvdPoints" << endl;
+
+
+}
+// -----------------------------------------------------------------------------
+
 
 ClassImp(CbmMvdDigitizer);

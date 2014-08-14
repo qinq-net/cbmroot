@@ -52,6 +52,7 @@ if(fInputDigis)
    cout << "End Chain" << endl;
    cout << "Start writing Hits" << endl;  
    fHits->AbsorbObjects(fDetector->GetOutputHits()); 
+   cout << "Total of " << fHits->GetEntriesFast() << " hits found" << endl;
    cout << "Finished writing Hits" << endl;
     cout << "//----------------------------------------//" << endl;
    }
