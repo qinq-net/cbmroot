@@ -23,7 +23,7 @@ CbmKFParticleFinderPID::CbmKFParticleFinderPID(const char* name, Int_t iVerbose)
   FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fGlobalTrackBranchName("GlobalTrack"), 
   fTofBranchName("TofHit"), fMCTracksBranchName("MCTrack"), fTrackMatchBranchName("StsTrackMatch"), fTrdBranchName ("TrdTrack"), fRichBranchName ("RichRing"),
   fTrackArray(0), fGlobalTrackArray(0), fTofHitArray(0), fMCTrackArray(0), fTrackMatchArray(0), fTrdTrackArray(0), fRichRingArray(0),
-  fPIDMode(0), fSisMode(0), fPID(0)
+  fPIDMode(0), fSisMode(0), fTrdPIDMode(0), fRichPIDMode(0), fPID(0)
 {
 }
 
@@ -212,60 +212,83 @@ void CbmKFParticleFinderPID::SetRecoPID()
 
     Double_t p = mom.Mag();
     Int_t q = stsPar->GetQp() > 0 ? 1 : -1;
-
-    if(fRichRingArray)
+    
+    if (fRichPIDMode == 1)
     {
-      Int_t richIndex = globalTrack->GetRichRingIndex();
-      if (richIndex > -1)
+      if(fRichRingArray)
       {
-        CbmRichRing* richRing = (CbmRichRing*)fRichRingArray->At(richIndex);
-        if (richRing)
+        Int_t richIndex = globalTrack->GetRichRingIndex();
+        if (richIndex > -1)
         {
-          Double_t axisA = richRing->GetAaxis();
-          Double_t axisB = richRing->GetBaxis();
-          Double_t dist = richRing->GetDistance();
-          
-          Double_t fMeanA = 4.95;
-          Double_t fMeanB = 4.54;
-          Double_t fRmsA = 0.30;
-          Double_t fRmsB = 0.22;
-          Double_t fRmsCoeff = 3.5;
-          Double_t fDistCut = 1.;
+          CbmRichRing* richRing = (CbmRichRing*)fRichRingArray->At(richIndex);
+          if (richRing)
+          {
+            Double_t axisA = richRing->GetAaxis();
+            Double_t axisB = richRing->GetBaxis();
+            Double_t dist = richRing->GetDistance();
+            
+            Double_t fMeanA = 4.95;
+            Double_t fMeanB = 4.54;
+            Double_t fRmsA = 0.30;
+            Double_t fRmsB = 0.22;
+            Double_t fRmsCoeff = 3.5;
+            Double_t fDistCut = 1.;
 
 
-      //            if(fElIdAnn->DoSelect(richRing, p) > -0.5) isElectronRICH = 1;
-          if (p<5.5){
-            if ( fabs(axisA-fMeanA) < fRmsCoeff*fRmsA &&
-            fabs(axisB-fMeanB) < fRmsCoeff*fRmsB && 
-            dist < fDistCut) isElectronRICH = 1;
-          }
-          else {
-            ///3 sigma
-            // Double_t polAaxis = 5.23463 - 1.65625 / (momentum - 4.49815);
-            // Double_t polBaxis = 4.8757 - 1.2958 / (momentum - 4.72537);
-            ///2 sigma          
-            Double_t polAaxis = 5.22648 - 2.39248 / (p - 4.15333);
-            Double_t polBaxis = 4.8908 - 2.06429 / (p - 4.3272);
-            if ( axisA < (fMeanA + fRmsCoeff*fRmsA) &&
-            axisA > polAaxis &&
-            axisB < (fMeanB + fRmsCoeff*fRmsB) && 
-            axisB > polBaxis &&
-            dist < fDistCut) isElectronRICH = 1;
+        //            if(fElIdAnn->DoSelect(richRing, p) > -0.5) isElectronRICH = 1;
+            if (p<5.5){
+              if ( fabs(axisA-fMeanA) < fRmsCoeff*fRmsA &&
+              fabs(axisB-fMeanB) < fRmsCoeff*fRmsB && 
+              dist < fDistCut) isElectronRICH = 1;
+            }
+            else {
+              ///3 sigma
+              // Double_t polAaxis = 5.23463 - 1.65625 / (momentum - 4.49815);
+              // Double_t polBaxis = 4.8757 - 1.2958 / (momentum - 4.72537);
+              ///2 sigma          
+              Double_t polAaxis = 5.22648 - 2.39248 / (p - 4.15333);
+              Double_t polBaxis = 4.8908 - 2.06429 / (p - 4.3272);
+              if ( axisA < (fMeanA + fRmsCoeff*fRmsA) &&
+              axisA > polAaxis &&
+              axisB < (fMeanB + fRmsCoeff*fRmsB) && 
+              axisB > polBaxis &&
+              dist < fDistCut) isElectronRICH = 1;
+            }
           }
         }
       }
     }
 
-    if(fTrdTrackArray)
+    if (fTrdPIDMode == 1)
     {
-      Int_t trdIndex = globalTrack->GetTrdTrackIndex();
-      if (trdIndex > -1)
+      if(fTrdTrackArray)
       {
-        CbmTrdTrack* trdTrack = (CbmTrdTrack*)fTrdTrackArray->At(trdIndex);
-        if (trdTrack)
+        Int_t trdIndex = globalTrack->GetTrdTrackIndex();
+        if (trdIndex > -1)
         {
-          if (trdTrack->GetPidANN() > 0.5)
-            isElectronTRD = 1;
+          CbmTrdTrack* trdTrack = (CbmTrdTrack*)fTrdTrackArray->At(trdIndex);
+          if (trdTrack)
+          {
+            if (trdTrack->GetPidWkn() > 0.635)
+              isElectronTRD = 1;
+          }
+        }
+      }
+    }
+
+    if (fTrdPIDMode == 2)
+    {
+      if(fTrdTrackArray)
+      {
+        Int_t trdIndex = globalTrack->GetTrdTrackIndex();
+        if (trdIndex > -1)
+        {
+          CbmTrdTrack* trdTrack = (CbmTrdTrack*)fTrdTrackArray->At(trdIndex);
+          if (trdTrack)
+          {
+            if (trdTrack->GetPidANN() > 0.9)
+              isElectronTRD = 1;
+          }
         }
       }
     }
@@ -306,13 +329,22 @@ void CbmKFParticleFinderPID::SetRecoPID()
     int iPdg=2;
     Double_t dm2min = dm2[2];
     
-    if(isElectronRICH /*&& isElectronTRD*/)
+    if( p>1.5 )
+    {
+      if ( isElectronRICH && isElectronTRD ) isElectron = 1;
+      if ( fRichPIDMode == 0 && isElectronTRD ) isElectron = 1;
+      if ( fTrdPIDMode == 0 && isElectronRICH ) isElectron = 1;
+    }
+    else
+      if( isElectronRICH ) isElectron = 1;
+    
+    if(isElectron)
     {
       sigma[3] = sP[3][0] + sP[3][1]*p + sP[3][2]*p*p + sP[3][3]*p*p*p + sP[3][4]*p*p*p*p;
       dm2[3] = fabs(m2 - m2El)/sigma[3];
       
-      if(dm2[3] < 3.)
-        isElectron = 1;
+      if(dm2[3] > 3.)
+        isElectron = 0;
     }
     
     if(!isElectron)

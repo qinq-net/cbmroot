@@ -37,6 +37,14 @@ class CbmKFParticleFinderPID : public FairTask {
   void SetSIS100() { fSisMode = 0; }
   void SetSIS300() { fSisMode = 1; }
   
+  void DoNotUseTRD() { fTrdPIDMode = 0; }
+  void UseTRDWknPID() { fTrdPIDMode = 1; }
+  void UseTRDANNPID() { fTrdPIDMode = 2; }
+  
+  void DoNotUseRICH() { fRichPIDMode = 0; }
+  void UseRICHRvspPID() { fRichPIDMode = 1; }
+  void UseRICHANNPID() { fRichPIDMode = 2; }
+  
   const std::vector<int>& GetPID() const { return fPID; }
   
  private:
@@ -68,6 +76,8 @@ class CbmKFParticleFinderPID : public FairTask {
   //PID variables
   Int_t fPIDMode;
   Int_t fSisMode;
+  Int_t fTrdPIDMode;
+  Int_t fRichPIDMode;
   std::vector<int> fPID;
   
   ClassDef(CbmKFParticleFinderPID,1);
