@@ -18,7 +18,7 @@ Include_Directories(SYSTEM ${Boost_INCLUDE_DIR})
 Set(LINK_DIRECTORIES
   ${ROOT_LIBRARY_DIR}
   ${FAIRROOT_LIBRARY_DIR}
-  ${Boost_LIBRARY_DIR}
+  ${Boost_LIBRARY_DIRS}
 )
  
 Link_Directories( 
