@@ -207,7 +207,7 @@ void CbmTrdSetTracksPidModWkn::Exec(Option_t* opt) {
 
 void CbmTrdSetTracksPidModWkn::SetParameters() {
     if (fSISType == "sis300") {
-	    fnSet = 6; //  number of the layers with TR
+	    fnSet = 5; //  number of the layers with TR
         fdegWkn = 4; //  statistics degree
 	}
 	
