@@ -109,7 +109,6 @@ data/CbmTrdModule.cxx
 data/CbmTrdAsic.cxx
 #beamtime/CbmTrdRawToDigiSpadic03.cxx
 
-
 #${ROCSYS}/include/spadic/Message.h
 #${ROCSYS}/include/roc/Message.h
 #${ROCSYS}/onlinemonitor/rocmonitor/TRocEvent.cxx
@@ -125,7 +124,8 @@ CbmTrdTrackFinderIdeal.cxx
 CbmTrdFitTracks.cxx  
 CbmTrdTrackFitterIdeal.cxx  
 #CbmTrdMatchTracks.cxx
-CbmTrdSetTracksPidWkn.cxx       
+CbmTrdSetTracksPidWkn.cxx   
+CbmTrdSetTracksPidModWkn.cxx  
 CbmTrdSetTracksPidLike.cxx     
 CbmTrdSetTracksPidANN.cxx       
 CbmTrdCreatePidLike.cxx 
