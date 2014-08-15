@@ -132,7 +132,7 @@ void CbmTrdSetTracksPidModWkn::Exec(Option_t* opt) {
 	else pTr->SetPidWkn(-2.);
 	}   
 
-   for(unsigned short itrack = 0; itrack < nTracks; itrack++) {
+   for(unsigned short itrack = 0; itrack < nTrue; itrack++) {
     eLossVector.clear();
 
     CbmTrdTrack* pTrack = (CbmTrdTrack*)fTrackArray->At(itrack); 
