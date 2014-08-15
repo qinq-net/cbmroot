@@ -35,7 +35,7 @@ Int_t mvd_qa1_transUrqmd()
   CbmTarget* target = new CbmTarget("Gold", 0.025);
 
   // Beam pipe geometry
-  TString pipeGeom = "pipe/pipe_standard.geo";
+  TString pipeGeom = "pipe/pipe_v13a.geo.root";
 
   // Magnet geometry and field map
   TString magnetGeom  = "magnet/magnet_v12b.geo.root";
@@ -44,7 +44,7 @@ Int_t mvd_qa1_transUrqmd()
   Double_t fieldScale = 1.;      // field scaling factor
 
   // MVD geometry
-  TString mvdGeom = "mvd/mvd_v07a.geo";
+  TString mvdGeom = "mvd/mvd_v07a.geo.root";
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -89,7 +89,8 @@ Int_t mvd_qa1_transUrqmd()
   fRun->AddModule(magnet);
   
   FairDetector* mvd= new CbmMvd("MVD", kTRUE);
-  mvd->SetGeometryFileName(mvdGeom); 
+  mvd->SetGeometryFileName(mvdGeom);
+   mvd->SetMotherVolume("pipevac1");
   fRun->AddModule(mvd);
   // ------------------------------------------------------------------------
 

@@ -31,7 +31,7 @@ void mvd_sim()
   TString targetGeom = "target_au_250mu.geo";
 
   // Beam pipe geometry
-  TString pipeGeom = "pipe/pipe_standard.geo";
+  TString pipeGeom = "pipe/pipe_v13a.geo.root";
 
   // Magnet geometry and field map
   TString magnetGeom  = "magnet/magnet_v12b.geo.root";
@@ -119,14 +119,14 @@ void mvd_sim()
 
 
   // -----   Create magnetic field   ---------------------------------------
- /* if ( 2 == fieldSymType ) {
+  if ( 2 == fieldSymType ) {
     CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
   }  else if ( 3 == fieldSymType ) {
     CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
   } 
   magField->SetPosition(0., 0., fieldZ);
   magField->SetScale(fieldScale);
-  fRun->SetField(magField);*/
+  fRun->SetField(magField);
   // ------------------------------------------------------------------------
 
 

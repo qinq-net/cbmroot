@@ -17,13 +17,13 @@
 
 
     // Input file (MC events)
-    TString inFile = "mvd.mc.root";
+    TString inFile = "data/mvd.mc.root";
 
     // Parameter file name
-    TString parFile = "params.root";
+    TString parFile = "data/params.root";
 
     // Output file
-    TString outFile = "dg.reco.root";;
+    TString outFile = "data/dg.reco.root";;
 
     // Background file (MC events, for pile-up)
     TString bgFile = inFile;
@@ -36,6 +36,8 @@
 
     // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
     Int_t iVerbose = 0;
+
+     TString mvdGeom = "data/fullgeometry.root";
 
     // In general, the following parts need not be touched
     // ========================================================================
@@ -86,42 +88,28 @@
 
 
     // -------   MVD Digitiser   ----------------------------------------------
-    CbmMvdDigitiser* digi = new CbmMvdDigitiser("MVDDigitiser", 0, iVerbose);
+    CbmMvdDigitizer* digi = new CbmMvdDigitizer("MVDDigitiser", 0, iVerbose);
     cout << "Adding Task:  CbmMvdDigitiser... " << endl;
     fRun->AddTask(digi);
-
-    digi->SetEpiThickness(0.0014);
-    digi->SetElectronsPerKeV(300);
-    digi->SetSegmentLength(0.0003);
-    digi->SetPixelSizeX(0.003);
-    digi->SetPixelSizeY(0.003);
-    digi->SetDiffusionCoef(0.0055); // adapted for 30um pixels
-    //digi->SetDiffusionCoef(0.0018); // adapted for 10um pixels
-    digi->SetWidthOfCluster(3);
 
 
     //--- Pile Up -------
     digi->SetBgFileName(bgFile);
     digi->SetBgBufferSize(1000);
-    digi->SetPileUp(0);
+    digi->SetPileUp(1);
 
 
     //--- Delta electrons -------
     digi->SetDeltaName(deltaFile);
     digi->SetDeltaBufferSize(10000);
-    digi->SetDeltaEvents(0);
+    digi->SetDeltaEvents(1);
 
 
     //----------------------------------------------------------------------------
     // -----   MVD Cluster Finder   ----------------------------------------------
 
-    CbmMvdFindHits* mvd_hit   = new CbmMvdFindHits("MVDFindHits", 0, iVerbose);
-    mvd_hit->SetSigmaNoise(15,kTRUE);  // kTRUE = add noise to digis, kFALSE = ideal detector
-    mvd_hit->SetSeedThreshold(50); //in electrons!
-    mvd_hit->SetNeighbourThreshold(30);
-    mvd_hit->SetAdcBits(12);
-    mvd_hit->SetHitPosErrX(0.0005);
-    mvd_hit->SetHitPosErrY(0.0005);
+    CbmMvdHitfinder* mvd_hit   = new CbmMvdHitfinder("MVDFindHits", 0, iVerbose);
+ ;
     fRun->AddTask(mvd_hit);
 
 
@@ -135,7 +123,7 @@
     rtdb->setOutput(parIo1);
     rtdb->saveOutput();
     rtdb->print();
-    fRun->LoadGeometry();
+    fRun->SetGeomFile(mvdGeom);
     // ---------------------------------------------------------------------------
 
 

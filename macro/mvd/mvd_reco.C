@@ -12,7 +12,7 @@
 
 
 void mvd_reco(Int_t  nEvents = 5,
-              Int_t  iVerbose = 0)
+              Int_t  iVerbose = 2)
 {
 
   // ========================================================================
@@ -60,8 +60,8 @@ void mvd_reco(Int_t  nEvents = 5,
   // -----   Reconstruction run   -------------------------------------------
   FairRunAna *run= new FairRunAna();
 
-  run->RunWithTimeStamps();
-  run->SetEventTimeInterval(10000.0, 10000.0);
+  //run->RunWithTimeStamps();
+  //run->SetEventTimeInterval(10000.0, 10000.0);
 
   run->SetInputFile(inFile);
   run->SetOutputFile(outFile);
@@ -70,18 +70,18 @@ void mvd_reco(Int_t  nEvents = 5,
   // ------------------------------------------------------------------------
  
   // -----   MVD Digitiser   ----------------------------------------------
- /* FairTask* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose);
+  CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose);
   run->AddTask(mvdDigitise);
   // ----------------------------------------------------------------------
 
   // -----   MVD Hit Finder   ---------------------------------------------
-  FairTask* mvdFindHits = new CbmMvdHitfinder("MVD Hit Finder", 0, iVerbose);
-  run->AddTask(mvdFindHits);*/
+  CbmMvdHitfinder* mvdHitfinder = new CbmMvdHitfinder("MVD Hit Finder", 0, iVerbose);
+  run->AddTask(mvdHitfinder);
   // ----------------------------------------------------------------------
 
   // -----     MVD FullRun     ---------------------------------------------
-  FairTask* mvdRun = new CbmMvdFullRun("Fullrun", 0, iVerbose);
-  run->AddTask(mvdRun);
+  //FairTask* mvdRun = new CbmMvdFullRun("Fullrun", 0, iVerbose);
+  //run->AddTask(mvdRun);
   // ----------------------------------------------------------------------
     
   // -----  Parameter database   --------------------------------------------
