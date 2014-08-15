@@ -406,15 +406,33 @@ void CbmMvd::ConstructRootGeometry() // added 05.05.14 by P. Sitzmann
   // Fill map of station numbers
 
   
-  
-  Int_t iStation =  1;
-  Int_t volId    = -1;
   Int_t chois = 0;
-  CbmMvdDetector* Detector = new CbmMvdDetector("A");
-  TString nodeName; 
-TString mother = "cave_1/" + fMotherVolumeName + "_0";
-      if (!mother)
-         {mother = "cave_1";}
+  Int_t iStation =  0;
+  Int_t volId    = -1;
+  CbmMvdDetector* Detector = new CbmMvdDetector("A"); 
+  TString nodeName;
+  TString mother;
+  TString pipeName = "pipevac1";
+  Int_t pipeID;
+  TGeoNode* pipeNode;
+  TString motherName; 
+  mother = "cave1/pipevac1";
+
+      if (!gGeoManager->CheckPath(mother.Data()))
+         {
+	pipeID = gGeoManager->GetUID(pipeName);
+ 	pipeNode = gGeoManager->GetNode(pipeID);
+        gGeoManager->CdTop();
+	gGeoManager->CdDown(0);
+	motherName=gGeoManager->GetPath();
+	mother = motherName;
+	mother += "/";
+	mother += pipeName;
+	mother += "_0";
+	gGeoManager->CdTop();
+	}
+      else
+	mother = "cave_1/pipevac1_0";
 cout << endl << "Try to find Geometry in " << mother << endl;
 
 if ( gGeoManager->CheckPath(mother + "/Beamtimeosetupoobgnum_0"))
@@ -581,6 +599,7 @@ case 3:
 	break;
 default:
 	cout << endl << "Start old Geometry" << endl;
+	iStation = 1;
 	do {
       	 TString volName = Form("mvdstation%02i", iStation);
       	 volId = gGeoManager->GetUID(volName);

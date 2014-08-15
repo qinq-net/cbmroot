@@ -101,11 +101,11 @@ InitStatus CbmMvdDigitizer::Init() {
 	cout << endl << "No CbmMvdDetector detected!" << endl; 
         GetMvdGeometry(); 
 	fDetector = CbmMvdDetector::Instance();
-	if(fDetector)
+	if(fDetector->GetSensorArraySize() > 1)
 	cout << endl << "succesfull loaded Geometry from file" << endl;
 	else
 	{
-	cout << endl << "Error now Detector found" << endl;
+	cout << endl << "Error no Detector found" << endl;
 	exit(-1);
 	}
 	}
@@ -189,16 +189,33 @@ void CbmMvdDigitizer::Reset() {
 // -----   Private method GetMvdGeometry   ---------------------------------
 void CbmMvdDigitizer::GetMvdGeometry() {
  
-  Int_t iStation =  1;
+  Int_t iStation =  0;
   Int_t volId    = -1;
-  Int_t chois = 0;
-  CbmMvdDetector* Detector = new CbmMvdDetector("A");
+  CbmMvdDetector* Detector = new CbmMvdDetector("A"); 
   TString nodeName;
-  TString mother = "cave1/pipevac1";
-      if (gGeoManager->CheckPath(mother.Data()))
-         {mother = "cave_1";}
+  TString mother;
+  TString pipeName = "pipevac1";
+  Int_t pipeID;
+  TGeoNode* pipeNode;
+  TString motherName; 
+  mother = "cave1/pipevac1";
+
+      if (!gGeoManager->CheckPath(mother.Data()))
+         {
+	pipeID = gGeoManager->GetUID(pipeName);
+ 	pipeNode = gGeoManager->GetNode(pipeID);
+	gGeoManager->CdTop();
+	gGeoManager->CdDown(0);
+	motherName=gGeoManager->GetPath();
+	mother = motherName;
+	mother += "/";
+	mother += pipeName;
+	mother += "_0";
+	gGeoManager->CdTop();
+	}
       else
 	mother = "cave_1/pipevac1_0";
+
  cout << endl << "MotherNode is : " << mother << endl;
  for(Int_t StatNr = 0; StatNr < 4; StatNr++)
       {
@@ -224,7 +241,7 @@ void CbmMvdDigitizer::GetMvdGeometry() {
 				  switch(StatNr)
 				    {
 				    case 0:
- 				      nodeName = mother; nodeName += Form("/MVDo0123ohoFPCoextoHSoSo0123_0/MVDo0ohoFPCoHSoS_1/St0Q%iohoFPC_1/S0Q%iS%i_1/MVD-S0-Q%i-L%i-C%02i-P0oPartAss_1/MVD-S0-Q%i-L%i-C%02i-P0_1", QuadNr, QuadNr, SegmentNr, QuadNr, Layer, SensNr, QuadNr, Layer, SensNr);
+ 				      nodeName = motherName; nodeName += Form("/MVDo0123ohoFPCoextoHSoSo0123_0/MVDo0ohoFPCoHSoS_1/St0Q%iohoFPC_1/S0Q%iS%i_1/MVD-S0-Q%i-L%i-C%02i-P0oPartAss_1/MVD-S0-Q%i-L%i-C%02i-P0_1", QuadNr, QuadNr, SegmentNr, QuadNr, Layer, SensNr, QuadNr, Layer, SensNr);
 					
 				      break;
 				    case 1:  

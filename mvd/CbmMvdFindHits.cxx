@@ -356,7 +356,7 @@ void CbmMvdFindHits::Exec(Option_t* opt) {
 	    }
 
 	    GenerateFakeDigis(station,pixelSizeX, pixelSizeY);
-
+	;
 	}
 
     }
@@ -432,6 +432,7 @@ void CbmMvdFindHits::Exec(Option_t* opt) {
 	    }
 
 	    if( ( GetAdcCharge(digi->GetCharge())>=fSeedThreshold ) && ( pixelUsed->At(iDigi)==kFALSE ) ){
+
 		clusterArray->clear();
 		clusterArray->push_back(iDigi);
 		
@@ -440,6 +441,7 @@ void CbmMvdFindHits::Exec(Option_t* opt) {
 
 		pair<Int_t, Int_t> a(digi->GetPixelX(), digi->GetPixelY());
     		fDigiMapIt = fDigiMap.find(a);
+		if (fDigiMapIt != fDigiMap.end())
     		fDigiMap.erase(fDigiMapIt);
 
 		for ( Int_t iCluster=0; iCluster<clusterArray->size(); iCluster++ ){
@@ -495,13 +497,12 @@ void CbmMvdFindHits::Exec(Option_t* opt) {
 
 
 Int_t CbmMvdFindHits::GetMvdGeometry() {
-   
-   cout << "-I- " << GetName() << " : Reading MVD geometry..." << endl;
+  cout << "-I- " << GetName() << " : Reading MVD geometry..." << endl;
   Int_t iStation =  1;
   Int_t volId    = -1;
   fStationMap.clear();
 
-  do {
+    do {
 
     // Volume name according to convention
     TString volName  = Form("mvdstation%02i", iStation);
@@ -517,6 +518,31 @@ Int_t CbmMvdFindHits::GetMvdGeometry() {
 
       // Full path to node 
       TString nodeName = "/cave_1/pipevac1_0/" + volName + "_0";
+
+  TString mother;
+  TString pipeName = "pipevac1";
+  Int_t pipeID;
+  TGeoNode* pipeNode;
+  TString motherName; 
+  mother = "cave1/pipevac1";
+
+      if (!gGeoManager->CheckPath(mother.Data()))
+         {
+	gGeoManager->CdTop();
+	gGeoManager->CdDown(0);
+	motherName=gGeoManager->GetPath();
+	mother = motherName;
+	mother += "/";
+	mother += pipeName;
+	mother += "_0/mvd_v07a_0/";
+	gGeoManager->CdTop();
+	}
+      else
+	mother = "cave_1/pipevac1_0/";
+
+       nodeName = mother + volName + "_0";
+
+ cout << endl << "MotherNode is : " << mother << endl;
 
       // Get z position of node
       Bool_t nodeFound = gGeoManager->cd(nodeName.Data());
@@ -544,7 +570,7 @@ Int_t CbmMvdFindHits::GetMvdGeometry() {
       fStationMap[iStation] = new CbmMvdStation(volName.Data(), iStation, volId,
 					     z, d, rmin, rmax);
       fStationMap[iStation]->Print();
-      
+
       iStation++;
 
     }     // Volume found

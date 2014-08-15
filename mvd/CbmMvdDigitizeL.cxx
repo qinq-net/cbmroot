@@ -1057,6 +1057,31 @@ Int_t CbmMvdDigitizeL::GetMvdGeometry() {
       // Full path to node 
       TString nodeName = "/cave_1/pipevac1_0/" + volName + "_0";
 
+  TString mother;
+  TString pipeName = "pipevac1";
+  Int_t pipeID;
+  TGeoNode* pipeNode;
+  TString motherName; 
+  mother = "cave1/pipevac1";
+
+      if (!gGeoManager->CheckPath(mother.Data()))
+         {
+	gGeoManager->CdTop();
+	gGeoManager->CdDown(0);
+	motherName=gGeoManager->GetPath();
+	mother = motherName;
+	mother += "/";
+	mother += pipeName;
+	mother += "_0/mvd_v07a_0/";
+	gGeoManager->CdTop();
+	}
+      else
+	mother = "cave_1/pipevac1_0/";
+
+       nodeName = mother + volName + "_0";
+
+ cout << endl << "MotherNode is : " << mother << endl;
+
       // Get z position of node
       Bool_t nodeFound = gGeoManager->cd(nodeName.Data());
 
