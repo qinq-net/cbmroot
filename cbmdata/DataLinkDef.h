@@ -96,4 +96,7 @@
 #pragma link C++ class CbmFiberHodoCluster;
 #pragma link C++ class CbmFiberHodoAddress;
 
+#pragma link C++ class CbmRawMessage;
+#pragma link C++ class CbmSpadicRawMessage;
+
 #endif
