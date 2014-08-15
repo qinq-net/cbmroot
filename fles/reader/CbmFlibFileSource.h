@@ -10,6 +10,7 @@
 
 #include "TimesliceSource.hpp"
 #include "Timeslice.hpp"
+#include "MicrosliceDescriptor.hpp"
 
 #ifndef __CINT__
 #include "Message.hpp"
@@ -18,6 +19,7 @@
 #include "FairSource.h"
 
 #include "TString.h"
+#include "TClonesArray.h"
 
 #include <memory>
 
@@ -40,6 +42,9 @@ class CbmFlibFileSource : public FairSource
   
     TString fFileName;
 
+    // --- Output arrays
+    TClonesArray* fSpadicRaw;         ///< Output array of CbmSpadicRawMessage
+
     //#ifndef __CINT__
     //    std::unique_ptr<fles::TimesliceSource> fSource; //!
     //#else
@@ -52,6 +57,7 @@ class CbmFlibFileSource : public FairSource
 #ifndef __CINT__
     void print_message(const spadic::Message& m);
 #endif
+    void PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc);
 
     ClassDef(CbmFlibFileSource, 1)
 };

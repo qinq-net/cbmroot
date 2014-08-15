@@ -5,7 +5,7 @@
 Set(INCLUDE_DIRECTORIES
   ${BASE_INCLUDE_DIRECTORIES} 
 #  ${CBMROOT_SOURCE_DIR}/cbmbase
-#  ${CBMROOT_SOURCE_DIR}/cbmdata
+  ${CBMROOT_SOURCE_DIR}/cbmdata/raw
   ${CBMROOT_SOURCE_DIR}/fles/ipc
   ${CBMROOT_SOURCE_DIR}/fles/spadic
   ${CBMROOT_SOURCE_DIR}/fles/reader
