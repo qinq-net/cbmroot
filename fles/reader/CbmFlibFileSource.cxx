@@ -12,8 +12,11 @@
 #include "Timeslice.hpp"
 #include "MicrosliceContents.hpp"
 
+// note M. Krieger, 2014-08-15: these includes should not be needed, please test
+#if 0
 #include "Message.hpp"
 #include "message_reader.h"
+#endif
 #include "TimesliceReader.hpp"
 
 #include "FairLogger.h"
