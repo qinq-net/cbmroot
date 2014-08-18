@@ -529,14 +529,15 @@ void CbmMvdDigitizeL::Exec(Option_t* opt) {
 		//cout << endl << "partical rejected, because light nuclei"<< endl ;
 		continue;}
 
-	    // Produce charge in pixels
+	    //cout << endl <<" Produce ionasations points" << endl;
 	    ProduceIonisationPoints(point, station);
 	    //ProduceSignalPoints();
+	   // cout << endl << "poduce charge in pixels" << endl;
 	    ProducePixelCharge(point,station);
 
 	    CbmMvdPixelCharge* pixelCharge;
 
-	    
+	    //cout << endl << "finished" << endl;
 
 	} //loop on MCpoints
 
@@ -786,15 +787,15 @@ void CbmMvdDigitizeL::ProducePixelCharge(CbmMvdPoint* point, CbmMvdStation* stat
     yLo = sPoint->y - fWidthOfCluster*sPoint->sigmaY;
     yUp = sPoint->y + fWidthOfCluster*sPoint->sigmaY;
 
-    if (fNumberOfSegments<2){Fatal("-E- CbmMvdDigitizer: ","fNumberOfSegments < 2, this makes no sense, check parameters.");}
-
-    Int_t* lowerXArray=new Int_t[fNumberOfSegments];
+    if (fNumberOfSegments<2)
+	{Fatal("-E- CbmMvdDigitizer: ","fNumberOfSegments < 2, this makes no sense, check parameters.");}
+    Int_t* lowerXArray=new Int_t [fNumberOfSegments];
     Int_t* upperXArray=new Int_t [fNumberOfSegments];
     Int_t* lowerYArray=new Int_t [fNumberOfSegments];
     Int_t* upperYArray=new Int_t [fNumberOfSegments];
-    Int_t* centreXArray= new Int_t [fNumberOfSegments];
-    Int_t* centreYArray= new Int_t [fNumberOfSegments];
     Int_t ixLo, ixUp, iyLo, iyUp;
+
+
 
     TransformXYtoPixelIndex(sPoint->x - fWidthOfCluster*sPoint->sigmaX,
 				sPoint->y - fWidthOfCluster*sPoint->sigmaY,
@@ -809,7 +810,7 @@ void CbmMvdDigitizeL::ProducePixelCharge(CbmMvdPoint* point, CbmMvdStation* stat
     iyLo=lowerYArray[0];
     ixUp=upperXArray[0];
     iyUp=upperYArray[0];
-
+//cout << endl << "Start on segments" << endl;
     for (Int_t i=1; i<fNumberOfSegments;i++) {
     	
 	sPoint= &fSignalPoints[i];
@@ -893,13 +894,13 @@ void CbmMvdDigitizeL::ProducePixelCharge(CbmMvdPoint* point, CbmMvdStation* stat
 							    (point->GetY()+point->GetXOut())/2, point->GetTime()
 							   );
 					    
-					
+					//cout << endl << "new pixel" << endl;
 					fChargeMap[a] = pixel;
 				}
 
     				// Pixel already in map -> Add charge
     				else {  pixel = fChargeMapIt->second;
-					//if ( ! pixel ) Fatal("AddChargeToPixel", "Zero pointer in charge map!");
+					//cout << endl << "added charge to pixel" << endl;
 					pixel->AddCharge(totCharge);
 				}
 				fPixelChargeShort.push_back(pixel);
@@ -923,7 +924,7 @@ void CbmMvdDigitizeL::ProducePixelCharge(CbmMvdPoint* point, CbmMvdStation* stat
 
 	    }//for y
     }// for x
-    
+ // cout << endl << "finished loop on x and y" << endl;
         std::vector<CbmMvdPixelCharge*>::size_type vectorSize=fPixelChargeShort.size();
 
         for(Int_t f=0;f<vectorSize; f++)
@@ -955,15 +956,14 @@ void CbmMvdDigitizeL::ProducePixelCharge(CbmMvdPoint* point, CbmMvdStation* stat
 //	    }
 
     };
-
+//cout << endl << "finished here" << endl;
     delete [] lowerXArray;
     delete [] upperXArray;
     delete [] lowerYArray;
     delete [] upperYArray;
-    delete [] centreXArray;
-    delete [] centreYArray;
 
 
+//cout << endl << "cleared all" << endl;
 }//end of function
 
 // -------------------------------------------------------------------------
