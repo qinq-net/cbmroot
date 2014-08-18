@@ -70,12 +70,13 @@ CbmUnigenGenerator::CbmUnigenGenerator(TString fileName)
         LOG(FATAL) << "CbmUnigenGenerator: No run description in input file." << FairLogger::endl;
     }
     fCM = kFALSE;
-    if(TMath::Abs(run->GetPTarg()) > 0) fCM = kTRUE;
+    LOG(DEBUG) << "Target Momentum: " << run->GetPTarg() << endl;
+    if(TMath::Abs(run->GetPTarg()) > 0.001) fCM = kTRUE;
     fBetaCM = 0.;
     fGammaCM = 1.;
     if(fCM) {
-        LOG(INFO) << "CbmUnigenGenerator: we are in CM frame" << FairLogger::endl;
-	Double_t elab = (TMath::Power(run->GetSqrtS()/run->GetAProj(),2)-
+        LOG(INFO) << "Input data is in CM frame" << FairLogger::endl;
+	Double_t elab = (TMath::Power(run->GetNNSqrtS(),2)-
 			 2*TMath::Power(0.938271998,2))/(2*0.938271998);
 	Double_t plab = TMath::Sqrt(elab*elab - TMath::Power(0.938271998,2));
         LOG(INFO) << "CbmUnigenGenerator: Plab = " << plab << " AGeV" << FairLogger::endl;
@@ -85,7 +86,7 @@ CbmUnigenGenerator::CbmUnigenGenerator(TString fileName)
                   << "betaCM = "    << fBetaCM
 	          << ", gammaCM = " << fGammaCM << FairLogger::endl;
     } else {
-        LOG(INFO) << "CbmUnigenGenerator: we are in LAB frame" << FairLogger::endl;
+        LOG(INFO) << "Input data is in LAB frame" << FairLogger::endl;
     }
 
     delete run;

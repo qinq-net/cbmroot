@@ -156,6 +156,16 @@ Double_t URun::GetTargetEnergy()
 
 
 //--------------------------------------------------------------------
+Double_t URun::GetNNSqrtS()
+{
+  // Get the cm energy
+  Double_t eSum = TMath::Sqrt( fPTarg*fPTarg + 0.938272029*0.938272029 ) + TMath::Sqrt( fPProj*fPProj + 0.938272029*0.938272029 ); 
+  Double_t pSum = Double_t(fPProj + fPTarg);
+  Double_t ecm = TMath::Sqrt( eSum*eSum - pSum*pSum );
+  return ecm;
+}
+//--------------------------------------------------------------------
+
 Double_t URun::GetSqrtS()
 {
   // Get the cm energy

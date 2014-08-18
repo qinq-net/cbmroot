@@ -52,6 +52,7 @@ class URun : public TNamed {
   inline Double_t    GetSigma()   const {return fSigma;}
   inline Int_t       GetNEvents() const {return fNEvents;}
   Double_t    GetSqrtS();
+  Double_t    GetNNSqrtS();
   Double_t    GetProjectileEnergy();
   Double_t    GetTargetEnergy();
   Double_t    GetBetaCM();
