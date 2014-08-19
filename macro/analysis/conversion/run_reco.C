@@ -1,4 +1,4 @@
-void run_reco(Int_t nEvents = 2, Int_t mode = 0)
+void run_reco(Int_t nEvents = 2, Int_t mode = 0, Int_t file_nr = 1)
 	// mode 1 = tomography
 	// mode 2 = urqmd
 	// mode 3 = pluto
@@ -10,10 +10,15 @@ void run_reco(Int_t nEvents = 2, Int_t mode = 0)
    TTree::SetMaxTreeSize(90000000000);
 
 	Int_t iVerbose = 0;
+	
+	Char_t filenr[5];
+	sprintf(filenr,"%05d",file_nr);
+	printf("Filenr: %s\n", filenr);
+	TString temp = filenr;
 
 	TString script = TString(gSystem->Getenv("SCRIPT"));
 	TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
-   TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v12b.root"; // Material budget file for L1 STS tracking
+	TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v12b.root"; // Material budget file for L1 STS tracking
 
 	gRandom->SetSeed(10);
 
@@ -22,16 +27,16 @@ void run_reco(Int_t nEvents = 2, Int_t mode = 0)
 	TString recoFile ="";
 	
 	
-	TString outName = "urqmdtest";
+	TString outName = "urqmdtest3";
 	if(mode == 1) {	// tomography
 		mcFile = "/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".mc.0001.root";
 		parFile = "/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".param.0001.root";
 		recoFile ="/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".reco.0001.root";
 	}
 	if(mode == 2) {	// urqmd
-		mcFile = "/common/home/reinecke/CBM-Simulationen/outputs/urqmd." + outName + ".mc.00003.root";
-		parFile = "/common/home/reinecke/CBM-Simulationen/outputs/urqmd." + outName + ".param.00003.root";
-		recoFile ="/common/home/reinecke/CBM-Simulationen/outputs/urqmd." + outName + ".reco.00003.root";
+		mcFile = "/common/home/reinecke/CBM-Simulationen/outputs/urqmd/urqmd." + outName + ".mc." + temp + ".root";
+		parFile = "/common/home/reinecke/CBM-Simulationen/outputs/urqmd/urqmd." + outName + ".param." + temp + ".root";
+		recoFile ="/common/home/reinecke/CBM-Simulationen/outputs/urqmd/urqmd." + outName + ".reco." + temp + ".root";
 	}
 	if(mode == 3) {	// pluto
 		mcFile = "/common/home/reinecke/CBM-Simulationen/outputs/pluto." + outName + ".mc.0001.root";

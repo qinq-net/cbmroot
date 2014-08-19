@@ -75,7 +75,6 @@ public:
 	KinematicParams CalculateKinematicParams(const CbmMCTrack* mctrackP, const CbmMCTrack* mctrackM);
         
 	Double_t	Invmass_2gammas(const CbmMCTrack* gamma1, const CbmMCTrack* gamma2);
-	Double_t	Invmass_gepem(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2, const CbmMCTrack* mctrack3);
 	Double_t	Invmass_2particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2);
 	Double_t	Invmass_4particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2, const CbmMCTrack* mctrack3, const CbmMCTrack* mctrack4);
 	Double_t	Invmass_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
@@ -91,18 +90,19 @@ public:
    void 	TomographyMC(CbmMCTrack* mctrack);
    void 	TomographyReco(CbmMCTrack* mctrack);
    void 	Probability();
-   void 	FillMCTracklist(CbmMCTrack* mctrack);
-   void 	FillMCTracklist_all(CbmMCTrack* mctrack);
-   void 	FillMCTracklist_omega(CbmMCTrack* mctrack);
+   void 	FillMCTracklist_gamma(CbmMCTrack* mctrack);
+   void 	FillMCTracklist_electrons(CbmMCTrack* mctrack);
+   //void 	FillMCTracklist_omega(CbmMCTrack* mctrack);
    void 	FillRecoTracklist(CbmMCTrack* mtrack);
-   void 	FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum);
+   void 	FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom);
    void 	InvariantMassTest();
    void 	InvariantMassTest_4epem();
-   void 	InvariantMassTest_omega();
    void 	InvariantMassTestReco();
    int 		GetTest();
    int 		GetNofEvents();
    void		SetMode(int mode);
+   void		InvariantMassMC_all();
+   Int_t	NofDaughters(Int_t motherId);
 
 
 
@@ -114,6 +114,9 @@ private:
    TH1D * fhNofElPrim;
    TH1D * fhNofElSec;
    TH1D * fhNofElAll;
+   TH1D * fhElectronSources;
+   TH1D * fhNofPi0_perEvent;
+   TH1D * fhNofPi0_perEvent_cut;
    
    TH3D * fhTomography;
    TH2D * fhTomography_XZ;
@@ -145,6 +148,7 @@ private:
    TH1D * fhInvariantMass_MC_all;
    TH1D * fhInvariantMass_MC_omega;
    TH1D * fhInvariantMass_MC_pi0;
+   TH1D * fhInvariantMass_MC_eta;
    
    TH1D * fhInvariantMassReco_pi0;
    
@@ -153,6 +157,15 @@ private:
    
    TH1D * fhInvariantMass_recoMomentum1;
    TH1D * fhInvariantMass_recoMomentum2;
+   TH1D * fhInvariantMass_recoMomentum3;
+   TH1D * fhInvariantMass_recoMomentum4;
+   TH1D * fhInvariantMass_recoMomentum5;
+   TH1D * fhMomentumtest1;
+   TH1D * fhMomentumtest2;
+   TH1D * fhMomentumtest3;
+   TH1D * fhMomentumtest4;
+   
+   TH1D * fhMCtest;
 
    TClonesArray* fRichPoints;
    TClonesArray* fMcTracks;
@@ -167,6 +180,12 @@ private:
    int testint;
    
    Int_t fAnalyseMode;
+   
+   
+   
+   
+	CbmVertex *fPrimVertex;
+	CbmKFVertex fKFVertex;
 
 
 
@@ -181,11 +200,11 @@ private:
    
    vector<CbmMCTrack*> fMCTracklist;
    vector<CbmMCTrack*> fMCTracklist_all;
-   vector<CbmMCTrack*> fMCTracklist_omega;
    vector<CbmMCTrack*> fRecoTracklist;
    vector<CbmMCTrack*> fRecoTracklistEPEM;
    
    vector<TVector3> fRecoMomentum;
+   vector<TVector3> fRecoRefittedMomentum;
 
 
    /**

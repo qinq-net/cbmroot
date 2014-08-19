@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export NOFEVENTS=500
+export NOFEVENTS=1000
 export mode=2
 
 DATE=$(date +"%H%M%S")
@@ -26,14 +26,14 @@ sed -i "s/run_analysis/$ANA2/" $ANA
 echo "Start of full conversion simulation"
 echo "-----------------------------------------------------------------------"
 root -l -b -q "$SIM($NOFEVENTS, $mode)" || exit 11
+rm -f $SIM
 root -l -b -q "$REC($NOFEVENTS, $mode)" || exit 12
+rm -f $REC
 root -l -b -q "$ANA($NOFEVENTS, $mode)" || exit 13
+rm -f $ANA
 echo "-----------------------------------------------------------------------"
 echo "Chain finished successfully"
 
 
-rm -f $SIM
-rm -f $REC
-rm -f $ANA
 
 

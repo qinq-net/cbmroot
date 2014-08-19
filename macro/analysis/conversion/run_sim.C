@@ -1,4 +1,4 @@
-void run_sim(Int_t nEvents = 2, Int_t mode = 0)
+void run_sim(Int_t nEvents = 2, Int_t mode = 0, Int_t file_nr = 1)
 	// mode 1 = tomography
 	// mode 2 = urqmd
 	// mode 3 = pluto
@@ -9,6 +9,12 @@ void run_sim(Int_t nEvents = 2, Int_t mode = 0)
 	}
    TTree::SetMaxTreeSize(90000000000);
 	Int_t iVerbose = 0;
+	
+	
+	Char_t filenr[5];
+	sprintf(filenr,"%05d",file_nr);
+	printf("Filenr: %s\n", filenr);
+	TString temp = filenr;
 
 	TString script = TString(gSystem->Getenv("SCRIPT"));
 	TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
@@ -18,7 +24,7 @@ void run_sim(Int_t nEvents = 2, Int_t mode = 0)
 	TString urqmdfilenumber = "00004";
 	TString plutofilenumber = "0001";
 
-	TString inFile = "/common/cbma/simulations/gen/urqmd/25gev/centr/urqmd.auau.25gev.centr.00004.root";
+	TString inFile = "/common/cbma/simulations/gen/urqmd/25gev/centr/urqmd.auau.25gev.centr." + temp + ".root";
 	TString plutoFile = "/common/cbma/simulations/gen/pluto/cktA/25gev/omega/epem/pluto.auau.25gev.omega.epem.0001.root";
 	TString parFile = "";
 	TString outFile = "";
@@ -45,7 +51,7 @@ void run_sim(Int_t nEvents = 2, Int_t mode = 0)
 	Double_t fieldScale =  1.0; 	// field scaling factor
 	
 	
-	TString outName = "urqmdtest";
+	TString outName = "urqmdtest3";
 	if(mode == 1) {	// tomography
 		parFile = "/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".param.0001.root";
 		outFile = "/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".mc.0001.root";
@@ -54,8 +60,8 @@ void run_sim(Int_t nEvents = 2, Int_t mode = 0)
 	
 	}
 	if(mode == 2) {	// urqmd
-		parFile = "/common/home/reinecke/CBM-Simulationen/outputs/urqmd." + outName + ".param.00003.root";
-		outFile = "/common/home/reinecke/CBM-Simulationen/outputs/urqmd." + outName + ".mc.00003.root";
+		parFile = "/common/home/reinecke/CBM-Simulationen/outputs/urqmd/urqmd." + outName + ".param." + temp + ".root";
+		outFile = "/common/home/reinecke/CBM-Simulationen/outputs/urqmd/urqmd." + outName + ".mc." + temp + ".root";
 		urqmd = "yes";
 		tomography = "no";
 	}
