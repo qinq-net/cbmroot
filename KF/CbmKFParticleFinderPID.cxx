@@ -243,11 +243,13 @@ void CbmKFParticleFinderPID::SetRecoPID()
             }
             else {
               ///3 sigma
-              // Double_t polAaxis = 5.23463 - 1.65625 / (momentum - 4.49815);
-              // Double_t polBaxis = 4.8757 - 1.2958 / (momentum - 4.72537);
+              // Double_t polAaxis = 5.80008 - 4.10118 / (momentum - 3.67402);
+              // Double_t polBaxis = 5.58839 - 4.75980 / (momentum - 3.31648);
+              // Double_t polRaxis = 5.87252 - 7.64641/(momentum - 1.62255);
               ///2 sigma          
-              Double_t polAaxis = 5.22648 - 2.39248 / (p - 4.15333);
-              Double_t polBaxis = 4.8908 - 2.06429 / (p - 4.3272);
+              Double_t polAaxis = 5.64791 - 4.24077 / (p - 3.65494);
+              Double_t polBaxis = 5.41106 - 4.49902 / (p - 3.52450);
+              //Double_t polRaxis = 5.66516 - 6.62229/(momentum - 2.25304);
               if ( axisA < (fMeanA + fRmsCoeff*fRmsA) &&
               axisA > polAaxis &&
               axisB < (fMeanB + fRmsCoeff*fRmsB) && 
