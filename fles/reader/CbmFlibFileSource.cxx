@@ -163,10 +163,22 @@ void CbmFlibFileSource::UnpackSpadicCbmNetMessage(const fles::Timeslice& ts, siz
     std::cout << "---- reader " << addr << " ----" << std::endl;
     while (auto mp = r.get_message(addr)) {
       print_message(*mp);
-      Int_t bla[3] = {1,1,1};
+      Int_t link = ts.descriptor(component, 0).eq_id;
+      Int_t address = addr;
+      Int_t channel = mp->channel_id();
+      Int_t epoch = -1;
+      Int_t time = mp->timestamp();
+      Int_t samples = mp->samples().size();
+      Int_t* sample_values = new Int_t[samples];
+      Int_t counter1=0;
+      for (auto x : mp->samples()) {
+        sample_values[counter1] = x;
+        ++counter1;
+      }
       new( (*fSpadicRaw)[counter] )
-	CbmSpadicRawMessage(1, 1, 1, 1, 1, 3, bla);
+	CbmSpadicRawMessage(link, address, channel, epoch, time, samples, sample_values);
       ++counter;
+      delete[] sample_values;
     }
   }
 
