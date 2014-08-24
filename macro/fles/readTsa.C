@@ -13,7 +13,9 @@ void readTsa()
 {
 
   // --- Specify input file name (this is just an example)
-  TString inFile = "pattern.tsa";
+//  TString inFile = "pattern.tsa";
+  TString inFile = "spadic10_data.tsa";
+  
 
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
