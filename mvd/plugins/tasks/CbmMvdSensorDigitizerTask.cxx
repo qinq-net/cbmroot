@@ -99,6 +99,7 @@ CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask()
     fLorentzW=1.03;
     fLorentzA=477.2;
 
+    fCompression = 0.;
     //fLorentzNorm=0.00013010281679422413;
     fLorentzNorm=1;
 
@@ -168,6 +169,10 @@ CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask(const char* name, Int_t iMo
     fLorentzW=1.03;
     fLorentzA=477.2;
 
+
+    fCompression = 0.;  
+
+
     //fLorentzNorm=0.00013010281679422413;
     fLorentzNorm=1;
 
@@ -214,6 +219,9 @@ InitStatus CbmMvdSensorDigitizerTask::ReadSensorInformation() {
   fLandauSigma=sensorData->GetLandauSigma();//cout << endl << " Landau Sigma is now set to " << fLandauSigma << endl;
   fLandauGain =sensorData->GetLandauGain();//cout << endl << " Landau Gain is now set to " << fLandauGain << endl;
   fEpiTh=      sensorData->GetEpiThickness();//cout << endl << " Epitaxial thickness is now set to " << fEpiTh << endl;
+  fCompression = fPixelSizeX / fPixelSizeY;
+  if (fCompression != 1)
+	cout << endl << "working with non uniform pixels" << endl;
   return kSUCCESS;
 }
 
@@ -270,6 +278,7 @@ fOutputBuffer->Clear();
 fDigis->Clear();
 fDigiMatch->Clear();
 
+
 for (Int_t iPoint=0; iPoint<fInputPoints->GetEntriesFast(); iPoint++)
     {
       
@@ -303,7 +312,7 @@ for (Int_t iPoint=0; iPoint<fInputPoints->GetEntriesFast(); iPoint++)
 for (Int_t i=0; i<fPixelCharge->GetEntriesFast(); i++)
 	{
 	    CbmMvdPixelCharge* pixel = (CbmMvdPixelCharge*)fPixelCharge->At(i);
-		
+            
 	    if ( pixel->GetCharge()>fChargeThreshold )
 	    {
 		Int_t nDigis = fDigis->GetEntriesFast();
@@ -311,7 +320,7 @@ for (Int_t i=0; i<fPixelCharge->GetEntriesFast(); i++)
 						    pixel->GetX(), pixel->GetY(), pixel->GetCharge(),
 						    fPixelSizeX, fPixelSizeY, pixel->GetTime(), 
 						    pixel->GetFrame());
-		
+		//cout << endl << " new Digi at " <<  pixel->GetX() << " " << pixel->GetY() << endl;
 		new ((*fOutputBuffer)[nDigis]) CbmMvdDigi (fSensor->GetStationNr(),
 						    pixel->GetX(), pixel->GetY(), pixel->GetCharge(),
 						    fPixelSizeX, fPixelSizeY, pixel->GetTime(), 
@@ -321,16 +330,20 @@ for (Int_t i=0; i<fPixelCharge->GetEntriesFast(); i++)
 							    *(pixel->GetPointID()));
 		    
 	    }
+		else 
+		{ 
+		//cout << endl << "charge under threshold, digi rejected" << endl;
+}
 	}
 
 	if (fDigis->GetEntriesFast()> 0)
 	{
 	  
-	//cout << endl << "registered " << fDigis->GetEntriesFast() 
-	  //   << " new digis out of " << fInputPoints->GetEntriesFast() 
-	    // << " Points in Frame " << fcurrentFrameNumber << " on sensor " 
-	    // << fSensor->GetName();
-//    fDigis->Print();
+/*	cout <<  "registered " << fDigis->GetEntriesFast() 
+	     << " new digis out of " << fInputPoints->GetEntriesFast() 
+	     << " Points in Frame " << fcurrentFrameNumber << " on sensor " 
+	     << fSensor->GetName() << endl;  */
+  
 	}
  fPixelCharge->Clear();
  fChargeMap.clear();
@@ -350,9 +363,9 @@ void CbmMvdSensorDigitizerTask::ProduceIonisationPoints(CbmMvdPoint* point) {
    ** the active Silicon layer.
    **/
   
-// Option_t* opt1;
+ //Option_t* opt1;
  //cout << endl << "Computing Point "   << endl;
-// point->Print(opt1);
+ //point->Print(opt1);
   
   Int_t pdgCode = point->GetPdgCode();
 
@@ -366,7 +379,10 @@ void CbmMvdSensorDigitizerTask::ProduceIonisationPoints(CbmMvdPoint* point) {
     
   fSensor->TopToLocal(globalPositionIn, localPositionIn);
   fSensor->TopToLocal(globalPositionOut, localPositionOut);
-  
+
+  Int_t pixelX, pixelY;
+  fSensor->LocalToPixel(&localPositionIn[0],pixelX, pixelY); 
+
   // Copy results into variables used by earlier versions
   
   Double_t entryX = localPositionIn [0];
@@ -593,7 +609,7 @@ void CbmMvdSensorDigitizerTask::ProducePixelCharge(CbmMvdPoint* point) {
     fSensor->LocalToPixel(maxCoord, upperXArray[0], upperYArray[0]);
 
     
-    //define region of interest for the cluster
+
     
      ixLo=lowerXArray[0];
      iyLo=lowerYArray[0];
@@ -661,8 +677,8 @@ Int_t ix, iy;
 			Float_t totCharge = ((
 				      sPoint->charge * fLorentzNorm *
 				      (0.5*fPar0*fPar1/TMath::Pi())/
-				      TMath::Max(1.e-10, ((Current[0]-xCentre)*(Current[0]-xCentre)+(Current[1]-yCentre)*
-				      (Current[1]-yCentre))/fPixelSize/fPixelSize+0.25*fPar1*fPar1)+fPar2)
+				      TMath::Max(1.e-10, (((Current[0]-xCentre)*(Current[0]-xCentre))*fCompression+((Current[1]-yCentre)*
+				      (Current[1]-yCentre))(1/fCompression))/fPixelSize/fPixelSize+0.25*fPar1*fPar1)+fPar2)
 				     );
 			
  			
@@ -687,7 +703,7 @@ Int_t ix, iy;
 							    (point->GetX()+point->GetXOut())/2, 
 							    (point->GetY()+point->GetXOut())/2, point->GetTime(), point->GetFrame()
 							   );
-//    					  cout << endl << "new charched pixel with charge " << totCharge << endl;
+  //cout << endl << "new charched pixel with charge " << totCharge << " at " << ix << " " << iy << endl;
  					  fPixelChargeShort.push_back(pixel);
 // 				cout << endl << "added pixel to ChargeShort vector " << endl;   
 					

@@ -509,6 +509,7 @@ void CbmMvdDigitizeL::Exec(Option_t* opt) {
 	fChargeMap.clear();
 
 	// Loop over MvdPoints in station
+
 	for (Int_t iPoint=0; iPoint<station->GetNPoints(); iPoint++) {
 	    CbmMvdPoint* point = station->GetPoint(iPoint);
 
@@ -529,17 +530,18 @@ void CbmMvdDigitizeL::Exec(Option_t* opt) {
 		//cout << endl << "partical rejected, because light nuclei"<< endl ;
 		continue;}
 
-	    //cout << endl <<" Produce ionasations points" << endl;
+	    cout << endl <<" Produce ionasations points" << endl;
 	    ProduceIonisationPoints(point, station);
 	    //ProduceSignalPoints();
-	   // cout << endl << "poduce charge in pixels" << endl;
+	    cout << endl << "poduce charge in pixels" << endl;
 	    ProducePixelCharge(point,station);
-
+	    cout << endl << "finished" << endl;
 	    CbmMvdPixelCharge* pixelCharge;
 
-	    //cout << endl << "finished" << endl;
+	    
 
 	} //loop on MCpoints
+
 
 	for (Int_t i=0; i<fPixelCharge->GetEntriesFast(); i++)
 	{
@@ -771,7 +773,7 @@ void CbmMvdDigitizeL::ProducePixelCharge(CbmMvdPoint* point, CbmMvdStation* stat
 
     Float_t xCharge=0.,yCharge=0.,totClusterCharge=0.;
     CbmMvdPixelCharge* pixel;
-
+    pair<Int_t, Int_t> a;
     Double_t xCentre,yCentre,sigmaX,sigmaY,xLo,xUp, yLo,yUp;
     
     SignalPoint* sPoint;
@@ -883,7 +885,7 @@ void CbmMvdDigitizeL::ProducePixelCharge(CbmMvdPoint* point, CbmMvdStation* stat
 			if(!pixel) {
 
 		 		// Look for pixel in charge map if not yet linked. 
-    				pair<Int_t, Int_t> a(ix, iy);
+    				a = std::make_pair(ix,iy); 
 				fChargeMapIt = fChargeMap.find(a);
 
     				// Pixel not yet in map -> Add new pixel
@@ -899,7 +901,8 @@ void CbmMvdDigitizeL::ProducePixelCharge(CbmMvdPoint* point, CbmMvdStation* stat
 				}
 
     				// Pixel already in map -> Add charge
-    				else {  pixel = fChargeMapIt->second;
+    				else {  
+					pixel = fChargeMapIt->second;
 					//cout << endl << "added charge to pixel" << endl;
 					pixel->AddCharge(totCharge);
 				}

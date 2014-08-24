@@ -244,13 +244,16 @@ CbmMvdDigi* digi = NULL;
     
 Int_t iDigi=0;
 digi = (CbmMvdDigi*) fInputBuffer->At(iDigi);
-    
+
     
     if(!digi){
 	cout << "-E- : CbmMvdSensorFindHitTask - Fatal: No Digits found in this event."<< endl;
     }
 
 Int_t nDigis = fInputBuffer->GetEntriesFast();
+
+//cout << endl << "working with " << nDigis << " entries" << endl;    
+
 
     if( fAddNoise == kTRUE ){
       // Generate random number and call it noise
@@ -294,7 +297,7 @@ Int_t nDigis = fInputBuffer->GetEntriesFast();
 	    if(GetAdcCharge(digi->GetCharge()) < fNeighThreshold ) continue;
 
 	    pair<Int_t, Int_t> a (digi->GetPixelX(),digi->GetPixelY());
-	    //cout << endl << "registerde pixel x:" << digi->GetPixelX() << " y:" << digi->GetPixelY() << endl;
+	   // cout << endl << "registerde pixel x:" << digi->GetPixelX() << " y:" << digi->GetPixelY() << endl;
 	    fDigiMap[a]=k;
 	};
 
@@ -367,11 +370,15 @@ Int_t nDigis = fInputBuffer->GetEntriesFast();
 
    // cout << endl << "-I-  End of task " << GetName() << ": Event Nr: " << fNEvent << ", nDIGIS: "<<nDigis << ", nHits:"<<fHits->GetEntriesFast()<<endl;
 
-    delete pixelUsed;
-    delete clusterArray;
+ 
+/*cout <<  "registered " << fHits->GetEntriesFast() 
+	     << " new hits out of " << fInputBuffer->GetEntriesFast() 
+	     << " Digis on sensor " 
+	     << fSensor->GetName() << endl;  */
+
+delete pixelUsed;
+delete clusterArray;
 fInputBuffer->Clear();
-//fHits->Print();
-//fOutputBuffer->Print();
 }
 else {//cout << endl << "No input found." << endl;
      }

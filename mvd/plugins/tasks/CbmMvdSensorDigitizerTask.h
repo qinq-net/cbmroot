@@ -143,6 +143,8 @@ public:
     Double_t fPar1;
     Double_t fPar2;
 
+    Double_t fCompression;
+
     Bool_t fShowDebugHistos;
     TH1F* fResolutionHistoX;
     TH1F* fResolutionHistoY;

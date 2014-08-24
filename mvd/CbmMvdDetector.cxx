@@ -74,7 +74,7 @@ void CbmMvdDetector::AddSensor(TString clearName, TString fullName, TString node
  
   CbmMvdSensor* sensor = (CbmMvdSensor*)fSensorArray->At(nSensors);
   sensor->SetDataSheet(sensorData);
-  //cout << endl << "new sensor to detector added" << endl;
+  //cout << endl << "new sensor " << fullName << " to detector added" << endl;
 } 
  
 // ----------------------------------------------------------------------

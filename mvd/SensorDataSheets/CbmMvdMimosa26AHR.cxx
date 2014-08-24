@@ -18,8 +18,8 @@ using std::endl;
 CbmMvdMimosa26AHR::CbmMvdMimosa26AHR()  {
   
   fMimosaName="Mimosa-26AHR";      // Clear name of the simulated sensor
-  fPixelPitchX=0.0025;	  	    // Pixel pitch in x of this sensor
-  fPixelPitchY=0.0025;              // Pixel pitch in y of this sensor
+  fPixelPitchX=0.0025;	  	    // Pixel pitch in x of this sensor in cm
+  fPixelPitchY=0.0025;              // Pixel pitch in y of this sensor in cm
   fNPixelsX=1152;    		    // Number of pixels in row
   fNPixelsY=576;  		    // Number of pixels in col
   fNPixels=fNPixelsX*fNPixelsY;	    // Number of pixels in sensor
