@@ -10,6 +10,7 @@ Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Winit-self -Wun
 Set(INCLUDE_DIRECTORIES
 ${CBMROOT_CURRENT_SOURCE_DIR}
 ${CBMROOT_SOURCE_DIR}/fles/ipc
+${CBMROOT_SOURCE_DIR}/fles/flib_dpb
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -43,7 +44,7 @@ timeslice_reader.cpp
 )
 
 Set(EXE_NAME timeslice_reader)
-Set(DEPENDENCIES fles_ipc boost_thread boost_system boost_serialization spadicMessage)
+Set(DEPENDENCIES fles_ipc flib_dpb boost_thread boost_system boost_serialization spadicMessage)
 
 GENERATE_EXECUTABLE()
 

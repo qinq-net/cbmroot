@@ -9,6 +9,7 @@ Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Winit-self -Wun
 Set(INCLUDE_DIRECTORIES
 ${CBMROOT_CURRENT_SOURCE_DIR}
 ${CBMROOT_SOURCE_DIR}/fles/ipc
+${CBMROOT_SOURCE_DIR}/fles/flib_dpb
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
@@ -30,9 +31,9 @@ TransparentFilter.cpp
 
 Set(EXE_NAME softdpb)
 If(UNIX AND NOT APPLE)
-  Set(DEPENDENCIES fles_ipc boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} rt)
+  Set(DEPENDENCIES fles_ipc flib_dpb boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} rt)
 Else()
-  Set(DEPENDENCIES fles_ipc boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT})
+  Set(DEPENDENCIES fles_ipc flib_dpb boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT})
 EndIf()
 
 GENERATE_EXECUTABLE()
