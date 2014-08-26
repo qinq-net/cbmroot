@@ -45,6 +45,7 @@ CbmStsDigitizeIdeal::CbmStsDigitizeIdeal(Int_t digiModel)
     fSetup(NULL),
     fPoints(NULL),
     fDigis(NULL),
+    fMatches(NULL),
     fTimer(),
     fNofPoints(0),
     fNofSignalsF(0),
@@ -69,6 +70,10 @@ CbmStsDigitizeIdeal::~CbmStsDigitizeIdeal() {
     fDigis->Delete();
     delete fDigis;
   }
+ if ( fMatches ) {
+	fMatches->Delete();
+	delete fMatches;
+ }
  Reset();
 }
 // -------------------------------------------------------------------------
@@ -96,6 +101,11 @@ void CbmStsDigitizeIdeal::CreateDigi(UInt_t address,
 	CbmStsDigi* digi =
 			new ( (*fDigis)[nDigis] ) CbmStsDigi(address, time, adc);
 	digi->SetMatch(digiMatch);
+
+	// --- For backward compatibility: create a second match in a separate branch
+	CbmMatch* digiMatch2 = new ( (*fMatches)[nDigis] ) CbmMatch();
+	digiMatch2->AddLink(match);
+
 	fNofDigis++;
 	LOG(DEBUG3) << GetName() << ": created digi at " << time
 			        << " ns with ADC " << adc << " at address " << address
@@ -239,6 +249,12 @@ InitStatus CbmStsDigitizeIdeal::Init() {
   fDigis = new TClonesArray("CbmStsDigi",1000);
   ioman->Register("StsDigi", "Digital response in STS", fDigis, kTRUE);
 
+  // Register output array (CbmStsDigiMatch)
+  // For backward compatibility only; the match object is already member
+  // of CbmStsDigi.
+  fMatches = new TClonesArray("CbmMatch", 1000);
+  ioman->Register("StsDigiMatch", "MC link to StsDigi", fMatches, kTRUE);
+
   // Get STS setup interface
   fSetup = CbmStsSetup::Instance();
 
@@ -251,7 +267,8 @@ InitStatus CbmStsDigitizeIdeal::Init() {
   // Register this task to the setup
   fSetup->SetDigitizer(this);
 
-  LOG(INFO) << GetName() << ": Initialisation successful" << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Initialisation successful"
+		    << FairLogger::endl;
   return kSUCCESS;
 
 }

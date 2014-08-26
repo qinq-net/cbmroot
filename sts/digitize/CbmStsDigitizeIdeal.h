@@ -93,6 +93,7 @@ class CbmStsDigitizeIdeal : public FairTask
   CbmStsSetup*   fSetup;        ///< STS setup interface
   TClonesArray*  fPoints;       ///< Input array of CbmStsPoint
   TClonesArray*  fDigis;        ///< Output array of CbmStsDigi
+  TClonesArray*  fMatches;      ///< Output array of CbmMatch
   TStopwatch     fTimer;        ///< ROOT timer
 
   // --- Event counters
