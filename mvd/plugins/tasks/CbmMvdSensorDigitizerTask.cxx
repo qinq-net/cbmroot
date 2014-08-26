@@ -678,7 +678,7 @@ Int_t ix, iy;
 				      sPoint->charge * fLorentzNorm *
 				      (0.5*fPar0*fPar1/TMath::Pi())/
 				      TMath::Max(1.e-10, (((Current[0]-xCentre)*(Current[0]-xCentre))*fCompression+((Current[1]-yCentre)*
-				      (Current[1]-yCentre))(1/fCompression))/fPixelSize/fPixelSize+0.25*fPar1*fPar1)+fPar2)
+				      (Current[1]-yCentre))*(1/fCompression))/fPixelSize/fPixelSize+0.25*fPar1*fPar1)+fPar2)
 				     );
 			
  			
