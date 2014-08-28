@@ -9,7 +9,7 @@ void create_rich_geo_with_mirror_misalignment()
 
 	ifstream inGeoFile(inGeoFileName.c_str());
 	ofstream outGeoFile(outGeoFileName.c_str());
-	TRandom* random = new TRandom();
+	TRandom3* random = new TRandom3();
 	string line;
 	if (inGeoFile.is_open()) {
 		while (getline (inGeoFile, line) ) {
