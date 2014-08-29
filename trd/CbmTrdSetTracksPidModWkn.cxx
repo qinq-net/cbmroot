@@ -115,9 +115,9 @@ void CbmTrdSetTracksPidModWkn::Exec(Option_t* opt) {
 
   std::vector<float> eLossVector; // vector for energy losses
 
-  fvec mWkn[fnSet],
-       resWkn=0, 
-       numTr=0;
+  fvec* mWkn = new fvec[fnSet];
+  fvec resWkn=0; 
+  fvec numTr=0;
  
   int nTracks_SIMD = fvecLen,
       NHits=0,
@@ -191,6 +191,8 @@ void CbmTrdSetTracksPidModWkn::Exec(Option_t* opt) {
     iV=0;
   }
   
+  delete[] mWkn;
+
   timer.Stop();
   static int nEv = 0;
   nEv++;
