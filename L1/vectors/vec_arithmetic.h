@@ -1,4 +1,4 @@
-#ifndef _vec_arithmetic_H_
+#ifndef _vec_arithmetic_H
 #define _vec_arithmetic_H
 
 /* Define all operators after definition of  basic operators */
