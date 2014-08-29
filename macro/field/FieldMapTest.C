@@ -5,12 +5,13 @@
 // with a older version of this values. If there is a change in
 // the field map itself or in the routines the test should fail.
 //
-// F. Uhlig   5.10.2010
+// D.Emschermann  29.08.2014 - switch to field_v12b from v09e
+// F. Uhlig       05.10.2010
 //
 // --------------------------------------------------------------------------
 
-void FieldMapTest(TString fieldMap = "field_v09e",
-		      Bool_t create_file = kFALSE)
+void FieldMapTest(TString fieldMap = "field_v12b",
+		  Bool_t create_file = kFALSE)
 {
   
   // -----   Load libraries   ---------------------------------------------
@@ -28,13 +29,15 @@ void FieldMapTest(TString fieldMap = "field_v09e",
   // Somehow this information should be extracted from the map itself
   CbmFieldMap* magField = NULL;
 
-  if (fieldMap == "field_v09e" )
+  if (fieldMap == "field_v12b" )
+    CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
+  // old magnetic field maps
+  else if (fieldMap == "field_v09e" )
     CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
   else if (fieldMap == "field_v09m" )
     CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
   else if (fieldMap == "field_v10e" )
     CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
-  // old magnetic field maps
   else if (fieldMap == "field_electron_standard" ) 
     CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
   else if (fieldMap == "field_muon_standard" )
