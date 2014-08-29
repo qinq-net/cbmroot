@@ -1,14 +1,15 @@
-# Build the fles_ipc library which is tacken from git@code.compeng.uni-frankfurt.de:flesnet.git
-# This library provides the interface to the FLIB board or to files in tca
-# format written by the FLIB 
-#
-# This file is only called if the compiler provides c++11 support
-
+# Build the spadic message reader library.
+# The code is external in github as defined in the svn:extrenals.
 # Add some extra compile warnings 
+
+Set(CMAKE_CXX_FLAGS_BAK ${CMAKE_CXX_FLAGS})
+
 Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Winit-self -Wundef -Wold-style-cast -Woverloaded-virtual -Wwrite-strings -Wnon-virtual-dtor")
 
 Set(INCLUDE_DIRECTORIES
-${CBMROOT_CURRENT_SOURCE_DIR}
+${CBMROOT_SOURCE_DIR}/fles/spadic/message
+${CBMROOT_SOURCE_DIR}/fles/spadic/timeslice
+${CBMROOT_SOURCE_DIR}/fles/spadic/message/wrap/cpp
 ${CBMROOT_SOURCE_DIR}/fles/ipc
 ${CBMROOT_SOURCE_DIR}/fles/flib_dpb
 )
@@ -27,10 +28,10 @@ ${Boost_LIBRARY_DIRS}
 Link_Directories( ${LINK_DIRECTORIES})
 
 Set(SRCS
-message.c
-message_reader.c
-Message.cpp
-TimesliceReader.cpp
+spadic/message/message.c
+spadic/message/message_reader.c
+spadic/message/wrap/cpp/Message.cpp
+spadic/timeslice/TimesliceReader.cpp
 )
 
 
@@ -40,7 +41,7 @@ Set(DEPENDENCIES)
 GENERATE_LIBRARY()
 
 Set(SRCS
-timeslice_reader.cpp
+spadic/timeslice/demo/timeslice_reader.cpp
 )
 
 Set(EXE_NAME timeslice_reader)

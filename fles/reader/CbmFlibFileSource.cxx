@@ -135,15 +135,15 @@ Int_t CbmFlibFileSource::ReadEvent()
 
 void CbmFlibFileSource::PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc)
 {
-  LOG(INFO) << "Header ID: Ox" << std::hex << (int)mdsc.hdr_id 
+  LOG(INFO) << "Header ID: Ox" << std::hex << static_cast<int>(mdsc.hdr_id) 
 	    << FairLogger::endl;
-  LOG(INFO) << "Header version: Ox" << std::hex << (int)mdsc.hdr_ver 
+  LOG(INFO) << "Header version: Ox" << std::hex << static_cast<int>(mdsc.hdr_ver) 
 	    << std::dec << FairLogger::endl;
   LOG(INFO) << "Equipement ID: " << mdsc.eq_id << FairLogger::endl;
   LOG(INFO) << "Flags: " << mdsc.flags << FairLogger::endl;
-  LOG(INFO) << "Sys ID: Ox" << std::hex << (int)mdsc.sys_id 
+  LOG(INFO) << "Sys ID: Ox" << std::hex << static_cast<int>(mdsc.sys_id) 
 	    << FairLogger::endl;
-  LOG(INFO) << "Sys version: Ox" << std::hex << (int)mdsc.sys_ver 
+  LOG(INFO) << "Sys version: Ox" << std::hex << static_cast<int>(mdsc.sys_ver) 
 	    << std::dec << FairLogger::endl;
   LOG(INFO) << "Microslice Idx: " << mdsc.idx << FairLogger::endl; 
   LOG(INFO) << "Checksum: " << mdsc.crc << FairLogger::endl;
@@ -157,7 +157,7 @@ void CbmFlibFileSource::UnpackSpadicCbmNetMessage(const fles::Timeslice& ts, siz
   spadic::TimesliceReader r;
   Int_t counter=0;
 
-  r.add_timeslice_cbmroot(ts, component);
+  r.add_component(ts, component);
 
   for (auto addr : r.sources()) {
     std::cout << "---- reader " << addr << " ----" << std::endl;
@@ -187,8 +187,8 @@ void CbmFlibFileSource::UnpackSpadicCbmNetMessage(const fles::Timeslice& ts, siz
 void CbmFlibFileSource::print_message(const spadic::Message& m)
 {
   std::cout << "v: " << (m.is_valid() ? "o" : "x");
-  std::cout << " / gid: " << (int)m.group_id();
-  std::cout << " / chid: " << (int)m.channel_id();
+  std::cout << " / gid: " << static_cast<int>(m.group_id());
+  std::cout << " / chid: " << static_cast<int>(m.channel_id());
   if ( m.is_hit() ) { 
     std::cout << " / ts: " << m.timestamp();
     std::cout << " / samples (" << m.samples().size() << "):";
