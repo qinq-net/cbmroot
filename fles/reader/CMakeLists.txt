@@ -8,7 +8,7 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/cbmdata/raw
   ${CBMROOT_SOURCE_DIR}/fles/ipc
   ${CBMROOT_SOURCE_DIR}/fles/flib_dpb
-  ${CBMROOT_SOURCE_DIR}/fles/spadic
+  ${CBMROOT_SOURCE_DIR}/fles/spadic_old
   ${CBMROOT_SOURCE_DIR}/fles/reader
 )
 
