@@ -160,7 +160,8 @@ public:
    
     TClonesArray* fDigiMatch;
     
-    
+  
+
     std::vector<CbmMvdPixelCharge*> fPixelChargeShort;
 
     TObjArray* fPixelScanAccelerator;

@@ -214,7 +214,7 @@ private:
     void GenerateFakeDigis(Double_t pixelSizeX, Double_t pixelSizeY);
     void CheckForNeighbours(vector<Int_t>* clusterArray, Int_t clusterDigi, TArrayS* pixelUsed);
     
-    void CreateHit(vector<Int_t>* clusterArray,  TVector3& pos, TVector3 &dpos);
+    void CreateHit(vector<Int_t>* clusterArray,  TVector3& pos, TVector3 &dpos, Int_t entryNr);
     void ComputeCenterOfGravity(vector<Int_t>* clusterArray, TVector3& pos, TVector3& dpos);
     void UpdateDebugHistos(vector<Int_t>* clusterArray, Int_t seedIndexX, Int_t seedIndexY);
     

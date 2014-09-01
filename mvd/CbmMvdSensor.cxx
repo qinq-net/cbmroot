@@ -511,15 +511,15 @@ void CbmMvdSensor::LocalToPixel	(Double_t* local, Int_t &pixelNumberX, Int_t &pi
   //Compute position of the frame relativ to the border of the matrix
   //which contains the pixel (0/0)
   Double_t x=local[0] + (fSensorData->GetPixelSignX() * GetDX());
-  //cout << " Double_t x=local[0] + (fSensorData->GetPixelSignX() * GetDX()); " << x << endl;
+  //cout << "From " << local[0] << " to Double_t x " << x << endl;
   Double_t y=local[1] + (fSensorData->GetPixelSignY() * GetDY());
-  //cout << "Double_t y=local[1] + (fSensorData->GetPixelSignY() * GetDY()); " << y << endl;
+  //cout << "From " << local[1] << " to Double_t y " << y << endl;
   //Compute the number of the pixel hit.
   //Note: substract 0.5 to move from border to center of pixel
   pixelNumberX= Int_t(x/fSensorData->GetPixelPitchX()-0.5);
-  //cout << "pixelNumberX = " << pixelNumberX << endl;
+  //if (pixelNumberX < 0) cout << "pixelNumberX = " << pixelNumberX << " on Sensor " << this->GetName() << endl;
   pixelNumberY= Int_t(y/fSensorData->GetPixelPitchY()-0.5);
-  //cout << "pixelNumberY = " << pixelNumberY << endl;
+  //if (pixelNumberY < 0) cout << "pixelNumberY = " << pixelNumberY << " on Sensor " << this->GetName() << endl;
 };
 // -------------------------------------------------------------------------
 
@@ -532,12 +532,12 @@ void CbmMvdSensor::PixelToLocal	(Int_t pixelNumberX, Int_t pixelNumberY, Double_
   //Ignore the direction of pixel numbering so far
   //By definiton (x,y) is in the center of the pixel
   
-  Double_t x =pixelNumberX * fSensorData->GetPixelPitchX();
-  Double_t y =pixelNumberY* fSensorData->GetPixelPitchY();
+  Double_t x = (pixelNumberX + 0.5) * fSensorData->GetPixelPitchX();
+  Double_t y = (pixelNumberY + 0.5) * fSensorData->GetPixelPitchY();
   
   //Perform coordinate transformation from border of matrix to center of volume
-  local[0]= x- fSensorData->GetPixelSignX()*GetDX();
-  local[1]= y- fSensorData->GetPixelSignY()*GetDY();
+  local[0]= x - fSensorData->GetPixelSignX()*GetDX();
+  local[1]= y - fSensorData->GetPixelSignY()*GetDY();
  
   local[2]=0; //per definition always at the sensor surface;
   

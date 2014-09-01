@@ -74,7 +74,7 @@ CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask()
     fPixelSizeX = 0.0030; // in cm
     fPixelSizeY = 0.0030;
     fCutOnDeltaRays  = 0.00169720;  //MeV
-    fChargeThreshold = 350.; //electrons change 1 to 10
+    fChargeThreshold = 100.; //electrons change 1 to 10
     fFanoSilicium    = 0.115;
     fEsum            = 0;
     fSegmentDepth    = 0;
@@ -391,7 +391,10 @@ void CbmMvdSensorDigitizerTask::ProduceIonisationPoints(CbmMvdPoint* point) {
   Double_t exitY  = localPositionOut[1];
   Double_t entryZ = localPositionIn [2];
   Double_t exitZ  = localPositionOut[2];
+
   
+
+
 
     /**
 
