@@ -530,12 +530,12 @@ void CbmMvdDigitizeL::Exec(Option_t* opt) {
 		//cout << endl << "partical rejected, because light nuclei"<< endl ;
 		continue;}
 
-	    cout << endl <<" Produce ionasations points" << endl;
+	    //cout << endl <<" Produce ionasations points" << endl;
 	    ProduceIonisationPoints(point, station);
 	    //ProduceSignalPoints();
-	    cout << endl << "poduce charge in pixels" << endl;
+	    //cout << endl << "poduce charge in pixels" << endl;
 	    ProducePixelCharge(point,station);
-	    cout << endl << "finished" << endl;
+	    //cout << endl << "finished" << endl;
 	    CbmMvdPixelCharge* pixelCharge;
 
 	    
