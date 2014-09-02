@@ -99,7 +99,7 @@ CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask()
     fLorentzW=1.03;
     fLorentzA=477.2;
 
-    fCompression = 0.;
+    fCompression = 1.;
     //fLorentzNorm=0.00013010281679422413;
     fLorentzNorm=1;
 
@@ -170,7 +170,7 @@ CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask(const char* name, Int_t iMo
     fLorentzA=477.2;
 
 
-    fCompression = 0.;  
+    fCompression = 1.;  
 
 
     //fLorentzNorm=0.00013010281679422413;
@@ -208,8 +208,11 @@ InitStatus CbmMvdSensorDigitizerTask::ReadSensorInformation() {
   sensorData=fSensor->GetDataSheet();
   if (!sensorData){return kERROR;}
   
-  fPixelSizeX=sensorData->GetPixelPitchX();
-  fPixelSizeY=sensorData->GetPixelPitchY();
+  fPixelSizeX = sensorData->GetPixelPitchX();
+  fPixelSizeY = sensorData->GetPixelPitchY();
+  fNPixelsX = sensorData->GetNPixelsX();
+  fNPixelsY = sensorData->GetNPixelsY();
+
   
   fPar0=sensorData->GetLorentzPar0();
   fPar1=sensorData->GetLorentzPar1();
@@ -221,7 +224,9 @@ InitStatus CbmMvdSensorDigitizerTask::ReadSensorInformation() {
   fEpiTh=      sensorData->GetEpiThickness();//cout << endl << " Epitaxial thickness is now set to " << fEpiTh << endl;
   fCompression = fPixelSizeX / fPixelSizeY;
   if (fCompression != 1)
-	cout << endl << "working with non uniform pixels" << endl;
+	//cout << endl << "working with non uniform pixels" << endl;
+  if (fCompression <= 0)
+	fCompression = 1;
   return kSUCCESS;
 }
 
@@ -268,7 +273,6 @@ if(fPreviousPlugin)
   {
   fInputPoints->Clear(); 
   fInputPoints->AbsorbObjects(fPreviousPlugin->GetOutputArray());
-  //cout << endl << "absorbt object from previous plugin." << endl;
   }
   if(fInputPoints->GetEntriesFast() > 0)
   {
@@ -290,6 +294,12 @@ for (Int_t iPoint=0; iPoint<fInputPoints->GetEntriesFast(); iPoint++)
 	  cout << "    -received bad MC-Point. Ignored." << endl;
 	  continue;
 	  } 
+      if (point->GetStationNr() != fSensor->GetStationNr())
+	{
+	  cout << "-W-" << GetName() << ":: Exec:" <<endl;
+	  cout << "    -received bad MC-Point which doesn't belong here. Ignored." << endl;
+	  continue;	
+	}
       fcurrentFrameNumber = point->GetFrame();
     //The digitizer acts only on particles, which crossed the station.
     //Particles generated in the sensor or being absorbed in this sensor are ignored
@@ -392,10 +402,6 @@ void CbmMvdSensorDigitizerTask::ProduceIonisationPoints(CbmMvdPoint* point) {
   Double_t entryZ = localPositionIn [2];
   Double_t exitZ  = localPositionOut[2];
 
-  
-
-
-
     /**
 
     Create vector entryDet a (x1,y1,z1) = entry in detector
@@ -472,11 +478,7 @@ void CbmMvdSensorDigitizerTask::ProduceIonisationPoints(CbmMvdPoint* point) {
 	trackLength = 1.0e+3;
     }
 
-//     cout << endl << "energy loss of point in Gev " << point->GetEnergyLoss() << endl;
-//     cout << endl << "computing charge with Landau Gain " << fLandauGain << " Landau Sigma " << fLandauSigma << " Landau MPV " << fLandauMPV << endl;
     //Smear the energy on each track segment
-    
-    
      Double_t charge = fLandauRandom->Landau(fLandauGain,fLandauSigma/fLandauMPV);
 
 //      cout << endl << "charge " << charge << endl;
@@ -567,8 +569,6 @@ void CbmMvdSensorDigitizerTask::ProducePixelCharge(CbmMvdPoint* point) {
      * as SimTrackerHit
      */
 
-	
-	
     fCurrentTotalCharge = 0.0;
    
 
@@ -640,6 +640,30 @@ void CbmMvdSensorDigitizerTask::ProducePixelCharge(CbmMvdPoint* point) {
     	if (iyLo > lowerYArray[i]){iyLo = lowerYArray[i];}
     	if (iyUp < upperYArray[i]){iyUp = upperYArray[i];}
     }
+
+if (ixUp > fNPixelsX)
+	{
+	//cout << endl << "Found pixel out of the sensor at " << ixUp << endl;
+	ixUp = fNPixelsX;
+	}
+
+if (iyUp > fNPixelsY)
+	{
+	//cout << endl << "Found pixel out of the sensor at " << iyUp << endl;
+	iyUp = fNPixelsY;
+	}
+
+if (ixLo < 0)
+	{
+	//cout << endl << "Found pixel out of the sensor at " << ixLo << endl;
+	ixLo = 0;
+	}
+
+if (iyLo < 0)
+	{
+	//cout << endl << "Found pixel out of the sensor at " << iyLo << endl;
+	iyLo = 0;
+	}
 
      //cout << "Scanning from x= " << ixLo << " to " <<ixUp <<" and  y= "<<iyLo<< " to " << iyUp << endl;
     

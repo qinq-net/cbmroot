@@ -67,9 +67,7 @@ CbmMvdSensorFindHitTask::CbmMvdSensorFindHitTask()
     fAdcDynamic = 150;
     fAdcOffset  = 0;
     fAdcBits    = 1;
-    fHits       = new TClonesArray("CbmMvdHit",10000);
     fClusters   = new TClonesArray("CbmMvdCluster",10000);
-   // fMatches    = new TClonesArray("CbmMvdHitMatch",10000); //testing purposes
     fBranchName = "MvdHit";
     fBranchNameMatch= "MvdHitMatch";
    
@@ -111,9 +109,7 @@ CbmMvdSensorFindHitTask::CbmMvdSensorFindHitTask(const char* name, Int_t iMode,
     fAdcDynamic = 150;
     fAdcOffset  = 0;
     fAdcBits    = 1;
-    fHits       = new TClonesArray("CbmMvdHit",10000);
     fClusters   = new TClonesArray("CbmMvdCluster",10000);
-    //fMatches    = new TClonesArray("CbmMvdHitMatch",10000); //testing purposes
     fBranchName = "MvdHit";
     fBranchNameMatch= "MvdHitMatch";
    
@@ -198,12 +194,6 @@ void CbmMvdSensorFindHitTask::Init(CbmMvdSensor* mysensor) {
 initialized = kTRUE;
 
    //cout << "-Finished- " << GetName() << ": Initialisation of sensor " << fSensor->GetName() << endl;
- 
-
-   
-    
-
-
 }
 // -------------------------------------------------------------------------
 
@@ -968,7 +958,7 @@ Int_t CbmMvdSensorFindHitTask::GetAdcCharge(Float_t charge)
 void CbmMvdSensorFindHitTask::Reset() {
     fHits->Clear("C");
     fClusters->Clear("C");
-   // fMatches->Clear("C");
+    fMatches->Clear("C");
 }
 
 // -------------------------------------------------------------------------

@@ -153,6 +153,8 @@ public:
     Int_t fCurrentLayer;
     Int_t fEvent;
     Int_t fVolumeId;
+    Int_t fNPixelsX;
+    Int_t fNPixelsY;
    
     TClonesArray* fPixelCharge;
     
