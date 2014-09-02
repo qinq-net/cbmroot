@@ -117,6 +117,7 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
     kfVertex = CbmKFVertex(*fPrimVtx);
   
   vector<L1FieldRegion> vField;
+//   fitter.Fit(vRTracks, pdg);
   fitter.GetChiToVertex(vRTracks, vField, vChiToPrimVtx, kfVertex, -3);
   
   KFPTrackVector tracks;
@@ -234,7 +235,7 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
     primVtx_tmp.SetNContributors( 0 );
     primVtx_tmp.SetChi2( -100 );
 
-    vector<short int> pvTrackIds;
+    vector<int> pvTrackIds;
     KFVertex pv(primVtx_tmp);
     fTopoReconstructor->AddPV(pv, pvTrackIds);
   }
