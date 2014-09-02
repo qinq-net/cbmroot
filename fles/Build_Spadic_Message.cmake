@@ -31,7 +31,6 @@ Set(SRCS
 spadic/message/message.c
 spadic/message/message_reader.c
 spadic/message/wrap/cpp/Message.cpp
-spadic/timeslice/TimesliceReader.cpp
 )
 
 
@@ -39,13 +38,4 @@ Set(LIBRARY_NAME spadicMessage)
 Set(DEPENDENCIES)
 
 GENERATE_LIBRARY()
-
-Set(SRCS
-spadic/timeslice/demo/timeslice_reader.cpp
-)
-
-Set(EXE_NAME timeslice_reader)
-Set(DEPENDENCIES fles_ipc flib_dpb boost_thread boost_system boost_serialization spadicMessage)
-
-GENERATE_EXECUTABLE()
 
