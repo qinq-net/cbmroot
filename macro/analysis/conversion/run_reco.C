@@ -27,7 +27,7 @@ void run_reco(Int_t nEvents = 2, Int_t mode = 0, Int_t file_nr = 1)
 	TString recoFile ="";
 	
 	
-	TString outName = "urqmdtest3";
+	TString outName = "tomo_0to60deg";
 	if(mode == 1) {	// tomography
 		mcFile = "/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".mc.0001.root";
 		parFile = "/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".param.0001.root";

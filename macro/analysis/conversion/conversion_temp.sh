@@ -1,7 +1,11 @@
 #!/bin/bash
 
-export NOFEVENTS=1000
-export mode=2
+# this macro makes a copy of the run_sim.C, run_reco.C and run_analysis.C with a different name (just added a timestamp there)
+# and executes these copies. after finishing all three steps the copies will be deleted after each step.
+# the aim of this was to be able to simultaneously work/modify the three run_*.C macros, while another analysis is still running
+
+export NOFEVENTS=10000
+export mode=1
 
 DATE=$(date +"%H%M%S")
 

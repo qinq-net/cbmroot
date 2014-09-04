@@ -34,7 +34,7 @@ void run_sim(Int_t nEvents = 2, Int_t mode = 0, Int_t file_nr = 1)
 	TString magnetGeom = "magnet/magnet_v12a.geo";
 	TString mvdGeom = "";
 	TString stsGeom = "sts/sts_v13d.geo.root";
-	TString richGeom= "rich/rich_v14a.root";
+	TString richGeom= "rich/rich_v14b.root";
 	TString trdGeom = "trd/trd_v13g.geo.root";
 	TString tofGeom = "tof/tof_v13b.geo.root";
 	TString ecalGeom = "";
@@ -51,7 +51,7 @@ void run_sim(Int_t nEvents = 2, Int_t mode = 0, Int_t file_nr = 1)
 	Double_t fieldScale =  1.0; 	// field scaling factor
 	
 	
-	TString outName = "urqmdtest3";
+	TString outName = "tomo_0to60deg";
 	if(mode == 1) {	// tomography
 		parFile = "/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".param.0001.root";
 		outFile = "/common/home/reinecke/CBM-Simulationen/outputs/tomography." + outName + ".mc.0001.root";
@@ -217,10 +217,11 @@ void run_sim(Int_t nEvents = 2, Int_t mode = 0, Int_t file_nr = 1)
    }
    
 	if (tomography == "yes") {
-		FairBoxGenerator* boxGen1 = new FairBoxGenerator(22, 300); //22 = gammas, nof = 400
+		FairBoxGenerator* boxGen1 = new FairBoxGenerator(22, 300); //22 = gammas, nof = 300
 		boxGen1->SetPtRange(0.,3.);
 		boxGen1->SetPhiRange(0.,360.);
-		boxGen1->SetThetaRange(2.5,25.);
+	//	boxGen1->SetThetaRange(2.5,25.);	// normal acceptance
+		boxGen1->SetThetaRange(0.,60.);	// increased acceptance to "illuminate" the whole detector
 		boxGen1->SetCosTheta();
 		boxGen1->Init();
 		primGen->AddGenerator(boxGen1);	

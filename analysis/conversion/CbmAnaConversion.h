@@ -23,6 +23,7 @@ class TH3D;
 class TClonesArray;
 class CbmRichRing;
 class TCanvas;
+class TRandom3;
 
 #include <vector>
 #include <map>
@@ -76,6 +77,7 @@ public:
         
 	Double_t	Invmass_2gammas(const CbmMCTrack* gamma1, const CbmMCTrack* gamma2);
 	Double_t	Invmass_2particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2);
+	Double_t	SmearValue(Double_t value);
 	Double_t	Invmass_4particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2, const CbmMCTrack* mctrack3, const CbmMCTrack* mctrack4);
 	Double_t	Invmass_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 
@@ -103,6 +105,8 @@ public:
    void		SetMode(int mode);
    void		InvariantMassMC_all();
    Int_t	NofDaughters(Int_t motherId);
+   
+   void		ReconstructGamma();
 
 
 
@@ -115,8 +119,11 @@ private:
    TH1D * fhNofElSec;
    TH1D * fhNofElAll;
    TH1D * fhElectronSources;
-   TH1D * fhNofPi0_perEvent;
-   TH1D * fhNofPi0_perEvent_cut;
+   TH1D * fhNofPi0_perEvent;		// number of pi0 per event
+   TH1D * fhNofPi0_perEvent_cut;	// number of pi0 with cut on z-axis (z <= 70cm, i.e. generated before 70cm)
+   TH1D * fhPi0_z;					// number of pi0 per z-bin
+   TH1D * fhPi0_z_cut;				// number of pi0 per z-bin with cut on acceptance (25° via x^2 + y^2 <= r^2 with r = z*tan 25°)
+   TH1D * fhElectronsFromPi0_z;		//
    
    TH3D * fhTomography;
    TH2D * fhTomography_XZ;
@@ -164,8 +171,18 @@ private:
    TH1D * fhMomentumtest2;
    TH1D * fhMomentumtest3;
    TH1D * fhMomentumtest4;
+   TH1D * fhMomentumtest5;
+   TH2D * fhMomentumtest5vs;
+   TH1D * fhMomentumtest6;
+   TH2D * fhMomentumtest6vs;
+   TH1D * fhMomentumtest7;
+   TH2D * fhMomentumtest7vs;
+   
+   TH1D * fhInvariantMass_pi0epem;
    
    TH1D * fhMCtest;
+   
+   TH1D * fhSearchGammas;
 
    TClonesArray* fRichPoints;
    TClonesArray* fMcTracks;
@@ -180,6 +197,8 @@ private:
    int testint;
    
    Int_t fAnalyseMode;
+   
+   
    
    
    
