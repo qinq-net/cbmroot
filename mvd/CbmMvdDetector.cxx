@@ -187,6 +187,7 @@ if(!initialized)
   foutputDigis = new TClonesArray("CbmMvdDigi",1000);
   foutputDigiMatchs = new TClonesArray("CbmMvdDigiMatch", 1000);
   foutputHits = new TClonesArray("CbmMvdHit",1000);
+  foutputHitMatchs = new TClonesArray("CbmMvdHitMatch", 1000);
   }
   for(Int_t j = 0; j < nSensors; j++)
     {
@@ -371,6 +372,26 @@ TClonesArray* CbmMvdDetector::GetOutputDigiMatchs(){
 return(foutputDigiMatchs);
 }
 //-----------------------------------------------------------------------  
+
+//-----------------------------------------------------------------------
+TClonesArray* CbmMvdDetector::GetOutputHitMatchs(){
+  
+   /**
+   * method used to write digiMatches to hd
+   */
+   
+  Int_t nSensors = fSensorArray->GetEntriesFast();
+  CbmMvdSensor* sensor;
+  
+  for(Int_t i=0; i<nSensors; i++){
+    sensor=(CbmMvdSensor*)fSensorArray->At(i);
+    fHitPlugin = sensor->GetHitPlugin();
+    foutputHitMatchs->AbsorbObjects(sensor->GetOutputMatch(fHitPlugin));
+  }
+
+return(foutputHitMatchs);
+}
+//----------------------------------------------------------------------- 
 
 //-----------------------------------------------------------------------
 

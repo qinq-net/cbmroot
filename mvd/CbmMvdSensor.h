@@ -89,6 +89,7 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   void TopToPixel       (Double_t* lab, Int_t &pixelNumberX, Int_t &pixelNumberY);
   Int_t GetFrameNumber  (Int_t pixelNumberY, Double_t absoluteTime);
   Int_t GetDigiPlugin () {return fDigiPlugin;};
+  Int_t GetHitPlugin () {return fHitPlugin;};
   
   void SetAlignment(TGeoHMatrix* alignmentMatrix);
   TGeoHMatrix* GetAlignmentCorr(){return fAlignmentCorr;};
@@ -140,10 +141,12 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   Int_t        fVolumeId;         // MC unique volume ID
   Int_t        fDetectorID;       // unique Detector ID
   Int_t        fDigiPlugin;
+  Int_t        fHitPlugin;
   TString      fVolName;	  // Name of the volume attached to this sensor
   TString      fNodeName;	  // full name of the volume (including path) of the volume
   TClonesArray* foutputDigis;
   TClonesArray* foutputDigiMatch;
+  TClonesArray* foutputHitMatch;
   TClonesArray* foutputBuffer;
   TClonesArray* fcurrentPoints;
   Double_t     fcurrentEventTime;

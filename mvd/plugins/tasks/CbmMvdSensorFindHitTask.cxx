@@ -431,8 +431,7 @@ void CbmMvdSensorFindHitTask::GenerateFakeDigis( Double_t pixelSizeX, Double_t p
 		 Int_t data[5]; 
 		 Float_t data2[5];
 		 
-		 CbmMvdDigiMatch* fakeDigiMatch=
-		       new ((*fDigiMatch)[nDigis]) CbmMvdDigiMatch(noise, -4, data, data, data2,data2, 0, -4, 0.);
+		
 		       
 		       
 		}
@@ -451,10 +450,10 @@ void CbmMvdSensorFindHitTask::CheckForNeighbours(vector<Int_t>* clusterArray, In
     CbmMvdDigi* seed = (CbmMvdDigi*)fInputBuffer->At(clusterArray->at(clusterDigi));
     //cout << endl << "pixel nr. " << clusterDigi << " is seed" << endl ;
     CbmMvdDigiMatch* seedMatch;
-    if (fUseMCInfo){seedMatch = (CbmMvdDigiMatch*)fDigiMatch->At(clusterArray->at(clusterDigi));}
+   
     
     CbmMvdDigi* digiOfInterest;
-    CbmMvdDigiMatch* digiMatchOfInterest;
+   
     	
     // Remove Seed Pixel from list of non-used pixels
     Int_t channelX=seed->GetPixelX();
@@ -653,7 +652,7 @@ void CbmMvdSensorFindHitTask::UpdateDebugHistos(vector<Int_t>* clusterArray, Int
       }
       
       if((relativeX-seedPixelOffset==0) && (relativeY-seedPixelOffset==0)) {//seed digiArray
-	centralDigiMatch = (CbmMvdDigiMatch*) fDigiMatch->At(clusterArray->at(k));
+	
 	if(centralDigiMatch){
 	  xCentralTrack=centralDigiMatch->GetDominatorX();
 	  yCentralTrack=centralDigiMatch->GetDominatorY();

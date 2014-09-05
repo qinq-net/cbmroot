@@ -433,7 +433,7 @@ void CbmMvd::ConstructRootGeometry() // added 05.05.14 by P. Sitzmann
 	}
       else
 	mother = "cave_1/pipevac1_0";
-cout << endl << "Try to find Geometry in " << mother << endl;
+cout << endl << "-I- Try to find Geometry in " << mother << endl;
 
 if ( gGeoManager->CheckPath(mother + "/Beamtimeosetupoobgnum_0"))
 	{
@@ -442,12 +442,12 @@ if ( gGeoManager->CheckPath(mother + "/Beamtimeosetupoobgnum_0"))
 	}
 else if (gGeoManager->CheckPath(mother + "/MVDoMistraloquero012oStationo150umodigi_0"))
 	{
-	cout << endl << "Found MVD with 3 Stations" << endl;
+	cout << "Found MVD with 3 Stations" << endl;
 	chois = 2;
 	}
 else if (gGeoManager->CheckPath(mother + "/MVDo0123ohoFPCoextoHSoSo0123_0"))
 	{
-	cout << endl << "Found MVD with 4 Stations" << endl;
+	cout << "-I- Found MVD with 4 Stations" << endl;
 	chois = 3;
 	}
 else 
@@ -533,7 +533,7 @@ case 2:
       }
 	break;
 case 3:
-	cout << endl << "Start Mvd with 4 Stations" << endl;
+	
 
   for(Int_t StatNr = 0; StatNr < 4; StatNr++)
       {
@@ -596,6 +596,8 @@ case 3:
 		 }
 	    }
       }
+	if (iStation > 1)
+		cout << "-I- Finished building MVD Geometry" << endl << endl;
 	break;
 default:
 	cout << endl << "Start old Geometry" << endl;
@@ -643,6 +645,7 @@ Bool_t CbmMvd::CheckIfSensitive(std::string name)
   }
   else if(tsname.EndsWith("-P0"))    
       {
+	if(fVerboseLevel>1)
       std::cout<<"*** Register "<<tsname<<" as active volume."<<endl;
       
       return kTRUE;

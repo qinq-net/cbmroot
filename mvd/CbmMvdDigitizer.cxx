@@ -311,7 +311,7 @@ void CbmMvdDigitizer::BuildEvent() {
 
   // ----- Then treat event pileup
   if (fNPileup>0) {
- 
+   
     // --- Vector of available background events from pile-up. 
     // --- Each event is used only once.
     Int_t nBuffer = fPileupManager->GetNEvents();
@@ -343,7 +343,7 @@ void CbmMvdDigitizer::BuildEvent() {
 			   
   // ----- Finally, treat delta electrons
   if (fNDeltaElect>0) {
- 
+    
     // --- Vector of available delta events.
     // --- Each event is used only once.
     Int_t nDeltaBuffer = fDeltaManager->GetNEvents();
@@ -374,7 +374,7 @@ void CbmMvdDigitizer::BuildEvent() {
 
 
   // ----- At last: Screen output
-  if ( fVerbose > 1 ) cout << endl << "-I- " << GetName() << "::BuildEvent: original "
+  cout << endl << "-I- " << GetName() << "::BuildEvent: original "
 			   << nOrig << ", pileup " << nPile << ", delta "
 			   << nElec << ", total " << nOrig+nPile+nElec
 			   << " MvdPoints" << endl;

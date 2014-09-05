@@ -11,6 +11,7 @@
 #include "CbmMvdDetector.h"
 #include "TGeoManager.h"
 
+
 using namespace std;
 
 
@@ -49,6 +50,7 @@ private:
  
  TClonesArray* fInputDigis;
  TClonesArray* fHits;
+ TClonesArray* fHitMatch;
 
  UInt_t fHitfinderPluginNr;
 

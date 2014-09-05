@@ -72,6 +72,9 @@ public:
  /** Intialisation **/
     void Init(CbmMvdSensor* mySensor);
 
+    TClonesArray* GetMatchArray() {return fMatches;};
+   
+
     /** Accessors **/
     //Double_t GetSigmaX()        const { return fSigmaX;     };
 
@@ -107,7 +110,7 @@ public:
 
 
     //protected:
-public:
+protected:
 
     // ----------   Protected data members  ------------------------------------
 
@@ -121,7 +124,7 @@ public:
     TClonesArray* fHits;
     TClonesArray* fClusters;
     TClonesArray* fMatches;
-    TClonesArray* fDigiMatch;
+   
 
     TObjArray* fPixelChargeHistos;
     TObjArray* fTotalChargeInNpixelsArray;

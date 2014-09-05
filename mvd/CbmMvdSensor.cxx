@@ -185,6 +185,7 @@ void CbmMvdSensor::Init(){
 {
   foutputDigis = new TClonesArray("CbmMvdDigi",1000);
   foutputDigiMatch = new TClonesArray("CbmMvdDigiMatch", 1000);
+  foutputHitMatch = new TClonesArray("CbmMvdHitMatch", 1000);
   foutputBuffer = new TClonesArray("CbmMvdHit", 1000);
   //cout << endl << " init TClonesArrays" << endl;
  }
@@ -242,7 +243,7 @@ void CbmMvdSensor::Init(){
 		findertask = (CbmMvdSensorFindHitTask*)fPluginArray->At(i);
 		if(! findertask->IsInit())
                		 findertask->Init(this); 
-		 
+		 fHitPlugin = i;
 	       }
      }
      }
@@ -351,6 +352,7 @@ if(ana)
 	}
 foutputDigis->Clear();
 foutputDigiMatch->Clear();
+foutputHitMatch->Clear();
 foutputBuffer->Clear();
 
 
@@ -468,12 +470,24 @@ TClonesArray* CbmMvdSensor::GetOutputMatch(Int_t nPlugin){
 if (nPlugin<fPluginArray->GetEntriesFast())
 {
   CbmMvdSensorPlugin* plugin=(CbmMvdSensorPlugin*)fPluginArray->At(nPlugin);
-  foutputDigiMatch->AbsorbObjects(plugin->GetMatchArray());
-  return (foutputDigiMatch);
+  if (nPlugin == fDigiPlugin)
+	{
+	foutputDigiMatch->AbsorbObjects(plugin->GetMatchArray());
+	return (foutputDigiMatch);
+	}
+  else if (nPlugin == fHitPlugin)
+	{
+	foutputHitMatch->AbsorbObjects(plugin->GetMatchArray());
+	return (foutputHitMatch);
+        }
+  else
+	return NULL;
+  
  }
   else {cout << endl << "Error nPlugin to high" << endl;}
 }    
 // ------------------------------------------------------------------------- 
+
 
 // -------------------------------------------------------------------------
 TClonesArray* CbmMvdSensor::GetOutputBuffer(){

@@ -68,6 +68,7 @@ class CbmMvdDetector : public TNamed
 
   TClonesArray* GetOuput(){;}
   TClonesArray* GetOutputHits();
+  TClonesArray* GetOutputHitMatchs();
   TClonesArray* GetOutputDigis();
   TClonesArray* GetOutputDigiMatchs();
   TClonesArray* GetOutputArray(Int_t nPlugin);
@@ -109,10 +110,12 @@ private:
   TClonesArray* foutputHits;
   TClonesArray* foutputDigis;
   TClonesArray* foutputDigiMatchs;
+  TClonesArray* foutputHitMatchs;
   TClonesArray* fcurrentEvent;
   /** Data members */
   
   Int_t fDigiPlugin; 
+  Int_t fHitPlugin;
   
   
   static CbmMvdDetector* fInstance;

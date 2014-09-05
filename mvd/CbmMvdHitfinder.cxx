@@ -54,7 +54,10 @@ if(fInputDigis)
    fHits->AbsorbObjects(fDetector->GetOutputHits()); 
    cout << "Total of " << fHits->GetEntriesFast() << " hits found" << endl;
    cout << "Finished writing Hits" << endl;
-    cout << "//----------------------------------------//" << endl;
+   cout << "Start writing HitsMatch" << endl;  
+   fHitMatch->AbsorbObjects(fDetector->GetOutputHitMatchs()); 
+   cout << "Finished writing Hits" << endl;
+    cout << "//----------------------------------------//" << endl << endl;
    }
    
 }
@@ -81,6 +84,9 @@ InitStatus CbmMvdHitfinder::Init() {
     // **********  Register output array
     fHits = new TClonesArray("CbmMvdHit", 10000);
     ioman->Register("MvdHits", "MvdHit", fHits, kTRUE);
+
+    fHitMatch = new TClonesArray("CbmMvdHitMatch", 10000);
+    ioman->Register("MvdHitMatchs", "MvdHitMatch", fHitMatch, kTRUE);
 
     fDetector = CbmMvdDetector::Instance();
     if(!fDetector)

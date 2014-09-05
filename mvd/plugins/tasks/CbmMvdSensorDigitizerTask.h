@@ -68,9 +68,9 @@ class CbmMvdSensorDigitizerTask : public CbmMvdSensorTask
   void Exec();
   void ExecChain();
   
-  virtual TClonesArray* GetOutputArray() {return fOutputBuffer;};
-  virtual TClonesArray* GetMatchArray() {return fDigiMatch;};
-  virtual TClonesArray* GetWriteArray() {return fDigis;};
+  TClonesArray* GetOutputArray() {return fOutputBuffer;};
+  TClonesArray* GetMatchArray() {return fDigiMatch;};
+  TClonesArray* GetWriteArray() {return fDigis;};
   
   InitStatus ReadSensorInformation();
   void ProduceIonisationPoints(CbmMvdPoint* point);
