@@ -32,6 +32,7 @@ ipc/System.cpp
 ipc/TimesliceInputArchive.cpp
 ipc/TimesliceReceiver.cpp
 ipc/TimesliceView.cpp
+ipc/MicrosliceContainer.cpp
 )
 
 
