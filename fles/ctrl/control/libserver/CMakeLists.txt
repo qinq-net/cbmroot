@@ -25,6 +25,6 @@ ServSeqItem.cpp
 
 
 Set(LIBRARY_NAME cbmnetcntlserver)
-Set(DEPENDENCIES boost_system zmq cbmnetutil)
+Set(DEPENDENCIES boost_system boost_thread zmq cbmnetutil)
 
 GENERATE_LIBRARY()
