@@ -27,12 +27,13 @@ ${Boost_LIBRARY_DIRS}
 Link_Directories( ${LINK_DIRECTORIES})
 
 Set(SRCS
+ipc/MicrosliceContainer.cpp
 ipc/StorableTimeslice.cpp
 ipc/System.cpp
+ipc/Timeslice.cpp
 ipc/TimesliceInputArchive.cpp
 ipc/TimesliceReceiver.cpp
 ipc/TimesliceView.cpp
-ipc/MicrosliceContainer.cpp
 )
 
 
