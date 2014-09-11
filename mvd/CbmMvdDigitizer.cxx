@@ -232,7 +232,7 @@ void CbmMvdDigitizer::GetMvdGeometry() {
 			    
 			    volId = gGeoManager->GetUID(volName);
 			   
-			
+                           			
 			    if (volId > -1 ) 
 				{
 			    for(Int_t SegmentNr = 0; SegmentNr < 100; SegmentNr++)
@@ -259,7 +259,7 @@ void CbmMvdDigitizer::GetMvdGeometry() {
 				Bool_t nodeFound = gGeoManager->CheckPath(nodeName.Data());
 				if (  nodeFound ) 
 				    {
-				   
+			
 				    Detector->AddSensor (volName, volName, nodeName, new CbmMvdMimosa26AHR, iStation, volId, 0.0);     
 				    iStation++;
 				    break;

@@ -330,7 +330,7 @@ for (Int_t i=0; i<fPixelCharge->GetEntriesFast(); i++)
 						    pixel->GetX(), pixel->GetY(), pixel->GetCharge(),
 						    fPixelSizeX, fPixelSizeY, pixel->GetTime(), 
 						    pixel->GetFrame());
-		//cout << endl << " new Digi at " <<  pixel->GetX() << " " << pixel->GetY() << endl;
+	//	cout << endl << " new Digi at " <<  pixel->GetX() << " " << pixel->GetY() << endl;
 		new ((*fOutputBuffer)[nDigis]) CbmMvdDigi (fSensor->GetStationNr(),
 						    pixel->GetX(), pixel->GetY(), pixel->GetCharge(),
 						    fPixelSizeX, fPixelSizeY, pixel->GetTime(), 
@@ -641,29 +641,6 @@ void CbmMvdSensorDigitizerTask::ProducePixelCharge(CbmMvdPoint* point) {
     	if (iyUp < upperYArray[i]){iyUp = upperYArray[i];}
     }
 
-if (ixUp > fNPixelsX)
-	{
-	//cout << endl << "Found pixel out of the sensor at " << ixUp << endl;
-	ixUp = fNPixelsX;
-	}
-
-if (iyUp > fNPixelsY)
-	{
-	//cout << endl << "Found pixel out of the sensor at " << iyUp << endl;
-	iyUp = fNPixelsY;
-	}
-
-if (ixLo < 0)
-	{
-	//cout << endl << "Found pixel out of the sensor at " << ixLo << endl;
-	ixLo = 0;
-	}
-
-if (iyLo < 0)
-	{
-	//cout << endl << "Found pixel out of the sensor at " << iyLo << endl;
-	iyLo = 0;
-	}
 
      //cout << "Scanning from x= " << ixLo << " to " <<ixUp <<" and  y= "<<iyLo<< " to " << iyUp << endl;
     

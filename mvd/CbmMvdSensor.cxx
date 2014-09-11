@@ -122,10 +122,10 @@ Int_t CbmMvdSensor::ReadSensorGeometry(TString volName, TString nodeName) {
       
       //fDetectorID = volume->GetIndex(volume->GetNode(nodeName));
       //cout << fDetectorID << endl;
-      //cout<< "This is the volume:" <<endl;
-      //volume->Dump();
-      //cout<< "This is the shape:" << endl;
-      //fShape->Dump();
+     // cout<< "This is the volume:" <<endl;
+     // volume->Dump();
+     // cout<< "This is the shape:" << endl;
+     // fShape->Dump();
   }
   
   
@@ -159,7 +159,7 @@ Int_t CbmMvdSensor::ReadSensorGeometry(TString volName, TString nodeName) {
     
     
     fMCMatrix=(TGeoHMatrix*)(gGeoManager->GetCurrentMatrix())->Clone(volName+"_MC_Matrix");
-    //fMCMatrix->Print();
+    fMCMatrix->Print();
     
     fMCMatrix->SetName(volName+"_MC_Matrix");
         
