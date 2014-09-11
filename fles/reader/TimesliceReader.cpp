@@ -12,8 +12,9 @@ struct TimesliceReader::TimesliceReader_ {
     void add_mc(const flib_dpb::MicrosliceContents& mc)
     {
         for (auto& dtm : mc.dtms()) {
-            auto& reader = _readers[dtm.data[0]];
-            reader.add_buffer(dtm.data+1, dtm.size-1);
+            // TODO distinguish same source address from different components
+            auto& reader = _readers[dtm.addr];
+            reader.add_buffer(dtm.data, dtm.size);
         }
     }
 };
@@ -32,9 +33,13 @@ void TimesliceReader::add_component(const fles::Timeslice& ts, size_t component)
 {
     for (size_t m {0}; m < ts.num_microslices(component); m++) {
         auto& desc = ts.descriptor(component, m);
-        auto p = ts.content(component, m);
-        // TODO check same source address from different components
-        _t->add_mc({p, desc.size});
+        auto *content = ts.content(component, m);
+
+        // interpret raw bytes as 16-bit unsigned integers, assuming the
+        // native byte order is correct
+        auto p = reinterpret_cast<const uint16_t *>(content);
+        auto s = desc.size * sizeof(*content) / sizeof(*p);
+        _t->add_mc({p, s});
     }
 }
 
