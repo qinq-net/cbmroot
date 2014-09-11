@@ -65,7 +65,7 @@ Set(INCLUDE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/include")
 
 Set(VMCWORKDIR ${CBMROOT_SOURCE_DIR})
 
-Option(USE_PATH_INFO "Information from PATH and LD_LIBRARY_PATH are used."OFF)
+Option(USE_PATH_INFO "Information from PATH and LD_LIBRARY_PATH are used." OFF)
 If(USE_PATH_INFO)
   Set(PATH "$PATH")
   If (APPLE)
@@ -124,6 +124,7 @@ else(CBMROOT_MINIMAL)
   find_package(TBB)
   find_package(SSE)
   find_package(IWYU)
+  find_package(ZeroMQ)
 # switch of the checking for the RuleChecker, since there is a problem
 # with JAVA on some systems which resulting in endless hanging of CMake 
 #  find_package(RuleChecker)
@@ -244,6 +245,9 @@ Else()
   Else()
     Message(STATUS "C++11 support found. Build FLES_IPC library.")
     add_subdirectory(fles)
+    add_subdirectory(fairmq)
+    add_subdirectory(fairmq/MQ)
+    add_subdirectory(tutorials/MQTest)
   EndIf()
 EndIf()
 
