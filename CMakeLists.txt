@@ -247,7 +247,7 @@ Else()
     add_subdirectory(fles)
     add_subdirectory(fairmq)
     add_subdirectory(fairmq/MQ)
-    add_subdirectory(tutorials/MQTest)
+#    add_subdirectory(tutorials/MQTest)
   EndIf()
 EndIf()
 
