@@ -29,7 +29,7 @@ class CbmMvdHitMatch: public CbmMatch
   /** Constructor with all parameters **/
   CbmMvdHitMatch(Double_t weight, Int_t index, Int_t entry = -1, Int_t file = -1);
 
-  CbmMvdHitMatch(Int_t par1, Int_t par2, Int_t par3, Int_t par4, Int_t par5); //quick solution for error in CbmMvdHitProducer
+  CbmMvdHitMatch(Int_t par1, Int_t par2, Int_t par3, Int_t par4, Int_t par5) { ; } //quick solution for error in CbmMvdHitProducer
    
 
 
@@ -45,15 +45,13 @@ class CbmMvdHitMatch: public CbmMatch
 
   Int_t GetPointId() const { return 0; }
   Int_t GetTrackId() const { return 0; }
-  Int_t GetNMerged();
-  
-  void AddMerged();
+  Int_t GetNMerged() const { return 0; }  
+  void AddMerged() { ; }
  
   
 
   /** Reset data members **/
-  void Clear();
-
+  void Clear() { ; }
 
  private:
 

@@ -43,15 +43,16 @@ public:
   Float_t GetWeight()     const { return fWeight; }
 
   Int_t GetNContributors() { return GetNofLinks();};
-  Int_t GetDominatorX();
-  Int_t GetDominatorY();
-  Int_t GetDominatorPointID();
-  Int_t GetDominatorTrackID();
+
+  Int_t GetDominatorX() { return 0; }
+  Int_t GetDominatorY() { return 0; }
+  Int_t GetDominatorPointID() { return 0; }
+  Int_t GetDominatorTrackID() { return 0; }
 
 
 
   /** Reset data members **/
-  void Clear();
+//  void Clear();
 
 
  private:
