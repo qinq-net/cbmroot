@@ -1,5 +1,5 @@
-#ifndef CBMLITUTILS_H_
-#define CBMLITUTILS_H_
+#ifndef CBMUTILS_H_
+#define CBMUTILS_H_
 
 class TCanvas;
 
@@ -11,7 +11,7 @@ class TCanvas;
 using std::string;
 using std::vector;
 
-namespace lit
+namespace Cbm
 {
 
 template <class T>
@@ -60,4 +60,4 @@ vector<string> Split(
 		char delimiter);
 }
 
-#endif /* CBMLITUTILS_H_ */
+#endif /* CBMUTILS_H_ */

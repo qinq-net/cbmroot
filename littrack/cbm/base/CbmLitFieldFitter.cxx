@@ -4,7 +4,7 @@
  * \date 2009
  **/
 #include "base/CbmLitFieldFitter.h"
-#include "../std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 
 #include "FairField.h"
 #include "FairRunAna.h"
@@ -971,7 +971,7 @@ void CbmLitFieldFitter::FitSlice(
    int nofParams = theFCN->GetPolynom()->GetNofCoefficients();
 
    for (int i = 0; i < nofParams; i++) {
-      std::string ss = "c" + lit::ToString<int>(i);
+      std::string ss = "c" + Cbm::ToString<int>(i);
       theMinuit.SetParameter(i, ss.c_str(), 0., 0.1, 1., -1.);
    }
    theMinuit.CreateMinimizer();

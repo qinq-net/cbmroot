@@ -9,7 +9,7 @@
 
 #include "CbmDrawHist.h"
 #include "CbmHistManager.h"
-#include "std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 
 #include <string>
 #include <iostream>
@@ -39,7 +39,7 @@
 ClassImp(CbmAnaDielectronTaskDraw);
 
 using namespace std;
-using namespace lit;
+using namespace Cbm;
 using boost::assign::list_of;
 CbmAnaDielectronTaskDraw::CbmAnaDielectronTaskDraw()
   :TObject(),
@@ -188,7 +188,7 @@ void CbmAnaDielectronTaskDraw::DrawEfficiencyOnHist(
 {
    string effTxt = "";
    if (h2->GetEntries() != 0){
-      effTxt = lit::NumberToString<Double_t>(((Double_t)h1->GetEntries()/h2->GetEntries()*100.), 1);
+      effTxt = Cbm::NumberToString<Double_t>(((Double_t)h1->GetEntries()/h2->GetEntries()*100.), 1);
    }
    TText *t = new TText(xPos, yPos, effTxt.c_str());
    t->SetTextSize(0.1);
@@ -653,7 +653,7 @@ void CbmAnaDielectronTaskDraw::Draw2DCut(
       DrawH2(H2( hist + "_"+ CbmAnaLmvmNames::fSourceTypes[i] ));
       double nofPerEvent = H2( hist + "_"+ CbmAnaLmvmNames::fSourceTypes[i] )->GetEntries()/(double)fNofEvents;
       cout << hist << "_" << CbmAnaLmvmNames::fSourceTypes[i] << " = " << nofPerEvent << endl;
-      DrawTextOnHist( ( lit::NumberToString(nofPerEvent, 2) + "/ev."), 0.1, 0.9, 0.5, 0.99);
+      DrawTextOnHist( ( Cbm::NumberToString(nofPerEvent, 2) + "/ev."), 0.1, 0.9, 0.5, 0.99);
       DrawTextOnHist(CbmAnaLmvmNames::fSourceTypesLatex[i], 0.6, 0.89, 0.7, 0.99);
       Draw2DCutTriangle(cutCrossX, cutCrossY);
       projX.push_back( H2( hist + "_"+ CbmAnaLmvmNames::fSourceTypes[i] )->ProjectionX() );
@@ -861,7 +861,7 @@ void CbmAnaDielectronTaskDraw::DrawMinvSource(
    for (int i = 0; i < CbmAnaLmvmNames::fNofBgPairSources; i++){
       hists[i]->SetMinimum(1e-8);
       legend->AddEntry(hists[i],
-            (CbmAnaLmvmNames::fBgPairSourceLatex[i]  + "(" +lit::NumberToString(100. * hists[i]->GetEntries() / nofBg, 1)+ "%)").c_str(), "f");
+            (CbmAnaLmvmNames::fBgPairSourceLatex[i]  + "(" +Cbm::NumberToString(100. * hists[i]->GetEntries() / nofBg, 1)+ "%)").c_str(), "f");
    }
    legend->SetFillColor(kWhite);
    legend->Draw();
@@ -915,10 +915,10 @@ void CbmAnaDielectronTaskDraw::DrawMinvSourceAll()
          ( H1("fh_bg_truematch_el_minv_" + CbmAnaLmvmNames::fAnaSteps[kPtCut]) )
          ( H1("fh_bg_truematch_notel_minv_" + CbmAnaLmvmNames::fAnaSteps[kPtCut]) )
          ( H1("fh_bg_mismatch_minv_" + CbmAnaLmvmNames::fAnaSteps[kPtCut]) ),
-         list_of("true match (" + lit::NumberToString(100. * trueMatch / nofBg, 1) + "%)")
-         ("true match (e^{#pm}) (" + lit::NumberToString(100. * trueMatchEl / nofBg, 1)+ "%)")
-         ("true match (not e^{#pm}) (" + lit::NumberToString(100. * trueMatchNotEl / nofBg, 1)+ "%)")
-         ("mismatch (" + lit::NumberToString(100. * misMatch / nofBg)+ "%)"),
+         list_of("true match (" + Cbm::NumberToString(100. * trueMatch / nofBg, 1) + "%)")
+         ("true match (e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchEl / nofBg, 1)+ "%)")
+         ("true match (not e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchNotEl / nofBg, 1)+ "%)")
+         ("mismatch (" + Cbm::NumberToString(100. * misMatch / nofBg)+ "%)"),
          kLinear, kLinear, true, 0.4, 0.7, 0.99, 0.99);
    }
 }
@@ -937,12 +937,12 @@ void CbmAnaDielectronTaskDraw::DrawElPiMomHis()
    H1("fh_pi_mom_mc")->SetMinimum(2);
    DrawH1( list_of(H1("fh_pi_mom_mc"))(H1("fh_pi_mom_acc"))(H1("fh_pi_mom_rec"))(H1("fh_pi_mom_rec_only_sts"))
          (H1("fh_pi_mom_rec_sts_rich_trd"))(H1("fh_pi_mom_rec_sts_rich_trd_tof")),
-         list_of("MC ("+lit::NumberToString(H1("fh_pi_mom_mc")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Acc (" + lit::NumberToString(H1("fh_pi_mom_acc")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Rec (" +  lit::NumberToString(H1("fh_pi_mom_rec")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Rec only STS (" + lit::NumberToString(H1("fh_pi_mom_rec_only_sts")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Rec STS-RICH-TRD (" + lit::NumberToString(H1("fh_pi_mom_rec_sts_rich_trd")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Rec STS-RICH-TRD-TOF (" + lit::NumberToString(H1("fh_pi_mom_rec_sts_rich_trd_tof")->GetEntries()/fNofEvents, 2) +" per event)"),
+         list_of("MC ("+Cbm::NumberToString(H1("fh_pi_mom_mc")->GetEntries()/fNofEvents, 2) +" per event)")
+         ("Acc (" + Cbm::NumberToString(H1("fh_pi_mom_acc")->GetEntries()/fNofEvents, 2) +" per event)")
+         ("Rec (" +  Cbm::NumberToString(H1("fh_pi_mom_rec")->GetEntries()/fNofEvents, 2) +" per event)")
+         ("Rec only STS (" + Cbm::NumberToString(H1("fh_pi_mom_rec_only_sts")->GetEntries()/fNofEvents, 2) +" per event)")
+         ("Rec STS-RICH-TRD (" + Cbm::NumberToString(H1("fh_pi_mom_rec_sts_rich_trd")->GetEntries()/fNofEvents, 2) +" per event)")
+         ("Rec STS-RICH-TRD-TOF (" + Cbm::NumberToString(H1("fh_pi_mom_rec_sts_rich_trd_tof")->GetEntries()/fNofEvents, 2) +" per event)"),
          kLinear, kLog, 0.1, 0.3, 0.99, 0.99);
 
    //primary pions vertex < 0.1 cm
@@ -957,12 +957,12 @@ void CbmAnaDielectronTaskDraw::DrawElPiMomHis()
    H1("fh_piprim_mom_mc")->SetMinimum(2);
    DrawH1( list_of(H1("fh_piprim_mom_mc"))(H1("fh_piprim_mom_acc"))(H1("fh_piprim_mom_rec"))(H1("fh_piprim_mom_rec_only_sts"))
          (H1("fh_piprim_mom_rec_sts_rich_trd"))(H1("fh_piprim_mom_rec_sts_rich_trd_tof")),
-         list_of("MC ("+lit::NumberToString(H1("fh_piprim_mom_mc")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Acc (" + lit::NumberToString(H1("fh_piprim_mom_acc")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Rec (" +  lit::NumberToString(H1("fh_piprim_mom_rec")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Rec only STS (" + lit::NumberToString(H1("fh_piprim_mom_rec_only_sts")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Rec STS-RICH-TRD (" + lit::NumberToString(H1("fh_piprim_mom_rec_sts_rich_trd")->GetEntries()/fNofEvents, 2) +" per event)")
-         ("Rec STS-RICH-TRD-TOF (" + lit::NumberToString(H1("fh_piprim_mom_rec_sts_rich_trd_tof")->GetEntries()/fNofEvents, 2) +" per event)"),
+         list_of("MC ("+Cbm::NumberToString(H1("fh_piprim_mom_mc")->GetEntries()/fNofEvents, 2) +" per event)")
+         ("Acc (" + Cbm::NumberToString(H1("fh_piprim_mom_acc")->GetEntries()/fNofEvents, 2) +" per event)")
+         ("Rec (" +  Cbm::NumberToString(H1("fh_piprim_mom_rec")->GetEntries()/fNofEvents, 2) +" per event)")
+         ("Rec only STS (" + Cbm::NumberToString(H1("fh_piprim_mom_rec_only_sts")->GetEntries()/fNofEvents, 2) +" per event)")
+         ("Rec STS-RICH-TRD (" + Cbm::NumberToString(H1("fh_piprim_mom_rec_sts_rich_trd")->GetEntries()/fNofEvents, 2) +" per event)")
+         ("Rec STS-RICH-TRD-TOF (" + Cbm::NumberToString(H1("fh_piprim_mom_rec_sts_rich_trd_tof")->GetEntries()/fNofEvents, 2) +" per event)"),
          kLinear, kLog, 0.1, 0.3, 0.99, 0.99);
 
    TCanvas *cPiNotAcc = CreateCanvas("lmvm_pi_mom_notacc", "lmvm_pi_mom_notacc", 800, 800);
@@ -1299,6 +1299,6 @@ void CbmAnaDielectronTaskDraw::DrawMvdAndStsHist()
 void CbmAnaDielectronTaskDraw::SaveCanvasToImage()
 {
    for (int i = 0; i < fCanvas.size(); i++){
-      lit::SaveCanvasAsImage(fCanvas[i], fOutputDir);
+      Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir);
    }
 }

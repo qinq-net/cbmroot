@@ -7,7 +7,7 @@
 #include "CbmReportElement.h"
 #include "CbmHistManager.h"
 #include "CbmDrawHist.h"
-#include "std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 #include "TH1.h"
 #include "TF1.h"
 #include "TPad.h"
@@ -20,8 +20,8 @@
 #include <iostream>
 
 using boost::assign::list_of;
-using lit::NumberToString;
-using lit::Split;
+using Cbm::NumberToString;
+using Cbm::Split;
 using std::map;
 using std::endl;
 using std::cout;

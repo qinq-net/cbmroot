@@ -21,7 +21,7 @@
 #include "CbmRichRing.h"
 #include "CbmRichHit.h"
 
-#include "std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 
 #include <iostream>
 #include <string>

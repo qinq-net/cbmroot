@@ -3,7 +3,7 @@
 #include "data/CbmLitTrackParam.h"
 #include "propagation/CbmLitMaterialInfo.h"
 #include "propagation/CbmLitMaterialEffectsImp.h"
-#include "utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 #include "CbmDrawHist.h"
 
 #include "TCanvas.h"
@@ -78,7 +78,7 @@ void CbmLitCheckEnergyLossMuons::DrawGraphs()
          ("total (calculation)")("ionization (calculation)")("bremsstrahlung (calculation)")("pair production (calculation)"),
          kLog, kLog, true, 0.20, 0.97, 0.9, 0.7);
 
-   lit::SaveCanvasAsImage(c1, fOutputDir);
+   Cbm::SaveCanvasAsImage(c1, fOutputDir);
 }
 
 void CbmLitCheckEnergyLossMuons::CalcEloss()

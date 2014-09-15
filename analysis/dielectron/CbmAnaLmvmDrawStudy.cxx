@@ -7,7 +7,7 @@
 #include "CbmAnaLmvmDrawStudy.h"
 
 #include "CbmDrawHist.h"
-#include "std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 #include "CbmHistManager.h"
 
 #include <string>
@@ -31,7 +31,7 @@
 #include "TSystem.h"
 
 using namespace std;
-using namespace lit;
+using namespace Cbm;
 using boost::assign::list_of;
 
 
@@ -121,7 +121,7 @@ TH2D* CbmAnaLmvmDrawStudy::H2(
 void CbmAnaLmvmDrawStudy::SaveCanvasToImage()
 {
    for (int i = 0; i < fCanvas.size(); i++){
-      lit::SaveCanvasAsImage(fCanvas[i], fOutputDir);
+      Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir);
    }
 }
 

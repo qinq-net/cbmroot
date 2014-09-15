@@ -5,7 +5,7 @@
  */
 #include "CbmLitFieldApproximationQaReport.h"
 #include "CbmReportElement.h"
-#include "std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 #include "CbmDrawHist.h"
 #include "CbmHistManager.h"
 #include "TCanvas.h"
@@ -17,9 +17,9 @@
 #include <boost/assign/list_inserter.hpp>
 using boost::assign::list_of;
 using boost::assign::push_back;
-using lit::ToString;
-using lit::Split;
-using lit::FindAndReplace;
+using Cbm::ToString;
+using Cbm::Split;
+using Cbm::FindAndReplace;
 
 CbmLitFieldApproximationQaReport::CbmLitFieldApproximationQaReport()
 {

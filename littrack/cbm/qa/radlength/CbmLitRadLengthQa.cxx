@@ -11,7 +11,7 @@
 #include "FairRadLenPoint.h"
 #include "CbmDrawHist.h"
 #include "CbmTrdAddress.h"
-#include "std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 #include "cbm/base/CbmLitTrackingGeometryConstructor.h"
 
 #include "TClonesArray.h"
@@ -34,7 +34,7 @@ using std::map;
 using std::atoi;
 using std::string;
 using boost::assign::list_of;
-using lit::ToString;
+using Cbm::ToString;
 
 const Double_t CbmLitRadLengthQa::SILICON_RAD_LENGTH = 9.365; // cm
 

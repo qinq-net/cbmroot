@@ -7,7 +7,7 @@
 #include "CbmReportElement.h"
 #include "CbmHistManager.h"
 #include "CbmDrawHist.h"
-#include "std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 #include "TH1.h"
 #include "TCanvas.h"
 #include "TLine.h"
@@ -15,9 +15,9 @@
 #include <vector>
 #include <set>
 
-using lit::NumberToString;
-using lit::FindAndReplace;
-using lit::Split;
+using Cbm::NumberToString;
+using Cbm::FindAndReplace;
+using Cbm::Split;
 using std::vector;
 using std::set;
 using std::endl;

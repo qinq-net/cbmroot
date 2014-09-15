@@ -8,7 +8,7 @@
 #include "CbmReportElement.h"
 #include "CbmHistManager.h"
 #include "CbmDrawHist.h"
-#include "../../../std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 #include "TH1.h"
 #include "TF1.h"
 #include "TProfile.h"
@@ -19,9 +19,9 @@ using std::vector;
 using std::endl;
 using std::stringstream;
 using boost::assign::list_of;
-using lit::NumberToString;
-using lit::Split;
-using lit::FindAndReplace;
+using Cbm::NumberToString;
+using Cbm::Split;
+using Cbm::FindAndReplace;
 
 string DefaultHitEfficiencyLabelFormatter(
       const string& histName,

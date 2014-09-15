@@ -16,6 +16,7 @@ ${CBMROOT_SOURCE_DIR}/rich/selection
 ${CBMROOT_SOURCE_DIR}/cbmbase 
 ${CBMROOT_SOURCE_DIR}/cbmbase/report
 ${CBMROOT_SOURCE_DIR}/cbmbase/draw
+${CBMROOT_SOURCE_DIR}/cbmbase/utils
 
 ${CBMROOT_SOURCE_DIR}/cbmdata
 ${CBMROOT_SOURCE_DIR}/cbmdata/rich
@@ -43,7 +44,7 @@ include_directories( ${INCLUDE_DIRECTORIES})
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ${FAIRROOT_LIBRARY_DIR}
-
+${Boost_LIBRARY_DIRS}
 )
 
 If(TBB_FOUND)
@@ -162,7 +163,7 @@ EndIf(TBB_FOUND)
 Set(LIBRARY_NAME Rich)
 Set(DEPENDENCIES
     # KF L1 ????
-    KF CbmBase CbmData Base MLP
+    KF L1 CbmBase CbmData Base MLP boost_regex
 )
 
 If(TBB_FOUND)

@@ -18,7 +18,7 @@
 #include "FairRuntimeDb.h"
 #include "CbmRichHitProducer.h"
 #include "CbmDrawHist.h"
-#include "std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 #include "CbmRichConverter.h"
 
 #include "TH1D.h"
@@ -409,7 +409,7 @@ void CbmRichPrototypeQa::DrawH1andFit(
    hist->GetFunction("gaus")->SetLineColor(kBlack);
    double m = hist->GetFunction("gaus")->GetParameter(1);
    double s = hist->GetFunction("gaus")->GetParameter(2);
-   string txt1 = lit::NumberToString<double>(m, 2) + " / " + lit::NumberToString<double>(s, 2);
+   string txt1 = Cbm::NumberToString<double>(m, 2) + " / " + Cbm::NumberToString<double>(s, 2);
    TLatex text;
    text.SetTextAlign(21);
    text.SetTextSize(0.06);
@@ -607,7 +607,7 @@ void CbmRichPrototypeQa::SaveCanvasToImage()
 {
    for (int i = 0; i < fCanvas.size(); i++)
    {
-      lit::SaveCanvasAsImage(fCanvas[i], fOutputDir);
+      Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir);
    }
 }
 

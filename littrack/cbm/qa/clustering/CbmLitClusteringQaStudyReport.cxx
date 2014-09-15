@@ -6,15 +6,15 @@
 #include "CbmLitClusteringQaStudyReport.h"
 #include "CbmReportElement.h"
 #include "CbmHistManager.h"
-#include "../../../std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 #include "TH1.h"
 #include <boost/assign/list_of.hpp>
 #include <vector>
 using std::endl;
 using std::vector;
 using boost::assign::list_of;
-using lit::NumberToString;
-using lit::Split;
+using Cbm::NumberToString;
+using Cbm::Split;
 
 CbmLitClusteringQaStudyReport::CbmLitClusteringQaStudyReport():
 		CbmStudyReport()

@@ -16,6 +16,7 @@ set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ${FAIRROOT_LIBRARY_DIR}
 ${CMAKE_SOURCE_DIR}/base
+${Boost_LIBRARY_DIRS}
 )
  
 link_directories( ${LINK_DIRECTORIES})
@@ -70,6 +71,8 @@ report/CbmTextReportElement.cxx
 report/CbmHtmlReportElement.cxx       
 report/CbmLatexReportElement.cxx
 
+utils/CbmUtils.cxx
+
 CbmMatchRecoToMC.cxx
 )
 
@@ -107,7 +110,7 @@ EndIf ( ${ROOT_HAS_GDML} STREQUAL yes )
 Set(LINKDEF CbmBaseLinkDef.h)
 Set(LIBRARY_NAME CbmBase)
 Set(DEPENDENCIES
-    CbmData Base
+    CbmData Base boost_regex
 )
 
 If ( ${ROOT_HAS_GDML} STREQUAL yes )

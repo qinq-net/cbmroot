@@ -22,7 +22,7 @@
 #include "FairRuntimeDb.h"
 #include "CbmRichHitProducer.h"
 #include "CbmDrawHist.h"
-#include "std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 #include "CbmRichConverter.h"
 #include "CbmReport.h"
 #include "CbmStudyReport.h"
@@ -353,7 +353,7 @@ void CbmRichGeoTest::DrawSummaryPlotsTemp()
    double p1 = f1->GetParameter(1);
    stringstream ss;
    ss.precision(3);
-   ss << "y="<<lit::NumberToString(p0, 1)<<"*x+"<<lit::NumberToString(p1, 1);
+   ss << "y="<<Cbm::NumberToString(p0, 1)<<"*x+"<<Cbm::NumberToString(p1, 1);
    TLegend* leg = new TLegend(0.15, 0.9, 0.85, 0.99);
    leg->AddEntry(new TH2D(), ss.str().c_str(), "");
    leg->SetFillColor(kWhite);
@@ -380,7 +380,7 @@ void CbmRichGeoTest::DrawSummaryPlotsTemp()
    double p10 = f2->GetParameter(0);
    double p11 = f2->GetParameter(1);
    stringstream ss2;
-   ss2 << "y="<<lit::NumberToString(p10, 1)<<"*x+"<<lit::NumberToString(p11, 1);
+   ss2 << "y="<<Cbm::NumberToString(p10, 1)<<"*x+"<<Cbm::NumberToString(p11, 1);
    TLegend* leg2 = new TLegend(0.15, 0.9, 0.85, 0.99);
    leg2->AddEntry(new TH2D(), ss2.str().c_str(), "");
    leg2->SetFillColor(kWhite);
@@ -723,8 +723,8 @@ void CbmRichGeoTest::DrawH2MeanRms(
    py->Scale(1./py->Integral());
    py->GetYaxis()->SetTitle("Yield");
    DrawH1(py);
-   string txt1 = lit::NumberToString<Double_t>(py->GetMean(), 2) + " / "
-         + lit::NumberToString<Double_t>(py->GetRMS(), 2);
+   string txt1 = Cbm::NumberToString<Double_t>(py->GetMean(), 2) + " / "
+         + Cbm::NumberToString<Double_t>(py->GetRMS(), 2);
    TLatex text;
    text.SetTextAlign(21);
    text.SetTextSize(0.05);
@@ -740,7 +740,7 @@ void CbmRichGeoTest::DrawH2MeanRms(
    py->Scale(1./py->Integral());
    py->GetYaxis()->SetTitle("Yield");
    DrawH1(py);
-   string txt1 = lit::NumberToString<Double_t>(py->GetMean(), 2) + " / " + lit::NumberToString<Double_t>(py->GetRMS(), 2);
+   string txt1 = Cbm::NumberToString<Double_t>(py->GetMean(), 2) + " / " + Cbm::NumberToString<Double_t>(py->GetRMS(), 2);
    TLatex text;
    text.SetTextAlign(21);
    text.SetTextSize(0.05);
@@ -768,7 +768,7 @@ void CbmRichGeoTest::DrawH1andFit(
    func->SetLineColor(kBlack);
    double m = func->GetParameter(1);
    double s = func->GetParameter(2);
-   string txt1 = lit::NumberToString<double>(m, 2) + " / " + lit::NumberToString<double>(s, 2);
+   string txt1 = Cbm::NumberToString<double>(m, 2) + " / " + Cbm::NumberToString<double>(s, 2);
    TLatex text;
    text.SetTextAlign(21);
    text.SetTextSize(0.06);
@@ -806,7 +806,7 @@ void CbmRichGeoTest::FitH1OneOverX(
    double p1 = f1->GetParameter(1);
    stringstream ss;
    ss.precision(3);
-   ss << "y="<<lit::NumberToString(p0, 1)<<"/P+"<<lit::NumberToString(p1, 1);
+   ss << "y="<<Cbm::NumberToString(p0, 1)<<"/P+"<<Cbm::NumberToString(p1, 1);
    TLegend* leg = new TLegend(0.15, 0.9, 0.85, 0.99);
    leg->AddEntry(new TH2D(), ss.str().c_str(), "");
    leg->SetFillColor(kWhite);
@@ -1179,7 +1179,7 @@ void CbmRichGeoTest::SaveCanvasToImage()
 {
    for (int i = 0; i < fCanvas.size(); i++)
    {
-      lit::SaveCanvasAsImage(fCanvas[i], fOutputDir);
+      Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir);
    }
 }
 

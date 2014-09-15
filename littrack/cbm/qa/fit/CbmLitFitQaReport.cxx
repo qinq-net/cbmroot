@@ -7,7 +7,7 @@
 #include "CbmReportElement.h"
 #include "CbmHistManager.h"
 #include "CbmDrawHist.h"
-#include "std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 #include "TH1.h"
 #include "TF1.h"
 #include "TPad.h"
@@ -18,8 +18,8 @@
 #include <map>
 
 using boost::assign::list_of;
-using lit::NumberToString;
-using lit::Split;
+using Cbm::NumberToString;
+using Cbm::Split;
 using std::map;
 
 CbmLitFitQaReport::CbmLitFitQaReport():
@@ -119,7 +119,7 @@ void CbmLitFitQaReport::DrawHistSigmaRMS(
    Double_t sigma,
    Double_t rms)
 {
-   string txt1 = lit::NumberToString<Double_t>(sigma, 2) + " / " + lit::NumberToString<Double_t>(rms, 2);
+   string txt1 = Cbm::NumberToString<Double_t>(sigma, 2) + " / " + Cbm::NumberToString<Double_t>(rms, 2);
    TLatex text;
    text.SetTextAlign(21);
    text.SetTextSize(0.08);

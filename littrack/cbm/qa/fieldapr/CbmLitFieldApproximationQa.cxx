@@ -8,7 +8,7 @@
 #include "base/CbmLitFloat.h"
 #include "base/CbmLitFieldFitter.h"
 #include "base/CbmLitFieldGridCreator.h"
-#include "utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 #include "CbmDrawHist.h"
 #include "CbmHistManager.h"
 
@@ -38,8 +38,8 @@
 
 #include <boost/assign/list_of.hpp>
 
-using lit::ToString;
-using lit::SaveCanvasAsImage;
+using Cbm::ToString;
+using Cbm::SaveCanvasAsImage;
 using lit::parallel::LitFieldSliceScal;
 using lit::parallel::LitFieldValueScal;
 using lit::parallel::LitFieldGrid;

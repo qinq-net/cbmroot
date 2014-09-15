@@ -21,7 +21,7 @@
 #include "CbmRichRing.h"
 #include "CbmRichHit.h"
 
-#include "std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 
 #include <iostream>
 #include <string>
@@ -499,7 +499,7 @@ void CbmRichUrqmdTest::SaveCanvasToImage()
 {
    for (int i = 0; i < fCanvas.size(); i++)
    {
-      lit::SaveCanvasAsImage(fCanvas[i], fOutputDir);
+      Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir);
    }
 }
 

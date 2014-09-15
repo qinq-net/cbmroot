@@ -5,7 +5,7 @@
  */
 #include "CbmLitFieldQaReport.h"
 #include "CbmReportElement.h"
-#include "utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 #include "CbmDrawHist.h"
 #include "CbmHistManager.h"
 #include <boost/assign/list_of.hpp>
@@ -13,9 +13,9 @@
 #include "TGraph2D.h"
 #include "TGraph.h"
 
-using lit::ToString;
-using lit::FindAndReplace;
-using lit::Split;
+using Cbm::ToString;
+using Cbm::FindAndReplace;
+using Cbm::Split;
 using boost::assign::list_of;
 
 CbmLitFieldQaReport::CbmLitFieldQaReport()

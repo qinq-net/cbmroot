@@ -6,7 +6,7 @@
 
 #include "base/CbmLitTrackingGeometryConstructor.h"
 #include "base/CbmLitFieldGridCreator.h"
-#include "std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 
 #include "CbmHistManager.h"
 #include "FairRunAna.h"
@@ -107,8 +107,8 @@ template<class T> void CbmLitTrackingGeometryConstructor::GetMuchLayout(
 
             // Convert material for this station
             TProfile2D* profile = (iLayerNode == 0)
-                  ? hm.P2("hrl_ThicknessSilicon_MuchAbsorber_" + lit::ToString<Int_t>(currentStation) + "_P2")
-                  : hm.P2("hrl_ThicknessSilicon_Much_" + lit::ToString<Int_t>(currentLayer) + "_P2");
+                  ? hm.P2("hrl_ThicknessSilicon_MuchAbsorber_" + Cbm::ToString<Int_t>(currentStation) + "_P2")
+                  : hm.P2("hrl_ThicknessSilicon_Much_" + Cbm::ToString<Int_t>(currentLayer) + "_P2");
             //profile->Rebin2D(200, 200);
             lit::parallel::LitMaterialGrid material;
             ConvertTProfile2DToLitMaterialGrid(profile, &material);
@@ -192,7 +192,7 @@ void CbmLitTrackingGeometryConstructor::GetTrdLayout(
    Int_t nofStations = GetNofTrdStations();
    for (Int_t iStation = 0; iStation < nofStations; iStation++) {
       // Convert material for this station
-      TProfile2D* profile = hm.P2("hrl_ThicknessSilicon_Trd_" + lit::ToString<Int_t>(iStation) + "_P2");
+      TProfile2D* profile = hm.P2("hrl_ThicknessSilicon_Trd_" + Cbm::ToString<Int_t>(iStation) + "_P2");
       //profile->Rebin2D(200, 200);
       lit::parallel::LitMaterialGrid material;
       ConvertTProfile2DToLitMaterialGrid(profile, &material);

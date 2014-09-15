@@ -5,7 +5,7 @@
  **/
 #include "CbmLitFieldQa.h"
 #include "CbmLitFieldQaReport.h"
-#include "utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 #include "CbmHistManager.h"
 
 #include "FairRunAna.h"
@@ -19,7 +19,7 @@
 #include <sstream>
 #include <cmath>
 
-using lit::ToString;
+using Cbm::ToString;
 using boost::assign::list_of;
 
 CbmLitFieldQa::CbmLitFieldQa():

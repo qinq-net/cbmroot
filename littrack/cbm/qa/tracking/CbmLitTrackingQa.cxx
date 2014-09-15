@@ -8,7 +8,7 @@
 #include "CbmLitTrackingQaStudyReport.h"
 #include "CbmLitTrackingQaReport.h"
 #include "CbmHistManager.h"
-#include "utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 #include "qa/mc/CbmLitMCTrackCreator.h"
 #include "qa/base/CbmLitAcceptanceFunction.h"
 #include "elid/CbmLitGlobalElectronId.h"
@@ -32,8 +32,8 @@
 
 using std::cout;
 using boost::assign::list_of;
-using lit::Split;
-using lit::FindAndReplace;
+using Cbm::Split;
+using Cbm::FindAndReplace;
 
 CbmLitTrackingQa::CbmLitTrackingQa():
    FairTask("LitTrackingQA", 1),

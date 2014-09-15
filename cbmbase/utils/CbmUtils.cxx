@@ -1,9 +1,9 @@
-#include "CbmLitUtils.h"
+#include "CbmUtils.h"
 
 #include "TCanvas.h"
 #include "TSystem.h"
 
-namespace lit
+namespace Cbm
 {
 
 void SaveCanvasAsImage(

@@ -29,7 +29,7 @@ ${STD_DIR}selection/CbmLitTrackSelectionSharedHits.cxx
 ${STD_DIR}selection/CbmLitTrackSelectionTrd.cxx
 
 ${STD_DIR}utils/CbmLitMath.cxx 
-${STD_DIR}utils/CbmLitUtils.cxx
+#${STD_DIR}utils/CbmLitUtils.cxx
 ${STD_DIR}utils/CbmLitMatrixMath.cxx 
 )
 

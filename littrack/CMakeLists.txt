@@ -17,6 +17,7 @@ ${CBMROOT_SOURCE_DIR}/littrack/cbm
 ${CBMROOT_SOURCE_DIR}/cbmbase
 ${CBMROOT_SOURCE_DIR}/cbmbase/report
 ${CBMROOT_SOURCE_DIR}/cbmbase/draw
+${CBMROOT_SOURCE_DIR}/cbmbase/utils
 
 ${CBMROOT_SOURCE_DIR}/cbmdata
 ${CBMROOT_SOURCE_DIR}/cbmdata/much

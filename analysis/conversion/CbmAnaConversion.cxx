@@ -24,7 +24,7 @@
 #include "CbmGlobalTrack.h"
 #include "CbmStsTrack.h"
 
-#include "std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 
 #include <iostream>
 #include <string>

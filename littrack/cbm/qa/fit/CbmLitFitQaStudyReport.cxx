@@ -7,7 +7,7 @@
 #include "CbmReportElement.h"
 #include "CbmHistManager.h"
 #include "CbmDrawHist.h"
-#include "../std/utils/CbmLitUtils.h"
+#include "CbmUtils.h"
 #include "TH1.h"
 #include "TF1.h"
 #include "TCanvas.h"
@@ -16,9 +16,9 @@
 #include <boost/assign/list_of.hpp>
 using boost::assign::list_of;
 using std::vector;
-using lit::Split;
-using lit::NumberToString;
-using lit::FindAndReplace;
+using Cbm::Split;
+using Cbm::NumberToString;
+using Cbm::FindAndReplace;
 
 CbmLitFitQaStudyReport::CbmLitFitQaStudyReport():
 		CbmStudyReport()
