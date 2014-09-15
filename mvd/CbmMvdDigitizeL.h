@@ -85,10 +85,10 @@ class CbmMvdDigitizeL : public FairTask
   void ProducePixelCharge(CbmMvdPoint* point, CbmMvdStation* station);
   void TransformXYtoPixelIndex(Double_t x, Double_t y,Int_t & ix, Int_t & iy);
   void TransformPixelIndexToXY(Int_t ix, Int_t iy, Double_t & x, Double_t & y );
-  void PositionWithinCell(Double_t x, Double_t y,  Int_t & ix, Int_t & iy, Double_t & xCell, Double_t & yCell);
+//  void PositionWithinCell(Double_t x, Double_t y,  Int_t & ix, Int_t & iy, Double_t & xCell, Double_t & yCell);
  // void AddChargeToPixel(Int_t channelX, Int_t channelY, Int_t charge, CbmMvdPoint* point);
   Int_t BuildEvent();
-  Double_t GetDetectorGeometry(CbmMvdPoint* point);
+//  Double_t GetDetectorGeometry(CbmMvdPoint* point);
 
   /** Modifiers **/
   void SetEpiThickness(Double_t epiTh)              { fEpiTh = epiTh;                     }
@@ -101,7 +101,7 @@ class CbmMvdDigitizeL : public FairTask
   void SetCutOnDeltaRays(Double_t cutOnDeltaRays)   { fCutOnDeltaRays = cutOnDeltaRays;   }
   void SetChargeThreshold(Double_t chargeThreshold) { fChargeThreshold = chargeThreshold; }
   void SetPixelSize(Double_t pixelSize);
-  void SetMvdGeometry(Int_t detId);
+//  void SetMvdGeometry(Int_t detId);
   void SetPileUp(Int_t pileUp)           { fNPileup         = pileUp;      }
   void SetDeltaEvents(Int_t deltaEvents) { fNDeltaElect     = deltaEvents; }
   void SetBgFileName(TString fileName)   { fBgFileName      = fileName;    }

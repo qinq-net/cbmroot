@@ -75,7 +75,7 @@ class CbmMvdSensorDigitizerTask : public CbmMvdSensorTask
   InitStatus ReadSensorInformation();
   void ProduceIonisationPoints(CbmMvdPoint* point);
   void ProducePixelCharge(CbmMvdPoint* point);
-  void PositionWithinCell(Double_t x, Double_t y,  Int_t & ix, Int_t & iy, Double_t & xCell, Double_t & yCell);
+//  void PositionWithinCell(Double_t x, Double_t y,  Int_t & ix, Int_t & iy, Double_t & xCell, Double_t & yCell);
 
   /** Modifiers **/
   void SetSegmentLength(Double_t segmentLength)     { fSegmentLength = segmentLength;     }

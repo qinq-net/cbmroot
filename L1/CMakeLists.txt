@@ -39,6 +39,7 @@ include_directories( ${INCLUDE_DIRECTORIES})
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ${FAIRROOT_LIBRARY_DIR}
+${Boost_LIBRARY_DIRS}
 )
  
 link_directories( ${LINK_DIRECTORIES})
@@ -131,7 +132,7 @@ set(LINKDEF L1LinkDef.h)
 Set(LIBRARY_NAME L1)
 Set(DEPENDENCIES
     #Rich 
-    KF Trd Sts CbmBase CbmData Base 
+    KF Trd Sts CbmBase CbmData Base boost_regex
 )
 
 GENERATE_LIBRARY()

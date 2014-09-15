@@ -25,7 +25,7 @@ class CbmTrdSPADIC : public FairTask
    * Default constructor.
    */
   CbmTrdSPADIC();
-  CbmTrdSPADIC(Bool_t MultiHit, Bool_t NeighbourReadout, Bool_t RowClusterMerger, Double_t MinimumChargeTH);
+//  CbmTrdSPADIC(Bool_t MultiHit, Bool_t NeighbourReadout, Bool_t RowClusterMerger, Double_t MinimumChargeTH);
 
   /**
    * \brief Destructor.

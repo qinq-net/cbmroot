@@ -38,7 +38,7 @@ include_directories( ${INCLUDE_DIRECTORIES})
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ${FAIRROOT_LIBRARY_DIR}
-
+${Boost_LIBRARY_DIRS}
 )
  
 link_directories( ${LINK_DIRECTORIES})
@@ -63,7 +63,7 @@ CbmSetup.cxx
 set(LINKDEF RunLinkDef.h)
 Set(LIBRARY_NAME Run)
 Set(DEPENDENCIES
-    CbmData Base CbmBase Field
+    CbmData Base CbmBase Field Much
 )
 
 GENERATE_LIBRARY()

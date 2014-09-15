@@ -55,7 +55,7 @@ public:
         fStep = tStep;
     }
 
-    void FindFiredStrips(CbmStsPoint* pnt, Int_t& nofStr, Int_t*& strips, Double_t*& signals, Int_t side);
+//    void FindFiredStrips(CbmStsPoint* pnt, Int_t& nofStr, Int_t*& strips, Double_t*& signals, Int_t side);
     void ProduceHitResponse(CbmStsSensor* sensor);
 
     void SetFrontThreshold(Double_t frontThr = 0.)

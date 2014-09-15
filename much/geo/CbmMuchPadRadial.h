@@ -21,7 +21,7 @@ public:
    * @param sector   Sector which this pad belongs to
    * @param iChannel Channel index corresponding to this pad
    */
-  CbmMuchPadRadial (CbmMuchSectorRadial* sector, Int_t iChannel);
+//  CbmMuchPadRadial (CbmMuchSectorRadial* sector, Int_t iChannel);
   
   CbmMuchPadRadial(Int_t address, Double_t r1, Double_t r2, Double_t phi1, Double_t phi2);
   

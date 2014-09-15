@@ -56,7 +56,7 @@ EndIf (Boost_FOUND)
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ${Boost_LIBRARY_DIRS}
-${FAIRROOT_LIBRARY_DIR}
+${CBMLIBDIR}
 ) 
 
 link_directories(${LINK_DIRECTORIES})
@@ -125,7 +125,8 @@ If (Boost_FOUND)
     List(GET Exe_Source ${_file} _src)
     Set(EXE_NAME ${_name})
     Set(SRCS ${_src})
-    Set(DEPENDENCIES MQcbmExample)
+    Set(DEPENDENCIES MQcbmExample Mvd )
+
     GENERATE_EXECUTABLE()
   EndForEach(_file RANGE 0 ${_length})
 EndIf (Boost_FOUND)

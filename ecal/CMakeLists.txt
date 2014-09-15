@@ -23,7 +23,7 @@ include_directories( ${INCLUDE_DIRECTORIES})
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ${FAIRROOT_LIBRARY_DIR}
-
+${Boost_LIBRARY_DIRS}
 )
  
 link_directories( ${LINK_DIRECTORIES})
@@ -68,7 +68,7 @@ set(LINKDEF EcalLinkDef.h)
 Set(LIBRARY_NAME Ecal)
 Set(DEPENDENCIES
     #KF ????
-    CbmBase CbmData Base MLP
+    CbmBase CbmData Base MLP ASImage
 )
 
 GENERATE_LIBRARY()

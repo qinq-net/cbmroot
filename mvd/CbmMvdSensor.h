@@ -120,12 +120,12 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   void Exec(UInt_t nPlugin); //runs individual plugin
   void ExecTo(UInt_t nPlugin);
   void ExecFrom(UInt_t nPlugin);
-  void Finish();
+//  void Finish();
   
   /** Data control */
   
   void ClearInputArray(){;}
-  void AddInputObject(TObject* dataObject);
+//  void AddInputObject(TObject* dataObject);
   
   TClonesArray* GetOutputBuffer();
   TClonesArray* GetOutputArray(Int_t nPlugin);

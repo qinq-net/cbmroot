@@ -85,14 +85,14 @@ private:
     /* Prepare test histograms */
     void PrepareHistograms();
 
+    CbmTrdHitProducerQa(const CbmTrdHitProducerQa&);
+    CbmTrdHitProducerQa& operator=(const CbmTrdHitProducerQa&);
 
-public:
+//public:
 
     /* Write test histograms */
     void WriteHistograms();
 
-    CbmTrdHitProducerQa(const CbmTrdHitProducerQa&);
-    CbmTrdHitProducerQa& operator=(const CbmTrdHitProducerQa&);
 
     ClassDef(CbmTrdHitProducerQa, 2)
 };

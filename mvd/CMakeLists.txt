@@ -17,6 +17,7 @@ set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ${GSL_LIBRARY_DIRS}
 ${FAIRROOT_LIBRARY_DIR}
+${CLHEP_LIBRARY_DIR}
 )
 
 link_directories( ${LINK_DIRECTORIES})
@@ -59,7 +60,7 @@ CbmMvdFullRun.cxx
 set(LINKDEF MvdLinkDef.h)
 Set(LIBRARY_NAME Mvd)
 Set(DEPENDENCIES
-    CbmBase CbmData Base 
+    CbmBase CbmData Base G4clhep 
 )
 
 GENERATE_LIBRARY()

@@ -56,7 +56,7 @@ class CbmStsFindHitsQa : public FairTask
 
 
   /** Standard constructor **/
-  CbmStsFindHitsQa(Int_t iVerbose);
+//  CbmStsFindHitsQa(Int_t iVerbose);
 
 
   /** Constructor with task name **/

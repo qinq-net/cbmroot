@@ -112,6 +112,7 @@ ${CBMROOT_SOURCE_DIR}/cbmdata/psd
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ${FAIRROOT_LIBRARY_DIR}
+${Boost_LIBRARY_DIRS}
 )
 # -----  End of link directories   ------------------------
 

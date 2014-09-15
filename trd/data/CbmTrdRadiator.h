@@ -66,7 +66,7 @@ class CbmTrdRadiator
   /** Init function **/
   void Init();
 
-  void SetRadPrototype(TString prototype);
+//  void SetRadPrototype(TString prototype);
 
   /** Spectra production **/
   void ProduceSpectra();

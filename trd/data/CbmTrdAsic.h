@@ -38,7 +38,7 @@ class CbmTrdAsic : public TNamed
   Double_t GetSizeY() const { return fSizeY; }
   Double_t GetSizeZ() const { return fSizeZ; }
 
-  Int_t GetAsicAddress(Int_t channelAddress);
+//  Int_t GetAsicAddress(Int_t channelAddress);
   Int_t GetAsicAddress() const { return fAsicAddress; }
   Int_t GetnofChannels() const {return fnofChannels; }
   Int_t GetFebGrouping() const {return fFebGrouping; }
