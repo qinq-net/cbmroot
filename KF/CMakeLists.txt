@@ -38,10 +38,16 @@ ${CBMROOT_SOURCE_DIR}/trd/param
 ${CBMROOT_SOURCE_DIR}/tof/TofParam
 ${CBMROOT_SOURCE_DIR}/ecal
 ${CBMROOT_SOURCE_DIR}/stt
-
-${CBMROOT_SOURCE_DIR}/vc/
-${CBMROOT_SOURCE_DIR}/vc/include/
 )
+
+If(NOT ${ROOT_HAS_VC})
+  set(INCLUDE_DIRECTORIES
+      ${INCLUDE_DIRECTORIES}
+      
+      ${CBMROOT_SOURCE_DIR}/vc/
+      ${CBMROOT_SOURCE_DIR}/vc/include/
+  )
+EndIf()
 
 include_directories( ${INCLUDE_DIRECTORIES})
 
