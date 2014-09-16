@@ -181,6 +181,7 @@ InitStatus CbmMvdFindHits::Init() {
 	cout << "-W- " << GetName() << "::Init: No MVD stations in geometry!"
 	    << endl << "   Task will be inactive!" << endl;
 	fActive = kFALSE;
+        return kERROR;
     }
     //11.12.08 cdritsa: end-------------------------
 
@@ -273,6 +274,7 @@ InitStatus CbmMvdFindHits::Init() {
     delete histoName;
     delete histoTotalChargeName;
 
+    return kSUCCESS;
 }
 // -------------------------------------------------------------------------
 
