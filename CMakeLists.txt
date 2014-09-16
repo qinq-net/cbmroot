@@ -202,6 +202,27 @@ add_subdirectory (geane)
 add_subdirectory (trackbase)
 ENDIF (NOT FAIRROOT_FOUND)
 
+Execute_Process(COMMAND ${ROOT_CONFIG_EXECUTABLE} --has-vc
+                OUTPUT_VARIABLE ROOT_HAS_VC
+               )
+String(STRIP ${ROOT_HAS_VC} ROOT_HAS_VC)
+
+If(NOT ${ROOT_HAS_VC})
+  Message(STATUS "Root does not support VC. Compile the internal version.")
+  Include(ExternalProject)
+  ExternalProject_Add(vc
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/vc_074
+    PREFIX vc
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}
+  )
+  Set(VC_INCLUDE_DIRS       
+      ${CBMROOT_SOURCE_DIR}/vc_074/ 
+      ${CBMROOT_SOURCE_DIR}/vc_074/include/
+     )
+EndIf()
+
+
+
 add_subdirectory (cbmbase)
 add_subdirectory (cbmdata)
 add_subdirectory (field)  
@@ -249,18 +270,6 @@ Else()
     add_subdirectory(fairmq/MQ)
     add_subdirectory(tutorials/MQTest)
   EndIf()
-EndIf()
-
-#add_subdirectory(fles/ipc)
-
-Execute_Process(COMMAND ${ROOT_CONFIG_EXECUTABLE} --has-vc
-                OUTPUT_VARIABLE ROOT_HAS_VC
-               )
-String(STRIP ${ROOT_HAS_VC} ROOT_HAS_VC)
-
-If(NOT ${ROOT_HAS_VC})
-  Message(STATUS "Root does not support VC. Compile the internal version.")
-  add_subdirectory (vc)
 EndIf()
 
 

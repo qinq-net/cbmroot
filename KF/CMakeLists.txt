@@ -42,10 +42,8 @@ ${CBMROOT_SOURCE_DIR}/stt
 
 If(NOT ${ROOT_HAS_VC})
   set(INCLUDE_DIRECTORIES
-      ${INCLUDE_DIRECTORIES}
-      
-      ${CBMROOT_SOURCE_DIR}/vc/
-      ${CBMROOT_SOURCE_DIR}/vc/include/
+      ${INCLUDE_DIRECTORIES}      
+      ${VC_INCLUDE_DIRS}
   )
 EndIf()
 
