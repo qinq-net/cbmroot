@@ -24,6 +24,8 @@ ${CBMROOT_SOURCE_DIR}/cbmdata/sts
 ${CBMROOT_SOURCE_DIR}/cbmdata/trd
 ${CBMROOT_SOURCE_DIR}/cbmdata/global
 
+${CBMROOT_SOURCE_DIR}/L1/vectors
+
 ${CBMROOT_SOURCE_DIR}/trd
 ${CBMROOT_SOURCE_DIR}/trd/digi
 ${CBMROOT_SOURCE_DIR}/trd/param
@@ -134,6 +136,19 @@ CbmTrdCreatePidLike.cxx
 #CbmTrdDigiRingSorter.cxx
 
 )
+
+IF (SSE_FOUND)
+  ADD_DEFINITIONS(-DHAVE_SSE)
+  SET_SOURCE_FILES_PROPERTIES(${SRCS} PROPERTIES COMPILE_FLAGS 
+  "-msse -O3")
+  Message(STATUS "TRD will be compiled with SSE support")
+ELSE (SSE_FOUND)
+  Message(STATUS "TRD will be compiled without SSE support")
+  SET_SOURCE_FILES_PROPERTIES(${SRCS} PROPERTIES COMPILE_FLAGS 
+  "-O3")
+ENDIF (SSE_FOUND)
+
+
 
 set(LINKDEF TrdLinkDef.h)
 Set(LIBRARY_NAME Trd)

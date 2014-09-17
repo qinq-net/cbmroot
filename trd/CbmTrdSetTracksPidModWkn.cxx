@@ -17,7 +17,14 @@
 #include "TMath.h"
 #include <iomanip>
 #include <iostream>
-#include <../L1/vectors/P4_F32vec4.h>
+
+#ifdef HAVE_SSE
+  #include "P4_F32vec4.h"
+#else
+  #include "PSEUDO_F32vec4.h"
+  #error NoSseFound
+#endif // HAVE_SSE
+
 #include <vector>
 #include <cmath>
 using std::cout;
