@@ -32,13 +32,6 @@ class CbmMvdSensorTask : public CbmMvdSensorPlugin
   /** Destructor **/
   virtual ~CbmMvdSensorTask();
   
-  virtual void Init();
-  virtual TClonesArray* GetInputArray();
-  virtual TClonesArray* GetMatchArray();
-  virtual TClonesArray* GetWriteArray();
-  virtual void SetInputArray(TClonesArray* inputArray);
-  virtual void SetInput(CbmMvdPoint* point);
-  virtual void SetOutputArray(TClonesArray* outputArray);
 
   virtual void 		SendInputBuffer(TClonesArray* inputBuffer){fInputBuffer=inputBuffer;};
   virtual void          CallBufferForInputData(){;}; //See comment in ExecChain() in .cxx

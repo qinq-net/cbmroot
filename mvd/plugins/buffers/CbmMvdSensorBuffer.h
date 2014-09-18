@@ -49,21 +49,11 @@ class CbmMvdSensorBuffer : public CbmMvdSensorPlugin
   * to clear it explitly**/
   
   virtual TClonesArray* GetOutputArray()			{return fCurrentEvent;};
-  virtual TClonesArray* GetInputArray();
-  virtual TClonesArray* GetMatchArray();
-  virtual TClonesArray* GetWriteArray();
- 
- 
-  virtual void SetInputArray(TClonesArray* inputArray);
-  virtual void SetOutputArray(TClonesArray* outputArray);
-  virtual void SetInput(CbmMvdPoint* point);
-  
+   
   /** Data Processing **/
   //=======================================================
-  virtual void ExecChain();
-  virtual void Exec();
+  virtual void ExecChain(){;}
   virtual void 		Init		(CbmMvdSensor* mySensor)	 {fSensor=mySensor;};
-  virtual void          Init();
   virtual void 		BuildTimeSlice	(Double_t tStart, Double_t tStop){;};
   virtual void 		Finish		()				 {;};
   

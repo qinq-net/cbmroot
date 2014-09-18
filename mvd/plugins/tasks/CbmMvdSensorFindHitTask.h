@@ -71,15 +71,8 @@ public:
     
     /** Intialisation **/
     void Init(CbmMvdSensor* mySensor);
-    virtual void Init();
  
     TClonesArray* GetMatchArray() {return fMatches;};
-    virtual TClonesArray* GetInputArray();
-    virtual TClonesArray* GetWriteArray();
-
-    virtual void SetInputArray(TClonesArray* inputArray);
-    virtual void SetInput(CbmMvdPoint* point);
-    virtual void SetOutputArray(TClonesArray* outputArray);
  
     /** Accessors **/
     //Double_t GetSigmaX()        const { return fSigmaX;     };
