@@ -1,8 +1,8 @@
 /**
  * \file CbmAnaConversion.cxx
  *
- * \author Tariq Mahmoud <t.mahmoud@gsi.de>
- * \date 2012
+ * \author Sascha Reinecke <reinecke@uni-wuppertal.de>
+ * \date 2014
  **/
 
 #include "CbmAnaConversion.h"
@@ -46,7 +46,6 @@ using boost::assign::list_of;
 CbmAnaConversion::CbmAnaConversion()
   : FairTask("CbmAnaConversion"),
     fhGammaZ(NULL),
-    fhGammaZ_selected(NULL),
     fTest(NULL),
     fhNofElPrim(NULL),
     fhNofElSec(NULL),
@@ -86,21 +85,21 @@ CbmAnaConversion::CbmAnaConversion()
     fhInvariantMassReco_pi0(NULL),
     fhMomentum_MCvsReco(NULL),     
     fhMomentum_MCvsReco_diff(NULL),   
-    fhInvariantMass_recoMomentum1(NULL),
-    fhInvariantMass_recoMomentum2(NULL),
-    fhInvariantMass_recoMomentum3(NULL),
-    fhInvariantMass_recoMomentum4(NULL),
-    fhInvariantMass_recoMomentum5(NULL),
-    fhMomentumtest1(NULL),
-    fhMomentumtest2(NULL),
-    fhMomentumtest3(NULL),
-    fhMomentumtest4(NULL),
-    fhMomentumtest5(NULL),
-    fhMomentumtest6(NULL),
-    fhMomentumtest7(NULL),
-    fhMomentumtest5vs(NULL),
-    fhMomentumtest6vs(NULL),
-    fhMomentumtest7vs(NULL),
+    fhInvMass_EPEM_mc(NULL),
+    fhInvMass_EPEM_stsMomVec(NULL),
+    fhInvMass_EPEM_refitted(NULL),
+    fhInvMass_EPEM_error_stsMomVec(NULL),
+    fhInvMass_EPEM_error_refitted(NULL),
+    fhUsedMomenta_stsMomVec(NULL),
+    fhUsedMomenta_mc(NULL),
+    fhUsedMomenta_error_stsMomVec(NULL),
+    fhUsedMomenta_error_refitted(NULL),
+    fhUsedMomenta_errorX_stsMomVec(NULL),
+    fhUsedMomenta_errorY_stsMomVec(NULL),
+    fhUsedMomenta_errorZ_stsMomVec(NULL),
+    fhUsedMomenta_vsX_stsMomVec(NULL),
+    fhUsedMomenta_vsY_stsMomVec(NULL),
+    fhUsedMomenta_vsZ_stsMomVec(NULL),
     fhInvariantMass_pi0epem(NULL),
     fhSearchGammas(NULL),
     fhMCtest(NULL),
@@ -120,7 +119,6 @@ CbmAnaConversion::CbmAnaConversion()
     fHistoList_tomography(),
     fMCTracklist(),
     fMCTracklist_all(),
-    //fMCTracklist_omega(),
     fRecoTracklist(),
     fRecoTracklistEPEM(),
     fRecoMomentum(),
@@ -157,14 +155,14 @@ InitStatus CbmAnaConversion::Init()
 	fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
 	if (NULL == fPrimVertex) { Fatal("CbmAnaConversion::Init","No PrimaryVertex array!"); }
 
-   InitHistograms();
+	InitHistograms();
    
      
    
 	testint = 0;
 	test = 0;
 
-   return kSUCCESS;
+	return kSUCCESS;
 }
 
 void CbmAnaConversion::InitHistograms()
@@ -172,11 +170,14 @@ void CbmAnaConversion::InitHistograms()
 	fHistoList.clear();
 	fHistoList_MC.clear();
 	fHistoList_tomography.clear();
+	fHistoList_reco.clear();
 	
 	fhGammaZ = new TH1D("fhGammaZ", "fhGammaZ;Z [cm];Entries", 300, 0.0, 300.);
-	fhGammaZ_selected = new TH1D("fhGammaZ_selected", "fhGammaZ_selected;Z [cm];Entries", 600, 0.0, 600.);
+	fHistoList.push_back(fhGammaZ);
 	
 	fTest = new TH2D("fTest", "fTest; X; Y", 200, -100, 100, 400, -200, 200);
+	fHistoList.push_back(fTest);
+	
 	
 	fhNofElPrim				= new TH1D("fhNofElPrim", "fhNofElPrim;Nof prim El;Entries", 10., -0.5, 9.5);
 	fhNofElSec				= new TH1D("fhNofElSec", "fhNofElSec;Nof Sec El;Entries", 20., -0.5, 19.5);
@@ -284,39 +285,40 @@ void CbmAnaConversion::InitHistograms()
 	fHistoList.push_back(fhMomentum_MCvsReco);
 	fHistoList.push_back(fhMomentum_MCvsReco_diff);
 	
-	fhInvariantMass_recoMomentum1 = new TH1D("fhInvariantMass_recoMomentum1","fhInvariantMass_recoMomentum1 (mc);mass;#", 400, 0., 2.);
-	fhInvariantMass_recoMomentum2 = new TH1D("fhInvariantMass_recoMomentum2","fhInvariantMass_recoMomentum2 (stsMomentumVec);mass;#", 100, 0., 2.);
-	fhInvariantMass_recoMomentum3 = new TH1D("fhInvariantMass_recoMomentum3","fhInvariantMass_recoMomentum3 (refitted at primary);mass;#", 100, 0., 2.);
-	fhInvariantMass_recoMomentum4 = new TH1D("fhInvariantMass_recoMomentum4","fhInvariantMass_recoMomentum4 (error, stsMomentumVec);(mc-reco)/mc;#", 500, -0.005, 4.995);
-	fhInvariantMass_recoMomentum5 = new TH1D("fhInvariantMass_recoMomentum5","fhInvariantMass_recoMomentum5 (error, refitted);(mc-reco)/mc;#", 500, -0.005, 4.995);
-	fhMomentumtest1 =	new TH1D("fhMomentumtest1","fhMomentumtest1;momentum;#", 100, 0., 2.);
-	fhMomentumtest2 =	new TH1D("fhMomentumtest2","fhMomentumtest2;momentum;#", 100, 0., 2.);
-	fhMomentumtest3 =	new TH1D("fhMomentumtest3","fhMomentumtest3 (error);(mc-reco)/mc;#", 400, -2.005, 1.995);
-	fhMomentumtest4 =	new TH1D("fhMomentumtest4","fhMomentumtest4 (error);(mc-reco_refitted)/mc;#", 400, -2.005, 1.995);
-	fhMomentumtest5 =	new TH1D("fhMomentumtest5","fhMomentumtest5 (error of x-momentum);(mc-reco_reco)/mc;#", 401, -4.01, 4.01);
-	fhMomentumtest5vs =	new TH2D("fhMomentumtest5vs","fhMomentumtest5vs (error of x-momentum);mc;reco", 101, -1.01, 1.01, 101, -1.01, 1.01);
-	fhMomentumtest6 =	new TH1D("fhMomentumtest6","fhMomentumtest6 (error of y-momentum);(mc-reco_reco)/mc;#", 401, -4.01, 4.01);
-	fhMomentumtest6vs =	new TH2D("fhMomentumtest6vs","fhMomentumtest6vs (error of y-momentum);mc;reco", 101, -1.01, 1.01, 101, -1.01, 1.01);
-	fhMomentumtest7 =	new TH1D("fhMomentumtest7","fhMomentumtest7 (error of z-momentum);(mc-reco_reco)/mc;#", 401, -4.01, 4.01);
-	fhMomentumtest7vs =	new TH2D("fhMomentumtest7vs","fhMomentumtest7vs (error of z-momentum);mc;reco", 201, -0.01, 4.01, 201, -0.01, 4.01);
-	fHistoList.push_back(fhInvariantMass_recoMomentum1);
-	fHistoList.push_back(fhInvariantMass_recoMomentum2);
-	fHistoList.push_back(fhInvariantMass_recoMomentum3);
-	fHistoList.push_back(fhInvariantMass_recoMomentum4);
-	fHistoList.push_back(fhInvariantMass_recoMomentum5);
-	fHistoList.push_back(fhMomentumtest1);
-	fHistoList.push_back(fhMomentumtest2);
-	fHistoList.push_back(fhMomentumtest3);
-	fHistoList.push_back(fhMomentumtest4);
-	fHistoList.push_back(fhMomentumtest5);		// error of x-component of reconstructed momentum
-	fHistoList.push_back(fhMomentumtest6);		// error of y-component of reconstructed momentum
-	fHistoList.push_back(fhMomentumtest7);		// error of z-component of reconstructed momentum
-	fHistoList.push_back(fhMomentumtest5vs);	// x-component of reconstructed momentum vs mc-momentum
-	fHistoList.push_back(fhMomentumtest6vs);	// y-component of reconstructed momentum vs mc-momentum
-	fHistoList.push_back(fhMomentumtest7vs);	// z-component of reconstructed momentum vs mc-momentum
+	fhInvMass_EPEM_mc				= new TH1D("fhInvMass_EPEM_mc","fhInvariantMass_recoMomentum1 (mc);mass;#", 400, 0., 2.);
+	fhInvMass_EPEM_stsMomVec		= new TH1D("fhInvMass_EPEM_stsMomVec","fhInvariantMass_recoMomentum2 (stsMomentumVec);mass;#", 100, 0., 2.);
+	fhInvMass_EPEM_refitted			= new TH1D("fhInvMass_EPEM_refitted","fhInvariantMass_recoMomentum3 (refitted at primary);mass;#", 100, 0., 2.);
+	fhInvMass_EPEM_error_stsMomVec	= new TH1D("fhInvMass_EPEM_error_stsMomVec","fhInvariantMass_recoMomentum4 (error, stsMomentumVec);(mc-reco)/mc;#", 500, -0.005, 4.995);
+	fhInvMass_EPEM_error_refitted	= new TH1D("fhInvMass_EPEM_error_refitted","fhInvariantMass_recoMomentum5 (error, refitted);(mc-reco)/mc;#", 500, -0.005, 4.995);
+	fhUsedMomenta_stsMomVec			= new TH1D("fhUsedMomenta_stsMomVec","fhMomentumtest1;momentum;#", 100, 0., 2.);
+	fhUsedMomenta_mc				= new TH1D("fhUsedMomenta_mc","fhMomentumtest2;momentum;#", 100, 0., 2.);
+	fhUsedMomenta_error_stsMomVec	= new TH1D("fhUsedMomenta_error_stsMomVec","fhMomentumtest3 (error);(mc-reco)/mc;#", 400, -2.005, 1.995);
+	fhUsedMomenta_error_refitted	= new TH1D("fhUsedMomenta_error_refitted","fhMomentumtest4 (error);(mc-reco_refitted)/mc;#", 400, -2.005, 1.995);
+	
+	fhUsedMomenta_errorX_stsMomVec	= new TH1D("fhUsedMomenta_errorX_stsMomVec","fhMomentumtest5 (error of x-momentum);(mc-reco_reco)/mc;#", 401, -4.01, 4.01);
+	fhUsedMomenta_vsX_stsMomVec		= new TH2D("fhUsedMomenta_vsX_stsMomVec","fhMomentumtest5vs (error of x-momentum);mc;reco", 101, -1.01, 1.01, 101, -1.01, 1.01);
+	fhUsedMomenta_errorY_stsMomVec	= new TH1D("fhUsedMomenta_errorY_stsMomVec","fhMomentumtest6 (error of y-momentum);(mc-reco_reco)/mc;#", 401, -4.01, 4.01);
+	fhUsedMomenta_vsY_stsMomVec		= new TH2D("fhUsedMomenta_vsY_stsMomVec","fhMomentumtest6vs (error of y-momentum);mc;reco", 101, -1.01, 1.01, 101, -1.01, 1.01);
+	fhUsedMomenta_errorZ_stsMomVec	= new TH1D("fhUsedMomenta_errorZ_stsMomVec","fhMomentumtest7 (error of z-momentum);(mc-reco_reco)/mc;#", 401, -4.01, 4.01);
+	fhUsedMomenta_vsZ_stsMomVec		= new TH2D("fhUsedMomenta_vsZ_stsMomVec","fhMomentumtest7vs (error of z-momentum);mc;reco", 201, -0.01, 4.01, 201, -0.01, 4.01);
+	fHistoList_reco.push_back(fhInvMass_EPEM_mc);
+	fHistoList_reco.push_back(fhInvMass_EPEM_stsMomVec);
+	fHistoList_reco.push_back(fhInvMass_EPEM_refitted);
+	fHistoList_reco.push_back(fhInvMass_EPEM_error_stsMomVec);
+	fHistoList_reco.push_back(fhInvMass_EPEM_error_refitted);
+	fHistoList_reco.push_back(fhUsedMomenta_stsMomVec);
+	fHistoList_reco.push_back(fhUsedMomenta_mc);
+	fHistoList_reco.push_back(fhUsedMomenta_error_stsMomVec);
+	fHistoList_reco.push_back(fhUsedMomenta_error_refitted);
+	fHistoList_reco.push_back(fhUsedMomenta_errorX_stsMomVec);		// error of x-component of reconstructed momentum
+	fHistoList_reco.push_back(fhUsedMomenta_errorY_stsMomVec);		// error of y-component of reconstructed momentum
+	fHistoList_reco.push_back(fhUsedMomenta_errorZ_stsMomVec);		// error of z-component of reconstructed momentum
+	fHistoList_reco.push_back(fhUsedMomenta_vsX_stsMomVec);	// x-component of reconstructed momentum vs mc-momentum
+	fHistoList_reco.push_back(fhUsedMomenta_vsY_stsMomVec);	// y-component of reconstructed momentum vs mc-momentum
+	fHistoList_reco.push_back(fhUsedMomenta_vsZ_stsMomVec);	// z-component of reconstructed momentum vs mc-momentum
 	
 	fhInvariantMass_pi0epem = new TH1D("fhInvariantMass_pi0epem","fhInvariantMass_pi0epem;mass;#", 400, 0., 2.);
-	fHistoList.push_back(fhInvariantMass_pi0epem);
+	fHistoList_reco.push_back(fhInvariantMass_pi0epem);
 	
 	
 	fhSearchGammas = new TH1D("fhSearchGammas","fhSearchGammas;mass;#", 100, -0.005, 0.995);
@@ -338,6 +340,7 @@ void CbmAnaConversion::Exec(Option_t* option)
    fRecoTracklist.clear();
    fRecoTracklistEPEM.clear();
    fRecoMomentum.clear();
+   fRecoRefittedMomentum.clear();
    
    int countPrimEl = 0;
    int countSecEl = 0;
@@ -371,14 +374,10 @@ void CbmAnaConversion::Exec(Option_t* option)
 	for (int i = 0; i < nofMcTracks; i++) {
 
 		CbmMCTrack* mctrack = (CbmMCTrack*)fMcTracks->At(i);
-		if (mctrack == NULL) continue;
+		if (mctrack == NULL) continue;   
    
-   
-		TomographyMC(mctrack); // analyse gamma-conversions with MC data
-   
-		FillMCTracklist_gamma(mctrack);
-		FillMCTracklist_electrons(mctrack);
-
+		TomographyMC(mctrack); 		// analyse gamma-conversions with MC data
+		FillMCTracklists(mctrack);	// fill tracklists for further analyses
 
   
 		if (mctrack->GetMotherId() == -1) {
@@ -410,89 +409,27 @@ void CbmAnaConversion::Exec(Option_t* option)
 			if (motherId == -1) countPi0MC_fromPrimary++;
 		}
 
-		if (TMath::Abs( mctrack->GetPdgCode())  == 11) {
-			int motherId = mctrack->GetMotherId();
-			if (motherId == -1) continue;
-			CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
-			int mcMotherPdg  = -1;
-			if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
-			//cout << mcMotherPdg << endl;
-			
-			if(mcMotherPdg == 22) {
-				fhElectronSources->Fill(0);
-				int grandmotherId = mother->GetMotherId();
-				if (grandmotherId == -1) continue;
-				CbmMCTrack* grandmother = (CbmMCTrack*) fMcTracks->At(grandmotherId);
-				int mcGrandmotherPdg  = -1;
-				if (NULL != grandmother) mcGrandmotherPdg = grandmother->GetPdgCode();
-				if(mcGrandmotherPdg == 111) fhElectronSources->Fill(3);
-				if(mcGrandmotherPdg == 221) fhElectronSources->Fill(4);
-				
-				if(mcGrandmotherPdg == 111) {
-					TVector3 v;
-					mctrack->GetStartVertex(v);
-					fhElectronsFromPi0_z->Fill(v.Z());
-				}
-				
-			}
-			if(mcMotherPdg == 111) fhElectronSources->Fill(1);
-			if(mcMotherPdg == 221) fhElectronSources->Fill(2);
-			
 
-			if (mcMotherPdg == 22) {
-				TVector3 v;
-				mctrack->GetStartVertex(v);
-				fhGammaZ->Fill(v.Z());
-				countGammaEl++;
-			}
+		if (TMath::Abs( mctrack->GetPdgCode())  == 11) {
+			AnalyseElectrons(mctrack);
 		}
+
 	}
-	
+
 	cout << "Number of pi0 in MC sample: " << countPi0MC << endl;
 	cout << "Number of pi0 from primary: " << countPi0MC_fromPrimary << endl;
 	fhNofPi0_perEvent->Fill(countPi0MC);
 	fhNofPi0_perEvent_cut->Fill(countPi0MC_cut);
-	
+
 	InvariantMassTest();
 	InvariantMassMC_all();
-	
+
 	ReconstructGamma();
-	
-//	cout << "fMCTracklist_omega: " << fMCTracklist_all.size() << endl;
-	if(fMCTracklist_all.size() > 1) {
-	//	CalculateInvMass_MC_2particles();
-	}
+
    
 	fhNofElPrim->Fill(countPrimEl);
 	fhNofElSec->Fill(countSecEl);
 	fhNofElAll->Fill(countAllEl);
-   
-	if(countPrimEl == 2 && countAllEl == 4) {
-		testint++;
-		for (int i = 0; i < nofMcTracks; i++) {
-			CbmMCTrack* mctrack = (CbmMCTrack*)fMcTracks->At(i);
-			if (TMath::Abs( mctrack->GetPdgCode())  == 11) {
-				int motherId = mctrack->GetMotherId();
-				if (motherId == -1) continue;
-				CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
-				int mcMotherPdg  = -1;
-				if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
-
-				if (mcMotherPdg == 22) {
-					TVector3 v;
-					mctrack->GetStartVertex(v);
-					fhGammaZ_selected->Fill(v.Z());
-				}
-			}
-		}
-	}
-
-//	cout << "Nof Prim El = " << countPrimEl << endl;
-//	cout << "Nof Sec El = " << countSecEl << endl;
-//	cout << "Nof All El = " << countAllEl << endl;
-//	cout << "Nof Gamma El = " << countGammaEl << endl;
-//	cout << "Nof McTracks = " << nofMcTracks << endl;
-//	cout << "Nof PrimPart = " << countPrimPart << endl;
 
 
 	// END - Analyse MC tracks
@@ -532,6 +469,7 @@ void CbmAnaConversion::Exec(Option_t* option)
        TVector3 stsMomentumVec; 
        stsTrack->GetParamFirst()->Momentum(stsMomentumVec);
        Double_t stsMomentum = stsMomentumVec.Mag();
+       
        TVector3 mcMomentumVec;
        mcTrack1->GetMomentum(mcMomentumVec);
        Double_t mcMomentum = mcMomentumVec.Mag();
@@ -559,7 +497,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 		vtxTrack->Momentum(refittedMomentum);
        
        
-		FillRecoTracklistEPEM(mcTrack1, bothtogether, refittedMomentum);
+		FillRecoTracklistEPEM(mcTrack1, stsMomentumVec, refittedMomentum);
        
 	}
 //	InvariantMassTestReco();
@@ -595,60 +533,45 @@ void CbmAnaConversion::Exec(Option_t* option)
 
 void CbmAnaConversion::Finish()
 {
-	Probability();
-	
-	
-	cout << "test " << test << endl;
-	
+	//Probability();
+
 /*	
 	TCanvas* c = new TCanvas();
 	c->SetWindowSize(800, 1600);
 	DrawH1(fTest);
 	//fhGammaZ->Write();
-	
-	TCanvas* c2 = new TCanvas();
-	c2->SetWindowSize(2000, 1600);
-	DrawH1(fhGammaZ_selected);
-	
-	TCanvas* c3 = new TCanvas();
-	c3->SetWindowSize(2000, 1600);
-	gPad->Divide(3,1);
-	c3->cd(1);
-	DrawH1(fhNofElPrim);
-	c3->cd(2);
-	DrawH1(fhNofElSec);
-	c3->cd(3);
-	DrawH1(fhNofElAll);
-	
-	
-	//TCanvas* c4 = new TCanvas();
-	//c4->SetWindowSize(2000, 1600);
-	//DrawH1(fhTomography);
 */
 	
 	// Write histograms to a file
 	gDirectory->mkdir("analysis-conversion");
 	gDirectory->cd("analysis-conversion");
-	for (Int_t i = 0; i < fHistoList.size(); i++){
-		fHistoList[i]->Write();
-	}
-	
+
 	gDirectory->mkdir("MC data");
 	gDirectory->cd("MC data");
 	for (Int_t i = 0; i < fHistoList_MC.size(); i++){
 		fHistoList_MC[i]->Write();
 	}
 	gDirectory->cd("..");
-	
+
 	gDirectory->mkdir("Tomography");
 	gDirectory->cd("Tomography");
 	for (Int_t i = 0; i < fHistoList_tomography.size(); i++){
 		fHistoList_tomography[i]->Write();
 	}
-	
-	
-	gDirectory->cd("../..");
-	
+	gDirectory->cd("..");
+
+	gDirectory->mkdir("Reconstruction");
+	gDirectory->cd("Reconstruction");
+	for (Int_t i = 0; i < fHistoList_reco.size(); i++){
+		fHistoList_reco[i]->Write();
+	}
+	gDirectory->cd("..");
+
+	for (Int_t i = 0; i < fHistoList.size(); i++){
+		fHistoList[i]->Write();
+	}
+
+	gDirectory->cd("..");
 // =========================================================================================================================
 // ============================================== END - FINISH function ====================================================
 // =========================================================================================================================
@@ -658,12 +581,47 @@ void CbmAnaConversion::Finish()
 
 
 
+void CbmAnaConversion::AnalyseElectrons(CbmMCTrack* mctrack)
+{
+	int motherId = mctrack->GetMotherId();
+	if (motherId == -1) return;
+	CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
+	int mcMotherPdg  = -1;
+	if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
+	//cout << mcMotherPdg << endl;
+
+	if(mcMotherPdg == 22) {
+		fhElectronSources->Fill(0);
+		int grandmotherId = mother->GetMotherId();
+		if (grandmotherId == -1) return;
+		CbmMCTrack* grandmother = (CbmMCTrack*) fMcTracks->At(grandmotherId);
+		int mcGrandmotherPdg  = -1;
+		if (NULL != grandmother) mcGrandmotherPdg = grandmother->GetPdgCode();
+		if(mcGrandmotherPdg == 111) fhElectronSources->Fill(3);
+		if(mcGrandmotherPdg == 221) fhElectronSources->Fill(4);
+
+		if(mcGrandmotherPdg == 111) {
+			TVector3 v;
+			mctrack->GetStartVertex(v);
+			fhElectronsFromPi0_z->Fill(v.Z());
+		}
+
+	}
+	if(mcMotherPdg == 111) fhElectronSources->Fill(1);
+	if(mcMotherPdg == 221) fhElectronSources->Fill(2);
+
+	if (mcMotherPdg == 22) {
+		TVector3 v;
+		mctrack->GetStartVertex(v);
+		fhGammaZ->Fill(v.Z());
+	//	countGammaEl++;
+	}
+}
 
 
 
-KinematicParams CbmAnaConversion::CalculateKinematicParams(
-      const CbmMCTrack* mctrackP,
-      const CbmMCTrack* mctrackM)
+
+KinematicParams CbmAnaConversion::CalculateKinematicParams(const CbmMCTrack* mctrackP, const CbmMCTrack* mctrackM)
 {
     KinematicParams params;
 
@@ -834,6 +792,9 @@ Double_t CbmAnaConversion::Invmass_4particlesRECO(const TVector3 part1, const TV
 }
 
 
+// =========================================================================================================================
+// ============================================== UP TO HERE: Invariant mass calculation ===================================
+// =========================================================================================================================
 
 
 
@@ -841,9 +802,9 @@ Double_t CbmAnaConversion::Invmass_4particlesRECO(const TVector3 part1, const TV
 void CbmAnaConversion::TomographyMC(CbmMCTrack* mctrack)
 // doing tomography from gamma -> e+ e- decays, MC DATA
 {
-		if (TMath::Abs( mctrack->GetPdgCode())  == 11) { 
-			int motherId = mctrack->GetMotherId();
-			if (motherId != -1) {
+	if (TMath::Abs( mctrack->GetPdgCode())  == 11) {
+		int motherId = mctrack->GetMotherId();
+		if (motherId != -1) {
 			CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
 			int mcMotherPdg  = -1;
 			if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
@@ -852,14 +813,13 @@ void CbmAnaConversion::TomographyMC(CbmMCTrack* mctrack)
 				TVector3 v;
 				mctrack->GetStartVertex(v);
 				fhGammaZ->Fill(v.Z());
-			  
+		
 				fhTomography->Fill(v.X(), v.Y(), v.Z());
 				fhTomography_XZ->Fill(v.X(), v.Z());
 				fhTomography_YZ->Fill(v.Y(), v.Z());
 				fhConversion_energy->Fill(mctrack->GetEnergy());
 				fhConversion_p->Fill(mctrack->GetP());
-				
-				
+
 				if(v.z() >= 0 && v.Z() <= 170) { // only in region before the RICH
 					fhTomography_uptoRICH->Fill(v.X(), v.Y());
 				}
@@ -881,11 +841,11 @@ void CbmAnaConversion::TomographyMC(CbmMCTrack* mctrack)
 				if(v.z() >= 369 && v.Z() <= 371) { // only in region of RICH backplate
 					fhTomography_RICH_backplate->Fill(v.X(), v.Y());
 				}
-				
+
 				fhConversion->Fill(v.z());
 			}
-			}
 		}
+	}
 }
 
 
@@ -926,43 +886,48 @@ void CbmAnaConversion::Probability()
 }
 
 
+// =========================================================================================================================
+// ============================================== UP TO HERE: Tomography related ===========================================
+// =========================================================================================================================
 
-void CbmAnaConversion::FillMCTracklist_gamma(CbmMCTrack* mctrack) 
-// only decay pi0 -> gamma gamma considered
-{	
-		if (TMath::Abs( mctrack->GetPdgCode())  == 22) { 
-			int motherId = mctrack->GetMotherId();
-			if (motherId != -1) {
-				CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
-				int mcMotherPdg  = -1;
-				if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
-				if (mcMotherPdg == 111) {	// pdg code 111 = pi0
-					fMCTracklist.push_back(mctrack);
-				}
+
+
+
+void CbmAnaConversion::FillMCTracklists(CbmMCTrack* mctrack)
+// fill all relevant tracklists containing MC tracks
+{
+	Bool_t electrons = true;
+	Bool_t gammas = true;
+	
+	// fill gamma tracklist
+	if(TMath::Abs( mctrack->GetPdgCode()) == 22 && gammas) {
+		int motherId = mctrack->GetMotherId();
+		if (motherId != -1) {
+			CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
+			int mcMotherPdg  = -1;
+			if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
+			if (mcMotherPdg == 111) {	// pdg code 111 = pi0
+				fMCTracklist.push_back(mctrack);
 			}
 		}
-}
+	}
 
-
-
-void CbmAnaConversion::FillMCTracklist_electrons(CbmMCTrack* mctrack) 
-// fill all electrons/positrons in tracklist, with cut on z-position and gamma as mother
-{	
-	if(TMath::Abs( mctrack->GetPdgCode()) == 11) { 
+	// fill electron tracklists
+	if(TMath::Abs( mctrack->GetPdgCode()) == 11 && electrons) { 
 		TVector3 v;
 		mctrack->GetStartVertex(v);
-		if(v.Z() <= 2000) {
+		if(v.Z() <= 70) {
 			int motherId = mctrack->GetMotherId();
 			if (motherId != -1 || motherId == -1) {
 				CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
 				int mcMotherPdg  = -1;
 				if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
-				if (mcMotherPdg == 21 || mcMotherPdg == 111 || mcMotherPdg == 221) {
+				if (mcMotherPdg == 22 || mcMotherPdg == 111 || mcMotherPdg == 221) {
 					int grandmotherId = mother->GetMotherId();
-					if(grandmotherId != -1) {
-						CbmMCTrack* grandmother = (CbmMCTrack*) fMcTracks->At(grandmotherId);
-						int mcGrandmotherPdg = -1;
-						if (NULL != grandmother) mcGrandmotherPdg = grandmother->GetPdgCode();
+					if(grandmotherId != -1 || grandmotherId == -1) {
+					//	CbmMCTrack* grandmother = (CbmMCTrack*) fMcTracks->At(grandmotherId);
+					//	int mcGrandmotherPdg = -1;
+					//	if (NULL != grandmother) mcGrandmotherPdg = grandmother->GetPdgCode();
 					//	if(mcGrandmotherPdg == 111) {
 							fMCTracklist_all.push_back(mctrack);
 					//	}
@@ -973,34 +938,6 @@ void CbmAnaConversion::FillMCTracklist_electrons(CbmMCTrack* mctrack)
 	}
 }
 
-
-
-/*
-void CbmAnaConversion::FillMCTracklist_omega(CbmMCTrack* mctrack) 
-// only decay omega -> e+ e- considered
-{
-	if (TMath::Abs( mctrack->GetPdgCode())  == 11) {
-		int motherId = mctrack->GetMotherId();
-		if (motherId == -1 && fAnalyseMode == 3) {	// fAnalyseMode == 3 -> pluto files
-			CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
-			int mcMotherPdg  = -1;
-			if (NULL != mother) mcMotherPdg = mother->GetPdgCode();                                                                                                                                                                                                                                                                     
-				fMCTracklist_omega.push_back(mctrack);
-				cout << "OMEGA FILL: pdg " << mctrack->GetPdgCode() << "\t motherid " << motherId << endl;
-		}
-		if (motherId != -1 && fAnalyseMode == 2) {	// fAnalyseMode == 2 -> urqmd files
-			CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
-			int mcMotherPdg  = -1;
-			if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
-			if (mcMotherPdg == 223) {	// pdg code 223 = omega
-				fMCTracklist_omega.push_back(mctrack);
-				cout << "OMEGA FILL: pdg " << mctrack->GetPdgCode() << "\t motherid " << motherId << endl;
-			}
-		}
-		
-	}
-}
-*/
 
 
 
@@ -1144,9 +1081,10 @@ void CbmAnaConversion::InvariantMassTest_4epem()
 							int mcMotherPdg1  = -1;
 							CbmMCTrack* mother1 = (CbmMCTrack*) fMcTracks->At(motherId1);
 							if (NULL != mother1) mcMotherPdg1 = mother1->GetPdgCode();
-							if(mcMotherPdg1 == 111 && NofDaughters(motherId1) == 4) {
+							if( (mcMotherPdg1 == 111 || mcMotherPdg1 == 221) && NofDaughters(motherId1) == 4) {
 								Double_t invmass2 = 0;	// momenta from stsMomentumVec
-								invmass2 = Invmass_4particlesRECO(fRecoMomentum[i], fRecoMomentum[j], fRecoMomentum[k], fRecoMomentum[l]);
+							//	invmass2 = Invmass_4particlesRECO(fRecoMomentum[i], fRecoMomentum[j], fRecoMomentum[k], fRecoMomentum[l]);
+								invmass2 = Invmass_4particlesRECO(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
 								fhInvariantMass_pi0epem->Fill(invmass2);
 								cout << "Decay pi0 -> e+e-e+e- detected!\t\t" << invmass2 << endl;
 							}
@@ -1229,7 +1167,7 @@ void CbmAnaConversion::InvariantMassTest_4epem()
 					
 					if(grandmotherId1 == -1) continue;
 					if(grandmotherId1 == grandmotherId2 && grandmotherId1 == grandmotherId3 && grandmotherId1 == grandmotherId4) {
-						if(mcGrandmotherPdg1 != 111) continue; // 111 = pi0, 221 = eta
+						if(mcGrandmotherPdg1 != 111 && mcGrandmotherPdg1 != 221) continue; // 111 = pi0, 221 = eta
 						
 						Double_t invmass1 = 0;	// true MC values
 						invmass1 = Invmass_4particles(fRecoTracklistEPEM[i], fRecoTracklistEPEM[j], fRecoTracklistEPEM[k], fRecoTracklistEPEM[l]);
@@ -1238,11 +1176,12 @@ void CbmAnaConversion::InvariantMassTest_4epem()
 						Double_t invmass3 = 0;	// momenta from refitted at primary vertex
 						invmass3 = Invmass_4particlesRECO(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
 						
-					//	cout << fRecoMomentum[i].X() << " / " << fRecoMomentum[i].Y() << " / " << fRecoMomentum[i].Z() << endl;
-					//	cout << fRecoMomentum[j].X() << " / " << fRecoMomentum[j].Y() << " / " << fRecoMomentum[j].Z() << endl;
-					//	cout << fRecoMomentum[k].X() << " / " << fRecoMomentum[k].Y() << " / " << fRecoMomentum[k].Z() << endl;
-					//	cout << fRecoMomentum[l].X() << " / " << fRecoMomentum[l].Y() << " / " << fRecoMomentum[l].Z() << endl;
-					
+						cout << "######################################################################" << endl;
+						cout << fRecoMomentum[i].X() << "\t" << fRecoRefittedMomentum[i].X() << endl;
+						cout << fRecoMomentum[i].Y() << "\t" << fRecoRefittedMomentum[i].Y() << endl;
+						cout << fRecoMomentum[i].Z() << "\t" << fRecoRefittedMomentum[i].Z() << endl;
+						
+						
 					cout << "######################################################################" << endl;
 					cout << "index: " << i << "\t" << j << "\t" << k << "\t" << l << endl;
 					cout << "motherid: " << motherId1 << "\t" << motherId2 << "\t" << motherId3 << "\t" << motherId4 << endl;
@@ -1251,72 +1190,68 @@ void CbmAnaConversion::InvariantMassTest_4epem()
 					cout << "pdg: " << fRecoTracklistEPEM[i]->GetPdgCode() << "\t" << fRecoTracklistEPEM[j]->GetPdgCode() << "\t" << fRecoTracklistEPEM[k]->GetPdgCode() << "\t" << fRecoTracklistEPEM[l]->GetPdgCode() << endl;
 					cout << "invmass reco: " << invmass2 << "\t invmass mc: " << invmass1 << endl;
 					
-					fhInvariantMass_recoMomentum1->Fill(invmass1);
-					fhInvariantMass_recoMomentum2->Fill(invmass2);
-					fhInvariantMass_recoMomentum3->Fill(invmass3);
-					fhInvariantMass_recoMomentum4->Fill(1.0*TMath::Abs(invmass1-invmass2)/invmass1);
-					fhInvariantMass_recoMomentum5->Fill(1.0*TMath::Abs(invmass1-invmass3)/invmass1);
+					fhInvMass_EPEM_mc->Fill(invmass1);
+					fhInvMass_EPEM_stsMomVec->Fill(invmass2);
+					fhInvMass_EPEM_refitted->Fill(invmass3);
+					fhInvMass_EPEM_error_stsMomVec->Fill(1.0*TMath::Abs(invmass1-invmass2)/invmass1);
+					fhInvMass_EPEM_error_refitted->Fill(1.0*TMath::Abs(invmass1-invmass3)/invmass1);
 					
-					fhMomentumtest1->Fill(fRecoMomentum[i].Mag());
-					fhMomentumtest1->Fill(fRecoMomentum[j].Mag());
-					fhMomentumtest1->Fill(fRecoMomentum[k].Mag());
-					fhMomentumtest1->Fill(fRecoMomentum[l].Mag());
+					fhUsedMomenta_stsMomVec->Fill(fRecoMomentum[i].Mag());
+					fhUsedMomenta_stsMomVec->Fill(fRecoMomentum[j].Mag());
+					fhUsedMomenta_stsMomVec->Fill(fRecoMomentum[k].Mag());
+					fhUsedMomenta_stsMomVec->Fill(fRecoMomentum[l].Mag());
 					
-					fhMomentumtest2->Fill(fRecoTracklistEPEM[i]->GetP());
-					fhMomentumtest2->Fill(fRecoTracklistEPEM[j]->GetP());
-					fhMomentumtest2->Fill(fRecoTracklistEPEM[k]->GetP());
-					fhMomentumtest2->Fill(fRecoTracklistEPEM[l]->GetP());
+					fhUsedMomenta_mc->Fill(fRecoTracklistEPEM[i]->GetP());
+					fhUsedMomenta_mc->Fill(fRecoTracklistEPEM[j]->GetP());
+					fhUsedMomenta_mc->Fill(fRecoTracklistEPEM[k]->GetP());
+					fhUsedMomenta_mc->Fill(fRecoTracklistEPEM[l]->GetP());
 					
-					fhMomentumtest3->Fill(TMath::Abs(fRecoTracklistEPEM[i]->GetP() - fRecoMomentum[i].Mag())/fRecoTracklistEPEM[i]->GetP());
-					fhMomentumtest3->Fill(TMath::Abs(fRecoTracklistEPEM[j]->GetP() - fRecoMomentum[j].Mag())/fRecoTracklistEPEM[j]->GetP());
-					fhMomentumtest3->Fill(TMath::Abs(fRecoTracklistEPEM[k]->GetP() - fRecoMomentum[k].Mag())/fRecoTracklistEPEM[k]->GetP());
-					fhMomentumtest3->Fill(TMath::Abs(fRecoTracklistEPEM[l]->GetP() - fRecoMomentum[l].Mag())/fRecoTracklistEPEM[l]->GetP());
+					fhUsedMomenta_error_stsMomVec->Fill(TMath::Abs(fRecoTracklistEPEM[i]->GetP() - fRecoMomentum[i].Mag())/fRecoTracklistEPEM[i]->GetP());
+					fhUsedMomenta_error_stsMomVec->Fill(TMath::Abs(fRecoTracklistEPEM[j]->GetP() - fRecoMomentum[j].Mag())/fRecoTracklistEPEM[j]->GetP());
+					fhUsedMomenta_error_stsMomVec->Fill(TMath::Abs(fRecoTracklistEPEM[k]->GetP() - fRecoMomentum[k].Mag())/fRecoTracklistEPEM[k]->GetP());
+					fhUsedMomenta_error_stsMomVec->Fill(TMath::Abs(fRecoTracklistEPEM[l]->GetP() - fRecoMomentum[l].Mag())/fRecoTracklistEPEM[l]->GetP());
 					
-					fhMomentumtest4->Fill((fRecoTracklistEPEM[i]->GetP() - fRecoMomentum[i].Mag())/fRecoTracklistEPEM[i]->GetP());
-					fhMomentumtest4->Fill((fRecoTracklistEPEM[j]->GetP() - fRecoMomentum[j].Mag())/fRecoTracklistEPEM[j]->GetP());
-					fhMomentumtest4->Fill((fRecoTracklistEPEM[k]->GetP() - fRecoMomentum[k].Mag())/fRecoTracklistEPEM[k]->GetP());
-					fhMomentumtest4->Fill((fRecoTracklistEPEM[l]->GetP() - fRecoMomentum[l].Mag())/fRecoTracklistEPEM[l]->GetP());
+					fhUsedMomenta_error_refitted->Fill(TMath::Abs(fRecoRefittedMomentum[i].Mag() - fRecoMomentum[i].Mag())/fRecoRefittedMomentum[i].Mag());
+					fhUsedMomenta_error_refitted->Fill(TMath::Abs(fRecoRefittedMomentum[j].Mag() - fRecoMomentum[j].Mag())/fRecoRefittedMomentum[j].Mag());
+					fhUsedMomenta_error_refitted->Fill(TMath::Abs(fRecoRefittedMomentum[k].Mag() - fRecoMomentum[k].Mag())/fRecoRefittedMomentum[k].Mag());
+					fhUsedMomenta_error_refitted->Fill(TMath::Abs(fRecoRefittedMomentum[l].Mag() - fRecoMomentum[l].Mag())/fRecoRefittedMomentum[l].Mag());
 					
-				//	fhMomentumtest4->Fill(TMath::Abs(fRecoTracklistEPEM[i]->GetP() - fRecoRefittedMomentum[i].Mag())/fRecoTracklistEPEM[i]->GetP());
-				//	fhMomentumtest4->Fill(TMath::Abs(fRecoTracklistEPEM[j]->GetP() - fRecoRefittedMomentum[j].Mag())/fRecoTracklistEPEM[j]->GetP());
-				//	fhMomentumtest4->Fill(TMath::Abs(fRecoTracklistEPEM[k]->GetP() - fRecoRefittedMomentum[k].Mag())/fRecoTracklistEPEM[k]->GetP());
-				//	fhMomentumtest4->Fill(TMath::Abs(fRecoTracklistEPEM[l]->GetP() - fRecoRefittedMomentum[l].Mag())/fRecoTracklistEPEM[l]->GetP());
 					
 					TVector3 momentumtest5a;
 					fRecoTracklistEPEM[i]->GetMomentum(momentumtest5a);
-					fhMomentumtest5->Fill(TMath::Abs(momentumtest5a.X() - fRecoMomentum[i].X())/momentumtest5a.X());
-					fhMomentumtest6->Fill(TMath::Abs(momentumtest5a.Y() - fRecoMomentum[i].Y())/momentumtest5a.Y());
-					fhMomentumtest7->Fill(TMath::Abs(momentumtest5a.Z() - fRecoMomentum[i].Z())/momentumtest5a.Z());
-					fhMomentumtest5vs->Fill(momentumtest5a.X(), fRecoMomentum[i].X());
-					fhMomentumtest6vs->Fill(momentumtest5a.Y(), fRecoMomentum[i].Y());
-					fhMomentumtest7vs->Fill(momentumtest5a.Z(), fRecoMomentum[i].Z());
+					fhUsedMomenta_errorX_stsMomVec->Fill(TMath::Abs(momentumtest5a.X() - fRecoMomentum[i].X())/momentumtest5a.X());
+					fhUsedMomenta_errorY_stsMomVec->Fill(TMath::Abs(momentumtest5a.Y() - fRecoMomentum[i].Y())/momentumtest5a.Y());
+					fhUsedMomenta_errorZ_stsMomVec->Fill(TMath::Abs(momentumtest5a.Z() - fRecoMomentum[i].Z())/momentumtest5a.Z());
+					fhUsedMomenta_vsX_stsMomVec->Fill(momentumtest5a.X(), fRecoMomentum[i].X());
+					fhUsedMomenta_vsY_stsMomVec->Fill(momentumtest5a.Y(), fRecoMomentum[i].Y());
+					fhUsedMomenta_vsZ_stsMomVec->Fill(momentumtest5a.Z(), fRecoMomentum[i].Z());
 				
 					TVector3 momentumtest5b;
 					fRecoTracklistEPEM[j]->GetMomentum(momentumtest5b);
-					fhMomentumtest5->Fill(TMath::Abs(momentumtest5b.X() - fRecoMomentum[j].X())/momentumtest5b.X());
-					fhMomentumtest6->Fill(TMath::Abs(momentumtest5b.Y() - fRecoMomentum[j].Y())/momentumtest5b.Y());
-					fhMomentumtest7->Fill(TMath::Abs(momentumtest5b.Z() - fRecoMomentum[j].Z())/momentumtest5b.Z());
-					fhMomentumtest5vs->Fill(momentumtest5b.X(), fRecoMomentum[j].X());
-					fhMomentumtest6vs->Fill(momentumtest5b.Y(), fRecoMomentum[j].Y());
-					fhMomentumtest7vs->Fill(momentumtest5b.Z(), fRecoMomentum[j].Z());
+					fhUsedMomenta_errorX_stsMomVec->Fill(TMath::Abs(momentumtest5b.X() - fRecoMomentum[j].X())/momentumtest5b.X());
+					fhUsedMomenta_errorY_stsMomVec->Fill(TMath::Abs(momentumtest5b.Y() - fRecoMomentum[j].Y())/momentumtest5b.Y());
+					fhUsedMomenta_errorZ_stsMomVec->Fill(TMath::Abs(momentumtest5b.Z() - fRecoMomentum[j].Z())/momentumtest5b.Z());
+					fhUsedMomenta_vsX_stsMomVec->Fill(momentumtest5b.X(), fRecoMomentum[j].X());
+					fhUsedMomenta_vsY_stsMomVec->Fill(momentumtest5b.Y(), fRecoMomentum[j].Y());
+					fhUsedMomenta_vsZ_stsMomVec->Fill(momentumtest5b.Z(), fRecoMomentum[j].Z());
 				
 					TVector3 momentumtest5c;
 					fRecoTracklistEPEM[k]->GetMomentum(momentumtest5c);
-					fhMomentumtest5->Fill(TMath::Abs(momentumtest5c.X() - fRecoMomentum[k].X())/momentumtest5c.X());
-					fhMomentumtest6->Fill(TMath::Abs(momentumtest5c.Y() - fRecoMomentum[k].Y())/momentumtest5c.Y());
-					fhMomentumtest7->Fill(TMath::Abs(momentumtest5c.Z() - fRecoMomentum[k].Z())/momentumtest5c.Z());
-					fhMomentumtest5vs->Fill(momentumtest5c.X(), fRecoMomentum[k].X());
-					fhMomentumtest6vs->Fill(momentumtest5c.Y(), fRecoMomentum[k].Y());
-					fhMomentumtest7vs->Fill(momentumtest5c.Z(), fRecoMomentum[k].Z());
+					fhUsedMomenta_errorX_stsMomVec->Fill(TMath::Abs(momentumtest5c.X() - fRecoMomentum[k].X())/momentumtest5c.X());
+					fhUsedMomenta_errorY_stsMomVec->Fill(TMath::Abs(momentumtest5c.Y() - fRecoMomentum[k].Y())/momentumtest5c.Y());
+					fhUsedMomenta_errorZ_stsMomVec->Fill(TMath::Abs(momentumtest5c.Z() - fRecoMomentum[k].Z())/momentumtest5c.Z());
+					fhUsedMomenta_vsX_stsMomVec->Fill(momentumtest5c.X(), fRecoMomentum[k].X());
+					fhUsedMomenta_vsY_stsMomVec->Fill(momentumtest5c.Y(), fRecoMomentum[k].Y());
+					fhUsedMomenta_vsZ_stsMomVec->Fill(momentumtest5c.Z(), fRecoMomentum[k].Z());
 				
 					TVector3 momentumtest5d;
 					fRecoTracklistEPEM[l]->GetMomentum(momentumtest5d);
-					fhMomentumtest5->Fill(TMath::Abs(momentumtest5d.X() - fRecoMomentum[l].X())/momentumtest5d.X());
-					fhMomentumtest6->Fill(TMath::Abs(momentumtest5d.Y() - fRecoMomentum[l].Y())/momentumtest5d.Y());
-					fhMomentumtest7->Fill(TMath::Abs(momentumtest5d.Z() - fRecoMomentum[l].Z())/momentumtest5d.Z());
-					fhMomentumtest5vs->Fill(momentumtest5d.X(), fRecoMomentum[l].X());
-					fhMomentumtest6vs->Fill(momentumtest5d.Y(), fRecoMomentum[l].Y());
-					fhMomentumtest7vs->Fill(momentumtest5d.Z(), fRecoMomentum[l].Z());
+					fhUsedMomenta_errorX_stsMomVec->Fill(TMath::Abs(momentumtest5d.X() - fRecoMomentum[l].X())/momentumtest5d.X());
+					fhUsedMomenta_errorY_stsMomVec->Fill(TMath::Abs(momentumtest5d.Y() - fRecoMomentum[l].Y())/momentumtest5d.Y());
+					fhUsedMomenta_errorZ_stsMomVec->Fill(TMath::Abs(momentumtest5d.Z() - fRecoMomentum[l].Z())/momentumtest5d.Z());
+					fhUsedMomenta_vsX_stsMomVec->Fill(momentumtest5d.X(), fRecoMomentum[l].X());
+					fhUsedMomenta_vsY_stsMomVec->Fill(momentumtest5d.Y(), fRecoMomentum[l].Y());
+					fhUsedMomenta_vsZ_stsMomVec->Fill(momentumtest5d.Z(), fRecoMomentum[l].Z());
 				
 					
 					
@@ -1506,7 +1441,7 @@ void CbmAnaConversion::InvariantMassMC_all()
 							CbmMCTrack* mother1 = (CbmMCTrack*) fMcTracks->At(motherId1);
 							if (NULL != mother1) mcMotherPdg1 = mother1->GetPdgCode();
 							if(mcMotherPdg1 == 111) {
-								Double_t invmass2 = 0;	// momenta from stsMomentumVec
+								Double_t invmass2 = 0;
 								invmass2 = Invmass_4particles(fMCTracklist_all[i], fMCTracklist_all[j], fMCTracklist_all[k], fMCTracklist_all[l]);
 								fhInvariantMass_pi0epem->Fill(invmass2);
 								cout << "#######################################  Decay pi0 -> e+e-e+e- detected!\t\t" << invmass2 << endl;

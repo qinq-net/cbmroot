@@ -3,7 +3,7 @@
 *
 * \brief Optimization of the RICH geometry.
 *
-* \author Tariq Mahmoud<t.mahmoud@gsi.de>
+* \author Sascha Reinecke <reinecke@uni-wuppertal.de>
 * \date 2014
 **/
 
@@ -89,12 +89,11 @@ public:
     */
    virtual void Finish();
    
+   void		AnalyseElectrons(CbmMCTrack* mctrack);
    void 	TomographyMC(CbmMCTrack* mctrack);
    void 	TomographyReco(CbmMCTrack* mctrack);
    void 	Probability();
-   void 	FillMCTracklist_gamma(CbmMCTrack* mctrack);
-   void 	FillMCTracklist_electrons(CbmMCTrack* mctrack);
-   //void 	FillMCTracklist_omega(CbmMCTrack* mctrack);
+   void 	FillMCTracklists(CbmMCTrack* mctrack);
    void 	FillRecoTracklist(CbmMCTrack* mtrack);
    void 	FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom);
    void 	InvariantMassTest();
@@ -112,7 +111,6 @@ public:
 
 private:
    TH1D * fhGammaZ;
-   TH1D * fhGammaZ_selected;
    TH2D * fTest;
    
    TH1D * fhNofElPrim;
@@ -162,21 +160,21 @@ private:
    TH2D * fhMomentum_MCvsReco;
    TH1D * fhMomentum_MCvsReco_diff;
    
-   TH1D * fhInvariantMass_recoMomentum1;
-   TH1D * fhInvariantMass_recoMomentum2;
-   TH1D * fhInvariantMass_recoMomentum3;
-   TH1D * fhInvariantMass_recoMomentum4;
-   TH1D * fhInvariantMass_recoMomentum5;
-   TH1D * fhMomentumtest1;
-   TH1D * fhMomentumtest2;
-   TH1D * fhMomentumtest3;
-   TH1D * fhMomentumtest4;
-   TH1D * fhMomentumtest5;
-   TH2D * fhMomentumtest5vs;
-   TH1D * fhMomentumtest6;
-   TH2D * fhMomentumtest6vs;
-   TH1D * fhMomentumtest7;
-   TH2D * fhMomentumtest7vs;
+   TH1D * fhInvMass_EPEM_mc;
+   TH1D * fhInvMass_EPEM_stsMomVec;
+   TH1D * fhInvMass_EPEM_refitted;
+   TH1D * fhInvMass_EPEM_error_stsMomVec;
+   TH1D * fhInvMass_EPEM_error_refitted;
+   TH1D * fhUsedMomenta_stsMomVec;
+   TH1D * fhUsedMomenta_mc;
+   TH1D * fhUsedMomenta_error_stsMomVec;
+   TH1D * fhUsedMomenta_error_refitted;
+   TH1D * fhUsedMomenta_errorX_stsMomVec;
+   TH2D * fhUsedMomenta_vsX_stsMomVec;
+   TH1D * fhUsedMomenta_errorY_stsMomVec;
+   TH2D * fhUsedMomenta_vsY_stsMomVec;
+   TH1D * fhUsedMomenta_errorZ_stsMomVec;
+   TH2D * fhUsedMomenta_vsZ_stsMomVec;
    
    TH1D * fhInvariantMass_pi0epem;
    
@@ -216,6 +214,7 @@ private:
    vector<TH1*> fHistoList;				// list of all histograms
    vector<TH1*> fHistoList_MC;			// list of all histograms generated with MC data
    vector<TH1*> fHistoList_tomography;	// list of all histograms of tomography data (photon conversion)
+   vector<TH1*> fHistoList_reco;		// list of all histograms of reconstruction data
    
    vector<CbmMCTrack*> fMCTracklist;
    vector<CbmMCTrack*> fMCTracklist_all;
