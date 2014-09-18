@@ -859,7 +859,7 @@ void CbmMvdFindHits::UpdateDebugHistos(vector<Int_t>* clusterArray, CbmMvdStatio
 
     Algorithm for cluster shapes
 
-    /************************************************************/
+     ************************************************************/
     
     
     Float_t chargeArray3D[fChargeArraySize][fChargeArraySize];

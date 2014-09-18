@@ -106,7 +106,7 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   
   void AddPlugin(CbmMvdSensorPlugin* plugin){fPluginArray->AddLast((TObject*)plugin);};
   
-  CbmMvdSensorPlugin* GetPlugin(UInt_t nPlugin){(CbmMvdSensorPlugin*) fPluginArray->At(nPlugin);}
+  CbmMvdSensorPlugin* GetPlugin(UInt_t nPlugin){ return (CbmMvdSensorPlugin*) fPluginArray->At(nPlugin);}
   
   
   

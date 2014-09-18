@@ -200,6 +200,7 @@ initialized = kTRUE;
 // -----   Virtual public method Reinit   ----------------------------------
 InitStatus CbmMvdSensorFindHitTask::ReInit() {
     cout << "-I- " <<"CbmMvdSensorFindHitTask::ReInt---------------"<<endl;
+    return kSUCCESS;
 }
 // -------------------------------------------------------------------------
 
@@ -617,7 +618,7 @@ void CbmMvdSensorFindHitTask::UpdateDebugHistos(vector<Int_t>* clusterArray, Int
     /************************************************************
     Algorithm for cluster shapes
 
-    /************************************************************/
+     ************************************************************/
     
     
     Float_t chargeArray3D[fChargeArraySize][fChargeArraySize];

@@ -36,19 +36,19 @@ class CbmMvdSensorPlugin : public TObject
   /** Destructor **/
   virtual ~CbmMvdSensorPlugin();
   
-  virtual const MvdSensorPluginType GetPluginType(){;}
-  virtual void Init(){;}
-  virtual void Exec(){;}
-  virtual void ExecChain(){;}
+  virtual const MvdSensorPluginType GetPluginType();
+  virtual void Init();
+  virtual void Exec();
+  virtual void ExecChain();
     
-  virtual TClonesArray* GetInputArray(){;}
-  virtual TClonesArray* GetOutputArray(){;}
-  virtual TClonesArray* GetMatchArray(){;}
-  virtual TClonesArray* GetWriteArray(){;}
+  virtual TClonesArray* GetInputArray();
+  virtual TClonesArray* GetOutputArray();
+  virtual TClonesArray* GetMatchArray();
+  virtual TClonesArray* GetWriteArray();
   
-  virtual void SetInputArray(TClonesArray* inputArray){;}
-  virtual void SetInput(CbmMvdPoint* point){;}
-  virtual void SetOutputArray(TClonesArray* outputArray){;}
+  virtual void SetInputArray(TClonesArray* inputArray);
+  virtual void SetInput(CbmMvdPoint* point);
+  virtual void SetOutputArray(TClonesArray* outputArray);
   
   virtual void SetNextPlugin(CbmMvdSensorPlugin* plugin) {fNextPlugin=plugin;}
   virtual void SetPreviousPlugin(CbmMvdSensorPlugin* plugin) {fPreviousPlugin=plugin;}
