@@ -18,11 +18,10 @@
 #ifndef CBMFIELDMAPCREATOR_H
 #define CBMFIELDMAPCREATOR_H 1
 
+#include "FairField.h"
 #include "TList.h"
 
 class TArrayF;
-class FairField;
-
 
 
 class CbmFieldMapCreator 

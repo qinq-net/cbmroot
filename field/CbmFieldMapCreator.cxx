@@ -3,12 +3,16 @@
 // -----         Created 15/01/08                    by V. Friese      -----
 // -------------------------------------------------------------------------
 
+#include "CbmFieldMapCreator.h"
+
+#include "CbmFieldMap.h"
+
+#include "FairField.h"
+
+#include "TArrayF.h"
 
 #include <iostream>
-#include "TArrayF.h"
-#include "FairField.h"
-#include "CbmFieldMap.h"
-#include "CbmFieldMapCreator.h"
+#include <cstring>
 
 using namespace std;
 
@@ -98,7 +102,11 @@ Bool_t CbmFieldMapCreator::CreateMap(const char* fileName) {
 
   // Define output file name
   TString outFileName = fileName;
-  if (fileName == "") outFileName = fMapName + ".root";
+  
+  if (strcmp (fileName,"") == 0) {
+//  if (fileName == "") {
+    outFileName = fMapName + ".root";
+  }
 
   // Check for proper intialisation
   if ( ! fInit ) {
