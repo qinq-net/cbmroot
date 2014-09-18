@@ -273,10 +273,10 @@ void CbmTrdDigitizerPRF::ScanPadPlaneTriangle(const Double_t* local_point, Doubl
     Int_t maxCol(5/W+0.5), maxRow(6);//5/H+3);// 7 and 3 in orig. minimum 5 times 5 cm area has to be scanned
     if (fnScanRowConst > 0)
       maxRow = fnScanRowConst;
-    const_cast<const Int_t&>(maxRow);
+//    const_cast<const Int_t&>(maxRow);
     if (fnScanColConst > 0)
       maxCol = fnScanColConst;
-    const_cast<const Int_t&>(maxCol);
+//    const_cast<const Int_t&>(maxCol);
 
     //printf("%i x %i\n",maxCol,maxRow);
     //Estimate starting column and row and limits due to chamber dimensions
@@ -499,10 +499,10 @@ void CbmTrdDigitizerPRF::ScanPadPlane(const Double_t* local_point, Double_t clus
     Int_t maxCol(5/W+0.5), maxRow(6);//5/H+3);// 7 and 3 in orig. minimum 5 times 5 cm area has to be scanned
     if (fnScanRowConst > 0)
       maxRow = fnScanRowConst;
-    const_cast<const Int_t&>(maxRow);
+//    const_cast<const Int_t&>(maxRow);
     if (fnScanColConst > 0)
       maxCol = fnScanColConst;
-    const_cast<const Int_t&>(maxCol);
+//    const_cast<const Int_t&>(maxCol);
     //printf("%i x %i\n",maxCol,maxRow);
     //Estimate starting column and row and limits due to chamber dimensions
     Int_t startCol(columnId-maxCol/2), stopCol(columnId+maxCol/2), startRow(rowId-maxRow/2), stopRow(rowId+maxRow/2), startSec(0);
@@ -622,7 +622,7 @@ void CbmTrdDigitizerPRF::SplitTrackPath(const CbmTrdPoint* point, Double_t ELoss
   if (fnClusterConst > 0){
     nCluster = fnClusterConst;   // Set number of cluster to constant value
   }
-  const_cast<const Int_t&>(nCluster);
+//  const_cast<const Int_t&>(nCluster);
   if (nCluster < 1){
     LOG(WARNING) << "CbmTrdDigitizerPRF::SplitTrackPath: nCluster: "<<nCluster<<"   track length: "<<std::setprecision(5)<<trackLength<<"cm  nCluster/cm: "<<std::setprecision(2)<<nClusterPerCm<<"  ELoss: "<<std::setprecision(5)<<ELoss*1e-6<<"keV " << FairLogger::endl;
     return;

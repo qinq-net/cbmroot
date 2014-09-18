@@ -1169,7 +1169,7 @@ void CbmTrdQa::Exec(Option_t * option)
 	if (mother_iTrack >= 0)
 	  track_mother = (CbmMCTrack*) fMCTracks->At(mother_iTrack);
 	else
-	  track_mother == NULL;
+	  track_mother = NULL;
 	if (notMultiPointTRDPoints.find(iTrack) == notMultiPointTRDPoints.end()){
 	  //if (track->GetNPoints(kSTS) > 0)
 	  {	
