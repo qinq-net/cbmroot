@@ -13,27 +13,31 @@ using std::endl;
 
 
 // -----   Default constructor   -------------------------------------------
-CbmMvdCluster::CbmMvdCluster() {
-fNeighbourUp=-1;
-fNeighbourDown=-1;
-fDigisInThisObject=0;
-fTotalDigisInCluster=-1;
-for(Int_t i=0;i<fMaxDigisInObject; i++){fDigiArray[i]=-1;}
+CbmMvdCluster::CbmMvdCluster() 
+ : TObject(),
+   fDigiArray(),
+   fNeighbourDown(-1),
+   fNeighbourUp(-1),
+   fDigisInThisObject(0),
+   fTotalDigisInCluster(-1)
+{
+  for(Int_t i=0;i<fMaxDigisInObject; i++){fDigiArray[i]=-1;}
 }
 // -------------------------------------------------------------------------
 
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmMvdCluster::CbmMvdCluster(Int_t* digiList, Short_t digisInThisObject, Short_t totalDigisInCluster, Int_t neighbourDown) {
-
+CbmMvdCluster::CbmMvdCluster(Int_t* digiList, Short_t digisInThisObject, Short_t totalDigisInCluster, Int_t neighbourDown) 
+ : TObject(),
+   fDigiArray(),
+   fNeighbourDown(neighbourDown),
+   fNeighbourUp(-1),
+   fDigisInThisObject(digisInThisObject),
+   fTotalDigisInCluster(totalDigisInCluster)
+{
     for(Int_t i=0;i<fMaxDigisInObject; i++){fDigiArray[i]=-1;}
-    for(Int_t i=0;i<digisInThisObject; i++){fDigiArray[i]=digiList[i];}
-    
-    fDigisInThisObject=digisInThisObject;
-    fTotalDigisInCluster=totalDigisInCluster;
-    fNeighbourDown=neighbourDown;
-    fNeighbourUp=-1;
+    for(Int_t i=0;i<digisInThisObject; i++){fDigiArray[i]=digiList[i];}   
 }
 // -------------------------------------------------------------------------
 

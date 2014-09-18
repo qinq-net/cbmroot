@@ -53,11 +53,11 @@ public:
     Int_t    GetFrameNumber() {return fFrameNumber;};
     
     //these functions are only for littrack
-    Int_t GetDominatorX(){;};
-    Int_t GetDominatorY(){;};
-    Int_t GetTrackID(){;};
-    Int_t GetContributors(){;};
-    Int_t GetPointID(){;};
+    Int_t GetDominatorX(){ return 0;};
+    Int_t GetDominatorY(){return 0;};
+    Int_t GetTrackID(){return 0;};
+    Int_t GetContributors(){return 0;};
+    Int_t GetPointID(){return 0;};
     //
     
     

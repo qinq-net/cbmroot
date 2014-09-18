@@ -48,10 +48,10 @@ class CbmMvdCluster : public TObject
 
 
   //these functions are only for littrack
-    Int_t GetDominatorX(){;};
-    Int_t GetDominatorY(){;};
-    Int_t GetTrackID(){;};
-    Int_t GetContributors(){;};
+    Int_t GetDominatorX(){return 0;};
+    Int_t GetDominatorY(){return 0;};
+    Int_t GetTrackID(){return 0;};
+    Int_t GetContributors(){return 0;};
     
     void SetDebuggingInfo(Short_t* foo1, Float_t foo2[5], Float_t foo3[5]){;};
     void SetContributors(Short_t short1){;};
