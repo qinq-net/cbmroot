@@ -89,7 +89,10 @@ class CbmMvdSensorBuffer : public CbmMvdSensorPlugin
   
   
   virtual void 		  BufferReady(){;};
- 
+
+private:
+  CbmMvdSensorBuffer(const CbmMvdSensorBuffer&); 
+  CbmMvdSensorBuffer operator=(const CbmMvdSensorBuffer&); 
   
   ClassDef(CbmMvdSensorBuffer,1);
 

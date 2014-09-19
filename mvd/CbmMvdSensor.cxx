@@ -27,25 +27,41 @@ using std::endl;
 
 
 // -----   Default constructor   -------------------------------------------
-CbmMvdSensor::CbmMvdSensor() : fStationNr(0),
-				 fVolumeId(0)
-				{
+CbmMvdSensor::CbmMvdSensor() 
+  : TNamed(),
+    fStationNr(0),
+    fVolumeId(0),
+    fDetectorID(-1),
+    fDigiPlugin(-1),
+    fHitPlugin(-1),
+    fVolName(""),
+    fNodeName(""),
+    foutputDigis(NULL),
+    foutputDigiMatch(NULL),
+    foutputHitMatch(NULL),
+    foutputBuffer(NULL),
+    fcurrentPoints(NULL),
+    fcurrentEventTime(0.),
+    fShape(NULL),
+    fMCMatrix(NULL),
+    fRecoMatrix(NULL),
+    fAlignmentCorr(NULL),
+    fTempCoordinate(),
+    fSensorPosition(),
+    fSensorData(new CbmMvdSensorDataSheet()),
+    fSensorMap(),
+  fPluginArray(new TObjArray(1)),
+  fSensorStartTime(0.),
+  initialized(kFALSE)
+{
 cout << "-W- " << GetName() << ": MVD-Sensor initialized without technical data.";
 cout << " Assuming default sensor." << endl;
-
-fSensorData=new CbmMvdSensorDataSheet();
-fPluginArray=new TObjArray(1);
 
 cout << "-W- " << GetName() << ": MVD-Sensor initialized without geometry data. ";
 cout << " Must be added manually before using this class." << endl;
 
 cout << "-W- " << GetName() << ": MVD-Sensor initialized without valid start time. ";
 cout << " Must be added manually before using this class." << endl;
-fSensorStartTime=0;
-fRecoMatrix=0;
-fMCMatrix=0;
-fAlignmentCorr=0;
-fDigiPlugin = -1;
 
 }
 // -------------------------------------------------------------------------
@@ -55,29 +71,34 @@ fDigiPlugin = -1;
 // -----   Standard constructor   ------------------------------------------
 CbmMvdSensor::CbmMvdSensor(const char* name, CbmMvdSensorDataSheet* dataSheet, TString volName, TString nodeName,
 			   Int_t stationNr, Int_t volumeId, Double_t sensorStartTime)
-  : TNamed(name, ""), fStationNr(stationNr), fVolumeId(volumeId)
+  : TNamed(name, ""), 
+    fStationNr(stationNr),
+    fVolumeId(volumeId),
+    fDetectorID(DetectorId(stationNr)),
+    fDigiPlugin(-1),
+    fHitPlugin(-1),
+    fVolName(volName),
+    fNodeName(nodeName),
+    foutputDigis(NULL),
+    foutputDigiMatch(NULL),
+    foutputHitMatch(NULL),
+    foutputBuffer(NULL),
+    fcurrentPoints(NULL),
+    fcurrentEventTime(0.),
+    fShape(NULL),
+    fMCMatrix(NULL),
+    fRecoMatrix(NULL),
+    fAlignmentCorr(NULL),
+    fTempCoordinate(),
+    fSensorPosition(),
+    fSensorData(dataSheet),
+    fSensorMap(),
+  fPluginArray(new TObjArray(1)),
+  fSensorStartTime(sensorStartTime),
+  initialized(kFALSE)
 {
       
-//names needed to find volume in TGeoManager
-  
-fVolName=volName;
-fNodeName=nodeName;
-fRecoMatrix=0;
-fMCMatrix=0;
-fAlignmentCorr=0;
-fDetectorID = DetectorId(stationNr);
-//fDetectorID = 0;
-fDigiPlugin = -1;
-
 ReadSensorGeometry(volName, fNodeName);  
-
-fSensorData= dataSheet;
-fSensorStartTime=sensorStartTime;
-fPluginArray=new TObjArray(1);
-
-initialized=kFALSE;
-
-//cout << "New Sensor named " << name <<" constructed" << endl;
 	
 }
 // -------------------------------------------------------------------------

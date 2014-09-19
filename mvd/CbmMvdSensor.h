@@ -174,6 +174,10 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   
   Bool_t initialized;
 
+private:
+  CbmMvdSensor(const CbmMvdSensor&);
+  CbmMvdSensor operator=(const CbmMvdSensor&);
+
   ClassDef(CbmMvdSensor,1);
 
 };

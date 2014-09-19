@@ -105,6 +105,10 @@ class CbmMvdSensorFrameBuffer : public CbmMvdSensorBuffer
   CbmMvdSensorDataSheet* fSensorData;
   Bool_t bOverflow ;
   Double_t currentTime;
+
+  CbmMvdSensorFrameBuffer(const CbmMvdSensorFrameBuffer&);
+  CbmMvdSensorFrameBuffer operator=(const CbmMvdSensorFrameBuffer&);
+
  ClassDef(CbmMvdSensorFrameBuffer,1);
 
 };

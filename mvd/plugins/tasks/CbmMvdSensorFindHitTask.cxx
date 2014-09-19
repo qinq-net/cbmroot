@@ -59,41 +59,62 @@ using std::vector;
 
 // -----   Default constructor   ------------------------------------------
 CbmMvdSensorFindHitTask::CbmMvdSensorFindHitTask()
-
+  : CbmMvdSensorTask(),
+    fAdcDynamic(150),
+    fAdcOffset(0),
+    fAdcBits(1),
+    fAdcSteps(-1),
+    fAdcStepSize(-1.),
+    fDigis(NULL),
+    fHits(NULL),
+    fClusters(new TClonesArray("CbmMvdCluster",10000)),
+    fMatches(NULL),
+    fPixelChargeHistos(NULL),
+    fTotalChargeInNpixelsArray(NULL),
+    fResolutionHistoX(NULL),
+    fResolutionHistoY(NULL),
+    fResolutionHistoCleanX(NULL),
+    fResolutionHistoCleanY(NULL),
+    fResolutionHistoMergedX(NULL),
+    fResolutionHistoMergedY(NULL),
+    fBadHitHisto(NULL),
+  fGausArray(NULL),
+  fGausArrayIt(-1),
+  fGausArrayLimit(5000),  
+  fDigiMap(),
+  fDigiMapIt(),
+  h(NULL),
+  h3(NULL),
+  h1(NULL),
+  h2(NULL),
+  Qseed(NULL),
+  fFullClusterHisto(NULL),
+  c1(NULL),
+  fNEvent(0),
+  fMode(0),
+  fCounter(0),
+  fSigmaNoise(15.),
+  fSeedThreshold(1.),
+  fNeighThreshold(1.),
+  fShowDebugHistos(kFALSE),
+  fUseMCInfo(kFALSE),
+  fLayerRadius(0.),
+  fLayerRadiusInner(0.),
+  fLayerPosZ(0.),
+  fHitPosX(0.),
+  fHitPosY(0.),
+  fHitPosZ(0.),
+  fHitPosErrX(0.0005),
+  fHitPosErrY(0.0005),
+  fHitPosErrZ(0.0),
+  fBranchName("MvdHit"),
+  fBranchNameMatch("MvdHitMatch"),
+  fDigisInCluster(-1),
+  fAddNoise(kFALSE)
 {
-    fMode       = 0;
-    fNEvent     = 0;
-    fCounter    = 0;
-    fAdcDynamic = 150;
-    fAdcOffset  = 0;
-    fAdcBits    = 1;
-    fClusters   = new TClonesArray("CbmMvdCluster",10000);
-    fBranchName = "MvdHit";
-    fBranchNameMatch= "MvdHitMatch";
-   
-
-    fAddNoise = kFALSE;
-
-    //Cluster Finding parameters
-    fSigmaNoise     = 15; //sigma of the gauss distribution of noise (in electrons)
-    fSeedThreshold  = 1;
-    fNeighThreshold = 1;
-    fGausArrayLimit=5000;
-
-    //Hit Position
-    fHitPosX = 0;
-    fHitPosY = 0;
-    fHitPosZ = 0;
-    fHitPosErrX = 0.0005;
-    fHitPosErrY = 0.0005;
-    fHitPosErrZ = 0.0;
-
-    fShowDebugHistos=kFALSE;
     CbmMvdCluster* clusterTemp= new CbmMvdCluster;
     fDigisInCluster= clusterTemp->GetMaxDigisInThisObject(); // read the number of memory cells from the cluster object
     delete clusterTemp;
-
-    initialized = kFALSE;
 }
 // -------------------------------------------------------------------------
 
@@ -102,42 +123,62 @@ CbmMvdSensorFindHitTask::CbmMvdSensorFindHitTask()
 // -----   Standard constructor   ------------------------------------------
 CbmMvdSensorFindHitTask::CbmMvdSensorFindHitTask(const char* name, Int_t iMode,
 			       Int_t iVerbose)
-
-{
-    fMode       = iMode;
-    fNEvent     = 0;
-    fAdcDynamic = 150;
-    fAdcOffset  = 0;
-    fAdcBits    = 1;
-    fClusters   = new TClonesArray("CbmMvdCluster",10000);
-    fBranchName = "MvdHit";
-    fBranchNameMatch= "MvdHitMatch";
-   
-    fAddNoise = kFALSE;
-
-    //Cluster Finding parameters
-    fSigmaNoise     = 15; // sigma of the gauss distribution of noise (in electrons)
-    fSeedThreshold  = 1;
-    fNeighThreshold = 1;
-
-
-    //Hit Position
-    fHitPosX = 0;
-    fHitPosY = 0;
-    fHitPosZ = 0;
-    fHitPosErrX = 0.0005;
-    fHitPosErrY = 0.0005;
-    fHitPosErrZ = 0.0;
-
-    fShowDebugHistos=kFALSE;
-    fGausArrayLimit=5000;
-    
+  : CbmMvdSensorTask(),
+    fAdcDynamic(150),
+    fAdcOffset(0),
+    fAdcBits(1),
+    fAdcSteps(-1),
+    fAdcStepSize(-1.),
+    fDigis(NULL),
+    fHits(NULL),
+    fClusters(new TClonesArray("CbmMvdCluster",10000)),
+    fMatches(NULL),
+    fPixelChargeHistos(NULL),
+    fTotalChargeInNpixelsArray(NULL),
+    fResolutionHistoX(NULL),
+    fResolutionHistoY(NULL),
+    fResolutionHistoCleanX(NULL),
+    fResolutionHistoCleanY(NULL),
+    fResolutionHistoMergedX(NULL),
+    fResolutionHistoMergedY(NULL),
+    fBadHitHisto(NULL),
+  fGausArray(NULL),
+  fGausArrayIt(-1),
+  fGausArrayLimit(5000),  
+  fDigiMap(),
+  fDigiMapIt(),
+  h(NULL),
+  h3(NULL),
+  h1(NULL),
+  h2(NULL),
+  Qseed(NULL),
+  fFullClusterHisto(NULL),
+  c1(NULL),
+  fNEvent(0),
+  fMode(iMode),
+  fCounter(0),
+  fSigmaNoise(15.),
+  fSeedThreshold(1.),
+  fNeighThreshold(1.),
+  fShowDebugHistos(kFALSE),
+  fUseMCInfo(kFALSE),
+  fLayerRadius(0.),
+  fLayerRadiusInner(0.),
+  fLayerPosZ(0.),
+  fHitPosX(0.),
+  fHitPosY(0.),
+  fHitPosZ(0.),
+  fHitPosErrX(0.0005),
+  fHitPosErrY(0.0005),
+  fHitPosErrZ(0.0),
+  fBranchName("MvdHit"),
+  fBranchNameMatch("MvdHitMatch"),
+  fDigisInCluster(-1),
+  fAddNoise(kFALSE)
+{    
     CbmMvdCluster* clusterTemp= new CbmMvdCluster;
     fDigisInCluster= clusterTemp->GetMaxDigisInThisObject(); // read the number of memory cells from the cluster object
     delete clusterTemp;
-
-    initialized = kFALSE;
- 
 }
 // -------------------------------------------------------------------------
 

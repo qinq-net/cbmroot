@@ -121,6 +121,10 @@ private:
   /** Print digitisation parameters **/
   void PrintParameters();
 
+private:
+  CbmMvdDigitizer(const CbmMvdDigitizer&);
+  CbmMvdDigitizer operator=(const CbmMvdDigitizer&);  
+
 ClassDef(CbmMvdDigitizer,1);    
 };
     

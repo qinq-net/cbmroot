@@ -53,7 +53,8 @@ class CbmMvdSensorTask : public CbmMvdSensorPlugin
   CbmMvdSensor* fSensor;
   
   private:
-    
+  CbmMvdSensorTask(const CbmMvdSensorTask&);    
+  CbmMvdSensorTask operator=(const CbmMvdSensorTask&);    
     
   ClassDef(CbmMvdSensorTask,1);
 

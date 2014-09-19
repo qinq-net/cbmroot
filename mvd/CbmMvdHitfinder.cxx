@@ -17,14 +17,26 @@
 
 
 // -----   Default constructor   ------------------------------------------
-CbmMvdHitfinder::CbmMvdHitfinder(): FairTask("MVDHitfinder"){
-
+CbmMvdHitfinder::CbmMvdHitfinder()
+  : FairTask("MVDHitfinder"),
+    fDetector(NULL),
+    fInputDigis(NULL),
+    fHits(NULL),
+    fHitMatch(NULL),
+    fHitfinderPluginNr(0)
+{
 }
 // -------------------------------------------------------------------------
 
 // -----   Standard constructor   ------------------------------------------
-CbmMvdHitfinder::CbmMvdHitfinder(const char* name, Int_t iMode, Int_t iVerbose) : FairTask(name, iVerbose){
-
+CbmMvdHitfinder::CbmMvdHitfinder(const char* name, Int_t iMode, Int_t iVerbose) 
+  : FairTask(name, iVerbose),
+    fDetector(NULL),
+    fInputDigis(NULL),
+    fHits(NULL),
+    fHitMatch(NULL),
+    fHitfinderPluginNr(0)
+{
 }
 // -------------------------------------------------------------------------
 

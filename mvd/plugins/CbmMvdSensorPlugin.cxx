@@ -10,7 +10,13 @@
 
 
 // -----   Default constructor   -------------------------------------------
-CbmMvdSensorPlugin::CbmMvdSensorPlugin() {
+CbmMvdSensorPlugin::CbmMvdSensorPlugin() 
+ : TObject(),
+   fNextPlugin(NULL), 
+   fPreviousPlugin(NULL),
+   bFlag(false),
+   initialized(kFALSE)
+{
 }
 // -------------------------------------------------------------------------
 

@@ -220,7 +220,9 @@ private:
     void ComputeCenterOfGravity(vector<Int_t>* clusterArray, TVector3& pos, TVector3& dpos);
     void UpdateDebugHistos(vector<Int_t>* clusterArray, Int_t seedIndexX, Int_t seedIndexY);
     
-
+private:
+    CbmMvdSensorFindHitTask(const CbmMvdSensorFindHitTask&);
+    CbmMvdSensorFindHitTask operator=(const CbmMvdSensorFindHitTask&);
 
     ClassDef(CbmMvdSensorFindHitTask,1);
 

@@ -71,10 +71,23 @@ using std::vector;
 
 // -----   Default constructor   ------------------------------------------
 CbmMvdFullRun::CbmMvdFullRun()
-    : FairTask("MVDSensorBuffer")
+  : FairTask("MVDSensorBuffer"),
+    bWriteOutput(kTRUE),
+    fDetector(NULL),
+    fMode(0),
+    fInputPoints(NULL),
+    fHits(NULL),
+    fDigis(NULL),
+    fdetectorOutput(NULL),
+    fNEvents(0),
+    fNPoints(0.),
+    fNReal(0.),
+    fNBg(0.),
+    fNFake(0.),
+    fNLost(0.),
+    fNMerged(0.),
+    fTime(0.)
 {
-    bWriteOutput   = true;
-    
 }
 // -------------------------------------------------------------------------
 
@@ -83,14 +96,26 @@ CbmMvdFullRun::CbmMvdFullRun()
 // -----   Standard constructor   ------------------------------------------
 CbmMvdFullRun::CbmMvdFullRun(const char* name, Int_t iMode,
 				 Int_t iVerbose)
-: FairTask(name, iVerbose)
+  : FairTask(name, iVerbose),
+    bWriteOutput(kTRUE),
+    fDetector(NULL),
+    fMode(iMode),
+    fInputPoints(NULL),
+    fHits(NULL),
+    fDigis(NULL),
+    fdetectorOutput(NULL),
+    fNEvents(0),
+    fNPoints(0.),
+    fNReal(0.),
+    fNBg(0.),
+    fNFake(0.),
+    fNLost(0.),
+    fNMerged(0.),
+    fTime(0.)
+
 {
     cout << "Starting CbmMvdFullRun::CbmMvdFullRun::() "<< endl;
-
-    fMode          = iMode;
-    bWriteOutput = true; 
-   
- }
+}
 
 
 // -------------------------------------------------------------------------

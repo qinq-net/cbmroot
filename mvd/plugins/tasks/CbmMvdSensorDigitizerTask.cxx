@@ -50,63 +50,102 @@ using std::vector;
 
 // -----   Default constructor   ------------------------------------------
 CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask()
-    
-{   fInputPoints     = NULL;
-    fOutputBuffer    = NULL;
-    fMode          = 0;
-    fPixelCharge   = new TClonesArray("CbmMvdPixelCharge");
-//     fDigis         = new TClonesArray("CbmMvdDigi");
+  : CbmMvdSensorTask(),
+    fcurrentFrameNumber(0),
+    fEpiTh(0.0014),
+    fSegmentLength(0.0001),
+    fDiffusionCoefficient(0.0055),
+    fElectronsPerKeV(276.),
+    fWidthOfCluster(3.5),
+    fPixelSizeX(0.0030),
+    fPixelSizeY(0.0030),
+    fCutOnDeltaRays(0.00169720),
+    fChargeThreshold(100.),
+    fFanoSilicium(0.115), 
+    fEsum(0.),
+    fSegmentDepth(0.),
+    fCurrentTotalCharge(0.),
+    fCurrentParticleMass(0.),
+    fCurrentParticleMomentum(0.),
+    fCurrentParticlePdg(0),
+    fRandomGeneratorTestHisto(NULL),
+  fPosXY(NULL),
+  fpZ(NULL),
+  fPosXinIOut(NULL),
+  fAngle(NULL),
+  fSegResolutionHistoX(NULL),
+  fSegResolutionHistoY(NULL),
+  fSegResolutionHistoZ(NULL),
+  fTotalChargeHisto(NULL),
+  fTotalSegmentChargeHisto(NULL),
+  fLorentzY0(-6.1),
+  fLorentzXc(0.), 
+  fLorentzW(1.03),
+  fLorentzA(477.2),
+  fLorentzNorm(1.),
+  fLandauMPV(877.4),
+  fLandauSigma(204.93),
+  fLandauGain(3.3),
+  fLandauRandom(new TRandom3()),
+  fPixelSize(0.0025),
+  fPar0(520.),
+  fPar1(0.34),
+  fPar2(-1.2),
+  fCompression(1.),
+  fShowDebugHistos(kFALSE),
+  fResolutionHistoX(NULL),
+  fResolutionHistoY(NULL),
+  fNumberOfSegments(0),
+  fCurrentLayer(0),
+  fEvent(0),
+  fVolumeId(0),
+  fNPixelsX(0),
+  fNPixelsY(0),
+  fPixelCharge(new TClonesArray("CbmMvdPixelCharge")),
+  fDigis(NULL),
+  fDigiMatch(NULL),
+  fPixelChargeShort(),
+  fPixelScanAccelerator(NULL),
+  fChargeMap(),
+  fChargeMapIt(),
+  fsensorDataSheet(NULL),
+  fMode(0),
+  fSigmaX(0.0005),
+  fSigmaY(0.0005),
+  fReadoutTime(0.00005),
+  fEfficiency(-1.),
+  fMergeDist(-1.),
+  fFakeRate(-1.),
+  fNPileup(0),
+  fNDeltaElect(0),
+  fDeltaBufferSize(0),
+  fBgBufferSize(0),
+  fBranchName(""),
+  fBgFileName(""),
+  fDeltaFileName(""),
+  fInputPoints(NULL),
+  fPoints(new TRefArray()),
+  fRandGen(), 
+  fTimer(),
+  fPileupManager(NULL),
+  fDeltaManager(NULL),
+  fGeoPar(NULL),
+  fNEvents(0),
+  fNPoints(0.),
+  fNReal(0.),
+  fNBg(0.),
+  fNFake(0.),
+  fNLost(0.),
+  fNMerged(0.),
+  fTime(0.),
+  fSignalPoints(),
+  h_trackLength(NULL),
+  h_numSegments(NULL),
+  h_LengthVsAngle(NULL),
+  h_LengthVsEloss(NULL),
+  h_ElossVsMomIn(NULL)
+{   
     fRandGen.SetSeed(2736);
-    fEvent       = 0;
-    fTime        = 0.;
-    fSigmaX      = 0.0005;
-    fSigmaY      = 0.0005;
-    fReadoutTime = 0.00005;
-   
-    fPoints=new TRefArray();
-   
-
-    fEpiTh         = 0.0014;
-    fSegmentLength = 0.0001;
-    fDiffusionCoefficient = 0.0055; // correspondes to the sigma of the gauss with the max drift length
-    fElectronsPerKeV = 276; //3.62 eV for e-h creation
-    fWidthOfCluster  = 3.5; // in sigmas
-    fPixelSizeX = 0.0030; // in cm
-    fPixelSizeY = 0.0030;
-    fCutOnDeltaRays  = 0.00169720;  //MeV
-    fChargeThreshold = 100.; //electrons change 1 to 10
-    fFanoSilicium    = 0.115;
-    fEsum            = 0;
-    fSegmentDepth    = 0;
-    fCurrentTotalCharge      = 0;
-    fCurrentParticleMass     = 0;
-    fCurrentParticleMomentum = 0;
-    fPixelScanAccelerator    = 0;
-    fLandauRandom=new TRandom3();
-
-    fShowDebugHistos = kFALSE;
-
-    fPixelSize = 0.0025;
-    fPar0 = 520.;
-    fPar1 = 0.34;
-    fPar2 = -1.2;
-    fLandauMPV   = 877.4;
-    fLandauSigma = 204.93;
-    fLandauGain= 3.3;
-
-    fLorentzY0=-6.1;
-    fLorentzXc=0.;
-    fLorentzW=1.03;
-    fLorentzA=477.2;
-
-    fCompression = 1.;
-    //fLorentzNorm=0.00013010281679422413;
-    fLorentzNorm=1;
-
-    
-    fcurrentFrameNumber = 0;
-
-initialized = kFALSE;
 }
 // -------------------------------------------------------------------------
 
@@ -115,25 +154,109 @@ initialized = kFALSE;
 // -----   Standard constructor   ------------------------------------------
 CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask(const char* name, Int_t iMode,
 				 Int_t iVerbose)
+  : CbmMvdSensorTask(),
+    fcurrentFrameNumber(0),
+    fEpiTh(0.0014),
+    fSegmentLength(0.0001),
+    fDiffusionCoefficient(0.0055),
+    fElectronsPerKeV(276.),
+    fWidthOfCluster(3.5),
+    fPixelSizeX(0.0030),
+    fPixelSizeY(0.0030),
+    fCutOnDeltaRays(0.00169720),
+    fChargeThreshold(100.),
+    fFanoSilicium(0.115), 
+    fEsum(0.),
+    fSegmentDepth(0.),
+    fCurrentTotalCharge(0.),
+    fCurrentParticleMass(0.),
+    fCurrentParticleMomentum(0.),
+    fCurrentParticlePdg(0),
+    fRandomGeneratorTestHisto(NULL),
+  fPosXY(NULL),
+  fpZ(NULL),
+  fPosXinIOut(NULL),
+  fAngle(NULL),
+  fSegResolutionHistoX(NULL),
+  fSegResolutionHistoY(NULL),
+  fSegResolutionHistoZ(NULL),
+  fTotalChargeHisto(NULL),
+  fTotalSegmentChargeHisto(NULL),
+  fLorentzY0(-6.1),
+  fLorentzXc(0.), 
+  fLorentzW(1.03),
+  fLorentzA(477.2),
+  fLorentzNorm(1.),
+  fLandauMPV(877.4),
+  fLandauSigma(204.93),
+  fLandauGain(3.3),
+  fLandauRandom(new TRandom3()),
+  fPixelSize(0.0025),
+  fPar0(520.),
+  fPar1(0.34),
+  fPar2(-1.2),
+  fCompression(1.),
+  fShowDebugHistos(kFALSE),
+  fResolutionHistoX(NULL),
+  fResolutionHistoY(NULL),
+  fNumberOfSegments(0),
+  fCurrentLayer(0),
+  fEvent(0),
+  fVolumeId(0),
+  fNPixelsX(0),
+  fNPixelsY(0),
+  fPixelCharge(new TClonesArray("CbmMvdPixelCharge",100000)),
+  fDigis(NULL),
+  fDigiMatch(NULL),
+  fPixelChargeShort(),
+  fPixelScanAccelerator(NULL),
+  fChargeMap(),
+  fChargeMapIt(),
+  fsensorDataSheet(NULL),
+  fMode(iMode),
+  fSigmaX(0.0005),
+  fSigmaY(0.0005),
+  fReadoutTime(0.00005),
+  fEfficiency(-1.),
+  fMergeDist(-1.),
+  fFakeRate(-1.),
+  fNPileup(0),
+  fNDeltaElect(0),
+  fDeltaBufferSize(0),
+  fBgBufferSize(0),
+  fBranchName("MvdPoint"),
+  fBgFileName(""),
+  fDeltaFileName(""),
+  fInputPoints(NULL),
+  fPoints(new TRefArray()),
+  fRandGen(), 
+  fTimer(),
+  fPileupManager(NULL),
+  fDeltaManager(NULL),
+  fGeoPar(NULL),
+  fNEvents(0),
+  fNPoints(0.),
+  fNReal(0.),
+  fNBg(0.),
+  fNFake(0.),
+  fNLost(0.),
+  fNMerged(0.),
+  fTime(0.),
+  fSignalPoints(),
+  h_trackLength(NULL),
+  h_numSegments(NULL),
+  h_LengthVsAngle(NULL),
+  h_LengthVsEloss(NULL),
+  h_ElossVsMomIn(NULL)
 {
-    cout << "Starting CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask() "<< endl;
+  cout << "Starting CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask() "<< endl;
 
-    fInputPoints     = NULL;
-    fOutputBuffer    = NULL;
-    
-//     fDigis         = new TClonesArray("CbmMvdDigi",100000);
-    fMode          = iMode;
-    fBranchName    = "MvdPoint";
-    fPixelCharge   = new TClonesArray("CbmMvdPixelCharge",100000);
-
-        fRandGen.SetSeed(2736);
+  fRandGen.SetSeed(2736);
     fEvent       = 0;
     fTime        = 0.;
     fSigmaX      = 0.0005;
     fSigmaY      = 0.0005;
     fReadoutTime = 0.00005;
-   
-    fPoints=new TRefArray();
    
 
     fEpiTh         = 0.0014;
@@ -152,7 +275,6 @@ CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask(const char* name, Int_t iMo
     fCurrentParticleMass     = 0;
     fCurrentParticleMomentum = 0;
     fPixelScanAccelerator    = 0;
-    fLandauRandom=new TRandom3();
 
     fShowDebugHistos = kFALSE;
 
@@ -179,7 +301,6 @@ CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask(const char* name, Int_t iMo
     
     fcurrentFrameNumber = 0;
 
-  initialized = kFALSE;
 
  }
 

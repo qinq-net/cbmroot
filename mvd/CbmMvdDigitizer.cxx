@@ -17,22 +17,51 @@
 
 
 // -----   Default constructor   ------------------------------------------
-CbmMvdDigitizer::CbmMvdDigitizer(): FairTask("MVDDigitizer"){
+CbmMvdDigitizer::CbmMvdDigitizer() 
+  : FairTask("MVDDigitizer"),
+    fMode(0),
+    fDetector(NULL),
+    fInputPoints(NULL),
+    fDigis(NULL),
+    fDigiMatch(NULL),
+    fDigiPluginNr(0),
+    fFakeRate(-1.),
+    fNPileup(-1),
+    fNDeltaElect(-1),
+    fDeltaBufferSize(-1),
+    fBgBufferSize(-1),
+    fBranchName(""),
+    fBgFileName(""),
+    fDeltaFileName(""),
+    fRandGen(),
+    fPileupManager(NULL),
+    fDeltaManager(NULL)
+{
 
 }
 // -------------------------------------------------------------------------
 
 // -----   Standard constructor   ------------------------------------------
-CbmMvdDigitizer::CbmMvdDigitizer(const char* name, Int_t iMode, Int_t iVerbose) : FairTask(name, iVerbose),
-fMode(iMode),
-fPileupManager(NULL),
-fDeltaManager(NULL),
-fBranchName("MvdPoint")
+CbmMvdDigitizer::CbmMvdDigitizer(const char* name, Int_t iMode, Int_t iVerbose) 
+  : FairTask(name, iVerbose),
+    fMode(iMode),
+    fDetector(NULL),
+    fInputPoints(NULL),
+    fDigis(NULL),
+    fDigiMatch(NULL),
+    fDigiPluginNr(0),
+    fFakeRate(-1.),
+    fNPileup(0),
+    fNDeltaElect(0),
+    fDeltaBufferSize(-1),
+    fBgBufferSize(-1),
+    fBranchName("MvdPoint"),
+    fBgFileName(""),
+    fDeltaFileName(""),
+    fRandGen(),
+    fPileupManager(NULL),
+    fDeltaManager(NULL)    
 {
-fNPileup = 0;
-fNDeltaElect = 0;
-
-
 }
 // -------------------------------------------------------------------------
 

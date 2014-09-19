@@ -79,6 +79,10 @@ private:
   /** Print digitisation parameters **/
   void PrintParameters();
 
+private:
+  CbmMvdHitfinder(const CbmMvdHitfinder&);
+  CbmMvdHitfinder operator=(const CbmMvdHitfinder&);
+
 ClassDef(CbmMvdHitfinder,1);    
 };
     

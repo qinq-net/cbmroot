@@ -214,7 +214,8 @@ private:
     void LabToIndex(Double_t labX, Double_t labY, Double_t pixelSizeX, Double_t pixelSizeY, Int_t& indexX, Int_t& indexY, CbmMvdStation* station);
     void IndexToLab(Int_t indexX, Int_t indexY, Double_t pixelSizeX, Double_t pixelSizeY, Double_t& labX, Double_t& labY, CbmMvdStation* station);
 
-
+    CbmMvdFindHits(const CbmMvdFindHits&);
+    CbmMvdFindHits operator=(const CbmMvdFindHits&);
 
     ClassDef(CbmMvdFindHits,1);
 

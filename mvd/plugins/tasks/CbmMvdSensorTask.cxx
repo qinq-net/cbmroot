@@ -10,9 +10,12 @@
 
 
 // -----   Default constructor   -------------------------------------------
-CbmMvdSensorTask::CbmMvdSensorTask() {
-  fInputBuffer     = NULL;
-  fOutputBuffer    = NULL;
+CbmMvdSensorTask::CbmMvdSensorTask() 
+: CbmMvdSensorPlugin(),
+  fInputBuffer(NULL),
+  fOutputBuffer(NULL),
+  fSensor(NULL)
+{
 }
 // -------------------------------------------------------------------------
 

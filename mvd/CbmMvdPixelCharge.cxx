@@ -12,13 +12,26 @@ using std::endl;
 
 
 // -----   Default constructor   -------------------------------------------
-CbmMvdPixelCharge::CbmMvdPixelCharge(){
-    fCharge = -1;
-    fMaxChargeContribution = 0;
-    fChannelNrX   = 0;
-    fChannelNrY   = 0;
-    fContributors = 0;
-    fTrackCharge  = 0;
+CbmMvdPixelCharge::CbmMvdPixelCharge()
+  : TObject(),
+    fFrame(-1),
+    fCharge(-1.),
+    fMaxChargeContribution(0.),
+    fDominatingPointX(-1.),
+    fDominatingPointY(-1.),
+    fContributors(0.),
+    fChannelNrX(0.),
+    fChannelNrY(0.),
+    fTrackCharge(0.),
+    fDominatorTrackId(-1.),
+    fDominatorPointId(-1.),
+    fTrackId(),
+    fPointId(),
+    fPointX(),
+    fPointY(),
+    fDominatorIndex(0),
+    fPixelTime(-1.)
+{
     for(Int_t i=0;i<5;i++){
       fTrackId[i]=-1;
       fPointId[i]=-1;
@@ -41,20 +54,26 @@ Bool_t CbmMvdPixelCharge::TestXY(Int_t channelNrX,Int_t channelNrY)
 
 // -----   Constructor with parameters   -----------------------------------
 CbmMvdPixelCharge::CbmMvdPixelCharge(Float_t charge, Int_t channelNrX, Int_t channelNrY, Int_t pointId, Int_t trackId,
-				     Float_t pointPosX, Float_t pointPosY, Float_t time, Int_t frame):TObject()
+				     Float_t pointPosX, Float_t pointPosY, Float_t time, Int_t frame)
+  : TObject(),
+    fFrame(frame),
+    fCharge(0.),
+    fMaxChargeContribution(0.),
+    fDominatingPointX(-1.),
+    fDominatingPointY(-1.),
+    fContributors(0.),
+    fChannelNrX(channelNrX),
+    fChannelNrY(channelNrY),
+    fTrackCharge(charge),
+    fDominatorTrackId(-1.),
+    fDominatorPointId(-1.),
+    fTrackId(),
+    fPointId(),
+    fPointX(),
+    fPointY(),
+    fDominatorIndex(0),
+    fPixelTime(time)
 {
-    fFrame = frame;
-  
-  fTrackCharge = charge;
-
-    fMaxChargeContribution = 0;
-    fDominatorIndex=0;
-
-    fChannelNrX = channelNrX;
-    fChannelNrY = channelNrY;
-
-    fPixelTime = time;
-    
     for(Int_t i=0;i<5;i++){
       fTrackId[i]=-1;
       fPointId[i]=-1;
@@ -62,8 +81,6 @@ CbmMvdPixelCharge::CbmMvdPixelCharge(Float_t charge, Int_t channelNrX, Int_t cha
       fPointY[i]=0;
     }
     
-    fContributors = 0;
-    fCharge       = 0;
     fTrackId[0]   = trackId;
     fPointId[0]	  = pointId;
     fPointX[0]	  = pointPosX;

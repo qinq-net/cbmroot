@@ -12,7 +12,16 @@
 
 
 // -----   Default constructor   -------------------------------------------
-CbmMvdSensorFrameBuffer::CbmMvdSensorFrameBuffer() {
+CbmMvdSensorFrameBuffer::CbmMvdSensorFrameBuffer() 
+ : CbmMvdSensorBuffer(),
+   fCurrentEvent(NULL),
+   fOutputPoints(NULL),
+   lastFrame(-1), 
+   thisFrame(-1),
+   fSensorData(NULL),
+   bOverflow(kFALSE),
+   currentTime(0.)
+{
   fBuffer     = NULL;
   bFlag       = false;
 }

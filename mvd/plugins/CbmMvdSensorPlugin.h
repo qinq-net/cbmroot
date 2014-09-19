@@ -68,6 +68,10 @@ class CbmMvdSensorPlugin : public TObject
 protected:
     bool 	bFlag;
     Bool_t initialized;
+
+private:
+  CbmMvdSensorPlugin(const CbmMvdSensorPlugin&);
+  CbmMvdSensorPlugin operator=(const CbmMvdSensorPlugin&);
   
   ClassDef(CbmMvdSensorPlugin,1);
 

@@ -20,10 +20,24 @@ CbmMvdDetector* CbmMvdDetector::Instance()
 }
 
 // -----   Default constructor   -------------------------------------------
-CbmMvdDetector::CbmMvdDetector() {
+CbmMvdDetector::CbmMvdDetector() 
+  : TNamed(),
+    fSensorArray(NULL),
+    fSensorIDArray(NULL),
+    fPluginCount(0),
+    foutput(NULL),
+    foutputHits(NULL),
+    foutputDigis(NULL),
+    foutputDigiMatchs(NULL),
+    foutputHitMatchs(NULL),
+    fcurrentEvent(NULL),
+    fDigiPlugin(-1),
+    fHitPlugin(-1),
+    fSensorArrayFilled(kFALSE),
+    initialized(kFALSE)
+{
 
   Fatal (GetName(), " - Do not use standard constructor");
-  fPluginCount = 0;
 
 }
 // -------------------------------------------------------------------------
@@ -32,15 +46,25 @@ CbmMvdDetector::CbmMvdDetector() {
 
 // -----   Standard constructor   ------------------------------------------
 CbmMvdDetector::CbmMvdDetector(const char* name)
+  : TNamed(),
+    fSensorArray(new TClonesArray("CbmMvdSensor", 10)),
+    fSensorIDArray(NULL),
+    fPluginCount(0),
+    foutput(NULL),
+    foutputHits(NULL),
+    foutputDigis(NULL),
+    foutputDigiMatchs(NULL),
+    foutputHitMatchs(NULL),
+    fcurrentEvent(NULL),
+    fDigiPlugin(-1),
+    fHitPlugin(-1),
+    fSensorArrayFilled(kFALSE),
+    initialized(kFALSE)
 {
  
   if(fInstance) {Fatal(GetName(), " - Error, singleton does already exist.");}
   else {fInstance=this;};
-  fSensorArray=new TClonesArray("CbmMvdSensor", 10);
  
-  fSensorArrayFilled=kFALSE;
-  fPluginCount = 0;
-  initialized = kFALSE;	
 }
 // -------------------------------------------------------------------------
 

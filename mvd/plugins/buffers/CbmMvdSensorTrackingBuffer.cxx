@@ -6,8 +6,12 @@
 
 
 // -----   Default constructor   -------------------------------------------
-CbmMvdSensorTrackingBuffer::CbmMvdSensorTrackingBuffer() {
-  fBuffer     = NULL;
+CbmMvdSensorTrackingBuffer::CbmMvdSensorTrackingBuffer() 
+  : CbmMvdSensorBuffer(),
+    ftimeStart(-1),
+    ftimeStop(-1),
+    ftimestep(-1)
+{
 };
 // -------------------------------------------------------------------------
 

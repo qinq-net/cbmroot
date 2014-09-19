@@ -295,7 +295,9 @@ private:
   
   private:
 
-  
+  CbmMvdSensorDigitizerTask(const CbmMvdSensorDigitizerTask&);
+  CbmMvdSensorDigitizerTask operator=(const CbmMvdSensorDigitizerTask&);
+    
   ClassDef(CbmMvdSensorDigitizerTask,1);
 
 };

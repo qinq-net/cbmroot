@@ -121,6 +121,9 @@ private:
   static CbmMvdDetector* fInstance;
   Bool_t fSensorArrayFilled;
   Bool_t initialized;
+
+  CbmMvdDetector(const CbmMvdDetector&);
+  CbmMvdDetector operator=(const CbmMvdDetector&);
   
  ClassDef(CbmMvdDetector,1);
   

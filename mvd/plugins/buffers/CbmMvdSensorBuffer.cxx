@@ -10,8 +10,12 @@
 
 
 // -----   Default constructor   -------------------------------------------
-CbmMvdSensorBuffer::CbmMvdSensorBuffer() {
-  fBuffer     = NULL;
+CbmMvdSensorBuffer::CbmMvdSensorBuffer() 
+  : CbmMvdSensorPlugin(),
+    fBuffer(NULL),
+    fCurrentEvent(NULL),
+    fSensor(NULL)
+{
 }
 // -------------------------------------------------------------------------
 

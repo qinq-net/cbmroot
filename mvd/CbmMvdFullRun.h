@@ -150,8 +150,12 @@ private:
   /** Print digitisation parameters **/
   void PrintParameters();
 
+private:
+  CbmMvdFullRun(const CbmMvdFullRun&);
+  CbmMvdFullRun operator=(const CbmMvdFullRun&);
 
   ClassDef(CbmMvdFullRun,1);
+
     
 };
     

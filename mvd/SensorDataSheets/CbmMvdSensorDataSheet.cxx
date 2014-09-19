@@ -15,48 +15,37 @@ using std::endl;
 
 
 // -----   Default constructor   -------------------------------------------
-CbmMvdSensorDataSheet::CbmMvdSensorDataSheet()  {
-  
-  fMimosaName="DefaulSensor";       // Clear name of the simulated sensor
-  fPixelPitchX=18.4e-4;	  	    // Pixel pitch of this sensor
-  fPixelPitchY=18.4e-4;             // Pixel pitch of this sensor
-  fNPixelsX=0;	    		    // Number of pixels in row
-  fNPixelsY=0;	  		    // Number of pixels in col
-  fNPixels=0;	  		    // Number of pixels in sensor
-  fPixelSignX=1;       		    // Direction of the pixel count X, if true, Pixel x=0 is at
-				    // left corner, else at right corner
-  fPixelSignY=1;       		    // Direction of the pixel count Y, if true, Pixel x=0 is at
-				    // the lower corner, else at upper corner
-  fShutterSign=1;      // if true, shutter runs parallel to pixel number
-  fIntegrationTime=50e3;  	    // Integration time of the pixels in ns
-  fEpiTh=14e-4;		   	    // Thickness of the epitaxial layer
-  
-  /** Description of the sensor for the digitizer **/
-	fLorentzPar0 = 4.12073e+02;
-	fLorentzPar1 = 0.8e+00;
-	fLorentzPar2 = 0;
-	fLandauMPV   = 8.62131e+02;
-	fLandauSigma = 2.e+02;
-        fLandauGain  = 1.56;
-  
-  /** ADC description **/
-  
-  fAdcDynamic = 150;
-  fAdcOffset  = 0;
-  fAdcBits    = 1;
-  fAdcSteps= TMath::Power(2,fAdcBits);
-  fAdcStepSize=fAdcDynamic/fAdcSteps;
-  fStatesPerBank=0;
-  fStatesPerLine=0;
-  fStatesPerFrame=0;
-  fPixelsPerBank=0;
-  
-  
-  /** Self-organizsation **/
-   
-  fValidData=kFALSE;
-  
-  
+CbmMvdSensorDataSheet::CbmMvdSensorDataSheet()  
+  : TNamed(),
+    fMimosaName("DefaulSensor"),
+    fPixelPitchX(18.4e-4),
+    fPixelPitchY(18.4e-4),
+    fNPixelsX(0),
+    fNPixelsY(0),
+    fNPixels(0),
+    fPixelSignX(1),
+    fPixelSignY(1),
+    fShutterSign(1),
+    fIntegrationTime(50e3),
+    fEpiTh(14e-4),
+    fNoise(0),
+    fLandauMPV(8.62131e+02),
+    fLandauSigma(2.e+02),
+    fLandauGain(1.56),
+    fLorentzPar0(4.12073e+02),
+    fLorentzPar1(0.8e+00),
+    fLorentzPar2(0.),
+    fAdcDynamic(150),
+    fAdcOffset(0),
+    fAdcBits(1),
+    fAdcSteps(TMath::Power(2,fAdcBits)),
+  fStatesPerBank(0),
+  fStatesPerLine(0),
+  fStatesPerFrame(0),
+  fPixelsPerBank(0),
+  fAdcStepSize(fAdcDynamic/fAdcSteps),
+  fValidData(kFALSE)
+{
 }
 
 // -----   Destructor   ----------------------------------------------------
