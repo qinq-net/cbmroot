@@ -21,7 +21,7 @@ class CbmStsTrackStatus {
 	public:
 
 		/** Constructor  **/
-		CbmStsTrackStatus() : fAddress(0), fTrackId(0),
+		CbmStsTrackStatus() : fAddress(0), fTrackId(0), fPid(0),
 		                      fX(0.), fY(0.), fZ(0.),
 		                      fPx(0.), fPy(0.), fPz(0.),
 		                      fTime(0.), fLength(0.) {		}
@@ -35,6 +35,7 @@ class CbmStsTrackStatus {
 		void Reset() {
 			fAddress = 0;
 			fTrackId = 0;
+			fPid     = 0;
 			fX       = 0.;
 			fY       = 0.;
 			fZ       = 0.;
@@ -48,6 +49,7 @@ class CbmStsTrackStatus {
 
 		UInt_t   fAddress;    ///< Unique address
 		Int_t    fTrackId;    ///< MCTrack index
+		Int_t    fPid;        ///< MCTrack PID [PDG code]
 		Double_t fX;          ///< x position [cm]
 		Double_t fY;          ///< x position [cm]
 		Double_t fZ;          ///< x position [cm]

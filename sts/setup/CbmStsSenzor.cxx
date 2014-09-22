@@ -11,6 +11,10 @@
 #include "TClonesArray.h"
 #include "TGeoMatrix.h"
 
+// Includes from FairRoot
+#include "FairField.h"
+#include "FairRunAna.h"
+
 // Includes from CbmRoot
 #include "CbmLink.h"
 #include "CbmStsHit.h"
@@ -156,10 +160,24 @@ Int_t CbmStsSenzor::ProcessPoint(CbmStsPoint* point, CbmLink* link) {
   Double_t x2 = local[0];
   Double_t y2 = local[1];
 
+  // --- Get magnetic field
+  global[0] = 0.5 * ( point->GetXIn() + point->GetXOut() );
+  global[1] = 0.5 * ( point->GetYIn() + point->GetYOut() );
+  global[2] = 0.5 * ( point->GetZIn() + point->GetZOut() );
+  Double_t bField[3] = { 0., 0., 0.};
+  if ( FairRunAna::Instance() )
+  	FairRunAna::Instance()->GetField()->Field(global, bField);
+
+
   // Create SensorPoint
+  // Note: there is a conversion from kG to T in the field values.
   CbmStsSensorPoint* sPoint = new CbmStsSensorPoint(x1, y1, x2, y2,
                                                     point->GetEnergyLoss(),
-                                                    point->GetTime());
+                                                    point->GetTime(),
+                                                    bField[0] / 10.,
+                                                    bField[1] / 10.,
+                                                    bField[2] / 10.,
+                                                    point->GetPid());
   LOG(DEBUG2) << GetName() << ": Local point coordinates are (" << x1
   		        << ", " << y1 << "), (" << x2 << ", " << y2 << ")"
   		        << FairLogger::endl;

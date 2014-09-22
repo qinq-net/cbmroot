@@ -430,6 +430,14 @@ Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
     return -1;
   }
 
+  // --- Debug
+  LOG(DEBUG4) << GetName() << ": processing sensor point at ( "
+		      << point->GetX1() << ", " << point->GetX2()
+		      << " ) cm at " << point->GetTime() << " ns, energy loss "
+		      << point->GetELoss() << ", PID " << point->GetPid()
+		      << ", By = " << point->GetBy() << " T"
+		      << FairLogger::endl;
+
   // --- Created charge signals
   Int_t nSignals = 0;
 

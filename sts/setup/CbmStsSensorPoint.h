@@ -32,10 +32,16 @@ class CbmStsSensorPoint
      ** @param x2,y2  Exit coordinates in local C.S. [cm]
      ** @param eLoss  Energy deposit [GeV]
      ** @param time   Time [ns]
+     ** @param bx     Mag. Field (x component) at midpoint [T]
+     ** @param by     Mag. Field (y component) at midpoint [T]
+     ** @param bz     Mag. Field (z component) at midpoint [T]
+     ** @param pid    Particle ty[e [PDG code]
      **/
     CbmStsSensorPoint(Double_t x1, Double_t y1,
                       Double_t x2, Double_t y2,
-                      Double_t eLoss, Double_t time);
+                      Double_t eLoss, Double_t time,
+                      Double_t bx = 0., Double_t by = 0., Double_t bz = 0.,
+                      Int_t pid = 0);
 
     /** Destructor  **/
     virtual ~CbmStsSensorPoint();
@@ -48,6 +54,10 @@ class CbmStsSensorPoint
     Double_t GetY2()    const { return fY2; }
     Double_t GetELoss() const { return fELoss; }
     Double_t GetTime()  const { return fTime; }
+    Double_t GetBx()    const { return fBx; }
+    Double_t GetBy()    const { return fBy; }
+    Double_t GetBz()    const { return fBz; }
+    Int_t    GetPid()   const { return fPid; }
 
 
 
@@ -59,6 +69,10 @@ class CbmStsSensorPoint
     Double_t fY2;      ///< Exit point y [cm]
     Double_t fELoss;   ///< Energy deposit [GeV]
     Double_t fTime;    ///< Time [ns]
+    Double_t fBx;      ///< Magnetic field x component at midpoint [T]
+    Double_t fBy;      ///< Magnetic field y component at midpoint [T]
+    Double_t fBz;      ///< Magnetic field z component at midpoint [T]
+    Int_t    fPid;     ///< Particle Type [PDG code]
 
     ClassDef(CbmStsSensorPoint,1);
 

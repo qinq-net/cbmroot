@@ -9,6 +9,7 @@
 
 #include "TGeoManager.h"
 #include "TGeoPhysicalNode.h"
+#include "TParticle.h"
 #include "TVirtualMC.h"
 #include "TVector3.h"
 
@@ -128,7 +129,7 @@ void CbmStsMC::Initialize() {
 
 
 
-// -----   ProcessHits  -----------------------------Ð----------------------
+// -----   ProcessHits  ----------------------------------------------------
 Bool_t CbmStsMC::ProcessHits(FairVolume* vol) {
 
 
@@ -220,6 +221,14 @@ CbmStsPoint* CbmStsMC::CreatePoint() {
     return NULL;
   }
   
+  // --- Check track PID
+  if ( fStatusIn.fPid != fStatusOut.fPid ) {
+    LOG(ERROR) << GetName() << ": inconsistent track PID "
+               << fStatusIn.fPid << " " << fStatusOut.fPid
+               << FairLogger::endl;
+    return NULL;
+  }
+
   // --- Entry position and momentum
   TVector3 posIn(fStatusIn.fX,  fStatusIn.fY,  fStatusIn.fZ);
   TVector3 momIn(fStatusIn.fPx, fStatusIn.fPy, fStatusIn.fPz);
@@ -242,7 +251,7 @@ CbmStsPoint* CbmStsMC::CreatePoint() {
   // --- Add new point to output array
   return new ( (*fStsPoints)[fStsPoints->GetEntriesFast()] )
     CbmStsPoint(fStatusIn.fTrackId, fStatusIn.fAddress, posIn, posOut,
-                momIn, momOut, time, length, fEloss);
+                momIn, momOut, time, length, fEloss, fStatusIn.fPid);
                 
 }
 // -------------------------------------------------------------------------
@@ -271,8 +280,9 @@ void CbmStsMC::SetStatus(CbmStsTrackStatus& status) {
   }
   else status.fAddress = it->second;
 
-  // --- Index of current track
+  // --- Index and PID of current track
   status.fTrackId  = gMC->GetStack()->GetCurrentTrackNumber();
+  status.fPid      = gMC->GetStack()->GetCurrentTrack()->GetPdgCode();
 
   // --- Position
   gMC->TrackPosition(status.fX, status.fY, status.fZ);

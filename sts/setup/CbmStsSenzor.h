@@ -10,6 +10,7 @@
 #define CBMSTSSENZOR_H 1
 
 
+#include <vector>
 #include "CbmStsAddress.h"
 #include "CbmStsCluster.h"
 #include "setup/CbmStsElement.h"
@@ -21,6 +22,8 @@ class CbmLink;
 class CbmStsModule;
 class CbmStsPoint;
 class CbmStsSensorType;
+
+using std::vector;
 
 
 /** @class CbmStsSenzor
