@@ -14,8 +14,13 @@ using std::endl;
 
 
 // -----   Default constructor   -------------------------------------------
-CbmMvdHit::CbmMvdHit() {
-  fFlag = -1;
+CbmMvdHit::CbmMvdHit() 
+ : CbmHit(),
+   fFlag(-1),
+   fClusterIndex(-1),
+   fIndexCentralX(-1),
+   fIndexCentralY(-1)
+{
 }
 // -------------------------------------------------------------------------
 
@@ -24,12 +29,13 @@ CbmMvdHit::CbmMvdHit() {
 // -----   Standard constructor   ------------------------------------------
 CbmMvdHit::CbmMvdHit(Int_t statNr, TVector3& pos, TVector3& dpos, Int_t indexCentralX, Int_t indexCentralY,
 		     Int_t clusterIndex, Int_t flag) 
-  : CbmHit(0, pos, dpos, 0., -1) {
+  : CbmHit(0, pos, dpos, 0., -1),
+    fFlag(flag),
+    fClusterIndex(clusterIndex),
+    fIndexCentralX(indexCentralX),
+    fIndexCentralY(indexCentralY)
+{
   fDetectorID = DetectorId(statNr);
-  fFlag = flag;
-  fClusterIndex=clusterIndex;
-  fIndexCentralX=indexCentralX;
-  fIndexCentralY=indexCentralY;
 }
 // -------------------------------------------------------------------------
 

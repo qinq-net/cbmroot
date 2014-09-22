@@ -39,7 +39,14 @@ class CbmMvdCluster : public TObject
   
   CbmMvdCluster(Int_t* digiList, Short_t digisInThisObject, Short_t totalDigisInCluster, Int_t neighbourDown);
 
-  CbmMvdCluster(Int_t dummyInt1, TVector3 dummyVect1, TVector3 dummyVect2, Int_t dummyInt2, Short_t* dummyShort1, Float_t dummyFloat1, Float_t dummyFloat2){};
+  CbmMvdCluster(Int_t dummyInt1, TVector3 dummyVect1, TVector3 dummyVect2, Int_t dummyInt2, Short_t* dummyShort1, Float_t dummyFloat1, Float_t dummyFloat2)
+    : TObject(),
+      fDigiArray(),
+      fNeighbourDown(-1),
+      fNeighbourUp(-1),
+      fDigisInThisObject(0),
+      fTotalDigisInCluster(-1)
+  {};
   //this constructor is only for littrack error, littrack has to implement new clustertyp
   
   
