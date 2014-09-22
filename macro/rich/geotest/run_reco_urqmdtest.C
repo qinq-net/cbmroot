@@ -8,9 +8,9 @@ void run_reco_urqmdtest(Int_t nEvents = 200)
 
 	TString inFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
 	TString outDir = "/Users/slebedev/Development/cbm/data/simulations/rich/urqmdtest/al/";
-	TString parFile =  outDir + "25gev.centr.param.al_1.root";
-	TString mcFile = outDir + "25gev.centr.mc.al_1.root";
-	TString recoFile = outDir + "25gev.centr.reco.al_1.root";
+	TString parFile =  outDir + "25gev.centr.param.al_2.root";
+	TString mcFile = outDir + "25gev.centr.mc.al_2.root";
+	TString recoFile = outDir + "25gev.centr.reco.al_2.root";
 
 	TString caveGeom = "cave.geo";
 	TString pipeGeom   = "pipe/pipe_standard.geo";
@@ -21,7 +21,9 @@ void run_reco_urqmdtest(Int_t nEvents = 200)
 	Double_t fieldZ = 50.; // field center z position
 	Double_t fieldScale =  1.0; // field scaling factor
 
-	TObjString stsDigiFile = parDir + "/sts/sts_v12b_std.digi.par"; // STS digi file
+	TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
+	TObjString trdDigiFile = parDir + "/trd/trd_v13p_3e.digi.par";
+
 	TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v12b.root"; // Material budget file for L1 STS tracking
 	std::string resultDir = "results_urqmd_25gev_centr_al_1/";
 
@@ -45,6 +47,7 @@ void run_reco_urqmdtest(Int_t nEvents = 200)
 
    TList *parFileList = new TList();
    parFileList->Add(&stsDigiFile);
+   parFileList->Add(&trdDigiFile);
 
    gDebug = 0;
    TStopwatch timer;
@@ -81,9 +84,6 @@ void run_reco_urqmdtest(Int_t nEvents = 200)
    FairTask* stsFindHits = new CbmStsFindHits();
    run->AddTask(stsFindHits);
 
-   //CbmStsMatchHits* stsMatchHits = new CbmStsMatchHits();
-   //run->AddTask(stsMatchHits);
-
    CbmKF* kalman = new CbmKF();
    run->AddTask(kalman);
    CbmL1* l1 = new CbmL1();
@@ -95,16 +95,23 @@ void run_reco_urqmdtest(Int_t nEvents = 200)
    FairTask* stsFindTracks = new CbmStsFindTracks(0, stsTrackFinder, useMvd);
    run->AddTask(stsFindTracks);
 
-   FairTask* stsMatchTracks = new CbmStsMatchTracks(0);
-   run->AddTask(stsMatchTracks);
-
    CbmStsTrackFitter* stsTrackFitter = new CbmStsKFTrackFitter();
    FairTask* stsFitTracks = new CbmStsFitTracks(stsTrackFitter, 0);
    run->AddTask(stsFitTracks);
 
-   CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
-   run->AddTask(finder);
+   // =========================================================================
+   	// ===                     TRD local reconstruction                      ===
+   	// =========================================================================
+	Bool_t simpleTR = kTRUE; // use fast and simple version for TR production
+	CbmTrdRadiator *radiator = new CbmTrdRadiator(simpleTR , "H++");
+	CbmTrdHitProducerSmearing* trdHitProd = new CbmTrdHitProducerSmearing(radiator);
+	trdHitProd->SetUseDigiPar(false);
+	//run->AddTask(trdHitProd);
 
+	CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
+	finder->SetTrackingType("branch");
+	finder->SetMergerType("nearest_hit");
+	run->AddTask(finder);
 
    CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
    richHitProd->SetDetectorType(4);
@@ -124,8 +131,8 @@ void run_reco_urqmdtest(Int_t nEvents = 200)
    CbmRichMatchRings* matchRings = new CbmRichMatchRings();
    run->AddTask(matchRings);
 
-	CbmMatchRecoToMC* match = new CbmMatchRecoToMC();
-	run->AddTask(match);
+   CbmMatchRecoToMC* match = new CbmMatchRecoToMC();
+   run->AddTask(match);
 
    CbmRichUrqmdTest* urqmdTest = new CbmRichUrqmdTest();
    urqmdTest->SetOutputDir(resultDir);
