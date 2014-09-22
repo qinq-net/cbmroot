@@ -221,6 +221,7 @@ If(NOT ${ROOT_HAS_VC})
       ${CBMROOT_SOURCE_DIR}/vc_074/ 
       ${CBMROOT_SOURCE_DIR}/vc_074/include/
      )
+  Install(FILES $${CMAKE_BINARY_DIR}/lib/libVc.a DESTINATION lib)
 EndIf()
 
 
@@ -338,7 +339,32 @@ endif(IWYU_FOUND)
 if(NOT CBMROOT_MINIMAL)
   WRITE_CONFIG_FILE(config.sh)
   WRITE_CONFIG_FILE(config.csh)
+
+  SET(VMCWORKDIR ${CMAKE_INSTALL_PREFIX}/share/cbmroot)
+  WRITE_CONFIG_FILE(config.sh_install)
+  WRITE_CONFIG_FILE(config.csh_install)
+
 else(NOT CBMROOT_MINIMAL)
   SET(FULL_CONFIG_FILE "false")
   WRITE_CONFIG_FILE(config.sh)
 endif(NOT CBMROOT_MINIMAL)
+
+
+Install(FILES ${CMAKE_BINARY_DIR}/config.sh_install
+        DESTINATION bin
+        RENAME CbmRootConfig.sh
+       )
+
+Install(FILES ${CMAKE_BINARY_DIR}/check_system.sh
+        DESTINATION bin
+       )
+
+Install(FILES ${CMAKE_BINARY_DIR}/config.csh_install
+        DESTINATION bin
+        RENAME CbmRootConfig.csh
+       )
+
+
+Install(DIRECTORY gconfig geometry input parameters
+        DESTINATION share/cbmroot
+        PATTERN ".svn" EXCLUDE)
