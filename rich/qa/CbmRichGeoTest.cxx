@@ -417,6 +417,8 @@ void CbmRichGeoTest::RingParameters()
 		if (NULL == ring) continue;
 		CbmTrackMatchNew* ringMatch = (CbmTrackMatchNew*) fRichRingMatches->At(iR);
 		if (NULL == ringMatch) continue;
+		cout << "BEFORE Lnk" << endl;
+		//cout << "Link = " << ringMatch->GetMatchedLink().GetIndex() << endl;
 
 		Int_t mcTrackId = ringMatch->GetMatchedLink().GetIndex();
 		if (mcTrackId < 0) continue;

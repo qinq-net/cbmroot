@@ -2,7 +2,7 @@
  * \file CbmRichGeoOpt.cxx
  *
  * \author Tariq Mahmoud <t.mahmoud@gsi.de>
- * \date 2012
+ * \date 2014
  **/
 
 #include "CbmRichGeoOpt.h"
@@ -20,6 +20,7 @@
 #include "CbmTrackMatchNew.h"
 #include "CbmRichRing.h"
 #include "CbmRichHit.h"
+#include "CbmRichPoint.h"
 
 #include "CbmUtils.h"
 
@@ -69,17 +70,19 @@ void CbmRichGeoOpt::Exec(
 {
    fEventNum++;
 
+
+
    cout << "CbmRichGeoOpt, event No. " <<  fEventNum << endl;
 
- /*  Int_t nofPoints = fRichPoints->GetEntriesFast();
+   Int_t nofPoints = fRefPoints->GetEntriesFast();
    for (int i = 0; i < nofPoints; i++) {
-	   CbmRichPoint* point = fRichPoints->At(i);
+	   CbmRichPoint* point = (CbmRichPoint*)fRefPoints->At(i);
 	   if (point == NULL) continue;
+	   cout << point->GetX() << " " << point->GetY() << endl;
 
-   }*/
+   }
 
 }
-
 
 
 void CbmRichGeoOpt::InitHistograms()

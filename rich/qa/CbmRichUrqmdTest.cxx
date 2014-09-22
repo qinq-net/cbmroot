@@ -188,8 +188,11 @@ void CbmRichUrqmdTest::NofRings()
    for (Int_t iR = 0; iR < nofRings; iR++){
       CbmRichRing *ring = (CbmRichRing*) fRichRings->At(iR);
       if (NULL == ring) continue;
+     // cout << "ring: nofHits=" << ring->GetNofHits() << endl;
       CbmTrackMatchNew* ringMatch = (CbmTrackMatchNew*) fRichRingMatches->At(iR);
       if (NULL == ringMatch) continue;
+     // cout << "nofHits=" << ringMatch->GetNofHits() << endl;
+     // continue;
       Int_t mcTrackId = ringMatch->GetMatchedLink().GetIndex();
       if (mcTrackId < 0) continue;
       CbmMCTrack* mcTrack = (CbmMCTrack*)fMcTracks->At(mcTrackId);
