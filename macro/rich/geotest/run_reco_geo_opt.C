@@ -1,5 +1,5 @@
 
-void run_reco_geo_opt(Int_t nEvents = 2)
+void run_reco_geo_opt(Int_t nEvents = 200)
 {
    TTree::SetMaxTreeSize(90000000000);
    TString script = TString(gSystem->Getenv("SCRIPT"));
@@ -8,14 +8,20 @@ void run_reco_geo_opt(Int_t nEvents = 2)
    gRandom->SetSeed(10);
 
    TString outDir = "/Users/slebedev/Development/cbm/data/simulations/rich/urqmdtest/";
-   TString inFile = outDir + "25gev.centr.mc.0000.root";
+   TString mcFile = outDir + "25gev.centr.mc.0000.root";
    TString parFile = outDir + "25gev.centr.param.0000.root";
-   TString outFile = outDir + "25gev.centr.reco.0000.root";
+   TString recFile = outDir + "25gev.centr.reco.0000.root";
    std::string resultDir = "results_urqmd_25gev_centr/";
    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
    TList *parFileList = new TList();
-   TObjString stsDigiFile = parDir + "/sts/sts_v12b_std.digi.par"; // STS digi file
-   parFileList->Add(&stsDigiFile);
+   //TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
+   //parFileList->Add(&stsDigiFile);
+
+	if (script == "yes") {
+		mcFile = TString(gSystem->Getenv("MC_FILE"));
+		recFile = TString(gSystem->Getenv("RECO_FILE"));
+		parFile = TString(gSystem->Getenv("PAR_FILE"));
+	}
 
    gDebug = 0;
    TStopwatch timer;
@@ -25,57 +31,8 @@ void run_reco_geo_opt(Int_t nEvents = 2)
    loadlibs();
 
    FairRunAna *run= new FairRunAna();
-   run->SetInputFile(inFile);
-   run->SetOutputFile(outFile);
-
-   Double_t threshold  =  4;
-   Double_t noiseWidth =  0.01;
-   Int_t    nofBits    = 12;
-   Double_t electronsPerAdc    =  10;
-   Double_t StripDeadTime = 0.1;
-   CbmStsDigitize* stsDigitize = new CbmStsDigitize("STS Digitiser", 0);
-   stsDigitize->SetRealisticResponse();
-   stsDigitize->SetFrontThreshold (threshold);
-   stsDigitize->SetBackThreshold  (threshold);
-   stsDigitize->SetFrontNoiseWidth(noiseWidth);
-   stsDigitize->SetBackNoiseWidth (noiseWidth);
-   stsDigitize->SetFrontNofBits   (nofBits);
-   stsDigitize->SetBackNofBits    (nofBits);
-   stsDigitize->SetFrontNofElPerAdc(electronsPerAdc);
-   stsDigitize->SetBackNofElPerAdc(electronsPerAdc);
-   stsDigitize->SetStripDeadTime  (StripDeadTime);
-   run->AddTask(stsDigitize);
-
-   FairTask* stsClusterFinder = new CbmStsClusterFinder("CbmStsClusterFinder", 0);
-   run->AddTask(stsClusterFinder);
-
-   FairTask* stsFindHits = new CbmStsFindHits(0);
-   run->AddTask(stsFindHits);
-
-   CbmStsMatchHits* stsMatchHits = new CbmStsMatchHits(0);
-   run->AddTask(stsMatchHits);
-
-   CbmKF* kalman = new CbmKF();
-   run->AddTask(kalman);
-   CbmL1* l1 = new CbmL1();
-   l1->SetMaterialBudgetFileName(stsMatBudgetFileName);
-   run->AddTask(l1);
-
-   CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
-   Bool_t useMvd = false;
-   FairTask* stsFindTracks = new CbmStsFindTracks(0, stsTrackFinder, useMvd);
-   run->AddTask(stsFindTracks);
-
-   FairTask* stsMatchTracks = new CbmStsMatchTracks(0);
-   run->AddTask(stsMatchTracks);
-
-   CbmStsTrackFitter* stsTrackFitter = new CbmStsKFTrackFitter();
-   FairTask* stsFitTracks = new CbmStsFitTracks(stsTrackFitter, 0);
-   run->AddTask(stsFitTracks);
-
-   CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
-   run->AddTask(finder);
-
+   run->SetInputFile(mcFile);
+   run->SetOutputFile(recFile);
 
    CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
    richHitProd->SetDetectorType(4);
@@ -85,8 +42,8 @@ void run_reco_geo_opt(Int_t nEvents = 2)
    run->AddTask(richHitProd);
 
    CbmRichReconstruction* richReco = new CbmRichReconstruction();
-   richReco->SetRunExtrapolation(true);
-   richReco->SetRunProjection(true);
+   richReco->SetRunExtrapolation(false);
+   richReco->SetRunProjection(false);
    richReco->SetRunTrackAssign(false);
    richReco->SetFinderName("ideal");
   // richReco->SetExtrapolationName("ideal");
@@ -94,9 +51,6 @@ void run_reco_geo_opt(Int_t nEvents = 2)
 
    CbmRichMatchRings* matchRings = new CbmRichMatchRings();
    run->AddTask(matchRings);
-
-   CbmRichGeoOpt* richGeoOpt = new CbmRichGeoOpt();
-   run->AddTask(richGeoOpt);
 
    // -----  Parameter database   --------------------------------------------
    FairRuntimeDb* rtdb = run->GetRuntimeDb();
@@ -120,7 +74,7 @@ void run_reco_geo_opt(Int_t nEvents = 2)
    Double_t ctime = timer.CpuTime();
    cout << endl << endl;
    cout << "Macro finished successfully." << endl;
-   cout << "Output file is "    << outFile << endl;
+   cout << "Output file is "    << recFile << endl;
    cout << "Parameter file is " << parFile << endl;
    cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
    cout << endl;

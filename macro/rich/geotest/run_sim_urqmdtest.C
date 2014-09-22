@@ -8,14 +8,17 @@ void run_sim_urqmdtest(Int_t nEvents = 200)
 
 	TString inFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
 	TString outDir = "/Users/slebedev/Development/cbm/data/simulations/rich/urqmdtest/al/";
-	TString parFile =  outDir + "25gev.centr.param.al_1.root";
-	TString outFile = outDir + "25gev.centr.mc.al_1.root";
+	TString parFile =  outDir + "25gev.centr.param.al_2.root";
+	TString outFile = outDir + "25gev.centr.mc.al_2.root";
 
 	TString caveGeom = "cave.geo";
 	TString pipeGeom   = "pipe/pipe_standard.geo";
 	TString magnetGeom = "magnet/magnet_v12a.geo";
-	TString stsGeom = "sts/sts_v12b.geo.root";
-	TString richGeom= "rich/rich_v13c.root";
+	TString stsGeom = "sts/sts_v13d.geo.root";
+	TString richGeom= "rich/rich_v14a.root";
+	//TString richGeom= "rich/rich_v08a.geo";
+	//TString trdGeom= "trd/trd_v13p_3e.geo.root";
+
 	TString fieldMap = "field_v12a";
 	Double_t fieldZ = 50.; // field center z position
 	Double_t fieldScale =  1.0; // field scaling factor
@@ -79,6 +82,12 @@ void run_sim_urqmdtest(Int_t nEvents = 200)
       rich->SetGeometryFileName(richGeom);
       fRun->AddModule(rich);
    }
+
+	/*if ( trdGeom != "" ) {
+		FairDetector* trd = new CbmTrd("TRD",kTRUE );
+		trd->SetGeometryFileName(trdGeom);
+		fRun->AddModule(trd);
+	}*/
 
    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
    magField->SetPosition(0., 0., fieldZ);

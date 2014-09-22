@@ -1,5 +1,5 @@
 
-void run_reco_geotest(Int_t nEvents = 1000)
+void run_reco_geotest(Int_t nEvents = 10000)
 {
    TTree::SetMaxTreeSize(90000000000);
    TString script = TString(gSystem->Getenv("SCRIPT"));
@@ -73,6 +73,9 @@ void run_reco_geotest(Int_t nEvents = 1000)
 
    CbmRichMatchRings* matchRings = new CbmRichMatchRings();
    run->AddTask(matchRings);
+
+	CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
+	run->AddTask(matchRecoToMc);
 
    CbmRichGeoTest* geoTest = new CbmRichGeoTest();
    geoTest->SetOutputDir(resultDir);
