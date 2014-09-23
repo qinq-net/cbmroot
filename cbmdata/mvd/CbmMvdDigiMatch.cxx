@@ -13,29 +13,26 @@ using std::endl;
 
 
 // -----   Default constructor   -------------------------------------------
-CbmMvdDigiMatch::CbmMvdDigiMatch()
+CbmMvdDigiMatch::CbmMvdDigiMatch():
+ fFileNumber(-1),
+ fIndex(0),
+ fWeight(0.),
+ fEntry(-1)
 {
- AddLink(0. , 0, -1 ,-1);
- 
- fFileNumber = -1;
- fIndex = 0; 
- fWeight = 0.;
- fEntry = -1;
-  
+
+ AddLink(0., 0, -1, -1);	
 }
 // -------------------------------------------------------------------------
 
 
 // -----   Constructor with parameters   -----------------------------------
-CbmMvdDigiMatch::CbmMvdDigiMatch(Double_t weight, Int_t index, Int_t entry, Int_t file)
-{
- AddLink(weight, index, entry, file);
-
- fFileNumber = file;
- fIndex = index; 
- fWeight = weight;
- fEntry = entry;
-    
+CbmMvdDigiMatch::CbmMvdDigiMatch(Double_t weight, Int_t index, Int_t entry, Int_t file):
+ fFileNumber(file),
+ fIndex(index),
+ fWeight(weight),
+ fEntry(entry)
+{    
+AddLink(weight, index, entry, file);
 }
 // -------------------------------------------------------------------------
 

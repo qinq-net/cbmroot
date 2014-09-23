@@ -15,13 +15,20 @@ using std::endl;
 
 
 // -----   Default constructor   -------------------------------------------
-CbmMvdDigi::CbmMvdDigi(){
-    fDetectorId   =  0;
-    fChannelNr    =  0;
-    fChannelNrX = 0;
-    fChannelNrY = 0;
-    fCharge     = 0;
-    
+CbmMvdDigi::CbmMvdDigi(): 	
+    fDetectorId(0),
+    fChannelNr(0),
+    fChannelNrX(0),
+    fChannelNrY(0),
+    fCharge(0),
+    fTrackID(-1),
+    fPointID(0),
+    fPixelSizeX(0),
+    fPixelSizeY(0),
+    fDigiTime(0),
+    fFrameNumber(0),
+    fDigiFlag(-1)
+{    
 }
 // -------------------------------------------------------------------------
 
@@ -54,25 +61,23 @@ CbmMvdDigi::CbmMvdDigi(Int_t iStation, Int_t iChannelNrX, Int_t iChannelNrY, Flo
 // -----   Constructor with parameters  --> used only due to error TODO include correct version -----------------------------------
 CbmMvdDigi::CbmMvdDigi(Int_t iStation, Int_t iChannelNrX, Int_t iChannelNrY, Float_t charge,
                        Float_t pixelSizeX, Float_t pixelSizeY, Float_t time, Int_t frame)
-:CbmDigi()
+:CbmDigi(),
+fDetectorId(DetectorId(iStation)),
+fCharge(charge),
+fChannelNrX(iChannelNrX),
+fChannelNrY(iChannelNrY),
+fPixelSizeX(pixelSizeX),
+fPixelSizeY(pixelSizeY),
+fDigiTime(time),
+fFrameNumber(frame),
+fDigiFlag(-1)
+
 {
     // Check range for station
     if ( ! ( iStation >= 0 && iStation <= 600 ) ) {
 	cout << "-E- CbmMvdDigi: Illegal station number " << iStation << endl;
 	Fatal("", "Illegal station number");
     }
-
-    fDetectorId = DetectorId(iStation);
-    fChannelNrY = iChannelNrY;
-    fCharge  = charge;
-    fChannelNrX=iChannelNrX;
-    fChannelNrY=iChannelNrY;
-    fPixelSizeX=pixelSizeX;
-    fPixelSizeY=pixelSizeY;
-    fDigiTime = time;
-    fFrameNumber = frame;
-    
-    fDigiFlag=-1;
     
 }
 // -------------------------------------------------------------------------

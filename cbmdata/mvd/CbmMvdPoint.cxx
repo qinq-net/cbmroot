@@ -21,7 +21,9 @@ CbmMvdPoint::CbmMvdPoint()
     fPy_out(0), 
     fPz_out(0),
     fPdgCode(0),
-    fPointId(-1)
+    fPointId(-1),
+    fFrame(0),
+    fStartTime(0.)
 {
 }
 // -------------------------------------------------------------------------
@@ -42,18 +44,15 @@ CbmMvdPoint::CbmMvdPoint(Int_t trackID, Int_t pdgCode, Int_t stationNr,
     fPy_out(momOut.Py()),
     fPz_out(momOut.Pz()),
     fPdgCode(pdgCode),
-    fPointId(-1)
+    fPointId(-1),
+    fFrame(frame)
 {
 FairRunSim* run = FairRunSim::Instance();
 FairPrimaryGenerator* gen = run->GetPrimaryGenerator();
 FairMCEventHeader* event = gen->GetEvent();
 
 fStartTime = event->GetT();
-fFrame = frame;
-
-    fPdgCode=pdgCode;
-    fDetectorID = DetectorId(stationNr);
-    fPointId=-1;
+fDetectorID = DetectorId(stationNr);
 }
 
 // -------------------------------------------------------------------------
