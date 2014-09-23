@@ -41,12 +41,13 @@ class CbmStsPoint : public FairMCPoint
    *@param tof      Time since event start [ns]
    *@param length   Track length since creation [cm]
    *@param eLoss    Energy deposit [GeV]
+   *@param pid      Particle ID (PDG code)
    *@param eventId  MC event identifier
    **/
   CbmStsPoint(Int_t trackID, Int_t detID, TVector3 posIn, 
-	      TVector3 posOut, TVector3 momIn, TVector3 momOut,
-	      Double_t tof, Double_t length, Double_t eLoss,
-	      Int_t eventId = 0);
+		  	  TVector3 posOut, TVector3 momIn, TVector3 momOut,
+		  	  Double_t tof, Double_t length, Double_t eLoss,
+		  	  Int_t pid = 0, Int_t eventId = 0);
 
 
   /** Copy constructor with event and epoch time 
@@ -75,6 +76,7 @@ class CbmStsPoint : public FairMCPoint
   Double_t GetPxOut() const { return fPx_out; }
   Double_t GetPyOut() const { return fPy_out; }
   Double_t GetPzOut() const { return fPz_out; }
+  Int_t    GetPid()   const { return fPid; }
   void PositionIn(TVector3& pos)  { pos.SetXYZ(fX, fY, fZ); }
   void PositionOut(TVector3& pos) { pos.SetXYZ(fX_out,fY_out,fZ_out); }
   void MomentumOut(TVector3& mom) { mom.SetXYZ(fPx_out,fPy_out,fPz_out); }
@@ -106,6 +108,7 @@ class CbmStsPoint : public FairMCPoint
 
   Double32_t fX_out,  fY_out,  fZ_out;
   Double32_t fPx_out, fPy_out, fPz_out;
+  Int_t fPid;         ///> Particle ID [PDG code]
 
 
 
