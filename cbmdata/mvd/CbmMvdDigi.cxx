@@ -70,7 +70,10 @@ fPixelSizeX(pixelSizeX),
 fPixelSizeY(pixelSizeY),
 fDigiTime(time),
 fFrameNumber(frame),
-fDigiFlag(-1)
+fDigiFlag(-1),
+fTrackID(0),
+fPointID(0),
+fChannelNr(0)
 
 {
     // Check range for station

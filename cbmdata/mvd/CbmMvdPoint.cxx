@@ -45,7 +45,8 @@ CbmMvdPoint::CbmMvdPoint(Int_t trackID, Int_t pdgCode, Int_t stationNr,
     fPz_out(momOut.Pz()),
     fPdgCode(pdgCode),
     fPointId(-1),
-    fFrame(frame)
+    fFrame(frame),
+    fStartTime(0)
 {
 FairRunSim* run = FairRunSim::Instance();
 FairPrimaryGenerator* gen = run->GetPrimaryGenerator();
