@@ -950,7 +950,7 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                         new((*fTofDigisColl)[fiNbDigis]) CbmTofDigiExp(
                               *fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] );
 
-			LOG(DEBUG)<<Form("Add digi %d (%d) match of (%d,%d,%d,%d,%d) at pos %d", 
+			LOG(DEBUG)<<Form("Add digi %d (%zu) match of (%d,%d,%d,%d,%d) at pos %d", 
 					iChosenDigi, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size(),
 					iSmType,iSm,iRpc,iCh,iSide,fiNbDigis)<<FairLogger::endl;
 
@@ -1401,7 +1401,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
                      fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( tofDigi );
 		     fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( iPntInd );
 
-		     LOG(INFO)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(INFO)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
                   } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -1434,7 +1434,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
 		     //					 tofDigi->GetMatch()->AddLink(1., iPntInd);
                      fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChannel].push_back( tofDigi );
 		     fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;                  } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
                   else {
@@ -1510,7 +1510,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
 		     //					 tofDigi->GetMatch()->AddLink(1., iPntInd);
                      fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iStripInd+1].push_back( tofDigi );
 		     fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iStripInd+1].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
                   } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -1543,7 +1543,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
 		     //					 tofDigi->GetMatch()->AddLink(1., iPntInd);
                      fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iStripInd].push_back( tofDigi );
 		     fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iStripInd].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
                   } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -1814,7 +1814,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 
 	      TGeoNode *fNode=        // prepare global->local trafo
 			gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
-	      LOG(DEBUG)<<Form(" TofDigitizerBDF:: (%3d,%3d,%3d,%3d) - node at (%6.1f,%6.1f,%6.1f) : 0x%08x",
+	      LOG(DEBUG)<<Form(" TofDigitizerBDF:: (%3d,%3d,%3d,%3d) - node at (%6.1f,%6.1f,%6.1f) : 0x%p",
 			      iSmType,iSM,iRpc,iChannel,
 			      fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode)
 			<<FairLogger::endl;
@@ -1855,7 +1855,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 	       //	       tofDigi->GetMatch()->AddLink(1., iPntInd);
                fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( tofDigi );
 	       fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
 
@@ -1881,7 +1881,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 	       //			   tofDigi->GetMatch()->AddLink(1., iPntInd);
                fStorDigi[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( tofDigi );
 	       fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
             } // charge ok
@@ -1960,7 +1960,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 		  //				  tofDigi->GetMatch()->AddLink(1., iPntInd);
                   fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][iChannel].push_back( tofDigi );
 		  fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iChannel].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
 
@@ -2089,7 +2089,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                {
 		 TGeoNode *fNode=        // prepare global->local trafo
 			gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
-		 LOG(DEBUG)<<Form(" TofDigitizerBDF:: (%3.d,%3d,%3d,%3d)-node at (%6.1f,%6.1f,%6.1f) : 0x%08x",
+		 LOG(DEBUG)<<Form(" TofDigitizerBDF:: (%3.d,%3d,%3d,%3d)-node at (%6.1f,%6.1f,%6.1f) : 0x%p",
 			      iSmType,iSM,iRpc,iChanInd,
 			      fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode)
 			<<FairLogger::endl;
@@ -2131,7 +2131,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 		  //				  tofDigi->GetMatch()->AddLink(1., iPntInd);
                   fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChanInd+1].push_back( tofDigi );
 		  fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChanInd+1].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
 
@@ -2157,7 +2157,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 		  //				  tofDigi->GetMatch()->AddLink(1., iPntInd);
                   fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChanInd].push_back( tofDigi );
 		  fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChanInd].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
 
@@ -2313,7 +2313,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 		  //				  tofDigi->GetMatch()->AddLink(1., iPntInd);
                   fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][iChanInd].push_back( tofDigi );
 		  fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iChanInd].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
                } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -2372,7 +2372,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 		     //					 tofDigi->GetMatch()->AddLink(1., iPntInd);
                      fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][iChanInd].push_back( tofDigi );
 		     fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iChanInd].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
 
@@ -2645,7 +2645,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 	    //			tofDigi->GetMatch()->AddLink(1., iPntInd);
             fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( tofDigi );
             fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
 
@@ -2655,7 +2655,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 	    //			tofDigi->GetMatch()->AddLink(1., iPntInd);
             fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChannel].push_back( tofDigi );
             fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
          } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -2735,7 +2735,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 	       //			   tofDigi->GetMatch()->AddLink(1., iPntInd);
                fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][iChannel].push_back( tofDigi );
 	       fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iChannel].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iChannel].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
             } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -2832,7 +2832,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 		  //				  tofDigi->GetMatch()->AddLink(1., iPntInd);
                   fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd].push_back( tofDigi );
 		  fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
 
@@ -2944,7 +2944,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 		  //				   tofDigi->GetMatch()->AddLink(1., iPntInd);
                   fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd+1].push_back( tofDigi );
 		  fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd+1].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
 
@@ -2954,7 +2954,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 		  //				   tofDigi->GetMatch()->AddLink(1., iPntInd);
                   fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd].push_back( tofDigi );
 		  fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
                } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -3073,7 +3073,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 		     //					  tofDigi->GetMatch()->AddLink(1., iPntInd);
                      fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][iSideChInd].push_back( tofDigi );
 		     fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iSideChInd].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
 
@@ -3153,7 +3153,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 		     //					  tofDigi->GetMatch()->AddLink(1., iPntInd);
                      fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][iSideChInd].push_back( tofDigi );
 		     fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iSideChInd].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iSideChInd].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
                   } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -3247,7 +3247,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 			//						 tofDigi->GetMatch()->AddLink(1., iPntInd);
                         fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][iChanInd].push_back( tofDigi );
 			fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iChanInd].push_back( iPntInd );
-			LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %d, val %d, MCt %d",
+			LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iChanInd].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
                      } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
