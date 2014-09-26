@@ -20,7 +20,7 @@
 #include "L1Algo/L1Algo.h"
 
 CbmL1MCTrack::CbmL1MCTrack(double mass_, double q_, TVector3 vr, TLorentzVector vp, int _ID, int _mother_ID, int _pdg):
-  mass(mass_),q(q_),p(0),x(0),y(0),z(0),px(0),py(0),pz(0),ID(_ID), mother_ID(_mother_ID), pdg(_pdg),Points(),StsHits(),
+  mass(mass_),q(q_),p(0),x(0),y(0),z(0),px(0),py(0),pz(0),time(0),ID(_ID), mother_ID(_mother_ID), pdg(_pdg),Points(),StsHits(),
   nMCContStations(0),nHitContStations(0),maxNStaMC(0),maxNSensorMC(0),maxNStaHits(0),nStations(0),nMCStations(0),isReconstructable(0),isAdditional(),
      rTracks(),tTracks()
 {
@@ -99,22 +99,24 @@ void CbmL1MCTrack::CalculateHitCont()
   int nhits = StsHits.size();
   nHitContStations = 0;
   int istaold = -1, ncont=0;
-  for( int ih=0; ih<nhits; ih++ ){
-    int jh = StsHits[ih];
-    L1StsHit &h = algo->vStsHits[jh];
-    int ista = algo->vSFlag[h.f]/4;
-    if (ista - istaold == 1) ncont++;
-    else if(ista - istaold > 1){
-      if( nHitContStations < ncont ) nHitContStations = ncont;
-      ncont = 1;
-    }
+  {
+    for( int ih=0; ih<nhits; ih++ ){
+      int jh = StsHits[ih];
+      L1StsHit &h = algo->vStsHits[jh];
+      int ista = algo->vSFlag[h.f]/4;
+      if (ista - istaold == 1) ncont++;
+      else if(ista - istaold > 1){
+        if( nHitContStations < ncont ) nHitContStations = ncont;
+        ncont = 1;
+      }
 
-    if ( !( ista >= istaold ) ) { // tracks going in backward direction are not reconstructable
-      nHitContStations = 0;
-      return;
+      if ( !( ista >= istaold ) ) { // tracks going in backward direction are not reconstructable
+        nHitContStations = 0;
+        return;
+      }
+      if (ista == istaold ) continue; // backward direction
+      istaold = ista;
     }
-    if (ista == istaold ) continue; // backward direction
-    istaold = ista;
   }
   if( nHitContStations<ncont ) nHitContStations=ncont;
 }; // void CbmL1MCTrack::CalculateHitCont()
@@ -201,9 +203,14 @@ void CbmL1MCTrack::CalculateIsReconstructable()
   if (L1->fPerformance == 2) isReconstructable = f & (nStations        >= CbmL1Constants::MinNStations); // QA definition
   if (L1->fPerformance == 1) isReconstructable = f & (nHitContStations >= CbmL1Constants::MinNStations); // L1 definition
 
-  isAdditional = f &
-    (nHitContStations == nStations) & (nMCContStations == nStations) & (nMCStations == nStations) &
-    (nHitContStations >= 3) &
-    (L1->vMCPoints[Points[0]].iStation == 0);
-  isAdditional &= !isReconstructable;
+  if(Points.size() > 0)
+  {
+    isAdditional = f &
+      (nHitContStations == nStations) & (nMCContStations == nStations) & (nMCStations == nStations) &
+      (nHitContStations >= 3) &
+      (L1->vMCPoints[Points[0]].iStation == 0);
+    isAdditional &= !isReconstructable;
+  }
+  else
+    isAdditional = 0;
 }; // bool CbmL1MCTrack::IsReconstructable()

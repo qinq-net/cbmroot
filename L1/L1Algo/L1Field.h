@@ -113,6 +113,14 @@ class L1FieldRegion{
       return B;
     }
     
+    void Get(const fvec z_, fvec* B) const{
+      fvec dz = (z_ - z0);
+      fvec dz2 = dz*dz;
+      B[0] = cx0 + cx1*dz + cx2*dz2;
+      B[1] = cy0 + cy1*dz + cy2*dz2;
+      B[2] = cz0 + cz1*dz + cz2*dz2;
+    }
+  
     void Set( const L1FieldValue &B0, const fvec B0z,
               const L1FieldValue &B1, const fvec B1z,
               const L1FieldValue &B2, const fvec B2z )

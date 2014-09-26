@@ -211,6 +211,7 @@ InitStatus CbmL1::Init()
     listStsPts = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("StsPoint") );
     listStsClusters = L1_DYNAMIC_CAST<TClonesArray*>( fManger->GetObject("StsCluster") );
     listStsDigi = L1_DYNAMIC_CAST<TClonesArray*>( fManger->GetObject("StsDigi") );
+    listStsDigiMatch = L1_DYNAMIC_CAST<TClonesArray*>( fManger->GetObject("StsDigiMatch") );
   }
   else{
     listMCTracks = 0;
@@ -803,7 +804,8 @@ void CbmL1::WriteSTAPAlgoData()  // must be called after ReadEvent
     for (int i = 0; i < n; i++){
       fadata  << static_cast<int>(algo->vStsHits[i].f) << " ";
       fadata  << static_cast<int>(algo->vStsHits[i].b) << " ";
-      fadata  << static_cast<int>(algo->vStsHits[i].iz) << endl;
+      fadata  << static_cast<int>(algo->vStsHits[i].iz)<< " ";
+      fadata  << algo->vStsHits[i].time << endl;
     };
     if (fVerbose >= 4) cout << "vStsHits[" << n << "]" << " have been written." << endl;
       // write StsHitsStartIndex and StsHitsStopIndex
@@ -862,7 +864,8 @@ void CbmL1::WriteSTAPPerfData()  // must be called after ReadEvent
       
       fpdata << vMCPoints[i].p << "  ";
       fpdata << vMCPoints[i].q << " ";
-      fpdata << vMCPoints[i].mass << "   ";
+      fpdata << vMCPoints[i].mass << " ";
+      fpdata << vMCPoints[i].time << "   ";
       
       fpdata << vMCPoints[i].pdg << " ";
       fpdata << vMCPoints[i].ID << " ";
@@ -890,7 +893,8 @@ void CbmL1::WriteSTAPPerfData()  // must be called after ReadEvent
       fpdata << vMCTracks[i].pz << " ";
       fpdata << vMCTracks[i].p << "  ";
       fpdata << vMCTracks[i].q << " ";
-      fpdata << vMCTracks[i].mass << "   ";
+      fpdata << vMCTracks[i].mass << " ";
+      fpdata << vMCTracks[i].time << "   ";
       
       fpdata << vMCTracks[i].pdg << " ";
       fpdata << vMCTracks[i].ID << " ";
@@ -1061,13 +1065,16 @@ void CbmL1::ReadSTAPAlgoData()
     fadata >> n;
     int element_f;  // for convert
     int element_b;
+    int element_n;
     int element_iz;
+    float time;
     for (int i = 0; i < n; i++){
       L1StsHit element;
-      fadata >> element_f >> element_b >> element_iz;
+      fadata >> element_f >> element_b >> element_n >> element_iz >> time;
       element.f = static_cast<THitI>(element_f);
       element.b = static_cast<THitI>(element_b);
       element.iz = static_cast<TZPosI>(element_iz);
+      element.time = time;
       algo->vStsHits.push_back(element);
     };
     if (fVerbose >= 4) cout << "vStsHits[" << n << "]" << " have been read." << endl;
@@ -1137,7 +1144,8 @@ void CbmL1::ReadSTAPPerfData()
       fpdata >> element.p;
       fpdata >> element.q;
       fpdata >> element.mass;
-      
+      fpdata >> element.time;
+
       fpdata >> element.pdg;
       fpdata >> element.ID;
       fpdata >> element.mother_ID;
@@ -1169,7 +1177,8 @@ void CbmL1::ReadSTAPPerfData()
       fpdata >> element.p;
       fpdata >> element.q;
       fpdata >> element.mass;
-
+      fpdata >> element.time;
+      
       fpdata >> element.pdg;
       fpdata >> element.ID;
       fpdata >> element.mother_ID;

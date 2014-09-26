@@ -8,6 +8,8 @@
 //#define cnst static const fvec
 #define cnst const fvec  
 
+// #define ANALYTICEXTRAPOLATION
+#ifdef ANALYTICEXTRAPOLATION
 inline void L1Extrapolate
 ( 
  L1TrackPar &T, // input track parameters (x,y,tx,ty,Q/p) and cov.matrix
@@ -298,7 +300,313 @@ inline void L1Extrapolate
   //cout<<"Extrapolation ok"<<endl;
 
 }
+#else
+inline void L1Extrapolate // extrapolates track parameters and returns jacobian for extrapolation of CovMatrix
+(
+ L1TrackPar &T, // input track parameters (x,y,tx,ty,Q/p) and cov.matrix
+ fvec        z_out  , // extrapolate to this z position
+ fvec       qp0    , // use Q/p linearisation at this value
+ const L1FieldRegion &F,
+ fvec *w = 0
+ )
+{
+    //
+  // Forth-order Runge-Kutta method for solution of the equation
+  // of motion of a particle with parameter qp = Q /P
+  //              in the magnetic field B()
+  //
+  //        | x |          tx
+  //        | y |          ty
+  // d/dz = | tx| = ft * ( ty * ( B(3)+tx*b(1) ) - (1+tx**2)*B(2) )
+  //        | ty|   ft * (-tx * ( B(3)+ty+b(2)   - (1+ty**2)*B(1) )  ,
+  //
+  //   where  ft = c_light*qp*sqrt ( 1 + tx**2 + ty**2 ) .
+  //
+  //  In the following for RK step  :
+  //
+  //     x=x[0], y=x[1], tx=x[3], ty=x[4].
+  //
+  //========================================================================
+  //
+  //  NIM A395 (1997) 169-184; NIM A426 (1999) 268-282.
+  //
+  //  the routine is based on LHC(b) utility code
+  //
+  //========================================================================
 
+
+  cnst ZERO = 0.0, ONE = 1.;
+  cnst c_light = 0.000299792458, c_light_i = 1./c_light;
+  
+  const fvec a[4] = {0.0f, 0.5f, 0.5f, 1.0f};
+  const fvec c[4] = {1.0f/6.0f, 1.0f/3.0f, 1.0f/3.0f, 1.0f/6.0f};
+  const fvec b[4] = {0.0f, 0.5f, 0.5f, 1.0f};
+  
+  int step4;
+  fvec k[16],x0[4],x[4],k1[16];
+  fvec Ax[4],Ay[4],Ax_tx[4],Ay_tx[4],Ax_ty[4],Ay_ty[4];
+
+  //----------------------------------------------------------------
+
+  fvec qp_in = T.qp;
+  const fvec z_in  = T.z;
+  const fvec h     = (z_out - T.z);
+  fvec hC    = h * c_light;
+  x0[0] = T.x; x0[1] = T.y;
+  x0[2] = T.tx; x0[3] = T.ty;
+  //
+  //   Runge-Kutta step
+  //
+
+  int step;
+  int i;
+
+  fvec B[4][3];
+  for (step = 0; step < 4; ++step) {
+    F.Get( z_in  + a[step] * h, B[step] );
+  }
+  
+  for (step = 0; step < 4; ++step) {
+    for(i=0; i < 4; ++i) {
+      if(step == 0) {
+        x[i] = x0[i];
+      }
+      else
+      {
+        x[i] = x0[i] + b[step] * k[step*4-4+i];
+      }
+    }
+
+    fvec tx = x[2]; 
+    fvec ty = x[3]; 
+    fvec tx2 = tx * tx; 
+    fvec ty2 = ty * ty; 
+    fvec txty = tx * ty;
+    fvec tx2ty21= 1.f + tx2 + ty2; 
+    // if( tx2ty21 > 1.e4 ) return 1;
+    fvec I_tx2ty21 = 1.f / tx2ty21 * qp0;
+    fvec tx2ty2 = sqrt(tx2ty21 ) ; 
+    //   fvec I_tx2ty2 = qp0 * hC / tx2ty2 ; unsused ???
+    tx2ty2 *= hC; 
+    fvec tx2ty2qp = tx2ty2 * qp0;
+    Ax[step] = ( txty*B[step][0] + ty*B[step][2] - ( 1.f + tx2 )*B[step][1] ) * tx2ty2;
+    Ay[step] = (-txty*B[step][1] - tx*B[step][2] + ( 1.f + ty2 )*B[step][0] ) * tx2ty2;
+
+    Ax_tx[step] = Ax[step]*tx*I_tx2ty21 + ( ty*B[step][0]-2.f*tx*B[step][1])*tx2ty2qp;
+    Ax_ty[step] = Ax[step]*ty*I_tx2ty21 + ( tx*B[step][0]+       B[step][2])*tx2ty2qp;
+    Ay_tx[step] = Ay[step]*tx*I_tx2ty21 + (-ty*B[step][1]-       B[step][2])*tx2ty2qp;
+    Ay_ty[step] = Ay[step]*ty*I_tx2ty21 + (-tx*B[step][1]+2.f*ty*B[step][0])*tx2ty2qp;
+
+    step4 = step * 4;
+    k[step4  ] = tx * h;
+    k[step4+1] = ty * h;
+    k[step4+2] = Ax[step] * qp0;
+    k[step4+3] = Ay[step] * qp0;
+
+  }  // end of Runge-Kutta steps
+
+  fvec initialised = ZERO;
+  if(w) //TODO use operator {?:}
+  {
+    const fvec zero = ZERO;
+    initialised = fvec( zero < *w );
+  }
+  else
+  {
+    const fvec one = ONE;
+    const fvec zero = ZERO;
+    initialised = fvec( zero < one );
+  }
+  
+  {
+    T.x =   ( (x0[0]+c[0]*k[0]+c[1]*k[4+0]+c[2]*k[8+0]+c[3]*k[12+0]) & initialised) + ( (!initialised) & T.x);
+    T.y =   ( (x0[1]+c[0]*k[1]+c[1]*k[4+1]+c[2]*k[8+1]+c[3]*k[12+1]) & initialised) + ( (!initialised) & T.y);
+    T.tx =  ( (x0[2]+c[0]*k[2]+c[1]*k[4+2]+c[2]*k[8+2]+c[3]*k[12+2]) & initialised) + ( (!initialised) & T.tx);
+    T.ty =  ( (x0[3]+c[0]*k[3]+c[1]*k[4+3]+c[2]*k[8+3]+c[3]*k[12+3]) & initialised) + ( (!initialised) & T.ty);
+    T.z =   ( z_out & initialised)  + ( (!initialised) & T.z);
+  }
+
+  //
+  //     Derivatives    dx/dqp
+  //
+
+  x0[0] = 0.f; x0[1] = 0.f; x0[2] = 0.f; x0[3] = 0.f;
+
+  //
+  //   Runge-Kutta step for derivatives dx/dqp
+
+  for (step = 0; step < 4; ++step) {
+    for(i=0; i < 4; ++i) {
+      if(step == 0) {
+        x[i] = x0[i];
+      } else
+      {
+        x[i] = x0[i] + b[step] * k1[step*4-4+i];
+      }
+    }
+    step4 = step * 4;
+    k1[step4  ] = x[2] * h;
+    k1[step4+1] = x[3] * h;
+    k1[step4+2] = Ax[step] + Ax_tx[step] * x[2] + Ax_ty[step] * x[3];
+    k1[step4+3] = Ay[step] + Ay_tx[step] * x[2] + Ay_ty[step] * x[3];
+
+  }  // end of Runge-Kutta steps for derivatives dx/dqp
+
+  fvec J[25];
+
+  for (i = 0; i < 4; ++i ) {
+    J[20+i]=x0[i]+c[0]*k1[i]+c[1]*k1[4+i]+c[2]*k1[8+i]+c[3]*k1[12+i];
+  }
+  J[24] = 1.;
+  //
+  //      end of derivatives dx/dqp
+  //
+
+  //     Derivatives    dx/tx
+  //
+
+  x0[0] = 0.f; x0[1] = 0.f; x0[2] = 1.f; x0[3] = 0.f;
+
+  //
+  //   Runge-Kutta step for derivatives dx/dtx
+  //
+
+  for (step = 0; step < 4; ++step) {
+    for(i=0; i < 4; ++i) {
+      if(step == 0) {
+        x[i] = x0[i];
+      }
+      else
+        if ( i!=2 )
+      {
+        x[i] = x0[i] + b[step] * k1[step*4-4+i];
+      }
+    }
+    step4 = step * 4;
+    k1[step4  ] = x[2] * h;
+    k1[step4+1] = x[3] * h;
+        // k1[step4+2] = Ax_tx[step] * x[2] + Ax_ty[step] * x[3];
+    k1[step4+3] = Ay_tx[step] * x[2] + Ay_ty[step] * x[3];
+
+  }  // end of Runge-Kutta steps for derivatives dx/dtx
+
+  for (i = 0; i < 4; ++i ) {
+    if(i != 2)
+    {
+      J[10+i]=x0[i]+c[0]*k1[i]+c[1]*k1[4+i]+c[2]*k1[8+i]+c[3]*k1[12+i];
+    }
+  }
+  //      end of derivatives dx/dtx
+  J[12] = 1.f;
+  J[14] = 0.f;
+
+  //     Derivatives    dx/ty
+  //
+
+  x0[0] = 0.f; x0[1] = 0.f; x0[2] = 0.f; x0[3] = 1.f;
+
+  //
+  //   Runge-Kutta step for derivatives dx/dty
+  //
+
+  for (step = 0; step < 4; ++step) {
+    for(i=0; i < 4; ++i) {
+      if(step == 0) {
+        x[i] = x0[i];           // ty fixed
+      } else 
+        if(i!=3) {
+        x[i] = x0[i] + b[step] * k1[step*4-4+i];
+      }
+
+    }
+    step4 = step * 4;
+    k1[step4  ] = x[2] * h;
+    k1[step4+1] = x[3] * h;
+    k1[step4+2] = Ax_tx[step] * x[2] + Ax_ty[step] * x[3];
+    //    k1[step4+3] = Ay_tx[step] * x[2] + Ay_ty[step] * x[3];
+
+  }  // end of Runge-Kutta steps for derivatives dx/dty
+
+  for (i = 0; i < 3; ++i ) {
+    J[15+i]=x0[i]+c[0]*k1[i]+c[1]*k1[4+i]+c[2]*k1[8+i]+c[3]*k1[12+i];
+  }
+  //      end of derivatives dx/dty
+  J[18] = 1.;
+  J[19] = 0.;
+
+  //
+  //    derivatives dx/dx and dx/dy
+
+  for(i = 0; i < 10; ++i){ J[i] = 0.;}
+  J[0] = 1.; J[6] = 1.;
+
+  fvec dqp = qp_in - qp0;
+  
+  { // update parameters
+    T.x += ((J[5*4+0]*dqp) & initialised);
+    T.y += ((J[5*4+1]*dqp) & initialised);
+    T.tx +=((J[5*4+2]*dqp) & initialised);
+    T.ty +=((J[5*4+3]*dqp) & initialised);
+  }
+   
+  //          covariance matrix transport 
+  
+//   // if ( C_in&&C_out ) CbmKFMath::multQtSQ( 5, J, C_in, C_out); // TODO
+//   j(0,2) = J[5*2 + 0];
+//   j(1,2) = J[5*2 + 1];
+//   j(2,2) = J[5*2 + 2];
+//   j(3,2) = J[5*2 + 3];
+//     
+//   j(0,3) = J[5*3 + 0];
+//   j(1,3) = J[5*3 + 1];
+//   j(2,3) = J[5*3 + 2];
+//   j(3,3) = J[5*3 + 3];
+//     
+//   j(0,4) = J[5*4 + 0];
+//   j(1,4) = J[5*4 + 1];
+//   j(2,4) = J[5*4 + 2];
+//   j(3,4) = J[5*4 + 3];
+  
+  const fvec c42 = T.C42, c43 = T.C43;
+
+  const fvec cj00 = T.C00 + T.C20*J[5*2 + 0] + T.C30*J[5*3 + 0] + T.C40*J[5*4 + 0];
+  // const fvec cj10 = T.C10 + T.C21*J[5*2 + 0] + T.C31*J[5*3 + 0] + T.C41*J[5*4 + 0];
+  const fvec cj20 = T.C20 + T.C22*J[5*2 + 0] + T.C32*J[5*3 + 0] + c42*J[5*4 + 0];
+  const fvec cj30 = T.C30 + T.C32*J[5*2 + 0] + T.C33*J[5*3 + 0] + c43*J[5*4 + 0];
+ 
+  const fvec cj01 = T.C10 + T.C20*J[5*2 + 1] + T.C30*J[5*3 + 1] + T.C40*J[5*4 + 1];
+  const fvec cj11 = T.C11 + T.C21*J[5*2 + 1] + T.C31*J[5*3 + 1] + T.C41*J[5*4 + 1];
+  const fvec cj21 = T.C21 + T.C22*J[5*2 + 1] + T.C32*J[5*3 + 1] + c42*J[5*4 + 1];
+  const fvec cj31 = T.C31 + T.C32*J[5*2 + 1] + T.C33*J[5*3 + 1] + c43*J[5*4 + 1];
+
+  // const fvec cj02 = T.C20*J[5*2 + 2] + T.C30*J[5*3 + 2] + T.C40*J[5*4 + 2];
+  // const fvec cj12 = T.C21*J[5*2 + 2] + T.C31*J[5*3 + 2] + T.C41*J[5*4 + 2];
+  const fvec cj22 = T.C22*J[5*2 + 2] + T.C32*J[5*3 + 2] + c42*J[5*4 + 2];
+  const fvec cj32 = T.C32*J[5*2 + 2] + T.C33*J[5*3 + 2] + c43*J[5*4 + 2];
+
+  // const fvec cj03 = T.C20*J[5*2 + 3] + T.C30*J[5*3 + 3] + T.C40*J[5*4 + 3];
+  // const fvec cj13 = T.C21*J[5*2 + 3] + T.C31*J[5*3 + 3] + T.C41*J[5*4 + 3];
+  const fvec cj23 = T.C22*J[5*2 + 3] + T.C32*J[5*3 + 3] + c42*J[5*4 + 3];
+  const fvec cj33 = T.C32*J[5*2 + 3] + T.C33*J[5*3 + 3] + c43*J[5*4 + 3];
+
+  T.C40 += ((c42*J[5*2 + 0] + c43*J[5*3 + 0] + T.C44*J[5*4 + 0]) & initialised); // cj40
+  T.C41 += ((c42*J[5*2 + 1] + c43*J[5*3 + 1] + T.C44*J[5*4 + 1]) & initialised); // cj41
+  T.C42 = ((c42*J[5*2 + 2] + c43*J[5*3 + 2] + T.C44*J[5*4 + 2]) & initialised) + ((!initialised) & T.C42);
+  T.C43 = ((c42*J[5*2 + 3] + c43*J[5*3 + 3] + T.C44*J[5*4 + 3]) & initialised) + ((!initialised) & T.C43);
+
+  T.C00 = ((cj00 + J[5*2 + 0]*cj20 + J[5*3 + 0]*cj30 + J[5*4 + 0]*T.C40)& initialised) + ((!initialised) & T.C00);
+  T.C10 = ((cj01 + J[5*2 + 0]*cj21 + J[5*3 + 0]*cj31 + J[5*4 + 0]*T.C41) & initialised) + ((!initialised) & T.C10);
+  T.C11 = ((cj11 + J[5*2 + 1]*cj21 + J[5*3 + 1]*cj31 + J[5*4 + 1]*T.C41) & initialised) + ((!initialised) & T.C11);
+
+  T.C20 = ((J[5*2 + 2]*cj20 + J[5*3 + 2]*cj30 + J[5*4 + 2]*T.C40) & initialised) + ((!initialised) & T.C20);
+  T.C30 = ((J[5*2 + 3]*cj20 + J[5*3 + 3]*cj30 + J[5*4 + 3]*T.C40) & initialised) + ((!initialised) & T.C30);
+  T.C21 = ((J[5*2 + 2]*cj21 + J[5*3 + 2]*cj31 + J[5*4 + 2]*T.C41) & initialised) + ((!initialised) & T.C21);
+  T.C31 = ((J[5*2 + 3]*cj21 + J[5*3 + 3]*cj31 + J[5*4 + 3]*T.C41) & initialised) + ((!initialised) & T.C31);
+  T.C22 = ((J[5*2 + 2]*cj22 + J[5*3 + 2]*cj32 + J[5*4 + 2]*T.C42) & initialised) + ((!initialised) & T.C22);
+  T.C32 = ((J[5*2 + 3]*cj22 + J[5*3 + 3]*cj32 + J[5*4 + 3]*T.C42) & initialised) + ((!initialised) & T.C32);
+  T.C33 = ((J[5*2 + 3]*cj23 + J[5*3 + 3]*cj33 + J[5*4 + 3]*T.C43) & initialised) + ((!initialised) & T.C33);
+}
+#endif //ANALYTICEXTRAPOLATION
 
 inline void L1Extrapolate0
 ( 

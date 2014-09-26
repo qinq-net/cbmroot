@@ -177,6 +177,7 @@ class CbmL1 : public FairTask
    TClonesArray *listMCTracks ;
    TClonesArray *listStsPts; // Sts MC points
    TClonesArray *listStsDigi;
+   TClonesArray *listStsDigiMatch;
    TClonesArray *listStsClusters;
    TClonesArray *listStsHits;
 

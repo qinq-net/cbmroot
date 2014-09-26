@@ -21,6 +21,7 @@
 #include "CbmStsAddress.h"
 
 #include "TDatabasePDG.h"
+#include "TRandom.h"
 
 #include <iostream>
 #include <vector>
@@ -52,6 +53,7 @@ struct TmpHit{ // used for sort Hits before writing in the normal arrays
   double u_front, u_back; // positions of strips
   double x, y;            // position of hit
   int iMC;                // index of MCPoint in the vMCPoints array
+  double time;
   static bool Compare( const TmpHit &a, const TmpHit &b ){
     return ( a.iStation <  b.iStation ) ||
          ( ( a.iStation == b.iStation ) && ( a.y < b.y ) );
@@ -202,6 +204,47 @@ void CbmL1::ReadEvent()
         if( th.iStripF<0 ){ negF++; continue;}
         if( th.iStripF>=0 && th.iStripB>=0 ) th.isStrip  = 1;
         if( th.iStripB <0 ) th.iStripB = th.iStripF;
+        
+        //Get time
+        int iFrontCluster = mh->GetFrontClusterId();
+        int iBackCluster = mh->GetBackClusterId();
+        CbmStsCluster *frontCluster = L1_DYNAMIC_CAST<CbmStsCluster*>( listStsClusters->At( iFrontCluster ) );
+        Double_t hitTime = 0;
+        Int_t nMcPointsInHit = 0;
+        for(unsigned int iDigi=0; iDigi<frontCluster->GetDigis().size(); iDigi++)
+        {
+          CbmMatch *stsDigiMatch = L1_DYNAMIC_CAST<CbmMatch*>( listStsDigiMatch->At( frontCluster->GetDigis()[iDigi] ) );
+
+          int nPoints = stsDigiMatch->GetNofLinks();
+
+          for(int iPoint=0; iPoint<nPoints; iPoint++)
+          {
+            int pointIndex = stsDigiMatch->GetLink(iPoint).GetIndex();
+            CbmStsPoint *stsPoint = L1_DYNAMIC_CAST<CbmStsPoint*>( listStsPts->At( pointIndex ) );
+            Double_t digiTime = stsPoint->GetTime() + gRandom->Gaus(0,5);
+            hitTime += digiTime;
+            nMcPointsInHit++;
+          }
+        }
+        CbmStsCluster *backCluster = L1_DYNAMIC_CAST<CbmStsCluster*>( listStsClusters->At( iBackCluster ) );
+        for(unsigned int iDigi=0; iDigi<backCluster->GetDigis().size(); iDigi++)
+        {
+          CbmMatch *stsDigiMatch = L1_DYNAMIC_CAST<CbmMatch*>( listStsDigiMatch->At( backCluster->GetDigis()[iDigi] ) );
+
+          int nPoints = stsDigiMatch->GetNofLinks();
+
+          for(int iPoint=0; iPoint<nPoints; iPoint++)
+          {
+            int pointIndex = stsDigiMatch->GetLink(iPoint).GetIndex();
+            CbmStsPoint *stsPoint = L1_DYNAMIC_CAST<CbmStsPoint*>( listStsPts->At( pointIndex ) );
+            Double_t digiTime = stsPoint->GetTime() + gRandom->Gaus(0,5);
+            hitTime += digiTime;
+            nMcPointsInHit++;
+          }
+        }
+        hitTime /= nMcPointsInHit;
+
+        th.time = hitTime;
 
         th.iStripF += nMvdHits;
         th.iStripB += nMvdHits;
@@ -400,7 +443,8 @@ void CbmL1::ReadEvent()
     L1StsHit h;
     h.f = tsF.effIndex;
     h.b = tsB.effIndex;
-
+    h.time = th.time; 
+    
       // find and save z positions
     float z_tmp;
     int ist = th.iStation;
@@ -541,33 +585,96 @@ void CbmL1::ReadEvent()
   sort( vtmpMCPoints.begin(), vtmpMCPoints.end(), TmpMCPoint::compareIDz );
   if (fVerbose >= 10) cout << "MCPoints are sorted." << endl;
 
-    // -- fill vMCTracks array --
+//     // -- fill vMCTracks array --
+//   PrimVtx.MC_ID = 999;
+//   {
+//     CbmL1Vtx Vtxcurr;
+//     int nvtracks=0,
+//         nvtrackscurr=0;
+//     int ID = -10000;
+//     for ( vector<TmpMCPoint>::iterator i= vtmpMCPoints.begin(); i!=vtmpMCPoints.end(); ++i){
+//       if( vMCTracks.empty() || i->ID!= ID ){ // new track
+//         ID = i->ID;
+//         CbmL1MCTrack T;
+//         T.ID = ID;
+//         if( listMCTracks )
+//         {
+//           CbmMCTrack *MCTrack = L1_DYNAMIC_CAST<CbmMCTrack*>( listMCTracks->At( T.ID ) );
+//           int mother_ID = MCTrack->GetMotherId();
+//           TVector3 vr;
+//           TLorentzVector vp;
+//           MCTrack->GetStartVertex(vr);
+//           MCTrack->Get4Momentum(vp);
+// 
+//           T = CbmL1MCTrack(vMCPoints[i->MCPoint].mass, vMCPoints[i->MCPoint].q, vr, vp, i->ID, mother_ID, vMCPoints[i->MCPoint].pdg);
+//           T.time = MCTrack->GetStartT();
+//         }
+//         vMCTracks.push_back( T );
+//         
+//         if ( T.mother_ID ==-1 ){ // vertex track
+// 
+//           if (  PrimVtx.MC_ID == 999 || fabs(T.z-Vtxcurr.MC_z)>1.e-7 ){// new vertex
+//             if( nvtrackscurr > nvtracks ){
+//               PrimVtx = Vtxcurr;
+//               nvtracks = nvtrackscurr;
+//             }
+//             Vtxcurr.MC_x  = T.x;
+//             Vtxcurr.MC_y  = T.y;
+//             Vtxcurr.MC_z  = T.z;
+//             Vtxcurr.MC_ID = T.mother_ID;
+//             nvtrackscurr = 1;
+//           }
+//           else nvtrackscurr++;
+//           
+//         }
+//       } // new track
+//       vMCTracks.back().Points.push_back(i->MCPoint);
+// //       if( i->eff ) vMCTracks.back().StsHits.push_back(i->StsHit);
+//     } // for i of tmpMCPoints
+//     if( nvtrackscurr > nvtracks ) PrimVtx = Vtxcurr;
+//   } // fill MC tracks
+  
   PrimVtx.MC_ID = 999;
   {
     CbmL1Vtx Vtxcurr;
-    int nvtracks=0,
-        nvtrackscurr=0;
-    int ID = -10000;
-    for ( vector<TmpMCPoint>::iterator i= vtmpMCPoints.begin(); i!=vtmpMCPoints.end(); ++i){
-      if( vMCTracks.empty() || i->ID!= ID ){ // new track
-        ID = i->ID;
-        CbmL1MCTrack T;
-        T.ID = ID;
-        if( listMCTracks )
-        {
-          CbmMCTrack *MCTrack = L1_DYNAMIC_CAST<CbmMCTrack*>( listMCTracks->At( T.ID ) );
-          int mother_ID = MCTrack->GetMotherId();
-          TVector3 vr;
-          TLorentzVector vp;
-          MCTrack->GetStartVertex(vr);
-          MCTrack->Get4Momentum(vp);
+    int nvtracks=0, nvtrackscurr=0;
+ 
+    if( listMCTracks )
+    {
+      unsigned int iMCPoint = 0;
+      
+      for(int iMCTrack=0; iMCTrack<listMCTracks->GetEntriesFast(); iMCTrack++)
+      {
+        CbmMCTrack *MCTrack = L1_DYNAMIC_CAST<CbmMCTrack*>( listMCTracks->At( iMCTrack ) );
+        
+        int mother_ID = MCTrack->GetMotherId();
+        TVector3 vr;
+        TLorentzVector vp;
+        MCTrack->GetStartVertex(vr);
+        MCTrack->Get4Momentum(vp);
 
-          T = CbmL1MCTrack(vMCPoints[i->MCPoint].mass, vMCPoints[i->MCPoint].q, vr, vp, i->ID, mother_ID, vMCPoints[i->MCPoint].pdg);
+        Int_t pdg = MCTrack->GetPdgCode();
+        Double_t q=1, mass = 0.;
+        if ( pdg < 9999999 && ( (TParticlePDG *)TDatabasePDG::Instance()->GetParticle(pdg) ))
+        {
+          q = TDatabasePDG::Instance()->GetParticle(pdg)->Charge()/3.0;
+          mass = TDatabasePDG::Instance()->GetParticle(pdg)->Mass(); 
         }
+        else    q = 0;
+        
+        CbmL1MCTrack T(mass, q, vr, vp, iMCTrack, mother_ID, pdg);
+        T.time = MCTrack->GetStartT();
+        
+        if(vtmpMCPoints.size()>0)
+          while( vtmpMCPoints[iMCPoint].ID == iMCTrack && iMCPoint < vtmpMCPoints.size() ) 
+          {
+            T.Points.push_back(vtmpMCPoints[iMCPoint].MCPoint);
+            iMCPoint++;
+          }
+        
         vMCTracks.push_back( T );
         
         if ( T.mother_ID ==-1 ){ // vertex track
-
           if (  PrimVtx.MC_ID == 999 || fabs(T.z-Vtxcurr.MC_z)>1.e-7 ){// new vertex
             if( nvtrackscurr > nvtracks ){
               PrimVtx = Vtxcurr;
@@ -580,14 +687,12 @@ void CbmL1::ReadEvent()
             nvtrackscurr = 1;
           }
           else nvtrackscurr++;
-          
         }
-      } // new track
-      vMCTracks.back().Points.push_back(i->MCPoint);
-//       if( i->eff ) vMCTracks.back().StsHits.push_back(i->StsHit);
-    } // for i of tmpMCPoints
+      }
+    }
     if( nvtrackscurr > nvtracks ) PrimVtx = Vtxcurr;
-  } // fill MC tracks
+  }
+  
   if (fVerbose >= 10) cout << "MCPoints and MCTracks are saved." << endl;
 
   
@@ -608,6 +713,7 @@ bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, bool MVD )
 {
   TVector3 xyzI,PI, xyzO,PO;
   Int_t mcID=-1;
+  Double_t time = 0.f;
   if( MVD && listMvdPts ){
     CbmMvdPoint *pt = L1_DYNAMIC_CAST<CbmMvdPoint*>( listMvdPts->At(iPoint) );
     if ( !pt ) return 1;
@@ -616,6 +722,7 @@ bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, bool MVD )
     pt->PositionOut(xyzO);
     pt->MomentumOut(PO);
     mcID = pt->GetTrackID();
+    time = pt->GetTime();
   }else if( listStsPts ){
     CbmStsPoint *pt = L1_DYNAMIC_CAST<CbmStsPoint*>( listStsPts->At(iPoint) );
     if ( !pt ) return 1;
@@ -624,6 +731,7 @@ bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, bool MVD )
     pt->PositionOut(xyzO);
     pt->MomentumOut(PO);
     mcID = pt->GetTrackID();
+    time = pt->GetTime();
   }
   TVector3 xyz = .5*(xyzI + xyzO );
   TVector3 P = .5*(PI + PO );
@@ -648,6 +756,8 @@ bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, bool MVD )
   MC->p = sqrt( fabs( MC->px*MC->px + MC->py*MC->py + MC->pz*MC->pz ) );
   MC->ID = mcID;
   MC->pointId = iPoint;
+  
+  MC->time = time;
   
   CbmMCTrack *MCTrack = L1_DYNAMIC_CAST<CbmMCTrack*>( listMCTracks->At( MC->ID ) );
   if ( !MCTrack ) return 1;
