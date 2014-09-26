@@ -117,7 +117,7 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
     kfVertex = CbmKFVertex(*fPrimVtx);
   
   vector<L1FieldRegion> vField;
-//   fitter.Fit(vRTracks, pdg);
+  fitter.Fit(vRTracks, pdg);
   fitter.GetChiToVertex(vRTracks, vField, vChiToPrimVtx, kfVertex, -3);
   
   KFPTrackVector tracks;
