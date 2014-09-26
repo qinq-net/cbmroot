@@ -165,6 +165,13 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
         "vc/sse/shuffle.h"
         "vc/sse/intrinsics.h"
         "Vc/Allocator"
+
+        # -- warnings from fles subdirector
+        "fles/ipc"
+        "fles/ctrl"
+        "fles/flib_dpb"
+        "fles/spadic"
+
   )
 
 # -----------------------------------------------------------
