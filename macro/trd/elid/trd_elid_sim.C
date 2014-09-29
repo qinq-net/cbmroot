@@ -1,8 +1,8 @@
-void trd_elid_sim(Int_t nEvents = 1000)
+void trd_elid_sim(Int_t nEvents = 100)
 {
-   Double_t minMomentum = 1.0; //minimum momentum
+   Double_t minMomentum = 1.5; //minimum momentum
    Double_t maxMomentum = 8.0; //maximum momentum
-   Double_t  thetaMin = 2.5;
+   Double_t thetaMin = 2.5;
    Double_t thetaMax = 25.;
 
 	TString outFile = "/Users/slebedev/Development/cbm/data/simulations/trd/elid/piel.0000.mc.root";
@@ -10,13 +10,12 @@ void trd_elid_sim(Int_t nEvents = 1000)
 
 	// -----  Geometries  -----------------------------------------------------
    TString caveGeom = "cave.geo";
-   TString targetGeom = "target_au_250mu.geo";
-   TString pipeGeom = "pipe_standard.geo";
+   TString pipeGeom = "pipe/pipe_standard.geo";
    TString stsGeom = "";//"sts/sts_v12b.geo.root";
    TString richGeom = "";// "rich/rich_v08a.geo";
-   TString trdGeom = "trd/trd_v13c.root";
+   TString trdGeom = "trd/trd_v13p_3e.geo.root";
    TString fieldMap = "field_v12a";
-   TString magnetGeom = "passive/magnet_v12a.geo";
+   TString magnetGeom = "magnet/magnet_v12a.geo";
 	Double_t fieldZ = 50.; // field center z position
 	Double_t fieldScale = 1.; // field scaling factor
 
@@ -51,11 +50,8 @@ void trd_elid_sim(Int_t nEvents = 1000)
       fRun->AddModule(pipe);
    }
 
-   if ( targetGeom != "" ) {
-      FairModule* target = new CbmTarget("Target");
-      target->SetGeometryFileName(targetGeom);
-      fRun->AddModule(target);
-   }
+   CbmTarget* target = new CbmTarget("Gold", 0.025); // 250 mum
+   fRun->AddModule(target);
 
    if ( magnetGeom != "" ) {
       FairModule* magnet = new CbmMagnet("MAGNET");
@@ -64,7 +60,7 @@ void trd_elid_sim(Int_t nEvents = 1000)
    }
 
    if ( stsGeom != "" ) {
-      FairDetector* sts = new CbmSts("STS", kTRUE);
+      FairDetector* sts = new CbmStsMC("STS", kTRUE);
       sts->SetGeometryFileName(stsGeom);
       fRun->AddModule(sts);
    }
@@ -92,7 +88,7 @@ void trd_elid_sim(Int_t nEvents = 1000)
 	Int_t kfCode1 = 11; // electrons
 	Int_t kfCode2 = -11; // positrons
 
-	FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 50);
+	FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 100);
 	boxGen1->SetPRange(minMomentum, maxMomentum);
 //	boxGen1->SetXYZ(50., 50., 450.);
 	boxGen1->SetPhiRange(0., 360.);
@@ -101,30 +97,30 @@ void trd_elid_sim(Int_t nEvents = 1000)
 	boxGen1->Init();
 	primGen->AddGenerator(boxGen1);
 
-	FairBoxGenerator* boxGen2 = new FairBoxGenerator(-11, 50);
+	FairBoxGenerator* boxGen2 = new FairBoxGenerator(-11, 100);
 	boxGen2->SetPRange(minMomentum, maxMomentum);
 //	boxGen2->SetXYZ(50., 50., 450.);
 	boxGen2->SetPhiRange(0., 360.);
 	boxGen2->SetThetaRange(thetaMin, thetaMax);
-	boxGen1->SetCosTheta();
+	boxGen2->SetCosTheta();
 	boxGen2->Init();
 	primGen->AddGenerator(boxGen2);
 
-	FairBoxGenerator* boxGen3 = new FairBoxGenerator(211, 50);
+	FairBoxGenerator* boxGen3 = new FairBoxGenerator(211, 100);
 	boxGen3->SetPRange(minMomentum, maxMomentum);
 //	boxGen3->SetXYZ(50., 50., 450.);
 	boxGen3->SetPhiRange(0., 360.);
 	boxGen3->SetThetaRange(thetaMin, thetaMax);
-	boxGen1->SetCosTheta();
+	boxGen3->SetCosTheta();
 	boxGen3->Init();
 	primGen->AddGenerator(boxGen3);
 
-	FairBoxGenerator* boxGen4 = new FairBoxGenerator(-211, 50);
+	FairBoxGenerator* boxGen4 = new FairBoxGenerator(-211, 100);
 	boxGen4->SetPRange(minMomentum, maxMomentum);
 //	boxGen4->SetXYZ(50., 50., 450.);
 	boxGen4->SetPhiRange(0., 360.);
 	boxGen4->SetThetaRange(thetaMin, thetaMax);
-	boxGen1->SetCosTheta();
+	boxGen4->SetCosTheta();
 	boxGen4->Init();
 	primGen->AddGenerator(boxGen4);
 
