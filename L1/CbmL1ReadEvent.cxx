@@ -206,46 +206,48 @@ void CbmL1::ReadEvent()
         if( th.iStripB <0 ) th.iStripB = th.iStripF;
         
         //Get time
-        int iFrontCluster = mh->GetFrontClusterId();
-        int iBackCluster = mh->GetBackClusterId();
-        CbmStsCluster *frontCluster = L1_DYNAMIC_CAST<CbmStsCluster*>( listStsClusters->At( iFrontCluster ) );
-        Double_t hitTime = 0;
-        Int_t nMcPointsInHit = 0;
-        for(unsigned int iDigi=0; iDigi<frontCluster->GetDigis().size(); iDigi++)
+        if(listStsClusters)
         {
-          CbmMatch *stsDigiMatch = L1_DYNAMIC_CAST<CbmMatch*>( listStsDigiMatch->At( frontCluster->GetDigis()[iDigi] ) );
-
-          int nPoints = stsDigiMatch->GetNofLinks();
-
-          for(int iPoint=0; iPoint<nPoints; iPoint++)
+          int iFrontCluster = mh->GetFrontClusterId();
+          int iBackCluster = mh->GetBackClusterId();
+          CbmStsCluster *frontCluster = L1_DYNAMIC_CAST<CbmStsCluster*>( listStsClusters->At( iFrontCluster ) );
+          Double_t hitTime = 0;
+          Int_t nMcPointsInHit = 0;
+          for(unsigned int iDigi=0; iDigi<frontCluster->GetDigis().size(); iDigi++)
           {
-            int pointIndex = stsDigiMatch->GetLink(iPoint).GetIndex();
-            CbmStsPoint *stsPoint = L1_DYNAMIC_CAST<CbmStsPoint*>( listStsPts->At( pointIndex ) );
-            Double_t digiTime = stsPoint->GetTime() + gRandom->Gaus(0,5);
-            hitTime += digiTime;
-            nMcPointsInHit++;
+            CbmMatch *stsDigiMatch = L1_DYNAMIC_CAST<CbmMatch*>( listStsDigiMatch->At( frontCluster->GetDigis()[iDigi] ) );
+
+            int nPoints = stsDigiMatch->GetNofLinks();
+
+            for(int iPoint=0; iPoint<nPoints; iPoint++)
+            {
+              int pointIndex = stsDigiMatch->GetLink(iPoint).GetIndex();
+              CbmStsPoint *stsPoint = L1_DYNAMIC_CAST<CbmStsPoint*>( listStsPts->At( pointIndex ) );
+              Double_t digiTime = stsPoint->GetTime() + gRandom->Gaus(0,5);
+              hitTime += digiTime;
+              nMcPointsInHit++;
+            }
           }
-        }
-        CbmStsCluster *backCluster = L1_DYNAMIC_CAST<CbmStsCluster*>( listStsClusters->At( iBackCluster ) );
-        for(unsigned int iDigi=0; iDigi<backCluster->GetDigis().size(); iDigi++)
-        {
-          CbmMatch *stsDigiMatch = L1_DYNAMIC_CAST<CbmMatch*>( listStsDigiMatch->At( backCluster->GetDigis()[iDigi] ) );
-
-          int nPoints = stsDigiMatch->GetNofLinks();
-
-          for(int iPoint=0; iPoint<nPoints; iPoint++)
+          CbmStsCluster *backCluster = L1_DYNAMIC_CAST<CbmStsCluster*>( listStsClusters->At( iBackCluster ) );
+          for(unsigned int iDigi=0; iDigi<backCluster->GetDigis().size(); iDigi++)
           {
-            int pointIndex = stsDigiMatch->GetLink(iPoint).GetIndex();
-            CbmStsPoint *stsPoint = L1_DYNAMIC_CAST<CbmStsPoint*>( listStsPts->At( pointIndex ) );
-            Double_t digiTime = stsPoint->GetTime() + gRandom->Gaus(0,5);
-            hitTime += digiTime;
-            nMcPointsInHit++;
+            CbmMatch *stsDigiMatch = L1_DYNAMIC_CAST<CbmMatch*>( listStsDigiMatch->At( backCluster->GetDigis()[iDigi] ) );
+
+            int nPoints = stsDigiMatch->GetNofLinks();
+
+            for(int iPoint=0; iPoint<nPoints; iPoint++)
+            {
+              int pointIndex = stsDigiMatch->GetLink(iPoint).GetIndex();
+              CbmStsPoint *stsPoint = L1_DYNAMIC_CAST<CbmStsPoint*>( listStsPts->At( pointIndex ) );
+              Double_t digiTime = stsPoint->GetTime() + gRandom->Gaus(0,5);
+              hitTime += digiTime;
+              nMcPointsInHit++;
+            }
           }
+          hitTime /= nMcPointsInHit;
+
+          th.time = hitTime;
         }
-        hitTime /= nMcPointsInHit;
-
-        th.time = hitTime;
-
         th.iStripF += nMvdHits;
         th.iStripB += nMvdHits;
 
