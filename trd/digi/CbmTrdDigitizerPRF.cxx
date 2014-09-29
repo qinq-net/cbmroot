@@ -494,7 +494,7 @@ void CbmTrdDigitizerPRF::ScanPadPlane(const Double_t* local_point, Double_t clus
     Double_t h = fModuleInfo->GetAnodeWireToPadPlaneDistance();
     Double_t W(fModuleInfo->GetPadSizeX(sectorId)), H(fModuleInfo->GetPadSizeY(sectorId));
     fModuleInfo->TransformToLocalPad(local_point, displacement_x, displacement_y);
-      
+
     //const Int_t maxCol(5/W+0.5), maxRow(5/H+3);// 7 and 3 in orig. minimum 5 times 5 cm area has to be scanned
     Int_t maxCol(5/W+0.5), maxRow(6);//5/H+3);// 7 and 3 in orig. minimum 5 times 5 cm area has to be scanned
     if (fnScanRowConst > 0)
@@ -579,7 +579,7 @@ void CbmTrdDigitizerPRF::ScanPadPlane(const Double_t* local_point, Double_t clus
 	else
 	  std::cout << std::endl;
       }
-      
+
     } // for iRow
     if (sum < 0.99 || sum > 1.01){
       LOG(WARNING) << "CbmTrdDigitizerPRF::ScanPadPlane: Summed charge: " << std::setprecision(5) << sum << "  hit:(" << columnId << ", " << rowId <<")   max:(" << fnCol-1 << ", " << fnRow-1 << ")" << FairLogger::endl;
@@ -670,7 +670,7 @@ void CbmTrdDigitizerPRF::AddDigi(Int_t pointId, Int_t address, Double_t charge, 
 
   std::map<Int_t, pair<CbmTrdDigi*, CbmMatch*> >::iterator it = fDigiMap.find(address);
   if (it == fDigiMap.end()) { // Pixel not yet in map -> Add new pixel
-    
+
     if (fSigma_noise_keV > 0.0){
       Double_t noise = fNoise->Gaus(0, fSigma_noise_keV * 1.E-6);// keV->GeV // add only once per digi and event noise !!!
       charge += noise; // resulting charge can be < 0 -> possible  problems with position reconstruction

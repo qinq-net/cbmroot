@@ -154,11 +154,24 @@ CbmTrdHit* CbmTrdHitProducerSmearing::CreateHit(Int_t pointId)
   TVector3 mcPos, mcMom;
   trdPoint->PositionOut(mcPos);
   trdPoint->Momentum(mcMom);
+  Double_t dz = trdPoint->GetZOut() - trdPoint->GetZIn();
 
   // TR: Sorry, electrons and positrons only
   if (fRadiator != NULL)
     if (TMath::Abs(mcTrack->GetPdgCode()) == 11) {
-      ELossTR = fRadiator->GetTR(mcMom);
+
+    	if (fRadiator->LatticeHit(trdPoint)){  // electron has passed lattice grid (or frame material) befor reaching the gas volume -> TR-photons have been absorbed by the lattice grid
+    		 // nofLatticeHits++;
+    		  ELossTR = 0.0;
+    		} else if (dz < 0){ //electron has not passed the radiator
+    		  ELossTR = 0.0;
+    		} else {
+    		  ELossTR = fRadiator->GetTR(mcMom);
+    		}
+
+
+
+      //ELossTR = fRadiator->GetTR(mcMom);
       ELoss += ELossTR;
     }
 

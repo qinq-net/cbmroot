@@ -54,41 +54,21 @@ class CbmTrdTrackFinderIdeal : public CbmTrdTrackFinder
   virtual Int_t DoFind(TClonesArray* hitArray,
 		      TClonesArray* trackArray);
 
-  /** Public accessors **/
-  const Int_t& GetNoTrdStations() const {return fNoTrdStations;};
-  const Int_t& GetNoTrdPerStation() const {return fNoTrdPerStation;};
-  const Int_t& GetVerbose() const {return fVerbose;};
-
-  /** Public modifiers **/
-  void SetVerbose(const Int_t& verbose) {fVerbose = verbose;};
-
- private:
+private:
 
   CbmTrdTrackFinderIdeal& operator=(const CbmTrdTrackFinderIdeal&);
   CbmTrdTrackFinderIdeal(const CbmTrdTrackFinderIdeal&);
 
-  /** Arrays of MC information **/
-  TClonesArray* fMCTrackArray;
-  TClonesArray* fMCPointArray;
+  TClonesArray* fMcTracks;
+  TClonesArray* fTrdPoints;
+  TClonesArray* fTrdHitMatches;// this is needed for clustering
 
-  /** Number of TRD stations **/
-  Int_t fNoTrdStations;
+  std::string fTrdHitProducerType; //smearing or digi
 
-  /** Number of TRD Layers per station **/
-  Int_t fNoTrdPerStation;
-
-  /** Verbosity level.
-   ** 0 - quit
-   ** 1 - event level
-   ** 2 - track level
-   ** 3 - debug (maximal output)
-   **/
-  Int_t fVerbose;
   Int_t fEventNum;
 
   ClassDef(CbmTrdTrackFinderIdeal,1);
 
 };
-
 
 #endif

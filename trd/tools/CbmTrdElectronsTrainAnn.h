@@ -188,10 +188,6 @@ private:
    // [0] = electrons, [1] = pions
    vector<TH1*> fhMeanEloss; // sum of energy losses in all layers divided by number of layers
    vector<TH1*> fhEloss; // energy losses in one layer
-   vector<TH1*> fhdEdX; // dEdX in one layer
-   vector<TH1*> fhTR; // TR in one layer
-   vector<TH1*> fhNofTRLayers; // Number of layers which have TR
-   vector<TH1*> fhNofHits; // Number of TRD hits
 
    // store sorted energy losses and cumulative probability for each TRD layer
    // 1st index -> [0] = electrons, [1] = pions

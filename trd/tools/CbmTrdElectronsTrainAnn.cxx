@@ -14,7 +14,7 @@
 #include "TGraph.h"
 #include "CbmTrdHit.h"
 #include "CbmTrdTrack.h"
-#include "CbmTrackMatch.h"
+#include "CbmTrackMatchNew.h"
 #include "CbmTrdPoint.h"
 #include "CbmMCTrack.h"
 
@@ -46,10 +46,6 @@ CbmTrdElectronsTrainAnn::CbmTrdElectronsTrainAnn(
     fhResults(),
     fhMeanEloss(),
     fhEloss(),
-    fhdEdX(),
-    fhTR(),
-    fhNofTRLayers(),
-    fhNofHits(),
     fhElossSort(),
     fEventNum(0),
     fOutputDir("results/"),
@@ -67,7 +63,7 @@ CbmTrdElectronsTrainAnn::CbmTrdElectronsTrainAnn(
     fNN(NULL),
     fReader(NULL),
     fIdMethod(kANN),
-    fNofAnnEpochs(250),
+    fNofAnnEpochs(50),
     fNofTrainSamples(2500),
     fElIdEfficiency(0.9),
     fRandom(new TRandom(0)),
@@ -78,10 +74,6 @@ CbmTrdElectronsTrainAnn::CbmTrdElectronsTrainAnn(
    fEloss.resize(2);
    fhMeanEloss.resize(2);
    fhEloss.resize(2);
-   fhdEdX.resize(2);
-   fhTR.resize(2);
-   fhNofTRLayers.resize(2);
-   fhNofHits.resize(2);
    string s;
 
    TH1::SetDefaultBufferSize(30000);
@@ -96,14 +88,6 @@ CbmTrdElectronsTrainAnn::CbmTrdElectronsTrainAnn(
       fHists.push_back(fhMeanEloss[i]);
       fhEloss[i] = new TH1D(("fhEloss"+s).c_str(),"fhEloss;Energy loss [a.u.];Yield",100, 0., 50e-6);
       fHists.push_back(fhEloss[i]);
-      fhdEdX[i] = new  TH1D(("fhdEdX"+s).c_str(),"fhdEdX;dEdX [a.u.];Yield",100, 0., 50e-6);
-      fHists.push_back(fhdEdX[i]);
-      fhTR[i] = new TH1D(("fhTR"+s).c_str(),"fhTR;Transition radiation [a.u.];Yield",100, 0., 50e-6);
-      fHists.push_back(fhTR[i]);
-      fhNofTRLayers[i] = new TH1D(("fhNofTRLayers"+s).c_str(),"fhNofTRLayers;Number of layers with TR;Yield", fNofTrdLayers + 1, -0.5, fNofTrdLayers + 0.5);
-      fHists.push_back(fhNofTRLayers[i]);
-      fhNofHits[i] = new TH1D(("fhNofHits"+s).c_str(),"fhNofHits;Number of hits;Yield",fNofTrdLayers + 1, -0.5, fNofTrdLayers + 0.5);
-      fHists.push_back(fhNofHits[i]);
    }
 
    Int_t nofSortBins = 200;
@@ -244,8 +228,8 @@ void CbmTrdElectronsTrainAnn::FillElossVectorSim()
       Int_t nHits = trdtrack->GetNofHits();
 
 
-      CbmTrackMatch* trdmatch = (CbmTrackMatch*) fTrdTrackMatches->At(iTrdTrack);
-      Int_t iMC = trdmatch->GetMCTrackId();
+      CbmTrackMatchNew* trdmatch = (CbmTrackMatchNew*) fTrdTrackMatches->At(iTrdTrack);
+      Int_t iMC = trdmatch->GetMatchedLink().GetIndex();
       if (iMC < 0 || iMC > fMCTracks->GetEntriesFast())  continue;
 
       CbmMCTrack* mctrack = (CbmMCTrack*) fMCTracks->At(iMC);
@@ -280,19 +264,12 @@ void CbmTrdElectronsTrainAnn::FillElossHist()
       for(int iT = 0; iT < fEloss[i].size(); iT++){
          Int_t nHits = fEloss[i][iT].size();
          double sumEloss = 0.;
-         int nofTRLayers = 0;
          for (int iH = 0; iH < nHits; iH++){
             sumEloss += fEloss[i][iT][iH].fEloss;
             fhEloss[i]->Fill(fEloss[i][iT][iH].fEloss);
-            fhdEdX[i]->Fill(fEloss[i][iT][iH].fdEdX);
-            fhTR[i]->Fill(fEloss[i][iT][iH].fTR);
-            if (fEloss[i][iT][iH].fTR >= 1e-9) nofTRLayers++;
          }// iH
-         fhNofHits[i]->Fill(nHits);
          fhMeanEloss[i]->Fill(sumEloss / nHits);
-         fhNofTRLayers[i]->Fill(nofTRLayers);
       }//iT
-      fhEloss[i]->Scale(1./fhEloss[i]->Integral());
    }
 }
 
@@ -744,20 +721,13 @@ void CbmTrdElectronsTrainAnn::FillAnnInputHist(
 void CbmTrdElectronsTrainAnn::Draw()
 {
    SetDefaultDrawStyle();
-   TCanvas* cEloss = new TCanvas("trd_elid_eloss", "trd_elid_eloss", 1200, 800);
-   cEloss->Divide(3, 2);
+   TCanvas* cEloss = new TCanvas("trd_elid_eloss", "trd_elid_eloss", 1200, 600);
+   cEloss->Divide(2, 1);
    cEloss->cd(1);
    DrawH1(fhMeanEloss, list_of("e^{#pm}")("#pi^{#pm}"), kLinear, kLog, true, 0.8, 0.8, 0.99, 0.99);
    cEloss->cd(2);
    DrawH1(fhEloss, list_of("e^{#pm}")("#pi^{#pm}"), kLinear, kLog, true, 0.8, 0.8, 0.99, 0.99);
-   cEloss->cd(3);
-   DrawH1(fhdEdX, list_of("e^{#pm}")("#pi^{#pm}"), kLinear, kLog, true, 0.8, 0.8, 0.99, 0.99);
-   cEloss->cd(4);
-   DrawH1(fhTR, list_of("e^{#pm}")("#pi^{#pm}"), kLinear, kLog, true, 0.8, 0.8, 0.99, 0.99);
-   cEloss->cd(5);
-   DrawH1(fhNofTRLayers, list_of("e^{#pm}")("#pi^{#pm}"), kLinear, kLog, true, 0.8, 0.8, 0.99, 0.99);
-   cEloss->cd(6);
-   DrawH1(fhNofHits, list_of("e^{#pm}")("#pi^{#pm}"), kLinear, kLog, true, 0.8, 0.8, 0.99, 0.99);
+
 
    TCanvas* cElossSort = new TCanvas("trd_elid_eloss_sort", "trd_elid_eloss_sort", 1200, 900);
    cElossSort->Divide(4, 3);
