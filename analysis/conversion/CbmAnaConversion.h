@@ -13,6 +13,10 @@
 #include "FairTask.h"
 #include "CbmMCTrack.h"
 #include "../dielectron/CbmAnaDielectronTask.h" 
+
+//#include "KFParticleTopoReconstructor.h"
+#include "CbmKFParticleFinder.h"
+
 class TH1;
 class TH2;
 class TH3;
@@ -106,6 +110,7 @@ public:
    Int_t	NofDaughters(Int_t motherId);
    
    void		ReconstructGamma();
+   
 
 
 
@@ -139,6 +144,7 @@ private:
    TH2D * fhTomography_reco_YZ;
    
    TH1D * fhConversion;
+   TH1D * fhConversion_inSTS;
    TH1D * fhConversion_prob;
    TH1D * fhConversion_energy;
    TH1D * fhConversion_p;
@@ -175,8 +181,15 @@ private:
    TH2D * fhUsedMomenta_vsY_stsMomVec;
    TH1D * fhUsedMomenta_errorZ_stsMomVec;
    TH2D * fhUsedMomenta_vsZ_stsMomVec;
+   TH1D * fhUsedMomenta_errorX_refitted;
+   TH2D * fhUsedMomenta_vsX_refitted;
+   TH1D * fhUsedMomenta_errorY_refitted;
+   TH2D * fhUsedMomenta_vsY_refitted;
+   TH1D * fhUsedMomenta_errorZ_refitted;
+   TH2D * fhUsedMomenta_vsZ_refitted;
    
    TH1D * fhInvariantMass_pi0epem;
+   TH1D * fhPi0_startvertex;
    
    TH1D * fhMCtest;
    
@@ -223,8 +236,9 @@ private:
    
    vector<TVector3> fRecoMomentum;
    vector<TVector3> fRecoRefittedMomentum;
-
-
+   
+   
+   
    /**
     * \brief Copy constructor.
     */
