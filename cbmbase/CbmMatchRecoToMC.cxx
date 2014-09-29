@@ -195,16 +195,25 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
    fTrdTracks = (TClonesArray*) ioman->GetObject("TrdTrack");
    fTrdDigiMatches = (TClonesArray*) ioman->GetObject("TrdDigiMatch");
    if (fTrdClusters != NULL) {
-      fTrdClusterMatches = new TClonesArray("CbmMatch", 100);
-      ioman->Register("TrdClusterMatch", "TRD", fTrdClusterMatches, kTRUE);
+	  fTrdClusterMatches = (TClonesArray*) ioman->GetObject("TrdClusterMatch");
+	  if (NULL == fTrdClusterMatches) {
+	     fTrdClusterMatches = new TClonesArray("CbmMatch", 100);
+		 ioman->Register("TrdClusterMatch", "TRD", fTrdClusterMatches, kTRUE);
+	  }
    }
    if (fTrdHits != NULL) {
-      fTrdHitMatches = new TClonesArray("CbmMatch", 100);
-      ioman->Register("TrdHitMatch", "TRD", fTrdHitMatches, kTRUE);
+	  fTrdHitMatches = (TClonesArray*) ioman->GetObject("TrdHitMatch");
+	  if (NULL == fTrdHitMatches) {
+         fTrdHitMatches = new TClonesArray("CbmMatch", 100);
+         ioman->Register("TrdHitMatch", "TRD", fTrdHitMatches, kTRUE);
+	  }
    }
    if (fTrdTracks != NULL) {
-      fTrdTrackMatches = new TClonesArray("CbmTrackMatchNew", 100);
-      ioman->Register("TrdTrackMatch", "TRD", fTrdTrackMatches, kTRUE);
+	  fTrdTrackMatches = (TClonesArray*) ioman->GetObject("TrdTrackMatch");
+	  if (NULL == fTrdTrackMatches) {
+	     fTrdTrackMatches = new TClonesArray("CbmTrackMatchNew", 100);
+         ioman->Register("TrdTrackMatch", "TRD", fTrdTrackMatches, kTRUE);
+	  }
    }
 
    // MUCH
