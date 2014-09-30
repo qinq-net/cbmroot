@@ -34,6 +34,8 @@ CbmTrdTrackFinderIdeal::CbmTrdTrackFinderIdeal()
   : CbmTrdTrackFinder(),
     fMcTracks(NULL),
     fTrdPoints(NULL),
+    fTrdHitMatches(NULL),
+    fTrdHitProducerType(""),
     fEventNum(-1)
 {
 }

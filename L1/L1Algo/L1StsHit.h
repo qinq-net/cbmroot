@@ -17,8 +17,8 @@ class L1StsHit
   
   
   
-  L1StsHit():f(0),b(0),iz(0),time(0),n(0) {}
-  L1StsHit(L1StsHit &h, unsigned short int _n, /*short*/ int sh, /*short*/ int shB):f(h.f + sh),b(h.b + shB),iz(0),n(_n){}
+  L1StsHit():f(0),b(0),iz(0),time(0.),n(0) {}
+ L1StsHit(L1StsHit &h, unsigned short int _n, /*short*/ int sh, /*short*/ int shB):f(h.f + sh),b(h.b + shB),iz(0),time(0.),n(_n){}
 
 };
 
