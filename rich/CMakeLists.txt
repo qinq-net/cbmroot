@@ -168,8 +168,7 @@ EndIf(TBB_FOUND)
 Set(LIBRARY_NAME Rich)
 Set(DEPENDENCIES
     # KF L1 ????
-    KF L1 CbmBase CbmData Base MLP boost_regex
-)
+    KF L1 CbmBase CbmData Base MLP boost_regex Gdml)
 
 If(TBB_FOUND)
   Set(DEPENDENCIES
