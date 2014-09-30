@@ -1,8 +1,6 @@
 # Create a library called "libClustering".
 
-set(INCLUDE_DIRECTORIES
-${BASE_INCLUDE_DIRECTORIES}
-
+Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/littrack/clustering
 
 ${CBMROOT_SOURCE_DIR}/cbmbase
@@ -18,7 +16,13 @@ ${CBMROOT_SOURCE_DIR}/much/geo
 ${CBMROOT_SOURCE_DIR}/mvd
 )
 
-include_directories( ${INCLUDE_DIRECTORIES})
+Include_Directories( ${INCLUDE_DIRECTORIES})
+
+Set(SYSTEM_INCLUDE_DIRECTORIES
+  ${BASE_INCLUDE_DIRECTORIES}
+)
+
+Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}

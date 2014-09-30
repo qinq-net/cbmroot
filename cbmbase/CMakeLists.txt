@@ -2,26 +2,30 @@
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
-set(INCLUDE_DIRECTORIES
-${BASE_INCLUDE_DIRECTORIES} 
-${Boost_INCLUDE_DIR}
-${CBMROOT_SOURCE_DIR}/cbmbase 
-${CBMROOT_SOURCE_DIR}/cbmdata
-${CBMROOT_SOURCE_DIR}/cbmdata/sts
+Set(SYSTEM_INCLUDE_DIRECTORIES
+  ${BASE_INCLUDE_DIRECTORIES} 
+  ${Boost_INCLUDE_DIR}
 )
 
-include_directories( ${INCLUDE_DIRECTORIES})
+Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
-set(LINK_DIRECTORIES
-${ROOT_LIBRARY_DIR}
-${FAIRROOT_LIBRARY_DIR}
-${CMAKE_SOURCE_DIR}/base
-${Boost_LIBRARY_DIRS}
+Set(INCLUDE_DIRECTORIES
+  ${CBMROOT_SOURCE_DIR}/cbmbase 
+  ${CBMROOT_SOURCE_DIR}/cbmdata
+  ${CBMROOT_SOURCE_DIR}/cbmdata/sts
+)
+Include_Directories( ${INCLUDE_DIRECTORIES})
+
+Set(LINK_DIRECTORIES
+  ${ROOT_LIBRARY_DIR}
+  ${FAIRROOT_LIBRARY_DIR}
+  ${Boost_LIBRARY_DIRS}
+#  ${CMAKE_SOURCE_DIR}/base
 )
  
 link_directories( ${LINK_DIRECTORIES})
 
-set(SRCS
+Set(SRCS
 CbmAddress.cxx
 CbmModuleList.cxx
 
@@ -82,8 +86,10 @@ CbmMatchRecoToMC.cxx
 #Set(CMAKE_REQUIRED_INCLUDES ${INCLUDE_DIRECTORIES})
 #Check_Include_Files(CbmMCEntry.h HAVE_LOWERCASE_PRINT)
 
-EXECUTE_PROCESS(COMMAND grep -c print ${CMAKE_SOURCE_DIR}/base/event/FairMultiLinkedData.h 
-                OUTPUT_VARIABLE NR_OF_print )
+Execute_Process(COMMAND grep -c print ${CMAKE_SOURCE_DIR}/base/event/FairMultiLinkedData.h 
+                OUTPUT_VARIABLE NR_OF_print 
+)
+
 If(NR_OF_print GREATER 0)
   Set(HAVE_LOWERCASE_PRINT TRUE)
 EndIf(NR_OF_print GREATER 0)
@@ -95,10 +101,9 @@ Else(${HAVE_LOWERCASE_PRINT})
   Message(STATUS "FairMultiLinkedData has upercase print function")
 EndIf(${HAVE_LOWERCASE_PRINT})
 
-
-EXEC_PROGRAM( ${ROOT_CONFIG_EXECUTABLE} 
-    ARGS "--has-gdml"
-    OUTPUT_VARIABLE ROOT_HAS_GDML )
+Execute_Process(COMMAND ${ROOT_CONFIG_EXECUTABLE} --has-gdml
+                OUTPUT_VARIABLE ROOT_HAS_GDML 
+)
 
 If ( ${ROOT_HAS_GDML} STREQUAL yes )
   Message(STATUS "Build CbmModule with Gdml support")

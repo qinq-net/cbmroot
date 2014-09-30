@@ -2,9 +2,7 @@
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
-set(INCLUDE_DIRECTORIES
-${BASE_INCLUDE_DIRECTORIES} 
-
+Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/cbmbase 
 ${CBMROOT_SOURCE_DIR}/cbmdata
 ${CBMROOT_SOURCE_DIR}/cbmdata/sts
@@ -40,14 +38,20 @@ ${CBMROOT_SOURCE_DIR}/ecal
 ${CBMROOT_SOURCE_DIR}/stt
 )
 
+Include_Directories( ${INCLUDE_DIRECTORIES})
+
+Set(SYSTEM_INCLUDE_DIRECTORIES
+  ${BASE_INCLUDE_DIRECTORIES} 
+)
+
 If(NOT ${ROOT_HAS_VC})
-  set(INCLUDE_DIRECTORIES
-      ${INCLUDE_DIRECTORIES}      
+  set(SYSTEM_INCLUDE_DIRECTORIES
+      ${SYSTEM_INCLUDE_DIRECTORIES}      
       ${VC_INCLUDE_DIRS}
   )
 EndIf()
 
-include_directories( ${INCLUDE_DIRECTORIES})
+Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}

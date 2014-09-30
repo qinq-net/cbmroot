@@ -2,9 +2,7 @@
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
-set(INCLUDE_DIRECTORIES
-${BASE_INCLUDE_DIRECTORIES} 
-
+Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/cbmbase
 
 ${CBMROOT_SOURCE_DIR}/cbmdata
@@ -28,12 +26,16 @@ ${CBMROOT_SOURCE_DIR}/psd
 ${CBMROOT_SOURCE_DIR}/passive
 ${CBMROOT_SOURCE_DIR}/field
 
-
-
 ${CBMROOT_SOURCE_DIR}/run
 )
 
-include_directories( ${INCLUDE_DIRECTORIES})
+Include_Directories( ${INCLUDE_DIRECTORIES})
+
+set(SYSTEM_INCLUDE_DIRECTORIES
+  ${BASE_INCLUDE_DIRECTORIES} 
+)
+
+Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}

@@ -3,17 +3,21 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 Set(INCLUDE_DIRECTORIES
-  ${BASE_INCLUDE_DIRECTORIES} 
-#  ${CBMROOT_SOURCE_DIR}/cbmbase
   ${CBMROOT_SOURCE_DIR}/cbmdata/raw
-  ${CBMROOT_SOURCE_DIR}/fles/ipc
-  ${CBMROOT_SOURCE_DIR}/fles/flib_dpb
-  ${CBMROOT_SOURCE_DIR}/fles/spadic
   ${CBMROOT_SOURCE_DIR}/fles/reader
 )
 
+Set(SYSTEM_INCLUDE_DIRECTORIES
+  ${BASE_INCLUDE_DIRECTORIES} 
+  ${Boost_INCLUDE_DIR} 
+  ${ROOT_INCLUDE_DIR}  
+  ${CBMROOT_SOURCE_DIR}/fles/ipc
+  ${CBMROOT_SOURCE_DIR}/fles/flib_dpb
+  ${CBMROOT_SOURCE_DIR}/fles/spadic
+)
+
 Include_Directories(${INCLUDE_DIRECTORIES})
-Include_Directories(SYSTEM ${Boost_INCLUDE_DIR} ${ROOT_INCLUDE_DIR})
+Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
  
 
 Set(LINK_DIRECTORIES

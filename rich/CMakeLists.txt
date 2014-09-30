@@ -2,10 +2,7 @@
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
-set(INCLUDE_DIRECTORIES
-${BASE_INCLUDE_DIRECTORIES} 
-${Boost_INCLUDE_DIR}
-
+Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/rich
 ${CBMROOT_SOURCE_DIR}/rich/fitter
 ${CBMROOT_SOURCE_DIR}/rich/finder
@@ -32,14 +29,22 @@ ${CBMROOT_SOURCE_DIR}/KF/Interface
 ${CBMROOT_SOURCE_DIR}/L1/OffLineInterface
 )
 
+Include_Directories( ${INCLUDE_DIRECTORIES})
+
+Set(SYSTEM_INCLUDE_DIRECTORIES
+  ${BASE_INCLUDE_DIRECTORIES} 
+  ${Boost_INCLUDE_DIR}
+)
+
 If(TBB_FOUND)
-  Set(INCLUDE_DIRECTORIES 
-      ${INCLUDE_DIRECTORIES}
+  Set(SYSTEM_INCLUDE_DIRECTORIES 
+      ${SYSTEM_INCLUDE_DIRECTORIES}
       ${TBB_INCLUDE_DIRS}
      )
 EndIf(TBB_FOUND)
 
-include_directories( ${INCLUDE_DIRECTORIES})
+Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
+
 
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}

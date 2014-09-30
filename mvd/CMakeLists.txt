@@ -2,16 +2,21 @@
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
-set(INCLUDE_DIRECTORIES
-${BASE_INCLUDE_DIRECTORIES} 
-${CLHEP_INCLUDE_DIR}
-${GSL_INCLUDE_DIRS}
-${CBMROOT_SOURCE_DIR}/cbmdata
-${CBMROOT_SOURCE_DIR}/cbmdata/mvd
-${CBMROOT_SOURCE_DIR}/mvd 
+Set(INCLUDE_DIRECTORIES
+  ${CBMROOT_SOURCE_DIR}/cbmdata
+  ${CBMROOT_SOURCE_DIR}/cbmdata/mvd
+  ${CBMROOT_SOURCE_DIR}/mvd 
 )
 
-include_directories( ${INCLUDE_DIRECTORIES})
+Include_Directories( ${INCLUDE_DIRECTORIES})
+
+Set(SYSTEM_INCLUDE_DIRECTORIES
+  ${BASE_INCLUDE_DIRECTORIES} 
+  ${CLHEP_INCLUDE_DIR}
+  ${GSL_INCLUDE_DIRS}
+)
+
+Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}

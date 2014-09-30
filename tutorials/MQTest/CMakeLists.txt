@@ -4,11 +4,7 @@
 
 
 
-set(INCLUDE_DIRECTORIES
-${BASE_INCLUDE_DIRECTORIES}
-${ROOT_INCLUDE_DIR}
-${ZMQ_INCLUDE_DIR}
-${Boost_INCLUDE_DIR}
+Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/fairmq
 ${CBMROOT_SOURCE_DIR}/MQ
 ${CBMROOT_SOURCE_DIR}/fairmq/zeromq
@@ -35,11 +31,16 @@ ${CBMROOT_SOURCE_DIR}/cbmdata/tof
 ${CBMROOT_SOURCE_DIR}/cbmdata/trd
 )
 
+Include_Directories(${INCLUDE_DIRECTORIES})
 
+Set(SYSTEM_INCLUDE_DIRECTORIES
+  ${BASE_INCLUDE_DIRECTORIES}
+  ${ROOT_INCLUDE_DIR}
+  ${ZMQ_INCLUDE_DIR}
+  ${Boost_INCLUDE_DIR}
+)
 
-#add_subdirectory (fles_ipc)
-
-include_directories(${INCLUDE_DIRECTORIES})
+Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 If (Boost_FOUND)
 #  configure_file( ${CBMROOT_SOURCE_DIR}/tutorials/MQTest/macro/startPushPull_cbm.sh.in ${CMAKE_BINARY_DIR}/bin/startPushPull_cbm.sh )

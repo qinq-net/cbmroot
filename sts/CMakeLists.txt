@@ -80,7 +80,6 @@ CbmStsReconstructionQa.cxx
 
 # ----  Specify include directories -----------------------
 set(INCLUDE_DIRECTORIES
-${BASE_INCLUDE_DIRECTORIES} 
 ${CBMROOT_SOURCE_DIR}/sts
 ${CBMROOT_SOURCE_DIR}/sts/setup
 ${CBMROOT_SOURCE_DIR}/sts/mc
@@ -104,6 +103,10 @@ ${CBMROOT_SOURCE_DIR}/cbmdata/trd
 ${CBMROOT_SOURCE_DIR}/cbmdata/tof 
 ${CBMROOT_SOURCE_DIR}/cbmdata/ecal 
 ${CBMROOT_SOURCE_DIR}/cbmdata/psd 
+)
+
+set(SYSTEM_INCLUDE_DIRECTORIES
+${BASE_INCLUDE_DIRECTORIES} 
 )
 # ----  End of include directories ------------------------
 
@@ -131,6 +134,7 @@ set(LINKDEF ${LIBRARY_NAME}LinkDef.h)
 
 # -----  Let cmake do the job   ---------------------------
 include_directories( ${INCLUDE_DIRECTORIES})
+include_directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 link_directories( ${LINK_DIRECTORIES})
 GENERATE_LIBRARY()
 # ---------------------------------------------------------

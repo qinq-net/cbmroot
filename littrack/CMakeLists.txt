@@ -6,10 +6,6 @@ add_subdirectory(parallel)
 INCLUDE(std/CMakeLists.txt)
 
 set(INCLUDE_DIRECTORIES
-${BASE_INCLUDE_DIRECTORIES}
-
-${Boost_INCLUDE_DIR}
-
 ${CBMROOT_SOURCE_DIR}/littrack
 ${CBMROOT_SOURCE_DIR}/littrack/std
 ${CBMROOT_SOURCE_DIR}/littrack/cbm
@@ -39,7 +35,14 @@ ${CBMROOT_SOURCE_DIR}/KF
 ${CBMROOT_SOURCE_DIR}/KF/Interface
 )
 
-include_directories( ${INCLUDE_DIRECTORIES})
+Include_Directories( ${INCLUDE_DIRECTORIES})
+
+Set(SYSTEM_INCLUDE_DIRECTORIES
+  ${BASE_INCLUDE_DIRECTORIES}
+  ${Boost_INCLUDE_DIR}
+)
+
+Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
