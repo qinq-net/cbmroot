@@ -156,8 +156,8 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis300_electron")
 
 
   // -----  STS hit matching   -----------------------------------------------
-  FairTask* stsMatchHits = new CbmStsMatchHits();
-  run->AddTask(stsMatchHits);
+//  FairTask* stsMatchHits = new CbmStsMatchHits();
+//  run->AddTask(stsMatchHits);
   // -------------------------------------------------------------------------
 
 
@@ -173,8 +173,8 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis300_electron")
 
 
   // ---   STS track matching   ----------------------------------------------
-  FairTask* stsMatchTracks = new CbmStsMatchTracks(iVerbose);
-  run->AddTask(stsMatchTracks);
+//  FairTask* stsMatchTracks = new CbmStsMatchTracks(iVerbose);
+//  run->AddTask(stsMatchTracks);
   // -------------------------------------------------------------------------
 
 
