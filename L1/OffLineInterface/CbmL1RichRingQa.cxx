@@ -691,9 +691,9 @@ void CbmL1RichRingQa::Exec(Option_t* option)
 
   Int_t NGhost = 0;
   Int_t NReco = fRingArray->GetEntriesFast();
-  Double_t local_x[fRingArray->GetEntriesFast()];
-  Double_t local_y[fRingArray->GetEntriesFast()];
-  Double_t local_r[fRingArray->GetEntriesFast()];
+//   Double_t local_x[fRingArray->GetEntriesFast()];
+//   Double_t local_y[fRingArray->GetEntriesFast()];
+//   Double_t local_r[fRingArray->GetEntriesFast()];
 
   Int_t MCRecoCor[NReco];
 
@@ -701,9 +701,9 @@ void CbmL1RichRingQa::Exec(Option_t* option)
     MCRecoCor[ir] = -1;
     map< Int_t, Int_t > hitmap;
     CbmRichRing *r = L1_DYNAMIC_CAST<CbmRichRing*>( fRingArray->At(ir) );
-    local_x[ir] = r->GetCenterX();
-    local_y[ir] = r->GetCenterY();
-    local_r[ir] = r->GetRadius();
+//     local_x[ir] = r->GetCenterX();
+//     local_y[ir] = r->GetCenterY();
+//     local_r[ir] = r->GetRadius();
     Int_t nh = r->GetNofHits();
     for( int ih=0; ih<nh; ih++ )
       {
@@ -759,10 +759,10 @@ void CbmL1RichRingQa::Exec(Option_t* option)
 	}
     }
   }
-  Int_t IfClone[NReco];
+//   Int_t IfClone[NReco];
 
   for( Int_t i1 = 0; i1<NReco; i1++ ){
-    IfClone[i1] = 0;
+//     IfClone[i1] = 0;
     CbmRichRing *r1 = L1_DYNAMIC_CAST<CbmRichRing*>( fRingArray->At(i1) );
     Int_t nh1 = r1->GetNofHits();
     for( Int_t i2 = 0; i2<NReco; i2++ ){
@@ -881,12 +881,12 @@ void CbmL1RichRingQa::Exec(Option_t* option)
       if ( ring.kind==0 ) { NMC++; continue;}
        NAll++;
        NMC37++;
-      Int_t fl=0;
+//       Int_t fl=0;
       if ( ring.kind==1 ) NExtra++;
       if ( ring.kind==2 ) NRef++;
       if ( ring.Reconstructed )
       {
-      fl = NClone;
+//       fl = NClone;
        NAllReco++;
        NClone += i->second.Reconstructed - 1 ;
        if ( ring.kind==2 )  NRefReco++;

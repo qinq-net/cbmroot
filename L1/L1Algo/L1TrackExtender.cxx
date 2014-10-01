@@ -63,7 +63,7 @@ void L1Algo::BranchFitterFast(const L1Branch &t, L1TrackPar& T, const bool dir, 
   fvec v2  = static_cast<fscal>( vStsStripsB[hit2.b] );
   fvec x2,y2;
   StripsToCoor(u2, v2, x2, y2, sta2);
-  fvec z2 = vStsZPos[hit2.iz];
+//   fvec z2 = vStsZPos[hit2.iz];
 
   fvec dzi = 1./(z1-z0);
 
@@ -91,7 +91,7 @@ void L1Algo::BranchFitterFast(const L1Branch &t, L1TrackPar& T, const bool dir, 
 
   L1FieldValue fB0, fB1, fB2 _fvecalignment;
   L1FieldRegion fld _fvecalignment;
-  fvec fz0 = sta1.z; // suppose field is smoth
+  fvec fz0 = sta1.z; // suppose field is smooth
   fvec fz1 = sta2.z;
   fvec fz2 = sta0.z;
 
@@ -189,9 +189,9 @@ void L1Algo::FindMoreHits(L1Branch &t, L1TrackPar& T, const bool dir, const fvec
   fvec v2  = static_cast<fscal>( vStsStripsB[hit2.b] );
   fvec x2,y2;
   StripsToCoor(u2, v2, x2, y2, sta2);
-  fvec z2 = vStsZPos[hit2.iz];
+//   fvec z2 = vStsZPos[hit2.iz];
 
-  fvec dzi = 1./(z1-z0);
+//   fvec dzi = 1./(z1-z0);
 
   L1FieldValue fB0, fB1, fB2 _fvecalignment;
   L1FieldRegion fld _fvecalignment;

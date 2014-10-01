@@ -813,11 +813,11 @@ void CbmL1::WriteSTAPAlgoData()  // must be called after ReadEvent
       // write StsHitsStartIndex and StsHitsStopIndex
     n = 20;
     for (int i = 0; i < n; i++){
-      if (algo->MaxNStations+1 > i) fadata  << algo->StsHitsStartIndex[i] << endl;
+      if (int(algo->MaxNStations)+1 > i) fadata  << algo->StsHitsStartIndex[i] << endl;
       else fadata  << 0 << endl;
     };
     for (int i = 0; i < n; i++){
-      if (algo->MaxNStations+1 > i) fadata  << algo->StsHitsStopIndex[i] << endl;
+      if (int(algo->MaxNStations)+1 > i) fadata  << algo->StsHitsStopIndex[i] << endl;
       else fadata  << 0 << endl;
     };
 
@@ -1085,12 +1085,12 @@ void CbmL1::ReadSTAPAlgoData()
     for (int i = 0; i < n; i++){
       int tmp;
       fadata >> tmp;
-      if (algo->MaxNStations+1 > i) algo->StsHitsStartIndex[i] = tmp;
+      if (int(algo->MaxNStations)+1 > i) algo->StsHitsStartIndex[i] = tmp;
     };
     for (int i = 0; i < n; i++){
       int tmp;
       fadata >> tmp;
-      if (algo->MaxNStations+1 > i) algo->StsHitsStopIndex[i] = tmp;
+      if (int(algo->MaxNStations)+1 > i) algo->StsHitsStopIndex[i] = tmp;
     };
 
     cout << "-I- CbmL1: CATrackFinder data for event " << nEvent << " has been read from file " << fadata_name << " successfully." << endl;

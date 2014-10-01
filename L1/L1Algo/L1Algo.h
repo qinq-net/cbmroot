@@ -133,7 +133,7 @@ class L1Algo{
   L1Grid vGrid[MaxNStations];     // hits as a combination of front-, backstrips and z-position
   vector< unsigned char > vSFlag,  // information of hits station & using hits in tracks;
                           vSFlagB;
-  THitI StsHitsStartIndex[MaxNStations+1], StsHitsStopIndex[MaxNStations+1]; // station-bounders in vStsHits array
+  THitI StsHitsStartIndex[int(MaxNStations)+1], StsHitsStopIndex[int(MaxNStations)+1]; // station-bounders in vStsHits array
 
    /// --- data used during finding iterations
 
@@ -141,7 +141,7 @@ class L1Algo{
   vector< L1StsHit > *vStsHitsUnused;
   std::vector< L1HitPoint > *vStsHitPointsUnused;
   THitI *RealIHit; // index in vStsHits indexed by index in vStsHitsUnused
-  THitI StsHitsUnusedStartIndex[MaxNStations+1], StsHitsUnusedStopIndex[MaxNStations+1];
+  THitI StsHitsUnusedStartIndex[int(MaxNStations)+1], StsHitsUnusedStopIndex[int(MaxNStations)+1];
   
 
     /// ----- Output data ----- 
@@ -397,7 +397,7 @@ class L1Algo{
 #ifdef TRACKS_FROM_TRIPLETS
   enum { fNFindIterations = TRACKS_FROM_TRIPLETS_ITERATION+1 }; // TODO investigate kAllPrimJumpIter & kAllSecJumpIter
 #else
-  enum { fNFindIterations = LAST_ITERATION+1 }; // TODO investigate kAllPrimJumpIter & kAllSecJumpIter
+  enum { fNFindIterations = int(LAST_ITERATION)+1 }; // TODO investigate kAllPrimJumpIter & kAllSecJumpIter
 #endif
 #else
   enum { fNFindIterations = 3 };
@@ -447,7 +447,7 @@ class L1Algo{
   L1FieldValue  vtxFieldValue _fvecalignment; // field at teh vertex position.
 
   vector <L1Triplet> vTriplets; // container for triplets got in finding
-  int TripStartIndex[MaxNStations-2], TripStopIndex[MaxNStations-2]; // containers for stations bounders in vTriplets. indices are from start to stop-1
+  int TripStartIndex[int(MaxNStations)-2], TripStopIndex[int(MaxNStations)-2]; // containers for stations bounders in vTriplets. indices are from start to stop-1
 
   int fTrackingLevel, fGhostSuppression; // really doesn't used
   float fMomentumCutOff;// really doesn't used

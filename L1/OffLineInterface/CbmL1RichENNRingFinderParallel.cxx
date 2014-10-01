@@ -245,17 +245,17 @@ void CbmL1RichENNRingFinderParallel::ENNRingFinder( const int NHits, nsL1vector<
   const int    SearchHitMaxQuality = 100; // TODO DELME
 
   const fvec R2MinCut = 3.*3., R2MaxCut = 7.*7.;
-  const fvec R2Min = RMin*RMin, R2Max = RMax*RMax;  
+//   const fvec R2Min = RMin*RMin, R2Max = RMax*RMax;  
   const fvec HitSize2 = 2 * HitSize;
-  const fvec HitSize4 = 4 * HitSize;
+//   const fvec HitSize4 = 4 * HitSize;
   const fvec HitSizeSq_v  = HitSize  * HitSize;
   const float HitSizeSq  = HitSizeSq_v[0];
-  const fvec HitSizeSq4 = HitSize2 * HitSize2;
+//   const fvec HitSizeSq4 = HitSize2 * HitSize2;
   const float AreaSize  = 2 * RMax[0] + HitSize;
   const float AreaSize2 = AreaSize * AreaSize;  
   
-  typedef vector<ENNRingHit>::iterator iH;
-  typedef vector<ENNRingHit*>::iterator iP;
+//   typedef vector<ENNRingHit>::iterator iH;
+//   typedef vector<ENNRingHit*>::iterator iP;
 
   THitIndex NInRings = Rings.size();
 

@@ -250,7 +250,7 @@ Int_t CbmL1CATrdTrackFinderSA::DoFind(TClonesArray *hitArray,
   // Create pointers to TRD hit and TrdPoint
   CbmTrdHit*   pHit  = NULL;
   CbmTrdPoint* pMCpt = NULL;
-  CbmMCTrack*  pMCtr = NULL;
+//   CbmMCTrack*  pMCtr = NULL;
 
   //--- Function: CreateSpacePoint --------------------------------------
   Double_t           //    b
@@ -320,7 +320,7 @@ Int_t CbmL1CATrdTrackFinderSA::DoFind(TClonesArray *hitArray,
     //  nNoTrdPoint++;
     //  continue;
     //}
-    pMCtr = L1_DYNAMIC_CAST<CbmMCTrack*>(fMCTrackArray->At(pMCpt->GetTrackID()));
+//     pMCtr = L1_DYNAMIC_CAST<CbmMCTrack*>(fMCTrackArray->At(pMCpt->GetTrackID()));
     //if ( ! pMCtr ) continue;
 
     trdPlaneID = pHit->GetPlaneId();
@@ -948,7 +948,7 @@ Int_t CbmL1CATrdTrackFinderSA::DoFind(TClonesArray *hitArray,
 
     ptIndex = pHit->GetRefIndex();
     pMCpt = (CbmTrdPoint*) (fMCPointArray->At(ptIndex));
-    pMCtr = (CbmMCTrack*) fMCTrackArray->At(pMCpt->GetTrackID());
+//     pMCtr = (CbmMCTrack*) fMCTrackArray->At(pMCpt->GetTrackID());
 
     trdPlaneID = pHit->GetPlaneID();
     Int_t trdPlaneIDN = trdPlaneID-1;
@@ -2623,10 +2623,10 @@ void CbmL1CATrdTrackFinderSA::CreateAndManageSegments(vector<CbmL1TrdTracklet4*>
   vector<CbmL1TrdTracklet4*>::iterator itclSeg;
 
   CbmTrdTrack *tr1 = NULL;
-  CbmTrdHit* hit1 = NULL;
-  CbmTrdHit* hit2 = NULL;
-  CbmTrdHit* hit3 = NULL;
-  CbmTrdHit* hit4 = NULL;
+//   CbmTrdHit* hit1 = NULL;
+//   CbmTrdHit* hit2 = NULL;
+//   CbmTrdHit* hit3 = NULL;
+//   CbmTrdHit* hit4 = NULL;
 
   CbmL1TrdTracklet4
     *clTrdSeg;
@@ -2648,19 +2648,19 @@ void CbmL1CATrdTrackFinderSA::CreateAndManageSegments(vector<CbmL1TrdTracklet4*>
     tr1 = new CbmTrdTrack();
 
     indTrdHit1 = clTrdSeg->GetInd(0);
-    hit1 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit1) );
+//     hit1 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit1) );
     tr1->AddHit(indTrdHit1, kTRDHIT);
 
     indTrdHit2 = clTrdSeg->GetInd(1);
-    hit2 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit2) );
+//     hit2 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit2) );
     tr1->AddHit(indTrdHit2, kTRDHIT);
 
     indTrdHit3 = clTrdSeg->GetInd(2);
-    hit3 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit3) );
+//     hit3 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit3) );
     tr1->AddHit(indTrdHit3, kTRDHIT);
 
     indTrdHit4 = clTrdSeg->GetInd(3);
-    hit4 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit4) );
+//     hit4 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit4) );
     tr1->AddHit(indTrdHit4, kTRDHIT);
 
 //    tr1->SortHits();
@@ -2679,19 +2679,19 @@ void CbmL1CATrdTrackFinderSA::CreateAndManageSegments(vector<CbmL1TrdTracklet4*>
     tr1 = new CbmTrdTrack();
 
     indTrdHit1 = clTrdSeg->GetInd(0);
-    hit1 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit1) );
+//     hit1 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit1) );
     tr1->AddHit(indTrdHit1, kTRDHIT);
 
     indTrdHit2 = clTrdSeg->GetInd(1);
-    hit2 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit2) );
+//     hit2 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit2) );
     tr1->AddHit(indTrdHit2, kTRDHIT);
 
     indTrdHit3 = clTrdSeg->GetInd(2);
-    hit3 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit3) );
+//     hit3 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit3) );
     tr1->AddHit(indTrdHit3, kTRDHIT);
 
     indTrdHit4 = clTrdSeg->GetInd(3);
-    hit4 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit4) );
+//     hit4 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit4) );
     tr1->AddHit(indTrdHit4, kTRDHIT);
 
 //    tr1->SortHits();
@@ -2710,19 +2710,19 @@ void CbmL1CATrdTrackFinderSA::CreateAndManageSegments(vector<CbmL1TrdTracklet4*>
     tr1 = new CbmTrdTrack();
 
     indTrdHit1 = clTrdSeg->GetInd(0);
-    hit1 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit1) );
+//     hit1 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit1) );
     tr1->AddHit(indTrdHit1, kTRDHIT);
 
     indTrdHit2 = clTrdSeg->GetInd(1);
-    hit2 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit2) );
+//     hit2 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit2) );
     tr1->AddHit(indTrdHit2, kTRDHIT);
 
     indTrdHit3 = clTrdSeg->GetInd(2);
-    hit3 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit3) );
+//     hit3 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit3) );
     tr1->AddHit(indTrdHit3, kTRDHIT);
 
     indTrdHit4 = clTrdSeg->GetInd(3);
-    hit4 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit4) );
+//     hit4 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(indTrdHit4) );
     tr1->AddHit(indTrdHit4, kTRDHIT);
 
 //    tr1->SortHits();
@@ -3088,7 +3088,7 @@ Double_t CbmL1CATrdTrackFinderSA::FitKF(CbmTrdTrack* pTrack) {
   CbmTrdHit* pHit = NULL;
   CbmKFTrdHit* pKFHit = NULL;
   Int_t hitIndex = 0;
-  Int_t materialIndex = 0;
+//   Int_t materialIndex = 0;
   Double_t eLoss = 0.;
 
   // Loop over TRD hits of the track
@@ -3103,7 +3103,7 @@ Double_t CbmL1CATrdTrackFinderSA::FitKF(CbmTrdTrack* pTrack) {
     // Create CbmKFTrdHit
     pKFHit = new CbmKFTrdHit();
     pKFHit->Create(pHit);
-    materialIndex = pKFHit->MaterialIndex;
+//     materialIndex = pKFHit->MaterialIndex;
     // Add to the KFTrack
     fKfTrack->fHits.push_back(pKFHit);
   } // Loop over TRD hits
@@ -3147,7 +3147,7 @@ Double_t CbmL1CATrdTrackFinderSA::FitTLinearFitter(Int_t M[]) {
   Double_t ax[6];
   Double_t ay[6];
   Double_t az1[6];
-  Double_t az2[6];
+//   Double_t az2[6];
 
   CbmTrdHit *trdHit;
   for(int i = 0; i < nrPnts; i++) {
@@ -3159,7 +3159,7 @@ Double_t CbmL1CATrdTrackFinderSA::FitTLinearFitter(Int_t M[]) {
       w++;
     }else{
       ay[w]  = trdHit->GetY();
-      az2[w] = trdHit->GetZ();
+//       az2[w] = trdHit->GetZ();
     }
   }
 

@@ -591,8 +591,6 @@ void CbmL1PFFitter::GetChiToVertex(vector<CbmStsTrack> &Tracks, vector<L1FieldRe
         zField[iH+1][iVec] = posz;
       }
     }
-
-    L1TrackPar TFirstPoint = T;
     
     fB[0] = CbmL1::Instance()->algo->GetvtxFieldValue();
     zField[0] = 0;
@@ -601,7 +599,6 @@ void CbmL1PFFitter::GetChiToVertex(vector<CbmStsTrack> &Tracks, vector<L1FieldRe
 
     for(int iSt= nStations-4; iSt>=0; iSt--)
     {
-      fvec zero = ZERO;
       fvec w=ONE;
       fvec initialized = fvec(T.z > (zSta[iSt]+2.5));
       w = fvec(w & initialized);

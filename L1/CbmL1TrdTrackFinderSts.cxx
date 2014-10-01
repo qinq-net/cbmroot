@@ -375,7 +375,7 @@ void CbmL1TrdTrackFinderSts::ProcessStation(CbmTrdTrack* pTrack,
 
   Int_t indexOfClosest;
   Double_t minChi2;
-  CbmTrdHit* closestHit = 0;
+//   CbmTrdHit* closestHit = 0;
   Int_t pointIndex;
   CbmTrdPoint *trdPoint;
   TVector3 pos;
@@ -476,7 +476,7 @@ void CbmL1TrdTrackFinderSts::ProcessStation(CbmTrdTrack* pTrack,
       if(chi2hit < minChi2) {
 	minChi2 = chi2hit;
 	indexOfClosest = hitIndex;
-	closestHit = pHit;
+// 	closestHit = pHit;
       }
     }// Loop over TRD hits
 

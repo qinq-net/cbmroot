@@ -885,7 +885,7 @@ void CbmL1::HistoPerformance() // TODO: check if works correctly. Change vHitRef
     }
 
           // killed tracks. At least one hit of they belong to some recoTrack
-    bool killed = 0;
+//     bool killed = 0;
     if(!reco){
       h_notfound_nhits->Fill(nmchits);
       h_notfound_station->Fill(ph.iStation);
@@ -907,7 +907,7 @@ void CbmL1::HistoPerformance() // TODO: check if works correctly. Change vHitRef
 //        h_notfound_ty->Fill((ph22.y-ph21.y)/(z22-z21));
 //      }
 
-      if( mtra.IsDisturbed() ) killed = 1;
+//       if( mtra.IsDisturbed() ) killed = 1;
     }
 
 

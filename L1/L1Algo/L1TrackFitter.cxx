@@ -217,7 +217,7 @@ void L1Algo::KFTrackFitter_simple()  // TODO: Add pipe.
         fvec v1  = static_cast<fscal>( vStsStripsB[hit1.b] );
         fvec x1,y1;
         StripsToCoor(u1, v1, x1, y1, sta1);
-        fvec z1 = vStsZPos[hit1.iz];
+//         fvec z1 = vStsZPos[hit1.iz];
 
         fvec u2  = static_cast<fscal>( vStsStrips[hit2.f] );
         fvec v2  = static_cast<fscal>( vStsStripsB[hit2.b] );

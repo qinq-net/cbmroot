@@ -1528,7 +1528,7 @@ void L1Algo::CATrackFinder()
       L1_ASSERT( StsHitsUnusedStopIndex[istal] <= (*vStsHitsUnused).size(), StsHitsUnusedStopIndex[istal] << " <= " << (*vStsHitsUnused).size());
     }
 #endif // L1_NO_ASSERT
-    unsigned int nPortions = 0; /// number of portions
+//     unsigned int nPortions = 0; /// number of portions
     {   
 	 /// possible left hits of triplets are splited in portions of 16 (4 SIMDs) to use memory faster
       portionStopIndex[NStations-1] = 0;
@@ -1556,7 +1556,7 @@ void L1Algo::CATrackFinder()
         ip++;
         portionStopIndex[istal] = ip;
       }// lstations
-      nPortions = ip;
+//       nPortions = ip;
     }
     
 #ifdef COUNTERS
