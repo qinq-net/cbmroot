@@ -58,6 +58,7 @@ class UEvent : public TObject {
   void Clear();
   void RemoveAt(Int_t i);
 
+ private:
   UEvent operator=(const UEvent&);
 
   ClassDef(UEvent, 1);
