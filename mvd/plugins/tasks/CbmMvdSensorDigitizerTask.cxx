@@ -451,7 +451,7 @@ for (Int_t i=0; i<fPixelCharge->GetEntriesFast(); i++)
 						    pixel->GetX(), pixel->GetY(), pixel->GetCharge(),
 						    fPixelSizeX, fPixelSizeY, pixel->GetTime(), 
 						    pixel->GetFrame());
-	//	cout << endl << " new Digi at " <<  pixel->GetX() << " " << pixel->GetY() << endl;
+		//cout << endl << " new Digi at " <<  pixel->GetX() << " " << pixel->GetY() << endl;
 		new ((*fOutputBuffer)[nDigis]) CbmMvdDigi (fSensor->GetStationNr(),
 						    pixel->GetX(), pixel->GetY(), pixel->GetCharge(),
 						    fPixelSizeX, fPixelSizeY, pixel->GetTime(), 
@@ -511,9 +511,12 @@ void CbmMvdSensorDigitizerTask::ProduceIonisationPoints(CbmMvdPoint* point) {
   fSensor->TopToLocal(globalPositionIn, localPositionIn);
   fSensor->TopToLocal(globalPositionOut, localPositionOut);
 
+  //cout << endl << " partical from global " << globalPositionIn[0] << " to local " << localPositionIn[0] << endl;
+
   Int_t pixelX, pixelY;
   fSensor->LocalToPixel(&localPositionIn[0],pixelX, pixelY); 
 
+  //cout << endl << "hit pixel nummber " << pixelX << ", " << pixelY << endl;
   // Copy results into variables used by earlier versions
   
   Double_t entryX = localPositionIn [0];

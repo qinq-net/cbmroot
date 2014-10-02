@@ -55,9 +55,9 @@ class CbmMvdDigitizer : public FairTask
   void SetDeltaName(TString fileName)    { fDeltaFileName   = fileName;    }
   void SetBgBufferSize(Int_t nBuffer)    { fBgBufferSize    = nBuffer;     }
   void SetDeltaBufferSize(Int_t nBuffer) { fDeltaBufferSize = nBuffer;     }
-
+  void SetMisalignment(Float_t misalignment[3]){for(Int_t i = 0; i<3; i++) epsilon[i]=misalignment[i];} // set the misalignment in cm
   void BuildEvent();
-
+  
 protected:
  
  
@@ -80,7 +80,7 @@ private:
   Int_t    fNDeltaElect;       // Number of delta electron events
   Int_t    fDeltaBufferSize;
   Int_t    fBgBufferSize;
-
+  Float_t epsilon[3];
 
   TString	fBranchName;   // Name of input branch (MvdPoint)
   TString       fBgFileName;     // Name of background (pileup) file 

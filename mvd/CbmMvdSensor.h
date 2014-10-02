@@ -108,7 +108,7 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   
   CbmMvdSensorPlugin* GetPlugin(UInt_t nPlugin){ return (CbmMvdSensorPlugin*) fPluginArray->At(nPlugin);}
   
-  
+  void SetMisalignment(Float_t misalignment[3]){for(Int_t i = 0; i<3; i++) epsilon[i]=misalignment[i];}
   
   /** Output to screen **/
   virtual void Print(Option_t* opt="") const;
@@ -150,7 +150,9 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   TClonesArray* foutputBuffer;
   TClonesArray* fcurrentPoints;
   Double_t     fcurrentEventTime;
-   
+  Float_t     epsilon[3];
+
+ 
   /** Position of the sensor */
   TGeoBBox*   fShape; 	  	   // volume corresponding to the sensor in the TGeoManager
   TGeoHMatrix* fMCMatrix; 	   // coordinate transformation from Master to MC-Position of this volume

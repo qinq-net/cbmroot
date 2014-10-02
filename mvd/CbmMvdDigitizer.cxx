@@ -125,19 +125,22 @@ InitStatus CbmMvdDigitizer::Init() {
     ioman->Register("MvdDigiMatchs", "MvdDigiMatch", fDigiMatch, kTRUE);
 
     fDetector = CbmMvdDetector::Instance();
+    
     if(!fDetector)
     	{
-	cout << endl << "No CbmMvdDetector detected!" << endl; 
+	cout << endl << "-I- Try to load CbmMvdDetector -I- " << endl; 
         GetMvdGeometry(); 
 	fDetector = CbmMvdDetector::Instance();
 	if(fDetector->GetSensorArraySize() > 1)
-	cout << endl << "succesfull loaded Geometry from file" << endl;
+		{
+		cout << endl << "-I- succesfully loaded Geometry from file -I-" << endl;
+		}
 	else
-	{
-	cout << endl << "Error no Detector found" << endl;
-	exit(-1);
-	}
-	}
+		{
+		cout << endl << "-E- Error no Detector found -E-" << endl;
+		exit(-1);
+		}
+	} 
 
 
        // **********  Create pileup manager if necessary
@@ -221,6 +224,7 @@ void CbmMvdDigitizer::GetMvdGeometry() {
   Int_t iStation =  0;
   Int_t volId    = -1;
   CbmMvdDetector* Detector = new CbmMvdDetector("A"); 
+  Detector->SetMisalignment(epsilon);
   TString nodeName;
   TString mother;
   TString pipeName = "pipevac1";

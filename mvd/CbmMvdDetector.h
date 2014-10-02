@@ -85,7 +85,7 @@ class CbmMvdDetector : public TNamed
   void AddPlugin(CbmMvdSensorPlugin* plugin);
   void BuildDebugHistograms(){;};
   void Init();
-    
+  void SetMisalignment(Float_t misalignment[3]){for(Int_t i = 0; i<3; i++) fepsilon[i] = misalignment[i];}; 
   /** Data Processing */
   
   void ExecChain(); //Processes the full execution chain
@@ -112,7 +112,8 @@ private:
   TClonesArray* foutputDigiMatchs;
   TClonesArray* foutputHitMatchs;
   TClonesArray* fcurrentEvent;
-  /** Data members */
+  Float_t fepsilon[3];
+ /** Data members */
   
   Int_t fDigiPlugin; 
   Int_t fHitPlugin;

@@ -635,7 +635,7 @@ void CbmMvdSensorFindHitTask::CreateHit(vector<Int_t>* clusterArray,  TVector3 &
     
     // Save hit into array
     Int_t nHits = fHits->GetEntriesFast();
-   // cout << endl << "adding new hit to fHits at X: " << pos.X() << " , Y: "<< pos.Y() << " , Z: " << pos.Z() << " , " ;
+    //cout << endl << "adding new hit to fHits at X: " << pos.X() << " , Y: "<< pos.Y() << " , Z: " << pos.Z() << " , " ;
     new ((*fHits)[nHits]) CbmMvdHit(fSensor->GetStationNr(), pos, dpos, indexX, indexY, nClusters, 0);
     CbmMvdHit* currentHit = new CbmMvdHit;
     currentHit = (CbmMvdHit*) fHits->At(nHits);
@@ -853,7 +853,7 @@ void CbmMvdSensorFindHitTask::ComputeCenterOfGravity(vector<Int_t>* clusterArray
 	x = lab[0];
 	y = lab[1];
 	
-//cout << endl << "x = " << x << " y = " << y << endl;
+        //cout << endl << "x = " << x << " y = " << y << endl;
 	//Calculate x,y coordinates of the pixel in the detector ref frame
 	//Double_t x = ( 0.5+double(xIndex) )*pixelSizeX;
 	//Double_t y = ( 0.5+double(yIndex) )*pixelSizeY;

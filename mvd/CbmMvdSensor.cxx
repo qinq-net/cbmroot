@@ -50,9 +50,10 @@ CbmMvdSensor::CbmMvdSensor()
     fSensorPosition(),
     fSensorData(new CbmMvdSensorDataSheet()),
     fSensorMap(),
-  fPluginArray(new TObjArray(1)),
-  fSensorStartTime(0.),
-  initialized(kFALSE)
+    fPluginArray(new TObjArray(1)),
+    fSensorStartTime(0.),
+    initialized(kFALSE),
+    epsilon()
 {
 cout << "-W- " << GetName() << ": MVD-Sensor initialized without technical data.";
 cout << " Assuming default sensor." << endl;
@@ -93,13 +94,12 @@ CbmMvdSensor::CbmMvdSensor(const char* name, CbmMvdSensorDataSheet* dataSheet, T
     fSensorPosition(),
     fSensorData(dataSheet),
     fSensorMap(),
-  fPluginArray(new TObjArray(1)),
-  fSensorStartTime(sensorStartTime),
-  initialized(kFALSE)
+    fPluginArray(new TObjArray(1)),
+    fSensorStartTime(sensorStartTime),
+    initialized(kFALSE),
+    epsilon()
 {
-      
-ReadSensorGeometry(volName, fNodeName);  
-	
+
 }
 // -------------------------------------------------------------------------
 
@@ -131,7 +131,8 @@ Int_t CbmMvdSensor::ReadSensorGeometry(TString volName, TString nodeName) {
   TGeoVolume* volume;
    //cout << gGeoManager->GetNodeId()<<endl;
   volId = gGeoManager->GetUID(volName); //search for node in geometry data base
-  
+  Double_t* tempCoordinate; 
+
   if ( !(volId > -1) ) {
     cout << "-W- " << GetName() << ": Station " << volName << " not found, ignored for now." << endl;
   }
@@ -180,20 +181,30 @@ Int_t CbmMvdSensor::ReadSensorGeometry(TString volName, TString nodeName) {
     
     
     fMCMatrix=(TGeoHMatrix*)(gGeoManager->GetCurrentMatrix())->Clone(volName+"_MC_Matrix");
-    fMCMatrix->Print();
+    //fMCMatrix->Print();
     
     fMCMatrix->SetName(volName+"_MC_Matrix");
-        
+       
     if (!fRecoMatrix) {
+        Double_t pre[3], past[3];
 	//The initial guess on the reconstructed position is that the MC-position is correct
+	//Short cut to misalignment, add a small error
 	fRecoMatrix=(TGeoHMatrix*)fMCMatrix->Clone(volName+"_Reco_Matrix");
-    };
+        PixelToTop(0, 0, pre);
+        tempCoordinate=fRecoMatrix->GetTranslation();
+	for(Int_t i=0;i<3;i++){tempCoordinate[i]=tempCoordinate[i]+epsilon[i];}
+	fRecoMatrix->SetTranslation(tempCoordinate);
+        PixelToTop(0, 0, past);
+	//cout << endl << "shifted pixel 0 from: " << pre[0] << ", " << pre[1] << " to " << past[0] << ", " << past[1] << endl; 
+    }
+     else
+	{tempCoordinate=fRecoMatrix->GetTranslation();}
     if (!fAlignmentCorr){
 	//If no knowledge on the reco matrix is available there is plausibly no correction data.
 	fAlignmentCorr=new TGeoHMatrix(volName+"_AlignmentData");
     }
   }
-Double_t* tempCoordinate=fRecoMatrix->GetTranslation();
+
 
  for(Int_t i=0;i<3;i++){fSensorPosition[i]=tempCoordinate[i];}
 }
@@ -202,6 +213,11 @@ Double_t* tempCoordinate=fRecoMatrix->GetTranslation();
 
 void CbmMvdSensor::Init(){
   
+
+      
+ReadSensorGeometry(fVolName, fNodeName);  
+	
+
  if(!initialized)
 {
   foutputDigis = new TClonesArray("CbmMvdDigi",1000);
@@ -533,7 +549,7 @@ void CbmMvdSensor::LocalToTop	(Double_t* local, Double_t* lab){
 
 // -------------------------------------------------------------------------
 void CbmMvdSensor::TopToLocal	(Double_t* lab, Double_t* local){
-  fRecoMatrix->MasterToLocal(lab, local); 
+  fMCMatrix->MasterToLocal(lab, local); 
   //cout << endl << "local 0 nach TopToLocal " << local[0] << endl;
   //cout << endl << "local 1 nach TopToLocal " << local[1] << endl;
 };

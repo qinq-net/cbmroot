@@ -6,7 +6,7 @@
 #include "CbmMvdDetector.h"
 
 #include <iostream>
-//#include <omp.h>
+
 
 using std::cout;
 using std::endl;
@@ -34,7 +34,8 @@ CbmMvdDetector::CbmMvdDetector()
     fDigiPlugin(-1),
     fHitPlugin(-1),
     fSensorArrayFilled(kFALSE),
-    initialized(kFALSE)
+    initialized(kFALSE),
+    fepsilon()
 {
 
   Fatal (GetName(), " - Do not use standard constructor");
@@ -59,12 +60,13 @@ CbmMvdDetector::CbmMvdDetector(const char* name)
     fDigiPlugin(-1),
     fHitPlugin(-1),
     fSensorArrayFilled(kFALSE),
-    initialized(kFALSE)
+    initialized(kFALSE),
+    fepsilon()
 {
  
   if(fInstance) {Fatal(GetName(), " - Error, singleton does already exist.");}
   else {fInstance=this;};
- 
+  fepsilon[0]=fepsilon[1]=fepsilon[2]=0;
 }
 // -------------------------------------------------------------------------
 
@@ -98,6 +100,15 @@ void CbmMvdDetector::AddSensor(TString clearName, TString fullName, TString node
  
   CbmMvdSensor* sensor = (CbmMvdSensor*)fSensorArray->At(nSensors);
   sensor->SetDataSheet(sensorData);
+
+
+    Float_t misalignment[3], randArray[3];
+    TRandom3* rand = new TRandom3(0);
+    rand->RndmArray(3,randArray);
+    misalignment[0] = ((2*randArray[0])-1) * fepsilon[0]; //cout << endl << "calculated misalignment from: " << fepsilon[0] << " und " << randArray[0] << " to " << misalignment[0] << endl;
+    misalignment[1] = ((2*randArray[0])-1) * fepsilon[1]; //cout << endl << misalignment[1] << endl;
+    misalignment[2] = ((2*randArray[0])-1) * fepsilon[2]; //cout << endl << misalignment[2] << endl;
+    sensor->SetMisalignment(misalignment);
   //cout << endl << "new sensor " << fullName << " to detector added" << endl;
 } 
  
@@ -204,6 +215,7 @@ void CbmMvdDetector::Init(){
   
   Int_t nSensors=fSensorArray->GetEntriesFast();
   CbmMvdSensor* sensor;
+  
 if(!initialized)
   {
   foutput = new TClonesArray("CbmMvdPoint",1000);
@@ -215,6 +227,7 @@ if(!initialized)
   }
   for(Int_t j = 0; j < nSensors; j++)
     {
+    
     sensor=(CbmMvdSensor*)fSensorArray->At(j);
     //cout << "Init Sensor " << sensor->GetName() << endl;
     sensor->Init();
@@ -276,7 +289,6 @@ void CbmMvdDetector::ExecChain(){
 
   Int_t nSensors=fSensorArray->GetEntriesFast();
   CbmMvdSensor* sensor;
-  #pragma omp parallel for
   for(Int_t i=0; i<nSensors; i++){
     sensor=(CbmMvdSensor*)fSensorArray->At(i);
     //cout << "I------ Send Chain to " << sensor->GetName() << endl;
