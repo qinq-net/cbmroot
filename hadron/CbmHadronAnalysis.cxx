@@ -2615,7 +2615,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
       // now do global distribution of TofHits to GlobalTracks 
       // attach BestTofTrack candidate to GlobalTrack
       if (verbose>10) {
-	cout<<Form("<Ddis> NRIt %d, gt %d, BestTofTrack j=%d, best 0x%08x, %d, %d, w: %7.2f ",
+	cout<<Form("<Ddis> NRIt %d, gt %d, BestTofTrack j=%d, best 0x%p, %d, %d, w: %7.2f ",
 		   NRIt,i,j,BestTofTrack, Btt, Bthi,Weight_THMUL[i][0])<<endl;
       }
 
@@ -2623,7 +2623,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
       if(Btt > -1) 
       while (j>-1 && GlobTrack->GetLength()!= BestTofTrack->GetTrackLength() ){  
         if (verbose>10) {
-	  cout<<Form("<Ddeb> BestTofTrack j=%d, best 0x%08x, %d",j, 
+	  cout<<Form("<Ddeb> BestTofTrack j=%d, best 0x%p, %d",j, 
 		     BestTofTrack, BestTofTrack->GetTofHitIndex())<<endl;
 	}
 	dist = BestTofTrack->GetDistance();

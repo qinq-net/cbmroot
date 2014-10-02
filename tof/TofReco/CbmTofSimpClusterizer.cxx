@@ -538,7 +538,7 @@ Bool_t   CbmTofSimpClusterizer::InitCalibParameter()
 	  for(Int_t iTrg=0; iTrg<iNTrg; iTrg++){
 	   TH1D *htmpDelTof =(TH1D*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Trg%02d_DelTof",iSmType,iSm,iRpc,iTrg));
 	   if (NULL==htmpDelTof) {
-	    LOG(INFO)<<" Histos " << Form("cl_CorSmT%01d_sm%03d_rpc%03d_Trg%02d_DelTof", iSmType, iSm, iRpc) << " not found. "
+	    LOG(INFO)<<" Histos " << Form("cl_CorSmT%01d_sm%03d_rpc%03d_Trg%02d_DelTof", iSmType, iSm, iRpc, iTrg) << " not found. "
 		      <<FairLogger::endl;
 	    continue;
 	   }
@@ -1246,7 +1246,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                         for( Int_t iCh = 0; iCh < iNbCh; iCh++ )
                         {
 			  LOG(DEBUG2)<<"CbmTofSimpClusterizer::BuildClusters: VDigisize "
-			     << Form(" T %3d Sm %3d R %3d Ch %3d Size %3d ",iSmType,iSm,iRpc,iCh,fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
+			     << Form(" T %3d Sm %3d R %3d Ch %3d Size %3zu ",iSmType,iSm,iRpc,iCh,fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
                              <<FairLogger::endl;
 
                            if( 0 < fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size() )
@@ -1254,7 +1254,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                            while( 1 < fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size() )
                            {
 			       LOG(DEBUG2) << "CbmTofSimpClusterizer::BuildClusters: digis processing for " 
-					  << Form(" SmT %3d Sm %3d Rpc %3d Ch %3d # %3d ",iSmType,iSm,iRpc,iCh,
+					  << Form(" SmT %3d Sm %3d Rpc %3d Ch %3d # %3zu ",iSmType,iSm,iRpc,iCh,
 						  fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
                                <<FairLogger::endl;
 			       /*
@@ -1284,7 +1284,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                }
 
 			      LOG(DEBUG2) << "CbmTofSimpClusterizer::BuildClusters: digis processing for " 
-					  << Form(" SmT %3d Sm %3d Rpc %3d Ch %3d # %3d ",iSmType,iSm,iRpc,iCh,
+					  << Form(" SmT %3d Sm %3d Rpc %3d Ch %3zu # %3d ",iSmType,iSm,iRpc,iCh,
 						  fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
 		  	                  <<FairLogger::endl;
                               if(2 > fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size()) break;
@@ -1295,7 +1295,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                               iChId = fTofId->SetDetectorInfo( xDetInfo );
 			      Int_t iUCellId=CbmTofAddress::GetUniqueAddress(iSm,iRpc,iCh,0,iSmType);
 			      LOG(DEBUG1)<<"CbmTofSimpClusterizer::BuildClusters:" 
-					 << Form(" T %3d Sm %3d R %3d Ch %3d size %3d ",
+					 << Form(" T %3d Sm %3d R %3d Ch %3d size %3zu ",
 						 iSmType,iSm,iRpc,iCh,fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
 					 << Form(" ChId: 0x%08x 0x%08x ",iChId,iUCellId)
 					 <<FairLogger::endl;
@@ -1328,7 +1328,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
 			      TGeoNode *fNode=        // prepare local->global trafo
 				gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
-			      LOG(DEBUG1)<<Form(" Node at (%6.1f,%6.1f,%6.1f) : 0x%08x",
+			      LOG(DEBUG1)<<Form(" Node at (%6.1f,%6.1f,%6.1f) : 0x%p",
 					       fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode)
 					<<FairLogger::endl;
 			      //        fNode->Print();
@@ -1356,7 +1356,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
 			      LOG(DEBUG1)
 				   <<"CbmTofSimpClusterizer::BuildClusters: NbChanInHit  "
-				   << Form(" %3d %3d %3d 0x%08x %d Time %f PosY %f Svel %f ",
+				   << Form(" %3d %3d %3d 0x%p %f Time %f PosY %f Svel %f ",
 					   iNbChanInHit,iCh,iLastChan,xDigiA,xDigiA->GetSide(),
 					   dTime,dPosY,fvCPSigPropSpeed[iSmType])
 
@@ -1452,7 +1452,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
 				    gGeoManager->LocalToMaster(hitpos_local, hitpos);
 				    LOG(DEBUG1)<<
-				    Form(" LocalToMaster for node 0x%08x: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)", 
+				    Form(" LocalToMaster for node 0x%p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)", 
 					 cNode, hitpos_local[0], hitpos_local[1], hitpos_local[2], 
 					 hitpos[0], hitpos[1], hitpos[2])
 					     <<FairLogger::endl;
@@ -1650,7 +1650,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
 		     gGeoManager->LocalToMaster(hitpos_local, hitpos);
 		     LOG(DEBUG2)<<
-		     Form(" LocalToMaster for V-node 0x%08x: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)", 
+		     Form(" LocalToMaster for V-node 0x%p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)", 
 			 cNode, hitpos_local[0], hitpos_local[1], hitpos_local[2], 
 			 hitpos[0], hitpos[1], hitpos[2])
 			     <<FairLogger::endl;
@@ -1674,7 +1674,8 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                      Int_t iRefId = 0; // Index of the correspondng TofPoint
 		     //                     if(NULL != fTofPointsColl) iRefId = fTofPointsColl->IndexOf( vPtsRef[0] );
 		     LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Save V-Hit  "
-		     << Form(" %3d %3d 0x%08x %3d %3d %3d 0x%08x",
+//		     << Form(" %3d %3d 0x%08x %3d %3d %3d 0x%08x",
+		     << Form(" %3d %3d %3d %3d %3d ",
 			     fiNbHits,iNbChanInHit,iDetId,iLastChan,iRefId) //vPtsRef.size(),vPtsRef[0])
 		       //   dWeightedTime,dWeightedPosY)
 				<<", DigiSize: "<<vDigiIndRef.size();
