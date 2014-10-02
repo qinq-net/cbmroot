@@ -217,6 +217,7 @@ Bool_t CbmFlibFileSource::CheckTimeslice(const fles::Timeslice& ts)
     }
     LOG(INFO) << "Found " << ts.num_components() 
 	      << " different components in tiemeslice" << FairLogger::endl; 
+    return kTRUE;
 }
 
 void CbmFlibFileSource::Close()

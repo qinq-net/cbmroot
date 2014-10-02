@@ -52,6 +52,8 @@ class CbmFlibFileSource : public FairSource
     void PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc);
 #endif
 
+    CbmFlibFileSource operator=(const CbmFlibFileSource&);
+
     ClassDef(CbmFlibFileSource, 1)
 };
 
