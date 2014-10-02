@@ -55,6 +55,7 @@ include(FairMacros)
 include(WriteConfigFile)
 include(CTest)
 include(CheckCompiler)
+Include(ExternalProject)
 
 #Check the compiler and set the compile and link flags
 Check_Compiler()
@@ -209,7 +210,6 @@ String(STRIP ${ROOT_HAS_VC} ROOT_HAS_VC)
 
 If(NOT ${ROOT_HAS_VC})
   Message(STATUS "Root does not support VC. Compile the internal version.")
-  Include(ExternalProject)
   ExternalProject_Add(vc
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/vc_074
     PREFIX vc
