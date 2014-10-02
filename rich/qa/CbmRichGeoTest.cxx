@@ -22,7 +22,7 @@
 #include "FairRuntimeDb.h"
 #include "CbmRichHitProducer.h"
 #include "CbmDrawHist.h"
-#include "CbmUtils.h"
+#include "utils/CbmUtils.h"
 #include "CbmRichConverter.h"
 #include "CbmReport.h"
 #include "CbmStudyReport.h"
@@ -72,6 +72,9 @@ CbmRichGeoTest::CbmRichGeoTest():
    fEventNum(0),
    fMinNofHits(0),
    fhHitsXY(NULL),
+   fhHitsXYEl(NULL),
+   fhHitsXYMore2GevEl(NULL),
+   fhHitsXYLess2GevEl(NULL),
    fhPointsXY(NULL),
    fhNofPhotonsPerHit(NULL),
    fhNofHits(),
@@ -196,10 +199,10 @@ void CbmRichGeoTest::InitHistograms()
 {
    double xMin = -110.;
    double xMax = 110.;
-   int nBinsX = 28;
+   int nBinsX = 50;
    double yMin = -200;
    double yMax = 200.;
-   int nBinsY = 40;
+   int nBinsY = 80;
    if (fRichDetectorType == "prototype"){
       xMin = -10.;
       xMax = 10.;
@@ -211,6 +214,12 @@ void CbmRichGeoTest::InitHistograms()
 
    fhHitsXY = new TH2D("fhHitsXY", "fhHitsXY;X [cm];Y [cm];Counter", nBinsX, xMin, xMax, nBinsY, yMin, yMax);
    fHists.push_back(fhHitsXY);
+   fhHitsXYEl = new TH2D("fhHitsXYEl", "fhHitsXYEl;X [cm];Y [cm];Counter", nBinsX, xMin, xMax, 2*nBinsY, 2*yMin, 2*yMax);
+   fHists.push_back(fhHitsXYEl);
+   fhHitsXYMore2GevEl = new TH2D("fhHitsXYMore2GevEl", "fhHitsXYMore2GevEl;X [cm];Y [cm];Counter", nBinsX, xMin, xMax, 2*nBinsY, 2*yMin, 2*yMax);
+   fHists.push_back(fhHitsXYMore2GevEl);
+   fhHitsXYLess2GevEl = new TH2D("fhHitsXYLess2GevEl", "fhHitsXYLess2GevEl;X [cm];Y [cm];Counter", nBinsX, xMin, xMax, 2*nBinsY, 2*yMin, 2*yMax);
+   fHists.push_back(fhHitsXYLess2GevEl);
    fhPointsXY = new TH2D("fhPointsXY", "fhPointsXY;X [cm];Y [cm];Counter", nBinsX, xMin, xMax, nBinsY, yMin, yMax);
    fHists.push_back(fhPointsXY);
 
@@ -591,11 +600,11 @@ void CbmRichGeoTest::HitsAndPoints()
 {
    Int_t nofHits = fRichHits->GetEntriesFast();
    for (Int_t iH = 0; iH < nofHits; iH++){
-      CbmRichHit *hit = (CbmRichHit*) fRichHits->At(iH);
+      CbmRichHit *hit = static_cast<CbmRichHit*>(fRichHits->At(iH));
       if ( hit == NULL ) continue;
       Int_t pointInd =  hit->GetRefId();
       if (pointInd < 0) continue;
-      CbmRichPoint *point = (CbmRichPoint*) fRichPoints->At(pointInd);
+      CbmRichPoint *point = static_cast<CbmRichPoint*>(fRichPoints->At(pointInd));
       if ( point == NULL ) continue;
 
       fhNofPhotonsPerHit->Fill(hit->GetNPhotons());
@@ -606,6 +615,23 @@ void CbmRichGeoTest::HitsAndPoints()
       fhHitsXY->Fill(hit->GetX(), hit->GetY());
       fhDiffXhit->Fill(hit->GetX() - outPos.X());
       fhDiffYhit->Fill(hit->GetY() - outPos.Y());
+
+
+      Int_t iMCTrack = point->GetTrackID();
+      CbmMCTrack* track = static_cast<CbmMCTrack*>(fMCTracks->At(iMCTrack));
+      if (NULL == track) continue;
+
+      Int_t iMother = track->GetMotherId();
+      if (iMother == -1) continue;
+      CbmMCTrack* motherTrack = static_cast<CbmMCTrack*>(fMCTracks->At(iMother));
+      int pdg = TMath::Abs(motherTrack->GetPdgCode());
+      int motherId = motherTrack->GetMotherId();
+      double mom = motherTrack->GetP();
+      if (pdg == 11 && motherId == -1) {
+    	  fhHitsXYEl->Fill(hit->GetX(), hit->GetY());
+    	  if (mom <= 2) fhHitsXYLess2GevEl->Fill(hit->GetX(), hit->GetY());
+    	  if (mom >2) fhHitsXYMore2GevEl->Fill(hit->GetX(), hit->GetY());
+      }
    }
 
    Int_t nofPoints = fRichPoints->GetEntriesFast();
@@ -823,6 +849,15 @@ void CbmRichGeoTest::DrawHist()
 
    TCanvas *cHitsXY = CreateCanvas("richgeo_hits_xy", "richgeo_hits_xy", 800, 800);
    DrawH2(fhHitsXY);
+
+   TCanvas *cHitsXYEl = CreateCanvas("richgeo_hits_xy_el", "richgeo_hits_xy_el", 800, 800);
+   DrawH2(fhHitsXYEl);
+
+   TCanvas *cHitsXYMore2GevEl = CreateCanvas("richgeo_hits_xy_more2gev_el", "richgeo_hits_xy_more2gev_el", 800, 800);
+   DrawH2(fhHitsXYMore2GevEl);
+
+   TCanvas *cHitsXYLess2GevEl = CreateCanvas("richgeo_hits_xy_less2gev_el", "richgeo_hits_xy_less2gev_el", 800, 800);
+   DrawH2(fhHitsXYLess2GevEl);
 
    TCanvas *cPointsXY = CreateCanvas("richgeo_points_xy", "richgeo_points_xy", 800, 800);
    DrawH2(fhPointsXY);

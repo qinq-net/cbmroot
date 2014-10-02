@@ -22,8 +22,6 @@
 #include "CbmRichHit.h"
 #include "CbmRichPoint.h"
 
-#include "CbmUtils.h"
-
 #include <iostream>
 #include <string>
 #include <boost/assign/list_of.hpp>

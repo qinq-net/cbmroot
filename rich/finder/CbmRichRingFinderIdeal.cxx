@@ -73,6 +73,7 @@ Int_t CbmRichRingFinderIdeal::DoFind(
       CbmRichHit* pRhit = (CbmRichHit*) hitArray->At(iHit);
       if ( NULL == pRhit ) continue;
       Int_t ptIndex = pRhit->GetRefId();
+      //cout << "ptIndex=" << ptIndex << endl;
       if (ptIndex < 0) continue; // fake or background hit
       CbmRichPoint* pMCpt = (CbmRichPoint*) (fRichPoints->At(ptIndex));
       if ( NULL == pMCpt ) continue;
@@ -83,6 +84,7 @@ Int_t CbmRichRingFinderIdeal::DoFind(
       if ( pMCtr->GetPdgCode() != 50000050) continue; // select only Cherenkov photons
       Int_t motherId = pMCtr->GetMotherId();
       hitMap[motherId]++;
+      //cout << "motherId=" << motherId << " " << hitMap[motherId] << endl;
    }
 
    // Create STL map from MCTrack index to RichRing index
@@ -94,9 +96,10 @@ Int_t CbmRichRingFinderIdeal::DoFind(
    for (Int_t iMCTrack = 0; iMCTrack < nMCTracks; iMCTrack++) {
       CbmMCTrack* pMCtr = (CbmMCTrack*) fMcTracks->At(iMCTrack);
       if ( NULL == pMCtr ) continue;
-
+      if (hitMap[iMCTrack] <= 0) continue;
       new((*ringArray)[nRings]) CbmRichRing();
       ringMap[iMCTrack] = nRings++;
+      //cout << "nRings=" << nRings << endl;
    }
 
    // Loop over RichHits. Get corresponding MCPoint and MCTrack index
@@ -105,6 +108,7 @@ Int_t CbmRichRingFinderIdeal::DoFind(
       if ( NULL == pRhit ) continue;
 
       Int_t ptIndex = pRhit->GetRefId();
+      //cout << "ptIndex=" << ptIndex <<endl;
 
       if (ptIndex < 0) continue;// fake or background hit
       CbmRichPoint* pMCpt = (CbmRichPoint*) fRichPoints->At(ptIndex);
@@ -122,6 +126,7 @@ Int_t CbmRichRingFinderIdeal::DoFind(
       if (ringMap.find(motherId) == ringMap.end()) continue;
 
       Int_t ringIndex = ringMap[motherId];
+      //cout << ringIndex << endl;
 
       CbmRichRing* pRing = (CbmRichRing*) ringArray->At(ringIndex);
       if ( NULL == pRing ) continue;

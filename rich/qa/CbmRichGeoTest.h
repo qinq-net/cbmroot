@@ -217,11 +217,6 @@ private:
 	      double xMax,
 	      const string& canvasName);
 
-//	/**
-//	 * \brief Create property tree an store different statistics there.
-//	 */
-//	void CreatePTree();
-
 	/**
 	 * \brief Calculate efficiency.
 	 * \param[in] histRec
@@ -299,6 +294,9 @@ private:
 	Int_t fMinNofHits; // Min number of hits in ring for detector acceptance calculation.
 
 	TH2D* fhHitsXY; // distribution of X and Y position of hits
+	TH2D* fhHitsXYEl;
+	TH2D* fhHitsXYMore2GevEl;
+	TH2D* fhHitsXYLess2GevEl;
 	TH2D* fhPointsXY; // distribution of X and Y position of points
 	TH1D* fhNofPhotonsPerHit; // Number of photons per hit
 
@@ -372,6 +370,8 @@ private:
    TH3D* fhAaxisXYZ; // A axis
    TH3D* fhRadiusXYZ; // Radius
    TH3D* fhdRXYZ; // dR
+
+
 
 	vector<TH1*> fHists; // store all TH1 pointers of the histogram
 
