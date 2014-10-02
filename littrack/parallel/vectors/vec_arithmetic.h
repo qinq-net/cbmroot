@@ -1,4 +1,4 @@
-#ifndef LIT_VEC_ARITHMETIC_H_
+#ifndef LIT_VEC_ARITHMETIC_H
 #define LIT_VEC_ARITHMETIC_H
 
 /* Define all operators after definition of  basic operators */
