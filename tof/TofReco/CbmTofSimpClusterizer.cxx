@@ -1284,7 +1284,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                }
 
 			      LOG(DEBUG2) << "CbmTofSimpClusterizer::BuildClusters: digis processing for " 
-					  << Form(" SmT %3d Sm %3d Rpc %3d Ch %3zu # %3d ",iSmType,iSm,iRpc,iCh,
+					  << Form(" SmT %3d Sm %3d Rpc %3d Ch %3d # %3zu ",iSmType,iSm,iRpc,iCh,
 						  fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
 		  	                  <<FairLogger::endl;
                               if(2 > fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size()) break;
