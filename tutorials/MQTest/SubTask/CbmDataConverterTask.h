@@ -79,7 +79,11 @@ protected:
 
     size_t fStsDigiPayloadSize;
     size_t fMuchDigiPayloadSize;
-    
+
+private:
+
+    CbmDataConverterTask(const CbmDataConverterTask&);    
+    CbmDataConverterTask operator=(const CbmDataConverterTask&);    
 };
 
 #endif	/* CBMDATACONVERTERTASK_H */

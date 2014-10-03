@@ -25,10 +25,10 @@ CbmDataConverterTask::CbmDataConverterTask() : FairTask("CbmDataConverterTask"),
         fCurrentStartTime (0.),
         fDuration (1000.),
         fPrint(false),
-        fDigiToPrint(0)
+        fDigiToPrint(0),
+        fStsDigiPayloadSize(fStsConverter->GetDigiPayloadSize()),
+        fMuchDigiPayloadSize(fMuchConverter->GetDigiPayloadSize())
 {
-        fStsDigiPayloadSize=fStsConverter->GetDigiPayloadSize();
-        fMuchDigiPayloadSize=fMuchConverter->GetDigiPayloadSize();
 }
 
 

@@ -8,8 +8,9 @@
 #include "CbmMuchDataConverter.h"
 
 CbmMuchDataConverter::CbmMuchDataConverter()
+: CbmDigiConverter(),
+  fMuchDigiPayloadSize(sizeof(Int_t)+sizeof(Int_t)+sizeof(Int_t)+sizeof(Int_t))
 {
-    fMuchDigiPayloadSize=sizeof(Int_t)+sizeof(Int_t)+sizeof(Int_t)+sizeof(Int_t);
 }
 
 

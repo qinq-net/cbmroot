@@ -68,6 +68,9 @@ class CbmMQFileSink: public FairMQDevice
     friend class boost::serialization::access;
     fles::StorableTimeslice fFlesTimeSlices{1,1};
     #endif // for BOOST serialization
+
+    CbmMQFileSink(const CbmMQFileSink&);
+    CbmMQFileSink operator=(const CbmMQFileSink&);
 };
 
 

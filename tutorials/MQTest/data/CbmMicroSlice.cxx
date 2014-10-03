@@ -7,7 +7,10 @@
 
 #include "CbmMicroSlice.h"
 
-CbmMicroSlice::CbmMicroSlice() {
+CbmMicroSlice::CbmMicroSlice() 
+  : fMicroSliceHeader(),
+    fMicroSliceData()
+{
 }
 
 CbmMicroSlice::~CbmMicroSlice() {

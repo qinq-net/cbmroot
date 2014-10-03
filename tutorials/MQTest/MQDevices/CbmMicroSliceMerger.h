@@ -54,7 +54,10 @@ protected:
     TPolicyTask* fProcessorTask; 
     
     //fles::StorableTimeslice fFlesTimeSlices{1, 1};
-       
+
+private:
+    CbmMicroSliceMerger(const CbmMicroSliceMerger&);       
+    CbmMicroSliceMerger operator=(const CbmMicroSliceMerger&);       
 };
 
 #include "CbmMicroSliceMerger.tpl"

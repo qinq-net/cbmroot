@@ -48,6 +48,9 @@ private :
     vector<CbmMicroSlice> fDigiVector;
     CbmMicroSlice fMicroSlice;
     DetectorId fDetID;
+
+    CbmTimeSliceLoader(const CbmTimeSliceLoader&);
+    CbmTimeSliceLoader operator=(const CbmTimeSliceLoader&);
 }; 
 
 

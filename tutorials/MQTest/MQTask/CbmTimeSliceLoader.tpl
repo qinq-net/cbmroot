@@ -10,8 +10,13 @@
 
 
 template <typename TCbmDigi, typename TPayloadOut> 
-CbmTimeSliceLoader<TCbmDigi,TPayloadOut>::CbmTimeSliceLoader() : FairMQSamplerTask("Load class TCbmDigi"),
-fDataConverterTask(new CbmDataConverterTask())
+CbmTimeSliceLoader<TCbmDigi,TPayloadOut>::CbmTimeSliceLoader() 
+: FairMQSamplerTask("Load class TCbmDigi"),
+  fDataConverterTask(new CbmDataConverterTask()),
+  fCBMTimeSlice(NULL),
+  fDigiVector(),
+  fMicroSlice(),
+  fDetID() 
 {
     TCbmDigi Digi;
     fDetID=(DetectorId)Digi.GetSystemId();

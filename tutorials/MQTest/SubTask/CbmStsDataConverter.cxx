@@ -8,8 +8,9 @@
 #include "CbmStsDataConverter.h"
 
 CbmStsDataConverter::CbmStsDataConverter()
+: CbmDigiConverter(),
+  fStsDigiPayloadSize(sizeof(ULong64_t)+sizeof(UInt_t)+sizeof(UShort_t)+sizeof(Int_t)+sizeof(Int_t))
 {
-    fStsDigiPayloadSize=sizeof(ULong64_t)+sizeof(UInt_t)+sizeof(UShort_t)+sizeof(Int_t)+sizeof(Int_t);
 }
 
 CbmStsDataConverter::~CbmStsDataConverter() 
