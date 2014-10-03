@@ -9,6 +9,8 @@ struct TimesliceReader::TimesliceReader_ {
     std::unordered_map<uint16_t, spadic::MessageReader> _readers;
     //< one MessageReader per CBMnet source address
 
+    TimesliceReader_() : _readers{} {}
+
     void add_mc(const flib_dpb::MicrosliceContents& mc)
     {
         for (auto& dtm : mc.dtms()) {
