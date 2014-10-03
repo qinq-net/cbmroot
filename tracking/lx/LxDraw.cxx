@@ -448,11 +448,11 @@ void LxDraw::DrawMuch(TGeoNode* node)
   {
     TGeoNode* child = dynamic_cast<TGeoNode*> (childO);
 
-    if (child)
-    {
-      gGeoManager->GetCurrentNavigator()->CdDown(child);
-      DrawMuch(child);
-    }
+//    if (child)
+//    {
+//      gGeoManager->GetCurrentNavigator()->CdDown(child);
+//      DrawMuch(child);
+//    }
 
     childO = children->After(childO);
   }
