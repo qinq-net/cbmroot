@@ -1883,7 +1883,7 @@ void CbmL1CATrdTrackFinderSA::CreateTracks(vector<CbmL1TrdTracklet4*> clTracklet
 
   CbmTrdTrack* tr1 = NULL;
   //  CbmTrdTrack* tr2 = NULL;
-  CbmTrdHit* hit1 = NULL;
+//   CbmTrdHit* hit1 = NULL;
   //CbmTrdHit* hit2 = NULL;
 
   vector<CbmTrdTrack*> vTempTrdTrackCand;
@@ -2019,7 +2019,7 @@ void CbmL1CATrdTrackFinderSA::CreateTracks(vector<CbmL1TrdTracklet4*> clTracklet
 
 	for(Int_t we = 0; we < 12; we++) {
 	  trdInd = (*ikol).M[we];
-	  hit1 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(trdInd) );
+// 	  hit1 = L1_DYNAMIC_CAST<CbmTrdHit*>( fArrayTrdHit->At(trdInd) );
 
 	  tr1->AddHit(trdInd, kTRDHIT);
 	}

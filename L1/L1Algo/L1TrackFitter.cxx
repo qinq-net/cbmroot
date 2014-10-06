@@ -597,7 +597,8 @@ void L1Algo::L1KFTrackFitter( bool extrapolateToTheEndOfSTS )
             const fvec zFinal = 100.f;
             i = NStations - 1;
             fvec initialised = fvec(zFinal > Tout.z); // 3cm safe distance, needed because of diff position of sensors
-            L1Extrapolate( Tout, zFinal, qp0, fld, &initialised ); // extra with old field
+            fvec wIn = (ONE  & (initialised));
+            L1Extrapolate( Tout, zFinal, qp0, fld, &wIn ); // extra with old field
           }
           
         }

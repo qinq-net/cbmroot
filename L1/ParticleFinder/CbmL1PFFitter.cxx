@@ -185,27 +185,27 @@ void CbmL1PFFitter::Fit(vector<CbmStsTrack> &Tracks, vector<int>& pidHypo)
     for(i=0; i<nTracks_SIMD; i++)
     {
       t[i] = & Tracks[itrack+i]; // current track
-      T.x[i]  = t[i]->GetParamLast()->GetX();
-      T.y[i]  = t[i]->GetParamLast()->GetY();
-      T.tx[i] = t[i]->GetParamLast()->GetTx();
-      T.ty[i] = t[i]->GetParamLast()->GetTy();
-      T.qp[i] = t[i]->GetParamLast()->GetQp();
-      T.z[i]  = t[i]->GetParamLast()->GetZ();
-      T.C00[i] = t[i]->GetParamLast()->GetCovariance(0,0);
-      T.C10[i] = t[i]->GetParamLast()->GetCovariance(1,0);
-      T.C11[i] = t[i]->GetParamLast()->GetCovariance(1,1);
-      T.C20[i] = t[i]->GetParamLast()->GetCovariance(2,0);
-      T.C21[i] = t[i]->GetParamLast()->GetCovariance(2,1);
-      T.C22[i] = t[i]->GetParamLast()->GetCovariance(2,2);
-      T.C30[i] = t[i]->GetParamLast()->GetCovariance(3,0);
-      T.C31[i] = t[i]->GetParamLast()->GetCovariance(3,1);
-      T.C32[i] = t[i]->GetParamLast()->GetCovariance(3,2);
-      T.C33[i] = t[i]->GetParamLast()->GetCovariance(3,3);
-      T.C40[i] = t[i]->GetParamLast()->GetCovariance(4,0);
-      T.C41[i] = t[i]->GetParamLast()->GetCovariance(4,1);
-      T.C42[i] = t[i]->GetParamLast()->GetCovariance(4,1);
-      T.C43[i] = t[i]->GetParamLast()->GetCovariance(4,3);
-      T.C44[i] = t[i]->GetParamLast()->GetCovariance(4,4);
+      T.x[i]  = t[i]->GetParamFirst()->GetX();
+      T.y[i]  = t[i]->GetParamFirst()->GetY();
+      T.tx[i] = t[i]->GetParamFirst()->GetTx();
+      T.ty[i] = t[i]->GetParamFirst()->GetTy();
+      T.qp[i] = t[i]->GetParamFirst()->GetQp();
+      T.z[i]  = t[i]->GetParamFirst()->GetZ();
+      T.C00[i] = t[i]->GetParamFirst()->GetCovariance(0,0);
+      T.C10[i] = t[i]->GetParamFirst()->GetCovariance(1,0);
+      T.C11[i] = t[i]->GetParamFirst()->GetCovariance(1,1);
+      T.C20[i] = t[i]->GetParamFirst()->GetCovariance(2,0);
+      T.C21[i] = t[i]->GetParamFirst()->GetCovariance(2,1);
+      T.C22[i] = t[i]->GetParamFirst()->GetCovariance(2,2);
+      T.C30[i] = t[i]->GetParamFirst()->GetCovariance(3,0);
+      T.C31[i] = t[i]->GetParamFirst()->GetCovariance(3,1);
+      T.C32[i] = t[i]->GetParamFirst()->GetCovariance(3,2);
+      T.C33[i] = t[i]->GetParamFirst()->GetCovariance(3,3);
+      T.C40[i] = t[i]->GetParamFirst()->GetCovariance(4,0);
+      T.C41[i] = t[i]->GetParamFirst()->GetCovariance(4,1);
+      T.C42[i] = t[i]->GetParamFirst()->GetCovariance(4,1);
+      T.C43[i] = t[i]->GetParamFirst()->GetCovariance(4,3);
+      T.C44[i] = t[i]->GetParamFirst()->GetCovariance(4,4);
       
       int pid = pidHypo[itrack+i];
       if(pid == -1) pid = 211;
@@ -278,209 +278,156 @@ void CbmL1PFFitter::Fit(vector<CbmStsTrack> &Tracks, vector<int>& pidHypo)
       }
     }
 
-//fit backward
-    for( int iter = 0; iter < 2; iter++  ) { // 1.5 iterations
+    // fit forward
 
-      fvec qp0 = T.qp;
+    i = 0;
+    FilterFirst( T, x_first, y_first, sta[i] ); // TODO different station. won't work with MVD
+    fvec qp0 = T.qp;
 
-      i= nHits-1;
+    fz1 = z[i];
+    sta[i].fieldSlice.GetFieldValue( T.x, T.y, fB1 );
+    fB1.Combine( fB[i], w[i] );
 
-      FilterFirst( T, x_last, y_last, sta[i] );
+    fz2 = z[i+2];
+    dz = fz2-fz1;
+    sta[i].fieldSlice.GetFieldValue( T.x + T.tx*dz, T.y + T.ty*dz, fB2 );
+    fB2.Combine( fB[i+2], w[i+2] );
+    fld.Set( fB2, fz2, fB1, fz1, fB0, fz0 );
 
-      fz1 = z[i];
-      sta[i].fieldSlice.GetFieldValue( T.x, T.y, fB1 );
-      fB1.Combine( fB[i], w[i] );
+    for( ++i; i<nHits; i++ )
+    {
+      fz0 = z[i];
+      dz = (fz1-fz0);
+      sta[i].fieldSlice.GetFieldValue( T.x - T.tx*dz, T.y - T.ty*dz, fB0 );
+      fB0.Combine( fB[i], w[i] );
+      fld.Set( fB0, fz0, fB1, fz1, fB2, fz2 );
 
-      fz2 = z[i-2];
-      dz = fz2-fz1;
-      sta[i].fieldSlice.GetFieldValue( T.x + T.tx*dz, T.y + T.ty*dz, fB2 );
-      fB2.Combine( fB[i-2], w[i-2] );
-      fld.Set( fB2, fz2, fB1, fz1, fB0, fz0 );
-      for( --i; i>=0; i-- )
-      {
-        fz0 = z[i];
-        dz = (fz1-fz0);
-        sta[i].fieldSlice.GetFieldValue( T.x - T.tx*dz, T.y - T.ty*dz, fB0 );
-        fB0.Combine( fB[i], w[i] );
-        fld.Set( fB0, fz0, fB1, fz1, fB2, fz2 );
-
-        fvec initialised = fvec(z[i] < z_end) & fvec(z_start <= z[i]);
-        fvec w1 = (w[i] & (initialised));
-        fvec wIn = (ONE & (initialised));
-        
-        L1Extrapolate( T, z[i], qp0, fld, &w1 );        
-        if(i == NMvdStations - 1) L1AddPipeMaterial( T, qp0, wIn );
-#ifdef USE_RL_TABLE
-        L1AddMaterial( T, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, wIn );
-        EnergyLossCorrection( T, mass2, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, 1 );
-#else
-        L1AddMaterial( T, sta[i].materialInfo, qp0, wIn );
-#endif
-        L1Filter( T, sta[i].frontInfo, u[i], w1 );
-        L1Filter( T, sta[i].backInfo,  v[i], w1 );
-        
-        fB2 = fB1; 
-        fz2 = fz1;
-        fB1 = fB0; 
-        fz1 = fz0;
-      }
-
-      for(iVec=0; iVec<nTracks_SIMD; iVec++)
-      {
-        FairTrackParam par;
-        par.SetX(T.x[iVec]);
-        par.SetY(T.y[iVec]);
-        par.SetTx(T.tx[iVec]);
-        par.SetTy(T.ty[iVec]);
-        par.SetQp(T.qp[iVec]);
-        par.SetZ(T.z[iVec]);
-
-        par.SetCovariance(0,0,T.C00[iVec]);
-        par.SetCovariance(1,0,T.C10[iVec]);
-        par.SetCovariance(1,1,T.C11[iVec]);
-        par.SetCovariance(2,0,T.C20[iVec]);
-        par.SetCovariance(2,1,T.C21[iVec]);
-        par.SetCovariance(2,2,T.C22[iVec]);
-        par.SetCovariance(3,0,T.C30[iVec]);
-        par.SetCovariance(3,1,T.C31[iVec]);
-        par.SetCovariance(3,2,T.C32[iVec]);
-        par.SetCovariance(3,3,T.C33[iVec]);
-        par.SetCovariance(4,0,T.C40[iVec]);
-        par.SetCovariance(4,1,T.C41[iVec]);
-        par.SetCovariance(4,2,T.C42[iVec]);
-        par.SetCovariance(4,3,T.C43[iVec]);
-        par.SetCovariance(4,4,T.C44[iVec]);
-        t[iVec]->SetParamFirst(&par);
-
-        t[iVec]->SetChiSq(T.chi2[iVec]);
-        t[iVec]->SetNDF(static_cast<int>(T.NDF[iVec]));
-      }
-
-      if ( iter == 1 ) continue; // only 1.5 iterations
-      
-      
-      // fit forward
-
-      i = 0;
-      FilterFirst( T, x_first, y_first, sta[i] ); // TODO different station. won't work with MVD
-      qp0 = T.qp;
-
-      fz1 = z[i];
-      sta[i].fieldSlice.GetFieldValue( T.x, T.y, fB1 );
-      fB1.Combine( fB[i], w[i] );
-
-      fz2 = z[i+2];
-      dz = fz2-fz1;
-      sta[i].fieldSlice.GetFieldValue( T.x + T.tx*dz, T.y + T.ty*dz, fB2 );
-      fB2.Combine( fB[i+2], w[i+2] );
-      fld.Set( fB2, fz2, fB1, fz1, fB0, fz0 );
-
-      for( ++i; i<nHits; i++ )
-      {
-        fz0 = z[i];
-        dz = (fz1-fz0);
-        sta[i].fieldSlice.GetFieldValue( T.x - T.tx*dz, T.y - T.ty*dz, fB0 );
-        fB0.Combine( fB[i], w[i] );
-        fld.Set( fB0, fz0, fB1, fz1, fB2, fz2 );
-
-        fvec initialised = fvec(z[i] <= z_end) & fvec(z_start < z[i]);
-        fvec w1  = (w[i] & (initialised));
-        fvec wIn = (ONE  & (initialised));
-            
-        L1Extrapolate( T, z[i], qp0, fld,&w1 );
-        if(i == NMvdStations) L1AddPipeMaterial( T, qp0, wIn );
-#ifdef USE_RL_TABLE
-        L1AddMaterial( T, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, wIn );
-        EnergyLossCorrection( T, mass2, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, -1 );
-#else
-        L1AddMaterial( T, sta[i].materialInfo, qp0, wIn );
-#endif
-        L1Filter( T, sta[i].frontInfo, u[i], w1 );
-        L1Filter( T, sta[i].backInfo,  v[i], w1 );
-
-        fB2 = fB1; 
-        fz2 = fz1;
-        fB1 = fB0; 
-        fz1 = fz0;
-      }
-
-      { // extrapolate to 1 m
-        L1TrackPar Tout = T;
-        if ( /*extrapolateToTheEndOfSTS*/ 0 ) {
-            // extrapolate to the last station
-          i = 0;
-          fz1 = z[i];
-          sta[i].fieldSlice.GetFieldValue( T.x, Tout.y, fB1 );
-          fB1.Combine( fB[i], w[i] );
-
-          fz2 = z[i+2];
-          dz = fz2-Tout.z;
-          sta[i].fieldSlice.GetFieldValue( Tout.x + Tout.tx*dz, Tout.y + Tout.ty*dz, fB2 );
-          fB2.Combine( fB[i+2], w[i+2] );
-          fld.Set( fB2, fz2, fB1, fz1, fB0, fz0 );
-
-          for( ++i; i<nHits; i++ )
-          {
-            fz0 = z[i];
-            dz = (Tout.z-fz0);
-            sta[i].fieldSlice.GetFieldValue( Tout.x - Tout.tx*dz, Tout.y - Tout.ty*dz, fB0 );
-            fB0.Combine( fB[i], w[i] );
-            fld.Set( fB0, fz0, fB1, fz1, fB2, fz2 );
-
-            fvec initialised = fvec(z[i] > z_end);
-            fvec wIn = (ONE  & (initialised));
-            
-            L1Extrapolate( Tout, z[i], qp0, fld,&wIn );
-            if(i == NMvdStations) L1AddPipeMaterial( Tout, qp0, wIn );
-#ifdef USE_RL_TABLE
-            L1AddMaterial( Tout, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(Tout.x, Tout.y), qp0, wIn );
-#else
-            L1AddMaterial( Tout, sta[i].materialInfo, qp0, wIn );
-#endif
-
-            fB2 = fB1; 
-            fz2 = fz1;
-            fB1 = fB0; 
-            fz1 = fz0;
-          }
-            // extrapolate to 1m
-          {
-            const fvec zFinal = 100.f;
-            i = nHits - 1;
-            fvec initialised = fvec(zFinal > Tout.z); // 3cm safe distance, needed because of diff position of sensors
-            L1Extrapolate( Tout, zFinal, qp0, fld, &initialised ); // extra with old field
-          }
+      fvec initialised = fvec(z[i] <= z_end) & fvec(z_start < z[i]);
+      fvec w1  = (w[i] & (initialised));
+      fvec wIn = (ONE  & (initialised));
           
-        }
-        for(iVec=0; iVec<nTracks_SIMD; iVec++)
-        {
-          FairTrackParam par;
-          par.SetX(T.x[iVec]);
-          par.SetY(T.y[iVec]);
-          par.SetTx(T.tx[iVec]);
-          par.SetTy(T.ty[iVec]);
-          par.SetQp(T.qp[iVec]);
-          par.SetZ(T.z[iVec]);
+      L1Extrapolate( T, z[i], qp0, fld,&w1 );
+      if(i == NMvdStations) L1AddPipeMaterial( T, qp0, wIn );
+  #ifdef USE_RL_TABLE
+      L1AddMaterial( T, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, wIn );
+      EnergyLossCorrection( T, mass2, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, -1 );
+  #else
+      L1AddMaterial( T, sta[i].materialInfo, qp0, wIn );
+  #endif
+      L1Filter( T, sta[i].frontInfo, u[i], w1 );
+      L1Filter( T, sta[i].backInfo,  v[i], w1 );
 
-          par.SetCovariance(0,0,Tout.C00[iVec]);
-          par.SetCovariance(1,0,Tout.C10[iVec]);
-          par.SetCovariance(1,1,Tout.C11[iVec]);
-          par.SetCovariance(2,0,Tout.C20[iVec]);
-          par.SetCovariance(2,1,Tout.C21[iVec]);
-          par.SetCovariance(2,2,Tout.C22[iVec]);
-          par.SetCovariance(3,0,Tout.C30[iVec]);
-          par.SetCovariance(3,1,Tout.C31[iVec]);
-          par.SetCovariance(3,2,Tout.C32[iVec]);
-          par.SetCovariance(3,3,Tout.C33[iVec]);
-          par.SetCovariance(4,0,Tout.C40[iVec]);
-          par.SetCovariance(4,1,Tout.C41[iVec]);
-          par.SetCovariance(4,2,Tout.C42[iVec]);
-          par.SetCovariance(4,3,Tout.C43[iVec]);
-          par.SetCovariance(4,4,Tout.C44[iVec]);
-          t[iVec]->SetParamLast(&par);
-        }
-      }
+      fB2 = fB1; 
+      fz2 = fz1;
+      fB1 = fB0; 
+      fz1 = fz0;
     }
+
+    L1TrackPar Tout = T;
+    for(iVec=0; iVec<nTracks_SIMD; iVec++)
+    {
+      FairTrackParam par;
+      par.SetX(T.x[iVec]);
+      par.SetY(T.y[iVec]);
+      par.SetTx(T.tx[iVec]);
+      par.SetTy(T.ty[iVec]);
+      par.SetQp(T.qp[iVec]);
+      par.SetZ(T.z[iVec]);
+
+      par.SetCovariance(0,0,Tout.C00[iVec]);
+      par.SetCovariance(1,0,Tout.C10[iVec]);
+      par.SetCovariance(1,1,Tout.C11[iVec]);
+      par.SetCovariance(2,0,Tout.C20[iVec]);
+      par.SetCovariance(2,1,Tout.C21[iVec]);
+      par.SetCovariance(2,2,Tout.C22[iVec]);
+      par.SetCovariance(3,0,Tout.C30[iVec]);
+      par.SetCovariance(3,1,Tout.C31[iVec]);
+      par.SetCovariance(3,2,Tout.C32[iVec]);
+      par.SetCovariance(3,3,Tout.C33[iVec]);
+      par.SetCovariance(4,0,Tout.C40[iVec]);
+      par.SetCovariance(4,1,Tout.C41[iVec]);
+      par.SetCovariance(4,2,Tout.C42[iVec]);
+      par.SetCovariance(4,3,Tout.C43[iVec]);
+      par.SetCovariance(4,4,Tout.C44[iVec]);
+      t[iVec]->SetParamLast(&par);
+    }
+    
+  //fit backward
+
+    qp0 = T.qp;
+
+    i= nHits-1;
+
+    FilterFirst( T, x_last, y_last, sta[i] );
+
+    fz1 = z[i];
+    sta[i].fieldSlice.GetFieldValue( T.x, T.y, fB1 );
+    fB1.Combine( fB[i], w[i] );
+
+    fz2 = z[i-2];
+    dz = fz2-fz1;
+    sta[i].fieldSlice.GetFieldValue( T.x + T.tx*dz, T.y + T.ty*dz, fB2 );
+    fB2.Combine( fB[i-2], w[i-2] );
+    fld.Set( fB2, fz2, fB1, fz1, fB0, fz0 );
+    for( --i; i>=0; i-- )
+    {
+      fz0 = z[i];
+      dz = (fz1-fz0);
+      sta[i].fieldSlice.GetFieldValue( T.x - T.tx*dz, T.y - T.ty*dz, fB0 );
+      fB0.Combine( fB[i], w[i] );
+      fld.Set( fB0, fz0, fB1, fz1, fB2, fz2 );
+
+      fvec initialised = fvec(z[i] < z_end) & fvec(z_start <= z[i]);
+      fvec w1 = (w[i] & (initialised));
+      fvec wIn = (ONE & (initialised));
+      
+      L1Extrapolate( T, z[i], qp0, fld, &w1 );        
+      if(i == NMvdStations - 1) L1AddPipeMaterial( T, qp0, wIn );
+  #ifdef USE_RL_TABLE
+      L1AddMaterial( T, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, wIn );
+      EnergyLossCorrection( T, mass2, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, 1 );
+  #else
+      L1AddMaterial( T, sta[i].materialInfo, qp0, wIn );
+  #endif
+      L1Filter( T, sta[i].frontInfo, u[i], w1 );
+      L1Filter( T, sta[i].backInfo,  v[i], w1 );
+      
+      fB2 = fB1; 
+      fz2 = fz1;
+      fB1 = fB0; 
+      fz1 = fz0;
+    }
+
+    for(iVec=0; iVec<nTracks_SIMD; iVec++)
+    {
+      FairTrackParam par;
+      par.SetX(T.x[iVec]);
+      par.SetY(T.y[iVec]);
+      par.SetTx(T.tx[iVec]);
+      par.SetTy(T.ty[iVec]);
+      par.SetQp(T.qp[iVec]);
+      par.SetZ(T.z[iVec]);
+
+      par.SetCovariance(0,0,T.C00[iVec]);
+      par.SetCovariance(1,0,T.C10[iVec]);
+      par.SetCovariance(1,1,T.C11[iVec]);
+      par.SetCovariance(2,0,T.C20[iVec]);
+      par.SetCovariance(2,1,T.C21[iVec]);
+      par.SetCovariance(2,2,T.C22[iVec]);
+      par.SetCovariance(3,0,T.C30[iVec]);
+      par.SetCovariance(3,1,T.C31[iVec]);
+      par.SetCovariance(3,2,T.C32[iVec]);
+      par.SetCovariance(3,3,T.C33[iVec]);
+      par.SetCovariance(4,0,T.C40[iVec]);
+      par.SetCovariance(4,1,T.C41[iVec]);
+      par.SetCovariance(4,2,T.C42[iVec]);
+      par.SetCovariance(4,3,T.C43[iVec]);
+      par.SetCovariance(4,4,T.C44[iVec]);
+      t[iVec]->SetParamFirst(&par);
+
+      t[iVec]->SetChiSq(T.chi2[iVec]);
+      t[iVec]->SetNDF(static_cast<int>(T.NDF[iVec]));
+    }      
   }
 
   delete[] x;
