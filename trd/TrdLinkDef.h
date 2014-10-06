@@ -34,7 +34,7 @@
 #pragma link C++ class  CbmTrdRadiator;
 //#pragma link C++ class  CbmTrdMatchTracks+;
 #pragma link C++ class  CbmTrdSetTracksPidWkn+;
-//#pragma link C++ class  CbmTrdSetTracksPidModWkn+;
+#pragma link C++ class  CbmTrdSetTracksPidModWkn+;
 #pragma link C++ class  CbmTrdSetTracksPidLike+;
 #pragma link C++ class  CbmTrdSetTracksPidANN+;
 #pragma link C++ class  CbmTrdCreatePidLike+;

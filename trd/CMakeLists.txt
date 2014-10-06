@@ -132,7 +132,7 @@ CbmTrdFitTracks.cxx
 CbmTrdTrackFitterIdeal.cxx  
 #CbmTrdMatchTracks.cxx
 CbmTrdSetTracksPidWkn.cxx   
-#CbmTrdSetTracksPidModWkn.cxx  
+CbmTrdSetTracksPidModWkn.cxx  
 CbmTrdSetTracksPidLike.cxx     
 CbmTrdSetTracksPidANN.cxx       
 CbmTrdCreatePidLike.cxx 
