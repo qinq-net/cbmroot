@@ -20,15 +20,23 @@ CbmDigi::CbmDigi()
 
 
 // -----   Copy constructor   ----------------------------------------------
-CbmDigi::CbmDigi(const CbmDigi& digi) : fMatch(NULL) { } 
+CbmDigi::CbmDigi(const CbmDigi& rhs) 
+  : TObject(rhs),
+    fMatch(NULL) 
+{
+} 
 // -------------------------------------------------------------------------
 
 
 
 // -----   Assignment operator   -------------------------------------------
-CbmDigi& CbmDigi::operator=(const CbmDigi& digi) {
-	fMatch = NULL;
-	return *this;
+CbmDigi& CbmDigi::operator=(const CbmDigi& rhs) 
+{
+  if (this != &rhs) {
+    TObject::operator=(rhs);
+    fMatch = NULL;
+  }
+  return *this;
 }
 // -------------------------------------------------------------------------
 

@@ -15,8 +15,8 @@ using std::endl;
 CbmStripHit::CbmStripHit():
 	CbmBaseHit(),
 	fU(0.),
-	fPhi(0.),
 	fDu(0.),
+	fPhi(0.),
 	fDphi(0.)
 {
 	SetType(kSTRIPHIT);
@@ -33,8 +33,8 @@ CbmStripHit::CbmStripHit(
 		Int_t refId):
 	CbmBaseHit(),
 	fU(u),
-	fPhi(phi),
 	fDu(du),
+	fPhi(phi),
 	fDphi(dphi)
 {
 	SetType(kSTRIPHIT);
@@ -51,8 +51,8 @@ CbmStripHit::CbmStripHit(
 		Int_t refId):
 	CbmBaseHit(),
 	fU(pos.X()),
-	fPhi(pos.Y()),
 	fDu(err.X()),
+	fPhi(pos.Y()),
 	fDphi(err.Y())
 {
 	SetType(kSTRIPHIT);

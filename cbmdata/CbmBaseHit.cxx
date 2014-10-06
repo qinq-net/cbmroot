@@ -8,10 +8,10 @@
 CbmBaseHit::CbmBaseHit():
     TObject(),
 	fType(kHIT),
-	fAddress(-1),
 	fZ(0.),
 	fDz(0.),
 	fRefId(-1),
+	fAddress(-1),
 	fMatch(NULL)
 {
 }
