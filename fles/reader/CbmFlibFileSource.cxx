@@ -123,6 +123,11 @@ Int_t CbmFlibFileSource::ReadEvent()
 		  << FairLogger::endl;
         UnpackSpadicCbmNetMessage(ts, c);
 	break;
+      case 0x40:
+	LOG(INFO) << "It is spadic data with correct system ID" 
+		  << FairLogger::endl;
+        UnpackSpadicCbmNetMessage(ts, c);
+	break;
       default:
 	LOG(INFO) << "Not known now" << FairLogger::endl;
       }
