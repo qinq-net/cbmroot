@@ -1,6 +1,8 @@
 #ifndef LXDRAW_INCLUDED
 #define LXDRAW_INCLUDED
 
+#pragma GCC diagnostic ignored "-Weffc++"
+
 #include "TCanvas.h"
 #include "TGeoNode.h"
 

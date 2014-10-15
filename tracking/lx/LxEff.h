@@ -1,19 +1,26 @@
 #ifndef LXEFF_INCLUDED
 #define LXEFF_INCLUDED
 
+#pragma GCC diagnostic ignored "-Weffc++"
+
 #include "Rtypes.h"
 #include "LxSettings.h"
 #include <map>
+#include <list>
+#include <iostream>
 
 class LxFinder;
+class LxPoint;
 
 struct LxEff
 {
   explicit LxEff(LxFinder& owner);
-  Double_t CalcRecoEff(bool joinExt);
-#ifdef CALC_LINK_WITH_STS_EFF
-  Double_t CalcLinkEff();// Before calling of this function CalcRecoEff() must be called because mcTracks is filled there.
-#endif//CALC_LINK_WITH_STS_EFF
+  void CalcRecoEff(bool joinExt);
+#ifdef CLUSTER_MODE
+  void AnalyzeNotMatched(std::ofstream& out, std::list<LxPoint*> hits[LXSTATIONS][LXLAYERS]);
+  void AnalyzeNotMatched2(std::ofstream& out, std::list<LxPoint*> hits[LXSTATIONS][LXLAYERS]);
+  void DumpNotMatchedMC(std::list<LxPoint*> hits[LXSTATIONS][LXLAYERS]);
+#endif//CLUSTER_MODE
   LxFinder& finder;
 };
 

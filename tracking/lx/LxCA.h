@@ -1,6 +1,8 @@
 #ifndef LXCA_INCLUDED
 #define LXCA_INCLUDED
 
+#pragma GCC diagnostic ignored "-Weffc++"
+
 #include "Rtypes.h"
 #include <list>
 #include <math.h>
@@ -25,17 +27,33 @@ struct LxPoint
   std::list<LxRay*> rays;
   LxLayer* layer;
   Int_t hitId;
+#ifdef MAKE_EFF_CALC
+  std::list<LxMCPoint*> mcPoints;
+#endif//MAKE_EFF_CALC
+
+#ifdef REMEMBER_CLUSTERED_RAYS_IN_POINTS
+  LxRay* leftClusteredRay;
+  LxRay* rightClusteredRay;
+#endif//REMEMBER_CLUSTERED_RAYS_IN_POINTS
 
   LxPoint(Double_t X, Double_t Y, Double_t Z, Double_t Dx, Double_t Dy, Double_t Dz, LxLayer* lay, int hId, bool isArtificial = false) :
-  x(X), y(Y), z(Z), dx(Dx), dy(Dy), dz(Dz), used(false), valid(true), artificial(isArtificial), track(NULL), rays(), layer(lay), hitId(hId)  {}
+      x(X), y(Y), z(Z), dx(Dx), dy(Dy), dz(Dz), layer(lay), used(false), valid(true), track(0), hitId(hId), artificial(isArtificial)
+#ifdef REMEMBER_CLUSTERED_RAYS_IN_POINTS
+      , leftClusteredRay(0), rightClusteredRay(0)
+#endif//REMEMBER_CLUSTERED_RAYS_IN_POINTS
+        {}
   ~LxPoint();
-  void CreateRay(LxPoint* lPoint);
- 
- private: 
-  LxPoint(const LxPoint&);
-  LxPoint operator=(const LxPoint&);
-
+  void CreateRay(LxPoint* lPoint, Double_t tx, Double_t ty, Double_t dtx, Double_t dty);
 };
+
+#ifdef USE_KALMAN
+struct LxKalmanParams
+{
+  Double_t tx, ty;
+  Double_t C11, C22;
+  Double_t chi2;
+};
+#endif//USE_KALMAN
 
 struct LxRay
 {
@@ -45,11 +63,26 @@ struct LxRay
   LxPoint* end;
   LxStation* station;
   std::list<LxRay*> neighbours;
-  LxRay(LxPoint* s, LxPoint* e);
+#ifdef CLUSTER_MODE
+  Int_t level;
+  bool used;
+  std::list<LxRay*> neighbourhood;
+  std::list<LxPoint*> clusterPoints;
+#endif//CLUSTER_MODE
 
- private:
-  LxRay(const LxRay&);
-  LxRay operator=(const LxRay&);
+#ifdef USE_KALMAN
+  LxKalmanParams kalman;
+#endif//USE_KALMAN
+  LxRay(LxPoint* s, LxPoint* e
+#ifdef CLUSTER_MODE
+      , Int_t
+#endif//CLUSTER_MODE
+      );
+  LxRay(LxPoint* s, LxPoint* e, Double_t Tx, Double_t Ty, Double_t Dtx, Double_t Dty
+#ifdef CLUSTER_MODE
+      , Int_t
+#endif//CLUSTER_MODE
+      );
 };
 
 struct LxLayer
@@ -73,14 +106,29 @@ struct LxLayer
   LxPoint* PickNearestPoint(LxRay* ray);// Used in track building.
   LxPoint* PickNearestPoint(Double_t x, Double_t y, Double_t deltaX, Double_t deltaY);// Used in middle point building.
   bool HasPointInRange(Double_t x, Double_t y, Double_t deltaX, Double_t deltaY);
- private:
-  LxLayer(const LxLayer&);
-  LxLayer operator=(const LxLayer&);
 };
+
+#ifdef CLUSTER_MODE
+typedef void* kdt_rays_handle;
+#endif//CLUSTER_MODE
 
 struct LxStation
 {
   std::vector<LxLayer*> layers;
+#ifdef CLUSTER_MODE
+  kdt_rays_handle raysHandle;
+  std::vector<std::list<LxRay*>*> clusters[2 * LXLAYERS];
+  kdt_rays_handle clusteredRaysHandle;
+  std::list<LxPoint*> clusteredPoints;
+  Double_t clusterXLimit;
+  Double_t clusterXLimit2;
+  Double_t clusterYLimit;
+  Double_t clusterYLimit2;
+  Double_t clusterTxLimit;
+  Double_t clusterTxLimit2;
+  Double_t clusterTyLimit;
+  Double_t clusterTyLimit2;
+#endif//CLUSTER_MODE
   LxSpace* space;
   int stationNumber;
   Double_t zCoord;
@@ -90,11 +138,19 @@ struct LxStation
   Double_t tyBreakLimit;
   Double_t txBreakSigma;
   Double_t tyBreakSigma;
-  Double_t disp01X;// 'disp' -- means: dispersion.
-  Double_t disp01Y;
-  Double_t disp02X;
-  Double_t disp02Y;
+  Double_t disp01XSmall;// 'disp' -- means: dispersion.
+  Double_t disp01XBig;
+  Double_t disp01YSmall;
+  Double_t disp01YBig;
+  Double_t disp02XSmall;
+  Double_t disp02XBig;
+  Double_t disp02YSmall;
+  Double_t disp02YBig;
+#ifdef USE_KALMAN_FIT
+  Double_t MSNoise[2][2][2];
+#endif//USE_KALMAN_FIT
   LxStation(LxSpace* sp, int stNum);
+  ~LxStation();
   void Clear();
 
   LxPoint* AddPoint(int layerNumber, int hitId, Double_t x, Double_t y, Double_t z, Double_t dx, Double_t dy, Double_t dz)
@@ -104,11 +160,11 @@ struct LxStation
 
   void RestoreMiddlePoints();
   void BuildRays();
+#ifdef CLUSTER_MODE
+  void BuildRays2();
+  void InsertClusterRay(Int_t levels, Int_t cardinality, LxRay* clusterRay);
+#endif//CLUSTER_MODE
   void ConnectNeighbours();
-
- private:
-  LxStation(const LxStation&);
-  LxStation operator=(const LxStation&);
 };
 
 struct LxExtTrack
@@ -116,13 +172,15 @@ struct LxExtTrack
   CbmStsTrack* track;
   Int_t extId;
   LxMCTrack* mcTrack;
+  std::pair<LxTrack*, Double_t> recoTrack;
 
-  LxExtTrack() : track(0), extId(-1), mcTrack(0) {}
+  LxExtTrack() : track(0), extId(-1), mcTrack(0), recoTrack(0, 0) {}
 };
 
 struct LxTrack
 {
-  LxExtTrack externalTrack;
+  LxExtTrack* externalTrack;
+  std::list<std::pair<LxExtTrack*, Double_t> > extTrackCandidates;
   bool matched;
   LxMCTrack* mcTrack;
 #ifdef CALC_LINK_WITH_STS_EFF
@@ -137,9 +195,14 @@ struct LxTrack
   Double_t aY;
   Double_t bY;
   int restoredPoints;
+#ifdef USE_KALMAN_FIT
+  Double_t x, y, z, dx, dy, tx, ty, dtx, dty;
+#endif//USE_KALMAN_FIT
+  bool clone;
 
   explicit LxTrack(LxTrackCandidate* tc);
   void Fit();
+  void Rebind();
 };
 
 struct LxSpace
@@ -158,9 +221,16 @@ struct LxSpace
 
   void RestoreMiddlePoints();
   void BuildRays();
+#ifdef CLUSTER_MODE
+  void BuildRays2();
+  void ConnectNeighbours2();
+  void BuildCandidates2(LxRay* ray, LxRay** rays, std::list<LxTrackCandidate*>& candidates, Double_t chi2);
+  void Reconstruct2();
+#endif//CLUSTER_MODE
   void ConnectNeighbours();
   void BuildCandidates(LxRay* ray, LxRay** rays, std::list<LxTrackCandidate*>& candidates, Double_t chi2);
   void Reconstruct();
+  void RemoveClones();
   void FitTracks();
   void JoinExtTracks();
   void CheckArray(Double_t xs[LXSTATIONS][LXLAYERS], Double_t ys[LXSTATIONS][LXLAYERS],

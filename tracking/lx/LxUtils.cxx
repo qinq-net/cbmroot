@@ -9,11 +9,16 @@ void LxFinder::SaveEventTracks()
   {
     LxTrack* firstTrack = *i;
 
-    if (0 == firstTrack->externalTrack.track)
+    if (0 == firstTrack->externalTrack)
       continue;
 
-    CbmStsTrack t = *firstTrack->externalTrack.track;
-    extFitter.DoFit(&t, 13);
+    CbmStsTrack t = *firstTrack->externalTrack->track;
+
+    if (t.GetParamLast()->GetQp() > 0)
+      extFitter.DoFit(&t, -13);
+    else
+      extFitter.DoFit(&t, 13);
+
     Double_t chi2Prim = extFitter.GetChiToVertex(&t, fPrimVtx);
     FairTrackParam params;
     extFitter.Extrapolate(&t, fPrimVtx->GetZ(), &params);
@@ -31,9 +36,8 @@ void LxFinder::SaveEventTracks()
     if (pt2 < 1)
       continue;
 
-    if (params.GetQp() > 0)
-      positiveTracks.push_back(t);
-    else if (params.GetQp() < 0)
-      negativeTracks.push_back(t);
+    t.SetParamFirst(&params);
+    *superEventData = t;
+    superEventTracks->Fill();
   }
 }

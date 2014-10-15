@@ -7,10 +7,6 @@
 #pragma link off all functions;
  
 #pragma link C++ class  LxFinder+;
+#pragma link C++ class  LxTrackAna+;
 
 #endif
-
-
-
-
-

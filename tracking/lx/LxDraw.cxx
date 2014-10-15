@@ -18,12 +18,15 @@
 #include "CbmKF.h"
 #include "TMCProcess.h"
 
+#ifdef CLUSTER_MODE
+#include "kdtree++/kdtree.hpp"
+#endif//CLUSTER_MODE
+
 #define USE_MUCH_ABSORBER
 
 using namespace std;
 
 static int StaColour = 17;
-static int TrackColour = 2;
 
 LxDraw::LxDraw() : YZ("YZ", "YZ Side View", -10, -50, 650, 1000), XZ("XZ", "XZ Top View", -10, -50, 650, 1000), YX("YX", "YX Front View", -500, 0, 1000, 1000), ask(true)
 {
@@ -31,11 +34,11 @@ LxDraw::LxDraw() : YZ("YZ", "YZ Side View", -10, -50, 650, 1000), XZ("XZ", "XZ T
   gStyle->SetCanvasBorderSize(1);
   gStyle->SetCanvasColor(0);
 
-  YZ.Range(-15.0, -300.0, 550.0, 300.0);
+  YZ.Range(-15.0, -300.0, 600.0, 300.0);
   YZ.Draw();
   YZ.Update();
 
-  XZ.Range(-15.0, -300.0, 550.0, 300.0);
+  XZ.Range(-15.0, -300.0, 600.0, 300.0);
   XZ.Draw();
   XZ.Update();
 
@@ -90,6 +93,28 @@ void LxDraw::DrawMCTracks()
     //if ((13 != T.pdg && -13 != T.pdg) || T.mother_ID >= 0)
       //continue;
 
+    bool mcPointOnSta[18] = { true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
+    int mcpCount = 0;
+
+    for (vector<LxMCPoint*>::iterator j = T.Points.begin(); j != T.Points.end(); ++j)
+    {
+      LxMCPoint* pMCPoint = *j;
+      mcPointOnSta[pMCPoint->stationNumber * 3 + pMCPoint->layerNumber] = true;
+      ++mcpCount;
+    }
+
+    bool isRefTrack = true;
+
+    for (int j = 0; j < 18; ++j)
+    {
+      if (!mcPointOnSta[j])
+        isRefTrack = false;
+    }
+
+    //if (!isRefTrack)
+    if (mcpCount < 15)
+      continue;
+
     pline.SetLineColor(kRed);
 
     if (T.p < 0.5)
@@ -118,6 +143,29 @@ void LxDraw::DrawMCTracks()
     lz.push_back(par[5]);
 
     bool ok = true;
+    cout << "LxDraw: drawing MC track with " << T.stationsWithHits << " hitted stations and " << T.layersWithHits << " hitted layers";
+
+    if (T.layersWithHits < LXSTATIONS * LXLAYERS)
+    {
+      cout << " ";
+
+      for (Int_t j = 0; j < LXSTATIONS; ++j)
+      {
+        cout << "[";
+
+        for (Int_t k = 0; k < LXLAYERS; ++k)
+        {
+          if (T.hitsOnStations[j][k])
+            cout << "x";
+          else
+            cout << "o";
+        }
+
+        cout << "]";
+      }
+    }
+
+    cout << endl;
 
     for(std::vector<LxMCPoint*>::iterator ip = T.Points.begin(); ip != T.Points.end(); ++ip)
     {
@@ -224,7 +272,7 @@ void LxDraw::DrawMCTracks()
     }
   }
 
-  cout <<"LxDraw: number of registered MC tracks: " << NRegMCTracks << endl;
+  cout << "LxDraw: number of registered MC tracks: " << NRegMCTracks << endl;
   YZ.cd();
   YZ.Update();
   XZ.cd();
@@ -268,13 +316,13 @@ void LxDraw::DrawInputHits()
   int n_poly2 = 0;
   int n_poly3 = 0;
 
-  for (int i = 5; i >= 0; --i)
-  //for (int i = 0; i >= 0; --i)
+  //for (int i = 5; i >= 0; --i)
+  for (int i = 0; i >= 0; --i)
   {
     LxStation* pSt = lxSpace.stations[i];
 
-    for (int j = 2; j >= 0; --j)
-    //for (int j = 0; j >= 0; --j)
+    //for (int j = 2; j >= 0; --j)
+    for (int j = 1; j >= 1; --j)
     {
       LxLayer* pLa = pSt->layers[j];
 
@@ -448,11 +496,11 @@ void LxDraw::DrawMuch(TGeoNode* node)
   {
     TGeoNode* child = dynamic_cast<TGeoNode*> (childO);
 
-//    if (child)
-//    {
-//      gGeoManager->GetCurrentNavigator()->CdDown(child);
-//      DrawMuch(child);
-//    }
+    //if (child) Commented because this version on CdDown() is not supported in older versions on ROOT. Possibly should be fixed.
+    //{
+      //gGeoManager->GetCurrentNavigator()->CdDown(child);
+      //DrawMuch(child);
+    //}
 
     childO = children->After(childO);
   }
@@ -480,11 +528,11 @@ void LxDraw::DrawMuch()
   latex.DrawLatex(-270.0, 250.0, "YX Front View");
   YX.Draw();
 
-  for (int i = 8; i > 0; --i)
+  for (int i = 6; i > 0; --i)
   {
     char buf[128];
     // Draw 3 layers of the much station
-    if (i < 7)
+    //if (i < 7)
     {
       sprintf(buf, "/cave_1/much_0/muchstation0%d_0", i);
       gGeoManager->cd(buf);
@@ -537,15 +585,87 @@ void LxDraw::DrawMuch()
   }
 }
 
+#ifdef CLUSTER_MODE
+struct KDRayWrap
+{
+  LxRay* ray;
+  Double_t data[4];
+  static bool destroyRays;
+
+  KDRayWrap(Double_t x, Double_t y, LxRay* r) : ray(r)
+  {
+    data[0] = x;
+    data[1] = y;
+    data[2] = ray->tx;
+    data[3] = ray->ty;
+  }
+
+  KDRayWrap(Double_t x, Double_t y, Double_t tx, Double_t ty) : ray(0)// This constructor is used when setting search-range bounds.
+  {
+    data[0] = x;
+    data[1] = y;
+    data[2] = tx;
+    data[3] = ty;
+  }
+
+  ~KDRayWrap()
+  {
+    if (destroyRays)
+      delete ray;
+  }
+
+  // Stuff required by libkdtree++
+  typedef Double_t value_type;
+
+  value_type operator[] (size_t n) const
+  {
+    return data[n];
+  }
+};
+
+//bool KDRayWrap::destroyRays = false;
+
+typedef KDTree::KDTree<4, KDRayWrap> KDRaysStorageType;
+#endif//CLUSTER_MODE
+
 void LxDraw::DrawRays()
 {
   LxFinder* finder = LxFinder::Instance();
   LxSpace& caSpace = finder->caSpace;
   int stationsNumber = caSpace.stations.size();
 
-  for (int i = stationsNumber - 1; i > 0; --i)
+  for (Int_t i = stationsNumber - 1; i > 0; --i)
   {
     LxStation* rSt = caSpace.stations[i];
+#ifdef CLUSTER_MODE
+    KDRaysStorageType* rays = static_cast<KDRaysStorageType*> (rSt->clusteredRaysHandle);
+    Double_t lZ = caSpace.stations[i - 1]->zCoord;
+
+    for (KDRaysStorageType::iterator j = rays->begin(); j != rays->end(); ++j)
+    {
+      KDRayWrap& wrap = const_cast<KDRayWrap&> (*j);
+      LxRay* ray = wrap.ray;
+      LxPoint* rPo = ray->source;
+      Double_t deltaZ = lZ - rPo->z;
+      Double_t lX = rPo->x + ray->tx * deltaZ;
+      Double_t lY = rPo->y + ray->ty * deltaZ;
+
+      YZ.cd();
+      TLine* yzLine = new TLine(rPo->z, rPo->y, lZ, lY);
+      yzLine->SetLineColor(kRed);
+      yzLine->Draw();
+
+      XZ.cd();
+      TLine* xzLine = new TLine(rPo->z, rPo->x, lZ, lX);
+      xzLine->SetLineColor(kRed);
+      xzLine->Draw();
+
+      YX.cd();
+      TLine* yxLine = new TLine(rPo->x, rPo->y, lX, lY);
+      yxLine->SetLineColor(kRed);
+      yxLine->Draw();
+    }
+#else//CLUSTER_MODE
     LxLayer* rLa = rSt->layers[0];
     LxStation* lSt = caSpace.stations[i - 1];
     int lLaInd = lSt->layers.size() - 1;
@@ -584,6 +704,7 @@ void LxDraw::DrawRays()
         yxLine->Draw();
       }
     }
+#endif//CLUSTER_MODE
   }
 
   YZ.cd();
@@ -604,6 +725,10 @@ void LxDraw::DrawRecoTracks()
   {
     LxTrack* track = *i;
 
+#ifdef USE_KALMAN_FIT
+    bool kalmanDrawn = false;
+#endif//USE_KALMAN_FIT
+
     for (int j = 0; j < track->length; ++j)
     {
       LxRay* ray = track->rays[j];
@@ -620,28 +745,69 @@ void LxDraw::DrawRecoTracks()
       Double_t lX = rX + ray->tx * deltaZ;
       Double_t lY = rY + ray->ty * deltaZ;
 
+#ifdef USE_KALMAN_FIT
+      Double_t kalmanZl = track->z;
+      Double_t kalmanXl = track->x;
+      Double_t kalmanYl = track->y;
+      Double_t kalmanZr = ray->source->z;
+      Double_t kalmanXr = kalmanXl + track->tx * (kalmanZr - kalmanZl);
+      Double_t kalmanYr = kalmanYl + track->ty * (kalmanZr - kalmanZl);
+#endif//USE_KALMAN_FIT
+
       YZ.cd();
       TLine* yzLineL = new TLine(rZ, rY, lZ, lY);
-      yzLineL->SetLineColor(kGreen);
+      yzLineL->SetLineColor(kBlue);
       yzLineL->Draw();
+
+#ifdef USE_KALMAN_FIT
+      if (!kalmanDrawn)
+      {
+        TLine* kalmanYZLine = new TLine(kalmanZr, kalmanYr, kalmanZl, kalmanYl);
+        kalmanYZLine->SetLineColor(kBlack);
+        kalmanYZLine->Draw();
+      }
+#endif//USE_KALMAN_FIT
 
       XZ.cd();
       TLine* xzLineL = new TLine(rZ, rX, lZ, lX);
-      xzLineL->SetLineColor(kGreen);
+      xzLineL->SetLineColor(kBlue);
       xzLineL->Draw();
+
+#ifdef USE_KALMAN_FIT
+      if (!kalmanDrawn)
+      {
+        TLine* kalmanXZLine = new TLine(kalmanZr, kalmanXr, kalmanZl, kalmanXl);
+        kalmanXZLine->SetLineColor(kBlack);
+        kalmanXZLine->Draw();
+      }
+#endif//USE_KALMAN_FIT
 
       YX.cd();
       TLine* yxLineL = new TLine(rX, rY, lX, lY);
-      yxLineL->SetLineColor(kGreen);
+      yxLineL->SetLineColor(kBlue);
       yxLineL->Draw();
+
+#ifdef USE_KALMAN_FIT
+      if (!kalmanDrawn)
+      {
+        TLine* kalmanYXLine = new TLine(kalmanXr, kalmanYr, kalmanXl, kalmanYl);
+        kalmanYXLine->SetLineColor(kBlack);
+        kalmanYXLine->Draw();
+      }
+#endif//USE_KALMAN_FIT
+
+#ifdef USE_KALMAN_FIT
+     kalmanDrawn = true;
+#endif//USE_KALMAN_FIT
     }
 
     // Draw a segment of an external track if it is set.
 
-    if (track->externalTrack.track)
+    //if (track->externalTrack)
+    if (false)
     {
       Double_t rZ = caSpace.stations[0]->layers[0]->zCoord;
-      const FairTrackParam* param = track->externalTrack.track->GetParamLast();
+      const FairTrackParam* param = track->externalTrack->track->GetParamLast();
 
       Double_t lX = param->GetX();
       Double_t lY = param->GetY();
@@ -652,17 +818,17 @@ void LxDraw::DrawRecoTracks()
 
       YZ.cd();
       TLine* yzLine = new TLine(lZ, lY, rZ, rY);
-      yzLine->SetLineColor(kRed);
+      yzLine->SetLineColor(kPink);
       yzLine->Draw();
 
       XZ.cd();
       TLine* xzLine = new TLine(lZ, lX, rZ, rX);
-      xzLine->SetLineColor(kRed);
+      xzLine->SetLineColor(kPink);
       xzLine->Draw();
 
       YX.cd();
       TLine* yxLine = new TLine(lX, lY, rX, rY);
-      yxLine->SetLineColor(kRed);
+      yxLine->SetLineColor(kPink);
       yxLine->Draw();
     }
   }
@@ -746,17 +912,17 @@ void LxDraw::DrawExtTracks()
 
     YZ.cd();
     TLine* yzLine = new TLine(lZ, lY, rZ, rY);
-    yzLine->SetLineColor(kRed);
+    yzLine->SetLineColor(kPink);
     yzLine->Draw();
 
     XZ.cd();
     TLine* xzLine = new TLine(lZ, lX, rZ, rX);
-    xzLine->SetLineColor(kRed);
+    xzLine->SetLineColor(kPink);
     xzLine->Draw();
 
     YX.cd();
     TLine* yxLine = new TLine(lX, lY, rX, rY);
-    yxLine->SetLineColor(kRed);
+    yxLine->SetLineColor(kPink);
     yxLine->Draw();
   }
 
