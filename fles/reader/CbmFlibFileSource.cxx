@@ -204,6 +204,8 @@ void CbmFlibFileSource::print_message(const spadic::Message& m)
   } else {
     if ( m.is_epoch_marker() ) { 
       std::cout << " This is an Epoch Marker" << std::endl; 
+    } else if ( m.is_epoch_out_of_sync() ) { 
+      std::cout << " This is an out of sync Epoch Marker" << std::endl; 
     } else {
       std::cout << " This is not known" << std::endl;
     }
