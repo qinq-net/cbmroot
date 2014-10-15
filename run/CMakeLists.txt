@@ -65,7 +65,7 @@ CbmSetup.cxx
 set(LINKDEF RunLinkDef.h)
 Set(LIBRARY_NAME Run)
 Set(DEPENDENCIES
-    CbmData Base CbmBase Field Much
+    CbmData Base CbmBase Field Much Mvd
 )
 
 GENERATE_LIBRARY()
