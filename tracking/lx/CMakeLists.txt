@@ -21,9 +21,16 @@ Set(INCLUDE_DIRECTORIES
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
 
+Set(SYSTEM_INCLUDE_DIRECTORIES
+  ${Boost_INCLUDE_DIRS}
+)
+
+Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
+
 Set(LINK_DIRECTORIES
   ${ROOT_LIBRARY_DIR}
   ${FAIRROOT_LIBRARY_DIR}
+  ${Boost_LIBRARY_DIRS}
 )
  
 Link_Directories( ${LINK_DIRECTORIES})
@@ -45,7 +52,7 @@ Set(NO_DICT_SRCS
 set(LINKDEF LxLinkDef.h)
 Set(LIBRARY_NAME LxTrack)
 Set(DEPENDENCIES
-    CbmBase CbmData Base 
+    CbmBase CbmData Base boost_regex
 )
 
 GENERATE_LIBRARY()
