@@ -60,8 +60,8 @@ CbmTarget::CbmTarget(const char* element, Double_t thickness,
 
 
 // -----   Constructor with properties   ------------------------------------
-CbmTarget::CbmTarget(Int_t z, Double_t density,
-                     Double_t thickness, Double_t diameter) :
+CbmTarget::CbmTarget(Int_t z, Double_t thickness,
+                     Double_t diameter, Double_t density) :
                      FairModule("Target", "CBM target"),
                      fZ(z),
                      fThickness(thickness),
