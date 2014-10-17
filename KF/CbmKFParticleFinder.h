@@ -34,9 +34,14 @@ class CbmKFParticleFinder : public FairTask {
   const KFParticleTopoReconstructor * GetTopoReconstructor() const { return fTopoReconstructor; }
   
   void SetPIDInformation(CbmKFParticleFinderPID* pid) { fPID = pid; }
-   
+  
+  // set cuts
+  void SetPrimaryProbCut(float prob);
+  
  private:
-   
+  
+  double InversedChi2Prob(double p, int ndf) const;
+  
   const CbmKFParticleFinder& operator = (const CbmKFParticleFinder&);
   CbmKFParticleFinder(const CbmKFParticleFinder&);
    

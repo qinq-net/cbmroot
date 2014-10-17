@@ -15,8 +15,9 @@
 #include "KFPTrackVector.h"
 
 //ROOT headers
-#include "TClonesArray.h"
-#include "TStopwatch.h"
+#include "TClonesArray.h" //to get arrays from the FairRootManager
+#include "TStopwatch.h" //to measure the time
+#include "TMath.h" //to calculate Prob function
 
 //c++ and std headers
 #include <iostream>
@@ -28,6 +29,9 @@ CbmKFParticleFinder::CbmKFParticleFinder(const char* name, Int_t iVerbose):
   FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fTrackArray(0), fPrimVtx(0), fTopoReconstructor(0), fPVFindMode(1), fPID(0)
 {
   fTopoReconstructor = new KFParticleTopoReconstructor;
+  
+  // set default cuts
+  SetPrimaryProbCut(0.0001); // 0.01% to consider primary track as a secondary;
 }
 
 CbmKFParticleFinder::~CbmKFParticleFinder()
@@ -265,5 +269,41 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
   fTopoReconstructor->SetTime(timer.RealTime());
 }
 
+double CbmKFParticleFinder::InversedChi2Prob(double p, int ndf) const
+{
+  double epsilon = 1.e-14;
+  double chi2Left = 0.f;
+  double chi2Right = 10000.f;
+  
+  double probLeft = p - TMath::Prob(chi2Left, ndf);
+  double probRight = p - TMath::Prob(chi2Right, ndf);
+  
+  double chi2Centr = (chi2Left+chi2Right)/2.f;
+  double probCentr = p - TMath::Prob( chi2Centr, ndf);
+  
+  while( TMath::Abs(chi2Right-chi2Centr)/chi2Centr > epsilon )
+  {
+    if(probCentr * probLeft > 0.f)
+    {
+      chi2Left = chi2Centr;
+      probLeft = probCentr;
+    }
+    else
+    {
+      chi2Right = chi2Centr;
+      probRight = probCentr;
+    }
+    
+    chi2Centr = (chi2Left+chi2Right)/2.f;
+    probCentr = p - TMath::Prob( chi2Centr, ndf);
+  }
+  
+  return chi2Centr;
+}
+
+void CbmKFParticleFinder::SetPrimaryProbCut(float prob)
+{ 
+  fTopoReconstructor->SetChi2PrimaryCut( InversedChi2Prob(prob, 2) );
+}
 
 ClassImp(CbmKFParticleFinder);

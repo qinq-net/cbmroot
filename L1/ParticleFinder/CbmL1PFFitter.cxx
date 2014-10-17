@@ -126,6 +126,10 @@ void CbmL1PFFitter::EnergyLossCorrection(L1TrackPar& T, const fvec& mass2, const
   const fvec& E2Corrected = (sqrt(E2) + direction*dE) * (sqrt(E2) + direction*dE);
   const fvec& corr = sqrt( p2/( E2Corrected - mass2 ) );
   
+  for(int iV=0; iV<fvecLen; iV++)
+    if( !(corr[iV] == corr[iV]) )
+      return;
+    
   qp0   *= corr;
   T.qp  *= corr;
   T.C40 *= corr;
