@@ -276,7 +276,6 @@ double CbmKFParticleFinder::InversedChi2Prob(double p, int ndf) const
   double chi2Right = 10000.f;
   
   double probLeft = p - TMath::Prob(chi2Left, ndf);
-  double probRight = p - TMath::Prob(chi2Right, ndf);
   
   double chi2Centr = (chi2Left+chi2Right)/2.f;
   double probCentr = p - TMath::Prob( chi2Centr, ndf);
@@ -291,7 +290,6 @@ double CbmKFParticleFinder::InversedChi2Prob(double p, int ndf) const
     else
     {
       chi2Right = chi2Centr;
-      probRight = probCentr;
     }
     
     chi2Centr = (chi2Left+chi2Right)/2.f;
