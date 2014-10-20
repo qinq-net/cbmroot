@@ -35,6 +35,8 @@ ipc/Timeslice.cpp
 ipc/TimesliceInputArchive.cpp
 ipc/TimesliceReceiver.cpp
 ipc/TimesliceView.cpp
+ipc/TimeslicePublisher.cpp
+ipc/TimesliceSubscriber.cpp
 )
 
 
