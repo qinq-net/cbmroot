@@ -231,10 +231,11 @@ void CbmMvdDigitizer::GetMvdGeometry() {
   Int_t pipeID;
   TGeoNode* pipeNode;
   TString motherName; 
-  mother = "cave1/pipevac1";
+  mother = "cave_1/pipevac1_0";
 
       if (!gGeoManager->CheckPath(mother.Data()))
          {
+     cout << endl << "pipevac1 not found in cave. Looking for Pipe..." << endl;
 	pipeID = gGeoManager->GetUID(pipeName);
  	pipeNode = gGeoManager->GetNode(pipeID);
 	gGeoManager->CdTop();

@@ -303,110 +303,10 @@ void CbmMvd::ConstructAsciiGeometry() {
 // --------    Public method ConstructRootGeometry     ---------------------
 void CbmMvd::ConstructRootGeometry() // added 05.05.14 by P. Sitzmann
 {
-  /** Construct the detector geometry from ROOT files, possible inputs are:
-   * 1. A TGeoVolume as a mother (master) volume containing the detector geometry
-   * 2. A TGeoManager with the detector geometry
-   * 3. A TGeoVolume as a mother or Master volume which is the output of the CAD2ROOT geometry, in this case
-   *    the materials are not proprely defined and had to be reset
-   *  In all cases we have to check that the material properties are the same or is the materials defined in
-   *  the current simulation session
-   */
 
-  TGeoManager* OldGeo=gGeoManager;
-  TGeoManager* NewGeo=0;
-  TGeoVolume* volume=0;;
-  TFile* f=new TFile(GetGeometryFileName().Data());
-  TList* l= f->GetListOfKeys();
-  TKey* key;
-  TIter next( l);
-  TGeoNode* n=0;
-  TGeoNode* myNode=0;
-  TGeoVolume* v1=0;
-  TGeoVolume* myMotherVolume = 0;
-  
-  cout << endl << "Start ConstructRootGeometry in CbmMvd" << endl;
-  while ((key = (TKey*)next())) {
-    /**loop inside the delivered root file and try to fine a TGeoManager object
-     * the first TGeoManager found will be read
-     */
-    if (strcmp(key->GetClassName(),"TGeoManager") != 0) { continue; }
-    gGeoManager=0;
-    NewGeo = (TGeoManager*)key->ReadObj();
-    break;
-  }
-  if (NewGeo!=0) {
-    /** in case a TGeoManager was found get the top most volume and the node
-     */
+FairDetector::ConstructRootGeometry();
 
-    NewGeo->cd();
-    volume=(TGeoVolume*)NewGeo->GetNode(0)->GetDaughter(0)->GetVolume();
-    v1=volume->MakeCopyVolume(volume->GetShape());
-    //n=NewGeo->GetTopNode();
-    n=v1->GetNode(0);
-    
-    //  NewGeo=0;
-    delete NewGeo;
-
-  } else {
-    /** The file does not contain any TGeoManager, so we assume to have a file with a TGeoVolume
-     * try to look for a TGeoVolume inside the file
-     */
-
-    key=(TKey*) l->At(0);  //Get the first key in the list
-    volume=dynamic_cast<TGeoVolume*> (key->ReadObj());
-    if(volume!=0) { n=volume->GetNode(0); }
-    if(n!=0) { 
-      v1=n->GetVolume(); 
-      n->Print();
-    }
-  }
-  if(v1==0) {
-    fLogger->Info(MESSAGE_ORIGIN, "\033[5m\033[31mFairModule::ConstructRootGeometry(): could not find any geometry in File!!  \033[0m", GetGeometryFileName().Data());
-    exit(0);
-  }
-  gGeoManager=OldGeo;
-  gGeoManager->cd();
-  // If AddToVolume is empty add the volume to the top volume Cave
-  // If it is defined check i´f the volume exists and if it exists add the volume from the root file
-  // to the already existing volume
-  TGeoVolume* Cave=NULL;
-  if ( 0 == fMotherVolumeName.Length() ) {
-    Cave= gGeoManager->GetTopVolume();
-  } else {
-    Cave = gGeoManager->GetVolume(fMotherVolumeName);
-    if ( NULL == Cave ) {
-      fLogger->Error(MESSAGE_ORIGIN,"\033[5m\033[31mFairModule::ConstructRootGeometry(): could not find the given mother volume \033[0m   %s \033[5m\033[31m where the geomanger should be added. \033[0m", fMotherVolumeName.Data());
-      exit(0);
-    }
-  }
-  /**Every thing is OK, we have a TGeoVolume and now we add it to the simulation TGeoManager  */
-  gGeoManager->AddVolume(v1);
-  /** force rebuilding of voxels */
-  TGeoVoxelFinder* voxels = v1->GetVoxels();
-  if (voxels) { voxels->SetNeedRebuild(); }
-  /**To avoid having different names of the default matrices because we could have get the volume from another
-   * TGeoManager, we reset the default matrix name
-   */
-  TGeoMatrix* M = n->GetMatrix();
-  SetDefaultMatrixName(M);
-
-  /** NOw we can remove the matrix so that the new geomanager will rebuild it properly*/
-  gGeoManager->GetListOfMatrices()->Remove(M);
-  TGeoHMatrix* global = gGeoManager->GetHMatrix();
-  gGeoManager->GetListOfMatrices()->Remove(global); //Remove the Identity matrix
-  /**Now we can add the node to the existing cave */
-  Cave->AddNode(v1,0, M);
-  /** correction from O. Merle: in case of a TGeoVolume (v1) set the material properly */
-  AssignMediumAtImport(v1);
-  /** now go through the herachy and set the materials properly, this is important becase the CAD converter
-   *  produce TGeoVolumes with materials that have only names and no properties
-   */
- 
-   ExpandNode(n);
-  // Fill map of station numbers
-
-  
-  Int_t chois = 0;
+Int_t chois = 0;
   Int_t iStation =  0;
   Int_t volId    = -1;
   CbmMvdDetector* Detector = new CbmMvdDetector("A"); 
@@ -416,10 +316,11 @@ void CbmMvd::ConstructRootGeometry() // added 05.05.14 by P. Sitzmann
   Int_t pipeID;
   TGeoNode* pipeNode;
   TString motherName; 
-  mother = "cave1/pipevac1";
+  mother = "cave_1/pipevac1_0";
 
       if (!gGeoManager->CheckPath(mother.Data()))
          {
+        if(fVerboseLevel) cout << endl << "pipevac1 not found in cave. Looking for Pipe..." << endl;
 	pipeID = gGeoManager->GetUID(pipeName);
  	pipeNode = gGeoManager->GetNode(pipeID);
         gGeoManager->CdTop();
@@ -616,6 +517,9 @@ default:
        	 } while ( volId > -1 );
 	break;
 	}
+
+
+
 }
 // -------------------------------------------------------------------------
 
@@ -656,74 +560,6 @@ Bool_t CbmMvd::CheckIfSensitive(std::string name)
 
 // ----------------------------------------------------------------------------
 
-void CbmMvd::SetDefaultMatrixName(TGeoMatrix* matrix) // added 05.05.14 by P. Sitzmann, needed by ConstructRootGeometry
-{
-  // Copied from root TGeoMatrix::SetDefaultName() and modified (memory leak)
-  // If no name was supplied in the ctor, the type of transformation is checked.
-  // A letter will be prepended to the name :
-  //   t - translation
-  //   r - rotation
-  //   s - scale
-  //   c - combi (translation + rotation)
-  //   g - general (tr+rot+scale)
-  // The index of the transformation in gGeoManager list of transformations will
-  // be appended.
-  if (!gGeoManager) { return; }
-  if (strlen(matrix->GetName())) { return; }
-  char type = 'n';
-  if (matrix->IsTranslation()) { type = 't'; }
-  if (matrix->IsRotation()) { type = 'r'; }
-  if (matrix->IsScale()) { type = 's'; }
-  if (matrix->IsCombi()) { type = 'c'; }
-  if (matrix->IsGeneral()) { type = 'g'; }
-  TObjArray* matrices = gGeoManager->GetListOfMatrices();
-  Int_t index = 0;
-  if (matrices) { index =matrices->GetEntriesFast() - 1; }
-  matrix->SetName(Form("%c%i", type, index));
-}
-// ----------------------------------------------------------------------------
 
-// ----------------------------------------------------------------------------
-void CbmMvd::AssignMediumAtImport(TGeoVolume* v) // added 05.05.14 by P. Sitzmann, needed by ConstructRootGeometry
-{
-
-  /**
-   * Assign medium to the the volume v, this has to be done in all cases:
-   * case 1: For CAD converted volumes they have no mediums (only names)
-   * case 2: TGeoVolumes, we need to be sure that the material is defined in this session
-   */
-  FairGeoMedia* Media       = FairGeoLoader::Instance()->getGeoInterface()->getMedia();
-  FairGeoBuilder* geobuild  = FairGeoLoader::Instance()->getGeoBuilder();
-
-  TGeoMedium* med1=v->GetMedium();
-  if(med1) {
-    TGeoMaterial* mat1=v->GetMaterial();
-    TGeoMaterial* newMat = gGeoManager->GetMaterial(mat1->GetName());
-    if( newMat==0) {
-      /**The Material is not defined in the TGeoManager, we try to create one if we have enough information about it*/
-      FairGeoMedium* FairMedium=Media->getMedium(mat1->GetName());
-      if (!FairMedium) {
-        fLogger->Debug(MESSAGE_ORIGIN,"Material %s is not defined in ASCII file nor in Root file we try to create one", mat1->GetName());
-        FairMedium=new FairGeoMedium(mat1->GetName());
-        Media->addMedium(FairMedium);
-      }
-
-      Int_t nmed=geobuild->createMedium(FairMedium);
-      v->SetMedium(gGeoManager->GetMedium(nmed));
-      gGeoManager->SetAllIndex();
-    } else {
-      /**Material is already available in the TGeoManager and we can set it */
-      TGeoMedium* med2= gGeoManager->GetMedium(mat1->GetName());
-      v->SetMedium(med2);
-    }
-  } else {
-    if (strcmp(v->ClassName(),"TGeoVolumeAssembly") != 0) {
-      //[R.K.-3.3.08]  // When there is NO material defined, set it to avoid conflicts in Geant
-      fLogger->Error(MESSAGE_ORIGIN,"The volume  %s  Has no medium information and not an Assembly so we have to quit", v->GetName());
-      abort();
-    }
-  }
-}
-// ----------------------------------------------------------------------------
 
 ClassImp(CbmMvd)

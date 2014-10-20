@@ -170,9 +170,6 @@ class CbmMvd : public FairDetector
      **/
     void ResetParameters();
 
-    void SetDefaultMatrixName(TGeoMatrix* matrix);
-    void AssignMediumAtImport(TGeoVolume* v);
-
     CbmMvd(const CbmMvd&);
     CbmMvd& operator=(const CbmMvd&);
 
