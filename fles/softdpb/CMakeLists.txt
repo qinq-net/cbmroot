@@ -14,10 +14,14 @@ ${CBMROOT_SOURCE_DIR}/fles/flib_dpb
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
 
-Include_Directories(SYSTEM ${Boost_INCLUDE_DIR})
+Include_Directories(SYSTEM 
+  ${Boost_INCLUDE_DIR}
+  ${ZMQ_INCLUDE_DIR}
+)
 
 Set(LINK_DIRECTORIES
-${Boost_LIBRARY_DIRS}
+  ${Boost_LIBRARY_DIRS}
+  ${ZMQ_LIBRARY_DIR}
 )
  
 Link_Directories( ${LINK_DIRECTORIES})
@@ -31,9 +35,9 @@ TransparentFilter.cpp
 
 Set(EXE_NAME softdpb)
 If(UNIX AND NOT APPLE)
-  Set(DEPENDENCIES fles_ipc flib_dpb boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} rt)
+  Set(DEPENDENCIES fles_ipc flib_dpb boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} ${LIBZMQ_SHARED} rt)
 Else()
-  Set(DEPENDENCIES fles_ipc flib_dpb boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT})
+  Set(DEPENDENCIES fles_ipc flib_dpb boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} ${LIBZMQ_SHARED})
 EndIf()
 
 GENERATE_EXECUTABLE()

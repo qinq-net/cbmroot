@@ -13,15 +13,18 @@ ${CBMROOT_CURRENT_SOURCE_DIR}/ipc
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
-${Boost_INCLUDE_DIR}
+  ${Boost_INCLUDE_DIR}
+  ${ZMQ_INCLUDE_DIR}
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
+
 Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 
 Set(LINK_DIRECTORIES
-${Boost_LIBRARY_DIRS}
+  ${Boost_LIBRARY_DIRS}
+  ${ZMQ_LIBRARY_DIRS}
 )
 
 Link_Directories( ${LINK_DIRECTORIES})
@@ -42,9 +45,9 @@ ipc/TimesliceSubscriber.cpp
 
 Set(LIBRARY_NAME fles_ipc)
 If(UNIX AND NOT APPLE)
-  Set(DEPENDENCIES boost_thread boost_system boost_serialization rt)
+  Set(DEPENDENCIES boost_thread boost_system boost_serialization ${LIBZMQ_SHARED} rt)
 Else()
-  Set(DEPENDENCIES boost_thread boost_system boost_serialization)
+  Set(DEPENDENCIES boost_thread boost_system boost_serialization ${LIBZMQ_SHARED})
 EndIf()
 
 

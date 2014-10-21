@@ -14,11 +14,14 @@ ${CBMROOT_SOURCE_DIR}/fles/ipc
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
 
-Include_Directories(SYSTEM ${Boost_INCLUDE_DIR})
- 
+Include_Directories(SYSTEM 
+  ${Boost_INCLUDE_DIR}  
+  ${ZMQ_INCLUDE_DIR}
+)
 
 Set(LINK_DIRECTORIES
-${Boost_LIBRARY_DIRS}
+  ${Boost_LIBRARY_DIRS}
+  ${ZMQ_LIBRARY_DIR}
 )
  
 Link_Directories( ${LINK_DIRECTORIES})
@@ -36,10 +39,10 @@ TrbBridgeTransaction.cpp
 
 Set(EXE_NAME trbnet_client)
 If(UNIX AND NOT APPLE)
-  Set(DEPENDENCIES fles_ipc boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} rt)
+  Set(DEPENDENCIES fles_ipc boost_program_options ${CMAKE_THREAD_LIBS_INIT} ${LIBZMQ_SHARED} rt)
 Else()
-#  Set(DEPENDENCIES fles_ipc boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT})
-  Set(DEPENDENCIES fles_ipc boost_program_options ${CMAKE_THREAD_LIBS_INIT})
+#  Set(DEPENDENCIES fles_ipc boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} )
+  Set(DEPENDENCIES fles_ipc boost_program_options ${CMAKE_THREAD_LIBS_INIT} ${LIBZMQ_SHARED})
 EndIf()
 
 GENERATE_EXECUTABLE()
