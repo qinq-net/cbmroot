@@ -1,0 +1,2 @@
+Add_Subdirectory(trbnet_client)
+Add_Subdirectory(daq_anal)

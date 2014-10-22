@@ -36,8 +36,7 @@ Include(Build_Spadic_Message.cmake)
 
 
 Add_Subdirectory(tsclient)
-Add_Subdirectory(trbnetclient/trbnet_client)
-Add_Subdirectory(trbnetclient/daq_anal)
+Add_Subdirectory(trb)
 Add_Subdirectory(softdpb)
 If(NOT APPLE)
   Add_Subdirectory(ctrl)
