@@ -38,9 +38,9 @@ TimesliceDebugger.cpp
 
 Set(EXE_NAME tsclient)
 If(UNIX AND NOT APPLE)
-  Set(DEPENDENCIES fles_ipc flib_dpb boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} ${LIBZMQ_SHARED} rt)
+  Set(DEPENDENCIES fles_ipc flib_dpb boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} zmq rt)
 Else()
-  Set(DEPENDENCIES fles_ipc flib_dpb boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT}${LIBZMQ_SHARED})
+  Set(DEPENDENCIES fles_ipc flib_dpb boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} zmq)
 EndIf()
 
 GENERATE_EXECUTABLE()

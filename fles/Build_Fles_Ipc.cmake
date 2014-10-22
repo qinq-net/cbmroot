@@ -45,9 +45,9 @@ ipc/TimesliceSubscriber.cpp
 
 Set(LIBRARY_NAME fles_ipc)
 If(UNIX AND NOT APPLE)
-  Set(DEPENDENCIES boost_thread boost_system boost_serialization ${LIBZMQ_SHARED} rt)
+  Set(DEPENDENCIES boost_thread boost_system boost_serialization zmq rt)
 Else()
-  Set(DEPENDENCIES boost_thread boost_system boost_serialization ${LIBZMQ_SHARED})
+  Set(DEPENDENCIES boost_thread boost_system boost_serialization zmq)
 EndIf()
 
 

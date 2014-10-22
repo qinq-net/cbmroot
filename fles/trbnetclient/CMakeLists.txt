@@ -39,10 +39,9 @@ TrbBridgeTransaction.cpp
 
 Set(EXE_NAME trbnet_client)
 If(UNIX AND NOT APPLE)
-  Set(DEPENDENCIES fles_ipc boost_program_options ${CMAKE_THREAD_LIBS_INIT} ${LIBZMQ_SHARED} rt)
+  Set(DEPENDENCIES fles_ipc boost_program_options ${CMAKE_THREAD_LIBS_INIT} zmq rt)
 Else()
-#  Set(DEPENDENCIES fles_ipc boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} )
-  Set(DEPENDENCIES fles_ipc boost_program_options ${CMAKE_THREAD_LIBS_INIT} ${LIBZMQ_SHARED})
+  Set(DEPENDENCIES fles_ipc boost_program_options ${CMAKE_THREAD_LIBS_INIT} zmq)
 EndIf()
 
 GENERATE_EXECUTABLE()
