@@ -14,7 +14,6 @@
 #define CBMMVDSENSORPLUGIN_H 1
 
 #include <iostream>
-#include "FairTask.h" //needed to get data type InitStatus
 #include "CbmMvdPoint.h"
 
 class TClonesArray;
@@ -41,10 +40,10 @@ class CbmMvdSensorPlugin : public TObject
   virtual void Exec(){;}
   virtual void ExecChain(){;}
     
-  virtual TClonesArray* GetInputArray(){;}
-  virtual TClonesArray* GetOutputArray(){;}
-  virtual TClonesArray* GetMatchArray(){;}
-  virtual TClonesArray* GetWriteArray(){;}
+  virtual TClonesArray* GetInputArray(){return 0;}
+  virtual TClonesArray* GetOutputArray(){return 0;}
+  virtual TClonesArray* GetMatchArray(){return 0;}
+  virtual TClonesArray* GetWriteArray(){return 0;}
   
   virtual void SetInputArray(TClonesArray* inputArray){;}
   virtual void SetInput(CbmMvdPoint* point){;}

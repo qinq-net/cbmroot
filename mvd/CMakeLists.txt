@@ -53,6 +53,7 @@ CbmMvdPixelCharge.cxx
 CbmMvdFindHits.cxx 
 CbmMvdHitfinder.cxx
 CbmMvdStation.cxx 
+CbmMvdStationPar.cxx
 MyG4UniversalFluctuationForSi.cxx
 CbmMvdDetector.cxx
 CbmMvdSensor.cxx

@@ -128,12 +128,12 @@ InitStatus CbmMvdDigitizer::Init() {
     
     if(!fDetector)
     	{
-	cout << endl << "-I- Try to load CbmMvdDetector -I- " << endl; 
+	if(fVerbose) cout << endl << "-I- Try to load CbmMvdDetector -I- " << endl; 
         GetMvdGeometry(); 
 	fDetector = CbmMvdDetector::Instance();
 	if(fDetector->GetSensorArraySize() > 1)
 		{
-		cout << endl << "-I- succesfully loaded Geometry from file -I-" << endl;
+		 if(fVerbose) cout << endl << "-I- succesfully loaded Geometry from file -I-" << endl;
 		}
 	else
 		{
@@ -235,7 +235,7 @@ void CbmMvdDigitizer::GetMvdGeometry() {
 
       if (!gGeoManager->CheckPath(mother.Data()))
          {
-     cout << endl << "pipevac1 not found in cave. Looking for Pipe..." << endl;
+        if(fVerbose) cout << endl << "pipevac1 not found in cave. Looking for Pipe..." << endl;
 	pipeID = gGeoManager->GetUID(pipeName);
  	pipeNode = gGeoManager->GetNode(pipeID);
 	gGeoManager->CdTop();
@@ -250,7 +250,7 @@ void CbmMvdDigitizer::GetMvdGeometry() {
       else
 	mother = "cave_1/pipevac1_0";
 
- cout << endl << "MotherNode is : " << mother << endl;
+  if(fVerbose) cout << endl << "MotherNode is : " << mother << endl;
  for(Int_t StatNr = 0; StatNr < 4; StatNr++)
       {
 	for(Int_t QuadNr = 0; QuadNr < 4; QuadNr++)

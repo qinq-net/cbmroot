@@ -16,6 +16,7 @@
 #pragma link C++ class CbmMvdPileupManager+;
 #pragma link C++ class CbmMvdPixelCharge+;
 #pragma link C++ class CbmMvdStation+;
+#pragma link C++ class CbmMvdStationPar+;
 #pragma link C++ class CbmMvdSensorDataSheet+;
 #pragma link C++ class CbmMvdMimosa26AHR+;
 #pragma link C++ class CbmMvdFullRun+;
@@ -33,9 +34,6 @@
 #pragma link C++ class CbmMvdSensorDigitizerTask+;
 
 #pragma link C++ class MyG4UniversalFluctuationForSi+;
-
-
-
 
 
 #endif
