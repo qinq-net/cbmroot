@@ -90,6 +90,7 @@ KFModelParameters/CbmThermalModelNoFlow.cxx
 KFModelParameters/CbmModelsQA.cxx
 KFQA/CbmKFTrErrMCPoints.cxx
 KFQA/CbmKFTrackFitQA.cxx
+KFQA/KFParticleMatch.cxx
 # KFParticlesFinder/CbmKFParticleDatabase.cxx
 KFParticle/KFParticleDatabase.cxx
 KFParticle/KFParticleBase.cxx
@@ -142,6 +143,7 @@ KFModelParameters/CbmModelsQA.h
 KFQA/CbmKFTrErrMCPoints.h
 KFQA/CbmKFTrackFitQA.h
 KFQA/CbmKFPartEfficiencies.h
+KFQA/KFParticleMatch.h
 # KFParticlesFinder/CbmKFParticleDatabase.h
 KFParticle/KFParticleBase.h
 KFParticle/KFParticle.h

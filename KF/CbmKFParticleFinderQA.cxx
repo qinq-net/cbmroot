@@ -13,6 +13,7 @@
 #include "KFParticleTopoReconstructor.h"
 #include "KFTopoPerformance.h"
 #include "KFMCTrack.h"
+#include "KFParticleMatch.h"
 
 //ROOT headers
 #include "TClonesArray.h"
@@ -30,6 +31,7 @@ using std::vector;
 
 CbmKFParticleFinderQA::CbmKFParticleFinderQA(const char* name, Int_t iVerbose, KFParticleTopoReconstructor* tr, TString outFileName):
   FairTask(name, iVerbose), fMCTracksBranchName("MCTrack"), fTrackMatchBranchName("StsTrackMatch"), fMCTrackArray(0), fTrackMatchArray(0), 
+  fRecParticles(0), fMCParticles(0), fMatchParticles(0), fSaveParticles(0), fSaveMCParticles(0),
   fOutFileName(outFileName), fOutFile(0), fEfffileName("Efficiency.txt"), fTopoPerformance(0), fPrintFrequency(100), fNEvents(0)
 {
   for(Int_t i=0; i<5; i++)
@@ -54,6 +56,14 @@ CbmKFParticleFinderQA::CbmKFParticleFinderQA(const char* name, Int_t iVerbose, K
 CbmKFParticleFinderQA::~CbmKFParticleFinderQA()
 {
   if(fTopoPerformance) delete fTopoPerformance;  
+  
+  if(fSaveParticles)
+    fRecParticles->Delete();
+  if(fSaveMCParticles)
+  {
+    fMCParticles->Delete();
+    fMatchParticles->Delete();
+  }
 }
 
 InitStatus CbmKFParticleFinderQA::Init()
@@ -83,13 +93,35 @@ InitStatus CbmKFParticleFinderQA::Init()
     return kERROR;
   }
   
+  if(fSaveParticles)
+  {
+    // create and register TClonesArray with output reco particles
+    fRecParticles = new TClonesArray("KFParticle",100);
+    ioman->Register("RecoParticles", "KFParticle", fRecParticles, kTRUE);
+  }
+
+  if(fSaveMCParticles)
+  {
+    // create and register TClonesArray with output MC particles
+    fMCParticles = new TClonesArray("KFMCParticle",100);
+    ioman->Register("KFMCParticles", "KFParticle", fMCParticles, kTRUE);
+
+    // create and register TClonesArray with matching between reco and MC particles
+    fMatchParticles = new TClonesArray("KFParticleMatch",100);
+    ioman->Register("KFParticleMatch", "KFParticle", fMatchParticles, kTRUE);
+  }
   return kSUCCESS;
 }
 
 void CbmKFParticleFinderQA::Exec(Option_t* opt)
 { 
-  static int nEvents = 0;
-  nEvents++;
+  if(fSaveParticles)
+    fRecParticles->Delete();
+  if(fSaveMCParticles)
+  {
+    fMCParticles->Delete();
+    fMatchParticles->Delete();
+  }
   
   Int_t nMCTracks = fMCTrackArray->GetEntriesFast();
   vector<KFMCTrack> mcTracks(nMCTracks);
@@ -169,6 +201,48 @@ void CbmKFParticleFinderQA::Exec(Option_t* opt)
     std::cout << "    PV Finder           " << fTime[1]/fNEvents * 1.e3 << " ms" << std::endl;
     std::cout << "    Sort Tracks         " << fTime[2]/fNEvents * 1.e3 << " ms" << std::endl;
     std::cout << "    KF Particle Finder  " << fTime[3]/fNEvents * 1.e3 << " ms" << std::endl;
+  }
+  
+  // save particles to a ROOT file
+  if(fSaveParticles)
+  {
+    for(unsigned int iP=0; iP < fTopoPerformance->GetTopoReconstructor()->GetParticles().size(); iP++)
+    {
+      new((*fRecParticles)[iP]) KFParticle(fTopoPerformance->GetTopoReconstructor()->GetParticles()[iP]);
+    }
+  }
+
+  if(fSaveMCParticles)
+  {
+    for(unsigned int iP=0; iP < fTopoPerformance->GetTopoReconstructor()->GetParticles().size(); iP++)
+    {
+      new((*fMatchParticles)[iP]) KFParticleMatch();
+      KFParticleMatch *p = (KFParticleMatch*)( fMatchParticles->At(iP) );
+
+      Short_t matchType = 0;
+      int iMCPart = -1;
+      if(!(fTopoPerformance->ParticlesMatch()[iP].IsMatchedWithPdg())) //background
+      {
+        if(fTopoPerformance->ParticlesMatch()[iP].IsMatched())
+        {
+          iMCPart = fTopoPerformance->ParticlesMatch()[iP].GetBestMatchWithPdg();
+          matchType = 1;
+        }
+      }
+      else
+      {
+        iMCPart = fTopoPerformance->ParticlesMatch()[iP].GetBestMatchWithPdg();
+        matchType = 2;
+      }
+
+      p->SetMatch(iMCPart);
+      p->SetMatchType(matchType);
+    }
+
+    for(unsigned int iP=0; iP < fTopoPerformance->MCParticles().size(); iP++)
+    {
+      new((*fMCParticles)[iP]) KFMCParticle(fTopoPerformance->MCParticles()[iP]);
+    }
   }
 }
 

@@ -34,6 +34,9 @@ class CbmKFParticleFinderQA : public FairTask {
   
   void SetPrintEffFrequency(Int_t n);
 
+  void SaveParticles(Bool_t b = 1) { fSaveParticles = b; }
+  void SaveMCParticles(Bool_t b = 1) { fSaveMCParticles = b; }
+  
  private:
   
   const CbmKFParticleFinderQA& operator = (const CbmKFParticleFinderQA&);
@@ -49,6 +52,14 @@ class CbmKFParticleFinderQA : public FairTask {
   TClonesArray *fMCTrackArray; //mc tracks
   TClonesArray *fTrackMatchArray; //track match
  
+ // output arrays of particles
+  TClonesArray* fRecParticles;    // output array of KF Particles
+  TClonesArray* fMCParticles;     // output array of MC Particles
+  TClonesArray* fMatchParticles;  // output array of match objects
+
+  Bool_t fSaveParticles;
+  Bool_t fSaveMCParticles;
+  
   //output file with histograms
   TString fOutFileName;
   TFile* fOutFile;

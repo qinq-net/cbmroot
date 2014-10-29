@@ -37,6 +37,7 @@
 #pragma link C++ class  KFParticle+;
 #pragma link C++ class  KFVertex+;
 #pragma link C++ class  KFPartEfficiencies+;
+#pragma link C++ class  KFMCParticle+;
 
 
 #pragma link C++ class  CbmThermalModelNoFlow+;
@@ -46,6 +47,8 @@
 
 #pragma link C++ class  CbmKFTrErrMCPoints+;
 #pragma link C++ class  CbmKFTrackFitQA+;
+#pragma link C++ class  KFParticleMatch+;
+
 
 #pragma link C++ class CbmKFParticleFinder+;
 #pragma link C++ class CbmKFParticleFinderPID+;
