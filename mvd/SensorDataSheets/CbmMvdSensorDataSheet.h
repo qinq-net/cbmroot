@@ -51,6 +51,8 @@ class CbmMvdSensorDataSheet : public TNamed
   Double_t     fIntegrationTime;  // Integration time of the pixels
   Double_t     fEpiTh;		  // Thickness of the epitaxial layer
   
+  Double_t fChargeThreshold;
+
   /** Description of the sensor for the digitizer **/
   Double_t     fNoise;            // Noise of the sensor
   Double_t     fLandauMPV;	  // Landau for digitizer
@@ -100,6 +102,8 @@ public:
   virtual Double_t GetLorentzPar1()     {return fLorentzPar1;};   // Lorentz for digitizer
   virtual Double_t GetLorentzPar2() 	{return fLorentzPar2;};  // Lorentz for digitizer
  
+
+  virtual Double_t GetChargeThreshold() {return fChargeThreshold;};
   
   /** ADC description **/
   

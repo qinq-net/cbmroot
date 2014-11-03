@@ -36,6 +36,7 @@ class CbmMvdStationPar : public TNamed
   /** Destructor **/
   virtual ~CbmMvdStationPar();
 
+  Bool_t Init();
 
   /** Accessors **/
   Int_t    GetStationCount() const { return fStationCount; };
@@ -64,22 +65,23 @@ class CbmMvdStationPar : public TNamed
 
 
   /** Output to screen **/
-  virtual void Print(Option_t* opt="") const;
+  void Print(Option_t* opt="") const;
 
 
 
  protected:
 
   Int_t                   fStationCount;        // Number of Stations
-  map<Int_t , Double_t >  fZPositions;          // map of the z positions of all Stations 
-  map<Int_t , Double_t >  fThicknesses;         //
-  map<Int_t , Double_t >  fHeights; 
-  map<Int_t , Double_t >  fWidths;  
-  map<Int_t , Double_t >  fXResolutions;
-  map<Int_t , Double_t >  fYResolutions;
-  map<Int_t , Double_t >  fRadiationLength;
-  map<Int_t , Double_t >  fBeamHeights;
-  map<Int_t , Double_t >  fBeamWidths;
+
+  map<Int_t , Int_t >  fZPositions;          // map of the z positions of all Stations 
+  map<Int_t , Double_t >  fThicknesses;      // in cm 
+  map<Int_t , Double_t >  fHeights;          // in cm
+  map<Int_t , Double_t >  fWidths;           // in cm
+  map<Int_t , Double_t >  fXResolutions;     // in mu m
+  map<Int_t , Double_t >  fYResolutions;     // in mu m
+  map<Int_t , Double_t >  fRadiationLength;  // in %x0
+  map<Int_t , Double_t >  fBeamHeights;      // in cm 
+  map<Int_t , Double_t >  fBeamWidths;       // in cm
 
 
   ClassDef(CbmMvdStationPar,1);

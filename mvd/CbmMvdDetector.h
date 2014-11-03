@@ -27,7 +27,7 @@
 #include "TClonesArray.h"
 
 #include "CbmMvdSensor.h"
-
+#include "CbmMvdStationPar.h"
 
 #include "plugins/CbmMvdSensorPlugin.h"
    #include "plugins/tasks/CbmMvdSensorTask.h"
@@ -86,6 +86,8 @@ class CbmMvdDetector : public TNamed
   void BuildDebugHistograms(){;};
   void Init();
   void SetMisalignment(Float_t misalignment[3]){for(Int_t i = 0; i<3; i++) fepsilon[i] = misalignment[i];}; 
+  void SetParameterFile(CbmMvdStationPar* parameter){fParameter = parameter;};
+  
   /** Data Processing */
   
   void ExecChain(); //Processes the full execution chain
@@ -99,9 +101,10 @@ class CbmMvdDetector : public TNamed
   void StoreDebugHistograms(TString fileName){;}
   
   /** Accessors */
-  
+  CbmMvdStationPar* GetParameterFile(){return fParameter;};  
   CbmMvdSensor* GetSensor(UInt_t nSensor){return (CbmMvdSensor*)fSensorArray->At(nSensor);};
-  
+  void PrintParameter(){fParameter->Print();};
+
 private:
   TClonesArray* fSensorArray;
   TClonesArray* fSensorIDArray; //Array of Sensor ID
@@ -123,12 +126,13 @@ private:
   Bool_t fSensorArrayFilled;
   Bool_t initialized;
 
+  CbmMvdStationPar* fParameter;
+
+
   CbmMvdDetector(const CbmMvdDetector&);
   CbmMvdDetector operator=(const CbmMvdDetector&);
   
  ClassDef(CbmMvdDetector,1);
-  
-
 };
 
 

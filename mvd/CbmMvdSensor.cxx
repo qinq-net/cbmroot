@@ -152,8 +152,7 @@ Int_t CbmMvdSensor::ReadSensorGeometry(TString volName, TString nodeName) {
   
   
   Bool_t nodeFound = gGeoManager->cd(nodeName.Data());
-  
-  
+
   if ( ! nodeFound ) {
         
         
@@ -165,26 +164,12 @@ Int_t CbmMvdSensor::ReadSensorGeometry(TString volName, TString nodeName) {
       }    
   else { 
     if(fMCMatrix) {delete fMCMatrix;}; //delete local copy of the position information
-    
-  //  fMCMatrix=new TGeoHMatrix();
-
-    /*while(!(volume->IsTopVolume())){
-	cout << "ping"<< endl;
-        TGeoHMatrix* tempMatrix=gGeoManager->GetCurrentMatrix();
-	if (!tempMatrix){cout << "- E -" << GetName() << ": Didn't receive TGeoMatrix of this sensor" << endl;}
-	fMCMatrix->Multiply(tempMatrix);
-	gGeoManager->CdUp();
-	volume=(TGeoVolume*)gGeoManager->GetCurrentVolume();
-      }
-*/	
-    
-    
-    
+ 
     fMCMatrix=(TGeoHMatrix*)(gGeoManager->GetCurrentMatrix())->Clone(volName+"_MC_Matrix");
     //fMCMatrix->Print();
     
     fMCMatrix->SetName(volName+"_MC_Matrix");
-       
+   
     if (!fRecoMatrix) {
         Double_t pre[3], past[3];
 	//The initial guess on the reconstructed position is that the MC-position is correct
@@ -542,7 +527,7 @@ TClonesArray* CbmMvdSensor::GetOutputBuffer(){
 // -----  Coordinate Transformations --------------------------------
 
 void CbmMvdSensor::LocalToTop	(Double_t* local, Double_t* lab){
-  fRecoMatrix->LocalToMaster(local, lab);
+  fMCMatrix->LocalToMaster(local, lab);
 };
 // -------------------------------------------------------------------------
 
@@ -591,7 +576,6 @@ void CbmMvdSensor::PixelToLocal	(Int_t pixelNumberX, Int_t pixelNumberY, Double_
   local[1]= y - fSensorData->GetPixelSignY()*GetDY();
  
   local[2]=0; //per definition always at the sensor surface;
-  
 };
 // -------------------------------------------------------------------------
 

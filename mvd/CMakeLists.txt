@@ -41,6 +41,8 @@ plugins/CbmMvdSensorPlugin.cxx
 SensorDataSheets/CbmMvdMimosa26AHR.cxx
 SensorDataSheets/CbmMvdSensorDataSheet.cxx  
 
+tools/CbmMvdGeoHandler.cxx
+
 CbmMvd.cxx 
 CbmMvdContFact.cxx 
 CbmMvdGeo.cxx 

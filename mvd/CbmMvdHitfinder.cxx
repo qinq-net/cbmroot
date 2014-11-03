@@ -7,6 +7,8 @@
 #include "CbmMvdPoint.h"
 #include "plugins/tasks/CbmMvdSensorFindHitTask.h"
 #include "SensorDataSheets/CbmMvdMimosa26AHR.h"
+#include "tools/CbmMvdGeoHandler.h"
+
 
 // Includes from FAIR
 #include "FairRootManager.h"
@@ -153,90 +155,10 @@ void CbmMvdHitfinder::Reset() {
 // -----   Private method GetMvdGeometry   ---------------------------------
 void CbmMvdHitfinder::GetMvdGeometry() {
  
-  Int_t iStation =  0;
-  Int_t volId    = -1;
-  CbmMvdDetector* Detector = new CbmMvdDetector("A"); 
-  TString nodeName;
-  TString mother;
-  TString pipeName = "pipevac1";
-  Int_t pipeID;
-  TGeoNode* pipeNode;
-  TString motherName; 
-  mother = "cave1/pipevac1";
-
-      if (!gGeoManager->CheckPath(mother.Data()))
-         {
-	pipeID = gGeoManager->GetUID(pipeName);
- 	pipeNode = gGeoManager->GetNode(pipeID);
-	gGeoManager->CdTop();
-	gGeoManager->CdDown(0);
-	motherName=gGeoManager->GetPath();
-	mother = motherName;
-	mother += "/";
-	mother += pipeName;
-	mother += "_0";
-	gGeoManager->CdTop();
-	}
-      else
-	mother = "cave_1/pipevac1_0";
-
- for(Int_t StatNr = 0; StatNr < 4; StatNr++)
-      {
-	for(Int_t QuadNr = 0; QuadNr < 4; QuadNr++)
-	    {
-	    
-	      for(Int_t Layer = 0; Layer < 2; Layer++)
-		  {
-		  
-		      for(Int_t SensNr = 0; SensNr < 100; SensNr++)
-			  {
-			    
-			    TString volName = Form("MVD-S%i-Q%i-L%i-C%02i-P0", StatNr, QuadNr, Layer, SensNr);
-			    
-			    volId = gGeoManager->GetUID(volName);
-			   
-			
-			    if (volId > -1 ) 
-				{
-			    for(Int_t SegmentNr = 0; SegmentNr < 100; SegmentNr++)
-			       {
-			    
-				  switch(StatNr)
-				    {
-				    case 0:
- 				     nodeName = mother; nodeName += Form("/MVDo0123ohoFPCoextoHSoSo0123_0/MVDo0ohoFPCoHSoS_1/St0Q%iohoFPC_1/S0Q%iS%i_1/MVD-S0-Q%i-L%i-C%02i-P0oPartAss_1/MVD-S0-Q%i-L%i-C%02i-P0_1", QuadNr, QuadNr, SegmentNr, QuadNr, Layer, SensNr, QuadNr, Layer, SensNr);
-				      break;
-				    case 1:  
- 				       nodeName = mother; nodeName += Form("/MVDo0123ohoFPCoextoHSoSo0123_0/MVDo1ohoFPCoextoHSoS_1/St1Q%iohoFPCoext_1/S1Q%iS%i_1/MVD-S1-Q%i-L%i-C%02i-P0oPartAss_1/MVD-S1-Q%i-L%i-C%02i-P0_1", QuadNr, QuadNr, SegmentNr, QuadNr, Layer, SensNr, QuadNr, Layer, SensNr);
-				      break;
-				    case 2:
- 				       nodeName = mother; nodeName += Form("/MVDo0123ohoFPCoextoHSoSo0123_0/MVDo2ohoFPCoextoHSoS_1/St2Q%iohoFPCoext_1/S2Q%iS%i_1/MVD-S2-Q%i-L%i-C%02i-P0oPartAss_1/MVD-S2-Q%i-L%i-C%02i-P0_1", QuadNr, QuadNr, SegmentNr, QuadNr, Layer, SensNr, QuadNr, Layer, SensNr);
-					break;
-				    case 3:
-					 nodeName = mother; nodeName += Form("/MVDo0123ohoFPCoextoHSoSo0123_0/MVDo3ohoFPCoextoHSoS_1/St3Q%iohoFPCoext_1/S3Q%iS%i_1/MVD-S3-Q%i-L%i-C%02i-P0oPartAss_1/MVD-S3-Q%i-L%i-C%02i-P0_1", QuadNr, QuadNr, SegmentNr, QuadNr, Layer, SensNr, QuadNr, Layer, SensNr);
- 				      break;   
-				    default: 
-					break;  
-				    }
-				Bool_t nodeFound = gGeoManager->CheckPath(nodeName.Data());
-				if (  nodeFound ) 
-				    {
-			
-				    Detector->AddSensor (volName, volName, nodeName, new CbmMvdMimosa26AHR, iStation, volId, 0.0);     
-				    iStation++;
-				    break;
-				    
-				    } 
-				    
-				}
-			    
-			  }
-			
-			
-		      }  
-		 }
-	    }
-      }
+CbmMvdDetector* Detector = new CbmMvdDetector("A");
+CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
+mvdHandler->Init();
+mvdHandler->Fill();
 }
 // -------------------------------------------------------------------------  
 

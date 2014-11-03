@@ -132,8 +132,7 @@ class CbmMvd : public FairDetector
   virtual Bool_t CheckIfSensitive(std::string name);
 
   virtual std::map<Int_t, Int_t> GetMap() {return fStationMap;};
-
- 
+  
   private:
 
 

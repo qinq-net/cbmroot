@@ -6,7 +6,7 @@
 #include "CbmMvdStationPar.h"
 
 #include <iostream>
-
+#include <math.h>
 
 using std::cout;
 using std::endl;
@@ -44,17 +44,6 @@ CbmMvdStationPar::CbmMvdStationPar(Int_t count)
     fBeamHeights(), 
     fBeamWidths()
 {
-for (Int_t i = 0; i <= count; i++)
-	{ fZPositions[count]=0.; 
-    	  fThicknesses[count]=0.; 
-          fHeights[count]=0.;
-          fWidths[count]=0.;
-          fXResolutions[count]=0.;
-          fYResolutions[count]=0.;
-          fRadiationLength[count]=0.; 
-          fBeamHeights[count]=0.; 
-          fBeamWidths[count]=0.; 
-	}
 }
 // -------------------------------------------------------------------------
 
@@ -66,8 +55,56 @@ CbmMvdStationPar::~CbmMvdStationPar() {
 
 // -----   Public method Print   -------------------------------------------
 void CbmMvdStationPar::Print(Option_t* opt) const {
-  cout << " --- " << GetName() 
-       << endl;
+cout 	<< endl << "--I--" << GetName() << "--I--" << endl
+	<< endl << "Initialized ParameterFile with " << fStationCount << " Stations" << endl
+	<< endl << "-------------------------------------------------------------------------" << endl
+	<< endl << "fZPositions[0] " << fZPositions.at(0) << " z position" << endl
+	<< endl << "fZPositions[1] " << fZPositions.at(1) << " z position" << endl
+	<< endl << "fZPositions[2] " << fZPositions.at(2) << " z position" << endl
+        << endl << "fZPositions[3] " << fZPositions.at(3) << " z position" << endl
+	<< endl << "-------------------------------------------------------------------------" << endl
+        << endl << "fBeamWidths[0] " << fBeamWidths.at(0) << " beam hole halfwidth" << endl
+	<< endl << "fBeamWidths[1] " << fBeamWidths.at(1) << " beam hole halfwidth" << endl
+	<< endl << "fBeamWidths[2] " << fBeamWidths.at(2) << " beam hole halfwidth" << endl
+        << endl << "fBeamWidths[3] " << fBeamWidths.at(3) << " beam hole halfwidth" << endl
+	<< endl << "-------------------------------------------------------------------------" << endl
+        << endl << "fBeamHeights[0] " << fBeamHeights.at(0) << " beam hole halfheight" << endl
+	<< endl << "fBeamHeights[1] " << fBeamHeights.at(1) << " beam hole halfheight" << endl
+	<< endl << "fBeamHeights[2] " << fBeamHeights.at(2) << " beam hole halfheight" << endl
+        << endl << "fBeamHeights[3] " << fBeamHeights.at(3) << " beam hole halfheight" << endl 
+	<< endl << "-------------------------------------------------------------------------" << endl
+	<< endl << "fThicknesses[0] " << fThicknesses.at(0) << " station thickness" << endl
+	<< endl << "fThicknesses[1] " << fThicknesses.at(1) << " station thickness" << endl
+	<< endl << "fThicknesses[2] " << fThicknesses.at(2) << " station thickness" << endl
+        << endl << "fThicknesses[3] " << fThicknesses.at(3) << " station thickness" << endl   
+	<< endl << "-------------------------------------------------------------------------" << endl
+        << endl << "fWidths[0] " << fWidths.at(0) << " station halfwidth" << endl
+	<< endl << "fWidths[1] " << fWidths.at(1) << " station halfwidth" << endl
+	<< endl << "fWidths[2] " << fWidths.at(2) << " station halfwidth" << endl
+        << endl << "fWidths[3] " << fWidths.at(3) << " station halfwidth" << endl
+	<< endl << "-------------------------------------------------------------------------" << endl
+        << endl << "fHeights[0] " << fHeights.at(0) << " station halfheight" << endl
+	<< endl << "fHeights[1] " << fHeights.at(1) << " station halfheight" << endl
+	<< endl << "fHeights[2] " << fHeights.at(2) << " station halfheight" << endl
+        << endl << "fHeights[3] " << fHeights.at(3) << " station halfheight" << endl   
+	<< endl << "--I--" << GetName() << "--I--" << endl;
+}
+// -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
+Bool_t CbmMvdStationPar::Init()
+{
+for (Int_t i = 0; i < fStationCount; i++)
+	{ fZPositions[i]=0.; 
+    	  fThicknesses[i]=0.; 
+          fHeights[i]=0.;
+          fWidths[i]=0.;
+          fXResolutions[i]=0.;
+          fYResolutions[i]=0.;
+          fRadiationLength[i]=0.; 
+          fBeamHeights[i]=0.; 
+          fBeamWidths[i]=0.; 
+	}
 }
 // -------------------------------------------------------------------------
 
@@ -76,9 +113,7 @@ Double_t CbmMvdStationPar::GetZPosition(Int_t stationNumber)
 {
 if(stationNumber <= fStationCount)
 	{
-	Double_t value;
-	value = fZPositions[stationNumber];
-	return value;
+	return fZPositions[stationNumber];
 	}
 else
 	{
@@ -93,9 +128,7 @@ Double_t CbmMvdStationPar::GetThickness(Int_t stationNumber)
 {
 if(stationNumber <= fStationCount)
 	{
-	Double_t value;
-	value = fThicknesses[stationNumber];
-	return value;
+	return fThicknesses[stationNumber];
 	}
 else
 	{
@@ -111,9 +144,7 @@ Double_t CbmMvdStationPar::GetHeight(Int_t stationNumber)
 {
 if(stationNumber <= fStationCount)
 	{
-	Double_t value;
-	value = fHeights[stationNumber];
-	return value;
+	return fHeights[stationNumber];
 	}
 else
 	{
@@ -129,9 +160,8 @@ Double_t CbmMvdStationPar::GetWidth(Int_t stationNumber)
 {
 if(stationNumber <= fStationCount)
 	{
-	Double_t value;
-	value = fWidths[stationNumber];
-	return value;
+	return fWidths[stationNumber];
+	
 	}
 else
 	{
@@ -147,9 +177,7 @@ Double_t CbmMvdStationPar::GetXRes(Int_t stationNumber)
 {
 if(stationNumber <= fStationCount)
 	{
-	Double_t value;
-	value = fXResolutions[stationNumber];
-	return value;
+	return fXResolutions[stationNumber]; 
 	}
 else
 	{
@@ -165,9 +193,7 @@ Double_t CbmMvdStationPar::GetYRes(Int_t stationNumber)
 {
 if(stationNumber <= fStationCount)
 	{
-	Double_t value;
-	value = fYResolutions[stationNumber];
-	return value;
+	return fYResolutions[stationNumber];
 	}
 else
 	{
@@ -183,9 +209,7 @@ Double_t CbmMvdStationPar::GetRadLength(Int_t stationNumber)
 {
 if(stationNumber <= fStationCount)
 	{
-	Double_t value;
-	value = fRadiationLength[stationNumber];
-	return value;
+	return fRadiationLength[stationNumber];
 	}
 else
 	{
@@ -201,9 +225,7 @@ Double_t CbmMvdStationPar::GetBeamHeight(Int_t stationNumber)
 {
 if(stationNumber <= fStationCount)
 	{
-	Double_t value;
-	value = fBeamHeights[stationNumber];
-	return value;
+	return fBeamHeights[stationNumber];
 	}
 else
 	{
@@ -219,9 +241,7 @@ Double_t CbmMvdStationPar::GetBeamWidth(Int_t stationNumber)
 {
 if(stationNumber <= fStationCount)
 	{
-	Double_t value;
-	value = fBeamWidths[stationNumber];
-	return value;
+	return fBeamWidths[stationNumber];
 	}
 else
 	{
@@ -238,7 +258,7 @@ void CbmMvdStationPar::SetZPosition(Int_t stationNumber, Double_t z)
 {
 if(fZPositions[stationNumber]!=0)
 	{
-	fZPositions[stationNumber] = (fZPositions[stationNumber] + z)/2;
+	fZPositions[stationNumber] = Int_t(((fZPositions[stationNumber] + z)/2)+0.5);
 	}
 else
 	{
@@ -251,8 +271,9 @@ else
 // -------------------------------------------------------------------------
 void CbmMvdStationPar::SetThickness(Int_t stationNumber, Double_t thickness)
 {
-fThicknesses[stationNumber] = thickness;
-
+Float_t Sensorthickness = fabs(thickness-fZPositions[stationNumber]);
+if(Sensorthickness > fThicknesses[stationNumber])
+	fThicknesses[stationNumber]=Sensorthickness;
 }  
 // -------------------------------------------------------------------------
 
@@ -331,6 +352,7 @@ else
 	}
 }  
 // -------------------------------------------------------------------------
+
 
 
 ClassImp(CbmMvdStationPar)

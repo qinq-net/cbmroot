@@ -334,6 +334,7 @@ InitStatus CbmMvdSensorDigitizerTask::ReadSensorInformation() {
   fNPixelsX = sensorData->GetNPixelsX();
   fNPixelsY = sensorData->GetNPixelsY();
 
+  fChargeThreshold = sensorData->GetChargeThreshold();
   
   fPar0=sensorData->GetLorentzPar0();
   fPar1=sensorData->GetLorentzPar1();

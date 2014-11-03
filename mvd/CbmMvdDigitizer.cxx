@@ -7,6 +7,7 @@
 #include "CbmMvdPoint.h"
 #include "plugins/tasks/CbmMvdSensorDigitizerTask.h"
 #include "SensorDataSheets/CbmMvdMimosa26AHR.h"
+#include "tools/CbmMvdGeoHandler.h"
 
 // Includes from FAIR
 #include "FairRootManager.h"
@@ -83,18 +84,18 @@ fDigis->Clear();
 BuildEvent();
 if(fInputPoints->GetEntriesFast() > 0)
    {
-   cout << "//----------------------------------------//";
-   cout << endl << "Send Input" << endl;
+   if(fVerbose) cout << "//----------------------------------------//";
+   if(fVerbose) cout << endl << "Send Input" << endl;
    fDetector->SendInput(fInputPoints);
-   cout << "Execute DigitizerPlugin Nr. "<< fDigiPluginNr << endl;
+   if(fVerbose) cout << "Execute DigitizerPlugin Nr. "<< fDigiPluginNr << endl;
    fDetector->Exec(fDigiPluginNr);
-   cout << "End Chain" << endl;
-   cout << "Start writing Digis" << endl;  
+   if(fVerbose) cout << "End Chain" << endl;
+   if(fVerbose) cout << "Start writing Digis" << endl;  
    fDigis->AbsorbObjects(fDetector->GetOutputDigis()); 
-   cout << "Total of " << fDigis->GetEntriesFast() << " digis in this Event" << endl;
-   cout << "Start writing DigiMatchs" << endl;  
+   if(fVerbose) cout << "Total of " << fDigis->GetEntriesFast() << " digis in this Event" << endl;
+   if(fVerbose) cout << "Start writing DigiMatchs" << endl;  
    fDigiMatch->AbsorbObjects(fDetector->GetOutputDigiMatchs()); 
-    cout  << "//----------------------------------------//" << endl ;
+   if(fVerbose) cout  << "//----------------------------------------//" << endl ;
    }
 }
 // -----------------------------------------------------------------------------
@@ -137,8 +138,8 @@ InitStatus CbmMvdDigitizer::Init() {
 		}
 	else
 		{
-		cout << endl << "-E- Error no Detector found -E-" << endl;
-		exit(-1);
+		LOG(FATAL) <<  "Geometry couldn't be loaded from file. No MVD digitizer available."
+	        << FairLogger::endl;
 		}
 	} 
 
@@ -220,95 +221,12 @@ void CbmMvdDigitizer::Reset() {
 
 // -----   Private method GetMvdGeometry   ---------------------------------
 void CbmMvdDigitizer::GetMvdGeometry() {
- 
-  Int_t iStation =  0;
-  Int_t volId    = -1;
-  CbmMvdDetector* Detector = new CbmMvdDetector("A"); 
-  Detector->SetMisalignment(epsilon);
-  TString nodeName;
-  TString mother;
-  TString pipeName = "pipevac1";
-  Int_t pipeID;
-  TGeoNode* pipeNode;
-  TString motherName; 
-  mother = "cave_1/pipevac1_0";
 
-      if (!gGeoManager->CheckPath(mother.Data()))
-         {
-        if(fVerbose) cout << endl << "pipevac1 not found in cave. Looking for Pipe..." << endl;
-	pipeID = gGeoManager->GetUID(pipeName);
- 	pipeNode = gGeoManager->GetNode(pipeID);
-	gGeoManager->CdTop();
-	gGeoManager->CdDown(0);
-	motherName=gGeoManager->GetPath();
-	mother = motherName;
-	mother += "/";
-	mother += pipeName;
-	mother += "_0";
-	gGeoManager->CdTop();
-	}
-      else
-	mother = "cave_1/pipevac1_0";
-
-  if(fVerbose) cout << endl << "MotherNode is : " << mother << endl;
- for(Int_t StatNr = 0; StatNr < 4; StatNr++)
-      {
-	for(Int_t QuadNr = 0; QuadNr < 4; QuadNr++)
-	    {
-	    
-	      for(Int_t Layer = 0; Layer < 2; Layer++)
-		  {
-		  
-		      for(Int_t SensNr = 0; SensNr < 100; SensNr++)
-			  {
-			    
-			    TString volName = Form("MVD-S%i-Q%i-L%i-C%02i-P0", StatNr, QuadNr, Layer, SensNr);
-			    
-			    volId = gGeoManager->GetUID(volName);
-			   
-                           			
-			    if (volId > -1 ) 
-				{
-			    for(Int_t SegmentNr = 0; SegmentNr < 100; SegmentNr++)
-			       {
-			    
-				  switch(StatNr)
-				    {
-				    case 0:
- 				     nodeName = mother; nodeName += Form("/MVDo0123ohoFPCoextoHSoSo0123_0/MVDo0ohoFPCoHSoS_1/St0Q%iohoFPC_1/S0Q%iS%i_1/MVD-S0-Q%i-L%i-C%02i-P0oPartAss_1/MVD-S0-Q%i-L%i-C%02i-P0_1", QuadNr, QuadNr, SegmentNr, QuadNr, Layer, SensNr, QuadNr, Layer, SensNr);
-					
-				      break;
-				    case 1:  
- 				       nodeName = mother; nodeName += Form("/MVDo0123ohoFPCoextoHSoSo0123_0/MVDo1ohoFPCoextoHSoS_1/St1Q%iohoFPCoext_1/S1Q%iS%i_1/MVD-S1-Q%i-L%i-C%02i-P0oPartAss_1/MVD-S1-Q%i-L%i-C%02i-P0_1", QuadNr, QuadNr, SegmentNr, QuadNr, Layer, SensNr, QuadNr, Layer, SensNr);
-				      break;
-				    case 2:
- 				       nodeName = mother; nodeName += Form("/MVDo0123ohoFPCoextoHSoSo0123_0/MVDo2ohoFPCoextoHSoS_1/St2Q%iohoFPCoext_1/S2Q%iS%i_1/MVD-S2-Q%i-L%i-C%02i-P0oPartAss_1/MVD-S2-Q%i-L%i-C%02i-P0_1", QuadNr, QuadNr, SegmentNr, QuadNr, Layer, SensNr, QuadNr, Layer, SensNr);
-					break;
-				    case 3:
-					 nodeName = mother; nodeName += Form("/MVDo0123ohoFPCoextoHSoSo0123_0/MVDo3ohoFPCoextoHSoS_1/St3Q%iohoFPCoext_1/S3Q%iS%i_1/MVD-S3-Q%i-L%i-C%02i-P0oPartAss_1/MVD-S3-Q%i-L%i-C%02i-P0_1", QuadNr, QuadNr, SegmentNr, QuadNr, Layer, SensNr, QuadNr, Layer, SensNr);
- 				      break;   
-				    default: 
-					break;  
-				    }
-				Bool_t nodeFound = gGeoManager->CheckPath(nodeName.Data());
-				if (  nodeFound ) 
-				    {
-			
-				    Detector->AddSensor (volName, volName, nodeName, new CbmMvdMimosa26AHR, iStation, volId, 0.0);     
-				    iStation++;
-				    break;
-				    
-				    } 
-				    
-				}
-			    
-			  }
-			
-			
-		      }  
-		 }
-	    }
-      }
+CbmMvdDetector* Detector = new CbmMvdDetector("A");
+CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
+mvdHandler->Init();
+mvdHandler->Fill();
+Detector->PrintParameter();
 }
 // -------------------------------------------------------------------------  
 

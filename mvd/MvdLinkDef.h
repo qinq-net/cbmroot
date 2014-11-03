@@ -33,6 +33,8 @@
 #pragma link C++ class CbmMvdSensorFindHitTask+;
 #pragma link C++ class CbmMvdSensorDigitizerTask+;
 
+#pragma link C++ class CbmMvdGeoHandler+;
+
 #pragma link C++ class MyG4UniversalFluctuationForSi+;
 
 
