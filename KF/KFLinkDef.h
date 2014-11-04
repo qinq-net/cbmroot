@@ -53,7 +53,7 @@
 #pragma link C++ class CbmKFParticleFinder+;
 #pragma link C++ class CbmKFParticleFinderPID+;
 #pragma link C++ class CbmKFParticleFinderQA+;
-
+#pragma link C++ class CbmKFParticleInterface+;
 #endif
 
 

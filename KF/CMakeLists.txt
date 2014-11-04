@@ -112,6 +112,7 @@ KFParticlePerformance/KFTopoPerformance.cxx
 CbmKFParticleFinder.cxx
 CbmKFParticleFinderPID.cxx
 CbmKFParticleFinderQA.cxx
+CbmKFParticleInterface.cxx
 )
 
 
@@ -159,6 +160,7 @@ KFParticlePerformance/KFTopoPerformance.h
 CbmKFParticleFinder.h
 CbmKFParticleFinderPID.h
 CbmKFParticleFinderQA.h
+CbmKFParticleInterface.h
 )
 
 If (APPLE)
