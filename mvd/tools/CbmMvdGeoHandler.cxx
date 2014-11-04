@@ -430,7 +430,7 @@ Int_t iStation = 0;
 
 }
 }
-else if(fGeoTyp == 4)
+else if(fGeoTyp == 1)
 {
   Int_t iStation =  1;
   Int_t volId    = -1;
