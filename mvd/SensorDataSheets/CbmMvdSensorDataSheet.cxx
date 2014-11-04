@@ -44,7 +44,8 @@ CbmMvdSensorDataSheet::CbmMvdSensorDataSheet()
   fStatesPerFrame(0),
   fPixelsPerBank(0),
   fAdcStepSize(fAdcDynamic/fAdcSteps),
-  fValidData(kFALSE)
+  fValidData(kFALSE),
+  fChargeThreshold()
 {
 }
 

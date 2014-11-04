@@ -56,7 +56,11 @@ CbmMvdGeoHandler::CbmMvdGeoHandler()
   fBeamheight(),
   fThickness(),
   fXres(),
-  fYres()
+  fYres(),
+  fIsSimulation(),
+  fStationMap(),
+  fStationPar(),
+  fDetector()
 {
 }
 //--------------------------------------------------------------------------
@@ -383,6 +387,8 @@ if(fBeamwidth > 0)fStationPar->SetBeamWidth(fStationNumber, fBeamwidth);
 //--------------------------------------------------------------------------
 void CbmMvdGeoHandler::FillStationMap()
 {
+if(fGeoTyp == 4)
+{
 Int_t iStation = 0;
   	for(Int_t StatNr = 0; StatNr < 4; StatNr++)
       	{
@@ -423,6 +429,27 @@ Int_t iStation = 0;
 		}
 
 }
+}
+else if(fGeoTyp == 4)
+{
+  Int_t iStation =  1;
+  Int_t volId    = -1;
+  do {
+    TString volName = Form("mvdstation%02i", iStation);
+    volId = gGeoManager->GetUID(volName);
+    if (volId > -1 ) {
+      fStationMap[volId] = iStation;
+      LOG(INFO) << GetName() << "::ConstructAsciiGeometry: "
+           << "Station No. " << iStation << ", volume ID " << volId 
+	   << ", volume name " << volName << FairLogger::endl;
+      iStation++;
+    }
+  } while ( volId > -1 );
+
+
+}
+else
+	LOG(FATAL) << "You tried to use an unsoported Geometry" << FairLogger::endl;
 }
 //--------------------------------------------------------------------------
 
