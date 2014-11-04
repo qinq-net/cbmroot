@@ -8,7 +8,7 @@
 #include "CbmDetectorList.h"
 #include "CbmTofDetectorId_v07a.h"
 #include "CbmTofDetectorId_v12b.h"
-//#include "CbmTofDetectorId_v14a.h"
+#include "CbmTofDetectorId_v14a.h"
 
 #include "FairLogger.h"
 
@@ -82,27 +82,25 @@ Int_t CbmTofGeoHandler::CheckGeometryVersion()
         return fGeoVersion;
       } else if (TString(node->GetName()).EqualTo("tof_v12b_0")) {
     	LOG(INFO)<< "Found TOF geometry v12b." << FairLogger::endl;
-	    fTofId = new CbmTofDetectorId_v12b();
-	    fGeoVersion = k12b;
+	fTofId = new CbmTofDetectorId_v12b();
+	fGeoVersion = k12b;
         return fGeoVersion;
       } else if (TString(node->GetName()).Contains("v13")){
                //TString(node->GetName()).EqualTo("tof_v13-3a_0")) {
     	LOG(INFO)<< "Found TOF geometry "<<TString(node->GetName())
                  <<", treat as Id 12b   "<< FairLogger::endl;
-	    fTofId = new CbmTofDetectorId_v12b();
-	    fGeoVersion = k12b;
+        fTofId = new CbmTofDetectorId_v12b();
+	fGeoVersion = k12b;
         return fGeoVersion;
       } else if (TString(node->GetName()).Contains("v14")){
-     	LOG(FATAL)<< "Found an unknown TOF geometry v14a. Was removed by F. Uhlig." << FairLogger::endl;
-
-/*    	LOG(INFO)<< "CbmTofGeoHandler::CheckGeometryVersion: Found TOF geometry "<<TString(node->GetName())
+    	LOG(INFO)<< "CbmTofGeoHandler::CheckGeometryVersion: Found TOF geometry "<<TString(node->GetName())
                  <<", treat as Id 14a   "<< FairLogger::endl;
-	    fTofId = new CbmTofDetectorId_v14a();
-	    fGeoVersion = k14a;
+	//	if(NULL!=fTofId) fTofId->Delete();
+      	fTofId = new CbmTofDetectorId_v14a();
+	fGeoVersion = k14a;
         return fGeoVersion;
-*/
       } else {
-     	LOG(FATAL)<< "Found an unknown TOF geometry." << FairLogger::endl;
+    	LOG(FATAL)<< "Found an unknown TOF geometry." << FairLogger::endl;
     	fGeoVersion = -1;
     	return fGeoVersion;
       }

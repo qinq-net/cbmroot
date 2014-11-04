@@ -11,6 +11,7 @@
 #include "CbmTofDigiExp.h"    // in cbmdata/tof
 #include "CbmTofGeoHandler.h" // in tof/TofTools
 #include "CbmTofDetectorId_v12b.h" // in cbmdata/tof
+#include "CbmTofDetectorId_v14a.h" // in cbmdata/tof
 #include "CbmTofCell.h"       // in tof/TofData
 #include "CbmTofDigiPar.h"    // in tof/TofParam
 #include "CbmTofDigiBdfPar.h" // in tof/TofParam
@@ -346,8 +347,18 @@ Bool_t   CbmTofDigitizerBDF::InitParameters()
       return kFALSE;
    }
 
-   fTofId = new CbmTofDetectorId_v12b();
+   LOG(INFO)<<"CbmTofDigitizerBDF::InitParameters: GeoVersion "<<iGeoVersion<<FairLogger::endl;
 
+   switch(iGeoVersion){
+       case k12b:
+	 fTofId = new CbmTofDetectorId_v12b();
+	 break;
+       case k14a:
+	 fTofId = new CbmTofDetectorId_v14a();
+	 break;
+       default:
+	 LOG(ERROR)<<"CbmTofDigitizerBDF::InitParameters: Invalid Detector ID "<<iGeoVersion<<FairLogger::endl;
+   }
    return kTRUE;
 }
 Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
@@ -372,6 +383,11 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
 
    // Generate the gain/fee channel matrix
    Int_t iNbSmTypes = fDigiBdfPar->GetNbSmTypes();
+
+   LOG(DEBUG2)<<"CbmTofDigitizerBDF::LoadBeamtimeValues: ini gain values for SmTypes "
+	      << iNbSmTypes
+	      << FairLogger::endl;
+
    fdChannelGain.resize( iNbSmTypes );
 
    TRandom3 randFeeGain;
@@ -489,7 +505,7 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
          } // switch( fDigiBdfPar->GetClusterRadiusModel() )
 
 
-      fh1ClusterTotProb[iSmType]  = new TH1D( Form("ClusterToProb%03d", iSmType),
+      fh1ClusterTotProb[iSmType]  = new TH1D( Form("ClusterTotProb%03d", iSmType),
                                                "Random throw to Cluster Tot mapping",
                                                10000, 0.0, 1.0 );
       TH1     *hClusterTot = fDigiBdfPar->GetClustTotHist(iSmType);
@@ -557,6 +573,8 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
                } // for each (Sm, rpc) pair
          } // for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
       } // else of if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
+
+   cout<<"CbmTofDigitizerBDF::LoadBeamtimeValues: GeoVersion "<<fGeoHandler->GetGeoVersion()<<endl;
 
    // TEST stupid stuffs
    Int_t iNbGeantChannels = fDigiPar->GetNrOfModules();
@@ -839,13 +857,13 @@ Bool_t   CbmTofDigitizerBDF::WriteHistos()
    fhMultiProbElCh->Write();
 
    // Uncomment if need to control the Cluster Size and ToT proba
-//   Int_t iNbSmTypes = fDigiBdfPar->GetNbSmTypes();
-//   for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
-//   {
-//      if( 0 == fDigiBdfPar->GetClusterModel() )
-//         fh1ClusterSizeProb[iSmType]->Write();
-//      fh1ClusterTotProb[iSmType]->Write();
-//   }
+   Int_t iNbSmTypes = fDigiBdfPar->GetNbSmTypes();
+   for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
+   {
+      if( 0 == fDigiBdfPar->GetClusterModel() )
+         fh1ClusterSizeProb[iSmType]->Write();
+      fh1ClusterTotProb[iSmType]->Write();
+   }
 
    gDirectory->cd( oldir->GetPath() );
 
@@ -1023,7 +1041,7 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                               dMinTime = fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime();
                            }
 
-			LOG(ERROR)<<Form(" New Tof Digi ")<<FairLogger::endl;
+			LOG(DEBUG)<<Form(" New Tof Digi ")<<FairLogger::endl;
 
                         new((*fTofDigisColl)[fiNbDigis]) CbmTofDigi(
                               *fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] );
@@ -1243,11 +1261,11 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
          || iRpc     < 0. || iNbRpc     <= iRpc
          || iChannel < 0. || iNbCh      <= iChannel )
       {
-         LOG(ERROR)<<"CbmTofDigitizerBDF => det ID "<< iDetId <<" SMType: "<<iSmType;
+	 LOG(ERROR)<<Form("CbmTofDigitizerBDF => det ID 0x%08x",iDetId) <<" SMType: "<<iSmType;
          LOG(ERROR)<<" SModule: "<<iSM<<" of "<<iNbSm+1;
          LOG(ERROR)<<" Module: "<<iRpc<<" of "<<iNbRpc+1;
          LOG(ERROR)<<" Gap: "<<iGap;
-         LOG(ERROR)<<" Cell: "<<iChannel<<" of "<<iNbCh+1 <<FairLogger::endl;
+         LOG(FATAL)<<" Cell: "<<iChannel<<" of "<<iNbCh+1 <<FairLogger::endl;
          continue;
       } // if error on channel data
 
@@ -1649,6 +1667,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       iSmType = fGeoHandler->GetSMType(iDetId);
       iRpc     = fGeoHandler->GetCounter(iDetId);
       iChannel = fGeoHandler->GetCell(iDetId);
+      if(fGeoHandler->GetGeoVersion() < k14a)
       iChannel --; // Again, channel going from 1 to nbCh instead of 0 to nbCh - 1 ?!?!?
       iGap     = fGeoHandler->GetGap(iDetId);
       iSM      = fGeoHandler->GetSModule(iDetId);
@@ -1678,11 +1697,12 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
          || iRpc     < 0. || iNbRpc     <= iRpc
          || iChannel < 0. || iNbCh      <= iChannel )
       {
-         LOG(ERROR)<<"CbmTofDigitizerBDF => det ID "<< iDetId <<" SMType: "<<iSmType;
+	 LOG(ERROR)<<Form("CbmTofDigitizerBDF => det ID 0x%08x",iDetId) 
+		   <<", GeoVersion "<< fGeoHandler->GetGeoVersion()<<", SMType: "<<iSmType;
          LOG(ERROR)<<" SModule: "<<iSM<<" of "<<iNbSm+1;
          LOG(ERROR)<<" Module: "<<iRpc<<" of "<<iNbRpc+1;
          LOG(ERROR)<<" Gap: "<<iGap;
-         LOG(ERROR)<<" Cell: "<<iChannel<<" of "<<iNbCh+1 <<FairLogger::endl;
+         LOG(FATAL)<<" Cell: "<<iChannel<<" of "<<iNbCh+1 <<FairLogger::endl;
          continue;
       } // if error on channel data
       LOG(DEBUG2)<<"CbmTofDigitizerBDF::DigitizeFlatDisc => Check Point "<<iPntInd
@@ -1719,6 +1739,10 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       //    (1-p)^NGaps with p = gap efficiency and Ngaps the number of gaps in this RPC
       // This results in the relation: p = 1 - (1 - P)^(1/Ngaps)
       //         with P = RPC efficiency from beamtime
+      LOG(DEBUG2)<<"CbmTofDigitizerBDF::DigitizeFlatDisc => Eff = "
+		 <<fDigiBdfPar->GetGapEfficiency(iSmType, iRpc) 
+		 <<FairLogger::endl;
+
       if( fDigiBdfPar->GetGapEfficiency(iSmType, iRpc) < fRandEff->Uniform(1) )
          continue;
 
@@ -1753,6 +1777,10 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       // Calculate the fraction of the charge in central channel
       Double_t dChargeCentral = dClustCharge * ComputeClusterAreaOnChannel(
                                     iChanId, dClusterSize, vPntPos.X(), vPntPos.Y());
+      LOG(DEBUG2)<<"CbmTofDigitizerBDF::DigitizeFlatDisc: ChargeCentral "<<dChargeCentral
+		 <<", "<<dClustCharge
+		 <<", "<<iChanId<<", "<<dClusterSize<<", "<<vPntPos.X()<<", "<<vPntPos.Y()<<", "<<vPntPos.Z()
+		 <<FairLogger::endl;
 
       dChargeCentral /= dClustArea;
       if( dClustCharge +0.0000001 < dChargeCentral )
@@ -1816,7 +1844,8 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 			gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
 	      LOG(DEBUG)<<Form(" TofDigitizerBDF:: (%3d,%3d,%3d,%3d) - node at (%6.1f,%6.1f,%6.1f) : 0x%p",
 			      iSmType,iSM,iRpc,iChannel,
-			      fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode)
+			       fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode, 
+			       vPntPos.X(), vPntPos.Y(), vPntPos.Z())
 			<<FairLogger::endl;
 	      TGeoNode*	cNode= gGeoManager->GetCurrentNode();
 	      TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();
@@ -1841,7 +1870,9 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 #endif
                           /fdSignalPropSpeed;
             } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
-
+	 LOG(DEBUG)<<Form(" TofDigitizerBDF:: chrg %7.1f, gain %7.1f, thr %7.1f ",dChargeCentral,
+			  fdChannelGain[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1],fDigiBdfPar->GetFeeThreshold())
+		   <<FairLogger::endl;
          // Switch between Digi and DigiExp
          if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
          {
@@ -2045,11 +2076,21 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 
             // Channel index in this UID is in [1,nbCh] instead of [0, nbCh[
             // ... don't ask me why ...
-            CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSM, iRpc, 0, iChanInd + 1);
 
+	    //            CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSM, iRpc, 0, iChanInd + 1);
+            Int_t iCh1=iChanInd;
+	    if(fGeoHandler->GetGeoVersion() < k14a) iCh1= iCh1+1; //FIXME
+	    CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSM, iRpc, 0, iCh1); 
             Int_t iSideChId = fTofId->SetDetectorInfo( xDetInfo );
 
             fChannelInfo = fDigiPar->GetCell( iSideChId );
+
+	    if(NULL == fChannelInfo){
+	      LOG(ERROR)<<"CbmTofDigitizerBDF::DigitizeFlatDisc: Invalid channel "
+			<<iSideChId<<" "<<iSmType<<" "<<iSM<<" "<<iRpc<<" "<<iChanInd+1
+			<<FairLogger::endl;
+	      continue;
+	    }
 
             // Calculate the fraction of the charge in this channel
             Double_t dChargeSideCh = dClustCharge * ComputeClusterAreaOnChannel(
@@ -2472,8 +2513,8 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
       } // if( pPoint )
 
       // Get all channel info
-      iDetId  = pPoint->GetDetectorID();
-      iSmType = fGeoHandler->GetSMType(iDetId);
+      iDetId   = pPoint->GetDetectorID();
+      iSmType  = fGeoHandler->GetSMType(iDetId);
       iRpc     = fGeoHandler->GetCounter(iDetId);
 
       iChannel = fGeoHandler->GetCell(iDetId);
@@ -2501,7 +2542,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
          || iRpc     < 0. || iNbRpc     < iRpc
          || iChannel < 0. || iNbCh      < iChannel )
       {
-         LOG(ERROR)<<"CbmTofDigitizerBDF => det ID "<< iDetId <<" SMType: "<<iSmType;
+	 LOG(ERROR)<<Form("CbmTofDigitizerBDF => det ID 0x%08x",iDetId) <<" SMType: "<<iSmType;
          LOG(ERROR)<<" SModule: "<<iSM<<" of "<<iNbSm+1;
          LOG(ERROR)<<" Module: "<<iRpc<<" of "<<iNbRpc+1;
          LOG(ERROR)<<" Gap: "<<iGap;
@@ -3342,6 +3383,9 @@ Double_t CbmTofDigitizerBDF::ComputeClusterAreaOnChannel(
             // First disc area
             Double_t dArea = dClustRadius * dClustRadius * TMath::Pi();
 
+	    LOG(DEBUG3)<<"CbmTofDigitizerBDF::ComputeClusterAreaOnChannel => CC in Ch "<<dArea
+		       <<FairLogger::endl;
+
             // Now check for each edge if it cuts the cluster circle
             // and remove the corresponding disc section if it does
             // (no overlap as no corner inside cluster)
@@ -3364,6 +3408,11 @@ Double_t CbmTofDigitizerBDF::ComputeClusterAreaOnChannel(
                // At max. one of the edges can cur the cluster circle
                // If it is the case, the area on the channel is the disc section area
                // If no crossing => no common area of cluster and channel
+
+	      LOG(DEBUG3)<<"CbmTofDigitizerBDF::ComputeClusterAreaOnChannel => CC out Ch "<<dClustRadius
+                         <<" "<<dEdgeR[0]<<" "<<dEdgeR[1]<<" "<<dEdgeR[2]<<" "<<dEdgeR[3]
+			 <<FairLogger::endl;
+
                if( TMath::Abs( dEdgeR[0] ) < dClustRadius )
                   return DiscSectionArea( dClustRadius, TMath::Abs( dEdgeR[0] ) );
                else if( TMath::Abs( dEdgeR[1] ) < dClustRadius )

@@ -795,6 +795,9 @@ Bool_t CbmTofTests::FillHistos()
       // with something in littrack QA
 //      CbmTofPoint* pPt = (CbmTofPoint*)(pTofHit->GetLinks());
       // Use instead the index
+      // outdated TBD
+      return kTRUE;
+
       CbmTofPoint* pPt = (CbmTofPoint*)fTofPointsColl->At( pTofHit->GetRefId() );
 
       fhTofRes->Fill( pTofHit->GetTime() - pPt->GetTime() );

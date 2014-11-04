@@ -593,6 +593,8 @@ void CbmTofDigiBdfPar::printParams()
       sChOrient[iSmType] = Form("  Chan orient. in SM type %3d:|->  ", iSmType);
       if( iMaxRpcNb < fiNbRpc[iSmType])
          iMaxRpcNb = fiNbRpc[iSmType];
+
+
       for( Int_t iRpc = 0; iRpc < fiNbRpc[iSmType]; iRpc ++)
       {
          sGapsNb[iSmType] += Form( "%3d  ", GetNbGaps( iSmType, iRpc) );

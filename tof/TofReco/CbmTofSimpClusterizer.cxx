@@ -12,6 +12,7 @@
 #include "CbmTofHit.h"        // in cbmdata/tof
 #include "CbmTofGeoHandler.h" // in tof/TofTools
 #include "CbmTofDetectorId_v12b.h" // in cbmdata/tof
+#include "CbmTofDetectorId_v14a.h" // in cbmdata/tof
 #include "CbmTofCell.h"       // in tof/TofData
 #include "CbmTofDigiPar.h"    // in tof/TofParam
 #include "CbmTofDigiBdfPar.h" // in tof/TofParam
@@ -308,7 +309,8 @@ void CbmTofSimpClusterizer::Exec(Option_t * option)
 
    fiNbHits = 0;
 
-   LOG(DEBUG)<<" CbmTofSimpClusterizer => New event"<<FairLogger::endl;
+   LOG(DEBUG)<<" CbmTofSimpClusterizer => New event with "
+	     <<fTofDigisColl->GetEntries()<<" digis "<<FairLogger::endl;
    fStart.Set();
 
    BuildClusters();
@@ -375,15 +377,31 @@ Bool_t   CbmTofSimpClusterizer::InitParameters()
    // Initialize the TOF GeoHandler
    Bool_t isSimulation=kFALSE;
    Int_t iGeoVersion = fGeoHandler->Init(isSimulation);
+   LOG(INFO)<<"CbmTofSimpClusterizer::InitParameters with GeoVersion "<<iGeoVersion<<FairLogger::endl;
+
    if( k12b > iGeoVersion )
    {
       LOG(ERROR)<<"CbmTofSimpClusterizer::InitParameters => Only compatible with geometries after v12b !!!"
                 <<FairLogger::endl;
       return kFALSE;
    }
-
-   fTofId = new CbmTofDetectorId_v12b();
-
+   
+   if(NULL != fTofId) 
+     LOG(INFO)<<"CbmTofSimpClusterizer::InitParameters with GeoVersion "<<fGeoHandler->GetGeoVersion()<<FairLogger::endl;
+   else{
+     switch(iGeoVersion){
+     case k12b: 
+       fTofId = new CbmTofDetectorId_v12b();
+       break;
+     case k14a:
+       fTofId = new CbmTofDetectorId_v14a();
+       break;
+     default:
+       LOG(ERROR)<<"CbmTofSimpClusterizer::InitParameters => Invalid geometry!!!"<<iGeoVersion
+		 <<FairLogger::endl;
+      return kFALSE;
+     }
+   }
    return kTRUE;
 }
 /************************************************************************************/
@@ -578,7 +596,11 @@ Bool_t   CbmTofSimpClusterizer::LoadGeometry()
             <<FairLogger::endl;
 
    Int_t iNrOfCells = fDigiPar->GetNrOfModules();
-   LOG(INFO)<<"Digi Parameter container contains "<<iNrOfCells<<" cells."<<FairLogger::endl;
+   LOG(INFO)<<"Digi Parameter container contains "<<iNrOfCells<<" cells"
+	    <<", interpret with GeoVersion "<<fGeoHandler->GetGeoVersion()<<FairLogger::endl;
+
+   fGeoHandler->CheckGeometryVersion();
+
    for (Int_t icell = 0; icell < iNrOfCells; ++icell) {
 
      Int_t cellId = fDigiPar->GetCellId(icell); // cellId is assigned in CbmTofCreateDigiPar
@@ -1095,7 +1117,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
          pDigi->SetTime(pDigi->GetTime() - dWT); // calibrate Digi Time 
 
 	 if(0) {//pDigi->GetType()==2 && pDigi->GetSm()==0){
-	  LOG(INFO)<<"CbmTofTestBeamClusterizer::BuildClusters: CalDigi "
+	  LOG(INFO)<<"CbmTofSimpClusterizer::BuildClusters: CalDigi "
 	            <<iDigInd<<",  T "
 		    <<pDigi->GetType()<<", Sm "
 		    <<pDigi->GetSm()<<", R "
@@ -1212,7 +1234,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
             {
                Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
                Int_t iChType = fDigiBdfPar->GetChanType( iSmType, iRpc );
-	       LOG(DEBUG2)<<"CbmTofTestBeamClusterizer::BuildClusters: RPC - Loop  "
+	       LOG(DEBUG2)<<"CbmTofSimpClusterizer::BuildClusters: RPC - Loop  "
 			 << Form(" %3d %3d %3d %3d ",iSmType,iSm,iRpc,iChType)
                          <<FairLogger::endl;
                fviClusterMul[iSmType][iSm][iRpc]=0; 
@@ -1291,7 +1313,10 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                               Int_t iLastChId = iChId; // Save Last hit channel
 
                               // 2 Digis = both sides present
-                              CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh+1); //FIXME
+			      Int_t iCh1=iCh;
+			      if(fGeoHandler->GetGeoVersion() < k14a) iCh1= iCh1+1; //FIXME
+			      CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh1); 
+
                               iChId = fTofId->SetDetectorInfo( xDetInfo );
 			      Int_t iUCellId=CbmTofAddress::GetUniqueAddress(iSm,iRpc,iCh,0,iSmType);
 			      LOG(DEBUG1)<<"CbmTofSimpClusterizer::BuildClusters:" 
@@ -1475,7 +1500,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     Int_t iDetId = CbmTofAddress::GetUniqueAddress(iSm,iRpc,iChm,0,iSmType);
                                     Int_t iRefId = 0; // Index of the correspondng TofPoint
 				    // if(NULL != fTofPointsColl) {     iRefId = fTofPointsColl->IndexOf( vPtsRef[0] ); }
-				    LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Save Hit  "
+				    LOG(DEBUG)<<"CbmTofSimpClusterizer::BuildClusters: Save Hit  "
 					       << Form(" %3d %3d 0x%08x %3d %3d %3d %f %f",
 						       fiNbHits,iNbChanInHit,iDetId,iCh,iLastChan,iRefId,
 						       dWeightedTime,dWeightedPosY)
@@ -1626,7 +1651,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                   // Check orientation to properly assign errors
                   if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                   {
-		     LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters: H-Hit " <<FairLogger::endl;
+		     LOG(DEBUG1)<<"CbmTofSimpClusterizer::BuildClusters: H-Hit " <<FairLogger::endl;
                   } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                   else
                   {
@@ -1673,7 +1698,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                      Int_t iDetId = CbmTofAddress::GetUniqueAddress(iSm,iRpc,iChm,0,iSmType);
                      Int_t iRefId = 0; // Index of the correspondng TofPoint
 		     //                     if(NULL != fTofPointsColl) iRefId = fTofPointsColl->IndexOf( vPtsRef[0] );
-		     LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Save V-Hit  "
+		     LOG(DEBUG)<<"CbmTofSimpClusterizer::BuildClusters: Save V-Hit  "
 //		     << Form(" %3d %3d 0x%08x %3d %3d %3d 0x%08x",
 		     << Form(" %3d %3d %3d %3d %3d ",
 			     fiNbHits,iNbChanInHit,iDetId,iLastChan,iRefId) //vPtsRef.size(),vPtsRef[0])
