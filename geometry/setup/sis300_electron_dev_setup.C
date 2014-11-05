@@ -60,8 +60,8 @@ void sis300_electron_dev_setup()
   // -----  DigiFiles  ------------------------------------------------------
   stsDigi      = "sts/sts_" + stsTag + "_std.digi.par";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
-  //  tofDigi      = "tof/tof_" + tofTag + ".digi.par";
-  tofDigi      = "tof/tof_v13b.digi.par";
+  tofDigi      = "tof/tof_" + tofTag + ".digi.par";
+  //tofDigi      = "tof/tof_v13b.digi.par";
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
