@@ -35,5 +35,7 @@
 #pragma link C++ class CbmRichProtProjectionProducer+;
 #pragma link C++ class CbmRichPrototypeQa+;
 
+
+#pragma link C++ class CbmRichTrbUnpack+;
 #endif
 
