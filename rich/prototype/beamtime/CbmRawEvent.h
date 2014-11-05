@@ -2,6 +2,8 @@
 #define CBMRAWEVENT_H
 
 #include <ostream>
+#include <stdint.h>
+
 
 using namespace std;
 
