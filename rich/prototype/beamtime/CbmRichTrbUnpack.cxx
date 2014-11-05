@@ -22,7 +22,7 @@ void CbmRichTrbUnpack::Run(const string& hldFileName)
 	streampos size;
 	char * memblock;
 
-	ifstream file (hldFileName, ios::in|ios::binary|ios::ate);
+	ifstream file (hldFileName.c_str(), ios::in|ios::binary|ios::ate);
 	if (file.is_open()) {
 		size = file.tellg();
 		memblock = new char [size];
