@@ -53,7 +53,7 @@ Int_t mvd_qa2_transDelta()
   Double_t fieldScale = 1.;      // field scaling factor
 
   // MVD geometry
-     TString mvdGeom = "mvd/mvd_v07a.geo.root";
+     TString mvdGeom = "mvd/mvd_v14a.geo.root";
 //     TString stsGeom = "sts_Standard_s3055AAFK5.SecD.geo";
 
   // In general, the following parts need not be touched

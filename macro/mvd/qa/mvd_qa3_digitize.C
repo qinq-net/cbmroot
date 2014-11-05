@@ -63,7 +63,7 @@ Int_t mvd_qa3_digitize()
 
 
     // -------   MVD Digitiser   ----------------------------------------------
-    CbmMvdDigitizeL* digi = new CbmMvdDigitizeL("MVDDigitiser", 0, iVerbose);
+    CbmMvdDigitizer* digi = new CbmMvdDigitizer("MVDDigitiser", 0, iVerbose);
     cout << "Adding Task:  CbmMvdDigitiser... " << endl;
     fRun->AddTask(digi);
 
@@ -102,13 +102,13 @@ Int_t mvd_qa3_digitize()
     // -----   MVD Cluster Finder   ----------------------------------------------
 
     
-    CbmMvdFindHits* mvd_hit   = new CbmMvdFindHits("MVDFindHits", 0, iVerbose);
+    CbmMvdHitfinder* mvd_hit   = new CbmMvdHitfinder("MVDFindHits", 0, iVerbose);
    // mvd_hit->SetSigmaNoise(15,kTRUE);  // kTRUE = add noise to digis, kFALSE = ideal detector
    // mvd_hit->SetSeedThreshold(50); //in electrons!
    // mvd_hit->SetNeighbourThreshold(30);
    // mvd_hit->SetAdcBits(12);
-    mvd_hit->SetHitPosErrX(0.0005);
-    mvd_hit->SetHitPosErrY(0.0005);
+   // mvd_hit->SetHitPosErrX(0.0005);
+   // mvd_hit->SetHitPosErrY(0.0005);
     //mvd_hit->ShowDebugHistograms();
     fRun->AddTask(mvd_hit);
 

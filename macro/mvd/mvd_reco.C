@@ -12,7 +12,7 @@
 
 
 void mvd_reco(Int_t  nEvents = 5,
-              Int_t  iVerbose = 2)
+              Int_t  iVerbose = 1)
 {
 
   // ========================================================================
@@ -70,7 +70,7 @@ void mvd_reco(Int_t  nEvents = 5,
   // ------------------------------------------------------------------------
  
   // -----   MVD Digitiser   ----------------------------------------------
-  CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose);
+  CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose); 
   run->AddTask(mvdDigitise);
   // ----------------------------------------------------------------------
 
@@ -78,12 +78,7 @@ void mvd_reco(Int_t  nEvents = 5,
   CbmMvdHitfinder* mvdHitfinder = new CbmMvdHitfinder("MVD Hit Finder", 0, iVerbose);
   run->AddTask(mvdHitfinder);
   // ----------------------------------------------------------------------
-
-  // -----     MVD FullRun     ---------------------------------------------
-  //FairTask* mvdRun = new CbmMvdFullRun("Fullrun", 0, iVerbose);
-  //run->AddTask(mvdRun);
-  // ----------------------------------------------------------------------
-    
+  
   // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo*  parIo = new FairParRootFileIo();
@@ -118,6 +113,6 @@ void mvd_reco(Int_t  nEvents = 5,
   cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
   cout << endl;
   // ------------------------------------------------------------------------
-
+ 
 
 }

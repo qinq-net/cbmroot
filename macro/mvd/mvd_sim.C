@@ -13,8 +13,8 @@ void mvd_sim()
 
   // Input file
   TString inDir   = gSystem->Getenv("VMCWORKDIR");
-  TString inFile  = inDir + "/input/urqmd.ftn14";
-  
+  TString inFile = inDir + "/input/urqmd.ftn14";
+
   // Number of events
   Int_t   nEvents = 5;
 
@@ -27,11 +27,10 @@ void mvd_sim()
   // Cave geometry
   TString caveGeom = "cave.geo";
 
-  // Target geometry
-  TString targetGeom = "target_au_250mu.geo";
-
   // Beam pipe geometry
-  TString pipeGeom = "pipe/pipe_v13a.geo.root";
+  TString pipeGeom = "pipe/pipe_v14f.root";
+  //TString pipeGeom = "pipe/pipe_standard.geo";
+  //TString pipeGeom = "pipe/pipe_v14e_new_mvd.root";
 
   // Magnet geometry and field map
   TString magnetGeom  = "magnet/magnet_v12b.geo.root";
@@ -41,8 +40,8 @@ void mvd_sim()
   Int_t fieldSymType = 3;
 
   // MVD geometry
-  TString mvdGeom = "mvd/mvd_v14a.geo.root";
 
+  TString mvdGeom = "mvd/mvd_v14a.geo.root";
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -103,7 +102,7 @@ void mvd_sim()
   pipe->SetGeometryFileName(pipeGeom);
   fRun->AddModule(pipe);
   
-  FairModule* target= new CbmTarget(97, 0.25);
+  FairModule* target= new CbmTarget(79, 0.25);
   fRun->AddModule(target);		
 
   FairModule* magnet = new CbmMagnet("MAGNET");
@@ -136,14 +135,6 @@ void mvd_sim()
   FairUrqmdGenerator*  urqmdGen = new FairUrqmdGenerator(inFile);
   primGen->AddGenerator(urqmdGen);
   fRun->SetGenerator(primGen);     
-
-  /*airBoxGenerator* boxGenerator=new FairBoxGenerator(211,1500);
-  boxGenerator->SetXYZ(0,0,0);
-  boxGenerator->SetPRange(120,121);
-  boxGenerator->SetPhiRange(0,360);
-  boxGenerator->SetThetaRange(0,180);
-  primGen->AddGenerator(boxGenerator); 
-  fRun->SetGenerator(primGen); */ 
   // ------------------------------------------------------------------------
 
 

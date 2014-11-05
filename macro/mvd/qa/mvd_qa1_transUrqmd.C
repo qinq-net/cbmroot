@@ -44,7 +44,7 @@ Int_t mvd_qa1_transUrqmd()
   Double_t fieldScale = 1.;      // field scaling factor
 
   // MVD geometry
-  TString mvdGeom = "mvd/mvd_v07a.geo.root";
+  TString mvdGeom = "mvd/mvd_v14a.geo.root";
 
   // In general, the following parts need not be touched
   // ========================================================================
