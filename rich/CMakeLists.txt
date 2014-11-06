@@ -9,6 +9,7 @@ ${CBMROOT_SOURCE_DIR}/rich/finder
 #${CBMROOT_SOURCE_DIR}/rich/qa
 ${CBMROOT_SOURCE_DIR}/rich/tracks
 ${CBMROOT_SOURCE_DIR}/rich/selection
+${CBMROOT_SOURCE_DIR}/prototype/beamtime
 
 ${CBMROOT_SOURCE_DIR}/cbmbase 
 ${CBMROOT_SOURCE_DIR}/cbmbase/report

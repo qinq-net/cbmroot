@@ -8,41 +8,46 @@ using namespace std;
 class CbmTrbRawHit
 {
 public:
+	CbmTrbRawHit () :
+		fTdcId (0),
+		fLeadingChannel (0),
+		fLeadingEpoch(0),
+		fLeadingCoarseTime(0),
+		fLeadingFineTime(0),
+		fTrailingChannel(0),
+		fTrailingEpoch(0),
+		fTrailingCoarseTime(0),
+		fTrailingFineTime(0),
+		fLeadingFineTimeCalibCorr(0.),
+		fTrailingFineTimeCalibCorr(0.)
+    {
 
-	CbmTrbRawHit (UShort_t tdc, UShort_t channel, UChar_t edgeType,
-         UInt_t epoch, UShort_t coarseTime, UShort_t fineTime) :
-             fTdcId (tdc), fChannel (channel), fEdgeType (edgeType)
+	}
+
+	CbmTrbRawHit (UShort_t tdc,
+		UShort_t leadingChannel, UInt_t leadingEpoch, UShort_t leadingCoarseTime, UShort_t leadingFineTime,
+	    UShort_t trailingChannel, UInt_t trailingEpoch, UShort_t trailingCoarseTime, UShort_t trailingFineTime) :
+	         fTdcId (tdc),
+	         fLeadingChannel(leadingChannel),
+	         fLeadingEpoch(leadingEpoch),
+	         fLeadingCoarseTime(leadingCoarseTime),
+	         fLeadingFineTime(leadingFineTime),
+	         fTrailingChannel(trailingChannel),
+	         fTrailingEpoch(trailingEpoch),
+	         fTrailingCoarseTime(trailingCoarseTime),
+	         fTrailingFineTime(trailingFineTime),
+	         fLeadingFineTimeCalibCorr(0.),
+	         fTrailingFineTimeCalibCorr(0.)
 	{
-      switch (edgeType)
-      {
-      case 0:  // trailing
-         this->fTrailingEpoch = epoch;
-         this->fTrailingCoarseTime = coarseTime;
-         this->fTrailingFineTime = fineTime;
-         break;
-      case 1:  // leading
-         this->fLeadingEpoch = epoch;
-         this->fLeadingCoarseTime = coarseTime;
-         this->fLeadingFineTime = fineTime;
-         break;
-      case 2:
-         cout << "CbmTrbRawHit: For initializing both edges' times call another constructor." << endl;
-         break;
-      default:
-         cout << "CbmTrbRawHit: Incorrect EdgeType: 0-Leading, 1-Trailing, 2-Both" <<endl;;
-         break;
-      }
 
-      fLeadingFineTimeCalibCorr = 0.;
-      fTrailingFineTimeCalibCorr = 0.;
-   }
+	}
 
    UShort_t GetTdc() const {return this->fTdcId;}
-   UShort_t GetChannel() const {return this->fChannel;}
-   UChar_t GetEdgeType() const {return this->fEdgeType;}
+   UShort_t GetLChannel() const {return this->fLeadingChannel;}
    UInt_t GetLEpoch() const {return this->fLeadingEpoch;}
    UShort_t GetLCTime() const {return this->fLeadingCoarseTime;}
    UShort_t GetLFTime() const {return this->fLeadingFineTime;}
+   UShort_t GetTChannel() const {return this->fTrailingChannel;}
    UInt_t GetTEpoch() const {return this->fTrailingEpoch;}
    UShort_t GetTCTime() const {return this->fTrailingCoarseTime;}
    UShort_t GetTFTime () const {return this->fTrailingFineTime;}
@@ -53,27 +58,14 @@ public:
    void SetLeadingTimeCorr (Double_t LFTimeCalibrCorr) {this->fLeadingFineTimeCalibCorr = LFTimeCalibrCorr;}
    void SetTrailingTimeCorr (Double_t TFTimeCalibrCorr){this->fTrailingFineTimeCalibCorr = TFTimeCalibrCorr;}
 
-   // return true if leading edge exists
-   inline bool IsLeading() const { return (fEdgeType == 1) || (fEdgeType == 2); }
-   // return true if trailing edge exists
-   inline bool IsTrailing() const { return (fEdgeType == 0) || (fEdgeType == 2); }
-
 private:
    UShort_t fTdcId;
-   UShort_t fChannel;
 
-   // Flag:
-   // 3 - not initialized
-   // 2 - both leading and trailing
-   // 1 - only leading
-   // 0 - only trailing
-   // Done so unusual to be the same 0/1 as 0/1 of 'isrising' in TTrbProc::ProcessTDCV3
-   UChar_t fEdgeType;
-
-   // Data
+   UShort_t fLeadingChannel;
    UInt_t fLeadingEpoch;            // 28 bit
    UShort_t fLeadingCoarseTime;     // 11 bit
    UShort_t fLeadingFineTime;       // 10 bit
+   UShort_t fTrailingChannel;
    UInt_t fTrailingEpoch;           // 28 bit
    UShort_t fTrailingCoarseTime;    // 11 bit
    UShort_t fTrailingFineTime;      // 10 bit
