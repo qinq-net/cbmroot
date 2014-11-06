@@ -3,6 +3,7 @@
 #include "CbmTrbRawHit.h"
 #include "CbmTrbOutputHit.h"
 #include "CbmRichTrbDefines.h"
+#include "CbmRichTrbParam.h"
 
 #include "TH1D.h"
 #include "TCanvas.h"
@@ -216,6 +217,7 @@ void CbmRichTrbUnpack::BuildEvent()
 	// sort array of RICH hits
 	std::sort(fOutputRichHits.begin(), fOutputRichHits.end(), CbmTrbOutputHitLeadingFullTimeComparatorLess());
 
+	CbmRichTrbParam* param = CbmRichTrbParam::Instance();
 	for (Int_t iRef = 0; iRef < nofRefHits; iRef++) {
 		Int_t indmin, indmax;
 		FindMinMaxIndex(fOutputReferenceHits[iRef]->GetLFullTime(), &indmin, &indmax);
@@ -223,6 +225,9 @@ void CbmRichTrbUnpack::BuildEvent()
 		//cout << "NEW EVENT, size " << size << endl;
 		for (Int_t iH = indmin; iH <= indmax; iH++) {
 			CbmTrbOutputHit* h = fOutputRichHits[iH];
+			CbmRichTrbMapData* data = param->GetRichTrbMapData(h->GetTdc(), h->GetLChannel());
+
+			cout << data->GetX() << " " << data->GetY() << endl;
 			//cout.precision(4);
 			//cout <<fixed << iH << " " << hex << h->GetTdc() << dec << " " << h->GetLChannel() << " " << h->GetLFullTime() << endl;
 		}
