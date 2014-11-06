@@ -83,7 +83,7 @@ CbmMvdDetector::~CbmMvdDetector() {
 // -------Setters -----------------------------------------------------
 
 void CbmMvdDetector::AddSensor(TString clearName, TString fullName, TString nodeName, 
-			       CbmMvdSensorDataSheet* sensorData, Int_t stationNr, Int_t volumeId, Double_t sensorStartTime) {
+			       CbmMvdSensorDataSheet* sensorData, Int_t sensorNr, Int_t volumeId, Double_t sensorStartTime, Int_t stationNr) {
  
   /**
    * 
@@ -96,13 +96,13 @@ void CbmMvdDetector::AddSensor(TString clearName, TString fullName, TString node
   
   Int_t nSensors=fSensorArray->GetEntriesFast();
  
-  new ((*fSensorArray)[nSensors]) CbmMvdSensor(clearName, sensorData, fullName, nodeName,stationNr,volumeId,sensorStartTime);
+  new ((*fSensorArray)[nSensors]) CbmMvdSensor(clearName, sensorData, fullName, nodeName,sensorNr,volumeId,sensorStartTime);
   //CbmMvdSensor(const char* name, CbmMvdSensorDataSheet* dataSheet, TString volName,
   //TString nodeName, Int_t stationNr, Int_t volumeId, Double_t sensorStartTime);
  
   CbmMvdSensor* sensor = (CbmMvdSensor*)fSensorArray->At(nSensors);
   sensor->SetDataSheet(sensorData);
-
+  sensor->SetStation(stationNr);
 
     Float_t misalignment[3], randArray[3];
     TRandom3* rand = new TRandom3(0);

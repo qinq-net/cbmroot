@@ -416,7 +416,7 @@ for (Int_t iPoint=0; iPoint<fInputPoints->GetEntriesFast(); iPoint++)
 	  cout << "    -received bad MC-Point. Ignored." << endl;
 	  continue;
 	  } 
-      if (point->GetStationNr() != fSensor->GetStationNr())
+      if (point->GetStationNr() != fSensor->GetSensorNr())
 	{
 	  cout << "-W-" << GetName() << ":: Exec:" <<endl;
 	  cout << "    -received bad MC-Point which doesn't belong here. Ignored." << endl;

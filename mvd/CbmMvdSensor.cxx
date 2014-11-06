@@ -30,6 +30,7 @@ using std::endl;
 CbmMvdSensor::CbmMvdSensor() 
   : TNamed(),
     fStationNr(0),
+    fSensorNr(0),
     fVolumeId(0),
     fDetectorID(-1),
     fDigiPlugin(-1),
@@ -70,10 +71,10 @@ cout << " Must be added manually before using this class." << endl;
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmMvdSensor::CbmMvdSensor(const char* name, CbmMvdSensorDataSheet* dataSheet, TString volName, TString nodeName,
-			   Int_t stationNr, Int_t volumeId, Double_t sensorStartTime)
+CbmMvdSensor::CbmMvdSensor(const char* name, CbmMvdSensorDataSheet* dataSheet, TString volName, TString nodeName, Int_t stationNr, Int_t volumeId, Double_t sensorStartTime)
   : TNamed(name, ""), 
-    fStationNr(stationNr),
+    fStationNr(),
+    fSensorNr(stationNr),
     fVolumeId(volumeId),
     fDetectorID(DetectorId(stationNr)),
     fDigiPlugin(-1),

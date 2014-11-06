@@ -71,7 +71,7 @@ class CbmMvdStationPar : public TNamed
 
  protected:
 
-  Int_t                   fStationCount;        // Number of Stations
+  Int_t                   fStationCount;        // Number of Stations, station numbering starts at 0!!!
 
   map<Int_t , Int_t >  fZPositions;          // map of the z positions of all Stations 
   map<Int_t , Double_t >  fThicknesses;      // in cm 

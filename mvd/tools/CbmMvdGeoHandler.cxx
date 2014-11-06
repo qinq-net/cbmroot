@@ -352,7 +352,7 @@ Int_t iStation = 0;
 				Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
 				        if(nodeFound)
 					{
-					fDetector->AddSensor(fSensorName, fSensorName, fnodeName, new CbmMvdMimosa26AHR, iStation, fVolId, 0.0);
+					fDetector->AddSensor(fSensorName, fSensorName, fnodeName, new CbmMvdMimosa26AHR, iStation, fVolId, 0.0, StatNr);
 					iStation++;
 					FillParameter();
 					}

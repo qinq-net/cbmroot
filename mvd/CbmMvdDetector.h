@@ -81,7 +81,7 @@ class CbmMvdDetector : public TNamed
   /** Initialisation */
   
   void AddSensor(TString clearName, TString fullName, TString nodeName, 
-		 CbmMvdSensorDataSheet* sensorData, Int_t stationNr, Int_t volumeId, Double_t sensorStartTime);
+		 CbmMvdSensorDataSheet* sensorData, Int_t sensorNr, Int_t volumeId, Double_t sensorStartTime, Int_t stationNr);
   void AddPlugin(CbmMvdSensorPlugin* plugin);
   void BuildDebugHistograms(){;};
   void Init();

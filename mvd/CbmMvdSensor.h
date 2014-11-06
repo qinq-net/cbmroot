@@ -63,6 +63,7 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   Int_t    GetStationNr()  const { return fStationNr; }
   Int_t    GetVolumeId()   const { return fVolumeId; }
   Int_t    GetDetectorID() const { return fDetectorID;};
+  Int_t    GetSensorNr() const { return fSensorNr; }
   
   Double_t GetDX(){return fShape->GetDX();};        
   Double_t GetDY(){return fShape->GetDY();};        
@@ -79,7 +80,9 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   void     SetDataSheet(CbmMvdSensorDataSheet* sheet){fSensorData = sheet;}
   void     SetMap(std::map<Int_t, Int_t> SensorMap) 	{fSensorMap = SensorMap;} // Get Sensor Map to identify every Sensor
   void     SendInput(CbmMvdPoint* point);
-  
+  void     SetStation(Int_t StationNumber){fStationNr = StationNumber;}  
+
+
   /** Coordinate transformations **/
   void LocalToTop	(Double_t* local, Double_t* lab);
   void TopToLocal	(Double_t* lab, Double_t* local);
@@ -138,6 +141,7 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
  protected:
 
   Int_t        fStationNr;        // Station identifier
+  Int_t	       fSensorNr; 	  // Sensor identifier
   Int_t        fVolumeId;         // MC unique volume ID
   Int_t        fDetectorID;       // unique Detector ID
   Int_t        fDigiPlugin;
