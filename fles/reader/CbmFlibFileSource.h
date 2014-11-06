@@ -36,11 +36,15 @@ class CbmFlibFileSource : public FairSource
     void Reset();
 
     void SetFileName(TString name) { fFileName = name; }
+    void SetHostName(TString name) { fFileName = name; }
+    void SetPortNumber(Int_t port) { fPort = port; }
 
   private:
   
     TString fFileName;
-
+    TString fHost;
+    Int_t   fPort;
+    
     // --- Output arrays
     TClonesArray* fSpadicRaw;         ///< Output array of CbmSpadicRawMessage
 

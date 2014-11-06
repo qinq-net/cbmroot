@@ -10,6 +10,7 @@
 
 #include "TimesliceInputArchive.hpp"
 #include "Timeslice.hpp"
+#include "TimesliceReceiver.hpp"
 #include "MicrosliceContents.hpp"
 
 // note M. Krieger, 2014-08-15: these includes should not be needed, please test
@@ -29,6 +30,8 @@
 CbmFlibFileSource::CbmFlibFileSource()
   : FairSource(),
     fFileName(""),
+    fHost("localhost"),
+    fPort(5556),
     fSpadicRaw(new TClonesArray("CbmSpadicRawMessage", 10)),
     fSource(NULL)
 {
@@ -39,6 +42,8 @@ CbmFlibFileSource::CbmFlibFileSource()
 CbmFlibFileSource::CbmFlibFileSource(const CbmFlibFileSource& source)
   : FairSource(source),
     fFileName(""),
+    fHost("localhost"),
+    fPort(5556),
     fSpadicRaw(NULL),
     fSource(NULL)
 {
@@ -51,18 +56,22 @@ CbmFlibFileSource::~CbmFlibFileSource()
 
 Bool_t CbmFlibFileSource::Init()
 {
-  LOG(INFO) << "Open the Flib input file" << FairLogger::endl;
   if ( 0 == fFileName.Length() ) {
-    LOG(FATAL) << "No input file defined." << FairLogger::endl;
+    TString connector = Form("tcp://%s:%i", fHost.Data(), fPort);
+    LOG(INFO) << "Open TSPublisher at " << connector << FairLogger::endl;
+    fSource = new fles::TimesliceReceiver(connector.Data());
+    if ( !fSource) { 
+      LOG(FATAL) << "Could not connect to publisher." << FairLogger::endl;
+    } 
   } else {
+    LOG(INFO) << "Open the Flib input file " << fFileName << FairLogger::endl;
     // Open the input file
     fSource = new fles::TimesliceInputArchive(fFileName.Data());
     //fSource.reset(new fles::TimesliceInputArchive(fFileName.Data()));
-
+    if ( !fSource) { 
+      LOG(FATAL) << "Could not open input file." << FairLogger::endl;
+    } 
   }
-  if ( !fSource) { 
-    LOG(FATAL) << "Could not open input file." << FairLogger::endl;
-  } 
 
   FairRootManager* ioman = FairRootManager::Instance();
   ioman->Register("SpadicRawMessage", "spadic raw data", fSpadicRaw, kTRUE);
