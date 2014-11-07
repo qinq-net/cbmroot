@@ -34,13 +34,18 @@ CbmMuchFindHitsStraws::CbmMuchFindHitsStraws(const char* digiFileName)
     , fClusters(NULL)
     , fHits(NULL)
     , fEffic(0)
-    , fMerge(0)
+    , fMerge(1)
     , fMirror(0)
     , fBinary(1)
     , fDimens(1)
     , fPhis()
+    , fDiams()
 {
-    SetPhis(0., 10, -10.);
+  //Double_t phis[10] = {0., 10., -10.};
+  //Double_t phis[10] = {-7., 0., 7., 0.};
+  Double_t phis[10] = {-7., 0., 7., 0., -3.};
+  SetPhis(5, phis);
+  for (Int_t i = 0; i < 10; ++i) fDiams[i] = 0.62;  
 }
 
 // -------------------------------------------------------------------------
@@ -106,21 +111,23 @@ void CbmMuchFindHitsStraws::Exec(Option_t* opt)
   if (fHits) fHits->Delete();
 
     static Int_t first = 1;
-    static Double_t radIn[6];
-    Double_t diam[6] = { 0.62, 0.62, 0.62, 0.62, 0.62, 0.62 }; // tube diameters
+    static Double_t radIn[20];
     Double_t sigmaX = 0.02, sigmaY = 2.0;                      // 200um, 2cm
-    const Double_t sigmaBin = diam[0] / TMath::Sqrt(12.);
-
-    Double_t phi[3] = { fPhis[0] * TMath::DegToRad(), fPhis[1] * TMath::DegToRad(), fPhis[2] * TMath::DegToRad() }; // rotation angles of views (doublets)
+    const Double_t sigmaBin = fDiams[0] / TMath::Sqrt(12.);
 
     if (first)
     {
         // Some initialization - should go somewhere else
+        cout << "--------------------------------------- " << endl; 
         cout << " Processing straws ... " << endl;
+        if (fBinary) cout << " With binary readout " << endl;
+	else cout << " With drift time measurement " << endl;
+	cout << " With " << fDimens << "-D information." << endl;
+        cout << "--------------------------------------- " << endl; 
         first = 0;
         // Get inner radia of stations
         Int_t nSt = fGeoScheme->GetNStations();
-        for (Int_t i = 0; i < nSt; ++i)
+        for (Int_t i = 0; i < nSt; ++i) 
         {
             CbmMuchStation* st = fGeoScheme->GetStation(i);
             radIn[i] = st->GetRmin();
@@ -128,7 +135,7 @@ void CbmMuchFindHitsStraws::Exec(Option_t* opt)
             cout << i << " " << radIn[i] << " " << mod->GetSize().X() << " " << mod->GetSize().Y() << " " << mod->GetSize().Z() << " " << mod->GetDetectorType()
                  << endl;
             if (mod->GetDetectorType() == 2)
-                assert(TMath::Abs(mod->GetSize().Z() - diam[i]) < 0.1); // tube diameter
+                assert(TMath::Abs(mod->GetSize().Z() - fDiams[i]) < 0.1); // tube diameter
         }
     }
 
@@ -166,21 +173,19 @@ void CbmMuchFindHitsStraws::Exec(Option_t* opt)
         Int_t station3 = CbmMuchAddress::GetStationIndex(address);
         Int_t layer = CbmMuchAddress::GetLayerIndex(address);
         Int_t side = CbmMuchAddress::GetLayerSideIndex(address);
-        Int_t rot = layer % 3;
-        Double_t cosPhi = TMath::Cos(phi[rot]);
-        Double_t sinPhi = TMath::Sin(phi[rot]);
+        Double_t cosPhi = TMath::Cos(fPhis[layer]);
+        Double_t sinPhi = TMath::Sin(fPhis[layer]);
         Double_t plocX = xyz[0] * cosPhi + xyz[1] * sinPhi;
         Double_t plocY = -xyz[0] * sinPhi + xyz[1] * cosPhi;
-        //    std::cout << "phi=" << phi[rot] << " x=" << xyz[0] << " y=" << xyz[1] << " z=" << xyz[2] << " plocX=" << plocX << " plocY=" << plocY << std::endl;
+        //    std::cout << "phi=" << phi[layer] << " x=" << xyz[0] << " y=" << xyz[1] << " z=" << xyz[2] << " plocX=" << plocX << " plocY=" << plocY << std::endl;
         Double_t xloc = plocX;
-        // cout << " Local: " << ploc.getX() << " " << ploc.getY() << " " << ploc.getZ() << endl;
         if (side)
-            xloc += diam[station3] / 2.; // half-tube shift
-        Int_t itube = (Int_t)(xloc / diam[station3]), iSegment;
+            xloc += fDiams[station3] / 2.; // half-tube shift
+        Int_t itube = (Int_t)(xloc / fDiams[station3]), iSegment;
         if (xloc < 0)
             itube--;
-        Double_t xwire = (itube + 0.5) * diam[station3]; // wire position
-        // cout << itube << " " << layer << " " << side << " " << xloc << " " << xwire << endl;
+        Double_t xwire = (itube + 0.5) * fDiams[station3]; // wire position
+        //cout << itube << " " << layer << " " << side << " " << xloc << " " << xwire-fDiams[station3]/2.*side << endl;
         Double_t times[3] = { 0 };
 
         /* No segmentation outside beam hole region
@@ -196,8 +201,6 @@ void CbmMuchFindHitsStraws::Exec(Option_t* opt)
 
         // Global coordinates in rotated coordinate system
         Double_t errU = gRandom->Gaus(0, sigmaX);
-        // Double_t wXY = TMath::Sin(phi[rot]);
-        // cout << station3 << " " << layer << " " << " " << wXY << endl;
 
         pos.SetXYZ(xyz[0], xyz[1], xyz[2]);
         dpos.SetXYZ(sigmaX, sigmaY, 0.);
@@ -205,7 +208,7 @@ void CbmMuchFindHitsStraws::Exec(Option_t* opt)
         iarray[0] = station3;
         iarray[1] = itube;
         iarray[2] = iSegment;
-        array[0] = xwire - diam[station3] / 2. * side; // Xwire
+        array[0] = xwire - fDiams[station3] / 2. * side; // Xwire
         array[1] = xloc - xwire;                       // drift distance
         array[2] = array[1] + errU;                    // drift distance with error
         Double_t locX = plocX + errU, locY = plocY;
@@ -217,9 +220,8 @@ void CbmMuchFindHitsStraws::Exec(Option_t* opt)
             // CbmMuchStrawHit(detectorId,u,phi,z,du,dphi,dz,refId,planeId);
             // cout << " Local: " << ploc.getX()+errU << " " << ploc.getY() << " " << ploc.getZ() << endl;
             hit = new ((*fHits)[nHits++]) CbmMuchStrawHit(address,
-                                                          // plocX + errU, TMath::ASin(wXY), pos[2], sigmaX, 0, 0,
                                                           locX,
-                                                          phi[rot],
+                                                          fPhis[layer],
                                                           pos[2],
                                                           sigmaX,
                                                           0,
@@ -254,9 +256,8 @@ void CbmMuchFindHitsStraws::Exec(Option_t* opt)
             Double_t globX = locX * cosPhi - locY * sinPhi;
             Double_t globY = locX * sinPhi + locY * cosPhi;
             Double_t dx, dy, dxy;
-            ComputeErrors(phi[rot], cosPhi, sinPhi, sigX, sigmaY, dx, dy, dxy);
+            ComputeErrors(fPhis[layer], cosPhi, sinPhi, sigX, sigmaY, dx, dy, dxy);
             hit = new ((*fHits)[nHits++]) CbmMuchStrawHit(address,
-                                                          // plocX + errU, TMath::ASin(wXY), pos[2], sigmaX, 0, 0,
                                                           globX,
                                                           globY,
                                                           pos[2],
@@ -276,7 +277,7 @@ void CbmMuchFindHitsStraws::Exec(Option_t* opt)
 
     // Apply inefficiency (currently inside tube walls)
     if (fEffic)
-        Effic(diam);
+        Effic();
     // Merge hits inside the same tube
     if (fMerge)
         Merge();
@@ -288,7 +289,7 @@ void CbmMuchFindHitsStraws::Exec(Option_t* opt)
         StorePixels();
 
     static Int_t eventNo = 0;
-    LOG(INFO) << "CbmMuchFindHitsStraws::Exec eventNo=" << eventNo << " hits=" << fHits->GetEntriesFast() << " digis=" << fDigis->GetEntriesFast()
+    LOG(INFO) << "CbmMuchFindHitsStraws::Exec eventNo=" << eventNo++ << " hits=" << fHits->GetEntriesFast() << " digis=" << fDigis->GetEntriesFast()
               << FairLogger::endl;
 }
 
@@ -321,11 +322,14 @@ void CbmMuchFindHitsStraws::ComputeErrors(Double_t phi,
 }
 
 // ---------   Private method Effic   -------------------------------
-void CbmMuchFindHitsStraws::Effic(Double_t* diam)
+void CbmMuchFindHitsStraws::Effic()
 {
     // Apply straw inefficiency (currently inside tube walls)
+    // if fEffic < 0 - only tube walls are considered; if > 0, fEffic is the efficiency in percent
 
     Int_t nHits = fHits->GetEntriesFast();
+    Double_t dead = 0.0;
+
     for (Int_t ihit = 0; ihit < nHits; ++ihit)
     {
         CbmMuchStrawHit* hit = (CbmMuchStrawHit*)fHits->UncheckedAt(ihit);
@@ -333,7 +337,8 @@ void CbmMuchFindHitsStraws::Effic(Double_t* diam)
         // Apply inefficiency
         Double_t drift = hit->GetDouble()[1];
         Int_t station = hit->GetInt()[0];
-        if (TMath::Abs(drift) < diam[station] / 2 - 0.01)
+	if (fEffic > 0) dead = (fDiams[station] / 2 - 0.01) * (1.0 - fEffic / 100.); // dead region near walls
+        if (TMath::Abs(drift) < fDiams[station] / 2 - 0.01 - dead)
             continue; // outside tube wall
         fHits->RemoveAt(ihit);
     }
@@ -385,7 +390,10 @@ void CbmMuchFindHitsStraws::Merge()
                 for (Int_t j = 0; j < nPoints; ++j)
                 {
                     hit->SetFlag(hit->GetFlag() + (1 << 1));  // increase overlap multiplicity
-                    digiM->AddLink(digiM1->GetMatchedLink()); // add point
+		    //if (digiM->GetNofLinks() > 1) cout << " Merge: " << digiM->GetNofLinks() << " " << digiM->ToString() << " " << digiM1->ToString() << endl;
+                    //digiM->AddLink(digiM1->GetMatchedLink()); // add point
+                    digiM->AddLink(digiM1->GetLink(j));
+		    //if (digiM->GetNofLinks() > 2) cout << digiM->GetNofLinks() << " " << digiM->ToString() << endl;
                 }
             }
             else
@@ -395,7 +403,10 @@ void CbmMuchFindHitsStraws::Merge()
                 for (Int_t j = 0; j < nPoints; ++j)
                 {
                     hit1->SetFlag(hit1->GetFlag() + (1 << 1));
-                    digiM1->AddLink(digiM->GetMatchedLink());
+		    //if (digiM1->GetNofLinks() > 1) cout << " Merge1: " << digiM1->GetNofLinks() << " " << digiM1->ToString() << " " << digiM->ToString() << endl;
+                    //digiM1->AddLink(digiM->GetMatchedLink());
+                    digiM1->AddLink(digiM->GetLink(j));
+		    //if (digiM1->GetNofLinks() > 2) cout << digiM1->GetNofLinks() << " " << digiM1->ToString() << endl;
                 }
                 break;
             }
@@ -410,13 +421,13 @@ void CbmMuchFindHitsStraws::Mirror()
 {
     // Add mirror hits (left/right ambiguity)
 
-    Double_t phi[3] = { fPhis[0] * TMath::DegToRad(), fPhis[1] * TMath::DegToRad(), fPhis[2] * TMath::DegToRad() }; // rotation angles of views (doublets)
     Int_t nHits0 = fHits->GetEntriesFast();
     Int_t nHits = nHits0;
     for (Int_t ihit = 0; ihit < nHits0; ++ihit)
     {
         CbmMuchStrawHit* hit = (CbmMuchStrawHit*)fHits->UncheckedAt(ihit);
         CbmMuchStrawHit* hitM = new ((*fHits)[nHits++]) CbmMuchStrawHit(*hit);
+	//cout << hit->ToString() << " " << hitM->ToString() << endl;
         // Add mirror hit
         // Double_t xwire = fDimens == 1 ? hit->GetDouble()[0] : hit2->GetDouble()[0];
         Double_t drift = hit->GetDouble()[2];
@@ -425,7 +436,7 @@ void CbmMuchFindHitsStraws::Mirror()
             // 1-D hits
             hitM->SetU(hit->GetU() - 2 * drift);
             // cout << hit->GetMatch() << " " << hitM->GetMatch() << endl;
-            // hitM->SetMatch(hit->GetMatch());
+            //hitM->SetMatch(hit->GetMatch());
         }
         else
         {
@@ -434,12 +445,12 @@ void CbmMuchFindHitsStraws::Mirror()
             UInt_t address = hit->GetAddress();
             Int_t layer = CbmMuchAddress::GetLayerIndex(address);
             Int_t rot = layer % 3;
-            Double_t cosPhi = TMath::Cos(phi[rot]);
-            Double_t sinPhi = TMath::Sin(phi[rot]);
+            Double_t cosPhi = TMath::Cos(fPhis[rot]);
+            Double_t sinPhi = TMath::Sin(fPhis[rot]);
             Double_t dx = drift * cosPhi, dy = drift * sinPhi;
             hitM->SetU(hit->GetU() - 2 * dx);
-            hitM->SetPhi(hit->GetPhi() - 2 * dy);
-            // cout << phi[rot] << " " << xwire << " " << hit2->GetX() << " " << drift << " " << hitM->GetX() << endl;
+            hitM->SetPhi(hit->GetPhi() - 2 * dy); // to pass the value
+            // cout << fPhis[rot] << " " << xwire << " " << hit2->GetX() << " " << drift << " " << hitM->GetX() << endl;
             // cout << hit2->GetY() << " " << drift << " " << hitM->GetY() << endl;
         }
         hitM->SetFlag(hitM->GetFlag() + 1); // flag mirror hit

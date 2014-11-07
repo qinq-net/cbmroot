@@ -14,7 +14,8 @@
 
 #include "CbmMuchGeoScheme.h"
 #include "FairTask.h"
-#include "TString.h"
+#include <TMath.h>
+#include <TString.h>
 
 class TClonesArray;
 
@@ -53,6 +54,10 @@ public:
     {
         return fPhis[i];
     }
+    Double_t GetDiam(Int_t i) const
+    {
+        return fDiams[i];
+    }
     void SetEff(Int_t eff)
     {
         fEffic = eff;
@@ -65,10 +70,10 @@ public:
     {
         fMirror = mirror;
     }
-    void SetBinary()
+    void SetBinary(Int_t binary)
     {
-        fBinary = 1;
-        fMirror = 0;
+        fBinary = binary;
+        if (fBinary) fMirror = 0;
     }
     void SetDimens(Int_t dim)
     {
@@ -78,11 +83,9 @@ public:
     {
         fPhis[i] = phi;
     } // set doublets rotation angles (degs)
-    void SetPhis(Double_t ph0, Double_t ph1, Double_t ph2)
+    void SetPhis(Int_t nphis, Double_t *phis)
     {
-        fPhis[0] = ph0;
-        fPhis[1] = ph1;
-        fPhis[2] = ph2;
+      for (Int_t i = 0; i < nphis; ++i) fPhis[i] = phis[i] * TMath::DegToRad();
     } // set doublets rotation angles (degs)
 
 private:
@@ -94,7 +97,7 @@ private:
                        Double_t& dx,
                        Double_t& dy,
                        Double_t& dxy); // compute errors for 2-D hits
-    void Effic(Double_t* diam);        // apply inefficiency (currently inside straw tube walls)
+    void Effic();                      // apply inefficiency (currently inside straw tube walls)
     void Merge();                      // merge hits inside the same straw tube
     void Mirror();                     // add mirror hits (left/right ambiguity)
     void StorePixels();                // store pixel hits
@@ -111,7 +114,8 @@ private:
     Int_t fMirror;                // mirror flag (left-right ambiguity)
     Int_t fBinary;                // binary flag (binary info - tube center as coord.)
     Int_t fDimens;                // 1- or 2-dimensional hits
-    Double_t fPhis[3];            // rotation angles of doublets
+    Double_t fPhis[10];           // rotation angles of doublets
+    Double_t fDiams[20];          // tube diameters
 
     CbmMuchFindHitsStraws(const CbmMuchFindHitsStraws&);
     CbmMuchFindHitsStraws& operator=(const CbmMuchFindHitsStraws&);
