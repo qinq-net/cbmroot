@@ -10,7 +10,7 @@
 
 #include "TimesliceInputArchive.hpp"
 #include "Timeslice.hpp"
-#include "TimesliceReceiver.hpp"
+#include "TimesliceSubscriber.hpp"
 #include "MicrosliceContents.hpp"
 
 // note M. Krieger, 2014-08-15: these includes should not be needed, please test
@@ -59,7 +59,7 @@ Bool_t CbmFlibFileSource::Init()
   if ( 0 == fFileName.Length() ) {
     TString connector = Form("tcp://%s:%i", fHost.Data(), fPort);
     LOG(INFO) << "Open TSPublisher at " << connector << FairLogger::endl;
-    fSource = new fles::TimesliceReceiver(connector.Data());
+    fSource = new fles::TimesliceSubscriber(connector.Data());
     if ( !fSource) { 
       LOG(FATAL) << "Could not connect to publisher." << FairLogger::endl;
     } 

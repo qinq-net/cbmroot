@@ -40,7 +40,6 @@ ipc/src/TimeslicePublisher.cpp
 ipc/src/TimesliceReceiver.cpp
 ipc/src/TimesliceView.cpp
 ipc/src/TimesliceSubscriber.cpp
-ipc/src/TimesliceView.cpp
 )
 
 
