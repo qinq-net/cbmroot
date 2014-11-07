@@ -98,5 +98,6 @@
 
 #pragma link C++ class CbmRawMessage;
 #pragma link C++ class CbmSpadicRawMessage;
+#pragma link C++ class CbmNxyterRawMessage;
 
 #endif
