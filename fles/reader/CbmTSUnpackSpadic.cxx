@@ -43,6 +43,8 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
   LOG(INFO) << "Unpacking Spadic Data" << FairLogger::endl; 
 
+  fSpadicRaw->Clear();
+
   spadic::TimesliceReader r;
   Int_t counter=0;
   

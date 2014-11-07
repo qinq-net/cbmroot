@@ -50,14 +50,9 @@ class CbmFlibFileSourceNew : public FairSource
 
     std::map<Int_t, CbmTSUnpack*> fUnpackers;
     
-    // --- Output arrays
-    TClonesArray* fSpadicRaw;         ///< Output array of CbmSpadicRawMessage
-
 #ifndef __CINT__
     fles::TimesliceSource* fSource; //!
     Bool_t CheckTimeslice(const fles::Timeslice& ts);
-    void UnpackSpadicCbmNetMessage(const fles::Timeslice& ts, size_t component);
-    void print_message(const spadic::Message& m);
     void PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc);
 #endif
 

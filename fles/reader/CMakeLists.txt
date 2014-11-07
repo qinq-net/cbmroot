@@ -34,9 +34,10 @@ Set(SRCS
   CbmFlibFileSource.cxx   
   CbmNxFlibFileSource.cxx   
 
-#  CbmTSUnpack.cxx
-#  CbmTSUnpackSpadic.cxx
-#  CbmFlibFileSourceNew.cxx   
+  CbmTSUnpack.cxx
+  CbmTSUnpackSpadic.cxx
+  CbmTSUnpackNxyter.cxx
+  CbmFlibFileSourceNew.cxx   
 )
 
 Set(NO_DICT_SRCS
