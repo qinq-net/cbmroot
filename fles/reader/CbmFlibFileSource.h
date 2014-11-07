@@ -36,7 +36,7 @@ class CbmFlibFileSource : public FairSource
     void Reset();
 
     void SetFileName(TString name) { fFileName = name; }
-    void SetHostName(TString name) { fFileName = name; }
+    void SetHostName(TString name) { fHost = name; }
     void SetPortNumber(Int_t port) { fPort = port; }
 
   private:
