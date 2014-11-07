@@ -68,8 +68,8 @@ function set_default_muon_geometry() {
     export LIT_RICH_GEOM=
     export LIT_TRD_GEOM=
     export LIT_TRD_DIGI=
-    export LIT_TOF_GEOM=tof/tof_v13b.geo.root
-    export LIT_TOF_DIGI=${VMCWORKDIR}/parameters/tof/tof_v13b.digi.par
+    export LIT_TOF_GEOM=tof/tof_v13-5e.geo.root
+    export LIT_TOF_DIGI=${VMCWORKDIR}/parameters/tof/tof_v13-5e.digi.par
     export LIT_ECAL_GEOM=
     export LIT_FIELD_MAP=field_v12a
     export LIT_MAGNET_GEOM=magnet/magnet_v12b.geo.root
@@ -100,8 +100,8 @@ function set_default_electron_geometry() {
     export LIT_RICH_GEOM=rich/rich_v08a.geo
     export LIT_TRD_GEOM=trd/trd_v13p_3e.geo.root
     export LIT_TRD_DIGI=${VMCWORKDIR}/parameters/trd/trd_v13p_3e.digi.par
-    export LIT_TOF_GEOM=tof/tof_v13b.geo.root
-    export LIT_TOF_DIGI=${VMCWORKDIR}/parameters/tof/tof_v13b.digi.par
+    export LIT_TOF_GEOM=tof/tof_v13-5d.geo.root
+    export LIT_TOF_DIGI=${VMCWORKDIR}/parameters/tof/tof_v13-5d.digi.par
     export LIT_ECAL_GEOM=
     export LIT_FIELD_MAP=field_v12a
     export LIT_MAGNET_GEOM=magnet/magnet_v12b.geo.root
