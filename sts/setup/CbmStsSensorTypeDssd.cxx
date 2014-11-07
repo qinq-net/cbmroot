@@ -438,12 +438,23 @@ Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
 		      << ", By = " << point->GetBy() << " T"
 		      << FairLogger::endl;
 
-  // --- Created charge signals
+  // --- Check for being in sensitive area
+  // --- Note: No charge is produced if either entry or exit point
+  // --- (or both) are outside the active area. This is not an exact
+  // --- description since the track may enter the sensitive area
+  // --- if not perpendicular to the sensor plane. The simplification
+  // --- was chosen to avoid complexity. :-)
+  if ( TMath::Abs(point->GetX1()) > fDx/2. ||
+	   TMath::Abs(point->GetY1()) > fDy/2. ||
+	   TMath::Abs(point->GetX2()) > fDx/2. ||
+	   TMath::Abs(point->GetY2()) > fDy/2. ) return 0;
+
+  // --- Number of created charge signals (coded front/back side)
   Int_t nSignals = 0;
 
   // --- Produce charge on front and back side
-  nSignals += 1000 * ProduceCharge(point, 0, sensor);
- 	nSignals += ProduceCharge(point, 1, sensor);
+  nSignals += 1000 * ProduceCharge(point, 0, sensor); // front
+  nSignals +=        ProduceCharge(point, 1, sensor); // back
 
   return nSignals;
 }
