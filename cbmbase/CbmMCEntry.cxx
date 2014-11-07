@@ -9,7 +9,11 @@
 
 ClassImp(CbmMCEntry);
 
-CbmMCEntry::CbmMCEntry():fPos(-1), fSource(-1) {
+CbmMCEntry::CbmMCEntry()
+  : FairMultiLinkedData(),
+    fSource(-1), 
+    fPos(-1)
+{
 	// TODO Auto-generated constructor stub
 
 }

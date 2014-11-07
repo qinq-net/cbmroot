@@ -11,10 +11,10 @@ CbmMuchPad::CbmMuchPad()
     fY(0.),
     fDx(0.),
     fDy(0.),
-    fNeighbours(),
     fDigiIndex(-1),
     fDigi(NULL),
-    fMatch(NULL)
+    fMatch(NULL),
+    fNeighbours()
 {
   fNeighbours.resize(20);
 }
@@ -27,10 +27,10 @@ CbmMuchPad::CbmMuchPad (Int_t address, Double_t x, Double_t y, Double_t dx, Doub
     fY(y),
     fDx(dx),
     fDy(dy),
-    fNeighbours(),
     fDigiIndex(-1),
     fDigi(new CbmMuchDigi(address)),
-    fMatch(new CbmMuchDigiMatch())
+    fMatch(new CbmMuchDigiMatch()),
+    fNeighbours()
 {
   fNeighbours.resize(20);
 }

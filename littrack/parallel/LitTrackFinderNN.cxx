@@ -25,12 +25,12 @@ const fscal lit::parallel::LitHitData::EPSILON = 0.005;
 
 lit::parallel::LitTrackFinderNN::LitTrackFinderNN() :
    fTracks(),
-   fLayout(),
-   fNofIterations(0),
-   fIteration(0),
    fHitData(),
    fUsedHitsSet(),
    fUsedSeedsSet(),
+   fLayout(),
+   fNofIterations(0),
+   fIteration(0),
    fMaxNofMissingHits(),
    fPDG(),
    fChiSqStripHitCut(),

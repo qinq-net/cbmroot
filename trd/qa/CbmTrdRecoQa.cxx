@@ -47,21 +47,21 @@ using std::endl;
 
 CbmTrdRecoQa::CbmTrdRecoQa()
   : FairTask(),
-    fMCPoints(NULL),
-    fDigis(NULL),
+    fTrianglePads(false),
+    fTriggerTH(1.0e-6),
     fClusters(NULL),
     fHits(NULL),
+    fMCPoints(NULL),
+    fDigis(NULL),
+    fDigiPar(NULL),
+    fModuleInfo(NULL),
+    fGeoHandler(new CbmTrdGeoHandler()),
     fModuleMap(),
     fModuleMapPoint(),
     fModuleMapDigi(),
     fModuleMapCluster(),
     fModuleMapHit(),
-    fModuleMapTrack(),
-    fTriggerTH(1.0e-6),
-    fTrianglePads(false),
-    fDigiPar(NULL),
-    fModuleInfo(NULL),
-    fGeoHandler(new CbmTrdGeoHandler())
+    fModuleMapTrack()
 {
 }
 // --------------------------------------------------------------------------
@@ -71,21 +71,21 @@ CbmTrdRecoQa::CbmTrdRecoQa()
 CbmTrdRecoQa::CbmTrdRecoQa(const char* name,
 					 const char* title)
   : FairTask(name),
-    fMCPoints(NULL),
-    fDigis(NULL),
+    fTrianglePads(false),
+    fTriggerTH(1.0e-6),
     fClusters(NULL),
     fHits(NULL),
+    fMCPoints(NULL),
+    fDigis(NULL),
+    fDigiPar(NULL),
+    fModuleInfo(NULL),
+    fGeoHandler(new CbmTrdGeoHandler()),
     fModuleMap(),
     fModuleMapPoint(),
     fModuleMapDigi(),
     fModuleMapCluster(),
     fModuleMapHit(),
-    fModuleMapTrack(),
-    fTriggerTH(1.0e-6),
-    fTrianglePads(false),
-    fDigiPar(NULL),
-    fModuleInfo(NULL),
-    fGeoHandler(new CbmTrdGeoHandler())
+    fModuleMapTrack()
 {
 }
 // --------------------------------------------------------------------------

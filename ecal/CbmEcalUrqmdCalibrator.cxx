@@ -362,9 +362,6 @@ CbmEcalCell* CbmEcalUrqmdCalibrator::FindNextCell(CbmEcalCell* cell)
 
 CbmEcalUrqmdCalibrator::CbmEcalUrqmdCalibrator()
   : FairTask(),
-    fLitePoints(NULL),
-    fEcalPoints(NULL),
-    fMCTracks(NULL),
     fPDGType(22),
     fMinEnergy(0.5),
     fGeoFile(""),
@@ -392,15 +389,15 @@ CbmEcalUrqmdCalibrator::CbmEcalUrqmdCalibrator()
     fStr(NULL),
     fDiffType(0),
     fInf(NULL),
-    fList() 
+    fList(),
+    fLitePoints(NULL),
+    fEcalPoints(NULL),
+    fMCTracks(NULL)
 {
 }
 
 CbmEcalUrqmdCalibrator::CbmEcalUrqmdCalibrator(const char* name, const Int_t iVerbose, const char* fileGeo)
   : FairTask(name, iVerbose), 
-    fLitePoints(NULL),
-    fEcalPoints(NULL),
-    fMCTracks(NULL),
     fPDGType(22),
     fMinEnergy(0.5),
     fGeoFile(fileGeo),
@@ -428,7 +425,11 @@ CbmEcalUrqmdCalibrator::CbmEcalUrqmdCalibrator(const char* name, const Int_t iVe
     fStr(NULL),
     fDiffType(0),
     fInf(CbmEcalInf::GetInstance(fGeoFile)),
-    fList() 
+  fList(),
+    fLitePoints(NULL),
+    fEcalPoints(NULL),
+    fMCTracks(NULL)
+
 {
 }
 

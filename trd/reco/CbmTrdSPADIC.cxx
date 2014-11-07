@@ -25,19 +25,20 @@ using std::endl;
 
 CbmTrdSPADIC::CbmTrdSPADIC()
   :FairTask("TrdSPADIC",1),
+   fSpadicResponse(NULL),
+   fShaperOrder(2),
+   fShapingTime(0.09),
+   fPeakBin(2),
+   fBitResolution(8),
+   fmaxdEdx(0.0001),
+   fAdcBit(fmaxdEdx/pow(2,fBitResolution)),
+   fPulseShape(false),
+   fSelectionMask(),
    fDigis(NULL),   
    fDigiPar(NULL),
    fModuleInfo(NULL),
    fGeoHandler(NULL),
-   fMinimumChargeTH(1.0e-06),
-   fBitResolution(8),
-   fmaxdEdx(0.0001),//[GeV]
-   fAdcBit(fmaxdEdx/pow(2,fBitResolution)),
-   fSpadicResponse(NULL),
-   fPulseShape(false),
-   fShaperOrder(2),
-   fShapingTime(0.09),
-   fPeakBin(2)
+   fMinimumChargeTH(1.0e-06)
 {
 }
 CbmTrdSPADIC::~CbmTrdSPADIC()

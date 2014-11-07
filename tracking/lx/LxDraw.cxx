@@ -28,7 +28,11 @@ using namespace std;
 
 static int StaColour = 17;
 
-LxDraw::LxDraw() : YZ("YZ", "YZ Side View", -10, -50, 650, 1000), XZ("XZ", "XZ Top View", -10, -50, 650, 1000), YX("YX", "YX Front View", -500, 0, 1000, 1000), ask(true)
+LxDraw::LxDraw() 
+  : YZ("YZ", "YZ Side View", -10, -50, 650, 1000), 
+    YX("YX", "YX Front View", -500, 0, 1000, 1000), 
+    XZ("XZ", "XZ Top View", -10, -50, 650, 1000), 
+    ask(true)
 {
   gStyle->SetCanvasBorderMode(0);
   gStyle->SetCanvasBorderSize(1);

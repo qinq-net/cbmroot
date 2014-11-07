@@ -40,9 +40,9 @@ public:
     * \brief Constructor.
     */
    LitHitData():
+      fHits(),
       fMaxErrX(),
       fMaxErrY(),
-      fHits(),
       fNofStations(0),
       fZPosSet(),
       fZPosBins() {}

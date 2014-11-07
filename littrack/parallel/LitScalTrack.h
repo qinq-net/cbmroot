@@ -36,16 +36,17 @@ public:
    /**
     * \brief Constructor.
     */
-   LitScalTrack():
-      fHits(),
-      fParamFirst(),
-      fParamLast(),
-      fChiSq(0.),
-      fNDF(1),
-      fNofMissingHits(0),
-      fPreviousTrackId(0),
-      fIsGood(true),
-      fLastStationId(0) {
+   LitScalTrack()
+     : fHits(),
+    fParamFirst(),
+    fParamLast(),
+    fChiSq(0.),
+    fNDF(1),
+    fNofMissingHits(0),
+    fPreviousTrackId(0),
+    fLastStationId(0),
+    fIsGood(true)
+   {
       fHits.reserve(30);
    }
 

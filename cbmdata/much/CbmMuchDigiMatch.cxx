@@ -31,11 +31,11 @@ using std::make_pair;
 CbmMuchDigiMatch::CbmMuchDigiMatch() 
   : CbmMatch(),
   //  fRefIndex(0),
+    fMCtimePerPrimaryElectron(0),
   //  fCharge(0),
     fRefIndexPerPrimaryElectron(0),
     fChargePerPrimaryElectron(0),
     fTimePerPrimaryElectron(0),
-    fMCtimePerPrimaryElectron(0),
     fSignalShape(0),
     fT0(0),
     fDeadTime(0.)
@@ -48,11 +48,11 @@ CbmMuchDigiMatch::CbmMuchDigiMatch()
 CbmMuchDigiMatch::CbmMuchDigiMatch(CbmMuchDigiMatch* match)
   : CbmMatch(*match),
   //  fRefIndex(match->fRefIndex),
+    fMCtimePerPrimaryElectron(match->fMCtimePerPrimaryElectron),
   //  fCharge(match->fCharge),
     fRefIndexPerPrimaryElectron(match->fRefIndexPerPrimaryElectron),
     fChargePerPrimaryElectron(match->fChargePerPrimaryElectron),
     fTimePerPrimaryElectron(match->fTimePerPrimaryElectron),
-    fMCtimePerPrimaryElectron(match->fMCtimePerPrimaryElectron),
     fSignalShape(match->fSignalShape),
     fT0(match->fT0),
     fDeadTime(match->fDeadTime)

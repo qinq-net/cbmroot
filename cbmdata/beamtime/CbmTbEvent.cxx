@@ -19,15 +19,15 @@ using namespace std;
 // -----   Constructor  ------------------------------------------------------ 
 CbmTbEvent::CbmTbEvent()
   : FairEventHeader(),
-  fTimeStart(0.),          
-  fTimeStop(0.),           
-  fEpochTime(0.),          
-  fNofData(0),            
-  fTimeBc(),
-  fNofDigis(),
-  fNofAux(0),
-  fTimeSum(0.),
-  fEventType(0) 
+    fTimeStart(0.),          
+    fTimeStop(0.),           
+    fEpochTime(0.),          
+    fNofData(0),            
+    fTimeBc(),
+    fNofDigis(),
+    fNofAux(0),
+    fEventType(0),
+    fTimeSum(0.)
 {
   Clear();
 }

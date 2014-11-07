@@ -22,9 +22,9 @@ using std::endl;
 // -----   Default constructor   -------------------------------------------
 CbmPsdIdealDigitizer::CbmPsdIdealDigitizer() :
   FairTask("Ideal Psd Digitizer",1),
+  fNDigis(0),
   fPointArray(NULL),
-  fDigiArray(NULL),
-  fNDigis(0)
+  fDigiArray(NULL)
 { 
   //  Reset();
 }

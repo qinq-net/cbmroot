@@ -74,10 +74,10 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName)
     fPeakingTime(20),
     fRemainderTime(40),
     fTimeBinWidth(1),
-    fTotalDriftTime(0.4/fDriftVelocity*10000), // 40 ns
     fNTimeBins(200),
     fNdigis(0),
-    fTOT(0)
+  fTOT(0),
+    fTotalDriftTime(0.4/fDriftVelocity*10000) // 40 ns
 {
 }
 // -------------------------------------------------------------------------

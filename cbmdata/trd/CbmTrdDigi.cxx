@@ -6,17 +6,17 @@ using std::stringstream;
 
 CbmTrdDigi::CbmTrdDigi() 
   : CbmDigi(),
+    fn_FNR_Triggers(0),
     fAddress(-1),
     fCharge(-1.),
     fTime(-1.),
+    fGlobalTriggered(false),
     fPrimeTriggered(false),
     fFNR_Triggered(false),
-    fGlobalTriggered(false),
-    fn_FNR_Triggers(0),
-    fNeighbourTriggerIds(),
     fNormalStop(true),
     fBufferFullStop(false),
     fDoubleHitStop(false),
+    fNeighbourTriggerIds(),
     fPulseShape()
 {
   for (Int_t i = 0; i < 8; i++)
@@ -30,17 +30,17 @@ CbmTrdDigi::CbmTrdDigi(
       Double_t charge,
       Double_t time)
   : CbmDigi(),
+    fn_FNR_Triggers(0),
     fAddress(address),
     fCharge(charge),
     fTime(time),
+    fGlobalTriggered(false),
     fPrimeTriggered(false),
     fFNR_Triggered(false),
-    fGlobalTriggered(false),
-    fn_FNR_Triggers(0),
-    fNeighbourTriggerIds(),
     fNormalStop(true),
     fBufferFullStop(false),
     fDoubleHitStop(false),
+    fNeighbourTriggerIds(),
     fPulseShape()
 {
   for (Int_t i = 0; i < 8; i++)
@@ -61,17 +61,17 @@ CbmTrdDigi::CbmTrdDigi(
 		       Bool_t doubleHitStop
 )
   : CbmDigi(),
+    fn_FNR_Triggers(0),
     fAddress(address),
     fCharge(charge),
     fTime(time),
+    fGlobalTriggered(globalTriggered),
     fPrimeTriggered(primeTriggered),
     fFNR_Triggered(fnr_Triggered),
-    fGlobalTriggered(globalTriggered),
-    fn_FNR_Triggers(0),
-    fNeighbourTriggerIds(),
     fNormalStop(normalStop),
     fBufferFullStop(bufferFullStop),
     fDoubleHitStop(doubleHitStop),
+    fNeighbourTriggerIds(),
     fPulseShape()
 {
   for (Int_t i = 0; i < 8; i++)

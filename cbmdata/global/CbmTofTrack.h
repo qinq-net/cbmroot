@@ -38,8 +38,8 @@ class CbmTofTrack : public TObject {
 	  : TObject(),
 	  fGlbTrack(trackIndex),
 	  fTofHit(hitIndex),
-	  fTrackPar(trackPar),
 	  fTrackLength(trackLength),
+	  fTrackPar(trackPar),
 	  fPidHypo(pidHypo),
           fMass(mass),
 	  fDistance(0.) 

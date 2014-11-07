@@ -45,8 +45,10 @@ class CbmTrdQa : public FairTask {
   void CreateLayerView();
   void GetPadInfos(Int_t moduleAddress, Double_t x, Double_t y, Int_t &iCol, Int_t &iRow, Double_t &padSizeX, Double_t &padSizeY);
   Double_t GetTrackLength(CbmTrdPoint* point);
+
   CbmTrdQa& operator=(const CbmTrdQa&);
   CbmTrdQa(const CbmTrdQa&);
+
   TClonesArray *fMCTracks;
   TClonesArray *fPoints; //!
   TClonesArray *fDigis; //!
@@ -85,9 +87,9 @@ class CbmTrdQa : public FairTask {
   std::map<Int_t, TH1I*> fModuleTracklengthMap; //!
   std::map<Int_t, TH1I*>::iterator fModuleTracklengthMapIt; //! 
   std::map<Int_t, TH1I*> fModuleMultiPointMap; //!
-  std::map<Int_t, TH1I*>::iterator fModuleDeltaEMapIt; //! 
-  std::map<Int_t, TH1I*> fModuleDeltaEMap; //!
   std::map<Int_t, TH1I*>::iterator fModuleMultiPointMapIt; //!  
+  std::map<Int_t, TH1I*> fModuleDeltaEMap; //!
+  std::map<Int_t, TH1I*>::iterator fModuleDeltaEMapIt; //! 
   std::map<Int_t, TH1I*> fModuleGhostMap; //!
   std::map<Int_t, TH1I*>::iterator fModuleGhostMapIt; //!  
   std::map<Int_t, TH1I*> fModuleLostMap; //!

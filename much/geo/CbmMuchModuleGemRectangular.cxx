@@ -20,10 +20,10 @@ using std::vector;
 CbmMuchModuleGemRectangular::CbmMuchModuleGemRectangular()
   : CbmMuchModuleGem(),
     fUseModuleDesign(kFALSE),
-    fGridDx(0.),
-    fGridDy(0.),
     fGridNx(0),
     fGridNy(0),
+    fGridDx(0.),
+    fGridDy(0.),
     fGrid()
 {
     fDetectorType = 1;
@@ -36,10 +36,10 @@ CbmMuchModuleGemRectangular::CbmMuchModuleGemRectangular(Int_t iStation, Int_t i
     Int_t iModule, TVector3 position, TVector3 size, Double_t cutRadius)
   : CbmMuchModuleGem(iStation, iLayer, iSide, iModule, position, size, cutRadius),
     fUseModuleDesign(kFALSE),
-    fGridDx(0.),
-    fGridDy(0.),
     fGridNx(0),
     fGridNy(0),
+    fGridDx(0.),
+    fGridDy(0.),
     fGrid()
 {
     fDetectorType = 1;

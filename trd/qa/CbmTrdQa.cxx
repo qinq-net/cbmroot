@@ -51,7 +51,6 @@ CbmTrdQa::CbmTrdQa(CbmTrdRadiator *radiator)
     fHits(NULL),
     fDigiPar(NULL),
     fModuleInfo(NULL),
-    fRadiator(radiator),
     fGeoHandler(new CbmTrdGeoHandler()),
     fLayerMap(),
     fLayerMapIt(),
@@ -78,7 +77,7 @@ CbmTrdQa::CbmTrdQa(CbmTrdRadiator *radiator)
     fModuledEdxMap(),
     fModuledEdxMapIt(), 
     fModuleTracklengthMap(),
-    fModuleTracklengthMapIt(), 
+    fModuleTracklengthMapIt(),
     fModuleMultiPointMap(),
     fModuleMultiPointMapIt(),
     fModuleDeltaEMap(), 
@@ -101,9 +100,9 @@ CbmTrdQa::CbmTrdQa(CbmTrdRadiator *radiator)
     fStsTrdPoints(NULL),
     fStsMuchPoints(NULL),
     fStsTofPoints(NULL),
-    //fMuchTrdPoints[11](NULL),
-    //fMuchTofPoints[11](NULL),
-    //fTrdTofPoints[11](NULL),
+    fMuchTrdPoints(),
+    fMuchTofPoints(),
+    fTrdTofPoints(),
     fStsTrdPointsTrackable(NULL),
     fTrdPointsPerMcTrack_PID(NULL),
     fTrdPointsPerMcTrack_PT(NULL),
@@ -150,7 +149,8 @@ CbmTrdQa::CbmTrdQa(CbmTrdRadiator *radiator)
     fLostPointVsAlpha(NULL),
     fHitToPointEfficiencyVsAlpha(NULL),
     fPRF_1D(NULL),
-    fPRF_2D(NULL)
+  fPRF_2D(NULL),
+    fRadiator(radiator)
 {
 }
 
@@ -163,7 +163,6 @@ CbmTrdQa::CbmTrdQa(const char *name, const char *title, const char *geo, Double_
     fHits(NULL),
     fDigiPar(NULL),
     fModuleInfo(NULL),
-    fRadiator(radiator),
     fGeoHandler(new CbmTrdGeoHandler()),
     fLayerMap(),
     fLayerMapIt(),
@@ -259,7 +258,8 @@ CbmTrdQa::CbmTrdQa(const char *name, const char *title, const char *geo, Double_
     fLostPointVsAlpha(NULL),
     fHitToPointEfficiencyVsAlpha(NULL),
     fPRF_1D(NULL),
-    fPRF_2D(NULL)
+  fPRF_2D(NULL),
+    fRadiator(radiator)
 {
 }
 

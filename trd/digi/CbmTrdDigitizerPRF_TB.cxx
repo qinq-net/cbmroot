@@ -36,14 +36,14 @@ const Double_t CbmTrdDigitizerPRF_TB::fDetectorDeadTime = 230.;
 
 CbmTrdDigitizerPRF_TB::CbmTrdDigitizerPRF_TB(CbmTrdRadiator *radiator)
   :FairTask("CbmTrdDigitizerPRF_TB"),
-   fTime(-1.),
    fDebug(false),
    fTrianglePads(false),
-   fMCPointId(-1),
+   fTime(-1.),
    fnRow(-1),
    fnCol(-1),
-   fModuleId(-1),
    fLayerId(-1),
+   fModuleId(-1),
+   fMCPointId(-1),
    fnDigi(0),
    fnPoint(0),
    fPoints(NULL),
@@ -54,8 +54,8 @@ CbmTrdDigitizerPRF_TB::CbmTrdDigitizerPRF_TB(CbmTrdRadiator *radiator)
    fModuleInfo(NULL),
    fRadiator(radiator),
    fDigiMap(),
-   fAddressTimeMap(),
-   fTimeAddressMap()
+   fTimeAddressMap(),
+   fAddressTimeMap()
 {
 }
 

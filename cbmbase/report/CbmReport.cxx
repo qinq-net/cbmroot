@@ -15,14 +15,15 @@
 using std::ofstream;
 using std::string;
 
-CbmReport::CbmReport():
-   fReportName("qa_report"),
-   fReportTitle("QA report"),
-   fOutputDir("./"),
-   fR(NULL),
-   fOut(NULL),
-   fReportType(kCoutReport),
-   fCanvases()
+CbmReport::CbmReport()
+  : TObject(),
+    fReportName("qa_report"),
+    fReportTitle("QA report"),
+    fOutputDir("./"),
+    fReportType(kCoutReport),
+    fR(NULL),
+    fOut(NULL),
+    fCanvases()
 {
 }
 
