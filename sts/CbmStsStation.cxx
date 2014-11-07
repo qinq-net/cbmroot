@@ -8,7 +8,7 @@
 #include "CbmStsSector.h"
 #include "CbmStsSectorDigiPar.h"
 
-#include "CbmStsSensor.h"
+#include "legacy/CbmStsSensor_old.h"
 
 #include "TMath.h"
 
@@ -167,7 +167,7 @@ Double_t CbmStsStation::GetZ(Int_t it)
     for (Int_t iSect=GetNSectors(); iSect > 0 ; iSect--) {
       CbmStsSector* sector = (CbmStsSector*)GetSector(iSect-1);
       for (Int_t iSens=sector->GetNSensors() ; iSens > 0 ; iSens--) {
-	CbmStsSensor* sensor = (CbmStsSensor*)sector->GetSensor(iSens-1);
+	CbmStsSensor_old* sensor = (CbmStsSensor_old*)sector->GetSensor(iSens-1);
 	Bool_t knownAlready = kFALSE;
 	for ( Int_t isz = 0 ; isz < knownZPos ; isz++ )
 	  if ( TMath::Abs(sensor->GetZ0()-fSensorZ[isz]) < 0.0001 ) {
@@ -197,7 +197,7 @@ Int_t CbmStsStation::GetNofZ()
   for (Int_t iSect=GetNSectors(); iSect > 0 ; iSect--) {
     CbmStsSector* sector = (CbmStsSector*)GetSector(iSect-1);
     for (Int_t iSens=sector->GetNSensors() ; iSens > 0 ; iSens--) {
-      CbmStsSensor* sensor = (CbmStsSensor*)sector->GetSensor(iSens-1);
+      CbmStsSensor_old* sensor = (CbmStsSensor_old*)sector->GetSensor(iSens-1);
       Bool_t knownAlready = kFALSE;
       for ( Int_t isz = 0 ; isz < knownZPos ; isz++ )
 	if ( TMath::Abs(sensor->GetZ0()-fSensorZ[isz]) < 0.0001 ) {

@@ -25,7 +25,7 @@
 #include "CbmGeoStsPar.h"
 #include "CbmStsStation.h"
 #include "CbmStsSector.h"
-#include "CbmStsSensor.h" // for field approx.
+#include "legacy/CbmStsSensor_old.h" // for field approx.
 #include "CbmStsDigiPar.h" // for dynamic_cast
 #include "CbmStsDigiScheme.h"
 #include "CbmStsFindTracks.h"

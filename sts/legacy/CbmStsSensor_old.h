@@ -1,9 +1,14 @@
 // -------------------------------------------------------------------------
-// -----                     CbmStsSensor header file                  -----
+// -----                     CbmStsSensor_old header file              -----
 // -----                  Created 01/07/2008  by R. Karabowicz         -----
 // -------------------------------------------------------------------------
 
-/** CbmStsSensor.h
+
+/** Legacy software. This class is replaced by CbmStsSensor (completely
+ ** new implementation).
+ **/
+
+/** CbmStsSensor_old.h
  *@author V.Friese <v.friese@gsi.de>
  *@since 28.08.06
  *@version 1.0
@@ -26,8 +31,8 @@
  **/
 
 
-#ifndef CBMSTSSENSOR_H
-#define CBMSTSSENSOR_H 1
+#ifndef CBMSTSSENSOR_OLD_H
+#define CBMSTSSENSOR_OLD_H 1
 
 #include "TNamed.h"
 
@@ -39,13 +44,13 @@
 class CbmStsSensorDigiPar;
 
 
-class CbmStsSensor : public TNamed
+class CbmStsSensor_old : public TNamed
 {
 
  public:
 
   /** Default constructor **/
-  CbmStsSensor();
+  CbmStsSensor_old();
 
 
   /** Standard constructor
@@ -61,16 +66,16 @@ class CbmStsSensor : public TNamed
    *@param stereoF   StereoF angle [rad] (for double sided strip)
    *@param stereoB   StereoB angle [rad] (for double sided strip)
    **/
-  CbmStsSensor(Int_t detId, Int_t iType, Double_t x0, Double_t y0,
+  CbmStsSensor_old(Int_t detId, Int_t iType, Double_t x0, Double_t y0,
 	       Double_t rotation, Double_t lx, Double_t ly, 
 	       Double_t dx, Double_t dy, Double_t stereoF, Double_t stereoB);
-  CbmStsSensor(TString tempName, Int_t detId, Int_t iType, Double_t x0, Double_t y0, Double_t z0,
+  CbmStsSensor_old(TString tempName, Int_t detId, Int_t iType, Double_t x0, Double_t y0, Double_t z0,
 	       Double_t rotation, Double_t lx, Double_t ly, 
 	       Double_t d, Double_t dx, Double_t dy, Double_t stereoF, Double_t stereoB);
   
 
   /** Destructor **/
-  virtual ~CbmStsSensor();
+  virtual ~CbmStsSensor_old();
 
 
   /** Accessors **/
@@ -263,7 +268,7 @@ class CbmStsSensor : public TNamed
 
 
 
-  ClassDef(CbmStsSensor,1);
+  ClassDef(CbmStsSensor_old,1);
 
 };
 

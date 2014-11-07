@@ -27,7 +27,7 @@
 #include "CbmKFMath.h"
 
 #include "CbmStsDigi.h"
-#include "CbmStsSensor.h" // for field FieldCheck.
+#include "legacy/CbmStsSensor_old.h" // for field FieldCheck.
 #include "CbmStsSector.h" // for field FieldCheck.
 #include "CbmStsStation.h" // for field FieldCheck.
 

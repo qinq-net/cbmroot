@@ -28,7 +28,7 @@
 #include "CbmStsDigiScheme.h"
 #include "CbmStsDigitize.h"
 #include "CbmStsPoint.h"
-#include "CbmStsSensor.h"
+#include "legacy/CbmStsSensor_old.h"
 #include "CbmStsSector.h"
 #include "CbmStsStation.h"
 
@@ -113,7 +113,7 @@ void CbmStsDigitize::Exec(Option_t* opt)
     Int_t nDigisF = 0;
     Int_t nDigisB = 0;
 
-    map<CbmStsSensor*, set<Int_t> >::iterator mapIt;
+    map<CbmStsSensor_old*, set<Int_t> >::iterator mapIt;
     for (mapIt = fPointMap.begin(); mapIt != fPointMap.end(); mapIt++)
         ((*mapIt).second).clear();
 
@@ -127,7 +127,7 @@ void CbmStsDigitize::Exec(Option_t* opt)
         gGeoManager->FindNode(xin, yin, zin);
         TGeoNode* curNode = gGeoManager->GetCurrentNode();
 
-        CbmStsSensor* sensor = NULL;
+        CbmStsSensor_old* sensor = NULL;
         if (fDigiScheme->IsNewGeometry())
         {
             TString curPath = fDigiScheme->GetCurrentPath();
@@ -179,7 +179,7 @@ void CbmStsDigitize::Exec(Option_t* opt)
 
             for (Int_t iSensor = sector->GetNSensors(); iSensor > 0;)
             {
-                CbmStsSensor* sensor = sector->GetSensor(--iSensor);
+                CbmStsSensor_old* sensor = sector->GetSensor(--iSensor);
 
                 ProduceHitResponse(sensor);
             }
@@ -304,7 +304,7 @@ void CbmStsDigitize::Exec(Option_t* opt)
 // -------------------------------------------------------------------------
 
 // -----   Private method ProduceHitResponse   --------------------------------
-void CbmStsDigitize::ProduceHitResponse(CbmStsSensor* sensor)
+void CbmStsDigitize::ProduceHitResponse(CbmStsSensor_old* sensor)
 {
     set<Int_t> pSet;
     if (fPointMap.find(sensor) == fPointMap.end())
@@ -467,7 +467,7 @@ void CbmStsDigitize::MakeSets()
             Int_t nSensors = sector->GetNSensors();
             for (Int_t iSensor = 0; iSensor < nSensors; iSensor++)
             {
-                CbmStsSensor* sensor = sector->GetSensor(iSensor);
+                CbmStsSensor_old* sensor = sector->GetSensor(iSensor);
                 set<Int_t> a;
                 fPointMap[sensor] = a;
                 fSectorWidth = 10. * sensor->GetLx();
@@ -534,7 +534,7 @@ void CbmStsDigitize::MakeSets1()
 
             for (Int_t iSensor = 0; iSensor < nSensors; iSensor++)
             {
-                CbmStsSensor* sensor = sector->GetSensor(iSensor);
+                CbmStsSensor_old* sensor = sector->GetSensor(iSensor);
                 set<Int_t> a;
                 fPointMap[sensor] = a;
                 fSectorWidth = 10. * sensor->GetLx();

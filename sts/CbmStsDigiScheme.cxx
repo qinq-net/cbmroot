@@ -8,7 +8,7 @@
 
 #include "CbmGeoStsPar.h"
 #include "CbmStsDigiPar.h"
-#include "CbmStsSensor.h"
+#include "legacy/CbmStsSensor_old.h"
 #include "CbmStsSensorDigiPar.h"
 #include "CbmStsSector.h"
 #include "CbmStsSectorDigiPar.h"
@@ -165,7 +165,7 @@ CbmStsSector* CbmStsDigiScheme::GetSector(Int_t stationNr, Int_t sectorNr) {
 // -------------------------------------------------------------------------
 
 // -----   Public method GetSensor   ---------------------------------------
-CbmStsSensor* CbmStsDigiScheme::GetSensor(Int_t stationNr, Int_t sectorNr, Int_t sensorNr) {
+CbmStsSensor_old* CbmStsDigiScheme::GetSensor(Int_t stationNr, Int_t sectorNr, Int_t sensorNr) {
   return ( GetStationByNr(stationNr)->GetSectorByNr(sectorNr)->GetSensorByNr(sensorNr) );
 }
 // -------------------------------------------------------------------------
@@ -186,9 +186,9 @@ Int_t CbmStsDigiScheme::GetDetectorIdByName(TString sensorName)
 // -------------------------------------------------------------------------
 
 // -----   Public method GetSensorIdByName  --------------------------------
-CbmStsSensor* CbmStsDigiScheme::GetSensorByName(TString sensorName)
+CbmStsSensor_old* CbmStsDigiScheme::GetSensorByName(TString sensorName)
 {
-  map < TString, CbmStsSensor*>::iterator p;
+  map < TString, CbmStsSensor_old*>::iterator p;
   p=fSensorByName.find(sensorName);
 
   if(p!=fSensorByName.end()){
@@ -302,7 +302,7 @@ Bool_t CbmStsDigiScheme::InitOld(CbmGeoStsPar* geoPar,
 	TString sensorName = geoSensor->GetName();
 	sensorName.ReplaceAll("#","_");
 
-	CbmStsSensor* sensor = new CbmStsSensor(sensorName.Data(), detId, 
+	CbmStsSensor_old* sensor = new CbmStsSensor_old(sensorName.Data(), detId,
 						sensorType, 
 						sensorX, sensorY, sensorZ,
 						sensorRot, 
@@ -330,12 +330,12 @@ Bool_t CbmStsDigiScheme::InitOld(CbmGeoStsPar* geoPar,
 	sector->AddSensor(sensor);
 
 	// put sensor into name/sensor map
-	map < TString, CbmStsSensor*>::iterator p;
+	map < TString, CbmStsSensor_old*>::iterator p;
    	p=fSensorByName.find(sensorName);
 	if(p!=fSensorByName.end()){
 	  cout << " -E- Sensor \"" << sensorName.Data() << "\" is already inserted " << endl;
 	}else{
-	  fSensorByName.insert(pair<TString, CbmStsSensor*> (sensorName, sensor));
+	  fSensorByName.insert(pair<TString, CbmStsSensor_old*> (sensorName, sensor));
 	}
 
       } // Loop over sensors
@@ -514,7 +514,7 @@ Bool_t CbmStsDigiScheme::InitNew(CbmGeoStsPar* geoPar,
 	    Double_t  sensDy = sensorPar->GetDy();
 	    Double_t  sensStereoF = sensorPar->GetStereoF();
 	    Double_t  sensStereoB = sensorPar->GetStereoB();
-	    CbmStsSensor* sensor = new CbmStsSensor(sensName, sensId, sensType,
+	    CbmStsSensor_old* sensor = new CbmStsSensor_old(sensName, sensId, sensType,
 						    sensX, sensY, sensZ,
 						    sensRot, sensLx, sensLy,
 			 			    sensD, sensDx, sensDy,

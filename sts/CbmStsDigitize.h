@@ -56,7 +56,7 @@ public:
     }
 
 //    void FindFiredStrips(CbmStsPoint* pnt, Int_t& nofStr, Int_t*& strips, Double_t*& signals, Int_t side);
-    void ProduceHitResponse(CbmStsSensor* sensor);
+    void ProduceHitResponse(CbmStsSensor_old* sensor);
 
     void SetFrontThreshold(Double_t frontThr = 0.)
     {
@@ -140,7 +140,7 @@ private:
     std::map<Int_t, set<Int_t> > fFChannelPointsMap;
     std::map<Int_t, set<Int_t> > fBChannelPointsMap;
 
-    std::map<CbmStsSensor*, set<Int_t> > fPointMap; /** sensor points **/
+    std::map<CbmStsSensor_old*, set<Int_t> > fPointMap; /** sensor points **/
     Float_t occupancy[10][1000][20];
 
     /** Make sensorwise set for points **/

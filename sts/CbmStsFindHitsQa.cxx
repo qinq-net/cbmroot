@@ -15,7 +15,7 @@
 #include "CbmStsDigiScheme.h"
 #include "CbmStsPoint.h"
 #include "CbmStsHit.h"
-#include "CbmStsSensor.h"
+#include "legacy/CbmStsSensor_old.h"
 #include "CbmStsSector.h"
 #include "CbmStsStation.h"
 #include "CbmMCTrack.h"
@@ -244,7 +244,7 @@ void CbmStsFindHitsQa::Exec(Option_t* opt) {
     for ( Int_t isect = 0 ; isect < station->GetNSectors() ; isect++ ) {
       sector = station->GetSector(isect);
 
-      CbmStsSensor* sensor = (CbmStsSensor*)sector->GetSensor(0);
+      CbmStsSensor_old* sensor = (CbmStsSensor_old*)sector->GetSensor(0);
       for ( Int_t iside = 0 ; iside<2; iside++){
         for (Int_t iChip = 0; iChip<8; iChip++){
           if (fNEvents==999) cout<<" St "<<istat+1<<" sect "<<isect+1<<" nofsens "<<sector->GetNSensors()<<" sectX "<<sensor->GetX0()<<" sectY "<<sensor->GetY0()<<" side "<<iside<<" chip "<<iChip+1<<" fNofDigisPChip "<<fNofDigisPChip[istat][isect][iside][iChip]<<endl;
@@ -306,7 +306,7 @@ void CbmStsFindHitsQa::Exec(Option_t* opt) {
 
     //    cout << " in node \"" << curNode->GetName() << "\"" << flush;
     TString curPath = fDigiScheme->GetCurrentPath();
-    CbmStsSensor* sensor = fDigiScheme->GetSensorByName(curPath);
+    CbmStsSensor_old* sensor = fDigiScheme->GetSensorByName(curPath);
     Int_t stationNr = sensor->GetStationNr();
 
     Int_t startHit = hitStationLimits[0][stationNr-1];
@@ -602,7 +602,7 @@ void CbmStsFindHitsQa::CreateHistos() {
 
   CbmStsStation* station = NULL;
   CbmStsSector*  sector  = NULL;
-  CbmStsSensor*  sensor  = NULL;
+  CbmStsSensor_old*  sensor  = NULL;
 
   fhHitFindingEfficiency = new TH1F("hHitFindingEfficiency","Hit finding efficiency",1000000,
 				    (Float_t)(2<<24)-0.5,(Float_t)(2<<24)-0.5+1000000.);

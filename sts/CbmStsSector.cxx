@@ -5,7 +5,7 @@
 
 #include "CbmStsSector.h"
 
-#include "CbmStsSensor.h"
+#include "legacy/CbmStsSensor_old.h"
 #include "CbmStsSensorDigiPar.h"
 
 #include "FairLogger.h"
@@ -112,10 +112,10 @@ void CbmStsSector::Print() {
 
 
 // -----   Public method GetSectorByNr   -----------------------------------
-CbmStsSensor* CbmStsSector::GetSensorByNr(Int_t sensorNr) {
+CbmStsSensor_old* CbmStsSector::GetSensorByNr(Int_t sensorNr) {
   if ( fSensorMap.find(sensorNr) != fSensorMap.end() ) {
     Int_t index = fSensorMap[sensorNr];
-    return (CbmStsSensor*) fSensors->At(index);
+    return (CbmStsSensor_old*) fSensors->At(index);
   }
   else {
     cout << "-W- CbmStsSector::GetSensorByNr: sensor " << sensorNr
@@ -157,7 +157,7 @@ void CbmStsSector::AddSensor(CbmStsSensorDigiPar* sensorPar) {
   Int_t nSensors = fSensors->GetEntries();
 
   // Create and add new sensor
-  CbmStsSensor* tempSens = new CbmStsSensor(Form("%ssens%d",fName.Data(),iSensor), sensorId, 
+  CbmStsSensor_old* tempSens = new CbmStsSensor_old(Form("%ssens%d",fName.Data(),iSensor), sensorId,
 					    iType, 
 					    x0,y0,z0,
 					    rotRel, 
@@ -205,7 +205,7 @@ void CbmStsSector::AddSensor(CbmStsSensorDigiPar* sensorPar) {
 // -------------------------------------------------------------------------
 
 // -----   Public method AddSensor   ---------------------------------------
-void CbmStsSector::AddSensor(CbmStsSensor* sensor) {
+void CbmStsSector::AddSensor(CbmStsSensor_old* sensor) {
 
   Int_t iSensor    = sensor->GetSensorNr();
   Int_t nSensors   = fSensors->GetEntries();
@@ -270,9 +270,9 @@ Int_t CbmStsSector::Intersect(Int_t iFStrip, Int_t iBStrip,
   Int_t tempDetId = -1;
   Int_t returnDetId = -1;
 
-  CbmStsSensor* sensor;
+  CbmStsSensor_old* sensor;
   for (Int_t iSens=0; iSens<GetNSensors(); iSens++) {
-    sensor = (CbmStsSensor*)GetSensor(iSens);
+    sensor = (CbmStsSensor_old*)GetSensor(iSens);
 
     tempDetId = sensor->Intersect(iFStrip, iBStrip, xTemp, yTemp, zTemp);
 
@@ -306,9 +306,9 @@ Int_t CbmStsSector::IntersectClusters(Double_t fChan, Double_t bChan,
   Int_t tempDetId = -1;
   Int_t returnDetId = -1;
   
-  CbmStsSensor* sensor;
+  CbmStsSensor_old* sensor;
   for (Int_t iSens=0; iSens<GetNSensors(); iSens++) {
-    sensor = (CbmStsSensor*)GetSensor(iSens);
+    sensor = (CbmStsSensor_old*)GetSensor(iSens);
 
     tempDetId = sensor->IntersectClusters(fChan, bChan, xTemp, yTemp, zTemp);
     

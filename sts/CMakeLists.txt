@@ -35,12 +35,17 @@ reco/CbmStsClusterFinderSimple.cxx
 reco/CbmStsFindClusters.cxx
 reco/CbmStsHitFinder.cxx
 )
+# --- Legacy sources
+set (SRCS_LEGACY
+legacy/CbmStsSensor_old.cxx
+)
 # --- All sources
 set(SRCS
 ${SRCS_SETUP}
 ${SRCS_MC}
 ${SRCS_DIGITIZE}
 ${SRCS_RECO}
+${SRCS_LEGACY}
 CbmGeoSts.cxx 
 CbmGeoStsPar.cxx 
 CbmStsContFact.cxx 
@@ -62,7 +67,6 @@ CbmStsMatchTracks.cxx
 CbmStsParAsciiFileIo.cxx 
 CbmStsParRootFileIo.cxx 
 CbmStsRadTool.cxx
-CbmStsSensor.cxx 
 CbmStsSensorDigiPar.cxx 
 CbmStsSector.cxx 
 CbmStsSectorDigiPar.cxx 

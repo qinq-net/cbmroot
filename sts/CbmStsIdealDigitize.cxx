@@ -14,7 +14,7 @@
 #include "CbmStsDigiPar.h"
 #include "CbmStsDigiScheme.h"
 #include "CbmStsPoint.h"
-#include "CbmStsSensor.h"
+#include "legacy/CbmStsSensor_old.h"
 #include "CbmStsSector.h"
 #include "CbmStsStation.h"
 #include "CbmMatch.h"
@@ -114,7 +114,7 @@ void CbmStsIdealDigitize::Exec(Option_t* opt)
         gGeoManager->FindNode(xIn, yIn, zIn);
         TGeoNode* curNode = gGeoManager->GetCurrentNode();
 
-        CbmStsSensor* sensor = fDigiScheme->GetSensorByName(curNode->GetName());
+        CbmStsSensor_old* sensor = fDigiScheme->GetSensorByName(curNode->GetName());
 
         if (!sensor)
             gLogger->Fatal(MESSAGE_ORIGIN, "No sensor in DigiScheme with name: %s", curNode->GetName());

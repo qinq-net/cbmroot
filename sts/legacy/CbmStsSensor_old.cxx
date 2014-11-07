@@ -3,7 +3,11 @@
 // -----                  Created 01/07/2008  by R. Karabowicz         -----
 // -------------------------------------------------------------------------
 
-#include "CbmStsSensor.h"
+/** Legacy software. This class is replaced by CbmStsSensor (completely
+ ** new implementation).
+ **/
+
+#include "CbmStsSensor_old.h"
 
 #include "CbmStsSensorDigiPar.h"
 
@@ -23,7 +27,7 @@ using std::vector;
 
 
 // -----   Default constructor   -------------------------------------------
-CbmStsSensor::CbmStsSensor() 
+CbmStsSensor_old::CbmStsSensor_old()
   : 
   fDetectorId(0),
   fType(0),
@@ -53,14 +57,14 @@ CbmStsSensor::CbmStsSensor()
   fBackActive(),
   fTrueHits()
 {
-  cout << "-W- CbmStsSensor: Do not use this constructor! " << endl;
+  cout << "-W- CbmStsSensor_old: Do not use this constructor! " << endl;
 }
 // -------------------------------------------------------------------------
 
 
 
 // -----   Enhanced constructor (by z0 and d)  ------------------------------------------
-CbmStsSensor::CbmStsSensor(TString tempName, Int_t detId, Int_t iType, Double_t x0, Double_t y0, Double_t z0,
+CbmStsSensor_old::CbmStsSensor_old(TString tempName, Int_t detId, Int_t iType, Double_t x0, Double_t y0, Double_t z0,
 			   Double_t rotation, Double_t lx, Double_t ly, 
 			   Double_t d, Double_t dx, Double_t dy, Double_t stereoF, Double_t stereoB)
   :
@@ -134,7 +138,7 @@ CbmStsSensor::CbmStsSensor(TString tempName, Int_t detId, Int_t iType, Double_t 
     }
   }
   else {
-    cout << "-E- CbmStsSensor: Illegal sensor type " << fType << endl;
+    cout << "-E- CbmStsSensor_old: Illegal sensor type " << fType << endl;
     Fatal("", "Illegal sensor type");
   }
 
@@ -191,7 +195,7 @@ CbmStsSensor::CbmStsSensor(TString tempName, Int_t detId, Int_t iType, Double_t 
     
   }
   else {
-    cout << "-E- CbmStsSensor: Illegal sensor type " << fType << endl;
+    cout << "-E- CbmStsSensor_old: Illegal sensor type " << fType << endl;
     Fatal("", "Illegal sensor type");
   }
 
@@ -220,7 +224,7 @@ CbmStsSensor::CbmStsSensor(TString tempName, Int_t detId, Int_t iType, Double_t 
 // -------------------------------------------------------------------------
 
 // -----   Standard constructor   ------------------------------------------
-CbmStsSensor::CbmStsSensor(Int_t detId, Int_t iType, Double_t x0, 
+CbmStsSensor_old::CbmStsSensor_old(Int_t detId, Int_t iType, Double_t x0,
 			   Double_t y0, Double_t rotation, Double_t lx, 
 			   Double_t ly, Double_t dx, Double_t dy, 
 			   Double_t stereoF, Double_t stereoB) 
@@ -286,7 +290,7 @@ CbmStsSensor::CbmStsSensor(Int_t detId, Int_t iType, Double_t x0,
     fNChannelsBack  = fNChannelsFront;
   }
   else {
-    cout << "-E- CbmStsSensor: Illegal sensor type " << fType << endl;
+    cout << "-E- CbmStsSensor_old: Illegal sensor type " << fType << endl;
     Fatal("", "Illegal sensor type");
   }
 
@@ -341,7 +345,7 @@ CbmStsSensor::CbmStsSensor(Int_t detId, Int_t iType, Double_t x0,
     
   }
   else {
-    cout << "-E- CbmStsSensor: Illegal sensor type " << fType << endl;
+    cout << "-E- CbmStsSensor_old: Illegal sensor type " << fType << endl;
     Fatal("", "Illegal sensor type");
   }
 
@@ -373,17 +377,17 @@ CbmStsSensor::CbmStsSensor(Int_t detId, Int_t iType, Double_t x0,
 
 
 // -----   Destructor   ----------------------------------------------------
-CbmStsSensor::~CbmStsSensor() { };
+CbmStsSensor_old::~CbmStsSensor_old() { };
 // -------------------------------------------------------------------------
 
 
 
 // -----   Public method GetChannel   --------------------------------------
-Int_t CbmStsSensor::GetChannel(Double_t x, Double_t y, Int_t iSide) {
+Int_t CbmStsSensor_old::GetChannel(Double_t x, Double_t y, Int_t iSide) {
 
   // Check iSide
   if (iSide !=0 && iSide != 1) {
-    cout << "-W- CbmStsSensor::GetChannel: Illegal side number " 
+    cout << "-W- CbmStsSensor_old::GetChannel: Illegal side number "
 	 << iSide << endl;
     return -1;
   }
@@ -402,7 +406,7 @@ Int_t CbmStsSensor::GetChannel(Double_t x, Double_t y, Int_t iSide) {
     Int_t iRow = Int_t(yint / fDy);
     iChan = iRow * nCol + iCol;
     if ( iChan < 0 || iChan > fNChannelsFront ) {
-      cout << "-E- CbmStsSensor::GetChannel: "
+      cout << "-E- CbmStsSensor_old::GetChannel: "
 	   << "Channel number " << iChan << " exceeds limit " 
 	   << fNChannelsFront << endl;
       cout << GetStationNr() << " " << GetSensorNr() << endl;
@@ -418,7 +422,7 @@ Int_t CbmStsSensor::GetChannel(Double_t x, Double_t y, Int_t iSide) {
       iChan = Int_t ( xint / fDx );
       if ( iChan < 0 || iChan > fNChannelsFront )
        {
-	cout << "-E- CbmStsSensor::GetChannel: "
+	cout << "-E- CbmStsSensor_old::GetChannel: "
 	     << "Front channel number " << iChan << " exceeds limit " 
 	     << fNChannelsFront << endl;
 	Fatal("GetChannel", "illegal channel number");
@@ -430,7 +434,7 @@ Int_t CbmStsSensor::GetChannel(Double_t x, Double_t y, Int_t iSide) {
       // Digitise
       iChan = Int_t ( xp / fDx );
       if ( iChan < 0 || iChan > fNChannelsBack ) {
-	cout << "-E- CbmStsSensor::GetChannel: "
+	cout << "-E- CbmStsSensor_old::GetChannel: "
 	     << "Back channel number " << iChan << " exceeds limit " 
 	     << fNChannelsBack << endl;
 	cout << "    Sensor " << GetSensorNr() << " of station " 
@@ -449,7 +453,7 @@ Int_t CbmStsSensor::GetChannel(Double_t x, Double_t y, Int_t iSide) {
      xf = xf - TMath::Floor(xf/fLx) * fLx;
      iChan = Int_t ( xf / fDx );
       if ( iChan < 0 || iChan > fNChannelsFront ) {
-	cout << "-E- CbmStsSensor::GetChannel: "
+	cout << "-E- CbmStsSensor_old::GetChannel: "
 	     << "Front channel number " << iChan << " exceeds limit " 
 	     << fNChannelsFront << endl;
 	Fatal("GetChannel", "illegal channel number");
@@ -471,7 +475,7 @@ Int_t CbmStsSensor::GetChannel(Double_t x, Double_t y, Int_t iSide) {
       }
       
       if ( iChan < 0 || iChan > fNChannelsBack ) {
-	cout << "-E- CbmStsSensor::GetChannel: "
+	cout << "-E- CbmStsSensor_old::GetChannel: "
 	     << "Back channel number " << iChan << " exceeds limit " 
 	     << fNChannelsBack << endl;
 	cout << "    Sensor " << GetSensorNr() << " of station " 
@@ -489,11 +493,11 @@ Int_t CbmStsSensor::GetChannel(Double_t x, Double_t y, Int_t iSide) {
 
     
 // -----   Public method GetChannel   --------------------------------------
-Float_t CbmStsSensor::GetChannelPlus(Double_t x, Double_t y, Int_t iSide) {
+Float_t CbmStsSensor_old::GetChannelPlus(Double_t x, Double_t y, Int_t iSide) {
 
   // Check iSide
   if (iSide !=0 && iSide != 1) {
-    cout << "-W- CbmStsSensor::GetChannel: Illegal side number " 
+    cout << "-W- CbmStsSensor_old::GetChannel: Illegal side number "
 	 << iSide << endl;
     return -1;
   }
@@ -512,7 +516,7 @@ Float_t CbmStsSensor::GetChannelPlus(Double_t x, Double_t y, Int_t iSide) {
     Int_t iRow = Int_t(yint / fDy);
     iChan = iRow * nCol + iCol;
     if ( iChan < 0 || iChan > fNChannelsFront ) {
-      cout << "-E- CbmStsSensor::GetChannel: "
+      cout << "-E- CbmStsSensor_old::GetChannel: "
 	   << "Channel number " << iChan << " exceeds limit " 
 	   << fNChannelsFront << endl;
       cout << GetStationNr() << " " << GetSensorNr() << endl;
@@ -526,7 +530,7 @@ Float_t CbmStsSensor::GetChannelPlus(Double_t x, Double_t y, Int_t iSide) {
     if ( iSide == 0 ) {        // Front side
       iChan = Int_t ( xint / fDx );
       if ( iChan < 0 || iChan > fNChannelsFront ) {
-	cout << "-E- CbmStsSensor::GetChannel: "
+	cout << "-E- CbmStsSensor_old::GetChannel: "
 	     << "Front channel number " << iChan << " exceeds limit " 
 	     << fNChannelsFront << endl;
 	Fatal("GetChannel", "illegal channel number");
@@ -538,7 +542,7 @@ Float_t CbmStsSensor::GetChannelPlus(Double_t x, Double_t y, Int_t iSide) {
       // Digitise
       iChan = Int_t ( xp / fDx );
       if ( iChan < 0 || iChan > fNChannelsBack ) {
-	cout << "-E- CbmStsSensor::GetChannel: "
+	cout << "-E- CbmStsSensor_old::GetChannel: "
 	     << "Back channel number " << iChan << " exceeds limit " 
 	     << fNChannelsBack << endl;
 	cout << "    Sensor " << GetSensorNr() << " of station " 
@@ -558,7 +562,7 @@ Float_t CbmStsSensor::GetChannelPlus(Double_t x, Double_t y, Int_t iSide) {
       xf = xf - TMath::Floor(xf/fLx) * fLx;
       iChan = xf / fDx;
       if ( iChan < 0 || iChan > fNChannelsFront ) {
-	cout << "-E- CbmStsSensor::GetChannel: "
+	cout << "-E- CbmStsSensor_old::GetChannel: "
 	     << "Front channel number " << iChan << " exceeds limit " 
 	     << fNChannelsFront << endl;
 	Fatal("GetChannel", "illegal channel number");
@@ -578,7 +582,7 @@ Float_t CbmStsSensor::GetChannelPlus(Double_t x, Double_t y, Int_t iSide) {
       }
       
       if ( iChan < 0 || iChan > fNChannelsBack ) {
-	cout << "-E- CbmStsSensor::GetChannel: "
+	cout << "-E- CbmStsSensor_old::GetChannel: "
 	     << "Back channel number " << iChan << " exceeds limit " 
 	     << fNChannelsBack << endl;
 	cout << "    Sensor " << GetSensorNr() << " of station " 
@@ -596,7 +600,7 @@ Float_t CbmStsSensor::GetChannelPlus(Double_t x, Double_t y, Int_t iSide) {
 
     
 // -----   Public method GetFrontChannel   ---------------------------------
-Int_t CbmStsSensor::GetFrontChannel(Double_t x, Double_t y, Double_t z) {
+Int_t CbmStsSensor_old::GetFrontChannel(Double_t x, Double_t y, Double_t z) {
   //cout << "frontchannel for " << x << " " << y << " " << z << " (" << fZ0-fD/2. << " " << fZ0+fD/2.<<")" << endl;
   z = z - fZ0 + fD/2.;
   //cout << " temp z = " << z << endl;
@@ -633,7 +637,7 @@ Int_t CbmStsSensor::GetFrontChannel(Double_t x, Double_t y, Double_t z) {
 
     
 // -----   Public method GetBackChannel   ----------------------------------
-Int_t CbmStsSensor::GetBackChannel (Double_t x, Double_t y, Double_t z) {
+Int_t CbmStsSensor_old::GetBackChannel (Double_t x, Double_t y, Double_t z) {
 
   z = fZ0 + fD/2. - z;
   if ( z > fD ) return -1;
@@ -676,7 +680,7 @@ Int_t CbmStsSensor::GetBackChannel (Double_t x, Double_t y, Double_t z) {
 
 
 // -----   Public method Inside   ------------------------------------------
-Bool_t CbmStsSensor::Inside(Double_t x, Double_t y) {
+Bool_t CbmStsSensor_old::Inside(Double_t x, Double_t y) {
   Double_t xint, yint;
   return IntCoord(x, y, xint, yint);
 }
@@ -684,14 +688,14 @@ Bool_t CbmStsSensor::Inside(Double_t x, Double_t y) {
 
 
 // -----   Public method ActivateChannels   --------------------------------
-Bool_t CbmStsSensor::ActivateChannels(Int_t ipt, 
+Bool_t CbmStsSensor_old::ActivateChannels(Int_t ipt,
 					   Double_t x, Double_t y) {
 
   Int_t iFront = FrontStripNumber(x, y);
   if (iFront < 0) return kFALSE;
   Int_t iBack  = BackStripNumber(x, y);
   if (iBack < 0) {
-    cout << "-W- CbmStsSensor::ActivateChannels: "
+    cout << "-W- CbmStsSensor_old::ActivateChannels: "
 	 << "No back strip number!" << endl;
     cout << "    Coordinates: (" << x << ", " << y << ")" << endl;
     cout << "    Sensor: " << fDetectorId << ", Front Strip: " 
@@ -712,7 +716,7 @@ Bool_t CbmStsSensor::ActivateChannels(Int_t ipt,
 
 
 // -----   Public method Intersect   ---------------------------------------
-Int_t CbmStsSensor::Intersect(Int_t iFStrip, Int_t iBStrip,
+Int_t CbmStsSensor_old::Intersect(Int_t iFStrip, Int_t iBStrip,
 				    vector<Double_t>& xCross, 
 				    vector<Double_t>& yCross) {
 
@@ -722,13 +726,13 @@ Int_t CbmStsSensor::Intersect(Int_t iFStrip, Int_t iBStrip,
 
   // Check for strip numbers
   if ( iFStrip < 0 || iFStrip > fNChannelsFront) {
-    cout << "-W- CbmStsSensor::Intersect: "
+    cout << "-W- CbmStsSensor_old::Intersect: "
 	 << "Invalid front channel number ! "
 	 << iFStrip << " " << fNChannelsFront << endl;
     return 0;
   }
   if ( iBStrip < 0 || iBStrip > fNChannelsBack) {
-    cout << "-W- CbmStsSensor::Intersect: "
+    cout << "-W- CbmStsSensor_old::Intersect: "
 	 << "Invalid back channel number ! "
 	 << iBStrip << " " << fNChannelsBack << endl;
     return 0;
@@ -774,18 +778,18 @@ Int_t CbmStsSensor::Intersect(Int_t iFStrip, Int_t iBStrip,
 // -------------------------------------------------------------------------
 
 // -----   Public method Intersect   ---------------------------------------
-Int_t CbmStsSensor::Intersect(Int_t iFStrip, Int_t iBStrip, 
+Int_t CbmStsSensor_old::Intersect(Int_t iFStrip, Int_t iBStrip,
 			      Double_t& xCross, Double_t& yCross, Double_t& zCross) {
 
   // Check for strip numbers
   if ( iFStrip < 0 || iFStrip > fNChannelsFront) {
-    cout << "-W- CbmStsSensor::Intersect: "
+    cout << "-W- CbmStsSensor_old::Intersect: "
 	 << "Invalid front channel number ! "
 	 << iFStrip << " " << fNChannelsFront << endl;
     return -1;
   }
   if ( iBStrip < 0 || iBStrip > fNChannelsBack) {
-    cout << "-W- CbmStsSensor::Intersect: "
+    cout << "-W- CbmStsSensor_old::Intersect: "
 	 << "Invalid back channel number ! "
 	 << iBStrip << " " << fNChannelsBack << endl;
     return -1;
@@ -881,18 +885,18 @@ Int_t CbmStsSensor::Intersect(Int_t iFStrip, Int_t iBStrip,
 // -------------------------------------------------------------------------
 
 // -----   Public method Intersect   ---------------------------------------
-Int_t CbmStsSensor::IntersectClusters(Double_t fChan, Double_t bChan,
+Int_t CbmStsSensor_old::IntersectClusters(Double_t fChan, Double_t bChan,
 				      Double_t& xCross, Double_t& yCross, Double_t& zCross) {
 
   // Check for strip numbers
   if ( fChan < 0 || fChan > fNChannelsFront) {
-    cout << "-W- CbmStsSensor::Intersect: "
+    cout << "-W- CbmStsSensor_old::Intersect: "
 	 << "Invalid front channel number ! "
 	 << fChan << " " << fNChannelsFront << endl;
     return -1;
   }
   if ( bChan < 0 || bChan > fNChannelsBack) {
-    cout << "-W- CbmStsSensor::Intersect: "
+    cout << "-W- CbmStsSensor_old::Intersect: "
 	 << "Invalid back channel number ! "
 	 << bChan << " " << fNChannelsBack << endl;
     return -1;
@@ -1017,7 +1021,7 @@ Int_t CbmStsSensor::IntersectClusters(Double_t fChan, Double_t bChan,
 
 
 // -----   Public method PointIndex   --------------------------------------
-Int_t CbmStsSensor::PointIndex(Int_t iFStrip, Int_t iBStrip) {
+Int_t CbmStsSensor_old::PointIndex(Int_t iFStrip, Int_t iBStrip) {
   pair<Int_t,Int_t> a(iFStrip, iBStrip);
   if (fTrueHits.find(a) == fTrueHits.end()) return -1;
   return fTrueHits[a];
@@ -1027,7 +1031,7 @@ Int_t CbmStsSensor::PointIndex(Int_t iFStrip, Int_t iBStrip) {
 
 
 // -----   Public method Reset   -------------------------------------------
-void CbmStsSensor::Reset() {
+void CbmStsSensor_old::Reset() {
   fFrontActive.clear();
   fBackActive.clear();
   fTrueHits.clear();
@@ -1037,7 +1041,7 @@ void CbmStsSensor::Reset() {
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmStsSensor::Print() {
+void CbmStsSensor_old::Print() {
   cout << "   Sensor Nr. ";
   cout.width(3);
   cout << GetSensorNr() << ", Type ";
@@ -1059,7 +1063,7 @@ void CbmStsSensor::Print() {
 
 
 // -----   Private method FrontStripNumber   -------------------------------
-Int_t CbmStsSensor::FrontStripNumber(Double_t x, Double_t y) const {
+Int_t CbmStsSensor_old::FrontStripNumber(Double_t x, Double_t y) const {
 
   Double_t xint = 0., yint = 0.;
 
@@ -1071,7 +1075,7 @@ Int_t CbmStsSensor::FrontStripNumber(Double_t x, Double_t y) const {
   Int_t iStrip = Int_t( xf / fDx );
   
   if (iStrip < 0 || iStrip > fNChannelsFront) {
-    cout << "-E- CbmStsSensor::FrontStripNumber: Invalid strip number"
+    cout << "-E- CbmStsSensor_old::FrontStripNumber: Invalid strip number"
 	 << "  " << iStrip << endl;
     cout << "    Sensor " << fDetectorId << ", x = " << xint << ", y = " 
 	 << yint << endl;
@@ -1089,7 +1093,7 @@ Int_t CbmStsSensor::FrontStripNumber(Double_t x, Double_t y) const {
 
 
 // -----   Private method BackStripNumber   --------------------------------
-Int_t CbmStsSensor::BackStripNumber(Double_t x, Double_t y) const {
+Int_t CbmStsSensor_old::BackStripNumber(Double_t x, Double_t y) const {
 
   Double_t xint = 0., yint = 0.;
 
@@ -1102,7 +1106,7 @@ Int_t CbmStsSensor::BackStripNumber(Double_t x, Double_t y) const {
       xp = xp - TMath::Floor(xp/fLy) * fLy;
       Int_t iStrip = (Int_t) ( xp / fDy );
       if (iStrip < 0 || iStrip > fNChannelsBack) {
-        cout << "-E- CbmStsSensor::BackStripNumber: Invalid strip number"
+        cout << "-E- CbmStsSensor_old::BackStripNumber: Invalid strip number"
 	     << "  " << iStrip << endl;
         cout << "    Sensor " << fDetectorId << ", x = " << xint << ", y = " 
 	     << yint << endl;
@@ -1118,7 +1122,7 @@ Int_t CbmStsSensor::BackStripNumber(Double_t x, Double_t y) const {
       // Digitise
       Int_t iStrip = (Int_t) ( xp / fDx );
       if (iStrip < 0 || iStrip > fNChannelsBack) {
-        cout << "-E- CbmStsSensor::BackStripNumber: Invalid strip number"
+        cout << "-E- CbmStsSensor_old::BackStripNumber: Invalid strip number"
 	     << "  " << iStrip << endl;
         cout << "    Sensor " << fDetectorId << ", x = " << xint << ", y = " 
 	     << yint << endl;
@@ -1139,7 +1143,7 @@ Int_t CbmStsSensor::BackStripNumber(Double_t x, Double_t y) const {
 
 
 // -----   Private method IntCoord   ---------------------------------------
-Bool_t CbmStsSensor::IntCoord(Double_t x, Double_t y,
+Bool_t CbmStsSensor_old::IntCoord(Double_t x, Double_t y,
 			      Double_t& xint, Double_t& yint) const {
 
   // Translation into sensor centre system
@@ -1168,7 +1172,7 @@ Bool_t CbmStsSensor::IntCoord(Double_t x, Double_t y,
 
 
 // -----   Private method IntCoord   ---------------------------------------
-Bool_t CbmStsSensor::IntCoord(Double_t x, Double_t y, Double_t z,
+Bool_t CbmStsSensor_old::IntCoord(Double_t x, Double_t y, Double_t z,
 			      Double_t& xint, Double_t& yint, Double_t& zint) const {
 
   // Translation into sensor centre system
@@ -1197,7 +1201,7 @@ Bool_t CbmStsSensor::IntCoord(Double_t x, Double_t y, Double_t z,
 
 
 // -----   Private method IsInside   ---------------------------------------
-Bool_t CbmStsSensor::IsInside(Double_t xint, Double_t yint) const {
+Bool_t CbmStsSensor_old::IsInside(Double_t xint, Double_t yint) const {
   if ( xint < 0.  ) return kFALSE;
   if ( xint > fLx ) return kFALSE;
   if ( yint < 0.  ) return kFALSE;
@@ -1209,4 +1213,4 @@ Bool_t CbmStsSensor::IsInside(Double_t xint, Double_t yint) const {
 
 
 
-ClassImp(CbmStsSensor)
+ClassImp(CbmStsSensor_old)

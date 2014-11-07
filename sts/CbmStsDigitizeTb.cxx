@@ -31,7 +31,7 @@
 #include "CbmStsDigiScheme.h"
 #include "CbmStsDigitizeTb.h"
 #include "CbmStsPoint.h"
-#include "CbmStsSensor.h"
+#include "legacy/CbmStsSensor_old.h"
 #include "CbmStsSector.h"
 #include "CbmStsStation.h"
 
@@ -129,7 +129,7 @@ void CbmStsDigitizeTb::DigitizePoint(const CbmStsPoint* point,
 
 
   // --- Get corresponding sensor from StsDigiScheme
-  CbmStsSensor* sensor = NULL;
+  CbmStsSensor_old* sensor = NULL;
   if ( fDigiScheme->IsNewGeometry() ) {
     TString curPath = fDigiScheme->GetCurrentPath();
     sensor = fDigiScheme->GetSensorByName(curPath);

@@ -11,7 +11,7 @@
 #include "FairMCPoint.h"
 #include "CbmMvdPoint.h"
 #include "CbmGeoStsPar.h"
-#include "CbmStsSensor.h"
+#include "legacy/CbmStsSensor_old.h"
 #include "CbmStsDigiScheme.h"
 #include "CbmGeoStsPar.h"
 #include "CbmStsDigiPar.h"
@@ -363,7 +363,7 @@ void CbmLitMCTrackCreator::FillStationMaps()
 		   Double_t zin = point->GetZIn();
 		   gGeoManager->FindNode(xin, yin, zin);
 		   TGeoNode* curNode = gGeoManager->GetCurrentNode();  // only needed for old geometries
-		   CbmStsSensor* sensor = (fStsDigiScheme->IsNewGeometry()) ?
+		   CbmStsSensor_old* sensor = (fStsDigiScheme->IsNewGeometry()) ?
 				   fStsDigiScheme->GetSensorByName(fStsDigiScheme->GetCurrentPath()) :
                        fStsDigiScheme->GetSensorByName(curNode->GetName());
 		   if (sensor != NULL) {

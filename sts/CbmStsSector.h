@@ -38,7 +38,7 @@
 #include <set>
 #include <vector>
 
-class CbmStsSensor;
+class CbmStsSensor_old;
 class CbmStsSensorDigiPar;
 
 class CbmStsSector : public TNamed
@@ -86,12 +86,12 @@ class CbmStsSector : public TNamed
   Int_t    GetNSensors()   const { return fSensors->GetEntriesFast(); }
   TObjArray* GetSensors() { return fSensors; }
 
-  CbmStsSensor* GetSensor(Int_t iSensor) { 
-    return (CbmStsSensor*) fSensors->At(iSensor); }
-  CbmStsSensor* GetSensorByNr(Int_t sensorNr);
+  CbmStsSensor_old* GetSensor(Int_t iSensor) {
+    return (CbmStsSensor_old*) fSensors->At(iSensor); }
+  CbmStsSensor_old* GetSensorByNr(Int_t sensorNr);
 
   void AddSensor(CbmStsSensorDigiPar* sensorPar);
-  void AddSensor(CbmStsSensor* sensor);
+  void AddSensor(CbmStsSensor_old* sensor);
 
   // Retrieve from sensor
   Int_t    GetType()       const { return fType; }

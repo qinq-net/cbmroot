@@ -28,6 +28,9 @@
 #pragma link C++ class CbmStsFindClusters;
 #pragma link C++ class CbmStsHitFinder;
 
+// Legacy
+#pragma link C++ class CbmStsSensor_old;
+
 // Enumerators
 #pragma link C++ enum EStsElementLevel;
 
@@ -53,7 +56,6 @@
 #pragma link C++ class CbmStsParAsciiFileIo;
 #pragma link C++ class CbmStsParRootFileIo;
 #pragma link C++ class CbmStsRadTool;
-#pragma link C++ class CbmStsSensor+;
 #pragma link C++ class CbmStsSensorDigiPar+;
 #pragma link C++ class CbmStsSector+;
 #pragma link C++ class CbmStsSectorDigiPar+;

@@ -27,7 +27,7 @@
 class CbmGeoStsPar;
 class CbmStsDigiPar;
 class CbmStsSector;
-class CbmStsSensor;
+class CbmStsSensor_old;
 class CbmStsStation;
 
 
@@ -67,9 +67,9 @@ class CbmStsDigiScheme : public TObject
   CbmStsStation* GetStation(Int_t iStation);                                       /** Station by index **/
   CbmStsStation* GetStationByNr(Int_t stationNr);                                  /** Station by number **/
   CbmStsSector*  GetSector     (Int_t stationNr, Int_t sectorNr);                  /** Sector  by number **/
-  CbmStsSensor*  GetSensor     (Int_t stationNr, Int_t sectorNr, Int_t sensorNr);  /** Sensor  by number **/
+  CbmStsSensor_old*  GetSensor     (Int_t stationNr, Int_t sectorNr, Int_t sensorNr);  /** Sensor  by number **/
   Int_t GetDetectorIdByName(TString sensorName);
-  CbmStsSensor* GetSensorByName    (TString sensorName);
+  CbmStsSensor_old* GetSensorByName    (TString sensorName);
 
   /** Check for new geometry **/
   Bool_t IsNewGeometry() const { return fIsNewGeometry; }
@@ -90,7 +90,7 @@ class CbmStsDigiScheme : public TObject
 
   std::map<Int_t,  CbmStsStation*> fStationMap; //! Map from number to station
   std::map<TString, Int_t>          fDetIdByName;
-  std::map<TString, CbmStsSensor*> fSensorByName;
+  std::map<TString, CbmStsSensor_old*> fSensorByName;
 
   CbmStsDigiScheme(const CbmStsDigiScheme&);
   CbmStsDigiScheme operator=(const CbmStsDigiScheme&);
