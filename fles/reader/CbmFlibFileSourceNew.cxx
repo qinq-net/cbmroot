@@ -123,8 +123,18 @@ Int_t CbmFlibFileSourceNew::ReadEvent()
     for (size_t c {0}; c < ts.num_components(); c++) {
       auto systemID = ts.descriptor(c, 0).sys_id;
       
-      PrintMicroSliceDescriptor(ts.descriptor(c, 0));
+          PrintMicroSliceDescriptor(ts.descriptor(c, 0));
 
+      auto it=fUnpackers.find(systemID);
+      if (it == fUnpackers.end()) {
+	LOG(FATAL) << "Could not find unpacker for system id 0x" << 
+	  std::hex << systemID << FairLogger::endl;
+      } else {
+        LOG(INFO) << "I am here." << FairLogger::endl;
+	it->second->DoUnpack(ts, c);
+      }
+
+      /*
      switch (systemID) {
       case 0xFA:
 	LOG(INFO) << "It is flesnet pattern generator data" << FairLogger::endl;
@@ -145,6 +155,7 @@ Int_t CbmFlibFileSourceNew::ReadEvent()
       default:
 	LOG(INFO) << "Not known now" << FairLogger::endl;
       }
+      */
     }
     return 0;
   }
@@ -179,7 +190,7 @@ void CbmFlibFileSourceNew::UnpackSpadicCbmNetMessage(const fles::Timeslice& ts, 
   r.add_component(ts, component);
 
   for (auto addr : r.sources()) {
-    std::cout << "---- reader " << addr << " ----" << std::endl;
+    LOG(INFO) << "---- reader " << addr << " ----" << FairLogger::endl;
     while (auto mp = r.get_message(addr)) {
       print_message(*mp);
       Int_t link = ts.descriptor(component, 0).eq_id;

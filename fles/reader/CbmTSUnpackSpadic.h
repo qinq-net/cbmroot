@@ -10,10 +10,13 @@
 
 #ifndef __CINT__
   #include "Timeslice.hpp"
+  #include "Message.hpp"
 #endif
 
 
 #include "CbmTSUnpack.h"
+
+#include "TClonesArray.h"
 
 class CbmTSUnpackSpadic : public CbmTSUnpack
 {
@@ -25,11 +28,15 @@ class CbmTSUnpackSpadic : public CbmTSUnpack
   virtual Bool_t Init();
 #ifndef __CINT__
   virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
+  void print_message(const spadic::Message& m);
 #endif
   virtual void Reset();
 
   // protected:
   //  virtual void Register();
+
+ private:
+  TClonesArray* fSpadicRaw;
 
   ClassDef(CbmTSUnpackSpadic, 1)
 };
