@@ -33,6 +33,10 @@ Link_Directories(
 Set(SRCS
   CbmFlibFileSource.cxx   
   CbmNxFlibFileSource.cxx   
+
+#  CbmTSUnpack.cxx
+#  CbmTSUnpackSpadic.cxx
+#  CbmFlibFileSourceNew.cxx   
 )
 
 Set(NO_DICT_SRCS
