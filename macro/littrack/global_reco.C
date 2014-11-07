@@ -64,8 +64,6 @@ void global_reco(Int_t nEvents = 10, // number of events
 	}
 
    parFileList->Add(&stsDigiFile);
-   parFileList->Add(&trdDigiFile);
-   parFileList->Add(&tofDigiFile);
 
 	Int_t iVerbose = 1;
 	TStopwatch timer;
@@ -170,6 +168,7 @@ void global_reco(Int_t nEvents = 10, // number of events
 
 		if (IsTrd(parFile)) {
 			// ----- TRD reconstruction-----------------------------------------
+   parFileList->Add(&trdDigiFile);
 			CbmTrdRadiator *radiator = new CbmTrdRadiator(kTRUE , "H++");
 			if (trdHitProducerType == "smearing") {
 				CbmTrdHitProducerSmearing* trdHitProd = new CbmTrdHitProducerSmearing(radiator);
@@ -197,6 +196,7 @@ void global_reco(Int_t nEvents = 10, // number of events
 		}
 
 		if (IsTof(parFile)) {
+   parFileList->Add(&tofDigiFile);
 			// ------ TOF hits --------------------------------------------------------
 		   CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("TOF HitProducerNew",iVerbose);
 		   tofHitProd->SetInitFromAscii(kFALSE);
