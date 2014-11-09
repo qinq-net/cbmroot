@@ -62,6 +62,9 @@ public:
 	/**
 	 * \brief Inherited from CbmBaseHit.
 	 */
+
+   CbmMuchStrawHit(const CbmMuchStrawHit&);
+
    Int_t GetPlaneId() const { return fPlaneId; }
 
    /** Accessores **/

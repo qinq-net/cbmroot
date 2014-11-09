@@ -65,4 +65,24 @@ CbmMuchStrawHit::CbmMuchStrawHit(
 	SetType(kMUCHSTRAWHIT);
 }
 
+CbmMuchStrawHit::CbmMuchStrawHit(const CbmMuchStrawHit& rhs)
+ : CbmStripHit(rhs),
+   fX(rhs.fX),
+   fY(rhs.fY),
+   fFlag(rhs.fFlag),
+   fPlaneId(rhs.fPlaneId),
+   fTube(rhs.fTube),
+   fSegment(rhs.fSegment)
+{
+  SetU(rhs.GetU());
+  SetDu(rhs.GetDu());
+  SetPhi(rhs.GetPhi());
+  SetDphi(rhs.GetDphi());
+  SetMatch(rhs.GetMatch());
+  for (Int_t i = 0; i < 5; ++i) {
+    fDouble[i] = rhs.fDouble[i];
+    fInt[i] = rhs.fInt[i];
+  }
+}
+
 ClassImp(CbmMuchStrawHit);
