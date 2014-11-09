@@ -41,8 +41,6 @@ CbmMuchFindHitsStraws::CbmMuchFindHitsStraws(const char* digiFileName)
     , fPhis()
     , fDiams()
 {
-  //Double_t phis[10] = {0., 10., -10.};
-  //Double_t phis[10] = {-7., 0., 7., 0.};
   Double_t phis[10] = {-7., 0., 7., 0., -3.};
   SetPhis(5, phis);
   for (Int_t i = 0; i < 10; ++i) fDiams[i] = 0.62;  
@@ -218,7 +216,7 @@ void CbmMuchFindHitsStraws::Exec(Option_t* opt)
         {
             // 1 - dim. hits
             // CbmMuchStrawHit(detectorId,u,phi,z,du,dphi,dz,refId,planeId);
-            // cout << " Local: " << ploc.getX()+errU << " " << ploc.getY() << " " << ploc.getZ() << endl;
+	    //cout << " Local: " << station3 << " " << layer << " " << locX << " " << errU << " " << array[2] << endl;
             hit = new ((*fHits)[nHits++]) CbmMuchStrawHit(address,
                                                           locX,
                                                           fPhis[layer],

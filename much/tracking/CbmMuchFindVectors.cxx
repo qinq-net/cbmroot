@@ -28,13 +28,14 @@ CbmMuchFindVectors::CbmMuchFindVectors()
     fGeoScheme(CbmMuchGeoScheme::Instance()),
     fTrackArray(NULL),
     fNofTracks(0),
-    //fLu(new TDecompLU(4)),
+    fHits(NULL),
+    fPoints(NULL),
+    fDigiMatches(NULL),
     fStatFirst(-1),
     fErrU(-1.0),
     fDiam(0.0),
-    //fCutChi2(100.0),
     fCutChi2(20.0),
-    fMinHits(5)
+    fMinHits(10)
 {
 }
 // -------------------------------------------------------------------------
@@ -47,13 +48,14 @@ CbmMuchFindVectors::CbmMuchFindVectors(
     fGeoScheme(CbmMuchGeoScheme::Instance()),
     fTrackArray(NULL),
     fNofTracks(0),
-    //fLu(new TDecompLU(4)),
+    fHits(NULL),
+    fPoints(NULL),
+    fDigiMatches(NULL),
     fStatFirst(-1),
     fErrU(-1.0),
     fDiam(0.0),
-    //fCutChi2(100.0),
     fCutChi2(20.0),
-    fMinHits(5)
+    fMinHits(10)
 {
 }
 // -------------------------------------------------------------------------
@@ -65,6 +67,8 @@ CbmMuchFindVectors::~CbmMuchFindVectors()
   for (Int_t i = 0; i < fgkStat; ++i) {
     Int_t nVecs = fVectors[i].size();
     for (Int_t j = 0; j < nVecs; ++j) delete fVectors[i][j];
+    //nVecs = fVectorsHigh[i].size();
+    //for (Int_t j = 0; j < nVecs; ++j) delete fVectorsHigh[i][j];
   }
   for (map<Int_t,TDecompLU*>::iterator it = fLus.begin(); it != fLus.end(); ++it)
     delete it->second;
@@ -159,6 +163,9 @@ void CbmMuchFindVectors::Exec(
     Int_t nVecs = fVectors[i].size();
     for (Int_t j = 0; j < nVecs; ++j) delete fVectors[i][j];
     fVectors[i].clear();
+    //nVecs = fVectorsHigh[i].size();
+    //for (Int_t j = 0; j < nVecs; ++j) delete fVectorsHigh[i][j];
+    fVectorsHigh[i].clear();
   }
 
   // Do all processing
@@ -172,6 +179,12 @@ void CbmMuchFindVectors::Exec(
   // Remove vectors with wrong orientation
   // (using empirical cuts for omega muons at 8 GeV) 
   CheckParams();
+
+  // Go to the high resolution mode processing
+  Double_t err = fErrU;
+  fErrU = 0.02;
+  if (fErrU < 0.1) HighRes();
+  fErrU = err;
 
   // Remove clones
   RemoveClones();
@@ -191,6 +204,8 @@ void CbmMuchFindVectors::Finish()
   for (Int_t i = 0; i < fgkStat; ++i) {
     Int_t nVecs = fVectors[i].size();
     for (Int_t j = 0; j < nVecs; ++j) delete fVectors[i][j];
+    //nVecs = fVectorsHigh[i].size();
+    //for (Int_t j = 0; j < nVecs; ++j) delete fVectorsHigh[i][j];
   }
   for (map<Int_t,TDecompLU*>::iterator it = fLus.begin(); it != fLus.end(); ++it)
     delete it->second;
@@ -214,15 +229,17 @@ void CbmMuchFindVectors::ComputeMatrix()
   }
 
   TMatrixD coef(4,4);
-  Int_t  pattMax = 1 << fgkPlanes, next = 0, nTot = 0;
+  Int_t  pattMax = 1 << fgkPlanes, nDouble = 0, nTot = 0;
     
   // Loop over doublet patterns
   for (Int_t ipat = 1; ipat < pattMax; ++ipat) {
 
-    // Check if the pattern is valid (all doublets are active)
-    next = 0;
-    for (Int_t j = 0; j < fgkPlanes; j += 2) if ((ipat & (3 << j)) == 0) { next = 1; break; }
-    if (next) continue;
+    // Check if the pattern is valid:
+    // either all doublets are active or 3 the first ones (for high resolution mode)
+    nDouble = 0;
+    for (Int_t j = 0; j < fgkPlanes; j += 2) if (ipat & (3 << j)) ++nDouble; else break;
+    if ((ipat & (3 << 6)) == 0) ++nDouble; // 3 doublets
+    if (nDouble < fgkPlanes / 2) continue;
     ++nTot;
 
     for (Int_t j = 0; j < fgkPlanes; ++j) onoff[j] = (ipat & (1 << j));
@@ -658,7 +675,7 @@ Bool_t CbmMuchFindVectors::IntersectViews(Int_t ista, Int_t curLay, Int_t indx1,
 // -------------------------------------------------------------------------
 
 // -----   Private method AddVector   --------------------------------------
-void CbmMuchFindVectors::AddVector(Int_t ista, Int_t patt, Double_t chi2, Double_t *pars)
+void CbmMuchFindVectors::AddVector(Int_t ista, Int_t patt, Double_t chi2, Double_t *pars, Bool_t lowRes)
 {
   // Add vector to the temporary container (as a MuchTrack)
 
@@ -676,9 +693,14 @@ void CbmMuchFindVectors::AddVector(Int_t ista, Int_t patt, Double_t chi2, Double
   for (Int_t ipl = 0; ipl < fgkPlanes; ++ipl) {
     if (!(patt & (1 << ipl))) continue;
     track->AddHit(fUzi[ipl][1], kMUCHSTRAWHIT);
+    if (lowRes) continue;
+    // Store selected hit coordinate (resolved left-right ambig.) as data member fDphi  
+    CbmMuchStrawHit *hit = (CbmMuchStrawHit*) fHits->UncheckedAt(fUzi[ipl][1]);
+    hit->SetDphi(fUz[ipl][0]);
   }
   SetTrackId(track); // set track ID as its flag 
-  fVectors[ista].push_back(track);
+  if (lowRes) fVectors[ista].push_back(track);
+  else fVectorsHigh[ista].push_back(track);
 }
 // -------------------------------------------------------------------------
 
@@ -788,6 +810,7 @@ Double_t CbmMuchFindVectors::FindChi2(Int_t ista, Int_t patt, Double_t *pars)
     //cout << " " << i << " " << x << " " << y << " " << u << " " <<  fUz[i][0] << " " << du*du << endl;
 
     // Edge effect
+    //if (errv < 2.0) continue; // skip for high-res. mode  
     Int_t iseg = fUzi[i][0];
     Double_t v = -x * fSina[i] + y * fCosa[i];
     Double_t v0 = 0;
@@ -837,10 +860,102 @@ void CbmMuchFindVectors::CheckParams()
 }
 // -------------------------------------------------------------------------
 
+// -----   Private method HighRes   ----------------------------------------
+void CbmMuchFindVectors::HighRes()
+{
+  // High resolution processing (resolve ghost hits and make high resolution vectors)
+
+  for (Int_t ista = 0; ista < fgkStat; ++ista) {
+    Int_t nvec = fVectors[ista].size();
+
+    for (Int_t iv = 0; iv < nvec; ++iv) {
+      CbmMuchTrack *vec = fVectors[ista][iv];
+      Int_t nhits = vec->GetNofHits(), patt = 0;
+      Double_t uu[fgkPlanes][2];
+
+      for (Int_t ih = 0; ih < nhits; ++ih) {
+	CbmMuchStrawHit *hit = (CbmMuchStrawHit*) fHits->UncheckedAt(vec->GetHitIndex(ih));
+	Int_t lay = fGeoScheme->GetLayerIndex(hit->GetAddress());
+	Int_t side = fGeoScheme->GetLayerSideIndex(hit->GetAddress());
+	Int_t plane = lay*2+side;
+	uu[plane][0] = hit->GetU();
+	uu[plane][1] = hit->GetDouble()[2];
+	patt |= (1 << plane);
+	fUzi[plane][0] = hit->GetSegment();
+	fUzi[plane][1] = vec->GetHitIndex(ih);
+      }
+
+      // Number of hit combinations is 2 
+      // - left-right ambiguity resolution does not really work for doublets
+      Int_t nCombs = (patt & 1) ? 2 : 1, flag = 1, nok = nCombs - 1;
+
+      for (Int_t icomb = -1; icomb < nCombs; icomb += 2) {
+	fUz[0][0] = (nCombs == 2) ? uu[0][0] + uu[0][1] * icomb : 0.0;
+	ProcessSingleHigh(ista, 1, patt, flag, nok, uu);
+      }
+      
+    } // for (Int_t iv = 0; 
+  } // for (Int_t ista = 0; 
+
+  MoveVectors(); // move vectors from one container to another, i.e. drop low resolution ones
+
+}
+// -------------------------------------------------------------------------
+
+// -----   Private method ProcessDoubleHigh   ------------------------------
+void CbmMuchFindVectors::ProcessSingleHigh(Int_t ista, Int_t plane, Int_t patt, Int_t flag,
+					   Int_t nok, Double_t uu[fgkPlanes][2]) 
+{
+  // Main processing engine for high resolution mode
+  // (recursively adds singlet hits to the vector)
+ 
+  Double_t pars[4] = {0.0};
+
+  // Number of hit combinations is 2
+  Int_t nCombs = (patt & (1 << plane)) ? 2 : 1;
+  nok += (nCombs - 1);
+
+  for (Int_t icomb = -1; icomb < nCombs; icomb += 2) {
+    fUz[plane][0] = (nCombs == 2) ? uu[plane][0] + uu[plane][1] * icomb : 0.0;
+    if (plane == fgkPlanes - 1 || nok == fMinHits && flag) {
+      // Straight line fit of the vector
+      Int_t patt1 = patt & ((1 << plane + 1) - 1); // apply mask
+      FindLine(patt1, pars);
+      Double_t chi2 = FindChi2(ista, patt1, pars);
+      //cout << " *** Stat: " << ista << " " << plane << " " << chi2 << " " << pars[0] << " " << pars[1] << endl;
+      if (icomb > -1) flag = 0;
+      if (chi2 > fCutChi2) continue; // too high chi2 - do not extend line
+      //if (plane + 1 < fgkPlanes) ProcessSingleHigh(ista, plane + 1, patt, flag, nok, uu);
+      if (plane + 1 < fgkPlanes) ProcessSingleHigh(ista, plane + 1, patt, 0, nok, uu);
+      else AddVector(ista, patt, chi2, pars, kFALSE); // add vector to the temporary container
+    } else {
+      ProcessSingleHigh(ista, plane + 1, patt, flag, nok, uu);
+    }
+  }
+
+}
+// -------------------------------------------------------------------------
+
+// -----   Private method MoveVectors   ------------------------------------
+void CbmMuchFindVectors::MoveVectors()
+{
+  // Drop low-resolution vectors and move high-res. ones to their container
+
+  for (Int_t ista = 0; ista < fgkStat; ++ista) {
+    Int_t nVecs = fVectors[ista].size();
+    for (Int_t j = 0; j < nVecs; ++j) delete fVectors[ista][j];
+    fVectors[ista].clear();
+    
+    nVecs = fVectorsHigh[ista].size();
+    for (Int_t j = 0; j < nVecs; ++j) fVectors[ista].push_back(fVectorsHigh[ista][j]);
+  }
+}
+// -------------------------------------------------------------------------
+
 // -----   Private method RemoveClones   -----------------------------------
 void CbmMuchFindVectors::RemoveClones()
 {
-  // Remove clone vectors (having EXACTLY the same hit combination of 4 doublets)
+  // Remove clone vectors (having at least 1 the same hit in each doublet (min. 4 the same hits))
  
   Int_t nthr = 4, planes[20];
 
@@ -1008,7 +1123,7 @@ void CbmMuchFindVectors::StoreVectors()
       //for (Int_t j = 0; j < tr->GetNofHits(); ++j) cout << j << " " << tr->GetHitIndex(j) << " " << fVectors[ist][iv]->GetHitIndex(j) << endl;
       // Set hit flag (to check Lit tracking)
       Int_t nhits = tr->GetNofHits();
-
+      /*
       for (Int_t j = 0; j < nhits; ++j) {
 	CbmMuchStrawHit *hit = (CbmMuchStrawHit*) fHits->UncheckedAt(tr->GetHitIndex(j));
 	if (usedHits.find(tr->GetHitIndex(j)) == usedHits.end()) {
@@ -1016,13 +1131,12 @@ void CbmMuchFindVectors::StoreVectors()
 	  usedHits.insert(tr->GetHitIndex(j));
 	} else {
 	  // Ugly interim solution for the tracking - create new hit
-	  /*
 	  CbmMuchStrawHit *hitNew = new ((*fHits)[nHitsTot++]) CbmMuchStrawHit(*hit);
 	  hitNew->SetFlag(ntrs-1);
-	  */
 	  usedHits.insert(nHitsTot-1);
 	}
       }
+      */
     }
   }
 }

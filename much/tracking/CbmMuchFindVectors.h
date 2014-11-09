@@ -71,6 +71,7 @@ public:
   Int_t fStatFirst;                             // First straw station No.
   std::multimap<Int_t,Int_t> fHitPl[fgkStat][fgkPlanes]; // hit indices on planes vs tube No
   std::vector<CbmMuchTrack*> fVectors[fgkStat]; // track vectors for stations
+  std::vector<CbmMuchTrack*> fVectorsHigh[fgkStat]; // track vectors for stations (high resolution)
   Double_t fUz[fgkPlanes][3];                   // hit float data
   Double_t fUzi[fgkPlanes][3];                  // hit int data
   Double_t fDz[fgkPlanes];                      // geometrical constants (Z-distances from layer 0)
@@ -94,12 +95,15 @@ public:
   void MakeVectors();
   void ProcessDouble(Int_t ista, Int_t lay2, Int_t patt, Int_t flag, Int_t tube0, Int_t segment0);
   Bool_t IntersectViews(Int_t ista, Int_t curLay, Int_t indx1, Int_t indx2, Int_t patt);
-  void AddVector(Int_t ista, Int_t patt, Double_t chi2, Double_t *pars); 
+  void AddVector(Int_t ista, Int_t patt, Double_t chi2, Double_t *pars, Bool_t lowRes = kTRUE); 
   void SetTrackId(CbmMuchTrack *vec);
   Bool_t SelDoubleId(Int_t indx1, Int_t indx2);
   void FindLine(Int_t patt, Double_t *pars);
   Double_t FindChi2(Int_t ista, Int_t patt, Double_t *pars);
   void CheckParams();
+  void HighRes();
+  void ProcessSingleHigh(Int_t ista, Int_t plane, Int_t patt, Int_t flag, Int_t nok, Double_t uu[fgkPlanes][2]); 
+  void MoveVectors();
   void RemoveClones();
   void RemoveShorts();
   void StoreVectors();

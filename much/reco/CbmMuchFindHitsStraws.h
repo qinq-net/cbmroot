@@ -72,7 +72,8 @@ public:
     }
     void SetBinary(Int_t binary)
     {
-        fBinary = binary;
+        //fBinary = binary;
+        fBinary = 1; // always uses binary mode (for vector finder) 
         if (fBinary) fMirror = 0;
     }
     void SetDimens(Int_t dim)
