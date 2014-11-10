@@ -144,7 +144,7 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis300_electron")
 
 
   // -----   STS Cluster Finder   --------------------------------------------
-  FairTask* stsClusterFinder = new CbmStsClusterFinder();
+  FairTask* stsClusterFinder = new CbmStsClusterFinder_old();
   run->AddTask(stsClusterFinder);
   // -------------------------------------------------------------------------
 

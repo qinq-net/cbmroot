@@ -1,5 +1,5 @@
 /**
- * \file CbmStsClusterFinder.cxx
+ * \file CbmStsClusterFinder_old.cxx
  **/
 #include "TClonesArray.h"
 #include "TH1S.h"
@@ -14,7 +14,7 @@
 #include "CbmStsDigi.h"
 #include "CbmStsDigiPar.h"
 #include "CbmStsDigiScheme.h"
-#include "CbmStsClusterFinder.h"
+#include "legacy/CbmStsClusterFinder_old.h"
 #include "CbmStsHit.h"
 #include "CbmStsSector.h"
 #include "CbmStsStation.h"
@@ -23,8 +23,8 @@
 
 using namespace std;
 
-CbmStsClusterFinder::CbmStsClusterFinder()
-    : FairTask("CbmStsClusterFinder", 1)
+CbmStsClusterFinder_old::CbmStsClusterFinder_old()
+    : FairTask("CbmStsClusterFinder_old", 1)
     , fGeoPar(NULL)
     , fDigiPar(NULL)
     , fDigis(NULL)
@@ -36,7 +36,7 @@ CbmStsClusterFinder::CbmStsClusterFinder()
 {
 }
 
-CbmStsClusterFinder::~CbmStsClusterFinder()
+CbmStsClusterFinder_old::~CbmStsClusterFinder_old()
 {
     if (fClusterCandidates)
     {
@@ -50,7 +50,7 @@ CbmStsClusterFinder::~CbmStsClusterFinder()
     }
 }
 
-void CbmStsClusterFinder::Exec(Option_t* opt)
+void CbmStsClusterFinder_old::Exec(Option_t* opt)
 {
 
 	  TStopwatch timer;
@@ -94,34 +94,34 @@ void CbmStsClusterFinder::Exec(Option_t* opt)
     timer.Stop();
 
     static Int_t eventNo = 0;
-    LOG(INFO) << "CbmStsClusterFinder::Exec: eventNo=" << eventNo++
+    LOG(INFO) << "CbmStsClusterFinder_old::Exec: eventNo=" << eventNo++
     		      << ", time " << timer.RealTime() << FairLogger::endl;
-    LOG(INFO) << "CbmStsClusterFinder::Exec: fDigis.Size=" << fDigis->GetEntries() << FairLogger::endl;
-    LOG(INFO) << "CbmStsClusterFinder::Exec: fClusterCandidates.Size=" << fClusterCandidates->GetEntries() << FairLogger::endl;
-    LOG(INFO) << "CbmStsClusterFinder::Exec: fClusters.Size=" << fClusters->GetEntries() << FairLogger::endl;
+    LOG(INFO) << "CbmStsClusterFinder_old::Exec: fDigis.Size=" << fDigis->GetEntries() << FairLogger::endl;
+    LOG(INFO) << "CbmStsClusterFinder_old::Exec: fClusterCandidates.Size=" << fClusterCandidates->GetEntries() << FairLogger::endl;
+    LOG(INFO) << "CbmStsClusterFinder_old::Exec: fClusters.Size=" << fClusters->GetEntries() << FairLogger::endl;
 
 }
 
-void CbmStsClusterFinder::SetParContainers()
+void CbmStsClusterFinder_old::SetParContainers()
 {
     FairRuntimeDb* db = FairRunAna::Instance()->GetRuntimeDb();
     if (NULL == db)
-        LOG(FATAL) << "CbmStsClusterFinder::SetParContainers: No runtime database" << FairLogger::endl;
+        LOG(FATAL) << "CbmStsClusterFinder_old::SetParContainers: No runtime database" << FairLogger::endl;
     fGeoPar = (CbmGeoStsPar*)db->getContainer("CbmGeoStsPar");
     fDigiPar = (CbmStsDigiPar*)db->getContainer("CbmStsDigiPar");
 }
 
-InitStatus CbmStsClusterFinder::Init()
+InitStatus CbmStsClusterFinder_old::Init()
 {
 
     // Get input array
     FairRootManager* ioman = FairRootManager::Instance();
     if (NULL == ioman)
-        LOG(FATAL) << "CbmStsClusterFinder::Init: No FairRootManager" << FairLogger::endl;
+        LOG(FATAL) << "CbmStsClusterFinder_old::Init: No FairRootManager" << FairLogger::endl;
 
     fDigis = (TClonesArray*)ioman->GetObject("StsDigi");
     if (NULL == fDigis)
-        LOG(FATAL) << "CbmStsClusterFinder::Init: No StsDigi array" << FairLogger::endl;
+        LOG(FATAL) << "CbmStsClusterFinder_old::Init: No StsDigi array" << FairLogger::endl;
 
     fClusterCandidates = new TClonesArray("CbmStsCluster", 30000);
     ioman->Register("StsClusterCand", "Cluster in STS", fClusterCandidates, kTRUE);
@@ -140,7 +140,7 @@ InitStatus CbmStsClusterFinder::Init()
     return kSUCCESS;
 }
 
-void CbmStsClusterFinder::MakeSets()
+void CbmStsClusterFinder_old::MakeSets()
 {
     fDigiMapF.clear();
     fDigiMapB.clear();
@@ -161,7 +161,7 @@ void CbmStsClusterFinder::MakeSets()
     }
 }
 
-void CbmStsClusterFinder::SortDigis()
+void CbmStsClusterFinder_old::SortDigis()
 {
     MakeSets();
 
@@ -193,7 +193,7 @@ void CbmStsClusterFinder::SortDigis()
     }
 }
 
-void CbmStsClusterFinder::FindClusters(Int_t stationNr, Int_t sectorNr, Int_t iSide, const set<Int_t>& digiSet)
+void CbmStsClusterFinder_old::FindClusters(Int_t stationNr, Int_t sectorNr, Int_t iSide, const set<Int_t>& digiSet)
 {
     CbmStsCluster* clusterCand = NULL;
 
@@ -296,7 +296,7 @@ void CbmStsClusterFinder::FindClusters(Int_t stationNr, Int_t sectorNr, Int_t iS
     }
 }
 
-void CbmStsClusterFinder::AnalyzeClusters()
+void CbmStsClusterFinder_old::AnalyzeClusters()
 {
     Int_t nofClusterCandidates = fClusterCandidates->GetEntriesFast();
     for (Int_t iclus = 0; iclus < nofClusterCandidates; iclus++)
@@ -305,7 +305,7 @@ void CbmStsClusterFinder::AnalyzeClusters()
     }
 }
 
-void CbmStsClusterFinder::AnalyzeCluster(Int_t clusterId)
+void CbmStsClusterFinder_old::AnalyzeCluster(Int_t clusterId)
 {
     const CbmStsCluster* clusterCand = static_cast<const CbmStsCluster*>(fClusterCandidates->At(clusterId));
 
@@ -346,8 +346,8 @@ void CbmStsClusterFinder::AnalyzeCluster(Int_t clusterId)
     }
 }
 
-void CbmStsClusterFinder::Finish()
+void CbmStsClusterFinder_old::Finish()
 {
 }
 
-ClassImp(CbmStsClusterFinder)
+ClassImp(CbmStsClusterFinder_old)

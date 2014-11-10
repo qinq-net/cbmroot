@@ -4,6 +4,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+
 // Setup
 //#pragma link C++ class CbmStsAddress;
 #pragma link C++ class CbmStsElement;
@@ -29,6 +30,7 @@
 #pragma link C++ class CbmStsHitFinder;
 
 // Legacy
+#pragma link C++ class CbmStsClusterFinder_old;
 #pragma link C++ class CbmStsDigitize_old;
 #pragma link C++ class CbmStsSensor_old;
 
@@ -44,7 +46,6 @@
 #pragma link C++ class CbmStsIdealDigitize+;
 #pragma link C++ class CbmStsDigitizeTb;
 #pragma link C++ class CbmStsIdealFindHits+;
-#pragma link C++ class CbmStsClusterFinder+;
 #pragma link C++ class CbmStsFindHits+;
 #pragma link C++ class CbmStsFindTracks+;
 #pragma link C++ class CbmStsFindTracksQa+;
@@ -56,8 +57,8 @@
 #pragma link C++ class CbmStsParAsciiFileIo;
 #pragma link C++ class CbmStsParRootFileIo;
 #pragma link C++ class CbmStsRadTool;
-#pragma link C++ class CbmStsSensorDigiPar+;
 #pragma link C++ class CbmStsSector+;
+#pragma link C++ class CbmStsSensorDigiPar+;
 #pragma link C++ class CbmStsSectorDigiPar+;
 #pragma link C++ class CbmStsStation+;
 #pragma link C++ class CbmStsStationDigiPar+;

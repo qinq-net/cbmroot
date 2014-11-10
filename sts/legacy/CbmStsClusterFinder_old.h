@@ -1,5 +1,5 @@
 /**
- * \file CbmStsClusterFinder.h
+ * \file CbmStsClusterFinder_old.h
  * \author Volker Friese <v.friese@gsi.de>
  * \since 11.09.06
  * \brief CBM task class for finding clusters in the STS
@@ -9,8 +9,13 @@
  *
  **/
 
-#ifndef CBMSTSCLUSTERFINDER_H
-#define CBMSTSCLUSTERFINDER_H 1
+/** Legacy software. This class is replaced by CbmStsFindClusters (completely
+ ** new implementation).
+ **/
+
+
+#ifndef CBMSTSCLUSTERFINDER_OLD_H
+#define CBMSTSCLUSTERFINDER_OLD_H 1
 
 #include "FairTask.h"
 
@@ -21,23 +26,24 @@ class TClonesArray;
 class CbmGeoStsPar;
 class CbmStsDigiPar;
 class CbmStsDigiScheme;
+class CbmStsSector;
 
 /**
- * \class CbmStsClusterFinder
+ * \class CbmStsClusterFinder_old
  * \brief CBM task class for finding clusters in the STS
  **/
-class CbmStsClusterFinder : public FairTask
+class CbmStsClusterFinder_old : public FairTask
 {
 public:
     /**
      * \brief Default constructor.
      **/
-    CbmStsClusterFinder();
+    CbmStsClusterFinder_old();
 
     /**
      * \brief Destructor.
      **/
-    virtual ~CbmStsClusterFinder();
+    virtual ~CbmStsClusterFinder_old();
 
     /**
      * \brief Inherited from FairTask.
@@ -70,8 +76,8 @@ private:
 
     void FindClusters(Int_t stationNr, Int_t sectorNr, Int_t iSide, const set<Int_t>& digiSet);
 
-    CbmStsClusterFinder(const CbmStsClusterFinder&);
-    CbmStsClusterFinder operator=(const CbmStsClusterFinder&);
+    CbmStsClusterFinder_old(const CbmStsClusterFinder_old&);
+    CbmStsClusterFinder_old operator=(const CbmStsClusterFinder_old&);
 
     TClonesArray* fDigis;             ///> Input array of CbmStsDigi
     /// FIXME: Why do we need a second array with cluster candidates which is written to file?
@@ -88,7 +94,7 @@ private:
     std::map<const CbmStsSector*, std::set<Int_t> > fDigiMapF; ///> sector digis (front)
     std::map<const CbmStsSector*, std::set<Int_t> > fDigiMapB; ///> sector digis (back)
 
-    ClassDef(CbmStsClusterFinder, 1);
+    ClassDef(CbmStsClusterFinder_old, 1);
 };
 
 #endif
