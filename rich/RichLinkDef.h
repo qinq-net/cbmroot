@@ -37,5 +37,6 @@
 
 
 #pragma link C++ class CbmRichTrbUnpack+;
+#pragma link C++ class CbmTrbCalibrator+;
 #endif
 

@@ -1,8 +1,10 @@
 #ifndef CBMRICHTRBUNPACK_H
 #define CBMRICHTRBUNPACK_H
 
+#include "CbmRichTrbDefines.h"
 
 #include "TObject.h"
+#include "TH1I.h"
 #include <string>
 #include <vector>
 
@@ -27,9 +29,18 @@ private:
     vector<CbmTrbOutputHit*> fOutputRichHits;
     vector<CbmTrbOutputHit*> fOutputReferenceHits;
 
+    //CbmTrbCalibrator* fCalibrator;
+
+    ///// Histos for calibration
+    TH1I* hLeadingFine[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
+    TH1I* hLeadingFineBuffer[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
+    TH1I* hTrailingFine[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
+    TH1I* hTrailingFineBuffer[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
+    ////////////////////////////
+
     void ReadEvents(void* data, int size);
     void ProcessTdc(CbmRawSubEvent* subEvent);
-    void DoCalibration();
+    void CreateOutputHits();
     void BuildEvent();
     void FindMinMaxIndex(Double_t x0, Int_t *indmin, Int_t *indmax);
     CbmTrbOutputHit* CreateOutputHit(CbmTrbRawHit* rawHit);
@@ -40,16 +51,12 @@ private:
      */
     Double_t GetFullTime(UInt_t epoch, UShort_t coarseTime, UShort_t fineTime);
 
-    /*
-     * Return time in ns.
-     */
-    Double_t GetLinearFineCalibration(unsigned fineCnt);
-
     void DrawQa();
+    
+    void GenHistos();
 
     CbmRichTrbUnpack(const CbmRichTrbUnpack&){;}
     CbmRichTrbUnpack operator=(const CbmRichTrbUnpack&){;}
-
 
     ClassDef(CbmRichTrbUnpack,1)
 };

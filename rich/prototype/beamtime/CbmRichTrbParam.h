@@ -39,7 +39,7 @@ private:
 	void ReadMap()
 	{
 		string line;
-		ifstream myfile ("/Users/slebedev/Development/cbm/trunk/cbmroot/macro/fles/pixel-coord_channel-register.ascii");
+		ifstream myfile ("pixel-coord_channel-register.ascii");
 		if (myfile.is_open()) {
 			getline (myfile,line);
 			getline (myfile,line);
@@ -58,6 +58,8 @@ private:
 				fMap[tdcId][chLeadingEdge] = new CbmRichTrbMapData(pmtNum, pixelNum, xmm, ymm, simpleX, simpleY, tdcId, chLeadingEdge, chTrailingEdge, padiwaNum, trbNum, pmtType);
 			}
 			myfile.close();
+		} else {
+		   cout << "[CbmRichTrbParam::ReadMap] Failed to open ASCII map file." << endl;
 		}
 	}
 };

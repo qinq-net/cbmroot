@@ -1,4 +1,3 @@
-
 #ifndef CBMTRBITERATOR_H
 #define CBMTRBITERATOR_H
 
@@ -83,4 +82,4 @@ public:
 
 };
 
-#endif
+#endif // CBMTRBITERATOR_H

@@ -1,6 +1,7 @@
 #ifndef CBMRAWSUBEVENT_H
 #define CBMRAWSUBEVENT_H
 
+#include "TObject.h" // only for swab - fix it!
 #include "CbmRawEvent.h"
 
 enum CbmRawSubEventIndex {
@@ -170,4 +171,4 @@ public:
 
 };
 
-#endif
+#endif // CBMRAWSUBEVENT_H

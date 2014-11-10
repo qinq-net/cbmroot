@@ -4,7 +4,6 @@
 #include <ostream>
 #include <stdint.h>
 
-
 using namespace std;
 
 enum CbmRawEventIndex {
@@ -205,4 +204,4 @@ public:
 
 };
 
-#endif
+#endif // CBMRAWEVENT_H
