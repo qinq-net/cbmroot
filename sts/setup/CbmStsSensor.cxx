@@ -1,11 +1,11 @@
-/** @file CbmStsSenzor.cxx
+/** @file CbmStsSensor.cxx
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 03.05.2013
  **/
 
 
 // Include class header
-#include "CbmStsSenzor.h"
+#include "CbmStsSensor.h"
 
 // Includes from ROOT
 #include "TClonesArray.h"
@@ -28,7 +28,7 @@
 
 
 // -----   Constructor   ---------------------------------------------------
-CbmStsSenzor::CbmStsSenzor() : CbmStsElement(),
+CbmStsSensor::CbmStsSensor() : CbmStsElement(),
                                fType(NULL),
                                fCurrentLink(NULL),
                                fHits(NULL)
@@ -39,7 +39,7 @@ CbmStsSenzor::CbmStsSenzor() : CbmStsElement(),
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmStsSenzor::CbmStsSenzor(const char* name, const char* title,
+CbmStsSensor::CbmStsSensor(const char* name, const char* title,
                            TGeoPhysicalNode* node) :
                            CbmStsElement(name, title, kStsSensor, node),
                            fType(NULL),
@@ -52,7 +52,7 @@ CbmStsSenzor::CbmStsSenzor(const char* name, const char* title,
 
 
 // -----   Create a new hit   ----------------------------------------------
-void CbmStsSenzor::CreateHit(Double_t xLocal, Double_t yLocal,
+void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
 		                         CbmStsCluster* clusterF,
 		                         CbmStsCluster* clusterB) {
 
@@ -102,7 +102,7 @@ void CbmStsSenzor::CreateHit(Double_t xLocal, Double_t yLocal,
 
 
 // -----   Find hits in sensor   -------------------------------------------
-Int_t CbmStsSenzor::FindHits(vector<CbmStsCluster*>& clusters,
+Int_t CbmStsSensor::FindHits(vector<CbmStsCluster*>& clusters,
 		                         TClonesArray* hitArray) {
 	fHits = hitArray;
 	Int_t nHits = fType->FindHits(clusters, this);
@@ -115,7 +115,7 @@ Int_t CbmStsSenzor::FindHits(vector<CbmStsCluster*>& clusters,
 
 
 // -----  Get the mother module   ------------------------------------------
-CbmStsModule* CbmStsSenzor::GetModule() const {
+CbmStsModule* CbmStsSensor::GetModule() const {
 	 return dynamic_cast<CbmStsModule*> ( GetMother() );
 }
 // -------------------------------------------------------------------------
@@ -123,7 +123,7 @@ CbmStsModule* CbmStsSenzor::GetModule() const {
 
 
 // -----   Process a CbmStsPoint  ------------------------------------------
-Int_t CbmStsSenzor::ProcessPoint(CbmStsPoint* point, CbmLink* link) {
+Int_t CbmStsSensor::ProcessPoint(CbmStsPoint* point, CbmLink* link) {
 
 	// Check whether type is assigned
 	if ( ! fType ) {
@@ -190,4 +190,4 @@ Int_t CbmStsSenzor::ProcessPoint(CbmStsPoint* point, CbmLink* link) {
 // -------------------------------------------------------------------------
 
 
-ClassImp(CbmStsSenzor)
+ClassImp(CbmStsSensor)

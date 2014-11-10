@@ -9,7 +9,7 @@
 
 
 #include <vector>
-#include "setup/CbmStsSenzor.h"
+#include "setup/CbmStsSensor.h"
 #include "setup/CbmStsElement.h"
 
 class TGeoManager;
@@ -79,7 +79,7 @@ class CbmStsSetup : public CbmStsElement
      ** @param  index  Index of sensor in the array
      ** @return  Pointer to sensor
      **/
-    CbmStsSenzor* GetSensor(Int_t index) { return fSensors[index]; }
+    CbmStsSensor* GetSensor(Int_t index) { return fSensors[index]; }
 
 
     /** Initialise setup from geometry
@@ -108,7 +108,7 @@ class CbmStsSetup : public CbmStsElement
 
     /** These arrays allow convenient loops over all modules or sensors. **/
     vector<CbmStsModule*> fModules;   ///< Array of modules
-    vector<CbmStsSenzor*> fSensors;   ///< Array of sensors
+    vector<CbmStsSensor*> fSensors;   ///< Array of sensors
 
     /** Default constructor  **/
     CbmStsSetup();

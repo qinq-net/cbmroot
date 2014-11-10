@@ -8,7 +8,7 @@
 #include "TGeoManager.h"
 
 #include "setup/CbmStsModule.h"
-#include "setup/CbmStsSenzor.h"
+#include "setup/CbmStsSensor.h"
 #include "setup/CbmStsSetup.h"
 
 
@@ -172,7 +172,7 @@ void CbmStsElement::InitDaughters() {
       	case kStsHalfLadder:
       		dElement = new CbmStsModule(name, title, pNode); break;
       	case kStsModule:
-      		dElement = new CbmStsSenzor(name, title, pNode); break;
+      		dElement = new CbmStsSensor(name, title, pNode); break;
       	default:
       		dElement = new CbmStsElement(name, title, fLevel+1, pNode); break;
       }

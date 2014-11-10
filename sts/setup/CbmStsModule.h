@@ -14,7 +14,7 @@
 #include "CbmStsDigi.h"
 #include "digitize/CbmStsSignal.h"
 #include "setup/CbmStsElement.h"
-#include "setup/CbmStsSenzor.h"
+#include "setup/CbmStsSensor.h"
 
 class TClonesArray;
 

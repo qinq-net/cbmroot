@@ -141,8 +141,8 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
   				CbmStsElement* modu = hlad->GetDaughter(iMod);
   				fModules.push_back(dynamic_cast<CbmStsModule*>(modu));
   				for (Int_t iSen = 0; iSen < modu->GetNofDaughters(); iSen++) {
-  					CbmStsSenzor* sensor =
-  							dynamic_cast<CbmStsSenzor*>(modu->GetDaughter(iSen));
+  					CbmStsSensor* sensor =
+  							dynamic_cast<CbmStsSensor*>(modu->GetDaughter(iSen));
   					fSensors.push_back(sensor);
   				}
   			}

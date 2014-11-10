@@ -33,7 +33,7 @@ CbmStsSensorTypeDssdIdeal::CbmStsSensorTypeDssdIdeal()
 // -----   Produce charge on the strips   ----------------------------------
 Int_t CbmStsSensorTypeDssdIdeal::ProduceCharge(CbmStsSensorPoint* point,
 																					 		 Int_t side,
-                                               const CbmStsSenzor* sensor)
+                                               const CbmStsSensor* sensor)
 																						 	 const {
 
   // --- Protect against being called without parameters being set

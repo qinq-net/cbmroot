@@ -305,7 +305,7 @@ Int_t CbmStsModule::FindHits(TClonesArray* hitArray) {
 	// --- Call FindHits method in each daughter sensor
 	Int_t nHits = 0;
 	for (Int_t iSensor = 0; iSensor < GetNofDaughters(); iSensor++) {
-		CbmStsSenzor* sensor = dynamic_cast<CbmStsSenzor*>(GetDaughter(iSensor));
+		CbmStsSensor* sensor = dynamic_cast<CbmStsSensor*>(GetDaughter(iSensor));
 		nHits += sensor->FindHits(fClusters, hitArray);
 	}
 

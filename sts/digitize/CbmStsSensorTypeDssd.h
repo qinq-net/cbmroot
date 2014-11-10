@@ -65,7 +65,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** Abstract from CbmStsSensorType
      **/
     virtual Int_t FindHits(std::vector<CbmStsCluster*>&,
-    		                   CbmStsSenzor* sensor);
+    		                   CbmStsSensor* sensor);
 
 
     /** Get the side of the sensor from the module channel number
@@ -93,7 +93,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** sensor characterised by the CbmStsSensorPoint object.
      **/
     virtual Int_t ProcessPoint(CbmStsSensorPoint* point,
-                               const CbmStsSenzor* sensor) const;
+                               const CbmStsSensor* sensor) const;
 
 
 
@@ -191,7 +191,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      **/
     Int_t IntersectClusters(CbmStsCluster* clusterF,
     		                    CbmStsCluster* clusterB,
-    		                    CbmStsSenzor* sensor);
+    		                    CbmStsSensor* sensor);
 
 
     /** Check whether a point (x,y) is inside the active area.
@@ -212,7 +212,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** @return  Number of generated charge signals (active strips)
      **/
     virtual Int_t ProduceCharge(CbmStsSensorPoint* point, Int_t side,
-                                const CbmStsSenzor* sensor) const;
+                                const CbmStsSensor* sensor) const;
 
 
     /** Register produced charge in one strip
@@ -221,7 +221,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** @param charge  charge in strip [e]
      ** @param time    time of registration [ns]
      **/
-    void RegisterCharge(const CbmStsSenzor* sensor, Int_t side, Int_t strip,
+    void RegisterCharge(const CbmStsSensor* sensor, Int_t side, Int_t strip,
                         Double_t charge, Double_t time) const;
 
 

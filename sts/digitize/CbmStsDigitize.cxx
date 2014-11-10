@@ -213,7 +213,7 @@ void CbmStsDigitize::ProcessPoint(CbmStsPoint* point, CbmLink* link) {
 
 	// --- Get the sensor the point is in
 	UInt_t address = point->GetDetectorID();
-	CbmStsSenzor* sensor = dynamic_cast<CbmStsSenzor*>
+	CbmStsSensor* sensor = dynamic_cast<CbmStsSensor*>
 					(fSetup->GetElement(address, kStsSensor));
 	if ( ! sensor ) LOG(ERROR) << GetName() << ": Sensor of StsPoint not found!"
 			                       << FairLogger::endl;
@@ -324,7 +324,7 @@ void CbmStsDigitize::SetSensorTypes() {
 	Int_t nTypes[6] = {0, 0, 0, 0, 0, 0};
 
 	for (Int_t iSensor = 0; iSensor < fSetup->GetNofSensors(); iSensor++) {
-		CbmStsSenzor* sensor = fSetup->GetSensor(iSensor);
+		CbmStsSensor* sensor = fSetup->GetSensor(iSensor);
 		TGeoBBox* shape = dynamic_cast<TGeoBBox*>
 											(sensor->GetPnode()->GetVolume()->GetShape());
 		Double_t volX = 2. * shape->GetDX();

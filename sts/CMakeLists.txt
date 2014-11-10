@@ -13,7 +13,7 @@ set(SRCS_SETUP
 #setup/CbmStsAddress.cxx
 setup/CbmStsElement.cxx
 setup/CbmStsModule.cxx
-setup/CbmStsSenzor.cxx
+setup/CbmStsSensor.cxx
 setup/CbmStsSensorPoint.cxx
 setup/CbmStsSensorType.cxx
 setup/CbmStsSetup.cxx

@@ -10,7 +10,7 @@
 #include "TNamed.h"
 #include "CbmStsCluster.h"
 
-class CbmStsSenzor;
+class CbmStsSensor;
 class CbmStsSensorPoint;
 
 
@@ -48,7 +48,7 @@ class CbmStsSensorType : public TNamed
      ** implemented for each concrete sensor type.
      **/
     virtual Int_t FindHits(std::vector<CbmStsCluster*>& clusters,
-    		                   CbmStsSenzor* sensor) = 0;
+    		                   CbmStsSensor* sensor) = 0;
 
 
     /** Type identifier **/
@@ -66,7 +66,7 @@ class CbmStsSensorType : public TNamed
      ** sensor characterised by the CbmStsSensorPoint object.
      **/
     virtual Int_t ProcessPoint(CbmStsSensorPoint* point,
-                               const CbmStsSenzor* sensor) const = 0;
+                               const CbmStsSensor* sensor) const = 0;
 
 
   private:

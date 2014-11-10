@@ -14,7 +14,7 @@
 
 #include "setup/CbmStsModule.h"
 #include "setup/CbmStsSensorPoint.h"
-#include "setup/CbmStsSenzor.h"
+#include "setup/CbmStsSensor.h"
 
 
 using std::fixed;
@@ -41,7 +41,7 @@ CbmStsSensorTypeDssd::CbmStsSensorTypeDssd()
 
 // -----   Find hits   -----------------------------------------------------
 Int_t CbmStsSensorTypeDssd::FindHits(vector<CbmStsCluster*>& clusters,
-		                                 CbmStsSenzor* sensor) {
+		                                 CbmStsSensor* sensor) {
 
 	Int_t nHits = 0;
 	Int_t nClusters = clusters.size();
@@ -296,7 +296,7 @@ Bool_t CbmStsSensorTypeDssd::Intersect(Double_t xF, Double_t xB,
 // -----  Intersect two clusters (front / back)   --------------------------
 Int_t CbmStsSensorTypeDssd::IntersectClusters(CbmStsCluster* clusterF,
 		                                          CbmStsCluster* clusterB,
-		                                          CbmStsSenzor* sensor) {
+		                                          CbmStsSensor* sensor) {
 
 	// --- Check pointer validity
 	if ( ! clusterF ) {
@@ -421,7 +421,7 @@ void CbmStsSensorTypeDssd::Print(Option_t* opt) const {
 
 // -----   Process an MC Point  --------------------------------------------
 Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
-                                         const CbmStsSenzor* sensor) const {
+                                         const CbmStsSensor* sensor) const {
 
   // --- Catch if parameters are not set
   if ( ! fIsSet ) {
@@ -465,7 +465,7 @@ Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
 // -----   Produce charge on the strips   ----------------------------------
 Int_t CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
                                           Int_t side,
-                                          const CbmStsSenzor* sensor)
+                                          const CbmStsSensor* sensor)
                                           const {
 
   // --- Protect against being called without parameters being set
@@ -546,7 +546,7 @@ Int_t CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 
 
 // -----   Register charge   -----------------------------------------------
-void CbmStsSensorTypeDssd::RegisterCharge(const CbmStsSenzor* sensor,
+void CbmStsSensorTypeDssd::RegisterCharge(const CbmStsSensor* sensor,
                                           Int_t side, Int_t strip,
                                           Double_t charge,
                                           Double_t time) const {

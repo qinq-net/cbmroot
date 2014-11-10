@@ -6,8 +6,8 @@
  ** renamed to spell correctly.
  **/
 
-#ifndef CBMSTSSENZOR_H
-#define CBMSTSSENZOR_H 1
+#ifndef CBMSTSSENSOR_H
+#define CBMSTSSENSOR_H 1
 
 
 #include <vector>
@@ -26,7 +26,7 @@ class CbmStsSensorType;
 using std::vector;
 
 
-/** @class CbmStsSenzor
+/** @class CbmStsSensor
  ** @brief Class representing an instance of a sensor in the CBM-STS.
  ** @author V.Friese <v.friese@gsi.de>
  ** @version 2.0
@@ -43,13 +43,13 @@ using std::vector;
  ** global system to the sensor system, having the sensor midpoint as origin.
  ** The analog response is then modelled by the CbmStsSensorType object.
  **/
-class CbmStsSenzor : public CbmStsElement
+class CbmStsSensor : public CbmStsElement
 {
 
   public:
 
     /** Constructor  **/
-    CbmStsSenzor();
+    CbmStsSensor();
 
 
     /** Standard constructor
@@ -57,12 +57,12 @@ class CbmStsSenzor : public CbmStsElement
      ** @param title  Title
      ** @param node   Pointer to relevant TGeoPhysicalNode
      */
-    CbmStsSenzor(const char* name, const char* title,
+    CbmStsSensor(const char* name, const char* title,
                  TGeoPhysicalNode* node = NULL);
 
 
     /** Destructor  **/
-    virtual ~CbmStsSenzor() { };
+    virtual ~CbmStsSensor() { };
 
 
     /** Create a new hit in the output array form two clusters
@@ -135,11 +135,11 @@ class CbmStsSenzor : public CbmStsElement
     TClonesArray* fHits;
 
     /** Prevent usage of copy constructor and assignment operator **/
-    CbmStsSenzor(const CbmStsSenzor&);
-    CbmStsSenzor& operator=(const CbmStsSenzor&);
+    CbmStsSensor(const CbmStsSensor&);
+    CbmStsSensor& operator=(const CbmStsSensor&);
 
 
-    ClassDef(CbmStsSenzor,1);
+    ClassDef(CbmStsSensor,2);
 
 };
 
