@@ -16,7 +16,6 @@ setup/CbmStsModule.cxx
 setup/CbmStsSenzor.cxx
 setup/CbmStsSensorPoint.cxx
 setup/CbmStsSensorType.cxx
-setup/CbmStsSensorTypeDssd.cxx
 setup/CbmStsSetup.cxx
 )
 # --- Sources in mc
@@ -26,6 +25,7 @@ mc/CbmStsMC.cxx
 # --- Sources in digitize
 set (SRCS_DIGITIZE
 digitize/CbmStsDigitize.cxx
+digitize/CbmStsSensorTypeDssd.cxx
 digitize/CbmStsSensorTypeDssdIdeal.cxx;
 digitize/CbmStsSignal.cxx;
 )

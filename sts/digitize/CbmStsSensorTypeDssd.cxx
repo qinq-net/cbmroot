@@ -3,7 +3,7 @@
  ** @date 02.05.2013
  **/
 
-#include "setup/CbmStsSensorTypeDssd.h"
+#include "digitize/CbmStsSensorTypeDssd.h"
 
 #include <iomanip>
 

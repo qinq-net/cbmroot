@@ -26,10 +26,10 @@
 #include "CbmStsPoint.h"
 
 // Include from STS
-#include "digitize/CbmStsSensorTypeDssdIdeal.h"
 #include "setup/CbmStsModule.h"
 #include "setup/CbmStsSetup.h"
-#include "setup/CbmStsSensorTypeDssd.h"
+#include "digitize/CbmStsSensorTypeDssd.h"
+#include "digitize/CbmStsSensorTypeDssdIdeal.h"
 
 
 
