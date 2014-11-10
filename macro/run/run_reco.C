@@ -105,7 +105,7 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis300_electron")
   Int_t    nofBits    = 12;
   Double_t electronsPerAdc    =  10;
   Double_t StripDeadTime = 0.1;
-  CbmStsDigitize* stsDigitize = new CbmStsDigitize();
+  CbmStsDigitize_old* stsDigitize = new CbmStsDigitize_old();
   stsDigitize->SetRealisticResponse();
   stsDigitize->SetFrontThreshold (threshold);
   stsDigitize->SetBackThreshold  (threshold);

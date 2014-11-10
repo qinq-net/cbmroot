@@ -37,6 +37,7 @@ reco/CbmStsHitFinder.cxx
 )
 # --- Legacy sources
 set (SRCS_LEGACY
+legacy/CbmStsDigitize_old.cxx 
 legacy/CbmStsSensor_old.cxx
 )
 # --- All sources
@@ -52,7 +53,6 @@ CbmStsContFact.cxx
 CbmStsDigiPar.cxx 
 CbmStsDigiScheme.cxx 
 CbmStsIdealDigitize.cxx 
-CbmStsDigitize.cxx 
 CbmStsDigitizeTb.cxx 
 CbmStsIdealFindHits.cxx 
 CbmStsClusterFinder.cxx 

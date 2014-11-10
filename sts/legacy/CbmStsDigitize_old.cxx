@@ -5,6 +5,10 @@
 // -----                  Created 08/07/2008  by R. Karabowicz         -----
 // -------------------------------------------------------------------------
 
+/** Legacy software. This class is replaced by CbmStsDigitize (completely
+ ** new implementation).
+ **/
+
 // Includes from ROOT
 #include "TClonesArray.h"
 #include "TObjArray.h"
@@ -26,7 +30,7 @@
 #include "CbmStsDigi.h"
 #include "CbmStsDigiPar.h"
 #include "CbmStsDigiScheme.h"
-#include "CbmStsDigitize.h"
+#include "CbmStsDigitize_old.h"
 #include "CbmStsPoint.h"
 #include "legacy/CbmStsSensor_old.h"
 #include "CbmStsSector.h"
@@ -42,7 +46,7 @@
 
 using namespace std;
 
-CbmStsDigitize::CbmStsDigitize()
+CbmStsDigitize_old::CbmStsDigitize_old()
     : FairTask("CbmStsDigitize")
     , fGeoPar(NULL)
     , fDigiPar(NULL)
@@ -80,7 +84,7 @@ CbmStsDigitize::CbmStsDigitize()
 // -------------------------------------------------------------------------
 
 // -----   Destructor   ----------------------------------------------------
-CbmStsDigitize::~CbmStsDigitize()
+CbmStsDigitize_old::~CbmStsDigitize_old()
 {
     if (fGeoPar)
         delete fGeoPar;
@@ -103,7 +107,7 @@ CbmStsDigitize::~CbmStsDigitize()
 // -------------------------------------------------------------------------
 
 // -----   Public method Exec   --------------------------------------------
-void CbmStsDigitize::Exec(Option_t* opt)
+void CbmStsDigitize_old::Exec(Option_t* opt)
 {
     // Reset all eventwise counters
     fTimer.Start();
@@ -304,7 +308,7 @@ void CbmStsDigitize::Exec(Option_t* opt)
 // -------------------------------------------------------------------------
 
 // -----   Private method ProduceHitResponse   --------------------------------
-void CbmStsDigitize::ProduceHitResponse(CbmStsSensor_old* sensor)
+void CbmStsDigitize_old::ProduceHitResponse(CbmStsSensor_old* sensor)
 {
     set<Int_t> pSet;
     if (fPointMap.find(sensor) == fPointMap.end())
@@ -373,7 +377,7 @@ void CbmStsDigitize::ProduceHitResponse(CbmStsSensor_old* sensor)
 }
 
 // -----   Private method SetParContainers   -------------------------------
-void CbmStsDigitize::SetParContainers()
+void CbmStsDigitize_old::SetParContainers()
 {
 
     // Get run and runtime database
@@ -394,7 +398,7 @@ void CbmStsDigitize::SetParContainers()
 // -------------------------------------------------------------------------
 
 // -----   Private method Init   -------------------------------------------
-InitStatus CbmStsDigitize::Init()
+InitStatus CbmStsDigitize_old::Init()
 {
     FairRootManager* ioman = FairRootManager::Instance();
     if (!ioman)
@@ -431,7 +435,7 @@ InitStatus CbmStsDigitize::Init()
 // -------------------------------------------------------------------------
 
 // -----   Private method ReInit   -----------------------------------------
-InitStatus CbmStsDigitize::ReInit()
+InitStatus CbmStsDigitize_old::ReInit()
 {
 
     // Clear digitisation scheme
@@ -449,7 +453,7 @@ InitStatus CbmStsDigitize::ReInit()
 // -------------------------------------------------------------------------
 
 // -----   Private method MakeSets   ---------------------------------------
-void CbmStsDigitize::MakeSets()
+void CbmStsDigitize_old::MakeSets()
 {
 
     fPointMap.clear();
@@ -504,7 +508,7 @@ void CbmStsDigitize::MakeSets()
     }
 }
 // -------------------------------------------------------------------------
-void CbmStsDigitize::MakeSets1()
+void CbmStsDigitize_old::MakeSets1()
 { // with occupancy file - default not used
 
     fPointMap.clear();
@@ -581,7 +585,7 @@ void CbmStsDigitize::MakeSets1()
 // -------------------------------------------------------------------------
 
 // -----   Private method Reset   ------------------------------------------
-void CbmStsDigitize::Reset()
+void CbmStsDigitize_old::Reset()
 {
     fFChannelPointsMap.clear();
     fBChannelPointsMap.clear();
@@ -593,7 +597,7 @@ void CbmStsDigitize::Reset()
 // -------------------------------------------------------------------------
 
 // -----   Virtual method Finish   -----------------------------------------
-void CbmStsDigitize::Finish()
+void CbmStsDigitize_old::Finish()
 {
     cout << endl;
     cout << "============================================================" << endl;
@@ -610,4 +614,4 @@ void CbmStsDigitize::Finish()
 }
 // -------------------------------------------------------------------------
 
-ClassImp(CbmStsDigitize)
+ClassImp(CbmStsDigitize_old)

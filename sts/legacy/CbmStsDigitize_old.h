@@ -5,6 +5,10 @@
 // -----                  Created 01/07/2008  by R. Karabowicz         -----
 // -------------------------------------------------------------------------
 
+/** Legacy software. This class is replaced by CbmStsDigitize (completely
+ ** new implementation).
+ **/
+
 /** CbmStsDigitise
  *@author Volker Friese <v.friese@gsi.de>
  *@since 30.08.06
@@ -15,29 +19,33 @@
  ** Produces objects of type CbmStsDigi out of CbmStsPoint.
  **/
 
-#ifndef CBMSTSDIGITIZE_H
-#define CBMSTSDIGITIZE_H 1
+#ifndef CBMSTSDIGITIZE_OLD_H
+#define CBMSTSDIGITIZE_OLD_H 1
 
 #include <set>
 #include "TStopwatch.h"
 #include "FairTask.h"
 
 class TClonesArray;
-class CbmGeostsPar;
+class CbmGeoStsPar;
 class CbmStsDigiPar;
 class CbmStsStation;
+class CbmStsSensor_old;
+class CbmStsDigiScheme;
 
 class CbmStsPoint;
 
-class CbmStsDigitize : public FairTask
+using std::set;
+
+class CbmStsDigitize_old : public FairTask
 {
 
 public:
     /** Default constructor **/
-    CbmStsDigitize();
+    CbmStsDigitize_old();
 
     /** Destructor **/
-    virtual ~CbmStsDigitize();
+    virtual ~CbmStsDigitize_old();
 
     /** Execution **/
     virtual void Exec(Option_t* opt);
@@ -159,10 +167,10 @@ private:
     /** Reset eventwise counters **/
     void Reset();
 
-    CbmStsDigitize(const CbmStsDigitize&);
-    CbmStsDigitize operator=(const CbmStsDigitize&);
+    CbmStsDigitize_old(const CbmStsDigitize_old&);
+    CbmStsDigitize_old operator=(const CbmStsDigitize_old&);
 
-    ClassDef(CbmStsDigitize, 1);
+    ClassDef(CbmStsDigitize_old, 1);
 };
 
 #endif

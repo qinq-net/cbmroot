@@ -29,6 +29,7 @@
 #pragma link C++ class CbmStsHitFinder;
 
 // Legacy
+#pragma link C++ class CbmStsDigitize_old;
 #pragma link C++ class CbmStsSensor_old;
 
 // Enumerators
@@ -41,7 +42,6 @@
 #pragma link C++ class CbmStsDigiPar;
 #pragma link C++ class CbmStsDigiScheme+;
 #pragma link C++ class CbmStsIdealDigitize+;
-#pragma link C++ class CbmStsDigitize+;
 #pragma link C++ class CbmStsDigitizeTb;
 #pragma link C++ class CbmStsIdealFindHits+;
 #pragma link C++ class CbmStsClusterFinder+;
