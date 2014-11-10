@@ -1,8 +1,8 @@
 /**
- * \file CbmStsFindHits.cxx
+ * \file CbmStsFindHits_old.cxx
  **/
 
-#include "CbmStsFindHits.h"
+#include "legacy/CbmStsFindHits_old.h"
 
 #include "CbmGeoStsPar.h"
 #include "CbmStsCluster.h"
@@ -25,8 +25,8 @@
 
 using namespace std;
 
-CbmStsFindHits::CbmStsFindHits()
-    : FairTask("CbmStsFindHits", 1)
+CbmStsFindHits_old::CbmStsFindHits_old()
+    : FairTask("CbmStsFindHits_old", 1)
     , fGeoPar(NULL)
     , fDigiPar(NULL)
     , fClusters(NULL)
@@ -37,7 +37,7 @@ CbmStsFindHits::CbmStsFindHits()
 {
 }
 
-CbmStsFindHits::~CbmStsFindHits()
+CbmStsFindHits_old::~CbmStsFindHits_old()
 {
     if (fHits)
     {
@@ -46,10 +46,10 @@ CbmStsFindHits::~CbmStsFindHits()
     }
 }
 
-void CbmStsFindHits::Exec(Option_t* opt)
+void CbmStsFindHits_old::Exec(Option_t* opt)
 {
 
-	  LOG(INFO) << "Findhits:: exec" << FairLogger::endl;
+	  LOG(INFO) << "FindHits_old:: exec" << FairLogger::endl;
 
 	  TStopwatch timer;
 	  timer.Start();
@@ -86,15 +86,15 @@ void CbmStsFindHits::Exec(Option_t* opt)
 
     timer.Stop();
     static Int_t eventNo = 0;
-    LOG(INFO) << "CbmStsFindHits::Exec: eventNo=" << eventNo++
+    LOG(INFO) << "CbmStsFindHits_old::Exec: eventNo=" << eventNo++
     		      << ", time " << timer.RealTime() << FairLogger::endl;
 }
 
-void CbmStsFindHits::SetParContainers()
+void CbmStsFindHits_old::SetParContainers()
 {
     FairRuntimeDb* db = FairRunAna::Instance()->GetRuntimeDb();
     if (db == NULL)
-        LOG(FATAL) << "CbmStsFindHits::SetParContainers: No runtime database" << FairLogger::endl;
+        LOG(FATAL) << "CbmStsFindHits_old::SetParContainers: No runtime database" << FairLogger::endl;
 
     // Get STS geometry parameter container
     fGeoPar = (CbmGeoStsPar*)db->getContainer("CbmGeoStsPar");
@@ -103,16 +103,16 @@ void CbmStsFindHits::SetParContainers()
     fDigiPar = (CbmStsDigiPar*)db->getContainer("CbmStsDigiPar");
 }
 
-InitStatus CbmStsFindHits::Init()
+InitStatus CbmStsFindHits_old::Init()
 {
     // Get input array
     FairRootManager* ioman = FairRootManager::Instance();
     if (ioman == NULL)
-        LOG(FATAL) << "CbmStsFindHits::Init: No FairRootManager" << FairLogger::endl;
+        LOG(FATAL) << "CbmStsFindHits_old::Init: No FairRootManager" << FairLogger::endl;
 
     fClusters = (TClonesArray*)ioman->GetObject("StsCluster");
     if (fClusters == NULL)
-        LOG(FATAL) << "CbmStsFindHits::Init: No StsCluster" << FairLogger::endl;
+        LOG(FATAL) << "CbmStsFindHits_old::Init: No StsCluster" << FairLogger::endl;
 
     // Register output array
     fHits = new TClonesArray("CbmStsHit", 1000);
@@ -129,7 +129,7 @@ InitStatus CbmStsFindHits::Init()
     return kSUCCESS;
 }
 
-void CbmStsFindHits::MakeSets()
+void CbmStsFindHits_old::MakeSets()
 {
     fClusterMapF.clear();
     fClusterMapB.clear();
@@ -150,7 +150,7 @@ void CbmStsFindHits::MakeSets()
     }
 }
 
-void CbmStsFindHits::SortClusters()
+void CbmStsFindHits_old::SortClusters()
 {
     MakeSets();
 
@@ -181,7 +181,7 @@ void CbmStsFindHits::SortClusters()
     }
 }
 
-void CbmStsFindHits::FindHits(CbmStsStation* station, CbmStsSector* sector, const set<Int_t>& frontSet, const set<Int_t>& backSet)
+void CbmStsFindHits_old::FindHits(CbmStsStation* station, CbmStsSector* sector, const set<Int_t>& frontSet, const set<Int_t>& backSet)
 {
     Int_t sectorType = sector->GetType();
 
@@ -316,8 +316,8 @@ void CbmStsFindHits::FindHits(CbmStsStation* station, CbmStsSector* sector, cons
     }         // strip GSI
 }
 
-void CbmStsFindHits::Finish()
+void CbmStsFindHits_old::Finish()
 {
 }
 
-ClassImp(CbmStsFindHits)
+ClassImp(CbmStsFindHits_old)

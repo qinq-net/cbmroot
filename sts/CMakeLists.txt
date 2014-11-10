@@ -39,6 +39,7 @@ reco/CbmStsHitFinder.cxx
 set (SRCS_LEGACY
 legacy/CbmStsClusterFinder_old.cxx 
 legacy/CbmStsDigitize_old.cxx 
+legacy/CbmStsFindHits_old.cxx 
 legacy/CbmStsSensor_old.cxx
 # --- Legacy, not compiled any longer
 # legacy/CbmStsIdealDigitize.cxx 
@@ -59,7 +60,6 @@ CbmStsDigiPar.cxx
 CbmStsDigiScheme.cxx 
 CbmStsDigitizeTb.cxx 
 CbmStsIdealFindHits.cxx 
-CbmStsFindHits.cxx 
 CbmStsFindTracks.cxx 
 CbmStsFindTracksQa.cxx 
 CbmStsFitTracks.cxx 

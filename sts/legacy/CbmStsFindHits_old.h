@@ -1,5 +1,5 @@
 /**
- * \file CbmStsFindHits.h
+ * \file CbmStsFindHits_old.h
  * \author Volker Friese <v.friese@gsi.de>
  * \since 11.09.06
  * \brief CBM task class for finding clusters in the STS
@@ -9,8 +9,8 @@
  *
  **/
 
-#ifndef CBMSTSFINDHITS_H
-#define CBMSTSFINDHITS_H 1
+#ifndef CBMSTSFINDHITS_OLD_H
+#define CBMSTSFINDHITS_OLD_H 1
 
 #include "FairTask.h"
 
@@ -25,22 +25,22 @@ class CbmStsSector;
 class CbmStsStation;
 
 /**
- * \class CbmStsFindHits
+ * \class CbmStsFindHits_old
  * \brief CBM task class for finding hits in the STS
  **/
-class CbmStsFindHits : public FairTask
+class CbmStsFindHits_old : public FairTask
 {
 
 public:
     /**
      * \brief Default constructor
      **/
-    CbmStsFindHits();
+    CbmStsFindHits_old();
 
     /**
      * \brief Destructor
      **/
-    virtual ~CbmStsFindHits();
+    virtual ~CbmStsFindHits_old();
 
     /**
      * \brief Execution
@@ -70,8 +70,8 @@ private:
 
     void FindHits(CbmStsStation* station, CbmStsSector* sector, const std::set<Int_t>& fSet, const std::set<Int_t>& bSet);
 
-    CbmStsFindHits(const CbmStsFindHits&);
-    CbmStsFindHits operator=(const CbmStsFindHits&);
+    CbmStsFindHits_old(const CbmStsFindHits_old&);
+    CbmStsFindHits_old operator=(const CbmStsFindHits_old&);
 
     CbmGeoStsPar* fGeoPar;         ///> Geometry parameters
     CbmStsDigiPar* fDigiPar;       ///> Digitisation parameters
@@ -85,7 +85,7 @@ private:
     std::map<const CbmStsSector*, std::set<Int_t> > fClusterMapF; ///> sector clusters (front)
     std::map<const CbmStsSector*, std::set<Int_t> > fClusterMapB; ///> sector clusters (back)
 
-    ClassDef(CbmStsFindHits, 1);
+    ClassDef(CbmStsFindHits_old, 1);
 };
 
 #endif

@@ -150,7 +150,7 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis300_electron")
 
 
   // -----   STS hit finder   ------------------------------------------------
-  FairTask* stsFindHits = new CbmStsFindHits();
+  FairTask* stsFindHits = new CbmStsFindHits_old();
   run->AddTask(stsFindHits);
   // -------------------------------------------------------------------------
 
