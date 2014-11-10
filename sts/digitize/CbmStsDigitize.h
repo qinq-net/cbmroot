@@ -1,10 +1,10 @@
-/** @file CbmStsDigitizeIdeal.h
+/** @file CbmStsDigitize.h
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 23.05.2014
  **/
 
-#ifndef CBMSTSDIGITIZEIDEAL_H
-#define CBMSTSDIGITIZEIDEAL_H 1
+#ifndef CBMSTSDIGITIZE_H
+#define CBMSTSDIGITIZE_H 1
 
 #include <map>
 #include "TStopwatch.h"
@@ -16,7 +16,7 @@ class CbmStsPoint;
 class CbmStsSetup;
 
 
-/** @class CbmStsDigitizeIdeal
+/** @class CbmStsDigitize
  ** @brief Task class for simulating the detector response of the STS
  ** @author Volker Friese <v.friese@gsi.de>
  ** @since 23.05.2014
@@ -31,7 +31,7 @@ class CbmStsSetup;
  ** buffered data prior to the MC time of the current event are read out
  ** and stored in the output.
  **/
-class CbmStsDigitizeIdeal : public FairTask
+class CbmStsDigitize : public FairTask
 {
 
  public:
@@ -41,11 +41,11 @@ class CbmStsDigitizeIdeal : public FairTask
    **                   0 = ideal, all charge in one strip.
    **                   1 = uniform charge creation along trajectory.
    **/
-  CbmStsDigitizeIdeal(Int_t digiModel = 0);
+  CbmStsDigitize(Int_t digiModel = 0);
 
 
   /** Destructor **/
-  virtual ~CbmStsDigitizeIdeal();
+  virtual ~CbmStsDigitize();
 
 
   /** Create a digi and send it for further processing
@@ -143,12 +143,12 @@ class CbmStsDigitizeIdeal : public FairTask
 
 
   /** Prevent usage of copy constructor and assignment operator **/
-  CbmStsDigitizeIdeal(const CbmStsDigitizeIdeal&);
-  CbmStsDigitizeIdeal operator=(const CbmStsDigitizeIdeal&);
+  CbmStsDigitize(const CbmStsDigitize&);
+  CbmStsDigitize operator=(const CbmStsDigitize&);
 
 
 
-  ClassDef(CbmStsDigitizeIdeal,1);
+  ClassDef(CbmStsDigitize,2);
 
 };
 

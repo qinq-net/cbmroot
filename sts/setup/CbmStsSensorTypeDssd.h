@@ -10,6 +10,9 @@
 #include "CbmStsSensorType.h"
 
 
+using std::vector;
+
+
 
 /** @class CbmStsSensorTypeDssd
  ** @brief Class describing double-sided silicon strip sensors.

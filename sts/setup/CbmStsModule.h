@@ -18,6 +18,8 @@
 
 class TClonesArray;
 
+using std::map;
+
 
 /** @class CbmStsModule
  ** @brief Class representing an instance of a readout unit in the CBM-STS.

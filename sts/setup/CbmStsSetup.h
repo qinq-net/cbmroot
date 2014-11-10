@@ -13,7 +13,7 @@
 #include "setup/CbmStsElement.h"
 
 class TGeoManager;
-class CbmStsDigitizeIdeal;
+class CbmStsDigitize;
 
 
 
@@ -35,7 +35,7 @@ class CbmStsSetup : public CbmStsElement
 
 
     /** Get digitiser task **/
-    CbmStsDigitizeIdeal* GetDigitizer() const  { return fDigitizer; }
+    CbmStsDigitize* GetDigitizer() const  { return fDigitizer; }
 
 
     /** Get an STS element by address
@@ -94,7 +94,7 @@ class CbmStsSetup : public CbmStsElement
 
 
     /** Set the digitiser task  **/
-    void SetDigitizer(CbmStsDigitizeIdeal* digitizer) {
+    void SetDigitizer(CbmStsDigitize* digitizer) {
     	fDigitizer = digitizer; }
 
 
@@ -102,7 +102,7 @@ class CbmStsSetup : public CbmStsElement
   private:
 
     static CbmStsSetup* fgInstance;    ///< Static instance of this class
-    CbmStsDigitizeIdeal* fDigitizer;   ///< Pointer to digitizer task
+    CbmStsDigitize* fDigitizer;   ///< Pointer to digitizer task
 
     static const TString fgkLevelName[kStsNofLevels];  ///< Level names
 

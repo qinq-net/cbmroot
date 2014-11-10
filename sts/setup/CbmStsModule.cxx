@@ -10,7 +10,7 @@
 #include "CbmStsAddress.h"
 #include "CbmStsCluster.h"
 #include "CbmStsDigi.h"
-#include "digitize/CbmStsDigitizeIdeal.h"
+#include "digitize/CbmStsDigitize.h"
 #include "setup/CbmStsModule.h"
 #include "setup/CbmStsSensorType.h"
 #include "setup/CbmStsSetup.h"
@@ -289,7 +289,7 @@ void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
 			        << fNofAdcChannels << FairLogger::endl;
 	LOG(DEBUG3) << GetName() << ": Sending message. Address " << address
 			        << ", time " << dTime << ", adc " << adc << FairLogger::endl;
-	CbmStsDigitizeIdeal* digitiser = CbmStsSetup::Instance()->GetDigitizer();
+	CbmStsDigitize* digitiser = CbmStsSetup::Instance()->GetDigitizer();
 	if ( digitiser ) digitiser->CreateDigi(address, dTime, adc,
 			                                   signal->GetMatch());
 

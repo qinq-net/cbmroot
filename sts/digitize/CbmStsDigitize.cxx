@@ -1,10 +1,10 @@
-/** @file CbmStsDigitizeIdeal.cxx
+/** @file CbmStsDigitize.cxx
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 23.05.2014
  **/
 
 // Include class header
-#include "CbmStsDigitizeIdeal.h"
+#include "CbmStsDigitize.h"
 
 // Includes from C++
 #include <iomanip>
@@ -34,7 +34,7 @@
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmStsDigitizeIdeal::CbmStsDigitizeIdeal(Int_t digiModel)
+CbmStsDigitize::CbmStsDigitize(Int_t digiModel)
   : FairTask("StsDigitize"),
     fDigiModel(digiModel),
     fDynRange(0.),
@@ -65,7 +65,7 @@ CbmStsDigitizeIdeal::CbmStsDigitizeIdeal(Int_t digiModel)
 
 
 // -----   Destructor   ----------------------------------------------------
-CbmStsDigitizeIdeal::~CbmStsDigitizeIdeal() {
+CbmStsDigitize::~CbmStsDigitize() {
  if ( fDigis ) {
     fDigis->Delete();
     delete fDigis;
@@ -81,7 +81,7 @@ CbmStsDigitizeIdeal::~CbmStsDigitizeIdeal() {
 
 
 // -----   Create a digi object   ------------------------------------------
-void CbmStsDigitizeIdeal::CreateDigi(UInt_t address,
+void CbmStsDigitize::CreateDigi(UInt_t address,
 		              									 ULong64_t time,
 		              									 UShort_t adc,
 		              									 const CbmMatch& match) {
@@ -121,7 +121,7 @@ void CbmStsDigitizeIdeal::CreateDigi(UInt_t address,
 
 
 // -----   Task execution   ------------------------------------------------
-void CbmStsDigitizeIdeal::Exec(Option_t* opt) {
+void CbmStsDigitize::Exec(Option_t* opt) {
 
 	// --- Start timer and reset counters
 	fTimer.Start();
@@ -175,7 +175,7 @@ void CbmStsDigitizeIdeal::Exec(Option_t* opt) {
 
 
 // -----   Finish run   ----------------------------------------------------
-void CbmStsDigitizeIdeal::Finish() {
+void CbmStsDigitize::Finish() {
 	std::cout << std::endl;
 	LOG(INFO) << "=====================================" << FairLogger::endl;
 	LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
@@ -202,7 +202,7 @@ void CbmStsDigitizeIdeal::Finish() {
 
 
 // -----  Process a StsPoint   ---------------------------------------------
-void CbmStsDigitizeIdeal::ProcessPoint(CbmStsPoint* point, CbmLink* link) {
+void CbmStsDigitize::ProcessPoint(CbmStsPoint* point, CbmLink* link) {
 
 	// Debug
 	if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG2) ) point->Print();
@@ -238,7 +238,7 @@ void CbmStsDigitizeIdeal::ProcessPoint(CbmStsPoint* point, CbmLink* link) {
 
 
 // -----   Initialisation   ------------------------------------------------
-InitStatus CbmStsDigitizeIdeal::Init() {
+InitStatus CbmStsDigitize::Init() {
 
   // Get input array (CbmStsPoint)
   FairRootManager* ioman = FairRootManager::Instance();
@@ -277,7 +277,7 @@ InitStatus CbmStsDigitizeIdeal::Init() {
 
 
 // -----   Private method ReInit   -----------------------------------------
-InitStatus CbmStsDigitizeIdeal::ReInit() {
+InitStatus CbmStsDigitize::ReInit() {
 
   fSetup = CbmStsSetup::Instance();
 
@@ -289,7 +289,7 @@ InitStatus CbmStsDigitizeIdeal::ReInit() {
 
 
 // -----   Private method Reset   ------------------------------------------
-void CbmStsDigitizeIdeal::Reset() {
+void CbmStsDigitize::Reset() {
   fNofPoints = fNofSignalsF = fNofSignalsB = fNofDigis = 0;
   if ( fDigis ) fDigis->Delete();
 }
@@ -300,7 +300,7 @@ void CbmStsDigitizeIdeal::Reset() {
 // -----   Set the digitisation parameters for the modules   ---------------
 // TODO: Currently, all modules have the same parameters. In future,
 // more flexible schemes must be used, in particular for the thersholds.
-void CbmStsDigitizeIdeal::SetModuleParameters() {
+void CbmStsDigitize::SetModuleParameters() {
 	Int_t nModules = fSetup->GetNofModules();
 	for (Int_t iModule = 0; iModule < nModules; iModule++) {
 		fSetup->GetModule(iModule)->SetParameters(2048, fDynRange, fThreshold,
@@ -318,7 +318,7 @@ void CbmStsDigitizeIdeal::SetModuleParameters() {
 // --- Set the types for the sensors in the setup --------------------------
 // TODO: Currently hard-coded to be SensorTypeDssd. Should be made more
 // flexible in the future.
-void CbmStsDigitizeIdeal::SetSensorTypes() {
+void CbmStsDigitize::SetSensorTypes() {
 
 	Int_t nSensors = fSetup->GetNofSensors();
 	Int_t nTypes[6] = {0, 0, 0, 0, 0, 0};
@@ -454,5 +454,5 @@ void CbmStsDigitizeIdeal::SetSensorTypes() {
 // -------------------------------------------------------------------------
 
 
-ClassImp(CbmStsDigitizeIdeal)
+ClassImp(CbmStsDigitize)
 
