@@ -43,8 +43,10 @@ legacy/CbmStsFindHits_old.cxx
 legacy/CbmStsSensor_old.cxx
 # --- Legacy, not compiled any longer
 # legacy/CbmStsIdealDigitize.cxx 
+# legacy/CbmStsIdealFindHits.cxx 
 # legacy/CbmStsRealClusterFinder.cxx 
 # legacy/CbmStsRealDigitize.cxx 
+# legacy/CbmStsRealFindHits.cxx 
 )
 # --- All sources
 set(SRCS
@@ -59,7 +61,6 @@ CbmStsContFact.cxx
 CbmStsDigiPar.cxx 
 CbmStsDigiScheme.cxx 
 CbmStsDigitizeTb.cxx 
-CbmStsIdealFindHits.cxx 
 CbmStsFindTracks.cxx 
 CbmStsFindTracksQa.cxx 
 CbmStsFitTracks.cxx 
