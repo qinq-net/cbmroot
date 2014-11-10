@@ -1,10 +1,10 @@
-/** @file CbmStsHitFinder.cxx
+/** @file CbmStsFindHits.cxx
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 16.06.2014
  **/
 
 // --- Include class header
-#include "reco/CbmStsHitFinder.h"
+#include "reco/CbmStsFindHits.h"
 
 // --- Includes from C++
 #include <iostream>
@@ -23,8 +23,8 @@ using namespace std;
 
 
 // -----   Constructor   ---------------------------------------------------
-CbmStsHitFinder::CbmStsHitFinder()
-    : FairTask("StsHitFinder", 1)
+CbmStsFindHits::CbmStsFindHits()
+    : FairTask("StsFindHits", 1)
     , fClusters(NULL)
     , fHits(NULL)
     , fSetup(NULL)
@@ -40,14 +40,14 @@ CbmStsHitFinder::CbmStsHitFinder()
 
 
 // -----   Destructor   ----------------------------------------------------
-CbmStsHitFinder::~CbmStsHitFinder() {
+CbmStsFindHits::~CbmStsFindHits() {
 }
 // -------------------------------------------------------------------------
 
 
 
 // -----   Task execution   ------------------------------------------------
-void CbmStsHitFinder::Exec(Option_t* opt) {
+void CbmStsFindHits::Exec(Option_t* opt) {
 
 	// --- Event number
 	Int_t iEvent =
@@ -96,7 +96,7 @@ void CbmStsHitFinder::Exec(Option_t* opt) {
 
 
 // -----   End-of-run action   ---------------------------------------------
-void CbmStsHitFinder::Finish() {
+void CbmStsFindHits::Finish() {
 	std::cout << std::endl;
 	LOG(INFO) << "=====================================" << FairLogger::endl;
 	LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
@@ -117,7 +117,7 @@ void CbmStsHitFinder::Finish() {
 
 
 // -----   End-of-event action   -------------------------------------------
-void CbmStsHitFinder::FinishEvent() {
+void CbmStsFindHits::FinishEvent() {
 
 	// --- Clear cluster sets for all active modules
 	Int_t nModules = 0;
@@ -135,7 +135,7 @@ void CbmStsHitFinder::FinishEvent() {
 
 
 // -----   Initialisation   ------------------------------------------------
-InitStatus CbmStsHitFinder::Init()
+InitStatus CbmStsFindHits::Init()
 {
     // --- Check IO-Manager
     FairRootManager* ioman = FairRootManager::Instance();
@@ -169,7 +169,7 @@ InitStatus CbmStsHitFinder::Init()
 
 
 // ----- Sort digis into module digi maps   --------------------------------
-Int_t CbmStsHitFinder::SortClusters() {
+Int_t CbmStsFindHits::SortClusters() {
 
 	// --- Counters
 	Int_t nClusters = 0;
@@ -208,4 +208,4 @@ Int_t CbmStsHitFinder::SortClusters() {
 }
 // -------------------------------------------------------------------------
 
-ClassImp(CbmStsHitFinder)
+ClassImp(CbmStsFindHits)

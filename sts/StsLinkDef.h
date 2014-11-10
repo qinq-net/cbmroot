@@ -27,7 +27,7 @@
 // Reconstruction
 #pragma link C++ class CbmStsClusterFinderSimple;
 #pragma link C++ class CbmStsFindClusters;
-#pragma link C++ class CbmStsHitFinder;
+#pragma link C++ class CbmStsFindHits;
 
 // Legacy
 #pragma link C++ class CbmStsClusterFinder_old;

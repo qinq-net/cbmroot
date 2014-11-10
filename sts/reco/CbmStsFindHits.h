@@ -1,11 +1,11 @@
-/** @file CbmStsHitFinder.h
+/** @file CbmStsFindHits.h
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 17.06.2014
  **/
 
 
-#ifndef CBMSTSHITFINDER_H
-#define CBMSTSHITFINDER_H 1
+#ifndef CBMSTSFINDHITS_H
+#define CBMSTSFINDHITS_H 1
 
 #include <set>
 #include "TStopwatch.h"
@@ -18,7 +18,7 @@ class CbmStsSetup;
 using std::set;
 
 
-/** @class CbmStsHitFinder
+/** @class CbmStsFindHits
  ** @brief Task class for finding STS hits
  ** @author Volker Friese <v.friese@gsi.de>
  ** @since 17.06.2014
@@ -32,16 +32,16 @@ using std::set;
  ** CbmStsClusterFinderSimple. Other, alternative algorithms can be
  ** plugged in.
  **/
-class CbmStsHitFinder : public FairTask
+class CbmStsFindHits : public FairTask
 {
 
 	public:
     /** Constructor **/
-    CbmStsHitFinder();
+    CbmStsFindHits();
 
 
     /** Destructor  **/
-    virtual ~CbmStsHitFinder();
+    virtual ~CbmStsFindHits();
 
 
     /** Task execution
@@ -91,11 +91,11 @@ class CbmStsHitFinder : public FairTask
 
 
     /** Prevent usage of copy constructor and assignment operator **/
-    CbmStsHitFinder(const CbmStsHitFinder&);
-    CbmStsHitFinder operator=(const CbmStsHitFinder&);
+    CbmStsFindHits(const CbmStsFindHits&);
+    CbmStsFindHits operator=(const CbmStsFindHits&);
 
 
-    ClassDef(CbmStsHitFinder, 1);
+    ClassDef(CbmStsFindHits, 2);
 };
 
 #endif

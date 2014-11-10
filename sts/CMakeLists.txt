@@ -33,7 +33,7 @@ digitize/CbmStsSignal.cxx;
 set (SRCS_RECO
 reco/CbmStsClusterFinderSimple.cxx
 reco/CbmStsFindClusters.cxx
-reco/CbmStsHitFinder.cxx
+reco/CbmStsFindHits.cxx
 )
 # --- Legacy sources
 set (SRCS_LEGACY
