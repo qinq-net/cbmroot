@@ -43,7 +43,6 @@
 #pragma link C++ class CbmStsContFact;
 #pragma link C++ class CbmStsDigiPar;
 #pragma link C++ class CbmStsDigiScheme+;
-#pragma link C++ class CbmStsIdealDigitize+;
 #pragma link C++ class CbmStsDigitizeTb;
 #pragma link C++ class CbmStsIdealFindHits+;
 #pragma link C++ class CbmStsFindHits+;
@@ -67,6 +66,12 @@
 #pragma link C++ class CbmStsSimulationQa+;
 #pragma link C++ class CbmStsFindHitsQa+;
 #pragma link C++ class CbmStsReconstructionQa+;
+
+/* Obsolete
+#pragma link C++ class CbmStsIdealDigitize;
+#pragma link C++ class CbmStsRealClusterFinder;
+#pragma link C++ class CbmStsRealDigitize;
+*/
 
 
 #endif /* __CINT__ */

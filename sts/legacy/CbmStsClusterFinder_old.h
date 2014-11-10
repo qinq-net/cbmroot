@@ -28,6 +28,9 @@ class CbmStsDigiPar;
 class CbmStsDigiScheme;
 class CbmStsSector;
 
+using std::set;
+using std::map;
+
 /**
  * \class CbmStsClusterFinder_old
  * \brief CBM task class for finding clusters in the STS

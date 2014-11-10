@@ -141,8 +141,8 @@ private:
     Int_t fFNofSteps;
     Int_t fBNofSteps;
 
-    Double_t* fStripSignalF;
-    Double_t* fStripSignalB;
+    Double_t* fStripSignalF; //!
+    Double_t* fStripSignalB; //!
 
     // map of the point indices contributing to a fired strip
     std::map<Int_t, set<Int_t> > fFChannelPointsMap;

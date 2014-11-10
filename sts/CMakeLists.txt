@@ -40,6 +40,10 @@ set (SRCS_LEGACY
 legacy/CbmStsClusterFinder_old.cxx 
 legacy/CbmStsDigitize_old.cxx 
 legacy/CbmStsSensor_old.cxx
+# --- Legacy, not compiled any longer
+# legacy/CbmStsIdealDigitize.cxx 
+# legacy/CbmStsRealClusterFinder.cxx 
+# legacy/CbmStsRealDigitize.cxx 
 )
 # --- All sources
 set(SRCS
@@ -53,7 +57,6 @@ CbmGeoStsPar.cxx
 CbmStsContFact.cxx 
 CbmStsDigiPar.cxx 
 CbmStsDigiScheme.cxx 
-CbmStsIdealDigitize.cxx 
 CbmStsDigitizeTb.cxx 
 CbmStsIdealFindHits.cxx 
 CbmStsFindHits.cxx 

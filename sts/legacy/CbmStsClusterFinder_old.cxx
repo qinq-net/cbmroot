@@ -21,7 +21,7 @@
 #include "TMath.h"
 #include "TStopwatch.h"
 
-using namespace std;
+
 
 CbmStsClusterFinder_old::CbmStsClusterFinder_old()
     : FairTask("CbmStsClusterFinder_old", 1)
