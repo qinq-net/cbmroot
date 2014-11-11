@@ -11,7 +11,6 @@
 #include "FairTask.h"
 #include "CbmMvdPoint.h"
 #include "CbmMvdDigi.h"
-#include "CbmMvdDigiMatch.h"
 
 #include "TArrayS.h"
 #include "TObjArray.h"
@@ -71,9 +70,9 @@ public:
     
     /** Intialisation **/
     void Init(CbmMvdSensor* mySensor);
- 
-    TClonesArray* GetMatchArray() {return fMatches;};
- 
+
+    void SetInputDigi(CbmMvdDigi* digi){ new((*fInputBuffer)[fInputBuffer->GetEntriesFast()]) CbmMvdDigi(*((CbmMvdDigi*)digi));}
+
     /** Accessors **/
     //Double_t GetSigmaX()        const { return fSigmaX;     };
 
@@ -122,7 +121,6 @@ protected:
     TClonesArray* fDigis;
     TClonesArray* fHits;
     TClonesArray* fClusters;
-    TClonesArray* fMatches;
    
 
     TObjArray* fPixelChargeHistos;
@@ -175,7 +173,6 @@ private:
     Double_t fHitPosErrZ;
 
     TString  fBranchName;
-    TString  fBranchNameMatch;
     
     Int_t fDigisInCluster;
     static const Short_t fChargeArraySize=7; //must be an odd number >3, recommended numbers= 5 or 7
@@ -216,7 +213,7 @@ private:
     void GenerateFakeDigis(Double_t pixelSizeX, Double_t pixelSizeY);
     void CheckForNeighbours(vector<Int_t>* clusterArray, Int_t clusterDigi, TArrayS* pixelUsed);
     
-    void CreateHit(vector<Int_t>* clusterArray,  TVector3& pos, TVector3 &dpos, Int_t entryNr);
+    void CreateHit(vector<Int_t>* clusterArray,  TVector3& pos, TVector3 &dpos);
     void ComputeCenterOfGravity(vector<Int_t>* clusterArray, TVector3& pos, TVector3& dpos);
     void UpdateDebugHistos(vector<Int_t>* clusterArray, Int_t seedIndexX, Int_t seedIndexY);
     

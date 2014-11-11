@@ -223,9 +223,9 @@ if(!initialized)
   foutput = new TClonesArray("CbmMvdPoint",1000);
   fcurrentEvent = new TClonesArray("CbmMvdPoint",1000);
   foutputDigis = new TClonesArray("CbmMvdDigi",1000);
-  foutputDigiMatchs = new TClonesArray("CbmMvdDigiMatch", 1000);
+  foutputDigiMatchs = new TClonesArray("CbmMatch", 1000);
   foutputHits = new TClonesArray("CbmMvdHit",1000);
-  foutputHitMatchs = new TClonesArray("CbmMvdHitMatch", 1000);
+  foutputHitMatchs = new TClonesArray("CbmMatch", 1000);
   }
   for(Int_t j = 0; j < nSensors; j++)
     {
@@ -267,6 +267,40 @@ void CbmMvdDetector::SendInput(TClonesArray* input){
 	        if (point->GetDetectorID() == sensor->GetDetectorID())
 	           {
                    sensor->SendInput(point);
+                   }
+                }
+        }
+}
+//-----------------------------------------------------------------------
+
+
+//-----------------------------------------------------------------------
+void CbmMvdDetector::SendInputDigis(TClonesArray* digis){
+
+  /**
+   * 
+   * Sending event to sensors, 
+   * each sensor gets only his own points
+   * 
+   * TODO: find faster way to re-sort points to sensors
+   * 
+   * **/
+  
+
+  CbmMvdDigi* digi;
+  Int_t nEntries = digis->GetEntriesFast();
+  Int_t nSensors=fSensorArray->GetEntriesFast();
+  CbmMvdSensor* sensor;
+  for(Int_t k = 0; k < nSensors; k++)
+      {
+      sensor=(CbmMvdSensor*)fSensorArray->At(k);
+  	 for (Int_t i = 0; i < nEntries ; i++ )   
+		{
+		digi= (CbmMvdDigi*) digis->At(i); 
+		digi->SetRefId(i);
+	        if (digi->GetDetectorId() == sensor->GetDetectorID())
+	           {
+                   sensor->SendInputDigi(digi);
                    }
                 }
         }

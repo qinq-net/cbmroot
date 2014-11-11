@@ -64,6 +64,7 @@ class CbmMvdDetector : public TNamed
 
   /** Data interface */
   void SendInput(TClonesArray* input);
+  void SendInputDigis(TClonesArray* digis);
   void SendClonesArray(TClonesArray* addedStructures, Int_t dataLevel=0){;}
 
   TClonesArray* GetOuput(){;}

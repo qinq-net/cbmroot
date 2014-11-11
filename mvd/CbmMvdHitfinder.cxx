@@ -60,18 +60,16 @@ fHits->Clear();
 
 if(fInputDigis)
    {
-   cout << endl << "//----------------------------------------//" << endl;
-   cout << "Execute HitfinderPlugin Nr. "<< fHitfinderPluginNr << endl;
+   if(fVerbose)cout << endl << "//----------------------------------------//" << endl;
+   if(fVerbose)cout << "Execute HitfinderPlugin Nr. "<< fHitfinderPluginNr << endl;
+   fDetector->SendInputDigis(fInputDigis);
    fDetector->Exec(fHitfinderPluginNr);
-   cout << "End Chain" << endl;
-   cout << "Start writing Hits" << endl;  
+   if(fVerbose)cout << "End Chain" << endl;
+   if(fVerbose)cout << "Start writing Hits" << endl;  
    fHits->AbsorbObjects(fDetector->GetOutputHits()); 
-   cout << "Total of " << fHits->GetEntriesFast() << " hits found" << endl;
-   cout << "Finished writing Hits" << endl;
-   cout << "Start writing HitsMatch" << endl;  
-   fHitMatch->AbsorbObjects(fDetector->GetOutputHitMatchs()); 
-   cout << "Finished writing Hits" << endl;
-    cout << "//----------------------------------------//" << endl << endl;
+   if(fVerbose)cout << "Total of " << fHits->GetEntriesFast() << " hits found" << endl;
+   if(fVerbose)cout << "Finished writing Hits" << endl;
+   if(fVerbose)cout << "//----------------------------------------//" << endl << endl;
    }
    
 }
@@ -97,10 +95,7 @@ InitStatus CbmMvdHitfinder::Init() {
    
     // **********  Register output array
     fHits = new TClonesArray("CbmMvdHit", 10000);
-    ioman->Register("MvdHits", "MvdHit", fHits, kTRUE);
-
-    fHitMatch = new TClonesArray("CbmMvdHitMatch", 10000);
-    ioman->Register("MvdHitMatchs", "MvdHitMatch", fHitMatch, kTRUE);
+    ioman->Register("MvdHit", "MvdHit", fHits, kTRUE);
 
     fDetector = CbmMvdDetector::Instance();
     if(!fDetector)

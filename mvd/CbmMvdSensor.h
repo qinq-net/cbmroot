@@ -39,7 +39,7 @@ using std::vector;
 
 // data classes
 class CbmMvdPoint;
-
+class CbmMvdDigi;
 
 class CbmMvdSensor : public TNamed, CbmMvdDetectorId
 {
@@ -80,6 +80,7 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   void     SetDataSheet(CbmMvdSensorDataSheet* sheet){fSensorData = sheet;}
   void     SetMap(std::map<Int_t, Int_t> SensorMap) 	{fSensorMap = SensorMap;} // Get Sensor Map to identify every Sensor
   void     SendInput(CbmMvdPoint* point);
+  void     SendInputDigi(CbmMvdDigi* digi);
   void     SetStation(Int_t StationNumber){fStationNr = StationNumber;}  
 
 

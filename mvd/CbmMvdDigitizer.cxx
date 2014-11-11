@@ -120,10 +120,10 @@ InitStatus CbmMvdDigitizer::Init() {
    
     // **********  Register output array
     fDigis = new TClonesArray("CbmMvdDigi", 10000);
-    ioman->Register("MvdDigis", "MvdDigi", fDigis, kTRUE);
+    ioman->Register("MvdDigi", "MvdDigi", fDigis, kTRUE);
 
-    fDigiMatch = new TClonesArray("CbmMvdDigiMatch", 100000);
-    ioman->Register("MvdDigiMatchs", "MvdDigiMatch", fDigiMatch, kTRUE);
+    fDigiMatch = new TClonesArray("CbmMatch", 100000);
+    ioman->Register("MvdDigiMatch", "MvdDigiMatch", fDigiMatch, kTRUE);
 
     fDetector = CbmMvdDetector::Instance();
     

@@ -207,8 +207,8 @@ ReadSensorGeometry(fVolName, fNodeName);
  if(!initialized)
 {
   foutputDigis = new TClonesArray("CbmMvdDigi",1000);
-  foutputDigiMatch = new TClonesArray("CbmMvdDigiMatch", 1000);
-  foutputHitMatch = new TClonesArray("CbmMvdHitMatch", 1000);
+  foutputDigiMatch = new TClonesArray("CbmMatch", 1000);
+  foutputHitMatch = new TClonesArray("CbmMatch", 1000);
   foutputBuffer = new TClonesArray("CbmMvdHit", 1000);
   //cout << endl << " init TClonesArrays" << endl;
  }
@@ -359,6 +359,14 @@ void CbmMvdSensor::SendInput(CbmMvdPoint* point){
 }
 // -------------------------------------------------------------------------
 
+
+// -------------------------------------------------------------------------
+void CbmMvdSensor::SendInputDigi(CbmMvdDigi* digi)
+{
+CbmMvdSensorFindHitTask* findertask = (CbmMvdSensorFindHitTask*)fPluginArray->At(fHitPlugin);
+findertask->SetInputDigi(digi);
+}
+// -------------------------------------------------------------------------
 void CbmMvdSensor::ExecChain(){
       
   FairRunSim* run = FairRunSim::Instance();

@@ -52,6 +52,11 @@ public:
     Double_t GetTime() const;/** Absolute time [ns]  **/
     Int_t    GetFrameNumber() {return fFrameNumber;};
     
+
+    Int_t    GetRefId() const { return fRefId; };   
+
+
+
     //these functions are only for littrack
     Int_t GetDominatorX(){ return 0;};
     Int_t GetDominatorY(){return 0;};
@@ -69,6 +74,7 @@ public:
     void SetDetectorId(Int_t detId)      { fDetectorId = detId;      };
     void SetFlag(Int_t flag)             { fDigiFlag   = flag;       }
     void SetFrameNr(Int_t frame) {fFrameNumber = frame;};
+    void SetRefId( Int_t refId ) { fRefId = refId; }
 private:
 
 
@@ -83,6 +89,8 @@ private:
     Int_t fChannelNr;
     Double_t fDigiTime;
     Int_t fFrameNumber;
+    Int_t fRefId;
+
 
     Int_t fDigiFlag; // Debugging and analysis information
 

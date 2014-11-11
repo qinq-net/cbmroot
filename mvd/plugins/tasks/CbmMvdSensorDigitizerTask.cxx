@@ -448,18 +448,20 @@ for (Int_t i=0; i<fPixelCharge->GetEntriesFast(); i++)
 	    if ( pixel->GetCharge()>fChargeThreshold )
 	    {
 		Int_t nDigis = fDigis->GetEntriesFast();
-		new ((*fDigis)[nDigis]) CbmMvdDigi (fSensor->GetStationNr(),
+		new ((*fDigis)[nDigis]) CbmMvdDigi (fSensor->GetSensorNr(),
 						    pixel->GetX(), pixel->GetY(), pixel->GetCharge(),
 						    fPixelSizeX, fPixelSizeY, pixel->GetTime(), 
 						    pixel->GetFrame());
+
 		//cout << endl << " new Digi at " <<  pixel->GetX() << " " << pixel->GetY() << endl;
-		new ((*fOutputBuffer)[nDigis]) CbmMvdDigi (fSensor->GetStationNr(),
+		new ((*fOutputBuffer)[nDigis]) CbmMvdDigi (fSensor->GetSensorNr(),
 						    pixel->GetX(), pixel->GetY(), pixel->GetCharge(),
 						    fPixelSizeX, fPixelSizeY, pixel->GetTime(), 
                                                     pixel->GetFrame());
-		
- 		new ((*fDigiMatch)[nDigis]) CbmMvdDigiMatch((Double_t) pixel->GetCharge(), 
-							    *(pixel->GetPointID()));
+
+ 		new ((*fDigiMatch)[nDigis]) CbmMatch();
+                CbmMatch* match = (CbmMatch*)fDigiMatch->At(nDigis);
+                match->AddLink((Double_t) pixel->GetCharge(),*(pixel->GetPointID()));
 		    
 	    }
 		else 
@@ -957,7 +959,7 @@ void CbmMvdSensorDigitizerTask::Init(CbmMvdSensor* mySensor) {
   
   
     fDigis = new TClonesArray("CbmMvdDigi", 10000);
-    fDigiMatch = new TClonesArray("CbmMvdDigiMatch", 10000);
+    fDigiMatch = new TClonesArray("CbmMatch", 10000);
 
     fOutputBuffer= new TClonesArray("CbmMvdDigi", 10000);  
     fInputPoints = new TClonesArray("CbmMvdPoint",10000); 

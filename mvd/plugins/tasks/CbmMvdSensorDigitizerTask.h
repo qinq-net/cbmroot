@@ -20,7 +20,7 @@
 #include "FairTask.h"
 #include "CbmMvdPoint.h"
 #include "CbmMvdDigi.h"
-#include "CbmMvdDigiMatch.h"
+#include "CbmMatch.h"
 #include "CbmMvdSensorTask.h"
 #include "CbmMvdPileupManager.h"
 #include "CbmMvdGeoPar.h"
