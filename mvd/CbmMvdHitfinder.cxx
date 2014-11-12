@@ -95,7 +95,7 @@ InitStatus CbmMvdHitfinder::Init() {
    
     // **********  Register output array
     fHits = new TClonesArray("CbmMvdHit", 10000);
-    ioman->Register("MvdHit", "MvdHit", fHits, kTRUE);
+    ioman->Register("MvdHit", "Mvd Hits", fHits, kTRUE);
 
     fDetector = CbmMvdDetector::Instance();
     if(!fDetector)
