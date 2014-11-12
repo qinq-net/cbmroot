@@ -5,7 +5,8 @@ void run_analysis()
    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
    loadlibs();
 
-   string hldFileName = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/fles/secondtest_pulser16ch+sync.hld";
+   //string hldFileName = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/fles/secondtest_pulser16ch+sync.hld";
+   string hldFileName = "../../../fles/secondtest_pulser16ch+sync.hld";
 
    CbmRichTrbUnpack* richUnpack = new CbmRichTrbUnpack();
    richUnpack->Run(hldFileName);

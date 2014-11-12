@@ -15,7 +15,7 @@
 
 CbmRichTrbUnpack::CbmRichTrbUnpack()
 {
-    GenHistos();
+   ;
 }
 
 CbmRichTrbUnpack::~CbmRichTrbUnpack()
@@ -63,7 +63,7 @@ void CbmRichTrbUnpack::ReadEvents(void* data, int size)
 		CbmRawEvent* rawEvent = trbIter->NextEvent();
 		if (rawEvent == NULL) break;
 
-		if (nofRawEvents % 50 == 0) cout << "Raw event no. " << nofRawEvents << endl;
+		//if (nofRawEvents % 50 == 0) cout << "Raw event no. " << nofRawEvents << endl;
 		rawEvent->Print();
 
 		// Loop throught subevents
@@ -72,9 +72,6 @@ void CbmRichTrbUnpack::ReadEvents(void* data, int size)
 			if (rawSubEvent == NULL) break;
 			//rawSubEvent->Print();
 			ProcessTdc(rawSubEvent);
-
-         // Give the calibrator the read subevent so that it was taken into account
-         CbmTrbCalibrator::Instance()->AddRawSubEvent(rawSubEvent);
 		}
 
 		if (nofEventsInBuffer >= NOF_RAW_EVENTS_IN_BUFFER) {
@@ -103,7 +100,7 @@ void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
 	bool isPmtTrb = ( trbId==0x8015 || trbId==0x8025 || trbId==0x8035 || trbId==0x8045 ||
 	                  trbId==0x8055 || trbId==0x8065 || trbId==0x8075 || trbId==0x8085 ||
 			            trbId==0x8095 || trbId==0x80a5 || trbId==0x80b5 || trbId==0x80c5 ||
-			            trbId==0x80d5 || trbId==0x80e5 || trbId==0x8015 || trbId==0x80f5 || trbId == 0x8105);
+			            trbId==0x80d5 || trbId==0x80e5 || trbId==0x80f5 || trbId==0x8105 || trbId == 0x8115);
 
 	while (true) {
 		tdcData = rawSubEvent->SubDataValue(tdcDataIndex);
@@ -134,21 +131,30 @@ void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
 				} else {
 
 					if ( isPmtTrb ) {
-						if (chNum%2 == 1) { // rising edge
+						if (chNum%2 == 1) { // leading edge
 							prevChNum = chNum;
 							prevEpochCounter = curEpochCounter;
 							prevCoarseTime = coarseTime;
 							prevFineTime = fineTime;
-						} else { // falling edge
+						} else { // trailing edge
 							if (chNum - prevChNum == 1) {
-								CbmTrbRawHit* rawHit = new CbmTrbRawHit(tdcId, prevChNum, prevEpochCounter, prevCoarseTime, prevFineTime, chNum, curEpochCounter, coarseTime, fineTime);
+								CbmTrbRawHit* rawHit = new CbmTrbRawHit(tdcId, prevChNum,
+								                                       prevEpochCounter, prevCoarseTime,
+								                                       prevFineTime, chNum, curEpochCounter,
+								                                       coarseTime, fineTime);
 								fRawRichHits.push_back(rawHit);
+
+
+                        // Give the calibrator the read fine time so that it was taken into account
+                        CbmTrbCalibrator::Instance()->AddFineTime(trbId, tdcId, chNum, prevFineTime, fineTime);
+
+								
 								prevChNum = 0;
 								prevEpochCounter = 0;
 								prevCoarseTime = 0;
 								prevFineTime = 0;
 							} else {
-								cout << "-ERROR- rising edge channel number - falling edge channel number != 1" << endl;
+								cout << "-ERROR- leading edge channel number - trailing edge channel number != 1" << endl;
 							}
 						}
 					} //isPmtTrb
@@ -325,38 +331,6 @@ void CbmRichTrbUnpack::DrawQa()
 	hLEpoch->Draw();
 	TCanvas* c8 = new TCanvas();
 	hTEpoch->Draw();
-
-}
-
-// Currently two basic types of hostigrams here needed for fine time calibaration -
-// Leading and trailing fine time distributions.
-void CbmRichTrbUnpack::GenHistos()
-{
-   TString obname;
-   TString obtitle;
-   TString dirname;
-
-   UInt_t tbins = TRB_TDC3_FINEBINS;
-   Int_t trange = TRB_TDC3_FINEBINS;
-
-   for (Int_t b=0; b<TRB_TDC3_NUMBOARDS; ++b)
-   {
-      for (Int_t t=0; t<TRB_TDC3_NUMTDC; ++t)
-      {
-         for (Int_t i=0; i<TRB_TDC3_CHANNELS; ++i)
-         {
-            dirname.Form("TRB/TRB%02d_TDC%02d", b, t);
-
-            obname.Form("%s/Chan%02d/LeadingFineTime_%02d_%02d_%02d", dirname.Data(), i, b, t, i);
-            obtitle.Form("Fine time Leading edge TRB %02d TDC %02d Channel %02d", b, t, i);
-            hLeadingFine[b][t][i] = new TH1I(obname.Data(), obtitle.Data(), tbins, 0, trange);
-
-            obname.Form("%s/Chan%02d/LeadingFineTimeBuffer_%02d_%02d_%02d", dirname.Data(), i, b, t, i);
-            obtitle.Form("Fine time Leading edge TRB %02d TDC %02d Channel %02d (calibration buffer)", b, t, i);
-            hLeadingFineBuffer[b][t][i] = new TH1I(obname.Data(), obtitle.Data(), tbins, 0, trange);
-         }
-      }
-   }
 
 }
 

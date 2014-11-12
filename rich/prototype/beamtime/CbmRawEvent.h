@@ -35,6 +35,7 @@ public:
 
 	void Print()
 	{
+	   printf("-----------------------Raw event-----------------------");
 		printf("HdrSize = %d \n", HdrSize() );
 		printf("HdrLen = %d \n", HdrLen());
 		printf("PaddedSize = %d \n", PaddedSize());
