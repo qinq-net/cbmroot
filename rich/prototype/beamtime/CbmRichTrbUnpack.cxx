@@ -1,4 +1,9 @@
 #include "CbmRichTrbUnpack.h"
+
+#include <fstream>
+#include <vector>
+#include <algorithm>
+
 #include "CbmTrbIterator.h"
 #include "CbmTrbRawHit.h"
 #include "CbmTrbOutputHit.h"
@@ -8,10 +13,7 @@
 #include "TH1D.h"
 #include "TCanvas.h"
 
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <algorithm>
+#include "FairLogger.h"
 
 CbmRichTrbUnpack::CbmRichTrbUnpack()
 {
@@ -35,16 +37,14 @@ void CbmRichTrbUnpack::Run(const string& hldFileName)
 		file.seekg (0, ios::beg);
 		file.read (memblock, size);
 		file.close();
-		cout << "the entire file content is in memory" << endl;
-		cout << "file size=" << size << endl;
-
+		LOG(INFO) << "The entire file content is in memory (" << size/1024 << " kB)" << FairLogger::endl;
 	} else {
-		cout << "Unable to open file" << endl;
+		LOG(FATAL) << "Unable to open file" << FairLogger::endl;
 	}
 
 	ReadEvents((void*)memblock, (int)size);
 
-	this->DrawQa();
+	//this->DrawQa();
 
 	delete[] memblock;
 }
@@ -53,7 +53,7 @@ void CbmRichTrbUnpack::ReadEvents(void* data, int size)
 {
 	CbmTrbIterator* trbIter = new CbmTrbIterator(data, size);
 	Int_t nofRawEvents = 0;
-	Int_t maxNofRawEvents = 2; //200000000;
+	Int_t maxNofRawEvents = 200000000;
 	Int_t nofEventsInBuffer = 0;
 	
 	// Loop through events
@@ -63,8 +63,8 @@ void CbmRichTrbUnpack::ReadEvents(void* data, int size)
 		CbmRawEvent* rawEvent = trbIter->NextEvent();
 		if (rawEvent == NULL) break;
 
-		//if (nofRawEvents % 50 == 0) cout << "Raw event no. " << nofRawEvents << endl;
-		rawEvent->Print();
+		if (nofRawEvents % 10000 == 0) LOG(INFO) << "Raw event # " << nofRawEvents << FairLogger::endl;
+		//rawEvent->Print();
 
 		// Loop throught subevents
 		while (true){
@@ -75,7 +75,7 @@ void CbmRichTrbUnpack::ReadEvents(void* data, int size)
 		}
 
 		if (nofEventsInBuffer >= NOF_RAW_EVENTS_IN_BUFFER) {
-			cout << "Event building, nof events in buffer:"<< nofEventsInBuffer << endl;
+			//LOG(INFO) << "Event building, nof events in buffer:" << nofEventsInBuffer << FairLogger::endl;
 			CreateOutputHits();
 			BuildEvent();
 			ClearAllBuffers();
@@ -89,41 +89,43 @@ void CbmRichTrbUnpack::ReadEvents(void* data, int size)
 
 		nofEventsInBuffer++;
 		nofRawEvents++;
+		
+		CbmTrbCalibrator::Instance()->NextRawEvent();    //TODO Quite tricky, maybe refactor this
 	}
 }
 
 void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
 {
-	uint32_t tdcDataIndex = 0;
-	uint32_t tdcData = 0x0;
-	uint32_t trbId = rawSubEvent->SubId();
-	bool isPmtTrb = ( trbId==0x8015 || trbId==0x8025 || trbId==0x8035 || trbId==0x8045 ||
-	                  trbId==0x8055 || trbId==0x8065 || trbId==0x8075 || trbId==0x8085 ||
-			            trbId==0x8095 || trbId==0x80a5 || trbId==0x80b5 || trbId==0x80c5 ||
-			            trbId==0x80d5 || trbId==0x80e5 || trbId==0x80f5 || trbId==0x8105 || trbId == 0x8115);
+	UInt_t tdcDataIndex = 0;
+	UInt_t tdcData = 0x0;
+	UInt_t trbId = rawSubEvent->SubId();
+	Bool_t isPmtTrb = (trbId==0x8015 || trbId==0x8025 || trbId==0x8035 || trbId==0x8045 ||
+	                   trbId==0x8055 || trbId==0x8065 || trbId==0x8075 || trbId==0x8085 ||
+			             trbId==0x8095 || trbId==0x80a5 || trbId==0x80b5 || trbId==0x80c5 ||
+			             trbId==0x80d5 || trbId==0x80e5 || trbId==0x80f5 || trbId==0x8105 || trbId == 0x8115);
 
 	while (true) {
 		tdcData = rawSubEvent->SubDataValue(tdcDataIndex);
-		uint32_t tdcNofWords = (tdcData >> 16) & 0xffff;
-		uint32_t tdcId = tdcData & 0xffff;
-		//printf("\nTDC DATA tdcNofWords = %i, tdcId = 0x%04x\n", tdcNofWords, tdcId);
+		UInt_t tdcNofWords = (tdcData >> 16) & 0xffff;
+		UInt_t tdcId = tdcData & 0xffff;
+		//printf("TDC DATA tdcNofWords = %i, tdcId = 0x%04x\n", tdcNofWords, tdcId);
 		if (tdcId == 0x5555) break;
 
-		uint32_t curEpochCounter = 0;
-		uint32_t prevChNum = 0;
-		uint32_t prevEpochCounter = 0;
-		uint32_t prevCoarseTime = 0;
-		uint32_t prevFineTime = 0;
-		for (uint32_t i = 0; i < tdcNofWords; i++) {
+		UInt_t curEpochCounter = 0;
+		UInt_t prevChNum = 0;
+		UInt_t prevEpochCounter = 0;
+		UInt_t prevCoarseTime = 0;
+		UInt_t prevFineTime = 0;
+		for (UInt_t i = 0; i < tdcNofWords; i++) {
 			tdcDataIndex++;
 			tdcData = rawSubEvent->SubDataValue(tdcDataIndex);
 
-			uint32_t tdcTimeDataMarker = (tdcData >> 31) & 0x1; //1 bit
+			UInt_t tdcTimeDataMarker = (tdcData >> 31) & 0x1; //1 bit
 			if (tdcTimeDataMarker == 0x1) { //TIME DATA
-				uint32_t chNum = (tdcData >> 22) & 0x7f; // 7bits
-				uint32_t fineTime = (tdcData >> 12) & 0x3ff; // 10 bits
-				uint32_t edge = (tdcData >> 11) & 0x1; // 1bit
-				uint32_t coarseTime = (tdcData) & 0x7ff; // 1bits
+				UInt_t chNum = (tdcData >> 22) & 0x7f; // 7bits
+				UInt_t fineTime = (tdcData >> 12) & 0x3ff; // 10 bits
+				UInt_t edge = (tdcData >> 11) & 0x1; // 1bit
+				UInt_t coarseTime = (tdcData) & 0x7ff; // 1bits
 
 				// create rawHits only for PMT, skip channel0
 				if (chNum == 0) {
@@ -138,7 +140,7 @@ void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
 							prevFineTime = fineTime;
 						} else { // trailing edge
 							if (chNum - prevChNum == 1) {
-								CbmTrbRawHit* rawHit = new CbmTrbRawHit(tdcId, prevChNum,
+								CbmTrbRawHit* rawHit = new CbmTrbRawHit(trbId, tdcId, prevChNum,
 								                                       prevEpochCounter, prevCoarseTime,
 								                                       prevFineTime, chNum, curEpochCounter,
 								                                       coarseTime, fineTime);
@@ -154,37 +156,36 @@ void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
 								prevCoarseTime = 0;
 								prevFineTime = 0;
 							} else {
-								cout << "-ERROR- leading edge channel number - trailing edge channel number != 1" << endl;
+								//LOG(INFO) << "-ERROR- leading edge channel number - trailing edge channel number != 1" << FairLogger::endl;
 							}
 						}
 					} //isPmtTrb
 
 					if (tdcId == 0x0110) { // reference time TDC
 						if (chNum == 1) {
-							CbmTrbRawHit* rawHitRef = new CbmTrbRawHit(tdcId, chNum, curEpochCounter, coarseTime, fineTime, 0, 0, 0, 0);
+							CbmTrbRawHit* rawHitRef = new CbmTrbRawHit(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime, 0, 0, 0, 0);
 							fRawReferenceHits.push_back(rawHitRef);
 						}
 					}
 
 				}
-				//cout.precision(3);
-				//cout << "TIMEDATA chNum:" << chNum << ", fineTime:" << fineTime << ", edge:" << edge << ", coarseTime:" << coarseTime
-				//		<< ", fullTime:" << fixed << GetFullTime(curEpochCounter, coarseTime, fineTime) << endl;
-				if (fineTime == 0x3ff) cout << "-ERROR- Dummy fine time registered: " << fineTime << endl;;
+      		LOG(DEBUG2) << "TIMEDATA chNum:" << chNum << ", fineTime:" << fineTime << ", edge:" << edge << ", coarseTime:" << coarseTime
+						<< ", fullTime:" << fixed << GetFullTime(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime) << FairLogger::endl;
+				if (fineTime == 0x3ff) LOG(DEBUG) << "-ERROR- Dummy fine time registered: " << fineTime << FairLogger::endl;
 			}
 
-			uint32_t tdcMarker = (tdcData >> 29) & 0x7; //3 bits
+			UInt_t tdcMarker = (tdcData >> 29) & 0x7; //3 bits
 			if (tdcMarker == 0x1) {// TDC header
-				uint32_t randomCode = (tdcData >> 16) & 0xff; // 8bits
-				uint32_t errorBits = (tdcData) & 0xffff; //16 bits
+				UInt_t randomCode = (tdcData >> 16) & 0xff; // 8bits
+				UInt_t errorBits = (tdcData) & 0xffff; //16 bits
 				//printf("TDC HEADER randomCode:0x%02x, errorBits:0x%04x\n", randomCode, errorBits);
 			} else if (tdcMarker == 0x2) {// DEBUG
-				uint32_t debugMode = (tdcData >> 24) & 0x1f; //5
-				uint32_t debugBits = (tdcData) & 0xffffff;//24 bits
+				UInt_t debugMode = (tdcData >> 24) & 0x1f; //5
+				UInt_t debugBits = (tdcData) & 0xffffff;//24 bits
 				//printf("DEBUG debugMode:%i, debugBits:0x%06x\n", debugMode, debugBits);
 			} else if (tdcMarker == 0x3){ // EPOCH counter
 				curEpochCounter = (tdcData) & 0xfffffff; //28 bits
-				//printf("EPOCHE COUNTER epochCounetr:0x%07x\n", curEpochCounter);
+				//printf("EPOCH COUNTER epochCounter:0x%07x\n", curEpochCounter);
 			}
 		} // for tdcNofWords
 		tdcDataIndex++;
@@ -193,17 +194,23 @@ void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
 
 CbmTrbOutputHit* CbmRichTrbUnpack::CreateOutputHit(CbmTrbRawHit* h)
 {
-	Double_t lFullTime = this->GetFullTime(h->GetLEpoch(), h->GetLCTime(), h->GetLFTime());
-	Double_t tFullTime = this->GetFullTime(h->GetTEpoch(), h->GetTCTime(), h->GetTFTime());
+	Double_t lFullTime = this->GetFullTime(h->GetTrb(), h->GetTdc(), h->GetLChannel(),
+	                                       h->GetLEpoch(), h->GetLCTime(), h->GetLFTime());
+	Double_t tFullTime = this->GetFullTime(h->GetTrb(), h->GetTdc(), h->GetTChannel(),
+	                                       h->GetTEpoch(), h->GetTCTime(), h->GetTFTime());
 	return new CbmTrbOutputHit(h->GetTdc(), h->GetLChannel(), lFullTime, h->GetTChannel(), tFullTime);
 }
 
-Double_t CbmRichTrbUnpack::GetFullTime(UInt_t epoch, UShort_t coarseTime, UShort_t fineTime)
+Double_t CbmRichTrbUnpack::GetFullTime(UShort_t TRB, UShort_t TDC, UShort_t CH, UInt_t epoch, UShort_t coarseTime, UShort_t fineTime)
 {
 	Double_t coarseUnit = 5.;
 	Double_t epochUnit = coarseUnit * 0x800;
-	//Double_t time = epoch * epochUnit + coarseTime * coarseUnit + GetLinearFineCalibration(fineTime);
-	Double_t time = epoch * epochUnit + coarseTime * coarseUnit + CbmTrbCalibrator::Instance()->GetFineTimeCalibrated(fineTime);
+	
+   uint32_t trb_index = (TRB >> 4) & 0x00FF;
+   uint32_t tdc_index = (TDC & 0x000F);
+	
+	Double_t time = epoch * epochUnit + coarseTime * coarseUnit + 
+	               CbmTrbCalibrator::Instance()->GetFineTimeCalibrated(trb_index, tdc_index, CH, fineTime);
 
 	return time;
 }
@@ -235,14 +242,13 @@ void CbmRichTrbUnpack::BuildEvent()
 		Int_t indmin, indmax;
 		FindMinMaxIndex(fOutputReferenceHits[iRef]->GetLFullTime(), &indmin, &indmax);
 		Int_t size = indmax - indmin + 1;
-		//cout << "NEW EVENT, size " << size << endl;
+	   LOG(DEBUG) << "NEW EVENT, size " << size << FairLogger::endl;
 		for (Int_t iH = indmin; iH <= indmax; iH++) {
 			CbmTrbOutputHit* h = fOutputRichHits[iH];
 			CbmRichTrbMapData* data = param->GetRichTrbMapData(h->GetTdc(), h->GetLChannel());
 
-			//cout << data->GetX() << " " << data->GetY() << endl;
-			//cout.precision(4);
-			//cout <<fixed << iH << " " << hex << h->GetTdc() << dec << " " << h->GetLChannel() << " " << h->GetLFullTime() << endl;
+			LOG(DEBUG2) << data->GetX() << " " << data->GetY() << FairLogger::endl;
+        	LOG(DEBUG2) <<fixed << iH << " " << hex << h->GetTdc() << dec << " " << h->GetLChannel() << " " << h->GetLFullTime() << FairLogger::endl;
 		}
 	}
 }
@@ -305,13 +311,13 @@ void CbmRichTrbUnpack::DrawQa()
 		hLFTime->Fill( rh->GetLFTime() );
 		hTCTime->Fill( rh->GetTCTime() );
 		hTFTime->Fill( rh->GetTFTime() );
-		Double_t fullTime = this->GetFullTime(rh->GetLEpoch(), rh->GetLCTime(), rh->GetLFTime());
+		Double_t fullTime = this->GetFullTime(rh->GetTrb(), rh->GetTdc(), rh->GetLChannel(), rh->GetLEpoch(), rh->GetLCTime(), rh->GetLFTime());
 		hFullTime->Fill( fullTime );
 	}
 
 	for (int i = 0; i < fRawReferenceHits.size(); i++) {
 		CbmTrbRawHit* rh = fRawReferenceHits[i];
-		Double_t fullTime = this->GetFullTime(rh->GetLEpoch(), rh->GetLCTime(), rh->GetLFTime());
+		Double_t fullTime = this->GetFullTime(rh->GetTrb(), rh->GetTdc(), rh->GetLChannel(), rh->GetLEpoch(), rh->GetLCTime(), rh->GetLFTime());
 		hFullTimeRef->Fill( fullTime );
 	}
 

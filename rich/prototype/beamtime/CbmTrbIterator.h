@@ -4,7 +4,8 @@
 #include "CbmRawEvent.h"
 #include "CbmRawSubEvent.h"
 
-class CbmTrbIterator {
+class CbmTrbIterator
+{
 private:
 	void* fData;
 	size_t fSize;

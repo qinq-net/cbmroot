@@ -39,7 +39,8 @@ private:
     /*
      * Return time in ns.
      */
-    Double_t GetFullTime(UInt_t epoch, UShort_t coarseTime, UShort_t fineTime);
+    Double_t GetFullTime(UShort_t TRB, UShort_t TDC, UShort_t CH,
+                         UInt_t epoch, UShort_t coarseTime, UShort_t fineTime);
 
     void DrawQa();
     

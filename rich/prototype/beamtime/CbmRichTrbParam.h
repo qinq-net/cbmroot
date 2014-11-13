@@ -1,9 +1,12 @@
 #ifndef CBMRICHTRBPARAM_H
 #define CBMRICHTRBPARAM_H
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <map>
+
+#include "FairLogger.h"
 
 #include "CbmRichTrbMapData.h"
 
@@ -52,14 +55,14 @@ private:
 				myfile >> pmtNum >> pixelNum >> xmm >> ymm >> simpleX >> simpleY;
 				myfile >> std::hex >> tdcId;
 				myfile >> std::dec >> chLeadingEdge >> chTrailingEdge >> padiwaNum >> trbNum >> pmtType;
-				cout << pmtNum <<" " <<  pixelNum <<" " << xmm <<" " << ymm <<" " << simpleX <<" " <<
-						simpleY <<" " << tdcId<<" " <<chLeadingEdge<<" " <<chTrailingEdge<<" " <<padiwaNum<<" " <<trbNum<<" " <<pmtType << endl;
+				LOG(DEBUG) << pmtNum <<" " <<  pixelNum <<" " << xmm <<" " << ymm <<" " << simpleX <<" " <<
+						simpleY <<" " << tdcId<<" " <<chLeadingEdge<<" " <<chTrailingEdge<<" " <<padiwaNum<<" " <<trbNum<<" " <<pmtType << FairLogger::endl;
 
 				fMap[tdcId][chLeadingEdge] = new CbmRichTrbMapData(pmtNum, pixelNum, xmm, ymm, simpleX, simpleY, tdcId, chLeadingEdge, chTrailingEdge, padiwaNum, trbNum, pmtType);
 			}
 			myfile.close();
 		} else {
-		   cout << "[CbmRichTrbParam::ReadMap] Failed to open ASCII map file." << endl;
+		   LOG(FATAL) << "[CbmRichTrbParam::ReadMap] Failed to open ASCII map file." << FairLogger::endl;
 		}
 	}
 };
