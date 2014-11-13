@@ -35,6 +35,20 @@ public:
 		return fMap[tdcId][leadingChannel];
 	}
 
+	Bool_t IsPmtTrb(UInt_t trbId) const
+	{
+		return  (trbId==0x8015 || trbId==0x8025 || trbId==0x8035 || trbId==0x8045 ||
+			                   trbId==0x8055 || trbId==0x8065 || trbId==0x8075 || trbId==0x8085 ||
+					             trbId==0x8095 || trbId==0x80a5 || trbId==0x80b5 || trbId==0x80c5 ||
+					             trbId==0x80d5 || trbId==0x80e5 || trbId==0x80f5 || trbId==0x8105); // || trbId == 0x8115);
+
+	}
+
+	Bool_t IsReferenceTimeTdc(UInt_t tdcId)
+	{
+		return (tdcId == 0x0110);
+	}
+
 private:
 
 	map<UInt_t, map<UInt_t, CbmRichTrbMapData*> > fMap;
@@ -65,6 +79,7 @@ private:
 		   LOG(FATAL) << "[CbmRichTrbParam::ReadMap] Failed to open ASCII map file." << FairLogger::endl;
 		}
 	}
+
 };
 
 #endif

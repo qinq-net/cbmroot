@@ -53,7 +53,7 @@ void CbmRichTrbUnpack::ReadEvents(void* data, int size)
 {
 	CbmTrbIterator* trbIter = new CbmTrbIterator(data, size);
 	Int_t nofRawEvents = 0;
-	Int_t maxNofRawEvents = 200000000;
+	Int_t maxNofRawEvents = 2000000000;
 	Int_t nofEventsInBuffer = 0;
 	
 	// Loop through events
@@ -99,10 +99,7 @@ void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
 	UInt_t tdcDataIndex = 0;
 	UInt_t tdcData = 0x0;
 	UInt_t trbId = rawSubEvent->SubId();
-	Bool_t isPmtTrb = (trbId==0x8015 || trbId==0x8025 || trbId==0x8035 || trbId==0x8045 ||
-	                   trbId==0x8055 || trbId==0x8065 || trbId==0x8075 || trbId==0x8085 ||
-			             trbId==0x8095 || trbId==0x80a5 || trbId==0x80b5 || trbId==0x80c5 ||
-			             trbId==0x80d5 || trbId==0x80e5 || trbId==0x80f5 || trbId==0x8105 || trbId == 0x8115);
+	Bool_t isPmtTrb = CbmRichTrbParam::Instance()->IsPmtTrb(trbId);
 
 	while (true) {
 		tdcData = rawSubEvent->SubDataValue(tdcDataIndex);
