@@ -231,8 +231,8 @@ void CbmMvdGeoHandler::NavigateTo(
 	else if(fStationNumber == 2) fRadLength = 0.47; 
 	else fRadLength = 0.49;  
 
-  	fXres = 3.8;
-  	fYres = 3.8;
+  	fXres = 3.8; // TODO: pixelSizeX / sqrt{12}
+  	fYres = 3.8; // TODO: pixelSizeY / sqrt{12}
    }
 }
 //--------------------------------------------------------------------------

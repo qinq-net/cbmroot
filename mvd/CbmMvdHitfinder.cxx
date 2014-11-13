@@ -91,7 +91,7 @@ InitStatus CbmMvdHitfinder::Init() {
 	}
 
     // **********  Get input arrays
-    fInputDigis = (TClonesArray*) ioman->GetObject("MvdDigis"); 
+    fInputDigis = (TClonesArray*) ioman->GetObject("MvdDigi"); 
    
     // **********  Register output array
     fHits = new TClonesArray("CbmMvdHit", 10000);
