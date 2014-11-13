@@ -1,7 +1,9 @@
 
 /** CbmPsdEventData.cxx
- **@author Alla Maevskaya <alla@inr.ru>
+ **@author Alla Maevskaya <alla@inr.ru> & SELIM
  **@since 3.08.20212
+ **
+ ** Modified to implement event plane method (S. Seddiki)
   **/
 
 
@@ -13,41 +15,42 @@ using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmPsdEventData::CbmPsdEventData() 
-  : TNamed(),
-    fRP(-9999),
-    fB(-1) 
+  : TNamed()
+    //fRP_MC(-9999),
+    //fB_MC(-1)
+    //fEP_RECO(-9999)
 {
-}  
+}
+
 // -----   constructor   -------------------------------------------
 CbmPsdEventData::CbmPsdEventData(const char *name) 
-  : TNamed(),
-    fRP(-9999),
-    fB(-1) 
+  : TNamed()
+    //fRP_MC(-9999),
+    //fB_MC(-1)
+    //fEP_RECO(-9999)
 {
   TString namst = "RP_";
   namst += name;
   SetName(namst.Data());
   SetTitle(namst.Data());
-  
 }
+
 /*
 CbmPsdEventData::CbmPsdEventData(Float_t rp, Float_t b) 
   : TNamed(),
-    fRP(rp),
-    fB(b) 
+    fRP_MC(rp),
+    fB_MC(b) 
 { 
  
 }
-
 */
 
 // -----   Destructor   ----------------------------------------------------
-CbmPsdEventData::~CbmPsdEventData() { }
-// -------------------------------------------------------------------------
+CbmPsdEventData::~CbmPsdEventData(){}
 
-void CbmPsdEventData::Print() {
-  cout<<"REACTION PLANE : "<<fRP <<" IMPACT PARAMETER "<<fB <<  endl;
 
+void CbmPsdEventData::Print() {  
+  cout << "(RECO) EVENT PLANE : " << fEP_RECO << endl;
 }
 
 ClassImp(CbmPsdEventData)

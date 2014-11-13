@@ -1,6 +1,6 @@
 // -------------------------------------------------------------------------
 // -----                CbmPsdIdealDigitizer source file             -----
-// -----                  Created 15/05/12  by     Alla & modified by SELIM -----
+// -----                  Created 15/05/12  by     Alla & SELIM & FLORIAN               -----
 // -------------------------------------------------------------------------
 #include <iostream>
 
@@ -11,7 +11,6 @@
 
 #include "CbmPsdDigi.h"
 #include "CbmPsdIdealDigitizer.h"
-//#include "CbmZdcPoint.h"
 #include "CbmPsdPoint.h"
 #include "TMath.h"
 
@@ -51,16 +50,15 @@ InitStatus CbmPsdIdealDigitizer::Init() {
   FairRootManager* ioman = FairRootManager::Instance();
   if ( ! ioman )
   {
-      LOG(FATAL) << "CbmPsdIdealDigitizer::Init: RootManager not instantised!" << FairLogger::endl;    // SELIM: precaution
+      LOG(FATAL) << "CbmPsdIdealDigitizer::Init: RootManager not instantised!" << FairLogger::endl;    //FLORIAN
       return kFATAL;
   }
 
   // Get input array
-  //fPointArray = (TClonesArray*) ioman->GetObject("ZDCPoint");
   fPointArray = (TClonesArray*) ioman->GetObject("PsdPoint");
   if ( ! fPointArray )
   {
-      LOG(FATAL) << "CbmPsdIdealDigitizer::Init: No PSDPoint array!" << FairLogger::endl;             // SELIM: precaution
+      LOG(FATAL) << "CbmPsdIdealDigitizer::Init: No PSDPoint array!" << FairLogger::endl;             //FLORIAN
       return kERROR;
   }
 
@@ -83,24 +81,34 @@ void CbmPsdIdealDigitizer::Exec(Option_t* opt) {
 
   cout<<" CbmPsdIdealDigitizer::Exec begin "<<endl;
   // Reset output array
-  if ( ! fDigiArray ) Fatal("Exec", "No PsdDigi array");
+   if ( ! fDigiArray ) Fatal("Exec", "No PsdDigi array");
   Reset();  // SELIM: reset!!!
    
   // Declare some variables
-  //CbmZdcPoint* point = NULL;
   CbmPsdPoint* point = NULL;
   Int_t modID   = -1;        // module ID
   Int_t scinID = -1;        // #sciillator
   Double_t x, y, z;         // Position
-  Double_t edep[100][100];                      // SELIM: can include up to 100 modules & 100 layers (can be extended) 
-  memset(edep, 0, 10000*sizeof(Double_t));
+ 
+ //const Int_t NB_PSD_MODS = 45;//marina: if we have mod #45 with small hole
+  //const Int_t NB_PSD_MODS = 100;
+  //const Int_t NB_PSD_SECT = 100;
+  //const Int_t NB_PSD_MODS = 44;
+  //const Int_t NB_PSD_SECT = 10;
+
+  //Double_t edep[100][100];               //SELIM: 49 modules, including central & corner modules (rejected in analysis/flow/eventPlane.cxx)
+  //memset(edep, 0, 10000*sizeof(Double_t));
+  
+  Double_t edep[NB_PSD_SECT][NB_PSD_MODS];               //SELIM: 49 modules, including central & corner modules (rejected in analysis/flow/eventPlane.cxx)
+  memset(edep, 0,(NB_PSD_SECT*NB_PSD_MODS)*sizeof(Double_t));
 
   TVector3 pos;       // Position vector
   fNDigis=0;
 
-  for (Int_t imod=0; imod<100; imod++)          // SELIM: can include up to 100 modules & 100 layers (can be extended)
+  //for (Int_t imod=0; imod<100; imod++)                   //SELIM: 49 modules, including central & corner modules (rejected in analysis/flow/eventPlane.cxx)
+  for (Int_t imod=0; imod<NB_PSD_MODS; imod++)//marina
   {
-      for (Int_t isec=0; isec<100; isec++)
+    for (Int_t isec=0; isec<NB_PSD_SECT; isec++)
       {
 	  edep[isec][imod] = 0.;
       }
@@ -110,25 +118,29 @@ void CbmPsdIdealDigitizer::Exec(Option_t* opt) {
   Int_t nPoints = fPointArray->GetEntriesFast();
   cout<<" nPoints "<<nPoints<<endl;
 
-  Int_t modID_min, modID_max;
-  modID_min = 100;
-  modID_max = 0;
+  //Int_t modID_min, modID_max;
+  //modID_min = 100;
+  //modID_max = 0;
 
-  Int_t sec;  
+  Int_t sec;
 
   for (Int_t iPoint=0; iPoint<nPoints; iPoint++)
   {
-      //point = (CbmZdcPoint*) fPointArray->At(iPoint);
       point = (CbmPsdPoint*) fPointArray->At(iPoint);
       if ( ! point ) continue;
 
       // Detector ID
-      modID = point->GetModuleID();              // SELIM: correction scintID <-> modID !!!!!!
-      scinID = point->GetDetectorID();
+      //modID = point->GetModuleID();                   // !!!!! correction SELIM: scintID <-> modID !!!!!!
+      //scinID = point->GetDetectorID();
+      //edep[sec][modID] += point->GetEnergyLoss();
 
-      sec = Int_t((scinID - 1)/6) + 1;           // SELIM: section number from 1 -> 10
-
-      edep[sec][modID] += (Double_t) point->GetEnergyLoss(); // SELIM: overcast in double!      
+      modID = point->GetModuleID(); //marina  1-44 (45)
+      scinID = point->GetDetectorID();//1-60 
+  
+      //sec = (Int_t)((scinID-1)/6);   //marina   0-9 
+      sec = (Int_t)((scinID-1)/6)+1;   //marina   1-10 
+      edep[sec-1][modID-1] += (Double_t) point->GetEnergyLoss();
+      //cout <<"MARINA modID,scinID " <<modID <<" " <<scinID <<" " <<sec <<endl;
       
       //if ( sec > modID_max) modID_max = sec;
       //if ( sec < modID_min) modID_min = sec;
@@ -136,15 +148,18 @@ void CbmPsdIdealDigitizer::Exec(Option_t* opt) {
 
   //cout << "modID in: " << modID_min << ", " << modID_max << endl;
 
-  for (Int_t imod=0; imod<100; imod++)           // SELIM: can include up to 100 modules 
+  //for (Int_t imod=1; imod<50; imod++)              //SELIM: 49 modules, including central & corner modules (rejected in analysis/flow/eventPlane.cxx)
+      for (Int_t imod=0; imod<NB_PSD_MODS; imod++)//marina
   {                  
-      for (Int_t isec=0; isec<100; isec++)
-      {	
-	if (edep[isec][imod]>0.)
-	{
-	  new ((*fDigiArray)[fNDigis]) CbmPsdDigi(isec, imod, edep[isec][imod]);
-	  fNDigis++;	  
-	}
+      for (Int_t isec=0; isec<NB_PSD_SECT; isec++)
+      {
+	  //if (edep[isec][imod]<=0.) cout << "!!  edep  !! : " << edep[isec][imod] << endl;
+	  if ( edep[isec][imod] <= 0. ) continue;
+	  else {
+	      new ((*fDigiArray)[fNDigis]) CbmPsdDigi(isec+1, imod+1, edep[isec][imod]);
+	      fNDigis++;
+	      //cout <<"MARINA CbmPsdIdealDigitizer " <<fNDigis <<" " <<isec+1 <<" " <<imod+1 <<" " <<edep[isec][imod] <<endl; 
+	  }
       }   // section
   }//module
 

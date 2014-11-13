@@ -15,11 +15,14 @@ ${CBMROOT_SOURCE_DIR}/cbmdata/global
 ${CBMROOT_SOURCE_DIR}/cbmdata/rich
 ${CBMROOT_SOURCE_DIR}/cbmdata/trd
 ${CBMROOT_SOURCE_DIR}/cbmdata/tof
+${CBMROOT_SOURCE_DIR}/cbmdata/psd
 
 ${CBMROOT_SOURCE_DIR}/sts 
 
 ${CBMROOT_SOURCE_DIR}/KF
 ${CBMROOT_SOURCE_DIR}/KF/Interface 
+${CBMROOT_SOURCE_DIR}/KF/KFQA
+${CBMROOT_SOURCE_DIR}/KF/KFParticle
 
 ${CBMROOT_SOURCE_DIR}/L1
 ${CBMROOT_SOURCE_DIR}/L1/L1Algo
@@ -30,6 +33,10 @@ ${CBMROOT_SOURCE_DIR}/much/geo
 ${CBMROOT_SOURCE_DIR}/rich
 
 ${CBMROOT_SOURCE_DIR}/littrack
+
+${CBMROOT_SOURCE_DIR}/cbmgenerators
+${CBMROOT_SOURCE_DIR}/analysis/flow
+
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
@@ -38,6 +45,13 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
   ${BASE_INCLUDE_DIRECTORIES} 
   ${Boost_INCLUDE_DIR}
 )
+
+If(NOT ${ROOT_HAS_VC})
+  set(SYSTEM_INCLUDE_DIRECTORIES
+      ${SYSTEM_INCLUDE_DIRECTORIES}      
+      ${VC_INCLUDE_DIRS}
+  )
+EndIf()
 
 Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
@@ -50,18 +64,18 @@ ${Boost_LIBRARY_DIRS}
 link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
-hyperon/CbmAnaHypYPtGenerator.cxx
-hyperon/CbmAnaHypTools.cxx
-#hyperon/CbmAnaHypSecFinder.cxx
+#hyperon/CbmAnaHypYPtGenerator.cxx 
+#hyperon/CbmAnaHypTools.cxx
+##hyperon/CbmAnaHypSecFinder.cxx 
 #hyperon/CbmAnaHypSecFinderQa.cxx
-hyperon/CbmAnaHypPair.cxx
-hyperon/CbmAnaHypLambdaCandidate.cxx
-hyperon/CbmAnaHypTrack.cxx
-hyperon/CbmAnaHypRecEff.cxx
-hyperon/CbmAnaHypRecLambda.cxx
-hyperon/CbmAnaHypSelectLambda.cxx
-hyperon/CbmAnaHypRecCascade.cxx
-hyperon/CbmAnaHypMix.cxx
+#hyperon/CbmAnaHypPair.cxx 
+#hyperon/CbmAnaHypLambdaCandidate.cxx
+#hyperon/CbmAnaHypTrack.cxx 
+#hyperon/CbmAnaHypRecEff.cxx
+#hyperon/CbmAnaHypRecLambda.cxx 
+#hyperon/CbmAnaHypSelectLambda.cxx
+#hyperon/CbmAnaHypRecCascade.cxx
+#hyperon/CbmAnaHypMix.cxx
 
 #CbmD0Analysis.cxx
 #V0/CbmV0Analysis.cxx
@@ -69,15 +83,15 @@ hyperon/CbmAnaHypMix.cxx
 #msh/CbmMSHConverter.cxx
 #msh/CbmMSHAnalysis.cxx
 
-much/CbmAnaMuch.cxx
-much/CbmAnaMuchJpsiPolarization.cxx
-much/CbmPolarizedGenerator.cxx
-much/CbmAnaMuonCandidate.cxx
-much/CbmAnaDimuonCandidate.cxx
-much/CbmAnaDimuonAnalysis.cxx
-much/CbmAnaDimuonHisto.cxx
-much/CbmAnaAngularAcceptance.cxx
-much/CbmAnaMuchBgd.cxx
+#much/CbmAnaMuch.cxx
+#much/CbmAnaMuchJpsiPolarization.cxx
+#much/CbmPolarizedGenerator.cxx
+#much/CbmAnaMuonCandidate.cxx 
+#much/CbmAnaDimuonCandidate.cxx
+#much/CbmAnaDimuonAnalysis.cxx
+#much/CbmAnaDimuonHisto.cxx
+#much/CbmAnaAngularAcceptance.cxx
+#much/CbmAnaMuchBgd.cxx
 
 #timing/CbmAnaTimingAnalysis.cxx 
 #timing/CbmAnaEpochTest.cxx
@@ -86,16 +100,20 @@ much/CbmAnaMuchBgd.cxx
 #timing/CbmAnaTimingStsDigitizer.cxx
 #timing/CbmAnaTimingStsHitFinder.cxx
 
-dielectron/CbmAnaDielectronTask.cxx
-dielectron/CbmAnaDielectronTaskDraw.cxx
-dielectron/CbmAnaDielectronTaskDrawAll.cxx
-dielectron/CbmAnaLmvmDrawStudy.cxx
-dielectron/CbmAnaLmvmNames.cxx
-dielectron/CbmAnaDielectronStudyReportAll.cxx
-dielectron/CbmAnaDielectronReports.cxx
+#dielectron/CbmAnaDielectronTask.cxx
+#dielectron/CbmAnaDielectronTaskDraw.cxx
+#dielectron/CbmAnaDielectronTaskDrawAll.cxx
+#dielectron/CbmAnaLmvmDrawStudy.cxx
+#dielectron/CbmAnaLmvmNames.cxx
+#dielectron/CbmAnaDielectronStudyReportAll.cxx
+#dielectron/CbmAnaDielectronReports.cxx
 
-conversion/CbmAnaConversion.cxx
+#conversion/CbmAnaConversion.cxx
 #photon/CbmTrdPhotonAnalysis.cxx
+
+flow/eventPlane.cxx
+flow/CbmAnaFlow.cxx
+
 )
 
 
@@ -115,7 +133,7 @@ ENDIF (SSE_FOUND)
 Set(LINKDEF AnalysisLinkDef.h)
 Set(LIBRARY_NAME Analysis)
 Set(DEPENDENCIES
-    Littrack KF L1 Much Rich Sts CbmBase CbmData Base )
+    Littrack KF L1 Much Rich Sts CbmBase CbmData Base Vc.a)
 
 GENERATE_LIBRARY()
 

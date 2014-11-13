@@ -13,5 +13,13 @@
 #pragma link C++ class  CbmPsdv1+;
 #pragma link C++ class  CbmPsdIdealDigitizer+;
 #pragma link C++ class  CbmPsdHitProducer+;
+#pragma link C++ class  CbmPsdv1_44mods_hole6cm+; 
+#pragma link C++ class  CbmPsdWoutv1_for44mods_full_holes+;
+#pragma link C++ class  CbmPsdWoutv1_for44mods_sub1+; 
+#pragma link C++ class  CbmPsdWoutv1_for44mods_sub2+; 
+#pragma link C++ class  CbmPsdWoutv1_for44mods_sub3+;
+
+
+
 #endif
 

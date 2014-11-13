@@ -1,6 +1,6 @@
 // -------------------------------------------------------------------------
 // -----                 CbmPsdHitProducerIdel header file             -----
-// -----                  Created 15/05/12  by Alla & modified by SELIM                  -----
+// -----                  Created 15/05/12  by Alla                   -----
 // -------------------------------------------------------------------------
 
 
@@ -9,8 +9,6 @@
  **
  ** The ideal digitizer produces digits  of type CbmPsdDigi as sum of Edep
  **for 6 scintilators .
- **
- ** Modified to correct bugs and simplify fEdep[10][44] -> fEdep (S. Seddiki)
  **/
 
 
@@ -22,6 +20,12 @@
 
 class TClonesArray;
 
+//const Int_t NB_PSD_MODS = 44; //marina //with hole 20 cm  
+//const Int_t NB_PSD_MODS = 45; //with hole in central module 23
+const Int_t NB_PSD_MODS = 48; //with 4 central mods
+//const Int_t NB_PSD_MODS = 60; //with central mods with hole
+//const Int_t NB_PSD_MODS = 176; //with mod10cm
+const Int_t NB_PSD_SECT = 10;
 
 
 class CbmPsdIdealDigitizer : public FairTask
