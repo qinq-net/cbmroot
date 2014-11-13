@@ -38,6 +38,7 @@ CbmCluster.cxx
 CbmMCEpoch.cxx
 CbmMCEventHeader.cxx
 CbmMCTrack.cxx
+CbmMCEventData.cxx
 
 CbmLink.cxx
 CbmMatch.cxx
@@ -57,6 +58,7 @@ sts/CbmStsDigi.cxx
 sts/CbmStsHit.cxx 
 sts/CbmStsPoint.cxx 
 sts/CbmStsTrack.cxx 
+sts/CbmStsEventData.cxx
 
 rich/CbmRichRing.cxx	
 rich/CbmRichHit.cxx 
