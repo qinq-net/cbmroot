@@ -58,6 +58,9 @@ class CbmMCTrack : public TObject
   /**  Output to screen  **/
   void Print(Int_t iTrack=0) const;
 
+  Int_t AccMVD() const {return GetNPoints(kMVD);}
+  Int_t AccSTS() const {return GetNPoints(kSTS);}
+  Int_t AccPSD() const {return GetNPoints(kPSD);}
 
   /**  Accessors  **/
   Int_t    GetPdgCode()  const { return fPdgCode; }
@@ -70,6 +73,7 @@ class CbmMCTrack : public TObject
   Double_t GetStartZ()   const { return fStartZ; }
   Double_t GetStartT()   const { return fStartT; }
   Double_t GetMass()     const;
+  Double_t GetCharge()   const;
   Double_t GetEnergy()   const;
   Double_t GetPt()       const { return TMath::Sqrt(fPx*fPx+fPy*fPy); }
   Double_t GetP() const { return TMath::Sqrt(fPx*fPx+fPy*fPy+fPz*fPz); }

@@ -133,8 +133,16 @@ Double_t CbmMCTrack::GetMass() const {
 }
 // -------------------------------------------------------------------------
 
-
-
+// -----   Public method GetCharge   ---------------------------------------
+Double_t CbmMCTrack::GetCharge() const {
+  if ( TDatabasePDG::Instance() ) {
+    TParticlePDG* particle = TDatabasePDG::Instance()->GetParticle(fPdgCode);
+    if ( particle ) return particle->Charge();
+    else return 0.;
+  }
+  return 0.;
+}
+// -------------------------------------------------------------------------
 
 // -----   Public method GetRapidity   -------------------------------------
 Double_t CbmMCTrack::GetRapidity() const {
