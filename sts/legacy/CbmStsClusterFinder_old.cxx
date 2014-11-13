@@ -18,6 +18,7 @@
 #include "CbmStsHit.h"
 #include "CbmStsSector.h"
 #include "CbmStsStation.h"
+#include "CbmTimeSlice.h"
 #include "TMath.h"
 #include "TStopwatch.h"
 
@@ -28,8 +29,10 @@ CbmStsClusterFinder_old::CbmStsClusterFinder_old()
     , fGeoPar(NULL)
     , fDigiPar(NULL)
     , fDigis(NULL)
+    , fTimeSlice(NULL)
     , fClusterCandidates(NULL)
     , fClusters(NULL)
+    , fInputMode(0)
     , fDigiScheme(NULL)
     , fDigiMapF()
     , fDigiMapB()
@@ -114,14 +117,25 @@ void CbmStsClusterFinder_old::SetParContainers()
 InitStatus CbmStsClusterFinder_old::Init()
 {
 
-    // Get input array
+    // Get I/O manager
     FairRootManager* ioman = FairRootManager::Instance();
     if (NULL == ioman)
         LOG(FATAL) << "CbmStsClusterFinder_old::Init: No FairRootManager" << FairLogger::endl;
 
-    fDigis = (TClonesArray*)ioman->GetObject("StsDigi");
-    if (NULL == fDigis)
-        LOG(FATAL) << "CbmStsClusterFinder_old::Init: No StsDigi array" << FairLogger::endl;
+    // Get input source of StsDigi (time slice or event)
+    fInputMode = -1;
+    fTimeSlice = (CbmTimeSlice*) ioman->GetObject("TimeSlice.");
+    if ( fTimeSlice ) {
+    	LOG(INFO) << GetName() << ": operating on time slice." << FairLogger::endl;
+    	fInputMode = 1;
+    }
+    else {
+    LOG(INFO) << GetName() << ": operating on event data." << FairLogger::endl;
+     fDigis = (TClonesArray*)ioman->GetObject("StsDigi");
+     fInputMode = 0;
+    }
+    if ( fInputMode == -1 )
+    	LOG(FATAL) << "CbmStsClusterFinder_old::Init: No StsDigi array" << FairLogger::endl;
 
     fClusterCandidates = new TClonesArray("CbmStsCluster", 30000);
     ioman->Register("StsClusterCand", "Cluster in STS", fClusterCandidates, kTRUE);
@@ -165,10 +179,21 @@ void CbmStsClusterFinder_old::SortDigis()
 {
     MakeSets();
 
-    const Int_t nofDigis = fDigis->GetEntriesFast();
+    Int_t nofDigis = 0;
+    switch (fInputMode) {
+    	case 0: nofDigis = fDigis->GetEntriesFast(); break;
+    	case 1: nofDigis = fTimeSlice->GetDataSize(kSTS); break;
+    	default: nofDigis = 0; break;
+    }
+
     for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++)
     {
-        const CbmStsDigi* digi = static_cast<const CbmStsDigi*>(fDigis->At(iDigi));
+    	  CbmStsDigi* digi = NULL;
+    	  if ( fInputMode == 0 )
+    	  	digi = static_cast<CbmStsDigi*> (fDigis->At(iDigi));
+    	  else if ( fInputMode == 1 )
+    	  	digi = static_cast<CbmStsDigi*> (fTimeSlice->GetData(kSTS, iDigi));
+
         const Int_t stationNr = CbmStsAddress::GetElementId(digi->GetAddress(), kStsStation);
         const Int_t sectorNr = digi->GetSectorNr();
         const Int_t iSide = CbmStsAddress::GetElementId(digi->GetAddress(), kStsSide);

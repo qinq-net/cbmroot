@@ -27,6 +27,7 @@ class CbmGeoStsPar;
 class CbmStsDigiPar;
 class CbmStsDigiScheme;
 class CbmStsSector;
+class CbmTimeSlice;
 
 using std::set;
 using std::map;
@@ -83,10 +84,12 @@ private:
     CbmStsClusterFinder_old operator=(const CbmStsClusterFinder_old&);
 
     TClonesArray* fDigis;             ///> Input array of CbmStsDigi
+    CbmTimeSlice* fTimeSlice;         //! Input raw data timeslice
     /// FIXME: Why do we need a second array with cluster candidates which is written to file?
     /// FIXME: This array is not used anywhere outside this class.
     TClonesArray* fClusterCandidates; ///> Input array of CbmStsCluster
     TClonesArray* fClusters;          ///> Input array of CbmStsCluster
+    Int_t fInputMode;    ///> 0 (default) = event; 1 = time slice
 
     CbmGeoStsPar* fGeoPar;         ///> Geometry parameters
     CbmStsDigiPar* fDigiPar;       ///> Digitisation parameters
