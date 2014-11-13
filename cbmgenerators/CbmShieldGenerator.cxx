@@ -27,6 +27,7 @@ CbmShieldGenerator::CbmShieldGenerator()
     fPDG(NULL),
     fIonMap()
 {
+    fpartType = -1; // SELIM
 }
 // ------------------------------------------------------------------------
 
@@ -51,7 +52,9 @@ CbmShieldGenerator::CbmShieldGenerator(const char* fileName)
   CloseInput();
   cout << "-I- CbmShieldGenerator: Reopening input file " << fileName 
        << endl;
-  fInputFile = new ifstream(fFileName);  
+  fInputFile = new ifstream(fFileName);
+
+  fpartType = -1;
 }
 // ------------------------------------------------------------------------
 
@@ -81,6 +84,7 @@ Bool_t CbmShieldGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
   Double_t pBeam   = 0.;
   Double_t bx       = 0.;  
   Double_t by       = 0.;
+  Double_t b       = 0.;  //SELIM
 
 
   // Define track variables to be read from file
@@ -91,9 +95,11 @@ Bool_t CbmShieldGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
   Double_t py      = 0.;
   Double_t pz      = 0.;
   Int_t    pdgType = 0;
+  Double_t etot    = 0.;   //SELIM
 
   // Read event header line from input file
-  *fInputFile >> eventId >> nTracks >> pBeam >> bx >> by;
+  //*fInputFile >> eventId >> nTracks >> pBeam >> bx >> by;
+  *fInputFile >> eventId >> b >> bx >> by >> nTracks;  //SELIM: update of SHIELD file structure
 
   // If end of input file is reached : close it and abort run
   if ( fInputFile->eof() ) {
@@ -125,10 +131,12 @@ Bool_t CbmShieldGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
   for (Int_t itrack=0; itrack<nTracks; itrack++) {
     
     // Read PID and momentum from file
-    *fInputFile >> iPid >> iMass >> iCharge >> px >> py >> pz;
+    //*fInputFile >> iPid >> iMass >> iCharge >> px >> py >> pz;
+    *fInputFile >> pdgType >> iMass >> iCharge >> px >> py >> pz >> etot; //SELIM: update of SHIELD file structure
 
     // Case ion
-    if ( iPid == 1000 ) {
+    /*                       //SELIM
+    if ( iPid == 1000 ) {       
       char ionName[20];
       sprintf(ionName, "Ion_%d_%d", iMass, iCharge);
       TParticlePDG* part = fPDG->GetParticle(ionName);
@@ -140,9 +148,15 @@ Bool_t CbmShieldGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
       pdgType = part->PdgCode();
     }
     else pdgType = fPDG->ConvertGeant3ToPdg(iPid);  // "normal" particle
-    
+    */
+
     // Give track to PrimaryGenerator
-    primGen->AddTrack(pdgType, px, py, pz, 0., 0., 0.);
+
+    if (fpartType == 1 && pdgType == 2112) primGen->AddTrack(pdgType, px, py, pz, 0., 0., 0.);
+    if (fpartType == 2 && pdgType == 2212) primGen->AddTrack(pdgType, px, py, pz, 0., 0., 0.);
+    if (fpartType == 3 && pdgType >= 1000000000) primGen->AddTrack(pdgType, px, py, pz, 0., 0., 0.);
+
+    if (fpartType == -1) primGen->AddTrack(pdgType, px, py, pz, 0., 0., 0.);
 
   }
 
@@ -176,15 +190,22 @@ Int_t CbmShieldGenerator::RegisterIons() {
   Int_t nIons = 0;
   Int_t eventId, nTracks, iPid, iMass, iCharge;
   Double_t pBeam, bx, by, px, py, pz;
+  Double_t b;           //SELIM
+  Double_t etot = 0.;   //SELIM
+  Int_t pdgType = 0;    //SELIM
   fIonMap.clear();
 
   while ( ! fInputFile->eof()) {
     
-    *fInputFile >> eventId >> nTracks >> pBeam >> bx >>by;
-    if ( fInputFile->eof() ) continue;
+    //*fInputFile >> eventId >> nTracks >> pBeam >> bx >>by;
+      *fInputFile >> eventId >> b >> bx >> by >> nTracks; //SELIM: update of SHIELD file structure
+      if ( fInputFile->eof() ) continue;
     for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
-      *fInputFile >> iPid >> iMass >> iCharge >> px >> py >> pz;
-      if ( iPid == 1000 ) { // ion
+      //*fInputFile >> iPid >> iMass >> iCharge >> px >> py >> pz;
+        *fInputFile >> pdgType >> iMass >> iCharge >> px >> py >> pz >> etot; //SELIM: update of SHIELD file structure
+	//if ( iPid == 1000 ) { // ion
+        if ( pdgType > 1000000000 )               //SELIM
+	{ // ion
 	char buffer[20];
 	sprintf(buffer, "Ion_%d_%d", iMass, iCharge);
 	TString ionName(buffer);

@@ -16,6 +16,9 @@
  ** PID; A; Z; px; py; pz
  ** The PID must be given as for GEANT3. For ions, it is 1000. The total
  ** momentum is required, not momentum per nucleon.
+ 
+ Modified to update with new SHIELD file structure (S. Seddiki)
+ 
 **/
 
 
@@ -58,7 +61,7 @@ class CbmShieldGenerator : public FairGenerator
   // virtual Bool_t ReadEvent(FairPrimaryGenerator* primGen);
   virtual Bool_t ReadEvent(FairPrimaryGenerator* primGen);
 
-
+  void SetPartType(int partType) {fpartType = partType;}
 
  private:
 
@@ -66,6 +69,7 @@ class CbmShieldGenerator : public FairGenerator
   const Char_t*  fFileName;           //! Input file Name
   TDatabasePDG*  fPDG;                //!  PDG database
 
+  int fpartType; // SELIM
 	
   /** Private method CloseInput. Just for convenience. Closes the 
    ** input file properly. Called from destructor and from ReadEvent. **/
@@ -85,7 +89,7 @@ class CbmShieldGenerator : public FairGenerator
   CbmShieldGenerator(const CbmShieldGenerator&);
   CbmShieldGenerator& operator=(const CbmShieldGenerator&);
 
-  ClassDef(CbmShieldGenerator,1);
+  ClassDef(CbmShieldGenerator,2);
 
 };
 
