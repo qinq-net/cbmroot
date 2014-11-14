@@ -108,6 +108,7 @@ qa/CbmRichUrqmdTest.cxx
 qa/CbmRichGeoTestStudyReport.cxx 
 prototype/beamtime/CbmRichTrbUnpack.cxx 
 prototype/beamtime/CbmTrbCalibrator.cxx
+prototype/beamtime/CbmRichTrbRecoQa.cxx
 )
 
 If(TBB_FOUND)
@@ -145,6 +146,7 @@ qa/CbmRichGeoOpt.h
 
 prototype/beamtime/CbmRichTrbUnpack.h
 prototype/beamtime/CbmTrbCalibrator.h
+prototype/beamtime/CbmRichTrbRecoQa.h
 )
 
 If(TBB_FOUND)

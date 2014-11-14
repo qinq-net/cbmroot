@@ -9,13 +9,17 @@
 #include "CbmTrbOutputHit.h"
 #include "CbmRichTrbParam.h"
 #include "CbmTrbCalibrator.h"
+#include "FairRootManager.h"
+#include "CbmRichHit.h"
+#include "TClonesArray.h"
 
 #include "TH1D.h"
 #include "TCanvas.h"
 
 #include "FairLogger.h"
 
-CbmRichTrbUnpack::CbmRichTrbUnpack()
+CbmRichTrbUnpack::CbmRichTrbUnpack(const string& hldFileName) :
+	fHldFileName(hldFileName)
 {
    ;
 }
@@ -25,35 +29,86 @@ CbmRichTrbUnpack::~CbmRichTrbUnpack()
 	;
 }
 
-void CbmRichTrbUnpack::Run(const string& hldFileName)
+Bool_t CbmRichTrbUnpack::Init()
+{
+	LOG(INFO) << "CbmRichTrbUnpack::Init()" << FairLogger::endl;
+	LOG(INFO) << "Input file name " << fHldFileName << endl;
+
+	ReadInputFileToMemory();
+
+	FairRootManager* fManager = FairRootManager::Instance();
+
+	fRichHits = new TClonesArray("CbmRichHit");
+	fManager->Register("RichHit","RICH", fRichHits, kTRUE);
+
+
+
+	ReadEvents();
+
+	return kTRUE;
+}
+
+Int_t CbmRichTrbUnpack::ReadEvent()
+{
+	LOG(INFO) << "Event #" << fEventNum << FairLogger::endl;
+	fRichHits->Clear();
+
+
+	BuildEvent(fEventNum);
+
+	//LOG(INFO) << "# hits in event " << fRichHits->GetEntries() << FairLogger::endl;
+	for (int i = 0; i < fRichHits->GetEntries(); i++) {
+	CbmRichHit* hit = (CbmRichHit*)fRichHits->At(i);
+		//LOG(INFO) << hit->GetX() << " " << hit->GetY() << FairLogger::endl;
+	}
+	fEventNum++;
+
+	if (fEventNum < fOutputReferenceHits.size()){
+		return 0; // still some data
+	} else {
+		return 1; // no more events
+	}
+}
+
+void CbmRichTrbUnpack::Close()
+{
+	DrawQa();
+	ClearAllBuffers();
+	delete[] fDataPointer;
+
+
+}
+
+void CbmRichTrbUnpack::Reset()
+{
+
+}
+
+void CbmRichTrbUnpack::ReadInputFileToMemory()
 {
 	streampos size;
-	char * memblock;
+	char* memblock;
 
-	ifstream file (hldFileName.c_str(), ios::in|ios::binary|ios::ate);
+	ifstream file (fHldFileName.c_str(), ios::in|ios::binary|ios::ate);
 	if (file.is_open()) {
 		size = file.tellg();
 		memblock = new char [size];
 		file.seekg (0, ios::beg);
 		file.read (memblock, size);
 		file.close();
-		LOG(INFO) << "The entire file content is in memory (" << size/1024 << " kB)" << FairLogger::endl;
+		LOG(INFO) << "The entire file content is in memory (" << size/(1024*1024) << " MB)" << FairLogger::endl;
 	} else {
-		LOG(FATAL) << "Unable to open file" << FairLogger::endl;
+		LOG(FATAL) << "Unable to open file " << FairLogger::endl;
 	}
-
-	ReadEvents((void*)memblock, (int)size);
-
-	//this->DrawQa();
-
-	delete[] memblock;
+	fDataPointer = (void*) memblock;
+	fDataSize = (UInt_t) size;
 }
 
-void CbmRichTrbUnpack::ReadEvents(void* data, int size)
+void CbmRichTrbUnpack::ReadEvents()
 {
-	CbmTrbIterator* trbIter = new CbmTrbIterator(data, size);
+	CbmTrbIterator* trbIter = new CbmTrbIterator(fDataPointer, fDataSize);
 	Int_t nofRawEvents = 0;
-	Int_t maxNofRawEvents = 2000000000;
+	//Int_t maxNofRawEvents = 20;
 	Int_t nofEventsInBuffer = 0;
 	
 	// Loop through events
@@ -63,10 +118,11 @@ void CbmRichTrbUnpack::ReadEvents(void* data, int size)
 		CbmRawEvent* rawEvent = trbIter->NextEvent();
 		if (rawEvent == NULL) break;
 
-		if (nofRawEvents % 10000 == 0) LOG(INFO) << "Raw event # " << nofRawEvents << FairLogger::endl;
+		//if (nofRawEvents % 10000 == 0)
+			LOG(INFO) << "Raw event # " << nofRawEvents << FairLogger::endl;
 		//rawEvent->Print();
 
-		// Loop throught subevents
+		// Loop over subevents
 		while (true){
 			CbmRawSubEvent* rawSubEvent = trbIter->NextSubEvent();
 			if (rawSubEvent == NULL) break;
@@ -75,23 +131,26 @@ void CbmRichTrbUnpack::ReadEvents(void* data, int size)
 		}
 
 		if (nofEventsInBuffer >= NOF_RAW_EVENTS_IN_BUFFER) {
-			//LOG(INFO) << "Event building, nof events in buffer:" << nofEventsInBuffer << FairLogger::endl;
-			CreateOutputHits();
-			BuildEvent();
-			ClearAllBuffers();
-			nofEventsInBuffer = 0;
+			//CreateOutputHits();
+			//BuildEvent();
+			//ClearAllBuffers();
+			//nofEventsInBuffer = 0;
 		}
 
       // Go out if exceed the limit of total number of raw hits
-		if (nofRawEvents >= maxNofRawEvents){
-			break;
-		}
+		//if (nofRawEvents >= maxNofRawEvents){
+		//	break;
+		//}
 
 		nofEventsInBuffer++;
 		nofRawEvents++;
 		
 		CbmTrbCalibrator::Instance()->NextRawEvent();    //TODO Quite tricky, maybe refactor this
 	}
+
+	CreateOutputHits();
+	//BuildEvent();
+	//ClearAllBuffers();
 }
 
 void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
@@ -124,9 +183,8 @@ void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
 				UInt_t edge = (tdcData >> 11) & 0x1; // 1bit
 				UInt_t coarseTime = (tdcData) & 0x7ff; // 1bits
 
-				// create rawHits only for PMT, skip channel0
 				if (chNum == 0) {
-
+					// TODO: do smth with ch0
 				} else {
 
 					if ( isPmtTrb ) {
@@ -225,29 +283,38 @@ void CbmRichTrbUnpack::CreateOutputHits()
 	for (Int_t i = 0; i < nofRefHits; i++) {
 		fOutputReferenceHits[i] = CreateOutputHit(fRawReferenceHits[i]);
 	}
+
+	std::sort(fOutputRichHits.begin(), fOutputRichHits.end(), CbmTrbOutputHitLeadingFullTimeComparatorLess());
 }
 
-void CbmRichTrbUnpack::BuildEvent()
+void CbmRichTrbUnpack::BuildEvent(Int_t refHitIndex)
 {
-	Int_t nofRichHits = fOutputRichHits.size();
-	Int_t nofRefHits = fOutputReferenceHits.size();
-	// sort array of RICH hits
-	std::sort(fOutputRichHits.begin(), fOutputRichHits.end(), CbmTrbOutputHitLeadingFullTimeComparatorLess());
+	//Int_t nofRichHits = fOutputRichHits.size();
+	//Int_t nofRefHits = fOutputReferenceHits.size();
 
 	CbmRichTrbParam* param = CbmRichTrbParam::Instance();
-	for (Int_t iRef = 0; iRef < nofRefHits; iRef++) {
-		Int_t indmin, indmax;
-		FindMinMaxIndex(fOutputReferenceHits[iRef]->GetLFullTime(), &indmin, &indmax);
-		Int_t size = indmax - indmin + 1;
-	   LOG(DEBUG) << "NEW EVENT, size " << size << FairLogger::endl;
-		for (Int_t iH = indmin; iH <= indmax; iH++) {
-			CbmTrbOutputHit* h = fOutputRichHits[iH];
-			CbmRichTrbMapData* data = param->GetRichTrbMapData(h->GetTdc(), h->GetLChannel());
+	Int_t indmin, indmax;
+	FindMinMaxIndex(fOutputReferenceHits[refHitIndex]->GetLFullTime(), &indmin, &indmax);
+	Int_t size = indmax - indmin + 1;
+	LOG(DEBUG) << "NEW EVENT, size " << size << FairLogger::endl;
+	for (Int_t iH = indmin; iH <= indmax; iH++) {
+		CbmTrbOutputHit* h = fOutputRichHits[iH];
+		CbmRichTrbMapData* data = param->GetRichTrbMapData(h->GetTdc(), h->GetLChannel());
 
-			LOG(DEBUG2) << data->GetX() << " " << data->GetY() << FairLogger::endl;
-        	LOG(DEBUG2) <<fixed << iH << " " << hex << h->GetTdc() << dec << " " << h->GetLChannel() << " " << h->GetLFullTime() << FairLogger::endl;
-		}
+		AddRichHitToOutputArray(data->GetX(), data->GetY());
+
+		LOG(DEBUG2) << data->GetX() << " " << data->GetY() << FairLogger::endl;
+		LOG(DEBUG2) <<fixed << iH << " " << hex << h->GetTdc() << dec << " " << h->GetLChannel() << " " << h->GetLFullTime() << FairLogger::endl;
 	}
+}
+
+void CbmRichTrbUnpack::AddRichHitToOutputArray(Double_t x, Double_t y)
+{
+	UInt_t counter = fRichHits->GetEntries();
+	new((*fRichHits)[counter]) CbmRichHit();
+	CbmRichHit* hit = (CbmRichHit*)fRichHits->At(counter);
+	hit->SetX(x);
+	hit->SetY(y);
 }
 
 void CbmRichTrbUnpack::FindMinMaxIndex(Double_t refTime, Int_t *indmin, Int_t *indmax)

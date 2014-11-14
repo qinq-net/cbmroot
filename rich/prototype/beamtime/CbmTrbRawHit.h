@@ -1,12 +1,13 @@
 #ifndef CBMTRBRAWHIT_H
 #define CBMTRBRAWHIT_H
 
+#include "TObject.h"
 /*
  *  TrbRawHit consists of two fronts - leading and trailing.
  *  Time interval between the leading and the trailing edges indicated the value of the hit.
  */
 
-class CbmTrbRawHit
+class CbmTrbRawHit: public TObject
 {
 public:
 	CbmTrbRawHit () :

@@ -1,8 +1,10 @@
 #ifndef CBMTRBOUTPUTHIT_H
 #define CBMTRBOUTPUTHIT_H
 
+#include "TObject.h"
 
-class CbmTrbOutputHit
+
+class CbmTrbOutputHit : public TObject
 {
 public:
 
