@@ -34,7 +34,7 @@ void run_analysis()
    run->SetOutputFile(outFile);
  //  run->SetEventHeader(event);
 
-   CbmRichTrbRawQa* qaRaw = new CbmRichTrbRawQa();
+   CbmRichTrbRecoQa* qaRaw = new CbmRichTrbRecoQa();
    run->AddTask(qaRaw);
 
 
