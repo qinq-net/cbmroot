@@ -19,9 +19,9 @@ void much_reco(
    // Digi files
    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
    TList* parFileList = new TList();
-   TObjString stsDigiFile = parDir + "/sts/sts_v12b_std.digi.par"; // STS digi file
+   TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
    TString muchDigiFile = parDir + "/much/much_v12b.digi.root"; // MUCH digi file
-   TString stsMatBudgetFile = parDir + "/sts/sts_matbudget_v12b.root";
+   TString stsMatBudgetFile = parDir + "/sts/sts_matbudget_v13d.root";
    parFileList->Add(&stsDigiFile);
 
 	Int_t iVerbose = 1;
@@ -36,13 +36,13 @@ void much_reco(
 	run->SetOutputFile(globalRecoFile);
 
 	// --- STS Digitization -----------------------------------------------------
-   CbmStsDigitize* stsDigitize = new CbmStsDigitize();
+   CbmStsDigitize_old* stsDigitize = new CbmStsDigitize_old();
    run->AddTask(stsDigitize);
 
-   FairTask* stsClusterFinder = new CbmStsClusterFinder();
+   FairTask* stsClusterFinder = new CbmStsClusterFinder_old();
    run->AddTask(stsClusterFinder);
 
-   FairTask* stsFindHits = new CbmStsFindHits();
+   FairTask* stsFindHits = new CbmStsFindHits_old();
    run->AddTask(stsFindHits);
 
    FairTask* stsMatchHits = new CbmStsMatchHits();

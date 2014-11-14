@@ -56,7 +56,7 @@ void much_sim(TString inputSignal = "",
   TString caveGeom   = "cave.geo";
   CbmTarget* target = new CbmTarget("Gold", 0.025);
   TString magnetGeom = "magnet/magnet_v12b.geo.root";
-  TString stsGeom    = "sts/sts_v12b.geo.root";
+  TString stsGeom    = "sts/sts_v13d.geo.root";
 
   // -----   Magnetic field   -----------------------------------------------
   TString  fieldMap   = "field_v12b";   // name of field map

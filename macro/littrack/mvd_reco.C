@@ -70,13 +70,13 @@ void mvd_reco(Int_t nEvents = 100)
 
    if (stsHitProducerType == "real") {
    // ----- STS REAL reconstruction -----------------------------------------------
-      CbmStsDigitize* stsDigitize = new CbmStsDigitize();
+      CbmStsDigitize_old* stsDigitize = new CbmStsDigitize_old();
       run->AddTask(stsDigitize);
 
-      FairTask* stsClusterFinder = new CbmStsClusterFinder();
+      FairTask* stsClusterFinder = new CbmStsClusterFinder_old();
       run->AddTask(stsClusterFinder);
 
-      FairTask* stsFindHits = new CbmStsFindHits();
+      FairTask* stsFindHits = new CbmStsFindHits_old();
       run->AddTask(stsFindHits);
 
    //   FairTask* stsMatchHits = new CbmStsMatchHits();
