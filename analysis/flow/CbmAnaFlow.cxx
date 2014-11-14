@@ -80,6 +80,14 @@ using std::vector;
 using std::cout;
 using std::endl;
 
+const double CbmAnaFlow::minBin_y = -2.; 
+const double CbmAnaFlow::maxBin_y = 2.;
+
+const double CbmAnaFlow::minBin_pt = 0.;
+const double CbmAnaFlow::maxBin_pt = 3.;
+
+
+
 ClassImp(CbmAnaFlow)
 
 

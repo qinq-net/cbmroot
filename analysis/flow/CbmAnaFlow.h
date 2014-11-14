@@ -321,12 +321,12 @@ class CbmAnaFlow : public FairTask
       // Range and binning for detection efficiency correction 
 
       static const int NyBin = 400;
-      static const double minBin_y = -2.;
-      static const double maxBin_y = 2.;
+      static const double minBin_y;
+      static const double maxBin_y;
 
       static const int NptBin = 300;
-      static const double minBin_pt = 0.;
-      static const double maxBin_pt = 3.;
+      static const double minBin_pt;
+      static const double maxBin_pt;
 
       // 2d (pt, y) maps 
       TH2F* hRap_vs_y_pt; //Z-axis: <rapidity>
