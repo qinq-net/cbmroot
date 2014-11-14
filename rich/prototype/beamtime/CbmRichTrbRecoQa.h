@@ -36,9 +36,9 @@ public:
     virtual void Finish();
 
 private:
-    TClonesArray* fRichHits;
+    TClonesArray* fRichHits; // Array of RICH hits
 
-    UInt_t fEventNum;
+    UInt_t fEventNum; // Event counter
 
     CbmRichTrbRecoQa(const CbmRichTrbRecoQa&){;}
     CbmRichTrbRecoQa operator=(const CbmRichTrbRecoQa&){;}

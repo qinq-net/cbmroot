@@ -9,6 +9,7 @@ class CbmTrbOutputHit : public TObject
 public:
 
 	CbmTrbOutputHit():
+	  fTrbId(0),
       fTdcId(0),
       fLeadingChannel(0),
       fLeadingFullTime(0.),
@@ -18,8 +19,9 @@ public:
 
 	}
 
-	CbmTrbOutputHit (UShort_t tdc, UShort_t lChannel, Double_t lFullTime, UShort_t tChannel, Double_t tFullTime) :
-      fTdcId(tdc),
+	CbmTrbOutputHit (UShort_t trb, UShort_t tdc, UShort_t lChannel, Double_t lFullTime, UShort_t tChannel, Double_t tFullTime) :
+      fTrbId(trb),
+	  fTdcId(tdc),
       fLeadingChannel(lChannel),
       fLeadingFullTime(lFullTime),
       fTrailingChannel(tChannel),
@@ -27,22 +29,23 @@ public:
 	{
 
 	}
+	UShort_t GetTrb() const {return fTrbId;}
+	UShort_t GetTdc() const {return fTdcId;}
+	UShort_t GetLChannel() const {return fLeadingChannel;}
+	Double_t GetLFullTime () const { return fLeadingFullTime;}
+	UShort_t GetTChannel() const {return fTrailingChannel;}
+	Double_t GetTFullTime () const { return fTrailingFullTime;}
+	Double_t GetDeltaT() const {return fTrailingFullTime - fLeadingFullTime;}
 
-   UShort_t GetTdc() const {return fTdcId;}
-   UShort_t GetLChannel() const {return fLeadingChannel;}
-   Double_t GetLFullTime () const { return fLeadingFullTime;}
-   UShort_t GetTChannel() const {return fTrailingChannel;}
-   Double_t GetTFullTime () const { return fTrailingFullTime;}
-   Double_t GetDeltaT() const {return fTrailingFullTime - fLeadingFullTime;}
-
-   void SetLeadingFullTime (Double_t fullTime) { fLeadingFullTime = fullTime; }
+	void SetLeadingFullTime (Double_t fullTime) { fLeadingFullTime = fullTime; }
 
 private:
-   UShort_t fTdcId;
-   UShort_t fLeadingChannel;
-   UShort_t fTrailingChannel;
-   Double_t fLeadingFullTime; // Full time stamp in ns
-   Double_t fTrailingFullTime; // Full time stamp in ns
+	UShort_t fTrbId;
+	UShort_t fTdcId;
+	UShort_t fLeadingChannel;
+	UShort_t fTrailingChannel;
+	Double_t fLeadingFullTime; // Full time stamp in ns
+	Double_t fTrailingFullTime; // Full time stamp in ns
 
 };
 

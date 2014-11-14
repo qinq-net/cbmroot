@@ -12,6 +12,8 @@
 #include "FairRootManager.h"
 #include "CbmRichHit.h"
 #include "TClonesArray.h"
+#include "CbmDrawHist.h"
+#include "TFolder.h"
 
 #include "TH1D.h"
 #include "TCanvas.h"
@@ -72,11 +74,9 @@ Int_t CbmRichTrbUnpack::ReadEvent()
 
 void CbmRichTrbUnpack::Close()
 {
-	DrawQa();
+	CreateAndDrawQa();
 	ClearAllBuffers();
 	delete[] fDataPointer;
-
-
 }
 
 void CbmRichTrbUnpack::Reset()
@@ -118,8 +118,7 @@ void CbmRichTrbUnpack::ReadEvents()
 		CbmRawEvent* rawEvent = trbIter->NextEvent();
 		if (rawEvent == NULL) break;
 
-		//if (nofRawEvents % 10000 == 0)
-			LOG(INFO) << "Raw event # " << nofRawEvents << FairLogger::endl;
+		if (nofRawEvents % 10000 == 0) LOG(INFO) << "Raw event # " << nofRawEvents << FairLogger::endl;
 		//rawEvent->Print();
 
 		// Loop over subevents
@@ -253,7 +252,7 @@ CbmTrbOutputHit* CbmRichTrbUnpack::CreateOutputHit(CbmTrbRawHit* h)
 	                                       h->GetLEpoch(), h->GetLCTime(), h->GetLFTime());
 	Double_t tFullTime = this->GetFullTime(h->GetTrb(), h->GetTdc(), h->GetTChannel(),
 	                                       h->GetTEpoch(), h->GetTCTime(), h->GetTFTime());
-	return new CbmTrbOutputHit(h->GetTdc(), h->GetLChannel(), lFullTime, h->GetTChannel(), tFullTime);
+	return new CbmTrbOutputHit(h->GetTrb(), h->GetTdc(), h->GetLChannel(), lFullTime, h->GetTChannel(), tFullTime);
 }
 
 Double_t CbmRichTrbUnpack::GetFullTime(UShort_t TRB, UShort_t TDC, UShort_t CH, UInt_t epoch, UShort_t coarseTime, UShort_t fineTime)
@@ -264,7 +263,7 @@ Double_t CbmRichTrbUnpack::GetFullTime(UShort_t TRB, UShort_t TDC, UShort_t CH, 
    uint32_t trb_index = (TRB >> 4) & 0x00FF;
    uint32_t tdc_index = (TDC & 0x000F);
 	
-	Double_t time = epoch * epochUnit + coarseTime * coarseUnit + 
+	Double_t time = epoch * epochUnit + coarseTime * coarseUnit -
 	               CbmTrbCalibrator::Instance()->GetFineTimeCalibrated(trb_index, tdc_index, CH, fineTime);
 
 	return time;
@@ -356,52 +355,95 @@ void CbmRichTrbUnpack::ClearAllBuffers()
 	fOutputReferenceHits.clear();
 }
 
-void CbmRichTrbUnpack::DrawQa()
+void CbmRichTrbUnpack::FillRawHitHist(CbmTrbRawHit* rh)
 {
-	TH1D* hLEpoch = new TH1D("hLEpoch", "hLEpoch", 100, 0, 0);
-	TH1D* hTEpoch = new TH1D("hTEpoch", "hTEpoch", 100, 0, 0);
-	TH1D* hLCTime = new TH1D("hLCTime", "hLCTime", 100, 0, 0);
-	TH1D* hLFTime = new TH1D("hLFTime", "hLFTime", 100, 0, 0);
-	TH1D* hTCTime = new TH1D("hTCTime", "hTCTime", 100, 0, 0);
-	TH1D* hTFTime = new TH1D("hTFTime", "hTFTime", 100, 0, 0);
-	TH1D* hFullTime = new TH1D("hFullTime", "hFullTime", 10000, 0, 0);
-	TH1D* hFullTimeRef = new TH1D("hFullTimeRef", "hFullTimeRef", 10000, 0, 0);
+	UShort_t trbInd = ( (rh->GetTrb() >> 4) & 0x00FF ) - 1;
+	UShort_t tdcInd = (rh->GetTdc() & 0x000F);
+
+	fhChannelEntries[trbInd][tdcInd]->Fill(rh->GetLChannel());
+	fhChannelEntries[trbInd][tdcInd]->Fill(rh->GetTChannel());
+	fhEpoch[trbInd][tdcInd]->Fill(rh->GetLEpoch());
+	fhEpoch[trbInd][tdcInd]->Fill(rh->GetTEpoch());
+	fhCoarseTime[trbInd][tdcInd]->Fill(rh->GetLCTime());
+	fhCoarseTime[trbInd][tdcInd]->Fill(rh->GetTCTime());
+	fhFineTime[trbInd][tdcInd]->Fill(rh->GetLFTime());
+	fhFineTime[trbInd][tdcInd]->Fill(rh->GetTFTime());
+}
+
+void CbmRichTrbUnpack::FillOutputHitHist(CbmTrbOutputHit* outHit)
+{
+	UShort_t trbInd = ( (outHit->GetTrb() >> 4) & 0x00FF ) - 1;
+	UShort_t tdcInd = (outHit->GetTdc() & 0x000F);
+
+	fhDeltaT[trbInd][tdcInd]->Fill(outHit->GetDeltaT());
+}
+
+void CbmRichTrbUnpack::CreateAndDrawQa()
+{
+
+	TString hname, htitle;
+	for (Int_t iTrb = 0; iTrb < TRB_TDC3_NUMBOARDS; iTrb++){
+		for (Int_t iTdc = 0; iTdc < TRB_TDC3_NUMTDC; iTdc++){
+			hname.Form("hChannelEntries_%d_%d", iTrb+1, iTdc);
+			htitle.Form("hChannelEntries_%d_%d;Channel number;Entries", iTrb+1, iTdc);
+			fhChannelEntries[iTrb][iTdc] = new TH1D( hname.Data(), htitle.Data(), 33, -0.5, 32.5);
+
+			hname.Form("hEpoch_%d_%d", iTrb+1, iTdc);
+			htitle.Form("hEpoch_%d_%d;Epoch counter;Entries", iTrb+1, iTdc);
+			fhEpoch[iTrb][iTdc] = new TH1D(hname, htitle, 1000, 0, 0);
+
+			hname.Form("hCoraseTime_%d_%d", iTrb+1, iTdc);
+			htitle.Form("hCoraseTime_%d_%d;Coarse time;Entries", iTrb+1, iTdc);
+			fhCoarseTime[iTrb][iTdc] = new TH1D(hname, htitle, 2048, -0.5, 2047.5);
+
+			hname.Form("hFineTime_%d_%d", iTrb+1, iTdc);
+			htitle.Form("hFineTime_%d_%d;Fine time;Entries", iTrb+1, iTdc);
+			fhFineTime[iTrb][iTdc] = new TH1D(hname, htitle, 1024, -0.5, 1023.5);
+
+			hname.Form("hDeltaT_%d_%d", iTrb+1, iTdc);
+			htitle.Form("hDeltaT_%d_%d;DeltaT [ns];Entries", iTrb+1, iTdc);
+			fhDeltaT[iTrb][iTdc] = new TH1D(hname, htitle, 200, 0, 0);
+		}
+	}
 
 	for (int i = 0; i < fRawRichHits.size(); i++) {
-		CbmTrbRawHit* rh = fRawRichHits[i];
-		hLEpoch->Fill( rh->GetLEpoch() );
-		hTEpoch->Fill( rh->GetTEpoch() );
-		hLCTime->Fill( rh->GetLCTime() );
-		hLFTime->Fill( rh->GetLFTime() );
-		hTCTime->Fill( rh->GetTCTime() );
-		hTFTime->Fill( rh->GetTFTime() );
-		Double_t fullTime = this->GetFullTime(rh->GetTrb(), rh->GetTdc(), rh->GetLChannel(), rh->GetLEpoch(), rh->GetLCTime(), rh->GetLFTime());
-		hFullTime->Fill( fullTime );
+		FillRawHitHist(fRawRichHits[i]);
 	}
 
 	for (int i = 0; i < fRawReferenceHits.size(); i++) {
-		CbmTrbRawHit* rh = fRawReferenceHits[i];
-		Double_t fullTime = this->GetFullTime(rh->GetTrb(), rh->GetTdc(), rh->GetLChannel(), rh->GetLEpoch(), rh->GetLCTime(), rh->GetLFTime());
-		hFullTimeRef->Fill( fullTime );
+		FillRawHitHist(fRawReferenceHits[i]);
 	}
 
-	TCanvas* c2 = new TCanvas();
-	hLCTime->Draw();
-	TCanvas* c3 = new TCanvas();
-	hLFTime->Draw();
-	TCanvas* c4 = new TCanvas();
-	hTCTime->Draw();
-	TCanvas* c5 = new TCanvas();
-	hTFTime->Draw();
-	TCanvas* c6 = new TCanvas();
-	hFullTime->Draw();
-	hFullTimeRef->SetLineColor(kRed);
-	hFullTimeRef->Draw("same");
-	TCanvas* c7 = new TCanvas();
-	hLEpoch->Draw();
-	TCanvas* c8 = new TCanvas();
-	hTEpoch->Draw();
+	for (int i = 0; i < fOutputRichHits.size(); i++) {
+		FillOutputHitHist(fOutputRichHits[i]);
+	}
 
+	for (int i = 0; i < fOutputReferenceHits.size(); i++) {
+		FillOutputHitHist(fOutputReferenceHits[i]);
+	}
+
+	TFolder* rootHistFolder = gROOT->GetRootFolder()->AddFolder("RICH_TRB_UNPACK_DEBUG", "RICH_TRB_UNPACK_DEBUG");
+	TString cname;
+	for (Int_t iTrb = 0; iTrb < TRB_TDC3_NUMBOARDS; iTrb++){
+		for (Int_t iTdc = 0; iTdc < TRB_TDC3_NUMTDC; iTdc++){
+			cname.Form("rich_trb_unpack_debug_trb%d_tdc_%d", iTrb+1, iTdc);
+			TCanvas* c = new TCanvas(cname.Data(), cname.Data(), 1200, 800);
+			c->Divide(3, 2);
+			c->cd(1);
+			DrawH1(fhChannelEntries[iTrb][iTdc]);
+			c->cd(2);
+			DrawH1(fhEpoch[iTrb][iTdc]);
+			c->cd(3);
+			DrawH1(fhCoarseTime[iTrb][iTdc]);
+			c->cd(4);
+			DrawH1(fhFineTime[iTrb][iTdc]);
+			c->cd(5);
+			DrawH1(fhDeltaT[iTrb][iTdc]);
+
+			rootHistFolder->Add(c);
+		}
+	}
+	rootHistFolder->Write();
 }
 
 ClassImp(CbmRichTrbUnpack)
