@@ -11,6 +11,11 @@
 #include "CbmRichHit.h"
 #include "TEllipse.h"
 #include "TLatex.h"
+#include "CbmRichRingLight.h"
+#include "CbmRichRingFitterCOP.h"
+#include "CbmRichRingFitterEllipseTau.h"
+#include "CbmRichConverter.h"
+
 
 #include <iostream>
 #include <vector>
@@ -34,13 +39,30 @@ InitStatus CbmRichTrbRecoQa::Init()
 	fRichHits = (TClonesArray*)manager->GetObject("RichHit");
 	if (NULL == fRichHits) { Fatal("CbmRichTrbRawQa::Init","No RichHit array!"); }
 
+	fRichRings = (TClonesArray*)manager->GetObject("RichRing");
+	if (NULL == fRichRings) { Fatal("CbmRichTrbRawQa::Init","No RichRing array!"); }
+
+	fCopFit = new CbmRichRingFitterCOP();
+	fTauFit = new CbmRichRingFitterEllipseTau();
 	InitHist();
+
+	return kSUCCESS;
 }
 
 void CbmRichTrbRecoQa::InitHist()
 {
 	fhNofHitsInEvent = new TH1D("fhNofHitsInEvent", "fhNofHitsInEvent;Number of hits in event;Entries", 50, -0.5, 49.5);
-	fhHitsXY = new TH2D("fhHitsXY", "fhHitsXY;X [cm];Y [cm];Entries", 32, 4., 210., 32, 4., 210.);
+	fhHitsXY = new TH2D("fhHitsXY", "fhHitsXY;X [mm];Y [mm];Entries", 32, 4., 210., 32, 4., 210.);
+	fhNofRingsInEvent = new TH1D("fhNofRingsInEvent", "fhNofRingsInEvent;# rings per event;Entries", 5, -0.5, 4.5);
+    fhBoverAEllipse = new TH1D("fhBoverAEllipse", "fhBoverAEllipse;B/A;Entries", 100, 0.0, 1.0);
+    fhXcYcEllipse = new TH2D("fhXcYcEllipse", "fhXcYcEllipse;X [mm];Y [mm];Entries", 100, 0., 210., 100, 0., 210.);
+    fhBaxisEllipse = new TH1D("fhBaxisEllipse", "fhBaxisEllipse;B axis [mm];Entries", 100, 0.0, 10.0);
+    fhAaxisEllipse = new TH1D("fhAaxisEllipse", "fhAaxisEllipse;A axis [mm];Entries", 100, 0.0, 10.0);
+    fhChi2Ellipse = new TH1D("fhChi2Ellipse", "fhChi2Ellipse;#Chi^{2};Entries", 100, 0.0, 10.);
+    fhXcYcCircle = new TH2D("fhXcYcCircle", "fhXcYcCircle;X [mm];Y [mm];Entries", 100, 0., 210., 100, 0., 210.);
+    fhRadiusCircle = new TH1D("fhRadiusCircle", "fhRadiusCircle;Radius [mm];Entries", 100, 0.0, 10.0);
+    fhChi2Circle = new TH1D("fhChi2Circle", "fhChi2Circle;#Chi^{2};Entries", 100, 0.0, 10.0);
+    fhDrCircle = new TH1D("fhDrCircle", "fhDrCircle;dR;Entries", 100, -1.0, 1.0);
 }
 
 void CbmRichTrbRecoQa::Exec(
@@ -58,14 +80,65 @@ void CbmRichTrbRecoQa::Exec(
 		fhHitsXY->Fill(hit->GetX(), hit->GetY());
 	}
 
-	if (fNofDrawnEvents <= 10) {
-		DrawEvent();
+	Int_t nofRingsInEvent = fRichRings->GetEntries();
+	fhNofRingsInEvent->Fill(nofRingsInEvent);
+	vector<CbmRichRingLight> fitCircleRing;
+	vector<CbmRichRingLight> fitEllipseRing;
+	for (Int_t iR = 0; iR < nofRingsInEvent; iR++) {
+		CbmRichRing* ring = static_cast<CbmRichRing*>(fRichRings->At(iR));
+		CbmRichRingLight ringL;
+		CbmRichConverter::CopyHitsToRingLight(ring, &ringL);
+		fTauFit->DoFit(&ringL);
+		FillHistEllipse(&ringL);
+		fitEllipseRing.push_back(ringL);
+		fCopFit->DoFit(&ringL);
+		FillHistCircle(&ringL);
+		fitCircleRing.push_back(ringL);
 	}
+
+	if (fNofDrawnEvents <= 10) {
+		DrawEvent(fitCircleRing, fitEllipseRing);
+	}
+}
+
+void CbmRichTrbRecoQa::FillHistEllipse(
+      CbmRichRingLight* ring)
+{
+   Double_t axisA = ring->GetAaxis();
+   Double_t axisB = ring->GetBaxis();
+   Double_t xcEllipse = ring->GetCenterX();
+   Double_t ycEllipse = ring->GetCenterY();
+   Int_t nofHitsRing = ring->GetNofHits();
+
+   fhBoverAEllipse->Fill(axisB/axisA);
+   fhXcYcEllipse->Fill(xcEllipse, ycEllipse);
+   fhNofHitsInRing->Fill(nofHitsRing);
+   fhBaxisEllipse->Fill(axisB);
+   fhAaxisEllipse->Fill(axisA);
+   fhChi2Ellipse->Fill(ring->GetChi2()/ring->GetNofHits());
+}
+
+void CbmRichTrbRecoQa::FillHistCircle(
+      CbmRichRingLight* ring)
+{
+   Double_t radius = ring->GetRadius();
+   Double_t xcCircle = ring->GetCenterX();
+   Double_t ycCircle = ring->GetCenterY();
+   Int_t nofHitsRing = ring->GetNofHits();
+   fhXcYcCircle->Fill(xcCircle, ycCircle);
+   fhRadiusCircle->Fill(radius);
+   fhChi2Circle->Fill(ring->GetChi2()/ring->GetNofHits());
+
+   for (Int_t iH = 0; iH < ring->GetNofHits(); iH++){
+      Double_t xh = ring->GetHit(iH).fX;
+      Double_t yh = ring->GetHit(iH).fY;
+      Double_t dr = radius - sqrt((xcCircle - xh)*(xcCircle - xh) + (ycCircle - yh)*(ycCircle - yh));
+      fhDrCircle->Fill(dr);
+   }
 }
 
 void CbmRichTrbRecoQa::DrawHist()
 {
-
 	TCanvas* c1 = new TCanvas("rich_trb_recoqa_nof_hits_in_event", "rich_trb_recoqa_nof_hits_in_event", 600, 600);
 	DrawH1(fhNofHitsInEvent);
 
@@ -73,7 +146,9 @@ void CbmRichTrbRecoQa::DrawHist()
 	DrawH2(fhHitsXY);
 }
 
-void CbmRichTrbRecoQa::DrawEvent()
+void CbmRichTrbRecoQa::DrawEvent(
+    		const vector<CbmRichRingLight>& fitRingCircle,
+    		const vector<CbmRichRingLight>& fitRingEllipse)
 {
    TString ss;
    ss.Form("rich_trb_recoqa_eventdisplay_%d", fNofDrawnEvents);
@@ -96,28 +171,31 @@ void CbmRichTrbRecoQa::DrawEvent()
 	   hitDr->SetFillColor(kGreen);
 	   hitDr->Draw();
    }
-/*
-   //Draw circle and center
-   TEllipse* circle = new TEllipse(ringHit->GetCenterX() - xCur,
-         ringHit->GetCenterY() - yCur, ringHit->GetRadius());
-   circle->SetFillStyle(0);
-   circle->SetLineWidth(3);
-   circle->Draw();
-   TEllipse* center = new TEllipse(ringHit->GetCenterX() - xCur, ringHit->GetCenterY() - yCur, .5);
-   center->Draw();
 
-   // Draw hits
-   for (int i = 0; i < ringHit->GetNofHits(); i++){
+   //Draw all found rings and centers
+   if (fitRingCircle.size() != fitRingEllipse.size()) {
+	   LOG(ERROR) << "CbmRichTrbRecoQa::DrawEvent fitRingCircle.size() != fitRingEllipse.size()" << FairLogger::endl;
+   }
+   Int_t nofRings = fitRingCircle.size();
+   for (Int_t iR = 0; iR < nofRings; iR++) {
+	   CbmRichRingLight r = fitRingCircle[iR];
+	   TEllipse* circle = new TEllipse(r.GetCenterX(), r.GetCenterY(), r.GetRadius());
+	   circle->SetFillStyle(0);
+	   circle->SetLineWidth(3);
+	   circle->Draw();
+	   TEllipse* center = new TEllipse(r.GetCenterX(), r.GetCenterY(), 1.5);
+	   center->Draw();
 
+	   // Draw hits from the ring
+	   for (int iH = 0; iH < r.GetNofHits(); iH++){
+		   CbmRichHitLight hit = r.GetHit(iH);
+		   TEllipse* hitDr = new TEllipse(hit.fX, hit.fY, 1.5);
+		   hitDr->SetFillColor(kRed);
+		   hitDr->Draw();
+	   }
    }
 
-   // Draw MC Points
-   for (int i = 0; i < ringPoint->GetNofHits(); i++){
-      TEllipse* pointDr = new TEllipse(ringPoint->GetHit(i).fX - xCur, ringPoint->GetHit(i).fY - yCur, 0.15);
-      pointDr->SetFillColor(kBlue);
-      pointDr->Draw();
-   }
-*/
+
    //Draw information
    ss.Form("(nEv)=(%d)", nofHitsInEvent);
    TLatex* latex = new TLatex(5., 225., ss.Data());
