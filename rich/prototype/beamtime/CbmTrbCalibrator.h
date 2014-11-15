@@ -2,6 +2,7 @@
 #define CBMTRBCALIBRATOR_H
 
 #include "TObject.h"
+#include "TFolder.h"
 #include "TH1.h"
 #include "TROOT.h"
 
@@ -16,14 +17,24 @@ public: // methods
    ~CbmTrbCalibrator();
 
    /*
-    * Singleton class object returner
+    * Singleton class object returner.
     */
    static CbmTrbCalibrator* Instance();
 
    /*
-    * Add raw fine time received from TDC and unpacked by the CbmRichTrbUnpack
+    * Set the period of calibration.
     */
-   void AddFineTime(UShort_t inTRBid, UShort_t inTDCid, UShort_t inCHid, UShort_t leadingFT, UShort_t trailingFT);
+   void SetCalibrationPeriod(UInt_t period) { fCalibrationPeriod = period; }
+
+   /*
+    * Get the period of calibration.
+    */
+   //UInt_t GetCalibrationPeriod() { return fCalibrationPeriod; }
+
+   /*
+    * Add raw fine time received from TDC and unpacked by the CbmRichTrbUnpack.
+    */
+   void AddFineTime(UShort_t inTRBid, UShort_t inTDCid, UShort_t inCHid, UShort_t fineTime);
    
    /*
     * Return time in ns.
@@ -36,19 +47,24 @@ public: // methods
     * (but don't forget to call AddFineTime for each fine time to be taken into account).
     * This counts the number of events to determine when to start DoCalibrate.
     */
-   void NextRawEvent();
+   //void NextRawEvent();
    
    /*
-    * Per se calibration of all the channels of all TDCs of all TRBs.
+    * Per se calibration of a certain channel of a certain TDC of a certain TRB.
     */
-   void DoCalibrate();
+   void DoCalibrate(UShort_t TRB, UShort_t TDC, UShort_t CH);
+
+   /*
+    * Save the calibration information into the root file.
+    */
+   void Save(const char* filename = "calibration.root");
 
    void GenHistos();
 
 private: // methods
 
    /*
-    * Constructor - private because the class is singleton
+    * Constructor - private because the class is singleton.
     */
    CbmTrbCalibrator();
 
@@ -71,53 +87,69 @@ private: // methods
 private: // data members
 
    /*
-    * If true then calibration will be executed after having
-    * calibrationPeriod events in the buffer.
+    * If true then calibration of channel CH will be executed after having
+    * calibrationPeriod entries in the buffer for channel CH.
     */
-   Bool_t toDoCalibration;
+   Bool_t fToDoCalibration;
    
    /*
-    * Minimum number of events to start calibration.
+    * Minimum number of fine time counters taken into account to start calibration.
     */
-   UInt_t calibrationPeriod;
+   UInt_t fCalibrationPeriod;
+
+   /*
+    * Root folder for all the calibration data.
+    */
+   TFolder* fTRBroot;
+
+   /*
+    * Calibration has already been done - use calibation table,
+    * Otherwise - use linear claibration.
+    */
+   TH1C* fCalibrationDoneHisto[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC];
 
    /*
     * Flushed after calibration.
     */
-   TH1I* hLeadingFine[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
+   TH1D* fhLeadingFineBuffer[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
    
+   /*
+    * Accumulates across all the received data.
+    */
+   TH1D* fhLeadingFine[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
+
    /*
     * Flushed after calibration.
     */
-   TH1I* hTrailingFine[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
+   //TH1D* fhTrailingFineBuffer[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
    
    /*
     * Accumulates across all the received data.
     */
-   TH1I* hLeadingFineBuffer[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
-   
-   /*
-    * Accumulates across all the received data.
-    */
-   TH1I* hTrailingFineBuffer[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
+   //TH1D* fhTrailingFine[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
 
    /*
     * Renewes at calibration.
     * Initialized with `identity` (linear =1 function) before the first calibration.
     */
-	TH1D* hCalcBinWidth[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
+	TH1D* fhCalcBinWidth[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
 	
 	/*
     * Renewes at calibration.
     * Initialized with `identity` (linear y=k*x function) before the first calibration.
     */
-	TH1D* hCalBinTime[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
+	TH1D* fhCalBinTime[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
 
    /*
     * Counter of events taken into account for calibration.
     * Used to determine when to start DoCalibrate.
     */
-   static UInt_t fEventCounter;
+   //static UInt_t fEventCounter;
+   
+   /*
+    * For each channel - counter of fine time counters taken into accout for calibration.
+    */
+   UInt_t fFTcounter[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
 
    /*
     * Pointer to the singleton class object.

@@ -47,9 +47,9 @@ void CbmRichTrbRecoQa::Exec(
 		Option_t* option)
 {
 	fEventNum++;
-	LOG(INFO) << "Event #" << fEventNum << FairLogger::endl;
+	LOG(DEBUG) << "Event #" << fEventNum << FairLogger::endl;
 
-	LOG(INFO) << "nof hits in event = " << fRichHits->GetEntries() << FairLogger::endl;
+	LOG(DEBUG) << "nof hits in event = " << fRichHits->GetEntries() << FairLogger::endl;
 
 	Int_t nofHitsInEvent = fRichHits->GetEntries();
 	fhNofHitsInEvent->Fill(nofHitsInEvent);

@@ -50,16 +50,16 @@ Bool_t CbmRichTrbUnpack::Init()
 
 Int_t CbmRichTrbUnpack::ReadEvent()
 {
-	LOG(INFO) << "Event #" << fEventNum << FairLogger::endl;
+	LOG(DEBUG) << "Event #" << fEventNum << FairLogger::endl;
 	fRichHits->Clear();
 
 
 	BuildEvent(fEventNum);
 
-	LOG(INFO) << "CbmRichTrbUnpack::ReadEvent : # hits in event " << fRichHits->GetEntries() << FairLogger::endl;
+	LOG(DEBUG) << "CbmRichTrbUnpack::ReadEvent : # hits in event " << fRichHits->GetEntries() << FairLogger::endl;
 	for (int i = 0; i < fRichHits->GetEntries(); i++) {
 	CbmRichHit* hit = (CbmRichHit*)fRichHits->At(i);
-		//LOG(INFO) << hit->GetX() << " " << hit->GetY() << FairLogger::endl;
+		//LOG(DEBUG) << hit->GetX() << " " << hit->GetY() << FairLogger::endl;
 	}
 	fEventNum++;
 
@@ -72,6 +72,7 @@ Int_t CbmRichTrbUnpack::ReadEvent()
 
 void CbmRichTrbUnpack::Close()
 {
+   CbmTrbCalibrator::Instance()->Save("calibration.root");
 	CreateAndDrawQa();
 	ClearAllBuffers();
 	delete[] fDataPointer;
@@ -142,7 +143,7 @@ void CbmRichTrbUnpack::ReadEvents()
 		nofEventsInBuffer++;
 		nofRawEvents++;
 		
-		CbmTrbCalibrator::Instance()->NextRawEvent();    //TODO Quite tricky, maybe refactor this
+		//CbmTrbCalibrator::Instance()->NextRawEvent();    //TODO Quite tricky, maybe refactor this
 	}
 
 	CreateOutputHits();
@@ -180,6 +181,10 @@ void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
 				UInt_t edge = (tdcData >> 11) & 0x1; // 1bit
 				UInt_t coarseTime = (tdcData) & 0x7ff; // 1bits
 
+            // Give the calibrator the read fine time so that it was taken into account
+            CbmTrbCalibrator::Instance()->AddFineTime(trbId, tdcId, chNum, fineTime);
+
+
 				if (chNum == 0) {
 					// TODO: do smth with ch0
 				} else {
@@ -197,18 +202,13 @@ void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
 								                                       prevFineTime, chNum, curEpochCounter,
 								                                       coarseTime, fineTime);
 								fRawRichHits.push_back(rawHit);
-
-
-                        // Give the calibrator the read fine time so that it was taken into account
-                        CbmTrbCalibrator::Instance()->AddFineTime(trbId, tdcId, chNum, prevFineTime, fineTime);
-
 								
 								prevChNum = 0;
 								prevEpochCounter = 0;
 								prevCoarseTime = 0;
 								prevFineTime = 0;
 							} else {
-								//LOG(INFO) << "-ERROR- leading edge channel number - trailing edge channel number != 1" << FairLogger::endl;
+								LOG(ERROR) << "Leading edge channel number - trailing edge channel number != 1" << FairLogger::endl;
 							}
 						}
 					} //isPmtTrb
@@ -258,7 +258,7 @@ Double_t CbmRichTrbUnpack::GetFullTime(UShort_t TRB, UShort_t TDC, UShort_t CH, 
 	Double_t coarseUnit = 5.;
 	Double_t epochUnit = coarseUnit * 0x800;
 	
-   uint32_t trb_index = (TRB >> 4) & 0x00FF;
+   uint32_t trb_index = (TRB >> 4) & 0x00FF - 1;
    uint32_t tdc_index = (TDC & 0x000F);
 	
 	Double_t time = epoch * epochUnit + coarseTime * coarseUnit -
