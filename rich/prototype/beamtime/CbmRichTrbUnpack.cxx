@@ -43,8 +43,6 @@ Bool_t CbmRichTrbUnpack::Init()
 	fRichHits = new TClonesArray("CbmRichHit");
 	fManager->Register("RichHit","RICH", fRichHits, kTRUE);
 
-
-
 	ReadEvents();
 
 	return kTRUE;
@@ -58,7 +56,7 @@ Int_t CbmRichTrbUnpack::ReadEvent()
 
 	BuildEvent(fEventNum);
 
-	//LOG(INFO) << "# hits in event " << fRichHits->GetEntries() << FairLogger::endl;
+	LOG(INFO) << "CbmRichTrbUnpack::ReadEvent : # hits in event " << fRichHits->GetEntries() << FairLogger::endl;
 	for (int i = 0; i < fRichHits->GetEntries(); i++) {
 	CbmRichHit* hit = (CbmRichHit*)fRichHits->At(i);
 		//LOG(INFO) << hit->GetX() << " " << hit->GetY() << FairLogger::endl;
@@ -422,22 +420,22 @@ void CbmRichTrbUnpack::CreateAndDrawQa()
 		FillOutputHitHist(fOutputReferenceHits[i]);
 	}
 
-	TFolder* rootHistFolder = gROOT->GetRootFolder()->AddFolder("RICH_TRB_UNPACK_DEBUG", "RICH_TRB_UNPACK_DEBUG");
+	TFolder* rootHistFolder = gROOT->GetRootFolder()->AddFolder("rich_trb_unpack_debug", "rich_trb_unpack_debug");
 	TString cname;
 	for (Int_t iTrb = 0; iTrb < TRB_TDC3_NUMBOARDS; iTrb++){
+		cname.Form("rich_trb_unpack_debug_trb%d", iTrb+1);
+		TCanvas* c = new TCanvas(cname.Data(), cname.Data(), 1250, 1000);
+		c->Divide(5, TRB_TDC3_NUMTDC);
 		for (Int_t iTdc = 0; iTdc < TRB_TDC3_NUMTDC; iTdc++){
-			cname.Form("rich_trb_unpack_debug_trb%d_tdc_%d", iTrb+1, iTdc);
-			TCanvas* c = new TCanvas(cname.Data(), cname.Data(), 1200, 800);
-			c->Divide(3, 2);
-			c->cd(1);
+			c->cd(5*iTdc + 1);
 			DrawH1(fhChannelEntries[iTrb][iTdc]);
-			c->cd(2);
+			c->cd(5*iTdc + 2);
 			DrawH1(fhEpoch[iTrb][iTdc]);
-			c->cd(3);
+			c->cd(5*iTdc + 3);
 			DrawH1(fhCoarseTime[iTrb][iTdc]);
-			c->cd(4);
+			c->cd(5*iTdc + 4);
 			DrawH1(fhFineTime[iTrb][iTdc]);
-			c->cd(5);
+			c->cd(5*iTdc + 5);
 			DrawH1(fhDeltaT[iTrb][iTdc]);
 
 			rootHistFolder->Add(c);

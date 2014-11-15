@@ -76,7 +76,7 @@ private:
     void ReadInputFileToMemory();
 
     /*
-     * Add CbmRichHit to the output array.
+     * Add CbmRichHit to the output TClonesArray.
      * \param x X coordinate of the hit
      * \param y Y coordinate of the hit
      */

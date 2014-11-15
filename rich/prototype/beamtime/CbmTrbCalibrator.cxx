@@ -91,8 +91,8 @@ void CbmTrbCalibrator::DoCalibrate()
 
 Double_t CbmTrbCalibrator::GetFineTimeCalibrated(UShort_t TRB, UShort_t TDC, UShort_t CH, UShort_t fineCnt)
 {
-   return GetRealFineCalibration(TRB, TDC, CH, fineCnt);
-//   return GetLinearFineCalibration(fineCnt);
+  // return GetRealFineCalibration(TRB, TDC, CH, fineCnt);
+   return GetLinearFineCalibration(fineCnt);
 }
 
 Double_t CbmTrbCalibrator::GetLinearFineCalibration(UShort_t fineCnt)
