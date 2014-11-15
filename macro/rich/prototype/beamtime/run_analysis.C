@@ -13,7 +13,8 @@ void run_analysis()
    Int_t nEvents = -1;
 
    // --- Specify output file name (this is just an example)
-   TString outFile = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/fles/output_test_file.root";
+   //TString outFile = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/fles/output_test_file.root";
+   TString outFile = "output_test_file.root";
 
    // --- Set log output levels
    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
