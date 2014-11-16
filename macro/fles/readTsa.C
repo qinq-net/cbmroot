@@ -16,7 +16,7 @@ void readTsa()
 //  TString inFile = "pattern.tsa";
 //  TString inFile = "spadic10_data.tsa";
 //   TString inFile = "/tmp/spadic_data/trigger_3x_source.tsa";
-   TString inFile = "flesnet_spadic_01.tsa";
+   TString inFile = "spadic_dlm_trigger_2014-11-15_noepoch.tsa";
 //   TString inFile = "/Users/uhlig/Downloads/nxdata.tsa";  
 
   // --- Specify number of events to be produced.
@@ -24,7 +24,7 @@ void readTsa()
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/pattern.root";
+  TString outFile = "data/test_online.root";
 
   // --- Set log output levels
   FairLogger::GetLogger()->SetLogScreenLevel("INFO");
@@ -45,8 +45,8 @@ void readTsa()
 
   // --- Source task
   CbmFlibFileSource* source = new CbmFlibFileSource();
-//  source->SetFileName(inFile);
-  source->SetHostName("cbmflib02.gsi.de");
+  source->SetFileName(inFile);
+//  source->SetHostName("cbmflib01.gsi.de");
 
   // --- Event header
 //  FairEventHeader* event = new CbmTbEvent();
@@ -56,6 +56,11 @@ void readTsa()
   FairRunOnline *run = new FairRunOnline(source);
   run->SetOutputFile(outFile);
 //  run->SetEventHeader(event);
+
+//  gDebug=2;
+  FairTask* spadicRawBeam = new CbmTrdRawBeamProfile();
+  run->AddTask(spadicRawBeam);
+
   run->Init();
 
   
