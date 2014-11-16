@@ -135,7 +135,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
     for (Int_t bin = 1; bin < 32; bin++){
       histName = "Integrated_ADC_Spectrum_" + syscore + spadic;
       fHM->H2(histName)->Fill(chID,raw->GetSamples()[bin] - raw->GetSamples()[0]);
-      sprintf(channelID,"%d",chID);
+      sprintf(channelID,"%02d",chID);
       //      itoa(chID,channelId,10);
       //      channelId = to_string(chID);
 
