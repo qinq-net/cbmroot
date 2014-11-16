@@ -140,7 +140,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
 
       channelId = std::to_string(chID);
 
-      histName = "Signal_Shape_" + syscore + spadic + channelId;
+      histName = "Signal_Shape_" + syscore + spadic + "_" + channelId;
       fHM->H2(histName)->Fill(bin,raw->GetSamples()[bin]);
     }
     histName = "Trigger_Heatmap_" + syscore + spadic;
