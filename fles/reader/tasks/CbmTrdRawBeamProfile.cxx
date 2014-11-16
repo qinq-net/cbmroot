@@ -89,6 +89,8 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
     Int_t chID = raw->GetChannelID();
     //string channelId;
     char channelID[2];
+    sprintf(channelID,"%02d",chID);
+    string channelId(channelID);
     /*
       LOG(INFO) << "******" << FairLogger::endl;
       LOG(INFO) << "Equipment ID: " << eqID << Fairlogger::endl;
@@ -135,13 +137,6 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
     for (Int_t bin = 1; bin < 32; bin++){
       histName = "Integrated_ADC_Spectrum_" + syscore + spadic;
       fHM->H2(histName)->Fill(chID,raw->GetSamples()[bin] - raw->GetSamples()[0]);
-      sprintf(channelID,"%02d",chID);
-      //      itoa(chID,channelId,10);
-      //      channelId = to_string(chID);
-
-      //channelId = std::to_string(chID);
-
-      string channelId(channelID);
 
       histName = "Signal_Shape_" + syscore + spadic + "_" + channelId;
       fHM->H2(histName)->Fill(bin,raw->GetSamples()[bin]);
