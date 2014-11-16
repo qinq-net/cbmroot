@@ -31,13 +31,15 @@ class CbmSpadicRawMessage : public CbmRawMessage
   CbmSpadicRawMessage();
 
   /** Constructor  **/
-  CbmSpadicRawMessage(Int_t FlibLink, Int_t FebId, Int_t ChannelId,
+  CbmSpadicRawMessage(Int_t EquipmentID, Int_t SourceAddress, Int_t ChannelId,
 		Int_t EpochMarker, Int_t Time, Int_t NrSamples, Int_t* Samples);
 
 	
   /** Destructor  **/
   virtual ~CbmSpadicRawMessage() { };
 
+  Int_t GetNrSamples() { return fNrSamples; }
+  Int_t* GetSamples() { return fSamples; }
 	
  private:
 

@@ -38,7 +38,7 @@ class CbmRawMessage : public TObject
   CbmRawMessage();
 
   /** Constructor  **/
-  CbmRawMessage(Int_t FlibLink, Int_t FebId, Int_t ChannelId,
+  CbmRawMessage(Int_t EquipmentID, Int_t SourceAdress, Int_t ChannelId,
 		Int_t EpochMarker, Int_t Time);
 
 	
@@ -54,15 +54,21 @@ class CbmRawMessage : public TObject
   /** Assignment operator  **/	
   //  CbmRawMessage& operator=(const CbmRawMessage&);
 
+  Int_t GetEquipmentID() { return fEquipmentID; }
+  Int_t GetSourceAddress() { return fSourceAddress; }
+  Int_t GetChannelID() { return fChannelID; }
+  Int_t GetEpochMarker() { return fEpochMarker; }
+  Int_t GetTime() { return fTime; }
+
  protected:
 
-  Int_t fFlibLink;
-  Int_t fFebId;
-  Int_t fChannelId;
+  Int_t fEquipmentID;
+  Int_t fSourceAddress;
+  Int_t fChannelID;
   Int_t fEpochMarker;
   Int_t fTime;
 
-  ClassDef(CbmRawMessage,1);
+  ClassDef(CbmRawMessage,2);
 
 };
 
