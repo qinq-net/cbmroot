@@ -73,6 +73,9 @@ InitStatus CbmTrdRawBeamProfile::ReInit()
 // ---- Exec ----------------------------------------------------------
 void CbmTrdRawBeamProfile::Exec(Option_t* option)
 {
+
+  Int_t channelMapping[32] = {1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,
+			      0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30};
   LOG(DEBUG) << "Exec of CbmTrdRawBeamProfile" << FairLogger::endl;
 
   Int_t entries = fRawSpadic->GetEntriesFast();
@@ -150,13 +153,16 @@ void CbmTrdRawBeamProfile::CreateHistograms()
   for(Int_t syscore = 0; syscore < 3; ++syscore) {
     for(Int_t spadic = 0; spadic < 3; ++spadic) {
       string histName = "CountRate_" + syscoreName[syscore] + "_" + spadicName[spadic];
-      fHM->Add(histName, new TH1F(histName.c_str(), string(histName + ";Channel;Counts").c_str(), 16, 0, 15));
+      fHM->Add(histName, new TH1F(histName.c_str(), string(histName + ";Channel;Counts").c_str(), 32, 0, 32));
 
       histName = "BaseLine_" + syscoreName[syscore] + "_" + spadicName[spadic];
-      fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;ADC value in Bin 0").c_str(), 16, 0, 15, 511, -256, 255));
+      fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;ADC value in Bin 0").c_str(), 32, 0, 32, 511, -256, 255));
 
       histName = "Integrated_ADC_Spectrum_" + syscoreName[syscore] + "_" + spadicName[spadic];
-      fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;Integr. ADC values in Bin [1,31]").c_str(), 16, 0, 15, 511*32, 0, 511*32));
+      fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;Integr. ADC values in Bin [1,31]").c_str(), 32, 0, 32, 511*32, 0, 511*32));
+
+      histName = "Trigger_Correlation_" + syscoreName[syscore] + "_" + spadicName[spadic];
+      fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;Trigger Counter").c_str(), 32, 0, 32, 511*32, 0, 511*32));
     }
   } 
 
