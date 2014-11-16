@@ -87,55 +87,61 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
     Int_t eqID = raw->GetEquipmentID();
     Int_t sourceA = raw->GetSourceAddress();
     Int_t chID = raw->GetChannelID();
+    string channelId;
+    /*
+      LOG(INFO) << "******" << FairLogger::endl;
+      LOG(INFO) << "Equipment ID: " << eqID << Fairlogger::endl;
+      LOG(INFO) << "Source Address: " << sourceA << FairLogger::endl;
+      LOG(INFO) << "Channel ID: " << chID << FairLogger::endl;
+    */
 
-    Int_t nrSamples=raw->GetNrSamples();
-   
-    if ( 32 == nrSamples) {
-      string syscore;
-      switch (eqID) {
-      case 57345:  // Münster
-	syscore="SysCore1_";
-	break;
-      case 57346: // Frankfurt
-	syscore="SysCore2_";
-	break;
-      case 57347: // Bucarest
-	syscore="SysCore3_";
-	break;
-      }     
-      
-      string spadic;
-      switch (sourceA) {
-      case 0:  // first spadic
-	spadic="Spadic1";
-	break;
-      case 1:  // first spadic
-	spadic="Spadic1";
-	chID += 16;
-	break;
-      case 2:  // second spadic
-	spadic="Spadic2";
-	break;
-      case 3:  // second spadic
-	spadic="Spadic1";
-	chID += 16;
-	break;
-      case 4:  // third spadic
-	spadic="Spadic2";
-	break;
-      case 5:  // third spadic
-	spadic="Spadic2";
-	chID += 16;
-	break;
-      }     
-      
-      string histName = "CountRate_" + syscore + spadic;
-      fHM->H1(histName)->Fill(chID);
-      histName = "BaseLine_" + syscore + spadic;
-      fHM->H2(histName)->Fill(chID,raw->GetSamples()[0]);
+    string syscore;
+    switch (eqID) {
+    case 57345:  // Münster
+      syscore="SysCore1_";
+      break;
+    case 57346: // Frankfurt
+      syscore="SysCore2_";
+      break;
+    case 57347: // Bucarest
+      syscore="SysCore3_";
+      break;
+    }     
+
+    string spadic;
+    switch (sourceA) {
+    case 0:  // first spadic
+      spadic="Spadic1";
+    case 1:  // first spadic
+      spadic="Spadic1";
+      break;
+    case 2:  // second spadic
+      spadic="Spadic2";
+    case 3:  // second spadic
+      spadic="Spadic1";
+      break;
+    case 4:  // third spadic
+      spadic="Spadic2";
+    case 5:  // third spadic
+      spadic="Spadic2";
+      break;
+    }     
+
+    string histName = "CountRate_" + syscore + spadic;
+    fHM->H1(histName)->Fill(chID);
+    histName = "BaseLine_" + syscore + spadic;
+    fHM->H2(histName)->Fill(chID,raw->GetSamples()[0]);
+    for (Int_t bin = 1; bin < 32; bin++){
       histName = "Integrated_ADC_Spectrum_" + syscore + spadic;
-      for (Int_t bin = 1; bin < 32; bin++)
-	fHM->H2(histName)->Fill(chID,raw->GetSamples()[bin] - raw->GetSamples()[0]);
+      fHM->H2(histName)->Fill(chID,raw->GetSamples()[bin] - raw->GetSamples()[0]);
+      //      sprintf(channelId,"%d",chID);
+      //      itoa(chID,channelId,10);
+      //      channelId = to_string(chID);
+
+      channelId = std::to_string(chID);
+
+      histName = "Signal_Shape_" + syscore + spadic + channelId;
+      fHM->H2(histName)->Fill(bin,raw->GetSamples()[bin]);
     }
     histName = "Trigger_Heatmap_" + syscore + spadic;
     if (chID%2 == 0)
@@ -161,7 +167,7 @@ void CbmTrdRawBeamProfile::CreateHistograms()
 
   string syscoreName[] = { "SysCore1", "SysCore2", "SysCore3" };
   string spadicName[] = { "Spadic1", "Spadic2", "Spadic3" };
-
+  string channelName[] = { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29",  "30", "31"};
   for(Int_t syscore = 0; syscore < 3; ++syscore) {
     for(Int_t spadic = 0; spadic < 3; ++spadic) {
       string histName = "CountRate_" + syscoreName[syscore] + "_" + spadicName[spadic];
@@ -179,6 +185,10 @@ void CbmTrdRawBeamProfile::CreateHistograms()
 
       histName = "Trigger_Correlation_" + syscoreName[syscore] + "_" + spadicName[spadic];
       fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;Trigger Counter").c_str(), 32, 0, 32, 32, 0, 32));
+      for(Int_t  channel = 0; channel < 3; channel++) {
+	histName = "Signal_Shape_" + syscoreName[syscore] + "_" + spadicName[spadic] + "_" + channelName[channel] ;
+	fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;ADC value").c_str(), 32, 0, 32, 511, -256, 255));
+      }
     }
   } 
 
