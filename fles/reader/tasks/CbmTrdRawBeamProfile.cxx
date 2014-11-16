@@ -133,6 +133,14 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
     histName = "Integrated_ADC_Spectrum_" + syscore + spadic;
     for (Int_t bin = 1; bin < 32; bin++)
       fHM->H2(histName)->Fill(chID,raw->GetSamples()[bin] - raw->GetSamples()[0]);
+    histName = "Trigger_Heatmap_" + syscore + spadic;
+    if (chID%2 == 0)
+      fHM->H2(histName)->Fill(chID/2,0);
+    else
+      fHM->H2(histName)->Fill((chID-1)/2,1);
+
+    //histName = "Trigger_Correlation_" + syscore + spadic;// needs time information to correlated events in different chambers
+    //fHM->H2(histName)->Fill(chID,chID);
   } 
 }
 
@@ -161,8 +169,12 @@ void CbmTrdRawBeamProfile::CreateHistograms()
       histName = "Integrated_ADC_Spectrum_" + syscoreName[syscore] + "_" + spadicName[spadic];
       fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;Integr. ADC values in Bin [1,31]").c_str(), 32, 0, 32, 511*32, 0, 511*32));
 
+      histName = "Trigger_Heatmap_" + syscoreName[syscore] + "_" + spadicName[spadic];
+      fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;Trigger Counter").c_str(), 16, 0, 16, 2, 0, 2));
+
       histName = "Trigger_Correlation_" + syscoreName[syscore] + "_" + spadicName[spadic];
-      fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;Trigger Counter").c_str(), 32, 0, 32, 511*32, 0, 511*32));
+      fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;Trigger Counter").c_str(), 32, 0, 32, 32, 0, 32));
+
     }
   } 
 
