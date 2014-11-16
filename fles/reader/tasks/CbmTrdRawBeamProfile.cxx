@@ -6,6 +6,7 @@
 #include "FairLogger.h"
 
 #include "TH1.h"
+#include "TH2.h"
 
 #include <string>
 
@@ -79,51 +80,56 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
   LOG(INFO) << "Entries: " << entries << FairLogger::endl;
 
   for (Int_t i=0; i < entries; ++i) {
-     CbmSpadicRawMessage* raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i));
-     Int_t eqID = raw->GetEquipmentID();
-     Int_t sourceA = raw->GetSourceAddress();
-     Int_t chID = raw->GetChannelID();
-     /*
-     LOG(INFO) << "******" << FairLogger::endl;
-     LOG(INFO) << "Equipment ID: " << eqID << Fairlogger::endl;
-     LOG(INFO) << "Source Address: " << sourceA << FairLogger::endl;
-     LOG(INFO) << "Channel ID: " << chID << FairLogger::endl;
-     */
+    CbmSpadicRawMessage* raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i));
+    Int_t eqID = raw->GetEquipmentID();
+    Int_t sourceA = raw->GetSourceAddress();
+    Int_t chID = raw->GetChannelID();
+    /*
+      LOG(INFO) << "******" << FairLogger::endl;
+      LOG(INFO) << "Equipment ID: " << eqID << Fairlogger::endl;
+      LOG(INFO) << "Source Address: " << sourceA << FairLogger::endl;
+      LOG(INFO) << "Channel ID: " << chID << FairLogger::endl;
+    */
 
-     string syscore;
-     switch (eqID) {
-     case 57345:  // Münster
-       syscore="SysCore1_";
-       break;
-     case 57346: // Frankfurt
-       syscore="SysCore2_";
-       break;
-     case 57347: // Bucarest
-       syscore="SysCore3_";
-       break;
-     }     
+    string syscore;
+    switch (eqID) {
+    case 57345:  // Münster
+      syscore="SysCore1_";
+      break;
+    case 57346: // Frankfurt
+      syscore="SysCore2_";
+      break;
+    case 57347: // Bucarest
+      syscore="SysCore3_";
+      break;
+    }     
 
-     string spadic;
-     switch (sourceA) {
-     case 0:  // first spadic
-       spadic="Spadic1";
-     case 1:  // first spadic
-       spadic="Spadic1";
-       break;
-     case 2:  // second spadic
-       spadic="Spadic2";
-     case 3:  // second spadic
-       spadic="Spadic1";
-       break;
-     case 4:  // third spadic
-       spadic="Spadic2";
-     case 5:  // third spadic
-       spadic="Spadic2";
-       break;
-     }     
+    string spadic;
+    switch (sourceA) {
+    case 0:  // first spadic
+      spadic="Spadic1";
+    case 1:  // first spadic
+      spadic="Spadic1";
+      break;
+    case 2:  // second spadic
+      spadic="Spadic2";
+    case 3:  // second spadic
+      spadic="Spadic1";
+      break;
+    case 4:  // third spadic
+      spadic="Spadic2";
+    case 5:  // third spadic
+      spadic="Spadic2";
+      break;
+    }     
 
-     string histName = "CountRate_" + syscore + spadic;
-     fHM->H1(histName)->Fill(chID);
+    string histName = "CountRate_" + syscore + spadic;
+    fHM->H1(histName)->Fill(chID);
+    histName = "BaseLine_" + syscore + spadic;
+    fHM->H2(histName)->Fill(chID,raw->GetSamples()[0]);
+    histName = "Integrated_ADC_Spectrum_" + syscore + spadic;
+    for (Int_t bin = 1; bin < 32; bin++)
+      fHM->H2(histName)->Fill(chID,raw->GetSamples()[bin] - raw->GetSamples()[0]);
   } 
 }
 
@@ -145,6 +151,12 @@ void CbmTrdRawBeamProfile::CreateHistograms()
     for(Int_t spadic = 0; spadic < 3; ++spadic) {
       string histName = "CountRate_" + syscoreName[syscore] + "_" + spadicName[spadic];
       fHM->Add(histName, new TH1F(histName.c_str(), string(histName + ";Channel;Counts").c_str(), 16, 0, 15));
+
+      histName = "BaseLine_" + syscoreName[syscore] + "_" + spadicName[spadic];
+      fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;ADC value in Bin 0").c_str(), 16, 0, 15, 511, -256, 255));
+
+      histName = "Integrated_ADC_Spectrum_" + syscoreName[syscore] + "_" + spadicName[spadic];
+      fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;Integr. ADC values in Bin [1,31]").c_str(), 16, 0, 15, 511*32, 0, 511*32));
     }
   } 
 
