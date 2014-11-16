@@ -88,9 +88,9 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
     Int_t sourceA = raw->GetSourceAddress();
     Int_t chID = raw->GetChannelID();
     //string channelId;
-    char channelID[2];
-    sprintf(channelID,"%02d",chID);
-    string channelId(channelID);
+    //char channelID[2];
+    //sprintf(channelID,"%02d",chID);
+    //string channelId(channelID);
     /*
       LOG(INFO) << "******" << FairLogger::endl;
       LOG(INFO) << "Equipment ID: " << eqID << Fairlogger::endl;
@@ -183,10 +183,10 @@ void CbmTrdRawBeamProfile::CreateHistograms()
 
       histName = "Trigger_Correlation_" + syscoreName[syscore] + "_" + spadicName[spadic];
       fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;Trigger Counter").c_str(), 32, 0, 32, 32, 0, 32));
-      for(Int_t  channel = 0; channel < 32; channel++) {
-	histName = "Signal_Shape_" + syscoreName[syscore] + "_" + spadicName[spadic] + "_" + channelName[channel];
-	fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;ADC value").c_str(), 32, 0, 32, 511, -256, 255));
-      }
+      //for(Int_t  channel = 0; channel < 32; channel++) {
+      //histName = "Signal_Shape_" + syscoreName[syscore] + "_" + spadicName[spadic] + "_" + channelName[channel];
+      //fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;ADC value").c_str(), 32, 0, 32, 511, -256, 255));
+      //}
     }
   } 
 
