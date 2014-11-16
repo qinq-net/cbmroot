@@ -188,7 +188,7 @@ void CbmTrdRawBeamProfile::CreateHistograms()
 
       histName = "Trigger_Correlation_" + syscoreName[syscore] + "_" + spadicName[spadic];
       fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;Trigger Counter").c_str(), 32, 0, 32, 32, 0, 32));
-      for(Int_t  channel = 0; channel < 3; channel++) {
+      for(Int_t  channel = 0; channel < 32; channel++) {
 	histName = "Signal_Shape_" + syscoreName[syscore] + "_" + spadicName[spadic] + "_" + channelName[channel] ;
 	fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;ADC value").c_str(), 32, 0, 32, 511, -256, 255));
       }
