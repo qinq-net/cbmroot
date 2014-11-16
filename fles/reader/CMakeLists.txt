@@ -4,7 +4,10 @@
 
 Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/cbmdata/raw
+  ${CBMROOT_SOURCE_DIR}/cbmdata
+  ${CBMROOT_SOURCE_DIR}/cbmbase
   ${CBMROOT_SOURCE_DIR}/fles/reader
+  ${CBMROOT_SOURCE_DIR}/fles/tasks
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -38,6 +41,9 @@ Set(SRCS
   CbmTSUnpackSpadic.cxx
   CbmTSUnpackNxyter.cxx
   CbmFlibFileSourceNew.cxx   
+  CbmDaqBuffer.cxx
+
+  tasks/CbmTrdRawBeamProfile.cxx
 )
 
 Set(NO_DICT_SRCS
@@ -47,7 +53,7 @@ Set(NO_DICT_SRCS
 Set(LINKDEF  FlibReaderLinkDef.h )
 Set(LIBRARY_NAME CbmFlibReader)
 Set(DEPENDENCIES
-    Base fles_ipc flib_dpb spadicMessage
+    Base CbmBase fles_ipc flib_dpb spadicMessage
 )
 
 GENERATE_LIBRARY()

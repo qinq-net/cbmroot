@@ -10,5 +10,8 @@
 #pragma link C++ class CbmTSUnpackSpadic;
 #pragma link C++ class CbmTSUnpackNxyter;
 #pragma link C++ class CbmFlibFileSourceNew;
+#pragma link C++ class CbmDaqBuffer;
+
+#pragma link C++ class CbmTrdRawBeamProfile;
 
 #endif

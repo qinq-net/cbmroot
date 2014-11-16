@@ -75,35 +75,6 @@ Bool_t CbmFlibFileSource::Init()
 
   FairRootManager* ioman = FairRootManager::Instance();
   ioman->Register("SpadicRawMessage", "spadic raw data", fSpadicRaw, kTRUE);
-
-  /*
-  auto timeslice = fSource->get();
-  const fles::Timeslice& ts = *timeslice;
-  for (size_t c {0}; c < ts.num_components(); c++) {
-    auto systemID = ts.descriptor(c, 0).sys_id;
-    auto& desc = ts.descriptor(c, 0);
-
-    LOG(INFO) << "Found subsystem with ID: " << std::hex << (int)desc.sys_id 
-	      << " and version " << (int)desc.sys_ver 
-	      << " for component " << c << FairLogger::endl;
-    
-    //    switch (desc.sys_id) {
-    switch (systemID) {
-    case 0xFA:
-      LOG(INFO) << "It is flesnet pattern generator data" << FairLogger::endl;
-      break;
-    case 0xF0:
-      LOG(INFO) << "It is flib pattern generator data" << FairLogger::endl;
-      break;
-    case 0xBC:
-      LOG(INFO) << "It is spadic data with wrong system ID" << FairLogger::endl;
-      break;
-    default:
-      LOG(INFO) << "Not known now" << FairLogger::endl;
-    }
-
-  }
-*/
   
   return kTRUE;
 
@@ -112,14 +83,14 @@ Bool_t CbmFlibFileSource::Init()
 Int_t CbmFlibFileSource::ReadEvent()
 {
   fSpadicRaw->Clear();
-
   while (auto timeslice = fSource->get()) {
     const fles::Timeslice& ts = *timeslice;
     for (size_t c {0}; c < ts.num_components(); c++) {
       auto systemID = ts.descriptor(c, 0).sys_id;
       
-      PrintMicroSliceDescriptor(ts.descriptor(c, 0));
-
+      if(gLogger->IsLogNeeded(DEBUG)) {
+	PrintMicroSliceDescriptor(ts.descriptor(c, 0));
+      }
       switch (systemID) {
       case 0xFA:
 	LOG(INFO) << "It is flesnet pattern generator data" << FairLogger::endl;
@@ -133,7 +104,7 @@ Int_t CbmFlibFileSource::ReadEvent()
         UnpackSpadicCbmNetMessage(ts, c);
 	break;
       case 0x40:
-	LOG(INFO) << "It is spadic data with correct system ID" 
+	LOG(DEBUG) << "It is spadic data with correct system ID" 
 		  << FairLogger::endl;
         UnpackSpadicCbmNetMessage(ts, c);
 	break;
@@ -149,20 +120,20 @@ Int_t CbmFlibFileSource::ReadEvent()
 
 void CbmFlibFileSource::PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc)
 {
-  LOG(INFO) << "Header ID: Ox" << std::hex << static_cast<int>(mdsc.hdr_id) 
+  LOG(DEBUG) << "Header ID: Ox" << std::hex << static_cast<int>(mdsc.hdr_id) 
 	    << FairLogger::endl;
-  LOG(INFO) << "Header version: Ox" << std::hex << static_cast<int>(mdsc.hdr_ver) 
+  LOG(DEBUG) << "Header version: Ox" << std::hex << static_cast<int>(mdsc.hdr_ver) 
 	    << std::dec << FairLogger::endl;
-  LOG(INFO) << "Equipement ID: " << mdsc.eq_id << FairLogger::endl;
-  LOG(INFO) << "Flags: " << mdsc.flags << FairLogger::endl;
-  LOG(INFO) << "Sys ID: Ox" << std::hex << static_cast<int>(mdsc.sys_id) 
+  LOG(DEBUG) << "Equipement ID: " << mdsc.eq_id << FairLogger::endl;
+  LOG(DEBUG) << "Flags: " << mdsc.flags << FairLogger::endl;
+  LOG(DEBUG) << "Sys ID: Ox" << std::hex << static_cast<int>(mdsc.sys_id) 
 	    << FairLogger::endl;
-  LOG(INFO) << "Sys version: Ox" << std::hex << static_cast<int>(mdsc.sys_ver) 
+  LOG(DEBUG) << "Sys version: Ox" << std::hex << static_cast<int>(mdsc.sys_ver) 
 	    << std::dec << FairLogger::endl;
-  LOG(INFO) << "Microslice Idx: " << mdsc.idx << FairLogger::endl; 
-  LOG(INFO) << "Checksum: " << mdsc.crc << FairLogger::endl;
-  LOG(INFO) << "Size: " << mdsc.size << FairLogger::endl;
-  LOG(INFO) << "Offset: " << mdsc.offset << FairLogger::endl;
+  LOG(DEBUG) << "Microslice Idx: " << mdsc.idx << FairLogger::endl; 
+  LOG(DEBUG) << "Checksum: " << mdsc.crc << FairLogger::endl;
+  LOG(DEBUG) << "Size: " << mdsc.size << FairLogger::endl;
+  LOG(DEBUG) << "Offset: " << mdsc.offset << FairLogger::endl;
 }
 
     
@@ -174,9 +145,11 @@ void CbmFlibFileSource::UnpackSpadicCbmNetMessage(const fles::Timeslice& ts, siz
   r.add_component(ts, component);
 
   for (auto addr : r.sources()) {
-    std::cout << "---- reader " << addr << " ----" << std::endl;
+//    std::cout << "---- reader " << addr << " ----" << std::endl;
     while (auto mp = r.get_message(addr)) {
-      print_message(*mp);
+      if (gLogger->IsLogNeeded(DEBUG)) {
+        print_message(*mp);
+      }
       Int_t link = ts.descriptor(component, 0).eq_id;
       Int_t address = addr;
       Int_t channel = mp->channel_id();
