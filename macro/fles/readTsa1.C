@@ -67,6 +67,10 @@ void readTsa1()
   FairTask* spadicRawBeam = new CbmTrdRawBeamProfile();
   run->AddTask(spadicRawBeam);
 
+  FairTask* onlineDisplay = new CbmTrdOnlineDisplay();
+  run->AddTask(onlineDisplay);
+
+
   run->Init();
 
   

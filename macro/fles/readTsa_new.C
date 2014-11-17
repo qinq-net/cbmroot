@@ -70,7 +70,8 @@ void readTsa_new()
   FairTask* spadicRawBeam = new CbmTrdRawBeamProfile();
   run->AddTask(spadicRawBeam);
 
-  FairTask* onlineDisplay = new CbmTrdOnlineDisplay();
+  CbmTrdOnlineDisplay* onlineDisplay = new CbmTrdOnlineDisplay();
+  onlineDisplay->SetUpdateInterval(1000);
   run->AddTask(onlineDisplay);
 
   run->Init();
