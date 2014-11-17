@@ -52,11 +52,11 @@ void run_analysis()
    richReco->SetRunFitter(false);
    //run->AddTask(richReco);
 
-   CbmRichTrbRecoQa* qaRaw = new CbmRichTrbRecoQa();
-   run->AddTask(qaRaw);
+   //CbmRichTrbRecoQa* qaRaw = new CbmRichTrbRecoQa();
+   //run->AddTask(qaRaw);
 
-   CbmRichTrbPulserQa* qaPulser = new CbmRichTrbPulserQa();
-   run->AddTask(qaPulser);
+   //CbmRichTrbPulserQa* qaPulser = new CbmRichTrbPulserQa();
+   //run->AddTask(qaPulser);
 
 
    run->Init();
