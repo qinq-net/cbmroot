@@ -5,6 +5,8 @@ void run_analysis()
    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
    loadlibs();
 
+   //string hldFileName = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/fles/secondtest_pulser16ch+sync.hld";
+   string hldFileDir = "/home/pusan/nov2014data/";
    string hldFileName = "Laser_100_0.hld";
 
    // --- Specify number of events to be produced.
@@ -13,7 +15,7 @@ void run_analysis()
 
    // --- Specify output file name (this is just an example)
    //TString outFile = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/fles/output_test_file.root";
-   TString outFile = "te14320215205.root";
+   TString outFile = hldFileName + ".root";
 
    // --- Set log output levels
    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
@@ -23,12 +25,13 @@ void run_analysis()
    gDebug = 0;
 
 
-   CbmRichTrbUnpack* source = new CbmRichTrbUnpack(hldFileName);
+   CbmRichTrbUnpack* source = new CbmRichTrbUnpack(hldFileDir + hldFileName);
    source->SetAnaPulserEvents(true);
 
-   //CbmTrbCalibrator* fgCalibrator = CbmTrbCalibrator::Instance();
-   //fgCalibrator->Import("calib_te14320215205.root");
+   CbmTrbCalibrator* fgCalibrator = CbmTrbCalibrator::Instance();
+   fgCalibrator->Import("calibration.root");
    //fgCalibrator->Export("calibration.root");
+   fgCalibrator->Draw();
 
    // --- Event header
  //  FairEventHeader* event = new CbmTbEvent();
@@ -47,13 +50,13 @@ void run_analysis()
    richReco->SetRunExtrapolation(false);
    richReco->SetRunProjection(false);
    richReco->SetRunFitter(false);
-  // run->AddTask(richReco);
+   //run->AddTask(richReco);
 
-//   CbmRichTrbRecoQa* qaRaw = new CbmRichTrbRecoQa();
-//   run->AddTask(qaRaw);
+   CbmRichTrbRecoQa* qaRaw = new CbmRichTrbRecoQa();
+   run->AddTask(qaRaw);
 
-//   CbmRichTrbPulserQa* qaPulser = new CbmRichTrbPulserQa();
-//   run->AddTask(qaPulser);
+   CbmRichTrbPulserQa* qaPulser = new CbmRichTrbPulserQa();
+   run->AddTask(qaPulser);
 
 
    run->Init();
