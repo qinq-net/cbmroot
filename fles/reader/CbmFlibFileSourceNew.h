@@ -20,6 +20,8 @@
 
 #include "TString.h"
 #include "TClonesArray.h"
+#include "TList.h"
+#include "TObjString.h"
 
 #include <memory>
 #include <map>
@@ -38,16 +40,22 @@ class CbmFlibFileSourceNew : public FairSource
     void Close();
     void Reset();
 
-    void SetFileName(TString name) { fFileName = name; }
+    void SetFileName(TString name) { fFileName = name; fInputFileList.Add(new TObjString(name));}
     void SetHostName(TString name) { fHost = name; }
     void SetPortNumber(Int_t port) { fPort = port; }
 
     void AddUnpacker(CbmTSUnpack* unpacker, Int_t id)
     { fUnpackers.insert ( std::pair<Int_t,CbmTSUnpack*>(id,unpacker) ); }    
 
+    void AddFile(const char * name) {       
+      fInputFileList.Add(new TObjString(name));
+    }
+
   private:
   
     TString fFileName;
+    TList   fInputFileList;    ///< List of input files
+    Int_t   fFileCounter;
     TString fHost;
     Int_t   fPort;
 

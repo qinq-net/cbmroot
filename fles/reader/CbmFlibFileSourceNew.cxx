@@ -21,6 +21,8 @@
 CbmFlibFileSourceNew::CbmFlibFileSourceNew()
   : FairSource(),
     fFileName(""),
+    fInputFileList(new TObjString()),
+    fFileCounter(0),
     fHost("localhost"),
     fPort(5556),
     fUnpackers(),
@@ -32,6 +34,8 @@ CbmFlibFileSourceNew::CbmFlibFileSourceNew()
 CbmFlibFileSourceNew::CbmFlibFileSourceNew(const CbmFlibFileSourceNew& source)
   : FairSource(source),
     fFileName(""),
+    fInputFileList(),
+    fFileCounter(0),
     fHost("localhost"),
     fPort(5556),
     fUnpackers(),
@@ -54,6 +58,11 @@ Bool_t CbmFlibFileSourceNew::Init()
       LOG(FATAL) << "Could not connect to publisher." << FairLogger::endl;
     } 
   } else {
+    // --- Open input file 
+    TObjString* tmp =
+      dynamic_cast<TObjString*>(fInputFileList.At(fFileCounter));
+    fFileName = tmp->GetString();
+
     LOG(INFO) << "Open the Flib input file " << fFileName << FairLogger::endl;
     fSource = new fles::TimesliceInputArchive(fFileName.Data());
     if ( !fSource) { 
@@ -74,26 +83,40 @@ Bool_t CbmFlibFileSourceNew::Init()
 Int_t CbmFlibFileSourceNew::ReadEvent()
 {
 
-  while (auto timeslice = fSource->get()) {
-    const fles::Timeslice& ts = *timeslice;
-    for (size_t c {0}; c < ts.num_components(); c++) {
-      auto systemID = ts.descriptor(c, 0).sys_id;
-      
-      PrintMicroSliceDescriptor(ts.descriptor(c, 0));
-      
-      auto it=fUnpackers.find(systemID);
-      if (it == fUnpackers.end()) {
-	LOG(FATAL) << "Could not find unpacker for system id 0x" << 
-	  std::hex << systemID << FairLogger::endl;
-      } else {
-        LOG(INFO) << "I am here." << FairLogger::endl;
-	it->second->DoUnpack(ts, c);
-      }
-      
-    }
-    return 0;
-  }
+  while( fFileCounter < fInputFileList.GetSize() ) {
   
+    while (auto timeslice = fSource->get()) {
+      const fles::Timeslice& ts = *timeslice;
+      for (size_t c {0}; c < ts.num_components(); c++) {
+	auto systemID = ts.descriptor(c, 0).sys_id;
+	
+	if(gLogger->IsLogNeeded(DEBUG)) {
+	  PrintMicroSliceDescriptor(ts.descriptor(c, 0));
+	}
+
+	auto it=fUnpackers.find(systemID);
+	if (it == fUnpackers.end()) {
+	  LOG(FATAL) << "Could not find unpacker for system id 0x" << 
+	    std::hex << systemID << FairLogger::endl;
+	} else {
+	  it->second->DoUnpack(ts, c);
+	}
+      }
+      return 0;
+    }
+
+    // Check if there is another file in the list
+    fFileCounter += 1;
+
+    if ( fInputFileList.GetSize() > fFileCounter ) {
+      delete fSource;
+      TObjString* tmp =
+	dynamic_cast<TObjString*>(fInputFileList.At(fFileCounter));
+      fFileName = tmp->GetString();
+      LOG(INFO) << "Open the Flib input file " << fFileName << FairLogger::endl;
+      fSource = new fles::TimesliceInputArchive(fFileName.Data());
+    }
+  } 
   return 1; // no more data; trigger end of run
 }
 
