@@ -14,7 +14,7 @@ class CbmTrdRawBeamProfile : public FairTask
     /** Default constructor **/
     CbmTrdRawBeamProfile();
 
-    /** Constructor with parameters (Optional)
+    /** Constructor with parameters (Optional) **/
     //  CbmTrdRawBeamProfile(Int_t verbose);
 
 

@@ -24,6 +24,8 @@
 #include <memory>
 #include <map>
 
+class CbmDaqBuffer;
+
 class CbmFlibFileSourceNew : public FairSource
 {
   public:
@@ -42,6 +44,7 @@ class CbmFlibFileSourceNew : public FairSource
 
     void AddUnpacker(CbmTSUnpack* unpacker, Int_t id)
     { fUnpackers.insert ( std::pair<Int_t,CbmTSUnpack*>(id,unpacker) ); }    
+
   private:
   
     TString fFileName;
@@ -49,7 +52,9 @@ class CbmFlibFileSourceNew : public FairSource
     Int_t   fPort;
 
     std::map<Int_t, CbmTSUnpack*> fUnpackers;
-    
+
+    CbmDaqBuffer* fBuffer;
+ 
 #ifndef __CINT__
     fles::TimesliceSource* fSource; //!
     Bool_t CheckTimeslice(const fles::Timeslice& ts);

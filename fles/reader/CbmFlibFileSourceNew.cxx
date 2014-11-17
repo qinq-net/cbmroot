@@ -7,6 +7,8 @@
 
 #include "CbmFlibFileSourceNew.h"
 
+#include "CbmDaqBuffer.h"
+
 #include "TimesliceInputArchive.hpp"
 #include "Timeslice.hpp"
 #include "TimesliceSubscriber.hpp"
@@ -21,21 +23,22 @@ CbmFlibFileSourceNew::CbmFlibFileSourceNew()
     fFileName(""),
     fHost("localhost"),
     fPort(5556),
+    fUnpackers(),
+    fBuffer(CbmDaqBuffer::Instance()),
     fSource(NULL)
 {
 }
-
-
 
 CbmFlibFileSourceNew::CbmFlibFileSourceNew(const CbmFlibFileSourceNew& source)
   : FairSource(source),
     fFileName(""),
     fHost("localhost"),
     fPort(5556),
+    fUnpackers(),
+    fBuffer(CbmDaqBuffer::Instance()),
     fSource(NULL)
 {
 }
-
 
 CbmFlibFileSourceNew::~CbmFlibFileSourceNew()
 {
@@ -64,10 +67,8 @@ Bool_t CbmFlibFileSourceNew::Init()
     it->second->Init();
     //    it->second->Register();
   }
-
   
   return kTRUE;
-
 }
 
 Int_t CbmFlibFileSourceNew::ReadEvent()
