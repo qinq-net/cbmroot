@@ -6,7 +6,7 @@ void run_analysis()
    loadlibs();
 
    //string hldFileName = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/fles/secondtest_pulser16ch+sync.hld";
-   string hldFileName = "../../../fles/secondtest_pulser16ch+sync.hld";
+   string hldFileName = "te14320214005.hld";
 
    // --- Specify number of events to be produced.
    // --- -1 means run until the end of the input file.
@@ -34,6 +34,16 @@ void run_analysis()
    FairRunOnline *run = new FairRunOnline(source);
    run->SetOutputFile(outFile);
  //  run->SetEventHeader(event);
+
+   CbmRichReconstruction* richReco = new CbmRichReconstruction();
+   //richReco->SetZTrackExtrapolation(50.);
+   //richReco->SetMinNofStsHits(0);
+   richReco->SetFinderName("hough_prototype");
+   richReco->SetRunTrackAssign(false);
+   richReco->SetRunExtrapolation(false);
+   richReco->SetRunProjection(false);
+   richReco->SetRunFitter(false);
+   run->AddTask(richReco);
 
    CbmRichTrbRecoQa* qaRaw = new CbmRichTrbRecoQa();
    run->AddTask(qaRaw);
