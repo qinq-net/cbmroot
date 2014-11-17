@@ -9,19 +9,19 @@
  */
 
 
-void readTsa_new()
+void readTsa1()
 {
 
   // --- Specify input file name (this is just an example)
-   TString inFile = "spadic_dlm_trigger_2014-11-15_noepoch.tsa";
-//   TString inFile = "nxdata.tsa";
+  TString inFile = "spadic_dlm_trigger_2014-11-15_noepoch.tsa";
+  TString inFile1 = "spadic_noise_trigger_2014-11-15_withepoch.tsa";
 
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/pattern.root";
+  TString outFile = "data/test_online.root";
 
   // --- Set log output levels
   FairLogger::GetLogger()->SetLogScreenLevel("INFO");
@@ -44,43 +44,38 @@ void readTsa_new()
   CbmTSUnpackSpadic* spadic_unpacker = new CbmTSUnpackSpadic();
 
   // NXyter Unpacker
-//  CbmTSUnpackNxyter* nxyter_unpacker = new CbmTSUnpackNxyter();
+  // CbmTSUnpackNxyter* nxyter_unpacker = new CbmTSUnpackNxyter();
 
   // --- Source task
   CbmFlibFileSourceNew* source = new CbmFlibFileSourceNew();
+  // source->SetHostName("cbmflib01.gsi.de");
   source->SetFileName(inFile);
-//  source->AddUnpacker(nxyter_unpacker, 0x10);
+  source->AddFile(inFile1);
+  //  source->AddUnpacker(nxyter_unpacker, 0x10);
   source->AddUnpacker(spadic_unpacker, 0x40);
-//  source->SetHostName("cbmflib02.gsi.de");
 
   // --- Event header
-//  FairEventHeader* event = new CbmTbEvent();
-//  event->SetRunId(260);
+  //  FairEventHeader* event = new CbmTbEvent();
+  //  event->SetRunId(260);
 
   // --- Run
-  FairRunOnline *run = FairRunOnline::Instance();
-  run->SetSource(source);
+  FairRunOnline *run = new FairRunOnline(source);
   run->SetOutputFile(outFile);
-  run->SetAutoFinish(kFALSE);
-
-//  FairRunOnline *run = new FairRunOnline(source);
-//  run->SetOutputFile(outFile);
 //  run->SetEventHeader(event);
 
+//  gDebug=2;
   FairTask* spadicRawBeam = new CbmTrdRawBeamProfile();
   run->AddTask(spadicRawBeam);
 
-  FairTask* onlineDisplay = new CbmTrdOnlineDisplay();
-  run->AddTask(onlineDisplay);
-
   run->Init();
+
   
   // --- Start run
   TStopwatch timer;
   timer.Start();
-  std::cout << ">>> Start run from the command line by calling Run(<events>)" << std::endl;
-//  run->Run(nEvents, 0); // run until end of input file
-//  timer.Stop();
+  std::cout << ">>> readTsa: Starting run..." << std::endl;
+  run->Run(nEvents, 0); // run until end of input file
+  timer.Stop();
   
   // --- End-of-run info
   Double_t rtime = timer.RealTime();
@@ -96,4 +91,3 @@ void readTsa_new()
   std::cout << " Test passed" << std::endl;
   std::cout << " All ok " << std::endl;
 }
-  
