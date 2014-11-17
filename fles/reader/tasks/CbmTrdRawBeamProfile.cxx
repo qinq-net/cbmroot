@@ -134,17 +134,18 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
       histName = "BaseLine_" + syscore + spadic;
       fHM->H2(histName)->Fill(chID,raw->GetSamples()[0]);
       histName = "Integrated_ADC_Spectrum_" + syscore + spadic;
-      for (Int_t bin = 1; bin < 32; bin++)
+      for (Int_t bin = 1; bin < 32; bin++) {
 	fHM->H2(histName)->Fill(chID,raw->GetSamples()[bin] - raw->GetSamples()[0]);
-    }
-    histName = "Trigger_Heatmap_" + syscore + spadic;
-    if (chID%2 == 0)
-      fHM->H2(histName)->Fill(chID/2,0);
-    else
-      fHM->H2(histName)->Fill((chID-1)/2,1);
+      }
+      histName = "Trigger_Heatmap_" + syscore + spadic;
+      if (chID%2 == 0)
+        fHM->H2(histName)->Fill(chID/2,0);
+      else
+        fHM->H2(histName)->Fill((chID-1)/2,1);
 
-    //histName = "Trigger_Correlation_" + syscore + spadic;// needs time information to correlated events in different chambers
-    //fHM->H2(histName)->Fill(chID,chID);
+      //histName = "Trigger_Correlation_" + syscore + spadic;// needs time information to correlated events in different chambers
+      //fHM->H2(histName)->Fill(chID,chID);
+    }
   } 
 }
 
