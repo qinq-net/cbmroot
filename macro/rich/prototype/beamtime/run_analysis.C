@@ -6,7 +6,7 @@ void run_analysis()
    loadlibs();
 
    //string hldFileName = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/fles/secondtest_pulser16ch+sync.hld";
-   string hldFileName = "te14320214005.hld";
+   string hldFileName = "/home/pusan/nov2014data/te14320215205.hld";
 
    // --- Specify number of events to be produced.
    // --- -1 means run until the end of the input file.
@@ -14,7 +14,7 @@ void run_analysis()
 
    // --- Specify output file name (this is just an example)
    //TString outFile = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/fles/output_test_file.root";
-   TString outFile = "output_test_file.root";
+   TString outFile = "te14320215205.root";
 
    // --- Set log output levels
    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
@@ -25,6 +25,10 @@ void run_analysis()
 
 
    CbmRichTrbUnpack* source = new CbmRichTrbUnpack(hldFileName);
+
+   CbmTrbCalibrator* fgCalibrator = CbmTrbCalibrator::Instance();
+   //fgCalibrator->Import("calib_te14320215205.root");
+   fgCalibrator->Export("calibration.root");
 
    // --- Event header
  //  FairEventHeader* event = new CbmTbEvent();
@@ -45,9 +49,11 @@ void run_analysis()
    richReco->SetRunFitter(false);
    run->AddTask(richReco);
 
-   CbmRichTrbRecoQa* qaRaw = new CbmRichTrbRecoQa();
-   run->AddTask(qaRaw);
+//   CbmRichTrbRecoQa* qaRaw = new CbmRichTrbRecoQa();
+//   run->AddTask(qaRaw);
 
+//   CbmRichTrbPulserQa* qaPulser = new CbmRichTrbPulserQa();
+//   run->AddTask(qaPulser);
 
 
    run->Init();
