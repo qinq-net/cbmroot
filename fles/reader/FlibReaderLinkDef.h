@@ -13,5 +13,6 @@
 #pragma link C++ class CbmDaqBuffer;
 
 #pragma link C++ class CbmTrdRawBeamProfile;
+#pragma link C++ class CbmTrdOnlineDisplay;
 
 #endif
