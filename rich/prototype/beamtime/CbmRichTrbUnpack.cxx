@@ -196,7 +196,7 @@ void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
 					if (tdcId == 0x7005) { //CTS
 
 					} else if (tdcId == 0x0110) { // reference time TDC for event building
-						if (chNum == 5) {
+						if (chNum == 7) {
 							CbmTrbRawHit* rawHitRef = new CbmTrbRawHit(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime, 0, 0, 0, 0);
 							fRawReferenceHits.push_back(rawHitRef);
 						}
@@ -501,8 +501,6 @@ void CbmRichTrbUnpack::CreateAndDrawEventBuildDisplay()
 	/*TH1D* div = (TH1D*)histhits->Clone();
 	div->Divide(histRef);
 	DrawH1(div);**/
-
-
 
 }
 
