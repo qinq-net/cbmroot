@@ -72,7 +72,7 @@ private:
 				LOG(DEBUG) << pmtNum <<" " <<  pixelNum <<" " << xmm <<" " << ymm <<" " << simpleX <<" " <<
 						simpleY <<" " << tdcId<<" " <<chLeadingEdge<<" " <<chTrailingEdge<<" " <<padiwaNum<<" " <<trbNum<<" " <<pmtType << FairLogger::endl;
 
-				fMap[tdcId][chLeadingEdge] = new CbmRichTrbMapData(pmtNum, pixelNum, xmm, ymm, simpleX, simpleY, tdcId, chLeadingEdge, chTrailingEdge, padiwaNum, trbNum, pmtType);
+				fMap[tdcId][chLeadingEdge] = new CbmRichTrbMapData(pmtNum, pixelNum, xmm / 10., ymm / 10., simpleX, simpleY, tdcId, chLeadingEdge, chTrailingEdge, padiwaNum, trbNum, pmtType);
 			}
 			myfile.close();
 		} else {

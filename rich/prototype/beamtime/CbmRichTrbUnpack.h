@@ -53,9 +53,10 @@ private:
 
     TClonesArray* fRichHits; // output array of RICH hits
 
-    void* fDataPointer; // pointer to data
+    Char_t* fDataPointer; // pointer to data
     UInt_t fDataSize; // size of data
     UInt_t fEventNum; // current event number
+    UInt_t fNofDoubleHits; // number of detected double hits
 
     vector<CbmTrbRawHit*> fRawRichHits; // raw hit from PMTs
     vector<CbmTrbRawHit*> fRawReferenceHits; // raw hits from reference time TDC
@@ -112,10 +113,15 @@ private:
     /*
      * Find min and max indecies of the time corridor in the output CbmRichTrbOutputHit array sorted by time.
      * \param x0 Reference time.
+     * \param windowT Time window in ns.
      * \param[out] indmin Min index.
      * \param[out] indmax Max index.
      */
-    void FindMinMaxIndex(Double_t x0, Int_t *indmin, Int_t *indmax);
+    void FindMinMaxIndex(
+    		Double_t x0,
+    		Double_t windowT,
+    		Int_t *indmin,
+    		Int_t *indmax);
 
     /*
      * Clear all buffers and used memory.
@@ -125,8 +131,13 @@ private:
     /*
      * Return time in ns.
      */
-    Double_t GetFullTime(UShort_t TRB, UShort_t TDC, UShort_t CH,
-                         UInt_t epoch, UShort_t coarseTime, UShort_t fineTime);
+    Double_t GetFullTime(
+    		UShort_t TRB,
+    		UShort_t TDC,
+    		UShort_t CH,
+            UInt_t epoch,
+            UShort_t coarseTime,
+            UShort_t fineTime);
 
     /*
      * Create and draw debug histogramms.
@@ -142,6 +153,12 @@ private:
 	 * Fill histograms with CbmTrbOutputHit data
 	 */
 	void FillOutputHitHist(CbmTrbOutputHit* outHit);
+
+	/*
+	 * Create and draw event display for event building.
+	 */
+	void CreateAndDrawEventBuildDisplay();
+
 
     CbmRichTrbUnpack(const CbmRichTrbUnpack&){;}
     CbmRichTrbUnpack operator=(const CbmRichTrbUnpack&){;}

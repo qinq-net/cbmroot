@@ -21,7 +21,9 @@
 #include "FairLogger.h"
 
 CbmRichTrbUnpack::CbmRichTrbUnpack(const string& hldFileName) :
-	fHldFileName(hldFileName)
+	fHldFileName(hldFileName),
+	fEventNum(0),
+	fNofDoubleHits(0)
 {
    ;
 }
@@ -51,12 +53,18 @@ Bool_t CbmRichTrbUnpack::Init()
 Int_t CbmRichTrbUnpack::ReadEvent()
 {
 	LOG(DEBUG) << "Event #" << fEventNum << FairLogger::endl;
+
 	fRichHits->Clear();
 
+	if (fOutputReferenceHits.size() == 0) {
+		LOG(ERROR) << "No reference time hits." << FairLogger::endl;
+		return 1;
+	}
 
 	BuildEvent(fEventNum);
 
-	LOG(DEBUG) << "CbmRichTrbUnpack::ReadEvent : # hits in event " << fRichHits->GetEntries() << FairLogger::endl;
+
+	LOG(INFO) << "CbmRichTrbUnpack::ReadEvent : # hits in event " << fRichHits->GetEntries() << FairLogger::endl;
 	for (int i = 0; i < fRichHits->GetEntries(); i++) {
 	CbmRichHit* hit = (CbmRichHit*)fRichHits->At(i);
 		//LOG(DEBUG) << hit->GetX() << " " << hit->GetY() << FairLogger::endl;
@@ -74,8 +82,8 @@ void CbmRichTrbUnpack::Close()
 {
    CbmTrbCalibrator::Instance()->Save("calibration.root");
 	CreateAndDrawQa();
+	CreateAndDrawEventBuildDisplay();
 	ClearAllBuffers();
-	delete[] fDataPointer;
 }
 
 void CbmRichTrbUnpack::Reset()
@@ -86,28 +94,25 @@ void CbmRichTrbUnpack::Reset()
 void CbmRichTrbUnpack::ReadInputFileToMemory()
 {
 	streampos size;
-	char* memblock;
-
 	ifstream file (fHldFileName.c_str(), ios::in|ios::binary|ios::ate);
 	if (file.is_open()) {
 		size = file.tellg();
-		memblock = new char [size];
+		fDataPointer = new Char_t[size];
 		file.seekg (0, ios::beg);
-		file.read (memblock, size);
+		file.read (fDataPointer, size);
 		file.close();
 		LOG(INFO) << "The entire file content is in memory (" << size/(1024*1024) << " MB)" << FairLogger::endl;
 	} else {
 		LOG(FATAL) << "Unable to open file " << FairLogger::endl;
 	}
-	fDataPointer = (void*) memblock;
 	fDataSize = (UInt_t) size;
 }
 
 void CbmRichTrbUnpack::ReadEvents()
 {
-	CbmTrbIterator* trbIter = new CbmTrbIterator(fDataPointer, fDataSize);
+	CbmTrbIterator* trbIter = new CbmTrbIterator((void*)fDataPointer, fDataSize);
 	Int_t nofRawEvents = 0;
-	//Int_t maxNofRawEvents = 20;
+	Int_t maxNofRawEvents = 2000000000;
 	Int_t nofEventsInBuffer = 0;
 	
 	// Loop through events
@@ -135,20 +140,17 @@ void CbmRichTrbUnpack::ReadEvents()
 			//nofEventsInBuffer = 0;
 		}
 
-      // Go out if exceed the limit of total number of raw hits
-		//if (nofRawEvents >= maxNofRawEvents){
-		//	break;
-		//}
+		// Go out if exceed the limit of total number of raw hits
+		if (nofRawEvents >= maxNofRawEvents){
+			break;
+		}
 
 		nofEventsInBuffer++;
 		nofRawEvents++;
-		
-		//CbmTrbCalibrator::Instance()->NextRawEvent();    //TODO Quite tricky, maybe refactor this
 	}
 
 	CreateOutputHits();
-	//BuildEvent();
-	//ClearAllBuffers();
+	delete[] fDataPointer;
 }
 
 void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
@@ -164,7 +166,10 @@ void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
 		UInt_t tdcId = tdcData & 0xffff;
 		//printf("TDC DATA tdcNofWords = %i, tdcId = 0x%04x\n", tdcNofWords, tdcId);
 		if (tdcId == 0x5555) break;
-
+		if (tdcId == 0x7000 || tdcId == 0x7001 || tdcId == 0x7002 || tdcId == 0x7003){
+			tdcDataIndex++;
+			continue;
+		}
 		UInt_t curEpochCounter = 0;
 		UInt_t prevChNum = 0;
 		UInt_t prevEpochCounter = 0;
@@ -176,20 +181,32 @@ void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
 
 			UInt_t tdcTimeDataMarker = (tdcData >> 31) & 0x1; //1 bit
 			if (tdcTimeDataMarker == 0x1) { //TIME DATA
+
 				UInt_t chNum = (tdcData >> 22) & 0x7f; // 7bits
 				UInt_t fineTime = (tdcData >> 12) & 0x3ff; // 10 bits
 				UInt_t edge = (tdcData >> 11) & 0x1; // 1bit
 				UInt_t coarseTime = (tdcData) & 0x7ff; // 1bits
 
-            // Give the calibrator the read fine time so that it was taken into account
-            CbmTrbCalibrator::Instance()->AddFineTime(trbId, tdcId, chNum, fineTime);
-
+				// Give the calibrator the read fine time so that it was taken into account
+				CbmTrbCalibrator::Instance()->AddFineTime(trbId, tdcId, chNum, fineTime);
 
 				if (chNum == 0) {
 					// TODO: do smth with ch0
 				} else {
+					if (tdcId == 0x7005) { //CTS
 
-					if ( isPmtTrb ) {
+					} else if (tdcId == 0x0110) { // reference time TDC for event building
+						if (chNum == 5) {
+							CbmTrbRawHit* rawHitRef = new CbmTrbRawHit(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime, 0, 0, 0, 0);
+							fRawReferenceHits.push_back(rawHitRef);
+						}
+					} else if ( isPmtTrb ) {
+						if (chNum == prevChNum) {
+							LOG(DEBUG) << " DOUBLE HIT DETECTED TIMEDATA chNum:" << chNum << ", fineTime:" << fineTime << ", edge:" << edge << ", coarseTime:" << coarseTime
+													<< ", fullTime:" << fixed << GetFullTime(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime) << FairLogger::endl;
+							fNofDoubleHits++;
+							continue;
+						}
 						if (chNum%2 == 1) { // leading edge
 							prevChNum = chNum;
 							prevEpochCounter = curEpochCounter;
@@ -203,28 +220,21 @@ void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
 								                                       coarseTime, fineTime);
 								fRawRichHits.push_back(rawHit);
 								
-								prevChNum = 0;
+								prevChNum = chNum;
 								prevEpochCounter = 0;
 								prevCoarseTime = 0;
 								prevFineTime = 0;
 							} else {
-								LOG(ERROR) << "Leading edge channel number - trailing edge channel number != 1" << FairLogger::endl;
+								LOG(ERROR) << "Leading edge channel number - trailing edge channel number != 1. tdcId=" << hex << tdcId << dec <<
+										", chNum=" << chNum <<  ", prevChNum=" << prevChNum << FairLogger::endl;
 							}
 						}
 					} //isPmtTrb
-
-					if (tdcId == 0x0110) { // reference time TDC
-						if (chNum == 1) {
-							CbmTrbRawHit* rawHitRef = new CbmTrbRawHit(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime, 0, 0, 0, 0);
-							fRawReferenceHits.push_back(rawHitRef);
-						}
-					}
-
-				}
-      		LOG(DEBUG2) << "TIMEDATA chNum:" << chNum << ", fineTime:" << fineTime << ", edge:" << edge << ", coarseTime:" << coarseTime
+				}// if chNum!=0
+				LOG(DEBUG) << "TIMEDATA chNum:" << chNum << ", fineTime:" << fineTime << ", edge:" << edge << ", coarseTime:" << coarseTime
 						<< ", fullTime:" << fixed << GetFullTime(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime) << FairLogger::endl;
 				if (fineTime == 0x3ff) LOG(DEBUG) << "-ERROR- Dummy fine time registered: " << fineTime << FairLogger::endl;
-			}
+			}//if TIME DATA
 
 			UInt_t tdcMarker = (tdcData >> 29) & 0x7; //3 bits
 			if (tdcMarker == 0x1) {// TDC header
@@ -282,6 +292,14 @@ void CbmRichTrbUnpack::CreateOutputHits()
 	}
 
 	std::sort(fOutputRichHits.begin(), fOutputRichHits.end(), CbmTrbOutputHitLeadingFullTimeComparatorLess());
+
+	/*for (Int_t i = 0; i < fOutputRichHits.size(); i++){
+		cout << fixed << fOutputRichHits[i]->GetLFullTime() << endl;
+	}
+	cout << "reference" << endl;
+	for (Int_t i = 0; i < fOutputReferenceHits.size(); i++){
+		cout << fixed << fOutputReferenceHits[i]->GetLFullTime() << endl;
+	}*/
 }
 
 void CbmRichTrbUnpack::BuildEvent(Int_t refHitIndex)
@@ -291,7 +309,7 @@ void CbmRichTrbUnpack::BuildEvent(Int_t refHitIndex)
 
 	CbmRichTrbParam* param = CbmRichTrbParam::Instance();
 	Int_t indmin, indmax;
-	FindMinMaxIndex(fOutputReferenceHits[refHitIndex]->GetLFullTime(), &indmin, &indmax);
+	FindMinMaxIndex(fOutputReferenceHits[refHitIndex]->GetLFullTime(), EVENT_TIME_WINDOW, &indmin, &indmax);
 	Int_t size = indmax - indmin + 1;
 	LOG(DEBUG) << "NEW EVENT, size " << size << FairLogger::endl;
 	for (Int_t iH = indmin; iH <= indmax; iH++) {
@@ -314,9 +332,13 @@ void CbmRichTrbUnpack::AddRichHitToOutputArray(Double_t x, Double_t y)
 	hit->SetY(y);
 }
 
-void CbmRichTrbUnpack::FindMinMaxIndex(Double_t refTime, Int_t *indmin, Int_t *indmax)
+void CbmRichTrbUnpack::FindMinMaxIndex(
+		Double_t refTime,
+		Double_t windowT,
+		Int_t *indmin,
+		Int_t *indmax)
 {
-	Double_t windowTime = 0.5 * EVENT_TIME_WINDOW;
+	Double_t windowTime = 0.5 * windowT;
 	CbmTrbOutputHit* mpnt = new CbmTrbOutputHit();
 	vector<CbmTrbOutputHit*>::iterator itmin, itmax;
 
@@ -378,6 +400,12 @@ void CbmRichTrbUnpack::FillOutputHitHist(CbmTrbOutputHit* outHit)
 
 void CbmRichTrbUnpack::CreateAndDrawQa()
 {
+	LOG(INFO) << "Number of raw RICH hits = " << fRawRichHits.size() << FairLogger::endl;
+	LOG(INFO) << "Number of output RICH hits = " << fOutputRichHits.size() << FairLogger::endl;
+	LOG(INFO) << "Number of raw reference time hits = " << fRawReferenceHits.size() << FairLogger::endl;
+	LOG(INFO) << "Number of output reference time hits = " << fOutputReferenceHits.size() << FairLogger::endl;
+	LOG(INFO) << "Number of double hits = " << fNofDoubleHits / 2. <<
+			", " << 100. * (fNofDoubleHits / 2.) / fRawRichHits.size() <<  "%"<< FairLogger::endl;
 
 	TString hname, htitle;
 	for (Int_t iTrb = 0; iTrb < TRB_TDC3_NUMBOARDS; iTrb++){
@@ -400,24 +428,26 @@ void CbmRichTrbUnpack::CreateAndDrawQa()
 
 			hname.Form("hDeltaT_%d_%d", iTrb+1, iTdc);
 			htitle.Form("hDeltaT_%d_%d;DeltaT [ns];Entries", iTrb+1, iTdc);
-			fhDeltaT[iTrb][iTdc] = new TH1D(hname, htitle, 200, 0, 0);
+			fhDeltaT[iTrb][iTdc] = new TH1D(hname, htitle, 200, -10, 10);
 		}
 	}
 
 	for (int i = 0; i < fRawRichHits.size(); i++) {
 		FillRawHitHist(fRawRichHits[i]);
+
 	}
 
 	for (int i = 0; i < fRawReferenceHits.size(); i++) {
-		FillRawHitHist(fRawReferenceHits[i]);
+		//FillRawHitHist(fRawReferenceHits[i]);
 	}
 
 	for (int i = 0; i < fOutputRichHits.size(); i++) {
 		FillOutputHitHist(fOutputRichHits[i]);
+		CbmTrbOutputHit* rh = fOutputRichHits[i];
 	}
 
 	for (int i = 0; i < fOutputReferenceHits.size(); i++) {
-		FillOutputHitHist(fOutputReferenceHits[i]);
+		//FillOutputHitHist(fOutputReferenceHits[i]);
 	}
 
 	TFolder* rootHistFolder = gROOT->GetRootFolder()->AddFolder("rich_trb_unpack_debug", "rich_trb_unpack_debug");
@@ -442,6 +472,38 @@ void CbmRichTrbUnpack::CreateAndDrawQa()
 		}
 	}
 	rootHistFolder->Write();
+}
+
+void CbmRichTrbUnpack::CreateAndDrawEventBuildDisplay()
+{
+	Double_t minT = fOutputReferenceHits[0]->GetLFullTime();
+	Double_t maxT = fOutputReferenceHits[ fOutputReferenceHits.size() - 1 ]->GetLFullTime();
+	TH1D* hRefTime = new TH1D("hRefTime", "hRefTime;Time [ns];Entries", 10000, 0., maxT - minT);
+	TH1D* hHitTime = new TH1D("hHitTime", "hHitTime;Time [ns];Entries", 10000, 0., maxT - minT);
+	TH1D* hDiffRefTime = new TH1D("hDiffRefTime", "hDiffRefTime;dT [ns];Entries", 2000, -10., 200000);
+	std::sort(fOutputReferenceHits.begin(), fOutputReferenceHits.end(), CbmTrbOutputHitLeadingFullTimeComparatorLess());
+	for (int i = 0; i < fOutputReferenceHits.size(); i++) {
+		hRefTime->Fill(fOutputReferenceHits[i]->GetLFullTime() - minT);
+
+		if (i != 0) hDiffRefTime->Fill( fOutputReferenceHits[i]->GetLFullTime() - fOutputReferenceHits[i-1]->GetLFullTime() );
+	}
+	for (int i = 0; i < fOutputRichHits.size(); i++) {
+		hHitTime->Fill(fOutputRichHits[i]->GetLFullTime() - minT);
+	}
+
+	TCanvas* c = new TCanvas("rich_trb_unpack_debug_ref_time", "rich_trb_unpack_debug_ref_time", 1600, 600);
+	DrawH1(hRefTime);
+	TCanvas* c2 = new TCanvas("rich_trb_unpack_debug_rich_hit_time", "rich_trb_unpack_debug_rich_hit_time", 1600, 600);
+	DrawH1(hHitTime);
+	TCanvas* c3 = new TCanvas("rich_trb_unpack_debug_delta_ref_time", "rich_trb_unpack_debug_delta_ref_time", 800, 800);
+	DrawH1(hDiffRefTime);
+
+	/*TH1D* div = (TH1D*)histhits->Clone();
+	div->Divide(histRef);
+	DrawH1(div);**/
+
+
+
 }
 
 ClassImp(CbmRichTrbUnpack)

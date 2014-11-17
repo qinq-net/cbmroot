@@ -2,7 +2,7 @@
 #define CBMRICHTRBDEFINES_H
 
 
-#define EVENT_TIME_WINDOW 30.          // Time window for building event in ns
+#define EVENT_TIME_WINDOW 300.          // Time window for building event in ns
 #define NOF_RAW_EVENTS_IN_BUFFER 1000  // Maximum raw events in the buffer
 
 // for nov2014 beamtime - 33 channels per TDC: 0th channel - reference, then 16 pairs (leading/trailing) for one PADIWA channel
