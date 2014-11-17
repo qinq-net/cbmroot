@@ -5,8 +5,7 @@ void run_analysis()
    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
    loadlibs();
 
-   //string hldFileName = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/fles/secondtest_pulser16ch+sync.hld";
-   string hldFileName = "/home/pusan/nov2014data/te14320215205.hld";
+   string hldFileName = "Laser_100_0.hld";
 
    // --- Specify number of events to be produced.
    // --- -1 means run until the end of the input file.
@@ -25,10 +24,11 @@ void run_analysis()
 
 
    CbmRichTrbUnpack* source = new CbmRichTrbUnpack(hldFileName);
+   source->SetAnaPulserEvents(true);
 
-   CbmTrbCalibrator* fgCalibrator = CbmTrbCalibrator::Instance();
+   //CbmTrbCalibrator* fgCalibrator = CbmTrbCalibrator::Instance();
    //fgCalibrator->Import("calib_te14320215205.root");
-   fgCalibrator->Export("calibration.root");
+   //fgCalibrator->Export("calibration.root");
 
    // --- Event header
  //  FairEventHeader* event = new CbmTbEvent();
@@ -47,7 +47,7 @@ void run_analysis()
    richReco->SetRunExtrapolation(false);
    richReco->SetRunProjection(false);
    richReco->SetRunFitter(false);
-   run->AddTask(richReco);
+  // run->AddTask(richReco);
 
 //   CbmRichTrbRecoQa* qaRaw = new CbmRichTrbRecoQa();
 //   run->AddTask(qaRaw);
