@@ -13,6 +13,7 @@ class CbmTrbRawHit;
 class CbmTrbOutputHit;
 class TClonesArray;
 class TH1D;
+class TH2D;
 
 class CbmRichTrbUnpack : public FairSource
 {
@@ -48,6 +49,11 @@ public:
      */
     void Reset();
 
+    /*
+     * Set to TRUE if you want to analyze LED pulser events.
+     */
+    Bool_t SetAnaPulserEvents(Bool_t b){fAnaPulserEvents = b;}
+
 private:
     string fHldFileName; // file name of HLD file
 
@@ -59,10 +65,10 @@ private:
     UInt_t fNofDoubleHits; // number of detected double hits
 
     vector<CbmTrbRawHit*> fRawRichHits; // raw hit from PMTs
-    vector<CbmTrbRawHit*> fRawReferenceHits; // raw hits from reference time TDC
+    vector<CbmTrbRawHit*> fRawEventTimeHits; // raw hits from reference time TDC
 
     vector<CbmTrbOutputHit*> fOutputRichHits; // output hits from PMTs
-    vector<CbmTrbOutputHit*> fOutputReferenceHits; // output hits from reference time TDC
+    vector<CbmTrbOutputHit*> fOutputEventTimeHits; // output hits from reference time TDC
 
     // Debug histograms
     TH1D* fhChannelEntries[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC];
@@ -70,6 +76,10 @@ private:
     TH1D* fhCoarseTime[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC];
     TH1D* fhFineTime[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC];
     TH1D* fhDeltaT[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC];
+    TH2D* fhNofRichHitsVsTrbNum; // Number of RICH hit per event vs. TRB number (only real event counts)
+    TH1D* fhDiffHitTimeEventTime; // Difference between reference event time and RICH hit time
+
+    Bool_t fAnaPulserEvents;
 
     /*
      * Read full input file to memory.
@@ -92,7 +102,20 @@ private:
      * Process TDC message for subevent
      * \param subEvent Poiner to subEvent
      */
-    void ProcessTdc(CbmRawSubEvent* subEvent);
+    void ProcessTdc(
+    		CbmRawSubEvent* subEvent);
+    /*
+     * Decode TDC data.
+     * \param data Array of TDC data words.
+     * \param size Number of words.
+     * \param trbId TRB ID.
+     * \param tdcId TDC ID.
+     */
+    void DecodeTdcData(
+    		UInt_t* data,
+    		UInt_t size,
+    		UInt_t trbId,
+    		UInt_t tdcId);
 
     /*
      * Create CbmTrbOutputHits from Raw hits
@@ -102,13 +125,15 @@ private:
     /*
      * Create CbmRichTrbOutputHit out of CbmTrbRawHit.
      */
-    CbmTrbOutputHit* CreateOutputHit(CbmTrbRawHit* rawHit);
+    CbmTrbOutputHit* CreateOutputHit(
+    		CbmTrbRawHit* rawHit);
 
     /*
      * Build event (create CbmRichHits) for the specified reference time hit.
      * \param refHitIndex Index of reference time hit.
      */
-    void BuildEvent(Int_t refHitIndex);
+    void BuildEvent(
+    		Int_t refHitIndex);
 
     /*
      * Find min and max indecies of the time corridor in the output CbmRichTrbOutputHit array sorted by time.
