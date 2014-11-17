@@ -128,14 +128,21 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
 	chID += 16;
 	break;
       }     
-      
+      char channelID[2];
+      sprintf(channelID,"_Ch%02d",chID);
+      string channelId(channelID);
+
       string histName = "CountRate_" + syscore + spadic;
       fHM->H1(histName)->Fill(chID);
       histName = "BaseLine_" + syscore + spadic;
       fHM->H2(histName)->Fill(chID,raw->GetSamples()[0]);
-      histName = "Integrated_ADC_Spectrum_" + syscore + spadic;
       for (Int_t bin = 1; bin < 32; bin++) {
+	histName = "Integrated_ADC_Spectrum_" + syscore + spadic;
 	fHM->H2(histName)->Fill(chID,raw->GetSamples()[bin] - raw->GetSamples()[0]);
+      }
+      for (Int_t bin = 0; bin < 32; bin++) {
+	histName = "Signal_Shape_" + syscore + spadic + channelId;
+	fHM->H2(histName)->Fill(bin,raw->GetSamples()[bin]);
       }
       histName = "Trigger_Heatmap_" + syscore + spadic;
       if (chID%2 == 0)
@@ -161,8 +168,11 @@ void CbmTrdRawBeamProfile::CreateHistograms()
   // Create histograms for 3 Syscores with maximum 3 Spadics
 
   string syscoreName[] = { "SysCore1", "SysCore2", "SysCore3" };
-  string spadicName[] = { "Spadic1", "Spadic2", "Spadic3" };
-
+  string spadicName[]  = { "Spadic1", "Spadic2", "Spadic3" };
+  string channelName[] = { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", 
+			   "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", 
+			   "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", 
+			   "30", "31"};
   for(Int_t syscore = 0; syscore < 3; ++syscore) {
     for(Int_t spadic = 0; spadic < 3; ++spadic) {
       string histName = "CountRate_" + syscoreName[syscore] + "_" + spadicName[spadic];
@@ -178,8 +188,14 @@ void CbmTrdRawBeamProfile::CreateHistograms()
       histName = "Trigger_Heatmap_" + syscoreName[syscore] + "_" + spadicName[spadic];
       fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;Trigger Counter").c_str(), 16, 0, 16, 2, 0, 2));
 
-      histName = "Trigger_Correlation_" + syscoreName[syscore] + "_" + spadicName[spadic];
-      fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;Trigger Counter").c_str(), 32, 0, 32, 32, 0, 32));
+      for(Int_t  channel = 0; channel < 32; channel++) {
+	histName = "Signal_Shape_" + syscoreName[syscore] + "_" + spadicName[spadic] + "_Ch" + channelName[channel];
+	fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;ADC value").c_str(), 32, 0, 32, 511, -256, 255));
+      }
+      /*
+	histName = "Trigger_Correlation_" + syscoreName[syscore] + "_" + spadicName[spadic];
+	fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;Trigger Counter").c_str(), 32, 0, 32, 32, 0, 32));
+      */
     }
   } 
 
