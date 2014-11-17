@@ -41,7 +41,7 @@ Bool_t CbmTSUnpackSpadic::Init()
 
 Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
-  LOG(INFO) << "Unpacking Spadic Data" << FairLogger::endl; 
+  LOG(DEBUG) << "Unpacking Spadic Data" << FairLogger::endl; 
 
   fSpadicRaw->Clear();
 
@@ -51,9 +51,11 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
   r.add_component(ts, component);
 
   for (auto addr : r.sources()) {
-    LOG(INFO) << "---- reader " << addr << " ----" << FairLogger::endl;
+    LOG(DEBUG) << "---- reader " << addr << " ----" << FairLogger::endl;
     while (auto mp = r.get_message(addr)) {
-      print_message(*mp);
+      if(gLogger->IsLogNeeded(DEBUG)) {
+	print_message(*mp);
+      }
       Int_t link = ts.descriptor(component, 0).eq_id;
       Int_t address = addr;
       Int_t channel = mp->channel_id();
@@ -78,23 +80,23 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 
 void CbmTSUnpackSpadic::print_message(const spadic::Message& m)
 {
-  std::cout << "v: " << (m.is_valid() ? "o" : "x");
-  std::cout << " / gid: " << static_cast<int>(m.group_id());
-  std::cout << " / chid: " << static_cast<int>(m.channel_id());
+  LOG(DEBUG) << "v: " << (m.is_valid() ? "o" : "x");
+  LOG(DEBUG) << " / gid: " << static_cast<int>(m.group_id());
+  LOG(DEBUG) << " / chid: " << static_cast<int>(m.channel_id());
   if ( m.is_hit() ) { 
-    std::cout << " / ts: " << m.timestamp();
-    std::cout << " / samples (" << m.samples().size() << "):";
+    LOG(DEBUG) << " / ts: " << m.timestamp();
+    LOG(DEBUG) << " / samples (" << m.samples().size() << "):";
     for (auto x : m.samples()) {
-      std::cout << " " << x;
+      LOG(DEBUG) << " " << x;
     }
-    std::cout << std::endl;
+    LOG(DEBUG) << FairLogger::endl;
   } else {
     if ( m.is_epoch_marker() ) { 
-      std::cout << " This is an Epoch Marker" << std::endl; 
+      LOG(DEBUG) << " This is an Epoch Marker" << FairLogger::endl; 
     } else if ( m.is_epoch_out_of_sync() ) { 
-      std::cout << " This is an out of sync Epoch Marker" << std::endl; 
+      LOG(DEBUG) << " This is an out of sync Epoch Marker" << FairLogger::endl; 
     } else {
-      std::cout << " This is not known" << std::endl;
+      LOG(DEBUG) << " This is not known" << FairLogger::endl;
     }
   }
 }
