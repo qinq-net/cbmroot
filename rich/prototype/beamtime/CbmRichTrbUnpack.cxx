@@ -87,7 +87,6 @@ Int_t CbmRichTrbUnpack::ReadEvent()
 
 void CbmRichTrbUnpack::Close()
 {
-   CbmTrbCalibrator::Instance()->Save("calibration.root");
 	CreateAndDrawQa();
 	CreateAndDrawEventBuildDisplay();
 	ClearAllBuffers();
@@ -170,7 +169,7 @@ void CbmRichTrbUnpack::ProcessTdc(CbmRawSubEvent* rawSubEvent)
 		tdcData = rawSubEvent->SubDataValue(tdcDataIndex);
 		UInt_t tdcNofWords = (tdcData >> 16) & 0xffff;
 		UInt_t tdcId = tdcData & 0xffff;
-		printf("TDC DATA tdcNofWords = %i, ID = 0x%04x\n", tdcNofWords, tdcId);
+		//printf("TDC DATA tdcNofWords = %i, ID = 0x%04x\n", tdcNofWords, tdcId);
 		if (tdcId == 0x5555) break;
 		if (tdcId == 0x7000 || tdcId == 0x7001 || tdcId == 0x7002 || tdcId == 0x7003){
 			tdcDataIndex++;
@@ -215,7 +214,7 @@ void CbmRichTrbUnpack::DecodeTdcData(
 			UInt_t coarseTime = (tdcData) & 0x7ff; // 1bits
 
 			// Give the calibrator the read fine time so that it was taken into account
-			CbmTrbCalibrator::Instance()->AddFineTime(trbId, tdcId, chNum, fineTime);
+			if (trbId != 0x7005) CbmTrbCalibrator::Instance()->AddFineTime(trbId, tdcId, chNum, fineTime);
 
 			if (chNum == 0) {
 				// TODO: do smth with ch0

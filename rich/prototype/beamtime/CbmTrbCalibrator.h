@@ -16,6 +16,8 @@ public: // methods
     */
    ~CbmTrbCalibrator();
 
+   void GenHistos();
+
    /*
     * Singleton class object returner.
     */
@@ -34,7 +36,7 @@ public: // methods
    /*
     * Add raw fine time received from TDC and unpacked by the CbmRichTrbUnpack.
     */
-   void AddFineTime(UShort_t inTRBid, UShort_t inTDCid, UShort_t inCHid, UShort_t fineTime);
+   void AddFineTime(UInt_t inTRBid, UShort_t inTDCid, UShort_t inCHid, UShort_t fineTime);
    
    /*
     * Return time in ns.
@@ -43,23 +45,24 @@ public: // methods
    Double_t GetFineTimeCalibrated(UShort_t TRB, UShort_t TDC, UShort_t CH, UShort_t fineCnt);
    
    /*
-    * Monkey code here. Call this method at each event in the Unpacker after
-    * (but don't forget to call AddFineTime for each fine time to be taken into account).
-    * This counts the number of events to determine when to start DoCalibrate.
-    */
-   //void NextRawEvent();
-   
-   /*
     * Per se calibration of a certain channel of a certain TDC of a certain TRB.
     */
    void DoCalibrate(UShort_t TRB, UShort_t TDC, UShort_t CH);
 
    /*
-    * Save the calibration information into the root file.
+    * Export the calibration information into the root file.
     */
-   void Save(const char* filename = "calibration.root");
+   void Export(const char* filename = "calibration.root");
 
-   void GenHistos();
+   /*
+    * Import the calibration information from the root file.
+    */
+   void Import(const char* filename = "calibration.root");
+
+   /*
+    * Draw a canvas with the flags indicating whilch channels have been calibrated.
+    */
+   void Draw();
 
 private: // methods
 
@@ -119,16 +122,6 @@ private: // data members
    TH1D* fhLeadingFine[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
 
    /*
-    * Flushed after calibration.
-    */
-   //TH1D* fhTrailingFineBuffer[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
-   
-   /*
-    * Accumulates across all the received data.
-    */
-   //TH1D* fhTrailingFine[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
-
-   /*
     * Renewes at calibration.
     * Initialized with `identity` (linear =1 function) before the first calibration.
     */
@@ -139,12 +132,6 @@ private: // data members
     * Initialized with `identity` (linear y=k*x function) before the first calibration.
     */
 	TH1D* fhCalBinTime[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC][TRB_TDC3_CHANNELS];
-
-   /*
-    * Counter of events taken into account for calibration.
-    * Used to determine when to start DoCalibrate.
-    */
-   //static UInt_t fEventCounter;
    
    /*
     * For each channel - counter of fine time counters taken into accout for calibration.
@@ -155,7 +142,6 @@ private: // data members
     * Pointer to the singleton class object.
     */
    static CbmTrbCalibrator* fInstance;
-
 
    ClassDef(CbmTrbCalibrator,1)
 };

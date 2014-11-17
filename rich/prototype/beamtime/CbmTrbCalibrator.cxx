@@ -2,13 +2,15 @@
 
 #include "FairLogger.h"
 #include "TFile.h"
+#include "TCanvas.h"
+#include "CbmDrawHist.h"
 
 CbmTrbCalibrator* CbmTrbCalibrator::fInstance = 0;
 //UInt_t CbmTrbCalibrator::fEventCounter = 0;
 
 CbmTrbCalibrator::CbmTrbCalibrator():
    fToDoCalibration(true),
-   fCalibrationPeriod(10000)
+   fCalibrationPeriod(5000)
 {
    GenHistos();
 }
@@ -26,19 +28,16 @@ CbmTrbCalibrator* CbmTrbCalibrator::Instance()
 // inTRBid - raw id, looks like 0x8025    TRB - from 0 to 16 incl.
 // inTDCid - raw id, looks like 0x****    TDC - from 0 to 3 incl.
 // inCHid - raw id of the channel - the same as CH - number of the channel from 0 to 32 incl.
-void CbmTrbCalibrator::AddFineTime(UShort_t inTRBid, UShort_t inTDCid, UShort_t inCHid, UShort_t fineTime)
+void CbmTrbCalibrator::AddFineTime(UInt_t inTRBid, UShort_t inTDCid, UShort_t inCHid, UShort_t fineTime)
 {
-   UShort_t TRB = (inTRBid >> 4) & 0x00FF - 1;
+   UInt_t TRB = ((inTRBid >> 4) & 0x00FF) - 1;
    UShort_t TDC = (inTDCid & 0x000F);
    UShort_t CH = inCHid;
+
    LOG(DEBUG3) << "AddFineTime: TRB" << TRB << " TDC" << TDC << " CH" << CH << FairLogger::endl;
 
    fhLeadingFineBuffer[TRB][TDC][CH]->Fill(fineTime);
    fhLeadingFine[TRB][TDC][CH]->Fill(fineTime);
-/*
-   fhTrailingFineBuffer[TRB-1][TDC][CH]->Fill(trailingFT);
-   fhTrailingFine[TRB-1][TDC][CH]->Fill(trailingFT);
-*/
 
    fFTcounter[TRB][TDC][CH]++;
    
@@ -51,19 +50,7 @@ void CbmTrbCalibrator::AddFineTime(UShort_t inTRBid, UShort_t inTDCid, UShort_t 
    }
 }
 
-/*
-void CbmTrbCalibrator::NextRawEvent()
-{
-   fEventCounter++;
-   
-   if (fEventCounter >= fCalibrationPeriod && fToDoCalibration) {
-      DoCalibrate();
-      fEventCounter = 0;
-   }
-}
-*/
-
-void CbmTrbCalibrator::Save(const char* filename)
+void CbmTrbCalibrator::Export(const char* filename)
 {
    TDirectory* current = gDirectory;
    TFile* old = gFile;
@@ -74,7 +61,12 @@ void CbmTrbCalibrator::Save(const char* filename)
       // error
    } else {
       file->cd();
-      fTRBroot->Write();
+
+      if (fTRBroot) {
+         //gROOT->GetRootFolder()->ls();
+         fTRBroot->Write();
+      }
+
       file->Close();
       current->cd();   
    }
@@ -83,6 +75,83 @@ void CbmTrbCalibrator::Save(const char* filename)
    
    gFile = old;
    gDirectory = current;
+}
+
+// This method will overwrite the existing tables
+void CbmTrbCalibrator::Import(const char* filename)
+{
+   LOG(INFO) << "Importing calibration tables from " << filename << FairLogger::endl;
+
+   if (fTRBroot) {
+      LOG(INFO) << "Removing existing calibration data." << FairLogger::endl;
+/*
+      for (Int_t b=0; b<TRB_TDC3_NUMBOARDS; ++b) {
+         for (Int_t t=0; t<TRB_TDC3_NUMTDC; ++t) {
+            for (Int_t i=0; i<TRB_TDC3_CHANNELS; ++i) {
+               delete fhLeadingFineBuffer[b][t][i];
+               delete fhLeadingFine[b][t][i];
+               delete fhCalcBinWidth[b][t][i];
+               delete fhCalBinTime[b][t][i];
+            }
+            delete fCalibrationDoneHisto[b][t];
+         }
+      }
+
+      //gROOT->GetRootFolder()->RecursiveRemove(fTRBroot);
+*/
+   }
+
+   TDirectory* current = gDirectory;
+   TFile* old = gFile;
+   TFile* file = new TFile(filename, "READ");
+
+   if (file == NULL || !(file->IsOpen()))
+   {
+      // error
+   } else {
+
+      TString obname;
+      TFolder* TRBfolder = (TFolder*)file->Get("TRB");
+      
+      for (Int_t b=0; b<TRB_TDC3_NUMBOARDS; ++b) {
+         obname.Form("TRB%02d", b+1);
+         TFolder* perTRBfolder = (TFolder*)(TRBfolder->FindObject(obname));
+
+         for (Int_t t=0; t<TRB_TDC3_NUMTDC; ++t) {
+            obname.Form("TDC%d", t);
+            TFolder* perTDCfolder = (TFolder*)(perTRBfolder->FindObject(obname));
+
+            for (Int_t i=0; i<TRB_TDC3_CHANNELS; ++i) {
+               obname.Form("FineTimeBuffer_%02d_%d_%02d", b+1, t, i);
+               TH1D* curHisto = (TH1D*)(perTDCfolder->FindObject(obname));
+               fhLeadingFineBuffer[b][t][i] = curHisto;
+
+               obname.Form("FineTime_%02d_%d_%02d", b+1, t, i);
+               curHisto = (TH1D*)(perTDCfolder->FindObject(obname));
+               fhLeadingFine[b][t][i] = curHisto;
+
+               obname.Form("BinWidth_%02d_%d_%02d", b+1, t, i);
+               curHisto = (TH1D*)(perTDCfolder->FindObject(obname));
+               fhCalcBinWidth[b][t][i] = curHisto;
+
+               obname.Form("CalTableBinTime_%02d_%d_%02d", b+1, t, i);
+               curHisto = (TH1D*)(perTDCfolder->FindObject(obname));
+               fhCalBinTime[b][t][i] = curHisto;
+            }
+
+            obname.Form("CalibrationDone_%02d_%d", b+1, t);
+            TH1C* curHisto2 = (TH1C*)(perTDCfolder->FindObject(obname));
+            fCalibrationDoneHisto[b][t] = curHisto2;
+         }
+      }
+
+   }
+   
+   delete file;
+   
+   gFile = old;
+   gDirectory = current;
+
 }
 
 void CbmTrbCalibrator::DoCalibrate(UShort_t TRB, UShort_t TDC, UShort_t CH)
@@ -116,7 +185,6 @@ void CbmTrbCalibrator::DoCalibrate(UShort_t TRB, UShort_t TDC, UShort_t CH)
    }
 
    fhLeadingFineBuffer[TRB][TDC][CH]->Reset();
-   //fhTrailingFineBuffer[TRB][TDC][CH]->Reset();
 
    fCalibrationDoneHisto[TRB][TDC]->SetBinContent(CH+1, 1);
 
@@ -155,7 +223,7 @@ void CbmTrbCalibrator::GenHistos()
    TFolder* TRBfolders[TRB_TDC3_NUMBOARDS];
    TFolder* TDCfolders[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC];
 
-   // TRBs are numerated startgin from 1, but the arrays of histos are from 0 (as in any C++ code)
+   // TRBs are numerated starting from 1, but the arrays of histos are from 0 (as in any C++ code)
    // TDCs are numerated from 0. One TRB has TDCs {0,1,2,3}.
    // Channels are numerated from 0 and there are total 33 channels for each TDC. 0-th channel is the reference channel.
 
@@ -176,25 +244,13 @@ void CbmTrbCalibrator::GenHistos()
             obname.Form("FineTimeBuffer_%02d_%d_%02d", b+1, t, i);
             obtitle.Form("Fine time Leading edge TRB %d TDC %d Channel %02d (calibration buffer)", b+1, t, i);
             fhLeadingFineBuffer[b][t][i] = new TH1D(obname.Data(), obtitle.Data(), tbins, 0, trange);
+            TDCfolders[b][t]->Add(fhLeadingFineBuffer[b][t][i]);
 
             obname.Form("FineTime_%02d_%d_%02d", b+1, t, i);
             obtitle.Form("Fine time Leading edge TRB %02d TDC %02d Channel %02d", b+1, t, i);
             fhLeadingFine[b][t][i] = new TH1D(obname.Data(), obtitle.Data(), tbins, 0, trange);
-
-            TDCfolders[b][t]->Add(fhLeadingFineBuffer[b][t][i]);
             TDCfolders[b][t]->Add(fhLeadingFine[b][t][i]);
-/*
-            obname.Form("TrailingFineTimeBuffer_%02d_%d_%02d", b+1, t, i);
-            obtitle.Form("Fine time Trailing edge TRB %02d TDC %d Channel %02d (calibration buffer)", b+1, t, i);
-            hTrailingFineBuffer[b][t][i] = new TH1D(obname.Data(), obtitle.Data(), tbins, 0, trange);
 
-            obname.Form("TrailingFineTime_%02d_%d_%02d", b+1, t, i);
-            obtitle.Form("Fine time Trailing edge TRB %02d TDC %d Channel %02d", b+1, t, i);
-            hTrailingFine[b][t][i] = new TH1D(obname.Data(), obtitle.Data(), tbins, 0, trange);
-
-            TDCfolders[b][t]->Add(hTrailingFineBuffer[b][t][i]);
-            TDCfolders[b][t]->Add(hTrailingFine[b][t][i]);
-*/
             obname.Form("BinWidth_%02d_%d_%02d", b+1, t, i);
             obtitle.Form("Binwidth Histogram of TRB %02d TDC %d Channel %02d", b+1, t, i);
             fhCalcBinWidth[b][t][i] = new TH1D(obname.Data(), obtitle.Data(), TRB_TDC3_FINEBINS, 0, TRB_TDC3_FINEBINS);
@@ -202,6 +258,8 @@ void CbmTrbCalibrator::GenHistos()
             //! Reset time bin correction arrays
             for (int fb=0; fb<TRB_TDC3_FINEBINS; ++fb)
                fhCalcBinWidth[b][t][i]->SetBinContent(fb + 1, 1.0);
+
+            TDCfolders[b][t]->Add(fhCalcBinWidth[b][t][i]);
 
             obname.Form("CalTableBinTime_%02d_%d_%02d", b+1, t, i);
             obtitle.Form("Calibration Table of TRB %02d TDC %d Channel %02d", b+1, t, i);
@@ -211,7 +269,6 @@ void CbmTrbCalibrator::GenHistos()
             for (int fb=0; fb<TRB_TDC3_FINEBINS; ++fb)
                fhCalBinTime[b][t][i]->SetBinContent(fb + 1, (Double_t)(TRB_TDC3_COARSEUNIT * fb) / (Double_t)TRB_TDC3_FINEBINS);
 
-            TDCfolders[b][t]->Add(fhCalcBinWidth[b][t][i]);
             TDCfolders[b][t]->Add(fhCalBinTime[b][t][i]);
 
          } // Channels
@@ -226,5 +283,21 @@ void CbmTrbCalibrator::GenHistos()
    } // TRBs
 
 } // end of method
+
+void CbmTrbCalibrator::Draw()
+{
+   TCanvas* c[4];
+   for (int t=0; t<4; t++)
+   {
+      TString obname;
+      obname.Form("Channels calibration flags of TDC%d of all TRBs", t);
+      c[t] = new TCanvas(obname, obname, 1000, 1000);
+      c[t]->Divide(4, 4);
+      for (int b=0; b<16; b++) {
+         c[t]->cd(b+1);
+         DrawH1(fCalibrationDoneHisto[b][t]);
+      }
+   }
+}
 
 ClassImp(CbmTrbCalibrator)
