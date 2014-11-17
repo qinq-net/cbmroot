@@ -9,6 +9,12 @@
 #define CBMHISTMANAGER_H_
 
 #include "TObject.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TGraph.h"
+#include "TGraph2D.h"
+#include "TProfile.h"
+#include "TProfile2D.h"
 #include <iostream>
 #include <map>
 #include <string>
@@ -19,12 +25,6 @@
 
 class TFile;
 class TNamed;
-class TH1;
-class TH2;
-class TGraph;
-class TGraph2D;
-class TProfile;
-class TProfile2D;
 
 using std::map;
 using std::make_pair;
@@ -120,7 +120,7 @@ public:
     	  std::cout << "Error: CbmHistManager::H1(name): name=" << name << std::endl;
       }
       assert(fMap.count(name) != 0);
-      return (TH1*) fMap.find(name)->second;
+      return dynamic_cast<TH1*>(fMap.find(name)->second);
    }
 
    /**
@@ -142,7 +142,7 @@ public:
     	  std::cout << "Error: CbmHistManager::H2(name): name=" << name << std::endl;
       }
       assert(fMap.count(name) != 0);
-      return (TH2*) fMap.find(name)->second;
+      return dynamic_cast<TH2*>(fMap.find(name)->second);
    }
 
    /**
@@ -164,7 +164,7 @@ public:
     	  std::cout << "Error: CbmHistManager::G1(name): name=" << name << std::endl;
       }
       assert(fMap.count(name) != 0);
-      return (TGraph*) fMap.find(name)->second;
+      return dynamic_cast<TGraph*>(fMap.find(name)->second);
    }
 
    /**
@@ -186,7 +186,7 @@ public:
     	  std::cout << "Error: CbmHistManager::G2(name): name=" << name << std::endl;
       }
       assert(fMap.count(name) != 0);
-      return (TGraph2D*) fMap.find(name)->second;
+      return dynamic_cast<TGraph2D*>(fMap.find(name)->second);
    }
 
    /**
@@ -208,7 +208,7 @@ public:
         std::cout << "Error: CbmHistManager::P1(name): name=" << name << std::endl;
       }
       assert(fMap.count(name) != 0);
-      return (TProfile*) fMap.find(name)->second;
+      return dynamic_cast<TProfile*>(fMap.find(name)->second);
    }
 
    /**
@@ -230,7 +230,7 @@ public:
         std::cout << "Error: CbmHistManager::P2(name): name=" << name << std::endl;
       }
       assert(fMap.count(name) != 0);
-      return (TProfile2D*) fMap.find(name)->second;
+      return dynamic_cast<TProfile2D*>(fMap.find(name)->second);
    }
 
    /**
