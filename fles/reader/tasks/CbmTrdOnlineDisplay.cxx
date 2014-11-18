@@ -66,13 +66,13 @@ InitStatus CbmTrdOnlineDisplay::Init()
   fSpadic1->cd(2);
   h2=static_cast<TH2*>(gROOT->FindObjectAny("BaseLine_SysCore1_Spadic1"));
   if (h2!=NULL) {
-    h2->Draw("");
+    h2->Draw("COLZ");
   }
 
   fSpadic1->cd(3);
   h2=static_cast<TH2*>(gROOT->FindObjectAny("Integrated_ADC_Spectrum_SysCore1_Spadic1"));
   if (h2!=NULL) {
-    h2->Draw("");
+    h2->Draw("COLZ");
   }
 
   fSpadic1->cd(4);
@@ -90,44 +90,62 @@ InitStatus CbmTrdOnlineDisplay::Init()
 
   for (Int_t i=0; i<32; i++) {
     fSpadic1a->cd(i+1);
-    TString temphistname = "Signal_Shape_SysCore1_Spadic1_Ch";
-    if(i<10) {
-      temphistname = temphistname + std::to_string(0) + std::to_string(i);
-      h2=static_cast<TH2*>(gROOT->FindObjectAny(temphistname.Data()));
-      if (h2!=NULL) {
-        h2->Draw("");
+    if (false){
+      TString temphistname = "Signal_Shape_SysCore1_Spadic1_Ch";
+      if(i<10) {
+	temphistname = temphistname + std::to_string(0) + std::to_string(i);
+	h2=static_cast<TH2*>(gROOT->FindObjectAny(temphistname.Data()));
+	if (h2!=NULL) {
+	  h2->Draw("COLZ");
+	}
+      } else {
+	temphistname = temphistname + std::to_string(i);
+	h2=static_cast<TH2*>(gROOT->FindObjectAny(temphistname.Data()));
+	if (h2!=NULL) {
+	  h2->Draw("COLZ");
+	}
       }
     } else {
-      temphistname = temphistname + std::to_string(i);
-      h2=static_cast<TH2*>(gROOT->FindObjectAny(temphistname.Data()));
-      if (h2!=NULL) {
-        h2->Draw("");
+      for(Int_t sys = 0; sys < 3; sys++){
+	for(Int_t spa = 0; spa < 3; spa++){
+	  TString temphistname = "Pulse_SysCore"+std::to_string(sys)+"_Spadic"+std::to_string(spa)+"_Ch" + std::to_string(0) + std::to_string(i);
+	  h1=static_cast<TH1*>(gROOT->FindObjectAny(temphistname.Data()));
+	  if (h1!=NULL) {
+	    h1->SetLineColor(sys);
+	    h1->SetLineStyle(spa);
+	    if (sys == 0 && spa == 0)
+	      h1->Draw("C");
+	    else
+	      h1->Draw("C,same");
+	  }
+	}
       }
     }
   }
 
-/*
-  CbmTrdRawBeamProfile* c = static_cast<CbmTrdRawBeamProfile*>(gROOT->FindObjectAny("CbmTrdRawBeamProfile")).Data()); 
-  LOG(INFO)<<"Found class "<< c->GetName() << FairLogger::endl;
 
-  TClass *cl = c->IsA();
-  TDataMember *dm = cl->GetDataMember("fHM");
-  TMethodCall *getter = dm->GetterMethod(c); 
+  /*
+    CbmTrdRawBeamProfile* c = static_cast<CbmTrdRawBeamProfile*>(gROOT->FindObjectAny("CbmTrdRawBeamProfile")).Data()); 
+    LOG(INFO)<<"Found class "<< c->GetName() << FairLogger::endl;
+
+    TClass *cl = c->IsA();
+    TDataMember *dm = cl->GetDataMember("fHM");
+    TMethodCall *getter = dm->GetterMethod(c); 
 
   
-  CbmHistManager* HM_RawProfile;
-  getter->Execute(c,"",HM_RawProfile); 
+    CbmHistManager* HM_RawProfile;
+    getter->Execute(c,"",HM_RawProfile); 
 
-  if (HM_RawProfile)
+    if (HM_RawProfile)
     LOG(INFO) << "Hier bin ich" << HM_RawProfile->GetName() << FairLogger::endl;
 
-   TList* list = gROOT->GetListOfBrowsables();
-   TIter nextT(list);
-   TObject *t = NULL;
-   while ((t = (TObject *) nextT())) {
-     LOG(INFO) << "Found obj " << t->GetName();
-   }
-*/
+    TList* list = gROOT->GetListOfBrowsables();
+    TIter nextT(list);
+    TObject *t = NULL;
+    while ((t = (TObject *) nextT())) {
+    LOG(INFO) << "Found obj " << t->GetName();
+    }
+  */
 
   return kSUCCESS;
 

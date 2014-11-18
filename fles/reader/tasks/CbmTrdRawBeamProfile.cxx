@@ -80,14 +80,14 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
 
   Int_t entries = fRawSpadic->GetEntriesFast();
   //  LOG(INFO) << "******" << FairLogger::endl;
-  //  LOG(INFO) << "Entries: " << entries << FairLogger::endl;
+  LOG(INFO) << "Entries: " << entries << FairLogger::endl;
 
   for (Int_t i=0; i < entries; ++i) {
     CbmSpadicRawMessage* raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i));
     Int_t eqID = raw->GetEquipmentID();
     Int_t sourceA = raw->GetSourceAddress();
     Int_t chID = raw->GetChannelID();
-
+    std::cout << "  eqID " << eqID << "  sourceA " << sourceA << "  chID " << chID << std::endl;
     Int_t nrSamples=raw->GetNrSamples();
    
     if ( 32 == nrSamples) {
@@ -97,10 +97,10 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
 	syscore="SysCore1_";
 	break;
       case 57346: // Frankfurt
-	syscore="SysCore2_";
+	syscore="SysCore1_";
 	break;
       case 57347: // Bucarest
-	syscore="SysCore3_";
+	syscore="SysCore1_";
 	break;
       default:
         LOG(FATAL) << "EquipmentID " << eqID << "not known." << FairLogger::endl;
@@ -147,12 +147,15 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
       for (Int_t bin = 1; bin < 32; bin++) {
 	histName = "Integrated_ADC_Spectrum_" + syscore + spadic;
 	fHM->H2(histName.Data())->Fill(chID,
-		raw->GetSamples()[bin] - raw->GetSamples()[0]);
+				       raw->GetSamples()[bin] - raw->GetSamples()[0]);
       }
 
       for (Int_t bin = 0; bin < 32; bin++) {
 	histName = "Signal_Shape_" + syscore + spadic + channelId;
 	fHM->H2(histName.Data())->Fill(bin,raw->GetSamples()[bin]);
+
+	histName = "Pulse_" + syscore + spadic + channelId;
+	fHM->H1(histName.Data())->Fill(bin,raw->GetSamples()[bin]);
       }
 
       histName = "Trigger_Heatmap_" + syscore + spadic;
@@ -164,6 +167,8 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
 
       //histName = "Trigger_Correlation_" + syscore + spadic;// needs time information to correlated events in different chambers
       //fHM->H2(histName.Data())->Fill(chID,chID);
+    } else {
+      // corrupt message?
     }
   } 
 }
@@ -212,6 +217,13 @@ void CbmTrdRawBeamProfile::CreateHistograms()
 	fHM->Add(histName.Data(), 
 		 new TH2F(histName, title, 32, 0, 32, 511, -256, 255));
       }
+      for(Int_t  channel = 0; channel < 32; channel++) {
+	histName = "Pulse_" + syscoreName[syscore] + "_" + spadicName[spadic] + "_Ch" + channelName[channel];
+	title = histName + ";Channel;ADC value";
+	fHM->Add(histName.Data(), 
+		 new TH1F(histName, title, 32, 0, 32));
+      }
+
       /*
 	histName = "Trigger_Correlation_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;Trigger Counter").c_str(), 32, 0, 32, 32, 0, 32));
