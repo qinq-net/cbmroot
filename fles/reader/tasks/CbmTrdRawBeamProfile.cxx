@@ -120,14 +120,14 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
       spadic="Spadic2";
       break;
     case 3:  // second spadic
-      spadic="Spadic1";
+      spadic="Spadic2";
       chID += 16;
       break;
     case 4:  // third spadic
-      spadic="Spadic2";
+      spadic="Spadic3";
       break;
     case 5:  // third spadic
-      spadic="Spadic2";
+      spadic="Spadic3";
       chID += 16;
       break;
     default:
