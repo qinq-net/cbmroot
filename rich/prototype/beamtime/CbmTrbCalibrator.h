@@ -12,16 +12,29 @@ class CbmTrbCalibrator : public TObject
 {
 public: // methods
    /*
-    * Destructor
+    * Destructor.
     */
    ~CbmTrbCalibrator();
 
+   /*
+    * Generate calibration tables. Not needed if they were imported from the external file.
+    */
    void GenHistos();
 
    /*
     * Singleton class object returner.
     */
    static CbmTrbCalibrator* Instance();
+
+   /*
+    * Enable calibration - build calibration tables from the received data.
+    */
+   void EnableCalibration() { fToDoCalibration = kTRUE; }
+
+   /*
+    * Disable calibration - either use linear hardcoded calibration or use tables imported from file.
+    */
+   void DisableCalibration() { fToDoCalibration = kFALSE; }
 
    /*
     * Set the period of calibration.
@@ -43,11 +56,6 @@ public: // methods
     * Fine time counter is 10 bits => UShort_t is enough.
     */
    Double_t GetFineTimeCalibrated(UShort_t TRB, UShort_t TDC, UShort_t CH, UShort_t fineCnt);
-   
-   /*
-    * Per se calibration of a certain channel of a certain TDC of a certain TRB.
-    */
-   void DoCalibrate(UShort_t TRB, UShort_t TDC, UShort_t CH);
 
    /*
     * Export the calibration information into the root file.
@@ -87,6 +95,11 @@ private: // methods
     */
    Double_t GetRealFineCalibration(UShort_t TRB, UShort_t TDC, UShort_t CH, UShort_t fineCnt);
 
+   /*
+    * Per se calibration of a certain channel of a certain TDC of a certain TRB basing on the buffer accumulated by AddFineTime().
+    */
+   void DoCalibrate(UShort_t TRB, UShort_t TDC, UShort_t CH);
+
 private: // data members
 
    /*
@@ -94,7 +107,12 @@ private: // data members
     * calibrationPeriod entries in the buffer for channel CH.
     */
    Bool_t fToDoCalibration;
-   
+
+   /*
+    * True is calibration histograms have already been created
+    */
+   Bool_t fTablesCreated;
+
    /*
     * Minimum number of fine time counters taken into account to start calibration.
     */

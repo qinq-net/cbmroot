@@ -6,13 +6,13 @@
 #include "CbmDrawHist.h"
 
 CbmTrbCalibrator* CbmTrbCalibrator::fInstance = 0;
-//UInt_t CbmTrbCalibrator::fEventCounter = 0;
 
+// By default the calibration tables are imported from the file
 CbmTrbCalibrator::CbmTrbCalibrator():
-   fToDoCalibration(true),
-   fCalibrationPeriod(5000)
+   fToDoCalibration(kFALSE),
+   fCalibrationPeriod(5000),
+   fTablesCreated(kFALSE)
 {
-   GenHistos();
 }
 
 CbmTrbCalibrator::~CbmTrbCalibrator()
@@ -23,31 +23,6 @@ CbmTrbCalibrator* CbmTrbCalibrator::Instance()
 {
    if (!fInstance) fInstance = new CbmTrbCalibrator();
    return fInstance;
-}
-
-// inTRBid - raw id, looks like 0x8025    TRB - from 0 to 16 incl.
-// inTDCid - raw id, looks like 0x****    TDC - from 0 to 3 incl.
-// inCHid - raw id of the channel - the same as CH - number of the channel from 0 to 32 incl.
-void CbmTrbCalibrator::AddFineTime(UInt_t inTRBid, UShort_t inTDCid, UShort_t inCHid, UShort_t fineTime)
-{
-   UInt_t TRB = ((inTRBid >> 4) & 0x00FF) - 1;
-   UShort_t TDC = (inTDCid & 0x000F);
-   UShort_t CH = inCHid;
-
-   LOG(DEBUG3) << "AddFineTime: TRB" << TRB << " TDC" << TDC << " CH" << CH << FairLogger::endl;
-
-   fhLeadingFineBuffer[TRB][TDC][CH]->Fill(fineTime);
-   fhLeadingFine[TRB][TDC][CH]->Fill(fineTime);
-
-   fFTcounter[TRB][TDC][CH]++;
-   
-   if (fFTcounter[TRB][TDC][CH] >= fCalibrationPeriod
-      && fToDoCalibration
-      && fCalibrationDoneHisto[TRB][TDC]->GetBinContent(CH+1) == 0)
-   {
-      DoCalibrate(TRB, TDC, CH);
-      fFTcounter[TRB][TDC][CH] = 0;
-   }
 }
 
 void CbmTrbCalibrator::Export(const char* filename)
@@ -81,25 +56,6 @@ void CbmTrbCalibrator::Export(const char* filename)
 void CbmTrbCalibrator::Import(const char* filename)
 {
    LOG(INFO) << "Importing calibration tables from " << filename << FairLogger::endl;
-
-   if (fTRBroot) {
-      LOG(INFO) << "Removing existing calibration data." << FairLogger::endl;
-/*
-      for (Int_t b=0; b<TRB_TDC3_NUMBOARDS; ++b) {
-         for (Int_t t=0; t<TRB_TDC3_NUMTDC; ++t) {
-            for (Int_t i=0; i<TRB_TDC3_CHANNELS; ++i) {
-               delete fhLeadingFineBuffer[b][t][i];
-               delete fhLeadingFine[b][t][i];
-               delete fhCalcBinWidth[b][t][i];
-               delete fhCalBinTime[b][t][i];
-            }
-            delete fCalibrationDoneHisto[b][t];
-         }
-      }
-
-      //gROOT->GetRootFolder()->RecursiveRemove(fTRBroot);
-*/
-   }
 
    TDirectory* current = gDirectory;
    TFile* old = gFile;
@@ -152,6 +108,36 @@ void CbmTrbCalibrator::Import(const char* filename)
    gFile = old;
    gDirectory = current;
 
+   fTablesCreated = kTRUE;
+}
+
+// inTRBid - raw id, looks like 0x8025    TRB - from 0 to 16 incl.
+// inTDCid - raw id, looks like 0x****    TDC - from 0 to 3 incl.
+// inCHid - raw id of the channel - the same as CH - number of the channel from 0 to 32 incl.
+void CbmTrbCalibrator::AddFineTime(UInt_t inTRBid, UShort_t inTDCid, UShort_t inCHid, UShort_t fineTime)
+{
+   if (fToDoCalibration)
+   {
+      if (!fTablesCreated) GenHistos();
+
+      UInt_t TRB = ((inTRBid >> 4) & 0x00FF) - 1;
+      UShort_t TDC = (inTDCid & 0x000F);
+      UShort_t CH = inCHid;
+
+      LOG(DEBUG3) << "AddFineTime: TRB" << TRB << " TDC" << TDC << " CH" << CH << FairLogger::endl;
+
+      fhLeadingFineBuffer[TRB][TDC][CH]->Fill(fineTime);
+      fhLeadingFine[TRB][TDC][CH]->Fill(fineTime);
+
+      fFTcounter[TRB][TDC][CH]++;
+      
+      if (fFTcounter[TRB][TDC][CH] >= fCalibrationPeriod
+         && fCalibrationDoneHisto[TRB][TDC]->GetBinContent(CH+1) == 0)
+      {
+         DoCalibrate(TRB, TDC, CH);
+         fFTcounter[TRB][TDC][CH] = 0;
+      }
+   }
 }
 
 void CbmTrbCalibrator::DoCalibrate(UShort_t TRB, UShort_t TDC, UShort_t CH)
@@ -187,7 +173,6 @@ void CbmTrbCalibrator::DoCalibrate(UShort_t TRB, UShort_t TDC, UShort_t CH)
    fhLeadingFineBuffer[TRB][TDC][CH]->Reset();
 
    fCalibrationDoneHisto[TRB][TDC]->SetBinContent(CH+1, 1);
-
 }
 
 Double_t CbmTrbCalibrator::GetFineTimeCalibrated(UShort_t TRB, UShort_t TDC, UShort_t CH, UShort_t fineCnt)
@@ -281,6 +266,9 @@ void CbmTrbCalibrator::GenHistos()
          
       } // TDCs
    } // TRBs
+
+   LOG(DEBUG) << "Histos created." << FairLogger::endl;
+   fTablesCreated = kTRUE;
 
 } // end of method
 

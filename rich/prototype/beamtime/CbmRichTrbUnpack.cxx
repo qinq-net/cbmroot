@@ -71,7 +71,7 @@ Int_t CbmRichTrbUnpack::ReadEvent()
 	BuildEvent(fEventNum);
 
 
-	LOG(INFO) << "CbmRichTrbUnpack::ReadEvent : # hits in event " << fRichHits->GetEntries() << FairLogger::endl;
+	LOG(DEBUG) << "CbmRichTrbUnpack::ReadEvent : # hits in event " << fRichHits->GetEntries() << FairLogger::endl;
 	for (int i = 0; i < fRichHits->GetEntries(); i++) {
 	CbmRichHit* hit = (CbmRichHit*)fRichHits->At(i);
 		//LOG(DEBUG) << hit->GetX() << " " << hit->GetY() << FairLogger::endl;
