@@ -87,54 +87,55 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
     Int_t eqID = raw->GetEquipmentID();
     Int_t sourceA = raw->GetSourceAddress();
     Int_t chID = raw->GetChannelID();
-    std::cout << "  eqID " << eqID << "  sourceA " << sourceA << "  chID " << chID << std::endl;
+    std::cout << std::dec << "==eqID " << eqID << "  sourceA " << sourceA << "  chID " << chID << std::endl;
     Int_t nrSamples=raw->GetNrSamples();
    
-    if ( 32 == nrSamples) {
-      TString syscore="";
-      switch (eqID) {
-      case 57345:  // Münster
-	syscore="SysCore1_";
-	break;
-      case 57346: // Frankfurt
-	syscore="SysCore1_";
-	break;
-      case 57347: // Bucarest
-	syscore="SysCore1_";
-	break;
-      default:
-        LOG(FATAL) << "EquipmentID " << eqID << "not known." << FairLogger::endl;
-	break;
-      }     
+  
+    TString syscore="";
+    switch (eqID) {
+    case 57345:  // Münster
+      syscore="SysCore1_";
+      break;
+    case 57346: // Frankfurt
+      syscore="SysCore1_";
+      break;
+    case 57347: // Bucarest
+      syscore="SysCore1_";
+      break;
+    default:
+      LOG(FATAL) << "EquipmentID " << eqID << "not known." << FairLogger::endl;
+      break;
+    }     
       
-      TString spadic="";
-      switch (sourceA) {
-      case 0:  // first spadic
-	spadic="Spadic1";
-	break;
-      case 1:  // first spadic
-	spadic="Spadic1";
-	chID += 16;
-	break;
-      case 2:  // second spadic
-	spadic="Spadic2";
-	break;
-      case 3:  // second spadic
-	spadic="Spadic1";
-	chID += 16;
-	break;
-      case 4:  // third spadic
-	spadic="Spadic2";
-	break;
-      case 5:  // third spadic
-	spadic="Spadic2";
-	chID += 16;
-	break;
-      default:
-        LOG(FATAL) << "Source Address " << sourceA << "not known." << FairLogger::endl;
-	break;
-      }     
-
+    TString spadic="";
+    switch (sourceA) {
+    case 0:  // first spadic
+      spadic="Spadic1";
+      break;
+    case 1:  // first spadic
+      spadic="Spadic1";
+      chID += 16;
+      break;
+    case 2:  // second spadic
+      spadic="Spadic2";
+      break;
+    case 3:  // second spadic
+      spadic="Spadic1";
+      chID += 16;
+      break;
+    case 4:  // third spadic
+      spadic="Spadic2";
+      break;
+    case 5:  // third spadic
+      spadic="Spadic2";
+      chID += 16;
+      break;
+    default:
+      LOG(FATAL) << "Source Address " << sourceA << "not known." << FairLogger::endl;
+      break;
+    }   
+    if ( 32 == nrSamples) {  
+      std::cout << "->eqID " << eqID << "  sourceA " << sourceA << "  chID " << chID << std::endl;
       TString channelId;
       channelId.Form("_Ch%02d", chID);
 
@@ -155,6 +156,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
 	fHM->H2(histName.Data())->Fill(bin,raw->GetSamples()[bin]);
 
 	histName = "Pulse_" + syscore + spadic + channelId;
+	fHM->H1(histName.Data())->Clear();
 	fHM->H1(histName.Data())->Fill(bin,raw->GetSamples()[bin]);
       }
 
@@ -168,6 +170,8 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
       //histName = "Trigger_Correlation_" + syscore + spadic;// needs time information to correlated events in different chambers
       //fHM->H2(histName.Data())->Fill(chID,chID);
     } else {
+      TString histName = "ErrorCounter_" + syscore + spadic;
+      fHM->H1(histName.Data())->Fill(chID);
       // corrupt message?
     }
   } 
@@ -196,6 +200,11 @@ void CbmTrdRawBeamProfile::CreateHistograms()
       TString title = histName + ";Channel;Counts";
       fHM->Add(histName.Data(), new TH1F(histName, title, 33, 0, 33));
 
+      histName = "ErrorCounter_" + syscoreName[syscore] + "_" + spadicName[spadic];
+      title = histName + ";Channel;ADC value in Bin 0";
+      fHM->Add(histName.Data(), 
+	       new TH1F(histName, title, 33, 0, 33));
+
       histName = "BaseLine_" + syscoreName[syscore] + "_" + spadicName[spadic];
       title = histName + ";Channel;ADC value in Bin 0";
       fHM->Add(histName.Data(), 
@@ -213,13 +222,13 @@ void CbmTrdRawBeamProfile::CreateHistograms()
 
       for(Int_t  channel = 0; channel < 32; channel++) {
 	histName = "Signal_Shape_" + syscoreName[syscore] + "_" + spadicName[spadic] + "_Ch" + channelName[channel];
-	title = histName + ";Channel;ADC value";
+	title = histName + ";Time Bin;ADC value";
 	fHM->Add(histName.Data(), 
 		 new TH2F(histName, title, 32, 0, 32, 511, -256, 255));
       }
       for(Int_t  channel = 0; channel < 32; channel++) {
 	histName = "Pulse_" + syscoreName[syscore] + "_" + spadicName[spadic] + "_Ch" + channelName[channel];
-	title = histName + ";Channel;ADC value";
+	title = histName + ";Time Bin;ADC value";
 	fHM->Add(histName.Data(), 
 		 new TH1F(histName, title, 32, 0, 32));
       }
