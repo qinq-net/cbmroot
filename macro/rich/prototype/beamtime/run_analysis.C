@@ -6,8 +6,9 @@ void run_analysis()
    loadlibs();
 
    //string hldFileName = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/fles/secondtest_pulser16ch+sync.hld";
-   string hldFileDir = "/home/pusan/nov2014data/";
-   string hldFileName = "Laser_100_0.hld";
+   string hldFileDir = "";// "/home/pusan/nov2014data/";
+   string hldFileName = "te14322160114.hld";// "Laser_100_0.hld";
+   Bool_t isAnaPulserEvents = false; // Set to true if you want to analyze pulser events
 
    // --- Specify number of events to be produced.
    // --- -1 means run until the end of the input file.
@@ -24,9 +25,8 @@ void run_analysis()
    // --- Set debug level
    gDebug = 0;
 
-
    CbmRichTrbUnpack* source = new CbmRichTrbUnpack(hldFileDir + hldFileName);
-   source->SetAnaPulserEvents(true);
+   source->SetAnaPulserEvents(isAnaPulserEvents);
 
    CbmTrbCalibrator* fgCalibrator = CbmTrbCalibrator::Instance();
 
@@ -38,8 +38,6 @@ void run_analysis()
 //   fgCalibrator->EnableCalibration();
 //   fgCalibrator->SetCalibrationPeriod(10000);
 
-
-
    // --- Event header
    //FairEventHeader* event = new CbmTbEvent();
    //event->SetRunId(260);
@@ -49,25 +47,23 @@ void run_analysis()
    run->SetOutputFile(outFile);
    //run->SetEventHeader(event);
 
-   CbmRichReconstruction* richReco = new CbmRichReconstruction();
-   //richReco->SetZTrackExtrapolation(50.);
-   //richReco->SetMinNofStsHits(0);
-   richReco->SetFinderName("hough_prototype");
-   richReco->SetRunTrackAssign(false);
-   richReco->SetRunExtrapolation(false);
-   richReco->SetRunProjection(false);
-   richReco->SetRunFitter(false);
-   //run->AddTask(richReco);
+   if (!isAnaPulserEvents) {
+	   CbmRichReconstruction* richReco = new CbmRichReconstruction();
+	   richReco->SetFinderName("hough_prototype");
+	   richReco->SetRunTrackAssign(false);
+	   richReco->SetRunExtrapolation(false);
+	   richReco->SetRunProjection(false);
+	   richReco->SetRunFitter(false);
+	   run->AddTask(richReco);
 
-   //CbmRichTrbRecoQa* qaRaw = new CbmRichTrbRecoQa();
-   //run->AddTask(qaRaw);
-
-   //CbmRichTrbPulserQa* qaPulser = new CbmRichTrbPulserQa();
-   //run->AddTask(qaPulser);
-
+	   CbmRichTrbRecoQa* qaRaw = new CbmRichTrbRecoQa();
+	   run->AddTask(qaRaw);
+   } else {
+	   CbmRichTrbPulserQa* qaPulser = new CbmRichTrbPulserQa();
+	   run->AddTask(qaPulser);
+   }
 
    run->Init();
-
 
    // --- Start run
    TStopwatch timer;
