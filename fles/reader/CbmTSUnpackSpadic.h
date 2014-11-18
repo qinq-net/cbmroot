@@ -15,6 +15,7 @@
 
 
 #include "CbmTSUnpack.h"
+#include "CbmBeamDefaults.h"
 
 #include "TClonesArray.h"
 
@@ -32,11 +33,14 @@ class CbmTSUnpackSpadic : public CbmTSUnpack
 #endif
   virtual void Reset();
 
+  virtual void Finish();
   // protected:
   //  virtual void Register();
 
  private:
   TClonesArray* fSpadicRaw;
+  Int_t fEpochMarkerArray[NrOfSyscores][NrOfHalfSpadics];
+  Int_t fSuperEpochCounter[NrOfSyscores][NrOfHalfSpadics];
 
   ClassDef(CbmTSUnpackSpadic, 1)
 };

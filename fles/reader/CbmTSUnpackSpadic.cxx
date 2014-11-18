@@ -7,6 +7,7 @@
 #include "CbmTSUnpackSpadic.h"
 
 #include "CbmSpadicRawMessage.h"
+
 #include "TimesliceReader.hpp"
 
 #include "FairLogger.h"
@@ -18,8 +19,16 @@
 
 CbmTSUnpackSpadic::CbmTSUnpackSpadic()
   : CbmTSUnpack(),
-    fSpadicRaw(new TClonesArray("CbmSpadicRawMessage", 10))
+    fSpadicRaw(new TClonesArray("CbmSpadicRawMessage", 10)),
+    fEpochMarkerArray(),
+    fSuperEpochCounter()
 {
+  for (Int_t i=0; i < NrOfSyscores; ++i) { 
+    for (Int_t j=0; j < NrOfHalfSpadics; ++j) { 
+      fEpochMarkerArray[i][j] = 0;
+      fSuperEpochCounter[i][j] = 0;
+    }
+  }
 }
 
 CbmTSUnpackSpadic::~CbmTSUnpackSpadic()
@@ -56,26 +65,85 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
       if(gLogger->IsLogNeeded(DEBUG)) {
 	print_message(*mp);
       }
+
       Int_t link = ts.descriptor(component, 0).eq_id;
       Int_t address = addr;
-      Int_t channel = mp->channel_id();
-      Int_t epoch = -1;
-      Int_t time = mp->timestamp();
-      Int_t samples = mp->samples().size();
-      Int_t* sample_values = new Int_t[samples];
-      Int_t counter1=0;
-      for (auto x : mp->samples()) {
-        sample_values[counter1] = x;
-        ++counter1;
+
+      if ( mp->is_epoch_marker() ) { 
+	switch (link) {
+	case kMuenster:  // Muenster
+          if ( mp->epoch_count() < fEpochMarkerArray[0][addr] ) {
+            fSuperEpochCounter[0][addr]++;
+	    LOG(INFO) << "Overflow of EpochCounter for Syscore0_Spadic" 
+		      << addr << FairLogger::endl;
+	  } else if ((mp->epoch_count() - fEpochMarkerArray[0][addr]) !=1 ) {
+	    LOG(INFO) << "Missed epoch counter for Syscore0_Spadic" 
+		      << addr << FairLogger::endl;
+	  }
+	  fEpochMarkerArray[0][addr] = mp->epoch_count(); 
+	  break;
+	case kFrankfurt: // Frankfurt
+          if ( mp->epoch_count() < fEpochMarkerArray[1][addr] ) {
+            fSuperEpochCounter[1][addr]++;
+	    LOG(INFO) << "Overflow of EpochCounter for Syscore0_Spadic" 
+		      << addr << FairLogger::endl;
+	  }  else if ((mp->epoch_count() - fEpochMarkerArray[0][addr]) !=1 ) {
+	    LOG(INFO) << "Missed epoch counter for Syscore0_Spadic" 
+		      << addr << FairLogger::endl;
+	  }
+	  fEpochMarkerArray[1][addr] = mp->epoch_count(); 
+	  break;
+	case kBucarest: // Bucarest
+          if ( mp->epoch_count() < fEpochMarkerArray[2][addr] ) {
+            fSuperEpochCounter[2][addr]++;
+	    LOG(INFO) << "Overflow of EpochCounter for Syscore0_Spadic" 
+		      << addr << FairLogger::endl;
+	  } else if ((mp->epoch_count() - fEpochMarkerArray[0][addr]) !=1 ) {
+	    LOG(INFO) << "Missed epoch counter for Syscore0_Spadic" 
+		      << addr << FairLogger::endl;
+	  }
+	  fEpochMarkerArray[2][addr] = mp->epoch_count(); 
+	  break;
+	default:
+	  LOG(FATAL) << "EquipmentID " << link << "not known." << FairLogger::endl;
+	  break;
+	}     
+        
+      } 
+      
+      if ( mp->is_hit() ) { 
+	Int_t channel = mp->channel_id();
+	Int_t epoch;
+	switch (link) {
+	case kMuenster:  // Muenster
+	  epoch = fEpochMarkerArray[0][addr]; 
+	  break;
+	case kFrankfurt: // Frankfurt
+	  epoch = fEpochMarkerArray[1][addr];
+	  break;
+	case kBucarest: // Bucarest
+	  epoch = fEpochMarkerArray[2][addr];
+	  break;
+	default:
+	  LOG(FATAL) << "EquipmentID " << link << "not known." << FairLogger::endl;
+	  break;
+	}     
+	Int_t time = mp->timestamp();
+	Int_t samples = mp->samples().size();
+	Int_t* sample_values = new Int_t[samples];
+	Int_t counter1=0;
+	for (auto x : mp->samples()) {
+	  sample_values[counter1] = x;
+	  ++counter1;
+	}
+	new( (*fSpadicRaw)[counter] )
+	  CbmSpadicRawMessage(link, address, channel, epoch, time, samples, sample_values);
+	++counter;
+	delete[] sample_values;
       }
-      new( (*fSpadicRaw)[counter] )
-	CbmSpadicRawMessage(link, address, channel, epoch, time, samples, sample_values);
-      ++counter;
-      delete[] sample_values;
     }
   }
   return kTRUE;
-
 }
 
 void CbmTSUnpackSpadic::print_message(const spadic::Message& m)
@@ -103,6 +171,18 @@ void CbmTSUnpackSpadic::print_message(const spadic::Message& m)
 
 void CbmTSUnpackSpadic::Reset()
 {
+}
+
+void CbmTSUnpackSpadic::Finish()
+{
+  for (Int_t i=0; i < NrOfSyscores; ++i) { 
+    for (Int_t j=0; j < NrOfHalfSpadics; ++j) { 
+      LOG(INFO) << "There have been " << fSuperEpochCounter[i][j] 
+		<< " SuperEpochs for Syscore" << i << "_Spadic" 
+		<< j << " in this file" << FairLogger::endl;
+    }
+  }
+
 }
 
 /*

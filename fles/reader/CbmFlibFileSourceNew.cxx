@@ -118,6 +118,12 @@ Int_t CbmFlibFileSourceNew::ReadEvent()
       fSource = new fles::TimesliceInputArchive(fFileName.Data());
     }
   } 
+  for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
+    LOG(INFO) << "Finish " << it->second->GetName() << 
+      " for systemID 0x" << std::hex << it->first << std::dec << FairLogger::endl;
+    it->second->Finish();
+    //    it->second->Register();
+  }
   return 1; // no more data; trigger end of run
 }
 

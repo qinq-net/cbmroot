@@ -31,6 +31,8 @@ class CbmTSUnpackNxyter : public CbmTSUnpack
 #endif
   virtual void Reset();
 
+  virtual void Finish() {;}
+
   // protected:
   //  virtual void Register();
 

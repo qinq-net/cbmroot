@@ -28,6 +28,7 @@ class CbmTSUnpack : public TObject
 #endif
   virtual void Reset() = 0;
 
+  virtual void Finish() = 0;
   // protected:
   //  virtual void Register() = 0;
 

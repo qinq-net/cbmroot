@@ -166,7 +166,7 @@ void CbmNxFlibFileSource::UnpackNxyterCbmNetMessage(const fles::Timeslice& ts, s
          #endif
 
          local_offset = 4;
-         while (local_offset < (uint32_t)cur_DTM_header.packet_length*2+4) {                     
+         while (local_offset < static_cast<uint32_t>(cur_DTM_header.packet_length*2+4)) {                     
 
             cur_hit_data.MessageType = (msContent_shifted[local_offset+5] >> 0) & 0x0F;   // 1 byte
 
@@ -230,7 +230,7 @@ void CbmNxFlibFileSource::UnpackNxyterCbmNetMessage(const fles::Timeslice& ts, s
          #endif
 
          // add 4 - DTM header size
-         offset += (uint32_t)cur_DTM_header.packet_length * 2+4;
+         offset += static_cast<uint32_t>(cur_DTM_header.packet_length * 2+4);
          // shift some more bytes to fit the CbmNet package size
          if ((padding = offset % 8) > 0) offset += (8-padding);
 
