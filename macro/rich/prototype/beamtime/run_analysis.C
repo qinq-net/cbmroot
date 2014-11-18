@@ -29,18 +29,25 @@ void run_analysis()
    source->SetAnaPulserEvents(true);
 
    CbmTrbCalibrator* fgCalibrator = CbmTrbCalibrator::Instance();
+
+   // either import calibration tables from the existing file
    fgCalibrator->Import("calibration.root");
-   //fgCalibrator->Export("calibration.root");
    fgCalibrator->Draw();
+   // or calibration tables from first events
+   // one can explicitly set the number of entries for channel to start its calibration
+//   fgCalibrator->EnableCalibration();
+//   fgCalibrator->SetCalibrationPeriod(10000);
+
+
 
    // --- Event header
- //  FairEventHeader* event = new CbmTbEvent();
- //  event->SetRunId(260);
+   //FairEventHeader* event = new CbmTbEvent();
+   //event->SetRunId(260);
 
    // --- Run
    FairRunOnline *run = new FairRunOnline(source);
    run->SetOutputFile(outFile);
- //  run->SetEventHeader(event);
+   //run->SetEventHeader(event);
 
    CbmRichReconstruction* richReco = new CbmRichReconstruction();
    //richReco->SetZTrackExtrapolation(50.);
@@ -67,6 +74,9 @@ void run_analysis()
    timer.Start();
    run->Run(nEvents, 0); // run until end of input file
    timer.Stop();
+
+   // --- export calibration tables
+//   fgCalibrator->Export("calibration.root");
 
    // --- End-of-run info
    Double_t rtime = timer.RealTime();
