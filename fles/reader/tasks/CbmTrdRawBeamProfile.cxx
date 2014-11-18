@@ -2,6 +2,7 @@
 
 #include "CbmSpadicRawMessage.h"
 #include "CbmHistManager.h"
+#include "CbmBeamDefaults.h"
 
 #include "FairLogger.h"
 
@@ -80,27 +81,26 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
 
   Int_t entries = fRawSpadic->GetEntriesFast();
   //  LOG(INFO) << "******" << FairLogger::endl;
-  LOG(INFO) << "Entries: " << entries << FairLogger::endl;
+  //  LOG(INFO) << "Entries: " << entries << FairLogger::endl;
 
   for (Int_t i=0; i < entries; ++i) {
     CbmSpadicRawMessage* raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i));
     Int_t eqID = raw->GetEquipmentID();
     Int_t sourceA = raw->GetSourceAddress();
     Int_t chID = raw->GetChannelID();
-    std::cout << std::dec << "==eqID " << eqID << "  sourceA " << sourceA << "  chID " << chID << std::endl;
+
     Int_t nrSamples=raw->GetNrSamples();
-   
-  
+
     TString syscore="";
     switch (eqID) {
-    case 57345:  // Münster
+    case kMuenster:  // Muenster
+      syscore="SysCore0_";
+      break;
+    case kFrankfurt: // Frankfurt
       syscore="SysCore1_";
       break;
-    case 57346: // Frankfurt
-      syscore="SysCore1_";
-      break;
-    case 57347: // Bucarest
-      syscore="SysCore1_";
+    case kBucarest: // Bucarest
+      syscore="SysCore2_";
       break;
     default:
       LOG(FATAL) << "EquipmentID " << eqID << "not known." << FairLogger::endl;
@@ -110,24 +110,24 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
     TString spadic="";
     switch (sourceA) {
     case 0:  // first spadic
-      spadic="Spadic1";
+      spadic="Spadic0";
       break;
     case 1:  // first spadic
-      spadic="Spadic1";
+      spadic="Spadic0";
       chID += 16;
       break;
     case 2:  // second spadic
-      spadic="Spadic2";
+      spadic="Spadic1";
       break;
     case 3:  // second spadic
-      spadic="Spadic2";
+      spadic="Spadic1";
       chID += 16;
       break;
     case 4:  // third spadic
-      spadic="Spadic3";
+      spadic="Spadic2";
       break;
     case 5:  // third spadic
-      spadic="Spadic3";
+      spadic="Spadic2";
       chID += 16;
       break;
     default:
@@ -135,7 +135,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
       break;
     }   
     if ( 32 == nrSamples) {  
-      std::cout << "->eqID " << eqID << "  sourceA " << sourceA << "  chID " << chID << std::endl;
+
       TString channelId;
       channelId.Form("_Ch%02d", chID);
 
@@ -188,8 +188,8 @@ void CbmTrdRawBeamProfile::CreateHistograms()
 
   // Create histograms for 3 Syscores with maximum 3 Spadics
 
-  TString syscoreName[] = { "SysCore1", "SysCore2", "SysCore3" };
-  TString spadicName[]  = { "Spadic1", "Spadic2", "Spadic3" };
+  TString syscoreName[] = { "SysCore0", "SysCore1", "SysCore2" };
+  TString spadicName[]  = { "Spadic0", "Spadic1", "Spadic2" };
   TString channelName[] = { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", 
 			   "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", 
 			   "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", 
