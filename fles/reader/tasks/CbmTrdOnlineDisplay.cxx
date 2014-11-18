@@ -58,25 +58,25 @@ InitStatus CbmTrdOnlineDisplay::Init()
   gPad->SetFillColor(0);
 
   fSpadic1->cd(1);
-  h1=static_cast<TH1*>(gROOT->FindObjectAny("CountRate_SysCore1_Spadic1"));
+  h1=static_cast<TH1*>(gROOT->FindObjectAny("CountRate_SysCore0_Spadic0"));
   if (h1!=NULL) {
     h1->Draw("");
   }
 
   fSpadic1->cd(2);
-  h2=static_cast<TH2*>(gROOT->FindObjectAny("BaseLine_SysCore1_Spadic1"));
+  h2=static_cast<TH2*>(gROOT->FindObjectAny("BaseLine_SysCore0_Spadic0"));
   if (h2!=NULL) {
     h2->Draw("COLZ");
   }
 
   fSpadic1->cd(3);
-  h2=static_cast<TH2*>(gROOT->FindObjectAny("Integrated_ADC_Spectrum_SysCore1_Spadic1"));
+  h2=static_cast<TH2*>(gROOT->FindObjectAny("Integrated_ADC_Spectrum_SysCore0_Spadic0"));
   if (h2!=NULL) {
     h2->Draw("COLZ");
   }
 
   fSpadic1->cd(4);
-  h2=static_cast<TH2*>(gROOT->FindObjectAny("Trigger_Heatmap_SysCore1_Spadic1"));
+  h2=static_cast<TH2*>(gROOT->FindObjectAny("Trigger_Heatmap_SysCore0_Spadic0"));
   if (h2!=NULL) {
     h2->Draw("COLZ");
   }
@@ -91,7 +91,7 @@ InitStatus CbmTrdOnlineDisplay::Init()
   for (Int_t i=0; i<32; i++) {
     fSpadic1a->cd(i+1);
     if (false){
-      TString temphistname = "Signal_Shape_SysCore1_Spadic1_Ch";
+      TString temphistname = "Signal_Shape_SysCore0_Spadic0_Ch";
       if(i<10) {
 	temphistname = temphistname + std::to_string(0) + std::to_string(i);
 	h2=static_cast<TH2*>(gROOT->FindObjectAny(temphistname.Data()));
