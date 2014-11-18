@@ -7,16 +7,20 @@ void run_analysis()
 
    //string hldFileName = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/fles/secondtest_pulser16ch+sync.hld";
    string hldFileDir = "";// "/home/pusan/nov2014data/";
-   string hldFileName = "te14322160114.hld";// "Laser_100_0.hld";
+   string hldFileName = hldFileDir + "te14322160114.hld";// "Laser_100_0.hld";
+   TString outRootFileName = hldFileName + ".root";// "Laser_100_0.hld";
    Bool_t isAnaPulserEvents = false; // Set to true if you want to analyze pulser events
+
+	TString script = TString(gSystem->Getenv("SCRIPT"));
+
+	if (script == "yes") {
+		hldFileName = string(gSystem->Getenv("INPUT_HLD_FILE"));
+		outRootFileName = TString(gSystem->Getenv("OUTPUT_ROOT_FILE"));
+	}
 
    // --- Specify number of events to be produced.
    // --- -1 means run until the end of the input file.
    Int_t nEvents = -1;
-
-   // --- Specify output file name (this is just an example)
-   //TString outFile = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/fles/output_test_file.root";
-   TString outFile = hldFileName + ".root";
 
    // --- Set log output levels
    FairLogger::GetLogger()->SetLogScreenLevel("INFO");
@@ -25,7 +29,7 @@ void run_analysis()
    // --- Set debug level
    gDebug = 0;
 
-   CbmRichTrbUnpack* source = new CbmRichTrbUnpack(hldFileDir + hldFileName);
+   CbmRichTrbUnpack* source = new CbmRichTrbUnpack(hldFileName);
    source->SetAnaPulserEvents(isAnaPulserEvents);
 
    CbmTrbCalibrator* fgCalibrator = CbmTrbCalibrator::Instance();
@@ -44,7 +48,7 @@ void run_analysis()
 
    // --- Run
    FairRunOnline *run = new FairRunOnline(source);
-   run->SetOutputFile(outFile);
+   run->SetOutputFile(outRootFileName);
    //run->SetEventHeader(event);
 
    if (!isAnaPulserEvents) {
@@ -79,7 +83,7 @@ void run_analysis()
    Double_t ctime = timer.CpuTime();
    std::cout << std::endl << std::endl;
    std::cout << "Macro finished successfully." << std::endl;
-   std::cout << "Output file is " << outFile << std::endl;
+   std::cout << "Output file is " << outRootFileName << std::endl;
    std::cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << std::endl;
    std::cout << " Test passed" << std::endl;
    std::cout << " All ok " << std::endl;
