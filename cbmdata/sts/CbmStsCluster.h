@@ -35,6 +35,18 @@ public:
      **/
     Double_t GetCentre() const { return fChannelMean; }
 
+    /** Get cluster index
+     ** @return Index of cluster in cluster array
+     **/
+    Int_t GetIndex() const { return fIndex; }
+
+
+    /** @brief Set cluster index
+     ** To keep track of the input during hit finding
+     ** @param index  Index of cluster in cluster array
+     **/
+    void SetIndex(Int_t index) { fIndex = index; }
+
     /**   Sector number
      **    Kept for bacjwrad compatibility
      **/
@@ -96,12 +108,13 @@ private:
     Double_t fChannelMean;   ///< Charge-weighted mean channel number
     Double_t fChannelMeanSq; ///< Charge-weighted mean square channel number
     Double_t fTime;          ///< Cluster time (average of digi times)
+    Int_t    fIndex;         ///< Index of cluster in input array
 
     // TODO: fSectorNr is here for backward compatibility with classes
     // using CbmStsDigiScheme. Should be eventually removed.
     Int_t fSectorNr; ///< Number of sector within station
 
-    ClassDef(CbmStsCluster, 3);
+    ClassDef(CbmStsCluster, 4);
 };
 
 #endif

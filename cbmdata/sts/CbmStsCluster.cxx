@@ -16,6 +16,7 @@ CbmStsCluster::CbmStsCluster()
     , fChannelMean(0.)
     , fChannelMeanSq(0.)
     , fTime(0.)
+    , fIndex(-1)
     , fSectorNr(0)
 {
 
