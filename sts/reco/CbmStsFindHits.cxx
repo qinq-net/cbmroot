@@ -179,6 +179,7 @@ Int_t CbmStsFindHits::SortClusters() {
 			 iCluster < fClusters->GetEntriesFast(); iCluster++) {
 		CbmStsCluster* cluster = static_cast<CbmStsCluster*> (fClusters->At(iCluster));
 		UInt_t address = cluster->GetAddress();
+		cluster->SetIndex(iCluster);
 		CbmStsModule* module =
 				static_cast<CbmStsModule*>(fSetup->GetElement(address, kStsModule));
 

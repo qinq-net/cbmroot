@@ -74,7 +74,9 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
 	// --- Transform into global coordinate system
 	Double_t local[3] = { xLocal, yLocal, 0.};
 	Double_t global[3];
-	Double_t error[3] = { 0., 0., 0. };
+	// TODO: Set proper errors and covariances. For the time being, pitch/sqrt(12)
+	// is used as an approximation.
+	Double_t error[3] = { 0.0017, 0.0017, 0.0017 };
 	fNode->GetMatrix()->LocalToMaster(local, global);
 
 	// --- Calculate hit time (average of cluster times)
@@ -82,16 +84,17 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
 
 	// --- Create hit
 	Int_t nHits = fHits->GetEntriesFast();
-	new ( (*fHits)[nHits] ) CbmStsHit(GetAddress(),   // address
-			                              global,         // coordinates
-			                              error,          // coord. error
-			                              0.,             // covariance xy
-			                              0,              // front cluster index
-			                              0,              // back cluster index
-			                              0,              // front digi index
-			                              0,              // back digi index
-			                              0,              // sectorNr
-			                              hitTime);       // hit time
+	new ( (*fHits)[nHits] )
+			CbmStsHit(GetAddress(),          // address
+					      global,                // coordinates
+					      error,                 // coordinate error
+					      0.,                    // covariance xy
+					      clusterF->GetIndex(),  // front cluster index
+					      clusterB->GetIndex(),  // back cluster index
+					      0,                     // front digi index
+					      -1,                    // back digi index
+					      -1,                    // sectorNr
+					      hitTime);              // hit time
 
 	LOG(DEBUG2) << GetName() << ": Creating hit at (" << global[0] << ", "
 			        << global[1] << ", " << global[2] << ")" << FairLogger::endl;
