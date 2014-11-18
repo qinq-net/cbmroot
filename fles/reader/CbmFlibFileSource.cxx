@@ -121,13 +121,13 @@ Int_t CbmFlibFileSource::ReadEvent()
 void CbmFlibFileSource::PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc)
 {
   LOG(DEBUG) << "Header ID: Ox" << std::hex << static_cast<int>(mdsc.hdr_id) 
-	    << FairLogger::endl;
+	    << std::dec << FairLogger::endl;
   LOG(DEBUG) << "Header version: Ox" << std::hex << static_cast<int>(mdsc.hdr_ver) 
 	    << std::dec << FairLogger::endl;
   LOG(DEBUG) << "Equipement ID: " << mdsc.eq_id << FairLogger::endl;
   LOG(DEBUG) << "Flags: " << mdsc.flags << FairLogger::endl;
   LOG(DEBUG) << "Sys ID: Ox" << std::hex << static_cast<int>(mdsc.sys_id) 
-	    << FairLogger::endl;
+	    << std::dec << FairLogger::endl;
   LOG(DEBUG) << "Sys version: Ox" << std::hex << static_cast<int>(mdsc.sys_ver) 
 	    << std::dec << FairLogger::endl;
   LOG(DEBUG) << "Microslice Idx: " << mdsc.idx << FairLogger::endl; 

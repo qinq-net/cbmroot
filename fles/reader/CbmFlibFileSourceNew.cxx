@@ -53,6 +53,7 @@ Bool_t CbmFlibFileSourceNew::Init()
   if ( 0 == fFileName.Length() ) {
     TString connector = Form("tcp://%s:%i", fHost.Data(), fPort);
     LOG(INFO) << "Open TSPublisher at " << connector << FairLogger::endl;
+    fInputFileList.Add(new TObjString(connector));
     fSource = new fles::TimesliceSubscriber(connector.Data());
     if ( !fSource) { 
       LOG(FATAL) << "Could not connect to publisher." << FairLogger::endl;
@@ -72,7 +73,7 @@ Bool_t CbmFlibFileSourceNew::Init()
 
   for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
     LOG(INFO) << "Initialize " << it->second->GetName() << 
-      " for systemID 0x" << std::hex << it->first << FairLogger::endl;
+      " for systemID 0x" << std::hex << it->first << std::dec << FairLogger::endl;
     it->second->Init();
     //    it->second->Register();
   }
@@ -97,7 +98,7 @@ Int_t CbmFlibFileSourceNew::ReadEvent()
 	auto it=fUnpackers.find(systemID);
 	if (it == fUnpackers.end()) {
 	  LOG(FATAL) << "Could not find unpacker for system id 0x" << 
-	    std::hex << systemID << FairLogger::endl;
+	    std::hex << systemID << std::dec << FairLogger::endl;
 	} else {
 	  it->second->DoUnpack(ts, c);
 	}
@@ -123,13 +124,13 @@ Int_t CbmFlibFileSourceNew::ReadEvent()
 void CbmFlibFileSourceNew::PrintMicroSliceDescriptor(const fles::MicrosliceDescriptor& mdsc)
 {
   LOG(INFO) << "Header ID: Ox" << std::hex << static_cast<int>(mdsc.hdr_id) 
-	    << FairLogger::endl;
+	    << std::dec << FairLogger::endl;
   LOG(INFO) << "Header version: Ox" << std::hex << static_cast<int>(mdsc.hdr_ver) 
 	    << std::dec << FairLogger::endl;
   LOG(INFO) << "Equipement ID: " << mdsc.eq_id << FairLogger::endl;
   LOG(INFO) << "Flags: " << mdsc.flags << FairLogger::endl;
   LOG(INFO) << "Sys ID: Ox" << std::hex << static_cast<int>(mdsc.sys_id) 
-	    << FairLogger::endl;
+	    << std::dec << FairLogger::endl;
   LOG(INFO) << "Sys version: Ox" << std::hex << static_cast<int>(mdsc.sys_ver) 
 	    << std::dec << FairLogger::endl;
   LOG(INFO) << "Microslice Idx: " << mdsc.idx << FairLogger::endl; 
