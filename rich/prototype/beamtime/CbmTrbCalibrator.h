@@ -8,6 +8,13 @@
 
 #include "CbmRichTrbDefines.h"
 
+enum enu_calibMode {
+   etn_IMPORT,  // import calibration tables from the file and use them
+   etn_ONLINE,  // use first data to calibrate; the channel has to get at least fCalibrationPeriod messages to get calibrated
+   etn_NOCALIB, // use linear function going from origin to (512, n) which means that the fine time is not calibrated
+   etn_IDEAL   // use almost linear function - close to real calibration but idealized
+};
+
 class CbmTrbCalibrator : public TObject
 {
 public: // methods
@@ -27,14 +34,9 @@ public: // methods
    static CbmTrbCalibrator* Instance();
 
    /*
-    * Enable calibration - build calibration tables from the received data.
+    *
     */
-   void EnableCalibration() { fToDoCalibration = kTRUE; }
-
-   /*
-    * Disable calibration - either use linear hardcoded calibration or use tables imported from file.
-    */
-   void DisableCalibration() { fToDoCalibration = kFALSE; }
+   void SetMode(enu_calibMode mode) { fCalibMode = mode; }
 
    /*
     * Set the period of calibration.
@@ -58,14 +60,19 @@ public: // methods
    Double_t GetFineTimeCalibrated(UShort_t TRB, UShort_t TDC, UShort_t CH, UShort_t fineCnt);
 
    /*
-    * Export the calibration information into the root file.
+    * Set the name of the file from which the calibration tables will be imported
     */
-   void Export(const char* filename = "calibration.root");
+   void SetInputFilename(TString filename) { fInputFilename = filename; }
 
    /*
     * Import the calibration information from the root file.
     */
-   void Import(const char* filename = "calibration.root");
+   void Import(/*const char* filename = "calibration.root"*/);
+
+   /*
+    * Export the calibration information into the root file.
+    */
+   void Export(const char* filename = "calibration.root");
 
    /*
     * Draw a canvas with the flags indicating whilch channels have been calibrated.
@@ -83,8 +90,10 @@ private: // methods
     * Pseudo-calibration - used during debug.
     * Return time in ns.
     * Fine time counter is 10 bits => UShort_t is enough.
+    * AlmostLinear has tails.
     */
-   Double_t GetLinearFineCalibration(UShort_t fineCnt);
+   Double_t GetLinearCalibratedFT(UShort_t fineCnt);
+   Double_t GetAlmostLinearCalibratedFT(UShort_t fineCnt);
 
    /*
     * Return really calibrated fine time. DoCalibrate() should have been called before.
@@ -93,7 +102,7 @@ private: // methods
     * Return time in ns.
     * Fine time counter is 10 bits => UShort_t is enough.
     */
-   Double_t GetRealFineCalibration(UShort_t TRB, UShort_t TDC, UShort_t CH, UShort_t fineCnt);
+   Double_t GetRealCalibratedFT(UShort_t TRB, UShort_t TDC, UShort_t CH, UShort_t fineCnt);
 
    /*
     * Per se calibration of a certain channel of a certain TDC of a certain TRB basing on the buffer accumulated by AddFineTime().
@@ -103,13 +112,12 @@ private: // methods
 private: // data members
 
    /*
-    * If true then calibration of channel CH will be executed after having
-    * calibrationPeriod entries in the buffer for channel CH.
+    * Current calibration mode (see description of enu_calibMode)
     */
-   Bool_t fToDoCalibration;
+   enu_calibMode fCalibMode;
 
    /*
-    * True is calibration histograms have already been created
+    * True if calibration histograms have already been created
     */
    Bool_t fTablesCreated;
 
@@ -122,6 +130,11 @@ private: // data members
     * Root folder for all the calibration data.
     */
    TFolder* fTRBroot;
+
+   /*
+    * Input file name
+    */
+   TString fInputFilename;
 
    /*
     * Calibration has already been done - use calibation table,

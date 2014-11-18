@@ -9,8 +9,8 @@ CbmTrbCalibrator* CbmTrbCalibrator::fInstance = 0;
 
 // By default the calibration tables are imported from the file
 CbmTrbCalibrator::CbmTrbCalibrator():
-   fToDoCalibration(kFALSE),
-   fCalibrationPeriod(5000),
+   fCalibMode(etn_NOCALIB),
+   fCalibrationPeriod(10000),
    fTablesCreated(kFALSE)
 {
 }
@@ -27,6 +27,18 @@ CbmTrbCalibrator* CbmTrbCalibrator::Instance()
 
 void CbmTrbCalibrator::Export(const char* filename)
 {
+/*
+   TH1I* calibrationEntries = new TH1I("abc", "abc", TRB_TDC3_CHANNELS*TRB_TDC3_NUMTDC*TRB_TDC3_NUMBOARDS, 0, TRB_TDC3_CHANNELS*TRB_TDC3_NUMTDC*TRB_TDC3_NUMBOARDS);
+   for (Int_t b=0; b<TRB_TDC3_NUMBOARDS; ++b) {
+      for (Int_t t=0; t<TRB_TDC3_NUMTDC; ++t) {
+         for (Int_t i=0; i<TRB_TDC3_CHANNELS; ++i) {
+            calibrationEntries->SetBinContent(b*TRB_TDC3_NUMTDC*TRB_TDC3_CHANNELS + t*TRB_TDC3_CHANNELS + i, fFTcounter[b][t][i]);
+         }
+      }
+   }
+   DrawH1(calibrationEntries);
+*/ 
+
    TDirectory* current = gDirectory;
    TFile* old = gFile;
    TFile* file = new TFile(filename, "RECREATE");
@@ -53,13 +65,13 @@ void CbmTrbCalibrator::Export(const char* filename)
 }
 
 // This method will overwrite the existing tables
-void CbmTrbCalibrator::Import(const char* filename)
+void CbmTrbCalibrator::Import(/*const char* filename*/)
 {
-   LOG(INFO) << "Importing calibration tables from " << filename << FairLogger::endl;
+   LOG(INFO) << "Importing calibration tables from " << fInputFilename << FairLogger::endl;
 
    TDirectory* current = gDirectory;
    TFile* old = gFile;
-   TFile* file = new TFile(filename, "READ");
+   TFile* file = new TFile(fInputFilename, "READ");
 
    if (file == NULL || !(file->IsOpen()))
    {
@@ -96,7 +108,7 @@ void CbmTrbCalibrator::Import(const char* filename)
             }
 
             obname.Form("CalibrationDone_%02d_%d", b+1, t);
-            TH1C* curHisto2 = (TH1C*)(perTDCfolder->FindObject(obname));
+            TH1C* curHisto2 = (TH1C*)(perTRBfolder->FindObject(obname));
             fCalibrationDoneHisto[b][t] = curHisto2;
          }
       }
@@ -116,7 +128,10 @@ void CbmTrbCalibrator::Import(const char* filename)
 // inCHid - raw id of the channel - the same as CH - number of the channel from 0 to 32 incl.
 void CbmTrbCalibrator::AddFineTime(UInt_t inTRBid, UShort_t inTDCid, UShort_t inCHid, UShort_t fineTime)
 {
-   if (fToDoCalibration)
+   // for etn_NOCALIB and etn_IDEAL this method is useless
+
+
+   if (fCalibMode == etn_ONLINE)
    {
       if (!fTablesCreated) GenHistos();
 
@@ -177,20 +192,46 @@ void CbmTrbCalibrator::DoCalibrate(UShort_t TRB, UShort_t TDC, UShort_t CH)
 
 Double_t CbmTrbCalibrator::GetFineTimeCalibrated(UShort_t TRB, UShort_t TDC, UShort_t CH, UShort_t fineCnt)
 {
-   if (fCalibrationDoneHisto[TRB][TDC]->GetBinContent(CH+1) == 1)
-      return GetRealFineCalibration(TRB, TDC, CH, fineCnt);
-   else
-      return GetLinearFineCalibration(fineCnt);
+   switch (fCalibMode) {
+      case etn_IMPORT:     // yes, this is correct - no break - fall through
+         if (!fTablesCreated) this->Import();
+      case etn_ONLINE:
+         if (fCalibrationDoneHisto[TRB][TDC]->GetBinContent(CH+1) == 1)
+            return GetRealCalibratedFT(TRB, TDC, CH, fineCnt);
+         break;
+      case etn_NOCALIB:
+         return GetLinearCalibratedFT(fineCnt);
+         break;
+      case etn_IDEAL:
+         return GetAlmostLinearCalibratedFT(fineCnt);
+         break;
+   }
 }
 
-Double_t CbmTrbCalibrator::GetLinearFineCalibration(UShort_t fineCnt)
+// etn_NOCALIB
+Double_t CbmTrbCalibrator::GetLinearCalibratedFT(UShort_t fineCnt)
 {
-   return (fineCnt<20) ? 0. : ((fineCnt>500) ? 5. : (fineCnt-20)/480.*5.);
+   return (Double_t)fineCnt * 5. / 512.; // counter * 5 ns / 512.  512 because there are 11 bits for fine time counter.
 }
 
-Double_t CbmTrbCalibrator::GetRealFineCalibration(UShort_t TRB, UShort_t TDC, UShort_t CH, UShort_t fineCnt)
+// etn_IDEAL
+Double_t CbmTrbCalibrator::GetAlmostLinearCalibratedFT(UShort_t fineCnt)
 {
-   return fhCalBinTime[TRB][TDC][CH]->GetBinContent(fineCnt+1); //TODO check
+   UShort_t tailSize = 30;
+
+   if (fineCnt < tailSize) {    // Left tail - 0 ns
+      return 0.;
+   } else if (fineCnt > 512-tailSize) {     // Right tail - 5 ns
+      return 5.;
+   } else {                   // Middle - linear function
+      return (Double_t)(fineCnt-tailSize) * 5. / (512. - 2.*tailSize);
+   }
+}
+
+// etn_IMPORT || etn_ONLINE
+Double_t CbmTrbCalibrator::GetRealCalibratedFT(UShort_t TRB, UShort_t TDC, UShort_t CH, UShort_t fineCnt)
+{
+   return fhCalBinTime[TRB][TDC][CH]->GetBinContent(fineCnt+1);
 }
 
 void CbmTrbCalibrator::GenHistos()
@@ -262,7 +303,7 @@ void CbmTrbCalibrator::GenHistos()
          obtitle.Form("Flag indicating that calibration is done for TRB %02d TDC %d", b+1, t);
          fCalibrationDoneHisto[b][t] = new TH1C(obname.Data(), obtitle.Data(), TRB_TDC3_CHANNELS, 0, TRB_TDC3_CHANNELS);
          
-         TDCfolders[b][t]->Add(fCalibrationDoneHisto[b][t]);
+         TRBfolders[b]->Add(fCalibrationDoneHisto[b][t]);
          
       } // TDCs
    } // TRBs
