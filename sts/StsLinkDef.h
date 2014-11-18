@@ -17,6 +17,7 @@
 
 // Monte-Carlo
 #pragma link C++ class CbmStsMC;
+#pragma link C++ class CbmStsSensorFactory;
 #pragma link C++ class CbmStsTrackStatus;
 
 // Digitization

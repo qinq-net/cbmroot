@@ -28,14 +28,6 @@ CbmStsSensorFactory::CbmStsSensorFactory()
 // -------------------------------------------------------------------------
 
 
-// ----- Get static instance   ---------------------------------------------
-CbmStsSensorFactory* CbmStsSensorFactory::Instance() {
-	  if ( ! fgInstance ) fgInstance = new CbmStsSensorFactory();
-	  return fgInstance;
-}
-// -------------------------------------------------------------------------
-
-
 
 // -----   Create sensor volume (private)   --------------------------------
 Bool_t CbmStsSensorFactory::CreateSensor(TString& name, TString& material,

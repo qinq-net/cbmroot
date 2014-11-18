@@ -21,6 +21,7 @@ setup/CbmStsSetup.cxx
 # --- Sources in mc
 set(SRCS_MC
 mc/CbmStsMC.cxx
+mc/CbmStsSensorFactory.cxx
 )
 # --- Sources in digitize
 set (SRCS_DIGITIZE
