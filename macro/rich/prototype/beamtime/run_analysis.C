@@ -15,7 +15,7 @@ void run_analysis()
    //string hldFileName = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/fles/secondtest_pulser16ch+sync.hld";
    string hldFileDir = "";// "/home/pusan/nov2014data/";
    string hldFileName = hldFileDir + "te14322160114.hld";// "Laser_100_0.hld";
-   TString outRootFileName = hldFileName + ".root";// "Laser_100_0.hld";
+   TString outRootFileName = hldFileDir + hldFileName + ".root";// "Laser_100_0.hld";
    Bool_t isAnaPulserEvents = false; // Set to true if you want to analyze pulser events
 
    	TString script = TString(gSystem->Getenv("SCRIPT"));
