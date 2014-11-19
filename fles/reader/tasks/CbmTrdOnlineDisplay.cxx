@@ -51,7 +51,7 @@ InitStatus CbmTrdOnlineDisplay::Init()
   gStyle->SetPalette(1);
   gStyle->SetLabelSize(lsize);
 
-  fSpadic1 = new TCanvas("fSpadic1", "Spadic1", 0, 0, 1010, 810);
+  fSpadic1 = new TCanvas("fSpadic1", "Spadic1", 0, 0, 505, 405);
   fSpadic1->Divide(3,2);
 
   // Should be set for each pad of the Canvas
@@ -84,7 +84,7 @@ InitStatus CbmTrdOnlineDisplay::Init()
 
  
 
-  TCanvas* fSpadic1a = new TCanvas("fSpadic1a", "Spadic1_Signal_Shape", 50, 50, 1510, 810);
+  fSpadic1a = new TCanvas("fSpadic1a", "Spadic1_Signal_Shape", 50, 50, 755, 405);
   fSpadic1a->Divide(8,4);	
   gPad->SetFillColor(0);
 
@@ -161,6 +161,7 @@ InitStatus CbmTrdOnlineDisplay::ReInit()
 void CbmTrdOnlineDisplay::Exec(Option_t* option)
 {
 
+/*
   fEventCounter++;
   
   if ( 0 == fEventCounter%fUpdateInterval ) {
@@ -173,6 +174,7 @@ void CbmTrdOnlineDisplay::Exec(Option_t* option)
     fSpadic1->Modified();
     fSpadic1->Update();
   } 
+*/
 
 }
 

@@ -45,6 +45,7 @@ Set(SRCS
 
   tasks/CbmTrdRawBeamProfile.cxx
   tasks/CbmTrdOnlineDisplay.cxx
+  tasks/CbmTrdEveOnlineDisplay.cxx
 )
 
 Set(NO_DICT_SRCS
@@ -54,7 +55,7 @@ Set(NO_DICT_SRCS
 Set(LINKDEF  FlibReaderLinkDef.h )
 Set(LIBRARY_NAME CbmFlibReader)
 Set(DEPENDENCIES
-    Base CbmBase fles_ipc flib_dpb spadicMessage
+    Eve Base CbmBase fles_ipc flib_dpb spadicMessage
 )
 
 GENERATE_LIBRARY()
