@@ -11,6 +11,7 @@ CbmStsHit::CbmStsHit()
     , fFrontClusterId(-1)
     , fBackClusterId(-1)
     , fTime(0.)
+    , fTimeError(0.)
 {
 }
 
@@ -18,7 +19,7 @@ CbmStsHit::CbmStsHit()
 CbmStsHit::CbmStsHit(Int_t address, const TVector3& pos, const TVector3& dpos,
 		                 Double_t dxy, Int_t frontClusterId, Int_t backClusterId,
 		                 Int_t frontDigiId, Int_t backDigiId, Int_t sectorNr,
-		                 Double_t time)
+		                 Double_t time, Double_t timeError)
     : CbmPixelHit(address, pos, dpos, dxy, -1)
     , fFrontDigiId(frontDigiId)
     , fBackDigiId(backDigiId)
@@ -26,6 +27,7 @@ CbmStsHit::CbmStsHit(Int_t address, const TVector3& pos, const TVector3& dpos,
     , fFrontClusterId(frontClusterId)
     , fBackClusterId(backClusterId)
     , fTime(time)
+    , fTimeError(timeError)
 {
 }
 CbmStsHit::~CbmStsHit()
