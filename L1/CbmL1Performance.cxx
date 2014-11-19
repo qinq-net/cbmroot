@@ -31,6 +31,8 @@
 #include "CbmStsSector.h" // for field FieldCheck.
 #include "CbmStsStation.h" // for field FieldCheck.
 
+#include "CbmMvdDigiMatch.h"
+
 #include "CbmL1Counters.h"
 
 #include <iostream>
@@ -1544,11 +1546,25 @@ void CbmL1::InputPerformance()
 //     Int_t nMC = listStsPts->GetEntries();
     for (int j=0; j < nEnt; j++ ){
       CbmMvdHit *sh = L1_DYNAMIC_CAST<CbmMvdHit*>( listMvdHits->At(j) );
-      CbmMvdHitMatch *hm = L1_DYNAMIC_CAST<CbmMvdHitMatch*>( listMvdHitMatches->At(j) );
+//       CbmMvdHitMatch *hm = L1_DYNAMIC_CAST<CbmMvdHitMatch*>( listMvdHitMatches->At(j) );
 
 //       int iMC = sh->GetRefIndex();
-      int iMC = hm->GetPointId();
-
+      
+      int iDigi = sh->GetRefId();
+      if (iDigi<0) continue;
+      CbmMatch *dm =  L1_DYNAMIC_CAST<CbmMatch*>( listMvdDigiMatches->At(iDigi));
+      int iMC = -1;
+      float mcWeight = 0.f;
+      for(int iDigiLink=0; iDigiLink<dm->GetNofLinks(); iDigiLink++)
+      {
+        if( dm->GetLink(iDigiLink).GetWeight() > mcWeight)
+        {
+          mcWeight = dm->GetLink(iDigiLink).GetWeight();
+          iMC = dm->GetLink(iDigiLink).GetIndex();
+        }
+      }
+      if(iMC<0) continue;
+     
         // hit pulls and residuals
 
       TVector3 hitPos, mcPos, hitErr;

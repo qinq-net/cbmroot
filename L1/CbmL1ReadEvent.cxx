@@ -20,6 +20,8 @@
 #include "CbmMatch.h"
 #include "CbmStsAddress.h"
 
+#include "CbmMvdDigiMatch.h"
+
 #include "TDatabasePDG.h"
 #include "TRandom.h"
 
@@ -119,7 +121,8 @@ void CbmL1::ReadEvent()
       {
         CbmMvdHit *mh = L1_DYNAMIC_CAST<CbmMvdHit*>( listMvdHits->At(j) );
         th.ExtIndex = -(1+j);
-        th.iStation = mh->GetStationNr() - 1;
+        th.iStation = mh->GetStationNr();// - 1;
+      // cout<<th.iStation << " th.iStation !!!!!!!!!!!!!!!!!!!!"<<endl;
         th.iSector  = 0;
         th.isStrip  = 0;
         th.iStripF = j;
@@ -149,10 +152,34 @@ void CbmL1::ReadEvent()
 //       iMCTr = match->GetTrackId();
 //     }
 //   }
-      if( listMvdHitMatches ){
-        CbmMvdHitMatch *match = L1_DYNAMIC_CAST<CbmMvdHitMatch*>( listMvdHitMatches->At(j) );
-        if( match){
-          iMC = match->GetPointId();
+//       if( listMvdHitMatches ){
+//         CbmMvdHitMatch *match = L1_DYNAMIC_CAST<CbmMvdHitMatch*>( listMvdHitMatches->At(j) );
+//         if( match){
+//           int iDigi = match->GetIndexNumber();
+//           CbmMvdDigiMatch *digimatch =  L1_DYNAMIC_CAST<CbmMvdDigiMatch*>( listMvdDigiMatches->At(iDigi));
+//           if(digimatch)
+//           {
+//             
+//             iMC = digimatch->GetIndexNumber();
+//             std::cout << "iMC " << iMC << std::endl;
+//           }
+//         }
+//       }
+      if( listMvdDigiMatches ){
+        CbmMvdHit *mh = L1_DYNAMIC_CAST<CbmMvdHit*>( listMvdHits->At(j) );
+        int iDigi = mh->GetRefId();
+        if (iDigi>=0)
+        {
+          CbmMatch *dm =  L1_DYNAMIC_CAST<CbmMatch*>( listMvdDigiMatches->At(iDigi));
+          float mcWeight = 0.f;
+          for(int iDigiLink=0; iDigiLink<dm->GetNofLinks(); iDigiLink++)
+          {
+            if( dm->GetLink(iDigiLink).GetWeight() > mcWeight)
+            {
+              mcWeight = dm->GetLink(iDigiLink).GetWeight();
+              iMC = dm->GetLink(iDigiLink).GetIndex();
+            }
+          }
         }
       }
       if( listMvdPts && iMC>=0 ){ // TODO1: don't need this with FairLinks
@@ -450,6 +477,7 @@ void CbmL1::ReadEvent()
       // find and save z positions
     float z_tmp;
     int ist = th.iStation;
+//     cout<<NMvdStations<<" NMvdStations "<<ist<<" ist "<<(s.ExtIndex)<<" (s.ExtIndex) "<<endl;
     if (ist < NMvdStations){
       CbmKFTube &t = CbmKF::Instance()->vMvdMaterial[ist];
       z_tmp = t.z;

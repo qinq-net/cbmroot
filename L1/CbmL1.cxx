@@ -37,6 +37,9 @@
 #include "TROOT.h"
 #include "TRandom3.h"
 
+#include "CbmMvdStationPar.h"
+#include "CbmMvdDetector.h"
+
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -229,6 +232,7 @@ InitStatus CbmL1::Init()
       listMvdHitMatches = 0;
     } else {
       listMvdPts = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("MvdPoint") );
+      listMvdDigiMatches = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("MvdDigiMatch") );
       listMvdHitMatches = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("MvdHitMatch") );
     }
   }
@@ -331,14 +335,22 @@ InitStatus CbmL1::Init()
     double z = 0;
     double Xmax, Ymax;
     if( ist<NMvdStations ){
+      
+      
+      
+      CbmMvdDetector* mvdDetector = CbmMvdDetector::Instance();
+      CbmMvdStationPar* mvdStationPar = mvdDetector->GetParameterFile();  
+        
+        
+        
       CbmKFTube &t = CbmKF::Instance()->vMvdMaterial[ist];
       geo[ind++] = t.z;
       geo[ind++] = t.dz;
       geo[ind++] = t.r;
       geo[ind++] = t.R;
       geo[ind++] = t.RadLength;
-      fscal f_phi=0, f_sigma=5.e-4, b_phi=3.14159265358/2., b_sigma=5.e-4;
-      f_phi=0; f_sigma=5.e-4; b_phi=3.14159265358/2.; b_sigma=5.e-4;
+      
+      fscal f_phi=0, f_sigma=mvdStationPar->GetXRes(ist)/10000, b_phi=3.14159265358/2., b_sigma=mvdStationPar->GetYRes(ist)/10000;
       geo[ind++] = f_phi;
       geo[ind++] = f_sigma;
       geo[ind++] = b_phi;
@@ -537,7 +549,6 @@ void CbmL1::Reconstruct()
 {
   static int nevent=0;
   if( fVerbose>1 ) cout << endl << "CbmL1::Exec event " << ++nevent << " ..." << endl << endl;
-
     // repack data
   ReadEvent();
   

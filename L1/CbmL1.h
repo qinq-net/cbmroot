@@ -183,6 +183,7 @@ class CbmL1 : public FairTask
 
    TClonesArray *listMvdPts; // Mvd MC points
    TClonesArray *listMvdHits;
+   TClonesArray *listMvdDigiMatches;
    TClonesArray *listMvdHitMatches;
 
     /// Used data = Repacked input data
