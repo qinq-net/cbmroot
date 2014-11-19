@@ -126,7 +126,7 @@ CbmStsModule* CbmStsSensor::GetModule() const {
 
 
 // -----   Process a CbmStsPoint  ------------------------------------------
-Int_t CbmStsSensor::ProcessPoint(CbmStsPoint* point, CbmLink* link) {
+Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point, CbmLink* link) {
 
 	// Check whether type is assigned
 	if ( ! fType ) {

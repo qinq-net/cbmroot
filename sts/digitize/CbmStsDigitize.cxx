@@ -18,11 +18,15 @@
 
 // Includes from FairRoot
 #include "FairEventHeader.h"
+#include "FairLink.h"
 #include "FairLogger.h"
+#include "FairMCPoint.h"
 #include "FairRunAna.h"
 
 // Includes from CbmRoot
+#include "CbmDaqBuffer.h"
 #include "CbmStsDigi.h"
+#include "CbmMCBuffer.h"
 #include "CbmStsPoint.h"
 
 // Include from STS
@@ -36,6 +40,7 @@
 // -----   Standard constructor   ------------------------------------------
 CbmStsDigitize::CbmStsDigitize(Int_t digiModel)
   : FairTask("StsDigitize"),
+    fMode(0),
     fDigiModel(digiModel),
     fDynRange(0.),
     fThreshold(0.),
@@ -51,7 +56,7 @@ CbmStsDigitize::CbmStsDigitize(Int_t digiModel)
     fNofSignalsF(0),
     fNofSignalsB(0),
     fNofDigis(0),
-    fNofEvents(0),
+    fNofSteps(0),
     fNofPointsTot(0.),
     fNofSignalsFTot(0.),
     fNofSignalsBTot(0.),
@@ -82,9 +87,9 @@ CbmStsDigitize::~CbmStsDigitize() {
 
 // -----   Create a digi object   ------------------------------------------
 void CbmStsDigitize::CreateDigi(UInt_t address,
-		              									 ULong64_t time,
-		              									 UShort_t adc,
-		              									 const CbmMatch& match) {
+		              							ULong64_t time,
+		              							UShort_t adc,
+		              							const CbmMatch& match) {
 
 	// Copy match object
 	CbmMatch* digiMatch = new CbmMatch();
@@ -127,6 +132,157 @@ void CbmStsDigitize::Exec(Option_t* opt) {
 	fTimer.Start();
 	Reset();
 
+	// --- Process StsPoints according to run mode
+	switch (fMode) {
+		case 0:  ProcessMCBuffer(); break;
+		case 1:  ProcessMCEvent();  break;
+		default: break;
+	}
+
+  // --- Process buffers of all modules
+  for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++)
+  	fSetup->GetModule(iModule)->ProcessAnalogBuffer(-1.);
+
+  // --- Counters
+  fTimer.Stop();
+  fNofSteps++;
+  fNofPointsTot   += fNofPoints;
+  fNofSignalsFTot += fNofSignalsF;
+  fNofSignalsBTot += fNofSignalsB;
+  fNofDigisTot    += fNofDigis;
+  fTimeTot        += fTimer.RealTime();
+
+  LOG(INFO) << "+ " << setw(20) << GetName() << ": Step " << setw(6)
+  		      << right << fNofSteps << ", time " << fixed << setprecision(6)
+  		      << fTimer.RealTime() << " s, points: " << fNofPoints
+  		      << ", signals: " << fNofSignalsF << " / " << fNofSignalsB
+  		      << ", digis: " << fNofDigis << FairLogger::endl;
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Finish run    ---------------------------------------------------
+void CbmStsDigitize::Finish() {
+	std::cout << std::endl;
+	LOG(INFO) << "=====================================" << FairLogger::endl;
+	LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
+	LOG(INFO) << "Steps processed  : " << fNofSteps << FairLogger::endl;
+	LOG(INFO) << "StsPoint / step  : " << fNofPointsTot / Double_t(fNofSteps)
+			      << FairLogger::endl;
+	LOG(INFO) << "Signals / step   : "
+			      << fNofSignalsFTot / Double_t(fNofSteps)
+			      << " / " << fNofSignalsBTot / Double_t(fNofSteps)
+			      << FairLogger::endl;
+	LOG(INFO) << "StsDigi / step   : " << fNofDigisTot  / Double_t(fNofSteps)
+			      << FairLogger::endl;
+	LOG(INFO) << "Digis per point  : " << fNofDigisTot / fNofPointsTot
+			      << FairLogger::endl;
+	LOG(INFO) << "Digis per signal : "
+			      << fNofDigisTot / ( fNofSignalsFTot + fNofSignalsBTot )
+			      << FairLogger::endl;
+	LOG(INFO) << "Time per step    : " << fTimeTot / Double_t(fNofSteps)
+			      << " s" << FairLogger::endl;
+	LOG(INFO) << "=====================================" << FairLogger::endl;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Initialisation    -----------------------------------------------
+InitStatus CbmStsDigitize::Init() {
+
+	// --- Detect running mode.
+
+	// If the tasks CbmMCTimeSim and CbmDaq are found, run in stream mode.
+	FairTask* timeSim = FairRunAna::Instance()->GetTask("MCTimeSim");
+	FairTask* daq     = FairRunAna::Instance()->GetTask("Daq");
+	if ( timeSim && daq ) {
+  	LOG(INFO) << GetName() << ": Using stream mode."
+  			      << FairLogger::endl;
+  	fMode = 0;
+	}  //? stream mode
+
+
+  // --- Else: run in event-based mode.
+  else {
+  	LOG(INFO) << GetName() << ": Using event mode."
+  			      << FairLogger::endl;
+  	fMode = 1;
+
+  	// Get input array (CbmStsPoint)
+    FairRootManager* ioman = FairRootManager::Instance();
+    if ( ! ioman ) Fatal("Init", "No FairRootManager");
+    fPoints = (TClonesArray*) ioman->GetObject("StsPoint");
+    if ( ! fPoints )
+    	LOG(FATAL) << GetName() << ": No StsPoint array in event-based mode!"
+      << FairLogger::endl;
+
+    // Register output array (CbmStsDigi)
+    fDigis = new TClonesArray("CbmStsDigi",1000);
+    ioman->Register("StsDigi", "Digital response in STS", fDigis, kTRUE);
+
+    // Register output array (CbmStsDigiMatch)
+    // For backward compatibility only; the match object is already member
+    // of CbmStsDigi.
+    fMatches = new TClonesArray("CbmMatch", 1000);
+    ioman->Register("StsDigiMatch", "MC link to StsDigi", fMatches, kTRUE);
+
+  } //? event mode
+
+  // Get STS setup interface
+  fSetup = CbmStsSetup::Instance();
+
+  // Assign types to the sensors in the setup
+  SetSensorTypes();
+
+  // Set the digitisation parameters of the modules
+  SetModuleParameters();
+
+  // Register this task to the setup
+  fSetup->SetDigitizer(this);
+
+  LOG(INFO) << GetName() << ": Initialisation successful"
+		    << FairLogger::endl;
+  return kSUCCESS;
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Process points from MCBuffer   ----------------------------------
+void CbmStsDigitize::ProcessMCBuffer() {
+
+  // Loop over StsPoints from MCBuffer
+  const CbmStsPoint* point = dynamic_cast<const CbmStsPoint*>
+                             (CbmMCBuffer::Instance()->GetNextPoint(kSTS));
+  while ( point ) {
+
+  	// --- Entry (event) number
+  	Int_t entry = point->GetEventID();
+
+  	// --- Point index in original array
+  	// TODO: This uses the FairLink set in CbmMCPointBuffer::Fill.
+  	// To be redone with redesign of MCPoint classes.
+    Int_t index = (point->GetLink(0)).GetIndex();
+
+    CbmLink* link = new CbmLink(1., index, entry);
+    ProcessPoint(point, link);
+    fNofPoints++;
+    delete link;
+
+  } // Point loop
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Process points from MC event    ---------------------------------
+void CbmStsDigitize::ProcessMCEvent() {
+
 	// --- MC Event number
 	Int_t iEvent =
 			FairRunAna::Instance()->GetEventHeader()->GetMCEntryNumber();
@@ -138,71 +294,27 @@ void CbmStsDigitize::Exec(Option_t* opt) {
 		return;
 	}
 	if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG) ) std::cout << std::endl;
-	LOG(DEBUG) << GetName() << ": processing event " << iEvent << " with " << fPoints->GetEntriesFast()
-			       << " StsPoints " << FairLogger::endl;
+	LOG(DEBUG) << GetName() << ": processing event " << iEvent << " with "
+			       << fPoints->GetEntriesFast() << " StsPoints "
+			       << FairLogger::endl;
 
 
   // --- Loop over all StsPoints and execute the ProcessPoint method
   for (Int_t iPoint=0; iPoint<fPoints->GetEntriesFast(); iPoint++) {
-   CbmStsPoint* point = (CbmStsPoint*) fPoints->At(iPoint);
+   const CbmStsPoint* point = (const CbmStsPoint*) fPoints->At(iPoint);
    CbmLink* link = new CbmLink(1., iPoint);
    ProcessPoint(point, link);
    fNofPoints++;
    delete link;
   }  // StsPoint loop
 
-  // --- Process buffers of all modules
-  for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++)
-  	fSetup->GetModule(iModule)->ProcessAnalogBuffer(-1.);
-
-  // --- Counters
-  fTimer.Stop();
-  fNofEvents++;
-  fNofPointsTot   += fNofPoints;
-  fNofSignalsFTot += fNofSignalsF;
-  fNofSignalsBTot += fNofSignalsB;
-  fNofDigisTot    += fNofDigis;
-  fTimeTot        += fTimer.RealTime();
-
-  LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
-  		      << right << iEvent << ", time " << fixed << setprecision(6)
-  		      << fTimer.RealTime() << " s, points: " << fNofPoints
-  		      << ", signals: " << fNofSignalsF << " / " << fNofSignalsB
-  		      << ", digis: " << fNofDigis << FairLogger::endl;
-}
-// -------------------------------------------------------------------------
-
-
-
-// -----   Finish run   ----------------------------------------------------
-void CbmStsDigitize::Finish() {
-	std::cout << std::endl;
-	LOG(INFO) << "=====================================" << FairLogger::endl;
-	LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
-	LOG(INFO) << "Events processed : " << fNofEvents << FairLogger::endl;
-	LOG(INFO) << "StsPoint / event : " << fNofPointsTot / Double_t(fNofEvents)
-			      << FairLogger::endl;
-	LOG(INFO) << "Signals / event  : "
-			      << fNofSignalsFTot / Double_t(fNofEvents)
-			      << " / " << fNofSignalsBTot / Double_t(fNofEvents)
-			      << FairLogger::endl;
-	LOG(INFO) << "StsDigi / event  : " << fNofDigisTot  / Double_t(fNofEvents)
-			      << FairLogger::endl;
-	LOG(INFO) << "Digis per point  : " << fNofDigisTot / fNofPointsTot
-			      << FairLogger::endl;
-	LOG(INFO) << "Digis per signal : "
-			      << fNofDigisTot / ( fNofSignalsFTot + fNofSignalsBTot )
-			      << FairLogger::endl;
-	LOG(INFO) << "Time per event   : " << fTimeTot / Double_t(fNofEvents)
-			      << " s" << FairLogger::endl;
-	LOG(INFO) << "=====================================" << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
 
 
 // -----  Process a StsPoint   ---------------------------------------------
-void CbmStsDigitize::ProcessPoint(CbmStsPoint* point, CbmLink* link) {
+void CbmStsDigitize::ProcessPoint(const CbmStsPoint* point, CbmLink* link) {
 
 	// Debug
 	if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG2) ) point->Print();
@@ -237,45 +349,6 @@ void CbmStsDigitize::ProcessPoint(CbmStsPoint* point, CbmLink* link) {
 
 
 
-// -----   Initialisation   ------------------------------------------------
-InitStatus CbmStsDigitize::Init() {
-
-  // Get input array (CbmStsPoint)
-  FairRootManager* ioman = FairRootManager::Instance();
-  if ( ! ioman ) Fatal("Init", "No FairRootManager");
-  fPoints = (TClonesArray*) ioman->GetObject("StsPoint");
-
-  // Register output array (CbmStsDigi)
-  fDigis = new TClonesArray("CbmStsDigi",1000);
-  ioman->Register("StsDigi", "Digital response in STS", fDigis, kTRUE);
-
-  // Register output array (CbmStsDigiMatch)
-  // For backward compatibility only; the match object is already member
-  // of CbmStsDigi.
-  fMatches = new TClonesArray("CbmMatch", 1000);
-  ioman->Register("StsDigiMatch", "MC link to StsDigi", fMatches, kTRUE);
-
-  // Get STS setup interface
-  fSetup = CbmStsSetup::Instance();
-
-  // Assign types to the sensors in the setup
-  SetSensorTypes();
-
-  // Set the digitisation parameters of the modules
-  SetModuleParameters();
-
-  // Register this task to the setup
-  fSetup->SetDigitizer(this);
-
-  LOG(INFO) << GetName() << ": Initialisation successful"
-		    << FairLogger::endl;
-  return kSUCCESS;
-
-}
-// -------------------------------------------------------------------------
-
-
-
 // -----   Private method ReInit   -----------------------------------------
 InitStatus CbmStsDigitize::ReInit() {
 
@@ -299,7 +372,7 @@ void CbmStsDigitize::Reset() {
 
 // -----   Set the digitisation parameters for the modules   ---------------
 // TODO: Currently, all modules have the same parameters. In future,
-// more flexible schemes must be used, in particular for the thersholds.
+// more flexible schemes must be used, in particular for the thresholds.
 void CbmStsDigitize::SetModuleParameters() {
 	Int_t nModules = fSetup->GetNofModules();
 	for (Int_t iModule = 0; iModule < nModules; iModule++) {

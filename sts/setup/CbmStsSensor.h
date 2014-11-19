@@ -109,7 +109,7 @@ class CbmStsSensor : public CbmStsElement
      ** Perform the appropriate action for a particle trajectory in the
      ** sensor characterised by the CbmStsPoint object
      **/
-    Int_t ProcessPoint(CbmStsPoint* point, CbmLink* link = NULL);
+    Int_t ProcessPoint(const CbmStsPoint* point, CbmLink* link = NULL);
 
 
     /** Set the sensor address

@@ -81,6 +81,7 @@ class CbmStsDigitize : public FairTask
 
  private:
 
+  Int_t fMode;       ///< Run mode. 0 = stream, 1 = event
   Int_t fDigiModel;  ///< Detector response model. 0 = ideal, 1 = real.
 
   // --- Digitisation parameters
@@ -103,7 +104,7 @@ class CbmStsDigitize : public FairTask
   Int_t          fNofDigis;     ///< Number of created digis in Exec
 
   // --- Run counters
-  Int_t          fNofEvents;      ///< Total number of events processed
+  Int_t          fNofSteps;       ///< Total number of steps processed
   Double_t       fNofPointsTot;   ///< Total number of points processed
   Double_t       fNofSignalsFTot; ///< Number of signals on front side
   Double_t       fNofSignalsBTot; ///< Number of signals on back side
@@ -119,18 +120,26 @@ class CbmStsDigitize : public FairTask
   virtual InitStatus Init();
 
 
+  /** Process StsPoints from MCEvent **/
+  void ProcessMCEvent();
+
+
+  /** Process StsPoints from MCBuffer **/
+  void ProcessMCBuffer();
+
+
   /** Process one MCPoint
    ** @param point  Pointer to CbmStsPoint to be processed
    ** @param link   Link to MCPoint
    **/
-  void ProcessPoint(CbmStsPoint* point, CbmLink* link = NULL);
+  void ProcessPoint(const CbmStsPoint* point, CbmLink* link = NULL);
 
 
   /** Re-initialisation **/
   virtual InitStatus ReInit();
 
 
-  /** Reset eventwise counters **/
+  /** Reset step-wise counters **/
   void Reset();
 
 
