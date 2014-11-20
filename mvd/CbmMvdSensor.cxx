@@ -295,7 +295,7 @@ ReadSensorGeometry(fVolName, fNodeName);
       {
        cout << endl << "No Plugins on this Sensor initial standart plugin " << endl;
        pluginFirst = NULL;
-       CbmMvdSensorPlugin* StandardPlugin = new CbmMvdSensorPlugin;
+       CbmMvdSensorPlugin* StandardPlugin = new CbmMvdSensorPlugin();
        	AddPlugin(StandardPlugin);
 	if(!framebuffer->IsInit())
        		StandardPlugin->Init();
