@@ -35,7 +35,7 @@ class CbmMvdSensorPlugin : public TObject
   /** Destructor **/
   virtual ~CbmMvdSensorPlugin();
   
-  virtual const MvdSensorPluginType GetPluginType(){;}
+  virtual const MvdSensorPluginType GetPluginType() = 0;
   virtual void Init(){;}
   virtual void Exec(){;}
   virtual void ExecChain(){;}
@@ -69,8 +69,8 @@ protected:
     Bool_t initialized;
 
 private:
-  CbmMvdSensorPlugin(const CbmMvdSensorPlugin&);
-  CbmMvdSensorPlugin operator=(const CbmMvdSensorPlugin&);
+  //CbmMvdSensorPlugin(const CbmMvdSensorPlugin&);
+  //CbmMvdSensorPlugin operator=(const CbmMvdSensorPlugin&);
   
   ClassDef(CbmMvdSensorPlugin,1);
 

@@ -18,6 +18,7 @@
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
 #include "CbmMCTrack.h"
+#include "FairLogger.h"
 
 // Includes from ROOT
 #include "TGeoManager.h"
@@ -107,7 +108,8 @@ CbmMvdSensorFindHitTask::CbmMvdSensorFindHitTask()
   fHitPosErrZ(0.0),
   fBranchName("MvdHit"),
   fDigisInCluster(-1),
-  fAddNoise(kFALSE)
+  fAddNoise(kFALSE),
+  inputSet(kFALSE)
 {
     CbmMvdCluster* clusterTemp= new CbmMvdCluster;
     fDigisInCluster= clusterTemp->GetMaxDigisInThisObject(); // read the number of memory cells from the cluster object
@@ -169,7 +171,8 @@ CbmMvdSensorFindHitTask::CbmMvdSensorFindHitTask(const char* name, Int_t iMode,
   fHitPosErrZ(0.0),
   fBranchName("MvdHit"),
   fDigisInCluster(-1),
-  fAddNoise(kFALSE)
+  fAddNoise(kFALSE),
+  inputSet(kFALSE)
 {    
     CbmMvdCluster* clusterTemp= new CbmMvdCluster;
     fDigisInCluster= clusterTemp->GetMaxDigisInThisObject(); // read the number of memory cells from the cluster object
@@ -248,18 +251,18 @@ void CbmMvdSensorFindHitTask::ExecChain() {
 // -----   Virtual public method Exec   --------------
 void CbmMvdSensorFindHitTask::Exec() {
 
- if(fInputBuffer->GetEntriesFast() <= 0)
-  {
-  fInputBuffer->Clear(); 
-  fInputBuffer->AbsorbObjects(fPreviousPlugin->GetOutputArray());
-  //cout << endl << "absorbt object from previous plugin." << endl;
-  }
+// if(!inputSet)
+//  {
+//  fInputBuffer->Clear(); 
+//  fInputBuffer->AbsorbObjects(fPreviousPlugin->GetOutputArray());
+//  cout << endl << "absorbt object from previous plugin at " << fSensor->GetName() << " got " << fInputBuffer->GetEntriesFast() << " entrys" << endl;
+//  }
  if(fInputBuffer->GetEntriesFast() > 0)
   {
 fHits->Clear("C");
 fOutputBuffer->Clear();
 fClusters->Clear("C");
-
+inputSet = kFALSE;
 vector<Int_t>* clusterArray=new vector<Int_t>;
         
 CbmMvdDigi* digi = NULL;
@@ -297,6 +300,7 @@ Int_t nDigis = fInputBuffer->GetEntriesFast();
     if( fMode == 1 )
       {
        GenerateFakeDigis(pixelSizeX, pixelSizeY); // -------- Create Fake Digis -
+	cout << endl << "generate fake digis" << endl;
       }
 
  
@@ -309,11 +313,15 @@ Int_t nDigis = fInputBuffer->GetEntriesFast();
     }
 
     fDigiMap.clear();
-
+Int_t refId;
 	for(Int_t k=0;k<nDigis;k++){
 
 	    digi = (CbmMvdDigi*) fInputBuffer->At(k);
-	    
+	    refId = digi->GetRefId();
+	    if ( refId < 0)
+		{
+		LOG(FATAL) << "RefID of this digi is -1 this should not happend "<< FairLogger::endl;
+		}
 	    //apply fNeighThreshold
 	   
 	    if(GetAdcCharge(digi->GetCharge()) < fNeighThreshold ) continue;
@@ -399,8 +407,11 @@ Int_t nDigis = fInputBuffer->GetEntriesFast();
 	     << fSensor->GetName() << endl;  */
 
 delete pixelUsed;
+clusterArray->clear();
 delete clusterArray;
 fInputBuffer->Clear();
+
+fDigiMap.clear();
 }
 else {//cout << endl << "No input found." << endl;
      }
@@ -558,9 +569,18 @@ void CbmMvdSensorFindHitTask::CreateHit(vector<Int_t>* clusterArray,  TVector3 &
     //calculate the CoG for this cluster
 
     Int_t    clusterSize = clusterArray->size();
+    Int_t    digiIndex = 0;
     //cout << endl << "try to create hit from " << clusterSize << " pixels" << endl;
-    CbmMvdDigi* pixelInCluster = (CbmMvdDigi*) fInputBuffer->At(clusterArray->at(0));
-    
+    CbmMvdDigi* pixelInCluster = (CbmMvdDigi*) fInputBuffer->At(clusterArray->at(digiIndex));
+    Int_t    thisRefID = pixelInCluster->GetRefId();
+    while(thisRefID < 0 && digiIndex < clusterSize)
+	{
+	pixelInCluster = (CbmMvdDigi*) fInputBuffer->At(clusterArray->at(digiIndex));
+	thisRefID = pixelInCluster->GetRefId();
+	digiIndex++;
+        }
+    if(thisRefID < 0)
+	LOG(FATAL) << "RefID of this digi is -1 this should not happend checked "<< digiIndex << " digis in this Cluster" << FairLogger::endl;
     Int_t detId = pixelInCluster->GetDetectorId();
 
     // Calculate the center of gravity of the charge of a cluster
@@ -625,7 +645,9 @@ void CbmMvdSensorFindHitTask::CreateHit(vector<Int_t>* clusterArray,  TVector3 &
     currentHit = (CbmMvdHit*) fHits->At(nHits);
     currentHit->SetTimeStamp(fSensor->GetCurrentEventTime());
     currentHit->SetTimeStampError(fSensor->GetIntegrationtime()/2);
-    currentHit->SetRefId(pixelInCluster->GetRefId());
+    currentHit->SetRefId(thisRefID);
+    if (pixelInCluster->GetRefId() < 0)
+    cout << endl << "new hit with refID " << pixelInCluster->GetRefId() << " to hit " << nHits << endl;
     
     nHits = fOutputBuffer->GetEntriesFast();
     new((*fOutputBuffer)[nHits]) CbmMvdHit(fSensor->GetStationNr(), pos, dpos, indexX, indexY, nClusters, 0);

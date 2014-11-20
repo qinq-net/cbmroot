@@ -71,7 +71,10 @@ public:
     /** Intialisation **/
     void Init(CbmMvdSensor* mySensor);
 
-    void SetInputDigi(CbmMvdDigi* digi){ new((*fInputBuffer)[fInputBuffer->GetEntriesFast()]) CbmMvdDigi(*((CbmMvdDigi*)digi));}
+    void SetInputDigi(CbmMvdDigi* digi)
+	{ new((*fInputBuffer)[fInputBuffer->GetEntriesFast()]) CbmMvdDigi(*((CbmMvdDigi*)digi)); 
+		inputSet = kTRUE;
+	}
 
     /** Accessors **/
     //Double_t GetSigmaX()        const { return fSigmaX;     };
@@ -161,6 +164,8 @@ private:
     Double_t fNeighThreshold;
     Bool_t fShowDebugHistos;
     Bool_t fUseMCInfo;
+    Bool_t inputSet;
+
 
     Double_t fLayerRadius;
     Double_t fLayerRadiusInner;

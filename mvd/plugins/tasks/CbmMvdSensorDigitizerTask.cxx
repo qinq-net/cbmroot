@@ -396,14 +396,13 @@ if(fPreviousPlugin)
   fInputPoints->Clear(); 
   fInputPoints->AbsorbObjects(fPreviousPlugin->GetOutputArray());
   }
-  if(fInputPoints->GetEntriesFast() > 0)
-  {
-
-
 fOutputBuffer->Clear();
+if(fInputPoints->GetEntriesFast() > 0)
+  {
 fDigis->Clear();
-fDigiMatch->Clear();
-
+fDigiMatch->Clear("C");
+if(fDigiMatch->GetEntriesFast() > 0)
+	cout << endl << "upps" << endl;
 
 for (Int_t iPoint=0; iPoint<fInputPoints->GetEntriesFast(); iPoint++)
     {
