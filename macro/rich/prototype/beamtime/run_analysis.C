@@ -12,18 +12,27 @@ void run_analysis()
    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
    loadlibs();
 
-   //string hldFileName = "/Users/slebedev/Development/cbm/trunk/cbmroot/macro/fles/secondtest_pulser16ch+sync.hld";
-   string hldFileDir = "";// "/home/pusan/nov2014data/";
-   string hldFileName = hldFileDir + "te14322160114.hld";// "Laser_100_0.hld";
-   TString outRootFileName = hldFileDir + hldFileName + ".root";// "Laser_100_0.hld";
-   Bool_t isAnaPulserEvents = false; // Set to true if you want to analyze pulser events
+   TString hldFileDir = "/mnt/data/tmp/";
+   
+   TString hldFileName = "lastrun.hld";
 
-   	TString script = TString(gSystem->Getenv("SCRIPT"));
+   TString hldFullFileName;
 
-   	if (script == "yes") {
-   		hldFileName = string(gSystem->Getenv("INPUT_HLD_FILE"));
-   		outRootFileName = TString(gSystem->Getenv("OUTPUT_ROOT_FILE"));
-   	}
+   hldFullFileName = hldFileDir + hldFileName;
+
+   TString outRootFileName;
+
+   TString outDir = "/home/pusan/nov2014res/";
+   outRootFileName = outDir + hldFileName + ".root";
+
+   Bool_t isAnaPulserEvents = false; // Set to true if you want to analyze pulser events, false if
+
+   TString script = TString(gSystem->Getenv("SCRIPT"));
+
+   if (script == "yes") {
+	   hldFullFileName = TString(gSystem->Getenv("INPUT_HLD_FILE"));
+	   outRootFileName = TString(gSystem->Getenv("OUTPUT_ROOT_FILE"));
+   }
 
    // --- Specify number of events to be produced.
    // --- -1 means run until the end of the input file.
@@ -36,7 +45,7 @@ void run_analysis()
    // --- Set debug level
    gDebug = 0;
 
-   CbmRichTrbUnpack* source = new CbmRichTrbUnpack(hldFileName);
+   CbmRichTrbUnpack* source = new CbmRichTrbUnpack(hldFullFileName);
    source->SetAnaPulserEvents(isAnaPulserEvents);
 
    CbmTrbCalibrator* fgCalibrator = CbmTrbCalibrator::Instance();
@@ -79,7 +88,13 @@ void run_analysis()
    timer.Stop();
 
    // --- export calibration tables
-   //fgCalibrator->Export("calibration.root");
+   //fgCalibrator->Export("calibration2.root");
+
+   // You may try to draw the histograms showing which channels are calibrated
+   //fgCalibrator->Draw();
+
+   // output png is out.png
+   // try to rename it here
 
    // --- End-of-run info
    Double_t rtime = timer.RealTime();
