@@ -61,8 +61,6 @@ void CbmRichTrbRecoQa::InitHist()
 {
    fhNofHitsInEvent = new TH1D("fhNofHitsInEvent", "fhNofHitsInEvent;Number of hits in event;Entries", 50, -0.5, 49.5);
    fhNofHitsInRing = new TH1D("fhNofHitsInRing", "fhNofHitsInRing;Number of hits in ring;Entries", 50, -0.5, 49.5);
-   fhHitsXYCm = new TH2D("fhHitsXYCm", "fhHitsXYCm;X [cm];Y [cm];Entries", 64, 0.0, 21, 64, 0.0, 21);
-
    fhHitsXYPixel = new TH2D("fhHitsXYPixel", "fhHitsXYPixel;X [pixel];Y [pixel];Entries", 32, 0.5, 32.5, 32, 0.5, 32.5);
 
    fhNofRingsInEvent = new TH1D("fhNofRingsInEvent", "fhNofRingsInEvent;# rings per event;Entries", 5, -0.5, 4.5);
@@ -94,10 +92,6 @@ void CbmRichTrbRecoQa::Exec(
 
 	Int_t nofHitsInEvent = fRichHits->GetEntries();
 	fhNofHitsInEvent->Fill(nofHitsInEvent);
-	for (Int_t iH = 0; iH < nofHitsInEvent; iH++) {
-		CbmRichHit* hit = static_cast<CbmRichHit*>(fRichHits->At(iH));
-		fhHitsXYCm->Fill(hit->GetX(), hit->GetY());
-	}
 
 	Int_t nofHitInfosInEvent = fRichHitInfos->GetEntries();
 	for (Int_t iH = 0; iH < nofHitInfosInEvent; iH++) {
@@ -179,7 +173,6 @@ void CbmRichTrbRecoQa::SaveHist()
    rootHistFolder = gROOT->GetRootFolder()->AddFolder("rich_trb_recoqa", "rich_trb_recoqa");
 
    rootHistFolder->Add(fhNofHitsInEvent);
-   rootHistFolder->Add(fhHitsXYCm);
    rootHistFolder->Add(fhHitsXYPixel);
    rootHistFolder->Add(fhNofRingsInEvent);
    rootHistFolder->Add(fhNofHitsInRing);
