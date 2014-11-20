@@ -32,7 +32,8 @@ class CbmSpadicRawMessage : public CbmRawMessage
 
   /** Constructor  **/
   CbmSpadicRawMessage(Int_t EquipmentID, Int_t SourceAddress, Int_t ChannelId,
-		Int_t EpochMarker, Int_t Time, Int_t NrSamples, Int_t* Samples);
+		      Int_t SuperEpoch, Int_t EpochMarker, Int_t Time, 
+		      Int_t NrSamples, Int_t* Samples);
 
 	
   /** Destructor  **/
@@ -40,11 +41,15 @@ class CbmSpadicRawMessage : public CbmRawMessage
 
   Int_t GetNrSamples() { return fNrSamples; }
   Int_t* GetSamples() { return fSamples; }
+
+  ULong_t GetFullTime();
+
 	
  private:
 
   Int_t fNrSamples;
   Int_t fSamples[32];
+  Int_t fSuperEpoch;
 
   ClassDef(CbmSpadicRawMessage,1);
 

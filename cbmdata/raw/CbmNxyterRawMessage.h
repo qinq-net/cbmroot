@@ -20,6 +20,7 @@ class CbmNxyterRawMessage : public CbmRawMessage
   /** Destructor  **/
   virtual ~CbmNxyterRawMessage() { };
 
+  ULong_t GetFullTime() { return 0L; }
 	
  private:
 

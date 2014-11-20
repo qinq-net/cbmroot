@@ -60,6 +60,8 @@ class CbmRawMessage : public TObject
   Int_t GetEpochMarker() { return fEpochMarker; }
   Int_t GetTime() { return fTime; }
 
+  virtual ULong_t GetFullTime() = 0;
+
  protected:
 
   Int_t fEquipmentID;
