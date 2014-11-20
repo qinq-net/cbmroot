@@ -5,6 +5,12 @@ enum enu_calibMode {
    etn_IDEAL   // use almost linear function - close to real calibration but idealized
 };
 
+enum CbmRichAnaTypeEnum{
+	kCbmRichBeamEvent,  // hodoscope ( beam trigger)
+	kCbmRichLaserPulserEvent, // Laser pulser events
+	kCbmRichLedPulserEvent // UV LED events
+};
+
 void run_analysis()
 {
    TStopwatch timer;
@@ -12,9 +18,9 @@ void run_analysis()
    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
    loadlibs();
 
-   TString hldFileDir = "/mnt/data/tmp/";
+   TString hldFileDir = "";//"/mnt/data/tmp/";
    
-   TString hldFileName = "lastrun.hld";
+   TString hldFileName = "te14324200946.hld";
 
    TString hldFullFileName;
 
@@ -22,10 +28,12 @@ void run_analysis()
 
    TString outRootFileName;
 
-   TString outDir = "/home/pusan/nov2014res/";
+   TString outDir = "";//"/home/pusan/nov2014res/";
    outRootFileName = outDir + hldFileName + ".root";
 
-   Bool_t isAnaPulserEvents = false; // Set to true if you want to analyze pulser events, false if
+   TString outputDir = "recoqa/";
+
+   CbmRichAnaTypeEnum anaType = kCbmRichBeamEvent; // Type of analysis you want to perform: kCbmRichBeamEvent, kCbmRichLaserPulserEvent, kCbmRichLedPulserEvent
 
    TString script = TString(gSystem->Getenv("SCRIPT"));
 
@@ -46,7 +54,8 @@ void run_analysis()
    gDebug = 0;
 
    CbmRichTrbUnpack* source = new CbmRichTrbUnpack(hldFullFileName);
-   source->SetAnaPulserEvents(isAnaPulserEvents);
+   source->SetAnaType(anaType);
+   source->SetDrawHisto(false);
 
    CbmTrbCalibrator* fgCalibrator = CbmTrbCalibrator::Instance();
    fgCalibrator->SetInputFilename("calibration.root");            // does not actually import data - only defines
@@ -63,7 +72,7 @@ void run_analysis()
    run->SetOutputFile(outRootFileName);
    //run->SetEventHeader(event);
 
-   if (!isAnaPulserEvents) {
+   if (anaType == kCbmRichBeamEvent) {
 	   CbmRichReconstruction* richReco = new CbmRichReconstruction();
 	   richReco->SetFinderName("hough_prototype");
 	   richReco->SetRunTrackAssign(false);
@@ -72,8 +81,10 @@ void run_analysis()
 	   richReco->SetRunFitter(false);
 	   run->AddTask(richReco);
 
-	   CbmRichTrbRecoQa* qaRaw = new CbmRichTrbRecoQa();
-	   run->AddTask(qaRaw);
+	   CbmRichTrbRecoQa* qaReco = new CbmRichTrbRecoQa();
+	   qaReco->SetMaxNofEventsToDraw(0);
+	   qaReco->SetOutputDir(outputDir);
+	   run->AddTask(qaReco);
    } else {
 	   CbmRichTrbPulserQa* qaPulser = new CbmRichTrbPulserQa();
 	   run->AddTask(qaPulser);
