@@ -63,6 +63,7 @@ class CbmFlibFileSourceNew : public FairSource
 
     CbmDaqBuffer* fBuffer;
  
+    UInt_t fTSNumber;
 #ifndef __CINT__
     fles::TimesliceSource* fSource; //!
     Bool_t CheckTimeslice(const fles::Timeslice& ts);

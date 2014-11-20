@@ -27,6 +27,7 @@ CbmFlibFileSourceNew::CbmFlibFileSourceNew()
     fPort(5556),
     fUnpackers(),
     fBuffer(CbmDaqBuffer::Instance()),
+    fTSNumber(0),
     fSource(NULL)
 {
 }
@@ -85,9 +86,14 @@ Int_t CbmFlibFileSourceNew::ReadEvent()
 {
 
   while( fFileCounter < fInputFileList.GetSize() ) {
-  
     while (auto timeslice = fSource->get()) {
       const fles::Timeslice& ts = *timeslice;
+      auto tsIndex = ts.index();
+      if( (tsIndex != (fTSNumber+1)) &&( fTSNumber != 0) ) {
+	LOG(WARNING) << "Missed Timeslices. Old TS Number was " << fTSNumber 
+		     << " New TS Number is " << tsIndex << FairLogger::endl;
+      }
+      fTSNumber=tsIndex;    
       for (size_t c {0}; c < ts.num_components(); c++) {
 	auto systemID = ts.descriptor(c, 0).sys_id;
 	
@@ -163,6 +169,9 @@ void CbmFlibFileSourceNew::Close()
 
 void CbmFlibFileSourceNew::Reset()
 {
+  for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
+    it->second->Reset();
+  }
 }
 
 ClassImp(CbmFlibFileSourceNew)
