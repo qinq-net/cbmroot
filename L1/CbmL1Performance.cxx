@@ -31,7 +31,7 @@
 #include "CbmStsSector.h" // for field FieldCheck.
 #include "CbmStsStation.h" // for field FieldCheck.
 
-#include "CbmMvdDigiMatch.h"
+#include "CbmMatch.h"
 
 #include "CbmL1Counters.h"
 

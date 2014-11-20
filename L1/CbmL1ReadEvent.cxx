@@ -20,7 +20,6 @@
 #include "CbmMatch.h"
 #include "CbmStsAddress.h"
 
-#include "CbmMvdDigiMatch.h"
 
 #include "TDatabasePDG.h"
 #include "TRandom.h"
