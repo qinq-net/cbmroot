@@ -3,6 +3,7 @@
 
 #include "FairTask.h"
 #include "CbmRichRingLight.h"
+#include "CbmHistManager.h"
 #include <vector>
 
 using namespace std;
@@ -10,6 +11,7 @@ using namespace std;
 class TClonesArray;
 class TH1D;
 class TH2D;
+class TCanvas;
 
 class CbmRichRingFitterCOP;
 class CbmRichRingFitterEllipseTau;
@@ -52,10 +54,6 @@ public:
     */
    void DrawHist();
 
-   /*
-    * Save histograms to the file.
-    */
-   void SaveHist();
 
     /*
      * Draw current event (event display)
@@ -78,35 +76,33 @@ public:
     void FillHistEllipse(
           CbmRichRingLight* ring);
 
+    /*
+     * Fit histogramm with Gauss fit and put results to the title.
+     */
+    void FitGaussAndDrawResults(TH1* h);
+
+    /*
+     * Set maximum number of events to draw
+     */
+    void SetMaxNofEventsToDraw(UInt_t n) {fMaxNofEventsToDraw = n;}
+
+    /*
+     * Set output directory for images.
+     */
+    void SetOutputDir(TString dir) {fOutputDir = dir;}
+
 private:
 
    TClonesArray* fRichHits; // Array of RICH hits
    TClonesArray* fRichRings; // Array of found RICH rings
    TClonesArray* fRichHitInfos; // Array of CbmRichHitInfo
 
-   TH1D* fhNofHitsInEvent; // number of hits in event
-   TH2D* fhHitsXYPixel; // XY distribution of the hits in event in pixels
-   TH1D* fhNofRingsInEvent; // number of found rings per event
-   TH1D* fhNofHitsInRing; // number of hits in found rings
-
-   //Ellipse histograms
-   TH1D* fhBoverAEllipse;
-   TH2D* fhXcYcEllipse;
-   TH1D* fhBaxisEllipse;
-   TH1D* fhAaxisEllipse;
-   TH1D* fhChi2Ellipse;
-
-   //circle histograms
-   TH2D* fhXcYcCircle;
-   TH1D* fhRadiusCircle;
-   TH1D* fhChi2Circle;
-   TH1D* fhDrCircle;
-
-   TH1D* fhEventsWithRings;
-   TH1D* fhHitsPerPMT;
+   CbmHistManager* fHM; // histogram manager, all the histogram are manager by HM
 
    UInt_t fEventNum; // Event counter
    UInt_t fNofDrawnEvents; // Number of drawn events
+   UInt_t fMaxNofEventsToDraw; // maximum number of events to draw
+   TString fOutputDir; // output directory to store figures
 
    CbmRichRingFitterCOP* fCopFit;
    CbmRichRingFitterEllipseTau* fTauFit;

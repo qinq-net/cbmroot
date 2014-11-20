@@ -25,7 +25,7 @@ CbmRichTrbUnpack::CbmRichTrbUnpack(TString hldFileName) :
 	fHldFileName(hldFileName),
 	fEventNum(0),
 	fNofDoubleHits(0),
-	fAnaPulserEvents(kFALSE)
+	fAnaType(kCbmRichBeamEvent)
 {
    ;
 }
@@ -84,8 +84,10 @@ Int_t CbmRichTrbUnpack::ReadEvent()
 
 void CbmRichTrbUnpack::Close()
 {
-	CreateAndDrawQa();
-	CreateAndDrawEventBuildDisplay();
+	if (fDrawHisto) {
+		CreateAndDrawQa();
+		CreateAndDrawEventBuildDisplay();
+	}
 	ClearAllBuffers();
 }
 
@@ -220,7 +222,11 @@ void CbmRichTrbUnpack::DecodeTdcData(
 
 				} else if (tdcId == 0x0110) { // reference time TDC for event building
                //if ( (fAnaPulserEvents && chNum == 15) || (!fAnaPulserEvents && chNum == 5) ) {         // shit shit shit
-               if ( (fAnaPulserEvents && chNum == 5) || (!fAnaPulserEvents && chNum == 6) ) {         // Hodoscopes (beam trigger)
+					if  ( (fAnaType == kCbmRichBeamEvent && chNum == 5) ||           // hodoscope (beam trigger)
+						  (fAnaType == kCbmRichLaserPulserEvent && chNum == 7) ||    // UV LED
+						  (fAnaType == kCbmRichLedPulserEvent && chNum == 15) ){     // Laser
+
+                 // if ( (fAnaPulserEvents && chNum == 5) || (!fAnaPulserEvents && chNum == 6) ) {         // Hodoscopes (beam trigger)
 					//if ( (fAnaPulserEvents && chNum == 15) || (!fAnaPulserEvents && chNum == 16) ) {       // Laser
 				   //if ( (fAnaPulserEvents && chNum == 7) || (!fAnaPulserEvents && chNum == 8) ) {         // UV LED
 						CbmTrbRawHit* rawHitRef = new CbmTrbRawHit(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime, 0, 0, 0, 0);

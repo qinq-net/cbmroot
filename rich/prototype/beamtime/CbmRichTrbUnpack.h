@@ -17,6 +17,12 @@ class TClonesArray;
 class TH1D;
 class TH2D;
 
+enum CbmRichAnaTypeEnum{
+	kCbmRichBeamEvent,
+	kCbmRichLaserPulserEvent,
+	kCbmRichLedPulserEvent
+};
+
 class CbmRichTrbUnpack : public FairSource
 {
 public:
@@ -52,9 +58,14 @@ public:
     void Reset();
 
     /*
-     * Set to TRUE if you want to analyze LED pulser events.
+     * Set what you want to analyze.
      */
-    Bool_t SetAnaPulserEvents(Bool_t b){fAnaPulserEvents = b;}
+    void SetAnaType(CbmRichAnaTypeEnum type){fAnaType = type;}
+
+    /*
+     * If TRUE histograms are drawn.
+     */
+    void SetDrawHisto(Bool_t b){fDrawHisto = b;}
 
 private:
     TString fHldFileName; // file name of HLD file
@@ -82,7 +93,9 @@ private:
     TH2D* fhNofRichHitsVsTrbNum; // Number of RICH hit per event vs. TRB number (only real event count)
     TH1D* fhDiffHitTimeEventTime; // Difference between reference event time and RICH hit time
 
-    Bool_t fAnaPulserEvents;
+    CbmRichAnaTypeEnum fAnaType; // What do you want to analyza beam events, laser events, led events
+
+    Bool_t fDrawHisto; // if TRUE histograms wre drawn
 
     /*
      * Read full input file to memory.
