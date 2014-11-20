@@ -80,8 +80,11 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
   //  LOG(DEBUG) << "Exec of CbmTrdRawBeamProfile" << FairLogger::endl;
 
   Int_t entries = fRawSpadic->GetEntriesFast();
+  Int_t sumTrigger = 0;
   //  LOG(INFO) << "******" << FairLogger::endl;
-  //  LOG(INFO) << "Entries: " << entries << FairLogger::endl;
+  LOG(INFO) << "Entries: " << entries << FairLogger::endl;
+
+  if (entries > 200) entries = 200; // for fast data visualization
 
   for (Int_t i=0; i < entries; ++i) {
     CbmSpadicRawMessage* raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i));
@@ -131,11 +134,11 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
       chID += 16;
       break;
     default:
-      LOG(FATAL) << "Source Address " << sourceA << "not known." << FairLogger::endl;
+      //LOG(FATAL) << "Source Address " << sourceA << "not known." << FairLogger::endl;
       break;
     }   
     if ( 32 == nrSamples) {  
-
+      sumTrigger++;
       TString channelId;
       channelId.Form("_Ch%02d", chID);
 
@@ -174,7 +177,15 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
       fHM->H1(histName.Data())->Fill(chID);
       // corrupt message?
     }
-  } 
+    if (i == entries-1){
+      TString histName = "TriggerCounter_" + syscore + spadic;
+      fHM->H1(histName.Data())->SetBinContent(fHM->H1(histName.Data())->GetNbinsX(),sumTrigger);
+      for (Int_t timeSlice = 1; timeSlice < fHM->H1(histName.Data())->GetNbinsX(); timeSlice++){
+	fHM->H1(histName.Data())->SetBinContent(timeSlice,fHM->H1(histName.Data())->GetBinContent(timeSlice+1));
+      }
+    }
+  } //entries
+
 }
 
 // ---- Finish --------------------------------------------------------
@@ -191,46 +202,44 @@ void CbmTrdRawBeamProfile::CreateHistograms()
   TString syscoreName[] = { "SysCore0", "SysCore1", "SysCore2" };
   TString spadicName[]  = { "Spadic0", "Spadic1", "Spadic2" };
   TString channelName[] = { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", 
-			   "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", 
-			   "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", 
-			   "30", "31"};
+			    "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", 
+			    "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", 
+			    "30", "31"};
   for(Int_t syscore = 0; syscore < 3; ++syscore) {
     for(Int_t spadic = 0; spadic < 3; ++spadic) {
       TString histName = "CountRate_" + syscoreName[syscore] + "_" + spadicName[spadic];
       TString title = histName + ";Channel;Counts";
       fHM->Add(histName.Data(), new TH1F(histName, title, 33, 0, 33));
 
+      histName = "TriggerCounter_" + syscoreName[syscore] + "_" + spadicName[spadic];
+      title = histName + ";TimeSlice;Trigger / TimeSlice";
+      fHM->Add(histName.Data(), new TH1F(histName, title, 500, 0, 500));
+
       histName = "ErrorCounter_" + syscoreName[syscore] + "_" + spadicName[spadic];
       title = histName + ";Channel;ADC value in Bin 0";
-      fHM->Add(histName.Data(), 
-	       new TH1F(histName, title, 33, 0, 33));
+      fHM->Add(histName.Data(), new TH1F(histName, title, 33, 0, 33));
 
       histName = "BaseLine_" + syscoreName[syscore] + "_" + spadicName[spadic];
       title = histName + ";Channel;ADC value in Bin 0";
-      fHM->Add(histName.Data(), 
-	       new TH2F(histName, title, 33, 0, 33, 511, -256, 255));
+      fHM->Add(histName.Data(), new TH2F(histName, title, 33, 0, 33, 511, -256, 255));
 
       histName = "Integrated_ADC_Spectrum_" + syscoreName[syscore] + "_" + spadicName[spadic];
       title = histName + ";Channel;Integr. ADC values in Bin [1,31]";
-      fHM->Add(histName.Data(),
-	       new TH2F(histName, title, 33, 0, 33, 2000, 0, 2000));
+      fHM->Add(histName.Data(), new TH2F(histName, title, 33, 0, 33, 2000, 0, 2000));
 
       histName = "Trigger_Heatmap_" + syscoreName[syscore] + "_" + spadicName[spadic];
       title = histName + ";Channel;Trigger Counter";
-      fHM->Add(histName.Data(),
-	       new TH2F(histName, title, 16, 0, 16, 2, 0, 2));
+      fHM->Add(histName.Data(), new TH2F(histName, title, 16, 0, 16, 2, 0, 2));
 
       for(Int_t  channel = 0; channel < 32; channel++) {
 	histName = "Signal_Shape_" + syscoreName[syscore] + "_" + spadicName[spadic] + "_Ch" + channelName[channel];
 	title = histName + ";Time Bin;ADC value";
-	fHM->Add(histName.Data(), 
-		 new TH2F(histName, title, 32, 0, 32, 511, -256, 255));
+	fHM->Add(histName.Data(), new TH2F(histName, title, 32, 0, 32, 511, -256, 255));
       }
       for(Int_t  channel = 0; channel < 32; channel++) {
 	histName = "Pulse_" + syscoreName[syscore] + "_" + spadicName[spadic] + "_Ch" + channelName[channel];
 	title = histName + ";Time Bin;ADC value";
-	fHM->Add(histName.Data(), 
-		 new TH1F(histName, title, 32, 0, 32));
+	fHM->Add(histName.Data(), new TH1F(histName, title, 32, 0, 32));
       }
 
       /*

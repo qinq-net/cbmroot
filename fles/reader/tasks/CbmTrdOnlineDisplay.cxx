@@ -22,7 +22,7 @@
 CbmTrdOnlineDisplay::CbmTrdOnlineDisplay()
   :FairTask("CbmTrdOnlineDisplay"),
    fSpadic1(NULL),
-   fSpadic1a(NULL),
+   fSpadic1a({NULL}),
    fUpdateInterval(10),
    fEventCounter(0)
 {
@@ -32,7 +32,7 @@ CbmTrdOnlineDisplay::CbmTrdOnlineDisplay()
 CbmTrdOnlineDisplay::~CbmTrdOnlineDisplay()
 {
   delete fSpadic1;
-  delete fSpadic1a;
+  delete[] fSpadic1a;
 }
 
 // ----  Initialisation  ----------------------------------------------
@@ -51,7 +51,7 @@ InitStatus CbmTrdOnlineDisplay::Init()
   gStyle->SetPalette(1);
   gStyle->SetLabelSize(lsize);
 
-  fSpadic1 = new TCanvas("fSpadic1", "Spadic1", 0, 0, 505, 405);
+  fSpadic1 = new TCanvas("fSpadic1", "Spadic1", 0, 0, 1010, 810);
   fSpadic1->Divide(3,2);
 
   // Should be set for each pad of the Canvas
@@ -81,48 +81,70 @@ InitStatus CbmTrdOnlineDisplay::Init()
     h2->Draw("COLZ");
   }
   fSpadic1->cd(5);
+  Int_t maxTrigger = 0;
+  for (Int_t sys = 0; sys < 3; sys++){
+    for (Int_t spa = 0; spa < 3; spa++){
+      h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("TriggerCounter_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
+      maxTrigger = h1->GetMaximum();
+    }
+  }
 
- 
+  h1=static_cast<TH1*>(gROOT->FindObjectAny("TriggerCounter_SysCore0_Spadic0"));
+  if (h1!=NULL) {
+    h1->GetYaxis()->SetRangeUser(-10,10+1.125*maxTrigger);
+    h1->Draw("");
+  }
+  h1=static_cast<TH1*>(gROOT->FindObjectAny("TriggerCounter_SysCore0_Spadic1"));
+  if (h1!=NULL) {
+    h1->SetLineColor(2);
+    h1->Draw("same");
+  }
+  h1=static_cast<TH1*>(gROOT->FindObjectAny("TriggerCounter_SysCore0_Spadic2"));
+  if (h1!=NULL) {
+    h1->SetLineColor(3);
+    h1->Draw("same");
+  }
 
-  fSpadic1a = new TCanvas("fSpadic1a", "Spadic1_Signal_Shape", 50, 50, 755, 405);
-  fSpadic1a->Divide(8,4);	
-  gPad->SetFillColor(0);
+  for (Int_t spa = 0; spa < 3; spa++) {
+    fSpadic1a[spa] = new TCanvas(TString("fSpadic"+ std::to_string(spa) +"a"), TString("Spadic"+ std::to_string(spa) +"_Signal_Shape"), 50, 50, 1510, 810);
+    fSpadic1a[spa]->Divide(8,4);	
+    gPad->SetFillColor(0);
 
-  for (Int_t i=0; i<32; i++) {
-    fSpadic1a->cd(i+1);
-    if (false){
-      TString temphistname = "Signal_Shape_SysCore0_Spadic0_Ch";
-      if(i<10) {
-	temphistname = temphistname + std::to_string(0) + std::to_string(i);
-	h2=static_cast<TH2*>(gROOT->FindObjectAny(temphistname.Data()));
-	if (h2!=NULL) {
-	  h2->Draw("COLZ");
+    for (Int_t i=0; i<32; i++) {
+      fSpadic1a[spa]->cd(i+1)->SetLogz(1);
+      if (true){
+	TString temphistname = "Signal_Shape_SysCore0_Spadic0_Ch";
+	if(i<10) {
+	  temphistname = temphistname + std::to_string(0) + std::to_string(i);
+	  h2=static_cast<TH2*>(gROOT->FindObjectAny(temphistname.Data()));
+	  if (h2!=NULL) {
+	    h2->Draw("COLZ");
+	  }
+	} else {
+	  temphistname = temphistname + std::to_string(i);
+	  h2=static_cast<TH2*>(gROOT->FindObjectAny(temphistname.Data()));
+	  if (h2!=NULL) {
+	    h2->Draw("COLZ");
+	  }
 	}
       } else {
-	temphistname = temphistname + std::to_string(i);
-	h2=static_cast<TH2*>(gROOT->FindObjectAny(temphistname.Data()));
-	if (h2!=NULL) {
-	  h2->Draw("COLZ");
-	}
-      }
-    } else {
-      for(Int_t sys = 0; sys < 3; sys++){
-	for(Int_t spa = 0; spa < 3; spa++){
-	  TString temphistname = "Pulse_SysCore"+std::to_string(sys)+"_Spadic"+std::to_string(spa)+"_Ch" + std::to_string(0) + std::to_string(i);
-	  h1=static_cast<TH1*>(gROOT->FindObjectAny(temphistname.Data()));
-	  if (h1!=NULL) {
-	    h1->SetLineColor(sys);
-	    h1->SetLineStyle(spa);
-	    if (sys == 0 && spa == 0)
-	      h1->Draw("C");
-	    else
-	      h1->Draw("C,same");
+	for(Int_t sys = 0; sys < 3; sys++){
+	  for(Int_t spa = 0; spa < 3; spa++){
+	    TString temphistname = "Pulse_SysCore"+std::to_string(sys)+"_Spadic"+std::to_string(spa)+"_Ch" + std::to_string(0) + std::to_string(i);
+	    h1=static_cast<TH1*>(gROOT->FindObjectAny(temphistname.Data()));
+	    if (h1!=NULL) {
+	      h1->SetLineColor(sys);
+	      h1->SetLineStyle(spa);
+	      if (sys == 0 && spa == 0)
+		h1->Draw("C");
+	      else
+		h1->Draw("C,same");
+	    }
 	  }
 	}
       }
     }
   }
-
 
   /*
     CbmTrdRawBeamProfile* c = static_cast<CbmTrdRawBeamProfile*>(gROOT->FindObjectAny("CbmTrdRawBeamProfile")).Data()); 
@@ -161,7 +183,6 @@ InitStatus CbmTrdOnlineDisplay::ReInit()
 void CbmTrdOnlineDisplay::Exec(Option_t* option)
 {
 
-/*
   fEventCounter++;
   
   if ( 0 == fEventCounter%fUpdateInterval ) {
@@ -174,7 +195,6 @@ void CbmTrdOnlineDisplay::Exec(Option_t* option)
     fSpadic1->Modified();
     fSpadic1->Update();
   } 
-*/
 
 }
 
