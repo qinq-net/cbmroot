@@ -2,8 +2,9 @@
 #define CBMRICHTRBUNPACK_H
 
 #include "CbmRichTrbDefines.h"
+
+#include <TString.h>
 #include "FairSource.h"
-#include <string>
 #include <vector>
 
 using namespace std;
@@ -22,7 +23,7 @@ public:
 	 * Constructor.
 	 * \param[in] hldFileName File name of input HLD file.
 	 */
-	CbmRichTrbUnpack(const string& hldFileName);
+	CbmRichTrbUnpack(TString hldFileName);
 
 	/*
 	 * Destructor.
@@ -55,7 +56,7 @@ public:
     Bool_t SetAnaPulserEvents(Bool_t b){fAnaPulserEvents = b;}
 
 private:
-    string fHldFileName; // file name of HLD file
+    TString fHldFileName; // file name of HLD file
 
     TClonesArray* fRichHits; // output array of RICH hits
 
@@ -91,7 +92,7 @@ private:
      * \param x X coordinate of the hit
      * \param y Y coordinate of the hit
      */
-    void AddRichHitToOutputArray(Double_t x, Double_t y);
+    void AddRichHitToOutputArray(UShort_t trbId, Double_t x, Double_t y);
 
     /*
      * Read all events and create output hits

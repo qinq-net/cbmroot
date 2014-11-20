@@ -192,12 +192,18 @@ void CbmTrbCalibrator::DoCalibrate(UShort_t TRB, UShort_t TDC, UShort_t CH)
 
 Double_t CbmTrbCalibrator::GetFineTimeCalibrated(UShort_t TRB, UShort_t TDC, UShort_t CH, UShort_t fineCnt)
 {
+   // hard-code for special channel number 0 which is a reference channel.
+   // for this channel the ideal calibration is used
+   if (CH == 0) return GetAlmostLinearCalibratedFT(fineCnt);
+
    switch (fCalibMode) {
       case etn_IMPORT:     // yes, this is correct - no break - fall through
          if (!fTablesCreated) this->Import();
       case etn_ONLINE:
          if (fCalibrationDoneHisto[TRB][TDC]->GetBinContent(CH+1) == 1)
             return GetRealCalibratedFT(TRB, TDC, CH, fineCnt);
+         else
+            return GetAlmostLinearCalibratedFT(fineCnt); // if the channel is not calibrated return time as if it was deally calibrated
          break;
       case etn_NOCALIB:
          return GetLinearCalibratedFT(fineCnt);

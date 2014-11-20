@@ -1,7 +1,6 @@
 #ifndef CBMRICHTRBRECOQA_H
 #define CBMRICHTRBRECOQA_H
 
-
 #include "FairTask.h"
 #include "CbmRichRingLight.h"
 #include <vector>
@@ -18,26 +17,25 @@ class CbmRichRingFitterEllipseTau;
 class CbmRichTrbRecoQa : public FairTask
 {
 public:
-	/*
-	 * Constructor.
-	 */
-	CbmRichTrbRecoQa();
+   /*
+    * Constructor.
+    */
+   CbmRichTrbRecoQa();
 
-	/*
-	 * Destractor.
-	 */
-    virtual ~CbmRichTrbRecoQa();
+   /*
+    * Destractor.
+    */
+   virtual ~CbmRichTrbRecoQa();
 
-    /**
-     * \brief Inherited from FairTask.
-     */
-    virtual InitStatus Init();
+   /**
+    * \brief Inherited from FairTask.
+    */
+   virtual InitStatus Init();
 
-    /**
-     * \brief Inherited from FairTask.
-     */
-    virtual void Exec(
-         Option_t* option);
+   /**
+    * \brief Inherited from FairTask.
+    */
+   virtual void Exec(Option_t* option);
 
     /**
      * \brief Inherited from FairTask.
@@ -49,10 +47,15 @@ public:
      */
     void InitHist();
 
-    /*
-     * Draw histograms.
-     */
-    void DrawHist();
+   /*
+    * Draw histograms.
+    */
+   void DrawHist();
+
+   /*
+    * Save histograms to the file.
+    */
+   void SaveHist();
 
     /*
      * Draw current event (event display)
@@ -76,37 +79,41 @@ public:
           CbmRichRingLight* ring);
 
 private:
-    TClonesArray* fRichHits; // Array of RICH hits
-    TClonesArray* fRichRings; // Array of found RICH rings
 
-    TH1D* fhNofHitsInEvent; // number of hits in event
-    TH2D* fhHitsXY; // XY distribution of the hits in event
-    TH1D* fhNofRingsInEvent; // number of found rings per event
-    TH1D* fhNofHitsInRing; // number of hits in found rings
+   TClonesArray* fRichHits; // Array of RICH hits
+   TClonesArray* fRichRings; // Array of found RICH rings
 
-    //Ellipse histograms
-    TH1D* fhBoverAEllipse;
-    TH2D* fhXcYcEllipse;
-    TH1D* fhBaxisEllipse;
-    TH1D* fhAaxisEllipse;
-    TH1D* fhChi2Ellipse;
+   TH1D* fhNofHitsInEvent; // number of hits in event
+   TH2D* fhHitsXY; // XY distribution of the hits in event
+   TH1D* fhNofRingsInEvent; // number of found rings per event
+   TH1D* fhNofHitsInRing; // number of hits in found rings
 
-    //circle histograms
-    TH2D* fhXcYcCircle;
-    TH1D* fhRadiusCircle;
-    TH1D* fhChi2Circle;
-    TH1D* fhDrCircle;
+   //Ellipse histograms
+   TH1D* fhBoverAEllipse;
+   TH2D* fhXcYcEllipse;
+   TH1D* fhBaxisEllipse;
+   TH1D* fhAaxisEllipse;
+   TH1D* fhChi2Ellipse;
 
-    UInt_t fEventNum; // Event counter
-    UInt_t fNofDrawnEvents; // Number of drawn events
+   //circle histograms
+   TH2D* fhXcYcCircle;
+   TH1D* fhRadiusCircle;
+   TH1D* fhChi2Circle;
+   TH1D* fhDrCircle;
 
-    CbmRichRingFitterCOP* fCopFit;
-    CbmRichRingFitterEllipseTau* fTauFit;
+   TH1D* fhEventsWithRings;
+   TH1D* fhHitsPerPMT;
 
-    CbmRichTrbRecoQa(const CbmRichTrbRecoQa&){;}
-    CbmRichTrbRecoQa operator=(const CbmRichTrbRecoQa&){;}
+   UInt_t fEventNum; // Event counter
+   UInt_t fNofDrawnEvents; // Number of drawn events
 
-    ClassDef(CbmRichTrbRecoQa, 1);
+   CbmRichRingFitterCOP* fCopFit;
+   CbmRichRingFitterEllipseTau* fTauFit;
+
+   CbmRichTrbRecoQa(const CbmRichTrbRecoQa&){;}
+   CbmRichTrbRecoQa operator=(const CbmRichTrbRecoQa&){;}
+
+   ClassDef(CbmRichTrbRecoQa, 1);
 };
 
 #endif

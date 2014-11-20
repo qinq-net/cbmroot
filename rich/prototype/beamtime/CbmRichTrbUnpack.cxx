@@ -20,7 +20,7 @@
 
 #include "FairLogger.h"
 
-CbmRichTrbUnpack::CbmRichTrbUnpack(const string& hldFileName) :
+CbmRichTrbUnpack::CbmRichTrbUnpack(TString hldFileName) :
 	fHldFileName(hldFileName),
 	fEventNum(0),
 	fNofDoubleHits(0),
@@ -55,8 +55,6 @@ Bool_t CbmRichTrbUnpack::Init()
 	return kTRUE;
 }
 
-
-
 Int_t CbmRichTrbUnpack::ReadEvent()
 {
 	LOG(DEBUG) << "Event #" << fEventNum << FairLogger::endl;
@@ -69,7 +67,6 @@ Int_t CbmRichTrbUnpack::ReadEvent()
 	}
 
 	BuildEvent(fEventNum);
-
 
 	LOG(DEBUG) << "CbmRichTrbUnpack::ReadEvent : # hits in event " << fRichHits->GetEntries() << FairLogger::endl;
 	for (int i = 0; i < fRichHits->GetEntries(); i++) {
@@ -100,7 +97,7 @@ void CbmRichTrbUnpack::Reset()
 void CbmRichTrbUnpack::ReadInputFileToMemory()
 {
 	streampos size;
-	ifstream file (fHldFileName.c_str(), ios::in|ios::binary|ios::ate);
+	ifstream file (fHldFileName.Data(), ios::in|ios::binary|ios::ate);
 	if (file.is_open()) {
 		size = file.tellg();
 		fDataPointer = new Char_t[size];
@@ -214,10 +211,10 @@ void CbmRichTrbUnpack::DecodeTdcData(
 			UInt_t coarseTime = (tdcData) & 0x7ff; // 1bits
 
 			// Give the calibrator the read fine time so that it was taken into account
-			if (trbId != 0x7005) CbmTrbCalibrator::Instance()->AddFineTime(trbId, tdcId, chNum, fineTime);
+			if ((trbId != 0x7005)) CbmTrbCalibrator::Instance()->AddFineTime(trbId, tdcId, chNum, fineTime);
 
 			if (chNum == 0) {
-				// TODO: do smth with ch0
+				// std::cout << "CHANNEL0: " << std::hex << "     TRB " << trbId << "    TDC " << tdcId << std::dec << std::endl;
 			} else {
 				if (tdcId == 0x7005) { //CTS
 
@@ -352,10 +349,10 @@ void CbmRichTrbUnpack::BuildEvent(Int_t refHitIndex)
 		CbmTrbOutputHit* h = fOutputRichHits[iH];
 		CbmRichTrbMapData* data = param->GetRichTrbMapData(h->GetTdc(), h->GetLChannel());
 
-		AddRichHitToOutputArray(data->GetX(), data->GetY());
-
 		UShort_t trbInd = ( (h->GetTrb() >> 4) & 0x00FF ) - 1;
 		nofHitsTrb[trbInd]++;
+
+		AddRichHitToOutputArray(trbInd, data->GetX(), data->GetY());
 
 		fhDiffHitTimeEventTime->Fill(eventTime - h->GetLFullTime());
 
@@ -368,13 +365,14 @@ void CbmRichTrbUnpack::BuildEvent(Int_t refHitIndex)
 	}
 }
 
-void CbmRichTrbUnpack::AddRichHitToOutputArray(Double_t x, Double_t y)
+void CbmRichTrbUnpack::AddRichHitToOutputArray(UShort_t trbId, Double_t x, Double_t y)
 {
 	UInt_t counter = fRichHits->GetEntries();
 	new((*fRichHits)[counter]) CbmRichHit();
 	CbmRichHit* hit = (CbmRichHit*)fRichHits->At(counter);
 	hit->SetX(x);
 	hit->SetY(y);
+   hit->SetPmtId(trbId);
 }
 
 void CbmRichTrbUnpack::FindMinMaxIndex(
@@ -473,7 +471,7 @@ void CbmRichTrbUnpack::CreateAndDrawQa()
 
 			hname.Form("hDeltaT_%d_%d", iTrb+1, iTdc);
 			htitle.Form("hDeltaT_%d_%d;DeltaT [ns];Entries", iTrb+1, iTdc);
-			fhDeltaT[iTrb][iTdc] = new TH1D(hname, htitle, 200, -10, 10);
+			fhDeltaT[iTrb][iTdc] = new TH1D(hname, htitle, 200, -20, 40);
 		}
 	}
 
@@ -501,7 +499,8 @@ void CbmRichTrbUnpack::CreateAndDrawQa()
 		cname.Form("rich_trb_unpack_debug_trb%d", iTrb+1);
 		TCanvas* c = new TCanvas(cname.Data(), cname.Data(), 1250, 1000);
 		c->Divide(5, TRB_TDC3_NUMTDC);
-		for (Int_t iTdc = 0; iTdc < TRB_TDC3_NUMTDC; iTdc++){
+		for (Int_t iTdc = 0; iTdc < TRB_TDC3_NUMTDC; iTdc++)
+      {
 			c->cd(5*iTdc + 1);
 			DrawH1(fhChannelEntries[iTrb][iTdc]);
 			c->cd(5*iTdc + 2);
@@ -513,10 +512,16 @@ void CbmRichTrbUnpack::CreateAndDrawQa()
 			c->cd(5*iTdc + 5);
 			DrawH1(fhDeltaT[iTrb][iTdc]);
 
-			rootHistFolder->Add(c);
+			//rootHistFolder->Add(c);
+
+         //rootHistFolder->Add(fhChannelEntries[iTrb][iTdc]);
+         //rootHistFolder->Add(fhEpoch[iTrb][iTdc]);
+         //rootHistFolder->Add(fhCoarseTime[iTrb][iTdc]);
+         //rootHistFolder->Add(fhFineTime[iTrb][iTdc]);
+         rootHistFolder->Add(fhDeltaT[iTrb][iTdc]);
+
 		}
 	}
-
 
 	TCanvas* c1 = new TCanvas("rich_trb_unpack_debug_rich_hits_vs_trb_num", "rich_trb_unpack_debug_rich_hits_vs_trb_num", 1200, 800);
 	DrawH2(fhNofRichHitsVsTrbNum);

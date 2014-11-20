@@ -57,12 +57,12 @@ Int_t CbmRichProtRingFinderHough::DoFind(
    fRingCount = 0;
 
 	if (NULL == rHitArray) {
-		cout << "-E- CbmRichProtRingFinderHough::DoFind: Hit array missing!"<< rHitArray << endl;
+		//cout << "-E- CbmRichProtRingFinderHough::DoFind: Hit array missing!"<< rHitArray << endl;
 		return -1;
 	}
 	const Int_t nhits = rHitArray->GetEntriesFast();
 	if (nhits <= 0) {
-		cout << "-E- CbmRichProtRingFinderHough::DoFind: No hits in this event!"	<< endl;
+		//cout << "-E- CbmRichProtRingFinderHough::DoFind: No hits in this event!"	<< endl;
 		return -1;
 	}
 
