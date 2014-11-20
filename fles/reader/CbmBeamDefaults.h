@@ -2,9 +2,10 @@
 #define CBMBEAMDEFAULTS_H 1
 
 /**  DetectorID enumerator  **/
-enum Exp_Group {kMuenster=57345,
-                kFrankfurt=57346,
-                kBucarest=57347};
+enum Exp_Group {kRich=0xE000,
+                kMuenster=0xE001,
+                kFrankfurt=0xE002,
+                kBucarest=0xE003};
 
 static const Int_t NrOfSyscores = 3;
 static const Int_t NrOfSpadics = 3;
