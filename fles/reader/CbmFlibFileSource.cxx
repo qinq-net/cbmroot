@@ -163,7 +163,7 @@ void CbmFlibFileSource::UnpackSpadicCbmNetMessage(const fles::Timeslice& ts, siz
         ++counter1;
       }
       new( (*fSpadicRaw)[counter] )
-	CbmSpadicRawMessage(link, address, channel, epoch, time, samples, sample_values);
+	CbmSpadicRawMessage(link, address, channel, 0, epoch, time, samples, sample_values);
       ++counter;
       delete[] sample_values;
     }
