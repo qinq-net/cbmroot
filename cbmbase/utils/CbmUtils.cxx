@@ -8,13 +8,14 @@ namespace Cbm
 
 void SaveCanvasAsImage(
    TCanvas* c,
-   const std::string& dir)
+   const std::string& dir,
+   const std::string& option)
 {
    if (dir == "") return;
    gSystem->mkdir(dir.c_str(), true); // create directory if it does not exist
-   c->SaveAs(std::string(dir + std::string(c->GetTitle()) + ".eps").c_str());
-   c->SaveAs(std::string(dir + std::string(c->GetTitle()) + ".png").c_str());
-   c->SaveAs(std::string(dir + std::string(c->GetTitle()) + ".gif").c_str());
+   if (option.find("eps") != std::string::npos) c->SaveAs(std::string(dir + std::string(c->GetTitle()) + ".eps").c_str());
+   if (option.find("png") != std::string::npos) c->SaveAs(std::string(dir + std::string(c->GetTitle()) + ".png").c_str());
+   if (option.find("gif") != std::string::npos) c->SaveAs(std::string(dir + std::string(c->GetTitle()) + ".gif").c_str());
 }
 
 string FindAndReplace(

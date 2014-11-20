@@ -48,7 +48,8 @@ int Sign(
 
 void SaveCanvasAsImage(
    TCanvas* c,
-   const std::string& dir);
+   const std::string& dir,
+   const std::string& option = "eps;png;gif");
 
 string FindAndReplace(
 		const string& name,
