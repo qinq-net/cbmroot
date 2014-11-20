@@ -38,7 +38,9 @@ class CbmTSUnpackSpadic : public CbmTSUnpack
   //  virtual void Register();
 
  private:
+
   TClonesArray* fSpadicRaw;
+
   Int_t fEpochMarkerArray[NrOfSyscores][NrOfHalfSpadics];
   Int_t fSuperEpochCounter[NrOfSyscores][NrOfHalfSpadics];
 

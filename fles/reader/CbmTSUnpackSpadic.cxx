@@ -52,11 +52,9 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
   LOG(DEBUG) << "Unpacking Spadic Data" << FairLogger::endl; 
 
-  fSpadicRaw->Clear();
-
   spadic::TimesliceReader r;
   Int_t counter=0;
-  
+
   r.add_component(ts, component);
 
   for (auto addr : r.sources()) {
@@ -65,7 +63,7 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
       if(gLogger->IsLogNeeded(DEBUG)) {
 	print_message(*mp);
       }
-
+      
       Int_t link = ts.descriptor(component, 0).eq_id;
       Int_t address = addr;
 
@@ -114,15 +112,19 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
       if ( mp->is_hit() ) { 
 	Int_t channel = mp->channel_id();
 	Int_t epoch;
+	Int_t superEpoch;
 	switch (link) {
 	case kMuenster:  // Muenster
 	  epoch = fEpochMarkerArray[0][addr]; 
+	  superEpoch = fSuperEpochCounter[0][addr]; 
 	  break;
 	case kFrankfurt: // Frankfurt
 	  epoch = fEpochMarkerArray[1][addr];
+	  superEpoch = fSuperEpochCounter[1][addr]; 
 	  break;
 	case kBucarest: // Bucarest
 	  epoch = fEpochMarkerArray[2][addr];
+	  superEpoch = fSuperEpochCounter[2][addr]; 
 	  break;
 	default:
 	  LOG(FATAL) << "EquipmentID " << link << "not known." << FairLogger::endl;
@@ -136,14 +138,15 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	  sample_values[counter1] = x;
 	  ++counter1;
 	}
-	new( (*fSpadicRaw)[counter] )
-	  CbmSpadicRawMessage(link, address, channel, epoch, time, samples, sample_values);
+	new( (*fSpadicRaw)[fSpadicRaw->GetEntriesFast()] )
+	  CbmSpadicRawMessage(link, address, channel, superEpoch, 
+			      epoch, time, samples, sample_values);
 	++counter;
 	delete[] sample_values;
       }
     }
   }
-  return kTRUE;
+
 }
 
 void CbmTSUnpackSpadic::print_message(const spadic::Message& m)
@@ -171,6 +174,7 @@ void CbmTSUnpackSpadic::print_message(const spadic::Message& m)
 
 void CbmTSUnpackSpadic::Reset()
 {
+  fSpadicRaw->Clear();
 }
 
 void CbmTSUnpackSpadic::Finish()
@@ -184,6 +188,7 @@ void CbmTSUnpackSpadic::Finish()
   }
 
 }
+
 
 /*
 void CbmTSUnpackSpadic::Register()
