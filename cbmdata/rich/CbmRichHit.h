@@ -45,6 +45,9 @@ public:
   virtual Int_t GetNPhotons() const { return fNPhotons; }
   virtual Double_t GetAmplitude() const { return fAmplitude; }
 
+  Int_t fPixelX;
+  Int_t fPixelY;
+
 private:
 
   Int_t fPmtId; // photomultiplier number

@@ -219,7 +219,10 @@ void CbmRichTrbUnpack::DecodeTdcData(
 				if (tdcId == 0x7005) { //CTS
 
 				} else if (tdcId == 0x0110) { // reference time TDC for event building
-					if ( (fAnaPulserEvents && chNum == 15) || (!fAnaPulserEvents && chNum == 5) ) {
+               //if ( (fAnaPulserEvents && chNum == 15) || (!fAnaPulserEvents && chNum == 5) ) {         // shit shit shit
+               if ( (fAnaPulserEvents && chNum == 5) || (!fAnaPulserEvents && chNum == 6) ) {         // Hodoscopes (beam trigger)
+					//if ( (fAnaPulserEvents && chNum == 15) || (!fAnaPulserEvents && chNum == 16) ) {       // Laser
+				   //if ( (fAnaPulserEvents && chNum == 7) || (!fAnaPulserEvents && chNum == 8) ) {         // UV LED
 						CbmTrbRawHit* rawHitRef = new CbmTrbRawHit(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime, 0, 0, 0, 0);
 						fRawEventTimeHits.push_back(rawHitRef);
 					}
@@ -256,7 +259,7 @@ void CbmRichTrbUnpack::DecodeTdcData(
 							prevCoarseTime[prevCounter] = 0;
 							prevFineTime[prevCounter] = 0;
 						} else {
-							LOG(ERROR) << "Leading edge channel number - trailing edge channel number != 1. tdcId=" << hex << tdcId << dec <<
+							LOG(DEBUG) << "Leading edge channel number - trailing edge channel number != 1. tdcId=" << hex << tdcId << dec <<
 									", chNum=" << chNum <<  ", prevChNum=" << prevChNum[prevCounter] << FairLogger::endl;
 						}
 					}
@@ -352,7 +355,7 @@ void CbmRichTrbUnpack::BuildEvent(Int_t refHitIndex)
 		UShort_t trbInd = ( (h->GetTrb() >> 4) & 0x00FF ) - 1;
 		nofHitsTrb[trbInd]++;
 
-		AddRichHitToOutputArray(trbInd, data->GetX(), data->GetY());
+		AddRichHitToOutputArray(trbInd, data);
 
 		fhDiffHitTimeEventTime->Fill(eventTime - h->GetLFullTime());
 
@@ -365,14 +368,16 @@ void CbmRichTrbUnpack::BuildEvent(Int_t refHitIndex)
 	}
 }
 
-void CbmRichTrbUnpack::AddRichHitToOutputArray(UShort_t trbId, Double_t x, Double_t y)
+void CbmRichTrbUnpack::AddRichHitToOutputArray(UShort_t trbId, CbmRichTrbMapData* data)
 {
 	UInt_t counter = fRichHits->GetEntries();
 	new((*fRichHits)[counter]) CbmRichHit();
 	CbmRichHit* hit = (CbmRichHit*)fRichHits->At(counter);
-	hit->SetX(x);
-	hit->SetY(y);
+	hit->SetX(data->GetX());
+	hit->SetY(data->GetY());
    hit->SetPmtId(trbId);
+   hit->fPixelX = data->GetXPixel();
+   hit->fPixelY = data->GetYPixel();
 }
 
 void CbmRichTrbUnpack::FindMinMaxIndex(

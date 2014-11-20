@@ -9,6 +9,7 @@
 
 using namespace std;
 
+class CbmRichTrbMapData;
 class CbmRawSubEvent;
 class CbmTrbRawHit;
 class CbmTrbOutputHit;
@@ -77,7 +78,7 @@ private:
     TH1D* fhCoarseTime[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC];
     TH1D* fhFineTime[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC];
     TH1D* fhDeltaT[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC];
-    TH2D* fhNofRichHitsVsTrbNum; // Number of RICH hit per event vs. TRB number (only real event counts)
+    TH2D* fhNofRichHitsVsTrbNum; // Number of RICH hit per event vs. TRB number (only real event count)
     TH1D* fhDiffHitTimeEventTime; // Difference between reference event time and RICH hit time
 
     Bool_t fAnaPulserEvents;
@@ -92,7 +93,7 @@ private:
      * \param x X coordinate of the hit
      * \param y Y coordinate of the hit
      */
-    void AddRichHitToOutputArray(UShort_t trbId, Double_t x, Double_t y);
+    void AddRichHitToOutputArray(UShort_t trbId, CbmRichTrbMapData* data);
 
     /*
      * Read all events and create output hits

@@ -85,6 +85,7 @@ private:
 
    TH1D* fhNofHitsInEvent; // number of hits in event
    TH2D* fhHitsXY; // XY distribution of the hits in event
+   TH2D* fhHitsXY2; 
    TH1D* fhNofRingsInEvent; // number of found rings per event
    TH1D* fhNofHitsInRing; // number of hits in found rings
 

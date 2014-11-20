@@ -88,7 +88,7 @@ Int_t CbmRichProtRingFinderHough::DoFind(
 	//for_each(UpH.begin(), UpH.end(), DeleteObject());
 	allH.clear();
 
-	cout << "CbmRichProtRingFinderHough. Number of found rings "<< rRingArray->GetEntriesFast() << endl;
+	//cout << "CbmRichProtRingFinderHough. Number of found rings "<< rRingArray->GetEntriesFast() << endl;
 
 	return 1;
 }
