@@ -1,13 +1,30 @@
-#ifndef CBMRICHTRBMAPDATA_H
-#define CBMRICHTRBMAPDATA_H
+#ifndef CBMRICHHITINFO_H
+#define CBMRICHHITINFO_H
 
-#include <string>
+#include "TObject.h"
 
-class CbmRichTrbMapData
+class CbmRichHitInfo : public TObject
 {
 public:
-	CbmRichTrbMapData(UInt_t pmtNum, UInt_t pixelNum, Double_t x, Double_t y, UInt_t xPixel, UInt_t yPixel,
-			UInt_t tdcId, UInt_t leadingChanel, UInt_t trailingChanel, UInt_t padiwaNum, UInt_t trbNum, const std::string& pmtType):
+	CbmRichHitInfo():
+			fPmtNum(0),
+			fPixelNum(0),
+			fX(0),
+			fY(0),
+			fXPixel(0),
+			fYPixel(0),
+			fTdcId(0),
+			fLeadingChannel(0),
+			fTrailingChannel(0),
+			fPadiwaNum(0),
+			fTrbNum(0),
+			fPmtTypeId(0)
+		{
+
+		}
+
+	CbmRichHitInfo(UInt_t pmtNum, UInt_t pixelNum, Double_t x, Double_t y, UInt_t xPixel, UInt_t yPixel,
+			UInt_t tdcId, UInt_t leadingChanel, UInt_t trailingChanel, UInt_t padiwaNum, UInt_t trbNum, UInt_t pmtTypeId):
 		fPmtNum(pmtNum),
 		fPixelNum(pixelNum),
 		fX(x),
@@ -19,14 +36,30 @@ public:
 		fTrailingChannel(trailingChanel),
 		fPadiwaNum(padiwaNum),
 		fTrbNum(trbNum),
-		fPmtType(pmtType)
+		fPmtTypeId(pmtTypeId)
 	{
 
 	}
 
-	~CbmRichTrbMapData()
+	virtual ~CbmRichHitInfo()
 	{
 
+	}
+
+	void Copy(CbmRichHitInfo* hitInfo)
+	{
+		fPmtNum = hitInfo->GetPmtNum();
+		fPixelNum = hitInfo->GetPixelNum();
+		fX = hitInfo->GetX();
+		fY = hitInfo->GetY();
+		fXPixel = hitInfo->GetXPixel();
+		fYPixel = hitInfo->GetYPixel();
+		fTdcId = hitInfo->GetTdcId();
+		fLeadingChannel = hitInfo->GetLeadingChannel();
+		fTrailingChannel = hitInfo->GetTrailingChannel();
+		fPadiwaNum = hitInfo->GetPadiwaNum();
+		fTrbNum	= hitInfo->GetTrbNum();
+		fPmtTypeId = hitInfo->GetPmtTypeId();
 	}
 
 	UInt_t GetPmtNum() const {return fPmtNum;}
@@ -40,7 +73,7 @@ public:
 	UInt_t GetTrailingChannel() const {return fTrailingChannel;}
 	UInt_t GetPadiwaNum() const {return fPadiwaNum;}
 	UInt_t GetTrbNum() const {return fTrbNum;}
-	const std::string& GetPmtType() const {return fPmtType;}
+	UInt_t GetPmtTypeId() const {return fPmtTypeId;}
 
 private:
 	UInt_t fPmtNum; // PMT number
@@ -54,7 +87,9 @@ private:
 	UInt_t fTrailingChannel; // trailing channel number
 	UInt_t fPadiwaNum; // PADIWA number
 	UInt_t fTrbNum; // TRB number
-	std::string fPmtType; // type of PMT PMT-Type
+	UInt_t fPmtTypeId; // type Id of PMT PMT-Type
+
+	ClassDef(CbmRichHitInfo, 1)
 };
 
 #endif

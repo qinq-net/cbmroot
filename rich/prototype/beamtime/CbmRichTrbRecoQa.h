@@ -82,10 +82,11 @@ private:
 
    TClonesArray* fRichHits; // Array of RICH hits
    TClonesArray* fRichRings; // Array of found RICH rings
+   TClonesArray* fRichHitInfos; // Array of CbmRichHitInfo
 
    TH1D* fhNofHitsInEvent; // number of hits in event
-   TH2D* fhHitsXY; // XY distribution of the hits in event
-   TH2D* fhHitsXY2; 
+   TH2D* fhHitsXYCm; // XY distribution of the hits in event in cm
+   TH2D* fhHitsXYPixel; // XY distribution of the hits in event in pixels
    TH1D* fhNofRingsInEvent; // number of found rings per event
    TH1D* fhNofHitsInRing; // number of hits in found rings
 

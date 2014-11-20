@@ -9,7 +9,7 @@
 
 using namespace std;
 
-class CbmRichTrbMapData;
+class CbmRichHitInfo;
 class CbmRawSubEvent;
 class CbmTrbRawHit;
 class CbmTrbOutputHit;
@@ -60,6 +60,7 @@ private:
     TString fHldFileName; // file name of HLD file
 
     TClonesArray* fRichHits; // output array of RICH hits
+    TClonesArray* fRichHitInfos; // output array of CbmRichHitInfo hits
 
     Char_t* fDataPointer; // pointer to data
     UInt_t fDataSize; // size of data
@@ -93,7 +94,7 @@ private:
      * \param x X coordinate of the hit
      * \param y Y coordinate of the hit
      */
-    void AddRichHitToOutputArray(UShort_t trbId, CbmRichTrbMapData* data);
+    void AddRichHitToOutputArray(UShort_t trbId, CbmRichHitInfo* hitInfo);
 
     /*
      * Read all events and create output hits

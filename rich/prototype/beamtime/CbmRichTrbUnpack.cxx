@@ -11,6 +11,7 @@
 #include "CbmTrbCalibrator.h"
 #include "FairRootManager.h"
 #include "CbmRichHit.h"
+#include "CbmRichHitInfo.h"
 #include "TClonesArray.h"
 #include "CbmDrawHist.h"
 #include "TFolder.h"
@@ -46,6 +47,9 @@ Bool_t CbmRichTrbUnpack::Init()
 	fRichHits = new TClonesArray("CbmRichHit");
 	fManager->Register("RichHit","RICH", fRichHits, kTRUE);
 
+	fRichHitInfos = new TClonesArray("CbmRichHitInfo");
+	fManager->Register("RichHitInfo","RICH", fRichHitInfos, kTRUE);
+
 	ReadEvents();
 
 	fhNofRichHitsVsTrbNum = new TH2D("fhNofRichHitsVsTrbNum", "fhNofRichHitsVsTrbNum;TRB number;Nof hits in event",
@@ -60,6 +64,7 @@ Int_t CbmRichTrbUnpack::ReadEvent()
 	LOG(DEBUG) << "Event #" << fEventNum << FairLogger::endl;
 
 	fRichHits->Clear();
+	fRichHitInfos->Clear();
 
 	if (fOutputEventTimeHits.size() == 0) {
 		LOG(ERROR) << "No reference time hits." << FairLogger::endl;
@@ -68,11 +73,6 @@ Int_t CbmRichTrbUnpack::ReadEvent()
 
 	BuildEvent(fEventNum);
 
-	LOG(DEBUG) << "CbmRichTrbUnpack::ReadEvent : # hits in event " << fRichHits->GetEntries() << FairLogger::endl;
-	for (int i = 0; i < fRichHits->GetEntries(); i++) {
-	CbmRichHit* hit = (CbmRichHit*)fRichHits->At(i);
-		//LOG(DEBUG) << hit->GetX() << " " << hit->GetY() << FairLogger::endl;
-	}
 	fEventNum++;
 
 	if (fEventNum < fOutputEventTimeHits.size()){
@@ -350,7 +350,7 @@ void CbmRichTrbUnpack::BuildEvent(Int_t refHitIndex)
 	}
 	for (Int_t iH = indmin; iH <= indmax; iH++) {
 		CbmTrbOutputHit* h = fOutputRichHits[iH];
-		CbmRichTrbMapData* data = param->GetRichTrbMapData(h->GetTdc(), h->GetLChannel());
+		CbmRichHitInfo* data = param->GetRichHitInfo(h->GetTdc(), h->GetLChannel());
 
 		UShort_t trbInd = ( (h->GetTrb() >> 4) & 0x00FF ) - 1;
 		nofHitsTrb[trbInd]++;
@@ -368,16 +368,23 @@ void CbmRichTrbUnpack::BuildEvent(Int_t refHitIndex)
 	}
 }
 
-void CbmRichTrbUnpack::AddRichHitToOutputArray(UShort_t trbId, CbmRichTrbMapData* data)
+void CbmRichTrbUnpack::AddRichHitToOutputArray(UShort_t trbId, CbmRichHitInfo* hitInfo)
 {
-	UInt_t counter = fRichHits->GetEntries();
-	new((*fRichHits)[counter]) CbmRichHit();
-	CbmRichHit* hit = (CbmRichHit*)fRichHits->At(counter);
-	hit->SetX(data->GetX());
-	hit->SetY(data->GetY());
-   hit->SetPmtId(trbId);
-   hit->fPixelX = data->GetXPixel();
-   hit->fPixelY = data->GetYPixel();
+	UInt_t counter1 = fRichHits->GetEntries();
+	new((*fRichHits)[counter1]) CbmRichHit();
+	CbmRichHit* hit = static_cast<CbmRichHit*>(fRichHits->At(counter1));
+	hit->SetX(hitInfo->GetX());
+	hit->SetY(hitInfo->GetY());
+
+	UInt_t counter2 = fRichHitInfos->GetEntries();
+	new((*fRichHitInfos)[counter2]) CbmRichHitInfo();
+	CbmRichHitInfo* newHitInfo = static_cast<CbmRichHitInfo*>(fRichHitInfos->At(counter2));
+	newHitInfo->Copy(hitInfo);
+
+	if (fRichHits->GetEntries() != fRichHitInfos->GetEntries()){
+		LOG(ERROR) << "CbmRichTrbUnpack::AddRichHitToOutputArray: fRichHits->Entries() =" <<
+				fRichHits->GetEntries() << "NOT EQUAL fRichHitInfos->Entries() = " << fRichHitInfos->GetEntries() << FairLogger:: endl;
+	}
 }
 
 void CbmRichTrbUnpack::FindMinMaxIndex(

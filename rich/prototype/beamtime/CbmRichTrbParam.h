@@ -8,7 +8,7 @@
 
 #include "FairLogger.h"
 
-#include "CbmRichTrbMapData.h"
+#include "CbmRichHitInfo.h"
 
 using namespace std;
 
@@ -30,7 +30,7 @@ public:
 
 	}
 
-	CbmRichTrbMapData* GetRichTrbMapData(UInt_t tdcId, UInt_t leadingChannel)
+	CbmRichHitInfo* GetRichHitInfo(UInt_t tdcId, UInt_t leadingChannel)
 	{
 		return fMap[tdcId][leadingChannel];
 	}
@@ -51,7 +51,7 @@ public:
 
 private:
 
-	map<UInt_t, map<UInt_t, CbmRichTrbMapData*> > fMap;
+	map<UInt_t, map<UInt_t, CbmRichHitInfo*> > fMap;
 
 	void ReadMap()
 	{
@@ -72,12 +72,20 @@ private:
 				LOG(DEBUG) << pmtNum <<" " <<  pixelNum <<" " << xmm <<" " << ymm <<" " << simpleX <<" " <<
 						simpleY <<" " << tdcId<<" " <<chLeadingEdge<<" " <<chTrailingEdge<<" " <<padiwaNum<<" " <<trbNum<<" " <<pmtType << FairLogger::endl;
 
-				fMap[tdcId][chLeadingEdge] = new CbmRichTrbMapData(pmtNum, pixelNum, xmm / 10., ymm / 10., simpleX, simpleY, tdcId, chLeadingEdge, chTrailingEdge, padiwaNum, trbNum, pmtType);
+				UInt_t pmtTypeId = GetPmtTypeIdByString(pmtType);
+				fMap[tdcId][chLeadingEdge] = new CbmRichHitInfo(pmtNum, pixelNum, xmm / 10., ymm / 10., simpleX, simpleY, tdcId, chLeadingEdge, chTrailingEdge, padiwaNum, trbNum, pmtTypeId);
 			}
 			myfile.close();
 		} else {
 		   LOG(FATAL) << "[CbmRichTrbParam::ReadMap] Failed to open ASCII map file." << FairLogger::endl;
 		}
+	}
+
+	UInt_t GetPmtTypeIdByString(const string& str)
+	{
+		if ( str == "H12700") return 1;
+		else if (str == "H8500") return 2;
+		else return -1;
 	}
 
 };

@@ -110,6 +110,7 @@ prototype/beamtime/CbmRichTrbUnpack.cxx
 prototype/beamtime/CbmTrbCalibrator.cxx
 prototype/beamtime/CbmRichTrbRecoQa.cxx
 prototype/beamtime/CbmRichTrbPulserQa.cxx
+prototype/beamtime/CbmRichHitInfo.cxx
 )
 
 If(TBB_FOUND)
@@ -149,6 +150,7 @@ prototype/beamtime/CbmRichTrbUnpack.h
 prototype/beamtime/CbmTrbCalibrator.h
 prototype/beamtime/CbmRichTrbRecoQa.h
 prototype/beamtime/CbmRichTrbPulserQa.h
+prototype/beamtime/CbmRichHitInfo.h
 )
 
 If(TBB_FOUND)
