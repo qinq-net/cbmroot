@@ -59,10 +59,9 @@ InitStatus CbmRichTrbRecoQa::Init()
 
 void CbmRichTrbRecoQa::InitHist()
 {
-   fhNofHitsInEvent = new TH1D("fhNofHitsInEvent", "fhNofHitsInEvent;Number of hits in event;Entries", 50, -0.5, 49.5);
+   fhNofHitsInEvent = new TH1D("fhNofHitsInEvent", "fhNofHitsInEvent;Number of hits in event;Entries", 50, 0.5, 50.5);
    fhNofHitsInRing = new TH1D("fhNofHitsInRing", "fhNofHitsInRing;Number of hits in ring;Entries", 50, -0.5, 49.5);
    fhHitsXYPixel = new TH2D("fhHitsXYPixel", "fhHitsXYPixel;X [pixel];Y [pixel];Entries", 32, 0.5, 32.5, 32, 0.5, 32.5);
-
    fhNofRingsInEvent = new TH1D("fhNofRingsInEvent", "fhNofRingsInEvent;# rings per event;Entries", 5, -0.5, 4.5);
    fhBoverAEllipse = new TH1D("fhBoverAEllipse", "fhBoverAEllipse;B/A;Entries", 100, 0.0, 1.0);
    fhXcYcEllipse = new TH2D("fhXcYcEllipse", "fhXcYcEllipse;X [cm];Y [cm];Entries", 100, 0., 21., 100, 0., 21.);
@@ -223,8 +222,6 @@ void CbmRichTrbRecoQa::DrawHist()
 {
    TCanvas* c1 = new TCanvas("rich_trb_recoqa_nof_hits_in_event", "rich_trb_recoqa_nof_hits_in_event", 600, 600);
    DrawH1(fhNofHitsInEvent);
-   TCanvas* c2 = new TCanvas("rich_trb_recoqa_hits_xy_cm", "rich_trb_recoqa_hits_xy_cm", 800, 600);
-   DrawH2(fhHitsXYCm);
 
    TCanvas* c3 = new TCanvas("rich_trb_recoqa_nof_rings_per_event", "rich_trb_recoqa_nof_rings_per_event", 600, 600);
    DrawH1(fhNofRingsInEvent);
