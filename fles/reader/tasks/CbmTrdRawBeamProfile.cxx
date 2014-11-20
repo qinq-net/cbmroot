@@ -94,6 +94,8 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
 
     Int_t nrSamples=raw->GetNrSamples();
 
+//    ULong_t time = raw->GetFullTime();
+
     TString syscore="";
     switch (eqID) {
     case kMuenster:  // Muenster
@@ -106,7 +108,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
       syscore="SysCore2_";
       break;
     default:
-      //LOG(FATAL) << "EquipmentID " << eqID << "not known." << FairLogger::endl;
+      LOG(FATAL) << "EquipmentID " << eqID << "not known." << FairLogger::endl;
       break;
     }     
       
@@ -134,7 +136,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
       chID += 16;
       break;
     default:
-      //LOG(FATAL) << "Source Address " << sourceA << "not known." << FairLogger::endl;
+      LOG(FATAL) << "Source Address " << sourceA << "not known." << FairLogger::endl;
       break;
     }   
     if ( 32 == nrSamples) {  
