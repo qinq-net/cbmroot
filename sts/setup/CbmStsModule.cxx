@@ -346,6 +346,16 @@ Int_t CbmStsModule::ProcessAnalogBuffer(Double_t readoutTime) {
 	// --- Counter
 	Int_t nDigis = 0;
 
+	// --- Time limit up to which signals are digitised and sent to DAQ.
+	// --- Up to that limit, it is guaranteed that future signals do not
+	// --- interfere with the buffered ones. The readoutTime is the time
+	// --- of the last processed StsPoint. All coming points will be later
+	// --- in time. So, the time limit is defined by this time minus
+	// --- 5 times the time resolution (maximal deviation of signal time
+	// --- from StsPoint time) minus the dead time, within which
+	// --- interference of signals can happen.
+	Double_t timeLimit = readoutTime - 5. * fTimeResolution - fDeadTime;
+
 	// --- Iterate over active channels
 	map<Int_t, multiset<CbmStsSignal*> >::iterator chanIt;
 	for (chanIt = fAnalogBuffer.begin();
@@ -358,7 +368,7 @@ Int_t CbmStsModule::ProcessAnalogBuffer(Double_t readoutTime) {
 
 			// --- Exit loop if signal time is larger than readout time
 			// --- N.b.: Readout time < 0 means digitise everything
-			if ( readoutTime >= 0. && (*sigIt)->GetTime() > readoutTime ) break;
+			if ( readoutTime >= 0. && (*sigIt)->GetTime() > timeLimit ) break;
 
 			// --- Digitise signal
 			Digitize( chanIt->first, (*sigIt) );

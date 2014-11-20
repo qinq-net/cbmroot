@@ -149,8 +149,9 @@ class CbmStsModule : public CbmStsElement
       ** @param time  readout time [ns]
       ** @return Number of created digis
       **
-      ** All signals with time less than the readout time will be
-      ** digitised and removed from the buffer.
+      ** All signals with time less than the readout time minus a
+      ** safety margin (taking into account dead time and time resolution)
+      ** will be digitised and removed from the buffer.
       **/
      Int_t ProcessAnalogBuffer(Double_t readoutTime);
 

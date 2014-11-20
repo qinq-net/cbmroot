@@ -95,21 +95,30 @@ void CbmStsDigitize::CreateDigi(UInt_t address,
 	CbmMatch* digiMatch = new CbmMatch();
 	digiMatch->AddLink(match);
 
-	// Current implementation is for event-based only. Digi is created
-	// by placement in the respective TClonesArray
-	if ( ! fDigis ) {
-		LOG(FATAL) << GetName() << ": No output TClonesArray for StsDigis!"
-				       << FairLogger::endl;
-		return;
-	}
-	Int_t nDigis = fDigis->GetEntriesFast();
-	CbmStsDigi* digi =
-			new ( (*fDigis)[nDigis] ) CbmStsDigi(address, time, adc);
-	digi->SetMatch(digiMatch);
+	// In stream mode: create digi and send it to Daq
+	if ( fMode == 0 ) {
+		CbmStsDigi* digi = new CbmStsDigi(address, time, adc);
+		digi->SetMatch(digiMatch);
+    CbmDaqBuffer::Instance()->InsertData(digi);
+	} //? Stream mode
 
-	// --- For backward compatibility: create a second match in a separate branch
-	CbmMatch* digiMatch2 = new ( (*fMatches)[nDigis] ) CbmMatch();
-	digiMatch2->AddLink(match);
+	// In event mode: create digi and match in TClonesArrays
+	else {
+		if ( ! fDigis ) {
+			LOG(FATAL) << GetName() << ": No output TClonesArray for StsDigis!"
+				       	 << FairLogger::endl;
+			return;
+		}
+		Int_t nDigis = fDigis->GetEntriesFast();
+		CbmStsDigi* digi =
+				new ( (*fDigis)[nDigis] ) CbmStsDigi(address, time, adc);
+		digi->SetMatch(digiMatch);
+
+		// --- For backward compatibility:
+		// --- create a second match in a separate branch
+		CbmMatch* digiMatch2 = new ( (*fMatches)[nDigis] ) CbmMatch();
+		digiMatch2->AddLink(match);
+	} //? event mode
 
 	fNofDigis++;
 	LOG(DEBUG3) << GetName() << ": created digi at " << time
@@ -165,6 +174,10 @@ void CbmStsDigitize::Exec(Option_t* opt) {
 
 // -----   Finish run    ---------------------------------------------------
 void CbmStsDigitize::Finish() {
+
+	// --- In stream mode: process the remaining points in the MCBuffer
+	if ( fMode == 0 ) Exec("");
+
 	std::cout << std::endl;
 	LOG(INFO) << "=====================================" << FairLogger::endl;
 	LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
@@ -269,9 +282,16 @@ void CbmStsDigitize::ProcessMCBuffer() {
     Int_t index = (point->GetLink(0)).GetIndex();
 
     CbmLink* link = new CbmLink(1., index, entry);
+    LOG(DEBUG2) << GetName() << ": Processing point at " << index
+    		     	  << ", event " << entry << ", time " << point->GetTime()
+    		        << " ns" << FairLogger::endl;
     ProcessPoint(point, link);
     fNofPoints++;
     delete link;
+
+    // Next StsPoint
+    point = dynamic_cast<const CbmStsPoint*>
+                        (CbmMCBuffer::Instance()->GetNextPoint(kSTS));
 
   } // Point loop
 

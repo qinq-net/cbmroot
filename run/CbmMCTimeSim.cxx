@@ -110,8 +110,11 @@ void CbmMCTimeSim::Exec(Option_t* opt) {
             << FairLogger::endl;
 
   // Read MCPoints from event into buffers
-  LOG(INFO) << fName << ": Points read from input: ";
+  LOG(DEBUG) << fName << ": Points read from input: ";
   for (Int_t iDet = 0; iDet < kNOFDETS; iDet++) {
+
+  	// --- For the time being, use only STS and MUCH to avoid overflow
+  	if ( iDet != kSTS && iDet != kMUCH ) continue;
 
     Int_t nPoints = 0;
     if ( fPointArrays[iDet] ) {
@@ -119,11 +122,11 @@ void CbmMCTimeSim::Exec(Option_t* opt) {
                              fEventId, fEventTime);
       TString sysName;
       CbmDetectorList::GetSystemNameCaps(iDet, sysName);
-      LOG(INFO) << sysName << " " << nPoints << "  ";
+      LOG(DEBUG) << sysName << " " << nPoints << "  ";
     }
 
   }
-  LOG(INFO) << FairLogger::endl;
+  LOG(DEBUG) << FairLogger::endl;
 
   // Log buffer status
   CbmMCBuffer::Instance()->Print();
