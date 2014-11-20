@@ -106,7 +106,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
       syscore="SysCore2_";
       break;
     default:
-      LOG(FATAL) << "EquipmentID " << eqID << "not known." << FairLogger::endl;
+      //LOG(FATAL) << "EquipmentID " << eqID << "not known." << FairLogger::endl;
       break;
     }     
       
@@ -179,10 +179,10 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
     }
     if (i == entries-1){
       TString histName = "TriggerCounter_" + syscore + spadic;
-      fHM->H1(histName.Data())->SetBinContent(fHM->H1(histName.Data())->GetNbinsX(),sumTrigger);
       for (Int_t timeSlice = 1; timeSlice < fHM->H1(histName.Data())->GetNbinsX(); timeSlice++){
 	fHM->H1(histName.Data())->SetBinContent(timeSlice,fHM->H1(histName.Data())->GetBinContent(timeSlice+1));
       }
+      fHM->H1(histName.Data())->SetBinContent(fHM->H1(histName.Data())->GetNbinsX(),sumTrigger);
     }
   } //entries
 
@@ -213,7 +213,7 @@ void CbmTrdRawBeamProfile::CreateHistograms()
 
       histName = "TriggerCounter_" + syscoreName[syscore] + "_" + spadicName[spadic];
       title = histName + ";TimeSlice;Trigger / TimeSlice";
-      fHM->Add(histName.Data(), new TH1F(histName, title, 500, 0, 500));
+      fHM->Add(histName.Data(), new TH1F(histName, title, 5000, 0, 5000));
 
       histName = "ErrorCounter_" + syscoreName[syscore] + "_" + spadicName[spadic];
       title = histName + ";Channel;ADC value in Bin 0";

@@ -38,7 +38,7 @@ class CbmTrdOnlineDisplay : public FairTask
 
   private:
 
-    TCanvas* fSpadic1; //!
+    TCanvas* fSpadic1[3]; //!
     TCanvas* fSpadic1a[3]; //!
 
     Int_t fUpdateInterval;
