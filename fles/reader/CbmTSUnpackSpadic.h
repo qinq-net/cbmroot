@@ -42,7 +42,13 @@ class CbmTSUnpackSpadic : public CbmTSUnpack
   TClonesArray* fSpadicRaw;
 
   Int_t fEpochMarkerArray[NrOfSyscores][NrOfHalfSpadics];
-  Int_t fSuperEpochCounter[NrOfSyscores][NrOfHalfSpadics];
+  Int_t fSuperEpochArray[NrOfSyscores][NrOfHalfSpadics];
+
+  Int_t fEpochMarker;
+  Int_t fSuperEpoch;
+
+  void GetEpochInfo(Int_t link, Int_t addr);
+  void FillEpochInfo(Int_t link, Int_t addr, Int_t epoch_count);
 
   ClassDef(CbmTSUnpackSpadic, 1)
 };
