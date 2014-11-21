@@ -42,6 +42,7 @@ Set(SRCS
   CbmTSUnpackNxyter.cxx
   CbmFlibFileSourceNew.cxx   
   CbmDaqBuffer.cxx
+  CbmFiberHodoMapping.cxx
 
   tasks/CbmTrdRawBeamProfile.cxx
   tasks/CbmTrdOnlineDisplay.cxx

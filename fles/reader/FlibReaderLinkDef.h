@@ -11,6 +11,7 @@
 #pragma link C++ class CbmTSUnpackNxyter;
 #pragma link C++ class CbmFlibFileSourceNew;
 #pragma link C++ class CbmDaqBuffer;
+#pragma link C++ class CbmFiberHodoMapping;
 
 #pragma link C++ class CbmTrdRawBeamProfile;
 #pragma link C++ class CbmTrdOnlineDisplay;
