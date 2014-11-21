@@ -12,6 +12,8 @@
 
 #include <vector>
 
+#include "TStopwatch.h"
+
 #include "FairMCPoint.h"
 #include "FairTask.h"
 
@@ -110,27 +112,16 @@ class CbmMCTimeSim : public FairTask
 
 
   /** Maximal size [MB] **/
-  Double_t fMaxBufferSize;
+  Double_t   fMaxBufferSize;  ///< Maximal buffer size [MB]
+  Int_t      fEventId;        ///< ID of current event
+  Double_t   fEventTime;      ///< Start time of current event
+  Int_t      fNofEvents;      ///< Event counter
+  TStopwatch fTimer;          ///< ROOT time
 
 
-  /** ID of current event **/
-  Int_t    fEventId;
-
-
-  /** Start time of current event [ns] **/
-  Double_t fEventTime;
-
-
-  /** Event counter  **/
-  Int_t fNofEvents;
-
-
-  /** Input of CbmMCEventHeader **/
-  CbmMCEventHeader* fEvent;
-
-
-  /** Input arrays of MCPoints **/
-  vector<TClonesArray*> fPointArrays;
+  // --- Input
+  CbmMCEventHeader*     fEvent;        ///< Input of CbmMCEventHeader
+  vector<TClonesArray*> fPointArrays;  ///< Input MCPoint arrays
 
 
   /** Create event time

@@ -193,7 +193,45 @@ void CbmStsModule::AddSignal(Int_t channel, Double_t time,
 
 
 
-// -----   Convert analog charge to ADC channel number   ------------------
+// -----   Status of analog buffer   ---------------------------------------
+void CbmStsModule::BufferStatus(Int_t& nofSignals,
+		                            Double_t& timeFirst,
+		                            Double_t& timeLast) {
+
+	map<Int_t, multiset<CbmStsSignal*> >::iterator chanIt;
+	multiset<CbmStsSignal*>::iterator sigIt;
+
+	Int_t nSignals   = 0;
+	Double_t tFirst  = -1.;
+	Double_t tLast   = -1.;
+	Double_t tSignal = -1.;
+
+	// --- Loop over active channels
+	for ( chanIt  = fAnalogBuffer.begin();
+			  chanIt != fAnalogBuffer.end(); chanIt++) {
+
+		// --- Loop over signals in channel
+		for ( sigIt  = (chanIt->second).begin();
+				  sigIt != (chanIt->second).end(); sigIt++) {
+
+			tSignal = (*sigIt)->GetTime();
+			nSignals++;
+			tFirst = tFirst < 0. ? tSignal : TMath::Min(tFirst, tSignal);
+			tLast  = TMath::Max(tLast, tSignal);
+		} // signals in channel
+
+	} // channels in module
+
+	nofSignals = nSignals;
+	timeFirst  = tFirst;
+	timeLast   = tLast;
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Convert analog charge to ADC channel number   -------------------
 Int_t CbmStsModule::ChargeToAdc(Double_t charge) {
 	if ( charge < fThreshold ) return -1;
 	Int_t adc = Int_t ( (charge - fThreshold) * Double_t(fNofAdcChannels)

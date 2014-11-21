@@ -7,7 +7,7 @@
 #ifndef CBMDAQ_H
 #define CBMDAQ_H 1
 
-
+#include "TStopwatch.h"
 #include "FairTask.h"
 
 
@@ -56,6 +56,20 @@ class CbmDaq : public FairTask
     // TODO: Implement functionality
     Bool_t fStoreEmptySlices;
 
+    /** Timer **/
+    TStopwatch fTimer;
+
+    /** Counters **/
+    Int_t fNofSteps;             ///< Number of execute steps
+    Int_t fNofDigis;             ///< Total number of processed digis
+    Int_t fNofTimeSlices;        ///< Number of time slices
+    Int_t fNofTimeSlicesEmpty;   ///< Number of empty time slices
+    Double_t fTimeDigiFirst;     ///< Time of first digi
+    Double_t fTimeDigiLast;      ///< Time of last digi
+    Double_t fTimeSliceFirst;    ///< Start time of first time slice
+    Double_t fTimeSliceLast;     ///< Stop time of last time slice
+
+
     /** Pointer to current time slice **/
     CbmTimeSlice* fTimeSlice;
 
@@ -70,8 +84,10 @@ class CbmDaq : public FairTask
     void CloseTimeSlice();
 
 
-    /** Fill data from the buffer into the current time slice **/
-    void FillTimeSlice();
+    /** Fill data from the buffer into the current time slice
+     ** @return Number if digis filled into the timeslice
+     **/
+    Int_t FillTimeSlice();
 
 
     /** At end of run: Process the remaining data in the CbmDaqBuffer  **/

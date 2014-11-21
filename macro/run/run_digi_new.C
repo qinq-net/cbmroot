@@ -35,7 +35,7 @@ void run_digi_new(Int_t nEvents = 2, const char* setup = "sis300_electron")
   
   // Specify log level (INFO, DEBUG, DEBUG1, ...)
   TString logLevel = "INFO";
-  FairLogger* log;  
+  //FairLogger* log;
 
   //  Digitisation files.
   // Add TObjectString containing the different file names to
@@ -95,28 +95,25 @@ void run_digi_new(Int_t nEvents = 2, const char* setup = "sis300_electron")
 
   
   // ---- MC Time simulation
-  Double_t rate = 1.e6;
   FairTask* timeSim = new CbmMCTimeSim(eventRate, beamProfile);
   run->AddTask(timeSim);
- 
  
   // ----- STS digitiser
   Double_t dynRange       =   40960.;  // Dynamic range [e]
   Double_t threshold      =    4000.;  // Digitisation threshold [e]
   Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
-  Double_t timeResolution =       5.;  // time resolution [ns]
+  Double_t timeResolution =       0.;  // time resolution [ns]
   Double_t deadTime       =     100.;  // infinite dead time (integrate entire event)
   Int_t digiModel         =  1;  // Model: 1 = uniform charge distribution along track
-
   CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
   stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime);
   run->AddTask(stsDigi);
 
- 
   // ----- DAQ
   FairTask* daq = new CbmDaq(timeSliceSize);
   run->AddTask(daq);
-  
+
+ 
  
   
 

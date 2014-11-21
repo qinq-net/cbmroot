@@ -24,6 +24,10 @@ void run_reco_new(Int_t nEvents = 2, const char* setup = "sis300_electron")
   // ========================================================================
   //          Adjust this part according to your requirements
 
+  // Specify log level (INFO, DEBUG, DEBUG1, ...)
+  TString logLevel = "DEBUG";
+
+
   // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
   Int_t iVerbose = 0;
 

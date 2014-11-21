@@ -9,16 +9,14 @@
 
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 #include <set>
 
 #include "TClonesArray.h"
 
-#include "FairLogger.h"
 #include "FairMCPoint.h"
 
 #include "CbmDetectorList.h"
-
-
 
 
 using namespace std;
@@ -171,26 +169,26 @@ template <class T> class CbmMCPointBuffer
   };
 
 
-  /**  Output to screen. Gives number of points in buffer and memory used.
-   ** @param det     System identifier (e.g. kSTS)
-   ** @param logger  Pointer to FairLogger singleton
-   **/
-  void Print() const {
-    LOG(DEBUG) << "\t" << fName << " Buffer: " << setw(8) << right
-              << fBuffer.size() << " points ("
-              << fixed << setprecision(3) << GetSize() << " MB) from "
-              << GetMinTime() << " ns to " << GetMaxTime() << " ns"
-              << FairLogger::endl;
-  };
-
-
   /**  Print the content of the buffer  **/
   void PrintContent() const {
     typename multiset<T, IsBefore<T> >::iterator iter;
     for (iter = fBuffer.begin(); iter != fBuffer.end(); iter++) {
       cout << "Point: x = " << iter->GetXIn() << ", y = " << (*iter).GetYIn()
-           << ", z = " << (*iter).GetZ() << ", t = " << (*iter).GetTime() << endl;
+           << ", z = " << (*iter).GetZ() << ", t = " << (*iter).GetTime();
+      cout << endl;
     }
+  }
+
+
+  /** Status string output **/
+  string ToString() const {
+    stringstream ss;
+    ss << setw(4) << left << fName << " Buffer: " << setw(8) << right
+       << fBuffer.size() << " points ("
+       << setw(8) << fixed << setprecision(3) << GetSize() << " MB) from "
+       << setw(10) << GetMinTime() << " ns to "
+       << setw(10) << GetMaxTime() << " ns";
+     return ss.str();
   }
 
 

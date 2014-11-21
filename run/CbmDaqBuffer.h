@@ -7,6 +7,7 @@
 #define CBMDAQBUFFER_H 1
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "CbmDetectorList.h"
@@ -111,6 +112,10 @@ class CbmDaqBuffer
 
     /**   Print buffer status  **/
     void PrintStatus() const;
+
+
+    /**   Status string  **/
+    string ToString() const;
 
 
   private:

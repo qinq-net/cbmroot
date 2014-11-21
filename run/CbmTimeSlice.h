@@ -6,6 +6,7 @@
 #ifndef CBMTIMESLICE_H
 #define CBMTIMESLICE_H 1
 
+#include <string>
 #include <vector>
 
 #include "TNamed.h"
@@ -76,8 +77,10 @@ class CbmTimeSlice : public TNamed
     void InsertData(CbmDigi* digi);
 
 
-    /** Info **/
-    virtual void Print(Option_t* opt = "") const;
+    /** Check whether timeslice contains data
+     ** @return kTRUE if timeslice contains data
+     **/
+    Bool_t IsEmpty() const { return fIsEmpty; }
 
 
     /** Reset the time slice
@@ -89,14 +92,18 @@ class CbmTimeSlice : public TNamed
      */
     void Reset(Double_t start, Double_t duration);
 
-    /** 
-     **
-     ** Get size of raw data container 
+
+    /** Status to string **/
+    string ToString() const;
+
+
+    /** Get size of raw data container for given detector
      **
      ** @param iDet   detector type
      ** @return size of raw data container (number of digis)
      */
     Int_t GetDataSize(DetectorId iDet) const;
+
     
     /** Get vector of much digis
      **
@@ -107,13 +114,14 @@ class CbmTimeSlice : public TNamed
     
   private:
 
-    Double_t fStartTime;    /** start time [ns] **/
-    Double_t fDuration;     /** duration [ns] **/
-    vector<CbmStsDigi> fStsData;  /** raw data container for STS **/
-    vector<CbmMuchDigi> fMuchData;  /** raw data container for MUCH **/
+    Double_t fStartTime;           ///< start time [ns]
+    Double_t fDuration;            ///< duration [ns]
+    Bool_t   fIsEmpty;             ///< Flag for containing no data
+    vector<CbmStsDigi> fStsData;   ///< raw data container for STS
+    vector<CbmMuchDigi> fMuchData; ///< raw data container for MUCH
 
 
-    ClassDef(CbmTimeSlice,1)
+    ClassDef(CbmTimeSlice,2)
 };
 
 #endif /* CBMTIMESLICE_H */

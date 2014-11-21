@@ -52,6 +52,9 @@ CbmStsDigitize::CbmStsDigitize(Int_t digiModel)
     fDigis(NULL),
     fMatches(NULL),
     fTimer(),
+    fTimePointLast(-1.),
+    fTimeDigiFirst(-1.),
+    fTimeDigiLast(-1.),
     fNofPoints(0),
     fNofSignalsF(0),
     fNofSignalsB(0),
@@ -94,6 +97,11 @@ void CbmStsDigitize::CreateDigi(UInt_t address,
 	// Copy match object
 	CbmMatch* digiMatch = new CbmMatch();
 	digiMatch->AddLink(match);
+
+	// Update times of first and last digi
+	fTimeDigiFirst = fNofDigis ?
+			             TMath::Min(fTimeDigiFirst, Double_t(time)) : time;
+	fTimeDigiLast  = TMath::Max(fTimeDigiLast, Double_t(time));
 
 	// In stream mode: create digi and send it to Daq
 	if ( fMode == 0 ) {
@@ -145,12 +153,63 @@ void CbmStsDigitize::Exec(Option_t* opt) {
 	switch (fMode) {
 		case 0:  ProcessMCBuffer(); break;
 		case 1:  ProcessMCEvent();  break;
-		default: break;
+		default: LOG(FATAL) << GetName() << ": unknown run mode " << fMode
+				                << FairLogger::endl; break;
 	}
+
+	// --- Readout time: in stream mode the time of the last processed StsPoint.
+	// --- Analog buffers will be digitised for signals at times smaller than
+	// --- that time minus a safety margin depending on the module properties
+	// --- (dead time and time resolution). In event mode, the readout time
+	// --- is set to -1., meaning to digitise everything in the readout buffers.
+	Double_t readoutTime = fMode == 0 ? fTimePointLast : -1.;
+
+	// --- After the last event, process the remaining analog buffer
+	if ( strncmp(opt, "finish", 6 ) == 0 ) readoutTime = -1.;
 
   // --- Process buffers of all modules
   for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++)
-  	fSetup->GetModule(iModule)->ProcessAnalogBuffer(-1.);
+  	fSetup->GetModule(iModule)->ProcessAnalogBuffer(readoutTime);
+  LOG(DEBUG) << GetName() << ": " << fNofDigis
+  		       << ( fNofDigis == 1 ? " digi " :  " digis " ) << "sent to DAQ ";
+  if ( fNofDigis )
+  	LOG(DEBUG) << "( from "
+ 	             << setprecision(3) << fTimeDigiFirst << " ns to "
+  		         << fTimeDigiLast << " ns )";
+  LOG(DEBUG) << FairLogger::endl;
+
+  // --- Check status of analog module buffers
+  if ( gLogger->IsLogNeeded(DEBUG)) {
+  	Int_t nSignalsTot  = 0;
+  	Double_t timeFirst = -1;
+  	Double_t timeLast  = -1.;
+  	Int_t nSignals;
+  	Double_t tFirst;
+  	Double_t tLast;
+    for (Int_t iModule = 0; iModule < fSetup->GetNofModules(); iModule++) {
+    	fSetup->GetModule(iModule)->BufferStatus(nSignals, tFirst, tLast);
+    	if ( nSignals ) {
+    		nSignalsTot += nSignals;
+    		timeFirst = timeFirst < 0. ? tFirst : TMath::Min(timeFirst, tFirst);
+    		timeLast  = TMath::Max(timeLast, tLast);
+    	} //? signals in module buffer?
+    } // modules in setup
+    LOG(DEBUG) << GetName() << ": " << nSignalsTot
+    		       << ( nSignalsTot == 1 ? " signal " : " signals " )
+    		       << "in analog buffers";
+    if ( nSignalsTot )
+    	LOG(DEBUG) << " ( from " << setprecision(3) << timeFirst << " ns to "
+    	           << timeLast << " ns.";
+    LOG(DEBUG) << FairLogger::endl;
+  } //? Log needed?
+
+
+  // --- Event log
+  LOG(INFO) << "+ " << setw(20) << GetName() << ": step  " << setw(6)
+  		      << right << fNofSteps << ", time " << fixed << setprecision(6)
+  		      << fTimer.RealTime() << " s, points: " << fNofPoints
+  		      << ", signals: " << fNofSignalsF << " / " << fNofSignalsB
+  		      << ", digis: " << fNofDigis << FairLogger::endl;
 
   // --- Counters
   fTimer.Stop();
@@ -161,12 +220,6 @@ void CbmStsDigitize::Exec(Option_t* opt) {
   fNofDigisTot    += fNofDigis;
   fTimeTot        += fTimer.RealTime();
 
-  LOG(INFO) << "+ " << setw(20) << GetName() << ": Step " << setw(6)
-  		      << right << fNofSteps << ", time " << fixed << setprecision(6)
-  		      << fTimer.RealTime() << " s, points: " << fNofPoints
-  		      << ", signals: " << fNofSignalsF << " / " << fNofSignalsB
-  		      << ", digis: " << fNofDigis << FairLogger::endl;
-
 }
 // -------------------------------------------------------------------------
 
@@ -176,13 +229,14 @@ void CbmStsDigitize::Exec(Option_t* opt) {
 void CbmStsDigitize::Finish() {
 
 	// --- In stream mode: process the remaining points in the MCBuffer
-	if ( fMode == 0 ) Exec("");
+	if ( fMode == 0 ) Exec("finish");
 
 	std::cout << std::endl;
 	LOG(INFO) << "=====================================" << FairLogger::endl;
 	LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
 	LOG(INFO) << "Steps processed  : " << fNofSteps << FairLogger::endl;
-	LOG(INFO) << "StsPoint / step  : " << fNofPointsTot / Double_t(fNofSteps)
+	LOG(INFO) << "StsPoint / step  : " << setprecision(1)
+			      << fNofPointsTot / Double_t(fNofSteps)
 			      << FairLogger::endl;
 	LOG(INFO) << "Signals / step   : "
 			      << fNofSignalsFTot / Double_t(fNofSteps)
@@ -190,8 +244,8 @@ void CbmStsDigitize::Finish() {
 			      << FairLogger::endl;
 	LOG(INFO) << "StsDigi / step   : " << fNofDigisTot  / Double_t(fNofSteps)
 			      << FairLogger::endl;
-	LOG(INFO) << "Digis per point  : " << fNofDigisTot / fNofPointsTot
-			      << FairLogger::endl;
+	LOG(INFO) << "Digis per point  : " << setprecision(6)
+			      << fNofDigisTot / fNofPointsTot << FairLogger::endl;
 	LOG(INFO) << "Digis per signal : "
 			      << fNofDigisTot / ( fNofSignalsFTot + fNofSignalsBTot )
 			      << FairLogger::endl;
@@ -206,7 +260,11 @@ void CbmStsDigitize::Finish() {
 // -----   Initialisation    -----------------------------------------------
 InitStatus CbmStsDigitize::Init() {
 
-	// --- Detect running mode.
+	std::cout << std::endl;
+  LOG(INFO) << "=========================================================="
+		        << FairLogger::endl;
+ 	LOG(INFO) << GetName() << ": Initialisation" << FairLogger::endl;
+	LOG(INFO) << FairLogger::endl;
 
 	// If the tasks CbmMCTimeSim and CbmDaq are found, run in stream mode.
 	FairTask* timeSim = FairRunAna::Instance()->GetTask("MCTimeSim");
@@ -258,7 +316,11 @@ InitStatus CbmStsDigitize::Init() {
 
   LOG(INFO) << GetName() << ": Initialisation successful"
 		    << FairLogger::endl;
-  return kSUCCESS;
+  LOG(INFO) << "=========================================================="
+		        << FairLogger::endl;
+	std::cout << std::endl;
+
+	return kSUCCESS;
 
 }
 // -------------------------------------------------------------------------
@@ -268,10 +330,20 @@ InitStatus CbmStsDigitize::Init() {
 // -----   Process points from MCBuffer   ----------------------------------
 void CbmStsDigitize::ProcessMCBuffer() {
 
+	// Time of first and last point
+	Double_t timeFirst = -1.;
+	Double_t timeLast  = -1.;
+
   // Loop over StsPoints from MCBuffer
   const CbmStsPoint* point = dynamic_cast<const CbmStsPoint*>
                              (CbmMCBuffer::Instance()->GetNextPoint(kSTS));
   while ( point ) {
+
+  	// --- Set time of first point
+  	if ( fNofPoints == 0 ) timeFirst = point->GetTime();
+
+  	// --- Update time of last point
+  	timeLast = TMath::Max(timeLast, point->GetTime());
 
   	// --- Entry (event) number
   	Int_t entry = point->GetEventID();
@@ -294,6 +366,17 @@ void CbmStsDigitize::ProcessMCBuffer() {
                         (CbmMCBuffer::Instance()->GetNextPoint(kSTS));
 
   } // Point loop
+
+  // --- Control output
+  LOG(DEBUG) << GetName() << ": read " << fNofPoints
+  		       << ( fNofPoints == 1 ? "point" : " points" );
+  if ( fNofPoints) LOG(DEBUG) << " from " << fixed << setprecision(3)
+  		                        << timeFirst << " ns to " << timeLast
+  		                        << " ns.";
+  LOG(DEBUG) << FairLogger::endl;
+
+  // --- Store time of last StsPoint
+  fTimePointLast = timeLast;
 
 }
 // -------------------------------------------------------------------------
@@ -383,6 +466,7 @@ InitStatus CbmStsDigitize::ReInit() {
 
 // -----   Private method Reset   ------------------------------------------
 void CbmStsDigitize::Reset() {
+	fTimeDigiFirst = fTimeDigiLast = -1.;
   fNofPoints = fNofSignalsF = fNofSignalsB = fNofDigis = 0;
   if ( fDigis ) fDigis->Delete();
 }
@@ -394,6 +478,22 @@ void CbmStsDigitize::Reset() {
 // TODO: Currently, all modules have the same parameters. In future,
 // more flexible schemes must be used, in particular for the thresholds.
 void CbmStsDigitize::SetModuleParameters() {
+
+	// --- Control output of parameters
+	LOG(INFO) << GetName() << ": Digitisation parameters :"
+			      << FairLogger::endl;
+	LOG(INFO) << "\t Dynamic range   " << setw(10) << right
+				    << fDynRange << " e"<< FairLogger::endl;
+	LOG(INFO) << "\t Threshold       " << setw(10) << right
+			      << fThreshold << " e"<< FairLogger::endl;
+	LOG(INFO) << "\t ADC channels    " << setw(10) << right
+			      << fNofAdcChannels << FairLogger::endl;
+	LOG(INFO) << "\t Time resolution " << setw(10) << right
+			      << fTimeResolution << " ns" << FairLogger::endl;
+	LOG(INFO) << "\t Dead time       " << setw(10) << right
+			      << fDeadTime << " ns" << FairLogger::endl;
+
+ // --- Set parameters for all modules
 	Int_t nModules = fSetup->GetNofModules();
 	for (Int_t iModule = 0; iModule < nModules; iModule++) {
 		fSetup->GetModule(iModule)->SetParameters(2048, fDynRange, fThreshold,
@@ -413,6 +513,15 @@ void CbmStsDigitize::SetModuleParameters() {
 // flexible in the future.
 void CbmStsDigitize::SetSensorTypes() {
 
+	TString model;
+	switch (fDigiModel) {
+		case 0:  model = "ideal";   break;
+		case 1:  model = "uniform"; break;
+		default: model = "unknown"; break;
+	}
+
+	LOG(INFO) << GetName() << ": Detector response model: " << model
+			      << FairLogger::endl;
 	Int_t nSensors = fSetup->GetNofSensors();
 	Int_t nTypes[6] = {0, 0, 0, 0, 0, 0};
 

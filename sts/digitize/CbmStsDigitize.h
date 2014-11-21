@@ -97,6 +97,13 @@ class CbmStsDigitize : public FairTask
   TClonesArray*  fMatches;      ///< Output array of CbmMatch
   TStopwatch     fTimer;        ///< ROOT timer
 
+  // --- Time of last processed StsPoint (for stream mode)
+  Double_t fTimePointLast;
+
+  // --- Digi times (for stream mode, in each step)
+  Double_t fTimeDigiFirst;      ///< Time of first digi sent to DAQ
+  Double_t fTimeDigiLast;       ///< Time of last digi sent to DAQ
+
   // --- Event counters
   Int_t          fNofPoints;    ///< Number of points processed in Exec
   Int_t          fNofSignalsF;  ///< Number of signals on front side
@@ -110,7 +117,6 @@ class CbmStsDigitize : public FairTask
   Double_t       fNofSignalsBTot; ///< Number of signals on back side
   Double_t       fNofDigisTot;    ///< Total number of digis created
   Double_t       fTimeTot;        ///< Total execution time
-
 
   /** End-of-run action **/
   virtual void Finish();
@@ -157,7 +163,7 @@ class CbmStsDigitize : public FairTask
 
 
 
-  ClassDef(CbmStsDigitize,2);
+  ClassDef(CbmStsDigitize,3);
 
 };
 

@@ -92,6 +92,16 @@ class CbmStsModule : public CbmStsElement
     		           Int_t index = 0, Int_t entry = 0, Int_t file = 0);
 
 
+    /** Get status of the analog buffer
+     **
+     ** @paramOut nofSignals Number of signals in buffer (active channels)
+     ** @paramOut timeFirst  Time of first signal in buffer [ns]
+     ** @paramOut timeLast   Time of last signal in buffer [ns]
+     **/
+    void BufferStatus(Int_t& nofSignals,
+    		              Double_t& timeFirst, Double_t& timeLast);
+
+
     /** Convert charge to ADC channel.
      ** @param charge  analog charge [e]
      ** @return  ADC channel number

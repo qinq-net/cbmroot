@@ -6,6 +6,7 @@
  */
 
 #include <iomanip>
+#include <sstream>
 
 #include "CbmTimeSlice.h"
 
@@ -13,7 +14,7 @@
 
 #include "FairLogger.h"
 
-#include <iostream>
+//#include <iostream>
 
 
 // -----   Default constructor   ---------------------------------------------
@@ -21,10 +22,10 @@ CbmTimeSlice::CbmTimeSlice()
  : TNamed(),
    fStartTime(0.), 
    fDuration(0.),
+   fIsEmpty(kTRUE),
    fStsData(),
    fMuchData()
 {
-//  LOG(FATAL) << "Default constructor of CbmTimeSlice must not be used!";
 }
 // ---------------------------------------------------------------------------
 
@@ -35,6 +36,7 @@ CbmTimeSlice::CbmTimeSlice(Double_t start, Double_t duration)
  : TNamed(),
    fStartTime(start), 
    fDuration(duration),
+   fIsEmpty(kTRUE),
    fStsData(),
    fMuchData()
 {
@@ -106,12 +108,14 @@ void CbmTimeSlice::InsertData(CbmDigi* data) {
     case kSTS: {
       CbmStsDigi* digi = static_cast<CbmStsDigi*>(data);
       fStsData.push_back(*digi);
+      fIsEmpty = kFALSE;
       break;
     }
 
     case kMUCH: {
       CbmMuchDigi* digi = static_cast<CbmMuchDigi*>(data);
       fMuchData.push_back(*digi);
+      fIsEmpty = kFALSE;
     }
     break;
 
@@ -128,26 +132,28 @@ void CbmTimeSlice::InsertData(CbmDigi* data) {
 
 
 
-// -----  Print information   ------------------------------------------------
-void CbmTimeSlice::Print(Option_t* opt) const {
-  LOG(INFO) << "TimeSlice: Interval [" << fixed << setprecision(3)
-            << fStartTime << ", " << GetEndTime() << "] ns"
-            << FairLogger::endl;
-  LOG(INFO) << "\t     Data: STS  " << fStsData.size() << FairLogger::endl;
-  LOG(INFO) << "\t     Data: MUCH " << fMuchData.size() << FairLogger::endl;
-}
-// ---------------------------------------------------------------------------
-
-
-
 // ----- Reset time slice   --------------------------------------------------
 void CbmTimeSlice::Reset(Double_t start, Double_t duration) {
 
   fStsData.clear();
   fMuchData.clear();
+  fIsEmpty = kTRUE;
   fStartTime = start;
   fDuration = duration;
 
+}
+// ---------------------------------------------------------------------------
+
+
+
+// -----   Status info   -----------------------------------------------------
+string CbmTimeSlice::ToString() const {
+  stringstream ss;
+  ss << "TimeSlice: interval [" << fixed << setprecision(3) << fStartTime
+  		<< ", " << GetEndTime() << "] ns, Data:";
+  ss << " STS "  << fStsData.size();
+  ss << " MUCH " << fMuchData.size();
+  return ss.str();
 }
 // ---------------------------------------------------------------------------
 

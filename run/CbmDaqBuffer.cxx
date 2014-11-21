@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 
 #include "TString.h"
 
@@ -145,6 +146,25 @@ CbmDaqBuffer* CbmDaqBuffer::Instance() {
 // ---------------------------------------------------------------------------
 
 
+string CbmDaqBuffer::ToString() const {
+	stringstream ss;
+	ss << "DaqBuffer: ";
+	Int_t size = GetSize();
+	if ( ! size ) {
+		ss << "empty";
+		return ss.str();
+	}
+	TString sysName;
+  for (Int_t det = kREF; det < kNOFDETS; det++) {
+    if ( GetSize(det) ) {
+      CbmDetectorList::GetSystemNameCaps(det, sysName);
+      ss << sysName << " " << GetSize(det) << "  ";
+    }
+  }
+  ss << "from " << fixed << setprecision(3) << GetFirstTime() << " ns to "
+  	 << GetLastTime() << " ns";
+  return ss.str();
+}
 
 // -----   Print status   ----------------------------------------------------
 void CbmDaqBuffer::PrintStatus() const {

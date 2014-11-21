@@ -27,6 +27,7 @@ CbmMCTimeSim::CbmMCTimeSim()
    fEventId(0),
    fEventTime(0.),
    fNofEvents(0),
+   fTimer(),
    fEvent(NULL),
    fPointArrays()
 { 
@@ -46,6 +47,7 @@ CbmMCTimeSim::CbmMCTimeSim(Double_t rate, Int_t profile, const char* name)
     fEventId(-1),
     fEventTime(0.),
     fNofEvents(0),
+    fTimer(),
     fEvent(NULL),
     fPointArrays()
 {
@@ -87,6 +89,10 @@ Double_t CbmMCTimeSim::CreateEventTime() {
 // -----   Exec   ------------------------------------------------------------
 void CbmMCTimeSim::Exec(Option_t* opt) {
 
+	// Start time and point counter
+	fTimer.Start();
+	Int_t nPointsAll = 0;
+
   // Get CbmMCBuffer instance and remove already used points
   CbmMCBuffer* buffer = CbmMCBuffer::Instance();
   buffer->Clear();
@@ -105,16 +111,17 @@ void CbmMCTimeSim::Exec(Option_t* opt) {
 
   // Log output
   cout << endl;
-  LOG(INFO) << fName << ": Event ID " << fEventId << ", event time "
-            << fixed << setprecision(3) << fEventTime << " ns"
-            << FairLogger::endl;
+  LOG(DEBUG) << fName
+  		      << ": event " << fNofEvents
+            << ", event ID " << fEventId
+            << ", event time " << fixed << setprecision(3) << fEventTime
+            << " ns, points ";
 
   // Read MCPoints from event into buffers
-  LOG(DEBUG) << fName << ": Points read from input: ";
   for (Int_t iDet = 0; iDet < kNOFDETS; iDet++) {
 
   	// --- For the time being, use only STS and MUCH to avoid overflow
-  	if ( iDet != kSTS && iDet != kMUCH ) continue;
+  	 if ( iDet != kSTS && iDet != kMUCH ) continue;
 
     Int_t nPoints = 0;
     if ( fPointArrays[iDet] ) {
@@ -123,15 +130,22 @@ void CbmMCTimeSim::Exec(Option_t* opt) {
       TString sysName;
       CbmDetectorList::GetSystemNameCaps(iDet, sysName);
       LOG(DEBUG) << sysName << " " << nPoints << "  ";
+      nPointsAll += nPoints;
     }
 
   }
   LOG(DEBUG) << FairLogger::endl;
 
   // Log buffer status
-  CbmMCBuffer::Instance()->Print();
+  LOG(DEBUG) << CbmMCBuffer::Instance()->ToString() << FairLogger::endl;
 
-  // Increment event counter
+  // Event log
+  fTimer.Stop();
+  LOG(INFO) << "+ " << setw(20) << GetName() << ": event " << setw(6)
+  		      << right << fNofEvents << ", time " << fixed << setprecision(6)
+  		      << fTimer.RealTime() << " s, points: " << nPointsAll
+  		      << ", event time " << setprecision(3) << fEventTime << " ns"
+            << FairLogger::endl;
   fNofEvents++;
 
 }
@@ -160,18 +174,30 @@ void CbmMCTimeSim::Finish() {
 // -----   Init   ------------------------------------------------------------
 InitStatus CbmMCTimeSim::Init() {
 
-  // Get FairRootManager
+	std::cout << std::endl;
+  LOG(INFO) << "=========================================================="
+		        << FairLogger::endl;
+ 	LOG(INFO) << GetName() << ": Initialisation" << FairLogger::endl;
+	LOG(INFO) << FairLogger::endl;
+	LOG(INFO) << GetName() << ": average interaction rate " << fEventRate
+			      << " Hz" << FairLogger::endl;
+	LOG(INFO) << GetName() << ": beam profile ";
+	switch (fBeamProfile) {
+		case 0:  LOG(INFO)  << "constant"; break;
+		case 1:  LOG(INFO)  << "Poisson"; break;
+		default: LOG(INFO)  << "unknown"; break;
+	}
+	LOG(INFO) << FairLogger::endl;
+
+	// Get FairRootManager
   FairRootManager* ioman = FairRootManager::Instance();
-  if ( ! ioman ) 
-    gLogger->Fatal(MESSAGE_ORIGIN, "No FairRootManager");
+  if ( ! ioman ) LOG(FATAL) << GetName() << ": No FairRootManager!"
+		                        << FairLogger::endl;
 
   // Get event header
   fEvent = (CbmMCEventHeader*) ioman->GetObject("MCEventHeader.");
 
-  //CbmMCEventHeader* event = (CbmMCEventHeader*) ioman->GetObject("MCEventHeader.");
-  //if ( ! event ) gLogger->Fatal(MESSAGE_ORIGIN, "No MC event header!");
-
-  // Get MCPoint arrays
+ // Get MCPoint arrays
   fPointArrays[kMVD]  = (TClonesArray*) ioman->GetObject("MvdPoint");
   fPointArrays[kSTS]  = (TClonesArray*) ioman->GetObject("StsPoint");
   fPointArrays[kRICH] = (TClonesArray*) ioman->GetObject("RichPoint");
@@ -181,19 +207,27 @@ InitStatus CbmMCTimeSim::Init() {
   fPointArrays[kECAL] = (TClonesArray*) ioman->GetObject("EcalPoint");
   fPointArrays[kPSD]  = (TClonesArray*) ioman->GetObject("PsdPoint");
 
-  // Screen output
+  // Control output for configuration
+  LOG(INFO) << GetName() << ": configuration ";
   TString config = "";
   for (Int_t iDet = 1; iDet < kNOFDETS; iDet++) {
     if ( fPointArrays[iDet] ) {
       TString sysName;
       CbmDetectorList::GetSystemNameCaps(iDet, sysName);
+      LOG(INFO) << sysName << " ";
       config += " " + sysName;
     }
   }
-  gLogger->Info(MESSAGE_ORIGIN, "Configuration %s", config.Data()); 
+  LOG(INFO) << FairLogger::endl;
 
   // Clear CbmMCBuffer
   CbmMCBuffer::Instance()->Clear();
+
+  LOG(INFO) << GetName() << ": Initialisation successful"
+		    << FairLogger::endl;
+  LOG(INFO) << "=========================================================="
+		        << FairLogger::endl;
+	std::cout << std::endl;
 
   return kSUCCESS;
 }

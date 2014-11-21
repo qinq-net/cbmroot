@@ -4,10 +4,9 @@
  **/
 
 #include <iomanip>
+#include <sstream>
 
 #include "TMath.h"
-
-#include "FairLogger.h"
 
 #include "CbmMCBuffer.h"
 
@@ -26,7 +25,7 @@ CbmMCBuffer::CbmMCBuffer()
     fStsBuffer("STS"),
     fRichBuffer("RICH"),
     fMuchBuffer("MUCH"),
-    fTrdBuffer("TRD)"),
+    fTrdBuffer("TRD"),
     fTofBuffer("TOF"),
     fEcalBuffer("ECAL"),
     fPsdBuffer("PSD"),
@@ -218,31 +217,28 @@ CbmMCBuffer* CbmMCBuffer::Instance() {
   return fgInstance;
 }
 // ---------------------------------------------------------------------------
-    
 
 
-// -----   Print   -----------------------------------------------------------
-void CbmMCBuffer::Print(const char* option) const {
 
-  LOG(INFO) << "MCBuffer: Last event " << fEventId << " at "
-            << fixed << setprecision(3) << fTime << " ns, "
-            << GetNofEntries() << " points from " << GetMinTime()
-            << " ns to " << GetMaxTime() << " ns, size " << GetSize()
-            << " MB" << FairLogger::endl;
-
-  if ( fMvdBuffer.GetSize() )  fMvdBuffer.Print();
-  if ( fStsBuffer.GetSize() )  fStsBuffer.Print();
-  if ( fRichBuffer.GetSize() ) fRichBuffer.Print();
-  if ( fMuchBuffer.GetSize() ) fMuchBuffer.Print();
-  if ( fTrdBuffer.GetSize() )  fTrdBuffer.Print();
-  if ( fTofBuffer.GetSize() )  fTofBuffer.Print();
-  if ( fEcalBuffer.GetSize() ) fEcalBuffer.Print();
-  if ( fPsdBuffer.GetSize() )  fPsdBuffer.Print();
-
+// -----   String output   ---------------------------------------------------
+string CbmMCBuffer::ToString() const
+{
+   stringstream ss;
+   ss  << "MCBuffer: Last event " << fEventId << " at "
+       << fixed << setprecision(3) << fTime << " ns, "
+       << GetNofEntries() << " points from " << GetMinTime()
+       << " ns to " << GetMaxTime() << " ns, size " << GetSize()
+       << " MB" << std::endl;
+   if ( fMvdBuffer.GetSize() )  ss << "\t\t" << fMvdBuffer.ToString()  << endl;
+   if ( fStsBuffer.GetSize() )  ss << "\t\t" << fStsBuffer.ToString()  << endl;
+   if ( fRichBuffer.GetSize() ) ss << "\t\t" << fRichBuffer.ToString() << endl;
+   if ( fMuchBuffer.GetSize() ) ss << "\t\t" << fMuchBuffer.ToString() << endl;
+   if ( fTrdBuffer.GetSize() )  ss << "\t\t" << fTrdBuffer.ToString()  << endl;
+   if ( fTofBuffer.GetSize() )  ss << "\t\t" << fTofBuffer.ToString()  << endl;
+   if ( fEcalBuffer.GetSize() ) ss << "\t\t" << fEcalBuffer.ToString() << endl;
+   if ( fPsdBuffer.GetSize() )  ss << "\t\t" << fPsdBuffer.ToString();
+   return ss.str();
 }
 // ---------------------------------------------------------------------------
-
-
-
 
 

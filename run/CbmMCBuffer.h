@@ -135,13 +135,6 @@ class CbmMCBuffer
   Int_t GetNofEntries() const;
 
 
-  /**   Screen output 
-   ** Reports the current buffer status.
-   ** @param option L for info on all buffers
-   **/
-  void Print(const char* option = "") const;
-
-
   /** Set the end-of-run flag
    ** This will triggetr to deliver all points from the buffer
    ** through GetNextPoint, irrespective of the last event time.
@@ -150,6 +143,8 @@ class CbmMCBuffer
   void SetEndOfRun(Bool_t flag = kTRUE) { fEndOfRun = flag; }
 
 
+  /** String output **/
+  string ToString() const;
 
 
 
