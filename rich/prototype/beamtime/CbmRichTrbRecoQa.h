@@ -82,6 +82,11 @@ public:
     void FitGaussAndDrawResults(TH1* h);
 
     /*
+     * Draw histograms from file
+     */
+    void DrawHistFromFile(TString fileName);
+
+    /*
      * Set maximum number of events to draw
      */
     void SetMaxNofEventsToDraw(UInt_t n) {fMaxNofEventsToDraw = n;}
@@ -90,6 +95,16 @@ public:
      * Set output directory for images.
      */
     void SetOutputDir(TString dir) {fOutputDir = dir;}
+
+    /*
+     * Set run title. It is also a part of the file name of image files.
+     */
+    void SetRunTitle(TString title) {fRunTitle = title;}
+
+    /*
+     * Set to TRUE if you want to draw histograms.
+     */
+    void SetDrawHist(Bool_t b) {fDrawHist = b;}
 
 private:
 
@@ -103,6 +118,8 @@ private:
    UInt_t fNofDrawnEvents; // Number of drawn events
    UInt_t fMaxNofEventsToDraw; // maximum number of events to draw
    TString fOutputDir; // output directory to store figures
+   TString fRunTitle; // Title of the run
+   Bool_t fDrawHist; // if TRUE histogramms are drawn
 
    CbmRichRingFitterCOP* fCopFit;
    CbmRichRingFitterEllipseTau* fTauFit;

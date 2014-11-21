@@ -84,7 +84,7 @@ Int_t CbmRichTrbUnpack::ReadEvent()
 
 void CbmRichTrbUnpack::Close()
 {
-	if (fDrawHisto) {
+	if (fDrawHist) {
 		CreateAndDrawQa();
 		CreateAndDrawEventBuildDisplay();
 	}

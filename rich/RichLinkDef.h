@@ -41,6 +41,6 @@
 #pragma link C++ class CbmRichTrbRecoQa+;
 #pragma link C++ class CbmRichTrbPulserQa+;
 #pragma link C++ class CbmRichHitInfo+;
-
+#pragma link C++ class CbmRichTrbRecoQaStudyReport+;
 #endif
 

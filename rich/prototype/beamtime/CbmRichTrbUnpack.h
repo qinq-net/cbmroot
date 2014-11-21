@@ -65,7 +65,7 @@ public:
     /*
      * If TRUE histograms are drawn.
      */
-    void SetDrawHisto(Bool_t b){fDrawHisto = b;}
+    void SetDrawHist(Bool_t b){fDrawHist = b;}
 
 private:
     TString fHldFileName; // file name of HLD file
@@ -95,7 +95,7 @@ private:
 
     CbmRichAnaTypeEnum fAnaType; // What do you want to analyza beam events, laser events, led events
 
-    Bool_t fDrawHisto; // if TRUE histograms wre drawn
+    Bool_t fDrawHist; // if TRUE histograms wre drawn
 
     /*
      * Read full input file to memory.
