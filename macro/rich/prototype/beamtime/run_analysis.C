@@ -41,6 +41,8 @@ void run_analysis()
    if (script == "yes") {
 	   hldFullFileName = TString(gSystem->Getenv("INPUT_HLD_FILE"));
 	   outRootFileName = TString(gSystem->Getenv("OUTPUT_ROOT_FILE"));
+	   outputDir = TString(gSystem->Getenv("OUTPUT_DIR"));
+	   runTitle = TString(gSystem->Getenv("RUN_TITLE"));
    }
 
    // --- Specify number of events to be produced.
