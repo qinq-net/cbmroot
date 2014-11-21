@@ -114,24 +114,24 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
       
     TString spadic="";
     switch (sourceA) {
-    case 0:  // first spadic
+    case (SpadicBaseAddress+0):  // first spadic
       spadic="Spadic0";
       break;
-    case 1:  // first spadic
+    case (SpadicBaseAddress+1):  // first spadic
       spadic="Spadic0";
       chID += 16;
       break;
-    case 2:  // second spadic
+    case (SpadicBaseAddress+2):  // second spadic
       spadic="Spadic1";
       break;
-    case 3:  // second spadic
+    case (SpadicBaseAddress+3):  // second spadic
       spadic="Spadic1";
       chID += 16;
       break;
-    case 4:  // third spadic
+    case (SpadicBaseAddress+4):  // third spadic
       spadic="Spadic2";
       break;
-    case 5:  // third spadic
+    case (SpadicBaseAddress+5):  // third spadic
       spadic="Spadic2";
       chID += 16;
       break;

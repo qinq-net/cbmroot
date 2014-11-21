@@ -146,7 +146,7 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
       }
     }
   }
-
+  return kTRUE;
 }
 
 void CbmTSUnpackSpadic::print_message(const spadic::Message& m)

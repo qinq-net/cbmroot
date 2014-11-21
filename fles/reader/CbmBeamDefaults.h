@@ -11,4 +11,6 @@ static const Int_t NrOfSyscores = 3;
 static const Int_t NrOfSpadics = 3;
 static const Int_t NrOfHalfSpadics = 6;
 
+static const Int_t SpadicBaseAddress = 0;
+
 #endif

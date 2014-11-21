@@ -45,18 +45,18 @@ struct hit_data
 CbmNxFlibFileSource::CbmNxFlibFileSource()
   : FairSource(),
     fFileName(""),
+    fCurrEpoch(0),
     fNxyterRaw(new TClonesArray("CbmNxyterRawMessage", 10)),
-    fSource(NULL),
-    fCurrEpoch(0)
+    fSource(NULL)
 {
 }
 
 CbmNxFlibFileSource::CbmNxFlibFileSource(const CbmNxFlibFileSource& source)
   : FairSource(source),
     fFileName(""),
+    fCurrEpoch(0),
     fNxyterRaw(NULL),
-    fSource(NULL),
-    fCurrEpoch(0)
+    fSource(NULL)
 {
 }
 
