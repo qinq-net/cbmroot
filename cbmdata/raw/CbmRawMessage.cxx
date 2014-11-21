@@ -5,10 +5,6 @@
 
 #include "CbmRawMessage.h"
 
-#include "FairMultiLinkedData.h"
-
-#include <memory>
-
 // -----   Default constructor   -------------------------------------------
 CbmRawMessage::CbmRawMessage() 
  : TObject(), 
@@ -21,36 +17,17 @@ CbmRawMessage::CbmRawMessage()
 {
 }
 
-CbmRawMessage::CbmRawMessage(Int_t EquipmentID, Int_t SourceAddress, Int_t ChannelId,
+CbmRawMessage::CbmRawMessage(Int_t EquipmentID, Int_t SourceAddress, 
+			     Int_t ChannelId,
 			     Int_t EpochMarker, Int_t Time)
  : TObject(), 
    fEquipmentID(EquipmentID),
    fSourceAddress(SourceAddress),
    fChannelID(ChannelId),
    fEpochMarker(EpochMarker),
-   fTime(Time)
-   
+   fTime(Time)   
 {
 }
-
-// -------------------------------------------------------------------------
-
-
-
-// -----   Copy constructor   ----------------------------------------------
-//CbmRawMessage::CbmRawMessage(const CbmRawMessage& digi) : fMatch(NULL) { } 
-// -------------------------------------------------------------------------
-
-
-
-// -----   Assignment operator   -------------------------------------------
-//CbmRawMessage& CbmRawMessage::operator=(const CbmRawMessage& digi) {
-//	fMatch = NULL;
-//	return *this;
-//}
-// -------------------------------------------------------------------------
-
-
 
 
 ClassImp(CbmRawMessage)
