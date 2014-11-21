@@ -32,6 +32,7 @@ void run_analysis()
    outRootFileName = outDir + hldFileName + ".root";
 
    TString outputDir = "recoqa/";
+   TString runTitle = "ring_pos_a";
 
    CbmRichAnaTypeEnum anaType = kCbmRichBeamEvent; // Type of analysis you want to perform: kCbmRichBeamEvent, kCbmRichLaserPulserEvent, kCbmRichLedPulserEvent
 
@@ -55,7 +56,7 @@ void run_analysis()
 
    CbmRichTrbUnpack* source = new CbmRichTrbUnpack(hldFullFileName);
    source->SetAnaType(anaType);
-   source->SetDrawHisto(false);
+   source->SetDrawHist(false);
 
    CbmTrbCalibrator* fgCalibrator = CbmTrbCalibrator::Instance();
    fgCalibrator->SetInputFilename("calibration.root");            // does not actually import data - only defines
@@ -84,6 +85,8 @@ void run_analysis()
 	   CbmRichTrbRecoQa* qaReco = new CbmRichTrbRecoQa();
 	   qaReco->SetMaxNofEventsToDraw(0);
 	   qaReco->SetOutputDir(outputDir);
+	   qaReco->SetRunTitle(runTitle);
+	   qaReco->SetDrawHist(true);
 	   run->AddTask(qaReco);
    } else {
 	   CbmRichTrbPulserQa* qaPulser = new CbmRichTrbPulserQa();
