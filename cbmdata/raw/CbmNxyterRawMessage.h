@@ -6,26 +6,28 @@
 
 class CbmNxyterRawMessage : public CbmRawMessage
 {
-
+  
  public:
-
+  
   /** Default constructor  **/
   CbmNxyterRawMessage();
-
+  
   /** Constructor  **/
-  CbmNxyterRawMessage(Int_t FlibLink, Int_t FebId, Int_t ChannelId, Int_t EpochMarker, Int_t Time,
-                        Int_t ADCval);
-
-	
+  CbmNxyterRawMessage(Int_t FlibLink, Int_t FebId, Int_t ChannelId, 
+		      Int_t EpochMarker, Int_t Time,
+		      Int_t ADCval, Bool_t lastEpoch);
+  
+  
   /** Destructor  **/
   virtual ~CbmNxyterRawMessage() { };
-
-  ULong_t GetFullTime() { return 0L; }
-	
+  
+  ULong_t GetFullTime();
+  
  private:
-
+  
   Int_t fADCvalue;
-
+  Bool_t fLastEpoch;
+  
   ClassDef(CbmNxyterRawMessage,1);
 
 };

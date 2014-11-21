@@ -203,7 +203,8 @@ void CbmNxFlibFileSource::UnpackNxyterCbmNetMessage(const fles::Timeslice& ts, s
                                     cur_hit_data.NxChNum,
                                     fCurrEpoch - cur_hit_data.NxLastEpoch,             // note the trick
                                     cur_hit_data.NxTs,
-                                    cur_hit_data.NxAdcValue);
+				   cur_hit_data.NxAdcValue,
+				   cur_hit_data.NxLastEpoch);
                ++counter;
             } else if (cur_hit_data.MessageType == 2) { // epoch counter
 

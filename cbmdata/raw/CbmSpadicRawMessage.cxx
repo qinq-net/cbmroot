@@ -72,20 +72,4 @@ ULong_t CbmSpadicRawMessage::GetFullTime()
   return result1;
 }
 
-// -----   Copy constructor   ----------------------------------------------
-//CbmSpadicRawMessage::CbmSpadicRawMessage(const CbmSpadicRawMessage& digi) : fMatch(NULL) { } 
-// -------------------------------------------------------------------------
-
-
-
-// -----   Assignment operator   -------------------------------------------
-//CbmSpadicRawMessage& CbmSpadicRawMessage::operator=(const CbmSpadicRawMessage& digi) {
-//	fMatch = NULL;
-//	return *this;
-//}
-// -------------------------------------------------------------------------
-
-
-
-
 ClassImp(CbmSpadicRawMessage)

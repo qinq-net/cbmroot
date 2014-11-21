@@ -75,8 +75,6 @@ Bool_t CbmTSUnpackNxyter::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
   LOG(INFO) << "Unpacking Nxyter Data" << FairLogger::endl; 
 
-  fNxyterRaw->Clear();
-
    Int_t counter=0;   //TODO was ist das???
 
    DTM_header cur_DTM_header;
@@ -141,11 +139,12 @@ Bool_t CbmTSUnpackNxyter::DoUnpack(const fles::Timeslice& ts, size_t component)
 
                new( (*fNxyterRaw)[counter] )
                CbmNxyterRawMessage(msDescriptor.eq_id,
-                                    cur_DTM_header.ROC_ID*4 + cur_hit_data.NxNumber,   //TODO check
-                                    cur_hit_data.NxChNum,
-                                    fCurrEpoch - cur_hit_data.NxLastEpoch,             // note the trick
-                                    cur_hit_data.NxTs,
-                                    cur_hit_data.NxAdcValue);
+				   cur_DTM_header.ROC_ID*4 + cur_hit_data.NxNumber,   //TODO check
+				   cur_hit_data.NxChNum,
+				   fCurrEpoch - cur_hit_data.NxLastEpoch,             // note the trick
+				   cur_hit_data.NxTs,
+				   cur_hit_data.NxAdcValue,
+				   cur_hit_data.NxLastEpoch);
                ++counter;
             } else if (cur_hit_data.MessageType == 2) { // epoch counter
 
@@ -189,6 +188,7 @@ Bool_t CbmTSUnpackNxyter::DoUnpack(const fles::Timeslice& ts, size_t component)
 
 void CbmTSUnpackNxyter::Reset()
 {
+  fNxyterRaw->Clear();
 }
 
 /*
