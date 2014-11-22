@@ -22,6 +22,7 @@
 #include "TClonesArray.h"
 #include "TList.h"
 #include "TObjString.h"
+#include "TStopwatch.h"
 
 #include <memory>
 #include <map>
@@ -64,6 +65,9 @@ class CbmFlibFileSourceNew : public FairSource
     CbmDaqBuffer* fBuffer;
  
     UInt_t fTSNumber;
+    UInt_t fTSCounter;
+    TStopwatch fTimer;
+
 #ifndef __CINT__
     fles::TimesliceSource* fSource; //!
     Bool_t CheckTimeslice(const fles::Timeslice& ts);

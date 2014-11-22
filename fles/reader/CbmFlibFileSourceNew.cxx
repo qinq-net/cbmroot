@@ -28,6 +28,8 @@ CbmFlibFileSourceNew::CbmFlibFileSourceNew()
     fUnpackers(),
     fBuffer(CbmDaqBuffer::Instance()),
     fTSNumber(0),
+    fTSCounter(0),
+    fTimer(),
     fSource(NULL)
 {
 }
@@ -41,6 +43,9 @@ CbmFlibFileSourceNew::CbmFlibFileSourceNew(const CbmFlibFileSourceNew& source)
     fPort(5556),
     fUnpackers(),
     fBuffer(CbmDaqBuffer::Instance()),
+    fTSNumber(0),
+    fTSCounter(0),
+    fTimer(),
     fSource(NULL)
 {
 }
@@ -84,9 +89,24 @@ Bool_t CbmFlibFileSourceNew::Init()
 
 Int_t CbmFlibFileSourceNew::ReadEvent()
 {
-
+  
+  //  fTimer.Start();
   while( fFileCounter < fInputFileList.GetSize() ) {
     while (auto timeslice = fSource->get()) {
+      fTSCounter++;
+      if ( 0 == fTSCounter%100 ) {
+	/*
+        fTimer.Stop();
+	Double_t rtime = fTimer.RealTime(); 
+	Double_t ctime = fTimer.CpuTime();
+	*/
+	LOG(INFO) << "Analyse Event " << fTSCounter << FairLogger::endl;
+	/*
+        LOG(INFO) << "Real time/100 timeslices: " << rtime << " s" << FairLogger::endl; 
+        LOG(INFO) << "CPU time/100 timeslices: " << ctime << " s" << FairLogger::endl; 
+	fTimer<.Start();
+	*/
+      }
       const fles::Timeslice& ts = *timeslice;
       auto tsIndex = ts.index();
       if( (tsIndex != (fTSNumber+1)) &&( fTSNumber != 0) ) {
