@@ -22,7 +22,7 @@
 //don't know why forward declaration doesn't work here
 //class TClonesArray;
 #include "TClonesArray.h"
-
+#include "TString.h"
 
 struct classcomp {
   bool operator() (const CbmFiberHodoDigi* lhs, const CbmFiberHodoDigi* rhs) const
@@ -55,6 +55,8 @@ class CbmFiberHodoClusterFinder : public FairTask
   /** Finish task **/
   virtual void Finish();
 
+  void SetInputDataLevelName(TString name) { fInputLevelName = name; }
+
  private:
 
   TClonesArray*     fDigis;       /** Input array of CbmFiberHodoDigi **/
@@ -63,10 +65,12 @@ class CbmFiberHodoClusterFinder : public FairTask
 
   std::map<Int_t, std::set<CbmFiberHodoDigi*, classcomp> > fDigiMap;   /** digis per hodo layer **/ 
 
+  TString fInputLevelName;
+
   CbmFiberHodoClusterFinder(const CbmFiberHodoClusterFinder&);
   CbmFiberHodoClusterFinder& operator=(const CbmFiberHodoClusterFinder&);
   
-  ClassDef(CbmFiberHodoClusterFinder,1);
+  ClassDef(CbmFiberHodoClusterFinder,2);
   
 };
 #endif

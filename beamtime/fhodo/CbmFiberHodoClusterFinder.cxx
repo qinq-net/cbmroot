@@ -22,7 +22,8 @@ CbmFiberHodoClusterFinder::CbmFiberHodoClusterFinder()
   :FairTask("FiberHodoClusterFinder",1),
    fDigis(NULL),
    fClusters(NULL),
-   finalClusters(NULL)
+   finalClusters(NULL),
+   fInputLevelName("HodoCalibDigi")
 {
 }
 // --------------------------------------------------------------------
@@ -75,7 +76,7 @@ InitStatus CbmFiberHodoClusterFinder::Init()
 
   FairRootManager *ioman = FairRootManager::Instance();
   
-  fDigis =(TClonesArray *)  ioman->GetObject("HodoCalibDigi");
+  fDigis =(TClonesArray *)  ioman->GetObject(fInputLevelName);
   if ( ! fDigis ) {
     LOG(ERROR) << "No FiberHodoDigi array!" << FairLogger::endl;
     LOG(ERROR) << "Task will be inactive" << FairLogger::endl;
@@ -96,7 +97,6 @@ InitStatus CbmFiberHodoClusterFinder::Init()
 // ---- Exec ----------------------------------------------------------
 void CbmFiberHodoClusterFinder::Exec(Option_t * option)
 {
-
 
   fClusters->Clear();
   finalClusters->Clear();
@@ -186,7 +186,7 @@ void CbmFiberHodoClusterFinder::Exec(Option_t * option)
   if(nofDigis>0)
     {
       Int_t nofClusterCandidates = fClusters->GetEntriesFast();
-      int clust[4]={0.,0.,0.,0.}; 
+      int clust[4]={0,0,0,0}; 
       for (Int_t iclus = 0; iclus < nofClusterCandidates; iclus++)
 	{
 	  const CbmFiberHodoCluster* cluster = static_cast<const CbmFiberHodoCluster*>(fClusters->At(iclus));
