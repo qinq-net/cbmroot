@@ -20,6 +20,8 @@ class CbmNxyterRawMessage : public CbmRawMessage
   
   /** Destructor  **/
   virtual ~CbmNxyterRawMessage() { };
+
+  Int_t GetADCvalue() { return fADCvalue;}
   
   ULong_t GetFullTime();
   
@@ -29,7 +31,7 @@ class CbmNxyterRawMessage : public CbmRawMessage
   Bool_t fLastEpoch;
   
   ClassDef(CbmNxyterRawMessage,1);
-
+  
 };
 
 #endif // CBMNXYTERRAWMESSAGE_H
