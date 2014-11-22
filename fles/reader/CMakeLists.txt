@@ -3,8 +3,9 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 Set(INCLUDE_DIRECTORIES
-  ${CBMROOT_SOURCE_DIR}/cbmdata/raw
   ${CBMROOT_SOURCE_DIR}/cbmdata
+  ${CBMROOT_SOURCE_DIR}/cbmdata/raw
+  ${CBMROOT_SOURCE_DIR}/cbmdata/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/cbmbase
   ${CBMROOT_SOURCE_DIR}/fles/reader
   ${CBMROOT_SOURCE_DIR}/fles/tasks
@@ -40,6 +41,9 @@ Set(SRCS
   CbmTSUnpack.cxx
   CbmTSUnpackSpadic.cxx
   CbmTSUnpackNxyter.cxx
+  CbmTSUnpackFiberHodo.cxx
+  CbmTSUnpackDummy.cxx
+
   CbmFlibFileSourceNew.cxx   
   CbmDaqBuffer.cxx
   CbmFiberHodoMapping.cxx

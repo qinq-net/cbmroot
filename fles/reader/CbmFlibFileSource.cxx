@@ -14,10 +14,11 @@
 #include "MicrosliceContents.hpp"
 
 // note M. Krieger, 2014-08-15: these includes should not be needed, please test
-#if 0
-#include "Message.hpp"
-#include "message_reader.h"
-#endif
+//#if 0
+//#include "Message.hpp"
+//#include "message_reader.h"
+//#endif
+
 #include "TimesliceReader.hpp"
 
 #include "FairLogger.h"
@@ -33,12 +34,14 @@ CbmFlibFileSource::CbmFlibFileSource()
     fHost("localhost"),
     fPort(5556),
     fSpadicRaw(new TClonesArray("CbmSpadicRawMessage", 10)),
+    fTSCounter(0),
     fSource(NULL)
 {
 }
 
 
 
+/*
 CbmFlibFileSource::CbmFlibFileSource(const CbmFlibFileSource& source)
   : FairSource(source),
     fFileName(""),
@@ -48,7 +51,7 @@ CbmFlibFileSource::CbmFlibFileSource(const CbmFlibFileSource& source)
     fSource(NULL)
 {
 }
-
+*/
 
 CbmFlibFileSource::~CbmFlibFileSource()
 {
@@ -84,6 +87,10 @@ Int_t CbmFlibFileSource::ReadEvent()
 {
   fSpadicRaw->Clear();
   while (auto timeslice = fSource->get()) {
+    fTSCounter++;
+    if ( 0 == fTSCounter%100 ) {
+      LOG(INFO) << "Analyse Event " << fTSCounter << FairLogger::endl;
+    }
     const fles::Timeslice& ts = *timeslice;
     for (size_t c {0}; c < ts.num_components(); c++) {
       auto systemID = ts.descriptor(c, 0).sys_id;

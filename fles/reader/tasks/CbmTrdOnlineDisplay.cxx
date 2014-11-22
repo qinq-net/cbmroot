@@ -21,8 +21,8 @@
 // ---- Default constructor -------------------------------------------
 CbmTrdOnlineDisplay::CbmTrdOnlineDisplay()
   :FairTask("CbmTrdOnlineDisplay"),
-   fSpadic1({NULL}),
-   fSpadic1a({NULL}),
+   fSpadic1(),
+   fSpadic1a(),
    fUpdateInterval(10),
    fEventCounter(0)
 {
@@ -31,8 +31,8 @@ CbmTrdOnlineDisplay::CbmTrdOnlineDisplay()
 // ---- Destructor ----------------------------------------------------
 CbmTrdOnlineDisplay::~CbmTrdOnlineDisplay()
 {
-  delete[] fSpadic1;
-  delete[] fSpadic1a;
+//  delete[] fSpadic1;
+//  delete[] fSpadic1a;
 }
 
 // ----  Initialisation  ----------------------------------------------

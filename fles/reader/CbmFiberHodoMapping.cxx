@@ -1,5 +1,7 @@
 #include "CbmFiberHodoMapping.h"
 
+#include "CbmBeamDefaults.h"
+
 #include "FairLogger.h"
 
 CbmFiberHodoMapping::CbmFiberHodoMapping()
@@ -36,25 +38,16 @@ Int_t CbmFiberHodoMapping::GetFiberHodoChannel(Int_t rocId, Int_t nxId, Int_t nx
 
 
 // -----   Mapping   ---------------------------------------------------------
-Bool_t CbmFiberHodoMapping::Map(Int_t iRoc, Int_t iNx, Int_t iId,
+Bool_t CbmFiberHodoMapping::Map(Int_t eqId, Int_t febId, Int_t channel,
 				Int_t& iStation, Int_t& iSector, 
 				Int_t& iSide, Int_t& iChannel) {
 
-	// --- ROC 5 to 6: Hodoscope
-	if ( iRoc <= 6 ) {
-          if (iNx == 0) {
-	    iStation = iRoc -5;
-	    iSector = 0;
-	    iSide = fFiberHodoPlane[iId];
-	    iChannel = fFiberHodoFiber[iId];
-	    return kTRUE;
-	  } else {
-	    LOG(FATAL) << GetName() << ": Unknown Nxyter Id " << iNx
-		       << " for Roc Id " << iRoc << FairLogger::endl;
-	  }
-	}
-
+  iStation = eqId - kHodo1;
+  iSector = 0;
+  iSide = fFiberHodoPlane[channel];
+  iChannel = fFiberHodoFiber[channel];
   return kTRUE;
+
 }
 // ---------------------------------------------------------------------------
 

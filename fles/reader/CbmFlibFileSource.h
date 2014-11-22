@@ -27,7 +27,6 @@ class CbmFlibFileSource : public FairSource
 {
   public:
     CbmFlibFileSource();
-    CbmFlibFileSource(const CbmFlibFileSource& source);
     virtual ~CbmFlibFileSource();
 
     Bool_t Init();
@@ -48,6 +47,8 @@ class CbmFlibFileSource : public FairSource
     // --- Output arrays
     TClonesArray* fSpadicRaw;         ///< Output array of CbmSpadicRawMessage
 
+    Int_t fTSCounter;
+
 #ifndef __CINT__
     fles::TimesliceSource* fSource; //!
     Bool_t CheckTimeslice(const fles::Timeslice& ts);
@@ -57,6 +58,7 @@ class CbmFlibFileSource : public FairSource
 #endif
 
     CbmFlibFileSource operator=(const CbmFlibFileSource&);
+    CbmFlibFileSource(const CbmFlibFileSource& source);
 
     ClassDef(CbmFlibFileSource, 1)
 };
