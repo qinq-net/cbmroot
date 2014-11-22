@@ -18,6 +18,7 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/fles/ipc/src
   ${CBMROOT_SOURCE_DIR}/fles/flib_dpb
   ${CBMROOT_SOURCE_DIR}/fles/spadic
+  ${CBMROOT_SOURCE_DIR}/fles/trb/trbnet_lib
 )
 
 Include_Directories(${INCLUDE_DIRECTORIES})
@@ -43,6 +44,7 @@ Set(SRCS
   CbmTSUnpackNxyter.cxx
   CbmTSUnpackFiberHodo.cxx
   CbmTSUnpackDummy.cxx
+  CbmTSUnpackTrb.cxx
 
   CbmFlibFileSourceNew.cxx   
   CbmDaqBuffer.cxx
@@ -60,7 +62,7 @@ Set(NO_DICT_SRCS
 Set(LINKDEF  FlibReaderLinkDef.h )
 Set(LIBRARY_NAME CbmFlibReader)
 Set(DEPENDENCIES
-    Eve Base CbmBase fles_ipc flib_dpb spadicMessage
+    Eve Base CbmBase fles_ipc flib_dpb spadicMessage trbnet
 )
 
 GENERATE_LIBRARY()
