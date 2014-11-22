@@ -20,7 +20,7 @@ void run_analysis()
 
    TString hldFileDir = "";//"/mnt/data/tmp/";
    
-   TString hldFileName = "te14324200946.hld";
+   TString hldFileName = "te14325221421.hld";
 
    TString hldFullFileName;
 
@@ -58,7 +58,7 @@ void run_analysis()
 
    CbmRichTrbUnpack* source = new CbmRichTrbUnpack(hldFullFileName);
    source->SetAnaType(anaType);
-   source->SetDrawHist(false);
+   source->SetDrawHist(true);
 
    CbmTrbCalibrator* fgCalibrator = CbmTrbCalibrator::Instance();
    fgCalibrator->SetInputFilename("calibration.root");            // does not actually import data - only defines

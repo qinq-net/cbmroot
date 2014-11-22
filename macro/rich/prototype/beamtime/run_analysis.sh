@@ -24,11 +24,7 @@ analyze_run_files() {
       export INPUT_HLD_FILE=${FF}
       export OUTPUT_ROOT_FILE=${FF}.root
       rm -rf ${OUTPUT_ROOT_FILE}
-      ROOT_FILES=${ROOT_FILES}${SPACE}${OUTPUT_ROOT_FILE}
-      echo ${ROOT_FILES}
-      echo ${INPUT_HLD_FILE}
-      echo ${OUTPUT_ROOT_FILE}
-      
+      ROOT_FILES=${ROOT_FILES}${SPACE}${OUTPUT_ROOT_FILE}      
       root -b -q -l "./run_analysis.C()"
    done
    
@@ -43,10 +39,22 @@ analyze_run_directory() {
    analyze_run_files ${1} ${2} ${3} ${filesArray[@]}
 }
 
-#filesArray=( te14324152650.hld te14324200946.hld )
-#analyze_run_files all_test_file.root recoRR/ testRun ${filesArray[@]}
+#filesArray=( te14324200946.hld )
+analyze_run_files wls_off_ring_a1.root wls_off_ring_a1/ wls_off_ring_a1 wls_off_ring_a1.hld
+analyze_run_files wls_off_ring_b1.root wls_off_ring_b1/ wls_off_ring_b1 wls_off_ring_b1.hld
+analyze_run_files wls_off_ring_b2.root wls_off_ring_b2/ wls_off_ring_b2 wls_off_ring_b2.hld
+analyze_run_files wls_off_ring_b3.root wls_off_ring_b3/ wls_off_ring_b3 wls_off_ring_b3.hld
+analyze_run_files wls_off_ring_d1.root wls_off_ring_d1/ wls_off_ring_d1 wls_off_ring_d1.hld
+analyze_run_files wls_off_ring_dg1.root wls_off_ring_dg1/ wls_off_ring_dg1 wls_off_ring_dg1.hld
+analyze_run_files wls_off_ring_g1.root wls_off_ring_g1/ wls_off_ring_g1 wls_off_ring_g1.hld
+analyze_run_files wls_off_ring_gh1.root wls_off_ring_gh1/ wls_off_ring_gh1 wls_off_ring_gh1.hld
+analyze_run_files wls_off_ring_h1.root wls_off_ring_h1/ wls_off_ring_h1 wls_off_ring_h1.hld
+analyze_run_files wls_off_ring_h2.root wls_off_ring_h2/ wls_off_ring_h2 wls_off_ring_h2.hld
 
-analyze_run_directory all_test_file.root recoRR/ testRun .
+
+
+
+#analyze_run_directory all_test_file.root recoRR/ testRun .
 
 
 export SCRIPT=no
