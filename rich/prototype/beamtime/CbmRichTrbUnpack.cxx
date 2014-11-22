@@ -54,7 +54,16 @@ Bool_t CbmRichTrbUnpack::Init()
 
 	fhNofRichHitsVsTrbNum = new TH2D("fhNofRichHitsVsTrbNum", "fhNofRichHitsVsTrbNum;TRB number;Nof hits in event",
 			TRB_TDC3_NUMBOARDS, .5, TRB_TDC3_NUMBOARDS + .5, 65, -0.5, 64.5);
-	fhDiffHitTimeEventTime = new TH1D("fhDiffHitTimeEventTime", "fhDiffHitTimeEventTime;dT [ns];Entries", 200, -50., 50.);
+	fhDiffHitTimeEventTimeAll = new TH1D("fhDiffHitTimeEventTime", "fhDiffHitTimeEventTime;dT [ns];Entries", 200, -100., 100.);
+
+	TString hname, htitle;
+	for (Int_t iTrb = 0; iTrb < TRB_TDC3_NUMBOARDS; iTrb++){
+		for (Int_t iTdc = 0; iTdc < TRB_TDC3_NUMTDC; iTdc++){
+			hname.Form("fhDiffHitTimeEventTime_%d_%d", iTrb+1, iTdc);
+			htitle.Form("fhDiffHitTimeEventTime_%d_%d;dT [ns];Entries", iTrb+1, iTdc);
+			fhDiffHitTimeEventTime[iTrb][iTdc] = new TH1D( hname.Data(), htitle.Data(), 200, -100., 100.);
+		}
+	}
 
 	return kTRUE;
 }
@@ -129,7 +138,7 @@ void CbmRichTrbUnpack::ReadEvents()
 
 		if (nofRawEvents % 10000 == 0) LOG(INFO) << "Raw event # " << nofRawEvents << FairLogger::endl;
 		//rawEvent->Print();
-
+		fSynchRefTime = -1.;
 		// Loop over subevents
 		while (true){
 			CbmRawSubEvent* rawSubEvent = trbIter->NextSubEvent();
@@ -208,27 +217,33 @@ void CbmRichTrbUnpack::DecodeTdcData(
 		if (tdcTimeDataMarker == 0x1) { //TIME DATA
 
 			UInt_t chNum = (tdcData >> 22) & 0x7f; // 7bits
-			UInt_t fineTime = (tdcData >> 12) & 0x3ff; // 10 bits
+			UInt_t fineTime = (tdcData >> 12) & 0x3ff; // 10 bits //0x3ff
 			UInt_t edge = (tdcData >> 11) & 0x1; // 1bit
 			UInt_t coarseTime = (tdcData) & 0x7ff; // 1bits
 
 			// Give the calibrator the read fine time so that it was taken into account
 			if ((trbId != 0x7005)) CbmTrbCalibrator::Instance()->AddFineTime(trbId, tdcId, chNum, fineTime);
 
-			if (chNum == 0) {
-				// std::cout << "CHANNEL0: " << std::hex << "     TRB " << trbId << "    TDC " << tdcId << std::dec << std::endl;
+			if (chNum == 0 ) {
+				Double_t time = GetFullTime(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime);
+				//cout << "CHANNEL0: " << fixed << fSynchRefTime << " " << time << "  "<<fSynchRefTime - time << " " <<hex << "     TRB " << trbId << "    TDC " << tdcId << dec << endl;
+				if (fSynchRefTime == -1. ) {//&& (isPmtTrb || tdcId == 0x0110)
+					fSynchRefTime = time;
+				}
+				if (fSynchRefTime != -1){
+					fSynchOffsetTimeMap[tdcId] = fSynchRefTime - time;
+				} else{
+					fSynchOffsetTimeMap[tdcId] = 0.;
+				}
 			} else {
 				if (tdcId == 0x7005) { //CTS
 
 				} else if (tdcId == 0x0110) { // reference time TDC for event building
-               //if ( (fAnaPulserEvents && chNum == 15) || (!fAnaPulserEvents && chNum == 5) ) {         // shit shit shit
+					//cout << fSynchOffsetTimeMap[0x0110] << endl;
 					if  ( (fAnaType == kCbmRichBeamEvent && chNum == 5) ||           // hodoscope (beam trigger)
 						  (fAnaType == kCbmRichLaserPulserEvent && chNum == 7) ||    // UV LED
 						  (fAnaType == kCbmRichLedPulserEvent && chNum == 15) ){     // Laser
 
-                 // if ( (fAnaPulserEvents && chNum == 5) || (!fAnaPulserEvents && chNum == 6) ) {         // Hodoscopes (beam trigger)
-					//if ( (fAnaPulserEvents && chNum == 15) || (!fAnaPulserEvents && chNum == 16) ) {       // Laser
-				   //if ( (fAnaPulserEvents && chNum == 7) || (!fAnaPulserEvents && chNum == 8) ) {         // UV LED
 						CbmTrbRawHit* rawHitRef = new CbmTrbRawHit(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime, 0, 0, 0, 0);
 						fRawEventTimeHits.push_back(rawHitRef);
 					}
@@ -259,6 +274,15 @@ void CbmRichTrbUnpack::DecodeTdcData(
 																   prevFineTime[prevCounter], chNum, curEpochCounter,
 																   coarseTime, fineTime);
 							fRawRichHits.push_back(rawHit);
+
+							/*CbmTrbOutputHit* oHit = CreateOutputHit(rawHit);
+							Double_t timeL = GetFullTime(trbId, tdcId, prevChNum[prevCounter], prevEpochCounter[prevCounter], prevCoarseTime[prevCounter], prevFineTime[prevCounter]);
+							Double_t timeT = GetFullTime(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime);
+							if (oHit->GetDeltaT() < 0.){
+								cout << oHit->GetDeltaT() << hex << " trbId:" << trbId << " tdcId:" << tdcId << dec << " chL:"
+										<< prevChNum[prevCounter] << " chT:" << chNum << " ctL:" << prevCoarseTime[prevCounter] << " ctT:" <<
+										coarseTime << " ftL:" << prevFineTime[prevCounter] << " ftT:" << fineTime<< endl;
+							}*/
 
 							prevChNum[prevCounter] = chNum;
 							prevEpochCounter[prevCounter] = 0;
@@ -311,7 +335,13 @@ Double_t CbmRichTrbUnpack::GetFullTime(UShort_t TRB, UShort_t TDC, UShort_t CH, 
 	
 	Double_t time = epoch * epochUnit + coarseTime * coarseUnit -
 	               CbmTrbCalibrator::Instance()->GetFineTimeCalibrated(trb_index, tdc_index, CH, fineTime);
-
+	if (CH != 0){
+		if (fSynchOffsetTimeMap[TDC] > 150) {
+			LOG(ERROR) << "CbmRichTrbUnpack::GetFullTime Synch Offset > 150 ns for TDC" << TDC << FairLogger::endl;
+		} else {
+			time = time + fSynchOffsetTimeMap[TDC];
+		}
+	}
 	return time;
 }
 
@@ -363,7 +393,11 @@ void CbmRichTrbUnpack::BuildEvent(Int_t refHitIndex)
 
 		AddRichHitToOutputArray(trbInd, data);
 
-		fhDiffHitTimeEventTime->Fill(eventTime - h->GetLFullTime());
+		fhDiffHitTimeEventTimeAll->Fill(eventTime - h->GetLFullTime());
+
+		//UShort_t trbInd = ( (h->GetTrb() >> 4) & 0x00FF ) - 1;
+	    UShort_t tdcInd = (h->GetTdc() & 0x000F);
+		fhDiffHitTimeEventTime[trbInd][tdcInd]->Fill(eventTime - h->GetLFullTime());
 
 		LOG(DEBUG2) << data->GetX() << " " << data->GetY() << FairLogger::endl;
 		LOG(DEBUG2) <<fixed << iH << " " << hex << h->GetTdc() << dec << " " << h->GetLChannel() << " " << h->GetLFullTime() << FairLogger::endl;
@@ -457,6 +491,14 @@ void CbmRichTrbUnpack::FillOutputHitHist(CbmTrbOutputHit* outHit)
 	UShort_t tdcInd = (outHit->GetTdc() & 0x000F);
 
 	fhDeltaT[trbInd][tdcInd]->Fill(outHit->GetDeltaT());
+	//if ( outHit->GetTdc() == 0xa1 && outHit->GetLChannel()  == 11) {
+		//cout << "-----  " << dec << outHit->GetDeltaT() << " " << outHit->GetLChannel() << " " << outHit->GetTChannel()
+		//				<< " " << hex  << outHit->GetTrb() << " " << outHit->GetTdc() << dec << endl;
+	//}
+	//if (outHit->GetDeltaT() < 0.) {
+	//	cout << dec << outHit->GetDeltaT() << " " << outHit->GetLChannel() << " " << outHit->GetTChannel()
+	//			<< " " << hex  << outHit->GetTrb() << " " << outHit->GetTdc() << dec << endl;
+	//}
 }
 
 void CbmRichTrbUnpack::CreateAndDrawQa()
@@ -495,40 +537,32 @@ void CbmRichTrbUnpack::CreateAndDrawQa()
 
 	for (int i = 0; i < fRawRichHits.size(); i++) {
 		FillRawHitHist(fRawRichHits[i]);
-
-	}
-
-	for (int i = 0; i < fRawEventTimeHits.size(); i++) {
-		//FillRawHitHist(fRawReferenceHits[i]);
 	}
 
 	for (int i = 0; i < fOutputRichHits.size(); i++) {
 		FillOutputHitHist(fOutputRichHits[i]);
-		CbmTrbOutputHit* rh = fOutputRichHits[i];
-	}
-
-	for (int i = 0; i < fOutputEventTimeHits.size(); i++) {
-		//FillOutputHitHist(fOutputReferenceHits[i]);
 	}
 
 	TFolder* rootHistFolder = gROOT->GetRootFolder()->AddFolder("rich_trb_unpack_debug", "rich_trb_unpack_debug");
 	TString cname;
 	for (Int_t iTrb = 0; iTrb < TRB_TDC3_NUMBOARDS; iTrb++){
 		cname.Form("rich_trb_unpack_debug_trb%d", iTrb+1);
-		TCanvas* c = new TCanvas(cname.Data(), cname.Data(), 1250, 1000);
-		c->Divide(5, TRB_TDC3_NUMTDC);
+		TCanvas* c = new TCanvas(cname.Data(), cname.Data(), 1500, 1000);
+		c->Divide(6, TRB_TDC3_NUMTDC);
 		for (Int_t iTdc = 0; iTdc < TRB_TDC3_NUMTDC; iTdc++)
       {
-			c->cd(5*iTdc + 1);
+			c->cd(6*iTdc + 1);
 			DrawH1(fhChannelEntries[iTrb][iTdc]);
-			c->cd(5*iTdc + 2);
+			c->cd(6*iTdc + 2);
 			DrawH1(fhEpoch[iTrb][iTdc]);
-			c->cd(5*iTdc + 3);
+			c->cd(6*iTdc + 3);
 			DrawH1(fhCoarseTime[iTrb][iTdc]);
-			c->cd(5*iTdc + 4);
+			c->cd(6*iTdc + 4);
 			DrawH1(fhFineTime[iTrb][iTdc]);
-			c->cd(5*iTdc + 5);
-			DrawH1(fhDeltaT[iTrb][iTdc]);
+			c->cd(6*iTdc + 5);
+			DrawH1(fhDeltaT[iTrb][iTdc], kLinear, kLog);
+			c->cd(6*iTdc + 6);
+			DrawH1(fhDiffHitTimeEventTime[iTrb][iTdc], kLinear, kLog);
 
 			//rootHistFolder->Add(c);
 
@@ -545,10 +579,10 @@ void CbmRichTrbUnpack::CreateAndDrawQa()
 	DrawH2(fhNofRichHitsVsTrbNum);
 
 	TCanvas* c2 = new TCanvas("rich_trb_unpack_debug_diff_hittime_eventtime", "rich_trb_unpack_debug_diff_hittime_eventtime", 800, 800);
-	DrawH1(fhDiffHitTimeEventTime);
+	DrawH1(fhDiffHitTimeEventTimeAll);
 
 	rootHistFolder->Add(fhNofRichHitsVsTrbNum);
-	rootHistFolder->Add(fhDiffHitTimeEventTime);
+	rootHistFolder->Add(fhDiffHitTimeEventTimeAll);
 	rootHistFolder->Write();
 }
 

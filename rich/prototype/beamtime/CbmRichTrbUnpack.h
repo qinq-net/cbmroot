@@ -6,6 +6,7 @@
 #include <TString.h>
 #include "FairSource.h"
 #include <vector>
+#include <map>
 
 using namespace std;
 
@@ -78,6 +79,9 @@ private:
     UInt_t fEventNum; // current event number
     UInt_t fNofDoubleHits; // number of detected double hits
 
+    Double_t fSynchRefTime; // Reference time for synchronization
+    map<UInt_t, Double_t> fSynchOffsetTimeMap; // first - TDCId, second - time offeset in ns
+
     vector<CbmTrbRawHit*> fRawRichHits; // raw hit from PMTs
     vector<CbmTrbRawHit*> fRawEventTimeHits; // raw hits from reference time TDC
 
@@ -90,8 +94,9 @@ private:
     TH1D* fhCoarseTime[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC];
     TH1D* fhFineTime[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC];
     TH1D* fhDeltaT[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC];
+    TH1D* fhDiffHitTimeEventTime[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC]; // Difference between reference event time and RICH hit time
     TH2D* fhNofRichHitsVsTrbNum; // Number of RICH hit per event vs. TRB number (only real event count)
-    TH1D* fhDiffHitTimeEventTime; // Difference between reference event time and RICH hit time
+    TH1D* fhDiffHitTimeEventTimeAll; // Difference between reference event time and RICH hit time
 
     CbmRichAnaTypeEnum fAnaType; // What do you want to analyza beam events, laser events, led events
 

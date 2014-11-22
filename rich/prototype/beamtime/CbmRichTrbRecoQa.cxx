@@ -240,13 +240,12 @@ void CbmRichTrbRecoQa::DrawHist()
 		TString str;
 		TLatex* latex = new TLatex();
 		latex->DrawLatex(0.01, 0.9, "Run title: "+fRunTitle);
-		str.Form("Total number of events %d", fEventNum);
+		str.Form("Total number of events %d", (Int_t)fHM->H1("fhNofHitsInEvent")->GetEntries());
 		latex->DrawLatex(0.01, 0.8, str.Data());
 		TH1* hREv = fHM->H1("fhNofRingsInEvent");
 		Int_t nofEvWithRing = hREv->GetEntries() - hREv->GetBinContent(1);
-		str.Form("Total number of events with ring %d (%.1f%%)", nofEvWithRing, 100. * nofEvWithRing / (Double_t)fEventNum);
+		str.Form("Total number of events with ring %d (%.1f%%)", nofEvWithRing, 100. * nofEvWithRing / (Double_t)fHM->H1("fhNofHitsInEvent")->GetEntries());
 		latex->DrawLatex(0.01, 0.7, str.Data());
-		cout << "fhNofHitsInRing = " << fHM->H1("fhNofHitsInRing")->GetEntries() << endl;
 		str.Form("Total number of rings %i", (Int_t)fHM->H1("fhNofHitsInRing")->GetEntries());
 		latex->DrawLatex(0.01, 0.6, str.Data());
 		str.Form("Total number of hits %i", (Int_t)fHM->H2("fhHitsXYPixel")->GetEntries());
