@@ -8,7 +8,8 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/cbmdata/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/cbmbase
   ${CBMROOT_SOURCE_DIR}/fles/reader
-  ${CBMROOT_SOURCE_DIR}/fles/tasks
+  ${CBMROOT_SOURCE_DIR}/fles/reader/unpacker
+  ${CBMROOT_SOURCE_DIR}/fles/reader/tasks
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -19,6 +20,7 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/fles/flib_dpb
   ${CBMROOT_SOURCE_DIR}/fles/spadic
   ${CBMROOT_SOURCE_DIR}/fles/trb/trbnet_lib
+  ${CBMROOT_SOURCE_DIR}/rich/prototype/beamtime
 )
 
 Include_Directories(${INCLUDE_DIRECTORIES})
@@ -38,17 +40,16 @@ Link_Directories(
 Set(SRCS
   CbmFlibFileSource.cxx   
   CbmNxFlibFileSource.cxx   
-
-  CbmTSUnpack.cxx
-  CbmTSUnpackSpadic.cxx
-  CbmTSUnpackNxyter.cxx
-  CbmTSUnpackFiberHodo.cxx
-  CbmTSUnpackDummy.cxx
-  CbmTSUnpackTrb.cxx
-
   CbmFlibFileSourceNew.cxx   
   CbmDaqBuffer.cxx
   CbmFiberHodoMapping.cxx
+
+  unpacker/CbmTSUnpack.cxx
+  unpacker/CbmTSUnpackSpadic.cxx
+  unpacker/CbmTSUnpackNxyter.cxx
+  unpacker/CbmTSUnpackFiberHodo.cxx
+  unpacker/CbmTSUnpackDummy.cxx
+  unpacker/CbmTSUnpackTrb.cxx
 
   tasks/CbmTrdRawBeamProfile.cxx
   tasks/CbmTrdOnlineDisplay.cxx
@@ -56,13 +57,13 @@ Set(SRCS
 )
 
 Set(NO_DICT_SRCS
- TimesliceReader.cpp
+ unpacker/TimesliceReader.cpp
 )
 
 Set(LINKDEF  FlibReaderLinkDef.h )
 Set(LIBRARY_NAME CbmFlibReader)
 Set(DEPENDENCIES
-    Eve Base CbmBase fles_ipc flib_dpb spadicMessage trbnet
+    Eve Base CbmBase Rich fles_ipc flib_dpb spadicMessage trbnet
 )
 
 GENERATE_LIBRARY()

@@ -20,6 +20,12 @@
 
 #include "TClonesArray.h"
 
+#include <map>
+#include <list>
+#include <vector>
+ 
+class CbmRawSubEvent;
+
 class CbmTSUnpackTrb : public CbmTSUnpack
 {
  public:
@@ -37,11 +43,22 @@ class CbmTSUnpackTrb : public CbmTSUnpack
 
  private:
 
-  //  TClonesArray* fTrbRaw;
+  TClonesArray* fTrbRaw;
 #ifndef __CINT__
   TrbBridge* fTrbBridge;
   std::list<std::vector<uint32_t>> fTrbEventList;
+  std::vector<uint32_t> fData;
+  size_t fDataSize;
 #endif
+
+    Double_t fSynchRefTime; // Reference time for synchronization
+    std::map<UInt_t, Double_t> fSynchOffsetTimeMap; // first - TDCId, second - time offeset in ns
+
+  void LoopOverTrbEvents();
+  void UnpackTrbEvents();
+  void ProcessTdc(CbmRawSubEvent* rawSubEvent);
+  void DecodeTdcData(UInt_t* data, UInt_t size, UInt_t trbId, UInt_t tdcId);
+  Double_t GetFullTime(UShort_t TRB, UShort_t TDC, UShort_t CH, UInt_t epoch, UShort_t coarseTime, UShort_t fineTime);
 
   ClassDef(CbmTSUnpackTrb, 1)
 };
