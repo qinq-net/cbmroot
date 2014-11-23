@@ -77,6 +77,7 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 
 	GetEpochInfo(link, addr);
 
+        Int_t triggerType = static_cast<Int_t>(mp->hit_type());
 	Int_t channel = mp->channel_id();
 	Int_t time = mp->timestamp();
 	Int_t samples = mp->samples().size();
@@ -90,7 +91,7 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 
 	new( (*fSpadicRaw)[fSpadicRaw->GetEntriesFast()] )
 	  CbmSpadicRawMessage(link, address, channel, fSuperEpoch, 
-			      fEpochMarker, time, samples, sample_values);
+			      fEpochMarker, time, triggerType, samples, sample_values);
 	++counter;
 	delete[] sample_values;
       }

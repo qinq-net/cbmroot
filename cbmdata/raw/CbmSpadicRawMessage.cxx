@@ -10,6 +10,7 @@
 // -----   Default constructor   -------------------------------------------
 CbmSpadicRawMessage::CbmSpadicRawMessage() 
  : CbmRawMessage(), 
+   fTriggerType(-1),
    fNrSamples(-1),
    fSamples(),
    fSuperEpoch(0)  
@@ -19,9 +20,10 @@ CbmSpadicRawMessage::CbmSpadicRawMessage()
 CbmSpadicRawMessage::CbmSpadicRawMessage(Int_t FlibLink, Int_t FebId, 
 					 Int_t ChannelId, Int_t SuperEpoch,
 					 Int_t EpochMarker, 
-					 Int_t Time, Int_t NrSamples,
-					 Int_t* Samples)
+					 Int_t Time, Int_t TriggerType,
+					 Int_t NrSamples, Int_t* Samples)
  : CbmRawMessage(FlibLink, FebId, ChannelId, EpochMarker, Time),
+   fTriggerType(TriggerType),
    fNrSamples(NrSamples),
    fSamples(),
    fSuperEpoch(SuperEpoch)     
