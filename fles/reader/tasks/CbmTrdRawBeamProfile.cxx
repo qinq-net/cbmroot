@@ -81,7 +81,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
   //			      0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30};
  
   Int_t entries = fRawSpadic->GetEntriesFast();
-  Int_t sumTrigger = 0;
+  Int_t sumTrigger[3][6] = {{0}};
   //  LOG(INFO) << "******" << FairLogger::endl;
   if (entries > 0)
     LOG(INFO) << "Entries: " << entries << FairLogger::endl;
@@ -190,12 +190,12 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
     if (infoType <= 7)
       fHM->H1(TString("InfoTypes_" + syscore + spadic).Data())->Fill(infoTypes[infoType],1);
     fHM->H1(TString("GroupId_" + syscore + spadic).Data())->Fill(groupId);
-    //sumTrigger++;
+    //sumTrigger[SysId][SpaId]++;
     if (stopType > 0){ //corrupt or multi message
       TString histName = "ErrorCounter_" + syscore + spadic;
       fHM->H1(histName.Data())->Fill(chID);   
     } else  {  //only normal message end
-      sumTrigger++;
+      sumTrigger[SysId][SpaId]++;
       TString channelId;
       channelId.Form("_Ch%02d", chID);
 
@@ -223,25 +223,40 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
 	fHM->H2(histName.Data())->Fill((chID-1)/2,1);
       } 
     } 
-    if (i == entries-1){
+    /*
+      if (i == entries-1){
       for (Int_t sy = 0; sy < 2; sy++){
-	for (Int_t sp = 0; sp < 2; sp++){
-	  TString histName = "TriggerCounter_SysCore" + std::to_string(sy) + "_Spadic" + std::to_string(sp);
-	  for (Int_t timeSlice = 1; timeSlice <= fHM->H1(histName.Data())->GetNbinsX(); timeSlice++){
-	    fHM->H1(histName.Data())->SetBinContent(timeSlice,fHM->H1(histName.Data())->GetBinContent(timeSlice+1)); // shift all bin one to the left
+      for (Int_t sp = 0; sp < 2; sp++){
+      TString histName = "TriggerCounter_SysCore" + std::to_string(sy) + "_Spadic" + std::to_string(sp);
+      for (Int_t timeSlice = 1; timeSlice <= fHM->H1(histName.Data())->GetNbinsX(); timeSlice++){
+      fHM->H1(histName.Data())->SetBinContent(timeSlice,fHM->H1(histName.Data())->GetBinContent(timeSlice+1)); // shift all bin one to the left
 	  
-	    if (timeSlice == fHM->H1(histName.Data())->GetNbinsX())
-	      fHM->H1(histName.Data())->SetBinContent(timeSlice,0); // set all last bins to 0
-	  } 
-	}
+      if (timeSlice == fHM->H1(histName.Data())->GetNbinsX())
+      fHM->H1(histName.Data())->SetBinContent(timeSlice,0); // set all last bins to 0
+      } 
+      }
       }
       TString histName = "TriggerCounter_" + syscore + spadic;
       fHM->H1(histName.Data())->SetBinContent(fHM->H1(histName.Data())->GetNbinsX(),sumTrigger);// set only the spa sys combi to new value
       fHM->H1("TriggerSum")->Fill(TString(syscore+spadic),sumTrigger);
       if (sumTrigger == 0) std::cout << syscore + spadic << std::endl;
-    } // last entry
+      } // last entry
+    */
     lastSpadicTime[SysId][SpaId] = time;
   } //entries
+  for (Int_t sy = 0; sy < 2; sy++){
+    for (Int_t sp = 0; sp < 2; sp++){
+      TString histName = "TriggerCounter_SysCore" + std::to_string(sy) + "_Spadic" + std::to_string(sp);
+      for (Int_t timeSlice = 1; timeSlice <= fHM->H1(histName.Data())->GetNbinsX(); timeSlice++){
+	fHM->H1(histName.Data())->SetBinContent(timeSlice,fHM->H1(histName.Data())->GetBinContent(timeSlice+1)); // shift all bin one to the left
+	  
+	//if (timeSlice == fHM->H1(histName.Data())->GetNbinsX())
+	//fHM->H1(histName.Data())->SetBinContent(timeSlice,0); // set all last bins to 0
+      }
+      fHM->H1(histName.Data())->SetBinContent(fHM->H1(histName.Data())->GetNbinsX(),sumTrigger[sy][2*sp] + sumTrigger[sy][2*sp+1]);// set only the spa sys combi to new value
+      fHM->H1("TriggerSum")->Fill(TString("SysCore" + std::to_string(sy) + "_Spadic" + std::to_string(sp)),sumTrigger[sy][2*sp] + sumTrigger[sy][2*sp+1]);
+    }
+  }
 }
 
 
@@ -300,7 +315,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
 
 	histName = "TriggerCounter_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	title = histName + ";TimeSlice;Trigger / TimeSlice";
-	fHM->Add(histName.Data(), new TH1F(histName, title, 5000, 0, 5000));
+	fHM->Add(histName.Data(), new TH1F(histName, title, 2500, 0, 2500));
 
 	histName = "ErrorCounter_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	title = histName + ";Channel;ADC value in Bin 0";
