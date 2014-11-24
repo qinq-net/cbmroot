@@ -39,9 +39,9 @@ CbmClusteringA1.cxx
 CbmClusteringSL.cxx
 CbmClusteringWard.cxx
 CbmMuchTest.cxx
-CbmMvdGeoCl.cxx
-CbmMvdClustering.cxx
-CbmMvdClusteringNoCharges.cxx
+#CbmMvdGeoCl.cxx
+#CbmMvdClustering.cxx
+#CbmMvdClusteringNoCharges.cxx
 )
 
 set(HEADERS
@@ -52,8 +52,8 @@ CbmMuchClustering.h
 #CbmClusteringWard.h
 CbmMuchTest.h
 #CbmMvdGeoCl.h
-CbmMvdClustering.h
-CbmMvdClusteringNoCharges.h
+#CbmMvdClustering.h
+#CbmMvdClusteringNoCharges.h
 )
 
 IF (SSE_FOUND)

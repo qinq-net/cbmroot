@@ -5,7 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class CbmMuchClustering+;
-#pragma link C++ class CbmMvdClustering+;
-#pragma link C++ class CbmMvdClusteringNoCharges+;
+//#pragma link C++ class CbmMvdClustering+;
+//#pragma link C++ class CbmMvdClusteringNoCharges+;
 
 #endif
