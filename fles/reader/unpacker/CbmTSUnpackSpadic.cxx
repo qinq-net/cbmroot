@@ -83,6 +83,7 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	Int_t groupId = mp->group_id();
 	Int_t channel = mp->channel_id();
 	Int_t time = mp->timestamp();
+        Int_t bufferOverflow = mp->buffer_overflow_count();
 	Int_t samples = mp->samples().size();
 	Int_t* sample_values = new Int_t[samples];
 
@@ -93,9 +94,9 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	}
 
 	new( (*fSpadicRaw)[fSpadicRaw->GetEntriesFast()] )
-	  CbmSpadicRawMessage(link, address, channel, fSuperEpoch, 
-			      fEpochMarker, time, triggerType, infoType, stopType, groupId,
-                              samples, sample_values);
+	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
+			      fSuperEpoch, triggerType, infoType, stopType, groupId,
+			      bufferOverflow, samples, sample_values);
 	++counter;
 	delete[] sample_values;
       }
@@ -120,7 +121,7 @@ void CbmTSUnpackSpadic::print_message(const spadic::Message& m)
     if ( m.is_epoch_marker() ) { 
       LOG(DEBUG) << " This is an Epoch Marker" << FairLogger::endl; 
     } else if ( m.is_epoch_out_of_sync() ) { 
-      LOG(DEBUG) << " This is an out of sync Epoch Marker" << FairLogger::endl; 
+      LOG(INFO) << " This is an out of sync Epoch Marker" << FairLogger::endl; 
     } else {
       LOG(DEBUG) << " This is not known" << FairLogger::endl;
     }

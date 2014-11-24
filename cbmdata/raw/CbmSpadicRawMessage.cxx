@@ -10,31 +10,32 @@
 // -----   Default constructor   -------------------------------------------
 CbmSpadicRawMessage::CbmSpadicRawMessage() 
  : CbmRawMessage(), 
+   fSuperEpoch(-1),  
    fTriggerType(-1),
    fInfoType(-1),
    fStopType(-1),
    fGroupId(-1),
+   fBufferOverflowCount(-1),
    fNrSamples(-1),
-   fSamples(),
-   fSuperEpoch(0)  
+   fSamples()
 {
 }
 
-CbmSpadicRawMessage::CbmSpadicRawMessage(Int_t FlibLink, Int_t FebId, 
-					 Int_t ChannelId, Int_t SuperEpoch,
-					 Int_t EpochMarker, 
-					 Int_t Time, Int_t TriggerType,
-					 Int_t InfoType, Int_t StopType,
-                                         Int_t GroupId,
+CbmSpadicRawMessage::CbmSpadicRawMessage(Int_t EquipmentID, Int_t SourceAddress, Int_t ChannelId,
+					 Int_t EpochMarker, Int_t Time, 
+					 Int_t SuperEpoch, Int_t TriggerType,
+					 Int_t InfoType, Int_t StopType, 
+					 Int_t GroupId, Int_t BufferOverflow, 
 					 Int_t NrSamples, Int_t* Samples)
- : CbmRawMessage(FlibLink, FebId, ChannelId, EpochMarker, Time),
+ : CbmRawMessage(EquipmentID, SourceAddress, ChannelId, EpochMarker, Time),
+   fSuperEpoch(SuperEpoch),
    fTriggerType(TriggerType),
    fInfoType(InfoType),
    fStopType(StopType),
    fGroupId(GroupId),
+   fBufferOverflowCount(BufferOverflow),
    fNrSamples(NrSamples),
-   fSamples(),
-   fSuperEpoch(SuperEpoch)     
+   fSamples()
 {
   for (Int_t i = 0; i < NrSamples; ++i) {
     fSamples[i] = Samples[i];
@@ -70,11 +71,11 @@ ULong_t CbmSpadicRawMessage::GetFullTime()
   //  (number1 | number2) will add both numbers bitwise 
 
   ULong_t result1 = ( ( static_cast<ULong_t>(fSuperEpoch) << 24) | 
-		      ( static_cast<ULong_t>(fEpochMarker) << 24) | 
+		      ( static_cast<ULong_t>(fEpochMarker) << 12) | 
 		      ( fTime & 0xfff )
 		      );
   /*
-  ULong_t result2 = fSuperEpoch * 4096 + fEpochMarker *4096 + fTime;
+  ULong_t result2 = fSuperEpoch * 4096 * 4096 + fEpochMarker *4096 + fTime;
 
   LOG(INFO) << "Time: " << result1 << " : " << result2 << FairLogger::endl;  
   */

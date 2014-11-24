@@ -91,7 +91,7 @@ Int_t CbmFlibFileSourceNew::ReadEvent()
 {
   
   //  fTimer.Start();
-  while( fFileCounter < fInputFileList.GetSize() ) {
+  //while( fFileCounter < fInputFileList.GetSize() ) {
     while (auto timeslice = fSource->get()) {
       fTSCounter++;
       if ( 0 == fTSCounter%100 ) {
@@ -123,15 +123,15 @@ Int_t CbmFlibFileSourceNew::ReadEvent()
 
 	auto it=fUnpackers.find(systemID);
 	if (it == fUnpackers.end()) {
-	  LOG(FATAL) << "Could not find unpacker for system id 0x" << 
-	    std::hex << systemID << std::dec << FairLogger::endl;
+	  //LOG(FATAL) << "Could not find unpacker for system id 0x" << 
+	  //std::hex << systemID << std::dec << FairLogger::endl;
 	} else {
 	  it->second->DoUnpack(ts, c);
 	}
       }
       return 0;
     }
-
+    /*
     // Check if there is another file in the list
     fFileCounter += 1;
 
@@ -143,7 +143,8 @@ Int_t CbmFlibFileSourceNew::ReadEvent()
       LOG(INFO) << "Open the Flib input file " << fFileName << FairLogger::endl;
       fSource = new fles::TimesliceInputArchive(fFileName.Data());
     }
-  } 
+    */
+    // } 
   for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
     LOG(INFO) << "Finish " << it->second->GetName() << 
       " for systemID 0x" << std::hex << it->first << std::dec << FairLogger::endl;

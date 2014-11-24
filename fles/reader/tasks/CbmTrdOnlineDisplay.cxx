@@ -52,8 +52,8 @@ InitStatus CbmTrdOnlineDisplay::Init()
   gStyle->SetLabelSize(lsize);
   for (Int_t sys = 0; sys < 2; sys++){
     for (Int_t spa = 0; spa < 2; spa++){
-      fSpadic1[spa][sys] = new TCanvas(TString("fSpadic" + std::to_string(spa) + "SysCore" + std::to_string(sys)), TString("Spadic" + std::to_string(spa) + "SysCore" + std::to_string(sys)), 0, 0, 600, 400);
-      fSpadic1[spa][sys]->Divide(3,2);
+      fSpadic1[spa][sys] = new TCanvas(TString("fSpadic" + std::to_string(spa) + "SysCore" + std::to_string(sys)), TString("Spadic" + std::to_string(spa) + "SysCore" + std::to_string(sys)), 0, 0, 600, 600);
+      fSpadic1[spa][sys]->Divide(3,3);
 
       // Should be set for each pad of the Canvas
       gPad->SetFillColor(0);
@@ -70,10 +70,16 @@ InitStatus CbmTrdOnlineDisplay::Init()
 	h2->Draw("COLZ");
       }
 
-      fSpadic1[spa][sys]->cd(3)->SetLogz(1);
-      h2=static_cast<TH2*>(gROOT->FindObjectAny(TString("Integrated_ADC_Spectrum_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
-      if (h2!=NULL) {
+      fSpadic1[spa][sys]->cd(3)->SetLogy(1);
+      /*
+	h2=static_cast<TH2*>(gROOT->FindObjectAny(TString("Integrated_ADC_Spectrum_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
+	if (h2!=NULL) {
 	h2->Draw("COLZ");
+	}
+      */
+      h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("GroupId_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));  
+      if (h1!=NULL) {
+	h1->Draw("");
       }
 
       fSpadic1[spa][sys]->cd(4);
@@ -81,7 +87,7 @@ InitStatus CbmTrdOnlineDisplay::Init()
       if (h2!=NULL) {
 	h2->Draw("COLZ");
       }
-      fSpadic1[spa][sys]->cd(5);
+      fSpadic1[spa][sys]->cd(5)->SetLogy(0);
       //Int_t maxTrigger = 0;
       //for (Int_t sys = 0; sys < 3; sys++){
       //for (Int_t spa = 0; spa < 3; spa++){
@@ -91,13 +97,33 @@ InitStatus CbmTrdOnlineDisplay::Init()
       //}
       //}
       h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("TriggerCounter_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
-      h1->Draw("");
+      if (h1!=NULL) {
+	h1->Draw("");
+      }
 
-      fSpadic1[spa][sys]->cd(6);
+      fSpadic1[spa][sys]->cd(6)->SetLogy(1);
       //h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("CountRate_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
       h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("TriggerSum")));
-      h1->Draw("");
-    }
+      if (h1!=NULL) {
+	h1->Draw("");
+      }    
+
+      fSpadic1[spa][sys]->cd(7)->SetLogy(1);
+      h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("StopTypes_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));  
+      if (h1!=NULL) {
+	h1->Draw("");
+      }    
+      fSpadic1[spa][sys]->cd(8)->SetLogy(1);
+      h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("InfoTypes_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));  
+      if (h1!=NULL) {
+	h1->Draw("");
+      }
+      fSpadic1[spa][sys]->cd(9)->SetLogy(1);
+   h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("TriggerTypes_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
+      if (h1!=NULL) {
+	h1->Draw("");
+      }
+       }
   }
   //if (maxTrigger < 10) maxTrigger = 10;
   /*
@@ -199,20 +225,9 @@ void CbmTrdOnlineDisplay::Exec(Option_t* option)
   Int_t maxTrigger = 0;
   fEventCounter++;
   TH1* h1=NULL;
-  if ( 0 == fEventCounter%(fUpdateInterval*10) ) {
-    LOG(INFO)<<"Update Canvas for Event "<< fEventCounter << FairLogger::endl; 
-    for(Int_t sys = 0; sys < 2; sys++){
-      for (Int_t spa = 0; spa < 2; spa++){
-	for(Int_t iCh=0; iCh<32; iCh++){
-	  fSpadic1a[spa][sys]->cd(iCh+1);
-	  gPad->Modified();
-	  gPad->Update();
-	}
-      }
-    } 
-  }
+
   if ( 0 == fEventCounter%(fUpdateInterval/10)) {
-   
+    LOG(INFO)<<"Update Canvas for Event "<< fEventCounter << FairLogger::endl; 
     for (Int_t sys = 0; sys < 2; sys++){
       for (Int_t spa = 0; spa < 2; spa++){
 	h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("TriggerCounter_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
@@ -224,22 +239,32 @@ void CbmTrdOnlineDisplay::Exec(Option_t* option)
       for (Int_t spa = 0; spa < 2; spa++){
 	h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("TriggerCounter_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
 	//h1->GetYaxis()->SetRangeUser(-10,10+1.125*maxTrigger);
-	for(Int_t iCh=0; iCh<6; iCh++){
+	for(Int_t iCh=0; iCh<9; iCh++){
 	  fSpadic1[spa][sys]->cd(iCh+1);
 	  gPad->Modified();
-	  gPad->Update();
+	  //gPad->Update();
 	}
+	fSpadic1[spa][sys]->Update();
       }
     }
   }
 }
 
   // ---- Finish --------------------------------------------------------
-  void CbmTrdOnlineDisplay::Finish()
-  {
-    for (Int_t sys = 0; sys < 2; sys++){
-      for (Int_t spa = 0; spa < 2; spa++)
-	fSpadic1[spa][sys]->Update();
+void CbmTrdOnlineDisplay::Finish()
+{
+  for (Int_t sys = 0; sys < 2; sys++){
+    for (Int_t spa = 0; spa < 2; spa++){
+      fSpadic1[spa][sys]->Update();
+      for(Int_t iCh=0; iCh<32; iCh++){
+	fSpadic1a[spa][sys]->cd(iCh+1);
+	gPad->Modified();
+	//gPad->Update();
+      }
+      fSpadic1a[spa][sys]->ResizeOpaque(0);
+      //fSpadic1a[spa][sys]->Resize();
+      fSpadic1a[spa][sys]->Update();
     }
   }
+}
   ClassImp(CbmTrdOnlineDisplay)

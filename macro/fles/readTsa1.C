@@ -9,12 +9,12 @@
  */
 
 
-void readTsa1()
+void readTsa1(TString inFile = "data/trigger_3x_source_sync.tsa")
 {
 
   // --- Specify input file name (this is just an example)
-  TString inFile = "spadic_dlm_trigger_2014-11-15_noepoch.tsa";
-  TString inFile1 = "spadic_noise_trigger_2014-11-15_withepoch.tsa";
+  //TString inFile = "spadic_dlm_trigger_2014-11-15_noepoch.tsa";
+  //TString inFile1 = "spadic_noise_trigger_2014-11-15_withepoch.tsa";
 
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
@@ -31,7 +31,7 @@ void readTsa1()
   gDebug = 0;
   
   std::cout << std::endl;
-  std::cout << ">>> readTsa:  input file is " << inFile  << std::endl;
+  //std::cout << ">>> readTsa:  input file is " << inFile  << std::endl;
   std::cout << ">>> readTsa: output file is " << outFile << std::endl;
 
   // ========================================================================
@@ -48,9 +48,9 @@ void readTsa1()
 
   // --- Source task
   CbmFlibFileSourceNew* source = new CbmFlibFileSourceNew();
-  // source->SetHostName("cbmflib01.gsi.de");
-  source->SetFileName(inFile);
-  source->AddFile(inFile1);
+  source->SetHostName("cbmflib01");
+  //source->SetFileName(inFile);
+  //source->AddFile(inFile1);
   //  source->AddUnpacker(nxyter_unpacker, 0x10);
   source->AddUnpacker(spadic_unpacker, 0x40);
 
@@ -67,7 +67,8 @@ void readTsa1()
   FairTask* spadicRawBeam = new CbmTrdRawBeamProfile();
   run->AddTask(spadicRawBeam);
 
-  FairTask* onlineDisplay = new CbmTrdOnlineDisplay();
+  CbmTrdOnlineDisplay* onlineDisplay = new CbmTrdOnlineDisplay();
+  onlineDisplay->SetUpdateInterval(1000);
   run->AddTask(onlineDisplay);
 
 

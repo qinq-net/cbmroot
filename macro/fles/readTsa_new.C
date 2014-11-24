@@ -13,7 +13,7 @@ void readTsa_new()
 {
 
   // --- Specify input file name (this is just an example)
-   TString inFile = "spadic_dlm_trigger_2014-11-15_noepoch.tsa";
+  //TString inFile = "spadic_dlm_trigger_2014-11-15_noepoch.tsa";
 //   TString inFile = "nxdata.tsa";
 
   // --- Specify number of events to be produced.
@@ -31,7 +31,7 @@ void readTsa_new()
   gDebug = 0;
   
   std::cout << std::endl;
-  std::cout << ">>> readTsa:  input file is " << inFile  << std::endl;
+  //std::cout << ">>> readTsa:  input file is " << inFile  << std::endl;
   std::cout << ">>> readTsa: output file is " << outFile << std::endl;
 
   // ========================================================================
@@ -48,10 +48,10 @@ void readTsa_new()
 
   // --- Source task
   CbmFlibFileSourceNew* source = new CbmFlibFileSourceNew();
-  source->SetFileName(inFile);
+  //source->SetFileName(inFile);
 //  source->AddUnpacker(nxyter_unpacker, 0x10);
   source->AddUnpacker(spadic_unpacker, 0x40);
-//  source->SetHostName("cbmflib02.gsi.de");
+  source->SetHostName("cbmflib01");
 
   // --- Event header
 //  FairEventHeader* event = new CbmTbEvent();
@@ -71,7 +71,7 @@ void readTsa_new()
   run->AddTask(spadicRawBeam);
 
   CbmTrdOnlineDisplay* onlineDisplay = new CbmTrdOnlineDisplay();
-  onlineDisplay->SetUpdateInterval(1000);
+  onlineDisplay->SetUpdateInterval(100);
   run->AddTask(onlineDisplay);
 
   run->Init();
@@ -87,7 +87,7 @@ void readTsa_new()
   Double_t rtime = timer.RealTime();
   Double_t ctime = timer.CpuTime();
   std::cout << std::endl << std::endl;
-  std::cout << ">>> readTsa: Macro finished successfully." << std::endl;
+  //std::cout << ">>> readTsa: Macro finished successfully." << std::endl;
   std::cout << ">>> readTsa: Output file is " << outFile << std::endl;
   std::cout << ">>> readTsa: Real time " << rtime << " s, CPU time "
   					<< ctime << " s" << std::endl;

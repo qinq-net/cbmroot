@@ -32,8 +32,9 @@ class CbmSpadicRawMessage : public CbmRawMessage
 
   /** Constructor  **/
   CbmSpadicRawMessage(Int_t EquipmentID, Int_t SourceAddress, Int_t ChannelId,
-		      Int_t SuperEpoch, Int_t EpochMarker, Int_t Time, Int_t TriggerType,
-		      Int_t InfoType, Int_t StopType, Int_t GroupId, Int_t NrSamples, Int_t* Samples);
+		      Int_t EpochMarker, Int_t Time, Int_t SuperEpoch, Int_t TriggerType,
+		      Int_t InfoType, Int_t StopType, Int_t GroupId, Int_t BufferOverflow, 
+		      Int_t NrSamples, Int_t* Samples);
 
 	
   /** Destructor  **/
@@ -42,12 +43,16 @@ class CbmSpadicRawMessage : public CbmRawMessage
   Int_t GetNrSamples() { return fNrSamples; }
   Int_t* GetSamples() { return fSamples; }
   Int_t GetTriggerType() { return fTriggerType; }
+  Int_t GetStopType() { return fStopType; }
+  Int_t GetInfoType() { return fInfoType; }
+  Int_t GetGroupId() { return fGroupId; }
 
   ULong_t GetFullTime();
 
 	
  private:
 
+  Int_t fSuperEpoch;
   Int_t fTriggerType;
   Int_t fInfoType;
   Int_t fStopType;
@@ -55,7 +60,6 @@ class CbmSpadicRawMessage : public CbmRawMessage
   Int_t fBufferOverflowCount; 
   Int_t fNrSamples;
   Int_t fSamples[32];
-  Int_t fSuperEpoch;
 
   ClassDef(CbmSpadicRawMessage,2);
 

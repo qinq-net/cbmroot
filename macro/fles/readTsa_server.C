@@ -71,7 +71,7 @@ void readTsa_server()
   run->AddTask(spadicRawBeam);
 
   CbmTrdOnlineDisplay* onlineDisplay = new CbmTrdOnlineDisplay();
-  onlineDisplay->SetUpdateInterval(100);
+  onlineDisplay->SetUpdateInterval(96);
   run->AddTask(onlineDisplay);
 
   run->Init();

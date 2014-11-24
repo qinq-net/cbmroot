@@ -9,7 +9,7 @@
  */
 
 
-void readTsa_file(TString inFile = "data/trigger_3x_source_sync.tsa")
+void readTsa_file(TString inFile = "data/1023_cern2014.tsa")
 {
 
   // --- Specify input file name (this is just an example)
