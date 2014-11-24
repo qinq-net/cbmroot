@@ -11,6 +11,9 @@
 CbmSpadicRawMessage::CbmSpadicRawMessage() 
  : CbmRawMessage(), 
    fTriggerType(-1),
+   fInfoType(-1),
+   fStopType(-1),
+   fGroupId(-1),
    fNrSamples(-1),
    fSamples(),
    fSuperEpoch(0)  
@@ -21,9 +24,14 @@ CbmSpadicRawMessage::CbmSpadicRawMessage(Int_t FlibLink, Int_t FebId,
 					 Int_t ChannelId, Int_t SuperEpoch,
 					 Int_t EpochMarker, 
 					 Int_t Time, Int_t TriggerType,
+					 Int_t InfoType, Int_t StopType,
+                                         Int_t GroupId,
 					 Int_t NrSamples, Int_t* Samples)
  : CbmRawMessage(FlibLink, FebId, ChannelId, EpochMarker, Time),
    fTriggerType(TriggerType),
+   fInfoType(InfoType),
+   fStopType(StopType),
+   fGroupId(GroupId),
    fNrSamples(NrSamples),
    fSamples(),
    fSuperEpoch(SuperEpoch)     
