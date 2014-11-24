@@ -9,11 +9,11 @@ ${CBMROOT_SOURCE_DIR}/cbmbase/draw
 ${CBMROOT_SOURCE_DIR}/cbmdata
 ${CBMROOT_SOURCE_DIR}/cbmdata/sts
 ${CBMROOT_SOURCE_DIR}/cbmdata/much
-${CBMROOT_SOURCE_DIR}/cbmdata/mvd
+#${CBMROOT_SOURCE_DIR}/cbmdata/mvd
 
 ${CBMROOT_SOURCE_DIR}/much/geo
 
-${CBMROOT_SOURCE_DIR}/mvd
+#${CBMROOT_SOURCE_DIR}/mvd
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
