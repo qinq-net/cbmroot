@@ -293,13 +293,8 @@ ReadSensorGeometry(fVolName, fNodeName);
   
   if(nPlugin == 0)
       {
-       cout << endl << "No Plugins on this Sensor initial standart plugin " << endl;
+       cout << endl << "No Plugins on this Sensor " << endl;
        pluginFirst = NULL;
-       CbmMvdSensorPlugin* StandardPlugin = new CbmMvdSensorPlugin();
-       	AddPlugin(StandardPlugin);
-	if(!framebuffer->IsInit())
-       		StandardPlugin->Init();
-    
       }
 initialized = kTRUE;
 }

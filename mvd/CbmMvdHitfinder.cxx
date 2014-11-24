@@ -61,8 +61,8 @@ fHits->Clear();
 if(fInputDigis)
    {
    if(fVerbose)cout << endl << "//----------------------------------------//" << endl;
-   if(fVerbose)cout << "Execute HitfinderPlugin Nr. "<< fHitfinderPluginNr << endl;
    fDetector->SendInputDigis(fInputDigis);
+   if(fVerbose)cout << "Execute HitfinderPlugin Nr. "<< fHitfinderPluginNr << endl;
    fDetector->Exec(fHitfinderPluginNr);
    if(fVerbose)cout << "End Chain" << endl;
    if(fVerbose)cout << "Start writing Hits" << endl;  
@@ -71,7 +71,6 @@ if(fInputDigis)
    if(fVerbose)cout << "Finished writing Hits" << endl;
    if(fVerbose)cout << "//----------------------------------------//" << endl << endl;
    }
-   
 }
 // -----------------------------------------------------------------------------
 

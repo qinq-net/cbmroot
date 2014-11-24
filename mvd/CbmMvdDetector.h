@@ -67,13 +67,13 @@ class CbmMvdDetector : public TNamed
   void SendInputDigis(TClonesArray* digis);
   void SendClonesArray(TClonesArray* addedStructures, Int_t dataLevel=0){;}
 
-  TClonesArray* GetOuput(){;}
+  TClonesArray* GetOuput(){ return 0;}
   TClonesArray* GetOutputHits();
   TClonesArray* GetOutputHitMatchs();
   TClonesArray* GetOutputDigis();
   TClonesArray* GetOutputDigiMatchs();
   TClonesArray* GetOutputArray(Int_t nPlugin);
-  TClonesArray* GetClonesArray(Int_t dataLevel){;}
+  TClonesArray* GetClonesArray(Int_t dataLevel){ return 0;}
   Int_t GetSensorArraySize(){return(fSensorArray->GetEntriesFast());} 
   UInt_t GetPluginArraySize(){return fPluginCount-1;} 
   

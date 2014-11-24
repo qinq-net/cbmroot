@@ -47,20 +47,18 @@ CbmMvd.cxx
 CbmMvdContFact.cxx 
 CbmMvdGeo.cxx 
 CbmMvdGeoPar.cxx 
-CbmMvdHitProducer.cxx 
 CbmMvdDigitizer.cxx  
-CbmMvdDigitizeL.cxx   
 CbmMvdPileupManager.cxx  
 CbmMvdPixelCharge.cxx  
-CbmMvdFindHits.cxx 
 CbmMvdHitfinder.cxx
-CbmMvdStation.cxx 
 CbmMvdStationPar.cxx
-MyG4UniversalFluctuationForSi.cxx
 CbmMvdDetector.cxx
 CbmMvdSensor.cxx
  
-CbmMvdFullRun.cxx
+old/CbmMvdStation.cxx 
+old/CbmMvdFindHits.cxx
+old/CbmMvdDigitizeL.cxx 
+old/CbmMvdHitProducer.cxx 
 )
 #CbmMvdMatchTracks.cxx 
 

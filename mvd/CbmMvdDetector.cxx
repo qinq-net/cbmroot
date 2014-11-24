@@ -257,13 +257,14 @@ void CbmMvdDetector::SendInput(TClonesArray* input){
   Int_t nEntries = input->GetEntriesFast();
   Int_t nSensors=fSensorArray->GetEntriesFast();
   CbmMvdSensor* sensor;
-  for(Int_t k = 0; k < nSensors; k++)
-      {
-      sensor=(CbmMvdSensor*)fSensorArray->At(k);
-  	 for (Int_t i = 0; i < nEntries ; i++ )   
+  for (Int_t i = 0; i < nEntries ; i++ )   
 		{
 		point= (CbmMvdPoint*) input->At(i); 
 		point->SetPointId(i);
+	 for(Int_t k = 0; k < nSensors; k++)
+     		 {
+    	  sensor=(CbmMvdSensor*)fSensorArray->At(k);
+  	
 	        if (point->GetDetectorID() == sensor->GetDetectorID())
 	           {
                    sensor->SendInput(point);
@@ -291,13 +292,14 @@ void CbmMvdDetector::SendInputDigis(TClonesArray* digis){
   Int_t nEntries = digis->GetEntriesFast();
   Int_t nSensors=fSensorArray->GetEntriesFast();
   CbmMvdSensor* sensor;
-  for(Int_t k = 0; k < nSensors; k++)
-      {
-      sensor=(CbmMvdSensor*)fSensorArray->At(k);
-  	 for (Int_t i = 0; i < nEntries ; i++ )   
+ for (Int_t i = 0; i < nEntries ; i++ )   
 		{
 		digi= (CbmMvdDigi*) digis->At(i); 
 		digi->SetRefId(i);
+          for(Int_t k = 0; k < nSensors; k++)
+      			{
+     		 sensor=(CbmMvdSensor*)fSensorArray->At(k);
+  	 
 	        if (digi->GetDetectorId() == sensor->GetDetectorID())
 	           {
                    sensor->SendInputDigi(digi);

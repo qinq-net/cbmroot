@@ -81,6 +81,7 @@ if ( fDigis)
 void CbmMvdDigitizer::Exec(Option_t* opt){
 
 fDigis->Clear();
+fDigiMatch->Clear();
 BuildEvent();
 if(fInputPoints->GetEntriesFast() > 0)
    {

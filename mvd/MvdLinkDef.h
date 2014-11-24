@@ -6,20 +6,20 @@
  
 #pragma link C++ class CbmMvd+;
 #pragma link C++ class CbmMvdContFact;
-#pragma link C++ class CbmMvdFindHits+;
+
 #pragma link C++ class CbmMvdHitfinder+;
 #pragma link C++ class CbmMvdGeo+;
 #pragma link C++ class CbmMvdGeoPar;
-#pragma link C++ class CbmMvdHitProducer+;
+
 #pragma link C++ class CbmMvdDigitizer+;
-#pragma link C++ class CbmMvdDigitizeL+;
+
 #pragma link C++ class CbmMvdPileupManager+;
 #pragma link C++ class CbmMvdPixelCharge+;
-#pragma link C++ class CbmMvdStation+;
+
 #pragma link C++ class CbmMvdStationPar+;
 #pragma link C++ class CbmMvdSensorDataSheet+;
 #pragma link C++ class CbmMvdMimosa26AHR+;
-#pragma link C++ class CbmMvdFullRun+;
+
 #pragma link C++ class CbmMvdSensor+;
 #pragma link C++ class CbmMvdDetector+;
 
@@ -36,7 +36,10 @@
 #pragma link C++ class CbmMvdGeoHandler+;
 
 #pragma link C++ class MyG4UniversalFluctuationForSi+;
+#pragma link C++ class CbmMvdFindHits+;
+#pragma link C++ class CbmMvdDigitizeL+;
+#pragma link C++ class CbmMvdHitProducer+;
+#pragma link C++ class CbmMvdStation+;
 
 
-#endif
-
+#endif 
