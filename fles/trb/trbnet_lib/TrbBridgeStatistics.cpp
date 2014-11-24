@@ -89,6 +89,7 @@ std::string fmtSize(double v) {
       long transAborted = transStarted - (_transactionsCompleted - ref._transactionsCompleted);
       
       std::stringstream ss;
+      return ss.str();
       if (includeHeaderInterval) {
          if (!_dumpsSinceLastHeader) 
             ss << dumpHeader();

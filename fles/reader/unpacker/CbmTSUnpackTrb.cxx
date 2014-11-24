@@ -11,7 +11,7 @@
 #include "CbmRawSubEvent.h"
 #include "CbmRichTrbParam.h"
 #include "CbmTrbCalibrator.h"
-#include "CbmTrbRawHit.h"
+#include "CbmTrbRawMessage.h"
 
 #include "TimesliceReader.hpp"
 
@@ -24,13 +24,18 @@
 
 CbmTSUnpackTrb::CbmTSUnpackTrb()
   : CbmTSUnpack(),
-    fTrbRaw(new TClonesArray("CbmTrbRawHit", 10)),
+    fTrbRaw(new TClonesArray("CbmTrbRawMessage", 10)),
     fTrbBridge(new TrbBridge()),
     fTrbEventList(),
     fData(),
     fDataSize(0),
     fSynchRefTime(0.),
-    fSynchOffsetTimeMap()
+    fSynchOffsetTimeMap(),
+    fTrbIter(NULL),
+    fRawEvent(NULL),
+    fRawSubEvent(NULL),
+    fLink(0),
+    fEpochMarker()
 {
 }
 
@@ -55,12 +60,15 @@ Bool_t CbmTSUnpackTrb::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
   LOG(DEBUG) << "Unpacking Trb Data" << FairLogger::endl; 
 
-  Int_t skipMS = 1;
+  fLink = ts.descriptor(component, 0).eq_id;
+
+  Int_t skipMS = 1; //TODO: should be set from macro according to the flib settings
   fTrbEventList = fTrbBridge->extractEventsFromTimeslice(ts, skipMS);
 
-  LOG(INFO) << "Found " << fTrbEventList.size() << " TRB events in time slice"
+  LOG(DEBUG) << "Found " << fTrbEventList.size() << " TRB events in time slice"
 	    << FairLogger::endl;
 
+  // Loop over all TRB events which are in the timeslice 
   while ( !fTrbEventList.empty() ) {  
     fData = fTrbEventList.front();
     fDataSize = fData.size();
@@ -84,23 +92,29 @@ void CbmTSUnpackTrb::Finish()
 
 void CbmTSUnpackTrb::UnpackTrbEvents()
 {
-  CbmTrbIterator* trbIter = new CbmTrbIterator(static_cast<void*>(fData.data()), fDataSize);
+
+
+  fTrbIter = new CbmTrbIterator(static_cast<void*>(fData.data()), fDataSize);
 
   // Loop over TRB events 
   while (true) {
     
     // Try to extract next event from the Iterator. If no events left - go out of the loop
-    CbmRawEvent* rawEvent = trbIter->NextEvent();
-    if (rawEvent == NULL) break;
-    
+    fRawEvent = fTrbIter->NextEvent();
+    if (fRawEvent == NULL) break;
+    if(gLogger->IsLogNeeded(DEBUG)) {
+      fRawEvent->Print();    
+    }
     fSynchRefTime = -1.;
-
-    Int_t subEvtCounter = 0;
+    
     // Loop over TRB subevents
     while (true){
-      CbmRawSubEvent* rawSubEvent = trbIter->NextSubEvent();
-      if (rawSubEvent == NULL) break;
-      //      ProcessTdc(rawSubEvent);
+      fRawSubEvent = fTrbIter->NextSubEvent();
+      if (fRawSubEvent == NULL) break;
+      if(gLogger->IsLogNeeded(DEBUG)) {
+	fRawSubEvent->Print();
+      }
+      ProcessTdc(fRawSubEvent);
     }
     
   }
@@ -117,22 +131,95 @@ void CbmTSUnpackTrb::ProcessTdc(CbmRawSubEvent* rawSubEvent)
     tdcData = rawSubEvent->SubDataValue(tdcDataIndex);
     UInt_t tdcNofWords = (tdcData >> 16) & 0xffff;
     UInt_t tdcId = tdcData & 0xffff;
-    //printf("TDC DATA tdcNofWords = %i, ID = 0x%04x\n", tdcNofWords, tdcId);
-    if (tdcId == 0x5555) break;
+    LOG(DEBUG) << "TDC DATA tdcNofWords = " << tdcNofWords << " , ID=  " 
+	      << std::hex << tdcId << std::dec << FairLogger::endl;
+
+    if (tdcId == 0x5555) break; // Fixed word for end of SubSubEvent
+ 
+    // if these ids show up one has to jump to the next word and interpret that one
+    // this magic knowledge comes from Jan and Manuel
     if (tdcId == 0x7000 || tdcId == 0x7001 || tdcId == 0x7002 || tdcId == 0x7003){
       tdcDataIndex++;
       continue;
     }
-    
+
     //read TDC words to array
     UInt_t dataArray[tdcNofWords];
     for (UInt_t i = 0; i < tdcNofWords; i++) {
       tdcDataIndex++;
       tdcData = rawSubEvent->SubDataValue(tdcDataIndex);
       dataArray[i] = tdcData;
-    } // for tdcNofWords
-    DecodeTdcData(dataArray, tdcNofWords, trbId, tdcId);
+    }
+    DecodeTdcDataNew(dataArray, tdcNofWords, tdcId);
     tdcDataIndex++;
+  }
+}
+
+void CbmTSUnpackTrb::DecodeTdcDataNew(UInt_t* data, UInt_t length, UInt_t tdcId)
+{
+
+  // ignore MBS-Triggern+ Billboard and CTS for the time beeing
+  if ( 0x7005 == tdcId || 0x112 == tdcId ) return;
+
+  for (UInt_t i = 0; i < length; i++){
+    LOG(DEBUG) << "Data word: " << std::hex << data[i] << std::dec << FairLogger::endl;
+    std::bitset<32> value(data[i]);
+    LOG(DEBUG) << "Data word: " << value << FairLogger::endl;
+
+    UInt_t tdcData = data[i];
+
+    UInt_t tdcTimeDataMarker = (data[i] >> 31) & 0x1; //1 bit
+    if (tdcTimeDataMarker == 0x1) { //TIME DATA
+      LOG(DEBUG) << "Found tdc time data for tdc " << tdcId << FairLogger::endl;  
+      UInt_t chNum = (tdcData >> 22) & 0x7f; // 7bits
+      UInt_t fineTime = (tdcData >> 12) & 0x3ff; // 10 bits //0x3ff
+      UInt_t edge = (tdcData >> 11) & 0x1; // 1bit
+      UInt_t coarseTime = (tdcData) & 0x7ff; // 1bits
+
+      Int_t epochMarker = 0;
+      auto it=fEpochMarker.find(tdcId);
+      if (it != fEpochMarker.end()) {
+	epochMarker = it->second;
+      }
+
+      LOG(DEBUG) << "Found " << fineTime << ", " << edge << ", " << coarseTime 
+		<< " fine, edge and coarse " 
+		<< " for TDC " << tdcId << ", channel " << chNum << FairLogger::endl;   
+
+      new( (*fTrbRaw)[fTrbRaw->GetEntriesFast()] )
+	CbmTrbRawMessage(fLink, tdcId, chNum, epochMarker, coarseTime, fineTime, edge);
+
+    } else {
+      LOG(DEBUG) << "No tdc time data for tdc " << tdcId << FairLogger::endl;  
+      UInt_t tdcMarker = (tdcData >> 29) & 0x7; //3 bits
+      if (tdcMarker == 0x1) {// TDC header
+	UInt_t randomCode = (tdcData >> 16) & 0xff; // 8bits
+	UInt_t errorBits = (tdcData) & 0xffff; //16 bits
+        LOG(DEBUG) << Form("TDC HEADER randomCode:0x%02x, errorBits:0x%04x\n", 
+			   randomCode, errorBits) 
+		   << FairLogger::endl;
+      } else if (tdcMarker == 0x2) {// DEBUG
+	UInt_t debugMode = (tdcData >> 24) & 0x1f; //5
+	UInt_t debugBits = (tdcData) & 0xffffff;//24 bits
+	LOG(DEBUG) << Form("DEBUG debugMode:%i, debugBits:0x%06x\n", 
+			   debugMode, debugBits) 
+		   << FairLogger::endl;
+      } else if (tdcMarker == 0x3){ // EPOCH counter
+	UInt_t curEpochCounter = (tdcData) & 0xfffffff; //28 bits
+
+	auto it=fEpochMarker.find(tdcId);
+	if (it == fEpochMarker.end()) {
+	  fEpochMarker.insert( std::pair<Int_t,Int_t>(tdcId,curEpochCounter) );    
+	} else {
+	  it->second = curEpochCounter;
+	}
+
+	LOG(DEBUG) << Form("EPOCH COUNTER epochCounter:0x%07x\n", 
+			   curEpochCounter)
+		   << FairLogger::endl;
+      }
+    }
+
   }
 }
 
@@ -181,8 +268,10 @@ void CbmTSUnpackTrb::DecodeTdcData(UInt_t* data, UInt_t size, UInt_t trbId, UInt
 	      //		(fAnaType == kCbmRichLedPulserEvent && chNum == 15) ){     // Laser
 
 
+	    /*
 	new( (*fTrbRaw)[fTrbRaw->GetEntriesFast()] )      	    
-	    CbmTrbRawHit(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime, 0, 0, 0, 0);
+	    CbmTrbRawMessage(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime, 0, 0, 0, 0);
+	    */
 	    //	    fRawEventTimeHits.push_back(rawHitRef);
 	  }
 	} else if ( isPmtTrb ) {
@@ -207,12 +296,13 @@ void CbmTSUnpackTrb::DecodeTdcData(UInt_t* data, UInt_t size, UInt_t trbId, UInt
 	      prevCounter++;
 	    }
 	    if (chNum - prevChNum[prevCounter] == 1) {
+	      /*
 	      new( (*fTrbRaw)[fTrbRaw->GetEntriesFast()] )      	    
 		CbmTrbRawHit(trbId, tdcId, prevChNum[prevCounter],
 			     prevEpochCounter[prevCounter], prevCoarseTime[prevCounter],
 			     prevFineTime[prevCounter], chNum, curEpochCounter,
 			     coarseTime, fineTime);
-
+	      */
 	      prevChNum[prevCounter] = chNum;
 	      prevEpochCounter[prevCounter] = 0;
 	      prevCoarseTime[prevCounter] = 0;

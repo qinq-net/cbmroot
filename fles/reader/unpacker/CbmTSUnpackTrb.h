@@ -25,6 +25,9 @@
 #include <vector>
  
 class CbmRawSubEvent;
+class CbmRawEvent;
+class CbmRawSubEvent;
+class CbmTrbIterator;
 
 class CbmTSUnpackTrb : public CbmTSUnpack
 {
@@ -51,13 +54,19 @@ class CbmTSUnpackTrb : public CbmTSUnpack
   size_t fDataSize;
 #endif
 
-    Double_t fSynchRefTime; // Reference time for synchronization
-    std::map<UInt_t, Double_t> fSynchOffsetTimeMap; // first - TDCId, second - time offeset in ns
+  Double_t fSynchRefTime; // Reference time for synchronization
+  std::map<UInt_t, Double_t> fSynchOffsetTimeMap; // first - TDCId, second - time offeset in ns
+  CbmTrbIterator* fTrbIter; //!
+  CbmRawEvent* fRawEvent;  //!
+  CbmRawSubEvent* fRawSubEvent; //!
+  Int_t fLink;
+  std::map<Int_t, Int_t> fEpochMarker;
 
   void LoopOverTrbEvents();
   void UnpackTrbEvents();
   void ProcessTdc(CbmRawSubEvent* rawSubEvent);
   void DecodeTdcData(UInt_t* data, UInt_t size, UInt_t trbId, UInt_t tdcId);
+  void DecodeTdcDataNew(UInt_t* data, UInt_t length, UInt_t tdcId);
   Double_t GetFullTime(UShort_t TRB, UShort_t TDC, UShort_t CH, UInt_t epoch, UShort_t coarseTime, UShort_t fineTime);
 
   ClassDef(CbmTSUnpackTrb, 1)

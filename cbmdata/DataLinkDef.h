@@ -101,5 +101,6 @@
 #pragma link C++ class CbmRawMessage;
 #pragma link C++ class CbmSpadicRawMessage;
 #pragma link C++ class CbmNxyterRawMessage;
+#pragma link C++ class CbmTrbRawMessage;
 
 #endif

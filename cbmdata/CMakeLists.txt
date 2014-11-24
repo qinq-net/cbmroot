@@ -125,6 +125,7 @@ beamtime/fhodo/CbmFiberHodoAddress.cxx
 raw/CbmRawMessage.cxx
 raw/CbmSpadicRawMessage.cxx
 raw/CbmNxyterRawMessage.cxx
+raw/CbmTrbRawMessage.cxx
 )
 
 set(LINKDEF  DataLinkDef.h)
