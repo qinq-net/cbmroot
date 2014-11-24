@@ -31,7 +31,8 @@ CbmMvdDigi::CbmMvdDigi()
     fFrameNumber(0),
     fDigiFlag(-1),
     fRefId(-1)
-{    
+{  
+cout << endl << "consturcted default digi this should not happend here" << endl;  
 }
 // -------------------------------------------------------------------------
 

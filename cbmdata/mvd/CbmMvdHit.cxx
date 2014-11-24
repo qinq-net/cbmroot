@@ -21,7 +21,8 @@ CbmMvdHit::CbmMvdHit()
    fIndexCentralX(-1),
    fIndexCentralY(-1),
    fTimeStamp(0),
-   fTimeStampError(0)
+   fTimeStampError(0),
+   fDetectorID(-1)
 {
 }
 // -------------------------------------------------------------------------
@@ -37,7 +38,8 @@ CbmMvdHit::CbmMvdHit(Int_t statNr, TVector3& pos, TVector3& dpos, Int_t indexCen
     fIndexCentralX(indexCentralX),
     fIndexCentralY(indexCentralY),
     fTimeStamp(0),
-    fTimeStampError(0)
+    fTimeStampError(0),
+    fDetectorID(-1)
 {
   fDetectorID = DetectorId(statNr);
 }
