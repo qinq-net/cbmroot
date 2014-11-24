@@ -103,4 +103,6 @@
 #pragma link C++ class CbmNxyterRawMessage;
 #pragma link C++ class CbmTrbRawMessage;
 
+#pragma link C++ enum DetectorId;
+
 #endif
