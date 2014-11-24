@@ -55,10 +55,11 @@ CbmMvdStationPar.cxx
 CbmMvdDetector.cxx
 CbmMvdSensor.cxx
  
-#old/CbmMvdStation.cxx 
+old/CbmMvdStation.cxx 
 old/CbmMvdFindHits.cxx
 old/CbmMvdDigitizeL.cxx 
 old/CbmMvdHitProducer.cxx 
+old/MyG4UniversalFluctuationForSi.cxx
 )
 #CbmMvdMatchTracks.cxx 
 

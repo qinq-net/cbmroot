@@ -39,7 +39,7 @@
 #pragma link C++ class CbmMvdFindHits+;
 #pragma link C++ class CbmMvdDigitizeL+;
 #pragma link C++ class CbmMvdHitProducer+;
-//#pragma link C++ class CbmMvdStation+;
+#pragma link C++ class CbmMvdStation+;
 
 
 #endif 
