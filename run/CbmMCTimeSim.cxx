@@ -27,6 +27,8 @@ CbmMCTimeSim::CbmMCTimeSim()
    fEventId(0),
    fEventTime(0.),
    fNofEvents(0),
+   fTimeEventFirst(-1.),
+   fTimeEventLast(-1.),
    fTimer(),
    fEvent(NULL),
    fPointArrays()
@@ -47,6 +49,8 @@ CbmMCTimeSim::CbmMCTimeSim(Double_t rate, Int_t profile, const char* name)
     fEventId(-1),
     fEventTime(0.),
     fNofEvents(0),
+    fTimeEventFirst(-1.),
+    fTimeEventLast(-1.),
     fTimer(),
     fEvent(NULL),
     fPointArrays()
@@ -108,6 +112,8 @@ void CbmMCTimeSim::Exec(Option_t* opt) {
 
   // Create and set the new event time
   fEventTime = CreateEventTime();
+  if ( ! fNofEvents ) fTimeEventFirst = fEventTime;
+  fTimeEventLast = fEventTime;
 
   // Log output
   cout << endl;
@@ -159,11 +165,19 @@ void CbmMCTimeSim::Finish() {
 
   cout << endl;
   LOG(INFO) << fName << ": End of run" << FairLogger::endl;
-  LOG(INFO) << fName << ": Events processed: " << fNofEvents
-            << FairLogger::endl << FairLogger::endl;
 
+  // --- Clear MCBuffer and flag end of run
   CbmMCBuffer::Instance()->Clear();
   CbmMCBuffer::Instance()->SetEndOfRun();
+
+	std::cout << std::endl;
+	LOG(INFO) << "=====================================" << FairLogger::endl;
+	LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Events processed: " << fNofEvents
+  		      << " from " << fixed << setprecision(3) << fTimeEventFirst
+  		      << " ns to " << fTimeEventLast << " ns" << FairLogger::endl;
+	LOG(INFO) << "=====================================" << FairLogger::endl
+			      << FairLogger::endl;
 
 }
 // ---------------------------------------------------------------------------
@@ -171,7 +185,7 @@ void CbmMCTimeSim::Finish() {
 
 
 
-// -----   Init   ------------------------------------------------------------
+// -----   Initialisation   --------------------------------------------------
 InitStatus CbmMCTimeSim::Init() {
 
 	std::cout << std::endl;
@@ -179,15 +193,17 @@ InitStatus CbmMCTimeSim::Init() {
 		        << FairLogger::endl;
  	LOG(INFO) << GetName() << ": Initialisation" << FairLogger::endl;
 	LOG(INFO) << FairLogger::endl;
-	LOG(INFO) << GetName() << ": average interaction rate " << fEventRate
+	LOG(INFO) << GetName() << ": average interaction rate is " << fEventRate
 			      << " Hz" << FairLogger::endl;
-	LOG(INFO) << GetName() << ": beam profile ";
+	LOG(INFO) << GetName() << ": beam profile is ";
 	switch (fBeamProfile) {
-		case 0:  LOG(INFO)  << "constant"; break;
-		case 1:  LOG(INFO)  << "Poisson"; break;
+		case 1:  LOG(INFO)  << "constant"; break;
+		case 2:  LOG(INFO)  << "Poisson"; break;
 		default: LOG(INFO)  << "unknown"; break;
 	}
 	LOG(INFO) << FairLogger::endl;
+	LOG(INFO) << GetName() << ": buffer size is " << fMaxBufferSize << " MB"
+			      << FairLogger::endl;
 
 	// Get FairRootManager
   FairRootManager* ioman = FairRootManager::Instance();

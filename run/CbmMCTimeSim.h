@@ -116,6 +116,8 @@ class CbmMCTimeSim : public FairTask
   Int_t      fEventId;        ///< ID of current event
   Double_t   fEventTime;      ///< Start time of current event
   Int_t      fNofEvents;      ///< Event counter
+  Double_t   fTimeEventFirst; ///< Time of first event
+  Double_t   fTimeEventLast ; ///< Time of last event
   TStopwatch fTimer;          ///< ROOT time
 
 

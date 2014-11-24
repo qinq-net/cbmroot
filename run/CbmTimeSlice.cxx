@@ -146,6 +146,55 @@ void CbmTimeSlice::Reset(Double_t start, Double_t duration) {
 
 
 
+// -----   Consistency check   -----------------------------------------------
+Bool_t CbmTimeSlice::SelfTest() {
+
+	// --- Skip if empty
+	if ( IsEmpty() ) {
+		LOG(DEBUG) << "TimeSlice: time slice is empty; self test OK."
+				      << FairLogger::endl;
+		return kTRUE;
+	}
+
+	LOG(DEBUG) << "TimeSlice: performing self test"
+			       << FairLogger::endl;
+	Bool_t status = kTRUE;
+
+	// --- Check STS
+	Double_t tCurrent  = -1.;
+	Double_t tPrevious = -1.;
+	for (Int_t index = 0; index < GetDataSize(kSTS); index++) {
+		tCurrent = GetData(kSTS, index)->GetTime();
+		if ( tCurrent < GetStartTime() ) {
+			LOG(WARNING) << "STS index " << index << ": t = " << tCurrent
+					         << " ns is before time slice start = " << GetStartTime()
+					         << " ns " << FairLogger::endl;
+			status = kFALSE;
+		} //? Time before time slice start
+		if ( tCurrent > GetEndTime() ) {
+			LOG(WARNING) << "STS index " << index << ": t = " << tCurrent
+					         << " ns is after time slice end " << GetEndTime()
+					         << " ns" << FairLogger::endl;
+			status = kFALSE;
+		} //? Time after time slice end
+		if ( tCurrent < tPrevious ) {
+			LOG(WARNING) << "STS index " << index << ": t = " << tCurrent
+					         << " ns, previous was t = " << tPrevious
+					         << " ns" << FairLogger::endl;
+			status = kFALSE;
+		} //? Time before last data
+	} // STS data loop
+	LOG(DEBUG) << "\t STS: data " << GetDataSize(kSTS)
+			      << ( status ? " OK" : " FAILED" ) << FairLogger::endl;
+
+	LOG(DEBUG) << "TimeSlice: self test"
+			       << ( status ? " OK" : " FAILED" ) << FairLogger::endl;
+	return status;
+}
+// ---------------------------------------------------------------------------
+
+
+
 // -----   Status info   -----------------------------------------------------
 string CbmTimeSlice::ToString() const {
   stringstream ss;

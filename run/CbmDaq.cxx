@@ -59,6 +59,7 @@ void CbmDaq::CloseTimeSlice() {
   	FairRootManager::Instance()->Fill();
   fTimeSliceLast = fTimeSlice->GetEndTime();
   fNofTimeSlices++;
+  if ( gLogger->IsLogNeeded(DEBUG) ) fTimeSlice->SelfTest();
 
   // --- Reset time slice with new time interval
   fCurrentStartTime += fDuration;

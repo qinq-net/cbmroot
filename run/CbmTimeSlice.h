@@ -93,6 +93,13 @@ class CbmTimeSlice : public TNamed
     void Reset(Double_t start, Double_t duration);
 
 
+    /** Consistency check
+     ** Tests data to be in defined time interval and ordered w.r.t. time.
+     ** @return kTRUE if OK, else kFALSE
+     **/
+    Bool_t SelfTest();
+
+
     /** Status to string **/
     string ToString() const;
 
@@ -119,6 +126,7 @@ class CbmTimeSlice : public TNamed
     Bool_t   fIsEmpty;             ///< Flag for containing no data
     vector<CbmStsDigi> fStsData;   ///< raw data container for STS
     vector<CbmMuchDigi> fMuchData; ///< raw data container for MUCH
+
 
 
     ClassDef(CbmTimeSlice,2)
