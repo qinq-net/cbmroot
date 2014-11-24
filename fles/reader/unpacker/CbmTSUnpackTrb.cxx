@@ -21,6 +21,7 @@
 #include "TClonesArray.h"
 
 #include <iostream>
+#include <bitset>
 
 CbmTSUnpackTrb::CbmTSUnpackTrb()
   : CbmTSUnpack(),
@@ -186,9 +187,22 @@ void CbmTSUnpackTrb::DecodeTdcDataNew(UInt_t* data, UInt_t length, UInt_t tdcId)
 		<< " fine, edge and coarse " 
 		<< " for TDC " << tdcId << ", channel " << chNum << FairLogger::endl;   
 
+      Double_t fullTime = GetFullCoarseTime(epochMarker, coarseTime);
+      LOG(INFO) << "FullTime: " << fullTime
+		<< FairLogger::endl;
+
       new( (*fTrbRaw)[fTrbRaw->GetEntriesFast()] )
 	CbmTrbRawMessage(fLink, tdcId, chNum, epochMarker, coarseTime, fineTime, edge);
 
+
+      if( 110 == tdcId ) {
+	pair<Double_t, CbmTrbRawMessage*> 
+	  value (fullTime, static_cast<CbmTrbRawMessage*>(fTrbRaw->At(fTrbRaw->GetEntriesFast())));
+	  fTimeBuffer.insert(value);
+
+
+
+      }
     } else {
       LOG(DEBUG) << "No tdc time data for tdc " << tdcId << FairLogger::endl;  
       UInt_t tdcMarker = (tdcData >> 29) & 0x7; //3 bits
@@ -334,6 +348,17 @@ void CbmTSUnpackTrb::DecodeTdcData(UInt_t* data, UInt_t size, UInt_t trbId, UInt
     }
   }// for loop
 }
+
+Double_t CbmTSUnpackTrb::GetFullCoarseTime(UInt_t epoch, UShort_t coarseTime)
+{
+  Double_t coarseUnit = 5.; // 5 ns
+  Double_t epochUnit = coarseUnit * 0x800; // ~10.3 mus
+  
+  Double_t time = epoch * epochUnit + coarseTime * coarseUnit;
+
+  return time;
+}
+
 
 Double_t CbmTSUnpackTrb::GetFullTime(UShort_t TRB, UShort_t TDC, UShort_t CH, UInt_t epoch, UShort_t coarseTime, UShort_t fineTime)
 {

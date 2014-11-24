@@ -17,6 +17,7 @@
 
 #include "CbmTSUnpack.h"
 #include "CbmBeamDefaults.h"
+#include "CbmTrbRawMessage.h"
 
 #include "TClonesArray.h"
 
@@ -62,11 +63,16 @@ class CbmTSUnpackTrb : public CbmTSUnpack
   Int_t fLink;
   std::map<Int_t, Int_t> fEpochMarker;
 
+  /** Buffer management **/
+  std::multimap<Double_t, CbmTrbRawMessage*> fTimeBuffer;
+
+
   void LoopOverTrbEvents();
   void UnpackTrbEvents();
   void ProcessTdc(CbmRawSubEvent* rawSubEvent);
   void DecodeTdcData(UInt_t* data, UInt_t size, UInt_t trbId, UInt_t tdcId);
   void DecodeTdcDataNew(UInt_t* data, UInt_t length, UInt_t tdcId);
+  Double_t GetFullCoarseTime(UInt_t epoch, UShort_t coarseTime);
   Double_t GetFullTime(UShort_t TRB, UShort_t TDC, UShort_t CH, UInt_t epoch, UShort_t coarseTime, UShort_t fineTime);
 
   ClassDef(CbmTSUnpackTrb, 1)
