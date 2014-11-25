@@ -211,6 +211,9 @@ Double_t CbmTrbCalibrator::GetFineTimeCalibrated(UShort_t TRB, UShort_t TDC, USh
       case etn_IDEAL:
          return GetAlmostLinearCalibratedFT(fineCnt);
          break;
+      case etn_NOFINE:
+         return 0.;
+         break;
    }
 }
 

@@ -12,7 +12,8 @@ enum enu_calibMode {
    etn_IMPORT,  // import calibration tables from the file and use them
    etn_ONLINE,  // use first data to calibrate; the channel has to get at least fCalibrationPeriod messages to get calibrated
    etn_NOCALIB, // use linear function going from origin to (512, n) which means that the fine time is not calibrated
-   etn_IDEAL   // use almost linear function - close to real calibration but idealized
+   etn_IDEAL,   // use almost linear function - close to real calibration but idealized
+   etn_NOFINE   // ignore fine time counter at all
 };
 
 class CbmTrbCalibrator : public TObject

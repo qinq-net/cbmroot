@@ -1,5 +1,7 @@
 #include "CbmRichTrbUnpack2.h"
 
+//TODO check which headers are really needed
+
 #include <iostream>
 #include <map>
 
@@ -12,17 +14,30 @@
 #include "CbmTrbCalibrator.h"
 #include "CbmRichTrbParam.h"
 
+#include "CbmRichTrbDefines.h"
+
 #include "CbmTrbRawMessage.h"
 
+// Uncoment if you want to have excessive printout (do not exectue on many events, may produce Gb's of output)
 //#define DEBUGPRINT
 
-CbmRichTrbUnpack2::CbmRichTrbUnpack2(TString hldFileName) :
-	fHldFileName(hldFileName),
+CbmRichTrbUnpack2::CbmRichTrbUnpack2() :
    fDataPointer(NULL),
+   fTrbIter(NULL),
    fNofRawEvents(0),
    fMaxNofRawEvents(2000000000),
    fTrbRawHits(new TClonesArray("CbmTrbRawMessage", 10))
 {
+}
+
+CbmRichTrbUnpack2::CbmRichTrbUnpack2(TString hldFileName) :
+   fDataPointer(NULL),
+   fTrbIter(NULL),
+   fNofRawEvents(0),
+   fMaxNofRawEvents(2000000000),
+   fTrbRawHits(new TClonesArray("CbmTrbRawMessage", 10))
+{
+   fHldFiles.push_back(hldFileName);
 }
 
 CbmRichTrbUnpack2::~CbmRichTrbUnpack2()
@@ -32,7 +47,6 @@ CbmRichTrbUnpack2::~CbmRichTrbUnpack2()
 Bool_t CbmRichTrbUnpack2::Init()
 {
 	LOG(INFO) << "CbmRichTrbUnpack::Init()" << FairLogger::endl;
-	LOG(INFO) << "Input file name " << fHldFileName << endl;
 
    FairRootManager* ioman = FairRootManager::Instance();
    if (ioman == NULL) {
@@ -40,15 +54,14 @@ Bool_t CbmRichTrbUnpack2::Init()
    }
    ioman->Register("CbmTrbRawMessage", "TRB raw messages", fTrbRawHits, kTRUE);
 
-	ReadInputFileToMemory();
-	//ReadEvents();
+   // Read the first file
+	ReadNextInputFileToMemory();
 
 	return kTRUE;
 }
 
 void CbmRichTrbUnpack2::Close()
 {
-   if (fDataPointer) delete [] fDataPointer;
 }
 
 void CbmRichTrbUnpack2::Reset()
@@ -56,29 +69,51 @@ void CbmRichTrbUnpack2::Reset()
    fTrbRawHits->Clear();
 }
 
-void CbmRichTrbUnpack2::ReadInputFileToMemory()
+UInt_t CbmRichTrbUnpack2::ReadNextInputFileToMemory()
 {
-	std::streampos size;
-	std::ifstream file (fHldFileName.Data(), std::ios::in|std::ios::binary|std::ios::ate);
-	if (file.is_open()) {
-		size = file.tellg();
-		fDataPointer = new Char_t[size];
-		file.seekg (0, std::ios::beg);
-		file.read (fDataPointer, size);
-		file.close();
-		LOG(INFO) << "The entire file content is in memory (" << size/(1024*1024) << " MB)" << FairLogger::endl;
-	} else {
-		LOG(FATAL) << "Unable to open file " << FairLogger::endl;
-	}
-	fDataSize = (UInt_t) size;
-   fTrbIter = new CbmTrbIterator((void*)fDataPointer, fDataSize);
+   if (fHldFiles.size() > 0) {
+      TString hldFileName = fHldFiles.front();
+      fHldFiles.pop_front();
+
+	   std::streampos size;
+	   std::ifstream file (hldFileName.Data(), std::ios::in|std::ios::binary|std::ios::ate);
+	   if (file.is_open()) {
+		   size = file.tellg();
+
+         if (fDataPointer) delete [] fDataPointer;
+		   fDataPointer = new Char_t[size];
+
+		   file.seekg (0, std::ios::beg);
+		   file.read (fDataPointer, size);
+		   file.close();
+		   LOG(INFO) << "The entire file " << hldFileName << " content is in memory (" << size/(1024*1024) << " MB)" << FairLogger::endl;
+	   } else {
+		   LOG(FATAL) << "Unable to open file " << hldFileName << FairLogger::endl;
+	   }
+	   fDataSize = (UInt_t) size;
+
+      if (fTrbIter) delete fTrbIter;
+      fTrbIter = new CbmTrbIterator((void*)fDataPointer, fDataSize);
+
+      return 0; // There is data available
+   } else {
+      if (fDataPointer) delete [] fDataPointer;
+      if (fTrbIter) delete fTrbIter;
+      return 1; // no more data
+   }
 }
 
 Int_t CbmRichTrbUnpack2::ReadEvent()
 {
    // Try to extract next event from the Iterator. If no events left - go out of the loop
 	CbmRawEvent* rawEvent = fTrbIter->NextEvent();
-	if (rawEvent == NULL) return 1; // no more data
+	if (rawEvent == NULL) {  // no more data
+      if (this->ReadNextInputFileToMemory() == 1) {
+         return 1;
+      } else {
+         rawEvent = fTrbIter->NextEvent();
+      }
+   }
 
 //   if (rawEvent->Size() > 8000) continue; // TODO uncomment?
 
@@ -106,47 +141,6 @@ Int_t CbmRichTrbUnpack2::ReadEvent()
 
    return 0; // still some data
 }
-
-/*
-void CbmRichTrbUnpack2::ReadEvents()
-{
-	Int_t nofRawEvents = 0;
-	Int_t maxNofRawEvents = 10000; //2000000000;
-	
-	// Loop over events
-	while (true) 
-   {
-	   // Try to extract next event from the Iterator. If no events left - go out of the loop
-		CbmRawEvent* rawEvent = fTrbIter->NextEvent();
-		if (rawEvent == NULL)  break;
-      if (rawEvent->Size() > 8000) continue;
-
-		// Go out if exceed the limit of total number of raw hits
-		if (nofRawEvents >= maxNofRawEvents) break;
-
-		if (nofRawEvents % 10000 == 0) LOG(INFO) << "Raw event # " << nofRawEvents << FairLogger::endl;
-      #ifdef DEBUGPRINT
-      rawEvent->Print();
-      #endif
-
-		// Loop over subevents
-		while (true)
-      {
-			CbmRawSubEvent* rawSubEvent = fTrbIter->NextSubEvent();
-			if (rawSubEvent == NULL) break;
-         #ifdef DEBUGPRINT
-			rawSubEvent->PrintHeaderOnly();  // PrintHeaderOnly() or Print()
-         #endif
-         ProcessSubEvent(rawSubEvent);
-
-		}
-
-		nofRawEvents++;
-	}
-
-	delete [] fDataPointer;
-}
-*/
 
 void CbmRichTrbUnpack2::ProcessSubEvent(CbmRawSubEvent* subEvent)
 {

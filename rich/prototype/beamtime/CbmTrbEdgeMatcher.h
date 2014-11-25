@@ -5,7 +5,8 @@
 
 #include "FairTask.h"
 
-//#include "PossibleLeadingEdges.h"
+// The TDC channels of which are draw for debug
+#define DEBUGTDCID 0x0081
 
 class TH1D;
 class TClonesArray;
@@ -22,33 +23,51 @@ public: // methods
    virtual void FinishEvent();
    virtual void FinishTask();
 
+   void SetDrawHits(Bool_t toDraw = kTRUE) { fDrawHist = toDraw; }
+
 private: // methods
 
-   void AddPossibleLeadingEdge(unsigned int tdcId, unsigned int lChannel, unsigned int lEpoch, unsigned int lDataWord);
+   // Add the leadgin edge into the buffer
+   void AddPossibleLeadingEdge(UInt_t tdcId, UInt_t lChannel, UInt_t lEpoch, UInt_t lDataWord);
 
-   // return true if the corresponding leading edge found
-   bool FindLeadingEdge(unsigned int tdcId, unsigned int lChannel,
-                                 unsigned int tEpoch, unsigned int tCoarse,
-                                 unsigned int* lEpoch, unsigned int* lWord);
+   // Return true if the corresponding leading edge has been found in the buffer
+   Bool_t FindLeadingEdge(UInt_t tdcId, UInt_t lChannel,
+                                 UInt_t tEpoch, UInt_t tCoarse,
+                                 UInt_t* lEpoch, UInt_t* lWord);
 
+   // Create an output digi with only leading edge
    void CreateLeadingEdgeOnlyDigi(UInt_t tdcId, UInt_t lepoch, UInt_t lword);
 
+   //TODO move this method somewhere else? z.b. Calibrator?
    Double_t GetFullTime(UInt_t tdcId, UInt_t channel, UInt_t epoch, UInt_t coarse, UInt_t fine);
+
+   void DrawDebugHistos();
 
 private: // data members
 
-   TClonesArray* fTrbRawHits; // Input raw hits from the unpacker
-   TClonesArray* fRichTrbDigi; // Output pairs (if possible) of leading and trailing edges
+   // Input raw hits from the unpacker
+   TClonesArray* fTrbRawHits;
 
+   // Output pairs (if possible) of leading and trailing edges
+   TClonesArray* fRichTrbDigi;
 
-   unsigned int BUFSIZE;
+   // The size of the buffer for the leading edges
+   UInt_t BUFSIZE;
 
    // 33 channels for each tdc * BUFSIZE edges stored for each channel * 2 (e+tw)
-   std::map<unsigned int, unsigned int*> tdcIdToStoredEdges;
-   std::map<unsigned int, unsigned int> circularCounters;
+   std::map<UInt_t, UInt_t*> tdcIdToStoredEdges;
+   std::map<UInt_t, UInt_t> circularCounters;
 
+   // --- Debug histograms
 
-   TH1D* fhTtimeMinusLtime[68]; // for each possible TDCid
+   // If true - draw debug histograms
+   Bool_t fDrawHist;
+
+   // For each possible TDCid
+   TH1D* fhTtimeMinusLtime[68];
+
+   // For all the channels of a single certain TDC with id DEBUGTDCID
+   TH1D* fhTtimeMinusLtimeCH[16];
 
    ClassDef(CbmTrbEdgeMatcher,1)
 };

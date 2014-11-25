@@ -1,11 +1,12 @@
 #include "CbmTrbEdgeMatcher.h"
 
+
+//TODO check which headers are really needed
 #include <cstdlib>
 
 #include <TClonesArray.h>
 #include <TH1D.h>
 #include <TCanvas.h>
-#include <TH1D.h>
 #include "FairRootManager.h"
 #include "FairLogger.h"
 
@@ -16,17 +17,9 @@
 
 CbmTrbEdgeMatcher::CbmTrbEdgeMatcher() :
    fRichTrbDigi(new TClonesArray("CbmRichTrbDigi", 10)),
-   BUFSIZE(16)
+   BUFSIZE(16),
+   fDrawHist(kFALSE)
 {
-   CbmRichTrbParam* param = CbmRichTrbParam::Instance();
-
-   for (UInt_t i=0; i<68; i++) {
-      TString histoName;
-      TString histoTitle;
-      histoName.Form("fhTtimeMinusLtime - TDC %04x", param->IntegerToTDCid(i));
-      histoTitle.Form("(Trailing time - Leading time) for TDC %04x", param->IntegerToTDCid(i));
-      fhTtimeMinusLtime[i] = new TH1D(histoName, histoTitle, 4000, -50., 50.);
-   }
 }
 
 CbmTrbEdgeMatcher::~CbmTrbEdgeMatcher()
@@ -46,15 +39,34 @@ InitStatus CbmTrbEdgeMatcher::Init()
       if (tdcIdToStoredEdgesI->second) delete [] tdcIdToStoredEdgesI->second;
    }
 
+   if (fDrawHist)
+   {
+      CbmRichTrbParam* param = CbmRichTrbParam::Instance();
+
+      TString histoName;
+      TString histoTitle;
+
+      for (UInt_t i=0; i<68; i++) {
+         histoName.Form("fhTtimeMinusLtime - TDC %04x", param->IntegerToTDCid(i));
+         histoTitle.Form("(Trailing time - Leading time) for TDC %04x", param->IntegerToTDCid(i));
+         fhTtimeMinusLtime[i] = new TH1D(histoName, histoTitle, 4000, -50., 50.);
+      }
+
+      for (UInt_t i=0; i<16; i++) {
+         histoName.Form("fhTtimeMinusLtime - TDC %04x CH%d - CH%d", DEBUGTDCID, i*2+2, i*2+1);
+         histoTitle.Form("(Trailing time - Leading time) for TDC %04x CH%d - CH%d", DEBUGTDCID, i*2+2, i*2+1);
+         fhTtimeMinusLtimeCH[i] = new TH1D(histoName, histoTitle, 4000, -50., 50.);
+      }
+   }
+
    return kSUCCESS;
 }
 
 void CbmTrbEdgeMatcher::Exec(Option_t* option)
 {
    CbmRichTrbParam* param = CbmRichTrbParam::Instance();
-//   PossibleLeadingEdges* possLeadEdges = PossibleLeadingEdges::Instance();
 
-   for (UInt_t i=0; i<fTrbRawHits->GetEntries(); i++) {
+   for (UInt_t i=0; i<fTrbRawHits->GetEntries(); i++) { // for loop over the input raw hits
       CbmTrbRawMessage* curTrbRawHit = static_cast<CbmTrbRawMessage*>(fTrbRawHits->At(i));
 
       UInt_t tdcId = curTrbRawHit->GetSourceAddress();
@@ -106,7 +118,10 @@ void CbmTrbEdgeMatcher::Exec(Option_t* option)
             Double_t tfullTime = GetFullTime(tdcId, channel, epoch, coarse, fine);
             Double_t lfullTime = GetFullTime(tdcId, lchannel, foundLepoch, lcoarse, lfine);
 
-            fhTtimeMinusLtime[param->TDCidToInteger(tdcId)]->Fill(tfullTime - lfullTime);
+            if (fDrawHist) {
+               fhTtimeMinusLtime[param->TDCidToInteger(tdcId)]->Fill(tfullTime - lfullTime);
+               if (tdcId == DEBUGTDCID) fhTtimeMinusLtimeCH[(channel/2)-1]->Fill(tfullTime - lfullTime);
+            }
 
             if (tfullTime - lfullTime < 0.) {
                // negative time-over-threshold
@@ -124,24 +139,10 @@ void CbmTrbEdgeMatcher::Exec(Option_t* option)
 
          }
 
-      }
+      } // TYPE OF THE EDGE
 
-   }
+   } // for loop over the input raw hits
 
-}
-
-Double_t CbmTrbEdgeMatcher::GetFullTime(UInt_t tdcId, UInt_t channel, UInt_t epoch, UInt_t coarse, UInt_t fine)
-{
-	Double_t coarseUnit = 5.;
-	Double_t epochUnit = coarseUnit * 0x800;
-	
-   UInt_t trb_index = (tdcId >> 4) & 0x00FF - 1;
-   UInt_t tdc_index = (tdcId & 0x000F);
-	
-	Double_t time = epoch * epochUnit + coarse * coarseUnit -
-	               CbmTrbCalibrator::Instance()->GetFineTimeCalibrated(trb_index, tdc_index, channel, fine);
-
-   return time;
 }
 
 void CbmTrbEdgeMatcher::FinishEvent()
@@ -151,38 +152,7 @@ void CbmTrbEdgeMatcher::FinishEvent()
 
 void CbmTrbEdgeMatcher::FinishTask()
 {
-   CbmRichTrbParam* param = CbmRichTrbParam::Instance();
-
-   TCanvas* c[17];
-   for (UInt_t i=1; i<18; i++) {
-
-      TString canvasName;
-      TString canvasTitle;
-      canvasName.Form("fhTtimeMinusLtime - TDCs %04x, %04x, %04x, %04x", param->IntegerToTDCid(i*4+0),
-                                                                         param->IntegerToTDCid(i*4+1),
-                                                                         param->IntegerToTDCid(i*4+2),
-                                                                         param->IntegerToTDCid(i*4+3));
-      canvasTitle.Form("(Trailing time - Leading time) for TDCs %04x, %04x, %04x, %04x",
-                                                                         param->IntegerToTDCid(i*4+0),
-                                                                         param->IntegerToTDCid(i*4+1),
-                                                                         param->IntegerToTDCid(i*4+2),
-                                                                         param->IntegerToTDCid(i*4+3));
-
-      c[i-1] = new TCanvas(canvasName, canvasTitle, 800, 800);
-      c[i-1]->Divide(2, 2);
-      c[i-1]->cd(1);
-      c[i-1]->GetPad(1)->SetLogy(1);
-      fhTtimeMinusLtime[(i-1)*4+0]->Draw();
-      c[i-1]->cd(2);
-      c[i-1]->GetPad(2)->SetLogy(1);
-      fhTtimeMinusLtime[(i-1)*4+1]->Draw();
-      c[i-1]->cd(3);
-      c[i-1]->GetPad(3)->SetLogy(1);
-      fhTtimeMinusLtime[(i-1)*4+2]->Draw();
-      c[i-1]->cd(4);
-      c[i-1]->GetPad(4)->SetLogy(1);
-      fhTtimeMinusLtime[(i-1)*4+3]->Draw();
-   }
+   this->DrawDebugHistos();
 }
 
 void CbmTrbEdgeMatcher::AddPossibleLeadingEdge(UInt_t tdcId, UInt_t lChannel, UInt_t lEpoch, UInt_t lDataWord)
@@ -238,7 +208,7 @@ Bool_t CbmTrbEdgeMatcher::FindLeadingEdge(UInt_t tdcId, UInt_t lChannel, UInt_t 
       if (numOfStoredEdges == 0) { // nothing found for the given channel - no need to create a 'leading-edge-only' digi
          *lEpoch = 0xffffffff;
          *lWord = 0xffffffff;
-         return false;
+         return kFALSE;
       } else if (numOfStoredEdges == 1) { // only one edge is stored for the given channel - clean the entry and return found data
          tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + foundWordIndex*2 + 0] = 0xffffffff;  // clean epoch
          tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + foundWordIndex*2 + 1] = 0xffffffff;  // clean data word
@@ -251,7 +221,7 @@ Bool_t CbmTrbEdgeMatcher::FindLeadingEdge(UInt_t tdcId, UInt_t lChannel, UInt_t 
             this->CreateLeadingEdgeOnlyDigi(tdcId, foundEpoch, foundWord);
             *lEpoch = 0xffffffff;
             *lWord = 0xffffffff;
-            return false;
+            return kFALSE;
          } else if ((signed int)tEpoch - (signed int)foundEpoch < 0) {
             //printf("\nonly one edge is stored for the given channel (negative TtimeOvTh) %08x - %08x = %d\n", tEpoch, foundEpoch, tEpoch - foundEpoch);
 
@@ -259,11 +229,11 @@ Bool_t CbmTrbEdgeMatcher::FindLeadingEdge(UInt_t tdcId, UInt_t lChannel, UInt_t 
             this->CreateLeadingEdgeOnlyDigi(tdcId, foundEpoch, foundWord);
             *lEpoch = 0xffffffff;
             *lWord = 0xffffffff;
-            return false;
+            return kFALSE;
          } else {
             *lEpoch = foundEpoch;  // return epoch
             *lWord = foundWord;      // return data word
-            return true;
+            return kTRUE;
          }
 
       } else { // more than one word found - find the nearest leading to the trailing
@@ -285,12 +255,12 @@ Bool_t CbmTrbEdgeMatcher::FindLeadingEdge(UInt_t tdcId, UInt_t lChannel, UInt_t 
             tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + foundWordIndex*2 + 1] = 0xffffffff;  // clean data word
             *lEpoch = foundEpoch;  // return epoch
             *lWord = foundWord;      // return data word
-            return true;
+            return kTRUE;
          } else {  // zero or more than one edge within the same epoch found
 
 
             UInt_t coarseDiff = 0;
-            Bool_t atLeastOneFound = false;
+            Bool_t atLeastOneFound = kFALSE;
             for (UInt_t i=0; i<BUFSIZE; i++) {
 
                UInt_t epoch1 = tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 0];
@@ -298,7 +268,7 @@ Bool_t CbmTrbEdgeMatcher::FindLeadingEdge(UInt_t tdcId, UInt_t lChannel, UInt_t 
                if (tword1 != 0xffffffff && epoch1 == tEpoch) { // found edge within the same epoch
 
                   if (!atLeastOneFound) {
-                     atLeastOneFound = true;
+                     atLeastOneFound = kTRUE;
                      coarseDiff = abs((signed int)(tword1 & 0x7ff) - (signed int)tCoarse);  // fist conicidence - store it
                      foundEpoch = tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 0];  // store epoch
                      foundWord =  tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 1];  // store data word
@@ -325,18 +295,18 @@ Bool_t CbmTrbEdgeMatcher::FindLeadingEdge(UInt_t tdcId, UInt_t lChannel, UInt_t 
                this->CreateLeadingEdgeOnlyDigi(tdcId, foundEpoch, foundWord);
                *lEpoch = 0xffffffff;
                *lWord = 0xffffffff;
-               return false;
+               return kFALSE;
             } else if ((signed int)tEpoch - (signed int)foundEpoch < 0) {
                //printf("\n============== zero or more than one edge within the same epoch (negative TtimeOvTh) %08x - %08x = %d\n", tEpoch, foundEpoch, tEpoch - foundEpoch);
                // Create a digi with leading edge only
                this->CreateLeadingEdgeOnlyDigi(tdcId, foundEpoch, foundWord);
                *lEpoch = 0xffffffff;
                *lWord = 0xffffffff;
-               return false;
+               return kFALSE;
             } else {
                *lEpoch = foundEpoch;  // return epoch
                *lWord = foundWord;      // return data word
-               return true;
+               return kTRUE;
             }
 
          }
@@ -347,7 +317,7 @@ Bool_t CbmTrbEdgeMatcher::FindLeadingEdge(UInt_t tdcId, UInt_t lChannel, UInt_t 
    {
       *lEpoch = 0xffffffff;
       *lWord = 0xffffffff;
-      return false;
+      return kFALSE;
    }
 }
 
@@ -360,6 +330,81 @@ void CbmTrbEdgeMatcher::CreateLeadingEdgeOnlyDigi(UInt_t tdcId, UInt_t lepoch, U
    Double_t timestamp = GetFullTime(tdcId, lchannel, lepoch, lcoarse, lfine);
    new( (*fRichTrbDigi)[fRichTrbDigi->GetEntriesFast()] )
       CbmRichTrbDigi(tdcId, kTRUE, kFALSE, lchannel, 0xffffffff, timestamp, 0.0);
+}
+
+Double_t CbmTrbEdgeMatcher::GetFullTime(UInt_t tdcId, UInt_t channel, UInt_t epoch, UInt_t coarse, UInt_t fine)
+{
+	Double_t coarseUnit = 5.;
+	Double_t epochUnit = coarseUnit * 0x800;
+	
+   UInt_t trb_index = (tdcId >> 4) & 0x00FF - 1;
+   UInt_t tdc_index = (tdcId & 0x000F);
+	
+	Double_t time = epoch * epochUnit + coarse * coarseUnit -
+	               CbmTrbCalibrator::Instance()->GetFineTimeCalibrated(trb_index, tdc_index, channel, fine);
+
+   return time;
+}
+
+void CbmTrbEdgeMatcher::DrawDebugHistos()
+{
+   if (!fDrawHist) return;
+
+   CbmRichTrbParam* param = CbmRichTrbParam::Instance();
+
+   TCanvas* c[17];
+   for (UInt_t i=1; i<18; i++) {
+
+      TString canvasName;
+      TString canvasTitle;
+      canvasName.Form("fhTtimeMinusLtime - TDCs %04x, %04x, %04x, %04x", param->IntegerToTDCid(i*4+0),
+                                                                         param->IntegerToTDCid(i*4+1),
+                                                                         param->IntegerToTDCid(i*4+2),
+                                                                         param->IntegerToTDCid(i*4+3));
+      canvasTitle.Form("(Trailing time - Leading time) for TDCs %04x, %04x, %04x, %04x",
+                                                                         param->IntegerToTDCid(i*4+0),
+                                                                         param->IntegerToTDCid(i*4+1),
+                                                                         param->IntegerToTDCid(i*4+2),
+                                                                         param->IntegerToTDCid(i*4+3));
+
+      c[i-1] = new TCanvas(canvasName, canvasTitle, 800, 800);
+      c[i-1]->Divide(2, 2);
+      c[i-1]->cd(1);
+      c[i-1]->GetPad(1)->SetLogy(1);
+      fhTtimeMinusLtime[(i-1)*4+0]->Draw();
+      c[i-1]->cd(2);
+      c[i-1]->GetPad(2)->SetLogy(1);
+      fhTtimeMinusLtime[(i-1)*4+1]->Draw();
+      c[i-1]->cd(3);
+      c[i-1]->GetPad(3)->SetLogy(1);
+      fhTtimeMinusLtime[(i-1)*4+2]->Draw();
+      c[i-1]->cd(4);
+      c[i-1]->GetPad(4)->SetLogy(1);
+      fhTtimeMinusLtime[(i-1)*4+3]->Draw();
+   }
+
+   TCanvas* c2[16];
+   TCanvas* c3;
+
+   TString canvasName;
+   TString canvasTitle;
+
+   canvasName.Form("fhTtimeMinusLtime - TDC %04x", DEBUGTDCID);
+   canvasTitle.Form("(Trailing time - Leading time) for TDC %04x", DEBUGTDCID);
+   c3 = new TCanvas(canvasName, canvasTitle, 800, 800); 
+   gPad->SetLogy(1);
+   fhTtimeMinusLtime[param->TDCidToInteger(DEBUGTDCID)]->Draw();
+
+
+   for (UInt_t i=0; i<16; i++) {
+      canvasName.Form("fhTtimeMinusLtime - TDC %04x CH%d - CH%d", DEBUGTDCID, i*2+2, i*2+1);
+      canvasTitle.Form("(Trailing time - Leading time) for TDC %04x CH%d - CH%d", DEBUGTDCID, i*2+2, i*2+1);
+
+      c2[i] = new TCanvas(canvasName, canvasTitle, 800, 800);
+      gPad->SetLogy(1);
+      fhTtimeMinusLtimeCH[i]->Draw();
+
+   }
 }
 
 ClassImp(CbmTrbEdgeMatcher)
