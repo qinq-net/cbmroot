@@ -11,7 +11,6 @@ class CbmTrbRawHit: public TObject
 {
 public:
 	CbmTrbRawHit () :
-		fTrbId (0),
 		fTdcId (0),
 		fLeadingChannel (0),
 		fLeadingEpoch(0),
@@ -26,10 +25,9 @@ public:
    {
 	}
 
-	CbmTrbRawHit (UShort_t trb, UShort_t tdc,
+	CbmTrbRawHit (UShort_t tdc,
 		            UShort_t leadingChannel, UInt_t leadingEpoch, UShort_t leadingCoarseTime, UShort_t leadingFineTime,
 	               UShort_t trailingChannel, UInt_t trailingEpoch, UShort_t trailingCoarseTime, UShort_t trailingFineTime) :
-         fTrbId (trb),
          fTdcId (tdc),
          fLeadingChannel(leadingChannel),
          fLeadingEpoch(leadingEpoch),
@@ -44,7 +42,6 @@ public:
 	{
 	}
 
-   UShort_t GetTrb() const {return this->fTrbId;}
    UShort_t GetTdc() const {return this->fTdcId;}
    
    UShort_t GetLChannel() const {return this->fLeadingChannel;}
@@ -63,7 +60,6 @@ public:
    void SetTrailingTimeCorr (Double_t TFTimeCalibrCorr){this->fTrailingFineTimeCalibCorr = TFTimeCalibrCorr;}
 
 private:
-   UShort_t fTrbId;                 // 16 bit (as max)
    UShort_t fTdcId;                 // 16 bit (as max)
 
    UShort_t fLeadingChannel;

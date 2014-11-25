@@ -5,13 +5,7 @@ enum enu_calibMode {
    etn_IDEAL   // use almost linear function - close to real calibration but idealized
 };
 
-enum CbmRichAnaTypeEnum{
-	kCbmRichBeamEvent,  // hodoscope ( beam trigger)
-	kCbmRichLaserPulserEvent, // Laser pulser events
-	kCbmRichLedPulserEvent // UV LED events
-};
-
-void run_analysis()
+void run_analysis2()
 {
    TStopwatch timer;
    timer.Start();
@@ -25,13 +19,11 @@ void run_analysis()
 
    TString outRootFileName;
 
-   TString outDir = "/home/pusan/nov2014res/";
+   TString outDir = "NewUnpacker/";
    outRootFileName = outDir + hldFileName + ".root";
 
-   TString outputDir = "recoqa/";
-   TString runTitle = "123123";
-
-   CbmRichAnaTypeEnum anaType = kCbmRichBeamEvent; // Type of analysis you want to perform: kCbmRichBeamEvent, kCbmRichLaserPulserEvent, kCbmRichLedPulserEvent
+   TString outputDir = "NewUnpacker/";
+   TString runTitle = "NewUnpackerTest";
 
    TString script = TString(gSystem->Getenv("SCRIPT"));
 
@@ -53,9 +45,7 @@ void run_analysis()
    // --- Set debug level
    gDebug = 0;
 
-   CbmRichTrbUnpack* source = new CbmRichTrbUnpack(hldFullFileName);
-   source->SetAnaType(anaType);
-   source->SetDrawHist(true);
+   CbmRichTrbUnpack2* source = new CbmRichTrbUnpack2(hldFullFileName);
 
    CbmTrbCalibrator* fgCalibrator = CbmTrbCalibrator::Instance();
    fgCalibrator->SetInputFilename("calibration.root");            // does not actually import data - only defines
@@ -72,25 +62,8 @@ void run_analysis()
    run->SetOutputFile(outRootFileName);
    //run->SetEventHeader(event);
 
-   if (anaType == kCbmRichBeamEvent) {
-	   CbmRichReconstruction* richReco = new CbmRichReconstruction();
-	   richReco->SetFinderName("hough_prototype");
-	   richReco->SetRunTrackAssign(false);
-	   richReco->SetRunExtrapolation(false);
-	   richReco->SetRunProjection(false);
-	   richReco->SetRunFitter(false);
-	   run->AddTask(richReco);
-
-	   CbmRichTrbRecoQa* qaReco = new CbmRichTrbRecoQa();
-	   qaReco->SetMaxNofEventsToDraw(0);
-	   qaReco->SetOutputDir(outputDir);
-	   qaReco->SetRunTitle(runTitle);
-	   qaReco->SetDrawHist(true);
-	   run->AddTask(qaReco);
-   } else {
-	   CbmRichTrbPulserQa* qaPulser = new CbmRichTrbPulserQa();
-	   run->AddTask(qaPulser);
-   }
+   CbmTrbEdgeMatcher* matcher = new CbmTrbEdgeMatcher();
+   run->AddTask(matcher);
 
    run->Init();
 
@@ -105,9 +78,6 @@ void run_analysis()
 
    // You may try to draw the histograms showing which channels are calibrated
    //fgCalibrator->Draw();
-
-   // output png is out.png
-   // try to rename it here
 
    // --- End-of-run info
    Double_t rtime = timer.RealTime();

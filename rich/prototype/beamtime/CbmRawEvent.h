@@ -36,9 +36,9 @@ public:
 	void Print()
 	{
 	   printf("-----------------------Raw event-----------------------");
-		printf("HdrSize = %d \n", HdrSize() );
-		printf("HdrLen = %d \n", HdrLen());
-		printf("PaddedSize = %d \n", PaddedSize());
+		printf("HdrSize = %ld \n", HdrSize() );
+		printf("HdrLen = %ld \n", HdrLen());
+		printf("PaddedSize = %ld \n", PaddedSize());
 
 		printf("EVENT - size: 0x%08x  decoding: 0x%08x  id:    0x%08x  seqNr:  0x%08x\n"
 					   "date: %s  time:     %s    runNr: 0x%08x  expId:  %s\n",

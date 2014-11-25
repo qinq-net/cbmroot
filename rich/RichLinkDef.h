@@ -37,7 +37,10 @@
 
 
 #pragma link C++ class CbmRichTrbUnpack+;
+#pragma link C++ class CbmRichTrbUnpack2+;
+#pragma link C++ class CbmTrbEdgeMatcher+;
 #pragma link C++ class CbmTrbCalibrator+;
+
 #pragma link C++ class CbmRichTrbRecoQa+;
 #pragma link C++ class CbmRichTrbPulserQa+;
 #pragma link C++ class CbmRichHitInfo+;

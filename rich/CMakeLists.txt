@@ -18,6 +18,7 @@ ${CBMROOT_SOURCE_DIR}/cbmbase/utils
 
 ${CBMROOT_SOURCE_DIR}/cbmdata
 ${CBMROOT_SOURCE_DIR}/cbmdata/rich
+${CBMROOT_SOURCE_DIR}/cbmdata/raw
 ${CBMROOT_SOURCE_DIR}/cbmdata/trd
 ${CBMROOT_SOURCE_DIR}/cbmdata/sts
 ${CBMROOT_SOURCE_DIR}/cbmdata/global
@@ -106,7 +107,9 @@ prototype/CbmRichPrototypeQa.cxx
 qa/CbmRichGeoTest.cxx 
 qa/CbmRichUrqmdTest.cxx
 qa/CbmRichGeoTestStudyReport.cxx 
-prototype/beamtime/CbmRichTrbUnpack.cxx 
+prototype/beamtime/CbmRichTrbUnpack.cxx
+prototype/beamtime/CbmRichTrbUnpack2.cxx
+prototype/beamtime/CbmTrbEdgeMatcher.cxx
 prototype/beamtime/CbmTrbCalibrator.cxx
 prototype/beamtime/CbmRichTrbRecoQa.cxx
 prototype/beamtime/CbmRichTrbPulserQa.cxx
@@ -148,6 +151,8 @@ qa/CbmRichUrqmdTest.h
 qa/CbmRichGeoOpt.h
 
 prototype/beamtime/CbmRichTrbUnpack.h
+prototype/beamtime/CbmRichTrbUnpack2.h
+prototype/beamtime/CbmTrbEdgeMatcher.h
 prototype/beamtime/CbmTrbCalibrator.h
 prototype/beamtime/CbmRichTrbRecoQa.h
 prototype/beamtime/CbmRichTrbPulserQa.h

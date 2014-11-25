@@ -217,7 +217,7 @@ Double_t CbmTrbCalibrator::GetFineTimeCalibrated(UShort_t TRB, UShort_t TDC, USh
 // etn_NOCALIB
 Double_t CbmTrbCalibrator::GetLinearCalibratedFT(UShort_t fineCnt)
 {
-   return (Double_t)fineCnt * 5. / 512.; // counter * 5 ns / 512.  512 because there are 11 bits for fine time counter.
+   return (Double_t)fineCnt * 5. / 512.; // counter * 5 ns / 512.  512 because there are 10 bits for fine time counter.
 }
 
 // etn_IDEAL
