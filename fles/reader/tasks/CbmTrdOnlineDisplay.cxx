@@ -52,8 +52,8 @@ InitStatus CbmTrdOnlineDisplay::Init()
   gStyle->SetLabelSize(lsize);
   for (Int_t sys = 0; sys < 2; sys++){
     for (Int_t spa = 0; spa < 2; spa++){
-      fSpadic1[spa][sys] = new TCanvas(TString("fSpadic" + std::to_string(spa) + "SysCore" + std::to_string(sys)), TString("Spadic" + std::to_string(spa) + "SysCore" + std::to_string(sys)), 0, 0, 600, 600);
-      fSpadic1[spa][sys]->Divide(3,3);
+      fSpadic1[spa][sys] = new TCanvas(TString("fSpadic" + std::to_string(spa) + "SysCore" + std::to_string(sys)), TString("Spadic" + std::to_string(spa) + "SysCore" + std::to_string(sys)), 0, 0, 800, 600);
+      fSpadic1[spa][sys]->Divide(4,3);
 
       // Should be set for each pad of the Canvas
       gPad->SetFillColor(0);
@@ -71,12 +71,6 @@ InitStatus CbmTrdOnlineDisplay::Init()
       }
 
       fSpadic1[spa][sys]->cd(3)->SetLogy(1);
-      /*
-	h2=static_cast<TH2*>(gROOT->FindObjectAny(TString("Integrated_ADC_Spectrum_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
-	if (h2!=NULL) {
-	h2->Draw("COLZ");
-	}
-      */
       h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("GroupId_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));  
       if (h1!=NULL) {
 	h1->Draw("");
@@ -88,21 +82,13 @@ InitStatus CbmTrdOnlineDisplay::Init()
 	h2->Draw("COLZ");
       }
       fSpadic1[spa][sys]->cd(5)->SetLogy(0);
-      //Int_t maxTrigger = 0;
-      //for (Int_t sys = 0; sys < 3; sys++){
-      //for (Int_t spa = 0; spa < 3; spa++){
-      //h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("TriggerCounter_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
-      //if (h1->GetMaximum() > maxTrigger)
-      //maxTrigger = h1->GetMaximum();
-      //}
-      //}
+  
       h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("TriggerCounter_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
       if (h1!=NULL) {
 	h1->Draw("");
       }
 
       fSpadic1[spa][sys]->cd(6)->SetLogy(1);
-      //h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("CountRate_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
       h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("TriggerSum")));
       if (h1!=NULL) {
 	h1->Draw("");
@@ -119,30 +105,19 @@ InitStatus CbmTrdOnlineDisplay::Init()
 	h1->Draw("");
       }
       fSpadic1[spa][sys]->cd(9)->SetLogy(1);
-   h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("TriggerTypes_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
+      h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("TriggerTypes_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
       if (h1!=NULL) {
 	h1->Draw("");
       }
-       }
+      fSpadic1[spa][sys]->cd(10)->SetLogy(1);
+      h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("ClusterSize_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
+      if (h1!=NULL) {
+	h1->Draw("");
+      }
+
+    }
   }
-  //if (maxTrigger < 10) maxTrigger = 10;
-  /*
-    h1=static_cast<TH1*>(gROOT->FindObjectAny("TriggerCounter_SysCore0_Spadic0"));
-    if (h1!=NULL) {
-    h1->GetYaxis()->SetRangeUser(-10,10+1.125*maxTrigger);
-    h1->Draw("");
-    }
-    h1=static_cast<TH1*>(gROOT->FindObjectAny("TriggerCounter_SysCore0_Spadic1"));
-    if (h1!=NULL) {
-    h1->SetLineColor(2);
-    h1->Draw("same");
-    }
-    h1=static_cast<TH1*>(gROOT->FindObjectAny("TriggerCounter_SysCore0_Spadic2"));
-    if (h1!=NULL) {
-    h1->SetLineColor(3);
-    h1->Draw("same");
-    }
-  */
+
   for (Int_t sys = 0; sys < 2; sys++){
     for (Int_t spa = 0; spa < 2; spa++) {
       fSpadic1a[spa][sys] = new TCanvas(TString("fSpadic"+ std::to_string(spa) +"a_sys"+ std::to_string(sys)), TString("Spadic"+ std::to_string(spa) +"_Signal_Shape_sys"+ std::to_string(sys)), 50, 50, 600, 350);
@@ -168,8 +143,6 @@ InitStatus CbmTrdOnlineDisplay::Init()
 	    }
 	  }
 	} else {
-	  //for(Int_t sys = 0; sys < 2; sys++){
-	  //for(Int_t spa = 0; spa < 3; spa++){
 	  TString temphistname = "Signal_Shape_SysCore"+std::to_string(sys)+"_Spadic"+std::to_string(spa)+"_Ch" + std::to_string(0) + std::to_string(i);
 	  h1=static_cast<TH1*>(gROOT->FindObjectAny(temphistname.Data()));
 	  if (h1!=NULL) {
@@ -179,36 +152,11 @@ InitStatus CbmTrdOnlineDisplay::Init()
 	      h1->Draw("C");
 	    else
 	      h1->Draw("C,same");
-	  }
-	  // }
+	  }	  
 	}
       }
     }
   }
-
-  /*
-    CbmTrdRawBeamProfile* c = static_cast<CbmTrdRawBeamProfile*>(gROOT->FindObjectAny("CbmTrdRawBeamProfile")).Data()); 
-    LOG(INFO)<<"Found class "<< c->GetName() << FairLogger::endl;
-
-    TClass *cl = c->IsA();
-    TDataMember *dm = cl->GetDataMember("fHM");
-    TMethodCall *getter = dm->GetterMethod(c); 
-
-  
-    CbmHistManager* HM_RawProfile;
-    getter->Execute(c,"",HM_RawProfile); 
-
-    if (HM_RawProfile)
-    LOG(INFO) << "Hier bin ich" << HM_RawProfile->GetName() << FairLogger::endl;
-
-    TList* list = gROOT->GetListOfBrowsables();
-    TIter nextT(list);
-    TObject *t = NULL;
-    while ((t = (TObject *) nextT())) {
-    LOG(INFO) << "Found obj " << t->GetName();
-    }
-  */
-
   return kSUCCESS;
 
 }

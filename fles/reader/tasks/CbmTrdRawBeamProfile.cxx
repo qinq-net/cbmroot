@@ -12,7 +12,8 @@
 #include "TString.h"
 
 #include <cmath>
-
+#include <map>
+#include <vector>
 // ---- Default constructor -------------------------------------------
 CbmTrdRawBeamProfile::CbmTrdRawBeamProfile()
   : FairTask("CbmTrdRawBeamProfile"),
@@ -80,17 +81,36 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
   //Int_t channelMapping[32] = {1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,
   //			      0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30};
  
+  std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > > timeBuffer;// <ASIC ID "Syscore%d_Spadic%d"<Time, SpadicMessage> >
+
   Int_t entries = fRawSpadic->GetEntriesFast();
   Int_t sumTrigger[3][6] = {{0}};
   //  LOG(INFO) << "******" << FairLogger::endl;
   if (entries > 0)
     LOG(INFO) << "Entries: " << entries << FairLogger::endl;
-  TString triggerTypes[4] = {"Global trigger","Self triggered","Neighbor triggered","Self and neighbor triggered"};
-  TString stopTypes[6] = {"Normal end of message", "Channel buffer full", "Ordering FIFO full", "Multi hit", "Multi hit and channel buffer full", "Multi hit and ordering FIFO full"};
-  TString infoTypes[8] = {"Channel disabled during message building", "Next grant timeout", "Next request timeout", "New grant but channel empty", "Corruption in message builder", "Empty word", "Epoch out of sync", "infoType out of array"};
+
+  // Find info about hitType, stopType and infoType in cbmroot/fles/spadic/message/constants/..
+  TString triggerTypes[4] = {"Global trigger",
+			     "Self triggered",
+			     "Neighbor triggered",
+			     "Self and neighbor triggered"};
+  TString stopTypes[6] = {"Normal end of message", 
+			  "Channel buffer full", 
+			  "Ordering FIFO full", 
+			  "Multi hit", 
+			  "Multi hit and channel buffer full", 
+			  "Multi hit and ordering FIFO full"};
+  TString infoTypes[8] = {"Channel disabled during message building", 
+			  "Next grant timeout", 
+			  "Next request timeout", 
+			  "New grant but channel empty", 
+			  "Corruption in message builder", 
+			  "Empty word", 
+			  "Epoch out of sync", 
+			  "infoType out of array"};
   //if (entries > 500) entries = 500; // for fast data visualization
   ULong_t lastSpadicTime[3][6] = {{0}}; //[sys][spa]
-
+  Int_t clusterSize[3][6] = {{1}};
   for (Int_t i=0; i < entries; ++i) {
 
     CbmSpadicRawMessage* raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(i));
@@ -105,28 +125,8 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
     if (infoType > 6) infoType = 7;
     Int_t groupId=raw->GetGroupId();
     ULong_t time = raw->GetFullTime();
-    //cbmroot/fles/spadic/message/constants/..
-    //  HIT (GLB, 0x0) /**< Global trigger */
-    //  HIT (SLF, 0x1) /**< Self triggered */
-    //  HIT (NBR, 0x2) /**< Neighbor triggered */
-    //  HIT (SAN, 0x3) /**< Self and neighbor triggered */
-    //
-    //  STOP (END, 0x0) /**< Normal end of message */
-    //	STOP (EBF, 0x1) /**< Channel buffer full */
-    //	STOP (EFF, 0x2) /**< Ordering FIFO full */
-    //	STOP (EDH, 0x3) /**< Multi hit */
-    //	STOP (EDB, 0x4) /**< Multi hit and channel buffer full */
-    //	STOP (EDO, 0x5) /**< Multi hit and ordering FIFO full */
-    //
-    //	INFO (DIS, 0x0) /**< Channel disabled during message building */
-    //	INFO (NGT, 0x1) /**< Next grant timeout */
-    //	INFO (NRT, 0x2) /**< Next request timeout */
-    //	INFO (NBE, 0x3) /**< New grant but channel empty */
-    //	INFO (MSB, 0x4) /**< Corruption in message builder */
-    //	INFO (NOP, 0x5) /**< Empty word */
-    //	INFO (SYN, 0x6) /**< Epoch out of sync */
-
-	  TString syscore="";
+   
+    TString syscore="";
     switch (eqID) {
     case kMuenster:  // Muenster
       syscore="SysCore0_";
@@ -141,7 +141,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
       SysId = 2;
       break;
     default:
-      LOG(FATAL) << "EquipmentID " << eqID << "not known." << FairLogger::endl;
+      LOG(ERROR) << "EquipmentID " << eqID << "not known." << FairLogger::endl;
       break;
     }     
       
@@ -175,12 +175,36 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
       chID += 16;
       break;
     default:
-      LOG(FATAL) << "Source Address " << sourceA << "not known." << FairLogger::endl;
+      LOG(ERROR) << "Source Address " << sourceA << "not known." << FairLogger::endl;
       break;
     }   
 
-    if (time >= lastSpadicTime[SysId][SpaId]){
-      // ok
+    timeBuffer[TString(syscore+spadic)][time].push_back(raw);
+
+    if (time > lastSpadicTime[SysId][SpaId]){
+      // ok, next hit
+      //LOG(DEBUG) << "ClusterSize: " << clusterSize[SysId][SpaId] << FairLogger::endl;
+      fHM->H1(TString("ClusterSize_" + syscore + spadic).Data())->Fill(clusterSize[SysId][2*SpaId]);
+      fHM->H1(TString("ClusterSize_" + syscore + spadic).Data())->Fill(clusterSize[SysId][2*SpaId+1]);
+      clusterSize[SysId][SpaId] = 1;
+    } else if (time == lastSpadicTime[SysId][SpaId]) { // Clusterizer
+      // possible FNR trigger
+      if (stopType == 0){ // normal ending
+	//clusterSize = 1;
+	if (triggerType == 0) { // gobal dlm trigger
+
+	} else if (triggerType == 1) { //Self triggered
+	  // central pad candidate
+	  clusterSize[SysId][SpaId]+=1;
+	} else if (triggerType == 2) { //Neighbor triggered
+	  // outer pad candidate
+	  clusterSize[SysId][SpaId]+=1;
+	} else { //Self and neighbor triggered
+	  // central pad candidate
+	  clusterSize[SysId][SpaId]+=1;
+	}
+      } else {// multihit or currupted
+      }
     } else {
       LOG(ERROR) << "SPADIC " << SysId << SpaId << " event time " << time << " < last time " << lastSpadicTime[SysId][SpaId] << FairLogger::endl;
     }
@@ -223,25 +247,6 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
 	fHM->H2(histName.Data())->Fill((chID-1)/2,1);
       } 
     } 
-    /*
-      if (i == entries-1){
-      for (Int_t sy = 0; sy < 2; sy++){
-      for (Int_t sp = 0; sp < 2; sp++){
-      TString histName = "TriggerCounter_SysCore" + std::to_string(sy) + "_Spadic" + std::to_string(sp);
-      for (Int_t timeSlice = 1; timeSlice <= fHM->H1(histName.Data())->GetNbinsX(); timeSlice++){
-      fHM->H1(histName.Data())->SetBinContent(timeSlice,fHM->H1(histName.Data())->GetBinContent(timeSlice+1)); // shift all bin one to the left
-	  
-      if (timeSlice == fHM->H1(histName.Data())->GetNbinsX())
-      fHM->H1(histName.Data())->SetBinContent(timeSlice,0); // set all last bins to 0
-      } 
-      }
-      }
-      TString histName = "TriggerCounter_" + syscore + spadic;
-      fHM->H1(histName.Data())->SetBinContent(fHM->H1(histName.Data())->GetNbinsX(),sumTrigger);// set only the spa sys combi to new value
-      fHM->H1("TriggerSum")->Fill(TString(syscore+spadic),sumTrigger);
-      if (sumTrigger == 0) std::cout << syscore + spadic << std::endl;
-      } // last entry
-    */
     lastSpadicTime[SysId][SpaId] = time;
   } //entries
   for (Int_t sy = 0; sy < 2; sy++){
@@ -249,12 +254,14 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
       TString histName = "TriggerCounter_SysCore" + std::to_string(sy) + "_Spadic" + std::to_string(sp);
       for (Int_t timeSlice = 1; timeSlice <= fHM->H1(histName.Data())->GetNbinsX(); timeSlice++){
 	fHM->H1(histName.Data())->SetBinContent(timeSlice,fHM->H1(histName.Data())->GetBinContent(timeSlice+1)); // shift all bin one to the left
-	  
-	//if (timeSlice == fHM->H1(histName.Data())->GetNbinsX())
-	//fHM->H1(histName.Data())->SetBinContent(timeSlice,0); // set all last bins to 0
       }
       fHM->H1(histName.Data())->SetBinContent(fHM->H1(histName.Data())->GetNbinsX(),sumTrigger[sy][2*sp] + sumTrigger[sy][2*sp+1]);// set only the spa sys combi to new value
       fHM->H1("TriggerSum")->Fill(TString("SysCore" + std::to_string(sy) + "_Spadic" + std::to_string(sp)),sumTrigger[sy][2*sp] + sumTrigger[sy][2*sp+1]);
+    }
+  }
+  for (std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > >::iterator it = timeBuffer.begin() ; it != timeBuffer.end(); it++){
+    for (std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > ::iterator it2 = it->second.begin() ; it2 != it->second.end(); it2++){
+      LOG(DEBUG) <<  "ClusterSize:" << Int_t(it2->second.size()) << FairLogger::endl;
     }
   }
 }
@@ -272,17 +279,31 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
     // Create histograms for 3 Syscores with maximum 3 Spadics
 
     TString syscoreName[3] = { "SysCore0", "SysCore1", "SysCore2" };
-    TString spadicName[3]  = { "Spadic0", "Spadic1", "Spadic2" };
+    TString spadicName[3]  = { "Spadic0",  "Spadic1",  "Spadic2" };
     TString channelName[32] = { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", 
 				"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", 
 				"20", "21", "22", "23", "24", "25", "26", "27", "28", "29", 
 				"30", "31"};
-    TString triggerTypes[4] = { "Global trigger","Self triggered","Neighbor triggered","Self and neighbor triggered"};
-    TString stopTypes[6] = {"Normal end of message", "Channel buffer full", "Ordering FIFO full", "Multi hit", "Multi hit and channel buffer full", "Multi hit and ordering FIFO full"};
-    TString infoTypes[8] = {"Channel disabled during message building", "Next grant timeout", "Next request timeout", "New grant but channel empty", "Corruption in message builder", "Empty word", "Epoch out of sync", "infoType out of array"};
+    TString triggerTypes[4] = { "Global trigger",
+				"Self triggered",
+				"Neighbor triggered",
+				"Self and neighbor triggered"};
+    TString stopTypes[6] = {"Normal end of message", 
+			    "Channel buffer full", 
+			    "Ordering FIFO full", 
+			    "Multi hit", 
+			    "Multi hit and channel buffer full", 
+			    "Multi hit and ordering FIFO full"};
+    TString infoTypes[8] = {"Channel disabled during message building", 
+			    "Next grant timeout", 
+			    "Next request timeout", 
+			    "New grant but channel empty", 
+			    "Corruption in message builder", 
+			    "Empty word", 
+			    "Epoch out of sync", 
+			    "infoType out of array"}; //not official type, just to monitor overflows
 
     fHM->Add("TriggerSum", new TH1F("TriggerSum", "TriggerSum", 9,0,9));
-    //fHM->H1("TriggerSum")->GetYaxis()->SetRangeUser(0,1E6);
     for(Int_t syscore = 0; syscore < 3; ++syscore) {
       for(Int_t spadic = 0; spadic < 3; ++spadic) {
 	fHM->H1("TriggerSum")->GetXaxis()->SetBinLabel(3*syscore+spadic+1,TString(syscoreName[syscore]+"_"+spadicName[spadic]));
@@ -313,9 +334,15 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
 	title = histName + "; ;Counts";
 	fHM->Add(histName.Data(), new TH1F(histName, title, 2, 0, 2));
 
+
+	histName = "ClusterSize_" + syscoreName[syscore] + "_" + spadicName[spadic];
+	title = histName + ";Cluster Size [Channel] ;Counts";
+	fHM->Add(histName.Data(), new TH1F(histName, title, 10, -0.5, 9.5));
+
+
 	histName = "TriggerCounter_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	title = histName + ";TimeSlice;Trigger / TimeSlice";
-	fHM->Add(histName.Data(), new TH1F(histName, title, 2500, 0, 2500));
+	fHM->Add(histName.Data(), new TH1F(histName, title, 500, 0, 500));
 
 	histName = "ErrorCounter_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	title = histName + ";Channel;ADC value in Bin 0";
@@ -343,16 +370,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t* option)
 	  title = histName + ";Time Bin;ADC value";
 	  fHM->Add(histName.Data(), new TH1F(histName, title, 33, 0, 33));
 	}
-
-	/*
-	  histName = "Trigger_Correlation_" + syscoreName[syscore] + "_" + spadicName[spadic];
-	  fHM->Add(histName, new TH2F(histName.c_str(), string(histName + ";Channel;Trigger Counter").c_str(), 32, 0, 32, 32, 0, 32));
-	*/
       }
     } 
-
-
   }
-
-
   ClassImp(CbmTrdRawBeamProfile)
