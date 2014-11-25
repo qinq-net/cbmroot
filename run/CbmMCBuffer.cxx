@@ -30,7 +30,7 @@ CbmMCBuffer::CbmMCBuffer()
     fEcalBuffer("ECAL"),
     fPsdBuffer("PSD"),
     fTime(0.),
-    fEventId(0),
+    fEventNr(0),
     fEndOfRun(kFALSE)
 { 
 }
@@ -61,9 +61,9 @@ void CbmMCBuffer::Clear() {
 
 // -----   Fill buffer   -----------------------------------------------------
 Int_t CbmMCBuffer::Fill(TClonesArray* points, DetectorId det,
-                        Int_t eventId, Double_t eventTime) {
+                        Int_t eventNr, Double_t eventTime) {
   Int_t iDet = det;
-  return Fill(points, iDet, eventId, eventTime);
+  return Fill(points, iDet, eventNr, eventTime);
 }
 // ---------------------------------------------------------------------------
 
@@ -71,22 +71,22 @@ Int_t CbmMCBuffer::Fill(TClonesArray* points, DetectorId det,
 
 // -----   Fill buffer   -----------------------------------------------------
 Int_t CbmMCBuffer::Fill(TClonesArray* points, Int_t det,
-                        Int_t eventId, Double_t eventTime) {
+                        Int_t eventNr, Double_t eventTime) {
 
   fTime    = eventTime;
-  fEventId = eventId;
+  fEventNr = eventNr;
 
   Int_t nPoints = 0;
   if ( points ) {
     switch (det) {
-    case kMVD:  nPoints = fMvdBuffer.Fill(points, eventTime, eventId);  break;
-    case kSTS:  nPoints = fStsBuffer.Fill(points, eventTime, eventId);  break;
-    case kRICH: nPoints = fRichBuffer.Fill(points, eventTime, eventId); break;
-    case kMUCH: nPoints = fMuchBuffer.Fill(points, eventTime, eventId); break;
-    case kTRD:  nPoints = fTrdBuffer.Fill(points, eventTime, eventId);  break;
-    case kTOF:  nPoints = fTofBuffer.Fill(points, eventTime, eventId);  break;
-    case kECAL: nPoints = fEcalBuffer.Fill(points, eventTime, eventId); break;
-    case kPSD:  nPoints = fPsdBuffer.Fill(points, eventTime, eventId);  break;
+    case kMVD:  nPoints = fMvdBuffer.Fill(points, eventTime, eventNr);  break;
+    case kSTS:  nPoints = fStsBuffer.Fill(points, eventTime, eventNr);  break;
+    case kRICH: nPoints = fRichBuffer.Fill(points, eventTime, eventNr); break;
+    case kMUCH: nPoints = fMuchBuffer.Fill(points, eventTime, eventNr); break;
+    case kTRD:  nPoints = fTrdBuffer.Fill(points, eventTime, eventNr);  break;
+    case kTOF:  nPoints = fTofBuffer.Fill(points, eventTime, eventNr);  break;
+    case kECAL: nPoints = fEcalBuffer.Fill(points, eventTime, eventNr); break;
+    case kPSD:  nPoints = fPsdBuffer.Fill(points, eventTime, eventNr);  break;
     default:    nPoints = 0; break;
     }
   }
@@ -224,7 +224,7 @@ CbmMCBuffer* CbmMCBuffer::Instance() {
 string CbmMCBuffer::ToString() const
 {
    stringstream ss;
-   ss  << "MCBuffer: Last event " << fEventId << " at "
+   ss  << "MCBuffer: Last event " << fEventNr << " at "
        << fixed << setprecision(3) << fTime << " ns, "
        << GetNofEntries() << " points from " << GetMinTime()
        << " ns to " << GetMaxTime() << " ns, size " << GetSize()

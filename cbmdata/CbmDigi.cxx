@@ -4,6 +4,7 @@
  **/
 
 #include "CbmDigi.h"
+#include "CbmMatch.h"
 
 #include "FairMultiLinkedData.h"
 
@@ -19,24 +20,40 @@ CbmDigi::CbmDigi()
 
 
 
-// -----   Copy constructor   ----------------------------------------------
+// -----   Copy constructor (deep copy)   ----------------------------------
 CbmDigi::CbmDigi(const CbmDigi& rhs) 
   : TObject(rhs),
-    fMatch(NULL) 
+    fMatch(NULL)
 {
+	if ( rhs.fMatch ) {
+		fMatch = new CbmMatch();
+		fMatch->AddLink( *(rhs.fMatch) );
+	}
 } 
 // -------------------------------------------------------------------------
 
 
 
-// -----   Assignment operator   -------------------------------------------
+// -----   Assignment operator (deep copy)  --------------------------------
 CbmDigi& CbmDigi::operator=(const CbmDigi& rhs) 
 {
   if (this != &rhs) {
     TObject::operator=(rhs);
-    fMatch = NULL;
+    if ( rhs.fMatch ) {
+  		fMatch = new CbmMatch();
+  		fMatch->AddLink( *(rhs.fMatch) );
+    }
+    else fMatch = NULL;
   }
   return *this;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Destructor   ----------------------------------------------------
+CbmDigi::~CbmDigi() {
+	if ( fMatch) delete fMatch;
 }
 // -------------------------------------------------------------------------
 

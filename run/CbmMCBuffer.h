@@ -95,7 +95,7 @@ class CbmMCBuffer
   /**  Current event ID
    ** @value ID of last event read into the buffer
    **/
-  Int_t GetEventId() const { return fEventId; }
+  Int_t GetEventNr() const { return fEventNr; }
   
 
   /**   Current size
@@ -166,8 +166,8 @@ class CbmMCBuffer
   Double_t fTime;
 
 
-  /** ID of last event read into the buffer  **/
-  Int_t fEventId;
+  /** Entry number of last event read into the buffer  **/
+  Int_t fEventNr;
 
 
   /** End-of-run flag  **/

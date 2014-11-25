@@ -132,7 +132,7 @@ void CbmMCTimeSim::Exec(Option_t* opt) {
     Int_t nPoints = 0;
     if ( fPointArrays[iDet] ) {
       nPoints = buffer->Fill(fPointArrays[iDet], iDet,
-                             fEventId, fEventTime);
+                             fNofEvents, fEventTime);
       TString sysName;
       CbmDetectorList::GetSystemNameCaps(iDet, sysName);
       LOG(DEBUG) << sysName << " " << nPoints << "  ";

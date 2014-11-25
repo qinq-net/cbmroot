@@ -399,12 +399,12 @@ Int_t CbmStsModule::ProcessAnalogBuffer(Double_t readoutTime) {
 	for (chanIt = fAnalogBuffer.begin();
 			 chanIt != fAnalogBuffer.end(); chanIt++) {
 
-		// --- Digitise all signals up to the specified readout time
+		// --- Digitise all signals up to the specified time limit
 		set<CbmStsSignal*>::iterator sigIt = (chanIt->second).begin();
 		set<CbmStsSignal*>::iterator oldIt = sigIt;
 		while ( sigIt != (chanIt->second).end() ) {
 
-			// --- Exit loop if signal time is larger than readout time
+			// --- Exit loop if signal time is larger than time limit
 			// --- N.b.: Readout time < 0 means digitise everything
 			if ( readoutTime >= 0. && (*sigIt)->GetTime() > timeLimit ) break;
 

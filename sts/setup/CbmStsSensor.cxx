@@ -188,7 +188,10 @@ Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point, CbmLink* link) {
   		        << " " << fType->GetTitle() << FairLogger::endl;
 
   // --- Call ProcessPoint method from sensor type
-  return fType->ProcessPoint(sPoint, this);
+  Bool_t result = fType->ProcessPoint(sPoint, this);
+  delete sPoint;
+
+  return result;
 }
 // -------------------------------------------------------------------------
 

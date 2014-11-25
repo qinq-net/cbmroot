@@ -53,9 +53,8 @@ class CbmDigi : public TObject
   CbmDigi(const CbmDigi&);
 
 
-
   /** Destructor  **/
-  virtual ~CbmDigi() { };
+  virtual ~CbmDigi();
 
 	
   /** Assignment operator  **/	

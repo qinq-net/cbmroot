@@ -48,16 +48,17 @@ class CbmStsSensorPoint
 
 
     /** Accessors **/
-    Double_t GetX1()    const { return fX1; }
-    Double_t GetY1()    const { return fY1; }
-    Double_t GetX2()    const { return fX2; }
-    Double_t GetY2()    const { return fY2; }
-    Double_t GetELoss() const { return fELoss; }
-    Double_t GetTime()  const { return fTime; }
-    Double_t GetBx()    const { return fBx; }
-    Double_t GetBy()    const { return fBy; }
-    Double_t GetBz()    const { return fBz; }
-    Int_t    GetPid()   const { return fPid; }
+    Double_t GetX1()    const { return fX1; }     ///< Entry x coordinate [cm]
+    Double_t GetY1()    const { return fY1; }     ///< Entry y coordinate [cm]
+    Double_t GetX2()    const { return fX2; }     ///< Exit x coordinate [cm]
+    Double_t GetY2()    const { return fY2; }     ///< Exit y coordinate [cm]
+    Double_t GetELoss() const { return fELoss; }  ///< Energy loss [GeV]
+    Double_t GetTime()  const { return fTime; }   ///< Time [ns]
+    Double_t GetBx()    const { return fBx; }     ///< Bx-Field at midpoint [T]
+    Double_t GetBy()    const { return fBy; }     ///< By-Field at midpoint [T]
+    Double_t GetBz()    const { return fBz; }     ///< Bz-Field at midpoint [T]
+    Int_t    GetPid()   const { return fPid; }    ///< Particle ID [PDG]
+
 
 
 

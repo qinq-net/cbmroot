@@ -49,11 +49,25 @@ class CbmTimeSlice : public TNamed
     CbmDigi* GetData(DetectorId iDet, Int_t index);
 
 
+    /** Get size of raw data container for given detector
+     **
+     ** @param iDet   detector type
+     ** @return size of raw data container (number of digis)
+     */
+    Int_t GetDataSize(DetectorId iDet) const;
+
+
     /** Duration of time slice
      **
      ** @return duration [ns]
      **/
     Double_t GetDuration() const { return fDuration; }
+
+
+    /** Get match object
+     ** @return Match object
+     **/
+    const CbmMatch& GetMatch() const { return fMatch; }
 
 
     /** Start time of time slice
@@ -104,14 +118,6 @@ class CbmTimeSlice : public TNamed
     string ToString() const;
 
 
-    /** Get size of raw data container for given detector
-     **
-     ** @param iDet   detector type
-     ** @return size of raw data container (number of digis)
-     */
-    Int_t GetDataSize(DetectorId iDet) const;
-
-    
     /** Get vector of much digis
      **
      ** @return MUCH raw data container (vector of digis) 
@@ -126,6 +132,7 @@ class CbmTimeSlice : public TNamed
     Bool_t   fIsEmpty;             ///< Flag for containing no data
     vector<CbmStsDigi> fStsData;   ///< raw data container for STS
     vector<CbmMuchDigi> fMuchData; ///< raw data container for MUCH
+    CbmMatch fMatch;               ///< link time slice to events
 
 
 

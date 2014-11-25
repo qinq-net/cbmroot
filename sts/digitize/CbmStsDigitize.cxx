@@ -94,7 +94,7 @@ void CbmStsDigitize::CreateDigi(UInt_t address,
 		              							UShort_t adc,
 		              							const CbmMatch& match) {
 
-	// Copy match object
+	// Copy match object. Will be deleted in the digi destructor.
 	CbmMatch* digiMatch = new CbmMatch();
 	digiMatch->AddLink(match);
 

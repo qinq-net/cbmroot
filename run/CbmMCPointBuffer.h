@@ -88,17 +88,17 @@ template <class T> class CbmMCPointBuffer
    ** @param array      Pointer to TClonesArray
    ** @param eventTime  Time to be added to the MCPoint time to get the absolute time
    **/
-  Int_t Fill(TClonesArray* array, Double_t eventTime, Int_t eventId) {
+  Int_t Fill(TClonesArray* array, Double_t eventTime, Int_t eventNr) {
     if ( ! array ) return 0;
     Int_t nPoints = array->GetEntriesFast();
     for (Int_t iPoint = 0; iPoint < nPoints; iPoint++) {
       T* point = (T*) array->At(iPoint);
-      point->SetEventID(eventId);
+      point->SetEventID(eventNr);
       point->SetTime(eventTime + point->GetTime());
       // 2 lines added by EK to propagate point index in TClonesArray
       // TODO add functionality in the buffer to return FairLink to the point
       FairLink l = point->GetLink(0);
-      point->AddLink(FairLink(l.GetFile(),eventId-1,-1,iPoint));
+      point->AddLink(FairLink(l.GetFile(), eventNr, -1, iPoint));
       fBuffer.insert(*point);
     }
     fBufferIt = fBuffer.begin();

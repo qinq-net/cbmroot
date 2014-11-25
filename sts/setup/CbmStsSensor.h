@@ -128,8 +128,7 @@ class CbmStsSensor : public CbmStsElement
 
     CbmStsSensorType* fType;    ///< Pointer to sensor type
 
-    /** Link to CbmStsPoint currently processed. Used in digitisation. **/
-    CbmLink* fCurrentLink;
+    CbmLink* fCurrentLink;      ///< Link to currently processed MCPoint
 
     /** Output array for hits. Used in hit finding. **/
     TClonesArray* fHits;

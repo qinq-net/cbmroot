@@ -24,7 +24,8 @@ CbmTimeSlice::CbmTimeSlice()
    fDuration(0.),
    fIsEmpty(kTRUE),
    fStsData(),
-   fMuchData()
+   fMuchData(),
+   fMatch()
 {
 }
 // ---------------------------------------------------------------------------
@@ -38,7 +39,8 @@ CbmTimeSlice::CbmTimeSlice(Double_t start, Double_t duration)
    fDuration(duration),
    fIsEmpty(kTRUE),
    fStsData(),
-   fMuchData()
+   fMuchData(),
+   fMatch()
 {
 }
 // ---------------------------------------------------------------------------
@@ -100,8 +102,19 @@ void CbmTimeSlice::InsertData(CbmDigi* data) {
     return;
   }
 
+  // --- Update match object, if links are present in the data
+  // --- The match counts the data from each event, each with weight = 1.
+  // --- This was chosen because the relative weighting between the
+  // --- detector systems is unclear.
+  CbmMatch* dataMatch = data->GetMatch();
+  if ( dataMatch) {
+  	for ( Int_t iLink = 0; iLink < dataMatch->GetNofLinks(); iLink++ ) {
+  		Int_t event = dataMatch->GetLink(iLink).GetEntry();
+  		fMatch.AddLink(1., 0, event);
+  	}
+  }
 
-  // --- If yes, copy the object into the STL vector
+  // --- Copy the data object into the STL vector
   Int_t iDet = data->GetSystemId();
   switch ( iDet ) {
 
@@ -116,8 +129,8 @@ void CbmTimeSlice::InsertData(CbmDigi* data) {
       CbmMuchDigi* digi = static_cast<CbmMuchDigi*>(data);
       fMuchData.push_back(*digi);
       fIsEmpty = kFALSE;
-    }
-    break;
+      break;
+   }
 
     default:
       TString sysName;
@@ -140,6 +153,7 @@ void CbmTimeSlice::Reset(Double_t start, Double_t duration) {
   fIsEmpty = kTRUE;
   fStartTime = start;
   fDuration = duration;
+  fMatch.ClearLinks();
 
 }
 // ---------------------------------------------------------------------------
