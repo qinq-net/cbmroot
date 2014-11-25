@@ -63,6 +63,7 @@ sts/CbmStsEventData.cxx
 rich/CbmRichRing.cxx	
 rich/CbmRichHit.cxx 
 rich/CbmRichPoint.cxx
+rich/CbmRichTrbDigi.cxx
 
 much/CbmMuchPixelHit.cxx 
 much/CbmMuchPoint.cxx
