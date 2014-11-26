@@ -16,6 +16,9 @@
 #include "FairLogger.h"
 #include "TClonesArray.h"
 
+#include "CbmMCTrack.h"////
+#include "CbmStsAddress.h"////
+
 CbmMatchRecoToMC::CbmMatchRecoToMC() :
    FairTask(),
    fMCTracks(NULL),
@@ -290,8 +293,9 @@ void CbmMatchRecoToMC::MatchHitsSts(
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
       const CbmMatch* frontClusterMatch = static_cast<const CbmMatch*>(matches->At(hit->GetFrontClusterId()));
       const CbmMatch* backClusterMatch = static_cast<const CbmMatch*>(matches->At(hit->GetBackClusterId()));
-      hitMatch->AddLink(*frontClusterMatch);
+	  hitMatch->AddLink(*frontClusterMatch);
       hitMatch->AddLink(*backClusterMatch);
+	  
     //  std::cout << "hit " << iHit << " " << hitMatch->ToString();
    }
 }
@@ -335,6 +339,14 @@ void CbmMatchRecoToMC::MatchTracks(
          for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
             const FairMCPoint* point = static_cast<const FairMCPoint*>(points->At(hitMatch->GetLink(iLink).GetIndex()));
             if (NULL == point) continue;
+			////fix low energy cut case on STS
+			if (CbmStsAddress::GetSystemId(point->GetDetectorID()) == kSTS ){
+				Int_t mcTrackId = point->GetTrackID();
+				CbmMCTrack *mcTrack = (CbmMCTrack*) fMCTracks->At(mcTrackId);
+				if(mcTrack->GetNPoints(kSTS) < 2)
+					continue;
+			}
+			////
             trackMatch->AddLink(CbmLink(1., point->GetTrackID()));
          }
       }
