@@ -401,19 +401,19 @@ int SetFebDef( CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t port, boo
 
 
 
-void config_hodo()
+void config_hodo( int link )
 {
 	//TODO: check if the srd over optics is correctly emulated
 	//resetrocnx ts need not to be executed when operated over optics. Instead a dlm has to be sent
 
 
 	// Custom settings:
-	const int kFlibLink = 1;
+	int FlibLink = link;
 	const uint32_t kNodeId = 0;
 	const uint32_t kRocId = 0;
 	const uint32_t kNxPort = 0; // 0 if nX is connected to CON19 connector; 1 for CON20 connector.
-	const uint32_t kVBiasS = 130;
-	const uint32_t kVth = 70;
+	const uint32_t kVBiasS = 142; // 142 messured 21.11. for Hodo2
+	const uint32_t kVth = 90; // 90 messured 21.11. for Hodo2
 	const uint32_t kVbfb= 50;
 
 	if( kNxPort != 0 && kNxPort != 1 ) { printf("Error! invalid value kNxPort = %d\n", kNxPort ); return; }
@@ -421,7 +421,7 @@ void config_hodo()
 	CbmNet::ControlClient conn;
 	ostringstream dpath;
 
-	dpath << "tcp://" << "localhost" << ":" << CbmNet::kPortControl + kFlibLink;
+	dpath << "tcp://" << "localhost" << ":" << CbmNet::kPortControl + FlibLink;
 	conn.Connect(dpath.str());
 
 	SetRocDef( conn, kNodeId );
