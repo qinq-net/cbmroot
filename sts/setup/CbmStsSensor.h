@@ -93,6 +93,12 @@ class CbmStsSensor : public CbmStsElement
     CbmStsModule* GetModule() const;
 
 
+  	/** Get physical node
+  	 ** @return Pointer to TGeoPhysicalNode of sensor
+     **/
+  	TGeoPhysicalNode* GetNode() const {return fNode;}
+
+
     /** Get the sensor Id within the module  **/
     Int_t GetSensorId() const {
       return CbmStsAddress::GetElementId(fAddress, kStsSensor); }

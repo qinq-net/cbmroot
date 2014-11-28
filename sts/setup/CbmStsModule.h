@@ -174,13 +174,15 @@ class CbmStsModule : public CbmStsElement
      void SetParameters(Int_t nChannels, Double_t dynRange,
     		                Double_t threshold, Int_t nAdc,
     		                Double_t timeResolution = 0.,
-    		                Double_t deadTime = 0.) {
+    		                Double_t deadTime = 0.,
+    		                Double_t noise = 0.) {
     	 fNofChannels    = nChannels;
     	 fDynRange       = dynRange;
     	 fThreshold      = threshold;
     	 fNofAdcChannels = nAdc;
     	 fTimeResolution = timeResolution;
     	 fDeadTime       = deadTime;
+    	 fNoise          = noise;
     	 fIsSet = kTRUE;
      }
 
@@ -195,6 +197,7 @@ class CbmStsModule : public CbmStsElement
     Int_t    fNofAdcChannels;  ///< Number of ADC channels
     Double_t fTimeResolution;  ///< Time resolution (sigma) [ns]
     Double_t fDeadTime;        ///< Channel dead time [ns]
+    Double_t fNoise;           ///< Equivalent noise charge (sigma) [e]
     Bool_t   fIsSet;           ///< Flag whether parameters are set
 
     /** Buffer for analog signals, key is channel number.

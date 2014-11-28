@@ -18,16 +18,17 @@
 
 // -----   Default constructor   -------------------------------------------
 CbmStsModule::CbmStsModule() : CbmStsElement(),
-			         fNofChannels(2048),
-			         fDynRange(0.),
-			         fThreshold(0.),
-			         fNofAdcChannels(0),
-			         fTimeResolution(0),
-			         fDeadTime(0.),
-			         fIsSet(kFALSE),
-   			         fAnalogBuffer(),
-                                 fDigis(),
-                                 fClusters()
+                               fNofChannels(2048),
+                               fDynRange(0.),
+                               fThreshold(0.),
+                               fNofAdcChannels(0),
+                               fTimeResolution(0),
+                               fDeadTime(0.),
+                               fNoise(0.),
+                               fIsSet(kFALSE),
+                               fAnalogBuffer(),
+                               fDigis(),
+                               fClusters()
 {
 }
 // -------------------------------------------------------------------------
@@ -44,6 +45,7 @@ CbmStsModule::CbmStsModule(const char* name, const char* title,
                            fNofAdcChannels(0),
                            fTimeResolution(0),
                            fDeadTime(0.),
+                           fNoise(0.),
                            fIsSet(0),
                            fAnalogBuffer(),
                            fDigis(),
@@ -293,8 +295,13 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 // -----   Digitise an analog charge signal   ------------------------------
 void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
 
+	// --- Add noise to the signal
+	Double_t charge = signal->GetCharge();
+	if ( fNoise > 0.)
+		charge = signal->GetCharge() + gRandom->Gaus(0., fNoise);
+
 	// --- No action if charge is below threshold
-	if ( signal->GetCharge() < fThreshold ) return;
+	if ( charge < fThreshold ) return;
 
 	// --- Construct channel address from module address and channel number
 	UInt_t address = CbmStsAddress::SetElementId(GetAddress(),
@@ -308,8 +315,8 @@ void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
 	// --- Prescription according to the information on the STS-XYTER
 	// --- by C. Schmidt.
 	UShort_t adc = 0;
-	if ( signal->GetCharge() > fDynRange ) adc = fNofAdcChannels - 1;
-	else adc = UShort_t( (signal->GetCharge() - fThreshold) / fDynRange
+	if ( charge > fDynRange ) adc = fNofAdcChannels - 1;
+	else adc = UShort_t( (charge - fThreshold) / fDynRange
 				     * Double_t(fNofAdcChannels) );
 
 	// --- Digitise time

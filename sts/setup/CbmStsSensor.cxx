@@ -10,6 +10,7 @@
 // Includes from ROOT
 #include "TClonesArray.h"
 #include "TGeoMatrix.h"
+#include "TMath.h"
 
 // Includes from FairRoot
 #include "FairField.h"
@@ -154,6 +155,7 @@ Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point, CbmLink* link) {
   fNode->GetMatrix()->MasterToLocal(global, local);
   Double_t x1 = local[0];
   Double_t y1 = local[1];
+  Double_t z1 = local[2];
 
   // --- Transform exit coordinates into local C.S.
   global[0] = point->GetXOut();
@@ -162,6 +164,13 @@ Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point, CbmLink* link) {
   fNode->GetMatrix()->MasterToLocal(global, local);
   Double_t x2 = local[0];
   Double_t y2 = local[1];
+  Double_t z2 = local[2];
+
+  // --- Momentum magnitude
+  Double_t px = point->GetPx();
+  Double_t py = point->GetPy();
+  Double_t pz = point->GetPz();
+  Double_t p = TMath::Sqrt( px*px + py*py + pz*pz );
 
   // --- Get magnetic field
   global[0] = 0.5 * ( point->GetXIn() + point->GetXOut() );
@@ -171,10 +180,9 @@ Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point, CbmLink* link) {
   if ( FairRunAna::Instance() )
   	FairRunAna::Instance()->GetField()->Field(global, bField);
 
-
-  // Create SensorPoint
+  // --- Create SensorPoint
   // Note: there is a conversion from kG to T in the field values.
-  CbmStsSensorPoint* sPoint = new CbmStsSensorPoint(x1, y1, x2, y2,
+  CbmStsSensorPoint* sPoint = new CbmStsSensorPoint(x1, y1, z1, x2, y2, z2, p,
                                                     point->GetEnergyLoss(),
                                                     point->GetTime(),
                                                     bField[0] / 10.,
