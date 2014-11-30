@@ -21,6 +21,7 @@ class TGeoPhysicalNode;
 class CbmLink;
 class CbmStsModule;
 class CbmStsPoint;
+class CbmStsSensorConditions;
 class CbmStsSensorType;
 
 using std::vector;
@@ -83,6 +84,13 @@ class CbmStsSensor : public CbmStsElement
     Int_t FindHits(vector<CbmStsCluster*>& clusters,
     		           TClonesArray* hitArray);
 
+
+    /** Sensor conditions
+     ** @return Pointer to sensor condition object
+     **/
+    CbmStsSensorConditions* GetConditions() const { return fConditions; }
+
+
     /** Current link object
      ** @return Pointer to current link object (to CbmStsPoint)
      **/
@@ -124,6 +132,14 @@ class CbmStsSensor : public CbmStsElement
     void SetAddress(UInt_t address) { fAddress = address; }
 
 
+    /** Set the sensor conditions
+     ** @param conditions  Pointer to condition object
+     **/
+     void SetConditions(CbmStsSensorConditions* conditions) {
+    	fConditions = conditions;
+    }
+
+
     /** Set the sensor type
      ** @param Pointer to sensor type object
      **/
@@ -132,12 +148,10 @@ class CbmStsSensor : public CbmStsElement
 
   private:
 
-    CbmStsSensorType* fType;    ///< Pointer to sensor type
-
-    CbmLink* fCurrentLink;      ///< Link to currently processed MCPoint
-
-    /** Output array for hits. Used in hit finding. **/
-    TClonesArray* fHits;
+    CbmStsSensorType*       fType;        ///< Pointer to sensor type
+    CbmStsSensorConditions* fConditions;  ///< Pointer to sensor conditions
+    CbmLink* fCurrentLink;  ///< Link to currently processed MCPoint
+    TClonesArray* fHits;    ///<  Output array for hits. Used in hit finding.
 
     /** Prevent usage of copy constructor and assignment operator **/
     CbmStsSensor(const CbmStsSensor&);

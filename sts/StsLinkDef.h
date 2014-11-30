@@ -10,6 +10,7 @@
 #pragma link C++ class CbmStsElement;
 #pragma link C++ class CbmStsModule;
 #pragma link C++ class CbmStsSensor;
+#pragma link C++ class CbmStsSensorConditions;
 #pragma link C++ class CbmStsSensorPoint;
 #pragma link C++ class CbmStsSensorType;
 #pragma link C++ class CbmStsSensorTypeDssd;

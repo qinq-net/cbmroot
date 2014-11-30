@@ -14,6 +14,7 @@ set(SRCS_SETUP
 setup/CbmStsElement.cxx
 setup/CbmStsModule.cxx
 setup/CbmStsSensor.cxx
+setup/CbmStsSensorConditions.cxx
 setup/CbmStsSensorPoint.cxx
 setup/CbmStsSensorType.cxx
 setup/CbmStsSetup.cxx

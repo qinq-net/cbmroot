@@ -23,6 +23,7 @@
 
 // Includes from STS
 #include "setup/CbmStsModule.h"
+#include "setup/CbmStsSensorConditions.h"
 #include "setup/CbmStsSensorPoint.h"
 #include "setup/CbmStsSetup.h"
 
@@ -31,6 +32,7 @@
 // -----   Constructor   ---------------------------------------------------
 CbmStsSensor::CbmStsSensor() : CbmStsElement(),
                                fType(NULL),
+                               fConditions(NULL),
                                fCurrentLink(NULL),
                                fHits(NULL)
 {
@@ -44,6 +46,7 @@ CbmStsSensor::CbmStsSensor(const char* name, const char* title,
                            TGeoPhysicalNode* node) :
                            CbmStsElement(name, title, kStsSensor, node),
                            fType(NULL),
+                           fConditions(NULL),
                            fCurrentLink(NULL),
                            fHits(NULL)
 {
