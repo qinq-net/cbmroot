@@ -4,19 +4,22 @@
 CbmNxyterRawMessage::CbmNxyterRawMessage() 
   : CbmRawMessage(),
     fADCvalue(0),
-    fLastEpoch(kFALSE)
+    fLastEpoch(kFALSE),
+    fPileUp(kFALSE),
+    fOverflow(kFALSE)
 {
 }
 
 // ------ Constructor -----------------------------------------------------
-CbmNxyterRawMessage::CbmNxyterRawMessage(Int_t FlibLink, Int_t FebId, 
-					 Int_t ChannelId, Int_t EpochMarker, 
-					 Int_t Time, Int_t ADCval,
-					 Bool_t lastEpoch)
+CbmNxyterRawMessage::CbmNxyterRawMessage(Int_t FlibLink, Int_t FebId, Int_t ChannelId,
+                                         Int_t EpochMarker, Int_t Time,
+                                         Int_t ADCval, Bool_t lastEpoch, Bool_t pileUp, Bool_t overflow)
   
   : CbmRawMessage(FlibLink, FebId, ChannelId, EpochMarker, Time),
     fADCvalue(ADCval),
-    fLastEpoch(lastEpoch)
+    fLastEpoch(lastEpoch),
+    fPileUp(pileUp),
+    fOverflow(overflow)
 {
 }
 

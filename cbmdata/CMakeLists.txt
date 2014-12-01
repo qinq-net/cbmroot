@@ -126,6 +126,7 @@ beamtime/fhodo/CbmFiberHodoAddress.cxx
 raw/CbmRawMessage.cxx
 raw/CbmSpadicRawMessage.cxx
 raw/CbmNxyterRawMessage.cxx
+raw/CbmNxyterRawSyncMessage.cxx
 raw/CbmTrbRawMessage.cxx
 )
 
