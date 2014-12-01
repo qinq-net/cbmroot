@@ -13,14 +13,22 @@
   #include "Timeslice.hpp"
 #endif
 
-
 #include "CbmTSUnpack.h"
 
 #include "TClonesArray.h"
 
+enum MessageTypes {
+   MSG_NOP    = 0,
+   MSG_HIT    = 1,
+   MSG_EPOCH  = 2,
+   MSG_SYNC   = 3,
+   MSG_AUX    = 4,
+   MSG_SYS    = 7
+};
+
 class CbmTSUnpackNxyter : public CbmTSUnpack
 {
- public:
+public:
   
   CbmTSUnpackNxyter();
   virtual ~CbmTSUnpackNxyter();
@@ -36,10 +44,23 @@ class CbmTSUnpackNxyter : public CbmTSUnpack
   // protected:
   //  virtual void Register();
 
- private:
-  Int_t fCurrEpoch; // Current epoch (first epoch in the stream initialises the 
+private:
 
+  Int_t fCurrEpoch; // Current epoch (first epoch in the stream initialises this variable)
+
+  void Print6bytesMessage(const uint8_t* msContent_shifted);
+
+  void ProcessMessage_hit(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
+  void ProcessMessage_epoch(const uint8_t* msContent_shifted);
+  void ProcessMessage_sync(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
+  void ProcessMessage_aux(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
+  void ProcessMessage_sys(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
+
+  // Output array of raw hit messages
   TClonesArray* fNxyterRaw;
+  
+  // Output array of raw sync messages
+  TClonesArray* fNxyterRawSync;
   
   ClassDef(CbmTSUnpackNxyter, 1)
 };

@@ -5,7 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class CbmFlibFileSource;
-#pragma link C++ class CbmNxFlibFileSource;
+//#pragma link C++ class CbmNxFlibFileSource;
 #pragma link C++ class CbmFlibFileSourceNew;
 
 #pragma link C++ class CbmTSUnpack;

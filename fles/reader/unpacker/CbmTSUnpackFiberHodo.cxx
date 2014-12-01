@@ -157,7 +157,9 @@ Bool_t CbmTSUnpackFiberHodo::DoUnpack(const fles::Timeslice& ts, size_t componen
 				   fCurrEpoch - cur_hit_data.NxLastEpoch,             // note the trick
 				   cur_hit_data.NxTs,
 				   cur_hit_data.NxAdcValue,
-				   cur_hit_data.NxLastEpoch);
+				   cur_hit_data.NxLastEpoch,
+				   cur_hit_data.NxPileUp,
+				   cur_hit_data.NxOverflow);
 	     ++counter;
 	     
 	     FillHodoDigiToBuffer();

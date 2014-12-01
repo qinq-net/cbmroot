@@ -9,7 +9,9 @@
  */
 
 
-void readTsa_file(TString inFile = "data/1023_cern2014.tsa")
+//void readTsa_file(TString inFile = "nxdata_syncscale0.tsa")
+void readTsa_file(TString inFile = "nxdata_syncscale2.tsa")
+//void readTsa_file(TString inFile = "nxdata.tsa")
 {
 
   // --- Specify input file name (this is just an example)
@@ -18,7 +20,7 @@ void readTsa_file(TString inFile = "data/1023_cern2014.tsa")
 
   // --- Specify number of events to be produced.
   // --- -1 means run until the end of the input file.
-  Int_t nEvents = -1;
+  Int_t nEvents = 10;
 
   // --- Specify output file name (this is just an example)
   TString outFile = "data/test_online.root";
@@ -29,9 +31,9 @@ void readTsa_file(TString inFile = "data/1023_cern2014.tsa")
 
   // --- Set debug level
   gDebug = 0;
-  
+
   std::cout << std::endl;
-  //std::cout << ">>> readTsa:  input file is " << inFile  << std::endl;
+  std::cout << ">>> readTsa:  input file is " << inFile  << std::endl;
   std::cout << ">>> readTsa: output file is " << outFile << std::endl;
 
   // ========================================================================
@@ -40,19 +42,16 @@ void readTsa_file(TString inFile = "data/1023_cern2014.tsa")
   std::cout << std::endl;
   std::cout << ">>> readTsa: Initialising..." << std::endl;
 
-  // Spadic Unpacker
-  CbmTSUnpackSpadic* spadic_unpacker = new CbmTSUnpackSpadic();
-
   // NXyter Unpacker
-  // CbmTSUnpackNxyter* nxyter_unpacker = new CbmTSUnpackNxyter();
+  CbmTSUnpackNxyter* nxyter_unpacker = new CbmTSUnpackNxyter();
 
   // --- Source task
   CbmFlibFileSourceNew* source = new CbmFlibFileSourceNew();
   //source->SetHostName("cbmflib01");
   source->SetFileName(inFile);
   //source->AddFile(inFile1);
-  //  source->AddUnpacker(nxyter_unpacker, 0x10);
-  source->AddUnpacker(spadic_unpacker, 0x40);
+  source->AddUnpacker( nxyter_unpacker, 0x10 );
+  // source->AddUnpacker(spadic_unpacker, 0x40);
 
   // --- Event header
   //  FairEventHeader* event = new CbmTbEvent();
@@ -64,24 +63,23 @@ void readTsa_file(TString inFile = "data/1023_cern2014.tsa")
 //  run->SetEventHeader(event);
 
 //  gDebug=2;
-  FairTask* spadicRawBeam = new CbmTrdRawBeamProfile();
-  run->AddTask(spadicRawBeam);
-
-  CbmTrdOnlineDisplay* onlineDisplay = new CbmTrdOnlineDisplay();
-  onlineDisplay->SetUpdateInterval(1000);
-  run->AddTask(onlineDisplay);
+//  FairTask* spadicRawBeam = new CbmTrdRawBeamProfile();
+//  run->AddTask(spadicRawBeam);
+//
+//  CbmTrdOnlineDisplay* onlineDisplay = new CbmTrdOnlineDisplay();
+//  onlineDisplay->SetUpdateInterval(1000);
+//  run->AddTask(onlineDisplay);
 
 
   run->Init();
 
-  
   // --- Start run
   TStopwatch timer;
   timer.Start();
   std::cout << ">>> readTsa: Starting run..." << std::endl;
   run->Run(nEvents, 0); // run until end of input file
   timer.Stop();
-  
+
   // --- End-of-run info
   Double_t rtime = timer.RealTime();
   Double_t ctime = timer.CpuTime();

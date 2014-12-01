@@ -39,7 +39,7 @@ Link_Directories(
 
 Set(SRCS
   CbmFlibFileSource.cxx   
-  CbmNxFlibFileSource.cxx   
+#  CbmNxFlibFileSource.cxx   
   CbmFlibFileSourceNew.cxx   
   CbmDaqBuffer.cxx
   CbmFiberHodoMapping.cxx
