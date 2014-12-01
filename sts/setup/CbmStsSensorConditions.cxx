@@ -3,7 +3,11 @@
  ** @date 28.06.2014
  **/
 
+#include <iomanip>
+#include <sstream>
 #include "CbmStsSensorConditions.h"
+
+using namespace std;
 
 
 // -----   Default constructor   -------------------------------------------
@@ -31,6 +35,20 @@ CbmStsSensorConditions::CbmStsSensorConditions(Double_t vFd,
 
 // -----   Destructor   ----------------------------------------------------
 CbmStsSensorConditions::~CbmStsSensorConditions() { }
+// -------------------------------------------------------------------------
+
+
+
+// -----   String output   -------------------------------------------------
+string CbmStsSensorConditions::ToString() const {
+	stringstream ss;
+	ss << "VFD = " << fVfd << " V, V(bias) = " << fVbias << " V, T = "
+		 << fTemperature << " K, C(coupl.) = " << fCcoupling
+		 << " pF, C(int.) = " << fCinterstrip << " pF, B = ("
+		 << setprecision(3) << fixed << fBx << ", " << fBy << ", " << fBz
+		 << ") T";
+	return ss.str();
+}
 // -------------------------------------------------------------------------
 
 

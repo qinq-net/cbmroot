@@ -32,7 +32,7 @@
 // -----   Constructor   ---------------------------------------------------
 CbmStsSensor::CbmStsSensor() : CbmStsElement(),
                                fType(NULL),
-                               fConditions(NULL),
+                               fConditions(),
                                fCurrentLink(NULL),
                                fHits(NULL)
 {
@@ -46,7 +46,7 @@ CbmStsSensor::CbmStsSensor(const char* name, const char* title,
                            TGeoPhysicalNode* node) :
                            CbmStsElement(name, title, kStsSensor, node),
                            fType(NULL),
-                           fConditions(NULL),
+                           fConditions(),
                            fCurrentLink(NULL),
                            fHits(NULL)
 {

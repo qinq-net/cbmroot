@@ -29,6 +29,7 @@ set (SRCS_DIGITIZE
 digitize/CbmStsDigitize.cxx
 digitize/CbmStsSensorTypeDssd.cxx
 digitize/CbmStsSensorTypeDssdIdeal.cxx;
+digitize/CbmStsSensorTypeDssdReal.cxx;
 digitize/CbmStsSignal.cxx;
 )
 # --- Sources in reco

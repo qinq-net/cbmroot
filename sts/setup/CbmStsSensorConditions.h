@@ -6,8 +6,11 @@
 #ifndef CBMSTSSENSORCONDITIONS_H
 #define CBMSTSSENSORCONDITIONS_H 1
 
+#include <string>
 #include "TMath.h"
 #include "TObject.h"
+
+using std::string;
 
 
 /** @class CbmStsSensorConditions
@@ -23,15 +26,15 @@ class CbmStsSensorConditions : public TObject {
 		/** Default constructor
 		 ** @param vFD           Full depletion voltage [V]
 		 ** @param vBias         Bias voltage [V]
-		 ** @param temperature   Temperature [degrees C]
-		 ** @param cCoupling     Coupling capacitance [F]
-		 ** @param cInterstrip   Inter-strip capacitance [F]
+		 ** @param temperature   Temperature [K]
+		 ** @param cCoupling     Coupling capacitance [pF]
+		 ** @param cInterstrip   Inter-strip capacitance [pF]
 		 ** @param bX            Magn. field Bx at sensor centre [T]
 		 ** @param bY            Magn. field By at sensor centre [T]
 		 ** @param bZ            Magn. field Bz at sensor centre [T]
 		 **/
 		CbmStsSensorConditions(Double_t vFD = 0., Double_t vBias = 0.,
-		                       Double_t temperature= 0,
+		                       Double_t temperature = 0.,
 		                       Double_t cCoupling = 0., Double_t cInterstrip = 0.,
 		                       Double_t bX = 0., Double_t bY = 0.,
 		                       Double_t bZ = 0.);
@@ -45,25 +48,25 @@ class CbmStsSensorConditions : public TObject {
 		Double_t GetBx() const { return fBx; }
 		Double_t GetBy() const { return fBy; }
 		Double_t GetBz() const { return fBz; }
-		Double_t GetB()  const {return TMath::Sqrt( fBx * fBx +
+		Double_t GetB()  const { return TMath::Sqrt( fBx * fBx +
 				                                         fBy * fBy +
 				                                         fBz * fBz ); }
 
 
 		/** Coupling capacitance
-		 ** @return Coupling capacitance [F]
+		 ** @return Coupling capacitance [pF]
 		 **/
 		Double_t GetCcoupling() const { return fCcoupling; }
 
 
 		/** Inter-strip capacitance
-		 ** @return Inter-strip capacitance [F]
+		 ** @return Inter-strip capacitance [pF]
 		 **/
 		Double_t GetCinterstrip() const { return fCinterstrip; }
 
 
 		/** Temperature
-		 ** @return Temperature [degrees C]
+		 ** @return Temperature [K]
 	   **/
 		Double_t GetTemperatur() const { return fTemperature; }
 
@@ -80,15 +83,28 @@ class CbmStsSensorConditions : public TObject {
 		Double_t GetVfd() const { return fVfd; }
 
 
+		/** Set the magnetic field
+		 ** @param bx,by,bz  Magnetic field components in sensor centre [T]
+		 **/
+		void SetField(Double_t bX, Double_t bY, Double_t bZ) {
+			fBx = bX;
+			fBy = bY;
+			fBz = bZ;
+		}
+
+
+		/** String output **/
+		string ToString() const;
+
 
 
 	private:
 
 		Double_t fVfd;           ///< Full depletion voltage [V]
 		Double_t fVbias;         ///< Bias voltage [V]
-		Double_t fTemperature;   ///< Temperature [degrees C]
-		Double_t fCcoupling;     ///< Coupling capacitance [F]
-		Double_t fCinterstrip;   ///< Inter-strip capacitance [F]
+		Double_t fTemperature;   ///< Temperature [K]
+		Double_t fCcoupling;     ///< Coupling capacitance [pF]
+		Double_t fCinterstrip;   ///< Inter-strip capacitance [pF]
 		Double_t fBx;            ///< Mag. field (x comp.) at sensor centre [T]
 		Double_t fBy;            ///< Mag. field (y comp.) at sensor centre [T]
 		Double_t fBz;            ///< Mag. field (z comp.) at sensor centre [T]

@@ -39,9 +39,10 @@ class CbmStsDigitize : public FairTask
   /** Constructor
    ** @param digiModel  Charge creation model.
    **                   0 = ideal, all charge in one strip.
-   **                   1 = uniform charge creation along trajectory.
+   **                   1 = simple, uniform charge creation
+   **                   2 = advanced
    **/
-  CbmStsDigitize(Int_t digiModel = 0);
+  CbmStsDigitize(Int_t digiModel = 2);
 
 
   /** Destructor **/
@@ -63,17 +64,22 @@ class CbmStsDigitize : public FairTask
 
 
   /** Set the digitisation parameters (same for all modules)
-   ** @param dynRagne   Dynamic range [e]
-   ** @param threshold  Threshold [e]
-   ** @param nAdc       Number of ADC channels
+   ** @param dynRagne             Dynamic range [e]
+   ** @param threshold            Threshold [e]
+   ** @param nAdc                 Number of ADC channels
+   ** @param timeResolution       Time resolution [ns]
+   ** @param deadTimec            Single-channel dead time [ns]
+   ** @param noise                Equivalent noise charge (sigma) [e]
    **/
   void SetParameters(Double_t dynRange, Double_t threshold, Int_t nAdc,
-  		               Double_t timeResolution, Double_t deadTime) {
+  		               Double_t timeResolution, Double_t deadTime,
+  		               Double_t noise) {
  	 fDynRange       = dynRange;
  	 fThreshold      = threshold;
  	 fNofAdcChannels = nAdc;
  	 fTimeResolution = timeResolution;
  	 fDeadTime       = deadTime;
+ 	 fNoise          = noise;
    }
 
 
@@ -82,7 +88,7 @@ class CbmStsDigitize : public FairTask
  private:
 
   Int_t fMode;       ///< Run mode. 0 = stream, 1 = event
-  Int_t fDigiModel;  ///< Detector response model. 0 = ideal, 1 = real.
+  Int_t fDigiModel;  ///< Detector response model. 0 = ideal, 1 = simple, 2 = real
 
   // --- Digitisation parameters
   Double_t fDynRange;         ///< Dynamic range [e]
@@ -90,6 +96,7 @@ class CbmStsDigitize : public FairTask
   Int_t    fNofAdcChannels;   ///< Number of ADC channels
   Double_t fTimeResolution;   ///< Time resolution (sigma) [ns]
   Double_t fDeadTime;         ///< Single-channel dead time [ns]
+  Double_t fNoise;            ///< equivalent noise charge (sigma) [ns]
 
   CbmStsSetup*   fSetup;        ///< STS setup interface
   TClonesArray*  fPoints;       ///< Input array of CbmStsPoint
@@ -151,6 +158,10 @@ class CbmStsDigitize : public FairTask
 
   /** Set the digitisation parameters in the modules **/
   void SetModuleParameters();
+
+
+  /** Set the operating parameters in the sensors **/
+  void SetSensorConditions();
 
 
   /** Set types for the sensors in the setup **/

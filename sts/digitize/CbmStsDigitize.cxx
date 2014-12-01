@@ -13,11 +13,13 @@
 // Includes from ROOT
 #include "TClonesArray.h"
 #include "TGeoBBox.h"
+#include "TGeoMatrix.h"
 #include "TGeoPhysicalNode.h"
 #include "TGeoVolume.h"
 
 // Includes from FairRoot
 #include "FairEventHeader.h"
+#include "FairField.h"
 #include "FairLink.h"
 #include "FairLogger.h"
 #include "FairMCPoint.h"
@@ -31,6 +33,8 @@
 
 // Include from STS
 #include "setup/CbmStsModule.h"
+#include "setup/CbmStsSensor.h"
+#include "setup/CbmStsSensorConditions.h"
 #include "setup/CbmStsSetup.h"
 #include "digitize/CbmStsSensorTypeDssd.h"
 #include "digitize/CbmStsSensorTypeDssdIdeal.h"
@@ -47,6 +51,7 @@ CbmStsDigitize::CbmStsDigitize(Int_t digiModel)
     fNofAdcChannels(0),
     fTimeResolution(0.),
     fDeadTime(0.),
+    fNoise(0.),
     fSetup(NULL),
     fPoints(NULL),
     fDigis(NULL),
@@ -308,6 +313,9 @@ InitStatus CbmStsDigitize::Init() {
   // Assign types to the sensors in the setup
   SetSensorTypes();
 
+  // Set sensor conditions
+  SetSensorConditions();
+
   // Set the digitisation parameters of the modules
   SetModuleParameters();
 
@@ -492,6 +500,8 @@ void CbmStsDigitize::SetModuleParameters() {
 			      << fTimeResolution << " ns" << FairLogger::endl;
 	LOG(INFO) << "\t Dead time       " << setw(10) << right
 			      << fDeadTime << " ns" << FairLogger::endl;
+	LOG(INFO) << "\t ENC             " << setw(10) << right
+			      << fNoise << " e" << FairLogger::endl;
 
  // --- Set parameters for all modules
 	Int_t nModules = fSetup->GetNofModules();
@@ -499,10 +509,63 @@ void CbmStsDigitize::SetModuleParameters() {
 		fSetup->GetModule(iModule)->SetParameters(2048, fDynRange, fThreshold,
 				                                      fNofAdcChannels,
 				                                      fTimeResolution,
-				                                      fDeadTime);
+				                                      fDeadTime,
+				                                      fNoise);
 	}
 	LOG(INFO) << GetName() << ": Set parameters for " << nModules
 			      << " modules " << FairLogger::endl;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Set the operating parameters for the sensors   ------------------
+// TODO: Currently, all sensors have the same parameters. In future,
+// more flexible schemes must be used (initialisation from a database).
+void CbmStsDigitize::SetSensorConditions() {
+
+	// --- Current parameters are hard-coded
+	Double_t vDep        =  70.;    //depletion voltage, V
+	Double_t vBias       = 140.;    //bias voltage, V
+	Double_t temperature = 268.;    //temperature of sensor, K
+	Double_t cCoupling   = 100.;    //coupling capacitance, pF
+	Double_t cInterstrip =   3.5;   //inter-strip capacitance, pF
+
+	// --- Control output of parameters
+	LOG(INFO) << GetName() << ": Sensor operation conditions :"
+			      << FairLogger::endl;
+	LOG(INFO) << "\t Depletion voltage       " << setw(10) << right
+				    << vDep << " V"<< FairLogger::endl;
+	LOG(INFO) << "\t Bias voltage            " << setw(10) << right
+			      << vBias << " V"<< FairLogger::endl;
+	LOG(INFO) << "\t Temperature             " << setw(10) << right
+			      << temperature << FairLogger::endl;
+	LOG(INFO) << "\t Coupling capacitance    " << setw(10) << right
+			      << cCoupling << " pF" << FairLogger::endl;
+	LOG(INFO) << "\t Inter-strip capacitance " << setw(10) << right
+			      << cInterstrip << " pF" << FairLogger::endl;
+
+	CbmStsSensorConditions cond(vDep, vBias, temperature, cCoupling,
+			                        cInterstrip);
+
+	// --- Set conditions for all sensors
+	for (Int_t iSensor = 0; iSensor < fSetup->GetNofSensors(); iSensor++) {
+		CbmStsSensor* sensor = fSetup->GetSensor(iSensor);
+		// -- Get field in sensor centre
+		Double_t field[3];
+		Double_t local[3] = { 0., 0., 0.}; // sensor centre in local C.S.
+		Double_t global[3];               // sensor centre in global C.S.
+		sensor->GetNode()->GetMatrix()->LocalToMaster(local, global);
+		FairRunAna::Instance()->GetField()->Field(global, field);
+		cond.SetField(field[0]/10., field[1]/10., field[2]/10.); // kG->T !
+    // --- Set the condition container
+		sensor->SetConditions(cond);
+		LOG(DEBUG1) << sensor->GetName() << ": conditions "
+				      << sensor->GetConditions().ToString() << FairLogger::endl;
+	} // sensor loop
+
+	LOG(INFO) << GetName() << ": Set conditions for "
+			      << fSetup->GetNofSensors() << " sensors " << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 

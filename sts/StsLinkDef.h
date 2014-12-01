@@ -13,7 +13,6 @@
 #pragma link C++ class CbmStsSensorConditions;
 #pragma link C++ class CbmStsSensorPoint;
 #pragma link C++ class CbmStsSensorType;
-#pragma link C++ class CbmStsSensorTypeDssd;
 #pragma link C++ class CbmStsSetup;
 
 // Monte-Carlo
@@ -23,7 +22,9 @@
 
 // Digitization
 #pragma link C++ class CbmStsDigitize;
+#pragma link C++ class CbmStsSensorTypeDssd;
 #pragma link C++ class CbmStsSensorTypeDssdIdeal;
+#pragma link C++ class CbmStsSensorTypeDssdReal;
 #pragma link C++ class CbmStsSignal;
 
 // Reconstruction

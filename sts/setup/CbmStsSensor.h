@@ -11,9 +11,11 @@
 
 
 #include <vector>
+#include <string>
 #include "CbmStsAddress.h"
 #include "CbmStsCluster.h"
 #include "setup/CbmStsElement.h"
+#include "setup/CbmStsSensorConditions.h"
 #include "setup/CbmStsSensorType.h"
 
 class TClonesArray;
@@ -21,7 +23,6 @@ class TGeoPhysicalNode;
 class CbmLink;
 class CbmStsModule;
 class CbmStsPoint;
-class CbmStsSensorConditions;
 class CbmStsSensorType;
 
 using std::vector;
@@ -88,7 +89,7 @@ class CbmStsSensor : public CbmStsElement
     /** Sensor conditions
      ** @return Pointer to sensor condition object
      **/
-    CbmStsSensorConditions* GetConditions() const { return fConditions; }
+    const CbmStsSensorConditions& GetConditions() const { return fConditions; }
 
 
     /** Current link object
@@ -133,9 +134,9 @@ class CbmStsSensor : public CbmStsElement
 
 
     /** Set the sensor conditions
-     ** @param conditions  Pointer to condition object
+     ** @param conditions  Condition object
      **/
-     void SetConditions(CbmStsSensorConditions* conditions) {
+     void SetConditions(CbmStsSensorConditions& conditions) {
     	fConditions = conditions;
     }
 
@@ -149,7 +150,7 @@ class CbmStsSensor : public CbmStsElement
   private:
 
     CbmStsSensorType*       fType;        ///< Pointer to sensor type
-    CbmStsSensorConditions* fConditions;  ///< Pointer to sensor conditions
+    CbmStsSensorConditions  fConditions;  ///< Operating conditions
     CbmLink* fCurrentLink;  ///< Link to currently processed MCPoint
     TClonesArray* fHits;    ///<  Output array for hits. Used in hit finding.
 
