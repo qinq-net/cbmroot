@@ -52,7 +52,10 @@ CbmMatchRecoToMC::CbmMatchRecoToMC() :
    fMuchClusterMatches(NULL),
    fMuchPixelHitMatches(NULL),
    fMuchStrawHitMatches(NULL),
-   fMuchTrackMatches(NULL)
+   fMuchTrackMatches(NULL),
+   fMvdHits(NULL),
+   fMvdDigiMatches(NULL),
+   fMvdHitMatches(NULL)
 {
 
 }
@@ -101,6 +104,12 @@ CbmMatchRecoToMC::~CbmMatchRecoToMC()
       fMuchTrackMatches->Delete();
       delete fMuchTrackMatches;
    }
+ 
+   if (fMvdHitMatches != NULL) {
+      fMvdHitMatches->Delete();
+      delete fMvdHitMatches;
+   }
+
 }
 
 InitStatus CbmMatchRecoToMC::Init()
@@ -123,6 +132,7 @@ void CbmMatchRecoToMC::Exec(
    if (fMuchPixelHitMatches != NULL) fMuchPixelHitMatches->Delete();
    if (fMuchStrawHitMatches != NULL) fMuchStrawHitMatches->Delete();
    if (fMuchTrackMatches != NULL) fMuchTrackMatches->Delete();
+   if (fMvdHitMatches != NULL) fMvdHitMatches->Delete();
 
    // STS
    if (fStsDigis && fStsClusters && fStsHits) { // MC->digi->cluster->hit->track
@@ -151,6 +161,11 @@ void CbmMatchRecoToMC::Exec(
    }
    MatchTracks(fMuchPixelHitMatches, fMuchPoints, fMuchTracks, fMuchTrackMatches);
    MatchTracks(fMuchStrawHitMatches, fMuchPoints, fMuchTracks, fMuchTrackMatches);
+
+   //MVD  // MC->digi->hit
+   if (fMvdDigiMatches && fMvdHits && fMvdHitMatches) {
+       MatchHitsMvd(fMvdDigiMatches, fMvdHits, fMvdHitMatches);
+   }
 
    static Int_t eventNo = 0;
    LOG(INFO) << "CbmMatchRecoToMC::Exec eventNo=" << eventNo++ << FairLogger::endl;
@@ -245,6 +260,15 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
       fMuchTrackMatches = new TClonesArray("CbmTrackMatchNew", 100);
       ioman->Register("MuchTrackMatch", "MUCH", fMuchTrackMatches, kTRUE);
    }
+
+   // MVD
+   fMvdHits = (TClonesArray*) ioman->GetObject("MvdHit");
+
+   fMvdDigiMatches = (TClonesArray*) ioman->GetObject("MvdDigiMatch");
+   if (fMvdHits != NULL) {
+      fMvdHitMatches = new TClonesArray("CbmMatch", 100);
+      ioman->Register("MvdHitMatch", "MVD", fMvdHitMatches, kTRUE);
+   }
 }
 
 void CbmMatchRecoToMC::MatchClusters(
@@ -298,6 +322,21 @@ void CbmMatchRecoToMC::MatchHitsSts(
 	  
     //  std::cout << "hit " << iHit << " " << hitMatch->ToString();
    }
+}
+
+void CbmMatchRecoToMC::MatchHitsMvd(
+      const TClonesArray* matches,
+      const TClonesArray* hits,
+      TClonesArray* hitMatches)
+{
+  if (!(matches && hits && hitMatches)) return;
+  Int_t nofHits = hits->GetEntriesFast();
+  for (Int_t iHit = 0; iHit < nofHits; iHit++) {
+	const CbmPixelHit* hit = static_cast<const CbmPixelHit*>(hits->At(iHit));
+ 	CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
+	const CbmMatch* digiMatch = static_cast<const CbmMatch*>(matches->At(hit->GetRefId()));
+	hitMatch->AddLink(*digiMatch);
+  }
 }
 
 void CbmMatchRecoToMC::MatchHitsToPoints(

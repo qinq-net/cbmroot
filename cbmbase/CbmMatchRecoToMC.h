@@ -61,6 +61,11 @@ private:
           const TClonesArray* hits,
           TClonesArray* hitMatches);
 
+    void MatchHitsMvd(
+          const TClonesArray* matches,
+          const TClonesArray* hits,
+          TClonesArray* hitMatches);
+
     void MatchHitsToPoints(
           const TClonesArray* points,
           const TClonesArray* hits,
@@ -112,6 +117,12 @@ private:
     TClonesArray* fMuchStrawHitMatches; // Output CbmMatch array
     TClonesArray* fMuchTrackMatches; // Output CbmMatch array
 
+    // MVD
+
+    TClonesArray* fMvdHits; // CbmMvdHit array
+    TClonesArray* fMvdDigiMatches; // CbmMatch array
+    TClonesArray* fMvdHitMatches; // Output CbmMatch array
+  
     CbmMatchRecoToMC(const CbmMatchRecoToMC&);
     CbmMatchRecoToMC& operator=(const CbmMatchRecoToMC&);
 
