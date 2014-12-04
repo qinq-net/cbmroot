@@ -10,6 +10,8 @@
 #include "FairField.h"
 #include "CbmFieldPar.h"
 #include "CbmMvdGeoPar.h"
+#include "CbmMvdStationPar.h"
+#include "CbmMvdDetector.h"
 #include "CbmGeoStsPar.h"
 #include "CbmGeoRichPar.h"
 #include "CbmGeoTrdPar.h"
@@ -147,38 +149,40 @@ InitStatus CbmKF::Init()
   //=== Mvd ===
   
   CbmMvdGeoPar* MvdPar = reinterpret_cast<CbmMvdGeoPar*>(RunDB->findContainer("CbmMvdGeoPar"));
-  
-  if( MvdPar ){ //=== Mvd stations ===
+  if( MvdPar ){
+    CbmMvdDetector* mvdDetector = CbmMvdDetector::Instance();
+    if(mvdDetector)
+    {
+      CbmMvdStationPar* mvdStationPar = mvdDetector->GetParameterFile();  
     
-    if( fVerbose ) cout<<"KALMAN FILTER : === READ MVD MATERIAL ==="<<endl;
     
-    int NMvdStations;
-    
-    TObjArray* mvdNodes = MvdPar->GetGeoSensitiveNodes();
-    if ( ! mvdNodes ) {
-      cout << "-E- " << GetName() << "::GetGeometry: No MVD node array"
-	   << endl;
-      NMvdStations = 0;
-      return kERROR;
-    }
-    
-    NMvdStations = mvdNodes->GetEntries();
-    
-    for ( Int_t ist = 0 ; ist < NMvdStations ; ist++ ) {
-      FairGeoNode* mvdNode = reinterpret_cast<FairGeoNode*>(mvdNodes->At(ist));
-      if ( ! mvdNode ) {
-	cout << "-W- CbmKF::Init: station#" << ist
-	     << " not found among sensitive nodes " << endl;
-	continue;
+      if( fVerbose ) cout<<"KALMAN FILTER : === READ MVD MATERIAL ==="<<endl;
+
+      int NStations = mvdStationPar->GetStationCount();
+
+      for ( Int_t ist = 0; ist<NStations; ist++ )
+      {
+        CbmKFTube tube;
+
+        tube.ID = 1101+ist;
+     //   tube.F = 1.;
+        tube.z  = mvdStationPar->GetZPosition(ist);
+        tube.dz = mvdStationPar->GetThickness(ist);
+        tube.RadLength = mvdStationPar->GetRadLength(ist);
+        tube.r  = std::min( mvdStationPar->GetBeamHeight(ist), mvdStationPar->GetBeamWidth(ist));
+        tube.R  = std::max( mvdStationPar->GetHeight(ist), mvdStationPar->GetWidth(ist));
+        tube.rr = tube.r * tube.r;
+        tube.RR = tube.R * tube.R;
+        tube.ZThickness = tube.dz;
+        tube.ZReference = tube.z;
+        
+        vMvdMaterial.push_back(tube);
+        MvdStationIDMap.insert(pair<Int_t,Int_t>(tube.ID, ist ) );
+        
+        if( fVerbose ) cout<<" Mvd material ( id, z, dz, r, R, RadL )= ( "
+                           << tube.ID<<", " << tube.z<<", " << tube.dz
+                           <<", " << tube.r<<", " << tube.R<<", " << tube.RadLength<<" )"<<endl;        
       }
-      
-      CbmKFTube tube;
-      if( ReadTube( tube, mvdNode ) ) continue;
-      tube.ID = 1101+ist;
-      vMvdMaterial.push_back(tube);
-      MvdStationIDMap.insert(pair<Int_t,Int_t>(tube.ID, ist ) );
-      
-      if( fVerbose ) cout<<" Mvd detector "<<tube.Info()<<endl;
     }
   }
 
