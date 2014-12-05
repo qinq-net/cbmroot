@@ -41,7 +41,7 @@ class CbmMvdCluster : public CbmCluster
       fTotalDigisInCluster(-1)
   {};
 
-CbmMvdCluster(const CbmMvdCluster&){;};
+CbmMvdCluster(const CbmMvdCluster&);
 
 CbmMvdCluster& operator=(const CbmMvdCluster&){return *this;};
 
