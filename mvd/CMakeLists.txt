@@ -31,11 +31,13 @@ set(SRCS
 plugins/tasks/CbmMvdSensorTask.cxx
 plugins/tasks/CbmMvdSensorDigitizerTask.cxx
 plugins/tasks/CbmMvdSensorFindHitTask.cxx
+plugins/tasks/CbmMvdSensorHitfinderTask.cxx
+plugins/tasks/CbmMvdSensorClusterfinderTask.cxx
 
 plugins/buffers/CbmMvdSensorBuffer.cxx
 plugins/buffers/CbmMvdSensorFrameBuffer.cxx
 plugins/buffers/CbmMvdSensorTrackingBuffer.cxx
-
+ 
 plugins/CbmMvdSensorPlugin.cxx
 
 SensorDataSheets/CbmMvdMimosa26AHR.cxx
@@ -54,6 +56,7 @@ CbmMvdHitfinder.cxx
 CbmMvdStationPar.cxx
 CbmMvdDetector.cxx
 CbmMvdSensor.cxx
+CbmMvdClusterfinder.cxx
  
 old/CbmMvdStation.cxx 
 old/CbmMvdFindHits.cxx

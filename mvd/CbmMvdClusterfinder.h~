@@ -1,12 +1,12 @@
 // ----------------------------------------------------------------------------
-// -----                    CbmMvdDigitizer header file                   -----
-// -----                   Created by C. Dritsa (2009)                    -----
-// -----                   Maintained by M.Deveaux (m.deveaux(att)gsi.de) -----
-// -----                   Update by P.Sitzmann (p.sitzmann(att)gsi.de    -----
+// -----               CbmMvdClusterfinder header file                    -----
+// -----                   Created by P.Sitzmann 03.12.2014               -----
 // ----------------------------------------------------------------------------
 
-#ifndef CBMMVDDIGITIZER_H
-#define CBMMVDDIGITIZER_H 1
+
+
+#ifndef CBMMVDCLUSTERFINDER_H
+#define CBMMVDCLUSTERFINDER_H 1
 
 #include "FairTask.h"
 #include "CbmMvdDetector.h"
@@ -19,36 +19,28 @@
 using namespace std;
 
 
-class CbmMvdDigitizer : public FairTask
+class CbmMvdClusterfinder : public FairTask
 {
  
  public:
 
   /** Default constructor **/  
-  CbmMvdDigitizer();
+  CbmMvdClusterfinder();
 
 
   /** Standard constructor 
   *@param name  Task name
   *@param mode  0 = MAPS, 1 = Ideal
   **/
-  CbmMvdDigitizer(const char* name, 
+  CbmMvdClusterfinder(const char* name, 
 		    Int_t mode = 0, Int_t iVerbose = 1);
 
 
   /** Destructor **/
-  ~CbmMvdDigitizer();
+  ~CbmMvdClusterfinder();
 
   void Exec(Option_t* opt);
 
-  void SetPileUp(Int_t pileUp)           { fNPileup         = pileUp;      }
-  void SetDeltaEvents(Int_t deltaEvents) { fNDeltaElect     = deltaEvents; }
-  void SetBgFileName(TString fileName)   { fBgFileName      = fileName;    }
-  void SetDeltaName(TString fileName)    { fDeltaFileName   = fileName;    }
-  void SetBgBufferSize(Int_t nBuffer)    { fBgBufferSize    = nBuffer;     }
-  void SetDeltaBufferSize(Int_t nBuffer) { fDeltaBufferSize = nBuffer;     }
-  void SetMisalignment(Float_t misalignment[3]){for(Int_t i = 0; i<3; i++) epsilon[i]=misalignment[i];} // set the misalignment in cm
-  void BuildEvent();
   
 protected:
  
@@ -116,10 +108,10 @@ private:
   void PrintParameters();
 
 private:
-  CbmMvdDigitizer(const CbmMvdDigitizer&);
-  CbmMvdDigitizer operator=(const CbmMvdDigitizer&);  
+  CbmMvdClusterfinder(const CbmMvdClusterfinder&);
+  CbmMvdClusterfinder operator=(const CbmMvdClusterfinder&);  
 
-ClassDef(CbmMvdDigitizer,1);    
+ClassDef(CbmMvdClusterfinder,1);    
 };
     
     

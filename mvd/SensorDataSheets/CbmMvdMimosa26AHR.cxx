@@ -31,7 +31,7 @@ CbmMvdMimosa26AHR::CbmMvdMimosa26AHR()  {
   fIntegrationTime=30.0e3;  	    // Integration time of the pixels in ns
   fEpiTh=18e-4;		   	    // Thickness of the epitaxial layer
   
-  fChargeThreshold = 100.;
+  fChargeThreshold = 10.;
 
   /** Description of the sensor for the digitizer //mesaured by melisa for Mimosa26AHR**/
        fNoise	     = 13;

@@ -1,15 +1,13 @@
 // -------------------------------------------------------------------------
-// -----                    CbmMvdHitfinder source file                -----
+// -----                    CbmMvdClusterfinder source file                -----
 // -------------------------------------------------------------------------
 
 // Includes from MVD
-#include "CbmMvdHitfinder.h"
+#include "CbmMvdClusterfinder.h"
 #include "CbmMvdPoint.h"
-#include "plugins/tasks/CbmMvdSensorFindHitTask.h"
-#include "plugins/tasks/CbmMvdSensorHitfinderTask.h"
+#include "plugins/tasks/CbmMvdSensorClusterfinderTask.h"
 #include "SensorDataSheets/CbmMvdMimosa26AHR.h"
 #include "tools/CbmMvdGeoHandler.h"
-
 
 // Includes from FAIR
 #include "FairRootManager.h"
@@ -24,73 +22,74 @@
 #include <iostream>
 
 // -----   Default constructor   ------------------------------------------
-CbmMvdHitfinder::CbmMvdHitfinder()
-  : FairTask("MVDHitfinder"),
+CbmMvdClusterfinder::CbmMvdClusterfinder() 
+  : FairTask("MVDClusterfinder"),
+    fMode(0),
     fDetector(NULL),
     fInputDigis(NULL),
-    fHits(NULL),
-    fHitfinderPluginNr(0),
-    fTimer(),
-    useClusterfinder()
+    fCluster(NULL),
+    fClusterPluginNr(),
+    fBranchName(""),
+    fTimer()
 {
+
 }
 // -------------------------------------------------------------------------
 
 // -----   Standard constructor   ------------------------------------------
-CbmMvdHitfinder::CbmMvdHitfinder(const char* name, Int_t iMode, Int_t iVerbose) 
+CbmMvdClusterfinder::CbmMvdClusterfinder(const char* name, Int_t iMode, Int_t iVerbose) 
   : FairTask(name, iVerbose),
+    fMode(iMode),
     fDetector(NULL),
     fInputDigis(NULL),
-    fHits(NULL),
-    fHitfinderPluginNr(0),
-    fTimer(),
-    useClusterfinder()
+    fCluster(NULL),
+    fClusterPluginNr(0),
+    fBranchName("MvdDigi"),
+    fTimer()    
 {
-useClusterfinder = kFALSE;
 }
 // -------------------------------------------------------------------------
 
 // -----   Destructor   ----------------------------------------------------
-CbmMvdHitfinder::~CbmMvdHitfinder() {
+CbmMvdClusterfinder::~CbmMvdClusterfinder() {
  
-if ( fHits) 
+if ( fCluster) 
     {
-    fHits->Delete();
-    delete fHits;
+    fCluster->Delete();
+    delete fCluster;
     }
 }
 // -----------------------------------------------------------------------------
 
 // -----   Exec   --------------------------------------------------------------
-void CbmMvdHitfinder::Exec(Option_t* opt){
-
-fHits->Clear();
+void CbmMvdClusterfinder::Exec(Option_t* opt){
+// --- Start timer
 fTimer.Start();
-if(fInputDigis || fInputCluster)
+	
+fCluster->Clear();
+if(fInputDigis->GetEntriesFast() > 0)
    {
-   if(fVerbose)cout << endl << "//----------------------------------------//" << endl;
-   if(!useClusterfinder)
+   if(fVerbose) cout << "//----------------------------------------//";
+   if(fVerbose) cout << endl << "Send Input" << endl;
    fDetector->SendInputDigis(fInputDigis);
-   else
-   fDetector->SendInputCluster(fInputCluster);
-   if(fVerbose)cout << "Execute HitfinderPlugin Nr. "<< fHitfinderPluginNr << endl;
-   fDetector->Exec(fHitfinderPluginNr);
-   if(fVerbose)cout << "End Chain" << endl;
-   if(fVerbose)cout << "Start writing Hits" << endl;  
-   fHits->AbsorbObjects(fDetector->GetOutputHits()); 
-   if(fVerbose)cout << "Total of " << fHits->GetEntriesFast() << " hits found" << endl;
-   if(fVerbose)cout << "Finished writing Hits" << endl;
-   if(fVerbose)cout << "//----------------------------------------//" << endl << endl;
+   if(fVerbose) cout << "Execute ClusterPlugin Nr. "<< fClusterPluginNr << endl;
+   fDetector->Exec(fClusterPluginNr);
+   if(fVerbose) cout << "End Chain" << endl;
+   if(fVerbose) cout << "Start writing Cluster" << endl;  
+   fCluster->AbsorbObjects(fDetector->GetOutputCluster()); 
+   if(fVerbose) cout << "Total of " << fCluster->GetEntriesFast() << " Cluster in this Event" << endl;
+   if(fVerbose) cout  << "//----------------------------------------//" << endl ;
    LOG(INFO) << "+ " << setw(20) << GetName() << ": Created: " 
-        << fHits->GetEntriesFast() << " hits in " 
+        << fCluster->GetEntriesFast() << " cluster in " 
         << fixed << setprecision(6) << fTimer.RealTime() << " s" << FairLogger::endl;
    }
+
 fTimer.Stop();
 }
 // -----------------------------------------------------------------------------
 
 // -----   Init   --------------------------------------------------------------
-InitStatus CbmMvdHitfinder::Init() {
+InitStatus CbmMvdClusterfinder::Init() {
   cout << "-I- " << GetName() << ": Initialisation..." << endl;
   cout << endl;
   cout << "---------------------------------------------" << endl;
@@ -105,38 +104,36 @@ InitStatus CbmMvdHitfinder::Init() {
 	}
 
     // **********  Get input arrays
-    if(!useClusterfinder)
     fInputDigis = (TClonesArray*) ioman->GetObject("MvdDigi"); 
-    else
-    fInputCluster = (TClonesArray*) ioman->GetObject("MvdCluster");
+   
     // **********  Register output array
-    fHits = new TClonesArray("CbmMvdHit", 10000);
-    ioman->Register("MvdHit", "Mvd Hits", fHits, kTRUE);
+    fCluster = new TClonesArray("CbmMvdCluster", 10000);
+    ioman->Register("MvdCluster", "Mvd Clusters", fCluster, kTRUE);
 
     fDetector = CbmMvdDetector::Instance();
+    
     if(!fDetector)
     	{
-	cout << endl << "No CbmMvdDetector detected!" << endl; 
+	if(fVerbose) cout << endl << "-I- Try to load CbmMvdDetector -I- " << endl; 
         GetMvdGeometry(); 
 	fDetector = CbmMvdDetector::Instance();
-	}
-
-    if(!useClusterfinder)
-	{
-    	CbmMvdSensorFindHitTask* HitfinderTask = new CbmMvdSensorFindHitTask();
-	fDetector->AddPlugin(HitfinderTask);
+	if(fDetector->GetSensorArraySize() > 1)
+		{
+		 if(fVerbose) cout << endl << "-I- succesfully loaded Geometry from file -I-" << endl;
+		}
+	else
+		{
+		LOG(FATAL) <<  "Geometry couldn't be loaded from file. No MVD digitizer available."
+	        << FairLogger::endl;
+		}
 	} 
-    else
-	{
-    	CbmMvdSensorHitfinderTask* HitfinderTask = new CbmMvdSensorHitfinderTask();
-	fDetector->AddPlugin(HitfinderTask);
-	cout << endl << "running with external clusterfinder" << endl;
-	}
 
-    fHitfinderPluginNr = (UInt_t) (fDetector->GetPluginArraySize());
-    fDetector->Init(); 
-
-
+    CbmMvdSensorClusterfinderTask* clusterTask = new CbmMvdSensorClusterfinderTask();
+   
+    fDetector->AddPlugin(clusterTask);
+    fClusterPluginNr = (UInt_t) (fDetector->GetPluginArraySize());
+    fDetector->Init();
+   
 
     // Screen output
     cout << GetName() << " initialised with parameters: " << endl;
@@ -148,7 +145,7 @@ InitStatus CbmMvdHitfinder::Init() {
 }
 
 // -----   Virtual public method Reinit   ----------------------------------
-InitStatus CbmMvdHitfinder::ReInit() {
+InitStatus CbmMvdClusterfinder::ReInit() {
 
     return kSUCCESS;
 }
@@ -157,8 +154,8 @@ InitStatus CbmMvdHitfinder::ReInit() {
 
 
 // -----   Virtual method Finish   -----------------------------------------
-void CbmMvdHitfinder::Finish() {
-
+void CbmMvdClusterfinder::Finish() {
+    fDetector->Finish();
     PrintParameters();
 
 }					       
@@ -167,33 +164,37 @@ void CbmMvdHitfinder::Finish() {
 
 
 // -----   Private method Reset   ------------------------------------------
-void CbmMvdHitfinder::Reset() {
-    fHits->Delete();
+void CbmMvdClusterfinder::Reset() {
+    fCluster->Delete();
 
 }
 // -------------------------------------------------------------------------  
 
 // -----   Private method GetMvdGeometry   ---------------------------------
-void CbmMvdHitfinder::GetMvdGeometry() {
- 
+void CbmMvdClusterfinder::GetMvdGeometry() {
+
 CbmMvdDetector* Detector = new CbmMvdDetector("A");
 CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
 mvdHandler->Init();
 mvdHandler->Fill();
+Detector->PrintParameter();
 }
 // -------------------------------------------------------------------------  
 
 
+
 // -----   Private method PrintParameters   --------------------------------
-void CbmMvdHitfinder::PrintParameters() {
+void CbmMvdClusterfinder::PrintParameters() {
     
     cout.setf(ios_base::fixed, ios_base::floatfield);
     cout << "============================================================" << endl;
-    cout << "============== Parameters Hitfinder ========================" << endl;
+    cout << "============== Parameters Clusterfinder ====================" << endl;
     cout << "============================================================" << endl;
     cout << "=============== End Task ===================================" << endl;
  
 }
 // -------------------------------------------------------------------------  
 
-ClassImp(CbmMvdHitfinder);
+
+
+ClassImp(CbmMvdClusterfinder);

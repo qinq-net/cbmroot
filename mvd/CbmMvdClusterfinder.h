@@ -1,60 +1,71 @@
 // ----------------------------------------------------------------------------
-// -----                    CbmMvdHitfinder header file                    -----
-// -----                   Created by C. Dritsa (2009)                    -----
-// -----                   Maintained by M.Deveaux (m.deveaux(att)gsi.de) -----
+// -----               CbmMvdClusterfinder header file                    -----
+// -----                   Created by P.Sitzmann 03.12.2014               -----
 // ----------------------------------------------------------------------------
 
-#ifndef CBMMVDHITFINDER_H
-#define CBMMVDHITFINDER_H 1
+
+
+#ifndef CBMMVDCLUSTERFINDER_H
+#define CBMMVDCLUSTERFINDER_H 1
 
 #include "FairTask.h"
 #include "CbmMvdDetector.h"
 #include "TGeoManager.h"
 
+#include "TRandom3.h"
+#include "TString.h"
+#include "TMath.h"
 
 using namespace std;
 
 
-class CbmMvdHitfinder : public FairTask
+class CbmMvdClusterfinder : public FairTask
 {
  
  public:
 
   /** Default constructor **/  
-  CbmMvdHitfinder();
+  CbmMvdClusterfinder();
 
 
   /** Standard constructor 
   *@param name  Task name
   *@param mode  0 = MAPS, 1 = Ideal
   **/
-  CbmMvdHitfinder(const char* name, 
+  CbmMvdClusterfinder(const char* name, 
 		    Int_t mode = 0, Int_t iVerbose = 1);
 
 
   /** Destructor **/
-  virtual ~CbmMvdHitfinder();
+  ~CbmMvdClusterfinder();
 
   void Exec(Option_t* opt);
-  void UseClusterfinder(Bool_t clusterfinderFlag ){useClusterfinder = clusterfinderFlag;}; //* enable use of external clusterfinder
-  
 
+  
 protected:
  
  
 
 
 private:
+/** Hit producer mode (0 = MAPS, 1 = Ideal) **/
+  Int_t fMode;
 
  CbmMvdDetector* fDetector;
  
  TClonesArray* fInputDigis;
- TClonesArray* fInputCluster;
- TClonesArray* fHits;
+ TClonesArray* fCluster;
 
- UInt_t fHitfinderPluginNr;
- Bool_t useClusterfinder; 
-TStopwatch     fTimer;        ///< ROOT timer
+ UInt_t fClusterPluginNr;
+
+  TString	fBranchName;   // Name of input branch (MvdDigi)
+  
+
+  TStopwatch     fTimer;        ///< ROOT timer
+    /** Random generator and Stopwatch **/
+  TRandom3   fRandGen; 
+  
+
 
 // -----   Private methods   ---------------------------------------------
  /** Intialisation **/
@@ -72,20 +83,21 @@ TStopwatch     fTimer;        ///< ROOT timer
   /** Register the output arrays to the IOManager **/
   void Register();
 
+  void GetMvdGeometry();
+
 
   /** Clear the hit arrays **/
   void Reset();	 
 
-  void GetMvdGeometry();
 
   /** Print digitisation parameters **/
   void PrintParameters();
 
 private:
-  CbmMvdHitfinder(const CbmMvdHitfinder&);
-  CbmMvdHitfinder operator=(const CbmMvdHitfinder&);
+  CbmMvdClusterfinder(const CbmMvdClusterfinder&);
+  CbmMvdClusterfinder operator=(const CbmMvdClusterfinder&);  
 
-ClassDef(CbmMvdHitfinder,1);    
+ClassDef(CbmMvdClusterfinder,1);    
 };
     
     

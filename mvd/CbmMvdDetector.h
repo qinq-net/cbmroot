@@ -33,6 +33,8 @@
    #include "plugins/tasks/CbmMvdSensorTask.h"
       #include "plugins/tasks/CbmMvdSensorDigitizerTask.h"
       #include "plugins/tasks/CbmMvdSensorFindHitTask.h"
+      #include "plugins/tasks/CbmMvdSensorClusterfinderTask.h"
+      #include "plugins/tasks/CbmMvdSensorHitfinderTask.h"
    #include "plugins/buffers/CbmMvdSensorBuffer.h"
       #include "plugins/buffers/CbmMvdSensorFrameBuffer.h"
       #include "plugins/buffers/CbmMvdSensorTrackingBuffer.h"
@@ -65,13 +67,14 @@ class CbmMvdDetector : public TNamed
   /** Data interface */
   void SendInput(TClonesArray* input);
   void SendInputDigis(TClonesArray* digis);
+  void SendInputCluster(TClonesArray* cluster);
   void SendClonesArray(TClonesArray* addedStructures, Int_t dataLevel=0){;}
 
   TClonesArray* GetOuput(){ return 0;}
   TClonesArray* GetOutputHits();
-  TClonesArray* GetOutputHitMatchs();
   TClonesArray* GetOutputDigis();
   TClonesArray* GetOutputDigiMatchs();
+  TClonesArray* GetOutputCluster();
   TClonesArray* GetOutputArray(Int_t nPlugin);
   TClonesArray* GetClonesArray(Int_t dataLevel){ return 0;}
   Int_t GetSensorArraySize(){return(fSensorArray->GetEntriesFast());} 
@@ -98,7 +101,7 @@ class CbmMvdDetector : public TNamed
   
   /** Finish */
   
-  void Finish(){;}
+  void Finish();
   void StoreDebugHistograms(TString fileName){;}
   
   /** Accessors */
@@ -113,6 +116,7 @@ private:
   TClonesArray* foutput;
   TClonesArray* foutputHits;
   TClonesArray* foutputDigis;
+  TClonesArray* foutputCluster;
   TClonesArray* foutputDigiMatchs;
   TClonesArray* foutputHitMatchs;
   TClonesArray* fcurrentEvent;
@@ -121,6 +125,7 @@ private:
   
   Int_t fDigiPlugin; 
   Int_t fHitPlugin;
+  Int_t fClusterPlugin;
   
   
   static CbmMvdDetector* fInstance;

@@ -60,7 +60,7 @@ using std::vector;
 // -----   Default constructor   ------------------------------------------
 CbmMvdSensorFindHitTask::CbmMvdSensorFindHitTask()
   : CbmMvdSensorTask(),
-    fAdcDynamic(150),
+    fAdcDynamic(200),
     fAdcOffset(0),
     fAdcBits(1),
     fAdcSteps(-1),
@@ -123,7 +123,7 @@ CbmMvdSensorFindHitTask::CbmMvdSensorFindHitTask()
 CbmMvdSensorFindHitTask::CbmMvdSensorFindHitTask(const char* name, Int_t iMode,
 			       Int_t iVerbose)
   : CbmMvdSensorTask(),
-    fAdcDynamic(150),
+    fAdcDynamic(200),
     fAdcOffset(0),
     fAdcBits(1),
     fAdcSteps(-1),
@@ -383,7 +383,7 @@ Int_t refId;
 
 		if( gDebug>0 ){ cout << "-I- " << " CbmMvdSensorFindHitTask: Calling method CreateHit()..." << endl; }
 		
-		CreateHit(clusterArray, pos, dpos); // Add cluster to array. Return pointer for filling the CbmMvdHitMatch
+		CreateHit(clusterArray, pos, dpos); 
 		
 		
 		

@@ -7,11 +7,13 @@
 #pragma link C++ class CbmMvd+;
 #pragma link C++ class CbmMvdContFact;
 
-#pragma link C++ class CbmMvdHitfinder+;
+
 #pragma link C++ class CbmMvdGeo+;
 #pragma link C++ class CbmMvdGeoPar;
 
 #pragma link C++ class CbmMvdDigitizer+;
+#pragma link C++ class CbmMvdHitfinder+;
+#pragma link C++ class CbmMvdClusterfinder+;
 
 #pragma link C++ class CbmMvdPileupManager+;
 #pragma link C++ class CbmMvdPixelCharge+;
@@ -31,7 +33,9 @@
 
 #pragma link C++ class CbmMvdSensorTask+;
 #pragma link C++ class CbmMvdSensorFindHitTask+;
+#pragma link C++ class CbmMvdSensorHitfinderTask+;
 #pragma link C++ class CbmMvdSensorDigitizerTask+;
+#pragma link C++ class CbmMvdSensorClusterfinderTask+;
 
 #pragma link C++ class CbmMvdGeoHandler+;
 
@@ -40,6 +44,5 @@
 #pragma link C++ class CbmMvdDigitizeL+;
 #pragma link C++ class CbmMvdHitProducer+;
 #pragma link C++ class CbmMvdStation+;
-
-
+ 
 #endif 

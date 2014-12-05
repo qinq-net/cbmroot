@@ -13,13 +13,14 @@
 #include "plugins/buffers/CbmMvdSensorFrameBuffer.h"
 #include "plugins/buffers/CbmMvdSensorTrackingBuffer.h"
 #include "plugins/tasks/CbmMvdSensorDigitizerTask.h"
-
+#include "plugins/tasks/CbmMvdSensorClusterfinderTask.h"
 #include "plugins/tasks/CbmMvdSensorFindHitTask.h"
+#include "plugins/tasks/CbmMvdSensorHitfinderTask.h"
 //---Plugins
 
 
 #include <iostream>
-
+#include "FairLogger.h"
 
 using std::cout;
 using std::endl;
@@ -35,11 +36,12 @@ CbmMvdSensor::CbmMvdSensor()
     fDetectorID(-1),
     fDigiPlugin(-1),
     fHitPlugin(-1),
+    fClusterPlugin(-1),
     fVolName(""),
     fNodeName(""),
     foutputDigis(NULL),
     foutputDigiMatch(NULL),
-    foutputHitMatch(NULL),
+    foutputCluster(NULL),
     foutputBuffer(NULL),
     fcurrentPoints(NULL),
     fcurrentEventTime(0.),
@@ -79,11 +81,12 @@ CbmMvdSensor::CbmMvdSensor(const char* name, CbmMvdSensorDataSheet* dataSheet, T
     fDetectorID(DetectorId(stationNr)),
     fDigiPlugin(-1),
     fHitPlugin(-1),
+    fClusterPlugin(-1),
     fVolName(volName),
     fNodeName(nodeName),
     foutputDigis(NULL),
     foutputDigiMatch(NULL),
-    foutputHitMatch(NULL),
+    foutputCluster(NULL),
     foutputBuffer(NULL),
     fcurrentPoints(NULL),
     fcurrentEventTime(0.),
@@ -208,8 +211,8 @@ ReadSensorGeometry(fVolName, fNodeName);
 {
   foutputDigis = new TClonesArray("CbmMvdDigi",1000);
   foutputDigiMatch = new TClonesArray("CbmMatch", 1000);
-  foutputHitMatch = new TClonesArray("CbmMatch", 1000);
   foutputBuffer = new TClonesArray("CbmMvdHit", 1000);
+  foutputCluster = new TClonesArray("CbmMvdCluster", 1000);
   //cout << endl << " init TClonesArrays" << endl;
  }
   
@@ -219,6 +222,8 @@ ReadSensorGeometry(fVolName, fNodeName);
   
   CbmMvdSensorFrameBuffer* framebuffer;
   CbmMvdSensorDigitizerTask* digitask;
+  CbmMvdSensorClusterfinderTask* clustertask;
+  CbmMvdSensorHitfinderTask* hitfindertask;
 
   CbmMvdSensorTrackingBuffer* trackingbuffer;
   CbmMvdSensorFindHitTask* findertask;
@@ -232,6 +237,7 @@ ReadSensorGeometry(fVolName, fNodeName);
           {
            const TString framename = "CbmMvdSensorFrameBuffer";
            const TString trackingname = "CbmMvdSensorTrackingBuffer";
+
 	   
            if ( pluginFirst->ClassName() == framename)
 	       {
@@ -253,6 +259,9 @@ ReadSensorGeometry(fVolName, fNodeName);
       {
       const TString digitizername = "CbmMvdSensorDigitizerTask";
       const TString findername = "CbmMvdSensorFindHitTask";
+      const TString clustername = "CbmMvdSensorClusterfinderTask";
+      const TString hitname = "CbmMvdSensorHitfinderTask";
+
       if (pluginFirst->ClassName()  == digitizername)
 	  {
 	  digitask = (CbmMvdSensorDigitizerTask*)fPluginArray->At(i);
@@ -266,6 +275,20 @@ ReadSensorGeometry(fVolName, fNodeName);
 		findertask = (CbmMvdSensorFindHitTask*)fPluginArray->At(i);
 		if(! findertask->IsInit())
                		 findertask->Init(this); 
+		 fHitPlugin = i;
+	       }
+      else if (pluginFirst->ClassName() == clustername)
+	       {
+		clustertask = (CbmMvdSensorClusterfinderTask*)fPluginArray->At(i);
+		if(! clustertask->IsInit())
+               		 clustertask->Init(this); 
+		 fClusterPlugin = i;
+	       }
+        else if (pluginFirst->ClassName() == hitname)
+	       {
+		hitfindertask = (CbmMvdSensorHitfinderTask*)fPluginArray->At(i);
+		if(! hitfindertask->IsInit())
+               		 hitfindertask->Init(this); 
 		 fHitPlugin = i;
 	       }
      }
@@ -305,15 +328,11 @@ void CbmMvdSensor::SendInput(CbmMvdPoint* point){
       
       CbmMvdSensorFrameBuffer* framebuffer;
       CbmMvdSensorDigitizerTask* digitask;
-      CbmMvdSensorTrackingBuffer* trackingbuffer;
-      CbmMvdSensorFindHitTask* findertask;
-     //cout << endl << pluginFirst->GetPluginType() << " " << pluginFirst->ClassName() << endl;
-      //cout << endl << " Start input on sensor " << GetName() << endl;
+
     pluginFirst=(CbmMvdSensorPlugin*)fPluginArray->At(0);
       if( pluginFirst->GetPluginType() == buffer)
           {
            TString framename = "CbmMvdSensorFrameBuffer";
-           TString trackingname = "CbmMvdSensorTrackingBuffer";
            if ( pluginFirst->ClassName() == framename)
 	       {
 		
@@ -321,30 +340,27 @@ void CbmMvdSensor::SendInput(CbmMvdPoint* point){
                 framebuffer->SetInput(point);
                }
                
-               if ( pluginFirst->ClassName() == trackingname)
-	       {
-		
-                trackingbuffer = (CbmMvdSensorTrackingBuffer*)fPluginArray->At(0);
-                trackingbuffer->SetInput(point);
-               }
+               else
+		{
+		LOG(FATAL) << "Invalid input typ" << FairLogger::endl;
+		}
 	  }
     else if(pluginFirst->GetPluginType() == task)
       {
       TString digitizername = "CbmMvdSensorDigitizerTask";
-      TString findername = "CbmMvdSensorFindHitTask";
-    
+        
       if (pluginFirst->ClassName()  == digitizername)
 	  {
 	  digitask = (CbmMvdSensorDigitizerTask*)fPluginArray->At(0);
           digitask->SetInput(point);
 	  } 
 	
-	   else if (pluginFirst->ClassName() == findername)
+	   else 
 	       {
-		findertask = (CbmMvdSensorFindHitTask*)fPluginArray->At(0);
-                findertask->SetInput(point); 
+		LOG(FATAL) << "Invalid input typ" << FairLogger::endl;
 		 
 	       }
+	
      }
      else
      {
@@ -358,10 +374,38 @@ void CbmMvdSensor::SendInput(CbmMvdPoint* point){
 // -------------------------------------------------------------------------
 void CbmMvdSensor::SendInputDigi(CbmMvdDigi* digi)
 {
-CbmMvdSensorFindHitTask* findertask = (CbmMvdSensorFindHitTask*)fPluginArray->At(fHitPlugin);
-findertask->SetInputDigi(digi);
+if(fClusterPlugin != -1)
+	{
+	CbmMvdSensorClusterfinderTask* clustertask = (CbmMvdSensorClusterfinderTask*)fPluginArray->At(fClusterPlugin);
+	clustertask->SetInputDigi(digi);
+	}
+else if(fHitPlugin != -1)
+	{
+	CbmMvdSensorFindHitTask* findertask = (CbmMvdSensorFindHitTask*)fPluginArray->At(fHitPlugin);
+	findertask->SetInputDigi(digi);
+	}
+else
+	{
+	cout << endl << "Somthing seems fishy here" << endl;
+	}
 }
 // -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
+void CbmMvdSensor::SendInputCluster(CbmMvdCluster* cluster)
+{
+if(fHitPlugin != -1)
+	{
+	CbmMvdSensorHitfinderTask* findertask = (CbmMvdSensorHitfinderTask*)fPluginArray->At(fHitPlugin);
+       	findertask->SetInputCluster(cluster);
+	}
+else
+	{
+	cout << endl << "Somthing seems fishy here" << endl;
+	}
+}
+// -------------------------------------------------------------------------
+
 void CbmMvdSensor::ExecChain(){
       
   FairRunSim* run = FairRunSim::Instance();
@@ -378,7 +422,7 @@ if(ana)
 	}
 foutputDigis->Clear();
 foutputDigiMatch->Clear();
-foutputHitMatch->Clear();
+foutputCluster->Clear();
 foutputBuffer->Clear();
 
 
@@ -483,8 +527,25 @@ TClonesArray* CbmMvdSensor::GetOutputArray(Int_t nPlugin){
 if (nPlugin<fPluginArray->GetEntriesFast())
 {
   CbmMvdSensorPlugin* plugin=(CbmMvdSensorPlugin*)fPluginArray->At(nPlugin);
-  foutputDigis->AbsorbObjects(plugin->GetWriteArray());
-  return (foutputDigis);
+  TString digitizername = "CbmMvdSensorDigitizerTask";
+  TString clustername = "CbmMvdSensorClusterfinderTask";
+      
+      if (plugin->ClassName()  == digitizername)
+	  {
+          CbmMvdSensorDigitizerTask* digiplugin = (CbmMvdSensorDigitizerTask*)fPluginArray->At(nPlugin);
+	  foutputDigis->AbsorbObjects(digiplugin->GetOutputArray());
+	  return foutputDigis;
+	  } 
+      else if (plugin->ClassName()  == clustername)
+	  {
+	  CbmMvdSensorClusterfinderTask* clusterplugin = (CbmMvdSensorClusterfinderTask*)fPluginArray->At(nPlugin);
+	  foutputCluster->AbsorbObjects(clusterplugin->GetOutputArray());
+	  return foutputCluster;
+	  } 
+      else
+	{ 
+	LOG(FATAL) << "undefined plugin called" << FairLogger::endl;
+	}
  }
   else {cout << endl << "Error nPlugin to high" << endl;}
 }    
@@ -501,11 +562,6 @@ if (nPlugin<fPluginArray->GetEntriesFast())
 	foutputDigiMatch->AbsorbObjects(plugin->GetMatchArray());
 	return (foutputDigiMatch);
 	}
-  else if (nPlugin == fHitPlugin)
-	{
-	foutputHitMatch->AbsorbObjects(plugin->GetMatchArray());
-	return (foutputHitMatch);
-        }
   else
 	return NULL;
   
@@ -639,9 +695,16 @@ void CbmMvdSensor::Print(Option_t* opt) const {
 }
 // -------------------------------------------------------------------------
 
-
-
-  
+//-----------------------------------------------------------------------
+void CbmMvdSensor::Finish(){
+  CbmMvdSensorPlugin* plugin;
+  Int_t nPlugin=fPluginArray->GetEntriesFast();
+  for(Int_t i=0; i<nPlugin; i++)
+      {
+	plugin=(CbmMvdSensorPlugin*)fPluginArray->At(i);
+	//plugin->Finish();
+      }
+}  
 // -------------------------------------------------------------------------  
 
 

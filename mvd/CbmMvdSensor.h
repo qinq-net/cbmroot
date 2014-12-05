@@ -32,6 +32,7 @@
 #include "TClonesArray.h"
 #include "TObjArray.h"
 #include "CbmMvdDetectorId.h"
+#include "CbmMvdCluster.h"
 
 #include "plugins/CbmMvdSensorPlugin.h"
 
@@ -81,6 +82,7 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   void     SetMap(std::map<Int_t, Int_t> SensorMap) 	{fSensorMap = SensorMap;} // Get Sensor Map to identify every Sensor
   void     SendInput(CbmMvdPoint* point);
   void     SendInputDigi(CbmMvdDigi* digi);
+  void     SendInputCluster(CbmMvdCluster* cluster);
   void     SetStation(Int_t StationNumber){fStationNr = StationNumber;}  
 
 
@@ -94,6 +96,7 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   Int_t GetFrameNumber  (Int_t pixelNumberY, Double_t absoluteTime);
   Int_t GetDigiPlugin () {return fDigiPlugin;};
   Int_t GetHitPlugin () {return fHitPlugin;};
+  Int_t GetClusterPlugin() {return fClusterPlugin;}
   
   void SetAlignment(TGeoHMatrix* alignmentMatrix);
   TGeoHMatrix* GetAlignmentCorr(){return fAlignmentCorr;};
@@ -124,7 +127,7 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   void Exec(UInt_t nPlugin); //runs individual plugin
   void ExecTo(UInt_t nPlugin);
   void ExecFrom(UInt_t nPlugin);
-//  void Finish();
+  void Finish();
   
   /** Data control */
   
@@ -147,11 +150,12 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   Int_t        fDetectorID;       // unique Detector ID
   Int_t        fDigiPlugin;
   Int_t        fHitPlugin;
+  Int_t        fClusterPlugin;
   TString      fVolName;	  // Name of the volume attached to this sensor
   TString      fNodeName;	  // full name of the volume (including path) of the volume
   TClonesArray* foutputDigis;
+  TClonesArray* foutputCluster;
   TClonesArray* foutputDigiMatch;
-  TClonesArray* foutputHitMatch;
   TClonesArray* foutputBuffer;
   TClonesArray* fcurrentPoints;
   Double_t     fcurrentEventTime;

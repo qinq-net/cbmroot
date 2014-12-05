@@ -17,6 +17,10 @@
 #include "TClonesArray.h"
 
 
+// Includes from C++
+#include <iomanip>
+#include <iostream>
+
 // -----   Default constructor   ------------------------------------------
 CbmMvdDigitizer::CbmMvdDigitizer() 
   : FairTask("MVDDigitizer"),
@@ -36,7 +40,8 @@ CbmMvdDigitizer::CbmMvdDigitizer()
     fDeltaFileName(""),
     fRandGen(),
     fPileupManager(NULL),
-    fDeltaManager(NULL)
+    fDeltaManager(NULL),
+    fTimer()
 {
 
 }
@@ -61,7 +66,8 @@ CbmMvdDigitizer::CbmMvdDigitizer(const char* name, Int_t iMode, Int_t iVerbose)
     fDeltaFileName(""),
     fRandGen(),
     fPileupManager(NULL),
-    fDeltaManager(NULL)    
+    fDeltaManager(NULL),
+    fTimer()    
 {
 }
 // -------------------------------------------------------------------------
@@ -79,7 +85,9 @@ if ( fDigis)
 
 // -----   Exec   --------------------------------------------------------------
 void CbmMvdDigitizer::Exec(Option_t* opt){
-
+// --- Start timer
+fTimer.Start();
+	
 fDigis->Clear();
 fDigiMatch->Clear();
 BuildEvent();
@@ -92,12 +100,17 @@ if(fInputPoints->GetEntriesFast() > 0)
    fDetector->Exec(fDigiPluginNr);
    if(fVerbose) cout << "End Chain" << endl;
    if(fVerbose) cout << "Start writing Digis" << endl;  
-   fDigis->AbsorbObjects(fDetector->GetOutputDigis()); 
+   fDigis->AbsorbObjects(fDetector->GetOutputArray(fDigiPluginNr)); 
    if(fVerbose) cout << "Total of " << fDigis->GetEntriesFast() << " digis in this Event" << endl;
    if(fVerbose) cout << "Start writing DigiMatchs" << endl;  
    fDigiMatch->AbsorbObjects(fDetector->GetOutputDigiMatchs()); 
    if(fVerbose) cout  << "//----------------------------------------//" << endl ;
+   LOG(INFO) << "+ " << setw(20) << GetName() << ": Created: " 
+        << fDigis->GetEntriesFast() << " digis in " 
+        << fixed << setprecision(6) << fTimer.RealTime() << " s" << FairLogger::endl;
    }
+
+fTimer.Stop();
 }
 // -----------------------------------------------------------------------------
 
@@ -205,7 +218,8 @@ InitStatus CbmMvdDigitizer::ReInit() {
 
 // -----   Virtual method Finish   -----------------------------------------
 void CbmMvdDigitizer::Finish() {
-
+    cout<< endl << "finishing" << endl;
+    fDetector->Finish();
     PrintParameters();
 
 }					       
@@ -227,7 +241,7 @@ CbmMvdDetector* Detector = new CbmMvdDetector("A");
 CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
 mvdHandler->Init();
 mvdHandler->Fill();
-Detector->PrintParameter();
+if(fVerbose)Detector->PrintParameter();
 }
 // -------------------------------------------------------------------------  
 
@@ -255,11 +269,7 @@ void CbmMvdDigitizer::BuildEvent() {
   Int_t nElec = 0;
 
   // ----- First treat standard input file
-  for (Int_t i=0; i<fInputPoints->GetEntriesFast(); i++) {
-    point = (CbmMvdPoint*) fInputPoints->At(i);
-    point->SetPointId(i);
-    nOrig++;
-  }
+    nOrig = fInputPoints->GetEntriesFast();
 
 
   // ----- Then treat event pileup
@@ -284,7 +294,7 @@ void CbmMvdDigitizer::BuildEvent() {
       for (Int_t iPoint=0; iPoint<points->GetEntriesFast(); iPoint++) {
 	point = (CbmMvdPoint*) points->At(iPoint);
 	point->SetTrackID(-2);
-	point->SetPointId(-2);
+	
 	nPile++;
       }
       fInputPoints->AbsorbObjects(points);
@@ -316,7 +326,7 @@ void CbmMvdDigitizer::BuildEvent() {
       for (Int_t iPoint=0; iPoint<pointsD->GetEntriesFast(); iPoint++) {
 	point = (CbmMvdPoint*) pointsD->At(iPoint);
 	point->SetTrackID(-3); // Mark the points as delta electron
-	point->SetPointId(-3);
+	
       nElec++;
       }
      fInputPoints->AbsorbObjects(pointsD);
@@ -327,10 +337,10 @@ void CbmMvdDigitizer::BuildEvent() {
 
 
   // ----- At last: Screen output
-  cout << endl << "-I- " << GetName() << "::BuildEvent: original "
+  LOG(INFO) << "+ " << GetName() << "::BuildEvent: original "
 			   << nOrig << ", pileup " << nPile << ", delta "
 			   << nElec << ", total " << nOrig+nPile+nElec
-			   << " MvdPoints" << endl;
+			   << " MvdPoints" << FairLogger::endl;
 
 
 }
