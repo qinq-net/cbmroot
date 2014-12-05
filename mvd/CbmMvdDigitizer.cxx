@@ -218,7 +218,7 @@ InitStatus CbmMvdDigitizer::ReInit() {
 
 // -----   Virtual method Finish   -----------------------------------------
 void CbmMvdDigitizer::Finish() {
-    cout<< endl << "finishing" << endl;
+   // cout<< endl << "finishing" << endl;
     fDetector->Finish();
     PrintParameters();
 
@@ -252,7 +252,7 @@ void CbmMvdDigitizer::PrintParameters() {
     
     cout.setf(ios_base::fixed, ios_base::floatfield);
     cout << "============================================================" << endl;
-    cout << "============== Parameters Digitizer ========================" << endl;
+    cout << "============== Parameters MvdDigitizer =====================" << endl;
     cout << "============================================================" << endl;
     cout << "=============== End Task ===================================" << endl;
  

@@ -30,7 +30,8 @@ CbmMvdPixelCharge::CbmMvdPixelCharge()
     fPointX(),
     fPointY(),
     fDominatorIndex(0),
-    fPixelTime(-1.)
+    fPixelTime(-1.),
+    fPointWeight()
 {
     for(Int_t i=0;i<5;i++){
       fTrackId[i]=-1;
@@ -72,20 +73,22 @@ CbmMvdPixelCharge::CbmMvdPixelCharge(Float_t charge, Int_t channelNrX, Int_t cha
     fPointX(),
     fPointY(),
     fDominatorIndex(0),
-    fPixelTime(time)
+    fPixelTime(time),
+    fPointWeight()
 {
     for(Int_t i=0;i<5;i++){
       fTrackId[i]=-1;
       fPointId[i]=-1;
       fPointX[i]=0;
       fPointY[i]=0;
+      fPointWeight[i]=0;
     }
     
     fTrackId[0]   = trackId;
     fPointId[0]	  = pointId;
     fPointX[0]	  = pointPosX;
     fPointY[0]	  = pointPosY;
-
+    fPointWeight[0] = charge;
 }
 
 // ------- DigestCharge ----------------------------------------------------#
@@ -111,6 +114,7 @@ void CbmMvdPixelCharge::DigestCharge(Float_t pointX, Float_t pointY, Int_t point
 	fPointId[fContributors]=pointId;
 	fPointX [fContributors]=pointX;
 	fPointY [fContributors]=pointY;
+	fPointWeight[fContributors]=fTrackCharge;
 	fContributors = fContributors+1;
 	
     }

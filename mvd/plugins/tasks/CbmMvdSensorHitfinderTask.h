@@ -123,8 +123,6 @@ protected:
     Int_t fAdcSteps;
     Float_t fAdcStepSize;
 
-    TClonesArray* fDigis;
-    TClonesArray* fHits;
     TClonesArray* fClusters;
    
 

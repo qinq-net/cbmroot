@@ -44,6 +44,7 @@ public:
     Int_t*   GetPointID()		{return fPointId;}
     Float_t* GetPointX()		{return fPointX;}
     Float_t* GetPointY()		{return fPointY;}
+    Float_t* GetPointWeight()           {return fPointWeight;}
     Float_t  GetTime()			{return fPixelTime;}
     Int_t    GetFrame()			{return fFrame;}
     
@@ -68,6 +69,7 @@ private:
     Int_t fDominatorPointId;
     Int_t fTrackId[5];
     Int_t fPointId[5];
+    Float_t fPointWeight[5];
     Float_t fPointX[5];
     Float_t fPointY[5];
     Short_t fDominatorIndex;

@@ -19,7 +19,6 @@ CbmMvdSensorClusterfinderTask::CbmMvdSensorClusterfinderTask()
     fAdcSteps(-1),
     fAdcStepSize(-1.),
     fDigis(NULL),
-    fClusters(new TClonesArray("CbmMvdCluster",10000)),
     fPixelChargeHistos(NULL),
     fTotalChargeInNpixelsArray(NULL),
     fResolutionHistoX(NULL),
@@ -85,8 +84,6 @@ CbmMvdSensorClusterfinderTask::CbmMvdSensorClusterfinderTask(const char* name, I
     fAdcSteps(-1),
     fAdcStepSize(-1.),
     fDigis(NULL),
-    
-    fClusters(new TClonesArray("CbmMvdCluster",10000)),
     fPixelChargeHistos(NULL),
     fTotalChargeInNpixelsArray(NULL),
     fResolutionHistoX(NULL),
@@ -145,7 +142,7 @@ void CbmMvdSensorClusterfinderTask::Init(CbmMvdSensor* mysensor) {
  //cout << "-Start- " << GetName() << ": Initialisation of sensor " << fSensor->GetName() << endl;
    fInputBuffer = new TClonesArray("CbmMvdDigi",10000); 
    fOutputBuffer= new TClonesArray("CbmMvdCluster", 10000);
-  
+   
  
     //Add charge collection histograms
     fPixelChargeHistos=new TObjArray();
@@ -185,7 +182,6 @@ void CbmMvdSensorClusterfinderTask::Exec() {
 if(fInputBuffer->GetEntriesFast() > 0)
   {
 fOutputBuffer->Clear();
-fClusters->Clear();
 inputSet = kFALSE;
 vector<Int_t>* clusterArray=new vector<Int_t>;
         
@@ -280,9 +276,9 @@ Int_t refId;
 			Int_t pixelY;
 			pair<Int_t, Int_t> pixelCoords;
     			Int_t clusterSize=clusterArray->size();
-			Int_t nClusters = fClusters->GetEntriesFast();
+			Int_t nClusters = fOutputBuffer->GetEntriesFast();
 			//cout << endl << "new cluster: " << nClusters << endl;
-			CbmMvdCluster* clusterNew=new ((*fClusters)[nClusters]) CbmMvdCluster();
+			CbmMvdCluster* clusterNew=new ((*fOutputBuffer)[nClusters]) CbmMvdCluster();
 	 		clusterNew->SetDetectorId(fSensor->GetDetectorID());
 			clusterNew->SetStationNr(fSensor->GetStationNr());
    			for(i=0;i<clusterSize;i++) 

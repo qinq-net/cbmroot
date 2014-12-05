@@ -189,7 +189,7 @@ void CbmMvdHitfinder::PrintParameters() {
     
     cout.setf(ios_base::fixed, ios_base::floatfield);
     cout << "============================================================" << endl;
-    cout << "============== Parameters Hitfinder ========================" << endl;
+    cout << "============== Parameters MvdHitfinder =====================" << endl;
     cout << "============================================================" << endl;
     cout << "=============== End Task ===================================" << endl;
  

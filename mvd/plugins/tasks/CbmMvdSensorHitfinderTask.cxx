@@ -65,8 +65,6 @@ CbmMvdSensorHitfinderTask::CbmMvdSensorHitfinderTask()
     fAdcBits(1),
     fAdcSteps(-1),
     fAdcStepSize(-1.),
-    fDigis(NULL),
-    fHits(NULL),
     fClusters(new TClonesArray("CbmMvdCluster",10000)),
     fPixelChargeHistos(NULL),
     fTotalChargeInNpixelsArray(NULL),
@@ -107,13 +105,10 @@ CbmMvdSensorHitfinderTask::CbmMvdSensorHitfinderTask()
   fHitPosErrY(0.0005),
   fHitPosErrZ(0.0),
   fBranchName("MvdHit"),
-  fDigisInCluster(-1),
   fAddNoise(kFALSE),
   inputSet(kFALSE)
 {
-    CbmMvdCluster* clusterTemp= new CbmMvdCluster;
-    fDigisInCluster= clusterTemp->GetMaxDigisInThisObject(); // read the number of memory cells from the cluster object
-    delete clusterTemp;
+
 }
 // -------------------------------------------------------------------------
 
@@ -128,8 +123,6 @@ CbmMvdSensorHitfinderTask::CbmMvdSensorHitfinderTask(const char* name, Int_t iMo
     fAdcBits(1),
     fAdcSteps(-1),
     fAdcStepSize(-1.),
-    fDigis(NULL),
-    fHits(NULL),
     fClusters(new TClonesArray("CbmMvdCluster",10000)),
     fPixelChargeHistos(NULL),
     fTotalChargeInNpixelsArray(NULL),
@@ -170,22 +163,19 @@ CbmMvdSensorHitfinderTask::CbmMvdSensorHitfinderTask(const char* name, Int_t iMo
   fHitPosErrY(0.0005),
   fHitPosErrZ(0.0),
   fBranchName("MvdHit"),
-  fDigisInCluster(-1),
   fAddNoise(kFALSE),
   inputSet(kFALSE)
 {    
-    CbmMvdCluster* clusterTemp= new CbmMvdCluster;
-    fDigisInCluster= clusterTemp->GetMaxDigisInThisObject(); // read the number of memory cells from the cluster object
-    delete clusterTemp;
+
 }
 // -------------------------------------------------------------------------
 
 // -----   Destructor   ----------------------------------------------------
 CbmMvdSensorHitfinderTask::~CbmMvdSensorHitfinderTask() {
 
-    if ( fHits ) {
-	fHits->Delete();
-	delete fHits;
+    if ( fOutputBuffer ) {
+	fOutputBuffer->Delete();
+	delete fOutputBuffer;
     }
 
     if ( fClusters ) {
@@ -210,7 +200,7 @@ void CbmMvdSensorHitfinderTask::Init(CbmMvdSensor* mysensor) {
  //cout << "-Start- " << GetName() << ": Initialisation of sensor " << fSensor->GetName() << endl;
    fInputBuffer = new TClonesArray("CbmMvdCluster",10000); 
    fOutputBuffer= new TClonesArray("CbmMvdHit", 10000);
-   fHits = new TClonesArray("CbmMvdHit", 10000);
+  
    
  
     //Add charge collection histograms
@@ -259,10 +249,9 @@ void CbmMvdSensorHitfinderTask::Exec() {
 //  }
  if(fInputBuffer->GetEntriesFast() > 0)
   {
-fHits->Clear("C");
+
 fOutputBuffer->Clear();
 inputSet = kFALSE;
-map<pair<Int_t,Int_t>,Int_t> superCluster;
 for(Int_t i = 0; i < fInputBuffer->GetEntriesFast(); i++)
 	{
 	CbmMvdCluster* cluster = (CbmMvdCluster*) fInputBuffer->At(i);
@@ -297,19 +286,14 @@ void CbmMvdSensorHitfinderTask::CreateHit(CbmMvdCluster* cluster,  TVector3 &pos
  
     
     // Save hit into array
-    Int_t nHits = fHits->GetEntriesFast();
-    //cout << endl << "adding new hit to fHits at X: " << pos.X() << " , Y: "<< pos.Y() << " , Z: " << pos.Z() << " , " ;
-    new ((*fHits)[nHits]) CbmMvdHit(fSensor->GetStationNr(), pos, dpos, indexX, indexY, cluster->GetRefId(), 0);
-    CbmMvdHit* currentHit = new CbmMvdHit;
-    currentHit = (CbmMvdHit*) fHits->At(nHits);
-    currentHit->SetTimeStamp(fSensor->GetCurrentEventTime());
-    currentHit->SetTimeStampError(fSensor->GetIntegrationtime()/2);
-    
-    nHits = fOutputBuffer->GetEntriesFast();
+
+   //cout << endl << "adding new hit to fHits at X: " << pos.X() << " , Y: "<< pos.Y() << " , Z: " << pos.Z() << " , from cluster nr " << cluster->GetRefId() ;
+    Int_t nHits = fOutputBuffer->GetEntriesFast();
     new((*fOutputBuffer)[nHits]) CbmMvdHit(fSensor->GetStationNr(), pos, dpos, indexX, indexY, cluster->GetRefId(), 0);
-    currentHit = (CbmMvdHit*) fOutputBuffer->At(nHits);
+    CbmMvdHit* currentHit = (CbmMvdHit*) fOutputBuffer->At(nHits);
     currentHit->SetTimeStamp(fSensor->GetCurrentEventTime());
     currentHit->SetTimeStampError(fSensor->GetIntegrationtime()/2);
+    currentHit->SetRefId(cluster->GetRefId());
 }
       
  //--------------------------------------------------------------------------     
@@ -426,7 +410,6 @@ Int_t CbmMvdSensorHitfinderTask::GetAdcCharge(Float_t charge)
 
 // -----   Private method Reset   ------------------------------------------
 void CbmMvdSensorHitfinderTask::Reset() {
-    fHits->Clear("C");
     fClusters->Clear("C");
 }
 

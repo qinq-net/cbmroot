@@ -63,7 +63,6 @@ public:
     virtual ~CbmMvdSensorClusterfinderTask();
 
 
-    TClonesArray* GetOutputArray() {return fClusters;};
 
     /** Task execution **/
     void ExecChain();
@@ -111,9 +110,6 @@ protected:
     Float_t fAdcStepSize;
 
     TClonesArray* fDigis;
-    TClonesArray* fClusters;
-   
-
     TObjArray* fPixelChargeHistos;
     TObjArray* fTotalChargeInNpixelsArray;
     

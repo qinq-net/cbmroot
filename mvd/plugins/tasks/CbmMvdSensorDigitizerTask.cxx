@@ -460,8 +460,10 @@ for (Int_t i=0; i<fPixelCharge->GetEntriesFast(); i++)
 
  		new ((*fDigiMatch)[nDigis]) CbmMatch();
                 CbmMatch* match = (CbmMatch*)fDigiMatch->At(nDigis);
-                match->AddLink((Double_t) pixel->GetCharge(),*(pixel->GetPointID()));
-		    
+		for(Int_t iLink = 0; iLink < pixel->GetNContributors(); iLink++)
+			{
+	                match->AddLink((Double_t) pixel->GetPointWeight()[iLink],pixel->GetPointID()[iLink]);
+			}		    
 	    }
 		else 
 		{ 
