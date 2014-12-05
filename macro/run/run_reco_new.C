@@ -25,7 +25,7 @@ void run_reco_new(Int_t nEvents = 2, const char* setup = "sis300_electron")
   //          Adjust this part according to your requirements
 
   // Specify log level (INFO, DEBUG, DEBUG1, ...)
-  TString logLevel = "DEBUG";
+  TString logLevel = "DEBUG2";
 
 
   // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
@@ -111,10 +111,12 @@ void run_reco_new(Int_t nEvents = 2, const char* setup = "sis300_electron")
   Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
   Double_t timeResolution =       5.;  // time resolution [ns]
   Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
-  Int_t digiModel         = 1;  // Model: 1 = uniform charge distribution along track
+  Double_t noise          =       0.;  // ENC [e]
+  Int_t digiModel         = 2;  // Model: 1 = uniform charge distribution along track
 
   CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
-  stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime);
+  stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution,
+  		                   deadTime, noise);
   run->AddTask(stsDigi);
   // -------------------------------------------------------------------------
 
