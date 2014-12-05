@@ -66,18 +66,6 @@ Int_t mvd_qa3_digitize()
     CbmMvdDigitizer* digi = new CbmMvdDigitizer("MVDDigitiser", 0, iVerbose);
     cout << "Adding Task:  CbmMvdDigitiser... " << endl;
     fRun->AddTask(digi);
-
-    // Parameters for tuning the digitizer, please use default except you are MAPS expert
-    //digi->SetEpiThickness(0.0014);
-    //digi->SetElectronsPerKeV(300);
-    //digi->SetSegmentLength(0.0003);
-    //digi->SetPixelSizeX(0.003);
-    //digi->SetPixelSizeY(0.003);
-    //digi->SetDiffusionCoef(0.0055); // adapted for 30um pixels
-    //digi->SetDiffusionCoef(0.0018); // adapted for 10um pixels
-    //digi->SetWidthOfCluster(3);
-
-    
     
     //--- Pile Up -------
     
@@ -111,27 +99,6 @@ Int_t mvd_qa3_digitize()
    // mvd_hit->SetHitPosErrY(0.0005);
     //mvd_hit->ShowDebugHistograms();
     fRun->AddTask(mvd_hit);
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     //----------------------------------------------------------------------------
     // -----  Parameter database   -----------------------------------------------

@@ -1,80 +1,66 @@
 // -------------------------------------------------------------------------
 //
-// Macro for standard transport simulation using UrQMD input and GEANT3
-// CBM setup with MVD only
+// Macro for standard transport simulation using UrQMD input with CbmUniGen
+// and GEANT3 CBM setup with MVD only
 //
-// V. Friese   06/02/2007
+// P.Sitzmann  04/09/2014
 //
 // --------------------------------------------------------------------------
-void mvd_sim()
+void mvd_CbmUniGen_sim_cluster(const char* input = "auau.25gev", const char* system = "centr", Int_t nEvents = 100)
 {
   // ========================================================================
   //          Adjust this part according to your requirements
 
   // Input file
   TString inDir   = gSystem->Getenv("VMCWORKDIR");
-  TString inFile = inDir + "/input/urqmd.ftn14";
+  TString inFile = inDir + "/input/urqmd.";
+  inFile = inFile + input;
+  inFile = inFile + ".";
+  inFile = inFile + system;
+  inFile = inFile + ".root";
 
-  // Number of events
-  Int_t   nEvents = 5;
-
-  // Output file name
-  TString outFile = "data/mvd.mc.root";
+  // Output file
+  TString outFile = "data/mvd.mc.unigen.";
+  outFile = outFile + input;
+  outFile = outFile + ".";
+  outFile = outFile + system;
+  outFile = outFile + ".root";
 
   // Parameter file name
-  TString parFile = "data/params.root";
+  TString parFile = "data/paramsunigen.";
+  parFile = parFile + input;
+  parFile = parFile + ".";
+  parFile = parFile + system;
+  parFile = parFile + ".root";
 
   // Cave geometry
   TString caveGeom = "cave.geo";
 
   // Beam pipe geometry
-  TString pipeGeom = "pipe/pipe_v14f.root";
+  TString pipeGeom = "pipe/pipe_v14y.geo.root";
 
   // Magnet geometry and field map
   TString magnetGeom  = "magnet/magnet_v12b.geo.root";
   TString fieldMap    = "field_v12b";   // name of field map
-  Int_t fieldZ     = 40.;             // field centre z position
-  Int_t fieldScale =  1.;             // field scaling factor
-  Int_t fieldSymType = 3;
+  Int_t fieldZ        = 40.;             // field centre z position
+  Int_t fieldScale    =  1.;             // field scaling factor
+  Int_t fieldSymType  = 3;
 
   // MVD geometry
-
   TString mvdGeom = "mvd/mvd_v14a.geo.root";
 
   // In general, the following parts need not be touched
   // ========================================================================
 
-
-
-
   // ----    Debug option   -------------------------------------------------
   gDebug = 0;
   // ------------------------------------------------------------------------
-
-
 
   // -----   Timer   --------------------------------------------------------
   TStopwatch timer;
   timer.Start();
   // ------------------------------------------------------------------------
 
-
-  // ----  Load libraries   -------------------------------------------------
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
-  gSystem->Load("libCbmBase");
-  gSystem->Load("libCbmData");
-  gSystem->Load("libCbmGenerators");
-  gSystem->Load("libField");
-  gSystem->Load("libGen");
-  gSystem->Load("libPassive");
-  gSystem->Load("libMvd");
-  // ------------------------------------------------------------------------
-
- 
  
   // -----   Create simulation run   ----------------------------------------
   FairRunSim* fRun = new FairRunSim();
@@ -109,6 +95,7 @@ void mvd_sim()
   mvd->SetGeometryFileName(mvdGeom); 
   mvd->SetMotherVolume("pipevac1");
   fRun->AddModule(mvd);
+
   // ------------------------------------------------------------------------
 
 
@@ -128,8 +115,8 @@ void mvd_sim()
 
   // -----   Create PrimaryGenerator   --------------------------------------
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
-  FairUrqmdGenerator*  urqmdGen = new FairUrqmdGenerator(inFile);
-  primGen->AddGenerator(urqmdGen);
+  CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
+  primGen->AddGenerator(uniGen);
   fRun->SetGenerator(primGen);     
   // ------------------------------------------------------------------------
 
@@ -158,7 +145,6 @@ void mvd_sim()
  
   // -----   Start run   ----------------------------------------------------
   fRun->Run(nEvents);
-  fRun->CreateGeometryFile("data/fullgeometry.root");
   // ------------------------------------------------------------------------
 
 

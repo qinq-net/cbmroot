@@ -6,14 +6,12 @@
 //         CbmMvdClusterfinder
 //         CbmMvdHitfinder
 // 
-//
-// V. Friese   23/04/2009
-// Update: P. Sitzmann Juli 2014
+// P. Sitzmann Juli 2014
 // --------------------------------------------------------------------------
 
 
-void mvd_reco(Int_t  nEvents = 5,
-              Int_t  iVerbose = 0)
+void mvd_CbmUniGen_reco_cluster(TString input = "auau.25gev", TString system = "centr", Int_t  nEvents = 100,
+              Int_t  iVerbose = 0, const char* setup = "sis300_electron")
 {
 
   // ========================================================================
@@ -21,37 +19,37 @@ void mvd_reco(Int_t  nEvents = 5,
 
    
   // Input file (MC events)
-  TString inFile = "data/mvd.mc.root";
-  
-  // Background file (MC events, for pile-up)
-  TString bgFile = "data/mvd_bg.mc.root";
-
+ // TString inFile = "data/mvd.mc.unigen.root";
+  TString inFile = "data/mvd.mc.unigen." + input + "." + system + ".root";
+  TString deltaFile = "data/mvd.mc.delta.root";
+  TString bgFile = "data/mvd.mc.unigen." + input + "." + system + ".root";
   // Output file
-  TString outFile = "data/mvd.reco.root";
+  TString outFile = "data/mvd.reco.unigen." + input + "." + system + ".root";
 
   // Parameter file
-  TString parFile = "data/params.root";
- 
-  TString mvdGeom = "data/fullgeometry.root";
+  TString parFile = "data/paramsunigen.";
+  parFile = parFile + input;
+  parFile = parFile + ".";
+  parFile = parFile + system;
+  parFile = parFile + ".root";
 
- 
   // In general, the following parts need not be touched
   // ========================================================================
 
   // ----    Debug option   -------------------------------------------------
   gDebug = 0;
   // ------------------------------------------------------------------------
-  
+
+
   // -----   Reconstruction run   -------------------------------------------
   FairRunAna *run= new FairRunAna();
+
   run->SetInputFile(inFile);
   run->SetOutputFile(outFile);
-  run->SetGeomFile(mvdGeom);
-
   // ------------------------------------------------------------------------
  
   // -----   MVD Digitiser   ----------------------------------------------
-  CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose); 
+  CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose);
   run->AddTask(mvdDigitise);
   // ----------------------------------------------------------------------
 
@@ -65,25 +63,15 @@ void mvd_reco(Int_t  nEvents = 5,
   mvdHitfinder->UseClusterfinder(kTRUE);
   run->AddTask(mvdHitfinder);
   // ----------------------------------------------------------------------
-  
-
-  // -----   Matching   ---------------------------------------------
-  CbmMatchRecoToMC* matcher = new CbmMatchRecoToMC();
-  run->AddTask(matcher);
-  // ----------------------------------------------------------------------
-  
-
 
   // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
-  FairParRootFileIo*  parIo = new FairParRootFileIo();
-  parIo->open(parFile.Data());
-  rtdb->setFirstInput(parIo);
-  rtdb->setOutput(parIo);
+  FairParRootFileIo* parIo1 = new FairParRootFileIo();
+  parIo1->open(parFile);
+  rtdb->setFirstInput(parIo1);
+  rtdb->setOutput(parIo1);
   rtdb->saveOutput();
-  rtdb->print();
   // ------------------------------------------------------------------------
-
   // -----   Run initialisation   -------------------------------------------
   run->Init();
   // ------------------------------------------------------------------------
@@ -108,6 +96,6 @@ void mvd_reco(Int_t  nEvents = 5,
   cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
   cout << endl;
   // ------------------------------------------------------------------------
- 
+
 
 }
