@@ -4,7 +4,6 @@
 // -----                 according to the CbmStsFindTracks             -----
 // -------------------------------------------------------------------------
 
-
 #include "CbmTrdFindTracks.h"
 
 #include "CbmTrdTrack.h"
