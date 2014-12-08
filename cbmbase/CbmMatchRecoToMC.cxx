@@ -55,7 +55,9 @@ CbmMatchRecoToMC::CbmMatchRecoToMC() :
    fMuchTrackMatches(NULL),
    fMvdHits(NULL),
    fMvdDigiMatches(NULL),
-   fMvdHitMatches(NULL)
+   fMvdHitMatches(NULL),
+   fMvdCluster(NULL),
+   fMvdClusterMatches(NULL)
 {
 
 }
@@ -104,11 +106,17 @@ CbmMatchRecoToMC::~CbmMatchRecoToMC()
       fMuchTrackMatches->Delete();
       delete fMuchTrackMatches;
    }
- 
+	
+   if (fMvdClusterMatches != NULL)
+      {
+      fMvdClusterMatches->Delete(); 
+      delete fMvdClusterMatches; 
+      }
    if (fMvdHitMatches != NULL) {
       fMvdHitMatches->Delete();
       delete fMvdHitMatches;
    }
+
 
 }
 
@@ -133,6 +141,7 @@ void CbmMatchRecoToMC::Exec(
    if (fMuchStrawHitMatches != NULL) fMuchStrawHitMatches->Delete();
    if (fMuchTrackMatches != NULL) fMuchTrackMatches->Delete();
    if (fMvdHitMatches != NULL) fMvdHitMatches->Delete();
+   if (fMvdClusterMatches != NULL) fMvdClusterMatches->Delete();
 
    // STS
    if (fStsDigis && fStsClusters && fStsHits) { // MC->digi->cluster->hit->track
@@ -162,10 +171,15 @@ void CbmMatchRecoToMC::Exec(
    MatchTracks(fMuchPixelHitMatches, fMuchPoints, fMuchTracks, fMuchTrackMatches);
    MatchTracks(fMuchStrawHitMatches, fMuchPoints, fMuchTracks, fMuchTrackMatches);
 
-   //MVD  // MC->digi->hit
-   if (fMvdDigiMatches && fMvdHits && fMvdHitMatches) {
+   //MVD  
+   if (fMvdDigiMatches && fMvdHits && fMvdHitMatches && !fMvdCluster) {// MC->digi->hit
        MatchHitsMvd(fMvdDigiMatches, fMvdHits, fMvdHitMatches);
    }
+   else if(fMvdDigiMatches && fMvdCluster && fMvdClusterMatches)
+	{
+	MatchClusters(fMvdDigiMatches, fMvdCluster, fMvdClusterMatches);// MC->digi->cluster->hit
+	MatchHits(fMvdClusterMatches, fMvdHits, fMvdHitMatches);
+	}
 
    static Int_t eventNo = 0;
    LOG(INFO) << "CbmMatchRecoToMC::Exec eventNo=" << eventNo++ << FairLogger::endl;
@@ -263,13 +277,19 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
 
    // MVD
    fMvdHits = (TClonesArray*) ioman->GetObject("MvdHit");
-
+   fMvdCluster = (TClonesArray*) ioman->GetObject("MvdCluster");
    fMvdDigiMatches = (TClonesArray*) ioman->GetObject("MvdDigiMatch");
+   if (fMvdCluster != NULL) {
+      fMvdClusterMatches = new TClonesArray("CbmMatch", 100);
+      ioman->Register("MvdClusterMatch", "MVD", fMvdClusterMatches, kTRUE);
+   }
+
    if (fMvdHits != NULL) {
       fMvdHitMatches = new TClonesArray("CbmMatch", 100);
       ioman->Register("MvdHitMatch", "MVD", fMvdHitMatches, kTRUE);
    }
 }
+
 
 void CbmMatchRecoToMC::MatchClusters(
       const TClonesArray* digiMatches,

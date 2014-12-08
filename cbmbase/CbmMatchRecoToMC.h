@@ -119,10 +119,14 @@ private:
 
     // MVD
 
-    TClonesArray* fMvdHits; // CbmMvdHit array
-    TClonesArray* fMvdDigiMatches; // CbmMatch array
-    TClonesArray* fMvdHitMatches; // Output CbmMatch array
-  
+    TClonesArray* fMvdHits; 		// CbmMvdHit array
+    TClonesArray* fMvdDigiMatches;	// CbmMatch array
+    TClonesArray* fMvdHitMatches; 	// Output CbmMatch array
+    TClonesArray* fMvdCluster;       	// CbmMvdCluster array
+    TClonesArray* fMvdClusterMatches;   // Output CbmMatch array
+
+
+
     CbmMatchRecoToMC(const CbmMatchRecoToMC&);
     CbmMatchRecoToMC& operator=(const CbmMatchRecoToMC&);
 
