@@ -103,10 +103,13 @@ LxTrack::LxTrack(LxTrackCandidate* tc) : matched(false), length(tc->length), chi
 #else//CLUSTER_MODE
 LxTrack::LxTrack(LxTrackCandidate* tc) : matched(false), length(tc->length), chi2(tc->chi2), mcTrack(0),
     aX(0), bX(0), aY(0), bY(0), restoredPoints(0), externalTrack(0)
+#ifndef LX_EXT_LINK_SOPH
+  , extLinkChi2(0)
+#endif//LX_EXT_LINK_SOPH
 #ifdef USE_KALMAN_FIT
     , x(0), y(0), z(0), dx(0), dy(0), tx(0), ty(0), dtx(0), dty(0)
 #endif//USE_KALMAN_FIT
-  , clone(false)
+  , clone(false), triggering(false)
 {
   memset(rays, 0, sizeof(rays));
   memset(points, 0, sizeof(points));
@@ -290,6 +293,7 @@ void LxTrack::Fit()
 }
 #endif//USE_KALMAN_FIT
 
+#ifdef LX_EXT_LINK_SOPH
 void LxTrack::Rebind()
 {
   externalTrack = 0;
@@ -317,6 +321,7 @@ void LxTrack::Rebind()
     }
   }
 }
+#endif// LX_EXT_LINK_SOPH
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // LxPoint
@@ -1702,7 +1707,17 @@ void LxSpace::JoinExtTracks()
   Double_t sigmaTxMuMinus2 = sigmaTxMuMinus * sigmaTxMuMinus;
   Double_t covXTx = 0.155612;
   Double_t covYTy = 0.157198;*/
-  Double_t cutCoeff = 5.0;
+  //Double_t cutCoeff = 5.0;
+#ifdef USE_OLD_STS_LINKING_RULE
+  Double_t sigmaX = 0.8548;
+  Double_t sigmaX2 = sigmaX * sigmaX;
+  Double_t sigmaY = 0.6233;
+  Double_t sigmaY2 = sigmaY * sigmaY;
+  Double_t sigmaTx = 0.02251;
+  Double_t sigmaTx2 = sigmaTx * sigmaTx;
+  Double_t sigmaTy = 0.007758;
+  Double_t sigmaTy2 = sigmaTy * sigmaTy;
+#endif//USE_OLD_STS_LINKING_RULE
 
   CbmLitToolFactory* factory = CbmLitToolFactory::Instance();
   TrackPropagatorPtr fPropagator = factory->CreateTrackPropagator("lit");
@@ -1713,6 +1728,7 @@ void LxSpace::JoinExtTracks()
 
     if (track->clone)
       continue;
+
 #ifdef USE_KALMAN_FIT
     Double_t x = track->x;
     Double_t y = track->y;
@@ -1729,7 +1745,8 @@ void LxSpace::JoinExtTracks()
     Double_t x = point->x;
     Double_t y = point->y;
     Double_t z = point->z;
-    Double_t tx0 = ray->tx;
+    //Double_t tx0 = ray->tx;
+    Double_t tx = ray->tx;
     Double_t ty = ray->ty;
     Double_t dxMuch = point->dx;
     Double_t dyMuch = point->dy;
@@ -1743,13 +1760,14 @@ void LxSpace::JoinExtTracks()
       LxExtTrack* extTrack = &(*j);
       const FairTrackParam* firstParam = extTrack->track->GetParamFirst();
       const FairTrackParam* lastParam = extTrack->track->GetParamLast();
+
+#ifndef USE_OLD_STS_LINKING_RULE
       CbmLitTrackParam litLastParam;
       CbmLitConverter::FairTrackParamToCbmLitTrackParam(lastParam, &litLastParam);
 
       if (kLITERROR == fPropagator->Propagate(&litLastParam, stations[0]->zCoord, 13))
         continue;
 
-#ifndef USE_OLD_STS_LINKING_RULE
       Double_t deltaX = abs(litLastParam.GetX() - x);
       Double_t deltaY = abs(litLastParam.GetY() - y);
       Double_t deltaTx = abs(litLastParam.GetTx() - tx0);
@@ -1763,11 +1781,11 @@ void LxSpace::JoinExtTracks()
       Double_t sigmaTy2 = dtyMuch * dtyMuch + litLastParam.GetCovariance(12);
       Double_t sigmaTy = sqrt(sigmaTy2);
 
-      if (deltaX > cutCoeff * sigmaX || deltaY > cutCoeff * sigmaY ||
-          deltaTx > cutCoeff * sigmaTx || deltaTy > cutCoeff * sigmaTy)
-      {
+      //if (deltaX > cutCoeff * sigmaX || deltaY > cutCoeff * sigmaY ||
+          //deltaTx > cutCoeff * sigmaTx || deltaTy > cutCoeff * sigmaTy)
+      //{
         //continue;
-      }
+      //}
 
       Double_t chi2 = deltaX * deltaX / sigmaX2 + deltaY * deltaY / sigmaY2 +
           deltaTx * deltaTx / sigmaTx2 + deltaTy * deltaTy / sigmaTy2;
@@ -1776,7 +1794,7 @@ void LxSpace::JoinExtTracks()
       //if ((tx0 - lastParam->GetTx()) * (lastParam->GetTx() - firstParam->GetTx()) < 0)
         //continue;
 
-      Double_t muchCharge = tx0 - firstParam->GetTx();
+      /*Double_t muchCharge = tx0 - firstParam->GetTx();
       Double_t tx = muchCharge > 0 ? tx0 + deltaMuPlus : tx0 + deltaMuMinus;
 
       if (muchCharge > 0)
@@ -1788,7 +1806,7 @@ void LxSpace::JoinExtTracks()
       {
         sigmaTx = sigmaTxMuMinus;
         sigmaTx2 = sigmaTxMuMinus2;
-      }
+      }*/
 
       Double_t deltaZ = lastParam->GetZ() - z;
       Double_t deltaX = abs(lastParam->GetX() - x - tx * deltaZ);
@@ -1796,37 +1814,39 @@ void LxSpace::JoinExtTracks()
       Double_t dySts2 = lastParam->GetCovariance(1, 1);
       Double_t dtxSts2 = lastParam->GetCovariance(2, 2);
       Double_t dtySts2 = lastParam->GetCovariance(3, 3);
-      Double_t sigmaXMeas2 = dxMuch * dxMuch + dxSts2 - covXTx * deltaZ;// deltaZ is negative.
-      Double_t sigmaXMeas = sqrt(sigmaXMeas2);
-      Double_t sigmaYMeas2 = dyMuch * dyMuch + dySts2 - covYTy * deltaZ;// deltaZ is negative.
-      Double_t sigmaYMeas = sqrt(sigmaYMeas2);
+      //Double_t sigmaXMeas2 = dxMuch * dxMuch + dxSts2 - covXTx * deltaZ;// deltaZ is negative.
+      Double_t sigmaXMeas2 = dxMuch * dxMuch + dxSts2 + dtxMuch * dtxMuch * deltaZ * deltaZ;
+      //Double_t sigmaXMeas = sqrt(sigmaXMeas2);
+      //Double_t sigmaYMeas2 = dyMuch * dyMuch + dySts2 - covYTy * deltaZ;// deltaZ is negative.
+      Double_t sigmaYMeas2 = dyMuch * dyMuch + dySts2 + dtyMuch * dtyMuch * deltaZ * deltaZ;
+      //Double_t sigmaYMeas = sqrt(sigmaYMeas2);
       Double_t sigmaTxMeas2 = dtxMuch * dtxMuch + dtxSts2;
-      Double_t sigmaTxMeas = sqrt(sigmaTxMeas2);
+      //Double_t sigmaTxMeas = sqrt(sigmaTxMeas2);
       Double_t sigmaTyMeas2 = dtyMuch * dtyMuch + dtySts2;
-      Double_t sigmaTyMeas = sqrt(sigmaTyMeas2);
+      //Double_t sigmaTyMeas = sqrt(sigmaTyMeas2);
 
-      if (deltaX > cutCoeff * sqrt(sigmaX2 + sigmaXMeas2))
-        continue;
+      //if (deltaX > cutCoeff * sqrt(sigmaX2 + sigmaXMeas2))
+        //continue;
 
       Double_t deltaY = abs(lastParam->GetY() - y - ty * deltaZ);
 
-      if (deltaY > cutCoeff * sqrt(sigmaY2 + sigmaYMeas2))
-        continue;
+      //if (deltaY > cutCoeff * sqrt(sigmaY2 + sigmaYMeas2))
+        //continue;
 
       Double_t deltaTx = abs(lastParam->GetTx() - tx);
 
-      if (deltaTx > cutCoeff * sqrt(sigmaTx2 + sigmaTxMeas2))
-        continue;
+      //if (deltaTx > cutCoeff * sqrt(sigmaTx2 + sigmaTxMeas2))
+        //continue;
 
       Double_t deltaTy = abs(lastParam->GetTy() - ty);
 
-      if (deltaTy > cutCoeff * sqrt(sigmaTy2 + sigmaTyMeas2))
-        continue;
+      //if (deltaTy > cutCoeff * sqrt(sigmaTy2 + sigmaTyMeas2))
+        //continue;
 
       // Take the charge sign into account.
-      Double_t stsCharge = firstParam->GetQp();
-      Double_t angMomInv =  muchCharge / stsCharge;
-      Double_t dAmi = abs(sqrt(dtxMuch * dtxMuch + firstParam->GetCovariance(2, 2)) / stsCharge);
+      //Double_t stsCharge = firstParam->GetQp();
+      //Double_t angMomInv =  muchCharge / stsCharge;
+      //Double_t dAmi = abs(sqrt(dtxMuch * dtxMuch + firstParam->GetCovariance(2, 2)) / stsCharge);
 
       // Check if the MUCH track projection to XZ plane angle fit the STS track momentum.
       //if (0.18 - dAmi > angMomInv || 0.52 + dAmi < angMomInv)
@@ -1837,6 +1857,7 @@ void LxSpace::JoinExtTracks()
           deltaTx * deltaTx / (sigmaTx2 + sigmaTxMeas2) + deltaTy * deltaTy / (sigmaTy2 + sigmaTyMeas2);
 #endif//USE_OLD_STS_LINKING_RULE
 
+#ifdef LX_EXT_LINK_SOPH
       list<pair<LxExtTrack*, Double_t> >::iterator k = track->extTrackCandidates.begin();
 
       for (; k != track->extTrackCandidates.end() && chi2 >= k->second; ++k)
@@ -1844,8 +1865,16 @@ void LxSpace::JoinExtTracks()
 
       pair<LxExtTrack*, Double_t> linkDesc(extTrack, chi2);
       track->extTrackCandidates.insert(k, linkDesc);
+#else//LX_EXT_LINK_SOPH
+      if (0 == track->externalTrack || track->extLinkChi2 > chi2)
+      {
+        track->externalTrack = extTrack;
+        track->extLinkChi2 = chi2;
+      }
+#endif//LX_EXT_LINK_SOPH
     }// for (list<LxExtTrack>::iterator j = extTracks.begin(); j != extTracks.end(); ++j)
 
+#ifdef LX_EXT_LINK_SOPH
     for (list<pair<LxExtTrack*, Double_t> >::iterator j = track->extTrackCandidates.begin();
         j != track->extTrackCandidates.end(); ++j)
     {
@@ -1869,7 +1898,8 @@ void LxSpace::JoinExtTracks()
         break;
       }
     }
-  }
+#endif// LX_EXT_LINK_SOPH
+  }// for (list<LxTrack*>::iterator i = tracks.begin(); i != tracks.end(); ++i)
 }
 
 void LxSpace::CheckArray(Double_t xs[LXSTATIONS][LXLAYERS], Double_t ys[LXSTATIONS][LXLAYERS],

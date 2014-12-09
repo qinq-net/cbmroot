@@ -385,6 +385,26 @@ void LxEff::CalcRecoEff(bool joinExt)
     matchTrack->mcTrack = &mcTrack;
     matchTrack->matched = true;
 
+    {
+      LxRay* ray = matchTrack->rays[0];
+      LxPoint* point = ray->end;
+      Double_t diffZMag = 40.0 - point->z;
+      Double_t magX = point->x + ray->tx * diffZMag;
+      Double_t magTx = magX / 40.0;
+      Double_t muchMom = abs(0.8029 / (ray->tx - magTx));
+      Double_t momErr = 100 * (muchMom - mcTrack.p) / mcTrack.p;
+      cout << "**********************************************************************" << endl;
+      cout << "**********************************************************************" << endl;
+      cout << "*** Momentum determination relative error: " << momErr << "%" << endl;
+      cout << "**********************************************************************" << endl;
+      cout << "**********************************************************************" << endl;
+
+      if (isSignal)
+        LxFinder::muchMomErrSig->Fill(momErr);
+      else
+        LxFinder::muchMomErrBgr->Fill(momErr);
+    }
+
     if (!isSignal)
       continue;
 
@@ -781,7 +801,11 @@ void LxEff::CalcRecoEff(bool joinExt)
         Double_t interTrackDistanceOn1stSq = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
 
         if (interTrackDistanceOn1stSq > 50.0 * 50.0)
+        {
+          track1->triggering = true;
+          track2->triggering = true;
           hasPairWithDifferentSigns = true;
+        }
 
         /*if (0 != track1->mcTrack && 0 != track2->mcTrack && track1->mcTrack->mother_ID < 0 && track2->mcTrack->mother_ID < 0 &&
             ((-13 == track1->mcTrack->pdg && 13 == track2->mcTrack->pdg) || (13 == track1->mcTrack->pdg && -13 == track2->mcTrack->pdg)))

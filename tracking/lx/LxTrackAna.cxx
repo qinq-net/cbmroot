@@ -13,6 +13,7 @@
 #include "CbmStsTrack.h"
 #include "CbmKFTrack.h"
 #include "CbmKFParticle.h"
+#include "TGeoManager.h"
 
 ClassImp(LxTrackAna)
 
@@ -64,6 +65,10 @@ static TH2F* muMinusStsBeginTxDiff2D = 0;
 static TH1F* deltaPhiPi = 0;
 
 static TH1F* jPsiMuonsMomsHisto = 0;
+
+static Double_t magnetCenterZ = 0;
+
+static TH1F* dtxMomProductHisto = 0;
 
 struct MomVsTxRange
 {
@@ -252,6 +257,17 @@ InitStatus LxTrackAna::Init()
   jPsiMuonsMomsHisto = new TH1F("jPsiMuonsMomsHisto", "J/Psi muons momenta distribution", 200, 0., 25.);
   jPsiMuonsMomsHisto->StatOverflows();
 
+  gGeoManager->cd("/cave_1/Magnet_container_0");
+  Double_t localCoords[3] = {0., 0., 0.};
+  Double_t globalCoords[3];
+  gGeoManager->LocalToMaster(localCoords, globalCoords);
+  magnetCenterZ = globalCoords[2];
+  //cout << "magnetCenterZ = " << magnetCenterZ << endl;
+  //return kFATAL;
+
+  dtxMomProductHisto = new TH1F("dtxMomProductHisto", "Dtx x Momentum distribution", 100, -0.5, 2.5);
+  dtxMomProductHisto->StatOverflows();
+
   segmentsAnalyzer.Init();
 
   return kSUCCESS;
@@ -421,6 +437,7 @@ void LxTrackAna::FinishTask()
   SaveHisto(deltaPhiPi, "deltaPhiPi.root");
 
   SaveHisto(jPsiMuonsMomsHisto, "jPsiMuonsMomsHisto.root");
+  SaveHisto(dtxMomProductHisto, "dtxMomProductHisto.root");
 
   segmentsAnalyzer.Finish();
 
@@ -654,6 +671,16 @@ static inline void BuildStatistics(LxSimpleTrack* track)
       Double_t diffZMuch = muchPt0.z - muchPt1.z;
       Double_t txMuch = (muchPt0.x - muchPt1.x) / diffZMuch;
       Double_t tyMuch = (muchPt0.y - muchPt1.y) / diffZMuch;
+
+      Double_t diffZMag = magnetCenterZ - muchPt0.z;
+      Double_t magX = muchPt0.x + txMuch * diffZMag;
+      Double_t magTx = magX / magnetCenterZ;
+      Double_t diffMagTx = txMuch - magTx;
+
+      if (-13 == track->pdgCode)
+        dtxMomProductHisto->Fill(diffMagTx * track->p);
+      else if (13 == track->pdgCode)
+        dtxMomProductHisto->Fill(-diffMagTx * track->p);
 
       if (-13 == track->pdgCode)
       {

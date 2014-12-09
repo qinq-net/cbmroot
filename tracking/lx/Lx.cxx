@@ -43,6 +43,8 @@ TH1F* LxFinder::numberOfTracks = 0;
 TH1F* LxFinder::signalInterTracksDistanceOn1st = 0;
 TH1F* LxFinder::bgrInterTracksDistanceOn1st = 0;
 TH1F* LxFinder::bgrInterTracksDistanceOn1stSigns = 0;
+TH1F* LxFinder::muchMomErrSig = 0;
+TH1F* LxFinder::muchMomErrBgr = 0;
 
 #ifdef MAKE_DISPERSE_2D_HISTOS
 TProfile2D* disperseLHistos[LXSTATIONS];
@@ -67,7 +69,7 @@ LxFinder::LxFinder() : muchPixelHits(0), listMCTracks(0), listMuchPts(0), listMu
     , mcPointsCount(0), mcPointsTriggered(0)
 #endif//CALC_MUCH_DETECTORS_EFF
 #ifdef MAKE_EFF_CALC
-    , falseJPsiTriggerings(0)
+    , falseJPsiTriggerings(0), saveOnlyTriggeringTracks(true)
 #endif//MAKE_EFF_CALC
 {
   fInstance = this;
@@ -307,6 +309,10 @@ InitStatus LxFinder::Init()
   bgrInterTracksDistanceOn1st->StatOverflows();
   bgrInterTracksDistanceOn1stSigns = new TH1F("bgrInterTracksDistanceOn1stSigns", "Distance between background tracks on the 1st station separated by signs", 200, 0.0, 250.0);
   bgrInterTracksDistanceOn1stSigns->StatOverflows();
+  muchMomErrSig = new TH1F("muchMomErrSig", "Momentum determination error for signal", 600, -300.0, 300.0);
+  muchMomErrSig->StatOverflows();
+  muchMomErrBgr = new TH1F("muchMomErrBgr", "Momentum determination error for background", 600, -300.0, 300.0);
+  muchMomErrBgr->StatOverflows();
 
   effByMomentumProfile = new TProfile("Reconstruction efficiency by momentum", "Reconstruction efficiency by momentum",
       100, 0.0, 50.0, 0.0, 100.0);
@@ -849,6 +855,13 @@ void LxFinder::SaveRecoTracks()
   for (list<LxTrack*>::iterator i = caSpace.tracks.begin(); i != caSpace.tracks.end(); ++i)
   {
     LxTrack* recoTrack = *i;
+
+    if (recoTrack->clone)
+      continue;
+
+    if (saveOnlyTriggeringTracks && !recoTrack->triggering)
+      continue;
+
     LxExtTrack* stsTrack = recoTrack->externalTrack;
 
     if (0 == stsTrack)
@@ -1073,6 +1086,8 @@ void LxFinder::FinishTask()
   SaveHisto(signalInterTracksDistanceOn1st, "signalInterTracksDistanceOn1st.root");
   SaveHisto(bgrInterTracksDistanceOn1st, "bgrInterTracksDistanceOn1st.root");
   SaveHisto(bgrInterTracksDistanceOn1stSigns, "bgrInterTracksDistanceOn1stSigns.root");
+  SaveHisto(muchMomErrSig, "muchMomErrSig.root");
+  SaveHisto(muchMomErrBgr, "muchMomErrBgr.root");
 
   TFile::CurrentFile() = curFile;
 

@@ -52,4 +52,7 @@
 
 #define LX_DEBUG
 
+#define USE_OLD_STS_LINKING_RULE
+//#define LX_EXT_LINK_SOPH
+
 #endif//LXSETTINGS_INCLUDED

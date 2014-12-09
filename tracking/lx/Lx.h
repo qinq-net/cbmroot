@@ -70,6 +70,11 @@ public:
     cutCoeff = value;
   }
 
+  void SetSaveOnlyTriggeringTracks(bool value)
+  {
+    saveOnlyTriggeringTracks = value;
+  }
+
 private:
   void SaveRecoTracks();
   void CalcInvMass();
@@ -113,6 +118,8 @@ private:
   static TH1F* signalInterTracksDistanceOn1st;
   static TH1F* bgrInterTracksDistanceOn1st;
   static TH1F* bgrInterTracksDistanceOn1stSigns;
+  static TH1F* muchMomErrSig;
+  static TH1F* muchMomErrBgr;
   CbmStsKFTrackFitter extFitter;
   CbmVertex* fPrimVtx;
   // These two containers below accumulates respectively all positive and all negative reconstructed tracks for all events.
@@ -144,6 +151,7 @@ private:
   Int_t mcPointsCount;
   Int_t mcPointsTriggered;
 #endif//CALC_MUCH_DETECTORS_EFF
+  bool saveOnlyTriggeringTracks;
 
   ClassDef(LxFinder, 1);
 };

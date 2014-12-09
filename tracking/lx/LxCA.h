@@ -172,15 +172,25 @@ struct LxExtTrack
   CbmStsTrack* track;
   Int_t extId;
   LxMCTrack* mcTrack;
+#ifdef LX_EXT_LINK_SOPH
   std::pair<LxTrack*, Double_t> recoTrack;
+#endif//LX_EXT_LINK_SOPH
 
-  LxExtTrack() : track(0), extId(-1), mcTrack(0), recoTrack(0, 0) {}
+  LxExtTrack() : track(0), extId(-1), mcTrack(0)
+#ifdef LX_EXT_LINK_SOPH
+      , recoTrack(0, 0)
+#endif//LX_EXT_LINK_SOPH
+  {}
 };
 
 struct LxTrack
 {
   LxExtTrack* externalTrack;
+#ifdef LX_EXT_LINK_SOPH
   std::list<std::pair<LxExtTrack*, Double_t> > extTrackCandidates;
+#else//LX_EXT_LINK_SOPH
+  Double_t extLinkChi2;
+#endif//LX_EXT_LINK_SOPH
   bool matched;
   LxMCTrack* mcTrack;
 #ifdef CALC_LINK_WITH_STS_EFF
@@ -199,10 +209,13 @@ struct LxTrack
   Double_t x, y, z, dx, dy, tx, ty, dtx, dty;
 #endif//USE_KALMAN_FIT
   bool clone;
+  bool triggering;
 
   explicit LxTrack(LxTrackCandidate* tc);
   void Fit();
+#ifdef LX_EXT_LINK_SOPH
   void Rebind();
+#endif//LX_EXT_LINK_SOPH
 };
 
 struct LxSpace
