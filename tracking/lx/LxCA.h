@@ -223,6 +223,10 @@ struct LxSpace
   std::vector<LxStation*> stations;
   std::list<LxTrack*> tracks;
   std::list<LxExtTrack> extTracks;
+  Double_t muchStsBreakX;
+  Double_t muchStsBreakY;
+  Double_t muchStsBreakTx;
+  Double_t muchStsBreakTy;
 
   LxSpace();
   void Clear();

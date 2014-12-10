@@ -1333,7 +1333,7 @@ void LxStation::ConnectNeighbours()
 // LxSpace
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-LxSpace::LxSpace()
+LxSpace::LxSpace() : muchStsBreakX(0), muchStsBreakY(0), muchStsBreakTx(0), muchStsBreakTy(0)
 {
   for (int i = 0; i < LXSTATIONS; ++i)
     stations.push_back(new LxStation(this, i));
@@ -1709,14 +1709,10 @@ void LxSpace::JoinExtTracks()
   Double_t covYTy = 0.157198;*/
   //Double_t cutCoeff = 5.0;
 #ifdef USE_OLD_STS_LINKING_RULE
-  Double_t sigmaX = 0.8548;
-  Double_t sigmaX2 = sigmaX * sigmaX;
-  Double_t sigmaY = 0.6233;
-  Double_t sigmaY2 = sigmaY * sigmaY;
-  Double_t sigmaTx = 0.02251;
-  Double_t sigmaTx2 = sigmaTx * sigmaTx;
-  Double_t sigmaTy = 0.007758;
-  Double_t sigmaTy2 = sigmaTy * sigmaTy;
+  Double_t sigmaX2 = muchStsBreakX * muchStsBreakX;
+  Double_t sigmaY2 = muchStsBreakY * muchStsBreakY;
+  Double_t sigmaTx2 = muchStsBreakTx * muchStsBreakTx;
+  Double_t sigmaTy2 = muchStsBreakTy * muchStsBreakTy;
 #endif//USE_OLD_STS_LINKING_RULE
 
   CbmLitToolFactory* factory = CbmLitToolFactory::Instance();

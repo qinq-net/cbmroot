@@ -3,6 +3,9 @@
 #include "TH1.h"
 #include "TH2.h"
 #include <cmath>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
 
 using namespace std;
 
@@ -209,8 +212,15 @@ void LxTrackAnaSegments::Init()
 
 static void SaveHisto(TH1* histo)
 {
+  DIR* dir = opendir("configuration");
+
+  if (dir)
+    closedir(dir);
+  else
+    mkdir("configuration", 0700);
+
   char name[256];
-  sprintf(name, "triplets/%s.root", histo->GetName());
+  sprintf(name, "configuration/%s.root", histo->GetName());
   TFile fh(name, "RECREATE");
   histo->Write();
   fh.Close();

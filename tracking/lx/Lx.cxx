@@ -83,13 +83,22 @@ static bool GetHistoRMS(const char* histoNameBase, Int_t histoNumber, Double_t& 
 {
   char name[256];
   bool result = false;
-  sprintf(name, "configuration/%s_%d.root", histoNameBase, histoNumber);
+
+  if (histoNumber < 0)
+    sprintf(name, "configuration/%s.root", histoNameBase);
+  else
+    sprintf(name, "configuration/%s_%d.root", histoNameBase, histoNumber);
+
   TFile* curFile = TFile::CurrentFile();
   TFile* f = new TFile(name);
 
   if (!f->IsZombie())
   {
-    sprintf(name, "%s_%d", histoNameBase, histoNumber);
+    if (histoNumber < 0)
+      sprintf(name, "%s", histoNameBase);
+    else
+      sprintf(name, "%s_%d", histoNameBase, histoNumber);
+
     TH1F* h = static_cast<TH1F*> (f->Get(name));
     retVal = h->GetRMS();
     result = true;
@@ -140,6 +149,7 @@ InitStatus LxFinder::Init()
   listStsPts = LX_DYNAMIC_CAST<TClonesArray*> (fManager->GetObject("StsPoint"));
   //fPrimVtx = LX_DYNAMIC_CAST<CbmVertex*> (fManager->GetObject("PrimaryVertex"));
   fPrimVtx = new CbmVertex;
+  Double_t rms;
 
   // Read Z-positions of MUCH station layers and save them in LxLayer objects.
 
@@ -165,8 +175,6 @@ InitStatus LxFinder::Init()
 
     if (i > 0)
     {
-      Double_t rms;
-
       if (!GetHistoRMS("muchLongSegmentTxHisto", i, rms))
         return kFATAL;
 
@@ -235,6 +243,30 @@ InitStatus LxFinder::Init()
       }
     }
 #endif//USE_KALMAN_FIT
+  }
+
+  if (!GetHistoRMS("muchStsBreakX", -1, caSpace.muchStsBreakX))
+  {
+    cout << "LxFinder::Init(): Failed to read RMS from muchStsBreakX" << endl;
+    return kFATAL;
+  }
+
+  if (!GetHistoRMS("muchStsBreakY", -1, caSpace.muchStsBreakY))
+  {
+    cout << "LxFinder::Init(): Failed to read RMS from muchStsBreakY" << endl;
+    return kFATAL;
+  }
+
+  if (!GetHistoRMS("muchStsBreakTx", -1, caSpace.muchStsBreakTx))
+  {
+    cout << "LxFinder::Init(): Failed to read RMS from muchStsBreakTx" << endl;
+    return kFATAL;
+  }
+
+  if (!GetHistoRMS("muchStsBreakTy", -1, caSpace.muchStsBreakTy))
+  {
+    cout << "LxFinder::Init(): Failed to read RMS from muchStsBreakTy" << endl;
+    return kFATAL;
   }
 
   // Create an output array.

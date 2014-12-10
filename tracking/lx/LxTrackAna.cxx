@@ -14,6 +14,9 @@
 #include "CbmKFTrack.h"
 #include "CbmKFParticle.h"
 #include "TGeoManager.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
 
 ClassImp(LxTrackAna)
 
@@ -275,7 +278,16 @@ InitStatus LxTrackAna::Init()
 
 static void SaveHisto(TH1* histo, const char* name)
 {
-  TFile fh(name, "RECREATE");
+  DIR* dir = opendir("configuration");
+
+  if (dir)
+    closedir(dir);
+  else
+    mkdir("configuration", 0700);
+
+  char file_name[256];
+  sprintf(file_name, "configuration/%s", name);
+  TFile fh(file_name, "RECREATE");
   histo->Write();
   fh.Close();
   delete histo;
