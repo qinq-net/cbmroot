@@ -788,6 +788,8 @@ bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, bool MVD )
   
   MC->time = time;
   
+  if(MC->ID < 0)
+    return 1;
   CbmMCTrack *MCTrack = L1_DYNAMIC_CAST<CbmMCTrack*>( listMCTracks->At( MC->ID ) );
   if ( !MCTrack ) return 1;
   MC->pdg  = MCTrack->GetPdgCode();
