@@ -77,7 +77,10 @@ private:
     Char_t* fDataPointer; // pointer to data
     UInt_t fDataSize; // size of data
     UInt_t fEventNum; // current event number
-    UInt_t fNofDoubleHits; // number of detected double hits
+    UInt_t fNofHitsWithOneEdge; // number of hits With one edge (leading or trailing)
+    UInt_t fNofRawEvents; // number of raw HLD events
+    UInt_t fNofRawSubEvents; // number of raw HLD sub events
+    UInt_t fNofTimeDataMessages;// number of time data messages
 
     Double_t fSynchRefTime; // Reference time for synchronization
     map<UInt_t, Double_t> fSynchOffsetTimeMap; // first - TDCId, second - time offeset in ns
