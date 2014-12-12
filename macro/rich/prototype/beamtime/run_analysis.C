@@ -18,14 +18,14 @@ void run_analysis()
    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
    loadlibs();
 
-   TString hldFileDir = "/mnt/data/WLS/WLS_off/nonstretched/ringH2/offset00250/";
-   TString hldFileName = "te14326030330.hld";
+   TString hldFileDir = "";//"/mnt/data/WLS/WLS_off/nonstretched/ringH2/offset00250/";
+   TString hldFileName = "wls_off_ring_a1.hld";
    TString hldFullFileName;
    hldFullFileName = hldFileDir + hldFileName;
 
    TString outRootFileName;
 
-   TString outDir = "/home/pusan/nov2014res/";
+   TString outDir = "";//"/home/pusan/nov2014res/";
    outRootFileName = outDir + hldFileName + ".root";
 
    TString outputDir = "recoqa/";
