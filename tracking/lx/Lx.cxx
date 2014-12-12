@@ -1025,13 +1025,13 @@ void LxFinder::CalcInvMass()
       vector<CbmKFTrackInterface*> kfData;
       kfData.push_back(&muPlus);
       kfData.push_back(&muMinus);
-      CbmKFParticle DiMu;
-      DiMu.Construct(kfData, 0);
-      DiMu.TransportToDecayVertex();
-      Double_t m, merr;
-      DiMu.GetMass(m, merr);
+      //CbmKFParticle DiMu;
+      //DiMu.Construct(kfData, 0);
+      //DiMu.TransportToDecayVertex();
+      //Double_t m, merr;
+      //iMu.GetMass(m, merr);
 
-      massHisto->Fill(m);
+      //massHisto->Fill(m);
     }
   }
 }
@@ -1161,11 +1161,11 @@ void LxFinder::SaveBackground()
       vector<CbmKFTrackInterface*> kfData;
       kfData.push_back(&muPlus);
       kfData.push_back(&muMinus);
-      CbmKFParticle DiMu;
-      DiMu.Construct(kfData, 0);
-      DiMu.TransportToDecayVertex();
-      Double_t m, merr;
-      DiMu.GetMass(m, merr);
+      //CbmKFParticle DiMu;
+      //DiMu.Construct(kfData, 0);
+      //DiMu.TransportToDecayVertex();
+      //Double_t m, merr;
+      //DiMu.GetMass(m, merr);
 
       //for (int k = 0; k < 1000; ++k)
         //backgroundMassHisto->Fill(m);

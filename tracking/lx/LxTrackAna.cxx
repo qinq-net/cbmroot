@@ -355,12 +355,12 @@ static void BuildInvMass2(list<CbmStsTrack*>& stsTracks, TH1* histo)
         kfData.push_back(&muPlus);
       }
 
-      CbmKFParticle DiMu;
-      DiMu.Construct(kfData, 0);
-      DiMu.TransportToDecayVertex();
-      Double_t m, merr;
-      DiMu.GetMass(m, merr);
-      histo->Fill(m);
+      //CbmKFParticle DiMu;
+      //DiMu.Construct(kfData, 0);
+      //DiMu.TransportToDecayVertex();
+      //Double_t m, merr;
+      //DiMu.GetMass(m, merr);
+      //histo->Fill(m);
     }
   }
 }
