@@ -13,8 +13,8 @@
 #include "CbmFiberHodoAddress.h"
 #include "CbmFiberHodoDigi.h"
 
-#include "TH1F.h"
-#include "TH2F.h"
+//#include "TH1F.h"
+//#include "TH2F.h"
 
 #include <map>
 #include <set>
@@ -23,6 +23,9 @@
 //class TClonesArray;
 #include "TClonesArray.h"
 #include "TString.h"
+
+class TH1F;
+class TH2F;
 
 struct classcomp {
   bool operator() (const CbmFiberHodoDigi* lhs, const CbmFiberHodoDigi* rhs) const
@@ -66,6 +69,24 @@ class CbmFiberHodoClusterFinder : public FairTask
   std::map<Int_t, std::set<CbmFiberHodoDigi*, classcomp> > fDigiMap;   /** digis per hodo layer **/ 
 
   TString fInputLevelName;
+
+  TH2F* hodo1_pos;
+  TH2F* hodo2_pos;
+
+  TH2F* hodo1_xcor;
+  TH2F* hodo2_xcor;
+
+  TH2F* hodo1_ycor;
+  TH2F* hodo2_ycor;
+  TH1F* hodo1x;
+  TH1F* hodo1y;
+  TH1F* hodo2x;
+  TH1F* hodo2y;
+  TH2F* hodo_xx;
+  TH2F* hodo_yy;
+  TH2F* hodo1_pos_nocut;
+  TH1F* hodo1x_nocut;
+  TH1F* hodo1y_nocut;
 
   CbmFiberHodoClusterFinder(const CbmFiberHodoClusterFinder&);
   CbmFiberHodoClusterFinder& operator=(const CbmFiberHodoClusterFinder&);

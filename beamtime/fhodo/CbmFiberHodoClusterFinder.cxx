@@ -11,6 +11,9 @@
 
 #include "TClonesArray.h"
 #include "TMath.h"
+#include "TH1F.h"
+#include "TH2F.h"
+
 #include <iostream>
 
 using std::map;
@@ -23,7 +26,22 @@ CbmFiberHodoClusterFinder::CbmFiberHodoClusterFinder()
    fDigis(NULL),
    fClusters(NULL),
    finalClusters(NULL),
-   fInputLevelName("HodoCalibDigi")
+   fInputLevelName("HodoCalibDigi"),
+   hodo1_pos(NULL),
+   hodo2_pos(NULL),
+   hodo1_xcor(NULL),
+   hodo2_xcor(NULL),
+   hodo1_ycor(NULL),
+   hodo2_ycor(NULL),
+   hodo1x(NULL),
+   hodo1y(NULL),
+   hodo2x(NULL),
+   hodo2y(NULL),
+   hodo_xx(NULL),
+   hodo_yy(NULL),
+   hodo1_pos_nocut(NULL),
+   hodo1x_nocut(NULL),
+   hodo1y_nocut(NULL)
 {
 }
 // --------------------------------------------------------------------
@@ -88,6 +106,26 @@ InitStatus CbmFiberHodoClusterFinder::Init()
 
   fClusters = new TClonesArray("CbmFiberHodoCluster", 100);
   ioman->Register("FiberHodoClusterCandidate","TRD",fClusters,kTRUE);
+
+  hodo1x = new TH1F("hodo1x", "Hodo 1 x", 64, 0., 64.);
+  hodo1y = new TH1F("hodo1y", "Hodo 1 y", 64, 0., 64.);
+  hodo1x_nocut = new TH1F("hodo1x_nocut", "Hodo 1 x, nocut", 64, 0., 64.);
+  hodo1y_nocut = new TH1F("hodo1y_nocut", "Hodo 1 y, nocut", 64, 0., 64.);
+  hodo2x = new TH1F("hodo2x", "Hodo 2 x", 64, 0., 64.);
+  hodo2y = new TH1F("hodo2y", "Hodo 2 y", 64, 0., 64.);
+
+  hodo1_pos = new TH2F("xy1", "y vs. x Hodo 1", 64, 0., 64., 64, 0., 64.);
+  hodo1_pos_nocut = new TH2F("xy1_nocut", "y vs. x Hodo 1, nocut", 64, 0., 64., 64, 0., 64.);
+  hodo2_pos = new TH2F("xy2", "y vs. x Hodo 2", 64, 0., 64., 64, 0., 64.);
+
+  hodo1_xcor = new TH2F("x1deltax", "deltax vs. x1", 64, 0., 64., 32, -32., 32.);
+  hodo2_xcor = new TH2F("x2deltax", "deltax vs. x2", 64, 0., 64., 32, -32., 32.);
+
+  hodo1_ycor = new TH2F("y1deltay", "deltay vs. y1", 64, 0., 64., 32, -32., 32.);
+  hodo2_ycor = new TH2F("y2deltay", "deltay vs. y2", 64, 0., 64., 32, -32., 32.);
+
+  hodo_xx = new TH2F("xx", "x2 vs. x1", 64, 0., 64., 64, 0., 64.);
+  hodo_yy = new TH2F("yy", "y2 vs. y1", 64, 0., 64., 64, 0., 64.);
 
   return kSUCCESS;
   
@@ -235,12 +273,88 @@ void CbmFiberHodoClusterFinder::Exec(Option_t * option)
 	  new_cluster->SetMeanError(nofFiber / TMath::Sqrt(12.));
 	}  
     }
+
+    if ( 4 == finalClusters->GetEntriesFast() ) {
+      // check if there is a cluster from each layer
+      set<Int_t> layerset; 
+      Double_t x1;
+      Double_t x2;
+      Double_t y1;
+      Double_t y2;
+      for(Int_t iclust=0; iclust<4; ++iclust ) {
+	Int_t layerID = CbmFiberHodoAddress::GetLayerAddress(static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetAddress());
+	if ( layerset.find(layerID) == layerset.end() ) {
+          layerset.insert(layerID);
+          switch (layerID) {
+	  case 0:
+	    x1=64-static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetMean();
+	    break;
+	  case 16:
+	    y1=static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetMean();
+	    break;
+	  case 1:
+	    x2=static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetMean();
+	    break;
+	  case 17:
+	    y2=static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetMean();
+	    break;
+	  }
+	} else {
+	  return;
+	}
+	
+      }
+      hodo1_pos->Fill(x1, y1);
+      hodo2_pos->Fill(x2, y2);
+      hodo_xx->Fill(x1, x2);
+      hodo_yy->Fill(y1, y2);
+      hodo1_xcor->Fill(x1, x1-x2);
+      hodo2_xcor->Fill(x2, x1-x2);
+      hodo1_ycor->Fill(y1, y1-y2);
+      hodo2_ycor->Fill(y2, y1-y2);
+      hodo1x->Fill(x1);
+      hodo1y->Fill(y1);
+      hodo2x->Fill(x2);
+      hodo2y->Fill(y2);
+    }
+
+    Double_t x1;
+    Double_t y1;
+    for(Int_t iclust=0; iclust<finalClusters->GetEntriesFast(); ++iclust ) {
+      Int_t layerID = CbmFiberHodoAddress::GetLayerAddress(static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetAddress());
+      switch (layerID) {
+      case 0:
+	x1=64-static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetMean();
+	break;
+      case 16:
+	y1=static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetMean();
+	break;
+      }
+      hodo1_pos_nocut->Fill(x1, y1);
+      hodo1x_nocut->Fill(x1);
+      hodo1y_nocut->Fill(y1);
+    }
+    
+
 }
 // --------------------------------------------------------------------
 
   // ---- Finish --------------------------------------------------------
   void CbmFiberHodoClusterFinder::Finish()
   {
+    hodo1_pos->Write();
+      hodo2_pos->Write();
+      hodo_xx->Write();
+      hodo_yy->Write();
+      hodo1_xcor->Write();
+      hodo2_xcor->Write();
+      hodo1_ycor->Write();
+      hodo2_ycor->Write();
+      hodo1x->Write();
+      hodo1y->Write();
+      hodo2x->Write();
+      hodo2y->Write();
+
   }
 
 
