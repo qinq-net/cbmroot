@@ -216,7 +216,7 @@ void StsCosyClusterFinder::Exec(Option_t * option)
   if(nofDigis>0)
     {
       Int_t nofClusterCandidates = fClusters->GetEntriesFast();
-      int clust[6]={0.,0.,0.,0.,0.,0.}; 
+      int clust[6]={0,0,0,0,0,0}; 
       int layer=0;
       for (Int_t iclus = 0; iclus < nofClusterCandidates; iclus++)
 	{

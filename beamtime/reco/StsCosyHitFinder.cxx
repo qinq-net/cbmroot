@@ -227,7 +227,7 @@ void StsCosyHitFinder::Exec(Option_t * option)
   
   double x=-100;
   double y=-100;
-  int clust[6]={0.,0.,0.,0.,0.,0.}; 
+  int clust[6]={0,0,0,0,0,0}; 
   
   for (Int_t iclus = 0; iclus < nofSTSClusters; iclus++)
     {
