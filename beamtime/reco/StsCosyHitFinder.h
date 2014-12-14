@@ -49,6 +49,10 @@ class StsCosyHitFinder : public FairTask
   /** Executed task **/
   virtual void Exec(Option_t * option);
   Int_t GetEntries () { return fChain->GetEntries();}
+  
+  void SetTriggeredMode(Bool_t mode) { fTriggeredMode = mode; }
+  void SetTriggeredStation(Int_t station) { fTriggeredStation = station ; }
+  
   /** Finish task **/
   virtual void Finish();
  
@@ -68,6 +72,9 @@ class StsCosyHitFinder : public FairTask
   TH1F *deltat3;
   TH1F *deltat4;
   TH1F *h_time_diff;
+
+  Bool_t fTriggeredMode; ///< Flag if data is taken in triggered mode
+  Int_t  fTriggeredStation;
 
   StsCosyHitFinder(const StsCosyHitFinder&);
   StsCosyHitFinder& operator=(const StsCosyHitFinder&);

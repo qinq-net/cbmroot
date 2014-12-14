@@ -30,7 +30,9 @@ StsCosyHitFinder::StsCosyHitFinder()
    fDigis(NULL),
    fHits(NULL),
    stsClusters(NULL),
-   hodoClusters(NULL)
+   hodoClusters(NULL),
+   fTriggeredMode(kFALSE),
+   fTriggeredStation(2)
 {
   fChain = new TChain("cbmsim");
   //  outFile=NULL;
@@ -129,6 +131,11 @@ void StsCosyHitFinder::Exec(Option_t * option)
   Int_t nofHodoClusters = hodoClusters->GetEntries();
   if(nofSTSClusters<1 || nofHodoClusters <1  )
     return;
+  
+  Double_t time_limits[] = {20, 22, 18};
+  Double_t time_shifts[] = {-6, -4, 10};
+  if(fTriggeredMode){time_limits[2]=4;time_shifts[2]=38;}
+      
   
   int detector_layer=-1;
   CbmFiberHodoCluster* hodo_temp=NULL;
@@ -263,7 +270,7 @@ void StsCosyHitFinder::Exec(Option_t * option)
 	  const CbmStsCluster* backCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_0p[k]));
 	  Double_t backChannel = backCluster->GetMean();
 	  Double_t back_time = backCluster->GetTime();
-	  if(TMath::Abs(back_time -front_time)<20)
+	  if(TMath::Abs(back_time -front_time - time_shifts[0]) < time_limits[0])
 	    {
 	      Double_t xHit = (frontChannel - 127)*0.005;
 	      Double_t yHit = (backChannel-127)*0.005;
@@ -292,7 +299,7 @@ void StsCosyHitFinder::Exec(Option_t * option)
 	  const CbmStsCluster* backCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_1p[k]));
 	  Double_t backChannel = backCluster->GetMean();
 	  Double_t back_time = backCluster->GetTime();
-	  if(TMath::Abs(back_time -front_time)<20)
+	  if(TMath::Abs(back_time -front_time - time_shifts[1]) < time_limits[1])
 	    {
 	      Double_t xHit = (frontChannel-127)*0.005;
 	      Double_t yHit = (backChannel-127)*0.005;
@@ -322,12 +329,11 @@ void StsCosyHitFinder::Exec(Option_t * option)
 	  Double_t backChannel = backCluster->GetMean();
 	  Double_t back_time = backCluster->GetTime();
 	  
-	  if(TMath::Abs(back_time -front_time)<20)
+	  if(TMath::Abs(back_time -front_time - time_shifts[2]) < time_limits[2])
 	    {
-	      Double_t xHit = (frontChannel+448 - 511.5)*0.0058;
-	      Double_t yHit = (backChannel+515-frontChannel-448)*0.0058/TMath::Tan(7.5*TMath::DegToRad()) - 3.;
 	      Double_t zHit = 70.0;
-	      
+	      Double_t xHit = (frontChannel+448)*0.0058 - 3.;
+	      Double_t yHit = (frontChannel+448 -(backChannel+515))*0.0058/TMath::Tan(7.5*TMath::DegToRad()) + 3.;	      
 	      TVector3 pos(xHit, yHit, zHit);
 	      TVector3 dpos;
 	      dpos.SetXYZ(frontCluster->GetMeanError()*0.0058,backCluster->GetMeanError()*0.0058, 0.);

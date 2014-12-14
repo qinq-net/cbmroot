@@ -23,7 +23,8 @@ using namespace std;
 
 // ---- Default constructor -------------------------------------------
 CbmStsCosyBL::CbmStsCosyBL()
-  :FairTask("CbmStsCosyBL",1),fDigis(NULL)
+  :FairTask("CbmStsCosyBL",1),fDigis(NULL),fTriggeredMode(kFALSE),
+   fTriggeredStation(2)
    { 
      fChain = new TChain("cbmsim");
      outFile=NULL;
@@ -166,6 +167,9 @@ InitStatus CbmStsCosyBL::ReInit()
 void CbmStsCosyBL::Exec(Option_t* option)
 {
 
+  cDigis->Clear();
+  chDigis->Clear();
+
   double hit_layer[2][2];
   
   for(int k=0;k<2;k++)
@@ -232,7 +236,11 @@ void CbmStsCosyBL::Exec(Option_t* option)
 	      int station = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsStation);
 	      int side = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsSide);
 	      int ch = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsChannel);
-	      double adc = -StsDigi->GetCharge() + base_line_array.at(station).at(side).at(ch);
+	      
+	      Double_t limit = 0;
+	      if(fTriggeredMode && station==fTriggeredStation)limit = -130;
+	      
+	      double adc = -StsDigi->GetCharge() + base_line_array.at(station).at(side).at(ch) - limit;
 	      if(adc>0)
 		{
 		  new ( (*cDigis)[fNDigis] ) CbmStsDigi(StsDigi->GetAddress(), StsDigi->GetTime(), (UShort_t)adc);
@@ -249,7 +257,7 @@ void CbmStsCosyBL::Exec(Option_t* option)
   
     
   fLogger->Debug(MESSAGE_ORIGIN,"Exec of CbmStsCosyBL");
-  Reset();
+//  Reset();
 }
 
  void CbmStsCosyBL::FinishEvent()

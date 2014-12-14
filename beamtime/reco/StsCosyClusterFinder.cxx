@@ -22,7 +22,9 @@ StsCosyClusterFinder::StsCosyClusterFinder()
   :FairTask("StsCosyClusterFinder",1),
    fDigis(NULL),
    fClusters(NULL),
-   finalClusters(NULL)
+   finalClusters(NULL),
+   fTriggeredMode(kFALSE),
+   fTriggeredStation(2)
 {
 }
 // --------------------------------------------------------------------
@@ -100,6 +102,10 @@ void StsCosyClusterFinder::Exec(Option_t * option)
   fClusters->Clear();
   finalClusters->Clear();
   
+  Double_t minCharge = 50;
+  Double_t maxCharge = 500;
+
+  
   map<Int_t, set<CbmStsDigi*, classcomp1> >::iterator mapIt;
   for (mapIt=fDigiMap.begin(); mapIt!=fDigiMap.end(); mapIt++) 
     {
@@ -125,7 +131,10 @@ void StsCosyClusterFinder::Exec(Option_t * option)
       int station = CbmStsAddress::GetElementId(digi->GetAddress(),kStsStation);
       int side = CbmStsAddress::GetElementId(digi->GetAddress(),kStsSide);
       Int_t layer= 2*station+side;
-      if(digi->GetCharge() > 50 && digi->GetCharge() < 500)
+      
+      if(fTriggeredMode && station==fTriggeredStation)maxCharge=200;
+
+      if(digi->GetCharge() > minCharge && digi->GetCharge() < maxCharge)
       {
 	layerSet.insert(layer);
 	fDigiMap[layer].insert(digi);
@@ -174,14 +183,24 @@ void StsCosyClusterFinder::Exec(Option_t * option)
 	      digi = static_cast<CbmStsDigi*>(fDigis->At(index));
 	      time = digi->GetTime();
 	      stripNr = CbmStsAddress::GetElementId((*j)->GetAddress(),kStsChannel);
-	      if (1 == stripNr-stripNrPrev && TMath::Abs(time - timePrev)< 40) 
+	      
+	      int station = CbmStsAddress::GetElementId(digi->GetAddress(),kStsStation);
+	      
+	      Bool_t TrCl = kTRUE;
+	      
+	      if(fTriggeredMode && station==fTriggeredStation)
+	      {
+		if(TMath::Abs(time - timePrev) > 1)TrCl=kFALSE;
+	      }
+
+	      if (1 == stripNr-stripNrPrev && TMath::Abs(time - timePrev)< 40 && TrCl) 
 		{
 		  stripNrPrev = stripNr;
 		  timePrev = time;
 		  cluster = (CbmStsCluster*) fClusters->Last();
 		  cluster->AddDigi(index);  
 		} 
-	      else 
+	      else if(TrCl)
 		{
 		  Int_t size = fClusters->GetEntriesFast();
 		  cluster = new ((*fClusters)[size]) CbmStsCluster();

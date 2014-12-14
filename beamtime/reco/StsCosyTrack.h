@@ -24,6 +24,8 @@ class StsCosyTrack : public FairTask
   virtual void Exec(Option_t* opt);
   Int_t GetEntries () { return fChain->GetEntries();}
 
+  void SetAlignment(Bool_t mode){fAlignment = mode;}
+  void SetChi2Cut(Double_t chi2x, Double_t chi2y){fChi2X=chi2x;fChi2Y=chi2y;}
 
  private:
 
@@ -58,12 +60,16 @@ class StsCosyTrack : public FairTask
   TH1F* y_chi2; 
   TH1F* y_pchi2;
   
-  TH2F * h_xx12;
+  TH2F * h_xx01;
+  TH2F * h_xx21;
   TH2F * h_xx02;
   TH2F * h_yy01;
-  TH2F * h_xx01;
-  TH2F * h_yy12;
+  TH2F * h_yy21;
   TH2F * h_yy02;
+  TH2D * XY[5];  
+
+  Bool_t fAlignment;
+  Double_t fChi2X, fChi2Y;
   
   ClassDef(StsCosyTrack,1);
 

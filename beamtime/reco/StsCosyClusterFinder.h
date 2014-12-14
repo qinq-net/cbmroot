@@ -54,7 +54,10 @@ class StsCosyClusterFinder : public FairTask
   /** Executed task **/
   virtual void Exec(Option_t * option);
   
-  /** Finish task **/
+  void SetTriggeredMode(Bool_t mode) { fTriggeredMode = mode; }
+  void SetTriggeredStation(Int_t station) { fTriggeredStation = station ; }
+
+/** Finish task **/
   virtual void Finish();
 
  private:
@@ -76,6 +79,9 @@ class StsCosyClusterFinder : public FairTask
   TH1F *time_diff_0;
   TH1F *time_diff_1;
   TH1F *time_diff_2;
+
+  Bool_t fTriggeredMode; ///< Flag if data is taken in triggered mode
+  Int_t  fTriggeredStation;
 
   std::map<Int_t, std::set<CbmStsDigi*, classcomp1> > fDigiMap;   /** digis per hodo layer **/ 
 

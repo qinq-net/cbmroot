@@ -49,6 +49,9 @@ class CbmStsCosyBL : public FairTask
     void BLClean();
     void BaseLine(TClonesArray* fBaselineDigis,     vector< vector < vector < double> > > base_line_array);
     void HodoBaseLine(TClonesArray* fBaselineDigis, vector< vector < vector < double> > > base_line);
+    
+    void SetTriggeredMode(Bool_t mode) { fTriggeredMode = mode; }
+    void SetTriggeredStation(Int_t station) { fTriggeredStation = station ; }
 
     virtual void Reset();    
 
@@ -92,6 +95,10 @@ class CbmStsCosyBL : public FairTask
 
     Bool_t calib;
     Bool_t hodo_calib;
+
+    Bool_t fTriggeredMode; ///< Flag if data is taken in triggered mode
+    Int_t  fTriggeredStation;
+
     vector< vector < vector < double> > > base_line_array;
     vector< vector < vector < double> > > hodo_BL_array;
     /** Input array from previous already existing data level **/
