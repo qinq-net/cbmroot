@@ -9,41 +9,32 @@
 
 
 
-#ifndef CBMDAQMAP_H
-#define CBMDAQMAP_H 1
+#ifndef CBMDAQMAPCOSY2014_H
+#define CBMDAQMAPCOSY2014_H 1
 
+#include "CbmDaqMap.h"
 
-#include "TObject.h"
-#include "TString.h"
-
-
-class CbmDaqMap : public TObject
+class CbmDaqMapCosy2014 : public CbmDaqMap
 {
-
 
  public:
 
   /**   Default constructor   **/
-  CbmDaqMap();
-
+  CbmDaqMapCosy2014();
 
   /**   Standard constructor 
    **@param iRun   run number
    **/
-  CbmDaqMap(Int_t iRun);
-
+  CbmDaqMapCosy2014(Int_t iRun);
 
   /**   Destructor   **/
-  virtual ~CbmDaqMap();
-
+  virtual ~CbmDaqMapCosy2014();
 
   /**   Set trun number  */
   void SetRun(Int_t iRun) { fRun = iRun; }
 
-
   /**  System Id from ROC Id  **/
   Int_t GetSystemId(Int_t rocId);
-
 
   /**  STS station from ROC Id  **/
   Int_t GetStsStation(Int_t rocId);
@@ -82,14 +73,13 @@ class CbmDaqMap : public TObject
 
   void InitializeFiberHodoMapping();
   
-  Int_t fRun;        /** Run number  **/
   Int_t fFiberHodoFiber[128];  /** Mapping from fiber hodoscope feb channel to fiber number **/
   Int_t fFiberHodoPlane[128];  /** Mapping from fiber hodoscope feb channel to plane number 1=X, 2=Y **/
   Int_t fFiberHodoPixel[128];  /** Mapping from fiber hodoscope feb channel to pixel number **/
 
 
 
-  ClassDef(CbmDaqMap,1);
+  ClassDef(CbmDaqMapCosy2014,1);
 
 };
 

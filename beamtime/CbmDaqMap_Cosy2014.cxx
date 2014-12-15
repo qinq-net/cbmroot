@@ -1,11 +1,11 @@
-/**@file CbmDaqMap.cxx
+/**@file CbmDaqMapCosy2014.cxx
  **@date 11.12.2013
  **@author V. Friese <v.friese@gsi.de>
  **/
 
+#include "CbmDaqMapCosy2014.h"
 
 #include "FairLogger.h"
-#include "CbmDaqMap.h"
 #include "CbmDetectorList.h"
 
 #include <iostream>
@@ -17,7 +17,7 @@ using std::endl;
 
 
 // -----   Default Constructor  ---------------------------------------------- 
-CbmDaqMap::CbmDaqMap() 
+CbmDaqMapCosy2014::CbmDaqMapCosy2014() 
   : TObject(),
     fRun(-1),
     fFiberHodoFiber(),
@@ -31,7 +31,7 @@ CbmDaqMap::CbmDaqMap()
 
 
 // -----   Standard Constructor  --------------------------------------------- 
-CbmDaqMap::CbmDaqMap(Int_t iRun) 
+CbmDaqMapCosy2014::CbmDaqMapCosy2014(Int_t iRun) 
   : TObject(),
     fRun(iRun),
     fFiberHodoFiber(),
@@ -45,12 +45,12 @@ CbmDaqMap::CbmDaqMap(Int_t iRun)
 
 
 // -----   Destructor   ------------------------------------------------------
-CbmDaqMap::~CbmDaqMap() { }
+CbmDaqMapCosy2014::~CbmDaqMapCosy2014() { }
 // ---------------------------------------------------------------------------
 
 
 // -----   Get System   ------------------------------------------------------
-Int_t CbmDaqMap::GetSystemId(Int_t rocId) {
+Int_t CbmDaqMapCosy2014::GetSystemId(Int_t rocId) {
 	Int_t systemId = -1;
  	if ( rocId >= 0  && rocId <= 1 ) systemId = kFHODO;
 	else if ( rocId >= 2  || rocId <= 7 ) systemId = kSTS;
@@ -67,7 +67,7 @@ Int_t CbmDaqMap::GetSystemId(Int_t rocId) {
 
 
 // -----   Get STS station number   ------------------------------------------
-Int_t CbmDaqMap::GetStsStation(Int_t rocId) {
+Int_t CbmDaqMapCosy2014::GetStsStation(Int_t rocId) {
 	if ( rocId < 2 || rocId > 7 ) {
 		LOG(ERROR) << GetName() << ": Illegal STS ROC Id " << rocId
 				       << FairLogger::endl;
@@ -79,7 +79,7 @@ Int_t CbmDaqMap::GetStsStation(Int_t rocId) {
 
 
 // -----   Get MUCH station number  ------------------------------------------
-Int_t CbmDaqMap::GetMuchStation(Int_t rocId) {
+Int_t CbmDaqMapCosy2014::GetMuchStation(Int_t rocId) {
 	Int_t station = -1;
 	if ( rocId == 0 || rocId == 1 ) station = 0;
 	else if ( rocId == 2 ) station = 1;
@@ -91,7 +91,7 @@ Int_t CbmDaqMap::GetMuchStation(Int_t rocId) {
 // ---------------------------------------------------------------------------
 
 // -----   Get Fiber Hodoscope station number   ------------------------------
-Int_t CbmDaqMap::GetFiberHodoStation(Int_t rocId) {
+Int_t CbmDaqMapCosy2014::GetFiberHodoStation(Int_t rocId) {
 	if ( rocId < 0 || rocId > 1 ) {
 		LOG(ERROR) << GetName() << ": Illegal Fiber Hodoscope ROC Id " << rocId
 				       << FairLogger::endl;
@@ -104,13 +104,13 @@ Int_t CbmDaqMap::GetFiberHodoStation(Int_t rocId) {
 
 
 // ----  Get STS sensor side   -----------------------------------------------
-Int_t CbmDaqMap::GetStsSensorSide(Int_t rocId) {
+Int_t CbmDaqMapCosy2014::GetStsSensorSide(Int_t rocId) {
 	return ( TMath::Even(rocId) ? 1 : 0 );
 }
 // ---------------------------------------------------------------------------
 
 // -----   Get STS channel number   ------------------------------------------
-Int_t CbmDaqMap::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
+Int_t CbmDaqMapCosy2014::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
 
 	Int_t channel = -1;
 
@@ -148,7 +148,7 @@ Int_t CbmDaqMap::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
 
 
 // -----   Get STS channel number   ------------------------------------------
-Int_t CbmDaqMap::GetFiberHodoChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
+Int_t CbmDaqMapCosy2014::GetFiberHodoChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
 	Int_t channel = -1;
 	return channel;
 }
@@ -157,7 +157,7 @@ Int_t CbmDaqMap::GetFiberHodoChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
 
 
 // -----   Mapping   ---------------------------------------------------------
-Bool_t CbmDaqMap::Map(Int_t iRoc, Int_t iNx, Int_t iId,
+Bool_t CbmDaqMapCosy2014::Map(Int_t iRoc, Int_t iNx, Int_t iId,
 			Int_t& iStation, Int_t& iSector, 
 			Int_t& iSide, Int_t& iChannel) {
 
@@ -204,7 +204,7 @@ Bool_t CbmDaqMap::Map(Int_t iRoc, Int_t iNx, Int_t iId,
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-void CbmDaqMap::InitializeFiberHodoMapping()
+void CbmDaqMapCosy2014::InitializeFiberHodoMapping()
 {
   // This code was copied from the Go4 analysis used for previous beamtimes
   for (Int_t i=0; i<128; i++) {
@@ -277,5 +277,5 @@ void CbmDaqMap::InitializeFiberHodoMapping()
 
 }
 
-ClassImp(CbmDaqMap)
+ClassImp(CbmDaqMapCosy2014)
 
