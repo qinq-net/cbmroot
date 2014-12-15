@@ -21,7 +21,10 @@ CbmMvdCluster::CbmMvdCluster()
    fDigisInThisObject(0),
    fTotalDigisInCluster(-1),
    fPixelMap(),
-   fStation(-1)
+   fStation(-1),
+   fRefId(-1),
+   fDetectorId(-1),
+   fClusterCharge(0)
 {
   for(Int_t i=0;i<fMaxDigisInObject; i++){fDigiArray[i]=-1;}
 }
@@ -31,11 +34,15 @@ CbmMvdCluster::CbmMvdCluster()
 CbmMvdCluster::CbmMvdCluster(Int_t* digiList, Short_t digisInThisObject, Short_t totalDigisInCluster, Int_t neighbourDown) 
  : CbmCluster(),
    fDigiArray(),
-   fNeighbourDown(neighbourDown),
+   fNeighbourDown(-1),
    fNeighbourUp(-1),
-   fDigisInThisObject(digisInThisObject),
-   fTotalDigisInCluster(totalDigisInCluster),
-   fStation(-1)
+   fDigisInThisObject(0),
+   fTotalDigisInCluster(-1),
+   fPixelMap(),
+   fStation(-1),
+   fRefId(-1),
+   fDetectorId(-1),
+   fClusterCharge(0)
 {
     for(Int_t i=0;i<fMaxDigisInObject; i++){fDigiArray[i]=-1;}
     for(Int_t i=0;i<digisInThisObject; i++){fDigiArray[i]=digiList[i];}   
@@ -44,14 +51,17 @@ CbmMvdCluster::CbmMvdCluster(Int_t* digiList, Short_t digisInThisObject, Short_t
 
 // -------------------------------------------------------------------------
 CbmMvdCluster::CbmMvdCluster(const CbmMvdCluster& rhs)
-  :CbmCluster(),
+ : CbmCluster(),
    fDigiArray(),
    fNeighbourDown(-1),
    fNeighbourUp(-1),
    fDigisInThisObject(0),
    fTotalDigisInCluster(-1),
    fPixelMap(),
-   fStation(-1)  
+   fStation(-1),
+   fRefId(-1),
+   fDetectorId(-1),
+   fClusterCharge(0) 
 { 
 	fPixelMap = rhs.fPixelMap;
         fNeighbourDown = rhs.fNeighbourDown;
@@ -68,6 +78,12 @@ CbmMvdCluster::CbmMvdCluster(const CbmMvdCluster& rhs)
 CbmMvdCluster::~CbmMvdCluster() {}
 // -------------------------------------------------------------------------
 
-
+// -------------------------------------------------------------------------
+void CbmMvdCluster::SetPixelMap(map <pair<Int_t, Int_t>, Int_t > PixelMap)
+{
+fPixelMap = PixelMap;
+for(map<pair<Int_t, Int_t>, Int_t>::iterator iter = fPixelMap.begin(); iter != fPixelMap.end(); iter++)
+	fClusterCharge += iter->second;
+}
 
 ClassImp(CbmMvdCluster)

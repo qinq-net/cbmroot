@@ -63,10 +63,10 @@ CbmMvdCluster& operator=(const CbmMvdCluster&){return *this;};
   /** Setters **/
   void SetNeighbourUp(Int_t index){fNeighbourUp=index;};
   void SetNeighbourDown(Int_t index){fNeighbourDown=index;};
-  void SetPixelMap(map <pair<Int_t, Int_t>, Int_t > PixelMap){fPixelMap = PixelMap;}; 
+  void SetPixelMap(map <pair<Int_t, Int_t>, Int_t > PixelMap); 
   void SetStationNr(Int_t stationNr){fStation = stationNr;};
   void SetRefId(Int_t RefId){fRefId = RefId;}; //* stores the index to the global TClonesArray	
-  void SetDetectorId(Int_t detId)      { fDetectorId = detId;      };
+  void SetDetectorId(Int_t detId)      { fDetectorId = detId;};
   /** Accessors **/
   
   Int_t   GetNeighbourDown(){return fNeighbourDown;};
@@ -79,7 +79,7 @@ CbmMvdCluster& operator=(const CbmMvdCluster&){return *this;};
   Int_t* GetDigiList(){return fDigiArray;};
   Int_t GetRefId(){return fRefId;};
 
-
+  Float_t GetClusterCharge(){return fClusterCharge;};
    
  protected:
      static const Short_t fMaxDigisInObject=8;
@@ -92,6 +92,8 @@ CbmMvdCluster& operator=(const CbmMvdCluster&){return *this;};
      Int_t fStation;
      Int_t fRefId;
   Int_t fDetectorId;
+     Float_t fClusterCharge;
+
   ClassDef(CbmMvdCluster,2);
 
 };
