@@ -22,7 +22,9 @@ CbmStsHodoCorrelations::CbmStsHodoCorrelations()
     hodo1_pos_sts0(NULL),
     hodo2_pos_sts0(NULL),
     hodo1_pos_sts1(NULL),
-    hodo2_pos_sts1(NULL)
+    hodo2_pos_sts1(NULL),
+    hodo1_pos_sts2(NULL),
+    hodo2_pos_sts2(NULL)
 {
 }
 
@@ -86,6 +88,9 @@ InitStatus CbmStsHodoCorrelations::Init()
   hodo1_pos_sts1 = new TH2F("xy1_sts1", "y vs. x Hodo 1, if sts1", 64, 0., 64., 64, 0., 64.);
   hodo2_pos_sts1 = new TH2F("xy2_sts1", "y vs. x Hodo 2, if sts1", 64, 0., 64., 64, 0., 64.);
 
+  hodo1_pos_sts2 = new TH2F("xy1_sts2", "y vs. x Hodo 1, if sts2", 64, 0., 64., 64, 0., 64.);
+  hodo2_pos_sts2 = new TH2F("xy2_sts2", "y vs. x Hodo 2, if sts2", 64, 0., 64., 64, 0., 64.);
+
   return kSUCCESS;
 
 }
@@ -107,6 +112,8 @@ void CbmStsHodoCorrelations::Exec(Option_t* option)
   UInt_t St0S1 = 0;
   UInt_t St1S0 = 0;
   UInt_t St1S1 = 0;
+  UInt_t St2S0 = 0;
+  UInt_t St2S1 = 0;
  
   // check if there is a coincidence between p- and n-side of sts0
   CbmStsDigi* stsDigi = NULL;
@@ -120,6 +127,8 @@ void CbmStsHodoCorrelations::Exec(Option_t* option)
     if ( 0 == station && 1 == side ) St0S1++; 
     if ( 1 == station && 0 == side ) St1S0++; 
     if ( 1 == station && 1 == side ) St1S1++; 
+    if ( 2 == station && 0 == side ) St2S0++; 
+    if ( 2 == station && 1 == side ) St2S1++; 
   }
 
   if ( 4 == nofHodoClusters ) {
@@ -156,10 +165,13 @@ void CbmStsHodoCorrelations::Exec(Option_t* option)
       hodo1_pos_sts0->Fill(x1, y1);
       hodo2_pos_sts0->Fill(x2, y2);
     }  
-    
     if ( St1S0 > 0 && St1S1 > 0 ) {
       hodo1_pos_sts1->Fill(x1, y1);
       hodo2_pos_sts1->Fill(x2, y2);
+    }  
+    if ( St2S0 > 0 && St2S1 > 0 ) {
+      hodo1_pos_sts2->Fill(x1, y1);
+      hodo2_pos_sts2->Fill(x2, y2);
     }  
   }
   // check if there is a coincidence between p- and n-side of sts1
@@ -174,6 +186,8 @@ void CbmStsHodoCorrelations::Finish()
   hodo2_pos_sts0->Write();
   hodo1_pos_sts1->Write();
   hodo2_pos_sts1->Write();
+  hodo1_pos_sts2->Write();
+  hodo2_pos_sts2->Write();
 }
 
 ClassImp(CbmStsHodoCorrelations)

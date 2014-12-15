@@ -42,11 +42,12 @@ class CbmStsHodoCorrelations : public FairTask
     /** Output array to  new data level**/
     TClonesArray* fHodoCluster;
 
-
     TH2F* hodo1_pos_sts0;
     TH2F* hodo2_pos_sts0;
     TH2F* hodo1_pos_sts1;
     TH2F* hodo2_pos_sts1;
+    TH2F* hodo1_pos_sts2;
+    TH2F* hodo2_pos_sts2;
     
     CbmStsHodoCorrelations(const CbmStsHodoCorrelations&);
     CbmStsHodoCorrelations operator=(const CbmStsHodoCorrelations&);
