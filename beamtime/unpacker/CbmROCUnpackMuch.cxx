@@ -21,7 +21,7 @@
 CbmROCUnpackMuch::CbmROCUnpackMuch()
   : CbmROCUnpack(),
     fBuffer(CbmTbDaqBuffer::Instance()),
-    fDaqMap(new CbmDaqMap()),
+    fDaqMap(NULL),
     fSource(NULL),
     fMuchDigis(new TClonesArray("CbmMuchBeamTimeDigi", 10)),
     fMuchBaselineDigis(new TClonesArray("CbmMuchBeamTimeDigi", 10))
@@ -37,6 +37,8 @@ Bool_t CbmROCUnpackMuch::Init()
 {
   FairRunOnline* online = FairRunOnline::Instance();
   fSource = static_cast<CbmSourceLmdNew*>(online->GetSource());
+
+  fDaqMap = fSource->GetDaqMap();
 
   FairRootManager* ioman = FairRootManager::Instance();
   ioman->Register("MuchDigi", "MUCH raw data", fMuchDigis, fPersistence);

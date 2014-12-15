@@ -59,7 +59,10 @@ class CbmSourceLmdNew : public FairSource
     void SetEventBuilder(CbmTbEventBuilder* eventBuilder)
     { fEventBuilder = eventBuilder; }
 
-    //    CbmTbDaqBuffer* GetBuffer() { return fBuffer; }
+    void SetDaqMap(CbmDaqMap* daqMap)
+    { fDaqMap = daqMap; }
+
+    CbmDaqMap* GetDaqMap() { return fDaqMap; }
 
     void SetBaseline(Bool_t baseline) { fBaselineData = baseline; } 
  

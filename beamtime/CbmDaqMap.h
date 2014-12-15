@@ -42,26 +42,26 @@ class CbmDaqMap : public TObject
 
 
   /**  System Id from ROC Id  **/
-  Int_t GetSystemId(Int_t rocId);
+  virtual Int_t GetSystemId(Int_t rocId) = 0;
 
 
   /**  STS station from ROC Id  **/
-  Int_t GetStsStation(Int_t rocId);
+  virtual Int_t GetStsStation(Int_t rocId) = 0;
 
   /**  MUCH station from ROC Id  **/
-  Int_t GetMuchStation(Int_t rocId);
+  virtual Int_t GetMuchStation(Int_t rocId) = 0;
 
   /**  Fiber Hodoscope station from ROC Id  **/
-  Int_t GetFiberHodoStation(Int_t rocId);
+  virtual Int_t GetFiberHodoStation(Int_t rocId) = 0;
 
   /**  STS sensor side from ROC and NXYTER Id **/
-  Int_t GetStsSensorSide(Int_t rocId);
+  virtual Int_t GetStsSensorSide(Int_t rocId) = 0;
 
   /** STS channel from ROC, NXYTER and NXYTER channel **/
-  Int_t GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel);
+  virtual Int_t GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) = 0;
 
   /** Fiber Hodoscope channel from ROC, NXYTER and NXYTER channel **/
-  Int_t GetFiberHodoChannel(Int_t rocId, Int_t nxId, Int_t nxChannel);
+  virtual Int_t GetFiberHodoChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) = 0;
 
 
   /**   Mapping
@@ -73,23 +73,17 @@ class CbmDaqMap : public TObject
    **@param iSide     Front side (0) / Back side (1) ( return)
    **@param iChannel  Channel number (return)  
   **/
-  Bool_t Map(Int_t iRoc, Int_t iNx, Int_t iId,
-	     Int_t& iStation, Int_t& iSector, Int_t& iSide, Int_t& iChannel);
+  virtual Bool_t Map(Int_t iRoc, Int_t iNx, Int_t iId,
+	     Int_t& iStation, Int_t& iSector, 
+	     Int_t& iSide, Int_t& iChannel) = 0;
     
 
 
- private:
+ protected:
 
-  void InitializeFiberHodoMapping();
-  
   Int_t fRun;        /** Run number  **/
-  Int_t fFiberHodoFiber[128];  /** Mapping from fiber hodoscope feb channel to fiber number **/
-  Int_t fFiberHodoPlane[128];  /** Mapping from fiber hodoscope feb channel to plane number 1=X, 2=Y **/
-  Int_t fFiberHodoPixel[128];  /** Mapping from fiber hodoscope feb channel to pixel number **/
 
-
-
-  ClassDef(CbmDaqMap,1);
+  ClassDef(CbmDaqMap,0);
 
 };
 

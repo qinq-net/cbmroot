@@ -6,8 +6,20 @@
 
 #pragma link C++ class CbmMuchDigiTb;
 #pragma link C++ class CbmDaqMap;
+#pragma link C++ class CbmDaqMapCosy2014;
 #pragma link C++ class CbmSourceLmd;
+#pragma link C++ class CbmSourceLmdNew;
 #pragma link C++ class CbmTbDaqBuffer;
+#pragma link C++ class CbmROCUnpack;
+#pragma link C++ class CbmROCUnpackSts;
+#pragma link C++ class CbmROCUnpackHodo;
+#pragma link C++ class CbmROCUnpackMuch;
+#pragma link C++ class CbmROCUnpackAux;
+#pragma link C++ class CbmROCUnpackDummy;
+#pragma link C++ class CbmROCUnpackEpoch;
+#pragma link C++ class CbmROCUnpackSystemMessage;
+#pragma link C++ class CbmTbEventBuilder;
+#pragma link C++ class CbmTbEventBuilderFixedTimeWindow;
 
 #pragma link C++ class CbmFiberHodoClusterFinder;
 #pragma link C++ class CbmStsCosyBL;

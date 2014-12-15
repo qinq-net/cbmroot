@@ -51,6 +51,9 @@ class CbmSourceLmd : public FairSource
       fInputFileList.Add(new TObjString(fname));
     }
 
+    void SetDaqMap(CbmDaqMap* daqMap)
+    { fDaqMap = daqMap; }
+
  private:
 
     // --- Settings

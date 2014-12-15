@@ -39,7 +39,7 @@ CbmSourceLmd::CbmSourceLmd()
     fPersistence(kTRUE),
     fEventTimeWindow(500.),
     fBuffer(CbmTbDaqBuffer::Instance()),
-    fDaqMap(new CbmDaqMap()),
+    fDaqMap(NULL),
     fRocIter(NULL),
     fTimeStart(0),
     fTimeStop(0),
@@ -88,7 +88,7 @@ CbmSourceLmd::CbmSourceLmd(const char* inFile)
     fPersistence(kTRUE),
     fEventTimeWindow(500.),
     fBuffer(CbmTbDaqBuffer::Instance()),
-    fDaqMap(new CbmDaqMap()),
+    fDaqMap(NULL),
     fRocIter(NULL),
     fTimeStart(0),
     fTimeStop(0),
@@ -137,7 +137,7 @@ CbmSourceLmd::CbmSourceLmd(const CbmSourceLmd& source)
 
 CbmSourceLmd::~CbmSourceLmd()
 {
-  delete fDaqMap;
+  //  delete fDaqMap;
 }
 
 
@@ -323,6 +323,10 @@ Bool_t CbmSourceLmd::Init()
   LOG(INFO) << "====================================================="
             << FairLogger::endl;
   LOG(INFO) << GetName() << ": Initialising ..." << FairLogger::endl;
+
+  if ( NULL == fDaqMap ) {
+    LOG(FATAL) << "No DaqMap defined." << FairLogger::endl;
+  }
 
   // --- Register output branches
   FairRootManager* ioman = FairRootManager::Instance();

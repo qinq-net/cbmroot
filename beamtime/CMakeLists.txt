@@ -18,6 +18,8 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/beamtime/param
   ${CBMROOT_SOURCE_DIR}/sts/setup
   ${CBMROOT_SOURCE_DIR}/beamtime/reco
+  ${CBMROOT_SOURCE_DIR}/beamtime/unpacker
+  ${CBMROOT_SOURCE_DIR}/beamtime/eventbuilder
 )
 
 
@@ -36,6 +38,7 @@ Include_Directories(
 
 Set(LINK_DIRECTORIES
   ${ROOT_LIBRARY_DIR}
+  ${Boost_LIBRARY_DIR}
   ${GEANT4_LIBRARY_DIR}
   ${FAIRROOT_LIBRARY_DIR}
 )
@@ -45,10 +48,25 @@ Link_Directories(
 )
 
 Set(SRCS
-  CbmDaqMap.cxx
   CbmMuchDigiTb.cxx
   CbmSourceLmd.cxx
+  CbmSourceLmdNew.cxx
   CbmTbDaqBuffer.cxx
+
+  CbmDaqMap.cxx
+  CbmDaqMapCosy2014.cxx
+  
+  unpacker/CbmROCUnpack.cxx
+  unpacker/CbmROCUnpackAux.cxx
+  unpacker/CbmROCUnpackDummy.cxx
+  unpacker/CbmROCUnpackEpoch.cxx
+  unpacker/CbmROCUnpackSystemMessage.cxx
+  unpacker/CbmROCUnpackSts.cxx
+  unpacker/CbmROCUnpackHodo.cxx
+  unpacker/CbmROCUnpackMuch.cxx
+
+  eventbuilder/CbmTbEventBuilder.cxx
+  eventbuilder/CbmTbEventBuilderFixedTimeWindow.cxx
 
   fhodo/CbmFiberHodoClusterFinder.cxx
 

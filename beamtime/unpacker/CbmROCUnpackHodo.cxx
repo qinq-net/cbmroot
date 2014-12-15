@@ -22,7 +22,7 @@
 CbmROCUnpackHodo::CbmROCUnpackHodo()
   : CbmROCUnpack(),
     fBuffer(CbmTbDaqBuffer::Instance()),
-    fDaqMap(new CbmDaqMap()),
+    fDaqMap(NULL),
     fSource(NULL),
     fHodoDigis(new TClonesArray("CbmFiberHodoDigi", 10)),
     fHodoBaselineDigis(new TClonesArray("CbmFiberHodoDigi", 10))
@@ -39,7 +39,8 @@ Bool_t CbmROCUnpackHodo::Init()
   FairRunOnline* online = FairRunOnline::Instance();
   fSource = static_cast<CbmSourceLmdNew*>(online->GetSource());
 
-  LOG(INFO) << "XXXXXXXXXX Persistence: " << fPersistence << FairLogger::endl;
+  fDaqMap = fSource->GetDaqMap();
+
   FairRootManager* ioman = FairRootManager::Instance();
   ioman->Register("HodoDigi", "HODO raw data", fHodoDigis, fPersistence);
   ioman->Register("HodoBaselineDigi", "HODO baseline data", 

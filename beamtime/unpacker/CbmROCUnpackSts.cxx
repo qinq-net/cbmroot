@@ -22,7 +22,7 @@
 CbmROCUnpackSts::CbmROCUnpackSts()
 : CbmROCUnpack(),
   fBuffer(CbmTbDaqBuffer::Instance()),
-  fDaqMap(new CbmDaqMap()),
+  fDaqMap(NULL),
   fSource(NULL),
   fStsDigis(new TClonesArray("CbmStsDigi", 10)),
   fStsBaselineDigis(new TClonesArray("CbmStsDigi", 10))
@@ -38,6 +38,8 @@ Bool_t CbmROCUnpackSts::Init()
 {
   FairRunOnline* online = FairRunOnline::Instance();
   fSource = static_cast<CbmSourceLmdNew*>(online->GetSource());
+
+  fDaqMap = fSource->GetDaqMap();
 
   FairRootManager* ioman = FairRootManager::Instance();
   ioman->Register("StsDigi", "STS raw data", fStsDigis, fPersistence);

@@ -18,8 +18,7 @@ using std::endl;
 
 // -----   Default Constructor  ---------------------------------------------- 
 CbmDaqMapCosy2014::CbmDaqMapCosy2014() 
-  : TObject(),
-    fRun(-1),
+  : CbmDaqMap(),
     fFiberHodoFiber(),
     fFiberHodoPlane(),
     fFiberHodoPixel()
@@ -32,8 +31,7 @@ CbmDaqMapCosy2014::CbmDaqMapCosy2014()
 
 // -----   Standard Constructor  --------------------------------------------- 
 CbmDaqMapCosy2014::CbmDaqMapCosy2014(Int_t iRun) 
-  : TObject(),
-    fRun(iRun),
+  : CbmDaqMap(iRun),
     fFiberHodoFiber(),
     fFiberHodoPlane(),
     fFiberHodoPixel()

@@ -30,9 +30,6 @@ class CbmDaqMapCosy2014 : public CbmDaqMap
   /**   Destructor   **/
   virtual ~CbmDaqMapCosy2014();
 
-  /**   Set trun number  */
-  void SetRun(Int_t iRun) { fRun = iRun; }
-
   /**  System Id from ROC Id  **/
   Int_t GetSystemId(Int_t rocId);
 

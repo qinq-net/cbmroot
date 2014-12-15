@@ -35,7 +35,7 @@ CbmSourceLmdNew::CbmSourceLmdNew()
     fReadInTimeStep(1e9),
     fPersistence(kTRUE),
     fBuffer(CbmTbDaqBuffer::Instance()),
-    fDaqMap(new CbmDaqMap()),
+    fDaqMap(NULL),
     fRocIter(NULL),
     fEventBuilder(NULL),
     fTimeStart(0),
@@ -78,7 +78,7 @@ CbmSourceLmdNew::CbmSourceLmdNew(const char* inFile)
     fReadInTimeStep(1e9),
     fPersistence(kTRUE),
     fBuffer(CbmTbDaqBuffer::Instance()),
-    fDaqMap(new CbmDaqMap()),
+    fDaqMap(NULL),
     fRocIter(NULL),
     fEventBuilder(NULL),
     fTimeStart(0),
@@ -122,7 +122,7 @@ CbmSourceLmdNew::CbmSourceLmdNew(const CbmSourceLmdNew& source)
 
 CbmSourceLmdNew::~CbmSourceLmdNew()
 {
-  delete fDaqMap;
+  //  delete fDaqMap;
 }
 
 
@@ -250,6 +250,16 @@ Bool_t CbmSourceLmdNew::Init()
             << FairLogger::endl;
   LOG(INFO) << GetName() << ": Initialising ..." << FairLogger::endl;
 
+  if ( NULL == fEventBuilder ) {
+    LOG(FATAL) << "No event builder defined." << FairLogger::endl;
+  }
+
+  fEventBuilder->Init();
+
+  if ( NULL == fDaqMap ) {
+    LOG(FATAL) << "No DaqMap defined." << FairLogger::endl;
+  }
+
   // Call the init of all registered unpackers
   for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
     LOG(INFO) << "Initialize " << it->second->GetName() << 
@@ -257,12 +267,6 @@ Bool_t CbmSourceLmdNew::Init()
     it->second->Init();
     it->second->SetPersistence(fPersistence);
   }
-
-  if ( NULL == fEventBuilder ) {
-    LOG(FATAL) << "No event builder defined." << FairLogger::endl;
-  }
-
-  fEventBuilder->Init();
 
   Bool_t success=OpenInputFileAndGetFirstMessage();
   if (!success) return kFALSE;
