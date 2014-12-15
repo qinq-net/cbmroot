@@ -64,13 +64,14 @@ class CbmSourceLmdNew : public FairSource
 
     CbmDaqMap* GetDaqMap() { return fDaqMap; }
 
-    void SetBaseline(Bool_t baseline) { fBaselineData = baseline; } 
- 
-    Bool_t IsBaseline() { return fBaselineData; }
-    Bool_t IsBaseline(Int_t rocNr);
-
+    void SetBaselineFill(Bool_t baseline) { fBaselineDataFill = baseline; } 
+     Bool_t IsBaselineFill() { return fBaselineDataFill; }
+    Bool_t IsBaselineFill(Int_t rocNr);
     void AddBaselineRoc(Int_t rocNr);
     Bool_t RemoveBaselineRoc(Int_t rocNr);
+
+    void SetBaselineRetrieve(Bool_t baseline) { fBaselineDataRetrieve = baseline; } 
+    Bool_t IsBaselineRetrieve() { return fBaselineDataRetrieve; }
 
     void SetEpoch(Int_t rocNr, uint32_t epochNr) 
     {  fCurrentEpoch[rocNr] = epochNr; }
@@ -138,7 +139,8 @@ class CbmSourceLmdNew : public FairSource
     Int_t fNofDigis[kNOFDETS];   ///< Number of created digis per detector system
     Int_t fNofAux;               ///< Number of AUX messages
 
-    Bool_t fBaselineData;   ///< Flag if the data is for baseline calibration
+    Bool_t fBaselineDataFill;   ///< Flag if the data is for baseline calibration
+    Bool_t fBaselineDataRetrieve;   ///< Flag if the data is for baseline calibration
     std::set<Int_t> fBaselineRoc; ///< List of RocIds which already signaled changin of readout status
     Bool_t fTriggeredMode; ///< Flag if data is taken in triggered mode
 

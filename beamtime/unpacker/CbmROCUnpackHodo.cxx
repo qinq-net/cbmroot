@@ -76,10 +76,10 @@ Bool_t CbmROCUnpackHodo::DoUnpack(roc::Message* Message, ULong_t hitTime)
   // In case of normal data insert the digi into the buffer.
   // In case of baseline data insert the digi only if the roc 
   // is already in baseline mode.  
-  if ( !fSource->IsBaseline() ) {
+  if ( !fSource->IsBaselineFill() ) {
     fBuffer->InsertData(digi);
   } else {
-    if ( fSource->IsBaseline(rocId) ) { fBuffer->InsertData(digi); }
+    if ( fSource->IsBaselineFill(rocId) ) { fBuffer->InsertData(digi); }
   }
 
   return kTRUE;
@@ -87,7 +87,7 @@ Bool_t CbmROCUnpackHodo::DoUnpack(roc::Message* Message, ULong_t hitTime)
 
 void CbmROCUnpackHodo::FillOutput(CbmDigi* digi)
 {
-  if ( !fSource->IsBaseline() ) {
+  if ( !fSource->IsBaselineRetrieve() ) {
     new( (*fHodoDigis)[fHodoDigis->GetEntriesFast()])
       CbmFiberHodoDigi(*(dynamic_cast<CbmFiberHodoDigi*>(digi)));
   } else {

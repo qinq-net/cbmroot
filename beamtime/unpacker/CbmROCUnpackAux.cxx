@@ -42,7 +42,7 @@ Bool_t CbmROCUnpackAux::Init()
 
 Bool_t CbmROCUnpackAux::DoUnpack(roc::Message* Message, ULong_t hitTime)
 {
-  if (!fSource->IsBaseline()) {
+  if (!fSource->IsBaselineFill()) {
     // --- ROC Id and channel number
     Int_t rocId = Message->getRocNumber();
     Int_t channel = Message->getAuxChNum();

@@ -46,7 +46,7 @@ Bool_t CbmROCUnpackSystemMessage::DoUnpack(roc::Message* message, ULong_t hitTim
     switch(message->getSysMesData()) {
     case roc::SYSMSG_USER_CALIBR_ON:
       {
-	if ( !fSource->IsBaseline() ) {
+	if ( !fSource->IsBaselineFill() ) {
 	  // --- Create AuxDigi and send it to the buffer
 	  digi = new CbmAuxDigi(666, 666, hitTime);
 	  fBuffer->InsertData(digi);
@@ -54,21 +54,25 @@ Bool_t CbmROCUnpackSystemMessage::DoUnpack(roc::Message* message, ULong_t hitTim
 	    setprecision(9) << Double_t(hitTime) * 1.e-9 << " s" << FairLogger::endl;
 	  fSource->AddBaselineRoc(rocId);
 	  LOG(INFO) << "ROC " << rocId << " now in baseline mode" << FairLogger::endl;
-	  fSource->SetBaseline(kTRUE);
+	  fSource->SetBaselineFill(kTRUE);
 	}
+	fSource->AddBaselineRoc(rocId);
+	LOG(INFO) << "ROC " << rocId << " now in baseline mode" << FairLogger::endl;
 	break;
       }
     case roc::SYSMSG_USER_CALIBR_OFF:
       {
-	Bool_t isEmpty=fSource->RemoveBaselineRoc(rocId);
-	LOG(INFO) << "ROC " << rocId << " now in normal mode" << FairLogger::endl;
-	if ( isEmpty ) {
-	  digi = new CbmAuxDigi(999, 999, hitTime);
-	  fBuffer->InsertData(digi);
-	  fSource->SetBaseline(kFALSE);
-	  LOG(INFO) << "Switching back to normal mode at " << 
-	    setprecision(9) << Double_t(hitTime) * 1.e-9 << " s" << FairLogger::endl;
-	}      
+	if ( fSource->IsBaselineFill() ) {
+	  Bool_t isEmpty=fSource->RemoveBaselineRoc(rocId);
+	  LOG(INFO) << "ROC " << rocId << " now in normal mode" << FairLogger::endl;
+	  if ( isEmpty ) {
+	    digi = new CbmAuxDigi(999, 999, hitTime);
+	    fBuffer->InsertData(digi);
+	    fSource->SetBaselineFill(kFALSE);
+	    LOG(INFO) << "Switching back to normal mode at " << 
+	      setprecision(9) << Double_t(hitTime) * 1.e-9 << " s" << FairLogger::endl;
+	  }     
+	} 
 	break;
       }
     case roc::SYSMSG_USER_RECONFIGURE:

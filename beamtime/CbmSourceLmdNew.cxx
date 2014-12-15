@@ -56,7 +56,8 @@ CbmSourceLmdNew::CbmSourceLmdNew()
     fNofHitMsg(),
     fNofDigis(),
     fNofAux(0),
-    fBaselineData(kFALSE),
+    fBaselineDataFill(kFALSE),
+    fBaselineDataRetrieve(kFALSE),
     fBaselineRoc(),
   fTriggeredMode(kFALSE),
   fUnpackers(),
@@ -99,7 +100,8 @@ CbmSourceLmdNew::CbmSourceLmdNew(const char* inFile)
     fNofHitMsg(),
     fNofDigis(),
     fNofAux(0),
-    fBaselineData(kFALSE),
+    fBaselineDataFill(kFALSE),
+    fBaselineDataRetrieve(kFALSE),
     fBaselineRoc(),
   fTriggeredMode(kFALSE),
   fUnpackers(),
@@ -339,7 +341,7 @@ Int_t CbmSourceLmdNew::ReadEvent()
 	  CurrentEvent->SetEventType(1);
 	  LOG(INFO) << "Event type is now: " 
 		    << CurrentEvent->GetEventType() << FairLogger::endl;
-	  fBaselineData = kTRUE; 
+	  fBaselineDataRetrieve = kTRUE; 
 	  LOG(INFO) << "In Old Aux RocId: "<< val<<FairLogger::endl;
 	  //	  FillBaselineDataContainer();
 	  fNofEvents++;
@@ -349,10 +351,10 @@ Int_t CbmSourceLmdNew::ReadEvent()
 	  fCurrentDigi = GetNextData();
 	  return 0;
 	} else if ( val  == 999 ) {
-	  fBaselineData = kFALSE; 
+	  fBaselineDataRetrieve = kFALSE; 
 	  LOG(INFO) << "Aux RocId: "<< val<<FairLogger::endl;
 	  LOG(INFO) << "Filling " 
-		    << ( fNofBaselineDigis - fNofDigis[kTutDet] ) 
+		    << ( fNofDigis[kTutDet] - fNofBaselineDigis ) 
 		    << " for this baseline event" 
 		    << FairLogger::endl;
           // remove special aux digi which should not end up in output
@@ -373,7 +375,7 @@ Int_t CbmSourceLmdNew::ReadEvent()
 	continue;
       } else {
 	it->second->FillOutput(fCurrentDigi);
-        if ( kTRUE == fBaselineData ) {
+        if ( kTRUE == fBaselineDataRetrieve ) {
 	  fNofDigis[kTutDet]++;
 	} else {
 	  fNofDigis[systemId]++;
@@ -472,7 +474,7 @@ void CbmSourceLmdNew::Reset()
 void CbmSourceLmdNew::AddBaselineRoc(Int_t rocNr) {
   // fBaselineData is set to kTRUE after the first call of this function
   // so the two rocs which are triggered should be set to basline mode
-  if ( fTriggeredMode && !fBaselineData ) {
+  if ( fTriggeredMode && !fBaselineDataFill ) {
     fBaselineRoc.insert(11);
     fBaselineRoc.insert(12);
     LOG(INFO) << "Triggered mode" << FairLogger::endl;
@@ -493,10 +495,11 @@ Bool_t CbmSourceLmdNew::RemoveBaselineRoc(Int_t rocNr)
     LOG(INFO) << "ROC 12" << " now in normal mode" << FairLogger::endl;
   }
   fBaselineRoc.erase(rocNr);
-  return fBaselineRoc.empty();  
+  Bool_t empty = fBaselineRoc.empty();  
+  return empty;  
 }
 
-Bool_t CbmSourceLmdNew::IsBaseline(Int_t rocNr)
+Bool_t CbmSourceLmdNew::IsBaselineFill(Int_t rocNr)
 {
   std::set<Int_t>::iterator it;
   if ( fBaselineRoc.find(rocNr) == fBaselineRoc.end() ) {
