@@ -36,8 +36,10 @@
 #include "setup/CbmStsSensor.h"
 #include "setup/CbmStsSensorConditions.h"
 #include "setup/CbmStsSetup.h"
+#include "digitize/CbmStsPhysics.h"
 #include "digitize/CbmStsSensorTypeDssd.h"
 #include "digitize/CbmStsSensorTypeDssdIdeal.h"
+#include "digitize/CbmStsSensorTypeDssdReal.h"
 
 
 
@@ -327,6 +329,7 @@ InitStatus CbmStsDigitize::Init() {
   LOG(INFO) << "=========================================================="
 		        << FairLogger::endl;
 	std::cout << std::endl;
+	LOG(INFO) << "Su charge " << CbmStsPhysics::GetSiCharge() << FairLogger::endl;
 
 	return kSUCCESS;
 
@@ -579,7 +582,8 @@ void CbmStsDigitize::SetSensorTypes() {
 	TString model;
 	switch (fDigiModel) {
 		case 0:  model = "ideal";   break;
-		case 1:  model = "uniform"; break;
+		case 1:  model = "simple"; break;
+		case 2:  model = "real"; break;
 		default: model = "unknown"; break;
 	}
 
@@ -604,6 +608,9 @@ void CbmStsDigitize::SetSensorTypes() {
 			case 1:  type = new CbmStsSensorTypeDssd();
 			         type->SetTitle("Dssd");
 			         break;
+			case 2:	 type = new CbmStsSensorTypeDssdReal();
+					     type->SetTitle("DssdReal");
+					     break;
 			default: type = NULL;
 							 break;
 		}
