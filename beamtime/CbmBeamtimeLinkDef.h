@@ -7,6 +7,7 @@
 #pragma link C++ class CbmMuchDigiTb;
 #pragma link C++ class CbmDaqMap;
 #pragma link C++ class CbmDaqMapCosy2014;
+#pragma link C++ class CbmDaqMapCosy2013;
 #pragma link C++ class CbmSourceLmd;
 #pragma link C++ class CbmSourceLmdNew;
 #pragma link C++ class CbmTbDaqBuffer;

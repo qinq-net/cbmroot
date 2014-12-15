@@ -1,25 +1,17 @@
-/**@file CbmDaqMap.cxx
+/**@file CbmDaqMapCosy2013.cxx
  **@date 11.12.2013
  **@author V. Friese <v.friese@gsi.de>
  **/
 
+#include "CbmDaqMapCosy2013.h"
 
-#include "FairLogger.h"
-#include "CbmDaqMap.h"
 #include "CbmDetectorList.h"
 
-#include <iostream>
-
-
-using std::cout;
-using std::endl;
-
-
+#include "FairLogger.h"
 
 // -----   Default Constructor  ---------------------------------------------- 
-CbmDaqMap::CbmDaqMap() 
-  : TObject(),
-    fRun(-1),
+CbmDaqMapCosy2013::CbmDaqMapCosy2013() 
+  : CbmDaqMap(),
     fFiberHodoFiber(),
     fFiberHodoPlane(),
     fFiberHodoPixel()
@@ -31,9 +23,8 @@ CbmDaqMap::CbmDaqMap()
 
 
 // -----   Standard Constructor  --------------------------------------------- 
-CbmDaqMap::CbmDaqMap(Int_t iRun) 
-  : TObject(),
-    fRun(iRun),
+CbmDaqMapCosy2013::CbmDaqMapCosy2013(Int_t iRun) 
+  : CbmDaqMap(iRun),
     fFiberHodoFiber(),
     fFiberHodoPlane(),
     fFiberHodoPixel()
@@ -45,12 +36,12 @@ CbmDaqMap::CbmDaqMap(Int_t iRun)
 
 
 // -----   Destructor   ------------------------------------------------------
-CbmDaqMap::~CbmDaqMap() { }
+CbmDaqMapCosy2013::~CbmDaqMapCosy2013() { }
 // ---------------------------------------------------------------------------
 
 
 // -----   Get System   ------------------------------------------------------
-Int_t CbmDaqMap::GetSystemId(Int_t rocId) {
+Int_t CbmDaqMapCosy2013::GetSystemId(Int_t rocId) {
 	Int_t systemId = -1;
 	if ( rocId >= 0  && rocId <= 4 ) systemId = kMUCH;
 	else if ( rocId == 5  || rocId == 6 ) systemId = kFHODO;
@@ -63,7 +54,7 @@ Int_t CbmDaqMap::GetSystemId(Int_t rocId) {
 
 
 // -----   Get STS station number   ------------------------------------------
-Int_t CbmDaqMap::GetStsStation(Int_t rocId) {
+Int_t CbmDaqMapCosy2013::GetStsStation(Int_t rocId) {
 	if ( rocId < 7 || rocId > 12 ) {
 		LOG(ERROR) << GetName() << ": Illegal STS ROC Id " << rocId
 				       << FairLogger::endl;
@@ -75,7 +66,7 @@ Int_t CbmDaqMap::GetStsStation(Int_t rocId) {
 
 
 // -----   Get MUCH station number  ------------------------------------------
-Int_t CbmDaqMap::GetMuchStation(Int_t rocId) {
+Int_t CbmDaqMapCosy2013::GetMuchStation(Int_t rocId) {
 	Int_t station = -1;
 	if ( rocId == 0 || rocId == 1 ) station = 0;
 	else if ( rocId == 2 ) station = 1;
@@ -87,7 +78,7 @@ Int_t CbmDaqMap::GetMuchStation(Int_t rocId) {
 // ---------------------------------------------------------------------------
 
 // -----   Get Fiber Hodoscope station number   ------------------------------
-Int_t CbmDaqMap::GetFiberHodoStation(Int_t rocId) {
+Int_t CbmDaqMapCosy2013::GetFiberHodoStation(Int_t rocId) {
 	if ( rocId < 5 || rocId > 6 ) {
 		LOG(ERROR) << GetName() << ": Illegal Fiber Hodoscope ROC Id " << rocId
 				       << FairLogger::endl;
@@ -100,7 +91,7 @@ Int_t CbmDaqMap::GetFiberHodoStation(Int_t rocId) {
 
 
 // ----  Get STS sensor side   -----------------------------------------------
-Int_t CbmDaqMap::GetStsSensorSide(Int_t rocId) {
+Int_t CbmDaqMapCosy2013::GetStsSensorSide(Int_t rocId) {
 	return ( TMath::Even(rocId) ? 0 : 1 );
 }
 // ---------------------------------------------------------------------------
@@ -108,7 +99,7 @@ Int_t CbmDaqMap::GetStsSensorSide(Int_t rocId) {
 
 /*
 // -----   Get STS channel number   ------------------------------------------
-Int_t CbmDaqMap::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
+Int_t CbmDaqMapCosy2013::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
 	Int_t channel = -1;
 	if ( rocId >= 7 && rocId <= 10 ) channel = nxChannel + nxId / 2 * 127;
 	else channel = nxChannel;
@@ -118,7 +109,7 @@ Int_t CbmDaqMap::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
 */
 
 // -----   Get STS channel number   ------------------------------------------
-Int_t CbmDaqMap::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
+Int_t CbmDaqMapCosy2013::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
 
 	Int_t channel = -1;
 
@@ -156,7 +147,7 @@ Int_t CbmDaqMap::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
 
 
 // -----   Get STS channel number   ------------------------------------------
-Int_t CbmDaqMap::GetFiberHodoChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
+Int_t CbmDaqMapCosy2013::GetFiberHodoChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
 	Int_t channel = -1;
 	return channel;
 }
@@ -165,7 +156,7 @@ Int_t CbmDaqMap::GetFiberHodoChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
 
 
 // -----   Mapping   ---------------------------------------------------------
-Bool_t CbmDaqMap::Map(Int_t iRoc, Int_t iNx, Int_t iId,
+Bool_t CbmDaqMapCosy2013::Map(Int_t iRoc, Int_t iNx, Int_t iId,
 			Int_t& iStation, Int_t& iSector, 
 			Int_t& iSide, Int_t& iChannel) {
 
@@ -238,7 +229,7 @@ Bool_t CbmDaqMap::Map(Int_t iRoc, Int_t iNx, Int_t iId,
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
-void CbmDaqMap::InitializeFiberHodoMapping()
+void CbmDaqMapCosy2013::InitializeFiberHodoMapping()
 {
   // This code was copied from the Go4 analysis used for previous beamtimes
   for (Int_t i=0; i<128; i++) {
@@ -311,5 +302,5 @@ void CbmDaqMap::InitializeFiberHodoMapping()
 
 }
 
-ClassImp(CbmDaqMap)
+ClassImp(CbmDaqMapCosy2013)
 
