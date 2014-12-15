@@ -702,7 +702,7 @@ void CbmMvdSensor::Finish(){
   for(Int_t i=0; i<nPlugin; i++)
       {
 	plugin=(CbmMvdSensorPlugin*)fPluginArray->At(i);
-	//plugin->Finish();
+	plugin->Finish();
       }
 }  
 // -------------------------------------------------------------------------  

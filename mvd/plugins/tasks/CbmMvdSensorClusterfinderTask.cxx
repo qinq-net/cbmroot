@@ -125,7 +125,8 @@ CbmMvdSensorClusterfinderTask::CbmMvdSensorClusterfinderTask(const char* name, I
   fBranchName("MvdHit"),
   fAddNoise(kFALSE),
   inputSet(kFALSE),
-ftempPixelMap()
+  ftempPixelMap(),
+  fVerbose(iVerbose)
 {    
    
 }
@@ -157,7 +158,64 @@ void CbmMvdSensorClusterfinderTask::Init(CbmMvdSensor* mysensor) {
 
 initialized = kTRUE;
 
+if(fSensor->GetDetectorID() == 1)
+{
+    fResolutionHistoX=new TH1F("SinglePointResolution_X","SinglePointResolution_X",10000,-0.0100,0.0100);
+    fResolutionHistoY=new TH1F("SinglePointResolution_Y","SinglePointResolution_Y",10000,-0.0100,0.0100);
+    fResolutionHistoCleanX=new TH1F("SinglePointResolution_X_Clean","SinglePointResolution_X_Clean",10000,-0.0100,0.0100);
+    fResolutionHistoCleanY=new TH1F("SinglePointResolution_Y_Clean","SinglePointResolution_Y_Clean",10000,-0.0100,0.0100);
+    fResolutionHistoMergedX=new TH1F("SinglePointResolution_X_Merged","SinglePointResolution_X_Merged",10000,-0.0100,0.0100);
+    fResolutionHistoMergedY=new TH1F("SinglePointResolution_Y_Merged","SinglePointResolution_Y_Merged",10000,-0.0100,0.0100);
+    fBadHitHisto            = new TH2F("BadHits","Hits above 0.003cm",1000,-2.5,2.5,1000,-2.5,2.5);
+    fFullClusterHisto = new TH1F("ChargeOfAllPixels","ChargeOfAllPixels",12000,0,12000);
+    //}
+
+    TH1F* histo;
+    TH1F* histoTotalCharge;
+    char* histoName= new char[20];
+    char* histoTotalChargeName= new char[50];
+
+    //Add charge collection histograms
+    fPixelChargeHistos=new TObjArray();
+    for (Int_t i=0; i<49; i++)
+    {
+	sprintf(histoName,"ChargePixel%i",i+1);
+	histo=new TH1F(histoName,histoName,200,0,200);
+	fPixelChargeHistos->AddLast(histo);
+    };
+
+     fTotalChargeInNpixelsArray = new TObjArray();
+    for (Int_t i=0; i<49; i++)
+    {
+	sprintf(histoTotalChargeName,"totalChargeInNPixels%i",i+1);
+	histoTotalCharge=new TH1F(histoTotalChargeName,histoTotalChargeName,12000,0,12000);
+	fTotalChargeInNpixelsArray->AddLast(histoTotalCharge);
+    };
+
+    //Number 49
+    histo = new TH1F("ChargePixelSeed","ChargePixelSeed",200,0,14000);
+    fPixelChargeHistos->AddLast(histo);
+    //Number 50
+    histo = new TH1F("ChargePixel9of49","ChargePixel 9 Of 49",200,0,14000);
+    fPixelChargeHistos->AddLast(histo);
+    //Number 51
+    histo = new TH1F("ChargePixel25of49","ChargePixel 25 Of 49",200,0,14000);
+    fPixelChargeHistos->AddLast(histo);
+    //Number 52
+    histo = new TH1F("ChargePixel49of49","ChargePixel 49 Of 49",200,0,14000);
+    fPixelChargeHistos->AddLast(histo);
+    //Number 53
+    histo = new TH1F("ChargePixel9of49Sorted","ChargePixel 9 Of 49 Sorted",200,0,14000);
+    fPixelChargeHistos->AddLast(histo);
+    //Number 54
+    histo = new TH1F("ChargePixel25of49Sorted","ChargePixel 25 Of 49 Sorted",200,0,14000);
+    fPixelChargeHistos->AddLast(histo);
+    //Number 55
+    histo = new TH1F("ChargePixel49of49Sorted","ChargePixel 49 Of 49 Sorted",49,0.5,49.5);
+    fPixelChargeHistos->AddLast(histo);
+}
    //cout << "-Finished- " << GetName() << ": Initialisation of sensor " << fSensor->GetName() << endl;
+
 }
 // -------------------------------------------------------------------------
 
@@ -269,7 +327,7 @@ Int_t refId;
 		     //cout << endl << "checked for neighbours, create cluster" << endl;   
 
 		}
-
+		
 			Int_t i=0;
 			Int_t pixelCharge;
 			Int_t pixelX;
@@ -291,7 +349,8 @@ Int_t refId;
 			}
 			clusterNew->SetPixelMap(ftempPixelMap);
 			ftempPixelMap.clear();
-	  			
+
+	  		if(fSensor->GetDetectorID() == 1) UpdateDebugHistos(clusterNew);	
     				
 	    }// if AdcCharge>threshold
 		else {//cout << endl << "pixel is with " <<  digi->GetCharge() << " under Threshold or used" << endl;
@@ -400,4 +459,187 @@ Int_t CbmMvdSensorClusterfinderTask::GetAdcCharge(Float_t charge)
 
 }
 // -------------------------------------------------------------------------
+
+void CbmMvdSensorClusterfinderTask::UpdateDebugHistos(CbmMvdCluster* cluster){ 
+    /************************************************************
+    Algorithm for cluster shapes
+
+     ************************************************************/
+    Float_t chargeArray3D[fChargeArraySize][fChargeArraySize];
+    Float_t chargeArray[fChargeArraySize*fChargeArraySize];
+    Short_t seedPixelOffset=fChargeArraySize/2; // 3 for 7, 2 for 5
+    Int_t   seedIndexX, seedIndexY;
+    Float_t seedCharge =0.;
+    Float_t clusterCharge = cluster->GetClusterCharge();
+    std::map < std::pair<Int_t, Int_t>,Int_t> clusterMap = cluster->GetPixelMap();
+    
+    for(Int_t k=0; k<fChargeArraySize;k++){
+      for(Int_t j=0; j<fChargeArraySize; j++){
+	chargeArray3D[k][j]=gRandom->Gaus(0,fSigmaNoise);
+      }
+    }
+    for(std::map < std::pair<Int_t, Int_t>,Int_t>::iterator iter = clusterMap.begin(); iter != clusterMap.end(); iter++)
+	{
+	if(iter->second > seedCharge)
+		{
+		seedCharge = iter->second;
+		seedIndexX = iter->first.first;
+		seedIndexY = iter->first.second;
+		}
+	}
+ //cout << endl << "seed pixel with " << seedCharge << " charge" << endl;
+     for(std::map < std::pair<Int_t, Int_t>,Int_t>::iterator iter = clusterMap.begin(); iter != clusterMap.end(); iter++){
+      
+      Int_t relativeX=iter->first.first+seedPixelOffset-seedIndexX;
+      Int_t relativeY=iter->first.second+seedPixelOffset-seedIndexY;
+      
+      if(fVerbose > 1)cout << relativeX << " " << relativeY << " " <<iter->first.first<< " " << seedIndexX << endl;
+      
+      
+      if (relativeX>=0 && relativeX<fChargeArraySize && relativeY>=0 && relativeY<fChargeArraySize){
+	chargeArray3D[relativeX][relativeY]=iter->second;
+      }
+      
+      if((relativeX-seedPixelOffset==0) && (relativeY-seedPixelOffset==0)) {//seed digiArray
+	
+      }
+
+    
+    }
+    
+    if(fVerbose > 1)
+	{
+    for(Int_t i=0;i<fChargeArraySize;i++)
+    {for (Int_t j=0;j<fChargeArraySize;j++) {cout << chargeArray3D[i][j] << " " ;}
+     cout << endl;
+    } 
+    
+
+    }
+    fFullClusterHisto->Fill(clusterCharge);
+    
+    for(Int_t k=0; k<fChargeArraySize;k++){
+      for(Int_t j=0; j<fChargeArraySize; j++){
+	chargeArray[fChargeArraySize*k+j]=chargeArray3D[k][j];
+      }
+    }
+    
+    Int_t qSeed=chargeArray3D[seedPixelOffset][seedPixelOffset];
+    Int_t q9=0;
+    
+    for(Int_t k=seedPixelOffset-1; k<seedPixelOffset+1;k++){
+      for(Int_t j=seedPixelOffset-1; j<seedPixelOffset+1; j++){
+	q9=q9+chargeArray3D[k][j];
+      }
+    };
+    
+    Int_t counter=0;
+    
+    if(fChargeArraySize<=7){
+      for(Int_t i=0;i<(fChargeArraySize*fChargeArraySize);i++){
+	((TH1F*) fPixelChargeHistos->At(i))->Fill(chargeArray[i]);
+	//cout << counter++<<" Charge: " << chargeArray[i]<< endl;
+      };
+    };
+    
+    //cout << "End of Cluster: "<<fChargeArraySize*fChargeArraySize << endl;
+    
+    Int_t q25=0;
+    Int_t q49=0;
+    
+   
+    
+    for(Int_t k=seedPixelOffset-2; k<seedPixelOffset+2;k++){
+	for(Int_t j=seedPixelOffset-2; j<seedPixelOffset+2; j++){q25=q25+chargeArray3D[k][j];}
+    };
+    
+    if (fChargeArraySize>= 7) {
+      for(Int_t k=seedPixelOffset-3; k<seedPixelOffset+3;k++){
+	for(Int_t j=seedPixelOffset-3; j<seedPixelOffset+3; j++){q49=q49+chargeArray3D[k][j];}
+      }
+    }  
+
+    ((TH1F*) fPixelChargeHistos->At(49))->Fill(qSeed);
+    ((TH1F*) fPixelChargeHistos->At(50))->Fill(q9);
+    ((TH1F*) fPixelChargeHistos->At(51))->Fill(q25);
+    ((TH1F*) fPixelChargeHistos->At(52))->Fill(q49);
+
+         
+	
+	//Prepare selection of crowns for charge bow histograms
+	
+  
+    
+    Int_t orderArray[fChargeArraySize*fChargeArraySize];
+    
+    TMath::Sort(fChargeArraySize*fChargeArraySize,chargeArray,orderArray,kTRUE);
+    
+    Float_t qSort=0;
+    for (Int_t i=0; i<9; i++){ qSort+=chargeArray[orderArray[i]]; };
+    ((TH1F*) fPixelChargeHistos->At(53))->Fill(qSort);
+    
+    for (Int_t i=9; i<25; i++) { qSort+=chargeArray[orderArray[i]]; };
+    ((TH1F*) fPixelChargeHistos->At(54))->Fill(qSort);
+		
+    TH1F* histoTotalCharge;
+    qSort=0;
+    for (Int_t i=0; i<fChargeArraySize*fChargeArraySize; i++){
+      qSort+=chargeArray[orderArray[i]];
+      ((TH1F*) fPixelChargeHistos->At(55))->Fill(i+1,qSort);
+      histoTotalCharge =(TH1F*) fTotalChargeInNpixelsArray->At(i) ;
+      histoTotalCharge->Fill(qSort);
+    } 
+}
+
+//--------------------------------------------------------------------------
+void CbmMvdSensorClusterfinderTask::Finish() {
+   
+
+   /* cout << "\n============================================================" << endl;
+    cout << "-I- " << GetName() << "::Finish: Total events skipped: " << fCounter << endl;
+    cout << "============================================================" << endl;
+    cout << "-I- Parameters used" << endl;
+    cout << "Gaussian noise [electrons]	: " << fSigmaNoise << endl;
+    cout << "Noise simulated [Bool]	        : " << fAddNoise << endl;
+    cout << "Threshold seed [ADC]            : " << fSeedThreshold << endl;
+    cout << "Threshold neighbours [ADC]	: " << fNeighThreshold << endl;
+    cout << "ADC - Bits			: " << fAdcBits << endl;
+    cout << "ADC - Dynamic [electrons]	: " << fAdcDynamic << endl;
+    cout << "ADC - Offset [electrons]	: " << fAdcOffset << endl;
+    cout << "============================================================" << endl;*/
+    
+if(fSensor->GetDetectorID() == 1)
+	{    
+    	TH1F* histo;
+    	TH2F* clusterShapeHistogram;
+      	TCanvas* canvas2=new TCanvas("HitFinderCharge","HitFinderCharge");
+      	canvas2->Divide(2,2);
+      	canvas2->cd(1);
+     	if(fChargeArraySize<=7)
+		{
+		clusterShapeHistogram= new TH2F("MvdClusterShape", "MvdClusterShape", fChargeArraySize, 0, fChargeArraySize,fChargeArraySize, 0, fChargeArraySize);
+		for (Int_t i=0;i<fChargeArraySize*fChargeArraySize; i++) 
+			{		
+	  		histo= (TH1F*)fPixelChargeHistos->At(i);
+	 		Float_t charge= histo->GetMean();
+	  		//cout <<i << " Charge " << charge << " xCluster: " << i%fChargeArraySize << " yCluster: " << i/fChargeArraySize << endl;
+	  		//histo->Fit("landau");
+	  		//TF1* fitFunction= histo->GetFunction("landau");
+ 	  		//Double_t MPV=fitFunction->GetParameter(1);
+	  		clusterShapeHistogram->Fill(i%fChargeArraySize,i/fChargeArraySize,charge);
+			}
+      		}
+     	clusterShapeHistogram->Draw("Lego2");
+     	canvas2->cd(2);
+      	histo= (TH1F*)fPixelChargeHistos->At(50);
+      	histo->Draw();
+      	canvas2->cd(3);      
+      	histo= (TH1F*)fPixelChargeHistos->At(51);
+      	histo->Draw();
+	canvas2->cd(4);
+	//fFullClusterHisto->Draw(); 
+	}
+
+}
+//--------------------------------------------------------------------------
 ClassImp(CbmMvdSensorClusterfinderTask)

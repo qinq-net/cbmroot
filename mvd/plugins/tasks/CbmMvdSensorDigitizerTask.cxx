@@ -1018,7 +1018,7 @@ void CbmMvdSensorDigitizerTask::ReInit(CbmMvdSensor* sensor) {
 void CbmMvdSensorDigitizerTask::Finish() {
 
 
-    PrintParameters();
+   // PrintParameters();
 
 
     if (fShowDebugHistos){

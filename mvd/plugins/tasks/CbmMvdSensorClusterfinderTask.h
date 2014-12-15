@@ -97,6 +97,7 @@ public:
     void SetHitPosErrZ( Double_t errorZ ) { errorZ = fHitPosErrZ; }
     void ShowDebugHistograms(){fShowDebugHistos=kTRUE;}
 
+    void UpdateDebugHistos(CbmMvdCluster* cluster);
 
     //protected:
 protected:
@@ -143,6 +144,7 @@ private:
     Int_t fNEvent;
     Int_t fMode;
     Int_t fCounter;
+    Int_t fVerbose;
     Double_t fSigmaNoise;
     Double_t fSeedThreshold;
     Double_t fNeighThreshold;
@@ -165,7 +167,7 @@ private:
 
     TString  fBranchName;
     
-    static const Short_t fChargeArraySize=7; //must be an odd number >3, recommended numbers= 5 or 7
+    static const Short_t fChargeArraySize=5; //must be an odd number >3, recommended numbers= 5 or 7
 
     Bool_t fAddNoise;
 
@@ -176,7 +178,7 @@ private:
     void Reset(){;};
 
     /** Virtual method Finish **/
-    void Finish(){;};
+    void Finish();
 
    
     void CheckForNeighbours(vector<Int_t>* clusterArray, Int_t clusterDigi, TArrayS* pixelUsed);
@@ -189,7 +191,7 @@ private:
      **@value Number of MVD stations
      **/
     Int_t GetMvdGeometry(){return 0;};
-
+    
     
 private:
     CbmMvdSensorClusterfinderTask(const CbmMvdSensorClusterfinderTask&);

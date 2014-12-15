@@ -890,6 +890,7 @@ void CbmMvdSensorFindHitTask::ComputeCenterOfGravity(vector<Int_t>* clusterArray
 
 //--------------------------------------------------------------------------
 void CbmMvdSensorFindHitTask::Finish() {
+if(fShowDebugHistos){
     cout << "\n============================================================" << endl;
     cout << "-I- " << GetName() << "::Finish: Total events skipped: " << fCounter << endl;
     cout << "============================================================" << endl;
@@ -908,7 +909,7 @@ void CbmMvdSensorFindHitTask::Finish() {
     TH2F* clusterShapeHistogram;
     
     
-    if(fShowDebugHistos){
+    
       
       TCanvas* canvas2=new TCanvas("HitFinderCharge","HitFinderCharge");
       //cout <<fChargeArraySize << endl;

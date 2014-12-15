@@ -41,6 +41,7 @@ plugins/buffers/CbmMvdSensorTrackingBuffer.cxx
 plugins/CbmMvdSensorPlugin.cxx
 
 SensorDataSheets/CbmMvdMimosa26AHR.cxx
+SensorDataSheets/CbmMvdMimosa34.cxx
 SensorDataSheets/CbmMvdSensorDataSheet.cxx  
 
 tools/CbmMvdGeoHandler.cxx

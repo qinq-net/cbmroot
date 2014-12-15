@@ -197,7 +197,7 @@ void CbmMvdGeoHandler::NavigateTo(
       fGeoPathHash = path.Hash();
       fCurrentVolume = gGeoManager->GetCurrentVolume();
       TString name = fCurrentVolume->GetName();
-      //cout << endl << "this volume is " << name << endl;
+      //cout << endl << "this volume#include "SensorDataSheets/CbmMvdMimosa26AHR.h" is " << name << endl;
       fVolumeShape = (TGeoBBox*)fCurrentVolume->GetShape();
       Double_t local[3] = {0., 0., 0.};  // Local center of volume
       gGeoManager->LocalToMaster(local, fGlobal);

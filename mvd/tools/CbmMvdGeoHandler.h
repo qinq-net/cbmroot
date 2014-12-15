@@ -14,6 +14,7 @@
 #include "TObject.h"
 #include "CbmMvdDetector.h"
 #include "SensorDataSheets/CbmMvdMimosa26AHR.h"
+#include "SensorDataSheets/CbmMvdMimosa34.h"
 #include "CbmMvdStationPar.h"
 
 using std::map;

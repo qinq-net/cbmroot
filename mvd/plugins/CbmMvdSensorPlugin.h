@@ -39,6 +39,7 @@ class CbmMvdSensorPlugin : public TObject
   virtual void Init(){;}
   virtual void Exec(){;}
   virtual void ExecChain(){;}
+  virtual void Finish(){;};
     
   virtual TClonesArray* GetInputArray(){return 0;}
   virtual TClonesArray* GetOutputArray(){return 0;}
