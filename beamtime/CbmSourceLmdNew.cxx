@@ -344,6 +344,9 @@ Int_t CbmSourceLmdNew::ReadEvent()
 	  //	  FillBaselineDataContainer();
 	  fNofEvents++;
           fNofBaselineDigis = fNofDigis[kTutDet];
+          // remove special aux digi which should not end up in output
+	  delete fCurrentDigi;
+	  fCurrentDigi = GetNextData();
 	  return 0;
 	} else if ( val  == 999 ) {
 	  fBaselineData = kFALSE; 
@@ -352,6 +355,9 @@ Int_t CbmSourceLmdNew::ReadEvent()
 		    << ( fNofBaselineDigis - fNofDigis[kTutDet] ) 
 		    << " for this baseline event" 
 		    << FairLogger::endl;
+          // remove special aux digi which should not end up in output
+	  delete fCurrentDigi;
+	  fCurrentDigi = GetNextData();
 	  return 0;
 	} else {
 	  msgType = 4; // This is an Aux digi
