@@ -20,7 +20,7 @@ class CbmStsCosyBL : public FairTask
 
     /** Constructor with parameters (Optional)
     //  CbmStsCosyBL(Int_t verbose);
-
+    **/
 
     /** Destructor **/
     ~CbmStsCosyBL();
@@ -44,7 +44,7 @@ class CbmStsCosyBL : public FairTask
 
     /** Finish task called at the end of the run **/
     virtual void Finish();
-    virtual Int_t AddFile( const char* name ); 
+    //    virtual Int_t AddFile( const char* name ); 
     void BLInit();
     void BLClean();
     void BaseLine(TClonesArray* fBaselineDigis,     vector< vector < vector < double> > > base_line_array);

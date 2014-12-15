@@ -302,12 +302,14 @@ void CbmStsCosyBL::Finish()
     
 }
 
-
+/*
 Int_t CbmStsCosyBL::AddFile( const char* name ){
   if (name) {
     fChain->AddFile(name);
   }
+
 }
+*/
 
 void CbmStsCosyBL::BaseLine(TClonesArray* fBaselineDigis, vector< vector < vector < double> > > base_line)
 {
