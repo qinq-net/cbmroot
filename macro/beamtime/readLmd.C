@@ -40,8 +40,11 @@ void readLmd()
   std::cout << std::endl;
   std::cout << ">>> readLmd: Initialising..." << std::endl;
 
+  CbmDaqMapCosy2013* daqMap = new CbmDaqMapCosy2013();
+
   // --- Source task
   CbmSourceLmd* source = new CbmSourceLmd();
+  source->SetDaqMap(daqMap);
   source->AddFile(inFile);
 
   // --- Event header

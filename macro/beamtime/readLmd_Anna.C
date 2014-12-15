@@ -10,30 +10,42 @@
  ** Uses CbmSourceLmd as source task.
  */
 
-void readLmd_Anna(Int_t runID, Int_t fileID)
+void readLmd_Anna()
 {
   
-	TString runN = TString::Itoa(runID,10);
-	TString fileN = TString::Itoa(fileID,10);
+  // TString runN = TString::Itoa(runID,10);
+  //  TString fileN = TString::Itoa(fileID,10);
+  
+  // --- Specify input file name (this is just an example)
 
-	// --- Specify input file name (this is just an example)
-	
-	TString inDir = "/hera/cbm/prod/beamtime/2013/12/cosy/run" + runN + "/";
-	TString inFile = inDir + "run" + runN + "_00" + fileN + "?.lmd";
-	
-	// --- Specify number of events to be produced.
-	// --- -1 means run until the end of the input file.
-	Int_t nEvents = -1;
-
-	// --- Specify output file name (this is just an example)
-	TString outDir = "data/";
-	TString outFile = outDir + "calib.run" + runN + "_" + fileN + ".root";
-
-	// --- Set log output levels
-	FairLogger::GetLogger()->SetLogScreenLevel("INFO");
-	FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
-
-	// --- Set debug level
+  TString inDir = "./lmd/";
+  //  TString inFile = inDir + "run" + runN + "_00" + fileN + "?.lmd";
+  TString inFile = inDir + "run016_hodo_sts2_0000.lmd";
+  TString inFile1 = inDir + "run016_hodo_sts2_0001.lmd";
+  TString inFile2 = inDir + "run016_hodo_sts2_0002.lmd";
+  TString inFile3 = inDir + "run016_hodo_sts2_0003.lmd";
+  TString inFile4 = inDir + "run016_hodo_sts2_0004.lmd";
+  TString inFile5 = inDir + "run016_hodo_sts2_0005.lmd";
+  TString inFile6 = inDir + "run016_hodo_sts2_0006.lmd";
+  TString inFile7 = inDir + "run016_hodo_sts2_0007.lmd";
+  TString inFile8 = inDir + "run016_hodo_sts2_0008.lmd";
+  TString inFile9 = inDir + "run016_hodo_sts2_0009.lmd";
+  TString inFile10 = inDir + "run016_hodo_sts2_00010.lmd";
+  TString inFile11 = inDir + "run016_hodo_sts2_00011.lmd";
+  
+  // --- Specify number of events to be produced.
+  // --- -1 means run until the end of the input file.
+  Int_t nEvents = -1;
+  
+  // --- Specify output file name (this is just an example)
+  TString outDir = "data/";
+  TString outFile = outDir + "run016_hodo_sts2.root";
+  
+  // --- Set log output levels
+  FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+  FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
+  
+  // --- Set debug level
   gDebug = 0;
   
   std::cout << std::endl;
@@ -47,17 +59,30 @@ void readLmd_Anna(Int_t runID, Int_t fileID)
   std::cout << ">>> readLmd: Initialising..." << std::endl;
   
   // --- Sets
-  Bool_t trigger = kTRUE;   // kFALSE - self-trigger; kTRUE - external trigger
+  Bool_t trigger = kFALSE;   // kFALSE - self-trigger; kTRUE - external trigger
   Int_t triggered_station = 2;
   
   // --- Source task
   CbmSourceLmd* source = new CbmSourceLmd();
   source->AddFile(inFile);
+  source->AddFile(inFile1);
+  source->AddFile(inFile2);
+  source->AddFile(inFile3);
+/*
+  source->AddFile(inFile4);
+  source->AddFile(inFile5);
+  source->AddFile(inFile6);
+  source->AddFile(inFile7);
+  source->AddFile(inFile8);
+  source->AddFile(inFile9);
+  source->AddFile(inFile10);
+  source->AddFile(inFile11);
+*/
   source->SetTriggeredMode(trigger);
 
   // --- Event header
   FairEventHeader* event = new CbmTbEvent();
-  event->SetRunId(runID);
+  event->SetRunId(012);
 
   // --- Run
   FairRunOnline *run = new FairRunOnline(source);
@@ -69,6 +94,30 @@ void readLmd_Anna(Int_t runID, Int_t fileID)
   hist->SetTriggeredMode(trigger);
   hist->SetTriggeredStation(triggered_station);
   run->AddTask(hist);
+
+  // --- Clusters
+  StsCosyClusterFinder* sts_clust= new StsCosyClusterFinder();
+  sts_clust->SetTriggeredMode(trigger);
+  sts_clust->SetTriggeredStation(triggered_station);
+  run->AddTask(sts_clust);
+  
+  CbmFiberHodoClusterFinder* hodo= new CbmFiberHodoClusterFinder();
+  run->AddTask(hodo);
+  
+  // --- Hits
+  StsCosyHitFinder* hits= new StsCosyHitFinder();
+  hits->SetTriggeredMode(trigger);
+  hits->SetTriggeredStation(triggered_station);
+  run->AddTask(hits);
+
+  // --- Residuals & correlations
+  StsCosyTrack* track= new StsCosyTrack();
+  Bool_t alignment = kFALSE; // kFALSE - without alignment; kTRUE - with alignment  
+  track->SetAlignment(alignment);
+//  track->SetChi2Cut(100.,100.);                            
+  run->AddTask(track);
+   
+  run->SetWriteRunInfoFile(kFALSE);
   
   run->Init();
   
