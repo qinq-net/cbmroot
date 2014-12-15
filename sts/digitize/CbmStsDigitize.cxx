@@ -36,7 +36,6 @@
 #include "setup/CbmStsSensor.h"
 #include "setup/CbmStsSensorConditions.h"
 #include "setup/CbmStsSetup.h"
-#include "digitize/CbmStsPhysics.h"
 #include "digitize/CbmStsSensorTypeDssd.h"
 #include "digitize/CbmStsSensorTypeDssdIdeal.h"
 #include "digitize/CbmStsSensorTypeDssdReal.h"
@@ -329,7 +328,6 @@ InitStatus CbmStsDigitize::Init() {
   LOG(INFO) << "=========================================================="
 		        << FairLogger::endl;
 	std::cout << std::endl;
-	LOG(INFO) << "Su charge " << CbmStsPhysics::GetSiCharge() << FairLogger::endl;
 
 	return kSUCCESS;
 
