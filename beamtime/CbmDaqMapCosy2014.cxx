@@ -48,30 +48,42 @@ CbmDaqMapCosy2014::~CbmDaqMapCosy2014() { }
 
 
 // -----   Get System   ------------------------------------------------------
-Int_t CbmDaqMapCosy2014::GetSystemId(Int_t rocId) {
-	Int_t systemId = -1;
- 	if ( rocId >= 0  && rocId <= 1 ) systemId = kFHODO;
-	else if ( rocId >= 2  || rocId <= 7 ) systemId = kSTS;
+Int_t CbmDaqMapCosy2014::GetSystemId(Int_t rocId) 
+{
+  Int_t systemId = -1;
+  
+  if ( rocId >= 0  && rocId <= 1 ) {
+    systemId = kFHODO;
+  } else if ( rocId >= 2  || rocId <= 7 ) {
+    systemId = kSTS;
+  } else {
+    LOG(WARNING) << GetName() << ": Unknown ROC id " << rocId
+		 << FairLogger::endl;
+  }
+  
+  return systemId;
+  
 /*
  	if ( rocId >= 0  && rocId <= 4 ) systemId = kMUCH;
-	else if ( rocId == 5  || rocId == 6 ) systemId = kFHODO;
-	else if ( rocId >= 7  || rocId <= 12 ) systemId = kSTS;
 */
-	else LOG(WARNING) << GetName() << ": Unknown ROC id " << rocId
-			              << FairLogger::endl;
-	return systemId;
 }
 // ---------------------------------------------------------------------------
 
 
 // -----   Get STS station number   ------------------------------------------
-Int_t CbmDaqMapCosy2014::GetStsStation(Int_t rocId) {
-	if ( rocId < 2 || rocId > 7 ) {
-		LOG(ERROR) << GetName() << ": Illegal STS ROC Id " << rocId
-				       << FairLogger::endl;
-		return -1;
-	}
-	return ( (rocId-0.1) / 2 - 1 );
+Int_t CbmDaqMapCosy2014::GetStsStation(Int_t rocId) 
+{
+  if ( rocId == 2 || rocId == 3 ) {
+    return 1;
+  } else 	if ( rocId == 4 || rocId == 5 ) {
+    return 0;
+  } else 	if ( rocId == 6 || rocId == 7 ) {
+    return 2;
+  } else {
+    LOG(ERROR) << GetName() << ": Illegal STS ROC Id " << rocId
+	       << FairLogger::endl;
+    return -1;
+  }
 }
 // ---------------------------------------------------------------------------
 
@@ -110,37 +122,37 @@ Int_t CbmDaqMapCosy2014::GetStsSensorSide(Int_t rocId) {
 // -----   Get STS channel number   ------------------------------------------
 Int_t CbmDaqMapCosy2014::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
 
-	Int_t channel = -1;
-
-	if (rocId == 2 ){ //sts0  p-side
-	    if (nxId == 0) channel = ((nxChannel < 64) ? (2 * nxChannel - 4 * (nxChannel % 2) + 3) : (2 * nxChannel + 1)); // even
-	    if (nxId == 2) channel = ((nxChannel < 64) ? (252 - 2 * nxChannel + 4 * (nxChannel % 2)) : (254 -2 * nxChannel)); // odd
-	}
-
-	if (rocId == 3 ){ //sts0 n-side
-	    if (nxId == 0) channel = ((nxChannel < 64) ? (253 - 2 * nxChannel + 4 * (nxChannel % 2)) : (255 - 2 * nxChannel)); // even
-	    if (nxId == 2) channel = ((nxChannel < 64) ? (2 * nxChannel + 2 - 4 * (nxChannel % 2)) : (2 * nxChannel)); // odd
-	}
-
-	if (rocId == 4){ //sts1 p-side
-	    if (nxId == 0) channel = 256 - ((nxChannel < 64) ? (2 * nxChannel - 4 * (nxChannel % 2) + 3) : (2 * nxChannel + 1)); // even
-	    if (nxId == 2) channel = 256 - ((nxChannel < 64) ? (252 - 2 * nxChannel + 4 * (nxChannel % 2)) : (254 -2 * nxChannel)); // odd
-	}
-
-	if (rocId == 5){ //sts1 n-side
-	    if (nxId == 0) channel = 256 - ((nxChannel < 64) ? (253 - 2 * nxChannel + 4 * (nxChannel % 2)) : (255 - 2 * nxChannel)); // even
-	    if (nxId == 2) channel = 256 - ((nxChannel < 64) ? (2 * nxChannel + 2 - 4 * (nxChannel % 2)) : (2 * nxChannel)); // odd
-	}
-
-	if (rocId == 6) { //sts2 p-side
-	  if (nxId == 0) channel = 128 - ((nxChannel < 64) ? (nxChannel + 2 * ((nxChannel + 1) % 2) - 1) : nxChannel);
-	}
-
-	if (rocId == 7) { //sts2 n-side
-	  if (nxId == 0) channel = 128 - ((nxChannel < 64) ? (127 - nxChannel) : (- nxChannel + 126 + 2 * (nxChannel % 2)));
-	}
-
-	return channel;
+  Int_t channel = -1;
+  
+  if (rocId == 2){ //sts1 p-side
+    if (nxId == 0) channel = 256 - ((nxChannel < 64) ? (2 * nxChannel - 4 * (nxChannel % 2) + 3) : (2 * nxChannel + 1)); // even
+    if (nxId == 2) channel = 256 - ((nxChannel < 64) ? (252 - 2 * nxChannel + 4 * (nxChannel % 2)) : (254 -2 * nxChannel)); // odd
+  }
+  
+  if (rocId == 3){ //sts1 n-side
+    if (nxId == 0) channel = 256 - ((nxChannel < 64) ? (253 - 2 * nxChannel + 4 * (nxChannel % 2)) : (255 - 2 * nxChannel)); // even
+    if (nxId == 2) channel = 256 - ((nxChannel < 64) ? (2 * nxChannel + 2 - 4 * (nxChannel % 2)) : (2 * nxChannel)); // odd
+  }
+  
+  if (rocId == 4 ){ //sts0  p-side
+    if (nxId == 0) channel = ((nxChannel < 64) ? (2 * nxChannel - 4 * (nxChannel % 2) + 3) : (2 * nxChannel + 1)); // even
+    if (nxId == 2) channel = ((nxChannel < 64) ? (252 - 2 * nxChannel + 4 * (nxChannel % 2)) : (254 -2 * nxChannel)); // odd
+  }
+  
+  if (rocId == 5 ){ //sts0 n-side
+    if (nxId == 0) channel = ((nxChannel < 64) ? (253 - 2 * nxChannel + 4 * (nxChannel % 2)) : (255 - 2 * nxChannel)); // even
+    if (nxId == 2) channel = ((nxChannel < 64) ? (2 * nxChannel + 2 - 4 * (nxChannel % 2)) : (2 * nxChannel)); // odd
+  }
+  
+  if (rocId == 6) { //sts2 p-side
+    if (nxId == 0) channel = 128 - ((nxChannel < 64) ? (nxChannel + 2 * ((nxChannel + 1) % 2) - 1) : nxChannel);
+  }
+  
+  if (rocId == 7) { //sts2 n-side
+    if (nxId == 0) channel = 128 - ((nxChannel < 64) ? (127 - nxChannel) : (- nxChannel + 126 + 2 * (nxChannel % 2)));
+  }
+  
+  return channel;
 }
 // ---------------------------------------------------------------------------
 
