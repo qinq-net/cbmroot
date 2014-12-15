@@ -55,7 +55,10 @@ CbmSourceLmdNew::CbmSourceLmdNew()
     fNofMessRoc(),
     fNofHitMsg(),
     fNofDigis(),
+    fNofBLDigis(),
+    fNofDiscardedDigis(),
     fNofAux(0),
+    fNofDiscardedAux(0),
     fBaselineDataFill(kFALSE),
     fBaselineDataRetrieve(kFALSE),
     fBaselineRoc(),
@@ -99,7 +102,10 @@ CbmSourceLmdNew::CbmSourceLmdNew(const char* inFile)
     fNofMessRoc(),
     fNofHitMsg(),
     fNofDigis(),
+    fNofBLDigis(),
+    fNofDiscardedDigis(),
     fNofAux(0),
+    fNofDiscardedAux(0),
     fBaselineDataFill(kFALSE),
     fBaselineDataRetrieve(kFALSE),
     fBaselineRoc(),
@@ -363,6 +369,7 @@ Int_t CbmSourceLmdNew::ReadEvent()
 	  return 0;
 	} else {
 	  msgType = 4; // This is an Aux digi
+	  fNofAux++;
 	}
       } else {
 	msgType = systemId + 10; // to get the correct unpacker
@@ -377,6 +384,7 @@ Int_t CbmSourceLmdNew::ReadEvent()
 	it->second->FillOutput(fCurrentDigi);
         if ( kTRUE == fBaselineDataRetrieve ) {
 	  fNofDigis[kTutDet]++;
+	  fNofBLDigis[systemId]++;
 	} else {
 	  fNofDigis[systemId]++;
 	}
@@ -449,10 +457,13 @@ void CbmSourceLmdNew::Close()
     TString sysName;
     CbmDetectorList::GetSystemNameCaps(iSys, sysName);
     LOG(INFO) << setw(5) << sysName << ": Messages " << fNofHitMsg[iSys]
-              << ", Digis " << fNofDigis[iSys] << FairLogger::endl;
+              << ", Digis " << fNofDigis[iSys] 
+	      << ", BaselineDigis " << fNofBLDigis[iSys] 
+	      << ", discarded Digis " << fNofDiscardedDigis[iSys] << FairLogger::endl;
   }
   LOG(INFO) << "AUX  : Messages " << fNofMessType[roc::MSG_AUX] << ", Digis "
-            << fNofAux << FairLogger::endl;
+            << fNofAux << ", discarded Digis " << fNofDiscardedAux 
+	    << FairLogger::endl;
 
 
   LOG(INFO) << "Total number of events: " << fNofEvents << FairLogger::endl;

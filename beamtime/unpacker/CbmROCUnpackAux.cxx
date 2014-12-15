@@ -52,6 +52,8 @@ Bool_t CbmROCUnpackAux::DoUnpack(roc::Message* Message, ULong_t hitTime)
     // --- Create AuxDigi and send it to the buffer
     CbmAuxDigi* digi = new CbmAuxDigi(rocId, channel, hitTime);
     fBuffer->InsertData(digi);
+  } else {
+    fSource->AddDiscardedAux();
   }
 
   return kTRUE;

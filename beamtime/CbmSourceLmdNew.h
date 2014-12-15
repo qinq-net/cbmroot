@@ -97,6 +97,9 @@ class CbmSourceLmdNew : public FairSource
     ULong_t GetStopTime() 
     { return fTimeStop; }
 
+    void AddDiscardedDigi(Int_t system) { fNofDiscardedDigis[system]++; }
+    void AddDiscardedAux() { fNofDiscardedAux++; }
+
  private:
 
     // --- Settings
@@ -137,7 +140,10 @@ class CbmSourceLmdNew : public FairSource
     Int_t fNofMessRoc[20][5];    ///< Number of messages per ROC and NXYTER
     Int_t fNofHitMsg[kNOFDETS];  ///< Number of hit messages per detector system
     Int_t fNofDigis[kNOFDETS];   ///< Number of created digis per detector system
+    Int_t fNofBLDigis[kNOFDETS];   ///< Number of created baseline digis per detector system
+    Int_t fNofDiscardedDigis[kNOFDETS]; ///< Number of created discarded digis per detector system
     Int_t fNofAux;               ///< Number of AUX messages
+    Int_t fNofDiscardedAux;      ///< Number of discarded AUX messages
 
     Bool_t fBaselineDataFill;   ///< Flag if the data is for baseline calibration
     Bool_t fBaselineDataRetrieve;   ///< Flag if the data is for baseline calibration

@@ -78,7 +78,11 @@ Bool_t CbmROCUnpackMuch::DoUnpack(roc::Message* Message, ULong_t hitTime)
   if ( !fSource->IsBaselineFill() ) {
     fBuffer->InsertData(digi);
   } else {
-    if ( fSource->IsBaselineFill(rocId) ) { fBuffer->InsertData(digi); }
+    if ( fSource->IsBaselineFill(rocId) ) { 
+      fBuffer->InsertData(digi); 
+    } else {
+      fSource->AddDiscardedDigi(kMUCH);
+    }
   }
 
   return kTRUE;
