@@ -174,7 +174,7 @@ Bool_t CbmSourceLmdNew::FillBuffer(ULong_t time)
     
     // call the registered unpacker for the 
     // message type of the current message
-    auto it=fUnpackers.find(msgType);
+    std::map<Int_t, CbmROCUnpack*>::iterator it=fUnpackers.find(msgType);
     if (it == fUnpackers.end()) {
       LOG(ERROR) << "Skipping message with unknown type " 
 		 << msgType << FairLogger::endl;
@@ -269,7 +269,7 @@ Bool_t CbmSourceLmdNew::Init()
   }
 
   // Call the init of all registered unpackers
-  for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
+  for (std::map<Int_t, CbmROCUnpack*>::iterator it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
     LOG(INFO) << "Initialize " << it->second->GetName() << 
       " for message type " << it->first << FairLogger::endl;
     it->second->Init();
@@ -375,7 +375,7 @@ Int_t CbmSourceLmdNew::ReadEvent()
 	msgType = systemId + 10; // to get the correct unpacker
       }
       
-      auto it=fUnpackers.find(msgType);
+      std::map<Int_t, CbmROCUnpack*>::iterator it=fUnpackers.find(msgType);
       if (it == fUnpackers.end()) {
 	LOG(ERROR) << "Skipping digi with unknown id " 
 		   << msgType << FairLogger::endl;
@@ -474,7 +474,7 @@ void CbmSourceLmdNew::Close()
 void CbmSourceLmdNew::Reset()
 {
   // Call the init of all registered unpackers
-  for (auto it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
+  for (std::map<Int_t, CbmROCUnpack*>::iterator it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
     it->second->Reset();
   }
   
