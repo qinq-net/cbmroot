@@ -219,11 +219,13 @@
 // Set limits for the DAC used to monitor the DLL lock state
 /*
  * Sub address 000 – Lower DLL lock threshold => 0100 1000
+ * From Version 1.20 the default value after reset is 0x071.
  */
 #define GET4V1X_DLL_DAC_MIN          0x48000000
 
 /*
  * Sub address 001 – Upper DLL lock threshold => 0100 1001
+ * From Version 1.20 the default value after reset is 0x238.
  */
 #define GET4V1X_DLL_DAC_MAX          0x49000000
 
