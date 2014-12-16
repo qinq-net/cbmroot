@@ -55,6 +55,7 @@ Set(SRCS
 
   CbmDaqMap.cxx
   CbmDaqMapCosy2014.cxx
+  CbmDaqMapCosy2014Much.cxx
   CbmDaqMapCosy2013.cxx
   
   unpacker/CbmROCUnpack.cxx

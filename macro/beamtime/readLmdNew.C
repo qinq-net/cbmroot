@@ -12,15 +12,19 @@
 void readLmdNew()
 {
 
+	// --- Specify run
+	TString runTag = "run053_0mm_8deg_0004";
+ // TString runTag = "run022_0000";
+
 	// --- Specify input file name (this is just an example)
- 	TString inFile = "lmd/run001_hodo_only_0000.lmd";
+ 	TString inFile = "lmd/" + runTag + ".lmd";
 
 	// --- Specify number of events to be produced.
 	// --- -1 means run until the end of the input file.
 	Int_t nEvents = -1;
 
 	// --- Specify output file name (this is just an example)
-	TString outFile = "data/run001_hodo_only_0000_new.root";
+	TString outFile = "data/" + runTag + ".root";
 
 	// --- Set log output levels
 	FairLogger::GetLogger()->SetLogScreenLevel("INFO");
@@ -78,6 +82,7 @@ void readLmdNew()
   run->SetOutputFile(outFile);
   run->SetEventHeader(event);
 
+  /*
   // --- Calibration
   CbmStsCosyBL* hist= new CbmStsCosyBL();
   run->AddTask(hist);
@@ -86,16 +91,20 @@ void readLmdNew()
   StsCosyClusterFinder* sts_clust= new StsCosyClusterFinder();
   run->AddTask(sts_clust);
 
+ // --- Hit finding for the sts
+  StsCosyHitFinder* hits= new StsCosyHitFinder();
+  run->AddTask(hits);
+
+  */
+
+
   // --- Cluster finding for the hodoscopes
   CbmFiberHodoClusterFinder* fhodoClust = new CbmFiberHodoClusterFinder();
   // If one wants to fill the spectra without basline calibrated data the following
   // line has to be uncommented
-  fhodoClust->SetInputDataLevelName("HodoDigi");
+  //fhodoClust->SetInputDataLevelName("HodoDigi");
   run->AddTask(fhodoClust);  
 
-  // --- Hit finding for the sts
-  StsCosyHitFinder* hits= new StsCosyHitFinder();
-  run->AddTask(hits);
 
   run->Init();
 

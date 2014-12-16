@@ -58,19 +58,43 @@ Bool_t CbmROCUnpackMuch::DoUnpack(roc::Message* Message, ULong_t hitTime)
   Int_t charge     = Message->getNxAdcValue();
   
   // --- Get detector element from DaqMap
-  Int_t station = fDaqMap->GetMuchStation(rocId);
+  Int_t station = 0;
   Int_t layer   = 0;
-  Int_t side    = 0;
-  Int_t module  = 0;
-  Int_t sector  = nxyterId;
-  Int_t channel = nxChannel;
+  Int_t sector  = 0;
+  Int_t channel = 0;
+
+  fDaqMap->Map(rocId, nxyterId, nxChannel,
+  		         station, layer, sector, channel);
 
   // --- Construct unique address
-  UInt_t address = CbmMuchAddress::GetAddress(station, layer, side,
-					      module, sector, channel);
+  UInt_t address = CbmMuchAddress::GetAddress(station, layer, 0,
+					      0, sector, channel);
   
   // --- Create digi
   CbmMuchBeamTimeDigi* digi = new CbmMuchBeamTimeDigi(address, charge, hitTime);
+  digi->SetPadX(sector);
+  digi->SetPadY(channel);
+  digi->SetRocId(rocId);
+  digi->SetNxId(nxyterId);
+  digi->SetNxCh(nxChannel);
+
+
+  LOG(DEBUG) << "MUCH message: rocId " << rocId << " NXYTER " << nxyterId
+  		<< " channel " << nxChannel << " charge " << charge << " time "
+  		<< hitTime << FairLogger::endl;
+  LOG(DEBUG) << "MUCH digi: station " << CbmMuchAddress::GetElementId(address, kMuchStation)
+       << " layer " << CbmMuchAddress::GetElementId(address, kMuchLayer)
+  << " layerside " << CbmMuchAddress::GetElementId(address, kMuchLayerSide)
+  << " module " << CbmMuchAddress::GetElementId(address, kMuchModule)
+  << " sector " << CbmMuchAddress::GetElementId(address, kMuchSector)
+  << " channel " << CbmMuchAddress::GetElementId(address, kMuchChannel)
+  << FairLogger::endl;
+  LOG(DEBUG) << "MUCH digi: pad x " << digi->GetPadX() << " pad y" << digi->GetPadY()
+  		<< " ROC " << digi->GetRocId() << " NXYTER " << digi->GetNxId()
+  		<< FairLogger::endl;
+  LOG(DEBUG) << FairLogger::endl;
+
+
 
   // In case of normal data insert the digi into the buffer.
   // In case of baseline data insert the digi only if the roc 

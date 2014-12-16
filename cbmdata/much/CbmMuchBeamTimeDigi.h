@@ -49,11 +49,31 @@ class CbmMuchBeamTimeDigi : public CbmDigi{
   Int_t GetChannelId()  const { return GetAddress(); }
   Int_t GetADCCharge()  const { return GetAdc(); }
   Int_t GetDTime() const { return 0; }
+
+  void SetPadX(Int_t padX) { fPadX = padX; }
+  void SetPadY(Int_t padY) { fPadY = padY; }
+  void SetRocId(Int_t rocId) { fRocId = rocId; }
+  void SetNxId(Int_t nxId) { fNxId = nxId; }
+  void SetNxCh(Int_t nxCh) { fNxCh = nxCh; }
+
+  Int_t GetPadX() const {return fPadX; }
+  Int_t GetPadY() const {return fPadY; }
+  Int_t GetRocId() const {return fRocId; }
+  Int_t GetNxId() const {return fNxId; }
+  Int_t GetNxCh() const {return fNxCh; }
+
+
+
  
  private:
   Long64_t fData;
   ULong_t fTime;
   CbmMuchDigiMatch* fMatch;  ///< matches to MC points (to be replaced with Fair links)
+  Int_t fPadX;
+  Int_t fPadY;
+  Int_t fRocId;
+  Int_t fNxId;
+  Int_t fNxCh;
   
   static const Int_t fgkAddrBits;
   static const Int_t fgkCharBits;

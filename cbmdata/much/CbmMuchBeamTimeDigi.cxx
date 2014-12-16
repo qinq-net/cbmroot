@@ -39,7 +39,8 @@ CbmMuchBeamTimeDigi::CbmMuchBeamTimeDigi()
   : CbmDigi(),
     fData(0),
     fTime(0),
-    fMatch(0)
+    fMatch(0),
+    fPadX(-1), fPadY(-1), fRocId(-1), fNxId(-1), fNxCh(-1)
 {
 }
 // -------------------------------------------------------------------------
@@ -50,7 +51,8 @@ CbmMuchBeamTimeDigi::CbmMuchBeamTimeDigi(Int_t address, Int_t charge, ULong_t ti
   : CbmDigi(),
     fData(0),
     fTime(time),
-    fMatch(0)
+    fMatch(0),
+    fPadX(-1), fPadY(-1), fRocId(-1), fNxId(-1), fNxCh(-1)
 {
   fData |= (address & fgkAddrMask) << fgkAddrShift;
   fData |= (charge  & fgkCharMask) << fgkCharShift;
@@ -62,7 +64,12 @@ CbmMuchBeamTimeDigi::CbmMuchBeamTimeDigi(CbmMuchBeamTimeDigi* digi)
   : CbmDigi(*digi),
     fData(digi->fData),
     fTime(digi->fTime),
-    fMatch(0)
+    fMatch(0),
+    fPadX(digi->GetPadX()),
+    fPadY(digi->GetPadY()),
+    fRocId(digi->GetRocId()),
+    fNxId(digi->GetNxId()),
+    fNxCh(digi->GetNxCh())
 { 
 }
 
@@ -70,7 +77,12 @@ CbmMuchBeamTimeDigi::CbmMuchBeamTimeDigi(CbmMuchBeamTimeDigi* digi,CbmMuchDigiMa
   : CbmDigi(*digi),
     fData(digi->fData),
     fTime(digi->fTime),
-    fMatch(new CbmMuchDigiMatch(match))
+    fMatch(new CbmMuchDigiMatch(match)),
+		fPadX(digi->GetPadX()),
+		fPadY(digi->GetPadY()),
+		fRocId(digi->GetRocId()),
+		fNxId(digi->GetNxId()),
+		fNxCh(digi->GetNxCh())
 {  
 }
 
@@ -79,7 +91,12 @@ CbmMuchBeamTimeDigi::CbmMuchBeamTimeDigi(const CbmMuchBeamTimeDigi& rhs)
  : CbmDigi(rhs),
    fData(rhs.fData),
    fTime(rhs.fTime),
-   fMatch(NULL)
+   fMatch(NULL),
+   fPadX(rhs.fPadX),
+   fPadY(rhs.fPadY),
+   fRocId(rhs.fRocId),
+   fNxId(rhs.fNxId),
+fNxCh(rhs.fNxCh)
 {
   if (NULL != rhs.fMatch) {
      fMatch = new CbmMuchDigiMatch(*(rhs.fMatch));
@@ -100,6 +117,11 @@ CbmMuchBeamTimeDigi& CbmMuchBeamTimeDigi::operator=(const CbmMuchBeamTimeDigi& r
     } else {
       fMatch = NULL;
     }
+    fPadX = rhs.fPadX;
+    fPadY = rhs.fPadY;
+    fRocId = rhs.fRocId;
+    fNxId = rhs.fNxId;
+    fNxCh = rhs.fNxCh;
 
   }
   return *this;
