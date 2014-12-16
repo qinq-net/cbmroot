@@ -50,6 +50,8 @@ Set(SRCS
   unpacker/CbmTSUnpackFiberHodo.cxx
   unpacker/CbmTSUnpackDummy.cxx
   unpacker/CbmTSUnpackTrb.cxx
+  unpacker/CbmGet4v1xHackDef.cxx
+  unpacker/CbmTSUnpackGet4v1x.cxx
 
   tasks/CbmTrdRawBeamProfile.cxx
   tasks/CbmTrdOnlineDisplay.cxx
