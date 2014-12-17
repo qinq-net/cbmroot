@@ -144,6 +144,7 @@ class CbmSourceLmdNew : public FairSource
     Int_t fNofDiscardedDigis[kNOFDETS]; ///< Number of created discarded digis per detector system
     Int_t fNofAux;               ///< Number of AUX messages
     Int_t fNofDiscardedAux;      ///< Number of discarded AUX messages
+    Int_t fNofIgnoredMessages;   ///< Number of ignores due to unknown system ID
 
     Bool_t fBaselineDataFill;   ///< Flag if the data is for baseline calibration
     Bool_t fBaselineDataRetrieve;   ///< Flag if the data is for baseline calibration
@@ -166,6 +167,10 @@ class CbmSourceLmdNew : public FairSource
      ** @return Pointer to next digi object. NULL if no more available.
      **/
     CbmDigi* GetNextData();
+
+
+    /** Get next message from the roc::iterator **/
+    Bool_t GetNextMessage();
 
     /** Open a new input file and 
      ** read the first message from the file

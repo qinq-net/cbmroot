@@ -59,6 +59,7 @@ CbmSourceLmdNew::CbmSourceLmdNew()
     fNofDiscardedDigis(),
     fNofAux(0),
     fNofDiscardedAux(0),
+    fNofIgnoredMessages(0),
     fBaselineDataFill(kFALSE),
     fBaselineDataRetrieve(kFALSE),
     fBaselineRoc(),
@@ -106,6 +107,7 @@ CbmSourceLmdNew::CbmSourceLmdNew(const char* inFile)
     fNofDiscardedDigis(),
     fNofAux(0),
     fNofDiscardedAux(0),
+    fNofIgnoredMessages(0),
     fBaselineDataFill(kFALSE),
     fBaselineDataRetrieve(kFALSE),
     fBaselineRoc(),
@@ -157,7 +159,17 @@ Bool_t CbmSourceLmdNew::FillBuffer(ULong_t time)
     
     // --- Jump out of loop of hit time is after time limit
     if (hitTime > time) { break; }
-    
+
+    // Ignore all messages with unknown system ID
+    Int_t systemId = fDaqMap->GetSystemId(rocId);
+    if ( systemId < 0 ) {
+    	fNofIgnoredMessages++;
+    	LOG(DEBUG) << "ROC id " << rocId << " system ID " << systemId
+    			       << ": ignoring message" << FairLogger::endl;
+    	GetNextMessage();
+    	continue;
+    }
+
     // Count number of messages for the different types
     fNofMessType[msgType]++;
     
@@ -169,7 +181,7 @@ Bool_t CbmSourceLmdNew::FillBuffer(ULong_t time)
       Int_t systemId = fDaqMap->GetSystemId(rocId);
       fNofHitMsg[systemId]++;
       fNofMessRoc[rocId][nxyId]++;
-      msgType = msgType*10 + systemId; 
+      if ( systemId >= 0 ) msgType = msgType*10 + systemId;
     }
     
     // call the registered unpacker for the 
@@ -177,26 +189,14 @@ Bool_t CbmSourceLmdNew::FillBuffer(ULong_t time)
     std::map<Int_t, CbmROCUnpack*>::iterator it=fUnpackers.find(msgType);
     if (it == fUnpackers.end()) {
       LOG(ERROR) << "Skipping message with unknown type " 
-		 << msgType << FairLogger::endl;
+		 << msgType << " ROC " << rocId << FairLogger::endl;
       continue;
     } else {
       it->second->DoUnpack(fCurrentMessage, hitTime);
     }
     
-    // --- Get next ROC message
-    if ( fRocIter->next() ) {
-      fCurrentMessage = &fRocIter->msg();
-    } else {
-      // Check if there is another file in the list of files
-      // and open this file if one exits
-      fFileCounter += 1;
-      if ( fInputFileList.GetSize() > fFileCounter ) {
-	Bool_t success=OpenInputFileAndGetFirstMessage();
-        if (!success) return kFALSE;
-      } else {
-        fCurrentMessage = NULL;
-      }
-    }
+    GetNextMessage();
+
   } //- message loop
   
   // --- Update buffer fill time
@@ -244,6 +244,33 @@ CbmDigi* CbmSourceLmdNew::GetNextData()
   // --- If the digi pointer is NULL; the input is exhausted and the buffer
   // --- is empty.
   return digi;
+}
+// --------------------------------------------------------------------------
+
+
+Bool_t CbmSourceLmdNew::GetNextMessage() {
+
+  if ( fRocIter->next() ) fCurrentMessage = &fRocIter->msg();
+
+  else  { // No new message
+
+    // Check if there is another file in the list of files
+    // and open this file if one exits
+    fFileCounter += 1;
+    if ( fInputFileList.GetSize() > fFileCounter ) {
+    	Bool_t success = OpenInputFileAndGetFirstMessage();
+      if (!success) {
+      	fCurrentMessage = NULL;
+      	return kFALSE;
+      }
+    }
+    else fCurrentMessage = NULL;
+
+  } //? No new message
+  return kTRUE;
+
+
+
 }
 // --------------------------------------------------------------------------
 
@@ -432,6 +459,8 @@ void CbmSourceLmdNew::Close()
   LOG(INFO) << "Start time : " << fTimeStart * 1.e-9 << " s  ";
   LOG(INFO) << "Stop  time : " << fTimeStop  * 1.e-9 << " s  ";
   LOG(INFO) << "Duration   : " << deltaT  << " s" << FairLogger::endl;
+  LOG(INFO) << "Ignored messages: " << fNofIgnoredMessages << FairLogger::endl;
+
 
   const char* names[8] = { "NOP", "HIT", "EPOCH", "SYNC", "AUX", "EPOCH2", "GET4", "SYS" };
   LOG(INFO) << FairLogger::endl;

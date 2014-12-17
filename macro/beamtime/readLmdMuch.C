@@ -13,7 +13,7 @@ void readLmdMuch()
 {
 
 	// --- Specify run
-	TString runTag = "MUCH/dec15_run043_0000";
+	TString runTag = "MUCH/dec16_run46_0002";
  // TString runTag = "run022_0000";
 
 	// --- Specify input file name (this is just an example)

@@ -55,7 +55,7 @@ Int_t CbmDaqMapCosy2014Much::GetSystemId(Int_t rocId)
   Int_t systemId = -1;
   
   // --- ROC 0 and 1 are MUCH
-  if ( rocId >= 0  && rocId <= 1 ) systemId = kMUCH;
+  if ( rocId >= 0  && rocId <= 2 ) systemId = kMUCH;
   // --- ROC 3 is HODO
   else if ( rocId == 3 ) systemId = kFHODO;
   // --- other ROC ids will be ignored
@@ -170,10 +170,10 @@ Bool_t CbmDaqMapCosy2014Much::Map(Int_t iRoc, Int_t iNx, Int_t iId,
 			Int_t& iStation, Int_t& iSector, 
 			Int_t& iSide, Int_t& iChannel) {
 
-  // --- ROC 2: Hodoscope
-  if ( 2 == iRoc  ) {
+  // --- ROC 3: Hodoscope
+  if ( 3 == iRoc  ) {
     if ( iNx-2 == 0) {
-      iStation = iRoc;
+      iStation = 1;
       iSector = 0;
       iSide = fFiberHodoPlane[iId];
       iChannel = fFiberHodoFiber[iId];
