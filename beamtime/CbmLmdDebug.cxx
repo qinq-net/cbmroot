@@ -15,6 +15,7 @@ using namespace std;
 
 
 
+
 // -----   Constructor   ---------------------------------------------------
 CbmLmdDebug::CbmLmdDebug(const char* fileName) :
 	fLmdFileName(fileName),
@@ -30,7 +31,8 @@ CbmLmdDebug::CbmLmdDebug(const char* fileName) :
 	fMaxTimeDisorder(0),
 	fTimeStart(0),
 	fTimeStop(0)
-	{
+{
+	for (Int_t iType = 0; iType < 8; iType++) fNofMsgType[iType] = 0;
 	Init();
 }
 // -------------------------------------------------------------------------
