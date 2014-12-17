@@ -51,6 +51,7 @@ Set(SRCS
   CbmMuchDigiTb.cxx
   CbmSourceLmd.cxx
   CbmSourceLmdNew.cxx
+  CbmLmdDebug.cxx
   CbmTbDaqBuffer.cxx
 
   CbmDaqMap.cxx

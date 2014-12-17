@@ -11,6 +11,7 @@
 #pragma link C++ class CbmDaqMapCosy2013;
 #pragma link C++ class CbmSourceLmd;
 #pragma link C++ class CbmSourceLmdNew;
+#pragma link C++ class CbmLmdDebug;
 #pragma link C++ class CbmTbDaqBuffer;
 #pragma link C++ class CbmROCUnpack;
 #pragma link C++ class CbmROCUnpackSts;
