@@ -244,44 +244,45 @@ void CbmFiberHodoClusterFinder::Exec(Option_t * option)
 	  
 	}
       
-      for(Int_t iclus = 0; iclus < nofClusterCandidates; iclus++)
-	{
-	  const CbmFiberHodoCluster* cluster = static_cast<const CbmFiberHodoCluster*>(fClusters->At(iclus));
-	  Int_t nofFiber = cluster->GetNofDigis();
-	  if(nofFiber>2)
-	    return;
-	  double strip=0.;
-	  double time=0;
-	  for (Int_t i = 0; i < nofFiber; ++i)
-	    {
-	      const CbmFiberHodoDigi* hodoDigi = (CbmFiberHodoDigi*)fDigis->At(cluster->GetDigi(i));
-	      strip += CbmFiberHodoAddress::GetStripId(hodoDigi->GetAddress());
-	      time += hodoDigi->GetTime();
-	    }
-	  Int_t size = finalClusters->GetEntriesFast();
-	  CbmFiberHodoCluster* new_cluster = new ((*finalClusters)[size]) CbmFiberHodoCluster();
-	  for (Int_t i = 0; i < nofFiber; ++i)
-	    {
-	      const CbmFiberHodoDigi* hodo_digi = static_cast<const CbmFiberHodoDigi*>(fDigis->At(cluster->GetDigi(i)));
-	      if (i == 0)
-		new_cluster->SetAddress(hodo_digi->GetAddress());
-	      new_cluster->AddDigi(cluster->GetDigi(i));
-	    }
-	  
-	  new_cluster->SetMean(strip/nofFiber);
-	  new_cluster->SetTime(time/nofFiber);
-	  new_cluster->SetMeanError(nofFiber / TMath::Sqrt(12.));
-	}  
+      for(Int_t iclus = 0; iclus < nofClusterCandidates; iclus++) {
+	const CbmFiberHodoCluster* cluster = static_cast<const CbmFiberHodoCluster*>(fClusters->At(iclus));
+	Int_t nofFiber = cluster->GetNofDigis();
+	if(nofFiber>2)
+	  return;
+	double strip = 0.;
+	double time = 0.;
+	Double_t charge = 0.;
+	for (Int_t i = 0; i < nofFiber; ++i) {
+	  const CbmFiberHodoDigi* hodoDigi = static_cast<CbmFiberHodoDigi*>(fDigis->At(cluster->GetDigi(i)));
+	  strip += CbmFiberHodoAddress::GetStripId(hodoDigi->GetAddress());
+	  time += hodoDigi->GetTime();
+	  charge += hodoDigi->GetCharge();
+	}
+	Int_t size = finalClusters->GetEntriesFast();
+	CbmFiberHodoCluster* new_cluster = new ((*finalClusters)[size]) CbmFiberHodoCluster();
+	for (Int_t i = 0; i < nofFiber; ++i) {
+	  const CbmFiberHodoDigi* hodo_digi = static_cast<const CbmFiberHodoDigi*>(fDigis->At(cluster->GetDigi(i)));
+	  if (i == 0) {
+	    new_cluster->SetAddress(hodo_digi->GetAddress());
+	    new_cluster->AddDigi(cluster->GetDigi(i));
+	  }
+	}
+	new_cluster->SetMean(strip/nofFiber);
+	new_cluster->SetTime(time/nofFiber);
+	new_cluster->SetCharge(charge);
+	new_cluster->SetMeanError(nofFiber / TMath::Sqrt(12.));
+      }  
     }
-
-    if ( 4 == finalClusters->GetEntriesFast() ) {
+  
+  if ( 2 == finalClusters->GetEntriesFast() ) {
+    //    if ( 4 == finalClusters->GetEntriesFast() ) {
       // check if there is a cluster from each layer
       set<Int_t> layerset; 
       Double_t x1;
       Double_t x2;
       Double_t y1;
       Double_t y2;
-      for(Int_t iclust=0; iclust<4; ++iclust ) {
+      for(Int_t iclust=0; iclust<finalClusters->GetEntriesFast(); ++iclust ) {
 	Int_t layerID = CbmFiberHodoAddress::GetLayerAddress(static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetAddress());
 	if ( layerset.find(layerID) == layerset.end() ) {
           layerset.insert(layerID);

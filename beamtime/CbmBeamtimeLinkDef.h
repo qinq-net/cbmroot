@@ -25,6 +25,7 @@
 #pragma link C++ class CbmTbEventBuilderFixedTimeWindow;
 
 #pragma link C++ class CbmFiberHodoClusterFinder;
+#pragma link C++ class CbmHodoRawHistos;
 #pragma link C++ class CbmStsCosyBL;
 #pragma link C++ class StsCosyClusterFinder;
 #pragma link C++ class StsCosyHitFinder;

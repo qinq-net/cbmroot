@@ -72,6 +72,7 @@ Set(SRCS
   eventbuilder/CbmTbEventBuilderFixedTimeWindow.cxx
 
   fhodo/CbmFiberHodoClusterFinder.cxx
+  fhodo/CbmHodoRawHistos.cxx
 
   param/CbmBeamTimeContFact.cxx
   param/CbmBeamTimeFirstPar.cxx
