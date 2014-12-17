@@ -27,7 +27,9 @@ CbmLmdDebug::CbmLmdDebug(const char* fileName) :
 	fLastMsgRocId(-1),
 	fLastMsgNxyId(-1),
 	fLastMsgTime(0),
-	fMaxTimeDisorder(0)
+	fMaxTimeDisorder(0),
+	fTimeStart(0),
+	fTimeStop(0)
 	{
 	Init();
 }
@@ -107,6 +109,11 @@ Int_t CbmLmdDebug::Run(Int_t maxMessages) {
     // --- Message full time
     ULong_t msgTime = fCurrentMessage->getMsgFullTime(fCurrentEpoch[rocId]);
 
+
+    // --- Update run start and stop time
+    if ( nMessages == 1 ) fTimeStart = msgTime;
+    fTimeStop = TMath::Max(fTimeStop, msgTime);
+
     // --- Message to screen for proper LOG level
     switch ( msgType ) {
     	case roc::MSG_SYNC:
@@ -158,6 +165,11 @@ Int_t CbmLmdDebug::Run(Int_t maxMessages) {
   timer.Stop();
   LOG(INFO) << "End of run; " << nMessages << " messages read"
   		      << FairLogger::endl;
+  LOG(INFO) << "Start time : " << fixed << setprecision(4) << fTimeStart * 1.e-9 << " s  ";
+  LOG(INFO) << "Stop  time : " << fTimeStop  * 1.e-9 << " s  ";
+  Double_t deltaT = (fTimeStop - fTimeStart) / 1.e9;
+  LOG(INFO) << "Duration   : " << deltaT  << " s" << FairLogger::endl;
+
   LOG(INFO) << "Max. time disorder " << fMaxTimeDisorder << " ns "
   		      << FairLogger::endl;
   PrintStats();

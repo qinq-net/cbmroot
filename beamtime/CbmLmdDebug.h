@@ -66,6 +66,10 @@ class CbmLmdDebug: public TObject {
     Int_t   fLastMsgNxyId;
     ULong_t fLastMsgTime;
 
+    // Run start and end time
+    ULong_t fTimeStart;
+    ULong_t fTimeStop;
+
     Long64_t fMaxTimeDisorder; ///< Maximal time disordering of messages
 
 
