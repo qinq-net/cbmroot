@@ -13,7 +13,7 @@ CbmFiberHodoCluster::CbmFiberHodoCluster()
 {
 }
 
-CbmFiberHodoCluster::~CbmFiberHodoCluster(){
+ CbmFiberHodoCluster::~CbmFiberHodoCluster(){
 }
 
 ClassImp(CbmFiberHodoCluster)

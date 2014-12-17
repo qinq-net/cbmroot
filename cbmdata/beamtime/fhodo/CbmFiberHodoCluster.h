@@ -54,6 +54,10 @@ public:
     return fMeanError;
   }
 
+  Double_t GetCharge() { return fCharge; }
+
+  void SetCharge(Double_t charge) { fCharge = charge; }
+
  private:
   CbmFiberHodoCluster(const CbmFiberHodoCluster&);
   CbmFiberHodoCluster& operator=(const CbmFiberHodoCluster&);
@@ -61,8 +65,9 @@ public:
   Double_t fTime; // FIXME: Modify clustering algorithm and remove this parameter.
   Double_t fMean; // FIXME: Modify clustering algorithm and remove this parameter.
   Double_t fMeanError; // FIXME: Modify clustering algorithm and remove this parameter.
+  Double_t fCharge;
 
-  ClassDef(CbmFiberHodoCluster, 2)
+  ClassDef(CbmFiberHodoCluster, 3)
 
 
 };
