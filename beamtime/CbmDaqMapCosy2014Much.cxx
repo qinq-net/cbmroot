@@ -56,12 +56,12 @@ Int_t CbmDaqMapCosy2014Much::GetSystemId(Int_t rocId)
   
   // --- ROC 0 and 1 are MUCH
   if ( rocId >= 0  && rocId <= 1 ) systemId = kMUCH;
-  // --- ROC 2 is hodoscope
-  else if ( rocId == 2 ) systemId = kFHODO;
-  // --- other ROC ids should not be there
+  // --- ROC 3 is HODO
+  else if ( rocId == 3 ) systemId = kFHODO;
+  // --- other ROC ids will be ignored
   else {
-    LOG(WARNING) << GetName() << ": Unknown ROC id " << rocId
-		 << FairLogger::endl;
+    //LOG(WARNING) << GetName() << ": Unknown ROC id " << rocId
+		// << FairLogger::endl;
   }
   
   return systemId;

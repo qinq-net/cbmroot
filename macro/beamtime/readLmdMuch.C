@@ -21,7 +21,7 @@ void readLmdMuch()
 
 	// --- Specify number of events to be produced.
 	// --- -1 means run until the end of the input file.
-	Int_t nEvents = 1000;
+	Int_t nEvents = -1;
 
 	// --- Specify output file name (this is just an example)
 	TString outFile = "data/" + runTag + ".root";
@@ -64,6 +64,7 @@ void readLmdMuch()
   // --- Source task
   // Register all unpackers, the event builder and the mapping in the source class 
   CbmSourceLmdNew* source = new CbmSourceLmdNew();
+  source->AddUnpacker(unpackDummy, -1);
   source->AddUnpacker(unpackEpoch, 2);
   source->AddUnpacker(unpackDummy, 3);
   source->AddUnpacker(unpackAux, 4);
