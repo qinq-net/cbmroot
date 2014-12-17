@@ -274,53 +274,79 @@ void CbmFiberHodoClusterFinder::Exec(Option_t * option)
       }  
     }
   
-  if ( 2 == finalClusters->GetEntriesFast() ) {
-    //    if ( 4 == finalClusters->GetEntriesFast() ) {
-      // check if there is a cluster from each layer
-      set<Int_t> layerset; 
-      Double_t x1;
-      Double_t x2;
-      Double_t y1;
-      Double_t y2;
-      for(Int_t iclust=0; iclust<finalClusters->GetEntriesFast(); ++iclust ) {
-	Int_t layerID = CbmFiberHodoAddress::GetLayerAddress(static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetAddress());
-	if ( layerset.find(layerID) == layerset.end() ) {
-          layerset.insert(layerID);
-          switch (layerID) {
-	  case 0:
-	    x1=64-static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetMean();
-	    break;
-	  case 16:
-	    y1=static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetMean();
-	    break;
-	  case 1:
-	    x2=static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetMean();
-	    break;
-	  case 17:
-	    y2=static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetMean();
-	    break;
-	  }
-	} else {
-	  return;
-	}
-	
+
+  Double_t x1;
+  Double_t x2;
+  Double_t y1;
+  Double_t y2;
+  Double_t pos;
+
+  Double_t charge_x1 = 0.;
+  Double_t charge_x2 = 0.;
+  Double_t charge_y1 = 0.;
+  Double_t charge_y2 = 0.;
+  Double_t charge = 0.;
+  Int_t address;
+  Int_t layerID;
+  CbmFiberHodoCluster* hodoClust = NULL;
+
+  for ( UInt_t iClust=0; iClust < finalClusters->GetEntriesFast(); ++iClust) {
+    hodoClust = static_cast<CbmFiberHodoCluster*>(finalClusters->At(iClust));
+    address = hodoClust->GetAddress();        
+    layerID = CbmFiberHodoAddress::GetLayerAddress(address);
+    pos = hodoClust->GetMean();
+    charge = hodoClust->GetCharge();
+
+    switch (layerID) {
+    case 0:
+      if (charge > charge_x1 ) {        
+	x1=64-pos;
+	charge_x1 = charge;
       }
-      hodo1_pos->Fill(x1, y1);
-      hodo2_pos->Fill(x2, y2);
-      hodo_xx->Fill(x1, x2);
-      hodo_yy->Fill(y1, y2);
-      hodo1_xcor->Fill(x1, x1-x2);
-      hodo2_xcor->Fill(x2, x1-x2);
-      hodo1_ycor->Fill(y1, y1-y2);
-      hodo2_ycor->Fill(y2, y1-y2);
-      hodo1x->Fill(x1);
-      hodo1y->Fill(y1);
-      hodo2x->Fill(x2);
-      hodo2y->Fill(y2);
+      break;
+    case 16:
+      if (charge > charge_y1 ) {        
+	y1=pos;
+	charge_y1 = charge;
+      }
+      break;
+    case 1:
+      if (charge > charge_x2 ) {        
+	x2=pos;
+	charge_x2 = charge;
+      }
+      break;
+    case 17:
+      if (charge > charge_y2 ) {        
+	y2=pos;
+	charge_y2 = charge;
+      }
+      break;
     }
 
-    Double_t x1;
-    Double_t y1;
+  }
+
+  if ( charge_x1 > 0. && charge_y1 > 0.) {
+    hodo1_pos->Fill(x1, y1);
+    hodo1x->Fill(x1);
+    hodo1y->Fill(y1);
+  }
+ if ( charge_x2 > 0. && charge_y2 > 0.) {
+   hodo2_pos->Fill(x2, y2);
+   hodo2x->Fill(x2);
+   hodo2y->Fill(y2);
+  }
+  if ( charge_x1 > 0. && charge_y1 > 0. && charge_x2 > 0. && charge_y2 > 0.) {
+    hodo_xx->Fill(x1, x2);
+    hodo_yy->Fill(y1, y2);
+    hodo1_xcor->Fill(x1, x1-x2);
+    hodo2_xcor->Fill(x2, x1-x2);
+    hodo1_ycor->Fill(y1, y1-y2);
+    hodo2_ycor->Fill(y2, y1-y2);
+  }
+
+  //    Double_t x1;
+  //  Double_t y1;
     for(Int_t iclust=0; iclust<finalClusters->GetEntriesFast(); ++iclust ) {
       Int_t layerID = CbmFiberHodoAddress::GetLayerAddress(static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetAddress());
       switch (layerID) {
