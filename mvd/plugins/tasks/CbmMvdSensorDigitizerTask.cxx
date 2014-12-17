@@ -775,6 +775,9 @@ void CbmMvdSensorDigitizerTask::ProducePixelCharge(CbmMvdPoint* point) {
     // loop over all pads of interest. 
 fPixelChargeShort.clear();   
 Int_t ix, iy;    
+
+if(ixLo < 0)ixLo=0;
+if(iyLo < 0)iyLo=0;
     
     for (ix = ixLo; ix < ixUp+1; ix++) {
 // cout << endl <<"loop for " << ix << endl;
