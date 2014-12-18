@@ -39,6 +39,18 @@ class CbmSourceLmdNew : public FairSource
     CbmSourceLmdNew(const CbmSourceLmdNew& source);
     virtual ~CbmSourceLmdNew();
 
+    /** Get time offset for AUX
+     ** @value AUX time offset (will be added to the AUX time stamp) [ns]
+     **
+     ** The time stamp of the AUX messages is generated on the ROCs,
+     ** whereas that of the HIT messages is generated on the NXYTERS.
+     ** Both clocks differ by a constant delay - the AUX come earlier.
+     ** This is corrected for when producing digis out of the messages.
+     ** The offset value will be added to the AUX time stamp (by the
+     ** AUX unpacker), i.e. the AUX will be delayed by this amount.
+     **/
+    ULong_t GetAuxOffset() const { return fAuxOffset; }
+
     virtual Bool_t Init();
     virtual Int_t ReadEvent();
     virtual void Close();
@@ -55,6 +67,20 @@ class CbmSourceLmdNew : public FairSource
 
     void AddUnpacker(CbmROCUnpack* unpacker, Int_t messageType)
     { fUnpackers.insert(std::pair<Int_t,CbmROCUnpack*>(messageType,unpacker));}
+
+
+    /** Set the time offset of AUX messages
+     ** @param offset  Time offset of AUX w.r.t. HIT [ns]
+     **
+     ** The time stamp of the AUX messages is generated on the ROCs,
+     ** whereas that of the HIT messages is generated on the NXYTERS.
+     ** Both clocks differ by a constant delay - the AUX come earlier.
+     ** This is corrected for when producing digis out of the messages.
+     ** The offset value will be added to the AUX time stamp, i.e.
+     ** they will be delayed by this amount.
+     **/
+    void SetAuxOffset(ULong_t offset) { fAuxOffset = offset; }
+
 
     void SetEventBuilder(CbmTbEventBuilder* eventBuilder)
     { fEventBuilder = eventBuilder; }
@@ -108,6 +134,7 @@ class CbmSourceLmdNew : public FairSource
     Int_t    fFileCounter;      ///< Counter the actual file in list
     ULong_t  fReadInTimeStep;   ///< Time step in which data from input are read
     Bool_t   fPersistence;      ///< Flag for file storage of output arrays
+    ULong_t  fAuxOffset;        ///< Offset of AUX w.r.t. HIT messages
 
     // --- Auxiliary classes
     CbmTbDaqBuffer* fBuffer;        ///< Digi buffer instance

@@ -48,9 +48,10 @@ Bool_t CbmROCUnpackAux::DoUnpack(roc::Message* Message, ULong_t hitTime)
     Int_t channel = Message->getAuxChNum();
 
     fSource->CheckCurrentEpoch(rocId);
+    ULong_t offset = fSource->GetAuxOffset();
     
     // --- Create AuxDigi and send it to the buffer
-    CbmAuxDigi* digi = new CbmAuxDigi(rocId, channel, hitTime);
+    CbmAuxDigi* digi = new CbmAuxDigi(rocId, channel, hitTime + offset);
     fBuffer->InsertData(digi);
   } else {
     fSource->AddDiscardedAux();

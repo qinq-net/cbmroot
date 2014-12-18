@@ -82,6 +82,7 @@ Set(SRCS
   reco/StsCosyHitFinder.cxx
   reco/StsCosyTrack.cxx
   reco/CbmStsHodoCorrelations.cxx
+  reco/CbmMuchRawHistos.cxx
 )
 
 # Add artificial dependency which delays the compilation of the defined file

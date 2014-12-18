@@ -34,6 +34,7 @@ CbmSourceLmdNew::CbmSourceLmdNew()
     fFileCounter(0),
     fReadInTimeStep(1e9),
     fPersistence(kTRUE),
+    fAuxOffset(1000),
     fBuffer(CbmTbDaqBuffer::Instance()),
     fDaqMap(NULL),
     fRocIter(NULL),
@@ -82,6 +83,7 @@ CbmSourceLmdNew::CbmSourceLmdNew(const char* inFile)
     fFileCounter(0),
     fReadInTimeStep(1e9),
     fPersistence(kTRUE),
+    fAuxOffset(1000),
     fBuffer(CbmTbDaqBuffer::Instance()),
     fDaqMap(NULL),
     fRocIter(NULL),
@@ -178,7 +180,6 @@ Bool_t CbmSourceLmdNew::FillBuffer(ULong_t time)
     // is 1 for hit messages and the unique system id)
     if ( fCurrentMessage->isHitMsg() ) {
       // --- ROC number defines the system
-      Int_t systemId = fDaqMap->GetSystemId(rocId);
       fNofHitMsg[systemId]++;
       fNofMessRoc[rocId][nxyId]++;
       if ( systemId >= 0 ) msgType = msgType*10 + systemId;

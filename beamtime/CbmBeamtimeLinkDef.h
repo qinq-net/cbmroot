@@ -31,6 +31,7 @@
 #pragma link C++ class StsCosyHitFinder;
 #pragma link C++ class StsCosyTrack;
 #pragma link C++ class CbmStsHodoCorrelations;
+#pragma link C++ class CbmMuchRawHistos;
 //#pragma link C++ class CbmBeamTimExampleTask;
 //#pragma link C++ class CbmBeamTimeExampleTask2;
 //#pragma link C++ class CbmBeamTimeExampleTask3;
