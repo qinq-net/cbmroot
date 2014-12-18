@@ -740,7 +740,10 @@ void CbmMvdSensorDigitizerTask::ProducePixelCharge(CbmMvdPoint* point) {
     fSensor->LocalToPixel(maxCoord, upperXArray[0], upperYArray[0]);
 
     
-
+    if(lowerXArray[0] < 0)lowerXArray[0]=0;
+    if(lowerYArray[0] < 0)lowerYArray[0]=0;
+    if(upperXArray[0] > fNPixelsX)upperXArray[0]=fNPixelsX;
+    if(upperYArray[0] > fNPixelsY)upperYArray[0]=fNPixelsY;
     
      ixLo=lowerXArray[0];
      iyLo=lowerYArray[0];
@@ -762,7 +765,13 @@ void CbmMvdSensorDigitizerTask::ProducePixelCharge(CbmMvdPoint* point) {
 	
 	fSensor->LocalToPixel(minCoord, lowerXArray[i], lowerYArray[i]);
         fSensor->LocalToPixel(maxCoord, upperXArray[i], upperYArray[i]);
-       
+	       
+	if(lowerXArray[i] < 0)lowerXArray[i]=0;
+	if(lowerYArray[i] < 0)lowerYArray[i]=0;
+
+	if(upperXArray[i] > fNPixelsX)upperXArray[i]=fNPixelsX;
+	if(upperYArray[i] > fNPixelsY)upperYArray[i]=fNPixelsY;
+
     	if (ixLo > lowerXArray[i]){ixLo = lowerXArray[i];}
     	if (ixUp < upperXArray[i]){ixUp = upperXArray[i];}
     	if (iyLo > lowerYArray[i]){iyLo = lowerYArray[i];}
@@ -776,8 +785,6 @@ void CbmMvdSensorDigitizerTask::ProducePixelCharge(CbmMvdPoint* point) {
 fPixelChargeShort.clear();   
 Int_t ix, iy;    
 
-if(ixLo < 0)ixLo=0;
-if(iyLo < 0)iyLo=0;
     
     for (ix = ixLo; ix < ixUp+1; ix++) {
 // cout << endl <<"loop for " << ix << endl;
