@@ -163,23 +163,13 @@ void CbmL1::ReadEvent()
 //             std::cout << "iMC " << iMC << std::endl;
 //           }
 //         }
-//       }
-      if( listMvdDigiMatches ){
-        CbmMvdHit *mh = L1_DYNAMIC_CAST<CbmMvdHit*>( listMvdHits->At(j) );
-        int iDigi = mh->GetRefId();
-        if (iDigi>=0)
-        {
-          CbmMatch *dm =  L1_DYNAMIC_CAST<CbmMatch*>( listMvdDigiMatches->At(iDigi));
-          float mcWeight = 0.f;
-          for(int iDigiLink=0; iDigiLink<dm->GetNofLinks(); iDigiLink++)
-          {
-            if( dm->GetLink(iDigiLink).GetWeight() > mcWeight)
-            {
-              mcWeight = dm->GetLink(iDigiLink).GetWeight();
-              iMC = dm->GetLink(iDigiLink).GetIndex();
-            }
-          }
-        }
+//       }  
+  
+      if( listMvdHitMatches ){
+        CbmMatch *hm = L1_DYNAMIC_CAST<CbmMatch*>( listMvdHitMatches->At(j) );
+       
+        if( hm->GetNofLinks()>0 )
+        iMC = hm->GetLink(0).GetIndex();
       }
       if( listMvdPts && iMC>=0 ){ // TODO1: don't need this with FairLinks
         CbmL1MCPoint MC;

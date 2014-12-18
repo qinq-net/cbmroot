@@ -1489,6 +1489,7 @@ void CbmL1::InputPerformance()
   if( listStsPts ){
     nMC = listStsPts->GetEntries();
   }
+  if( 0 )
   if( listStsHits ){
     for (unsigned int iH=0; iH < vStsHits.size(); iH++ ){
       const CbmL1StsHit &h = vStsHits[iH];
@@ -1541,30 +1542,27 @@ void CbmL1::InputPerformance()
       
     }
   } // sts
+  
   if( listMvdHits ){
     Int_t nEnt = listMvdHits->GetEntries();
-//     Int_t nMC = listStsPts->GetEntries();
     for (int j=0; j < nEnt; j++ ){
       CbmMvdHit *sh = L1_DYNAMIC_CAST<CbmMvdHit*>( listMvdHits->At(j) );
-//       CbmMvdHitMatch *hm = L1_DYNAMIC_CAST<CbmMvdHitMatch*>( listMvdHitMatches->At(j) );
+      CbmMatch *hm = L1_DYNAMIC_CAST<CbmMatch*>( listMvdHitMatches->At(j) );
 
-//       int iMC = sh->GetRefIndex();
-      
-      int iDigi = sh->GetRefId();
-      if (iDigi<0) continue;
-      CbmMatch *dm =  L1_DYNAMIC_CAST<CbmMatch*>( listMvdDigiMatches->At(iDigi));
       int iMC = -1;
-      float mcWeight = 0.f;
-      for(int iDigiLink=0; iDigiLink<dm->GetNofLinks(); iDigiLink++)
-      {
-        if( dm->GetLink(iDigiLink).GetWeight() > mcWeight)
-        {
-          mcWeight = dm->GetLink(iDigiLink).GetWeight();
-          iMC = dm->GetLink(iDigiLink).GetIndex();
-        }
-      }
-      if(iMC<0) continue;
-     
+//       float mcWeight = -1.f;
+//       for(int iDigiLink=0; iDigiLink<hm->GetNofLinks(); iDigiLink++)
+//       {
+//         if( hm->GetLink(iDigiLink).GetWeight() > mcWeight)
+//         {
+//           mcWeight = hm->GetLink(iDigiLink).GetWeight();
+//           iMC = hm->GetLink(iDigiLink).GetIndex();
+//         }
+//       }
+//       if(iMC<0) continue;
+      if( hm->GetNofLinks()>0 )
+        iMC = hm->GetLink(0).GetIndex();
+        
         // hit pulls and residuals
 
       TVector3 hitPos, mcPos, hitErr;
@@ -1572,6 +1570,7 @@ void CbmL1::InputPerformance()
       sh->PositionError(hitErr);
       CbmMvdPoint *pt = 0;
       if( iMC>=0 && iMC<nMC) pt = L1_DYNAMIC_CAST<CbmMvdPoint*>( listMvdPts->At(iMC) );
+
       if ( !pt ){
 //         cout << " No MC points! " << "iMC=" << iMC << endl;
         continue;
