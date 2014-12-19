@@ -11,6 +11,7 @@
 #include "roc/Message.h"
 
 #include "CbmROCUnpack.h"
+#include "CbmHistManager.h"
 
 class CbmTbDaqBuffer;
 class CbmDaqMap;
@@ -28,6 +29,7 @@ class CbmROCUnpackHodo : public CbmROCUnpack
   virtual Bool_t DoUnpack(roc::Message* Message, ULong_t hitTime);
   virtual void FillOutput(CbmDigi* digi);
   virtual void Reset();
+  virtual void Finish();
 
  private:
 
@@ -36,6 +38,9 @@ class CbmROCUnpackHodo : public CbmROCUnpack
   CbmSourceLmdNew* fSource;
   TClonesArray* fHodoDigis;         ///< Output array of CbmHodoDigi
   TClonesArray* fHodoBaselineDigis; ///< Output array for baseline calib.
+  CbmHistManager* fHM;  ///< Histogram manager
+
+  void CreateHistograms();
 
   ClassDef(CbmROCUnpackHodo, 1)
 };

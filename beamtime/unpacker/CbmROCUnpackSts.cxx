@@ -67,6 +67,22 @@ Bool_t CbmROCUnpackSts::DoUnpack(roc::Message* Message, ULong_t hitTime)
   Int_t side    = fDaqMap->GetStsSensorSide(rocId);
   Int_t channel = fDaqMap->GetStsChannel(rocId, nxyterId, nxChannel);
 
+
+  Int_t iStation;
+  Int_t iSector;
+  Int_t iPlane;
+  Int_t iFiber;
+
+  fDaqMap->Map(rocId, nxyterId, nxChannel, iStation, iSector, iPlane, iFiber);
+
+  if( station != iStation ||  sector != iSector ||
+      side != iPlane || channel != iFiber ) {
+    LOG(INFO) << "Roc, Nxyter: " << rocId << ", " << nxyterId << FairLogger::endl;
+    LOG(INFO) << "Station: " << station << ", " << iStation << FairLogger::endl;
+    LOG(INFO) << "Sector: " << sector << ", " << iSector << FairLogger::endl;
+    LOG(INFO) << "Side: " << side << ", " << iPlane << FairLogger::endl;
+    LOG(INFO) << "Channel: " << channel << ", " << iFiber << FairLogger::endl;
+  } 
   // --- Create a STS digi and send it to the buffer
   UInt_t address = CbmStsAddress::GetAddress(station,
                    0,   // ladder

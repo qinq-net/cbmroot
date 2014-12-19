@@ -26,6 +26,7 @@ class CbmROCUnpack : public TObject
   virtual Bool_t DoUnpack(roc::Message* Message, ULong_t hitTime) = 0;
   virtual void FillOutput(CbmDigi* digi) = 0;
   virtual void Reset() = 0;
+  virtual void Finish() = 0;
 
   void SetPersistence(Bool_t persistence = kTRUE) 
   { fPersistence = persistence; }

@@ -7,10 +7,11 @@
 #include "CbmROCUnpackHodo.h"
 
 #include "CbmFiberHodoDigi.h"
-#include "CbmTbDaqBuffer.h"
-#include "CbmSourceLmdNew.h"
-#include "CbmDaqMap.h"
 #include "CbmFiberHodoAddress.h"
+
+#include "CbmTbDaqBuffer.h"
+#include "CbmDaqMap.h"
+#include "CbmSourceLmdNew.h"
 #include "CbmDetectorList.h"
 
 #include "FairRunOnline.h"
@@ -18,6 +19,8 @@
 #include "FairRootManager.h"
 
 #include "TClonesArray.h"
+#include "TDirectory.h"
+
 
 CbmROCUnpackHodo::CbmROCUnpackHodo()
   : CbmROCUnpack(),
@@ -25,7 +28,8 @@ CbmROCUnpackHodo::CbmROCUnpackHodo()
     fDaqMap(NULL),
     fSource(NULL),
     fHodoDigis(new TClonesArray("CbmFiberHodoDigi", 10)),
-    fHodoBaselineDigis(new TClonesArray("CbmFiberHodoDigi", 10))
+    fHodoBaselineDigis(new TClonesArray("CbmFiberHodoDigi", 10)),
+    fHM(new CbmHistManager())
 {
 }
   
@@ -45,8 +49,21 @@ Bool_t CbmROCUnpackHodo::Init()
   ioman->Register("HodoDigi", "HODO raw data", fHodoDigis, fPersistence);
   ioman->Register("HodoBaselineDigi", "HODO baseline data", 
 		  fHodoBaselineDigis, fPersistence);
+
+  CreateHistograms();
+
   return kTRUE;
 
+}
+
+void CbmROCUnpackHodo::CreateHistograms()
+{
+  fHM->Add("Raw_ADC_FrontHodo", 
+	   new TH2F("Raw_ADC_FrontHodo", 
+		    "Raw_ADC_FrontHodo;channel;ADC value", 128, 0, 127, 4096, 0, 4095));   
+  fHM->Add("Raw_ADC_RearHodo", 
+	   new TH2F("Raw_ADC_RearHodo", 
+		    "Raw_ADC_RearHodo;channel;ADC value", 128, 0, 127, 4096, 0, 4095));   
 }
  
 Bool_t CbmROCUnpackHodo::DoUnpack(roc::Message* Message, ULong_t hitTime)
@@ -56,8 +73,17 @@ Bool_t CbmROCUnpackHodo::DoUnpack(roc::Message* Message, ULong_t hitTime)
   Int_t rocId      = Message->getRocNumber();
   Int_t nxyterId   = Message->getNxNumber();
   Int_t nxChannel  = Message->getNxChNum();
+ 
   Int_t charge     = Message->getNxAdcValue();
+ 
+  Int_t station = fDaqMap->GetFiberHodoStation(rocId);
   
+  if ( 0 == station ) {
+    fHM->H2("Raw_ADC_FrontHodo")->Fill(nxChannel,charge);
+  } else {
+    fHM->H2("Raw_ADC_RearHodo")->Fill(nxChannel,charge);
+  } 
+
   // --- Check for epoch marker for this ROC
   fSource->CheckCurrentEpoch(rocId);
 
@@ -65,7 +91,7 @@ Bool_t CbmROCUnpackHodo::DoUnpack(roc::Message* Message, ULong_t hitTime)
   Int_t iSector;
   Int_t iPlane;
   Int_t iFiber;
-  
+
   fDaqMap->Map(rocId, nxyterId, nxChannel, iStation, iSector, iPlane, iFiber);
   Int_t address = CbmFiberHodoAddress::GetAddress(iStation, iPlane, iFiber);
   
@@ -95,10 +121,10 @@ void CbmROCUnpackHodo::FillOutput(CbmDigi* digi)
     new( (*fHodoDigis)[fHodoDigis->GetEntriesFast()])
       CbmFiberHodoDigi(*(dynamic_cast<CbmFiberHodoDigi*>(digi)));
   } else {
-      new( (*fHodoBaselineDigis)[fHodoBaselineDigis->GetEntriesFast()])
+    new( (*fHodoBaselineDigis)[fHodoBaselineDigis->GetEntriesFast()])
       CbmFiberHodoDigi(*(dynamic_cast<CbmFiberHodoDigi*>(digi)));
   }
-
+  
 }
 
 void CbmROCUnpackHodo::Reset()
@@ -119,6 +145,15 @@ void CbmROCUnpackHodo::Reset()
   // --- Clear output arrays
   fHodoDigis->Clear();
   fHodoBaselineDigis->Clear();
+}
+
+void CbmROCUnpackHodo::Finish()
+{
+  gDirectory->mkdir("Hodo_Raw");
+  gDirectory->cd("Hodo_Raw");
+  fHM->H2("Raw_ADC_FrontHodo")->Write();	
+  fHM->H2("Raw_ADC_RearHodo")->Write();	
+  gDirectory->cd("..");
 }
 
 ClassImp(CbmROCUnpackHodo)

@@ -23,6 +23,7 @@ class CbmROCUnpackDummy : public CbmROCUnpack
   virtual Bool_t DoUnpack(roc::Message* Message, ULong_t hitTime);
   virtual void FillOutput(CbmDigi* digi) {;}
   virtual void Reset();
+  virtual void Finish() {;}
 
  private:
 
