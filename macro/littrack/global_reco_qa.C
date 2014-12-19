@@ -72,8 +72,8 @@ void global_reco_qa(Int_t nEvents = 10,
    }
 
    parFileList->Add(&stsDigiFile);
-   parFileList->Add(&trdDigiFile);
-   parFileList->Add(&tofDigiFile);
+   //parFileList->Add(&trdDigiFile);
+   //parFileList->Add(&tofDigiFile);
 
 	TStopwatch timer;
 	timer.Start();

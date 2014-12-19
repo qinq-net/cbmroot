@@ -9,14 +9,14 @@
 using std::cout;
 using std::endl;
 
-void global_sim(Int_t nEvents = 100)
+void global_sim(Int_t nEvents = 10)
 {
    TTree::SetMaxTreeSize(90000000000);
 	TString script = TString(gSystem->Getenv("LIT_SCRIPT"));
 
 	// Specify "electron" or "muon" setup of CBM
-	TString setup = "muon";
-//	TString setup = "electron";
+	//TString setup = "muon";
+	TString setup = "electron";
 
 	// Event parameters
 	Int_t nofMuonsPlus = 0; // number of embedded muons from FairBoxGenerator
@@ -29,12 +29,12 @@ void global_sim(Int_t nEvents = 100)
 	Int_t nofJPsiToElectrons = 0; // number of embedded J/Psi particles decaying to e+ and e-
 	Int_t nofAuIons = 0; // number of generated Au ions
 	TString urqmd = "yes"; // If "yes" than UrQMD will be used as background
-    TString unigen = "no"; // If "yes" than CbmUnigenGenerator will be used instead of FairUrqmdGenerator
+    TString unigen = "yes"; // If "yes" than CbmUnigenGenerator will be used instead of FairUrqmdGenerator
     TString pluto = "no"; // If "yes" PLUTO generator will be used
 
 	// Files
-	TString urqmdFile  = "/Users/andrey/Development/cbm/d/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.0000.ftn14"; // input UrQMD file
-	TString dir = "events/much_v13e/"; // Directory for output simulation files
+	TString urqmdFile  = "/Users/andrey/Development/cbm/prod/gen/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root"; // input UrQMD file
+	TString dir = "events/mvd_v14a/"; // Directory for output simulation files
 	TString mcFile = dir + "mc.0000.root"; //MC file name
 	TString parFile = dir + "param.0000.root"; //Parameter file name
 	TString plutoFile = "/Users/andrey/Development/cbm/d/pluto/omega.25gev.1M.root";
@@ -59,15 +59,15 @@ void global_sim(Int_t nEvents = 100)
 	} else if (setup == "electron") {
 		caveGeom   = "cave.geo";
 		//targetGeom = "target/target_au_250mu.geo";
-		pipeGeom   = "pipe/pipe_v13a.geo.root";
-		mvdGeom    = "";//"mvd/mvd_v07a.geo.root";
+		pipeGeom   = "pipe/pipe_v14y.geo.root";
+		mvdGeom    = "mvd/mvd_v14a.geo.root";//"mvd/mvd_v14a.geo.root";//"mvd/mvd_v07a.geo.root";
 		stsGeom    = "sts/sts_v13d.geo.root";
 		richGeom   = "";//"rich/rich_v08a.geo";
-		trdGeom    = "";//"trd/trd_v13p_3e.geo.root";
+		trdGeom    = "";//"trd/trd_v14a_3e.geo.root";
 		tofGeom    = "";//"tof/tof_v13b.geo.root";
 		ecalGeom   = "";//"ecal_FastMC.geo";
-		fieldMap   = "field_v12a";
-		magnetGeom = "magnet/magnet_v12a.geo";
+		fieldMap   = "field_v12b";
+		magnetGeom = "magnet/magnet_v12b.geo.root";
 	}
 
 	// If SCRIPT environment variable is set to "yes", i.e. macro is run via script
@@ -105,7 +105,7 @@ void global_sim(Int_t nEvents = 100)
 		magnetGeom = TString(gSystem->Getenv("LIT_MAGNET_GEOM"));
 	}
 	// -----   Magnetic field   -----------------------------------------------
-	Double_t fieldZ = 50.; // field center z position
+	Double_t fieldZ = 40.; // field center z position
 	Double_t fieldScale = 1.; // field scaling factor
 
 	TStopwatch timer;
@@ -197,7 +197,7 @@ void global_sim(Int_t nEvents = 100)
 	// ------------------------------------------------------------------------
 
    // -----   Create magnetic field   ----------------------------------------
-   CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+   CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
    magField->SetPosition(0., 0., fieldZ);
    magField->SetScale(fieldScale);
    run->SetField(magField);

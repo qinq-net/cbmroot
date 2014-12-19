@@ -23,7 +23,7 @@ void global_reco(Int_t nEvents = 10, // number of events
 	TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
 
    // Input and output data
-	TString dir = "events/much_v13e/"; // Output directory
+	TString dir = "events/mvd_v14a/"; // Output directory
    TString mcFile = dir + "mc.0000.root"; // MC transport file
    TString parFile = dir + "param.0000.root"; // Parameters file
    TString globalRecoFile = dir + "global.reco.0000.root"; // Output file with reconstructed tracks and hits
@@ -33,7 +33,7 @@ void global_reco(Int_t nEvents = 10, // number of events
    // Digi files
    TList* parFileList = new TList();
    TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
-   TObjString trdDigiFile = parDir + "/trd/trd_v13p_3e.digi.par"; // TRD digi file
+   TObjString trdDigiFile = parDir + "/trd/trd_v14a_3e.digi.par"; // TRD digi file
    TString muchDigiFile = parDir + "/much/much_v13f.digi.root"; // MUCH digi file
    TString stsMatBudgetFile = parDir + "/sts/sts_matbudget_v13d.root";
    TObjString tofDigiFile = parDir + "/tof/tof_v13b.digi.par";// TOF digi file
@@ -128,6 +128,30 @@ void global_reco(Int_t nEvents = 10, // number of events
 
        //  FairTask* stsMatchHits = new CbmStsIdealMatchHits("STSMatchHits", iVerbose);
        //  run->AddTask(stsMatchHits);
+		} else if (stsHitProducerType == "new") {
+			  // --- The following settings correspond to the settings for the old
+			  // --- digitizer in run_reco.C
+			  Double_t dynRange       =   40960.;  // Dynamic range [e]
+			  Double_t threshold      =    4000.;  // Digitisation threshold [e]
+			  Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
+			  Double_t timeResolution =       5.;  // time resolution [ns]
+			  Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
+			  Int_t digiModel         = 1;  // Model: 1 = uniform charge distribution along track
+
+			  CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
+			  stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, 0);
+			  run->AddTask(stsDigi);
+
+			  // -----   STS Cluster Finder   --------------------------------------------
+			  FairTask* stsCluster = new CbmStsFindClusters();
+			  run->AddTask(stsCluster);
+			  // -------------------------------------------------------------------------
+
+
+			  // -----   STS hit finder   ------------------------------------------------
+			  FairTask* stsHit = new CbmStsFindHits();
+			  run->AddTask(stsHit);
+			  // -------------------------------------------------------------------------
 		}
 
 		FairTask* kalman = new CbmKF();
