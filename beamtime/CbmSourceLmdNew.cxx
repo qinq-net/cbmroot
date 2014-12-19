@@ -448,6 +448,12 @@ Int_t CbmSourceLmdNew::ReadEvent()
 void CbmSourceLmdNew::Close()
 {
 
+  // Call the finish function for all registered unpackers
+  // write histos, etc.
+  for (std::map<Int_t, CbmROCUnpack*>::iterator it=fUnpackers.begin(); it!=fUnpackers.end(); ++it) {
+    it->second->Finish();
+  }
+
   LOG(INFO) << FairLogger::endl;
   LOG(INFO) << "====================================================="
             << FairLogger::endl;
