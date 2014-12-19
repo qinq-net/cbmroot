@@ -69,14 +69,30 @@ class CbmDaqMapCosy2014 : public CbmDaqMap
  private:
 
   void InitializeFiberHodoMapping();
+  void InitializeStsMapping();
+  void InitializeRocToSystemArray();
+  void InitializeRocToStsStation();
+  void InitializeRocToHodoStation();
   
-  Int_t fFiberHodoFiber[128];  /** Mapping from fiber hodoscope feb channel to fiber number **/
-  Int_t fFiberHodoPlane[128];  /** Mapping from fiber hodoscope feb channel to plane number 1=X, 2=Y **/
-  Int_t fFiberHodoPixel[128];  /** Mapping from fiber hodoscope feb channel to pixel number **/
+  static const Int_t fMaxNyterChannels=128;
+  static const Int_t fMaxNumRoc = 8;
+  static const Int_t fMaxStsRoc = 6;
 
+  /** Mapping from fiber hodoscope feb channel to fiber number **/
+  Int_t fFiberHodoFiber[fMaxNyterChannels];  
+  /** Mapping from fiber hodoscope feb channel to plane number 1=X, 2=Y **/
+  Int_t fFiberHodoPlane[fMaxNyterChannels];  
+  /** Mapping from fiber hodoscope feb channel to pixel number **/
+  Int_t fFiberHodoPixel[fMaxNyterChannels];  
 
+  Int_t fRocToSystem[fMaxNumRoc];    //!
+  Int_t fRocToStsStation[fMaxNumRoc]; //!
+  Int_t fRocToHodoStation[fMaxNumRoc];  //!
 
-  ClassDef(CbmDaqMapCosy2014,1);
+  // Sts strip from RocId, NxyterId, NxyterCh
+  Int_t fStsStrip[fMaxStsRoc][2][fMaxNyterChannels];
+
+  ClassDef(CbmDaqMapCosy2014,2);
 
 };
 

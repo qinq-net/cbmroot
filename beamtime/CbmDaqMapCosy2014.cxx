@@ -21,9 +21,17 @@ CbmDaqMapCosy2014::CbmDaqMapCosy2014()
   : CbmDaqMap(),
     fFiberHodoFiber(),
     fFiberHodoPlane(),
-    fFiberHodoPixel()
+    fFiberHodoPixel(),
+    fRocToSystem(),
+    fRocToStsStation(),
+    fRocToHodoStation(),
+    fStsStrip()
 {
   InitializeFiberHodoMapping();
+  InitializeRocToSystemArray();
+  InitializeRocToStsStation();
+  InitializeRocToHodoStation();
+  InitializeStsMapping(); 
 }
 // ---------------------------------------------------------------------------
 
@@ -34,9 +42,17 @@ CbmDaqMapCosy2014::CbmDaqMapCosy2014(Int_t iRun)
   : CbmDaqMap(iRun),
     fFiberHodoFiber(),
     fFiberHodoPlane(),
-    fFiberHodoPixel()
+    fFiberHodoPixel(),
+    fRocToSystem(),
+    fRocToStsStation(),
+    fRocToHodoStation(),
+    fStsStrip()
 {
   InitializeFiberHodoMapping();
+  InitializeRocToSystemArray();
+  InitializeRocToStsStation();
+  InitializeRocToHodoStation();
+  InitializeStsMapping(); 
 }
 // ---------------------------------------------------------------------------
 
@@ -50,22 +66,14 @@ CbmDaqMapCosy2014::~CbmDaqMapCosy2014() { }
 // -----   Get System   ------------------------------------------------------
 Int_t CbmDaqMapCosy2014::GetSystemId(Int_t rocId) 
 {
-  Int_t systemId = -1;
-  
-  if ( rocId >= 0  && rocId <= 1 ) {
-    systemId = kFHODO;
-  } else if ( rocId >= 2  || rocId <= 7 ) {
-    systemId = kSTS;
-  } else {
+
+  if ( rocId < 0  || rocId >= fMaxNumRoc ) {
     LOG(WARNING) << GetName() << ": Unknown ROC id " << rocId
 		 << FairLogger::endl;
+    return -1;
+  } else {
+    return fRocToSystem[rocId];
   }
-  
-  return systemId;
-  
-/*
- 	if ( rocId >= 0  && rocId <= 4 ) systemId = kMUCH;
-*/
 }
 // ---------------------------------------------------------------------------
 
@@ -73,41 +81,38 @@ Int_t CbmDaqMapCosy2014::GetSystemId(Int_t rocId)
 // -----   Get STS station number   ------------------------------------------
 Int_t CbmDaqMapCosy2014::GetStsStation(Int_t rocId) 
 {
-  if ( rocId == 2 || rocId == 3 ) {
-    return 1;
-  } else 	if ( rocId == 4 || rocId == 5 ) {
-    return 0;
-  } else 	if ( rocId == 6 || rocId == 7 ) {
-    return 2;
-  } else {
+  Int_t station =  fRocToStsStation[rocId];
+
+  if ( -1 == station) {
     LOG(ERROR) << GetName() << ": Illegal STS ROC Id " << rocId
 	       << FairLogger::endl;
-    return -1;
-  }
+  } 
+
+  return station;
 }
 // ---------------------------------------------------------------------------
 
 
 // -----   Get MUCH station number  ------------------------------------------
-Int_t CbmDaqMapCosy2014::GetMuchStation(Int_t rocId) {
-	Int_t station = -1;
-	if ( rocId == 0 || rocId == 1 ) station = 0;
-	else if ( rocId == 2 ) station = 1;
-	else if ( rocId == 3 || rocId == 4 ) station = 2;
-	else LOG(ERROR) << GetName() << ": Illegal MUCH ROC Id " << rocId
-			            << FairLogger::endl;
-	return station;
+Int_t CbmDaqMapCosy2014::GetMuchStation(Int_t rocId) 
+{
+  // No MUCH in the STS setup 
+  Int_t station = -1;
+  return station;
 }
 // ---------------------------------------------------------------------------
 
 // -----   Get Fiber Hodoscope station number   ------------------------------
-Int_t CbmDaqMapCosy2014::GetFiberHodoStation(Int_t rocId) {
-	if ( rocId < 0 || rocId > 1 ) {
-		LOG(ERROR) << GetName() << ": Illegal Fiber Hodoscope ROC Id " << rocId
-				       << FairLogger::endl;
-		return -1;
-	}
-	return ( rocId );
+Int_t CbmDaqMapCosy2014::GetFiberHodoStation(Int_t rocId) 
+{ 
+  Int_t station =  fRocToHodoStation[rocId];
+
+  if ( -1 == station) {
+    LOG(ERROR) << GetName() << ": Illegal Hodo ROC Id " << rocId
+	       << FairLogger::endl;
+  } 
+
+  return station;
 }
 // ---------------------------------------------------------------------------
 
@@ -144,12 +149,25 @@ Int_t CbmDaqMapCosy2014::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel)
     if (nxId == 2) channel = ((nxChannel < 64) ? (2 * nxChannel + 2 - 4 * (nxChannel % 2)) : (2 * nxChannel)); // odd
   }
   
+
+  // station which was in until run53 
+
   if (rocId == 6) { //sts2 p-side
     if (nxId == 0) channel = 128 - ((nxChannel < 64) ? (nxChannel + 2 * ((nxChannel + 1) % 2) - 1) : nxChannel);
   }
   
   if (rocId == 7) { //sts2 n-side
     if (nxId == 0) channel = 128 - ((nxChannel < 64) ? (127 - nxChannel) : (- nxChannel + 126 + 2 * (nxChannel % 2)));
+  }
+
+  //station which is in since run54
+  
+  if (rocId == 6) { //sts2 p-side
+    if (nxId == 0) channel = nxChannel;
+  }
+  
+  if (rocId == 7) { //sts2 n-side
+    if (nxId == 0) channel = nxChannel;
   }
   
   return channel;
@@ -169,12 +187,13 @@ Int_t CbmDaqMapCosy2014::GetFiberHodoChannel(Int_t rocId, Int_t nxId, Int_t nxCh
 // -----   Mapping   ---------------------------------------------------------
 Bool_t CbmDaqMapCosy2014::Map(Int_t iRoc, Int_t iNx, Int_t iId,
 			Int_t& iStation, Int_t& iSector, 
-			Int_t& iSide, Int_t& iChannel) {
-
+			Int_t& iSide, Int_t& iChannel) 
+{
   // --- Valid ROC Id
-  if ( iRoc < 0 || iRoc > 3 )
-    LOG(FATAL) << GetName() << ": UInvalid ROC Id " << iRoc
+  if ( iRoc < 0  || iRoc >= fMaxNumRoc ) {
+    LOG(FATAL) << GetName() << ": Invalid ROC id " << iRoc
 	       << FairLogger::endl;
+  }
   
   // --- ROC 0 to 1: Hodoscope
   if ( 0 == iRoc  ) {
@@ -188,7 +207,7 @@ Bool_t CbmDaqMapCosy2014::Map(Int_t iRoc, Int_t iNx, Int_t iId,
       LOG(FATAL) << GetName() << ": Unknown Nxyter Id " << iNx
 		 << " for Roc Id " << iRoc << FairLogger::endl;
     }
-  } else if ( 1 == iRoc  ) {
+  } else if ( 1 == iRoc ) {
     if ( iNx-2 == 0) {
       iStation = iRoc;
       iSector = 0;
@@ -198,17 +217,19 @@ Bool_t CbmDaqMapCosy2014::Map(Int_t iRoc, Int_t iNx, Int_t iId,
     } else {
       LOG(FATAL) << GetName() << ": Unknown Nxyter Id " << iNx
 		 << " for Roc Id " << iRoc << FairLogger::endl;
+
     }
-    // -- ROC 2 to 3: Sts Station 
-  } else if ( iRoc == 2 || iRoc == 3 ) {
-    iStation = 0;
-    iSector  = 0;
-    iSide    = 3 - iRoc;
-    //	iChannel = iId + iNx / 2 * 127;
+    // ROC 2 to 7: Sts
+  } else {
+    if ( iNx == 2 )  iNx = 1; // there is no nxyter 1, but there is a array index 1
+    iStation = fRocToStsStation[iRoc];
+    iSector = 0;
+    iSide = GetStsSensorSide(iRoc);
+    Int_t arrayIndex= iStation*2 + iRoc%2;
+    iChannel = fStsStrip[arrayIndex][iNx][iId];
+    return kTRUE;
   }
-
-
-  
+ 
   return kTRUE;
 }
 // ---------------------------------------------------------------------------
@@ -284,6 +305,147 @@ void CbmDaqMapCosy2014::InitializeFiberHodoMapping()
               << fFiberHodoPlane[i] << ", " << fFiberHodoPixel[i] 
               << FairLogger::endl;
   }
+
+}
+
+void CbmDaqMapCosy2014::InitializeRocToSystemArray() 
+{
+  fRocToSystem[0] = kFHODO;
+  fRocToSystem[1] = kFHODO;
+  fRocToSystem[2] = kSTS;
+  fRocToSystem[3] = kSTS;
+  fRocToSystem[4] = kSTS;
+  fRocToSystem[5] = kSTS;
+  fRocToSystem[6] = kSTS;
+  fRocToSystem[7] = kSTS;
+}
+
+void CbmDaqMapCosy2014::InitializeRocToStsStation() 
+{
+  fRocToStsStation[0] = -1;
+  fRocToStsStation[1] = -1;
+  fRocToStsStation[2] = 1;
+  fRocToStsStation[3] = 1;
+  fRocToStsStation[4] = 0;
+  fRocToStsStation[5] = 0;
+  fRocToStsStation[6] = 2;
+  fRocToStsStation[7] = 2;
+}
+
+void CbmDaqMapCosy2014::InitializeRocToHodoStation() 
+{
+  fRocToHodoStation[0] = 0;
+  fRocToHodoStation[1] = 1;
+  fRocToHodoStation[2] = -1;
+  fRocToHodoStation[3] = -1;
+  fRocToHodoStation[4] = -1;
+  fRocToHodoStation[5] = -1;
+  fRocToHodoStation[6] = -1;
+  fRocToHodoStation[7] = -1;
+}
+
+void CbmDaqMapCosy2014::InitializeStsMapping()
+{ 
+  
+  Int_t arrayIndex;
+  Int_t evenChannel;
+  Int_t oddChannel;
+  
+  // Fill Array for RocId 2
+  // RocId 2 belongs to the first Roc of station 1
+  // so it must be the third in the array  
+  // sts1 p-side
+  arrayIndex = 2;
+  for(Int_t nxChannel = 0; nxChannel < 128; ++nxChannel) {
+    evenChannel = 256 - ((nxChannel < 64) ? (2 * nxChannel - 4 * (nxChannel % 2) + 3) : (2 * nxChannel + 1)); // even
+    oddChannel =   256 - ((nxChannel < 64) ? (252 - 2 * nxChannel + 4 * (nxChannel % 2)) : (254 -2 * nxChannel)); // odd
+  
+    fStsStrip[arrayIndex][0][nxChannel] = evenChannel;
+    fStsStrip[arrayIndex][1][nxChannel] = oddChannel;
+  }
+
+  // Fill Array for RocId 3
+  // RocId 3 belongs to the second Roc of station 1
+  // so it must be the third in the array  
+  // sts1 n-side
+  arrayIndex = 3;
+  for(Int_t nxChannel = 0; nxChannel < 128; ++nxChannel) {
+     evenChannel = 256 - ((nxChannel < 64) ? (253 - 2 * nxChannel + 4 * (nxChannel % 2)) : (255 - 2 * nxChannel)); // even
+     oddChannel = 256 - ((nxChannel < 64) ? (2 * nxChannel + 2 - 4 * (nxChannel % 2)) : (2 * nxChannel)); // odd
+    fStsStrip[arrayIndex][0][nxChannel] = evenChannel;
+    fStsStrip[arrayIndex][1][nxChannel] = oddChannel;
+  }
+
+  // Fill Array for RocId 4
+  // RocId 4 belongs to the first Roc of station 0
+  // so it must be the first in the array  
+  // sts0 p-side
+  arrayIndex = 0;
+  for(Int_t nxChannel = 0; nxChannel < 128; ++nxChannel) {
+    evenChannel = ((nxChannel < 64) ? (2 * nxChannel - 4 * (nxChannel % 2) + 3) : (2 * nxChannel + 1)); // even
+    oddChannel = ((nxChannel < 64) ? (252 - 2 * nxChannel + 4 * (nxChannel % 2)) : (254 -2 * nxChannel)); // odd
+    fStsStrip[arrayIndex][0][nxChannel] = evenChannel;
+    fStsStrip[arrayIndex][1][nxChannel] = oddChannel;
+  }
+
+  // Fill Array for RocId 5
+  // RocId 5 belongs to the second Roc of station 0
+  // so it must be the second in the array  
+  // sts0 n-side
+  arrayIndex = 1;
+  for(Int_t nxChannel = 0; nxChannel < 128; ++nxChannel) {
+    evenChannel = ((nxChannel < 64) ? (253 - 2 * nxChannel + 4 * (nxChannel % 2)) : (255 - 2 * nxChannel)); // even
+    oddChannel = ((nxChannel < 64) ? (2 * nxChannel + 2 - 4 * (nxChannel % 2)) : (2 * nxChannel)); // odd
+    fStsStrip[arrayIndex][0][nxChannel] = evenChannel;
+    fStsStrip[arrayIndex][1][nxChannel] = oddChannel;
+  }
+
+  if ( fRun < 54 ) {
+    // Fill Array for RocId 6
+    // RocId 4 belongs to the first Roc of station 2
+    // so it must be the forth in the array  
+    // sts0 p-side
+    arrayIndex = 4;
+    for(Int_t nxChannel = 0; nxChannel < 128; ++nxChannel) {
+      evenChannel = 128 - ((nxChannel < 64) ? (nxChannel + 2 * ((nxChannel + 1) % 2) - 1) : nxChannel);
+      fStsStrip[arrayIndex][0][nxChannel] = evenChannel;
+      fStsStrip[arrayIndex][1][nxChannel] = -1;
+    }
+
+    // Fill Array for RocId 7
+    // RocId 5 belongs to the second Roc of station 2
+    // so it must be the fifth in the array  
+    // sts0 n-side
+    arrayIndex = 5;
+    for(Int_t nxChannel = 0; nxChannel < 128; ++nxChannel) {
+      evenChannel = 128 - ((nxChannel < 64) ? (127 - nxChannel) : (- nxChannel + 126 + 2 * (nxChannel % 2)));
+      fStsStrip[arrayIndex][0][nxChannel] = evenChannel;
+      fStsStrip[arrayIndex][1][nxChannel] = -1;
+    }
+    
+  } else { 
+    // Fill Array for RocId 6
+    // RocId 4 belongs to the first Roc of station 2
+    // so it must be the forth in the array  
+    // sts0 p-side
+    arrayIndex = 4;
+    for(Int_t nxChannel = 0; nxChannel < 128; ++nxChannel) {
+      fStsStrip[arrayIndex][0][nxChannel] = nxChannel;
+      fStsStrip[arrayIndex][1][nxChannel] = -1;
+    }
+
+    // Fill Array for RocId 7
+    // RocId 5 belongs to the second Roc of station 2
+    // so it must be the fifth in the array  
+    // sts0 n-side
+    arrayIndex = 5;
+    for(Int_t nxChannel = 0; nxChannel < 128; ++nxChannel) {
+      fStsStrip[arrayIndex][0][nxChannel] = nxChannel;
+      fStsStrip[arrayIndex][1][nxChannel] = -1;
+    }
+
+  }
+  
 
 }
 
