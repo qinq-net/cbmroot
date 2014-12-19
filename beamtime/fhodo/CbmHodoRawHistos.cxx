@@ -2,7 +2,6 @@
 
 #include "CbmFiberHodoDigi.h"
 #include "CbmFiberHodoAddress.h"
-#include "CbmHistManager.h"
 
 #include "FairLogger.h"
 

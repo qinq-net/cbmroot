@@ -348,7 +348,7 @@ void CbmFiberHodoClusterFinder::Exec(Option_t * option)
   //    Double_t x1;
   //  Double_t y1;
     for(Int_t iclust=0; iclust<finalClusters->GetEntriesFast(); ++iclust ) {
-      Int_t layerID = CbmFiberHodoAddress::GetLayerAddress(static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetAddress());
+      layerID = CbmFiberHodoAddress::GetLayerAddress(static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetAddress());
       switch (layerID) {
       case 0:
 	x1=64-static_cast<CbmFiberHodoCluster*>(finalClusters->At(iclust))->GetMean();
