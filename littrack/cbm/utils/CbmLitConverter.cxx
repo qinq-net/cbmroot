@@ -20,6 +20,7 @@
 #include "CbmTrdTrack.h"
 #include "CbmMuchStrawHit.h"
 #include "CbmMuchGeoScheme.h"
+#include "CbmMvdHit.h"
 
 #include "CbmGlobalTrack.h"
 #include "CbmTrdAddress.h"
@@ -130,6 +131,23 @@ void CbmLitConverter::CbmHitToCbmLitPixelHit(
    litHit->SetRefId(index);
 
    litHit->SetDetectorId(sysId, hit->GetStationNr() - 1);
+}
+
+void CbmLitConverter::CbmMvdHitToCbmLitPixelHit(
+   const CbmMvdHit* hit,
+   Int_t index,
+   CbmLitPixelHit* litHit)
+{
+   litHit->SetX(hit->GetX());
+   litHit->SetY(hit->GetY());
+   litHit->SetZ(hit->GetZ());
+   litHit->SetDx(hit->GetDx());
+   litHit->SetDy(hit->GetDy());
+   litHit->SetDz(hit->GetDz());
+   litHit->SetDxy(0.);
+   litHit->SetRefId(index);
+
+   litHit->SetDetectorId(kLITMVD, hit->GetStationNr());
 }
 
 void CbmLitConverter::CbmStsTrackToCbmLitTrack(
@@ -334,10 +352,10 @@ void CbmLitConverter::MvdHitArrayToHitVector(
 {
    Int_t nofHits = hits->GetEntriesFast();
    for(Int_t iHit = 0; iHit < nofHits; iHit++) {
-      CbmHit* hit = static_cast<CbmHit*>(hits->At(iHit));
+      CbmMvdHit* hit = static_cast<CbmMvdHit*>(hits->At(iHit));
       if(NULL == hit) { continue; }
       CbmLitPixelHit* litHit = new CbmLitPixelHit();
-      CbmHitToCbmLitPixelHit(hit, iHit, litHit, kLITMVD);
+      CbmMvdHitToCbmLitPixelHit(hit, iHit, litHit);
       litHits.push_back(litHit);
    }
 }
