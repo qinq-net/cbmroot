@@ -18,7 +18,7 @@ bool get4v1x::Message::convertFromOld(void* src)
 {
    data = 0;
 
-   uint8_t* arr = (uint8_t*) src;
+   uint8_t* arr = static_cast<uint8_t*> (src);
 
    setMessageType((arr[0] >> 5) & 0x7);
    setRocNumber((arr[0] >> 2) & 0x7);
@@ -71,58 +71,58 @@ bool get4v1x::Message::convertFromOld(void* src)
 
 bool get4v1x::Message::convertToOld(void* tgt)
 {
-   uint8_t* data = (uint8_t*) tgt;
-   for (int n=0;n<6;n++) data[n] = 0;
+   uint8_t* data_in = static_cast<uint8_t*> (tgt);
+   for (int n=0;n<6;n++) data_in[n] = 0;
 
-   data[0] = ((getMessageType() & 0x7) << 5) | ((getRocNumber() & 0x7) << 2);
+   data_in[0] = ((getMessageType() & 0x7) << 5) | ((getRocNumber() & 0x7) << 2);
 
    switch (getMessageType()) {
       case MSG_HIT:
-         data[0] = data[0] | (getNxNumber() & 0x3);
-         data[1] = ((getNxTs() >> 9) & 0x1f) | ((getNxLtsMsb() << 5) & 0xe0);
-         data[2] = (getNxTs() >> 1);
-         data[3] = ((getNxTs() << 7) & 0x80) | (getNxChNum() & 0x7f);
-         data[4] = (getNxAdcValue() >> 5) & 0x7f;
-         data[5] = ((getNxAdcValue() << 3) & 0xf8) |
+         data_in[0] = data_in[0] | (getNxNumber() & 0x3);
+         data_in[1] = ((getNxTs() >> 9) & 0x1f) | ((getNxLtsMsb() << 5) & 0xe0);
+         data_in[2] = (getNxTs() >> 1);
+         data_in[3] = ((getNxTs() << 7) & 0x80) | (getNxChNum() & 0x7f);
+         data_in[4] = (getNxAdcValue() >> 5) & 0x7f;
+         data_in[5] = ((getNxAdcValue() << 3) & 0xf8) |
                     (getNxLastEpoch() & 0x1) |
                     ((getNxOverflow() & 0x1) << 1) |
                     ((getNxPileup() & 0x1) << 2);
          break;
 
       case MSG_EPOCH:
-         data[1] = (getEpochNumber() >> 24) & 0xff;
-         data[2] = (getEpochNumber() >> 16) & 0xff;
-         data[3] = (getEpochNumber() >> 8) & 0xff;
-         data[4] = getEpochNumber() & 0xff;
-         data[5] = getEpochMissed();
+         data_in[1] = (getEpochNumber() >> 24) & 0xff;
+         data_in[2] = (getEpochNumber() >> 16) & 0xff;
+         data_in[3] = (getEpochNumber() >> 8) & 0xff;
+         data_in[4] = getEpochNumber() & 0xff;
+         data_in[5] = getEpochMissed();
          break;
 
       case MSG_SYNC:
-         data[0] = data[0] | (getSyncChNum() & 0x3);
-         data[1] = (getSyncEpochLSB() << 7) | ((getSyncTs() >> 7) & 0x7f);
-         data[2] = ((getSyncTs() << 1) & 0xfc) | ((getSyncData() >> 22) & 0x3);
-         data[3] = (getSyncData() >> 14) & 0xff;
-         data[4] = (getSyncData() >> 6) & 0xff;
-         data[5] = ((getSyncData() << 2) & 0xfc) | (getSyncStFlag() & 0x3);
+         data_in[0] = data_in[0] | (getSyncChNum() & 0x3);
+         data_in[1] = (getSyncEpochLSB() << 7) | ((getSyncTs() >> 7) & 0x7f);
+         data_in[2] = ((getSyncTs() << 1) & 0xfc) | ((getSyncData() >> 22) & 0x3);
+         data_in[3] = (getSyncData() >> 14) & 0xff;
+         data_in[4] = (getSyncData() >> 6) & 0xff;
+         data_in[5] = ((getSyncData() << 2) & 0xfc) | (getSyncStFlag() & 0x3);
          break;
 
       case MSG_AUX:
-         data[0] = data[0] | ((getAuxChNum() >> 5) & 0x3);
-         data[1] = ((getAuxChNum() << 3) & 0xf8) |
+         data_in[0] = data_in[0] | ((getAuxChNum() >> 5) & 0x3);
+         data_in[1] = ((getAuxChNum() << 3) & 0xf8) |
                     ((getAuxEpochLSB() << 2) & 0x4) |
                     ((getAuxTs() >> 12) & 0x3);
-         data[2] = (getAuxTs() >> 4) & 0xff;
-         data[3] = ((getAuxTs() << 4) & 0xe0) |
+         data_in[2] = (getAuxTs() >> 4) & 0xff;
+         data_in[3] = ((getAuxTs() << 4) & 0xe0) |
                     (getAuxFalling() << 4) |
                     (getAuxOverflow() << 3);
          break;
 
       case MSG_SYS:
-         data[1] = getSysMesType();
-         data[2] = (getSysMesData() >> 24) & 0xff;
-         data[3] = (getSysMesData() >> 16) & 0xff;
-         data[4] = (getSysMesData() >> 8) & 0xff;
-         data[5] = getSysMesData() & 0xff;
+         data_in[1] = getSysMesType();
+         data_in[2] = (getSysMesData() >> 24) & 0xff;
+         data_in[3] = (getSysMesData() >> 16) & 0xff;
+         data_in[4] = (getSysMesData() >> 8) & 0xff;
+         data_in[5] = getSysMesData() & 0xff;
          break;
 
       default:
@@ -300,7 +300,8 @@ void get4v1x::Message::printData(unsigned outType, unsigned kind, uint32_t epoch
    TString sLogBuff = "";
 
    if (kind & msg_print_Hex) {
-      uint8_t* arr = (uint8_t*) &data;
+//      uint8_t* arr = static_cast<uint8_t*> ( &data );
+      uint8_t* arr = (uint8_t*) ( &data );
       snprintf(buf, sizeof(buf), "%02X:%02X:%02X:%02X:%02X:%02X ",
                arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
 //      os << buf;
@@ -438,7 +439,8 @@ void get4v1x::Message::printData(unsigned outType, unsigned kind, uint32_t epoch
    }
 
    if (kind & msg_print_Data) {
-      uint8_t* arr = (uint8_t*) &data;
+//      uint8_t* arr = static_cast<uint8_t*> ( &data );
+      uint8_t* arr = (uint8_t*) ( &data );
       switch (getMessageType()) {
         case MSG_NOP:
            snprintf(buf, sizeof(buf), "NOP (raw %02X:%02X:%02X:%02X:%02X:%02X)",
@@ -484,15 +486,15 @@ void get4v1x::Message::printData(unsigned outType, unsigned kind, uint32_t epoch
                  snprintf(sysbuf, sizeof(sysbuf), "DAQ finished");
                  break;
               case SYSMSG_NX_PARITY: {
-                   uint32_t data = getSysMesData();
-                   uint32_t nxb3_flg = (data>>31) & 0x01;
-                   uint32_t nxb3_val = (data>>24) & 0x7f;
-                   uint32_t nxb2_flg = (data>>23) & 0x01;
-                   uint32_t nxb2_val = (data>>16) & 0x7f;
-                   uint32_t nxb1_flg = (data>>15) & 0x01;
-                   uint32_t nxb1_val = (data>>8 ) & 0x7f;
-                   uint32_t nxb0_flg = (data>>7 ) & 0x01;
-                   uint32_t nxb0_val = (data    ) & 0x7f;
+                   uint32_t nxb3_data = getSysMesData();
+                   uint32_t nxb3_flg = (nxb3_data>>31) & 0x01;
+                   uint32_t nxb3_val = (nxb3_data>>24) & 0x7f;
+                   uint32_t nxb2_flg = (nxb3_data>>23) & 0x01;
+                   uint32_t nxb2_val = (nxb3_data>>16) & 0x7f;
+                   uint32_t nxb1_flg = (nxb3_data>>15) & 0x01;
+                   uint32_t nxb1_val = (nxb3_data>>8 ) & 0x7f;
+                   uint32_t nxb0_flg = (nxb3_data>>7 ) & 0x01;
+                   uint32_t nxb0_val = (nxb3_data    ) & 0x7f;
                    snprintf(sysbuf, sizeof(sysbuf),"Nx:%1x %1d%1d%1d%1d:%02x:%02x:%02x:%02x nX parity error", getNxNumber(), 
                             nxb3_flg, nxb2_flg, nxb1_flg, nxb0_flg,
                             nxb3_val, nxb2_val, nxb1_val, nxb0_val);
@@ -715,15 +717,16 @@ bool get4v1x::Message::assign(void* src, int fmt)
          convertFromOld(src);
          return true;
       case formatOptic1: 
-         convertFromOld((uint8_t*) src + 2);
-         setRocNumber((*((uint8_t*) src) << 8) | *((uint8_t*) src + 1) );
+         convertFromOld(static_cast<uint8_t*> ( src ) + 2);
+         setRocNumber( (*( static_cast<uint8_t*> ( src ) ) << 8)
+                      | *( static_cast<uint8_t*> ( src ) + 1) );
          return true;
       case formatEth2:
          memcpy(&data, src, 6);
          return true;
       case formatOptic2:
-         memcpy(&data, (uint8_t*) src + 2, 6);
-         setRocNumber(*((uint16_t*) src));
+         memcpy(&data, static_cast<uint8_t*> ( src ) + 2, 6);
+         setRocNumber(*( static_cast<uint16_t*> ( src ) ));
          return true;
       case formatNormal:
          memcpy(&data, src, 8);
@@ -740,15 +743,15 @@ bool get4v1x::Message::copyto(void* tgt, int fmt)
          convertToOld(tgt);
          return true;
       case formatOptic1:
-         convertToOld((uint8_t*) tgt + 2);
-         *((uint16_t*) tgt) = getRocNumber();
+         convertToOld( static_cast<uint8_t*> ( tgt ) + 2);
+         *( static_cast<uint16_t*> ( tgt ) ) = getRocNumber();
          return true;
       case formatEth2:
          memcpy(tgt, &data, 6);
          return true;
       case formatOptic2:
-         memcpy((uint8_t*) tgt + 2, &data, 6);
-         *((uint16_t*) tgt) = getRocNumber();
+         memcpy( static_cast<uint8_t*> ( tgt ) + 2, &data, 6);
+         *( static_cast<uint16_t*> ( tgt ) ) = getRocNumber();
          return true;
       case formatNormal:
          memcpy(tgt, &data, 8);

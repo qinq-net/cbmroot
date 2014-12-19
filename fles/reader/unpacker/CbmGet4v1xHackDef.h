@@ -98,20 +98,20 @@ namespace get4v1x {
          inline void setData( uint64_t value) { data = value; }
 
          inline uint32_t getField(uint32_t shift, uint32_t len) const
-            { return (data >> shift) & ((((uint32_t)1) << len) - 1); }
+            { return (data >> shift) & (((static_cast<uint32_t>(1)) << len) - 1); }
 
          inline void setField(uint32_t shift, uint32_t len, uint32_t value)
-            { data = (data & ~(((((uint64_t) 1) << len) - 1) << shift)) | (((uint64_t) value) << shift); }
+            { data = (data & ~((((static_cast<uint64_t>(1)) << len) - 1) << shift)) | ((static_cast<uint64_t>(value)) << shift); }
 
          inline uint8_t getBit(uint32_t shift) const
             { return (data >> shift) & 1; }
 
          inline void setBit(uint32_t shift, uint8_t value)
-            { data = value ? (data | (((uint64_t) 1) << shift)) : (data & ~(((uint64_t) 1) << shift)) ; }
+            { data = value ? (data | ((static_cast<uint64_t>(1)) << shift)) : (data & ~((static_cast<uint64_t>(1)) << shift)) ; }
 
 
          inline uint32_t getFieldBE(uint32_t shift, uint32_t len) const
-            { return (dataBE() >> shift) & ((((uint32_t)1) << len) - 1); }
+            { return (dataBE() >> shift) & (((static_cast<uint32_t>(1)) << len) - 1); }
          inline uint8_t getBitBE(uint32_t shift) const
             { return (dataBE() >> shift) & 1; }
          inline uint64_t dataBE() const
@@ -507,11 +507,11 @@ namespace get4v1x {
 
          //! Expanded timestamp for 250 MHz * 14 bit epochs
          inline static uint64_t FullTimeStamp(uint32_t epoch, uint16_t stamp)
-            { return ((uint64_t) epoch << 14) | (stamp & 0x3fff); }
+            { return (static_cast<uint64_t>(epoch) << 14) | (stamp & 0x3fff); }
 
          //! Expanded timestamp for 250/8*5 MHz * 19 bit epochs
          inline static uint64_t FullTimeStamp2(uint32_t epoch, uint32_t stamp)
-            { return ((uint64_t) epoch << 19) | (stamp & 0x7ffff); }
+            { return (static_cast<uint64_t>(epoch) << 19) | (stamp & 0x7ffff); }
 
 
          static uint64_t CalcDistance(uint64_t start, uint64_t stop);
