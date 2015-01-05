@@ -608,7 +608,7 @@ void CbmMvdSensorClusterfinderTask::Finish() {
     cout << "ADC - Offset [electrons]	: " << fAdcOffset << endl;
     cout << "============================================================" << endl;*/
     
-if(fSensor->GetDetectorID() == 1)
+if(fSensor->GetDetectorID() == 1 && fVerbose > 1)
 	{    
     	TH1F* histo;
     	TH2F* clusterShapeHistogram;
