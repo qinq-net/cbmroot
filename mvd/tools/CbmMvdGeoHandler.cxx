@@ -309,9 +309,12 @@ else
 //--------------------------------------------------------------------------
 void CbmMvdGeoHandler::FillDetector()
 {
+if(fGeoTyp == 1)
+	LOG(FATAL) << "Using old Geometry files within the new Digitizer is not supportet, "
+		   << "please use CbmMvdDigitizeL if you want to use this Geometry" << FairLogger::endl;
 if(fGeoTyp != 4)
-	LOG(FATAL) <<  "Geometry format of MVD file "
-		 << " not yet supported." << FairLogger::endl;
+	LOG(FATAL) <<  "Geometry format of MVD file " 
+		   <<  " not yet supported." << FairLogger::endl;
 else
 {
 fDetector = CbmMvdDetector::Instance();
