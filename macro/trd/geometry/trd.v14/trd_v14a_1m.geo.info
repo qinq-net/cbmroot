@@ -2,7 +2,7 @@
 ##   trd_v14a_1m information file
 #
 
-# created 20140626
+# created 20150108
 
 # envelope
  360 cm   start of TRD (z)
@@ -80,10 +80,10 @@ GBTX readout boards are : NOT included
    100.0%   channel efficiency
 
  125.05 m2      total surface    
- 119.52 m2      total active area
-   1.43 m3      total gas volume 
-   4.15 cm2/ch  average channel size
-2407.50 ch/m2   channels per m2 active area
+ 114.12 m2      total active area
+   1.37 m3      total gas volume 
+   3.97 cm2/ch  average channel size
+2521.50 ch/m2   channels per m2 active area
 
 # gas volume position
   391.6000 cm   position of gas volume - layer  1

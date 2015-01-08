@@ -1105,12 +1105,12 @@ void dump_info_file()
     if (iModule <= 3)     
     {
       total_surface += total_modules[iModule] * DetectorSizeX[0] / 100 * DetectorSizeY[0] / 100;
-      total_actarea += total_modules[iModule] * (DetectorSizeX[0]-FrameWidth[0]) / 100 * (DetectorSizeY[0]-FrameWidth[0]) / 100;
+      total_actarea += total_modules[iModule] * (DetectorSizeX[0]-2*FrameWidth[0]) / 100 * (DetectorSizeY[0]-2*FrameWidth[0]) / 100;
     }
     else
     {
       total_surface += total_modules[iModule] * DetectorSizeX[1] / 100 * DetectorSizeY[1] / 100;
-      total_actarea += total_modules[iModule] * (DetectorSizeX[1]-FrameWidth[1]) / 100 * (DetectorSizeY[1]-FrameWidth[1]) / 100;
+      total_actarea += total_modules[iModule] * (DetectorSizeX[1]-2*FrameWidth[1]) / 100 * (DetectorSizeY[1]-2*FrameWidth[1]) / 100;
     }
   fprintf(ifile,"\n");
 
