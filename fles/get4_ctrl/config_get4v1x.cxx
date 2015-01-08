@@ -252,7 +252,7 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 }
 
 /*
- * GET$ v1.x (>1.2) initial configuration
+ * GET4 v1.x (>1.2) initial configuration
  * int link = FLIB link number
  * int mode = readout mode to configure
  *            * 0 => default 24b mode settings
@@ -325,7 +325,41 @@ void config_get4v1x( int link, int mode, const uint32_t kRocId = C2  )
 	conn.Read( kNodeId, ROC_OPTICS_LINK_STATUS, ret );
 	printf("ROC_OPTICS_LINK_STATUS  = %d\n", ret);
 
+	ReadMessages( conn, kNodeId, 300 );
 
+}
+
+/*
+ * GET4 v1.x (>1.2) + ROC + FLIB: direct readout of ROC messages
+ * from ROC buffer through the registers interface
+ */
+int ReadMessages(CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t nbMess = 1)
+{
+   CbmNet::ListSeq messList;
+   // rocutil> ssm 2
+   initList.AddRead(ROC_BURST1);
+   initList.AddRead(ROC_BURST2);
+   initList.AddRead(ROC_BURST3);
+
+   int nSuccTot = 0;
+   for( int iMess = 0; iMess < ; iMess++ )
+   {
+      int nSucc = conn.DoListSeq(nodeid, messList);
+
+      if( nSucc != messList.Size() ) {
+         printf("Error in ReadMessages: errors during r/w SysCore registers. Number of successfully executed commands is %d out of %d\n",
+               nSucc, messList.Size() );
+         return -1;
+      } // if( nSucc != list.Size() )
+      printf("Message on ROC %04X %02X:%02X:%02X:%02X:%02X:%02X \n",
+             nodeid,
+             ((messList[2].value) >> 8)& 0xFF, (messList[2].value) & 0xFF,
+             ((messList[1].value) >> 8)& 0xFF, (messList[1].value) & 0xFF,
+             ((messList[1].value) >> 8)& 0xFF, (messList[1].value) & 0xFF);
+      nSuccTot += nSucc;
+   } // for( int iMess = 0; iMess < ; iMess++ )
+
+   return nSuccTot;
 }
 
 
