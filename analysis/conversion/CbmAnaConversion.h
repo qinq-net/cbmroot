@@ -1,7 +1,7 @@
 /**
 * \file CbmAnaConversion.h
 *
-* \brief Optimization of the RICH geometry.
+* Base class for conversion analysis
 *
 * \author Sascha Reinecke <reinecke@uni-wuppertal.de>
 * \date 2014
@@ -16,6 +16,12 @@
 
 //#include "KFParticleTopoReconstructor.h"
 #include "CbmKFParticleFinder.h"
+#include "CbmKFParticleFinderQA.h"
+
+#include "CbmAnaConversionTomography.h"
+#include "CbmAnaConversionRich.h"
+#include "CbmAnaConversionKF.h"
+#include "CbmAnaConversionReco.h"
 
 class TH1;
 class TH2;
@@ -32,16 +38,11 @@ class TRandom3;
 #include <vector>
 #include <map>
 
+#include "TStopwatch.h"
+
 using namespace std;
 
-/**
-* \class CbmAnaConversion
-*
-* \brief Optimization of the RICH geometry.
-*
-* \author Tariq Mahmoud<t.mahmoud@gsi.de>
-* \date 2014
-**/
+
 
 /*class KinematicParams{
 public:
@@ -81,9 +82,7 @@ public:
         
 	Double_t	Invmass_2gammas(const CbmMCTrack* gamma1, const CbmMCTrack* gamma2);
 	Double_t	Invmass_2particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2);
-	Double_t	SmearValue(Double_t value);
 	Double_t	Invmass_4particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2, const CbmMCTrack* mctrack3, const CbmMCTrack* mctrack4);
-	Double_t	Invmass_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 
 
 	void	CalculateInvMass_MC_2particles();
@@ -94,29 +93,29 @@ public:
    virtual void Finish();
    
    void		AnalyseElectrons(CbmMCTrack* mctrack);
-   void 	TomographyMC(CbmMCTrack* mctrack);
-   void 	TomographyReco(CbmMCTrack* mctrack);
-   void 	Probability();
-   void 	FillMCTracklists(CbmMCTrack* mctrack);
-   void 	FillRecoTracklist(CbmMCTrack* mtrack);
-   void 	FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom);
-   void 	InvariantMassTest();
-   void 	InvariantMassTest_4epem();
-   void 	InvariantMassTestReco();
-   int 		GetTest();
-   int 		GetNofEvents();
+   void		FillMCTracklists(CbmMCTrack* mctrack);
+   void		FillRecoTracklist(CbmMCTrack* mtrack);
+   void		FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom);
+   void		InvariantMassTest();
+   void		InvariantMassTest_4epem();
+   void		InvariantMassTestReco();
+   int		GetTest();
+   int		GetNofEvents();
    void		SetMode(int mode);
-   void		InvariantMassMC_all();
-   Int_t	NofDaughters(Int_t motherId);
    
    void		ReconstructGamma();
    
+   
+   void		SetKF(CbmKFParticleFinder* kfparticle, CbmKFParticleFinderQA* kfparticleQA);
+
 
 
 
 private:
-   TH1D * fhGammaZ;
-   TH2D * fTest;
+	Int_t DoTomography;
+	Int_t DoRichAnalysis;
+	Int_t DoKFAnalysis;
+	Int_t DoReconstruction;
    
    TH1D * fhNofElPrim;
    TH1D * fhNofElSec;
@@ -128,26 +127,6 @@ private:
    TH1D * fhPi0_z_cut;				// number of pi0 per z-bin with cut on acceptance (25° via x^2 + y^2 <= r^2 with r = z*tan 25°)
    TH1D * fhElectronsFromPi0_z;		//
    
-   TH3D * fhTomography;
-   TH2D * fhTomography_XZ;
-   TH2D * fhTomography_YZ;
-   TH2D * fhTomography_uptoRICH;
-   TH2D * fhTomography_RICH_complete;
-   TH2D * fhTomography_RICH_beampipe;
-   TH2D * fhTomography_STS_end;
-   TH2D * fhTomography_STS_lastStation;
-   TH2D * fhTomography_RICH_frontplate;
-   TH2D * fhTomography_RICH_backplate;
-      
-   TH3D * fhTomography_reco;
-   TH2D * fhTomography_reco_XZ;
-   TH2D * fhTomography_reco_YZ;
-   
-   TH1D * fhConversion;
-   TH1D * fhConversion_inSTS;
-   TH1D * fhConversion_prob;
-   TH1D * fhConversion_energy;
-   TH1D * fhConversion_p;
    
    TH1D * fhInvariantMass_test;
    TH1D * fhInvariantMass_test2;
@@ -156,46 +135,20 @@ private:
    TH1D * fhInvariantMassReco_test2;
    TH1D * fhInvariantMassReco_test3;
       
-   TH1D * fhInvariantMass_MC_all;
-   TH1D * fhInvariantMass_MC_omega;
-   TH1D * fhInvariantMass_MC_pi0;
-   TH1D * fhInvariantMass_MC_eta;
-   
    TH1D * fhInvariantMassReco_pi0;
    
    TH2D * fhMomentum_MCvsReco;
    TH1D * fhMomentum_MCvsReco_diff;
    
-   TH1D * fhInvMass_EPEM_mc;
-   TH1D * fhInvMass_EPEM_stsMomVec;
-   TH1D * fhInvMass_EPEM_refitted;
-   TH1D * fhInvMass_EPEM_error_stsMomVec;
-   TH1D * fhInvMass_EPEM_error_refitted;
-   TH1D * fhUsedMomenta_stsMomVec;
-   TH1D * fhUsedMomenta_mc;
-   TH1D * fhUsedMomenta_error_stsMomVec;
-   TH1D * fhUsedMomenta_error_refitted;
-   TH1D * fhUsedMomenta_errorX_stsMomVec;
-   TH2D * fhUsedMomenta_vsX_stsMomVec;
-   TH1D * fhUsedMomenta_errorY_stsMomVec;
-   TH2D * fhUsedMomenta_vsY_stsMomVec;
-   TH1D * fhUsedMomenta_errorZ_stsMomVec;
-   TH2D * fhUsedMomenta_vsZ_stsMomVec;
-   TH1D * fhUsedMomenta_errorX_refitted;
-   TH2D * fhUsedMomenta_vsX_refitted;
-   TH1D * fhUsedMomenta_errorY_refitted;
-   TH2D * fhUsedMomenta_vsY_refitted;
-   TH1D * fhUsedMomenta_errorZ_refitted;
-   TH2D * fhUsedMomenta_vsZ_refitted;
-   
-   TH1D * fhInvariantMass_pi0epem;
-   TH1D * fhPi0_startvertex;
-   
-   TH1D * fhMCtest;
-   
+
+      
    TH1D * fhSearchGammas;
 
+	CbmVertex *fPrimVertex;
+	CbmKFVertex fKFVertex;
    TClonesArray* fRichPoints;
+   TClonesArray* fRichRings;
+   TClonesArray* fRichRingMatches;
    TClonesArray* fMcTracks;
    TClonesArray* fStsTracks;
    TClonesArray* fStsTrackMatches;
@@ -210,12 +163,30 @@ private:
    Int_t fAnalyseMode;
    
    
-   
-   
-   
-   
-	CbmVertex *fPrimVertex;
-	CbmKFVertex fKFVertex;
+   CbmKFParticleFinder* fKFparticle;
+   CbmKFParticleFinderQA* fKFparticleFinderQA;
+   const KFParticleTopoReconstructor* fKFtopo;
+   vector<int> trackindexarray;
+   Int_t particlecounter;
+   Int_t particlecounter_2daughters;
+   Int_t particlecounter_3daughters;
+   Int_t particlecounter_4daughters;
+   Int_t particlecounter_all;
+
+
+	// for data gained from the KFParticle package
+	Int_t fNofGeneratedPi0_allEvents;	// number of generated pi0 summed up over ALL EVENTS
+	Int_t fNofPi0_kfparticle_allEvents;	// number of all reconstructed pi0 summed up over ALL EVENTS
+	Int_t fNofGeneratedPi0;
+	Int_t fNofPi0_kfparticle;
+	TH1D * fhPi0Ratio;
+	TH1D * fhPi0_mass;
+	TH1D * fhPi0_NDaughters;
+
+
+
+
+
 
 
 
@@ -228,6 +199,9 @@ private:
    vector<TH1*> fHistoList_MC;			// list of all histograms generated with MC data
    vector<TH1*> fHistoList_tomography;	// list of all histograms of tomography data (photon conversion)
    vector<TH1*> fHistoList_reco;		// list of all histograms of reconstruction data
+   vector<TH1*> fHistoList_reco_mom;	// list of all histograms of reconstruction data (used momenta)
+   vector<TH1*> fHistoList_kfparticle;	// list of all histograms containing results from KFParticle package
+   vector<TH1*> fHistoList_richrings;	// list of all histograms related to rich rings
    
    vector<CbmMCTrack*> fMCTracklist;
    vector<CbmMCTrack*> fMCTracklist_all;
@@ -236,6 +210,23 @@ private:
    
    vector<TVector3> fRecoMomentum;
    vector<TVector3> fRecoRefittedMomentum;
+   
+   
+   
+   // timer
+   TStopwatch timer_all;
+   Double_t fTime_all;
+   
+   TStopwatch timer_mc;
+   Double_t fTime_mc;
+   TStopwatch timer_rec;
+   Double_t fTime_rec;
+   
+   
+   CbmAnaConversionTomography	*fAnaTomography;
+   CbmAnaConversionRich			*fAnaRich;
+   CbmAnaConversionKF			*fAnaKF;
+   CbmAnaConversionReco			*fAnaReco;
    
    
    
