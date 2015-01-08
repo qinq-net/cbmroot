@@ -1,8 +1,9 @@
 ///                                             
-/// \file Create_TRD_Geometry_v14a.C
+/// \file Create_TRD_Geometry_v15a.C
 /// \brief Generates TRD geometry in Root format.
 ///                                             
 
+// 2015-01-08 - DE - v15a_3e - reduce frame thickness in large modules to 15 mm instead of 20 mm
 // 2014-06-25 - DE - v14a_3e - consists of only 3 small and 3 large modules types (was 4+4 before)
 // 2014-06-25 - DE - v14a_3e - inner part of all 3 stations is now identical
 // 2014-05-02 - DE - v14a_3e - redesign inner part of station 3, now with 5x5-1 small modules, like in station 1 and station 2
@@ -79,7 +80,7 @@
 #include <iostream>
 
 // Name of output file with geometry
-const TString tagVersion   = "v14a";
+const TString tagVersion   = "v15a";
 //const TString subVersion   = "_1h";
 //const TString subVersion   = "_1e";
 //const TString subVersion   = "_1m";
@@ -315,7 +316,8 @@ const Double_t asic_width     = 3.0;  // 2.0;  1.0;   // 1 cm
 //const Double_t asic_distance  = 0.4;  // 0.40; // a factor of width for ASIC pairs
 Double_t asic_distance; //  = 0.40; // for 10 ASICs - a factor of width for ASIC pairs
 
-const Double_t FrameWidth[2]    = { 1.5, 2.0 };   // Width of detector frames in cm
+//const Double_t FrameWidth[2]    = { 1.5, 2.0 };   // Width of detector frames in cm
+const Double_t FrameWidth[2]    = { 1.5, 1.5 };   // Width of detector frames in cm
 // mini - production
 const Double_t DetectorSizeX[2] = { 57., 95.};   // => 54 x 54 cm2 & 91 x 91 cm2 active area
 const Double_t DetectorSizeY[2] = { 57., 95.};   // quadratic modules
@@ -324,7 +326,8 @@ const Double_t DetectorSizeY[2] = { 57., 95.};   // quadratic modules
 //const Double_t DetectorSizeY[2] = { 60., 100.};   // quadratic modules
 
 // Parameters tor the lattice grid reinforcing the entrance window
-const Double_t lattice_o_width[2] = { 1.5, 2.0 };   // Width of outer lattice frame in cm
+//const Double_t lattice_o_width[2] = { 1.5, 2.0 };   // Width of outer lattice frame in cm
+const Double_t lattice_o_width[2] = { 1.5, 1.5 };   // Width of outer lattice frame in cm
 const Double_t lattice_i_width[2] = { 0.2, 0.2 };   // { 0.4, 0.4 };   // Width of inner lattice frame in cm
 // Thickness (in z) of lattice frames in cm - see below
 
@@ -407,7 +410,7 @@ void dump_info_file();
 void dump_digi_file();
 
 
-void Create_TRD_Geometry_v14a_3e() {
+void Create_TRD_Geometry_v15a_3e() {
   // Load the necessary FairRoot libraries 
   gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
   basiclibs();
@@ -513,10 +516,12 @@ void dump_digi_file()
           {  6.75,  6.75,  6.75 },   // module type 4 -  4.56 mm2
 
           {  3.75,  4.00,  3.75 },   // module type 5 -  2.84 mm2
+          {  5.75,  5.75,  5.75 },   // module type 6 -  4.13 mm2
+          { 11.50, 11.50, 11.50 },   // module type 7 -  8.26 mm2
+          { 15.25, 15.50, 15.25 } }; // module type 8 - 11.14 mm2
 //          {  7.50,  7.75,  7.50 },   // module type 6 -  5.51 mm2
-          {  5.50,  5.75,  5.50 },   // module type 6 -  4.09 mm2
-          { 11.25, 11.50, 11.25 },   // module type 7 -  8.18 mm2
-          { 15.00, 15.50, 15.00 } }; // module type 8 - 11.02 mm2
+//          {  5.50,  5.75,  5.50 },   // module type 6 -  4.09 mm2
+//          { 11.25, 11.50, 11.25 },   // module type 7 -  8.18 mm2
 
   const Int_t NofRowsInSector[NofModuleTypes][NofSectors] =   // number of rows per sector
         { {  12,  12,  12 },         // module type 1
@@ -524,11 +529,15 @@ void dump_digi_file()
           {   1,  10,   1 },         // module type 3
           {   2,   4,   2 },         // module type 4
 
-          {  10,   4,  10 },         // module type 5
-//          {   4,   4,   4 },         // module type 6
-          {   2,  12,   2 },         // module type 6
+          {   8,   8,   8 },         // module type 5
+          {   4,   8,   4 },         // module type 6
           {   2,   4,   2 },         // module type 7
           {   2,   2,   2 } };       // module type 8
+//          {  10,   4,  10 },         // module type 5
+//          {   4,   4,   4 },         // module type 6
+//          {   2,  12,   2 },         // module type 6
+//          {   2,   4,   2 },         // module type 7
+//          {   2,   2,   2 } };       // module type 8
 
   Double_t HeightOfSector[NofModuleTypes][NofSectors];
   Double_t PadWidth[NofModuleTypes];
@@ -1105,12 +1114,12 @@ void dump_info_file()
     if (iModule <= 3)     
     {
       total_surface += total_modules[iModule] * DetectorSizeX[0] / 100 * DetectorSizeY[0] / 100;
-      total_actarea += total_modules[iModule] * (DetectorSizeX[0]-FrameWidth[0]) / 100 * (DetectorSizeY[0]-FrameWidth[0]) / 100;
+      total_actarea += total_modules[iModule] * (DetectorSizeX[0]-2*FrameWidth[0]) / 100 * (DetectorSizeY[0]-2*FrameWidth[0]) / 100;
     }
     else
     {
       total_surface += total_modules[iModule] * DetectorSizeX[1] / 100 * DetectorSizeY[1] / 100;
-      total_actarea += total_modules[iModule] * (DetectorSizeX[1]-FrameWidth[1]) / 100 * (DetectorSizeY[1]-FrameWidth[1]) / 100;
+      total_actarea += total_modules[iModule] * (DetectorSizeX[1]-2*FrameWidth[1]) / 100 * (DetectorSizeY[1]-2*FrameWidth[1]) / 100;
     }
   fprintf(ifile,"\n");
 
