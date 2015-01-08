@@ -44,10 +44,14 @@
 //#pragma link C++ class CbmAnaDielectronReports+;
 //#pragma link C++ class CbmAnaMuchBgd+;
 
-//#pragma link C++ class CbmAnaConversion+;
+#pragma link C++ class CbmAnaConversion+;
+#pragma link C++ class CbmAnaConversionTomography+;
+#pragma link C++ class CbmAnaConversionRich+;
+//#pragma link C++ class CbmAnaConversionKF+;
+#pragma link C++ class CbmAnaConversionReco+;
 
-#pragma link C++ class eventPlane+;
-#pragma link C++ class CbmAnaFlow+;
+//#pragma link C++ class eventPlane+;
+//#pragma link C++ class CbmAnaFlow+;
 
 //#pragma link C++ class CbmTrdPhotonAnalysis+;
 

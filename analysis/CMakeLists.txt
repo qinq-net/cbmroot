@@ -108,11 +108,16 @@ set(SRCS
 #dielectron/CbmAnaDielectronStudyReportAll.cxx
 #dielectron/CbmAnaDielectronReports.cxx
 
-#conversion/CbmAnaConversion.cxx
+conversion/CbmAnaConversion.cxx
+conversion/CbmAnaConversionTomography.cxx
+conversion/CbmAnaConversionRich.cxx
+#conversion/CbmAnaConversionKF.cxx
+conversion/CbmAnaConversionReco.cxx
+
 #photon/CbmTrdPhotonAnalysis.cxx
 
-flow/eventPlane.cxx
-flow/CbmAnaFlow.cxx
+#flow/eventPlane.cxx
+#flow/CbmAnaFlow.cxx
 
 )
 
@@ -129,6 +134,9 @@ ELSE (SSE_FOUND)
   SET_SOURCE_FILES_PROPERTIES(${SRCS} PROPERTIES COMPILE_FLAGS 
   "-O3")
 ENDIF (SSE_FOUND)
+
+ADD_DEFINITIONS(-DDO_TPCCATRACKER_EFF_PERFORMANCE -DNonhomogeneousField -DCBM -DUSE_TIMERS)
+
 
 Set(LINKDEF AnalysisLinkDef.h)
 Set(LIBRARY_NAME Analysis)
