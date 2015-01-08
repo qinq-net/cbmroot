@@ -36,8 +36,9 @@ struct DTM_header
 
 CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
   : CbmTSUnpack(),
-	bVerbose(kFALSE),
-    fCurrEpoch(0)
+	fbVerbose(kFALSE),
+	fiMode(0),
+   fiCurrEpoch(0)
 //    fNxyterRaw(new TClonesArray("CbmNxyterRawMessage", 10)),
 //    fNxyterRawSync(new TClonesArray("CbmNxyterRawSyncMessage", 10))
 {
@@ -55,8 +56,10 @@ Bool_t CbmTSUnpackGet4v1x::Init()
   if (ioman == NULL) {
     LOG(FATAL) << "No FairRootManager instance" << FairLogger::endl;
   }
-//  ioman->Register("NxyterRawMessage", "nXYTER raw data", fNxyterRaw, kTRUE);
-//  ioman->Register("NxyterRawSyncMessage", "nXYTER raw sync data", fNxyterRawSync, kTRUE);
+//  ioman->Register("Get4RawMessage",       "GET4 raw data",      fGet4Raw, kTRUE);
+//  ioman->Register("NxyterRawSyncMessage", "GET4 raw sync data", fGet4RawSync, kTRUE);
+
+  InitMonitorHistograms();
 
   return kTRUE;
 }
@@ -94,40 +97,72 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
 
          // Loop over messages
          local_offset = 4;
-         while (local_offset < packageSize)
+         if( 0 == fiMode || kTRUE == fbVerbose )
          {
-            if( kTRUE == bVerbose )
+            while (local_offset < packageSize)
             {
                get4v1x::Message mess;
                mess.setData( msContent_shifted[0] );
                mess.printDataLog();
-            } // if( kTRUE == bVerbose )
 
-        	 /*
-            // Extract the message type to define which procedure to apply to the 6-bytes message
-            uint8_t messageType = (msContent_shifted[local_offset+5] >> 0) & 0x07;   // 3 bits
+               local_offset += 6; // next message
+            } // while (local_offset < packageSize)
+         } // if( 0 == fiMode || kTRUE == fbVerbose )
+         switch(fiMode)
+         {
+            case 0:
+            {
+               // debug mode, nothing to do here (printout already done)
+               break;
+            } // case 0
+            case 1:
+            {
+               // Monitor mode, fill histograms
+               while (local_offset < packageSize)
+               {
+                  local_offset += 6; // next message
+               } // while (local_offset < packageSize)
+               break;
+            } // case 1
+            case 2:
+            {
+               // Normal mode, unpack data and fill TClonesArray of CbmRawMessage
+               while (local_offset < packageSize)
+               {
+                  /*
+                  // Extract the message type to define which procedure to apply to the 6-bytes message
+                  uint8_t messageType = (msContent_shifted[local_offset+5] >> 0) & 0x07;   // 3 bits
 
-            this->Print6bytesMessage(&msContent_shifted[local_offset]);
+                  this->Print6bytesMessage(&msContent_shifted[local_offset]);
 
-            switch(messageType) {
-            case MSG_HIT:
-               this->ProcessMessage_hit(&msContent_shifted[local_offset], msDescriptor.eq_id, cur_DTM_header.ROC_ID);
+                  switch(messageType) {
+                  case MSG_HIT:
+                     // This is NXYTER => ignore
+                     break;
+                  case MSG_EPOCH:
+                     this->ProcessMessage_epoch(&msContent_shifted[local_offset],
+                                                msDescriptor.eq_id, cur_DTM_header.ROC_ID);
+                     break;
+                  case MSG_SYNC:
+                     this->ProcessMessage_sync(&msContent_shifted[local_offset],
+                                                msDescriptor.eq_id, cur_DTM_header.ROC_ID);
+                     break;
+                  case MSG_AUX:
+                     this->ProcessMessage_aux(&msContent_shifted[local_offset],
+                                               msDescriptor.eq_id, cur_DTM_header.ROC_ID);
+                     break;
+                  case MSG_SYS:
+                     this->ProcessMessage_sys(&msContent_shifted[local_offset],
+                                               msDescriptor.eq_id, cur_DTM_header.ROC_ID);
+                     break;
+                  }
+                   */
+                  local_offset += 6; // next message
+               } // while (local_offset < packageSize)
                break;
-            case MSG_EPOCH:
-               this->ProcessMessage_epoch(&msContent_shifted[local_offset]);
+            } // case 2
+            default:
                break;
-            case MSG_SYNC:
-               this->ProcessMessage_sync(&msContent_shifted[local_offset], msDescriptor.eq_id, cur_DTM_header.ROC_ID);
-               break;
-            case MSG_AUX:
-               this->ProcessMessage_aux(&msContent_shifted[local_offset], msDescriptor.eq_id, cur_DTM_header.ROC_ID);
-               break;
-            case MSG_SYS:
-               this->ProcessMessage_sys(&msContent_shifted[local_offset], msDescriptor.eq_id, cur_DTM_header.ROC_ID);
-               break;
-            }
-             */
-            local_offset += 6; // next message
          }
 
          offset += packageSize;
@@ -147,8 +182,14 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
 
 void CbmTSUnpackGet4v1x::Reset()
 {
-//  fNxyterRaw->Clear();
-//  fNxyterRawSync->Clear();
+//  fGet4Raw->Clear();
+//  fGet4RawSync->Clear();
+}
+
+void CbmTSUnpackGet4v1x::Finish()
+{
+   WriteMonitorHistograms();
+   DeleteMonitorHistograms();
 }
 
 /*
@@ -159,68 +200,50 @@ void CbmTSUnpackGet4v1x::Register()
 /*
 void CbmTSUnpackGet4v1x::Print6bytesMessage(const uint8_t* msContent_shifted)
 {
-   if( kTRUE == bVerbose )
+   if( kTRUE == fbVerbose )
 	   printf("0x%02X%02X%02X%02X%02X%02X :\t",
 				msContent_shifted[0], msContent_shifted[1],
 				msContent_shifted[2], msContent_shifted[3],
 				msContent_shifted[4], msContent_shifted[5]);
 }
+*/
+
+//************** Monitor functions *************/
 
 
-// Last epoch flag, overflow flag, pileup flag, ADC value, channel, timestamp, LTS, NX id, ROC id, messageType=1
-// [LOPAAAAA][AAAAAAA-][CCCCCCCT][TTTTTTTT][TTTTTLLL][NNRRR001]
-void CbmTSUnpackGet4v1x::ProcessMessage_hit(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID)
+void CbmTSUnpackGet4v1x::InitMonitorHistograms()
 {
 
-   Int_t messageType, rocID, nxID, lts, timestamp, channel, ADCvalue;
-   Bool_t pileUp, overflow, lastEpoch;
-
-   messageType = (msContent_shifted[5] >> 0) & 0x07;          // 3 bits
-   rocID       = (msContent_shifted[5] >> 3) & 0x07;          // 3 bits
-   nxID        = (msContent_shifted[5] >> 6) & 0x03;          // 2 bits
-   lts         = (msContent_shifted[4] >> 0) & 0x07;          // 3 bits
-   timestamp  = ((msContent_shifted[4] >> 3) & 0x1F)          // 5 bits
-             + (((msContent_shifted[3] >> 0) & 0xFF) << 5)    // 8 bits
-             + (((msContent_shifted[2] >> 0) & 0x01) << 13);  // 1 bit
-   channel     = (msContent_shifted[2] >> 1) & 0x7F;          // 7 bits
-   ADCvalue   = ((msContent_shifted[1] >> 1) & 0x7F)          // 7 bits
-             + (((msContent_shifted[0] >> 0) & 0x1F) << 7);   // 5 bits
-   pileUp      = (msContent_shifted[0] >> 5) & 0x01;          // 1 bit
-   overflow    = (msContent_shifted[0] >> 6) & 0x01;          // 1 bit
-   lastEpoch   = (msContent_shifted[0] >> 7) & 0x01;          // 1 bit
-
-   if( kTRUE == bVerbose )
-      printf("messType=%d\tROC=0x%01X\tNX=0x%01X\tLTS=0x%01X\tTs=0x%04X\tCh=0x%02X\tADC=0x%04X\tpileUp=%d\toverfl=%d\tlastE=%d\n",
-         messageType, rocID, nxID, lts, timestamp, channel, ADCvalue, pileUp, overflow, lastEpoch);
-
-
-   new( (*fNxyterRaw)[fNxyterRaw->GetEntriesFast()] )
-   CbmNxyterRawMessage(
-         EqID,
-         RocID*4 + nxID,
-         channel,
-         fCurrEpoch, //              - cur_hit_data.NxLastEpoch,  //TODO subtract here or in GetFullTime() method ?!
-         timestamp,
-         ADCvalue,
-         lastEpoch,
-         pileUp,
-         overflow);
 }
+void CbmTSUnpackGet4v1x::FillMonitorHistograms()
+{
 
+}
+void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
+{
+
+}
+void CbmTSUnpackGet4v1x::DeleteMonitorHistograms()
+{
+
+}
+//**********************************************/
+
+/*
 // Missed event (currently skipped), epoch counter value, ROC id, messageType=2
 // [MMMMMMMM][EEEEEEEE][EEEEEEEE][EEEEEEEE][EEEEEEEE][--RRR010]
-void CbmTSUnpackGet4v1x::ProcessMessage_epoch(const uint8_t* msContent_shifted)
+void CbmTSUnpackGet4v1x::ProcessMessage_epoch(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID)
 {
    Int_t messageType = (msContent_shifted[5] >> 0) & 0x07;          // 3 bits
 
-   fCurrEpoch = ((msContent_shifted[4] >> 0) & 0xFF)                // 8 bits
+   fiCurrEpoch = ((msContent_shifted[4] >> 0) & 0xFF)                // 8 bits
              + (((msContent_shifted[3] >> 0) & 0xFF) << 8)          // 8 bits
              + (((msContent_shifted[2] >> 0) & 0xFF) << 16)         // 8 bits
              + (((msContent_shifted[1] >> 0) & 0xFF) << 24);        // 8 bits
 
    // Debug printout
-   if( kTRUE == bVerbose )
-   	   printf("messType=%d\tepoch=0x%08X\n", messageType, fCurrEpoch);
+   if( kTRUE == fbVerbose )
+   	   printf("messType=%d\tepoch=0x%08X\n", messageType, fiCurrEpoch);
 
 }
 
@@ -247,12 +270,12 @@ void CbmTSUnpackGet4v1x::ProcessMessage_sync(const uint8_t* msContent_shifted, u
          EqID,
          RocID*4 + syncCh,  //TODO check
          syncCh,
-         fCurrEpoch, //              - cur_hit_data.NxLastEpoch,  //TODO subtract here or in GetFullTime() method ?!
+         fiCurrEpoch, //              - cur_hit_data.NxLastEpoch,  //TODO subtract here or in GetFullTime() method ?!
          timestamp,
          status,
          data);
 
-   if( kTRUE == bVerbose )
+   if( kTRUE == fbVerbose )
       printf("messType=%d\tROC=0x%01X\tsyncCh=0x%01X\tTs=0x%04X\tdata=0x%08X\tstat=0x%01X\n",
          messageType, rocID, syncCh, timestamp, data, status);
 
@@ -279,7 +302,7 @@ void CbmTSUnpackGet4v1x::ProcessMessage_aux(const uint8_t* msContent_shifted, ui
 
    //TODO put the unpacked data into some output array
 
-   if( kTRUE == bVerbose )
+   if( kTRUE == fbVerbose )
       printf("messType=%d\tROC=0x%01X\tCh=0x%02X\tTs=0x%04X\tedgeType=%d\tpileUp=%d\n",
          messageType, rocID, channel, timestamp, edgeType, pileUp);
 
@@ -298,7 +321,7 @@ void CbmTSUnpackGet4v1x::ProcessMessage_sys(const uint8_t* msContent_shifted, ui
 
    //TODO put the unpacked data into some output array
 
-   if( kTRUE == bVerbose )
+   if( kTRUE == fbVerbose )
       printf("messType=%d\tROC=0x%01X\tNX=0x%02X\tsysMessType=%02X\n",
          messageType, rocID, nxID, sysMessType);
 }
