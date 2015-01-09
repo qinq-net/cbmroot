@@ -111,10 +111,10 @@ int Set24bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x18, ROC_CMD_LST_PUT + ROC_TS_RESET);
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x1C, 1);
 //# ROC_FIFO_RESET (active high?)
-   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x20, ROC_CMD_LST_PUT + ROC_GET4_FIFO_RESET);
+   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x20, ROC_CMD_LST_PUT + ROC_FIFO_RESET);
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x24, 1);
 //# ROC_FIFO_RESET
-   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x28, ROC_CMD_LST_PUT + ROC_GET4_FIFO_RESET);
+   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x28, ROC_CMD_LST_PUT + ROC_FIFO_RESET);
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x2C, 0);
 //# ROC_START_DAQ
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x30, ROC_CMD_LST_PUT + ROC_START_DAQ);
@@ -193,10 +193,10 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x18, ROC_CMD_LST_PUT + ROC_TS_RESET);
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x1C, 1);
 // ROC_FIFO_RESET (active high?)
-   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x20, ROC_CMD_LST_PUT + ROC_GET4_FIFO_RESET);
+   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x20, ROC_CMD_LST_PUT + ROC_FIFO_RESET);
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x24, 1);
 // ROC_FIFO_RESET
-   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x28, ROC_CMD_LST_PUT + ROC_GET4_FIFO_RESET);
+   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x28, ROC_CMD_LST_PUT + ROC_FIFO_RESET);
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x2C, 0);
 // ROC_START_DAQ
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x30, ROC_CMD_LST_PUT + ROC_START_DAQ);
@@ -259,7 +259,7 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
  *            * 1 => default 32b mode settings
  *            * 2 => tbd, read config from a text/xml file
  */
-void config_get4v1x( int link, int mode, const uint32_t kRocId = C2  )
+void config_get4v1x( int link, int mode, const uint32_t kRocId = 0xC2  )
 {
 	//TODO: All !
 
@@ -289,6 +289,12 @@ void config_get4v1x( int link, int mode, const uint32_t kRocId = C2  )
 	conn.Read( kNodeId, ROC_SVN_REVISION, ret );
 	printf("svn revision     = %10d \n", ret);
 	conn.Read( kNodeId, ROC_BUILD_TIME, ret );
+   if(0 == ret )
+   {
+      printf("Invalid svn revision, link or ROC is probably inactive, stopping there\n");
+      return;
+   } // if(0 == ret )
+
    time_t rawtime = ret;
    struct tm * timeinfo;
    char buffer [20];
@@ -337,9 +343,9 @@ int ReadMessages(CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t nbMess 
 {
    CbmNet::ListSeq messList;
    // rocutil> ssm 2
-   initList.AddRead(ROC_BURST1);
-   initList.AddRead(ROC_BURST2);
-   initList.AddRead(ROC_BURST3);
+   messList.AddRead(ROC_BURST1);
+   messList.AddRead(ROC_BURST2);
+   messList.AddRead(ROC_BURST3);
 
    int nSuccTot = 0;
    for( int iMess = 0; iMess < ; iMess++ )
