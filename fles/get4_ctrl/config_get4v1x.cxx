@@ -288,21 +288,21 @@ void config_get4v1x( int link, int mode, const uint32_t kRocId = 0xC2  )
 	printf("FPGA type        = %10d \n", ret);
 	conn.Read( kNodeId, ROC_SVN_REVISION, ret );
 	printf("svn revision     = %10d \n", ret);
-	conn.Read( kNodeId, ROC_BUILD_TIME, ret );
    if(0 == ret )
    {
       printf("Invalid svn revision, link or ROC is probably inactive, stopping there\n");
       return;
    } // if(0 == ret )
 
+   conn.Read( kNodeId, ROC_BUILD_TIME, ret );
+   printf("build time       = %10u \n", ret);
    time_t rawtime = ret;
    struct tm * timeinfo;
    char buffer [20];
-   timeinfo = localtime ( &rawtime);
-   strftime (buffer,20,"%F %T",timeinfo);
-	printf("build time       = %s \n", ret);
-
-	printf("\n", ret);
+   timeinfo = localtime( &rawtime);
+   strftime( buffer,20,"%F %T",timeinfo);
+	printf("build time       = %s \n", buffer);
+	printf("\n");
 	printf("Setting ROCID to = %d \n", kRocId);
    conn.Write( kNodeId, ROC_ROCID, kRocId );
 	SetRocDef( conn, kNodeId );
@@ -348,7 +348,7 @@ int ReadMessages(CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t nbMess 
    messList.AddRead(ROC_BURST3);
 
    int nSuccTot = 0;
-   for( int iMess = 0; iMess < ; iMess++ )
+   for( int iMess = 0; iMess < nbMess; iMess++ )
    {
       int nSucc = conn.DoListSeq(nodeid, messList);
 
@@ -361,7 +361,7 @@ int ReadMessages(CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t nbMess 
              nodeid,
              ((messList[2].value) >> 8)& 0xFF, (messList[2].value) & 0xFF,
              ((messList[1].value) >> 8)& 0xFF, (messList[1].value) & 0xFF,
-             ((messList[1].value) >> 8)& 0xFF, (messList[1].value) & 0xFF);
+             ((messList[0].value) >> 8)& 0xFF, (messList[0].value) & 0xFF);
       nSuccTot += nSucc;
    } // for( int iMess = 0; iMess < ; iMess++ )
 
