@@ -261,9 +261,6 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
  */
 void config_get4v1x( int link, int mode, const uint32_t kRocId = 0xC2  )
 {
-	//TODO: All !
-
-
 	// Custom settings:
 	int FlibLink = link;
 	const uint32_t kNodeId = 0;
@@ -333,6 +330,56 @@ void config_get4v1x( int link, int mode, const uint32_t kRocId = 0xC2  )
 
 	ReadMessages( conn, kNodeId, 300 );
 
+	// Close connection
+	conn.Close();
+}
+
+void spiCmd_get4v1x( int link, int mode, uint32_t uSpiWord = 0xA5  )
+{
+   // Custom settings:
+   int FlibLink = link;
+   const uint32_t kNodeId = 0;
+
+   // Needed ?
+   const uint32_t kNxPort = 0; // 0 if nX is connected to CON19 connector; 1 for CON20 connector.
+   if( kNxPort != 0 && kNxPort != 1 ) { printf("Error! invalid value kNxPort = %d\n", kNxPort ); return; }
+
+   CbmNet::ControlClient conn;
+   ostringstream dpath;
+
+   dpath << "tcp://" << "localhost" << ":" << CbmNet::kPortControl + FlibLink;
+   conn.Connect(dpath.str());
+
+   // Check board and firmware info
+   uint32_t ret;
+   conn.Read( kNodeId, ROC_TYPE, ret );
+   printf("Firmware type    = FE %5d TS %5d\n", (ret>>16)& 0xFFFF,  (ret)& 0xFFFF);
+   conn.Read( kNodeId, ROC_HWV, ret );
+   printf("Firmware Version = %10d \n", ret);
+   conn.Read( kNodeId, ROC_FPGA_TYPE, ret );
+   printf("FPGA type        = %10d \n", ret);
+   conn.Read( kNodeId, ROC_SVN_REVISION, ret );
+   printf("svn revision     = %10d \n", ret);
+   if(0 == ret )
+   {
+      printf("Invalid svn revision, link or ROC is probably inactive, stopping there\n");
+      return;
+   } // if(0 == ret )
+
+   conn.Read( kNodeId, ROC_BUILD_TIME, ret );
+   time_t rawtime = ret;
+   struct tm * timeinfo;
+   char buffer [20];
+   timeinfo = localtime( &rawtime);
+   strftime( buffer,20,"%F %T",timeinfo);
+   printf("build time       = %s \n", buffer);
+   printf("\n");
+
+   printf("Sending SPI command through GET4 => %d \n", uSpiWord);
+   SendSpi( conn, kNodeId, 1, &uSpiWord)
+
+   // Close connection
+   conn.Close();
 }
 
 /*
