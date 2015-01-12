@@ -21,6 +21,8 @@
 // GET4 v1.x internal registers address
 #include "fles/get4_ctrl/defines_get4v1x.h"
 
+// GET4 v1.x ROC message tool functions => maybe already loaded from libCbmFlibReader.so?
+#include "fles/reader/unpacker/CbmGet4v1xHackDef.h"
 
 // Symbols from ControlClient.hpp are in libcbmnetcntlclientroot.so, loaded in rootlogon.C
 // This is to let your IDE know about CbmNet::ControlClient class, and thus make
@@ -261,30 +263,30 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
  */
 void config_get4v1x( int link, int mode, const uint32_t kRocId = 0xC2  )
 {
-	// Custom settings:
-	int FlibLink = link;
-	const uint32_t kNodeId = 0;
+   // Custom settings:
+   int FlibLink = link;
+   const uint32_t kNodeId = 0;
 
-	// Needed ?
-	const uint32_t kNxPort = 0; // 0 if nX is connected to CON19 connector; 1 for CON20 connector.
-	if( kNxPort != 0 && kNxPort != 1 ) { printf("Error! invalid value kNxPort = %d\n", kNxPort ); return; }
+   // Needed ?
+   const uint32_t kNxPort = 0; // 0 if nX is connected to CON19 connector; 1 for CON20 connector.
+   if( kNxPort != 0 && kNxPort != 1 ) { printf("Error! invalid value kNxPort = %d\n", kNxPort ); return; }
 
-	CbmNet::ControlClient conn;
-	ostringstream dpath;
+   CbmNet::ControlClient conn;
+   ostringstream dpath;
 
-	dpath << "tcp://" << "localhost" << ":" << CbmNet::kPortControl + FlibLink;
-	conn.Connect(dpath.str());
+   dpath << "tcp://" << "localhost" << ":" << CbmNet::kPortControl + FlibLink;
+   conn.Connect(dpath.str());
 
    // Check board and firmware info
-	uint32_t ret;
-	conn.Read( kNodeId, ROC_TYPE, ret );
-	printf("Firmware type    = FE %5d TS %5d\n", (ret>>16)& 0xFFFF,  (ret)& 0xFFFF);
-	conn.Read( kNodeId, ROC_HWV, ret );
-	printf("Firmware Version = %10d \n", ret);
-	conn.Read( kNodeId, ROC_FPGA_TYPE, ret );
-	printf("FPGA type        = %10d \n", ret);
-	conn.Read( kNodeId, ROC_SVN_REVISION, ret );
-	printf("svn revision     = %10d \n", ret);
+   uint32_t ret;
+   conn.Read( kNodeId, ROC_TYPE, ret );
+   printf("Firmware type    = FE %5d TS %5d\n", (ret>>16)& 0xFFFF,  (ret)& 0xFFFF);
+   conn.Read( kNodeId, ROC_HWV, ret );
+   printf("Firmware Version = %10d \n", ret);
+   conn.Read( kNodeId, ROC_FPGA_TYPE, ret );
+   printf("FPGA type        = %10d \n", ret);
+   conn.Read( kNodeId, ROC_SVN_REVISION, ret );
+   printf("svn revision     = %10d \n", ret);
    if(0 == ret )
    {
       printf("Invalid svn revision, link or ROC is probably inactive, stopping there\n");
@@ -298,19 +300,19 @@ void config_get4v1x( int link, int mode, const uint32_t kRocId = 0xC2  )
    char buffer [20];
    timeinfo = localtime( &rawtime);
    strftime( buffer,20,"%F %T",timeinfo);
-	printf("build time       = %s \n", buffer);
-	printf("\n");
-	printf("Setting ROCID to = %d \n", kRocId);
+   printf("build time       = %s \n", buffer);
+   printf("\n");
+   printf("Setting ROCID to = %d \n", kRocId);
    conn.Write( kNodeId, ROC_ROCID, kRocId );
-	SetRocDef( conn, kNodeId );
+   SetRocDef( conn, kNodeId );
 
-	switch( mode )
-	{
-	   case 0:
-	      Set24bDef( conn, kNodeId );
-	      break;
-	   case 1:
-	      Set32bDef( conn, kNodeId );
+   switch( mode )
+   {
+      case 0:
+         Set24bDef( conn, kNodeId );
+         break;
+      case 1:
+         Set32bDef( conn, kNodeId );
          break;
       case 2:
          std::cout<<" Configuration mode 2 not implemented yet ! "<<std::endl;
@@ -318,20 +320,20 @@ void config_get4v1x( int link, int mode, const uint32_t kRocId = 0xC2  )
       default:
          std::cout<<" Unknown configuration mode "<<std::endl;
          break;
-	} // switch( mode )
+   } // switch( mode )
 
 
-	// StartDAQ => Use the command list 2 in order to also 
-	conn.Write( kNodeId, ROC_CMD_LST_NR, 2);
+   // StartDAQ => Use the command list 2 in order to also
+   conn.Write( kNodeId, ROC_CMD_LST_NR, 2);
 
    // Check link status
-	conn.Read( kNodeId, ROC_OPTICS_LINK_STATUS, ret );
-	printf("ROC_OPTICS_LINK_STATUS  = %d\n", ret);
+   conn.Read( kNodeId, ROC_OPTICS_LINK_STATUS, ret );
+   printf("ROC_OPTICS_LINK_STATUS  = %d\n", ret);
 
-	ReadMessages( conn, kNodeId, 300 );
+   ReadMessages( conn, kNodeId, 300 );
 
-	// Close connection
-	conn.Close();
+   // Close connection
+   conn.Close();
 }
 
 void spiCmd_get4v1x( int link, int mode, uint32_t uSpiWord = 0xA5  )
@@ -385,17 +387,32 @@ void spiCmd_get4v1x( int link, int mode, uint32_t uSpiWord = 0xA5  )
 /*
  * GET4 v1.x (>1.2) + ROC + FLIB: direct readout of ROC messages
  * from ROC buffer through the registers interface
+ * Mostly copied/adapted from the RocGui function DataWidget::getData()
  */
 int ReadMessages(CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t nbMess = 1)
 {
+
+   // Register operations list
    CbmNet::ListSeq messList;
    // rocutil> ssm 2
+   messList.AddRead(ROC_ROCID);
    messList.AddRead(ROC_BURST1);
    messList.AddRead(ROC_BURST2);
    messList.AddRead(ROC_BURST3);
 
+   // Message printout variables
+   get4v1x::Message msg1, msg2;
+   msg1.setRocNumber(0);
+   msg2.setRocNumber(0);
+
+   std::ostringstream ostr;
+
+   uint64_t value1, value2, value3, message1, message2;
+   uint64_t rocid;
+   uint8_t data[6];
+
    int nSuccTot = 0;
-   for( int iMess = 0; iMess < nbMess; iMess++ )
+   for( int iMess = 0; iMess <= nbMess/2; iMess++ )
    {
       int nSucc = conn.DoListSeq(nodeid, messList);
 
@@ -404,11 +421,45 @@ int ReadMessages(CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t nbMess 
                nSucc, messList.Size() );
          return -1;
       } // if( nSucc != list.Size() )
+
+      rocid = messList[0].value;
+      rocid = (rocid&0x000000000000FFFF)<<48;
+
+      msg1.setRocNumber(rocid);
+      msg2.setRocNumber(rocid);
+
+      value1 = messList[1].value;
+      value2 = messList[2].value;
+      value3 = messList[3].value;
+
+      message1 = rocid | value1<<16 | (value2&0xffff0000)>>16;
+      message2 = rocid | (value2&0xffff)<<32 | value3;
+
+      data[5] = (message1      ) & 0xFF;
+      data[4] = (message1 >>  8) & 0xFF;
+      data[3] = (message1 >> 16) & 0xFF;
+      data[2] = (message1 >> 24) & 0xFF;
+      data[1] = (message1 >> 32) & 0xFF;
+      data[0] = (message1 >> 40) & 0xFF;
+      msg1.assign(data);
+
+      data[5] =  message2        & 0xFF;
+      data[4] = (message2 >>  8) & 0xFF;
+      data[3] = (message2 >> 16) & 0xFF;
+      data[2] = (message2 >> 24) & 0xFF;
+      data[1] = (message2 >> 32) & 0xFF;
+      data[0] = (message2 >> 40) & 0xFF;
+      msg2.assign(data);
+
+      msg1.printDataCout();
+      msg2.printDataCout();
+
       printf("Message on ROC %04X %02X:%02X:%02X:%02X:%02X:%02X \n",
              nodeid,
+             ((messList[3].value) >> 8)& 0xFF, (messList[3].value) & 0xFF,
              ((messList[2].value) >> 8)& 0xFF, (messList[2].value) & 0xFF,
-             ((messList[1].value) >> 8)& 0xFF, (messList[1].value) & 0xFF,
-             ((messList[0].value) >> 8)& 0xFF, (messList[0].value) & 0xFF);
+             ((messList[1].value) >> 8)& 0xFF, (messList[1].value) & 0xFF);
+
       nSuccTot += nSucc;
    } // for( int iMess = 0; iMess < ; iMess++ )
 
