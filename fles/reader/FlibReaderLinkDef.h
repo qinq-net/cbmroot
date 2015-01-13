@@ -14,6 +14,7 @@
 #pragma link C++ class CbmTSUnpackFiberHodo;
 #pragma link C++ class CbmTSUnpackDummy;
 #pragma link C++ class CbmTSUnpackTrb;
+#pragma link C++ class CbmTSUnpackGet4v1x;
 
 #pragma link C++ class CbmDaqBuffer;
 #pragma link C++ class CbmFiberHodoMapping;
