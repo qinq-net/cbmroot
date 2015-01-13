@@ -158,12 +158,12 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
    CbmNet::ListSeq initList;
 
 
-// ROC_GET4_RECEIVE_CLK_CFG => Set link speed to 156.25 MBit/s
-   initList.AddWrite(ROC_GET4_RECEIVE_CLK_CFG,           3);
+// ROC_GET4_RECEIVE_CLK_CFG => Set link speed to 19.XX MBit/s
+//   initList.AddWrite(ROC_GET4_RECEIVE_CLK_CFG,           0);
 
 // ROC_GET4_RECEIVE_MASK_LSBS & ROC_GET4_RECEIVE_MASK_MSBS
 //  => Activate only the 4 first chips
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x0000000F);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0xFFFFFFFF);
    initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
 
 // ROC_GET4_SAMPLE_FALLING_EDGE_LSBS & ROC_GET4_SAMPLE_FALLING_EDGE_MSBS
@@ -235,6 +235,9 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 
    // ROC_GET4_CMD_TO_GET4 => Set link speed to 156.25 MBit/s
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_LNK_RATE +   0x7 );
+
+// ROC_GET4_RECEIVE_CLK_CFG => Set link speed to 156.25 MBit/s
+   initList.AddWrite(ROC_GET4_RECEIVE_CLK_CFG,           3);
 
    // ROC_GET4_CMD_TO_GET4 => Lower DLL lock threshold
    // Maybe needed if DLL flag off while the lock can be observed at low levels on scope
@@ -425,8 +428,6 @@ int ReadMessages(CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t nbMess 
       rocid = messList[0].value;
       rocid = (rocid&0x000000000000FFFF)<<48;
 
-      msg1.setRocNumber(rocid);
-      msg2.setRocNumber(rocid);
 
       value1 = messList[1].value;
       value2 = messList[2].value;
@@ -434,7 +435,7 @@ int ReadMessages(CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t nbMess 
 
       message1 = rocid | value1<<16 | (value2&0xffff0000)>>16;
       message2 = rocid | (value2&0xffff)<<32 | value3;
-
+/*
       data[5] = (message1      ) & 0xFF;
       data[4] = (message1 >>  8) & 0xFF;
       data[3] = (message1 >> 16) & 0xFF;
@@ -442,7 +443,11 @@ int ReadMessages(CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t nbMess 
       data[1] = (message1 >> 32) & 0xFF;
       data[0] = (message1 >> 40) & 0xFF;
       msg1.assign(data);
+*/
+      msg1.setData(message1);
+      msg1.setRocNumber(rocid);
 
+/*
       data[5] =  message2        & 0xFF;
       data[4] = (message2 >>  8) & 0xFF;
       data[3] = (message2 >> 16) & 0xFF;
@@ -450,15 +455,21 @@ int ReadMessages(CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t nbMess 
       data[1] = (message2 >> 32) & 0xFF;
       data[0] = (message2 >> 40) & 0xFF;
       msg2.assign(data);
+*/
+      msg2.setData(message2);
+      msg2.setRocNumber(rocid);
 
       msg1.printDataCout();
       msg2.printDataCout();
 
-      printf("Message on ROC %04X %02X:%02X:%02X:%02X:%02X:%02X \n",
+      printf("Message on ROC %04X %02X:%02X:%02X:%02X %02X:%02X:%02X:%02X %02X:%02X:%02X:%02X\n",
              nodeid,
-             ((messList[3].value) >> 8)& 0xFF, (messList[3].value) & 0xFF,
-             ((messList[2].value) >> 8)& 0xFF, (messList[2].value) & 0xFF,
-             ((messList[1].value) >> 8)& 0xFF, (messList[1].value) & 0xFF);
+             ((messList[3].value) >> 24)& 0xFF, (messList[3].value >> 16) & 0xFF,
+             ((messList[3].value) >>  8)& 0xFF, (messList[3].value      ) & 0xFF,
+             ((messList[2].value) >> 24)& 0xFF, (messList[2].value >> 16) & 0xFF,
+             ((messList[2].value) >>  8)& 0xFF, (messList[2].value      ) & 0xFF,
+             ((messList[1].value) >> 24)& 0xFF, (messList[1].value >> 16) & 0xFF,
+             ((messList[1].value) >>  8)& 0xFF, (messList[1].value      ) & 0xFF);
 
       nSuccTot += nSucc;
    } // for( int iMess = 0; iMess < ; iMess++ )
