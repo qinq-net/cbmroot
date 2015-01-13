@@ -100,13 +100,13 @@ set(SRCS
 #timing/CbmAnaTimingStsDigitizer.cxx
 #timing/CbmAnaTimingStsHitFinder.cxx
 
-#dielectron/CbmAnaDielectronTask.cxx
-#dielectron/CbmAnaDielectronTaskDraw.cxx
-#dielectron/CbmAnaDielectronTaskDrawAll.cxx
-#dielectron/CbmAnaLmvmDrawStudy.cxx
-#dielectron/CbmAnaLmvmNames.cxx
-#dielectron/CbmAnaDielectronStudyReportAll.cxx
-#dielectron/CbmAnaDielectronReports.cxx
+dielectron/CbmAnaDielectronTask.cxx
+dielectron/CbmAnaDielectronTaskDraw.cxx
+dielectron/CbmAnaDielectronTaskDrawAll.cxx
+dielectron/CbmAnaLmvmDrawStudy.cxx
+dielectron/CbmAnaLmvmNames.cxx
+dielectron/CbmAnaDielectronStudyReportAll.cxx
+dielectron/CbmAnaDielectronReports.cxx
 
 conversion/CbmAnaConversion.cxx
 conversion/CbmAnaConversionTomography.cxx
