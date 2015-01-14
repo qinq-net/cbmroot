@@ -49,6 +49,12 @@ void mvd_CbmUniGen_sim_cluster(const char* input = "auau.25gev", const char* sys
   // MVD geometry
   TString mvdGeom = "mvd/mvd_v14a.geo.root";
 
+ // StS geometry
+  TString stsGeom = "sts/sts_v13d.geo.root";
+
+  // Tof geometry
+  TString tofGeom = "tof/tof_v13b.geo.root";
+
   // In general, the following parts need not be touched
   // ========================================================================
 
@@ -96,6 +102,13 @@ void mvd_CbmUniGen_sim_cluster(const char* input = "auau.25gev", const char* sys
   mvd->SetMotherVolume("pipevac1");
   fRun->AddModule(mvd);
 
+  FairDetector* sts = new CbmStsMC(kTRUE);
+  sts->SetGeometryFileName(stsGeom);
+  fRun->AddModule(sts);
+
+  FairDetector* tof = new CbmTof("TOF", kTRUE);
+  tof->SetGeometryFileName(tofGeom);
+  fRun->AddModule(tof);
   // ------------------------------------------------------------------------
 
 
@@ -127,7 +140,6 @@ void mvd_CbmUniGen_sim_cluster(const char* input = "auau.25gev", const char* sys
   // ------------------------------------------------------------------------
 
   
-  
   // -----   Runtime database   ---------------------------------------------
   CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
   fieldPar->SetParameters(magField);
@@ -140,7 +152,6 @@ void mvd_CbmUniGen_sim_cluster(const char* input = "auau.25gev", const char* sys
   rtdb->saveOutput();
   rtdb->print();
   // ------------------------------------------------------------------------
-
 
  
   // -----   Start run   ----------------------------------------------------
