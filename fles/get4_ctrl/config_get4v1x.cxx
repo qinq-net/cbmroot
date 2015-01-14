@@ -81,20 +81,20 @@ int Set24bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 
 //# ROC_GET4_RECEIVE_MASK_LSBS & ROC_GET4_RECEIVE_MASK_MSBS
 //  => Activate only the 4 first chips
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x0000000F);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000B0C);
    initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
 
 //# ROC_GET4_SAMPLE_FALLING_EDGE_LSBS & ROC_GET4_SAMPLE_FALLING_EDGE_MSBS
 //  => Change the edge on which the data from the GET4 are sampled
 //  => Can be necessary with some ROC v2 systems 
-//   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x00000000);
-//   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, 0x00000000);
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x0000004B);
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, 0x00000000);
 
 //# ROC_GET4_SUPRESS_EPOCHS_LSBS & ROC_GET4_SUPRESS_EPOCHS_MSBS
 //  => Enable the suppression of the 156.25 MHz epoch without data messages
 //  => Chip granularity setting, maybe interesting to keep at least one per ROC 
-//   initList.AddWrite(ROC_GET4_SUPRESS_EPOCHS_LSBS, 0x00000000);
-//   initList.AddWrite(ROC_GET4_SUPRESS_EPOCHS_MSBS, 0x00000000);
+   initList.AddWrite(ROC_GET4_SUPRESS_EPOCHS_LSBS, 0x00000000);
+   initList.AddWrite(ROC_GET4_SUPRESS_EPOCHS_MSBS, 0x00000000);
 
 //# ROC_GET4_READOUT_MODE => 24 bits mode selection
    initList.AddWrite(ROC_GET4_READOUT_MODE,               0);
@@ -144,6 +144,9 @@ int Set24bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
    //# ROC_GET4_CMD_TO_GET4 => Set link speed to 156.25 MBit/s
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_24B_RO_CONF       +      0x7 );
 
+// ROC_GET4_RECEIVE_CLK_CFG => Set link speed to 156.25 MBit/s
+   initList.AddWrite(ROC_GET4_RECEIVE_CLK_CFG,           0x3);
+
    //# ROC_GET4_CMD_TO_GET4 => Re-Initialize the readout unit state machine
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_INIT_RO_INIT );
 
@@ -163,20 +166,23 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 
 // ROC_GET4_RECEIVE_MASK_LSBS & ROC_GET4_RECEIVE_MASK_MSBS
 //  => Activate only the 4 first chips
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0xFFFFFFFF);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000B00);
    initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0xFFFFFFFF);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0xFFFFFFFF);
+
 
 // ROC_GET4_SAMPLE_FALLING_EDGE_LSBS & ROC_GET4_SAMPLE_FALLING_EDGE_MSBS
 //  => Change the edge on which the data from the GET4 are sampled
 //  => Can be necessary with some ROC v2 systems 
-//   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x00000000);
-//   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, 0x00000000);
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x00000000);
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, 0x00000000);
 
 // ROC_GET4_SUPRESS_EPOCHS_LSBS & ROC_GET4_SUPRESS_EPOCHS_MSBS
 //  => Enable the suppression of the 156.25 MHz epoch without data messages
 //  => Chip granularity setting, maybe interesting to keep at least one per ROC 
-//   initList.AddWrite(ROC_GET4_SUPRESS_EPOCHS_LSBS, 0x00000000);
-//   initList.AddWrite(ROC_GET4_SUPRESS_EPOCHS_MSBS, 0x00000000);
+   initList.AddWrite(ROC_GET4_SUPRESS_EPOCHS_LSBS, 0x00000000);
+   initList.AddWrite(ROC_GET4_SUPRESS_EPOCHS_MSBS, 0x00000000);
 
 //# ROC_GET4_READOUT_MODE => 32 bits mode selection
    initList.AddWrite(ROC_GET4_READOUT_MODE,               1);
@@ -237,7 +243,7 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_LNK_RATE +   0x7 );
 
 // ROC_GET4_RECEIVE_CLK_CFG => Set link speed to 156.25 MBit/s
-   initList.AddWrite(ROC_GET4_RECEIVE_CLK_CFG,           3);
+   initList.AddWrite(ROC_GET4_RECEIVE_CLK_CFG,           0x3);
 
    // ROC_GET4_CMD_TO_GET4 => Lower DLL lock threshold
    // Maybe needed if DLL flag off while the lock can be observed at low levels on scope
@@ -326,13 +332,14 @@ void config_get4v1x( int link, int mode, const uint32_t kRocId = 0xC2  )
    } // switch( mode )
 
 
-   // StartDAQ => Use the command list 2 in order to also
+   // StartDAQ => Use the command list 2 in order to also to make a clean start
    conn.Write( kNodeId, ROC_CMD_LST_NR, 2);
 
    // Check link status
    conn.Read( kNodeId, ROC_OPTICS_LINK_STATUS, ret );
    printf("ROC_OPTICS_LINK_STATUS  = %d\n", ret);
 
+   // Read 300 messages for quick cross check of setting
    ReadMessages( conn, kNodeId, 300 );
 
    // Close connection
@@ -381,11 +388,59 @@ void spiCmd_get4v1x( int link, int mode, uint32_t uSpiWord = 0xA5  )
    printf("\n");
 
    printf("Sending SPI command through GET4 => %d \n", uSpiWord);
-   SendSpi( conn, kNodeId, 1, &uSpiWord)
+   SendSpi( conn, kNodeId, 1, &uSpiWord);
 
    // Close connection
    conn.Close();
 }
+
+void dump_get4v1x( int link, int mode, uint32_t uNbMess = 300  )
+{
+   // Custom settings:
+   int FlibLink = link;
+   const uint32_t kNodeId = 0;
+
+   // Needed ?
+   const uint32_t kNxPort = 0; // 0 if nX is connected to CON19 connector; 1 for CON20 connector.
+   if( kNxPort != 0 && kNxPort != 1 ) { printf("Error! invalid value kNxPort = %d\n", kNxPort ); return; }
+
+   CbmNet::ControlClient conn;
+   ostringstream dpath;
+
+   dpath << "tcp://" << "localhost" << ":" << CbmNet::kPortControl + FlibLink;
+   conn.Connect(dpath.str());
+
+   // Check board and firmware info
+   uint32_t ret;
+   conn.Read( kNodeId, ROC_TYPE, ret );
+   printf("Firmware type    = FE %5d TS %5d\n", (ret>>16)& 0xFFFF,  (ret)& 0xFFFF);
+   conn.Read( kNodeId, ROC_HWV, ret );
+   printf("Firmware Version = %10d \n", ret);
+   conn.Read( kNodeId, ROC_FPGA_TYPE, ret );
+   printf("FPGA type        = %10d \n", ret);
+   conn.Read( kNodeId, ROC_SVN_REVISION, ret );
+   printf("svn revision     = %10d \n", ret);
+   if(0 == ret )
+   {
+      printf("Invalid svn revision, link or ROC is probably inactive, stopping there\n");
+      return;
+   } // if(0 == ret )
+
+   conn.Read( kNodeId, ROC_BUILD_TIME, ret );
+   time_t rawtime = ret;
+   struct tm * timeinfo;
+   char buffer [20];
+   timeinfo = localtime( &rawtime);
+   strftime( buffer,20,"%F %T",timeinfo);
+   printf("build time       = %s \n", buffer);
+   printf("\n");
+
+   ReadMessages( conn, kNodeId, uNbMess);
+
+   // Close connection
+   conn.Close();
+}
+
 
 /*
  * GET4 v1.x (>1.2) + ROC + FLIB: direct readout of ROC messages
@@ -412,7 +467,7 @@ int ReadMessages(CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t nbMess 
 
    uint64_t value1, value2, value3, message1, message2;
    uint64_t rocid;
-   uint8_t data[6];
+   uint64_t data;
 
    int nSuccTot = 0;
    for( int iMess = 0; iMess <= nbMess/2; iMess++ )
@@ -435,33 +490,29 @@ int ReadMessages(CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t nbMess 
 
       message1 = rocid | value1<<16 | (value2&0xffff0000)>>16;
       message2 = rocid | (value2&0xffff)<<32 | value3;
-/*
-      data[5] = (message1      ) & 0xFF;
-      data[4] = (message1 >>  8) & 0xFF;
-      data[3] = (message1 >> 16) & 0xFF;
-      data[2] = (message1 >> 24) & 0xFF;
-      data[1] = (message1 >> 32) & 0xFF;
-      data[0] = (message1 >> 40) & 0xFF;
-      msg1.assign(data);
-*/
-      msg1.setData(message1);
-      msg1.setRocNumber(rocid);
+
+      data =  rocid
+            + ( ( (message1      ) & 0xFF) << 40)
+            + ( ( (message1 >>  8) & 0xFF) << 32)
+            + ( ( (message1 >> 16) & 0xFF) << 24)
+            + ( ( (message1 >> 24) & 0xFF) << 16)
+            + ( ( (message1 >> 32) & 0xFF) <<  8)
+            + ( ( (message1 >> 40) & 0xFF));
+      msg1.setData(data);
+
+      data =  rocid
+            + ( ( (message2      ) & 0xFF) << 40)
+            + ( ( (message2 >>  8) & 0xFF) << 32)
+            + ( ( (message2 >> 16) & 0xFF) << 24)
+            + ( ( (message2 >> 24) & 0xFF) << 16)
+            + ( ( (message2 >> 32) & 0xFF) <<  8)
+            + ( ( (message2 >> 40) & 0xFF)); 
+      msg2.setData(data);
+
+      msg1.printDataCout( get4v1x::msg_print_Hex | get4v1x::msg_print_Prefix | get4v1x::msg_print_Data );
+      msg2.printDataCout( get4v1x::msg_print_Hex | get4v1x::msg_print_Prefix | get4v1x::msg_print_Data );
 
 /*
-      data[5] =  message2        & 0xFF;
-      data[4] = (message2 >>  8) & 0xFF;
-      data[3] = (message2 >> 16) & 0xFF;
-      data[2] = (message2 >> 24) & 0xFF;
-      data[1] = (message2 >> 32) & 0xFF;
-      data[0] = (message2 >> 40) & 0xFF;
-      msg2.assign(data);
-*/
-      msg2.setData(message2);
-      msg2.setRocNumber(rocid);
-
-      msg1.printDataCout();
-      msg2.printDataCout();
-
       printf("Message on ROC %04X %02X:%02X:%02X:%02X %02X:%02X:%02X:%02X %02X:%02X:%02X:%02X\n",
              nodeid,
              ((messList[3].value) >> 24)& 0xFF, (messList[3].value >> 16) & 0xFF,
@@ -470,7 +521,7 @@ int ReadMessages(CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t nbMess 
              ((messList[2].value) >>  8)& 0xFF, (messList[2].value      ) & 0xFF,
              ((messList[1].value) >> 24)& 0xFF, (messList[1].value >> 16) & 0xFF,
              ((messList[1].value) >>  8)& 0xFF, (messList[1].value      ) & 0xFF);
-
+*/
       nSuccTot += nSucc;
    } // for( int iMess = 0; iMess < ; iMess++ )
 
