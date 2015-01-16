@@ -27,6 +27,7 @@ mc/CbmStsSensorFactory.cxx
 # --- Sources in digitize
 set (SRCS_DIGITIZE
 digitize/CbmStsDigitize.cxx
+digitize/CbmStsPhysics.cxx
 digitize/CbmStsSensorTypeDssd.cxx
 digitize/CbmStsSensorTypeDssdIdeal.cxx;
 digitize/CbmStsSensorTypeDssdReal.cxx;
