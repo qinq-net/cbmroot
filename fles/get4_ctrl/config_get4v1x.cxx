@@ -81,7 +81,7 @@ int Set24bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 
 //# ROC_GET4_RECEIVE_MASK_LSBS & ROC_GET4_RECEIVE_MASK_MSBS
 //  => Activate only the 4 first chips
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000B0C);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000BA4);
    initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
 
 //# ROC_GET4_SAMPLE_FALLING_EDGE_LSBS & ROC_GET4_SAMPLE_FALLING_EDGE_MSBS
@@ -166,7 +166,8 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 
 // ROC_GET4_RECEIVE_MASK_LSBS & ROC_GET4_RECEIVE_MASK_MSBS
 //  => Activate only the 4 first chips
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000B00);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000002BC);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000002BC);
    initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0xFFFFFFFF);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0xFFFFFFFF);
@@ -175,7 +176,8 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 // ROC_GET4_SAMPLE_FALLING_EDGE_LSBS & ROC_GET4_SAMPLE_FALLING_EDGE_MSBS
 //  => Change the edge on which the data from the GET4 are sampled
 //  => Can be necessary with some ROC v2 systems 
-   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x00000000);
+//   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x00000004);
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x000000B4);
    initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, 0x00000000);
 
 // ROC_GET4_SUPRESS_EPOCHS_LSBS & ROC_GET4_SUPRESS_EPOCHS_MSBS
@@ -185,7 +187,7 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
    initList.AddWrite(ROC_GET4_SUPRESS_EPOCHS_MSBS, 0x00000000);
 
 //# ROC_GET4_READOUT_MODE => 32 bits mode selection
-   initList.AddWrite(ROC_GET4_READOUT_MODE,               1);
+//   initList.AddWrite(ROC_GET4_READOUT_MODE,               1);
 
 // Define CMD-list 2 (Reset + Start-DAQ)
 // ROC_STOP_DAQ
@@ -231,7 +233,7 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 
    // ROC_GET4_CMD_TO_GET4 => Time over Threshold Configuration: 
    // => DI ON, AutoHeal ON, 2 bins resolution (100ps)
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_TOT   +      0x5 );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_TOT   +      0xD );
 
    // ROC_GET4_CMD_TO_GET4 => Time over Threshold Range: 
    // Bits maximum = 8 bits output (FF) * n bits resolution = FF (1 bin) to 7FF (8 bins)
@@ -240,7 +242,7 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_TOT_MAX +  0x1FF );
 
    // ROC_GET4_CMD_TO_GET4 => Set link speed to 156.25 MBit/s
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_LNK_RATE +   0x7 );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_LNK_RATE +   0x6 );
 
 // ROC_GET4_RECEIVE_CLK_CFG => Set link speed to 156.25 MBit/s
    initList.AddWrite(ROC_GET4_RECEIVE_CLK_CFG,           0x3);
@@ -258,6 +260,9 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 
    // ROC_GET4_CMD_TO_GET4 => Enable all channels
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_HIT_MASK          + 0x000000 );
+
+//# ROC_GET4_READOUT_MODE => 32 bits mode selection
+   initList.AddWrite(ROC_GET4_READOUT_MODE,               1);
 
    return conn.DoListSeq(nodeid, initList);
 }
