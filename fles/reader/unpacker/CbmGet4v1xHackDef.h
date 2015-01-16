@@ -440,7 +440,7 @@ namespace get4v1x {
          inline uint8_t   getGet4V10R24ErrorData()   const { return getField( 41, 7); }
 
          // ---------- Get4 v1.x 32b data access methods ----------------
-         inline uint8_t  getGet4V10R32ChipId()      const { return ( ( getSysMesType() )&0xF ); }
+         inline uint8_t  getGet4V10R32ChipId()      const { return getField(    6, 6); }
          inline uint8_t  getGet4V10R32MessageType() const { return getFieldBE( 46, 2); }
             // type 0 => Epoch message
          inline uint32_t getGet4V10R32EpochNumber() const { return getFieldBE( 17,24); }
