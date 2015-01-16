@@ -234,6 +234,9 @@ InitStatus CbmL1::Init()
       listMvdPts = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("MvdPoint") );
       listMvdDigiMatches = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("MvdDigiMatch") );
       listMvdHitMatches = L1_DYNAMIC_CAST<TClonesArray*>(  fManger->GetObject("MvdHitMatch") );
+      
+      if(!listMvdHitMatches)
+        std::cout << "No listMvdHitMatches provided, performance is not done correctly" << std::endl;
     }
   }
   else{

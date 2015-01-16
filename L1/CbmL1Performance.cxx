@@ -1543,7 +1543,7 @@ void CbmL1::InputPerformance()
     }
   } // sts
   
-  if( listMvdHits ){
+  if( listMvdHits && listMvdHitMatches){
     Int_t nEnt = listMvdHits->GetEntries();
     for (int j=0; j < nEnt; j++ ){
       CbmMvdHit *sh = L1_DYNAMIC_CAST<CbmMvdHit*>( listMvdHits->At(j) );
