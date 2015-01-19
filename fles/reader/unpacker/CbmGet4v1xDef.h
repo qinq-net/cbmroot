@@ -52,7 +52,7 @@ namespace get4v1x {
    const uint32_t kuCoarseOverflowTest = kuCoarseCounterSize / 2 ; // Limit for overflow check
 
    // Nominal bin size of NL are neglected
-   const double   kdBinSize     = kdClockCycleSize / Double_t(kuFineTime + 1);
+   const double   kdBinSize     = kdClockCycleSize / static_cast<double>(kuFineTime + 1);
    // Epoch Size in bins
    const uint32_t kuEpochInBins = kuFineTime + kuCoarseTime + 1;
    // Epoch Size in ps
