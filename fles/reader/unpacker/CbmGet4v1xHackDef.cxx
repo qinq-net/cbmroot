@@ -1,5 +1,8 @@
 #include "CbmGet4v1xHackDef.h"
 
+// Specific headers
+#include "CbmGet4v1xDef.h"
+
 // FAIRROOT headers
 #include "FairLogger.h"
 
@@ -570,7 +573,7 @@ void get4v1x::Message::printData(unsigned outType, unsigned kind, uint32_t epoch
 
                  switch(get4_32b_type)
                  {
-                    case 0: // epoch message
+                    case GET4_32B_EPOCH: // epoch message
                     {
                         uint32_t get4_32b_ep_epoch = getGet4V10R32EpochNumber();
                         uint32_t get4_32b_ep_sync  = getGet4V10R32SyncFlag();
@@ -586,7 +589,7 @@ void get4v1x::Message::printData(unsigned outType, unsigned kind, uint32_t epoch
                                 */
                         break;
                     }
-                    case 1: // slow control message
+                    case GET4_32B_SLCM: // slow control message
                     {
                         uint32_t get4_32b_sl_data = getGet4V10R32SlData();
                         uint32_t get4_32b_sl_type = getGet4V10R32SlType();
@@ -607,7 +610,7 @@ void get4v1x::Message::printData(unsigned outType, unsigned kind, uint32_t epoch
                         */
                         break;
                     }
-                    case 2: // error event
+                    case GET4_32B_ERROR: // error event
                     {
                         uint32_t get4_32b_er_code = getGet4V10R32ErrorData();
                         uint32_t get4_32b_er_unus = getGet4V10R32ErrorUnused();
@@ -628,7 +631,7 @@ void get4v1x::Message::printData(unsigned outType, unsigned kind, uint32_t epoch
                                 */
                         break;
                     }
-                    case 3: // data event
+                    case GET4_32B_DATA: // data event
                     {
                         uint32_t get4_32b_dat_tot  = getGet4V10R32HitTot();
                         uint32_t get4_32b_dat_ft   = getGet4V10R32HitFt();

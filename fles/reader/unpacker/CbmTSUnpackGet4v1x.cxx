@@ -9,16 +9,20 @@
 
 #include "CbmTSUnpackGet4v1x.h"
 
+// Specific headers
 //#include "CbmNxyterRawMessage.h"
 //#include "CbmNxyterRawSyncMessage.h"
+#include "CbmGet4v1xDef.h"
 
-#include "CbmGet4v1xHackDef.h"
-
+// FAIRROOT headers
 #include "FairLogger.h"
 #include "FairRootManager.h"
 
+// ROOT headers
+#include "TH2.h"
 #include "TClonesArray.h"
 
+// C++ std headers
 #include <iostream>
 #include <stdint.h>
 
@@ -38,7 +42,18 @@ CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
   : CbmTSUnpack(),
 	fbVerbose(kFALSE),
 	fiMode(0),
-   fiCurrEpoch(0)
+   fuNbRocs(0),
+   fuNbGet4(0),
+   fiCurrEpoch(0),
+   fhMessageTypePerRoc(0),
+   fhSysMessTypePerRoc(0),
+   fhGet4EpochFlags(0),
+   fhGet4EpochSyncDist(0),
+   fhGet4ChanDataCount(0),
+   fhGet4ChanDllStatus(0),
+   fhGet4ChanTotMap(0),
+   fhGet4ChanErrors(0),
+   fhGet4ChanSlowContM(0)
 //    fNxyterRaw(new TClonesArray("CbmNxyterRawMessage", 10)),
 //    fNxyterRawSync(new TClonesArray("CbmNxyterRawSyncMessage", 10))
 {
@@ -58,6 +73,13 @@ Bool_t CbmTSUnpackGet4v1x::Init()
   }
 //  ioman->Register("Get4RawMessage",       "GET4 raw data",      fGet4Raw, kTRUE);
 //  ioman->Register("NxyterRawSyncMessage", "GET4 raw sync data", fGet4RawSync, kTRUE);
+
+  if( 0 >= fuNbRocs || 0 >= fuNbGet4 )
+  {
+     LOG(ERROR) << "CbmTSUnpackGet4v1x::Init => Nb of ROCs or GET4s not defined!!! " << FairLogger::endl;
+     LOG(ERROR) << "Nb of ROCs:"<< fuNbRocs << " Nb of GET4s : " << fuNbGet4 << FairLogger::endl;
+     LOG(FATAL) << "Please use the functions SetRocNb and/or SetGet4Nb before running!!" << FairLogger::endl;
+  }
 
   InitMonitorHistograms();
 
@@ -90,19 +112,31 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
          const uint16_t* ROC_ID_pointer = reinterpret_cast<const uint16_t*>(&msContent_shifted[2]);
          cur_DTM_header.ROC_ID = *ROC_ID_pointer;
 
-         // Debug printout
-         cur_DTM_header.Dump();
-
          uint32_t packageSize = static_cast<uint32_t>(cur_DTM_header.packet_length*2+4);
 
          // Loop over messages
          local_offset = 4;
          if( 0 == fiMode || kTRUE == fbVerbose )
          {
+            // Debug printout
+            cur_DTM_header.Dump();
+            LOG(INFO)<<" Package Size: "<<packageSize<<FairLogger::endl;
             while (local_offset < packageSize)
             {
+               // FIXME: This is here just until the bytes order in the ums is found
+               // Then it should be removed (Q? is big vs small endian)
+               this->Print6bytesMessage(&msContent_shifted[local_offset]);
+
                get4v1x::Message mess;
-               mess.setData( msContent_shifted[0] );
+               uint64_t dataContent =
+                       ( static_cast<uint64_t>( cur_DTM_header.ROC_ID                & 0xFFFF) << 48)
+                     + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 0] ) & 0xFF) << 40)
+                     + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 1] ) & 0xFF) << 32)
+                     + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 2] ) & 0xFF) << 24)
+                     + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 3] ) & 0xFF) << 16)
+                     + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 4] ) & 0xFF) <<  8)
+                     + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 5] ) & 0xFF));
+               mess.setData( dataContent );
                mess.printDataLog();
 
                local_offset += 6; // next message
@@ -120,6 +154,45 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
                // Monitor mode, fill histograms
                while (local_offset < packageSize)
                {
+                  get4v1x::Message mess;
+                  uint64_t dataContent =
+                          ( static_cast<uint64_t>( cur_DTM_header.ROC_ID                & 0xFFFF) << 48)
+                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 0] ) & 0xFF) << 40)
+                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 1] ) & 0xFF) << 32)
+                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 2] ) & 0xFF) << 24)
+                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 3] ) & 0xFF) << 16)
+                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 4] ) & 0xFF) <<  8)
+                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 5] ) & 0xFF));
+                  mess.setData( dataContent );
+
+                  fhMessageTypePerRoc->Fill( cur_DTM_header.ROC_ID, mess.getMessageType() );
+
+                  switch( mess.getMessageType() )
+                  {
+                     case get4v1x::MSG_HIT:
+                        // This is NXYTER in a GET4 unpacker => ignore
+                        break;
+                     case get4v1x::MSG_EPOCH:
+                        this->MonitorMessage_epoch(mess, msDescriptor.eq_id);
+                        break;
+                     case get4v1x::MSG_SYNC:
+                        this->MonitorMessage_sync(mess, msDescriptor.eq_id);
+                        break;
+                     case get4v1x::MSG_AUX:
+                        this->MonitorMessage_aux(mess, msDescriptor.eq_id);
+                        break;
+                     case get4v1x::MSG_EPOCH2:
+                        this->MonitorMessage_epoch2(mess, msDescriptor.eq_id);
+                        break;
+                     case get4v1x::MSG_GET4:
+                        this->MonitorMessage_get4(mess, msDescriptor.eq_id);
+                        break;
+                     case get4v1x::MSG_SYS:
+                        this->MonitorMessage_sys(mess, msDescriptor.eq_id);
+                        break;
+                     default:
+                        break;
+                  } // switch( mess.getMessageType() )
                   local_offset += 6; // next message
                } // while (local_offset < packageSize)
                break;
@@ -129,41 +202,52 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
                // Normal mode, unpack data and fill TClonesArray of CbmRawMessage
                while (local_offset < packageSize)
                {
-                  /*
-                  // Extract the message type to define which procedure to apply to the 6-bytes message
-                  uint8_t messageType = (msContent_shifted[local_offset+5] >> 0) & 0x07;   // 3 bits
+                  get4v1x::Message mess;
+                  uint64_t dataContent =
+                          ( static_cast<uint64_t>( cur_DTM_header.ROC_ID                & 0xFFFF) << 48)
+                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 0] ) & 0xFF) << 40)
+                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 1] ) & 0xFF) << 32)
+                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 2] ) & 0xFF) << 24)
+                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 3] ) & 0xFF) << 16)
+                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 4] ) & 0xFF) <<  8)
+                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 5] ) & 0xFF));
+                  mess.setData( dataContent );
 
-                  this->Print6bytesMessage(&msContent_shifted[local_offset]);
+                  fhMessageTypePerRoc->Fill( cur_DTM_header.ROC_ID, mess.getMessageType() );
+                  switch( mess.getMessageType() )
+                  {
+                     case get4v1x::MSG_HIT:
+                        // This is NXYTER in a GET4 unpacker => ignore
+                        break;
+                     case get4v1x::MSG_EPOCH:
+                        this->ProcessMessage_epoch(mess, msDescriptor.eq_id);
+                        break;
+                     case get4v1x::MSG_SYNC:
+                        this->ProcessMessage_sync(mess, msDescriptor.eq_id);
+                        break;
+                     case get4v1x::MSG_AUX:
+                        this->ProcessMessage_aux(mess, msDescriptor.eq_id);
+                        break;
+                     case get4v1x::MSG_EPOCH2:
+                        this->ProcessMessage_epoch2(mess, msDescriptor.eq_id);
+                        break;
+                     case get4v1x::MSG_GET4:
+                        this->ProcessMessage_get4(mess, msDescriptor.eq_id);
+                        break;
+                     case get4v1x::MSG_SYS:
+                        this->ProcessMessage_sys(mess, msDescriptor.eq_id);
+                        break;
+                     default:
+                        break;
+                  } // switch( mess.getMessageType() )
 
-                  switch(messageType) {
-                  case MSG_HIT:
-                     // This is NXYTER => ignore
-                     break;
-                  case MSG_EPOCH:
-                     this->ProcessMessage_epoch(&msContent_shifted[local_offset],
-                                                msDescriptor.eq_id, cur_DTM_header.ROC_ID);
-                     break;
-                  case MSG_SYNC:
-                     this->ProcessMessage_sync(&msContent_shifted[local_offset],
-                                                msDescriptor.eq_id, cur_DTM_header.ROC_ID);
-                     break;
-                  case MSG_AUX:
-                     this->ProcessMessage_aux(&msContent_shifted[local_offset],
-                                               msDescriptor.eq_id, cur_DTM_header.ROC_ID);
-                     break;
-                  case MSG_SYS:
-                     this->ProcessMessage_sys(&msContent_shifted[local_offset],
-                                               msDescriptor.eq_id, cur_DTM_header.ROC_ID);
-                     break;
-                  }
-                   */
                   local_offset += 6; // next message
                } // while (local_offset < packageSize)
                break;
             } // case 2
             default:
                break;
-         }
+         } // switch(fiMode)
 
          offset += packageSize;
 
@@ -213,6 +297,106 @@ void CbmTSUnpackGet4v1x::Print6bytesMessage(const uint8_t* msContent_shifted)
 
 void CbmTSUnpackGet4v1x::InitMonitorHistograms()
 {
+   fhMessageTypePerRoc = new TH2I("hMessageTypePerRoc",
+         "Nb of message for each type per ROC; ROC #; Type",
+         fuNbRocs, -0.5, fuNbRocs -0.5,
+         16, -0.5, 15.5);
+   fhMessageTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::MSG_NOP,      "NOP");
+   fhMessageTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::MSG_HIT,      "HIT");
+   fhMessageTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::MSG_EPOCH,    "EPOCH");
+   fhMessageTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::MSG_SYNC,     "SYNC");
+   fhMessageTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::MSG_AUX,      "AUX");
+   fhMessageTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::MSG_EPOCH2,   "EPOCH2");
+   fhMessageTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::MSG_GET4,     "GET4");
+   fhMessageTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::MSG_SYS,      "SYS");
+   fhMessageTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::MSG_GET4_SLC, "MSG_GET4_SLC");
+   fhMessageTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::MSG_GET4_32B, "MSG_GET4_32B");
+   fhMessageTypePerRoc->GetYaxis()->SetBinLabel(1 + 15, "GET4 Hack 32B");
+
+   fhRocSyncTypePerRoc = new TH2I("hRocSyncTypePerRoc",
+         "Nb of message for each SYNC type per ROC; ROC #; SYNC Type",
+         fuNbRocs, -0.5, fuNbRocs -0.5,
+         get4v1x::kuMaxSync, -0.5, get4v1x::kuMaxSync - 0.5);
+
+   fhRocAuxTypePerRoc = new TH2I("hRocAuxTypePerRoc",
+         "Nb of message for each AUX type per ROC; ROC #; AUX Type",
+         fuNbRocs, -0.5, fuNbRocs -0.5,
+         get4v1x::kuMaxAux, -0.5, get4v1x::kuMaxAux - 0.5);
+
+   fhSysMessTypePerRoc = new TH2I("hSysMessTypePerRoc",
+         "Nb of system message for each type per ROC; ROC #; System Type",
+         fuNbRocs, -0.5, fuNbRocs -0.5,
+         16, -0.5, 15.5);
+   fhSysMessTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::SYSMSG_DAQ_START,       "DAQ START");
+   fhSysMessTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::SYSMSG_DAQ_FINISH,      "DAQ FINISH");
+   fhSysMessTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::SYSMSG_NX_PARITY,       "NX PARITY");
+   fhSysMessTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::SYSMSG_SYNC_PARITY,     "SYNC PARITY");
+   fhSysMessTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::SYSMSG_DAQ_RESUME,      "DAQ RESUME");
+   fhSysMessTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::SYSMSG_FIFO_RESET,      "FIFO RESET");
+   fhSysMessTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::SYSMSG_USER,            "USER");
+   fhSysMessTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::SYSMSG_PCTIME,          "PCTIME");
+   fhSysMessTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::SYSMSG_ADC,             "ADC");
+   fhSysMessTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::SYSMSG_PACKETLOST,      "PACKET LOST");
+   fhSysMessTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::SYSMSG_GET4_EVENT,      "GET4 ERROR");
+   fhSysMessTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::SYSMSG_CLOSYSYNC_ERROR, "CLOSYSYNC ERROR");
+   fhSysMessTypePerRoc->GetYaxis()->SetBinLabel(1 + get4v1x::SYSMSG_TS156_SYNC,      "TS156 SYNC");
+   fhSysMessTypePerRoc->GetYaxis()->SetBinLabel(1 + 15, "GET4 Hack 32B");
+
+   fhGet4EpochFlags    = new TH2I("hGet4EpochFlags",
+         "Number of epochs with corresponding flag set per GET4; GET4 #;",
+         fuNbGet4, -0.5, fuNbGet4 -0.5,
+         2, -0.5, 1.5);
+
+   fhGet4EpochSyncDist = new TH2I("hGet4EpochSyncDist",
+         "Distance between epochs with SYNC flag for each GET4; SYNC distance [epochs]; Epochs",
+         fuNbGet4, -0.5, fuNbGet4 -0.5,
+         2*get4v1x::kuSyncCycleSzGet4, 0.5, 2*get4v1x::kuSyncCycleSzGet4 -0.5);
+
+   fhGet4ChanDataCount = new TH1I("hGet4ChanDataCount",
+         "Data Messages per GET4 channel; GET4 channel #; Data Count",
+         fuNbGet4*get4v1x::kuChanPerGet4, -0.5, fuNbGet4*get4v1x::kuChanPerGet4 -0.5);
+
+   fhGet4ChanDllStatus = new TH2I("hGet4ChanDllStatus",
+         "DLL flag status per GET4 channel; GET4 channel #; DLL Flag value Count",
+         fuNbGet4*get4v1x::kuChanPerGet4 , -0.5, fuNbGet4*get4v1x::kuChanPerGet4 -0.5,
+         2, -0.5, 1.5);
+
+   fhGet4ChanTotMap    = new TH2I("hGet4ChanTotMap",
+         "TOT values per GET4 channel; GET4 channel #; TOT value [ns]",
+         fuNbGet4*get4v1x::kuChanPerGet4, -0.5, fuNbGet4*get4v1x::kuChanPerGet4 -0.5,
+         50, 0.0, 50.0);
+
+   fhGet4ChanErrors    = new TH2I("hGet4ChanErrors",
+         "Error messages per GET4 channel; GET4 channel #; Error",
+         fuNbGet4*get4v1x::kuChanPerGet4*2, -0.5, fuNbGet4*get4v1x::kuChanPerGet4 -0.5,
+         32, -0.5, 31.5);
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(1,  "0x00: Readout Init    ");
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(2,  "0x01: Sync            ");
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(3,  "0x02: Epoch count sync");
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(4,  "0x03: Epoch           ");
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(5,  "0x04: FIFO Write      ");
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(6,  "0x05: Lost event      ");
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(7,  "0x06: Channel state   ");
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(8,  "0x07: Token Ring state");
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(9,  "0x08: Token           ");
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(10, "0x09: Error Readout   ");
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(11, "0x0a: SPI             ");
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(12, "0x0b: DLL Lock error  "); // <- From GET4 v1.2
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(13, "0x0c: DLL Reset invoc."); // <- From GET4 v1.2
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(14, "0x11: Overwrite       ");
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(15, "0x12: ToT out of range");
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(16, "0x13: Event Discarded ");
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(17, "0x7f: Unknown         ");
+   fhGet4ChanErrors->GetYaxis()->SetBinLabel(18, "Corrupt error or unsupported yet");
+
+   fhGet4ChanSlowContM = new TH2I("hGet4ChanSlowContM",
+         "Slow control messages per GET4 channel; GET4 channel #; Type",
+         fuNbGet4*get4v1x::kuChanPerGet4*2, -0.5, fuNbGet4*get4v1x::kuChanPerGet4 -0.5,
+         4, -0.5, 3.5);
+   fhGet4ChanSlowContM->GetYaxis()->SetBinLabel(1,  "0: Scaler event            ");
+   fhGet4ChanSlowContM->GetYaxis()->SetBinLabel(2,  "1: Dead time counter event ");
+   fhGet4ChanSlowContM->GetYaxis()->SetBinLabel(3,  "2: SPI receiver data        ");
+   fhGet4ChanSlowContM->GetYaxis()->SetBinLabel(4,  "3: Start message/Hamming Er.");
 
 }
 void CbmTSUnpackGet4v1x::FillMonitorHistograms()
@@ -227,103 +411,467 @@ void CbmTSUnpackGet4v1x::DeleteMonitorHistograms()
 {
 
 }
+void CbmTSUnpackGet4v1x::MonitorMessage_epoch(  get4v1x::Message mess, uint16_t EqID)
+{
+   // ROC epoch message: 250 MHz clock for now
+   // TODO: check compatibility when ROC clock changed to 200 MHz
+   uint8_t  cRocId    = mess.getRocNumber();
+}
+void CbmTSUnpackGet4v1x::MonitorMessage_sync(   get4v1x::Message mess, uint16_t EqID)
+{
+   // ROC sync message: TS in 250 MHz clock for now
+   // TODO: check compatibility when ROC clock changed to 200 MHz
+   uint8_t  cRocId    = mess.getRocNumber();
+   fhRocSyncTypePerRoc->Fill( cRocId, mess.getSyncChNum() );
+}
+void CbmTSUnpackGet4v1x::MonitorMessage_aux(    get4v1x::Message mess, uint16_t EqID)
+{
+   // ROC aux message: TS in 250 MHz clock for now
+   // TODO: check compatibility when ROC clock changed to 200 MHz
+   uint8_t  cRocId    = mess.getRocNumber();
+   fhRocAuxTypePerRoc->Fill( cRocId, mess.getAuxChNum() );
+}
+void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t EqID)
+{
+   // GET4 v1.x epoch message (24b only for now)
+   // TODO: check compatibility when 32b format without hack ready
+}
+void CbmTSUnpackGet4v1x::MonitorMessage_get4(   get4v1x::Message mess, uint16_t EqID)
+{
+   // GET4 v1.x data message (24b only for now)
+   // TODO: check compatibility when 32b format without hack ready
+}
+void CbmTSUnpackGet4v1x::MonitorMessage_sys(    get4v1x::Message mess, uint16_t EqID)
+{
+   uint8_t  cRocId    = mess.getRocNumber();
+   fhSysMessTypePerRoc->Fill( cRocId, mess.getSysMesType() );
+   switch( mess.getSysMesType() )
+   {
+      case get4v1x::SYSMSG_DAQ_START:
+      {
+         break;
+      } // case get4v1x::SYSMSG_DAQ_START
+      case get4v1x::SYSMSG_DAQ_FINISH:
+      {
+         break;
+      } // case get4v1x::SYSMSG_DAQ_FINISH
+      case get4v1x::SYSMSG_NX_PARITY:
+      case get4v1x::SYSMSG_ADC:
+      case get4v1x::SYSMSG_PCTIME:
+      {
+         // NXYTER related => don't care in this unpacker
+         break;
+      } // case get4v1x::SYSMSG_NX_PARITY
+      case get4v1x::SYSMSG_SYNC_PARITY:
+      {
+         break;
+      } // case get4v1x::SYSMSG_SYNC_PARITY
+      case get4v1x::SYSMSG_DAQ_RESUME:
+      {
+         break;
+      } // case get4v1x::SYSMSG_DAQ_RESUME
+      case get4v1x::SYSMSG_FIFO_RESET:
+      {
+         break;
+      } // case get4v1x::SYSMSG_FIFO_RESET
+      case get4v1x::SYSMSG_USER:
+      {
+         break;
+      } // case get4v1x::SYSMSG_USER
+      case get4v1x::SYSMSG_PACKETLOST:
+      {
+         break;
+      } // case get4v1x::SYSMSG_PACKETLOST
+      case get4v1x::SYSMSG_GET4_EVENT:
+      {
+         // GET4 v1.x error message (24b only for now)
+         // TODO: check compatibility when 32b format without hack ready
+         break;
+      } // case get4v1x::SYSMSG_GET4_EVENT
+      case get4v1x::SYSMSG_CLOSYSYNC_ERROR:
+      {
+         break;
+      } // case get4v1x::SYSMSG_CLOSYSYNC_ERROR
+      case get4v1x::SYSMSG_TS156_SYNC:
+      {
+         break;
+      } // case get4v1x::SYSMSG_TS156_SYNC
+      case get4v1x::SYSMSG_GET4V1_32BIT_0:
+      case get4v1x::SYSMSG_GET4V1_32BIT_1:
+      case get4v1x::SYSMSG_GET4V1_32BIT_2:
+      case get4v1x::SYSMSG_GET4V1_32BIT_3:
+      case get4v1x::SYSMSG_GET4V1_32BIT_4:
+      case get4v1x::SYSMSG_GET4V1_32BIT_5:
+      case get4v1x::SYSMSG_GET4V1_32BIT_6:
+      case get4v1x::SYSMSG_GET4V1_32BIT_7:
+      case get4v1x::SYSMSG_GET4V1_32BIT_8:
+      case get4v1x::SYSMSG_GET4V1_32BIT_9:
+      case get4v1x::SYSMSG_GET4V1_32BIT_10:
+      case get4v1x::SYSMSG_GET4V1_32BIT_11:
+      case get4v1x::SYSMSG_GET4V1_32BIT_12:
+      case get4v1x::SYSMSG_GET4V1_32BIT_13:
+      case get4v1x::SYSMSG_GET4V1_32BIT_14:
+      case get4v1x::SYSMSG_GET4V1_32BIT_15:
+      {
+         // GET4 v1.x 32b raw message using hack
+         fhMessageTypePerRoc->Fill( cRocId, 15 );
+         MonitorMessage_Get4v1( mess, EqID);
+         break;
+      } // case get4v1x::SYSMSG_TS156_SYNC
+      default:
+      {
+         if( kTRUE == fbVerbose )
+            LOG(WARNING)<<"CbmTSUnpackGet4v1x::MonitorMessage_sys => Unknown sysMess type ignored: "
+                        <<mess.getSysMesType()<<FairLogger::endl;
+         break;
+      } // default:
+   } // switch( mess.getSysMesType() )
+}
+void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t EqID)
+{
+   // GET4 v1.x 32b raw message using hack
+   uint8_t  cRocId    = mess.getRocNumber();
+   uint8_t  cChipId   = mess.getGet4V10R32ChipId();
+   uint8_t  cMessType = mess.getGet4V10R32MessageType();
+
+   if( fuNbGet4 <= cChipId + get4v1x::kuMaxGet4PerRoc*cRocId )
+   {
+      if( kTRUE == fbVerbose )
+         LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_Get4v1 => Ignored message with ChipId above limit!"
+                  <<" ChipId: "<<cChipId
+                  <<" RocId: " <<cRocId
+                  <<" Limit: " <<fuNbGet4<<FairLogger::endl;
+   } // if( fuNbGet4 <= cChipId + kuMaxGet4PerRoc*mess.getRocNumber() )
+
+   switch( cMessType )
+   {
+      case get4v1x::GET4_32B_EPOCH: // => Epoch message
+      {
+         break;
+      } // case get4v1x::GET4_32B_EPOCH
+      case get4v1x::GET4_32B_SLCM:  // => Slow control
+      {
+         Double_t dFullChId =
+               get4v1x::kuChanPerGet4*2*( cChipId + get4v1x::kuMaxGet4PerRoc*cRocId )
+               + mess.getGet4V10R32SlChan()
+               + 0.5*mess.getGet4V10R32SlEdge();
+         fhGet4ChanSlowContM->Fill( dFullChId, mess.getGet4V10R32SlType() );
+         break;
+      } // case get4v1x::GET4_32B_SLCM
+      case get4v1x::GET4_32B_ERROR: // => Error message
+      {
+         Double_t dFullChId =
+               get4v1x::kuChanPerGet4*2*( cChipId + get4v1x::kuMaxGet4PerRoc*cRocId )
+               + mess.getGet4V10R32ErrorChan()
+               + 0.5*mess.getGet4V10R32ErrorEdge();
+         switch( mess.getGet4V10R32ErrorData() )
+         {
+            case get4v1x::GET4_V1X_ERR_READ_INIT:
+               fhGet4ChanErrors->Fill( dFullChId, 0);
+               break;
+            case get4v1x::GET4_V1X_ERR_SYNC:
+               fhGet4ChanErrors->Fill( dFullChId, 1);
+               break;
+            case get4v1x::GET4_V1X_ERR_EP_CNT_SYNC:
+               fhGet4ChanErrors->Fill( dFullChId, 2);
+               break;
+            case get4v1x::GET4_V1X_ERR_EP:
+               fhGet4ChanErrors->Fill( dFullChId, 3);
+               break;
+            case get4v1x::GET4_V1X_ERR_FIFO_WRITE:
+               fhGet4ChanErrors->Fill( dFullChId, 4);
+               break;
+            case get4v1x::GET4_V1X_ERR_LOST_EVT:
+               fhGet4ChanErrors->Fill( dFullChId, 5);
+               break;
+            case get4v1x::GET4_V1X_ERR_CHAN_STATE:
+               fhGet4ChanErrors->Fill( dFullChId, 6);
+               break;
+            case get4v1x::GET4_V1X_ERR_TOK_RING_ST:
+               fhGet4ChanErrors->Fill( dFullChId, 7);
+               break;
+            case get4v1x::GET4_V1X_ERR_TOKEN:
+               fhGet4ChanErrors->Fill( dFullChId, 8);
+               break;
+            case get4v1x::GET4_V1X_ERR_READOUT_ERR:
+               fhGet4ChanErrors->Fill( dFullChId, 9);
+               break;
+            case get4v1x::GET4_V1X_ERR_SPI:
+               fhGet4ChanErrors->Fill( dFullChId, 10);
+               break;
+            case get4v1x::GET4_V1X_ERR_DLL_LOCK:
+               fhGet4ChanErrors->Fill( dFullChId, 11);
+               break;
+            case get4v1x::GET4_V1X_ERR_DLL_RESET:
+               fhGet4ChanErrors->Fill( dFullChId, 12);
+               break;
+            case get4v1x::GET4_V1X_ERR_TOT_OVERWRT:
+               fhGet4ChanErrors->Fill( dFullChId, 13);
+               break;
+            case get4v1x::GET4_V1X_ERR_TOT_RANGE:
+               fhGet4ChanErrors->Fill( dFullChId, 14);
+               break;
+            case get4v1x::GET4_V1X_ERR_EVT_DISCARD:
+               fhGet4ChanErrors->Fill( dFullChId, 15);
+               break;
+            case get4v1x::GET4_V1X_ERR_UNKNOWN:
+               fhGet4ChanErrors->Fill( dFullChId, 16);
+               break;
+            default: // Corrupt error or not yet supported error
+               fhGet4ChanErrors->Fill( dFullChId, 17);
+               break;
+         } // switch( mess.getGet4V10R32ErrorData() )
+         break;
+      } // case get4v1x::GET4_32B_ERROR
+      case get4v1x::GET4_32B_DATA:  // => Hit Data
+      {
+         UInt_t uFullChId =
+               get4v1x::kuChanPerGet4*( cChipId + get4v1x::kuMaxGet4PerRoc*cRocId )
+               + mess.getGet4V10R32HitChan();
+         fhGet4ChanDataCount->Fill( uFullChId );
+         fhGet4ChanDllStatus->Fill( uFullChId, mess.getGet4V10R32HitDllFlag() );
+         fhGet4ChanTotMap->Fill(    uFullChId, mess.getGet4V10R32HitTot() );
+
+         break;
+      } // case get4v1x::GET4_32B_DATA
+   } // switch( cMessType )
+
+}
 //**********************************************/
 
-/*
-// Missed event (currently skipped), epoch counter value, ROC id, messageType=2
-// [MMMMMMMM][EEEEEEEE][EEEEEEEE][EEEEEEEE][EEEEEEEE][--RRR010]
-void CbmTSUnpackGet4v1x::ProcessMessage_epoch(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID)
+//************ Processing functions ************/
+void CbmTSUnpackGet4v1x::ProcessMessage_epoch(  get4v1x::Message mess, uint16_t EqID)
 {
-   Int_t messageType = (msContent_shifted[5] >> 0) & 0x07;          // 3 bits
-
-   fiCurrEpoch = ((msContent_shifted[4] >> 0) & 0xFF)                // 8 bits
-             + (((msContent_shifted[3] >> 0) & 0xFF) << 8)          // 8 bits
-             + (((msContent_shifted[2] >> 0) & 0xFF) << 16)         // 8 bits
-             + (((msContent_shifted[1] >> 0) & 0xFF) << 24);        // 8 bits
-
-   // Debug printout
-   if( kTRUE == fbVerbose )
-   	   printf("messType=%d\tepoch=0x%08X\n", messageType, fiCurrEpoch);
-
+   // ROC epoch message: 250 MHz clock for now
+   // TODO: check compatibility when ROC clock changed to 200 MHz
 }
-
-
-// Status, Data, Timestamp, syncChannel, ROC id, messageType=3
-// [SSDDDDDD][DDDDDDDD][DDDDDDDD][DDTTTTTT][TTTTTTTT][CCRRR011]
-void CbmTSUnpackGet4v1x::ProcessMessage_sync(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID)
+void CbmTSUnpackGet4v1x::ProcessMessage_sync(   get4v1x::Message mess, uint16_t EqID)
 {
-   Int_t messageType, rocID, syncCh, timestamp, data, status;
-
-   messageType = (msContent_shifted[5] >> 0) & 0x07;          // 3 bits
-   rocID       = (msContent_shifted[5] >> 3) & 0x07;          // 3 bits
-   syncCh      = (msContent_shifted[5] >> 6) & 0x03;          // 2 bits
-   timestamp  = ((msContent_shifted[4] >> 0) & 0xFF)          // 8 bits
-             + (((msContent_shifted[3] >> 0) & 0x3F) << 8);   // 6 bits
-   data       = ((msContent_shifted[3] >> 6) & 0x03)          // 2 bits
-             + (((msContent_shifted[2] >> 0) & 0xFF) << 2)    // 8 bits
-             + (((msContent_shifted[1] >> 0) & 0xFF) << 10)   // 8 bits
-             + (((msContent_shifted[0] >> 0) & 0x3F) << 18);  // 6 bits
-   status      = (msContent_shifted[0] >> 6) & 0x03;          // 2 bits
-
-   new( (*fNxyterRawSync)[fNxyterRawSync->GetEntriesFast()] )
-   CbmNxyterRawSyncMessage(
-         EqID,
-         RocID*4 + syncCh,  //TODO check
-         syncCh,
-         fiCurrEpoch, //              - cur_hit_data.NxLastEpoch,  //TODO subtract here or in GetFullTime() method ?!
-         timestamp,
-         status,
-         data);
-
-   if( kTRUE == fbVerbose )
-      printf("messType=%d\tROC=0x%01X\tsyncCh=0x%01X\tTs=0x%04X\tdata=0x%08X\tstat=0x%01X\n",
-         messageType, rocID, syncCh, timestamp, data, status);
-
+   // ROC sync message: TS in 250 MHz clock for now
+   // TODO: check compatibility when ROC clock changed to 200 MHz
+   uint8_t  cRocId    = mess.getRocNumber();
+   fhRocSyncTypePerRoc->Fill( cRocId, mess.getSyncChNum() );
 }
-
-// Pileup flag, edge type, timestamp, channel, ROC id, messageType=4
-// [--------][--------][---PETTT][TTTTTTTT][TTTCCCCC][CCRRR100]
-void CbmTSUnpackGet4v1x::ProcessMessage_aux(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID)
+void CbmTSUnpackGet4v1x::ProcessMessage_aux(    get4v1x::Message mess, uint16_t EqID)
 {
-   Int_t messageType, rocID, channel, timestamp;
-   Bool_t edgeType, pileUp;
-
-   messageType = (msContent_shifted[5] >> 0) & 0x07;          // 3 bits
-   rocID       = (msContent_shifted[5] >> 3) & 0x07;          // 3 bits
-   channel    = ((msContent_shifted[5] >> 6) & 0x03)          // 2 bits
-             + (((msContent_shifted[4] >> 0) & 0x1F) << 2);   // 5 bits
-
-   timestamp  = ((msContent_shifted[4] >> 5) & 0x07)          // 3 bits
-             + (((msContent_shifted[3] >> 0) & 0xFF) << 3)    // 8 bits
-             + (((msContent_shifted[2] >> 0) & 0x07) << 11);  // 3 bit
-
-   edgeType    = (msContent_shifted[2] >> 3) & 0x01;          // 1 bit
-   pileUp      = (msContent_shifted[2] >> 4) & 0x01;          // 1 bit
-
-   //TODO put the unpacked data into some output array
-
-   if( kTRUE == fbVerbose )
-      printf("messType=%d\tROC=0x%01X\tCh=0x%02X\tTs=0x%04X\tedgeType=%d\tpileUp=%d\n",
-         messageType, rocID, channel, timestamp, edgeType, pileUp);
-
+   // ROC aux message: TS in 250 MHz clock for now
+   // TODO: check compatibility when ROC clock changed to 200 MHz
+   uint8_t  cRocId    = mess.getRocNumber();
+   fhRocSyncTypePerRoc->Fill( cRocId, mess.getSyncChNum() );
 }
-
-// First four bytes are yet not unpacked, system message type, NX id, ROC id, messageType=7
-// [--------][--------][--------][--------][TTTTTTTT][NNRRR111]
-void CbmTSUnpackGet4v1x::ProcessMessage_sys(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID)
+void CbmTSUnpackGet4v1x::ProcessMessage_epoch2( get4v1x::Message mess, uint16_t EqID)
 {
-   Int_t messageType, rocID, nxID, sysMessType;
-
-   messageType = (msContent_shifted[5] >> 0) & 0x07;          // 3 bits
-   rocID       = (msContent_shifted[5] >> 3) & 0x07;          // 3 bits
-   nxID        = (msContent_shifted[5] >> 6) & 0x03;          // 2 bits
-   sysMessType = (msContent_shifted[4] >> 0) & 0xFF;          // 8 bits
-
-   //TODO put the unpacked data into some output array
-
+   // GET4 v1.x epoch message (24b only for now)
+   // TODO: check compatibility when 32b format without hack ready
+   uint8_t  cRocId    = mess.getRocNumber();
    if( kTRUE == fbVerbose )
-      printf("messType=%d\tROC=0x%01X\tNX=0x%02X\tsysMessType=%02X\n",
-         messageType, rocID, nxID, sysMessType);
+      LOG(INFO)<<"CbmTSUnpackGet4v1x::ProcessMessage_epoch2 => Found a GET4 24b message: ignore it"
+               <<FairLogger::endl;
 }
-*/
+void CbmTSUnpackGet4v1x::ProcessMessage_get4(   get4v1x::Message mess, uint16_t EqID)
+{
+   // GET4 v1.x data message (24b only for now)
+   // TODO: check compatibility when 32b format without hack ready
+   uint8_t  cRocId    = mess.getRocNumber();
+   if( kTRUE == fbVerbose )
+      LOG(INFO)<<"CbmTSUnpackGet4v1x::ProcessMessage_get4   => Found a GET4 24b message: ignore it"
+               <<FairLogger::endl;
+}
+void CbmTSUnpackGet4v1x::ProcessMessage_sys(    get4v1x::Message mess, uint16_t EqID)
+{
+   uint8_t  cRocId    = mess.getRocNumber();
+   fhSysMessTypePerRoc->Fill( cRocId, mess.getSysMesType() );
+   switch( mess.getSysMesType() )
+   {
+      case get4v1x::SYSMSG_DAQ_START:
+      {
+         break;
+      } // case get4v1x::SYSMSG_DAQ_START
+      case get4v1x::SYSMSG_DAQ_FINISH:
+      {
+         break;
+      } // case get4v1x::SYSMSG_DAQ_FINISH
+      case get4v1x::SYSMSG_NX_PARITY:
+      case get4v1x::SYSMSG_ADC:
+      case get4v1x::SYSMSG_PCTIME:
+      {
+         // NXYTER related => don't care in this unpacker
+         break;
+      } // case get4v1x::SYSMSG_NX_PARITY
+      case get4v1x::SYSMSG_SYNC_PARITY:
+      {
+         break;
+      } // case get4v1x::SYSMSG_SYNC_PARITY
+      case get4v1x::SYSMSG_DAQ_RESUME:
+      {
+         break;
+      } // case get4v1x::SYSMSG_DAQ_RESUME
+      case get4v1x::SYSMSG_FIFO_RESET:
+      {
+         break;
+      } // case get4v1x::SYSMSG_FIFO_RESET
+      case get4v1x::SYSMSG_USER:
+      {
+         break;
+      } // case get4v1x::SYSMSG_USER
+      case get4v1x::SYSMSG_PACKETLOST:
+      {
+         break;
+      } // case get4v1x::SYSMSG_PACKETLOST
+      case get4v1x::SYSMSG_GET4_EVENT:
+      {
+         // GET4 v1.x error message (24b only for now)
+         // TODO: check compatibility when 32b format without hack ready
+         break;
+      } // case get4v1x::SYSMSG_GET4_EVENT
+      case get4v1x::SYSMSG_CLOSYSYNC_ERROR:
+      {
+         // GET4 v1.x error message (24b only for now)
+         // TODO: check compatibility when 32b format without hack ready
+         break;
+      } // case get4v1x::SYSMSG_CLOSYSYNC_ERROR
+      case get4v1x::SYSMSG_TS156_SYNC:
+      {
+         break;
+      } // case get4v1x::SYSMSG_TS156_SYNC
+      case get4v1x::SYSMSG_GET4V1_32BIT_0:
+      case get4v1x::SYSMSG_GET4V1_32BIT_1:
+      case get4v1x::SYSMSG_GET4V1_32BIT_2:
+      case get4v1x::SYSMSG_GET4V1_32BIT_3:
+      case get4v1x::SYSMSG_GET4V1_32BIT_4:
+      case get4v1x::SYSMSG_GET4V1_32BIT_5:
+      case get4v1x::SYSMSG_GET4V1_32BIT_6:
+      case get4v1x::SYSMSG_GET4V1_32BIT_7:
+      case get4v1x::SYSMSG_GET4V1_32BIT_8:
+      case get4v1x::SYSMSG_GET4V1_32BIT_9:
+      case get4v1x::SYSMSG_GET4V1_32BIT_10:
+      case get4v1x::SYSMSG_GET4V1_32BIT_11:
+      case get4v1x::SYSMSG_GET4V1_32BIT_12:
+      case get4v1x::SYSMSG_GET4V1_32BIT_13:
+      case get4v1x::SYSMSG_GET4V1_32BIT_14:
+      case get4v1x::SYSMSG_GET4V1_32BIT_15:
+      {
+         // GET4 v1.x 32b raw message using hack
+         fhMessageTypePerRoc->Fill( cRocId, 15 );
+         ProcessMessage_Get4v1( mess, EqID);
+         break;
+      } // case get4v1x::SYSMSG_TS156_SYNC
+      default:
+      {
+         if( kTRUE == fbVerbose )
+            LOG(WARNING)<<"CbmTSUnpackGet4v1x::ProcessMessage_sys => Unknown sysMess type ignored: "
+                        <<mess.getSysMesType()<<FairLogger::endl;
+         break;
+      } // default:
+   } // switch( mess.getSysMesType() )
+}
+void CbmTSUnpackGet4v1x::ProcessMessage_Get4v1( get4v1x::Message mess, uint16_t EqID)
+{
+   // GET4 v1.x 32b raw message using hack
+   uint8_t  cRocId    = mess.getRocNumber();
+   uint8_t  cChipId   = mess.getGet4V10R32ChipId();
+   uint8_t  cMessType = mess.getGet4V10R32MessageType();
+
+   if( fuNbGet4 <= cChipId + get4v1x::kuMaxGet4PerRoc*cRocId )
+   {
+      if( kTRUE == fbVerbose )
+         LOG(INFO)<<"CbmTSUnpackGet4v1x::ProcessMessage_Get4v1 => Ignored message with ChipId above limit!"
+                  <<" ChipId: "<<cChipId
+                  <<" RocId: " <<cRocId
+                  <<" Limit: " <<fuNbGet4<<FairLogger::endl;
+   } // if( fuNbGet4 <= cChipId + kuMaxGet4PerRoc*mess.getRocNumber() )
+
+   switch( cMessType )
+   {
+      case get4v1x::GET4_32B_EPOCH: // => Epoch message
+      {
+         break;
+      } // case get4v1x::GET4_32B_EPOCH
+      case get4v1x::GET4_32B_SLCM:  // => Slow control
+      {
+         Double_t dFullChId =
+               get4v1x::kuChanPerGet4*2*( cChipId + get4v1x::kuMaxGet4PerRoc*cRocId )
+               + mess.getGet4V10R32SlChan()
+               + 0.5*mess.getGet4V10R32SlEdge();
+         fhGet4ChanSlowContM->Fill( dFullChId, mess.getGet4V10R32SlType() );
+         break;
+      } // case get4v1x::GET4_32B_SLCM
+      case get4v1x::GET4_32B_ERROR: // => Error message
+      {
+         Double_t dFullChId =
+               get4v1x::kuChanPerGet4*2*( cChipId + get4v1x::kuMaxGet4PerRoc*cRocId )
+               + mess.getGet4V10R32ErrorChan()
+               + 0.5*mess.getGet4V10R32ErrorEdge();
+         switch( mess.getGet4V10R32ErrorData() )
+         {
+            case get4v1x::GET4_V1X_ERR_READ_INIT:
+               fhGet4ChanErrors->Fill( dFullChId, 0);
+               break;
+            case get4v1x::GET4_V1X_ERR_SYNC:
+               fhGet4ChanErrors->Fill( dFullChId, 1);
+               break;
+            case get4v1x::GET4_V1X_ERR_EP_CNT_SYNC:
+               fhGet4ChanErrors->Fill( dFullChId, 2);
+               break;
+            case get4v1x::GET4_V1X_ERR_EP:
+               fhGet4ChanErrors->Fill( dFullChId, 3);
+               break;
+            case get4v1x::GET4_V1X_ERR_FIFO_WRITE:
+               fhGet4ChanErrors->Fill( dFullChId, 4);
+               break;
+            case get4v1x::GET4_V1X_ERR_LOST_EVT:
+               fhGet4ChanErrors->Fill( dFullChId, 5);
+               break;
+            case get4v1x::GET4_V1X_ERR_CHAN_STATE:
+               fhGet4ChanErrors->Fill( dFullChId, 6);
+               break;
+            case get4v1x::GET4_V1X_ERR_TOK_RING_ST:
+               fhGet4ChanErrors->Fill( dFullChId, 7);
+               break;
+            case get4v1x::GET4_V1X_ERR_TOKEN:
+               fhGet4ChanErrors->Fill( dFullChId, 8);
+               break;
+            case get4v1x::GET4_V1X_ERR_READOUT_ERR:
+               fhGet4ChanErrors->Fill( dFullChId, 9);
+               break;
+            case get4v1x::GET4_V1X_ERR_SPI:
+               fhGet4ChanErrors->Fill( dFullChId, 10);
+               break;
+            case get4v1x::GET4_V1X_ERR_DLL_LOCK:
+               fhGet4ChanErrors->Fill( dFullChId, 11);
+               break;
+            case get4v1x::GET4_V1X_ERR_DLL_RESET:
+               fhGet4ChanErrors->Fill( dFullChId, 12);
+               break;
+            case get4v1x::GET4_V1X_ERR_TOT_OVERWRT:
+               fhGet4ChanErrors->Fill( dFullChId, 13);
+               break;
+            case get4v1x::GET4_V1X_ERR_TOT_RANGE:
+               fhGet4ChanErrors->Fill( dFullChId, 14);
+               break;
+            case get4v1x::GET4_V1X_ERR_EVT_DISCARD:
+               fhGet4ChanErrors->Fill( dFullChId, 15);
+               break;
+            case get4v1x::GET4_V1X_ERR_UNKNOWN:
+               fhGet4ChanErrors->Fill( dFullChId, 16);
+               break;
+            default: // Corrupt error or not yet supported error
+               fhGet4ChanErrors->Fill( dFullChId, 17);
+               break;
+         } // switch( mess.getGet4V10R32ErrorData() )
+         break;
+      } // case get4v1x::GET4_32B_ERROR
+      case get4v1x::GET4_32B_DATA:  // => Hit Data
+      {
+         UInt_t uFullChId =
+               get4v1x::kuChanPerGet4*( cChipId + get4v1x::kuMaxGet4PerRoc*cRocId )
+               + mess.getGet4V10R32HitChan();
+         fhGet4ChanDataCount->Fill( uFullChId );
+         fhGet4ChanDllStatus->Fill( uFullChId, mess.getGet4V10R32HitDllFlag() );
+         break;
+      } // case get4v1x::GET4_32B_DATA
+   } // switch( cMessType )
+}
+//**********************************************/
+
 ClassImp(CbmTSUnpackGet4v1x)

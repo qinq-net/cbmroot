@@ -78,6 +78,11 @@ namespace get4v1x {
       msg_print_FairLog = 2,
    };
 
+
+   // Max nb of each external trigger signal type
+   const uint32_t kuMaxSync    =  2; // <- MAX_SYNC
+   const uint32_t kuMaxAux     =  4; // <- MAX_AUX
+
    class Message {
 
       protected:

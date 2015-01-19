@@ -14,10 +14,14 @@
   #include "Timeslice.hpp"
 #endif
 
+// Specific headers
+#include "CbmGet4v1xHackDef.h"
 #include "CbmTSUnpack.h"
 
+// ROOT headers
 #include "TClonesArray.h"
 
+// C++ std headers
 #include <vector>
 
 class TH1;
@@ -38,7 +42,8 @@ public:
 
   virtual void Finish();
 
-  void SetGet4Nb( Int_t iNbChips);
+  inline void SetRocNb(  UInt_t uNbRocsIn ) { fuNbRocs = uNbRocsIn; }
+  inline void SetGet4Nb( UInt_t uNbChipsIn) { fuNbGet4 = uNbChipsIn; }
 
   inline void SetVerbose( Bool_t inVerb = kTRUE ) { fbVerbose = inVerb; }
 
@@ -61,35 +66,43 @@ private:
   std::vector< Int_t > fviCurrEpoch2; // Current epoch2 (one per GET4 chip)
 
   // Monitoring related variables
-  TH1 * fhCountsPerChannel;
+  TH2 * fhMessageTypePerRoc;
+  TH2 * fhRocSyncTypePerRoc;
+  TH2 * fhRocAuxTypePerRoc;
+  TH2 * fhSysMessTypePerRoc;
+  TH2 * fhGet4EpochFlags;
   TH2 * fhGet4EpochSyncDist;
+  TH1 * fhGet4ChanDataCount;
   TH2 * fhGet4ChanDllStatus;
+  TH2 * fhGet4ChanTotMap;
+  TH2 * fhGet4ChanErrors;
+  TH2 * fhGet4ChanSlowContM;
 
   // Verbose functions (redundant with Print from GET4 Hack/Tools?)
   void Print6bytesMessage(const uint8_t* msContent_shifted);
 
   // Monitoring functions
   void InitMonitorHistograms();
-  void MonitorMessage_epoch(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
-  void MonitorMessage_sync(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
-  void MonitorMessage_aux(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
-  void MonitorMessage_sys(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
-  void MonitorMessage_epoch2(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
-  void MonitorMessage_get4(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
-  void MonitorMessage_Get4v1(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
+  void MonitorMessage_epoch(  get4v1x::Message mess, uint16_t EqID);
+  void MonitorMessage_sync(   get4v1x::Message mess, uint16_t EqID);
+  void MonitorMessage_aux(    get4v1x::Message mess, uint16_t EqID);
+  void MonitorMessage_sys(    get4v1x::Message mess, uint16_t EqID);
+  void MonitorMessage_epoch2( get4v1x::Message mess, uint16_t EqID);
+  void MonitorMessage_get4(   get4v1x::Message mess, uint16_t EqID);
+  void MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t EqID);
   void FillMonitorHistograms();
   void WriteMonitorHistograms();
   void DeleteMonitorHistograms();
 
   // Unpacking functions
-  // EqID = Equipment identifier from ums, RocID = ROC identifier from ums
-  void ProcessMessage_epoch(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
-  void ProcessMessage_sync(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
-  void ProcessMessage_aux(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
-  void ProcessMessage_sys(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
-  void ProcessMessage_epoch2(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
-  void ProcessMessage_get4(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
-  void ProcessMessage_Get4v1(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
+  // EqID = Equipment identifier from ums
+  void ProcessMessage_epoch(  get4v1x::Message mess, uint16_t EqID);
+  void ProcessMessage_sync(   get4v1x::Message mess, uint16_t EqID);
+  void ProcessMessage_aux(    get4v1x::Message mess, uint16_t EqID);
+  void ProcessMessage_sys(    get4v1x::Message mess, uint16_t EqID);
+  void ProcessMessage_epoch2( get4v1x::Message mess, uint16_t EqID);
+  void ProcessMessage_get4(   get4v1x::Message mess, uint16_t EqID);
+  void ProcessMessage_Get4v1( get4v1x::Message mess, uint16_t EqID);
 
   // Output array of raw GET4 32b hits
 //  TClonesArray* fGet4Raw;
