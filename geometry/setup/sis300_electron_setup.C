@@ -1,6 +1,7 @@
 //
 //   comments
 //
+// 2015-01-19 - DE - use TRD v15a as new default
 // 2014-07-05 - DE - use PIPE v14y as interim solution
 // 2014-07-03 - DE - use PIPE v14h together with RICH v14a -> overlap with STS
 // 2014-06-30 - DE - make RICH v14a the new default
@@ -53,7 +54,7 @@ void sis300_electron_setup()
 
   // -----  Tags  -----------------------------------------------------------
   stsTag       = "v13d";
-  trdTag       = "v14a_3e";
+  trdTag       = "v15a_3e";
   tofTag       = "v13-5d";
 
   // -----  DigiFiles  ------------------------------------------------------

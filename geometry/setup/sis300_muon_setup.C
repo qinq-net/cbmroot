@@ -1,6 +1,7 @@
 //
 //   comments
 //
+// 2015-01-19 - DE - use TRD v15a as new default
 // 2014-06-30 - DE - make TRD v14a the new default
 // 2014-06-25 - DE - define digi files through tags for STS, TRD and TOF
 // 2013-11-05 - DE - switch to trd_v13p geometry
@@ -49,7 +50,7 @@ void sis300_muon_setup()
 
   // -----  Tags  -----------------------------------------------------------
   stsTag       = "v13d";
-  trdTag       = "v14a_3m";
+  trdTag       = "v15a_3m";
   tofTag       = "v13-5e";
 
   // -----  DigiFiles  ------------------------------------------------------
