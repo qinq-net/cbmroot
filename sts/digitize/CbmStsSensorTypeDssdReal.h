@@ -10,6 +10,8 @@
 #include "TRandom3.h"
 #include "CbmStsSensorTypeDssd.h"
 
+class CbmStsPhysics;
+
 
 /** @class CbmStsSensorTypeDssdReal
  ** @brief Class describing double-sided silicon strip sensors.
@@ -99,6 +101,9 @@ class CbmStsSensorTypeDssdReal : public CbmStsSensorTypeDssd
 	/** Temporary variables to avoid frequent calculations **/
 	Double_t fkTq;          //! = sqrt(2 * k * T / q)
 	Double_t fCTcoef;       //! cross-talk coefficient due to capacitances 
+
+	/** Instance of StsPhysics **/
+	CbmStsPhysics* fPhysics;  //!
 
 	/** Produce charge on front or back side from a CbmStsSensorPoint
 	 ** @param point  Pointer to CbmStsSensorType object

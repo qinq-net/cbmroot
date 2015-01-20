@@ -31,11 +31,12 @@
 #include "CbmMCBuffer.h"
 #include "CbmStsPoint.h"
 
-// Include from STS
+// Includes from STS
 #include "setup/CbmStsModule.h"
 #include "setup/CbmStsSensor.h"
 #include "setup/CbmStsSensorConditions.h"
 #include "setup/CbmStsSetup.h"
+#include "digitize/CbmStsPhysics.h"
 #include "digitize/CbmStsSensorTypeDssd.h"
 #include "digitize/CbmStsSensorTypeDssdIdeal.h"
 #include "digitize/CbmStsSensorTypeDssdReal.h"
@@ -310,6 +311,9 @@ InitStatus CbmStsDigitize::Init() {
 
   // Get STS setup interface
   fSetup = CbmStsSetup::Instance();
+
+  // Instantiate StsPhysics
+  CbmStsPhysics::Instance();
 
   // Assign types to the sensors in the setup
   SetSensorTypes();

@@ -40,7 +40,7 @@ class CbmStsPhysics {
 		 ** with given mass and charge.
 		 **/
 		Double_t StoppingPower(Double_t energy, Double_t mass,
-				                   Int_t charge, Bool_t isElectron);
+				                   Double_t charge, Bool_t isElectron);
 
 
 
@@ -72,13 +72,13 @@ class CbmStsPhysics {
 		static const Double_t fgE1;
 		static const Double_t fgE2;
 
+
 		// --- Data tables for stopping power
 		map<Double_t, Double_t> fStoppingElectron;  ///< E [GeV] -> <-dE/dx> [GeV*g/cm^2]
 		map<Double_t, Double_t> fStoppingProton  ;  ///< E [GeV] -> <-dE/dx> [GeV*g/cm^2]
 
 
-
-		// --- Read data tables
+		// --- Read data tables from files
 		void ReadDataTables();
 
 };

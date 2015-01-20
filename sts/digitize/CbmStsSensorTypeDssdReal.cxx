@@ -20,7 +20,7 @@
 
 #include "FairLogger.h"
 
-
+#include "digitize/CbmStsPhysics.h"
 #include "setup/CbmStsModule.h"
 #include "setup/CbmStsSensorPoint.h"
 #include "setup/CbmStsSensor.h"
@@ -45,7 +45,7 @@ static Bool_t fField = 1;
     CbmStsSensorTypeDssdReal::CbmStsSensorTypeDssdReal()
 : CbmStsSensorTypeDssd(), 
     fVdepletion (), fVbias (), fkTq (), fTemperature (),
-    fCcoup (), fCinter (), fCTcoef ()
+    fCcoup (), fCinter (), fCTcoef (), fPhysics(CbmStsPhysics::Instance())
 {
 }
 // -------------------------------------------------------------------------
@@ -241,31 +241,41 @@ const {
     // thickness of trajectory layer in cm, should be > 2 mum and < 10 mum
     Double_t delta = 3e-4;
 
-    // mass [GeV], Ekin [GeV], dEdx [GeV/cm]
-    Int_t pid = point -> GetPid();
-    Double_t mass, Ekin, Z, p;
-    if ( pid > 1000000000 && pid < 1010000000){ // heavy ions 
-	Int_t ion = pid - 1000000000;
-	Z = int(ion / 10000);
-	ion -= 10000 * Z;
-	mass = ion / 10;
-	LOG(DEBUG4) << "Particle ID = " << pid << FairLogger::endl;
-	LOG(DEBUG4) << "it is an ion with Z =  " << Z << " and A = " << mass << FairLogger::endl;
-    } else {
-	TParticle * particle = new TParticle ();
-	particle -> SetPdgCode(pid);
-	mass = particle -> GetPDG(0) -> Mass();
-	Z = (particle -> GetPDG(0) -> Charge()) / 3;
-    }
-    p = point -> GetP();
-    Ekin = sqrt(p*p + mass*mass) - mass;
+    // --- Get mass and charge
+    Double_t mass   = 0.;
+    Double_t charge = 0.;
+    Int_t pid = point->GetPid();
+    // First look in TDatabasePDG
+    TParticlePDG* particle = TDatabasePDG::Instance()->GetParticle(pid);
+    if ( particle ) {
+    	mass   = particle->Mass();
+    	charge = particle->Charge() / 3.;
+    } //? found in database
+    else if (pid > 1000000000 && pid < 1010000000 ) {  // ion
+    	pid -= 1000000000;
+    	Int_t iCharge = pid / 10000;
+    	pid -= iCharge * 10000;
+    	charge = Double_t (iCharge);
+    	mass   = Double_t ( pid / 10 );
+    } //? ion
+    else    // not found
+    	LOG(FATAL) << GetName() << ": could not determine properties for PID "
+    			       << point->GetPid() << FairLogger::endl;
 
-    LOG(DEBUG2) << "mass = " << mass << ", Z = " << Z << ", Ekin = " << Ekin << ", p = " << p << FairLogger::endl;
+    // --- Calculate kinetic energy; determine whether it is an electron
+    Double_t p = point->GetP();
+    Double_t eKin = TMath::Sqrt( p*p + mass*mass ) - mass;
+    Bool_t isElectron = ( point->GetPid() == 11 || point->GetPid() == -11 );
 
-    Bool_t isElectron = 0;
-    if ((point -> GetPid()) == 11 || (point -> GetPid()) == -11) isElectron = 1; 
+    // --- Get stopping power
+    Double_t dedx = fPhysics->StoppingPower(eKin, mass, charge, isElectron);
 
-    Double_t dEdx = StoppingPower(isElectron, mass, Ekin, Z);
+    LOG(DEBUG3) << GetName() << ": PID " << point->GetPid() << ", mass "
+    		        << mass << " GeV, charge " << charge << ", Ekin " << eKin
+    		        << " GeV, <dE/dx> = " << 1000. * dedx << " MeV "
+    		        << FairLogger::endl;
+
+
     Double_t chargeLayerUni = qtot / (Int_t (trajLength / delta));
 
 
@@ -273,7 +283,7 @@ const {
     for (Int_t iLayer = 0; iLayer < Int_t(trajLength / delta); iLayer ++) {
 	if (side == 0){
 	    // energy loss calculation in eV; m, Ekin - in GeV, dEdx - in GeV/cm
-	    if (fNonUniformity) ELossLayerArray.push_back(EnergyLossLayer(ELossRandom, delta, mass, Ekin, dEdx));
+	    if (fNonUniformity) ELossLayerArray.push_back(EnergyLossLayer(ELossRandom, delta, mass, eKin, dedx));
 	    else ELossLayerArray.push_back(chargeLayerUni);
 	}
 
@@ -298,9 +308,9 @@ const {
 
 	    // --- Calculate charge in strip
 	    // normalize registered charge to total charge from simulation - qtot
-	    Double_t charge = stripChargeCT[iStrip] * qtot / totalLossCharge;// in e
+	    Double_t chargeNorm = stripChargeCT[iStrip] * qtot / totalLossCharge;// in e
 	    // --- Register charge to module
-	    RegisterCharge(sensor, side, iStrip, charge, 
+	    RegisterCharge(sensor, side, iStrip, chargeNorm,
 		    (point -> GetTime()));
 	    nSignals++;
 	}
@@ -472,9 +482,9 @@ Double_t CbmStsSensorTypeDssdReal::StoppingPower(Bool_t fElectron,
 
     //calculate dEdx
     if (fElectron){ 
+    	E = Ex;
 	if (E <= 10){//read from electron table, we have table only till E = 10 GeV
 	    LOG(DEBUG2) << "it is ELECTRON" << FairLogger::endl;
-	    E = Ex;
 	    inFile.open(dataDir + "/dEdx_Si_e.txt");
 	    if(inFile.is_open()){
 		LOG(DEBUG2) << "opened file" << FairLogger::endl;
@@ -484,10 +494,11 @@ Double_t CbmStsSensorTypeDssdReal::StoppingPower(Bool_t fElectron,
 		    inFile >> dEdxtemp;//dEdx, MeV/...
 		    Etemp *= 1e-3;
 		}
-		dEdx = dEdxtemp * 1e-3;
+		LOG(DEBUG4) << "dE/dx =  " << dEdxtemp << " MeV/..." <<  Etemp << FairLogger::endl;
+		dEdx = dEdxtemp * 1e-3 * 2.33;
 		inFile.close();
 	    }else{
-		LOG(ERROR) << "File with dE/dx for protons WAS NOT opened." << FairLogger::endl;}
+		LOG(ERROR) << "File with dE/dx for electrons WAS NOT opened." << FairLogger::endl;}
 
 	} else {
 	    dEdx = 100e-3 * 2.33;// convert to MeV/cm, rho(Si) = 2.33 g/cm^2 
@@ -507,9 +518,8 @@ Double_t CbmStsSensorTypeDssdReal::StoppingPower(Bool_t fElectron,
 		    Etemp *= 1e-3;
 		    //	counter++;
 		}
-		LOG(DEBUG4) << "dE/dx =  " << dEdxtemp << " MeV/..." << FairLogger::endl;
-		dEdx = dEdxtemp * 1e-3;
-		dEdx *= zx * zx * 2.33;// convert to MeV/cm, rho(Si) = 2.33 g/cm^2 
+		LOG(DEBUG4) << "dE/dx =  " << dEdxtemp << " MeV/..." <<  Etemp << "  " << E << FairLogger::endl;
+		dEdx = dEdxtemp * 1e-3 * zx * zx * 2.33; // convert to MeV/cm, rho(Si) = 2.33 g/cm^2
 		inFile.close();
 	    }else{
 		LOG(ERROR) << "File with dE/dx for protons WAS NOT opened." << FairLogger::endl;
