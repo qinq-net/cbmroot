@@ -188,10 +188,10 @@ void create_bpipe_geometry_v14i()
   if ( ! iron ) Fatal("Main", "Medium iron not found");
   // ---> beryllium
   FairGeoMedium* mBe = geoMedia->getMedium("beryllium");
-  if ( ! mIron ) Fatal("Main", "FairMedium beryllium not found");
-  geoBuild->createMedium(mIron);
+  if ( ! mBe ) Fatal("Main", "FairMedium beryllium not found");
+  geoBuild->createMedium(mBe);
   TGeoMedium* be = gGeoMan->GetMedium("beryllium");
-  if ( ! iron ) Fatal("Main", "Medium beryllium not found");
+  if ( ! be ) Fatal("Main", "Medium beryllium not found");
   // ---> vacuum
   FairGeoMedium* mVacuum = geoMedia->getMedium("vacuum");
   if ( ! mVacuum ) Fatal("Main", "FairMedium vacuum not found");
