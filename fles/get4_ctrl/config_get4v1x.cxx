@@ -81,14 +81,32 @@ int Set24bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 
 //# ROC_GET4_RECEIVE_MASK_LSBS & ROC_GET4_RECEIVE_MASK_MSBS
 //  => Activate only the 4 first chips
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000BA4);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000BA4);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
+///////// For ROC v3 single board setup
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000001);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000002);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000004);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000008);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x0000000F);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000010);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000020);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000040);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000080);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000F0);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000FF);
    initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
+
 
 //# ROC_GET4_SAMPLE_FALLING_EDGE_LSBS & ROC_GET4_SAMPLE_FALLING_EDGE_MSBS
 //  => Change the edge on which the data from the GET4 are sampled
 //  => Can be necessary with some ROC v2 systems 
-   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x0000004B);
+//   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x0000004B);
+//   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, 0x00000000);
+///////// For ROC v3 single board setup
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x00000000);
    initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, 0x00000000);
+
 
 //# ROC_GET4_SUPRESS_EPOCHS_LSBS & ROC_GET4_SUPRESS_EPOCHS_MSBS
 //  => Enable the suppression of the 156.25 MHz epoch without data messages
@@ -126,23 +144,36 @@ int Set24bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x3C, 0);
 
 //# GET4 configuration
+   //# GET4V1X_TDC_CORE_TIMING_CONF => DLL TDC core timing
+   //   (bit 4 enable, bits3..0 : phase shift in 400ps steps)
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x000012 );
+
+   //# GET4V1X_DLL_DAC_MIN => lower DLL monitoring threshold 450 mV
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MIN          + 0x000100 );
+
+   //# GET4V1X_DLL_DAC_MAX => upper DLL monitoring threshold 1000 mV
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MAX          + 0x000238 );
+
    //# ROC_GET4_CMD_TO_GET4 => Disable all channels
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_HIT_MASK          + 0x00000F );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_HIT_MASK             + 0x00000F );
+
+   //# GET4V1X_SERIAL_FLOW_CONTR => disable serial interface
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_SERIAL_FLOW_CONTR    + 0x000001 );
 
    //# ROC_GET4_CMD_TO_GET4 => Reset Readout and configuration
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_INIT_ROCONF_RST );
 
    //# ROC_GET4_CMD_TO_GET4 => Enable DLL Auto Reset
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_INIT_DLL_RST_AUTO +      0x1 );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_INIT_DLL_RST_AUTO    +      0x1 );
 
    //# ROC_GET4_CMD_TO_GET4 => Enable 24b readout mode, disable LostEventError messages
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_RO_CONF_BASIC     +      0x0 );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_RO_CONF_BASIC        +      0x0 );
 
    //# ROC_GET4_CMD_TO_GET4 => Select Readout 1 diagnostic for channel 1 Rising edge
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DIAG_SELECT       +     0x23 );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DIAG_SELECT          +     0x23 );
 
    //# ROC_GET4_CMD_TO_GET4 => Set link speed to 156.25 MBit/s
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_24B_RO_CONF       +      0x7 );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_24B_RO_CONF          +      0x7 );
 
 // ROC_GET4_RECEIVE_CLK_CFG => Set link speed to 156.25 MBit/s
    initList.AddWrite(ROC_GET4_RECEIVE_CLK_CFG,           0x3);
@@ -150,8 +181,14 @@ int Set24bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
    //# ROC_GET4_CMD_TO_GET4 => Re-Initialize the readout unit state machine
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_INIT_RO_INIT );
 
+   //# GET4V1X_SERIAL_FLOW_CONTR => enable serial interface
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_SERIAL_FLOW_CONTR    + 0x000000 );
+
    //# ROC_GET4_CMD_TO_GET4 => Enable all channels
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_HIT_MASK          + 0x000000 );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_HIT_MASK             + 0x000000 );
+
+   //# ROC_GET4_CMD_TO_GET4 => SCv3 test: disable bad channels
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_HIT_MASK             + 0x00000F );
 
    return conn.DoListSeq(nodeid, initList);
 }
@@ -164,25 +201,38 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 // ROC_GET4_RECEIVE_CLK_CFG => Set link speed to 19.XX MBit/s
 //   initList.AddWrite(ROC_GET4_RECEIVE_CLK_CFG,           0);
 
+// ROC_EPOCH250_EN => Enable/Disable the production of 250MHz (ROC)
+//                    epochs
+   initList.AddWrite(ROC_EPOCH250_EN,                    1);
+
 // ROC_GET4_RECEIVE_MASK_LSBS & ROC_GET4_RECEIVE_MASK_MSBS
 //  => Activate only the 4 first chips
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000002BC);
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000002BC);
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000002BC);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0xFFFFFFFF);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0xFFFFFFFF);
+///////// For ROC v3 single board setup
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000FF);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x0000FF00);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00FF0000);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0xFF000000);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
 
 
 // ROC_GET4_SAMPLE_FALLING_EDGE_LSBS & ROC_GET4_SAMPLE_FALLING_EDGE_MSBS
 //  => Change the edge on which the data from the GET4 are sampled
-//  => Can be necessary with some ROC v2 systems 
+//  => Can be necessary with some ROC v2 systems
 //   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x00000004);
-   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x000000B4);
+//   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x000000B4);
+//   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, 0x00000000);
+///////// For ROC v3 single board setup
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x00000000);
    initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, 0x00000000);
 
 // ROC_GET4_SUPRESS_EPOCHS_LSBS & ROC_GET4_SUPRESS_EPOCHS_MSBS
 //  => Enable the suppression of the 156.25 MHz epoch without data messages
-//  => Chip granularity setting, maybe interesting to keep at least one per ROC 
+//  => Chip granularity setting, maybe interesting to keep at least one per ROC
    initList.AddWrite(ROC_GET4_SUPRESS_EPOCHS_LSBS, 0x00000000);
    initList.AddWrite(ROC_GET4_SUPRESS_EPOCHS_MSBS, 0x00000000);
 
@@ -216,8 +266,21 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x3C, 0);
 
 // GET4 configuration
+   //# GET4V1X_TDC_CORE_TIMING_CONF => DLL TDC core timing
+   //   (bit 4 enable, bits3..0 : phase shift in 400ps steps)
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x000012 );
+
+   //# GET4V1X_DLL_DAC_MIN => lower DLL monitoring threshold 450 mV
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MIN          + 0x000100 );
+
+   //# GET4V1X_DLL_DAC_MAX => upper DLL monitoring threshold 1000 mV
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MAX          + 0x000238 );
+
    // ROC_GET4_CMD_TO_GET4 => Disable all channels
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_HIT_MASK          + 0x00000F );
+
+   //# GET4V1X_SERIAL_FLOW_CONTR => disable serial interface  
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_SERIAL_FLOW_CONTR    + 0x000001 );
 
    // ROC_GET4_CMD_TO_GET4 => Reset Readout and configuration
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_INIT_ROCONF_RST );
@@ -247,22 +310,21 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 // ROC_GET4_RECEIVE_CLK_CFG => Set link speed to 156.25 MBit/s
    initList.AddWrite(ROC_GET4_RECEIVE_CLK_CFG,           0x3);
 
-   // ROC_GET4_CMD_TO_GET4 => Lower DLL lock threshold
-   // Maybe needed if DLL flag off while the lock can be observed at low levels on scope
-//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MIN       +      0x7 );
-
-   // ROC_GET4_CMD_TO_GET4 => Upper DLL lock threshold
-   // Maybe needed if DLL flag off while the lock can be observed at high levels on scope
-//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MAX       +      0x7 );
-
    // ROC_GET4_CMD_TO_GET4 => Re-Initialize the readout unit state machine
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_INIT_RO_INIT );
+
+   //# GET4V1X_SERIAL_FLOW_CONTR => enable serial interface
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_SERIAL_FLOW_CONTR    + 0x000000 );
 
    // ROC_GET4_CMD_TO_GET4 => Enable all channels
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_HIT_MASK          + 0x000000 );
 
 //# ROC_GET4_READOUT_MODE => 32 bits mode selection
    initList.AddWrite(ROC_GET4_READOUT_MODE,               1);
+
+   //# ROC_GET4_CMD_TO_GET4 => SCv3 test: disable bad channels
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_HIT_MASK             + 0x00000A );
+
 
    return conn.DoListSeq(nodeid, initList);
 }
@@ -275,7 +337,7 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
  *            * 1 => default 32b mode settings
  *            * 2 => tbd, read config from a text/xml file
  */
-void config_get4v1x( int link, int mode, const uint32_t kRocId = 0xC2  )
+void config_get4v1x( int link, int mode, const uint32_t kRocId = 0x01, uint32_t uNbMess = 300  )
 {
    // Custom settings:
    int FlibLink = link;
@@ -345,7 +407,7 @@ void config_get4v1x( int link, int mode, const uint32_t kRocId = 0xC2  )
    printf("ROC_OPTICS_LINK_STATUS  = %d\n", ret);
 
    // Read 300 messages for quick cross check of setting
-   ReadMessages( conn, kNodeId, 300 );
+   ReadMessages( conn, kNodeId, uNbMess );
 
    // Close connection
    conn.Close();
@@ -533,6 +595,78 @@ int ReadMessages(CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t nbMess 
    return nSuccTot;
 }
 
+void lnktest_get4v1x( int link, int mode, uint32_t uNbMess = 30  )
+{
+   // Custom settings:
+   int FlibLink = link;
+   const uint32_t kNodeId = 0;
+
+   // Needed ?
+   const uint32_t kNxPort = 0; // 0 if nX is connected to CON19 connector; 1 for CON20 connector.
+   if( kNxPort != 0 && kNxPort != 1 ) { printf("Error! invalid value kNxPort = %d\n", kNxPort ); return; }
+
+   CbmNet::ControlClient conn;
+   ostringstream dpath;
+
+   dpath << "tcp://" << "localhost" << ":" << CbmNet::kPortControl + FlibLink;
+   conn.Connect(dpath.str());
+
+   // Check board and firmware info
+   uint32_t ret;
+   conn.Read( kNodeId, ROC_TYPE, ret );
+   printf("Firmware type    = FE %5d TS %5d\n", (ret>>16)& 0xFFFF,  (ret)& 0xFFFF);
+   conn.Read( kNodeId, ROC_HWV, ret );
+   printf("Firmware Version = %10d \n", ret);
+   conn.Read( kNodeId, ROC_FPGA_TYPE, ret );
+   printf("FPGA type        = %10d \n", ret);
+   conn.Read( kNodeId, ROC_SVN_REVISION, ret );
+   printf("svn revision     = %10d \n", ret);
+   if(0 == ret )
+   {
+      printf("Invalid svn revision, link or ROC is probably inactive, stopping there\n");
+      return;
+   } // if(0 == ret )
+
+   conn.Read( kNodeId, ROC_BUILD_TIME, ret );
+   time_t rawtime = ret;
+   struct tm * timeinfo;
+   char buffer [20];
+   timeinfo = localtime( &rawtime);
+   strftime( buffer,20,"%F %T",timeinfo);
+   printf("build time       = %s \n", buffer);
+   printf("\n");
+
+   printf("\nTry speed     =  19.XX MBit/s \n");
+// ROC_GET4_RECEIVE_CLK_CFG => Set link speed to  19.XX MBit/s
+   conn.Write(kNodeId, ROC_GET4_RECEIVE_CLK_CFG,           0);
+   // StartDAQ => Use the command list 2 in order to also to make a clean start
+   conn.Write( kNodeId, ROC_CMD_LST_NR, 2);
+   ReadMessages( conn, kNodeId, uNbMess);
+
+   printf("\nTry speed     =  39.XX MBit/s \n");
+// ROC_GET4_RECEIVE_CLK_CFG => Set link speed to  39.XX MBit/s
+   conn.Write(kNodeId, ROC_GET4_RECEIVE_CLK_CFG,           1);
+   // StartDAQ => Use the command list 2 in order to also to make a clean start
+   conn.Write( kNodeId, ROC_CMD_LST_NR, 2);
+   ReadMessages( conn, kNodeId, uNbMess);
+
+   printf("\nTry speed     =  78.XX MBit/s \n");
+// ROC_GET4_RECEIVE_CLK_CFG => Set link speed to  78.XX MBit/s
+   conn.Write(kNodeId, ROC_GET4_RECEIVE_CLK_CFG,           2);
+   // StartDAQ => Use the command list 2 in order to also to make a clean start
+   conn.Write( kNodeId, ROC_CMD_LST_NR, 2);
+   ReadMessages( conn, kNodeId, uNbMess);
+
+   printf("\nTry speed     = 156.XX MBit/s \n");
+// ROC_GET4_RECEIVE_CLK_CFG => Set link speed to 156.XX MBit/s
+   conn.Write(kNodeId, ROC_GET4_RECEIVE_CLK_CFG,           3);
+   // StartDAQ => Use the command list 2 in order to also to make a clean start
+   conn.Write( kNodeId, ROC_CMD_LST_NR, 2);
+   ReadMessages( conn, kNodeId, uNbMess);
+
+   // Close connection
+   conn.Close();
+}
 
 
 
