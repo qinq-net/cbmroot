@@ -68,6 +68,11 @@ public:
      */
     void SetDrawHist(Bool_t b){fDrawHist = b;}
 
+    /*
+     * Set to true if you wan to use finger-scintillator for event triggering
+     */
+    void SetUseFingerSci(Bool_t b) {fUseFingerSci = b;}
+
 private:
     TString fHldFileName; // file name of HLD file
 
@@ -87,9 +92,11 @@ private:
 
     vector<CbmTrbRawHit*> fRawRichHits; // raw hit from PMTs
     vector<CbmTrbRawHit*> fRawEventTimeHits; // raw hits from reference time TDC
+    vector<CbmTrbRawHit*> fRawFingerSciHits; // fUseFingerSciTrigger must be true, RAW hits from finger-scintillator
 
     vector<CbmTrbOutputHit*> fOutputRichHits; // output hits from PMTs
     vector<CbmTrbOutputHit*> fOutputEventTimeHits; // output hits from reference time TDC
+    vector<CbmTrbOutputHit*> fOutputFingerSciHits; // fUseFingerSciTrigger must be true, hits from finger-scintillator
 
     // Debug histograms
     TH1D* fhChannelEntries[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC];
@@ -100,8 +107,10 @@ private:
     TH1D* fhDiffHitTimeEventTime[TRB_TDC3_NUMBOARDS][TRB_TDC3_NUMTDC]; // Difference between reference event time and RICH hit time
     TH2D* fhNofRichHitsVsTrbNum; // Number of RICH hit per event vs. TRB number (only real event count)
     TH1D* fhDiffHitTimeEventTimeAll; // Difference between reference event time and RICH hit time
+    TH1D* fhDiffFingerSciTimeEventTimeAll; // Difference between finger-sci time and reference time hit
 
     CbmRichAnaTypeEnum fAnaType; // What do you want to analyza beam events, laser events, led events
+    Bool_t fUseFingerSci; //If you want to use finger-scintillator behind the rich box as a trigger for event building
 
     Bool_t fDrawHist; // if TRUE histograms wre drawn
 
@@ -163,12 +172,14 @@ private:
      * Find min and max indecies of the time corridor in the output CbmRichTrbOutputHit array sorted by time.
      * \param x0 Reference time.
      * \param windowT Time window in ns.
+     * \param[in] hits array of hits
      * \param[out] indmin Min index.
      * \param[out] indmax Max index.
      */
     void FindMinMaxIndex(
     		Double_t x0,
     		Double_t windowT,
+			vector<CbmTrbOutputHit*>& hits,
     		Int_t *indmin,
     		Int_t *indmax);
 

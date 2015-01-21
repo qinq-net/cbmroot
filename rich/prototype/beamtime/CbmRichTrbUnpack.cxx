@@ -29,7 +29,8 @@ CbmRichTrbUnpack::CbmRichTrbUnpack(TString hldFileName) :
 	fNofRawEvents(0),
 	fNofRawSubEvents(0),
 	fNofTimeDataMessages(0),
-	fAnaType(kCbmRichBeamEvent)
+	fAnaType(kCbmRichBeamEvent),
+	fUseFingerSci(false)
 {
 }
 
@@ -55,9 +56,9 @@ Bool_t CbmRichTrbUnpack::Init()
 
 	ReadEvents();
 
-	fhNofRichHitsVsTrbNum = new TH2D("fhNofRichHitsVsTrbNum", "fhNofRichHitsVsTrbNum;TRB number;Nof hits in event",
-			TRB_TDC3_NUMBOARDS, .5, TRB_TDC3_NUMBOARDS + .5, 65, -0.5, 64.5);
+	fhNofRichHitsVsTrbNum = new TH2D("fhNofRichHitsVsTrbNum", "fhNofRichHitsVsTrbNum;TRB number;Nof hits in event", TRB_TDC3_NUMBOARDS, .5, TRB_TDC3_NUMBOARDS + .5, 65, -0.5, 64.5);
 	fhDiffHitTimeEventTimeAll = new TH1D("fhDiffHitTimeEventTime", "fhDiffHitTimeEventTime;dT [ns];Entries", 200, -100., 100.);
+	fhDiffFingerSciTimeEventTimeAll = new TH1D("fhDiffFingerSciTimeEventTimeAll", "fhDiffFingerSciTimeEventTimeAll;dT [ns];Entries", 200, -100., 100.);
 
 	TString hname, htitle;
 	for (Int_t iTrb = 0; iTrb < TRB_TDC3_NUMBOARDS; iTrb++){
@@ -235,6 +236,10 @@ void CbmRichTrbUnpack::DecodeTdcData(
 						CbmTrbRawHit* rawHitRef = new CbmTrbRawHit(tdcId, chNum, curEpochCounter, coarseTime, fineTime, 0, 0, 0, 0);
 						fRawEventTimeHits.push_back(rawHitRef);
 					}
+					if (fUseFingerSci && chNum == 1) {
+						CbmTrbRawHit* rawFingerScif = new CbmTrbRawHit(tdcId, chNum, curEpochCounter, coarseTime, fineTime, 0, 0, 0, 0);
+						fRawFingerSciHits.push_back(rawFingerScif);
+					}
 				} else if ( isPmtHit ) {
 					if ( param->IsLeadingEdgeChannel(chNum) ) { // leading edge
 						mesQ.push( CbmRichTrbTimeMessage(chNum, curEpochCounter, coarseTime, fineTime) );
@@ -327,6 +332,16 @@ void CbmRichTrbUnpack::CreateOutputHits()
 		fOutputEventTimeHits[i] = CreateOutputHit(fRawEventTimeHits[i]);
 	}
 
+	if (fUseFingerSci) {
+		Int_t nofFingSciHits = fRawFingerSciHits.size();
+		fOutputFingerSciHits.resize(nofFingSciHits);
+		for (Int_t i = 0; i < nofFingSciHits; i++) {
+			fOutputFingerSciHits[i] = CreateOutputHit(fRawFingerSciHits[i]);
+		}
+		std::sort(fOutputFingerSciHits.begin(), fOutputFingerSciHits.end(), CbmTrbOutputHitLeadingFullTimeComparatorLess());
+	}
+
+
 	std::sort(fOutputRichHits.begin(), fOutputRichHits.end(), CbmTrbOutputHitLeadingFullTimeComparatorLess());
 }
 
@@ -335,7 +350,20 @@ void CbmRichTrbUnpack::BuildEvent(Int_t refHitIndex)
 	CbmRichTrbParam* param = CbmRichTrbParam::Instance();
 	Int_t indmin, indmax;
 	Double_t eventTime = fOutputEventTimeHits[refHitIndex]->GetLFullTime();
-	FindMinMaxIndex(eventTime, EVENT_TIME_WINDOW, &indmin, &indmax);
+
+	// check finger-scintillator for event triggering
+	if (fUseFingerSci) {
+		FindMinMaxIndex(eventTime, EVENT_TIME_WINDOW, fOutputFingerSciHits,&indmin, &indmax);
+		Int_t size = indmax - indmin + 1;
+		if (size == 0){
+			return;
+		} else {
+			CbmTrbOutputHit* h = fOutputFingerSciHits[indmin];
+			fhDiffFingerSciTimeEventTimeAll->Fill(eventTime - h->GetLFullTime());
+		}
+	}
+
+	FindMinMaxIndex(eventTime, EVENT_TIME_WINDOW, fOutputRichHits,&indmin, &indmax);
 	Int_t size = indmax - indmin + 1;
 	UInt_t nofHitsTrb[TRB_TDC3_NUMBOARDS];
 	for (UInt_t i = 0; i < TRB_TDC3_NUMBOARDS; i++) {
@@ -387,6 +415,7 @@ void CbmRichTrbUnpack::AddRichHitToOutputArray(UShort_t trbId, CbmRichHitInfo* h
 void CbmRichTrbUnpack::FindMinMaxIndex(
 		Double_t refTime,
 		Double_t windowT,
+		vector<CbmTrbOutputHit*>& hits,
 		Int_t *indmin,
 		Int_t *indmax)
 {
@@ -395,13 +424,13 @@ void CbmRichTrbUnpack::FindMinMaxIndex(
 	vector<CbmTrbOutputHit*>::iterator itmin, itmax;
 
 	mpnt->SetLeadingFullTime(refTime - windowTime);
-	itmin = std::lower_bound(fOutputRichHits.begin(), fOutputRichHits.end(), mpnt, CbmTrbOutputHitLeadingFullTimeComparatorLess());
+	itmin = std::lower_bound(hits.begin(), hits.end(), mpnt, CbmTrbOutputHitLeadingFullTimeComparatorLess());
 
 	mpnt->SetLeadingFullTime(refTime + windowTime);
-	itmax = std::lower_bound(fOutputRichHits.begin(), fOutputRichHits.end(), mpnt, CbmTrbOutputHitLeadingFullTimeComparatorLess()) - 1;
+	itmax = std::lower_bound(hits.begin(), hits.end(), mpnt, CbmTrbOutputHitLeadingFullTimeComparatorLess()) - 1;
 
-	*indmin = itmin - fOutputRichHits.begin();
-	*indmax = itmax - fOutputRichHits.begin();
+	*indmin = itmin - hits.begin();
+	*indmax = itmax - hits.begin();
 }
 
 void CbmRichTrbUnpack::ClearAllBuffers()
@@ -416,6 +445,11 @@ void CbmRichTrbUnpack::ClearAllBuffers()
 	}
 	fRawEventTimeHits.clear();
 
+	for (Int_t i = 0; i < fRawFingerSciHits.size(); i++) {
+		delete fRawFingerSciHits[i];
+	}
+	fRawFingerSciHits.clear();
+
 	for (Int_t i = 0; i < fOutputRichHits.size(); i++) {
 		delete fOutputRichHits[i];
 	}
@@ -425,6 +459,11 @@ void CbmRichTrbUnpack::ClearAllBuffers()
 		delete fOutputEventTimeHits[i];
 	}
 	fOutputEventTimeHits.clear();
+
+	for (Int_t i = 0; i < fOutputFingerSciHits.size(); i++) {
+		delete fOutputFingerSciHits[i];
+	}
+	fOutputFingerSciHits.clear();
 }
 
 void CbmRichTrbUnpack::FillRawHitHist(CbmTrbRawHit* rh)
@@ -455,6 +494,8 @@ void CbmRichTrbUnpack::CreateAndDrawQa()
 	LOG(INFO) << "Number of output RICH hits = " << fOutputRichHits.size() << FairLogger::endl;
 	LOG(INFO) << "Number of raw reference time hits = " << fRawEventTimeHits.size() << FairLogger::endl;
 	LOG(INFO) << "Number of output reference time hits = " << fOutputEventTimeHits.size() << FairLogger::endl;
+	LOG(INFO) << "Number of raw finger-sci  hits = " << fRawFingerSciHits.size() << FairLogger::endl;
+	LOG(INFO) << "Number of output finger-sci hits = " << fOutputFingerSciHits.size() << FairLogger::endl;
 	LOG(INFO) << "Number of hits with one edge = " << fNofHitsWithOneEdge << ", " << 100. * fNofHitsWithOneEdge / fRawRichHits.size() <<  "%"<< FairLogger::endl;
 	LOG(INFO) << "Number of raw HLD events = " << fNofRawEvents << FairLogger::endl;
 	LOG(INFO) << "Number of raw HLD sub events = " << fNofRawSubEvents << FairLogger:: endl;
@@ -530,6 +571,11 @@ void CbmRichTrbUnpack::CreateAndDrawQa()
 
 	TCanvas* c2 = new TCanvas("rich_trb_unpack_debug_diff_hittime_eventtime", "rich_trb_unpack_debug_diff_hittime_eventtime", 800, 800);
 	DrawH1(fhDiffHitTimeEventTimeAll);
+
+	if (fUseFingerSci){
+		TCanvas* c = new TCanvas("rich_trb_unpack_debug_diff_fingerscitime_eventtime", "rich_trb_unpack_debug_diff_fingerscitime_eventtime", 800, 800);
+		DrawH1(fhDiffFingerSciTimeEventTimeAll, kLinear, kLog);
+	}
 
 	rootHistFolder->Add(fhNofRichHitsVsTrbNum);
 	rootHistFolder->Add(fhDiffHitTimeEventTimeAll);
