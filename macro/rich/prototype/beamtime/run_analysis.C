@@ -19,7 +19,7 @@ void run_analysis()
    loadlibs();
 
    TString hldFileDir = "";//"/mnt/data/WLS/WLS_off/nonstretched/ringH2/offset00250/";
-   TString hldFileName = "wls_off_ring_a1.hld";
+   TString hldFileName = "/Users/slebedev/Development/cbm/data/cern_beamtime_2014/te14328022312.hld";
    TString hldFullFileName;
    hldFullFileName = hldFileDir + hldFileName;
 
@@ -56,6 +56,7 @@ void run_analysis()
    CbmRichTrbUnpack* source = new CbmRichTrbUnpack(hldFullFileName);
    source->SetAnaType(anaType);
    source->SetDrawHist(true);
+   source->SetUseFingerSci(false);
 
    CbmTrbCalibrator* fgCalibrator = CbmTrbCalibrator::Instance();
    fgCalibrator->SetInputFilename("calibration.root");            // does not actually import data - only defines
