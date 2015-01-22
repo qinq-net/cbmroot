@@ -1,6 +1,7 @@
 //
 //   comments
 //
+// 2015-01-22 - DE - use MVD v14b with PIPE v14l as default
 // 2015-01-19 - DE - use TRD v15a as new defaut
 // 2014-07-05 - DE - use PIPE v14x as interim solution
 // 2014-07-01 - DE - use PIPE v14f -> overlap with STS
@@ -62,13 +63,13 @@ void sis100_electron_setup()
   stsDigi      = "sts/sts_" + stsTag + "_std.digi.par";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
-  //tofDigi      = "tof/tof_v13a.digi.par";
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
-  pipeGeom     = "pipe/pipe_v14x.geo.root"; // "pipe/pipe_v14f.root";
+  pipeGeom     = "pipe/pipe_v14l.root";
   magnetGeom   = "magnet/magnet_v12b.geo.root";
-  mvdGeom      = "";
+  mvdGeom      = "mvd/mvd_v14a.geo.root";
+  //  mvdGeom      = "mvd/mvd_v14b.geo.root";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
   richGeom     = "rich/rich_v14a.root";
   muchGeom     = "";
