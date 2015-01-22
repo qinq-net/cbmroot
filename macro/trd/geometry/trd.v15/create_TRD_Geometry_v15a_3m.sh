@@ -1,6 +1,8 @@
 #
 # create TRD geometry from patch file
 #
+# diff -c Create_TRD_Geometry_v15a_3e.C Create_TRD_Geometry_v15a_3m.C > a3etoa3m.patch
+#
 # cp Create_TRD_Geometry_v13p4.C Create_TRD_Geometry_v13p1.C
 # patch Create_TRD_Geometry_v13p1.C p4top1.patch
 # root -l Create_TRD_Geometry_v13p1.C
