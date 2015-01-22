@@ -94,14 +94,20 @@ const TString FileNameInfo = geoVersion + ".geo.info";
 const TString FileNamePads = "CbmTrdPads_" + tagVersion + ".h";
 
 // display switches
-const Bool_t IncludeRadiator    = true;  // false;  // true, if radiator is included in geometry
-const Bool_t IncludeLattice     = true;  // false;  // true, if lattice grid is included in geometry
-const Bool_t IncludeFebs        = true;  // false;  // true, if FEBs are included in geometry
-const Bool_t IncludeRobs        = false; // false;  // true, if ROBs are included in geometry
-const Bool_t IncludeAsics       = true;  // false;  // true, if ASICs are included in geometry
-const Bool_t IncludeSupports    = true;  // false;  // true, if support structure is included in geometry
-const Bool_t IncludeLabels      = true;  // false;  // true, if TRD (I, II, III) labels are plotted in (VisLevel 5)
-const Bool_t IncludeFieldVector = false; // false;  // true, if magnetic field vector to be shown (in the magnet)
+const Bool_t IncludeRadiator    = false;  // true;  // false;  // true, if radiator is included in geometry
+const Bool_t IncludeLattice     = false;  // true;  // false;  // true, if lattice grid is included in geometry
+
+const Bool_t IncludeKaptonFoil  = false;  // true;  // false;  // true, if entrance window is included in geometry
+const Bool_t IncludeGasFrame    = false;  // true;  // false;  // true, if frame around gas volume is included in geometry
+const Bool_t IncludePadplane    = false;  // true;  // false;  // true, if padplane is included in geometry
+const Bool_t IncludeBackpanel   = false;  // true;  // false;  // true, if backpanel is included in geometry
+
+const Bool_t IncludeFebs        = false;  // true;  // false;  // true, if FEBs are included in geometry
+const Bool_t IncludeRobs        = false;  // false; // false;  // true, if ROBs are included in geometry
+const Bool_t IncludeAsics       = false;  // true;  // false;  // true, if ASICs are included in geometry
+const Bool_t IncludeSupports    = false;  // true;  // false;  // true, if support structure is included in geometry
+const Bool_t IncludeLabels      = false;  // true;  // false;  // true, if TRD (I, II, III) labels are plotted in (VisLevel 5)
+const Bool_t IncludeFieldVector = false;  // false;  // true, if magnetic field vector to be shown (in the magnet)
 
 const Double_t feb_rotation_angle = 45; //0.1; // 65.; // 70.; // 0.;   // rotation around x-axis, should be < 90 degrees  
 
@@ -377,37 +383,22 @@ const  Double_t feb_thickness         =   0.25;  // light //  2.5 mm thickness o
 // Names of the different used materials which are used to build the modules
 // The materials are defined in the global media.geo file 
 const TString KeepingVolumeMedium     = "air";
-const TString RadiatorVolumeMedium    = "air";
-const TString LatticeVolumeMedium     = "air";
-const TString KaptonVolumeMedium      = "air";
+const TString RadiatorVolumeMedium    = "TRDpefoam20";
+const TString LatticeVolumeMedium     = "TRDG10";
+const TString KaptonVolumeMedium      = "TRDkapton";
 const TString GasVolumeMedium         = "TRDgas";
-const TString PadCopperVolumeMedium   = "air";
-const TString PadPcbVolumeMedium      = "air";    // todo - put correct FEB material here
-const TString HoneycombVolumeMedium   = "air";
-const TString CarbonVolumeMedium      = "air";
-const TString FebVolumeMedium         = "air";    // todo - put correct FEB material here
+const TString PadCopperVolumeMedium   = "TRDcopper";
+const TString PadPcbVolumeMedium      = "TRDG10";    // todo - put correct FEB material here
+const TString HoneycombVolumeMedium   = "TRDaramide";
+const TString CarbonVolumeMedium      = "TRDcarbon";
+const TString FebVolumeMedium         = "TRDG10";    // todo - put correct FEB material here
 const TString AsicVolumeMedium        = "air";       // todo - put correct ASIC material here
 const TString TextVolumeMedium        = "air";       // leave as air
-const TString FrameVolumeMedium       = "air";
-const TString AluminiumVolumeMedium   = "air";
-
-//const TString KeepingVolumeMedium     = "air";
-//const TString RadiatorVolumeMedium    = "TRDpefoam20";
-//const TString LatticeVolumeMedium     = "TRDG10";
-//const TString KaptonVolumeMedium      = "TRDkapton";
-//const TString GasVolumeMedium         = "TRDgas";
-//const TString PadCopperVolumeMedium   = "TRDcopper";
-//const TString PadPcbVolumeMedium      = "TRDG10";    // todo - put correct FEB material here
-//const TString HoneycombVolumeMedium   = "TRDaramide";
-//const TString CarbonVolumeMedium      = "TRDcarbon";
-//const TString FebVolumeMedium         = "TRDG10";    // todo - put correct FEB material here
-//const TString AsicVolumeMedium        = "air";       // todo - put correct ASIC material here
-//const TString TextVolumeMedium        = "air";       // leave as air
-//const TString FrameVolumeMedium       = "TRDG10";
-//const TString AluminiumVolumeMedium   = "aluminium";
-////const TString MylarVolumeMedium       = "mylar";
-////const TString RadiatorVolumeMedium    = "polypropylene";
-////const TString ElectronicsVolumeMedium = "goldcoatedcopper";
+const TString FrameVolumeMedium       = "TRDG10";
+const TString AluminiumVolumeMedium   = "aluminium";
+//const TString MylarVolumeMedium       = "mylar";
+//const TString RadiatorVolumeMedium    = "polypropylene";
+//const TString ElectronicsVolumeMedium = "goldcoatedcopper";
 
 
 // some global variables
@@ -804,6 +795,22 @@ void dump_info_file()
 
   fprintf(ifile,"lattice grid is         : ");
   if (!IncludeLattice ) fprintf(ifile,"NOT ");
+  fprintf(ifile,"included\n");
+
+  fprintf(ifile,"kapton window is        : ");
+  if (!IncludeKaptonFoil) fprintf(ifile,"NOT ");
+  fprintf(ifile,"included\n");
+
+  fprintf(ifile,"gas frame is            : ");
+  if (!IncludeGasFrame  ) fprintf(ifile,"NOT ");
+  fprintf(ifile,"included\n");
+
+  fprintf(ifile,"padplane is             : ");
+  if (!IncludePadplane  ) fprintf(ifile,"NOT ");
+  fprintf(ifile,"included\n");
+
+  fprintf(ifile,"backpanel is            : ");
+  if (!IncludeBackpanel ) fprintf(ifile,"NOT ");
   fprintf(ifile,"included\n");
 
   fprintf(ifile,"asics are               : ");
@@ -1488,14 +1495,17 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
 
    }  // with lattice grid 
 
-   // Kapton Foil
-   TGeoBBox* trd_kapton = new TGeoBBox("", sizeX /2., sizeY /2., kapton_thickness /2.);
-   TGeoVolume* trdmod1_kaptonvol = new TGeoVolume("kaptonfoil", trd_kapton, kaptonVolMed);
-   //   TGeoVolume* trdmod1_kaptonvol = new TGeoVolume(Form("module%d_kaptonfoil", moduleType), trd_kapton, kaptonVolMed);
-   //   TGeoVolume* trdmod1_kaptonvol = new TGeoVolume(Form("trd1mod%dkapton", moduleType), trd_kapton, kaptonVolMed);
-   trdmod1_kaptonvol->SetLineColor(kGreen);
-   TGeoTranslation* trd_kapton_trans = new TGeoTranslation("", 0., 0., kapton_position);
-   module->AddNode(trdmod1_kaptonvol, 1, trd_kapton_trans);
+   if(IncludeKaptonFoil)
+   {
+     // Kapton Foil
+     TGeoBBox* trd_kapton = new TGeoBBox("", sizeX /2., sizeY /2., kapton_thickness /2.);
+     TGeoVolume* trdmod1_kaptonvol = new TGeoVolume("kaptonfoil", trd_kapton, kaptonVolMed);
+     //   TGeoVolume* trdmod1_kaptonvol = new TGeoVolume(Form("module%d_kaptonfoil", moduleType), trd_kapton, kaptonVolMed);
+     //   TGeoVolume* trdmod1_kaptonvol = new TGeoVolume(Form("trd1mod%dkapton", moduleType), trd_kapton, kaptonVolMed);
+     trdmod1_kaptonvol->SetLineColor(kGreen);
+     TGeoTranslation* trd_kapton_trans = new TGeoTranslation("", 0., 0., kapton_position);
+     module->AddNode(trdmod1_kaptonvol, 1, trd_kapton_trans);
+   }
 
    // start of Frame in z
    // Gas
@@ -1510,71 +1520,77 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
    module->AddNode(trdmod1_gasvol, 1, trd_gas_trans);
    // end of Frame in z
 
+   if(IncludeGasFrame)
+   {
+     // frame1
+     TGeoBBox* trd_frame1 = new TGeoBBox("", sizeX /2., frameWidth /2., frame_thickness/2.);
+     TGeoVolume* trdmod1_frame1vol = new TGeoVolume("frame1", trd_frame1, frameVolMed);
+     //   TGeoVolume* trdmod1_frame1vol = new TGeoVolume(Form("module%d_frame1", moduleType), trd_frame1, frameVolMed);
+     //   TGeoVolume* trdmod1_frame1vol = new TGeoVolume(Form("trd1mod%dframe1", moduleType), trd_frame1, frameVolMed);
+     trdmod1_frame1vol->SetLineColor(kRed);
+     
+     // translations 
+     TGeoTranslation* trd_frame1_trans = new TGeoTranslation("", 0., activeAreaY /2. + frameWidth /2., frame_position);
+     module->AddNode(trdmod1_frame1vol, 1, trd_frame1_trans);
+     trd_frame1_trans = new TGeoTranslation("", 0., -(activeAreaY /2. + frameWidth /2.), frame_position);
+     module->AddNode(trdmod1_frame1vol, 2, trd_frame1_trans);
+     
+     
+     // frame2
+     TGeoBBox* trd_frame2 = new TGeoBBox("", frameWidth /2., activeAreaY /2., frame_thickness /2.);
+     TGeoVolume* trdmod1_frame2vol = new TGeoVolume("frame2", trd_frame2, frameVolMed);
+     //   TGeoVolume* trdmod1_frame2vol = new TGeoVolume(Form("module%d_frame2", moduleType), trd_frame2, frameVolMed);
+     //   TGeoVolume* trdmod1_frame2vol = new TGeoVolume(Form("trd1mod%dframe2", moduleType), trd_frame2, frameVolMed);
+     trdmod1_frame2vol->SetLineColor(kRed);
+     
+     // translations 
+     TGeoTranslation* trd_frame2_trans = new TGeoTranslation("", activeAreaX /2. + frameWidth /2., 0., frame_position);
+     module->AddNode(trdmod1_frame2vol, 1, trd_frame2_trans);
+     trd_frame2_trans = new TGeoTranslation("", -(activeAreaX /2. + frameWidth /2.), 0., frame_position);
+     module->AddNode(trdmod1_frame2vol, 2, trd_frame2_trans);
+   }
 
-   // frame1
-   TGeoBBox* trd_frame1 = new TGeoBBox("", sizeX /2., frameWidth /2., frame_thickness/2.);
-   TGeoVolume* trdmod1_frame1vol = new TGeoVolume("frame1", trd_frame1, frameVolMed);
-   //   TGeoVolume* trdmod1_frame1vol = new TGeoVolume(Form("module%d_frame1", moduleType), trd_frame1, frameVolMed);
-   //   TGeoVolume* trdmod1_frame1vol = new TGeoVolume(Form("trd1mod%dframe1", moduleType), trd_frame1, frameVolMed);
-   trdmod1_frame1vol->SetLineColor(kRed);
+   if(IncludePadplane)
+   {
+     // Pad Copper
+     TGeoBBox *trd_padcopper = new TGeoBBox("", sizeX /2., sizeY /2., padcopper_thickness /2.);
+     TGeoVolume* trdmod1_padcoppervol = new TGeoVolume("padcopper", trd_padcopper, padcopperVolMed);
+     //   TGeoVolume* trdmod1_padcoppervol = new TGeoVolume(Form("module%d_padcopper", moduleType), trd_padcopper, padcopperVolMed);
+     //   TGeoVolume* trdmod1_padcoppervol = new TGeoVolume(Form("trd1mod%dpadcopper", moduleType), trd_padcopper, padcopperVolMed);
+     trdmod1_padcoppervol->SetLineColor(kOrange);
+     TGeoTranslation *trd_padcopper_trans = new TGeoTranslation("", 0., 0., padcopper_position);
+     module->AddNode(trdmod1_padcoppervol, 1, trd_padcopper_trans);
+  
+     // Pad Plane
+     TGeoBBox* trd_padpcb = new TGeoBBox("", sizeX /2., sizeY /2., padplane_thickness /2.);
+     TGeoVolume* trdmod1_padpcbvol = new TGeoVolume("padplane", trd_padpcb, padpcbVolMed);
+     //   TGeoVolume* trdmod1_padpcbvol = new TGeoVolume(Form("module%d_padplane", moduleType), trd_padpcb, padpcbVolMed);
+     //   TGeoVolume* trdmod1_padpcbvol = new TGeoVolume(Form("trd1mod%dpadplane", moduleType), trd_padpcb, padpcbVolMed);
+     trdmod1_padpcbvol->SetLineColor(kBlue);
+     TGeoTranslation *trd_padpcb_trans = new TGeoTranslation("", 0., 0., padplane_position);
+     module->AddNode(trdmod1_padpcbvol, 1, trd_padpcb_trans);
+   }
 
-   // translations 
-   TGeoTranslation* trd_frame1_trans = new TGeoTranslation("", 0., activeAreaY /2. + frameWidth /2., frame_position);
-   module->AddNode(trdmod1_frame1vol, 1, trd_frame1_trans);
-   trd_frame1_trans = new TGeoTranslation("", 0., -(activeAreaY /2. + frameWidth /2.), frame_position);
-   module->AddNode(trdmod1_frame1vol, 2, trd_frame1_trans);
-
-
-   // frame2
-   TGeoBBox* trd_frame2 = new TGeoBBox("", frameWidth /2., activeAreaY /2., frame_thickness /2.);
-   TGeoVolume* trdmod1_frame2vol = new TGeoVolume("frame2", trd_frame2, frameVolMed);
-   //   TGeoVolume* trdmod1_frame2vol = new TGeoVolume(Form("module%d_frame2", moduleType), trd_frame2, frameVolMed);
-   //   TGeoVolume* trdmod1_frame2vol = new TGeoVolume(Form("trd1mod%dframe2", moduleType), trd_frame2, frameVolMed);
-   trdmod1_frame2vol->SetLineColor(kRed);
-
-   // translations 
-   TGeoTranslation* trd_frame2_trans = new TGeoTranslation("", activeAreaX /2. + frameWidth /2., 0., frame_position);
-   module->AddNode(trdmod1_frame2vol, 1, trd_frame2_trans);
-   trd_frame2_trans = new TGeoTranslation("", -(activeAreaX /2. + frameWidth /2.), 0., frame_position);
-   module->AddNode(trdmod1_frame2vol, 2, trd_frame2_trans);
-
-
-   // Pad Copper
-   TGeoBBox *trd_padcopper = new TGeoBBox("", sizeX /2., sizeY /2., padcopper_thickness /2.);
-   TGeoVolume* trdmod1_padcoppervol = new TGeoVolume("padcopper", trd_padcopper, padcopperVolMed);
-   //   TGeoVolume* trdmod1_padcoppervol = new TGeoVolume(Form("module%d_padcopper", moduleType), trd_padcopper, padcopperVolMed);
-   //   TGeoVolume* trdmod1_padcoppervol = new TGeoVolume(Form("trd1mod%dpadcopper", moduleType), trd_padcopper, padcopperVolMed);
-   trdmod1_padcoppervol->SetLineColor(kOrange);
-   TGeoTranslation *trd_padcopper_trans = new TGeoTranslation("", 0., 0., padcopper_position);
-   module->AddNode(trdmod1_padcoppervol, 1, trd_padcopper_trans);
-
-   // Pad Plane
-   TGeoBBox* trd_padpcb = new TGeoBBox("", sizeX /2., sizeY /2., padplane_thickness /2.);
-   TGeoVolume* trdmod1_padpcbvol = new TGeoVolume("padplane", trd_padpcb, padpcbVolMed);
-   //   TGeoVolume* trdmod1_padpcbvol = new TGeoVolume(Form("module%d_padplane", moduleType), trd_padpcb, padpcbVolMed);
-   //   TGeoVolume* trdmod1_padpcbvol = new TGeoVolume(Form("trd1mod%dpadplane", moduleType), trd_padpcb, padpcbVolMed);
-   trdmod1_padpcbvol->SetLineColor(kBlue);
-   TGeoTranslation *trd_padpcb_trans = new TGeoTranslation("", 0., 0., padplane_position);
-   module->AddNode(trdmod1_padpcbvol, 1, trd_padpcb_trans);
-
-   // Honeycomb
-   TGeoBBox* trd_honeycomb = new TGeoBBox("", sizeX /2., sizeY /2., honeycomb_thickness /2.);
-   TGeoVolume* trdmod1_honeycombvol = new TGeoVolume("honeycomb", trd_honeycomb, honeycombVolMed);
-   //   TGeoVolume* trdmod1_honeycombvol = new TGeoVolume(Form("module%d_honeycomb", moduleType), trd_honeycomb, honeycombVolMed);
-   //   TGeoVolume* trdmod1_honeycombvol = new TGeoVolume(Form("trd1mod%dhoneycomb", moduleType), trd_honeycomb, honeycombVolMed);
-   trdmod1_honeycombvol->SetLineColor(kOrange);
-   TGeoTranslation* trd_honeycomb_trans = new TGeoTranslation("", 0., 0., honeycomb_position);
-   module->AddNode(trdmod1_honeycombvol, 1, trd_honeycomb_trans);
-
-   // Carbon fiber layers
-   TGeoBBox* trd_carbon = new TGeoBBox("", sizeX /2., sizeY /2., carbon_thickness /2.);
-   TGeoVolume* trdmod1_carbonvol = new TGeoVolume("carbonsheet", trd_carbon, carbonVolMed);
-   //   TGeoVolume* trdmod1_carbonvol = new TGeoVolume(Form("module%d_carbonsheet", moduleType), trd_carbon, carbonVolMed);
-   //   TGeoVolume* trdmod1_carbonvol = new TGeoVolume(Form("trd1mod%dcarbon", moduleType), trd_carbon, carbonVolMed);
-   trdmod1_carbonvol->SetLineColor(kGreen);
-   TGeoTranslation* trd_carbon_trans = new TGeoTranslation("", 0., 0., carbon_position);
-   module->AddNode(trdmod1_carbonvol, 1, trd_carbon_trans);
-
+   if(IncludeBackpanel)
+   { 
+     // Honeycomb
+     TGeoBBox* trd_honeycomb = new TGeoBBox("", sizeX /2., sizeY /2., honeycomb_thickness /2.);
+     TGeoVolume* trdmod1_honeycombvol = new TGeoVolume("honeycomb", trd_honeycomb, honeycombVolMed);
+     //   TGeoVolume* trdmod1_honeycombvol = new TGeoVolume(Form("module%d_honeycomb", moduleType), trd_honeycomb, honeycombVolMed);
+     //   TGeoVolume* trdmod1_honeycombvol = new TGeoVolume(Form("trd1mod%dhoneycomb", moduleType), trd_honeycomb, honeycombVolMed);
+     trdmod1_honeycombvol->SetLineColor(kOrange);
+     TGeoTranslation* trd_honeycomb_trans = new TGeoTranslation("", 0., 0., honeycomb_position);
+     module->AddNode(trdmod1_honeycombvol, 1, trd_honeycomb_trans);
+  
+     // Carbon fiber layers
+     TGeoBBox* trd_carbon = new TGeoBBox("", sizeX /2., sizeY /2., carbon_thickness /2.);
+     TGeoVolume* trdmod1_carbonvol = new TGeoVolume("carbonsheet", trd_carbon, carbonVolMed);
+     //   TGeoVolume* trdmod1_carbonvol = new TGeoVolume(Form("module%d_carbonsheet", moduleType), trd_carbon, carbonVolMed);
+     //   TGeoVolume* trdmod1_carbonvol = new TGeoVolume(Form("trd1mod%dcarbon", moduleType), trd_carbon, carbonVolMed);
+     trdmod1_carbonvol->SetLineColor(kGreen);
+     TGeoTranslation* trd_carbon_trans = new TGeoTranslation("", 0., 0., carbon_position);
+     module->AddNode(trdmod1_carbonvol, 1, trd_carbon_trans);
+   }
 
    // FEBs
    if (IncludeFebs) 
