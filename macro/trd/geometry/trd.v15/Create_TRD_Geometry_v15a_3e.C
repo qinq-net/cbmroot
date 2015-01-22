@@ -1489,7 +1489,7 @@ TGeoVolume* create_trd_module_type(Int_t moduleType)
    //   TGeoVolume* trdmod1_gasvol = new TGeoVolume(Form("trd1mod%dgas", moduleType), trd_gas, gasVolMed);
    //   trdmod1_gasvol->SetLineColor(kBlue);
    trdmod1_gasvol->SetLineColor(kGreen); // to avoid blue overlaps in the screenshots
-   trdmod1_radvol->SetTransparency(40); // set transparency for the TRD gas
+   trdmod1_gasvol->SetTransparency(40);  // set transparency for the TRD gas
    TGeoTranslation* trd_gas_trans = new TGeoTranslation("", 0., 0., gas_position);
    module->AddNode(trdmod1_gasvol, 1, trd_gas_trans);
    // end of Frame in z
