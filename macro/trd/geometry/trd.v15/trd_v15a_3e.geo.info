@@ -2,7 +2,7 @@
 ##   trd_v15a_3e information file
 #
 
-# created 20150108
+# created 20150122
 
 # envelope
  410 cm   start of TRD (z)
@@ -57,6 +57,10 @@
 support structure is    : included
 radiator is             : included
 lattice grid is         : included
+kapton window is        : included
+gas frame is            : included
+padplane is             : included
+backpanel is            : included
 asics are               : included
 front-end boards are    : included
 GBTX readout boards are : NOT included
