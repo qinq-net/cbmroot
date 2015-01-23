@@ -34,10 +34,10 @@ const UInt_t kuNbChanComb = 4;
 class CbmTSUnpackGet4v1x : public CbmTSUnpack
 {
 public:
-  
+
   CbmTSUnpackGet4v1x();
   virtual ~CbmTSUnpackGet4v1x();
-    
+
   virtual Bool_t Init();
 #ifndef __CINT__
   virtual Bool_t DoUnpack(const fles::Timeslice& ts, size_t component);
@@ -101,7 +101,7 @@ private:
   TH1 * fhTimeResCombi[kuNbChanComb*(kuNbChanComb-1)/2];
 
   // Verbose functions (redundant with Print from GET4 Hack/Tools?)
-  void Print6bytesMessage(const uint8_t* msContent_shifted);
+//  void Print6bytesMessage(const uint8_t* msContent_shifted);
 
   // Monitoring functions
   void InitMonitorHistograms();

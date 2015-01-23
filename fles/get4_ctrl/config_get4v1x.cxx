@@ -91,10 +91,10 @@ int Set24bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x0000000F);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000010);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000020);
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000040);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000040);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000080);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000F0);
-//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000FF);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000FF);
    initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
 
 
@@ -213,10 +213,11 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0xFFFFFFFF);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0xFFFFFFFF);
 ///////// For ROC v3 single board setup
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000FF);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000FF);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x0000FF00);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00FF0000);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0xFF000000);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000FF);
    initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
 
 
@@ -227,7 +228,7 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 //   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x000000B4);
 //   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, 0x00000000);
 ///////// For ROC v3 single board setup
-   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x00000000);
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x00000080);
    initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, 0x00000000);
 
 // ROC_GET4_SUPRESS_EPOCHS_LSBS & ROC_GET4_SUPRESS_EPOCHS_MSBS

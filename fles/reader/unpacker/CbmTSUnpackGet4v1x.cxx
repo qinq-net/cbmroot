@@ -159,7 +159,7 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
             {
                // FIXME: This is here just until the bytes order in the ums is found
                // Then it should be removed (Q? is big vs small endian)
-               this->Print6bytesMessage(&msContent_shifted[local_offset]);
+//               this->Print6bytesMessage(&msContent_shifted[local_offset]);
 
                get4v1x::Message mess;
                uint64_t dataContent =
@@ -495,6 +495,18 @@ void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
 
    fHist->cd();
 
+   fhMessageTypePerRoc->Write();
+   fhRocSyncTypePerRoc->Write();
+   fhRocAuxTypePerRoc ->Write();
+   fhSysMessTypePerRoc->Write();
+   fhGet4EpochFlags   ->Write();
+   fhGet4EpochSyncDist->Write();
+   fhGet4ChanDataCount->Write();
+   fhGet4ChanDllStatus->Write();
+   fhGet4ChanTotMap   ->Write();
+   fhGet4ChanErrors   ->Write();
+   fhGet4ChanSlowContM->Write();
+
    if( kTRUE == fbPulserMode )
    {
       // First make a gauss fit to obtain the time resolution data
@@ -656,6 +668,8 @@ void CbmTSUnpackGet4v1x::MonitorMessage_sys(    get4v1x::Message mess, uint16_t 
       {
          // GET4 v1.x 32b raw message using hack
          fhMessageTypePerRoc->Fill( cRocId, 15 );
+         fhSysMessTypePerRoc->Fill( cRocId, 15 );
+
          MonitorMessage_Get4v1( mess, EqID);
          break;
       } // case get4v1x::SYSMSG_TS156_SYNC
@@ -692,6 +706,12 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
       {
          fvuCurrEpoch2[uChipFullId] = mess.getGet4V10R32EpochNumber();
 
+         if( 1 == mess.getGet4V10R32SyncFlag() )
+         {
+            fhGet4EpochFlags->Fill(uChipFullId , 0);
+            fhGet4EpochSyncDist->Fill( uChipFullId, fvuCurrEpoch2[uChipFullId] % get4v1x::kuSyncCycleSzGet4 );
+         } // if( 1 == mess.getGet4V10R32SyncFlag() )
+
          // Fill Pulser test histos if needed
          // Accepted pairs are when both messages are defined and they are at most
          // 1 epoch apart => possibility of double use is the pulse happens on top of
@@ -706,8 +726,8 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
             UInt_t uHistoFmcIdx = 0;
             for( UInt_t uChanFmcA = 0; uChanFmcA < kuNbChanFmc; uChanFmcA++)
                for( UInt_t uChanFmcB = uChanFmcA + 1; uChanFmcB < kuNbChanFmc; uChanFmcB++)
-                  if( 0xF0 <= fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcA].getMessageType() &&
-                      0xF0 <= fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcB].getMessageType() &&
+                  if( ( 0xF0 <= fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcA].getMessageType() ) &&
+                      ( 0xF0 <= fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcB].getMessageType() ) &&
                       (   fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcA ]
                         < fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcB ] + 2 ) &&
                       (   fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcA ] + 2
@@ -726,10 +746,10 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
             UInt_t uHistoCombiIdx = 0;
             for( UInt_t uChanA = 0; uChanA < kuNbChanTest-1; uChanA++)
             {
-               if( 0xF0 <= fvmLastHit[ fiPulserChan[uChanA]   ].getMessageType() &&
-                   0xF0 <= fvmLastHit[ fiPulserChan[uChanA+1] ].getMessageType() &&
-                   fvuLastHitEp[ fiPulserChan[uChanA]   ]     < fvuLastHitEp[ fiPulserChan[uChanA+1] ] + 2 &&
-                   fvuLastHitEp[ fiPulserChan[uChanA]   ] + 2 > fvuLastHitEp[ fiPulserChan[uChanA+1] ] )
+               if( ( 0xF0 <= fvmLastHit[ fiPulserChan[uChanA]   ].getMessageType() ) &&
+                   ( 0xF0 <= fvmLastHit[ fiPulserChan[uChanA+1] ].getMessageType() ) &&
+                   ( fvuLastHitEp[ fiPulserChan[uChanA]   ]     < fvuLastHitEp[ fiPulserChan[uChanA+1] ] + 2 ) &&
+                   ( fvuLastHitEp[ fiPulserChan[uChanA]   ] + 2 > fvuLastHitEp[ fiPulserChan[uChanA+1] ]     ) )
                   fhTimeResPairs[uChanA]->Fill(
                         ( fvuLastHitEp[ fiPulserChan[uChanA] ]
                          -fvuLastHitEp[ fiPulserChan[uChanA+1] ])*get4v1x::kdEpochInPs
@@ -738,10 +758,10 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
                            )*get4v1x::kdBinSize );
 
                for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
-                  if( 0xF0 <= fvmLastHit[ fiPulserChan[uChanA] ].getMessageType() &&
-                      0xF0 <= fvmLastHit[ fiPulserChan[uChanB] ].getMessageType() &&
-                      fvuLastHitEp[ fiPulserChan[uChanA] ]     < fvuLastHitEp[ fiPulserChan[uChanB] ] + 2 &&
-                      fvuLastHitEp[ fiPulserChan[uChanA] ] + 2 > fvuLastHitEp[ fiPulserChan[uChanB] ] )
+                  if( ( 0xF0 <= fvmLastHit[ fiPulserChan[uChanA] ].getMessageType() ) &&
+                      ( 0xF0 <= fvmLastHit[ fiPulserChan[uChanB] ].getMessageType() ) &&
+                      ( fvuLastHitEp[ fiPulserChan[uChanA] ]     < fvuLastHitEp[ fiPulserChan[uChanB] ] + 2 ) &&
+                      ( fvuLastHitEp[ fiPulserChan[uChanA] ] + 2 > fvuLastHitEp[ fiPulserChan[uChanB] ]     ) )
                {
                   fhTimeResCombi[uHistoCombiIdx]->Fill(
                         ( fvuLastHitEp[ fiPulserChan[uChanA] ]
