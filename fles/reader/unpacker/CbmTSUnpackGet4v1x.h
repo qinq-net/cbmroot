@@ -27,6 +27,10 @@
 class TH1;
 class TH2;
 
+const UInt_t kuNbChanFmc  = 32;
+const UInt_t kuNbChanTest = 16;
+const UInt_t kuNbChanComb = 4;
+
 class CbmTSUnpackGet4v1x : public CbmTSUnpack
 {
 public:
@@ -49,6 +53,14 @@ public:
 
   inline void SetMode( Int_t inMode = 2 ) { fiMode = inMode; }
 
+  inline void SetPulserMode( Bool_t inPulserMode = kTRUE ) { fbPulserMode = inPulserMode; }
+  inline void SetPulserFmc( Int_t inPulserFmc = 0 ) { fiPulserFmc = inPulserFmc; }
+  void SetPulserChans( Int_t inPulserChanA = 0, Int_t inPulserChanB = 1, Int_t inPulserChanC = 2,
+        Int_t inPulserChanD =  3, Int_t inPulserChanE =  4, Int_t inPulserChanF =  5, Int_t inPulserChanG =  6,
+        Int_t inPulserChanH =  7, Int_t inPulserChanI =  8, Int_t inPulserChanJ =  9, Int_t inPulserChanK = 10,
+        Int_t inPulserChanL = 11, Int_t inPulserChanM = 12, Int_t inPulserChanN = 13, Int_t inPulserChanO = 14,
+        Int_t inPulserChanP = 15 );
+
   // protected:
   //  virtual void Register();
 
@@ -62,21 +74,31 @@ private:
   UInt_t fuNbGet4;
 
   // Epochs book-keeping variables
-  Int_t fiCurrEpoch; // Current epoch (first epoch in the stream initialises this variable)
-  std::vector< Int_t > fviCurrEpoch2; // Current epoch2 (one per GET4 chip)
+  std::vector< UInt_t > fvuCurrEpoch;  // Current epoch  (one per ROC)
+  std::vector< UInt_t > fvuCurrEpoch2; // Current epoch2 (one per GET4 chip)
 
   // Monitoring related variables
   TH2 * fhMessageTypePerRoc;
   TH2 * fhRocSyncTypePerRoc;
   TH2 * fhRocAuxTypePerRoc;
   TH2 * fhSysMessTypePerRoc;
-  TH2 * fhGet4EpochFlags;
-  TH2 * fhGet4EpochSyncDist;
+  TH2 * fhGet4EpochFlags;    // TODO
+  TH2 * fhGet4EpochSyncDist; // TODO
   TH1 * fhGet4ChanDataCount;
   TH2 * fhGet4ChanDllStatus;
   TH2 * fhGet4ChanTotMap;
   TH2 * fhGet4ChanErrors;
   TH2 * fhGet4ChanSlowContM;
+     // TDC pulser test, works up to 1 hits per 2 epoch
+  Bool_t fbPulserMode;
+  Int_t  fiPulserFmc;
+  Int_t  fiPulserChan[kuNbChanTest];
+  std::vector< UInt_t >           fvuLastHitEp; // Epoch of Last hit message (one per GET4 chip & channel)
+  std::vector< get4v1x::Message > fvmLastHit;   // Last hit message (one per GET4 chip & channel)
+  TH1 * fhTimeResFMC[kuNbChanFmc*(kuNbChanFmc-1)/2];
+  TH2 * fhTimeResAllFMC;
+  TH1 * fhTimeResPairs[kuNbChanTest - 1];
+  TH1 * fhTimeResCombi[kuNbChanComb*(kuNbChanComb-1)/2];
 
   // Verbose functions (redundant with Print from GET4 Hack/Tools?)
   void Print6bytesMessage(const uint8_t* msContent_shifted);

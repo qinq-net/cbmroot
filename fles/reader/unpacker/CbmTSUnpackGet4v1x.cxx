@@ -19,8 +19,10 @@
 #include "FairRootManager.h"
 
 // ROOT headers
+#include "TF1.h"
 #include "TH2.h"
 #include "TClonesArray.h"
+#include "TFile.h"
 
 // C++ std headers
 #include <iostream>
@@ -44,7 +46,6 @@ CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
 	fiMode(0),
    fuNbRocs(0),
    fuNbGet4(0),
-   fiCurrEpoch(0),
    fhMessageTypePerRoc(0),
    fhSysMessTypePerRoc(0),
    fhGet4EpochFlags(0),
@@ -81,9 +82,42 @@ Bool_t CbmTSUnpackGet4v1x::Init()
      LOG(FATAL) << "Please use the functions SetRocNb and/or SetGet4Nb before running!!" << FairLogger::endl;
   }
 
+  // Prepare the epoch storing vectors
+  fvuCurrEpoch.resize( fuNbRocs);
+  for( UInt_t uRoc = 0; uRoc < fuNbRocs; uRoc++)
+     fvuCurrEpoch[uRoc] = 0;
+  fvuCurrEpoch2.resize(fuNbGet4);
+  for( UInt_t uChip = 0; uChip < fuNbGet4; uChip++)
+     fvuCurrEpoch2[uChip] = 0;
+
   InitMonitorHistograms();
 
   return kTRUE;
+}
+
+
+void CbmTSUnpackGet4v1x::SetPulserChans(
+      Int_t inPulserChanA, Int_t inPulserChanB, Int_t inPulserChanC, Int_t inPulserChanD,
+      Int_t inPulserChanE, Int_t inPulserChanF, Int_t inPulserChanG, Int_t inPulserChanH,
+      Int_t inPulserChanI, Int_t inPulserChanJ, Int_t inPulserChanK, Int_t inPulserChanL,
+      Int_t inPulserChanM, Int_t inPulserChanN, Int_t inPulserChanO, Int_t inPulserChanP )
+{
+   fiPulserChan[ 0] = inPulserChanA;
+   fiPulserChan[ 1] = inPulserChanB;
+   fiPulserChan[ 2] = inPulserChanC;
+   fiPulserChan[ 3] = inPulserChanD;
+   fiPulserChan[ 4] = inPulserChanE;
+   fiPulserChan[ 5] = inPulserChanF;
+   fiPulserChan[ 6] = inPulserChanG;
+   fiPulserChan[ 7] = inPulserChanH;
+   fiPulserChan[ 8] = inPulserChanI;
+   fiPulserChan[ 9] = inPulserChanJ;
+   fiPulserChan[10] = inPulserChanK;
+   fiPulserChan[11] = inPulserChanL;
+   fiPulserChan[12] = inPulserChanM;
+   fiPulserChan[13] = inPulserChanN;
+   fiPulserChan[14] = inPulserChanO;
+   fiPulserChan[15] = inPulserChanP;
 }
 
 Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
@@ -398,14 +432,121 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
    fhGet4ChanSlowContM->GetYaxis()->SetBinLabel(3,  "2: SPI receiver data        ");
    fhGet4ChanSlowContM->GetYaxis()->SetBinLabel(4,  "3: Start message/Hamming Er.");
 
+
+   if( kTRUE == fbPulserMode )
+   {
+      // Full FMC test
+      UInt_t uHistoFmcIdx = 0;
+      for( UInt_t uChanFmcA = 0; uChanFmcA < kuNbChanFmc; uChanFmcA++)
+         for( UInt_t uChanFmcB = uChanFmcA + 1; uChanFmcB < kuNbChanFmc; uChanFmcB++)
+         {
+            fhTimeResFMC[uHistoFmcIdx] = new TH1I(
+                  Form("hTimeResFMC_%03u_%03u", uChanFmcA, uChanFmcB),
+                  Form("Time difference for channels %03u an %03u in chosen FMC; DeltaT [ps]; Counts",
+                        uChanFmcA, uChanFmcB),
+                  1000, -12500, 12500);
+            uHistoFmcIdx++;
+         } // for any unique pair of channel in chosen FMC
+      fhTimeResAllFMC = new TH2D( "hTimeResAllFMC",
+            "Time resolution for any channels pair in chosen FMC; Ch A; Ch B",
+            kuNbChanTest, -0.5, kuNbChanTest - 0.5,
+            kuNbChanTest, -0.5, kuNbChanTest - 0.5);
+
+      // Chosen channels test
+      UInt_t uHistoCombiIdx = 0;
+      for( UInt_t uChanA = 0; uChanA < kuNbChanTest-1; uChanA++)
+      {
+         fhTimeResPairs[uChanA]  = new TH1I(
+               Form("hTimeResPairs_%03u_%03u", fiPulserChan[uChanA], fiPulserChan[uChanA+1]),
+               Form("Time difference for selected channels %03u an %03u; DeltaT [ps]; Counts",
+                     fiPulserChan[uChanA], fiPulserChan[uChanA+1]),
+                     1000, -12500, 12500);
+         for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
+         {
+            fhTimeResCombi[uHistoCombiIdx]  = new TH1I(
+               Form("hTimeResCombi_%03u_%03u", fiPulserChan[uChanA], fiPulserChan[uChanB]),
+               Form("Time difference for selected channels %03u an %03u; DeltaT [ps]; Counts",
+                     fiPulserChan[uChanA], fiPulserChan[uChanB]),
+               1000, -12500, 12500);
+            uHistoCombiIdx++;
+         } // for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
+      } // for( UInt_t uChanA = 0; uChanA < kuNbChanTest; uChanA++)
+
+      // Prepare the vector storing the hit data for time diff calculation
+      fvuLastHitEp.resize( fuNbGet4 * get4v1x::kuChanPerGet4);
+      fvmLastHit.resize(   fuNbGet4 * get4v1x::kuChanPerGet4);
+
+      // Now clear the hits
+      for( UInt_t uChan = 0; uChan < fuNbGet4 * get4v1x::kuChanPerGet4; uChan++)
+      {
+         fvuLastHitEp[uChan] = 0;
+         fvmLastHit[uChan].reset();
+      } // for( UInt_t uChan = 0; uChan < fuNbGet4 * get4v1x::kuChanPerGet4; uChan++)
+   } // if( kTRUE == fbPulserMode )
 }
 void CbmTSUnpackGet4v1x::FillMonitorHistograms()
 {
-
 }
 void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
 {
+   TDirectory * oldir = gDirectory;
+   TFile *fHist;
+   fHist = new TFile("./get4Monitor.hst.root","RECREATE");
 
+   fHist->cd();
+
+   if( kTRUE == fbPulserMode )
+   {
+      // First make a gauss fit to obtain the time resolution data
+      // for all FMC channels pairs
+      UInt_t uHistoFmcIdx = 0;
+      TF1 *fitFunc[kuNbChanFmc*(kuNbChanFmc-1)/2];
+      for( UInt_t uChanFmcA = 0; uChanFmcA < kuNbChanFmc; uChanFmcA++)
+         for( UInt_t uChanFmcB = uChanFmcA + 1; uChanFmcB < kuNbChanFmc; uChanFmcB++)
+         {
+            Double_t dRes = 0.0;
+
+            // No need to fit if not data in histo
+            if( 0 == fhTimeResFMC[uHistoFmcIdx]->Integral() )
+               continue;
+
+            fitFunc[uHistoFmcIdx] = new TF1( Form("f_%02d_%02d",uChanFmcA,uChanFmcB), "gaus",
+                  fhTimeResFMC[uHistoFmcIdx]->GetMean() - 5*fhTimeResFMC[uHistoFmcIdx]->GetRMS() ,
+                  fhTimeResFMC[uHistoFmcIdx]->GetMean() + 5*fhTimeResFMC[uHistoFmcIdx]->GetRMS());
+
+            fhTimeResFMC[uHistoFmcIdx]->Fit( Form("f_%02d_%02d",uChanFmcA,uChanFmcB), "QR");
+
+            dRes = fitFunc[uHistoFmcIdx]->GetParameter(2);
+
+            // If needed uncomment for debugging
+            //(WARNING: this adds 1024 histos to the file!)
+//            fhTimeResFMC[uHistoFmcIdx]->Write();
+
+            delete fitFunc[uHistoFmcIdx];
+
+            fhTimeResAllFMC->Fill(uChanFmcA, uChanFmcB, dRes);
+
+            uHistoFmcIdx++;
+         } // for any unique pair of channel in chosen FMC
+
+      // Then write the FMC summary histo
+      fhTimeResAllFMC->Write();
+
+      // Write the histos for the test on chosen channel pairs
+      UInt_t uHistoCombiIdx = 0;
+      for( UInt_t uChanA = 0; uChanA < kuNbChanTest-1; uChanA++)
+      {
+         fhTimeResPairs[uChanA]->Write();
+         for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
+         {
+            fhTimeResCombi[uHistoCombiIdx]->Write();
+            uHistoCombiIdx++;
+         } // for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
+      } // for( UInt_t uChanA = 0; uChanA < kuNbChanTest; uChanA++)
+   } // if( kTRUE == fbPulserMode )
+
+   gDirectory->cd( oldir->GetPath() );
+   fHist->Close();
 }
 void CbmTSUnpackGet4v1x::DeleteMonitorHistograms()
 {
@@ -532,27 +673,93 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
    // GET4 v1.x 32b raw message using hack
    uint8_t  cRocId    = mess.getRocNumber();
    uint8_t  cChipId   = mess.getGet4V10R32ChipId();
+   uint32_t uChipFullId = cChipId + get4v1x::kuMaxGet4PerRoc*cRocId;
    uint8_t  cMessType = mess.getGet4V10R32MessageType();
 
-   if( fuNbGet4 <= cChipId + get4v1x::kuMaxGet4PerRoc*cRocId )
+   if( fuNbGet4 <= uChipFullId )
    {
       if( kTRUE == fbVerbose )
          LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_Get4v1 => Ignored message with ChipId above limit!"
                   <<" ChipId: "<<cChipId
                   <<" RocId: " <<cRocId
                   <<" Limit: " <<fuNbGet4<<FairLogger::endl;
+      return;
    } // if( fuNbGet4 <= cChipId + kuMaxGet4PerRoc*mess.getRocNumber() )
 
    switch( cMessType )
    {
       case get4v1x::GET4_32B_EPOCH: // => Epoch message
       {
+         fvuCurrEpoch2[uChipFullId] = mess.getGet4V10R32EpochNumber();
+
+         // Fill Pulser test histos if needed
+         // Accepted pairs are when both messages are defined and they are at most
+         // 1 epoch apart => possibility of double use is the pulse happens on top of
+         // an epoch and more than once every 3 epochs. For example:
+         // HHHHEHHHH.......E......HHHHEHHHH leads to
+         // (HHHHHHHH)             (HHHHHHHH) and
+         //     (HHHH              HHHH)
+         if( kTRUE == fbPulserMode )
+         {
+            // Fill the time difference for all channels pairs in
+            // the chosen FMC
+            UInt_t uHistoFmcIdx = 0;
+            for( UInt_t uChanFmcA = 0; uChanFmcA < kuNbChanFmc; uChanFmcA++)
+               for( UInt_t uChanFmcB = uChanFmcA + 1; uChanFmcB < kuNbChanFmc; uChanFmcB++)
+                  if( 0xF0 <= fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcA].getMessageType() &&
+                      0xF0 <= fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcB].getMessageType() &&
+                      (   fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcA ]
+                        < fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcB ] + 2 ) &&
+                      (   fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcA ] + 2
+                        > fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcB ] ) )
+               {
+                  fhTimeResFMC[uHistoFmcIdx]->Fill(
+                       ( fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcA]
+                        -fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcB])*get4v1x::kdEpochInPs
+                       + ( fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcA].getGet4V10R32HitTimeBin()
+                          -fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcB].getGet4V10R32HitTimeBin()
+                          )*get4v1x::kdBinSize );
+                  uHistoFmcIdx++;
+               } // for any unique pair of channel in chosen FMC with data
+
+            // Fill the time difference for the chosen channel pairs
+            UInt_t uHistoCombiIdx = 0;
+            for( UInt_t uChanA = 0; uChanA < kuNbChanTest-1; uChanA++)
+            {
+               if( 0xF0 <= fvmLastHit[ fiPulserChan[uChanA]   ].getMessageType() &&
+                   0xF0 <= fvmLastHit[ fiPulserChan[uChanA+1] ].getMessageType() &&
+                   fvuLastHitEp[ fiPulserChan[uChanA]   ]     < fvuLastHitEp[ fiPulserChan[uChanA+1] ] + 2 &&
+                   fvuLastHitEp[ fiPulserChan[uChanA]   ] + 2 > fvuLastHitEp[ fiPulserChan[uChanA+1] ] )
+                  fhTimeResPairs[uChanA]->Fill(
+                        ( fvuLastHitEp[ fiPulserChan[uChanA] ]
+                         -fvuLastHitEp[ fiPulserChan[uChanA+1] ])*get4v1x::kdEpochInPs
+                        + ( fvmLastHit[ fiPulserChan[uChanA] ].getGet4V10R32HitTimeBin()
+                           -fvmLastHit[ fiPulserChan[uChanA+1]].getGet4V10R32HitTimeBin()
+                           )*get4v1x::kdBinSize );
+
+               for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
+                  if( 0xF0 <= fvmLastHit[ fiPulserChan[uChanA] ].getMessageType() &&
+                      0xF0 <= fvmLastHit[ fiPulserChan[uChanB] ].getMessageType() &&
+                      fvuLastHitEp[ fiPulserChan[uChanA] ]     < fvuLastHitEp[ fiPulserChan[uChanB] ] + 2 &&
+                      fvuLastHitEp[ fiPulserChan[uChanA] ] + 2 > fvuLastHitEp[ fiPulserChan[uChanB] ] )
+               {
+                  fhTimeResCombi[uHistoCombiIdx]->Fill(
+                        ( fvuLastHitEp[ fiPulserChan[uChanA] ]
+                         -fvuLastHitEp[ fiPulserChan[uChanB] ])*get4v1x::kdEpochInPs
+                        + ( fvmLastHit[ fiPulserChan[uChanA] ].getGet4V10R32HitTimeBin()
+                           -fvmLastHit[ fiPulserChan[uChanB]].getGet4V10R32HitTimeBin()
+                           )*get4v1x::kdBinSize );
+                  uHistoCombiIdx++;
+               } // for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
+            } // for( UInt_t uChanA = 0; uChanA < kuNbChanTest; uChanA++)
+
+         } // if( kTRUE == fbPulserMode )
          break;
       } // case get4v1x::GET4_32B_EPOCH
       case get4v1x::GET4_32B_SLCM:  // => Slow control
       {
          Double_t dFullChId =
-               get4v1x::kuChanPerGet4*2*( cChipId + get4v1x::kuMaxGet4PerRoc*cRocId )
+               get4v1x::kuChanPerGet4*2*( uChipFullId )
                + mess.getGet4V10R32SlChan()
                + 0.5*mess.getGet4V10R32SlEdge();
          fhGet4ChanSlowContM->Fill( dFullChId, mess.getGet4V10R32SlType() );
@@ -561,7 +768,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
       case get4v1x::GET4_32B_ERROR: // => Error message
       {
          Double_t dFullChId =
-               get4v1x::kuChanPerGet4*2*( cChipId + get4v1x::kuMaxGet4PerRoc*cRocId )
+               get4v1x::kuChanPerGet4*2*( uChipFullId )
                + mess.getGet4V10R32ErrorChan()
                + 0.5*mess.getGet4V10R32ErrorEdge();
          switch( mess.getGet4V10R32ErrorData() )
@@ -626,11 +833,20 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
       case get4v1x::GET4_32B_DATA:  // => Hit Data
       {
          UInt_t uFullChId =
-               get4v1x::kuChanPerGet4*( cChipId + get4v1x::kuMaxGet4PerRoc*cRocId )
+               get4v1x::kuChanPerGet4*( uChipFullId )
                + mess.getGet4V10R32HitChan();
          fhGet4ChanDataCount->Fill( uFullChId );
          fhGet4ChanDllStatus->Fill( uFullChId, mess.getGet4V10R32HitDllFlag() );
          fhGet4ChanTotMap->Fill(    uFullChId, mess.getGet4V10R32HitTot() );
+
+         // Save the hit info in order to fill later the pulser histos
+         if( kTRUE == fbPulserMode )
+         {
+            // Epoch of Last hit message (one per GET4 chip & channel)
+            fvuLastHitEp[ uFullChId ] = fvuCurrEpoch2[uChipFullId];
+            // Last hit message (one per GET4 chip & channel)
+            fvmLastHit[ uFullChId ] = mess;
+         } // if( kTRUE == fbPulserMode )
 
          break;
       } // case get4v1x::GET4_32B_DATA
@@ -770,15 +986,17 @@ void CbmTSUnpackGet4v1x::ProcessMessage_Get4v1( get4v1x::Message mess, uint16_t 
    // GET4 v1.x 32b raw message using hack
    uint8_t  cRocId    = mess.getRocNumber();
    uint8_t  cChipId   = mess.getGet4V10R32ChipId();
+   uint32_t uChipFullId = cChipId + get4v1x::kuMaxGet4PerRoc*cRocId;
    uint8_t  cMessType = mess.getGet4V10R32MessageType();
 
-   if( fuNbGet4 <= cChipId + get4v1x::kuMaxGet4PerRoc*cRocId )
+   if( fuNbGet4 <= uChipFullId )
    {
       if( kTRUE == fbVerbose )
          LOG(INFO)<<"CbmTSUnpackGet4v1x::ProcessMessage_Get4v1 => Ignored message with ChipId above limit!"
                   <<" ChipId: "<<cChipId
                   <<" RocId: " <<cRocId
                   <<" Limit: " <<fuNbGet4<<FairLogger::endl;
+      return;
    } // if( fuNbGet4 <= cChipId + kuMaxGet4PerRoc*mess.getRocNumber() )
 
    switch( cMessType )
@@ -790,7 +1008,7 @@ void CbmTSUnpackGet4v1x::ProcessMessage_Get4v1( get4v1x::Message mess, uint16_t 
       case get4v1x::GET4_32B_SLCM:  // => Slow control
       {
          Double_t dFullChId =
-               get4v1x::kuChanPerGet4*2*( cChipId + get4v1x::kuMaxGet4PerRoc*cRocId )
+               get4v1x::kuChanPerGet4*2*( uChipFullId )
                + mess.getGet4V10R32SlChan()
                + 0.5*mess.getGet4V10R32SlEdge();
          fhGet4ChanSlowContM->Fill( dFullChId, mess.getGet4V10R32SlType() );
@@ -799,7 +1017,7 @@ void CbmTSUnpackGet4v1x::ProcessMessage_Get4v1( get4v1x::Message mess, uint16_t 
       case get4v1x::GET4_32B_ERROR: // => Error message
       {
          Double_t dFullChId =
-               get4v1x::kuChanPerGet4*2*( cChipId + get4v1x::kuMaxGet4PerRoc*cRocId )
+               get4v1x::kuChanPerGet4*2*( uChipFullId )
                + mess.getGet4V10R32ErrorChan()
                + 0.5*mess.getGet4V10R32ErrorEdge();
          switch( mess.getGet4V10R32ErrorData() )
@@ -864,7 +1082,7 @@ void CbmTSUnpackGet4v1x::ProcessMessage_Get4v1( get4v1x::Message mess, uint16_t 
       case get4v1x::GET4_32B_DATA:  // => Hit Data
       {
          UInt_t uFullChId =
-               get4v1x::kuChanPerGet4*( cChipId + get4v1x::kuMaxGet4PerRoc*cRocId )
+               get4v1x::kuChanPerGet4*( uChipFullId )
                + mess.getGet4V10R32HitChan();
          fhGet4ChanDataCount->Fill( uFullChId );
          fhGet4ChanDllStatus->Fill( uFullChId, mess.getGet4V10R32HitDllFlag() );
