@@ -444,13 +444,13 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
                   Form("hTimeResFMC_%03u_%03u", uChanFmcA, uChanFmcB),
                   Form("Time difference for channels %03u an %03u in chosen FMC; DeltaT [ps]; Counts",
                         uChanFmcA, uChanFmcB),
-                  1000, -12500, 12500);
+                  500, -12500, 12500);
             uHistoFmcIdx++;
          } // for any unique pair of channel in chosen FMC
       fhTimeResAllFMC = new TH2D( "hTimeResAllFMC",
             "Time resolution for any channels pair in chosen FMC; Ch A; Ch B",
-            kuNbChanTest, -0.5, kuNbChanTest - 0.5,
-            kuNbChanTest, -0.5, kuNbChanTest - 0.5);
+            kuNbChanFmc - 1, -0.5, kuNbChanFmc - 1.5,
+            kuNbChanFmc - 1,  0.5, kuNbChanFmc - 0.5);
 
       // Chosen channels test
       UInt_t uHistoCombiIdx = 0;
@@ -460,14 +460,14 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
                Form("hTimeResPairs_%03u_%03u", fiPulserChan[uChanA], fiPulserChan[uChanA+1]),
                Form("Time difference for selected channels %03u an %03u; DeltaT [ps]; Counts",
                      fiPulserChan[uChanA], fiPulserChan[uChanA+1]),
-                     1000, -12500, 12500);
+                     500, -12500, 12500);
          for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
          {
             fhTimeResCombi[uHistoCombiIdx]  = new TH1I(
                Form("hTimeResCombi_%03u_%03u", fiPulserChan[uChanA], fiPulserChan[uChanB]),
                Form("Time difference for selected channels %03u an %03u; DeltaT [ps]; Counts",
                      fiPulserChan[uChanA], fiPulserChan[uChanB]),
-               1000, -12500, 12500);
+               500, -12500, 12500);
             uHistoCombiIdx++;
          } // for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
       } // for( UInt_t uChanA = 0; uChanA < kuNbChanTest; uChanA++)
@@ -520,13 +520,19 @@ void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
 
             // No need to fit if not data in histo
             if( 0 == fhTimeResFMC[uHistoFmcIdx]->Integral() )
-               continue;
+            {
 
-            fitFunc[uHistoFmcIdx] = new TF1( Form("f_%02d_%02d",uChanFmcA,uChanFmcB), "gaus",
+               LOG(INFO)<<" FMS histo empty: "<<uHistoFmcIdx<<" "
+                     <<uChanFmcA<<" "<<uChanFmcB<<FairLogger::endl;
+               uHistoFmcIdx++;
+               continue;
+            } //  if( 0 == fhTimeResFMC[uHistoFmcIdx]->Integral() )
+
+            fitFunc[uHistoFmcIdx] = new TF1( Form("f_%03d_%03d",uChanFmcA,uChanFmcB), "gaus",
                   fhTimeResFMC[uHistoFmcIdx]->GetMean() - 5*fhTimeResFMC[uHistoFmcIdx]->GetRMS() ,
                   fhTimeResFMC[uHistoFmcIdx]->GetMean() + 5*fhTimeResFMC[uHistoFmcIdx]->GetRMS());
 
-            fhTimeResFMC[uHistoFmcIdx]->Fit( Form("f_%02d_%02d",uChanFmcA,uChanFmcB), "QR");
+            fhTimeResFMC[uHistoFmcIdx]->Fit( Form("f_%03d_%03d",uChanFmcA,uChanFmcB), "QR");
 
             dRes = fitFunc[uHistoFmcIdx]->GetParameter(2);
 
@@ -719,56 +725,101 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
          // HHHHEHHHH.......E......HHHHEHHHH leads to
          // (HHHHHHHH)             (HHHHHHHH) and
          //     (HHHH              HHHH)
-         if( kTRUE == fbPulserMode )
+         if( kTRUE == fbPulserMode && 0 == uChipFullId )
          {
             // Fill the time difference for all channels pairs in
             // the chosen FMC
             UInt_t uHistoFmcIdx = 0;
             for( UInt_t uChanFmcA = 0; uChanFmcA < kuNbChanFmc; uChanFmcA++)
                for( UInt_t uChanFmcB = uChanFmcA + 1; uChanFmcB < kuNbChanFmc; uChanFmcB++)
-                  if( ( 0xF0 <= fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcA].getMessageType() ) &&
-                      ( 0xF0 <= fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcB].getMessageType() ) &&
+               {
+/*
+                  LOG(DEBUG)<<"CbmTSUnpackGet4v1x::MonitorMessage_Get4v1 => Test FMC condition "
+                           <<" uChanFmcA: "<<uChanFmcA
+                           <<" uChanFmcB: " <<uChanFmcB
+                           <<" Conditions: "
+                           <<(   fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcA ]
+                                               < fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcB ] + 2 )
+                           <<" "
+                           <<(   fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcA ] + 2
+                                 > fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcB ] )
+                           <<FairLogger::endl;
+                           */
+                  if( ( 0xF0 <= fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcA].getSysMesType() ) &&
+                      ( 0xF0 <= fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcB].getSysMesType() ) &&
                       (   fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcA ]
                         < fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcB ] + 2 ) &&
                       (   fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcA ] + 2
                         > fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcB ] ) )
-               {
-                  fhTimeResFMC[uHistoFmcIdx]->Fill(
-                       ( fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcA]
-                        -fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcB])*get4v1x::kdEpochInPs
-                       + ( fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcA].getGet4V10R32HitTimeBin()
-                          -fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcB].getGet4V10R32HitTimeBin()
-                          )*get4v1x::kdBinSize );
+                  {
+                     Double_t dTimeDiff = 0.0;
+                     /*
+                     // if conditions needed to deal with unsigned int at full resolution
+                     if( fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcA] <
+                           fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcB])
+                        dTimeDiff -=
+                              ( fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcB]
+                               -fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcA])*get4v1x::kdEpochInPs;
+                        else dTimeDiff +=
+                              ( fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcA]
+                               -fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcB])*get4v1x::kdEpochInPs;
+                     // if conditions needed to deal with unsigned int at full resolution
+                     if( fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcA].getGet4V10R32HitTimeBin() <
+                           fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcB].getGet4V10R32HitTimeBin())
+                        dTimeDiff -=
+                              ( fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcB].getGet4V10R32HitTimeBin()
+                               -fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcA].getGet4V10R32HitTimeBin()
+                              )*get4v1x::kdBinSize;
+                        else dTimeDiff +=
+                              ( fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcA].getGet4V10R32HitTimeBin()
+                               -fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcB].getGet4V10R32HitTimeBin()
+                              )*get4v1x::kdBinSize;
+                     */
+                     dTimeDiff = fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcA].CalcGet4V10R32HitTimeDiff(
+                           fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcA],
+                           fvuLastHitEp[ fiPulserFmc * kuNbChanFmc+ uChanFmcB],
+                           fvmLastHit[ fiPulserFmc * kuNbChanFmc+ uChanFmcB] );
+
+                     fhTimeResFMC[uHistoFmcIdx]->Fill( dTimeDiff );
+                  } // if both channels have matching data
                   uHistoFmcIdx++;
-               } // for any unique pair of channel in chosen FMC with data
+               } // for any unique pair of channel in chosen FMC
 
             // Fill the time difference for the chosen channel pairs
             UInt_t uHistoCombiIdx = 0;
             for( UInt_t uChanA = 0; uChanA < kuNbChanTest-1; uChanA++)
             {
-               if( ( 0xF0 <= fvmLastHit[ fiPulserChan[uChanA]   ].getMessageType() ) &&
-                   ( 0xF0 <= fvmLastHit[ fiPulserChan[uChanA+1] ].getMessageType() ) &&
-                   ( fvuLastHitEp[ fiPulserChan[uChanA]   ]     < fvuLastHitEp[ fiPulserChan[uChanA+1] ] + 2 ) &&
-                   ( fvuLastHitEp[ fiPulserChan[uChanA]   ] + 2 > fvuLastHitEp[ fiPulserChan[uChanA+1] ]     ) )
-                  fhTimeResPairs[uChanA]->Fill(
-                        ( fvuLastHitEp[ fiPulserChan[uChanA] ]
-                         -fvuLastHitEp[ fiPulserChan[uChanA+1] ])*get4v1x::kdEpochInPs
-                        + ( fvmLastHit[ fiPulserChan[uChanA] ].getGet4V10R32HitTimeBin()
-                           -fvmLastHit[ fiPulserChan[uChanA+1]].getGet4V10R32HitTimeBin()
-                           )*get4v1x::kdBinSize );
+               if( ( 0xF0 <= fvmLastHit[ fiPulserChan[uChanA]   ].getSysMesType() ) &&
+                   ( 0xF0 <= fvmLastHit[ fiPulserChan[uChanA+1] ].getSysMesType() ) &&
+                   ( fvuLastHitEp[ fiPulserChan[uChanA]   ]
+                         < fvuLastHitEp[ fiPulserChan[uChanA+1] ] + 2 ) &&
+                   ( fvuLastHitEp[ fiPulserChan[uChanA]   ] + 2
+                         > fvuLastHitEp[ fiPulserChan[uChanA+1] ]     ) )
+               {
+                  Double_t dTimeDiff =
+                        fvmLastHit[   fiPulserChan[uChanA]   ].CalcGet4V10R32HitTimeDiff(
+                        fvuLastHitEp[ fiPulserChan[uChanA]   ],
+                        fvuLastHitEp[ fiPulserChan[uChanA+1] ],
+                        fvmLastHit[   fiPulserChan[uChanA+1] ] );
+                  fhTimeResPairs[uChanA]->Fill( dTimeDiff );
+               } // // if both channels have data
 
                for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
-                  if( ( 0xF0 <= fvmLastHit[ fiPulserChan[uChanA] ].getMessageType() ) &&
-                      ( 0xF0 <= fvmLastHit[ fiPulserChan[uChanB] ].getMessageType() ) &&
-                      ( fvuLastHitEp[ fiPulserChan[uChanA] ]     < fvuLastHitEp[ fiPulserChan[uChanB] ] + 2 ) &&
-                      ( fvuLastHitEp[ fiPulserChan[uChanA] ] + 2 > fvuLastHitEp[ fiPulserChan[uChanB] ]     ) )
                {
-                  fhTimeResCombi[uHistoCombiIdx]->Fill(
-                        ( fvuLastHitEp[ fiPulserChan[uChanA] ]
-                         -fvuLastHitEp[ fiPulserChan[uChanB] ])*get4v1x::kdEpochInPs
-                        + ( fvmLastHit[ fiPulserChan[uChanA] ].getGet4V10R32HitTimeBin()
-                           -fvmLastHit[ fiPulserChan[uChanB]].getGet4V10R32HitTimeBin()
-                           )*get4v1x::kdBinSize );
+                  if( ( 0xF0 <= fvmLastHit[ fiPulserChan[uChanA] ].getSysMesType() ) &&
+                      ( 0xF0 <= fvmLastHit[ fiPulserChan[uChanB] ].getSysMesType() ) &&
+                      ( fvuLastHitEp[ fiPulserChan[uChanA] ]
+                            < fvuLastHitEp[ fiPulserChan[uChanB] ] + 2 ) &&
+                      ( fvuLastHitEp[ fiPulserChan[uChanA] ] + 2
+                            > fvuLastHitEp[ fiPulserChan[uChanB] ]     ) )
+                  {
+                     Double_t dTimeDiff =
+                           fvmLastHit[   fiPulserChan[uChanA] ].CalcGet4V10R32HitTimeDiff(
+                           fvuLastHitEp[ fiPulserChan[uChanA] ],
+                           fvuLastHitEp[ fiPulserChan[uChanB] ],
+                           fvmLastHit[   fiPulserChan[uChanB] ] );
+                     fhTimeResCombi[uHistoCombiIdx]->Fill( dTimeDiff );
+                  } // if both channels have data
                   uHistoCombiIdx++;
                } // for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
             } // for( UInt_t uChanA = 0; uChanA < kuNbChanTest; uChanA++)
@@ -866,6 +917,15 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
             fvuLastHitEp[ uFullChId ] = fvuCurrEpoch2[uChipFullId];
             // Last hit message (one per GET4 chip & channel)
             fvmLastHit[ uFullChId ] = mess;
+/*
+            LOG(DEBUG)<<"CbmTSUnpackGet4v1x::MonitorMessage_Get4v1 => Test data status  "
+                     <<" uFullChId: "<<uFullChId
+                     <<" Status: "
+                     <<(Int_t)( mess.getSysMesType() )
+                     <<" "
+                     <<(Int_t)( fvmLastHit[ uFullChId ].getSysMesType() )
+                     <<FairLogger::endl;
+*/
          } // if( kTRUE == fbPulserMode )
 
          break;

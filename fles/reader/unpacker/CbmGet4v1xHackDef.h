@@ -468,6 +468,9 @@ namespace get4v1x {
          inline uint8_t  getGet4V10R32HitChan()     const { return getFieldBE( 43, 2); }
          inline bool     getGet4V10R32HitDllFlag()  const { return getBitBE(   45); }
 
+         // ---------- Get4 v1.x 32b tool methods -----------------------
+         double CalcGet4V10R32HitTimeDiff(uint32_t epochA, uint32_t epochB, Message& messB);
+
          // ---------- Common functions -----------------------
 
          //! Returns \a true is message type is #MSG_NOP (filler message)

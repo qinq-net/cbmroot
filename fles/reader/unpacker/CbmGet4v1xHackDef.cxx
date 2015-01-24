@@ -764,3 +764,25 @@ bool get4v1x::Message::copyto(void* tgt, int fmt)
    return false;
 
 }
+
+double get4v1x::Message::CalcGet4V10R32HitTimeDiff(
+      uint32_t epochA, uint32_t epochB, Message& messB)
+{
+   Double_t dTimeDiff = 0.0;
+   // if conditions needed to deal with unsigned int at full resolution
+   if( epochA < epochB)
+      dTimeDiff -=
+            ( epochB - epochA )*get4v1x::kdEpochInPs;
+      else dTimeDiff +=
+            ( epochA - epochB )*get4v1x::kdEpochInPs;
+   // if conditions needed to deal with unsigned int at full resolution
+   if( this->getGet4V10R32HitTimeBin() < messB.getGet4V10R32HitTimeBin() )
+      dTimeDiff -=
+            ( messB.getGet4V10R32HitTimeBin() - this->getGet4V10R32HitTimeBin()
+            )*get4v1x::kdBinSize;
+      else dTimeDiff +=
+            ( this->getGet4V10R32HitTimeBin() - messB.getGet4V10R32HitTimeBin()
+            )*get4v1x::kdBinSize;
+
+   return dTimeDiff;
+}
