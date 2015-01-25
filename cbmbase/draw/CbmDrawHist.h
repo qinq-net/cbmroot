@@ -186,10 +186,10 @@ void DrawGraph(
    HistScale logx = kLinear,
    HistScale logy = kLinear,
    Bool_t drawLegend = true,
-   Double_t x1 = 0.25,
-   Double_t y1 = 0.99,
-   Double_t x2 = 0.55,
-   Double_t y2 = 0.75);
+   Double_t x1 = 0.50,
+   Double_t y1 = 0.78,
+   Double_t x2 = 0.99,
+   Double_t y2 = 0.99);
 
 /**
  * \fn DrawGraph2D
