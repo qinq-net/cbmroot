@@ -303,7 +303,7 @@ void CbmLitTrackingQaReport::DrawEfficiency(
 		labels[iHist] = labelFormatter(name, efficiencies[iHist]);
 	}
 
-	DrawH1(histos, labels, kLinear, kLinear, true, 0.3, 0.3, 0.85, 0.6, "PE1");
+	DrawH1(histos, labels, kLinear, kLinear, true, 0.50, 0.78, 0.99, 0.99, "PE1");
 	DrawMeanEfficiencyLines(histos, efficiencies);
 }
 
@@ -328,7 +328,7 @@ void CbmLitTrackingQaReport::DrawPionSuppression(
       labels[iHist] = labelFormatter(name, ps[iHist]);
    }
 
-   DrawH1(histos, labels, kLinear, kLog, true, 0.3, 0.3, 0.85, 0.6, "PE1");
+   DrawH1(histos, labels, kLinear, kLog, true, 0.50, 0.78, 0.99, 0.99, "PE1");
    DrawMeanEfficiencyLines(histos, ps);
 }
 
@@ -371,7 +371,7 @@ void CbmLitTrackingQaReport::DrawAccAndRec(
 		labels[iHist] = split[4] + ":" + split[3] + "(" + NumberToString<Double_t>(hist->GetEntries() / nofEvents, 1) + ")";
 	}
 
-	DrawH1(histos, labels, kLinear, kLinear, true, 0.2, 0.75, 0.5, 0.99);
+	DrawH1(histos, labels, kLinear, kLinear, true, 0.50, 0.78, 0.99, 0.99);
 }
 
 void CbmLitTrackingQaReport::DrawYPtHistos()
@@ -452,7 +452,7 @@ void CbmLitTrackingQaReport::DrawHitsHistos(
       list_of("all: " + NumberToString<Double_t>(hAll->GetMean(), 1))
              ("true: " + NumberToString<Double_t>(hTrue->GetMean(), 1))
              ("fake: " + NumberToString<Double_t>(hFake->GetMean(), 1)),
-              kLinear, kLog, true, 0.25, 0.99, 0.55, 0.75);
+              kLinear, kLog, true, 0.50, 0.78, 0.99, 0.99);
 
    canvas->cd(2);
    TH1* hTrueOverAll = HM()->H1(hist + "_TrueOverAll");
@@ -460,7 +460,7 @@ void CbmLitTrackingQaReport::DrawHitsHistos(
    DrawH1(list_of(hTrueOverAll)(hFakeOverAll),
       list_of("true/all: " + NumberToString<Double_t>(hTrueOverAll->GetMean()))
              ("fake/all: " + NumberToString<Double_t>(hFakeOverAll->GetMean())),
-             kLinear, kLog, true, 0.25, 0.99, 0.55, 0.75);
+             kLinear, kLog, true, 0.50, 0.78, 0.99, 0.99);
 }
 
 Double_t CbmLitTrackingQaReport::CalcEfficiency(
