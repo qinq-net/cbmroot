@@ -99,6 +99,9 @@ private:
   TH2 * fhTimeResAllFMC;
   TH1 * fhTimeResPairs[kuNbChanTest - 1];
   TH1 * fhTimeResCombi[kuNbChanComb*(kuNbChanComb-1)/2];
+  TH2 * fhPulserHitDistNs;
+  TH2 * fhPulserHitDistUs;
+  TH2 * fhPulserHitDistMs;
 
   // Verbose functions (redundant with Print from GET4 Hack/Tools?)
 //  void Print6bytesMessage(const uint8_t* msContent_shifted);
