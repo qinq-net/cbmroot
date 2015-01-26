@@ -79,6 +79,10 @@ int Set24bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 //# ROC_GET4_RECEIVE_CLK_CFG => Set link speed to 156.25 MBit/s
    initList.AddWrite(ROC_GET4_RECEIVE_CLK_CFG,           3);
 
+// ROC_EPOCH250_EN => Enable/Disable the production of 250MHz (ROC)
+//                    epochs
+   initList.AddWrite(ROC_EPOCH250_EN,                    0);
+
 //# ROC_GET4_RECEIVE_MASK_LSBS & ROC_GET4_RECEIVE_MASK_MSBS
 //  => Activate only the 4 first chips
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000BA4);
@@ -203,7 +207,7 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 
 // ROC_EPOCH250_EN => Enable/Disable the production of 250MHz (ROC)
 //                    epochs
-   initList.AddWrite(ROC_EPOCH250_EN,                    1);
+   initList.AddWrite(ROC_EPOCH250_EN,                    0);
 
 // ROC_GET4_RECEIVE_MASK_LSBS & ROC_GET4_RECEIVE_MASK_MSBS
 //  => Activate only the 4 first chips
