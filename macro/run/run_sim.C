@@ -99,6 +99,7 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis300_electron")
   if ( mvdGeom != "" ) {
     FairDetector* mvd = new CbmMvd("MVD", kTRUE);
     mvd->SetGeometryFileName(mvdGeom);
+    mvd->SetMotherVolume("pipevac1");
     fRun->AddModule(mvd);
   }
 
