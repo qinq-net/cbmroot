@@ -272,6 +272,16 @@ void create_stsgeo_v13x(const char* geoTag="v13x")
   cout << endl << endl;
   cout << "===> Creating sensors...." << endl << endl;
   infoFile << endl << "Sensors: " << endl;
+  CbmStsSensorFactory* sensFac = CbmStsSensorFactory::Instance();
+  Int_t nSensors = sensFac->GetNofSensors();
+  for (Int_t iSensor = 0; iSensor < nSensors; iSensor++) {
+    TGeoVolume* sensor = sensFac->GetSensor(iSensor);
+    CheckVolume(sensor, infoFile);
+  }
+
+
+  /*
+  infoFile << endl << "Sensors: " << endl;
   Int_t nSensors = CreateSensors();
   for (Int_t iSensor = 1; iSensor <= nSensors; iSensor++) {
     TString name = Form("Sensor%02d",iSensor);
@@ -294,6 +304,7 @@ void create_stsgeo_v13x(const char* geoTag="v13x")
     CheckVolume(sensor);
     CheckVolume(sensor, infoFile);
   }
+  */
   // --------------------------------------------------------------------------
 
 
