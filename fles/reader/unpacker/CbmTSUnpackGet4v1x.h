@@ -102,6 +102,8 @@ private:
   TH2 * fhPulserHitDistNs;
   TH2 * fhPulserHitDistUs;
   TH2 * fhPulserHitDistMs;
+  TH2 * fhPulserFeeDnl;
+  TH2 * fhPulserFeeInl;
 
   // Verbose functions (redundant with Print from GET4 Hack/Tools?)
 //  void Print6bytesMessage(const uint8_t* msContent_shifted);

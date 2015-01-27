@@ -23,6 +23,7 @@
 #include "TH2.h"
 #include "TClonesArray.h"
 #include "TFile.h"
+#include "TMath.h"
 
 // C++ std headers
 #include <iostream>
@@ -436,7 +437,11 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
    if( kTRUE == fbPulserMode )
    {
       // Full FMC test
-      UInt_t uHistoFmcIdx = 0;
+      UInt_t uHistoFmcIdx =   0;
+      UInt_t uNbBinsDt    = 500;
+      Double_t dMinDt     = -1.*(uNbBinsDt*get4v1x::kdBinSize/2.) -get4v1x::kdBinSize/2.;
+      Double_t dMaxDt     =  1.*(uNbBinsDt*get4v1x::kdBinSize/2.) +get4v1x::kdBinSize/2.;
+      uNbBinsDt ++; // To account for extra bin due to shift by 1/2 bin of both ranges
       for( UInt_t uChanFmcA = 0; uChanFmcA < kuNbChanFmc; uChanFmcA++)
          for( UInt_t uChanFmcB = uChanFmcA + 1; uChanFmcB < kuNbChanFmc; uChanFmcB++)
          {
@@ -444,7 +449,7 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
                   Form("hTimeResFMC_%03u_%03u", uChanFmcA, uChanFmcB),
                   Form("Time difference for channels %03u an %03u in chosen FMC; DeltaT [ps]; Counts",
                         uChanFmcA, uChanFmcB),
-                  500, -12500, 12500);
+                  uNbBinsDt, dMinDt, dMaxDt);
             uHistoFmcIdx++;
          } // for any unique pair of channel in chosen FMC
       fhTimeResAllFMC = new TH2D( "hTimeResAllFMC",
@@ -460,14 +465,14 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
                Form("hTimeResPairs_%03u_%03u", fiPulserChan[uChanA], fiPulserChan[uChanA+1]),
                Form("Time difference for selected channels %03u an %03u; DeltaT [ps]; Counts",
                      fiPulserChan[uChanA], fiPulserChan[uChanA+1]),
-                     500, -12500, 12500);
+               uNbBinsDt, dMinDt, dMaxDt);
          for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
          {
             fhTimeResCombi[uHistoCombiIdx]  = new TH1I(
                Form("hTimeResCombi_%03u_%03u", fiPulserChan[uChanA], fiPulserChan[uChanB]),
                Form("Time difference for selected channels %03u an %03u; DeltaT [ps]; Counts",
                      fiPulserChan[uChanA], fiPulserChan[uChanB]),
-               500, -12500, 12500);
+               uNbBinsDt, dMinDt, dMaxDt);
             uHistoCombiIdx++;
          } // for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
       } // for( UInt_t uChanA = 0; uChanA < kuNbChanTest; uChanA++)
@@ -486,15 +491,25 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
       fhPulserHitDistNs = new TH2D( "hPulserHitDistNs",
             "Time Interval between hits for all channels in chosen FMC; Chan # ; Hits interval [ns]",
             kuNbChanFmc, -0.5, kuNbChanFmc - 0.5,
-            1000 ,  -0.5, 999.5);
+            1000 ,  0., 1000.0);
       fhPulserHitDistUs = new TH2D( "hPulserHitDistUs",
             "Time Interval between hits for all channels in chosen FMC; Chan # ; Hits interval [us]",
             kuNbChanFmc, -0.5, kuNbChanFmc - 0.5,
-            1000 ,  -0.5, 999.5);
+            1000 ,  0., 1000.0);
       fhPulserHitDistMs = new TH2D( "hPulserHitDistMs",
             "Time Interval between hits for all channels in chosen FMC; Chan # ; Hits interval [ms]",
             kuNbChanFmc, -0.5, kuNbChanFmc - 0.5,
-            1000 ,  -0.5, 999.5);
+            1000 ,  0., 1000.0);
+
+      fhPulserFeeDnl = new TH2D( "hPulserFeeDnl",
+            "DNL for all channels in chosen FEE board; Chan # ; FT Bin; DNL [bin]",
+            kuNbChanFmc, -0.5, kuNbChanFmc - 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+
+      fhPulserFeeInl = new TH2D( "hPulserFeeInl",
+            "INL for all channels in chosen FEE board; Chan # ; FT Bin; INL [bin]",
+            kuNbChanFmc, -0.5, kuNbChanFmc - 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
    } // if( kTRUE == fbPulserMode )
 }
 void CbmTSUnpackGet4v1x::FillMonitorHistograms()
@@ -545,17 +560,17 @@ void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
                   fhTimeResFMC[uHistoFmcIdx]->GetMean() - 5*fhTimeResFMC[uHistoFmcIdx]->GetRMS() ,
                   fhTimeResFMC[uHistoFmcIdx]->GetMean() + 5*fhTimeResFMC[uHistoFmcIdx]->GetRMS());
 
-            fhTimeResFMC[uHistoFmcIdx]->Fit( Form("f_%03d_%03d",uChanFmcA,uChanFmcB), "QR");
+            fhTimeResFMC[uHistoFmcIdx]->Fit( Form("f_%03d_%03d",uChanFmcA,uChanFmcB), "IQRM0");
 
             dRes = fitFunc[uHistoFmcIdx]->GetParameter(2);
 
             // If needed uncomment for debugging
             //(WARNING: this adds 1024 histos to the file!)
-//            fhTimeResFMC[uHistoFmcIdx]->Write();
+            fhTimeResFMC[uHistoFmcIdx]->Write();
 
             delete fitFunc[uHistoFmcIdx];
 
-            fhTimeResAllFMC->Fill(uChanFmcA, uChanFmcB, dRes);
+            fhTimeResAllFMC->Fill(uChanFmcA, uChanFmcB, dRes/TMath::Sqrt2() );
 
             uHistoFmcIdx++;
          } // for any unique pair of channel in chosen FMC
@@ -579,6 +594,29 @@ void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
       fhPulserHitDistNs->Write();
       fhPulserHitDistUs->Write();
       fhPulserHitDistMs->Write();
+
+      // Compute the DNL from the bins occupancy
+      for( UInt_t uChanFmcA = 0; uChanFmcA < kuNbChanFmc; uChanFmcA++)
+      {
+         Double_t dNbCountsTotal = fhPulserFeeDnl->Integral( uChanFmcA+1, uChanFmcA+1, 1, get4v1x::kuFineTime+1);
+         Double_t dNbCountsBinMean = dNbCountsTotal/(get4v1x::kuFineTime+1);
+         for( UInt_t uBin = 1; uBin <= get4v1x::kuFineTime+1; uBin ++)
+            fhPulserFeeDnl->SetBinContent( uChanFmcA+1, uBin,
+                            fhPulserFeeDnl->GetBinContent(uChanFmcA+1, uBin)/dNbCountsBinMean );
+      } // for( UInt_t uChanFmcA = 0; uChanFmcA < kuNbChanFmc; uChanFmcA++)
+      fhPulserFeeDnl->Write();
+      // COmpute the INL from the DNL
+      for( UInt_t uChanFmcA = 0; uChanFmcA < kuNbChanFmc; uChanFmcA++)
+      {
+         Double_t dInl = 0.0;
+         for( UInt_t uBin = 1; uBin <= get4v1x::kuFineTime+1; uBin ++)
+         {
+            dInl += 0.5 * fhPulserFeeDnl->GetBinContent(uChanFmcA+1, uBin);
+            fhPulserFeeInl->SetBinContent( uChanFmcA+1, uBin, dInl - (uBin-0.5) );
+            dInl += 0.5 * fhPulserFeeDnl->GetBinContent(uChanFmcA+1, uBin);
+         } // for( UInt_t uBin = 1; uBin <= get4v1x::kuFineTime+1; uBin ++)
+      } // for( UInt_t uChanFmcA = 0; uChanFmcA < kuNbChanFmc; uChanFmcA++)
+      fhPulserFeeInl->Write();
    } // if( kTRUE == fbPulserMode )
 
    gDirectory->cd( oldir->GetPath() );
@@ -906,9 +944,15 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
                            fvuCurrEpoch2[uChipFullId],
                            fvuLastHitEp[ uFullChId ],
                            fvmLastHit[   uFullChId ] );
-               fhPulserHitDistNs->Fill( uFullChId%kuNbChanFmc, dHitsDt / 1e3 );
-               fhPulserHitDistUs->Fill( uFullChId%kuNbChanFmc, dHitsDt / 1e6 );
-               fhPulserHitDistMs->Fill( uFullChId%kuNbChanFmc, dHitsDt / 1e9 );
+               if( dHitsDt < 1e6 )
+                  fhPulserHitDistNs->Fill( uFullChId%kuNbChanFmc, dHitsDt / 1e3 );
+               else if( dHitsDt < 1e9)
+                  fhPulserHitDistUs->Fill( uFullChId%kuNbChanFmc, dHitsDt / 1e6 );
+               else
+                  fhPulserHitDistMs->Fill( uFullChId%kuNbChanFmc, dHitsDt / 1e9 );
+
+               // Fill the DNL histos
+               fhPulserFeeDnl->Fill( uFullChId%kuNbChanFmc, mess.getGet4V10R32HitFt() );
             } // if( fiPulserFmc == (uFullChId/kuNbChanFmc) )
 
             // Epoch of Last hit message (one per GET4 chip & channel)
