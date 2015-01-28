@@ -93,9 +93,13 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis300_electron")
 
 
   // -----   MVD Digitiser   -------------------------------------------------
-  CbmMvdDigitizeL* mvdDigi =
-  		new CbmMvdDigitizeL("MVD Digitiser", 0, iVerbose);
-  run->AddTask(mvdDigi);
+  CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose);
+  run->AddTask(mvdDigitise);
+  // -------------------------------------------------------------------------
+
+  // -----   MVD Clusterfinder   ---------------------------------------------
+  CbmMvdClusterfinder* mvdCluster = new CbmMvdClusterfinder("MVD Clusterfinder", 0, iVerbose);
+  run->AddTask(mvdCluster);
   // -------------------------------------------------------------------------
  
 
@@ -124,13 +128,11 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis300_electron")
   // ===                     MVD local reconstruction                      ===
   // =========================================================================
 
-
   // -----   MVD Hit Finder   ------------------------------------------------
-  CbmMvdFindHits* mvdHitFinder = new CbmMvdFindHits("MVD Hit Finder", 0,
-  		iVerbose);
-  run->AddTask(mvdHitFinder);
+  CbmMvdHitfinder* mvdHitfinder = new CbmMvdHitfinder("MVD Hit Finder", 0, iVerbose);
+  mvdHitfinder->UseClusterfinder(kTRUE);
+  run->AddTask(mvdHitfinder);
   // -------------------------------------------------------------------------
-
 
   // ===                 End of MVD local reconstruction                   ===
   // =========================================================================
