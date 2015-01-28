@@ -409,6 +409,7 @@ void CbmMatchRecoToMC::MatchTracks(
             trackMatch->AddLink(CbmLink(1., point->GetTrackID()));
          }
       }
+      if ( ! trackMatch->GetNofLinks() ) continue;
       // Calculate number of true and wrong hits
       Int_t trueCounter = trackMatch->GetNofTrueHits();
       Int_t wrongCounter = trackMatch->GetNofWrongHits();
