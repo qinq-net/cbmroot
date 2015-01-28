@@ -28,7 +28,7 @@ void mvd_sim()
   TString caveGeom = "cave.geo";
 
   // Beam pipe geometry
-  TString pipeGeom = "pipe/pipe_v14f.root";
+  TString pipeGeom = "pipe/pipe_v14l.root";
 
   // Magnet geometry and field map
   TString magnetGeom  = "magnet/magnet_v12b.geo.root";
