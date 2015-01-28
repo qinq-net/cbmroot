@@ -12,6 +12,7 @@
 // Includes from FAIR
 #include "FairRootManager.h"
 #include "FairModule.h"
+#include "FairLogger.h"
 
 // Includes from ROOT
 #include "TClonesArray.h"
@@ -131,6 +132,12 @@ InitStatus CbmMvdDigitizer::Init() {
 
     // **********  Get input arrays
     fInputPoints = (TClonesArray*) ioman->GetObject("MvdPoint"); 
+
+    if (! fInputPoints ) {
+      LOG(ERROR) << "No MvdPoint branch found. There was no MVD in the simulation. Switch this task off" << FairLogger::endl;
+      return kERROR;
+    }
+
    
     // **********  Register output array
     fDigis = new TClonesArray("CbmMvdDigi", 10000);

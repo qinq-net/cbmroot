@@ -105,6 +105,11 @@ InitStatus CbmMvdClusterfinder::Init() {
 
     // **********  Get input arrays
     fInputDigis = (TClonesArray*) ioman->GetObject("MvdDigi"); 
+
+    if (! fInputDigis ) {
+      LOG(ERROR) << "No MvdDigi branch found. There was no MVD in the simulation. Switch this task off" << FairLogger::endl;
+      return kERROR;
+    }
    
     // **********  Register output array
     fCluster = new TClonesArray("CbmMvdCluster", 10000);

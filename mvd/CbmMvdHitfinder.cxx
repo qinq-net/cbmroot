@@ -105,10 +105,21 @@ InitStatus CbmMvdHitfinder::Init() {
 	}
 
     // **********  Get input arrays
-    if(!useClusterfinder)
-    fInputDigis = (TClonesArray*) ioman->GetObject("MvdDigi"); 
-    else
-    fInputCluster = (TClonesArray*) ioman->GetObject("MvdCluster");
+    if(!useClusterfinder) {
+      fInputDigis = (TClonesArray*) ioman->GetObject("MvdDigi"); 
+      if (! fInputDigis ) {
+        LOG(ERROR) << "No MvdDigi branch found. There was no MVD in the simulation. Switch this task off" << FairLogger::endl;
+        return kERROR;
+      }
+    } else {
+      fInputCluster = (TClonesArray*) ioman->GetObject("MvdCluster");
+      if (! fInputCluster ) {
+        LOG(ERROR) << "No MvdCluster branch found. There was no MVD in the simulation. Switch this task off" << FairLogger::endl;
+        return kERROR;
+      }
+    }
+
+
     // **********  Register output array
     fHits = new TClonesArray("CbmMvdHit", 10000);
     ioman->Register("MvdHit", "Mvd Hits", fHits, kTRUE);
