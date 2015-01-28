@@ -37,10 +37,12 @@ struct DTM_header
 
 CbmTSUnpackNxyter::CbmTSUnpackNxyter()
   : CbmTSUnpack(),
-    fCurrEpoch(0),
     fNxyterRaw(new TClonesArray("CbmNxyterRawMessage", 10)),
     fNxyterRawSync(new TClonesArray("CbmNxyterRawSyncMessage", 10))
 {
+    for( size_t iRoc = 0; iRoc < fgkNRocsMax; ++iRoc ) {
+        fCurrEpoch[ iRoc ] = 0;
+    }
 }
 
 CbmTSUnpackNxyter::~CbmTSUnpackNxyter()
@@ -49,7 +51,7 @@ CbmTSUnpackNxyter::~CbmTSUnpackNxyter()
 
 Bool_t CbmTSUnpackNxyter::Init()
 {
-  LOG(INFO) << "Initializing" << FairLogger::endl;
+  LOG(INFO) << "Initializing nxyter unpacker" << FairLogger::endl;
 
   FairRootManager* ioman = FairRootManager::Instance();
   if (ioman == NULL) {
@@ -106,7 +108,7 @@ Bool_t CbmTSUnpackNxyter::DoUnpack(const fles::Timeslice& ts, size_t component)
                this->ProcessMessage_hit(&msContent_shifted[local_offset], msDescriptor.eq_id, cur_DTM_header.ROC_ID);
                break;
             case MSG_EPOCH:
-               this->ProcessMessage_epoch(&msContent_shifted[local_offset]);
+               this->ProcessMessage_epoch(&msContent_shifted[local_offset], cur_DTM_header.ROC_ID);
                break;
             case MSG_SYNC:
                this->ProcessMessage_sync(&msContent_shifted[local_offset], msDescriptor.eq_id, cur_DTM_header.ROC_ID);
@@ -191,7 +193,7 @@ void CbmTSUnpackNxyter::ProcessMessage_hit(const uint8_t* msContent_shifted, uin
          EqID,
          RocID*4 + nxID,
          channel,
-         fCurrEpoch, //              - cur_hit_data.NxLastEpoch,  //TODO subtract here or in GetFullTime() method ?!
+         fCurrEpoch[RocID], //              - cur_hit_data.NxLastEpoch,  //TODO subtract here or in GetFullTime() method ?!
          timestamp,
          ADCvalue,
          lastEpoch,
@@ -201,18 +203,18 @@ void CbmTSUnpackNxyter::ProcessMessage_hit(const uint8_t* msContent_shifted, uin
 
 // Missed event (currently skipped), epoch counter value, ROC id, messageType=2
 // [MMMMMMMM][EEEEEEEE][EEEEEEEE][EEEEEEEE][EEEEEEEE][--RRR010]
-void CbmTSUnpackNxyter::ProcessMessage_epoch(const uint8_t* msContent_shifted)
+void CbmTSUnpackNxyter::ProcessMessage_epoch(const uint8_t* msContent_shifted, uint16_t RocID)
 {
    Int_t messageType = (msContent_shifted[5] >> 0) & 0x07;          // 3 bits
 
-   fCurrEpoch = ((msContent_shifted[4] >> 0) & 0xFF)                // 8 bits
-             + (((msContent_shifted[3] >> 0) & 0xFF) << 8)          // 8 bits
-             + (((msContent_shifted[2] >> 0) & 0xFF) << 16)         // 8 bits
-             + (((msContent_shifted[1] >> 0) & 0xFF) << 24);        // 8 bits
+   fCurrEpoch[ RocID ] = ((msContent_shifted[4] >> 0) & 0xFF)               // 8 bits
+                     + (((msContent_shifted[3] >> 0) & 0xFF) << 8)          // 8 bits
+                     + (((msContent_shifted[2] >> 0) & 0xFF) << 16)         // 8 bits
+                     + (((msContent_shifted[1] >> 0) & 0xFF) << 24);        // 8 bits
 
    // Debug printout
    #ifdef VERBOSE
-   printf("messType=%d\tepoch=0x%08X\n", messageType, fCurrEpoch);
+   printf("messType=%d\tepoch=0x%08X\troc=%04d\n", messageType, fCurrEpoch[RocID], RocID);
    #endif
 }
 
@@ -239,7 +241,7 @@ void CbmTSUnpackNxyter::ProcessMessage_sync(const uint8_t* msContent_shifted, ui
          EqID,
          RocID*4 + syncCh,  //TODO check
          syncCh,
-         fCurrEpoch, //              - cur_hit_data.NxLastEpoch,  //TODO subtract here or in GetFullTime() method ?!
+         fCurrEpoch[RocID], // - cur_hit_data.NxLastEpoch,  //TODO subtract here or in GetFullTime() method ?!
          timestamp,
          status,
          data);
@@ -248,7 +250,6 @@ void CbmTSUnpackNxyter::ProcessMessage_sync(const uint8_t* msContent_shifted, ui
       printf("messType=%d\tROC=0x%01X\tsyncCh=0x%01X\tTs=0x%04X\tdata=0x%08X\tstat=0x%01X\n",
          messageType, rocID, syncCh, timestamp, data, status);
    #endif
-
 }
 
 // Pileup flag, edge type, timestamp, channel, ROC id, messageType=4

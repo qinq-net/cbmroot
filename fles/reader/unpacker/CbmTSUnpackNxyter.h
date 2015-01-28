@@ -44,14 +44,16 @@ public:
   // protected:
   //  virtual void Register();
 
+  static const size_t fgkNRocsMax = 64;
+
 private:
 
-  Int_t fCurrEpoch; // Current epoch (first epoch in the stream initialises this variable)
+  Int_t fCurrEpoch[fgkNRocsMax]; // Current epoch of each of the ROCs
 
   void Print6bytesMessage(const uint8_t* msContent_shifted);
 
   void ProcessMessage_hit(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
-  void ProcessMessage_epoch(const uint8_t* msContent_shifted);
+  void ProcessMessage_epoch(const uint8_t* msContent_shifted, uint16_t RocID);
   void ProcessMessage_sync(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
   void ProcessMessage_aux(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
   void ProcessMessage_sys(const uint8_t* msContent_shifted, uint16_t EqID, uint16_t RocID);
