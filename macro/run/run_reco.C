@@ -28,9 +28,10 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis300_electron")
   Int_t iVerbose = 0;
 
   TString outDir  = "data/";
-  TString inFile  = outDir + setup + "_test.mc.root";   // Input file (MC events)
-  TString parFile = outDir + setup + "_params.root";    // Parameter file
-  TString outFile = outDir + setup + "_test.eds.root";  // Output file
+  TString inFile  = outDir + setup + "_test.mc.root";       // Input file (MC events)
+  TString parFile = outDir + setup + "_params.root";        // Parameter file
+  TString outFile = outDir + setup + "_test.eds.root";      // Output file
+  TString geoFile = outDir + setup + "_geofile_full.root";  // Geometry file
 
   //  Digitisation files.
   // Add TObjectString containing the different file names to
@@ -81,6 +82,7 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis300_electron")
   FairRunAna *run = new FairRunAna();
   run->SetInputFile(inFile);
   run->SetOutputFile(outFile);
+  run->SetGeomFile(geoFile);
   // ------------------------------------------------------------------------
 
 
