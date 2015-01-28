@@ -55,7 +55,7 @@ void sis100_electron_setup()
   fieldSymType =  3;
 
   // -----  Tags  -----------------------------------------------------------
-  stsTag       = "v13d";
+  stsTag       = "v13x";
   trdTag       = "v15a_1e";
   tofTag       = "v13-5b";
 
