@@ -608,7 +608,7 @@ void create_stsgeo_v13x(const char* geoTag="v13x")
   trans2->RegisterYourself();
 
   // --- Create STS volume
-  TString stsName = "STS_";  
+  TString stsName = "sts_";  
   stsName += geoTag;
   TGeoShape* stsShape = new TGeoCompositeShape("stsShape", 
 					       "stsBox-stsCone1:trans1-stsCone2:trans2");
