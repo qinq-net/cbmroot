@@ -1,6 +1,7 @@
 //
 //   comments
 //
+// 2015-01-29 - DE - use chopped PIPE v14q as default
 // 2015-01-19 - DE - use TRD v15a as new default
 // 2014-06-30 - DE - make TRD v14a the new default
 // 2014-06-25 - DE - define digi files through tags for STS, TRD and TOF
@@ -49,7 +50,7 @@ void sis100_hadron_setup()
   fieldSymType =  3;
 
   // -----  Tags  -----------------------------------------------------------
-  stsTag       = "v13d";
+  stsTag       = "v13x";
   trdTag       = "v15a_1h";
   tofTag       = "v13-5a";
 
@@ -60,9 +61,9 @@ void sis100_hadron_setup()
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
-  pipeGeom     = "pipe/pipe_v13a.geo.root";
+  pipeGeom     = "pipe/pipe_v14q.root";
   magnetGeom   = "magnet/magnet_v12b.geo.root";
-  mvdGeom      = "";
+  mvdGeom      = "mvd/mvd_v14b.geo.root";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
   richGeom     = "";
   muchGeom     = "";
