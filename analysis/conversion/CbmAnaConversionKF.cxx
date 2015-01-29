@@ -24,6 +24,25 @@ using namespace std;
 
 
 CbmAnaConversionKF::CbmAnaConversionKF()
+ : fKFparticle(NULL),
+   fKFparticleFinderQA(NULL),
+   fKFtopo(NULL),
+   trackindexarray(),
+   particlecounter(0),
+   particlecounter_2daughters(0),
+   particlecounter_3daughters(0),
+   particlecounter_4daughters(0),
+   particlecounter_all(0),
+   fhPi0_NDaughters(NULL),
+   fNofGeneratedPi0_allEvents(0),
+   fNofPi0_kfparticle_allEvents(0),
+   fNofGeneratedPi0(0),
+   fNofPi0_kfparticle(0),
+   fhPi0Ratio(NULL),
+   fhPi0_mass(NULL),
+   fSignalIds(),
+   fGhostIds(),
+   fHistoList_kfparticle()
 {
 }
 

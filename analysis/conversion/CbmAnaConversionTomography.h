@@ -34,7 +34,7 @@ class CbmAnaConversionTomography
 
 public:
 	CbmAnaConversionTomography();
-	~CbmAnaConversionTomography();
+	virtual ~CbmAnaConversionTomography();
 
 	void Init();
 	void InitHistos();
@@ -85,7 +85,9 @@ private:
 	TStopwatch timer;
 	Double_t fTime;
 
-
+	CbmAnaConversionTomography(const CbmAnaConversionTomography&);
+	CbmAnaConversionTomography operator=(const CbmAnaConversionTomography&);
+     
 	ClassDef(CbmAnaConversionTomography,1)
 };
 

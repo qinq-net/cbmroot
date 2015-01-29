@@ -32,7 +32,7 @@ class CbmAnaConversionKF
 
 public:
 	CbmAnaConversionKF();
-	~CbmAnaConversionKF();
+	virtual ~CbmAnaConversionKF();
 
 	void Init();
 	void InitHistos();
@@ -79,6 +79,8 @@ private:
 
 	vector<TH1*> fHistoList_kfparticle;	// list of all histograms containing results from KFParticle package
 
+	CbmAnaConversionKF(const CbmAnaConversionKF&);
+	CbmAnaConversionKF operator=(const CbmAnaConversionKF&);
 
 	ClassDef(CbmAnaConversionKF,1)
 };

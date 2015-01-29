@@ -31,7 +31,7 @@ class CbmAnaConversionRich
 
 public:
 	CbmAnaConversionRich();
-	~CbmAnaConversionRich();
+	virtual ~CbmAnaConversionRich();
 
 	void Init();
 	void InitHistos();
@@ -105,7 +105,8 @@ private:
 	TStopwatch timer;
 	Double_t fTime;
 
-
+	CbmAnaConversionRich(const CbmAnaConversionRich&);
+	CbmAnaConversionRich operator=(const CbmAnaConversionRich&);
 
 	ClassDef(CbmAnaConversionRich,1)
 };
