@@ -1,9 +1,10 @@
 //
 //   comments
 //
+
+// 2015-01-28 - DE - use STS v13x fitting with with PIPE v14l
 // 2015-01-22 - DE - use MVD v14b with PIPE v14l as default
 // 2015-01-19 - DE - use TRD v15a as new defaut
-// 2014-07-25 - DE - use STS v13x fitting with with PIPE v14?
 // 2014-07-05 - DE - use PIPE v14x as interim solution
 // 2014-07-01 - DE - use PIPE v14f -> overlap with STS
 // 2014-06-30 - DE - use PIPE v14d together with RICH v14a
