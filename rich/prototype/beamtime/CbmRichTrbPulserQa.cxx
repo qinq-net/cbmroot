@@ -13,15 +13,15 @@
 #include <iostream>
 #include <vector>
 
-CbmRichTrbPulserQa::CbmRichTrbPulserQa():
-	fEventNum(0)
+CbmRichTrbPulserQa::CbmRichTrbPulserQa()
+  : FairTask(),
+    fRichHits(NULL),
+    fEventNum(0)
 {
-	;
 }
 
 CbmRichTrbPulserQa::~CbmRichTrbPulserQa()
 {
-	;
 }
 
 

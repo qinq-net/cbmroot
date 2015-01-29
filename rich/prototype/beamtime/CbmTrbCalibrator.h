@@ -175,6 +175,10 @@ private: // data members
     */
    static CbmTrbCalibrator* fInstance;
 
+   CbmTrbCalibrator(const CbmTrbCalibrator&);
+   CbmTrbCalibrator operator=(const CbmTrbCalibrator&);
+
+
    ClassDef(CbmTrbCalibrator,1)
 };
 

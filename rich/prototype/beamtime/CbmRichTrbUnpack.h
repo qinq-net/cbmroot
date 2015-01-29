@@ -219,8 +219,8 @@ private:
 	void CreateAndDrawEventBuildDisplay();
 
 
-    CbmRichTrbUnpack(const CbmRichTrbUnpack&){;}
-    CbmRichTrbUnpack operator=(const CbmRichTrbUnpack&){;}
+    CbmRichTrbUnpack(const CbmRichTrbUnpack&);
+    CbmRichTrbUnpack operator=(const CbmRichTrbUnpack&);
 
     ClassDef(CbmRichTrbUnpack,1)
 };

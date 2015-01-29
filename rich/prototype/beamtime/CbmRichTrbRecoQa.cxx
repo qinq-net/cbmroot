@@ -27,18 +27,25 @@
 #include <iostream>
 #include <vector>
 
-CbmRichTrbRecoQa::CbmRichTrbRecoQa():
-	fEventNum(0),
-	fNofDrawnEvents(0),
-	fRunTitle(""),
-	fOutputDir("")
+CbmRichTrbRecoQa::CbmRichTrbRecoQa()
+  : FairTask(),
+    fRichHits(NULL),
+    fRichRings(NULL),
+    fRichHitInfos(NULL),
+    fHM(NULL),
+    fEventNum(0),
+    fNofDrawnEvents(0),
+    fMaxNofEventsToDraw(0),
+    fOutputDir(""),
+    fRunTitle(""),
+    fDrawHist(kFALSE),
+    fCopFit(NULL),
+    fTauFit(NULL)
 {
-   ;
 }
 
 CbmRichTrbRecoQa::~CbmRichTrbRecoQa()
 {
-	;
 }
 
 InitStatus CbmRichTrbRecoQa::Init()

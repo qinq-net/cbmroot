@@ -69,6 +69,9 @@ private: // data members
    // For all the channels of a single certain TDC with id DEBUGTDCID
    TH1D* fhTtimeMinusLtimeCH[16];
 
+   CbmTrbEdgeMatcher(const CbmTrbEdgeMatcher&);
+   CbmTrbEdgeMatcher operator=(const CbmTrbEdgeMatcher&);
+
    ClassDef(CbmTrbEdgeMatcher,1)
 };
 

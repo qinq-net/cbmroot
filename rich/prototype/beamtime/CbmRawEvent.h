@@ -203,6 +203,9 @@ public:
 		return buffer;
 	}
 
+ private:
+	CbmRawEvent(const CbmRawEvent&);
+	CbmRawEvent operator=(const CbmRawEvent&);
 };
 
 #endif // CBMRAWEVENT_H

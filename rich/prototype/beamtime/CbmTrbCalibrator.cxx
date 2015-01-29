@@ -8,10 +8,19 @@
 CbmTrbCalibrator* CbmTrbCalibrator::fInstance = 0;
 
 // By default the calibration tables are imported from the file
-CbmTrbCalibrator::CbmTrbCalibrator():
-   fCalibMode(etn_NOCALIB),
-   fCalibrationPeriod(10000),
-   fTablesCreated(kFALSE)
+CbmTrbCalibrator::CbmTrbCalibrator()
+  : TObject(),
+    fCalibMode(etn_NOCALIB),
+    fTablesCreated(kFALSE),
+    fCalibrationPeriod(10000),
+    fTRBroot(NULL),
+    fInputFilename(""),
+    fCalibrationDoneHisto(),
+    fhLeadingFineBuffer(),
+    fhLeadingFine(),
+    fhCalcBinWidth(),
+    fhCalBinTime(),
+    fFTcounter()
 {
 }
 

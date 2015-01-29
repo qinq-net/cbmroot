@@ -15,10 +15,16 @@
 #include "CbmTrbRawMessage.h"
 #include "CbmTrbCalibrator.h"
 
-CbmTrbEdgeMatcher::CbmTrbEdgeMatcher() :
-   fRichTrbDigi(new TClonesArray("CbmRichTrbDigi", 10)),
-   BUFSIZE(16),
-   fDrawHist(kFALSE)
+CbmTrbEdgeMatcher::CbmTrbEdgeMatcher() 
+  : FairTask(),
+    fTrbRawHits(NULL), 
+    fRichTrbDigi(new TClonesArray("CbmRichTrbDigi", 10)),
+    BUFSIZE(16),
+    tdcIdToStoredEdges(),
+    circularCounters(),
+    fDrawHist(kFALSE),
+    fhTtimeMinusLtime(),
+    fhTtimeMinusLtimeCH()
 {
 }
 

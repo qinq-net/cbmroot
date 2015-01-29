@@ -81,6 +81,10 @@ public:
 		return fCurrentSubEvent;
 	}
 
+ private:
+
+	CbmTrbIterator(const CbmTrbIterator&);
+	CbmTrbIterator operator=(const CbmTrbIterator&);
 };
 
 #endif // CBMTRBITERATOR_H

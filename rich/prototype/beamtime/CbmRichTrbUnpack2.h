@@ -37,8 +37,8 @@ private: // methods
    void ProcessSubSubEvent(UInt_t* data, UInt_t size, UInt_t subEventId);
 
    //TODO implement or get rid
-   CbmRichTrbUnpack2(const CbmRichTrbUnpack2&) {;}
-   CbmRichTrbUnpack2 operator=(const CbmRichTrbUnpack2&) {;}
+   CbmRichTrbUnpack2(const CbmRichTrbUnpack2&);
+   CbmRichTrbUnpack2 operator=(const CbmRichTrbUnpack2&);
 
 private: // data members
 

@@ -59,8 +59,8 @@ private:
     UInt_t fEventNum; // Event counter
 
 
-    CbmRichTrbPulserQa(const CbmRichTrbPulserQa&){;}
-    CbmRichTrbPulserQa operator=(const CbmRichTrbPulserQa&){;}
+    CbmRichTrbPulserQa(const CbmRichTrbPulserQa&);
+    CbmRichTrbPulserQa operator=(const CbmRichTrbPulserQa&);
 
     ClassDef(CbmRichTrbPulserQa, 1);
 };

@@ -124,8 +124,8 @@ private:
    CbmRichRingFitterCOP* fCopFit;
    CbmRichRingFitterEllipseTau* fTauFit;
 
-   CbmRichTrbRecoQa(const CbmRichTrbRecoQa&){;}
-   CbmRichTrbRecoQa operator=(const CbmRichTrbRecoQa&){;}
+   CbmRichTrbRecoQa(const CbmRichTrbRecoQa&);
+   CbmRichTrbRecoQa operator=(const CbmRichTrbRecoQa&);
 
    ClassDef(CbmRichTrbRecoQa, 1);
 };

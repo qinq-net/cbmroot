@@ -22,15 +22,38 @@
 
 #include "FairLogger.h"
 
-CbmRichTrbUnpack::CbmRichTrbUnpack(TString hldFileName) :
-	fHldFileName(hldFileName),
-	fEventNum(0),
-	fNofHitsWithOneEdge(0),
-	fNofRawEvents(0),
-	fNofRawSubEvents(0),
-	fNofTimeDataMessages(0),
-	fAnaType(kCbmRichBeamEvent),
-	fUseFingerSci(false)
+CbmRichTrbUnpack::CbmRichTrbUnpack(TString hldFileName) 
+  : FairSource(),
+    fHldFileName(hldFileName),
+    fRichHits(NULL),
+    fRichHitInfos(NULL),
+    fDataPointer(NULL),
+    fDataSize(0),
+    fEventNum(0),
+    fNofHitsWithOneEdge(0),
+    fNofRawEvents(0),
+    fNofRawSubEvents(0),
+    fNofTimeDataMessages(0),
+    fSynchRefTime(0.),
+    fSynchOffsetTimeMap(),
+    fRawRichHits(),
+    fRawEventTimeHits(),
+    fRawFingerSciHits(),
+    fOutputRichHits(),
+    fOutputEventTimeHits(),
+    fOutputFingerSciHits(),
+    fhChannelEntries(),
+    fhEpoch(),
+    fhCoarseTime(),
+    fhFineTime(),
+    fhDeltaT(),
+    fhDiffHitTimeEventTime(),
+    fhNofRichHitsVsTrbNum(),
+    fhDiffHitTimeEventTimeAll(),
+    fhDiffFingerSciTimeEventTimeAll(),
+    fAnaType(kCbmRichBeamEvent),
+    fUseFingerSci(false),
+    fDrawHist(kFALSE)
 {
 }
 

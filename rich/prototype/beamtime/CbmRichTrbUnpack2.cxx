@@ -21,21 +21,27 @@
 // Uncoment if you want to have excessive printout (do not exectue on many events, may produce Gb's of output)
 //#define DEBUGPRINT
 
-CbmRichTrbUnpack2::CbmRichTrbUnpack2() :
-   fDataPointer(NULL),
-   fTrbIter(NULL),
-   fNofRawEvents(0),
-   fMaxNofRawEvents(2000000000),
-   fTrbRawHits(new TClonesArray("CbmTrbRawMessage", 10))
+CbmRichTrbUnpack2::CbmRichTrbUnpack2() 
+: FairSource(),
+  fHldFiles(),
+  fNofRawEvents(0),
+  fMaxNofRawEvents(2000000000),
+  fDataPointer(NULL),
+  fDataSize(0),
+  fTrbIter(NULL),
+  fTrbRawHits(new TClonesArray("CbmTrbRawMessage", 10))
 {
 }
 
-CbmRichTrbUnpack2::CbmRichTrbUnpack2(TString hldFileName) :
-   fDataPointer(NULL),
-   fTrbIter(NULL),
-   fNofRawEvents(0),
-   fMaxNofRawEvents(2000000000),
-   fTrbRawHits(new TClonesArray("CbmTrbRawMessage", 10))
+CbmRichTrbUnpack2::CbmRichTrbUnpack2(TString hldFileName) 
+: FairSource(),
+  fHldFiles(),
+  fNofRawEvents(0),
+  fMaxNofRawEvents(2000000000),
+  fDataPointer(NULL),
+  fDataSize(0),
+  fTrbIter(NULL),
+  fTrbRawHits(new TClonesArray("CbmTrbRawMessage", 10))
 {
    fHldFiles.push_back(hldFileName);
 }

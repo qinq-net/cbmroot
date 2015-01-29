@@ -14,7 +14,7 @@ using namespace std;
 
 class CbmRichTrbParam {
 private:
-	CbmRichTrbParam() {
+ CbmRichTrbParam() : fMap() {
 		ReadMap();
 	}
 

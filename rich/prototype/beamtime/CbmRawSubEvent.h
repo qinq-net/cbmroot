@@ -175,6 +175,10 @@ public:
 		return 1 << (Decoding() >> 16 & 0xff);
 	}
 
+ private:
+	CbmRawSubEvent(const CbmRawSubEvent&);
+	CbmRawSubEvent operator=(const CbmRawSubEvent&);
+
 };
 
 #endif // CBMRAWSUBEVENT_H
