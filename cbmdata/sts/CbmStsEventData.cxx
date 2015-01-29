@@ -15,15 +15,69 @@ using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmStsEventData::CbmStsEventData() 
-  : TNamed()    
-    //fEP_RECO(-9999)
+  : TNamed(),
+    fevtID(0),	
+    fEP_RECO_harmo1_sub1(0.),
+    fdeltaEP_harmo1_sub1(0.),
+    fQx_harmo1_sub1(0.),
+    fQy_harmo1_sub1(0.),
+    fEP_RECO_harmo1_sub2(0.),
+    fdeltaEP_harmo1_sub2(0.),
+    fQx_harmo1_sub2(0.),
+    fQy_harmo1_sub2(0.), 
+    fEP_RECO_harmo1_full(0.),
+    fdeltaEP_harmo1_full(0.),
+    fQx_harmo1_full(0.),
+    fQy_harmo1_full(0.),
+    fEP_RECO_harmo2_sub1(0.),
+    fdeltaEP_harmo2_sub1(0.),
+    fQx_harmo2_sub1(0.),
+    fQy_harmo2_sub1(0.),
+    fEP_RECO_harmo2_sub2(0.),
+    fdeltaEP_harmo2_sub2(0.),
+    fQx_harmo2_sub2(0.),
+    fQy_harmo2_sub2(0.),
+    fEP_RECO_harmo2_full(0.),
+    fdeltaEP_harmo2_full(0.),
+    fQx_harmo2_full(0.),
+    fQy_harmo2_full(0.),
+    fmult(0),
+    fv1(0.), 
+    fv2(0.)
 {
 }
 
 // -----   constructor   -------------------------------------------
 CbmStsEventData::CbmStsEventData(const char *name) 
-  : TNamed()    
-    //fEP_RECO(-9999)
+  : TNamed(),
+    fevtID(0),	
+    fEP_RECO_harmo1_sub1(0.),
+    fdeltaEP_harmo1_sub1(0.),
+    fQx_harmo1_sub1(0.),
+    fQy_harmo1_sub1(0.),
+    fEP_RECO_harmo1_sub2(0.),
+    fdeltaEP_harmo1_sub2(0.),
+    fQx_harmo1_sub2(0.),
+    fQy_harmo1_sub2(0.), 
+    fEP_RECO_harmo1_full(0.),
+    fdeltaEP_harmo1_full(0.),
+    fQx_harmo1_full(0.),
+    fQy_harmo1_full(0.),
+    fEP_RECO_harmo2_sub1(0.),
+    fdeltaEP_harmo2_sub1(0.),
+    fQx_harmo2_sub1(0.),
+    fQy_harmo2_sub1(0.),
+    fEP_RECO_harmo2_sub2(0.),
+    fdeltaEP_harmo2_sub2(0.),
+    fQx_harmo2_sub2(0.),
+    fQy_harmo2_sub2(0.),
+    fEP_RECO_harmo2_full(0.),
+    fdeltaEP_harmo2_full(0.),
+    fQx_harmo2_full(0.),
+    fQy_harmo2_full(0.),
+    fmult(0),
+    fv1(0.), 
+    fv2(0.)
 {
   TString namst = "RP_";
   namst += name;

@@ -1,7 +1,14 @@
 #include "CbmRichTrbDigi.h"
 
-CbmRichTrbDigi::CbmRichTrbDigi() :
-   TObject()
+CbmRichTrbDigi::CbmRichTrbDigi() 
+  : TObject(),
+    fTDCid(0),
+    fHasLeadingEdge(kFALSE),
+    fHasTrailingEdge(kFALSE),
+    fLeadingEdgeChannel(0),
+    fTrailingEdgeChannel(0),
+    fLeadingEdgeTimestamp(0.),
+    fTrailingEdgeTimestamp(0.)
 {
 }
 

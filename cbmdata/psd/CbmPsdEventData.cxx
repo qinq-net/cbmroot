@@ -15,19 +15,55 @@ using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmPsdEventData::CbmPsdEventData() 
-  : TNamed()
-    //fRP_MC(-9999),
-    //fB_MC(-1)
-    //fEP_RECO(-9999)
+  : TNamed(),
+    fevtID(0),
+    fEP_RECO(0.),
+    fdeltaEP(0.),
+    fQx(0.),
+    fQy(0.),
+    fedep_centralmod_nohole(0.),
+    fedep_centralmod_hole(0.),
+    fedep_1stCorona(0.),
+    fedep_2ndCorona(0.),
+    fEP_sub1(0.),
+    fdeltaEP_sub1(0.),
+    fQx_sub1(0.),
+    fQy_sub1(0.),
+    fEP_sub2(0.),
+    fdeltaEP_sub2(0.),
+    fQx_sub2(0.),
+    fQy_sub2(0.),
+    fEP_sub3(0.),
+    fdeltaEP_sub3(0.),
+    fQx_sub3(0.),
+    fQy_sub3(0.)
 {
 }
 
 // -----   constructor   -------------------------------------------
 CbmPsdEventData::CbmPsdEventData(const char *name) 
-  : TNamed()
-    //fRP_MC(-9999),
-    //fB_MC(-1)
-    //fEP_RECO(-9999)
+  : TNamed(),
+    fevtID(0),
+    fEP_RECO(0.),
+    fdeltaEP(0.),
+    fQx(0.),
+    fQy(0.),
+    fedep_centralmod_nohole(0.),
+    fedep_centralmod_hole(0.),
+    fedep_1stCorona(0.),
+    fedep_2ndCorona(0.),
+    fEP_sub1(0.),
+    fdeltaEP_sub1(0.),
+    fQx_sub1(0.),
+    fQy_sub1(0.),
+    fEP_sub2(0.),
+    fdeltaEP_sub2(0.),
+    fQx_sub2(0.),
+    fQy_sub2(0.),
+    fEP_sub3(0.),
+    fdeltaEP_sub3(0.),
+    fQx_sub3(0.),
+    fQy_sub3(0.)
 {
   TString namst = "RP_";
   namst += name;

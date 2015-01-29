@@ -13,17 +13,17 @@ using std::endl;
 
 // -----   Default constructor   -------------------------------------------
 CbmMCEventData::CbmMCEventData() 
-  : TNamed()
-    //fRP(-9999),
-    //fB(-1)    
+  : TNamed(),
+    fRP(-9999),
+    fB(-1)    
 {
 }
 
 // -----   constructor   -------------------------------------------
 CbmMCEventData::CbmMCEventData(const char *name) 
-  : TNamed()
-    //fRP(-9999),
-    //fB(-1)    
+  : TNamed(),
+    fRP(-9999),
+    fB(-1)    
 {
   TString namst = "RP_";
   namst += name;
