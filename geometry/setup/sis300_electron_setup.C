@@ -1,6 +1,9 @@
 //
 //   comments
 //
+
+// 2015-01-28 - DE - use STS v13x fitting with with PIPE v14n
+// 2015-01-22 - DE - use MVD v14b with PIPE v14n as default
 // 2015-01-19 - DE - use TRD v15a as new default
 // 2014-07-05 - DE - use PIPE v14y as interim solution
 // 2014-07-03 - DE - use PIPE v14h together with RICH v14a -> overlap with STS
@@ -53,7 +56,7 @@ void sis300_electron_setup()
   fieldSymType =  3;
 
   // -----  Tags  -----------------------------------------------------------
-  stsTag       = "v13d";
+  stsTag       = "v13x";
   trdTag       = "v15a_3e";
   tofTag       = "v13-5d";
 
@@ -61,15 +64,14 @@ void sis300_electron_setup()
   stsDigi      = "sts/sts_" + stsTag + "_std.digi.par";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
-  //tofDigi      = "tof/tof_v13b.digi.par";
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
-  pipeGeom     = "pipe/pipe_v14y.geo.root"; // "pipe/pipe_v14h.root";
+  pipeGeom     = "pipe/pipe_v14n.root";
   magnetGeom   = "magnet/magnet_v12b.geo.root";
-  mvdGeom      = "";
+  mvdGeom      = "mvd/mvd_v14b.geo.root";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
-  richGeom     = "rich/rich_v14a.root";
+  richGeom     = "rich/rich_v14a_3e.root";
   muchGeom     = "";
   shieldGeom   = "";
   platformGeom = ""; // "passive/platform_v13b.geo";
