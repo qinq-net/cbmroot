@@ -1,6 +1,8 @@
 //
 //   comments
 //
+
+// 2015-01-28 - DE - use STS v13x fitting with with PIPE v14l
 // 2015-01-22 - DE - use MVD v14b with PIPE v14l as default
 // 2015-01-19 - DE - use TRD v15a as new defaut
 // 2014-07-05 - DE - use PIPE v14x as interim solution
@@ -68,10 +70,9 @@ void sis100_electron_setup()
   caveGeom     = "cave.geo";
   pipeGeom     = "pipe/pipe_v14l.root";
   magnetGeom   = "magnet/magnet_v12b.geo.root";
-  //  mvdGeom      = "mvd/mvd_v14a.geo.root";
   mvdGeom      = "mvd/mvd_v14b.geo.root";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
-  richGeom     = "rich/rich_v14a.root";
+  richGeom     = "rich/rich_v14a_1e.root";
   muchGeom     = "";
   shieldGeom   = "";
   platformGeom = ""; // "passive/platform_v13a.geo";
