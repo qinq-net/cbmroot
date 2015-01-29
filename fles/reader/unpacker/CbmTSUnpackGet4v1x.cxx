@@ -29,6 +29,12 @@
 #include <iostream>
 #include <stdint.h>
 
+/*********/
+// TODO   /
+// 1) 24b epoch flags
+// 2) 24b TOT
+/*********/
+
 struct DTM_header
 {
    uint8_t packet_length;
@@ -43,11 +49,13 @@ struct DTM_header
 
 CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
   : CbmTSUnpack(),
-	fbVerbose(kFALSE),
-	fiMode(0),
+   fbVerbose(kFALSE),
+   fiMode(0),
    fuNbRocs(0),
    fuNbGet4(0),
    fhMessageTypePerRoc(0),
+   fhRocSyncTypePerRoc(0),
+   fhRocAuxTypePerRoc(0),
    fhSysMessTypePerRoc(0),
    fhGet4EpochFlags(0),
    fhGet4EpochSyncDist(0),
@@ -55,7 +63,21 @@ CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
    fhGet4ChanDllStatus(0),
    fhGet4ChanTotMap(0),
    fhGet4ChanErrors(0),
-   fhGet4ChanSlowContM(0)
+   fhGet4ChanSlowContM(0),
+   fbPulserMode(kFALSE),
+   fiPulserFmc(0),
+//  Int_t  fiPulserChan[kuNbChanTest];
+//  std::vector< UInt_t >           fvuLastHitEp; // Epoch of Last hit message (one per GET4 chip & channel)
+//  std::vector< get4v1x::Message > fvmLastHit;   // Last hit message (one per GET4 chip & channel)
+//  TH1 * fhTimeResFMC[kuNbChanFmc*(kuNbChanFmc-1)/2];
+  fhTimeResAllFMC(0),
+//  TH1 * fhTimeResPairs[kuNbChanTest - 1];
+//  TH1 * fhTimeResCombi[kuNbChanComb*(kuNbChanComb-1)/2];
+  fhPulserHitDistNs(0),
+  fhPulserHitDistUs(0),
+  fhPulserHitDistMs(0),
+  fhPulserFeeDnl(0),
+  fhPulserFeeInl(0)
 //    fNxyterRaw(new TClonesArray("CbmNxyterRawMessage", 10)),
 //    fNxyterRawSync(new TClonesArray("CbmNxyterRawSyncMessage", 10))
 {
@@ -768,6 +790,11 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
    {
       case get4v1x::GET4_32B_EPOCH: // => Epoch message
       {
+         if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
+            LOG(DEBUG) << "Epoch nb jump in chip "<< uChipFullId <<": "
+                       << mess.getGet4V10R32EpochNumber() - fvuCurrEpoch2[uChipFullId] 
+                       <<" ("<<fvuCurrEpoch2[uChipFullId]
+                       << " -> "<<mess.getGet4V10R32EpochNumber() <<")"<< FairLogger::endl;
          fvuCurrEpoch2[uChipFullId] = mess.getGet4V10R32EpochNumber();
 
          if( 1 == mess.getGet4V10R32SyncFlag() )
@@ -932,7 +959,8 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
                + mess.getGet4V10R32HitChan();
          fhGet4ChanDataCount->Fill( uFullChId );
          fhGet4ChanDllStatus->Fill( uFullChId, mess.getGet4V10R32HitDllFlag() );
-         fhGet4ChanTotMap->Fill(    uFullChId, mess.getGet4V10R32HitTot() );
+         fhGet4ChanTotMap->Fill(    uFullChId, mess.getGet4V10R32HitTot()
+                                               *get4v1x::kdTotBinSize/1000.0 );
 
          // Save the hit info in order to fill later the pulser histos
          if( kTRUE == fbPulserMode )
@@ -944,12 +972,21 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
                            fvuCurrEpoch2[uChipFullId],
                            fvuLastHitEp[ uFullChId ],
                            fvmLastHit[   uFullChId ] );
-               if( dHitsDt < 1e6 )
+               if( 0 == fvuLastHitEp[uFullChId])
+                  {}
+               else if( dHitsDt < 1e6 )
                   fhPulserHitDistNs->Fill( uFullChId%kuNbChanFmc, dHitsDt / 1e3 );
                else if( dHitsDt < 1e9)
                   fhPulserHitDistUs->Fill( uFullChId%kuNbChanFmc, dHitsDt / 1e6 );
                else
                   fhPulserHitDistMs->Fill( uFullChId%kuNbChanFmc, dHitsDt / 1e9 );
+
+               if( 0 < fvuLastHitEp[uFullChId] && dHitsDt < 5e3 )
+                  LOG(DEBUG) <<uFullChId<<" "<<dHitsDt<<" "
+                      <<fvuLastHitEp[ uFullChId ]<<" "<<fvuCurrEpoch2[uChipFullId]<<" "
+                      <<fvmLastHit[   uFullChId ].getGet4V10R32HitTot()*get4v1x::kdTotBinSize/1000.0<<" "
+                      <<mess.getGet4V10R32HitTot()*get4v1x::kdTotBinSize/1000.0<<FairLogger::endl;;
+
 
                // Fill the DNL histos
                fhPulserFeeDnl->Fill( uFullChId%kuNbChanFmc, mess.getGet4V10R32HitFt() );
