@@ -37,7 +37,10 @@ const Double_t CbmStsPhysics::fgE1 = TMath::Power(fgI / TMath::Power(fgE2, fgF2)
 
 
 // -----   Constructor   ---------------------------------------------------
-CbmStsPhysics::CbmStsPhysics() {
+CbmStsPhysics::CbmStsPhysics() 
+  : fStoppingElectron(),
+    fStoppingProton()
+{
 	LOG(INFO) << "Instantiating STS Physics... " << FairLogger::endl;
 	ReadDataTables();
 }

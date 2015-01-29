@@ -156,6 +156,10 @@ class CbmStsSensorTypeDssdReal : public CbmStsSensorTypeDssd
 	 **/
 	Double_t StoppingPower(Bool_t fElectron, Double_t mx, Double_t Ex, Int_t zx) const;
 
+ private:
+	CbmStsSensorTypeDssdReal(const CbmStsSensorTypeDssdReal&);
+	CbmStsSensorTypeDssdReal operator=(const CbmStsSensorTypeDssdReal&);
+
 	ClassDef(CbmStsSensorTypeDssdReal,1);
 
 };

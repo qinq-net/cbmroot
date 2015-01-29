@@ -20,7 +20,9 @@ CbmStsSensorFactory* CbmStsSensorFactory::fgInstance = NULL;
 
 // -----   Constructor (private)   -----------------------------------------
 CbmStsSensorFactory::CbmStsSensorFactory()
-	: TNamed("StsSensorFactory", "") {
+  : TNamed("StsSensorFactory", ""),
+    fSensors()
+{
 	Int_t nSensors = DefineSensors();
 	LOG(INFO) << GetName() << ": " << nSensors << " sensors created."
 			      << FairLogger::endl;
