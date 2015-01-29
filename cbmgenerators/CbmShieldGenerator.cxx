@@ -25,9 +25,9 @@ CbmShieldGenerator::CbmShieldGenerator()
     fInputFile(NULL),
     fFileName(NULL),
     fPDG(NULL),
+    fpartType(-1),
     fIonMap()
 {
-    fpartType = -1; // SELIM
 }
 // ------------------------------------------------------------------------
 
@@ -39,6 +39,7 @@ CbmShieldGenerator::CbmShieldGenerator(const char* fileName)
     fInputFile(NULL),
     fFileName(fileName),
     fPDG(TDatabasePDG::Instance()),
+    fpartType(-1),
     fIonMap()
 {
   cout << "-I- CbmShieldGenerator: Opening input file " << fileName << endl;
@@ -53,8 +54,6 @@ CbmShieldGenerator::CbmShieldGenerator(const char* fileName)
   cout << "-I- CbmShieldGenerator: Reopening input file " << fileName 
        << endl;
   fInputFile = new ifstream(fFileName);
-
-  fpartType = -1;
 }
 // ------------------------------------------------------------------------
 
