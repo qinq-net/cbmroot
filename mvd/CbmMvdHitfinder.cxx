@@ -28,10 +28,11 @@ CbmMvdHitfinder::CbmMvdHitfinder()
   : FairTask("MVDHitfinder"),
     fDetector(NULL),
     fInputDigis(NULL),
+    fInputCluster(NULL),
     fHits(NULL),
     fHitfinderPluginNr(0),
-    fTimer(),
-    useClusterfinder()
+    useClusterfinder(kFALSE),
+    fTimer()
 {
 }
 // -------------------------------------------------------------------------
@@ -41,12 +42,12 @@ CbmMvdHitfinder::CbmMvdHitfinder(const char* name, Int_t iMode, Int_t iVerbose)
   : FairTask(name, iVerbose),
     fDetector(NULL),
     fInputDigis(NULL),
+    fInputCluster(NULL),
     fHits(NULL),
     fHitfinderPluginNr(0),
-    fTimer(),
-    useClusterfinder()
+    useClusterfinder(kFALSE),
+    fTimer()
 {
-useClusterfinder = kFALSE;
 }
 // -------------------------------------------------------------------------
 

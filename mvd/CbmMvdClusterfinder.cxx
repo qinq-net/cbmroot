@@ -30,9 +30,9 @@ CbmMvdClusterfinder::CbmMvdClusterfinder()
     fCluster(NULL),
     fClusterPluginNr(),
     fBranchName(""),
-    fTimer()
+    fTimer(),
+    fRandGen()
 {
-
 }
 // -------------------------------------------------------------------------
 
@@ -45,7 +45,8 @@ CbmMvdClusterfinder::CbmMvdClusterfinder(const char* name, Int_t iMode, Int_t iV
     fCluster(NULL),
     fClusterPluginNr(0),
     fBranchName("MvdDigi"),
-    fTimer()    
+    fTimer(),
+    fRandGen()
 {
 }
 // -------------------------------------------------------------------------

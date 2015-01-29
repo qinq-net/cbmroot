@@ -70,8 +70,8 @@ protected:
     Bool_t initialized;
 
 private:
-  //CbmMvdSensorPlugin(const CbmMvdSensorPlugin&);
-  //CbmMvdSensorPlugin operator=(const CbmMvdSensorPlugin&);
+  CbmMvdSensorPlugin& operator=(const CbmMvdSensorPlugin&);
+  CbmMvdSensorPlugin(const CbmMvdSensorPlugin&);
   
   ClassDef(CbmMvdSensorPlugin,1);
 
