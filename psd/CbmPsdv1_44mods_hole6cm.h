@@ -93,6 +93,8 @@ class CbmPsdv1_44mods_hole6cm : public CbmPsd
    **/
   void ResetParameters();
 
+  CbmPsdv1_44mods_hole6cm(const CbmPsdv1_44mods_hole6cm&);
+  CbmPsdv1_44mods_hole6cm operator=(const CbmPsdv1_44mods_hole6cm&);
 
   ClassDef(CbmPsdv1_44mods_hole6cm,4)
 

@@ -21,9 +21,23 @@ using std::endl;
 
 
 // -----   Default constructor   -------------------------------------------
-CbmPsdv1_44mods_hole6cm::CbmPsdv1_44mods_hole6cm() {
-  fPsdCollection = new TClonesArray("CbmPsdPoint");
-  fPosIndex = 0;
+CbmPsdv1_44mods_hole6cm::CbmPsdv1_44mods_hole6cm() 
+: CbmPsd(),
+  fTrackID(0),
+  fVolumeID(0),
+  fModuleID(0),
+  fPos(),
+  fMom(),
+  fTime(0.),
+  fLength(0.),
+  fEloss(0.),
+  fPosIndex(0),
+  fPsdCollection(new TClonesArray("CbmPsdPoint")),
+  fXshift(0.),
+  fZposition(0.),
+  fRotYAngle(0.),
+  fGeoFile("")
+{
 }
 // -------------------------------------------------------------------------
 
@@ -31,7 +45,22 @@ CbmPsdv1_44mods_hole6cm::CbmPsdv1_44mods_hole6cm() {
 
 // -----   Standard constructor   ------------------------------------------
 CbmPsdv1_44mods_hole6cm::CbmPsdv1_44mods_hole6cm(const char* name, Bool_t active)
-  : CbmPsd(name, active) {
+: CbmPsd(name, active),
+  fTrackID(0),
+  fVolumeID(0),
+  fModuleID(0),
+  fPos(),
+  fMom(),
+  fTime(0.),
+  fLength(0.),
+  fEloss(0.),
+  fPosIndex(0),
+  fPsdCollection(new TClonesArray("CbmPsdPoint")),
+  fXshift(0.),
+  fZposition(0.),
+  fRotYAngle(0.),
+  fGeoFile("")
+{
 }
 
 // -------------------------------------------------------------------------

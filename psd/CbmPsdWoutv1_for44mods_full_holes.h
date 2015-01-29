@@ -94,6 +94,8 @@ class CbmPsdWoutv1_for44mods_full_holes : public CbmPsd
    **/
   void ResetParameters();
 
+  CbmPsdWoutv1_for44mods_full_holes(const CbmPsdWoutv1_for44mods_full_holes&);
+  CbmPsdWoutv1_for44mods_full_holes operator=(const CbmPsdWoutv1_for44mods_full_holes&);
 
   ClassDef(CbmPsdWoutv1_for44mods_full_holes,3)
 

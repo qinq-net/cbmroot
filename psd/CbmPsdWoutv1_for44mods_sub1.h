@@ -94,6 +94,8 @@ class CbmPsdWoutv1_for44mods_sub1 : public CbmPsd
    **/
   void ResetParameters();
 
+  CbmPsdWoutv1_for44mods_sub1(const CbmPsdWoutv1_for44mods_sub1&);
+  CbmPsdWoutv1_for44mods_sub1 operator=(const CbmPsdWoutv1_for44mods_sub1&);
 
   ClassDef(CbmPsdWoutv1_for44mods_sub1,3)
 
