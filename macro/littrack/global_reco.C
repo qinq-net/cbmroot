@@ -92,12 +92,22 @@ void global_reco(Int_t nEvents = 10, // number of events
 
 		if (IsMvd(parFile)) {
 			// ----- MVD reconstruction    --------------------------------------------
-			CbmMvdDigitizeL* mvdDigi = new CbmMvdDigitizeL("MVD Digitiser", 0, iVerbose);
-			run->AddTask(mvdDigi);
+  // -----   MVD Digitiser   -------------------------------------------------
+  CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose);
+  run->AddTask(mvdDigitise);
+  // -------------------------------------------------------------------------
 
-			CbmMvdFindHits* mvdHitFinder = new CbmMvdFindHits("MVD Hit Finder", 0, iVerbose);
-			run->AddTask(mvdHitFinder);
-			// -------------------------------------------------------------------------
+  // -----   MVD Clusterfinder   ---------------------------------------------
+  CbmMvdClusterfinder* mvdCluster = new CbmMvdClusterfinder("MVD Clusterfinder", 0, iVerbose);
+  run->AddTask(mvdCluster);
+  // -------------------------------------------------------------------------
+
+  // -----   MVD Hit Finder   ------------------------------------------------
+  CbmMvdHitfinder* mvdHitfinder = new CbmMvdHitfinder("MVD Hit Finder", 0, iVerbose);
+  mvdHitfinder->UseClusterfinder(kTRUE);
+  run->AddTask(mvdHitfinder);
+
+
 		}
 
 		if (stsHitProducerType == "real") {

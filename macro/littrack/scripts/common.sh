@@ -89,7 +89,7 @@ function set_default_muon_geometry() {
 # Function sets the default electron geometry
 function set_default_electron_geometry() {
     export LIT_CAVE_GEOM=cave.geo
-    export LIT_PIPE_GEOM=pipe/pipe_v13a.geo.root
+    export LIT_PIPE_GEOM=pipe/pipe_v14y.geo.root
     export LIT_SHIELD_GEOM=
     export LIT_MVD_GEOM=
     export LIT_STS_GEOM=sts/sts_v13d.geo.root
@@ -97,9 +97,9 @@ function set_default_electron_geometry() {
     export LIT_STS_MAT_BUDGET_FILE=${VMCWORKDIR}/parameters/sts/sts_matbudget_v13d.root
     export LIT_MUCH_GEOM=
     export LIT_MUCH_DIGI=
-    export LIT_RICH_GEOM=rich/rich_v08a.geo
-    export LIT_TRD_GEOM=trd/trd_v13p_3e.geo.root
-    export LIT_TRD_DIGI=${VMCWORKDIR}/parameters/trd/trd_v13p_3e.digi.par
+    export LIT_RICH_GEOM=rich/rich_v14a.root
+    export LIT_TRD_GEOM=trd/trd_v15a_3e.geo.root
+    export LIT_TRD_DIGI=${VMCWORKDIR}/parameters/trd/trd_v15a_3e.digi.par
     export LIT_TOF_GEOM=tof/tof_v13-5d.geo.root
     export LIT_TOF_DIGI=${VMCWORKDIR}/parameters/tof/tof_v13-5d.digi.par
     export LIT_ECAL_GEOM=
@@ -121,9 +121,9 @@ function set_default_electron_geometry() {
 # Function set default mvd geometry
 function set_default_mvd_geometry() {
     export LIT_CAVE_GEOM=cave.geo
-    export LIT_PIPE_GEOM=pipe/pipe_v13a.geo.root
+    export LIT_PIPE_GEOM=pipe/pipe_v14l.root
     export LIT_SHIELD_GEOM=
-    export LIT_MVD_GEOM=mvd/mvd_v07a.geo.root
+    export LIT_MVD_GEOM=mvd/mvd_v14b.geo.root
     export LIT_STS_GEOM=sts/sts_v13d.geo.root
     export LIT_STS_DIGI=${VMCWORKDIR}/parameters/sts/sts_v13d_std.digi.par
     export LIT_STS_MAT_BUDGET_FILE=${VMCWORKDIR}/parameters/sts/sts_matbudget_v13d.root
