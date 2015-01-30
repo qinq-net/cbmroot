@@ -1,20 +1,13 @@
 //
 //   comments
 //
-
-// 2015-01-28 - DE - use STS v13x fitting with with PIPE v14l
-// 2015-01-22 - DE - use MVD v14b with PIPE v14l as default
-// 2015-01-19 - DE - use TRD v15a as new defaut
-// 2014-07-05 - DE - use PIPE v14x as interim solution
-// 2014-07-01 - DE - use PIPE v14f -> overlap with STS
-// 2014-06-30 - DE - use PIPE v14d together with RICH v14a
-// 2014-06-30 - DE - make RICH v14a the new default
+// 2015-01-29 - DE - use chopped PIPE v14q as default
+// 2015-01-19 - DE - use TRD v15a as new default
 // 2014-06-30 - DE - make TRD v14a the new default
 // 2014-06-25 - DE - define digi files through tags for STS, TRD and TOF
 // 2013-11-05 - DE - switch to trd_v13p geometry
 // 2013-10-11 - DE - add empty string defining the platform
-// 2013-10-07 - DE - pipe_v13d.geo fixes overlap with TOF
-// 2013-10-07 - DE - rich_v13a is not at nominal position 1800mm, but at 1600mm
+// 2013-10-07 - DE - pipe_v13c.geo fixes overlap with TOF, fills RICH section
 //
 
 static TString caveGeom;
@@ -46,7 +39,7 @@ static Double_t fieldZ;
 static Double_t fieldScale;
 static Int_t    fieldSymType;
 
-void sis100_electron_dev_setup()
+void dev_sis100_hadron_setup()
 {
   FairLogger* logger = FairLogger::GetLogger();
 
@@ -58,8 +51,8 @@ void sis100_electron_dev_setup()
 
   // -----  Tags  -----------------------------------------------------------
   stsTag       = "v13x";
-  trdTag       = "v15a_1e";
-  tofTag       = "v13-5b";
+  trdTag       = "v15a_1h";
+  tofTag       = "v13-5a";
 
   // -----  DigiFiles  ------------------------------------------------------
   stsDigi      = "sts/sts_" + stsTag + "_std.digi.par";
@@ -68,13 +61,12 @@ void sis100_electron_dev_setup()
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
-  pipeGeom     = "pipe/pipe_v14l.root";
+  pipeGeom     = "pipe/pipe_v14q.root";
   magnetGeom   = "magnet/magnet_v12b.geo.root";
   mvdGeom      = "mvd/mvd_v14b.geo.root";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
-  richGeom     = "rich/rich_v14a_1e.root";
+  richGeom     = "";
   muchGeom     = "";
-  shieldGeom   = "";
   platformGeom = ""; // "passive/platform_v13a.geo";
   trdGeom      = "trd/trd_" + trdTag + ".geo.root";
   tofGeom      = "tof/tof_" + tofTag + ".geo.root";

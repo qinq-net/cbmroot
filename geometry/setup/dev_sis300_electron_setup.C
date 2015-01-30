@@ -45,7 +45,7 @@ static Double_t fieldZ;
 static Double_t fieldScale;
 static Int_t    fieldSymType;
 
-void sis300_electron_dev_setup()
+void dev_sis300_electron_setup()
 {
   FairLogger* logger = FairLogger::GetLogger();
 
