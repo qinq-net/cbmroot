@@ -234,6 +234,13 @@ void create_stsgeo_v13x(const char* geoTag="v13x")
   geoBuild->createMedium(mSilicon);
   TGeoMedium* silicon = gGeoMan->GetMedium("silicon");
   if ( ! silicon ) Fatal("Main", "Medium silicon not found");
+  // ---> STScable
+  FairGeoMedium* mSTScable  = geoMedia->getMedium("STScable");
+  if ( ! mSTScable ) Fatal("Main", "FairMedium STScable not found");
+  geoBuild->createMedium(mSTScable);
+  TGeoMedium* STScable = gGeoMan->GetMedium("STScable");
+  if ( ! STScable ) Fatal("Main", "Medium STScable not found");
+  // ---
   gStsMedium = air;
   // --------------------------------------------------------------------------
 
@@ -1272,8 +1279,8 @@ TGeoVolume* ConstructModule(const char* name,
   // --- Cable is centred in x and z and aligned to the top
   if ( gkConstructCables && cableLength > 0.0001 ) {
     TString cableName = TString(name) + "_cable";
-    TGeoMedium* cableMedium = gGeoMan->GetMedium("silicon");
-    if ( ! cableMedium ) Fatal("CreateModule", "Medium silicon not found!");
+    TGeoMedium* cableMedium = gGeoMan->GetMedium("STScable");
+    if ( ! cableMedium ) Fatal("CreateModule", "Medium STScable not found!");
     TGeoVolume* cable = gGeoManager->MakeBox(cableName.Data(),
 					     cableMedium,
 					     cableX / 2.,
@@ -1281,7 +1288,7 @@ TGeoVolume* ConstructModule(const char* name,
 					     cableZ / 2.);
     // add color to cables
     cable->SetLineColor(kOrange);
-    //    cable->SetTransparency(80);
+    cable->SetTransparency(60);
     Double_t cableXpos = 0.;
     Double_t cableYpos = sectorY + 0.5 * cableY - 0.5 * moduleY;
     Double_t cableZpos = 0.;
