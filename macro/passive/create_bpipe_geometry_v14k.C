@@ -43,7 +43,7 @@ TString macrosname = "create_bpipe_geometry_v14k.C";
 // ---> Geometry file name (output)
 TString rootFileName = "pipe_v14k.root";
 // ---> Geometry name
-TString pipeName = "PIPE_v14k";
+TString pipeName = "pipe_v14k";
 // ----------------------------------------------------------------------------
 
 
