@@ -95,7 +95,7 @@ Bool_t CbmStsDigiScheme::Init(CbmGeoStsPar*  geoPar,
   TGeoNode* top = gGeoManager->GetTopNode();
   for (Int_t iNode = 0; iNode < top->GetNdaughters(); iNode++) {
     TString nodeName = top->GetDaughter(iNode)->GetName();
-    if (nodeName.Contains("STS")) {
+    if ((nodeName.Contains("STS")) || (nodeName.Contains("sts"))) {
       test = top->GetDaughter(iNode)->GetVolume();
       break;
     }
@@ -367,7 +367,7 @@ Bool_t CbmStsDigiScheme::InitNew(CbmGeoStsPar* geoPar,
   for (Int_t iNode = 0; iNode < cave->GetNdaughters(); iNode++) {
     TGeoNode* node = cave->GetDaughter(iNode);
     TString name = node->GetName();
-    if ( name.Contains("STS") ) {
+    if ((name.Contains("STS")) || (name.Contains("sts"))) {
       sts = node;
       gGeoManager->CdDown(iNode);
       break;
