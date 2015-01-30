@@ -561,6 +561,7 @@ void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
    fhSysMessTypePerRoc->Write();
    fhGet4EpochFlags   ->Write();
    fhGet4EpochSyncDist->Write();
+   fhGet4EpochJumps   ->Write();
    fhGet4ChanDataCount->Write();
    fhGet4ChanDllStatus->Write();
    fhGet4ChanTotMap   ->Write();
