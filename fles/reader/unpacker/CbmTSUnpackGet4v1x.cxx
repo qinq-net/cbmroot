@@ -59,6 +59,7 @@ CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
    fhSysMessTypePerRoc(0),
    fhGet4EpochFlags(0),
    fhGet4EpochSyncDist(0),
+   fhGet4EpochJumps(0),
    fhGet4ChanDataCount(0),
    fhGet4ChanDllStatus(0),
    fhGet4ChanTotMap(0),
@@ -402,12 +403,21 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
    fhGet4EpochFlags    = new TH2I("hGet4EpochFlags",
          "Number of epochs with corresponding flag set per GET4; GET4 # ;",
          fuNbGet4, -0.5, fuNbGet4 -0.5,
-         2, -0.5, 1.5);
+         4, -0.5, 3.5);
+   fhGet4EpochFlags->GetYaxis()->SetBinLabel(1, "SYNC");
+   fhGet4EpochFlags->GetYaxis()->SetBinLabel(2, "Ep. Missmatch");
+   fhGet4EpochFlags->GetYaxis()->SetBinLabel(3, "Ep. Loss");
+   fhGet4EpochFlags->GetYaxis()->SetBinLabel(4, "Data Loss");
 
    fhGet4EpochSyncDist = new TH2I("hGet4EpochSyncDist",
          "Distance between epochs with SYNC flag for each GET4; SYNC distance [epochs]; Epochs",
          fuNbGet4, -0.5, fuNbGet4 -0.5,
          2*get4v1x::kuSyncCycleSzGet4, 0.5, 2*get4v1x::kuSyncCycleSzGet4 -0.5);
+
+   fhGet4EpochJumps    = new TH2I("hGet4EpochJumps",
+         "Distance between epochs when jump happens for each GET4; Epoch distance [epochs]; Epochs",
+         fuNbGet4, -0.5, fuNbGet4 -0.5,
+         401, -200.5, 200.5);
 
    fhGet4ChanDataCount = new TH1I("hGet4ChanDataCount",
          "Data Messages per GET4 channel; GET4 channel # ; Data Count",
@@ -682,9 +692,34 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
    // GET4 v1.x epoch message (24b only for now)
    // TODO: check compatibility when 32b format without hack ready
    uint8_t  cRocId    = mess.getRocNumber();
+   uint8_t  cChipId   = mess.getEpoch2ChipNumber();
+   uint32_t uChipFullId = cChipId + get4v1x::kuMaxGet4PerRoc*cRocId;
+
    LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_epoch2 => GET4 Epoch2: EqId "
                <<EqID<<" roc "
-               <<cRocId<<FairLogger::endl;
+               <<cRocId<<" chip "
+               <<cChipId<<FairLogger::endl;
+
+   if( fvuCurrEpoch2[uChipFullId] +1 != mess.getEpoch2Number())
+   {
+      Int_t iEpJump = mess.getEpoch2Number();
+      iEpJump      -= fvuCurrEpoch2[uChipFullId];
+      LOG(DEBUG) << "Epoch nb jump in chip "<< uChipFullId <<": "
+                 << iEpJump
+                 <<" ("<<fvuCurrEpoch2[uChipFullId]
+                 << " -> "<<mess.getEpoch2Number() <<")"<< FairLogger::endl;
+
+      fhGet4EpochJumps->Fill(uChipFullId, iEpJump);
+   } // if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
+   fvuCurrEpoch2[uChipFullId] = mess.getEpoch2Number();
+   if( 1 == mess.getEpoch2Sync() )
+      fhGet4EpochFlags->Fill(uChipFullId, 0);
+   if( 1 == mess.getEpoch2EpochMissmatch() )
+      fhGet4EpochFlags->Fill(uChipFullId, 1);
+   if( 1 == mess.getEpoch2EpochLost() )
+      fhGet4EpochFlags->Fill(uChipFullId, 2);
+   if( 1 == mess.getEpoch2DataLost() )
+      fhGet4EpochFlags->Fill(uChipFullId, 3);
 }
 void CbmTSUnpackGet4v1x::MonitorMessage_get4(   get4v1x::Message mess, uint16_t EqID)
 {
@@ -816,10 +851,16 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
       case get4v1x::GET4_32B_EPOCH: // => Epoch message
       {
          if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
+         {
+            Int_t iEpJump = mess.getGet4V10R32EpochNumber();
+            iEpJump      -= fvuCurrEpoch2[uChipFullId];
             LOG(DEBUG) << "Epoch nb jump in chip "<< uChipFullId <<": "
-                       << mess.getGet4V10R32EpochNumber() - fvuCurrEpoch2[uChipFullId] 
+                       << iEpJump
                        <<" ("<<fvuCurrEpoch2[uChipFullId]
                        << " -> "<<mess.getGet4V10R32EpochNumber() <<")"<< FairLogger::endl;
+
+            fhGet4EpochJumps->Fill(uChipFullId, iEpJump);
+         } // if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
          fvuCurrEpoch2[uChipFullId] = mess.getGet4V10R32EpochNumber();
 
          if( 1 == mess.getGet4V10R32SyncFlag() )

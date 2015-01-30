@@ -85,6 +85,7 @@ private:
   TH2 * fhSysMessTypePerRoc;
   TH2 * fhGet4EpochFlags;    // TODO
   TH2 * fhGet4EpochSyncDist; // TODO
+  TH2 * fhGet4EpochJumps; // TODO
   TH1 * fhGet4ChanDataCount;
   TH2 * fhGet4ChanDllStatus;
   TH2 * fhGet4ChanTotMap;
