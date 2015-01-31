@@ -27,7 +27,7 @@
 class TH1;
 class TH2;
 
-const UInt_t kuNbChanFmc  = 32;
+const UInt_t kuNbChanFee  = 32;
 const UInt_t kuNbChanTest = 16;
 const UInt_t kuNbChanComb = 4;
 
@@ -54,13 +54,14 @@ public:
   inline void SetMode( Int_t inMode = 2 ) { fiMode = inMode; }
 
   inline void SetPulserMode( Bool_t inPulserMode = kTRUE ) { fbPulserMode = inPulserMode; }
-  inline void SetPulserFmc( UInt_t inPulserFmc = 0 ) { fuPulserFmc = inPulserFmc; }
+  inline void SetPulserFee( UInt_t inPulserFee = 0 ) { fuPulserFee = inPulserFee; }
   void SetPulserChans( UInt_t inPulserChanA = 0, UInt_t inPulserChanB = 1, UInt_t inPulserChanC = 2,
         UInt_t inPulserChanD =  3, UInt_t inPulserChanE =  4, UInt_t inPulserChanF =  5,
         UInt_t inPulserChanG =  6, UInt_t inPulserChanH =  7, UInt_t inPulserChanI =  8,
         UInt_t inPulserChanJ =  9, UInt_t inPulserChanK = 10, UInt_t inPulserChanL = 11,
         UInt_t inPulserChanM = 12, UInt_t inPulserChanN = 13, UInt_t inPulserChanO = 14,
         UInt_t inPulserChanP = 15 );
+  inline void SetOldReadoutSupp( Bool_t inReadoutAllowed = kTRUE ) { fbOldReadoutOk = inReadoutAllowed; }
 
   // protected:
   //  virtual void Register();
@@ -93,12 +94,12 @@ private:
   TH2 * fhGet4ChanSlowContM;
      // TDC pulser test, works up to 1 hits per 2 epoch
   Bool_t fbPulserMode;
-  UInt_t fuPulserFmc;
+  UInt_t fuPulserFee;
   UInt_t fuPulserChan[kuNbChanTest];
   std::vector< UInt_t >           fvuLastHitEp; // Epoch of Last hit message (one per GET4 chip & channel)
   std::vector< get4v1x::Message > fvmLastHit;   // Last hit message (one per GET4 chip & channel)
-  TH1 * fhTimeResFMC[kuNbChanFmc*(kuNbChanFmc-1)/2];
-  TH2 * fhTimeResAllFMC;
+  TH1 * fhTimeResFee[kuNbChanFee*(kuNbChanFee-1)/2];
+  TH2 * fhTimeResAllFee;
   TH1 * fhTimeResPairs[kuNbChanTest - 1];
   TH1 * fhTimeResCombi[kuNbChanComb*(kuNbChanComb-1)/2];
   TH2 * fhPulserHitDistNs;
@@ -106,6 +107,13 @@ private:
   TH2 * fhPulserHitDistMs;
   TH2 * fhPulserFeeDnl;
   TH2 * fhPulserFeeInl;
+     // Monitoring of 24b mode for debugging purpose
+  Bool_t fbOldReadoutOk;
+  TH1 * fhGet4ChanTotCount;
+  std::vector< UInt_t >           fvuLastOldTotEp; // Epoch of Last TOT message (one per GET4 chip & channel)
+  std::vector< get4v1x::Message > fvmLastOldTot;   // Last TOT message (one per GET4 chip & channel)
+  TH2 * fhPulserFeeTotDnl;
+  TH2 * fhPulserFeeTotInl;
 
   // Verbose functions (redundant with Print from GET4 Hack/Tools?)
 //  void Print6bytesMessage(const uint8_t* msContent_shifted);
