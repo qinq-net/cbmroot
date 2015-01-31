@@ -26,11 +26,12 @@ void readTsa_server_get4( Int_t nEvents = 1000 )
 
   // --- Set log output levels
   FairLogger::GetLogger()->SetLogScreenLevel("INFO");
+//  FairLogger::GetLogger()->SetLogScreenLevel("DEBUG");
   FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
 
   // --- Set debug level
   gDebug = 0;
-  
+
   std::cout << std::endl;
   //std::cout << ">>> readTsa:  input file is " << inFile  << std::endl;
   std::cout << ">>> readTsa: output file is " << outFile << std::endl;
@@ -50,11 +51,15 @@ void readTsa_server_get4( Int_t nEvents = 1000 )
   // GET4 Unpacker
   CbmTSUnpackGet4v1x* get4_unpacker = new CbmTSUnpackGet4v1x();
   get4_unpacker->SetRocNb(      1); // Min 1
-  get4_unpacker->SetGet4Nb(     8); // Min 1
+  get4_unpacker->SetGet4Nb(    16); // Min 1
   get4_unpacker->SetMode(       1); // 0 = debug, 1 = moni, 2 = unpack
   get4_unpacker->SetPulserMode(  ); // kTRUE = ON, kFALSE = OFF
-  get4_unpacker->SetPulserFmc(   ); // 1 value (default is 0)
-  get4_unpacker->SetPulserChans( ); // 1-16 values (default is 0-15)
+  get4_unpacker->SetPulserFee(   ); // 1 value (default is 0)
+  get4_unpacker->SetPulserChans(  0,  4,  8, 12,
+                                 16, 20, 24, 28,
+                                 32, 36, 40, 44,
+                                 48, 52, 56, 60); // 1-16 values (default is 0-15)
+  get4_unpacker->SetOldReadoutSupp();
 
   // --- Source task
   CbmFlibFileSourceNew* source = new CbmFlibFileSourceNew();
@@ -62,8 +67,8 @@ void readTsa_server_get4( Int_t nEvents = 1000 )
 //  source->AddUnpacker(nxyter_unpacker, 0x10);
 //  source->AddUnpacker(spadic_unpacker, 0x40);
   source->AddUnpacker(get4_unpacker, 0x60);
-//  source->SetHostName("cbmflib05");
-  source->SetHostName("daqserv");
+  source->SetHostName("cbmflib03");
+//  source->SetHostName("daqserv");
 
   // --- Event header
 //  FairEventHeader* event = new CbmTbEvent();
