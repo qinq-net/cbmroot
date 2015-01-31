@@ -75,6 +75,9 @@ class CbmTSUnpackTrb : public CbmTSUnpack
   Double_t GetFullCoarseTime(UInt_t epoch, UShort_t coarseTime);
   Double_t GetFullTime(UShort_t TRB, UShort_t TDC, UShort_t CH, UInt_t epoch, UShort_t coarseTime, UShort_t fineTime);
 
+  CbmTSUnpackTrb(const CbmTSUnpackTrb&);
+  CbmTSUnpackTrb operator=(const CbmTSUnpackTrb&);
+
   ClassDef(CbmTSUnpackTrb, 1)
 };
 

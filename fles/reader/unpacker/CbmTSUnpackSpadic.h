@@ -50,6 +50,9 @@ class CbmTSUnpackSpadic : public CbmTSUnpack
   void GetEpochInfo(Int_t link, Int_t addr);
   void FillEpochInfo(Int_t link, Int_t addr, Int_t epoch_count);
 
+  CbmTSUnpackSpadic(const CbmTSUnpackSpadic&);
+  CbmTSUnpackSpadic operator=(const CbmTSUnpackSpadic&);
+
   ClassDef(CbmTSUnpackSpadic, 1)
 };
 

@@ -99,4 +99,7 @@ private:
    std::time_t _lastStatDump;
    
    int _lastEvtNumber = -1;
+
+  TrbBridge(const TrbBridge&);
+  TrbBridge operator=(const TrbBridge&);
 };

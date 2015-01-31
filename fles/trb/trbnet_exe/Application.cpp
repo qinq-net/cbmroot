@@ -6,7 +6,11 @@
 #include <sys/stat.h>
 #include <boost/format.hpp>
 
-Application::Application(Parameters const& par) : _par(par)
+Application::Application(Parameters const& par) 
+  : _par(par)
+  , _source()
+  , _trbBridge()
+
 {
    if (!_par.shm_identifier().empty()) {
       _source.reset(new fles::TimesliceReceiver(_par.shm_identifier()));

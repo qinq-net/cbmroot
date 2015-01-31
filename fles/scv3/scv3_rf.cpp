@@ -12,7 +12,9 @@ class scv3_rf {
 
 public:
 
-  scv3_rf(std::string path) {
+  scv3_rf(std::string path) 
+    : ctrlclient()
+  {
     ctrlclient.Connect(path);  
   }
   

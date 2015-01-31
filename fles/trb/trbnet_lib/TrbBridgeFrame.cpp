@@ -2,10 +2,11 @@
 #include <boost/format.hpp>
 #include <sstream> 
 
-TrbBridgeFrame::TrbBridgeFrame(const uint16_t* msContent, size_t frameLength) {
+TrbBridgeFrame::TrbBridgeFrame(const uint16_t* msContent, size_t frameLength) 
+  : _content(msContent)
+  , _length(frameLength)
+{
    if (frameLength < 4 || frameLength > 64 || frameLength & 1) throw TrbBrideFrameException("Invalid frameLength");
-   _content = msContent;
-   _length = frameLength;
 }
 
    
@@ -82,7 +83,9 @@ std::string TrbBridgeFrame::dump() const {
    return ss.str();
 }
 
-TrbBrideFrameException::TrbBrideFrameException(const std::string& what_arg, const TrbBridgeFrame* frameInvolved) {
+TrbBrideFrameException::TrbBrideFrameException(const std::string& what_arg, const TrbBridgeFrame* frameInvolved) 
+  : _what("")
+{
    if (frameInvolved) {
       std::stringstream ss;
       ss << what_arg << std::endl << "Related to " << frameInvolved->dump();

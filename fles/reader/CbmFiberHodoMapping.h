@@ -42,9 +42,9 @@ class CbmFiberHodoMapping : public TObject
 
   void InitializeFiberHodoMapping();
   
-  Int_t fFiberHodoFiber[128];  /** Mapping from fiber hodoscope feb channel to fiber number **/
-  Int_t fFiberHodoPlane[128];  /** Mapping from fiber hodoscope feb channel to plane number 1=X, 2=Y **/
-  Int_t fFiberHodoPixel[128];  /** Mapping from fiber hodoscope feb channel to pixel number **/
+  Int_t fFiberHodoFiber[128]; //!  /** Mapping from fiber hodoscope feb channel to fiber number **/
+  Int_t fFiberHodoPlane[128]; //! /** Mapping from fiber hodoscope feb channel to plane number 1=X, 2=Y **/
+  Int_t fFiberHodoPixel[128]; //! /** Mapping from fiber hodoscope feb channel to pixel number **/
 
   ClassDef(CbmFiberHodoMapping,1);
 

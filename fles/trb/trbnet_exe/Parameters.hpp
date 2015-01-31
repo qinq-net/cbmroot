@@ -19,7 +19,11 @@ public:
 class Parameters
 {
 public:
-    Parameters(int argc, char* argv[]) { parse_options(argc, argv); }
+  Parameters(int argc, char* argv[]) 
+    : _shm_identifier("")
+    , _input_archive("")
+    , _output_archive("")
+  { parse_options(argc, argv); }
 
     Parameters(const Parameters&) = delete;
     void operator=(const Parameters&) = delete;

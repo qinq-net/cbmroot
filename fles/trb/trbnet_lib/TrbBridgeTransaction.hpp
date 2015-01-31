@@ -13,9 +13,16 @@ public:
     * Generates an empty transaction w/o buffer.
     * You cannot use this transaction !
     */
-   TrbBridgeTransaction() {
-      TrbBridgeTransaction(0);
-   }
+  TrbBridgeTransaction() 
+    : _buffer(NULL)
+    , _writeIdx(0)
+    , _size(0)
+    , _completed(false)
+    , _transactionNumber(0)
+    , _frameNumberExpected(0)
+  {
+    TrbBridgeTransaction(0);
+  }
 
    /**
     * Generates an empty transaction

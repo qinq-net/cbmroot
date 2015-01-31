@@ -8,7 +8,7 @@ static char *rcsId = "$Header: /misc/hadesprojects/daq/cvsroot/eventbuilder/hada
 #include <string.h>
 
 #include <stdint.h>
-
+#include <stdlib.h>
 
 #include "hldread.h"
 

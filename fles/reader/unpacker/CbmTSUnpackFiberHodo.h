@@ -53,6 +53,9 @@ class CbmTSUnpackFiberHodo : public CbmTSUnpack
 
   void FillHodoDigiToBuffer();
 
+  CbmTSUnpackFiberHodo(const CbmTSUnpackFiberHodo&);
+  CbmTSUnpackFiberHodo operator=(const CbmTSUnpackFiberHodo&);
+
   ClassDef(CbmTSUnpackFiberHodo, 1)
 };
 

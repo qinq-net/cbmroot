@@ -10,18 +10,32 @@
 
 /* Construction & Destruction */
    TrbBridge::TrbBridge() 
-      : _eventBuffer(TrbBridgeTransaction::MAX_SIZE / sizeof(_eventBuffer[0]) + 8)
-       ,_transactionBuffer(reinterpret_cast<uint16_t*>(_eventBuffer.data()) + 16)
-       ,_transaction(_transactionBuffer)
+     : _eventBuffer(TrbBridgeTransaction::MAX_SIZE / sizeof(_eventBuffer[0]) + 8)
+     , _transactionBuffer(reinterpret_cast<uint16_t*>(_eventBuffer.data()) + 16)
+     , _filePtr()
+     , _transaction(_transactionBuffer)
+     ,  _eventNum(0)
+     ,  _runNum(0)
+     , _time(0)
+     , _date(0)
+     , _flags(0)
+     , _currentStats()
+     , _lastStats()
+     , _offlineProcessing(false)
+     , _MCSize(0)
+     , _creationTimeMCCount(0)
+     , _archiveCreationTime()
+     , _lastStatDump(0)
+
    {
-      _eventNum = 0;
-      _flags = 0;
+     //      _eventNum = 0;
+     //      _flags = 0;
 
       srand(std::time(NULL));
       _runNum = rand();
       
-      _creationTimeMCCount = 0;
-      _offlineProcessing = false;
+      //     _creationTimeMCCount = 0;
+      //      _offlineProcessing = false;
    }
 
    TrbBridge::~TrbBridge() {

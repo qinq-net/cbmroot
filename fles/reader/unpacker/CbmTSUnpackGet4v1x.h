@@ -138,7 +138,10 @@ private:
   
   // Output array of raw sync messages
 //  TClonesArray* fGet4RawSync;
-  
+
+  CbmTSUnpackGet4v1x(const CbmTSUnpackGet4v1x&);
+  CbmTSUnpackGet4v1x operator=(const CbmTSUnpackGet4v1x&);
+
   ClassDef(CbmTSUnpackGet4v1x, 1)
 };
 

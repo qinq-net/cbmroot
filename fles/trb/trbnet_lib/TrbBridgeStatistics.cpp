@@ -23,9 +23,26 @@ std::string fmtSize(double v) {
    
    
 // Init
-   TrbBridgeStatistics::TrbBridgeStatistics() {
+TrbBridgeStatistics::TrbBridgeStatistics() 
+  : _timeslicesProcessed(0)
+  , _framesProcessed(0)
+  , _framesAssigned(0)
+  , _framesSkipped(0)
+  , _framesDiscarded(0)
+  , _transactionsStarted(0)
+  , _transactionsCompleted(0)
+  , _transactionsMissing(0)
+  , _SSEStructureError(0)
+  , _missedTriggerNumbers(0)
+  , _triggerNumberSequenceErrors(0)
+  , _dumpsSinceLastHeader(0)
+  , _eventSizeTotal(0)
+  , _eventSizeNumber(0)
+  , _eventSizeMin(0xffffff)
+  , _eventSizeMax(0)     
+{
       reset();
-   }
+}
 
    void TrbBridgeStatistics::reset() {
       _framesProcessed = 0;

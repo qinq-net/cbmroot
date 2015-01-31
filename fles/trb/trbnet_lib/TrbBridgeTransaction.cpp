@@ -8,8 +8,15 @@
 
 #include "TrbBridgeTrbNetHeaders.hpp"
 
-TrbBridgeTransaction::TrbBridgeTransaction(uint16_t* buffer) {
-   _buffer = buffer;
+TrbBridgeTransaction::TrbBridgeTransaction(uint16_t* buffer) 
+  : _buffer(buffer)
+  , _writeIdx(0)
+  , _size(0)
+  , _completed(false)
+  , _transactionNumber(0)
+  , _frameNumberExpected(0)    
+{
+  //   _buffer = buffer;
    reset();
 }
 
@@ -167,7 +174,9 @@ std::string TrbBridgeTransaction::dump() const {
    return ss.str();
 }
 
-TrbBridgeTransactionException::TrbBridgeTransactionException(const std::string& what_arg, const TrbBridgeTransaction* involvedTransaction, const TrbBridgeFrame* involvedFrame) {
+TrbBridgeTransactionException::TrbBridgeTransactionException(const std::string& what_arg, const TrbBridgeTransaction* involvedTransaction, const TrbBridgeFrame* involvedFrame) 
+  : _what("")
+{
    if (involvedTransaction || involvedFrame) {
       std::stringstream ss;
       ss << what_arg << std::endl;

@@ -63,7 +63,10 @@ private:
   
   // Output array of raw sync messages
   TClonesArray* fNxyterRawSync;
-  
+
+  CbmTSUnpackNxyter(const CbmTSUnpackNxyter&);
+  CbmTSUnpackNxyter operator=(const CbmTSUnpackNxyter&);
+
   ClassDef(CbmTSUnpackNxyter, 1)
 };
 

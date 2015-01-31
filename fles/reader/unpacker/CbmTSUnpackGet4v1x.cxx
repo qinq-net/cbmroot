@@ -48,39 +48,38 @@ struct DTM_header
 };
 
 CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
-  : CbmTSUnpack(),
-   fbVerbose(kFALSE),
-   fiMode(0),
-   fuNbRocs(0),
-   fuNbGet4(0),
-   fhMessageTypePerRoc(0),
-   fhRocSyncTypePerRoc(0),
-   fhRocAuxTypePerRoc(0),
-   fhSysMessTypePerRoc(0),
-   fhGet4EpochFlags(0),
-   fhGet4EpochSyncDist(0),
-   fhGet4EpochJumps(0),
-   fhGet4ChanDataCount(0),
-   fhGet4ChanDllStatus(0),
-   fhGet4ChanTotMap(0),
-   fhGet4ChanErrors(0),
-   fhGet4ChanSlowContM(0),
-   fbPulserMode(kFALSE),
-   fuPulserFmc(0),
-//  UInt_t  fuPulserChan[kuNbChanTest];
-//  std::vector< UInt_t >           fvuLastHitEp; // Epoch of Last hit message (one per GET4 chip & channel)
-//  std::vector< get4v1x::Message > fvmLastHit;   // Last hit message (one per GET4 chip & channel)
-//  TH1 * fhTimeResFMC[kuNbChanFmc*(kuNbChanFmc-1)/2];
-  fhTimeResAllFMC(0),
-//  TH1 * fhTimeResPairs[kuNbChanTest - 1];
-//  TH1 * fhTimeResCombi[kuNbChanComb*(kuNbChanComb-1)/2];
-  fhPulserHitDistNs(0),
-  fhPulserHitDistUs(0),
-  fhPulserHitDistMs(0),
-  fhPulserFeeDnl(0),
-  fhPulserFeeInl(0)
-//    fNxyterRaw(new TClonesArray("CbmNxyterRawMessage", 10)),
-//    fNxyterRawSync(new TClonesArray("CbmNxyterRawSyncMessage", 10))
+: CbmTSUnpack(),
+  fbVerbose(kFALSE),
+  fiMode(0),
+  fuNbRocs(0),
+  fuNbGet4(0),
+  fvuCurrEpoch(),
+  fvuCurrEpoch2(),
+  fhMessageTypePerRoc(NULL),
+  fhRocSyncTypePerRoc(NULL),
+  fhRocAuxTypePerRoc(NULL),
+  fhSysMessTypePerRoc(NULL),
+  fhGet4EpochFlags(NULL),
+  fhGet4EpochSyncDist(NULL),
+  fhGet4ChanDataCount(NULL),
+  fhGet4ChanDllStatus(NULL),
+  fhGet4ChanTotMap(NULL),
+  fhGet4ChanErrors(NULL),
+  fhGet4ChanSlowContM(NULL),
+  fbPulserMode(kFALSE),
+  fuPulserFmc(0),
+  fuPulserChan(),
+  fvuLastHitEp(),
+  fvmLastHit(),
+  fhTimeResFMC(),
+  fhTimeResAllFMC(NULL),
+  fhTimeResPairs(),
+  fhTimeResCombi(),
+  fhPulserHitDistNs(NULL),
+  fhPulserHitDistUs(NULL),
+  fhPulserHitDistMs(NULL),
+  fhPulserFeeDnl(NULL),
+  fhPulserFeeInl(NULL)
 {
 }
 

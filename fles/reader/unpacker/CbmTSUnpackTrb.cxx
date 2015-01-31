@@ -36,7 +36,8 @@ CbmTSUnpackTrb::CbmTSUnpackTrb()
     fRawEvent(NULL),
     fRawSubEvent(NULL),
     fLink(0),
-    fEpochMarker()
+    fEpochMarker(),
+    fTimeBuffer()
 {
 }
 
@@ -145,7 +146,7 @@ void CbmTSUnpackTrb::ProcessTdc(CbmRawSubEvent* rawSubEvent)
     }
 
     //read TDC words to array
-    UInt_t dataArray[tdcNofWords];
+    UInt_t* dataArray = new UInt_t[tdcNofWords];
     for (UInt_t i = 0; i < tdcNofWords; i++) {
       tdcDataIndex++;
       tdcData = rawSubEvent->SubDataValue(tdcDataIndex);
@@ -153,6 +154,7 @@ void CbmTSUnpackTrb::ProcessTdc(CbmRawSubEvent* rawSubEvent)
     }
     DecodeTdcDataNew(dataArray, tdcNofWords, tdcId);
     tdcDataIndex++;
+    delete [] dataArray;
   }
 }
 
