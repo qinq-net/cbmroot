@@ -78,25 +78,31 @@ void run_analysis(Int_t nEvents = 1000)
    CbmAnaDielectronTask *task = new CbmAnaDielectronTask();
    if (energy == "8gev" || energy == "10gev") {
       // weight rho0 = Multiplicity * Branching Ratio = 9 * 4.7e-5 for 10 AGeV beam energy
-      if (plutoParticle == "rho0") task->SetWeight(0.000423);
-      // weight omega = Multiplicity * Branching Ratio = 19 * 7.07e-5 for 10 AGeV beam energy
-      if (plutoParticle == "omegaepem" ) task->SetWeight(0.0013433);
-      // weight omega = Multiplicity * Branching Ratio = 19 * 5.9e-4 for 10 AGeV beam energy
-      if (plutoParticle == "omegadalitz") task->SetWeight(0.01121);
-      // weight phi = Multipli0city * Branching Ratio = 0.12 * 3.09e-4 for 10 AGeV beam energy
-      if (plutoParticle == "phi") task->SetWeight(0.00003708);
-
+      if (plutoParticle == "rho0") task->SetWeight(9 * 4.7e-5);
+      // weight omega = Multiplicity * Branching Ratio = 19 * 7.28e-5 for 10 AGeV beam energy
+      if (plutoParticle == "omegaepem" ) task->SetWeight(19 * 7.28e-5);
+      // weight omega = Multiplicity * Branching Ratio = 19 * 7.7e-4 for 10 AGeV beam energy
+      if (plutoParticle == "omegadalitz") task->SetWeight(19 * 7.7e-4);
+      // weight phi = Multipli0city * Branching Ratio = 0.12 * 2.97e-4 for 10 AGeV beam energy
+      if (plutoParticle == "phi") task->SetWeight(0.12 * 2.97e-4);
    } else if (energy == "25gev") {
       // weight rho0 = Multiplicity * Branching Ratio = 23 * 4.7e-5 for 25 AGeV beam energy
-      if (plutoParticle == "rho0") task->SetWeight(0.001081);
-      // weight omega = Multiplicity * Branching Ratio = 38 * 7.07e-5 for 25 AGeV beam energy
-      if (plutoParticle == "omegaepem" ) task->SetWeight(0.0026866);
-      // weight omega = Multiplicity * Branching Ratio = 38 * 5.9e-4 for 25 AGeV beam energy
-      if (plutoParticle == "omegadalitz") task->SetWeight(0.02242);
-      // weight phi = Multiplicity * Branching Ratio = 1.28 * 3.09e-4 for 25 AGeV beam energy
-      if (plutoParticle == "phi") task->SetWeight(0.00039552);
-      // weight pi0 = Multiplicity * Branching Ratio = 365 * 1.2e-2  for 25 AGeV beam energy
-      if (plutoParticle == "pi0") task->SetWeight(4.38);
+      if (plutoParticle == "rho0") task->SetWeight(23 * 4.7e-5);
+      // weight omega = Multiplicity * Branching Ratio = 38 * 7.28e-5 for 25 AGeV beam energy
+      if (plutoParticle == "omegaepem" ) task->SetWeight(38 * 7.28e-5);
+      // weight omega = Multiplicity * Branching Ratio = 38 * 7.7e-4 for 25 AGeV beam energy
+      if (plutoParticle == "omegadalitz") task->SetWeight(38 * 7.7e-4);
+      // weight phi = Multiplicity * Branching Ratio = 1.28 * 2.97e-4 for 25 AGeV beam energy
+      if (plutoParticle == "phi") task->SetWeight(1.28 * 2.97e-4);
+   } else if (energy == "3.5gev") {
+      // weight rho0 = Multiplicity * Branching Ratio = 1.0 * 4.7e-5 for 25 AGeV beam energy
+      if (plutoParticle == "rho0") task->SetWeight(1.0 * 4.7e-5);
+      // weight omega = Multiplicity * Branching Ratio = 1.2 * 7.28e-5 for 25 AGeV beam energy
+      if (plutoParticle == "omegaepem" ) task->SetWeight(1.2 * 7.28e-5);
+      // weight omega = Multiplicity * Branching Ratio = 1.2 * 5.9e-4 for 25 AGeV beam energy
+      if (plutoParticle == "omegadalitz") task->SetWeight(1.2 * 7.7e-5);
+      // weight phi = Multiplicity * Branching Ratio = 0.1 * 2.97e-4 for 25 AGeV beam energy
+      if (plutoParticle == "phi") task->SetWeight(0.1 * 2.97e-4);
    }
    //task->SetChiPrimCut(2.);
    //task->SetMomentumCut(momentumCut); // if cut < 0 then it is not used

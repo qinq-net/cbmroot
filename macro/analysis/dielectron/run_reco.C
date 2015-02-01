@@ -11,27 +11,29 @@ void run_reco(Int_t nEvents = 1000)
    TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.mc.root";
    TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.reco.root";     */
 
-       TString dir = "/hera/cbm/users/slebedev/mc/dielectron/sep13/25gev/trd/1.0field/nomvd/rho0/";
-	TString mcFile = dir + "mc.auau.25gev.centr.00001.root";
-	TString parFile = dir + "/params.auau.25gev.centr.00001.root";
-	TString recoFile = dir + "/test.reco.test.auau.25gev.centr.00001.root";
-      //  TString analysisFile = dir + "/test.analysis.test.auau.25gev.centr.00001.root";
+       TString dir = "/hera/cbm/users/slebedev/mc/dielectron/sep14/3.5gev/richv08a/trd4/tofv13/0.5field/nomvd/rho0/";
+	TString mcFile = dir + "mc.auau.3.5gev.centr.00001.root";
+	TString parFile = dir + "/params.auau.3.5gev.centr.00001.root";
+	TString recoFile = dir + "/reco.auau.3.5gev.centr.00001.root";
+	//  TString analysisFile = dir + "/test.analysis.test.auau.25gev.centr.00001.root";
+
+	
 
 	TString delta = "no"; // if "yes" Delta electrons will be embedded
 	TString deltaFile = "";
 
    TList *parFileList = new TList();
-   TObjString stsDigiFile = parDir + "/sts/sts_v13c_std.digi.par"; // STS digi file
-   TObjString trdDigiFile = parDir + "/trd/trd_v13p_3e.digi.par"; // TRD digi file
+   TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
+   TObjString trdDigiFile = parDir + "/trd/trd_v14a_1e.digi.par"; // TRD digi file
    TObjString tofDigiFile = parDir + "/tof/tof_v13b.digi.par"; // TOF digi file
 
-   TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v13c.root"; // Material budget file for L1 STS tracking
+   TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v13d.root"; // Material budget file for L1 STS tracking
 
    TString resultDir = "recqa/";
    Double_t trdAnnCut = 0.85;
-   Int_t minNofPointsTrd = 6;
+   Int_t minNofPointsTrd = 2;
    TString tofHitProducerType = "v13"; //v07 or v13
-   TString trdHitProducerType = "clustering"; //"digi" or "smearing" or "clustering"
+   TString trdHitProducerType = "smearing"; //"digi" or "smearing" or "clustering"
 
 	if (script == "yes") {
 		mcFile = TString(gSystem->Getenv("MC_FILE"));
@@ -53,10 +55,17 @@ void run_reco(Int_t nEvents = 1000)
 		trdAnnCut = TString(gSystem->Getenv("TRD_ANN_CUT")).Atof();
       minNofPointsTrd = TString(gSystem->Getenv("MIN_NOF_POINTS_TRD")).Atof();
 	}
+       
 
    parFileList->Add(&stsDigiFile);
    parFileList->Add(&trdDigiFile);
    parFileList->Add(&tofDigiFile);
+
+   cout << "mcFile=" << mcFile << endl;
+   cout << "parFile=" << parFile << endl;
+   cout << "recoFile=" << recoFile << endl;
+   cout << "trdDigiFile=" << trdDigiFile->GetString() << endl;
+   cout << "trdSmearingType=" << trdHitProducerType << endl;
 
    TStopwatch timer;
    timer.Start();

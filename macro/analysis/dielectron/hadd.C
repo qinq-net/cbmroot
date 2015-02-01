@@ -41,13 +41,13 @@ bool CheckFile(TFile* fileAna, TFile* fileReco);
 
 void hadd() {
 
-    string dir = "/hera/cbm/users/slebedev/mc/dielectron/nov13/25gev/trd/1.0field/nomvd/";
-    string fileArray = ".auau.25gev.centr.";
+    string dir = "/hera/cbm/users/slebedev/mc/dielectron/dec14/8gev/stsv14_4cm/richv14a/trd4/tofv13/1.0field/nomvd/";
+    string fileArray = ".auau.8gev.centr.";
     string particleDir[5] = {"omegaepem", "phi", "omegadalitz", "rho0", "urqmd"};
-    string addString = "analysis"; //analysis or litqa
+    string addString = "litqa"; //analysis or litqa
     int nofFiles = 250;
 
-	for (int iF = 0; iF < 4; iF++){
+	for (int iF = 3; iF < 4; iF++){
 	        string fileNameAna = dir + particleDir[iF] + "/" + string("analysis") + fileArray;
 	        string fileNameReco = dir + particleDir[iF] + "/" + string("reco") + fileArray;
 	        string fileNameQa = dir + particleDir[iF] + "/" + string("litqa") + fileArray;
@@ -112,7 +112,7 @@ bool CheckFile(TFile* fileAna, TFile* fileReco) {
 
     if (fileAna == NULL || fileReco == NULL)  return false;
 
-    if (fileAna->GetEND() < 4000 || fileReco->GetEND() < 4000) return false;
+    if (fileAna->GetEND() < 10000 || fileReco->GetEND() < 10000) return false;
 
     TTree* treeAna = (TTree*)fileAna->Get("cbmsim");
     TTree* treeReco = (TTree*)fileReco->Get("cbmsim");

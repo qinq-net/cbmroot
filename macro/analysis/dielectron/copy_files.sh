@@ -1,27 +1,23 @@
 #####!/bin/sh
 
-dirFrom=/hera/cbm/users/slebedev/mc/dielectron/nov13/25gev/trd/
-dirTo=/u/slebedev/Baykal/copytemp/nov13/25gev/trd/
+subPath=/8gev/stsv14_4cm/richv14a/trd4/tofv13/1.0field/nomvd/
 
-filename=litqa.auau.25gev.centr.all.root
+dirFrom=/hera/cbm/users/slebedev/mc/dielectron/dec14/${subPath}
+dirTo=/u/slebedev/Baykal/copytemp/dec14/${subPath}
+filename=litqa.auau.8gev.centr.all.root
 
 function copy_func() {
-   mkdir -p ${dirTo}/${2}/${1}/
-   cp ${dirFrom}/${2}/${1}/${filename} ${dirTo}/${2}/${1}/
+   mkdir -p ${dirTo}/${1}/
+   cp ${dirFrom}/${1}/${filename} ${dirTo}/${1}/
 }
 
 function copy_all() {
-   copy_func rho0 ${1}
-   copy_func omegaepem ${1}
-   copy_func omegadalitz ${1}
-   copy_func phi ${1}
-  # copy_func urqmd ${1}
+   copy_func rho0
+  # copy_func omegaepem
+  # copy_func omegadalitz
+  # copy_func phi 
+  # copy_func urqmd
 }
 
-copy_all 1.0field/nomvd
-#copy_all 0.7field/mvd4
-#copy_all 0.7field/nomvd
-#copy_all 1.0field/mvd
-#copy_all 1.0field/mvd4
-#copy_all 1.0field/nomvd
+copy_all
 
