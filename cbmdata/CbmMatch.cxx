@@ -39,7 +39,7 @@ string CbmMatch::ToString() const
    return ss.str();
 }
 
-void CbmMatch::AddLink(const CbmMatch& match)
+void CbmMatch::AddLinks(const CbmMatch& match)
 {
    Int_t nofLinks = match.GetNofLinks();
    for (Int_t i = 0; i < nofLinks; i++) {

@@ -103,7 +103,7 @@ void CbmStsDigitize::CreateDigi(UInt_t address,
 
 	// Copy match object. Will be deleted in the digi destructor.
 	CbmMatch* digiMatch = new CbmMatch();
-	digiMatch->AddLink(match);
+	digiMatch->AddLinks(match);
 
 	// Update times of first and last digi
 	fTimeDigiFirst = fNofDigis ?
@@ -132,7 +132,7 @@ void CbmStsDigitize::CreateDigi(UInt_t address,
 		// --- For backward compatibility:
 		// --- create a second match in a separate branch
 		CbmMatch* digiMatch2 = new ( (*fMatches)[nDigis] ) CbmMatch();
-		digiMatch2->AddLink(match);
+		digiMatch2->AddLinks(match);
 	} //? event mode
 
 	fNofDigis++;

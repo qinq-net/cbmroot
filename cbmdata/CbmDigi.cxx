@@ -27,7 +27,7 @@ CbmDigi::CbmDigi(const CbmDigi& rhs)
 {
 	if ( rhs.fMatch ) {
 		fMatch = new CbmMatch();
-		fMatch->AddLink( *(rhs.fMatch) );
+		fMatch->AddLinks( *(rhs.fMatch) );
 	}
 } 
 // -------------------------------------------------------------------------
@@ -41,7 +41,7 @@ CbmDigi& CbmDigi::operator=(const CbmDigi& rhs)
     TObject::operator=(rhs);
     if ( rhs.fMatch ) {
   		fMatch = new CbmMatch();
-  		fMatch->AddLink( *(rhs.fMatch) );
+  		fMatch->AddLinks( *(rhs.fMatch) );
     }
     else fMatch = NULL;
   }

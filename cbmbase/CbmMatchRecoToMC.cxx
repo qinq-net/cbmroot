@@ -304,7 +304,7 @@ void CbmMatchRecoToMC::MatchClusters(
       Int_t nofDigis = cluster->GetNofDigis();
       for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++) {
          const CbmMatch* digiMatch = static_cast<const CbmMatch*>(digiMatches->At(cluster->GetDigi(iDigi)));
-         clusterMatch->AddLink(*digiMatch);
+         clusterMatch->AddLinks(*digiMatch);
       }
    }
 }
@@ -320,7 +320,7 @@ void CbmMatchRecoToMC::MatchHits(
       const CbmBaseHit* hit = static_cast<const CbmBaseHit*>(hits->At(iHit));
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
       const CbmMatch* clusterMatch = static_cast<const CbmMatch*>(matches->At(hit->GetRefId()));
-      hitMatch->AddLink(*clusterMatch);
+      hitMatch->AddLinks(*clusterMatch);
     //  std::cout << "hit " << iHit << " " << hitMatch->ToString();
    }
 }
@@ -337,8 +337,8 @@ void CbmMatchRecoToMC::MatchHitsSts(
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
       const CbmMatch* frontClusterMatch = static_cast<const CbmMatch*>(matches->At(hit->GetFrontClusterId()));
       const CbmMatch* backClusterMatch = static_cast<const CbmMatch*>(matches->At(hit->GetBackClusterId()));
-	  hitMatch->AddLink(*frontClusterMatch);
-      hitMatch->AddLink(*backClusterMatch);
+	  hitMatch->AddLinks(*frontClusterMatch);
+      hitMatch->AddLinks(*backClusterMatch);
 	  
     //  std::cout << "hit " << iHit << " " << hitMatch->ToString();
    }
@@ -355,7 +355,7 @@ void CbmMatchRecoToMC::MatchHitsMvd(
 	const CbmPixelHit* hit = static_cast<const CbmPixelHit*>(hits->At(iHit));
  	CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
 	const CbmMatch* digiMatch = static_cast<const CbmMatch*>(matches->At(hit->GetRefId()));
-	hitMatch->AddLink(*digiMatch);
+	hitMatch->AddLinks(*digiMatch);
   }
 }
 
