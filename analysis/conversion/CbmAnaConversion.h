@@ -12,7 +12,8 @@
 
 #include "FairTask.h"
 #include "CbmMCTrack.h"
-#include "../dielectron/CbmAnaDielectronTask.h" 
+#include "../dielectron/CbmLmvmKinematicParams.h"
+#include "CbmKFVertex.h"
 
 //#include "KFParticleTopoReconstructor.h"
 #include "CbmKFParticleFinder.h"
@@ -78,7 +79,7 @@ public:
    virtual void Exec(
 		   Option_t* option);
 		   
-	KinematicParams CalculateKinematicParams(const CbmMCTrack* mctrackP, const CbmMCTrack* mctrackM);
+   CbmLmvmKinematicParams CalculateKinematicParams(const CbmMCTrack* mctrackP, const CbmMCTrack* mctrackM);
         
 	Double_t	Invmass_2gammas(const CbmMCTrack* gamma1, const CbmMCTrack* gamma2);
 	Double_t	Invmass_2particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2);

@@ -11,7 +11,7 @@
 #include <string>
 #include <map>
 
-#include "CbmAnaLmvmNames.h"
+#include "CbmLmvmHist.h"
 
 #include "TObject.h"
 

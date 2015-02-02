@@ -599,9 +599,9 @@ void CbmAnaConversion::AnalyseElectrons(CbmMCTrack* mctrack)
 
 
 
-KinematicParams CbmAnaConversion::CalculateKinematicParams(const CbmMCTrack* mctrackP, const CbmMCTrack* mctrackM)
+CbmLmvmKinematicParams CbmAnaConversion::CalculateKinematicParams(const CbmMCTrack* mctrackP, const CbmMCTrack* mctrackM)
 {
-    KinematicParams params;
+	CbmLmvmKinematicParams params;
 
     TVector3 momP;  //momentum e+
     mctrackP->GetMomentum(momP);
@@ -622,11 +622,11 @@ KinematicParams CbmAnaConversion::CalculateKinematicParams(const CbmMCTrack* mct
     Double_t theta = 180.*anglePair/TMath::Pi();
     Double_t minv = 2.*TMath::Sin(anglePair / 2.)*TMath::Sqrt(momM.Mag()*momP.Mag());
 
-    params.momentumMag = momPair.Mag();
-    params.pt = ptPair;
-    params.rapidity = yPair;
-    params.minv = minv;
-    params.angle = theta;
+    params.fMomentumMag = momPair.Mag();
+    params.fPt = ptPair;
+    params.fRapidity = yPair;
+    params.fMinv = minv;
+    params.fAngle = theta;
     return params;
 }
 

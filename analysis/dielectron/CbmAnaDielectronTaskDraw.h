@@ -7,7 +7,7 @@
 #ifndef CBM_ANA_DIELECTRON_TASK_DRAW_H
 #define CBM_ANA_DIELECTRON_TASK_DRAW_H
 
-#include "CbmAnaLmvmNames.h"
+#include "CbmLmvmHist.h"
 #include <string>
 
 #include "TObject.h"
@@ -189,7 +189,7 @@ private:
      * \param[in] step Analysis step.
      */
     void SOverBg(
-          AnalysisSteps step);
+          CbmLmvmAnalysisSteps step);
 
     /**
      * Calculates S/BG ratio for each step of the analysis

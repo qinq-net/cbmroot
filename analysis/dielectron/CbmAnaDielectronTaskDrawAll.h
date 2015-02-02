@@ -11,7 +11,7 @@
 #include <string>
 #include <map>
 
-#include "CbmAnaLmvmNames.h"
+#include "CbmLmvmHist.h"
 
 #include "TObject.h"
 
@@ -121,7 +121,7 @@ private:
     * \param[in] step Analysis step.
     */
    void DrawMinv(
-         AnalysisSteps step);
+         CbmLmvmAnalysisSteps step);
 
    /**
     * \brief It creates a mean histogram from 4 files.

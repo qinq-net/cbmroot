@@ -104,7 +104,7 @@ dielectron/CbmAnaDielectronTask.cxx
 dielectron/CbmAnaDielectronTaskDraw.cxx
 dielectron/CbmAnaDielectronTaskDrawAll.cxx
 dielectron/CbmAnaLmvmDrawStudy.cxx
-dielectron/CbmAnaLmvmNames.cxx
+dielectron/CbmLmvmHist.cxx
 dielectron/CbmAnaDielectronStudyReportAll.cxx
 dielectron/CbmAnaDielectronReports.cxx
 

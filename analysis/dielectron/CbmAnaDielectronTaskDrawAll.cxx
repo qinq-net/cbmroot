@@ -68,10 +68,10 @@ void CbmAnaDielectronTaskDrawAll::DrawHistosFromFile(
    }
 
    // index: AnalysisSteps
-   fh_mean_bg_minv.resize(CbmAnaLmvmNames::fNofAnaSteps);
-   fh_mean_eta_minv.resize(CbmAnaLmvmNames::fNofAnaSteps);
-   fh_mean_pi0_minv.resize(CbmAnaLmvmNames::fNofAnaSteps);
-   fh_sum_s_minv.resize(CbmAnaLmvmNames::fNofAnaSteps);
+   fh_mean_bg_minv.resize(CbmLmvmHist::fNofAnaSteps);
+   fh_mean_eta_minv.resize(CbmLmvmHist::fNofAnaSteps);
+   fh_mean_pi0_minv.resize(CbmLmvmHist::fNofAnaSteps);
+   fh_sum_s_minv.resize(CbmLmvmHist::fNofAnaSteps);
 
    FillMeanHist();
    FillSumSignalsHist();
@@ -122,15 +122,15 @@ void CbmAnaDielectronTaskDrawAll::DrawMinvAll()
 }
 
 void CbmAnaDielectronTaskDrawAll::DrawMinv(
-      AnalysisSteps step)
+      CbmLmvmAnalysisSteps step)
 {
-   TH1D* sRho = (TH1D*) H1(kRho0, "fh_signal_minv_" + CbmAnaLmvmNames::fAnaSteps[step])->Clone();
-   TH1D* sOmega = (TH1D*) H1(kOmega, "fh_signal_minv_" + CbmAnaLmvmNames::fAnaSteps[step])->Clone();
-   TH1D* sPhi = (TH1D*) H1(kPhi, "fh_signal_minv_" + CbmAnaLmvmNames::fAnaSteps[step])->Clone();
+   TH1D* sRho = (TH1D*) H1(kRho0, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+   TH1D* sOmega = (TH1D*) H1(kOmega, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+   TH1D* sPhi = (TH1D*) H1(kPhi, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
    TH1D* bg = fh_mean_bg_minv[step];
    TH1D* sEta = fh_mean_eta_minv[step];
    TH1D* sPi0 = fh_mean_pi0_minv[step];
-   TH1D* sOmegaDalitz = (TH1D*) H1(kOmegaD, "fh_signal_minv_" + CbmAnaLmvmNames::fAnaSteps[step])->Clone();
+   TH1D* sOmegaDalitz = (TH1D*) H1(kOmegaD, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
 
    TH1D* coctail = (TH1D*)sRho->Clone();
    coctail->Add(sOmega);
@@ -229,28 +229,28 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
    gPad->SetLogy(true);
 
    // signal-to-background ration vs. minv
-   TH1D* sbgVsMinv = new TH1D(("sbgVsMinv_" + CbmAnaLmvmNames::fAnaSteps[step]).c_str(),
-         ("sbgVsMinv_"+CbmAnaLmvmNames::fAnaSteps[step]+";M_{ee} [GeV/c^{2}];Cocktail/Background").c_str(),
+   TH1D* sbgVsMinv = new TH1D(("sbgVsMinv_" + CbmLmvmHist::fAnaSteps[step]).c_str(),
+         ("sbgVsMinv_"+CbmLmvmHist::fAnaSteps[step]+";M_{ee} [GeV/c^{2}];Cocktail/Background").c_str(),
          bg->GetNbinsX(), bg->GetXaxis()->GetXmin(), bg->GetXaxis()->GetXmax());
    sbgVsMinv->Divide(coctail, bg, 1., 1., "B");
-   TCanvas* c = CreateCanvas(("lmvm_sbg_vs_minv_"+CbmAnaLmvmNames::fAnaSteps[step]).c_str(),
-         ("lmvm_sbg_vs_minv_"+CbmAnaLmvmNames::fAnaSteps[step]).c_str(), 800, 800);
+   TCanvas* c = CreateCanvas(("lmvm_sbg_vs_minv_"+CbmLmvmHist::fAnaSteps[step]).c_str(),
+         ("lmvm_sbg_vs_minv_"+CbmLmvmHist::fAnaSteps[step]).c_str(), 800, 800);
    DrawH1(sbgVsMinv);
    gPad->SetLogy(true);
 }
 
 void CbmAnaDielectronTaskDrawAll::FillMeanHist()
 {
-   for (int step = 0; step < CbmAnaLmvmNames::fNofAnaSteps; step++){
+   for (int step = 0; step < CbmLmvmHist::fNofAnaSteps; step++){
       for (int iS = 0; iS < fNofSignals; iS++){
          if (iS == 0) {
-            fh_mean_bg_minv[step] = (TH1D*)H1(iS, "fh_bg_minv_" + CbmAnaLmvmNames::fAnaSteps[step])->Clone();
-            fh_mean_eta_minv[step] = (TH1D*)H1(iS, "fh_eta_minv_" + CbmAnaLmvmNames::fAnaSteps[step])->Clone();
-            fh_mean_pi0_minv[step] = (TH1D*)H1(iS, "fh_pi0_minv_" + CbmAnaLmvmNames::fAnaSteps[step])->Clone();
+            fh_mean_bg_minv[step] = (TH1D*)H1(iS, "fh_bg_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+            fh_mean_eta_minv[step] = (TH1D*)H1(iS, "fh_eta_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+            fh_mean_pi0_minv[step] = (TH1D*)H1(iS, "fh_pi0_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
          } else {
-            fh_mean_bg_minv[step]->Add( (TH1D*)H1(iS, "fh_bg_minv_" + CbmAnaLmvmNames::fAnaSteps[step])->Clone() );
-            fh_mean_eta_minv[step]->Add( (TH1D*)H1(iS, "fh_eta_minv_" + CbmAnaLmvmNames::fAnaSteps[step])->Clone() );
-            fh_mean_pi0_minv[step]->Add( (TH1D*)H1(iS, "fh_pi0_minv_" + CbmAnaLmvmNames::fAnaSteps[step])->Clone() );
+            fh_mean_bg_minv[step]->Add( (TH1D*)H1(iS, "fh_bg_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone() );
+            fh_mean_eta_minv[step]->Add( (TH1D*)H1(iS, "fh_eta_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone() );
+            fh_mean_pi0_minv[step]->Add( (TH1D*)H1(iS, "fh_pi0_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone() );
          }
       }
       fh_mean_bg_minv[step]->Scale(1./(double) fNofSignals);
@@ -261,7 +261,7 @@ void CbmAnaDielectronTaskDrawAll::FillMeanHist()
    if (fOutputDir != ""){
       gSystem->mkdir(fOutputDir.c_str(), true);
       TFile* f = TFile::Open( string(fOutputDir + "/mean_hist.root").c_str(), "RECREATE" );
-      for (int i = 0; i < CbmAnaLmvmNames::fNofAnaSteps; i++){
+      for (int i = 0; i < CbmLmvmHist::fNofAnaSteps; i++){
          fh_mean_bg_minv[i]->Write();
       }
       f->Close();
@@ -271,11 +271,11 @@ void CbmAnaDielectronTaskDrawAll::FillMeanHist()
 
 void CbmAnaDielectronTaskDrawAll::FillSumSignalsHist()
 {
-   for (int step = 0; step < CbmAnaLmvmNames::fNofAnaSteps; step++){
-      fh_sum_s_minv[step] = (TH1D*)H1(kRho0, "fh_signal_minv_" + CbmAnaLmvmNames::fAnaSteps[step])->Clone();
-      fh_sum_s_minv[step]->Add( (TH1D*)H1(kOmega, "fh_signal_minv_" + CbmAnaLmvmNames::fAnaSteps[step])->Clone() );
-      fh_sum_s_minv[step]->Add( (TH1D*)H1(kPhi, "fh_signal_minv_" + CbmAnaLmvmNames::fAnaSteps[step])->Clone() );
-      fh_sum_s_minv[step]->Add( (TH1D*)H1(kOmegaD, "fh_signal_minv_" + CbmAnaLmvmNames::fAnaSteps[step])->Clone() );
+   for (int step = 0; step < CbmLmvmHist::fNofAnaSteps; step++){
+      fh_sum_s_minv[step] = (TH1D*)H1(kRho0, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+      fh_sum_s_minv[step]->Add( (TH1D*)H1(kOmega, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone() );
+      fh_sum_s_minv[step]->Add( (TH1D*)H1(kPhi, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone() );
+      fh_sum_s_minv[step]->Add( (TH1D*)H1(kOmegaD, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone() );
       fh_sum_s_minv[step]->Add( (TH1D*)fh_mean_eta_minv[step]->Clone() );
       fh_sum_s_minv[step]->Add( (TH1D*)fh_mean_pi0_minv[step]->Clone() );
    }
@@ -285,10 +285,10 @@ void CbmAnaDielectronTaskDrawAll::CalcCutEffRange(
       Double_t minMinv,
       Double_t maxMinv)
 {
-    TH1D* grS = new TH1D("grS", ";Analysis step;Efficiency [%]", CbmAnaLmvmNames::fNofAnaSteps, 0, CbmAnaLmvmNames::fNofAnaSteps);
-    TH1D* grB = new TH1D("grB", ";Analysis step;Efficiency [%]", CbmAnaLmvmNames::fNofAnaSteps, 0, CbmAnaLmvmNames::fNofAnaSteps);
+    TH1D* grS = new TH1D("grS", ";Analysis step;Efficiency [%]", CbmLmvmHist::fNofAnaSteps, 0, CbmLmvmHist::fNofAnaSteps);
+    TH1D* grB = new TH1D("grB", ";Analysis step;Efficiency [%]", CbmLmvmHist::fNofAnaSteps, 0, CbmLmvmHist::fNofAnaSteps);
     int x = 1;
-    for (int step = kElId; step < CbmAnaLmvmNames::fNofAnaSteps; step++){
+    for (int step = kElId; step < CbmLmvmHist::fNofAnaSteps; step++){
        if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)){
           continue;
        }
@@ -298,7 +298,7 @@ void CbmAnaDielectronTaskDrawAll::CalcCutEffRange(
        double yS = 100.* fh_sum_s_minv[step]->Integral(x1, x2) / fh_sum_s_minv[kElId]->Integral(x1, x2);
        double yB = 100.* fh_mean_bg_minv[step]->Integral(x1, x2) / fh_mean_bg_minv[kElId]->Integral(x1, x2);
 
-       grB->GetXaxis()->SetBinLabel(x, CbmAnaLmvmNames::fAnaStepsLatex[step].c_str());
+       grB->GetXaxis()->SetBinLabel(x, CbmLmvmHist::fAnaStepsLatex[step].c_str());
        grB->SetBinContent(x, yB);
        grS->SetBinContent(x, yS);
        x++;
@@ -330,10 +330,10 @@ TH1D* CbmAnaDielectronTaskDrawAll::SBgRange(
 {
    stringstream ss;
    ss << "lmvm_s_bg_region_" << min << "_" << max;
-   TH1D* h_s_bg = new TH1D(ss.str().c_str(), string(ss.str()+";Analysis steps;S/BG").c_str(), CbmAnaLmvmNames::fNofAnaSteps, 0, CbmAnaLmvmNames::fNofAnaSteps);
+   TH1D* h_s_bg = new TH1D(ss.str().c_str(), string(ss.str()+";Analysis steps;S/BG").c_str(), CbmLmvmHist::fNofAnaSteps, 0, CbmLmvmHist::fNofAnaSteps);
    h_s_bg->GetXaxis()->SetLabelSize(0.06);
    int x = 1;
-   for (int step = kElId; step < CbmAnaLmvmNames::fNofAnaSteps; step++){
+   for (int step = kElId; step < CbmLmvmHist::fNofAnaSteps; step++){
       if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)){
          continue;
       }
@@ -341,7 +341,7 @@ TH1D* CbmAnaDielectronTaskDrawAll::SBgRange(
       Int_t bin2 = fh_sum_s_minv[step]->FindBin(max);
       double y = fh_sum_s_minv[step]->Integral(bin1, bin2) / fh_mean_bg_minv[step]->Integral(bin1, bin2);
 
-      h_s_bg->GetXaxis()->SetBinLabel(x, CbmAnaLmvmNames::fAnaStepsLatex[step].c_str());
+      h_s_bg->GetXaxis()->SetBinLabel(x, CbmLmvmHist::fAnaStepsLatex[step].c_str());
       h_s_bg->SetBinContent(x, y);
       // replace "." with "_"
       string str = ss.str();
@@ -349,7 +349,7 @@ TH1D* CbmAnaDielectronTaskDrawAll::SBgRange(
          if (*it == '.') *it = '_';
       }
 
-      fPt->Put(string(str+"_"+CbmAnaLmvmNames::fAnaSteps[step]), y);
+      fPt->Put(string(str+"_"+CbmLmvmHist::fAnaSteps[step]), y);
       x++;
    }
    h_s_bg->GetXaxis()->SetRange(1, x - 1);
@@ -383,25 +383,25 @@ void CbmAnaDielectronTaskDrawAll::SBgRangeAll()
 
 void CbmAnaDielectronTaskDrawAll::DrawSBgSignals()
 {
-   Double_t y[CbmAnaLmvmNames::fNofAnaSteps];
+   Double_t y[CbmLmvmHist::fNofAnaSteps];
    TCanvas* cFit = CreateCanvas("lmvm_signal_fit", "lmvm_signal_fit", 600, 600);
    for (int iF = 0; iF < fNofSignals - 1; iF++){
-      string signalName = CbmAnaLmvmNames::fSignalNames[iF];
+      string signalName = CbmLmvmHist::fSignalNames[iF];
       cout << "Signal: " << signalName << endl;
       stringstream ss;
       ss << "lmvm_s_bg_cuts_" << signalName;
 
-      TH1D* h_s_bg = new TH1D(ss.str().c_str(), string(ss.str()+";Analysis steps;S/BG").c_str(), CbmAnaLmvmNames::fNofAnaSteps, 0, CbmAnaLmvmNames::fNofAnaSteps);
+      TH1D* h_s_bg = new TH1D(ss.str().c_str(), string(ss.str()+";Analysis steps;S/BG").c_str(), CbmLmvmHist::fNofAnaSteps, 0, CbmLmvmHist::fNofAnaSteps);
       h_s_bg->GetXaxis()->SetLabelSize(0.06);
       h_s_bg->SetLineWidth(4);
       int x = 1;
-      for (int step = 0; step < CbmAnaLmvmNames::fNofAnaSteps; step++){
+      for (int step = 0; step < CbmLmvmHist::fNofAnaSteps; step++){
          if (step < kElId) continue;
          if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)){
             continue;
          }
 
-         TH1D* s = (TH1D*)H1(iF, "fh_signal_minv_" + CbmAnaLmvmNames::fAnaSteps[step])->Clone();
+         TH1D* s = (TH1D*)H1(iF, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
          TH1D* bg = (TH1D*)fh_mean_bg_minv[step]->Clone();
          cFit->cd();
          if (iF == 2){
@@ -424,15 +424,15 @@ void CbmAnaDielectronTaskDrawAll::DrawSBgSignals()
             sumBg += bg->GetBinContent(i);
          }
          Double_t sbg = sumSignal/sumBg;
-         double eff = 100. * H1(iF, "fh_signal_pty_" + CbmAnaLmvmNames::fAnaSteps[step])->GetEntries() /
-                             H1(iF, "fh_signal_pty_" + CbmAnaLmvmNames::fAnaSteps[kMc])->GetEntries();
+         double eff = 100. * H1(iF, "fh_signal_pty_" + CbmLmvmHist::fAnaSteps[step])->GetEntries() /
+                             H1(iF, "fh_signal_pty_" + CbmLmvmHist::fAnaSteps[kMc])->GetEntries();
 
-         fPt->Put(signalName + "_sbg_"+CbmAnaLmvmNames::fAnaSteps[step], sumSignal/sumBg);
-         fPt->Put(signalName + "_eff_"+CbmAnaLmvmNames::fAnaSteps[step], eff);
-         fPt->Put(signalName + "_signal_minv_mean_"+CbmAnaLmvmNames::fAnaSteps[step], 1000.*mean);
-         fPt->Put(signalName + "_signal_minv_rms_"+CbmAnaLmvmNames::fAnaSteps[step], 1000.*sigma);
+         fPt->Put(signalName + "_sbg_"+CbmLmvmHist::fAnaSteps[step], sumSignal/sumBg);
+         fPt->Put(signalName + "_eff_"+CbmLmvmHist::fAnaSteps[step], eff);
+         fPt->Put(signalName + "_signal_minv_mean_"+CbmLmvmHist::fAnaSteps[step], 1000.*mean);
+         fPt->Put(signalName + "_signal_minv_rms_"+CbmLmvmHist::fAnaSteps[step], 1000.*sigma);
 
-         h_s_bg->GetXaxis()->SetBinLabel(x, CbmAnaLmvmNames::fAnaStepsLatex[step].c_str());
+         h_s_bg->GetXaxis()->SetBinLabel(x, CbmLmvmHist::fAnaStepsLatex[step].c_str());
          if (sbg < 1000.) h_s_bg->SetBinContent(x, sbg);
          x++;
       }

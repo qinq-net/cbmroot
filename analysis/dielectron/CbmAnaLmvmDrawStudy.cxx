@@ -129,8 +129,8 @@ void CbmAnaLmvmDrawStudy::SetAnalysisStepLabels(
       TH1* h)
 {
    h->GetXaxis()->SetLabelSize(0.06);
-   for (Int_t step = 0; step < CbmAnaLmvmNames::fNofAnaSteps; step++){
-      h->GetXaxis()->SetBinLabel(step + 1, CbmAnaLmvmNames::fAnaStepsLatex[step].c_str());
+   for (Int_t step = 0; step < CbmLmvmHist::fNofAnaSteps; step++){
+      h->GetXaxis()->SetBinLabel(step + 1, CbmLmvmHist::fAnaStepsLatex[step].c_str());
    }
 }
 
@@ -252,7 +252,7 @@ void CbmAnaLmvmDrawStudy::DrawBgSourcePairs()
          habsPx[i]->SetMinimum(0.);
          habsPx[i]->SetLineWidth(3.);
       }
-      DrawTextOnHist(CbmAnaLmvmNames::fBgPairSourceLatex[iP], 0.4, 0.9, 0.6, 0.99);
+      DrawTextOnHist(CbmLmvmHist::fBgPairSourceLatex[iP], 0.4, 0.9, 0.6, 0.99);
    }
 
    DrawBgSourcePairsStep(kPtCut);
@@ -263,14 +263,14 @@ void CbmAnaLmvmDrawStudy::DrawBgSourcePairsStep(
       int step)
 {
    stringstream ssC;
-   ssC << "lmvm_study_source_pairs_" << CbmAnaLmvmNames::fAnaSteps[step];
+   ssC << "lmvm_study_source_pairs_" << CbmLmvmHist::fAnaSteps[step];
    TCanvas *c2 = CreateCanvas(ssC.str().c_str(), ssC.str().c_str(), 600, 600);
    vector<TH1*> habsPx;
    habsPx.resize(fNofStudies);
    for (int i = 0; i < fNofStudies; i++){
       TH2D* habs = (TH2D*)H2(i, "fh_source_pairs")->Clone();
       stringstream ss;
-      ss << "fh_source_pairs_" << i << "_" << CbmAnaLmvmNames::fAnaSteps[step];
+      ss << "fh_source_pairs_" << i << "_" << CbmLmvmHist::fAnaSteps[step];
       habsPx[i] = habs->ProjectionY(ss.str().c_str(), step+1, step+1);
       habsPx[i]->GetYaxis()->SetTitle("Pairs per event x10^{-3}");
       habsPx[i]->Scale(1000);
@@ -279,8 +279,8 @@ void CbmAnaLmvmDrawStudy::DrawBgSourcePairsStep(
    for (int i = 0; i < fNofStudies; i++){
       habsPx[i]->SetMinimum(0.);
       habsPx[i]->SetLineWidth(3.);
-      for (Int_t y = 1; y <= CbmAnaLmvmNames::fBgPairSourceLatex.size(); y++){
-         habsPx[i]->GetXaxis()->SetBinLabel(y, CbmAnaLmvmNames::fBgPairSourceLatex[y-1].c_str());
+      for (Int_t y = 1; y <= CbmLmvmHist::fBgPairSourceLatex.size(); y++){
+         habsPx[i]->GetXaxis()->SetBinLabel(y, CbmLmvmHist::fBgPairSourceLatex[y-1].c_str());
       }
    }
 }
@@ -292,10 +292,10 @@ void CbmAnaLmvmDrawStudy::DrawDistributions(
       int sourceType)
 {
    stringstream ssC;
-   ssC << canvasName << CbmAnaLmvmNames::fAnaSteps[step]<<"_"<<CbmAnaLmvmNames::fSourceTypes[sourceType];
+   ssC << canvasName << CbmLmvmHist::fAnaSteps[step]<<"_"<<CbmLmvmHist::fSourceTypes[sourceType];
    TCanvas *c = CreateCanvas(ssC.str().c_str(), ssC.str().c_str(), 900, 900);
 
-   string s = histName + CbmAnaLmvmNames::fAnaSteps[step]+"_"+CbmAnaLmvmNames::fSourceTypes[sourceType];
+   string s = histName + CbmLmvmHist::fAnaSteps[step]+"_"+CbmLmvmHist::fSourceTypes[sourceType];
    vector<TH1*> h;
    h.resize(fNofStudies);
    for (int i = 0; i < fNofStudies; i++){
@@ -309,9 +309,9 @@ void CbmAnaLmvmDrawStudy::DrawBgSourceMinv()
 {
    TCanvas *c = CreateCanvas("lmvm_study_source_minv_ptcut", "lmvm_study_source_minv_ptcut", 1200, 800);
    c->Divide(3, 2);
-   for (int iP = 0; iP < CbmAnaLmvmNames::fNofBgPairSources; iP++){
+   for (int iP = 0; iP < CbmLmvmHist::fNofBgPairSources; iP++){
       stringstream ss;
-      ss << "fh_source_bg_minv_" <<iP << "_" << CbmAnaLmvmNames::fAnaSteps[kPtCut];
+      ss << "fh_source_bg_minv_" <<iP << "_" << CbmLmvmHist::fAnaSteps[kPtCut];
       c->cd(iP+1);
       vector<TH1*> habs;
       habs.resize(fNofStudies);
@@ -324,7 +324,7 @@ void CbmAnaLmvmDrawStudy::DrawBgSourceMinv()
          habs[i]->SetMinimum(0.);
          habs[i]->SetLineWidth(3.);
       }
-      DrawTextOnHist(CbmAnaLmvmNames::fBgPairSourceLatex[iP], 0.4, 0.9, 0.6, 0.99);
+      DrawTextOnHist(CbmLmvmHist::fBgPairSourceLatex[iP], 0.4, 0.9, 0.6, 0.99);
    }
 }
 

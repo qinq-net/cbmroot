@@ -1,5 +1,5 @@
-#ifndef CBM_ANA_LMVM_NAMES_H
-#define CBM_ANA_LMVM_NAMES_H
+#ifndef CBM_LMVM_HIST_H
+#define CBM_LMVM_HIST_H
 
 #include <vector>
 #include <string>
@@ -9,7 +9,7 @@ using namespace std;
 /*
  * \brief Enumeration for different sources.
  */
-enum SourceTypes {
+enum CbmLmvmSourceTypes {
   kSignal = 0,
   kBg = 1,
   kPi0 = 2,
@@ -19,7 +19,7 @@ enum SourceTypes {
 /*
  * \brief Enumeration for analysis steps.
  */
-enum AnalysisSteps {
+enum CbmLmvmAnalysisSteps {
   kMc = 0,
   kAcc = 1,
   kReco = 2,
@@ -36,28 +36,19 @@ enum AnalysisSteps {
 /*
  * \brief Enumeration for different sources of BG pairs
  */
-enum BgPairSource {
-  kGG = 0,
-  kPP = 1,
-  kOO = 2,
-  kGP = 3,
-  kGO = 4,
-  kPO = 5
+enum CbmLmvmBgPairSource {
+  kGG = 0, // gamma-gamma
+  kPP = 1, // pi0-pi0
+  kOO = 2, // other-other
+  kGP = 3, // gamma-pi0
+  kGO = 4, // gamma-other
+  kPO = 5 // pi0-other
 };
 
-/*
- * \brief Enumeration for signal names.
- */
-/*enum SignalNames {
-  kRho0 = 0,
-  kOmega = 1,
-  kPhi = 2,
-  kOmegaDalitz = 3
-};*/
-
-class CbmAnaLmvmNames
+class CbmLmvmHist
 {
 public:
+
    const static int fNofSourceTypes = 4;
    const static vector<string> fSourceTypes;
    const static vector<string> fSourceTypesLatex;
