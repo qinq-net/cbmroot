@@ -48,6 +48,7 @@ public:
 
   inline void SetRocNb(  UInt_t uNbRocsIn ) { fuNbRocs = uNbRocsIn; }
   inline void SetGet4Nb( UInt_t uNbChipsIn) { fuNbGet4 = uNbChipsIn; }
+  inline void SetMsOverlapTs( UInt_t uMsOverIn) { fuMsOverlapTs = uMsOverIn; }
 
   inline void SetVerbose( Bool_t inVerb = kTRUE ) { fbVerbose = inVerb; }
 
@@ -74,6 +75,7 @@ private:
   // Hardware related variables => MUST be set on startup by user!
   UInt_t fuNbRocs;
   UInt_t fuNbGet4;
+  UInt_t fuMsOverlapTs;
 
   // Epochs book-keeping variables
   std::vector< UInt_t > fvuCurrEpoch;  // Current epoch  (one per ROC)

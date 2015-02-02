@@ -31,8 +31,7 @@
 
 /*********/
 // TODO   /
-// 1) 24b Hits interval
-// 2) 24b TOT
+// 1) Deal with MC overlap between TS (Setter, jump/clean)
 /*********/
 
 struct DTM_header
@@ -53,6 +52,7 @@ CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
   fiMode(0),
   fuNbRocs(0),
   fuNbGet4(0),
+  fuMsOverlapTs(0),
   fvuCurrEpoch(),
   fvuCurrEpoch2(),
   fhMessageTypePerRoc(NULL),
@@ -152,7 +152,8 @@ void CbmTSUnpackGet4v1x::SetPulserChans(
 Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
    // Loop over microslices
-   for (size_t m = 0; m < ts.num_microslices(component); ++m)
+   size_t sMaxMsNb = ts.num_microslices(component) - fuMsOverlapTs;
+   for (size_t m = 0; m < sMaxMsNb; ++m)
    {
       auto msDescriptor = ts.descriptor(component, m);
       const uint8_t* msContent = reinterpret_cast<const uint8_t*>(ts.content(component, m));

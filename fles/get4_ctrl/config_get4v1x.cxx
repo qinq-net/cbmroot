@@ -33,11 +33,39 @@
 
 using std::ostringstream;
 
-int SendSpi(CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t nbData, uint32_t* data)
+int SendSpi(CbmNet::ControlClient & conn, uint32_t nodeid,
+            uint32_t get4idx, uint16_t configBits
+            uint32_t nbData, uint32_t* data)
 {
    CbmNet::ListSeq initList;
+   int ret_val = 0;
+
+   // Read current chips mask
+   initList.AddRead(ROC_GET4_RECEIVE_MASK_LSBS);
+   initList.AddRead(ROC_GET4_RECEIVE_MASK_MSBS);
+
+   // Send only to chosen get4
+   if( get4idx < 32 )
+   {
+      initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x1 << get4idx);
+      initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
+   } // if( get4idx < 32 )
+      else if( get4idx < 64 )
+      {
+         initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000000);
+         initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x1 << (get4idx - 32) );
+      } // else of if( get4idx < 32 )
+      else
+      {
+         printf("SendSpi: Invalid get4 chip index (%u) or link stopping there\n", get4idx);
+         return 0;
+      }
+
+   //# ROC_GET4_CMD_TO_GET4 => Disable all channels
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_HIT_MASK    + 0x00000F );
+
    // Send GET4 command Config SPI
-   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_SPI_CONF + 0x000000 );
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_SPI_CONF    + (configBits & 0x7FF) );
 
    // Send SPI START
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_SPI_START );
@@ -49,7 +77,17 @@ int SendSpi(CbmNet::ControlClient & conn, uint32_t nodeid, uint32_t nbData, uint
    // Send SPI STOP
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_SPI_STOP );
 
-   return conn.DoListSeq(nodeid, initList);
+   //# ROC_GET4_CMD_TO_GET4 => Enable all channels
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_HIT_MASK    + 0x000000 );
+
+   // Process the list of commands
+   ret_val = conn.DoListSeq(nodeid, initList);
+
+   // restore original chips mask
+   conn.Write( kNodeId, ROC_GET4_RECEIVE_MASK_LSBS, initList[0].value );
+   conn.Write( kNodeId, ROC_GET4_RECEIVE_MASK_LSBS, initList[1].value );
+
+   return ret_val;
 }
 
 int SetRocDef(CbmNet::ControlClient & conn, uint32_t nodeid)
@@ -348,10 +386,6 @@ void config_get4v1x( int link, int mode, const uint32_t kRocId = 0x01, uint32_t 
    int FlibLink = link;
    const uint32_t kNodeId = 0;
 
-   // Needed ?
-   const uint32_t kNxPort = 0; // 0 if nX is connected to CON19 connector; 1 for CON20 connector.
-   if( kNxPort != 0 && kNxPort != 1 ) { printf("Error! invalid value kNxPort = %d\n", kNxPort ); return; }
-
    CbmNet::ControlClient conn;
    ostringstream dpath;
 
@@ -418,15 +452,11 @@ void config_get4v1x( int link, int mode, const uint32_t kRocId = 0x01, uint32_t 
    conn.Close();
 }
 
-void spiCmd_get4v1x( int link, int mode, uint32_t uSpiWord = 0xA5  )
+void spiCmd_get4v1x( int link, uint32_t uSpiWord = 0xA5  )
 {
    // Custom settings:
    int FlibLink = link;
    const uint32_t kNodeId = 0;
-
-   // Needed ?
-   const uint32_t kNxPort = 0; // 0 if nX is connected to CON19 connector; 1 for CON20 connector.
-   if( kNxPort != 0 && kNxPort != 1 ) { printf("Error! invalid value kNxPort = %d\n", kNxPort ); return; }
 
    CbmNet::ControlClient conn;
    ostringstream dpath;
@@ -460,7 +490,166 @@ void spiCmd_get4v1x( int link, int mode, uint32_t uSpiWord = 0xA5  )
    printf("\n");
 
    printf("Sending SPI command through GET4 => %d \n", uSpiWord);
-   SendSpi( conn, kNodeId, 1, &uSpiWord);
+   SendSpi( conn, kNodeId, 0, 0x429, 1, &uSpiWord);
+
+   // Close connection
+   conn.Close();
+}
+
+void spiPadi8All_get4v1x( int link, uint32_t uGet4Idx = 0,
+                          uint32_t uDacValChip0 = 0x110,
+                          uint32_t uDacValChip1 = 0x110,
+                          uint32_t uDacValChip2 = 0x110,
+                          uint32_t uDacValChip3 = 0x110  )
+{
+   // Custom settings:
+   int FlibLink = link;
+
+   CbmNet::ControlClient conn;
+   ostringstream dpath;
+
+   dpath << "tcp://" << "localhost" << ":" << CbmNet::kPortControl + FlibLink;
+   conn.Connect(dpath.str());
+
+   // Check board and firmware info
+   uint32_t ret;
+   conn.Read( kNodeId, ROC_TYPE, ret );
+   printf("Firmware type    = FE %5d TS %5d\n", (ret>>16)& 0xFFFF,  (ret)& 0xFFFF);
+   conn.Read( kNodeId, ROC_HWV, ret );
+   printf("Firmware Version = %10d \n", ret);
+   conn.Read( kNodeId, ROC_FPGA_TYPE, ret );
+   printf("FPGA type        = %10d \n", ret);
+   conn.Read( kNodeId, ROC_SVN_REVISION, ret );
+   printf("svn revision     = %10d \n", ret);
+   if(0 == ret )
+   {
+      printf("Invalid svn revision, link or ROC is probably inactive, stopping there\n");
+      return;
+   } // if(0 == ret )
+
+   conn.Read( kNodeId, ROC_BUILD_TIME, ret );
+   time_t rawtime = ret;
+   struct tm * timeinfo;
+   char buffer [20];
+   timeinfo = localtime( &rawtime);
+   strftime( buffer,20,"%F %T",timeinfo);
+   printf("build time       = %s \n", buffer);
+   printf("\n");
+
+   const int32_t kuNbPadiPerGet4 = 4;
+   uint32_t uSpiWords[kuNbPadiPerGet4];
+   // # SPI Interface : 16 Bit, 20 MBit/s, read OFF, CPHA 0, CPOL 1
+   uint32_t uSpiConfig = 0x429;
+
+   uint32_ uMaskAllCh = 0xA << 24;
+   uSpiWords[0]=  uMaskAllCh + (uDacValChip0 << 10);
+   uSpiWords[1]=  uMaskAllCh + (uDacValChip1 << 10);
+   uSpiWords[2]=  uMaskAllCh + (uDacValChip2 << 10);
+   uSpiWords[3]=  uMaskAllCh + (uDacValChip3 << 10);
+
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiPerGet4, &uSpiWord);
+
+   // Close connection
+   conn.Close();
+}
+
+void spiPadi6_get4v1x( int link, uint32_t uGet4Idx = 0,
+        uint32_t uPa0Ch0 = 0x110, uint32_t uPa0Ch1 = 0x110, uint32_t uPa0Ch2 = 0x110, uint32_t uPa0Ch3 = 0x110,
+        uint32_t uPa1Ch0 = 0x110, uint32_t uPa1Ch1 = 0x110, uint32_t uPa1Ch2 = 0x110, uint32_t uPa1Ch3 = 0x110,
+        uint32_t uPa2Ch0 = 0x110, uint32_t uPa2Ch1 = 0x110, uint32_t uPa2Ch2 = 0x110, uint32_t uPa2Ch3 = 0x110,
+        uint32_t uPa3Ch0 = 0x110, uint32_t uPa3Ch1 = 0x110, uint32_t uPa3Ch2 = 0x110, uint32_t uPa3Ch3 = 0x110,
+        uint32_t uPa4Ch0 = 0x110, uint32_t uPa4Ch1 = 0x110, uint32_t uPa4Ch2 = 0x110, uint32_t uPa4Ch3 = 0x110,
+        uint32_t uPa5Ch0 = 0x110, uint32_t uPa5Ch1 = 0x110, uint32_t uPa5Ch2 = 0x110, uint32_t uPa5Ch3 = 0x110,
+        uint32_t uPa6Ch0 = 0x110, uint32_t uPa6Ch1 = 0x110, uint32_t uPa6Ch2 = 0x110, uint32_t uPa6Ch3 = 0x110,
+        uint32_t uPa7Ch0 = 0x110, uint32_t uPa7Ch1 = 0x110, uint32_t uPa7Ch2 = 0x110, uint32_t uPa7Ch3 = 0x110
+        )
+{
+   // Custom settings:
+   int FlibLink = link;
+
+   CbmNet::ControlClient conn;
+   ostringstream dpath;
+
+   dpath << "tcp://" << "localhost" << ":" << CbmNet::kPortControl + FlibLink;
+   conn.Connect(dpath.str());
+
+   // Check board and firmware info
+   uint32_t ret;
+   conn.Read( kNodeId, ROC_TYPE, ret );
+   printf("Firmware type    = FE %5d TS %5d\n", (ret>>16)& 0xFFFF,  (ret)& 0xFFFF);
+   conn.Read( kNodeId, ROC_HWV, ret );
+   printf("Firmware Version = %10d \n", ret);
+   conn.Read( kNodeId, ROC_FPGA_TYPE, ret );
+   printf("FPGA type        = %10d \n", ret);
+   conn.Read( kNodeId, ROC_SVN_REVISION, ret );
+   printf("svn revision     = %10d \n", ret);
+   if(0 == ret )
+   {
+      printf("Invalid svn revision, link or ROC is probably inactive, stopping there\n");
+      return;
+   } // if(0 == ret )
+
+   conn.Read( kNodeId, ROC_BUILD_TIME, ret );
+   time_t rawtime = ret;
+   struct tm * timeinfo;
+   char buffer [20];
+   timeinfo = localtime( &rawtime);
+   strftime( buffer,20,"%F %T",timeinfo);
+   printf("build time       = %s \n", buffer);
+   printf("\n");
+
+   const int32_t kuNbPadiPerGet4 = 8; // 8 chip/board w/ 4 ch each
+   uint32_t uSpiWords[kuNbPadiPerGet4];
+   // # SPI Interface : 14 Bit, 20 MBit/s, read OFF, CPHA 0, CPOL 1
+   uint32_t uSpiConfig = 0x3A9;
+
+   // Set channel 0 of all chips
+   uint32_ uMaskCh0 = 0x4 << 24;
+   uSpiWords[0]=  uMaskCh0 + (uPa0Ch0 << 10);
+   uSpiWords[1]=  uMaskCh0 + (uPa1Ch0 << 10);
+   uSpiWords[2]=  uMaskCh0 + (uPa2Ch0 << 10);
+   uSpiWords[3]=  uMaskCh0 + (uPa3Ch0 << 10);
+   uSpiWords[4]=  uMaskCh0 + (uPa4Ch0 << 10);
+   uSpiWords[5]=  uMaskCh0 + (uPa5Ch0 << 10);
+   uSpiWords[6]=  uMaskCh0 + (uPa6Ch0 << 10);
+   uSpiWords[7]=  uMaskCh0 + (uPa7Ch0 << 10);
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiChPerGet4, &uSpiWord);
+
+   // Set channel 1 of all chips
+   uint32_ uMaskCh1 = 0x5 << 24;
+   uSpiWords[0]=  uMaskCh1 + (uPa0Ch1 << 10);
+   uSpiWords[1]=  uMaskCh1 + (uPa1Ch1 << 10);
+   uSpiWords[2]=  uMaskCh1 + (uPa2Ch1 << 10);
+   uSpiWords[3]=  uMaskCh1 + (uPa3Ch1 << 10);
+   uSpiWords[4]=  uMaskCh1 + (uPa4Ch1 << 10);
+   uSpiWords[5]=  uMaskCh1 + (uPa5Ch1 << 10);
+   uSpiWords[6]=  uMaskCh1 + (uPa6Ch1 << 10);
+   uSpiWords[7]=  uMaskCh1 + (uPa7Ch1 << 10);
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiChPerGet4, &uSpiWord);
+
+   // Set channel 2 of all chips
+   uint32_ uMaskCh2 = 0x6 << 24;
+   uSpiWords[0]=  uMaskCh2 + (uPa0Ch2 << 10);
+   uSpiWords[1]=  uMaskCh2 + (uPa1Ch2 << 10);
+   uSpiWords[2]=  uMaskCh2 + (uPa2Ch2 << 10);
+   uSpiWords[3]=  uMaskCh2 + (uPa3Ch2 << 10);
+   uSpiWords[4]=  uMaskCh2 + (uPa4Ch2 << 10);
+   uSpiWords[5]=  uMaskCh2 + (uPa5Ch2 << 10);
+   uSpiWords[6]=  uMaskCh2 + (uPa6Ch2 << 10);
+   uSpiWords[7]=  uMaskCh2 + (uPa7Ch2 << 10);
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiChPerGet4, &uSpiWord);
+
+   // Set channel 3 of all chips
+   uint32_ uMaskCh3 = 0x7 << 24;
+   uSpiWords[0]=  uMaskCh3 + (uPa0Ch3 << 10);
+   uSpiWords[1]=  uMaskCh3 + (uPa1Ch3 << 10);
+   uSpiWords[2]=  uMaskCh3 + (uPa2Ch3 << 10);
+   uSpiWords[3]=  uMaskCh3 + (uPa3Ch3 << 10);
+   uSpiWords[4]=  uMaskCh3 + (uPa4Ch3 << 10);
+   uSpiWords[5]=  uMaskCh3 + (uPa5Ch3 << 10);
+   uSpiWords[6]=  uMaskCh3 + (uPa6Ch3 << 10);
+   uSpiWords[7]=  uMaskCh3 + (uPa7Ch3 << 10);
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiChPerGet4, &uSpiWord);
 
    // Close connection
    conn.Close();
@@ -471,10 +660,6 @@ void dump_get4v1x( int link, int mode, uint32_t uNbMess = 300  )
    // Custom settings:
    int FlibLink = link;
    const uint32_t kNodeId = 0;
-
-   // Needed ?
-   const uint32_t kNxPort = 0; // 0 if nX is connected to CON19 connector; 1 for CON20 connector.
-   if( kNxPort != 0 && kNxPort != 1 ) { printf("Error! invalid value kNxPort = %d\n", kNxPort ); return; }
 
    CbmNet::ControlClient conn;
    ostringstream dpath;
@@ -605,10 +790,6 @@ void lnktest_get4v1x( int link, int mode, uint32_t uNbMess = 30  )
    // Custom settings:
    int FlibLink = link;
    const uint32_t kNodeId = 0;
-
-   // Needed ?
-   const uint32_t kNxPort = 0; // 0 if nX is connected to CON19 connector; 1 for CON20 connector.
-   if( kNxPort != 0 && kNxPort != 1 ) { printf("Error! invalid value kNxPort = %d\n", kNxPort ); return; }
 
    CbmNet::ControlClient conn;
    ostringstream dpath;
