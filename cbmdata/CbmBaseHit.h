@@ -59,7 +59,7 @@ public:
 	 void SetMatch(CbmMatch* match) { fMatch = match; }
 
 	/**
-	 * Pure virtual function. Must be implemented in derived class.
+	 * Virtual function. Must be implemented in derived class.
 	 * Should return plane identifier of the hit. Usually this is station or layer
 	 * number of the detector. Can be calculated using unique detector identifier
 	 * or can use additional class member from the derived class to store the plane identifier.
@@ -67,7 +67,7 @@ public:
 	virtual Int_t GetPlaneId() const { return -1; }
 
 	/**
-	 * \brief Pure virtual function. Must be implemented in derived class.
+	 * \brief Virtual function. Must be implemented in derived class.
 	 * Has to return string representation of the object.
 	 **/
 	virtual string ToString() const { return "Has to be implemented in derrived class"; }
