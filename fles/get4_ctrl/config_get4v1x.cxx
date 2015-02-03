@@ -41,25 +41,33 @@ int SendSpi(CbmNet::ControlClient & conn, uint32_t nodeid,
    int ret_val = 0;
 
    // Read current chips mask
-   initList.AddRead(ROC_GET4_RECEIVE_MASK_LSBS);
-   initList.AddRead(ROC_GET4_RECEIVE_MASK_MSBS);
+   uint32_t uMaskOldLsbs;
+   uint32_t uMaskOldMsbs;
+   conn.Read( nodeid, ROC_GET4_TRANSMIT_MASK_LSBS, uMaskOldLsbs );
+   conn.Read( nodeid, ROC_GET4_TRANSMIT_MASK_MSBS, uMaskOldMsbs );
+   printf("SendSpi: Restore Get4 chip mask %08X %08X\n", uMaskOldMsbs, uMaskOldLsbs);
 
    // Send only to chosen get4
+   uint32_t uMaskLsbs = 0x00000000;
+   uint32_t uMaskMsbs = 0x00000000;
    if( get4idx < 32 )
    {
-      initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x1 << get4idx);
-      initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
+      uMaskLsbs += 0x1 << get4idx;
+      uMaskMsbs = 0x00000000;
    } // if( get4idx < 32 )
       else if( get4idx < 64 )
       {
-         initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000000);
-         initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x1 << (get4idx - 32) );
+         uMaskLsbs = 0x00000000;
+         uMaskMsbs = 0x1 << (get4idx - 32);
       } // else of if( get4idx < 32 )
       else
       {
          printf("SendSpi: Invalid get4 chip index (%u) or link stopping there\n", get4idx);
          return 0;
       }
+   printf("SendSpi: Get4 chip mask (index %u) %08X %08X\n", get4idx, uMaskMsbs, uMaskLsbs);
+   initList.AddWrite(ROC_GET4_TRANSMIT_MASK_LSBS, uMaskLsbs);
+   initList.AddWrite(ROC_GET4_TRANSMIT_MASK_MSBS, uMaskMsbs);
 
    //# ROC_GET4_CMD_TO_GET4 => Disable all channels
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_HIT_MASK    + 0x00000F );
@@ -84,8 +92,9 @@ int SendSpi(CbmNet::ControlClient & conn, uint32_t nodeid,
    ret_val = conn.DoListSeq(nodeid, initList);
 
    // restore original chips mask
-   conn.Write( nodeid, ROC_GET4_RECEIVE_MASK_LSBS, initList[0].value );
-   conn.Write( nodeid, ROC_GET4_RECEIVE_MASK_LSBS, initList[1].value );
+   printf("SendSpi: Restore Get4 chip mask %08X %08X\n", uMaskOldMsbs, uMaskOldLsbs);
+   conn.Write( nodeid, ROC_GET4_TRANSMIT_MASK_LSBS, uMaskOldLsbs );
+   conn.Write( nodeid, ROC_GET4_TRANSMIT_MASK_MSBS, uMaskOldMsbs );
 
    return ret_val;
 }
@@ -136,7 +145,7 @@ int Set24bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000040);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000080);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000F0);
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000FF);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x0000FFFF);
    initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
 
 
@@ -259,7 +268,7 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x0000FF00);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00FF0000);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0xFF000000);
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000FF);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x0000FFFF);
    initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
 
 
@@ -270,7 +279,7 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 //   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x000000B4);
 //   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, 0x00000000);
 ///////// For ROC v3 single board setup
-   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x00000080);
+   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x00000000);
    initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, 0x00000000);
 
 // ROC_GET4_SUPRESS_EPOCHS_LSBS & ROC_GET4_SUPRESS_EPOCHS_MSBS
@@ -496,11 +505,11 @@ void spiCmd_get4v1x( int link, uint32_t uSpiWord = 0xA5  )
    conn.Close();
 }
 
-void spiPadi8All_get4v1x( int link, uint32_t uGet4Idx = 0,
-                          uint32_t uDacValChip0 = 0x110,
-                          uint32_t uDacValChip1 = 0x110,
-                          uint32_t uDacValChip2 = 0x110,
-                          uint32_t uDacValChip3 = 0x110  )
+void spiPadi8All_get4v1x( int link, uint32_t uFeeIdx = 0,
+                          uint32_t uDacValChip0 = 0x1C0,
+                          uint32_t uDacValChip1 = 0x1C0,
+                          uint32_t uDacValChip2 = 0x1C0,
+                          uint32_t uDacValChip3 = 0x1C0  )
 {
    // Custom settings:
    int FlibLink = link;
@@ -539,14 +548,19 @@ void spiPadi8All_get4v1x( int link, uint32_t uGet4Idx = 0,
 
    const int32_t kuNbPadiPerGet4 = 4;
    uint32_t uSpiWords[kuNbPadiPerGet4];
-   // # SPI Interface : 14 Bit, 20 MBit/s, read OFF, CPHA 0, CPOL 1
-   uint32_t uSpiConfig = 0x3A9;
 
-   uint32_t uMaskAllCh = 0xA << 20;
-   uSpiWords[0]=  uMaskAllCh + ( (uDacValChip0 & 0x3FF) << 10);
-   uSpiWords[1]=  uMaskAllCh + ( (uDacValChip1 & 0x3FF) << 10);
-   uSpiWords[2]=  uMaskAllCh + ( (uDacValChip2 & 0x3FF) << 10);
-   uSpiWords[3]=  uMaskAllCh + ( (uDacValChip3 & 0x3FF) << 10);
+   // The GET4 connected to the SPI connector is the #4 on each FEE-GET4
+   uint32_t uGet4Idx   = 4 + 8*uFeeIdx;
+
+   // # SPI Interface : 16 Bit, 20 MBit/s, read OFF, CPHA 0, CPOL 1
+   uint32_t uSpiConfig = 0x429;
+
+   uint32_t uWriteBit  = 0x1<<23;
+   uint32_t uMaskAllCh = 0x1<<21;
+   uSpiWords[0]=  uWriteBit + uMaskAllCh + ( (uDacValChip0 & 0x3FF) << 8);
+   uSpiWords[1]=  uWriteBit + uMaskAllCh + ( (uDacValChip1 & 0x3FF) << 8);
+   uSpiWords[2]=  uWriteBit + uMaskAllCh + ( (uDacValChip2 & 0x3FF) << 8);
+   uSpiWords[3]=  uWriteBit + uMaskAllCh + ( (uDacValChip3 & 0x3FF) << 8);
 
    SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiPerGet4, uSpiWords);
 
@@ -554,7 +568,134 @@ void spiPadi8All_get4v1x( int link, uint32_t uGet4Idx = 0,
    conn.Close();
 }
 
-void spiPadi6_get4v1x( int link, uint32_t uGet4Idx = 0,
+void spiPadi8_get4v1x( int link, uint32_t uFeeIdx = 0,
+        uint32_t uPa0Ch0 = 0x1C0, uint32_t uPa1Ch0 = 0x1C0, uint32_t uPa2Ch0 = 0x1C0, uint32_t uPa3Ch0 = 0x1C0,
+        uint32_t uPa0Ch1 = 0x1C0, uint32_t uPa1Ch1 = 0x1C0, uint32_t uPa2Ch1 = 0x1C0, uint32_t uPa3Ch1 = 0x1C0,
+        uint32_t uPa0Ch2 = 0x1C0, uint32_t uPa1Ch2 = 0x1C0, uint32_t uPa2Ch2 = 0x1C0, uint32_t uPa3Ch2 = 0x1C0,
+        uint32_t uPa0Ch3 = 0x1C0, uint32_t uPa1Ch3 = 0x1C0, uint32_t uPa2Ch3 = 0x1C0, uint32_t uPa3Ch3 = 0x1C0,
+        uint32_t uPa0Ch4 = 0x1C0, uint32_t uPa1Ch4 = 0x1C0, uint32_t uPa2Ch4 = 0x1C0, uint32_t uPa3Ch4 = 0x1C0,
+        uint32_t uPa0Ch5 = 0x1C0, uint32_t uPa1Ch5 = 0x1C0, uint32_t uPa2Ch5 = 0x1C0, uint32_t uPa3Ch5 = 0x1C0,
+        uint32_t uPa0Ch6 = 0x1C0, uint32_t uPa1Ch6 = 0x1C0, uint32_t uPa2Ch6 = 0x1C0, uint32_t uPa3Ch6 = 0x1C0,
+        uint32_t uPa0Ch7 = 0x1C0, uint32_t uPa1Ch7 = 0x1C0, uint32_t uPa2Ch7 = 0x1C0, uint32_t uPa3Ch7 = 0x1C0
+        )
+{
+   // Custom settings:
+   int FlibLink = link;
+   const uint32_t kNodeId = 0;
+
+   CbmNet::ControlClient conn;
+   ostringstream dpath;
+   dpath << "tcp://" << "localhost" << ":" << CbmNet::kPortControl + FlibLink;
+   conn.Connect(dpath.str());
+
+   // Check board and firmware info
+   uint32_t ret;
+
+   conn.Read( kNodeId, ROC_TYPE, ret );
+   printf("Firmware type    = FE %5d TS %5d\n", (ret>>16)& 0xFFFF,  (ret)& 0xFFFF);
+
+   conn.Read( kNodeId, ROC_HWV, ret );
+   printf("Firmware Version = %10d \n", ret);
+
+   conn.Read( kNodeId, ROC_FPGA_TYPE, ret );
+   printf("FPGA type        = %10d \n", ret);
+   conn.Read( kNodeId, ROC_SVN_REVISION, ret );
+   printf("svn revision     = %10d \n", ret);
+   if(0 == ret )
+   {
+      printf("Invalid svn revision, link or ROC is probably inactive, stopping there\n");
+      return;
+   } // if(0 == ret )
+   conn.Read( kNodeId, ROC_BUILD_TIME, ret );
+   time_t rawtime = ret;
+   struct tm * timeinfo;
+   char buffer [20];
+   timeinfo = localtime( &rawtime);
+   strftime( buffer,20,"%F %T",timeinfo);
+   printf("build time       = %s \n", buffer);
+   printf("\n");
+
+   const int32_t kuNbPadiPerGet4 = 4; // 4 chip/board w/ 8 ch each
+   uint32_t uSpiWords[kuNbPadiPerGet4];
+
+   // The GET4 connected to the SPI connector is the #4 on each FEE-GET4
+   uint32_t uGet4Idx   = 4 + 8*uFeeIdx;
+
+   // # SPI Interface : 16 Bit, 20 MBit/s, read OFF, CPHA 0, CPOL 1
+   uint32_t uSpiConfig = 0x429;
+
+   // Enable the writing in PADI SPI interface
+   uint32_t uWriteBit  = 0x1<<23;
+
+   // Set channel 0 of all chips
+   uint32_t uMaskCh0 = 0x0 << 18;
+   uSpiWords[0]=  uWriteBit + uMaskCh0 + ( (uPa0Ch0 & 0x3FF) << 8);
+   uSpiWords[1]=  uWriteBit + uMaskCh0 + ( (uPa1Ch0 & 0x3FF) << 8);
+   uSpiWords[2]=  uWriteBit + uMaskCh0 + ( (uPa2Ch0 & 0x3FF) << 8);
+   uSpiWords[3]=  uWriteBit + uMaskCh0 + ( (uPa3Ch0 & 0x3FF) << 8);
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiPerGet4, uSpiWords);
+
+   // Set channel 1 of all chips
+   uint32_t uMaskCh1 = 0x1 << 18;
+   uSpiWords[0]=  uWriteBit + uMaskCh1 + ( (uPa0Ch1 & 0x3FF) << 8);
+   uSpiWords[1]=  uWriteBit + uMaskCh1 + ( (uPa1Ch1 & 0x3FF) << 8);
+   uSpiWords[2]=  uWriteBit + uMaskCh1 + ( (uPa2Ch1 & 0x3FF) << 8);
+   uSpiWords[3]=  uWriteBit + uMaskCh1 + ( (uPa3Ch1 & 0x3FF) << 8);
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiPerGet4, uSpiWords);
+
+   // Set channel 2 of all chips
+   uint32_t uMaskCh2 = 0x2 << 18;
+   uSpiWords[0]=  uWriteBit + uMaskCh2 + ( (uPa0Ch2 & 0x3FF) << 8);
+   uSpiWords[1]=  uWriteBit + uMaskCh2 + ( (uPa1Ch2 & 0x3FF) << 8);
+   uSpiWords[2]=  uWriteBit + uMaskCh2 + ( (uPa2Ch2 & 0x3FF) << 8);
+   uSpiWords[3]=  uWriteBit + uMaskCh2 + ( (uPa3Ch2 & 0x3FF) << 8);
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiPerGet4, uSpiWords);
+
+   // Set channel 3 of all chips
+   uint32_t uMaskCh3 = 0x3 << 18;
+   uSpiWords[0]=  uWriteBit + uMaskCh3 + ( (uPa0Ch3 & 0x3FF) << 8);
+   uSpiWords[1]=  uWriteBit + uMaskCh3 + ( (uPa1Ch3 & 0x3FF) << 8);
+   uSpiWords[2]=  uWriteBit + uMaskCh3 + ( (uPa2Ch3 & 0x3FF) << 8);
+   uSpiWords[3]=  uWriteBit + uMaskCh3 + ( (uPa3Ch3 & 0x3FF) << 8);
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiPerGet4, uSpiWords);
+
+   // Set channel 4 of all chips
+   uint32_t uMaskCh4 = 0x4 << 18;
+   uSpiWords[0]=  uWriteBit + uMaskCh4 + ( (uPa0Ch4 & 0x3FF) << 8);
+   uSpiWords[1]=  uWriteBit + uMaskCh4 + ( (uPa1Ch4 & 0x3FF) << 8);
+   uSpiWords[2]=  uWriteBit + uMaskCh4 + ( (uPa2Ch4 & 0x3FF) << 8);
+   uSpiWords[3]=  uWriteBit + uMaskCh4 + ( (uPa3Ch4 & 0x3FF) << 8);
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiPerGet4, uSpiWords);
+
+   // Set channel 5 of all chips
+   uint32_t uMaskCh5 = 0x5 << 18;
+   uSpiWords[0]=  uWriteBit + uMaskCh5 + ( (uPa0Ch5 & 0x3FF) << 8);
+   uSpiWords[1]=  uWriteBit + uMaskCh5 + ( (uPa1Ch5 & 0x3FF) << 8);
+   uSpiWords[2]=  uWriteBit + uMaskCh5 + ( (uPa2Ch5 & 0x3FF) << 8);
+   uSpiWords[3]=  uWriteBit + uMaskCh5 + ( (uPa3Ch5 & 0x3FF) << 8);
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiPerGet4, uSpiWords);
+
+   // Set channel 6 of all chips
+   uint32_t uMaskCh6 = 0x6 << 18;
+   uSpiWords[0]=  uWriteBit + uMaskCh6 + ( (uPa0Ch6 & 0x3FF) << 8);
+   uSpiWords[1]=  uWriteBit + uMaskCh6 + ( (uPa1Ch6 & 0x3FF) << 8);
+   uSpiWords[2]=  uWriteBit + uMaskCh6 + ( (uPa2Ch6 & 0x3FF) << 8);
+   uSpiWords[3]=  uWriteBit + uMaskCh6 + ( (uPa3Ch6 & 0x3FF) << 8);
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiPerGet4, uSpiWords);
+
+   // Set channel 7 of all chips
+   uint32_t uMaskCh7 = 0x7 << 18;
+   uSpiWords[0]=  uWriteBit + uMaskCh7 + ( (uPa0Ch7 & 0x3FF) << 8);
+   uSpiWords[1]=  uWriteBit + uMaskCh7 + ( (uPa1Ch7 & 0x3FF) << 8);
+   uSpiWords[2]=  uWriteBit + uMaskCh7 + ( (uPa2Ch7 & 0x3FF) << 8);
+   uSpiWords[3]=  uWriteBit + uMaskCh7 + ( (uPa3Ch7 & 0x3FF) << 8);
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiPerGet4, uSpiWords);
+
+   // Close connection
+   conn.Close();
+}
+
+void spiPadi6_get4v1x( int link, uint32_t uFeeIdx = 0,
         uint32_t uPa0Ch0 = 0x110, uint32_t uPa0Ch1 = 0x110, uint32_t uPa0Ch2 = 0x110, uint32_t uPa0Ch3 = 0x110,
         uint32_t uPa1Ch0 = 0x110, uint32_t uPa1Ch1 = 0x110, uint32_t uPa1Ch2 = 0x110, uint32_t uPa1Ch3 = 0x110,
         uint32_t uPa2Ch0 = 0x110, uint32_t uPa2Ch1 = 0x110, uint32_t uPa2Ch2 = 0x110, uint32_t uPa2Ch3 = 0x110,
@@ -602,55 +743,62 @@ void spiPadi6_get4v1x( int link, uint32_t uGet4Idx = 0,
 
    const int32_t kuNbPadiPerGet4 = 8; // 8 chip/board w/ 4 ch each
    uint32_t uSpiWords[kuNbPadiPerGet4];
+
+   // The GET4 connected to the SPI connector is the #4 on each FEE-GET4
+   uint32_t uGet4Idx   = 4 + 8*uFeeIdx;
+
    // # SPI Interface : 14 Bit, 20 MBit/s, read OFF, CPHA 0, CPOL 1
    uint32_t uSpiConfig = 0x3A9;
 
+   // Enable the writing in PADI SPI interface
+   uint32_t uWriteBit  = 0x4 << 20;
+
    // Set channel 0 of all chips
-   uint32_t uMaskCh0 = 0x4 << 20;
-   uSpiWords[0]=  uMaskCh0 + ( (uPa0Ch0 & 0x3FF) << 10);
-   uSpiWords[1]=  uMaskCh0 + ( (uPa1Ch0 & 0x3FF) << 10);
-   uSpiWords[2]=  uMaskCh0 + ( (uPa2Ch0 & 0x3FF) << 10);
-   uSpiWords[3]=  uMaskCh0 + ( (uPa3Ch0 & 0x3FF) << 10);
-   uSpiWords[4]=  uMaskCh0 + ( (uPa4Ch0 & 0x3FF) << 10);
-   uSpiWords[5]=  uMaskCh0 + ( (uPa5Ch0 & 0x3FF) << 10);
-   uSpiWords[6]=  uMaskCh0 + ( (uPa6Ch0 & 0x3FF) << 10);
-   uSpiWords[7]=  uMaskCh0 + ( (uPa7Ch0 & 0x3FF) << 10);
+   uint32_t uMaskCh0 = 0x0 << 20;
+   uSpiWords[0]=  uWriteBit + uMaskCh0 + ( (uPa0Ch0 & 0x3FF) << 10);
+   uSpiWords[1]=  uWriteBit + uMaskCh0 + ( (uPa1Ch0 & 0x3FF) << 10);
+   uSpiWords[2]=  uWriteBit + uMaskCh0 + ( (uPa2Ch0 & 0x3FF) << 10);
+   uSpiWords[3]=  uWriteBit + uMaskCh0 + ( (uPa3Ch0 & 0x3FF) << 10);
+   uSpiWords[4]=  uWriteBit + uMaskCh0 + ( (uPa4Ch0 & 0x3FF) << 10);
+   uSpiWords[5]=  uWriteBit + uMaskCh0 + ( (uPa5Ch0 & 0x3FF) << 10);
+   uSpiWords[6]=  uWriteBit + uMaskCh0 + ( (uPa6Ch0 & 0x3FF) << 10);
+   uSpiWords[7]=  uWriteBit + uMaskCh0 + ( (uPa7Ch0 & 0x3FF) << 10);
    SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiChPerGet4, uSpiWords);
 
    // Set channel 1 of all chips
-   uint32_t uMaskCh1 = 0x5 << 20;
-   uSpiWords[0]=  uMaskCh1 + ( (uPa0Ch1 & 0x3FF) << 10);
-   uSpiWords[1]=  uMaskCh1 + ( (uPa1Ch1 & 0x3FF) << 10);
-   uSpiWords[2]=  uMaskCh1 + ( (uPa2Ch1 & 0x3FF) << 10);
-   uSpiWords[3]=  uMaskCh1 + ( (uPa3Ch1 & 0x3FF) << 10);
-   uSpiWords[4]=  uMaskCh1 + ( (uPa4Ch1 & 0x3FF) << 10);
-   uSpiWords[5]=  uMaskCh1 + ( (uPa5Ch1 & 0x3FF) << 10);
-   uSpiWords[6]=  uMaskCh1 + ( (uPa6Ch1 & 0x3FF) << 10);
-   uSpiWords[7]=  uMaskCh1 + ( (uPa7Ch1 & 0x3FF) << 10);
+   uint32_t uMaskCh1 = 0x1 << 20;
+   uSpiWords[0]=  uWriteBit + uMaskCh1 + ( (uPa0Ch1 & 0x3FF) << 10);
+   uSpiWords[1]=  uWriteBit + uMaskCh1 + ( (uPa1Ch1 & 0x3FF) << 10);
+   uSpiWords[2]=  uWriteBit + uMaskCh1 + ( (uPa2Ch1 & 0x3FF) << 10);
+   uSpiWords[3]=  uWriteBit + uMaskCh1 + ( (uPa3Ch1 & 0x3FF) << 10);
+   uSpiWords[4]=  uWriteBit + uMaskCh1 + ( (uPa4Ch1 & 0x3FF) << 10);
+   uSpiWords[5]=  uWriteBit + uMaskCh1 + ( (uPa5Ch1 & 0x3FF) << 10);
+   uSpiWords[6]=  uWriteBit + uMaskCh1 + ( (uPa6Ch1 & 0x3FF) << 10);
+   uSpiWords[7]=  uWriteBit + uMaskCh1 + ( (uPa7Ch1 & 0x3FF) << 10);
    SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiChPerGet4, uSpiWords);
 
    // Set channel 2 of all chips
-   uint32_t uMaskCh2 = 0x6 << 20;
-   uSpiWords[0]=  uMaskCh2 + ( (uPa0Ch2 & 0x3FF) << 10);
-   uSpiWords[1]=  uMaskCh2 + ( (uPa1Ch2 & 0x3FF) << 10);
-   uSpiWords[2]=  uMaskCh2 + ( (uPa2Ch2 & 0x3FF) << 10);
-   uSpiWords[3]=  uMaskCh2 + ( (uPa3Ch2 & 0x3FF) << 10);
-   uSpiWords[4]=  uMaskCh2 + ( (uPa4Ch2 & 0x3FF) << 10);
-   uSpiWords[5]=  uMaskCh2 + ( (uPa5Ch2 & 0x3FF) << 10);
-   uSpiWords[6]=  uMaskCh2 + ( (uPa6Ch2 & 0x3FF) << 10);
-   uSpiWords[7]=  uMaskCh2 + ( (uPa7Ch2 & 0x3FF) << 10);
+   uint32_t uMaskCh2 = 0x2 << 20;
+   uSpiWords[0]=  uWriteBit + uMaskCh2 + ( (uPa0Ch2 & 0x3FF) << 10);
+   uSpiWords[1]=  uWriteBit + uMaskCh2 + ( (uPa1Ch2 & 0x3FF) << 10);
+   uSpiWords[2]=  uWriteBit + uMaskCh2 + ( (uPa2Ch2 & 0x3FF) << 10);
+   uSpiWords[3]=  uWriteBit + uMaskCh2 + ( (uPa3Ch2 & 0x3FF) << 10);
+   uSpiWords[4]=  uWriteBit + uMaskCh2 + ( (uPa4Ch2 & 0x3FF) << 10);
+   uSpiWords[5]=  uWriteBit + uMaskCh2 + ( (uPa5Ch2 & 0x3FF) << 10);
+   uSpiWords[6]=  uWriteBit + uMaskCh2 + ( (uPa6Ch2 & 0x3FF) << 10);
+   uSpiWords[7]=  uWriteBit + uMaskCh2 + ( (uPa7Ch2 & 0x3FF) << 10);
    SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiChPerGet4, uSpiWords);
 
    // Set channel 3 of all chips
-   uint32_t uMaskCh3 = 0x7 << 20;
-   uSpiWords[0]=  uMaskCh3 + ( (uPa0Ch3 & 0x3FF) << 10);
-   uSpiWords[1]=  uMaskCh3 + ( (uPa1Ch3 & 0x3FF) << 10);
-   uSpiWords[2]=  uMaskCh3 + ( (uPa2Ch3 & 0x3FF) << 10);
-   uSpiWords[3]=  uMaskCh3 + ( (uPa3Ch3 & 0x3FF) << 10);
-   uSpiWords[4]=  uMaskCh3 + ( (uPa4Ch3 & 0x3FF) << 10);
-   uSpiWords[5]=  uMaskCh3 + ( (uPa5Ch3 & 0x3FF) << 10);
-   uSpiWords[6]=  uMaskCh3 + ( (uPa6Ch3 & 0x3FF) << 10);
-   uSpiWords[7]=  uMaskCh3 + ( (uPa7Ch3 & 0x3FF) << 10);
+   uint32_t uMaskCh3 = 0x3 << 20;
+   uSpiWords[0]=  uWriteBit + uMaskCh3 + ( (uPa0Ch3 & 0x3FF) << 10);
+   uSpiWords[1]=  uWriteBit + uMaskCh3 + ( (uPa1Ch3 & 0x3FF) << 10);
+   uSpiWords[2]=  uWriteBit + uMaskCh3 + ( (uPa2Ch3 & 0x3FF) << 10);
+   uSpiWords[3]=  uWriteBit + uMaskCh3 + ( (uPa3Ch3 & 0x3FF) << 10);
+   uSpiWords[4]=  uWriteBit + uMaskCh3 + ( (uPa4Ch3 & 0x3FF) << 10);
+   uSpiWords[5]=  uWriteBit + uMaskCh3 + ( (uPa5Ch3 & 0x3FF) << 10);
+   uSpiWords[6]=  uWriteBit + uMaskCh3 + ( (uPa6Ch3 & 0x3FF) << 10);
+   uSpiWords[7]=  uWriteBit + uMaskCh3 + ( (uPa7Ch3 & 0x3FF) << 10);
    SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiChPerGet4, uSpiWords);
 
    // Close connection
