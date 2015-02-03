@@ -21,7 +21,6 @@ class TH1D;
 class TFile;
 class TCanvas;
 class CbmHistManager;
-class CbmAnaPTree;
 
 using namespace std;
 
@@ -48,9 +47,10 @@ public:
     fh_mean_eta_minv(),
     fh_mean_pi0_minv(),
     fh_sum_s_minv(),
-    fOutputDir(""),
-    fPt(NULL)
-      {;}
+    fOutputDir("")
+      {
+	 ;
+      }
 
    /**
     * \brief Destructor.
@@ -93,8 +93,7 @@ private:
    // index: AnalysisSteps
    vector<TH1D*> fh_sum_s_minv; // sum of all signals
 
-   string fOutputDir; // output directory for figures and .json file
-   CbmAnaPTree* fPt;
+   string fOutputDir; // output directory for figures
 
    TCanvas* CreateCanvas(
          const string& name,

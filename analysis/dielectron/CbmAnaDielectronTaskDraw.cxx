@@ -17,7 +17,6 @@
 #include <sstream>
 
 #include <boost/assign/list_of.hpp>
-#include "CbmAnaPTree.h"
 
 #include "TText.h"
 #include "TH1.h"
@@ -64,8 +63,7 @@ CbmAnaDielectronTaskDraw::CbmAnaDielectronTaskDraw()
    fMvd2CutD(0.),       
    fHM(NULL),
    fCanvas(),
-   fOutputDir(""),
-   fPt(NULL)
+   fOutputDir("")
 {
 }
 
@@ -97,8 +95,6 @@ void CbmAnaDielectronTaskDraw::DrawHistFromFile(
    fMvd2CutP = 1.5;
    fMvd2CutD = 0.5;
 
-   fPt = new CbmAnaPTree();
-
    fHM = new CbmHistManager();
    TFile* file = new TFile(fileName.c_str());
    fHM->ReadFromFile(file);
@@ -113,6 +109,7 @@ void CbmAnaDielectronTaskDraw::DrawHistFromFile(
    if (!fUseMvd) RemoveMvdCutBins();
    DrawPtYDistributionAll();
    DrawPtYEfficiencyAll();
+   DrawRapidityDistributionAll();
    DrawMomentumDistributionAll();
    DrawMomentumEfficiencyAll();
    DrawMotherPdg();
@@ -131,9 +128,6 @@ void CbmAnaDielectronTaskDraw::DrawHistFromFile(
    DrawElPiMomHis();
 
    SaveCanvasToImage();
-
-   string qaFile = fOutputDir + "/lmvm_results.json";
-   fPt->Write(qaFile);
 }
 
 void CbmAnaDielectronTaskDraw::RebinMinvHist()
@@ -357,10 +351,6 @@ void CbmAnaDielectronTaskDraw::SOverBg(
       sumSignal += s->GetBinContent(i);
       sumBg += bg->GetBinContent(i);
    }
-   fPt->Put("sbg_"+CbmLmvmHist::fAnaSteps[step], sumSignal/sumBg);
-   fPt->Put("eff_"+CbmLmvmHist::fAnaSteps[step], (Double_t)pty->GetEntries()/ptymc->GetEntries()*100.);
-   fPt->Put("signal_minv_mean_"+CbmLmvmHist::fAnaSteps[step], 1000.*mean);
-   fPt->Put("signal_minv_rms_"+CbmLmvmHist::fAnaSteps[step], 1000.*sigma);
 }
 
 void CbmAnaDielectronTaskDraw::SOverBgAll()
@@ -407,6 +397,23 @@ void CbmAnaDielectronTaskDraw::DrawPtYDistributionAll()
   // cMc->cd(2);
    DrawPtYDistribution(kPtCut, false);
 }
+
+
+void CbmAnaDielectronTaskDraw::DrawRapidityDistributionAll()
+{
+   Int_t hi = 1;
+   TCanvas *c = CreateCanvas("lmvm_signal_rapidity", "lmvm_signal_rapidity", 750, 1000);
+   c->Divide(3, 4);
+   for (int step = 0; step < CbmLmvmHist::fNofAnaSteps; step++){
+      if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)) continue;
+      c->cd(hi++);
+      TH1D* proj = H2( "fh_signal_pty_" + CbmLmvmHist::fAnaSteps[step] )->ProjectionX();
+      DrawH1(proj);
+      DrawTextOnHist(CbmLmvmHist::fAnaStepsLatex[step], 0.70, 0.78, 0.90, 0.9);
+   }
+}
+
+
 
 void CbmAnaDielectronTaskDraw::DrawPtYEfficiency(
       int step)

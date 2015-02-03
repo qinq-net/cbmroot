@@ -420,7 +420,7 @@ void CbmAnaDielectronTask::InitHists()
    //Sources pairs 2D
    CreateAnalysisStepsH2(fh_source_pairs_epem, "fh_source_pairs_epem","mother particle e+", "mother particle e-", "Yield", 3, 0., 3., 3, 0., 3.);
    //Invariant mass vs. Mc Pt
-   CreateAnalysisStepsH2(fh_signal_minv_pt, "fh_signal_minv_pt","M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Yield", 2000, 0., 2., 20, 0., 2.);
+   CreateAnalysisStepsH2(fh_signal_minv_pt, "fh_signal_minv_pt","M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Yield", 200, 0., 2., 20, 0., 2.);
 
    fh_opening_angle.resize(CbmLmvmHist::fNofSourceTypes);
    fh_source_mom.resize(CbmLmvmHist::fNofSourceTypes);
@@ -689,7 +689,7 @@ Bool_t CbmAnaDielectronTask::IsMcTrackAccepted(
 	CbmMCTrack* tr = (CbmMCTrack*) fMCTracks->At(mcTrackInd);
 	if (tr == NULL) return false;
 	Int_t nRichPoints = fNofHitsInRingMap[mcTrackInd];
-	return (tr->GetNPoints(kMVD) + tr->GetNPoints(kSTS) >= 4 && nRichPoints >= 7 && tr->GetNPoints(kTRD) > 8 && tr->GetNPoints(kTOF) > 0) ;
+	return (tr->GetNPoints(kMVD) + tr->GetNPoints(kSTS) >= 4 && nRichPoints >= 7 && tr->GetNPoints(kTRD) >= 2 && tr->GetNPoints(kTOF) > 0) ;
 }
 
 void CbmAnaDielectronTask::SingleParticleAcceptance()
@@ -733,27 +733,46 @@ void CbmAnaDielectronTask::PairMcAndAcceptance()
 	Int_t nMcTracks = fMCTracks->GetEntries();
 	for (Int_t iP = 0; iP < nMcTracks; iP++) {
 		CbmMCTrack* mctrackP = (CbmMCTrack*) fMCTracks->At(iP);
-		Int_t motherId = mctrackP->GetMotherId();
-		Int_t pdg = mctrackP->GetPdgCode();
-		if ( !(motherId == -1 && pdg == -11 )) continue;
+		Int_t motherIdP = mctrackP->GetMotherId();
+		Int_t pdgP = mctrackP->GetPdgCode();
+		if ( pdgP != 11 ) continue;
 		Bool_t isAccP = IsMcTrackAccepted(iP);
 		for (Int_t iM = 0; iM < nMcTracks; iM++) {
 			if (iP == iM) continue;
 			CbmMCTrack* mctrackM = (CbmMCTrack*) fMCTracks->At(iM);
-			motherId = mctrackM->GetMotherId();
-			pdg = mctrackM->GetPdgCode();
-			if ( !(motherId == -1 && pdg == 11 )) continue;
+			Int_t motherIdM = mctrackM->GetMotherId();
+			Int_t pdgM = mctrackM->GetPdgCode();
+			if ( pdgM != -11 ) continue;
 			Bool_t isAccM = IsMcTrackAccepted(iM);
 			CbmLmvmKinematicParams p = CbmLmvmKinematicParams::KinematicParamsWithMcTracks(mctrackP,mctrackM);
 
-			fh_signal_pty[kMc]->Fill(p.fRapidity,p. fPt,fWeight);
-			fh_signal_mom[kMc]->Fill(p.fMomentumMag, fWeight);
-			fh_signal_minv[kMc]->Fill(p.fMinv, fWeight);
+			// e+/- from signal
+			if (motherIdM == -1 && pdgM == -11 && motherIdP == -1 && pdgP == 11) {
+				fh_signal_pty[kMc]->Fill(p.fRapidity,p.fPt, fWeight);
+				fh_signal_mom[kMc]->Fill(p.fMomentumMag, fWeight);
+				fh_signal_minv[kMc]->Fill(p.fMinv, fWeight);
 
-			if (isAccP && isAccM) {
-				fh_signal_pty[kAcc]->Fill(p.fRapidity, p.fPt, fWeight);
-				fh_signal_mom[kAcc]->Fill(p.fMomentumMag, fWeight);
-				fh_signal_minv[kAcc]->Fill(p.fMinv, fWeight);
+				if (isAccP && isAccM) {
+					fh_signal_pty[kAcc]->Fill(p.fRapidity, p.fPt, fWeight);
+					fh_signal_mom[kAcc]->Fill(p.fMomentumMag, fWeight);
+					fh_signal_minv[kAcc]->Fill(p.fMinv, fWeight);
+				}
+			}
+
+			if (motherIdP >=0 && motherIdM >=0){
+			    CbmMCTrack* mct1P = (CbmMCTrack*) fMCTracks->At(motherIdP);
+			    Int_t motherPdgP = mct1P->GetPdgCode();
+
+			    CbmMCTrack* mct1M = (CbmMCTrack*) fMCTracks->At(motherIdM);
+			    Int_t motherPdgM = mct1M->GetPdgCode();
+
+			    Bool_t isPi0 = (motherPdgP == 111 && pdgP == 11 && motherPdgM == 111 && pdgM == -11 && motherIdP == motherIdM);
+			    Bool_t isEta = (motherPdgP == 221 && pdgP == 11 && motherPdgM == 221 && pdgM == -11 && motherIdP == motherIdM);
+
+			    if (isPi0) fh_pi0_minv[kMc]->Fill(p.fMinv);
+			    if (isEta) fh_eta_minv[kMc]->Fill(p.fMinv);
+			    if (isAccP && isAccM && isPi0) fh_pi0_minv[kAcc]->Fill(p.fMinv);
+			    if (isAccP && isAccM && isEta) fh_eta_minv[kAcc]->Fill(p.fMinv);
 			}
 		}//iM
 	}//iP

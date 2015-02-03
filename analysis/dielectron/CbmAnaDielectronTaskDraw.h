@@ -18,7 +18,6 @@ class TH1D;
 class TFile;
 class TCanvas;
 class CbmHistManager;
-class CbmAnaPTree;
 
 using namespace std;
 
@@ -69,8 +68,7 @@ private:
 
     CbmHistManager* fHM; //histogram manager
     vector<TCanvas*> fCanvas; // store pointers to all canvas -> save as image
-    string fOutputDir; // output directory for results (figures and json)
-    CbmAnaPTree* fPt; // property tree
+    string fOutputDir; // output directory for results
 
     /**
      * \brief Rebin minv histograms for better drawing. Should be called after
@@ -211,6 +209,11 @@ private:
      * using DrawPtYDistribution method.
      */
     void DrawPtYDistributionAll();
+
+    /**
+     * Draw Rapidity distributions of signal for all steps
+     */
+    void DrawRapidityDistributionAll();
 
     /**
      * \brief Draw efficiency in dependence on Pt and Rapidity.
