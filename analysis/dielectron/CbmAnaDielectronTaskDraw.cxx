@@ -9,7 +9,7 @@
 
 #include "CbmDrawHist.h"
 #include "CbmHistManager.h"
-#include "CbmUtils.h"
+#include "utils/CbmUtils.h"
 
 #include <string>
 #include <iostream>
