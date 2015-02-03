@@ -20,9 +20,11 @@ analyze_run_files() {
 
    ROOT_FILES=
    SPACE=" "
+   export TEMP_STORAGE_DIR=$(dirname ${OUTPUT_ROOT_FILE_ALL})
    for FF in "${filesArray[@]}"; do
+      export CURRENT_FILE_NAME=$(basename ${FF})
       export INPUT_HLD_FILE=${FF}
-      export OUTPUT_ROOT_FILE=${FF}.root
+      export OUTPUT_ROOT_FILE=${TEMP_STORAGE_DIR}/${CURRENT_FILE_NAME}.tempfile.hld.root
       rm -rf ${OUTPUT_ROOT_FILE}
       ROOT_FILES=${ROOT_FILES}${SPACE}${OUTPUT_ROOT_FILE}      
       root -b -q -l "./run_analysis.C()"
@@ -43,16 +45,7 @@ analyze_run_directory() {
 #filesArray=( file1.hld file2.hld file3.hld file4.hld)
 #analyze_run_files outputRootFileWithHist.root outputDirWithImages/ titleOfAnalysis ${filesArray[@]}
 
-analyze_run_files wls_off_ring_a1.root wls_off_ring_a1/ wls_off_ring_a1 wls_off_ring_a1.hld
-analyze_run_files wls_off_ring_b1.root wls_off_ring_b1/ wls_off_ring_b1 wls_off_ring_b1.hld
-analyze_run_files wls_off_ring_b2.root wls_off_ring_b2/ wls_off_ring_b2 wls_off_ring_b2.hld
-analyze_run_files wls_off_ring_b3.root wls_off_ring_b3/ wls_off_ring_b3 wls_off_ring_b3.hld
-analyze_run_files wls_off_ring_d1.root wls_off_ring_d1/ wls_off_ring_d1 wls_off_ring_d1.hld
-analyze_run_files wls_off_ring_dg1.root wls_off_ring_dg1/ wls_off_ring_dg1 wls_off_ring_dg1.hld
-analyze_run_files wls_off_ring_g1.root wls_off_ring_g1/ wls_off_ring_g1 wls_off_ring_g1.hld
-analyze_run_files wls_off_ring_gh1.root wls_off_ring_gh1/ wls_off_ring_gh1 wls_off_ring_gh1.hld
-analyze_run_files wls_off_ring_h1.root wls_off_ring_h1/ wls_off_ring_h1 wls_off_ring_h1.hld
-analyze_run_files wls_off_ring_h2.root wls_off_ring_h2/ wls_off_ring_h2 wls_off_ring_h2.hld
+analyze_run_files /Users/slebedev/Development/cbm/data/cern_beamtime_2014/te14328171010.root results_te14328171010/ results_te14328171010 /Users/slebedev/Development/cbm/data/cern_beamtime_2014/te14328171010.hld
 
 
 #example how to run analysis for all .hld files in directory

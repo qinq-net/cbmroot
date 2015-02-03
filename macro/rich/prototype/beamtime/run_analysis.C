@@ -19,7 +19,7 @@ void run_analysis()
    loadlibs();
 
    TString hldFileDir = "";//"/mnt/data/WLS/WLS_off/nonstretched/ringH2/offset00250/";
-   TString hldFileName = "/Users/slebedev/Development/cbm/data/cern_beamtime_2014/te14328022312.hld";
+   TString hldFileName = "/Users/slebedev/Development/cbm/data/cern_beamtime_2014/te14328171010.hld";
    TString hldFullFileName;
    hldFullFileName = hldFileDir + hldFileName;
 
