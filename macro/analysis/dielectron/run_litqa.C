@@ -84,7 +84,7 @@ void run_litqa(Int_t nEvents = 1000)
    trackingQa->SetVerbose(0);
    trackingQa->SetMinNofHitsRich(7);
    trackingQa->SetQuotaRich(0.6);
-   trackingQa->SetPRange(30, 0., 6.);
+   trackingQa->SetPRange(30, 0., 3.);
    trackingQa->SetOutputDir(std::string(resultDir));
    std::vector<std::string> trackCat, richCat;
    trackCat.push_back("All");
@@ -106,10 +106,10 @@ void run_litqa(Int_t nEvents = 1000)
    fitQa->SetOutputDir(std::string(resultDir));
    run->AddTask(fitQa);
 
-  /* CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
-   clusteringQa->SetMuchDigiFileName(muchDigiFile.Data());
+   CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
+  // clusteringQa->SetMuchDigiFileName(muchDigiFile.Data());
    clusteringQa->SetOutputDir(std::string(resultDir));
-   run->AddTask(clusteringQa);*/
+   run->AddTask(clusteringQa);
 
    CbmLitTofQa* tofQa = new CbmLitTofQa();
    tofQa->SetOutputDir(std::string(resultDir));
