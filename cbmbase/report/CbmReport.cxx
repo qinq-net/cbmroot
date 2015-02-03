@@ -9,7 +9,7 @@
 #include "CbmHtmlReportElement.h"
 #include "CbmTextReportElement.h"
 #include "TCanvas.h"
-#include "utils/CbmUtils.h"
+#include "../utils/CbmUtils.h"
 
 #include <fstream>
 #include <string>
