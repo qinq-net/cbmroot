@@ -118,7 +118,7 @@ void CbmReport::PrintCanvases() const
 	Int_t nofCanvases = fCanvases.size();
 	for (Int_t i = 0; i < nofCanvases; i++) {
 		TCanvas* canvas = fCanvases[i];
-		Out() << R()->Image(canvas->GetName(), canvas->GetName());
+		Out() << R()->Image(canvas->GetName(), string("png/"+string(canvas->GetName())).c_str( ));
 	}
 }
 
