@@ -5,14 +5,14 @@
  **/
 
 void draw_analysis_all() {
-    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-    loadlibs();
+	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
+	loadlibs();
     gSystem->Load("libAnalysis");
 
     Bool_t useMvd = false;
-    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/apr14_rich/8gev/rich_pmtreduced_30_u/trd4/tofv13/1.0field/nomvd/";
+    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/dec14/25gev/stsv14_2cm/richv14a/trd10/tofv13/1.0field/nomvd/";
 
-    std::string fileName = "analysis.auau.8gev.centr.all.root";
+    std::string fileName = "analysis.auau.25gev.centr.all.root";
     //std::string fileName = "analysis.pimisid.0.0.auau.8gev.centr.all.root";
     std::string outputDir = dir + "results_all/";
 
