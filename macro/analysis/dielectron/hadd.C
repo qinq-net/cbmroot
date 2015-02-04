@@ -91,13 +91,19 @@ void hadd() {
 					if (fileQa != NULL) fileQa->Close();
 				}
 				if (addString == "litqa"){
-					FileList->Add( fileQa );
-					count++;
+                                        Bool_t isGoodQaFile = CheckQaFile(fileQa);
+					if (isGoodQaFile){
+					    FileList->Add( fileQa );
+					    count++;
+					} else {
+                                            if (fileQa != NULL) fileQa->Close();
+					}
 					if (fileAna != NULL) fileAna->Close();
 				}
 			} else {
 				if ( fileAna != NULL) fileAna->Close();
-				if ( fileQa != NULL) fileReco->Close();
+				if ( fileReco != NULL) fileReco->Close();
+                                if ( fileQa != NULL) fileQa->Close();
 			}
 		}
 		cout << endl<< "-I- number of files to merge = " << count << endl << endl;
@@ -116,11 +122,19 @@ void hadd() {
 	}//iF
 }
 
+bool CheckQaFile(TFile* fileQa)
+{
+    if (fileQa == NULL) return false;
+    if (fileQa->GetEND() < 50000) return false;
+
+    return true;
+}
+
 bool CheckFile(TFile* fileAna, TFile* fileReco) {
 
     if (fileAna == NULL || fileReco == NULL)  return false;
 
-    if (fileAna->GetEND() < 10000 || fileReco->GetEND() < 10000) return false;
+    if (fileAna->GetEND() < 50000 || fileReco->GetEND() < 50000) return false;
 
     TTree* treeAna = (TTree*)fileAna->Get("cbmsim");
     TTree* treeReco = (TTree*)fileReco->Get("cbmsim");
