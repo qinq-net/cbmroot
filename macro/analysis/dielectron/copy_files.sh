@@ -23,10 +23,10 @@ copy_all_mesons() {
 copy_all_mesons_ana_litqa() {
 	subPath=${1}
 	fileNameAna=analysis${2}
-	copy_all_mesons ${mainDirFrom}/${subPath} mainDirTo/${subPath} ${fileNameAna}
+	copy_all_mesons ${mainDirFrom}/${subPath} ${mainDirTo}/${subPath} ${fileNameAna}
 	
 	fileNameLitqa=litqa${2}
-	copy_all_mesons ${mainDirFrom}/${subPath} mainDirTo/${subPath} ${fileNameLitqa}
+	copy_all_mesons ${mainDirFrom}/${subPath} ${mainDirTo}/${subPath} ${fileNameLitqa}
 }
 
 copy_all_mesons_ana_litqa /8gev/stsv13d/richv14a/trd4/tofv13/1.0field/nomvd/ .auau.8gev.centr.all.root
