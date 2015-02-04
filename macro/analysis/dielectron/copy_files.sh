@@ -1,23 +1,40 @@
 #####!/bin/sh
 
-subPath=/8gev/stsv14_4cm/richv14a/trd4/tofv13/1.0field/nomvd/
+mainDirFrom=/hera/cbm/users/slebedev/mc/dielectron/dec14/
+mainDirTo=/u/slebedev/Baykal/copytemp/dec14/
 
-dirFrom=/hera/cbm/users/slebedev/mc/dielectron/dec14/${subPath}
-dirTo=/u/slebedev/Baykal/copytemp/dec14/${subPath}
-filename=litqa.auau.8gev.centr.all.root
-
-function copy_func() {
-   mkdir -p ${dirTo}/${1}/
-   cp ${dirFrom}/${1}/${filename} ${dirTo}/${1}/
+copy_func() {
+   dirFrom=${1}
+   dirTo=${2}
+   filename=${3}
+   meson=${4}
+   mkdir -p ${dirTo}/${meson}/
+   cp ${dirFrom}/${meson}/${filename} ${dirTo}/${meson}/
 }
 
-function copy_all() {
-   copy_func rho0
-  # copy_func omegaepem
-  # copy_func omegadalitz
-  # copy_func phi 
-  # copy_func urqmd
+copy_all_mesons() {
+  copy_func ${1} ${2} ${3} rho0
+  copy_func ${1} ${2} ${3} omegaepem
+  copy_func ${1} ${2} ${3} omegadalitz
+  copy_func ${1} ${2} ${3} phi 
+  #copy_func ${1} ${2} ${3} urqmd
 }
 
-copy_all
+copy_all_mesons_ana_litqa() {
+	subPath=${1}
+	fileNameAna=analysis${2}
+	copy_all_mesons mainDirFrom/${subPath} mainDirTo/${subPath} fileNameAna
+	
+	fileNameLitqa=litqa${2}
+	copy_all_mesons mainDirFrom/${subPath} mainDirTo/${subPath} fileNameLitqa
+}
 
+copy_all_mesons_ana_litqa /8gev/stsv13d/richv14a/trd4/tofv13/1.0field/nomvd/ .auau.8gev.centr.all.root
+copy_all_mesons_ana_litqa /25gev/stsv13d/richv14a/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root 
+copy_all_mesons_ana_litqa /8gev/stsv13d/richv14a_bepipe/trd4/tofv13/1.0field/nomvd/ .auau.8gev.centr.all.root
+copy_all_mesons_ana_litqa /25gev/stsv13d/richv14a_bepipe/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root
+copy_all_mesons_ana_litqa /8gev/stsv13d/richv14a/trd4/tofv13/0.7field/nomvd/ .auau.8gev.centr.all.root
+copy_all_mesons_ana_litqa /8gev/stsv14_2cm/richv14a/trd4/tofv13/1.0field/nomvd/ .auau.8gev.centr.all.root
+copy_all_mesons_ana_litqa /25gev/stsv14_2cm/richv14a/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root
+copy_all_mesons_ana_litqa /8gev/stsv14_4cm/richv14a/trd4/tofv13/1.0field/nomvd/ .auau.8gev.centr.all.root
+copy_all_mesons_ana_litqa /25gev/stsv14_4cm/richv14a/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root
