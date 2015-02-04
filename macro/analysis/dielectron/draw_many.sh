@@ -32,9 +32,9 @@ draw_all()
 	
 	echo "Draw LITQA"
 	draw_litqa ${main_dir} ${litqa_file} rho0/
-#	draw_litqa ${main_dir} ${litqa_file} omegaepem/
-#	draw_litqa ${main_dir} ${litqa_file} phi/
-#	draw_litqa ${main_dir} ${litqa_file} omegadalitz/
+	draw_litqa ${main_dir} ${litqa_file} omegaepem/
+	draw_litqa ${main_dir} ${litqa_file} phi/
+	draw_litqa ${main_dir} ${litqa_file} omegadalitz/
 	
 	echo "Draw ANALYSIS"
 	draw_ana ${main_dir} ${ana_file} rho0/
@@ -46,6 +46,14 @@ draw_all()
 	draw_ana_all ${main_dir} ${ana_file}
 }
 
-draw_all /Users/slebedev/Development/cbm/data/lmvm/dec14/25gev/stsv14_2cm/richv14a/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root
+draw_all /Users/slebedev/Development/cbm/data/lmvm/jan15/8gev/stsv13d/richv14a/trd4/tofv13/1.0field/nomvd/ .auau.8gev.centr.all.root
+draw_all /Users/slebedev/Development/cbm/data/lmvm/jan15//25gev/stsv13d/richv14a/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root 
+draw_all /Users/slebedev/Development/cbm/data/lmvm/jan15//8gev/stsv13d/richv14a_bepipe/trd4/tofv13/1.0field/nomvd/ .auau.8gev.centr.all.root
+draw_all /Users/slebedev/Development/cbm/data/lmvm/jan15//25gev/stsv13d/richv14a_bepipe/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root
+draw_all /Users/slebedev/Development/cbm/data/lmvm/jan15//8gev/stsv13d/richv14a/trd4/tofv13/0.7field/nomvd/ .auau.8gev.centr.all.root
+draw_all /Users/slebedev/Development/cbm/data/lmvm/jan15//8gev/stsv14_2cm/richv14a/trd4/tofv13/1.0field/nomvd/ .auau.8gev.centr.all.root
+draw_all /Users/slebedev/Development/cbm/data/lmvm/jan15//25gev/stsv14_2cm/richv14a/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root
+draw_all /Users/slebedev/Development/cbm/data/lmvm/jan15//8gev/stsv14_4cm/richv14a/trd4/tofv13/1.0field/nomvd/ .auau.8gev.centr.all.root
+draw_all /Users/slebedev/Development/cbm/data/lmvm/jan15//25gev/stsv14_4cm/richv14a/trd10/tofv13/1.0field/nomvd/ .auau.25gev.centr.all.root
 
 export SCRIPT=no
