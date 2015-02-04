@@ -13,7 +13,14 @@ void draw_analysis() {
     Bool_t drawSignificance = true;
     std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/dec14/25gev/stsv13d/richv14a/trd10/tofv13/1.0field/nomvd/rho0/";
     std::string fileName = dir + "analysis.auau.25gev.centr.all.root";
-    std::string outputDir = dir + "results_ana/realpid/";
+
+    std::string script = std::string(gSystem->Getenv("SCRIPT"));
+    if (script == "yes"){
+       dir = std::string(gSystem->Getenv("LMVM_MAIN_DIR"));
+       fileName = dir + std::string(gSystem->Getenv("LMVM_ANA_FILE_NAME"));
+    }
+
+    std::string outputDir = dir + "lmvm_results/realpid/";
   // std::string outputDir = "";
 
     CbmAnaDielectronTaskDraw *draw = new CbmAnaDielectronTaskDraw();

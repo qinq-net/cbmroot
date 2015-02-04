@@ -11,18 +11,17 @@ void draw_analysis_all() {
 
     Bool_t useMvd = false;
     std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/dec14/25gev/stsv14_2cm/richv14a/trd10/tofv13/1.0field/nomvd/";
-
     std::string fileName = "analysis.auau.25gev.centr.all.root";
     //std::string fileName = "analysis.pimisid.0.0.auau.8gev.centr.all.root";
-    std::string outputDir = dir + "results_all/";
 
-  /*  std::string script = std::string(gSystem->Getenv("SCRIPT"));
+
+    std::string script = std::string(gSystem->Getenv("SCRIPT"));
     if (script == "yes"){
-       dir = std::string(gSystem->Getenv("DIR"));
-       fileName = std::string(gSystem->Getenv("FILE_NAME"));
-       outputDir = std::string(gSystem->Getenv("OUTPUT_DIR"));
+       dir = std::string(gSystem->Getenv("LMVM_MAIN_DIR"));
+       fileName = std::string(gSystem->Getenv("LMVM_ANA_FILE_NAME"));
     }
-*/
+
+    std::string outputDir = dir + "lmvm_results_all/";
     std::string fnRho0 = dir + "rho0/" + fileName;
     std::string fnOmega = dir +"omegaepem/" + fileName;
     std::string fnPhi = dir + "phi/" + fileName;
