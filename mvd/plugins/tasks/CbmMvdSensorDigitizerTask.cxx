@@ -792,7 +792,7 @@ Int_t ix, iy;
 // cout << endl <<"loop in " << iy << endl;
 		//calculate the position of the current pixel in the lab-system
 
-		Double_t Current[2];
+		Double_t Current[3];
 		fSensor->PixelToLocal(ix,iy,Current);
 		pixel=0; //decouple pixel-pointer from previous pixel
 		//loop over segments, check if the pad received some charge
