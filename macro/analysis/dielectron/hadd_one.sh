@@ -16,4 +16,6 @@ run_hadd_ana_litqa() {
 
 run_hadd_ana_litqa ${1} ${2} ${3}
 
+echo "All done. You can close terminal"
+
 export SCRIPT=no
