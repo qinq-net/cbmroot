@@ -43,11 +43,19 @@ void hadd() {
 
     string dir = "/hera/cbm/users/slebedev/mc/dielectron/dec14/8gev/stsv14_4cm/richv14a/trd4/tofv13/1.0field/nomvd/";
     string fileArray = ".auau.8gev.centr.";
-    string particleDir[5] = {"omegaepem", "phi", "omegadalitz", "rho0", "urqmd"};
     string addString = "litqa"; //analysis or litqa
     int nofFiles = 250;
 
-	for (int iF = 3; iF < 4; iF++){
+    TString script = TString(gSystem->Getenv("SCRIPT"));
+    if (script == "yes") {
+    	addString = string(gSystem->Getenv("LMVM_ADD_STRING"));
+    	fileArray = string(gSystem->Getenv("LMVM_FILE_ARRAY"));
+    	dir = string(gSystem->Getenv("LMVM_MAIN_DIR"));
+        nofFiles = TString(gSystem->Getenv("LMVM_NOF_FILES")).Atof();
+    }
+
+    string particleDir[5] = {"omegaepem", "phi", "omegadalitz", "rho0", "urqmd"};
+	for (int iF = 0; iF < 4; iF++){
 	        string fileNameAna = dir + particleDir[iF] + "/" + string("analysis") + fileArray;
 	        string fileNameReco = dir + particleDir[iF] + "/" + string("reco") + fileArray;
 	        string fileNameQa = dir + particleDir[iF] + "/" + string("litqa") + fileArray;
