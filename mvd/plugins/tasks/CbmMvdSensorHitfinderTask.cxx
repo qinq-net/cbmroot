@@ -260,7 +260,7 @@ for(Int_t i = 0; i < fInputBuffer->GetEntriesFast(); i++)
 	CreateHit(cluster, pos, dpos);
 	}
 }
-fInputBuffer->Clear();
+fInputBuffer->Delete();
 }
 //--------------------------------------------------------------------------
 

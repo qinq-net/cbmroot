@@ -237,7 +237,7 @@ void CbmMvdSensorClusterfinderTask::ExecChain() {
 void CbmMvdSensorClusterfinderTask::Exec() {   
 if(fInputBuffer->GetEntriesFast() > 0)
   {
-fOutputBuffer->Clear();
+fOutputBuffer->Delete();
 inputSet = kFALSE;
 vector<Int_t>* clusterArray=new vector<Int_t>;
         
@@ -359,7 +359,7 @@ Int_t refId;
 delete pixelUsed;
 clusterArray->clear();
 delete clusterArray;
-fInputBuffer->Clear();
+fInputBuffer->Delete();
 
 fDigiMap.clear();
 }

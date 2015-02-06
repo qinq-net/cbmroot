@@ -67,7 +67,7 @@ void CbmMvdClusterfinder::Exec(Option_t* opt){
 // --- Start timer
 fTimer.Start();
 	
-fCluster->Clear();
+fCluster->Delete();
 if(fInputDigis->GetEntriesFast() > 0)
    {
    if(fVerbose) cout << "//----------------------------------------//";
@@ -77,7 +77,7 @@ if(fInputDigis->GetEntriesFast() > 0)
    fDetector->Exec(fClusterPluginNr);
    if(fVerbose) cout << "End Chain" << endl;
    if(fVerbose) cout << "Start writing Cluster" << endl;  
-   fCluster->AbsorbObjects(fDetector->GetOutputCluster()); 
+   fCluster->AbsorbObjects(fDetector->GetOutputCluster(),0,fDetector->GetOutputCluster()->GetEntriesFast()-1); 
    if(fVerbose) cout << "Total of " << fCluster->GetEntriesFast() << " Cluster in this Event" << endl;
    if(fVerbose) cout  << "//----------------------------------------//" << endl ;
    LOG(INFO) << "+ " << setw(20) << GetName() << ": Created: " 

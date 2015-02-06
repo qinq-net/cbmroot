@@ -78,7 +78,7 @@ if(fInputDigis || fInputCluster)
    fDetector->Exec(fHitfinderPluginNr);
    if(fVerbose)cout << "End Chain" << endl;
    if(fVerbose)cout << "Start writing Hits" << endl;  
-   fHits->AbsorbObjects(fDetector->GetOutputHits()); 
+   fHits->AbsorbObjects(fDetector->GetOutputHits(),0,fDetector->GetOutputHits()->GetEntriesFast()-1); 
    if(fVerbose)cout << "Total of " << fHits->GetEntriesFast() << " hits found" << endl;
    if(fVerbose)cout << "Finished writing Hits" << endl;
    if(fVerbose)cout << "//----------------------------------------//" << endl << endl;
