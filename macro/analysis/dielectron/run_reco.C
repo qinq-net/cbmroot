@@ -119,50 +119,39 @@ void run_reco(Int_t nEvents = 1000)
 	// =========================================================================
 	// ===                      STS local reconstruction                     ===
 	// =========================================================================
-    if (true){ // STS REAL
-      Double_t threshold  =  4;
-      Double_t noiseWidth =  0.1;
-      Int_t    nofBits    = 20;
-      Double_t minStep    =  0.01;
-      Double_t StripDeadTime = 10.;
+	Double_t threshold  =  4;
+	Double_t noiseWidth =  0.1;
+	Int_t    nofBits    = 20;
+	Double_t minStep    =  0.01;
+	Double_t StripDeadTime = 10.;
 
-      Double_t threshold  =  4;
-      Double_t noiseWidth =  0.01;
-      Int_t    nofBits    = 12;
-      Double_t electronsPerAdc    =  10;
-      Double_t StripDeadTime = 0.1;
-      CbmStsDigitize* stsDigitize = new CbmStsDigitize();
-      stsDigitize->SetRealisticResponse();
-      stsDigitize->SetFrontThreshold (threshold);
-      stsDigitize->SetBackThreshold  (threshold);
-      stsDigitize->SetFrontNoiseWidth(noiseWidth);
-      stsDigitize->SetBackNoiseWidth (noiseWidth);
-      stsDigitize->SetFrontNofBits   (nofBits);
-      stsDigitize->SetBackNofBits    (nofBits);
-      stsDigitize->SetFrontNofElPerAdc(electronsPerAdc);
-      stsDigitize->SetBackNofElPerAdc(electronsPerAdc);
-      stsDigitize->SetStripDeadTime  (StripDeadTime);
-      run->AddTask(stsDigitize);
+	Double_t threshold  =  4;
+	Double_t noiseWidth =  0.01;
+	Int_t    nofBits    = 12;
+	Double_t electronsPerAdc    =  10;
+	Double_t StripDeadTime = 0.1;
+	CbmStsDigitize_old* stsDigitize = new CbmStsDigitize_old();
+	stsDigitize->SetRealisticResponse();
+	stsDigitize->SetFrontThreshold (threshold);
+	stsDigitize->SetBackThreshold  (threshold);
+	stsDigitize->SetFrontNoiseWidth(noiseWidth);
+	stsDigitize->SetBackNoiseWidth (noiseWidth);
+	stsDigitize->SetFrontNofBits   (nofBits);
+	stsDigitize->SetBackNofBits    (nofBits);
+	stsDigitize->SetFrontNofElPerAdc(electronsPerAdc);
+	stsDigitize->SetBackNofElPerAdc(electronsPerAdc);
+	stsDigitize->SetStripDeadTime  (StripDeadTime);
+	run->AddTask(stsDigitize);
 
-      FairTask* stsClusterFinder = new CbmStsClusterFinder();
-      run->AddTask(stsClusterFinder);
+	FairTask* stsClusterFinder = new CbmStsClusterFinder_old();
+	run->AddTask(stsClusterFinder);
 
-      FairTask* stsFindHits = new CbmStsFindHits();
-      run->AddTask(stsFindHits);
+	FairTask* stsFindHits = new CbmStsFindHits_old();
+	run->AddTask(stsFindHits);
 
-     // CbmStsMatchHits* stsMatchHits = new CbmStsMatchHits();
-     // run->AddTask(stsMatchHits);
+	// CbmStsMatchHits* stsMatchHits = new CbmStsMatchHits();
+	// run->AddTask(stsMatchHits);
 
-    } else { // STS IDEAL RESPONSE
-      FairTask* stsDigitize = new CbmStsIdealDigitize();
-      run->AddTask(stsDigitize);
-
-      FairTask* stsClusterFinder = new CbmStsClusterFinder();
-      run->AddTask(stsClusterFinder);
-
-      FairTask* stsFindHits = new CbmStsIdealFindHits();
-      run->AddTask(stsFindHits);
-   }
 
 	CbmKF* kalman = new CbmKF();
 	run->AddTask(kalman);
