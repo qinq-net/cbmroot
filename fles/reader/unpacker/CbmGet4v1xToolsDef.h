@@ -1,7 +1,15 @@
 #ifndef GET4_V1_X_TOOLS_DEF_H
 #define GET4_V1_X_TOOLS_DEF_H
 
-#include <stdint.h>
+#ifdef __APPLE__ 
+#include <_types/_uint8_t.h> 
+//#include <_types/_uint16_t.h>
+#include <_types/_uint32_t.h> 
+#include <_types/_uint64_t.h> 
+#else 
+#include <stdint.h> 
+#endif  
+//#include <stdint.h>
 //#include <iostream>
 
 namespace get4v1x {
