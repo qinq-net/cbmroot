@@ -482,7 +482,7 @@ for (Int_t i=0; i<fPixelCharge->GetEntriesFast(); i++)
 	}
  fPixelCharge->Clear();
  fChargeMap.clear();
- fInputPoints->Clear();
+ fInputPoints->Delete();
 
  }
 else { //cout << endl << "No input found." << endl;

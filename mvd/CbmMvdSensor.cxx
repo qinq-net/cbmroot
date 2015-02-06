@@ -533,13 +533,13 @@ if (nPlugin<fPluginArray->GetEntriesFast())
       if (plugin->ClassName()  == digitizername)
 	  {
           CbmMvdSensorDigitizerTask* digiplugin = (CbmMvdSensorDigitizerTask*)fPluginArray->At(nPlugin);
-	  foutputDigis->AbsorbObjects(digiplugin->GetOutputArray());
+	  foutputDigis->AbsorbObjects(digiplugin->GetOutputArray(),0,digiplugin->GetOutputArray()->GetEntriesFast()-1);
 	  return foutputDigis;
 	  } 
       else if (plugin->ClassName()  == clustername)
 	  {
 	  CbmMvdSensorClusterfinderTask* clusterplugin = (CbmMvdSensorClusterfinderTask*)fPluginArray->At(nPlugin);
-	  foutputCluster->AbsorbObjects(clusterplugin->GetOutputArray());
+	  foutputCluster->AbsorbObjects(clusterplugin->GetOutputArray(),0,clusterplugin->GetOutputArray()->GetEntriesFast()-1);
 	  return foutputCluster;
 	  } 
       else
@@ -559,7 +559,7 @@ if (nPlugin<fPluginArray->GetEntriesFast())
   CbmMvdSensorPlugin* plugin=(CbmMvdSensorPlugin*)fPluginArray->At(nPlugin);
   if (nPlugin == fDigiPlugin)
 	{
-	foutputDigiMatch->AbsorbObjects(plugin->GetMatchArray());
+	  foutputDigiMatch->AbsorbObjects(plugin->GetMatchArray(),0,plugin->GetMatchArray()->GetEntriesFast()-1);
 	return (foutputDigiMatch);
 	}
   else
@@ -575,7 +575,7 @@ if (nPlugin<fPluginArray->GetEntriesFast())
 TClonesArray* CbmMvdSensor::GetOutputBuffer(){
 
   CbmMvdSensorPlugin* plugin=(CbmMvdSensorPlugin*)fPluginArray->At(fPluginArray->GetLast());
-  foutputBuffer->AbsorbObjects(plugin->GetOutputArray());
+  foutputBuffer->AbsorbObjects(plugin->GetOutputArray(),0,plugin->GetOutputArray()->GetEntriesFast()-1);
   //foutputBuffer->Print();
   return (foutputBuffer);
      

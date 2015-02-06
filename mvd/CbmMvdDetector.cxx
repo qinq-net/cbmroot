@@ -109,8 +109,8 @@ void CbmMvdDetector::AddSensor(TString clearName, TString fullName, TString node
   sensor->SetStation(stationNr);
 
     Float_t misalignment[3], randArray[3];
-    TRandom3* rand = new TRandom3(0);
-    rand->RndmArray(3,randArray);
+    //    TRandom3* rand = new TRandom3(0);
+    gRandom->RndmArray(3,randArray);
     misalignment[0] = ((2*randArray[0])-1) * fepsilon[0]; 
     misalignment[1] = ((2*randArray[0])-1) * fepsilon[1]; 
     misalignment[2] = ((2*randArray[0])-1) * fepsilon[2]; 
@@ -370,11 +370,12 @@ void CbmMvdDetector::ExecChain(){
    * 
    * **/
   
- foutput->Clear();
+  foutput->Clear();
   fcurrentEvent->Clear();
   foutputDigis->Clear();
   foutputDigiMatchs->Clear();
   foutputHits->Clear();
+  foutputCluster->Clear();
 
   Int_t nSensors=fSensorArray->GetEntriesFast();
   CbmMvdSensor* sensor;
@@ -399,6 +400,13 @@ void CbmMvdDetector::Exec(UInt_t nLevel){
    * execute spezific plugin on all sensors
    * 
    * **/
+
+  foutput->Clear();
+  fcurrentEvent->Clear();
+  foutputDigis->Clear();
+  foutputDigiMatchs->Clear();
+  foutputHits->Clear();
+  foutputCluster->Clear();
   
   Int_t nSensors=fSensorArray->GetEntriesFast();
   CbmMvdSensor* sensor;
@@ -451,7 +459,7 @@ TClonesArray* CbmMvdDetector::GetOutputHits(){
   CbmMvdSensor* sensor;
   for(Int_t i=0; i<nSensors; i++){
     sensor=(CbmMvdSensor*)fSensorArray->At(i);
-    foutputHits->AbsorbObjects(sensor->GetOutputBuffer());
+    foutputHits->AbsorbObjects(sensor->GetOutputBuffer(),0,sensor->GetOutputBuffer()->GetEntriesFast()-1);
   }
 
 return(foutputHits);
@@ -471,7 +479,7 @@ TClonesArray* CbmMvdDetector::GetOutputDigis(){
   for(Int_t i=0; i<nSensors; i++){
     sensor=(CbmMvdSensor*)fSensorArray->At(i);
     fDigiPlugin = sensor->GetDigiPlugin();
-    foutputDigis->AbsorbObjects(sensor->GetOutputArray(fDigiPlugin));
+    foutputDigis->AbsorbObjects(sensor->GetOutputArray(fDigiPlugin),0,sensor->GetOutputArray(fDigiPlugin)->GetEntriesFast()-1);
   }
 
 return(foutputDigis);
@@ -491,7 +499,7 @@ TClonesArray* CbmMvdDetector::GetOutputDigiMatchs(){
   for(Int_t i=0; i<nSensors; i++){
     sensor=(CbmMvdSensor*)fSensorArray->At(i);
     fDigiPlugin = sensor->GetDigiPlugin();
-    foutputDigiMatchs->AbsorbObjects(sensor->GetOutputMatch(fDigiPlugin));
+    foutputDigiMatchs->AbsorbObjects(sensor->GetOutputMatch(fDigiPlugin),0,sensor->GetOutputMatch(fDigiPlugin)->GetEntriesFast()-1);
   }
 
 return(foutputDigiMatchs);
@@ -507,7 +515,7 @@ TClonesArray* CbmMvdDetector::GetOutputCluster(){
   for(Int_t i=0; i<nSensors; i++){
     sensor=(CbmMvdSensor*)fSensorArray->At(i);
     fClusterPlugin = sensor->GetClusterPlugin();
-    foutputCluster->AbsorbObjects(sensor->GetOutputArray(fClusterPlugin));
+    foutputCluster->AbsorbObjects(sensor->GetOutputArray(fClusterPlugin),0,sensor->GetOutputArray(fClusterPlugin)->GetEntriesFast()-1);
   }
 
 return(foutputCluster);
@@ -529,7 +537,7 @@ TClonesArray* CbmMvdDetector::GetOutputArray(Int_t nPlugin){
   CbmMvdSensor* sensor;
   for(Int_t i=0; i<nSensors; i++){
     sensor=(CbmMvdSensor*)fSensorArray->At(i);
-    foutputDigis->AbsorbObjects(sensor->GetOutputArray(nPlugin));
+    foutputDigis->AbsorbObjects(sensor->GetOutputArray(nPlugin),0,sensor->GetOutputArray(nPlugin)->GetEntriesFast()-1);
   }
 
 return(foutputDigis);

@@ -89,8 +89,9 @@ void CbmMvdDigitizer::Exec(Option_t* opt){
 // --- Start timer
 fTimer.Start();
 	
-fDigis->Clear();
-fDigiMatch->Clear();
+fDigis->Delete();
+fDigiMatch->Delete();
+
 BuildEvent();
 if(fInputPoints->GetEntriesFast() > 0)
    {
@@ -101,10 +102,10 @@ if(fInputPoints->GetEntriesFast() > 0)
    fDetector->Exec(fDigiPluginNr);
    if(fVerbose) cout << "End Chain" << endl;
    if(fVerbose) cout << "Start writing Digis" << endl;  
-   fDigis->AbsorbObjects(fDetector->GetOutputArray(fDigiPluginNr)); 
+   fDigis->AbsorbObjects(fDetector->GetOutputArray(fDigiPluginNr),0,fDetector->GetOutputArray(fDigiPluginNr)->GetEntriesFast()-1); 
    if(fVerbose) cout << "Total of " << fDigis->GetEntriesFast() << " digis in this Event" << endl;
    if(fVerbose) cout << "Start writing DigiMatchs" << endl;  
-   fDigiMatch->AbsorbObjects(fDetector->GetOutputDigiMatchs()); 
+   fDigiMatch->AbsorbObjects(fDetector->GetOutputDigiMatchs(),0,fDetector->GetOutputDigiMatchs()->GetEntriesFast()-1); 
    if(fVerbose) cout  << "//----------------------------------------//" << endl ;
    LOG(INFO) << "+ " << setw(20) << GetName() << ": Created: " 
         << fDigis->GetEntriesFast() << " digis in " 
