@@ -53,6 +53,14 @@ CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
   fuNbRocs(0),
   fuNbGet4(0),
   fuMsOverlapTs(0),
+  fulTsNb(0),
+  fulMsNb(0),
+  fsMaxMsNb(0),
+  fuOffset(0),
+  fuMaxOffset(0),
+  fuLocalOffset(0),
+  fuMaxLocalOffset(0),
+  fvbRocFeetSyncStart(kFALSE),
   fvuCurrEpoch(),
   fvuCurrEpoch2(),
   fhMessageTypePerRoc(NULL),
@@ -111,6 +119,15 @@ Bool_t CbmTSUnpackGet4v1x::Init()
      LOG(FATAL) << "Please use the functions SetRocNb and/or SetGet4Nb before running!!" << FairLogger::endl;
   }
 
+  // Initialize TS counter
+  fulTsNb = 0;
+
+  // At start all ROCs are considered "unsynchronized"
+  // Stay so until the DLM 10 is issued: ~/flesnet/build/sync_frontend
+  fvbRocFeetSyncStart.resize( fuNbRocs);
+  for( UInt_t uRoc = 0; uRoc < fuNbRocs; uRoc++)
+     fvbRocFeetSyncStart[uRoc] = kFALSE;
+
   // Prepare the epoch storing vectors
   fvuCurrEpoch.resize( fuNbRocs);
   for( UInt_t uRoc = 0; uRoc < fuNbRocs; uRoc++)
@@ -151,10 +168,15 @@ void CbmTSUnpackGet4v1x::SetPulserChans(
 
 Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
+   fulTsNb++;
+   if( 0 == fiMode || kTRUE == fbVerbose )
+      LOG(INFO)<<" ++++++++++++ Ts # "<<fulTsNb<<FairLogger::endl;
+
    // Loop over microslices
-   size_t sMaxMsNb = ts.num_microslices(component) - fuMsOverlapTs;
-   for (size_t m = 0; m < sMaxMsNb; ++m)
+   fsMaxMsNb = ts.num_microslices(component) - fuMsOverlapTs;
+   for (size_t m = 0; m < fsMaxMsNb; ++m)
    {
+      fulMsNb = m;
       auto msDescriptor = ts.descriptor(component, m);
       const uint8_t* msContent = reinterpret_cast<const uint8_t*>(ts.content(component, m));
 
@@ -163,10 +185,16 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
       const uint8_t* msContent_shifted;
       int padding;
 
+      if( 0 == fiMode || kTRUE == fbVerbose )
+         LOG(INFO)<<" ************ Ms # "<<m<<FairLogger::endl;
+
+      fuMaxOffset = msDescriptor.size;
+
       // Loop over the data of one microslice
       while (offset < msDescriptor.size)
       {
          msContent_shifted = &msContent[offset];
+         fuOffset = offset;
 
          // Extract DTM header info
          DTM_header cur_DTM_header;
@@ -174,9 +202,13 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
          cur_DTM_header.packet_length = msContent_shifted[0];
          cur_DTM_header.packet_counter = msContent_shifted[1];
          const uint16_t* ROC_ID_pointer = reinterpret_cast<const uint16_t*>(&msContent_shifted[2]);
-         cur_DTM_header.ROC_ID = *ROC_ID_pointer;
+//         cur_DTM_header.ROC_ID = *ROC_ID_pointer;
+         // TODO: Check if planned behavior
+         //       -> ROC ID increased by 256 per link, 16 bits => only links 1 and 2 easy to use
+         cur_DTM_header.ROC_ID = (*ROC_ID_pointer) / 256; // ROC ID increased by 256 per link
 
          uint32_t packageSize = static_cast<uint32_t>(cur_DTM_header.packet_length*2+4);
+         fuMaxLocalOffset = packageSize;
 
          // Loop over messages
          local_offset = 4;
@@ -184,13 +216,10 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
          {
             // Debug printout
             cur_DTM_header.Dump();
-            LOG(INFO)<<" Package Size: "<<packageSize<<FairLogger::endl;
+            LOG(INFO)<<" Package Size: "<<packageSize<<" ROC ID: "<<cur_DTM_header.ROC_ID<<FairLogger::endl;
             while (local_offset < packageSize)
             {
-               // FIXME: This is here just until the bytes order in the ums is found
-               // Then it should be removed (Q? is big vs small endian)
-//               this->Print6bytesMessage(&msContent_shifted[local_offset]);
-
+               fuLocalOffset = local_offset;
                get4v1x::Message mess;
                uint64_t dataContent =
                        ( static_cast<uint64_t>( cur_DTM_header.ROC_ID                & 0xFFFF) << 48)
@@ -218,6 +247,7 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
                // Monitor mode, fill histograms
                while (local_offset < packageSize)
                {
+                  fuLocalOffset = local_offset;
                   get4v1x::Message mess;
                   uint64_t dataContent =
                           ( static_cast<uint64_t>( cur_DTM_header.ROC_ID                & 0xFFFF) << 48)
@@ -234,23 +264,50 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
                   switch( mess.getMessageType() )
                   {
                      case get4v1x::MSG_HIT:
+                     {
                         // This is NXYTER in a GET4 unpacker => ignore
                         break;
+                     } // case get4v1x::MSG_HIT:
                      case get4v1x::MSG_EPOCH:
+                     {
+                        // Ignore all messages before RocFeet system SYNC
+                        if (kFALSE == fvbRocFeetSyncStart[cur_DTM_header.ROC_ID] )
+                           break;
                         this->MonitorMessage_epoch(mess, msDescriptor.eq_id);
                         break;
+                     } // case get4v1x::MSG_EPOCH:
                      case get4v1x::MSG_SYNC:
+                     {
+                        // Ignore all messages before RocFeet system SYNC
+                        if (kFALSE == fvbRocFeetSyncStart[cur_DTM_header.ROC_ID] )
+                           break;
                         this->MonitorMessage_sync(mess, msDescriptor.eq_id);
                         break;
+                     } // case get4v1x::MSG_SYNC:
                      case get4v1x::MSG_AUX:
+                     {
+                        // Ignore all messages before RocFeet system SYNC
+                        if (kFALSE == fvbRocFeetSyncStart[cur_DTM_header.ROC_ID] )
+                           break;
                         this->MonitorMessage_aux(mess, msDescriptor.eq_id);
                         break;
+                     } // case get4v1x::MSG_AUX:
                      case get4v1x::MSG_EPOCH2:
+                     {
+                        // Ignore all messages before RocFeet system SYNC
+                        if (kFALSE == fvbRocFeetSyncStart[cur_DTM_header.ROC_ID] )
+                           break;
                         this->MonitorMessage_epoch2(mess, msDescriptor.eq_id);
                         break;
+                     } // case get4v1x::MSG_EPOCH2:
                      case get4v1x::MSG_GET4:
+                     {
+                        // Ignore all messages before RocFeet system SYNC
+                        if (kFALSE == fvbRocFeetSyncStart[cur_DTM_header.ROC_ID] )
+                           break;
                         this->MonitorMessage_get4(mess, msDescriptor.eq_id);
                         break;
+                     } // case get4v1x::MSG_GET4:
                      case get4v1x::MSG_SYS:
                         this->MonitorMessage_sys(mess, msDescriptor.eq_id);
                         break;
@@ -266,6 +323,7 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
                // Normal mode, unpack data and fill TClonesArray of CbmRawMessage
                while (local_offset < packageSize)
                {
+                  fuLocalOffset = local_offset;
                   get4v1x::Message mess;
                   uint64_t dataContent =
                           ( static_cast<uint64_t>( cur_DTM_header.ROC_ID                & 0xFFFF) << 48)
@@ -281,23 +339,55 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
                   switch( mess.getMessageType() )
                   {
                      case get4v1x::MSG_HIT:
+                     {
                         // This is NXYTER in a GET4 unpacker => ignore
                         break;
+                     } // case get4v1x::MSG_HIT:
                      case get4v1x::MSG_EPOCH:
+                     {
+                        // Ignore all messages before RocFeet system SYNC
+                        if (kFALSE == fvbRocFeetSyncStart[cur_DTM_header.ROC_ID] )
+                           break;
+
                         this->ProcessMessage_epoch(mess, msDescriptor.eq_id);
                         break;
+                     } // case get4v1x::MSG_EPOCH:
                      case get4v1x::MSG_SYNC:
+                     {
+                        // Ignore all messages before RocFeet system SYNC
+                        if (kFALSE == fvbRocFeetSyncStart[cur_DTM_header.ROC_ID] )
+                           break;
+
                         this->ProcessMessage_sync(mess, msDescriptor.eq_id);
                         break;
+                     } // case get4v1x::MSG_SYNC:
                      case get4v1x::MSG_AUX:
+                     {
+                        // Ignore all messages before RocFeet system SYNC
+                        if (kFALSE == fvbRocFeetSyncStart[cur_DTM_header.ROC_ID] )
+                           break;
+
                         this->ProcessMessage_aux(mess, msDescriptor.eq_id);
                         break;
+                     } // case get4v1x::MSG_AUX:
                      case get4v1x::MSG_EPOCH2:
+                     {
+                        // Ignore all messages before RocFeet system SYNC
+                        if (kFALSE == fvbRocFeetSyncStart[cur_DTM_header.ROC_ID] )
+                           break;
+
                         this->ProcessMessage_epoch2(mess, msDescriptor.eq_id);
                         break;
+                     } // case get4v1x::MSG_EPOCH2:
                      case get4v1x::MSG_GET4:
+                     {
+                        // Ignore all messages before RocFeet system SYNC
+                        if (kFALSE == fvbRocFeetSyncStart[cur_DTM_header.ROC_ID] )
+                           break;
+
                         this->ProcessMessage_get4(mess, msDescriptor.eq_id);
                         break;
+                     } // case get4v1x::MSG_GET4:
                      case get4v1x::MSG_SYS:
                         this->ProcessMessage_sys(mess, msDescriptor.eq_id);
                         break;
@@ -763,14 +853,20 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
                <<cRocId<<" chip "
                <<cChipId<<FairLogger::endl;
 
-   if( fvuCurrEpoch2[uChipFullId] +1 != mess.getEpoch2Number())
+   if( fvuCurrEpoch2[uChipFullId] +1 != mess.getEpoch2Number() &&
+         0 != fvuCurrEpoch2[uChipFullId] )
    {
       Int_t iEpJump = mess.getEpoch2Number();
       iEpJump      -= fvuCurrEpoch2[uChipFullId];
-      LOG(DEBUG) << "Epoch nb jump in chip "<< uChipFullId <<": "
-                 << iEpJump
-                 <<" ("<<fvuCurrEpoch2[uChipFullId]
-                 << " -> "<<mess.getEpoch2Number() <<")"<< FairLogger::endl;
+      LOG(INFO) << "Epoch nb jump in chip "
+                 <<Form("%3u: ", uChipFullId)
+                 << Form(" %3d (%6u -> %6u)", iEpJump, fvuCurrEpoch2[uChipFullId],
+                                         mess.getEpoch2Number() )
+                 <<Form(" TS #%12llu", fulTsNb)
+                 <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                 <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
+                 <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                 << FairLogger::endl;
 
       fhGet4EpochJumps->Fill(uChipFullId, iEpJump);
    } // if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
@@ -778,11 +874,117 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
    if( 1 == mess.getEpoch2Sync() )
       fhGet4EpochFlags->Fill(uChipFullId, 0);
    if( 1 == mess.getEpoch2EpochMissmatch() )
+   {
       fhGet4EpochFlags->Fill(uChipFullId, 1);
+      LOG(INFO) << "Epoch missmatch in chip "
+                <<Form("%3u: ", uChipFullId)
+                <<Form(" EP #%6u", mess.getEpoch2Number() )
+                <<Form(" TS #%12llu", fulTsNb)
+                <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
+                <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                << FairLogger::endl;
+   } // if( 1 == mess.getEpoch2EpochMissmatch() )
    if( 1 == mess.getEpoch2EpochLost() )
+   {
       fhGet4EpochFlags->Fill(uChipFullId, 2);
+      LOG(INFO) << "Epoch loss in chip      "
+                <<Form("%3u: ", uChipFullId)
+                <<Form(" EP #%6u", mess.getEpoch2Number() )
+                <<Form(" TS #%12llu", fulTsNb)
+                <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
+                <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                << FairLogger::endl;
+   } // if( 1 == mess.getEpoch2EpochLost() )
    if( 1 == mess.getEpoch2DataLost() )
+   {
       fhGet4EpochFlags->Fill(uChipFullId, 3);
+      LOG(INFO) << "Data Loss in chip       "
+                <<Form("%3u: ", uChipFullId)
+                <<Form(" EP #%6u", mess.getEpoch2Number() )
+                <<Form(" TS #%12llu", fulTsNb)
+                <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
+                <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                << FairLogger::endl;
+   } // if( 1 == mess.getEpoch2DataLost() )
+
+   // Fill Pulser test histos if needed
+   // Accepted pairs are when both messages are defined and they are at most
+   // 1 epoch apart => possibility of double use is the pulse happens on top of
+   // an epoch and more than once every 3 epochs. For example:
+   // HHHHEHHHH.......E......HHHHEHHHH leads to
+   // (HHHHHHHH)             (HHHHHHHH) and
+   //     (HHHH              HHHH)
+   if( kTRUE == fbPulserMode && 0 == uChipFullId && kTRUE == fbOldReadoutOk )
+   {
+      // Fill the time difference for all channels pairs in
+      // the chosen Fee
+      UInt_t uHistoFeeIdx = 0;
+      for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
+         for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < kuNbChanFee; uChanFeeB++)
+         {
+            if(
+                ( get4v1x::MSG_GET4 <= fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeA].getMessageType() ) &&
+                ( get4v1x::MSG_GET4 <= fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeB].getMessageType() ) &&
+                (   fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeA ]
+                  < fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeB ] + 2 ) &&
+                (   fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeA ] + 2
+                  > fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeB ] ) )
+            {
+               Double_t dTimeDiff = 0.0;
+               dTimeDiff = fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeA].CalcGet4V10R24HitTimeDiff(
+                     fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeA],
+                     fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeB],
+                     fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeB] );
+
+               fhTimeResFee[uHistoFeeIdx]->Fill( dTimeDiff );
+            } // if both channels have matching data
+            uHistoFeeIdx++;
+         } // for any unique pair of channel in chosen Fee
+
+      // Fill the time difference for the chosen channel pairs
+      UInt_t uHistoCombiIdx = 0;
+      for( UInt_t uChanA = 0; uChanA < kuNbChanTest-1; uChanA++)
+      {
+         if( ( get4v1x::MSG_GET4 <= fvmLastHit[ fuPulserChan[uChanA]   ].getMessageType() ) &&
+             ( get4v1x::MSG_GET4 <= fvmLastHit[ fuPulserChan[uChanA+1] ].getMessageType() ) &&
+             ( fvuLastHitEp[ fuPulserChan[uChanA]   ]
+                   < fvuLastHitEp[ fuPulserChan[uChanA+1] ] + 2 ) &&
+             ( fvuLastHitEp[ fuPulserChan[uChanA]   ] + 2
+                   > fvuLastHitEp[ fuPulserChan[uChanA+1] ]     ) )
+         {
+            Double_t dTimeDiff =
+                  fvmLastHit[   fuPulserChan[uChanA]   ].CalcGet4V10R24HitTimeDiff(
+                  fvuLastHitEp[ fuPulserChan[uChanA]   ],
+                  fvuLastHitEp[ fuPulserChan[uChanA+1] ],
+                  fvmLastHit[   fuPulserChan[uChanA+1] ] );
+            fhTimeResPairs[uChanA]->Fill( dTimeDiff );
+         } // // if both channels have data
+
+         for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
+         {
+            if( ( get4v1x::MSG_GET4 <= fvmLastHit[ fuPulserChan[uChanA] ].getMessageType() ) &&
+                ( get4v1x::MSG_GET4 <= fvmLastHit[ fuPulserChan[uChanB] ].getMessageType() ) &&
+                ( fvuLastHitEp[ fuPulserChan[uChanA] ]
+                      < fvuLastHitEp[ fuPulserChan[uChanB] ] + 2 ) &&
+                ( fvuLastHitEp[ fuPulserChan[uChanA] ] + 2
+                      > fvuLastHitEp[ fuPulserChan[uChanB] ]     ) )
+            {
+               Double_t dTimeDiff =
+                     fvmLastHit[   fuPulserChan[uChanA] ].CalcGet4V10R24HitTimeDiff(
+                     fvuLastHitEp[ fuPulserChan[uChanA] ],
+                     fvuLastHitEp[ fuPulserChan[uChanB] ],
+                     fvmLastHit[   fuPulserChan[uChanB] ] );
+               fhTimeResCombi[uHistoCombiIdx]->Fill( dTimeDiff );
+            } // if both channels have data
+            uHistoCombiIdx++;
+         } // for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
+      } // for( UInt_t uChanA = 0; uChanA < kuNbChanTest; uChanA++)
+
+   } // if( kTRUE == fbPulserMode && 0 == uChipFullId && kTRUE == fbOldReadoutOk )
+
 }
 void CbmTSUnpackGet4v1x::MonitorMessage_get4(   get4v1x::Message mess, uint16_t EqID)
 {
@@ -915,6 +1117,17 @@ void CbmTSUnpackGet4v1x::MonitorMessage_sys(    get4v1x::Message mess, uint16_t 
       } // case get4v1x::SYSMSG_FIFO_RESET
       case get4v1x::SYSMSG_USER:
       {
+         if( get4v1x::SYSMSG_USER_ROCFEET_SYNC == mess.getSysMesData() )
+         {
+            LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_sys => SYNC DLM!"
+                     <<" RocId: " << Form("%02u", cRocId)
+                     <<Form(" TS  #%12llu", fulTsNb)
+                     <<Form(" MS  #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                     <<Form(" OF  #%5u/%5u", fuOffset, fuMaxOffset)
+                     <<Form(" LO  #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                     <<FairLogger::endl;
+            fvbRocFeetSyncStart[cRocId] = kTRUE;
+         }
          break;
       } // case get4v1x::SYSMSG_USER
       case get4v1x::SYSMSG_PACKETLOST:
@@ -952,6 +1165,10 @@ void CbmTSUnpackGet4v1x::MonitorMessage_sys(    get4v1x::Message mess, uint16_t 
       case get4v1x::SYSMSG_GET4V1_32BIT_14:
       case get4v1x::SYSMSG_GET4V1_32BIT_15:
       {
+         // Ignore all messages before RocFeet system SYNC
+         if (kFALSE == fvbRocFeetSyncStart[cRocId] )
+            break;
+
          // GET4 v1.x 32b raw message using hack
          fhMessageTypePerRoc->Fill( cRocId, 15 );
          fhSysMessTypePerRoc->Fill( cRocId, 15 );
@@ -994,14 +1211,20 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
    {
       case get4v1x::GET4_32B_EPOCH: // => Epoch message
       {
-         if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
+         if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber() &&
+               0 != fvuCurrEpoch2[uChipFullId] )
          {
             Int_t iEpJump = mess.getGet4V10R32EpochNumber();
             iEpJump      -= fvuCurrEpoch2[uChipFullId];
-            LOG(DEBUG) << "Epoch nb jump in chip "<< uChipFullId <<": "
-                       << iEpJump
-                       <<" ("<<fvuCurrEpoch2[uChipFullId]
-                       << " -> "<<mess.getGet4V10R32EpochNumber() <<")"<< FairLogger::endl;
+            LOG(INFO) << "Epoch nb jump in chip "
+                       <<Form("%3u: ", uChipFullId)
+                       << Form(" %3d (%6u -> %6u)", iEpJump, fvuCurrEpoch2[uChipFullId],
+                                                    mess.getGet4V10R32EpochNumber() )
+                       <<Form(" TS  #%12llu", fulTsNb)
+                       <<Form(" MS  #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                       <<Form(" OF  #%5u/%5u", fuOffset, fuMaxOffset)
+                       <<Form(" LO  #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                       << FairLogger::endl;
 
             fhGet4EpochJumps->Fill(uChipFullId, iEpJump);
          } // if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
@@ -1107,6 +1330,10 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
          {
             case get4v1x::GET4_V1X_ERR_READ_INIT:
                fhGet4ChanErrors->Fill( dFullChId, 0);
+               LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_Get4v1 => Readout Init!"
+                        <<" ChipId: "<<Form("%02u", cChipId)
+                        <<" RocId: " <<Form("%02u", cRocId)
+                        <<" TS: " <<fulTsNb<<FairLogger::endl;
                break;
             case get4v1x::GET4_V1X_ERR_SYNC:
                fhGet4ChanErrors->Fill( dFullChId, 1);

@@ -145,7 +145,9 @@ int Set24bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000040);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000080);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000F0);
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x0000FFFF);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x0000FFFF);
+///////// For ROC v3 symmetric dual board setup
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000FF);
    initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
 
 
@@ -187,12 +189,15 @@ int Set24bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 //# ROC_FIFO_RESET
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x28, ROC_CMD_LST_PUT + ROC_FIFO_RESET);
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x2C, 0);
+//# ROC_ADDSYSMSG
+   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x30, ROC_CMD_LST_PUT + ROC_ADDSYSMSG);
+   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x34, 0x00000010);
 //# ROC_START_DAQ
-   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x30, ROC_CMD_LST_PUT + ROC_START_DAQ);
-   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x34, 0);
-//# ROC_CMD_LST_ACTIVE
-   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x38, ROC_CMD_LST_PUT + ROC_CMD_LST_ACTIVE );
+   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x38, ROC_CMD_LST_PUT + ROC_START_DAQ);
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x3C, 0);
+//# ROC_CMD_LST_ACTIVE
+   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x40, ROC_CMD_LST_PUT + ROC_CMD_LST_ACTIVE );
+   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x44, 0);
 
 //# GET4 configuration
    //# GET4V1X_TDC_CORE_TIMING_CONF => DLL TDC core timing
@@ -268,9 +273,11 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x0000FF00);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00FF0000);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0xFF000000);
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x0000FFFF);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x0000FFFF);
+///////// For ROC v3 symmetric dual board setup
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000FF);
+//   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000001);
    initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
-
 
 // ROC_GET4_SAMPLE_FALLING_EDGE_LSBS & ROC_GET4_SAMPLE_FALLING_EDGE_MSBS
 //  => Change the edge on which the data from the GET4 are sampled
@@ -310,12 +317,15 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 // ROC_FIFO_RESET
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x28, ROC_CMD_LST_PUT + ROC_FIFO_RESET);
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x2C, 0);
-// ROC_START_DAQ
-   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x30, ROC_CMD_LST_PUT + ROC_START_DAQ);
-   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x34, 0);
-// ROC_CMD_LST_ACTIVE
-   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x38, ROC_CMD_LST_PUT + ROC_CMD_LST_ACTIVE );
+//# ROC_ADDSYSMSG
+   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x30, ROC_CMD_LST_PUT + ROC_ADDSYSMSG);
+   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x34, 0x00000010);
+//# ROC_START_DAQ
+   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x38, ROC_CMD_LST_PUT + ROC_START_DAQ);
    initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x3C, 0);
+//# ROC_CMD_LST_ACTIVE
+   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x40, ROC_CMD_LST_PUT + ROC_CMD_LST_ACTIVE );
+   initList.AddWrite(ROC_CMD_LST_MEM + 0x200 + 0x44, 0);
 
 // GET4 configuration
    //# GET4V1X_TDC_CORE_TIMING_CONF => DLL TDC core timing

@@ -72,7 +72,8 @@ namespace get4v1x {
    enum SysMessageUserTypes {
       SYSMSG_USER_CALIBR_ON    = 7,
       SYSMSG_USER_CALIBR_OFF   = 8,
-      SYSMSG_USER_RECONFIGURE  = 9
+      SYSMSG_USER_RECONFIGURE  = 9,
+      SYSMSG_USER_ROCFEET_SYNC = 16
    };
 
    enum MessagePrintMask {
@@ -537,6 +538,8 @@ namespace get4v1x {
          static uint64_t CalcDistance(uint64_t start, uint64_t stop);
 
          static double CalcDistanceD(double start, double stop);
+
+         bool operator<(const Message& other) const;
 
          // -------------------- methods for working with different formats
 

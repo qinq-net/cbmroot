@@ -46,17 +46,18 @@ void readTsa_server_get4( Int_t nEvents = 1000 )
 //  CbmTSUnpackNxyter* nxyter_unpacker = new CbmTSUnpackNxyter();
 
   // Spadic Unpacker
-  CbmTSUnpackSpadic* spadic_unpacker = new CbmTSUnpackSpadic();
+//  CbmTSUnpackSpadic* spadic_unpacker = new CbmTSUnpackSpadic();
 
   // GET4 Unpacker
   CbmTSUnpackGet4v1x* get4_unpacker = new CbmTSUnpackGet4v1x();
-  get4_unpacker->SetRocNb(      1); // Min 1
-  get4_unpacker->SetGet4Nb(    16); // Min 1
+  get4_unpacker->SetRocNb(      2); // Min 1
+  get4_unpacker->SetGet4Nb(   136); // Min 1
+  get4_unpacker->SetMsOverlapTs(1); // Min 1
   get4_unpacker->SetMode(       1); // 0 = debug, 1 = moni, 2 = unpack
-  get4_unpacker->SetPulserMode(  ); // kTRUE = ON, kFALSE = OFF
+  get4_unpacker->SetPulserMode(  ); // kTRUE = ON, kFALSE = OFF (default is ON)
   get4_unpacker->SetPulserFee(   ); // 1 value (default is 0)
   get4_unpacker->SetPulserChans(  0,  4,  8, 12,
-                                 16, 20, 24, 28,
+                                512,516,520,524,
                                  32, 36, 40, 44,
                                  48, 52, 56, 60); // 1-16 values (default is 0-15)
   get4_unpacker->SetOldReadoutSupp();

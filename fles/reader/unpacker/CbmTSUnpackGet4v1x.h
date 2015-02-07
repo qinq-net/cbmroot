@@ -77,6 +77,18 @@ private:
   UInt_t fuNbGet4;
   UInt_t fuMsOverlapTs;
 
+  // TS counter
+  ULong64_t fulTsNb;
+  ULong64_t fulMsNb;
+  size_t    fsMaxMsNb;
+  UInt_t    fuOffset;
+  UInt_t    fuMaxOffset;
+  UInt_t    fuLocalOffset;
+  UInt_t    fuMaxLocalOffset;
+
+  // SYNC handling
+  std::vector< Bool_t > fvbRocFeetSyncStart;  // Keep track whether the SYNC DLM was processed  (one per ROC)
+
   // Epochs book-keeping variables
   std::vector< UInt_t > fvuCurrEpoch;  // Current epoch  (one per ROC)
   std::vector< UInt_t > fvuCurrEpoch2; // Current epoch2 (one per GET4 chip)

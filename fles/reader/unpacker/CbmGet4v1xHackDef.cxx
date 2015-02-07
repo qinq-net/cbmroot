@@ -166,6 +166,35 @@ uint64_t get4v1x::Message::getMsgFullTime(uint32_t epoch) const
 }
 
 //----------------------------------------------------------------------------
+//! strict weak ordering operator, assumes same epoch for both messages
+bool get4v1x::Message::operator<(const Message& other) const
+{
+   uint64_t uThisTs  = 0;
+   uint64_t uOtherTs = 0;
+
+   // First find the timestamp of the current message
+   if( MSG_SYS == this->getMessageType() &&
+         SYSMSG_GET4V1_32BIT_0 <= this->getSysMesType() )
+   {
+      if( GET4_32B_DATA == this->getGet4V10R32MessageType() )
+         uThisTs = this->FullTimeStamp2(0, this->getGet4V10R32HitTimeBin() ) / 20 + 512;
+         else uThisTs = 0;
+   } // if 32b GET4 message
+      else uThisTs = this->getMsgFullTime( 0 );
+
+   // Then find the timestamp of the current message
+   if( MSG_SYS == other.getMessageType() &&
+         SYSMSG_GET4V1_32BIT_0 <= other.getSysMesType() )
+   {
+      if( GET4_32B_DATA == other.getGet4V10R32MessageType() )
+         uOtherTs = other.FullTimeStamp2(0, other.getGet4V10R32HitTimeBin() ) / 20 + 512;
+         else uOtherTs = 0;
+   } // if 32b GET4 message
+      else uOtherTs = other.getMsgFullTime( 0 );
+
+   return uThisTs < uOtherTs;
+}
+//----------------------------------------------------------------------------
 //! Returns expanded and adjusted time of message in double (in ns)
 //! epoch should correspond to the message type - epoch2 for Get4, epoch for all others
 
