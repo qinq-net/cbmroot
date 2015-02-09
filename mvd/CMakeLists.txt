@@ -5,27 +5,27 @@
 Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/mvd 
 
-${CBMROOT_SOURCE_DIR}/cbmbase 
+#${CBMROOT_SOURCE_DIR}/cbmbase 
 
 ${CBMROOT_SOURCE_DIR}/cbmdata
-${CBMROOT_SOURCE_DIR}/cbmdata/sts
+#${CBMROOT_SOURCE_DIR}/cbmdata/sts
 
 ${CBMROOT_SOURCE_DIR}/cbmdata/mvd
-${CBMROOT_SOURCE_DIR}/cbmdata/global
+#${CBMROOT_SOURCE_DIR}/cbmdata/global
 
 
-${CBMROOT_SOURCE_DIR}/sts
+#${CBMROOT_SOURCE_DIR}/sts
 
-${CBMROOT_SOURCE_DIR}/KF
-${CBMROOT_SOURCE_DIR}/KF/Interface 
+#${CBMROOT_SOURCE_DIR}/KF
+#${CBMROOT_SOURCE_DIR}/KF/Interface 
 
-${CBMROOT_SOURCE_DIR}/much/geo
+#${CBMROOT_SOURCE_DIR}/much/geo
 
-${CBMROOT_SOURCE_DIR}/rich
+#${CBMROOT_SOURCE_DIR}/rich
 
-${CBMROOT_SOURCE_DIR}/littrack
-${CBMROOT_SOURCE_DIR}/littrack/cbm
-${CBMROOT_SOURCE_DIR}/littrack/std/
+#${CBMROOT_SOURCE_DIR}/littrack
+#${CBMROOT_SOURCE_DIR}/littrack/cbm
+#${CBMROOT_SOURCE_DIR}/littrack/std/
 
 )
 
@@ -67,7 +67,7 @@ SensorDataSheets/CbmMvdSensorDataSheet.cxx
 
 tools/CbmMvdGeoHandler.cxx
 
-qa/CbmMvdQa.cxx
+#qa/CbmMvdQa.cxx
 
 CbmMvd.cxx 
 CbmMvdContFact.cxx 
@@ -96,7 +96,8 @@ old/MyG4UniversalFluctuationForSi.cxx
 set(LINKDEF MvdLinkDef.h)
 Set(LIBRARY_NAME Mvd)
 Set(DEPENDENCIES
-    CbmBase CbmData Base G4clhep KF Littrack
+    CbmBase CbmData Base G4clhep
+#    CbmBase CbmData Base G4clhep KF Littrack
 )
 
 GENERATE_LIBRARY()
