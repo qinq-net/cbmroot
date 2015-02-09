@@ -37,7 +37,7 @@ class CbmMvdHitfinder : public FairTask
 
   void Exec(Option_t* opt);
   void UseClusterfinder(Bool_t clusterfinderFlag ){useClusterfinder = clusterfinderFlag;}; //* enable use of external clusterfinder
-  
+  void ShowDebugHistos(){fShowDebugHistos = kTRUE;}
 
 protected:
  
@@ -53,7 +53,8 @@ private:
  TClonesArray* fHits;
 
  UInt_t fHitfinderPluginNr;
- Bool_t useClusterfinder; 
+ Bool_t useClusterfinder;
+ Bool_t fShowDebugHistos; 
 TStopwatch     fTimer;        ///< ROOT timer
 
 // -----   Private methods   ---------------------------------------------

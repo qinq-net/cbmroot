@@ -273,7 +273,7 @@ CbmMvdDigitizeL::CbmMvdDigitizeL(const char* name, Int_t iMode,
     h_ElossVsMomIn(NULL)
 {
   cout << "Starting CbmMvdDigitizeL::CbmMvdDigitizeL() "<< endl;    
-  SetPixelSize(25.);  
+  SetPixelSize(18.4);  
 }
 
 

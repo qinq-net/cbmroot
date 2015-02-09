@@ -92,7 +92,6 @@ CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask()
   fPar1(0.34),
   fPar2(-1.2),
   fCompression(1.),
-  fShowDebugHistos(kFALSE),
   fResolutionHistoX(NULL),
   fResolutionHistoY(NULL),
   fNumberOfSegments(0),
@@ -196,7 +195,6 @@ CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask(const char* name, Int_t iMo
   fPar1(0.34),
   fPar2(-1.2),
   fCompression(1.),
-  fShowDebugHistos(kFALSE),
   fResolutionHistoX(NULL),
   fResolutionHistoY(NULL),
   fNumberOfSegments(0),
@@ -276,7 +274,6 @@ CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask(const char* name, Int_t iMo
     fCurrentParticleMomentum = 0;
     fPixelScanAccelerator    = 0;
 
-    fShowDebugHistos = kFALSE;
 
     fPixelSize = 0.0025;
     fPar0 = 520.;
@@ -345,6 +342,7 @@ InitStatus CbmMvdSensorDigitizerTask::ReadSensorInformation() {
   fLandauGain =sensorData->GetLandauGain();//cout << endl << " Landau Gain is now set to " << fLandauGain << endl;
   fEpiTh=      sensorData->GetEpiThickness();//cout << endl << " Epitaxial thickness is now set to " << fEpiTh << endl;
   fCompression = fPixelSizeX / fPixelSizeY;
+
   if (fCompression != 1)
 	//cout << endl << "working with non uniform pixels" << endl;
   if (fCompression <= 0)
@@ -373,7 +371,7 @@ void CbmMvdSensorDigitizerTask::SetInputArray (TClonesArray* inputStream){
 void CbmMvdSensorDigitizerTask::SetInput(CbmMvdPoint* point){
 
 new((*fInputPoints)[fInputPoints->GetEntriesFast()]) CbmMvdPoint(*((CbmMvdPoint*)point));
-// cout << endl << "New Input registered" << endl;
+
 
 } 
 
@@ -393,22 +391,20 @@ void CbmMvdSensorDigitizerTask::Exec() {
   
 if(fPreviousPlugin)
   {
-  fInputPoints->Clear(); 
+   fInputPoints->Delete();
   fInputPoints->AbsorbObjects(fPreviousPlugin->GetOutputArray());
   }
-fOutputBuffer->Clear();
+fOutputBuffer->Clear("C");
+fDigis->Clear("C");
+fDigiMatch->Clear("C");
 if(fInputPoints->GetEntriesFast() > 0)
   {
-fDigis->Clear();
-fDigiMatch->Clear("C");
-if(fDigiMatch->GetEntriesFast() > 0)
-	cout << endl << "upps" << endl;
 
 for (Int_t iPoint=0; iPoint<fInputPoints->GetEntriesFast(); iPoint++)
     {
-      
+   
      CbmMvdPoint* point=(CbmMvdPoint*)fInputPoints->At(iPoint);
-     
+       
       if (!point) 
 	  {
 	  cout << "-W-" << GetName() << ":: Exec:" <<endl;
@@ -433,17 +429,18 @@ for (Int_t iPoint=0; iPoint<fInputPoints->GetEntriesFast(); iPoint++)
       if ( point->GetPdgCode() > 100000) 
 	  {continue;}
     // Digitize the point
-      ProduceIonisationPoints(point);
-      ProducePixelCharge(point);
+     //cout << endl << " found point make digi" << endl;
+     ProduceIonisationPoints(point);
+     ProducePixelCharge(point);
     } //loop on MCpoints
 
      
  
-  
+ 
 for (Int_t i=0; i<fPixelCharge->GetEntriesFast(); i++)
-	{
-	    CbmMvdPixelCharge* pixel = (CbmMvdPixelCharge*)fPixelCharge->At(i);
-            
+	{ 
+        CbmMvdPixelCharge* pixel = (CbmMvdPixelCharge*)fPixelCharge->At(i);
+           
 	    if ( pixel->GetCharge()>fChargeThreshold )
 	    {
 		Int_t nDigis = fDigis->GetEntriesFast();
@@ -468,25 +465,19 @@ for (Int_t i=0; i<fPixelCharge->GetEntriesFast(); i++)
 		else 
 		{ 
 		//cout << endl << "charge under threshold, digi rejected" << endl;
-}
+		}
 	}
-
-	if (fDigis->GetEntriesFast()> 0)
-	{
-	  
-/*	cout <<  "registered " << fDigis->GetEntriesFast() 
-	     << " new digis out of " << fInputPoints->GetEntriesFast() 
-	     << " Points in Frame " << fcurrentFrameNumber << " on sensor " 
-	     << fSensor->GetName() << endl;  */
-  
-	}
- fPixelCharge->Clear();
- fChargeMap.clear();
- fInputPoints->Delete();
 
  }
+
 else { //cout << endl << "No input found." << endl;
      }
+
+ fPixelCharge->Delete();
+ fChargeMap.clear();
+ fInputPoints->Delete();
+ fSignalPoints.clear();
+ 
 }// end of exec
 
 // -------------------------------------------------------------------------
@@ -515,12 +506,12 @@ void CbmMvdSensorDigitizerTask::ProduceIonisationPoints(CbmMvdPoint* point) {
   fSensor->TopToLocal(globalPositionIn, localPositionIn);
   fSensor->TopToLocal(globalPositionOut, localPositionOut);
 
-  //cout << endl << " partical from global " << globalPositionIn[0] << " to local " << localPositionIn[0] << endl;
+  //if (fShowDebugHistos)cout << endl << " partical from global " << globalPositionIn[0] << " to local " << localPositionIn[0] << endl;
 
   Int_t pixelX, pixelY;
   fSensor->LocalToPixel(&localPositionIn[0],pixelX, pixelY); 
 
-  //cout << endl << "hit pixel nummber " << pixelX << ", " << pixelY << endl;
+  //if (fShowDebugHistos)cout << endl << "hit pixel number " << pixelX << ", " << pixelY << endl;
   // Copy results into variables used by earlier versions
   
   Double_t entryX = localPositionIn [0];
@@ -609,16 +600,16 @@ void CbmMvdSensorDigitizerTask::ProduceIonisationPoints(CbmMvdPoint* point) {
     //Smear the energy on each track segment
      Double_t charge = fLandauRandom->Landau(fLandauGain,fLandauSigma/fLandauMPV);
 
-//      cout << endl << "charge " << charge << endl;
+ //if (fShowDebugHistos )  cout << endl << "charge " << charge << endl;
     
     if (charge>(12000/fLandauMPV)){charge=12000/fLandauMPV;} //limit Random generator behaviour
    
-    if (fShowDebugHistos){fRandomGeneratorTestHisto->Fill(charge*fLandauMPV);}
+    if (fShowDebugHistos ){fRandomGeneratorTestHisto->Fill(charge*fLandauMPV);}
     //Translate the charge to normalized energy
     
 //     cout << endl << "charge after random generator " << charge << endl;
     Double_t dEmean = charge / (fElectronsPerKeV * 1e6);
-//     cout << endl << "dEmean " << dEmean << endl;
+ //   cout << endl << "dEmean " << dEmean << endl;
     fNumberOfSegments = int(trackLength/fSegmentLength) + 1;
 
     dEmean = dEmean*((Double_t)trackLength/fEpiTh);//scale the energy to the track length
@@ -656,12 +647,11 @@ void CbmMvdSensorDigitizerTask::ProduceIonisationPoints(CbmMvdPoint* point) {
 	x = entryXepi + ((double)(i)+0.5)*( lx/( (Double_t)fNumberOfSegments) ); //middle position of the segment; xdirection
         y = entryYepi + ((double)(i)+0.5)*( ly/( (Double_t)fNumberOfSegments) ); //middle position of the segment; ydirection
 
-	if (fShowDebugHistos){
+	if (fShowDebugHistos ){
 	    xDebug=xDebug + x;
 	    yDebug=yDebug + y;
 	    zDebug=zDebug + z;
 	};
-
 
 	SignalPoint* sPoint=&fSignalPoints[i];
 	
@@ -677,8 +667,8 @@ void CbmMvdSensorDigitizerTask::ProduceIonisationPoints(CbmMvdPoint* point) {
 	sPoint->charge = charge;
 	totalSegmentCharge=totalSegmentCharge+charge;
     }
-
-    if (fShowDebugHistos && fSensor->GetZ() <6 ){
+//if (fShowDebugHistos  )cout << endl << "totalSegmentCharge " << totalSegmentCharge << endl;
+    if (fShowDebugHistos  ){
         fTotalSegmentChargeHisto->Fill(totalSegmentCharge*fLandauMPV);
        	fSegResolutionHistoX->Fill(xDebug/fNumberOfSegments - (point->GetX()+point->GetXOut())/2-fSensor->GetX());
 	fSegResolutionHistoY->Fill(yDebug/fNumberOfSegments- (point->GetY()+point->GetYOut())/2-fSensor->GetY());
@@ -779,7 +769,7 @@ void CbmMvdSensorDigitizerTask::ProducePixelCharge(CbmMvdPoint* point) {
     }
 
 
-     //cout << "Scanning from x= " << ixLo << " to " <<ixUp <<" and  y= "<<iyLo<< " to " << iyUp << endl;
+//cout << "Scanning from x= " << ixLo << " to " <<ixUp <<" and  y= "<<iyLo<< " to " << iyUp << endl;
     
     // loop over all pads of interest. 
 fPixelChargeShort.clear();   
@@ -816,14 +806,8 @@ Int_t ix, iy;
 			fCurrentTotalCharge += sPoint->charge;
  			
 			//compute the charge distributed to this pixel by this segment 
-			Float_t totCharge = ((
-				      sPoint->charge * fLorentzNorm *
-				      (0.5*fPar0*fPar1/TMath::Pi())/
-				      TMath::Max(1.e-10, (((Current[0]-xCentre)*(Current[0]-xCentre))+((Current[1]-yCentre)*
-				      (Current[1]-yCentre)))/fPixelSize/fPixelSize+0.25*fPar1*fPar1)+fPar2)
-				     );
-			
- 			
+Float_t totCharge = (sPoint->charge * fLorentzNorm *(0.5*fPar0*fPar1/TMath::Pi())/
+	TMath::Max(1.e-10, (((Current[0]-xCentre)*(Current[0]-xCentre))+((Current[1]-yCentre)*(Current[1]-yCentre)))/fPixelSize/fPixelSize+0.25*fPar1*fPar1)+fPar2);
 			
 			if(totCharge<1){
 			 
@@ -869,7 +853,7 @@ Int_t ix, iy;
 				
 
 			
-			if(fShowDebugHistos){
+			if(fShowDebugHistos ){
 		    	xCharge=xCharge + Current[0] * totCharge;
 		    	yCharge=yCharge + Current[1] * totCharge;
 		    	totClusterCharge=totClusterCharge + totCharge;
@@ -881,6 +865,7 @@ Int_t ix, iy;
     }// for x
 //    cout << endl << "End of loops " << endl;
   std::vector<CbmMvdPixelCharge*>::size_type vectorSize=fPixelChargeShort.size();
+
     for(Int_t f=0;f<vectorSize; f++)
 	{
 	  CbmMvdPixelCharge* pixelCharge =  fPixelChargeShort.at(f);
@@ -894,13 +879,14 @@ Int_t ix, iy;
 	  
 	}
 	
+  
+  
+if (fShowDebugHistos ) {
+//cout << endl << "produced " << fPixelChargeShort.size() << " Digis with total charge of " << totClusterCharge << endl;
   TVector3 momentum, position;
-
+if (totClusterCharge > 0)fTotalChargeHisto->Fill(totClusterCharge); 
   point->Position(position);
   point->Momentum(momentum);
-  
-  
-if (fShowDebugHistos) {
    fPosXY->Fill(position.X(),position.Y());
    fpZ->Fill(momentum.Z());
   fPosXinIOut->Fill(point->GetZ()-point->GetZOut());
@@ -984,6 +970,7 @@ InitStatus initSuccess=ReadSensorInformation();
   // Initialize histogramms used for debugging  
    
   if (fShowDebugHistos) {
+	cout << endl << "Show debug histos in this Plugin" << endl;
 	fRandomGeneratorTestHisto = new TH1F("TestHisto","TestHisto",1000,0,12000);
 	fResolutionHistoX=new TH1F ("DigiResolutionX","DigiResolutionX", 1000, -.005,.005);
 	fResolutionHistoY=new TH1F ("DigiResolutionY","DigiResolutionY", 1000, -.005,.005);

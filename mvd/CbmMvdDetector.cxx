@@ -38,7 +38,8 @@ CbmMvdDetector::CbmMvdDetector()
     fSensorArrayFilled(kFALSE),
     initialized(kFALSE),
     fepsilon(),
-    fParameter()
+    fParameter(),
+    fFinished(kFALSE)
 {
 
   Fatal (GetName(), " - Do not use standard constructor");
@@ -67,7 +68,8 @@ CbmMvdDetector::CbmMvdDetector(const char* name)
     fSensorArrayFilled(kFALSE),
     initialized(kFALSE),
     fepsilon(),
-    fParameter()
+    fParameter(),
+    fFinished(kFALSE)
 {
  
   if(fInstance) {Fatal(GetName(), " - Error, singleton does already exist.");}
@@ -257,6 +259,20 @@ if(!initialized)
 }
 //-----------------------------------------------------------------------
 
+//-----------------------------------------------------------------------
+void CbmMvdDetector::ShowDebugHistos(){ 
+ 
+  Int_t nSensors=fSensorArray->GetEntriesFast();
+  CbmMvdSensor* sensor;
+
+  for(Int_t j = 0; j < nSensors; j++)
+    {
+    sensor=(CbmMvdSensor*)fSensorArray->At(j);
+    sensor->ShowDebugHistos();
+    }
+ 
+}
+//-----------------------------------------------------------------------
 
 //-----------------------------------------------------------------------
 void CbmMvdDetector::SendInput(TClonesArray* input){
@@ -285,7 +301,7 @@ void CbmMvdDetector::SendInput(TClonesArray* input){
   	
 	        if (point->GetDetectorID() == sensor->GetDetectorID())
 	           {
-                   sensor->SendInput(point);
+                  sensor->SendInput(point);
                    }
                 }
         }
@@ -410,7 +426,6 @@ void CbmMvdDetector::Exec(UInt_t nLevel){
   
   Int_t nSensors=fSensorArray->GetEntriesFast();
   CbmMvdSensor* sensor;
- // #pragma omp parallel for
   for(Int_t i=0; i<nSensors; i++){
     sensor=(CbmMvdSensor*)fSensorArray->At(i);
     sensor->Exec(nLevel);
@@ -433,7 +448,6 @@ TClonesArray* CbmMvdDetector::GetCurrentEvent(){
   /**
    * Method used for debugging, Plugins have to hold there output until next call
    */
-  
   Int_t nSensors = fSensorArray->GetEntriesFast();
   CbmMvdSensor* sensor;
   for(Int_t i=0; i<nSensors; i++){
@@ -459,7 +473,11 @@ TClonesArray* CbmMvdDetector::GetOutputHits(){
   CbmMvdSensor* sensor;
   for(Int_t i=0; i<nSensors; i++){
     sensor=(CbmMvdSensor*)fSensorArray->At(i);
+    Int_t length = sensor->GetOutputArrayLen(sensor->GetHitPlugin());
+    if(length >= 0)
+	{
     foutputHits->AbsorbObjects(sensor->GetOutputBuffer(),0,sensor->GetOutputBuffer()->GetEntriesFast()-1);
+	}
   }
 
 return(foutputHits);
@@ -475,11 +493,15 @@ TClonesArray* CbmMvdDetector::GetOutputDigis(){
    
   Int_t nSensors = fSensorArray->GetEntriesFast();
   CbmMvdSensor* sensor;
-  
   for(Int_t i=0; i<nSensors; i++){
     sensor=(CbmMvdSensor*)fSensorArray->At(i);
     fDigiPlugin = sensor->GetDigiPlugin();
-    foutputDigis->AbsorbObjects(sensor->GetOutputArray(fDigiPlugin),0,sensor->GetOutputArray(fDigiPlugin)->GetEntriesFast()-1);
+    Int_t length = sensor->GetOutputArrayLen(fDigiPlugin);
+    if(length >= 0)
+	{
+    	foutputDigis->AbsorbObjects(sensor->GetOutputArray(fDigiPlugin),0,length);
+        foutputDigiMatchs->AbsorbObjects(sensor->GetOutputMatch(),0,length);
+	}
   }
 
 return(foutputDigis);
@@ -492,15 +514,6 @@ TClonesArray* CbmMvdDetector::GetOutputDigiMatchs(){
    /**
    * method used to write digiMatches to hd
    */
-   
-  Int_t nSensors = fSensorArray->GetEntriesFast();
-  CbmMvdSensor* sensor;
-  
-  for(Int_t i=0; i<nSensors; i++){
-    sensor=(CbmMvdSensor*)fSensorArray->At(i);
-    fDigiPlugin = sensor->GetDigiPlugin();
-    foutputDigiMatchs->AbsorbObjects(sensor->GetOutputMatch(fDigiPlugin),0,sensor->GetOutputMatch(fDigiPlugin)->GetEntriesFast()-1);
-  }
 
 return(foutputDigiMatchs);
 }
@@ -508,14 +521,17 @@ return(foutputDigiMatchs);
 
 //-----------------------------------------------------------------------  
 TClonesArray* CbmMvdDetector::GetOutputCluster(){
-
+   /**
+   * method used to write Cluster to hd
+   */
   Int_t nSensors = fSensorArray->GetEntriesFast();
   CbmMvdSensor* sensor;
-  
   for(Int_t i=0; i<nSensors; i++){
     sensor=(CbmMvdSensor*)fSensorArray->At(i);
     fClusterPlugin = sensor->GetClusterPlugin();
-    foutputCluster->AbsorbObjects(sensor->GetOutputArray(fClusterPlugin),0,sensor->GetOutputArray(fClusterPlugin)->GetEntriesFast()-1);
+    Int_t length = sensor->GetOutputArrayLen(fClusterPlugin);
+    if(length >= 0)
+    foutputCluster->AbsorbObjects(sensor->GetOutputArray(fClusterPlugin),0,length);
   }
 
 return(foutputCluster);
@@ -532,26 +548,34 @@ TClonesArray* CbmMvdDetector::GetOutputArray(Int_t nPlugin){
    /**
    * method used to write processed events to hd
    */
-   
+
   Int_t nSensors = fSensorArray->GetEntriesFast();
   CbmMvdSensor* sensor;
   for(Int_t i=0; i<nSensors; i++){
     sensor=(CbmMvdSensor*)fSensorArray->At(i);
-    foutputDigis->AbsorbObjects(sensor->GetOutputArray(nPlugin),0,sensor->GetOutputArray(nPlugin)->GetEntriesFast()-1);
-  }
-
+    Int_t length = sensor->GetOutputArrayLen(nPlugin);
+    if(length >= 0)
+	{
+        foutputDigis->AbsorbObjects(sensor->GetOutputArray(nPlugin),0,length);
+        foutputDigiMatchs->AbsorbObjects(sensor->GetOutputMatch(),0,length);
+	}  
+}
 return(foutputDigis);
 } 
 //-----------------------------------------------------------------------
 
 //-----------------------------------------------------------------------    
 void CbmMvdDetector::Finish(){
-  Int_t nSensors = fSensorArray->GetEntriesFast();
-  CbmMvdSensor* sensor;
-for(Int_t i=0; i<nSensors; i++){
-    sensor=(CbmMvdSensor*)fSensorArray->At(i);
-    sensor->Finish();
-  }
+if(!fFinished)
+	{
+  	Int_t nSensors = fSensorArray->GetEntriesFast();
+ 	 CbmMvdSensor* sensor;
+	for(Int_t i=0; i<nSensors; i++){
+    		sensor=(CbmMvdSensor*)fSensorArray->At(i);
+    		sensor->Finish();
+  		}
+	fFinished = kTRUE;
+	}
 }
 //-----------------------------------------------------------------------
 

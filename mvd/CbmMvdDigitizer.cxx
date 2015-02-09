@@ -42,7 +42,8 @@ CbmMvdDigitizer::CbmMvdDigitizer()
     fRandGen(),
     fPileupManager(NULL),
     fDeltaManager(NULL),
-    fTimer()
+    fTimer(),
+    fShowDebugHistos(kFALSE)
 {
 
 }
@@ -68,7 +69,8 @@ CbmMvdDigitizer::CbmMvdDigitizer(const char* name, Int_t iMode, Int_t iVerbose)
     fRandGen(),
     fPileupManager(NULL),
     fDeltaManager(NULL),
-    fTimer()    
+    fTimer(),
+    fShowDebugHistos(kFALSE)    
 {
 }
 // -------------------------------------------------------------------------
@@ -102,10 +104,11 @@ if(fInputPoints->GetEntriesFast() > 0)
    fDetector->Exec(fDigiPluginNr);
    if(fVerbose) cout << "End Chain" << endl;
    if(fVerbose) cout << "Start writing Digis" << endl;  
-   fDigis->AbsorbObjects(fDetector->GetOutputArray(fDigiPluginNr),0,fDetector->GetOutputArray(fDigiPluginNr)->GetEntriesFast()-1); 
+   fDigis->AbsorbObjects(fDetector->GetOutputDigis(),0,fDetector->GetOutputArray(fDigiPluginNr)->GetEntriesFast()-1); 
    if(fVerbose) cout << "Total of " << fDigis->GetEntriesFast() << " digis in this Event" << endl;
    if(fVerbose) cout << "Start writing DigiMatchs" << endl;  
-   fDigiMatch->AbsorbObjects(fDetector->GetOutputDigiMatchs(),0,fDetector->GetOutputDigiMatchs()->GetEntriesFast()-1); 
+   fDigiMatch->AbsorbObjects(fDetector->GetOutputDigiMatchs(),0,fDetector->GetOutputDigiMatchs()->GetEntriesFast()-1);
+   if(fVerbose) cout << "Total of " << fDigiMatch->GetEntriesFast() << " digisMatch in this Event" << endl; 
    if(fVerbose) cout  << "//----------------------------------------//" << endl ;
    LOG(INFO) << "+ " << setw(20) << GetName() << ": Created: " 
         << fDigis->GetEntriesFast() << " digis in " 
@@ -203,6 +206,7 @@ InitStatus CbmMvdDigitizer::Init() {
    
     fDetector->AddPlugin(digiTask);
     fDigiPluginNr = (UInt_t) (fDetector->GetPluginArraySize());
+    if(fShowDebugHistos) fDetector->ShowDebugHistos();
     fDetector->Init();
    
 
@@ -294,6 +298,7 @@ void CbmMvdDigitizer::BuildEvent() {
 
       // Select random event from vector and remove it after usage
       Int_t index = gRandom->Integer(freeEvents.size());
+      
       Int_t iEvent = freeEvents[index];
       TClonesArray* points = fPileupManager->GetEvent(iEvent);
       freeEvents.erase(freeEvents.begin() + index);
@@ -302,10 +307,10 @@ void CbmMvdDigitizer::BuildEvent() {
       for (Int_t iPoint=0; iPoint<points->GetEntriesFast(); iPoint++) {
 	point = (CbmMvdPoint*) points->At(iPoint);
 	point->SetTrackID(-2);
-	
 	nPile++;
+new((*fInputPoints)[fInputPoints->GetEntriesFast()]) CbmMvdPoint(*((CbmMvdPoint*)points->At(iPoint)));
       }
-      fInputPoints->AbsorbObjects(points);
+
 	
     }   // Pileup event loop
 
@@ -334,10 +339,10 @@ void CbmMvdDigitizer::BuildEvent() {
       for (Int_t iPoint=0; iPoint<pointsD->GetEntriesFast(); iPoint++) {
 	point = (CbmMvdPoint*) pointsD->At(iPoint);
 	point->SetTrackID(-3); // Mark the points as delta electron
-	
+	new((*fInputPoints)[fInputPoints->GetEntriesFast()]) CbmMvdPoint(*((CbmMvdPoint*)pointsD->At(iPoint)));
       nElec++;
       }
-     fInputPoints->AbsorbObjects(pointsD);
+
 
     }  // Delta electron event loop
 

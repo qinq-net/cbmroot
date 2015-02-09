@@ -91,7 +91,7 @@ class CbmMvdDetector : public TNamed
   void Init();
   void SetMisalignment(Float_t misalignment[3]){for(Int_t i = 0; i<3; i++) fepsilon[i] = misalignment[i];}; 
   void SetParameterFile(CbmMvdStationPar* parameter){fParameter = parameter;};
-  
+  void ShowDebugHistos();
   /** Data Processing */
   
   void ExecChain(); //Processes the full execution chain
@@ -131,6 +131,8 @@ private:
   static CbmMvdDetector* fInstance;
   Bool_t fSensorArrayFilled;
   Bool_t initialized;
+  Bool_t fFinished;
+
 
   CbmMvdStationPar* fParameter;
 

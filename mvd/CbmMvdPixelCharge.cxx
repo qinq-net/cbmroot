@@ -121,7 +121,8 @@ void CbmMvdPixelCharge::DigestCharge(Float_t pointX, Float_t pointY, Int_t point
 }
 
 // -----   Destructor   ----------------------------------------------------
-CbmMvdPixelCharge::~CbmMvdPixelCharge(){}
+CbmMvdPixelCharge::~CbmMvdPixelCharge(){
+}
 // -------------------------------------------------------------------------
 
 ClassImp(CbmMvdPixelCharge)

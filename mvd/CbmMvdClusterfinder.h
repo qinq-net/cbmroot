@@ -41,7 +41,7 @@ class CbmMvdClusterfinder : public FairTask
 
   void Exec(Option_t* opt);
 
-  
+  void ShowDebugHistos(){fShowDebugHistos = kTRUE;}
 protected:
  
  
@@ -50,12 +50,12 @@ protected:
 private:
 /** Hit producer mode (0 = MAPS, 1 = Ideal) **/
   Int_t fMode;
-
+  Bool_t fShowDebugHistos;
  CbmMvdDetector* fDetector;
  
  TClonesArray* fInputDigis;
  TClonesArray* fCluster;
-
+  
  UInt_t fClusterPluginNr;
 
   TString	fBranchName;   // Name of input branch (MvdDigi)

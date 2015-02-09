@@ -479,7 +479,7 @@ void CbmMvdFindHits::Exec(Option_t* opt) {
 	    }
 
 	    if( ( GetAdcCharge(digi->GetCharge())>=fSeedThreshold ) && ( pixelUsed->At(iDigi)==kFALSE ) ){
-
+cout << endl << "found pixel" << endl;
 		clusterArray->clear();
 		clusterArray->push_back(iDigi);
 		

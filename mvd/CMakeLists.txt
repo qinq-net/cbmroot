@@ -3,9 +3,30 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 Set(INCLUDE_DIRECTORIES
-  ${CBMROOT_SOURCE_DIR}/cbmdata
-  ${CBMROOT_SOURCE_DIR}/cbmdata/mvd
-  ${CBMROOT_SOURCE_DIR}/mvd 
+${CBMROOT_SOURCE_DIR}/mvd 
+
+${CBMROOT_SOURCE_DIR}/cbmbase 
+
+${CBMROOT_SOURCE_DIR}/cbmdata
+${CBMROOT_SOURCE_DIR}/cbmdata/sts
+
+${CBMROOT_SOURCE_DIR}/cbmdata/mvd
+${CBMROOT_SOURCE_DIR}/cbmdata/global
+
+
+${CBMROOT_SOURCE_DIR}/sts
+
+${CBMROOT_SOURCE_DIR}/KF
+${CBMROOT_SOURCE_DIR}/KF/Interface 
+
+${CBMROOT_SOURCE_DIR}/much/geo
+
+${CBMROOT_SOURCE_DIR}/rich
+
+${CBMROOT_SOURCE_DIR}/littrack
+${CBMROOT_SOURCE_DIR}/littrack/cbm
+${CBMROOT_SOURCE_DIR}/littrack/std/
+
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
@@ -46,6 +67,8 @@ SensorDataSheets/CbmMvdSensorDataSheet.cxx
 
 tools/CbmMvdGeoHandler.cxx
 
+qa/CbmMvdQa.cxx
+
 CbmMvd.cxx 
 CbmMvdContFact.cxx 
 CbmMvdGeo.cxx 
@@ -64,6 +87,8 @@ old/CbmMvdFindHits.cxx
 old/CbmMvdDigitizeL.cxx 
 old/CbmMvdHitProducer.cxx 
 old/MyG4UniversalFluctuationForSi.cxx
+
+
 )
 #CbmMvdMatchTracks.cxx 
 
@@ -71,7 +96,7 @@ old/MyG4UniversalFluctuationForSi.cxx
 set(LINKDEF MvdLinkDef.h)
 Set(LIBRARY_NAME Mvd)
 Set(DEPENDENCIES
-    CbmBase CbmData Base G4clhep 
+    CbmBase CbmData Base G4clhep KF Littrack
 )
 
 GENERATE_LIBRARY()

@@ -106,7 +106,7 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   Int_t ReadSensorGeometry(TString volName, TString nodeName);
   
   void Init();
-  
+  void ShowDebugHistos();
   /** Plugin Controll */
   
   void SetPluginList(TObjArray* pluginArray){fPluginArray=pluginArray;};
@@ -136,8 +136,8 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   
   TClonesArray* GetOutputBuffer();
   TClonesArray* GetOutputArray(Int_t nPlugin);
-  TClonesArray* GetOutputMatch(Int_t nPlugin);
- 
+  TClonesArray* GetOutputMatch();
+  Int_t         GetOutputArrayLen(Int_t nPlugin);
  
  
   
@@ -150,6 +150,7 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   Int_t        fDetectorID;       // unique Detector ID
   Int_t        fDigiPlugin;
   Int_t        fHitPlugin;
+  Int_t        fDigiLen;
   Int_t        fClusterPlugin;
   TString      fVolName;	  // Name of the volume attached to this sensor
   TString      fNodeName;	  // full name of the volume (including path) of the volume

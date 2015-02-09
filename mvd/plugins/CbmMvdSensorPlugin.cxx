@@ -15,7 +15,8 @@ CbmMvdSensorPlugin::CbmMvdSensorPlugin()
    fNextPlugin(NULL), 
    fPreviousPlugin(NULL),
    bFlag(false),
-   initialized(kFALSE)
+   initialized(kFALSE),
+   fShowDebugHistos(kFALSE)
 {
 }
 // -------------------------------------------------------------------------

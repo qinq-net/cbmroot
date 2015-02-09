@@ -322,6 +322,20 @@ ReadSensorGeometry(fVolName, fNodeName);
 initialized = kTRUE;
 }
 // -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
+void CbmMvdSensor::ShowDebugHistos(){
+if(fDetectorID == 1)
+	{
+	CbmMvdSensorPlugin* pluginLast;
+	pluginLast=(CbmMvdSensorPlugin*)fPluginArray->At(fPluginArray->GetEntriesFast()-1);
+	cout << endl << "Set debug mode on Plugin " << fPluginArray->GetEntriesFast()-1 << " at sensor " << GetName() << endl;
+	pluginLast->ShowDebugHistos();
+	}
+}
+
+
+// -------------------------------------------------------------------------
 void CbmMvdSensor::SendInput(CbmMvdPoint* point){
   
       CbmMvdSensorPlugin* pluginFirst;
@@ -420,10 +434,10 @@ if(ana)
 	FairEventHeader* event = ana->GetEventHeader();
 	fcurrentEventTime = event->GetEventTime();
 	}
-foutputDigis->Clear();
-foutputDigiMatch->Clear();
-foutputCluster->Clear();
-foutputBuffer->Clear();
+foutputDigis->Clear("C");
+foutputDigiMatch->Clear("C");
+foutputCluster->Clear("C");
+foutputBuffer->Clear("C");
 
 
    CbmMvdSensorPlugin* plugin;
@@ -447,7 +461,10 @@ foutputBuffer->Clear();
 // -------------------------------------------------------------------------
 
 void CbmMvdSensor::Exec(UInt_t nPlugin){
-  
+  foutputDigis->Clear("C");
+foutputDigiMatch->Clear("C");
+foutputCluster->Clear("C");
+foutputBuffer->Clear("C");
   Int_t nPluginMax=fPluginArray->GetEntriesFast();
   
   if(nPlugin>nPluginMax) {Fatal(GetName()," Error - Called non-existing plugin");}
@@ -462,6 +479,11 @@ void CbmMvdSensor::ExecTo(UInt_t nPlugin)
 FairRunSim* run = FairRunSim::Instance();
 FairPrimaryGenerator* gen = run->GetPrimaryGenerator();
 FairMCEventHeader* event = gen->GetEvent();
+
+foutputDigis->Delete();
+foutputCluster->Delete();
+foutputDigiMatch->Clear("C");
+foutputBuffer->Clear("C");
 
 fcurrentEventTime = event->GetT();
   
@@ -524,49 +546,66 @@ else {cout << endl << "nPlugin to large" << endl;}
 // -------------------------------------------------------------------------   
 TClonesArray* CbmMvdSensor::GetOutputArray(Int_t nPlugin){
 
-if (nPlugin<fPluginArray->GetEntriesFast())
-{
-  CbmMvdSensorPlugin* plugin=(CbmMvdSensorPlugin*)fPluginArray->At(nPlugin);
-  TString digitizername = "CbmMvdSensorDigitizerTask";
-  TString clustername = "CbmMvdSensorClusterfinderTask";
-      
-      if (plugin->ClassName()  == digitizername)
+if(nPlugin == fHitPlugin)
+	GetOutputBuffer();
+else if (nPlugin == fDigiPlugin)
 	  {
           CbmMvdSensorDigitizerTask* digiplugin = (CbmMvdSensorDigitizerTask*)fPluginArray->At(nPlugin);
-	  foutputDigis->AbsorbObjects(digiplugin->GetOutputArray(),0,digiplugin->GetOutputArray()->GetEntriesFast()-1);
-	  return foutputDigis;
+	  Int_t ArrayLength = digiplugin->GetOutputArray()->GetEntriesFast()-1;
+	  if(ArrayLength >= 0)
+		{
+	  	foutputDigis->AbsorbObjects(digiplugin->GetOutputArray(),0,ArrayLength);
+	  	foutputDigiMatch->AbsorbObjects(digiplugin->GetMatchArray(),0,ArrayLength);
+		//cout << endl << "got digis " << foutputDigis->GetEntriesFast() << " and matches " << foutputDigiMatch->GetEntriesFast() << endl;
+		}
+	  return(foutputDigis);
 	  } 
-      else if (plugin->ClassName()  == clustername)
+else if (nPlugin == fClusterPlugin)
 	  {
 	  CbmMvdSensorClusterfinderTask* clusterplugin = (CbmMvdSensorClusterfinderTask*)fPluginArray->At(nPlugin);
-	  foutputCluster->AbsorbObjects(clusterplugin->GetOutputArray(),0,clusterplugin->GetOutputArray()->GetEntriesFast()-1);
-	  return foutputCluster;
+          Int_t ArrayLength = clusterplugin->GetOutputArray()->GetEntriesFast()-1;
+	  if(ArrayLength >= 0)
+	  	foutputCluster->AbsorbObjects(clusterplugin->GetOutputArray(),0,ArrayLength);
+	  return(foutputCluster);
 	  } 
-      else
+else
 	{ 
 	LOG(FATAL) << "undefined plugin called" << FairLogger::endl;
 	}
- }
-  else {cout << endl << "Error nPlugin to high" << endl;}
 }    
 // -------------------------------------------------------------------------   
 
 // -------------------------------------------------------------------------   
-TClonesArray* CbmMvdSensor::GetOutputMatch(Int_t nPlugin){
+Int_t CbmMvdSensor::GetOutputArrayLen(Int_t nPlugin){
 
-if (nPlugin<fPluginArray->GetEntriesFast())
-{
-  CbmMvdSensorPlugin* plugin=(CbmMvdSensorPlugin*)fPluginArray->At(nPlugin);
-  if (nPlugin == fDigiPlugin)
-	{
-	  foutputDigiMatch->AbsorbObjects(plugin->GetMatchArray(),0,plugin->GetMatchArray()->GetEntriesFast()-1);
-	return (foutputDigiMatch);
+GetOutputArray(nPlugin); //** make sure that the arrays are filled 
+
+if (nPlugin == fDigiPlugin)
+	  {
+	  return(foutputDigis->GetEntriesFast()-1);
+	  }  
+else if (nPlugin == fClusterPlugin)
+	  {
+	  return(foutputCluster->GetEntriesFast()-1);
+	  } 
+else if (nPlugin == fHitPlugin)
+	  {
+	  return(foutputBuffer->GetEntriesFast()-1);
+	  } 
+
+else
+	{ 
+	LOG(FATAL) << "undefined plugin called" << FairLogger::endl;
 	}
-  else
-	return NULL;
-  
- }
-  else {cout << endl << "Error nPlugin to high" << endl;}
+
+}    
+// -------------------------------------------------------------------------   
+
+// -------------------------------------------------------------------------   
+TClonesArray* CbmMvdSensor::GetOutputMatch(){
+
+  return(foutputDigiMatch);
+
 }    
 // ------------------------------------------------------------------------- 
 
@@ -574,9 +613,10 @@ if (nPlugin<fPluginArray->GetEntriesFast())
 // -------------------------------------------------------------------------
 TClonesArray* CbmMvdSensor::GetOutputBuffer(){
 
+
+
   CbmMvdSensorPlugin* plugin=(CbmMvdSensorPlugin*)fPluginArray->At(fPluginArray->GetLast());
   foutputBuffer->AbsorbObjects(plugin->GetOutputArray(),0,plugin->GetOutputArray()->GetEntriesFast()-1);
-  //foutputBuffer->Print();
   return (foutputBuffer);
      
 } 

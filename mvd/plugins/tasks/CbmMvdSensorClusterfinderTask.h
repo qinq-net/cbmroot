@@ -95,7 +95,6 @@ public:
     void SetHitPosErrX( Double_t errorX ) { errorX = fHitPosErrX; }
     void SetHitPosErrY( Double_t errorY ) { errorY = fHitPosErrY; }
     void SetHitPosErrZ( Double_t errorZ ) { errorZ = fHitPosErrZ; }
-    void ShowDebugHistograms(){fShowDebugHistos=kTRUE;}
 
     void UpdateDebugHistos(CbmMvdCluster* cluster);
 
@@ -148,7 +147,6 @@ private:
     Double_t fSigmaNoise;
     Double_t fSeedThreshold;
     Double_t fNeighThreshold;
-    Bool_t fShowDebugHistos;
     Bool_t fUseMCInfo;
     Bool_t inputSet;
 

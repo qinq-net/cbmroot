@@ -84,7 +84,6 @@ class CbmMvdSensorDigitizerTask : public CbmMvdSensorTask
   void SetWidthOfCluster(Double_t widthOfCluster)   { fWidthOfCluster = widthOfCluster;   }
   void SetCutOnDeltaRays(Double_t cutOnDeltaRays)   { fCutOnDeltaRays = cutOnDeltaRays;   }
   void SetChargeThreshold(Float_t chargeThreshold) { fChargeThreshold = chargeThreshold; }
-  void ShowDebugHistograms() {fShowDebugHistos = kTRUE;}
 
   
 
@@ -145,7 +144,6 @@ public:
 
     Double_t fCompression;
 
-    Bool_t fShowDebugHistos;
     TH1F* fResolutionHistoX;
     TH1F* fResolutionHistoY;
 

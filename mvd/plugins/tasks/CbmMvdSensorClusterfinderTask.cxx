@@ -47,7 +47,6 @@ CbmMvdSensorClusterfinderTask::CbmMvdSensorClusterfinderTask()
     fSigmaNoise(15.),
     fSeedThreshold(1.),
     fNeighThreshold(1.),
-    fShowDebugHistos(kFALSE),
     fUseMCInfo(kFALSE),
     fLayerRadius(0.),
     fLayerRadiusInner(0.),
@@ -111,7 +110,6 @@ CbmMvdSensorClusterfinderTask::CbmMvdSensorClusterfinderTask(const char* name, I
     fSigmaNoise(15.),
     fSeedThreshold(1.),
     fNeighThreshold(1.),
-    fShowDebugHistos(kFALSE),
     fUseMCInfo(kFALSE),
     fLayerRadius(0.),
     fLayerRadiusInner(0.),
@@ -152,11 +150,9 @@ void CbmMvdSensorClusterfinderTask::Init(CbmMvdSensor* mysensor) {
     fAdcStepSize  = fAdcDynamic/fAdcSteps;
 
 
-
-
 initialized = kTRUE;
 
-if(fSensor->GetDetectorID() == 1)
+if(fShowDebugHistos)
 {
     fResolutionHistoX=new TH1F("SinglePointResolution_X","SinglePointResolution_X",10000,-0.0100,0.0100);
     fResolutionHistoY=new TH1F("SinglePointResolution_Y","SinglePointResolution_Y",10000,-0.0100,0.0100);
@@ -348,7 +344,7 @@ Int_t refId;
 			clusterNew->SetPixelMap(ftempPixelMap);
 			ftempPixelMap.clear();
 
-	  		if(fSensor->GetDetectorID() == 1) UpdateDebugHistos(clusterNew);	
+	  		if(fShowDebugHistos) UpdateDebugHistos(clusterNew);	
     				
 	    }// if AdcCharge>threshold
 		else {//cout << endl << "pixel is with " <<  digi->GetCharge() << " under Threshold or used" << endl;
@@ -592,8 +588,9 @@ void CbmMvdSensorClusterfinderTask::UpdateDebugHistos(CbmMvdCluster* cluster){
 //--------------------------------------------------------------------------
 void CbmMvdSensorClusterfinderTask::Finish() {
    
-
-   /* cout << "\n============================================================" << endl;
+if(fShowDebugHistos)
+	{  
+    cout << "\n============================================================" << endl;
     cout << "-I- " << GetName() << "::Finish: Total events skipped: " << fCounter << endl;
     cout << "============================================================" << endl;
     cout << "-I- Parameters used" << endl;
@@ -604,10 +601,9 @@ void CbmMvdSensorClusterfinderTask::Finish() {
     cout << "ADC - Bits			: " << fAdcBits << endl;
     cout << "ADC - Dynamic [electrons]	: " << fAdcDynamic << endl;
     cout << "ADC - Offset [electrons]	: " << fAdcOffset << endl;
-    cout << "============================================================" << endl;*/
+    cout << "============================================================" << endl;
     
-if(fSensor->GetDetectorID() == 1 && fVerbose > 1)
-	{    
+  
     	TH1F* histo;
     	TH2F* clusterShapeHistogram;
       	TCanvas* canvas2=new TCanvas("HitFinderCharge","HitFinderCharge");

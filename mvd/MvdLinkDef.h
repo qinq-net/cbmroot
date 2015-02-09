@@ -40,6 +40,9 @@
 
 #pragma link C++ class CbmMvdGeoHandler+;
 
+#pragma link C++ class CbmMvdQa+;
+
+
 #pragma link C++ class MyG4UniversalFluctuationForSi+;
 #pragma link C++ class CbmMvdFindHits+;
 #pragma link C++ class CbmMvdDigitizeL+;

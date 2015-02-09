@@ -31,7 +31,8 @@ CbmMvdClusterfinder::CbmMvdClusterfinder()
     fClusterPluginNr(),
     fBranchName(""),
     fTimer(),
-    fRandGen()
+    fRandGen(),
+    fShowDebugHistos(kFALSE)
 {
 }
 // -------------------------------------------------------------------------
@@ -46,7 +47,8 @@ CbmMvdClusterfinder::CbmMvdClusterfinder(const char* name, Int_t iMode, Int_t iV
     fClusterPluginNr(0),
     fBranchName("MvdDigi"),
     fTimer(),
-    fRandGen()
+    fRandGen(),
+    fShowDebugHistos(kFALSE)
 {
 }
 // -------------------------------------------------------------------------
@@ -68,7 +70,7 @@ void CbmMvdClusterfinder::Exec(Option_t* opt){
 fTimer.Start();
 	
 fCluster->Delete();
-if(fInputDigis->GetEntriesFast() > 0)
+if(fInputDigis && fInputDigis->GetEntriesFast() > 0)
    {
    if(fVerbose) cout << "//----------------------------------------//";
    if(fVerbose) cout << endl << "Send Input" << endl;
@@ -138,6 +140,7 @@ InitStatus CbmMvdClusterfinder::Init() {
    
     fDetector->AddPlugin(clusterTask);
     fClusterPluginNr = (UInt_t) (fDetector->GetPluginArraySize());
+    if(fShowDebugHistos)fDetector->ShowDebugHistos();
     fDetector->Init();
    
 

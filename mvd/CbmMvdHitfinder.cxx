@@ -32,7 +32,8 @@ CbmMvdHitfinder::CbmMvdHitfinder()
     fHits(NULL),
     fHitfinderPluginNr(0),
     useClusterfinder(kFALSE),
-    fTimer()
+    fTimer(),
+    fShowDebugHistos(kFALSE)
 {
 }
 // -------------------------------------------------------------------------
@@ -46,7 +47,8 @@ CbmMvdHitfinder::CbmMvdHitfinder(const char* name, Int_t iMode, Int_t iVerbose)
     fHits(NULL),
     fHitfinderPluginNr(0),
     useClusterfinder(kFALSE),
-    fTimer()
+    fTimer(),
+    fShowDebugHistos(kFALSE)
 {
 }
 // -------------------------------------------------------------------------
@@ -146,6 +148,7 @@ InitStatus CbmMvdHitfinder::Init() {
 	}
 
     fHitfinderPluginNr = (UInt_t) (fDetector->GetPluginArraySize());
+    if(fShowDebugHistos) fDetector->ShowDebugHistos();
     fDetector->Init(); 
 
 

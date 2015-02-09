@@ -58,6 +58,7 @@ class CbmMvdSensorPlugin : public TObject
   
   bool	  PluginReady(){return (bFlag);};
   void  SetPluginReady(bool flag) {bFlag = flag;}
+  void  ShowDebugHistos(){fShowDebugHistos = kTRUE;}
 
   Bool_t IsInit(){return(initialized);}
   /** data members **/
@@ -68,7 +69,7 @@ class CbmMvdSensorPlugin : public TObject
 protected:
     bool 	bFlag;
     Bool_t initialized;
-
+    Bool_t fShowDebugHistos;
 private:
   CbmMvdSensorPlugin& operator=(const CbmMvdSensorPlugin&);
   CbmMvdSensorPlugin(const CbmMvdSensorPlugin&);
