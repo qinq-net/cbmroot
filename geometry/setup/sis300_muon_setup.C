@@ -38,10 +38,10 @@ static Double_t fieldZ;
 static Double_t fieldScale;
 static Int_t    fieldSymType;
 
+static TString defaultInputFile;
+
 void sis300_muon_setup()
 {
-  FairLogger* logger = FairLogger::GetLogger();
-
   // -----   Magnetic field   -----------------------------------------------
   fieldMap     = "field_v12b";   // name of field map
   fieldZ       = 40.;            // field centre z position
@@ -75,5 +75,11 @@ void sis300_muon_setup()
   psdZpos = 1500.;
   psdXpos = 10.;
 
-  cout<<"Reading geometry setup and magnetic field settings from "<< gSystem->UnixPathName(gInterpreter->GetCurrentMacroName())<<endl;
+  // ------ Input file ------------------------------------------------------
+
+  defaultInputFile = "/input/urqmd.auau.25gev.centr.root";
+
+  cout << "Reading geometry setup and magnetic field settings from "
+       << gSystem->UnixPathName(gInterpreter->GetCurrentMacroName())
+       << endl;
 }
