@@ -17,6 +17,7 @@
 #include "FairLogger.h"
 
 #include <iostream>
+#include <fstream>
 
 CbmFlibFileSourceNew::CbmFlibFileSourceNew()
   : FairSource(),
@@ -71,6 +72,12 @@ Bool_t CbmFlibFileSourceNew::Init()
     fFileName = tmp->GetString();
 
     LOG(INFO) << "Open the Flib input file " << fFileName << FairLogger::endl;
+    // Check if the input file exist
+    FILE* inputFile = fopen(fFileName.Data(), "r");
+    if ( ! inputFile )  {
+      LOG(FATAL) << "Input file " << fFileName << " doesn't exist." << FairLogger::endl;
+    }
+    fclose(inputFile);
     fSource = new fles::TimesliceInputArchive(fFileName.Data());
     if ( !fSource) { 
       LOG(FATAL) << "Could not open input file." << FairLogger::endl;
@@ -141,6 +148,12 @@ Int_t CbmFlibFileSourceNew::ReadEvent()
 	dynamic_cast<TObjString*>(fInputFileList.At(fFileCounter));
       fFileName = tmp->GetString();
       LOG(INFO) << "Open the Flib input file " << fFileName << FairLogger::endl;
+      // Check if the input file exist
+      FILE* inputFile = fopen(fFileName.Data(), "r");
+      if ( ! inputFile )  {
+        LOG(FATAL) << "Input file " << fFileName << " doesn't exist." << FairLogger::endl;
+      }
+      fclose(inputFile);
       fSource = new fles::TimesliceInputArchive(fFileName.Data());
     }
     */

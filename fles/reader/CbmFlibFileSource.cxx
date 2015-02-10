@@ -27,6 +27,7 @@
 #include "TClonesArray.h"
 
 #include <iostream>
+#include <fstream>
 
 CbmFlibFileSource::CbmFlibFileSource()
   : FairSource(),
@@ -68,6 +69,12 @@ Bool_t CbmFlibFileSource::Init()
     } 
   } else {
     LOG(INFO) << "Open the Flib input file " << fFileName << FairLogger::endl;
+    // Check if the input file exist
+    FILE* inputFile = fopen(fFileName.Data(), "r");
+    if ( ! inputFile )	{
+      LOG(FATAL) << "Input file " << fFileName << " doesn't exist." << FairLogger::endl;
+    }
+    fclose(inputFile);
     // Open the input file
     fSource = new fles::TimesliceInputArchive(fFileName.Data());
     //fSource.reset(new fles::TimesliceInputArchive(fFileName.Data()));

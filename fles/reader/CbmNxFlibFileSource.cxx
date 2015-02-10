@@ -13,6 +13,7 @@
 #include "TClonesArray.h"
 
 #include <iostream>
+#include <fstream>
 
 #define VERBOSE
 
@@ -72,6 +73,12 @@ Bool_t CbmNxFlibFileSource::Init()
   if ( 0 == fFileName.Length() ) {
     LOG(FATAL) << "No input file defined." << FairLogger::endl;
   } else {
+    // Check if the input file exist
+    FILE* inputFile = fopen(fFileName.Data(), "r");
+    if ( ! inputFile )  {
+      LOG(FATAL) << "Input file " << fFileName << " doesn't exist." << FairLogger::endl;
+    }
+    fclose(inputFile);
     // Open the input file
     fSource = new fles::TimesliceInputArchive(fFileName.Data());
     //fSource.reset(new fles::TimesliceInputArchive(fFileName.Data()));

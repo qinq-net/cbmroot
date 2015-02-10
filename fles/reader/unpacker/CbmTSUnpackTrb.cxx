@@ -75,9 +75,15 @@ Bool_t CbmTSUnpackTrb::DoUnpack(const fles::Timeslice& ts, size_t component)
     fData = fTrbEventList.front();
     fDataSize = fData.size();
     UnpackTrbEvents();
+    LOG(INFO) << "Here" << FairLogger::endl;
     fTrbEventList.pop_front();
   }
 
+  for (auto it=fTimeBuffer.begin(); it!=fTimeBuffer.end(); ++it) {
+    LOG(INFO) << " Time for channel " << it->second->GetChannelID() 
+	      << " is " << it->first << FairLogger::endl;
+  }
+  
   return kTRUE;
 }
 
@@ -190,16 +196,18 @@ void CbmTSUnpackTrb::DecodeTdcDataNew(UInt_t* data, UInt_t length, UInt_t tdcId)
 		<< " for TDC " << tdcId << ", channel " << chNum << FairLogger::endl;   
 
       Double_t fullTime = GetFullCoarseTime(epochMarker, coarseTime);
-      LOG(INFO) << "FullTime: " << fullTime
+      LOG(DEBUG) << "FullTime: " << fullTime
 		<< FairLogger::endl;
 
+      Int_t entries=fTrbRaw->GetEntriesFast();
       new( (*fTrbRaw)[fTrbRaw->GetEntriesFast()] )
 	CbmTrbRawMessage(fLink, tdcId, chNum, epochMarker, coarseTime, fineTime, edge);
 
 
-      if( 110 == tdcId ) {
+      if( 0x110 == tdcId && chNum != 0 ) {
+        LOG(INFO) << "Filling" << FairLogger::endl; 
 	pair<Double_t, CbmTrbRawMessage*> 
-	  value (fullTime, static_cast<CbmTrbRawMessage*>(fTrbRaw->At(fTrbRaw->GetEntriesFast())));
+	  value (fullTime, static_cast<CbmTrbRawMessage*>(fTrbRaw->At(entries)));
 	  fTimeBuffer.insert(value);
 
 
