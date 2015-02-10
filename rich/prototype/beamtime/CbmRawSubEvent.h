@@ -4,6 +4,12 @@
 #include "TObject.h" // only for swab - fix it!
 #include "CbmRawEvent.h"
 
+/*
+The class describes the data format of an TRB3 subevent. A detailed description of the data format
+can be found at http://jspc29.x-matter.uni-frankfurt.de/docu/trb3docu.pdf on page 96
+*/
+
+
 enum CbmRawSubEventIndex {
 	CbmRawSubEventIndexSize,
 	CbmRawSubEventIndexDecoding,

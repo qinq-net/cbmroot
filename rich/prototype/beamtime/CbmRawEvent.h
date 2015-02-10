@@ -4,6 +4,11 @@
 #include <ostream>
 #include <stdint.h>
 
+/*
+The class describes the data format of an TRB3 event. A detailed description of the data format
+can be found at http://jspc29.x-matter.uni-frankfurt.de/docu/trb3docu.pdf on page 96
+*/
+
 using namespace std;
 
 enum CbmRawEventIndex {
