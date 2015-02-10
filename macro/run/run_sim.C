@@ -22,7 +22,6 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis300_electron")
 
   // ----- Paths and file names  --------------------------------------------
   TString inDir   = gSystem->Getenv("VMCWORKDIR");
-  TString inFile  = inDir + "/input/urqmd.ftn14";
 
   TString outDir  = "data/";
   TString outFile = outDir + setup + "_test.mc.root";
@@ -35,7 +34,9 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis300_electron")
   
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
-  
+
+  TString inFile  = inDir + defaultInputFile;
+
   CbmTarget* target = new CbmTarget("Gold", 0.025);
   
 
@@ -60,6 +61,7 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis300_electron")
   FairRunSim* fRun = new FairRunSim();
   fRun->SetName("TGeant3");              // Transport engine
   fRun->SetOutputFile(outFile);          // Output file
+  fRun->SetGenerateRunInfo(kTRUE);       // Create FairRunInfo file
   FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
   // ------------------------------------------------------------------------
 
@@ -173,11 +175,11 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis300_electron")
 
   // -----   Create PrimaryGenerator   --------------------------------------
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
-  // Use the CbmUrqmdGenrator which calculates a reaction plane and
+  // Use the CbmUnigenGenrator which calculates a reaction plane and
   // rotate all particles accordingly
-  CbmUrqmdGenerator*  urqmdGen = new CbmUrqmdGenerator(inFile);
-  urqmdGen->SetEventPlane(0. , 360.);
-  primGen->AddGenerator(urqmdGen);
+  CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
+  uniGen->SetEventPlane(0. , 360.);
+  primGen->AddGenerator(uniGen);
   fRun->SetGenerator(primGen);       
   // ------------------------------------------------------------------------
 
