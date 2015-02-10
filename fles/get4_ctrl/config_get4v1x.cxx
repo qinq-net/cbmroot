@@ -705,6 +705,16 @@ void spiPadi8_get4v1x( int link, uint32_t uFeeIdx = 0,
    conn.Close();
 }
 
+void spiPadi6All_get4v1x( int link, uint32_t uFeeIdx = 0, uint32_t uPa0Ch0 = 0x110)
+{
+   spiPadi6_get4v1x( link, uFeeIdx,
+         uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0,
+         uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0,
+         uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0,
+         uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0, uPa0Ch0
+           );
+}
+
 void spiPadi6_get4v1x( int link, uint32_t uFeeIdx = 0,
         uint32_t uPa0Ch0 = 0x110, uint32_t uPa0Ch1 = 0x110, uint32_t uPa0Ch2 = 0x110, uint32_t uPa0Ch3 = 0x110,
         uint32_t uPa1Ch0 = 0x110, uint32_t uPa1Ch1 = 0x110, uint32_t uPa1Ch2 = 0x110, uint32_t uPa1Ch3 = 0x110,
@@ -766,6 +776,7 @@ void spiPadi6_get4v1x( int link, uint32_t uFeeIdx = 0,
    // Set channel 0 of all chips
    uint32_t uMaskCh0 = 0x0 << 20;
    uSpiWords[0]=  uWriteBit + uMaskCh0 + ( (uPa0Ch0 & 0x3FF) << 10);
+   printf("test     = %8x \n", uSpiWords[0]);
    uSpiWords[1]=  uWriteBit + uMaskCh0 + ( (uPa1Ch0 & 0x3FF) << 10);
    uSpiWords[2]=  uWriteBit + uMaskCh0 + ( (uPa2Ch0 & 0x3FF) << 10);
    uSpiWords[3]=  uWriteBit + uMaskCh0 + ( (uPa3Ch0 & 0x3FF) << 10);
@@ -773,7 +784,7 @@ void spiPadi6_get4v1x( int link, uint32_t uFeeIdx = 0,
    uSpiWords[5]=  uWriteBit + uMaskCh0 + ( (uPa5Ch0 & 0x3FF) << 10);
    uSpiWords[6]=  uWriteBit + uMaskCh0 + ( (uPa6Ch0 & 0x3FF) << 10);
    uSpiWords[7]=  uWriteBit + uMaskCh0 + ( (uPa7Ch0 & 0x3FF) << 10);
-   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiChPerGet4, uSpiWords);
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiPerGet4, uSpiWords);
 
    // Set channel 1 of all chips
    uint32_t uMaskCh1 = 0x1 << 20;
@@ -785,7 +796,7 @@ void spiPadi6_get4v1x( int link, uint32_t uFeeIdx = 0,
    uSpiWords[5]=  uWriteBit + uMaskCh1 + ( (uPa5Ch1 & 0x3FF) << 10);
    uSpiWords[6]=  uWriteBit + uMaskCh1 + ( (uPa6Ch1 & 0x3FF) << 10);
    uSpiWords[7]=  uWriteBit + uMaskCh1 + ( (uPa7Ch1 & 0x3FF) << 10);
-   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiChPerGet4, uSpiWords);
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiPerGet4, uSpiWords);
 
    // Set channel 2 of all chips
    uint32_t uMaskCh2 = 0x2 << 20;
@@ -797,7 +808,7 @@ void spiPadi6_get4v1x( int link, uint32_t uFeeIdx = 0,
    uSpiWords[5]=  uWriteBit + uMaskCh2 + ( (uPa5Ch2 & 0x3FF) << 10);
    uSpiWords[6]=  uWriteBit + uMaskCh2 + ( (uPa6Ch2 & 0x3FF) << 10);
    uSpiWords[7]=  uWriteBit + uMaskCh2 + ( (uPa7Ch2 & 0x3FF) << 10);
-   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiChPerGet4, uSpiWords);
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiPerGet4, uSpiWords);
 
    // Set channel 3 of all chips
    uint32_t uMaskCh3 = 0x3 << 20;
@@ -809,7 +820,7 @@ void spiPadi6_get4v1x( int link, uint32_t uFeeIdx = 0,
    uSpiWords[5]=  uWriteBit + uMaskCh3 + ( (uPa5Ch3 & 0x3FF) << 10);
    uSpiWords[6]=  uWriteBit + uMaskCh3 + ( (uPa6Ch3 & 0x3FF) << 10);
    uSpiWords[7]=  uWriteBit + uMaskCh3 + ( (uPa7Ch3 & 0x3FF) << 10);
-   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiChPerGet4, uSpiWords);
+   SendSpi( conn, kNodeId, uGet4Idx, uSpiConfig, kuNbPadiPerGet4, uSpiWords);
 
    // Close connection
    conn.Close();

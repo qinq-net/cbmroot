@@ -837,3 +837,14 @@ double get4v1x::Message::CalcGet4V10R32HitTimeDiff(
 
    return dTimeDiff;
 }
+
+//----------------------------------------------------------------------------
+//! strict weak ordering operator, including epoch for both messages
+bool get4v1x::FullMessage::operator<(const FullMessage& other) const
+{
+   if( other.fuExtendedEpoch == this->fuExtendedEpoch )
+      // Same epoch => use Message (base) class ordering operator
+      return this->Message::operator<( other );
+      else return this->fuExtendedEpoch < other.fuExtendedEpoch;
+
+}

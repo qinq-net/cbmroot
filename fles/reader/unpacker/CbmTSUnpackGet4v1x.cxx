@@ -61,8 +61,11 @@ CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
   fuLocalOffset(0),
   fuMaxLocalOffset(0),
   fvbRocFeetSyncStart(kFALSE),
+  fvbGet4WaitFirstSync(kTRUE),
   fvuCurrEpoch(),
+  fvuCurrEpochCycle(),
   fvuCurrEpoch2(),
+  fvuCurrEpoch2Cycle(),
   fhMessageTypePerRoc(NULL),
   fhRocSyncTypePerRoc(NULL),
   fhRocAuxTypePerRoc(NULL),
@@ -93,7 +96,8 @@ CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
   fvuLastOldTotEp(),
   fvmLastOldTot(),
   fhPulserFeeTotDnl(NULL),
-  fhPulserFeeTotInl(NULL)
+  fhPulserFeeTotInl(NULL),
+  fmsOrderedEpochsData()
 {
 }
 
@@ -122,11 +126,15 @@ Bool_t CbmTSUnpackGet4v1x::Init()
   // Initialize TS counter
   fulTsNb = 0;
 
-  // At start all ROCs are considered "unsynchronized"
+  // At start all ROCs and GET4 are considered "unsynchronized"
   // Stay so until the DLM 10 is issued: ~/flesnet/build/sync_frontend
+  // The GET4 are synchronized after reception of 1st epoch2 with SYNC
   fvbRocFeetSyncStart.resize( fuNbRocs);
   for( UInt_t uRoc = 0; uRoc < fuNbRocs; uRoc++)
      fvbRocFeetSyncStart[uRoc] = kFALSE;
+  fvbGet4WaitFirstSync.resize(fuNbGet4);
+  for( UInt_t uChip = 0; uChip < fuNbGet4; uChip++)
+     fvbGet4WaitFirstSync[uChip] = kTRUE;
 
   // Prepare the epoch storing vectors
   fvuCurrEpoch.resize( fuNbRocs);
@@ -508,7 +516,7 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
    fhGet4EpochSyncDist = new TH2I("hGet4EpochSyncDist",
          "Distance between epochs with SYNC flag for each GET4; SYNC distance [epochs]; Epochs",
          fuNbGet4, -0.5, fuNbGet4 -0.5,
-         2*get4v1x::kuSyncCycleSzGet4, 0.5, 2*get4v1x::kuSyncCycleSzGet4 -0.5);
+         2*get4v1x::kuSyncCycleSzGet4, -0.5, 2*get4v1x::kuSyncCycleSzGet4 -0.5);
 
    fhGet4EpochJumps    = new TH2I("hGet4EpochJumps",
          "Distance between epochs when jump happens for each GET4; Epoch distance [epochs]; Epochs",
@@ -853,6 +861,26 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
                <<cRocId<<" chip "
                <<cChipId<<FairLogger::endl;
 
+   // As long as the 1st epoch with sync flag after SYNC DLM is found,
+   // consider data as not good
+   if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+   {
+      if( 1 == mess.getEpoch2Sync() )
+      {
+         fvbGet4WaitFirstSync[uChipFullId] = kFALSE;
+
+         LOG(INFO) << "First SYNC Epoch after DLM in chip "
+                   <<Form("%3u: ", uChipFullId)
+                   <<Form(" EP #%6u", mess.getEpoch2Number() )
+                   <<Form(" TS #%12llu", fulTsNb)
+                   <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                   <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
+                   <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                   << FairLogger::endl;
+      } // if( 1 == mess.getEpoch2Sync() )
+         else return;
+   } // if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+
    if( fvuCurrEpoch2[uChipFullId] +1 != mess.getEpoch2Number() &&
          0 != fvuCurrEpoch2[uChipFullId] )
    {
@@ -871,8 +899,13 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
       fhGet4EpochJumps->Fill(uChipFullId, iEpJump);
    } // if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
    fvuCurrEpoch2[uChipFullId] = mess.getEpoch2Number();
+
    if( 1 == mess.getEpoch2Sync() )
+   {
       fhGet4EpochFlags->Fill(uChipFullId, 0);
+      fhGet4EpochSyncDist->Fill( uChipFullId, fvuCurrEpoch2[uChipFullId] % get4v1x::kuSyncCycleSzGet4 );
+   } // if( 1 == mess.getEpoch2Sync() )
+
    if( 1 == mess.getEpoch2EpochMissmatch() )
    {
       fhGet4EpochFlags->Fill(uChipFullId, 1);
@@ -1003,6 +1036,11 @@ void CbmTSUnpackGet4v1x::MonitorMessage_get4(   get4v1x::Message mess, uint16_t 
             get4v1x::kuChanPerGet4*( uChipFullId )
             + mess.getGet4ChNum();
       UInt_t uTimeStamp = mess.getGet4Ts();
+
+      // As long as the 1st epoch with sync flag after SYNC DLM is found,
+      // consider data as not good
+      if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+         return;
 
       if( 1 == mess.getGet4Edge() )
       {
@@ -1211,6 +1249,26 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
    {
       case get4v1x::GET4_32B_EPOCH: // => Epoch message
       {
+         // As long as the 1st epoch with sync flag after SYNC DLM is found,
+         // consider data as not good
+         if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+         {
+            if( 1 == mess.getGet4V10R32SyncFlag() )
+            {
+               fvbGet4WaitFirstSync[uChipFullId] = kFALSE;
+
+               LOG(INFO) << "First SYNC Epoch after DLM in chip "
+                         <<Form("%3u: ", uChipFullId)
+                         <<Form(" EP #%6u", mess.getGet4V10R32EpochNumber() )
+                         <<Form(" TS #%12llu", fulTsNb)
+                         <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                         <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
+                         <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                         << FairLogger::endl;
+            } // if( 1 == mess.getGet4V10R32SyncFlag() )
+               else return;
+         } // if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+
          if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber() &&
                0 != fvuCurrEpoch2[uChipFullId] )
          {
@@ -1314,18 +1372,30 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
       case get4v1x::GET4_32B_SLCM:  // => Slow control
       {
          Double_t dFullChId =
-               get4v1x::kuChanPerGet4*2*( uChipFullId )
+               get4v1x::kuChanPerGet4*( uChipFullId )
                + mess.getGet4V10R32SlChan()
                + 0.5*mess.getGet4V10R32SlEdge();
+
+         // As long as the 1st epoch with sync flag after SYNC DLM is found,
+         // consider data as not good
+         if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+            return;
+
          fhGet4ChanSlowContM->Fill( dFullChId, mess.getGet4V10R32SlType() );
          break;
       } // case get4v1x::GET4_32B_SLCM
       case get4v1x::GET4_32B_ERROR: // => Error message
       {
          Double_t dFullChId =
-               get4v1x::kuChanPerGet4*2*( uChipFullId )
+               get4v1x::kuChanPerGet4*( uChipFullId )
                + mess.getGet4V10R32ErrorChan()
                + 0.5*mess.getGet4V10R32ErrorEdge();
+
+         // As long as the 1st epoch with sync flag after SYNC DLM is found,
+         // consider data as not good
+         if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+            return;
+
          switch( mess.getGet4V10R32ErrorData() )
          {
             case get4v1x::GET4_V1X_ERR_READ_INIT:
@@ -1394,6 +1464,12 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
          UInt_t uFullChId =
                get4v1x::kuChanPerGet4*( uChipFullId )
                + mess.getGet4V10R32HitChan();
+
+         // As long as the 1st epoch with sync flag after SYNC DLM is found,
+         // consider data as not good
+         if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+            return;
+
          fhGet4ChanDataCount->Fill( uFullChId );
          fhGet4ChanDllStatus->Fill( uFullChId, mess.getGet4V10R32HitDllFlag() );
          fhGet4ChanTotMap->Fill(    uFullChId, mess.getGet4V10R32HitTot()

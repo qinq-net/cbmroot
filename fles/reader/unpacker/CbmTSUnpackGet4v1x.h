@@ -23,6 +23,8 @@
 
 // C++ std headers
 #include <vector>
+#include <map>
+#include <set>
 
 class TH1;
 class TH2;
@@ -88,10 +90,13 @@ private:
 
   // SYNC handling
   std::vector< Bool_t > fvbRocFeetSyncStart;  // Keep track whether the SYNC DLM was processed  (one per ROC)
+  std::vector< Bool_t > fvbGet4WaitFirstSync; // True until the 1st SYNC Ep2 after DLM is found (one per GET4)
 
   // Epochs book-keeping variables
-  std::vector< UInt_t > fvuCurrEpoch;  // Current epoch  (one per ROC)
-  std::vector< UInt_t > fvuCurrEpoch2; // Current epoch2 (one per GET4 chip)
+  std::vector< UInt_t > fvuCurrEpoch;       // Current epoch  (one per ROC)
+  std::vector< UInt_t > fvuCurrEpochCycle;  // Current cycle of the epoch counter (one per ROC)
+  std::vector< UInt_t > fvuCurrEpoch2;      // Current epoch2 (one per GET4 chip)
+  std::vector< UInt_t > fvuCurrEpoch2Cycle; // Current cycle of the epoch2 counter (one per GET4 chip)
 
   // Monitoring related variables
   TH2 * fhMessageTypePerRoc;
@@ -129,9 +134,6 @@ private:
   TH2 * fhPulserFeeTotDnl;
   TH2 * fhPulserFeeTotInl;
 
-  // Verbose functions (redundant with Print from GET4 Hack/Tools?)
-//  void Print6bytesMessage(const uint8_t* msContent_shifted);
-
   // Monitoring functions
   void InitMonitorHistograms();
   void MonitorMessage_epoch(  get4v1x::Message mess, uint16_t EqID);
@@ -144,6 +146,10 @@ private:
   void FillMonitorHistograms();
   void WriteMonitorHistograms();
   void DeleteMonitorHistograms();
+
+  // Unpacking related variables
+     // Map of following pairs: full epoch +  Multiset containers for ordered data (1/epoch)
+  std::map< ULong64_t, std::multiset< get4v1x::Message > > fmsOrderedEpochsData;
 
   // Unpacking functions
   // EqID = Equipment identifier from ums

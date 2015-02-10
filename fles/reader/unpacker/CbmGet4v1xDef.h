@@ -61,7 +61,8 @@ namespace get4v1x {
 
    // Size of the epoch counters in ROC messages
    const uint64_t kulMainEpochCycleSz = 0xFFFFFFFFuLL; // for ROC  250.00 MHz clock
-   const uint64_t kulGet4EpochCycleSz = 0x00FFFFFFuLL; // for GET4 156.25 MHz clock
+   const uint64_t kulGet4EpochCycleSz = 0x00FFFFFFuLL; // for GET4 156.25 MHz clock in 32b mode (Hack)
+   const uint64_t kul24bGet4EpochCycleSz = 0xFFFFFFFFuLL; // for GET4 156.25 MHz clock in 24b mode (ROC check)
 
    // Size of the nominal SYNC cycles
    // (aka nb of epoch between 2 epochs with SYNC flag when no problem)

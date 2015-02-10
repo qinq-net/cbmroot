@@ -554,6 +554,24 @@ namespace get4v1x {
          bool copyto(void* tgt, int fmt = formatNormal);
    };
 
+   class FullMessage : public Message {
+      protected:
+         uint64_t fuExtendedEpoch;   // Epoch of the message, extended with 32b epoch cycle counter
+
+      public:
+         FullMessage() : Message(), fuExtendedEpoch(0) {}
+
+         FullMessage(const FullMessage& src) : Message(src), fuExtendedEpoch(src.fuExtendedEpoch) {}
+
+         void assign(const FullMessage& src) { Message::assign(src); fuExtendedEpoch = src.fuExtendedEpoch; }
+
+         FullMessage& operator=(const FullMessage& src) { assign(src); return *this; }
+
+         bool operator<(const FullMessage& other) const;
+
+         inline void reset() {  Message::reset(); fuExtendedEpoch = 0; }
+   };
+
 }
 
 
