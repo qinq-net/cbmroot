@@ -103,6 +103,7 @@
 #pragma link C++ class CbmSpadicRawMessage;
 #pragma link C++ class CbmNxyterRawMessage;
 #pragma link C++ class CbmNxyterRawSyncMessage;
+#pragma link C++ class CbmStsxyterRawHitMessage;
 #pragma link C++ class CbmTrbRawMessage;
 
 #pragma link C++ enum DetectorId;

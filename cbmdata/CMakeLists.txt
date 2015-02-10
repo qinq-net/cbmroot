@@ -127,6 +127,7 @@ raw/CbmRawMessage.cxx
 raw/CbmSpadicRawMessage.cxx
 raw/CbmNxyterRawMessage.cxx
 raw/CbmNxyterRawSyncMessage.cxx
+raw/CbmStsxyterRawHitMessage.cxx
 raw/CbmTrbRawMessage.cxx
 )
 
