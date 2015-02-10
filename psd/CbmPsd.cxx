@@ -136,7 +136,7 @@ Bool_t  CbmPsd::ProcessHits(FairVolume* vol)
 // -----   Public method EndOfEvent   --------------------------------------
 void CbmPsd::EndOfEvent() {
   if (fVerboseLevel) Print();
-  fPsdCollection->Clear();
+  fPsdCollection->Delete();
   fPosIndex = 0;
 }
 // -------------------------------------------------------------------------
@@ -175,7 +175,7 @@ void CbmPsd::Print() const {
 
 // -----   Public method Reset   -------------------------------------------
 void CbmPsd::Reset() {
-  fPsdCollection->Clear();
+  fPsdCollection->Delete();
   ResetParameters();
 }
 // -------------------------------------------------------------------------
