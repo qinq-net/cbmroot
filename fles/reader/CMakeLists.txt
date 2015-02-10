@@ -47,6 +47,7 @@ Set(SRCS
   unpacker/CbmTSUnpack.cxx
   unpacker/CbmTSUnpackSpadic.cxx
   unpacker/CbmTSUnpackNxyter.cxx
+  unpacker/CbmTSUnpackStsxyter.cxx
   unpacker/CbmTSUnpackFiberHodo.cxx
   unpacker/CbmTSUnpackDummy.cxx
   unpacker/CbmTSUnpackTrb.cxx

@@ -11,6 +11,7 @@
 #pragma link C++ class CbmTSUnpack;
 #pragma link C++ class CbmTSUnpackSpadic;
 #pragma link C++ class CbmTSUnpackNxyter;
+#pragma link C++ class CbmTSUnpackStsxyter;
 #pragma link C++ class CbmTSUnpackFiberHodo;
 #pragma link C++ class CbmTSUnpackDummy;
 #pragma link C++ class CbmTSUnpackTrb;
