@@ -184,7 +184,7 @@ void CbmMuch::BeginEvent() {
 // -------------------------------------------------------------------------
 void CbmMuch::EndOfEvent() {
   if (fVerboseLevel) Print();
-  fMuchCollection->Clear();
+  fMuchCollection->Delete();
   ResetParameters();
 }
 // -------------------------------------------------------------------------
@@ -219,7 +219,7 @@ void CbmMuch::Print() const {
 
 // -------------------------------------------------------------------------
 void CbmMuch::Reset() {
-  fMuchCollection->Clear();
+  fMuchCollection->Delete();
   ResetParameters();
 }
 // -------------------------------------------------------------------------
