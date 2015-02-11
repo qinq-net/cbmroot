@@ -371,7 +371,7 @@ void CbmLitTrackingQaReport::DrawAccAndRec(
 		hist->Scale(1./nofEvents);
 		string name = hist->GetName();
 		vector<string> split = Split(name, '_');
-		labels[iHist] = split[4] + ":" + split[3] + "(" + NumberToString<Double_t>(hist->GetEntries() / nofEvents, 1) + ")";
+		labels[iHist] = split[4] + ":" + split[3] + "(" + NumberToString<Double_t>(hist->GetEntries() / nofEvents, 2) + ")";
 	}
 
 	DrawH1(histos, labels, kLinear, kLinear, true, 0.50, 0.78, 0.99, 0.99);
