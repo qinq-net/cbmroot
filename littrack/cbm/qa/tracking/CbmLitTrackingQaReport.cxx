@@ -263,8 +263,11 @@ void CbmLitTrackingQaReport::DrawEfficiencyHistos()
 		string re = (variant == "Sts") ? "hte_Sts_Sts_(All|Muon|Electron)_(Acc|Rec)_Np" : "hte_" + variant + "_.*_(All|Muon|Electron)_(Acc|Rec)_Np";
 		DrawAccAndRec("tracking_qa_local_acc_and_rec_" + variant + "_Np", re);
 
-		re = (variant == "Sts") ? "hte_Sts_Sts_(All|Muon|Electron)_(Acc|Rec)_p" : "hte_" + variant + "_.*_(All|Muon|Electron)_(Acc|Rec)_p";
-		DrawAccAndRec("tracking_qa_local_acc_and_rec_" + variant + "_p", re);
+		re = (variant == "Sts") ? "hte_Sts_Sts_(All)_(Acc|Rec)_p" : "hte_" + variant + "_.*_(All)_(Acc|Rec)_p";
+		DrawAccAndRec("tracking_qa_local_acc_and_rec_" + variant + "_All_p", re);
+
+		re = (variant == "Sts") ? "hte_Sts_Sts_(Muon|Electron)_(Acc|Rec)_p" : "hte_" + variant + "_.*_(Muon|Electron)_(Acc|Rec)_p";
+		DrawAccAndRec("tracking_qa_local_acc_and_rec_" + variant + "_ElectronMuon_p", re);
 	}
 
 	//
