@@ -60,8 +60,9 @@ void CbmAnaDielectronTaskDrawAll::DrawHistosFromFile(
       fHM[i] = new CbmHistManager();
       TFile* file = new TFile(fileNames[i].c_str());
       fHM[i]->ReadFromFile(file);
-      Int_t fNofEvents = (int) H1(i, "fh_event_number")->GetEntries();
-      fHM[i]->ScaleByPattern(".*", 1./fNofEvents);
+      Int_t nofEvents = (int) H1(i, "fh_event_number")->GetEntries();
+      fHM[i]->ScaleByPattern(".*", 1./nofEvents);
+      cout << "nofEvents = " << nofEvents << endl;
    }
 
    // index: AnalysisSteps

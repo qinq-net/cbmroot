@@ -420,7 +420,7 @@ void CbmAnaDielectronTaskDraw::DrawPtYEfficiency(
 {
    TH2D* h = H2("fh_signal_pty_" + CbmLmvmHist::fAnaSteps[step]);
    // efficiency is normalized to the previous step (step - 1)
-   TH2D* hmc = H2("fh_signal_pty_" + CbmLmvmHist::fAnaSteps[step - 1]);
+   TH2D* hmc = H2("fh_signal_pty_" + CbmLmvmHist::fAnaSteps[kMc]);
 
    TH2D* eff = DivideH2D(h, hmc);
    eff->GetZaxis()->SetTitle("Efficiency [%]");
@@ -432,13 +432,16 @@ void CbmAnaDielectronTaskDraw::DrawPtYEfficiency(
 void CbmAnaDielectronTaskDraw::DrawPtYEfficiencyAll()
 {
    Int_t hi = 1;
-   TCanvas *c = CreateCanvas("lmvm_pty_efficiency", "lmvm_pty_efficiency", 750, 1000);
-   c->Divide(3,4);
+   TCanvas *c = CreateCanvas("lmvm_pty_efficiency", "lmvm_pty_efficiency", 1000, 1000);
+   c->Divide(3,3);
    for (int step = kAcc; step < CbmLmvmHist::fNofAnaSteps; step++){
       if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)) continue;
       c->cd(hi++);
       DrawPtYEfficiency(step);
    }
+
+   TCanvas *cptcut = CreateCanvas("lmvm_pty_efficiency_ptcut", "lmvm_pty_efficiency_ptcut", 600, 600);
+   DrawPtYEfficiency(kPtCut);
 }
 
 void CbmAnaDielectronTaskDraw::DrawMomentumDistributionAll()
