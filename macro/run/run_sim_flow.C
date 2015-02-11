@@ -11,7 +11,7 @@
 
 // TO CHECK in the code: IMPORTANT NOTE
 
-void run_sim_flow(Double_t En=10, Int_t nEvents = 2)  
+void run_sim_flow(Int_t nEvents = 2, Int_t En=25, const char* setup = "sis300_electron")
 {
   // ========================================================================
   //          Adjust this part according to your requirements
@@ -24,59 +24,56 @@ void run_sim_flow(Double_t En=10, Int_t nEvents = 2)
 
   cout << "gen = " << gen << endl;
 
-  Float_t psdZpos = 800.;   // (in cm); default: 8m at SIS100, 15m at SIS300
+//  Float_t psdZpos = 800.;   // (in cm); default: 8m at SIS100, 15m at SIS300
 
   TString numEvt = "";
-  if(nEvents<10) numEvt="000";
-  if(nEvents>=10 && nEvents<100) numEvt="00";
-  if(nEvents>=100 && nEvents<1000) numEvt="0";
-  if(nEvents>=1000 && nEvents<10000) numEvt="";
-  numEvt += nEvents;
-  
-  TString sEn = "";
-  sEn += En;
-
-  TString inputDir = gSystem->Getenv("VMCWORKDIR");
-  inputDir += "/input";
+  numEvt.Form("%04i", nEvents);
 
   // ----- Paths and file names  --------------------------------------------
 
-  // UNIGEN data format for UrQMD
-  TString inFile = inputDir + "/urqmd.auau." + sEn + "gev.mbias.root";
+  TString inputDir = gSystem->Getenv("VMCWORKDIR");
 
   TString outDir = "./data/";
   TString outFile = outDir + "mc_" + numEvt +  "evt.root";
   TString parFile = outDir + "params_" + numEvt +  "evt.root";
 
+  TString setupFile = inputDir + "/geometry/setup/" + setup + "_setup.C";
+  TString setupFunct = setup;
+  setupFunct += "_setup()";
+  
+  gROOT->LoadMacro(setupFile);
+  gInterpreter->ProcessLine(setupFunct);
+
+  // UNIGEN data format for UrQMD
+  TString inFile;
+  inFile.Form("%s/input/urqmd.auau.%igev.mbias.root", inputDir.Data(), En);
+
   cout << "inFile: " << inFile << endl;
   cout << "outFile: " << outFile << endl;
 
-  // -----  Geometries  -----------------------------------------------------
-  TString caveGeom   = "cave.geo";
-  TString pipeGeom   = "pipe/pipe_v14c.root";
-  TString magnetGeom = "magnet/magnet_v12b.geo.root";
-  TString mvdGeom    = "";
-  TString stsGeom    = "sts/sts_v13d.geo.root";
+  // -----  Overwrite geometries defined in setup ----------------------
+  pipeGeom   = "pipe/pipe_v14c.root";
+  mvdGeom    = "";
+  richGeom   = "";
+  trdGeom    = "";
+  tofGeom    = "";
+
+  CbmTarget* target = new CbmTarget("Gold", 0.025);
+
   cout << "STS geo : " << stsGeom << endl;
-  TString richGeom   = "";
-  TString trdGeom    = "";
-  TString tofGeom    = "";
-  TString ecalGeom   = "";
 
   // -----   Magnetic field   -----------------------------------------------
-  TString fieldMap = "field_v12b";
-  Double_t fieldZ     = 40.;             // field centre z position
-
   // field scaling factor
-  Double_t fieldScale;
-  if (En == 35.) fieldScale = 1.;
-  if (En == 25.) fieldScale = 1.;
-  if (En == 15.) fieldScale = 1.;
-  if (En == 10.) fieldScale = 1.;             
-  if (En == 8.)  fieldScale = 0.818;
-  if (En == 6.)  fieldScale = 0.632;
-  if (En == 4.)  fieldScale = 0.632;    
-  if (En == 2.)  fieldScale = 0.5; 
+  if (En == 35) fieldScale = 1.;
+  if (En == 25) fieldScale = 1.;
+  if (En == 15) fieldScale = 1.;
+  if (En == 10) fieldScale = 1.;             
+  if (En == 8)  fieldScale = 0.818;
+  if (En == 6)  fieldScale = 0.632;
+  if (En == 4)  fieldScale = 0.632;    
+  if (En == 2)  fieldScale = 0.5; 
+
+  cout << "Field scaling factor: " << fieldScale << endl;
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -96,6 +93,7 @@ void run_sim_flow(Double_t En=10, Int_t nEvents = 2)
                                          // IMPORTANT NOTE: need G4 for hadronic calorimetry in PSD including projectile fragments (produced in SHIELD)
                                          // IMPORTANT NOTE: change physics list (in gconfig/g4Config.C) to either FTFP_BERT or QGSP_BIC_HP (both tested)
   fRun->SetOutputFile(outFile);          // Output file
+  fRun->SetGenerateRunInfo(kTRUE);       // Create FairRunInfo file
   FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
   // ------------------------------------------------------------------------
 
@@ -118,9 +116,7 @@ void run_sim_flow(Double_t En=10, Int_t nEvents = 2)
     fRun->AddModule(pipe);      
   }
   
-  CbmTarget* target = new CbmTarget("Gold", 0.025);
-  //target->SetPosition(0., 0., 15.);      //cm
-  fRun->AddModule(target);
+  if ( target ) fRun->AddModule(target);
 
   if ( magnetGeom != "" ) {
     FairModule* magnet = new CbmMagnet("MAGNET");
@@ -131,6 +127,7 @@ void run_sim_flow(Double_t En=10, Int_t nEvents = 2)
   if ( mvdGeom != "" ) {
     FairDetector* mvd = new CbmMvd("MVD", kTRUE);
     mvd->SetGeometryFileName(mvdGeom);
+    mvd->SetMotherVolume("pipevac1");
     fRun->AddModule(mvd);
   }
 
@@ -262,34 +259,34 @@ void run_sim_flow(Double_t En=10, Int_t nEvents = 2)
   // -----   Create PrimaryGenerator   --------------------------------------
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
 
-  if (kbeam == kFALSE)
-  {
+  if (kbeam == kFALSE) {
+    
     CbmUnigenGenerator*  urqmdGen = new CbmUnigenGenerator(inFile);
     urqmdGen->SetEventPlane(-TMath::Pi(), TMath::Pi());
     // IMPORTANT NOTE: event plane angle in [-pi, pi] by convention
     // TO DO: rotation should be done in FairPrimaryGenerator, not from UnigenGenerator -> same for all event generators
     
     primGen->AddGenerator(urqmdGen);
-  } else
-  {
-      Double_t bMom;
-      if (En == 35) bMom = 35.926;
-      if (En == 25) bMom = 25.92;
-      if (En == 15) bMom = 15.91;
-      if (En == 10) bMom = 10.898; 
-      if (En == 8) bMom = 8.88889;
-      if (En == 6) bMom = 6.87454;
-      if (En == 4) bMom = 4.84832;
-      if (En == 2) bMom = 2.78444;
-
-      int Nion;
-      int pileup = 100;
-      Nion = nEvents*pileup;
-
-      FairIonGenerator *fIongen= new FairIonGenerator(79, 197, 79, Nion, 0., 0., bMom, 0., 0., -1.); 
-      primGen->AddGenerator(fIongen);   
-
-      nEvents = 1;
+  } else {
+    
+    Double_t bMom;
+    if (En == 35) bMom = 35.926;
+    if (En == 25) bMom = 25.92;
+    if (En == 15) bMom = 15.91;
+    if (En == 10) bMom = 10.898; 
+    if (En == 8) bMom = 8.88889;
+    if (En == 6) bMom = 6.87454;
+    if (En == 4) bMom = 4.84832;
+    if (En == 2) bMom = 2.78444;
+    
+    int Nion;
+    int pileup = 100;
+    Nion = nEvents*pileup;
+    
+    FairIonGenerator *fIongen= new FairIonGenerator(79, 197, 79, Nion, 0., 0., bMom, 0., 0., -1.); 
+    primGen->AddGenerator(fIongen);   
+    
+    nEvents = 1;
   }
 
    // Include beam emittance
