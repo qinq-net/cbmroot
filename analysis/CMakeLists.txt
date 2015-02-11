@@ -117,8 +117,8 @@ conversion/CbmAnaConversionReco.cxx
 
 #photon/CbmTrdPhotonAnalysis.cxx
 
-#flow/eventPlane.cxx
-#flow/CbmAnaFlow.cxx
+flow/eventPlane.cxx
+flow/CbmAnaFlow.cxx
 
 )
 
@@ -142,7 +142,7 @@ ADD_DEFINITIONS(-DDO_TPCCATRACKER_EFF_PERFORMANCE -DNonhomogeneousField -DCBM -D
 Set(LINKDEF AnalysisLinkDef.h)
 Set(LIBRARY_NAME Analysis)
 Set(DEPENDENCIES
-    Littrack KF L1 Much Rich Sts CbmBase CbmData Base Vc.a)
+    Littrack KF L1 Much Rich Sts CbmBase CbmData CbmGenerators Base Vc.a)
 
 GENERATE_LIBRARY()
 
