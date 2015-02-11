@@ -18,17 +18,13 @@
 // --------------------------------------------------------------------------
 
 
-void run_reco_flow(Double_t En=10, Int_t nEvents = 2)
+void run_reco_flow(Int_t nEvents = 2, Int_t En=10, const char* setup = "sis300_electron")
 {
   Int_t gen = 0;
 
   TString numEvt = "";
-  if(nEvents<10) numEvt="000";
-  if(nEvents>=10 && nEvents<100) numEvt="00";                                                                       
-  if(nEvents>=100 && nEvents<1000) numEvt="0";
-  if(nEvents>=1000 && nEvents<10000) numEvt="";
-  numEvt += nEvents;
-  
+  numEvt.Form("%04i", nEvents);
+
   TString sEn = "";
   sEn += En;
 
@@ -43,6 +39,17 @@ void run_reco_flow(Double_t En=10, Int_t nEvents = 2)
   TString parFile = dir + "params_" + numEvt +  "evt.root";    
   TString outFile = dir + "reco_" + numEvt +  "evt.root";
 
+
+  TString inDir = gSystem->Getenv("VMCWORKDIR");
+  TString paramDir = inDir + "/parameters/";
+
+  TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
+  TString setupFunct = setup;
+  setupFunct += "_setup()";
+
+  gROOT->LoadMacro(setupFile);
+  gInterpreter->ProcessLine(setupFunct);
+
   //  Digitisation files.
   // Add TObjectString containing the different file names to
   // a TList which is passed as input to the FairParAsciiFileIo.
@@ -51,22 +58,23 @@ void run_reco_flow(Double_t En=10, Int_t nEvents = 2)
   // the reconstruction.
   TList *parFileList = new TList();
 
-  TString workDir = gSystem->Getenv("VMCWORKDIR");
-  TString paramDir = workDir + "/parameters";
-
-  TObjString stsDigiFile = paramDir + "/sts/sts_v13d_std.digi.par";
+  TObjString stsDigiFile = paramDir + stsDigi;
   parFileList->Add(&stsDigiFile);
+  cout << "macro/run/run_reco.C using: " << stsDigi << endl;
 
+  TObjString trdDigiFile = paramDir + trdDigi;
+  parFileList->Add(&trdDigiFile);
+  cout << "macro/run/run_reco.C using: " << trdDigi << endl;
+
+  TObjString tofDigiFile = paramDir + tofDigi;
+  parFileList->Add(&tofDigiFile);
+  cout << "macro/run/run_reco.C using: " << tofDigi << endl;
+
+  //TODO: Don't hardcode the file here. This file should be also defined
+  //      in the setup files
   TString stsMatBudgetFileName = paramDir + "/sts/sts_matbudget_v13d.root";
   cout << "STS MB : " << stsMatBudgetFileName << endl;
   
-  //TObjString trdDigiFile =  paramDir + "/trd/trd_v13o.digi.par";
-  //parFileList->Add(&trdDigiFile);
-
-  //TObjString tofDigiFile =  paramDir + "/tof/tof_v13b.digi.par";
-  //parFileList->Add(&tofDigiFile);
-
-
   // In general, the following parts need not be touched
   // ========================================================================
 
@@ -96,14 +104,6 @@ void run_reco_flow(Double_t En=10, Int_t nEvents = 2)
   // ===                          (where available)                        ===
   // =========================================================================
 
-
-  // -----   MVD Digitiser   -------------------------------------------------
-  //CbmMvdDigitizeL* mvdDigi =
-  //		new CbmMvdDigitizeL("MVD Digitiser", 0, iVerbose);
-  //run->AddTask(mvdDigi);
-  // -------------------------------------------------------------------------
- 
-
   // -----   STS digitizer   -------------------------------------------------
   Double_t threshold  =  4;
   Double_t noiseWidth =  0.01;
@@ -124,67 +124,28 @@ void run_reco_flow(Double_t En=10, Int_t nEvents = 2)
   run->AddTask(stsDigitize);
   // -------------------------------------------------------------------------
 
-
-  // =========================================================================
-  // ===                     MVD local reconstruction                      ===
-  // =========================================================================
-
-
-  // -----   MVD Hit Finder   ------------------------------------------------
-  //CbmMvdFindHits* mvdHitFinder = new CbmMvdFindHits("MVD Hit Finder", 0,
-  //		iVerbose);
-  //run->AddTask(mvdHitFinder);
-  // -------------------------------------------------------------------------
-
-
-  // ===                 End of MVD local reconstruction                   ===
-  // =========================================================================
-
-
-
-
-  // =========================================================================
-  // ===                      STS local reconstruction                     ===
-  // =========================================================================
-
-
   // -----   STS Cluster Finder   --------------------------------------------
   FairTask* stsClusterFinder = new CbmStsClusterFinder_old();
   run->AddTask(stsClusterFinder);
   // -------------------------------------------------------------------------
-
 
   // -----   STS hit finder   ------------------------------------------------
   FairTask* stsFindHits = new CbmStsFindHits_old();
   run->AddTask(stsFindHits);
   // -------------------------------------------------------------------------
 
-
-  // -----  STS hit matching   -----------------------------------------------
-  //  FairTask* stsMatchHits = new CbmStsMatchHits();
-  //  run->AddTask(stsMatchHits);
-  // -------------------------------------------------------------------------
-
-
   // ---  STS track finding   ------------------------------------------------
   CbmKF* kalman = new CbmKF();
   run->AddTask(kalman);
-  
+
   CbmL1* l1 = new CbmL1();
   l1->SetMaterialBudgetFileName(stsMatBudgetFileName);
   run->AddTask(l1);
-  
+
   CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
   FairTask* stsFindTracks = new CbmStsFindTracks(iVerbose, stsTrackFinder);
   run->AddTask(stsFindTracks);
   // -------------------------------------------------------------------------
-
-
-  // ---   STS track matching   ----------------------------------------------
-  //  FairTask* stsMatchTracks = new CbmStsMatchTracks(iVerbose);
-  //  run->AddTask(stsMatchTracks);
-  // -------------------------------------------------------------------------
-
 
   // ---   STS track fitting   -----------------------------------------------
   CbmStsTrackFitter* stsTrackFitter = new CbmStsKFTrackFitter();
@@ -194,52 +155,6 @@ void run_reco_flow(Double_t En=10, Int_t nEvents = 2)
 
   // ===                 End of STS local reconstruction                   ===
   // =========================================================================
-
-
-
-
-  // =========================================================================
-  // ===                     TRD local reconstruction                      ===
-  // =========================================================================
-
-  // Update of the values for the radiator F.U. 17.08.07
-  /*
-  Int_t trdNFoils = 130; // number of polyetylene foils
-  Float_t trdDFoils = 0.0013; // thickness of 1 foil [cm]
-  Float_t trdDGap = 0.02; // thickness of gap between foils [cm]
-  Bool_t simpleTR = kTRUE; // use fast and simple version for TR
-  // production
-
-  CbmTrdRadiator *radiator = new CbmTrdRadiator(simpleTR, trdNFoils,
-  		trdDFoils, trdDGap);
-
-  CbmTrdHitProducerSmearing* trdHitProd = new CbmTrdHitProducerSmearing(radiator);
-  //run->AddTask(trdHitProd);
-  */
-
-  // -------------------------------------------------------------------------
-  // ===                 End of TRD local reconstruction                   ===
-  // =========================================================================
-
-
-  // =========================================================================
-  // ===                     TOF local reconstruction                      ===
-  // =========================================================================
-
-
-  // ------   TOF hit producer   ---------------------------------------------
-  /*
-  CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("TOF HitProducerNew",iVerbose); 
-  tofHitProd->SetInitFromAscii(kFALSE);
-  //run->AddTask(tofHitProd);
-  */
-  // -------------------------------------------------------------------------
-
-  // ===                   End of TOF local reconstruction                 ===
-  // =========================================================================
-
-
-
 
   // =========================================================================
   // ===                        Global tracking                            ===
@@ -256,7 +171,7 @@ void run_reco_flow(Double_t En=10, Int_t nEvents = 2)
   // "nearest_hit" - assigns nearest hit to the track
   finder->SetMergerType("nearest_hit");
 
-  //run->AddTask(finder);
+  run->AddTask(finder);
 
   // -----   Primary vertex finding   ---------------------------------------
   CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
@@ -272,73 +187,6 @@ void run_reco_flow(Double_t En=10, Int_t nEvents = 2)
   run->AddTask(matchTask);
   // ----------------------------------------------------
 
-  // -----   TRD track matching   --------------------------------------------
-  //CbmTrdMatchTracks* trdMatchTracks = new CbmTrdMatchTracks(iVerbose);
-  //run->AddTask(trdMatchTracks);
-  // ----------------------------------------------------
-
-  // ----------- TRD track Pid Wkn ----------------------
-  //CbmTrdSetTracksPidWkn* trdSetTracksPidTask = new CbmTrdSetTracksPidWkn(  		"trdFindTracks", "trdFindTracks");
-  //run->AddTask(trdSetTracksPidTask);
-  // ----------------------------------------------------
-
-  // ----------- TRD track Pid Ann ----------------------
-  //CbmTrdSetTracksPidANN* trdSetTracksPidAnnTask = new CbmTrdSetTracksPidANN(  		"Ann", "Ann");
-  //run->AddTask(trdSetTracksPidAnnTask);
-  // ----------------------------------------------------
-
-  // ----------- TRD track Pid Like ----------------------
-  // Since in the newest version of this method depends on the global
-  // track the task has to move after the global tracking
-// FU 08.02.12 Switch the task off since the input file needed for the new geometry has to be generated first.
-//  CbmTrdSetTracksPidLike* trdSetTracksPidLikeTask =
-//  		new CbmTrdSetTracksPidLike("Likelihood", "Likelihood");
-//  run->AddTask(trdSetTracksPidLikeTask);
-  // ----------------------------------------------------
-
-
-  // =========================================================================
-  // ===                        RICH reconstruction                        ===
-  // =========================================================================
-
-  // ---------------------RICH Hit Producer ----------------------------------
-  /*
-  CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
-  richHitProd->SetDetectorType(4);
-  richHitProd->SetNofNoiseHits(220);
-  richHitProd->SetCollectionEfficiency(1.0);
-  richHitProd->SetSigmaMirror(0.06);
-  //run->AddTask(richHitProd);
-  */
-  //--------------------------------------------------------------------------
-
-  //--------------------- RICH Reconstruction ----------------------------------
-  //  CbmRichReconstruction* richReco = new CbmRichReconstruction();
-  //run->AddTask(richReco);
-
-  // ------------------- RICH Ring matching  ---------------------------------
-  //CbmRichMatchRings* matchRings = new CbmRichMatchRings();
-  //run->AddTask(matchRings);
-  // -------------------------------------------------------------------------
-  // ===                 End of RICH local reconstruction                  ===
-  // =========================================================================
-
-
-/*
-  // =========================================================================
-  // ===                        ECAL reconstruction                        ===
-  // =========================================================================
-
-  // -----   ECAL hit producer  ----------------------------------------------
-  CbmEcalHitProducerFastMC* ecalHitProd = new CbmEcalHitProducerFastMC(
-  		"ECAL Hitproducer");
-  run->AddTask(ecalHitProd);
-  // -------------------------------------------------------------------------
-
-  // ===                      End of ECAL reconstruction                   ===
-  // =========================================================================
-*/
-
   // =========================================================================
   // ===                        PSD reconstruction                        ===
   // =========================================================================
@@ -350,18 +198,6 @@ void run_reco_flow(Double_t En=10, Int_t nEvents = 2)
   CbmPsdHitProducer* psdHit = new CbmPsdHitProducer();
   run->AddTask(psdHit);
 
-  // ------  KF particle finder
-  /*
-  float cuts[2][3] = {{3.,3..-100.},{3.,3.,-100.}};
-  CbmKFParticlesFinder* kfPartFinder = new CbmKFParticlesFinder(cuts,1);
-  run->AddTask(kfPartFinder);
-  
-  CbmKFParticlesFinderQA* kfPartFinderQA = new CbmKFParticlesFinderQA(kfPartFinder,1,3);
-  kfPartFinderQA->SaveParticles(1);
-  kfPartFinderQA->SaveMCParticles(1);
-  run->AddTask(kfPartFinderQA);
-  */
-  
   // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
