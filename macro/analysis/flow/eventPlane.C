@@ -19,39 +19,13 @@
 //         (if run on many event files in parallel, merge event plane task output files, for at least > 10 000 events
 //         -> to estimate correction factors to apply to the measured flow vn)
 
-void eventPlane(Double_t En = 10, Int_t nEvents = 2, Int_t fileNum = 5, Int_t fQcorr = 0, Int_t fBarcorr = 0)
+void eventPlane(Double_t En = 10, Int_t nEvents = 2, Int_t fQcorr = 0, Int_t fBarcorr = 0)
 {
     Int_t gen = 0;             // model
     int mcreco = 1;            // STS EP method: use reco. tracks or MC tracks with >= 4 hits in STS
     Double_t cutY_sub = 0.8;   // STS EP method: use (reco or MC) tracks with y < cutY_sub to decrease STS/PSD overlap
     int doFixStat = 0;         // Binning method for EP flattening: fixed multiplicity intervals or fixed collision statistics intervals
 
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
-  gSystem->Load("libCbmBase");
-  gSystem->Load("libCbmData");
-  gSystem->Load("libCbmGenerators");
-  gSystem->Load("libField");
-  gSystem->Load("libGen");
-  gSystem->Load("libPassive");
-  gSystem->Load("libMvd");
-  gSystem->Load("libSts");
-  gSystem->Load("libEcal");
-  gSystem->Load("libKF");
-  gSystem->Load("libTrd");
-  gSystem->Load("libL1");
-  //gSystem->Load("libTof");
-  gSystem->Load("libPsd");
-  gSystem->Load("libAnalysis");
-
-  TString sGen = "";
-  if (gen == 0) sGen = "urqmd";
-  if (gen == 1) sGen = "shield";
-  
   TString numEvt = "";
   if(nEvents<10) numEvt="000";
   if(nEvents>=10 && nEvents<100) numEvt="00";
@@ -61,13 +35,6 @@ void eventPlane(Double_t En = 10, Int_t nEvents = 2, Int_t fileNum = 5, Int_t fQ
 
   TString sEn = "";
   sEn += En;
-
-  TString sfileNum = "";
-  if(fileNum<10) sfileNum="000";
-  if(fileNum>=10 && fileNum<100) sfileNum="00";
-  if(fileNum>=100 && fileNum<1000) sfileNum="0";
-  if(fileNum>=1000 && fileNum<10000) sfileNum="";
-  sfileNum += fileNum;
 
   // === reco or MC
   TString smcreco = "";
@@ -91,20 +58,22 @@ void eventPlane(Double_t En = 10, Int_t nEvents = 2, Int_t fileNum = 5, Int_t fQ
   if (fQcorr != 1 && fBarcorr != 1 ) sFlatBin = "";
 
   // === Input & ouptput files
-  TString dir = "/hera/cbm/users/sseddiki/test/";
+  TString dir = gSystem->Getenv("VMCWORKDIR");
+  dir += "/macro/run/data/";
+
   // Input file (reco events)
-  TString infilename = dir + "reco/reco_" + numEvt +  "evt_" + sfileNum +  ".root";
+  TString infilename = dir + "reco_" + numEvt +  "evt.root";
   // Input file (MC events)
-  TString infilename2 = dir + "sim/mc_" + numEvt +  "evt_" + sfileNum +  ".root";
+  TString infilename2 = dir + "mc_" + numEvt +  "evt.root";
   // Parameter file
-  TString paramfilename = dir + "sim/params_" + numEvt +  "evt_" + sfileNum +  ".root";
+  TString paramfilename = dir + "params_" + numEvt +  "evt.root";
   // PSD coordinates (from Psdv1.cxx)
-  TString PsdModCoord = dir + "geo/psd_geo_xy_" + numEvt + "evt_" + sfileNum + ".txt";
+  TString PsdModCoord = dir + "psd_geo_xy_" + numEvt + "evt.txt";
   // Correction file
-  TString corrfilename = dir + "ana/ana_1Mevt" + smcreco + scutY_sub + ".root";
-  TString corrfilename_Qcorr = dir + "ana/ana_1Mevt" + smcreco + scutY_sub + "_Qcorr" + sFlatBin + ".root";
+  TString corrfilename = dir + "ana_1Mevt" + smcreco + scutY_sub + ".root";
+  TString corrfilename_Qcorr = dir + "ana_1Mevt" + smcreco + scutY_sub + "_Qcorr" + sFlatBin + ".root";
   // Output file
-  TString outfilename = dir + "ana/ana_" + numEvt +  "evt_" + sfileNum + smcreco + scutY_sub + sQcorr + sBarcorr + sFlatBin + ".root";
+  TString outfilename = dir + "ana_" + numEvt +  "evt_" + smcreco + scutY_sub + sQcorr + sBarcorr + sFlatBin + ".root";
 
   //==================================
   FairRunAna* fRun = new FairRunAna();
