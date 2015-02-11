@@ -3,7 +3,7 @@ void draw_litqa()
    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
    loadlibs();
 
-   std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/dec14/8gev/stsv13d/richv14a/trd4/tofv13/0.7field/nomvd/rho0/";
+   std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/feb15/8gev/stsv13d/richv14a_1e/trd4/tofv13/1.0field/nomvd/rho0/";
    std::string fileName = dir + "litqa.auau.8gev.centr.all.root";
 
    std::string script = std::string(gSystem->Getenv("SCRIPT"));

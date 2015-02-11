@@ -11,7 +11,7 @@ void draw_analysis() {
 
     Bool_t useMvd = false;
     Bool_t drawSignificance = true;
-    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/dec14/25gev/stsv13d/richv14a/trd10/tofv13/1.0field/nomvd/rho0/";
+    std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/feb15/25gev/stsv13d/richv14a_3e/trd10/tofv13/1.0field/nomvd/omegadalitz/";
     std::string fileName = dir + "analysis.auau.25gev.centr.all.root";
 
     std::string script = std::string(gSystem->Getenv("SCRIPT"));
