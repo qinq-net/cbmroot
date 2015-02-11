@@ -107,6 +107,7 @@ dielectron/CbmAnaLmvmDrawStudy.cxx
 dielectron/CbmLmvmHist.cxx
 dielectron/CbmAnaDielectronStudyReportAll.cxx
 dielectron/CbmAnaDielectronReports.cxx
+dielectron/CbmLmvmHadd.cxx
 
 conversion/CbmAnaConversion.cxx
 conversion/CbmAnaConversionTomography.cxx
