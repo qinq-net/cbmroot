@@ -365,6 +365,9 @@ private:
    vector<TH1D*> fh_signal_mom; // Signal momentum distribution
    vector<TH2D*> fh_signal_pty; // Pt/y distribution for signal
    vector<TH2D*> fh_signal_minv_pt; // Invariant mass vs. MC Pt
+   vector<TH2D*> fh_eta_minv_pt; // Invariant mass vs. MC Pt
+   vector<TH2D*> fh_pi0_minv_pt; // Invariant mass vs. MC Pt
+
 
    vector<TH1D*> fh_bg_truematch_minv; // Invariant mass for truly matched tracks
    vector<TH1D*> fh_bg_truematch_el_minv; // Invariant mass for truly matched electron tracks

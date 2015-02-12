@@ -214,6 +214,8 @@ CbmAnaDielectronTask::CbmAnaDielectronTask()
     fh_signal_mom(),
     fh_signal_pty(),
     fh_signal_minv_pt(),
+    fh_eta_minv_pt(),
+    fh_pi0_minv_pt(),
     fh_bg_truematch_minv(),
     fh_bg_truematch_el_minv(),
     fh_bg_truematch_notel_minv(),
@@ -413,14 +415,17 @@ void CbmAnaDielectronTask::InitHists()
       ss << "fh_source_bg_minv_" << i;
       CreateAnalysisStepsH1(fh_source_bg_minv[i], ss.str(), "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
    }
+   //Invariant mass vs. Mc Pt
+   CreateAnalysisStepsH2(fh_signal_minv_pt, "fh_signal_minv_pt","M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Yield", 100, 0., 4., 20, 0., 2.);
+   CreateAnalysisStepsH2(fh_pi0_minv_pt, "fh_pi0_minv_pt", "M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Yield", 100, 0., 4., 20, 0., 2.);
+   CreateAnalysisStepsH2(fh_eta_minv_pt, "fh_eta_minv_pt", "M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Yield", 100, 0., 4., 20, 0., 2.);
+
    // Momentum distribution of the signal
    CreateAnalysisStepsH1(fh_signal_mom, "fh_signal_mom", "P [GeV/c]", "Yield", 100, 0., 15.);
    //Pt/y distibution of the signal
    CreateAnalysisStepsH2(fh_signal_pty, "fh_signal_pty","Rapidity", "P_{t} [GeV/c]", "Yield", 40, 0., 4., 20, 0., 2.);
    //Sources pairs 2D
    CreateAnalysisStepsH2(fh_source_pairs_epem, "fh_source_pairs_epem","mother particle e+", "mother particle e-", "Yield", 3, 0., 3., 3, 0., 3.);
-   //Invariant mass vs. Mc Pt
-   CreateAnalysisStepsH2(fh_signal_minv_pt, "fh_signal_minv_pt","M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Yield", 100, 0., 4., 20, 0., 2.);
 
    fh_opening_angle.resize(CbmLmvmHist::fNofSourceTypes);
    fh_source_mom.resize(CbmLmvmHist::fNofSourceTypes);
@@ -1282,6 +1287,8 @@ void CbmAnaDielectronTask::FillPairHists(
    PairSource(candP, candM, step, parRec);
    if (isPi0) fh_pi0_minv[step]->Fill(parRec->fMinv);
    if (isEta) fh_eta_minv[step]->Fill(parRec->fMinv);
+   if (isPi0) fh_pi0_minv_pt[step]->Fill(parRec->fMinv, parMc->fPt);
+   if (isEta) fh_eta_minv_pt[step]->Fill(parRec->fMinv, parMc->fPt);
    if (isGamma) fh_gamma_minv[step]->Fill(parRec->fMinv);
    if (isBG && isMismatch) fh_bg_mismatch_minv[step]->Fill(parRec->fMinv);
    if (isBG && !isMismatch){
