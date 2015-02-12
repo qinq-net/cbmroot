@@ -396,22 +396,22 @@ void CbmAnaDielectronTask::InitHists()
    CreateSourceTypesH1(fh_mvd2cut_qa, "fh_mvd2cut_qa", "MVD hit assignment", "Yield", 2, 0., 2.);
 
    //Create invariant mass histograms
-   CreateAnalysisStepsH1(fh_signal_minv, "fh_signal_minv", "M_{ee} [GeV/c^{2}]", "Yield", 2000, 0. , 2.);
-   CreateAnalysisStepsH1(fh_bg_minv, "fh_bg_minv", "M_{ee} [GeV/c^{2}]", "Yield", 2000, 0. , 2.);
-   CreateAnalysisStepsH1(fh_pi0_minv, "fh_pi0_minv", "M_{ee} [GeV/c^{2}]", "Yield", 2000, 0. , 2.);
-   CreateAnalysisStepsH1(fh_eta_minv, "fh_eta_minv", "M_{ee} [GeV/c^{2}]", "Yield", 2000, 0. , 2.);
-   CreateAnalysisStepsH1(fh_gamma_minv, "fh_gamma_minv", "M_{ee} [GeV/c^{2}]", "Yield", 2000, 0. , 2.);
+   CreateAnalysisStepsH1(fh_signal_minv, "fh_signal_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1(fh_bg_minv, "fh_bg_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1(fh_pi0_minv, "fh_pi0_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1(fh_eta_minv, "fh_eta_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1(fh_gamma_minv, "fh_gamma_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
    // minv for true matched and mismatched tracks
-   CreateAnalysisStepsH1(fh_bg_truematch_minv, "fh_bg_truematch_minv", "M_{ee} [GeV/c^{2}]", "Yield", 2000, 0. , 2.);
-   CreateAnalysisStepsH1(fh_bg_truematch_el_minv, "fh_bg_truematch_el_minv", "M_{ee} [GeV/c^{2}]", "Yield", 2000, 0. , 2.);
-   CreateAnalysisStepsH1(fh_bg_truematch_notel_minv, "fh_bg_truematch_notel_minv", "M_{ee} [GeV/c^{2}]", "Yield", 2000, 0. , 2.);
-   CreateAnalysisStepsH1(fh_bg_mismatch_minv, "fh_bg_mismatch_minv", "M_{ee} [GeV/c^{2}]", "Yield", 2000, 0. , 2.);
+   CreateAnalysisStepsH1(fh_bg_truematch_minv, "fh_bg_truematch_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1(fh_bg_truematch_el_minv, "fh_bg_truematch_el_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1(fh_bg_truematch_notel_minv, "fh_bg_truematch_notel_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1(fh_bg_mismatch_minv, "fh_bg_mismatch_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
    // Minv for different sources
    fh_source_bg_minv.resize(CbmLmvmHist::fNofBgPairSources);
    for (int i = 0; i < CbmLmvmHist::fNofBgPairSources; i++){
       stringstream ss;
       ss << "fh_source_bg_minv_" << i;
-      CreateAnalysisStepsH1(fh_source_bg_minv[i], ss.str(), "M_{ee} [GeV/c^{2}]", "Yield", 2000, 0. , 2.);
+      CreateAnalysisStepsH1(fh_source_bg_minv[i], ss.str(), "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
    }
    // Momentum distribution of the signal
    CreateAnalysisStepsH1(fh_signal_mom, "fh_signal_mom", "P [GeV/c]", "Yield", 100, 0., 15.);
@@ -420,7 +420,7 @@ void CbmAnaDielectronTask::InitHists()
    //Sources pairs 2D
    CreateAnalysisStepsH2(fh_source_pairs_epem, "fh_source_pairs_epem","mother particle e+", "mother particle e-", "Yield", 3, 0., 3., 3, 0., 3.);
    //Invariant mass vs. Mc Pt
-   CreateAnalysisStepsH2(fh_signal_minv_pt, "fh_signal_minv_pt","M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Yield", 200, 0., 2., 20, 0., 2.);
+   CreateAnalysisStepsH2(fh_signal_minv_pt, "fh_signal_minv_pt","M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Yield", 100, 0., 4., 20, 0., 2.);
 
    fh_opening_angle.resize(CbmLmvmHist::fNofSourceTypes);
    fh_source_mom.resize(CbmLmvmHist::fNofSourceTypes);
