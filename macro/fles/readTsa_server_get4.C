@@ -25,6 +25,7 @@ void readTsa_server_get4( Int_t nEvents = 1000 )
   TString outFile = "data/get4_test.root";
 
   // --- Set log output levels
+//  FairLogger::GetLogger()->SetLogScreenLevel("WARNING");
   FairLogger::GetLogger()->SetLogScreenLevel("INFO");
 //  FairLogger::GetLogger()->SetLogScreenLevel("DEBUG");
   FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
@@ -52,8 +53,11 @@ void readTsa_server_get4( Int_t nEvents = 1000 )
   CbmTSUnpackGet4v1x* get4_unpacker = new CbmTSUnpackGet4v1x();
   get4_unpacker->SetRocNb(      2); // Min 1
   get4_unpacker->SetGet4Nb(   136); // Min 1
-  get4_unpacker->SetMsOverlapTs(1); // Min 1
-  get4_unpacker->SetMode(       1); // 0 = debug, 1 = moni, 2 = unpack
+  get4_unpacker->SetMsOverlapTs(0); // Min 1
+  get4_unpacker->SetMode(       2); // 0 = debug, 1 = moni, 2 = unpack
+     // Disable unconnected chips
+  for( UInt_t uChipIndex = 8; uChipIndex < 128; uChipIndex++)
+     get4_unpacker->SetActiveGet4( uChipIndex, kFALSE );
   get4_unpacker->SetPulserMode(  ); // kTRUE = ON, kFALSE = OFF (default is ON)
   get4_unpacker->SetPulserFee(   ); // 1 value (default is 0)
   get4_unpacker->SetPulserChans(  0,  4,  8, 12,

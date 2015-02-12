@@ -172,12 +172,23 @@ bool get4v1x::Message::operator<(const Message& other) const
    uint64_t uThisTs  = 0;
    uint64_t uOtherTs = 0;
 
+   // if both GET4 32b messages, use the full timestamp info
+   if( MSG_SYS == this->getMessageType() &&
+         SYSMSG_GET4V1_32BIT_0 <= this->getSysMesType() &&
+         MSG_SYS == other.getMessageType() &&
+         SYSMSG_GET4V1_32BIT_0 <= other.getSysMesType() )
+   {
+      uThisTs  = this->getGet4V10R32HitTimeBin();
+      uOtherTs = other.getGet4V10R32HitTimeBin();
+      return uThisTs < uOtherTs;
+   } // both GET4 32b
+
    // First find the timestamp of the current message
    if( MSG_SYS == this->getMessageType() &&
          SYSMSG_GET4V1_32BIT_0 <= this->getSysMesType() )
    {
       if( GET4_32B_DATA == this->getGet4V10R32MessageType() )
-         uThisTs = this->FullTimeStamp2(0, this->getGet4V10R32HitTimeBin() ) / 20 + 512;
+         uThisTs = ( this->getGet4V10R32HitTimeBin() ) / 20 + 512;
          else uThisTs = 0;
    } // if 32b GET4 message
       else uThisTs = this->getMsgFullTime( 0 );
@@ -187,7 +198,7 @@ bool get4v1x::Message::operator<(const Message& other) const
          SYSMSG_GET4V1_32BIT_0 <= other.getSysMesType() )
    {
       if( GET4_32B_DATA == other.getGet4V10R32MessageType() )
-         uOtherTs = other.FullTimeStamp2(0, other.getGet4V10R32HitTimeBin() ) / 20 + 512;
+         uOtherTs = ( other.getGet4V10R32HitTimeBin() ) / 20 + 512;
          else uOtherTs = 0;
    } // if 32b GET4 message
       else uOtherTs = other.getMsgFullTime( 0 );

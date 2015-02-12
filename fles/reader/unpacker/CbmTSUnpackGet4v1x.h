@@ -51,6 +51,7 @@ public:
   inline void SetRocNb(  UInt_t uNbRocsIn ) { fuNbRocs = uNbRocsIn; }
   inline void SetGet4Nb( UInt_t uNbChipsIn) { fuNbGet4 = uNbChipsIn; }
   inline void SetMsOverlapTs( UInt_t uMsOverIn) { fuMsOverlapTs = uMsOverIn; }
+         void SetActiveGet4( UInt_t uChipsIndex, Bool_t bActiveFlag = kTRUE);
 
   inline void SetVerbose( Bool_t inVerb = kTRUE ) { fbVerbose = inVerb; }
 
@@ -58,7 +59,7 @@ public:
 
   inline void SetPulserMode( Bool_t inPulserMode = kTRUE ) { fbPulserMode = inPulserMode; }
   inline void SetPulserFee( UInt_t inPulserFee = 0 ) { fuPulserFee = inPulserFee; }
-  void SetPulserChans( UInt_t inPulserChanA = 0, UInt_t inPulserChanB = 1, UInt_t inPulserChanC = 2,
+         void SetPulserChans( UInt_t inPulserChanA = 0, UInt_t inPulserChanB = 1, UInt_t inPulserChanC = 2,
         UInt_t inPulserChanD =  3, UInt_t inPulserChanE =  4, UInt_t inPulserChanF =  5,
         UInt_t inPulserChanG =  6, UInt_t inPulserChanH =  7, UInt_t inPulserChanI =  8,
         UInt_t inPulserChanJ =  9, UInt_t inPulserChanK = 10, UInt_t inPulserChanL = 11,
@@ -66,8 +67,9 @@ public:
         UInt_t inPulserChanP = 15 );
   inline void SetOldReadoutSupp( Bool_t inReadoutAllowed = kTRUE ) { fbOldReadoutOk = inReadoutAllowed; }
 
-  // protected:
+protected:
   //  virtual void Register();
+  void FinishUnpack();
 
 private:
   // Behavior control variables
@@ -78,6 +80,7 @@ private:
   UInt_t fuNbRocs;
   UInt_t fuNbGet4;
   UInt_t fuMsOverlapTs;
+  std::vector< Bool_t  > fvbActiveChips; // Active flag to avoid mapping need (one per GET4 chip, def. kTRUE)
 
   // TS counter
   ULong64_t fulTsNb;
@@ -149,7 +152,20 @@ private:
 
   // Unpacking related variables
      // Map of following pairs: full epoch +  Multiset containers for ordered data (1/epoch)
-  std::map< ULong64_t, std::multiset< get4v1x::Message > > fmsOrderedEpochsData;
+  std::map< ULong64_t, std::multiset< get4v1x::FullMessage > > fmsOrderedEpochsData;
+     // Map of following pairs: full epoch +  Closed buffer flag (1/epoch)
+  std::map< ULong64_t, Bool_t > fmsOrderedEpochsBuffStat;
+     // FULL epoch2 key of the Current buffer (one per GET4 chip)
+  std::vector< ULong64_t >      fvuCurrEpochBuffer;
+     // iterator of the Current buffer (one per GET4 chip)
+  std::vector<
+     std::map< ULong64_t, std::multiset<
+           get4v1x::FullMessage >
+        >::iterator >  fvuCurrEpochBufferIt;
+     // Last epoch buffer for which all chips were done
+  ULong64_t fuLastEpBufferReady;
+     // Current buffer for read (first unread close epoch, to be erased after read?)
+  ULong64_t fuCurrEpReadBuffer;
 
   // Unpacking functions
   // EqID = Equipment identifier from ums

@@ -53,6 +53,7 @@ CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
   fuNbRocs(0),
   fuNbGet4(0),
   fuMsOverlapTs(0),
+  fvbActiveChips(),
   fulTsNb(0),
   fulMsNb(0),
   fsMaxMsNb(0),
@@ -97,7 +98,12 @@ CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
   fvmLastOldTot(),
   fhPulserFeeTotDnl(NULL),
   fhPulserFeeTotInl(NULL),
-  fmsOrderedEpochsData()
+  fmsOrderedEpochsData(),
+  fmsOrderedEpochsBuffStat(),
+  fvuCurrEpochBuffer(),
+  fvuCurrEpochBufferIt(),
+  fuLastEpBufferReady(0),
+  fuCurrEpReadBuffer(0)
 {
 }
 
@@ -136,19 +142,52 @@ Bool_t CbmTSUnpackGet4v1x::Init()
   for( UInt_t uChip = 0; uChip < fuNbGet4; uChip++)
      fvbGet4WaitFirstSync[uChip] = kTRUE;
 
+  // Prepare the active chips flags
+  if( 0 == fvbActiveChips.size() && 0 < fuNbGet4  )
+  {
+     fvbActiveChips.resize(fuNbGet4);
+     for( UInt_t uChip = 0; uChip < fuNbGet4; uChip++)
+        fvbActiveChips[uChip] = kTRUE;
+  } // if( 0 == fvbActiveChips.size()
   // Prepare the epoch storing vectors
   fvuCurrEpoch.resize( fuNbRocs);
+  fvuCurrEpochCycle.resize( fuNbRocs);
   for( UInt_t uRoc = 0; uRoc < fuNbRocs; uRoc++)
+  {
      fvuCurrEpoch[uRoc] = 0;
+     fvuCurrEpochCycle[uRoc] = 0;
+  } // for( UInt_t uRoc = 0; uRoc < fuNbRocs; uRoc++)
   fvuCurrEpoch2.resize(fuNbGet4);
+  fvuCurrEpoch2Cycle.resize(fuNbGet4);
+  fvuCurrEpochBuffer.resize(fuNbGet4);
+  fvuCurrEpochBufferIt.resize(fuNbGet4);
   for( UInt_t uChip = 0; uChip < fuNbGet4; uChip++)
+  {
      fvuCurrEpoch2[uChip] = 0;
+     fvuCurrEpoch2Cycle[uChip] = 0;
+     fvuCurrEpochBuffer[uChip] = 0;
+     fvuCurrEpochBufferIt[uChip] = fmsOrderedEpochsData.end();
+  } // for( UInt_t uChip = 0; uChip < fuNbGet4; uChip++)
 
   InitMonitorHistograms();
 
   return kTRUE;
 }
 
+void CbmTSUnpackGet4v1x::SetActiveGet4( UInt_t uChipsIndex, Bool_t bActiveFlag)
+{
+   if( 0 == fvbActiveChips.size() && 0 < fuNbGet4 )
+   {
+      fvbActiveChips.resize(fuNbGet4);
+      for( UInt_t uChip = 0; uChip < fuNbGet4; uChip++)
+         fvbActiveChips[uChip] = kTRUE;
+   } // if( 0 == fvbActiveChips.size()
+
+   if( uChipsIndex < fuNbGet4 )
+      fvbActiveChips[uChipsIndex] = bActiveFlag;
+      else LOG(ERROR)<<" CbmTSUnpackGet4v1x::SetActiveGet4 => Invalid chip index "
+                     << uChipsIndex <<FairLogger::endl;
+}
 
 void CbmTSUnpackGet4v1x::SetPulserChans(
       UInt_t inPulserChanA, UInt_t inPulserChanB, UInt_t inPulserChanC, UInt_t inPulserChanD,
@@ -179,6 +218,9 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
    fulTsNb++;
    if( 0 == fiMode || kTRUE == fbVerbose )
       LOG(INFO)<<" ++++++++++++ Ts # "<<fulTsNb<<FairLogger::endl;
+
+   if( 2 == fiMode )
+      LOG(INFO)<<" ++++++++++++ Ts # "<<fulTsNb<<" Start!"<<FairLogger::endl;
 
    // Loop over microslices
    fsMaxMsNb = ts.num_microslices(component) - fuMsOverlapTs;
@@ -423,7 +465,65 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
 
    } // for (size_t m = 0; m < ts.num_microslices(component); ++m)
 
+  FinishUnpack();
+
   return kTRUE;
+}
+
+void CbmTSUnpackGet4v1x::FinishUnpack()
+{
+   // Something to do only in Processing mode
+   // TODO: Use the stored data for something usefull !!!
+   if( 2 == fiMode )
+   {
+      if( kFALSE == fvbGet4WaitFirstSync[0] )
+      {
+      LOG(DEBUG)<<" CbmTSUnpackGet4v1x::FinishUnpack => Stored epochs: "
+               <<fmsOrderedEpochsData.size()<<" "
+               <<fmsOrderedEpochsBuffStat.size()<<FairLogger::endl;
+      UInt_t uNbClosedEpochs = 0;
+      Bool_t bOneEpochPrinted = kFALSE;
+      auto itBuffer = fmsOrderedEpochsData.begin();
+      for( auto itFlag = fmsOrderedEpochsBuffStat.begin();  itFlag!=fmsOrderedEpochsBuffStat.end(); ++itFlag )
+      {
+         if( kTRUE == itFlag->second )
+         {
+            uNbClosedEpochs++;
+            LOG(DEBUG)<<" CbmTSUnpackGet4v1x::FinishUnpack => Epochs: "<<uNbClosedEpochs
+                     <<" Size: "<< (itBuffer->second).size() << FairLogger::endl;
+         }
+         if( kFALSE == bOneEpochPrinted && 0 < (itBuffer->second).size() )
+         {
+            for( auto itData = (itBuffer->second).begin(); itData != (itBuffer->second).end(); ++itData)
+            {
+               LOG(DEBUG)<<" Epoch: "<< itData->getExtendedEpoch() <<" ";
+               itData->printDataLog();
+            } // for( auto itData = (itBuffer->second).begin(); itData != (itBuffer->second).begin(); ++itData)
+            bOneEpochPrinted = kTRUE;
+         } // if( kFALSE == bOneEpochPrinted && 0 < (itBuffer->second).size() )
+         ++itBuffer;
+      } // for( auto itFlag = fmsOrderedEpochsBuffStat.begin();  itFlag!=fmsOrderedEpochsBuffStat.end(); ++itFlag )
+      LOG(DEBUG)<<" CbmTSUnpackGet4v1x::FinishUnpack => Closed epochs: "<<uNbClosedEpochs<<FairLogger::endl;
+      } // if( kFALSE == fvbGet4WaitFirstSync[0] )
+
+
+      auto itBuffer = fmsOrderedEpochsData.begin();
+      for( auto itFlag = fmsOrderedEpochsBuffStat.begin();  itFlag!=fmsOrderedEpochsBuffStat.end(); ++itFlag )
+      {
+         if( kTRUE == itFlag->second )
+         {
+            (itBuffer->second).clear();
+            fmsOrderedEpochsData.erase( itBuffer );
+            fmsOrderedEpochsBuffStat.erase( itFlag );
+         } // if( kTRUE == itFlag->second )
+         ++itBuffer;
+      } // for( auto itFlag = fmsOrderedEpochsBuffStat.begin();  itFlag!=fmsOrderedEpochsBuffStat.end(); ++itFlag )
+      if( 0 < fmsOrderedEpochsBuffStat.size() )
+         fuLastEpBufferReady = (fmsOrderedEpochsBuffStat.begin())->first ;
+         else fuLastEpBufferReady = 0;
+
+      LOG(DEBUG)<<" ++++++++++++ Ts # "<<fulTsNb<<" Done!"<<FairLogger::endl;
+   } // if( 2 == fiMode )
 }
 
 void CbmTSUnpackGet4v1x::Reset()
@@ -827,6 +927,13 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch(  get4v1x::Message mess, uint16_t 
    LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_epoch => ROC Epoch: EqId "
                <<EqID<<" roc "
                <<cRocId<<FairLogger::endl;
+
+   // Epoch counter overflow book keeping
+   if( (get4v1x::kulMainEpochCycleSz - 2) < fvuCurrEpoch[cRocId] &&
+       mess.getEpochNumber() < 2  )
+      fvuCurrEpochCycle[cRocId]++;
+
+   fvuCurrEpoch[cRocId] = mess.getEpochNumber();
 }
 void CbmTSUnpackGet4v1x::MonitorMessage_sync(   get4v1x::Message mess, uint16_t EqID)
 {
@@ -860,6 +967,27 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
                <<EqID<<" roc "
                <<cRocId<<" chip "
                <<cChipId<<FairLogger::endl;
+
+   // Reject data of chips above defined limit to avoid overflow/seg fault
+   if( fuNbGet4 <= uChipFullId )
+   {
+      if( kTRUE == fbVerbose )
+         LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_epoch2 => Ignored message with ChipId above limit!"
+                  <<" ChipId: "<<cChipId
+                  <<" RocId: " <<cRocId
+                  <<" Limit: " <<fuNbGet4<<FairLogger::endl;
+      return;
+   } // if( fuNbGet4 <= cChipId + kuMaxGet4PerRoc*mess.getRocNumber() )
+
+   // Reject data of Inactive chips
+   if( kFALSE == fvbActiveChips[uChipFullId])
+   {
+      if( kTRUE == fbVerbose )
+         LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_epoch2 => Ignored message with Inactive Chip!"
+                  <<" ChipId: "<<cChipId
+                  <<" RocId: " <<cRocId <<FairLogger::endl;
+      return;
+   } // if( kFALSE == fvbActiveChips[uChipFullId])
 
    // As long as the 1st epoch with sync flag after SYNC DLM is found,
    // consider data as not good
@@ -898,6 +1026,12 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
 
       fhGet4EpochJumps->Fill(uChipFullId, iEpJump);
    } // if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
+
+   // Epoch counter overflow book keeping
+   if( (get4v1x::kul24bGet4EpochCycleSz - 2) < fvuCurrEpoch2[uChipFullId] &&
+       mess.getEpoch2Number() < 2  )
+      fvuCurrEpoch2Cycle[uChipFullId]++;
+
    fvuCurrEpoch2[uChipFullId] = mess.getEpoch2Number();
 
    if( 1 == mess.getEpoch2Sync() )
@@ -1037,6 +1171,27 @@ void CbmTSUnpackGet4v1x::MonitorMessage_get4(   get4v1x::Message mess, uint16_t 
             + mess.getGet4ChNum();
       UInt_t uTimeStamp = mess.getGet4Ts();
 
+      // Reject data of chips above defined limit to avoid overflow/seg fault
+      if( fuNbGet4 <= uChipFullId )
+      {
+         if( kTRUE == fbVerbose )
+            LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_get4 => Ignored message with ChipId above limit!"
+                     <<" ChipId: "<<cChipId
+                     <<" RocId: " <<cRocId
+                     <<" Limit: " <<fuNbGet4<<FairLogger::endl;
+         return;
+      } // if( fuNbGet4 <= cChipId + kuMaxGet4PerRoc*mess.getRocNumber() )
+
+      // Reject data of Inactive chips
+      if( kFALSE == fvbActiveChips[uChipFullId])
+      {
+         if( kTRUE == fbVerbose )
+            LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_get4 => Ignored message with Inactive Chip!"
+                     <<" ChipId: "<<cChipId
+                     <<" RocId: " <<cRocId <<FairLogger::endl;
+         return;
+      } // if( kFALSE == fvbActiveChips[uChipFullId])
+
       // As long as the 1st epoch with sync flag after SYNC DLM is found,
       // consider data as not good
       if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
@@ -1165,7 +1320,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_sys(    get4v1x::Message mess, uint16_t 
                      <<Form(" LO  #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                      <<FairLogger::endl;
             fvbRocFeetSyncStart[cRocId] = kTRUE;
-         }
+         } // if( get4v1x::SYSMSG_USER_ROCFEET_SYNC == mess.getSysMesData() )
          break;
       } // case get4v1x::SYSMSG_USER
       case get4v1x::SYSMSG_PACKETLOST:
@@ -1235,6 +1390,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
                <<EqID<<" roc "
                <<cRocId<<FairLogger::endl;
 
+   // Reject data of chips above defined limit to avoid overflow/seg fault
    if( fuNbGet4 <= uChipFullId )
    {
       if( kTRUE == fbVerbose )
@@ -1244,6 +1400,16 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
                   <<" Limit: " <<fuNbGet4<<FairLogger::endl;
       return;
    } // if( fuNbGet4 <= cChipId + kuMaxGet4PerRoc*mess.getRocNumber() )
+
+   // Reject data of Inactive chips
+   if( kFALSE == fvbActiveChips[uChipFullId])
+   {
+      if( kTRUE == fbVerbose )
+         LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_Get4v1 => Ignored message with Inactive Chip!"
+                  <<" ChipId: "<<cChipId
+                  <<" RocId: " <<cRocId <<FairLogger::endl;
+      return;
+   } // if( kFALSE == fvbActiveChips[uChipFullId])
 
    switch( cMessType )
    {
@@ -1286,6 +1452,12 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
 
             fhGet4EpochJumps->Fill(uChipFullId, iEpJump);
          } // if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
+
+         // Epoch counter overflow book keeping
+         if( (get4v1x::kulGet4EpochCycleSz - 2) < fvuCurrEpoch2[uChipFullId] &&
+             mess.getEpoch2Number() < 2  )
+            fvuCurrEpoch2Cycle[uChipFullId]++;
+
          fvuCurrEpoch2[uChipFullId] = mess.getGet4V10R32EpochNumber();
 
          if( 1 == mess.getGet4V10R32SyncFlag() )
@@ -1527,6 +1699,13 @@ void CbmTSUnpackGet4v1x::ProcessMessage_epoch(  get4v1x::Message mess, uint16_t 
    LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_epoch => ROC Epoch: EqId "
                <<EqID<<" roc "
                <<cRocId<<FairLogger::endl;
+
+   // Epoch counter overflow book keeping
+   if( (get4v1x::kulMainEpochCycleSz - 2) < fvuCurrEpoch[cRocId] &&
+       mess.getEpochNumber() < 2  )
+      fvuCurrEpochCycle[cRocId]++;
+
+   fvuCurrEpoch[cRocId] = mess.getEpochNumber();
 }
 void CbmTSUnpackGet4v1x::ProcessMessage_sync(   get4v1x::Message mess, uint16_t EqID)
 {
@@ -1562,6 +1741,116 @@ void CbmTSUnpackGet4v1x::ProcessMessage_epoch2( get4v1x::Message mess, uint16_t 
    LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_epoch2 => GET4 Epoch2: EqId "
                <<EqID<<" roc "
                <<cRocId<<FairLogger::endl;
+   /*
+   // Reject data of chips above defined limit to avoid overflow/seg fault
+   if( fuNbGet4 <= uChipFullId )
+   {
+      if( kTRUE == fbVerbose )
+         LOG(DEBUG)<<"CbmTSUnpackGet4v1x::MonitorMessage_epoch2 => Ignored message with ChipId above limit!"
+                  <<" ChipId: "<<cChipId
+                  <<" RocId: " <<cRocId
+                  <<" Limit: " <<fuNbGet4<<FairLogger::endl;
+      return;
+   } // if( fuNbGet4 <= cChipId + kuMaxGet4PerRoc*mess.getRocNumber() )
+
+   // Reject data of Inactive chips
+   if( kFALSE == fvbActiveChips[uChipFullId])
+   {
+      if( kTRUE == fbVerbose )
+         LOG(DEBUG)<<"CbmTSUnpackGet4v1x::MonitorMessage_epoch2 => Ignored message with Inactive Chip!"
+                  <<" ChipId: "<<cChipId
+                  <<" RocId: " <<cRocId <<FairLogger::endl;
+      return;
+   } // if( kFALSE == fvbActiveChips[uChipFullId])
+
+   // As long as the 1st epoch with sync flag after SYNC DLM is found,
+   // consider data as not good
+   if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+   {
+      if( 1 == mess.getEpoch2Sync() )
+      {
+         fvbGet4WaitFirstSync[uChipFullId] = kFALSE;
+
+         LOG(INFO) << "First SYNC Epoch after DLM in chip "
+                   <<Form("%3u: ", uChipFullId)
+                   <<Form(" EP #%6u", mess.getEpoch2Number() )
+                   <<Form(" TS #%12llu", fulTsNb)
+                   <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                   <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
+                   <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                   << FairLogger::endl;
+      } // if( 1 == mess.getEpoch2Sync() )
+         else return;
+   } // if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+
+   if( fvuCurrEpoch2[uChipFullId] +1 != mess.getEpoch2Number() &&
+         0 != fvuCurrEpoch2[uChipFullId] )
+   {
+      Int_t iEpJump = mess.getEpoch2Number();
+      iEpJump      -= fvuCurrEpoch2[uChipFullId];
+      LOG(DEBUG) << "Epoch nb jump in chip "
+                 <<Form("%3u: ", uChipFullId)
+                 << Form(" %3d (%6u -> %6u)", iEpJump, fvuCurrEpoch2[uChipFullId],
+                                         mess.getEpoch2Number() )
+                 <<Form(" TS #%12llu", fulTsNb)
+                 <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                 <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
+                 <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                 << FairLogger::endl;
+
+      fhGet4EpochJumps->Fill(uChipFullId, iEpJump);
+   } // if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
+
+   // Epoch counter overflow book keeping
+   if( (get4v1x::kul24bGet4EpochCycleSz - 2) < fvuCurrEpoch2[uChipFullId] &&
+       mess.getEpoch2Number() < 2  )
+      fvuCurrEpoch2Cycle[uChipFullId]++;
+
+   fvuCurrEpoch2[uChipFullId] = mess.getEpoch2Number();
+
+   if( 1 == mess.getEpoch2Sync() )
+   {
+      fhGet4EpochFlags->Fill(uChipFullId, 0);
+      fhGet4EpochSyncDist->Fill( uChipFullId, fvuCurrEpoch2[uChipFullId] % get4v1x::kuSyncCycleSzGet4 );
+   } // if( 1 == mess.getEpoch2Sync() )
+
+   if( 1 == mess.getEpoch2EpochMissmatch() )
+   {
+      fhGet4EpochFlags->Fill(uChipFullId, 1);
+      LOG(DEBUG) << "Epoch missmatch in chip "
+                <<Form("%3u: ", uChipFullId)
+                <<Form(" EP #%6u", mess.getEpoch2Number() )
+                <<Form(" TS #%12llu", fulTsNb)
+                <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
+                <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                << FairLogger::endl;
+   } // if( 1 == mess.getEpoch2EpochMissmatch() )
+   if( 1 == mess.getEpoch2EpochLost() )
+   {
+      fhGet4EpochFlags->Fill(uChipFullId, 2);
+      LOG(DEBUG) << "Epoch loss in chip      "
+                <<Form("%3u: ", uChipFullId)
+                <<Form(" EP #%6u", mess.getEpoch2Number() )
+                <<Form(" TS #%12llu", fulTsNb)
+                <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
+                <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                << FairLogger::endl;
+   } // if( 1 == mess.getEpoch2EpochLost() )
+   if( 1 == mess.getEpoch2DataLost() )
+   {
+      fhGet4EpochFlags->Fill(uChipFullId, 3);
+      LOG(DEBUG) << "Data Loss in chip       "
+                <<Form("%3u: ", uChipFullId)
+                <<Form(" EP #%6u", mess.getEpoch2Number() )
+                <<Form(" TS #%12llu", fulTsNb)
+                <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
+                <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                << FairLogger::endl;
+   } // if( 1 == mess.getEpoch2DataLost() )
+   */
 }
 void CbmTSUnpackGet4v1x::ProcessMessage_get4(   get4v1x::Message mess, uint16_t EqID)
 {
@@ -1569,7 +1858,7 @@ void CbmTSUnpackGet4v1x::ProcessMessage_get4(   get4v1x::Message mess, uint16_t 
    // TODO: check compatibility when 32b format without hack ready
    uint8_t  cRocId    = mess.getRocNumber();
    if( kTRUE == fbVerbose )
-      LOG(INFO)<<"CbmTSUnpackGet4v1x::ProcessMessage_get4   => Found a GET4 24b message: ignore it"
+      LOG(DEBUG)<<"CbmTSUnpackGet4v1x::ProcessMessage_get4   => Found a GET4 24b message: ignore it"
                <<FairLogger::endl;
 
    LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_get4 => GET4 Data: EqId "
@@ -1583,7 +1872,9 @@ void CbmTSUnpackGet4v1x::ProcessMessage_sys(    get4v1x::Message mess, uint16_t 
                <<EqID<<" roc "
                <<cRocId<<FairLogger::endl;
 
-   fhSysMessTypePerRoc->Fill( cRocId, mess.getSysMesType() );
+   if( mess.getSysMesType() < get4v1x::SYSMSG_GET4V1_32BIT_0 )
+      fhSysMessTypePerRoc->Fill( cRocId, mess.getSysMesType() );
+
    switch( mess.getSysMesType() )
    {
       case get4v1x::SYSMSG_DAQ_START:
@@ -1615,6 +1906,17 @@ void CbmTSUnpackGet4v1x::ProcessMessage_sys(    get4v1x::Message mess, uint16_t 
       } // case get4v1x::SYSMSG_FIFO_RESET
       case get4v1x::SYSMSG_USER:
       {
+         if( get4v1x::SYSMSG_USER_ROCFEET_SYNC == mess.getSysMesData() )
+         {
+            LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_sys => SYNC DLM!"
+                     <<" RocId: " << Form("%02u", cRocId)
+                     <<Form(" TS  #%12llu", fulTsNb)
+                     <<Form(" MS  #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                     <<Form(" OF  #%5u/%5u", fuOffset, fuMaxOffset)
+                     <<Form(" LO  #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                     <<FairLogger::endl;
+            fvbRocFeetSyncStart[cRocId] = kTRUE;
+         } // if( get4v1x::SYSMSG_USER_ROCFEET_SYNC == mess.getSysMesData() )
          break;
       } // case get4v1x::SYSMSG_USER
       case get4v1x::SYSMSG_PACKETLOST:
@@ -1654,8 +1956,14 @@ void CbmTSUnpackGet4v1x::ProcessMessage_sys(    get4v1x::Message mess, uint16_t 
       case get4v1x::SYSMSG_GET4V1_32BIT_14:
       case get4v1x::SYSMSG_GET4V1_32BIT_15:
       {
+         // Ignore all messages before RocFeet system SYNC
+         if (kFALSE == fvbRocFeetSyncStart[cRocId] )
+            break;
+
          // GET4 v1.x 32b raw message using hack
          fhMessageTypePerRoc->Fill( cRocId, 15 );
+         fhSysMessTypePerRoc->Fill( cRocId, 15 );
+
          ProcessMessage_Get4v1( mess, EqID);
          break;
       } // case get4v1x::SYSMSG_TS156_SYNC
@@ -1676,10 +1984,11 @@ void CbmTSUnpackGet4v1x::ProcessMessage_Get4v1( get4v1x::Message mess, uint16_t 
    uint32_t uChipFullId = cChipId + get4v1x::kuMaxGet4PerRoc*cRocId;
    uint8_t  cMessType = mess.getGet4V10R32MessageType();
 
-   LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_Get4v1 => 32b GET4 message: EqId "
+   LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::ProcessMessage_Get4v1 => 32b GET4 message: EqId "
                <<EqID<<" roc "
                <<cRocId<<FairLogger::endl;
 
+   // Reject data of chips above defined limit to avoid overflow/seg fault
    if( fuNbGet4 <= uChipFullId )
    {
       if( kTRUE == fbVerbose )
@@ -1690,10 +1999,123 @@ void CbmTSUnpackGet4v1x::ProcessMessage_Get4v1( get4v1x::Message mess, uint16_t 
       return;
    } // if( fuNbGet4 <= cChipId + kuMaxGet4PerRoc*mess.getRocNumber() )
 
+   // Reject data of Inactive chips
+   if( kFALSE == fvbActiveChips[uChipFullId])
+   {
+      if( kTRUE == fbVerbose )
+         LOG(INFO)<<"CbmTSUnpackGet4v1x::ProcessMessage_Get4v1 => Ignored message with Inactive Chip!"
+                  <<" ChipId: "<<cChipId
+                  <<" RocId: " <<cRocId <<FairLogger::endl;
+      return;
+   } // if( kFALSE == fvbActiveChips[uChipFullId])
+
    switch( cMessType )
    {
       case get4v1x::GET4_32B_EPOCH: // => Epoch message
       {
+
+         // As long as the 1st epoch with sync flag after SYNC DLM is found,
+         // consider data as not good
+         if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+         {
+            if( 1 == mess.getGet4V10R32SyncFlag() )
+            {
+               fvbGet4WaitFirstSync[uChipFullId] = kFALSE;
+
+               LOG(INFO) << "First SYNC Epoch after DLM in chip "
+                         <<Form("%3u: ", uChipFullId)
+                         <<Form(" EP #%6u", mess.getGet4V10R32EpochNumber() )
+                         <<Form(" TS #%12llu", fulTsNb)
+                         <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                         <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
+                         <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                         << FairLogger::endl;
+            } // if( 1 == mess.getGet4V10R32SyncFlag() )
+               else return;
+         } // if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+
+         if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber() &&
+               0 != fvuCurrEpoch2[uChipFullId] )
+         {
+            Int_t iEpJump = mess.getGet4V10R32EpochNumber();
+            iEpJump      -= fvuCurrEpoch2[uChipFullId];
+            LOG(DEBUG) << "Epoch nb jump in chip "
+                       <<Form("%3u: ", uChipFullId)
+                       << Form(" %3d (%6u -> %6u)", iEpJump, fvuCurrEpoch2[uChipFullId],
+                                                    mess.getGet4V10R32EpochNumber() )
+                       <<Form(" TS  #%12llu", fulTsNb)
+                       <<Form(" MS  #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                       <<Form(" OF  #%5u/%5u", fuOffset, fuMaxOffset)
+                       <<Form(" LO  #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                       << FairLogger::endl;
+
+            fhGet4EpochJumps->Fill(uChipFullId, iEpJump);
+         } // if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
+
+         // Epoch counter overflow book keeping
+         if( (get4v1x::kulGet4EpochCycleSz - 2) < fvuCurrEpoch2[uChipFullId] &&
+             mess.getEpoch2Number() < 2  )
+            fvuCurrEpoch2Cycle[uChipFullId]++;
+
+         fvuCurrEpoch2[uChipFullId] = mess.getGet4V10R32EpochNumber();
+
+         if( 1 == mess.getGet4V10R32SyncFlag() )
+         {
+            fhGet4EpochFlags->Fill(uChipFullId , 0);
+            fhGet4EpochSyncDist->Fill( uChipFullId, fvuCurrEpoch2[uChipFullId] % get4v1x::kuSyncCycleSzGet4 );
+         } // if( 1 == mess.getGet4V10R32SyncFlag() )
+
+         // Check other active chips current epoch and close all epochs which all chips passed
+         fvuCurrEpochBuffer[uChipFullId] = static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
+               ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24);
+         ULong64_t uLowerCurrentReadyEp = fvuCurrEpochBuffer[uChipFullId];
+//         LOG(DEBUG2)<<"CbmTSUnpackGet4v1x::MonitorMessage_Get4v1 => Check close "
+//               << uLowerCurrentReadyEp << " => ";
+         for( UInt_t uChipScan = 0; uChipScan < fuNbGet4; uChipScan++)
+         {
+//            LOG(DEBUG2)<<"( "<<fvbActiveChips[uChipScan]<<", "<<fvuCurrEpochBuffer[uChipScan]<<") ";
+            if( kTRUE == fvbActiveChips[uChipScan] &&
+                  fvuCurrEpochBuffer[uChipScan] < uLowerCurrentReadyEp )
+               uLowerCurrentReadyEp = fvuCurrEpochBuffer[uChipScan];
+         } // for( UInt_t uChipScan = 0; uChipScan < fuNbGet4; uChipScan++)
+
+         //
+
+//         LOG(INFO)<<" => ( "<<fuLastEpBufferReady<<", "<<uLowerCurrentReadyEp<<") "<<FairLogger::endl;
+
+         // The map is ordered so we can just loop over
+         if( fuLastEpBufferReady < uLowerCurrentReadyEp )
+         {
+//            for( std::map<ULong64_t, Bool_t>::iterator it= fmsOrderedEpochsBuffStat.find(fuLastEpBufferReady);
+            // Check to avoid starting at an entry already removed in previous loops
+            auto it_Start = fmsOrderedEpochsBuffStat.find(fuLastEpBufferReady);
+            if( fmsOrderedEpochsBuffStat.end() == it_Start )
+               it_Start = fmsOrderedEpochsBuffStat.begin();
+
+            for( auto it= it_Start;
+                 it!=fmsOrderedEpochsBuffStat.find(uLowerCurrentReadyEp);
+                 ++it)
+               it->second = kTRUE;
+            auto it = fmsOrderedEpochsBuffStat.find(uLowerCurrentReadyEp);
+            --it; // Go back to previous element
+            fuLastEpBufferReady = it->first;
+         }
+
+         // Start new buffer for this epoch if it does not already exist
+         if( fmsOrderedEpochsData.end() == fmsOrderedEpochsData.find(fvuCurrEpochBuffer[uChipFullId]) )
+         {
+            // new entry in map with empty multiset
+            fmsOrderedEpochsData.insert( fmsOrderedEpochsData.end(),
+                  std::pair< ULong64_t, std::multiset< get4v1x::FullMessage > >(
+                        fvuCurrEpochBuffer[uChipFullId],
+                        std::multiset< get4v1x::FullMessage >() ) );
+            // new entry in map with kFALSE flag
+            fmsOrderedEpochsBuffStat.insert( fmsOrderedEpochsBuffStat.end(),
+                  std::pair<ULong64_t, Bool_t>(fvuCurrEpochBuffer[uChipFullId], kFALSE) );
+         } // if( fmsOrderedEpochsData.end() == fmsOrderedEpochsData.find(fvuCurrEpochBuffer[uChipFullId]) )
+
+         fvuCurrEpochBufferIt[uChipFullId] = fmsOrderedEpochsData.find(fvuCurrEpochBuffer[uChipFullId]);
+
          break;
       } // case get4v1x::GET4_32B_EPOCH
       case get4v1x::GET4_32B_SLCM:  // => Slow control
@@ -1702,6 +2124,12 @@ void CbmTSUnpackGet4v1x::ProcessMessage_Get4v1( get4v1x::Message mess, uint16_t 
                get4v1x::kuChanPerGet4*2*( uChipFullId )
                + mess.getGet4V10R32SlChan()
                + 0.5*mess.getGet4V10R32SlEdge();
+
+         // As long as the 1st epoch with sync flag after SYNC DLM is found,
+         // consider data as not good
+         if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+            return;
+
          fhGet4ChanSlowContM->Fill( dFullChId, mess.getGet4V10R32SlType() );
          break;
       } // case get4v1x::GET4_32B_SLCM
@@ -1711,10 +2139,20 @@ void CbmTSUnpackGet4v1x::ProcessMessage_Get4v1( get4v1x::Message mess, uint16_t 
                get4v1x::kuChanPerGet4*2*( uChipFullId )
                + mess.getGet4V10R32ErrorChan()
                + 0.5*mess.getGet4V10R32ErrorEdge();
+
+         // As long as the 1st epoch with sync flag after SYNC DLM is found,
+         // consider data as not good
+         if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+            return;
+
          switch( mess.getGet4V10R32ErrorData() )
          {
             case get4v1x::GET4_V1X_ERR_READ_INIT:
                fhGet4ChanErrors->Fill( dFullChId, 0);
+               LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_Get4v1 => Readout Init!"
+                        <<" ChipId: "<<Form("%02u", cChipId)
+                        <<" RocId: " <<Form("%02u", cRocId)
+                        <<" TS: " <<fulTsNb<<FairLogger::endl;
                break;
             case get4v1x::GET4_V1X_ERR_SYNC:
                fhGet4ChanErrors->Fill( dFullChId, 1);
@@ -1775,8 +2213,24 @@ void CbmTSUnpackGet4v1x::ProcessMessage_Get4v1( get4v1x::Message mess, uint16_t 
          UInt_t uFullChId =
                get4v1x::kuChanPerGet4*( uChipFullId )
                + mess.getGet4V10R32HitChan();
+
+         // As long as the 1st epoch with sync flag after SYNC DLM is found,
+         // consider data as not good
+         if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+            return;
+
          fhGet4ChanDataCount->Fill( uFullChId );
          fhGet4ChanDllStatus->Fill( uFullChId, mess.getGet4V10R32HitDllFlag() );
+         fhGet4ChanTotMap->Fill(    uFullChId, mess.getGet4V10R32HitTot()
+                                               *get4v1x::kdTotBinSize/1000.0 );
+
+         // Save the message in the corresponding epoch vector
+         get4v1x::FullMessage fullMess( mess, fvuCurrEpochBuffer[uChipFullId] );
+//         std::map< ULong64_t, std::multiset< get4v1x::FullMessage > >::iterator it;
+//         auto it = fmsOrderedEpochsData.find( fvuCurrEpochBuffer[uChipFullId] );
+         auto it = fvuCurrEpochBufferIt[uChipFullId];
+         (it->second).insert( (it->second).end(), fullMess );
+
          break;
       } // case get4v1x::GET4_32B_DATA
    } // switch( cMessType )

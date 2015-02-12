@@ -561,6 +561,8 @@ namespace get4v1x {
       public:
          FullMessage() : Message(), fuExtendedEpoch(0) {}
 
+         FullMessage(const Message& src, uint64_t uEpIn) : Message(src), fuExtendedEpoch(uEpIn) {}
+
          FullMessage(const FullMessage& src) : Message(src), fuExtendedEpoch(src.fuExtendedEpoch) {}
 
          void assign(const FullMessage& src) { Message::assign(src); fuExtendedEpoch = src.fuExtendedEpoch; }
@@ -570,6 +572,8 @@ namespace get4v1x {
          bool operator<(const FullMessage& other) const;
 
          inline void reset() {  Message::reset(); fuExtendedEpoch = 0; }
+
+         inline uint64_t getExtendedEpoch() const {return fuExtendedEpoch; }
    };
 
 }
