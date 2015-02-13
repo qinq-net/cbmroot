@@ -20,7 +20,6 @@ CbmBuildEventsSimple::CbmBuildEventsSimple(const char* name, Int_t iVerbose)
     fPrevT(-1111), fPrevN(-1111), fCurT(-1111), fCurN(-1111),
     fStartT(-1111), fEndT(-1111), fOpenEvent(0)
 {
-  ;
 }
 
 void CbmBuildEventsSimple::Exec(Option_t* opt)
@@ -40,7 +39,7 @@ void CbmBuildEventsSimple::Exec(Option_t* opt)
     digi=fSlice->GetData(kSTS, i);
     if (digi==NULL) continue;
     t=digi->GetTime();
-    cout << t << endl;
+//    cout << t << endl;
     if (t-fCurT>fStepLength)
     {
       fPrevT=fCurT; fPrevN=fCurN;
@@ -49,7 +48,6 @@ void CbmBuildEventsSimple::Exec(Option_t* opt)
     n++;
     if (n>=fEventStartThreshold)
     {
-      cout << n << endl;
       i=ConstructEvent();
       n=0;
     }
@@ -127,8 +125,8 @@ Int_t CbmBuildEventsSimple::ConstructEvent()
     fOpenEvent++;
     return nsts;
   }
+  LOG(INFO) << "CbmBuildEventsSimple:	Event " << fEv << " constructed. STS digis: " <<  fSTSDigi->GetEntriesFast() << FairLogger::endl;
   fEv++; fOpenEvent=0; fEndT=-1111; fStartT=-1111;
-    LOG(INFO) << "CbmBuildEventsSimple:	Event " << fEv << " constructed. Events: " <<  fSTSDigi->GetEntriesFast() << FairLogger::endl;
   FairRootManager::Instance()->Fill();
   fNSTSDigis=0; fSTSDigi->Delete();
 
@@ -146,6 +144,7 @@ void CbmBuildEventsSimple::FillStsInfo(Int_t st, Int_t end)
     digi=(CbmStsDigi*)fSlice->GetData(kSTS, i);
     new ((*fSTSDigi)[fNSTSDigis])CbmStsDigi(*digi);
     fNSTSDigis++;
+//    cout << fSTSDigi->GetEntries() << " " << fNSTSDigis << endl;
   }
 }
 
@@ -158,7 +157,7 @@ Int_t CbmBuildEventsSimple::SkipEvents(Int_t ists)	/** Skip events until fEndT r
   Double_t t;
 
   if (fOpenEvent<=0) fOpenEvent--; else fOpenEvent=-1;
-  fSTSDigi->Delete();
+  fSTSDigi->Delete(); fNSTSDigis=0;
   for(i=ists;i<nsts;i++)
   {
     digi=fSlice->GetData(kSTS, i);
