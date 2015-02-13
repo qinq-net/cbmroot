@@ -130,7 +130,7 @@ void CbmStsDigitize::CreateDigi(UInt_t address,
 
 		// --- For backward compatibility:
 		// --- create a second match in a separate branch
-		CbmMatch* digiMatch2 = new ( (*fMatches)[nDigis] ) CbmMatch(match);
+		new ( (*fMatches)[nDigis] ) CbmMatch(match);
 	} //? event mode
 
 	fNofDigis++;

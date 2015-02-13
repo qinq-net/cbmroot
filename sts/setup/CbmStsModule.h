@@ -155,6 +155,21 @@ class CbmStsModule : public CbmStsElement
      Int_t GetNofDigis() const { return fDigis.size(); }
 
 
+     /** Initialise the analog buffer
+      ** The analog buffer contains a std::multiset for each channel, to be
+      ** filled with CbmStsSignal objects. Without this method, a channel
+      ** multiset would be instantiated at run time when the first signal
+      ** for this channel arrives. Depending on the occupancy of this channel,
+      ** this may happen only after several hundreds of events. Consequently,
+      ** the memory consumption will increase for the first events until
+      ** each channel was activated at least once. This beaviour mimicks a
+      ** memory leak and makes it harder to detect a real one in other parts
+      ** of the code. This is avoided by instantiating each channel multiset
+      ** at initialisation time.
+      **/
+     void InitAnalogBuffer();
+
+
      /** Digitise signals in the analog buffer
       ** @param time  readout time [ns]
       ** @return Number of created digis
@@ -184,6 +199,7 @@ class CbmStsModule : public CbmStsElement
     	 fDeadTime       = deadTime;
     	 fNoise          = noise;
     	 fIsSet = kTRUE;
+    	 InitAnalogBuffer();
      }
 
      void Status() const;

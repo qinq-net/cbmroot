@@ -385,6 +385,19 @@ CbmStsDigi* CbmStsModule::GetDigi(Int_t channel, Int_t& index) {
 
 
 
+// -----  Initialise the analog buffer   -----------------------------------
+void CbmStsModule::InitAnalogBuffer() {
+
+	 for (Int_t channel = 0; channel < fNofChannels; channel++) {
+		 multiset<CbmStsSignal*> mset;
+		 fAnalogBuffer[channel] = mset;
+	 } // channel loop
+
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Process the analog buffer   -------------------------------------
 Int_t CbmStsModule::ProcessAnalogBuffer(Double_t readoutTime) {
 
