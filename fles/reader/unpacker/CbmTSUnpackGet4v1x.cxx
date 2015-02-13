@@ -29,10 +29,14 @@
 #include <iostream>
 #include <stdint.h>
 
-/*********/
-// TODO   /
-// 1) Deal with MC overlap between TS (Setter, jump/clean)
-/*********/
+/*********
+ * TODO
+ * 1) Use the time sorted data => ~OK
+ * 2) Counts as function of time (s bin, per chip/ROC)
+ * 3) Split class
+ * 4) Time sorted data output
+ * 5) Monitor size of close epochs
+ *********/
 
 struct DTM_header
 {
@@ -491,6 +495,132 @@ void CbmTSUnpackGet4v1x::FinishUnpack()
             uNbClosedEpochs++;
             LOG(DEBUG)<<" CbmTSUnpackGet4v1x::FinishUnpack => Epochs: "<<uNbClosedEpochs
                      <<" Size: "<< (itBuffer->second).size() << FairLogger::endl;
+
+
+               // Use data for monitoring
+            if( kTRUE == fbPulserMode )
+            {
+               // Loop on data
+               for( auto itData = (itBuffer->second).begin(); itData != (itBuffer->second).end(); ++itData)
+               {
+                  get4v1x::Message mess = *itData;
+                  uint8_t  cRocId    = mess.getRocNumber();
+                  uint8_t  cChipId   = mess.getGet4V10R32ChipId();
+                  uint32_t uChipFullId = cChipId + get4v1x::kuMaxGet4PerRoc*cRocId;
+//                  uint8_t  cMessType = mess.getGet4V10R32MessageType();
+                  UInt_t uFullChId =
+                     get4v1x::kuChanPerGet4*( uChipFullId )
+                     + mess.getGet4V10R32HitChan();
+
+                  // As long as the 1st epoch with sync flag after SYNC DLM is found,
+                  // consider data as not good
+                  if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+                     return;
+
+                  fhGet4ChanDataCount->Fill( uFullChId );
+                  fhGet4ChanDllStatus->Fill( uFullChId, mess.getGet4V10R32HitDllFlag() );
+                  fhGet4ChanTotMap->Fill(    uFullChId, mess.getGet4V10R32HitTot()
+                                                        *get4v1x::kdTotBinSize/1000.0 );
+
+                  // Save the hit info in order to fill later the pulser histos
+
+                  // First fill time interval histos
+                  if( fuPulserFee == (uFullChId/kuNbChanFee) )
+                  {
+                     Double_t dHitsDt = mess.CalcGet4V10R32HitTimeDiff(
+                                 fvuCurrEpoch2[uChipFullId],
+                                 fvuLastHitEp[ uFullChId ],
+                                 fvmLastHit[   uFullChId ] );
+                     if( 0 == fvuLastHitEp[uFullChId])
+                        {}
+                     else if( dHitsDt < 1e6 )
+                        fhPulserHitDistNs->Fill( uFullChId%kuNbChanFee, dHitsDt / 1e3 );
+                     else if( dHitsDt < 1e9)
+                        fhPulserHitDistUs->Fill( uFullChId%kuNbChanFee, dHitsDt / 1e6 );
+                     else
+                        fhPulserHitDistMs->Fill( uFullChId%kuNbChanFee, dHitsDt / 1e9 );
+
+                     if( 0 < fvuLastHitEp[uFullChId] && dHitsDt < 5e3 )
+                        LOG(DEBUG) <<uFullChId<<" "<<dHitsDt<<" "
+                            <<fvuLastHitEp[ uFullChId ]<<" "<<fvuCurrEpoch2[uChipFullId]<<" "
+                            <<fvmLastHit[   uFullChId ].getGet4V10R32HitTot()*get4v1x::kdTotBinSize/1000.0<<" "
+                            <<mess.getGet4V10R32HitTot()*get4v1x::kdTotBinSize/1000.0<<FairLogger::endl;;
+
+
+                     // Fill the DNL histos
+                     fhPulserFeeDnl->Fill( uFullChId%kuNbChanFee, mess.getGet4V10R32HitFt() );
+                  } // if( fuPulserFee == (uFullChId/kuNbChanFee) )
+
+                  // Epoch of Last hit message (one per GET4 chip & channel)
+                  fvuLastHitEp[ uFullChId ] = itData->getExtendedEpoch();
+                  // Last hit message (one per GET4 chip & channel)
+                  fvmLastHit[ uFullChId ] = mess;
+               } // for( auto itData = (itBuffer->second).begin(); itData != (itBuffer->second).begin(); ++itData)
+
+               // Fill the time difference for all channels pairs in
+               // the chosen Fee
+               UInt_t uHistoFeeIdx = 0;
+               for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
+                  for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < kuNbChanFee; uChanFeeB++)
+                  {
+                     if( ( 0xF0 <= fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeA].getSysMesType() ) &&
+                         ( 0xF0 <= fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeB].getSysMesType() ) &&
+                         (   fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeA ]
+                           < fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeB ] + 2 ) &&
+                         (   fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeA ] + 2
+                           > fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeB ] ) )
+                     {
+                        Double_t dTimeDiff = 0.0;
+                        dTimeDiff = fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeA].CalcGet4V10R32HitTimeDiff(
+                              fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeA],
+                              fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeB],
+                              fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeB] );
+
+                        fhTimeResFee[uHistoFeeIdx]->Fill( dTimeDiff );
+                     } // if both channels have matching data
+                     uHistoFeeIdx++;
+                  } // for any unique pair of channel in chosen Fee
+
+               // Fill the time difference for the chosen channel pairs
+               UInt_t uHistoCombiIdx = 0;
+               for( UInt_t uChanA = 0; uChanA < kuNbChanTest-1; uChanA++)
+               {
+                  if( ( 0xF0 <= fvmLastHit[ fuPulserChan[uChanA]   ].getSysMesType() ) &&
+                      ( 0xF0 <= fvmLastHit[ fuPulserChan[uChanA+1] ].getSysMesType() ) &&
+                      ( fvuLastHitEp[ fuPulserChan[uChanA]   ]
+                            < fvuLastHitEp[ fuPulserChan[uChanA+1] ] + 2 ) &&
+                      ( fvuLastHitEp[ fuPulserChan[uChanA]   ] + 2
+                            > fvuLastHitEp[ fuPulserChan[uChanA+1] ]     ) )
+                  {
+                     Double_t dTimeDiff =
+                           fvmLastHit[   fuPulserChan[uChanA]   ].CalcGet4V10R32HitTimeDiff(
+                           fvuLastHitEp[ fuPulserChan[uChanA]   ],
+                           fvuLastHitEp[ fuPulserChan[uChanA+1] ],
+                           fvmLastHit[   fuPulserChan[uChanA+1] ] );
+                     fhTimeResPairs[uChanA]->Fill( dTimeDiff );
+                  } // // if both channels have data
+
+                  for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
+                  {
+                     if( ( 0xF0 <= fvmLastHit[ fuPulserChan[uChanA] ].getSysMesType() ) &&
+                         ( 0xF0 <= fvmLastHit[ fuPulserChan[uChanB] ].getSysMesType() ) &&
+                         ( fvuLastHitEp[ fuPulserChan[uChanA] ]
+                               < fvuLastHitEp[ fuPulserChan[uChanB] ] + 2 ) &&
+                         ( fvuLastHitEp[ fuPulserChan[uChanA] ] + 2
+                               > fvuLastHitEp[ fuPulserChan[uChanB] ]     ) )
+                     {
+                        Double_t dTimeDiff =
+                              fvmLastHit[   fuPulserChan[uChanA] ].CalcGet4V10R32HitTimeDiff(
+                              fvuLastHitEp[ fuPulserChan[uChanA] ],
+                              fvuLastHitEp[ fuPulserChan[uChanB] ],
+                              fvmLastHit[   fuPulserChan[uChanB] ] );
+                        fhTimeResCombi[uHistoCombiIdx]->Fill( dTimeDiff );
+                     } // if both channels have data
+                     uHistoCombiIdx++;
+                  } // for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
+               } // for( UInt_t uChanA = 0; uChanA < kuNbChanTest; uChanA++)
+            } // if( kTRUE == fbPulserMode )
+
          }
          if( kFALSE == bOneEpochPrinted && 0 < (itBuffer->second).size() )
          {
@@ -521,6 +651,7 @@ void CbmTSUnpackGet4v1x::FinishUnpack()
       if( 0 < fmsOrderedEpochsBuffStat.size() )
          fuLastEpBufferReady = (fmsOrderedEpochsBuffStat.begin())->first ;
          else fuLastEpBufferReady = 0;
+
 
       LOG(DEBUG)<<" ++++++++++++ Ts # "<<fulTsNb<<" Done!"<<FairLogger::endl;
    } // if( 2 == fiMode )
