@@ -280,7 +280,47 @@ void CbmL1::ReadEvent()
       }
       th.iMC=-1;
 
-      int iMC = sh->GetRefId(); // TODO1: don't need this with FairLinks
+      int iMC = -1;
+      if(listStsClusterMatch)
+      {
+        
+        const CbmMatch* frontClusterMatch = static_cast<const CbmMatch*>(listStsClusterMatch->At(sh->GetFrontClusterId()));
+        const CbmMatch* backClusterMatch  = static_cast<const CbmMatch*>(listStsClusterMatch->At(sh->GetBackClusterId()));
+        
+        CbmMatch stsHitMatch;
+        
+        for(int iFrontLink = 0; iFrontLink<frontClusterMatch->GetNofLinks(); iFrontLink++)
+        {
+          const CbmLink& frontLink = frontClusterMatch->GetLink(iFrontLink);
+          for(int iBackLink = 0; iBackLink<backClusterMatch->GetNofLinks(); iBackLink++)
+          {
+            const CbmLink& backLink = backClusterMatch->GetLink(iBackLink);
+            
+            if(frontLink.GetIndex() == backLink.GetIndex())
+            {
+              stsHitMatch.AddLink(frontLink);
+              stsHitMatch.AddLink(backLink);
+            }
+          }
+        }
+
+        if( stsHitMatch.GetNofLinks()>0 )
+        {
+          Float_t bestWeight = 0.f;
+          
+          for(int iLink=0; iLink < stsHitMatch.GetNofLinks(); iLink++)
+          {
+            if( stsHitMatch.GetLink(iLink).GetWeight() > bestWeight)
+            {
+              bestWeight = stsHitMatch.GetLink(iLink).GetWeight();
+              iMC = stsHitMatch.GetLink(iLink).GetIndex();
+            }
+          }
+        }
+      }
+      else
+        iMC = sh->GetRefId(); // TODO1: don't need this with FairLinks
+        
       if( listStsPts && iMC>=0 && iMC<nMC){
         CbmL1MCPoint MC;
         if( ! ReadMCPoint( &MC, iMC, 0 ) ){
@@ -289,8 +329,7 @@ void CbmL1::ReadEvent()
           isUsedStsPoint[iMC] = 1;
           th.iMC = vMCPoints.size()-1;
         }
-      } // if listStsPts
-
+      }  // if listStsPts
       
   //if(  th.iMC >=0 ) // DEBUG !!!!
       {
@@ -796,122 +835,20 @@ bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, bool MVD )
   /// Read information about correspondence between hits and mcpoints and fill CbmL1MCPoint::hitIds and CbmL1StsHit::mcPointIds arrays
   /// should be called after fill of algo
 void CbmL1::HitMatch()
-{
-  const bool useLinks = 0; // 0 - use HitMatch, one_to_one; 1 - use FairLinks, many_to_many. Set 0 to switch to old definition of efficiency.
-  // TODO: fix trunk problem with links. Set useLinks = 1
-  
+{  
   const int NHits = vStsHits.size();
   for (int iH = 0; iH < NHits; iH++){
     CbmL1StsHit& hit = vStsHits[iH];
+
+    int iP = vHitMCRef[iH];
+    if (iP >= 0){
+      hit.mcPointIds.push_back( iP );
+      vMCPoints[iP].hitIds.push_back(iH);
+    }
     
-    const bool isMvd = (hit.extIndex < 0);
-    if (useLinks && !isMvd){
-      if (listStsClusters){
-        CbmStsHit *stsHit = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(hit.extIndex) );
-        const int NLinks = stsHit->GetMatch()->GetNofLinks();
-        if ( NLinks != 2 ) cout << "HitMatch: Error. Hit wasn't matched with 2 clusters." << endl;
-          // see at 1-st cluster
-        vector<int> stsPointIds; // save here all mc-points matched with first cluster
-        int iL = 0;
-        CbmLink link = stsHit->GetMatch()->GetLink(iL);
-        CbmStsCluster *stsCluster = L1_DYNAMIC_CAST<CbmStsCluster*>( listStsClusters->At( link.GetIndex() ) );
-        int NLinks2 = stsCluster->GetMatch()->GetNofLinks();
-        for ( int iL2 = 0; iL2 < NLinks2; iL2++){
-          CbmLink link2 = stsCluster->GetMatch()->GetLink(iL2);
-          CbmStsDigi *stsDigi = L1_DYNAMIC_CAST<CbmStsDigi*>( listStsDigi->At( link2.GetIndex() ) );
-          const int NLinks3 = stsDigi->GetMatch()->GetNofLinks();
-          for ( int iL3 = 0; iL3 < NLinks3; iL3++){
-            CbmLink link3 = stsDigi->GetMatch()->GetLink(iL3);
-            int stsPointId = link3.GetIndex();
-            stsPointIds.push_back( stsPointId );
-          } // for mcPoint
-        } // for digi
-          // see at 2-nd cluster
-        iL = 1;
-        link = stsHit->GetMatch()->GetLink(iL);
-        stsCluster = L1_DYNAMIC_CAST<CbmStsCluster*>( listStsClusters->At( link.GetIndex() ) );
-        NLinks2 = stsCluster->GetMatch()->GetNofLinks();
-        for ( int iL2 = 0; iL2 < NLinks2; iL2++){
-          CbmLink link2 = stsCluster->GetMatch()->GetLink(iL2);
-          CbmStsDigi *stsDigi = L1_DYNAMIC_CAST<CbmStsDigi*>( listStsDigi->At( link2.GetIndex() ) );
-          const int NLinks3 = stsDigi->GetMatch()->GetNofLinks();
-          for ( int iL3 = 0; iL3 < NLinks3; iL3++){
-            CbmLink link3 = stsDigi->GetMatch()->GetLink(iL3);
-            int stsPointId = link3.GetIndex();
-            
-            if ( !find(&(stsPointIds[0]), &(stsPointIds[stsPointIds.size()]), stsPointId) ) continue; // check if first cluster matched with same mc-point
-
-              CbmStsPoint *stsPoint = L1_DYNAMIC_CAST<CbmStsPoint*>( listStsPts->At( stsPointId ) );
-              
-                // find mcPoint in array
-              int mcTrackId = stsPoint->GetTrackID();
-              TVector3 xyzIn,xyzOut;
-              stsPoint->PositionIn(xyzIn);
-              stsPoint->PositionOut(xyzOut);
-              TVector3 xyz = .5*(xyzIn + xyzOut );
-              double z =  xyz.z();
-
-              const int NPoints = vMCPoints.size();
-              int iP;
-              for (iP = 0; iP < NPoints; iP++){
-                if ( (vMCPoints[iP].ID == mcTrackId) && (vMCPoints[iP].z == z) ) break;
-              };
-
-              if (iP == NPoints){ // No mc-point was found in vMCPoints array.
-                CbmL1MCPoint MC;
-                if ( !ReadMCPoint( &MC, stsPointId, 0 ) ) {
-                  MC.iStation = vHitStore[hit.hitId].iStation;
-                    //algo->GetFStation(algo->vSFlag[algo->vStsHits[hit.hitId].f]);
-                  vMCPoints.push_back(MC);
-                }
-                else {
-                  continue;
-                }
-
-              }
-                // check if the hit already matched with the mc-point and save it if this is not the case
-              if ( !find(&(hit.mcPointIds[0]), &(hit.mcPointIds[hit.mcPointIds.size()]), iP) ){
-                hit.mcPointIds.push_back( iP );
-                vMCPoints[iP].hitIds.push_back(iH);
-              }
-
-          } // for mcPoint
-        } // for digi
-
-      } // if clusters
-      else{
-        // CbmStsHit *stsHit = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(hit.extIndex) );
-        // int iP = stsHit->GetRefIndex();
-        int iP = vHitMCRef[iH];
-        if (iP >= 0){
-          hit.mcPointIds.push_back( iP );
-          vMCPoints[iP].hitIds.push_back(iH);
-        }
-      } // if no clusters
-    } // if useLinks
-    else{ // if no use Links or this is mvd hit
-      // int iP = -1; // TODO2
-      // if (isMvd) {
-      //   // CbmMvdHitMatch *match = L1_DYNAMIC_CAST<CbmMvdHitMatch*>( listMvdHitMatches->At( -hit.extIndex - 1 ) );
-      //   // if( match){
-      //   //   iP = match->GetPointId();
-      //   // }
-      //   iP = vHitMCRef[iH];
-      // }
-      // else {
-      //   CbmStsHit *stsHit = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At( hit.extIndex ) );
-      //   iP = stsHit->GetRefIndex();
-      // }
-
-      int iP = vHitMCRef[iH];
-      if (iP >= 0){
-        hit.mcPointIds.push_back( iP );
-        vMCPoints[iP].hitIds.push_back(iH);
-      }
-    }
-    if (hit.mcPointIds.size() > 1){ // CHECKME  never works!
-      cout << "Hit number " << iH << " has been matched with " << hit.mcPointIds.size() << " mcPoints." << endl;
-      cout << "Hit number " << iH << " " <<  hit.mcPointIds[0] << " " << vHitMCRef[iH] << endl;
-    }
+//     if (hit.mcPointIds.size() > 1){ // CHECKME  never works!
+//       cout << "Hit number " << iH << " has been matched with " << hit.mcPointIds.size() << " mcPoints." << endl;
+//       cout << "Hit number " << iH << " " <<  hit.mcPointIds[0] << " " << vHitMCRef[iH] << endl;
+//     }
   } // for hits
 }

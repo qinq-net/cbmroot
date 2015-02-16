@@ -180,6 +180,8 @@ class CbmL1 : public FairTask
    TClonesArray *listStsDigiMatch;
    TClonesArray *listStsClusters;
    TClonesArray *listStsHits;
+   TClonesArray *listStsHitMatch;
+   TClonesArray *listStsClusterMatch;
 
    TClonesArray *listMvdPts; // Mvd MC points
    TClonesArray *listMvdHits;

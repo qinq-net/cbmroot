@@ -80,6 +80,7 @@ listStsDigi(0),
 listStsDigiMatch(0),
 listStsClusters(0),
 listStsHits(0),
+listStsHitMatch(0),
 
 listMvdPts(0),
 listMvdHits(0),
@@ -119,6 +120,7 @@ listStsDigi(0),
 listStsDigiMatch(0),
 listStsClusters(0),
 listStsHits(0),
+listStsHitMatch(0),
 
 listMvdPts(0),
 listMvdHits(0),
@@ -217,6 +219,8 @@ InitStatus CbmL1::Init()
     listStsClusters = L1_DYNAMIC_CAST<TClonesArray*>( fManger->GetObject("StsCluster") );
     listStsDigi = L1_DYNAMIC_CAST<TClonesArray*>( fManger->GetObject("StsDigi") );
     listStsDigiMatch = L1_DYNAMIC_CAST<TClonesArray*>( fManger->GetObject("StsDigiMatch") );
+    listStsHitMatch = L1_DYNAMIC_CAST<TClonesArray*>( fManger->GetObject("StsHitMatch") );
+    listStsClusterMatch = L1_DYNAMIC_CAST<TClonesArray*>( fManger->GetObject("StsClusterMatch") );
   }
   else{
     listMCTracks = 0;
