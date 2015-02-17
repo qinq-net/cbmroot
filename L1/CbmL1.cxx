@@ -488,13 +488,6 @@ InitStatus CbmL1::Init()
 
   
   algo->fRadThick.resize(algo->NStations);
-    // MVD does not use map
-  for( int iSta = 0; iSta < algo->NMvdStations;iSta++ ) {
-    algo->fRadThick[iSta].SetBins(1, 100); // mvd should be in +-100 cm square
-    algo->fRadThick[iSta].table.resize(1);
-    algo->fRadThick[iSta].table[0].resize(1);
-    algo->fRadThick[iSta].table[0][0] = algo->vStations[iSta].materialInfo.RadThick[0];
-  }
 
     // Read STS Radiation Thickness table
   if (fMatBudgetFileName != "") {
@@ -502,7 +495,7 @@ InitStatus CbmL1::Init()
     TFile *rlFile = new TFile(fMatBudgetFileName);
 
     cout << "STS Material budget file is " << fMatBudgetFileName << "." << endl;
-    for( int j = 0, iSta = algo->NMvdStations; iSta < algo->NStations; iSta++, j++ ) {
+    for( int j = 0, iSta = 0; iSta < algo->NStations; iSta++, j++ ) {
       TString name = "Radiation Thickness [%]";
       name += ", Station";
       name += j+1; 
@@ -516,14 +509,12 @@ InitStatus CbmL1::Init()
       const float RMax = hStaRadLen->GetXaxis()->GetXmax(); // should be same as min
       algo->fRadThick[iSta].SetBins(NBins,RMax); // TODO
       algo->fRadThick[iSta].table.resize(NBins);
-    
       for( int iB = 0; iB < NBins; iB++ ) {
         algo->fRadThick[iSta].table[iB].resize(NBins);
         for( int iB2 = 0; iB2 < NBins; iB2++ ) {
           algo->fRadThick[iSta].table[iB][iB2] = 0.01 * hStaRadLen->GetBinContent(iB,iB2); //0.0034;//0.003209;//
-          if ( algo->fRadThick[iSta].table[iB][iB2] < algo->vStations[iSta].materialInfo.RadThick[0] )
-            algo->fRadThick[iSta].table[iB][iB2] = algo->vStations[iSta].materialInfo.RadThick[0];
-            // cout << iB << " " << iB2 << " " << algo->fRadThick[iSta].table[iB][iB2] << endl; // dbg
+//          if ( algo->fRadThick[iSta].table[iB][iB2] < algo->vStations[iSta].materialInfo.RadThick[0] && iSta >=4){
+//            algo->fRadThick[iSta].table[iB][iB2] = algo->vStations[iSta].materialInfo.RadThick[0];}
         }
       }
     }
@@ -533,7 +524,7 @@ InitStatus CbmL1::Init()
   }
   else{
     cout << "No material budget file is found. Homogenious budget will be used" << endl;
-    for( int iSta = algo->NMvdStations; iSta < algo->NStations; iSta++ ) {
+    for( int iSta = 0; iSta < algo->NStations; iSta++ ) {
       cout << iSta << endl;
       algo->fRadThick[iSta].SetBins(1, 100); // mvd should be in +-100 cm square
       algo->fRadThick[iSta].table.resize(1);
