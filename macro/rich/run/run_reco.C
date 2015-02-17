@@ -1,4 +1,4 @@
-void run_reco(Int_t nEvents = 20)
+void run_reco(Int_t nEvents = 5)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -6,7 +6,7 @@ void run_reco(Int_t nEvents = 20)
 
 	TString script = TString(gSystem->Getenv("SCRIPT"));
 	TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
-   TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v12b.root"; // Material budget file for L1 STS tracking
+    TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v13d.root"; // Material budget file for L1 STS tracking
 
 	gRandom->SetSeed(10);
 
@@ -14,6 +14,7 @@ void run_reco(Int_t nEvents = 20)
 	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.0001.root";
 	TString recoFile ="/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.0001.root";
 	std::string resultDir = "recqa_0001/";
+	TString trdHitProducerType = "smearing";
 	int nofNoiseHitsInRich = 220;
 	double collectionEff = 1.0;
 	double sigmaErrorRich = 0.06;
@@ -27,12 +28,13 @@ void run_reco(Int_t nEvents = 20)
 		collectionEff = TString(gSystem->Getenv("RICH_COLLECTION_EFF")).Atof();
         sigmaErrorRich = TString(gSystem->Getenv("SIGMA_ERROR_RICH")).Atof();
         crosstalkRich = TString(gSystem->Getenv("CROSSTALK_RICH")).Atof();
+        trdHitProducerType = TString(gSystem->Getenv("TRD_HIT_PRODUCER_TYPE"));
 	}
 
    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
    TList *parFileList = new TList();
    TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
-   TObjString trdDigiFile = parDir + "/trd/trd_v13g.digi.par"; // TRD digi file
+   TObjString trdDigiFile = parDir + "/trd/trd_v14a_3e.digi.par"; // TRD digi file
    TObjString tofDigiFile = parDir + "/tof/tof_v13b.digi.par"; // TOF digi file
 
    parFileList->Add(&stsDigiFile);
@@ -75,35 +77,29 @@ void run_reco(Int_t nEvents = 20)
 	// ===                      STS local reconstruction                     ===
 	// =========================================================================
 
-	Double_t threshold  =  4;
-	Double_t noiseWidth =  0.01;
-	Int_t    nofBits    = 12;
-	Double_t electronsPerAdc    =  10;
-	Double_t StripDeadTime = 0.1;
-	CbmStsDigitize* stsDigitize = new CbmStsDigitize();
-	stsDigitize->SetRealisticResponse();
-	stsDigitize->SetFrontThreshold (threshold);
-	stsDigitize->SetBackThreshold  (threshold);
-	stsDigitize->SetFrontNoiseWidth(noiseWidth);
-	stsDigitize->SetBackNoiseWidth (noiseWidth);
-	stsDigitize->SetFrontNofBits   (nofBits);
-	stsDigitize->SetBackNofBits    (nofBits);
-	stsDigitize->SetFrontNofElPerAdc(electronsPerAdc);
-	stsDigitize->SetBackNofElPerAdc(electronsPerAdc);
-	stsDigitize->SetStripDeadTime  (StripDeadTime);
-	run->AddTask(stsDigitize);
+	Double_t dynRange       =   40960.;  // Dynamic range [e]
+	Double_t threshold      =    4000.;  // Digitisation threshold [e]
+	Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
+	Double_t timeResolution =       5.;  // time resolution [ns]
+	Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
+	Double_t noise          =       0.;  // ENC [e]
+	Int_t digiModel         = 1;  // Model: 1 = uniform charge distribution along track
 
-	FairTask* stsClusterFinder = new CbmStsClusterFinder();
-	run->AddTask(stsClusterFinder);
+	CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
+	stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
+	run->AddTask(stsDigi);
 
-	FairTask* stsFindHits = new CbmStsFindHits();
-	run->AddTask(stsFindHits);
+	FairTask* stsCluster = new CbmStsFindClusters();
+	run->AddTask(stsCluster);
+
+	FairTask* stsHit = new CbmStsFindHits();
+	run->AddTask(stsHit);
 
 
 	CbmKF* kalman = new CbmKF();
 	run->AddTask(kalman);
 	CbmL1* l1 = new CbmL1();
-   l1->SetMaterialBudgetFileName(stsMatBudgetFileName);
+    l1->SetMaterialBudgetFileName(stsMatBudgetFileName);
 	run->AddTask(l1);
 
 	CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
@@ -115,16 +111,28 @@ void run_reco(Int_t nEvents = 20)
 	// ===                     TRD local reconstruction                      ===
 	// =========================================================================
 	if (IsTrd(parFile)) {
-		// Update of the values for the radiator F.U. 17.08.07
-		Int_t trdNFoils = 130; // number of polyetylene foils
-		Float_t trdDFoils = 0.0013; // thickness of 1 foil [cm]
-		Float_t trdDGap = 0.02; // thickness of gap between foils [cm]
-		Bool_t simpleTR = kTRUE; // use fast and simple version for TR production
+		CbmTrdRadiator *radiator = new CbmTrdRadiator(kTRUE , "H++");
 
-		//CbmTrdRadiator *radiator = new CbmTrdRadiator(simpleTR , trdNFoils, trdDFoils, trdDGap);
-		CbmTrdRadiator *radiator = new CbmTrdRadiator(simpleTR , "H++");
-      CbmTrdHitProducerSmearing* trdHitProd = new CbmTrdHitProducerSmearing(radiator);
-      run->AddTask(trdHitProd);
+		if (trdHitProducerType == "smearing") {
+			CbmTrdHitProducerSmearing* trdHitProd = new CbmTrdHitProducerSmearing(radiator);
+			trdHitProd->SetUseDigiPar(false);
+			run->AddTask(trdHitProd);
+		} else if (trdHitProducerType == "digi") {
+			CbmTrdDigitizer* trdDigitizer = new CbmTrdDigitizer(radiator);
+			run->AddTask(trdDigitizer);
+
+			CbmTrdHitProducerDigi* trdHitProd = new CbmTrdHitProducerDigi();
+			run->AddTask(trdHitProd);
+		} else if (trdHitProducerType == "clustering") {
+			CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
+			run->AddTask(trdDigiPrf);
+
+			CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
+			run->AddTask(trdCluster);
+
+			CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
+			run->AddTask(trdHit);
+		}
 	}// isTRD
 
 	// =========================================================================

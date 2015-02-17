@@ -1,4 +1,4 @@
-void run_sim(Int_t nEvents = 20)
+void run_sim(Int_t nEvents = 2)
 {
    TTree::SetMaxTreeSize(90000000000);
 	Int_t iVerbose = 0;
@@ -10,15 +10,16 @@ void run_sim(Int_t nEvents = 20)
 
 	TString inFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
 	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.0001.root";
+	TString geoFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/geofilefull.0001.root";
 	TString outFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.0001.root";
 
 	TString caveGeom = "cave.geo";
-	TString pipeGeom = "pipe/pipe_standard.geo";
+	TString pipeGeom = "pipe/pipe_v14h.root";
 	TString magnetGeom = "magnet/magnet_v12a.geo";
 	TString mvdGeom = "";
 	TString stsGeom = "sts/sts_v13d.geo.root";
-	TString richGeom= "rich/rich_v14b.root";
-	TString trdGeom = "trd/trd_v13g.geo.root";
+	TString richGeom= "rich/rich_v14a_3e.root";
+	TString trdGeom = "trd/trd_v14a_3e.geo.root";
 	TString tofGeom = "tof/tof_v13b.geo.root";
 	TString ecalGeom = "";
 	TString fieldMap = "field_v12a";
@@ -196,6 +197,8 @@ void run_sim(Int_t nEvents = 20)
 	rtdb->print();
 
 	fRun->Run(nEvents);
+
+    fRun->CreateGeometryFile(geoFile);
 
 	timer.Stop();
 	Double_t rtime = timer.RealTime();
