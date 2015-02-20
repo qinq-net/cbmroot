@@ -46,6 +46,8 @@ public:
     fh_mean_bg_minv(),
     fh_mean_eta_minv(),
     fh_mean_pi0_minv(),
+    fh_mean_eta_minv_pt(),
+    fh_mean_pi0_minv_pt(),
     fh_sum_s_minv(),
     fOutputDir("")
       {
@@ -89,6 +91,8 @@ private:
    vector<TH1D*> fh_mean_bg_minv; //mean histograms from 4 files
    vector<TH1D*> fh_mean_eta_minv;
    vector<TH1D*> fh_mean_pi0_minv;
+   vector<TH2D*> fh_mean_eta_minv_pt;
+   vector<TH2D*> fh_mean_pi0_minv_pt;
 
    // index: AnalysisSteps
    vector<TH1D*> fh_sum_s_minv; // sum of all signals
@@ -120,6 +124,18 @@ private:
     * \param[in] step Analysis step.
     */
    void DrawMinv(
+         CbmLmvmAnalysisSteps step);
+
+   /**
+    * \brief Draw invariant mass vs Pt histograms.
+    */
+   void DrawMinvPtAll();
+
+   /**
+    * \brief Draw invariant mass spectra vs Pt for all signal types for specified analysis step.
+    * \param[in] step Analysis step.
+    */
+   void DrawMinvPt(
          CbmLmvmAnalysisSteps step);
 
    /**

@@ -198,6 +198,8 @@ public:
     Bool_t IsMcTrackAccepted(
     		Int_t mcTrackInd);
 
+    void RichPmtXY();
+
     void MCPairs();
 
     void PairMcAndAcceptance();
@@ -344,6 +346,11 @@ private:
 
    TH1D* fh_mc_mother_pdg; //mother pdg code for e-/e+
    TH1D* fh_acc_mother_pdg; //mother pdg code for accepted e-/e+
+
+   // X-Y distribution of MC pints on the RICH PMT plane
+   TH2D* fh_signal_pmtXY;
+   TH2D* fh_pi0_pmtXY;
+   TH2D* fh_gamma_pmtXY;
 
    // Vertex of secondary electron from gamma conversion for different analysis step
    //Index is the analysis step: [0]-mc, [1]-acc, [2]-reco, [3]-chi2prim, [4]-elid,

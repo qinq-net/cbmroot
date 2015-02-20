@@ -221,7 +221,8 @@ private:
      * \param[in] step Analysis step.
      */
     void DrawPtYEfficiency(
-          int step);
+          int step,
+		  bool drawAnaStep = true);
 
     /**
      * Draw efficiency in dependence on Pt and Rapidity of signal for all steps.
@@ -331,6 +332,8 @@ private:
     void DrawMvdCutQa();
 
     void DrawMvdAndStsHist();
+
+    void DrawPmtXY();
 
    CbmAnaDielectronTaskDraw(const CbmAnaDielectronTaskDraw&);
    CbmAnaDielectronTaskDraw& operator=(const CbmAnaDielectronTaskDraw&);

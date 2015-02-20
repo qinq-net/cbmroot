@@ -126,6 +126,7 @@ void CbmAnaDielectronTaskDraw::DrawHistFromFile(
    DrawMvdCutQa();
    DrawMvdAndStsHist();
    DrawElPiMomHis();
+   DrawPmtXY();
 
    SaveCanvasToImage();
 }
@@ -390,12 +391,11 @@ void CbmAnaDielectronTaskDraw::DrawPtYDistributionAll()
       DrawPtYDistribution(step);
    }
 
-   TCanvas *cMc = CreateCanvas("lmvm_pty_"+CbmLmvmHist::fAnaSteps[kPtCut], "lmvm_pty_"+CbmLmvmHist::fAnaSteps[kPtCut], 800, 800);
-   //cMc->Divide(2,1);
-   //cMc->cd(1);
-  // DrawPtYDistribution(kMc, false);
-  // cMc->cd(2);
-   DrawPtYDistribution(kPtCut, false);
+   TCanvas *cMc = CreateCanvas("lmvm_pty_"+CbmLmvmHist::fAnaSteps[kAcc], "lmvm_pty_"+CbmLmvmHist::fAnaSteps[kAcc], 800, 800);
+   DrawPtYDistribution(kAcc, true);
+
+   TCanvas *cPtcut = CreateCanvas("lmvm_pty_"+CbmLmvmHist::fAnaSteps[kPtCut], "lmvm_pty_"+CbmLmvmHist::fAnaSteps[kPtCut], 800, 800);
+   DrawPtYDistribution(kPtCut, true);
 }
 
 
@@ -416,7 +416,8 @@ void CbmAnaDielectronTaskDraw::DrawRapidityDistributionAll()
 
 
 void CbmAnaDielectronTaskDraw::DrawPtYEfficiency(
-      int step)
+      int step,
+	  bool drawAnaStep)
 {
    TH2D* h = H2("fh_signal_pty_" + CbmLmvmHist::fAnaSteps[step]);
    // efficiency is normalized to the previous step (step - 1)
@@ -425,8 +426,9 @@ void CbmAnaDielectronTaskDraw::DrawPtYEfficiency(
    TH2D* eff = DivideH2D(h, hmc);
    eff->GetZaxis()->SetTitle("Efficiency [%]");
    DrawH2(eff);
-   DrawEfficiencyOnHist(h, hmc, 0.2, 1.8);
-   DrawTextOnHist(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.78, 0.70, 0.9);
+   eff->SetMaximum(10.);
+   if (drawAnaStep) DrawEfficiencyOnHist(h, hmc, 0.2, 1.8);
+   if (drawAnaStep) DrawTextOnHist(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.78, 0.70, 0.9);
 }
 
 void CbmAnaDielectronTaskDraw::DrawPtYEfficiencyAll()
@@ -441,7 +443,7 @@ void CbmAnaDielectronTaskDraw::DrawPtYEfficiencyAll()
    }
 
    TCanvas *cptcut = CreateCanvas("lmvm_pty_efficiency_ptcut", "lmvm_pty_efficiency_ptcut", 600, 600);
-   DrawPtYEfficiency(kPtCut);
+   DrawPtYEfficiency(kPtCut, true);
 }
 
 void CbmAnaDielectronTaskDraw::DrawMomentumDistributionAll()
@@ -475,6 +477,21 @@ void CbmAnaDielectronTaskDraw::DrawMotherPdg()
 {
    TCanvas *c = CreateCanvas("lmvm_mother_pdg", "lmvm_mother_pdg", 500, 500);
    DrawH1(list_of(H1("fh_mc_mother_pdg"))(H1("fh_acc_mother_pdg")), list_of("MC")("acc"), kLinear, kLog, true, 0.7, 0.7, 0.99, 0.99);
+}
+
+void CbmAnaDielectronTaskDraw::DrawPmtXY()
+{
+	TCanvas *c = CreateCanvas("lmvm_pmt_xy", "lmvm_pmt_xy", 1500, 500);
+	c->cd(1);
+	DrawH2(H2("fh_signal_pmtXY"));
+	DrawTextOnHist(CbmLmvmHist::fSourceTypesLatex[kSignal], 0.50, 0.78, 0.70, 0.9);
+	c->cd(2);
+	DrawH2(H2("fh_pi0_pmtXY"));
+	DrawTextOnHist(CbmLmvmHist::fSourceTypesLatex[kPi0], 0.50, 0.78, 0.70, 0.9);
+	c->cd(3);
+	DrawH2(H2("fh_gamma_pmtXY"));
+	DrawTextOnHist(CbmLmvmHist::fSourceTypesLatex[kGamma], 0.50, 0.78, 0.70, 0.9);
+
 }
 
 void CbmAnaDielectronTaskDraw::Draw1DSourceTypes(

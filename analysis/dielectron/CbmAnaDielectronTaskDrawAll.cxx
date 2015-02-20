@@ -70,6 +70,8 @@ void CbmAnaDielectronTaskDrawAll::DrawHistosFromFile(
    fh_mean_eta_minv.resize(CbmLmvmHist::fNofAnaSteps);
    fh_mean_pi0_minv.resize(CbmLmvmHist::fNofAnaSteps);
    fh_sum_s_minv.resize(CbmLmvmHist::fNofAnaSteps);
+   fh_mean_eta_minv_pt.resize(CbmLmvmHist::fNofAnaSteps);
+   fh_mean_pi0_minv_pt.resize(CbmLmvmHist::fNofAnaSteps);
 
    FillMeanHist();
    FillSumSignalsHist();
@@ -79,6 +81,7 @@ void CbmAnaDielectronTaskDrawAll::DrawHistosFromFile(
    SBgRangeAll();
    DrawSBgSignals();
    DrawMinvAll();
+   DrawMinvPtAll();
    SaveCanvasToImage();
 }
 
@@ -243,6 +246,33 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
    gPad->SetLogy(true);
 }
 
+void CbmAnaDielectronTaskDrawAll::DrawMinvPtAll()
+{
+   TCanvas *cptcut = CreateCanvas("minv_pt_ptcut", "minv_pt_ptcut", 800, 800);
+   DrawMinv(kPtCut);
+
+}
+
+void CbmAnaDielectronTaskDrawAll::DrawMinvPt(
+      CbmLmvmAnalysisSteps step)
+{
+   TH2D* sRho = (TH2D*) H2(kRho0, "fh_signal_minv_pt_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+   TH2D* sOmega = (TH2D*) H2(kOmega, "fh_signal_minv_pt_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+   TH2D* sOmegaDalitz = (TH2D*) H2(kOmegaD, "fh_signal_minv_pt_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+   TH2D* sPhi = (TH2D*) H2(kPhi, "fh_signal_minv_pt_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+   TH2D* sEta = fh_mean_eta_minv_pt[step];
+   TH2D* sPi0 = fh_mean_pi0_minv_pt[step];
+
+   TH2D* coctail = (TH2D*)sRho->Clone();
+   coctail->Add(sOmega);
+   coctail->Add(sPhi);
+   coctail->Add(sOmegaDalitz);
+   coctail->Add(sEta);
+   coctail->Add(sPi0);
+
+   DrawH2(coctail);
+}
+
 void CbmAnaDielectronTaskDrawAll::FillMeanHist()
 {
    for (int step = 0; step < CbmLmvmHist::fNofAnaSteps; step++){
@@ -251,15 +281,21 @@ void CbmAnaDielectronTaskDrawAll::FillMeanHist()
             fh_mean_bg_minv[step] = (TH1D*)H1(iS, "fh_bg_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
             fh_mean_eta_minv[step] = (TH1D*)H1(iS, "fh_eta_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
             fh_mean_pi0_minv[step] = (TH1D*)H1(iS, "fh_pi0_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+            fh_mean_eta_minv_pt[step] = (TH2D*)H2(iS, "fh_eta_minv_pt_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+            fh_mean_pi0_minv_pt[step] = (TH2D*)H2(iS, "fh_pi0_minv_pt_" + CbmLmvmHist::fAnaSteps[step])->Clone();
          } else {
             fh_mean_bg_minv[step]->Add( (TH1D*)H1(iS, "fh_bg_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone() );
             fh_mean_eta_minv[step]->Add( (TH1D*)H1(iS, "fh_eta_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone() );
             fh_mean_pi0_minv[step]->Add( (TH1D*)H1(iS, "fh_pi0_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone() );
+            fh_mean_eta_minv_pt[step]->Add( (TH2D*)H2(iS, "fh_eta_minv_pt_" + CbmLmvmHist::fAnaSteps[step])->Clone() );
+            fh_mean_pi0_minv_pt[step]->Add( (TH2D*)H2(iS, "fh_pi0_minv_pt_" + CbmLmvmHist::fAnaSteps[step])->Clone() );
          }
       }
       fh_mean_bg_minv[step]->Scale(1./(double) fNofSignals);
       fh_mean_eta_minv[step]->Scale(1./(double) fNofSignals);
       fh_mean_pi0_minv[step]->Scale(1./(double) fNofSignals);
+      fh_mean_eta_minv_pt[step]->Scale(1./(double) fNofSignals);
+      fh_mean_pi0_minv_pt[step]->Scale(1./(double) fNofSignals);
    }
 
    if (fOutputDir != ""){
@@ -267,6 +303,8 @@ void CbmAnaDielectronTaskDrawAll::FillMeanHist()
       TFile* f = TFile::Open( string(fOutputDir + "/mean_hist.root").c_str(), "RECREATE" );
       for (int i = 0; i < CbmLmvmHist::fNofAnaSteps; i++){
          fh_mean_bg_minv[i]->Write();
+         fh_mean_eta_minv[i]->Write();
+         fh_mean_pi0_minv[i]->Write();
       }
       f->Close();
    }

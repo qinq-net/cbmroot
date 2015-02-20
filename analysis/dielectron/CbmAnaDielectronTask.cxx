@@ -202,6 +202,9 @@ CbmAnaDielectronTask::CbmAnaDielectronTask()
     fNofHitsInRingMap(),
     fh_mc_mother_pdg(NULL),
     fh_acc_mother_pdg(NULL),
+	fh_signal_pmtXY(NULL),
+	fh_pi0_pmtXY(NULL),
+	fh_gamma_pmtXY(NULL),
     fh_vertex_el_gamma_xz(),
     fh_vertex_el_gamma_yz(),
     fh_vertex_el_gamma_xy(),
@@ -314,6 +317,14 @@ void CbmAnaDielectronTask::InitHists()
    fHistoList.push_back(fh_mc_mother_pdg);
    fh_acc_mother_pdg = new TH1D("fh_acc_mother_pdg","fh_acc_mother_pdg; Pdg code; Particles per event", 7000, -3500., 3500.);
    fHistoList.push_back(fh_acc_mother_pdg);
+
+   //X-Y distribution of MC points on PMT
+   fh_signal_pmtXY = new TH2D("fh_signal_pmtXY", "fh_signal_pmtXY;X [cm];Y [cm];Counter", 220, -110, 110, 400, -200, 200);
+   fHistoList.push_back(fh_signal_pmtXY);
+   fh_pi0_pmtXY = new TH2D("fh_pi0_pmtXY", "fh_pi0_pmtXY;X [cm];Y [cm];Counter", 220, -110, 110, 400, -200, 200);
+   fHistoList.push_back(fh_pi0_pmtXY);
+   fh_gamma_pmtXY = new TH2D("fh_gamma_pmtXY", "fh_gamma_pmtXY;X [cm];Y [cm];Counter", 220, -110, 110, 400, -200, 200);
+   fHistoList.push_back(fh_gamma_pmtXY);
 
    //vertex of the secondary electrons from gamma conversion
    CreateAnalysisStepsH2(fh_vertex_el_gamma_xz, "fh_vertex_el_gamma_xz","Z [cm]", "X [cm]", "Counter per event", 200, -10., 190., 400, -130.,130.);
@@ -615,6 +626,7 @@ void CbmAnaDielectronTask::Exec(
 
     FillRichRingNofHits();
     MCPairs();   
+    RichPmtXY();
     SingleParticleAcceptance();
     PairMcAndAcceptance();
     FillTopologyCandidates();
@@ -686,6 +698,42 @@ void CbmAnaDielectronTask::MCPairs()
         }
     } // nMcTracks
 } //MC Pairs
+
+void CbmAnaDielectronTask::RichPmtXY()
+{
+    Int_t nofRichPoints = fRichPoints->GetEntriesFast();
+    for (Int_t iP=0; iP < nofRichPoints; iP++) {
+        FairMCPoint* pointPhoton = static_cast<FairMCPoint*>(fRichPoints->At(iP));
+        if (NULL == pointPhoton) continue;
+
+        Int_t iMCTrackPhoton = pointPhoton->GetTrackID();
+        CbmMCTrack* trackPhoton = static_cast<CbmMCTrack*>(fMCTracks->At(iMCTrackPhoton));
+        if (NULL == trackPhoton) continue;
+
+        Int_t iMCTrack = trackPhoton->GetMotherId();
+        if (iMCTrack == -1) continue;
+
+        CbmMCTrack* track = static_cast<CbmMCTrack*>(fMCTracks->At(iMCTrack));
+        if (NULL == track) continue;
+
+        Int_t pdg = TMath::Abs(track->GetPdgCode());
+        Int_t motherId = track->GetMotherId();
+
+		if (pdg == 11 && motherId == -1) { //signal
+			fh_signal_pmtXY->Fill(pointPhoton->GetX(), pointPhoton->GetY(), fWeight);
+		}
+		if (motherId >=0){
+			CbmMCTrack* mct1 = (CbmMCTrack*) fMCTracks->At(motherId);
+			int motherPdg = mct1->GetPdgCode();
+			if (mct1 != NULL && motherPdg == 111 && pdg == 11) { //pi0
+				fh_pi0_pmtXY->Fill(pointPhoton->GetX(), pointPhoton->GetY());
+			}
+			if (mct1 != NULL && motherPdg == 22 && pdg == 11){ //gamma
+				fh_gamma_pmtXY->Fill(pointPhoton->GetX(), pointPhoton->GetY());
+			}
+		}
+    }
+}
 
 
 Bool_t CbmAnaDielectronTask::IsMcTrackAccepted(
