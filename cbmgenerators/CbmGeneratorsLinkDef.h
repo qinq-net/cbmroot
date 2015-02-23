@@ -15,6 +15,8 @@
 #pragma link C++ class UEvent+;
 #pragma link C++ class UParticle+;
 #pragma link C++ class CbmIonGenerator+;
+#pragma link C++ class CbmPlutoGenerator+;
+#pragma link C++ class CbmPlutoReactionGenerator+;
 
 #endif
 

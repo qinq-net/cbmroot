@@ -33,6 +33,7 @@ EndIf (FAIRBASE)
 # is checked
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 set(CMAKE_MODULE_PATH "${FAIRROOTPATH}/share/fairbase/cmake/modules"  ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "${FAIRROOTPATH}/share/fairbase/cmake/modules_old" ${CMAKE_MODULE_PATH})
 
 # Check if the compiler support specific C++11 features
 # Up to now this is only a check since the code does not use
@@ -163,6 +164,11 @@ endif(CBMROOT_MINIMAL)
 # set a variable which should be used in all CMakeLists.txt
 # Defines all basic include directories from fairbase
 SetBasicVariables()
+
+Set(BASE_INCLUDE_DIRECTORIES
+${BASE_INCLUDE_DIRECTORIES} 
+${SYSTEM_INCLUDE_DIRECTORIES} 
+)
 
 # Set the library version in the main CMakeLists.txt
 SET(CBMROOT_MAJOR_VERSION 0)

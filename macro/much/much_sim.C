@@ -77,25 +77,6 @@ void much_sim(TString inputSignal = "",
   gDebug = 0;
   // ------------------------------------------------------------------------
 
-
-  // ----  Load libraries   -------------------------------------------------
-  cout << endl << "=== much_sim.C : Loading libraries ..." << endl;
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
-  gSystem->Load("libCbmBase");
-  gSystem->Load("libCbmData");
-  gSystem->Load("libField");
-  gSystem->Load("libGen");
-  gSystem->Load("libPassive");
-  gSystem->Load("libSts");
-  gSystem->Load("libTrd");
-  gSystem->Load("libTof");
-  gSystem->Load("libMuch");
-  // -----------------------------------------------------------------------
-
   // -----   Create simulation run   ----------------------------------------
   cout << endl << "=== much_sim.C : Creating run and database ..." << endl;
   FairRunSim* fRun = new FairRunSim();
@@ -168,7 +149,7 @@ void much_sim(TString inputSignal = "",
 //  FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
   if ( inputSignal != "" ) {
-  	FairPlutoGenerator *plutoGen= new FairPlutoGenerator(inputSignal);
+  	CbmPlutoGenerator *plutoGen= new CbmPlutoGenerator(inputSignal);
   	primGen->AddGenerator(plutoGen);
   }
   if ( inputBgr != "" ) {
