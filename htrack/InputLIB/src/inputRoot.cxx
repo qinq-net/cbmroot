@@ -1464,7 +1464,8 @@ inputRoot::inputRoot(const char* name, bitArray detMask, int hitProducer, bool e
 	fileName = generateFileName(name);
 
         manager->SetInputFile(fileName.c_str());
-        manager->OpenInChain();
+        manager->OpenSignalChain();
+//        manager->OpenInChain();
 //	manager->OpenInFile(fileName.c_str());
 
 /*
@@ -1563,7 +1564,7 @@ inputRoot::inputRoot(const char* name, const char* _detectorFileName, unsigned s
 	fileName = generateFileName(name);
 
         manager->SetInputFile(fileName.c_str());
-        manager->OpenInChain();
+        manager->OpenSignalChain();
 //	manager->OpenInFile(fileName.c_str());
 
 /*	inputTracks                       = NULL;
@@ -1683,7 +1684,7 @@ void inputRoot::init(const char* name, int hitProducer) {
 	fileName = generateFileName(name);
 
         manager->SetInputFile(fileName.c_str());
-        manager->OpenInChain();
+        manager->OpenSignalChain();
 //	manager->OpenInFile(fileName.c_str());
 
 	inputData::init(hitProducer);
