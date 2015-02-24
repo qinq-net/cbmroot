@@ -230,7 +230,23 @@ If(NOT ${ROOT_HAS_VC})
   Install(FILES $${CMAKE_BINARY_DIR}/lib/libVc.a DESTINATION lib)
 EndIf()
 
+# Test is we use the new FairSource. The difference is the signature.
+# Compile test code. If the code compiles we use the new FairSource.
+Message(STATUS "Checking for FairSource version")
+Execute_process(COMMAND ${CMAKE_CXX_COMPILER} -c 
+                        ${CMAKE_SOURCE_DIR}/test/testcode/CbmTestSource.cxx
+                        -I${ROOT_INCLUDE_DIR} -I${FAIRROOTPATH}/include
+                        -I${CMAKE_SOURCE_DIR}/base/source
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                RESULT_VARIABLE OldFairSource
+                ERROR_QUIET
+               )
 
+If(OldFairSource)
+  Message(STATUS "Found old FairSource")
+Else()
+  Message(STATUS"Found new FairSource")
+EndIf()
 
 add_subdirectory (cbmbase)
 add_subdirectory (cbmdata)
@@ -275,9 +291,11 @@ Else()
   Else()
     Message(STATUS "C++11 support found. Build FLES_IPC library.")
     add_subdirectory(fles)
-    add_subdirectory(fairmq)
-    add_subdirectory(MQ)
     add_subdirectory(tutorials/MQTest)
+    If (FAIRBASE)
+      add_subdirectory(fairmq)
+      add_subdirectory(MQ)
+    EndIf()
   EndIf()
 EndIf()
 
