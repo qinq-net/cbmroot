@@ -63,6 +63,11 @@ Set(NO_DICT_SRCS
  unpacker/TimesliceReader.cpp
 )
 
+If(NOT OldFairSource)
+  Add_Definitions(-D_NewFairSource)
+  Set(DEFINITIONS _NewFairSource)
+EndIf()
+
 Set(LINKDEF  FlibReaderLinkDef.h )
 Set(LIBRARY_NAME CbmFlibReader)
 Set(DEPENDENCIES

@@ -21,7 +21,11 @@ public: // methods
    virtual ~CbmRichTrbUnpack2();
 
    Bool_t Init();
-   Int_t ReadEvent();
+#ifdef _NewFairSource
+   Int_t ReadEvent(UInt_t);
+#else                    
+   Int_t ReadEvent();    
+#endif                    
    void Close();
    void Reset();
 

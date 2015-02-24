@@ -167,6 +167,8 @@ If(TBB_FOUND)
      )
 EndIf(TBB_FOUND)
 
+
+
 IF (SSE_FOUND)
   ADD_DEFINITIONS(-DHAVE_SSE)
   SET_SOURCE_FILES_PROPERTIES(${SRCS} PROPERTIES COMPILE_FLAGS "-msse -O3")
@@ -183,6 +185,11 @@ If(TBB_FOUND)
 Else(TBB_FOUND)
   set(LINKDEF  RichLinkDef.h)
 EndIf(TBB_FOUND)
+
+If(NOT OldFairSource)
+  Add_Definitions(-D_NewFairSource)
+  Set(DEFINITIONS _NewFairSource)
+EndIf()
 
 Set(LIBRARY_NAME Rich)
 Set(DEPENDENCIES

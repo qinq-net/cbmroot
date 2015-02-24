@@ -46,7 +46,11 @@ public:
     /*
      * Inherited from FairSource.
      */
-    Int_t ReadEvent();
+#ifdef _NewFairSource
+    Int_t ReadEvent(UInt_t);
+#else                    
+    Int_t ReadEvent();    
+#endif            
 
     /*
      * Inherited from FairSource.

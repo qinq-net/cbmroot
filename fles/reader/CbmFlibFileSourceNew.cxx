@@ -94,7 +94,11 @@ Bool_t CbmFlibFileSourceNew::Init()
   return kTRUE;
 }
 
-Int_t CbmFlibFileSourceNew::ReadEvent()
+#ifdef _NewFairSource
+Int_t CbmFlibFileSourceNew::ReadEvent(UInt_t) 
+#else
+Int_t CbmFlibFileSourceNew::ReadEvent()       
+#endif
 {
   
   //  fTimer.Start();

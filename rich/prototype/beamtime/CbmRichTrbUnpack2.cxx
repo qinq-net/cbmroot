@@ -109,7 +109,11 @@ UInt_t CbmRichTrbUnpack2::ReadNextInputFileToMemory()
    }
 }
 
-Int_t CbmRichTrbUnpack2::ReadEvent()
+#ifdef _NewFairSource
+Int_t CbmRichTrbUnpack2::ReadEvent(UInt_t) 
+#else
+Int_t CbmRichTrbUnpack2::ReadEvent()       
+#endif
 {
    // Try to extract next event from the Iterator. If no events left - go out of the loop
 	CbmRawEvent* rawEvent = fTrbIter->NextEvent();

@@ -95,7 +95,11 @@ Bool_t CbmRichTrbUnpack::Init()
 	return kTRUE;
 }
 
-Int_t CbmRichTrbUnpack::ReadEvent()
+#ifdef _NewFairSource
+Int_t CbmRichTrbUnpack::ReadEvent(UInt_t) 
+#else
+Int_t CbmRichTrbUnpack::ReadEvent()       
+#endif
 {
 	LOG(DEBUG) << "Event #" << fEventNum << FairLogger::endl;
 

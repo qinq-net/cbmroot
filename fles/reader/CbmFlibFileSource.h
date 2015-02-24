@@ -30,7 +30,11 @@ class CbmFlibFileSource : public FairSource
     virtual ~CbmFlibFileSource();
 
     Bool_t Init();
+#ifdef _NewFairSource
+    Int_t ReadEvent(UInt_t);
+#else 
     Int_t ReadEvent();
+#endif
     void Close();
     void Reset();
 
