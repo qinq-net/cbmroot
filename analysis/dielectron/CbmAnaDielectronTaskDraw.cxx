@@ -449,7 +449,6 @@ void CbmAnaDielectronTaskDraw::DrawMotherPdg()
 
 void CbmAnaDielectronTaskDraw::DrawPmtXY()
 {
-	return;
 	TCanvas *c = CreateCanvas("lmvm_pmt_xy", "lmvm_pmt_xy", 1500, 500);
 	c->cd(1);
 	DrawH2(H2("fh_signal_pmtXY"));
