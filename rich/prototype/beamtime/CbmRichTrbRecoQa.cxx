@@ -87,6 +87,8 @@ void CbmRichTrbRecoQa::InitHist()
 	fHM->Create1<TH1D>("fhChi2Circle", "fhChi2Circle;#Chi^{2};Entries", 200, 0.0, 0.5);
 	fHM->Create1<TH1D>("fhDrCircle", "fhDrCircle;dR [cm];Entries", 200, -1.0, 1.0);
 	fHM->Create2<TH2D>("fhHitsXYPmt", "fhHitsXYPmt;PMT X;PMT Y;Hits per PMT", 4, 0.5, 32.5, 4, 0.5, 32.5);
+	fHM->Create1<TH1D>("fhNofHitsInEventAll", "fhNofHitsInEventAll;Number of hits in event;Entries", 40, 0.5, 40.5);
+	fHM->Create1<TH1D>("fhNofHitsInEventWithRing", "fhNofHitsInEventWithRing;Number of hits in event;Entries", 40, 0.5, 40.5);
 }
 
 void CbmRichTrbRecoQa::Exec(
@@ -120,6 +122,10 @@ void CbmRichTrbRecoQa::Exec(
 		FillHistCircle(&ringL);
 		fitCircleRing.push_back(ringL);
 	}
+
+	fHM->H1("fhNofHitsInEventAll")->Fill(nofHitsInEvent);
+	if (nofRingsInEvent >= 1) fHM->H1("fhNofHitsInEventWithRing")->Fill(nofHitsInEvent);
+
 
 	if (nofHitsInEvent >= 5 && fNofDrawnEvents < fMaxNofEventsToDraw ) {
 		DrawEvent(fitCircleRing, fitEllipseRing);
@@ -227,6 +233,13 @@ void CbmRichTrbRecoQa::DrawHist()
 	{
 		TCanvas* c = new TCanvas(fRunTitle + "_rich_trb_recoqa_hits_xy_pmt", fRunTitle + "_rich_trb_recoqa_hits_xy_pmt", 800, 600);
 		DrawH2(fHM->H2("fhHitsXYPmt"));
+		Cbm::SaveCanvasAsImage(c, string(fOutputDir.Data()), "png");
+	}
+
+	{
+		TCanvas* c = new TCanvas(fRunTitle + "_rich_trb_recoqa_efficiency", fRunTitle + "_rich_trb_recoqa_efficiency", 800, 600);
+		TH1D* eff = Cbm::DivideH1(fHM->H1("fhNofHitsInEventWithRing"), fHM->H1("fhNofHitsInEventAll"));
+		DrawH1(eff);
 		Cbm::SaveCanvasAsImage(c, string(fOutputDir.Data()), "png");
 	}
 

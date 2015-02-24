@@ -54,7 +54,6 @@ public:
     */
    void DrawHist();
 
-
     /*
      * Draw current event (event display)
      * \param fitRingCircle Fitted rings with COP algorithm.
