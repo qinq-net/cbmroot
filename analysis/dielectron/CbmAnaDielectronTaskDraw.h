@@ -139,26 +139,6 @@ private:
           Double_t y2);
 
     /**
-     * Divide two 2D histograms and return 2D result histogram.
-     * \param[in] h1 Pointer to the first histogram.
-     * \param[in] h2 Pointer to the second histogram.
-     * \param return Created 2D histogram.
-     */
-    TH2D* DivideH2D(
-          TH2D* h1,
-          TH2D* h2);
-
-    /**
-     * Divide two 1D histograms and returns 1D result histogram.
-     * \param[in] h1 Pointer to the first histogram.
-     * \param[in] h2 Pointer to the second histogram.
-     * \param[in] return Created 1D histogram.
-     */
-    TH1D* DivideH1D(
-          TH1D* h1,
-          TH1D* h2);
-
-    /**
      * Produce 1D significance histogram Significance=S/sqrt(S+BG).
      * \param[in] s Histogram with signal.
      * \param[in] bg Histogram eith background.

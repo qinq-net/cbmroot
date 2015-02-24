@@ -205,38 +205,6 @@ void CbmAnaDielectronTaskDraw::DrawTextOnHist(
    leg->Draw();
 }
 
-TH2D* CbmAnaDielectronTaskDraw::DivideH2D(
-      TH2D* h1,
-      TH2D* h2)
-{
-    Int_t nBinsX = h1->GetNbinsX();
-    Double_t minX = h1->GetXaxis()->GetXmin();
-    Double_t maxX = h1->GetXaxis()->GetXmax();
-    Int_t nBinsY = h1->GetNbinsY();
-    Double_t minY = h1->GetYaxis()->GetXmin();
-    Double_t maxY = h1->GetYaxis()->GetXmax();
-
-    string hname = string(h1->GetName()) + "_divide";
-    TH2D* h3 = new TH2D(hname.c_str(), h1->GetTitle(), nBinsX, minX, maxX, nBinsY, minY, maxY);
-    //h1->Sumw2();
-    //h2->Sumw2();
-    h3->Divide(h1,h2,100.,1.,"B");
-    return h3;
-}
-
-TH1D* CbmAnaDielectronTaskDraw::DivideH1D(
-      TH1D* h1,
-      TH1D* h2)
-{
-    Int_t nBins = h1->GetNbinsX();
-    Double_t min = h1->GetXaxis()->GetXmin();
-    Double_t max = h1->GetXaxis()->GetXmax();
-    string hname = string(h1->GetName()) + "_divide";
-    TH1D* h3 = new TH1D(hname.c_str(), h1->GetTitle(), nBins, min, max);
-    h3->Sumw2();
-    h3->Divide(h1, h2, 100.,1., "B");
-    return h3;
-}
 
 TH1D* CbmAnaDielectronTaskDraw::CreateSignificanceH1D(
       TH1D* s,
@@ -423,7 +391,7 @@ void CbmAnaDielectronTaskDraw::DrawPtYEfficiency(
    // efficiency is normalized to the previous step (step - 1)
    TH2D* hmc = H2("fh_signal_pty_" + CbmLmvmHist::fAnaSteps[kMc]);
 
-   TH2D* eff = DivideH2D(h, hmc);
+   TH2D* eff = Cbm::DivideH2(h, hmc);
    eff->GetZaxis()->SetTitle("Efficiency [%]");
    DrawH2(eff);
    eff->SetMaximum(10.);
@@ -481,6 +449,7 @@ void CbmAnaDielectronTaskDraw::DrawMotherPdg()
 
 void CbmAnaDielectronTaskDraw::DrawPmtXY()
 {
+	return;
 	TCanvas *c = CreateCanvas("lmvm_pmt_xy", "lmvm_pmt_xy", 1500, 500);
 	c->cd(1);
 	DrawH2(H2("fh_signal_pmtXY"));
