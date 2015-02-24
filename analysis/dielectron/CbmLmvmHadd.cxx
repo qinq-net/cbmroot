@@ -22,70 +22,103 @@ void CbmLmvmHadd::AddFiles(
 {
     string particleDir[5] = {"omegaepem", "phi", "omegadalitz", "rho0", "urqmd"};
 	for (int iF = 0; iF < 4; iF++){
-	        string fileNameAna = dir + particleDir[iF] + "/" + string("analysis") + fileTamplate;
-	        string fileNameReco = dir + particleDir[iF] + "/" + string("reco") + fileTamplate;
-	        string fileNameQa = dir + particleDir[iF] + "/" + string("litqa") + fileTamplate;
+		AddFilesForParticle(particleDir[iF], dir, fileTamplate, addString, nofFiles);
+	}//iF
+}
 
-		cout << "-I- " << dir << endl;
+void CbmLmvmHadd::AddFilesForParticle(
+		const string& particleDir,
+		const string& dir,
+		const string& fileTamplate,
+		const string& addString,
+		Int_t nofFiles)
+{
+	Int_t maxNofFiles = 100;
+	string fileNameAna = dir + particleDir + "/" + string("analysis") + fileTamplate;
+	string fileNameReco = dir + particleDir + "/" + string("reco") + fileTamplate;
+	string fileNameQa = dir + particleDir + "/" + string("litqa") + fileTamplate;
 
-		string outputFile = fileNameAna;
-		if (addString == "litqa") outputFile = fileNameQa;
-		outputFile += "all.root";
-		cout << "-I- OUTPUT: " << outputFile << endl;
-		TFile* Target = TFile::Open( outputFile.c_str(), "RECREATE" );
+	cout << "-I- " << dir << endl;
+	int count = 0;
+	TList* fileList = new TList();
+	TList* tempTargetFiles = new TList();
+	Int_t targetFileNum = 0;
+	for (int i = 1; i < nofFiles; i++){
+		stringstream ss;
+		ss.fill('0');
+		ss.width(5);
+		ss  << i << ".root";
 
-		int count = 0;
-		TList* FileList = new TList();
-		for (int i = 1; i < nofFiles; i++){
-			stringstream ss;
-			ss.fill('0');
-			ss.width(5);
-			ss  << i << ".root";
+		TFile* fileAna = TFile::Open( (fileNameAna + ss.str() ).c_str(), "READ");
+		TFile* fileReco = TFile::Open( (fileNameReco + ss.str() ).c_str(), "READ");
 
-			TFile* fileAna = TFile::Open( (fileNameAna + ss.str() ).c_str(), "READ");
-			TFile* fileReco = TFile::Open( (fileNameReco + ss.str() ).c_str(), "READ");
-			TFile* fileQa = TFile::Open( (fileNameQa+ss.str() ).c_str(), "READ");
-
-			Bool_t isGoodFile = CheckFile(fileAna, fileReco);
-
-			if (fileReco != NULL) fileReco->Close();
-
-			if ( isGoodFile ){
-				if (addString == "analysis"){
-					FileList->Add( fileAna );
+		Bool_t isGoodFile = CheckFile(fileAna, fileReco);
+		if (fileReco != NULL) fileReco->Close();
+		if ( isGoodFile ){
+			if (addString == "analysis"){
+				fileList->Add( fileAna );
+				count++;
+			}
+			if (addString == "litqa"){
+				TFile* fileQa = TFile::Open( (fileNameQa + ss.str() ).c_str(), "READ");
+				Bool_t isGoodQaFile = CheckQaFile(fileQa);
+				if (isGoodQaFile){
+					fileList->Add( fileQa );
 					count++;
+				} else {
 					if (fileQa != NULL) fileQa->Close();
 				}
-				if (addString == "litqa"){
-                    Bool_t isGoodQaFile = CheckQaFile(fileQa);
-					if (isGoodQaFile){
-					    FileList->Add( fileQa );
-					    count++;
-					} else {
-                        if (fileQa != NULL) fileQa->Close();
-					}
-					if (fileAna != NULL) fileAna->Close();
-				}
-			} else {
-				if ( fileAna != NULL) fileAna->Close();
-				if ( fileReco != NULL) fileReco->Close();
-                if ( fileQa != NULL) fileQa->Close();
+				if (fileAna != NULL) fileAna->Close();
 			}
+		} else {
+			if ( fileAna != NULL) fileAna->Close();
+			if ( fileReco != NULL) fileReco->Close();
 		}
-		cout << endl<< "-I- number of files to merge = " << count << endl << endl;
 
-		MergeRootfile( Target, FileList );
-
-		Target->Close();
-		int nFL = FileList->GetEntries();
-		for (int iFL = 0; iFL < nFL; iFL++){
-			TFile* f = (TFile*)FileList->At(iFL);
-			f->Close();
-			delete f;
+		if (fileList->GetEntries() >= maxNofFiles) {
+			TFile* tf = CreateAndMergeTempTargetFile(targetFileNum, fileList);
+			tempTargetFiles->Add(tf);
+			CloseFilesFromList(fileList);
+			fileList->RemoveAll();
 		}
-		delete Target;
-		delete FileList;
-	}//iF
+	}
+	cout << endl<< "-I- number of files to merge = " << count << endl << endl;
+
+	string outputFile = fileNameAna + "all.root";
+	if (addString == "litqa") outputFile = fileNameQa + "all.root";
+	cout << "-I- OUTPUT: " << outputFile << endl;
+	TFile* targetFile = TFile::Open( outputFile.c_str(), "RECREATE" );
+	MergeRootfile( targetFile, tempTargetFiles );
+
+	CloseFilesFromList(tempTargetFiles);
+	targetFile->Close();
+
+	if (targetFile != NULL) delete targetFile;
+	if (tempTargetFiles != NULL) delete tempTargetFiles;
+	if (fileList != NULL) delete fileList;
+}
+
+TFile* CbmLmvmHadd::CreateAndMergeTempTargetFile(
+		Int_t targetFileNum,
+		TList* fileList)
+{
+	cout << "-I- CreateAndMergeTempTargetFile no" << targetFileNum << endl;
+	stringstream ss;
+	ss  << targetFileNum << ".root";
+	TFile* targetFile = TFile::Open( string("temp_taget_file_" + ss.str()).c_str(), "RECREATE" );
+	MergeRootfile( targetFile, fileList );
+	return targetFile;
+}
+
+void CbmLmvmHadd::CloseFilesFromList(
+	    TList* fileList)
+{
+	int nFL = fileList->GetEntries();
+	for (int iFL = 0; iFL < nFL; iFL++){
+		TFile* f = (TFile*)fileList->At(iFL);
+		f->Close();
+		delete f;
+	}
 }
 
 Bool_t CbmLmvmHadd::CheckQaFile(

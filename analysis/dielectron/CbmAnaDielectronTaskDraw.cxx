@@ -449,7 +449,8 @@ void CbmAnaDielectronTaskDraw::DrawMotherPdg()
 
 void CbmAnaDielectronTaskDraw::DrawPmtXY()
 {
-	TCanvas *c = CreateCanvas("lmvm_pmt_xy", "lmvm_pmt_xy", 1500, 500);
+	TCanvas *c = CreateCanvas("lmvm_pmt_xy", "lmvm_pmt_xy", 1800, 500);
+	c->Divide(3, 1);
 	c->cd(1);
 	DrawH2(H2("fh_signal_pmtXY"));
 	DrawTextOnHist(CbmLmvmHist::fSourceTypesLatex[kSignal], 0.50, 0.78, 0.70, 0.9);

@@ -249,7 +249,7 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
 void CbmAnaDielectronTaskDrawAll::DrawMinvPtAll()
 {
    TCanvas *cptcut = CreateCanvas("minv_pt_ptcut", "minv_pt_ptcut", 800, 800);
-   DrawMinv(kPtCut);
+   DrawMinvPt(kPtCut);
 
 }
 

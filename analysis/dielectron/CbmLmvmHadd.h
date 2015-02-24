@@ -25,6 +25,8 @@ public:
 			const string& addString,
 			Int_t nofFiles);
 
+
+
 private:
 	Bool_t CheckQaFile(
 			TFile* fileQa);
@@ -32,6 +34,20 @@ private:
 	Bool_t CheckFile(
 			TFile* fileAna,
 			TFile* fileReco);
+
+	void CloseFilesFromList(
+			TList* fileList);
+
+	void AddFilesForParticle(
+			const string& particleDir,
+			const string& dir,
+			const string& fileTamplate,
+			const string& addString,
+			Int_t nofFiles);
+
+	TFile* CreateAndMergeTempTargetFile(
+			Int_t targetFileNum,
+			TList* fileList);
 
 	/* Merge root file into one.
 	 * This function was taken from hadd.C macro.
