@@ -245,7 +245,7 @@ Execute_process(COMMAND ${CMAKE_CXX_COMPILER} -c
 If(OldFairSource)
   Message(STATUS "Found old FairSource")
 Else()
-  Message(STATUS"Found new FairSource")
+  Message(STATUS "Found new FairSource")
 EndIf()
 
 add_subdirectory (cbmbase)
