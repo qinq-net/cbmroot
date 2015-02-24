@@ -2,6 +2,10 @@
 #define CBMUTILS_H_
 
 class TCanvas;
+class TH1;
+class TH1D;
+class TH2;
+class TH2D;
 
 #include <vector>
 #include <string>
@@ -59,6 +63,38 @@ string FindAndReplace(
 vector<string> Split(
 		const string& name,
 		char delimiter);
+
+/*
+ * \brief Divide 1D histograms and return result histogram h = h1 / h2.
+ * \param[in] h1 Pointer to the first histogram.
+ * \param[in] h2 Pointer to the second histogram.
+ * \param[in] histName Name of the result histogram. if histName = "" then histName = h1->GetName() + "_divide"
+ * \param[in] scale Scale factor of result histogram.
+ * \param[in] titleYaxis Y axis title of result histogram.
+ */
+TH1D* DivideH1(
+		TH1* h1,
+		TH1* h2,
+		const string& histName = "",
+		double scale = 100.,
+		const string& titleYaxis = "Efficiency [%]");
+
+
+/*
+ * \brief Divide 2D histograms and return result histogram h = h1 / h2.
+ * \param[in] h1 Pointer to the first histogram.
+ * \param[in] h2 Pointer to the second histogram.
+ * \param[in] histName Name of the result histogram. if histName = "" then histName = h1->GetName() + "_divide"
+ * \param[in] scale Scale factor of result histogram.
+ * \param[in] titleZaxis Z axis title of result histogram.
+ */
+TH2D* DivideH2(
+      TH2* h1,
+      TH2* h2,
+	  const string& histName = "",
+	  double scale = 100.,
+	  const string& titleZaxis = "Efficiency [%]");
+
 }
 
 #endif /* CBMUTILS_H_ */
