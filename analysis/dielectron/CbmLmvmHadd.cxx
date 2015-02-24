@@ -20,10 +20,16 @@ void CbmLmvmHadd::AddFiles(
 		const string& addString,
 		Int_t nofFiles)
 {
-    string particleDir[5] = {"omegaepem", "phi", "omegadalitz", "rho0", "urqmd"};
-	for (int iF = 0; iF < 4; iF++){
-		AddFilesForParticle(particleDir[iF], dir, fileTamplate, addString, nofFiles);
-	}//iF
+    if (addString == "analysis") { // for analysisi add up all particles
+		string particleDir[4] = {"omegaepem", "phi", "omegadalitz", "rho0"};
+		for (int iF = 0; iF < 4; iF++){
+			AddFilesForParticle(particleDir[iF], dir, fileTamplate, addString, nofFiles);
+		}//iF
+    }
+
+    if (addString == "litqa") { // for litqa add up only rho0
+		AddFilesForParticle("rho0", dir, fileTamplate, addString, nofFiles);
+    }
 }
 
 void CbmLmvmHadd::AddFilesForParticle(
