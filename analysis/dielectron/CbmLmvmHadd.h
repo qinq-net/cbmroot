@@ -46,6 +46,8 @@ private:
 			Int_t nofFiles);
 
 	TFile* CreateAndMergeTempTargetFile(
+			const string& dir,
+			const string& addString,
 			Int_t targetFileNum,
 			TList* fileList);
 

@@ -40,9 +40,10 @@ void CbmLmvmHadd::AddFilesForParticle(
 		Int_t nofFiles)
 {
 	Int_t maxNofFiles = 100;
-	string fileNameAna = dir + particleDir + "/" + string("analysis") + fileTamplate;
-	string fileNameReco = dir + particleDir + "/" + string("reco") + fileTamplate;
-	string fileNameQa = dir + particleDir + "/" + string("litqa") + fileTamplate;
+	string fullDir = dir + particleDir + "/";
+	string fileNameAna = fullDir + string("analysis") + fileTamplate;
+	string fileNameReco = fullDir + string("reco") + fileTamplate;
+	string fileNameQa = fullDir + string("litqa") + fileTamplate;
 
 	cout << "-I- " << dir << endl;
 	int count = 0;
@@ -81,11 +82,12 @@ void CbmLmvmHadd::AddFilesForParticle(
 			if ( fileReco != NULL) fileReco->Close();
 		}
 
-		if (fileList->GetEntries() >= maxNofFiles) {
-			TFile* tf = CreateAndMergeTempTargetFile(targetFileNum, fileList);
+		if (fileList->GetEntries() >= maxNofFiles || i == nofFiles -1) {
+			TFile* tf = CreateAndMergeTempTargetFile(fullDir, addString, targetFileNum, fileList);
 			tempTargetFiles->Add(tf);
 			CloseFilesFromList(fileList);
 			fileList->RemoveAll();
+			targetFileNum++;
 		}
 	}
 	cout << endl<< "-I- number of files to merge = " << count << endl << endl;
@@ -105,13 +107,15 @@ void CbmLmvmHadd::AddFilesForParticle(
 }
 
 TFile* CbmLmvmHadd::CreateAndMergeTempTargetFile(
+		const string& dir,
+		const string& addString,
 		Int_t targetFileNum,
 		TList* fileList)
 {
-	cout << "-I- CreateAndMergeTempTargetFile no" << targetFileNum << endl;
+	cout << "-I- CreateAndMergeTempTargetFile no:" << targetFileNum << ", nofFiles:" << fileList->GetEntries() << endl;
 	stringstream ss;
 	ss  << targetFileNum << ".root";
-	TFile* targetFile = TFile::Open( string("temp_taget_file_" + ss.str()).c_str(), "RECREATE" );
+	TFile* targetFile = TFile::Open( string(dir + addString + ".temp.taget.file." + ss.str()).c_str(), "RECREATE" );
 	MergeRootfile( targetFile, fileList );
 	return targetFile;
 }
