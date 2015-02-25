@@ -63,6 +63,7 @@
 #include "L1Field.h"
 #include "CbmL1PFFitter.h"
 
+
 #include "CbmLmvmUtils.h"
 
 #include <sstream>
@@ -319,11 +320,11 @@ void CbmAnaDielectronTask::InitHists()
    fHistoList.push_back(fh_acc_mother_pdg);
 
    //X-Y distribution of MC points on PMT
-   fh_signal_pmtXY = new TH2D("fh_signal_pmtXY", "fh_signal_pmtXY;X [cm];Y [cm];Counter", 220, -110, 110, 400, -200, 200);
+   fh_signal_pmtXY = new TH2D("fh_signal_pmtXY", "fh_signal_pmtXY;X [cm];Y [cm];Counter", 110, -110, 110, 200, -200, 200);
    fHistoList.push_back(fh_signal_pmtXY);
-   fh_pi0_pmtXY = new TH2D("fh_pi0_pmtXY", "fh_pi0_pmtXY;X [cm];Y [cm];Counter", 220, -110, 110, 400, -200, 200);
+   fh_pi0_pmtXY = new TH2D("fh_pi0_pmtXY", "fh_pi0_pmtXY;X [cm];Y [cm];Counter", 110, -110, 110, 200, -200, 200);
    fHistoList.push_back(fh_pi0_pmtXY);
-   fh_gamma_pmtXY = new TH2D("fh_gamma_pmtXY", "fh_gamma_pmtXY;X [cm];Y [cm];Counter", 220, -110, 110, 400, -200, 200);
+   fh_gamma_pmtXY = new TH2D("fh_gamma_pmtXY", "fh_gamma_pmtXY;X [cm];Y [cm];Counter", 110, -110, 110, 200, -200, 200);
    fHistoList.push_back(fh_gamma_pmtXY);
 
    //vertex of the secondary electrons from gamma conversion
@@ -701,9 +702,14 @@ void CbmAnaDielectronTask::MCPairs()
 
 void CbmAnaDielectronTask::RichPmtXY()
 {
-    Int_t nofRichPoints = fRichPoints->GetEntriesFast();
-    for (Int_t iP=0; iP < nofRichPoints; iP++) {
-        FairMCPoint* pointPhoton = static_cast<FairMCPoint*>(fRichPoints->At(iP));
+    Int_t nofRichHits = fRichHits->GetEntriesFast();
+    for (Int_t iH=0; iH < nofRichHits; iH++) {
+    	CbmRichHit* richHit = static_cast<CbmRichHit*>(fRichHits->At(iH));
+    	if ( richHit == NULL ) continue;
+    	Int_t pointInd =  richHit->GetRefId();
+    	if (pointInd < 0) continue;
+
+        FairMCPoint* pointPhoton = static_cast<FairMCPoint*>(fRichPoints->At(pointInd));
         if (NULL == pointPhoton) continue;
 
         Int_t iMCTrackPhoton = pointPhoton->GetTrackID();
@@ -713,23 +719,27 @@ void CbmAnaDielectronTask::RichPmtXY()
         Int_t iMCTrack = trackPhoton->GetMotherId();
         if (iMCTrack == -1) continue;
 
-        CbmMCTrack* track = static_cast<CbmMCTrack*>(fMCTracks->At(iMCTrack));
-        if (NULL == track) continue;
+        CbmMCTrack* mctrack = static_cast<CbmMCTrack*>(fMCTracks->At(iMCTrack));
+        if (NULL == mctrack) continue;
 
-        Int_t pdg = TMath::Abs(track->GetPdgCode());
-        Int_t motherId = track->GetMotherId();
+        Int_t pdg = TMath::Abs(mctrack->GetPdgCode());
+        Int_t motherId = mctrack->GetMotherId();
+        TVector3 v;
+		mctrack->GetStartVertex(v);
+		Bool_t isPrim = (v.Z() < 2.);
 
 		if (pdg == 11 && motherId == -1) { //signal
-			fh_signal_pmtXY->Fill(pointPhoton->GetX(), pointPhoton->GetY(), fWeight);
+			fh_signal_pmtXY->Fill(richHit->GetX(), richHit->GetY(), fWeight);
 		}
-		if (motherId >=0){
+		if (motherId >=0 && isPrim){
+
 			CbmMCTrack* mct1 = (CbmMCTrack*) fMCTracks->At(motherId);
 			int motherPdg = mct1->GetPdgCode();
 			if (mct1 != NULL && motherPdg == 111 && pdg == 11) { //pi0
-				fh_pi0_pmtXY->Fill(pointPhoton->GetX(), pointPhoton->GetY());
+				fh_pi0_pmtXY->Fill(richHit->GetX(), richHit->GetY());
 			}
 			if (mct1 != NULL && motherPdg == 22 && pdg == 11){ //gamma
-				fh_gamma_pmtXY->Fill(pointPhoton->GetX(), pointPhoton->GetY());
+				fh_gamma_pmtXY->Fill(richHit->GetX(), richHit->GetY());
 			}
 		}
     }
