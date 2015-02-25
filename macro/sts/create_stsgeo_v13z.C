@@ -1,7 +1,7 @@
 /******************************************************************************
  ** Creation of STS geometry in ROOT format (TGeo).
  **
- ** @file create_stsgeo_v13y.C
+ ** @file create_stsgeo_v13z.C
  ** @author Volker Friese <v.friese@gsi.de>
  ** @since 15 June 2012
  ** @date 09.05.2014
@@ -10,6 +10,8 @@
  ** @date 25.07.2014
  ** @author David Emschermann <d.emschermann@gsi.de>
  ** modify cutout in STS keeping volume to fit beampipes v14e,f,g,h,i,j
+ **
+ ** v13z: derived from v13x with cables split into 8 microcables
  **
  ** The geometry hierarachy is:
  **
@@ -160,7 +162,7 @@ TGeoManager*   gGeoMan           = NULL;  // will be set later
 // ======                         Main function                           =====
 // ============================================================================
 
-void create_stsgeo_v13y(const char* geoTag="v13y")
+void create_stsgeo_v13z(const char* geoTag="v13z")
 {
 
   // -------------  Load the necessary FairRoot libraries   -------------------
