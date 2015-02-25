@@ -53,6 +53,7 @@ EndIf (Boost_FOUND)
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ${Boost_LIBRARY_DIRS}
+${FAIRROOT_LIBRARY_DIR}
 ${CBMLIBDIR}
 ) 
 
@@ -85,9 +86,13 @@ If (Boost_FOUND)
   Set(DEPENDENCIES 
     Base ParBase FairTools CbmBase Run
     CbmData Rich Trd Tof Psd CbmGenerators Field Sts
-    fles_ipc FairMQ FairMQSampler 
+    fles_ipc FairMQ 
     boost_thread boost_system boost_serialization boost_timer Passive
-    RIO Cint Core)
+    RIO Cint Core
+  )
+  If (FAIRBASE) 
+    Set(DEPENDENCIES ${DEPENDENCIES} FairMQSampler)
+  EndIf()
 Else (Boost_FOUND)
   message( FATAL_ERROR "Boost library required to compile the MQ example" )
 EndIf (Boost_FOUND)
@@ -123,6 +128,9 @@ If (Boost_FOUND)
     Set(EXE_NAME ${_name})
     Set(SRCS ${_src})
     Set(DEPENDENCIES MQcbmExample Mvd )
+    If (NOT FAIRBASE) 
+      Set(DEPENDENCIES ${DEPENDENCIES} BaseMQ)
+    EndIf()
 
     GENERATE_EXECUTABLE()
   EndForEach(_file RANGE 0 ${_length})
