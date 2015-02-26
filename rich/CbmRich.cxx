@@ -42,7 +42,7 @@ std::map<TString, TGeoMedium*> CbmRich::fFixedMedia;
 CbmRich::CbmRich() :
    FairDetector("RICH", kTRUE, kRICH),
    fPosIndex(0),
-
+   fRegisterPhotons(kFALSE),
    fRichPoints(NULL),
    fRichRefPlanePoints(NULL),
    fRichMirrorPoints(NULL),
@@ -55,6 +55,7 @@ CbmRich::CbmRich() :
    fPosIndex = 0;
 
    fVerboseLevel = 1;
+   fRegisterPhotons=kFALSE;
 }
 
 CbmRich::CbmRich(
@@ -68,6 +69,7 @@ CbmRich::CbmRich(
       Double_t rz):
    FairDetector(name, active, kRICH),
    fPosIndex(0),
+   fRegisterPhotons(kFALSE),
    fRichPoints(new TClonesArray("CbmRichPoint")),
    fRichRefPlanePoints(new TClonesArray("CbmRichPoint")),
    fRichMirrorPoints(new TClonesArray("CbmRichPoint")),
@@ -76,6 +78,7 @@ CbmRich::CbmRich(
    fPositionRotation(new TGeoCombiTrans(px, py, pz, fRotation))
 {
    fVerboseLevel = 1;
+   fRegisterPhotons=kFALSE;
 }
 
 CbmRich::~CbmRich()
@@ -167,28 +170,49 @@ Bool_t CbmRich::ProcessHits(
          TParticle* part    = gMC->GetStack()->GetCurrentTrack();
          Double_t charge = part->GetPDG()->Charge() / 3. ;
 
-         if (charge != 0.) { //if ( pdgCode == 50000050)
-            Int_t trackID = gMC->GetStack()->GetCurrentTrackNumber();
-            Double_t time = gMC->TrackTime() * 1.0e09;
-            Double_t length = gMC->TrackLength();
-            Double_t eLoss = gMC->Edep();
-            TLorentzVector tPos, tMom;
-
-            gMC->TrackPosition(tPos);
-            gMC->TrackMomentum(tMom);
-
-            AddRefPlaneHit(trackID, iVol, TVector3(tPos.X(), tPos.Y(), tPos.Z()), TVector3(tMom.Px(), tMom.Py(), tMom.Pz()), time, length, eLoss);
-
-            //Increment number of RefPlanePoints for this track
-            CbmStack* stack = (CbmStack*) gMC->GetStack();
-            stack->AddPoint(kREF);
-            return kTRUE;
-         } else {
-        	 return kFALSE;
-         }
+         //if (charge != 0.) { //
+	 //the following was changed by tariq	 
+	 if(fRegisterPhotons){
+	   Int_t trackID = gMC->GetStack()->GetCurrentTrackNumber();
+	   Double_t time = gMC->TrackTime() * 1.0e09;
+	   Double_t length = gMC->TrackLength();
+	   Double_t eLoss = gMC->Edep();
+	   TLorentzVector tPos, tMom;
+	   
+	   gMC->TrackPosition(tPos);
+	   gMC->TrackMomentum(tMom);
+	   
+	   AddRefPlaneHit(trackID, iVol, TVector3(tPos.X(), tPos.Y(), tPos.Z()), TVector3(tMom.Px(), tMom.Py(), tMom.Pz()), time, length, eLoss);
+	   
+	   //Increment number of RefPlanePoints for this track
+	   CbmStack* stack = (CbmStack*) gMC->GetStack();
+	   stack->AddPoint(kREF);
+	   return kTRUE;
+	 }else{
+	   if (charge != 0.){
+	     Int_t trackID = gMC->GetStack()->GetCurrentTrackNumber();
+	     Double_t time = gMC->TrackTime() * 1.0e09;
+	     Double_t length = gMC->TrackLength();
+	     Double_t eLoss = gMC->Edep();
+	     TLorentzVector tPos, tMom;
+	     
+	     gMC->TrackPosition(tPos);
+	     gMC->TrackMomentum(tMom);
+	     
+	     AddRefPlaneHit(trackID, iVol, TVector3(tPos.X(), tPos.Y(), tPos.Z()), TVector3(tMom.Px(), tMom.Py(), tMom.Pz()), time, length, eLoss);
+	     
+	     //Increment number of RefPlanePoints for this track
+	     CbmStack* stack = (CbmStack*) gMC->GetStack();
+	     stack->AddPoint(kREF);
+	     return kTRUE;
+	   }else {
+	     return kFALSE;
+	   }
+	 }
+	 //end of changes by tariq	 
       }
    }
-
+   
    // Treat mirror points
    if (volName.Contains("rich1mgl") || volName.Contains("rich1mglLU") || volName.Contains("rich1mglRU") ) {
 
@@ -559,5 +583,12 @@ CbmRichPoint* CbmRich::AddMirrorHit(
    Int_t tsize = clref.GetEntriesFast();
    return new(clref[tsize]) CbmRichPoint(trackID, detID, pos, mom, time,length, eLoss);
 }
+
+void CbmRich::SetRegisterPhotons(Bool_t par)
+{
+  fRegisterPhotons=par;
+}
+Bool_t CbmRich::GetRegisterPhotons(){return fRegisterPhotons;}
+
 
 ClassImp(CbmRich)

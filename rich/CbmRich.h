@@ -163,6 +163,12 @@ public:
     * \brief Put some optical properties.
     */
    void ConstructOpGeometry();
+ 
+ /**
+    * \brief 
+    */
+   void SetRegisterPhotons(Bool_t par);
+   Bool_t GetRegisterPhotons();
 
 
    /** Check whether a volume is sensitive.
@@ -177,6 +183,7 @@ public:
 private:
 
    Int_t fPosIndex;
+   Bool_t fRegisterPhotons;
 
    TClonesArray* fRichPoints; // MC points onto the photodetector plane
    TClonesArray* fRichRefPlanePoints; // points on the reference plane
