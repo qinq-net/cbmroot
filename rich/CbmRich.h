@@ -163,12 +163,6 @@ public:
     * \brief Put some optical properties.
     */
    void ConstructOpGeometry();
- 
- /**
-    * \brief 
-    */
-   void SetRegisterPhotons(Bool_t par);
-   Bool_t GetRegisterPhotons();
 
 
    /** Check whether a volume is sensitive.
@@ -180,14 +174,22 @@ public:
     **/
    virtual Bool_t CheckIfSensitive(std::string name);
 
+   /*
+    * \brief set fRegisterPhotonsOnSensitivePlane parameter
+    */
+   void SetRegisterPhotonsOnSensitivePlane(Bool_t b) {fRegisterPhotonsOnSensitivePlane = b;}
+
 private:
 
    Int_t fPosIndex;
-   Bool_t fRegisterPhotons;
+   // set to true if you want to register photons onto the sensitive gas plane,
+   // if false then only charged particles are registered
+   Bool_t fRegisterPhotonsOnSensitivePlane;
 
    TClonesArray* fRichPoints; // MC points onto the photodetector plane
    TClonesArray* fRichRefPlanePoints; // points on the reference plane
    TClonesArray* fRichMirrorPoints; // mirror points
+
 
    // GDML geometry
    static std::map<TString, TGeoMedium*> fFixedMedia; // List of media "repaired" after importing GMDL
