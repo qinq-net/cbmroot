@@ -36,5 +36,6 @@ void eventDisplay(const char* setup = "sis300_electron")
   fMan->AddTask(StsPoint);
  
     
-  fMan->Init(1,4,10000);
+  //  fMan->Init(1,4,10000);
+  fMan->Init(1,5,10000);  // make STS sensors visible by default
 }
