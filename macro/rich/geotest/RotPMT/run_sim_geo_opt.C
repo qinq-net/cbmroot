@@ -125,10 +125,7 @@ void run_sim_geo_opt(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2, int 
     //FairDetector* rich = new CbmRich("RICH", kTRUE);
     CbmRich* rich = new CbmRich("RICH", kTRUE);
     rich->SetGeometryFileName(richGeom);
-    cout<<"######################## fRegisterPhotons = "<< rich->GetRegisterPhotons()<<endl;
     rich->SetRegisterPhotons(kTRUE); // Cerenkov photons are also registered in the sim tree
-    cout<<"######################## fRegisterPhotons = "<< rich->GetRegisterPhotons()<<endl;
-    //cout<<"fRegisterPhotons = "<< rich.fRegisterPhotons<<endl;
     fRun->AddModule(rich);
   }
   
