@@ -1,12 +1,13 @@
 /******************************************************************************
  ** Creation of STS digitisation parameter file in ASCII format.
  **
- ** @file create_stsdigipar_v12.C
+ ** @file create_stsdigipar_v13.C
  ** @author Volker Friese <v.friese@gsi.de>
  ** @since 21 June 2012
  ** @date 21.06.2012
  **
  ** This macro is compatible with geometries created with create_geometry_v12.C
+ ** It supports STS geometries written with lower case characters.
  **
  ** The digitisation properties are the same for all sensors.
  ** The numbering of modules (sectors) is consecutively in each station,
@@ -42,14 +43,14 @@ Double_t gkStereoFront =  0.;
 Double_t gkStereoBack  =  7.5;
 
 // ---> Geometry and digitisation tags
-TString gkGeoTag = "v13c";
+TString gkGeoTag = "v13y";
 TString gkDigiTag = "std";
 // ----------------------------------------------------------------------------
 
 
 
 // -------------   Other global variables   -----------------------------------
-// ---> TGeoManager (too lazy to write out 'Manager' all the time
+// ---> TGeoManager (too lazy to write out 'Manager' all the time)
 TGeoManager*   geoMan           = NULL;  // will be set later
 // ----------------------------------------------------------------------------
 
@@ -100,7 +101,8 @@ void create_stsdigipar_v13(const char* geoTag  = gkGeoTag,
   // ---> STS
   geoMan->CdDown(0);
   TGeoNode* sts = geoMan->GetCurrentNode();
-  if ( ! TString(sts->GetName()).Contains("STS") ) {
+  //  if ( ! TString(sts->GetName()).Contains("STS") ) {
+  if ( ! TString(sts->GetName()).Contains("sts") ) {
     cout << "-E- Illegal STS node name " << sts->GetName() << endl;
     exit(0);
   }
@@ -246,7 +248,8 @@ Bool_t CreateGeoFromFile(const char* fileName) {
   }
   TGeoVolume* sts = top->GetNode(0)->GetVolume();
   TString stsName = sts->GetName();
-  if ( ! stsName.BeginsWith("STS") ) {
+  //  if ( ! stsName.BeginsWith("STS") ) {
+  if ( ! stsName.BeginsWith("sts") ) {
     cout << "-E- No STS volume found on second level" << endl;
     return kFALSE;
   }
