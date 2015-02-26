@@ -949,8 +949,8 @@ Int_t CreateLadders() {
   s0vol  = gGeoMan->GetVolume(s0name);
   shape  = (TGeoBBox*) s0vol->GetShape();
   shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
-  halfLadderU = ConstructHalfLadder("HalfLadder01u", nSectors, sectorTypes, 'r');  // mirrored
-  halfLadderD = ConstructHalfLadder("HalfLadder01d", nSectors, sectorTypes, 'l');  // mirrored
+  halfLadderU = ConstructHalfLadder("HalfLadder18u", nSectors, sectorTypes, 'r');  // mirrored
+  halfLadderD = ConstructHalfLadder("HalfLadder18d", nSectors, sectorTypes, 'l');  // mirrored
   ConstructLadder("Ladder18", halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
@@ -1030,8 +1030,8 @@ Int_t CreateLadders() {
   s0vol  = gGeoMan->GetVolume(s0name);
   shape  = (TGeoBBox*) s0vol->GetShape();
   shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
-  halfLadderU = ConstructHalfLadder("HalfLadder05u", nSectors, sectorTypes, 'r');  // mirrored
-  halfLadderD = ConstructHalfLadder("HalfLadder05d", nSectors, sectorTypes, 'l');  // mirrored
+  halfLadderU = ConstructHalfLadder("HalfLadder19u", nSectors, sectorTypes, 'r');  // mirrored
+  halfLadderD = ConstructHalfLadder("HalfLadder19d", nSectors, sectorTypes, 'l');  // mirrored
   ConstructLadder("Ladder19", halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
@@ -1122,8 +1122,8 @@ Int_t CreateLadders() {
   s0vol  = gGeoMan->GetVolume(s0name);
   shape  = (TGeoBBox*) s0vol->GetShape();
   ladderY = 2. * shape->GetDY();
-  halfLadderU = ConstructHalfLadder("HalfLadder10u", nSectors, sectorTypes, 'r');  // mirrored
-  halfLadderD = ConstructHalfLadder("HalfLadder10d", nSectors, sectorTypes, 'l');  // mirrored
+  halfLadderU = ConstructHalfLadder("HalfLadder20u", nSectors, sectorTypes, 'r');  // mirrored
+  halfLadderD = ConstructHalfLadder("HalfLadder20d", nSectors, sectorTypes, 'l');  // mirrored
   shape = (TGeoBBox*) halfLadderU->GetShape();
   ConstructLadder("Ladder20", halfLadderU, halfLadderD, shiftZ);
   nLadders++;
