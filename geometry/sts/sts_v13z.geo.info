@@ -120,27 +120,27 @@ Contains: HalfLadder20u HalfLadder20d Ladder20_FullFrameBox Ladder20_FullFrameBo
 HalfLadder20u: size  6.1992 x 38.4400 x  0.2300, assembly
 Contains: HalfLadder20u_Module08 HalfLadder20u_Module03 HalfLadder20u_Module04 HalfLadder20u_Module05 HalfLadder20u_Module05 
 
-Stations: Station01: size 47.4936 x 40.0000 x 10.0000, medium air
+Stations: Station01: size 47.4936 x 40.0000 x  7.2000, medium air
 Contains: Ladder03 Ladder02 Ladder02 Ladder18 Ladder18 Ladder02 Ladder02 Ladder03 Cone Cone 
 Position z = 30
-Station02: size 71.0904 x 40.0000 x 10.0000, medium air
+Station02: size 71.0904 x 40.0000 x  7.2000, medium air
 Contains: Ladder04 Ladder03 Ladder03 Ladder02 Ladder02 Ladder01 Ladder01 Ladder02 Ladder02 Ladder03 Ladder03 Ladder04 Cone Cone 
 Position z = 40
-Station03: size 71.0904 x 64.0000 x 10.0000, medium air
+Station03: size 71.0904 x 64.0000 x  7.2000, medium air
 Contains: Ladder08 Ladder07 Ladder06 Ladder06 Ladder06 Ladder19 Ladder19 Ladder06 Ladder06 Ladder06 Ladder07 Ladder08 Cone Cone 
 Position z = 50
-Station04: size 82.8888 x 64.0000 x 10.0000, medium air
+Station04: size 82.8888 x 64.0000 x  7.2000, medium air
 Contains: Ladder09 Ladder08 Ladder07 Ladder06 Ladder06 Ladder06 Ladder05 Ladder05 Ladder06 Ladder06 Ladder06 Ladder07 Ladder08 Ladder09 Cone Cone 
 Position z = 60
-Station05: size 82.8888 x 80.0000 x 10.0000, medium air
+Station05: size 82.8888 x 80.0000 x  7.2000, medium air
 Contains: Ladder14 Ladder13 Ladder12 Ladder12 Ladder11 Ladder11 Ladder20 Ladder20 Ladder11 Ladder11 Ladder12 Ladder12 Ladder13 Ladder14 Cone Cone 
 Position z = 70
-Station06: size 82.8888 x 80.0000 x 10.0000, medium air
+Station06: size 82.8888 x 80.0000 x  7.2000, medium air
 Contains: Ladder14 Ladder13 Ladder12 Ladder12 Ladder11 Ladder11 Ladder10 Ladder10 Ladder11 Ladder11 Ladder12 Ladder12 Ladder13 Ladder14 Cone Cone 
 Position z = 80
-Station07: size 94.6872 x 96.0000 x 10.0000, medium air
+Station07: size 94.6872 x 96.0000 x  7.2000, medium air
 Contains: Ladder14 Ladder13 Ladder17 Ladder17 Ladder16 Ladder16 Ladder16 Ladder15 Ladder15 Ladder16 Ladder16 Ladder16 Ladder17 Ladder17 Ladder13 Ladder14 Cone Cone 
 Position z = 90
-Station08: size 94.6872 x 96.0000 x 10.0000, medium air
+Station08: size 94.6872 x 96.0000 x  7.2000, medium air
 Contains: Ladder14 Ladder13 Ladder17 Ladder17 Ladder16 Ladder16 Ladder16 Ladder15 Ladder15 Ladder16 Ladder16 Ladder16 Ladder17 Ladder17 Ladder13 Ladder14 Cone Cone 
 Position z = 100

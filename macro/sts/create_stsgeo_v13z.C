@@ -602,7 +602,7 @@ void create_stsgeo_v13z(const char* geoTag="v13z")
   // --- Station 07: 16 ladders, type 14 13 17 17 16 16 16 15 15 16 16 16 17 17 13 14
   cout << endl;
   statZ = 90.;
-  rHole = 4.39;
+  rHole = 4.20; // 4.39;
   nLadders = 16;
   ladderTypes[0]  = 14;
   ladderTypes[1]  = 13;
@@ -641,7 +641,7 @@ void create_stsgeo_v13z(const char* geoTag="v13z")
   // --- same as station 07
   cout << endl;
   statZ = 100.;
-  rHole = 4.39;
+  rHole = 4.20; // 4.39;
   nLadders = 16;
   ladderTypes[0]  = 14;
   ladderTypes[1]  = 13;
@@ -687,7 +687,7 @@ void create_stsgeo_v13z(const char* geoTag="v13z")
   Double_t stsX = 0.;
   Double_t stsY = 0.;
   Double_t stsZ = 0.;
-  Double_t stsBorder = 5.;
+  Double_t stsBorder = 2*5.;  // 5 cm space for carbon ladders on each side
   for (Int_t iStation = 1; iStation<8; iStation++) {
     TString statName = Form("Station%02d", iStation);
     TGeoVolume* station = gGeoMan->GetVolume(statName);
@@ -703,6 +703,7 @@ void create_stsgeo_v13z(const char* geoTag="v13z")
 
   // --- Create box  around the stations
   new TGeoBBox("stsBox", stsX/2., stsY/2., stsZ/2.);
+  cout << "size of STS box: x " <<  stsX << " - y " << stsY << " - z " << stsZ << endl;
 
   // --- Create cone hosting the beam pipe
   // --- One straight section with constant radius followed by a cone
@@ -1860,14 +1861,19 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
   // --- Create station volume
   TString boxName(name);
   boxName += "_box";
-  //  TGeoBBox* statBox = new TGeoBBox(boxName, statX/2., statY/2., statZ/2.);
-  TGeoBBox* statBox = new TGeoBBox(boxName, statX/2., statY/2., 5.);  // changed Z size of the station  ( statZ/2. )
+
+  //  cout << "statZ/2.: " << statZ/2. << endl;
+  statZ = 2 * 3.6;  // changed Z size of the station for cone
+  TGeoBBox* statBox = new TGeoBBox(boxName, statX/2., statY/2., statZ/2.);
+
   TString tubName(name);
   tubName += "_tub";
   TString expression = boxName + "-" + tubName;
   //  TGeoTube* statTub = new TGeoTube(tubName, 0., rHole, statZ/2.);
+
   //  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.);
-  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.+.1);  // .1 opens the hole
+  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.+.1);  // .1 opens the hole in z direction
+
   statShape = new TGeoCompositeShape(name, expression.Data());
   TGeoVolume* station = new TGeoVolume(name, statShape, gStsMedium);
 
