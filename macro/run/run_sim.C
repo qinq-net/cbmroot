@@ -43,8 +43,7 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis300_electron")
   // In general, the following parts need not be touched
   // ========================================================================
 
-
-
+  cout << "[INFO   ] Setup: " << setup << endl;
 
   // ----    Debug option   -------------------------------------------------
   gDebug = 0;
