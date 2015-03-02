@@ -91,7 +91,8 @@ private:
    //double RotAngleY;
    
    vector<TVector3> PlanePoints;
-   TVector3 PlaneCenter;
+   TVector3 PMTPlaneCenter;
+   TVector3 MirrorCenter;
    /**
     * \brief get MC Histos (P & Pt).
     */
@@ -121,6 +122,14 @@ private:
     * \brief Loop over all rings in array and fill ring parameters histograms.
     */
    void RingParameters();
+   /**
+    * \brief calculate distance between mirror center and pmt-point.
+    */
+   float GetDistanceMirrorCenterToPMTPoint(TVector3 PMTpoint);
+   /**
+    * \brief calculate intersection sphere-line.
+    */
+   float  GetIntersectionPointsLS( TVector3 MirrCenter,  TVector3 G_P1,  TVector3 G_P2, float R);
    
    /**
     * \brief Copy constructor.
@@ -141,10 +150,12 @@ private:
    TH1D* H_DiffXhit;
    TH1D* H_DiffYhit;
    
-   TH1D* H_AlphaMomNormOfXY;
-   TH1D* H_AlphaMomPointsAtXY;
-   TH1D* H_AlphaMomPointsAtPMT;
-   TH1D* H_AlphaRefPointsNormOfXY;
+   /* TH1D* H_AlphaMomNormOfXY; */
+   /* TH1D* H_AlphaMomPointsAtXY; */
+   /* TH1D* H_AlphaMomPointsAtPMT; */
+   /* TH1D* H_AlphaRefPointsNormOfXY; */
+   TH1D* H_dFocalPoint_I;
+   TH1D* H_dFocalPoint_II;
    TH1D* H_Alpha;
    TH1D* H_Alpha_UpLeft;
    TH3D* H_Alpha_XYposAtDet;
