@@ -11,6 +11,8 @@
 #include <vector>
 #include <iostream>
 #include <boost/assign/list_of.hpp>
+#include "CbmUtils.h"
+
 using boost::assign::list_of;
 using namespace std;
 
@@ -46,6 +48,7 @@ void CbmRichTrbRecoQaStudyReport::Draw()
    FitGausAndDrawH1("fhAaxisEllipse", "rich_report_aaxis");
    FitGausAndDrawH1("fhDrCircle", "rich_report_dr");
    FitGausAndDrawH1("fhBoverAEllipse", "rich_report_boa");
+   DrawEfficiency();
 }
 
 void CbmRichTrbRecoQaStudyReport::FitGausAndDrawH1(
@@ -85,6 +88,21 @@ void CbmRichTrbRecoQaStudyReport::FitGausAndDrawH1(
    }
    gPad->SetGridx(true);
    gPad->SetGridy(true);
+}
+
+void CbmRichTrbRecoQaStudyReport::DrawEfficiency()
+{
+	Int_t nofStudies = HM().size();
+	TCanvas* canvas2 = CreateCanvas("rich_report_efficiency", "rich_report_efficiency", 600, 600);
+	vector<TH1*> histos1(nofStudies);
+	vector<string> legendNames;
+	for (UInt_t iStudy = 0; iStudy < nofStudies; iStudy++) {
+	    histos1[iStudy] = Cbm::DivideH1(HM()[iStudy]->H1("fhNofHitsInEventWithRing"), HM()[iStudy]->H1("fhNofHitsInEventAll"));
+		TString str;
+		//str.Form(" (%.2f/%.2f)", mean, sigma);
+		legendNames.push_back(GetStudyNames()[iStudy] + string(str.Data()));
+	}
+	DrawH1(histos1, legendNames, kLinear, kLinear);
 }
 
 ClassImp(CbmRichTrbRecoQaStudyReport)

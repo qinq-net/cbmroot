@@ -41,6 +41,9 @@ protected:
 			const string& histName,
 			const string& canvasName);
 
+	void DrawEfficiency();
+
+
    ClassDef(CbmRichTrbRecoQaStudyReport, 1)
 };
 
