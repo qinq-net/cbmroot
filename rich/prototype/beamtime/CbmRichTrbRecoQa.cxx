@@ -73,22 +73,22 @@ void CbmRichTrbRecoQa::InitHist()
 {
 	fHM = new CbmHistManager();
 
-	fHM->Create1<TH1D>("fhNofHitsInEvent", "fhNofHitsInEvent;Number of hits in event;Entries", 40, 0.5, 40.5);
-	fHM->Create1<TH1D>("fhNofHitsInRing", "fhNofHitsInRing;Number of hits in ring;Entries", 40, -0.5, 39.5);
+	fHM->Create1<TH1D>("fhNofHitsInEvent", "fhNofHitsInEvent;Number of hits in event;Yield", 40, 0.5, 40.5);
+	fHM->Create1<TH1D>("fhNofHitsInRing", "fhNofHitsInRing;Number of hits in ring;Yield", 40, -0.5, 39.5);
 	fHM->Create2<TH2D>("fhHitsXYPixel", "fhHitsXYPixel;X [pixel];Y [pixel];Hits per pixel", 32, 0.5, 32.5, 32, 0.5, 32.5);
-	fHM->Create1<TH1D>("fhNofRingsInEvent", "fhNofRingsInEvent;# rings per event;Entries", 5, -0.5, 4.5);
-	fHM->Create1<TH1D>("fhBoverAEllipse", "fhBoverAEllipse;B/A;Entries", 200, 0.0, 1.0);
-	fHM->Create2<TH2D>("fhXcYcEllipse", "fhXcYcEllipse;X [cm];Y [cm];Entries", 200, 0., 21., 100, 0., 21.);
-	fHM->Create1<TH1D>("fhBaxisEllipse", "fhBaxisEllipse;B axis [cm];Entries", 200, 3.5, 5.5);
-	fHM->Create1<TH1D>("fhAaxisEllipse", "fhAaxisEllipse;A axis [cm];Entries", 200, 3.5, 5.5);
-	fHM->Create1<TH1D>("fhChi2Ellipse", "fhChi2Ellipse;#Chi^{2};Entries", 200, 0.0, 0.5);
-	fHM->Create2<TH2D>("fhXcYcCircle", "fhXcYcCircle;X [cm];Y [cm];Entries", 200, 0., 21., 100, 0., 21.);
-	fHM->Create1<TH1D>("fhRadiusCircle", "fhRadiusCircle;Radius [cm];Entries", 200, 4.0, 5.0);
-	fHM->Create1<TH1D>("fhChi2Circle", "fhChi2Circle;#Chi^{2};Entries", 200, 0.0, 0.5);
-	fHM->Create1<TH1D>("fhDrCircle", "fhDrCircle;dR [cm];Entries", 200, -1.0, 1.0);
+	fHM->Create1<TH1D>("fhNofRingsInEvent", "fhNofRingsInEvent;# rings per event;Yield", 5, -0.5, 4.5);
+	fHM->Create1<TH1D>("fhBoverAEllipse", "fhBoverAEllipse;B/A;Yield", 200, 0.0, 1.0);
+	fHM->Create2<TH2D>("fhXcYcEllipse", "fhXcYcEllipse;X [cm];Y [cm];Yield", 200, 0., 21., 100, 0., 21.);
+	fHM->Create1<TH1D>("fhBaxisEllipse", "fhBaxisEllipse;B axis [cm];Yield", 200, 3.5, 5.5);
+	fHM->Create1<TH1D>("fhAaxisEllipse", "fhAaxisEllipse;A axis [cm];Yield", 200, 3.5, 5.5);
+	fHM->Create1<TH1D>("fhChi2Ellipse", "fhChi2Ellipse;#Chi^{2};Yield", 200, 0.0, 0.5);
+	fHM->Create2<TH2D>("fhXcYcCircle", "fhXcYcCircle;X [cm];Y [cm];Yield", 200, 0., 21., 100, 0., 21.);
+	fHM->Create1<TH1D>("fhRadiusCircle", "fhRadiusCircle;Radius [cm];Yield", 200, 4.0, 5.0);
+	fHM->Create1<TH1D>("fhChi2Circle", "fhChi2Circle;#Chi^{2};Yield", 200, 0.0, 0.5);
+	fHM->Create1<TH1D>("fhDrCircle", "fhDrCircle;dR [cm];Yield", 200, -1.0, 1.0);
 	fHM->Create2<TH2D>("fhHitsXYPmt", "fhHitsXYPmt;PMT X;PMT Y;Hits per PMT", 4, 0.5, 32.5, 4, 0.5, 32.5);
-	fHM->Create1<TH1D>("fhNofHitsInEventAll", "fhNofHitsInEventAll;Number of hits in event;Entries", 40, 0.5, 40.5);
-	fHM->Create1<TH1D>("fhNofHitsInEventWithRing", "fhNofHitsInEventWithRing;Number of hits in event;Entries", 40, 0.5, 40.5);
+	fHM->Create1<TH1D>("fhNofHitsInEventAll", "fhNofHitsInEventAll;Number of hits in event;Yield", 40, 0.5, 40.5);
+	fHM->Create1<TH1D>("fhNofHitsInEventWithRing", "fhNofHitsInEventWithRing;Number of hits in event;Yield", 40, 0.5, 40.5);
 }
 
 void CbmRichTrbRecoQa::Exec(

@@ -21,7 +21,11 @@ public:
     */
    virtual ~CbmRichTrbRecoQaStudyReport();
 
+   void SetFitHist(Bool_t b) {fFitHist = b;}
+
 protected:
+
+   Bool_t fFitHist; // if true -> histograms will be fitted by gaus
     /**
     * \brief Inherited from CbmLitStudyReport.
     */
