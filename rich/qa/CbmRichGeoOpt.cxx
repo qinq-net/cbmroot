@@ -104,7 +104,8 @@ void CbmRichGeoOpt::Exec(Option_t* option)
       if( PlanePoints[p].X() == PlanePoints[p-1].X() ){ 
 	FillPointsAtPMT();PointsFilled=0;}else{ PointsFilled=1;}
     }
-    PlaneCenter.SetX(fGP.fPmtX); PlaneCenter.SetY(fGP.fPmtY); PlaneCenter.SetZ(fGP.fPmtZ);
+    PMTPlaneCenter.SetX(fGP.fPmtX); PMTPlaneCenter.SetY(fGP.fPmtY); PMTPlaneCenter.SetZ(fGP.fPmtZ);
+    MirrorCenter.SetX(fGP.fMirrorX); PMTPlaneCenter.SetY(fGP.fMirrorY); PMTPlaneCenter.SetZ(fGP.fMirrorZ);
 
     if(PointsFilled==1){ //Run the analysis only if the points are filled and are different  
       HitsAndPoints();
@@ -130,20 +131,28 @@ void CbmRichGeoOpt::HitsAndPoints(){
     if (RefPoint == NULL) continue;
     int trackId = RefPoint->GetTrackID(); if(trackId==-2) {continue;}
     RefPoint->Position(PosAtRefl);
-    int Zpos=int(10.*PosAtRefl.Z());//2653 or 2655 -->take 2655 which is the entrance point of the REFLECTED photon into the sensitive plane   
+    int Zpos=int(10.*PosAtRefl.Z());//2653 or 2655 -->take 2655 which is the entrance point 
+                                                     //of the REFLECTED photon into the sensitive plane   
     //cout<<PosAtRefl.Z()<<"    "<<Zpos<<endl;
     if(Zpos==2653){continue;}
     
     CbmRichPoint* point = (CbmRichPoint*) fRichPoints->At(trackId);
     if(NULL == point) continue;
     PosAtDetIn.SetX(point->GetX()); PosAtDetIn.SetY(point->GetY()); PosAtDetIn.SetZ(point->GetZ());
-
+    //float DistMCToFocalPoint=GetDistanceMirrorCenterToPMTPoint(point);
+    float Delta= GetDistanceMirrorCenterToPMTPoint(PosAtDetIn)-(fGP.fMirrorR/2.);
+    float hypot= GetIntersectionPointsLS(MirrorCenter,  PlanePoints[1],  PlanePoints[2], fGP.fMirrorR/2.);
+    //if(hypot==-1.){cout<<"   ********************+ hypot==-1. :and Delta ="<<Delta<<endl;}
+    float rho=TMath::Sqrt(hypot*hypot-Delta*Delta);
+    H_dFocalPoint_I->Fill(Delta);
+    H_dFocalPoint_II->Fill(rho);
     /////////// calculate the vectors on teh PMT plane
-    TVector3 r1=PlanePoints[1]-PlanePoints[0]; TVector3 r2=PlanePoints[2]-PlanePoints[0];
-    TVector3 n_p=r1.Cross(r2); TVector3 rg=PosAtDetIn-PosAtRefl;
+
+    TVector3 LineOnPMT1=PlanePoints[1]-PlanePoints[0]; TVector3 LineOnPMT2=PlanePoints[2]-PlanePoints[0];
+    TVector3 NormToPMT=LineOnPMT1.Cross(LineOnPMT2); TVector3 LineSensToPMT=PosAtDetIn-PosAtRefl;
    
     /////////// calculate alpha relative to the "tilted" PMT plane !!
-    double Alpha=rg.Angle(n_p);//*TMath::RadToDeg();
+    double Alpha=LineSensToPMT.Angle(NormToPMT);//*TMath::RadToDeg();
     double AlphaInDeg=Alpha*TMath::RadToDeg();
     if(AlphaInDeg>90.){AlphaInDeg=180.-AlphaInDeg;}
 
@@ -272,6 +281,11 @@ void CbmRichGeoOpt::InitHistograms()
   H_Alpha_UpLeft= new TH1D("H_Alpha_UpLeft","H_Alpha_UpLeft;#alpha_{photon-PMT} [deg];Yield",180,0.,90.);
   H_Alpha_XYposAtDet= new TH3D("H_Alpha_XYposAtDet","H_Alpha_XYposAtDet; X [cm]; Y [cm];#alpha_{photon-PMT} [deg];Yield",270, -90, 0,  450, 50,200, 180,0.,90.);
   //////////////////////////////////////
+  H_dFocalPoint_I= new TH1D("H_dFocalPoint_I","H_dFocalPoint_I;#Delta_{f} [cm];Yield",100,100.,200.);
+  H_dFocalPoint_II= new TH1D("H_dFocalPoint_II","H_dFocalPoint_II;#rho_{f} [cm];Yield",100,100.,200.);
+
+
+  //////////////////////////////////////
   // Detector acceptance efficiency vs. (pt,y) and p
   H_acc_mom_el = new TH1D("H_acc_mom_el", "H_acc_mom_el;p [GeV/c];Yield", 24, 0., 12.);
   H_acc_pty_el = new TH2D("H_acc_pty_el", "H_acc_pty_el;Rapidity;P_{t} [GeV/c];Yield",25, 0., 4., 20, 0., 3.);
@@ -313,7 +327,9 @@ void CbmRichGeoOpt::WriteHistograms(){
   H_acc_mom_el->Write();
   H_acc_pty_el->Write();
 
-  H_NofHitsAll->Write();
+ H_dFocalPoint_I->Write(); 
+    H_dFocalPoint_II->Write();
+ H_NofHitsAll->Write();
 
   H_Radius->Write();
   H_aAxis->Write();
@@ -354,6 +370,44 @@ void CbmRichGeoOpt::FillPointsAtPMT()
   }
 }
 
+//////////////////////////////////////////////////////
+float  CbmRichGeoOpt::GetIntersectionPointsLS( TVector3 MirrCenter,  TVector3 G_P1,  TVector3 G_P2, float R){
+  float A=(G_P1-MirrCenter)*(G_P1-MirrCenter);
+  float B=(G_P2-G_P1)*(G_P2-G_P1);
+  float P=2.*( (G_P1-MirrCenter)*(G_P2-G_P1) )/(B);
+  float q=(A-R*R)/B;
+
+  float t1=-1.*P/2.-TMath::Sqrt( (P/2.)*(P/2.) -q);
+  float t2=-1.*P/2.+TMath::Sqrt( (P/2.)*(P/2.) -q);
+  //Check if nan --> no intersection
+  if(! (t1==1. || t1 >1.) ){return -1.;}
+
+  TVector3 IntersectP1;  TVector3 IntersectP2;
+  IntersectP1.SetX( G_P1.X()+t1*(G_P2.X()-G_P1.X()) );
+  IntersectP1.SetY( G_P1.Y()+t1*(G_P2.Y()-G_P1.Y()) );
+  IntersectP1.SetZ( G_P1.Z()+t1*(G_P2.Z()-G_P1.Z()) );
+
+  IntersectP2.SetX( G_P1.X()+t2*(G_P2.X()-G_P1.X()) );
+  IntersectP2.SetY( G_P1.Y()+t2*(G_P2.Y()-G_P1.Y()) );
+  IntersectP2.SetZ( G_P1.Z()+t2*(G_P2.Z()-G_P1.Z()) );
+
+  TVector3 Line1=IntersectP1-G_P1;
+  float Length1=TMath::Sqrt(Line1.X()*Line1.X() + Line1.Y()*Line1.Y() + Line1.Z()*Line1.Z());
+  TVector3 Line2=IntersectP2-G_P1;
+  float Length2=TMath::Sqrt(Line2.X()*Line2.X() + Line2.Y()*Line2.Y() + Line2.Z()*Line2.Z());
+  
+  if(Length1<Length2){return Length1;}else{return Length2;}
+  
+}
+//////////////////////////////////////////////////////
+float  CbmRichGeoOpt::GetDistanceMirrorCenterToPMTPoint(TVector3 PMTpoint)
+{
+  float XTerm= (PMTpoint.X()-MirrorCenter.X())*(PMTpoint.X()-MirrorCenter.X());
+  float YTerm= (PMTpoint.Y()-MirrorCenter.Y())*(PMTpoint.Y()-MirrorCenter.Y());
+  float ZTerm= (PMTpoint.Z()-MirrorCenter.Z())*(PMTpoint.Z()-MirrorCenter.Z());
+  return TMath::Sqrt(XTerm+YTerm+ZTerm);
+
+}
 //////////////////////////////////////////////////////
 void CbmRichGeoOpt::Finish()
 {
