@@ -11,10 +11,10 @@ void run_reco(Int_t nEvents = 1000)
    TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.mc.root";
    TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.reco.root";     */
 
-       TString dir = "/hera/cbm/users/slebedev/mc/dielectron/sep14/3.5gev/richv08a/trd4/tofv13/0.5field/nomvd/rho0/";
-	TString mcFile = dir + "mc.auau.3.5gev.centr.00001.root";
-	TString parFile = dir + "/params.auau.3.5gev.centr.00001.root";
-	TString recoFile = dir + "/reco.auau.3.5gev.centr.00001.root";
+       TString dir = "/hera/cbm/users/slebedev/mc/dielectron/feb15/3.5gev/stsv13d/richv14a_1e/notrd/tofv13/1.0field/nomvd/rho0/";
+	TString mcFile = dir + "/mc.auau.3.5gev.centr.00134.root";
+	TString parFile = dir + "/params.auau.3.5gev.centr.00134.root";
+	TString recoFile = dir + "/reco.auau.3.5gev.centr.00134.root";
 	//  TString analysisFile = dir + "/test.analysis.test.auau.25gev.centr.00001.root";
 
 	
@@ -58,13 +58,13 @@ void run_reco(Int_t nEvents = 1000)
        
 
    parFileList->Add(&stsDigiFile);
-   parFileList->Add(&trdDigiFile);
+   if (trdDigiFile.GetString() != "") parFileList->Add(&trdDigiFile);
    parFileList->Add(&tofDigiFile);
 
    cout << "mcFile=" << mcFile << endl;
    cout << "parFile=" << parFile << endl;
    cout << "recoFile=" << recoFile << endl;
-   cout << "trdDigiFile=" << trdDigiFile->GetString() << endl;
+  // cout << "trdDigiFile=" << trdDigiFile->GetString() << endl;
    cout << "trdSmearingType=" << trdHitProducerType << endl;
 
    TStopwatch timer;

@@ -49,7 +49,7 @@ void run_analysis(Int_t nEvents = 1000)
    }
 
     parFileList->Add(&stsDigiFile);
-   parFileList->Add(&trdDigiFile);
+   if (trdDigiFile.GetString() != "") parFileList->Add(&trdDigiFile);
    parFileList->Add(&tofDigiFile);
 
    // load libraries
