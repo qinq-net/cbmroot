@@ -14,6 +14,7 @@
 #pragma link C++ class CbmStsSensorPoint;
 #pragma link C++ class CbmStsSensorType;
 #pragma link C++ class CbmStsSetup;
+#pragma link C++ class CbmStsStation_new;
 
 // Monte-Carlo
 #pragma link C++ class CbmStsMC;

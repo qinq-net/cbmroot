@@ -10,6 +10,7 @@
 #include "setup/CbmStsModule.h"
 #include "setup/CbmStsSensor.h"
 #include "setup/CbmStsSetup.h"
+#include "setup/CbmStsStation_new.h"
 
 
 
@@ -47,7 +48,7 @@ CbmStsElement::CbmStsElement(const char* name, const char* title,
 void CbmStsElement::AddDaughter(CbmStsElement* element) {
   if ( ! element ) return;
   if ( element->GetLevel() != fLevel + 1) {
-    LOG(ERROR) << fName << ": Trying to add an element of level "
+    LOG(FATAL) << fName << ": Trying to add an element of level "
                << element->GetLevel() << " as daughter of level "
                << fLevel << "! Command will be ignored."
                << FairLogger::endl;
@@ -166,9 +167,12 @@ void CbmStsElement::InitDaughters() {
       // Create element and add it as daughter
       TString name = CbmStsSetup::GetLevelName(fLevel+1);
       name += Form("%02i", nDaughters++);
+
       const char* title = mNode->GetDaughter(iNode)->GetVolume()->GetName();
       CbmStsElement* dElement = NULL;
       switch ( fLevel) {
+      	case kStsSystem:
+      		dElement = new CbmStsStation_new(name, title, pNode); break;
       	case kStsHalfLadder:
       		dElement = new CbmStsModule(name, title, pNode); break;
       	case kStsModule:

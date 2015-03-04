@@ -17,6 +17,7 @@
 
 // Includes from STS
 #include "setup/CbmStsModule.h"
+#include "setup/CbmStsStation_new.h"
 
 
 
@@ -148,6 +149,13 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
   			}
   		}
   	}
+  }
+
+  // --- Init the stations
+  for (Int_t iStat = 0; iStat < GetNofDaughters(); iStat++) {
+  	CbmStsStation_new* station =
+  			dynamic_cast<CbmStsStation_new*>(GetDaughter(iStat));
+  	station->Init();
   }
 
   // --- Consistency check
