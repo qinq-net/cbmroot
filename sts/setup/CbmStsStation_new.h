@@ -7,6 +7,9 @@
 #define CBMSTSSTATION_NEW_H 1
 
 
+#include "CbmStsElement.h"
+
+
 /** @class CbmStsStation_new
  ** @brief Class representing a station of the StsSystem.
  ** @author V.Friese <v.friese@gsi.de>
@@ -16,7 +19,6 @@
  ** It holds station-wide parameters like z position, sensor thickness,
  ** and material budget for use in reconstruction tasks.
  **/
-
 class CbmStsStation_new : public CbmStsElement {
 
 	public:
@@ -38,6 +40,36 @@ class CbmStsStation_new : public CbmStsElement {
 		virtual ~CbmStsStation_new();
 
 
+		/** Minimal and maximal x and y coordinates **/
+		Double_t GetXmin() const { return fXmin; }
+		Double_t GetXmax() const { return fXmax; }
+		Double_t GetYmin() const { return fYmin; }
+		Double_t GetYmax() const { return fYmax; }
+
+
+		/** Sensor thickness **/
+		Double_t GetSensorD() const { return fSensorD; }
+
+
+		/** Get sensor strip pitch
+		 ** @param iSide  Sensor side (0 = front, 1 = back)
+		 ** @value Strip pitch [cm]
+		 **/
+		Double_t GetSensorPitch(Int_t iSide) const;
+
+
+		/** Get sensor stereo angle
+		 ** @param iSide  Sensor side (0 = front, 1 = back)
+		 ** @value Stereo angle [degrees]
+		 **/
+		Double_t GetSensorStereoAngle(Int_t iSide) const;
+
+
+		/** Sensor rotation **/
+		// TODO: Unclear which rotation angle should be delivered. To discuss with L1.
+		Double_t GetSensorRot() const { return 0.; }
+
+
 		/** Station z position in global c.s. **/
 		Double_t GetZ() const { return fZ; }
 
@@ -46,11 +78,24 @@ class CbmStsStation_new : public CbmStsElement {
 		void Init();
 
 
+		/** Info  **/
+		virtual string ToString() const;
+
+
 
 
 	private:
 
-		Double_t fZ;  ///< z position of station (mean of min. and. max. z of sensors)
+		Double_t fZ;          ///< z position of station [cm]
+		Double_t fXmin;       ///< minimal x coordinate [cm]
+		Double_t fXmax;       ///< maximal x coordinate [cm]
+		Double_t fYmin;       ///< minimal y coordinate [cm]
+		Double_t fYmax;       ///< maximal y coordinate [cm]
+		Double_t fSensorD;    ///< thickness of sensors [cm]
+		Int_t    fNofSensors; ///< Number of sensors in station
+		Bool_t fDiffSensorD;  ///< Flag for different sensor thicknesses
+		CbmStsSensor* fFirstSensor; ///< Pointer to first sensor
+
 
 		/** @brief Initialise the z position
 		 ** The z position of the station is determined as the mean of the minimum

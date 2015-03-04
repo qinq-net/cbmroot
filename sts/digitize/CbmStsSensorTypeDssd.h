@@ -61,6 +61,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
     /** Destructor  **/
     virtual ~CbmStsSensorTypeDssd() { };
 
+
     /** Find hits from clusters
      ** Abstract from CbmStsSensorType
      **/
@@ -68,15 +69,29 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
     		                   CbmStsSensor* sensor);
 
 
+    /** Get pitch on front or back side
+     ** @param side 0 = front side, 1 = back side
+     ** @value Strip pitch [cm]
+     **/
+    Double_t GetPitch(Int_t iSide) const;
+
+
     /** Get the side of the sensor from the module channel number
      ** The channel number can also be the cluster position, so it needs
      ** not be integer.
      ** @param channel  Channel number
-     ** @return Sensir side ( 0 = front, 1 = back)
+     ** @return Sensor side ( 0 = front, 1 = back)
      **/
     Int_t GetSide(Double_t channel) const {
     	return ( channel < Double_t(fNofStrips[0]) ? 0 : 1 );
     }
+
+
+    /** Get stereo angle on front or back side
+     ** @param side 0 = front side, 1 = back side
+     ** @value Stereo angle [degrees]
+     **/
+    Double_t GetStereoAngle(Int_t iSide) const;
 
 
     /** Print parameters **/

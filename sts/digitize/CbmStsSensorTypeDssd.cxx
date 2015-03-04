@@ -154,6 +154,30 @@ Int_t CbmStsSensorTypeDssd::GetModuleChannel(Int_t strip, Int_t side,
 
 
 
+// -----  Get the strip pitch    -------------------------------------------
+Double_t CbmStsSensorTypeDssd::GetPitch(Int_t iSide) const {
+	if ( iSide < 0 || iSide > 1 ) {
+		LOG(FATAL) << GetName() << ": illegal side identifier!"
+				       << FairLogger::endl;
+	}
+	return fPitch[iSide];
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----  Get the stereo angle    ------------------------------------------
+Double_t CbmStsSensorTypeDssd::GetStereoAngle(Int_t iSide) const {
+	if ( iSide < 0 || iSide > 1 ) {
+		LOG(FATAL) << GetName() << ": illegal side identifier!"
+				       << FairLogger::endl;
+	}
+	return fStereo[iSide];
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Get strip number from coordinates   -----------------------------
 Int_t CbmStsSensorTypeDssd::GetStripNumber(Double_t x, Double_t y,
 		                                       Int_t side) const {

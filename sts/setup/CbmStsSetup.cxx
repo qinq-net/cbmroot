@@ -156,6 +156,7 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
   	CbmStsStation_new* station =
   			dynamic_cast<CbmStsStation_new*>(GetDaughter(iStat));
   	station->Init();
+  	LOG(DEBUG) << station->ToString() << FairLogger::endl;
   }
 
   // --- Consistency check
