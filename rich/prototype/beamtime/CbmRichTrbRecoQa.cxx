@@ -332,35 +332,41 @@ void CbmRichTrbRecoQa::DrawEvent(
 
    Int_t nofRings = fitRingCircle.size();
    for (Int_t iR = 0; iR < nofRings; iR++) {
-	   CbmRichRingLight rCircle = fitRingCircle[iR];
-	   TEllipse* circle = new TEllipse(rCircle.GetCenterX(), rCircle.GetCenterY(), rCircle.GetRadius());
+	   CbmRichRingLight rC = fitRingCircle[iR];
+	   TEllipse* circle = new TEllipse(rC.GetCenterX(), rC.GetCenterY(), rC.GetRadius());
 	   circle->SetFillStyle(0);
 	   circle->SetLineWidth(3);
 	   circle->Draw();
-	   TEllipse* cCircle = new TEllipse(rCircle.GetCenterX(), rCircle.GetCenterY(), 0.15);
+	   TEllipse* cCircle = new TEllipse(rC.GetCenterX(), rC.GetCenterY(), 0.15);
 	   cCircle->Draw();
 
-	   CbmRichRingLight rEllipse = fitRingEllipse[iR];
-	   TEllipse* ellipse = new TEllipse(rEllipse.GetCenterX(), rEllipse.GetCenterY(), rEllipse.GetAaxis(), rEllipse.GetBaxis());
+	   CbmRichRingLight rE = fitRingEllipse[iR];
+	   TEllipse* ellipse = new TEllipse(rE.GetCenterX(), rE.GetCenterY(), rE.GetAaxis(), rE.GetBaxis());
 	   ellipse->SetFillStyle(0);
 	   ellipse->SetLineWidth(3);
 	   ellipse->SetLineColor(kBlue);
 	   ellipse->Draw();
-	   TEllipse* cEllipse = new TEllipse(rEllipse.GetCenterX(), rEllipse.GetCenterY(), 0.15);
+	   TEllipse* cEllipse = new TEllipse(rE.GetCenterX(), rE.GetCenterY(), 0.15);
 	   cEllipse->Draw();
 
 	   // Draw hits from the ring
-	   for (int iH = 0; iH < rCircle.GetNofHits(); iH++){
-		   CbmRichHitLight hit = rCircle.GetHit(iH);
+	   for (int iH = 0; iH < rC.GetNofHits(); iH++){
+		   CbmRichHitLight hit = rC.GetHit(iH);
 		   TEllipse* hitDr = new TEllipse(hit.fX, hit.fY, 0.15);
 		   hitDr->SetFillColor(kRed);
 		   hitDr->Draw();
 	   }
 	   //Draw information
-	   ss.Form("#font[12]{nEv=%d, nR=%d}", nofHitsInEvent, rCircle.GetNofHits());
-	   TLatex* latex = new TLatex(0.5, 22.5 - 1.0 * iR, ss.Data());
-	   //latex->SetTextFont(10);
-	   latex->Draw();
+	   ss.Form("(x, y, A, B, #phi, n, B/A)=(%.1f, %.1f, %.2f, %.2f, %.2f, %i, %.2f)",
+			   	 rE.GetCenterX(), rE.GetCenterY(), rE.GetAaxis(), rE.GetBaxis(), rE.GetPhi(), rE.GetNofHits(), rE.GetBaxis()/rE.GetAaxis());
+	   TLatex* latexEllipse = new TLatex(0.05, 22.5 - 1.0 * iR, ss.Data());
+	   latexEllipse->SetTextSize(0.03);
+	   latexEllipse->Draw();
+
+	   ss.Form("(x, y, R, n)=(%.1f, %.1f, %.2f, %i)", rC.GetCenterX(), rC.GetCenterY(), rC.GetRadius(), rE.GetNofHits());
+	   TLatex* latexCircle = new TLatex(0.05, 21.5 - 1.0 * iR, ss.Data());
+	   latexCircle->SetTextSize(0.03);
+	   latexCircle->Draw();
    }
 }
 
