@@ -13,7 +13,7 @@
 // Matching of reconstructed and MC tracks in STS, RICH and TRD
 //
 // V. Friese   24/02/2006
-// Version     24/04/2007 (V. Friese)
+// Version     04/03/2015 (V. Friese)
 //
 // --------------------------------------------------------------------------
 
@@ -49,7 +49,9 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis300_electron")
 
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
-
+  
+  // --- STS digipar file is there only for L1. It is no longer required
+  // ---  for STS digitisation and should be eventually removed.
   TObjString stsDigiFile = paramDir + stsDigi;
   parFileList->Add(&stsDigiFile);
   cout << "macro/run/run_reco.C using: " << stsDigi << endl;
@@ -101,27 +103,26 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis300_electron")
   CbmMvdClusterfinder* mvdCluster = new CbmMvdClusterfinder("MVD Clusterfinder", 0, iVerbose);
   run->AddTask(mvdCluster);
   // -------------------------------------------------------------------------
- 
+
 
   // -----   STS digitizer   -------------------------------------------------
-  Double_t threshold  =  4;
-  Double_t noiseWidth =  0.01;
-  Int_t    nofBits    = 12;
-  Double_t electronsPerAdc    =  10;
-  Double_t StripDeadTime = 0.1;
-  CbmStsDigitize_old* stsDigitize = new CbmStsDigitize_old();
-  stsDigitize->SetRealisticResponse();
-  stsDigitize->SetFrontThreshold (threshold);
-  stsDigitize->SetBackThreshold  (threshold);
-  stsDigitize->SetFrontNoiseWidth(noiseWidth);
-  stsDigitize->SetBackNoiseWidth (noiseWidth);
-  stsDigitize->SetFrontNofBits   (nofBits);
-  stsDigitize->SetBackNofBits    (nofBits);
-  stsDigitize->SetFrontNofElPerAdc(electronsPerAdc);
-  stsDigitize->SetBackNofElPerAdc(electronsPerAdc);
-  stsDigitize->SetStripDeadTime  (StripDeadTime);
-  run->AddTask(stsDigitize);
+  // -----   The parameters of the STS digitizer are set such as to match
+  // -----   those in the old digitizer. Change them only if you know what you
+  // -----   are doing.
+  Double_t dynRange       =   40960.;  // Dynamic range [e]
+  Double_t threshold      =    4000.;  // Digitisation threshold [e]
+  Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
+  Double_t timeResolution =       5.;  // time resolution [ns]
+  Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
+  Double_t noise          =       0.;  // ENC [e]
+  Int_t digiModel         =       1;   // Model: 1 = uniform charge distribution along track
+
+  CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
+  stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution,
+  		                 deadTime, noise);
+  run->AddTask(stsDigi);
   // -------------------------------------------------------------------------
+
 
 
   // =========================================================================
@@ -146,13 +147,13 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis300_electron")
 
 
   // -----   STS Cluster Finder   --------------------------------------------
-  FairTask* stsClusterFinder = new CbmStsClusterFinder_old();
+  FairTask* stsClusterFinder = new CbmStsFindClusters();
   run->AddTask(stsClusterFinder);
   // -------------------------------------------------------------------------
 
 
   // -----   STS hit finder   ------------------------------------------------
-  FairTask* stsFindHits = new CbmStsFindHits_old();
+  FairTask* stsFindHits = new CbmStsFindHits();
   run->AddTask(stsFindHits);
   // -------------------------------------------------------------------------
 

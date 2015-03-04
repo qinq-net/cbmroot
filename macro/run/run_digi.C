@@ -55,9 +55,9 @@ void run_digi(Int_t nEvents = 2, const char* setup = "sis300_electron")
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
 
-  TObjString stsDigiFile = paramDir + stsDigi;
+ TObjString stsDigiFile = paramDir + stsDigi;
   parFileList->Add(&stsDigiFile);
-  cout << "macro/run/run_digi.C using: " << stsDigi << endl;
+   cout << "macro/run/run_digi.C using: " << stsDigi << endl;
 
 //  TObjString trdDigiFile = paramDir + trdDigi;
 //  parFileList->Add(&trdDigiFile);
@@ -101,7 +101,15 @@ void run_digi(Int_t nEvents = 2, const char* setup = "sis300_electron")
  
  
   // ----- STS digitiser
-  CbmStsDigitizeTb* stsDigi = new CbmStsDigitizeTb();
+  Double_t dynRange       =   40960.;  // Dynamic range [e]
+  Double_t threshold      =    4000.;  // Digitisation threshold [e]
+  Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
+  Double_t timeResolution =       0.;  // time resolution [ns]
+  Double_t deadTime       =     100.;  // infinite dead time (integrate entire event)
+  Int_t digiModel         =       1;   // Model: 1 = uniform charge distribution along track
+  Double_t noise          =    1000.;  // Noise [e]
+  CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
+  stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
   run->AddTask(stsDigi);
  
  

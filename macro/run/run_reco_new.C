@@ -98,22 +98,27 @@ void run_reco_new(Int_t nEvents = 2, const char* setup = "sis300_electron")
 
 
   // -----   MVD Digitiser   -------------------------------------------------
-  CbmMvdDigitizeL* mvdDigi =
-  		new CbmMvdDigitizeL("MVD Digitiser", 0, iVerbose);
-  run->AddTask(mvdDigi);
+  CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose);
+  run->AddTask(mvdDigitise);
   // -------------------------------------------------------------------------
- 
+
+  // -----   MVD Clusterfinder   ---------------------------------------------
+  CbmMvdClusterfinder* mvdCluster = new CbmMvdClusterfinder("MVD Clusterfinder", 0, iVerbose);
+  run->AddTask(mvdCluster);
+  // -------------------------------------------------------------------------
+
 
   // -----   STS digitizer   -------------------------------------------------
-  // --- The following settings correspond to the settings for the old
-  // --- digitizer in run_reco.C
+  // --- These parameters correspond to the anticipated ones for the
+  // --- STSXYTER. The digitizer uses the advanced detector response
+  // --- simulation with non-uniform charge distribution along the track.
   Double_t dynRange       =   40960.;  // Dynamic range [e]
   Double_t threshold      =    4000.;  // Digitisation threshold [e]
-  Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
+  Int_t nAdc              =      32;   // Number of ADC channels (5 bit)
   Double_t timeResolution =       5.;  // time resolution [ns]
-  Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
-  Double_t noise          =       0.;  // ENC [e]
-  Int_t digiModel         = 2;  // Model: 1 = uniform charge distribution along track
+  Double_t deadTime       =     200.;  // infinite dead time (integrate entire event)
+  Double_t noise          =    1000.;  // ENC [e]
+  Int_t digiModel         = 2;  // Model: 2 = advanced detector response
 
   CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
   stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution,
@@ -127,10 +132,11 @@ void run_reco_new(Int_t nEvents = 2, const char* setup = "sis300_electron")
   // =========================================================================
 
 
+
   // -----   MVD Hit Finder   ------------------------------------------------
-  CbmMvdFindHits* mvdHitFinder = new CbmMvdFindHits("MVD Hit Finder", 0,
-  		iVerbose);
-  run->AddTask(mvdHitFinder);
+  CbmMvdHitfinder* mvdHitfinder = new CbmMvdHitfinder("MVD Hit Finder", 0, iVerbose);
+  mvdHitfinder->UseClusterfinder(kTRUE);
+  run->AddTask(mvdHitfinder);
   // -------------------------------------------------------------------------
 
 
