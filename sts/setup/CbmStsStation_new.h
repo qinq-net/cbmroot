@@ -103,6 +103,11 @@ class CbmStsStation_new : public CbmStsElement {
 		 **/
 		void InitPosition();
 
+    // --- Prevent usage of copy constructor and assignment operator
+    CbmStsStation_new(const CbmStsStation_new&);
+    CbmStsStation_new& operator=(const CbmStsStation_new&);
+
+
 		ClassDef(CbmStsStation_new, 1);
 };
 
