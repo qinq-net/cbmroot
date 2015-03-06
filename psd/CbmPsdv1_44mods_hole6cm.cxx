@@ -18,7 +18,7 @@
 
 using std::cout;
 using std::endl;
-
+using std::ofstream;
 
 // -----   Default constructor   -------------------------------------------
 CbmPsdv1_44mods_hole6cm::CbmPsdv1_44mods_hole6cm() 

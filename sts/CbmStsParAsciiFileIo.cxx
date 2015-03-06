@@ -21,7 +21,7 @@ using std::endl;
 
 ClassImp(CbmStsParAsciiFileIo)
 
-CbmStsParAsciiFileIo::CbmStsParAsciiFileIo(fstream* f) : FairDetParAsciiFileIo(f) {
+CbmStsParAsciiFileIo::CbmStsParAsciiFileIo(std::fstream* f) : FairDetParAsciiFileIo(f) {
   // constructor calls the base class constructor
   fName="CbmStsParIo";
 }

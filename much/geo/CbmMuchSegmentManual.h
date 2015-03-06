@@ -218,7 +218,7 @@ class CbmMuchSegmentManual : public FairTask {
       return str[0] == '#' || str.length() == 0 || str[0] == '\0' || str[0] == '\n';
     }
 
-    void OmitDummyLines(ifstream &infile, string &str){
+    void OmitDummyLines(std::ifstream &infile, string &str){
       getline(infile, str);
       while(IsDummyLine(str)) getline(infile, str);
     }

@@ -264,7 +264,7 @@ void CbmKFParticleFinderQA::Finish()
   gFile = currentFile;
   gDirectory = curr;
 
-  std::fstream eff(fEfffileName.Data(),fstream::out);
+  std::fstream eff(fEfffileName.Data(),std::fstream::out);
   eff << fTopoPerformance->fParteff;
   eff.close();
 }

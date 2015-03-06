@@ -62,7 +62,7 @@ class CbmStsDigiPar : public FairParSet
 
 
   /** Read one line (station) from ASCII input **/
-  void readline(const char* buffer, Int_t* set, fstream* f);
+  void readline(const char* buffer, Int_t* set, std::fstream* f);
 
 
   /** Put an Ascii header for Ascii file output  **/

@@ -82,7 +82,7 @@ void CbmStsDigiPar::clear() {
 
 
 // -----   Public method readline   ----------------------------------------
-void CbmStsDigiPar::readline(const char* buffer, Int_t* set, fstream* f) {
+void CbmStsDigiPar::readline(const char* buffer, Int_t* set, std::fstream* f) {
 
   // First line: Station ID and type
   Int_t    stationNr   = -1;
@@ -138,7 +138,7 @@ void CbmStsDigiPar::readline(const char* buffer, Int_t* set, fstream* f) {
 
 }
 // -------------------------------------------------------------------------
-/*void CbmStsDigiPar::readline(const char* buffer, Int_t* set, fstream* f) {
+/*void CbmStsDigiPar::readline(const char* buffer, Int_t* set, std::fstream* f) {
 
   // First line: Station ID and type
   Int_t    stationNr   = -1;

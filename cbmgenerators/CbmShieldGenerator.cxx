@@ -18,6 +18,7 @@
 using std::cout;
 using std::endl;
 using std::map;
+using std::ifstream;
 
 // -----   Default constructor   ------------------------------------------
 CbmShieldGenerator::CbmShieldGenerator() 

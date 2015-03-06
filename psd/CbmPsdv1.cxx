@@ -20,7 +20,7 @@
 
 using std::cout;
 using std::endl;
-
+using std::ofstream;
 
 // -----   Default constructor   -------------------------------------------
 CbmPsdv1::CbmPsdv1() 

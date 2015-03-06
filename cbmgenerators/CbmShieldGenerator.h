@@ -65,7 +65,7 @@ class CbmShieldGenerator : public FairGenerator
 
  private:
 
-  ifstream*      fInputFile;          //! Input file stream
+  std::ifstream*      fInputFile;          //! Input file stream
   const Char_t*  fFileName;           //! Input file Name
   TDatabasePDG*  fPDG;                //!  PDG database
 

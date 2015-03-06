@@ -17,7 +17,7 @@
 #include <iostream>
 using std::cout;
 using std::endl;
-
+using std::ifstream;
 
 const Double_t kProtonMass = 0.938271998;
 

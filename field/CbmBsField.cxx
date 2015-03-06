@@ -16,6 +16,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::fabs;
+using std::ifstream;
 
 Int_t checked_index_max(Int_t suggested_index,Int_t array_size)  
 {

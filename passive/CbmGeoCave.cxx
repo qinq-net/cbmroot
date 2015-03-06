@@ -18,6 +18,7 @@
 
 using std::cout;
 using std::ios;
+using std::fstream;
 
 ClassImp(CbmGeoCave)
 

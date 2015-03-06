@@ -39,7 +39,11 @@ using std::cin;
 using std::endl;
 using std::pair;
 using std::vector;
-
+using std::ios;
+using std::setw;
+using std::setfill;
+using std::setiosflags;
+using std::setprecision;
 
 // ---- Default constructor -------------------------------------------
 CbmTrdHitRateFastQa::CbmTrdHitRateFastQa()

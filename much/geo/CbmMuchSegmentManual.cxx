@@ -25,6 +25,8 @@
 #include "TColor.h"
 #include "TSystem.h"
 
+using std::ifstream;
+
 // -----   Default constructor   -------------------------------------------
 CbmMuchSegmentManual::CbmMuchSegmentManual()
   : FairTask(),

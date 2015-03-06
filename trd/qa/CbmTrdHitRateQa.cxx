@@ -35,7 +35,9 @@ using std::cin;
 using std::endl;
 using std::pair;
 using std::vector;
-
+using std::ios;
+using std::setw;
+using std::flush;
 
 // ---- Default constructor -------------------------------------------
 CbmTrdHitRateQa::CbmTrdHitRateQa()

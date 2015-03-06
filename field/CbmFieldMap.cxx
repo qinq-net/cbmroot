@@ -418,7 +418,7 @@ void CbmFieldMap::WriteAsciiFile(const char* fileName) {
   // Open file
   cout << "-I- CbmFieldMap: Writing field map to ASCII file " 
        << fileName << endl;
-  ofstream mapFile(fileName);
+  std::ofstream mapFile(fileName);
   if ( ! mapFile.is_open() ) {
     cerr << "-E- CbmFieldMap:ReadAsciiFile: Could not open file! " << endl;
     return;
@@ -550,7 +550,7 @@ void CbmFieldMap::ReadAsciiFile(const char* fileName) {
   // Open file
   LOG(INFO) << "CbmFieldMap: Reading field map from ASCII file " 
 	    << fileName << FairLogger::endl;
-  ifstream mapFile(fileName);
+  std::ifstream mapFile(fileName);
   if ( ! mapFile.is_open() ) {
     LOG(ERROR) << "CbmFieldMap:ReadAsciiFile: Could not open file!" << FairLogger::endl;
     LOG(FATAL) << "CbmFieldMap:ReadAsciiFile: Could not open file!" << FairLogger::endl;

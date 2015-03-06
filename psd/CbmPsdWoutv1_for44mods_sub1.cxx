@@ -19,7 +19,7 @@
 
 using std::cout;
 using std::endl;
-
+using std::ofstream;
 
 // -----   Default constructor   -------------------------------------------
 CbmPsdWoutv1_for44mods_sub1::CbmPsdWoutv1_for44mods_sub1() 

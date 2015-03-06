@@ -12,7 +12,7 @@ class FairParSet;
 
 class CbmStsParAsciiFileIo : public FairDetParAsciiFileIo {
 public:
-  CbmStsParAsciiFileIo(fstream*);
+  CbmStsParAsciiFileIo(std::fstream*);
   ~CbmStsParAsciiFileIo() {}
   Bool_t init(FairParSet*);
   Int_t write(FairParSet*);

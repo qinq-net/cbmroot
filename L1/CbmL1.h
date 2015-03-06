@@ -155,7 +155,7 @@ class CbmL1 : public FairTask
       /// SIMD KF Banchmark service-functions
    void WriteSIMDKFData();
 
-   static istream& eatwhite(istream& is); // skip spaces
+   static std::istream& eatwhite(std::istream& is); // skip spaces
    static void writedir2current( TObject *obj ); // help procedure
 
    int NStation, NMvdStations, NStsStations; // number of detector stations (all\sts\mvd)
