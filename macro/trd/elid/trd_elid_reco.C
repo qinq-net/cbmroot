@@ -1,4 +1,4 @@
-void trd_elid_reco(Int_t nEvents = 100)
+void trd_elid_reco(Int_t nEvents = 200)
 {
    Int_t trdNFoils = 70;
    Float_t trdDFoils = 0.0014;
@@ -14,7 +14,7 @@ void trd_elid_reco(Int_t nEvents = 100)
 
    TList *parFileList = new TList();
    //TObjString stsDigiFile = parDir + "/sts/sts_v12b_std.digi.par"; // STS digi file
-   TObjString trdDigiFile = parDir + "/trd/trd_v13p_3e.digi.par"; // TRD digi file
+   TObjString trdDigiFile = parDir + "/trd/trd_v14a_3e.digi.par"; // TRD digi file
    parFileList->Add(&trdDigiFile);
 
 	gDebug = 0;
@@ -44,16 +44,16 @@ void trd_elid_reco(Int_t nEvents = 100)
 		CbmTrdHitProducerDigi* trdHitProd = new CbmTrdHitProducerDigi();
 		run->AddTask(trdHitProd);
 	} else if (trdHitProducerType == "clustering") {
-		CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
+	/*	CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
 		run->AddTask(trdDigiPrf);
 
 		CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
 		run->AddTask(trdCluster);
 
 		CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
-		run->AddTask(trdHit);
+		run->AddTask(trdHit);*/
 
-	/*	Bool_t triangularPads = false;// Bucharest triangular pad-plane layout
+		Bool_t triangularPads = false;// Bucharest triangular pad-plane layout
 		//Double_t triggerThreshold = 0.5e-6;//SIS100
 		Double_t triggerThreshold = 1.0e-6;//SIS300
 		//Double_t triggerThreshold = 3.0e-7;//0.5cm homogeniuse pad height
@@ -63,7 +63,7 @@ void trd_elid_reco(Int_t nEvents = 100)
 		trdDigiPrf->SetTriangularPads(triangularPads);
 		//trdDigiPrf->SetNoiseLevel(trdNoiseSigma_keV);
 		//trdDigiPrf->SetNCluster(1); // limits the number of iterations per MC-point to one
-		//trdDigiPrf->SetPadPlaneScanArea(3,3); // limits the number of channels participating to the charge sharing (col,row)
+		trdDigiPrf->SetPadPlaneScanArea(3,3); // limits the number of channels participating to the charge sharing (col,row)
 		run->AddTask(trdDigiPrf);
 
 		CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
@@ -76,7 +76,7 @@ void trd_elid_reco(Int_t nEvents = 100)
 
 		CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
 		trdHit->SetTriangularPads(triangularPads);
-		run->AddTask(trdHit);*/
+		run->AddTask(trdHit);
 	}
 
 	CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
@@ -88,7 +88,7 @@ void trd_elid_reco(Int_t nEvents = 100)
 	run->AddTask(trdFindTracks);
 
 	CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
-		run->AddTask(matchRecoToMc);
+	run->AddTask(matchRecoToMc);
 
 	CbmTrdElectronsTrainAnn* elAnn = new CbmTrdElectronsTrainAnn(10);
 	run->AddTask(elAnn);

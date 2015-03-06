@@ -1,4 +1,4 @@
-void trd_elid_sim(Int_t nEvents = 100)
+void trd_elid_sim(Int_t nEvents = 200)
 {
    Double_t minMomentum = 1.5; //minimum momentum
    Double_t maxMomentum = 8.0; //maximum momentum
@@ -13,7 +13,7 @@ void trd_elid_sim(Int_t nEvents = 100)
    TString pipeGeom = "pipe/pipe_standard.geo";
    TString stsGeom = "";//"sts/sts_v12b.geo.root";
    TString richGeom = "";// "rich/rich_v08a.geo";
-   TString trdGeom = "trd/trd_v13p_3e.geo.root";
+   TString trdGeom = "trd/trd_v14a_3e.geo.root";
    TString fieldMap = "field_v12a";
    TString magnetGeom = "magnet/magnet_v12a.geo";
 	Double_t fieldZ = 50.; // field center z position
@@ -88,7 +88,7 @@ void trd_elid_sim(Int_t nEvents = 100)
 	Int_t kfCode1 = 11; // electrons
 	Int_t kfCode2 = -11; // positrons
 
-	FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 100);
+	FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 200);
 	boxGen1->SetPRange(minMomentum, maxMomentum);
 //	boxGen1->SetXYZ(50., 50., 450.);
 	boxGen1->SetPhiRange(0., 360.);
@@ -97,7 +97,7 @@ void trd_elid_sim(Int_t nEvents = 100)
 	boxGen1->Init();
 	primGen->AddGenerator(boxGen1);
 
-	FairBoxGenerator* boxGen2 = new FairBoxGenerator(-11, 100);
+	FairBoxGenerator* boxGen2 = new FairBoxGenerator(-11, 200);
 	boxGen2->SetPRange(minMomentum, maxMomentum);
 //	boxGen2->SetXYZ(50., 50., 450.);
 	boxGen2->SetPhiRange(0., 360.);
@@ -106,7 +106,7 @@ void trd_elid_sim(Int_t nEvents = 100)
 	boxGen2->Init();
 	primGen->AddGenerator(boxGen2);
 
-	FairBoxGenerator* boxGen3 = new FairBoxGenerator(211, 100);
+	FairBoxGenerator* boxGen3 = new FairBoxGenerator(211, 200);
 	boxGen3->SetPRange(minMomentum, maxMomentum);
 //	boxGen3->SetXYZ(50., 50., 450.);
 	boxGen3->SetPhiRange(0., 360.);
@@ -115,7 +115,7 @@ void trd_elid_sim(Int_t nEvents = 100)
 	boxGen3->Init();
 	primGen->AddGenerator(boxGen3);
 
-	FairBoxGenerator* boxGen4 = new FairBoxGenerator(-211, 100);
+	FairBoxGenerator* boxGen4 = new FairBoxGenerator(-211, 200);
 	boxGen4->SetPRange(minMomentum, maxMomentum);
 //	boxGen4->SetXYZ(50., 50., 450.);
 	boxGen4->SetPhiRange(0., 360.);
