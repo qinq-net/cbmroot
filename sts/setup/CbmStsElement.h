@@ -135,6 +135,7 @@ class CbmStsElement : public TNamed
     void SetMother(CbmStsElement* mother) { fMother = mother; }
 
 
+private:
     // --- Prevent usage of copy constructor and assignment operator
     CbmStsElement(const CbmStsElement&);
     CbmStsElement& operator=(const CbmStsElement&);
