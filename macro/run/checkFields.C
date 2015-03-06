@@ -25,7 +25,12 @@ int checkFields (const char *field_basename="field_v12a", double field_Z_origin=
   Double_t fzmin =  -50.;    // along z axis
   Double_t fzmax =   300.;
 
-  char big_title[200],stored_pdf_filename[200],*ext_add[3]={"xy","xz","z"};
+  char big_title[200];
+  char stored_pdf_filename[200];
+  TString* ext_add = new TString[3];
+  ext_add[0]="xy";
+  ext_add[1]="xz";
+  ext_add[2]="z";
 
   // -------  Get magnetic field  -----------------------------------------
 
@@ -53,7 +58,7 @@ int checkFields (const char *field_basename="field_v12a", double field_Z_origin=
   field->SetPosition(0., 0., field_Z_origin);
 
   sprintf(big_title,"Map:    %s      Z_magnet_center = %.0f",field_basename,field_Z_origin);    
-  sprintf(stored_pdf_filename,"%s_1D_%s_%.0f_%.0f\.pdf",field_basename,ext_add[flag_yx_zx_z],field_Z_origin,fixed_coord);
+  sprintf(stored_pdf_filename,"%s_1D_%s_%.0f_%.0f.pdf",field_basename,ext_add[flag_yx_zx_z].Data(),field_Z_origin,fixed_coord);
 
   // ----------------------------------------------------------------------
 
@@ -79,7 +84,15 @@ int checkFields (const char *field_basename="field_v12a", double field_Z_origin=
   Double_t fdz = (fzmax-fzmin) / Double_t(fnz);
 
   Int_t i,j,k;
-  char name[200],*nnam[3]={"x","y","z"},*nnam1[3]={"xz","xy","xyz"};
+  char name[200];
+  TString* nnam = new TString[3];
+  nnam[0]="x";
+  nnam[1]="y";
+  nnam[2]="z";
+  TString* nnam1 = new TString[3];
+  nnam1[0]="xz";
+  nnam1[1]="xy";
+  nnam1[2]="xyz";
   Int_t xyz[5]={-20,-10,0,10,20};
   Int_t h_colors[5]={25,33,1,4,2};
 
@@ -102,13 +115,13 @@ int checkFields (const char *field_basename="field_v12a", double field_Z_origin=
 	    {
 	      for (k=0;k<5;k++)
 		{
-		  sprintf(name,"hB%s_%s%d",nnam[i],nnam[j],xyz[k]);
+		  sprintf(name,"hB%s_%s%d",nnam[i].Data(),nnam[j].Data(),xyz[k]);
 		  h[k][i][j]=new TH1D(name,name,fnx,minx,maxx);
 		  (h[k][i][j])->SetLineColor(h_colors[k]);
 		  (h[k][i][j])->SetLineWidth(1+(k<2));
 		  (h[k][i][j])->SetStats(0);
 		}
-	      sprintf(name,"hB%s (%s)   z=%.0f   %s=%d,%d,%d,%d,%d",nnam[i],nnam[1-j],z,nnam[j],xyz[0],
+	      sprintf(name,"hB%s (%s)   z=%.0f   %s=%d,%d,%d,%d,%d",nnam[i].Data(),nnam[1-j].Data(),z,nnam[j].Data(),xyz[0],
 		      xyz[1],xyz[2],xyz[3],xyz[4]);
 	      (h[0][i][j])->SetTitle(name);
 	    }
@@ -172,19 +185,19 @@ int checkFields (const char *field_basename="field_v12a", double field_Z_origin=
 	      for (k=0;k<5;k++)
 		{
 		  if ((flag_yx_zx_z<2)||(j==0))
-		    sprintf(name,"hB%s_%s%d",nnam[i],nnam[j1],xyz[k]);
+		    sprintf(name,"hB%s_%s%d",nnam[i].Data(),nnam[j1].Data(),xyz[k]);
 		  else
-		    sprintf(name,"hB_%d_%s%d",k,nnam[i],xyz[k]);
+		    sprintf(name,"hB_%d_%s%d",k,nnam[i].Data(),xyz[k]);
 		  h[k][i][j]=new TH1D(name,name,fnx,minx,maxx);
 		  (h[k][i][j])->SetLineColor(h_colors[k]);
 		  (h[k][i][j])->SetLineWidth(1+(k<2));
 		  (h[k][i][j])->SetStats(0);
 		}
 	      if ((flag_yx_zx_z<2)||(j==0))
-		sprintf(name,"hB%s (%s)   y=%.0f   %s=%d,%d,%d,%d,%d",nnam[i],nnam[2-j1],y,nnam[j1],xyz[0],
+		sprintf(name,"hB%s (%s)   y=%.0f   %s=%d,%d,%d,%d,%d",nnam[i].Data(),nnam[2-j1].Data(),y,nnam[j1].Data(),xyz[0],
 			xyz[1],xyz[2],xyz[3],xyz[4]);
 	      else
-		sprintf(name,"|B%s| (%s)   y=%.0f   %s=%d,%d,%d,%d,%d",nnam1[i],nnam[2-j1],y,nnam[j1],xyz[0],
+		sprintf(name,"|B%s| (%s)   y=%.0f   %s=%d,%d,%d,%d,%d",nnam1[i].Data(),nnam[2-j1].Data(),y,nnam[j1].Data(),xyz[0],
 			xyz[1],xyz[2],xyz[3],xyz[4]);
 	      (h[0][i][j])->SetTitle(name);
 	    }

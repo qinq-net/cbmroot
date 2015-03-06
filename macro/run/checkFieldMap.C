@@ -6,7 +6,7 @@
 //
 // --------------------------------------------------------------------------
 
-checkFieldMap()
+int checkFieldMap()
 {
 
   // Choose field map
@@ -40,8 +40,9 @@ checkFieldMap()
   field->Init();
   field->Print();
   Int_t type = field->GetType();
+  const char* mapFile;
   if ( type >=1 && type <= 3) 
-    const char* mapFile = field->GetFileName();
+    mapFile = field->GetFileName();
   // ----------------------------------------------------------------------
 
 
@@ -58,9 +59,9 @@ checkFieldMap()
   TGraph hBt2(fnz+1);
   TH2F hB1("hB1", "B at z_{target}", 
 	   fmx, fxmin, fxmax, fmy, fymin, fymax);
-  TH2F hB2("hB1", "B at RICH entrance", 
+  TH2F hB2("hB2", "B at RICH entrance", 
 	   fmx, fxmin, fxmax, fmy, fymin, fymax);
-  TH2F hB3("hB2", "B at RICH PM",       
+  TH2F hB3("hB3", "B at RICH PM",       
 	   fmx, fxmin, fxmax, fmy, fymin, fymax);
   // ----------------------------------------------------------------------
 
@@ -169,6 +170,7 @@ checkFieldMap()
   // ----------------------------------------------------------------------
 
 
+exit(0);
 
   // -------  Draw graphs and histogram   ---------------------------------
   cout << endl << "=====>  Drawing..." << endl;
@@ -273,7 +275,7 @@ checkFieldMap()
   hB1.GetXaxis()->SetTitle("x [cm]");
   hB1.GetYaxis()->SetTitle("y [cm]");
   char t[100];
-  sprintf(t,"B [T] at z= 0",fzref1);
+  sprintf(t,"B [T] at z=%8.2f cm",fzref1);
   hB1.SetTitle(t);
   hB1.Draw("COLZ");
 
@@ -283,9 +285,9 @@ checkFieldMap()
   hB2.UseCurrentStyle();
   hB2.GetXaxis()->SetTitle("x [cm]");
   hB2.GetYaxis()->SetTitle("y [cm]");
-  char t[100];
+//  char t[100];
   sprintf(t,"B [T] at RICH entrance (z=%8.2f cm)",fzref2);
-  hB2->SetTitle(t);
+  hB2.SetTitle(t);
   hB2.Draw("COLZ");
 
   pad7->cd();
@@ -314,9 +316,9 @@ checkFieldMap()
   info.SetTextAlign(2);
   sprintf(t1,"Field name: %s, type: %s",field->GetName(),fieldType.Data());
   info.AddText(0.05, 0.9, t1);
-  Double_t bx = field->GetBx(0.,0.,0.) / 10.;
-  Double_t by = field->GetBy(0.,0.,0.) / 10.;
-  Double_t bz = field->GetBz(0.,0.,0.) / 10.;
+  bx = field->GetBx(0.,0.,0.) / 10.;
+  by = field->GetBy(0.,0.,0.) / 10.;
+  bz = field->GetBz(0.,0.,0.) / 10.;
   sprintf(t1,"Field at origin is (%7.4f, %7.4f, %7.4f) T",bx,by,bz);
   cout << t1 << endl;
   info.AddText(0.05, 0.7, t1);
@@ -328,18 +330,18 @@ checkFieldMap()
     Double_t yp = field->GetPositionY();
     Double_t zp = field->GetPositionZ();
     sprintf(t1,"Centre position (%.2f, %.2f, %.2f) cm",xp,yp,zp);
-    info->AddText(0.05, 0.3, t1);
+    info.AddText(0.05, 0.3, t1);
     Double_t scale = field->GetScale();
     sprintf(t1,"Scaling factor %.2f, Field integral along z = %.4f Tm",
 	    scale,bint);
-    info->AddText(0.05, 0.1, t1);
+    info.AddText(0.05, 0.1, t1);
   }
   info.Draw();
 
   master->cd();
   sprintf(t1,"Field check for %s", field->GetName());
   TPaveLabel label(0.20, 0.92, 0.88, 0.97, t1);
-  label->Draw();
+  label.Draw();
   
   /*
   c1->cd();
@@ -352,10 +354,9 @@ checkFieldMap()
   cbm->Draw();
   */
   
-
+  cout << "Reach end of script" << endl;
 
   ps->Close();
-  
+
+  return 0;  
 }
-
-

@@ -6,7 +6,7 @@
 //
 // --------------------------------------------------------------------------
 
-checkFieldSym()
+Int_t checkFieldSym()
 {
 
   // Choose field map
@@ -39,8 +39,9 @@ checkFieldSym()
   field->Init();
   field->Print();
   Int_t type = field->GetType();
+    const char* mapFile;
   if ( type >=1 && type <= 3) 
-    const char* mapFile = field->GetFileName();
+    mapFile = field->GetFileName();
   // ----------------------------------------------------------------------
 
 
@@ -338,7 +339,7 @@ checkFieldSym()
   hB1.GetYaxis()->SetTitle("y [cm]");
   char t[100];
   sprintf(t,"B [T] at z = %8.2f cm",fzref1);
-  hB1->SetTitle(t);
+  hB1.SetTitle(t);
   hB1.Draw("COLZ");
 
   pad11->cd();
@@ -366,9 +367,9 @@ checkFieldSym()
   info.SetTextAlign(2);
   sprintf(t1,"Field name: %s, type: %s",field->GetName(),fieldType.Data());
   info.AddText(0.05, 0.9, t1);
-  Double_t bx = field->GetBx(0.,0.,0.) / 10.;
-  Double_t by = field->GetBy(0.,0.,0.) / 10.;
-  Double_t bz = field->GetBz(0.,0.,0.) / 10.;
+  bx = field->GetBx(0.,0.,0.) / 10.;
+  by = field->GetBy(0.,0.,0.) / 10.;
+  bz = field->GetBz(0.,0.,0.) / 10.;
   sprintf(t1,"Field at target is (%7.4f, %7.4f, %7.4f) T",bx,by,bz);
   cout << t1 << endl;
   info.AddText(0.05, 0.7, t1);
@@ -380,17 +381,17 @@ checkFieldSym()
     Double_t yp = field->GetPositionY();
     Double_t zp = field->GetPositionZ();
     sprintf(t1,"Centre position (%.2f, %.2f, %.2f) cm",xp,yp,zp);
-    info->AddText(0.05, 0.3, t1);
+    info.AddText(0.05, 0.3, t1);
     Double_t scale = ((CbmFieldMap*)field)->GetScale();
     sprintf(t1,"Scaling factor %.2f",scale);
-    info->AddText(0.05, 0.1, t1);
+    info.AddText(0.05, 0.1, t1);
   }
   info.Draw();
 
   master->cd();
   sprintf(t1,"Symmetry check for %s", field->GetName());
   TPaveLabel label(0.20, 0.92, 0.88, 0.97, t1);
-  label->Draw();
+  label.Draw();
   
   c1->cd();
   const char* wrkdir = getenv("VMCWORKDIR");
@@ -398,7 +399,11 @@ checkFieldSym()
   cout << "Logofile: " << logo << endl;
   // Old Open don't work anymore, tries to open a xpm file
   // For new open you have to give the file type (11=gif)
+#ifdef __CLING__
+  TImage* cbm = TImage::Open(logo,TImage::EImageFileTypes::kGif);
+#else
   TImage* cbm = TImage::Open(logo,11);
+#endif
   TPad* padimg = new TPad("padimg", "", 0.05, 0.80, 0.20, 0.95);
   padimg->Draw();
   padimg->cd();
@@ -406,7 +411,8 @@ checkFieldSym()
 
 
   ps->Close();
-  
+
+  return 0;  
 }
 
 
