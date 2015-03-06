@@ -9,7 +9,7 @@
 * \date 206
 **/
 
-#ifndef CBM_RICH_TARCK_EXTRAPOLATION_KF
+#ifndef CBM_RICH_TRACK_EXTRAPOLATION_KF
 #define CBM_RICH_TRACK_EXTRAPOLATION_KF
 
 #include "CbmRichTrackExtrapolationBase.h"
