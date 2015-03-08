@@ -69,6 +69,28 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
     		                   CbmStsSensor* sensor);
 
 
+    /** Get parameters
+     ** @param[out] dX         Size of active area in x [cm]
+     ** @param[out] dY         Size of active area in y [cm]
+     ** @param[out] dZ         Active thickness [cm]
+     ** @param[out] nStripsF   Number of strips on front side
+     ** @param[out] nStripsB   Number of strips on back side
+     ** @param[out] stereoF    Stereo angle on front side [degrees]
+     ** @param[out] stereoB    Stereo angle on back side [degrees]
+     **/
+    void GetParameters(Double_t dX, Double_t dY, Double_t dZ,
+    		               Int_t nStripsF, Int_t nStripsB,
+    		               Double_t stereoF, Double_t stereoB) const {
+    	dX       = fDx;
+    	dY       = fDy;
+    	dZ       = fDz;
+    	nStripsF = fNofStrips[0];
+    	nStripsB = fNofStrips[1];
+    	stereoF  = fStereo[0];
+    	stereoB  = fStereo[1];
+    }
+
+
     /** Get pitch on front or back side
      ** @param side 0 = front side, 1 = back side
      ** @value Strip pitch [cm]
@@ -92,6 +114,12 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** @value Stereo angle [degrees]
      **/
     Double_t GetStereoAngle(Int_t iSide) const;
+
+
+    /** Indicate parameters are set
+     ** @value kTRUE if parameters are set, kFALSE else
+     **/
+    Bool_t IsSet() const { return fIsSet; }
 
 
     /** Print parameters **/

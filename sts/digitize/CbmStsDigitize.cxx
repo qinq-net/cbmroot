@@ -265,6 +265,9 @@ void CbmStsDigitize::Finish() {
 // -----   Initialisation    -----------------------------------------------
 InitStatus CbmStsDigitize::Init() {
 
+  // Get STS setup interface
+  fSetup = CbmStsSetup::Instance();
+
 	std::cout << std::endl;
   LOG(INFO) << "=========================================================="
 		        << FairLogger::endl;
@@ -306,9 +309,6 @@ InitStatus CbmStsDigitize::Init() {
     ioman->Register("StsDigiMatch", "MC link to StsDigi", fMatches, kTRUE);
 
   } //? event mode
-
-  // Get STS setup interface
-  fSetup = CbmStsSetup::Instance();
 
   // Instantiate StsPhysics
   CbmStsPhysics::Instance();
@@ -576,153 +576,85 @@ void CbmStsDigitize::SetSensorConditions() {
 
 
 // --- Set the types for the sensors in the setup --------------------------
-// TODO: Currently hard-coded to be SensorTypeDssd. Should be made more
-// flexible in the future.
+// TODO: I do not like the current implementation. Depending on the
+// detector response model, it replaces the sensor types set by CbmStsSetup
+// by the appropriate sensor types for each sensor. A better and fully
+// consistent treatment requires the introduction of parameter handling
+// for the STS digitisation, which is still to come.
 void CbmStsDigitize::SetSensorTypes() {
 
-	TString model;
-	switch (fDigiModel) {
-		case 0:  model = "ideal";   break;
-		case 1:  model = "simple"; break;
-		case 2:  model = "real"; break;
-		default: model = "unknown"; break;
+	// --- Sensor counter
+	Int_t nSensorsSet = 0;
+
+	// --- Catch unknown response model
+	if ( fDigiModel < 0 || fDigiModel > 2 )
+		LOG(FATAL) << GetName() << ": Unknown response model " << fDigiModel
+				       << FairLogger::endl;
+
+	// --- No action required if model is "simple". TypeDssd is instantiated
+	// --- as default by CbmStsSetup.
+	if ( fDigiModel == 1 ) {
+		LOG(INFO) << GetName() << ": Detector response model SIMPLE"
+				      << FairLogger::endl;
+		return;
 	}
 
-	LOG(INFO) << GetName() << ": Detector response model: " << model
-			      << FairLogger::endl;
-	Int_t nSensors = fSetup->GetNofSensors();
-	Int_t nTypes[6] = {0, 0, 0, 0, 0, 0};
+	// --- Log
+	LOG(INFO) << GetName() << ": Detector response model "
+			      << ( fDigiModel == 0 ? "IDEAL" : "REAL" ) << FairLogger::endl;
 
+	// --- Loop over sensors in setup
+	Int_t nSensors = fSetup->GetNofSensors();
 	for (Int_t iSensor = 0; iSensor < fSetup->GetNofSensors(); iSensor++) {
 		CbmStsSensor* sensor = fSetup->GetSensor(iSensor);
-		TGeoBBox* shape = dynamic_cast<TGeoBBox*>
-											(sensor->GetPnode()->GetVolume()->GetShape());
-		Double_t volX = 2. * shape->GetDX();
-		Double_t volY = 2. * shape->GetDY();
 
-		// --- Instantiate sensor type object
-		CbmStsSensorTypeDssd* type = NULL;
-		switch (fDigiModel) {
-			case 0:  type = new CbmStsSensorTypeDssdIdeal();
-			         type->SetTitle("DssdIdeal");
-			         break;
-			case 1:  type = new CbmStsSensorTypeDssd();
-			         type->SetTitle("Dssd");
-			         break;
-			case 2:	 type = new CbmStsSensorTypeDssdReal();
-					     type->SetTitle("DssdReal");
-					     break;
-			default: type = NULL;
-							 break;
+		// --- Get sensor type. Catch non-DSSD types.
+		if ( ! sensor->GetType()->IsA()->InheritsFrom(CbmStsSensorTypeDssd::Class()) )
+			LOG(FATAL) << GetName() << ": Sensor " << sensor->GetName()
+			           << " is not of type DSSD!" << FairLogger::endl;
+		CbmStsSensorTypeDssd* type =
+				dynamic_cast<CbmStsSensorTypeDssd*>(sensor->GetType());
+
+		// --- Catch sensor parameters not being set
+		if ( ! type->IsSet() )
+			LOG(FATAL) << GetName() <<": Parameters of sensor " << sensor->GetName()
+			           << " are not set!" << FairLogger::endl;
+
+		// --- Get parameters
+		Double_t dX = 0.;
+		Double_t dY = 0.;
+		Double_t dZ = 0.;
+		Int_t nStripsF = 0;
+		Int_t nStripsB = 0;
+		Double_t stereoF = 0.;
+		Double_t stereoB = 0.;
+		type->GetParameters(dX, dY, dZ, nStripsF, nStripsB, stereoF, stereoB);
+
+		// --- Instantiate new sensor type according to response model
+		CbmStsSensorTypeDssd* newType = NULL;
+		if ( fDigiModel == 0 ) {
+			newType = new CbmStsSensorTypeDssdIdeal();
+			newType->SetTitle("DssdIdeal");
 		}
-		if ( ! type ) {
-			LOG(FATAL) << GetName() << ": Unknown sensor response model "
-					       << fDigiModel << FairLogger::endl;
-			continue;
+		else if ( fDigiModel == 2 ) {
+			newType = new CbmStsSensorTypeDssdReal();
+			newType->SetTitle("DssdReal");
 		}
-		sensor->SetType(type);
+		else
+			LOG(FATAL) << GetName() << ": Unknown response model " << fDigiModel
+			           << FairLogger::endl;
 
-		// Sensor01: 4 x 2.2
-		if ( volX > 3.99 && volX < 4.01 ) {
-			Double_t lx = 3.7584;   // active size in x
-			Double_t ly = 1.96;     // active size in y
-			Double_t lz = 0.03;     // active thickness
-			Int_t nStripsF = 648;   // number of strips front side (58 mum)
-			Int_t nStripsB = 648;   // number of strips back side  (58 mum)
-			Double_t stereoF = 0.;  // stereo angle front side
-			Double_t stereoB = 7.5; // stereo angle back side
-			type->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
-			type->SetName("Sensor01");
-			nTypes[0]++;
-		} //? Sensor01
+		// --- Set parameters to new type
+		newType->SetParameters(dX, dY, dZ, nStripsF, nStripsB, stereoF, stereoB);
 
-		// Sensor02: 6.2 x 2.2
-		else if ( volX > 6.19 && volX < 6.21 && volY > 2.19 && volY < 2.21) {
-			Double_t lx = 5.9392;   // active size in x
-			Double_t ly = 1.96;     // active size in y
-			Double_t lz = 0.03;     // active thickness
-			Int_t nStripsF = 1024;  // number of strips front side (58 mum)
-			Int_t nStripsB = 1024;  // number of strips back side  (58 mum)
-			Double_t stereoF = 0.;  // stereo angle front side
-			Double_t stereoB = 7.5; // stereo angle back side
-			type->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
-			type->SetName("Sensor02");
-			nTypes[1]++;
-		} //? Sensor02
+		// --- Set new type to sensor
+		sensor->SetType(newType);
+		nSensorsSet++;
 
-		// Sensor03: 6.2 x 4.2
-		else if ( volX > 6.19 && volX < 6.21 && volY > 4.19 && volY < 4.21) {
-			Double_t lx = 5.9392;   // active size in x
-			Double_t ly = 3.96;     // active size in y
-			Double_t lz = 0.03;     // active thickness
-			Int_t nStripsF = 1024;  // number of strips front side (58 mum)
-			Int_t nStripsB = 1024;  // number of strips back side  (58 mum)
-			Double_t stereoF = 0.;  // stereo angle front side
-			Double_t stereoB = 7.5; // stereo angle back side
-			type->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
-			type->SetName("Sensor03");
-			nTypes[2]++;
-		} //? Sensor03
+	} //# sensors in setup
 
-		// Sensor04: 6.2 x 6.2
-		else if ( volX > 6.19 && volX < 6.21 && volY > 6.19 && volY < 6.21) {
-			Double_t lx = 5.9392;   // active size in x
-			Double_t ly = 5.96;     // active size in y
-			Double_t lz = 0.03;     // active thickness
-			Int_t nStripsF = 1024;  // number of strips front side (58 mum)
-			Int_t nStripsB = 1024;  // number of strips back side  (58 mum)
-			Double_t stereoF = 0.;  // stereo angle front side
-			Double_t stereoB = 7.5; // stereo angle back side
-			type->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
-			type->SetName("Sensor04");
-			nTypes[3]++;
-		} //? Sensor04
-
-		// Sensor05: 3.1 x 3.1
-		else if ( volX > 3.09 && volX < 3.11 && volY > 3.09 && volY < 3.11) {
-			Double_t lx = 2.8594;   // active size in x
-			Double_t ly = 2.86;     // active size in y
-			Double_t lz = 0.03;     // active thickness
-			Int_t nStripsF = 493;   // number of strips front side (58 mum)
-			Int_t nStripsB = 493;   // number of strips back side  (58 mum)
-			Double_t stereoF = 0.;  // stereo angle front side
-			Double_t stereoB = 7.5; // stereo angle back side
-			type->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
-			type->SetName("Sensor05");
-			nTypes[4]++;
-		} //? Sensor05
-
-		// Sensor06: 1.5 x 4.2
-		else if ( volX > 1.49 && volX < 1.51 && volY > 4.19 && volY < 4.21) {
-			Double_t lx = 1.2586;   // active size in x
-			Double_t ly = 3.96;     // active size in y
-			Double_t lz = 0.03;     // active thickness
-			Int_t nStripsF = 217;   // number of strips front side (58 mum)
-			Int_t nStripsB = 217;   // number of strips back side  (58 mum)
-			Double_t stereoF = 0.;  // stereo angle front side
-			Double_t stereoB = 7.5; // stereo angle back side
-			type->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
-			type->SetName("Sensor06");
-			nTypes[5]++;
-		} //? Sensor06
-
-		// Unknown sensor type
-		else {
-			LOG(FATAL) << GetName() << ": Unknown sensor type with x = " << volX
-					       << ", y = " << volY << FairLogger::endl;
-			continue;
-		}  //? unknown type
-
-		sensor->SetType(type);
-	} //? Loop over sensors
-
-	LOG(INFO) << GetName() << ": Set types for " << nSensors
-			      << " sensors ( " << nTypes[0];
-	for (Int_t iType = 0; iType < 6; iType++)
-		LOG(INFO) << " / " << nTypes[iType];
-
-	LOG(INFO) << " ) " << FairLogger::endl;
-
+	LOG(INFO) << GetName() << ": Re-set types for " << nSensorsSet
+            << " sensors" << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 

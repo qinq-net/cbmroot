@@ -34,6 +34,13 @@ class CbmStsSetup : public CbmStsElement
     virtual ~CbmStsSetup() { };
 
 
+    /** Define available sensor types
+     ** Poor man's sensor database, with hardcoded values
+     ** @value Number of available sensor types
+     **/
+    Int_t DefineSensorTypes();
+
+
     /** Get digitiser task **/
     CbmStsDigitize* GetDigitizer() const  { return fDigitizer; }
 
@@ -98,6 +105,15 @@ class CbmStsSetup : public CbmStsElement
     	fDigitizer = digitizer; }
 
 
+    /** Set sensor parameters
+     ** Set the sensor parameters that are not contained in the geometry,
+     ** but required for digitisation and reconstruction, like strip pitch,
+     ** stereo angle etc.
+     ** @value Number of sensors the type of which was set.
+     **/
+    Int_t SetSensorTypes();
+
+
 
   private:
 
@@ -109,6 +125,9 @@ class CbmStsSetup : public CbmStsElement
     /** These arrays allow convenient loops over all modules or sensors. **/
     vector<CbmStsModule*> fModules;   ///< Array of modules
     vector<CbmStsSensor*> fSensors;   ///< Array of sensors
+
+    /** Available sensor types **/
+    map<Int_t, CbmStsSensorType*> fSensorTypes;
 
     /** Default constructor  **/
     CbmStsSetup();
