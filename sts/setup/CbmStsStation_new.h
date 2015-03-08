@@ -97,11 +97,15 @@ class CbmStsStation_new : public CbmStsElement {
 		CbmStsSensor* fFirstSensor; ///< Pointer to first sensor
 
 
-		/** @brief Initialise the z position
+		/** @brief Check properties of sensors (position, thickness)
 		 ** The z position of the station is determined as the mean of the minimum
 		 ** and maximum z positions of all sensors within the station.
+		 ** The active thickness of the first sensor is defined as thickness of the
+		 ** entire station. A warning is given out if there are different thicknesses
+		 ** among the sensors in the stations.
 		 **/
-		void InitPosition();
+		void CheckSensorProperties();
+
 
     // --- Prevent usage of copy constructor and assignment operator
     CbmStsStation_new(const CbmStsStation_new&);

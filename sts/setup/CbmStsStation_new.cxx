@@ -46,73 +46,9 @@ CbmStsStation_new::~CbmStsStation_new() {
 // -------------------------------------------------------------------------
 
 
-// -----   Strip pitch    --------------------------------------------------
-Double_t CbmStsStation_new::GetSensorPitch(Int_t iSide) const {
-	if ( iSide < 0 || iSide > 1 ) {
-		LOG(FATAL) << GetName() << ": illegal side identifier!"
-				       << FairLogger::endl;
-	}
-	CbmStsSensorTypeDssd* type =
-			dynamic_cast<CbmStsSensorTypeDssd*>(fFirstSensor);
-	if ( ! type )
-		LOG(FATAL) << GetName() << ": sensor type is not DSSD!"
-		           << FairLogger::endl;
-	return type->GetPitch(iSide);
-}
-// -------------------------------------------------------------------------
 
-
-
-// -----   Stereo angle    --------------------------------------------------
-Double_t CbmStsStation_new::GetSensorStereoAngle(Int_t iSide) const {
-	if ( iSide < 0 || iSide > 1 ) {
-		LOG(FATAL) << GetName() << ": illegal side identifier!"
-				       << FairLogger::endl;
-	}
-	CbmStsSensorTypeDssd* type =
-			dynamic_cast<CbmStsSensorTypeDssd*>(fFirstSensor);
-	if ( ! type )
-		LOG(FATAL) << GetName() << ": sensor type is not DSSD!"
-		           << FairLogger::endl;
-	return type->GetStereoAngle(iSide);
-}
-// -------------------------------------------------------------------------
-
-
-
-// -----   Initialise station parameters   ---------------------------------
-void CbmStsStation_new::Init() {
-
-	// Determine x and y extensions of the STS volume. This implementation
-	// assumes that the shape of the latter derives from TGeoBBox and that
-	// it is not rotated in the global c.s.
-	TGeoBBox* box = dynamic_cast<TGeoBBox*>(fNode->GetShape());
-	if ( ! box )
-		LOG(FATAL) << GetName() << ": shape is not box! " << FairLogger::endl;
-	Double_t local[3] = { 0., 0., 0.};
-	Double_t global[3];
-  fNode->GetMatrix()->LocalToMaster(local, global);
-  fXmin = global[0] - box->GetDX();
-  fXmax = global[0] + box->GetDX();
-  fYmin = global[1] - box->GetDY();
-  fYmax = global[1] + box->GetDY();
-
-  // The z position of the station is obtained from the sensor positions,
-  // not from the station node. This is more flexible, because it does not
-  // assume the station to be symmetric.
-	InitPosition();
-
-	// Warning if varying sensor properties are found
-	if ( fDiffSensorD )
-		LOG(WARNING) << GetName() << ": Different values for sensor thickness!"
-		             << FairLogger::endl;
-}
-// -------------------------------------------------------------------------
-
-
-
-// -----   Initialise the station z position   -----------------------------
-void CbmStsStation_new::InitPosition() {
+// -----   Initialise the station properties from sensors   ----------------
+void CbmStsStation_new::CheckSensorProperties() {
 
 	Int_t nSensors = 0;         // sensor counter
 	Double_t zMin  =  999999.;  // sensor z minimum
@@ -178,6 +114,71 @@ void CbmStsStation_new::InitPosition() {
 
 
 
+// -----   Strip pitch    --------------------------------------------------
+Double_t CbmStsStation_new::GetSensorPitch(Int_t iSide) const {
+	if ( iSide < 0 || iSide > 1 ) {
+		LOG(FATAL) << GetName() << ": illegal side identifier!"
+				       << FairLogger::endl;
+	}
+	CbmStsSensorTypeDssd* type =
+			dynamic_cast<CbmStsSensorTypeDssd*>(fFirstSensor->GetType());
+	if ( ! type )
+		LOG(FATAL) << GetName() << ": sensor type is not DSSD!"
+		           << FairLogger::endl;
+	return type->GetPitch(iSide);
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Stereo angle    --------------------------------------------------
+Double_t CbmStsStation_new::GetSensorStereoAngle(Int_t iSide) const {
+	if ( iSide < 0 || iSide > 1 ) {
+		LOG(FATAL) << GetName() << ": illegal side identifier!"
+				       << FairLogger::endl;
+	}
+	CbmStsSensorTypeDssd* type =
+			dynamic_cast<CbmStsSensorTypeDssd*>(fFirstSensor->GetType());
+	if ( ! type )
+		LOG(FATAL) << GetName() << ": sensor type is not DSSD!"
+		           << FairLogger::endl;
+	return type->GetStereoAngle(iSide);
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Initialise station parameters   ---------------------------------
+void CbmStsStation_new::Init() {
+
+	// Determine x and y extensions of the STS volume. This implementation
+	// assumes that the shape of the latter derives from TGeoBBox and that
+	// it is not rotated in the global c.s.
+	TGeoBBox* box = dynamic_cast<TGeoBBox*>(fNode->GetShape());
+	if ( ! box )
+		LOG(FATAL) << GetName() << ": shape is not box! " << FairLogger::endl;
+	Double_t local[3] = { 0., 0., 0.};
+	Double_t global[3];
+  fNode->GetMatrix()->LocalToMaster(local, global);
+  fXmin = global[0] - box->GetDX();
+  fXmax = global[0] + box->GetDX();
+  fYmin = global[1] - box->GetDY();
+  fYmax = global[1] + box->GetDY();
+
+  // The z position of the station is obtained from the sensor positions,
+  // not from the station node. This is more flexible, because it does not
+  // assume the station to be symmetric.
+	CheckSensorProperties();
+
+	// Warning if varying sensor properties are found
+	if ( fDiffSensorD )
+		LOG(WARNING) << GetName() << ": Different values for sensor thickness!"
+		             << FairLogger::endl;
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Info   ----------------------------------------------------------
 string CbmStsStation_new::ToString() const
 {
@@ -185,7 +186,11 @@ string CbmStsStation_new::ToString() const
    ss << GetName() << ": " << fNofSensors << " sensors, z = " << fZ
   	  << " cm, x = " << fXmin << " to " << fXmax << " cm, y = " << fYmin
   	  << " to " << fYmax << " cm " << "\n\t\t"
-  	  << " sensor thickness " << fSensorD << " cm";
+  	  << " sensor thickness " << fSensorD << " cm"
+  	  << " pitch " << GetSensorPitch(0) << " cm / " << GetSensorPitch(1)
+  	  << " cm, stereo angle " << GetSensorStereoAngle(0) << " / "
+  	  << GetSensorStereoAngle(1);
+
    return ss.str();
 }
 // -------------------------------------------------------------------------
