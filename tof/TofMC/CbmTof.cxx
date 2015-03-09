@@ -183,10 +183,11 @@ TClonesArray* CbmTof::GetCollection(Int_t iColl) const {
 // -----   Public method Print   -------------------------------------------
 void CbmTof::Print() const {
   Int_t nHits = fTofCollection->GetEntriesFast();
-  cout << "-I- CbmTof: " << nHits << " points registered in this event." 
-       << endl;
+  LOG(INFO) << "CbmTof: " << nHits << " points registered in this event." << FairLogger::endl;
+
   if (fVerboseLevel>1)
-    for (Int_t i=0; i<nHits; i++) (*fTofCollection)[i]->Print();
+    for (Int_t i=0; i<nHits; i++) 
+      (*fTofCollection)[i]->Print();
 }
 // -------------------------------------------------------------------------
 
@@ -204,7 +205,7 @@ void CbmTof::Reset() {
 // -----   Public method CopyClones   --------------------------------------
 void CbmTof::CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset){
   Int_t nEntries = cl1->GetEntriesFast();
-  cout << "-I- CbmTof: " << nEntries << " entries to add." << endl;
+  LOG(INFO) << "CbmTof: " << nEntries << " entries to add." << FairLogger::endl;
   TClonesArray& clref = *cl2;
   CbmTofPoint* oldpoint = NULL;
    for (Int_t i=0; i<nEntries; i++) {
@@ -214,8 +215,7 @@ void CbmTof::CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset){
     new (clref[fPosIndex]) CbmTofPoint(*oldpoint);
     fPosIndex++;
   }
-  cout << "-I- CbmTof: " << cl2->GetEntriesFast() << " merged entries." 
-       << endl;
+  LOG(INFO) << "CbmTof: " << cl2->GetEntriesFast() << " merged entries." << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 void CbmTof::ConstructGeometry()

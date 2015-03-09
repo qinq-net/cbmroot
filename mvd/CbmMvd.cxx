@@ -191,8 +191,7 @@ TClonesArray* CbmMvd::GetCollection(Int_t iColl) const {
 // -----   Virtual public method Print   -----------------------------------
 void CbmMvd::Print() const {
   Int_t nHits = fCollection->GetEntriesFast();
-  cout << "-I- CbmMvd: " << nHits << " points registered in this event." 
-       << endl;
+  LOG(INFO) << "CbmMvd: " << nHits << " points registered in this event." << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
@@ -211,7 +210,7 @@ void CbmMvd::Reset() {
 // -----   Virtual public method CopyClones   ------------------------------
 void CbmMvd::CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset) {
   Int_t nEntries = cl1->GetEntriesFast();
-  cout << "-I- CbmMvd: " << nEntries << " entries to add." << endl;
+  LOG(INFO) << "CbmMvd: " << nEntries << " entries to add." << FairLogger::endl;
   TClonesArray& clref = *cl2;
   CbmMvdPoint* oldpoint = NULL;
    for (Int_t i=0; i<nEntries; i++) {
@@ -221,8 +220,7 @@ void CbmMvd::CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset) {
     new (clref[fPosIndex]) CbmMvdPoint(*oldpoint);
     fPosIndex++;
   }
-   cout << " -I- CbmMvd: " << cl2->GetEntriesFast() << " merged entries."
-       << endl;
+  LOG(INFO) << "CbmMvd: " << cl2->GetEntriesFast() << " merged entries." << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
@@ -323,9 +321,9 @@ CbmMvdPoint* CbmMvd::AddHit(Int_t trackID, Int_t pdg, Int_t stationNr,
   TClonesArray& clref = *fCollection;
   Int_t size = clref.GetEntriesFast();
   if (fVerboseLevel>1) 
-    cout << "-I- CbmMvd: Adding Point at (" << posIn.X() << ", " << posIn.Y() 
+    LOG(INFO) << "CbmMvd: Adding Point at (" << posIn.X() << ", " << posIn.Y() 
 	 << ", " << posIn.Z() << ") cm,  station " << stationNr << ", track "
-	 << trackID << ", energy loss " << eLoss*1e06 << " keV" << endl;
+         << trackID << ", energy loss " << eLoss*1e06 << " keV" << FairLogger::endl;
   return new(clref[size]) CbmMvdPoint(trackID, pdg, stationNr, posIn, posOut,
 				      momIn, momOut, time, length, eLoss);
 }
