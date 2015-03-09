@@ -252,7 +252,7 @@ TClonesArray* CbmRich::GetCollection(
 void CbmRich::Print() const
 {
    Int_t nHits = fRichPoints->GetEntriesFast();
-   cout << "-I- CbmRich: " << nHits << " points registered in this event." << endl;
+   LOG(INFO) << "CbmRich: " << nHits << " points registered in this event." << FairLogger::endl;
 
    if (fVerboseLevel > 1) for (Int_t i=0; i<nHits; i++) (*fRichPoints)[i]->Print();
 }
@@ -271,7 +271,7 @@ void CbmRich::CopyClones(
       Int_t offset )
 {
    Int_t nEntries = cl1->GetEntriesFast();
-   cout << "-I- CbmRich: " << nEntries << " entries to add." << endl;
+   LOG(INFO) << "CbmRich: " << nEntries << " entries to add." << FairLogger::endl;
    TClonesArray& clref = *cl2;
    CbmRichPoint* oldpoint = NULL;
    for (Int_t i=0; i< nEntries ; i++ ) {
@@ -281,7 +281,7 @@ void CbmRich::CopyClones(
       new (clref[fPosIndex]) CbmRichPoint(*oldpoint);
       fPosIndex++;
    }
-   cout << "-I- CbmRich: " << cl2->GetEntriesFast() << " merged entries." << endl;
+   LOG(INFO) << "CbmRich: " << cl2->GetEntriesFast() << " merged entries." << FairLogger::endl;
 }
 
 void CbmRich::ConstructOpGeometry() 

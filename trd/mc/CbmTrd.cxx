@@ -251,7 +251,7 @@ TClonesArray* CbmTrd::GetCollection(
 void CbmTrd::Print() const
 {
   Int_t nHits = fTrdPoints->GetEntriesFast();
-  LOG(INFO) << "CbmTrd : " << nHits << " points registered in this event." << FairLogger::endl;
+  LOG(INFO) << "CbmTrd: " << nHits << " points registered in this event." << FairLogger::endl;
 
   if (fVerboseLevel > 1)
     for (Int_t i=0; i<nHits; i++)
