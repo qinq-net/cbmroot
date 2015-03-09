@@ -5,7 +5,7 @@ using namespace std;
 
 #include "URun.h"
 
-
+#include "FairLogger.h"
 //____________________________________________________________________
 //
 // URun
@@ -36,8 +36,8 @@ URun::URun()
     fNEvents(0)
 {
   // Default constructor. Should not be used
-  cout << "Warning: Default constructor of URun should not be used!"
-       << endl;
+  LOG(WARNING) << "Default constructor of URun should not be used!" 
+    << FairLogger::endl;
 }
 //--------------------------------------------------------------------
 
