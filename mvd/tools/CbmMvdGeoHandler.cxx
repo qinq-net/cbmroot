@@ -276,18 +276,18 @@ if ( gGeoManager->CheckPath(fMother + "/Beamtimeosetupoobgnum_0"))
 	}
 else if (gGeoManager->CheckPath(fMother + "/MVDoMistraloquero012oStationo150umodigi_0"))
 	{
-	cout << "Found MVD with 3 Stations" << endl;
+	LOG(INFO) << "Found MVD with 3 Stations" << FairLogger::endl;
 	fGeoTyp = 3;
 	}
 else if (gGeoManager->CheckPath(fMother + "/MVDo0123ohoFPCoextoHSoSo0123_0"))
 	{
-	LOG(INFO) << "-I- Found MVD with 4 Stations" << FairLogger::endl;
+	LOG(INFO) << "Found MVD with 4 Stations" << FairLogger::endl;
 	fGeoTyp = 4;
 	fDetectorName = "/MVDo0123ohoFPCoextoHSoSo0123_0";
 	}
 else 
 	{
-	cout << endl << "Try standart Geometry" << endl;
+	cout << endl << "Try standard Geometry" << endl;
 	fGeoTyp = 1;
 	}
  
