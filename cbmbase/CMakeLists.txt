@@ -13,6 +13,8 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/cbmbase 
   ${CBMROOT_SOURCE_DIR}/cbmdata
   ${CBMROOT_SOURCE_DIR}/cbmdata/sts
+  # needed by rootcling
+  ${CBMROOT_SOURCE_DIR}/cbmbase/report
 )
 Include_Directories( ${INCLUDE_DIRECTORIES})
 

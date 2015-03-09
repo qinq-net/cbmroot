@@ -37,6 +37,9 @@ ${CBMROOT_SOURCE_DIR}/littrack
 ${CBMROOT_SOURCE_DIR}/cbmgenerators
 ${CBMROOT_SOURCE_DIR}/analysis/flow
 
+#needed by rootcling
+${CBMROOT_SOURCE_DIR}/analysis/dielectron
+${CBMROOT_SOURCE_DIR}/analysis/conversion
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})

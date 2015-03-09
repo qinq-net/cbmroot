@@ -16,6 +16,17 @@ ${CBMROOT_SOURCE_DIR}/trackbase
 ${CBMROOT_SOURCE_DIR}/geane
 
 ${CBMROOT_SOURCE_DIR}/htrack
+
+#needed by rootcling
+${CBMROOT_SOURCE_DIR}/htrack/DataObjectLIB/include
+${CBMROOT_SOURCE_DIR}/htrack/MiscLIB/include
+${CBMROOT_SOURCE_DIR}/htrack/FileioLIB/include
+${CBMROOT_SOURCE_DIR}/htrack/DataRootObjectLIB/include
+${CBMROOT_SOURCE_DIR}/htrack/InputLIB/include
+${CBMROOT_SOURCE_DIR}/htrack/LutGeneratorLIB/include
+${CBMROOT_SOURCE_DIR}/htrack/HistogramTransformationLIB/include
+${CBMROOT_SOURCE_DIR}/htrack/OutputResultLIB/include
+${CBMROOT_SOURCE_DIR}/htrack/CbmHoughStsTrackFinder/include
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})

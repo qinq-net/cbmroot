@@ -5,6 +5,14 @@
 Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/cbmbase 
 ${CBMROOT_SOURCE_DIR}/cbmdata 
+# needed by rootcling
+${CBMROOT_SOURCE_DIR}/cbmdata/raw
+${CBMROOT_SOURCE_DIR}/cbmdata/beamtime/fhodo
+${CBMROOT_SOURCE_DIR}/cbmdata/mvd
+${CBMROOT_SOURCE_DIR}/cbmdata/much
+${CBMROOT_SOURCE_DIR}/cbmdata/trd
+${CBMROOT_SOURCE_DIR}/cbmdata/tof
+${CBMROOT_SOURCE_DIR}/cbmdata/ecal
 )
 Include_Directories( ${INCLUDE_DIRECTORIES})
 

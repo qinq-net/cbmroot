@@ -5,6 +5,15 @@
 Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/mvd 
 
+#needed by rootcling
+${CBMROOT_SOURCE_DIR}/mvd/old
+#${CBMROOT_SOURCE_DIR}/mvd/qa
+#${CBMROOT_SOURCE_DIR}/mvd/tools
+#${CBMROOT_SOURCE_DIR}/mvd/plugins
+${CBMROOT_SOURCE_DIR}/mvd/plugins/tasks
+${CBMROOT_SOURCE_DIR}/mvd/plugins/buffers
+${CBMROOT_SOURCE_DIR}/mvd/SensorDataSheets
+
 #${CBMROOT_SOURCE_DIR}/cbmbase 
 
 ${CBMROOT_SOURCE_DIR}/cbmdata

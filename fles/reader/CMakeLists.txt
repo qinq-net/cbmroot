@@ -21,6 +21,10 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/fles/spadic
   ${CBMROOT_SOURCE_DIR}/fles/trb/trbnet_lib
   ${CBMROOT_SOURCE_DIR}/rich/prototype/beamtime
+
+  # needed by rootcling
+  ${CBMROOT_SOURCE_DIR}/fles/spadic/message/wrap/cpp
+  ${CBMROOT_SOURCE_DIR}/fles/spadic/message
 )
 
 Include_Directories(${INCLUDE_DIRECTORIES})
