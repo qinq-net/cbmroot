@@ -7,6 +7,10 @@
 
 #include "CbmRichRingFitterEllipseMinuit.h"
 
+#include "Minuit2/Minuit2Minimizer.h"
+
+#include "FairLogger.h"
+
 using std::endl;
 using std::cout;
 
@@ -88,9 +92,8 @@ vector<double> CbmRichRingFitterEllipseMinuit::DoFit(
       const vector<double>& x,
       const vector<double>& y)
 {
-   FCNEllipse *theFCN = new FCNEllipse(x, y);
 
-   // create initial starting values for parameters
+   // Create initial starting values for parameters
    double xf1 = 0.;
    double yf1 = 0.;
    for(int i = 0; i < x.size(); i++) {
@@ -103,20 +106,34 @@ vector<double> CbmRichRingFitterEllipseMinuit::DoFit(
    double xf2 = xf1 + a;
    double yf2 = yf1;
 
-   TFitterMinuit theMinuit;
-   theMinuit.SetPrintLevel(-1);
-   theMinuit.SetMinuitFCN(theFCN);
-   theMinuit.SetParameter(0, "xf1", xf1, 0.1, 1., -1.);
-   theMinuit.SetParameter(1, "yf1", yf1, 0.1, 1., -1.);
-   theMinuit.SetParameter(2, "xf2", xf2, 0.1, 1., -1.);
-   theMinuit.SetParameter(3, "yf2", yf2, 0.1, 1., -1.);
-   theMinuit.SetParameter(4, "a", a, 0.1, 1., -1.);
-   theMinuit.CreateMinimizer();
-   theMinuit.Minimize();
+
+   ROOT::Minuit2::Minuit2Minimizer min;
+
+
+   FCNEllipse2 *theFCN = new FCNEllipse2(x, y);
+   
+   min.SetMaxFunctionCalls(1000000);
+   min.SetMaxIterations(100000);
+   min.SetTolerance(0.001);
+ 
+   min.SetFunction(*theFCN);
+ 
+   // Set the free variables to be minimized!
+   min.SetVariable(0, "xf1", xf1, 0.1);
+   min.SetVariable(1, "yf1", yf1, 0.1);
+   min.SetVariable(2, "xf2", xf2, 0.1);
+   min.SetVariable(3, "yf2", yf2, 0.1);
+   min.SetVariable(4, "a", a, 0.1);
+ 
+   min.Minimize(); 
+
+   const double *xs = min.X();
+
    vector<double> fpar;
    fpar.clear();
    for (int i = 0; i < 5; i++){
-      fpar.push_back(theMinuit.GetParameter(i));
+     fpar.push_back(xs[i]);
    }
    return fpar;
+
 }

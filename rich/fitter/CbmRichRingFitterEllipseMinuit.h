@@ -10,92 +10,60 @@
 #define CBM_RICH_RING_FITTER_ELLIPSE_MINUIT
 
 #include "CbmRichRingFitterEllipseBase.h"
-#include "TFitterMinuit.h"
+
+#include "Math/IFunction.h"
+#include "Rtypes.h"
+
 #include <vector>
 
 using std::vector;
 
-/**
-* \class FCNEllipse
-*
-* \brief FCN for Minuit.
-* \author Semen Lebedev <s.lebedev@gsi.de>
-* \date 2011
-**/
-class FCNEllipse : public ROOT::Minuit2::FCNBase {
-public:
-   /**
-    * \brief Default constructor.
-    */
-   FCNEllipse(
-         const vector<Double_t>& x,
-         const vector<Double_t>& y) :
-            fX(x),
-            fY(y),
-            fErrorDef(1.)
-   {
-
-   }
-
-   /**
-    * \brief Default destructor.
-    */
-   ~FCNEllipse()
-   {
-
-   }
-
-   /**
-    * \brief Inherited from ROOT::Minuit2::FCNBase.
-    */
-   virtual Double_t Up() const
-   {
-      return fErrorDef;
-   }
-
-   /**
-    * \brief Inherited from ROOT::Minuit2::FCNBase.
-    */
-   virtual Double_t operator()(
-         const vector<Double_t>& par) const
-   {
-      Double_t r = 0.;
-      for(UInt_t i = 0; i < fX.size(); i++) {
-         Double_t ri = calcE(i, par);
-         r +=   ri * ri;
-      }
-      return r;
-   }
-
-   /**
-    * \brief Calculate E for certain hit.
-    * \param[in] i Hit index.
-    * \param[in] par Ellipse parameters.
-    */
-   Double_t calcE(
-         Int_t i,
-         const vector<Double_t>& par) const
-   {
-      Double_t d1 = sqrt( (fX[i] - par[0])*(fX[i] - par[0]) +
-                          (fY[i] - par[1])*(fY[i] - par[1])  );
-      Double_t d2 = sqrt( (fX[i] - par[2])*(fX[i] - par[2]) +
-                          (fY[i] - par[3])*(fY[i] - par[3])  );
-      Double_t ri = d1 + d2 - 2 * par[4];
-      return ri;
-    }
-
-
-   vector<Double_t> X() const {return fX;}
-
-   vector<Double_t> Y() const {return fY;}
-
-   void SetErrorDef(Double_t def) {fErrorDef = def;}
-
+class FCNEllipse2: public ROOT::Math::IBaseFunctionMultiDim 
+{
 private:
-    vector<Double_t> fX; // vector of X coordinates
-    vector<Double_t> fY; // vector of Y coordinates
-    Double_t fErrorDef;
+   vector<Double_t> fX; // vector of X coordinates
+   vector<Double_t> fY; // vector of Y coordinates
+public:
+
+ FCNEllipse2(vector<Double_t> x, vector<Double_t> y) 
+     : ROOT::Math::IBaseFunctionMultiDim(), 
+     fX(x),
+     fY(y)
+     {}
+     
+   double DoEval(const double* x) const 
+   {
+     Double_t r = 0.;
+     for(UInt_t i = 0; i < fX.size(); i++) {
+       Double_t ri = calcE(i, x);
+       r +=   ri * ri;
+     }
+     return r;
+   }
+   
+   Double_t calcE(
+		  Int_t i,
+		  const double* par) const
+   {
+     Double_t d1 = sqrt( (fX[i] - par[0])*(fX[i] - par[0]) +
+			 (fY[i] - par[1])*(fY[i] - par[1])  );
+     Double_t d2 = sqrt( (fX[i] - par[2])*(fX[i] - par[2]) +
+			 (fY[i] - par[3])*(fY[i] - par[3])  );
+     Double_t ri = d1 + d2 - 2 * par[4];
+     return ri;
+   }
+   
+   unsigned int NDim() const
+   {
+      return 5;
+   }
+ 
+   ROOT::Math::IBaseFunctionMultiDim* Clone() const
+   {
+     return new FCNEllipse2(fX, fY);
+   }
 };
+
 
 /**
 * \class CbmRichRingFitterEllipseMinuit
@@ -143,6 +111,7 @@ private:
    void TransformToRichRing(
          CbmRichRingLight* ring,
          const vector<double>& par);
+
 };
 
 #endif

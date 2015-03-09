@@ -9,7 +9,8 @@ ${CBMROOT_SOURCE_DIR}/rich/finder
 #${CBMROOT_SOURCE_DIR}/rich/qa
 ${CBMROOT_SOURCE_DIR}/rich/tracks
 ${CBMROOT_SOURCE_DIR}/rich/selection
-${CBMROOT_SOURCE_DIR}/prototype/beamtime
+# needed by rootcling
+${CBMROOT_SOURCE_DIR}/rich/prototype/beamtime
 
 ${CBMROOT_SOURCE_DIR}/cbmbase 
 ${CBMROOT_SOURCE_DIR}/cbmbase/report
@@ -149,7 +150,6 @@ prototype/CbmRichPrototypeQa.h
 qa/CbmRichGeoTest.h 
 qa/CbmRichUrqmdTest.h
 qa/CbmRichGeoOpt.h
-
 prototype/beamtime/CbmRichTrbUnpack.h
 prototype/beamtime/CbmRichTrbUnpack2.h
 prototype/beamtime/CbmTrbEdgeMatcher.h
