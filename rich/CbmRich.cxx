@@ -252,7 +252,7 @@ TClonesArray* CbmRich::GetCollection(
 void CbmRich::Print() const
 {
    Int_t nHits = fRichPoints->GetEntriesFast();
-   LOG(INFO) << "CbmRich: " << nHits << " points registered in this event." << FairLogger::endl;
+   LOG(INFO) << fName << ": " << nHits << " points registered in this event." << FairLogger::endl;
 
    if (fVerboseLevel > 1) for (Int_t i=0; i<nHits; i++) (*fRichPoints)[i]->Print();
 }

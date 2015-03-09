@@ -183,7 +183,7 @@ TClonesArray* CbmTof::GetCollection(Int_t iColl) const {
 // -----   Public method Print   -------------------------------------------
 void CbmTof::Print() const {
   Int_t nHits = fTofCollection->GetEntriesFast();
-  LOG(INFO) << "CbmTof: " << nHits << " points registered in this event." << FairLogger::endl;
+  LOG(INFO) << fName << ": " << nHits << " points registered in this event." << FairLogger::endl;
 
   if (fVerboseLevel>1)
     for (Int_t i=0; i<nHits; i++) 
