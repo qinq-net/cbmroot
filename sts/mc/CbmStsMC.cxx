@@ -61,7 +61,7 @@ void CbmStsMC::ConstructGeometry() {
     		       << fileName.Data() << " not supported." << FairLogger::endl;
   }
 
-  LOG(INFO) << GetName() << ": Constructing geometry from ROOT  file "
+  LOG(INFO) << "Constructing " << GetName() << "  geometry from ROOT  file "
   		      << fileName.Data() << FairLogger::endl;
   ConstructRootGeometry();
 }
