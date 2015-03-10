@@ -2,7 +2,7 @@
 ##   trd_v15b_1m information file
 #
 
-# created 20150122
+# created 20150310
 
 # envelope
  360 cm   start of TRD (z)
@@ -36,7 +36,7 @@
   495 cm   z-position of layer  4
 
 # flags
-support structure is    : NOT included
+support structure is    : included
 radiator is             : NOT included
 lattice grid is         : NOT included
 kapton window is        : NOT included
