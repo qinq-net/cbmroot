@@ -33,7 +33,6 @@ using std::set;
 class CbmLitTofQa : public FairTask
 {
 public:
-	typedef Bool_t (*LitTrackAcceptanceFunction)(const TClonesArray* mcTracks, Int_t index);
    /**
     * \brief Constructor.
     */
@@ -124,7 +123,12 @@ private:
    CbmStsKFTrackFitter fKFFitter; // Pointer to the Kalman Filter Fitter algorithm
 
    vector<string> fTrackCategories; // Vector of track category names
+
+
+#ifndef  __ROOTCLING__
+   typedef Bool_t (*LitTrackAcceptanceFunction)(const TClonesArray* mcTracks, Int_t index);
    map<string, LitTrackAcceptanceFunction> fTrackAcceptanceFunctions; // maps track category name to track acceptance function
+#endif
 
    set<Int_t> fMCTrackIdForTofHits; // Set of MC track IDs for all existing TOF hits
    set<Int_t> fMCTrackIdForTofPoints; // Set of MC track IDs for all existing TOF points

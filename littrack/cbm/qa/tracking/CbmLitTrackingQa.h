@@ -31,9 +31,6 @@ using std::multimap;
 class CbmLitTrackingQa : public FairTask
 {
 public:
-	typedef Bool_t (*LitTrackAcceptanceFunction)(const TClonesArray* mcTracks, Int_t index);
-	typedef Bool_t (*LitRingAcceptanceFunction)(const TClonesArray* mcTracks, Int_t index, Int_t nofHitsInRing);
-	typedef Bool_t (*LitPiSuppAcceptanceFunction)(const TClonesArray* globalTracks, const TClonesArray* stsMatches, const TClonesArray* richMatches, Int_t index);
 
    /**
     * \brief Constructor.
@@ -338,10 +335,14 @@ private:
    vector<string> fRingCategoriesPID; // Vector of ring category names for REC+PID
    vector<string> fPiSuppCategories;; // Vector of categories for pion suppression
 
+#ifndef  __ROOTCLING__
+   typedef Bool_t (*LitTrackAcceptanceFunction)(const TClonesArray* mcTracks, Int_t index);
+   typedef Bool_t (*LitRingAcceptanceFunction)(const TClonesArray* mcTracks, Int_t index, Int_t nofHitsInRing);
+   typedef Bool_t (*LitPiSuppAcceptanceFunction)(const TClonesArray* globalTracks, const TClonesArray* stsMatches, const TClonesArray* richMatches, Int_t index);
    map<string, LitTrackAcceptanceFunction> fTrackAcceptanceFunctions; // maps track category name to track acceptance function
    map<string, LitRingAcceptanceFunction> fRingAcceptanceFunctions; // maps ring category name to ring acceptance function
    map<string, LitPiSuppAcceptanceFunction> fPiSuppAcceptanceFunctions; // maps pion supp. category name to piSupp acceptance function
-
+#endif
 
    CbmLitGlobalElectronId* fElectronId; // Electron identification tool
    Double_t fTrdAnnCut;
