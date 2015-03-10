@@ -105,7 +105,7 @@ const Bool_t IncludeBackpanel   = false;  // true;  // false;  // true, if backp
 const Bool_t IncludeFebs        = false;  // true;  // false;  // true, if FEBs are included in geometry
 const Bool_t IncludeRobs        = false;  // false; // false;  // true, if ROBs are included in geometry
 const Bool_t IncludeAsics       = false;  // true;  // false;  // true, if ASICs are included in geometry
-const Bool_t IncludeSupports    = true;   // true;  // false;  // true, if support structure is included in geometry
+const Bool_t IncludeSupports    = true;  // support structure must be there, otherwise there are no TRDpoints in sim
 const Bool_t IncludeLabels      = false;  // true;  // false;  // true, if TRD (I, II, III) labels are plotted in (VisLevel 5)
 const Bool_t IncludeFieldVector = false;  // false;  // true, if magnetic field vector to be shown (in the magnet)
 
