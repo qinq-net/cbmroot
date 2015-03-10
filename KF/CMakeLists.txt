@@ -183,7 +183,7 @@ ENDIF (SSE_FOUND)
 set(LINKDEF KFLinkDef.h)
 Set(LIBRARY_NAME KF)
 Set(DEPENDENCIES
-    Ecal CbmBase CbmData Base Vc.a Minuit2
+    Sts Ecal CbmBase CbmData Base Vc.a Minuit2
 )
 
 GENERATE_LIBRARY()
