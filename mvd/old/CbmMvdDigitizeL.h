@@ -259,7 +259,7 @@ private:
 
   typedef std::vector<SignalPoint> SignalPointVec;
   
-  SignalPointVec fSignalPoints;
+  SignalPointVec fSignalPoints;//!
 
 
   /** Set parameter containers **/
