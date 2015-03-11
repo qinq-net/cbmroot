@@ -15,7 +15,7 @@
 #include "CbmGeoStsPar.h"
 #include "CbmGeoRichPar.h"
 #include "CbmGeoTrdPar.h"
-#include "CbmGeoSttPar.h" //AZ
+//#include "CbmGeoSttPar.h" //AZ
 #include "CbmGeoTofPar.h"
 #include "CbmGeoMuchPar.h"
 #include "CbmGeoPassivePar.h"
@@ -366,12 +366,14 @@ InitStatus CbmKF::Init()
 
 
   //=== Stt stations ===
+
+  /**
     
   CbmGeoSttPar *sttPar = reinterpret_cast<CbmGeoSttPar*>(RunDB->findContainer("CbmGeoSttPar"));
  
   if( sttPar ){
 
-    /*
+
     if( fVerbose ) cout<<"KALMAN FILTER : === READ STT PASSIVE MATERIAL ==="<<endl;
     if( fVerbose==1 ) cout<<"printout skipped for Verbose mode 1"<<endl;
     TObjArray *Nodes = sttPar->GetGeoPassiveNodes();
@@ -383,7 +385,7 @@ InitStatus CbmKF::Init()
       if( !kfmat ) continue;
       if( fVerbose>=1 ) cout<<" Stt material "<<name<<" : "<<kfmat->Info()<<endl;
     }
-    */
+
 
     if( fVerbose ) cout<<"KALMAN FILTER : === READ STT DETECTORS ==="<<endl;
 
@@ -431,6 +433,8 @@ InitStatus CbmKF::Init()
       }
     }
   }
+
+  **/
   
 
   //=== MUon CHambers ===
