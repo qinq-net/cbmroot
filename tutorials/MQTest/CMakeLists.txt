@@ -88,7 +88,7 @@ If (Boost_FOUND)
     CbmData Rich Trd Tof Psd CbmGenerators Field Sts
     fles_ipc FairMQ 
     boost_thread boost_system boost_serialization boost_timer Passive
-    RIO Cint Core
+    RIO Core
   )
   If (FAIRBASE) 
     Set(DEPENDENCIES ${DEPENDENCIES} FairMQSampler)
