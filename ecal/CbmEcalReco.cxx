@@ -7,6 +7,7 @@
 
 #include "FairRootManager.h"
 #include "FairTrackParam.h"
+#include "FairLogger.h"
 
 #include "CbmEcalStructure.h"
 #include "CbmEcalInf.h"
@@ -18,6 +19,8 @@
 #include "CbmEcalCalibration.h"
 #include "CbmEcalParam.h"
 #include "CbmEcalPosLib.h"
+
+#include "Minuit2/Minuit2Minimizer.h"
 
 #include <iostream>
 
@@ -38,7 +41,9 @@ void FCNEcalCluster::SetN(Int_t n)
   fNDF=fCluster->Size()-(n*3-fFixClusterEnergy);
 }
 
-Double_t FCNEcalCluster::operator()(const vector<Double_t>& par) const
+//Double_t FCNEcalCluster::operator()(const vector<Double_t>& par) const
+//{
+Double_t FCNEcalCluster::DoEval(const Double_t* par) const
 {
 //  if (par.size()!=fN*3)
 //    Fatal("()", "Size of input vector is wrong (%d, should be %d)!", par.size(), fN*3);
@@ -104,7 +109,7 @@ Double_t FCNEcalCluster::operator()(const vector<Double_t>& par) const
 
       r=TMath::Sqrt(cx*cx+cy*cy);
 
-      /** TODO: should be Z of the cell**/
+      // TODO: should be Z of the cell**/
       theta=TMath::ATan(r/fInf->GetZPos());
       theta*=TMath::RadToDeg();
       phi=TMath::ACos(cx/r)*TMath::RadToDeg();
@@ -233,7 +238,7 @@ void CbmEcalReco::WriteClusterInfo(CbmEcalCluster* clstr)
 
       r=TMath::Sqrt(cx*cx+cy*cy);
 
-      /** TODO: should be Z of the cell**/
+      // TODO: should be Z of the cell**/
       theta=TMath::ATan(r/fInf->GetZPos());
       theta*=TMath::RadToDeg();
       phi=TMath::ACos(cx/r)*TMath::RadToDeg();
@@ -286,7 +291,9 @@ void CbmEcalReco::FillTree()
 
 }
 
-/** Fit a given cluster. A first approximation should be available **/
+// Fit a given cluster. A first approximation should be available **/
+
+
 void CbmEcalReco::FitCluster(CbmEcalCluster* clstr)
 {
   vector<CbmEcalCell*> cells(fN-fNOld);
@@ -305,86 +312,106 @@ void CbmEcalReco::FitCluster(CbmEcalCluster* clstr)
     Info("FitCluster", "Give up fitting the cluster with %d maximums. ", n);
     return;
   }
+  
   fFCN->SetCluster(clstr);
-  /** The cluster it self  doesn't care about amplitude of maximums **/
+  // The cluster it self  doesn't care about amplitude of maximums 
   fFCN->SetN(n);
+
+  Int_t params=0;
+
   fFitter->Clear();
   fFitter->SetPrintLevel(-1);
   fFitter->SetMaxIterations(fMaxIterations);
-  if (fFixClusterEnergy==0)
-    for(i=0;i<n;i++)
-    {
+  if (fFixClusterEnergy==0) {
+    for(i=0;i<n;i++) {
       p=(CbmEcalRecParticle*)fReco->At(i+fNOld);
       cells[i]=fStr->GetHitCell(p->CellNum());
-      par="e"; par+=i; fFitter->SetParameter(i*3   ,par.Data(), p->E(), 0.01*p->E(), p->E()*0.2, p->E()*2.0);
-      par="x"; par+=i; fFitter->SetParameter(i*3+1 ,par.Data(), p->X(), 0.1 ,p->X()-24., p->X()+24.);
-      par="y"; par+=i; fFitter->SetParameter(i*3+2 ,par.Data(), p->Y(), 0.1 ,p->Y()-24., p->Y()+24.);
-    } else
-  {
+      par="e"; par+=i; 
+      fFitter->SetVariable(i*3   ,par.Data(), p->E(), 0.01*p->E());
+      fFitter->SetVariableLimits(i*3, p->E()*0.2, p->E()*2.0);
+      params++;
+      par="x"; par+=i; 
+      fFitter->SetVariable(i*3+1 ,par.Data(), p->X(), 0.1);
+      fFitter->SetVariableLimits(i*3+1, p->X()-24., p->X()+24.);
+      params++;
+      par="y"; par+=i; 
+      fFitter->SetVariable(i*3+2 ,par.Data(), p->Y(), 0.1);
+      fFitter->SetVariableLimits(i*3+2, p->Y()-24., p->Y()+24.);
+      params++;
+    }
+  } else {
     e=0;
-    for(i=0;i<n;i++)
-    {
+    for(i=0;i<n;i++) {
       p=(CbmEcalRecParticle*)fReco->At(i+fNOld);
       pe[i]=p->E(); e+=pe[i];
     }
-    for(i=0;i<n;i++)
-    {
+    for(i=0;i<n;i++) {
       p=(CbmEcalRecParticle*)fReco->At(i+fNOld);
       cells[i]=fStr->GetHitCell(p->CellNum());
-      par="x"; par+=i; fFitter->SetParameter(i*3 ,par.Data(), p->X(), 0.1 ,p->X()-24., p->X()+24.);
-      par="y"; par+=i; fFitter->SetParameter(i*3+1 ,par.Data(), p->Y(), 0.1 ,p->Y()-24., p->Y()+24.);
-      if (i!=n-1)
-      {
-        par="n";
+      par="x"; par+=i; 
+      fFitter->SetVariable(i*3 ,par.Data(), p->X(), 0.1);
+      fFitter->SetVariableLimits(i*3,p->X()-24., p->X()+24.);
+      params++;
+      par="y"; par+=i; 
+      fFitter->SetVariable(i*3+1 ,par.Data(), p->Y(), 0.1);
+      fFitter->SetVariableLimits(i*3+1, p->Y()-24., p->Y()+24.);
+      params++;
+      if (i!=n-1) {
+	par="n";
 	par+=i;
-	fFitter->SetParameter(i*3+2 ,par.Data(), p->E()/e, 0.005, 0.0, 1.0);
+	fFitter->SetVariable(i*3+2 ,par.Data(), p->E()/e, 0.005);
+	fFitter->SetVariableLimits(i*3+2, 0.0, 1.0);
+        params++;
       }
       e-=p->E();
     }
-
+    
   }
 
+  fFCN->SetNumParam(params);
   fFCN->SetParticleSeeds(cells);
-  fFitter->CreateMinimizer();
+
+  fFitter->SetFunction(*fFCN);
   ret=fFitter->Minimize();
 
-  Double_t chi2;
-  Double_t edm;
-  Double_t errdef;
-  Int_t nvpar;
-  Int_t nparx;
+  Double_t chi2=fFitter->MinValue();
 
-  fFitter->GetStats(chi2, edm, errdef, nvpar, nparx);
-  if (ret!=0&&fVerbose>1)
-  {
+  if (ret!=0&&fVerbose>1) {
     Info("FitCluster", "Minimization failed! Last chi2 %f, old chi2 %f.", chi2, oldchi2);
   }
 
 //  cout << "chi2=" << chi2 << ", NDF=" << fFCN->NDF() << endl;
-  if (fFCN->NDF()>0)
+  if (fFCN->NDF()>0) {
     chi2/=fFCN->NDF();
-  else
+  } else {
     chi2=-chi2;
+  }
   clstr->fChi2=chi2;
 
-
   e=fFCN->ClusterEnergy();
-  for(i=0;i<n;i++)
-  {
+
+  // get the fit parameters from Minuit
+  const double *fitResult = fFitter->X();
+
+  for(i=0;i<n;i++) {
     p=(CbmEcalRecParticle*)fReco->At(i+fNOld);
-    p->fX=fFitter->GetParameter(i*3+1-fFixClusterEnergy);
-    p->fY=fFitter->GetParameter(i*3+2-fFixClusterEnergy);
-    if (fFixClusterEnergy)
-    {
-      if (i!=n-1)
-      {
-        p->fE=fFitter->GetParameter(i*3+2)*e;
+    p->fX=fitResult[i*3+1-fFixClusterEnergy];
+    p->fY=fitResult[i*3+2-fFixClusterEnergy];
+    LOG(DEBUG2) << "fitResult[" << i*3+1-fFixClusterEnergy << "]: " << fitResult[i*3+1-fFixClusterEnergy] << FairLogger::endl;
+    LOG(DEBUG2) << "fitResult[" << i*3+2-fFixClusterEnergy << "]: " << fitResult[i*3+2-fFixClusterEnergy] << FairLogger::endl;
+    if (fFixClusterEnergy) {
+      if (i!=n-1) {
+        p->fE=fitResult[i*3+2]*e;
+	LOG(DEBUG2) << "fitResult[" << i*3+2 << "]: " << fitResult[i*3+2] << FairLogger::endl;
 	e-=p->fE;
-      } else
+      } else {
 	p->fE=e;
+      }
+    } else {
+      p->fE=fitResult[i*3];
+	LOG(DEBUG2) << "fitResult[" << i*3 << "]: " << fitResult[i*3] << FairLogger::endl;
     }
-    else
-      p->fE=fFitter->GetParameter(i*3);
+
     tv.SetXYZ(p->fX, p->fY, fInf->GetZPos());
     tv*=p->fE/tv.Mag();
     p->fPx=tv.X();
@@ -420,7 +447,7 @@ void CbmEcalReco::TimeReco(CbmEcalRecParticle* p, CbmEcalCluster* cluster)
   cl=fStr->GetHitCell(p->CellNum());
   cx=cl->GetCenterX(); cy=cl->GetCenterY(); 
   r=TMath::Sqrt(cx*cx+cy*cy);
-  /** TODO: should be Z of the cell**/
+  // TODO: should be Z of the cell**/
   theta=TMath::ATan(r/fInf->GetZPos());
   theta*=TMath::RadToDeg();
   phi=TMath::ACos(cx/r)*TMath::RadToDeg();
@@ -431,7 +458,7 @@ void CbmEcalReco::TimeReco(CbmEcalRecParticle* p, CbmEcalCluster* cluster)
     cell=fStr->GetHitCell(cluster->CellNum(k));
     celltime=cell->GetTime();
     if (celltime==-1111) continue;
-    /** No time information for the cell **/
+    // No time information for the cell **/
     type=cell->GetType();
     cellsize=module/type;
     x=cell->GetCenterX(); x-=p->X(); // x-=cx; 
@@ -450,7 +477,7 @@ void CbmEcalReco::TimeReco(CbmEcalRecParticle* p, CbmEcalCluster* cluster)
     p->SetTOF(time);
 }
 
-/** Calculate a chi2 for just reconstructed photons **/
+// Calculate a chi2 for just reconstructed photons **/
 Double_t CbmEcalReco::CalculateChi2(CbmEcalCluster* cluster)
 {
   if (!fShLib) return -1111;
@@ -506,7 +533,7 @@ Double_t CbmEcalReco::CalculateChi2(CbmEcalCluster* cluster)
 
       r=TMath::Sqrt(cx*cx+cy*cy);
 
-      /** TODO: should be Z of the cell**/
+      // TODO: should be Z of the cell**/
       theta=TMath::ATan(r/fInf->GetZPos());
       theta*=TMath::RadToDeg();
       phi=TMath::ACos(cx/r)*TMath::RadToDeg();
@@ -557,7 +584,7 @@ Double_t CbmEcalReco::CalculateChi2(CbmEcalCluster* cluster)
   return chi2;
 }
 
-/** Get first approximation of photon parameters from maximum **/
+// Get first approximation of photon parameters from maximum **/
 void CbmEcalReco::Reco(CbmEcalCell* cell, CbmEcalCluster* clstr)
 {
   if (fLib==NULL)
@@ -724,7 +751,7 @@ void CbmEcalReco::CreateTree()
   fOutTree->Branch("cmaxs", &fCMaxs, "cmaxs/I");
 }
 
-/** Default constructor. Requirement of ROOT system **/
+// Default constructor. Requirement of ROOT system **/
 CbmEcalReco::CbmEcalReco() 
   : FairTask(),
     fN(0),
@@ -784,7 +811,7 @@ CbmEcalReco::CbmEcalReco()
     fMaxIterations(0),
     fFixClusterEnergy(0),
     fFCN(NULL),
-    fFitter(NULL),
+//    fFitter(NULL),
     fMinMaxE(0.),
     fUsePosLib(0),
     fPreE(0.),
@@ -792,7 +819,7 @@ CbmEcalReco::CbmEcalReco()
 {
 }
 
-/** Standard constructor **/
+// Standard constructor **/
 CbmEcalReco::CbmEcalReco(const char *name, const Int_t iVerbose, const char* configname)
   : FairTask(name, iVerbose),
     fN(0),
@@ -1001,11 +1028,9 @@ InitStatus CbmEcalReco::Init()
   fFCN->SetCStep(fCStep);
   fFCN->SetFixClusterEnergy(fFixClusterEnergy);
   fFCN->SetStructure(fStr);
-  fFitter=new TFitterMinuit(18);
+  fFitter=new ROOT::Minuit2::Minuit2Minimizer();
   fFitter->SetPrintLevel(-1);
-  fFitter->SetMinuitFCN(fFCN);
   fFitter->SetMaxIterations(fMaxIterations);
-
   return kSUCCESS;
 }
 

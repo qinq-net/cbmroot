@@ -59,20 +59,23 @@ CbmEcalCalibrationV2.cxx CbmEcalAnalysisSimple.cxx CbmEcalIdentification.cxx
 CbmEcalMaximumLocator.cxx CbmEcalAnalysisJPsi.cxx
 CbmEcalAnalysisSShape.cxx CbmEcalAnalysisShape.cxx
 CbmEcalShLibRecord.cxx CbmEcalShLib.cxx CbmEcalShLibTable.cxx
-CbmEcalClusterFinder.cxx CbmEcalReco.cxx CbmEcalShLibNN.cxx
-CbmEcalAnalysisEres.cxx CbmEcalPosLib.cxx CbmEcalReco2.cxx
+CbmEcalClusterFinder.cxx 
+CbmEcalReco.cxx 
+CbmEcalShLibNN.cxx
+CbmEcalAnalysisEres.cxx CbmEcalPosLib.cxx 
+CbmEcalReco2.cxx
 CbmEcalShLibCorr.cxx CbmEcalShLibCorrTable.cxx
-CbmEcalShLibCorrRecord.cxx CbmEcalRecoCorr.cxx
+CbmEcalShLibCorrRecord.cxx 
+CbmEcalRecoCorr.cxx
 CbmEcalDigi.cxx CbmEcalPrepare.cxx CbmEcalAnalysisCalib.cxx
 CbmEcalInf.cxx
 )
-
 
 set(LINKDEF EcalLinkDef.h)
 Set(LIBRARY_NAME Ecal)
 Set(DEPENDENCIES
     #KF ????
-    CbmBase CbmData Base MLP ASImage
+    CbmBase CbmData Base MLP ASImage Minuit2
 )
 
 GENERATE_LIBRARY()

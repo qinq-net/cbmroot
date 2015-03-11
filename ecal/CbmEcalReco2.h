@@ -9,7 +9,9 @@
 
 #include "FairTask.h"
 #include "TString.h"
-#include "TFitterMinuit.h"
+
+#include "Minuit2/Minuit2Minimizer.h"
+#include "Math/IFunction.h"
 
 class TChain;
 class TClonesArray;
@@ -26,11 +28,11 @@ class CbmEcalPosLib;
 class CbmEcalMaximum;
 class TFormula;
 
-class FCNEcalCluster2 : public ROOT::Minuit2::FCNBase
+class FCNEcalCluster2 : public ROOT::Math::IBaseFunctionMultiDim
 {
 public:
  FCNEcalCluster2(CbmEcalCalibration* cal, CbmEcalShLib* shlib, TFormula** sigma, CbmEcalInf* inf)
-   : ROOT::Minuit2::FCNBase(), fCal(cal), fShLib(shlib), fSigma(sigma), 
+   : ROOT::Math::IBaseFunctionMultiDim(), fCal(cal), fShLib(shlib), fSigma(sigma), 
     fInf(inf), fStr(NULL), fCluster(NULL), fEStep(1e-4), fCStep(1e-4), 
     fErrorDef(1.0), fClusterEnergy(0.), fClusterResp(0.), fN(0), fCells(), 
     fFixClusterEnergy(0), fNDF(0) 
@@ -46,6 +48,8 @@ public:
   void SetN(Int_t n);
   Int_t GetN() const {return fN;}
 
+  void SetNumParam(Int_t i) {fParam=i;}
+
   /** Get/Set various steps **/
   void SetEStep(Double_t step) {fEStep=step;}
   void SetCStep(Double_t step) {fCStep=step;}
@@ -56,10 +60,18 @@ public:
 
   /** The chi2 stuff **/
   /** par[n] --- energy, par[n+1] --- x, par[n+2] --- y **/
-  virtual Double_t operator()(const std::vector<Double_t>& par) const;
+  Double_t DoEval(const Double_t* x) const;
 
-  virtual Double_t Up() const {return fErrorDef;}
-  void SetErrorDef(Double_t errordef) {fErrorDef=errordef;}
+  unsigned int NDim() const
+  {
+    return fParam;
+  }
+  
+  ROOT::Math::IBaseFunctionMultiDim* Clone() const
+    {
+      return new FCNEcalCluster2(fCal, fShLib, fSigma, fInf);
+    }
+
   void SetFixClusterEnergy(Int_t fix) {fFixClusterEnergy=fix;}
   Double_t ClusterEnergy() const {return fClusterEnergy;}
 
@@ -95,6 +107,8 @@ private:
   Int_t fFixClusterEnergy;
   /** NDF of fit **/
   Int_t fNDF;
+  /** Number of parameters **/
+  Int_t fParam;
 
   FCNEcalCluster2(const FCNEcalCluster2&);
   FCNEcalCluster2& operator=(const FCNEcalCluster2&);
@@ -222,7 +236,7 @@ private:
   /** A chi^2 and gradient function for cluster/particles **/
   FCNEcalCluster2* fFCN;		//!
   /** A fitter **/
-  TFitterMinuit* fFitter;	//!
+  ROOT::Minuit2::Minuit2Minimizer* fFitter;
   /** Minimum energy of precluster maximum for consideration **/
   Double_t fMinMaxE;
   /** Use a position library instead of S-curves **/
