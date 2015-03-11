@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 function print_example(){
 echo "##################################################################"
 echo "# To set the required parameters as source and the build         #"
@@ -41,7 +40,7 @@ if [ "$#" -lt "2" ]; then
   exit 1
 fi
 
-# test if a ctest model is either Experimantal or Nightly
+# test if a ctest model is either Experimental or Nightly
 if [ "$1" == "Experimental" -o "$1" == "Nightly" -o "$1" == "Continuous" ]; then
   echo ""
 else
@@ -77,7 +76,7 @@ else
   GCC_VERSION=$($CXX -dumpversion)
 fi
 
-export LABEL1=${LINUX_FLAVOUR}-$SYSTEM-$COMPILER$GCC_VERSION-fairsoft_$FAIRSOFT_VERSION
+export LABEL1=${LINUX_FLAVOUR}-$SYSTEM-$COMPILER$GCC_VERSION-fairsoft_$FAIRSOFT_VERSION-fairroot_$FAIRROOT_VERSION
 export LABEL=$(echo $LABEL1 | sed -e 's#/#_#g')
 
 # get the number of processors
