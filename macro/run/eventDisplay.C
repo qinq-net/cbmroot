@@ -1,4 +1,4 @@
-void eventDisplay(const char* setup = "sis300_electron")
+void eventDisplay(const char* setup = "sis100_electron")
 {
 
   TString dataDir   = "data/";

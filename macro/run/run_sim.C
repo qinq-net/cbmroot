@@ -14,7 +14,7 @@
 //
 // --------------------------------------------------------------------------
 
-void run_sim(Int_t nEvents = 2, const char* setup = "sis300_electron")
+void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
 {
 
   // ========================================================================
