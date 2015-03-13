@@ -65,7 +65,7 @@ void sis100_hadron_setup()
   caveGeom     = "cave.geo";
   pipeGeom     = "pipe/pipe_v14q.root";
   magnetGeom   = "magnet/magnet_v12b.geo.root";
-  mvdGeom      = "mvd/mvd_v14b.geo.root";
+  mvdGeom      = "mvd/mvd_v15a.geo.root";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
   richGeom     = "";
   muchGeom     = "";
