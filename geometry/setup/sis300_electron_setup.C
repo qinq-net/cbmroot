@@ -2,6 +2,7 @@
 //   comments
 //
 
+// 2015-03-13 - DE - use STS v13y with correct ladder orientation as new default
 // 2015-01-28 - DE - use STS v13x fitting with with PIPE v14n
 // 2015-01-22 - DE - use MVD v14b with PIPE v14n as default
 // 2015-01-19 - DE - use TRD v15a as new default
@@ -56,7 +57,7 @@ void sis300_electron_setup()
   fieldSymType =  3;
 
   // -----  Tags  -----------------------------------------------------------
-  stsTag       = "v13x";
+  stsTag       = "v13y";
   trdTag       = "v15a_3e";
   tofTag       = "v13-5d";
 
