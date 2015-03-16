@@ -6,13 +6,14 @@
 // Clusterizer in TOF
 // Test class for TOF (Point/Digi/Hit)
 //
-// P.-A. Loizeau   30/09/2013
-// Version     30/09/2013 (P.-A. Loizeau)
+// P.-A. Loizeau   13/03/2015
+// Version         13/03/2015 (P.-A. Loizeau)
 //
 // --------------------------------------------------------------------------
 
 
-void run_digi(Int_t nEvents = 2) {
+void run_digi_test(Int_t nEvents = 2, const char* setup = "sis100_electron")
+{
 
   // ========================================================================
   //          Adjust this part according to your requirements
@@ -20,17 +21,25 @@ void run_digi(Int_t nEvents = 2) {
   // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
   Int_t iVerbose = 0;
 
+  // ----- Paths and file names  --------------------------------------------
+  TString inDir   = gSystem->Getenv("VMCWORKDIR");
+
+  TString outDir  = "data/";
+
   // Input file (MC events)
-//  TString inFile = "data/25agev.mc.root";
-  TString inFile = "/buffalo/ploizeau/cbmroot/2013_08_23/25agev_mbias.mc.root";
-//  TString inFile = "/buffalo/ploizeau/cbmroot/pal_2013_08_27/300/25agev_mbias.mc.root";
+  TString inFile = outDir + setup + "_test.mc.root";
   // Parameter file
-//  TString parFile = "data/25agev.params.root";
-  TString parFile = "/buffalo/ploizeau/cbmroot/2013_08_23/25agev_mbias.params.root";
-//  TString parFile = "/buffalo/ploizeau/cbmroot/pal_2013_08_27/300/25agev_mbias.params.root";
+  TString parFile = outDir + setup + "_params.root";
 
   // Output file
-  TString outFile = "digitizerTest.eds.root";
+  TString outFile = outDir + setup + "_digitizerTest.eds.root";
+
+  TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
+  TString setupFunct = setup;
+  setupFunct += "_setup()";
+  
+  gROOT->LoadMacro(setupFile);
+  gInterpreter->ProcessLine(setupFunct);
 
   //  Digitisation files.
   // Add TObjectString containing the different file names to
@@ -41,12 +50,12 @@ void run_digi(Int_t nEvents = 2) {
   TList *parFileList = new TList();
 
   TString workDir = gSystem->Getenv("VMCWORKDIR");
-  TString paramDir = workDir + "/parameters";
+  TString paramDir = workDir + "/parameters/";
 
-  TObjString tofDigiFile =  paramDir + "/tof/tof_v13b.digi.par";
+  TObjString tofDigiFile = paramDir + tofDigi;
   parFileList->Add(&tofDigiFile);
 
-  TObjString tofDigiBdfFile =  "./tof.digibdf.par";
+  TObjString tofDigiBdfFile = paramDir + "tof/tof.digibdf.par";
   parFileList->Add(&tofDigiBdfFile);
 
 
