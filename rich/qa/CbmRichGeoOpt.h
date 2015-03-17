@@ -12,6 +12,8 @@
 
 #include "FairTask.h"
 #include "CbmRichRecGeoPar.h"
+#include <sstream>
+#include <fstream>     
 
 class TVector3;
 class TH1;
@@ -82,28 +84,29 @@ private:
    TClonesArray* fRichRingMatches; 
 
    Int_t fEventNum;
-   Int_t fEventNum2;
+   Int_t PointsFilled;
    Int_t fMinNofHits; // Min number of hits in ring for detector acceptance calculation.
- 
+
+   Int_t nPhotonsNotOnPlane;
+   Int_t nPhotonsNotOnSphere;
+   Int_t nTotalPhorons; 
    //TVector3 NormToXYPlane;
    //TVector3 XYPlane_P0;TVector3 XYPlane_P1;TVector3 XYPlane_P2;
    //double RotAngleX;
    //double RotAngleY;
    
+   //Parameters to be read from a parameters file
    vector<TVector3> PlanePoints;
-   TVector3 PMTPlaneCenter;
-   TVector3 MirrorCenter;
+   TVector3 PMTPlaneCenter; TVector3 ReadPMTPlaneCenter;TVector3 ReadPMTPlaneCenterOrig;
+   TVector3 MirrorCenter; TVector3 ReadMirrorCenter;
+   double RotX; double RotY;
+   TVector3 r1; TVector3 r2; TVector3 n;
+
    /**
     * \brief get MC Histos (P & Pt).
     */
    void FillMcHist();
-
-   /**
-    * \brief get point coordinates.
-    */
-   void FillPointsAtPMT();
-   
-   
+      
    /**
     * \brief Initialize histograms.
     */
@@ -122,22 +125,53 @@ private:
     * \brief Loop over all rings in array and fill ring parameters histograms.
     */
    void RingParameters();
+   
+   /**
+    * \brief get point coordinates.
+    */
+   void FillPointsAtPMT();
+   
    /**
     * \brief calculate distance between mirror center and pmt-point.
     */
    float GetDistanceMirrorCenterToPMTPoint(TVector3 PMTpoint);
    /**
-    * \brief calculate intersection sphere-line.
+    * \ calculate intersection sphere-line.
     */
    float  GetIntersectionPointsLS( TVector3 MirrCenter,  TVector3 G_P1,  TVector3 G_P2, float R);
    
+  /**
+    * \ Check if a given point lies on a given sphare.
+    */
+   bool  CheckPointLiesOnSphere(TVector3 Point);
+   
+  /**
+    * \brief Check if a given point lies on agiven plane.
+    */
+   bool  CheckPointLiesOnPlane(TVector3 Point,TVector3 p0,TVector3 n );
+ /**
+    * \brief Check if a given line intersects a given sphere.
+    */
+   bool  CheckLineIntersectsSphere(TVector3 Point);
+   
+/**
+    * \brief Check if a given line intersects a given plane.
+    */
+   bool  CheckLineIntersectsPlane(TVector3 Point);
+
    /**
-    * \brief Copy constructor.
+    * \get parameters of a plane: x=p0+mu*r1+lambda*r2
+    */
+
+   //void ReadParametersFile();
+
+   /**
+   * \brief Copy constructor.
     */
    CbmRichGeoOpt(const CbmRichGeoOpt&);
    
    
-   /**
+  /**
     * \brief histograms.
     */
    TH1D* H_MomPrim;
@@ -154,8 +188,8 @@ private:
    /* TH1D* H_AlphaMomPointsAtXY; */
    /* TH1D* H_AlphaMomPointsAtPMT; */
    /* TH1D* H_AlphaRefPointsNormOfXY; */
-   TH1D* H_dFocalPoint_I;
-   TH1D* H_dFocalPoint_II;
+   TH1D* H_dFocalPoint_Delta;
+   TH1D* H_dFocalPoint_Rho;
    TH1D* H_Alpha;
    TH1D* H_Alpha_UpLeft;
    TH3D* H_Alpha_XYposAtDet;
@@ -169,7 +203,7 @@ private:
    //////////////////////////////////
    TH1D *H_RingCenterX;TH1D *H_RingCenterY;TH2D *H_RingCenter;
    TH1D *H_Radius; TH1D *H_aAxis; TH1D *H_bAxis; TH1D *H_boa; TH1D *H_dR;
-   TH3D *H_RingCenter_Aaxis;  TH3D *H_RingCenter_Baxis;  TH3D *H_RingCenter_boa;
+   TH3D *H_RingCenter_Aaxis;  TH3D *H_RingCenter_Baxis;  TH3D *H_RingCenter_boa;TH3D *H_RingCenter_dR;
 
    /**
     * \brief Assignment operator.
