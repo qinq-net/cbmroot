@@ -37,7 +37,10 @@ CbmRichGeoOpt::CbmRichGeoOpt()
     fRefPoints(NULL),
     fRichHits(NULL),
     fEventNum(0),
-    fEventNum2(0),
+    PointsFilled(0),
+    nPhotonsNotOnPlane(0),
+    nPhotonsNotOnSphere(0),
+    nTotalPhorons(0),
     fGP(),
     fRichRings(NULL), 
     fRichRingMatches(NULL),
@@ -46,9 +49,11 @@ CbmRichGeoOpt::CbmRichGeoOpt()
 
 {
   fEventNum = 0;
-  fEventNum2 = 0;
+  PointsFilled = 0;
   fMinNofHits = 7;
-
+  nPhotonsNotOnPlane = 0;
+  nPhotonsNotOnSphere = 0;
+  nTotalPhorons = 0; 
 }
 
 CbmRichGeoOpt::~CbmRichGeoOpt()
@@ -88,7 +93,6 @@ InitStatus CbmRichGeoOpt::Init()
   for(int p=0;p<PlanePoints.size();p++){
     PlanePoints[p].SetX(-1000.);PlanePoints[p].SetY(-1000.);PlanePoints[p].SetZ(-1000.);
   }
-
   InitHistograms();
   
   return kSUCCESS;
@@ -97,25 +101,39 @@ InitStatus CbmRichGeoOpt::Init()
 void CbmRichGeoOpt::Exec(Option_t* option)
 {
   fEventNum++;
-  //Fill the coordinates of the three points on the PMT plane 
-  if(fRichPoints->GetEntriesFast()>10){
-    int PointsFilled=0;
+  cout << "#################### CbmRichGeoOpt, event No. " <<  fEventNum << endl;
+  if(PointsFilled==0){
     for(int p=1;p<PlanePoints.size();p++){
-      if( PlanePoints[p].X() == PlanePoints[p-1].X() ){ 
-	FillPointsAtPMT();PointsFilled=0;}else{ PointsFilled=1;}
-    }
-    PMTPlaneCenter.SetX(fGP.fPmtX); PMTPlaneCenter.SetY(fGP.fPmtY); PMTPlaneCenter.SetZ(fGP.fPmtZ);
-    MirrorCenter.SetX(fGP.fMirrorX); PMTPlaneCenter.SetY(fGP.fMirrorY); PMTPlaneCenter.SetZ(fGP.fMirrorZ);
-
-    if(PointsFilled==1){ //Run the analysis only if the points are filled and are different  
-      HitsAndPoints();
-      RingParameters();
-      FillMcHist();
+      if( PlanePoints[p].X() == PlanePoints[p-1].X() ){FillPointsAtPMT();PointsFilled=0;}else{PointsFilled=1;}
     }
   }
+  
+  //cout << "#################### CbmRichGeoOpt, event No. " <<  fEventNum << endl;
+  //Fill the coordinates of the three points on the PMT plane 
+  if(PointsFilled==1 && fEventNum<10){
+    for(int p=0;p<PlanePoints.size();p++){
+      cout<<"Point "<<p<< ": ("<<PlanePoints[p].X()<<" , "<< PlanePoints[p].Y()<<" , "<< PlanePoints[p].Z()<<")"<<endl;
+    }
+  }
+  
+  /////////////////////////////////////////
+  if(PointsFilled==1){
+    
+   if(fEventNum<10){
+     r1=PlanePoints[1]-PlanePoints[0]; 
+     r2=PlanePoints[2]-PlanePoints[0]; 
+     n=r1.Cross(r2);
+     MirrorCenter.SetX(fGP.fMirrorX);MirrorCenter.SetY(fGP.fMirrorY);MirrorCenter.SetZ(fGP.fMirrorZ);
+     cout<<"MirrorCenter=("<<MirrorCenter.X()<<","<<MirrorCenter.Y()<<","<<MirrorCenter.Z()<<")"<<endl;
+     cout<<"r1=("<<r1.X()<<","<<r1.Y()<<","<<r1.Z()<<")"<<endl;
+     cout<<"r2=("<<r2.X()<<","<<r2.Y()<<","<<r2.Z()<<")"<<endl;
+     cout<<"n=("<<n.X()<<","<<n.Y()<<","<<n.Z()<<")"<<endl;
+   }
+    HitsAndPoints();
+    RingParameters();
+    FillMcHist();
+  }
 }
-
-
 
 /////// Get data of hits and points
 void CbmRichGeoOpt::HitsAndPoints(){
@@ -124,38 +142,44 @@ void CbmRichGeoOpt::HitsAndPoints(){
   if(nofPoints==0 || nofRefPoints==0){return;} if(nofPoints>1500){return;} 
   cout<<"nofPoints:  "<<  nofPoints<<endl;
   //loop over points and get momentum of photons --> calculate angle (to be done later)
-
+  
   for (int i = 0; i < nofRefPoints; i++) {
     TVector3 PosAtRefl; TVector3 PosAtDetIn; //TVector3 PosAtDetOut;
     CbmRichPoint* RefPoint = (CbmRichPoint*)fRefPoints->At(i);
     if (RefPoint == NULL) continue;
     int trackId = RefPoint->GetTrackID(); if(trackId==-2) {continue;}
+ 
     RefPoint->Position(PosAtRefl);
     int Zpos=int(10.*PosAtRefl.Z());//2653 or 2655 -->take 2655 which is the entrance point 
-                                                     //of the REFLECTED photon into the sensitive plane   
+    //of the REFLECTED photon into the sensitive plane   
     //cout<<PosAtRefl.Z()<<"    "<<Zpos<<endl;
     if(Zpos==2653){continue;}
+    
     
     CbmRichPoint* point = (CbmRichPoint*) fRichPoints->At(trackId);
     if(NULL == point) continue;
     PosAtDetIn.SetX(point->GetX()); PosAtDetIn.SetY(point->GetY()); PosAtDetIn.SetZ(point->GetZ());
+        
+    bool Checked=CheckPointLiesOnPlane(PosAtDetIn,PlanePoints[0],n);
+        
+    nTotalPhorons++;//nPhotonsNotOnPlane++;
+    if( Checked==0 ){nPhotonsNotOnPlane++; continue; }
     //float DistMCToFocalPoint=GetDistanceMirrorCenterToPMTPoint(point);
     float Delta= GetDistanceMirrorCenterToPMTPoint(PosAtDetIn)-(fGP.fMirrorR/2.);
-    float hypot= GetIntersectionPointsLS(MirrorCenter,  PlanePoints[1],  PlanePoints[2], fGP.fMirrorR/2.);
-    //if(hypot==-1.){cout<<"   ********************+ hypot==-1. :and Delta ="<<Delta<<endl;}
+    float hypot= GetIntersectionPointsLS(MirrorCenter, PosAtRefl, PosAtDetIn,fGP.fMirrorR/2.);
+    if(hypot==-1.){nPhotonsNotOnSphere++; continue;}
     float rho=TMath::Sqrt(hypot*hypot-Delta*Delta);
-    H_dFocalPoint_I->Fill(Delta);
-    H_dFocalPoint_II->Fill(rho);
+
+    H_dFocalPoint_Delta->Fill(Delta);
+    H_dFocalPoint_Rho->Fill(rho);
     /////////// calculate the vectors on teh PMT plane
 
-    TVector3 LineOnPMT1=PlanePoints[1]-PlanePoints[0]; TVector3 LineOnPMT2=PlanePoints[2]-PlanePoints[0];
-    TVector3 NormToPMT=LineOnPMT1.Cross(LineOnPMT2); TVector3 LineSensToPMT=PosAtDetIn-PosAtRefl;
-   
+    TVector3 LineSensToPMT=PosAtDetIn-PosAtRefl;
     /////////// calculate alpha relative to the "tilted" PMT plane !!
-    double Alpha=LineSensToPMT.Angle(NormToPMT);//*TMath::RadToDeg();
+    double Alpha=LineSensToPMT.Angle(n);//*TMath::RadToDeg();
     double AlphaInDeg=Alpha*TMath::RadToDeg();
     if(AlphaInDeg>90.){AlphaInDeg=180.-AlphaInDeg;}
-
+    
     H_PointsIn_XY->Fill(PosAtDetIn.X(),PosAtDetIn.Y());
     H_Alpha->Fill(AlphaInDeg);
     if(PosAtDetIn.X()<0. && PosAtDetIn.Y()>0) {
@@ -166,7 +190,6 @@ void CbmRichGeoOpt::HitsAndPoints(){
   
   //***********************************************************  
   Int_t nofHits = fRichHits->GetEntriesFast();
-  //cout<<"++++++++++++++++++++++++ nofHits = "<<nofHits<<endl;
   for (Int_t iH = 0; iH < nofHits; iH++){
     CbmRichHit *hit = (CbmRichHit*) fRichHits->At(iH); if ( hit == NULL ) continue;
     Int_t pointInd =  hit->GetRefId(); if (pointInd < 0) continue;
@@ -177,13 +200,13 @@ void CbmRichGeoOpt::HitsAndPoints(){
     TVector3 inPos(point->GetX(), point->GetY(), point->GetZ());
     TVector3 outPos;
     CbmRichHitProducer::TiltPoint(&inPos, &outPos, fGP.fPmtPhi, fGP.fPmtTheta, fGP.fPmtZOrig);
-    //cout<<hit->GetX()<<"     "<<hit->GetY()<<endl;
     H_Hits_XY->Fill(hit->GetX(), hit->GetY());
     H_DiffXhit->Fill(hit->GetX() - outPos.X());
     H_DiffYhit->Fill(hit->GetY() - outPos.Y());
     
   }
 }
+
 ///////////////////////////////
 void CbmRichGeoOpt::RingParameters()
 {
@@ -199,7 +222,7 @@ void CbmRichGeoOpt::RingParameters()
     Double_t momentum = mcTrack->GetP();
     Double_t pt = mcTrack->GetPt();
     Double_t rapidity = mcTrack->GetRapidity();
-    //cout<<"pdg = "<<pdg<<", momentum = "<<momentum<<endl;
+    
     if (pdg != 11 || motherId != -1) continue; // only primary electrons
         
     if (ring->GetNofHits() >= fMinNofHits){
@@ -219,7 +242,7 @@ void CbmRichGeoOpt::RingParameters()
       
     float CentX=ring->GetCenterX();
     float CentY=ring->GetCenterY();
-    //cout<<CentY<<endl;
+    
     H_RingCenter->Fill(CentX,CentY); 
     H_RingCenter_Aaxis->Fill(CentX,CentY,aA);
     H_RingCenter_Baxis->Fill(CentX,CentY,bA); 
@@ -234,6 +257,7 @@ void CbmRichGeoOpt::RingParameters()
       double yH=hit->GetY();
       double dR=aA-TMath::Sqrt( (CentX-xH)*(CentX-xH) + (CentY-yH)*(CentY-yH) );
       H_dR->Fill(dR);
+      H_RingCenter_dR->Fill(CentX,CentY,dR);
     } 
     
    //////////////////////////////////    
@@ -270,7 +294,7 @@ void CbmRichGeoOpt::InitHistograms()
   
   
   H_Hits_XY = new TH2D("H_Hits_XY", "H_Hits_XY;X [cm];Y [cm];Counter", 150, -100., 50.,341, 0.,340.);//100, 240.,340.);//nBinsX, xMin, xMax, nBinsY, yMin, yMax);
-  H_PointsIn_XY = new TH2D("H_PointsIn_XY", "H_PointsIn_XY;X [cm];Y [cm];Counter", 1101, -100., 10.,341, 0.,340.);//1001, 140.,240.);
+  H_PointsIn_XY = new TH2D("H_PointsIn_XY", "H_PointsIn_XY;X [cm];Y [cm];Counter", 2001, -100., 100.,341, 0.,340.);//1001, 140.,240.);
   H_PointsOut_XY = new TH2D("H_PointsOut_XY", "H_PointsOut_XY;X [cm];Y [cm];Counter", 1101, -100., 10.,341, 0.,340.);//nBinsX, xMin, xMax, nBinsY, yMin, yMax);
   
   H_NofPhotonsPerHit = new TH1D("H_NofPhotonsPerHit", "H_NofPhotonsPerHit;Number of photons per hit;Yield", 10, -0.5, 9.5);
@@ -281,8 +305,8 @@ void CbmRichGeoOpt::InitHistograms()
   H_Alpha_UpLeft= new TH1D("H_Alpha_UpLeft","H_Alpha_UpLeft;#alpha_{photon-PMT} [deg];Yield",180,0.,90.);
   H_Alpha_XYposAtDet= new TH3D("H_Alpha_XYposAtDet","H_Alpha_XYposAtDet; X [cm]; Y [cm];#alpha_{photon-PMT} [deg];Yield",270, -90, 0,  450, 50,200, 180,0.,90.);
   //////////////////////////////////////
-  H_dFocalPoint_I= new TH1D("H_dFocalPoint_I","H_dFocalPoint_I;#Delta_{f} [cm];Yield",100,100.,200.);
-  H_dFocalPoint_II= new TH1D("H_dFocalPoint_II","H_dFocalPoint_II;#rho_{f} [cm];Yield",100,100.,200.);
+  H_dFocalPoint_Delta= new TH1D("H_dFocalPoint_Delta","H_dFocalPoint_Delta;#Delta_{f} [mm];Yield",200,-20.,20.);
+  H_dFocalPoint_Rho= new TH1D("H_dFocalPoint_Rho","H_dFocalPoint_Rho;#rho_{f} [mm];Yield",150,50.,200.);
 
 
   //////////////////////////////////////
@@ -304,11 +328,12 @@ void CbmRichGeoOpt::InitHistograms()
   
   H_RingCenter_Aaxis= new TH3D("H_RingCenter_Aaxis","H_RingCenter_Aaxis",301, -100, 0,301, 200, 300, 401, 2.,10.);
   H_RingCenter_Baxis= new TH3D("H_RingCenter_Baxis","H_RingCenter_Baxis",301, -100, 0,301, 200, 300, 401, 2.,10.);
-  H_RingCenter_boa= new TH3D("H_RingCenter_boa","H_RingCenter_boa",301, -100, 0,301, 200, 300, 251, 0.5,1.);
+  H_RingCenter_boa= new TH3D("H_RingCenter_boa","H_RingCenter_boa",301, -100, 0,301, 200, 300, 25, 0.5,1.);
+  H_RingCenter_dR= new TH3D("H_RingCenter_dR","H_RingCenter_dR",301, -100, 0,301, 200, 300, 251, -0.5,0.5);
   
   
 }
-
+//////////////////////////////////////////////////////////
 void CbmRichGeoOpt::WriteHistograms(){
  
   H_MomPrim->Write(); 
@@ -327,8 +352,8 @@ void CbmRichGeoOpt::WriteHistograms(){
   H_acc_mom_el->Write();
   H_acc_pty_el->Write();
 
- H_dFocalPoint_I->Write(); 
-    H_dFocalPoint_II->Write();
+ H_dFocalPoint_Delta->Write(); 
+    H_dFocalPoint_Rho->Write();
  H_NofHitsAll->Write();
 
   H_Radius->Write();
@@ -339,36 +364,43 @@ void CbmRichGeoOpt::WriteHistograms(){
   H_RingCenter_Aaxis->Write();
   H_RingCenter_Baxis->Write();
   H_RingCenter_boa->Write();
+  H_RingCenter_dR->Write();
   H_dR->Write();
 }
-
+//////////////////////////////////////////////////////////////
+///////////////////////////////
 void CbmRichGeoOpt::FillPointsAtPMT()
 {
+  
   for(int p=0;p<PlanePoints.size();p++){
     if(PlanePoints[p].X() != -1000.){
       if(p==0){continue;}
       else{
 	int PointFilled=1;
 	for(int p2=p-1;p2>-1;p2--){
-	  if(TMath::Abs( PlanePoints[p2].X() - PlanePoints[p].X() ) < 0.1){PointFilled=0;}
+	  if(TMath::Abs( PlanePoints[p2].X() - PlanePoints[p].X() ) < 1.0){PointFilled=0;}
 	}
 	if(PointFilled==1){continue;}
       }
     }
     
-    fEventNum2++;
+    //fEventNum++;
     Int_t nofPoints = fRichPoints->GetEntriesFast();
     
     for(Int_t ip = 0; ip < nofPoints-10; ip+=10){
       CbmRichPoint* point = (CbmRichPoint*) fRichPoints->At(ip);
       if(NULL == point) continue;
       int trackId = point->GetTrackID(); if(trackId==-2) continue;
-      
+      if(point->GetX()>=0 || point->GetY()<=0){continue;}
+
       PlanePoints[p].SetX(point->GetX());PlanePoints[p].SetY(point->GetY());PlanePoints[p].SetZ(point->GetZ());
       if(PlanePoints[p].X() !=-1000.){break;}
     }
   }
 }
+
+//////////////////////////////////////////////////////
+
 
 //////////////////////////////////////////////////////
 float  CbmRichGeoOpt::GetIntersectionPointsLS( TVector3 MirrCenter,  TVector3 G_P1,  TVector3 G_P2, float R){
@@ -379,8 +411,10 @@ float  CbmRichGeoOpt::GetIntersectionPointsLS( TVector3 MirrCenter,  TVector3 G_
 
   float t1=-1.*P/2.-TMath::Sqrt( (P/2.)*(P/2.) -q);
   float t2=-1.*P/2.+TMath::Sqrt( (P/2.)*(P/2.) -q);
+  //cout<<"t1="<<t1<<",  t2="<<t2<<endl;
   //Check if nan --> no intersection
   if(! (t1==1. || t1 >1.) ){return -1.;}
+  //cout<<"t1="<<t1<<",  t2="<<t2<<endl;
 
   TVector3 IntersectP1;  TVector3 IntersectP2;
   IntersectP1.SetX( G_P1.X()+t1*(G_P2.X()-G_P1.X()) );
@@ -396,9 +430,9 @@ float  CbmRichGeoOpt::GetIntersectionPointsLS( TVector3 MirrCenter,  TVector3 G_
   TVector3 Line2=IntersectP2-G_P1;
   float Length2=TMath::Sqrt(Line2.X()*Line2.X() + Line2.Y()*Line2.Y() + Line2.Z()*Line2.Z());
   
+  //return Length1<Length2 ?  Length1 :  Length2;
   if(Length1<Length2){return Length1;}else{return Length2;}
-  
-}
+ }
 //////////////////////////////////////////////////////
 float  CbmRichGeoOpt::GetDistanceMirrorCenterToPMTPoint(TVector3 PMTpoint)
 {
@@ -409,9 +443,38 @@ float  CbmRichGeoOpt::GetDistanceMirrorCenterToPMTPoint(TVector3 PMTpoint)
 
 }
 //////////////////////////////////////////////////////
+bool  CbmRichGeoOpt::CheckPointLiesOnPlane(TVector3 Point,TVector3 p0,TVector3 norm )
+{
+  double TolaratedDiff=0.001;
+  double ProdP0WithNorm=p0.Dot(norm);// cout<<"ProdP0WithNorm = "<<ProdP0WithNorm;
+  double ProdPWithNorm=Point.Dot(norm); //cout<<"  ProdPWithNorm = "<<ProdPWithNorm<<endl;
+  return TMath::Abs(ProdP0WithNorm - ProdPWithNorm) <= ( (TMath::Abs(ProdP0WithNorm) < TMath::Abs(ProdPWithNorm) ? TMath::Abs(ProdPWithNorm) : TMath::Abs(ProdP0WithNorm)) * TolaratedDiff);
+}
+
+//////////////////////////////////////////////////////
+bool  CbmRichGeoOpt::CheckPointLiesOnSphere(TVector3 Point)
+{
+
+
+}
+
+//////////////////////////////////////////////////////
+bool  CbmRichGeoOpt::CheckLineIntersectsPlane(TVector3 Point)
+{
+
+
+}
+//////////////////////////////////////////////////////
+bool  CbmRichGeoOpt::CheckLineIntersectsSphere(TVector3 Point)
+{
+
+
+}
+//////////////////////////////////////////////////////
 void CbmRichGeoOpt::Finish()
 {
-  
+  cout<<nPhotonsNotOnPlane<<" out of "<<nTotalPhorons<<" are not on the plane("<<float(nPhotonsNotOnPlane)/float(nTotalPhorons)<<")"<<endl;
+  cout<<nPhotonsNotOnSphere<<" out of "<<nTotalPhorons<<" are not on the ideal sphere("<<float(nPhotonsNotOnSphere)/float(nTotalPhorons)<<")"<<endl;
   WriteHistograms();
 }
 
