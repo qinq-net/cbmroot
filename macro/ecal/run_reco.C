@@ -409,9 +409,6 @@ void run_reco(Int_t nEvents = 1) {
   // =========================================================================
 
   // -----  Parameter database   --------------------------------------------
-  //  TString stsDigi = gSystem->Getenv("VMCWORKDIR");
-  // stsDigi += "/parameters/sts/";
-  //  stsDigi += stsDigiFile;
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
   FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
