@@ -11,7 +11,7 @@
 
 
 void mvd_CbmUniGen_reco_cluster(TString input = "auau.25gev", TString system = "centr", Int_t  nEvents = 100,
-              Int_t  iVerbose = 0, const char* setup = "sis300_electron")
+              Int_t  iVerbose = 0, const char* setup = "sis300_electron", bool PileUp = false, bool littrack = false)
 {
 
   // ========================================================================
@@ -22,8 +22,21 @@ void mvd_CbmUniGen_reco_cluster(TString input = "auau.25gev", TString system = "
   TString inFile = "data/mvd.mc.unigen." + input + "." + system + ".root";
   TString deltaFile = "data/mvd.mc.delta.root";
   TString bgFile = "data/mvd.mc.unigen." + input + "." + system + ".root";
+
   // Output file
-  TString outFile = "data/mvd.reco.unigen." + input + "." + system + ".root";
+  TString outSystem = "data/mvd.reco.unigen." + input + "." + system;
+if(!PileUp)
+{
+if(littrack)
+  TString outFile = outSystem + ".littrack.root";
+else 
+  TString outFile = outSystem + ".l1.root";
+}
+else if(littrack)
+  TString outFile = outSystem + ".PileUp.littrack.root";
+else 
+  TString outFile = outSystem + ".PileUp.l1.root";
+
 
   // Parameter file
   TString parFile = "data/paramsunigen.";
@@ -59,6 +72,8 @@ void mvd_CbmUniGen_reco_cluster(TString input = "auau.25gev", TString system = "
   cout << "macro/run/run_reco.C using: " << tofDigi << endl;
 
 
+TString globalTrackingType = "nn";
+
   // In general, the following parts need not be touched
   // ========================================================================
 
@@ -72,21 +87,37 @@ void mvd_CbmUniGen_reco_cluster(TString input = "auau.25gev", TString system = "
 
   run->SetInputFile(inFile);
   run->SetOutputFile(outFile);
+  run->SetGenerateRunInfo(kTRUE);
   // ------------------------------------------------------------------------
  
   // -----   MVD Digitiser   ----------------------------------------------
   CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose);
+
+if(PileUp)
+	{
+ 	 Int_t pileUpInMVD=3; 
+  	mvdDigitise->SetBgFileName(bgFile);
+  	mvdDigitise->SetBgBufferSize(200); 
+  	mvdDigitise->SetPileUp(pileUpInMVD-1);
+  	//--- Delta electrons -------
+ 	 mvdDigitise->SetDeltaName(deltaFile);
+ 	 mvdDigitise->SetDeltaBufferSize(pileUpInMVD*200); 
+  	mvdDigitise->SetDeltaEvents(pileUpInMVD*100);
+	}
+  mvdDigitise->ShowDebugHistograms();
   run->AddTask(mvdDigitise);
   // ----------------------------------------------------------------------
 
   // -----   MVD Clusterfinder   --------------------------------------------
   CbmMvdClusterfinder* mvdCluster = new CbmMvdClusterfinder("MVD Clusterfinder", 0, iVerbose); 
+  //mvdCluster->ShowDebugHistos();
   run->AddTask(mvdCluster);
   // ----------------------------------------------------------------------
 
   // -----   MVD Hit Finder   ---------------------------------------------
   CbmMvdHitfinder* mvdHitfinder = new CbmMvdHitfinder("MVD Hit Finder", 0, iVerbose);
   mvdHitfinder->UseClusterfinder(kTRUE);
+  //mvdHitfinder->ShowDebugHistos();
   run->AddTask(mvdHitfinder);
   // ----------------------------------------------------------------------
 
@@ -104,7 +135,7 @@ void mvd_CbmUniGen_reco_cluster(TString input = "auau.25gev", TString system = "
   CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
   stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution,
   		                   deadTime, noise);
-  run->AddTask(stsDigi);
+ /* run->AddTask(stsDigi);
   // -------------------------------------------------------------------------
 
   // -----   STS Cluster Finder   --------------------------------------------
@@ -124,16 +155,42 @@ void mvd_CbmUniGen_reco_cluster(TString input = "auau.25gev", TString system = "
   CbmL1* l1 = new CbmL1();
   run->AddTask(l1);
 
-  Bool_t useMvdInL1Tracking = kTRUE;
+  Bool_t useMvdInL1Tracking = !littrack;
   CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
   FairTask* stsFindTracks = new CbmStsFindTracks(iVerbose, stsTrackFinder, useMvdInL1Tracking);
   run->AddTask(stsFindTracks);
   // ------------------------------------------------------------------------
- 
+ if(littrack)
+{
+  CbmLitFindMvdTracks* mvdFinder = new CbmLitFindMvdTracks();
+  run->AddTask(mvdFinder);
+
+  // ------ Global track reconstruction -------------------------------------
+  CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
+  //CbmLitFindGlobalTracksParallel* finder = new CbmLitFindGlobalTracksParallel();
+  // Tracking method to be used
+  // "branch" - branching tracking
+  // "nn" - nearest neighbor tracking
+  // "nn_parallel" - nearest neighbor parallel tracking
+  finder->SetName("FindGlobalTracks");
+  finder->SetTrackingType(std::string(globalTrackingType));
+  // Hit-to-track merger method to be used
+  // "nearest_hit" - assigns nearest hit to the track
+  // "all_hits" - assigns all hits in the searching area to track
+  finder->SetMergerType("nearest_hit");
+  run->AddTask(finder);
+}
   //------   Match Monte Carlo Data to Reco Data    -------------------------
   CbmMatchRecoToMC* matcher = new CbmMatchRecoToMC();
   run->AddTask(matcher);
   // ------------------------------------------------------------------------
+
+  // -----   Primary vertex finding   --------------------------------------
+  CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
+  CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
+  findVertex->SetName("FindPrimaryVertex");
+  run->AddTask(findVertex);
+  // -----------------------------------------------------------------------*/
 
   // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();

@@ -37,7 +37,7 @@ void mvd_CbmUniGen_sim_cluster(const char* input = "auau.25gev", const char* sys
   TString caveGeom = "cave.geo";
 
   // Beam pipe geometry
-  TString pipeGeom = "pipe/pipe_v14y.geo.root";
+  TString pipeGeom = "pipe/pipe_v14l.root";
 
   // Magnet geometry and field map
   TString magnetGeom  = "magnet/magnet_v12b.geo.root";
@@ -47,7 +47,7 @@ void mvd_CbmUniGen_sim_cluster(const char* input = "auau.25gev", const char* sys
   Int_t fieldSymType  = 3;
 
   // MVD geometry
-  TString mvdGeom = "mvd/mvd_v14a.geo.root";
+  TString mvdGeom = "mvd/mvd_v15a.geo.root";
 
  // StS geometry
   TString stsGeom = "sts/sts_v13d.geo.root";
