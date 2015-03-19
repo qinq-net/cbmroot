@@ -341,7 +341,8 @@ void CbmRichTrbRecoQa::DrawEvent(
 	   cCircle->Draw();
 
 	   CbmRichRingLight rE = fitRingEllipse[iR];
-	   TEllipse* ellipse = new TEllipse(rE.GetCenterX(), rE.GetCenterY(), rE.GetAaxis(), rE.GetBaxis());
+	   Double_t ePhi = rE.GetPhi() * 180 / TMath::Pi();
+	   TEllipse* ellipse = new TEllipse(rE.GetCenterX(), rE.GetCenterY(), rE.GetAaxis(), rE.GetBaxis(), 0., 360., ePhi);
 	   ellipse->SetFillStyle(0);
 	   ellipse->SetLineWidth(3);
 	   ellipse->SetLineColor(kBlue);
