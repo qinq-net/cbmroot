@@ -412,7 +412,6 @@ InitStatus CbmL1::Init()
           if(y>Ymax) Ymax = y;
         }
       }
-//      cout << "Station  "<<  ist << ",  Xmax  " << Xmax<<",  Ymax" << Ymax<<endl;
     }
 
     double dx = 1.; // step for the field approximation
@@ -490,7 +489,6 @@ InitStatus CbmL1::Init()
 
   
   algo->fRadThick.resize(algo->NStations);
-
     // Read STS Radiation Thickness table
   if (fMatBudgetFileName != "") {
     TFile* oldfile = gFile;
@@ -511,12 +509,13 @@ InitStatus CbmL1::Init()
       const float RMax = hStaRadLen->GetXaxis()->GetXmax(); // should be same as min
       algo->fRadThick[iSta].SetBins(NBins,RMax); // TODO
       algo->fRadThick[iSta].table.resize(NBins);
+
       for( int iB = 0; iB < NBins; iB++ ) {
         algo->fRadThick[iSta].table[iB].resize(NBins);
         for( int iB2 = 0; iB2 < NBins; iB2++ ) {
-          algo->fRadThick[iSta].table[iB][iB2] = 0.01 * hStaRadLen->GetBinContent(iB,iB2); //0.0034;//0.003209;//
-//          if ( algo->fRadThick[iSta].table[iB][iB2] < algo->vStations[iSta].materialInfo.RadThick[0] && iSta >=4){
-//            algo->fRadThick[iSta].table[iB][iB2] = algo->vStations[iSta].materialInfo.RadThick[0];}
+          algo->fRadThick[iSta].table[iB][iB2] = 0.01 * hStaRadLen->GetBinContent(iB,iB2);
+          if(algo->fRadThick[iSta].table[iB][iB2] < algo->vStations[iSta].materialInfo.RadThick[0]){
+        	  algo->fRadThick[iSta].table[iB][iB2] = algo->vStations[iSta].materialInfo.RadThick[0];}
         }
       }
     }
