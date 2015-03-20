@@ -168,7 +168,7 @@ InitStatus CbmKF::Init()
      //   tube.F = 1.;
         tube.z  = mvdStationPar->GetZPosition(ist);
         tube.dz = mvdStationPar->GetThickness(ist);
-        tube.RadLength = mvdStationPar->GetRadLength(ist);
+        tube.RadLength = 100 * tube.dz / mvdStationPar->GetRadLength(ist);
         tube.r  = std::min( mvdStationPar->GetBeamHeight(ist), mvdStationPar->GetBeamWidth(ist));
         tube.R  = std::max( mvdStationPar->GetHeight(ist), mvdStationPar->GetWidth(ist));
         tube.rr = tube.r * tube.r;
