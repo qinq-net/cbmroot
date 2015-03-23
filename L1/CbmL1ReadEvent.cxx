@@ -823,9 +823,13 @@ bool CbmL1::ReadMCPoint( CbmL1MCPoint *MC, int iPoint, bool MVD )
   if ( !MCTrack ) return 1;
   MC->pdg  = MCTrack->GetPdgCode();
   MC->mother_ID = MCTrack->GetMotherId();
-  if ( abs(MC->pdg) >= 10000 ) return 1;
-  MC->q = TDatabasePDG::Instance()->GetParticle(MC->pdg)->Charge()/3.0;
-  MC->mass = TDatabasePDG::Instance()->GetParticle(MC->pdg)->Mass();
+
+  TParticlePDG* particlePDG = TDatabasePDG::Instance()->GetParticle(MC->pdg);
+  if(particlePDG)
+  {
+    MC->q = particlePDG->Charge()/3.0;
+    MC->mass = particlePDG->Mass();
+  }
 
   return 0;
 }

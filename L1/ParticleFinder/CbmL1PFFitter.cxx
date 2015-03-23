@@ -213,7 +213,8 @@ void CbmL1PFFitter::Fit(vector<CbmStsTrack> &Tracks, vector<int>& pidHypo)
       
       int pid = pidHypo[itrack+i];
       if(pid == -1) pid = 211;
-      mass[i] = TDatabasePDG::Instance()->GetParticle(pid)->Mass();
+//       mass[i] = TDatabasePDG::Instance()->GetParticle(pid)->Mass();
+      mass[i] = KFParticleDatabase::Instance()->GetMass(pid);
     }
     mass2 = mass*mass;
 
@@ -313,10 +314,10 @@ void CbmL1PFFitter::Fit(vector<CbmStsTrack> &Tracks, vector<int>& pidHypo)
       L1Extrapolate( T, z[i], qp0, fld,&w1 );
       if(i == NMvdStations) L1AddPipeMaterial( T, qp0, wIn );
   #ifdef USE_RL_TABLE
-      L1AddMaterial( T, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, wIn );
+      L1AddMaterial( T, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, wIn, mass2 );
       EnergyLossCorrection( T, mass2, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, -1 );
   #else
-      L1AddMaterial( T, sta[i].materialInfo, qp0, wIn );
+      L1AddMaterial( T, sta[i].materialInfo, qp0, wIn, mass2 );
   #endif
       L1Filter( T, sta[i].frontInfo, u[i], w1 );
       L1Filter( T, sta[i].backInfo,  v[i], w1 );
@@ -388,10 +389,10 @@ void CbmL1PFFitter::Fit(vector<CbmStsTrack> &Tracks, vector<int>& pidHypo)
       L1Extrapolate( T, z[i], qp0, fld, &w1 );        
       if(i == NMvdStations - 1) L1AddPipeMaterial( T, qp0, wIn );
   #ifdef USE_RL_TABLE
-      L1AddMaterial( T, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, wIn );
+      L1AddMaterial( T, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, wIn, mass2 );
       EnergyLossCorrection( T, mass2, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, 1 );
   #else
-      L1AddMaterial( T, sta[i].materialInfo, qp0, wIn );
+      L1AddMaterial( T, sta[i].materialInfo, qp0, wIn, mass2 );
   #endif
       L1Filter( T, sta[i].frontInfo, u[i], w1 );
       L1Filter( T, sta[i].backInfo,  v[i], w1 );
