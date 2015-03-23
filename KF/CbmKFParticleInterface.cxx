@@ -58,7 +58,7 @@ void CbmKFParticleInterface::SetKFParticleFromStsTrack(CbmStsTrack *track, KFPar
       q = 1;
     if(qp<0.f)
       q=-1;
-    if( TMath::Abs(pdg[iTr]) == 1000020030 || TMath::Abs(pdg[iTr]) == 1000020040 ) q *= 2;
+    if( TMath::Abs(pdg) == 1000020030 || TMath::Abs(pdg) == 1000020040 ) q *= 2;
     
     float c2 = 1.f/(1.f + a*a + b*b);
     float pq = 1.f/qp * TMath::Abs(q);
