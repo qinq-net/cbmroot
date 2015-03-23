@@ -82,6 +82,7 @@ void CbmRichTrbRecoQa::InitHist()
 	fHM->Create1<TH1D>("fhBaxisEllipse", "fhBaxisEllipse;B axis [cm];Yield", 200, 3.5, 5.5);
 	fHM->Create1<TH1D>("fhAaxisEllipse", "fhAaxisEllipse;A axis [cm];Yield", 200, 3.5, 5.5);
 	fHM->Create1<TH1D>("fhChi2Ellipse", "fhChi2Ellipse;#Chi^{2};Yield", 200, 0.0, 0.5);
+	fHM->Create1<TH1D>("fhPhiEllipse", "fhPhiEllipse;Ellipse rotation angle [rad];Yield", 100, -1.7, 1.7);
 	fHM->Create2<TH2D>("fhXcYcCircle", "fhXcYcCircle;X [cm];Y [cm];Yield", 200, 0., 21., 100, 0., 21.);
 	fHM->Create1<TH1D>("fhRadiusCircle", "fhRadiusCircle;Radius [cm];Yield", 200, 4.0, 5.0);
 	fHM->Create1<TH1D>("fhChi2Circle", "fhChi2Circle;#Chi^{2};Yield", 200, 0.0, 0.5);
@@ -140,6 +141,7 @@ void CbmRichTrbRecoQa::FillHistEllipse(
    Double_t xcEllipse = ring->GetCenterX();
    Double_t ycEllipse = ring->GetCenterY();
    Int_t nofHitsRing = ring->GetNofHits();
+   Double_t phi = ring->GetPhi();
 
    fHM->H1("fhBoverAEllipse")->Fill(axisB/axisA);
    fHM->H2("fhXcYcEllipse")->Fill(xcEllipse, ycEllipse);
@@ -147,6 +149,7 @@ void CbmRichTrbRecoQa::FillHistEllipse(
    fHM->H1("fhBaxisEllipse")->Fill(axisB);
    fHM->H1("fhAaxisEllipse")->Fill(axisA);
    fHM->H1("fhChi2Ellipse")->Fill(ring->GetChi2()/nofHitsRing);
+   fHM->H1("fhPhiEllipse")->Fill(phi);
 }
 
 void CbmRichTrbRecoQa::FillHistCircle(
@@ -205,6 +208,8 @@ void CbmRichTrbRecoQa::DrawHist()
 		DrawH1(fHM->H1("fhChi2Ellipse"));
 		c->cd(5);
 		DrawH2(fHM->H2("fhXcYcEllipse"));
+		c->cd(6);
+		DrawH1(fHM->H1("fhPhiEllipse"));
 		Cbm::SaveCanvasAsImage(c, string(fOutputDir.Data()), "png");
 	}
 
