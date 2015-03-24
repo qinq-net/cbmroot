@@ -66,8 +66,8 @@ public:
 		fStCutPP = 1.5;
 		fTtCutAngle = 0.75;
 		fTtCutPP = 4.0;
-		fRtCutAngle = 1.25;
-		fRtCutPP = 2.0;
+		fRtCutAngle = 1.0;
+		fRtCutPP = 2.5;
 		fMvd1CutP = 1.2;
 		fMvd1CutD = 0.4;
 		fMvd2CutP = 1.5;

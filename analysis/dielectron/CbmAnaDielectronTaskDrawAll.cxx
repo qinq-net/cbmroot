@@ -72,6 +72,7 @@ void CbmAnaDielectronTaskDrawAll::DrawHistosFromFile(
    fh_sum_s_minv.resize(CbmLmvmHist::fNofAnaSteps);
    fh_mean_eta_minv_pt.resize(CbmLmvmHist::fNofAnaSteps);
    fh_mean_pi0_minv_pt.resize(CbmLmvmHist::fNofAnaSteps);
+   fh_mean_sbg_vs_minv.resize(CbmLmvmHist::fNofAnaSteps);
 
    FillMeanHist();
    FillSumSignalsHist();
@@ -83,6 +84,7 @@ void CbmAnaDielectronTaskDrawAll::DrawHistosFromFile(
    DrawMinvAll();
    DrawMinvPtAll();
    DrawSBgVsMinv();
+   SaveHist();
    SaveCanvasToImage();
 }
 
@@ -177,6 +179,16 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
    sRho->Rebin(nRebin);
    sPhi->Rebin(nRebin);
 
+   sbg->Scale(1./nRebin);
+   coctail->Scale(1./nRebin);
+   bg->Scale(1./nRebin);
+   sPi0->Scale(1./nRebin);
+   sEta->Scale(1./nRebin);
+   sOmegaDalitz->Scale(1./nRebin);
+   sOmega->Scale(1./nRebin);
+   sRho->Scale(1./nRebin);
+   sPhi->Scale(1./nRebin);
+
    sbg->GetXaxis()->SetRangeUser(0, 2.);
    bg->GetXaxis()->SetRangeUser(0, 2.);
    coctail->GetXaxis()->SetRangeUser(0, 2.);
@@ -266,24 +278,24 @@ void CbmAnaDielectronTaskDrawAll::DrawSBgVsMinv()
 {
 	TH1D* bg = (TH1D*)fh_mean_bg_minv[kTtCut]->Clone();
 	TH1D* coctail = GetCoctailMinv(kTtCut);
-	TH1D* sbgVsMinvTtCut = new TH1D(("sbgVsMinv_" + CbmLmvmHist::fAnaSteps[kTtCut]).c_str(), ("sbgVsMinv_"+CbmLmvmHist::fAnaSteps[kTtCut]+";M_{ee} [GeV/c^{2}];Cocktail/Background").c_str(),
+	fh_mean_sbg_vs_minv[kTtCut] = new TH1D(("fh_sbg_vs_minv_" + CbmLmvmHist::fAnaSteps[kTtCut]).c_str(), ("fh_sbg_vs_minv_"+CbmLmvmHist::fAnaSteps[kTtCut]+";M_{ee} [GeV/c^{2}];Cocktail/Background").c_str(),
 		 bg->GetNbinsX(), bg->GetXaxis()->GetXmin(), bg->GetXaxis()->GetXmax());
-	sbgVsMinvTtCut->Divide(coctail, bg, 1., 1., "B");
-	sbgVsMinvTtCut->Rebin(20);
-	sbgVsMinvTtCut->Scale(1./20.);
-	sbgVsMinvTtCut->GetXaxis()->SetRangeUser(0, 2.);
+	fh_mean_sbg_vs_minv[kTtCut]->Divide(coctail, bg, 1., 1., "B");
+	fh_mean_sbg_vs_minv[kTtCut]->Rebin(20);
+	fh_mean_sbg_vs_minv[kTtCut]->Scale(1./20.);
+	fh_mean_sbg_vs_minv[kTtCut]->GetXaxis()->SetRangeUser(0, 2.);
 
 	bg = (TH1D*)fh_mean_bg_minv[kPtCut]->Clone();
 	coctail = GetCoctailMinv(kPtCut);
-	TH1D* sbgVsMinvPtCut = new TH1D(("sbgVsMinv_" + CbmLmvmHist::fAnaSteps[kPtCut]).c_str(), ("sbgVsMinv_"+CbmLmvmHist::fAnaSteps[kPtCut]+";M_{ee} [GeV/c^{2}];Cocktail/Background").c_str(),
+	fh_mean_sbg_vs_minv[kPtCut] = new TH1D(("fh_sbg_vs_minv_" + CbmLmvmHist::fAnaSteps[kPtCut]).c_str(), ("fh_sbg_vs_minv_"+CbmLmvmHist::fAnaSteps[kPtCut]+";M_{ee} [GeV/c^{2}];Cocktail/Background").c_str(),
 		 bg->GetNbinsX(), bg->GetXaxis()->GetXmin(), bg->GetXaxis()->GetXmax());
-	sbgVsMinvPtCut->Divide(coctail, bg, 1., 1., "B");
-	sbgVsMinvPtCut->Rebin(20);
-	sbgVsMinvPtCut->Scale(1./20.);
-	sbgVsMinvPtCut->GetXaxis()->SetRangeUser(0, 2.);
+	fh_mean_sbg_vs_minv[kPtCut]->Divide(coctail, bg, 1., 1., "B");
+	fh_mean_sbg_vs_minv[kPtCut]->Rebin(20);
+	fh_mean_sbg_vs_minv[kPtCut]->Scale(1./20.);
+	fh_mean_sbg_vs_minv[kPtCut]->GetXaxis()->SetRangeUser(0, 2.);
 
 	TCanvas* c = CreateCanvas("lmvm_sbg_vs_minv", "lmvm_sbg_vs_minv", 800, 800);
-	DrawH1(list_of(sbgVsMinvTtCut)(sbgVsMinvPtCut), list_of("Without Pt cut")("With Pt cut"), kLinear, kLog, true, 0.6, 0.85, 0.99, 0.99);
+	DrawH1(list_of(fh_mean_sbg_vs_minv[kTtCut])(fh_mean_sbg_vs_minv[kPtCut]), list_of("Without Pt cut")("With Pt cut"), kLinear, kLog, true, 0.6, 0.85, 0.99, 0.99);
 	gPad->SetLogy(true);
 }
 
@@ -338,17 +350,23 @@ void CbmAnaDielectronTaskDrawAll::FillMeanHist()
       fh_mean_pi0_minv_pt[step]->Scale(1./(double) fNofSignals);
    }
 
-   if (fOutputDir != ""){
-      gSystem->mkdir(fOutputDir.c_str(), true);
-      TFile* f = TFile::Open( string(fOutputDir + "/mean_hist.root").c_str(), "RECREATE" );
-      for (int i = 0; i < CbmLmvmHist::fNofAnaSteps; i++){
-         fh_mean_bg_minv[i]->Write();
-         fh_mean_eta_minv[i]->Write();
-         fh_mean_pi0_minv[i]->Write();
-      }
-      f->Close();
-   }
 
+}
+
+void CbmAnaDielectronTaskDrawAll::SaveHist()
+{
+	if (fOutputDir != ""){
+		gSystem->mkdir(fOutputDir.c_str(), true);
+		TFile* f = TFile::Open( string(fOutputDir + "/draw_all_hist.root").c_str(), "RECREATE" );
+		for (int i = 0; i < CbmLmvmHist::fNofAnaSteps; i++){
+			fh_mean_bg_minv[i]->Write();
+			fh_mean_eta_minv[i]->Write();
+			fh_mean_pi0_minv[i]->Write();
+		}
+		fh_mean_sbg_vs_minv[kTtCut]->Write();
+		fh_mean_sbg_vs_minv[kPtCut]->Write();
+		f->Close();
+	}
 }
 
 void CbmAnaDielectronTaskDrawAll::FillSumSignalsHist()
