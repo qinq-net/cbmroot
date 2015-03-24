@@ -113,6 +113,16 @@ private:
          int signalType,
          const string& name);
 
+   /**
+    * \brief Create and return cotail vs. minv
+    */
+   TH1D* GetCoctailMinv(
+   		CbmLmvmAnalysisSteps step);
+
+   /**
+    * \brief Draw S/Bg vs minv.
+    */
+   void DrawSBgVsMinv();
 
    /**
     * \brief Draw invariant mass histograms.

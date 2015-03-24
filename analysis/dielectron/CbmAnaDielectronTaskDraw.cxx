@@ -449,18 +449,20 @@ void CbmAnaDielectronTaskDraw::DrawMotherPdg()
 
 void CbmAnaDielectronTaskDraw::DrawPmtXY()
 {
-	TCanvas *c = CreateCanvas("lmvm_pmt_xy", "lmvm_pmt_xy", 1800, 500);
-	c->Divide(3, 1);
+	TCanvas *c = CreateCanvas("lmvm_pmt_xy", "lmvm_pmt_xy", 500, 1800);
+	c->Divide(1, 3);
 	c->cd(1);
 	DrawH2(H2("fh_signal_pmtXY"));
+	gPad->SetLogz(true);
 	DrawTextOnHist(CbmLmvmHist::fSourceTypesLatex[kSignal], 0.50, 0.78, 0.70, 0.9);
 	c->cd(2);
 	DrawH2(H2("fh_pi0_pmtXY"));
+	gPad->SetLogz(true);
 	DrawTextOnHist(CbmLmvmHist::fSourceTypesLatex[kPi0], 0.50, 0.78, 0.70, 0.9);
 	c->cd(3);
 	DrawH2(H2("fh_gamma_pmtXY"));
+	gPad->SetLogz(true);
 	DrawTextOnHist(CbmLmvmHist::fSourceTypesLatex[kGamma], 0.50, 0.78, 0.70, 0.9);
-
 }
 
 void CbmAnaDielectronTaskDraw::Draw1DSourceTypes(

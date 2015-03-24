@@ -82,6 +82,7 @@ void CbmAnaDielectronTaskDrawAll::DrawHistosFromFile(
    DrawSBgSignals();
    DrawMinvAll();
    DrawMinvPtAll();
+   DrawSBgVsMinv();
    SaveCanvasToImage();
 }
 
@@ -110,6 +111,26 @@ TH2D* CbmAnaDielectronTaskDrawAll::H2(
    return (TH2D*) fHM[signalType]->H1(name);
 }
 
+TH1D* CbmAnaDielectronTaskDrawAll::GetCoctailMinv(
+		CbmLmvmAnalysisSteps step)
+{
+	TH1D* sRho = (TH1D*) H1(kRho0, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+	TH1D* sOmega = (TH1D*) H1(kOmega, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+	TH1D* sPhi = (TH1D*) H1(kPhi, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+	TH1D* sEta = fh_mean_eta_minv[step];
+	TH1D* sPi0 = fh_mean_pi0_minv[step];
+	TH1D* sOmegaDalitz = (TH1D*) H1(kOmegaD, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
+
+	TH1D* coctail = (TH1D*)sRho->Clone();
+	coctail->Add(sOmega);
+	coctail->Add(sPhi);
+	coctail->Add(sEta);
+	coctail->Add(sPi0);
+	coctail->Add(sOmegaDalitz);
+
+	return coctail;
+}
+
 void CbmAnaDielectronTaskDrawAll::DrawMinvAll()
 {
     TCanvas *cMc = CreateCanvas("minv_all_mc", "minv_all_mc", 800, 800);
@@ -128,17 +149,12 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
    TH1D* sRho = (TH1D*) H1(kRho0, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
    TH1D* sOmega = (TH1D*) H1(kOmega, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
    TH1D* sPhi = (TH1D*) H1(kPhi, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
-   TH1D* bg = fh_mean_bg_minv[step];
-   TH1D* sEta = fh_mean_eta_minv[step];
-   TH1D* sPi0 = fh_mean_pi0_minv[step];
+   TH1D* bg = (TH1D*)fh_mean_bg_minv[step]->Clone();
+   TH1D* sEta = (TH1D*)fh_mean_eta_minv[step]->Clone();
+   TH1D* sPi0 = (TH1D*)fh_mean_pi0_minv[step]->Clone();
    TH1D* sOmegaDalitz = (TH1D*) H1(kOmegaD, "fh_signal_minv_" + CbmLmvmHist::fAnaSteps[step])->Clone();
 
-   TH1D* coctail = (TH1D*)sRho->Clone();
-   coctail->Add(sOmega);
-   coctail->Add(sPhi);
-   coctail->Add(sEta);
-   coctail->Add(sPi0);
-   coctail->Add(sOmegaDalitz);
+   TH1D* coctail = GetCoctailMinv(step);
 
    TH1D* sbg = (TH1D*)bg->Clone();
    sbg->Add(sRho);
@@ -160,6 +176,16 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
    sOmega->Rebin(nRebin);
    sRho->Rebin(nRebin);
    sPhi->Rebin(nRebin);
+
+   sbg->GetXaxis()->SetRangeUser(0, 2.);
+   bg->GetXaxis()->SetRangeUser(0, 2.);
+   coctail->GetXaxis()->SetRangeUser(0, 2.);
+   sPi0->GetXaxis()->SetRangeUser(0, 2.);
+   sEta->GetXaxis()->SetRangeUser(0, 2.);
+   sOmegaDalitz->GetXaxis()->SetRangeUser(0, 2.);
+   sOmega->GetXaxis()->SetRangeUser(0, 2.);
+   sRho->GetXaxis()->SetRangeUser(0, 2.);
+   sPhi->GetXaxis()->SetRangeUser(0, 2.);
 
    if (step == kMc) {
 	  DrawH1(list_of(coctail)(sPi0)(sEta)(sOmegaDalitz)(sOmega)(sRho)(sPhi),
@@ -234,23 +260,37 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
    coctail->SetLineWidth(3);
 
    gPad->SetLogy(true);
+}
 
-   // signal-to-background ration vs. minv
-   TH1D* sbgVsMinv = new TH1D(("sbgVsMinv_" + CbmLmvmHist::fAnaSteps[step]).c_str(),
-         ("sbgVsMinv_"+CbmLmvmHist::fAnaSteps[step]+";M_{ee} [GeV/c^{2}];Cocktail/Background").c_str(),
-         bg->GetNbinsX(), bg->GetXaxis()->GetXmin(), bg->GetXaxis()->GetXmax());
-   sbgVsMinv->Divide(coctail, bg, 1., 1., "B");
-   TCanvas* c = CreateCanvas(("lmvm_sbg_vs_minv_"+CbmLmvmHist::fAnaSteps[step]).c_str(),
-         ("lmvm_sbg_vs_minv_"+CbmLmvmHist::fAnaSteps[step]).c_str(), 800, 800);
-   DrawH1(sbgVsMinv);
-   gPad->SetLogy(true);
+void CbmAnaDielectronTaskDrawAll::DrawSBgVsMinv()
+{
+	TH1D* bg = (TH1D*)fh_mean_bg_minv[kTtCut]->Clone();
+	TH1D* coctail = GetCoctailMinv(kTtCut);
+	TH1D* sbgVsMinvTtCut = new TH1D(("sbgVsMinv_" + CbmLmvmHist::fAnaSteps[kTtCut]).c_str(), ("sbgVsMinv_"+CbmLmvmHist::fAnaSteps[kTtCut]+";M_{ee} [GeV/c^{2}];Cocktail/Background").c_str(),
+		 bg->GetNbinsX(), bg->GetXaxis()->GetXmin(), bg->GetXaxis()->GetXmax());
+	sbgVsMinvTtCut->Divide(coctail, bg, 1., 1., "B");
+	sbgVsMinvTtCut->Rebin(20);
+	sbgVsMinvTtCut->Scale(1./20.);
+	sbgVsMinvTtCut->GetXaxis()->SetRangeUser(0, 2.);
+
+	bg = (TH1D*)fh_mean_bg_minv[kPtCut]->Clone();
+	coctail = GetCoctailMinv(kPtCut);
+	TH1D* sbgVsMinvPtCut = new TH1D(("sbgVsMinv_" + CbmLmvmHist::fAnaSteps[kPtCut]).c_str(), ("sbgVsMinv_"+CbmLmvmHist::fAnaSteps[kPtCut]+";M_{ee} [GeV/c^{2}];Cocktail/Background").c_str(),
+		 bg->GetNbinsX(), bg->GetXaxis()->GetXmin(), bg->GetXaxis()->GetXmax());
+	sbgVsMinvPtCut->Divide(coctail, bg, 1., 1., "B");
+	sbgVsMinvPtCut->Rebin(20);
+	sbgVsMinvPtCut->Scale(1./20.);
+	sbgVsMinvPtCut->GetXaxis()->SetRangeUser(0, 2.);
+
+	TCanvas* c = CreateCanvas("lmvm_sbg_vs_minv", "lmvm_sbg_vs_minv", 800, 800);
+	DrawH1(list_of(sbgVsMinvTtCut)(sbgVsMinvPtCut), list_of("Without Pt cut")("With Pt cut"), kLinear, kLog, true, 0.6, 0.85, 0.99, 0.99);
+	gPad->SetLogy(true);
 }
 
 void CbmAnaDielectronTaskDrawAll::DrawMinvPtAll()
 {
    TCanvas *cptcut = CreateCanvas("minv_pt_ptcut", "minv_pt_ptcut", 800, 800);
    DrawMinvPt(kPtCut);
-
 }
 
 void CbmAnaDielectronTaskDrawAll::DrawMinvPt(
