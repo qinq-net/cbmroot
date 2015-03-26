@@ -6,7 +6,7 @@ void CreateGDMLfileNew(float PMTrotX=5, float PMTrotY=5, int RotMir=-10){
 
   float DefaultRotX=27.952765 + 5.; float DefaultRotY=13.477 +5.; int RICH_mirror_Y_shift=805;
   float pmt_pos_x_addend=0., pmt_pos_y_addend=0., pmt_pos_z_addend=0.;
-  float pmt_width=1200.; float pmt_height=700;
+  float pmt_width=1300.; float pmt_height=750;
 
   if(RotMir==1){
     DefaultRotX=6.418315 + 5.; DefaultRotY=13.477 + 5.; RICH_mirror_Y_shift=835;
@@ -32,7 +32,7 @@ void CreateGDMLfileNew(float PMTrotX=5, float PMTrotY=5, int RotMir=-10){
   
   std::ifstream infile1 (InFileUpper);
   std::ifstream infile2 (InFileLower);
-  sprintf(GeoFileName,"/data/cbmroot/geometry/rich/GeoOpt/RotPMT/NewGeo/rich_geo_%s_RotPMT_%s_%s.gdml",RotMirText,ShiftXTxt,ShiftYTxt);
+  sprintf(GeoFileName,"/hera/cbm/users/tariq/cbmroot/geometry/rich/GeoOpt/RotPMT/NewGeo/rich_geo_%s_RotPMT_%s_%s.gdml",RotMirText,ShiftXTxt,ShiftYTxt);
  
   cout<<GeoFileName<<endl; //continue;
   //return;
