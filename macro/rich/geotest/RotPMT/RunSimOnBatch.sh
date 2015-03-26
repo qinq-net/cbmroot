@@ -48,14 +48,14 @@ mkdir -p ${outdir}/log
 username=$(whoami)
 workdir=/tmp/$username/$JOB_ID.$SGE_TASK_ID
 mkdir -p $workdir
-#cd $workdir
+cd $workdir
 
-root -b -l -q "Run_Sim_GeoOpt_Batch.C()"
-root -b -l -q "Run_Reco_GeoOpt_Batch.C()"
+#root -b -l -q "Run_Sim_GeoOpt_Batch.C()"
+#root -b -l -q "Run_Reco_GeoOpt_Batch.C()"
 
-#root -b -l -q "${macro_dir}/Run_Sim_GeoOpt_Batch.C()"
-#root -b -l -q "${macro_dir}/Run_Rec_GeoOpt_Batch.C()"
+root -b -l -q "${macro_dir}/Run_Sim_GeoOpt_Batch.C()"
+root -b -l -q "${macro_dir}/Run_Rec_GeoOpt_Batch.C()"
 
-#cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log
+cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log
 
 export SCRIPT=no
