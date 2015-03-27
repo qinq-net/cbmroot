@@ -23,7 +23,9 @@ void Import_GDML_Export_ROOT(float PMTrotX=5, float PMTrotY=5, int RotMir=-10)
   TString FileName=ss.str();
 
   TString InFile=FileName+".gdml";
+  cout<<" ########## "<<InFile<<endl;
   TString OutFile=FileName+".root";
+  cout<<" ########## "<<OutFile<<endl;
   TString vmcDir = TString(gSystem->Getenv("VMCWORKDIR"));
   
   TGeoManager *gdml = new TGeoManager("gdml", "FAIRGeom");
