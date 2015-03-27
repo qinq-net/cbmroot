@@ -811,7 +811,7 @@ CbmEcalReco::CbmEcalReco()
     fMaxIterations(0),
     fFixClusterEnergy(0),
     fFCN(NULL),
-//    fFitter(NULL),
+    fFitter(NULL),
     fMinMaxE(0.),
     fUsePosLib(0),
     fPreE(0.),

@@ -43,7 +43,18 @@ using std::endl;
 using std::ifstream;
 
 // -----   Default constructor   -------------------------------------------
-eventPlane::eventPlane() : FairTask("EventPlane",1), fHeader(NULL), fMCEventData(NULL), flistPSDdigit(NULL), flistPSDhit(NULL), fCbmPsdEvent(NULL), flistSTSMCtrack(NULL), flistSTSRECOtrack(NULL), flistSTStrackMATCH(NULL), flistPV(NULL), fCbmStsEvent(NULL)
+eventPlane::eventPlane() 
+  : FairTask("EventPlane",1), 
+    fHeader(NULL), 
+fMCEventData(NULL), 
+flistPSDdigit(NULL), 
+flistPSDhit(NULL), 
+fCbmPsdEvent(NULL), 
+flistSTSMCtrack(NULL), 
+flistSTSRECOtrack(NULL), 
+flistSTStrackMATCH(NULL), 
+flistPV(NULL), 
+fCbmStsEvent(NULL)
 {
     fPi = TMath::Pi();
 

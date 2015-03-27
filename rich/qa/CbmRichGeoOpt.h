@@ -97,10 +97,16 @@ private:
    
    //Parameters to be read from a parameters file
    vector<TVector3> PlanePoints;
-   TVector3 PMTPlaneCenter; TVector3 ReadPMTPlaneCenter;TVector3 ReadPMTPlaneCenterOrig;
-   TVector3 MirrorCenter; TVector3 ReadMirrorCenter;
-   double RotX; double RotY;
-   TVector3 r1; TVector3 r2; TVector3 n;
+   TVector3 PMTPlaneCenter; 
+   TVector3 ReadPMTPlaneCenter;
+   TVector3 ReadPMTPlaneCenterOrig;
+   TVector3 MirrorCenter; 
+   TVector3 ReadMirrorCenter;
+   double RotX; 
+   double RotY;
+   TVector3 r1; 
+   TVector3 r2; 
+   TVector3 n;
 
    /**
     * \brief get MC Histos (P & Pt).

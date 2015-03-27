@@ -36,24 +36,63 @@ CbmRichGeoOpt::CbmRichGeoOpt()
     fMcTracks(NULL),
     fRefPoints(NULL),
     fRichHits(NULL),
-    fEventNum(0),
-    PointsFilled(0),
-    nPhotonsNotOnPlane(0),
-    nPhotonsNotOnSphere(0),
-    nTotalPhorons(0),
     fGP(),
     fRichRings(NULL), 
     fRichRingMatches(NULL),
-    fMinNofHits(0)
-
-
+    fEventNum(0),
+    PointsFilled(0),
+    fMinNofHits(7),
+    nPhotonsNotOnPlane(0),
+    nPhotonsNotOnSphere(0),
+    nTotalPhorons(0),
+    PlanePoints(),
+    PMTPlaneCenter(),
+    ReadPMTPlaneCenter(),
+    ReadPMTPlaneCenterOrig(),
+    MirrorCenter(),
+    ReadMirrorCenter(),
+    RotX(0.),
+    RotY(0.),
+    r1(),
+    r2(),
+    n(),
+  H_MomPrim(NULL),
+  H_PtPrim(NULL),
+  H_Hits_XY(NULL),
+  H_PointsIn_XY(NULL),
+  H_PointsOut_XY(NULL),
+  H_NofPhotonsPerHit(NULL),
+  H_DiffXhit(NULL),
+  H_DiffYhit(NULL),
+  H_dFocalPoint_Delta(NULL),
+  H_dFocalPoint_Rho(NULL),
+  H_Alpha(NULL),
+  H_Alpha_UpLeft(NULL),
+  H_Alpha_XYposAtDet(NULL),
+  H_acc_mom_el(NULL),
+  H_acc_pty_el(NULL),
+  H_NofHitsAll(NULL),
+  H_RingCenterX(NULL),
+  H_RingCenterY(NULL),
+  H_RingCenter(NULL),
+  H_Radius(NULL), 
+  H_aAxis(NULL), 
+  H_bAxis(NULL), 
+  H_boa(NULL), 
+  H_dR(NULL),
+  H_RingCenter_Aaxis(NULL),  
+  H_RingCenter_Baxis(NULL),  
+  H_RingCenter_boa(NULL),
+  H_RingCenter_dR(NULL)
 {
+  /*
   fEventNum = 0;
   PointsFilled = 0;
   fMinNofHits = 7;
   nPhotonsNotOnPlane = 0;
   nPhotonsNotOnSphere = 0;
   nTotalPhorons = 0; 
+  */
 }
 
 CbmRichGeoOpt::~CbmRichGeoOpt()
