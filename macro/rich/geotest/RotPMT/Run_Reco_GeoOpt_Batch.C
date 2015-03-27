@@ -1,23 +1,28 @@
-void Run_Reco_GeoOpt_Batch()
+void Run_Reco_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2, int RotMir=-10)
 {
  
   TTree::SetMaxTreeSize(90000000000);
   gRandom->SetSeed(10);
 
-  TString script = TString(gSystem->Getenv("SCRIPT"));
-  if (script != "yes"){cout<<" script must be yes ... it is set to ("<< script <<")  , going to exit"<<endl; exit();}
-  
-  int nEvents=TString(gSystem->Getenv("N_EVS")).Atof();
-  int RotMir=TString(gSystem->Getenv("ROTMIR")).Atof();
-  float PMTrotX=TString(gSystem->Getenv("PMT_ROTX")).Atof();
-  float PMTrotY=TString(gSystem->Getenv("PMT_ROTY")).Atof();
-  int GeoCase=TString(gSystem->Getenv("GEO_CASE")).Atof();
-  
-  int PtNotP=TString(gSystem->Getenv("PT_NOT_P")).Atof();
-  float MomMin=TString(gSystem->Getenv("MOM_MIN")).Atof();
-  float MomMax=TString(gSystem->Getenv("MOM_MAX")).Atof();
+  int GeoCase=2;
+  int PtNotP=1;  float MomMin=0.; float MomMax=4.;
 
-   
+  TString script = TString(gSystem->Getenv("SCRIPT"));
+  if (script == "yes"){
+    cout<<" ----------------- running with script --------------------"<<endl;
+    nEvents=TString(gSystem->Getenv("N_EVS")).Atof();
+    RotMir=TString(gSystem->Getenv("ROTMIR")).Atof();
+    PMTrotX=TString(gSystem->Getenv("PMT_ROTX")).Atof();
+    PMTrotY=TString(gSystem->Getenv("PMT_ROTY")).Atof();
+    
+    GeoCase=TString(gSystem->Getenv("GEO_CASE")).Atof();
+    
+    PtNotP=TString(gSystem->Getenv("PT_NOT_P")).Atof();
+    MomMin=TString(gSystem->Getenv("MOM_MIN")).Atof();
+    MomMax=TString(gSystem->Getenv("MOM_MAX")).Atof();
+
+  }  
+
   TString RotMirText=GetMirText(RotMir);
   TString PMTRotText=GetPMTRotText(PMTrotX, PMTrotY);
   TString outDir=GetOutDir(GeoCase);//="/data/GeoOpt/RotPMT/NewGeo/";
@@ -129,7 +134,8 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  return "/hera/cbm/users/tariq/GeoOptRootFiles/RotPMT/";
+  return "/data/GeoOpt/RotPMT/";
+  //return "/hera/cbm/users/tariq/GeoOptRootFiles/RotPMT/";
   // if(GeoCase<=0){return "/data/GeoOpt/RotPMT/OlderGeo/";}
   // if(GeoCase==1){return "/data/GeoOpt/RotPMT/OldGeo/";}
   // if(GeoCase==2){return "/data/GeoOpt/RotPMT/NewGeo/";}

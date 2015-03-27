@@ -31,16 +31,6 @@ source ${cbmroot_config_path}
 # This line is needed, otherwise root will crash
 export DISPLAY=localhost:0.0
 
-#Set PIPE geometry
-    echo "****************************************"
-if [ ${GeoCase} -eq "-2" ] || [ ${GeoCase} -eq "0" ] ; then
-    export PIPE_GEOM=pipe/pipe_standard.geo
-    echo "old pipe GeoCase = "${GeoCase}  
-else
-    export PIPE_GEOM=pipe/pipe_v14h.root
-    echo "new pipe GeoCase = "${GeoCase}  
-fi
-
 #create needed directories
 mkdir -p ${outdir}/log
 

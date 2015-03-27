@@ -1,18 +1,24 @@
-void Run_Sim_GeoOpt_Batch()
+void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2, int RotMir=-10)
 {
 
+  int GeoCase=2;
+  int PtNotP=1;  float MomMin=0.; float MomMax=4.;
+
   TString script = TString(gSystem->Getenv("SCRIPT"));
-  if (script != "yes"){cout<<" script must be yes ... it is set to ("<< script <<")  , going to exit"<<endl; exit();}
-  
-  int nEvents=TString(gSystem->Getenv("N_EVS")).Atof();
-  int RotMir=TString(gSystem->Getenv("ROTMIR")).Atof();
-  float PMTrotX=TString(gSystem->Getenv("PMT_ROTX")).Atof();
-  float PMTrotY=TString(gSystem->Getenv("PMT_ROTY")).Atof();
-  int GeoCase=TString(gSystem->Getenv("GEO_CASE")).Atof();
-  
-  int PtNotP=TString(gSystem->Getenv("PT_NOT_P")).Atof();
-  float MomMin=TString(gSystem->Getenv("MOM_MIN")).Atof();
-  float MomMax=TString(gSystem->Getenv("MOM_MAX")).Atof();
+  if (script == "yes"){
+    cout<<" ----------------- running with script --------------------"<<endl;
+    nEvents=TString(gSystem->Getenv("N_EVS")).Atof();
+    RotMir=TString(gSystem->Getenv("ROTMIR")).Atof();
+    PMTrotX=TString(gSystem->Getenv("PMT_ROTX")).Atof();
+    PMTrotY=TString(gSystem->Getenv("PMT_ROTY")).Atof();
+    
+    GeoCase=TString(gSystem->Getenv("GEO_CASE")).Atof();
+    
+    PtNotP=TString(gSystem->Getenv("PT_NOT_P")).Atof();
+    MomMin=TString(gSystem->Getenv("MOM_MIN")).Atof();
+    MomMax=TString(gSystem->Getenv("MOM_MAX")).Atof();
+
+  }  
   cout<<RotMir<<", "<<PMTrotX<<", "<<PMTrotY<<", "<<GeoCase<<endl;
   
   TTree::SetMaxTreeSize(90000000000);
@@ -20,6 +26,7 @@ void Run_Sim_GeoOpt_Batch()
   TString RotMirText=GetMirText(RotMir);
   TString PMTRotText=GetPMTRotText(PMTrotX, PMTrotY);
   TString richGeom=GetRICH_GeoFile( RotMirText, PMTRotText, GeoCase);
+  TString pipeGeom=GetPipe_GeoFile( GeoCase);
 
   cout<<"RotMirText = "<<RotMirText<<endl;
   cout<<"PMTRotText = "<<PMTRotText<<endl;
@@ -37,8 +44,6 @@ void Run_Sim_GeoOpt_Batch()
   cout<<"++++++++++++++++++++++++++++++++++++++++++++"<<endl; 
   //return;
   TString caveGeom = "cave.geo";
-  TString pipeGeom = =TString(gSystem->Getenv("PIPE_GEOM"));
-
   TString magnetGeom = "magnet/magnet_v12b.geo.root";
   TString stsGeom = "";
   TString fieldMap = "field_v12a";
@@ -105,8 +110,8 @@ void Run_Sim_GeoOpt_Batch()
   float StartPhi=90.1, EndPhi=180.;
   float StartTheta=2.5, EndTheta=25.;
   FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 1);
-  if(PtNotP==1){boxGen1->SetPtRange(MomMin,MomMax); }
-  else{boxGen1->SetPRange(MomMin,MomMax); }
+  if(PtNotP==1){cout<<" +++++++++++++++++++++++++++++++++++++++++++++++++++++++ taking pt: from "<<MomMin<<"  to  "<<MomMax<<" ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl; boxGen1->SetPtRange(MomMin,MomMax); }
+  else{cout<<" +++++++++++++++++++++++++++++++++++++++++++++++++++++++ taking p: from "<<MomMin<<"  to  "<<MomMax<<" ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;  boxGen1->SetPRange(MomMin,MomMax); }
   // boxGen1->SetPRange(0.,10.);
   //boxGen1->SetPtRange(0.,4.);
   boxGen1->SetPhiRange(StartPhi,EndPhi);//0.,360.);
@@ -186,7 +191,9 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  return "/hera/cbm/users/tariq/GeoOptRootFiles/RotPMT/";
+  return "/data/GeoOpt/RotPMT/";
+
+  //return "/hera/cbm/users/tariq/GeoOptRootFiles/RotPMT/";
   // if(GeoCase<=0){return "/data/GeoOpt/RotPMT/OlderGeo/";}
   // if(GeoCase==1){return "/data/GeoOpt/RotPMT/OldGeo/";}
   // if(GeoCase==2){return "/data/GeoOpt/RotPMT/NewGeo/";}
@@ -219,7 +226,6 @@ TString  GetPMTRotText(float PMTrotX, float PMTrotY){
 }
 
 ////////////////////////////////////////////////////////
-
 TString GetRICH_GeoFile( char *RotMirText, TString  PMTRotText, int GeoCase){
   //GeoCase=-2 ==> old geometry with rich_v08a.geo (RICH starts at 1600, Mirror tilt -1)
   //GeoCase=-1 ==> old geometry with rich_v14a.gdml (RICH starts at 1800, Mirror tilt -1)
@@ -242,6 +248,11 @@ TString GetRICH_GeoFile( char *RotMirText, TString  PMTRotText, int GeoCase){
   ss<<Dir<<Dir2<<"rich_geo_"<<RotMirText<<"_"<<PMTRotText<<Endung;
   
   return ss.str();
+}
+////////////////////////////////////////////////////////
+TString GetPipe_GeoFile(int GeoCase){
+  if(GeoCase == -2 || GeoCase == 0){return "pipe/pipe_standard.geo";}
+  else{return "pipe/pipe_v14h.root";}
 }
 
 /*
