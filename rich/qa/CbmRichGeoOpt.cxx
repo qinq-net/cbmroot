@@ -144,7 +144,7 @@ void CbmRichGeoOpt::HitsAndPoints(){
   //loop over points and get momentum of photons --> calculate angle (to be done later)
   
   for (int i = 0; i < nofRefPoints; i++) {
-    TVector3 PosAtRefl; TVector3 PosAtDetIn; //TVector3 PosAtDetOut;
+    TVector3 PosAtRefl; TVector3 PosAtDetIn; TVector3 PosAtDetOut;
     CbmRichPoint* RefPoint = (CbmRichPoint*)fRefPoints->At(i);
     if (RefPoint == NULL) continue;
     int trackId = RefPoint->GetTrackID(); if(trackId==-2) {continue;}
@@ -181,6 +181,10 @@ void CbmRichGeoOpt::HitsAndPoints(){
     if(AlphaInDeg>90.){AlphaInDeg=180.-AlphaInDeg;}
     
     H_PointsIn_XY->Fill(PosAtDetIn.X(),PosAtDetIn.Y());
+    //PosAtDetOut
+    CbmRichHitProducer::TiltPoint(&PosAtDetIn, &PosAtDetOut, fGP.fPmtPhi, fGP.fPmtTheta, fGP.fPmtZOrig);
+    H_PointsOut_XY->Fill(PosAtDetOut.X(),PosAtDetOut.Y());
+
     H_Alpha->Fill(AlphaInDeg);
     if(PosAtDetIn.X()<0. && PosAtDetIn.Y()>0) {
       H_Alpha_UpLeft->Fill(AlphaInDeg );
