@@ -10,7 +10,7 @@ ForEach(__setup IN  LISTS  setup)
   Set(testname global_sim_${__setup})
 
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/littrack/commit_tests/run_test.sh ${__setup} sim)
-  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "420")
+  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   
   Set(_dep ${testname})
