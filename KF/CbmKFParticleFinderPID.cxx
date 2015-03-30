@@ -68,18 +68,24 @@ InitStatus CbmKFParticleFinderPID::Init()
       return kERROR;
     }
     
-    fTrdTrackArray = (TClonesArray*) ioman->GetObject(fTrdBranchName);
-    if(fTrdTrackArray==0)
+    if(fTrdPIDMode > 0)
     {
-      Error("CbmKFParticleFinderPID::Init","TRD track-array not found!");
-      return kERROR;
+      fTrdTrackArray = (TClonesArray*) ioman->GetObject(fTrdBranchName);
+      if(fTrdTrackArray==0)
+      {
+        Error("CbmKFParticleFinderPID::Init","TRD track-array not found!");
+        return kERROR;
+      }
     }
     
-    fRichRingArray = (TClonesArray*) ioman->GetObject(fRichBranchName);
-    if(fRichRingArray == 0)
-    {
-      Error("CbmKFParticleFinderPID::Init","Rich ring array not found!");
-      return kERROR;
+    if(fRichPIDMode>0)
+    {  
+      fRichRingArray = (TClonesArray*) ioman->GetObject(fRichBranchName);
+      if(fRichRingArray == 0)
+      {
+        Error("CbmKFParticleFinderPID::Init","Rich ring array not found!");
+        return kERROR;
+      }
     }
   }
   
