@@ -107,6 +107,8 @@ private:
    TVector3 r1; 
    TVector3 r2; 
    TVector3 n;
+   double PMTPlaneX; double PMTPlaneY;
+   double PMTPlaneXatThird; double PMTPlaneYatThird;
 
    /**
     * \brief get MC Histos (P & Pt).
@@ -166,10 +168,16 @@ private:
    bool  CheckLineIntersectsPlane(TVector3 Point);
 
    /**
-    * \get parameters of a plane: x=p0+mu*r1+lambda*r2
+    * \get the x-y coordinate of the center of illuminated area of PMT plane
     */
 
-   //void ReadParametersFile();
+   void GetPlaneCenter(float RotMir, float RotX, float RotY);
+
+   /**
+    * \get rotation angles of pmt plane around x- and y-axis
+    */
+
+   void GetPMTRotAngels();
 
    /**
    * \brief Copy constructor.
@@ -197,8 +205,23 @@ private:
    TH1D* H_dFocalPoint_Delta;
    TH1D* H_dFocalPoint_Rho;
    TH1D* H_Alpha;
+
    TH1D* H_Alpha_UpLeft;
+   TH1D* H_Alpha_UpLeft_Q1;
+   TH1D* H_Alpha_UpLeft_Q2;
+   TH1D* H_Alpha_UpLeft_Q3;
+   TH1D* H_Alpha_UpLeft_Q4;
+   TH1D* H_Alpha_UpLeft_LeftPart;
+   TH1D* H_Alpha_UpLeft_RightPart;
+
    TH3D* H_Alpha_XYposAtDet;
+   TH3D* H_Alpha_XYposAtDet_Q1;
+   TH3D* H_Alpha_XYposAtDet_Q2;
+   TH3D* H_Alpha_XYposAtDet_Q3;
+   TH3D* H_Alpha_XYposAtDet_Q4;
+   TH3D* H_Alpha_XYposAtDet_LeftPart;
+   TH3D* H_Alpha_XYposAtDet_RightPart;
+
 
    TH1D* H_acc_mom_el;
    TH2D* H_acc_pty_el;
@@ -208,8 +231,42 @@ private:
 
    //////////////////////////////////
    TH1D *H_RingCenterX;TH1D *H_RingCenterY;TH2D *H_RingCenter;
-   TH1D *H_Radius; TH1D *H_aAxis; TH1D *H_bAxis; TH1D *H_boa; TH1D *H_dR;
-   TH3D *H_RingCenter_Aaxis;  TH3D *H_RingCenter_Baxis;  TH3D *H_RingCenter_boa;TH3D *H_RingCenter_dR;
+   TH1D *H_Radius; TH1D *H_aAxis; TH1D *H_bAxis;
+   
+   TH1D *H_boa; 
+   TH1D *H_boa_Q1; 
+   TH1D *H_boa_Q2; 
+   TH1D *H_boa_Q3; 
+   TH1D *H_boa_Q4; 
+   TH1D *H_boa_LeftPart; 
+   TH1D *H_boa_RightPart;
+
+
+   TH1D *H_dR;
+   TH1D *H_dR_Q1; 
+   TH1D *H_dR_Q2; 
+   TH1D *H_dR_Q3; 
+   TH1D *H_dR_Q4; 
+   TH1D *H_dR_LeftPart; 
+   TH1D *H_dR_RightPart;
+
+   TH3D *H_RingCenter_Aaxis;  TH3D *H_RingCenter_Baxis;
+
+   TH3D *H_RingCenter_boa;
+   TH3D *H_RingCenter_boa_Q1;
+   TH3D *H_RingCenter_boa_Q2;
+   TH3D *H_RingCenter_boa_Q3;
+   TH3D *H_RingCenter_boa_Q4;
+   TH3D *H_RingCenter_boa_LeftPart;
+   TH3D *H_RingCenter_boa_RightPart;
+
+   TH3D *H_RingCenter_dR;
+   TH3D *H_RingCenter_dR_Q1;
+   TH3D *H_RingCenter_dR_Q2;
+   TH3D *H_RingCenter_dR_Q3;
+   TH3D *H_RingCenter_dR_Q4;
+   TH3D *H_RingCenter_dR_LeftPart;
+   TH3D *H_RingCenter_dR_RightPart;
 
    /**
     * \brief Assignment operator.
