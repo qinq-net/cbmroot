@@ -185,7 +185,8 @@ void CbmRichGeoOpt::HitsAndPoints(){
   if(nofPoints==0 || nofRefPoints==0){return;} if(nofPoints>1500){return;} 
   cout<<"nofPoints:  "<<  nofPoints<<endl;
   //loop over points and get momentum of photons --> calculate angle (to be done later)
-  
+  H_NofPhotonsPerEv->Fill(nofRefPoints); 
+
   for (int i = 0; i < nofRefPoints; i++) {
     TVector3 PosAtRefl; TVector3 PosAtDetIn; TVector3 PosAtDetOut;
     CbmRichPoint* RefPoint = (CbmRichPoint*)fRefPoints->At(i);
@@ -237,8 +238,8 @@ void CbmRichGeoOpt::HitsAndPoints(){
       if(PosAtDetIn.X() <= PMTPlaneX && PosAtDetIn.Y() <= PMTPlaneY){H_Alpha_UpLeft_Q3->Fill(AlphaInDeg ); H_Alpha_XYposAtDet_Q3->Fill(PosAtDetIn.X(),PosAtDetIn.Y(),AlphaInDeg);}
       if(PosAtDetIn.X() > PMTPlaneX && PosAtDetIn.Y() <= PMTPlaneY){H_Alpha_UpLeft_Q4->Fill(AlphaInDeg ); H_Alpha_XYposAtDet_Q4->Fill(PosAtDetIn.X(),PosAtDetIn.Y(),AlphaInDeg);}
 
-      if(PosAtDetIn.X() > PMTPlaneXatThird){H_Alpha_UpLeft_LeftPart->Fill(AlphaInDeg ); H_Alpha_XYposAtDet_LeftPart->Fill(PosAtDetIn.X(),PosAtDetIn.Y(),AlphaInDeg);}
-      if(PosAtDetIn.X() <= PMTPlaneXatThird){H_Alpha_UpLeft_RightPart->Fill(AlphaInDeg ); H_Alpha_XYposAtDet_RightPart->Fill(PosAtDetIn.X(),PosAtDetIn.Y(),AlphaInDeg);}
+      if(PosAtDetIn.X() <= PMTPlaneXatThird){H_Alpha_UpLeft_LeftPart->Fill(AlphaInDeg ); H_Alpha_XYposAtDet_LeftPart->Fill(PosAtDetIn.X(),PosAtDetIn.Y(),AlphaInDeg);}
+      if(PosAtDetIn.X() > PMTPlaneXatThird){H_Alpha_UpLeft_RightPart->Fill(AlphaInDeg ); H_Alpha_XYposAtDet_RightPart->Fill(PosAtDetIn.X(),PosAtDetIn.Y(),AlphaInDeg);}
     }
   }
   
@@ -306,6 +307,9 @@ void CbmRichGeoOpt::RingParameters()
     if(CentX > PMTPlaneX && CentY > PMTPlaneY){H_boa_Q2->Fill(bA/aA); H_RingCenter_boa_Q2->Fill(CentX,CentY,bA/aA);}
     if(CentX <= PMTPlaneX && CentY <= PMTPlaneY){H_boa_Q3->Fill(bA/aA); H_RingCenter_boa_Q3->Fill(CentX,CentY,bA/aA);}
     if(CentX > PMTPlaneX && CentY <= PMTPlaneY){H_boa_Q4->Fill(bA/aA); H_RingCenter_boa_Q4->Fill(CentX,CentY,bA/aA);}
+
+    if(CentX > PMTPlaneXatThird){H_boa_RightPart->Fill(bA/aA); H_RingCenter_boa_RightPart->Fill(CentX,CentY,bA/aA);}
+    if(CentX <= PMTPlaneXatThird){H_boa_LeftPart->Fill(bA/aA); H_RingCenter_boa_LeftPart->Fill(CentX,CentY,bA/aA);}
     //  if(PosAtDetIn.X() > PMTPlaneX && PosAtDetIn.Y() <= PMTPlaneY){
     
     if(CentX <=  PMTPlaneX && CentY >PMTPlaneY){H_boa_Q1->Fill(bA/aA);}
@@ -323,6 +327,9 @@ void CbmRichGeoOpt::RingParameters()
       if(CentX > PMTPlaneX && CentY > PMTPlaneY){H_dR_Q2->Fill(dR); H_RingCenter_dR_Q2->Fill(CentX,CentY,dR);}
       if(CentX <= PMTPlaneX && CentY <= PMTPlaneY){H_dR_Q3->Fill(dR); H_RingCenter_dR_Q3->Fill(CentX,CentY,dR);}
       if(CentX > PMTPlaneX && CentY <= PMTPlaneY){H_dR_Q4->Fill(dR); H_RingCenter_dR_Q4->Fill(CentX,CentY,dR);}
+      
+      if(CentX > PMTPlaneXatThird){H_dR_RightPart->Fill(dR); H_RingCenter_dR_RightPart->Fill(CentX,CentY,dR);}
+      if(CentX <= PMTPlaneXatThird){H_dR_LeftPart->Fill(dR); H_RingCenter_dR_LeftPart->Fill(CentX,CentY,dR);}
     } 
   }
 }
@@ -358,6 +365,7 @@ void CbmRichGeoOpt::InitHistograms()
   H_PointsIn_XY = new TH2D("H_PointsIn_XY", "H_PointsIn_XY;X [cm];Y [cm];Counter", 2001, -100., 100.,341, 0.,340.);//1001, 140.,240.);
   H_PointsOut_XY = new TH2D("H_PointsOut_XY", "H_PointsOut_XY;X [cm];Y [cm];Counter", 1101, -100., 10.,341, 0.,340.);//nBinsX, xMin, xMax, nBinsY, yMin, yMax);
   
+  H_NofPhotonsPerEv = new TH1D("H_NofPhotonsPerEv", "H_NofPhotonsPerEv;Number of photons per hit;Yield", 1000, 0., 1000.);
   H_NofPhotonsPerHit = new TH1D("H_NofPhotonsPerHit", "H_NofPhotonsPerHit;Number of photons per hit;Yield", 10, -0.5, 9.5);
   H_DiffXhit = new TH1D("H_DiffXhit", "H_DiffXhit;Y_{point}-Y_{hit} [cm];Yield", 200, -1., 1.);
   H_DiffYhit = new TH1D("H_DiffYhit", "H_DiffYhit;Y_{point}-Y_{hit} [cm];Yield", 200, -1., 1.);
@@ -446,6 +454,7 @@ void CbmRichGeoOpt::WriteHistograms(){
   H_Hits_XY->Write(); 
   H_PointsIn_XY->Write();
   H_PointsOut_XY->Write();
+  H_NofPhotonsPerEv->Write(); 
   H_NofPhotonsPerHit->Write(); 
   H_DiffXhit->Write();
   H_DiffYhit->Write();
