@@ -188,12 +188,14 @@ private:
   /**
     * \brief histograms.
     */
+   
    TH1D* H_MomPrim;
    TH1D* H_PtPrim;
 
    TH2D* H_Hits_XY; // distribution of X and Y position of hits
    TH2D* H_PointsIn_XY; // distribution of X and Y position of points
    TH2D* H_PointsOut_XY; // distribution of X and Y position of points (tilting pmt plane)
+   TH1D* H_NofPhotonsPerEv; // Number of photons per hit
    TH1D* H_NofPhotonsPerHit; // Number of photons per hit
    TH1D* H_DiffXhit;
    TH1D* H_DiffYhit;
