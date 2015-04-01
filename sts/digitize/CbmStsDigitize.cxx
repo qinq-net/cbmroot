@@ -364,7 +364,7 @@ void CbmStsDigitize::ProcessMCBuffer() {
   	// To be redone with redesign of MCPoint classes.
     Int_t index = (point->GetLink(0)).GetIndex();
 
-    CbmLink* link = new CbmLink(1., index, entry);
+    CbmLink* link = new CbmLink(1., index, entry, 0);
     LOG(DEBUG2) << GetName() << ": Processing point at " << index
     		     	  << ", event " << entry << ", time " << point->GetTime()
     		        << " ns" << FairLogger::endl;

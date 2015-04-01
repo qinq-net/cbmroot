@@ -214,7 +214,7 @@ void CbmStsDigitize_old::Exec(Option_t* opt)
                                       */
                 UInt_t address = CbmStsAddress::GetAddress(stationNr, 0, 0, 0, 0, 0, ifstr);
                 Int_t size = fDigis->GetEntriesFast();
-                new ((*fDigis)[size]) CbmStsDigi(address, 0, digiFSignal, sectorNr);
+                CbmStsDigi* digi=new ((*fDigis)[size]) CbmStsDigi(address, 0, digiFSignal, sectorNr);
                 LOG(DEBUG3) << GetName() << ": New digi at address " << address
                 		        << ", sector " << sectorNr << " front side, channel "
                 		        << ifstr << ", ADC " << digiFSignal << FairLogger::endl;
@@ -222,7 +222,9 @@ void CbmStsDigitize_old::Exec(Option_t* opt)
                 set<Int_t> chPnt = fFChannelPointsMap[ifstr];
                 if (chPnt.size() == 0)
                 {
-                    new ((*fDigiMatches)[size]) CbmMatch();
+                    CbmMatch* match = NULL;
+                    match=new ((*fDigiMatches)[size]) CbmMatch();
+		    digi->SetMatch(match);
                 }
                 else
                 {
@@ -235,6 +237,7 @@ void CbmStsDigitize_old::Exec(Option_t* opt)
                         if (it1 == chPnt.begin())
                             match = new ((*fDigiMatches)[size]) CbmMatch();
                          match->AddLink(CbmLink(point->GetEnergyLoss(), pnt));
+			 digi->SetMatch(match);
                     }
                 }
                 nDigisF++;
@@ -263,7 +266,7 @@ void CbmStsDigitize_old::Exec(Option_t* opt)
                 // Use here the backward-compatibel constructor of CbmStsDigi.
                 UInt_t address = CbmStsAddress::GetAddress(stationNr, 0, 0, 0, 0, 1, ibstr);
                 Int_t size = fDigis->GetEntriesFast();
-                new ((*fDigis)[size]) CbmStsDigi(address, 0, digiBSignal, sectorNr);
+                CbmStsDigi* digi=new ((*fDigis)[size]) CbmStsDigi(address, 0, digiBSignal, sectorNr);
                 LOG(DEBUG3) << GetName() << ": New digi at address " << address
                 		        << ", sector " << sectorNr << " back side, channel "
                 		        << ibstr << ", ADC " << digiBSignal << FairLogger::endl;
@@ -271,7 +274,9 @@ void CbmStsDigitize_old::Exec(Option_t* opt)
                 set<Int_t> chPnt = fBChannelPointsMap[ibstr];
                 if (chPnt.size() == 0)
                 {
-                    new ((*fDigiMatches)[size]) CbmMatch();
+                    CbmMatch* match = NULL;
+                    match=new ((*fDigiMatches)[size]) CbmMatch();
+		    digi->SetMatch(match);
                 }
                 else
                 {
@@ -284,6 +289,7 @@ void CbmStsDigitize_old::Exec(Option_t* opt)
                         if (it1 == chPnt.begin())
                             match = new ((*fDigiMatches)[size]) CbmMatch();
                          match->AddLink(CbmLink(point->GetEnergyLoss(), pnt));
+			 digi->SetMatch(match);
                     }
                 }
                 nDigisB++;

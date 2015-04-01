@@ -10,6 +10,7 @@
 
 #include "FairTask.h"
 class TClonesArray;
+class CbmMCDataArray;
 
 class CbmMatchRecoToMC : public FairTask
 {
@@ -51,6 +52,11 @@ private:
           const TClonesArray* clusters,
           TClonesArray* clusterMatches);
 
+    void MatchStsClusters(
+          const TClonesArray* digiMatches,
+          const TClonesArray* clusters,
+          TClonesArray* clusterMatches);
+
     void MatchHits(
           const TClonesArray* matches,
           const TClonesArray* hits,
@@ -77,11 +83,18 @@ private:
           const TClonesArray* tracks,
           TClonesArray* trackMatches);
 
+    //Special case for STS: now evbased compatible
+    void MatchStsTracks(
+          const TClonesArray* hitMatches,
+          CbmMCDataArray* points,
+          const TClonesArray* tracks,
+          TClonesArray* trackMatches);
+
     // Pointers to data arrays
-    TClonesArray* fMCTracks;
+    CbmMCDataArray* fMCTracks;  // Monte-Carlo tracks
 
     // STS
-    TClonesArray* fStsPoints; // CbmStsPoint array
+    CbmMCDataArray* fStsPoints; // CbmStsPoint array
     TClonesArray* fStsDigis; // CbmStsDigi array
     TClonesArray* fStsClusters; // CbmStsCluster array
     TClonesArray* fStsHits; // CbmStsHit array

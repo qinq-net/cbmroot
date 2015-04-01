@@ -82,6 +82,21 @@ class CbmStsDigitize : public FairTask
  	 fNoise          = noise;
    }
 
+  /** Re-initialisation **/
+  virtual InitStatus ReInit();
+
+
+  /** Set the digitisation parameters in the modules **/
+  void SetModuleParameters();
+
+
+  /** Set the operating parameters in the sensors **/
+  void SetSensorConditions();
+
+
+  /** Set types for the sensors in the setup **/
+  void SetSensorTypes();
+
 
 
 
@@ -148,24 +163,9 @@ class CbmStsDigitize : public FairTask
   void ProcessPoint(const CbmStsPoint* point, CbmLink* link = NULL);
 
 
-  /** Re-initialisation **/
-  virtual InitStatus ReInit();
-
-
   /** Reset step-wise counters **/
   void Reset();
 
-
-  /** Set the digitisation parameters in the modules **/
-  void SetModuleParameters();
-
-
-  /** Set the operating parameters in the sensors **/
-  void SetSensorConditions();
-
-
-  /** Set types for the sensors in the setup **/
-  void SetSensorTypes();
 
 
   /** Prevent usage of copy constructor and assignment operator **/
