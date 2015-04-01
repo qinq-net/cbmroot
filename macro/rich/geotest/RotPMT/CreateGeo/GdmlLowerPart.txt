@@ -81,7 +81,7 @@
 <sphere name="RICH_mirror_and_support_belt_strip_PartBody" rmin="(RICH_mirror_r)" rmax="(RICH_mirror_r+mirror_cont_supp_addend_out)" startphi="-4.106000" deltaphi="8.212000" starttheta="75.236500" deltatheta="29.527000" lunit="mm" aunit="degree"/>
 <sphere name="RICH_mirror_replica_PartBody" rmin="(RICH_mirror_r)" rmax="((RICH_mirror_r+mirror_cont_supp_addend_out))" startphi="-36.954000" deltaphi="32.848000" starttheta="75.236500" deltatheta="29.527000" lunit="mm" aunit="degree"/>
 <box name="rich1d_PartBody" x="((pmt_width/2))*2" y="((pmt_height/2))*2" z="((pmt_thickness/2))*2" lunit="mm"/>
-<box name="Sens_plane_3" x="(2468.00000000)*2" y="(1875.00000000)*2" z="(0.50000000)*2" lunit="mm"/>
+<box name="Sens_plane_3" x="(2468.00000000)*2" y="(1975.00000000)*2" z="(0.50000000)*2" lunit="mm"/>
 <tube name="Sens_plane_2" rmin="0.00000000" rmax="160.00000000" z="(1.00000000)*2" startphi="0.000000" deltaphi="360.000000" lunit="mm" aunit="degree"/>
 <subtraction name="Sens_plane_PartBody">
 <first ref="Sens_plane_3"/>
