@@ -230,6 +230,7 @@ private:
 
    //////////////////////////////////
    TH1D* H_NofHitsAll;
+   TH1D* H_NofRings;
 
    //////////////////////////////////
    TH1D *H_RingCenterX;TH1D *H_RingCenterY;TH2D *H_RingCenter;
