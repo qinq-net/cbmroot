@@ -101,7 +101,7 @@ private:
    TVector3 ReadPMTPlaneCenter;
    TVector3 ReadPMTPlaneCenterOrig;
    TVector3 MirrorCenter; 
-   TVector3 ReadMirrorCenter;
+   //TVector3 ReadMirrorCenter;
    double RotX; 
    double RotY;
    TVector3 r1; 
