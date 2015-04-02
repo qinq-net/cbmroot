@@ -90,6 +90,7 @@ CbmRichGeoOpt::CbmRichGeoOpt()
   H_acc_mom_el(NULL),
   H_acc_pty_el(NULL),
   H_NofHitsAll(NULL),
+  H_NofRings(NULL),
   H_RingCenterX(NULL),
   H_RingCenterY(NULL),
   H_RingCenter(NULL),
@@ -311,10 +312,13 @@ void CbmRichGeoOpt::RingParameters()
   Int_t nofRings = fRichRings->GetEntriesFast();
   for (Int_t iR = 0; iR < nofRings; iR++){
     CbmRichRing *ring = (CbmRichRing*) fRichRings->At(iR);  if (NULL == ring) continue;
-    CbmTrackMatchNew* ringMatch = (CbmTrackMatchNew*) fRichRingMatches->At(iR); if (NULL == ringMatch) continue;
-    Int_t mcTrackId = ringMatch->GetMatchedLink().GetIndex();  if (mcTrackId < 0) continue;
-    CbmMCTrack* mcTrack = (CbmMCTrack*)fMcTracks->At(mcTrackId);  if (!mcTrack) continue;
+    CbmTrackMatchNew* ringMatch = (CbmTrackMatchNew*) fRichRingMatches->At(iR); 
+    if (NULL == ringMatch){ H_NofRings->SetBinContent(8,H_NofRings->GetBinCenter(8)); continue;}
     
+    Int_t mcTrackId = ringMatch->GetMatchedLink().GetIndex();  
+    if (mcTrackId < 0){ continue;}
+    CbmMCTrack* mcTrack = (CbmMCTrack*)fMcTracks->At(mcTrackId);  if (!mcTrack) continue;
+
     Int_t motherId = mcTrack->GetMotherId();
     Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
     Double_t momentum = mcTrack->GetP();
@@ -322,7 +326,8 @@ void CbmRichGeoOpt::RingParameters()
     Double_t rapidity = mcTrack->GetRapidity();
     
     if (pdg != 11 || motherId != -1) continue; // only primary electrons
-        
+    H_NofRings->Fill(nofRings);
+
     if (ring->GetNofHits() >= fMinNofHits){
       H_acc_mom_el->Fill(momentum);
       H_acc_pty_el->Fill(rapidity, pt);
@@ -443,6 +448,7 @@ void CbmRichGeoOpt::InitHistograms()
   //////////////////////////////////
 
   H_NofHitsAll = new TH1D("H_NofHitsAll", "H_NofHitsAll;Nof hits in ring;Yield", 50, 0., 50.);
+  H_NofRings = new TH1D("H_NofRings", "H_NofRings;Nof rings per event;Yield", 10, 0., 10.);
   
   /////////////////////////////////////////////
   H_Radius= new TH1D("H_Radius","H_Radius",401, 2.,6.);
@@ -526,7 +532,8 @@ void CbmRichGeoOpt::WriteHistograms(){
   H_dFocalPoint_Delta->Write(); 
   H_dFocalPoint_Rho->Write();
   H_NofHitsAll->Write();
-  
+  H_NofRings->Write();
+
   H_Radius->Write();
   H_aAxis->Write();
   H_bAxis->Write();
