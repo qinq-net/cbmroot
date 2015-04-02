@@ -49,8 +49,8 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fKFVertex(),
 	fHistoList_recofull(),
 	fhElectrons(NULL),
-	fElectrons_track(NULL),
-	fElectrons_momenta(NULL),
+	fElectrons_track(),
+	fElectrons_momenta(),
 	fhElectrons_invmass(NULL),
     timer(),
     fTime(0.)
