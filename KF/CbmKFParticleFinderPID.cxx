@@ -187,7 +187,7 @@ void CbmKFParticleFinderPID::SetRecoPID()
                                {0.261491, -0.103121, 0.0247587, -0.00123286, 2.61731e-05},
                                {0.657274, -0.22355, 0.0430177, -0.0026822, 7.34146e-05},
                                {0.116525, -0.045522,0.0151319, -0.000495545, 4.43144e-06}  }; 
-    for(Int_t iSp=0; iSp<4; iSp++)
+    for(Int_t iSp=0; iSp<7; iSp++)
       for(Int_t jSp=0; jSp<5; jSp++)
         sP[iSp][jSp] = sPLocal[iSp][jSp];
   }
