@@ -50,6 +50,8 @@
 #include "CbmAnaConversionRich.h"
 //#include "CbmAnaConversionKF.h"
 #include "CbmAnaConversionReco.h"
+#include "CbmAnaConversionPhotons.h"
+#include "CbmAnaConversionRecoFull.h"
 
 
 #define M2E 2.6112004954086e-7
@@ -63,6 +65,8 @@ CbmAnaConversion::CbmAnaConversion()
     DoRichAnalysis(0),
     DoKFAnalysis(0),
     DoReconstruction(0),
+    DoPhotons(0),
+    DoRecoFull(0),
     fhNofElPrim(NULL),
     fhNofElSec(NULL),
     fhNofElAll(NULL),
@@ -122,6 +126,7 @@ CbmAnaConversion::CbmAnaConversion()
     fMCTracklist_all(),
     fRecoTracklist(),
     fRecoTracklistEPEM(),
+    fRecoTracklistEPEM_id(),
     fRecoMomentum(),
     fRecoRefittedMomentum(),
     timer_all(),
@@ -132,9 +137,10 @@ CbmAnaConversion::CbmAnaConversion()
     fTime_rec(0.),
     fAnaTomography(NULL),
     fAnaRich(NULL),
-    fAnaKF(NULL),
-    fAnaReco(NULL)
-    
+    //fAnaKF(NULL),
+    fAnaReco(NULL),
+    fAnaPhotons(NULL),
+    fAnaRecoFull(NULL)  
 {
 }
 
@@ -187,8 +193,10 @@ InitStatus CbmAnaConversion::Init()
 	
 	DoTomography = 1;
 	DoRichAnalysis = 1;
-	DoKFAnalysis = 1;
+	DoKFAnalysis = 0;
 	DoReconstruction = 1;
+	DoPhotons = 1;
+	DoRecoFull = 1;
 	
 	if(DoTomography) {
 		fAnaTomography = new CbmAnaConversionTomography();
@@ -206,6 +214,14 @@ InitStatus CbmAnaConversion::Init()
 	if(DoReconstruction) {
 		fAnaReco = new CbmAnaConversionReco();
 		fAnaReco->Init();
+	}
+	if(DoPhotons) {
+		fAnaPhotons = new CbmAnaConversionPhotons();
+		fAnaPhotons->Init();
+	}
+	if(DoRecoFull) {
+		fAnaRecoFull = new CbmAnaConversionRecoFull();
+		fAnaRecoFull->Init();
 	}
 
 
@@ -307,6 +323,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 	fMCTracklist_all.clear();
 	fRecoTracklist.clear();
 	fRecoTracklistEPEM.clear();
+	fRecoTracklistEPEM_id.clear();
 	fRecoMomentum.clear();
 	fRecoRefittedMomentum.clear();
 
@@ -328,13 +345,25 @@ void CbmAnaConversion::Exec(Option_t* option)
 	}
 
 	if(DoKFAnalysis) {
-		//fAnaKF->SetSignalIds(fKFparticleFinderQA->GetSignalIds());
-		//fAnaKF->SetGhostIds(fKFparticleFinderQA->GetGhostIds());
-		//fAnaKF->KFParticle_Analysis();
+	//	fAnaKF->SetSignalIds(fKFparticleFinderQA->GetSignalIds());
+	//	fAnaKF->SetGhostIds(fKFparticleFinderQA->GetGhostIds());
+	//	fAnaKF->KFParticle_Analysis();
 	}
 
 	if(DoRichAnalysis) {
 		fAnaRich->AnalyseRICHdata();
+	}
+
+	if(DoPhotons) {
+		fAnaPhotons->Exec();
+	}
+
+	if(DoRecoFull) {
+		fAnaRecoFull->Exec();
+	}
+
+	if(DoTomography) {
+		fAnaTomography->Exec();		// analyse gamma-conversions with MC data
 	}
 
 	// ========================================================================================
@@ -345,11 +374,8 @@ void CbmAnaConversion::Exec(Option_t* option)
 		CbmMCTrack* mctrack = (CbmMCTrack*)fMcTracks->At(i);
 		if (mctrack == NULL) continue;   
    
-		FillMCTracklists(mctrack);	// fill tracklists for further analyses
+		FillMCTracklists(mctrack, i);	// fill tracklists for further analyses
 
-		if(DoTomography) {
-			fAnaTomography->TomographyMC(mctrack);		// analyse gamma-conversions with MC data
-		}
 
 
 		if (mctrack->GetMotherId() == -1) { countPrimPart++; }   
@@ -472,7 +498,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 		vtxTrack->Momentum(refittedMomentum);
        
 		// Fill tracklists containing momenta from mc-true, measured in sts, refitted at primary
-		FillRecoTracklistEPEM(mcTrack1, stsMomentumVec, refittedMomentum);
+		FillRecoTracklistEPEM(mcTrack1, stsMomentumVec, refittedMomentum, stsMcTrackId);
 	}
 	timer_rec.Stop();
 	fTime_rec += timer_rec.RealTime();
@@ -480,7 +506,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 //	InvariantMassTestReco();
 
 	if(DoReconstruction) {
-		fAnaReco->SetTracklistReco(fRecoTracklistEPEM, fRecoMomentum, fRecoRefittedMomentum);
+		fAnaReco->SetTracklistReco(fRecoTracklistEPEM, fRecoMomentum, fRecoRefittedMomentum, fRecoTracklistEPEM_id);
 		fAnaReco->InvariantMassTest_4epem();
 	}
 
@@ -500,13 +526,8 @@ void CbmAnaConversion::Exec(Option_t* option)
 
 void CbmAnaConversion::Finish()
 {
-	cout << "\n\n ############### FINISHING ############" << endl;
-/*	
-	TCanvas* c = new TCanvas();
-	c->SetWindowSize(800, 1600);
-	DrawH1(fTest);
-	//fhGammaZ->Write();
-*/
+	cout << "\n\n############### CALLING FINISH ROUTINES... ############" << endl;
+
 	
 	// Write histograms to a file
 	gDirectory->mkdir("analysis-conversion");
@@ -523,8 +544,10 @@ void CbmAnaConversion::Finish()
 
 	if(DoTomography)		{ fAnaTomography->Finish(); }
 	if(DoRichAnalysis)		{ fAnaRich->Finish(); }
-	if(DoKFAnalysis)		{ fAnaKF->Finish(); }
+//	if(DoKFAnalysis)		{ fAnaKF->Finish(); }
 	if(DoReconstruction)	{ fAnaReco->Finish(); }
+	if(DoRecoFull)			{ fAnaRecoFull->Finish(); }
+	if(DoPhotons)			{ fAnaPhotons->Finish(); }
 
 	for (Int_t i = 0; i < fHistoList.size(); i++){
 		fHistoList[i]->Write();
@@ -534,7 +557,7 @@ void CbmAnaConversion::Finish()
 	
 	
 	cout << endl;
-	cout << "############### FINISH ##############" << endl;
+	cout << "############### FINISHED MAIN TASK ##############" << endl;
 	cout << "Particlecounter: " << particlecounter << endl;
 	cout << "Particlecounter (2 daughters): " << particlecounter_2daughters << endl;
 	cout << "Particlecounter (3 daughters): " << particlecounter_3daughters << endl;
@@ -738,7 +761,7 @@ Double_t CbmAnaConversion::Invmass_4particles(const CbmMCTrack* mctrack1, const 
 
 
 
-void CbmAnaConversion::FillMCTracklists(CbmMCTrack* mctrack)
+void CbmAnaConversion::FillMCTracklists(CbmMCTrack* mctrack, int i)
 // fill all relevant tracklists containing MC tracks
 {
 	Bool_t electrons = true;
@@ -807,12 +830,13 @@ void CbmAnaConversion::FillRecoTracklist(CbmMCTrack* mctrack)
 
 
 
-void CbmAnaConversion::FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom) 
+void CbmAnaConversion::FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom, int i) 
 {
 	if (TMath::Abs( mctrack->GetPdgCode())  == 11) { 
 		int motherId = mctrack->GetMotherId();
 		if (motherId != -1) {
 			fRecoTracklistEPEM.push_back(mctrack);
+			fRecoTracklistEPEM_id.push_back(i);
 			fRecoMomentum.push_back(stsMomentum);
 			fRecoRefittedMomentum.push_back(refittedMom);
 		}

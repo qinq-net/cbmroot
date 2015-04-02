@@ -14,6 +14,7 @@
 #include <TH2.h>
 #include <TH3.h>
 #include <TClonesArray.h>
+#include <TStopwatch.h>
 
 // included from CbmRoot
 #include "CbmMCTrack.h"
@@ -45,12 +46,17 @@ public:
 	void SetGhostIds(std::vector<int> *ghostids);
 
 
-
+	void test();
+	Double_t Invmass_4particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2, const CbmMCTrack* mctrack3, const CbmMCTrack* mctrack4);
 
 
 
 
 private:
+	TClonesArray* fKFMcParticles;
+	TClonesArray* fMcTracks;
+	TClonesArray* fStsTracks;
+	TClonesArray* fStsTrackMatches;
 
 	CbmKFParticleFinder* fKFparticle;
 	CbmKFParticleFinderQA* fKFparticleFinderQA;
@@ -78,6 +84,11 @@ private:
 
 
 	vector<TH1*> fHistoList_kfparticle;	// list of all histograms containing results from KFParticle package
+
+
+	// timer
+	TStopwatch timer;
+	Double_t fTime;
 
 	CbmAnaConversionKF(const CbmAnaConversionKF&);
 	CbmAnaConversionKF operator=(const CbmAnaConversionKF&);

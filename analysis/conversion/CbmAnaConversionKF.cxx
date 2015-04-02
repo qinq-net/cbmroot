@@ -16,6 +16,9 @@
 #include "CbmKFParticleFinder.h"
 #include "CbmKFParticleFinderQA.h"
 #include "KFParticleTopoReconstructor.h"
+#include "CbmStsTrack.h"
+#include "CbmMCTrack.h"
+#include "CbmTrackMatchNew.h"
 
 
 
@@ -24,7 +27,11 @@ using namespace std;
 
 
 CbmAnaConversionKF::CbmAnaConversionKF()
- : fKFparticle(NULL),
+ : fKFMcParticles(NULL),
+   fMcTracks(NULL),
+   fStsTracks(NULL),
+   fStsTrackMatches(NULL),
+   fKFparticle(NULL),
    fKFparticleFinderQA(NULL),
    fKFtopo(NULL),
    trackindexarray(),
@@ -42,7 +49,9 @@ CbmAnaConversionKF::CbmAnaConversionKF()
    fhPi0_mass(NULL),
    fSignalIds(),
    fGhostIds(),
-   fHistoList_kfparticle()
+   fHistoList_kfparticle(),
+   timer(),
+   fTime(0.)
 {
 }
 
@@ -54,8 +63,20 @@ CbmAnaConversionKF::~CbmAnaConversionKF()
 void CbmAnaConversionKF::Init()
 {
 	FairRootManager* ioman = FairRootManager::Instance();
-	if (NULL == ioman) { Fatal("CbmAnaConversion::Init","RootManager not instantised!"); }
+	if (NULL == ioman) { Fatal("CbmAnaConversionKF::Init","RootManager not instantised!"); }
 
+	fKFMcParticles = (TClonesArray*) ioman->GetObject("KFMCParticles");
+	if ( NULL == fKFMcParticles) { Fatal("CbmAnaConversionKF::Init","No KFMCParticles array!"); }
+
+	fMcTracks = (TClonesArray*) ioman->GetObject("MCTrack");
+	if ( NULL == fMcTracks) { Fatal("CbmAnaConversionKF::Init","No MCTrack array!"); }
+
+	fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
+	if ( NULL == fStsTracks) { Fatal("CbmAnaConversionKF::Init","No StsTrack array!"); }
+
+	fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
+	if (NULL == fStsTrackMatches) { Fatal("CbmAnaConversionKF::Init","No StsTrackMatch array!"); }
+	
 
 	fKFtopo = fKFparticle->GetTopoReconstructor();
 
@@ -94,6 +115,8 @@ void CbmAnaConversionKF::Finish()
 		fHistoList_kfparticle[i]->Write();
 	}
 	gDirectory->cd("..");
+
+	cout << "CbmAnaConversionKF: Realtime - " << fTime << endl;
 }
 
 
@@ -128,6 +151,8 @@ void CbmAnaConversionKF::SetGhostIds(std::vector<int> *ghostids)
 
 void CbmAnaConversionKF::KFParticle_Analysis()
 {
+	timer.Start();
+
 	int testkf = fKFtopo->NPrimaryVertices();
 	cout << "KFParticle_Analysis - test kf NPrimaryVertices: " << testkf << endl;
 
@@ -187,15 +212,39 @@ void CbmAnaConversionKF::KFParticle_Analysis()
 	
 	
 	cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
-	cout << "KFParticle_Analysis - SignalIds size: " << fSignalIds.size();
+	cout << "KFParticle_Analysis - SignalIds size: " << fSignalIds.size() << "\t";
 	for(int i=0; i<fSignalIds.size(); i++) {
 		Int_t pdg = (fKFtopo->GetParticles()[fSignalIds[i]]).GetPDG();
 		Int_t daughters = (fKFtopo->GetParticles()[fSignalIds[i]]).NDaughters();
+		vector<int> daughterIds = (fKFtopo->GetParticles()[fSignalIds[i]]).DaughterIds();
 		float mass = 0;
 		float mass_sigma = 0;
 		(fKFtopo->GetParticles()[fSignalIds[i]]).GetMass(mass, mass_sigma);
 		if(pdg == 111) {
-			cout << "pi0 found!\t";
+			cout << "CbmAnaConversionKF: pi0 found, signal id: " << (fKFtopo->GetParticles()[fSignalIds[i]]).Id() << "\t daughters: " << daughters << "\t";
+			cout << "daughter ids: ";
+			Int_t electronids[4] = {0};
+			for(int j=0; j<daughterIds.size(); j++) {
+				vector<int> granddaughterIds = (fKFtopo->GetParticles()[daughterIds[j]]).DaughterIds();
+				cout << daughterIds[j] << " (" << granddaughterIds[0] << ",pdg" << (fKFtopo->GetParticles()[granddaughterIds[0]]).GetPDG() << "/" << granddaughterIds[1] << ",pdg" << (fKFtopo->GetParticles()[granddaughterIds[1]]).GetPDG() << ")" << " / ";
+				electronids[j*2] = granddaughterIds[0];
+				electronids[j*2+1] = granddaughterIds[1];
+			}
+			cout << endl;
+
+			cout << "the 4 electrons and their grandmotherids: ";
+			CbmMCTrack * electrontracks[4];
+			for(int k=0; k<4; k++) {
+				electrontracks[k] = (CbmMCTrack*) fMcTracks->At(electronids[k]);
+				CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(electrontracks[k]->GetMotherId());
+				if(mother == NULL) continue;
+				CbmMCTrack* grandmother = (CbmMCTrack*) fMcTracks->At(mother->GetMotherId());
+				if(grandmother == NULL) continue;
+				cout << "gmid" << mother->GetMotherId() << "pdg" << grandmother->GetPdgCode() << " / ";
+				
+			}
+			cout << endl;
+
 			particlecounter++;
 			if(daughters == 2) { particlecounter_2daughters++; }
 			if(daughters == 3) { particlecounter_3daughters++; }
@@ -206,9 +255,8 @@ void CbmAnaConversionKF::KFParticle_Analysis()
 		}
 	}
 	
-	cout << endl;
 	cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
-	cout << "KFParticle_Analysis - GhostIds size: " << fGhostIds.size();
+	cout << "KFParticle_Analysis - GhostIds size: " << fGhostIds.size() << "\t";
 	for(int i=0; i<fGhostIds.size(); i++) {
 		Int_t pdg = (fKFtopo->GetParticles()[fGhostIds[i]]).GetPDG();
 		Int_t daughters = (fKFtopo->GetParticles()[fGhostIds[i]]).NDaughters();
@@ -251,9 +299,109 @@ void CbmAnaConversionKF::KFParticle_Analysis()
 */
 
 
+	test();
+
+	timer.Stop();
+	fTime += timer.RealTime();
+}
+
+
+void CbmAnaConversionKF::test() {
+	int nofparticles = fKFMcParticles->GetEntriesFast();
+	cout << "CbmAnaConversionKF: test nof " << nofparticles << endl;
+	for(int i=0; i<nofparticles; i++) {
+		CbmMCTrack* mcTrack1 = (CbmMCTrack*) fKFMcParticles->At(i);
+		int pdg = TMath::Abs(mcTrack1->GetPdgCode());
+		if(pdg == 111) {
+			cout << "CbmAnaConversionKF: test successful!" << endl;
+		}
+	}
+
+
+	vector< vector<int> > ids;
+	const vector<KFParticle>& particles = fKFparticle->GetTopoReconstructor()->GetParticles();
+	for(int iPart=0; iPart<fSignalIds.size(); iPart++)
+	{
+		if(particles[fSignalIds[iPart]].GetPDG() != 111) continue;
+		//some cuts on pi0 if needed
+  
+		const KFParticle& pi0 = particles[fSignalIds[iPart]];
+		vector<int> electrons;
+		for(int iGamma=0; iGamma<pi0.NDaughters(); iGamma++) {
+			const int GammaID = pi0.DaughterIds()[iGamma];
+			const KFParticle& Gamma = particles[GammaID];
+			for(int iElectron=0; iElectron<Gamma.NDaughters(); iElectron++) {
+				int ElectronID = Gamma.DaughterIds()[iElectron];
+				const KFParticle& Electron = particles[ElectronID];
+				int STStrackID = Electron.DaughterIds()[0];
+				electrons.push_back(STStrackID);
+			}
+		}
+		ids.push_back(electrons);
+	}
+
+	if(ids.size() > 0) {
+		cout << "NEW TEST: (sts ids) ";
+		for(int i=0; i<ids.size(); i++) {
+			for(int j=0; j<4; j++) {
+				cout << " " << ids[i][j];
+			}
+			cout << " | ";
+		}
+		cout << endl;
+
+
+	cout << "MC-pdgs: ";
+	CbmMCTrack* mcTracks[4];
+	for(int i=0; i<ids.size(); i++) {
+		for(int j=0; j<4; j++) {
+			CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(ids[i][j]);
+			if (stsTrack == NULL) return;
+			CbmTrackMatchNew* stsMatch  = (CbmTrackMatchNew*)fStsTrackMatches->At(ids[i][j]);
+			if (stsMatch == NULL) return;
+			int stsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
+			if (stsMcTrackId < 0) return;
+			mcTracks[j] = (CbmMCTrack*) fMcTracks->At(stsMcTrackId);
+			if (mcTracks[j] == NULL) return;
+			
+			CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(mcTracks[j]->GetMotherId());
+			CbmMCTrack* grandmother = (CbmMCTrack*) fMcTracks->At(mother->GetMotherId());
+			
+	
+			cout << " " << stsMcTrackId << "/" << mcTracks[j]->GetPdgCode() << "(motherid" << mcTracks[j]->GetMotherId() << ",motherpdg" << mother->GetPdgCode() << ",grandmotherpdg" << grandmother->GetPdgCode() << ",grandmotherid" << mother->GetMotherId() << ")";
+		}
+	}
+	cout << endl;
+	Double_t mass = Invmass_4particles(mcTracks[0], mcTracks[1], mcTracks[2], mcTracks[3]);
+	cout << "mass: " << mass << endl;
+
+	}
 
 }
 
+
+Double_t CbmAnaConversionKF::Invmass_4particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2, const CbmMCTrack* mctrack3, const CbmMCTrack* mctrack4)
+// calculation of invariant mass from four electrons/positrons
+{
+    TLorentzVector lorVec1;
+    mctrack1->Get4Momentum(lorVec1);
+    
+    TLorentzVector lorVec2;
+    mctrack2->Get4Momentum(lorVec2);
+    
+    TLorentzVector lorVec3;
+    mctrack3->Get4Momentum(lorVec3);
+    
+    TLorentzVector lorVec4;
+    mctrack4->Get4Momentum(lorVec4);
+    
+    
+    TLorentzVector sum;
+    sum = lorVec1 + lorVec2 + lorVec3 + lorVec4;
+    cout << "mc: \t" << sum.Px() << " / " << sum.Py() << " / " << sum.Pz() << " / " << sum.E() << "\t => mag = " << sum.Mag() << endl;
+
+	return sum.Mag();
+}
 
 
 
