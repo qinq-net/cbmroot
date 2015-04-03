@@ -35,12 +35,12 @@ void global_reco(Int_t nEvents = 10, // number of events
    TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
    TObjString trdDigiFile = parDir + "/trd/trd_v14a_3e.digi.par"; // TRD digi file
    TString muchDigiFile = parDir + "/much/much_v13f.digi.root"; // MUCH digi file
-   TString stsMatBudgetFile = parDir + "/sts/sts_matbudget_v13d.root";
+   TString stsMatBudgetFile = parDir + "/sts/sts_matbudget_v13y.root";
    TObjString tofDigiFile = parDir + "/tof/tof_v13b.digi.par";// TOF digi file
 
    // Reconstruction parameters
    TString globalTrackingType = "nn"; // Global tracking type
-   TString stsHitProducerType = "real"; // STS hit producer type: real, ideal
+   TString stsHitProducerType = "new"; // STS hit producer type: real, ideal
    TString trdHitProducerType = "smearing"; // TRD hit producer type: smearing, digi, clustering
    TString muchHitProducerType = "advanced"; // MUCH hit producer type: simple, advanced
 
@@ -175,7 +175,7 @@ void global_reco(Int_t nEvents = 10, // number of events
 		run->AddTask(kalman);
 		CbmL1* l1 = new CbmL1();
 		l1->SetExtrapolateToTheEndOfSTS(true);
-		l1->SetMaterialBudgetFileName(stsMatBudgetFile);
+		//l1->SetMaterialBudgetFileName(stsMatBudgetFile);
 		run->AddTask(l1);
 		CbmStsTrackFinder* trackFinder = new CbmL1StsTrackFinder();
 		FairTask* findTracks = new CbmStsFindTracks(iVerbose, trackFinder);

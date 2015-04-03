@@ -33,7 +33,8 @@ void global_sim(Int_t nEvents = 10)
     TString pluto = "no"; // If "yes" PLUTO generator will be used
 
 	// Files
-	TString urqmdFile  = "/Users/andrey/Development/cbm/prod/gen/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root"; // input UrQMD file
+	// TString urqmdFile  = "/Users/andrey/Development/cbm/prod/gen/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root"; // input UrQMD file
+	TString urqmdFile = "$VMCWORKDIR/input/urqmd.auau.10gev.centr.root";
 	TString dir = "events/mvd_v14a/"; // Directory for output simulation files
 	TString mcFile = dir + "mc.0000.root"; //MC file name
 	TString parFile = dir + "param.0000.root"; //Parameter file name
