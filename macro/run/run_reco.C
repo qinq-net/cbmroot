@@ -87,12 +87,10 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
   // ----- MC Data Manager   ------------------------------------------------
   CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
-    mcManager->AddFile(inFile);
-    run->AddTask(mcManager);
+  mcManager->AddFile(inFile);
+  run->AddTask(mcManager);
   // ------------------------------------------------------------------------
-
-
-
+	
 
   // =========================================================================
   // ===             Detector Response Simulation (Digitiser)              ===

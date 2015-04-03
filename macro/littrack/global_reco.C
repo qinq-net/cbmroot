@@ -88,6 +88,13 @@ void global_reco(Int_t nEvents = 10, // number of events
 		exit(0);
 	}
 
+  // ----- MC Data Manager   ------------------------------------------------
+  CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+  mcManager->AddFile(mcFile);
+  run->AddTask(mcManager);
+  // ------------------------------------------------------------------------
+
+
 	if (opt == "all" || opt == "hits") {
 
 		if (IsMvd(parFile)) {
