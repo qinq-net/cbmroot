@@ -4,7 +4,7 @@ void Run_Reco_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2
   TTree::SetMaxTreeSize(90000000000);
   gRandom->SetSeed(10);
 
-  int GeoCase=2;
+  int GeoCase=-1;
   int PtNotP=1;  float MomMin=0.; float MomMax=4.;
   //int PtNotP=0;  float MomMin=3.95; float MomMax=4.;
 
@@ -124,8 +124,8 @@ TString GetGeoText(int GeoCase){
   //GeoCase=2 ==> gdml-geo: RICH starts at 1800, Mirror tilt -1 or 10, 
   //                        mirror does cover full acceptance)
 
-  if(GeoCase==-2){return "RichGeo_v08a";}
-  if(GeoCase==-1){return "RichGeo_v14a";}
+  if(GeoCase==-2){return "RichGeo_v14a";}
+  if(GeoCase==-1){return "RichGeo_v08a";}
   if(GeoCase==0){return "RichGeo_ascii";}
   if(GeoCase==1){return "RichGeo_OldGdml";}
   if(GeoCase==2){return "RichGeo_NewGdml";}

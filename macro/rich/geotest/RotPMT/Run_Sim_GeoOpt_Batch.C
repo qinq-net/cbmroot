@@ -1,8 +1,9 @@
 void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2, int RotMir=-10)
 {
 
-  int GeoCase=2;
+  int GeoCase=-1;
   int PtNotP=1;  float MomMin=0.; float MomMax=4.;
+  //int PtNotP=0;  float MomMin=3.95; float MomMax=4.;
 
   TString script = TString(gSystem->Getenv("SCRIPT"));
   if (script == "yes"){
@@ -22,11 +23,12 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   cout<<RotMir<<", "<<PMTrotX<<", "<<PMTrotY<<", "<<GeoCase<<endl;
   
   TTree::SetMaxTreeSize(90000000000);
-   
+  //******************************
   TString RotMirText=GetMirText(RotMir);
   TString PMTRotText=GetPMTRotText(PMTrotX, PMTrotY);
   TString richGeom=GetRICH_GeoFile( RotMirText, PMTRotText, GeoCase);
   TString pipeGeom=GetPipe_GeoFile( GeoCase);
+  //******************************
 
   cout<<"RotMirText = "<<RotMirText<<endl;
   cout<<"PMTRotText = "<<PMTRotText<<endl;
@@ -44,7 +46,8 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   cout<<"++++++++++++++++++++++++++++++++++++++++++++"<<endl; 
   //return;
   TString caveGeom = "cave.geo";
-  TString magnetGeom = "magnet/magnet_v12b.geo.root";
+  //TString magnetGeom = "magnet/magnet_v12b.geo.root";
+  TString magnetGeom = "";
   TString stsGeom = "";
   TString fieldMap = "field_v12a";
   Double_t fieldZ = 50.; // field center z position
@@ -108,10 +111,10 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   
   // e+/-
   float StartPhi=90.1, EndPhi=180.;
-  float StartTheta=2.5, EndTheta=25.;
+  float StartTheta=2.5, EndTheta=35.;
   FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 1);
-  if(PtNotP==1){cout<<" +++++++++++++++++++++++++++++++++++++++++++++++++++++++ taking pt: from "<<MomMin<<"  to  "<<MomMax<<" ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl; boxGen1->SetPtRange(MomMin,MomMax); }
-  else{cout<<" +++++++++++++++++++++++++++++++++++++++++++++++++++++++ taking p: from "<<MomMin<<"  to  "<<MomMax<<" ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;  boxGen1->SetPRange(MomMin,MomMax); }
+  if(PtNotP==1){boxGen1->SetPtRange(MomMin,MomMax); }
+  else{boxGen1->SetPRange(MomMin,MomMax); }
   // boxGen1->SetPRange(0.,10.);
   //boxGen1->SetPtRange(0.,4.);
   boxGen1->SetPhiRange(StartPhi,EndPhi);//0.,360.);
@@ -183,8 +186,8 @@ TString GetGeoText(int GeoCase){
   //GeoCase=2 ==> gdml-geo: RICH starts at 1800, Mirror tilt -1 or 10, 
   //                        mirror does cover full acceptance)
 
-  if(GeoCase==-2){return "RichGeo_v08a";}
-  if(GeoCase==-1){return "RichGeo_v14a";}
+  if(GeoCase==-2){return "RichGeo_v14a";}
+  if(GeoCase==-1){return "RichGeo_v08a";}
   if(GeoCase==0){return "RichGeo_ascii";}
   if(GeoCase==1){return "RichGeo_OldGdml";}
   if(GeoCase==2){return "RichGeo_NewGdml";}
