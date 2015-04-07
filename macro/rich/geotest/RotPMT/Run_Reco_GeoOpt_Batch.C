@@ -6,6 +6,8 @@ void Run_Reco_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2
 
   int GeoCase=2;
   int PtNotP=1;  float MomMin=0.; float MomMax=4.;
+  //int PtNotP=0;  float MomMin=3.95; float MomMax=4.;
+
 
   TString script = TString(gSystem->Getenv("SCRIPT"));
   if (script == "yes"){
@@ -68,10 +70,6 @@ void Run_Reco_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2
   
   CbmRichMatchRings* matchRings = new CbmRichMatchRings();
   run->AddTask(matchRings);
-  
-  //Tariq's routine for geometry optimization
-  CbmRichGeoOpt* richGeoOpt = new CbmRichGeoOpt();
-  run->AddTask(richGeoOpt);
   
   // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
