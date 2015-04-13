@@ -1,7 +1,7 @@
 void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2, int RotMir=-10)
 {
 
-  int GeoCase=-1;
+  int GeoCase=2;
   int PtNotP=1;  float MomMin=0.; float MomMax=4.;
   //int PtNotP=0;  float MomMin=3.95; float MomMax=4.;
 
@@ -28,6 +28,7 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   TString PMTRotText=GetPMTRotText(PMTrotX, PMTrotY);
   TString richGeom=GetRICH_GeoFile( RotMirText, PMTRotText, GeoCase);
   TString pipeGeom=GetPipe_GeoFile( GeoCase);
+  pipeGeom="";
   //******************************
 
   cout<<"RotMirText = "<<RotMirText<<endl;
@@ -37,17 +38,19 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   TString outDir=GetOutDir(GeoCase);//="/data/GeoOpt/RotPMT/NewGeo/";
   TString GeoText=GetGeoText(GeoCase);
   TString MomText=GetMomText(PtNotP,MomMin,MomMax);
+  TString ExtraText="_WideTheta_WidePhi_NoMagField.";
+  ExtraText=".";
 
-  TString ParFile = outDir + "Parameters_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+".root";
-  TString SimFile = outDir + "Sim_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+".root";
-  // TString OutPutGeoFile = outDir + "OutPutGeo_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+".root";
+  TString ParFile = outDir + "Parameters_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
+  TString SimFile = outDir + "Sim_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
+  TString OutPutGeoFile = outDir + "OutPutGeo_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
   cout<<"par: "<<ParFile<<endl;
   cout<<"sim: "<<SimFile<<endl;
   cout<<"++++++++++++++++++++++++++++++++++++++++++++"<<endl; 
   //return;
   TString caveGeom = "cave.geo";
-  //TString magnetGeom = "magnet/magnet_v12b.geo.root";
-  TString magnetGeom = "";
+  TString magnetGeom = "magnet/magnet_v12b.geo.root";
+  //TString magnetGeom = "";
   TString stsGeom = "";
   TString fieldMap = "field_v12a";
   Double_t fieldZ = 50.; // field center z position
@@ -111,7 +114,7 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   
   // e+/-
   float StartPhi=90.1, EndPhi=180.;
-  float StartTheta=2.5, EndTheta=35.;
+  float StartTheta=2.5, EndTheta=25.;
   FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 1);
   if(PtNotP==1){boxGen1->SetPtRange(MomMin,MomMax); }
   else{boxGen1->SetPRange(MomMin,MomMax); }
@@ -150,7 +153,7 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   rtdb->print();
   
   fRun->Run(nEvents);
-  //fRun->CreateGeometryFile(OutPutGeoFile);
+  fRun->CreateGeometryFile(OutPutGeoFile);
   
   timer.Stop();
   Double_t rtime = timer.RealTime();
@@ -186,8 +189,8 @@ TString GetGeoText(int GeoCase){
   //GeoCase=2 ==> gdml-geo: RICH starts at 1800, Mirror tilt -1 or 10, 
   //                        mirror does cover full acceptance)
 
-  if(GeoCase==-2){return "RichGeo_v14a";}
-  if(GeoCase==-1){return "RichGeo_v08a";}
+ if(GeoCase==-2){return "RichGeo_v08a";}
+  if(GeoCase==-1){return "RichGeo_v14a";}
   if(GeoCase==0){return "RichGeo_ascii";}
   if(GeoCase==1){return "RichGeo_OldGdml";}
   if(GeoCase==2){return "RichGeo_NewGdml";}
@@ -232,8 +235,8 @@ TString  GetPMTRotText(float PMTrotX, float PMTrotY){
 TString GetRICH_GeoFile( char *RotMirText, TString  PMTRotText, int GeoCase){
   //GeoCase=-2 ==> old geometry with rich_v08a.geo (RICH starts at 1600, Mirror tilt -1)
   //GeoCase=-1 ==> old geometry with rich_v14a.gdml (RICH starts at 1800, Mirror tilt -1)
-  if(GeoCase==-2){return "rich/rich_v14a.root";}
-  if(GeoCase==-1){return "rich/rich_v08a.geo";}
+  if(GeoCase==-2){return "rich/rich_v08a.geo";}
+  if(GeoCase==-1){return "rich/rich_v14a.root";}
   //GeoCase=0 ==> old geometry with *.geo (own creation)(RICH starts at 1600, Mirror tilt -1)
   //GeoCase=1 ==> gdml-geo: RICH starts at 1800, Mirror tilt -1 or 10, 
   //                        mirror does NOT cover full acceptance)
@@ -244,7 +247,7 @@ TString GetRICH_GeoFile( char *RotMirText, TString  PMTRotText, int GeoCase){
   
   TString Dir2="NewGeo/";
   TString Endung=".root";
-  if(GeoCase==0){Dir2="OlderGeo/"; Endung=".geo";}
+  if(GeoCase==0){Dir2="OldGeo/"; Endung=".geo";}
   if(GeoCase==1){Dir2="OldGeo/";}
   if(GeoCase==2){Dir2="NewGeo/";}
   stringstream ss; 
