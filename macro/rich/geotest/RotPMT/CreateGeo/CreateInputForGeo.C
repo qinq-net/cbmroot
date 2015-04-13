@@ -15,7 +15,7 @@ void CreateInputForGeo(float PMTrotX=5., float PMTrotY=5.){
 
   char InputFileName[256];
   
-  sprintf(InputFileName,"/data/cbmroot/geometry/rich/GeoOpt/RotPMT/GeoFiles/VeryOldGeo/DatFiles/rich_inputfile_RotPMT_%s_%s.dat",ShiftXTxt,ShiftYTxt);
+  sprintf(InputFileName,"/data/cbmroot/geometry/rich/GeoOpt/RotPMT/OldGeo/rich_inputfile_RotPMT_%s_%s.dat",ShiftXTxt,ShiftYTxt);
   cout<<InputFileName<<endl; //continue;
   //return;
   string line;
