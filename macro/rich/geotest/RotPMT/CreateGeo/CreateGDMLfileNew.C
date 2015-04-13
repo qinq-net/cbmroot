@@ -6,8 +6,17 @@ void CreateGDMLfileNew(float PMTrotX=5, float PMTrotY=5, int RotMir=-10){
 
   float DefaultRotX=27.952765 + 5.; float DefaultRotY=13.477 +5.; int RICH_mirror_Y_shift=805;
   float pmt_pos_x_addend=0., pmt_pos_y_addend=0., pmt_pos_z_addend=0.;
-  float pmt_width=1300.; float pmt_height=750;
-  //when chamgimg the rich hight change also the hight of sens_plane.
+
+  float EnlargePMT_Width=400., EnlargePMT_Height=200.;
+  float pmt_width=EnlargePMT_Width+1000.; float pmt_height=EnlargePMT_Height+600;
+
+  float ShiftRichX=1000., ShiftRichY=1000., ShiftRichZ=98.;
+  float RICH_position_from_IP=1800.-ShiftRichZ; 
+  float RICH_mirror_position_from_IP=3500-ShiftRichZ; 
+  float RICH_length=1899.5;
+  float RICH_height=4100; float RICH_entrance_width=2551.17; float RICH_exit_width=5136.;
+  
+
   if(RotMir==1){
     DefaultRotX=6.418315 + 5.; DefaultRotY=13.477 + 5.; RICH_mirror_Y_shift=835;
     pmt_pos_x_addend=0.; pmt_pos_y_addend=0.; pmt_pos_z_addend=0.;
@@ -19,6 +28,7 @@ void CreateGDMLfileNew(float PMTrotX=5, float PMTrotY=5, int RotMir=-10){
   char GeoFileName[256];
   char* InFileUpper="CreateGeo/GdmlUpperPart.txt";//[256];
   char* InFileLower="CreateGeo/GdmlLowerPart.txt";//[256];
+  //char* InFileLower="CreateGeo/GdmlLowerPart_vacuum.txt";//[256];
 
   int ShiftXmod10=(int(PMTrotX*10)) % 10;  
   float IntegerXValue=PMTrotX-(float (ShiftXmod10))/10.;
@@ -55,6 +65,13 @@ void CreateGDMLfileNew(float PMTrotX=5, float PMTrotY=5, int RotMir=-10){
   outfile <<"<variable name=\"pmt_pos_z_addend\" value=\""<<pmt_pos_z_addend<<"\"/>" << std::endl;
   outfile <<"<variable name=\"pmt_width\" value=\""<<pmt_width<<"\"/>" << std::endl;
   outfile <<"<variable name=\"pmt_height\" value=\""<<pmt_height<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"RICH_mirror_position_from_IP\" value=\""<<RICH_mirror_position_from_IP<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"RICH_position_from_IP\" value=\""<<RICH_position_from_IP<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"RICH_length\" value=\""<<RICH_length<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"RICH_height\" value=\""<<RICH_height<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"RICH_entrance_width\" value=\""<<RICH_entrance_width<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"RICH_exit_width\" value=\""<<RICH_exit_width<<"\"/>" << std::endl;
+
   outfile << "                  " << std::endl;
   while ( getline (infile2,line) ){outfile << line<<std::endl;}
   // cout<<"####################################################"<<endl;
