@@ -4,7 +4,7 @@ void Run_Ana_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   TTree::SetMaxTreeSize(90000000000);
   gRandom->SetSeed(10);
 
-  int GeoCase=-1;
+  int GeoCase=2;
   int PtNotP=1;  float MomMin=0.; float MomMax=4.;
   //int PtNotP=0;  float MomMin=3.95; float MomMax=4.;
 
@@ -30,12 +30,14 @@ void Run_Ana_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   TString outDir=GetOutDir(GeoCase);//="/data/GeoOpt/RotPMT/NewGeo/";
   TString GeoText=GetGeoText(GeoCase);
   TString MomText=GetMomText(PtNotP,MomMin,MomMax);
+  TString ExtraText="_WideTheta_WidePhi_NoMagField.";
+  ExtraText=".";
 
-  TString ParFile = outDir + "Parameters_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+".root";
-  TString SimFile = outDir + "Sim_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+".root";
-  TString RecFile = outDir + "Rec_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+".root";
+  TString ParFile = outDir + "Parameters_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
+  TString SimFile = outDir + "Sim_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
+  TString RecFile = outDir + "Rec_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
 
-  TString AnaFile = outDir + "Ana_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+".root";
+  TString AnaFile = outDir + "Ana_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
 
   gDebug = 0;
   TStopwatch timer;
@@ -106,8 +108,8 @@ TString GetGeoText(int GeoCase){
   //GeoCase=2 ==> gdml-geo: RICH starts at 1800, Mirror tilt -1 or 10, 
   //                        mirror does cover full acceptance)
 
-  if(GeoCase==-2){return "RichGeo_v14a";}
-  if(GeoCase==-1){return "RichGeo_v08a";}
+  if(GeoCase==-2){return "RichGeo_v08a";}
+  if(GeoCase==-1){return "RichGeo_v14a";}
   if(GeoCase==0){return "RichGeo_ascii";}
   if(GeoCase==1){return "RichGeo_OldGdml";}
   if(GeoCase==2){return "RichGeo_NewGdml";}
