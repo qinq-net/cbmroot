@@ -4,19 +4,17 @@ void CreateGDMLfileNew(float PMTrotX=5, float PMTrotY=5, int RotMir=-10){
   //float DefaultRotX=34.159435; float DefaultRotY=18.477; //for rotmir=-10 degrees  and no rot pmt (0,0) (old values)
   //if(RotMir==1){ DefaultRotX=17.536; DefaultRotY=18.477; } old values as taken from -1 degrees
 
-  float DefaultRotX=27.952765 + 5.; float DefaultRotY=13.477 +5.; int RICH_mirror_Y_shift=805;
-  float pmt_pos_x_addend=0., pmt_pos_y_addend=0., pmt_pos_z_addend=0.;
-
   float EnlargePMT_Width=400., EnlargePMT_Height=200.;
   float pmt_width=EnlargePMT_Width+1000.; float pmt_height=EnlargePMT_Height+600;
 
-  float ShiftRichX=1000., ShiftRichY=1000., ShiftRichZ=98.;
+  float ShiftRichX=1000., ShiftRichY=1000., ShiftRichZ=0.;
   float RICH_position_from_IP=1800.-ShiftRichZ; 
   float RICH_mirror_position_from_IP=3500-ShiftRichZ; 
   float RICH_length=1899.5;
-  float RICH_height=4100; float RICH_entrance_width=2551.17; float RICH_exit_width=5136.;
+  float RICH_height=4100+ShiftRichY; float RICH_entrance_width=2551.17+ShiftRichX; float RICH_exit_width=5136.+ShiftRichX;
   
-
+  float DefaultRotX=27.952765 + 5.; float DefaultRotY=13.477 +5.; int RICH_mirror_Y_shift=805;
+  float pmt_pos_x_addend=0., pmt_pos_y_addend=0., pmt_pos_z_addend=0.;
   if(RotMir==1){
     DefaultRotX=6.418315 + 5.; DefaultRotY=13.477 + 5.; RICH_mirror_Y_shift=835;
     pmt_pos_x_addend=0.; pmt_pos_y_addend=0.; pmt_pos_z_addend=0.;
@@ -28,7 +26,7 @@ void CreateGDMLfileNew(float PMTrotX=5, float PMTrotY=5, int RotMir=-10){
   char GeoFileName[256];
   char* InFileUpper="CreateGeo/GdmlUpperPart.txt";//[256];
   char* InFileLower="CreateGeo/GdmlLowerPart.txt";//[256];
-  //char* InFileLower="CreateGeo/GdmlLowerPart_vacuum.txt";//[256];
+  //char* InFileLower="CreateGeo/GdmlLowerPart_CO2.txt";//[256];
 
   int ShiftXmod10=(int(PMTrotX*10)) % 10;  
   float IntegerXValue=PMTrotX-(float (ShiftXmod10))/10.;
@@ -42,8 +40,8 @@ void CreateGDMLfileNew(float PMTrotX=5, float PMTrotY=5, int RotMir=-10){
   
   std::ifstream infile1 (InFileUpper);
   std::ifstream infile2 (InFileLower);
-  //sprintf(GeoFileName,"/hera/cbm/users/tariq/cbmroot/geometry/rich/GeoOpt/RotPMT/NewGeo/rich_geo_%s_RotPMT_%s_%s.gdml",RotMirText,ShiftXTxt,ShiftYTxt);
-  sprintf(GeoFileName,"/data/cbmroot/geometry/rich/GeoOpt/RotPMT/NewGeo/rich_geo_%s_RotPMT_%s_%s.gdml",RotMirText,ShiftXTxt,ShiftYTxt);
+  sprintf(GeoFileName,"/hera/cbm/users/tariq/cbmroot/geometry/rich/GeoOpt/RotPMT/NewGeo/rich_geo_%s_RotPMT_%s_%s.gdml",RotMirText,ShiftXTxt,ShiftYTxt);
+  //sprintf(GeoFileName,"/data/cbmroot/geometry/rich/GeoOpt/RotPMT/NewGeo/rich_geo_%s_RotPMT_%s_%s.gdml",RotMirText,ShiftXTxt,ShiftYTxt);
  
   cout<<GeoFileName<<endl; //continue;
   //return;
