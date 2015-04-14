@@ -4,7 +4,7 @@ void CreateGDMLfileNew(float PMTrotX=5, float PMTrotY=5, int RotMir=-10){
   //float DefaultRotX=34.159435; float DefaultRotY=18.477; //for rotmir=-10 degrees  and no rot pmt (0,0) (old values)
   //if(RotMir==1){ DefaultRotX=17.536; DefaultRotY=18.477; } old values as taken from -1 degrees
 
-  float EnlargePMT_Width=400., EnlargePMT_Height=200.;
+  float EnlargePMT_Width=275., EnlargePMT_Height=150.;
   float pmt_width=EnlargePMT_Width+1000.; float pmt_height=EnlargePMT_Height+600;
 
   float ShiftRichX=1000., ShiftRichY=1000., ShiftRichZ=0.;
@@ -25,8 +25,8 @@ void CreateGDMLfileNew(float PMTrotX=5, float PMTrotY=5, int RotMir=-10){
   
   char GeoFileName[256];
   char* InFileUpper="CreateGeo/GdmlUpperPart.txt";//[256];
-  char* InFileLower="CreateGeo/GdmlLowerPart.txt";//[256];
-  //char* InFileLower="CreateGeo/GdmlLowerPart_CO2.txt";//[256];
+  //char* InFileLower="CreateGeo/GdmlLowerPart.txt";//[256];
+  char* InFileLower="CreateGeo/GdmlLowerPart_CO2.txt";//[256];
 
   int ShiftXmod10=(int(PMTrotX*10)) % 10;  
   float IntegerXValue=PMTrotX-(float (ShiftXmod10))/10.;
