@@ -30,11 +30,15 @@ void Run_Ana_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   TString outDir=GetOutDir(GeoCase);//="/data/GeoOpt/RotPMT/NewGeo/";
   TString GeoText=GetGeoText(GeoCase);
   TString MomText=GetMomText(PtNotP,MomMin,MomMax);
-  TString ExtraText="_WideTheta_WidePhi_NoMagField.";
-  ExtraText=".";
+  TString ExtraText="_RegularTheta.";
+  //  ExtraText=".";
 
   TString ParFile = outDir + "Parameters_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
   TString SimFile = outDir + "Sim_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
+  TString RecFile = outDir + "Rec_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
+
+  TString AnaFile = outDir + "Ana_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
+
   TString RecFile = outDir + "Rec_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
 
   TString AnaFile = outDir + "Ana_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
@@ -116,8 +120,8 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  return "/data/GeoOpt/RotPMT/";
-  //return "/hera/cbm/users/tariq/GeoOptRootFiles/RotPMT/";
+  //return "/data/GeoOpt/RotPMT/";
+  return "/hera/cbm/users/tariq/GeoOptRootFiles/RotPMT/";
   // if(GeoCase<=0){return "/data/GeoOpt/RotPMT/OlderGeo/";}
   // if(GeoCase==1){return "/data/GeoOpt/RotPMT/OldGeo/";}
   // if(GeoCase==2){return "/data/GeoOpt/RotPMT/NewGeo/";}
