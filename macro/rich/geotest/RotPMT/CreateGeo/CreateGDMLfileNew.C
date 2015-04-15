@@ -1,38 +1,40 @@
 #include <iostream>
 #include <fstream>  
 void CreateGDMLfileNew(float PMTrotX=5, float PMTrotY=5, int RotMir=-10){
-  //float DefaultRotX=34.159435; float DefaultRotY=18.477; //for rotmir=-10 degrees  and no rot pmt (0,0) (old values)
-  //if(RotMir==1){ DefaultRotX=17.536; DefaultRotY=18.477; } old values as taken from -1 degrees
 
-  float EnlargePMT_Width=275., EnlargePMT_Height=150.;
-  float pmt_width=EnlargePMT_Width+1000.; float pmt_height=EnlargePMT_Height+600;
-
-  float ShiftRichX=1000., ShiftRichY=1000., ShiftRichZ=0.;
-  float RICH_position_from_IP=1800.-ShiftRichZ; 
-  float RICH_mirror_position_from_IP=3500-ShiftRichZ; 
-  float RICH_length=1899.5;
-  float RICH_height=4100+ShiftRichY; float RICH_entrance_width=2551.17+ShiftRichX; float RICH_exit_width=5136.+ShiftRichX;
   
-  float DefaultRotX=27.952765 + 5.; float DefaultRotY=13.477 +5.; int RICH_mirror_Y_shift=805;
-  float pmt_pos_x_addend=0., pmt_pos_y_addend=0., pmt_pos_z_addend=0.;
-  if(RotMir==1){
-    DefaultRotX=6.418315 + 5.; DefaultRotY=13.477 + 5.; RICH_mirror_Y_shift=835;
-    pmt_pos_x_addend=0.; pmt_pos_y_addend=0.; pmt_pos_z_addend=0.;
-  }
+  float Mirror_angle = RotMir;//-10;
+  float PMT_X_addend = 0;
+  float PMT_Y_addend = 0;
+  float PMT_Z_addend = 0;
+  float DeltaPMT_Width=275., DeltaPMT_Height=150.;
+  float PMT_width = 1000 + DeltaPMT_Width;
+  float PMT_height = 600 + DeltaPMT_Height;
+  
+  // float PMT_X_rot_addend = -32.952765;
+  // float PMT_Y_rot_addend = -18.477;
+  
+  float DefaultRotX=32.952765; float DefaultRotY=18.477;
+  
+  if(RotMir==1){DefaultRotX=10.952765.;}
+  if(RotMir==-1){DefaultRotX=14.952765.;}
+  
   char RotMirText[256];
   if(RotMir<0){sprintf( RotMirText,"RotMir_m%d",RotMir*-1);}
   else{sprintf( RotMirText,"RotMir_p%d",RotMir);}
   
   char GeoFileName[256];
+  // char* InFileUpper="GdmlUpperPart.txt";//[256];
+  // char* InFileLower="GdmlLowerPart.txt";//[256];
   char* InFileUpper="CreateGeo/GdmlUpperPart.txt";//[256];
-  //char* InFileLower="CreateGeo/GdmlLowerPart.txt";//[256];
-  char* InFileLower="CreateGeo/GdmlLowerPart_CO2.txt";//[256];
-
+  char* InFileLower="CreateGeo/GdmlLowerPart.txt";//[256];
+  //char* InFileLower="CreateGeo/GdmlLowerPart_CO2.txt";//[256];
+  
   int ShiftXmod10=(int(PMTrotX*10)) % 10;  
   float IntegerXValue=PMTrotX-(float (ShiftXmod10))/10.;
   int ShiftYmod10=(int(PMTrotY*10)) % 10;
   float IntegerYValue=PMTrotY-(float (ShiftYmod10))/10.;
-
+  
   char ShiftXTxt[256]; char ShiftYTxt[256];
   sprintf(ShiftXTxt,"Xpos%dpoint%d",IntegerXValue,ShiftXmod10);
   sprintf(ShiftYTxt,"Ypos%dpoint%d",IntegerYValue,ShiftYmod10);
@@ -40,9 +42,9 @@ void CreateGDMLfileNew(float PMTrotX=5, float PMTrotY=5, int RotMir=-10){
   
   std::ifstream infile1 (InFileUpper);
   std::ifstream infile2 (InFileLower);
-  sprintf(GeoFileName,"/hera/cbm/users/tariq/cbmroot/geometry/rich/GeoOpt/RotPMT/NewGeo/rich_geo_%s_RotPMT_%s_%s.gdml",RotMirText,ShiftXTxt,ShiftYTxt);
-  //sprintf(GeoFileName,"/data/cbmroot/geometry/rich/GeoOpt/RotPMT/NewGeo/rich_geo_%s_RotPMT_%s_%s.gdml",RotMirText,ShiftXTxt,ShiftYTxt);
- 
+  //sprintf(GeoFileName,"/hera/cbm/users/tariq/cbmroot/geometry/rich/GeoOpt/RotPMT/NewGeo/rich_geo_%s_RotPMT_%s_%s.gdml",RotMirText,ShiftXTxt,ShiftYTxt);
+  sprintf(GeoFileName,"/data/cbmroot/geometry/rich/GeoOpt/RotPMT/NewGeo/rich_geo_%s_RotPMT_%s_%s.gdml",RotMirText,ShiftXTxt,ShiftYTxt);
+  
   cout<<GeoFileName<<endl; //continue;
   //return;
   string line;
@@ -52,28 +54,21 @@ void CreateGDMLfileNew(float PMTrotX=5, float PMTrotY=5, int RotMir=-10){
   while ( getline (infile1,line) ){outfile << line<<std::endl;}
   
   outfile << "                  " << std::endl;
-  outfile <<"<variable name=\"RICH_mirror_Y_shift\" value=\""<<RICH_mirror_Y_shift<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"RICH_mirror_angle\" value=\""<<RotMir<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"pmt_rot_x_addend\" value=\""<<PMTrotX-DefaultRotX<<"\"/>";
+  outfile <<"<variable name=\"Mirror_angle\" value=\""<<Mirror_angle<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"PMT_X_addend\" value=\""<<PMT_X_addend<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"PMT_Y_addend\" value=\""<<PMT_Y_addend<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"PMT_Z_addend\" value=\""<<PMT_Z_addend<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"PMT_X_rot_addend\" value=\""<<PMTrotX-DefaultRotX<<"\"/>";  
   outfile << " <!-- rot x ="<< PMTrotX <<" --> " << std::endl;
-  outfile <<"<variable name=\"pmt_rot_y_addend\" value=\""<<PMTrotY-DefaultRotY<<"\"/>";
+  outfile <<"<variable name=\"PMT_Y_rot_addend\" value=\""<<PMTrotY-DefaultRotY<<"\"/>";
   outfile << " <!-- rot y ="<< PMTrotY <<" --> " << std::endl;
-  outfile <<"<variable name=\"pmt_pos_x_addend\" value=\""<<pmt_pos_x_addend<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"pmt_pos_y_addend\" value=\""<<pmt_pos_y_addend<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"pmt_pos_z_addend\" value=\""<<pmt_pos_z_addend<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"pmt_width\" value=\""<<pmt_width<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"pmt_height\" value=\""<<pmt_height<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"RICH_mirror_position_from_IP\" value=\""<<RICH_mirror_position_from_IP<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"RICH_position_from_IP\" value=\""<<RICH_position_from_IP<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"RICH_length\" value=\""<<RICH_length<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"RICH_height\" value=\""<<RICH_height<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"RICH_entrance_width\" value=\""<<RICH_entrance_width<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"RICH_exit_width\" value=\""<<RICH_exit_width<<"\"/>" << std::endl;
 
+  outfile <<"<variable name=\"PMT_width\" value=\""<<PMT_width<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"PMT_height\" value=\""<<PMT_height<<"\"/>" << std::endl;
   outfile << "                  " << std::endl;
   while ( getline (infile2,line) ){outfile << line<<std::endl;}
   // cout<<"####################################################"<<endl;
   outfile.close(); 
-
-
+  
+  
 }
