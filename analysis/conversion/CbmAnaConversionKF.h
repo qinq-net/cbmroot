@@ -40,7 +40,7 @@ public:
 	void Finish();
 	void Exec();
 
-	void KFParticle_Analysis();
+	//void KFParticle_Analysis();
 
 	void SetKF(CbmKFParticleFinder* kfparticle, CbmKFParticleFinderQA* kfparticleQA);
 	void SetSignalIds(std::vector<int> *signalids);

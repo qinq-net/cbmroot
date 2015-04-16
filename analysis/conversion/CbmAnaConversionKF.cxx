@@ -158,7 +158,7 @@ void CbmAnaConversionKF::SetGhostIds(std::vector<int> *ghostids)
 
 
 
-
+/*
 void CbmAnaConversionKF::KFParticle_Analysis()
 {
 	timer.Start();
@@ -285,28 +285,28 @@ void CbmAnaConversionKF::KFParticle_Analysis()
 	
 	
 	
-/*
-	trackindexarray.clear();
-	trackindexarray = fKFtopo->GetPVTrackIndexArray();
-	cout << "trackindexarray: " << trackindexarray.size() << endl;
+
+//	trackindexarray.clear();
+//	trackindexarray = fKFtopo->GetPVTrackIndexArray();
+//	cout << "trackindexarray: " << trackindexarray.size() << endl;
 	
-	KFVertex vertex;
-	vertex = fKFtopo->GetPrimKFVertex();
-	int testnof = 0;
-	testnof = vertex.GetNContributors();
-	cout << "nof contributors: " << testnof << endl;
+//	KFVertex vertex;
+//	vertex = fKFtopo->GetPrimKFVertex();
+//	int testnof = 0;
+//	testnof = vertex.GetNContributors();
+//	cout << "nof contributors: " << testnof << endl;
 	
-	KFParticle particle;
-	particle = fKFtopo->GetPrimVertex();
+//	KFParticle particle;
+//	particle = fKFtopo->GetPrimVertex();
 	
 	
-	for(int i=0; i < kftrackvector->Size(); i++) {
+//	for(int i=0; i < kftrackvector->Size(); i++) {
 		//const kfvector_int& tempPDG;
 		//tempPDG = kftrackvector->PDG;
 		//fKFVertex->At(trackindexarray[i]);
 	
-	}
-*/
+//	}
+
 
 
 	test();
@@ -314,6 +314,7 @@ void CbmAnaConversionKF::KFParticle_Analysis()
 	timer.Stop();
 	fTime += timer.RealTime();
 }
+*/
 
 
 void CbmAnaConversionKF::test() {
