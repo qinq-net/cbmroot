@@ -107,8 +107,8 @@ private:
    TVector3 r1; 
    TVector3 r2; 
    TVector3 n;
-   double PMTPlaneX; double PMTPlaneY;
-   double PMTPlaneXatThird; double PMTPlaneYatThird;
+   double PMTPlaneX; //double PMTPlaneY;
+   //double PMTPlaneXatThird; double PMTPlaneYatThird;
 
    /**
     * \brief get MC Histos (P & Pt).
@@ -197,33 +197,21 @@ private:
    TH2D* H_PointsOut_XY; // distribution of X and Y position of points (tilting pmt plane)
    TH1D* H_NofPhotonsPerEv; // Number of photons per hit
    TH1D* H_NofPhotonsPerHit; // Number of photons per hit
+   TH1D* H_NofPhotonsSmallerThan30; // Number of photons per hit
    TH1D* H_DiffXhit;
    TH1D* H_DiffYhit;
    
-   /* TH1D* H_AlphaMomNormOfXY; */
-   /* TH1D* H_AlphaMomPointsAtXY; */
-   /* TH1D* H_AlphaMomPointsAtPMT; */
-   /* TH1D* H_AlphaRefPointsNormOfXY; */
    TH1D* H_dFocalPoint_Delta;
    TH1D* H_dFocalPoint_Rho;
    TH1D* H_Alpha;
 
    TH1D* H_Alpha_UpLeft;
-   TH1D* H_Alpha_UpLeft_Q1;
-   TH1D* H_Alpha_UpLeft_Q2;
-   TH1D* H_Alpha_UpLeft_Q3;
-   TH1D* H_Alpha_UpLeft_Q4;
-   TH1D* H_Alpha_UpLeft_LeftPart;
-   TH1D* H_Alpha_UpLeft_RightPart;
-
+   TH1D* H_Alpha_UpLeft_LeftHalf;
+   TH1D* H_Alpha_UpLeft_RightHalf;
+   //H_Alpha_UpLeft_RighttHalf
    TH3D* H_Alpha_XYposAtDet;
-   TH3D* H_Alpha_XYposAtDet_Q1;
-   TH3D* H_Alpha_XYposAtDet_Q2;
-   TH3D* H_Alpha_XYposAtDet_Q3;
-   TH3D* H_Alpha_XYposAtDet_Q4;
-   TH3D* H_Alpha_XYposAtDet_LeftPart;
-   TH3D* H_Alpha_XYposAtDet_RightPart;
-
+   TH3D* H_Alpha_XYposAtDet_LeftHalf;
+   TH3D* H_Alpha_XYposAtDet_RightHalf;
 
    TH1D* H_acc_mom_el;
    TH2D* H_acc_pty_el;
@@ -231,45 +219,30 @@ private:
    //////////////////////////////////
    TH1D* H_NofHitsAll;
    TH1D* H_NofRings;
+   TH2D* H_NofRings_NofHits;
 
    //////////////////////////////////
    TH1D *H_RingCenterX;TH1D *H_RingCenterY;TH2D *H_RingCenter;
    TH1D *H_Radius; TH1D *H_aAxis; TH1D *H_bAxis;
    
    TH1D *H_boa; 
-   TH1D *H_boa_Q1; 
-   TH1D *H_boa_Q2; 
-   TH1D *H_boa_Q3; 
-   TH1D *H_boa_Q4; 
-   TH1D *H_boa_LeftPart; 
-   TH1D *H_boa_RightPart;
+   TH1D *H_boa_LeftHalf;
+   TH1D *H_boa_RightHalf;
 
 
    TH1D *H_dR;
-   TH1D *H_dR_Q1; 
-   TH1D *H_dR_Q2; 
-   TH1D *H_dR_Q3; 
-   TH1D *H_dR_Q4; 
-   TH1D *H_dR_LeftPart; 
-   TH1D *H_dR_RightPart;
+   TH1D *H_dR_LeftHalf;
+   TH1D *H_dR_RightHalf;
 
    TH3D *H_RingCenter_Aaxis;  TH3D *H_RingCenter_Baxis;
 
    TH3D *H_RingCenter_boa;
-   TH3D *H_RingCenter_boa_Q1;
-   TH3D *H_RingCenter_boa_Q2;
-   TH3D *H_RingCenter_boa_Q3;
-   TH3D *H_RingCenter_boa_Q4;
-   TH3D *H_RingCenter_boa_LeftPart;
-   TH3D *H_RingCenter_boa_RightPart;
+   TH3D *H_RingCenter_boa_LeftHalf;
+   TH3D *H_RingCenter_boa_RightHalf;
 
    TH3D *H_RingCenter_dR;
-   TH3D *H_RingCenter_dR_Q1;
-   TH3D *H_RingCenter_dR_Q2;
-   TH3D *H_RingCenter_dR_Q3;
-   TH3D *H_RingCenter_dR_Q4;
-   TH3D *H_RingCenter_dR_LeftPart;
-   TH3D *H_RingCenter_dR_RightPart;
+   TH3D *H_RingCenter_dR_LeftHalf;
+   TH3D *H_RingCenter_dR_RightHalf;
 
    /**
     * \brief Assignment operator.
