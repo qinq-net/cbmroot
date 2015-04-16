@@ -121,6 +121,16 @@ void CbmAnaConversionKF::Finish()
 
 
 
+
+void CbmAnaConversionKF::Exec()
+{
+	//KFParticle_Analysis();
+	test2();
+
+}
+
+
+
 void CbmAnaConversionKF::SetKF(CbmKFParticleFinder* kfparticle, CbmKFParticleFinderQA* kfparticleQA)
 {
 	fKFparticle = kfparticle;
@@ -401,6 +411,17 @@ Double_t CbmAnaConversionKF::Invmass_4particles(const CbmMCTrack* mctrack1, cons
     cout << "mc: \t" << sum.Px() << " / " << sum.Py() << " / " << sum.Pz() << " / " << sum.E() << "\t => mag = " << sum.Mag() << endl;
 
 	return sum.Mag();
+}
+
+
+
+
+void CbmAnaConversionKF::test2()
+{
+	const KFPTrackVector* kftrackvector;
+	kftrackvector = fKFtopo->GetTracks();
+	cout << "CbmAnaConversionKF: size of kftrackvector: " << kftrackvector->Size() << endl;
+
 }
 
 

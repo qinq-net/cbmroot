@@ -38,6 +38,7 @@ public:
 	void Init();
 	void InitHistos();
 	void Finish();
+	void Exec();
 
 	void KFParticle_Analysis();
 
@@ -48,6 +49,8 @@ public:
 
 	void test();
 	Double_t Invmass_4particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2, const CbmMCTrack* mctrack3, const CbmMCTrack* mctrack4);
+
+	void test2();
 
 
 

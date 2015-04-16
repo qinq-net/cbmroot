@@ -21,7 +21,7 @@
 
 #include "CbmAnaConversionTomography.h"
 #include "CbmAnaConversionRich.h"
-//#include "CbmAnaConversionKF.h"
+#include "CbmAnaConversionKF.h"
 #include "CbmAnaConversionReco.h"
 #include "CbmAnaConversionPhotons.h"
 #include "CbmAnaConversionRecoFull.h"
@@ -231,7 +231,7 @@ private:
    
    CbmAnaConversionTomography	*fAnaTomography;
    CbmAnaConversionRich			*fAnaRich;
-   //CbmAnaConversionKF			*fAnaKF;
+   CbmAnaConversionKF			*fAnaKF;
    CbmAnaConversionReco			*fAnaReco;
    CbmAnaConversionPhotons		*fAnaPhotons;
    CbmAnaConversionRecoFull		*fAnaRecoFull;

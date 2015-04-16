@@ -21,6 +21,7 @@
 #include "CbmVertex.h"
 #include "CbmKFVertex.h"
 #include "../../littrack/cbm/elid/CbmLitGlobalElectronId.h"
+#include "../dielectron/CbmLmvmKinematicParams.h"
 
 
 
@@ -43,6 +44,7 @@ public:
 	void CombineElectrons();
 	Double_t Invmass_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 
+	CbmLmvmKinematicParams CalculateKinematicParamsReco(const TVector3 electron1, const TVector3 electron2);
 
 
 
@@ -68,6 +70,7 @@ private:
 	vector<TVector3> fElectrons_momenta;
 
 	TH1D * fhElectrons_invmass;
+	TH1D * fhElectrons_invmass_cut;
 
 
 	// timer

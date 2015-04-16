@@ -48,7 +48,7 @@
 
 #include "CbmAnaConversionTomography.h"
 #include "CbmAnaConversionRich.h"
-//#include "CbmAnaConversionKF.h"
+#include "CbmAnaConversionKF.h"
 #include "CbmAnaConversionReco.h"
 #include "CbmAnaConversionPhotons.h"
 #include "CbmAnaConversionRecoFull.h"
@@ -137,7 +137,7 @@ CbmAnaConversion::CbmAnaConversion()
     fTime_rec(0.),
     fAnaTomography(NULL),
     fAnaRich(NULL),
-    //fAnaKF(NULL),
+    fAnaKF(NULL),
     fAnaReco(NULL),
     fAnaPhotons(NULL),
     fAnaRecoFull(NULL)  
@@ -193,7 +193,7 @@ InitStatus CbmAnaConversion::Init()
 	
 	DoTomography = 1;
 	DoRichAnalysis = 1;
-	DoKFAnalysis = 0;
+	DoKFAnalysis = 1;
 	DoReconstruction = 1;
 	DoPhotons = 1;
 	DoRecoFull = 1;
@@ -207,9 +207,9 @@ InitStatus CbmAnaConversion::Init()
 		fAnaRich->Init();
 	}
 	if(DoKFAnalysis) {
-	//	fAnaKF = new CbmAnaConversionKF();
-	//	fAnaKF->SetKF(fKFparticle, fKFparticleFinderQA);
-	//	fAnaKF->Init();
+		fAnaKF = new CbmAnaConversionKF();
+		fAnaKF->SetKF(fKFparticle, fKFparticleFinderQA);
+		fAnaKF->Init();
 	}
 	if(DoReconstruction) {
 		fAnaReco = new CbmAnaConversionReco();
@@ -237,11 +237,11 @@ void CbmAnaConversion::InitHistograms()
 	fhNofElPrim				= new TH1D("fhNofElPrim", "fhNofElPrim;Nof prim El;Entries", 10., -0.5, 9.5);
 	fhNofElSec				= new TH1D("fhNofElSec", "fhNofElSec;Nof Sec El;Entries", 20., -0.5, 19.5);
 	fhNofElAll				= new TH1D("fhNofElAll", "fhNofElAll;Nof All El;Entries", 30., -0.5, 29.5);
-	fhNofPi0_perEvent		= new TH1D("fhNofPi0_perEvent", "fhNofPi0_perEvent;Nof pi0;Entries", 400., -0.5, 799.5);
-	fhNofPi0_perEvent_cut	= new TH1D("fhNofPi0_perEvent_cut", "fhNofPi0_perEvent_cut;Nof pi0;Entries", 400., -0.5, 799.5);
+	fhNofPi0_perEvent		= new TH1D("fhNofPi0_perEvent", "fhNofPi0_perEvent;Nof pi0;Entries", 1000., -0.5, 999.5);
+	fhNofPi0_perEvent_cut	= new TH1D("fhNofPi0_perEvent_cut", "fhNofPi0_perEvent_cut (Z<10cm);Nof pi0;Entries", 800., -0.5, 799.5);
 	fhPi0_z					= new TH1D("fhPi0_z", "fhPi0_z;z [cm];Entries", 600., -0.5, 599.5);
 	fhPi0_z_cut				= new TH1D("fhPi0_z_cut", "fhPi0_z_cut;z [cm];Entries", 600., -0.5, 599.5);
-	fhElectronSources		= new TH1D("fhElectronSources", "fhElectronSources;Source;Entries", 5., 0., 5.);
+	fhElectronSources		= new TH1D("fhElectronSources", "fhElectronSources;Source;Entries", 6., 0., 6.);
 	fhElectronsFromPi0_z	= new TH1D("fhElectronsFromPi0_z", "fhElectronsFromPi0_z (= pos. of gamma conversion);z [cm];Entries", 600., -0.5, 599.5);
 	fHistoList.push_back(fhNofPi0_perEvent);
 	fHistoList.push_back(fhNofPi0_perEvent_cut);
@@ -253,8 +253,9 @@ void CbmAnaConversion::InitHistograms()
 	fhElectronSources->GetXaxis()->SetBinLabel(1, "gamma");
 	fhElectronSources->GetXaxis()->SetBinLabel(2, "pi0");
 	fhElectronSources->GetXaxis()->SetBinLabel(3, "eta");
-	fhElectronSources->GetXaxis()->SetBinLabel(4, "gamma from pi0");
-	fhElectronSources->GetXaxis()->SetBinLabel(5, "gamma from eta");
+	fhElectronSources->GetXaxis()->SetBinLabel(4, "else");
+	fhElectronSources->GetXaxis()->SetBinLabel(5, "gamma from pi0");
+	fhElectronSources->GetXaxis()->SetBinLabel(6, "gamma from eta");
 	
 
 	
@@ -347,7 +348,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 	if(DoKFAnalysis) {
 	//	fAnaKF->SetSignalIds(fKFparticleFinderQA->GetSignalIds());
 	//	fAnaKF->SetGhostIds(fKFparticleFinderQA->GetGhostIds());
-	//	fAnaKF->KFParticle_Analysis();
+		fAnaKF->Exec();
 	}
 
 	if(DoRichAnalysis) {
@@ -461,6 +462,17 @@ void CbmAnaConversion::Exec(Option_t* option)
 		int motherId = mcTrack1->GetMotherId();
 		double momentum = mcTrack1->GetP();
 		stsMatch->GetTrueOverAllHitsRatio();
+
+/*		if (richInd < 0) continue;
+		CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(richInd);
+		if (richMatch == NULL) continue;
+		int richMcTrackId = richMatch->GetMatchedLink().GetIndex();
+		if (richMcTrackId < 0) continue;
+		CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
+		if (mcTrack2 == NULL) continue;
+*/
+		//if(stsMcTrackId != richMcTrackId) continue;
+
        
 		if(DoTomography) {
 			fAnaTomography->TomographyReco(mcTrack1);
@@ -544,7 +556,7 @@ void CbmAnaConversion::Finish()
 
 	if(DoTomography)		{ fAnaTomography->Finish(); }
 	if(DoRichAnalysis)		{ fAnaRich->Finish(); }
-//	if(DoKFAnalysis)		{ fAnaKF->Finish(); }
+	if(DoKFAnalysis)		{ fAnaKF->Finish(); }
 	if(DoReconstruction)	{ fAnaReco->Finish(); }
 	if(DoRecoFull)			{ fAnaRecoFull->Finish(); }
 	if(DoPhotons)			{ fAnaPhotons->Finish(); }
@@ -596,8 +608,8 @@ void CbmAnaConversion::AnalyseElectrons(CbmMCTrack* mctrack)
 		CbmMCTrack* grandmother = (CbmMCTrack*) fMcTracks->At(grandmotherId);
 		int mcGrandmotherPdg  = -1;
 		if (NULL != grandmother) mcGrandmotherPdg = grandmother->GetPdgCode();
-		if(mcGrandmotherPdg == 111) fhElectronSources->Fill(3);
-		if(mcGrandmotherPdg == 221) fhElectronSources->Fill(4);
+		if(mcGrandmotherPdg == 111) fhElectronSources->Fill(4);
+		if(mcGrandmotherPdg == 221) fhElectronSources->Fill(5);
 
 		if(mcGrandmotherPdg == 111) {
 			TVector3 v;
@@ -608,6 +620,7 @@ void CbmAnaConversion::AnalyseElectrons(CbmMCTrack* mctrack)
 	}
 	if(mcMotherPdg == 111) fhElectronSources->Fill(1);
 	if(mcMotherPdg == 221) fhElectronSources->Fill(2);
+	if(mcMotherPdg != 22 && mcMotherPdg != 111 && mcMotherPdg != 221) fhElectronSources->Fill(3);
 
 	if (mcMotherPdg == 22) {
 		TVector3 v;

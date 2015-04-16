@@ -54,6 +54,7 @@ public:
 
 	void AnalyseElectronsFromGammaMC();
 	void AnalyseElectronsFromGammaReco();
+	void AnalyseElectronsFromPi0Reco();
 
 
 
@@ -91,10 +92,12 @@ private:
 	TH1D * fPhotonsRest_ptMC_e;
 	TH1D * fPhotonsRest_ptMC_eta;
 
-	vector<CbmMCTrack*> fMCTracklist;
-	vector<CbmMCTrack*> fMCTracklist_allElectronsFromGamma;
-	vector<CbmMCTrack*> fRecoTracklist_allElectronsFromGamma;
-	vector<TVector3> fRecoTracklist_allElectronsFromGammaMom;
+	vector<CbmMCTrack*>	fMCTracklist;
+	vector<CbmMCTrack*>	fMCTracklist_allElectronsFromGamma;
+	vector<CbmMCTrack*>	fRecoTracklist_allElectronsFromGamma;
+	vector<TVector3>	fRecoTracklist_allElectronsFromGammaMom;
+	vector<CbmMCTrack*>	fRecoTracklist_allElectronsFromPi0;
+	vector<TVector3>	fRecoTracklist_allElectronsFromPi0Mom;
 
 	Int_t global_nof_photonsMC;
 	Int_t global_nof_photonsReco;
@@ -126,6 +129,7 @@ private:
 
 	// distribution of invariant masses from MC-true data
 	TH1D * fhEFG_invmass_all;
+	TH1D * fhEFG_invmass_combBack;
 	TH1D * fhEFG_invmass_allSameG;
 	TH1D * fhEFG_invmass_direct;
 	TH1D * fhEFG_invmass_pi0;
@@ -189,10 +193,26 @@ private:
 
 	// distribution of invariant masses from reconstructed momenta
 	TH1D * fhEFG_invmass_all_reco;
+	TH1D * fhEFG_invmass_combBack_reco;
 	TH1D * fhEFG_invmass_allSameG_reco;
 	TH1D * fhEFG_invmass_direct_reco;
 	TH1D * fhEFG_invmass_pi0_reco;
 	TH1D * fhEFG_invmass_eta_reco;
+
+	// opening angle vs pt from reconstructed data
+	//TH2D * fhEFG_angleVSpt_all_reco;
+	//TH2D * fhEFG_angleVSpt_combBack_reco;
+	TH2D * fhEFG_angleVSpt_allSameG_reco;
+	TH2D * fhEFG_angleVSpt_direct_reco;
+	TH2D * fhEFG_angleVSpt_pi0_reco;
+	TH2D * fhEFG_angleVSpt_eta_reco;
+
+	// momentum resolution of photons from reconstructed data
+	TH2D * fhEFG_momentumResolutionPhoton_reco;
+	TH2D * fhEFG_momentumResolutionElectrons_reco;
+
+	// opening angles for e+e- pairs from pi0 dalitz decays (i.e. e+e- pairs directly stemming from pi0)
+	TH1D * fhEFPI0_angle_reco;
 
 
 	// timer

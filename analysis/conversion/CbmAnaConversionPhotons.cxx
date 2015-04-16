@@ -64,6 +64,8 @@ CbmAnaConversionPhotons::CbmAnaConversionPhotons()
 	fMCTracklist_allElectronsFromGamma(),
 	fRecoTracklist_allElectronsFromGamma(),
 	fRecoTracklist_allElectronsFromGammaMom(),
+	fRecoTracklist_allElectronsFromPi0(),
+	fRecoTracklist_allElectronsFromPi0Mom(),
 	global_nof_photonsMC(0),
 	global_nof_photonsReco(0),
 	fhGlobalNofDirectPhotons(NULL),
@@ -86,6 +88,7 @@ CbmAnaConversionPhotons::CbmAnaConversionPhotons()
 	fhEFG_angleVSpt_pi0(NULL),
 	fhEFG_angleVSpt_eta(NULL),
 	fhEFG_invmass_all(NULL),
+	fhEFG_invmass_combBack(NULL),
 	fhEFG_invmass_allSameG(NULL),
 	fhEFG_invmass_direct(NULL),
 	fhEFG_invmass_pi0(NULL),
@@ -126,11 +129,25 @@ CbmAnaConversionPhotons::CbmAnaConversionPhotons()
 	fhEFG_angle_direct_reco(NULL),
 	fhEFG_angle_pi0_reco(NULL),
 	fhEFG_angle_eta_reco(NULL),
+	fhEFG_angleBelow1GeV_all_reco(NULL),
+	fhEFG_angleBelow1GeV_combBack_reco(NULL),
+	fhEFG_angleBelow1GeV_allSameG_reco(NULL),
+	fhEFG_angleBelow1GeV_direct_reco(NULL),
+	fhEFG_angleBelow1GeV_pi0_reco(NULL),
+	fhEFG_angleBelow1GeV_eta_reco(NULL),
 	fhEFG_invmass_all_reco(NULL),
+	fhEFG_invmass_combBack_reco(NULL),
 	fhEFG_invmass_allSameG_reco(NULL),
 	fhEFG_invmass_direct_reco(NULL),
 	fhEFG_invmass_pi0_reco(NULL),
 	fhEFG_invmass_eta_reco(NULL),
+	fhEFG_angleVSpt_allSameG_reco(NULL),
+	fhEFG_angleVSpt_direct_reco(NULL),
+	fhEFG_angleVSpt_pi0_reco(NULL),
+	fhEFG_angleVSpt_eta_reco(NULL),
+	fhEFG_momentumResolutionPhoton_reco(NULL),
+	fhEFG_momentumResolutionElectrons_reco(NULL),
+	fhEFPI0_angle_reco(NULL),
     timer(),
     fTime(0.)
 {
@@ -236,11 +253,13 @@ void CbmAnaConversionPhotons::InitHistos()
 	fHistoList_EFG_angle.push_back(fhEFG_angle_pi0);
 	fHistoList_EFG_angle.push_back(fhEFG_angle_eta);
 	fhEFG_invmass_all		= new TH1D("fhEFG_invmass_all", "fhEFG_invmass_all; invmass [GeV/c^2]; #", 5000, 0., 0.5);
+	fhEFG_invmass_combBack	= new TH1D("fhEFG_invmass_combBack", "fhEFG_invmass_combBack; invmass [GeV/c^2]; #", 5000, 0., 0.5);
 	fhEFG_invmass_allSameG	= new TH1D("fhEFG_invmass_allSameG", "fhEFG_invmass_allSameG; invmass [GeV/c^2]; #", 1000, 0., 0.1);
 	fhEFG_invmass_direct	= new TH1D("fhEFG_invmass_direct", "fhEFG_invmass_direct; invmass [GeV/c^2]; #", 1000, 0., 0.1);
 	fhEFG_invmass_pi0		= new TH1D("fhEFG_invmass_pi0", "fhEFG_invmass_pi0; invmass [GeV/c^2]; #", 1000, 0., 0.1);
 	fhEFG_invmass_eta		= new TH1D("fhEFG_invmass_eta", "fhEFG_invmass_eta; invmass [GeV/c^2]; #", 1000, 0., 0.1);
 	fHistoList_EFG_invmass.push_back(fhEFG_invmass_all);
+	fHistoList_EFG_invmass.push_back(fhEFG_invmass_combBack);
 	fHistoList_EFG_invmass.push_back(fhEFG_invmass_allSameG);
 	fHistoList_EFG_invmass.push_back(fhEFG_invmass_direct);
 	fHistoList_EFG_invmass.push_back(fhEFG_invmass_pi0);
@@ -289,10 +308,10 @@ void CbmAnaConversionPhotons::InitHistos()
 	// opening angle vs energy (MC)
 	//fhEFG_angleVSenergy_all			= new TH2D("fhEFG_angleVSenergy_all", "fhEFG_angleVSenergy_all;opening angle [deg];energy [GeV]", 2000, 0., 100., 5000, 0., 50.);
 	//fhEFG_angleVSenergy_combBack	= new TH2D("fhEFG_angleVSenergy_combBack", "fhEFG_angleVSenergy_combBack;opening angle [deg];energy [GeV]", 2000, 0., 100., 5000, 0., 50.);
-	fhEFG_angleVSenergy_allSameG	= new TH2D("fhEFG_angleVSenergy_allSameG", "fhEFG_angleVSenergy_allSameG;opening angle [deg];energy [GeV]", 400, 0., 20., 5000, 0., 50.);
-	fhEFG_angleVSenergy_direct		= new TH2D("fhEFG_angleVSenergy_direct", "fhEFG_angleVSenergy_direct;opening angle [deg];energy [GeV]", 400, 0., 20., 5000, 0., 50.);
-	fhEFG_angleVSenergy_pi0			= new TH2D("fhEFG_angleVSenergy_pi0", "fhEFG_angleVSenergy_pi0;opening angle [deg];energy [GeV]", 400, 0., 20., 5000, 0., 50.);
-	fhEFG_angleVSenergy_eta			= new TH2D("fhEFG_angleVSenergy_eta", "fhEFG_angleVSenergy_eta;opening angle [deg];energy [GeV]", 400, 0., 20., 5000, 0., 50.);
+	fhEFG_angleVSenergy_allSameG	= new TH2D("fhEFG_angleVSenergy_allSameG", "fhEFG_angleVSenergy_allSameG;energy [GeV];opening angle [deg]", 5000, 0., 50., 400, 0., 20.);
+	fhEFG_angleVSenergy_direct		= new TH2D("fhEFG_angleVSenergy_direct", "fhEFG_angleVSenergy_direct;energy [GeV];opening angle [deg]", 5000, 0., 50., 400, 0., 20.);
+	fhEFG_angleVSenergy_pi0			= new TH2D("fhEFG_angleVSenergy_pi0", "fhEFG_angleVSenergy_pi0;energy [GeV];opening angle [deg]", 5000, 0., 50., 400, 0., 20.);
+	fhEFG_angleVSenergy_eta			= new TH2D("fhEFG_angleVSenergy_eta", "fhEFG_angleVSenergy_eta;energy [GeV];opening angle [deg]", 5000, 0., 50., 400, 0., 20.);
 	//fHistoList_EFG_angle.push_back(fhEFG_angleVSenergy_all);
 	//fHistoList_EFG_angle.push_back(fhEFG_angleVSenergy_combBack);
 	fHistoList_EFG_angle.push_back(fhEFG_angleVSenergy_allSameG);
@@ -303,10 +322,10 @@ void CbmAnaConversionPhotons::InitHistos()
 	// opening angle vs pt (MC)
 	//fhEFG_angleVSpt_all			= new TH2D("fhEFG_angleVSpt_all", "fhEFG_angleVSpt_all;opening angle [deg];pt [GeV/c]", 2000, 0., 100., 500, 0., 5.);
 	//fhEFG_angleVSpt_combBack	= new TH2D("fhEFG_angleVSpt_combBack", "fhEFG_angleVSpt_combBack;opening angle [deg];pt [GeV/c]", 2000, 0., 100., 500, 0., 5.);
-	fhEFG_angleVSpt_allSameG	= new TH2D("fhEFG_angleVSpt_allSameG", "fhEFG_angleVSpt_allSameG;opening angle [deg];pt [GeV/c]", 400, 0., 20., 500, 0., 5.);
-	fhEFG_angleVSpt_direct		= new TH2D("fhEFG_angleVSpt_direct", "fhEFG_angleVSpt_direct;opening angle [deg];pt [GeV/c]", 400, 0., 20., 500, 0., 5.);
-	fhEFG_angleVSpt_pi0			= new TH2D("fhEFG_angleVSpt_pi0", "fhEFG_angleVSpt_pi0;opening angle [deg];pt [GeV/c]", 400, 0., 20., 500, 0., 5.);
-	fhEFG_angleVSpt_eta			= new TH2D("fhEFG_angleVSpt_eta", "fhEFG_angleVSpt_eta;opening angle [deg];pt [GeV/c]", 400, 0., 20., 500, 0., 5.);
+	fhEFG_angleVSpt_allSameG	= new TH2D("fhEFG_angleVSpt_allSameG", "fhEFG_angleVSpt_allSameG;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
+	fhEFG_angleVSpt_direct		= new TH2D("fhEFG_angleVSpt_direct", "fhEFG_angleVSpt_direct;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
+	fhEFG_angleVSpt_pi0			= new TH2D("fhEFG_angleVSpt_pi0", "fhEFG_angleVSpt_pi0;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
+	fhEFG_angleVSpt_eta			= new TH2D("fhEFG_angleVSpt_eta", "fhEFG_angleVSpt_eta;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
 	//fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_all);
 	//fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_combBack);
 	fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_allSameG);
@@ -371,18 +390,42 @@ void CbmAnaConversionPhotons::InitHistos()
 	fHistoList_EFG_angle.push_back(fhEFG_angleBelow1GeV_pi0_reco);
 	fHistoList_EFG_angle.push_back(fhEFG_angleBelow1GeV_eta_reco);
 	
-	fhEFG_invmass_all_reco		= new TH1D("fhEFG_invmass_all_reco", "fhEFG_invmass_all_reco; invmass [GeV/c^2]; #", 500, 0., 5.);
-	fhEFG_invmass_allSameG_reco	= new TH1D("fhEFG_invmass_allSameG_reco", "fhEFG_invmass_allSameG_reco; invmass [GeV/c^2]; #", 500, 0., 5);
-	fhEFG_invmass_direct_reco	= new TH1D("fhEFG_invmass_direct_reco", "fhEFG_invmass_direct_reco; invmass [GeV/c^2]; #", 500, 0., 5);
-	fhEFG_invmass_pi0_reco		= new TH1D("fhEFG_invmass_pi0_reco", "fhEFG_invmass_pi0_reco; invmass [GeV/c^2]; #", 500, 0., 5);
-	fhEFG_invmass_eta_reco		= new TH1D("fhEFG_invmass_eta_reco", "fhEFG_invmass_eta_reco; invmass [GeV/c^2]; #", 500, 0., 5);
+	fhEFG_invmass_all_reco		= new TH1D("fhEFG_invmass_all_reco", "fhEFG_invmass_all_reco; invmass [GeV/c^2]; #", 5000, 0., 5.);
+	fhEFG_invmass_combBack_reco	= new TH1D("fhEFG_invmass_combBack_reco", "fhEFG_invmass_combBack_reco; invmass [GeV/c^2]; #", 5000, 0., 5.);
+	fhEFG_invmass_allSameG_reco	= new TH1D("fhEFG_invmass_allSameG_reco", "fhEFG_invmass_allSameG_reco; invmass [GeV/c^2]; #", 5000, 0., 5);
+	fhEFG_invmass_direct_reco	= new TH1D("fhEFG_invmass_direct_reco", "fhEFG_invmass_direct_reco; invmass [GeV/c^2]; #", 5000, 0., 5);
+	fhEFG_invmass_pi0_reco		= new TH1D("fhEFG_invmass_pi0_reco", "fhEFG_invmass_pi0_reco; invmass [GeV/c^2]; #", 5000, 0., 5);
+	fhEFG_invmass_eta_reco		= new TH1D("fhEFG_invmass_eta_reco", "fhEFG_invmass_eta_reco; invmass [GeV/c^2]; #", 5000, 0., 5);
 	fHistoList_EFG_invmass.push_back(fhEFG_invmass_all_reco);
+	fHistoList_EFG_invmass.push_back(fhEFG_invmass_combBack_reco);
 	fHistoList_EFG_invmass.push_back(fhEFG_invmass_allSameG_reco);
 	fHistoList_EFG_invmass.push_back(fhEFG_invmass_direct_reco);
 	fHistoList_EFG_invmass.push_back(fhEFG_invmass_pi0_reco);
 	fHistoList_EFG_invmass.push_back(fhEFG_invmass_eta_reco);
 
+	// opening angle vs pt (reco)
+	//fhEFG_angleVSpt_all			= new TH2D("fhEFG_angleVSpt_all", "fhEFG_angleVSpt_all;opening angle [deg];pt [GeV/c]", 2000, 0., 100., 500, 0., 5.);
+	//fhEFG_angleVSpt_combBack	= new TH2D("fhEFG_angleVSpt_combBack", "fhEFG_angleVSpt_combBack;opening angle [deg];pt [GeV/c]", 2000, 0., 100., 500, 0., 5.);
+	fhEFG_angleVSpt_allSameG_reco	= new TH2D("fhEFG_angleVSpt_allSameG_reco", "fhEFG_angleVSpt_allSameG_reco;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
+	fhEFG_angleVSpt_direct_reco		= new TH2D("fhEFG_angleVSpt_direct_reco", "fhEFG_angleVSpt_direct_reco;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
+	fhEFG_angleVSpt_pi0_reco		= new TH2D("fhEFG_angleVSpt_pi0_reco", "fhEFG_angleVSpt_pi0_reco;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
+	fhEFG_angleVSpt_eta_reco		= new TH2D("fhEFG_angleVSpt_eta_reco", "fhEFG_angleVSpt_eta_reco;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
+	//fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_all);
+	//fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_combBack);
+	fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_allSameG_reco);
+	fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_direct_reco);
+	fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_pi0_reco);
+	fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_eta_reco);
 
+
+	fhEFG_momentumResolutionPhoton_reco		= new TH2D("fhEFG_momentumResolutionPhoton_reco", "fhEFG_momentumResolutionPhoton_reco;p [GeV/c]; dp/p [%]", 20, 0., 20., 800, 0., 200.);
+	fhEFG_momentumResolutionElectrons_reco	= new TH2D("fhEFG_momentumResolutionElectrons_reco", "fhEFG_momentumResolutionElectrons_reco;p [GeV/c]; dp/p [%]", 20, 0., 20., 1600, 0., 400.);
+	fHistoList_EFG.push_back(fhEFG_momentumResolutionPhoton_reco);
+	fHistoList_EFG.push_back(fhEFG_momentumResolutionElectrons_reco);
+
+
+	fhEFPI0_angle_reco	= new TH1D("fhEFPI0_angle_reco", "fhEFPI0_angle_reco; angle [deg]; #", 500, 0., 50.);
+	fHistoList_photons.push_back(fhEFPI0_angle_reco);
 }
 
 
@@ -472,6 +515,8 @@ void CbmAnaConversionPhotons::Exec()
 	fMCTracklist_allElectronsFromGamma.clear();
 	fRecoTracklist_allElectronsFromGamma.clear();
 	fRecoTracklist_allElectronsFromGammaMom.clear();
+	fRecoTracklist_allElectronsFromPi0.clear();
+	fRecoTracklist_allElectronsFromPi0Mom.clear();
 
 	//AnalysePhotons();
 
@@ -560,6 +605,7 @@ void CbmAnaConversionPhotons::Exec()
 
 	CombineElectrons();
 	AnalyseElectronsFromGammaReco();
+	AnalyseElectronsFromPi0Reco();
 
 
 	timer.Stop();
@@ -669,6 +715,10 @@ void CbmAnaConversionPhotons::FillRecoTracklist_allElectrons(CbmMCTrack* mctrack
 			fRecoTracklist_allElectronsFromGamma.push_back(mctrack);
 			fRecoTracklist_allElectronsFromGammaMom.push_back(refittedMom);
 		}
+		if(motherpdg == 111) {
+			fRecoTracklist_allElectronsFromPi0.push_back(mctrack);
+			fRecoTracklist_allElectronsFromPi0Mom.push_back(refittedMom);
+		}
 	}
 }
 
@@ -713,7 +763,7 @@ void CbmAnaConversionPhotons::CombineElectrons()
 			else check=1;
 		}
 	}
-	fPhotons_nofPerEvent->Fill(photoncounter);
+	//fPhotons_nofPerEvent->Fill(photoncounter);
 
 	global_nof_photonsReco += photoncounter;
 }
@@ -854,6 +904,7 @@ void CbmAnaConversionPhotons::AnalyseElectronsFromGammaMC()
 			// fill only combinations of e+e-, which do not have the same mother gamma -> combinatorial background
 			if(motherID_i != motherID_j) {
 				fhEFG_angle_combBack->Fill(paramSet.fAngle);
+				fhEFG_invmass_combBack->Fill(paramSet.fMinv);
 				fhEFG_momentumPair_combBack->Fill(paramSet.fMomentumMag);
 				fhEFG_energy_combBack->Fill(mothermctrack_i->GetEnergy());
 				continue;
@@ -924,33 +975,47 @@ void CbmAnaConversionPhotons::AnalyseElectronsFromGammaMC()
 void CbmAnaConversionPhotons::AnalyseElectronsFromGammaReco()
 {
 	int electronnumber = fRecoTracklist_allElectronsFromGamma.size();
+	if(fRecoTracklist_allElectronsFromGamma.size() != fRecoTracklist_allElectronsFromGammaMom.size()) {
+		cout << "CbmAnaConversionPhotons::AnalyseElectronsFromGammaReco() - array sizes dont fit!" << endl;
+		return;
+	}
 	cout << "CbmAnaConversionPhotons: array size in AnalyseElectronsFromGammaReco(): " << electronnumber << endl;
 	for(int i=0; i<electronnumber; i++) {
 		for(int j=i; j<electronnumber; j++) {
 			if(fRecoTracklist_allElectronsFromGamma[i]->GetPdgCode() + fRecoTracklist_allElectronsFromGamma[j]->GetPdgCode() != 0) continue;	// only 1 electron and 1 positron allowed
+			
 			
 			CbmLmvmKinematicParams paramSet = CalculateKinematicParamsReco( fRecoTracklist_allElectronsFromGammaMom[i], fRecoTracklist_allElectronsFromGammaMom[j] );
 			
 			fhEFG_angle_all_reco->Fill(paramSet.fAngle);		// fill all combinations of e+e-, even if they dont come from the same origin
 			fhEFG_invmass_all_reco->Fill(paramSet.fMinv);
 			
-			int motherID_i = fMCTracklist_allElectronsFromGamma[i]->GetMotherId();
-			int motherID_j = fMCTracklist_allElectronsFromGamma[j]->GetMotherId();
+			int motherID_i = fRecoTracklist_allElectronsFromGamma[i]->GetMotherId();
+			int motherID_j = fRecoTracklist_allElectronsFromGamma[j]->GetMotherId();
 			
 			if(motherID_i != motherID_j) {
 				fhEFG_angle_combBack_reco->Fill(paramSet.fAngle);
+				fhEFG_invmass_combBack_reco->Fill(paramSet.fMinv);
 				continue;
 			}
 			
 			fhEFG_angle_allSameG_reco->Fill(paramSet.fAngle);		// all combinations of e+e- with the same origin
 			fhEFG_invmass_allSameG_reco->Fill(paramSet.fMinv);
+			fhEFG_angleVSpt_allSameG_reco->Fill(paramSet.fPt, paramSet.fAngle);
+			
 			
 			CbmMCTrack* mothermctrack_i = (CbmMCTrack*)fMcTracks->At(motherID_i);
 			int grandmotherID_i = mothermctrack_i->GetMotherId();
 			
+			fhEFG_momentumResolutionPhoton_reco->Fill(paramSet.fMomentumMag, TMath::Abs(mothermctrack_i->GetP() - paramSet.fMomentumMag)/paramSet.fMomentumMag*100);	// dp/p in percent
+			fhEFG_momentumResolutionElectrons_reco->Fill(fRecoTracklist_allElectronsFromGammaMom[i].Mag(), TMath::Abs(fRecoTracklist_allElectronsFromGammaMom[i].Mag() - fRecoTracklist_allElectronsFromGamma[i]->GetP())/fRecoTracklist_allElectronsFromGammaMom[i].Mag()*100);
+			fhEFG_momentumResolutionElectrons_reco->Fill(fRecoTracklist_allElectronsFromGammaMom[j].Mag(), TMath::Abs(fRecoTracklist_allElectronsFromGammaMom[j].Mag() - fRecoTracklist_allElectronsFromGamma[j]->GetP())/fRecoTracklist_allElectronsFromGammaMom[j].Mag()*100);
+			
+			
 			if(grandmotherID_i == -1) {		// combinations of e+e- from the same gamma, gamma = direct gamma
 				fhEFG_angle_direct_reco->Fill(paramSet.fAngle);
 				fhEFG_invmass_direct_reco->Fill(paramSet.fMinv);
+				fhEFG_angleVSpt_direct_reco->Fill(paramSet.fPt, paramSet.fAngle);
 			}
 			else {		// combinations of e+e- from the same gamma, with gamma estimating from another particle (pi0/eta/...)
 				CbmMCTrack* grandmothermctrack_i = (CbmMCTrack*)fMcTracks->At(grandmotherID_i);
@@ -959,10 +1024,12 @@ void CbmAnaConversionPhotons::AnalyseElectronsFromGammaReco()
 				if(grandmotherpdg_i == 111) {
 					fhEFG_angle_pi0_reco->Fill(paramSet.fAngle);
 					fhEFG_invmass_pi0_reco->Fill(paramSet.fMinv);
+					fhEFG_angleVSpt_pi0_reco->Fill(paramSet.fPt, paramSet.fAngle);
 				}
 				if(grandmotherpdg_i == 221) {
 					fhEFG_angle_eta_reco->Fill(paramSet.fAngle);
 					fhEFG_invmass_eta_reco->Fill(paramSet.fMinv);
+					fhEFG_angleVSpt_eta_reco->Fill(paramSet.fPt, paramSet.fAngle);
 				}
 			}
 		}
@@ -970,4 +1037,31 @@ void CbmAnaConversionPhotons::AnalyseElectronsFromGammaReco()
 }
 
 
+
+
+void CbmAnaConversionPhotons::AnalyseElectronsFromPi0Reco()
+{
+	int electronnumber = fRecoTracklist_allElectronsFromPi0.size();
+	if(fRecoTracklist_allElectronsFromPi0.size() != fRecoTracklist_allElectronsFromPi0Mom.size()) {
+		cout << "CbmAnaConversionPhotons::AnalyseElectronsFromGammaPi0() - array sizes dont fit!" << endl;
+		return;
+	}
+	cout << "CbmAnaConversionPhotons: array size in AnalyseElectronsFromPi0Reco(): " << electronnumber << endl;
+	for(int i=0; i<electronnumber; i++) {
+		for(int j=i; j<electronnumber; j++) {
+			if(fRecoTracklist_allElectronsFromPi0[i]->GetPdgCode() + fRecoTracklist_allElectronsFromPi0[j]->GetPdgCode() != 0) continue;	// only 1 electron and 1 positron allowed
+			
+			
+			CbmLmvmKinematicParams paramSet = CalculateKinematicParamsReco( fRecoTracklist_allElectronsFromPi0Mom[i], fRecoTracklist_allElectronsFromPi0Mom[j] );
+			
+			int motherID_i = fRecoTracklist_allElectronsFromPi0[i]->GetMotherId();
+			int motherID_j = fRecoTracklist_allElectronsFromPi0[j]->GetMotherId();
+			
+			if(motherID_i != motherID_j) {
+				continue;
+			}
+			fhEFPI0_angle_reco->Fill(paramSet.fAngle);
+		}
+	}
+}
 

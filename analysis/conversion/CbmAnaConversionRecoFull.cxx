@@ -105,7 +105,7 @@ void CbmAnaConversionRecoFull::InitHistos()
 {
 	fHistoList_recofull.clear();
 
-	fhElectrons = new TH1I("fhElectrons", "fhElectrons; nof photons per event; #", 7, 0., 7.);
+	fhElectrons = new TH1I("fhElectrons", "fhElectrons; nof photons per event; #", 8, 0., 8.);
 	fHistoList_recofull.push_back(fhElectrons);
 	fhElectrons->GetXaxis()->SetBinLabel(1, "electrons rich");
 	fhElectrons->GetXaxis()->SetBinLabel(2, "electrons trd");
@@ -114,10 +114,13 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fhElectrons->GetXaxis()->SetBinLabel(5, "electrons rich+tof");
 	fhElectrons->GetXaxis()->SetBinLabel(6, "electrons trd+tof");
 	fhElectrons->GetXaxis()->SetBinLabel(7, "electrons rich+trd+tof");
+	fhElectrons->GetXaxis()->SetBinLabel(8, "electrons 2 out of 3");
 
 
 	fhElectrons_invmass = new TH1D("fhElectrons_invmass", "fhElectrons_invmass; invariant mass; #", 600, -0.0025, 2.9975);
+	fhElectrons_invmass_cut = new TH1D("fhElectrons_invmass_cut", "fhElectrons_invmass_cut; invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_recofull.push_back(fhElectrons_invmass);
+	fHistoList_recofull.push_back(fhElectrons_invmass_cut);
 	
 }
 
@@ -218,6 +221,7 @@ void CbmAnaConversionRecoFull::Exec()
 		if(electron_rich && electron_tof) fhElectrons->Fill(4);
 		if(electron_trd && electron_tof) fhElectrons->Fill(5);
 		if(electron_rich && electron_trd && electron_tof) fhElectrons->Fill(6);
+		if( (electron_rich && electron_trd) || (electron_rich && electron_tof) || (electron_trd && electron_tof) ) fhElectrons->Fill(7);
 
 
 		if(electron_rich) {
@@ -253,6 +257,40 @@ void CbmAnaConversionRecoFull::CombineElectrons()
 						
 						Double_t invmass = Invmass_4particlesRECO(fElectrons_momenta[a], fElectrons_momenta[b], fElectrons_momenta[c], fElectrons_momenta[d]);
 						fhElectrons_invmass->Fill(invmass);
+						
+						
+						CbmLmvmKinematicParams params1 = CalculateKinematicParamsReco(fElectrons_momenta[a], fElectrons_momenta[b]);
+						CbmLmvmKinematicParams params2 = CalculateKinematicParamsReco(fElectrons_momenta[a], fElectrons_momenta[c]);
+						CbmLmvmKinematicParams params3 = CalculateKinematicParamsReco(fElectrons_momenta[a], fElectrons_momenta[d]);
+						CbmLmvmKinematicParams params4 = CalculateKinematicParamsReco(fElectrons_momenta[b], fElectrons_momenta[c]);
+						CbmLmvmKinematicParams params5 = CalculateKinematicParamsReco(fElectrons_momenta[b], fElectrons_momenta[d]);
+						CbmLmvmKinematicParams params6 = CalculateKinematicParamsReco(fElectrons_momenta[c], fElectrons_momenta[d]);
+						
+						Double_t openingAngleCut = 1;
+						Int_t IsPhoton_openingAngle1 = (params1.fAngle < openingAngleCut);
+						Int_t IsPhoton_openingAngle2 = (params2.fAngle < openingAngleCut);
+						Int_t IsPhoton_openingAngle3 = (params3.fAngle < openingAngleCut);
+						Int_t IsPhoton_openingAngle4 = (params4.fAngle < openingAngleCut);
+						Int_t IsPhoton_openingAngle5 = (params5.fAngle < openingAngleCut);
+						Int_t IsPhoton_openingAngle6 = (params6.fAngle < openingAngleCut);
+						
+						Double_t invMassCut = 0.03;
+						Int_t IsPhoton_invMass1 = (params1.fMinv < invMassCut);
+						Int_t IsPhoton_invMass2 = (params2.fMinv < invMassCut);
+						Int_t IsPhoton_invMass3 = (params3.fMinv < invMassCut);
+						Int_t IsPhoton_invMass4 = (params4.fMinv < invMassCut);
+						Int_t IsPhoton_invMass5 = (params5.fMinv < invMassCut);
+						Int_t IsPhoton_invMass6 = (params6.fMinv < invMassCut);
+						
+						if(IsPhoton_openingAngle1 && IsPhoton_openingAngle6 && IsPhoton_invMass1 && IsPhoton_invMass6 && (check1 + check2 == 1) && (check3 + check4 == 1)) {
+							fhElectrons_invmass_cut->Fill(invmass);
+						}
+						if(IsPhoton_openingAngle2 && IsPhoton_openingAngle5 && IsPhoton_invMass2 && IsPhoton_invMass5 && (check1 + check3 == 1) && (check2 + check4 == 1)) {
+							fhElectrons_invmass_cut->Fill(invmass);
+						}
+						if(IsPhoton_openingAngle3 && IsPhoton_openingAngle4 && IsPhoton_invMass3 && IsPhoton_invMass4 && (check1 + check4 == 1) && (check2 + check3 == 1)) {
+							fhElectrons_invmass_cut->Fill(invmass);
+						}
 					}
 				}
 			}
@@ -282,5 +320,34 @@ Double_t CbmAnaConversionRecoFull::Invmass_4particlesRECO(const TVector3 part1, 
     sum = lorVec1 + lorVec2 + lorVec3 + lorVec4;    
 
 	return sum.Mag();
+}
+
+
+
+CbmLmvmKinematicParams CbmAnaConversionRecoFull::CalculateKinematicParamsReco(const TVector3 electron1, const TVector3 electron2)
+{
+	CbmLmvmKinematicParams params;
+
+    Double_t energyP = TMath::Sqrt(electron1.Mag2() + M2E);
+    TLorentzVector lorVecP(electron1, energyP);
+
+    Double_t energyM = TMath::Sqrt(electron2.Mag2() + M2E);
+    TLorentzVector lorVecM(electron2, energyM);
+
+    TVector3 momPair = electron1 + electron2;
+    Double_t energyPair = energyP + energyM;
+    Double_t ptPair = momPair.Perp();
+    Double_t pzPair = momPair.Pz();
+    Double_t yPair = 0.5*TMath::Log((energyPair+pzPair)/(energyPair-pzPair));
+    Double_t anglePair = lorVecM.Angle(lorVecP.Vect());
+    Double_t theta = 180.*anglePair/TMath::Pi();
+    Double_t minv = 2.*TMath::Sin(anglePair / 2.)*TMath::Sqrt(electron1.Mag()*electron2.Mag());
+
+    params.fMomentumMag = momPair.Mag();
+    params.fPt = ptPair;
+    params.fRapidity = yPair;
+    params.fMinv = minv;
+    params.fAngle = theta;
+    return params;
 }
 

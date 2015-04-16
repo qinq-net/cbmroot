@@ -47,7 +47,7 @@
 #pragma link C++ class CbmAnaConversion+;
 #pragma link C++ class CbmAnaConversionTomography+;
 #pragma link C++ class CbmAnaConversionRich+;
-//#pragma link C++ class CbmAnaConversionKF+;
+#pragma link C++ class CbmAnaConversionKF+;
 #pragma link C++ class CbmAnaConversionReco+;
 #pragma link C++ class CbmAnaConversionPhotons+;
 #pragma link C++ class CbmAnaConversionRecoFull+;

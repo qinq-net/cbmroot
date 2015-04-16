@@ -98,6 +98,8 @@ private:
 	
 	TH1D * fhEPEM_openingAngle_gg_mc;
 	TH1D * fhEPEM_openingAngle_gg_refitted;
+	TH1D * fhEPEM_openingAngle_gee_mc;
+	TH1D * fhEPEM_openingAngle_gee_refitted;
 
 
 	TH1D * fhInvMass_EPEM_mc;
