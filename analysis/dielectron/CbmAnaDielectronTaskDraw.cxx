@@ -45,22 +45,6 @@ CbmAnaDielectronTaskDraw::CbmAnaDielectronTaskDraw()
    fNofEvents(0),
    fUseMvd(kFALSE),
    fDrawSignificance(kFALSE),
-   fTrdAnnCut(0.),	    
-   fRichAnnCut(0.),	    
-   fPtCut(0.),	    
-   fAngleCut(0.),	    
-   fChiPrimCut(0.),	    
-   fGammaCut(0.),	    
-   fStCutAngle(0.),	    
-   fStCutPP(0.),	    
-   fTtCutAngle(0.),	    
-   fTtCutPP(0.),
-   fRtCutAngle(0.),
-   fRtCutPP(0.),
-   fMvd1CutP(0.),	    
-   fMvd1CutD(0.),	    
-   fMvd2CutP(0.),	    
-   fMvd2CutD(0.),       
    fHM(NULL),
    fCanvas(),
    fOutputDir("")
@@ -78,22 +62,7 @@ void CbmAnaDielectronTaskDraw::DrawHistFromFile(
    fUseMvd = useMvd;
    fDrawSignificance = drawSig;
 
-   fTrdAnnCut = 0.85;
-   fRichAnnCut = 0.0;
-   fPtCut = 0.2;
-   fAngleCut = 1.;
-   fChiPrimCut = 2.;
-   fGammaCut = 0.025;
-   fStCutAngle = 1.5;
-   fStCutPP = 1.5;
-   fTtCutAngle = 0.75;
-   fTtCutPP = 4.0;
-   fRtCutAngle = 1.25;
-   fRtCutPP = 2.0;
-   fMvd1CutP = 1.2;
-   fMvd1CutD = 0.4;
-   fMvd2CutP = 1.5;
-   fMvd2CutD = 0.5;
+   fCuts.SetDefaultCuts();
 
    fHM = new CbmHistManager();
    TFile* file = new TFile(fileName.c_str());
@@ -512,25 +481,25 @@ void CbmAnaDielectronTaskDraw::Draw1DCut(
 
 void CbmAnaDielectronTaskDraw::DrawCutDistributions()
 {
-   Draw1DCut("fh_richann", "left", fRichAnnCut);
-   Draw1DCut("fh_trdann", "left", fTrdAnnCut);
+   Draw1DCut("fh_richann", "left", fCuts.fRichAnnCut);
+   Draw1DCut("fh_trdann", "left", fCuts.fTrdAnnCut);
    Draw2DCut("fh_tofm2");
 
-   Draw1DCut("fh_chi2prim", "right", fChiPrimCut);
-   Draw1DCut("fh_pt", "left", fPtCut);
+   Draw1DCut("fh_chi2prim", "right", fCuts.fChiPrimCut);
+   Draw1DCut("fh_pt", "left", fCuts.fPtCut);
    Draw1DCut("fh_mom", "left");
    Draw1DCut("fh_chi2sts", "right");
 
-   Draw2DCut("fh_stcut", fStCutPP, fStCutAngle);
-   Draw2DCut("fh_ttcut", fTtCutPP, fTtCutAngle);
-   Draw2DCut("fh_rtcut", fRtCutPP, fRtCutAngle);
+   Draw2DCut("fh_stcut", fCuts.fStCutPP, fCuts.fStCutAngle);
+   Draw2DCut("fh_ttcut", fCuts.fTtCutPP, fCuts.fTtCutAngle);
+   Draw2DCut("fh_rtcut", fCuts.fRtCutPP, fCuts.fRtCutAngle);
 
-   Draw2DCut("fh_stcut_pion", fStCutPP, fStCutAngle);
-   Draw2DCut("fh_ttcut_pion", fTtCutPP, fTtCutAngle);
-   Draw2DCut("fh_rtcut_pion", fRtCutPP, fRtCutAngle);
-   Draw2DCut("fh_stcut_truepair", fStCutPP, fStCutAngle);
-   Draw2DCut("fh_ttcut_truepair", fTtCutPP, fTtCutAngle);
-   Draw2DCut("fh_rtcut_truepair", fRtCutPP, fRtCutAngle);
+   Draw2DCut("fh_stcut_pion", fCuts.fStCutPP, fCuts.fStCutAngle);
+   Draw2DCut("fh_ttcut_pion", fCuts.fTtCutPP, fCuts.fTtCutAngle);
+   Draw2DCut("fh_rtcut_pion", fCuts.fRtCutPP, fCuts.fRtCutAngle);
+   Draw2DCut("fh_stcut_truepair", fCuts.fStCutPP, fCuts.fStCutAngle);
+   Draw2DCut("fh_ttcut_truepair", fCuts.fTtCutPP, fCuts.fTtCutAngle);
+   Draw2DCut("fh_rtcut_truepair", fCuts.fRtCutPP, fCuts.fRtCutAngle);
 
  /*  TH2D* st = H2("fh_stcut_signal");
    double sumT = 0.;
@@ -554,8 +523,8 @@ void CbmAnaDielectronTaskDraw::DrawCutDistributions()
 */
 
    if (fUseMvd) {
-      Draw2DCut("fh_mvd1cut", fMvd1CutD, fMvd1CutP);
-      Draw2DCut("fh_mvd2cut", fMvd2CutD, fMvd2CutP);
+      Draw2DCut("fh_mvd1cut", fCuts.fMvd1CutD, fCuts.fMvd1CutP);
+      Draw2DCut("fh_mvd2cut", fCuts.fMvd2CutD, fCuts.fMvd2CutP);
    }
 }
 

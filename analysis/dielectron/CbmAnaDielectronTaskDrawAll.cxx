@@ -536,16 +536,16 @@ void CbmAnaDielectronTaskDrawAll::DrawSBgSignals()
          double eff = 100. * H1(iF, "fh_signal_pty_" + CbmLmvmHist::fAnaSteps[step])->GetEntries() / H1(iF, "fh_signal_pty_" + CbmLmvmHist::fAnaSteps[kMc])->GetEntries();
 
          cDashboard->cd();
-         latex->DrawLatex(0.05, 1.0 - iDash*0.05, signalName.c_str());
-         latex->DrawLatex(0.2, 1.0 - iDash*0.05, CbmLmvmHist::fAnaSteps[step].c_str());
+         latex->DrawLatex(0.05, 1.0 - iDash*0.04, signalName.c_str());
+         latex->DrawLatex(0.2, 1.0 - iDash*0.04, CbmLmvmHist::fAnaSteps[step].c_str());
          str.Form("%.2f", eff);
-         latex->DrawLatex(0.4, 1.0 - iDash*0.05, str.Data());
+         latex->DrawLatex(0.4, 1.0 - iDash*0.04, str.Data());
          str.Form("%.3f", sumSignal/sumBg);
-         latex->DrawLatex(0.55, 1.0 - iDash*0.05, str.Data());
+         latex->DrawLatex(0.55, 1.0 - iDash*0.04, str.Data());
          str.Form("%.1f", 1000.*mean);
-         latex->DrawLatex(0.7, 1.0 - iDash*0.05, str.Data());
+         latex->DrawLatex(0.7, 1.0 - iDash*0.04, str.Data());
          str.Form("%.1f", 1000.*sigma);
-         latex->DrawLatex(0.85, 1.0 - iDash*0.05, str.Data());
+         latex->DrawLatex(0.85, 1.0 - iDash*0.04, str.Data());
 
          h_s_bg->GetXaxis()->SetBinLabel(x, CbmLmvmHist::fAnaStepsLatex[step].c_str());
          if (sbg < 1000.) h_s_bg->SetBinContent(x, sbg);

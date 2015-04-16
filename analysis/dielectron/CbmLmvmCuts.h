@@ -8,6 +8,10 @@
 #ifndef CBM_LMVM_CUTS_H
 #define CBM_LMVM_CUTS_H
 
+#include "TObject.h"
+#include <iostream>
+
+using namespace std;
 
 class CbmLmvmCuts {
 public:
