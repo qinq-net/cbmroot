@@ -157,6 +157,15 @@ CbmRichRecGeoPar CbmRichHitProducer::InitGeometry()
 	if (sensNodes->GetEntriesFast() > 0 && passNodes->GetEntriesFast() > 0 ) {
 		return InitAsciiGeometry();
 	} else {
+
+		TObjArray* nodesTop = gGeoManager->GetTopNode()->GetNodes();
+		for (Int_t i1 = 0; i1 < nodesTop->GetEntriesFast(); i1++) {
+			TGeoNode* gasNode = (TGeoNode*) nodesTop->At(i1);
+			if ( TString(gasNode->GetName()).Contains("GAS") ) {
+				return InitRootGeometryTemp();
+			}
+		}
+
 		return InitRootGeometry();
 	}
 }
@@ -330,6 +339,88 @@ CbmRichRecGeoPar CbmRichHitProducer::InitRootGeometry()
    }
    return gp;
 }
+
+// temporary solution for the test geometry
+// this method will be removed in the future
+CbmRichRecGeoPar CbmRichHitProducer::InitRootGeometryTemp()
+{
+   cout << "-I- CbmRichHitProducer::InitRootGeometryTemp" << endl;
+   CbmRichRecGeoPar gp;
+
+	TObjArray* nodesTop = gGeoManager->GetTopNode()->GetNodes();
+	for (Int_t i1 = 0; i1 < nodesTop->GetEntriesFast(); i1++) {
+		TGeoNode* gasNode = (TGeoNode*) nodesTop->At(i1);
+		if ( TString(gasNode->GetName()).Contains("GAS") ) {
+			gp.fNRefrac = 1.000446242;
+			const Double_t *trGas = gasNode->GetMatrix()->GetTranslation();
+			TObjArray* nodes3 = gasNode->GetNodes();
+			for (Int_t i3 = 0; i3 < nodes3->GetEntriesFast(); i3++) {
+				TGeoNode* pmtNode = (TGeoNode*) nodes3->At(i3);
+				if ( TString(pmtNode->GetName()).Contains("PMT") ) {
+					const Double_t *trPmt = pmtNode->GetMatrix()->GetTranslation();
+					const TGeoBBox* pmtShape = (const TGeoBBox*)(pmtNode->GetVolume()->GetShape());
+					Double_t pmtX = trGas[0] + trPmt[0];
+					Double_t pmtY = trGas[1] + trPmt[1];
+					if (pmtX > 0. && pmtY > 0) {
+						const Double_t *rm = pmtNode->GetMatrix()->GetRotationMatrix();
+						TGeoRotation rotM;
+						rotM.SetMatrix(rm);
+						Double_t phi, theta, psi;
+						rotM.GetAngles(phi, theta, psi);
+						cout << "PMT:" << rotM.GetPhiRotation(true) << " " << theta << " " << psi << endl << endl << endl;
+
+						gp.fPmtTheta = TMath::ASin(rm[7]); // tilting angle around x-axis
+						gp.fPmtPhi = -1.*TMath::ASin(rm[2]); // tilting angle around y-axis
+
+						gp.fPmtXOrig = pmtX;
+						gp.fPmtYOrig = pmtY;
+						gp.fPmtZOrig = trGas[2] + trPmt[2] + pmtShape->GetDZ();
+
+						gp.fPmtWidthX = pmtShape->GetDX();
+						gp.fPmtWidthY = pmtShape->GetDY();
+
+						gp.fPmtX = gp.fPmtXOrig * TMath::Cos(gp.fPmtPhi) + gp.fPmtZOrig * TMath::Sin(gp.fPmtPhi);
+						gp.fPmtY = -gp.fPmtXOrig * TMath::Sin(gp.fPmtTheta) * TMath::Sin(gp.fPmtPhi) + gp.fPmtYOrig*TMath::Cos(gp.fPmtTheta) + gp.fPmtZOrig*TMath::Sin(gp.fPmtTheta)*TMath::Cos(gp.fPmtPhi);
+						gp.fPmtZ = -gp.fPmtXOrig * TMath::Cos(gp.fPmtTheta) * TMath::Sin(gp.fPmtPhi) - gp.fPmtYOrig*TMath::Sin(gp.fPmtTheta) + gp.fPmtZOrig*TMath::Cos(gp.fPmtTheta)*TMath::Cos(gp.fPmtPhi);
+
+					}
+				}
+			}
+		} // if RICH_gas
+
+		if ( TString(gasNode->GetName()).Contains("GAS") ) {
+			const Double_t *trGas = gasNode->GetMatrix()->GetTranslation();
+			TObjArray* nodes3 = gasNode->GetNodes();
+			for (Int_t i3 = 0; i3 < nodes3->GetEntriesFast(); i3++) {
+				TGeoNode* mirrorNode = (TGeoNode*) nodes3->At(i3);
+				if ( TString(mirrorNode->GetName()).Contains("MIRROR_TILE") ) {
+
+					const Double_t *rm = mirrorNode->GetMatrix()->GetRotationMatrix();
+					gp.fMirrorTheta = TMath::ASin(rm[3]); // tilting angle around x-axis
+					//gp.fPmtPhi = -1.*TMath::ASin(rm[2]); // tilting angle around y-axis
+
+					const Double_t* matr = mirrorNode->GetMatrix()->GetRotationMatrix();
+					Double_t phi, theta, psi;
+					TGeoRotation rotM;
+					rotM.SetMatrix(matr);
+					rotM.GetAngles(phi, theta, psi);
+					cout << "Mirror:" << phi << " " << theta << " " << psi << endl << endl << endl;
+
+					const Double_t *trMirror = mirrorNode->GetMatrix()->GetTranslation();
+					const TGeoBBox* mirrorShape = (const TGeoBBox*)(mirrorNode->GetVolume()->GetShape());
+
+					gp.fMirrorX = trGas[0] + trMirror[0];
+					gp.fMirrorY = trGas[1] + trMirror[1];
+					gp.fMirrorZ = trGas[2] + trMirror[2];// + mirrorShape->GetDZ();
+					//TODO: set mirror radius form geometry
+					gp.fMirrorR = 300;
+				}
+			}
+		} // if GAS
+	}
+	return gp;
+}
+
 
 void CbmRichHitProducer::Exec(
       Option_t* option)

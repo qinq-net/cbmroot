@@ -69,6 +69,8 @@ public:
     */
    static CbmRichRecGeoPar InitRootGeometry();
 
+   static CbmRichRecGeoPar InitRootGeometryTemp();
+
    /**
     * \brief Init geometry parameters. The Geometry type will be chosen automatically.
     */
