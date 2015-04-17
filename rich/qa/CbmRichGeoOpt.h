@@ -206,10 +206,12 @@ private:
    TH1D* H_Alpha;
 
    TH1D* H_Alpha_UpLeft;
+   TH1D* H_Alpha_UpLeft_RegularTheta;
    TH1D* H_Alpha_UpLeft_LeftHalf;
    TH1D* H_Alpha_UpLeft_RightHalf;
    //H_Alpha_UpLeft_RighttHalf
    TH3D* H_Alpha_XYposAtDet;
+   TH3D* H_Alpha_XYposAtDet_RegularTheta;
    TH3D* H_Alpha_XYposAtDet_LeftHalf;
    TH3D* H_Alpha_XYposAtDet_RightHalf;
 
@@ -226,21 +228,25 @@ private:
    TH1D *H_Radius; TH1D *H_aAxis; TH1D *H_bAxis;
    
    TH1D *H_boa; 
+   TH1D *H_boa_RegularTheta; 
    TH1D *H_boa_LeftHalf;
    TH1D *H_boa_RightHalf;
 
 
    TH1D *H_dR;
+   TH1D *H_dR_RegularTheta;
    TH1D *H_dR_LeftHalf;
    TH1D *H_dR_RightHalf;
 
    TH3D *H_RingCenter_Aaxis;  TH3D *H_RingCenter_Baxis;
 
    TH3D *H_RingCenter_boa;
+   TH3D *H_RingCenter_boa_RegularTheta;
    TH3D *H_RingCenter_boa_LeftHalf;
    TH3D *H_RingCenter_boa_RightHalf;
 
    TH3D *H_RingCenter_dR;
+   TH3D *H_RingCenter_dR_RegularTheta;
    TH3D *H_RingCenter_dR_LeftHalf;
    TH3D *H_RingCenter_dR_RightHalf;
 
