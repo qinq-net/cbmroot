@@ -2,20 +2,29 @@
 #include <fstream>  
 void CreateGDMLfileNew(float PMTrotX=5, float PMTrotY=5, int RotMir=-10){
 
-  
-  float Mirror_angle = RotMir;//-10;
-  float PMT_X_addend = 0;
-  float PMT_Y_addend = 0;
-  float PMT_Z_addend = 0;
+  float RICH_entrance_width = 3500;
+  float RICH_exit_width = 5136;
+  float RICH_height = 6000;
+  float RICH_length = 1997.5;
+  float entrance_width_addend = 2;
+
   float DeltaPMT_Width=275., DeltaPMT_Height=150.;
-  float PMT_width = 1000 + DeltaPMT_Width;
-  float PMT_height = 600 + DeltaPMT_Height;
+  float pmt_width = 1000 + DeltaPMT_Width;
+  float pmt_height = 600 + DeltaPMT_Height;
   
-  // float PMT_X_rot_addend = -32.952765;
-  // float PMT_Y_rot_addend = -18.477;
+  float RICH_mirror_angle = RotMir;
+
+ float pmt_pos_x_addend = 0;
+  float pmt_pos_y_addend = 0;
+  float pmt_pos_z_addend = 0;
+  // float pmt_rot_x_addend = -27.952765;
+  // float pmt_rot_y_addend = -13.477;
+ 
+
   
+  float RICH_mirror_Y_shift = 805;
+
   float DefaultRotX=32.952765; float DefaultRotY=18.477;
-  
   if(RotMir==1){DefaultRotX=10.952765.;}
   if(RotMir==-1){DefaultRotX=14.952765.;}
   
@@ -54,17 +63,27 @@ void CreateGDMLfileNew(float PMTrotX=5, float PMTrotY=5, int RotMir=-10){
   while ( getline (infile1,line) ){outfile << line<<std::endl;}
   
   outfile << "                  " << std::endl;
-  outfile <<"<variable name=\"Mirror_angle\" value=\""<<Mirror_angle<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"PMT_X_addend\" value=\""<<PMT_X_addend<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"PMT_Y_addend\" value=\""<<PMT_Y_addend<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"PMT_Z_addend\" value=\""<<PMT_Z_addend<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"PMT_X_rot_addend\" value=\""<<PMTrotX-DefaultRotX<<"\"/>";  
+  outfile <<"<variable name=\"RICH_entrance_width\" value=\""<<RICH_entrance_width<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"RICH_exit_width\" value=\""<<RICH_exit_width<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"RICH_height\" value=\""<<RICH_height<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"RICH_length\" value=\""<<RICH_length<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"entrance_width_addend\" value=\""<<entrance_width_addend<<"\"/>" << std::endl;
+  
+  outfile <<"<variable name=\"RICH_mirror_angle\" value=\""<<RICH_mirror_angle<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"RICH_mirror_Y_shift\" value=\""<<RICH_mirror_Y_shift<<"\"/>" << std::endl;
+
+  outfile <<"<variable name=\"pmt_width\" value=\""<<pmt_width<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"pmt_height\" value=\""<<pmt_height<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"pmt_pos_x_addend\" value=\""<<pmt_pos_x_addend<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"pmt_pos_y_addend\" value=\""<<pmt_pos_y_addend<<"\"/>" << std::endl;
+  outfile <<"<variable name=\"pmt_pos_z_addend\" value=\""<<pmt_pos_z_addend<<"\"/>" << std::endl;
+
+  outfile <<"<variable name=\"pmt_rot_x_addend\" value=\""<<PMTrotX-DefaultRotX<<"\"/>";  
   outfile << " <!-- rot x ="<< PMTrotX <<" --> " << std::endl;
-  outfile <<"<variable name=\"PMT_Y_rot_addend\" value=\""<<PMTrotY-DefaultRotY<<"\"/>";
+  outfile <<"<variable name=\"pmt_rot_y_addend\" value=\""<<PMTrotY-DefaultRotY<<"\"/>";
   outfile << " <!-- rot y ="<< PMTrotY <<" --> " << std::endl;
 
-  outfile <<"<variable name=\"PMT_width\" value=\""<<PMT_width<<"\"/>" << std::endl;
-  outfile <<"<variable name=\"PMT_height\" value=\""<<PMT_height<<"\"/>" << std::endl;
+ 
   outfile << "                  " << std::endl;
   while ( getline (infile2,line) ){outfile << line<<std::endl;}
   // cout<<"####################################################"<<endl;
