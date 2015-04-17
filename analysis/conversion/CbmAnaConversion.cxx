@@ -520,6 +520,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 	if(DoReconstruction) {
 		fAnaReco->SetTracklistReco(fRecoTracklistEPEM, fRecoMomentum, fRecoRefittedMomentum, fRecoTracklistEPEM_id);
 		fAnaReco->InvariantMassTest_4epem();
+		fAnaReco->CalculateInvMassWithFullRecoCuts();
 	}
 
 	// END - analyse reconstructed tracks

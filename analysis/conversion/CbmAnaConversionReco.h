@@ -19,6 +19,7 @@
 // included from CbmRoot
 #include "CbmMCTrack.h"
 #include "CbmVertex.h"
+#include "../dielectron/CbmLmvmKinematicParams.h"
 
 
 
@@ -47,6 +48,9 @@ public:
 	Int_t NofDaughters(Int_t motherId);
 	Double_t CalculateOpeningAngleReco(TVector3 electron1, TVector3 electron2);
 	Double_t CalculateOpeningAngleMC(CbmMCTrack* mctrack1, CbmMCTrack* mctrack2);
+
+	void CalculateInvMassWithFullRecoCuts();
+	CbmLmvmKinematicParams CalculateKinematicParamsReco(const TVector3 electron1, const TVector3 electron2);
 
 
 
@@ -128,6 +132,8 @@ private:
 	TH1D * fhInvariantMass_pi0epem;
 	TH1D * fhPi0_startvertex;
 	TH1D * fhPi0_startvertexElectrons;
+
+	TH1D * fhInvMassWithFullRecoCuts;
 
 
 	// timer

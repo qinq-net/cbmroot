@@ -52,6 +52,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fElectrons_track(),
 	fElectrons_momenta(),
 	fhElectrons_invmass(NULL),
+	fhElectrons_invmass_cut(NULL),
     timer(),
     fTime(0.)
 {
@@ -105,7 +106,7 @@ void CbmAnaConversionRecoFull::InitHistos()
 {
 	fHistoList_recofull.clear();
 
-	fhElectrons = new TH1I("fhElectrons", "fhElectrons; nof photons per event; #", 8, 0., 8.);
+	fhElectrons = new TH1I("fhElectrons", "fhElectrons;; #", 8, 0., 8.);
 	fHistoList_recofull.push_back(fhElectrons);
 	fhElectrons->GetXaxis()->SetBinLabel(1, "electrons rich");
 	fhElectrons->GetXaxis()->SetBinLabel(2, "electrons trd");

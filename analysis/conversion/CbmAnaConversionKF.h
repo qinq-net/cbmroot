@@ -21,6 +21,8 @@
 #include "CbmVertex.h"
 #include "CbmKFParticleFinder.h"
 #include "CbmKFParticleFinderQA.h"
+#include "CbmKFParticle.h"
+#include "KFParticle.h"
 
 
 
@@ -51,6 +53,8 @@ public:
 	Double_t Invmass_4particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2, const CbmMCTrack* mctrack3, const CbmMCTrack* mctrack4);
 
 	void test2();
+	void Reconstruct();
+	Double_t Invmass_4particlesRECO(KFParticle part1, KFParticle part2, KFParticle part3, KFParticle part4);
 
 
 
@@ -87,6 +91,11 @@ private:
 
 
 	vector<TH1*> fHistoList_kfparticle;	// list of all histograms containing results from KFParticle package
+	
+
+	vector<KFParticle> particlevector;
+	vector<int> electronIDs;
+	TH1D * fhInvMassPi0WithFullReco;
 
 
 	// timer
