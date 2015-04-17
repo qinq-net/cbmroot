@@ -48,6 +48,7 @@ public:
     fh_mean_pi0_minv(),
     fh_mean_eta_minv_pt(),
     fh_mean_pi0_minv_pt(),
+    fh_mean_sbg_vs_minv(),
     fh_sum_s_minv(),
     fOutputDir("")
       {

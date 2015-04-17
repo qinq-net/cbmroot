@@ -19,7 +19,7 @@ using namespace std;
 // --- Standard constructor
 CbmMCDataArray::CbmMCDataArray(const char* branchname,
 		                           const std::vector<std::list<TString> >& fileList)
-  : fLegacy(0), fLegacyArray(NULL), fBranchName(branchname), fSize(-1111)
+  : fLegacy(0), fLegacyArray(NULL), fBranchName(branchname), fSize(-1111), fChains(), fTArr(), fN(), fArrays()
 {
   list<TString>::const_iterator p;
   Int_t i;
@@ -48,7 +48,7 @@ CbmMCDataArray::CbmMCDataArray(const char* branchname,
 
 // --- Legacy constructor
 CbmMCDataArray::CbmMCDataArray(const char* branchname)
-  : fLegacy(1), fLegacyArray(NULL), fBranchName(branchname), fSize(-1111)
+  : fLegacy(1), fLegacyArray(NULL), fBranchName(branchname), fSize(-1111), fChains(), fTArr(), fN(), fArrays()
 {
   FairRootManager* fManager=FairRootManager::Instance();
   if (!fManager)

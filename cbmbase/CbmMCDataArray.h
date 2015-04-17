@@ -80,8 +80,9 @@ class CbmMCDataArray
 			                 fSize(0),
 			                 fChains(),
 			                 fTArr(),
-			                 fN(0) { }
-
+			                 fN(0),
+			                 fArrays() { }
+  
 		/** Standard constructor. Should be called from CbmMCDataManager.
 		 ** @param branchName   Name of data branch
 		 ** @param fileList     Vector of file list (one for each input source)
@@ -129,6 +130,8 @@ class CbmMCDataArray
 		 ** index is the event number.
 		 **/
 		vector<map<Int_t, TClonesArray*> > fArrays;	//!
+
+                CbmMCDataArray& operator=(const CbmMCDataArray&);
 
 		ClassDef(CbmMCDataArray, 1);
 };
