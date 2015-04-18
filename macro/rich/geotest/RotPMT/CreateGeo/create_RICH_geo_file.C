@@ -14,8 +14,8 @@ void create_RICH_geo_file(float PMTrotX=5., float PMTrotY=5.){//char *geometry="
   char infile[256];	// geometry data file - input
   char outfile[256];	// geometry data file for CBMROOT - output
   char logfile[256];	// log file
-  sprintf(infile,"/data/cbmroot/geometry/rich/GeoOpt/RotPMT/OldGeo/rich_inputfile_RotPMT_%s_%s.dat",ShiftXTxt,ShiftYTxt);
-  sprintf(outfile,"/data/cbmroot/geometry/rich/GeoOpt/RotPMT/OldGeo/rich_geo_RotMir_p1_RotPMT_%s_%s.geo",ShiftXTxt,ShiftYTxt);//_X%dpoint%d_Y%dpoint%d.geo",IntegerXValue,ShiftXmod10, IntegerYValue, ShiftYmod10);  //sprintf(outfile,"%s.geo",geometry);
+  sprintf(infile,"/data/cbmroot/geometry/rich/GeoOpt/RotPMT/GeoFiles/VeryOldGeo/DatFiles/rich_inputfile_RotPMT_%s_%s.dat",ShiftXTxt,ShiftYTxt);
+  sprintf(outfile,"/data/cbmroot/geometry/rich/GeoOpt/RotPMT/GeoFiles/VeryOldGeo/rich_geo_RotMir_p1_RotPMT_%s_%s.geo",ShiftXTxt,ShiftYTxt);//_X%dpoint%d_Y%dpoint%d.geo",IntegerXValue,ShiftXmod10, IntegerYValue, ShiftYmod10);  //sprintf(outfile,"%s.geo",geometry);
   sprintf(logfile,"rich_inputfile_RotPMT_%s_%s.log",ShiftXTxt,ShiftYTxt);
   printf("\n");
     
