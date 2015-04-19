@@ -107,7 +107,7 @@ private:
    TVector3 r1; 
    TVector3 r2; 
    TVector3 n;
-   double PMTPlaneX; //double PMTPlaneY;
+   double PMTPlaneX; double PMTPlaneY;
    //double PMTPlaneXatThird; double PMTPlaneYatThird;
 
    /**
@@ -209,11 +209,15 @@ private:
    TH1D* H_Alpha_UpLeft_RegularTheta;
    TH1D* H_Alpha_UpLeft_LeftHalf;
    TH1D* H_Alpha_UpLeft_RightHalf;
+   TH1D* H_Alpha_UpLeft_UpperHalf;
+   TH1D* H_Alpha_UpLeft_LowerHalf;
    //H_Alpha_UpLeft_RighttHalf
    TH3D* H_Alpha_XYposAtDet;
    TH3D* H_Alpha_XYposAtDet_RegularTheta;
    TH3D* H_Alpha_XYposAtDet_LeftHalf;
    TH3D* H_Alpha_XYposAtDet_RightHalf;
+   TH3D* H_Alpha_XYposAtDet_UpperHalf;
+   TH3D* H_Alpha_XYposAtDet_LowerHalf;
 
    TH1D* H_acc_mom_el;
    TH2D* H_acc_pty_el;
@@ -231,12 +235,16 @@ private:
    TH1D *H_boa_RegularTheta; 
    TH1D *H_boa_LeftHalf;
    TH1D *H_boa_RightHalf;
+   TH1D *H_boa_UpperHalf;
+   TH1D *H_boa_LowerHalf;
 
 
    TH1D *H_dR;
    TH1D *H_dR_RegularTheta;
    TH1D *H_dR_LeftHalf;
-   TH1D *H_dR_RightHalf;
+   TH1D *H_dR_RightHalf;   
+   TH1D *H_dR_UpperHalf;
+   TH1D *H_dR_LowerHalf;
 
    TH3D *H_RingCenter_Aaxis;  TH3D *H_RingCenter_Baxis;
 
@@ -244,11 +252,15 @@ private:
    TH3D *H_RingCenter_boa_RegularTheta;
    TH3D *H_RingCenter_boa_LeftHalf;
    TH3D *H_RingCenter_boa_RightHalf;
+   TH3D *H_RingCenter_boa_UpperHalf;
+   TH3D *H_RingCenter_boa_LowerHalf;
 
    TH3D *H_RingCenter_dR;
    TH3D *H_RingCenter_dR_RegularTheta;
    TH3D *H_RingCenter_dR_LeftHalf;
    TH3D *H_RingCenter_dR_RightHalf;
+   TH3D *H_RingCenter_dR_UpperHalf;
+   TH3D *H_RingCenter_dR_LowerHalf;
 
    /**
     * \brief Assignment operator.
