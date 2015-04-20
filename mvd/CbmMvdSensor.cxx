@@ -26,7 +26,6 @@ using std::cout;
 using std::endl;
 
 
-
 // -----   Default constructor   -------------------------------------------
 CbmMvdSensor::CbmMvdSensor() 
   : TNamed(),
@@ -41,11 +40,12 @@ CbmMvdSensor::CbmMvdSensor()
     fVolName(""),
     fNodeName(""),
     foutputDigis(NULL),
-    foutputDigiMatch(NULL),
     foutputCluster(NULL),
+    foutputDigiMatch(NULL),
     foutputBuffer(NULL),
     fcurrentPoints(NULL),
     fcurrentEventTime(0.),
+    epsilon(),
     fShape(NULL),
     fMCMatrix(NULL),
     fRecoMatrix(NULL),
@@ -56,8 +56,7 @@ CbmMvdSensor::CbmMvdSensor()
     fSensorMap(),
     fPluginArray(new TObjArray(1)),
     fSensorStartTime(0.),
-    initialized(kFALSE),
-    epsilon()
+    initialized(kFALSE)
 {
 cout << "-W- " << GetName() << ": MVD-Sensor initialized without technical data.";
 cout << " Assuming default sensor." << endl;
@@ -87,11 +86,12 @@ CbmMvdSensor::CbmMvdSensor(const char* name, CbmMvdSensorDataSheet* dataSheet, T
     fVolName(volName),
     fNodeName(nodeName),
     foutputDigis(NULL),
-    foutputDigiMatch(NULL),
     foutputCluster(NULL),
+    foutputDigiMatch(NULL),
     foutputBuffer(NULL),
     fcurrentPoints(NULL),
     fcurrentEventTime(0.),
+    epsilon(),
     fShape(NULL),
     fMCMatrix(NULL),
     fRecoMatrix(NULL),
@@ -102,8 +102,7 @@ CbmMvdSensor::CbmMvdSensor(const char* name, CbmMvdSensorDataSheet* dataSheet, T
     fSensorMap(),
     fPluginArray(new TObjArray(1)),
     fSensorStartTime(sensorStartTime),
-    initialized(kFALSE),
-    epsilon()
+    initialized(kFALSE)
 {
 
 }

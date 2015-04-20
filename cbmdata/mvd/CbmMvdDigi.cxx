@@ -93,8 +93,8 @@ CbmMvdDigi::CbmMvdDigi(Int_t iStation, Int_t iChannelNrX, Int_t iChannelNrY, Flo
    fChannelNr(0),
    fDigiTime(time),
    fFrameNumber(frame),
-   fDigiFlag(-1),
-   fRefId(-1)
+   fRefId(-1),
+   fDigiFlag(-1)
 {
     // Check range for station
     if ( ! ( iStation >= 0 && iStation <= 600 ) ) {

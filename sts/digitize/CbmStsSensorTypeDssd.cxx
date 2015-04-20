@@ -31,8 +31,8 @@ const double kPairEnergy = 3.57142e-9;
 CbmStsSensorTypeDssd::CbmStsSensorTypeDssd()
     : CbmStsSensorType(), 
       fDx(-1.), fDy(-1.), fDz(-1.),
-      fPitch(), fStereo(), fIsSet(kFALSE),
-      fNofStrips(), fTanStereo(), fStripShift()
+      fNofStrips(), fStereo(), fIsSet(kFALSE),
+      fPitch(), fTanStereo(), fStripShift()
 {
 }
 // -------------------------------------------------------------------------

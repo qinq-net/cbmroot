@@ -44,8 +44,8 @@ static Bool_t fField = 1;
 // -----   Constructor   ---------------------------------------------------
     CbmStsSensorTypeDssdReal::CbmStsSensorTypeDssdReal()
 : CbmStsSensorTypeDssd(), 
-    fVdepletion (), fVbias (), fkTq (), fTemperature (),
-    fCcoup (), fCinter (), fCTcoef (), fPhysics(CbmStsPhysics::Instance())
+    fVdepletion (), fVbias (), fTemperature (),
+    fCcoup (), fCinter (), fkTq (), fCTcoef (), fPhysics(CbmStsPhysics::Instance())
 {
 }
 // -------------------------------------------------------------------------

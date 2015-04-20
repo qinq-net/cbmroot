@@ -65,21 +65,39 @@ CbmStsFindHitsQa::CbmStsFindHitsQa()
   fMatches(NULL),          // StsTrackMatch
   fStsDigis(NULL),          // StsDigi
   fStsClusters(NULL),          // StsCluster
-
+  fTimer(),
+  fhHitPointCorrelation(),
+  fhHitPointCorrelationU(),
+  fhHitPointCorrelationB(),
+  fhEnergyLoss(),
+  fhIncAngle(),
+  fhPoints(),
+  fhRecoPoints(),
+  fhHitFindingEfficiency(NULL),
+  fhEffIncAng(NULL),
+  fhEffMom(NULL),
+  fhEffPdgSec(NULL),
+  fhEffPdgPrim(NULL),
+  fhHitPointPull(NULL),
+  fhHitPointCorr(NULL),
+  fhNofHits(),
+  fHistoList(NULL),
+  fHistoListPS(),
   fNStations(0),
   fNEvents(0),
   fTime1(0.),
-
-  fhHitFindingEfficiency(),
-  fhEffIncAng(),
-  fhEffMom(),
-  fhEffPdgSec(),
-  fhEffPdgPrim(),
-  fhHitPointPull(),
-  fhHitPointCorr(),
-  fHistoList(),
-  fTimer(),
   fNofHits(),
+  fNofDigisPChip(),
+  fNofPoints(),
+  fNofRecoPoints(),
+  fNofPointsIncAng(),
+  fNofRecoPointsIncAng(),
+  fNofPointsMom(),
+  fNofRecoPointsMom(),
+  fNofRecoPdgSec(),
+  fNofPointsPdgSec(),
+  fNofRecoPdgPrim(),
+  fNofPointsPdgPrim(),
   fNofPointsPrim(),
   fNofPointsSec(),
   fNofRecoPrim(),
@@ -87,7 +105,8 @@ CbmStsFindHitsQa::CbmStsFindHitsQa()
   fNofPointsMomSum(),
   fNofRecoPointsMomSum(),
   fOnlineAnalysis(kFALSE),
-  recoCanvas()
+  recoCanvas(NULL),
+  recoPad()
 {  
   fDigiScheme = new CbmStsDigiScheme();
 }
@@ -98,37 +117,57 @@ CbmStsFindHitsQa::CbmStsFindHitsQa()
 // -----   Standard constructor   ------------------------------------------
 CbmStsFindHitsQa::CbmStsFindHitsQa(Bool_t visualizeBool, Int_t iVerbose)
   : FairTask("STSFindHitsQa", iVerbose), 
-  fOnlineAnalysis(visualizeBool),
-  fGeoPar(NULL),
-  fDigiPar(NULL),
-  fDigiScheme(NULL),
-  fMCTracks(NULL),          // MCtrack
-  fStsPoints(NULL),          // StsPoints
-  fStsHits(NULL),          // StsHits
-  fMatches(NULL),          // StsTrackMatch
-  fStsClusters(NULL),          // StsCluster
-  fStsDigis(NULL),          // StsDigi
-  fNStations(0),
-  fNEvents(0),
-  fTime1(0.),
-
-  fhHitFindingEfficiency(),
-  fhEffIncAng(),
-  fhEffMom(),
-  fhEffPdgSec(),
-  fhEffPdgPrim(),
-  fhHitPointPull(),
-  fhHitPointCorr(),
-  fHistoList(),
-  fTimer(),
-  fNofHits(),
-  fNofPointsPrim(),
-  fNofPointsSec(),
-  fNofRecoPrim(),
-  fNofRecoSec(),
-  fNofPointsMomSum(),
-  fNofRecoPointsMomSum(),
-  recoCanvas()
+    fGeoPar(NULL),
+    fDigiPar(NULL),
+    fDigiScheme(NULL),
+    fMCTracks(NULL),          // MCtrack
+    fStsPoints(NULL),          // StsPoints
+    fStsHits(NULL),          // StsHits
+    fMatches(NULL),          // StsTrackMatch
+    fStsDigis(NULL),          // StsDigi
+    fStsClusters(NULL),          // StsCluster
+    fTimer(),
+    fhHitPointCorrelation(),
+    fhHitPointCorrelationU(),
+    fhHitPointCorrelationB(),
+    fhEnergyLoss(),
+    fhIncAngle(),
+    fhPoints(),
+    fhRecoPoints(),
+    fhHitFindingEfficiency(NULL),
+    fhEffIncAng(NULL),
+    fhEffMom(NULL),
+    fhEffPdgSec(NULL),
+    fhEffPdgPrim(NULL),
+    fhHitPointPull(NULL),
+    fhHitPointCorr(NULL),
+    fhNofHits(),
+    fHistoList(NULL),
+    fHistoListPS(),
+    fNStations(0),
+    fNEvents(0),
+    fTime1(0.),
+    fNofHits(),
+    fNofDigisPChip(),
+    fNofPoints(),
+    fNofRecoPoints(),
+    fNofPointsIncAng(),
+    fNofRecoPointsIncAng(),
+    fNofPointsMom(),
+    fNofRecoPointsMom(),
+    fNofRecoPdgSec(),
+    fNofPointsPdgSec(),
+    fNofRecoPdgPrim(),
+    fNofPointsPdgPrim(),
+    fNofPointsPrim(),
+    fNofPointsSec(),
+    fNofRecoPrim(),
+    fNofRecoSec(),
+    fNofPointsMomSum(),
+    fNofRecoPointsMomSum(),
+    fOnlineAnalysis(visualizeBool),
+    recoCanvas(NULL),
+    recoPad()
 {  
   fDigiScheme = new CbmStsDigiScheme();
 }
@@ -139,37 +178,57 @@ CbmStsFindHitsQa::CbmStsFindHitsQa(Bool_t visualizeBool, Int_t iVerbose)
 // -----   Constructor with name   -----------------------------------------
 CbmStsFindHitsQa::CbmStsFindHitsQa(const char* name, Int_t iVerbose) 
   : FairTask(name, iVerbose), 
-  fGeoPar(NULL),
-  fDigiPar(NULL),
-  fDigiScheme(NULL),
-  fMCTracks(NULL),          // MCtrack
-  fStsPoints(NULL),          // StsPoints
-  fStsHits(NULL),          // StsHits
-  fMatches(NULL),          // StsTrackMatch
-  fStsClusters(NULL),          // StsCluster
-  fStsDigis(NULL),          // StsDigi
-  fNStations(0),
-  fNEvents(0),
-  fTime1(0.),
-
-  fhHitFindingEfficiency(),
-  fhEffIncAng(),
-  fhEffMom(),
-  fhEffPdgSec(),
-  fhEffPdgPrim(),
-  fhHitPointPull(),
-  fhHitPointCorr(),
-  fHistoList(),
-  fTimer(),
-  fNofPointsPrim(),
-  fNofPointsSec(),
-  fNofRecoPrim(),
-  fNofRecoSec(),
-  fNofPointsMomSum(),
-  fNofRecoPointsMomSum(),
-  fNofHits(),
-  fOnlineAnalysis(kFALSE),
-  recoCanvas()
+    fGeoPar(NULL),
+    fDigiPar(NULL),
+    fDigiScheme(NULL),
+    fMCTracks(NULL),          // MCtrack
+    fStsPoints(NULL),          // StsPoints
+    fStsHits(NULL),          // StsHits
+    fMatches(NULL),          // StsTrackMatch
+    fStsDigis(NULL),          // StsDigi
+    fStsClusters(NULL),          // StsCluster
+    fTimer(),
+    fhHitPointCorrelation(),
+    fhHitPointCorrelationU(),
+    fhHitPointCorrelationB(),
+    fhEnergyLoss(),
+    fhIncAngle(),
+    fhPoints(),
+    fhRecoPoints(),
+    fhHitFindingEfficiency(NULL),
+    fhEffIncAng(NULL),
+    fhEffMom(NULL),
+    fhEffPdgSec(NULL),
+    fhEffPdgPrim(NULL),
+    fhHitPointPull(NULL),
+    fhHitPointCorr(NULL),
+    fhNofHits(),
+    fHistoList(NULL),
+    fHistoListPS(),
+    fNStations(0),
+    fNEvents(0),
+    fTime1(0.),
+    fNofHits(),
+    fNofDigisPChip(),
+    fNofPoints(),
+    fNofRecoPoints(),
+    fNofPointsIncAng(),
+    fNofRecoPointsIncAng(),
+    fNofPointsMom(),
+    fNofRecoPointsMom(),
+    fNofRecoPdgSec(),
+    fNofPointsPdgSec(),
+    fNofRecoPdgPrim(),
+    fNofPointsPdgPrim(),
+    fNofPointsPrim(),
+    fNofPointsSec(),
+    fNofRecoPrim(),
+    fNofRecoSec(),
+    fNofPointsMomSum(),
+    fNofRecoPointsMomSum(),
+    fOnlineAnalysis(kFALSE),
+    recoCanvas(NULL),
+    recoPad()
 {
   fDigiScheme = new CbmStsDigiScheme();
 }

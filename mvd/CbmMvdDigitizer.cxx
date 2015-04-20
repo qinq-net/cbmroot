@@ -26,6 +26,7 @@
 CbmMvdDigitizer::CbmMvdDigitizer() 
   : FairTask("MVDDigitizer"),
     fMode(0),
+    fShowDebugHistos(kFALSE),
     fDetector(NULL),
     fInputPoints(NULL),
     fDigis(NULL),
@@ -37,14 +38,14 @@ CbmMvdDigitizer::CbmMvdDigitizer()
     fNDeltaElect(-1),
     fDeltaBufferSize(-1),
     fBgBufferSize(-1),
+    epsilon(),
     fBranchName(""),
     fBgFileName(""),
     fDeltaFileName(""),
+    fTimer(),
     fRandGen(),
     fPileupManager(NULL),
-    fDeltaManager(NULL),
-    fTimer(),
-    fShowDebugHistos(kFALSE)
+    fDeltaManager(NULL)
 {
 
 }
@@ -54,6 +55,7 @@ CbmMvdDigitizer::CbmMvdDigitizer()
 CbmMvdDigitizer::CbmMvdDigitizer(const char* name, Int_t iMode, Int_t iVerbose) 
   : FairTask(name, iVerbose),
     fMode(iMode),
+    fShowDebugHistos(kFALSE),
     fDetector(NULL),
     fInputPoints(NULL),
     fDigis(NULL),
@@ -65,14 +67,14 @@ CbmMvdDigitizer::CbmMvdDigitizer(const char* name, Int_t iMode, Int_t iVerbose)
     fNDeltaElect(0),
     fDeltaBufferSize(-1),
     fBgBufferSize(-1),
+    epsilon(),
     fBranchName("MvdPoint"),
     fBgFileName(""),
     fDeltaFileName(""),
+    fTimer(),
     fRandGen(),
     fPileupManager(NULL),
-    fDeltaManager(NULL),
-    fTimer(),
-    fShowDebugHistos(kFALSE)    
+    fDeltaManager(NULL)
 {
 }
 // -------------------------------------------------------------------------

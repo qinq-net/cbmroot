@@ -22,17 +22,19 @@ using std::map;
 
 // -----   Default constructor   -------------------------------------------
 CbmStsStation::CbmStsStation() 
-: fDetectorId(0),
-  fZ(0.),
-  fD(0.),
-  fRmin(0.),
-  fRmax(0.),
-  fRotation(0.),
-  fSectors(),
-  fName(),
-  fRadLength(),
-  fSectorMap(),
-  fMcIdMap()
+  : TNamed("",""),
+    fName(),
+    fDetectorId(0),
+    fZ(0.),
+    fD(0.),
+    fRadLength(),
+    fRmin(0.),
+    fRmax(0.),
+    fRotation(0.),
+    fSectors(),
+    fSectorMap(),
+    fMcIdMap(),
+    fSensorZ()
 {
   fSectors = new TObjArray(100);
   fSectorMap.clear();
@@ -46,17 +48,18 @@ CbmStsStation::CbmStsStation(const char* name, Int_t iStation, Double_t z,
 			     Double_t d, Double_t rl, Double_t rmin, 
 			     Double_t rmax, Double_t rotation) 
   : TNamed(name, "STS station"),
+    fName(),
     fDetectorId(0),
     fZ(0.),
     fD(0.),
+    fRadLength(),
     fRmin(0.),
     fRmax(0.),
     fRotation(0.),
     fSectors(),
-    fName(),
-    fRadLength(),
     fSectorMap(),
-    fMcIdMap()  
+    fMcIdMap(),
+    fSensorZ()
 {
   fDetectorId = 2 << 24 | iStation << 16;
   fZ          = z;
