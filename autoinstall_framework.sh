@@ -9,8 +9,8 @@
 #-------------------------------------
 
 # put your desired variants here:
-export FSOFTVER=dec14
-export FROOTVER=v-14.11
+export FSOFTVER=mar15p1
+export FROOTVER=v-15.03
 export NUMOFCPU=12
 export CBMSRCDIR=`pwd`
 
