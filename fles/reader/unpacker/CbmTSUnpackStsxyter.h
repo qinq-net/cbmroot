@@ -134,6 +134,8 @@ private:
 
 #undef __SWAPWORDS
 
+    CbmTSUnpackStsxyter(const CbmTSUnpackStsxyter&);    
+    CbmTSUnpackStsxyter& operator=(const CbmTSUnpackStsxyter&);    
 
     ClassDef(CbmTSUnpackStsxyter, 1);
 };

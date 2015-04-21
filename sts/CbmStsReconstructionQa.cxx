@@ -152,6 +152,14 @@ CbmStsReconstructionQa::CbmStsReconstructionQa(Int_t iVerbose)
 CbmStsReconstructionQa::CbmStsReconstructionQa(Bool_t visualizeBool, Int_t minHits, Double_t quota,
 				       Int_t iVerbose) 
   : FairTask("STSReconstructionQA", iVerbose), 
+    fHitMap(),
+    fHitTrackMap(),
+    fMatchMap(),
+    fQualiMap(),
+    fMCTracks(NULL),          // MCtrack
+    fStsPoints(NULL),         // StsPoints
+    fStsHits(NULL),           // StsHits
+    fStsTracks(NULL),         // StsTrack
     fMatches(NULL),           // StsTrackMatch
     fStsDigis(NULL),          // StsDigi
     fPassGeo(NULL),
