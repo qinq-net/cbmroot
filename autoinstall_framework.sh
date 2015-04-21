@@ -9,7 +9,7 @@
 #-------------------------------------
 
 # put your desired variants here:
-export FSOFTVER=mar15p1
+export FSOFTVER=mar15
 export FROOTVER=v-15.03
 export NUMOFCPU=12
 export CBMSRCDIR=`pwd`
@@ -77,7 +77,7 @@ echo "FAIRROOTPATH: $FAIRROOTPATH"
 
 svn co https://subversion.gsi.de/cbmsoft/cbmroot/fieldmaps fieldmaps
 
-#svn co https://subversion.gsi.de/cbmsoft/cbmroot/trunk $CBMSRCDIR
+#svn co https://subversion.gsi.de/cbmsoft/cbmroot/trunk cbm_$CBMSRCDIR
 cd $CBMSRCDIR
 mkdir build
 cd build
