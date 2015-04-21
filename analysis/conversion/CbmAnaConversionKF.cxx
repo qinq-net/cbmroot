@@ -430,7 +430,7 @@ void CbmAnaConversionKF::test2()
 	Int_t kftv_size = kftrackvector->Size();
 	cout << "CbmAnaConversionKF: size of kftrackvector: " << kftv_size << endl;
 	
-	vector<int, KFPSimdAllocator<int> > vector_pdgs = kftrackvector->PDG();
+        kfvector_int vector_pdgs = kftrackvector->PDG();
 	
 	cout << "CbmAnaConversionKF: pdgs in trackvector: ";
 	for(int i=0; i<kftv_size; i++) {
