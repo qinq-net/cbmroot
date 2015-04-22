@@ -51,6 +51,9 @@ CbmAnaConversionKF::CbmAnaConversionKF()
    fSignalIds(),
    fGhostIds(),
    fHistoList_kfparticle(),
+   particlevector(),
+   electronIDs(),
+   fhInvMassPi0WithFullReco(NULL),
    timer(),
    fTime(0.)
 {

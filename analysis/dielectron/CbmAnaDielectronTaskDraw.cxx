@@ -45,6 +45,7 @@ CbmAnaDielectronTaskDraw::CbmAnaDielectronTaskDraw()
    fNofEvents(0),
    fUseMvd(kFALSE),
    fDrawSignificance(kFALSE),
+   fCuts(),
    fHM(NULL),
    fCanvas(),
    fOutputDir("")

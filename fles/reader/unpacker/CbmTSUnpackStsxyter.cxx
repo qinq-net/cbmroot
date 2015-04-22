@@ -15,7 +15,7 @@ CbmTSUnpackStsxyter::CbmTSUnpackStsxyter()
 : CbmTSUnpack(),
   fDtmNum( 0 ),
   fDtmNumInitialized( kFALSE ),
-  // fCurrEpoch(0),
+  fCurrEpoch(),
   fStsxyterRawHitMessage(new TClonesArray("CbmStsxyterRawHitMessage", 10))
 {
     fCurrEpoch.resize( fkgNumStsxytersDefault );

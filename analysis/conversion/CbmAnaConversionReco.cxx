@@ -85,6 +85,7 @@ CbmAnaConversionReco::CbmAnaConversionReco()
     fhInvariantMass_pi0epem(NULL),
     fhPi0_startvertex(NULL),
     fhPi0_startvertexElectrons(NULL),
+    fhInvMassWithFullRecoCuts(NULL),
     timer(),
     fTime(0.)
 {
