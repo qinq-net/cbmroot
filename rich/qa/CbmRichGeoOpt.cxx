@@ -57,71 +57,80 @@ CbmRichGeoOpt::CbmRichGeoOpt()
     r2(),
     n(),
     PMTPlaneX(0.),
-    PMTPlaneY(0.),
+  PMTPlaneY(0.),
+  MirrPosition(),
+// MirrPosX(0.),
+// MirrPosY(0.),
+// MirrPosZ(0.),
+
 // PMTPlaneXatThird(0.),
 // PMTPlaneYatThird(0.),
-    H_MomPrim(NULL), 
-    H_PtPrim(NULL),
-    H_Hits_XY(NULL),
-    H_PointsIn_XY(NULL),
-    H_PointsOut_XY(NULL),
-    H_NofPhotonsPerEv(NULL),
-    H_NofPhotonsPerHit(NULL),
-    H_NofPhotonsSmallerThan30(NULL),
-    H_DiffXhit(NULL),
-    H_DiffYhit(NULL),
-    H_dFocalPoint_Delta(NULL),
-    H_dFocalPoint_Rho(NULL),
-    H_Alpha(NULL),
-    H_Alpha_UpLeft(NULL),
-    H_Alpha_UpLeft_RegularTheta(NULL),
-    H_Alpha_UpLeft_LeftHalf(NULL),
-    H_Alpha_UpLeft_RightHalf(NULL),
-    H_Alpha_UpLeft_UpperHalf(NULL),
-    H_Alpha_UpLeft_LowerHalf(NULL),
-    H_Alpha_XYposAtDet(NULL),
-    H_Alpha_XYposAtDet_RegularTheta(NULL),
-    H_Alpha_XYposAtDet_LeftHalf(NULL),
-    H_Alpha_XYposAtDet_RightHalf(NULL),
-    H_Alpha_XYposAtDet_UpperHalf(NULL),
-    H_Alpha_XYposAtDet_LowerHalf(NULL),
-    H_acc_mom_el(NULL),
-    H_acc_pty_el(NULL),
-    H_NofHitsAll(NULL),
-    H_NofRings(NULL),
-    H_NofRings_NofHits(NULL),
-    H_RingCenterX(NULL),
-    H_RingCenterY(NULL),
-    H_RingCenter(NULL),
-    H_Radius(NULL), 
-    H_aAxis(NULL), 
-    H_bAxis(NULL), 
-    H_boa(NULL), 
-    H_boa_RegularTheta(NULL), 
-    H_boa_LeftHalf(NULL), 
-    H_boa_RightHalf(NULL), 
-    H_boa_UpperHalf(NULL), 
-    H_boa_LowerHalf(NULL), 
-    H_dR(NULL),
-    H_dR_RegularTheta(NULL),
-    H_dR_LeftHalf(NULL), 
-    H_dR_RightHalf(NULL), 
-    H_dR_UpperHalf(NULL), 
-    H_dR_LowerHalf(NULL), 
-    H_RingCenter_Aaxis(NULL),  
-    H_RingCenter_Baxis(NULL),  
-    H_RingCenter_boa(NULL),
-    H_RingCenter_boa_RegularTheta(NULL),
-    H_RingCenter_boa_LeftHalf(NULL),
-    H_RingCenter_boa_RightHalf(NULL),
-    H_RingCenter_boa_UpperHalf(NULL),
-    H_RingCenter_boa_LowerHalf(NULL),
-    H_RingCenter_dR(NULL),
-    H_RingCenter_dR_RegularTheta(NULL),
-    H_RingCenter_dR_LeftHalf(NULL),
-    H_RingCenter_dR_RightHalf(NULL),
-    H_RingCenter_dR_UpperHalf(NULL),
-    H_RingCenter_dR_LowerHalf(NULL)
+  
+  H_DistancePMTtoMirrCenter(NULL),
+  H_DistancePMTtoMirr(NULL),
+  H_MomPrim(NULL),
+  H_PtPrim(NULL),
+  H_Hits_XY(NULL),
+  H_PointsIn_XY(NULL),
+  H_PointsOut_XY(NULL),
+  H_NofPhotonsPerEv(NULL),
+  H_NofPhotonsPerHit(NULL),
+  H_NofPhotonsSmallerThan30(NULL),
+  H_DiffXhit(NULL),
+  H_DiffYhit(NULL),
+  H_dFocalPoint_Delta(NULL),
+  H_dFocalPoint_Rho(NULL),
+  H_Alpha(NULL),
+  H_Alpha_UpLeft(NULL),
+  H_Alpha_UpLeft_II(NULL),
+  H_Alpha_UpLeft_RegularTheta(NULL),
+  H_Alpha_UpLeft_LeftHalf(NULL),
+  H_Alpha_UpLeft_RightHalf(NULL),
+  H_Alpha_UpLeft_UpperHalf(NULL),
+  H_Alpha_UpLeft_LowerHalf(NULL),
+  H_Alpha_XYposAtDet(NULL),
+  H_Alpha_XYposAtDet_RegularTheta(NULL),
+  H_Alpha_XYposAtDet_LeftHalf(NULL),
+  H_Alpha_XYposAtDet_RightHalf(NULL),
+  H_Alpha_XYposAtDet_UpperHalf(NULL),
+  H_Alpha_XYposAtDet_LowerHalf(NULL),
+  H_acc_mom_el(NULL),
+  H_acc_pty_el(NULL),
+  H_NofHitsAll(NULL),
+  H_NofRings(NULL),
+  H_NofRings_NofHits(NULL),
+  H_RingCenterX(NULL),
+  H_RingCenterY(NULL),
+  H_RingCenter(NULL),
+  H_Radius(NULL), 
+  H_aAxis(NULL), 
+  H_bAxis(NULL), 
+  H_boa(NULL), 
+  H_boa_RegularTheta(NULL), 
+  H_boa_LeftHalf(NULL), 
+  H_boa_RightHalf(NULL), 
+  H_boa_UpperHalf(NULL), 
+  H_boa_LowerHalf(NULL), 
+  H_dR(NULL),
+  H_dR_RegularTheta(NULL),
+  H_dR_LeftHalf(NULL), 
+  H_dR_RightHalf(NULL), 
+  H_dR_UpperHalf(NULL), 
+  H_dR_LowerHalf(NULL), 
+  H_RingCenter_Aaxis(NULL),  
+  H_RingCenter_Baxis(NULL),  
+  H_RingCenter_boa(NULL),
+  H_RingCenter_boa_RegularTheta(NULL),
+  H_RingCenter_boa_RightHalf(NULL),
+  H_RingCenter_boa_LeftHalf(NULL),
+  H_RingCenter_boa_LowerHalf(NULL),
+  H_RingCenter_boa_UpperHalf(NULL),
+  H_RingCenter_dR(NULL),
+  H_RingCenter_dR_RegularTheta(NULL),
+  H_RingCenter_dR_LeftHalf(NULL),
+  H_RingCenter_dR_RightHalf(NULL),
+  H_RingCenter_dR_UpperHalf(NULL),
+  H_RingCenter_dR_LowerHalf(NULL)
 
 {
   /*
@@ -171,6 +180,8 @@ InitStatus CbmRichGeoOpt::Init()
   for(int p=0;p<PlanePoints.size();p++){
     PlanePoints[p].SetX(-1000.);PlanePoints[p].SetY(-1000.);PlanePoints[p].SetZ(-1000.);
   }
+  MirrPosition.SetXYZ(0.,80.5,350.); 
+  //MirrPosX=0.;  MirrPosY=80.5;  MirrPosZ=350.;
   InitHistograms();
   
   return kSUCCESS;
@@ -180,12 +191,13 @@ void CbmRichGeoOpt::Exec(Option_t* option)
 {
   fEventNum++;
   cout << "#################### CbmRichGeoOpt, event No. " <<  fEventNum << endl;
+  
   if(PointsFilled==0){
     for(int p=1;p<PlanePoints.size();p++){
       if( PlanePoints[p].X() == PlanePoints[p-1].X() ){FillPointsAtPMT();PointsFilled=0;}else{PointsFilled=1;}
     }
   }
-  
+    
   //cout << "#################### CbmRichGeoOpt, event No. " <<  fEventNum << endl;
   //Fill the coordinates of the three points on the PMT plane 
       
@@ -200,7 +212,7 @@ void CbmRichGeoOpt::Exec(Option_t* option)
   if(PointsFilled==1){
     GetPMTRotAngels();
     GetPlaneCenter(fGP.fMirrorTheta*180./TMath::Pi(), RotX*180./TMath::Pi(), RotY*180./TMath::Pi());
-
+    
     if(fEventNum<10){
       r1=PlanePoints[1]-PlanePoints[0]; 
       r2=PlanePoints[2]-PlanePoints[0]; 
@@ -215,7 +227,8 @@ void CbmRichGeoOpt::Exec(Option_t* option)
     RingParameters();
     FillMcHist();
   }
-  fGP.Print();
+  //fGP.Print();
+  
 }
 
 /////// Get data of hits and points
@@ -236,8 +249,8 @@ void CbmRichGeoOpt::HitsAndPoints(){
     RefPoint->Position(PosAtRefl);
     int Zpos=int(10.*PosAtRefl.Z());//2657 or 2658 -->take 2658 which is the entrance point 
     //of the REFLECTED photon into the sensitive plane   
-    cout<<PosAtRefl.Z()<<"    "<<Zpos<<endl;
-    if(Zpos==2657){continue;}
+    //cout<<PosAtRefl.Z()<<"    "<<Zpos<<endl;
+    if(Zpos==2653){continue;}//2657 for geo 2015. 2653 for geo dec2104
     
     
 
@@ -268,6 +281,10 @@ void CbmRichGeoOpt::HitsAndPoints(){
     double Alpha=LineSensToPMT.Angle(n);//*TMath::RadToDeg();
     double AlphaInDeg=Alpha*TMath::RadToDeg();
     if(AlphaInDeg>90.){AlphaInDeg=180.-AlphaInDeg;}
+    /////////// calculate alpha throuh the momentum vector !!
+    double Alpha2=mom.Angle(n);//*TMath::RadToDeg();
+    double Alpha2InDeg=Alpha2*TMath::RadToDeg();
+    if(AlphaInDeg>90.){AlphaInDeg=180.-AlphaInDeg;}
     
     H_PointsIn_XY->Fill(PosAtDetIn.X(),PosAtDetIn.Y());
     //PosAtDetOut
@@ -281,6 +298,7 @@ void CbmRichGeoOpt::HitsAndPoints(){
 	H_Alpha_XYposAtDet_RegularTheta->Fill(PosAtDetIn.X(),PosAtDetIn.Y(),AlphaInDeg);
       }
       H_Alpha_UpLeft->Fill(AlphaInDeg );
+      H_Alpha_UpLeft_II->Fill(Alpha2InDeg );
 
       H_Alpha_XYposAtDet->Fill(PosAtDetIn.X(),PosAtDetIn.Y(),AlphaInDeg);
       if(PosAtDetIn.X() <= PMTPlaneX){H_Alpha_UpLeft_LeftHalf->Fill(AlphaInDeg ); H_Alpha_XYposAtDet_LeftHalf->Fill(PosAtDetIn.X(),PosAtDetIn.Y(),AlphaInDeg);}
@@ -427,6 +445,7 @@ void CbmRichGeoOpt::InitHistograms()
  
   H_Alpha= new TH1D("H_Alpha","H_Alpha;#alpha_{photon-PMT} [deg];Yield",360,0.,180.);
   H_Alpha_UpLeft= new TH1D("H_Alpha_UpLeft","H_Alpha_UpLeft;#alpha_{photon-PMT} [deg];Yield",360,0.,180.);
+  H_Alpha_UpLeft_II= new TH1D("H_Alpha_UpLeft_II","H_Alpha_UpLeft_II;#alpha_{photon-PMT} [deg];Yield",360,0.,180.);
   H_Alpha_UpLeft_RegularTheta= new TH1D("H_Alpha_UpLeft_RegularTheta","H_Alpha_UpLeft_RegularTheta;#alpha_{photon-PMT} [deg];Yield",360,0.,180.);
 
   H_Alpha_UpLeft_LeftHalf= new TH1D("H_Alpha_UpLeft_LeftHalf","H_Alpha_UpLeft_LeftHalf;#alpha_{photon-PMT} [deg];Yield",360,0.,180.);
@@ -478,21 +497,21 @@ void CbmRichGeoOpt::InitHistograms()
 
   H_RingCenter= new TH2D("H_RingCenter","H_RingCenter",1001, -100., 0.,2501, 50.,300.);
   
-  H_RingCenter_Aaxis= new TH3D("H_RingCenter_Aaxis","H_RingCenter_Aaxis",301, -100, 0,301, 200, 300, 401, 2.,10.);
-  H_RingCenter_Baxis= new TH3D("H_RingCenter_Baxis","H_RingCenter_Baxis",301, -100, 0,301, 200, 300, 401, 2.,10.);
-  H_RingCenter_boa= new TH3D("H_RingCenter_boa","H_RingCenter_boa",301, -100, 0,301, 200, 300, 25, 0.5,1.);
-  H_RingCenter_boa_RegularTheta= new TH3D("H_RingCenter_boa_RegularTheta","H_RingCenter_boa_RegularTheta",301, -100, 0,301, 200, 300, 25, 0.5,1.);
-  H_RingCenter_boa_LeftHalf= new TH3D("H_RingCenter_boa_LeftHalf","H_RingCenter_boa_LeftHalf",301, -100, 0,301, 200, 300, 25, 0.5,1.);
-  H_RingCenter_boa_RightHalf= new TH3D("H_RingCenter_boa_RightHalf","H_RingCenter_boa_RightHalf",301, -100, 0,301, 200, 300, 25, 0.5,1.);
-  H_RingCenter_boa_LowerHalf= new TH3D("H_RingCenter_boa_LowerHalf","H_RingCenter_boa_LowerHalf",301, -100, 0,301, 200, 300, 25, 0.5,1.);
-  H_RingCenter_boa_UpperHalf= new TH3D("H_RingCenter_boa_UpperHalf","H_RingCenter_boa_UpperHalf",301, -100, 0,301, 200, 300, 25, 0.5,1.);
+  H_RingCenter_Aaxis= new TH3D("H_RingCenter_Aaxis","H_RingCenter_Aaxis",300, -100, 0,500, 50, 300, 401, 2.,10.);
+  H_RingCenter_Baxis= new TH3D("H_RingCenter_Baxis","H_RingCenter_Baxis",300, -100, 0,500, 50, 300, 401, 2.,10.);
+  H_RingCenter_boa= new TH3D("H_RingCenter_boa","H_RingCenter_boa",300, -100, 0,500, 50, 300, 25, 0.5,1.);
+  H_RingCenter_boa_RegularTheta= new TH3D("H_RingCenter_boa_RegularTheta","H_RingCenter_boa_RegularTheta",300, -100, 0,500, 50, 300, 25, 0.5,1.);
+  H_RingCenter_boa_LeftHalf= new TH3D("H_RingCenter_boa_LeftHalf","H_RingCenter_boa_LeftHalf",300, -100, 0,500, 50, 300, 25, 0.5,1.);
+  H_RingCenter_boa_RightHalf= new TH3D("H_RingCenter_boa_RightHalf","H_RingCenter_boa_RightHalf",300, -100, 0,500, 50, 300, 25, 0.5,1.);
+  H_RingCenter_boa_LowerHalf= new TH3D("H_RingCenter_boa_LowerHalf","H_RingCenter_boa_LowerHalf",300, -100, 0,500, 50, 300, 25, 0.5,1.);
+  H_RingCenter_boa_UpperHalf= new TH3D("H_RingCenter_boa_UpperHalf","H_RingCenter_boa_UpperHalf",300, -100, 0,500, 50, 300, 25, 0.5,1.);
 
-  H_RingCenter_dR= new TH3D("H_RingCenter_dR","H_RingCenter_dR",301, -100, 0,301, 200, 300, 251, -0.5,0.5);
-  H_RingCenter_dR_RegularTheta= new TH3D("H_RingCenter_dR_RegularTheta","H_RingCenter_dR_RegularTheta",301, -100, 0,301, 200, 300, 251, -0.5,0.5);
-  H_RingCenter_dR_LeftHalf= new TH3D("H_RingCenter_dR_LeftHalf","H_RingCenter_dR_LeftHalf",301, -100, 0,301, 200, 300, 251, -0.5,0.5);
-  H_RingCenter_dR_RightHalf= new TH3D("H_RingCenter_dR_RightHalf","H_RingCenter_dR_RightHalf",301, -100, 0,301, 200, 300, 251, -0.5,0.5);
-  H_RingCenter_dR_LowerHalf= new TH3D("H_RingCenter_dR_LowerHalf","H_RingCenter_dR_LowerHalf",301, -100, 0,301, 200, 300, 251, -0.5,0.5);
-  H_RingCenter_dR_UpperHalf= new TH3D("H_RingCenter_dR_UpperHalf","H_RingCenter_dR_UpperHalf",301, -100, 0,301, 200, 300, 251, -0.5,0.5);
+  H_RingCenter_dR= new TH3D("H_RingCenter_dR","H_RingCenter_dR",300, -100, 0,500, 50, 300, 251, -0.5,0.5);
+  H_RingCenter_dR_RegularTheta= new TH3D("H_RingCenter_dR_RegularTheta","H_RingCenter_dR_RegularTheta",300, -100, 0,500, 50, 300, 251, -0.5,0.5);
+  H_RingCenter_dR_LeftHalf= new TH3D("H_RingCenter_dR_LeftHalf","H_RingCenter_dR_LeftHalf",300, -100, 0,500, 50, 300, 251, -0.5,0.5);
+  H_RingCenter_dR_RightHalf= new TH3D("H_RingCenter_dR_RightHalf","H_RingCenter_dR_RightHalf",300, -100, 0,500, 50, 300, 251, -0.5,0.5);
+  H_RingCenter_dR_LowerHalf= new TH3D("H_RingCenter_dR_LowerHalf","H_RingCenter_dR_LowerHalf",300, -100, 0,500, 50, 300, 251, -0.5,0.5);
+  H_RingCenter_dR_UpperHalf= new TH3D("H_RingCenter_dR_UpperHalf","H_RingCenter_dR_UpperHalf",300, -100, 0,500, 50, 300, 251, -0.5,0.5);
  
   
 }
@@ -513,6 +532,7 @@ void CbmRichGeoOpt::WriteHistograms(){
  
   H_Alpha->Write();
   H_Alpha_UpLeft->Write();
+  H_Alpha_UpLeft_II->Write();
   H_Alpha_UpLeft_RegularTheta->Write();
   H_Alpha_UpLeft_LeftHalf->Write();
   H_Alpha_UpLeft_RightHalf->Write();

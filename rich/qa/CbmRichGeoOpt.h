@@ -108,6 +108,7 @@ private:
    TVector3 r2; 
    TVector3 n;
    double PMTPlaneX; double PMTPlaneY;
+   TVector3 MirrPosition;   //double MirrPosX; double MirrPosY; double MirrPosZ;
    //double PMTPlaneXatThird; double PMTPlaneYatThird;
 
    /**
@@ -189,6 +190,8 @@ private:
     * \brief histograms.
     */
    
+   TH1D* H_DistancePMTtoMirrCenter;
+   TH1D* H_DistancePMTtoMirr;
    TH1D* H_MomPrim;
    TH1D* H_PtPrim;
 
@@ -206,6 +209,7 @@ private:
    TH1D* H_Alpha;
 
    TH1D* H_Alpha_UpLeft;
+   TH1D* H_Alpha_UpLeft_II;
    TH1D* H_Alpha_UpLeft_RegularTheta;
    TH1D* H_Alpha_UpLeft_LeftHalf;
    TH1D* H_Alpha_UpLeft_RightHalf;
