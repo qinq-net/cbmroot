@@ -1,5 +1,6 @@
-void Import_GDML_Export_ROOT(TString FileName)
+void Import_GDML_Export_ROOT(/*TString FileName*/)
 {
+  TString FileName = "/geometry/rich/rich_v14d";
   TString InFile=FileName+".gdml";
   TString OutFile=FileName+".root";
   TString vmcDir = TString(gSystem->Getenv("VMCWORKDIR"));
