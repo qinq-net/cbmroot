@@ -111,7 +111,7 @@ void CbmRich::Initialize()
 Bool_t CbmRich::CheckIfSensitive(std::string name)
 {
    TString volName = name;
-   if ( volName.Contains("rich1d") || volName.Contains("Sens_plane") || volName.Contains("PMT")){
+   if ( volName.Contains("rich1d") || volName.Contains("Sens_plane")){
       return kTRUE;
    }
    return kFALSE;
@@ -126,7 +126,7 @@ Bool_t CbmRich::ProcessHits(
    TString volName = TString(vol->GetName());
   // cout << volName << endl;
    //Treat photodetectors : All particles
-   if (volName.Contains("rich1d") || volName.Contains("PMT")){
+   if (volName.Contains("rich1d")){
       if (gMC->IsTrackEntering()){
 
          TParticle* part = gMC->GetStack()->GetCurrentTrack();
