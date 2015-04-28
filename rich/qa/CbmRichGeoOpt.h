@@ -194,6 +194,7 @@ private:
    TH1D* H_DistancePMTtoMirr;
    TH1D* H_MomPrim;
    TH1D* H_PtPrim;
+   TH2D* H_MomPt;
 
    TH2D* H_Hits_XY; // distribution of X and Y position of hits
    TH2D* H_PointsIn_XY; // distribution of X and Y position of points
