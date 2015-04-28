@@ -44,6 +44,10 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   TString ParFile = outDir + "Parameters_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
   TString SimFile = outDir + "Sim_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
   TString OutPutGeoFile = outDir + "OutPutGeo_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
+  gSystem->Exec( ("rm "+ParFile).Data() );
+  gSystem->Exec( ("rm "+SimFile).Data() );
+  gSystem->Exec( ("rm "+OutPutGeoFile).Data() );
+
   cout<<"par: "<<ParFile<<endl;
   cout<<"sim: "<<SimFile<<endl;
   cout<<"++++++++++++++++++++++++++++++++++++++++++++"<<endl; 
@@ -197,7 +201,7 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  //return "/data/GeoOpt/RotPMT/";
+  return "/data/GeoOpt/RotPMT/";
 
   return "/hera/cbm/users/tariq/GeoOptRootFiles/RotPMT/";
   // if(GeoCase<=0){return "/data/GeoOpt/RotPMT/OlderGeo/";}
