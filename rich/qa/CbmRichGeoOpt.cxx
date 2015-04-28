@@ -235,7 +235,7 @@ void CbmRichGeoOpt::Exec(Option_t* option)
 void CbmRichGeoOpt::HitsAndPoints(){
   Int_t nofRefPoints = fRefPoints->GetEntriesFast();
   Int_t nofPoints = fRichPoints->GetEntriesFast();
-  if(nofPoints==0 || nofRefPoints==0){return;} if(nofPoints>1500){return;} 
+  if(nofPoints==0 || nofRefPoints==0){return;} if(nofPoints>2000){return;} 
   cout<<"nofPoints:  "<<  nofPoints<<endl;
   //loop over points and get momentum of photons --> calculate angle (to be done later)
   if(nofPoints<=30){H_NofPhotonsSmallerThan30->Fill(nofPoints); }
@@ -245,25 +245,38 @@ void CbmRichGeoOpt::HitsAndPoints(){
     TVector3 PosAtRefl; TVector3 PosAtDetIn; TVector3 PosAtDetOut;
     CbmRichPoint* RefPoint = (CbmRichPoint*)fRefPoints->At(i);
     if (RefPoint == NULL) continue;
-    int trackId = RefPoint->GetTrackID(); if(trackId==-2) {continue;}
+    int RefPointTrackId = RefPoint->GetTrackID(); if(RefPointTrackId==-2) {continue;}
     RefPoint->Position(PosAtRefl);
     int Zpos=int(10.*PosAtRefl.Z());//2657 or 2658 -->take 2658 which is the entrance point 
     //of the REFLECTED photon into the sensitive plane   
     //cout<<PosAtRefl.Z()<<"    "<<Zpos<<endl;
-    if(Zpos==2653){continue;}//2657 for geo 2015. 2653 for geo dec2104
+    if(Zpos==3037){continue;}//2657 for geo 2015. 2653 for geo dec2104
+   
+    // mcTrack->GetMomentum(mom);    Double_t theta=mom.Theta()* 180 / TMath::Pi();
     
-    
-
-    CbmMCTrack* mcTrack = (CbmMCTrack*)fMcTracks->At(trackId);
-    TVector3 mom;
-    mcTrack->GetMomentum(mom);    Double_t theta=mom.Theta()* 180 / TMath::Pi();
-    
-    CbmRichPoint* point = (CbmRichPoint*) fRichPoints->At(trackId);
+    CbmRichPoint* point = (CbmRichPoint*) fRichPoints->At(RefPointTrackId);
     if(NULL == point) continue;
     PosAtDetIn.SetX(point->GetX()); PosAtDetIn.SetY(point->GetY()); PosAtDetIn.SetZ(point->GetZ());
-        
-    bool Checked=CheckPointLiesOnPlane(PosAtDetIn,PlanePoints[0],n);
     
+    Int_t iMCTrack = point->GetTrackID();
+    CbmMCTrack* PointTrack = static_cast<CbmMCTrack*>(fMcTracks->At(iMCTrack));
+    if (NULL == PointTrack) continue;
+    Int_t iMother = PointTrack->GetMotherId();
+    if (iMother == -1){continue;}
+
+    CbmMCTrack* motherTrack = static_cast<CbmMCTrack*>(fMcTracks->At(iMother));
+    int pdg = TMath::Abs(motherTrack->GetPdgCode());
+    int motherId = motherTrack->GetMotherId();
+    TVector3 PointMom; PointTrack->GetMomentum(PointMom); 
+    TVector3 ElMom; Double_t ElTheta;
+    if (pdg == 11 && motherId == -1){
+      motherTrack->GetMomentum(ElMom);   ElTheta=ElMom.Theta()* 180 / TMath::Pi(); 
+      //cout<<"primera at ElTheta: "<<ElTheta<<endl; 
+    }
+    
+    ////////////////////////////////////////////////////
+    bool Checked=CheckPointLiesOnPlane(PosAtDetIn,PlanePoints[0],n);
+    /*
     nTotalPhorons++;//nPhotonsNotOnPlane++;
     if( Checked==0 ){nPhotonsNotOnPlane++; continue; }
     //float DistMCToFocalPoint=GetDistanceMirrorCenterToPMTPoint(point);
@@ -275,16 +288,18 @@ void CbmRichGeoOpt::HitsAndPoints(){
     H_dFocalPoint_Delta->Fill(Delta);
     H_dFocalPoint_Rho->Fill(rho);
     /////////// calculate the vectors on teh PMT plane
-    
+     */
     TVector3 LineSensToPMT=PosAtDetIn-PosAtRefl;
+    
+
     /////////// calculate alpha relative to the "tilted" PMT plane !!
     double Alpha=LineSensToPMT.Angle(n);//*TMath::RadToDeg();
     double AlphaInDeg=Alpha*TMath::RadToDeg();
     if(AlphaInDeg>90.){AlphaInDeg=180.-AlphaInDeg;}
     /////////// calculate alpha throuh the momentum vector !!
-    double Alpha2=mom.Angle(n);//*TMath::RadToDeg();
+    double Alpha2=PointMom.Angle(n);//*TMath::RadToDeg();
     double Alpha2InDeg=Alpha2*TMath::RadToDeg();
-    if(AlphaInDeg>90.){AlphaInDeg=180.-AlphaInDeg;}
+    if(Alpha2InDeg>90.){Alpha2InDeg=180.-Alpha2InDeg;}
     
     H_PointsIn_XY->Fill(PosAtDetIn.X(),PosAtDetIn.Y());
     //PosAtDetOut
@@ -293,7 +308,7 @@ void CbmRichGeoOpt::HitsAndPoints(){
 
     H_Alpha->Fill(AlphaInDeg);
     if(PosAtDetIn.X()<0. && PosAtDetIn.Y()>0) {
-      if(theta<=24){
+      if(ElTheta<=25){
 	H_Alpha_UpLeft_RegularTheta->Fill(AlphaInDeg );
 	H_Alpha_XYposAtDet_RegularTheta->Fill(PosAtDetIn.X(),PosAtDetIn.Y(),AlphaInDeg);
       }
