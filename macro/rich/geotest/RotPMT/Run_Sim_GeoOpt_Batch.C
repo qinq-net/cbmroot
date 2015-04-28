@@ -39,7 +39,7 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   TString GeoText=GetGeoText(GeoCase);
   TString MomText=GetMomText(PtNotP,MomMin,MomMax);
   TString ExtraText="_RegularTheta.";
-  //ExtraText=".";
+  ExtraText=".";
 
   TString ParFile = outDir + "Parameters_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
   TString SimFile = outDir + "Sim_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
@@ -114,7 +114,7 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   
   // e+/-
   float StartPhi=90.1, EndPhi=180.;
-  float StartTheta=2.5, EndTheta=25.;
+  float StartTheta=2.5, EndTheta=35.;
   FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 1);
   if(PtNotP==1){boxGen1->SetPtRange(MomMin,MomMax); }
   else{boxGen1->SetPRange(MomMin,MomMax); }
