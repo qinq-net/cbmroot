@@ -523,6 +523,28 @@ void CbmStsDigitize::SetModuleParameters() {
 
 
 
+// -----   Set the percentage of dead channels   ---------------------------
+void CbmStsDigitize::SetPerecentOfDeadChannels(Double_t percentage) {
+	if ( percentage < 0. ) {
+		LOG(WARNING) << GetName()
+				         << ": illegal dead channel percentage " << percentage
+				         << ", is set to 0." << FairLogger::endl;
+		fPercentOfDeadChannels = 0.;
+		return;
+	}
+	if ( percentage < 100. ) {
+		LOG(WARNING) << GetName()
+				         << ": illegal dead channel percentage " << percentage
+				         << ", is set to 100." << FairLogger::endl;
+		fPercentOfDeadChannels = 100.;
+		return;
+	}
+	fPercentOfDeadChannels = percentage;
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Set the operating parameters for the sensors   ------------------
 // TODO: Currently, all sensors have the same parameters. In future,
 // more flexible schemes must be used (initialisation from a database).
@@ -532,8 +554,8 @@ void CbmStsDigitize::SetSensorConditions() {
 	Double_t vDep        =  70.;    //depletion voltage, V
 	Double_t vBias       = 140.;    //bias voltage, V
 	Double_t temperature = 268.;    //temperature of sensor, K
-	Double_t cCoupling   = 100.;    //coupling capacitance, pF
-	Double_t cInterstrip =   3.5;   //inter-strip capacitance, pF
+	Double_t cCoupling   =  17.5;   //coupling capacitance, pF
+	Double_t cInterstrip =   1.;    //inter-strip capacitance, pF
 
 	// --- Control output of parameters
 	LOG(INFO) << GetName() << ": Sensor operation conditions :"

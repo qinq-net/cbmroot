@@ -63,6 +63,12 @@ class CbmStsDigitize : public FairTask
   virtual void Exec(Option_t* opt);
 
 
+  /** Percentage of dead channels **/
+  Double_t GetPercentOfDeadChannels() const {
+  	return fPercentOfDeadChannels;
+  }
+
+
   /** Set the digitisation parameters (same for all modules)
    ** @param dynRagne             Dynamic range [e]
    ** @param threshold            Threshold [e]
@@ -90,6 +96,10 @@ class CbmStsDigitize : public FairTask
   void SetModuleParameters();
 
 
+  /** Set percentage of dead channels **/
+  void SetPerecentOfDeadChannels(Double_t percentage);
+
+
   /** Set the operating parameters in the sensors **/
   void SetSensorConditions();
 
@@ -112,6 +122,7 @@ class CbmStsDigitize : public FairTask
   Double_t fTimeResolution;   ///< Time resolution (sigma) [ns]
   Double_t fDeadTime;         ///< Single-channel dead time [ns]
   Double_t fNoise;            ///< equivalent noise charge (sigma) [ns]
+  Double_t fPercentOfDeadChannels; ///< percentage of dead channels
 
   CbmStsSetup*   fSetup;        ///< STS setup interface
   TClonesArray*  fPoints;       ///< Input array of CbmStsPoint
@@ -165,7 +176,6 @@ class CbmStsDigitize : public FairTask
 
   /** Reset step-wise counters **/
   void Reset();
-
 
 
   /** Prevent usage of copy constructor and assignment operator **/
