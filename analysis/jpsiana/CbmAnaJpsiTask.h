@@ -3,6 +3,16 @@
 #define CBMJPSIANATASK
 
 #include "FairTask.h"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TH3D.h"
+#include "TClonesArray.h"
+#include "CbmHistManager.h"
+//#include "../dielectron/CbmLmvmCandidate.h"
+#include "CbmKFVertex.h"
+#include "CbmVertex.h"
+
+
 
 using namespace std;
 
@@ -35,11 +45,44 @@ public:
     * \brief Inherited from FairTask.
     */
    virtual void Finish();
+   
 
 
 
 private:
+  Int_t fEventNum;
+  
+  TClonesArray* fMcTracks;
+  TClonesArray* fStsPoints;  
+  TClonesArray* fRichPoints; 
+  TClonesArray* fTrdPoints; 
+  TClonesArray* fTofPoints; 
+  TClonesArray* fStsHits;
+  TClonesArray* fRichHits;
+  TClonesArray* fTrdHits;
+  TClonesArray* fTofHits;
+  TClonesArray* fStsTracks;
+  TClonesArray* fRichRings;
+  TClonesArray* fTrdTracks;
+  TClonesArray* fGlobalTracks;
+  
+  CbmVertex* fPrimVertex;
+  CbmKFVertex fKFVertex;
 
+
+  CbmHistManager* fHM;
+
+    void InitHist();
+    
+    void DrawHist();
+
+    void McPair();
+
+    void MCPointPMT();
+
+    void RichHitPMT();
+
+    void FillCandidates();
 
 
    /**
