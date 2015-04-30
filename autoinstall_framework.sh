@@ -27,7 +27,7 @@ export CBMSRCDIR=`pwd`
 
 cd ..
 git clone https://github.com/FairRootGroup/FairSoft fairsoft_$FSOFTVER
-cd fairsoft_$FSOFTVER/
+cd fairsoft_$FSOFTVER
 git tag -l
 git checkout -b $FSOFTVER $FSOFTVER
 #emacs -nw automatic.conf
@@ -49,8 +49,8 @@ export SIMPATH=`pwd`
 echo "SIMPATH	 : $SIMPATH"
 cd ../..
 
-git clone https://github.com/FairRootGroup/FairRoot.git fairroot_src
-cd fairroot_src
+git clone https://github.com/FairRootGroup/FairRoot.git fairroot_src_$FROOTVER
+cd fairroot_src_$FROOTVER
 git tag -l
 git checkout -b $FROOTVER $FROOTVER
 mkdir build
