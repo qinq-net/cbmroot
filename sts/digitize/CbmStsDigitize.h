@@ -64,8 +64,8 @@ class CbmStsDigitize : public FairTask
 
 
   /** Percentage of dead channels **/
-  Double_t GetPercentOfDeadChannels() const {
-  	return fPercentOfDeadChannels;
+  Double_t GetDeadChannelFraction() const {
+  	return fDeadChannelFraction;
   }
 
 
@@ -97,7 +97,7 @@ class CbmStsDigitize : public FairTask
 
 
   /** Set percentage of dead channels **/
-  void SetPerecentOfDeadChannels(Double_t percentage);
+  void SetDeadChannelFraction(Double_t fraction);
 
 
   /** Set the operating parameters in the sensors **/
@@ -116,13 +116,13 @@ class CbmStsDigitize : public FairTask
   Int_t fDigiModel;  ///< Detector response model. 0 = ideal, 1 = simple, 2 = real
 
   // --- Digitisation parameters
-  Double_t fDynRange;         ///< Dynamic range [e]
-  Double_t fThreshold;        ///< Threshold [e]
-  Int_t    fNofAdcChannels;   ///< Number of ADC channels
-  Double_t fTimeResolution;   ///< Time resolution (sigma) [ns]
-  Double_t fDeadTime;         ///< Single-channel dead time [ns]
-  Double_t fNoise;            ///< equivalent noise charge (sigma) [ns]
-  Double_t fPercentOfDeadChannels; ///< percentage of dead channels
+  Double_t fDynRange;            ///< Dynamic range [e]
+  Double_t fThreshold;           ///< Threshold [e]
+  Int_t    fNofAdcChannels;      ///< Number of ADC channels
+  Double_t fTimeResolution;      ///< Time resolution (sigma) [ns]
+  Double_t fDeadTime;            ///< Single-channel dead time [ns]
+  Double_t fNoise;               ///< equivalent noise charge (sigma) [ns]
+  Double_t fDeadChannelFraction; ///< fraction of dead channels [%]
 
   CbmStsSetup*   fSetup;        ///< STS setup interface
   TClonesArray*  fPoints;       ///< Input array of CbmStsPoint

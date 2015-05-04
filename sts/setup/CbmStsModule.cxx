@@ -135,6 +135,9 @@ void CbmStsModule::AddSignal(Int_t channel, Double_t time,
 	LOG(DEBUG3) << GetName() << ": Receiving signal " << charge
 			        << " in channel " << channel << " at time "
 			        << time << " s" << FairLogger::endl;
+	
+	// --- Discard charge if the channel is dead
+	if ( fDeadChannels.count(channel) ) return;
 
 	// --- If the channel is not yet active: create a new set and insert
 	// --- new signal into it.
@@ -444,6 +447,53 @@ Int_t CbmStsModule::ProcessAnalogBuffer(Double_t readoutTime) {
 	}  // Iterate over channels
 
 	return nDigis;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Create list of dead channels   ----------------------------------
+Int_t CbmStsModule::SetDeadChannels(Double_t percentage) {
+
+	Double_t fraction = percentage;
+
+	// --- Catch illegal percentage values
+	if ( percentage < 0. ) {
+		LOG(WARNING) << GetName() << ": illegal percentage of dead channels "
+				<< percentage << ", is set to 0." << FairLogger::endl;
+		fraction = 0.;
+	}
+	if ( percentage > 100. ) {
+		LOG(WARNING) << GetName() << ": illegal percentage of dead channels "
+				<< percentage << ", is set to 100." << FairLogger::endl;
+		fraction = 100.;
+	}
+
+	// --- Re-set dead channel list
+	fDeadChannels.clear();
+
+	// --- Number of dead channels
+	Int_t nOfDeadChannels = fraction * fNofChannels / 100;
+
+	// --- Case percentage < 50: randomise inactive channels
+	// --- N.b.: catches also zero fraction (nOfDeadChannels = 0)
+	// --- N.b.: set::insert has no effect if element is already present
+	if ( nOfDeadChannels < (fNofChannels / 2) ) {
+		while ( fDeadChannels.size() < nOfDeadChannels )
+			fDeadChannels.insert( Int_t( gRandom->Uniform(fNofChannels) ) );
+	}
+
+	// --- Case percentage > 50: randomise active channels
+	// --- N.b.: catches also unity fraction (nOfDeadChannels = fNofChannels)
+	// --- N.b.: set::erase has no effect if element is not present
+	else {
+		for (Int_t channel = 0; channel < fNofChannels; channel++)
+			fDeadChannels.insert(channel);
+		while ( fDeadChannels.size() > nOfDeadChannels )
+			fDeadChannels.erase( Int_t ( gRandom->Uniform(fNofChannels) ) );
+	}
+
+	return fDeadChannels.size();
 }
 // -------------------------------------------------------------------------
 

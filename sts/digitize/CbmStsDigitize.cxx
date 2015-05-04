@@ -7,6 +7,7 @@
 #include "CbmStsDigitize.h"
 
 // Includes from C++
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 
@@ -54,6 +55,7 @@ CbmStsDigitize::CbmStsDigitize(Int_t digiModel)
     fTimeResolution(0.),
     fDeadTime(0.),
     fNoise(0.),
+    fDeadChannelFraction(0.),
     fSetup(NULL),
     fPoints(NULL),
     fDigis(NULL),
@@ -506,6 +508,8 @@ void CbmStsDigitize::SetModuleParameters() {
 			      << fDeadTime << " ns" << FairLogger::endl;
 	LOG(INFO) << "\t ENC             " << setw(10) << right
 			      << fNoise << " e" << FairLogger::endl;
+	LOG(INFO) << "\t Dead channel fraction " << setw(10) << right
+			      << fDeadChannelFraction << " %" << FairLogger::endl;
 
  // --- Set parameters for all modules
 	Int_t nModules = fSetup->GetNofModules();
@@ -515,6 +519,7 @@ void CbmStsDigitize::SetModuleParameters() {
 				                                      fTimeResolution,
 				                                      fDeadTime,
 				                                      fNoise);
+		fSetup->GetModule(iModule)->SetDeadChannels(fDeadChannelFraction);
 	}
 	LOG(INFO) << GetName() << ": Set parameters for " << nModules
 			      << " modules " << FairLogger::endl;
@@ -524,22 +529,22 @@ void CbmStsDigitize::SetModuleParameters() {
 
 
 // -----   Set the percentage of dead channels   ---------------------------
-void CbmStsDigitize::SetPerecentOfDeadChannels(Double_t percentage) {
-	if ( percentage < 0. ) {
+void CbmStsDigitize::SetDeadChannelFraction(Double_t fraction) {
+	if ( fraction < 0. ) {
 		LOG(WARNING) << GetName()
-				         << ": illegal dead channel percentage " << percentage
-				         << ", is set to 0." << FairLogger::endl;
-		fPercentOfDeadChannels = 0.;
+				         << ": illegal dead channel fraction " << fraction
+				         << "% , is set to 0 %" << FairLogger::endl;
+		fDeadChannelFraction = 0.;
 		return;
 	}
-	if ( percentage < 100. ) {
+	if ( fraction > 100. ) {
 		LOG(WARNING) << GetName()
-				         << ": illegal dead channel percentage " << percentage
-				         << ", is set to 100." << FairLogger::endl;
-		fPercentOfDeadChannels = 100.;
+				         << ": illegal dead channel fraction " << fraction
+				         << "% , is set to 100 %" << FairLogger::endl;
+		fDeadChannelFraction = 100.;
 		return;
 	}
-	fPercentOfDeadChannels = percentage;
+	fDeadChannelFraction = fraction;
 }
 // -------------------------------------------------------------------------
 
