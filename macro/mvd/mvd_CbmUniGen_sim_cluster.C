@@ -20,11 +20,7 @@ void mvd_CbmUniGen_sim_cluster(const char* input = "auau.25gev", const char* sys
   inFile = inFile + ".root";
 
   // Output file
-  TString outFile = "data/mvd.mc.unigen.";
-  outFile = outFile + input;
-  outFile = outFile + ".";
-  outFile = outFile + system;
-  outFile = outFile + ".root";
+  TString outFile = "data/mvd.mc.unigen." + input + "." + system + ".root";
 
   // Parameter file name
   TString parFile = "data/paramsunigen.";
@@ -53,7 +49,7 @@ void mvd_CbmUniGen_sim_cluster(const char* input = "auau.25gev", const char* sys
   TString stsGeom = "sts/sts_v13d.geo.root";
 
   // Tof geometry
-  TString tofGeom = "tof/tof_v13b.geo.root";
+ // TString tofGeom = "tof/tof_v13b.geo.root";
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -106,9 +102,9 @@ void mvd_CbmUniGen_sim_cluster(const char* input = "auau.25gev", const char* sys
   sts->SetGeometryFileName(stsGeom);
   fRun->AddModule(sts);
 
-  FairDetector* tof = new CbmTof("TOF", kTRUE);
-  tof->SetGeometryFileName(tofGeom);
-  fRun->AddModule(tof);
+ // FairDetector* tof = new CbmTof("TOF", kTRUE);
+ // tof->SetGeometryFileName(tofGeom);
+ // fRun->AddModule(tof);
   // ------------------------------------------------------------------------
 
 

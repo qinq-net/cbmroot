@@ -11,7 +11,7 @@
 
 
 void mvd_CbmUniGen_reco_cluster(TString input = "auau.25gev", TString system = "centr", Int_t  nEvents = 100,
-              Int_t  iVerbose = 0, const char* setup = "sis300_electron", bool PileUp = false, bool littrack = false)
+              Int_t  iVerbose = 0, const char* setup = "sis300_electron", bool PileUp = true, bool littrack = false)
 {
 
   // ========================================================================
@@ -67,11 +67,7 @@ else
   parFileList->Add(&stsDigiFile);
   cout << "macro/run/run_reco.C using: " << stsDigi << endl;
 
-  TObjString tofDigiFile = paramDir + tofDigi;
-  parFileList->Add(&tofDigiFile);
-  cout << "macro/run/run_reco.C using: " << tofDigi << endl;
-
-
+ 
 TString globalTrackingType = "nn";
 
   // In general, the following parts need not be touched
@@ -90,7 +86,13 @@ TString globalTrackingType = "nn";
   run->SetGenerateRunInfo(kTRUE);
   // ------------------------------------------------------------------------
  
-  // -----   MVD Digitiser   ----------------------------------------------
+  // ----- MC Data Manager   ------------------------------------------------
+  CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+  mcManager->AddFile(inFile);
+  run->AddTask(mcManager);
+  // ------------------------------------------------------------------------
+
+  // -----   MVD Digitiser   ------------------------------------------------
   CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose);
 
 if(PileUp)
@@ -104,7 +106,7 @@ if(PileUp)
  	 mvdDigitise->SetDeltaBufferSize(pileUpInMVD*200); 
   	mvdDigitise->SetDeltaEvents(pileUpInMVD*100);
 	}
-  mvdDigitise->ShowDebugHistograms();
+  //mvdDigitise->ShowDebugHistograms();
   run->AddTask(mvdDigitise);
   // ----------------------------------------------------------------------
 
@@ -135,7 +137,7 @@ if(PileUp)
   CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
   stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution,
   		                   deadTime, noise);
- /* run->AddTask(stsDigi);
+  run->AddTask(stsDigi);
   // -------------------------------------------------------------------------
 
   // -----   STS Cluster Finder   --------------------------------------------
@@ -190,7 +192,7 @@ if(PileUp)
   CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
   findVertex->SetName("FindPrimaryVertex");
   run->AddTask(findVertex);
-  // -----------------------------------------------------------------------*/
+  // -----------------------------------------------------------------------
 
   // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();

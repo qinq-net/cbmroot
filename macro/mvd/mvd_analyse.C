@@ -3,7 +3,7 @@
 void mvd_analyse(TString input = "auau.25gev", TString system = "centr", 
 		 Int_t  nEvents = 100, Int_t  iVerbose = 0, 
 		 const char* setup = "sis300_electron", 
-		 bool PileUp = true, bool littrack = true)
+		 bool PileUp = true, bool littrack = false)
 {
 
   // ========================================================================
@@ -11,19 +11,19 @@ void mvd_analyse(TString input = "auau.25gev", TString system = "centr",
 
    
   // Input file (reco data)
-  TString mcFile = "data/mvd.mc.unigen." + input + "." + system + "_newPipe.root";
+  TString mcFile = "data/mvd.mc.unigen." + input + "." + system + ".root";
   // Output file
 if(!PileUp)
 	{
 	if(littrack)
 	  TString recoFile = "data/mvd.reco.unigen." + input + "." + system + ".littrack.root";
 	else 
-	  TString recoFile = "data/mvd.reco.unigen." + input + "." + system + ".root";
+	  TString recoFile = "data/mvd.reco.unigen." + input + "." + system + ".l1.root";
 	}
 else if(littrack)
   TString recoFile = "data/mvd.reco.unigen." + input + "." + system + ".PileUp.littrack.root";
 else 
-  TString recoFile = "data/mvd.reco.unigen." + input + "." + system + "_PileUp.root";
+  TString recoFile = "data/mvd.reco.unigen." + input + "." + system + ".PileUp.l1.root";
 
   // Output file
 if(!PileUp)

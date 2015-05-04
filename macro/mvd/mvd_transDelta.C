@@ -14,7 +14,7 @@ void mvd_transDelta()
 
 
   // Number of events
-  Int_t   nEvents = 200000;
+  Int_t   nEvents = 5000;
 
 
   // Output path  
