@@ -168,11 +168,13 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
 
     /** Get the cluster position at the top edge of the sensor.
      ** @param[in]  centre    Cluster centre in (module) channel units
-     ** @param[in]  sensorId  Sensor index in module
+     ** @param[in]  sensor    Pointer to sensor object
      ** @param[out] xCluster  Cluster position at readout edge
      ** @param[out] side      Sensor side [0 = front, 1 = back]
+     **
+     ** A correction for the Lorentz shift is applied.
      **/
-    void GetClusterPosition(Double_t centre, Int_t sensorId,
+    void GetClusterPosition(Double_t centre, CbmStsSensor* sensor,
     		                    Double_t& xCluster, Int_t& side);
 
 
