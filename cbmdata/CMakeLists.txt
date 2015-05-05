@@ -35,7 +35,6 @@ CbmDetectorList.cxx
 
 CbmBaseHit.cxx
 CbmDigi.cxx
-CbmHit.cxx
 CbmPixelHit.cxx
 CbmStack.cxx
 CbmStripHit.cxx
