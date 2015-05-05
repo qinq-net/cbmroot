@@ -55,9 +55,9 @@ CbmStsSetup::CbmStsSetup() : CbmStsElement("STS", "system", kStsSystem),
 Int_t CbmStsSetup::DefineSensorTypes() {
 
 	// Common parameters for all sensor types
-  Double_t lz      = 0.;   // active thickness
-	Double_t stereoF = 0.;   // stereo angle front side
-	Double_t stereoB = 7.5;  // stereo angle back side
+  Double_t lz      = 0.03; // active thickness [cm]
+	Double_t stereoF = 0.;   // stereo angle front side [degrees]
+	Double_t stereoB = 7.5;  // stereo angle back side [degrees]
 
 	// Parameters varying from type to type
 	Double_t lx      = 0.;   // active size in x

@@ -203,7 +203,7 @@ void CbmStsFindHits_old::FindHits(CbmStsStation* station, CbmStsSector* sector, 
     else if (sectorType == 3)
     {
         static const Double_t SQRT12 = TMath::Sqrt(12.);
-        static const Double_t SQRT6 = TMath::Sqrt(12.);
+        static const Double_t SQRT6 = TMath::Sqrt(6.);
 
         const Double_t rotation = sector->GetRotation();
         const Double_t dx = sector->GetDx();

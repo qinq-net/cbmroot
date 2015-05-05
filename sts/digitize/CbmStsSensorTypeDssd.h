@@ -78,9 +78,9 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** @param[out] stereoF    Stereo angle on front side [degrees]
      ** @param[out] stereoB    Stereo angle on back side [degrees]
      **/
-    void GetParameters(Double_t dX, Double_t dY, Double_t dZ,
-    		               Int_t nStripsF, Int_t nStripsB,
-    		               Double_t stereoF, Double_t stereoB) const {
+    void GetParameters(Double_t& dX, Double_t& dY, Double_t& dZ,
+    		               Int_t& nStripsF, Int_t& nStripsB,
+    		               Double_t& stereoF, Double_t& stereoB) const {
     	dX       = fDx;
     	dY       = fDy;
     	dZ       = fDz;
