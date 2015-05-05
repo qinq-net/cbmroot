@@ -8,9 +8,9 @@
 #include "TH3D.h"
 #include "TClonesArray.h"
 #include "CbmHistManager.h"
-//#include "../dielectron/CbmLmvmCandidate.h"
 #include "CbmKFVertex.h"
 #include "CbmVertex.h"
+#include "CbmAnaJpsiCandidate.h"
 
 
 
@@ -53,21 +53,26 @@ private:
   Int_t fEventNum;
   
   TClonesArray* fMcTracks;
-  TClonesArray* fStsPoints;  
-  TClonesArray* fRichPoints; 
-  TClonesArray* fTrdPoints; 
-  TClonesArray* fTofPoints; 
+  TClonesArray* fStsPoints;
   TClonesArray* fStsHits;
-  TClonesArray* fRichHits;
-  TClonesArray* fTrdHits;
-  TClonesArray* fTofHits;
   TClonesArray* fStsTracks;
+  TClonesArray* fStsTrackMatches;
+  TClonesArray* fRichPoints; 
+  TClonesArray* fRichHits;
   TClonesArray* fRichRings;
+  TClonesArray* fRichRingMatches;
+  TClonesArray* fTrdPoints; 
+  TClonesArray* fTrdHits;
   TClonesArray* fTrdTracks;
+  TClonesArray* fTrdTrackMatches;
+  TClonesArray* fTofPoints; 
+  TClonesArray* fTofHits;
   TClonesArray* fGlobalTracks;
   
   CbmVertex* fPrimVertex;
   CbmKFVertex fKFVertex;
+
+  vector<CbmAnaJpsiCandidate> fCandidates; // array of JPsi candidates
 
 
   CbmHistManager* fHM;
@@ -82,7 +87,16 @@ private:
 
     void RichHitPMT();
 
+    /**
+     * \brief Fill fCandidates array with JPsiCandidates. Candidate should have STS, RICH, TRD, TOF local segments.
+     *
+     */
     void FillCandidates();
+
+    /**
+     * \brief Assign MC info to the candidates.
+     */
+    void AssignMcToCandidates();
 
 
    /**
@@ -94,8 +108,6 @@ private:
     * \brief Assignment operator.
     */
    CbmAnaJpsiTask& operator=(const CbmAnaJpsiTask&);
-
-
 
 
 	ClassDef(CbmAnaJpsiTask,1)

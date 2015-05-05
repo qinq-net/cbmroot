@@ -18,6 +18,7 @@
 #include "CbmGlobalTrack.h"
 #include "CbmAnaJpsiCandidate.h"
 #include "CbmAnaJpsiUtils.h"
+#include "CbmTrackMatchNew.h"
 
 
 using namespace std;
@@ -67,12 +68,18 @@ InitStatus CbmAnaJpsiTask::Init()
    fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
    if ( NULL == fTofHits) {Fatal("CbmAnaJpsiTask::Init","No TofHits Array! ");}
    
+	fTrdTrackMatches = (TClonesArray*) ioman->GetObject("TrdTrackMatch");
+	if (NULL == fTrdTrackMatches) { Fatal("CbmAnaDielectronTask::Init","No TrdTrackMatch array!"); }
+
    fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
    if ( NULL == fStsTracks) {Fatal("CbmAnaJpsiTask::Init","No StsTracks Array! ");}
    
    fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
    if ( NULL == fRichRings) {Fatal("CbmAnaJpsiTask::Init","No RichRings Array! ");}
    
+   fRichRingMatches = (TClonesArray*) ioman->GetObject("RichRingMatch");
+   if (NULL == fRichRingMatches) { Fatal("CbmAnaJpsiTask::Init","No RichRingMatch array!"); }
+
    fTrdTracks = (TClonesArray*) ioman->GetObject("TrdTrack");
    if ( NULL == fTrdTracks ) {Fatal("CbmAnaJpsiTask::Init","No TrdTracks Array!");}
    
@@ -81,6 +88,9 @@ InitStatus CbmAnaJpsiTask::Init()
 
    fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
    if (NULL == fPrimVertex) { Fatal("CbmAnaJpsiTask::Init","No PrimaryVertex array!"); }
+
+   fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
+   if ( NULL == fStsTrackMatches ) {Fatal("CbmAnaJpsiTask::Init","No StsTrackMatches Array!");}
 
    InitHist();
    return kSUCCESS;
@@ -158,6 +168,10 @@ void CbmAnaJpsiTask::InitHist()
    //Dalitz Decay in PMTPlane XY | RichHit
    fHM->Create2<TH2D>("fhRichHitDalitzDecayInPETPlaneXY","fhRichHitDalitzDecayInPETPlaneXY;X[cm];Y[cm];Entries",220,-110,110,400,-200,200);
 
+   //reconstructed momenta
+   fHM->Create1<TH1D>("fhReconMomSignalElectron","fhReconMomSignalElectron;P [GeV/c];Entries",150,0,15);
+   fHM->Create1<TH1D>("fhReconMomGammaConv","fhReconMomGammaConv;P [GeV/c];Entries",150,0,15);
+   fHM->Create1<TH1D>("fhReconMomDalitzDecay","fhReconMomDalitzDecay;P [GeV/c];Entries",150,0,15);
 }
 
 
@@ -304,8 +318,119 @@ void CbmAnaJpsiTask::Exec(
   MCPointPMT();
 
   RichHitPMT();
+
+  FillCandidates();
+
+  AssignMcToCandidates();
 }
 
+
+void CbmAnaJpsiTask::FillCandidates()
+{
+	fCandidates.clear();
+	Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
+
+	for (Int_t i=0;i<nofGlobalTracks;i++) {
+		// create candidate, in which we will store some parameters of reconstructed global track
+    	CbmAnaJpsiCandidate cand;
+
+		//get GlobalTrack from array
+		CbmGlobalTrack* globalTrack = (CbmGlobalTrack*) fGlobalTracks->At(i);
+		if (NULL == globalTrack) continue;
+
+		// get StsTrack from global track
+		Int_t stsInd = globalTrack->GetStsTrackIndex();
+		if (stsInd < 0) continue;
+		CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(stsInd);
+		if (NULL == stsTrack) continue;
+
+		//calculate and get track parameters
+        CbmAnaJpsiUtils::CalculateAndSetTrackParamsToCandidate(&cand, stsTrack, fKFVertex);
+
+        // RICH
+        cand.fRichInd = globalTrack->GetRichRingIndex();
+        if (cand.fRichInd < 0) continue;
+        CbmRichRing* richRing = (CbmRichRing*) fRichRings->At(cand.fRichInd);
+        if (NULL == richRing) continue;
+
+        // TRD
+        cand.fTrdInd = globalTrack->GetTrdTrackIndex();
+        if (cand.fTrdInd < 0) continue;
+        CbmTrdTrack* trdTrack = (CbmTrdTrack*) fTrdTracks->At(cand.fTrdInd);
+        if (trdTrack == NULL) continue;
+
+        // ToF
+        cand.fTofInd = globalTrack->GetTofHitIndex();
+        if (cand.fTofInd < 0) continue;
+        CbmTofHit* tofHit = (CbmTofHit*) fTofHits->At(cand.fTofInd);
+        if (tofHit == NULL) continue;
+
+        //IsElectron(richRing, cand.fMomentum.Mag(), trdTrack, gTrack, &cand);
+
+        // push candidate to the array
+        // we store oanly candidate which have all local segments: STS, RICH, TRD, TOF
+        fCandidates.push_back(cand);
+	}
+}
+
+void CbmAnaJpsiTask::AssignMcToCandidates()
+{
+   int nCand = fCandidates.size();
+   for (int i = 0; i < nCand; i++){
+	   //reset MC information
+      fCandidates[i].ResetMcParams();
+
+      //STS
+      //MCTrackId of the candidate is defined by STS track
+      int stsInd = fCandidates[i].fStsInd;
+      CbmTrackMatchNew* stsMatch  = (CbmTrackMatchNew*) fStsTrackMatches->At(stsInd);
+      if (stsMatch == NULL) continue;
+      fCandidates[i].fStsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
+      if (fCandidates[i].fStsMcTrackId < 0) continue;
+      CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMcTracks->At(fCandidates[i].fStsMcTrackId);
+      if (mcTrack1 == NULL) continue;
+      int pdg = TMath::Abs(mcTrack1->GetPdgCode());
+      int motherId = mcTrack1->GetMotherId();
+
+      // set MC signature for candidate
+      if (pdg == 11 && motherId == -1) fCandidates[i].fIsMcSignalElectron = true;
+      if (motherId >=0){
+         CbmMCTrack* mct1 = (CbmMCTrack*) fMcTracks->At(motherId);
+         int motherPdg = mct1->GetPdgCode();
+         //Pi0 electron
+         if (mct1 != NULL && motherPdg == 111 && pdg == 11) {
+            fCandidates[i].fIsMcPi0Electron = true;
+         }
+         //Gamam conversion electron
+         if (mct1 != NULL && motherPdg == 22 && pdg == 11){
+            fCandidates[i].fIsMcGammaElectron = true;
+         }
+      }
+
+      // RICH
+      int richInd = fCandidates[i].fRichInd;
+      CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*) fRichRingMatches->At(richInd);
+      if (richMatch == NULL) continue;
+      fCandidates[i].fRichMcTrackId = richMatch->GetMatchedLink().GetIndex();
+
+      // TRD
+      int trdInd = fCandidates[i].fTrdInd;
+      CbmTrackMatchNew* trdMatch = (CbmTrackMatchNew*) fTrdTrackMatches->At(trdInd);
+      if (trdMatch == NULL) continue;
+      fCandidates[i].fTrdMcTrackId = trdMatch->GetMatchedLink().GetIndex();
+
+      // ToF
+      int tofInd = fCandidates[i].fTofInd;
+      if (tofInd < 0) continue;
+      CbmTofHit* tofHit = (CbmTofHit*) fTofHits->At(tofInd);
+      if (tofHit == NULL) continue;
+      Int_t tofPointIndex = tofHit->GetRefId();
+      if (tofPointIndex < 0) continue;
+      FairMCPoint* tofPoint = (FairMCPoint*) fTofPoints->At(tofPointIndex);
+      if (tofPoint == NULL) continue;
+      fCandidates[i].fTofMcTrackId = tofPoint->GetTrackID();
+   }// candidates
+}
 
 
 void CbmAnaJpsiTask::DrawHist()
@@ -508,6 +633,28 @@ void CbmAnaJpsiTask::DrawHist()
 	  DrawH2(fHM->H2("fhRichHitDalitzDecayInPETPlaneXY"));
   }
 
+  {
+	  TCanvas* c = new TCanvas("jpsi_ReconMomSignalElectron","jpsi_ReconMomSignalElectron",600,600);
+	  DrawH1(fHM->H1("fhReconMomSignalElectron"));
+  }
+
+  {
+	  TCanvas* c = new TCanvas("jpsi_ReconMomGammaConv","jpsi_ReconMomGammaConv",600,600);
+	  DrawH1(fHM->H1("fhReconMomGammaConv"));
+  }
+
+  {
+	  TCanvas* c = new TCanvas("jpsi_ReconMomDalitzDecay","jpsi_ReconMomDalitzDecay",600,600);
+	  DrawH1(fHM->H1("fhReconMomDalitzDecay"));
+  }
+
+  {
+	  TCanvas* c = new TCanvas("jpsi_DiffMomCandAndMcTrack","jpsi_DiffMomCandAndMcTrack",600,600);
+	  c->SetLogy();
+	  DrawH1(fHM->H1("fhDiffMomCandAndMcTrack"));
+  }
+
+
    // fHM->WriteToFile();
 
 }
@@ -700,39 +847,8 @@ void CbmAnaJpsiTask::RichHitPMT()
     }
 }
 
-void CbmAnaJpsiTask::FillCandidates()
-{
-	Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
 
-	for (Int_t i=0;i<nofGlobalTracks;i++)
-	{
-		// create candidate, in which we will store some parameters of reconstructed global track
-    	CbmAnaJpsiCandidate cand;
 
-		//get GlobalTrack
-		CbmGlobalTrack* globalTrack = (CbmGlobalTrack*) fGlobalTracks->At(i);
-		if (NULL == globalTrack) continue;
-
-		// get StsTrack from global track
-		Int_t stsInd = globalTrack->GetStsTrackIndex();
-		if (stsInd < 0) continue;
-		CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(stsInd);
-		if (NULL == stsTrack) continue;
-
-		//calculate and get track parameters
-        CbmAnaJpsiUtils::CalculateAndSetTrackParamsToCandidate(&cand, stsTrack, fKFVertex);
-
-        // now you can get parameters from candidate
-       // cand.fChi2sts
-       // cand.fChi2Prim
-       // cand.fMomentum.Mag() // total momenta
-		//cand.fMass
-       // cand.fCharge
-      //	cand.fEnergy
-       // cand.fRapidity
-	}
-
-}
 
 
 void CbmAnaJpsiTask::Finish()
