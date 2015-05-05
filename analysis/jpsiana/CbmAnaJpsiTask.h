@@ -78,8 +78,6 @@ private:
   CbmHistManager* fHM;
 
     void InitHist();
-    
-    void DrawHist();
 
     void McPair();
 
