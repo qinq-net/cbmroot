@@ -84,11 +84,6 @@
 #pragma link C++ class CbmPsdPoint;
 #pragma link C++ class CbmPsdEventData;
 
-#pragma link C++ class CbmSttPoint+;
-#pragma link C++ class CbmSttHit+;
-#pragma link C++ class CbmSttTrack+;
-#pragma link C++ class CbmSttTrackMatch+;
-
 #pragma link C++ class CbmGlobalTrack+;
 #pragma link C++ class CbmTofTrack;
 #pragma link C++ class CbmVertex+;

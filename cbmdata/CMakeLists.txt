@@ -116,11 +116,6 @@ psd/CbmPsdHit.cxx
 psd/CbmPsdPoint.cxx
 psd/CbmPsdEventData.cxx
 
-stt/CbmSttPoint.cxx
-stt/CbmSttHit.cxx
-stt/CbmSttTrack.cxx
-stt/CbmSttTrackMatch.cxx
-
 global/CbmGlobalTrack.cxx
 global/CbmVertex.cxx
 global/CbmTofTrack.cxx
