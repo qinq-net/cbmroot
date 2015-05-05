@@ -339,9 +339,9 @@ void CbmAnaJpsiTask::FillCandidates()
 		if (NULL == globalTrack) continue;
 
 		// get StsTrack from global track
-		Int_t stsInd = globalTrack->GetStsTrackIndex();
-		if (stsInd < 0) continue;
-		CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(stsInd);
+		cand.fStsInd = globalTrack->GetStsTrackIndex();
+		if (cand.fStsInd < 0) continue;
+		CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(cand.fStsInd);
 		if (NULL == stsTrack) continue;
 
 		//calculate and get track parameters
