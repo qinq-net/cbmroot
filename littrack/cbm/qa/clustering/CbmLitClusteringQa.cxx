@@ -8,7 +8,7 @@
 #include "CbmLitClusteringQa.h"
 #include "CbmLitClusteringQaReport.h"
 #include "CbmHistManager.h"
-#include "CbmHit.h"
+//#include "CbmHit.h"
 #include "CbmBaseHit.h"
 #include "FairRootManager.h"
 #include "CbmMuchDigi.h"

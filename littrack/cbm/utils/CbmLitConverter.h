@@ -14,7 +14,7 @@ class CbmTofTrack;
 class CbmBaseHit;
 class CbmPixelHit;
 class CbmStripHit;
-class CbmHit;
+//class CbmHit;
 class CbmMvdHit;
 class FairTrackParam;
 class CbmStsTrack;
@@ -43,11 +43,13 @@ public:
       Int_t index,
       CbmLitStripHit* litHit);
 
+   /*
    static void CbmHitToCbmLitPixelHit(
       const CbmHit* hit,
       Int_t index,
       CbmLitPixelHit* litHit,
       LitSystemId sysId);
+      */
 
    static void CbmMvdHitToCbmLitPixelHit(
       const CbmMvdHit* hit,

@@ -13,7 +13,7 @@
 #include "CbmBaseHit.h"
 #include "CbmPixelHit.h"
 #include "CbmStripHit.h"
-#include "CbmHit.h"
+//#include "CbmHit.h"
 #include "FairTrackParam.h"
 #include "CbmStsTrack.h"
 #include "CbmMuchTrack.h"
@@ -113,6 +113,7 @@ void CbmLitConverter::CbmStripHitToCbmLitStripHit(
    }
 }
 
+/*
 void CbmLitConverter::CbmHitToCbmLitPixelHit(
    const CbmHit* hit,
    Int_t index,
@@ -132,6 +133,7 @@ void CbmLitConverter::CbmHitToCbmLitPixelHit(
 
    litHit->SetDetectorId(sysId, hit->GetStationNr() - 1);
 }
+*/
 
 void CbmLitConverter::CbmMvdHitToCbmLitPixelHit(
    const CbmMvdHit* hit,
