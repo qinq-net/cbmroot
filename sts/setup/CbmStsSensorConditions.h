@@ -65,6 +65,13 @@ class CbmStsSensorConditions : public TObject {
 		Double_t GetCinterstrip() const { return fCinterstrip; }
 
 
+		/** Cross-talk coefficient
+		 ** Is derived from
+		 ** @return Cross-talk coefficient
+		 **/
+		Double_t GetCrossTalk() const { return fCrossTalk; }
+
+
 		/** Temperature
 		 ** @return Temperature [K]
 	   **/
@@ -105,6 +112,7 @@ class CbmStsSensorConditions : public TObject {
 		Double_t fTemperature;   ///< Temperature [K]
 		Double_t fCcoupling;     ///< Coupling capacitance [pF]
 		Double_t fCinterstrip;   ///< Inter-strip capacitance [pF]
+		Double_t fCrossTalk;     ///< Cross-talk coefficient
 		Double_t fBx;            ///< Mag. field (x comp.) at sensor centre [T]
 		Double_t fBy;            ///< Mag. field (y comp.) at sensor centre [T]
 		Double_t fBz;            ///< Mag. field (z comp.) at sensor centre [T]

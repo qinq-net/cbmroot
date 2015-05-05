@@ -25,10 +25,12 @@ CbmStsSensorConditions::CbmStsSensorConditions(Double_t vFd,
 		                                           fTemperature(temperature),
 		                                           fCcoupling(cCoupling),
 		                                           fCinterstrip(cInterstrip),
+		                                           fCrossTalk(0.),
 		                                           fBx(bX),
 		                                           fBy(bY),
 		                                           fBz(bZ)
 {
+	fCrossTalk = cInterstrip / (cInterstrip + cCoupling);
 }
 // -------------------------------------------------------------------------
 
@@ -44,7 +46,8 @@ string CbmStsSensorConditions::ToString() const {
 	stringstream ss;
 	ss << "VFD = " << fVfd << " V, V(bias) = " << fVbias << " V, T = "
 		 << fTemperature << " K, C(coupl.) = " << fCcoupling
-		 << " pF, C(int.) = " << fCinterstrip << " pF, B = ("
+		 << " pF, C(int.) = " << fCinterstrip
+		 << " pF, cross-talk coeff. = " << fCrossTalk <<  "B = ("
 		 << setprecision(3) << fixed << fBx << ", " << fBy << ", " << fBz
 		 << ") T";
 	return ss.str();
