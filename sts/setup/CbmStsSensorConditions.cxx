@@ -30,7 +30,8 @@ CbmStsSensorConditions::CbmStsSensorConditions(Double_t vFd,
 		                                           fBy(bY),
 		                                           fBz(bZ)
 {
-	fCrossTalk = cInterstrip / (cInterstrip + cCoupling);
+	if ( fCinterstrip + fCcoupling != 0. )
+		fCrossTalk = cInterstrip / (cInterstrip + cCoupling);
 }
 // -------------------------------------------------------------------------
 
