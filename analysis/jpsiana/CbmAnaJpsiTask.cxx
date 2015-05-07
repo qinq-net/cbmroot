@@ -381,7 +381,7 @@ void CbmAnaJpsiTask::FillCandidates()
         //IsElectron(richRing, cand.fMomentum.Mag(), trdTrack, gTrack, &cand);
 
         // push candidate to the array
-        // we store oanly candidate which have all local segments: STS, RICH, TRD, TOF
+        // we store only candidate which have all local segments: STS, RICH, TRD, TOF
         fCandidates.push_back(cand);
 	}
 }
@@ -414,7 +414,7 @@ void CbmAnaJpsiTask::AssignMcToCandidates()
          if (mct1 != NULL && motherPdg == 111 && pdg == 11) {
             fCandidates[i].fIsMcPi0Electron = true;
          }
-         //Gamam conversion electron
+         //Gamma conversion electron
          if (mct1 != NULL && motherPdg == 22 && pdg == 11){
             fCandidates[i].fIsMcGammaElectron = true;
          }
