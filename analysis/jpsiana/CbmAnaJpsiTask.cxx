@@ -18,6 +18,7 @@
 #include "CbmGlobalTrack.h"
 #include "CbmAnaJpsiCandidate.h"
 #include "CbmAnaJpsiUtils.h"
+#include "CbmAnaJpsiHist.h"
 #include "CbmTrackMatchNew.h"
 
 
@@ -96,6 +97,20 @@ InitStatus CbmAnaJpsiTask::Init()
    return kSUCCESS;
 }
 
+void CbmAnaJpsiTask::CreateSourceTypesH1(
+      const string& name,
+      const string& axisX,
+      const string& axisY,
+      double nBins,
+      double min,
+      double max)
+{
+   for (Int_t i = 0; i < CbmAnaJpsiHist::fNofSourceTypes; i++){
+      string hname = name + "_"+ CbmAnaJpsiHist::fSourceTypes[i];
+      fHM->Create1<TH1D>(hname, hname+";"+axisX+";"+axisY, nBins, min, max);
+   }
+}
+
 void CbmAnaJpsiTask::InitHist()
 {
 	fHM = new CbmHistManager();
@@ -169,9 +184,7 @@ void CbmAnaJpsiTask::InitHist()
    fHM->Create2<TH2D>("fhRichHitDalitzDecayInPETPlaneXY","fhRichHitDalitzDecayInPETPlaneXY;X[cm];Y[cm];Entries",220,-110,110,400,-200,200);
 
    //reconstructed momenta
-   fHM->Create1<TH1D>("fhReconMomSignalElectron","fhReconMomSignalElectron;P [GeV/c];Entries",150,0,15);
-   fHM->Create1<TH1D>("fhReconMomGammaConv","fhReconMomGammaConv;P [GeV/c];Entries",150,0,15);
-   fHM->Create1<TH1D>("fhReconMomDalitzDecay","fhReconMomDalitzDecay;P [GeV/c];Entries",150,0,15);
+   CreateSourceTypesH1("fhRecMom","P [GeV/c]", "Entries", 150, 0, 15);
 }
 
 

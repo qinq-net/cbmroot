@@ -244,6 +244,8 @@ void CbmAnaJpsiReport::Draw()
 		  DrawH2(H2("fhRichHitDalitzDecayInPETPlaneXY"));
 	  }
 
+
+
 	  {
 		  TCanvas* c = CreateCanvas("jpsi_ReconMomSignalElectron","jpsi_ReconMomSignalElectron",600,600);
 		  DrawH1(H1("fhReconMomSignalElectron"));

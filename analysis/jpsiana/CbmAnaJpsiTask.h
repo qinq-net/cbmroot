@@ -77,6 +77,23 @@ private:
 
   CbmHistManager* fHM;
 
+  /*
+   * \brief Creates 1D histograms for different track source types.
+   * \param[in] name Base name of the histograms.
+   * \param[in] axisX X axis title.
+   * \param[in] axisY Y axis title.
+   * \param[in] nBins Number of bins in the histogram.
+   * \param[in] min Minimum value.
+   * \param[in] max Maximum value.
+   */
+  void CreateSourceTypesH1(
+        const string& name,
+        const string& axisX,
+        const string& axisY,
+        double nBins,
+        double min,
+        double max);
+
     void InitHist();
 
     void McPair();
@@ -95,6 +112,8 @@ private:
      * \brief Assign MC info to the candidates.
      */
     void AssignMcToCandidates();
+
+
 
 
    /**

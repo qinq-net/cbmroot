@@ -165,8 +165,7 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
    sbg->Add(sEta);
    sbg->Add(sPi0);
    sbg->Add(sOmegaDalitz);
-   sbg->SetMinimum(1e-8);
-   sbg->SetMaximum(1e-2);
+
 
    int nRebin = 20;
    sbg->Rebin(nRebin);
@@ -189,6 +188,9 @@ void CbmAnaDielectronTaskDrawAll::DrawMinv(
    sRho->Scale(1./nRebin);
    sPhi->Scale(1./nRebin);
 
+
+   sbg->SetMinimum(1e-10);
+   sbg->SetMaximum(1e-4);
    sbg->GetXaxis()->SetRangeUser(0, 2.);
    bg->GetXaxis()->SetRangeUser(0, 2.);
    coctail->GetXaxis()->SetRangeUser(0, 2.);

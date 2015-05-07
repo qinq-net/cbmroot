@@ -53,7 +53,7 @@ void CbmAnaDielectronStudyReportAll::DrawBgMinv()
 	    histos1[iStudy]->GetXaxis()->SetRangeUser(0, 2.);
 		legendNames.push_back(GetStudyNames()[iStudy]);
 	}
-	DrawH1(histos1, legendNames, kLinear, kLinear);
+	DrawH1(histos1, legendNames, kLinear, kLinear,  true, 0.6, 0.75, 0.99, 0.99);
 }
 
 void CbmAnaDielectronStudyReportAll::DrawSBgMinv()
@@ -69,6 +69,6 @@ void CbmAnaDielectronStudyReportAll::DrawSBgMinv()
 	    histos1[iStudy]->GetXaxis()->SetRangeUser(0, 2.);
 		legendNames.push_back(GetStudyNames()[iStudy]);
 	}
-	DrawH1(histos1, legendNames, kLinear, kLog);
+	DrawH1(histos1, legendNames, kLinear, kLog, true, 0.6, 0.75, 0.99, 0.99);
 }
 

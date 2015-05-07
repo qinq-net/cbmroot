@@ -114,6 +114,7 @@ dielectron/CbmLmvmHadd.cxx
 
 jpsiana/CbmAnaJpsiTask.cxx
 jpsiana/CbmAnaJpsiReport.cxx
+jpsiana/CbmAnaJpsiHist.cxx
 
 conversion/CbmAnaConversion.cxx
 conversion/CbmAnaConversionTomography.cxx
