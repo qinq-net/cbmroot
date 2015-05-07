@@ -1,7 +1,7 @@
 /*
  *====================================================================
  *
- *  CBM Thermal Model, No Flow
+ *  CBM Thermal Model, No Flow. This module is obsolete, to be completely replaced by CbmBoltzmannDistribution
  *  
  *  Authors: V.Vovchenko
  *
@@ -9,7 +9,7 @@
  *
  *====================================================================
  *
- *  Thermal model calculations
+ *  Boltzmann distribution calculations
  *
  *====================================================================
  */
@@ -76,9 +76,6 @@ namespace ThermalModelNoFlowNamespace {
 	const TString LevelNames[recoLevels] = {"Level 0", "Level 1", "Level 2", "Level 3"};
 	
 	Double_t AcceptanceFunction::getAcceptance(const Double_t & y, const Double_t & pt) const {
-		/*for(int i=0;i<ys.size();++i)
-			if (fabs(y-ys[i])<dy && fabs(pt-pts[i])<dpt) return probs[i];
-		return 0.;*/
 		double ret = sfunc.Eval(y, pt);
 		if (ret<0.) ret = 0.;
 		if (ret>1.) ret = 1.;
@@ -90,11 +87,9 @@ namespace ThermalModelNoFlowNamespace {
 	public:
 
 	  ThermalDistributionFunction(int part, double T_, double R_, double ekin_, AcceptanceFunction *af_=NULL, ReconstructionEfficiencyFunction *rf_=NULL) : 
-		  fT(T_), fV(4./3.*TMath::Pi()*R_*R_*R_), mass(0.), ekin(ekin_), ycm(0.), af(af_), rf(rf_)
+		  fT(T_), fV(4./3.*TMath::Pi()*R_*R_*R_), mass(0.), ekin(ekin_), af(af_), rf(rf_)
 	  {
 			mass = TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass();
-			//double ss2 = 0.5*sqrt(2*kProtonMass*(ekin+2*kProtonMass));
-		    //double v = sqrt(1.-kProtonMass*kProtonMass/ss2/ss2);
 			double v = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
 			ycm = 0.5*log((1 + v)/(1 - v));//TMath::ATanH(v);
 	  }
@@ -118,7 +113,6 @@ namespace ThermalModelNoFlowNamespace {
 			ret += tmpr;
 		  }
 		  ret *= dpt * GeVtoifm * GeVtoifm * GeVtoifm * fV / 4. / TMath::Pi() / TMath::Pi();
-		  //std::cout << mn << " " << ret << " ";
 		  return ret;
 	  }
 	  
@@ -129,8 +123,6 @@ namespace ThermalModelNoFlowNamespace {
 		  double ret = 0.;
 		  double ss2 = 0.5*sqrt(2*kProtonMass*(ekin+2*kProtonMass));
 		  double v = sqrt(1.-kProtonMass*kProtonMass/ss2/ss2);
-		  //double tmpv = 0., tmpv2 = 0.;
-		  //cout << y << " " << TMath::ATanH(v) << " " << ycm << " ";
 		  y = y - TMath::ATanH(v);
 
 		  for(double pt=0.5*dpt;pt<6.;pt+=dpt) {
@@ -144,18 +136,13 @@ namespace ThermalModelNoFlowNamespace {
 			}
 			ret += tmpr;
 		  }
-		  //cout << tmpv/tmpv2 << "\n";
 		  ret *= dpt * GeVtoifm * GeVtoifm * GeVtoifm * fV / 4. / TMath::Pi() / TMath::Pi();
-		  //std::cout << mn << " " << ret << " ";
 		  return ret;
 	  }
 	  
 	  double dndybinlab(double ymin, double ymax, int itery) const {
 		double dy = (ymax - ymin) / itery;
 		double ty = 0., ret = 0., ret2 = 0.;
-		//double ss2 = 0.5*sqrt(2*kProtonMass*(ekin+2*kProtonMass));
-		//double v = sqrt(1.-kProtonMass*kProtonMass/ss2/ss2);
-		//ymin = ymin - TMath::ATanH(v);
 			for(int iy=0;iy<itery;++iy) {
 				ty = ymin + dy*iy + dy*0.5;
 				ret2 += 1.;
@@ -167,14 +154,13 @@ namespace ThermalModelNoFlowNamespace {
 	  double dndydptcm(double y, double pt) const {
 		  double tmpmt = sqrt(pt*pt + mass*mass);
 		  double ret = GeVtoifm * GeVtoifm * GeVtoifm * fV / 4. / TMath::Pi() / TMath::Pi() * pt * tmpmt * TMath::CosH(y) * TMath::Exp(-tmpmt * TMath::CosH(y) / fT);
-		  //if (af!=NULL) ret *= getAcceptance(y, pt);
 		  if (af!=NULL) ret *= af->getAcceptance(y + ycm, pt);
 		  if (rf!=NULL) {
 			  double tp = tmpmt * TMath::CosH(y + ycm);
 			  tp = sqrt(tp*tp - mass*mass);
 			  ret *= rf->f(tp);
 		  }
-		  return ret;//GeVtoifm * fV / 4. / TMath::Pi() / TMath::Pi() * pt * tmpmt * TMath::CosH(y) * TMath::Exp(-tmpmt * TMath::CosH(y) / fT);
+		  return ret;
 	  }
 	  
 	  double dndydptlab(double y, double pt) const {
@@ -182,8 +168,6 @@ namespace ThermalModelNoFlowNamespace {
 		  double ss2 = 0.5*sqrt(2*kProtonMass*(ekin+2*kProtonMass));
 		  double v = sqrt(1.-kProtonMass*kProtonMass/ss2/ss2);
 		  double ret = 1.;
-		  //if (af!=NULL) ret *= af->getAcceptance(y, pt);
-		  //if (rf!=NULL) ret *= rf->f(sqrt(m*m*TMath::SinH(y)*TMath::SinH(y) + pt*pt*TMath::CosH(y)*TMath::CosH(y)));
 		  y = y - TMath::ATanH(v);
 		  ret *= GeVtoifm * GeVtoifm * GeVtoifm * fV / 4. / TMath::Pi() / TMath::Pi() * pt * tmpmt * TMath::CosH(y) * TMath::Exp(-tmpmt * TMath::CosH(y) / fT);
 		  if (af!=NULL) ret *= af->getAcceptance(y + ycm, pt);
@@ -192,7 +176,7 @@ namespace ThermalModelNoFlowNamespace {
 			  tp = sqrt(tp*tp - mass*mass);
 			  ret *= rf->f(tp);
 		  }
-		  return ret;//GeVtoifm * fV / 4. / TMath::Pi() / TMath::Pi() * pt * tmpmt * TMath::CosH(y) * TMath::Exp(-tmpmt * TMath::CosH(y) / fT);
+		  return ret;
 	  }
 	  
 	  double dndydptbin(double ymin, double ymax, int itery, double ptmin, double ptmax, int iterpt) const {
@@ -242,17 +226,13 @@ namespace ThermalModelNoFlowNamespace {
 			  int iterpt = 400;
 			  double dpt = (ptmax - ptmin) / iterpt;
 			  double ty = 0., tpt = 0., tmp = 0.;
-			  //double v0 = sqrt(2*kProtonMass*ekin+ekin*ekin)/(2*kProtonMass+ekin);
-			  //double ycm = 0.5*log((1 + v0)/(1 - v0));
 			  double tp = 0.;
-			  //std::cout << v0 << endl;
 			  for(int iy=0;iy<itery;++iy) {
 				ty = ymin + (iy+0.5)*dy;
 				for(int ipt=0;ipt<iterpt;++ipt) {
 					tpt = ptmin + (ipt+0.5)*dpt;
 					tmp = tpt * sqrt(tpt*tpt + mass*mass) * TMath::CosH(ty-ycm) * TMath::Exp(-sqrt(tpt*tpt + mass*mass)*TMath::CosH(ty-ycm)/fT);
 					ret1 += tmp;
-					//ret2 += tmp * sqrt(tpt*tpt + m*m);
 					ret2 += tmp * tempCrit(ty, tpt, mass);
 					if (rf!=NULL) {
 						tp = sqrt(mass*mass*TMath::SinH(ty)*TMath::SinH(ty) + tpt*tpt*TMath::CosH(ty)*TMath::CosH(ty));
@@ -261,28 +241,21 @@ namespace ThermalModelNoFlowNamespace {
 					}
 				}
 			  }
-			  //std::cout << "T = " << T << "\tmT = " << ret2 / ret1 << endl;
 			  return ret2 / ret1;
 		 }
 		 else {
 			  if (af->ys.size()==0) return -1.;
 			  double ret1 = 0., ret2 = 0.;
-			  //double en = kProtonMass + ekin;
-			  //double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
-			  //double ycm = 0.5*log((1 + v0)/(1 - v0));
-			  //std::cout << v0 <<  " " << ycm << endl;
 			  double tmp = 0., tp = 0.;
 			  for(unsigned int i=0;i<af->ys.size();++i) {
 				tp = sqrt(af->pts[i]*af->pts[i] + mass*mass) * cosh(af->ys[i]);
 				tp = sqrt(tp*tp - mass*mass);
 				tmp = af->pts[i] * sqrt(af->pts[i]*af->pts[i]+ mass*mass) * cosh(af->ys[i]-ycm) * exp(-sqrt(af->pts[i]*af->pts[i] + mass*mass)*cosh(af->ys[i]-ycm)/fT) 
-				  * af->probs[i];// * RecEfficiency(tp);
+				  * af->probs[i];
 				if (rf!=NULL) tmp *= rf->f(tp);
 				ret1 += tmp;
-				//ret2 += tmp * sqrt(accfunc.pts[i]*accfunc.pts[i] + m*m);
 				ret2 += tmp * tempCrit(af->ys[i], af->pts[i], mass);
 			  }
-			  //std::cout << "T = " << T << "\tmT = " << ret2 / ret1 << endl;
 			  return ret2 / ret1;
 		 }
 	  }
@@ -297,17 +270,13 @@ namespace ThermalModelNoFlowNamespace {
 			  int iterpt = 400;
 			  double dpt = (ptmax - ptmin) / iterpt;
 			  double ty = 0., tpt = 0., tmp = 0.;
-			  //double v0 = sqrt(2*kProtonMass*ekin+ekin*ekin)/(2*kProtonMass+ekin);
-			  //double ycm = 0.5*log((1 + v0)/(1 - v0));
 			  double tp = 0.;
-			  //std::cout << v0 << endl;
 			  for(int iy=0;iy<itery;++iy) {
 				ty = ymin + (iy+0.5)*dy;
 				for(int ipt=0;ipt<iterpt;++ipt) {
 					tpt = ptmin + (ipt+0.5)*dpt;
 					tmp = tpt * sqrt(tpt*tpt + mass*mass) * TMath::CosH(ty-ycm) * TMath::Exp(-sqrt(tpt*tpt + mass*mass)*TMath::CosH(ty-ycm)/fT);
 					ret1 += tmp;
-					//ret2 += tmp * sqrt(tpt*tpt + m*m);
 					ret2 += tmp * chi2func(ty, tpt, mass);
 					if (rf!=NULL) {
 						tp = sqrt(mass*mass*TMath::SinH(ty)*TMath::SinH(ty) + tpt*tpt*TMath::CosH(ty)*TMath::CosH(ty));
@@ -316,37 +285,27 @@ namespace ThermalModelNoFlowNamespace {
 					}
 				}
 			  }
-			  //std::cout << "T = " << T << "\tmT = " << ret2 / ret1 << endl;
 			  return ret2 / ret1;
 		 }
 		 else {
 			  if (af->ys.size()==0) return -1.;
 			  double ret1 = 0., ret2 = 0.;
-			  //double en = kProtonMass + ekin;
-			  //double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
-			  //double ycm = 0.5*log((1 + v0)/(1 - v0));
-			  //std::cout << v0 <<  " " << ycm << endl;
 			  double tmp = 0., tp = 0.;
 			  for(unsigned int i=0;i<af->ys.size();++i) {
 				tp = sqrt(af->pts[i]*af->pts[i] + mass*mass) * cosh(af->ys[i]);
 				tp = sqrt(tp*tp - mass*mass);
 				tmp = af->pts[i] * sqrt(af->pts[i]*af->pts[i]+ mass*mass) * cosh(af->ys[i]-ycm) * exp(-sqrt(af->pts[i]*af->pts[i] + mass*mass)*cosh(af->ys[i]-ycm)/fT) 
-				  * af->probs[i];// * RecEfficiency(tp);
+				  * af->probs[i];
 				if (rf!=NULL) tmp *= rf->f(tp);
 				ret1 += tmp;
-				//ret2 += tmp * sqrt(accfunc.pts[i]*accfunc.pts[i] + m*m);
 				ret2 += tmp * chi2func(af->ys[i], af->pts[i], mass);
 			  }
-			  //std::cout << "T = " << T << "\tmT = " << ret2 / ret1 << endl;
 			  return ret2 / ret1;
 		 }
 	  }
 
 	  double T() const {return fT;}
 	  double V() const {return fV;}
-	  
-	  ThermalDistributionFunction(const ThermalDistributionFunction&);
-      ThermalDistributionFunction& operator=(const ThermalDistributionFunction&);
 
 	private:
 	  double fT, fV;
@@ -360,29 +319,21 @@ namespace ThermalModelNoFlowNamespace {
 	class ThermalChi2Func {
 
 	public:
-	  ThermalChi2Func(TH1F *dndyexp, TH2F *dndydptexp, double Norm_) : Norm(Norm_), dndyHist(dndyexp), dndydptHist(dndydptexp)
+	  ThermalChi2Func(TH1F *dndyexp, TH2F *dndydptexp, double Norm_) : Norm(Norm_) 
 	  { 
-		  //iter = 0; 
-// 		  dndyHist = dndyexp; 
-// 		  dndydptHist = dndydptexp; 
-		  //cout << "AAA\n";
+		  dndyHist = dndyexp; 
+		  dndydptHist = dndydptexp; 
 	  }
 
 	  ~ThermalChi2Func() {}
 	  
-	  ThermalChi2Func(const ThermalChi2Func&);
-      ThermalChi2Func& operator=(const ThermalChi2Func&);
-	  
 	  double chi2dndy(int part, double T_, double R_, double ekin_, AcceptanceFunction *af_=NULL, ReconstructionEfficiencyFunction *rf_=NULL, double systerr = 0.) const {
-		//std::cout << iter << " " << par[0] << " " << par[1] << "\n";
-		//assert(par.size() == 4);
 		ThermalDistributionFunction pl(part, T_, R_, ekin_, af_, rf_);
 		double chi2 = 0.;
 		double tmpval = 0., tmpval2 = 0., tmpvar = 0.;
 		
 		int iters = 0;
 		
-		//cout << "Calc chi2 1\n";
 
 		for(int n = 0; n < dndyHist->GetNbinsX(); n++) {
 		  tmpval = dndyHist->GetBinContent(n);
@@ -391,13 +342,10 @@ namespace ThermalModelNoFlowNamespace {
 			tmpval /= Norm * dndyHist->GetXaxis()->GetBinWidth(n);
 			tmpvar = dndyHist->GetBinError(n) / Norm / dndyHist->GetXaxis()->GetBinWidth(n);
 			tmpvar = sqrt(tmpvar*tmpvar + systerr*systerr*tmpval*tmpval);
-			//tmpval2 = pl.dndylab(dndyHist->GetBinCenter(n));
 			tmpval2 = pl.dndybinlab(dndyHist->GetXaxis()->GetBinLowEdge(n), dndyHist->GetXaxis()->GetBinUpEdge(n), 10);
 			chi2 += (tmpval - tmpval2) * (tmpval - tmpval2) / tmpvar / tmpvar;///fMVariances[n]);
-			//if (af_!=NULL) std::cout << dndyHist->GetBinCenter(n) << " " << tmpval << " " << tmpvar << " " << tmpval2 << " " << (tmpval - tmpval2) * (tmpval - tmpval2) / tmpvar / tmpvar << "\n";
 		  }
 		}
-		//std::cout << chi2 / iters << "\n";
 		
 		chi2 /= iters;
 		
@@ -408,7 +356,6 @@ namespace ThermalModelNoFlowNamespace {
 		ThermalDistributionFunction pl(part, T_, R_, ekin_, af_, rf_);
 		double chi2 = 0.;
 		int iters = 0;
-		//cout << "Calc chi2 2\n";
 		double tmpval = 0., tmpval2 = 0., tmpvar = 0.;
 		for(int nx = 0; nx < dndydptHist->GetNbinsX(); nx++) {
 		  for(int ny = 0; ny < dndydptHist->GetNbinsY(); ny++) {
@@ -417,12 +364,10 @@ namespace ThermalModelNoFlowNamespace {
 				iters++;
 				tmpval /= Norm * dndydptHist->GetXaxis()->GetBinWidth(nx) * dndydptHist->GetYaxis()->GetBinWidth(ny);
 				tmpvar = dndydptHist->GetBinError(nx,ny) / Norm / dndydptHist->GetXaxis()->GetBinWidth(nx) / dndydptHist->GetYaxis()->GetBinWidth(ny);
-				//tmpval2 = pl.dndydpt(dndydptHist->GetXaxis()->GetBinCenter(nx), dndydptHist->GetYaxis()->GetBinCenter(ny));
 				tmpvar = sqrt(tmpvar*tmpvar + systerr*systerr*tmpval*tmpval);
 				tmpval2 = pl.dndydptbin(dndydptHist->GetXaxis()->GetBinLowEdge(nx), dndydptHist->GetXaxis()->GetBinUpEdge(nx), 
 							10, dndydptHist->GetYaxis()->GetBinLowEdge(ny), dndydptHist->GetYaxis()->GetBinUpEdge(ny), 10);//pl.dndyexp(dndyHist->GetBinCenter(n));
 				chi2 += (tmpval - tmpval2) * (tmpval - tmpval2) / tmpvar / tmpvar;///fMVariances[n]);
-				//std::cout << tmpval << " " << tmpvar << " " << tmpval2 << "\t";
 			  }
 		  }
 		}
@@ -444,42 +389,24 @@ ClassImp(CbmThermalModelNoFlow)
 
 CbmThermalModelNoFlow::CbmThermalModelNoFlow(Float_t ekin_, Int_t recoLevel, Int_t usePID, Int_t trackNumber, Int_t iVerbose):
   ekin(ekin_),
-  ycm(0),
-  fUpdate(0),
   fusePID(usePID),
   fRecoLevel(recoLevel),
   fTrackNumber(trackNumber),
-  flistStsPts(0),
-  flistTofPts(0),
   flistStsTracksMatch(0),
   flistStsTracks(0),
   fPrimVtx(0),
-  outfileName(""),
-  fChiToPrimVtx(0),
-  NPrimGlobalMC(0),
-  NPrimGlobalReco(0),
   flistMCTracks(0),
   flsitGlobalTracks(0),
   flistTofHits(0),
-  flistTofPoints(0),
-  histodir(0),
-  events(0),
-  AcceptanceSTS(),
-  AcceptanceSTSTOF()
-//  flistRichRings(0),
-//  flistTrdTracks(0),
-{  
+  histodir(0)
+{
+  NPrimGlobalMC = 0;
+  NPrimGlobalReco = 0;
+  
   double pbeam = sqrt((kProtonMass+ekin)*(kProtonMass+ekin)-kProtonMass*kProtonMass);
   double betacm = pbeam / (2.*kProtonMass+ekin);
   ycm = 0.5*log((1.+betacm)/(1.-betacm));
   
-  /*mtTall = new TSpline3*[p_sz];
-  mtTacc = new TSpline3*[p_sz];
-  Npart = new TSpline3*[p_sz];
-  mtTsts = new TSpline3*[p_sz];
-  Npartsts = new TSpline3*[p_sz];
-  mtTststof = new TSpline3*[p_sz];
-  Npartststof = new TSpline3*[p_sz];*/
   for(int part=0;part<p_sz;++part) ComputeThermalDependence(part);
 
   /*globalmtavMC = new Double_t[p_sz];
@@ -515,12 +442,9 @@ CbmThermalModelNoFlow::CbmThermalModelNoFlow(Float_t ekin_, Int_t recoLevel, Int
     }
   //}
   
-  //printf("Init 2\n");
   
   TDirectory *currentDir = gDirectory;
   
-  //std::cout << 0.128 << "\t" << mtTall->Eval(0.128) << endl;
-  //gDirectory->mkdir("KFModelParameters");
   gDirectory->cd("Models");
   
   histodir = gDirectory;
@@ -613,22 +537,12 @@ CbmThermalModelNoFlow::CbmThermalModelNoFlow(Float_t ekin_, Int_t recoLevel, Int
   gDirectory->cd("..");
   gDirectory->cd("..");
   
-  //gDirectory->mkdir("ModelParameters");
-  //gDirectory->cd("ModelParameters");
-  //for(int rl=0;rl<recoLevels;++rl)  {
-    //gDirectory->mkdir("ThermalModel");
     gDirectory->cd("BoltzmannDistribution");
     gDirectory->mkdir("Reconstructible tracks");
     gDirectory->cd("Reconstructible tracks");
     gDirectory->mkdir("PerEvent");
     gDirectory->cd("PerEvent");
     
-    /*hTempFullReco = new TH1F*[1];
-    hRadFullReco = new TH1F*[1];
-    hTempErrStatFullReco = new TH1F*[1];
-    hRadErrStatFullReco= new TH1F*[1];
-    hTempErrMomFullReco = new TH1F*[1];
-    hRadErrMomFullReco = new TH1F*[1];*/
     for(int part=0;part<p_sz;++part) {
       gDirectory->mkdir(p_names[part]);
       gDirectory->cd(p_names[part]);
@@ -672,7 +586,6 @@ CbmThermalModelNoFlow::CbmThermalModelNoFlow(Float_t ekin_, Int_t recoLevel, Int
       gDirectory->cd("..");
     }
 
-    //gDirectory = currentDir;
     gDirectory->cd("..");
     gDirectory->cd("..");
     gDirectory->cd("..");
@@ -681,10 +594,6 @@ CbmThermalModelNoFlow::CbmThermalModelNoFlow(Float_t ekin_, Int_t recoLevel, Int
   gDirectory->cd("Reconstructible tracks");
   gDirectory->mkdir("Global");
   gDirectory->cd("Global");
-  /*hfyReco = new TH1F*[1];
-  hfyRecomodel = new TH1F*[1];
-  hfdndydptReco = new TH2F*[1];
-  hfdndydptRecomodel = new TH2F*[1];*/
   for(int part=0;part<p_sz;++part) {
     gDirectory->mkdir(p_names[part]);
     gDirectory->cd(p_names[part]);
@@ -708,20 +617,11 @@ CbmThermalModelNoFlow::CbmThermalModelNoFlow(Float_t ekin_, Int_t recoLevel, Int
   gDirectory->cd("..");
   gDirectory->cd("..");
     
-    //gDirectory->mkdir("ModelParameters");
-    //gDirectory->cd("ModelParameters");
-    //gDirectory->mkdir("ThermalModel");
     gDirectory->cd("BoltzmannDistribution");
     gDirectory->mkdir("Reconstructible tracks corrected");
     gDirectory->cd("Reconstructible tracks corrected");
     gDirectory->mkdir("PerEvent");
     gDirectory->cd("PerEvent");
-    /*hTempFullRecoCor = new TH1F*[1];
-    hRadFullRecoCor = new TH1F*[1];
-    hTempErrStatFullRecoCor = new TH1F*[1];
-    hRadErrStatFullRecoCor = new TH1F*[1];
-    hTempErrMomFullRecoCor = new TH1F*[1];
-    hRadErrMomFullRecoCor = new TH1F*[1];*/
     for(int part=0;part<p_sz;++part) {
       gDirectory->mkdir(p_names[part]);
       gDirectory->cd(p_names[part]);
@@ -766,16 +666,11 @@ CbmThermalModelNoFlow::CbmThermalModelNoFlow(Float_t ekin_, Int_t recoLevel, Int
     gDirectory->cd("..");
     gDirectory->cd("..");
     gDirectory->cd("..");
-  //}
   
   gDirectory->cd("BoltzmannDistribution");
   gDirectory->cd("Reconstructible tracks corrected");
   gDirectory->mkdir("Global");
   gDirectory->cd("Global");
-  /*hfyRecoCor = new TH1F*[1];
-  hfyRecoCormodel = new TH1F*[1];
-  hfdndydptRecoCor = new TH2F*[1];
-  hfdndydptRecoCormodel = new TH2F*[1];*/
   for(int part=0;part<p_sz;++part) {
     gDirectory->mkdir(p_names[part]);
     gDirectory->cd(p_names[part]);
@@ -807,97 +702,6 @@ CbmThermalModelNoFlow::CbmThermalModelNoFlow(Float_t ekin_, Int_t recoLevel, Int
 
 CbmThermalModelNoFlow::~CbmThermalModelNoFlow()
 {
-  /*delete [] globalmtavMC;
-  delete [] globalmt2avMC;
-  delete [] globalfavMC;
-  delete [] globalf2avMC;
-  delete [] globalmtmomerrMC;
-  delete [] globalnTracksMC;
-  delete [] globalmtavReco;
-  delete [] globalmt2avReco;
-  delete [] globalfavReco;
-  delete [] globalf2avReco;
-  delete [] globalmtmomerrReco;
-  delete [] globalnTracksReco;*/
-  /*for(int part=0;part<p_sz;++part) {
-	  delete mtTall[part];
-	  //delete mtTacc[part];
-	  //delete Npart[part];
-	  delete mtTsts[part];
-	  delete Npartsts[part];
-	  delete mtTststof[part];
-	  delete Npartststof[part];
-	}*/
-  /*delete [] mtTall;
-  delete [] mtTacc;
-  delete [] Npart;
-  delete [] mtTsts;
-  delete [] Npartsts;
-  delete [] mtTststof;
-  delete [] Npartststof;*/
-  
-  /*for(int part=0;part<p_sz;++part) {
-	delete hTempFullMC[part];
-	delete hTempFullReco[part];
-	delete hTempFullRecoCor[part];
-	delete hTempErrStatFullMC[part];
-	delete hTempErrStatFullReco[part];
-	delete hTempErrStatFullRecoCor[part];
-	delete hTempErrMomFullMC[part];
-	delete hTempErrMomFullReco[part];
-	delete hTempErrMomFullRecoCor[part];
-	delete hRadFullMC[part];
-	delete hRadFullReco[part];
-	delete hRadFullRecoCor[part];
-	delete hRadErrStatFullMC[part];
-	delete hRadErrStatFullReco[part];
-	delete hRadErrStatFullRecoCor[part];
-	delete hRadErrMomFullMC[part];
-	delete hRadErrMomFullReco[part];
-	delete hRadErrMomFullRecoCor[part];
-	delete hfyMC[part];
-	delete hfyMCmodel[part];
-	delete hfdndydptMC[part];
-	delete hfdndydptMCmodel[part];
-	delete hfyRecoCor[part];
-	delete hfyRecoCormodel[part];
-	delete hfdndydptRecoCor[part];
-	delete hfdndydptRecoCormodel[part];
-	delete hfyRecoCor[part];
-	delete hfyRecoCormodel[part];
-	delete hfdndydptRecoCor[part];
-	delete hfdndydptRecoCormodel[part];
-  }
-	delete [] hTempFullMC;
-	delete [] hTempFullReco;
-	delete [] hTempFullRecoCor;
-	delete [] hTempErrStatFullMC;
-	delete [] hTempErrStatFullReco;
-	delete [] hTempErrStatFullRecoCor;
-	delete [] hTempErrMomFullMC;
-	delete [] hTempErrMomFullReco;
-	delete [] hTempErrMomFullRecoCor;
-	delete [] hRadFullMC;
-	delete [] hRadFullReco;
-	delete [] hRadFullRecoCor;
-	delete [] hRadErrStatFullMC;
-	delete [] hRadErrStatFullReco;
-	delete [] hRadErrStatFullRecoCor;
-	delete [] hRadErrMomFullMC;
-	delete [] hRadErrMomFullReco;
-	delete [] hRadErrMomFullRecoCor;
-	delete [] hfyMC;
-	delete [] hfyMCmodel;
-	delete [] hfdndydptMC;
-	delete [] hfdndydptMCmodel;
-	delete [] hfyRecoCor;
-	delete [] hfyRecoCormodel;
-	delete [] hfdndydptRecoCor;
-	delete [] hfdndydptRecoCormodel;
-	delete [] hfyRecoCor;
-	delete [] hfyRecoCormodel;
-	delete [] hfdndydptRecoCor;
-	delete [] hfdndydptRecoCormodel;*/
   
 }
 
@@ -942,26 +746,7 @@ void CbmThermalModelNoFlow::ReInit(FairRootManager *fManger)
   if (fusePID == 2){
     flsitGlobalTracks = dynamic_cast<TClonesArray*>( fManger->GetObject("GlobalTrack") );
     flistTofHits = dynamic_cast<TClonesArray*>( fManger->GetObject("TofHit") );
-/*    flistRichRings = dynamic_cast<TClonesArray*>( fManger->GetObject("RichRing") );
-    flistTrdTracks = dynamic_cast<TClonesArray*>( fManger->GetObject("TrdTrack") );
-
-//     if (fRichGeoType != "compact" && fRichGeoType != "large"){
-//       fRichGeoType = "compact";
-//     }
-
-    std::string richANNFile = gSystem->Getenv("VMCWORKDIR");
-//     if (fRichGeoType == "compact"){
-      richANNFile += "/parameters/rich/el_id_ann_weights_rich_compact.txt";
-//     }
-//     else if (fRichGeoType == "large"){
-//       richANNFile += "/parameters/rich/el_id_ann_weights_rich.txt";
-//     }
-
-    fElIdAnn = new CbmRichElectronIdAnn(richANNFile);
-    fElIdAnn->Init();*/
   }
-
-  //return kSUCCESS;
 }
 
 void CbmThermalModelNoFlow::Init()
@@ -971,10 +756,7 @@ void CbmThermalModelNoFlow::Init()
 
 void CbmThermalModelNoFlow::Exec()
 {
-  //std::cout << "Event started\n" <<< endl;
-  //std::cout << "Event started\n" << endl;
   if(!flistStsTracks) return;
-//   if(!fPrimVtx) return;
 
   if(!flistStsTracksMatch) return;
   if(!flistStsPts) return;
@@ -1061,28 +843,6 @@ void CbmThermalModelNoFlow::Exec()
       Double_t p = mom.Mag();
       Int_t q = stsPar->GetQp() > 0 ? 1 : -1;
 
-//       if(flistRichRings)
-//       {
-//         Int_t richIndex = globalTrack->GetRichRingIndex();
-//         if (richIndex > -1)
-//         {
-//           CbmRichRing* richRing = (CbmRichRing*)flistRichRings->At(richIndex);
-//           if (richRing)
-//             if(fElIdAnn->DoSelect(richRing, p) > -0.5) isElectronRICH = 1;
-//         }
-//       }
-// 
-//       if(flistTrdTracks)
-//       {
-//         Int_t trdIndex = globalTrack->GetTrdTrackIndex();
-//         if (trdIndex > -1)
-//         {
-//           CbmTrdTrack* trdTrack = (CbmTrdTrack*)flistTrdTracks->At(trdIndex);
-//           if (trdTrack)
-//             if (trdTrack->GetPidANN() > 0.979) isElectronTRD = 1;
-//         }
-//       }
-
       Double_t l = globalTrack->GetLength();
       if( !((l>800.) && (l<1400.)) ) continue;//SIS 300
 //      if( !((l>580.) && (l<700.)) ) continue;//SIS 100
@@ -1155,10 +915,6 @@ void CbmThermalModelNoFlow::Exec()
 //         vTrackPDG[stsTrackIndex] = q*PdgHypo[3];
     }
   }
-  
-  //int nTracksPrimMC = 0;
-  //int nTracksPrimReco[recoLevels];
-  //for(int i=0;i<recoLevels;++i) nTracksPrimReco[i] = 0;
   
   static int NEv=0;
   NEv++;
@@ -1429,36 +1185,6 @@ void CbmThermalModelNoFlow::Exec()
     }
   }
   
-  /*int ind1 = 0, ind2 = 1;
-  std::cout << p_names[ind1] << "/" << p_names[ind2] << ": " << nTracksPaAllMC[ind1] / (double)(nTracksPaAllMC[ind2]) << " " <<
-	sqrt(nTracksPaAllMC[ind1] / (double)(nTracksPaAllMC[ind2]) / (double)(nTracksPaAllMC[ind2]) + nTracksPaAllMC[ind1] * nTracksPaAllMC[ind1] / (double)(nTracksPaAllMC[ind2]) / (double)(nTracksPaAllMC[ind2]) / (double)(nTracksPaAllMC[ind2]) / (double)(nTracksPaAllMC[ind2]) * (double)(nTracksPaAllMC[ind2])) <<
-	" " << nTracksReco[ind1] / (double)(nTracksReco[ind2]) << " " <<
-	sqrt(nTracksReco[ind1] / (double)(nTracksReco[ind2]) / (double)(nTracksReco[ind2]) + nTracksReco[ind1] * nTracksReco[ind1] / (double)(nTracksReco[ind2]) / (double)(nTracksReco[ind2]) / (double)(nTracksReco[ind2]) / (double)(nTracksReco[ind2]) * (double)(nTracksReco[ind2])) <<endl;
-  
-  ind1 = 2; 
-  ind2 = 3;
-  std::cout << p_names[ind1] << "/" << p_names[ind2] << ": " << nTracksPaAllMC[ind1] / (double)(nTracksPaAllMC[ind2]) << " " <<
-	sqrt(nTracksPaAllMC[ind1] / (double)(nTracksPaAllMC[ind2]) / (double)(nTracksPaAllMC[ind2]) + nTracksPaAllMC[ind1] * nTracksPaAllMC[ind1] / (double)(nTracksPaAllMC[ind2]) / (double)(nTracksPaAllMC[ind2]) / (double)(nTracksPaAllMC[ind2]) / (double)(nTracksPaAllMC[ind2]) * (double)(nTracksPaAllMC[ind2])) <<
-	" " << nTracksReco[ind1] / (double)(nTracksReco[ind2]) << " " <<
-	sqrt(nTracksReco[ind1] / (double)(nTracksReco[ind2]) / (double)(nTracksReco[ind2]) + nTracksReco[ind1] * nTracksReco[ind1] / (double)(nTracksReco[ind2]) / (double)(nTracksReco[ind2]) / (double)(nTracksReco[ind2]) / (double)(nTracksReco[ind2]) * (double)(nTracksReco[ind2])) <<endl;
-  
-  ind1 = 3; 
-  ind2 = 1;
-  std::cout << p_names[ind1] << "/" << p_names[ind2] << ": " << nTracksPaAllMC[ind1] / (double)(nTracksPaAllMC[ind2]) << " " <<
-	sqrt(nTracksPaAllMC[ind1] / (double)(nTracksPaAllMC[ind2]) / (double)(nTracksPaAllMC[ind2]) + nTracksPaAllMC[ind1] * nTracksPaAllMC[ind1] / (double)(nTracksPaAllMC[ind2]) / (double)(nTracksPaAllMC[ind2]) / (double)(nTracksPaAllMC[ind2]) / (double)(nTracksPaAllMC[ind2]) * (double)(nTracksPaAllMC[ind2])) <<
-	" " << nTracksReco[ind1] / (double)(nTracksReco[ind2]) << " " <<
-	sqrt(nTracksReco[ind1] / (double)(nTracksReco[ind2]) / (double)(nTracksReco[ind2]) + nTracksReco[ind1] * nTracksReco[ind1] / (double)(nTracksReco[ind2]) / (double)(nTracksReco[ind2]) / (double)(nTracksReco[ind2]) / (double)(nTracksReco[ind2]) * (double)(nTracksReco[ind2])) <<endl;
-  
-  ind1 = 2; 
-  ind2 = 0;
-  std::cout << p_names[ind1] << "/" << p_names[ind2] << ": " << nTracksPaAllMC[ind1] / (double)(nTracksPaAllMC[ind2]) << " " <<
-	sqrt(nTracksPaAllMC[ind1] / (double)(nTracksPaAllMC[ind2]) / (double)(nTracksPaAllMC[ind2]) + nTracksPaAllMC[ind1] * nTracksPaAllMC[ind1] / (double)(nTracksPaAllMC[ind2]) / (double)(nTracksPaAllMC[ind2]) / (double)(nTracksPaAllMC[ind2]) / (double)(nTracksPaAllMC[ind2]) * (double)(nTracksPaAllMC[ind2])) <<
-	" " << nTracksReco[ind1] / (double)(nTracksReco[ind2]) << " " <<
-	sqrt(nTracksReco[ind1] / (double)(nTracksReco[ind2]) / (double)(nTracksReco[ind2]) + nTracksReco[ind1] * nTracksReco[ind1] / (double)(nTracksReco[ind2]) / (double)(nTracksReco[ind2]) / (double)(nTracksReco[ind2]) / (double)(nTracksReco[ind2]) * (double)(nTracksReco[ind2])) <<endl;
-  */
-  //int nTracksPaAllMC[p_sz];
-  //int nTracksReco[p_sz];
-  
   
   for(int part=0;part<p_sz;++part) {
     mtavMC[part] /= nTracksPaAllMC[part];
@@ -1567,28 +1293,6 @@ void CbmThermalModelNoFlow::ComputeThermalDependence(Int_t part)
   ReadAcceptanceFunction(AcceptanceSTSTOF, dir + "pty_acc_ststof_v13.txt");
   
   std::vector<double> mtall, Tvecall;
-  
-  // {
-    // TString work      = getenv("VMCWORKDIR");
-    // TString fileName  = work + "/KF/KFModelParameters/mt_T_thermal_4pi.txt";
-    // ifstream* mtT = new ifstream(fileName.Data());
-	
-    // if ( !mtT->is_open()) { Fatal("ModelParameters","Cannot open mt-T 4pi dependence file."); }
-
-    // double tmp1, tmp2, tmp3, tmp4;
-
-    // while ( ! mtT->eof() ) {
-		// *mtT >> tmp1 >> tmp2;
-		// if (!mtT->eof()) {
-			// Tvecall.push_back(tmp1);
-			// mtall.push_back(tmp2);
-		// }
-    // }
-    
-    // mtT->close();
-  
-    // delete mtT;
-  // }
 
   std::cout << "Computing dependencies of ThermalModel...";
   
@@ -1641,31 +1345,6 @@ void CbmThermalModelNoFlow::ComputeThermalDependence(Int_t part)
 }
 
 Double_t CbmThermalModelNoFlow::ThermalMt(double T, double m) {
-  /*double ret1 = 0., ret2 = 0.;
-  double ymin = -3., ymax = 6.;
-  int itery = 500;
-  double dy = (ymax - ymin) / itery;
-  double ptmin = 0., ptmax = 3.;
-  int iterpt = 400;
-  double dpt = (ptmax - ptmin) / iterpt;
-  double ty = 0., tpt = 0., tmp = 0.;
-  double v0 = sqrt(2*kProtonMass*ekin+ekin*ekin)/(2*kProtonMass+ekin);
-  double ycm = 0.5*log((1 + v0)/(1 - v0));
-  //std::cout << v0 << endl;
-  for(int iy=0;iy<itery;++iy) {
-	ty = ymin + (iy+0.5)*dy;
-	for(int ipt=0;ipt<iterpt;++ipt) {
-		tpt = ptmin + (ipt+0.5)*dpt;
-		tmp = tpt * sqrt(tpt*tpt + m*m) * cosh(ty-ycm) * exp(-sqrt(tpt*tpt + m*m)*cosh(ty-ycm)/T);
-		ret1 += tmp;
-		//ret2 += tmp * sqrt(tpt*tpt + m*m);
-		ret2 += tmp * tempCrit(ty, tpt, m);
-	}
-  }
-  //std::cout << "T = " << T << "\tmT = " << ret2 / ret1 << endl;
-  return ret2 / ret1;*/
-  //double v0 = sqrt(2*kProtonMass*ekin+ekin*ekin)/(2*kProtonMass+ekin);
-  //double ycm = 0.5*log((1 + v0)/(1 - v0));
   double ret1 = 0., ret2 = 0.;
   vector<double> xlag, wlag, xleg, wleg;
   //GetCoefs2DLaguerre32Legendre32(0., 6., xlag, wlag, xleg, wleg);
@@ -1692,9 +1371,6 @@ Double_t CbmThermalModelNoFlow::ThermalMt2(double T, double m) {
   int iterpt = 1200;
   double dpt = (ptmax - ptmin) / iterpt;
   double ty = 0., tpt = 0., tmp = 0.;
-  //double v0 = sqrt(2*kProtonMass*ekin+ekin*ekin)/(2*kProtonMass+ekin);
-  //double ycm = 0.5*log((1 + v0)/(1 - v0));
-  //std::cout << v0 << endl;
   for(int iy=0;iy<itery;++iy) {
 	ty = ymin + (iy+0.5)*dy;
 	for(int ipt=0;ipt<iterpt;++ipt) {
@@ -1715,46 +1391,6 @@ Double_t CbmThermalModelNoFlow::RecEfficiency(Double_t p) {
 }
 
 Double_t CbmThermalModelNoFlow::ThermalMtAcc(double T, double m, const AcceptanceFunction & accfunc) {
-  /*if (accfunc.ys.size()==0) return -1.;
-  double ret1 = 0., ret2 = 0.;
-  double en = kProtonMass + ekin;
-  double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
-  double ycm = 0.5*log((1 + v0)/(1 - v0));
-  //std::cout << v0 <<  " " << ycm << endl;
-  double tmp = 0., tp = 0.;
-  for(int i=0;i<accfunc.ys.size();++i) {
-	tp = sqrt(accfunc.pts[i]*accfunc.pts[i] + m*m) * cosh(accfunc.ys[i]);
-	tp = sqrt(tp*tp - m*m);
-	//tmp = accfunc.pts[i] * sqrt(accfunc.pts[i]*accfunc.pts[i]+ m*m) * cosh(accfunc.ys[i]-ycm) * exp(-sqrt(accfunc.pts[i]*accfunc.pts[i] + m*m)*cosh(accfunc.ys[i]-ycm)/T) 
-	//  * accfunc.probs[i] * RecEfficiency(tp);
-	tmp = accfunc.pts[i] * sqrt(accfunc.pts[i]*accfunc.pts[i]+ m*m) * cosh(accfunc.ys[i]-ycm) * exp(-sqrt(accfunc.pts[i]*accfunc.pts[i] + m*m)*cosh(accfunc.ys[i]-ycm)/T) 
-	  * accfunc.getAcceptance(accfunc.ys[i], accfunc.pts[i]) * RecEfficiency(tp);
-	ret1 += tmp;
-	//ret2 += tmp * sqrt(accfunc.pts[i]*accfunc.pts[i] + m*m);
-	ret2 += tmp * tempCrit(accfunc.ys[i], accfunc.pts[i], m);
-  }
-  //std::cout << "T = " << T << "\tmT = " << ret2 / ret1 << endl;
-  return ret2 / ret1;*/
-  //double en = kProtonMass + ekin;
-  //double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
-  //double ycm = 0.5*log((1 + v0)/(1 - v0));
-  /*  double dpt = 0.05;
-	
-	double dy = 0.05, tmpmt = 0.;
-	double ret1 = 0., ret2 = 0., tmpmn = 0.;
-	for(double yt=0.;yt<5.+1e-5;yt+=dy) {
-		for(double pt=0.5*dpt;pt<8.;pt+=dpt) {
-		  double tmpf = 0.;
-		  double tp = sqrt(pt*pt + m*m) * TMath::CosH(yt);
-		  tp = sqrt(tp*tp - m*m);
-		  tmpf = pt * sqrt(pt*pt+ m*m) * TMath::CosH(yt-ycm) * exp(-sqrt(pt*pt + m*m)*TMath::CosH(yt-ycm)/T) 
-			* accfunc.getAcceptance(yt, pt) * RecEfficiency(tp);
-		  ret1 += tmpf;
-		  ret2 += tmpf * tempCrit(yt, pt, m);
-		}
-		//std::cout << mn << " ";
-	}
-	return ret2 / ret1;*/
   double ret1 = 0., ret2 = 0.;
   vector<double> xlag, wlag, xleg, wleg;
   //GetCoefs2DLaguerre32Legendre32(0., 6., xlag, wlag, xleg, wleg);
@@ -1779,10 +1415,6 @@ Double_t CbmThermalModelNoFlow::ThermalMtAcc(double T, double m, const Acceptanc
 Double_t CbmThermalModelNoFlow::ThermalMt2Acc(double T, double m, const AcceptanceFunction & accfunc) {
   if (accfunc.ys.size()==0) return -1.;
   double ret1 = 0., ret2 = 0.;
-  //double en = kProtonMass + ekin;
-  //double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
-  //double ycm = 0.5*log((1 + v0)/(1 - v0));
-  //std::cout << v0 <<  " " << ycm << endl;
   double tmp = 0., tp = 0.;
   for(unsigned int i=0;i<accfunc.ys.size();++i) {
 	tp = sqrt(accfunc.pts[i]*accfunc.pts[i] + m*m) * cosh(accfunc.ys[i]);
@@ -1798,31 +1430,6 @@ Double_t CbmThermalModelNoFlow::ThermalMt2Acc(double T, double m, const Acceptan
 }
 
 Double_t CbmThermalModelNoFlow::NFracAcc(double T, double m, const AcceptanceFunction & accfunc) {
-  /*if (accfunc.ys.size()==0) return -1.;
-  double ret1 = 0., ret2 = 0.;
-  double en = kProtonMass + ekin;
-  //double gam = en / mass;
-  //double v0 = sqrt(1. - 1./gam/gam);
-  double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
-  double ycm = 0.5*log((1. + v0)/(1. - v0));
-  //std::cout << v0 <<  " " << ycm << endl;
-  double tmp = 0., tp = 0.;
-  for(int i=0;i<accfunc.ys.size();++i) {
-	tp = sqrt(accfunc.pts[i]*accfunc.pts[i] + m*m) * cosh(accfunc.ys[i]);
-	tp = sqrt(tp*tp - m*m);
-	tmp = accfunc.pts[i] * sqrt(accfunc.pts[i]*accfunc.pts[i]+ m*m) * cosh(accfunc.ys[i]-ycm) * exp(-sqrt(accfunc.pts[i]*accfunc.pts[i] + m*m)*cosh(accfunc.ys[i]-ycm)/T);
-	//ret1 += tmp;
-	ret2 += tmp * accfunc.probs[i] * RecEfficiency(tp);//RecEfficiency(sqrt((accfunc.pts[i]*accfunc.pts[i]+m*m)*cosh(accfunc.ys[i])*cosh(accfunc.ys[i])-m*m));
-  }
-  ret2 *= accfunc.dy * accfunc.dpt / 2. / 2. / TMath::Pi() / TMath::Pi();
-  ret1 = T * m * m * TMath::BesselK(2, m/T) / 2. / TMath::Pi() / TMath::Pi();
-  //std::cout << "T = " << T << "\tNfrac = " << ret2 / ret1 << endl;
-  return ret2 / ret1;*/
-  //double en = kProtonMass + ekin;
-  //double gam = en / mass;
-  //double v0 = sqrt(1. - 1./gam/gam);
-  //double v0 = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
-  //double ycm = 0.5*log((1. + v0)/(1. - v0));
   double ret1 = 0., ret2 = 0.;
   vector<double> xlag, wlag, xleg, wleg;
   //GetCoefs2DLaguerre32Legendre32(0., 6., xlag, wlag, xleg, wleg);
@@ -2092,12 +1699,6 @@ void CbmThermalModelNoFlow::Finish(){
 			printf("%lf\t%lf\t%lf\n", tmpchi2ndfMC, tmpchi2ndfRecoUn, tmpchi2ndf);
 			
 			
-			/*for(double tmpT=0.1;tmpT<0.1505;tmpT+=0.001) {
-				tmpmt2thMC = ThermalMt2(tmpT, TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass());
-				tmpchi2ndfMC = (globalfavMC[part]-tmpmt2thMC) * (globalfavMC[part]-tmpmt2thMC) / ((globalf2avMC[part]-globalfavMC[part]*globalfavMC[part]) / (globalnTracksMC[part]-1.));
-		        fout << tmpT << " " << tmpchi2ndfMC << " " << ThermalMt(tmpT, TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()) << "\n";
-			}*/
-			
 			ThermalDistributionFunction pl(part, tmpT1, getRadius(tmpT1, globalnTracksMC[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()),
 											ekin, NULL, NULL);
 			  
@@ -2173,26 +1774,4 @@ void CbmThermalModelNoFlow::Finish(){
     //printf("Type\tRapidity\tAll\tReco\tReco cor\n");
   //}
   
-  /*if(!(outfileName == ""))
-  {
-    TDirectory *curr = gDirectory;
-    TFile *currentFile = gFile;
-    // Open output file and write histograms
-    TFile* outfile;
-    
-    std::cout << outfileName << endl;
-
-    if (!fUpdate) outfile = new TFile(outfileName.Data(),"RECREATE");
-    else outfile = new TFile(outfileName.Data(),"UPDATE");
-    outfile->cd();
-    WriteHistos(histodir);
-    outfile->Close();
-    outfile->Delete();
-    gFile = currentFile;
-    gDirectory = curr;
-  }
-  else
-  {
-    WriteHistosCurFile(histodir);
-  }*/
 }
