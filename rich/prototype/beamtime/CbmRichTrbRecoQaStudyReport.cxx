@@ -70,17 +70,17 @@ void CbmRichTrbRecoQaStudyReport::FitGausAndDrawH1(
 		 Double_t sigma = (NULL != fit) ? fit->GetParameter(2) : 0.;
 		 Double_t mean = (NULL != fit) ? fit->GetParameter(1) : 0.;
 		 TString str;
-		 str.Form(" (%.2f/%.2f)", mean, sigma);
+		 str.Form(" (%.2f/%.3f)", mean, sigma);
 		 legendNames.push_back(GetStudyNames()[iStudy] + string(str.Data()));
      } else {
     	 TString str;
-    	 str.Form(" (%.2f/%.2f)", histos1[iStudy]->GetMean(), histos1[iStudy]->GetRMS());
+    	 str.Form(" (%.2f/%.3f)", histos1[iStudy]->GetMean(), histos1[iStudy]->GetRMS());
     	 TF1* fit = histos1[iStudy]->GetFunction("gaus");
     	 if (fit != NULL) fit->Delete();
     	 legendNames.push_back(GetStudyNames()[iStudy] + string(str.Data()));
      }
    }
-   DrawH1(histos1, legendNames, kLinear, kLinear);
+   DrawH1(histos1, legendNames, kLinear, kLinear, true, .5, .7, .99, .99);
    if (fFitHist) {
 	   for (UInt_t iStudy = 0; iStudy < nofStudies; iStudy++) {
 		  histos1[iStudy]->GetFunction("gaus")->SetLineColor(histos1[iStudy]->GetLineColor());
