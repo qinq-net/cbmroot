@@ -57,7 +57,8 @@ Int_t CbmStsSensorTypeDssd::FindHits(vector<CbmStsCluster*>& clusters,
 	Double_t xCluster = -1.;  // cluster position on read-out edge
 	Int_t side  = -1;         // front or back side
 	for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
-		side = GetSide( clusters[iCluster]->GetCentre() );
+		CbmStsCluster* cluster = clusters[iCluster];
+		side = GetSide( cluster->GetCentre() );
 		if ( side == 0) {
 			frontClusters.push_back(iCluster);
 			nClustersF++;

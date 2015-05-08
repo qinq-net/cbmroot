@@ -310,10 +310,6 @@ void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
 	UInt_t address = CbmStsAddress::SetElementId(GetAddress(),
 			                                         kStsChannel, channel);
 
-	// --- Qualify front or back side
-	Int_t side = ( channel < 1024 ? 0 : 1);
-	address = CbmStsAddress::SetElementId(address, kStsSide, side);
-
 	// --- Digitise charge
 	// --- Prescription according to the information on the STS-XYTER
 	// --- by C. Schmidt.
