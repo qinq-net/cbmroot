@@ -18,7 +18,7 @@ setup/CbmStsSensorConditions.cxx
 setup/CbmStsSensorPoint.cxx
 setup/CbmStsSensorType.cxx
 setup/CbmStsSetup.cxx
-setup/CbmStsStation_new.cxx
+setup/CbmStsStation.cxx
 )
 # --- Sources in mc
 set(SRCS_MC

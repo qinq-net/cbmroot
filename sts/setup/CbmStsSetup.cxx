@@ -18,7 +18,7 @@
 
 // Includes from STS
 #include "setup/CbmStsModule.h"
-#include "setup/CbmStsStation_new.h"
+#include "setup/CbmStsStation.h"
 #include "digitize/CbmStsSensorTypeDssd.h"
 
 
@@ -249,8 +249,8 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
 
   // --- Init the stations (get station-wide parameters like z, xmax etc.)
   for (Int_t iStat = 0; iStat < GetNofDaughters(); iStat++) {
-  	CbmStsStation_new* station =
-  			dynamic_cast<CbmStsStation_new*>(GetDaughter(iStat));
+  	CbmStsStation* station =
+  			dynamic_cast<CbmStsStation*>(GetDaughter(iStat));
   	station->Init();
   	LOG(DEBUG) << station->ToString() << FairLogger::endl;
   }

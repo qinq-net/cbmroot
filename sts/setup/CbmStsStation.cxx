@@ -1,4 +1,4 @@
-/** @file CbmStsStation_new.cxx
+/** @file CbmStsStation.cxx
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 04.03.2015
  **/
@@ -8,11 +8,11 @@
 #include "TGeoMatrix.h"
 #include "CbmStsSensor.h"
 #include "CbmStsSensorTypeDssd.h"
-#include "CbmStsStation_new.h"
+#include "CbmStsStation.h"
 
 
 // -----   Default constructor   -------------------------------------------
-CbmStsStation_new::CbmStsStation_new()
+CbmStsStation::CbmStsStation()
 	: CbmStsElement(),
 	  fZ(0.),
 	  fXmin(0.), fXmax(0.), fYmin(0.), fYmax(0.), fSensorD(0.),
@@ -26,7 +26,7 @@ CbmStsStation_new::CbmStsStation_new()
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmStsStation_new::CbmStsStation_new(const char* name, const char* title,
+CbmStsStation::CbmStsStation(const char* name, const char* title,
 		                                 TGeoPhysicalNode* node)
 	: CbmStsElement(name, title, kStsStation, node),
 	  fZ(0.),
@@ -41,14 +41,14 @@ CbmStsStation_new::CbmStsStation_new(const char* name, const char* title,
 
 
 // -----   Destructor   ----------------------------------------------------
-CbmStsStation_new::~CbmStsStation_new() {
+CbmStsStation::~CbmStsStation() {
 }
 // -------------------------------------------------------------------------
 
 
 
 // -----   Initialise the station properties from sensors   ----------------
-void CbmStsStation_new::CheckSensorProperties() {
+void CbmStsStation::CheckSensorProperties() {
 
 	Int_t nSensors = 0;         // sensor counter
 	Double_t zMin  =  999999.;  // sensor z minimum
@@ -115,7 +115,7 @@ void CbmStsStation_new::CheckSensorProperties() {
 
 
 // -----   Strip pitch    --------------------------------------------------
-Double_t CbmStsStation_new::GetSensorPitch(Int_t iSide) const {
+Double_t CbmStsStation::GetSensorPitch(Int_t iSide) const {
 	if ( iSide < 0 || iSide > 1 ) {
 		LOG(FATAL) << GetName() << ": illegal side identifier!"
 				       << FairLogger::endl;
@@ -134,7 +134,7 @@ Double_t CbmStsStation_new::GetSensorPitch(Int_t iSide) const {
 // -----   Rotation    -----------------------------------------------------
 // N.B.: Implementation is only correct if the first sensor is only rotated
 // in the x-y plane.
-Double_t CbmStsStation_new::GetSensorRotation() const {
+Double_t CbmStsStation::GetSensorRotation() const {
 	TGeoPhysicalNode* sensorNode = fFirstSensor->GetNode();
 	Double_t local[3] = {1., 0., 0.}; // unit vector on local x axis
 	Double_t global[3];    // unit vector in global C.S.
@@ -146,7 +146,7 @@ Double_t CbmStsStation_new::GetSensorRotation() const {
 
 
 // -----   Stereo angle    -------------------------------------------------
-Double_t CbmStsStation_new::GetSensorStereoAngle(Int_t iSide) const {
+Double_t CbmStsStation::GetSensorStereoAngle(Int_t iSide) const {
 	if ( iSide < 0 || iSide > 1 ) {
 		LOG(FATAL) << GetName() << ": illegal side identifier!"
 				       << FairLogger::endl;
@@ -163,7 +163,7 @@ Double_t CbmStsStation_new::GetSensorStereoAngle(Int_t iSide) const {
 
 
 // -----   Initialise station parameters   ---------------------------------
-void CbmStsStation_new::Init() {
+void CbmStsStation::Init() {
 
 	// Determine x and y extensions of the STS volume. This implementation
 	// assumes that the shape of the latter derives from TGeoBBox and that
@@ -194,7 +194,7 @@ void CbmStsStation_new::Init() {
 
 
 // -----   Info   -----------------------------------------------------------
-string CbmStsStation_new::ToString() const
+string CbmStsStation::ToString() const
 {
    stringstream ss;
    ss << GetName() << ": " << fNofSensors << " sensors, z = " << fZ
@@ -209,5 +209,5 @@ string CbmStsStation_new::ToString() const
 }
 // --------------------------------------------------------------------------
 
-ClassImp(CbmStsStation_new)
+ClassImp(CbmStsStation)
 

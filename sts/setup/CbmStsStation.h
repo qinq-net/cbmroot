@@ -1,16 +1,16 @@
-/** @file CbmStsStation_new.h
+/** @file CbmStsStation.h
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 4.03.2015
  **/
 
-#ifndef CBMSTSSTATION_NEW_H
-#define CBMSTSSTATION_NEW_H 1
+#ifndef CBMSTSSTATION_H
+#define CBMSTSSTATION_H 1
 
 
 #include "CbmStsElement.h"
 
 
-/** @class CbmStsStation_new
+/** @class CbmStsStation
  ** @brief Class representing a station of the StsSystem.
  ** @author V.Friese <v.friese@gsi.de>
  ** @version 1.0
@@ -19,12 +19,12 @@
  ** It holds station-wide parameters like z position, sensor thickness,
  ** and material budget for use in reconstruction tasks.
  **/
-class CbmStsStation_new : public CbmStsElement {
+class CbmStsStation : public CbmStsElement {
 
 	public:
 
 		/** Default constructor **/
-		CbmStsStation_new();
+		CbmStsStation();
 
 
 		/** Standard constructor
@@ -32,12 +32,12 @@ class CbmStsStation_new : public CbmStsElement {
 		 ** @param title  Station type
 		 ** @param node   Pointer to corresponding TGeoPhysicalNode
 		 */
-		CbmStsStation_new(const char* name, const char* title,
+		CbmStsStation(const char* name, const char* title,
 						TGeoPhysicalNode* node = NULL);
 
 
 		/** Destructor **/
-		virtual ~CbmStsStation_new();
+		virtual ~CbmStsStation();
 
 
 		/** Minimal and maximal x and y coordinates **/
@@ -141,11 +141,11 @@ class CbmStsStation_new : public CbmStsElement {
 
 
     // --- Prevent usage of copy constructor and assignment operator
-    CbmStsStation_new(const CbmStsStation_new&);
-    CbmStsStation_new& operator=(const CbmStsStation_new&);
+    CbmStsStation(const CbmStsStation&);
+    CbmStsStation& operator=(const CbmStsStation&);
 
 
-		ClassDef(CbmStsStation_new, 1);
+		ClassDef(CbmStsStation, 1);
 };
 
-#endif /* CBMSTSSTATION_NEW_H_ */
+#endif /* CBMSTSSTATION_H */
