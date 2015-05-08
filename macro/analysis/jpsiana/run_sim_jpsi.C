@@ -1,4 +1,4 @@
-void run_sim_jpsi(Int_t nEvents = 1)
+void run_sim_jpsi(Int_t nEvents = 2)
 {
    TTree::SetMaxTreeSize(90000000000);
 	Int_t iVerbose = 0;
@@ -8,10 +8,15 @@ void run_sim_jpsi(Int_t nEvents = 1)
 
 	//gRandom->SetSeed(10);
 
+	//TString inFile = "/data/CbmRoot/cbmroot/trunk/input/urqmd.auau.25gev.centr.root";
+	//TString parFile = "/data/CbmRoot/sim_data/param.0001.root";
+	//TString geoFile = "/data/CbmRoot/sim_data/geofilefull.0001.root";
+	//TString outFile = "/data/CbmRoot/sim_data/mc.0001.root";
+
 	TString inFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
-	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.00090.root";
-	TString geoFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/geofilefull.00090.root";
-	TString outFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.00090.root";
+	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.0001.root";
+	TString geoFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/geofilefull.0001.root";
+	TString outFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.0001.root";
 
 	TString caveGeom = "cave.geo";
 	TString pipeGeom = "pipe/pipe_v14h.root";
@@ -24,12 +29,13 @@ void run_sim_jpsi(Int_t nEvents = 1)
 	TString ecalGeom = "";
 	TString fieldMap = "field_v12a";
 
-	TString electrons = "yes"; // If "yes" than primary electrons will be generated
+	TString electrons = "no"; // If "yes" than primary electrons will be generated
 	Int_t NELECTRONS = 5; // number of e- to be generated
 	Int_t NPOSITRONS = 5; // number of e+ to be generated
 	TString urqmd = "yes"; // If "yes" than UrQMD will be used as background
-	TString pluto = "no"; // If "yes" PLUTO particles will be embedded
-	TString plutoFile = "";
+	TString pluto = "yes"; // If "yes" PLUTO particles will be embedded
+	//TString plutoFile = "/data/CbmRoot/cbmroot/trunk/input/pluto.auau.25gev.jpsi.epem.0001.root";
+	TString plutoFile = "/Users/slebedev/Development/cbm/data/jpsi/pluto.auau.25gev.jpsi.epem.0001.root";
 	TString plutoParticle = "";
 	Double_t fieldZ = 50.; // field center z position
 	Double_t fieldScale =  1.0; // field scaling factor
@@ -176,7 +182,7 @@ void run_sim_jpsi(Int_t nEvents = 1)
    }
 
 	if (pluto == "yes") {
-		FairPlutoGenerator *plutoGen= new FairPlutoGenerator(plutoFile);
+		CbmPlutoGenerator *plutoGen= new CbmPlutoGenerator(plutoFile);
 		primGen->AddGenerator(plutoGen);
 	}
 

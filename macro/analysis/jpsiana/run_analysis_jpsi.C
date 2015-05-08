@@ -10,11 +10,15 @@ void run_analysis_jpsi(Int_t nEvents = 2)
 
 	gRandom->SetSeed(10);
 
-	TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.00090.root";
-	TString recoFile ="/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.00090.root";
-	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.00090.root";
-	TString anaFile ="/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.00090.root";
+	//TString mcFile = "/data/CbmRoot/sim_data/mc.0001.root";
+	//TString parFile = "/data/CbmRoot/sim_data/param.0001.root";
+	//TString recoFile ="/data/CbmRoot/sim_data/reco.0001.root";
+	//TString anaFile ="/data/CbmRoot/sim_data/analysis.0001.root";
 
+	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.0001.root";
+	TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.0001.root";
+	TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.0001.root";
+	TString anaFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/analysis.0001.root";
 
 	TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
     TObjString trdDigiFile = parDir + "/trd/trd_v14a_3e.digi.par"; // TRD digi file
@@ -51,7 +55,7 @@ void run_analysis_jpsi(Int_t nEvents = 2)
 	FairRunAna *run= new FairRunAna();
 	if (mcFile != "") run->SetInputFile(mcFile);
 	run->AddFriend(recoFile);
-	if (recoFile != "") run->SetOutputFile(recoFile);
+	if (recoFile != "") run->SetOutputFile(anaFile);
 
 	CbmAnaJpsiTask* jpsiTask= new CbmAnaJpsiTask();
 	run->AddTask(jpsiTask);
