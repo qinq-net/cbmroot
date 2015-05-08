@@ -35,7 +35,7 @@ namespace RapidityFitBlastWaveNamespace {
 	public:
 
 	  dndyFCN(const std::vector<double> &y_, const std::vector<double> &dndy_, const std::vector<double> &err_, double T, double mass):
-	  fPositions(y_), fMeasurements(dndy_), fErrors(err_), fT(T), fMass(mass)
+	  fPositions(y_), fMeasurements(dndy_), fErrors(err_), fT(T), fMass(mass), iter(0)
 	  { 
 	  }
 
@@ -55,9 +55,9 @@ namespace RapidityFitBlastWaveNamespace {
 	private:
 	  std::vector<double> fPositions;
 	  std::vector<double> fMeasurements;
-	  int iter;
-	  std::vector<double> fErrors;
+	  std::vector<double> fErrors;	  
 	  double fT, fMass;
+	  int iter;
 	};
 }
 

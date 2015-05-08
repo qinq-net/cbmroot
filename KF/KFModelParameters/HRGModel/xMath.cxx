@@ -466,7 +466,7 @@ double xMath::StruveH1(double x)
       y = v*v;
       r = 1;
       h = 1;
-      i1 = (int)(-8. / log10(v));
+      i1 = static_cast<int>((-8. / log10(v)));
       for (i = 1; i <= i1; ++i) {
          h = -h*y / ((2*i+ 1)*(2*i + 3));
          r += h;

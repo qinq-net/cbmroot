@@ -12,17 +12,20 @@ struct RapidityFitBlastWaveParameter {
 	double xmin, xmax;
 	std::string name;
 	RapidityFitBlastWaveParameter(std::string name_="", bool toFit_=true, double val=1., double err=0., double vmin=-2., double vmax=2.):
-		toFit(toFit_), value(val), error(err), xmin(vmin), xmax(vmax) {
+		toFit(toFit_), value(val), error(err), xmin(vmin), xmax(vmax), name("") {
 		}
 };
 
 struct RapidityFitBlastWaveParameters {
     RapidityFitBlastWaveParameter A, eta;
     double chi2ndf;
-    RapidityFitBlastWaveParameters(double A_ = 200., double eta_ = 0.3)
+    RapidityFitBlastWaveParameters(double A_ = 200., double eta_ = 0.3):
+		A(RapidityFitBlastWaveParameter("A", true, A_, 1000., 0., 200000.)),
+		eta(RapidityFitBlastWaveParameter("eta", true, eta_, 0.2, 0., 10.)),
+		chi2ndf(1.)
 	{
-		A = RapidityFitBlastWaveParameter("A", true, A_, 1000., 0., 200000.);
-		eta = RapidityFitBlastWaveParameter("eta", true, eta_, 0.2, 0., 10.);
+		// A = RapidityFitBlastWaveParameter("A", true, A_, 1000., 0., 200000.);
+		// eta = RapidityFitBlastWaveParameter("eta", true, eta_, 0.2, 0., 10.);
 	}
 	RapidityFitBlastWaveParameter GetParamater(const std::string& name) const {
 		if (A.name==name) return A;

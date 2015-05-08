@@ -313,7 +313,8 @@ int CbmImpactParameterModel::CalculateTotalChargeInEvent(int RecoLevel) {
 	std::cout << "MC tracks: " << nTracksMC << "\n";
     vRTracksMC.resize(nTracksMC);
     for(int iTr=0; iTr<nTracksMC; iTr++)
-      vRTracksMC[iTr] = *( (CbmMCTrack*) flistMCTracks->At(iTr));
+      // vRTracksMC[iTr] = *( (CbmMCTrack*) flistMCTracks->At(iTr));
+	  vRTracksMC[iTr] = *( static_cast<CbmMCTrack*> (flistMCTracks->At(iTr) ) );
 	  
 	for(int iTr=0; iTr<nTracksMC; iTr++) {
 	  if (vRTracksMC[iTr].GetMotherId()==-1) 

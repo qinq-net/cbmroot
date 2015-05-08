@@ -75,29 +75,50 @@ CbmMultiscatteringModel::CbmMultiscatteringModel(Int_t recoLevel, Int_t iVerbose
   //ekin(ekin_),
   //fusePID(usePID),
   ekin(ekin_),
+  p0cm(5.),
+  ycm(1.),
+  fUpdate(true),
+  fusePID(true),
   fRecoLevel(recoLevel),
+  fTrackNumber(1),
+  fEventStats(EventStats),
+  events(0),
+  fModeName(Mode),
+  outfileName(""),
+  histodir(0),
+  flistMCTracks(0),
+  IndexSigt(0), IndexSigz(0), IndexQz(0), IndexPt(0), IndexPz(0), 
+  IndexY(0), IndexModelPt(0), IndexModelPz(0), IndexModelY(0),
+  IndexYPt(0), IndexModelYPt(0),
+  pullsigt(0), pullsigz(0), pullqz(0),
+  sigts(), sigzs(), qzs(),
   //fTrackNumber(trackNumber),
   //flistStsTracks(0),
   //flistStsTracksMatch(0),
   //fPrimVtx(0),
   //flsitGlobalTracks(0),
   //flistTofHits(0),
-  histodir(0),
-  flistMCTracks(0)
+  PPDG(2212),
+  paramsGlobal(),
+  paramsLocal(),
+  totalGlobal(0),
+  totalLocal(0),
+  kProtonMass(0.938271998),
+  model(0)
 //  flistRichRings(0),
 //  flistTrdTracks(0),
   
 {
-  fModeName = Mode;
-  fEventStats = EventStats;
+  // fModeName = Mode;
+  // fEventStats = EventStats;
   
-  events = 0;
+  //events = 0;
   sigts.resize(0);
   sigzs.resize(0);
   qzs.resize(0);
   
-  PPDG = 2212;
-  kProtonMass = 0.938271998;
+  // PPDG = 2212;
+  // kProtonMass = 0.938271998;
   
   //PDGtoIndex.clear();
   
@@ -333,7 +354,8 @@ void CbmMultiscatteringModel::CalculateAveragesInEvent(int RecoLevel, bool Updat
 	std::cout << "MC tracks: " << nTracksMC << "\n";
     vRTracksMC.resize(nTracksMC);
     for(int iTr=0; iTr<nTracksMC; iTr++)
-      vRTracksMC[iTr] = *( (CbmMCTrack*) flistMCTracks->At(iTr));
+      //vRTracksMC[iTr] = *( (CbmMCTrack*) flistMCTracks->At(iTr));
+	  vRTracksMC[iTr] = *( static_cast<CbmMCTrack*>( flistMCTracks->At(iTr)) );
 	  
 	for(int iTr=0; iTr<nTracksMC; iTr++) {
       //for(unsigned int part=0;part<ParticlePDGsTrack.size();++part) {

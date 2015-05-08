@@ -8,7 +8,9 @@ namespace BlastWaveNamespace {
 }
 
 BlastWave::BlastWave(double mass, int PDGID, bool UseAcc, double ymin, double ymax, double ycm, double etam):
-		fMass(mass), fPDGID(PDGID), fUseAcceptance(UseAcc), fYmin(ymin), fYmax(ymax), fYcm(ycm), fEtaMax(etam)
+		xlag32(), wlag32(), xleg32(), wleg32(), xlegeta(), wlegeta(),
+		fMass(mass), fPDGID(PDGID), fUseAcceptance(UseAcc), fYmin(ymin), fYmax(ymax), fYcm(ycm), fEtaMax(etam),
+		fNorm(1.), fAcceptance(), fReconstructionEfficiency(), fTamt(), fNormT(), fNormT4pi()
 {
 	if (fabs(fEtaMax)<1e-5) fEtaMax = 1.e-5;
 	BlastWaveNamespace::GetCoefsIntegrateLegendre32(0., 3., xlag32, wlag32);

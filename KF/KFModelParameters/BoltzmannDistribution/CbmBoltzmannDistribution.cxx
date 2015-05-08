@@ -83,26 +83,52 @@ CbmBoltzmannDistribution::CbmBoltzmannDistribution(Int_t recoLevel, Int_t iVerbo
   //flistStsTracksMatch(0),
   //fPrimVtx(0),
   ekin(ekin_),
+  p0cm(5.),
+  ycm(2.),
+  fUpdate(true),
+  fusePID(true),
   fRecoLevel(recoLevel),
+  fTrackNumber(1),
+  fEventStats(EventStats),
+  events(0),
+  fModeName(Mode),
+  outfileName(""),
   //flsitGlobalTracks(0),
   //flistTofHits(0),
   histodir(0),
   flistMCTracks(0),
+  IndexT(0), IndexMt(0), IndexModelMt(0), 
+  IndexMt2(0), IndexModelMt2(0), IndexModelMt4Pi(0),
+  histodndy(0), histodndymodel(0),
+  histo1DIntervals(0),
+  grTy(0),
+  grdndyReco(0),
+  pullT(0),
+  Ts(),
+  kProtonMass(0.938271998),
   fPDGID(PDG),
-  totalEvents(0)
+  fMass(TDatabasePDG::Instance()->GetParticle(fPDGID)->Mass()),
+  fYminv(), fYmaxv(),
+  paramGlobal(0), paramGlobalInterval(0), param2GlobalInterval(0),
+  paramLocal(0), paramLocalInterval(0),
+  totalLocal(0), totalGlobal(0),
+  totalGlobalInterval(0), totalLocalInterval(0),
+  totalEvents(0),
+  model(0), modelmc(0), modelsY(0)
+  
 //  flistRichRings(0),
 //  flistTrdTracks(0),
   
 {
-  fModeName = Mode;
-  fEventStats = EventStats;
-  fMass = TDatabasePDG::Instance()->GetParticle(fPDGID)->Mass();
+  // fModeName = Mode;
+  // fEventStats = EventStats;
+  // fMass = TDatabasePDG::Instance()->GetParticle(fPDGID)->Mass();
   
-  events = 0;
+  // events = 0;
   Ts.resize(0);
   
   //PPDG = 2212;
-  kProtonMass = 0.938271998;
+  // kProtonMass = 0.938271998;
   
   //PDGtoIndex.clear();
   
@@ -512,8 +538,8 @@ void CbmBoltzmannDistribution::Finish(){
 	grTy->SetPointError(grindex, 0.*0.5*(fYmaxv[ind]-fYminv[ind]), errT*1.e3);
 	//std::cout << T << " " << errT << "\n";
 	
-	double A = modelsY[ind]->GetA(totalGlobalInterval[ind] / (double)(totalEvents), T);
-	double errA = modelsY[ind]->GetAerror(totalGlobalInterval[ind] / (double)(totalEvents), T, sqrt(totalGlobalInterval[ind]) / (double)(totalEvents), errT);
+	double A = modelsY[ind]->GetA(totalGlobalInterval[ind] / static_cast<double>(totalEvents), T);
+	double errA = modelsY[ind]->GetAerror(totalGlobalInterval[ind] / static_cast<double>(totalEvents), T, sqrt(totalGlobalInterval[ind]) / static_cast<double>(totalEvents), errT);
 	std::cout << "A = " << A << " error = " << errA << "\n";
 	grdndyReco->SetPoint(grindex, 0.5*(fYminv[ind]+fYmaxv[ind]), A / (fYmaxv[ind]-fYminv[ind]));
 	grdndyReco->SetPointError(grindex, 0.*0.5*(fYmaxv[ind]-fYminv[ind]), errA / (fYmaxv[ind]-fYminv[ind]));
@@ -528,7 +554,7 @@ void CbmBoltzmannDistribution::Finish(){
   T = model->GetT(paramGlobal / totalGlobal);
   
   for(int n = 1; n < histodndymodel->GetNbinsX(); n++) {
-	  histodndymodel->SetBinContent(n, model->dndy(histodndymodel->GetXaxis()->GetBinCenter(n), model->GetA(totalGlobal / (double)(totalEvents),T), T));
+	  histodndymodel->SetBinContent(n, model->dndy(histodndymodel->GetXaxis()->GetBinCenter(n), model->GetA(totalGlobal / static_cast<double>(totalEvents),T), T));
   }
 }
 
@@ -539,7 +565,8 @@ void CbmBoltzmannDistribution::CalculateAveragesInEvent(int RecoLevel, bool Upda
 	std::cout << "MC tracks: " << nTracksMC << "\n";
     vRTracksMC.resize(nTracksMC);
     for(int iTr=0; iTr<nTracksMC; iTr++)
-      vRTracksMC[iTr] = *( (CbmMCTrack*) flistMCTracks->At(iTr));
+      // vRTracksMC[iTr] = *( (CbmMCTrack*) flistMCTracks->At(iTr));
+	  vRTracksMC[iTr] = *( static_cast<CbmMCTrack*> (flistMCTracks->At(iTr) ) );
 	  
 	for(int iTr=0; iTr<nTracksMC; iTr++) {
 	    if (vRTracksMC[iTr].GetPdgCode()==fPDGID && vRTracksMC[iTr].GetMotherId()==-1) {

@@ -87,7 +87,7 @@ namespace ThermalModelNoFlowNamespace {
 	public:
 
 	  ThermalDistributionFunction(int part, double T_, double R_, double ekin_, AcceptanceFunction *af_=NULL, ReconstructionEfficiencyFunction *rf_=NULL) : 
-		  fT(T_), fV(4./3.*TMath::Pi()*R_*R_*R_), mass(0.), ekin(ekin_), af(af_), rf(rf_)
+		  fT(T_), fV(4./3.*TMath::Pi()*R_*R_*R_), mass(0.), ekin(ekin_), ycm(0.), af(af_), rf(rf_)
 	  {
 			mass = TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass();
 			double v = sqrt(2.*kProtonMass*ekin+ekin*ekin)/(2.*kProtonMass+ekin);
@@ -306,6 +306,9 @@ namespace ThermalModelNoFlowNamespace {
 
 	  double T() const {return fT;}
 	  double V() const {return fV;}
+	  
+	  ThermalDistributionFunction(const ThermalDistributionFunction&);
+	  ThermalDistributionFunction& operator=(const ThermalDistributionFunction&);
 
 	private:
 	  double fT, fV;
@@ -319,7 +322,7 @@ namespace ThermalModelNoFlowNamespace {
 	class ThermalChi2Func {
 
 	public:
-	  ThermalChi2Func(TH1F *dndyexp, TH2F *dndydptexp, double Norm_) : Norm(Norm_) 
+	  ThermalChi2Func(TH1F *dndyexp, TH2F *dndydptexp, double Norm_) : Norm(Norm_), dndyHist(0), dndydptHist(0)
 	  { 
 		  dndyHist = dndyexp; 
 		  dndydptHist = dndydptexp; 
@@ -374,6 +377,9 @@ namespace ThermalModelNoFlowNamespace {
 		return chi2 / iters;
 	  }
 	  
+	  ThermalChi2Func(const ThermalChi2Func&);
+	  ThermalChi2Func& operator=(const ThermalChi2Func&);
+	  
 	  private:
 		double Norm;
 		TH1F *dndyHist;
@@ -389,16 +395,28 @@ ClassImp(CbmThermalModelNoFlow)
 
 CbmThermalModelNoFlow::CbmThermalModelNoFlow(Float_t ekin_, Int_t recoLevel, Int_t usePID, Int_t trackNumber, Int_t iVerbose):
   ekin(ekin_),
+  ycm(1.),
+  fUpdate(true),
   fusePID(usePID),
   fRecoLevel(recoLevel),
   fTrackNumber(trackNumber),
+  flistStsPts(0),
+  flistTofPts(0),
   flistStsTracksMatch(0),
   flistStsTracks(0),
   fPrimVtx(0),
+  outfileName(""),
+  fChiToPrimVtx(),
+  NPrimGlobalMC(0),
+  NPrimGlobalReco(0),
   flistMCTracks(0),
   flsitGlobalTracks(0),
   flistTofHits(0),
-  histodir(0)
+  flistTofPoints(0),
+  histodir(0),
+  events(0),
+  AcceptanceSTS(),
+  AcceptanceSTSTOF()
 {
   NPrimGlobalMC = 0;
   NPrimGlobalReco = 0;
@@ -732,15 +750,20 @@ void CbmThermalModelNoFlow::ReInit(FairRootManager *fManger)
 {
   //FairRootManager *fManger = FairRootManager::Instance();
 
-  flistStsTracks = (TClonesArray *)  fManger->GetObject("StsTrack");
-  flistTofPts = (TClonesArray *)  fManger->GetObject("TofPoint");
-  fPrimVtx = (CbmVertex*) fManger->GetObject("PrimaryVertex");
+  // flistStsTracks = (TClonesArray *)  fManger->GetObject("StsTrack");
+  // flistTofPts = (TClonesArray *)  fManger->GetObject("TofPoint");
+  // fPrimVtx = (CbmVertex*) fManger->GetObject("PrimaryVertex");
+  flistStsTracks = dynamic_cast<TClonesArray*>(  fManger->GetObject("StsTrack") );
+  flistTofPts = dynamic_cast<TClonesArray*>(  fManger->GetObject("TofPoint") );
+  fPrimVtx = dynamic_cast<CbmVertex*>(  fManger->GetObject("PrimaryVertex") );
   //fPrimVtx = new CbmVertex();
   //for the particle id
   flistStsTracksMatch = dynamic_cast<TClonesArray*>(  fManger->GetObject("StsTrackMatch") );
   flistMCTracks = dynamic_cast<TClonesArray*>( fManger->GetObject("MCTrack") );
-  flistStsPts = (TClonesArray *)  fManger->GetObject("StsPoint");
-  flistTofPts = (TClonesArray *)  fManger->GetObject("TofPoint");
+  // flistStsPts = (TClonesArray *)  fManger->GetObject("StsPoint");
+  // flistTofPts = (TClonesArray *)  fManger->GetObject("TofPoint");
+  flistStsPts = dynamic_cast<TClonesArray*>(  fManger->GetObject("StsPoint") );
+  flistTofPts = dynamic_cast<TClonesArray*>(  fManger->GetObject("TofPoint") );
   
 
   if (fusePID == 2){
@@ -768,10 +791,12 @@ void CbmThermalModelNoFlow::Exec()
   int nTracksMC = flistMCTracks->GetEntries();
   vRTracks.resize(nTracks);
   for(int iTr=0; iTr<nTracks; iTr++)
-    vRTracks[iTr] = *( (CbmStsTrack*) flistStsTracks->At(iTr));
+    // vRTracks[iTr] = *( (CbmStsTrack*) flistStsTracks->At(iTr));
+	vRTracks[iTr] = *( static_cast<CbmStsTrack*>( flistStsTracks->At(iTr)) );
   vRTracksMC.resize(nTracksMC);
   for(int iTr=0; iTr<nTracksMC; iTr++)
-    vRTracksMC[iTr] = *( (CbmMCTrack*) flistMCTracks->At(iTr));
+    // vRTracksMC[iTr] = *( (CbmMCTrack*) flistMCTracks->At(iTr));
+	vRTracksMC[iTr] = *( static_cast<CbmMCTrack*>( flistMCTracks->At(iTr)) );
 
   CbmKFVertex kfVertex;
   if(fPrimVtx)
@@ -782,10 +807,12 @@ void CbmThermalModelNoFlow::Exec()
   {
     for(int iTr=0; iTr<nTracks; iTr++)
     {
-      CbmTrackMatch* stsTrackMatch = (CbmTrackMatch*)flistStsTracksMatch->At(iTr);
+      // CbmTrackMatch* stsTrackMatch = (CbmTrackMatch*)flistStsTracksMatch->At(iTr);
+	  CbmTrackMatch* stsTrackMatch = static_cast<CbmTrackMatch*> (flistStsTracksMatch->At(iTr) );
       if(stsTrackMatch -> GetNofMCTracks() == 0) continue;
       const int mcTrackId = stsTrackMatch->GetMCTrackId();
-      CbmMCTrack* mcTrack = (CbmMCTrack*)flistMCTracks->At(mcTrackId);
+      // CbmMCTrack* mcTrack = (CbmMCTrack*)flistMCTracks->At(mcTrackId);
+	  CbmMCTrack* mcTrack = static_cast<CbmMCTrack*> (flistMCTracks->At(mcTrackId) );
       vTrackPDG[iTr] = mcTrack->GetPdgCode();
     }
   }
@@ -926,13 +953,15 @@ void CbmThermalModelNoFlow::Exec()
   CbmKFTrErrMCPoints* MCTrackSortedArray = new CbmKFTrErrMCPoints[flistMCTracks->GetEntriesFast()+1];
   for (Int_t iSts=0; iSts<flistStsPts->GetEntriesFast(); iSts++)
   {
-     CbmStsPoint* StsPoint = (CbmStsPoint*)flistStsPts->At(iSts);
+     // CbmStsPoint* StsPoint = (CbmStsPoint*)flistStsPts->At(iSts);
+	 CbmStsPoint* StsPoint = static_cast<CbmStsPoint*> (flistStsPts->At(iSts) );
      MCTrackSortedArray[StsPoint->GetTrackID()].StsArray.push_back(StsPoint);
   }
   
   for (Int_t iTof=0; iTof<flistTofPts->GetEntriesFast(); iTof++)
   {
-     CbmTofPoint* TofPoint = (CbmTofPoint*)flistTofPts->At(iTof);
+     // CbmTofPoint* TofPoint = (CbmTofPoint*)flistTofPts->At(iTof);
+	 CbmTofPoint* TofPoint = static_cast<CbmTofPoint*> (flistTofPts->At(iTof) );
      MCTrackSortedArray[TofPoint->GetTrackID()].TofArray.push_back(TofPoint);
   }
   
@@ -1042,7 +1071,8 @@ void CbmThermalModelNoFlow::Exec()
   if (fRecoLevel==1) {
     for(int iTrs=0; iTrs<nTracks; iTrs++) {
       if (vTrackPDG[iTrs]!=-1) {
-	iTr = ((CbmTrackMatch*)flistStsTracksMatch->At(iTrs))->GetMCTrackId();
+	// iTr = ((CbmTrackMatch*)flistStsTracksMatch->At(iTrs))->GetMCTrackId();
+	iTr = (static_cast<CbmTrackMatch*> (flistStsTracksMatch->At(iTrs) ))->GetMCTrackId();
 	
 	for(int part=0;part<p_sz;++part) {
 	  if (vTrackPDG[iTrs]==pdgIds[part] && vRTracksMC[iTr].GetMotherId()==-1) {
@@ -1086,7 +1116,8 @@ void CbmThermalModelNoFlow::Exec()
   if (fRecoLevel==2) {
     for(int iTrs=0; iTrs<nTracks; iTrs++) {
       if (vTrackPDG[iTrs]!=-1) {
-	iTr = ((CbmTrackMatch*)flistStsTracksMatch->At(iTrs))->GetMCTrackId();
+	// iTr = ((CbmTrackMatch*)flistStsTracksMatch->At(iTrs))->GetMCTrackId();
+	iTr = (static_cast<CbmTrackMatch*> (flistStsTracksMatch->At(iTrs) ))->GetMCTrackId();
 	TVector3 tmpv;
 	vRTracks[iTrs].GetParamFirst()->Momentum(tmpv);
 	for(int part=0;part<p_sz;++part) {
@@ -1135,7 +1166,8 @@ void CbmThermalModelNoFlow::Exec()
   if (fRecoLevel==3) {
     for(int iTrs=0; iTrs<nTracks; iTrs++) {
       if (vTrackPDG[iTrs]!=-1) {
-	iTr = ((CbmTrackMatch*)flistStsTracksMatch->At(iTrs))->GetMCTrackId();
+	// iTr = ((CbmTrackMatch*)flistStsTracksMatch->At(iTrs))->GetMCTrackId();
+	iTr = (static_cast<CbmTrackMatch*> (flistStsTracksMatch->At(iTrs) ))->GetMCTrackId();
 	TVector3 tmpv;
 	vRTracks[iTrs].GetParamFirst()->Momentum(tmpv);
 	for(int part=0;part<p_sz;++part) {
@@ -1460,7 +1492,7 @@ bool CbmThermalModelNoFlow::checkIfReconstructable(CbmKFTrErrMCPoints *inTrack)
   if (fusePID==2 && tofHits==0) return 0;
   vector<int> hitz(0);
   for(int hit=0;hit<stsHits;++hit) {
-    hitz.push_back((int)((inTrack->GetStsPoint(hit)->GetZ()+5.)/10.));
+    hitz.push_back(static_cast<int>((inTrack->GetStsPoint(hit)->GetZ()+5.)/10.));
   }
   sort(hitz.begin(), hitz.end());
   for(int hit1=0;hit1<stsHits-3;++hit1)
@@ -1633,12 +1665,12 @@ void CbmThermalModelNoFlow::Finish(){
 	  //if  (part==0) 
 	  {
 	      double tmpTMC = getTemperatureAll(globalmtavMC[part], part, 20);
-	      double tmpRMC = getRadius(tmpTMC, globalnTracksMC[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass());
+	      double tmpRMC = getRadius(tmpTMC, globalnTracksMC[part] / static_cast<double>(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass());
 	      double tmpTMCerr = getTemperatureDerivAll(globalmtavMC[part], part, 20) * sqrt((globalmt2avMC[part]-globalmtavMC[part]*globalmtavMC[part]) / (globalnTracksMC[part]-1.));
 	      double tmp1MC = 0., tmp2MC = 0.;
 	      double tmpNMCerr = sqrt(globalnTracksMC[part]) / events;
-	      tmp1MC = getRadiusDerivT(tmpTMC, (double)(globalnTracksMC[part]) / events, TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass());
-	      tmp2MC = getRadiusDerivN(tmpTMC, (double)(globalnTracksMC[part]) / events, TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass());
+	      tmp1MC = getRadiusDerivT(tmpTMC, static_cast<double>(globalnTracksMC[part]) / events, TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass());
+	      tmp2MC = getRadiusDerivN(tmpTMC, static_cast<double>(globalnTracksMC[part]) / events, TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass());
 	      double tmpRMCerr = sqrt(tmp1MC*tmp1MC*tmpTMCerr*tmpTMCerr + tmp2MC*tmp2MC*tmpNMCerr*tmpNMCerr);
 		  double tmpmt2th = ThermalMt2(tmpTMC, TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass());
 		  double tmpchi2ndf = (globalfavMC[part]-tmpmt2th) * (globalfavMC[part]-tmpmt2th) / ((globalf2avMC[part]-globalfavMC[part]*globalfavMC[part]) / (globalnTracksMC[part]-1.));
@@ -1664,22 +1696,22 @@ void CbmThermalModelNoFlow::Finish(){
 			double tmpT2 = getTemperatureAll(globalmtavReco[part], part, 20);
 			double tmpT3 = getTemperatureAllCor(globalmtavReco[part], part, 20, mtTacc[part]);
 			printf("%s Radius\t%10lf\t%10lf\t%10lf\n", p_names[part].Data(),
-				  getRadius(tmpT1, globalnTracksMC[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()),
-				  getRadius(tmpT2, globalnTracksReco[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()),
-				  getRadiusCor(tmpT3, globalnTracksReco[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass(), Npart[part]));
-			printf("%lf\t%lf\n", Npart[part]->Eval(tmpT3), globalnTracksReco[part] / (double)(globalnTracksMC[part]));
+				  getRadius(tmpT1, globalnTracksMC[part] / static_cast<double>(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()),
+				  getRadius(tmpT2, globalnTracksReco[part] / static_cast<double>(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()),
+				  getRadiusCor(tmpT3, globalnTracksReco[part] / static_cast<double>(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass(), Npart[part]));
+			printf("%lf\t%lf\n", Npart[part]->Eval(tmpT3), globalnTracksReco[part] / static_cast<double>(globalnTracksMC[part]));
 			printf("%lf\t%lf\n", globalmtavMC[part], globalmtavReco[part]);
 			
 			double tmpmt2thMC = ThermalMt2(tmpT1, TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass());
 		    double tmpchi2ndfMC = (globalfavMC[part]-tmpmt2thMC) * (globalfavMC[part]-tmpmt2thMC) / ((globalf2avMC[part]-globalfavMC[part]*globalfavMC[part]) / (globalnTracksMC[part]-1.));
 			
 			double tmpTRe = getTemperatureAllCor(globalmtavReco[part], part, 20, mtTacc[part]);
-			double tmpRRe = getRadiusCor(tmpTRe, globalnTracksReco[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass(), Npart[part]);
+			double tmpRRe = getRadiusCor(tmpTRe, globalnTracksReco[part] / static_cast<double>(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass(), Npart[part]);
 			double tmpTReerr = getTemperatureDerivAllCor(globalmtavReco[part], part, 20, mtTacc[part]) * sqrt((globalmt2avReco[part]-globalmtavReco[part]*globalmtavReco[part]) / (globalnTracksReco[part]-1.));
 			double tmp1Re = 0., tmp2Re = 0.;
 			double tmpNReerr = sqrt(globalnTracksReco[part]) / events;
-			tmp1Re = getRadiusDerivTCor(tmpTRe, (double)(globalnTracksReco[part]) / events, TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass(), Npart[part]);
-			tmp2Re = getRadiusDerivNCor(tmpTRe, (double)(globalnTracksReco[part]) / events, TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass(), Npart[part]);
+			tmp1Re = getRadiusDerivTCor(tmpTRe, static_cast<double>(globalnTracksReco[part]) / events, TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass(), Npart[part]);
+			tmp2Re = getRadiusDerivNCor(tmpTRe, static_cast<double>(globalnTracksReco[part]) / events, TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass(), Npart[part]);
 			double tmpRReerr = sqrt(tmp1Re*tmp1Re*tmpTReerr*tmpTReerr + tmp2Re*tmp2Re*tmpNReerr*tmpNReerr);
 			
 			if (0) cout << sqrt(globalmtmomerrReco[part]) / globalnTracksReco[part] << endl;
@@ -1699,11 +1731,11 @@ void CbmThermalModelNoFlow::Finish(){
 			printf("%lf\t%lf\t%lf\n", tmpchi2ndfMC, tmpchi2ndfRecoUn, tmpchi2ndf);
 			
 			
-			ThermalDistributionFunction pl(part, tmpT1, getRadius(tmpT1, globalnTracksMC[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()),
+			ThermalDistributionFunction pl(part, tmpT1, getRadius(tmpT1, globalnTracksMC[part] / static_cast<double>(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()),
 											ekin, NULL, NULL);
 			  
 			  for(int n = 0; n < hfyMC[part]->GetNbinsX(); n++) {
-				  hfyMCmodel[part]->SetBinContent(n, pl.dndylab(hfyMC[part]->GetBinCenter(n)) * (double)events * (hfyMC[part]->GetXaxis()->GetBinUpEdge(n) - hfyMC[part]->GetXaxis()->GetBinLowEdge(n)));
+				  hfyMCmodel[part]->SetBinContent(n, pl.dndylab(hfyMC[part]->GetBinCenter(n)) * static_cast<double>(events) * (hfyMC[part]->GetXaxis()->GetBinUpEdge(n) - hfyMC[part]->GetXaxis()->GetBinLowEdge(n)));
 				}
 				
 			  for(int nx = 0; nx < hfdndydptMC[part]->GetNbinsX(); nx++) {
@@ -1715,18 +1747,18 @@ void CbmThermalModelNoFlow::Finish(){
 				  }
 				}
 				
-			ThermalDistributionFunction plR(part, tmpT2, getRadius(tmpT2, globalnTracksReco[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()),
+			ThermalDistributionFunction plR(part, tmpT2, getRadius(tmpT2, globalnTracksReco[part] / static_cast<double>(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()),
 											ekin, NULL, NULL);
 			  
 			  for(int n = 0; n < hfyReco[part]->GetNbinsX(); n++) {
-				  hfyRecomodel[part]->SetBinContent(n, plR.dndylab(hfyReco[part]->GetBinCenter(n)) * (double)events * (hfyReco[part]->GetXaxis()->GetBinUpEdge(n) - hfyReco[part]->GetXaxis()->GetBinLowEdge(n)));
+				  hfyRecomodel[part]->SetBinContent(n, plR.dndylab(hfyReco[part]->GetBinCenter(n)) * static_cast<double>(events) * (hfyReco[part]->GetXaxis()->GetBinUpEdge(n) - hfyReco[part]->GetXaxis()->GetBinLowEdge(n)));
 				}
 				
 			  for(int nx = 0; nx < hfdndydptReco[part]->GetNbinsX(); nx++) {
 				  for(int ny = 0; ny < hfdndydptReco[part]->GetNbinsY(); ny++) {
 					  //hfdndydptMCmodel[part]->SetBinContent(nx, ny, pl.dndydpt(hfdndydptMC[part]->GetXaxis()->GetBinCenter(nx), hfdndydptMC[part]->GetYaxis()->GetBinCenter(ny)) * globalmtavMC[0]);
 					  hfdndydptRecomodel[part]->SetBinContent(nx, ny, plR.dndydptbin(hfdndydptReco[part]->GetXaxis()->GetBinLowEdge(nx), hfdndydptReco[part]->GetXaxis()->GetBinUpEdge(nx), 
-						10, hfdndydptReco[part]->GetYaxis()->GetBinLowEdge(ny), hfdndydptReco[part]->GetYaxis()->GetBinUpEdge(ny), 10) * (double)events 
+						10, hfdndydptReco[part]->GetYaxis()->GetBinLowEdge(ny), hfdndydptReco[part]->GetYaxis()->GetBinUpEdge(ny), 10) * static_cast<double>(events )
 						* hfdndydptReco[part]->GetXaxis()->GetBinWidth(nx) * hfdndydptReco[part]->GetYaxis()->GetBinWidth(ny) );
 				  }
 				}
@@ -1735,11 +1767,11 @@ void CbmThermalModelNoFlow::Finish(){
 			if (fTrackNumber==0) reff = ReconstructionEfficiencyFunction(0.99, 0.98, 0.135);
 			else reff = ReconstructionEfficiencyFunction(0.98, 0.88, 0.2);
 				
-			ThermalDistributionFunction plRC(part, tmpT3, getRadiusCor(tmpT3, globalnTracksReco[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass(), Npart[part]),
+			ThermalDistributionFunction plRC(part, tmpT3, getRadiusCor(tmpT3, globalnTracksReco[part] / static_cast<double>(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass(), Npart[part]),
 											ekin, &AcceptanceSTS, &reff);
 			  
 			  for(int n = 0; n < hfyRecoCor[part]->GetNbinsX(); n++) {
-				  hfyRecoCormodel[part]->SetBinContent(n, plRC.dndylab(hfyRecoCor[part]->GetBinCenter(n)) * (double)events * (hfyRecoCor[part]->GetXaxis()->GetBinUpEdge(n) - hfyRecoCor[part]->GetXaxis()->GetBinLowEdge(n)));
+				  hfyRecoCormodel[part]->SetBinContent(n, plRC.dndylab(hfyRecoCor[part]->GetBinCenter(n)) * static_cast<double>(events) * (hfyRecoCor[part]->GetXaxis()->GetBinUpEdge(n) - hfyRecoCor[part]->GetXaxis()->GetBinLowEdge(n)));
 				  //hfyRecoCormodel[part]->SetBinContent(n, plRC.dndybinlab(hfyRecoCor[part]->GetXaxis()->GetBinLowEdge(n), hfyRecoCor[part]->GetXaxis()->GetBinUpEdge(n), 10) * (double)events * (hfyRecoCor[part]->GetXaxis()->GetBinUpEdge(n) - hfyRecoCor[part]->GetXaxis()->GetBinLowEdge(n)));
 				}
 				
@@ -1747,25 +1779,25 @@ void CbmThermalModelNoFlow::Finish(){
 				  for(int ny = 0; ny < hfdndydptRecoCor[part]->GetNbinsY(); ny++) {
 					  //hfdndydptMCmodel[part]->SetBinContent(nx, ny, pl.dndydpt(hfdndydptMC[part]->GetXaxis()->GetBinCenter(nx), hfdndydptMC[part]->GetYaxis()->GetBinCenter(ny)) * globalmtavMC[0]);
 					  hfdndydptRecoCormodel[part]->SetBinContent(nx, ny, plRC.dndydptbin(hfdndydptRecoCor[part]->GetXaxis()->GetBinLowEdge(nx), hfdndydptRecoCor[part]->GetXaxis()->GetBinUpEdge(nx), 
-						10, hfdndydptRecoCor[part]->GetYaxis()->GetBinLowEdge(ny), hfdndydptRecoCor[part]->GetYaxis()->GetBinUpEdge(ny), 10) * (double)events 
+						10, hfdndydptRecoCor[part]->GetYaxis()->GetBinLowEdge(ny), hfdndydptRecoCor[part]->GetYaxis()->GetBinUpEdge(ny), 10) * static_cast<double>(events) 
 						* hfdndydptRecoCor[part]->GetXaxis()->GetBinWidth(nx) * hfdndydptRecoCor[part]->GetYaxis()->GetBinWidth(ny) );
 				  }
 				}
 				
-			ThermalChi2Func fFCN2(hfyMC[part], hfdndydptMC[part], (double)events);
-			cout << "MC chi2/ndf = " << fFCN2.chi2dndy(part, tmpT1, getRadius(tmpT1, globalnTracksMC[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()), ekin, NULL, NULL)  << "\n";
+			ThermalChi2Func fFCN2(hfyMC[part], hfdndydptMC[part], static_cast<double>(events));
+			cout << "MC chi2/ndf = " << fFCN2.chi2dndy(part, tmpT1, getRadius(tmpT1, globalnTracksMC[part] / static_cast<double>(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()), ekin, NULL, NULL)  << "\n";
 		    //fflush(stdout);
-			cout << "MC YPtchi2/ndf = " << fFCN2.chi2ypt(part, tmpT1, getRadius(tmpT1, globalnTracksMC[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()), ekin, NULL, NULL)  << "\n";
+			cout << "MC YPtchi2/ndf = " << fFCN2.chi2ypt(part, tmpT1, getRadius(tmpT1, globalnTracksMC[part] / static_cast<double>(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()), ekin, NULL, NULL)  << "\n";
 			
-			ThermalChi2Func fFCN2Reco(hfyReco[part], hfdndydptReco[part], (double)events);
-			cout << "Reco uncor chi2/ndf = " << fFCN2Reco.chi2dndy(part, tmpT2, getRadius(tmpT2, globalnTracksReco[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()), ekin, NULL, NULL, 0.05)  << "\n";
+			ThermalChi2Func fFCN2Reco(hfyReco[part], hfdndydptReco[part], static_cast<double>(events));
+			cout << "Reco uncor chi2/ndf = " << fFCN2Reco.chi2dndy(part, tmpT2, getRadius(tmpT2, globalnTracksReco[part] / static_cast<double>(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()), ekin, NULL, NULL, 0.05)  << "\n";
 		    //fflush(stdout);
-			cout << "Reco uncor YPtchi2/ndf = " << fFCN2Reco.chi2ypt(part, tmpT2, getRadius(tmpT2, globalnTracksReco[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()), ekin, NULL, NULL, 0.05)  << "\n";
+			cout << "Reco uncor YPtchi2/ndf = " << fFCN2Reco.chi2ypt(part, tmpT2, getRadius(tmpT2, globalnTracksReco[part] / static_cast<double>(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass()), ekin, NULL, NULL, 0.05)  << "\n";
 			
-			ThermalChi2Func fFCN2RecoCor(hfyRecoCor[part], hfdndydptRecoCor[part], (double)events);
-			cout << "Reco chi2/ndf = " << fFCN2RecoCor.chi2dndy(part, tmpT3, getRadiusCor(tmpT3, globalnTracksReco[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass(), Npart[part]), ekin, &AcceptanceSTS, &reff, 0.05)  << "\n";
+			ThermalChi2Func fFCN2RecoCor(hfyRecoCor[part], hfdndydptRecoCor[part], static_cast<double>(events));
+			cout << "Reco chi2/ndf = " << fFCN2RecoCor.chi2dndy(part, tmpT3, getRadiusCor(tmpT3, globalnTracksReco[part] / static_cast<double>(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass(), Npart[part]), ekin, &AcceptanceSTS, &reff, 0.05)  << "\n";
 		    //fflush(stdout);
-			cout << "Reco YPtchi2/ndf = " << fFCN2RecoCor.chi2ypt(part, tmpT3, getRadiusCor(tmpT3, globalnTracksReco[part] / (double)(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass(), Npart[part]), ekin, &AcceptanceSTS, &reff, 0.05)  << "\n";
+			cout << "Reco YPtchi2/ndf = " << fFCN2RecoCor.chi2ypt(part, tmpT3, getRadiusCor(tmpT3, globalnTracksReco[part] / static_cast<double>(events), TDatabasePDG::Instance()->GetParticle(pdgIds[part])->Mass(), Npart[part]), ekin, &AcceptanceSTS, &reff, 0.05)  << "\n";
 			
 			
 		}

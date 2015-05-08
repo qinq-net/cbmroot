@@ -81,30 +81,61 @@ CbmBlastWave::CbmBlastWave(Int_t recoLevel, Int_t iVerbose, TString Mode, Int_t 
   //ekin(ekin_),
   //fusePID(usePID),
   ekin(ekin_),
+  p0cm(5.),
+  ycm(2.),
+  fUpdate(true),
+  fusePID(true),
   fRecoLevel(recoLevel),
+  fTrackNumber(1),
+  fEventStats(EventStats),
+  events(0),
+  fModeName(Mode),
+  outfileName(""),
+  histodir(0),
+  flistMCTracks(0),
+  IndexT(0), IndexMt(0), IndexModelMt(0), 
+  IndexMt2(0), IndexModelMt2(0), IndexModelMt4Pi(0),
+  histodndy(0), histodndymodel(0),
+  histoeta(0), histodndymodel2(0),
+  histomult(0), histomultmodel(0),
+  histo1DIntervals(0),
+  grTy(0),
+  grdndyReco(0),
+  pullT(0),
+  Ts(),
+  kProtonMass(0.938271998),
   //fTrackNumber(trackNumber),
   //flistStsTracks(0),
   //flistStsTracksMatch(0),
   //fPrimVtx(0),
   //flsitGlobalTracks(0),
   //flistTofHits(0),
-  histodir(0),
-  flistMCTracks(0),
   fPDGID(PDG),
-  totalEvents(0)
+  fMass(TDatabasePDG::Instance()->GetParticle(fPDGID)->Mass()),
+  fYminv(), fYmaxv(),
+  paramGlobal(0), paramGlobalInterval(0), param2GlobalInterval(0),
+  paramLocal(0), paramLocalInterval(0),
+  totalLocal(0), totalGlobal(0),
+  totalGlobalInterval(0),
+  totalLocalInterval(0),
+  y2Local(0.), y2Global(0.), y4Local(0.), y4Global(0.),
+  totalEvents(0),
+  model(0), modelmc(0), 
+  modelL(0), modelmcL(0),
+  modelsY(0)
 //  flistRichRings(0),
 //  flistTrdTracks(0),
   
 {
-  fModeName = Mode;
-  fEventStats = EventStats;
-  fMass = TDatabasePDG::Instance()->GetParticle(fPDGID)->Mass();
+  // fModeName = Mode;
+  // fEventStats = EventStats;
+  // fMass = TDatabasePDG::Instance()->GetParticle(fPDGID)->Mass();
   
-  events = 0;
+  // events = 0;
   Ts.resize(0);
   
   //PPDG = 2212;
-  kProtonMass = 0.938271998;
+  // kProtonMass = 0.938271998;
   
   double pbeam = sqrt((kProtonMass+ekin)*(kProtonMass+ekin)-kProtonMass*kProtonMass);
   double betacm = pbeam / (2.*kProtonMass+ekin);
@@ -481,14 +512,14 @@ void CbmBlastWave::Exec()
 	  histoeta->Fill(etamax);
 	  
 	  //std::cout << "T = " << T << "\n";
-	  histomult->SetBinContent(totalEvents, totalLocal / (double)(fEventStats));
-	  histomult->SetBinError(totalEvents, 0.*sqrt(totalLocal) / (double)(fEventStats));
+	  histomult->SetBinContent(totalEvents, totalLocal / static_cast<double>(fEventStats));
+	  histomult->SetBinError(totalEvents, 0.*sqrt(totalLocal) / static_cast<double>(fEventStats));
 	  double s1 = y2Local;
 	  double s2 = y4Local;
 	  int  Numb = totalLocal;
 	  double erretamax = modelL->detady2(y2Local / totalLocal) * TMath::Sqrt((s2 - s1*s1 / Numb) / (Numb-1.) / Numb);
-	  histomultmodel->SetBinContent(totalEvents, modelL->GetA(totalLocal / (double)(fEventStats), etamax));
-	  histomultmodel->SetBinError(totalEvents, modelL->GetAerror(totalLocal / (double)(fEventStats), etamax, 0.*TMath::Sqrt(totalLocal) / (double)(fEventStats), erretamax));
+	  histomultmodel->SetBinContent(totalEvents, modelL->GetA(totalLocal / static_cast<double>(fEventStats), etamax));
+	  histomultmodel->SetBinError(totalEvents, modelL->GetAerror(totalLocal / static_cast<double>(fEventStats), etamax, 0.*TMath::Sqrt(totalLocal) / static_cast<double>(fEventStats), erretamax));
 	  
 	  events = 0;
 	  paramLocal = 0.;
@@ -563,8 +594,8 @@ void CbmBlastWave::Finish(){
 	grTy->SetPointError(grindex, 0.*0.5*(fYmaxv[ind]-fYminv[ind]), errT*1.e3);
 	//std::cout << T << " " << errT << "\n";
 	
-	double A = modelsY[ind]->GetA(totalGlobalInterval[ind] / (double)(totalEvents), T);
-	double errA = modelsY[ind]->GetAerror(totalGlobalInterval[ind] / (double)(totalEvents), T, sqrt(totalGlobalInterval[ind]) / (double)(totalEvents), errT);
+	double A = modelsY[ind]->GetA(totalGlobalInterval[ind] / static_cast<double>(totalEvents), T);
+	double errA = modelsY[ind]->GetAerror(totalGlobalInterval[ind] / static_cast<double>(totalEvents), T, sqrt(totalGlobalInterval[ind]) / static_cast<double>(totalEvents), errT);
 	std::cout << "A = " << A << " error = " << errA << "\n";
 	grdndyReco->SetPoint(grindex, 0.5*(fYminv[ind]+fYmaxv[ind]), A / (fYmaxv[ind]-fYminv[ind]));
 	grdndyReco->SetPointError(grindex, 0.*0.5*(fYmaxv[ind]-fYminv[ind]), errA / (fYmaxv[ind]-fYminv[ind]));
@@ -611,11 +642,11 @@ void CbmBlastWave::Finish(){
   
   //double y2av = 0., y2norm = 0.;
   for(int n = 1; n < histodndymodel2->GetNbinsX(); n++) {
-	  histodndymodel2->SetBinContent(n, modelL->GetA(totalGlobal / (double)(totalEvents), etamax) * modelmcL->fy(histodndymodel2->GetXaxis()->GetBinCenter(n), etamax));
+	  histodndymodel2->SetBinContent(n, modelL->GetA(totalGlobal / static_cast<double>(totalEvents), etamax) * modelmcL->fy(histodndymodel2->GetXaxis()->GetBinCenter(n), etamax));
   }
   
-  std::cout << "<" << name << "> = " << modelL->GetA(totalGlobal / (double)(totalEvents), etamax) << " error = " 
-				<< modelL->GetAerror(totalGlobal / (double)(totalEvents), etamax, TMath::Sqrt(totalGlobal) / (double)(totalEvents), erretamax) << "\n";
+  std::cout << "<" << name << "> = " << modelL->GetA(totalGlobal / static_cast<double>(totalEvents), etamax) << " error = " 
+				<< modelL->GetAerror(totalGlobal / static_cast<double>(totalEvents), etamax, TMath::Sqrt(totalGlobal) / static_cast<double>(totalEvents), erretamax) << "\n";
   
   //std::cout << "<y2>4 = " << y2av / y2norm << "\n";
 }
@@ -627,7 +658,8 @@ void CbmBlastWave::CalculateAveragesInEvent(int RecoLevel, bool UpdateGlobal) {
 	std::cout << "MC tracks: " << nTracksMC << "\n";
     vRTracksMC.resize(nTracksMC);
     for(int iTr=0; iTr<nTracksMC; iTr++)
-      vRTracksMC[iTr] = *( (CbmMCTrack*) flistMCTracks->At(iTr));
+      // vRTracksMC[iTr] = *( (CbmMCTrack*) flistMCTracks->At(iTr));
+	  vRTracksMC[iTr] = *( static_cast<CbmMCTrack*> ( flistMCTracks->At(iTr) ) );
 	  
 	for(int iTr=0; iTr<nTracksMC; iTr++) {
 	    if (vRTracksMC[iTr].GetPdgCode()==fPDGID && vRTracksMC[iTr].GetMotherId()==-1) {

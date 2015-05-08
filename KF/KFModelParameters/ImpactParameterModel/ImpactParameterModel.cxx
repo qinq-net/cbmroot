@@ -3,7 +3,9 @@
 #include <fstream>
 
 
-ImpactParameterModel::ImpactParameterModel(std::string filename) {
+ImpactParameterModel::ImpactParameterModel(std::string filename):
+	bfromN(), bfromNerror()
+ {
 	std::fstream fin(filename.c_str(), std::fstream::in);
 	int tot = 0;
 	fin >> tot;

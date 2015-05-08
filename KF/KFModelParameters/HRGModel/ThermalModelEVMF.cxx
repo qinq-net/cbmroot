@@ -163,8 +163,8 @@ void ThermalModelEVMF::CalculateDensities() {
 		double xold = x, rold = r1;
 		for(int iter=1;iter<=MAXITS;++iter) {
 			x = xold - Jinv*rold;
-			if (fMode==0 && x*vo>1.) x = 1./vo * (rand()/(double)(RAND_MAX));
-			if (fMode==1 && x*vo>0.5) x = 0.5 / vo * (rand()/(double)(RAND_MAX));
+			if (fMode==0 && x*vo>1.) x = 1./vo * (rand()/static_cast<double>(RAND_MAX));
+			if (fMode==1 && x*vo>0.5) x = 0.5 / vo * (rand()/static_cast<double>(RAND_MAX));
 			r1 = x - Density(x);
 			Jinv = (x - xold) / (r1 - rold);
 			if (fabs(r1)<TOLF) break;
@@ -188,10 +188,10 @@ void ThermalModelEVMF::CalculateDensities() {
 	}
 
 	for(unsigned int i=0;i<TPS->fParticles.size();++i) densities[i] = densitiesid[i];// / fSuppression;
-    for(int i=0;i<(int)TPS->fParticles.size();++i) {
+    for(int i=0;i<static_cast<int>(TPS->fParticles.size());++i) {
         {
             densitiestotal[i] = densities[i];
-            for(int j=0;j<(int)TPS->fParticles[i].ResonanceBR.size();++j)
+            for(int j=0;j<static_cast<int>(TPS->fParticles[i].ResonanceBR.size());++j)
                 if (i!=TPS->fParticles[i].ResonanceBR[j].second) densitiestotal[i] += TPS->fParticles[i].ResonanceBR[j].first * densities[TPS->fParticles[i].ResonanceBR[j].second];
         }
     }
