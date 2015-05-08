@@ -47,13 +47,27 @@ class CbmStsStation_new : public CbmStsElement {
 		Double_t GetYmax() const { return fYmax; }
 
 
-		/** Sensor thickness **/
+		/** Sensor thickness
+   	 ** @value Thickness (extension in z) of first sensor [cm]
+   	 **
+     ** This return the thickness of the first sensor in the station.
+		 ** Needed by L1/KF.
+		 ** Note that in general, sensors of different thicknesses can be
+		 ** in the station. In this case, a warning message is issued when
+		 ** the station properties are initialised.
+	   **/
 		Double_t GetSensorD() const { return fSensorD; }
 
 
 		/** Get sensor strip pitch
 		 ** @param iSide  Sensor side (0 = front, 1 = back)
 		 ** @value Strip pitch [cm]
+   	 **
+     ** This return the strip pitch of the first sensor in the station.
+     ** Valid only for sensors of type DSSD.
+		 ** Needed by L1/KF.
+		 ** Note that in general, sensors of different pitches can be
+		 ** in the station.
 		 **/
 		Double_t GetSensorPitch(Int_t iSide) const;
 
@@ -61,16 +75,35 @@ class CbmStsStation_new : public CbmStsElement {
 		/** Get sensor stereo angle
 		 ** @param iSide  Sensor side (0 = front, 1 = back)
 		 ** @value Stereo angle [degrees]
+   	 **
+     ** This return the strip stereo angle of the first sensor in the station.
+     ** Valid only for sensors of type DSSD.
+		 ** Needed by L1/KF.
+		 ** Note that in general, sensors of different stereo angles can be
+		 ** in the station.
 		 **/
 		Double_t GetSensorStereoAngle(Int_t iSide) const;
 
 
-		/** Sensor rotation **/
-		// TODO: Unclear which rotation angle should be delivered. To discuss with L1.
-		Double_t GetSensorRot() const { return 0.; }
+
+		/** Sensor rotation
+		 ** @value Rotation of first sensor in station in global C.S. [rad]
+		 **
+     ** This return the rotation angle in the x-y plane of the first sensor
+     ** in the station w.r.t. the global C.S.
+		 ** Needed by L1/KF.
+		 ** Note that in general, the rotation angle will be different for each
+		 ** sensor. In particular, half of the are upside down.
+		 **/
+		Double_t GetSensorRotation() const;
 
 
-		/** Station z position in global c.s. **/
+
+		/** Station z position in global c.s.
+		 ** @value  z Position of station in global C.S. [cm]
+		 **
+		 ** Calculated from the sensor positions (mean between min z and max z)
+		 **/
 		Double_t GetZ() const { return fZ; }
 
 

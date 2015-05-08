@@ -76,7 +76,7 @@ void CbmStsStation_new::CheckSensorProperties() {
 
   				// Get sensor z position
   		    TGeoPhysicalNode* sensorNode = sensor->GetPnode();
-  		    // --- Transform entry coordinates into local C.S.
+  		    // --- Transform sensor centre into global C.S.
   		    Double_t local[3] = {0., 0., 0.};  // sensor centre, local c.s.
    		    Double_t global[3];                // sensor centre, global c.s.
     		  sensorNode->GetMatrix()->LocalToMaster(local, global);
@@ -131,7 +131,21 @@ Double_t CbmStsStation_new::GetSensorPitch(Int_t iSide) const {
 
 
 
-// -----   Stereo angle    --------------------------------------------------
+// -----   Rotation    -----------------------------------------------------
+// N.B.: Implementation is only correct if the first sensor is only rotated
+// in the x-y plane.
+Double_t CbmStsStation_new::GetSensorRotation() const {
+	TGeoPhysicalNode* sensorNode = fFirstSensor->GetNode();
+	Double_t local[3] = {1., 0., 0.}; // unit vector on local x axis
+	Double_t global[3];    // unit vector in global C.S.
+	sensorNode->GetMatrix()->LocalToMaster(local, global);
+	return atan2(global[1], global[0]); // angle from global to local x-axis
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Stereo angle    -------------------------------------------------
 Double_t CbmStsStation_new::GetSensorStereoAngle(Int_t iSide) const {
 	if ( iSide < 0 || iSide > 1 ) {
 		LOG(FATAL) << GetName() << ": illegal side identifier!"
@@ -175,11 +189,11 @@ void CbmStsStation_new::Init() {
 		LOG(WARNING) << GetName() << ": Different values for sensor thickness!"
 		             << FairLogger::endl;
 }
-// -------------------------------------------------------------------------
+// --------------------------------------------------------------------------
 
 
 
-// -----   Info   ----------------------------------------------------------
+// -----   Info   -----------------------------------------------------------
 string CbmStsStation_new::ToString() const
 {
    stringstream ss;
@@ -193,7 +207,7 @@ string CbmStsStation_new::ToString() const
 
    return ss.str();
 }
-// -------------------------------------------------------------------------
+// --------------------------------------------------------------------------
 
 ClassImp(CbmStsStation_new)
 
