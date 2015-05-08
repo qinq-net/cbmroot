@@ -96,28 +96,45 @@ CbmHRGModel::CbmHRGModel(Int_t recoLevel, Int_t iVerbose, TString Mode, Int_t Ev
 			   Bool_t useStatistics,
 			   Double_t rad):
   CbmModelBase(tr),
-  //ekin(ekin_),
-  //fusePID(usePID),
+  ekin(25.),
+  ycm(1.),
+  fUpdate(true),
+  fusePID(true), //fusePID(usePID),
   fRecoLevel(recoLevel),
-  //fTrackNumber(trackNumber),
+  fTrackNumber(1),//fTrackNumber(trackNumber),
+  fEventStats(EventStats),
+  events(0),
   //flistStsTracks(0),
   //flistStsTracksMatch(0),
   //fPrimVtx(0),
   fUseWidth(useWidth),
   fUseStatistics(useStatistics),
   fRadius(rad),
+  fModeName(Mode),
   //flsitGlobalTracks(0),
   //flistTofHits(0),
+  outfileName(""),
   histodir(0),
-  flistMCTracks(0)
+  flistMCTracks(0),
+  IndexTemperature(0), IndexErrorTemperature(0), IndexMuB(0), IndexErrorMuB(0), IndexMuS(0), IndexErrorMuS(0), IndexMuQ(0), IndexErrorMuQ(0),
+	    IndexnB(0), IndexEnergy(0), IndexEntropy(0), IndexPressure(0), IndexEoverN(0), IndexEtaoverS(0), IndexChi2Fit(0),
+		IndexTmuB(0), IndexTnB(0), IndexTE(0),
+		grTmuB(NULL), pullT(NULL), pullmuB(NULL),
+		Ts(), muB(), errT(), errmuB(),
+		PDGtoIndex(), ParticlePDGsTrack(),
+		ParticleNames(), RatiosToFit(),
+		SystErrors(), MultGlobal(), MultLocal(),
+		AcceptanceSTS(), AcceptanceSTSTOF(),
+		TPS(), model(NULL)
+		
 //  flistRichRings(0),
 //  flistTrdTracks(0),
   
 {
-  fModeName = Mode;
-  fEventStats = EventStats;
+  // fModeName = Mode;
+  // fEventStats = EventStats;
   
-  events = 0;
+  // events = 0;
   Ts.resize(0);
   muB.resize(0);
   errT.resize(0);
@@ -521,7 +538,7 @@ bool CbmHRGModel::checkIfReconstructable(CbmKFTrErrMCPoints *inTrack)
   if (fusePID==2 && tofHits==0) return 0;
   vector<int> hitz(0);
   for(int hit=0;hit<stsHits;++hit) {
-    hitz.push_back((int)((inTrack->GetStsPoint(hit)->GetZ()+5.)/10.));
+    hitz.push_back(static_cast<int>((inTrack->GetStsPoint(hit)->GetZ()+5.)/10.));
   }
   sort(hitz.begin(), hitz.end());
   for(int hit1=0;hit1<stsHits-3;++hit1)
@@ -597,7 +614,8 @@ void CbmHRGModel::CalculateMultiplicitiesInEvent(std::vector<int> & Mult, int Re
 	std::cout << "MC tracks: " << nTracksMC << "\n";
     vRTracksMC.resize(nTracksMC);
     for(int iTr=0; iTr<nTracksMC; iTr++)
-      vRTracksMC[iTr] = *( (CbmMCTrack*) flistMCTracks->At(iTr));
+      //vRTracksMC[iTr] = *( (CbmMCTrack*) flistMCTracks->At(iTr));
+	  vRTracksMC[iTr] = *( dynamic_cast<CbmMCTrack*>(flistMCTracks->At(iTr)));
 	  
 	for(int iTr=0; iTr<nTracksMC; iTr++) {
 	  //iTr = ((CbmTrackMatch*)flistStsTracksMatch->At(iTrs))->GetMCTrackId();

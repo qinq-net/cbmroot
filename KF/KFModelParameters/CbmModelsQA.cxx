@@ -65,11 +65,16 @@ ClassImp(CbmModelsQA)
 
 CbmModelsQA::CbmModelsQA(Int_t iVerbose, int findParticlesMode, int perf, KFParticleTopoReconstructor *tr, const char *name, const char *title, float ekin_):
   FairTask(name,iVerbose),
+  fPrimVtx(NULL),
   outfileName("CbmModelsQA.root"),
   histodir(0),
+  vStsHitMatch(), vStsPointMatch(),
+  vMvdPointMatch(), vMCTrackMatch(),
   fNEvents(0),
   fTopoReconstructor(tr),
-  ekin(ekin_)
+  ekin(ekin_),
+  Models(),
+  histodirmod(NULL)
 {
   TDirectory *currentDir = gDirectory;
   
@@ -190,14 +195,16 @@ void CbmModelsQA::AddHRGAnalysis(int TracksType, double SystError, TString name,
 	//HRGModel->AddRatio(3122, -211, SystError);	//Lambda/pi- 
 	
 	
-    Models.push_back((CbmModelBase*)HRGModel);
+    //Models.push_back((CbmModelBase*)HRGModel);
+	Models.push_back(static_cast<CbmModelBase*>(HRGModel));
 }
 
 void CbmModelsQA::AddMultiscatteringAnalysis(int TracksType, double SystError, TString name, int EventStats) {
 
 	CbmMultiscatteringModel *MultiscatteringModel = new CbmMultiscatteringModel(TracksType, 1, name, EventStats, fTopoReconstructor, ekin);
 	
-    Models.push_back((CbmMultiscatteringModel*)MultiscatteringModel);
+    // Models.push_back((CbmMultiscatteringModel*)MultiscatteringModel);
+	Models.push_back(static_cast<CbmMultiscatteringModel*>(MultiscatteringModel));
 }
 
 void CbmModelsQA::AddInverseSlopeAnalysis(int PDGID, const char *pname, int TracksType, double SystError, TString name, int EventStats)
@@ -227,14 +234,16 @@ void CbmModelsQA::AddInverseSlopeAnalysis(int PDGID, const char *pname, int Trac
 	//InverseSlope->AddRapidityInterval(1.8, 2.0);
 	InverseSlope->AddHistos();
 	
-    Models.push_back((CbmInverseSlope*)InverseSlope);
+    // Models.push_back((CbmInverseSlope*)InverseSlope);
+	Models.push_back(static_cast<CbmInverseSlope*>(InverseSlope));
 }
 
 void CbmModelsQA::AddBoltzmannAnalysis(int PDGID, const char *pname, int TracksType, double SystError, TString name, int EventStats)
 {
 	CbmBoltzmannDistribution *BoltzmannDistribution = new CbmBoltzmannDistribution(TracksType, 1, name, PDGID, TString(pname), EventStats, fTopoReconstructor, ekin);
 
-    Models.push_back((CbmBoltzmannDistribution*)BoltzmannDistribution);
+    // Models.push_back((CbmBoltzmannDistribution*)BoltzmannDistribution);
+	Models.push_back(static_cast<CbmBoltzmannDistribution*>(BoltzmannDistribution));
 }
 
 void CbmModelsQA::AddBlastWaveAnalysis(int PDGID, const char *pname, int TracksType, double SystError, TString name, int EventStats, double Tlong)
@@ -254,12 +263,14 @@ void CbmModelsQA::AddBlastWaveAnalysis(int PDGID, const char *pname, int TracksT
 	// BlastWave->AddRapidityInterval(1.2, 1.4);
 	// BlastWave->AddHistos();
 	
-    Models.push_back((CbmBlastWave*)BlastWave);
+    // Models.push_back((CbmBlastWave*)BlastWave);
+	Models.push_back(static_cast<CbmBlastWave*>(BlastWave));
 }
 
 void CbmModelsQA::AddImpactParameterAnalysis(int TracksType, double SystError, TString name, TString InputTable) {
 	
 	CbmImpactParameterModel *ImpactParameterModel = new CbmImpactParameterModel(TracksType, 1, name, fTopoReconstructor, ekin, InputTable);
 	
-    Models.push_back((CbmImpactParameterModel*)ImpactParameterModel);
+    // Models.push_back((CbmImpactParameterModel*)ImpactParameterModel);
+	Models.push_back(static_cast<CbmImpactParameterModel*>(ImpactParameterModel));
 }

@@ -12,7 +12,7 @@ struct FitParameter {
 	double xmin, xmax;
 	std::string name;
 	FitParameter(std::string name_="", bool toFit_=true, double val=1., double err=0., double vmin=-2., double vmax=2.):
-		toFit(toFit_), value(val), error(err), xmin(vmin), xmax(vmax) {
+		toFit(toFit_), value(val), error(err), xmin(vmin), xmax(vmax), name("") {
 		}
 };
 
@@ -20,8 +20,14 @@ struct ThermalModelFitParametersExtended {
     FitParameter T, muB, muS, muQ, gammaS, V;
     double chi2ndf;
     FitParameter nB, rhoB, rhoQ, en, entropy, pressure, eta;
-    ThermalModelFitParametersExtended() { }
-    ThermalModelFitParametersExtended(ThermalModelBase *model) {
+    ThermalModelFitParametersExtended():
+		T(), muB(), muS(), muQ(), gammaS(), V(), chi2ndf(),
+		nB(), rhoB(), rhoQ(), en(), entropy(), pressure(), eta()
+		{ }
+    ThermalModelFitParametersExtended(ThermalModelBase *model):
+			T(), muB(), muS(), muQ(), gammaS(), V(), chi2ndf(),
+			nB(), rhoB(), rhoQ(), en(), entropy(), pressure(), eta() 
+	{
         T.value = model->Parameters.T;
         muB.value = model->Parameters.muB;
         muS.value = model->Parameters.muS;
@@ -41,15 +47,23 @@ struct ThermalModelFitParametersExtended {
 struct ThermalModelFitParameters {
     FitParameter T, muB, muS, muQ, gammaS, V, R;
     double chi2ndf;
-    ThermalModelFitParameters(double T_=0.12, double muB_=0.5, double muS_=0.1, double muQ_=-0.01, double gammaS_=1., double V_ = 4000., double R_=1.)
+    ThermalModelFitParameters(double T_=0.12, double muB_=0.5, double muS_=0.1, double muQ_=-0.01, double gammaS_=1., double V_ = 4000., double R_=1.):
+		T(FitParameter("T", true, T_, 0.05, 0.05, 0.18)),
+		muB(FitParameter("muB", true, muB_, 0.05, 0., 1.)),
+		muS(FitParameter("muS", false, muS_)),
+		muQ(FitParameter("muQ", false, muQ_)),
+		gammaS(FitParameter("gammaS", false, gammaS_, 0.2, 0.5, 1.5)),
+		V(FitParameter("V", true, V_, 2000., 1., 20000.)),
+		R(FitParameter("R", false, R_, 0., 0., 100.)),
+		chi2ndf(1.)
 	{
-		T = FitParameter("T", true, T_, 0.05, 0.05, 0.18);
-		muB = FitParameter("muB", true, muB_, 0.05, 0., 1.);
-		muS = FitParameter("muS", false, muS_);
-		muQ = FitParameter("muQ", false, muQ_);
-        gammaS = FitParameter("gammaS", false, gammaS_, 0.2, 0.5, 1.5);
-        V = FitParameter("V", true, V_, 2000., 1., 20000.);
-		R = FitParameter("R", false, R_, 0., 0., 100.);
+		// T = FitParameter("T", true, T_, 0.05, 0.05, 0.18);
+		// muB = FitParameter("muB", true, muB_, 0.05, 0., 1.);
+		// muS = FitParameter("muS", false, muS_);
+		// muQ = FitParameter("muQ", false, muQ_);
+        // gammaS = FitParameter("gammaS", false, gammaS_, 0.2, 0.5, 1.5);
+        // V = FitParameter("V", true, V_, 2000., 1., 20000.);
+		// R = FitParameter("R", false, R_, 0., 0., 100.);
 	}
 	FitParameter GetParamater(const std::string& name) const {
 		if (T.name==name) return T;
@@ -109,9 +123,12 @@ struct ExperimentRatio {
 	ExperimentRatio(int PDGID1_ = 211, int PDGID2_ = -211, double value_ = 1., double error_ = 0.1):
 		PDGID1(PDGID1_), PDGID2(PDGID2_), value(value_), error(error_) { }
 	ExperimentRatio(int PDGID1_, int PDGID2_, double value1, double error1, double value2, double error2):
-		PDGID1(PDGID1_), PDGID2(PDGID2_) { 
-			value = value1 / value2;
-			error = sqrt(error1*error1 / value2 / value2 + value1 * value1 / value2  / value2  / value2  / value2  * error2 * error2);
+		PDGID1(PDGID1_), PDGID2(PDGID2_),
+		value(value1 / value2),
+		error(sqrt(error1*error1 / value2 / value2 + value1 * value1 / value2  / value2  / value2  / value2  * error2 * error2))
+		{ 
+			// value = value1 / value2;
+			// error = sqrt(error1*error1 / value2 / value2 + value1 * value1 / value2  / value2  / value2  / value2  * error2 * error2);
 			//error += value * 0.05;
 		}
     void addSystematicError(double percent) {
@@ -123,17 +140,25 @@ struct FittedQuantity {
     int type; // 0 - Multiplicity, 1 - Ratio
     ExperimentMultiplicity mult;
     ExperimentRatio ratio;
-    FittedQuantity() {
-        type = 0;
-        mult = ExperimentMultiplicity(-211, 10., 1.);
+    FittedQuantity():
+		type(0),
+		mult(ExperimentMultiplicity(-211, 10., 1.)),
+		ratio()
+	{
+        // type = 0;
+        // mult = ExperimentMultiplicity(-211, 10., 1.);
     }
-    FittedQuantity(const ExperimentMultiplicity & op) {
-        type = 0;
-        mult = op;
+    FittedQuantity(const ExperimentMultiplicity & op):
+		type(0), mult(op), ratio()
+	{
+        // type = 0;
+        // mult = op;
     }
-    FittedQuantity(const ExperimentRatio & op) {
-        type = 1;
-        ratio = op;
+    FittedQuantity(const ExperimentRatio & op):
+		type(1), mult(), ratio(op)
+	{
+        // type = 1;
+        // ratio = op;
     }
 };
 
@@ -149,7 +174,11 @@ public:
     std::vector<ExperimentMultiplicity> Multiplicities;
 	std::vector<ExperimentRatio> Ratios;
     ThermalModelFit(ThermalModelBase *model_, double T=0.12, double muB=0.5, double muS=0., double muQ=0., double gammaS=1., double V=4000., double R=1.):
-            model(model_), Parameters(T, muB, muS, muQ, gammaS, V, R)
+            model(model_), Parameters(T, muB, muS, muQ, gammaS, V, R),
+			ExtendedParameters(),
+			QBgoal(0.4),
+			Multiplicities(),
+			Ratios()
     {
         Multiplicities.resize(0);
         Ratios.resize(0);
@@ -189,6 +218,9 @@ public:
     double chi2Ndf(double T, double muB);
 
 	ThermalModelFitParameters PerformFit();
+	
+	ThermalModelFit(const ThermalModelFit&);
+    ThermalModelFit& operator=(const ThermalModelFit&);
 };
 
 std::vector<FittedQuantity> loadExpDataFromFile(const std::string & filename);

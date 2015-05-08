@@ -3,7 +3,6 @@
 #include <cmath>
 #include <iostream>
 #include "xMath.h"
-#include <omp.h>
 
 using namespace std;
 

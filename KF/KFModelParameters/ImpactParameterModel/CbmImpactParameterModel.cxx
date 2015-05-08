@@ -79,7 +79,16 @@ CbmImpactParameterModel::CbmImpactParameterModel(Int_t recoLevel, Int_t iVerbose
   //ekin(ekin_),
   //fusePID(usePID),
   ekin(ekin_),
+  p0cm(5.),
+  ycm(2.),
+  fUpdate(true),
+  fusePID(true),
   fRecoLevel(recoLevel),
+  fTrackNumber(0),
+  fEventStats(1),
+  events(0),
+  fModeName(Mode),
+  outfileName(""),
   //fTrackNumber(trackNumber),
   //flistStsTracks(0),
   //flistStsTracksMatch(0),
@@ -91,18 +100,25 @@ CbmImpactParameterModel::CbmImpactParameterModel(Int_t recoLevel, Int_t iVerbose
   //flistTofHits(0),
   histodir(0),
   flistMCTracks(0),
+  MCEvent(0),
+  Indexb(0), IndexNwp(0), IndexNpe(0), IndexbMC(0), Indexbpe(0), 
+  IndexbpeMC(0), Indexbdiff(0), Indexbres(0), Indexbpull(0),
+  totalEvents(0),
+  PPDG(2212),
+  kProtonMass(0.938271998),
 //  fCor(0.62)
-  fCor(0.40)
+  fCor(0.40),
+  model(NULL)
 //  flistRichRings(0),
 //  flistTrdTracks(0),
   
 {
-  fModeName = Mode;
+  // fModeName = Mode;
   
-  events = 0;
+  // events = 0;
   
-  PPDG = 2212;
-  kProtonMass = 0.938271998;
+  // PPDG = 2212;
+  // kProtonMass = 0.938271998;
   
   //PDGtoIndex.clear();
   

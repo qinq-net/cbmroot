@@ -43,6 +43,7 @@ namespace HRGModelNamespace {
 	  BilinearSplineFunction sfunc;
 	  void setSpline() { sfunc.setData(ys, pts, probs); }
 	  Double_t getAcceptance(const Double_t & y, const Double_t & pt) const;
+	  AcceptanceFunction():dy(), dpt(), ys(), pts(), probs(), sfunc() { }
 	};
 	
 	struct ReconstructionEfficiencyFunction {

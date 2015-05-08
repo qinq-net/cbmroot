@@ -26,8 +26,8 @@ class SplineFunction
 {
 public:
     vector< pair<double, double> > vals;
-    SplineFunction() { vals.resize(0); }
-    SplineFunction(vector<double> x, vector<double> y)
+    SplineFunction():vals() { vals.resize(0); }
+    SplineFunction(vector<double> x, vector<double> y):vals()
     {
         for(unsigned int i=0;i<x.size();++i)
         {

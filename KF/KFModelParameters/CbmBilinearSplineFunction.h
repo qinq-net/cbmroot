@@ -23,8 +23,8 @@ class BilinearSplineFunction
 	vector<double> xs;
 	vector<SplineFunction> xspls;
 public:
-	BilinearSplineFunction(void) { xs.resize(0); xspls.resize(0); }
-	BilinearSplineFunction(const vector<double> & x, const vector<double> & y, const vector<double> & vals)
+	BilinearSplineFunction(void):xs(), xspls() { xs.resize(0); xspls.resize(0); }
+	BilinearSplineFunction(const vector<double> & x, const vector<double> & y, const vector<double> & vals):xs(), xspls()
     {
 		setData(x, y, vals);
     }

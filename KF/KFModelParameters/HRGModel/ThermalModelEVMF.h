@@ -19,6 +19,9 @@ public:
 	int fMode;
     ThermalModelEVMF(ThermalParticleSystem *TPS_, double T=0.16, double muB=0.23, double muS=0.1, double muQ=-0.01, double gammaS=1., double V=4000., double R=1., int mode=0):
         ThermalModelBase(TPS_, T, muB, muS, muQ, gammaS, V, R),
+		densitiesid(),
+		fSuppression(1.),
+		fDensity(0.),
         RHad(R),
 		fMode(mode)
 			{
@@ -28,6 +31,9 @@ public:
 			}
 	ThermalModelEVMF(ThermalParticleSystem *TPS_, const ThermalModelParameters& params, double RHad_ = 0., int mode=0):
         ThermalModelBase(TPS_, params),
+		densitiesid(),
+		fSuppression(1.),
+		fDensity(0.),
 		RHad(RHad_),
 		fMode(mode)
 		{
@@ -142,12 +148,12 @@ public:
 
     virtual double GetParticlePrimordialDensity(int part) {
         if (!fCalculated) CalculateDensities();
-        if (part>=(int)densities.size()) return 0.;
+        if (part>=static_cast<int>(densities.size())) return 0.;
         return densities[part];
     }
     virtual double GetParticleTotalDensity(int part) {
         if (!fCalculated) CalculateDensities();
-        if (part>=(int)densitiestotal.size()) return 0.;
+        if (part>=static_cast<int>(densitiestotal.size())) return 0.;
         return densitiestotal[part];
     }
 

@@ -40,7 +40,7 @@ public:
     ThermalParticle(bool Stable_=true, std::string Name="hadron", int PDGID=0, int SpinDeg=1, int Stat=0, double Mass=0.,
                     int Strange=0, int Baryon=0, int Charge=0, double AbsS=0., double Width=0., double Threshold=0., std::string DecayName="pi0", int Charm = 0, double AbsC = 0., double radius = 0.5):
                     fStable(Stable_), fName(Name), fPDGID(PDGID), fSpinDegeneracy(SpinDeg), fStatistics(Stat), fMass(Mass),
-                    fS(Strange), fB(Baryon), fC(Charge), fCharm(Charm), fAbsS(AbsS), fAbsC(AbsC), fWidth(Width), fThreshold(Threshold), fRadius(radius), fDecayName(DecayName) {
+                    fS(Strange), fB(Baryon), fC(Charge), fCharm(Charm), fAbsS(AbsS), fAbsC(AbsC), fWidth(Width), fThreshold(Threshold), fRadius(radius), fDecayName(DecayName), fDecays(), fDecaysOrig(), ResonanceBR() {
                         ResonanceBR.resize(0);
                         //fWidth = 1e-10;
                     }

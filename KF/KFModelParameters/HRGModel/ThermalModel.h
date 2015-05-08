@@ -38,12 +38,12 @@ public:
             }
 
         //#pragma omp parallel for
-		for(int i=0;i<(int)TPS->fParticles.size();++i) {
+		for(int i=0;i<static_cast<int>(TPS->fParticles.size());++i) {
             //if (TPS->fParticles[i].fStable==0) densitiestotal[i] = 0.;
             //else
             {
 				densitiestotal[i] = densities[i];
-				for(int j=0;j<(int)TPS->fParticles[i].ResonanceBR.size();++j)
+				for(int j=0;j<static_cast<int>(TPS->fParticles[i].ResonanceBR.size());++j)
                     if (i!=TPS->fParticles[i].ResonanceBR[j].second) densitiestotal[i] += TPS->fParticles[i].ResonanceBR[j].first * densities[TPS->fParticles[i].ResonanceBR[j].second];
 			}
 		}
@@ -51,12 +51,12 @@ public:
 	}
     virtual double GetParticlePrimordialDensity(int part) {
         if (!fCalculated) CalculateDensities();
-        if (part>=(int)densities.size()) return 0.;
+        if (part>=static_cast<int>(densities.size())) return 0.;
         return densities[part];
     }
     virtual double GetParticleTotalDensity(int part) {
         if (!fCalculated) CalculateDensities();
-        if (part>=(int)densitiestotal.size()) return 0.;
+        if (part>=static_cast<int>(densitiestotal.size())) return 0.;
         return densitiestotal[part];
     }
     virtual double CalculateHadronDensity() {

@@ -25,7 +25,7 @@ namespace ThermalModelFitNamespace {
 
 	public:
 
-	  RatiosFCN(ThermalModelFit *thmfit_):THMFit(thmfit_) { 
+	  RatiosFCN(ThermalModelFit *thmfit_):THMFit(thmfit_), iter(0) { 
 	  }
 
 	  ~RatiosFCN() {}
@@ -60,6 +60,9 @@ namespace ThermalModelFitNamespace {
 	  }
 
 	  double Up() const {return 1.;}
+	  
+	  RatiosFCN(const RatiosFCN&);
+      RatiosFCN& operator=(const RatiosFCN&);
 
 	private:
 	  ThermalModelFit *THMFit;
@@ -239,8 +242,8 @@ using namespace std;
 
 std::vector<FittedQuantity> loadExpDataFromFile(const std::string & filename) {
     std::vector<FittedQuantity> ret(0);
-    fstream fin;
-    fin.open(filename);
+    ifstream fin(filename.c_str());
+    //fin.open(filename);
     if (fin.is_open()) {
         string tmp;
         char tmpc[500];

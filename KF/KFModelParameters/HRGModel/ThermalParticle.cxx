@@ -72,7 +72,7 @@ double ThermalParticle::CalculateParticleDensity(double T, double muB, double mu
 	ret = 0.;
     if (tMass>70.) return 0.;
 	for(int i=1;i<10;++i) {
-        cur = xMath::BesselK(2, i*tMass) * exp(tMu*i - log(pow(gammaS, -fAbsS))*i) / (double)(i);
+        cur = xMath::BesselK(2, i*tMass) * exp(tMu*i - log(pow(gammaS, -fAbsS))*i) / i;
 		ret += Sign*cur;
         if (i!=1 && cur/ret<eps) break;
 		//prev = cur;

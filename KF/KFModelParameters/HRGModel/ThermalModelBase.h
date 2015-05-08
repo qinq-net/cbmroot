@@ -39,21 +39,38 @@ public:
         fCalculated(false),
         fNormBratio(false),
         fQuantumStats(true),
-        useOpenMP(0)
+		fUseHagedorn(false),
+		QBgoal(0.4),
+		fVolume(V),
+		useOpenMP(0),
+		densities(),
+		densitiestotal(),
+		fHag(),
+		fHagedornDensity(0.)
         {
-            QBgoal = 0.4;
-            fVolume = V;
+            // QBgoal = 0.4;
+            // fVolume = V;
             Parameters.muS = muB / 5.;
             Parameters.muQ = -muB / 50.;
-			fUseHagedorn = false;
+			// fUseHagedorn = false;
         }
     ThermalModelBase(/*std::string InputFile="",*/ ThermalParticleSystem *TPS_, const ThermalModelParameters& params):
         TPS(TPS_), 
         Parameters(params),
         fUseWidth(false),
-        fCalculated(false)
+        fCalculated(false),
+        fNormBratio(false),
+        fQuantumStats(true),
+		fUseHagedorn(false),
+		QBgoal(0.4),
+		fVolume(4000.),
+		useOpenMP(0),
+		densities(),
+		densitiestotal(),
+		fHag(),
+		fHagedornDensity(0.)
         {
-            QBgoal = 0.4;
+            // QBgoal = 0.4;
         }
     virtual ~ThermalModelBase(void) { }
     void SetUseWidth(bool useWidth) {
@@ -121,6 +138,9 @@ public:
     virtual double CalculateMesonMatterEntropyDensity() = 0;
     virtual double CalculatePressure() = 0;
     virtual double CalculateShearViscosity() = 0;
+	
+	ThermalModelBase(const ThermalModelBase&);
+    ThermalModelBase& operator=(const ThermalModelBase&);
 };
 
 #endif // THERMALMODELBASE_H

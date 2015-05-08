@@ -12,18 +12,22 @@ struct RapidityFitParameter {
 	double xmin, xmax;
 	std::string name;
 	RapidityFitParameter(std::string name_="", bool toFit_=true, double val=1., double err=0., double vmin=-2., double vmax=2.):
-		toFit(toFit_), value(val), error(err), xmin(vmin), xmax(vmax) {
+		toFit(toFit_), value(val), error(err), xmin(vmin), xmax(vmax), name("") {
 		}
 };
 
 struct RapidityFitParameters {
     RapidityFitParameter A, sig, yav;
     double chi2ndf;
-    RapidityFitParameters(double A_ = 200., double sig_ = 1., double yav_ = 0.)
+    RapidityFitParameters(double A_ = 200., double sig_ = 1., double yav_ = 0.):
+		A(RapidityFitParameter("A", true, A_, 100., 0., 2000.)),
+		sig(RapidityFitParameter("sig", true, sig_, 0.5, 0., 10.)),
+		yav(RapidityFitParameter("yav", true, yav_, 0.3, 0., 10.)),
+		chi2ndf(1.)
 	{
-		A = RapidityFitParameter("A", true, A_, 100., 0., 2000.);
-		sig = RapidityFitParameter("sig", true, sig_, 0.5, 0., 10.);
-		yav = RapidityFitParameter("yav", true, yav_, 0.3, 0., 10.);
+		// A = RapidityFitParameter("A", true, A_, 100., 0., 2000.);
+		// sig = RapidityFitParameter("sig", true, sig_, 0.5, 0., 10.);
+		// yav = RapidityFitParameter("yav", true, yav_, 0.3, 0., 10.);
 	}
 	RapidityFitParameter GetParamater(const std::string& name) const {
 		if (A.name==name) return A;

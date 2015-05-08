@@ -13,9 +13,10 @@ namespace ThermalParticleSystemNameSpace {
     }
 }
 
-ThermalParticleSystem::ThermalParticleSystem(std::string InputFile)
+ThermalParticleSystem::ThermalParticleSystem(std::string InputFile):
+	fParticles(), PDGtoID(), IDtoPDG(), NumberOfParticles(0)
 {
-    NumberOfParticles = 0;
+    // NumberOfParticles = 0;
     fParticles.resize(0);
     PDGtoID.clear();
     IDtoPDG.resize(0);
@@ -143,20 +144,20 @@ void ThermalParticleSystem::LoadDatabase(std::string InputFile) {
         decays.reserve(decaypartnumber);
         pdgids.reserve(decaypartnumber);
 
-        for(unsigned int i=0;i<(unsigned int)decaypartnumber;++i) {
+        for(unsigned int i=0;i<static_cast<unsigned int>(decaypartnumber);++i) {
             int pdgid, decaysnumber, tmpid, daughters;
             double bratio;
             fin >> pdgid >> decaysnumber;
             decaymap[pdgid] = i;
             decays.push_back(vector<ParticleDecay>(0));
             pdgids.push_back(pdgid);
-            for(unsigned int j=0;j<(unsigned int)decaysnumber;++j) {
+            for(unsigned int j=0;j<static_cast<unsigned int>(decaysnumber);++j) {
                 ParticleDecay decay;
                 fin >> bratio;
                 decay.fBratio = bratio / 100.;
                 fin >> daughters;
                 decay.fDaughters.reserve(daughters);
-                for(unsigned int k=0;k<(unsigned int)daughters;++k) {
+                for(unsigned int k=0;k<static_cast<unsigned int>(daughters);++k) {
                     fin >> tmpid;
                     decay.fDaughters.push_back(tmpid);
                 }
@@ -166,11 +167,12 @@ void ThermalParticleSystem::LoadDatabase(std::string InputFile) {
         fin.close();
     }
 
-    fin.open(InputFile);
-    if (fin.is_open()) {
+    // fin.open(InputFile);
+    ifstream fin2(InputFile.c_str());
+	if (fin2.is_open()) {
         string tmp;
         char tmpc[500];
-        fin.getline(tmpc, 500);
+        fin2.getline(tmpc, 500);
         tmp = string(tmpc);
         while (1) {
             vector<string> fields = split(tmp, ';');
@@ -211,7 +213,7 @@ void ThermalParticleSystem::LoadDatabase(std::string InputFile) {
                 PDGtoID[-pdgid] = IDtoPDG.size()-1;
             }
 
-            fin.getline(tmpc, 500);
+            fin2.getline(tmpc, 500);
             tmp = string(tmpc);
         }
 
@@ -226,7 +228,7 @@ void ThermalParticleSystem::LoadDatabase(std::string InputFile) {
             if (fParticles[i].fPDGID<0) fParticles[i].SetDecays(GetDecaysFromAntiParticle(fParticles[PDGtoID[-fParticles[i].fPDGID]].fDecays));
         }
         for(unsigned int i=0;i<fParticles.size();++i) fParticles[i].fDecaysOrig = fParticles[i].fDecays;
-        fin.close();
+        fin2.close();
         FillResonanceDecays();
     }
 }
