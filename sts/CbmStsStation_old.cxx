@@ -1,9 +1,9 @@
 // -------------------------------------------------------------------------
-// -----                     CbmStsStation source file                 -----
+// -----                     CbmStsStation_old source file                 -----
 // -----                  Created 31/03/05  by V. Friese               -----
 // -------------------------------------------------------------------------
 
-#include "CbmStsStation.h"
+#include "CbmStsStation_old.h"
 
 #include "CbmStsSector.h"
 #include "CbmStsSectorDigiPar.h"
@@ -21,7 +21,7 @@ using std::map;
 
 
 // -----   Default constructor   -------------------------------------------
-CbmStsStation::CbmStsStation() 
+CbmStsStation_old::CbmStsStation_old()
   : TNamed("",""),
     fName(),
     fDetectorId(0),
@@ -44,7 +44,7 @@ CbmStsStation::CbmStsStation()
 
 
 // -----   Standard constructor   ------------------------------------------
-CbmStsStation::CbmStsStation(const char* name, Int_t iStation, Double_t z, 
+CbmStsStation_old::CbmStsStation_old(const char* name, Int_t iStation, Double_t z,
 			     Double_t d, Double_t rl, Double_t rmin, 
 			     Double_t rmax, Double_t rotation) 
   : TNamed(name, "STS station"),
@@ -80,7 +80,7 @@ CbmStsStation::CbmStsStation(const char* name, Int_t iStation, Double_t z,
 
 
 // -----   Destructor   ----------------------------------------------------
-CbmStsStation::~CbmStsStation() {
+CbmStsStation_old::~CbmStsStation_old() {
   if ( fSectors ) {
     fSectors->Delete();
     delete fSectors;
@@ -91,7 +91,7 @@ CbmStsStation::~CbmStsStation() {
 
 
 // -----   Public method GetNChannels   ------------------------------------
-Int_t CbmStsStation::GetNChannels() {
+Int_t CbmStsStation_old::GetNChannels() {
   Int_t nChan = 0;
   for (Int_t iSect=0; iSect<GetNSectors(); iSect++) 
     if ( GetSector(iSect)->GetNChannels() > 0 )
@@ -104,13 +104,13 @@ Int_t CbmStsStation::GetNChannels() {
 
 
 // -----   Public method GetSectorByNr   -----------------------------------
-CbmStsSector* CbmStsStation::GetSectorByNr(Int_t sectorNr) {
+CbmStsSector* CbmStsStation_old::GetSectorByNr(Int_t sectorNr) {
   if ( fSectorMap.find(sectorNr) != fSectorMap.end() ) {
     Int_t index = fSectorMap[sectorNr];
     return (CbmStsSector*) fSectors->At(index);
   }
   else {
-    cout << "-W- CbmStsStation::GetSectorByNr: sector " << sectorNr
+    cout << "-W- CbmStsStation_old::GetSectorByNr: sector " << sectorNr
 	 << " not found (station " << GetStationNr() << ")." << endl;
     return NULL;
   }
@@ -120,7 +120,7 @@ CbmStsSector* CbmStsStation::GetSectorByNr(Int_t sectorNr) {
 
 
 // -----   Public method AddSector   ---------------------------------------
-void CbmStsStation::AddSector(CbmStsSectorDigiPar* sectorPar) {
+void CbmStsStation_old::AddSector(CbmStsSectorDigiPar* sectorPar) {
 
   // Get digitisation parameters
   Int_t iSector   = sectorPar->GetSectorNr();
@@ -146,7 +146,7 @@ void CbmStsStation::AddSector(CbmStsSectorDigiPar* sectorPar) {
 // -------------------------------------------------------------------------
 
 // -----   Public method AddSector   ---------------------------------------
-void CbmStsStation::AddSector(CbmStsSector* sector) {
+void CbmStsStation_old::AddSector(CbmStsSector* sector) {
 
   Int_t iSector  = sector->GetSectorNr();
   Int_t nSectors = fSectors->GetEntries();
@@ -159,7 +159,7 @@ void CbmStsStation::AddSector(CbmStsSector* sector) {
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-Double_t CbmStsStation::GetZ(Int_t it)
+Double_t CbmStsStation_old::GetZ(Int_t it)
 {
   if ( fSensorZ[it] < -665. ) {
     Int_t knownZPos = 0;
@@ -190,7 +190,7 @@ Double_t CbmStsStation::GetZ(Int_t it)
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-Int_t CbmStsStation::GetNofZ()
+Int_t CbmStsStation_old::GetNofZ()
 {
   Int_t knownZPos = 0;
   for ( knownZPos = 0 ; knownZPos < 10 ; knownZPos++ ) {
@@ -220,7 +220,7 @@ Int_t CbmStsStation::GetNofZ()
 
 
 // -----   Public method Reset   -------------------------------------------
-void CbmStsStation::Reset() {
+void CbmStsStation_old::Reset() {
   for (Int_t iSector=0; iSector<GetNSectors(); iSector++) 
     GetSector(iSector)->Reset();
 }
@@ -229,7 +229,7 @@ void CbmStsStation::Reset() {
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmStsStation::Print(Bool_t kLong) {
+void CbmStsStation_old::Print(Bool_t kLong) {
   cout << "Station Nr. ";
   cout.width(2);
   cout << GetStationNr() << ", z =  ";
@@ -251,4 +251,4 @@ void CbmStsStation::Print(Bool_t kLong) {
 
 
 
-ClassImp(CbmStsStation)
+ClassImp(CbmStsStation_old)

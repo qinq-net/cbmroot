@@ -4,16 +4,20 @@
 // -------------------------------------------------------------------------
 
 
-/** CbmStsStation.h
+/** CbmStsStation_old.h
  *@author V.Friese <v.friese@gsi.de>
  **
  ** This class holds the transport geometry parameters 
  ** of one STS tracking station necessary for digitisation.
+ **
+ ** Deprecated. Use CbmStsStation instead.
+ **
  **/
 
 
-#ifndef CBMSTSSTATION_H
-#define CBMSTSSTATION_H 1
+
+#ifndef CBMSTSSTATIONOLD_H
+#define CBMSTSSTATIONOLD_H 1
 
 
 #include "TObjArray.h"
@@ -26,13 +30,13 @@ class CbmStsSector;
 class CbmStsSectorDigiPar;
 
 
-class CbmStsStation : public TNamed
+class CbmStsStation_old : public TNamed
 {
 
  public:
 
   /** Default constructor **/
-  CbmStsStation();
+  CbmStsStation_old();
 
 
   /** Standard constructor 
@@ -45,13 +49,13 @@ class CbmStsStation : public TNamed
   *@param rmax      Outer radius [cm]
   *@param rotation  Rotation angle in global c.s. [rad]
   **/
-  CbmStsStation(const char* name, Int_t detId, Double_t z, Double_t d,
+  CbmStsStation_old(const char* name, Int_t detId, Double_t z, Double_t d,
 		Double_t rl, Double_t rmin, Double_t rmax, 
 		Double_t rotation);
 
 
   /** Destructor **/
-  virtual ~CbmStsStation();
+  virtual ~CbmStsStation_old();
 
 
   /** Accessors **/
@@ -103,10 +107,10 @@ class CbmStsStation : public TNamed
  
  private:
 
-  CbmStsStation(const CbmStsStation&);
-  CbmStsStation operator=(const CbmStsStation&);
+  CbmStsStation_old(const CbmStsStation_old&);
+  CbmStsStation_old operator=(const CbmStsStation_old&);
 
-  ClassDef(CbmStsStation,1);
+  ClassDef(CbmStsStation_old,1);
 
 };
 
