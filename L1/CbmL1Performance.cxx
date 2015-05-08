@@ -29,7 +29,7 @@
 #include "CbmStsDigi.h"
 #include "legacy/CbmStsSensor_old.h" // for field FieldCheck.
 #include "CbmStsSector.h" // for field FieldCheck.
-#include "CbmStsStation.h" // for field FieldCheck.
+#include "CbmStsStation_old.h" // for field FieldCheck.
 
 #include "CbmMatch.h"
 
@@ -1260,7 +1260,7 @@ void CbmL1::FieldApproxCheck()
       z = t.z;
       Xmax = Ymax = t.R;
     }else{
-      CbmStsStation *st = StsDigi.GetStation(ist - NMvdStations);
+      CbmStsStation_old *st = StsDigi.GetStation(ist - NMvdStations);
       z = st->GetZ();
 
       double x,y;
@@ -1624,7 +1624,7 @@ void CbmL1::InputPerformance()
 //       else
 //         mcPoint->PositionOut(mcPos);
 // 
-//       CbmStsStation *sta = StsDigi.GetStation(digi->GetStationNr());
+//       CbmStsStation_old *sta = StsDigi.GetStation(digi->GetStationNr());
 //       CbmStsSector* sector = sta->GetSector(digi->GetSectorNr());
 //       digi->GetChannelNr();
 //       

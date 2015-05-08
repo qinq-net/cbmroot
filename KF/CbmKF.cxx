@@ -19,7 +19,7 @@
 #include "CbmGeoTofPar.h"
 #include "CbmGeoMuchPar.h"
 #include "CbmGeoPassivePar.h"
-#include "CbmStsStation.h"
+#include "CbmStsStation_old.h"
 #include "FairRuntimeDb.h"
 
 #include <iostream>
@@ -197,7 +197,7 @@ InitStatus CbmKF::Init()
 
     for ( Int_t ist = 0; ist<NStations; ist++ )
       {
-	CbmStsStation *st = StsDigi.GetStation(ist);
+	CbmStsStation_old *st = StsDigi.GetStation(ist);
 	if ( !st ) continue;
 
 	CbmKFTube tube;

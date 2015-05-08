@@ -23,7 +23,7 @@
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
 #include "CbmGeoStsPar.h"
-#include "CbmStsStation.h"
+#include "CbmStsStation_old.h"
 #include "CbmStsSector.h"
 #include "legacy/CbmStsSensor_old.h" // for field approx.
 #include "CbmStsDigiPar.h" // for dynamic_cast
@@ -369,7 +369,7 @@ InitStatus CbmL1::Init()
       z = t.z;
       Xmax = Ymax = t.R;
     }else{
-      CbmStsStation *st = StsDigi.GetStation(ist - NMvdStations);
+      CbmStsStation_old *st = StsDigi.GetStation(ist - NMvdStations);
   
       geo[ind++] = st->GetZ();
       geo[ind++] = st->GetD();
@@ -1321,7 +1321,7 @@ void CbmL1::WriteSIMDKFData()
         z = t.z;
         Xmax = Ymax = t.R;
       }else{
-        CbmStsStation *st = StsDigi.GetStation(ist - NMvdStations);
+        CbmStsStation_old *st = StsDigi.GetStation(ist - NMvdStations);
         CbmStsSector* sector = st->GetSector(0);
         f_phi = sector->GetRotation();
         b_phi = sector->GetRotation();
@@ -1428,7 +1428,7 @@ void CbmL1::WriteSIMDKFData()
       }
       else if(ist<(NStsStations+NMvdStations))
       {
-        CbmStsStation *st = StsDigi.GetStation(ist - NMvdStations);
+        CbmStsStation_old *st = StsDigi.GetStation(ist - NMvdStations);
         FileGeo<<st->GetZ()<<" ";
         FileGeo<<st->GetD()<<" ";
         FileGeo<<st->GetRadLength()<<" ";

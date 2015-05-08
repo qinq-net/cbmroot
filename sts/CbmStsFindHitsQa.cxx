@@ -17,7 +17,7 @@
 #include "CbmStsHit.h"
 #include "legacy/CbmStsSensor_old.h"
 #include "CbmStsSector.h"
-#include "CbmStsStation.h"
+#include "CbmStsStation_old.h"
 #include "CbmMCTrack.h"
 
 #include "FairRootManager.h"
@@ -261,7 +261,7 @@ void CbmStsFindHitsQa::Exec(Option_t* opt) {
     return;
   }
 
-  CbmStsStation* station = NULL;
+  CbmStsStation_old* station = NULL;
   CbmStsSector*  sector  = NULL;
   
   Int_t nofStsDigis = fStsDigis->GetEntriesFast();
@@ -659,7 +659,7 @@ void CbmStsFindHitsQa::CreateHistos() {
   Double_t maxMom   = 10.;
   Int_t    nBinsMom = 40;
 
-  CbmStsStation* station = NULL;
+  CbmStsStation_old* station = NULL;
   CbmStsSector*  sector  = NULL;
   CbmStsSensor_old*  sensor  = NULL;
 
@@ -843,7 +843,7 @@ InitStatus CbmStsFindHitsQa::Init() {
 
   fNStations = fDigiScheme->GetNStations();
 
-  CbmStsStation* station = NULL;
+  CbmStsStation_old* station = NULL;
   CbmStsSector*  sector  = NULL;
   for ( Int_t istat = fNStations ; istat > 0 ; ) {
     station = fDigiScheme->GetStation(--istat);
@@ -939,7 +939,7 @@ InitStatus CbmStsFindHitsQa::ReInit() {
 // -----   Virtual method Finish   -----------------------------------------
 void CbmStsFindHitsQa::Finish() {
 
-  CbmStsStation* station = NULL;
+  CbmStsStation_old* station = NULL;
   CbmStsSector*  sector  = NULL;
   Int_t NofRecoPoints = 0;
   Int_t HFE_reco = 0;

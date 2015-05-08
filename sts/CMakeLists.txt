@@ -79,7 +79,7 @@ CbmStsRadTool.cxx
 CbmStsSensorDigiPar.cxx 
 CbmStsSector.cxx 
 CbmStsSectorDigiPar.cxx 
-CbmStsStation.cxx 
+CbmStsStation_old.cxx 
 CbmStsStationDigiPar.cxx 
 CbmStsTrackFinderIdeal.cxx 
 CbmStsTrackFitterIdeal.cxx 

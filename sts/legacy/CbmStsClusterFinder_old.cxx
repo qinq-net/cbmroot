@@ -17,7 +17,7 @@
 #include "legacy/CbmStsClusterFinder_old.h"
 #include "CbmStsHit.h"
 #include "CbmStsSector.h"
-#include "CbmStsStation.h"
+#include "CbmStsStation_old.h"
 #include "CbmTimeSlice.h"
 #include "TMath.h"
 #include "TStopwatch.h"
@@ -69,7 +69,7 @@ void CbmStsClusterFinder_old::Exec(Option_t* opt)
     Int_t nofStations = fDigiScheme->GetNStations();
     for (Int_t iStation = 0; iStation < nofStations; iStation++)
     {
-        CbmStsStation* station = fDigiScheme->GetStation(iStation);
+        CbmStsStation_old* station = fDigiScheme->GetStation(iStation);
         Int_t nofSectors = station->GetNSectors();
         for (Int_t iSector = 0; iSector < nofSectors; iSector++)
         {
@@ -161,7 +161,7 @@ void CbmStsClusterFinder_old::MakeSets()
     Int_t nofStations = fDigiScheme->GetNStations();
     for (Int_t iStation = 0; iStation < nofStations; iStation++)
     {
-        CbmStsStation* station = fDigiScheme->GetStation(iStation);
+        CbmStsStation_old* station = fDigiScheme->GetStation(iStation);
         Int_t nofSectors = station->GetNSectors();
         for (Int_t iSector = 0; iSector < nofSectors; iSector++)
         {

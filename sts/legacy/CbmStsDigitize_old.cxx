@@ -34,7 +34,7 @@
 #include "CbmStsPoint.h"
 #include "legacy/CbmStsSensor_old.h"
 #include "CbmStsSector.h"
-#include "CbmStsStation.h"
+#include "CbmStsStation_old.h"
 
 #include "CbmMatch.h"
 #include "CbmLink.h"
@@ -154,7 +154,7 @@ void CbmStsDigitize_old::Exec(Option_t* opt)
 
     for (Int_t iStation = fDigiScheme->GetNStations(); iStation > 0;)
     {
-        CbmStsStation* station = fDigiScheme->GetStation(--iStation);
+        CbmStsStation_old* station = fDigiScheme->GetStation(--iStation);
         for (Int_t iSector = station->GetNSectors(); iSector > 0;)
         {
             CbmStsSector* sector = station->GetSector(--iSector);
@@ -470,7 +470,7 @@ void CbmStsDigitize_old::MakeSets()
 
     for (Int_t iStation = 0; iStation < nStations; iStation++)
     {
-        CbmStsStation* station = fDigiScheme->GetStation(iStation);
+        CbmStsStation_old* station = fDigiScheme->GetStation(iStation);
         Int_t nSectors = station->GetNSectors();
         for (Int_t iSector = 0; iSector < nSectors; iSector++)
         {
@@ -534,7 +534,7 @@ void CbmStsDigitize_old::MakeSets1()
 
     for (Int_t iStation = 0; iStation < nStations; iStation++)
     {
-        CbmStsStation* station = fDigiScheme->GetStation(iStation);
+        CbmStsStation_old* station = fDigiScheme->GetStation(iStation);
         Int_t nSectors = station->GetNSectors();
 
         for (Int_t iSector = 0; iSector < nSectors; iSector++)

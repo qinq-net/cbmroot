@@ -23,7 +23,7 @@
 #include "CbmStsIdealMatchHits.h"
 #include "CbmStsPoint.h"
 #include "CbmStsSector.h"
-#include "CbmStsStation.h"
+#include "CbmStsStation_old.h"
 #include "CbmStsAddress.h"
 #include "CbmMatch.h"
 #include "CbmLink.h"
@@ -154,7 +154,7 @@ void CbmStsIdealMatchHits::Exec(Option_t* opt)
         // Determine sector type and channel numbers
         Int_t iStation = CbmStsAddress::GetElementId(hit->GetAddress(), kStsStation) + 1; // hit->GetStationNr();
         Int_t iSector = hit->GetSectorNr();
-        CbmStsStation* station = fDigiScheme->GetStationByNr(iStation);
+        CbmStsStation_old* station = fDigiScheme->GetStationByNr(iStation);
         CbmStsSector* sector = fDigiScheme->GetSector(iStation, iSector);
         Int_t iType = sector->GetType();
         CbmMatch* dMatchF = NULL;
