@@ -99,7 +99,7 @@ KFModelParameters/HRGModel/CbmHRGModel.cxx
 KFModelParameters/HRGModel/HagedornSpectrum.cxx
 KFModelParameters/HRGModel/ThermalModel.cxx
 # KFModelParameters/HRGModel/ThermalModelBase.cxx
-KFModelParameters/HRGModel/ThermalModelEVMF.cxx
+#KFModelParameters/HRGModel/ThermalModelEVMF.cxx
 KFModelParameters/HRGModel/ThermalModelFit.cxx
 KFModelParameters/HRGModel/ThermalParticle.cxx
 KFModelParameters/HRGModel/ThermalParticleSystem.cxx
