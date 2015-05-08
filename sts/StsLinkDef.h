@@ -38,6 +38,7 @@
 #pragma link C++ class CbmStsDigitize_old;
 #pragma link C++ class CbmStsFindHits_old;
 #pragma link C++ class CbmStsSensor_old;
+#pragma link C++ class CbmStsStation_old;
 
 // Enumerators
 #pragma link C++ enum EStsElementLevel;
@@ -62,7 +63,6 @@
 #pragma link C++ class CbmStsSector+;
 #pragma link C++ class CbmStsSensorDigiPar+;
 #pragma link C++ class CbmStsSectorDigiPar+;
-#pragma link C++ class CbmStsStation_old;
 #pragma link C++ class CbmStsStationDigiPar+;
 #pragma link C++ class CbmStsTrackFinderIdeal+;
 #pragma link C++ class CbmStsTrackFitterIdeal+;
