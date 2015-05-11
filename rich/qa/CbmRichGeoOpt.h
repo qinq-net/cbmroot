@@ -12,6 +12,7 @@
 
 #include "FairTask.h"
 #include "CbmRichRecGeoPar.h"
+#include "CbmRichPoint.h"
 #include <sstream>
 #include <fstream>     
 
@@ -126,6 +127,12 @@ private:
     */
    void WriteHistograms();
    
+   /**
+    * \brief get a point coressponding to point at sens-plane.
+    */
+   CbmRichPoint* GetPMTPoint(int TrackIdOfSensPlane);
+
+
    /**
     * \brief Calculate residuals between hits and MC points and fill histograms.
     */
