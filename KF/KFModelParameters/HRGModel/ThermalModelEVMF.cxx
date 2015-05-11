@@ -2,6 +2,7 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
+#include <cstdlib>
 #include "xMath.h"
 
 using namespace std;
