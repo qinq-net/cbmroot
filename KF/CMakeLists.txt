@@ -26,7 +26,6 @@ ${CBMROOT_SOURCE_DIR}/KF/KFModelParameters/BlastWaveModel
 ${CBMROOT_SOURCE_DIR}/KF/KFQA
 ${CBMROOT_SOURCE_DIR}/KF/KFParticle
 ${CBMROOT_SOURCE_DIR}/KF/KFParticlePerformance
-${CBMROOT_SOURCE_DIR}/KF/KFParticlesFinder
 
 ${CBMROOT_SOURCE_DIR}/sts 
 ${CBMROOT_SOURCE_DIR}/sts/legacy
@@ -43,7 +42,6 @@ ${CBMROOT_SOURCE_DIR}/much/geo
 ${CBMROOT_SOURCE_DIR}/trd/param
 ${CBMROOT_SOURCE_DIR}/tof/TofParam
 ${CBMROOT_SOURCE_DIR}/ecal
-${CBMROOT_SOURCE_DIR}/stt
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
