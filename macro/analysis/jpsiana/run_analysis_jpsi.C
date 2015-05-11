@@ -57,6 +57,14 @@ void run_analysis_jpsi(Int_t nEvents = 2)
 	run->AddFriend(recoFile);
 	if (recoFile != "") run->SetOutputFile(anaFile);
 
+	//CbmKF is needed for Extrapolation
+	CbmKF* kf = new CbmKF();
+	run->AddTask(kf);
+
+	CbmL1* l1 = new CbmL1();
+	l1->SetMaterialBudgetFileName(stsMatBudgetFileName);
+	run->AddTask(l1);
+
 	CbmAnaJpsiTask* jpsiTask= new CbmAnaJpsiTask();
 	run->AddTask(jpsiTask);
 

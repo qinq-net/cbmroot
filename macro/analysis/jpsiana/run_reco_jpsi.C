@@ -304,7 +304,7 @@ void run_reco_jpsi(Int_t nEvents = 2)
    richCat.push_back("ElectronReference");
    trackingQa->SetTrackCategories(trackCat);
    trackingQa->SetRingCategories(richCat);
-   run->AddTask(trackingQa);
+  // run->AddTask(trackingQa);
 
    CbmLitFitQa* fitQa = new CbmLitFitQa();
    fitQa->SetMvdMinNofHits(0);
@@ -316,7 +316,7 @@ void run_reco_jpsi(Int_t nEvents = 2)
 
    CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
    clusteringQa->SetOutputDir(resultDir);
-   run->AddTask(clusteringQa);
+  // run->AddTask(clusteringQa);
 
     // =========================================================================
     // ===                        ECAL reconstruction                        ===
