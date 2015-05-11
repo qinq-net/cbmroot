@@ -113,7 +113,10 @@ private:
      */
     void AssignMcToCandidates();
 
-
+    /**
+     * \brief Fill histograms for signal and BG electrons
+     */
+    void DifferenceSignalAndBg();
 
 
    /**

@@ -14,6 +14,8 @@
 #include <map>
 #include <iostream>
 #include "CbmAnaJpsiReport.h"
+#include "CbmAnaJpsiHist.h"
+#include "TLine.h"
 
 using boost::assign::list_of;
 using Cbm::NumberToString;
@@ -245,21 +247,45 @@ void CbmAnaJpsiReport::Draw()
 	  }
 
 
+	  DrawCutDistributions();
+}
 
-	  {
-		  TCanvas* c = CreateCanvas("jpsi_ReconMomSignalElectron","jpsi_ReconMomSignalElectron",600,600);
-		  DrawH1(H1("fhReconMomSignalElectron"));
-	  }
 
-	  {
-		  TCanvas* c = CreateCanvas("jpsi_ReconMomGammaConv","jpsi_ReconMomGammaConv",600,600);
-		  DrawH1(H1("fhReconMomGammaConv"));
-	  }
+void CbmAnaJpsiReport::DrawSourceTypesH1(
+      const string& hName,
+      bool doScale)
+{
+   vector<TH1*> h;
+   vector<string> hLegend;
+   for (int i = 0; i < CbmAnaJpsiHist::fNofSourceTypes; i++){
+      string fullName = hName+"_"+CbmAnaJpsiHist::fSourceTypes[i];
+      h.push_back( H1(fullName) );
+      h[i]->SetLineWidth(2);
+      h[i]->SetLineColor(CbmAnaJpsiHist::fSourceTypesColor[i]);
+      if (doScale) h[i]->Scale(1. / h[i]->Integral());
+      hLegend.push_back( CbmAnaJpsiHist::fSourceTypesLatex[i] );
+   }
+   DrawH1(h, hLegend, kLinear, kLog, true, 0.90, 0.7, 0.99, 0.99);
+}
 
-	  {
-		  TCanvas* c = CreateCanvas("jpsi_ReconMomDalitzDecay","jpsi_ReconMomDalitzDecay",600,600);
-		  DrawH1(H1("fhReconMomDalitzDecay"));
-	  }
+void CbmAnaJpsiReport::DrawCutH1(
+      const string& hName,
+      double cutValue)
+{
+   Int_t w = 600;
+   Int_t h = 600;
+   TCanvas *c = CreateCanvas( ("jpsi_" + hName).c_str(), ("jpsi_" + hName).c_str(), w, h);
+   DrawSourceTypesH1(hName);
+   if (cutValue != -999999.){
+      TLine* cutLine = new TLine(cutValue, 0.0, cutValue, 1.0);
+      cutLine->SetLineWidth(2);
+      cutLine->Draw();
+   }
+}
+
+void CbmAnaJpsiReport::DrawCutDistributions()
+{
+   DrawCutH1("fhChi2PrimEl", 2.0);
 }
 
 

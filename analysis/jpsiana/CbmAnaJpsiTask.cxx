@@ -25,9 +25,28 @@
 using namespace std;
 
 CbmAnaJpsiTask::CbmAnaJpsiTask()
-  : FairTask("CbmAnaJpsiTask"),
-  fEventNum(0)
-
+    : FairTask("CbmAnaJpsiTask"),
+	  fEventNum(0),
+	  fMcTracks(NULL),
+	  fStsPoints(NULL),
+	  fStsHits(NULL),
+	  fStsTracks(NULL),
+	  fStsTrackMatches(NULL),
+	  fRichPoints(NULL),
+	  fRichHits(NULL),
+	  fRichRings(NULL),
+	  fRichRingMatches(NULL),
+	  fTrdPoints(NULL),
+	  fTrdHits(NULL),
+	  fTrdTracks(NULL),
+	  fTrdTrackMatches(NULL),
+	  fTofPoints(NULL),
+	  fTofHits(NULL),
+	  fGlobalTracks(NULL),
+	  fPrimVertex(NULL),
+	  fKFVertex(),
+	  fCandidates(),
+	  fHM(NULL)
 {
 }
 
@@ -184,7 +203,7 @@ void CbmAnaJpsiTask::InitHist()
    fHM->Create2<TH2D>("fhRichHitDalitzDecayInPETPlaneXY","fhRichHitDalitzDecayInPETPlaneXY;X[cm];Y[cm];Entries",220,-110,110,400,-200,200);
 
    //reconstructed momenta
-   CreateSourceTypesH1("fhRecMom","P [GeV/c]", "Entries", 150, 0, 15);
+   CreateSourceTypesH1("fhChi2PrimEl","#chi^{2}_{prim}", "Yield", 200, 0., 20.);
 }
 
 
@@ -335,6 +354,8 @@ void CbmAnaJpsiTask::Exec(
   FillCandidates();
 
   AssignMcToCandidates();
+
+  DifferenceSignalAndBg();
 }
 
 
@@ -443,6 +464,24 @@ void CbmAnaJpsiTask::AssignMcToCandidates()
       if (tofPoint == NULL) continue;
       fCandidates[i].fTofMcTrackId = tofPoint->GetTrackID();
    }// candidates
+}
+
+void CbmAnaJpsiTask::DifferenceSignalAndBg()
+{
+    Int_t nCand = fCandidates.size();
+    for (Int_t i = 0; i < nCand; i++){
+        if (fCandidates[i].fIsMcSignalElectron){
+            fHM->H1("fhChi2PrimEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fChi2Prim);
+        } else {
+        	fHM->H1("fhChi2PrimEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fChi2Prim);
+        }
+        if (fCandidates[i].fIsMcGammaElectron){
+        	fHM->H1("fhChi2PrimEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fChi2Prim);
+        }
+        if (fCandidates[i].fIsMcPi0Electron) {
+        	fHM->H1("fhChi2PrimEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fChi2Prim);
+        }
+    } // loop over candidates
 }
 
 void CbmAnaJpsiTask::McPair()

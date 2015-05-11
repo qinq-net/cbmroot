@@ -29,6 +29,16 @@ protected:
     */
    virtual void Draw();
 
+   void DrawSourceTypesH1(
+         const string& hName,
+         bool doScale = true);
+
+   void DrawCutH1(
+         const string& hName,
+         double cutValue);
+
+   void DrawCutDistributions();
+
 
 	ClassDef(CbmAnaJpsiReport, 1);
 };

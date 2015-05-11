@@ -29,9 +29,9 @@ public:
 		stsTracks[0] = *stsTrack;
 		vector<L1FieldRegion> vField;
 		vector<float> chiPrim;
-	  //fPFFitter.GetChiToVertex(stsTracks, vField, chiPrim, kfVertex, 3e6);
-	  //cand->fChi2sts = stsTracks[0].GetChiSq() / stsTracks[0].GetNDF();
-	  //cand->fChi2Prim = chiPrim[0];
+	    fPFFitter.GetChiToVertex(stsTracks, vField, chiPrim, kfVertex, 3e6);
+	    cand->fChi2sts = stsTracks[0].GetChiSq() / stsTracks[0].GetNDF();
+	    cand->fChi2Prim = chiPrim[0];
 
 		const FairTrackParam* vtxTrack = stsTracks[0].GetParamFirst();
 
@@ -42,7 +42,6 @@ public:
 		cand->fCharge = (vtxTrack->GetQp() > 0) ?1 :-1;
 		cand->fEnergy = sqrt(cand->fMomentum.Mag2() + cand->fMass * cand->fMass);
 		cand->fRapidity = 0.5*TMath::Log((cand->fEnergy + cand->fMomentum.Z()) / (cand->fEnergy - cand->fMomentum.Z()));
-
 	}
 };
 

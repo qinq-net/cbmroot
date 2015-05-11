@@ -7,14 +7,26 @@
 class CbmAnaJpsiCandidate{
 public:
 	CbmAnaJpsiCandidate()
-	  : fMomentum(),
-		fPosition(),
-	    fMass(0.),
-	    fEnergy(0.),
-	    fRapidity(0.),
-	    fCharge(0),
-	    fChi2Prim(0.),
-	    fChi2sts(0.)
+	  : fPosition(),
+		fMomentum(),
+		fMass(0.),
+		fEnergy(0.),
+		fRapidity(0.),
+		fCharge(0),
+		fChi2Prim(0.),
+		fChi2sts(0.),
+		fStsInd(-1),
+		fRichInd(-1),
+		fTrdInd(-1),
+		fTofInd(-1),
+		fIsElectron(false),
+		fStsMcTrackId(-1),
+		fRichMcTrackId(-1),
+		fTrdMcTrackId(-1),
+		fTofMcTrackId(-1),
+		fIsMcSignalElectron(false),
+		fIsMcPi0Electron(false),
+		fIsMcGammaElectron(false)
 	{
 	}
 
