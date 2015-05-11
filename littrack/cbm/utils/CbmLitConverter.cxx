@@ -10,10 +10,9 @@
 
 #include "CbmTrack.h"
 #include "CbmTofTrack.h"
-#include "CbmBaseHit.h"
+#include "CbmHit.h"
 #include "CbmPixelHit.h"
 #include "CbmStripHit.h"
-//#include "CbmHit.h"
 #include "FairTrackParam.h"
 #include "CbmStsTrack.h"
 #include "CbmMuchTrack.h"
@@ -332,7 +331,7 @@ void CbmLitConverter::HitArrayToHitVector(
 {
    Int_t nofHits = hits->GetEntriesFast();
    for(Int_t iHit = 0; iHit < nofHits; iHit++) {
-      CbmBaseHit* hit = (CbmBaseHit*) hits->At(iHit);
+      CbmHit* hit = (CbmHit*) hits->At(iHit);
       if(NULL == hit) { continue; }
       if (hit->GetType() == kMUCHSTRAWHIT) {
          CbmLitStripHit* litHit = new CbmLitStripHit();

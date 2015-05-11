@@ -15,7 +15,7 @@
 #include "utils/CbmLitMemoryManagment.h"
 #include "propagation/CbmLitTGeoTrackPropagator.h"
 
-#include "CbmBaseHit.h"
+#include "CbmHit.h"
 #include "CbmPixelHit.h"
 #include "CbmStripHit.h"
 #include "CbmStsTrack.h"

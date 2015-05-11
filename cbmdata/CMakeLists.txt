@@ -33,7 +33,7 @@ link_directories( ${LINK_DIRECTORIES})
 set(SRCS
 CbmDetectorList.cxx
 
-CbmBaseHit.cxx
+CbmHit.cxx
 CbmDigi.cxx
 CbmPixelHit.cxx
 CbmStack.cxx

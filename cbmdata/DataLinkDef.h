@@ -5,7 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class CbmDigi+;
-#pragma link C++ class CbmBaseHit+;
+#pragma link C++ class CbmHit;
 #pragma link C++ class CbmMCTrack+;
 #pragma link C++ class CbmPixelHit+;
 #pragma link C++ class CbmStack+;

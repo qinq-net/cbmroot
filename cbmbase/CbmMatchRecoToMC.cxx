@@ -9,7 +9,7 @@
 #include "CbmMatch.h"
 #include "CbmTrackMatchNew.h"
 #include "CbmCluster.h"
-#include "CbmBaseHit.h"
+#include "CbmHit.h"
 #include "CbmStsHit.h"
 #include "CbmTrack.h"
 #include "CbmDigi.h"
@@ -343,7 +343,7 @@ void CbmMatchRecoToMC::MatchHits(
    if (!(matches && hits && hitMatches)) return;
    Int_t nofHits = hits->GetEntriesFast();
    for (Int_t iHit = 0; iHit < nofHits; iHit++) {
-      const CbmBaseHit* hit = static_cast<const CbmBaseHit*>(hits->At(iHit));
+      const CbmHit* hit = static_cast<const CbmHit*>(hits->At(iHit));
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
       const CbmMatch* clusterMatch = static_cast<const CbmMatch*>(matches->At(hit->GetRefId()));
       hitMatch->AddLinks(*clusterMatch);
@@ -391,7 +391,7 @@ void CbmMatchRecoToMC::MatchHitsToPoints(
    if (!(hits && hitMatches)) return;
    Int_t nofHits = hits->GetEntriesFast();
    for (Int_t iHit = 0; iHit < nofHits; iHit++) {
-      const CbmBaseHit* hit = static_cast<const CbmBaseHit*>(hits->At(iHit));
+      const CbmHit* hit = static_cast<const CbmHit*>(hits->At(iHit));
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
       const FairMCPoint* point = static_cast<const FairMCPoint*>(points->At(hit->GetRefId()));
       hitMatch->AddLink(CbmLink(point->GetEnergyLoss(), hit->GetRefId()));

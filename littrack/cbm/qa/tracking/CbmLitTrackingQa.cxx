@@ -15,7 +15,7 @@
 #include "CbmGlobalTrack.h"
 #include "CbmRichRing.h"
 #include "CbmMCTrack.h"
-#include "CbmBaseHit.h"
+#include "CbmHit.h"
 #include "FairMCPoint.h"
 #include "CbmStsTrack.h"
 #include "CbmMvdHitMatch.h"
@@ -771,7 +771,7 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
       if (isTrdOk) { trdMCId = trdTrackMatch->GetMatchedLink().GetIndex(); }
       if (isMuchOk) { muchMCId = muchTrackMatch->GetMatchedLink().GetIndex(); }
       if (isTofOk) {
-         const CbmBaseHit* tofHit = static_cast<const CbmBaseHit*>(fTofHits->At(tofId));
+         const CbmHit* tofHit = static_cast<const CbmHit*>(fTofHits->At(tofId));
          const FairMCPoint* tofPoint = static_cast<const FairMCPoint*>(fTofPoints->At(tofHit->GetRefId()));
          if (tofPoint != NULL) tofMCId = tofPoint->GetTrackID();
       }

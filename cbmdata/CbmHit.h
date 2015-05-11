@@ -1,5 +1,5 @@
 /**
- * \file CbmBaseHit.h
+ * \file CbmHit.h
  * \author Andrey Lebedev <andrey.lebedev@gsi.de>
  * \date 2009
  *
@@ -7,9 +7,11 @@
  * Derives from TObject.
  * Each hit has its unique identifier of type HitType,
  * which can be later use for safe type casting.
+ *
+ * Former name: CbmBaseHit (renamed 11 May 2015)
  **/
-#ifndef CBMBASEHIT_H_
-#define CBMBASEHIT_H_
+#ifndef CBMHIT_H_
+#define CBMHIT_H_
 
 enum HitType {
 	kHIT,
@@ -30,18 +32,18 @@ enum HitType {
 using std::string;
 class CbmMatch;
 
-class CbmBaseHit : public TObject
+class CbmHit : public TObject
 {
 public:
 	/**
 	 * \brief Default constructor.
 	 */
-	CbmBaseHit();
+	CbmHit();
 
 	/**
 	 * \brief Destructor.
 	 */
-	virtual ~CbmBaseHit();
+	virtual ~CbmHit();
 
 	/* Accessors */
 	HitType GetType() const { return fType; }
@@ -79,8 +81,8 @@ protected:
      **/
 	void SetType(HitType type) { fType = type; }
 
-        CbmBaseHit(const CbmBaseHit&);
-        CbmBaseHit& operator=(const CbmBaseHit&);   
+        CbmHit(const CbmHit&);
+        CbmHit& operator=(const CbmHit&);
 
 private:
 	HitType fType; ///< hit type
@@ -90,7 +92,7 @@ private:
 	Int_t fAddress; ///< detector unique identifier
 	CbmMatch* fMatch; ///< Monte-Carlo information
 
-	ClassDef(CbmBaseHit, 2);
+	ClassDef(CbmHit, 2);
 };
 
-#endif /* CBMBASEHIT_H_ */
+#endif /* CBMHIT_H_ */

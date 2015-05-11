@@ -1,11 +1,13 @@
 /**
- * \file CbmBaseHit.cxx
+ * \file CbmHit.cxx
  * \author Andrey Lebedev <andrey.lebedev@gsi.de>
  * \date 2009
+ *
+ * Former name CbmBaseHit. Renamed 11 May 2015.
  **/
-#include "CbmBaseHit.h"
+#include "CbmHit.h"
 
-CbmBaseHit::CbmBaseHit():
+CbmHit::CbmHit():
     TObject(),
 	fType(kHIT),
 	fZ(0.),
@@ -17,7 +19,7 @@ CbmBaseHit::CbmBaseHit():
 }
 
 // Only shallow copy needed
-CbmBaseHit::CbmBaseHit(const CbmBaseHit& rhs)
+CbmHit::CbmHit(const CbmHit& rhs)
  : TObject(rhs),
    fType(rhs.fType),
    fZ(rhs.fZ),
@@ -29,7 +31,7 @@ CbmBaseHit::CbmBaseHit(const CbmBaseHit& rhs)
 }
 
 // Only shallow copy needed
-CbmBaseHit& CbmBaseHit::operator=(const CbmBaseHit& rhs)
+CbmHit& CbmHit::operator=(const CbmHit& rhs)
 {
 
   if (this != &rhs) {
@@ -44,8 +46,8 @@ CbmBaseHit& CbmBaseHit::operator=(const CbmBaseHit& rhs)
   return *this;
 }
 
-CbmBaseHit::~CbmBaseHit()
+CbmHit::~CbmHit()
 {
 }
 
-ClassImp(CbmBaseHit);
+ClassImp(CbmHit);

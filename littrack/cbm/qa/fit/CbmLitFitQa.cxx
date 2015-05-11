@@ -204,7 +204,7 @@ void CbmLitFitQa::ProcessTrdTrack(
    FillTrackParamHistogramm("htp_Trd_LastParam", lastParam);
 
    // Fill histograms for first track parameters
-   const CbmBaseHit* firstHit = static_cast<const CbmBaseHit*>(fTrdHits->At(track->GetHitIndex(0)));
+   const CbmHit* firstHit = static_cast<const CbmHit*>(fTrdHits->At(track->GetHitIndex(0)));
    //Int_t firstStation = 10 * CbmTrdAddress::GetStationNr(firstHit->GetAddress()) + CbmTrdAddress::GetLayerNr(firstHit->GetAddress());
    Int_t firstStation = CbmTrdAddress::GetLayerId(firstHit->GetAddress());
    if (mcTrack.GetNofPointsAtStation(kTRD, firstStation) > 0) {
@@ -213,7 +213,7 @@ void CbmLitFitQa::ProcessTrdTrack(
    }
 
    // Fill histograms for last track parameters
-   const CbmBaseHit* lastHit = static_cast<const CbmBaseHit*>(fTrdHits->At(track->GetHitIndex(nofHits - 1)));
+   const CbmHit* lastHit = static_cast<const CbmHit*>(fTrdHits->At(track->GetHitIndex(nofHits - 1)));
    //Int_t lastStation = 10 * CbmTrdAddress::GetStationNr(lastHit->GetAddress()) + CbmTrdAddress::GetLayerNr(lastHit->GetAddress());
    Int_t lastStation = CbmTrdAddress::GetLayerId(lastHit->GetAddress());
    if (mcTrack.GetNofPointsAtStation(kTRD, lastStation) > 0) {
@@ -248,7 +248,7 @@ void CbmLitFitQa::ProcessMuchTrack(
    FillTrackParamHistogramm("htp_Much_LastParam", lastParam);
 
    // Fill histograms for first track parameters
-   const CbmBaseHit* firstHit = static_cast<const CbmBaseHit*>(fMuchPixelHits->At(track->GetHitIndex(0)));
+   const CbmHit* firstHit = static_cast<const CbmHit*>(fMuchPixelHits->At(track->GetHitIndex(0)));
 //   Int_t firstStation = firstHit->GetPlaneId();
    Int_t firstStation = 100 * CbmMuchGeoScheme::GetStationIndex(firstHit->GetAddress())
             + 10 * CbmMuchGeoScheme::GetLayerIndex(firstHit->GetAddress())
@@ -259,7 +259,7 @@ void CbmLitFitQa::ProcessMuchTrack(
    }
 
    // Fill histograms for last track parameters
-   const CbmBaseHit* lastHit = static_cast<const CbmBaseHit*>(fMuchPixelHits->At(track->GetHitIndex(nofHits - 1)));
+   const CbmHit* lastHit = static_cast<const CbmHit*>(fMuchPixelHits->At(track->GetHitIndex(nofHits - 1)));
 //   Int_t lastStation = lastHit->GetPlaneId();
    Int_t lastStation = 100 * CbmMuchGeoScheme::GetStationIndex(lastHit->GetAddress())
               + 10 * CbmMuchGeoScheme::GetLayerIndex(lastHit->GetAddress())
