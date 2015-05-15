@@ -286,6 +286,9 @@ void CbmAnaJpsiReport::DrawCutH1(
 void CbmAnaJpsiReport::DrawCutDistributions()
 {
    DrawCutH1("fhChi2PrimEl", 2.0);
+   DrawCutH1("fhMomEl", 5.0);
+   DrawCutH1("fhChi2StsEl", 2.0);
+   DrawCutH1("fhRapidityEl", 2.0);
 }
 
 
