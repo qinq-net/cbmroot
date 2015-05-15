@@ -114,6 +114,17 @@ private:
     void AssignMcToCandidates();
 
     /**
+     * \brief Return true if MC track is in detector acceptance
+     */
+    Bool_t IsMcTrackAccepted(
+    		Int_t mcTrackInd);
+
+    /**
+     * \brief Fill hgistograms for MC and Acc pairs
+     */
+    void PairMcAndAcceptance();
+
+    /**
      * \brief Fill histograms for signal and BG electrons
      */
     void DifferenceSignalAndBg();

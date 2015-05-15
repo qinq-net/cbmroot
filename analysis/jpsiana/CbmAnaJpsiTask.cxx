@@ -20,6 +20,7 @@
 #include "CbmAnaJpsiUtils.h"
 #include "CbmAnaJpsiHist.h"
 #include "CbmTrackMatchNew.h"
+#include "CbmAnaJpsiKinematicParams.h"
 
 
 using namespace std;
@@ -206,7 +207,7 @@ void CbmAnaJpsiTask::InitHist()
    CreateSourceTypesH1("fhChi2PrimEl","#chi^{2}_{prim}", "Yield", 200, 0., 20.);
    CreateSourceTypesH1("fhMomEl","P [GeV/c]", "Yield", 160, 0., 16.);
    CreateSourceTypesH1("fhChi2StsEl","#chi^{2}_{STS}", "Yield", 80, 0., 8.);
-   CreateSourceTypesH1("fhRapidityEl","y", "Yield", 40, 0., 4.);
+   CreateSourceTypesH1("fhRapidityEl","Rapidity", "Yield", 40, 0., 4.);
 
 }
 
@@ -360,6 +361,8 @@ void CbmAnaJpsiTask::Exec(
   AssignMcToCandidates();
 
   DifferenceSignalAndBg();
+
+  PairMcAndAcceptance();
 }
 
 
@@ -476,58 +479,73 @@ void CbmAnaJpsiTask::DifferenceSignalAndBg()
     for (Int_t i = 0; i < nCand; i++){
         if (fCandidates[i].fIsMcSignalElectron){
             fHM->H1("fhChi2PrimEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fChi2Prim);
+            fHM->H1("fhMomEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fMomentum.Mag());
+            fHM->H1("fhChi2StsEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fChi2sts);
+            fHM->H1("fhRapidityEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fRapidity);
         } else {
         	fHM->H1("fhChi2PrimEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fChi2Prim);
-        }
-        if (fCandidates[i].fIsMcGammaElectron){
-        	fHM->H1("fhChi2PrimEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fChi2Prim);
-        }
-        if (fCandidates[i].fIsMcPi0Electron) {
-        	fHM->H1("fhChi2PrimEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fChi2Prim);
-        }
-
-        //Momentum of Candidate
-        if (fCandidates[i].fIsMcSignalElectron){
-        	fHM->H1("fhMomEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fMomentum.Mag());
-        } else {
         	fHM->H1("fhMomEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fMomentum.Mag());
-        }
-        if (fCandidates[i].fIsMcGammaElectron){
-        	fHM->H1("fhMomEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fMomentum.Mag());
-        }
-        if (fCandidates[i].fIsMcPi0Electron){
-            fHM->H1("fhMomEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fMomentum.Mag());
-        }
-
-
-        //Chi2Sts of Candidate
-        if (fCandidates[i].fIsMcSignalElectron){
-        	fHM->H1("fhChi2StsEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fChi2sts);
-        } else {
         	fHM->H1("fhChi2StsEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fChi2sts);
-        }
-        if (fCandidates[i].fIsMcGammaElectron){
-        	fHM->H1("fhChi2StsEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fChi2sts);
-        }
-        if (fCandidates[i].fIsMcPi0Electron){
-        	fHM->H1("fhChi2StsEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fChi2sts);
-        }
-
-        //Rapidity of Candidate
-        if (fCandidates[i].fIsMcSignalElectron){
-        	fHM->H1("fhRapidityEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fRapidity);
-        } else {
         	fHM->H1("fhRapidityEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fRapidity);
         }
         if (fCandidates[i].fIsMcGammaElectron){
+        	fHM->H1("fhChi2PrimEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fChi2Prim);
+        	fHM->H1("fhMomEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fMomentum.Mag());
+        	fHM->H1("fhChi2StsEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fChi2sts);
         	fHM->H1("fhRapidityEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fRapidity);
         }
-        if (fCandidates[i].fIsMcPi0Electron){
+        if (fCandidates[i].fIsMcPi0Electron) {
+        	fHM->H1("fhChi2PrimEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fChi2Prim);
+        	fHM->H1("fhMomEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fMomentum.Mag());
+        	fHM->H1("fhChi2StsEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fChi2sts);
         	fHM->H1("fhRapidityEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fRapidity);
         }
-
     } // loop over candidates
 }
+
+Bool_t CbmAnaJpsiTask::IsMcTrackAccepted(
+		Int_t mcTrackInd)
+{
+	CbmMCTrack* tr = (CbmMCTrack*) fMcTracks->At(mcTrackInd);
+	if (tr == NULL) return false;
+	//Int_t nRichPoints = fNofHitsInRingMap[mcTrackInd];
+	return (tr->GetNPoints(kMVD) + tr->GetNPoints(kSTS) >= 4);// && nRichPoints >= 7 && tr->GetNPoints(kTRD) >= 2 && tr->GetNPoints(kTOF) > 0) ;
+}
+
+void CbmAnaJpsiTask::PairMcAndAcceptance()
+{
+	Int_t nMcTracks = fMcTracks->GetEntries();
+	for (Int_t iP = 0; iP < nMcTracks; iP++) {
+		CbmMCTrack* mctrackP = (CbmMCTrack*) fMcTracks->At(iP);
+		Int_t motherIdP = mctrackP->GetMotherId();
+		Int_t pdgP = mctrackP->GetPdgCode();
+		if ( pdgP != 11 ) continue;
+		Bool_t isAccP = IsMcTrackAccepted(iP);
+		for (Int_t iM = 0; iM < nMcTracks; iM++) {
+			if (iP == iM) continue;
+			CbmMCTrack* mctrackM = (CbmMCTrack*) fMcTracks->At(iM);
+			Int_t motherIdM = mctrackM->GetMotherId();
+			Int_t pdgM = mctrackM->GetPdgCode();
+			if ( pdgM != -11 ) continue;
+			Bool_t isAccM = IsMcTrackAccepted(iM);
+			CbmAnaJpsiKinematicParams p = CbmAnaJpsiKinematicParams::KinematicParamsWithMcTracks(mctrackP,mctrackM);
+
+			// e+/- from signal
+			if (motherIdM == -1 && pdgM == -11 && motherIdP == -1 && pdgP == 11) {
+				// 2D histo p.fRapidity, p.fPt
+				// 1D histo p.fMomentumMag
+				// 1D histo p.fMinv
+
+				//accepted e+/-
+				if (isAccP && isAccM) {
+					// 2D histo p.fRapidity, p.fPt
+					// 1D histo p.fMomentumMag
+					// 1D histo p.fMinv
+				}
+			}
+		}//iM
+	}//iP
+} // PairsAcceptance
 
 
 void CbmAnaJpsiTask::McPair()
