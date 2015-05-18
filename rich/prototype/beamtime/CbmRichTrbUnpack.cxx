@@ -227,9 +227,11 @@ void CbmRichTrbUnpack::DecodeTdcData(
 		DecodeEpicsData(data, size);
 		return;
 	}
+	//printf("TRBID=0x%04x, TDCID=0x%04x\n", trbId, tdcId);
 
 	CbmRichTrbParam* param = CbmRichTrbParam::Instance();
-	Bool_t isPmtHit = CbmRichTrbParam::Instance()->IsPmtTrb(trbId);
+	//Bool_t isPmtHit = CbmRichTrbParam::Instance()->IsPmtTrb(trbId);
+	Bool_t isPmtHit = CbmRichTrbParam::Instance()->IsPmtTdc(tdcId);
 	UInt_t curEpochCounter = 0;
 	queue<CbmRichTrbTimeMessage> mesQ;
 
