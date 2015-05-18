@@ -219,6 +219,11 @@ void CbmAnaJpsiTask::InitHist()
    fHM->Create2<TH2D>("fhAccEpmRapidityPt","fhAccEpmRapidityPt;P_{t} [GeV/c];y;Entries",40,0,4,30,0,3);
    fHM->Create1<TH1D>("fhAccEpmMomentumMag","fhAccEpmMomentumMag; p [GeV/c];Yield",350,0,35);
    fHM->Create1<TH1D>("fhAccEpmMinv","fhAccEpmMinv;m_{inv} [GeV/c^{2}];Yield",500,0,5);//invariant mass
+
+   //e+/- Candidate
+   fHM->Create2<TH2D>("fhCandMcEpmPtY","fhCandMcEpmPtY;P_{t} [GeV/c];y;Entries",40,0,4,30,0,3);
+   fHM->Create1<TH1D>("fhCandEpmMinv","fhCandEpmMinv;m_{inv} [GeV/c^{2}];Yield",500,0,5);// reconstructed invariant mass
+
 }
 
 
@@ -560,6 +565,40 @@ void CbmAnaJpsiTask::PairMcAndAcceptance()
 			}
 		}//iM
 	}//iP
+
+	// find e+/- in Candidates
+	Int_t nCand = fCandidates.size();
+	for (Int_t iM=0 ; iM<nCand ; iM++) //loop over electrons
+	{
+		if (fCandidates[iM].fIsMcSignalElectron && fCandidates[iM].fCharge < 0) // All signal electrons (no positrons)
+		{
+			for (Int_t iP=0 ; iP<nCand ; iP++) //loop over positrons
+			{	if (iP==iM) continue;
+				if (fCandidates[iP].fIsMcSignalElectron && fCandidates[iP].fCharge > 0)
+				{
+					//get McId and McTracks
+					Int_t CandMcIdM= fCandidates[iM].fStsMcTrackId;
+					Int_t CandMcIdP= fCandidates[iP].fStsMcTrackId;
+					CbmMCTrack* CandMcTrackM = (CbmMCTrack*) fMcTracks->At(CandMcIdM);
+					CbmMCTrack* CandMcTrackP = (CbmMCTrack*) fMcTracks->At(CandMcIdP);
+
+					//get McParameters
+					CbmAnaJpsiKinematicParams cMc = CbmAnaJpsiKinematicParams::KinematicParamsWithMcTracks(CandMcTrackM,CandMcTrackP);
+
+					//get reconstructed parameters
+					CbmAnaJpsiKinematicParams cRec = CbmAnaJpsiKinematicParams::KinematicParamsWithCandidates(&fCandidates[iM],&fCandidates[iP]);
+
+					//Fill histograms
+					fHM->H2("fhCandMcEpmPtY")->Fill(cMc.fRapidity,cMc.fPt);//histogram Rapidity vs. transv. Momentum
+					fHM->H1("fhCandEpmMinv")->Fill(cRec.fMinv); //histogram invariant mass
+				}
+			}
+
+		}//SignalEl/Pos
+	}//cand
+
+
+
 } // PairsAcceptance
 
 

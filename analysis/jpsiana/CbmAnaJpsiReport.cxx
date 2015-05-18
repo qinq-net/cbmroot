@@ -280,6 +280,17 @@ void CbmAnaJpsiReport::Draw()
 	  	  DrawH1(H1("fhAccEpmMinv"));
 	  }
 
+	  {
+	  	  TCanvas* c = CreateCanvas("jpsi_CandMcEpmPtY","jpsi_CandMcEpmPtY",600,600);
+	  	  DrawH2(H2("fhCandMcEpmPtY"));
+	  }
+
+	  {
+	  	  TCanvas* c = CreateCanvas("jpsi_CandEpmMinv","jpsi_CandEpmMinv",600,600);
+	  	  H1("fhCandEpmMinv")->Scale(1. / H1("fhCandEpmMinv")->Integral());//Scale Yield
+	  	  DrawH1(H1("fhCandEpmMinv"));
+	  }
+
 	  DrawCutDistributions();
 }
 
