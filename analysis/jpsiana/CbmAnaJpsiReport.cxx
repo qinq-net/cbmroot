@@ -322,6 +322,7 @@ void CbmAnaJpsiReport::DrawCutDistributions()
    DrawCutH1("fhMomEl", 5.0);
    DrawCutH1("fhChi2StsEl", 2.0);
    DrawCutH1("fhRapidityEl", 2.0);
+   DrawCutH1("fhPtEl", 2.0);
 }
 
 
