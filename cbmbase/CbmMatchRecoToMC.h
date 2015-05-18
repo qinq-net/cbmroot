@@ -41,6 +41,8 @@ public:
      */
     virtual void Finish();
 
+    void SetIncludeMvdHitsInStsTrack(Bool_t includeMvdHitsInStsTrack);
+
 private:
     /**
      * \brief Read and create data branches.
@@ -85,10 +87,15 @@ private:
 
     //Special case for STS: now evbased compatible
     void MatchStsTracks(
-          const TClonesArray* hitMatches,
-          CbmMCDataArray* points,
+    	  const TClonesArray* mvdHitMatches,
+          const TClonesArray* stsHitMatches,
+    	  const TClonesArray* mvdPoints,
+          CbmMCDataArray* stsPoints,
           const TClonesArray* tracks,
           TClonesArray* trackMatches);
+
+    // If MVD hits has to be included in STS track
+    Bool_t fIncludeMvdHitsInStsTrack;
 
     // Pointers to data arrays
     CbmMCDataArray* fMCTracks;  // Monte-Carlo tracks
@@ -131,7 +138,7 @@ private:
     TClonesArray* fMuchTrackMatches; // Output CbmMatch array
 
     // MVD
-
+    TClonesArray* fMvdPoints; // CbmMvdPoint array
     TClonesArray* fMvdHits; 		// CbmMvdHit array
     TClonesArray* fMvdDigiMatches;	// CbmMatch array
     TClonesArray* fMvdHitMatches; 	// Output CbmMatch array

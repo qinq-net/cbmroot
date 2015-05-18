@@ -132,6 +132,7 @@ void CbmLitFitQa::ProcessStsTrack(
    if (NULL == fStsTracks || NULL == fStsTrackMatches || trackId < 0) return;
 
    CbmTrackMatchNew* match = static_cast<CbmTrackMatchNew*>(fStsTrackMatches->At(trackId));
+   if (match->GetNofLinks() < 1) return;
    Int_t mcId = match->GetMatchedLink().GetIndex();
    if (mcId < 0) return; // Ghost or fake track
 
@@ -351,15 +352,16 @@ void CbmLitFitQa::ProcessTrackParamsAtVertex()
       CbmStsTrack* track = static_cast<CbmStsTrack*>(fStsTracks->At(iTrack));
 
       CbmTrackMatchNew* match = static_cast<CbmTrackMatchNew*>(fStsTrackMatches->At(iTrack));
+      if (match->GetNofLinks() < 1) continue;
       Int_t mcId = match->GetMatchedLink().GetIndex();
-      if (mcId < 0) return; // Ghost or fake track
+      if (mcId < 0) continue; // Ghost or fake track
 
       const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(fMCTracks->At(mcId));
       if (mcTrack->GetMotherId() != -1) continue; // only for primaries
       //if (mcTrack->GetP() < 1.) continue; // only for momentum large 1 GeV/c
 
       // Check correctness of reconstructed track
-      if (match->GetTrueOverAllHitsRatio() < fQuota) return;
+      if (match->GetTrueOverAllHitsRatio() < fQuota) continue;
 
       fKFFitter.DoFit(track, 211);
       Double_t chiPrimary = fKFFitter.GetChiToVertex(track, fPrimVertex);

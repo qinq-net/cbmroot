@@ -12,6 +12,7 @@
 #include "CbmHit.h"
 #include "CbmStsHit.h"
 #include "CbmTrack.h"
+#include "CbmStsTrack.h"
 #include "CbmDigi.h"
 #include "FairMCPoint.h"
 #include "FairLogger.h"
@@ -25,6 +26,7 @@
 
 CbmMatchRecoToMC::CbmMatchRecoToMC() :
    FairTask(),
+   fIncludeMvdHitsInStsTrack(kFALSE),
    fMCTracks(NULL),
    fStsPoints(NULL),
    fStsDigis(NULL),
@@ -57,6 +59,7 @@ CbmMatchRecoToMC::CbmMatchRecoToMC() :
    fMuchPixelHitMatches(NULL),
    fMuchStrawHitMatches(NULL),
    fMuchTrackMatches(NULL),
+   fMvdPoints(NULL),
    fMvdHits(NULL),
    fMvdDigiMatches(NULL),
    fMvdHitMatches(NULL),
@@ -120,8 +123,11 @@ CbmMatchRecoToMC::~CbmMatchRecoToMC()
       fMvdHitMatches->Delete();
       delete fMvdHitMatches;
    }
+}
 
-
+void CbmMatchRecoToMC::SetIncludeMvdHitsInStsTrack(Bool_t includeMvdHitsInStsTrack)
+{
+	fIncludeMvdHitsInStsTrack = includeMvdHitsInStsTrack;
 }
 
 InitStatus CbmMatchRecoToMC::Init()
@@ -147,6 +153,14 @@ void CbmMatchRecoToMC::Exec(
    if (fMvdHitMatches != NULL) fMvdHitMatches->Delete();
    if (fMvdClusterMatches != NULL) fMvdClusterMatches->Delete();
 
+   //MVD
+   if (fMvdDigiMatches && fMvdHits && fMvdHitMatches && !fMvdCluster) {// MC->digi->hit
+       MatchHitsMvd(fMvdDigiMatches, fMvdHits, fMvdHitMatches);
+   } else if (fMvdDigiMatches && fMvdCluster && fMvdClusterMatches) {
+	  MatchClusters(fMvdDigiMatches, fMvdCluster, fMvdClusterMatches);// MC->digi->cluster->hit
+	  MatchHits(fMvdClusterMatches, fMvdHits, fMvdHitMatches);
+   }
+
    // STS
    if (fStsDigis && fStsClusters && fStsHits) { // MC->digi->cluster->hit->track
       if (fStsDigiMatches)
@@ -154,7 +168,7 @@ void CbmMatchRecoToMC::Exec(
       else
          MatchStsClusters(fStsDigis, fStsClusters, fStsClusterMatches);
       MatchHitsSts(fStsClusterMatches, fStsHits, fStsHitMatches);
-      MatchStsTracks(fStsHitMatches, fStsPoints, fStsTracks, fStsTrackMatches);
+      MatchStsTracks(fMvdHitMatches, fStsHitMatches, fMvdPoints, fStsPoints, fStsTracks, fStsTrackMatches);
    }
 
    // TRD
@@ -177,16 +191,6 @@ void CbmMatchRecoToMC::Exec(
    }
    MatchTracks(fMuchPixelHitMatches, fMuchPoints, fMuchTracks, fMuchTrackMatches);
    MatchTracks(fMuchStrawHitMatches, fMuchPoints, fMuchTracks, fMuchTrackMatches);
-
-   //MVD  
-   if (fMvdDigiMatches && fMvdHits && fMvdHitMatches && !fMvdCluster) {// MC->digi->hit
-       MatchHitsMvd(fMvdDigiMatches, fMvdHits, fMvdHitMatches);
-   }
-   else if(fMvdDigiMatches && fMvdCluster && fMvdClusterMatches)
-	{
-	MatchClusters(fMvdDigiMatches, fMvdCluster, fMvdClusterMatches);// MC->digi->cluster->hit
-	MatchHits(fMvdClusterMatches, fMvdHits, fMvdHitMatches);
-	}
 
    static Int_t eventNo = 0;
    LOG(INFO) << "CbmMatchRecoToMC::Exec eventNo=" << eventNo++ << FairLogger::endl;
@@ -284,6 +288,7 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
    }
 
    // MVD
+   fMvdPoints = (TClonesArray*) ioman->GetObject("MvdPoint");
    fMvdHits = (TClonesArray*) ioman->GetObject("MvdHit");
    fMvdCluster = (TClonesArray*) ioman->GetObject("MvdCluster");
    fMvdDigiMatches = (TClonesArray*) ioman->GetObject("MvdDigiMatch");
@@ -458,28 +463,31 @@ void CbmMatchRecoToMC::MatchTracks(
 }
 
 void CbmMatchRecoToMC::MatchStsTracks(
-      const TClonesArray* hitMatches,
-      CbmMCDataArray* points,
+	  const TClonesArray* mvdHitMatches,
+      const TClonesArray* stsHitMatches,
+	  const TClonesArray* mvdPoints,
+      CbmMCDataArray* stsPoints,
       const TClonesArray* tracks,
       TClonesArray* trackMatches)
 {
-   if (!(hitMatches && points && tracks && trackMatches)) return;
+   if (!((stsHitMatches && stsPoints && tracks && trackMatches)
+		   && ((fIncludeMvdHitsInStsTrack) ? mvdHitMatches && mvdPoints : true))) return;
 
    Bool_t editMode = (trackMatches->GetEntriesFast() != 0);
 
    Int_t nofTracks = tracks->GetEntriesFast();
    for (Int_t iTrack = 0; iTrack < nofTracks; iTrack++) {
-      const CbmTrack* track = static_cast<const CbmTrack*>(tracks->At(iTrack));
+      const CbmStsTrack* track = static_cast<const CbmStsTrack*>(tracks->At(iTrack));
       CbmTrackMatchNew* trackMatch = (editMode) ?
             static_cast<CbmTrackMatchNew*>(trackMatches->At(iTrack)) :
                new ((*trackMatches)[iTrack]) CbmTrackMatchNew();
-      Int_t nofHits = track->GetNofHits();
-      for (Int_t iHit = 0; iHit < nofHits; iHit++) {
-         const CbmMatch* hitMatch = static_cast<CbmMatch*>(hitMatches->At(track->GetHitIndex(iHit)));
+      Int_t nofStsHits = track->GetNofHits();
+      for (Int_t iHit = 0; iHit < nofStsHits; iHit++) {
+         const CbmMatch* hitMatch = static_cast<CbmMatch*>(stsHitMatches->At(track->GetHitIndex(iHit)));
          Int_t nofLinks = hitMatch->GetNofLinks();
          for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
-	    CbmLink link=hitMatch->GetLink(iLink);
-            const FairMCPoint* point = static_cast<const FairMCPoint*>(points->Get(link));
+	        const CbmLink& link = hitMatch->GetLink(iLink);
+            const FairMCPoint* point = static_cast<const FairMCPoint*>(stsPoints->Get(link));
             if (NULL == point) continue;
 			////fix low energy cut case on STS
 			if (CbmStsAddress::GetSystemId(point->GetDetectorID()) == kSTS ){
@@ -492,16 +500,32 @@ void CbmMatchRecoToMC::MatchStsTracks(
             trackMatch->AddLink(CbmLink(1., point->GetTrackID(), link.GetEntry(), link.GetFile()));
          }
       }
+
+      // Include MVD hits in STS matching if needed.
+      if (fIncludeMvdHitsInStsTrack) {
+         Int_t nofMvdHits = track->GetNofMvdHits();
+         for (Int_t iHit = 0; iHit < nofMvdHits; iHit++) {
+            const CbmMatch* hitMatch = static_cast<CbmMatch*>(mvdHitMatches->At(track->GetMvdHitIndex(iHit)));
+            Int_t nofLinks = hitMatch->GetNofLinks();
+            for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
+        	   const CbmLink& link = hitMatch->GetLink(iLink);
+	           const FairMCPoint* point = static_cast<const FairMCPoint*>(mvdPoints->At(link.GetIndex()));
+               if (NULL == point) continue;
+               trackMatch->AddLink(CbmLink(1., point->GetTrackID(), link.GetEntry(), link.GetFile()));
+            }
+         }
+      }
+
       if ( ! trackMatch->GetNofLinks() ) continue;
       // Calculate number of true and wrong hits
       Int_t trueCounter = trackMatch->GetNofTrueHits();
       Int_t wrongCounter = trackMatch->GetNofWrongHits();
-      for (Int_t iHit = 0; iHit < nofHits; iHit++) {
-         const CbmMatch* hitMatch = static_cast<CbmMatch*>(hitMatches->At(track->GetHitIndex(iHit)));
+      for (Int_t iHit = 0; iHit < nofStsHits; iHit++) {
+         const CbmMatch* hitMatch = static_cast<CbmMatch*>(stsHitMatches->At(track->GetHitIndex(iHit)));
          Int_t nofLinks = hitMatch->GetNofLinks();
          Bool_t hasTrue = false;
          for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
-            const FairMCPoint* point = static_cast<const FairMCPoint*>(points->Get(hitMatch->GetLink(iLink)));
+            const FairMCPoint* point = static_cast<const FairMCPoint*>(stsPoints->Get(hitMatch->GetLink(iLink)));
             if (NULL == point) continue;
             if (point->GetTrackID() == trackMatch->GetMatchedLink().GetIndex()) {
                hasTrue = true;
@@ -509,6 +533,25 @@ void CbmMatchRecoToMC::MatchStsTracks(
             }
          }
          if (hasTrue) trueCounter++; else wrongCounter++;
+      }
+
+      // Include MVD hits in STS track matching if needed
+      if (fIncludeMvdHitsInStsTrack) {
+    	 Int_t nofMvdHits = track->GetNofMvdHits();
+         for (Int_t iHit = 0; iHit < nofMvdHits; iHit++) {
+            const CbmMatch* hitMatch = static_cast<CbmMatch*>(mvdHitMatches->At(track->GetMvdHitIndex(iHit)));
+            Int_t nofLinks = hitMatch->GetNofLinks();
+            Bool_t hasTrue = false;
+            for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
+               const FairMCPoint* point = static_cast<const FairMCPoint*>(mvdPoints->At(hitMatch->GetLink(iLink).GetIndex()));
+               if (NULL == point) continue;
+               if (point->GetTrackID() == trackMatch->GetMatchedLink().GetIndex()) {
+                  hasTrue = true;
+                  break;
+               }
+            }
+            if (hasTrue) trueCounter++; else wrongCounter++;
+         }
       }
       trackMatch->SetNofTrueHits(trueCounter);
       trackMatch->SetNofWrongHits(wrongCounter);

@@ -691,10 +691,10 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
       const CbmTrackMatchNew* stsTrackMatch;
       if (isStsOk) {
          stsTrackMatch = static_cast<const CbmTrackMatchNew*>(fStsMatches->At(stsId));
-         isStsOk = stsTrackMatch->GetTrueOverAllHitsRatio() >= fQuota;//CheckTrackQuality(stsTrackMatch, kSTS);
+         isStsOk = stsTrackMatch->GetTrueOverAllHitsRatio() >= fQuota;
          FillTrackQualityHistograms(stsTrackMatch, kSTS);
          if (!isStsOk) { // ghost track
-            Int_t nofHits = stsTrackMatch->GetNofHits();//stsTrackMatch->GetNofTrueHits() + stsTrackMatch->GetNofWrongHits() + stsTrackMatch->GetNofFakeHits();
+            Int_t nofHits = stsTrackMatch->GetNofHits();
             fHM->H1("hng_NofGhosts_Sts_Nh")->Fill(nofHits);
 
             // calculate number of ghost after RICH matching
