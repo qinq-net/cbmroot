@@ -246,6 +246,39 @@ void CbmAnaJpsiReport::Draw()
 		  DrawH2(H2("fhRichHitDalitzDecayInPETPlaneXY"));
 	  }
 
+	  {
+		  TCanvas* c = CreateCanvas("jpsi_McEpmRapidityPt","jpsi_McEpmRapidityPt",600,600);
+		  DrawH2(H2("fhMcEpmRapidityPt"));
+	  }
+
+	  {
+	  	  TCanvas* c = CreateCanvas("jpsi_McEpmMometumMag","jpsi_McEpmMometumMag",600,600);
+	  	  H1("fhMcEpmMomentumMag")->Scale(1. / H1("fhMcEpmMomentumMag")->Integral());//Scale Yield
+	  	  DrawH1(H1("fhMcEpmMomentumMag"));
+	  }
+
+	  {
+	  	  TCanvas* c = CreateCanvas("jpsi_McEpmMinv","jpsi_McEpmMinv",600,600);
+	  	  H1("fhMcEpmMinv")->Scale(1. / H1("fhMcEpmMinv")->Integral());//Scale Yield
+	  	  DrawH1(H1("fhMcEpmMinv"));
+	  }
+
+	  {
+		  TCanvas* c = CreateCanvas("jpsi_AccEpmRapidityPt","jpsi_AccEpmRapidityPt",600,600);
+		  DrawH2(H2("fhAccEpmRapidityPt"));
+	  }
+
+	  {
+	  	  TCanvas* c = CreateCanvas("jpsi_AccEpmMometumMag","jpsi_AccEpmMometumMag",600,600);
+	  	  H1("fhAccEpmMomentumMag")->Scale(1. / H1("fhAccEpmMomentumMag")->Integral());//Scale Yield
+	  	  DrawH1(H1("fhAccEpmMomentumMag"));
+	  }
+
+	  {
+	  	  TCanvas* c = CreateCanvas("jpsi_AccEpmMinv","jpsi_AccEpmMinv",600,600);
+	  	  H1("fhAccEpmMinv")->Scale(1. / H1("fhAccEpmMinv")->Integral());//Scale Yield
+	  	  DrawH1(H1("fhAccEpmMinv"));
+	  }
 
 	  DrawCutDistributions();
 }

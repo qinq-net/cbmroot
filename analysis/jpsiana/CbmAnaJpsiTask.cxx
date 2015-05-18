@@ -209,6 +209,15 @@ void CbmAnaJpsiTask::InitHist()
    CreateSourceTypesH1("fhChi2StsEl","#chi^{2}_{STS}", "Yield", 80, 0., 8.);
    CreateSourceTypesH1("fhRapidityEl","Rapidity", "Yield", 40, 0., 4.);
 
+   //e+/- Mc
+   fHM->Create2<TH2D>("fhMcEpmRapidityPt","fhMcEpmRapidityPt;P_{t} [GeV/c];y;Entries",40,0,4,30,0,3);
+   fHM->Create1<TH1D>("fhMcEpmMomentumMag","fhMcEpmMomentumMag;p [GeV/c];Yield",350,0,35);
+   fHM->Create1<TH1D>("fhMcEpmMinv","fhMcEpmMinv;m_{inv} [GeV/c^{2}];Yield",500,0,5); //invariant mass
+
+   //e+/- Accepted
+   fHM->Create2<TH2D>("fhAccEpmRapidityPt","fhAccEpmRapidityPt;P_{t} [GeV/c];y;Entries",40,0,4,30,0,3);
+   fHM->Create1<TH1D>("fhAccEpmMomentumMag","fhAccEpmMomentumMag; p [GeV/c];Yield",350,0,35);
+   fHM->Create1<TH1D>("fhAccEpmMinv","fhAccEpmMinv;m_{inv} [GeV/c^{2}];Yield",500,0,5);//invariant mass
 }
 
 
@@ -532,15 +541,16 @@ void CbmAnaJpsiTask::PairMcAndAcceptance()
 
 			// e+/- from signal
 			if (motherIdM == -1 && pdgM == -11 && motherIdP == -1 && pdgP == 11) {
-				// 2D histo p.fRapidity, p.fPt
-				// 1D histo p.fMomentumMag
-				// 1D histo p.fMinv
+
+				fHM->H2("fhMcEpmRapidityPt")->Fill(p.fRapidity,p.fPt);	// 2D histo p.fRapidity, p.fPt
+				fHM->H1("fhMcEpmMomentumMag")->Fill(p.fMomentumMag); 	// 1D histo p.fMomentumMag
+				fHM->H1("fhMcEpmMinv")->Fill(p.fMinv);					// 1D histo p.fMinv
 
 				//accepted e+/-
 				if (isAccP && isAccM) {
-					// 2D histo p.fRapidity, p.fPt
-					// 1D histo p.fMomentumMag
-					// 1D histo p.fMinv
+					fHM->H2("fhAccEpmRapidityPt")->Fill(p.fRapidity,p.fPt); // 2D histo p.fRapidity, p.fPt
+					fHM->H1("fhAccEpmMomentumMag")->Fill(p.fMomentumMag);	// 1D histo p.fMomentumMag
+					fHM->H1("fhAccEpmMinv")->Fill(p.fMinv);					// 1D histo p.fMinv
 				}
 			}
 		}//iM
