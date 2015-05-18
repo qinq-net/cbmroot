@@ -535,7 +535,7 @@ void CbmAnaDielectronTaskDraw::DrawSourcesBgPairsEpEm(
       bool drawAnaStep)
 {
    TH2D* h = (TH2D*)H2("fh_source_pairs_epem_" + CbmLmvmHist::fAnaSteps[step])->Clone();
-   gStyle->SetPaintTextFormat("4.1");
+   gStyle->SetPaintTextFormat("4.1f");
    string labels[3] = {"#gamma", "#pi^{0}", "oth"};
    for (Int_t i = 1; i <= 3; i++){
       h->GetYaxis()->SetBinLabel(i, labels[i-1].c_str());
