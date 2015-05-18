@@ -549,6 +549,7 @@ void CbmRichTrbUnpack::AddRichHitToOutputArray(UShort_t trbId, CbmRichHitInfo* h
 	CbmRichHit* hit = static_cast<CbmRichHit*>(fRichHits->At(counter1));
 	hit->SetX(hitInfo->GetX());
 	hit->SetY(hitInfo->GetY());
+	hit->SetPmtId(hitInfo->GetPmtNum());
 
 	UInt_t counter2 = fRichHitInfos->GetEntries();
 	new((*fRichHitInfos)[counter2]) CbmRichHitInfo();

@@ -41,22 +41,76 @@ void CbmRichTrbRecoQaStudyReport::Create()
 void CbmRichTrbRecoQaStudyReport::Draw()
 {
    SetDefaultDrawStyle();
-   FitGausAndDrawH1("fhRadiusCircle", "rich_report_radius");
-   FitGausAndDrawH1("fhNofHitsInEvent", "rich_report_hits_in_event");
-   FitGausAndDrawH1("fhNofHitsInRing", "rich_report_hits_in_ring");
-   FitGausAndDrawH1("fhBaxisEllipse", "rich_report_baxis");
-   FitGausAndDrawH1("fhAaxisEllipse", "rich_report_aaxis");
-   FitGausAndDrawH1("fhDrCircle", "rich_report_dr");
-   FitGausAndDrawH1("fhBoverAEllipse", "rich_report_boa");
+   {
+	   TCanvas* canvas2 = CreateCanvas("rich_report_radius", "rich_report_radius", 600, 600);
+	   FitGausAndDrawH1("fhRadiusCircle");
+   }
+
+   {
+	   TCanvas* canvas2 = CreateCanvas("rich_report_hits_in_event", "rich_report_hits_in_event", 600, 600);
+	   FitGausAndDrawH1("fhNofHitsInEvent");
+   }
+
+   {
+	   TCanvas* canvas2 = CreateCanvas("rich_report_hits_in_ring", "rich_report_hits_in_ring", 600, 600);
+	   FitGausAndDrawH1("fhNofHitsInRing");
+   }
+
+   {
+	   TCanvas* canvas2 = CreateCanvas("rich_report_baxis", "rich_report_baxis", 600, 600);
+	   FitGausAndDrawH1("fhBaxisEllipse");
+   }
+
+   {
+	   TCanvas* canvas2 = CreateCanvas("rich_report_aaxis", "rich_report_aaxis", 600, 600);
+	   FitGausAndDrawH1("fhAaxisEllipse");
+   }
+
+   {
+	   TCanvas* canvas2 = CreateCanvas("rich_report_dr", "rich_report_dr", 600, 600);
+	   FitGausAndDrawH1("fhDrCircle");
+   }
+
+   {
+	   TCanvas* canvas2 = CreateCanvas("rich_report_boa", "rich_report_boa", 600, 600);
+	   FitGausAndDrawH1("fhBoverAEllipse");
+   }
+
+   { // position G
+	   TCanvas* canvas2 = CreateCanvas("rich_report_nofhits_pmt_posG", "rich_report_nofhits_pmt_posG", 1200, 1200);
+	   canvas2->Divide(2,2);
+	   canvas2->cd(1);
+	   FitGausAndDrawH1("fhNofHitsInRingPmt_4");
+	   canvas2->cd(2);
+	   FitGausAndDrawH1("fhNofHitsInRingPmt_0");
+	   canvas2->cd(3);
+	   FitGausAndDrawH1("fhNofHitsInRingPmt_5");
+	   canvas2->cd(4);
+	   FitGausAndDrawH1("fhNofHitsInRingPmt_1");
+   }
+
+   { // position H
+	   TCanvas* canvas2 = CreateCanvas("rich_report_nofhits_pmt_posH", "rich_report_nofhits_pmt_posH", 1200, 1200);
+	   canvas2->Divide(2,2);
+	   canvas2->cd(1);
+	   FitGausAndDrawH1("fhNofHitsInRingPmt_5");
+	   canvas2->cd(2);
+	   FitGausAndDrawH1("fhNofHitsInRingPmt_1");
+	   canvas2->cd(3);
+	   FitGausAndDrawH1("fhNofHitsInRingPmt_6");
+	   canvas2->cd(4);
+	   FitGausAndDrawH1("fhNofHitsInRingPmt_2");
+   }
+
+
    DrawEfficiency();
+
 }
 
 void CbmRichTrbRecoQaStudyReport::FitGausAndDrawH1(
-		const string& histName,
-		const string& canvasName)
+		const string& histName)
 {
    Int_t nofStudies = HM().size();
-   TCanvas* canvas2 = CreateCanvas(canvasName.c_str(), canvasName.c_str(), 600, 600);
    vector<TH1*> histos1(nofStudies);
    vector<string> legendNames;
    for (UInt_t iStudy = 0; iStudy < nofStudies; iStudy++) {
