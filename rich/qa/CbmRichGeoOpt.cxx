@@ -193,7 +193,7 @@ InitStatus CbmRichGeoOpt::Init()
 void CbmRichGeoOpt::Exec(Option_t* option)
 {
   fEventNum++;
-  cout << "#################### CbmRichGeoOpt, event No. " <<  fEventNum << endl;
+  //cout << "#################### CbmRichGeoOpt, event No. " <<  fEventNum << endl;
   
   if(PointsFilled==0){
     for(int p=1;p<PlanePoints.size();p++){
@@ -239,7 +239,7 @@ void CbmRichGeoOpt::HitsAndPoints(){
   Int_t nofRefPoints = fRefPoints->GetEntriesFast();
   Int_t nofPoints = fRichPoints->GetEntriesFast();
   if(nofPoints==0 || nofRefPoints==0){return;} if(nofPoints>2000){return;} 
-  cout<<"nofPoints:  "<<  nofPoints<<endl;
+  //cout<<"nofPoints:  "<<  nofPoints<<endl;
   //loop over points and get momentum of photons --> calculate angle (to be done later)
   if(nofPoints<=30){H_NofPhotonsSmallerThan30->Fill(nofPoints); }
   H_NofPhotonsPerEv->Fill(nofPoints); 
