@@ -291,6 +291,17 @@ void CbmAnaJpsiReport::Draw()
 	  	  DrawH1(H1("fhCandEpmMinv"));
 	  }
 
+	  {
+	  	  TCanvas* c = CreateCanvas("jpsi_CandMcEpmPtYChi2PrimCut","jpsi_CandMcEpmPtYChi2PrimCut",600,600);
+	  	  DrawH2(H2("fhCandMcEpmPtYChi2PrimCut"));
+	  }
+
+	  {
+	  	  TCanvas* c = CreateCanvas("jpsi_CandEpmMinvChi2PrimCut","jpsi_CandEpmMinvChi2PrimCut",600,600);
+	  	  H1("fhCandEpmMinvChi2PrimCut")->Scale(1. / H1("fhCandEpmMinvChi2PrimCut")->Integral());//Scale Yield
+	  	  DrawH1(H1("fhCandEpmMinvChi2PrimCut"));
+	  }
+
 	  DrawCutDistributions();
 }
 

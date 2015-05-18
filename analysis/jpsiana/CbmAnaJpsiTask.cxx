@@ -224,6 +224,12 @@ void CbmAnaJpsiTask::InitHist()
    fHM->Create2<TH2D>("fhCandMcEpmPtY","fhCandMcEpmPtY;P_{t} [GeV/c];y;Entries",40,0,4,30,0,3);
    fHM->Create1<TH1D>("fhCandEpmMinv","fhCandEpmMinv;m_{inv} [GeV/c^{2}];Yield",500,0,5);// reconstructed invariant mass
 
+   //e+/- Candidate with Chi2primCut
+   fHM->Create2<TH2D>("fhCandMcEpmPtYChi2PrimCut","fhCandMcEpmPtYChi2PrimCut;P_{t} [GeV/c];y;Entries",40,0,4,30,0,3);
+   fHM->Create1<TH1D>("fhCandEpmMinvChi2PrimCut","fhCandEpmMinvChi2PrimCut;m_{inv} [GeV/c^{2}];Yield",500,0,5);// reconstructed invariant mass
+
+
+
 }
 
 
@@ -591,6 +597,14 @@ void CbmAnaJpsiTask::PairMcAndAcceptance()
 					//Fill histograms
 					fHM->H2("fhCandMcEpmPtY")->Fill(cMc.fRapidity,cMc.fPt);//histogram Rapidity vs. transv. Momentum
 					fHM->H1("fhCandEpmMinv")->Fill(cRec.fMinv); //histogram invariant mass
+
+					//Chi2Prim Cut
+					if (fCandidates[iP].fChi2Prim >= 3) continue;
+					if (fCandidates[iM].fChi2Prim >= 3) continue;
+
+					//Fill histograms
+					fHM->H2("fhCandMcEpmPtYChi2PrimCut")->Fill(cMc.fRapidity,cMc.fPt);//histogram Rapidity vs. transv. Momentum
+					fHM->H1("fhCandEpmMinvChi2PrimCut")->Fill(cRec.fMinv); //histogram invariant mass
 				}
 			}
 
