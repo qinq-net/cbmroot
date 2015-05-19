@@ -15,6 +15,7 @@
 #include <iostream>
 #include "CbmAnaJpsiReport.h"
 #include "CbmAnaJpsiHist.h"
+#include "CbmAnaJpsiCuts.h"
 #include "TLine.h"
 
 using boost::assign::list_of;
@@ -345,6 +346,8 @@ void CbmAnaJpsiReport::DrawCutDistributions()
    DrawCutH1("fhChi2StsEl", 2.0);
    DrawCutH1("fhRapidityEl", 2.0);
    DrawCutH1("fhPtEl", 2.0);
+   DrawCutH1("fhRichAnn", 2.0);
+   DrawCutH1("fhTrdAnn", 2.0);
 }
 
 
