@@ -26,7 +26,10 @@ public:
 		fTofMcTrackId(-1),
 		fIsMcSignalElectron(false),
 		fIsMcPi0Electron(false),
-		fIsMcGammaElectron(false)
+		fIsMcGammaElectron(false),
+		fRichAnn(0.),
+		fTrdAnn(0.),
+		fMass2(0.)
 	{
 	}
 
@@ -63,6 +66,9 @@ public:
 	Bool_t fIsMcPi0Electron; // Is pi0 electron (MC info)
 	Bool_t fIsMcGammaElectron; // Is gamma conversion electron (MC info)
 
+	Double_t fRichAnn;
+	Double_t fTrdAnn;
+	Double_t fMass2;
 };
 
 #endif

@@ -11,6 +11,11 @@
 #include "CbmKFVertex.h"
 #include "CbmVertex.h"
 #include "CbmAnaJpsiCandidate.h"
+#include "CbmAnaJpsiCuts.h"
+#include "CbmRichRing.h"
+#include "CbmRichElectronIdAnn.h"
+#include "CbmTrdTrack.h"
+#include "CbmGlobalTrack.h"
 
 
 
@@ -74,6 +79,9 @@ private:
 
   vector<CbmAnaJpsiCandidate> fCandidates; // array of JPsi candidates
 
+  CbmAnaJpsiCuts fCuts; //electron identification and analysis cuts
+
+  CbmRichElectronIdAnn* fElIdAnn;
 
   CbmHistManager* fHM;
 
@@ -120,9 +128,38 @@ private:
     		Int_t mcTrackInd);
 
     /**
-     * \brief Fill hgistograms for MC and Acc pairs
+     * \brief Fill histograms for MC and Acc pairs
      */
     void PairMcAndAcceptance();
+
+    /**
+     * \brief  Identifies particle as Electron (or not)
+     */
+    void IsElectron(
+    		CbmRichRing* ring,
+    		Double_t momentum,
+    		CbmTrdTrack* trdTrack,
+    	    CbmGlobalTrack* gTrack,
+    		CbmAnaJpsiCandidate* cand);
+
+    /**
+     * \brief  find rich electron
+     */
+    Bool_t IsRichElectron(
+    		CbmRichRing* ring,
+			Double_t momentum,
+			CbmAnaJpsiCandidate* cand);
+
+    Bool_t IsTrdElectron(
+          CbmTrdTrack* trdTrack,
+    	  CbmAnaJpsiCandidate* cand);
+
+
+    Bool_t IsTofElectron(
+    	      CbmGlobalTrack* gTrack,
+    	      Double_t momentum,
+    		  CbmAnaJpsiCandidate* cand);
+
 
     /**
      * \brief Fill histograms for signal and BG electrons
