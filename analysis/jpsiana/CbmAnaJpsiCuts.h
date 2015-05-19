@@ -21,19 +21,7 @@ public:
 		fUseRichAnn(kTRUE),
 		fMomentumCut(0.),
 		fChiPrimCut(0.),
-		fPtCut(0.),
-		fAngleCut(0.),
-		fGammaCut(0.),
-		fStCutAngle(0.),
-		fStCutPP(0.),
-		fTtCutAngle(0.),
-		fTtCutPP(0.),
-		fRtCutAngle(0.),
-		fRtCutPP(0.),
-		fMvd1CutP(0.),
-		fMvd1CutD(0.),
-		fMvd2CutP(0.),
-		fMvd2CutD(0.)
+		fPtCut(0.)
 	{
 		SetDefaultCuts();
 	}
@@ -56,20 +44,8 @@ public:
 		fMomentumCut = -1.; // if cut < 0 it is not used
 
 		// analysis cuts
-		fPtCut = 0.2;
-		fAngleCut = 1.;
+		fPtCut = 1.5;
 		fChiPrimCut = 3.;
-		fGammaCut = 0.025;
-		fStCutAngle = 1.5;
-		fStCutPP = 1.5;
-		fTtCutAngle = 0.75;
-		fTtCutPP = 4.0;
-		fRtCutAngle = 1.0;
-		fRtCutPP = 2.5;
-		fMvd1CutP = 1.2;
-		fMvd1CutD = 0.4;
-		fMvd2CutP = 1.5;
-		fMvd2CutD = 0.5;
 	}
 
 	/*
@@ -82,13 +58,6 @@ public:
 				"fRichAnnCut = " << fRichAnnCut << endl <<
 				"fChiPrimCut = " << fChiPrimCut << endl <<
 				"fPtCut = " << fPtCut << endl <<
-				"fAngleCut = " << fAngleCut << endl <<
-				"fGammaCut = " << fGammaCut << endl <<
-				"fStCut (ang,pp) = (" << fStCutAngle << "," << fStCutPP << ")" << endl <<
-				"fRtCut (ang,pp) = (" << fRtCutAngle << "," << fRtCutPP << ")" << endl <<
-				"fTtCut (ang,pp) = (" << fTtCutAngle << "," << fTtCutPP << ")" << endl <<
-				"fMvd1Cut (p,d) = (" << fMvd1CutP << "," << fMvd1CutD << ")" << endl <<
-				"fMvd2Cut (p,d) = (" << fMvd2CutP << "," << fMvd2CutD << ")" << endl <<
 				"fMomentumCut = "<< fMomentumCut <<  endl;
 	}
 
@@ -108,18 +77,6 @@ public:
 	// Analysis cuts
 	Double_t fChiPrimCut;
 	Double_t fPtCut;
-	Double_t fAngleCut;
-	Double_t fGammaCut;
-	Double_t fStCutAngle;
-	Double_t fStCutPP;
-	Double_t fTtCutAngle;
-	Double_t fTtCutPP;
-	Double_t fRtCutAngle;
-	Double_t fRtCutPP;
-	Double_t fMvd1CutP;
-	Double_t fMvd1CutD;
-	Double_t fMvd2CutP;
-	Double_t fMvd2CutD;
 };
 
 #endif

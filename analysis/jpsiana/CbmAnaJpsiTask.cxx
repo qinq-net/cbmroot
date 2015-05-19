@@ -116,6 +116,12 @@ InitStatus CbmAnaJpsiTask::Init()
    if ( NULL == fStsTrackMatches ) {Fatal("CbmAnaJpsiTask::Init","No StsTrackMatches Array!");}
 
    InitHist();
+
+   if (fCuts.fUseRichAnn){
+      fElIdAnn = new CbmRichElectronIdAnn();
+      fElIdAnn->Init();
+   }
+
    return kSUCCESS;
 }
 
