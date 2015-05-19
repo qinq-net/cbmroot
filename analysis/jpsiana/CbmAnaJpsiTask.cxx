@@ -217,8 +217,14 @@ void CbmAnaJpsiTask::InitHist()
    CreateSourceTypesH1("fhChi2StsEl","#chi^{2}_{STS}", "Yield", 80, 0., 8.);
    CreateSourceTypesH1("fhRapidityEl","Rapidity", "Yield", 40, 0., 4.);
    CreateSourceTypesH1("fhPtEl","#P_{t}", "Yield", 40, 0., 4.);
-   CreateSourceTypesH1("fhRichAnn","RichAnn", "Yield", 400, 0., 40.);
-   CreateSourceTypesH1("fhTrdAnn","TrdAnn", "Yield", 400, 0., 40.);
+   CreateSourceTypesH1("fhRichAnn","RichAnn", "Yield", 20, 0., 2.);
+   CreateSourceTypesH1("fhTrdAnn","TrdAnn", "Yield", 20, 0., 2.);
+   fHM->Create2<TH2D>("fhTofMomM2Signal","TofMomM2Signal;m^{2} [(GeV/c^{2})^{2}];p [GeV/c];Entries", 60, 0, 12,10,0,10);
+   fHM->Create2<TH2D>("fhTofMomM2Background","TofMomM2Background;m^{2} [(GeV/c^{2})^{2}];p [GeV/c];Entries", 100, 0, 20,80,0,8);
+   fHM->Create2<TH2D>("fhTofMomM2Gamma","TofMomM2Gamma;m^{2} [(GeV/c^{2})^{2}];p [GeV/c];Entries", 50, 0, 10,10,0,1);
+   fHM->Create2<TH2D>("fhTofMomM2Pi0","TofMomM2Pi0;m^{2} [(GeV/c^{2})^{2}];p [GeV/c];Entries", 50, 0, 10,10,0,1);
+
+
 
 
    //e+/- Mc
@@ -239,6 +245,10 @@ void CbmAnaJpsiTask::InitHist()
    fHM->Create2<TH2D>("fhCandMcEpmPtYChi2PrimCut","fhCandMcEpmPtYChi2PrimCut;P_{t} [GeV/c];y;Entries",40,0,4,30,0,3);
    fHM->Create1<TH1D>("fhCandEpmMinvChi2PrimCut","fhCandEpmMinvChi2PrimCut;m_{inv} [GeV/c^{2}];Yield",500,0,5);// reconstructed invariant mass
 
+
+   //e+/- Candidate with Chi2primCut
+   fHM->Create2<TH2D>("fhRecoCandEpmPtYChi2PrimCut","fhRecoCandMcEpmPtYChi2PrimCut;P_{t} [GeV/c];y;Entries",40,0,4,30,0,3);
+   fHM->Create1<TH1D>("fhRecoCandEpmMinvChi2PrimCut","fhRecoCandEpmMinvChi2PrimCut;m_{inv} [GeV/c^{2}];Yield",500,0,5);// reconstructed invariant mass
 
 
 }
@@ -517,6 +527,7 @@ void CbmAnaJpsiTask::DifferenceSignalAndBg()
             fHM->H1("fhPtEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fMomentum.Perp());
             fHM->H1("fhRichAnn_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fRichAnn);
             fHM->H1("fhTrdAnn_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fTrdAnn);
+            fHM->H2("fhTofMomM2Signal")->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
         } else {
         	fHM->H1("fhChi2PrimEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fChi2Prim);
         	fHM->H1("fhMomEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fMomentum.Mag());
@@ -525,6 +536,7 @@ void CbmAnaJpsiTask::DifferenceSignalAndBg()
         	fHM->H1("fhPtEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fMomentum.Perp());
         	fHM->H1("fhRichAnn_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fRichAnn);
             fHM->H1("fhTrdAnn_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fTrdAnn);
+            fHM->H2("fhTofMomM2Background")->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
 
         }
         if (fCandidates[i].fIsMcGammaElectron){
@@ -535,6 +547,7 @@ void CbmAnaJpsiTask::DifferenceSignalAndBg()
         	fHM->H1("fhPtEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fMomentum.Perp());
         	fHM->H1("fhRichAnn_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fRichAnn);
             fHM->H1("fhTrdAnn_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fTrdAnn);
+            fHM->H2("fhTofMomM2Gamma")->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
 
         }
         if (fCandidates[i].fIsMcPi0Electron) {
@@ -545,6 +558,7 @@ void CbmAnaJpsiTask::DifferenceSignalAndBg()
         	fHM->H1("fhPtEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fMomentum.Perp());
         	fHM->H1("fhRichAnn_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fRichAnn);
             fHM->H1("fhTrdAnn_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fTrdAnn);
+            fHM->H2("fhTofMomM2Pi0")->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
 
         }
     } // loop over candidates
@@ -602,6 +616,7 @@ void CbmAnaJpsiTask::PairMcAndAcceptance()
 		{
 			for (Int_t iP=0 ; iP<nCand ; iP++) //loop over positrons
 			{	if (iP==iM) continue;
+
 				if (fCandidates[iP].fIsMcSignalElectron && fCandidates[iP].fCharge > 0)
 				{
 					//get McId and McTracks
@@ -631,6 +646,31 @@ void CbmAnaJpsiTask::PairMcAndAcceptance()
 			}//loop over positrons
 
 		}//SignalEl
+
+
+		//reconstructed Electron
+		if (fCandidates[iM].fIsElectron && fCandidates[iM].fCharge < 0)
+		{
+			for (Int_t iP=0 ; iP<nCand ; iP++) //loop over positrons
+			{
+				if (iP==iM) continue;
+
+				if (fCandidates[iP].fIsElectron && fCandidates[iP].fCharge > 0)
+				{	// !!!NO SELECTION OF SIGNAL ELECTRONS!!!
+
+					CbmAnaJpsiKinematicParams candidateRec = CbmAnaJpsiKinematicParams::KinematicParamsWithCandidates(&fCandidates[iM],&fCandidates[iP]);
+
+					//Chi2Prim Cut
+					if (fCandidates[iP].fChi2Prim >= 3) continue;
+					if (fCandidates[iM].fChi2Prim >= 3) continue;
+
+					//Fill histograms
+					fHM->H2("fhRecoCandEpmPtYChi2PrimCut")->Fill(candidateRec.fRapidity,candidateRec.fPt);//histogram Rapidity vs. transv. Momentum
+					fHM->H1("fhRecoCandEpmMinvChi2PrimCut")->Fill(candidateRec.fMinv); //histogram invariant mass
+
+				}
+			}
+		}
 	}//cand | loop over electrons
 
 
@@ -644,7 +684,7 @@ void CbmAnaJpsiTask::IsElectron(
 	    CbmGlobalTrack * gTrack,
 		CbmAnaJpsiCandidate* cand)
 {
-	Bool_t richEl = IsRichElectron(ring, momentum,cand);
+	Bool_t richEl = IsRichElectron(ring, momentum, cand);
 	Bool_t trdEl = (trdTrack != NULL)?IsTrdElectron(trdTrack, cand):true;
 	Double_t annRich = cand->fRichAnn;
 	Double_t annTrd = cand->fTrdAnn;

@@ -303,6 +303,30 @@ void CbmAnaJpsiReport::Draw()
 	  	  DrawH1(H1("fhCandEpmMinvChi2PrimCut"));
 	  }
 
+	  {
+	  	  TCanvas* c = CreateCanvas("jpsi_TofMomM2Signal","jpsi_TofMomM2Signal",1200,1200);
+	  	  c->Divide(2,2);
+	  	  c->cd(1);
+	  	  DrawH2(H2("fhTofMomM2Signal"));
+	  	  c->cd(2);
+	  	  DrawH2(H2("fhTofMomM2Background"));
+	  	  c->cd(3);
+	  	  DrawH2(H2("fhTofMomM2Gamma"));
+	  	  c->cd(4);
+	  	  DrawH2(H2("fhTofMomM2Pi0"));
+	  }
+
+	  {
+	  	  TCanvas* c = CreateCanvas("jpsi_RecoCandEpmPtYChi2PrimCut","jpsi_RecoCandEpmPtYChi2PrimCut",600,600);
+	  	  DrawH2(H2("fhRecoCandEpmPtYChi2PrimCut"));
+	  }
+
+	  {
+	  	  TCanvas* c = CreateCanvas("jpsi_RecoCandEpmMinvChi2PrimCut","jpsi_RecoCandEpmMinvChi2PrimCut",600,600);
+	  	  H1("fhRecoCandEpmMinvChi2PrimCut")->Scale(1. / H1("fhRecoCandEpmMinvChi2PrimCut")->Integral());//Scale Yield
+	      DrawH1(H1("fhRecoCandEpmMinvChi2PrimCut"));
+	  }
+
 	  DrawCutDistributions();
 }
 
@@ -333,7 +357,7 @@ void CbmAnaJpsiReport::DrawCutH1(
    TCanvas *c = CreateCanvas( ("jpsi_" + hName).c_str(), ("jpsi_" + hName).c_str(), w, h);
    DrawSourceTypesH1(hName);
    if (cutValue != -999999.){
-      TLine* cutLine = new TLine(cutValue, 0.0, cutValue, 1.0);
+      TLine* cutLine = new TLine(cutValue, 0.0, cutValue, 1.);
       cutLine->SetLineWidth(2);
       cutLine->Draw();
    }
