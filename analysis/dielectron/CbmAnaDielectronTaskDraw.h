@@ -109,21 +109,6 @@ private:
           Double_t yPos);
 
     /**
-     * Draw text on the histogram. Histogram must be drawn in advance.
-     * \param[in] text Text you want to draw.
-     * \param[in] x1
-     * \param[in] y1
-     * \param[in] x2
-     * \param[in] y2
-     */
-    void DrawTextOnHist(
-          const string& text,
-          Double_t x1,
-          Double_t y1,
-          Double_t x2,
-          Double_t y2);
-
-    /**
      * Produce 1D significance histogram Significance=S/sqrt(S+BG).
      * \param[in] s Histogram with signal.
      * \param[in] bg Histogram eith background.

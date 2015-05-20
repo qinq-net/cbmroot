@@ -160,21 +160,6 @@ void CbmAnaDielectronTaskDraw::DrawEfficiencyOnHist(
    t->Draw();
 }
 
-void CbmAnaDielectronTaskDraw::DrawTextOnHist(
-      const string& text,
-      Double_t x1,
-      Double_t y1,
-      Double_t x2,
-      Double_t y2)
-{
-   TLegend* leg = new TLegend(x1, y1, x2, y2);
-   leg->AddEntry(new TH2D(), text.c_str(), "");
-   leg->SetFillColor(kWhite);
-   leg->SetFillStyle(0);
-   leg->SetBorderSize(0);
-   leg->Draw();
-}
-
 
 TH1D* CbmAnaDielectronTaskDraw::CreateSignificanceH1D(
       TH1D* s,
@@ -315,7 +300,7 @@ void CbmAnaDielectronTaskDraw::DrawPtYDistribution(
 
    DrawH2(h, kLinear, kLinear, kLinear, "COLZ");
    if (drawAnaStep) DrawEfficiencyOnHist(h, hmc, 0.2, 1.8);
-   if (drawAnaStep) DrawTextOnHist(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.78, 0.70, 0.9);
+   if (drawAnaStep) DrawTextOnPad(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.78, 0.70, 0.9);
 }
 
 void CbmAnaDielectronTaskDraw::DrawPtYDistributionAll()
@@ -347,7 +332,7 @@ void CbmAnaDielectronTaskDraw::DrawRapidityDistributionAll()
       c->cd(hi++);
       TH1D* proj = H2( "fh_signal_pty_" + CbmLmvmHist::fAnaSteps[step] )->ProjectionX();
       DrawH1(proj);
-      DrawTextOnHist(CbmLmvmHist::fAnaStepsLatex[step], 0.70, 0.78, 0.90, 0.9);
+      DrawTextOnPad(CbmLmvmHist::fAnaStepsLatex[step], 0.70, 0.78, 0.90, 0.9);
    }
 }
 
@@ -366,7 +351,7 @@ void CbmAnaDielectronTaskDraw::DrawPtYEfficiency(
    DrawH2(eff);
    eff->SetMaximum(10.);
    if (drawAnaStep) DrawEfficiencyOnHist(h, hmc, 0.2, 1.8);
-   if (drawAnaStep) DrawTextOnHist(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.78, 0.70, 0.9);
+   if (drawAnaStep) DrawTextOnPad(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.78, 0.70, 0.9);
 }
 
 void CbmAnaDielectronTaskDraw::DrawPtYEfficiencyAll()
@@ -424,15 +409,15 @@ void CbmAnaDielectronTaskDraw::DrawPmtXY()
 	c->cd(1);
 	DrawH2(H2("fh_signal_pmtXY"));
 	gPad->SetLogz(true);
-	DrawTextOnHist(CbmLmvmHist::fSourceTypesLatex[kSignal], 0.50, 0.78, 0.70, 0.9);
+	DrawTextOnPad(CbmLmvmHist::fSourceTypesLatex[kSignal], 0.50, 0.78, 0.70, 0.9);
 	c->cd(2);
 	DrawH2(H2("fh_pi0_pmtXY"));
 	gPad->SetLogz(true);
-	DrawTextOnHist(CbmLmvmHist::fSourceTypesLatex[kPi0], 0.50, 0.78, 0.70, 0.9);
+	DrawTextOnPad(CbmLmvmHist::fSourceTypesLatex[kPi0], 0.50, 0.78, 0.70, 0.9);
 	c->cd(3);
 	DrawH2(H2("fh_gamma_pmtXY"));
 	gPad->SetLogz(true);
-	DrawTextOnHist(CbmLmvmHist::fSourceTypesLatex[kGamma], 0.50, 0.78, 0.70, 0.9);
+	DrawTextOnPad(CbmLmvmHist::fSourceTypesLatex[kGamma], 0.50, 0.78, 0.70, 0.9);
 }
 
 void CbmAnaDielectronTaskDraw::Draw1DSourceTypes(
@@ -553,7 +538,7 @@ void CbmAnaDielectronTaskDraw::DrawSourcesBgPairsEpEm(
    DrawH2(h, kLinear, kLinear, kLinear, "text COLZ");
    h->GetXaxis()->SetLabelSize(0.1);
    h->GetYaxis()->SetLabelSize(0.1);
-   if (drawAnaStep) DrawTextOnHist(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.90, 0.70, 0.99);
+   if (drawAnaStep) DrawTextOnPad(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.90, 0.70, 0.99);
 }
 
 void CbmAnaDielectronTaskDraw::DrawSourcesBgPairsAll()
@@ -619,8 +604,8 @@ void CbmAnaDielectronTaskDraw::Draw2DCut(
       DrawH2(H2( hist + "_"+ CbmLmvmHist::fSourceTypes[i] ));
       double nofPerEvent = H2( hist + "_"+ CbmLmvmHist::fSourceTypes[i] )->GetEntries()/(double)fNofEvents;
       cout << hist << "_" << CbmLmvmHist::fSourceTypes[i] << " = " << nofPerEvent << endl;
-      DrawTextOnHist( ( Cbm::NumberToString(nofPerEvent, 2) + "/ev."), 0.1, 0.9, 0.5, 0.99);
-      DrawTextOnHist(CbmLmvmHist::fSourceTypesLatex[i], 0.6, 0.89, 0.7, 0.99);
+      DrawTextOnPad( ( Cbm::NumberToString(nofPerEvent, 2) + "/ev."), 0.1, 0.9, 0.5, 0.99);
+      DrawTextOnPad(CbmLmvmHist::fSourceTypesLatex[i], 0.6, 0.89, 0.7, 0.99);
       Draw2DCutTriangle(cutCrossX, cutCrossY);
       projX.push_back( H2( hist + "_"+ CbmLmvmHist::fSourceTypes[i] )->ProjectionX() );
       projY.push_back( H2( hist + "_"+ CbmLmvmHist::fSourceTypes[i] )->ProjectionY() );
@@ -790,7 +775,7 @@ void CbmAnaDielectronTaskDraw::DrawMinvSandBg(
    bg->SetMarkerStyle(1);
    sbg->SetMarkerStyle(1);
 
-   DrawTextOnHist(CbmLmvmHist::fAnaStepsLatex[step], 0.65, 0.78, 0.85, 0.9);
+   DrawTextOnPad(CbmLmvmHist::fAnaStepsLatex[step], 0.65, 0.78, 0.85, 0.9);
 }
 
 void CbmAnaDielectronTaskDraw::DrawMinvSandBgAll()
@@ -831,7 +816,7 @@ void CbmAnaDielectronTaskDraw::DrawMinvSource(
    }
    legend->SetFillColor(kWhite);
    legend->Draw();
-   if (drawAnaStep) DrawTextOnHist(CbmLmvmHist::fAnaStepsLatex[step], 0.65, 0.78, 0.85, 0.9);
+   if (drawAnaStep) DrawTextOnPad(CbmLmvmHist::fAnaStepsLatex[step], 0.65, 0.78, 0.85, 0.9);
 }
 
 void CbmAnaDielectronTaskDraw::DrawMinvSourceAll()
@@ -1173,7 +1158,7 @@ void CbmAnaDielectronTaskDraw::DrawMinvPtAll()
 
       TH2D* h = H2("fh_signal_minv_pt_" + CbmLmvmHist::fAnaSteps[step]);
       DrawH2(h, kLinear, kLinear, kLinear, "COLZ");
-      DrawTextOnHist(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.78, 0.70, 0.9);
+      DrawTextOnPad(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.78, 0.70, 0.9);
    }
 }
 
@@ -1189,7 +1174,7 @@ void CbmAnaDielectronTaskDraw::DrawBgSourcesVsMomentum()
       if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)) continue;
       c1->cd (hi++);
       Draw1DSourceTypes("fh_source_mom_" + CbmLmvmHist::fAnaSteps[step], false);
-      DrawTextOnHist(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.90, 0.70, 0.99);
+      DrawTextOnPad(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.90, 0.70, 0.99);
    }
    TCanvas *c1_1 = CreateCanvas("lmvm_source_mom_ttcut","lmvm_source_mom_ttcut", 600, 600);
    Draw1DSourceTypes("fh_source_mom_" + CbmLmvmHist::fAnaSteps[kTtCut], false);
@@ -1201,7 +1186,7 @@ void CbmAnaDielectronTaskDraw::DrawBgSourcesVsMomentum()
       if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)) continue;
       c3->cd (hi++);
       Draw1DSourceTypes("fh_source_pt_" + CbmLmvmHist::fAnaSteps[step], false);
-      DrawTextOnHist(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.90, 0.70, 0.99);
+      DrawTextOnPad(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.90, 0.70, 0.99);
    }
    TCanvas *c1_2 = CreateCanvas("lmvm_source_pt_ttcut","lmvm_source_pt_ttcut", 600, 600);
    Draw1DSourceTypes("fh_source_pt_" + CbmLmvmHist::fAnaSteps[kTtCut], false);
@@ -1214,7 +1199,7 @@ void CbmAnaDielectronTaskDraw::DrawBgSourcesVsMomentum()
       if ( !fUseMvd && (step == kMvd1Cut || step == kMvd2Cut)) continue;
       c2->cd (hi++);
       Draw1DSourceTypes("fh_opening_angle_" + CbmLmvmHist::fAnaSteps[step]);
-      DrawTextOnHist(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.90, 0.70, 0.99);
+      DrawTextOnPad(CbmLmvmHist::fAnaStepsLatex[step], 0.50, 0.90, 0.70, 0.99);
    }
    TCanvas *c1_3 = CreateCanvas("lmvm_opening_angle_ttcut","lmvm_opening_angle_ttcut", 600, 600);
    Draw1DSourceTypes("fh_opening_angle_" + CbmLmvmHist::fAnaSteps[kTtCut], false);
