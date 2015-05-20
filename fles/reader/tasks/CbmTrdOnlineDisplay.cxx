@@ -168,7 +168,7 @@ InitStatus CbmTrdOnlineDisplay::ReInit()
 }
 
 // ---- Exec ----------------------------------------------------------
-void CbmTrdOnlineDisplay::Exec(Option_t* option)
+void CbmTrdOnlineDisplay::Exec(Option_t*)
 {
   Int_t maxTrigger = 0;
   fEventCounter++;

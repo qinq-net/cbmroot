@@ -48,6 +48,7 @@ CbmAnaJpsiTask::CbmAnaJpsiTask()
 	  fPrimVertex(NULL),
 	  fKFVertex(),
 	  fCandidates(),
+          fElIdAnn(NULL),
 	  fHM(NULL),
 	  fCuts()
 {

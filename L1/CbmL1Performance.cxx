@@ -443,9 +443,10 @@ void CbmL1::HistoPerformance() // TODO: check if works correctly. Change vHitRef
 
   static TH1F *h_notfound_mom, *h_notfound_nhits, *h_notfound_station, *h_notfound_r, *h_notfound_tx, *h_notfound_ty;
   
-  static TH1F *h_mcp, *h_nmchits, *h_chi2, *h_prob, *MC_vx, *MC_vy, *MC_vz, *VtxChiPrim, *VtxChiSec;
+  static TH1F *h_mcp, *h_nmchits;
+//  static TH1F *h_chi2, *h_prob, *MC_vx, *MC_vy, *MC_vz, *VtxChiPrim, *VtxChiSec;
 
-  static TH2F *P_vs_P ;
+//  static TH2F *P_vs_P ;
 
   static TH2F *h2_vertex, *h2_prim_vertex, *h2_sec_vertex;
   //static TH3F *h3_vertex, *h3_prim_vertex, *h3_sec_vertex;
@@ -579,17 +580,21 @@ void CbmL1::HistoPerformance() // TODO: check if works correctly. Change vHitRef
     h_notfound_tx = new TH1F("h_notfound_tx", "tx of not found track at the first hit", 50, -5.0, 5.0);
     h_notfound_ty = new TH1F("h_notfound_ty", "ty of not found track at the first hit", 50, -1.0, 1.0);
 
+/*
     h_chi2 = new TH1F("chi2", "Chi^2", 100, 0.0, 10.);
     h_prob = new TH1F("prob", "Prob", 100, 0.0, 1.01);
     VtxChiPrim = new TH1F("vtxChiPrim", "Chi to primary vtx for primary tracks", 100, 0.0, 10.);
     VtxChiSec = new TH1F("vtxChiSec", "Chi to primary vtx for secondary tracks", 100, 0.0, 10.);
+*/
     h_mcp = new TH1F("h_mcp", "MC P ", 500, 0.0, 5.0);
+/*
     MC_vx = new TH1F("MC_vx", "MC Vertex X", 100, -.05, .05);
     MC_vy = new TH1F("MC_vy", "MC Vertex Y", 100, -.05, .05);
     MC_vz = new TH1F("MC_vz", "MC Vertex Z", 100, -.05, .05);
+*/
     h_nmchits = new TH1F("h_nmchits", "N STS hits on MC track", 50, 0.0, 10.0);
  
-    P_vs_P = new TH2F("P_vs_P", "Resolution P/Q vs P", 20, 0., 20.,100, -.05, .05);
+//    P_vs_P = new TH2F("P_vs_P", "Resolution P/Q vs P", 20, 0., 20.,100, -.05, .05);
       
     h2_vertex = new TH2F("h2_vertex", "2D vertex distribution", 105, -5., 100., 100, -50., 50.);
     h2_prim_vertex = new TH2F("h2_primvertex", "2D primary vertex distribution", 105, -5., 100., 100, -50., 50.);

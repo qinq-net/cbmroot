@@ -313,7 +313,7 @@ public:
    /**
     * \brief Clear memory. Remove all histograms.
     */
-   void Clear();
+   void Clear(Option_t*);
 
    /**
     * \brief Shrink empty bins in H1.

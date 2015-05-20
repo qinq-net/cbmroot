@@ -26,6 +26,7 @@ CbmStsModule::CbmStsModule() : CbmStsElement(),
                                fDeadTime(0.),
                                fNoise(0.),
                                fIsSet(kFALSE),
+                               fDeadChannels(),
                                fAnalogBuffer(),
                                fDigis(),
                                fClusters()
@@ -48,6 +49,7 @@ CbmStsModule::CbmStsModule(const char* name, const char* title,
                            fNoise(0.),
                            fIsSet(0),
                            fAnalogBuffer(),
+                           fDeadChannels(),
                            fDigis(),
                            fClusters()
 {
