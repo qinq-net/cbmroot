@@ -48,7 +48,7 @@ CbmAnaJpsiTask::CbmAnaJpsiTask()
 	  fPrimVertex(NULL),
 	  fKFVertex(),
 	  fCandidates(),
-          fElIdAnn(NULL),
+	  fElIdAnn(NULL),
 	  fHM(NULL),
 	  fCuts()
 {
@@ -140,102 +140,48 @@ void CbmAnaJpsiTask::CreateSourceTypesH1(
    }
 }
 
+void CbmAnaJpsiTask::CreateSourceTypesH2(
+      const string& name,
+      const string& axisX,
+      const string& axisY,
+      const string& axisZ,
+      double nBinsX,
+      double minX,
+      double maxX,
+      double nBinsY,
+      double minY,
+      double maxY)
+{
+   string hname = "";
+   for (Int_t i = 0; i < CbmAnaJpsiHist::fNofSourceTypes; i++){
+      hname = name + "_"+ CbmAnaJpsiHist::fSourceTypes[i];
+      fHM->Create2<TH2D>(hname, hname+";"+axisX+";"+axisY+";"+axisZ, nBinsX, minX, maxX, nBinsY, minY, maxY);
+   }
+}
+
 void CbmAnaJpsiTask::InitHist()
 {
 	fHM = new CbmHistManager();
-	//Mom / Pt
-   fHM->Create1<TH1D>("fhMcMomAll","fhMcMomAll;Momentum [GeV/c];Entries",150,0,15);
-   fHM->Create1<TH1D>("fhMcMomElectrons","fhMcMomElectrons;Momentum [GeV/c];Entries",150,0,15);
-   fHM->Create2<TH2D>("fhMcPtYElectrons","fhMcPtYElectrons;Pt [GeV/c];Rapidity;Entries",40,0,4,40,0,4);
-   //PDGCode
-   fHM->Create1<TH1D>("fhPdgCodeAll","fhPdgCodeAll;PdgCode of participating particles; Entries",2000,-1000,1000);
 
-   //NofHits in ...
-   fHM->Create1<TH1D>("fhNofStsHitsInEvent","fhNofStsHitsInEvent;Number of StsHits per Event;Entries",100,0,25000);
-   fHM->Create1<TH1D>("fhNofRichHitsInEvent","fhNofRichHitsInEvent;Number of RichHits per Event;Entries",100,0,2000);
-   fHM->Create1<TH1D>("fhNofTrdHitsInEvent","fhNofTrdHitsInEvent;Number of TrdHits per Event;Entries",100,0,15000);
-   fHM->Create1<TH1D>("fhNofTofHitsInEvent","fhNofTofHitsInEvent;Number of TofHits per Event;Entries",100,0,3000);
+   //RICH PMT plane XY
+   CreateSourceTypesH2("fhRichPmtXY","X [cm]","Y [cm]","Yield", 220, -110, 110, 400, -200, 200);
 
-   //NofTracks/Rings
-   fHM->Create1<TH1D>("fhNofStsTracksInEvent","fhNofStsTracksInEvent;Number of StsTracks per Event;Entries",90,0,900);
-   fHM->Create1<TH1D>("fhNofRichRingsInEvent","fhNofRichRingsInEvent;Number of RichRings per Event;Entries",70,0,70);
-   fHM->Create1<TH1D>("fhNofTrdTracksInEvent","fhNofTrdTracksInEvent;Number of TrdTracks per Event;Entries",70,0,700);
-
-   //HitsInPlane
-   fHM->Create2<TH2D>("fhStsHitXY","fhStsHitXY;X [cm];Y [cm];Entries",100,-50,50,100,-50,50);
-   fHM->Create2<TH2D>("fhRichHitXY","fhRichHitXY;X [cm];Y [cm];Entries",200,-100,100,400,-200,200);
-   fHM->Create2<TH2D>("fhTrdHitXY","fhTrdHitXY;X [cm];Y [cm];Entries",1000,-500,500,1000,-500,500);
-   fHM->Create2<TH2D>("fhTofHitXY","fhTofHitXY;X [cm];Y [cm];Entries",1000,-500,500,1000,-500,500);
-   fHM->Create1<TH1D>("fhAllDetektorHitsInZPosition","fhAllDetektorHitsInZPosition;Z [cm];Entries",1100,0,1100);
-
-   //NofTracks
-   fHM->Create1<TH1D>("fhNofMcTracksInEvent","fhNofMcTracksInEvent;Number of MC Tracks per Event;Entries",200,0,25000);
-
-   //NofPoints in ...
-   fHM->Create1<TH1D>("fhNofStsPointInEvent","fhNofStsPointInEvent;Number of StsPoints per Event;Entries",200,0,10000);
-   fHM->Create1<TH1D>("fhNofRichPointInEvent","fhNofRichPointInEvent;Number of RhichPoints per Event;Entries",200,0,20000);
-   fHM->Create1<TH1D>("fhNofTrdPointInEvent","fhNofTrdPointInEvent;Number of TrdPoints per Event;Entries",200,0,15000);
-   fHM->Create1<TH1D>("fhNofTofPointInEvent","fhNofTofPointInEvent;Number of TofPoints per Event;Entries",200,0,20000);
-
-   //signal electrons
-   fHM->Create1<TH1D>("fhSignalElectronMom","fhSignalElectronMom;P [GeV/c];Entries",150,0,15);
-   fHM->Create1<TH1D>("fhSignalElectronPt","fhSignalElectronPt;Pt [GeV/c];Entries",40,0,4);
-   fHM->Create1<TH1D>("fhSignalMotherPdgCode","fhSignalMotherPdgCode;PdgCode;Entries",28,-14,14);
-   fHM->Create2<TH2D>("fhRichPointSignalElectronPMTPlane","fhRichPointSignalElectronPMTPlane;X[cm];Y[cm];Entries",220,-110,110,400,-200,200);
-   fHM->Create2<TH2D>("fhRichHitSignalElectronPMTPlane","fhRichHitSignalElectronPMTPlane;X[cm];Y[cm];Entries",220,-110,110,400,-200,200);
-
-
-   //conversion electrons
-   fHM->Create1<TH1D>("fhGammaConvElectronMom","fhGammaConvElectronMom;P [GeV/c];Entries",150,0,15);
-   fHM->Create1<TH1D>("fhGammaConvElectronPt","fhGammaConvElectronPt;P [GeV/c];Entries",25,0,2.5);
-   fHM->Create2<TH2D>("fhGammaConvElectronStartVertXY","fhGammaConvElectronStartVert;X[cm];Y[cm];Entries",600,-300,300,600,-300,300);
-   fHM->Create2<TH2D>("fhGammaConvElectronStartVertZX","fhGammaConvElectronStartVert;Z[cm];X[cm];Entries",1100,0,1100,400,-200,200);
-   fHM->Create2<TH2D>("fhGammaConvElectronStartVertZY","fhGammaConvElectronStartVert;Z[cm];Y[cm];Entries",1100,0,1100,400,-200,200);
-   fHM->Create2<TH2D>("fhGammaConvElectronStartVertZSqrt(X2+Y2)","fhGammaConvElectronStartVertZSqrt(X2+Y2);Z[cm];Sqrt(#X^{2}+#Y^{2})[cm];Entries",1100,0,1100,600,0,600);
-
-   //Dalitz
-   fHM->Create1<TH1D>("fhpi0DalitzDecayMomentum","fhpi0DalitzDecayMomentum;P [GeV/c];Entries",140,0,14);
-
-   //Photons from Gamma And Pi0 PMTPlane | RichPoint
-   fHM->Create2<TH2D>("fhRichPointGammaAndPi0PMTPlane","fhRichPointGammaAndPi0PMTPlane;X[cm];Y[cm];Entries",220,-110,110,400,-200,200);
-
-   //GammaConversion Photon in PMTPlane XY | RichPoint
-   fHM->Create2<TH2D>("fhRichPointGammaConversionPhotonInPETPlaneXY","fhRichPointGammaConversionPhotonInPETPlaneXY;X[cm];Y[cm];Entries",220,-110,110,400,-200,200);
-
-   //Dalitz Decay in PMTPlane XY | RichPoint
-   fHM->Create2<TH2D>("fhRichPointDalitzDecayInPETPlaneXY","fhRichPointDalitzDecayInPETPlaneXY;X[cm];Y[cm];Entries",220,-110,110,400,-200,200);
-
-
-   //GammaConversion Photon in PMTPlane XY | RichHit
-   fHM->Create2<TH2D>("fhRichHitGammaConversionPhotonInPETPlaneXY","fhRichHitGammaConversionPhotonInPETPlaneXY;X[cm];Y[cm];Entries",220,-110,110,400,-200,200);
-
-   //Dalitz Decay in PMTPlane XY | RichHit
-   fHM->Create2<TH2D>("fhRichHitDalitzDecayInPETPlaneXY","fhRichHitDalitzDecayInPETPlaneXY;X[cm];Y[cm];Entries",220,-110,110,400,-200,200);
-
-   //reconstructed momenta
+   //distributions of ID and analysis cuts
    CreateSourceTypesH1("fhChi2PrimEl","#chi^{2}_{prim}", "Yield", 200, 0., 20.);
    CreateSourceTypesH1("fhMomEl","P [GeV/c]", "Yield", 160, 0., 16.);
    CreateSourceTypesH1("fhChi2StsEl","#chi^{2}_{STS}", "Yield", 80, 0., 8.);
    CreateSourceTypesH1("fhRapidityEl","Rapidity", "Yield", 40, 0., 4.);
-   CreateSourceTypesH1("fhPtEl","#P_{t}", "Yield", 40, 0., 4.);
+   CreateSourceTypesH1("fhPtEl","P_{t} [GeV/c]", "Yield", 40, 0., 4.);
    CreateSourceTypesH1("fhRichAnn","RichAnn", "Yield", 20, 0., 2.);
    CreateSourceTypesH1("fhTrdAnn","TrdAnn", "Yield", 20, 0., 2.);
-   fHM->Create2<TH2D>("fhTofMomM2Signal","TofMomM2Signal;m^{2} [(GeV/c^{2})^{2}];p [GeV/c];Entries", 60, 0, 12,10,0,10);
-   fHM->Create2<TH2D>("fhTofMomM2Background","TofMomM2Background;m^{2} [(GeV/c^{2})^{2}];p [GeV/c];Entries", 100, 0, 20,80,0,8);
-   fHM->Create2<TH2D>("fhTofMomM2Gamma","TofMomM2Gamma;m^{2} [(GeV/c^{2})^{2}];p [GeV/c];Entries", 50, 0, 10,10,0,1);
-   fHM->Create2<TH2D>("fhTofMomM2Pi0","TofMomM2Pi0;m^{2} [(GeV/c^{2})^{2}];p [GeV/c];Entries", 50, 0, 10,10,0,1);
-
-
-
+   CreateSourceTypesH2("fhTofM2","m^{2} [(GeV/c^{2})^{2}]","p [GeV/c]","Yield", 40, 0., 4., 280, -0.2, 1.2);
 
    //e+/- Mc
    fHM->Create2<TH2D>("fhMcEpmRapidityPt","fhMcEpmRapidityPt;P_{t} [GeV/c];y;Entries",40,0,4,30,0,3);
-   fHM->Create1<TH1D>("fhMcEpmMomentumMag","fhMcEpmMomentumMag;p [GeV/c];Yield",350,0,35);
    fHM->Create1<TH1D>("fhMcEpmMinv","fhMcEpmMinv;m_{inv} [GeV/c^{2}];Yield",500,0,5); //invariant mass
 
    //e+/- Accepted
    fHM->Create2<TH2D>("fhAccEpmRapidityPt","fhAccEpmRapidityPt;P_{t} [GeV/c];y;Entries",40,0,4,30,0,3);
-   fHM->Create1<TH1D>("fhAccEpmMomentumMag","fhAccEpmMomentumMag; p [GeV/c];Yield",350,0,35);
    fHM->Create1<TH1D>("fhAccEpmMinv","fhAccEpmMinv;m_{inv} [GeV/c^{2}];Yield",500,0,5);//invariant mass
 
    //e+/- Candidate
@@ -250,8 +196,6 @@ void CbmAnaJpsiTask::InitHist()
    //e+/- Candidate with Chi2primCut
    fHM->Create2<TH2D>("fhRecoCandEpmPtYChi2PrimCut","fhRecoCandMcEpmPtYChi2PrimCut;P_{t} [GeV/c];y;Entries",40,0,4,30,0,3);
    fHM->Create1<TH1D>("fhRecoCandEpmMinvChi2PrimCut","fhRecoCandEpmMinvChi2PrimCut;m_{inv} [GeV/c^{2}];Yield",500,0,5);// reconstructed invariant mass
-
-
 }
 
 
@@ -267,137 +211,13 @@ void CbmAnaJpsiTask::Exec(
       Fatal("CbmAnaJpsiTask::Exec","No PrimaryVertex array!");
    }
 
-   Int_t nofMcTracks = fMcTracks->GetEntriesFast();
-   //fhNofMcTracksInEvent->Fill(nofMcTracks);
-   fHM->H1("fhNofMcTracksInEvent")->Fill(nofMcTracks);
-   
-   for (Int_t i=0; i<nofMcTracks; i++)
-   {
-      CbmMCTrack* track = (CbmMCTrack*)fMcTracks->At(i);
-      Double_t McMomenta = track->GetP();
-      //fhMcMomAll->Fill(McMomenta);
-      fHM->H1("fhMcMomAll")->Fill(McMomenta);
-      
-      Int_t pdgcode = track->GetPdgCode();
-      Int_t MotherId = track->GetMotherId();
-      //fhPdgCodeAll->Fill(pdgcode);
-      fHM->H1("fhPdgCodeAll")->Fill(pdgcode);
-       
-      if ( TMath::Abs(pdgcode)==11 && MotherId==-1) 
-      {
-    	  //fhMcMomElectrons->Fill(McMomenta);
-    	  fHM->H1("fhMcMomElectrons")->Fill(McMomenta);
-    	  Double_t McPt = track->GetPt();
-    	  Double_t McY = track->GetRapidity();
-    	  fHM->H2("fhMcPtYElectrons")->Fill(McPt,McY);
-      }
-      
-   } 
-   
-   
-   Int_t nofStsPoint = fStsPoints->GetEntriesFast();
-   fHM->H1("fhNofStsPointInEvent")->Fill(nofStsPoint);
-   
-   Int_t nofRichPoint = fRichPoints->GetEntriesFast();
-   fHM->H1("fhNofRichPointInEvent")->Fill(nofRichPoint);
-   
-   Int_t nofTrdPoint = fTrdPoints->GetEntriesFast();
-   fHM->H1("fhNofTrdPointInEvent")->Fill(nofTrdPoint);
-   
-   Int_t nofTofPoint = fTofPoints->GetEntriesFast();
-   fHM->H1("fhNofTofPointInEvent")->Fill(nofTofPoint);
-   
-   Int_t nofStsHit = fStsHits->GetEntriesFast();
-   fHM->H1("fhNofStsHitsInEvent")->Fill(nofStsHit);
-   
-   Int_t nofRichHit = fRichHits->GetEntriesFast();
-   fHM->H1("fhNofRichHitsInEvent")->Fill(nofRichHit);
-   
-   Int_t nofTrdHit = fTrdHits->GetEntriesFast();
-   fHM->H1("fhNofTrdHitsInEvent")->Fill(nofTrdHit);
-   
-   Int_t nofTofHit = fTofHits->GetEntriesFast();
-   fHM->H1("fhNofTofHitsInEvent")->Fill(nofTofHit);
-   
-   Int_t nofStsTracks = fStsTracks->GetEntriesFast();
-   fHM->H1("fhNofStsTracksInEvent")->Fill(nofStsTracks);
-   
-   Int_t nofRichRings = fRichRings->GetEntriesFast();
-   fHM->H1("fhNofRichRingsInEvent")->Fill(nofRichRings);
-   
-   Int_t nofTrdTracks = fTrdTracks->GetEntriesFast();
-   fHM->H1("fhNofTrdTracksInEvent")->Fill(nofTrdTracks);
- 
-   
-   for (Int_t i=0;i<nofStsHit;i++)
-   {
-     CbmStsHit* StsHit = (CbmStsHit*)fStsHits->At(i);
-     Double_t StsHitXPos = StsHit->GetX();
-     Double_t StsHitYPos = StsHit->GetY();
-     
-     TVector3 vPos;
-     StsHit->Position(vPos);
-     vPos.Z();
-     
-     fHM->H2("fhStsHitXY")->Fill(StsHitXPos,StsHitYPos);
-
-     fHM->H1("fhAllDetektorHitsInZPosition")->Fill(vPos.Z());
-  }
-  
-   for (Int_t i=0;i<nofRichHit;i++)
-   {
-     CbmRichHit* RichHit = (CbmRichHit*)fRichHits->At(i);
-     Double_t RichHitXPos = RichHit->GetX();
-     Double_t RichHitYPos = RichHit->GetY();
-     
-     
-     TVector3 vPos;
-     RichHit->Position(vPos);
-     vPos.Z();
-     
-     fHM->H2("fhRichHitXY")->Fill(RichHitXPos,RichHitYPos);
-     fHM->H1("fhAllDetektorHitsInZPosition")->Fill(vPos.Z());
-  }
-  
-  for (Int_t i=0;i<nofTrdHit;i++)
-   {
-     CbmTrdHit* TrdHit = (CbmTrdHit*)fTrdHits->At(i);
-     Double_t TrdHitXPos = TrdHit->GetX();
-     Double_t TrdHitYPos = TrdHit->GetY();
-     
-     TVector3 vPos;
-     TrdHit->Position(vPos);
-     vPos.Z();
-     
-     fHM->H2("fhTrdHitXY")->Fill(TrdHitXPos,TrdHitYPos);
-     fHM->H1("fhAllDetektorHitsInZPosition")->Fill(vPos.Z());
-  }
-  
-  for (Int_t i=0;i<nofTofHit;i++)
-   {
-     CbmTofHit* TofHit = (CbmTofHit*)fTofHits->At(i);
-     Double_t TofHitXPos = TofHit->GetX();
-     Double_t TofHitYPos = TofHit->GetY();
-     
-     TVector3 vPos;
-     TofHit->Position(vPos);
-     vPos.Z();
-     
-     fHM->H2("fhTofHitXY")->Fill(TofHitXPos,TofHitYPos);
-     fHM->H1("fhAllDetektorHitsInZPosition")->Fill(vPos.Z());
-  }
-
   if (fPrimVertex != NULL){
      fKFVertex = CbmKFVertex(*fPrimVertex);
   } else {
      Fatal("CbmAnaDielectronTask::Exec","No PrimaryVertex array!");
   }
 
-  McPair();
-
-  MCPointPMT();
-
-  RichHitPMT();
+  RichPmtXY();
 
   FillCandidates();
 
@@ -528,7 +348,7 @@ void CbmAnaJpsiTask::DifferenceSignalAndBg()
             fHM->H1("fhPtEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fMomentum.Perp());
             fHM->H1("fhRichAnn_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fRichAnn);
             fHM->H1("fhTrdAnn_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fTrdAnn);
-            fHM->H2("fhTofMomM2Signal")->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
+            fHM->H1("fhTofM2_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
         } else {
         	fHM->H1("fhChi2PrimEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fChi2Prim);
         	fHM->H1("fhMomEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fMomentum.Mag());
@@ -537,8 +357,7 @@ void CbmAnaJpsiTask::DifferenceSignalAndBg()
         	fHM->H1("fhPtEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fMomentum.Perp());
         	fHM->H1("fhRichAnn_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fRichAnn);
             fHM->H1("fhTrdAnn_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fTrdAnn);
-            fHM->H2("fhTofMomM2Background")->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
-
+            fHM->H1("fhTofM2_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
         }
         if (fCandidates[i].fIsMcGammaElectron){
         	fHM->H1("fhChi2PrimEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fChi2Prim);
@@ -548,8 +367,7 @@ void CbmAnaJpsiTask::DifferenceSignalAndBg()
         	fHM->H1("fhPtEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fMomentum.Perp());
         	fHM->H1("fhRichAnn_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fRichAnn);
             fHM->H1("fhTrdAnn_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fTrdAnn);
-            fHM->H2("fhTofMomM2Gamma")->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
-
+            fHM->H1("fhTofM2_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
         }
         if (fCandidates[i].fIsMcPi0Electron) {
         	fHM->H1("fhChi2PrimEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fChi2Prim);
@@ -559,8 +377,7 @@ void CbmAnaJpsiTask::DifferenceSignalAndBg()
         	fHM->H1("fhPtEl_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fMomentum.Perp());
         	fHM->H1("fhRichAnn_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fRichAnn);
             fHM->H1("fhTrdAnn_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fTrdAnn);
-            fHM->H2("fhTofMomM2Pi0")->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
-
+            fHM->H1("fhTofM2_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
         }
     } // loop over candidates
 }
@@ -595,15 +412,13 @@ void CbmAnaJpsiTask::PairMcAndAcceptance()
 			// e+/- from signal
 			if (motherIdM == -1 && pdgM == -11 && motherIdP == -1 && pdgP == 11) {
 
-				fHM->H2("fhMcEpmRapidityPt")->Fill(p.fRapidity,p.fPt);	// 2D histo p.fRapidity, p.fPt
-				fHM->H1("fhMcEpmMomentumMag")->Fill(p.fMomentumMag); 	// 1D histo p.fMomentumMag
-				fHM->H1("fhMcEpmMinv")->Fill(p.fMinv);					// 1D histo p.fMinv
+				fHM->H2("fhMcEpmRapidityPt")->Fill(p.fRapidity,p.fPt);
+				fHM->H1("fhMcEpmMinv")->Fill(p.fMinv);
 
 				//accepted e+/-
 				if (isAccP && isAccM) {
-					fHM->H2("fhAccEpmRapidityPt")->Fill(p.fRapidity,p.fPt); // 2D histo p.fRapidity, p.fPt
-					fHM->H1("fhAccEpmMomentumMag")->Fill(p.fMomentumMag);	// 1D histo p.fMomentumMag
-					fHM->H1("fhAccEpmMinv")->Fill(p.fMinv);					// 1D histo p.fMinv
+					fHM->H2("fhAccEpmRapidityPt")->Fill(p.fRapidity,p.fPt);
+					fHM->H1("fhAccEpmMinv")->Fill(p.fMinv);
 				}
 			}
 		}//iM
@@ -673,9 +488,6 @@ void CbmAnaJpsiTask::PairMcAndAcceptance()
 			}
 		}
 	}//cand | loop over electrons
-
-
-
 } // PairsAcceptance
 
 void CbmAnaJpsiTask::IsElectron(
@@ -690,9 +502,9 @@ void CbmAnaJpsiTask::IsElectron(
 	Double_t annRich = cand->fRichAnn;
 	Double_t annTrd = cand->fTrdAnn;
 	Bool_t tofEl = IsTofElectron(gTrack, momentum, cand);
-	Bool_t momCut = (fCuts.fMomentumCut > 0.)?(momentum < fCuts.fMomentumCut):true;
+	//Bool_t momCut = (fCuts.fMomentumCut > 0.)?(momentum < fCuts.fMomentumCut):true;
 
-	if (richEl && trdEl && tofEl && momCut)
+	if (richEl && trdEl && tofEl)
 	{
 	     cand->fIsElectron = true;
 	} else
@@ -780,192 +592,56 @@ Bool_t CbmAnaJpsiTask::IsTofElectron(
 }
 
 
-void CbmAnaJpsiTask::McPair()
-{
-  Int_t nofMcTracks = fMcTracks->GetEntriesFast();
-  for (Int_t i=0; i<nofMcTracks;i++)
-  {
-	CbmMCTrack* mctrack = (CbmMCTrack*) fMcTracks->At(i);
-    Int_t motherId = mctrack->GetMotherId();
-    Int_t pdgCode = mctrack->GetPdgCode();
-    Double_t McMomentum = mctrack->GetP();
-    Double_t motherPt = mctrack->GetPt();
+void CbmAnaJpsiTask::RichPmtXY() {
+	Int_t nofRichHits = fRichHits->GetEntriesFast();
+	for (Int_t i = 0; i < nofRichHits; i++) {
+		// get the RichHit from array
+		CbmRichHit* richHit = (CbmRichHit*) fRichHits->At(i);
+		if (NULL == richHit) continue;
+		Int_t PointInd = richHit->GetRefId();
+		if (PointInd < 0) continue;
 
-    if (TMath::Abs(pdgCode) != 11 ) continue; //look for electron
+		// get the McRichPoint of the RichHit
+		CbmRichPoint* richMcPoint = (CbmRichPoint*) fRichPoints->At(PointInd);
+		if (NULL == richMcPoint) continue;
 
-    if (motherId == -1 )
-    {   //analysis of signal electrons
-    	fHM->H1("fhSignalElectronMom")->Fill(McMomentum);
-    	fHM->H1("fhSignalElectronPt")->Fill(motherPt);
-    	fHM->H1("fhSignalMotherPdgCode")->Fill(pdgCode);
-    }
+		// get the RICH photon MC Track
+		Int_t photonMcTrackId = richMcPoint->GetTrackID();
+		if (photonMcTrackId == -1) continue;
+		CbmMCTrack* photonMcTrack = (CbmMCTrack*) fMcTracks->At(photonMcTrackId);
+		if (NULL == photonMcTrack) continue;
 
+		// get photon mother MC Track (electron, pion etc.)
+		Int_t photonMotherId = photonMcTrack->GetMotherId();
+		if (photonMotherId == -1) continue;
+		CbmMCTrack* photonMotherMcTrack = (CbmMCTrack*) fMcTracks->At( photonMotherId);
+		if (NULL == photonMotherMcTrack) continue;
+		Int_t photonMotherPdgCode = photonMotherMcTrack->GetPdgCode();
 
-    if (motherId != -1) // no Signal electron
-    { CbmMCTrack* motherMcTrack = (CbmMCTrack*) fMcTracks->At(motherId);
-      Int_t grandmotherId = motherMcTrack->GetMotherId();
-      Int_t motherPdgCode = motherMcTrack->GetPdgCode();
-      Double_t motherMcMomentum = motherMcTrack->GetP();
-      Double_t motherMcPt = motherMcTrack->GetPt();
+		// check that the photon was produced by electron
+		if (TMath::Abs(11) == photonMotherPdgCode) {
+			Int_t photonGrandmotherId = photonMotherMcTrack->GetMotherId();
 
-      if (motherPdgCode == 22)	//gamma conversion particle
-      {        //analysis of gamma conversion particle
-    	fHM->H1("fhGammaConvElectronMom")->Fill(motherMcMomentum);
-    	fHM->H1("fhGammaConvElectronPt")->Fill(motherMcPt);
+			// if primary signal electron
+			if (TMath::Abs(11) == photonMotherPdgCode || photonGrandmotherId == -1) {
+				fHM->H2("fhRichPmtXY_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill( richHit->GetX(), richHit->GetY());
+			}
 
-    	TVector3 v;
-    	mctrack->GetStartVertex(v);
-    	fHM->H2("fhGammaConvElectronStartVertXY")->Fill(v.X(),v.Y());
-    	fHM->H2("fhGammaConvElectronStartVertZY")->Fill(v.Z(),v.Y());
-    	fHM->H2("fhGammaConvElectronStartVertZX")->Fill(v.Z(),v.X());
-    	fHM->H2("fhGammaConvElectronStartVertZSqrt(X2+Y2)")->Fill( v.Z(),sqrt(v.Y()*v.Y()+v.X()*v.X()) );
+			if (photonGrandmotherId != -1) {
+				CbmMCTrack* photonGrandmotherMcTrack = (CbmMCTrack*) fMcTracks->At(photonGrandmotherId);
+				if (NULL == photonGrandmotherMcTrack) continue;
+				Int_t photonGrandmotherPdgCode = photonGrandmotherMcTrack->GetPdgCode();
 
-        if (grandmotherId!=-1)
-        {
-    	CbmMCTrack* grandmotherMcTrack = (CbmMCTrack*) fMcTracks->At(grandmotherId);
-    	Int_t grandmotherPdgCode = grandmotherMcTrack->GetPdgCode();
-    	Double_t pi0DalitzDecayMomentum = grandmotherMcTrack->GetP();
-    	if (grandmotherPdgCode == 111) //pi0 Dalitz decay
-    	{
-    		fHM->H1("fhpi0DalitzDecayMomentum")->Fill(pi0DalitzDecayMomentum);
-    	}
-        }
+				if (photonGrandmotherPdgCode == 22) {
+					fHM->H2("fhRichPmtXY_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(richHit->GetX(), richHit->GetY());
+				}
 
-      }
-
-    }
-
-  }
-
-}
-
-
-
-void CbmAnaJpsiTask::MCPointPMT()
-{
-    Int_t nofRichPoints = fRichPoints->GetEntriesFast();
-    for (Int_t i=0;i<nofRichPoints;i++)
-    {
-        // get the MC RICH point from array
-        CbmRichPoint* richMcPoint = (CbmRichPoint*) fRichPoints->At(i);
-        if (NULL == richMcPoint) continue;
-
-        // get the RICH photon MC Track
-        Int_t photonMcTrackId = richMcPoint->GetTrackID();
-        if (photonMcTrackId==-1) continue;
-        CbmMCTrack* photonMcTrack = (CbmMCTrack*) fMcTracks->At(photonMcTrackId);
-        if (NULL == photonMcTrack) continue;
-
-        // get photon mother MC Track (electron, pion etc.)
-        Int_t photonMotherId = photonMcTrack->GetMotherId();
-        if (photonMotherId == -1) continue;
-        CbmMCTrack* photonMotherMcTrack = (CbmMCTrack*) fMcTracks->At(photonMotherId);
-        if (NULL == photonMotherMcTrack) continue;
-        Int_t photonMotherPdgCode = photonMotherMcTrack->GetPdgCode();
-
-        // check that the photon was produced by electron
-        if ( TMath::Abs(11) == photonMotherPdgCode )
-        {
-            Int_t photonGrandmotherId = photonMotherMcTrack->GetMotherId();
-
-            // if primary signal electron
-            if ( TMath::Abs(11) == photonMotherPdgCode || photonGrandmotherId == -1) {
-                fHM->H2("fhRichPointSignalElectronPMTPlane")->Fill(richMcPoint->GetX(),richMcPoint->GetY());
-            }
-
-            if (photonGrandmotherId != -1) {
-                //get the grandmother of the photon
-            	CbmMCTrack* photonGrandmotherMcTrack = (CbmMCTrack*) fMcTracks->At(photonGrandmotherId);
-                if (NULL == photonGrandmotherMcTrack) continue;
-                Int_t photonGrandmotherPdgCode = photonGrandmotherMcTrack->GetPdgCode();
-
-                // check that the grand mother of the photon is gamma or Pi0
-                if (photonGrandmotherPdgCode == 111 || photonGrandmotherPdgCode == 22) {
-                    fHM->H2("fhRichPointGammaAndPi0PMTPlane")->Fill(richMcPoint->GetX(),richMcPoint->GetY());
-                }
-
-                //check if grand mother of the photon is just gamma from gamma conversion
-                if (photonGrandmotherPdgCode == 22)
-                {
-                	fHM->H2("fhRichPointGammaConversionPhotonInPETPlaneXY")->Fill(richMcPoint->GetX(),richMcPoint->GetY());
-
-                }
-
-                //check if grand mother of the photon is Pi0 (from Dalitz)
-                if (photonGrandmotherPdgCode == 111)
-                {
-                	fHM->H2("fhRichPointDalitzDecayInPETPlaneXY")->Fill(richMcPoint->GetX(),richMcPoint->GetY());
-                }
-
-
-            }
-        }
-    }
-}
-
-
-void CbmAnaJpsiTask::RichHitPMT()
-{
-    Int_t nofRichHits = fRichHits->GetEntriesFast();
-    for (Int_t i=0;i<nofRichHits;i++)
-    {
-        // get the RichHit from array
-        CbmRichHit* richHit = (CbmRichHit*) fRichHits->At(i);
-        if (NULL == richHit) continue;
-        Int_t PointInd = richHit->GetRefId();
-        if (PointInd < 0 )continue;
-
-        // get the McRichPoint of the RichHit
-        CbmRichPoint* richMcPoint = (CbmRichPoint*) fRichPoints->At(PointInd);
-        if (NULL == richMcPoint) continue;
-
-        // get the RICH photon MC Track
-        Int_t photonMcTrackId = richMcPoint->GetTrackID();
-        if (photonMcTrackId==-1) continue;
-        CbmMCTrack* photonMcTrack = (CbmMCTrack*) fMcTracks->At(photonMcTrackId);
-        if (NULL == photonMcTrack) continue;
-
-        // get photon mother MC Track (electron, pion etc.)
-        Int_t photonMotherId = photonMcTrack->GetMotherId();
-        if (photonMotherId == -1) continue;
-        CbmMCTrack* photonMotherMcTrack = (CbmMCTrack*) fMcTracks->At(photonMotherId);
-        if (NULL == photonMotherMcTrack) continue;
-        Int_t photonMotherPdgCode = photonMotherMcTrack->GetPdgCode();
-
-        // check that the photon was produced by electron
-        if ( TMath::Abs(11) == photonMotherPdgCode )
-        {
-           Int_t photonGrandmotherId = photonMotherMcTrack->GetMotherId();
-
-           // if primary signal electron
-           if ( TMath::Abs(11) == photonMotherPdgCode || photonGrandmotherId == -1)
-           	{
-        	  fHM->H2("fhRichHitSignalElectronPMTPlane")->Fill(richHit->GetX(),richHit->GetY());
-           	}
-
-           if (photonGrandmotherId != -1)
-           {
-             //get the grandmother of the photon
-             CbmMCTrack* photonGrandmotherMcTrack = (CbmMCTrack*) fMcTracks->At(photonGrandmotherId);
-             if (NULL == photonGrandmotherMcTrack) continue;
-             Int_t photonGrandmotherPdgCode = photonGrandmotherMcTrack->GetPdgCode();
-
-             //check out if grand mother of the photon is just gamma from gamma conversion
-             if (photonGrandmotherPdgCode == 22)
-             {
-              	fHM->H2("fhRichHitGammaConversionPhotonInPETPlaneXY")->Fill(richHit->GetX(),richHit->GetY());
-
-             }
-
-            //check out if grand mother of the photon is Pi0 (from Dalitz)
-             if (photonGrandmotherPdgCode == 111)
-             {
-              	fHM->H2("fhRichHitDalitzDecayInPETPlaneXY")->Fill(richHit->GetX(),richHit->GetY());
-             }
-
-           }
-        }
-    }
+				if (photonGrandmotherPdgCode == 111) {
+					fHM->H2("fhRichPmtXY_"+ CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(richHit->GetX(), richHit->GetY());
+				}
+			}
+		}
+	}
 }
 
 

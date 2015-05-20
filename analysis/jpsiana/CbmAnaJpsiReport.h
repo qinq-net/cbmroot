@@ -37,6 +37,9 @@ protected:
          const string& hName,
          double cutValue);
 
+   void Draw2DCut(
+         const string& hist);
+
    void DrawCutDistributions();
 
 

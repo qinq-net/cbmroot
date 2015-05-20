@@ -19,7 +19,6 @@ public:
 		fRmsCoeff(0.),
 		fDistCut(0.),
 		fUseRichAnn(kTRUE),
-		fMomentumCut(0.),
 		fChiPrimCut(0.),
 		fPtCut(0.)
 	{
@@ -41,7 +40,6 @@ public:
 		fRmsB = -1.;
 		fRmsCoeff = -1.;
 		fDistCut = -1.;
-		fMomentumCut = -1.; // if cut < 0 it is not used
 
 		// analysis cuts
 		fPtCut = 1.5;
@@ -57,8 +55,7 @@ public:
 				"fTrdAnnCut = " << fTrdAnnCut << endl <<
 				"fRichAnnCut = " << fRichAnnCut << endl <<
 				"fChiPrimCut = " << fChiPrimCut << endl <<
-				"fPtCut = " << fPtCut << endl <<
-				"fMomentumCut = "<< fMomentumCut <<  endl;
+				"fPtCut = " << fPtCut << endl;
 	}
 
 public:
@@ -72,7 +69,6 @@ public:
 	Double_t fRmsCoeff;
 	Double_t fDistCut;
 	Bool_t fUseRichAnn;
-	Double_t fMomentumCut; // if cut < 0 then it will not be used
 
 	// Analysis cuts
 	Double_t fChiPrimCut;

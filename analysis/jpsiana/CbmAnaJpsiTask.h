@@ -102,13 +102,35 @@ private:
         double min,
         double max);
 
+
+  /*
+   * \brief Creates 2D histograms for different track source types.
+   * \param[in] name Base name of the histograms.
+   * \param[in] axisX X axis title.
+   * \param[in] axisY Y axis title.
+   * \param[in] axisZ Z axis title.
+   * \param[in] nBinsX Number of bins for X axis in the histogram.
+   * \param[in] minX Minimum value for X axis.
+   * \param[in] maxX Maximum value for X axis.
+   * \param[in] nBinsY Number of bins for Y axis in the histogram.
+   * \param[in] minY Minimum value for Y axis.
+   * \param[in] maxY Maximum value for Y axis.
+   */
+  void CreateSourceTypesH2(
+        const string& name,
+        const string& axisX,
+        const string& axisY,
+        const string& axisZ,
+        double nBinsX,
+        double minX,
+        double maxX,
+        double nBinsY,
+        double minY,
+        double maxY);
+
     void InitHist();
 
-    void McPair();
-
-    void MCPointPMT();
-
-    void RichHitPMT();
+    void RichPmtXY();
 
     /**
      * \brief Fill fCandidates array with JPsiCandidates. Candidate should have STS, RICH, TRD, TOF local segments.
