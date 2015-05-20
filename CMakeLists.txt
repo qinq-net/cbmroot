@@ -198,10 +198,10 @@ Generate_Version_Info()
 # cause another cmake executable to run.  The same process will walk through
 # the project's entire directory structure.
 
-#set(BUILD_BEAMTIME FALSE CACHE BOOL "Build everything needed (DABC, RocLib ...) to read testbeam data.")
-#If(BUILD_BEAMTIME)
-#  Set(BUILD_MBS FALSE)
-#EndIf(BUILD_BEAMTIME)
+set(BUILD_BEAMTIME FALSE CACHE BOOL "Build everything needed (DABC, RocLib ...) to read testbeam data.")
+If(BUILD_BEAMTIME)
+  Set(BUILD_MBS FALSE)
+EndIf(BUILD_BEAMTIME)
 
 IF(NOT FAIRROOT_FOUND)
 
@@ -345,10 +345,11 @@ Else(${EveIsBuild} STREQUAL yes)
 EndIf(${EveIsBuild} STREQUAL yes)
 
 #set(BUILD_BEAMTIME FALSE CACHE BOOL "Build everything needed (DABC, RocLib ...) to read testbeam data.")
-#If(BUILD_BEAMTIME)
-  add_subdirectory (roclight)
+If(BUILD_BEAMTIME)
+#  add_subdirectory (roclight)
+  add_subdirectory (roc)
   add_subdirectory (beamtime)
-#EndIf(BUILD_BEAMTIME)
+EndIf(BUILD_BEAMTIME)
 
 
 Option(BUILD_DOXYGEN "Build Doxygen" OFF)

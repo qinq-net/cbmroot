@@ -12,7 +12,8 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/cbmdata/beamtime
   ${CBMROOT_SOURCE_DIR}/cbmdata/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/sts/setup
-  ${CBMROOT_SOURCE_DIR}/roclight
+  ${CBMROOT_BINARY_DIR}/roc/roc/roclib
+#  ${CBMROOT_SOURCE_DIR}/roclight
   ${CBMROOT_SOURCE_DIR}/beamtime
   ${CBMROOT_SOURCE_DIR}/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/beamtime/param
@@ -96,7 +97,11 @@ Set_Source_Files_Properties(PROPERTIES CbmRocSource.cxx PROPERTIES
 Set(LINKDEF  CbmBeamtimeLinkDef.h)
 Set(LIBRARY_NAME CbmBeamtime)
 Set(DEPENDENCIES
-    RocLight
+    ${LIBRARY_OUTPUT_PATH}/libDabcRoc.so 
+    ${LIBRARY_OUTPUT_PATH}/libDabcMbs.so 
+    ${LIBRARY_OUTPUT_PATH}/libDabcBase.so 
+    ${LIBRARY_OUTPUT_PATH}/libRoc.so 
+#    RocLight
     Sts
     CbmData CbmBase
 #    Base Trd
