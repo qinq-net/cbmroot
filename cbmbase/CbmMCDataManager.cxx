@@ -29,8 +29,8 @@ CbmMCDataManager::CbmMCDataManager(const char* name, Int_t legacy)
 // --- Destructor
 CbmMCDataManager::~CbmMCDataManager()
 {
-  list<CbmMCDataArray*>::const_iterator p;
-  for(p=fActive.begin();p!=fActive.end();++p) delete (*p);
+  map<TString, CbmMCDataArray*>::const_iterator p;
+  for(p=fActive.begin();p!=fActive.end();++p) delete p->second;
   fActive.clear();
 }
 
@@ -68,10 +68,10 @@ Int_t CbmMCDataManager::AddFileToChain(const char* name, Int_t number)
 void CbmMCDataManager::FinishEvent()
 {
   cout << "FinishEvent" << endl;
-  list<CbmMCDataArray*>::const_iterator p;
+  map<TString, CbmMCDataArray*>::const_iterator p;
 
   for(p=fActive.begin();p!=fActive.end();++p)
-    (*p)->FinishEvent();
+    p->second->FinishEvent();
 }
 
 
@@ -91,13 +91,20 @@ InitStatus CbmMCDataManager::Init()
 CbmMCDataArray* CbmMCDataManager::InitBranch(const char* brname)
 {
   CbmMCDataArray* arr;
+  TString nm=brname;
+
+  if (fActive.find(nm)!=fActive.end())
+  {
+    cout << "InitBranch: " << nm << " " << fActive[nm] << endl; 
+    return fActive[nm];
+  }  
   if (fLegacy==0)
     arr=new CbmMCDataArray(brname, fFileList);
   else
     arr=new CbmMCDataArray(brname);
 
-  fActive.push_back(arr);
-
+  fActive[nm]=arr;
+  cout << "InitBranch: " << nm << " " << arr << endl; 
   return arr;
 }
 

@@ -69,6 +69,10 @@ class CbmStsDigitize : public FairTask
   }
 
 
+  /** Initialise the STS setup and the parameters **/
+  void InitSetup();
+
+
   /** Set the digitisation parameters (same for all modules)
    ** @param dynRagne             Dynamic range [e]
    ** @param threshold            Threshold [e]

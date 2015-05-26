@@ -8,12 +8,14 @@
 
 #include "FairTask.h"
 
+#include <map>
 #include <list>
 #include <vector>
 
 class CbmMCDataArray;
 
 
+using std::map;
 using std::list;
 using std::vector;
 
@@ -86,7 +88,7 @@ class CbmMCDataManager : public FairTask
     vector<list<TString> > fFileList;		//! Array of filename chains
 
     /** List of created CbmMCDataArrays **/
-    list<CbmMCDataArray*> fActive;			//!
+    map<TString, CbmMCDataArray*> fActive;			//!
 
 
     ClassDef(CbmMCDataManager, 1);

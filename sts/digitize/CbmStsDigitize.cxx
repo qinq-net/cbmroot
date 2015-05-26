@@ -267,8 +267,11 @@ void CbmStsDigitize::Finish() {
 // -----   Initialisation    -----------------------------------------------
 InitStatus CbmStsDigitize::Init() {
 
-  // Get STS setup interface
-  fSetup = CbmStsSetup::Instance();
+	// Initialise STS setup
+	InitSetup();
+
+  // Instantiate StsPhysics
+  CbmStsPhysics::Instance();
 
 	std::cout << std::endl;
   LOG(INFO) << "=========================================================="
@@ -312,17 +315,6 @@ InitStatus CbmStsDigitize::Init() {
 
   } //? event mode
 
-  // Instantiate StsPhysics
-  CbmStsPhysics::Instance();
-
-  // Assign types to the sensors in the setup
-  SetSensorTypes();
-
-  // Set sensor conditions
-  SetSensorConditions();
-
-  // Set the digitisation parameters of the modules
-  SetModuleParameters();
 
   // Register this task to the setup
   fSetup->SetDigitizer(this);
@@ -334,6 +326,26 @@ InitStatus CbmStsDigitize::Init() {
 	std::cout << std::endl;
 
 	return kSUCCESS;
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Initialisation of setup    --------------------------------------
+void CbmStsDigitize::InitSetup() {
+
+  // Get STS setup interface
+	fSetup = CbmStsSetup::Instance();
+
+  // Assign types to the sensors in the setup
+	SetSensorTypes();
+
+  // Set sensor conditions
+	SetSensorConditions();
+
+  // Set the digitisation parameters of the modules
+	SetModuleParameters();
 
 }
 // -------------------------------------------------------------------------
