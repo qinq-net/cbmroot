@@ -38,7 +38,7 @@ The names are available via the function PairClassName(Int_t i)
 #include "CbmTrack.h"
 #include "CbmRichRing.h"
 #include "CbmMatch.h"
-#include "CbmBaseHit.h"
+#include "CbmHit.h"
 #include "CbmMCTrack.h"
 
 #include "PairAnalysisEvent.h"
@@ -693,11 +693,11 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	  if( (!trkl && !ring) || !hits) continue;
 
 	  // loop over all hits
-	  CbmBaseHit   *hit  = 0x0;
+	  CbmHit   *hit  = 0x0;
 	  Int_t nhits = (trkl ? trkl->GetNofHits() : ring->GetNofHits() );
 	  for (Int_t ihit=0; ihit < nhits; ihit++){
-	    if(trkl) hit = dynamic_cast<CbmBaseHit*>(hits->At( trkl->GetHitIndex(ihit) ) );
-	    else     hit = dynamic_cast<CbmBaseHit*>(hits->At( ring->GetHit(ihit) ) );
+	    if(trkl) hit = dynamic_cast<CbmHit*>(hits->At( trkl->GetHitIndex(ihit) ) );
+	    else     hit = dynamic_cast<CbmHit*>(hits->At( ring->GetHit(ihit) ) );
 	    if(!hit) continue;
 	    // fill variables
 	    PairAnalysisVarManager::Fill(hit, values);
