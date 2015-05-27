@@ -68,6 +68,34 @@ class CbmStsDigitize : public FairTask
   	return fDeadChannelFraction;
   }
 
+  /** Digitize model **/
+  Int_t GetDigitizeModel() const { return fDigiModel;}
+
+  /** Get number of signals front side **/
+  Int_t GetNofSignalsF() const {return fNofSignalsF;}
+
+  /** Get number of signals back side **/
+  Int_t GetNofSignalsB() const {return fNofSignalsB;}
+
+  /** Get the digitisation parameters 
+   ** @param dynRagne             Dynamic range [e]
+   ** @param threshold            Threshold [e]
+   ** @param nAdc                 Number of ADC channels
+   ** @param timeResolution       Time resolution [ns]
+   ** @param deadTimec            Single-channel dead time [ns]
+   ** @param noise                Equivalent noise charge (sigma) [e]
+   **/
+   void GetParameters(Double_t& dynRange, Double_t& threshold, Int_t& nAdc,
+  		               Double_t& timeResolution, Double_t& deadTime,
+  		               Double_t& noise) {
+ 	 dynRange       = fDynRange;
+ 	 threshold      = fThreshold;
+ 	 nAdc           = fNofAdcChannels;
+ 	 timeResolution = fTimeResolution;
+ 	 deadTime       = fDeadTime;
+ 	 noise          = fNoise;
+    }
+
 
   /** Initialise the STS setup and the parameters **/
   void InitSetup();
@@ -81,9 +109,9 @@ class CbmStsDigitize : public FairTask
    ** @param deadTimec            Single-channel dead time [ns]
    ** @param noise                Equivalent noise charge (sigma) [e]
    **/
-  void SetParameters(Double_t dynRange, Double_t threshold, Int_t nAdc,
-  		               Double_t timeResolution, Double_t deadTime,
-  		               Double_t noise) {
+  void SetParameters(Double_t dynRange = 75000., Double_t threshold = 3000., Int_t nAdc = 32,
+  		               Double_t timeResolution = 10., Double_t deadTime = 800.,
+  		               Double_t noise = 1000.) {
  	 fDynRange       = dynRange;
  	 fThreshold      = threshold;
  	 fNofAdcChannels = nAdc;
@@ -91,6 +119,8 @@ class CbmStsDigitize : public FairTask
  	 fDeadTime       = deadTime;
  	 fNoise          = noise;
    }
+
+  void SetPhysicalProcesses(Bool_t nonUniform = 1, Bool_t diffusion = 1, Bool_t crossTalk = 1, Bool_t lorentzShift = 1);
 
   /** Re-initialisation **/
   virtual InitStatus ReInit();
@@ -101,7 +131,7 @@ class CbmStsDigitize : public FairTask
 
 
   /** Set percentage of dead channels **/
-  void SetDeadChannelFraction(Double_t fraction);
+  void SetDeadChannelFraction(Double_t fraction = 0.);
 
 
   /** Set the operating parameters in the sensors **/
@@ -127,6 +157,12 @@ class CbmStsDigitize : public FairTask
   Double_t fDeadTime;            ///< Single-channel dead time [ns]
   Double_t fNoise;               ///< equivalent noise charge (sigma) [ns]
   Double_t fDeadChannelFraction; ///< fraction of dead channels [%]
+
+  // --- Switches for charge sharing process
+  Bool_t fNonUniform;   ///< Non-uniform distribution of energy loss along the track
+  Bool_t fDiffusion;    ///< Diffusion of charge carriers
+  Bool_t fCrossTalk;    ///< Cross talk due to interstrip capaciance
+  Bool_t fLorentzShift; ///< Lorentz shift of charge carriers in magneic field
 
   CbmStsSetup*   fSetup;        ///< STS setup interface
   TClonesArray*  fPoints;       ///< Input array of CbmStsPoint
