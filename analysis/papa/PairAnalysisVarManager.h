@@ -765,7 +765,7 @@ inline void PairAnalysisVarManager::FillVarMCTrack(const CbmMCTrack *particle, D
   if(mother) granni = mc->GetMCTrackMother(mother);
   Int_t gLabel1 = (mother ? mother->GetMotherId() : -5);
   values[kPdgCodeGrandMother] = (granni ? granni->GetPdgCode() : -99999. );//mc->GetMotherPDG(mother);
-  values[kGeantId]            = particle->GetGeantProcessId();
+  //  values[kGeantId]            = particle->GetGeantProcessId();
   //  if(TMath::Abs(values[kPdgCodeMother])<1.)
   //  if(gLabel1>-1 && values[kPdgCodeGrandMother]==223 && TMath::Abs(values[kPdgCode])==11)
   //  if(mLabel1>-1 && values[kPdgCodeMother]==0 && TMath::Abs(values[kPdgCode])==11)
