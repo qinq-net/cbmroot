@@ -169,7 +169,7 @@ void PairAnalysisEvent::Init()
     ////    printf("%p %p %d \n",stsMatch,&stsMatch->GetMatchedLink(),stsMatch->GetMatchedIndex());
     //TODO: investigate why the hell there could be 0xffffffffffffffe0 for stsMatch->GetMatchedLink() for these the fMatchedIndex is -1
     //    Int_t istsMC = (stsMatch && (&stsMatch->GetMatchedLink()&0xffffffffffffffe0) ? stsMatch->GetMatchedLink().GetIndex() : -1 );
-    Int_t istsMC = (stsMatch && stsMatch->GetMatchedIndex()>=0 ? stsMatch->GetMatchedLink().GetIndex() : -1 );
+    Int_t istsMC = (stsMatch && /*stsMatch->GetMatchedIndex()>=0 ?*/ stsMatch->GetMatchedLink().GetIndex() /*: -1*/ );
     CbmTrackMatchNew *trdMatch = 0x0;
     if(trdTrack) trdMatch = static_cast<CbmTrackMatchNew*>( fTrdMatches->At(itrd) );
     Int_t itrdMC = (trdMatch ? trdMatch->GetMatchedLink().GetIndex() : -1 );
