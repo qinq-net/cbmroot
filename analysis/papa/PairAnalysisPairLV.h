@@ -32,7 +32,6 @@ public:
   PairAnalysisPairLV(PairAnalysisTrack * const particle1, Int_t pid1,
 		 PairAnalysisTrack * const particle2, Int_t pid2, Char_t type);
 
-  //TODO:  copy constructor + assignment operator
   void SetTracks(PairAnalysisTrack * const particle1, Int_t pid1,
                  PairAnalysisTrack * const particle2, Int_t pid2);
 

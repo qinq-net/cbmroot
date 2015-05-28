@@ -39,8 +39,8 @@ PairAnalysisPair::PairAnalysisPair(const PairAnalysisPair& pair) :
   fLabel(pair.GetLabel()),
   fWeight(pair.GetWeight()),
   fPdgCode(pair.PdgCode()),
-  fRefD1(),
-  fRefD2(),
+  fRefD1(pair.GetFirstDaughter()),
+  fRefD2(pair.GetSecondDaughter()),
   fPid1(pair.GetFirstDaughterPid()),
   fPid2(pair.GetSecondDaughterPid()),
   fKFUsage(pair.GetKFUsage())

@@ -162,11 +162,10 @@ class PairAnalysisSignalMC : public TNamed {
   Bool_t fCheckBothChargesGrandMother2; //              grand mother 2
   Bool_t fCheckGEANTProcess;            //              GEANT process
 
-  Double_t fWeight;                     // weighting factor
-  
   EBranchRelation fMothersRelation;   // mother 1&2 relation (same, different or whatever)
   TMCProcess fGEANTProcess;           // GEANT process ID (see roots TMCProcess)
-  EJpsiRadiativ fJpsiRadiative;      // check for J/psi radiative decay
+  Double_t fWeight;                   // weighting factor
+  EJpsiRadiativ fJpsiRadiative;       // check for J/psi radiative decay
 
   // dalitz decays
   EDalitz fDalitz;                      // check for dalitz decay

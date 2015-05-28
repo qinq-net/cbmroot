@@ -117,6 +117,31 @@ PairAnalysisTrack::PairAnalysisTrack(CbmGlobalTrack *gtrk,
 }
 
 //______________________________________________
+PairAnalysisTrack::PairAnalysisTrack(const PairAnalysisTrack& track) :
+  TNamed(track.GetName(), track.GetTitle()),
+  fGlblTrack(track.GetGlobalTrack()),
+  fStsTrack(track.GetStsTrack()),
+  fTrdTrack(track.GetTrdTrack()),
+  fRichRing(track.GetRichRing()),
+  fMCTrack(track.GetMCTrack()),
+  fStsTrackMatch(track.GetTrackMatch(kSTS)),
+  fTrdTrackMatch(track.GetTrackMatch(kTRD)),
+  fRichRingMatch(track.GetTrackMatch(kRICH)),
+  fMomentum(), //TODO: copy
+  fPosition(), //TODO: copy
+  fCharge(track.Charge()),
+  fPdgCode(track.PdgCode()),
+  fLabel(track.GetLabel()),
+  fWeight(track.GetWeight()),
+  fMultiMatch(0)
+{
+  //
+  // Copy Constructor
+  //
+
+}
+
+//______________________________________________
 PairAnalysisTrack::~PairAnalysisTrack()
 {
   //

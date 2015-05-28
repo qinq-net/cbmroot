@@ -82,6 +82,32 @@ PairAnalysisEvent::PairAnalysisEvent(const char* name, const char* title) :
 }
 
 //______________________________________________
+PairAnalysisEvent::PairAnalysisEvent(const PairAnalysisEvent& event) :
+  TNamed(event.GetName(), event.GetTitle()),
+  fMCTracks(0x0),
+  fStsMatches(0x0),
+  fTrdMatches(0x0),
+  fRichMatches(0x0),
+  fGlobalTracks(0x0),
+  fTrdTracks(0x0),
+  fStsTracks(0x0),
+  fRichRings(0x0),
+  fStsHits(event.GetHits(kSTS)),
+  fTrdHits(event.GetHits(kTRD)),
+  fRichHits(event.GetHits(kRICH)),
+  fTrdHitMatches(event.GetTrdHitMatches()),
+  fTrdPoints(event.GetTrdPoints()),
+  fPrimVertex(event.GetPrimaryVertex()),
+  fTracks(event.GetTracks()),
+  fMultiMatch(event.GetNumberOfVageMatches())
+{
+  //
+  // Named Constructor
+  //
+  fTracks->SetOwner(kTRUE);
+}
+
+//______________________________________________
 PairAnalysisEvent::~PairAnalysisEvent()
 {
   //

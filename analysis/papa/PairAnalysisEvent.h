@@ -25,6 +25,7 @@ public:
   PairAnalysisEvent();
   PairAnalysisEvent(const char*name, const char* title);
 
+  PairAnalysisEvent(const PairAnalysisEvent& event);
   virtual ~PairAnalysisEvent();
 
   void SetInput(FairRootManager *man);
@@ -44,6 +45,7 @@ public:
   TClonesArray *GetTrdHitMatches()    const { return fTrdHitMatches; }
   TClonesArray *GetTrdPoints()        const { return fTrdPoints; }
 
+  TObjArray    *GetTracks()           const { return fTracks; }
   PairAnalysisTrack *GetTrack(UInt_t pos);
 
   virtual void Clear(Option_t *opt="C");

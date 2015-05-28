@@ -38,6 +38,7 @@ public:
 		  CbmMCTrack *mctrk,
 		  CbmTrackMatchNew *stsmatch, CbmTrackMatchNew *trdMatch, CbmTrackMatchNew *richMatch);
 
+  PairAnalysisTrack(const PairAnalysisTrack& track);
   virtual ~PairAnalysisTrack();
 
   // setter

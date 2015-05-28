@@ -36,7 +36,8 @@ AnalysisTaskMultiPairAnalysis::AnalysisTaskMultiPairAnalysis() :
   fBeamEnergy(0.),
   fWeight(1.),
   fEventFilter(0x0),
-  fEventStat(0x0)
+  fEventStat(0x0),
+  fInputEvent(0x0)
 {
   //
   // Constructor
@@ -54,7 +55,8 @@ AnalysisTaskMultiPairAnalysis::AnalysisTaskMultiPairAnalysis(const char *name) :
   fBeamEnergy(0.),
   fWeight(1.),
   fEventFilter(0x0),
-  fEventStat(0x0)
+  fEventStat(0x0),
+  fInputEvent(0x0)
 {
   //
   // Constructor
