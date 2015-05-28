@@ -756,7 +756,6 @@ inline void PairAnalysisVarManager::FillVarMCTrack(const CbmMCTrack *particle, D
   // Set
   CbmMCTrack* mother=0x0;
   Int_t mLabel1 = particle->GetMotherId();
-  //  if(mLabel1<-1)   Printf(" mother label: %d ",mLabel1);
   mother = mc->GetMCTrackFromMCEvent(mLabel1);
   
   values[kPdgCode]            = particle->GetPdgCode();
@@ -765,16 +764,8 @@ inline void PairAnalysisVarManager::FillVarMCTrack(const CbmMCTrack *particle, D
   if(mother) granni = mc->GetMCTrackMother(mother);
   Int_t gLabel1 = (mother ? mother->GetMotherId() : -5);
   values[kPdgCodeGrandMother] = (granni ? granni->GetPdgCode() : -99999. );//mc->GetMotherPDG(mother);
-  //  values[kGeantId]            = particle->GetGeantProcessId();
-  //  if(TMath::Abs(values[kPdgCodeMother])<1.)
-  //  if(gLabel1>-1 && values[kPdgCodeGrandMother]==223 && TMath::Abs(values[kPdgCode])==11)
-  //  if(mLabel1>-1 && values[kPdgCodeMother]==0 && TMath::Abs(values[kPdgCode])==11)
-  /* if(TMath::Abs(values[kPdgCode])==111) */
-  /*   Printf(" Geant process: %.0f \t daughter label: %d pdg: %.0f \t mother label: %d pdg: %.0f \t granni label: %d pdg: %.0f", */
-  /* 	   values[kGeantId], */
-  /* 	   0,values[kPdgCode], */
-  /* 	   mLabel1,values[kPdgCodeMother], */
-  /* 	   gLabel1,values[kPdgCodeGrandMother]); */
+  values[kGeantId]            = particle->GetGeantProcessId();
+
   values[kPxMC]        = particle->GetPx();
   values[kPyMC]        = particle->GetPy();
   values[kPzMC]        = particle->GetPz();
