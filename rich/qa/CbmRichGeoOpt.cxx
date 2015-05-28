@@ -64,7 +64,7 @@ CbmRichGeoOpt::CbmRichGeoOpt()
 
 // PMTPlaneXatThird(0.),
 // PMTPlaneYatThird(0.),
-  
+  H_Theta_TwoVectors(NULL),
   H_DistancePMTtoMirrCenter(NULL),
   H_DistancePMTtoMirr(NULL),
   H_MomPrim(NULL),
@@ -243,7 +243,7 @@ void CbmRichGeoOpt::HitsAndPoints(){
   //loop over points and get momentum of photons --> calculate angle (to be done later)
   if(nofPoints<=30){H_NofPhotonsSmallerThan30->Fill(nofPoints); }
   H_NofPhotonsPerEv->Fill(nofPoints); 
-
+  
   for (int i = 0; i < nofRefPoints; i++) {
     TVector3 PosAtRefl; TVector3 PosAtDetIn; TVector3 PosAtDetOut;
     CbmRichPoint* RefPoint = (CbmRichPoint*)fRefPoints->At(i);
@@ -254,16 +254,14 @@ void CbmRichGeoOpt::HitsAndPoints(){
     //of the REFLECTED photon into the sensitive plane   
     //cout<<PosAtRefl.Z()<<"    "<<Zpos<<endl;
     if(Zpos==3037){continue;}
-   
-    
     CbmRichPoint* point = GetPMTPoint(RefPointTrackId);//
     PosAtDetIn.SetX(point->GetX()); PosAtDetIn.SetY(point->GetY()); PosAtDetIn.SetZ(point->GetZ());
-   
+    
     Int_t PointMCTrackId = point->GetTrackID();
     CbmMCTrack* PointTrack = static_cast<CbmMCTrack*>(fMcTracks->At(PointMCTrackId));
     if (NULL == PointTrack) continue;
     TVector3 PointMom; PointTrack->GetMomentum(PointMom);
-
+    
     Int_t PointMotherId = PointTrack->GetMotherId();
     if (PointMotherId == -1){continue;}
 
@@ -284,7 +282,7 @@ void CbmRichGeoOpt::HitsAndPoints(){
       */
     TVector3 LineSensToPMT=PosAtDetIn-PosAtRefl;
     
-    
+    H_Theta_TwoVectors->Fill(LineSensToPMT.Angle(PointMom));
     /////////// calculate alpha relative to the "tilted" PMT plane !!
     double Alpha=LineSensToPMT.Angle(n);//*TMath::RadToDeg();
     double AlphaInDeg=Alpha*TMath::RadToDeg();
@@ -437,16 +435,17 @@ void CbmRichGeoOpt::InitHistograms()
   int nBinsX = 28; double xMin = -110.; double xMax = 110.;  
   int nBinsY = 40; double yMin = -200; double yMax = 200.;
   
-  H_MomPrim = new TH1D("H_MomPrim", "H_MomPrim;p [GeV]; Yield", 200, 0., 10.);
+  H_Theta_TwoVectors= new TH1D("H_Theta_TwoVectors", "H_Theta_TwoVectors;#theta [deg]; Yield", 180, 0., 360.);
+  H_MomPrim = new TH1D("H_MomPrim", "H_MomPrim;p [GeV]; Yield", 100, 0., 10.);
   H_PtPrim = new TH1D("H_PtPrim", "H_PtPrim;p [GeV]; Yield", 80, 0., 4.);
-  H_MomPt = new TH2D("H_MomPt", "H_MomPt;p [GeV];pt [GeV]; Yield", 200, 0., 10., 80, 0., 4.);
+  H_MomPt = new TH2D("H_MomPt", "H_MomPt;p [GeV];pt [GeV]; Yield", 100, 0., 10., 80, 0., 4.);
 
   
   H_Hits_XY = new TH2D("H_Hits_XY", "H_Hits_XY;X [cm];Y [cm];Counter", 200, -150., 50.,400, 0.,400.);
-  H_PointsIn_XY = new TH2D("H_PointsIn_XY", "H_PointsIn_XY;X [cm];Y [cm];Counter", 400, -100., 100.,400, 0.,400.);
+  H_PointsIn_XY = new TH2D("H_PointsIn_XY", "H_PointsIn_XY;X [cm];Y [cm];Counter", 110, -100., 10.,400, 0.,400.);
   H_PointsOut_XY = new TH2D("H_PointsOut_XY", "H_PointsOut_XY;X [cm];Y [cm];Counter", 200, -150., 50.,400, 0.,400.);
   //cout<<" init hist H_NofPhotonsPerEv"<<endl;
-  H_NofPhotonsPerEv = new TH1D("H_NofPhotonsPerEv", "H_NofPhotonsPerEv;Number of photons per hit;Yield", 1000, 0., 1000.);
+  H_NofPhotonsPerEv = new TH1D("H_NofPhotonsPerEv", "H_NofPhotonsPerEv;Number of photons per hit;Yield", 500, 0., 1000.);
   H_NofPhotonsPerHit = new TH1D("H_NofPhotonsPerHit", "H_NofPhotonsPerHit;Number of photons per hit;Yield", 10, -0.5, 9.5);
   H_NofPhotonsSmallerThan30 = new TH1D("H_NofPhotonsSmallerThan30", "H_NofPhotonsSmallerThan30 ;Number of photons;Yield", 10, -0.5, 9.5);
   H_DiffXhit = new TH1D("H_DiffXhit", "H_DiffXhit;Y_{point}-Y_{hit} [cm];Yield", 200, -1., 1.);
@@ -530,6 +529,7 @@ void CbmRichGeoOpt::InitHistograms()
 //////////////////////////////////////////////////////////
 void CbmRichGeoOpt::WriteHistograms(){
  
+  H_Theta_TwoVectors->Write(); 
   H_MomPrim->Write(); 
   H_PtPrim->Write(); 
   H_MomPt->Write(); 
@@ -709,21 +709,47 @@ void CbmRichGeoOpt::GetPMTRotAngels()
 void  CbmRichGeoOpt::GetPlaneCenter(float rotMir, float rotX, float rotY)
 {
   float MinX=-110., MaxX=0., MinY=120., MaxY=220.;  
+
   if(rotMir < 1.1 && rotMir > 0.9 ){//rotMir==1){
-    //   if( (rotX < 0.05 && rotX > -0.05 ) && (rotY < 0.05 && rotY > -0.05 ) ){MinX=-110., MaxX=0., MinY=120., MaxY=220.;  }
-    if( rotX < 5 && (rotY < 0.05 && rotY > -0.05 ) ){MinX=-110., MaxX=0., MinY=120., MaxY=220.;  }
-    else if(rotX == 0 && rotY == 5 ){MinX=-110., MaxX=0., MinY=120., MaxY=220.;  }
-    else{MinX=-110., MaxX=0., MinY=120., MaxY=220.;  }
-  }else if(rotMir < -9.9 && rotMir > -10.1 ){//rotMir==-10){
-    //   if( (rotX <= 5) && (rotY <= 5 ) ){MinX=-110., MaxX=-1.5, MinY=125., MaxY=196.;  }
-    if( (rotY <= 5 ) ){MinX=-110., MaxX=-1.5, MinY=125., MaxY=196.;  }
-    else if( (rotY > 5 && rotY <=25 ) ){MinX=-105., MaxX=-5., MinY=125., MaxY=197.;  }
-    else if( (rotY > 25 && rotY <=30 ) ){MinX=-101., MaxX=-9., MinY=125., MaxY=199.;  }
-    else if( (rotY > 30 && rotY <=35 ) ){MinX=-100., MaxX=-13., MinY=125., MaxY=199.;  }
-    else if( (rotY > 35 && rotY <=40 ) ){MinX=-100., MaxX=-16., MinY=125., MaxY=199.;  }
-    else if( (rotY > 40 && rotY <=45 ) ){MinX=-99., MaxX=-20., MinY=125., MaxY=200.;  }
-    else if( (rotY > 45) ){MinX=-94., MaxX=-25., MinY=125., MaxY=200.;  } 
+    MinX=-90., MaxX=-1.; MinY=70., MaxY=130.;
+    //if( rotX > 0 && rotX <= 5){MinY=125., MaxY=192.;}
+    if( rotX > 5 && rotX <= 15){MinY=74., MaxY=134.;}
+    if( rotX > 15 && rotX <=25){MinY=79., MaxY=134.;}
+    if( rotX > 25 && rotX <=35){MinY=81., MaxY=134.;}
+    if( rotX > 35){MinY=85., MaxY=134.;}
+    
+    //if( rotY > 0 && rotY <= 5){MinX=-100., MaxX=-1.;}
+    if( rotY > 5 && rotY <= 10){MinX=-88., MaxX=-1.;}
+    if( rotY > 10 && rotY <20){MinX=-88., MaxX=-1.;}
+    if( rotY >= 20 && rotY <35){MinX=-85., MaxX=-4.;}
+    if( rotY >= 35 && rotY <45){MinX=-82., MaxX=-12.;}
+    if( rotY >= 45){MinX=-81., MaxX=-20.;}
+   }else if(rotMir < -9.9 && rotMir > -10.1 ){//rotMir==-10){
+    MinX=-100., MaxX=-1.; MinY=125., MaxY=192.;
+
+    //if( rotX > 0 && rotX <= 5){MinY=125., MaxY=192.;}
+    if( rotX > 5 && rotX <= 10){MinY=126., MaxY=191.;}
+    if( rotX > 10 && rotX <=15){MinY=128., MaxY=190.;}
+    if( rotX > 15 && rotX <=20){MinY=132., MaxY=189.;}
+    if( rotX > 20 && rotX <=25){MinY=134., MaxY=187.;}
+    if( rotX > 25 && rotX <=30){MinY=138., MaxY=187.;}
+    if( rotX > 30 && rotX <=35){MinY=139., MaxY=187.;}
+    if( rotX > 35 && rotX <=40){MinY=141., MaxY=185.;}
+    if( rotX > 40 && rotX <=45){MinY=142., MaxY=185.;}
+    if( rotX > 45 && rotX <=50){MinY=145., MaxY=185.;}
+    
+    //if( rotY > 0 && rotY <= 5){MinX=-100., MaxX=-1.;}
+    if( rotY > 5 && rotY <= 10){MinX=-99., MaxX=-1.;}
+    if( rotY > 10 && rotY <=15){MinX=-98., MaxX=-2.;}
+    if( rotY > 15 && rotY <=20){MinX=-97., MaxX=-2.;}
+    if( rotY > 20 && rotY <=25){MinX=-95., MaxX=-5.;}
+    if( rotY > 25 && rotY <=30){MinX=-95., MaxX=-7.;}
+    if( rotY > 30 && rotY <=35){MinX=-92., MaxX=-8.;}
+    if( rotY > 35 && rotY <=40){MinX=-90., MaxX=-12.;}
+    if( rotY > 40 && rotY <=45){MinX=-88., MaxX=-16.;}
+    if( rotY > 45 && rotY <=50){MinX=-87., MaxX=-19.;}
   }
+
   PMTPlaneX=MinX+(MaxX-MinX)/2.; PMTPlaneY=MinY+(MaxY-MinY)/2.;
 }
 
