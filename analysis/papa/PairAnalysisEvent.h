@@ -25,7 +25,6 @@ public:
   PairAnalysisEvent();
   PairAnalysisEvent(const char*name, const char* title);
 
-  PairAnalysisEvent(const PairAnalysisEvent& event);
   virtual ~PairAnalysisEvent();
 
   void SetInput(FairRootManager *man);
@@ -76,6 +75,7 @@ private:
 
  Int_t         fMultiMatch;     // number of mutiple matched tracks 
 
+ PairAnalysisEvent(const PairAnalysisEvent& event);
  PairAnalysisEvent &operator=(const PairAnalysisEvent &c);
 
  ClassDef(PairAnalysisEvent,1)         // PairAnalysis Event
