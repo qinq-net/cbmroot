@@ -56,6 +56,7 @@ private:
  TClonesArray *fStsMatches;     //STS matches
  TClonesArray *fTrdMatches;     //TRD matches
  TClonesArray *fRichMatches;    //RICH matches
+ TClonesArray *fTofPoints;      //TOF points
 
  TClonesArray *fGlobalTracks;   //global tracks
  TClonesArray *fTrdTracks;      //TRD tracks
@@ -65,6 +66,7 @@ private:
  TClonesArray *fStsHits;        //STS hits
  TClonesArray *fTrdHits;        //TRD hits
  TClonesArray *fRichHits;       //RICH hits
+ TClonesArray *fTofHits ;       //TOF hits
 
  TClonesArray *fTrdHitMatches;        //TRD hits
  TClonesArray *fTrdPoints;        //TRD points
@@ -74,6 +76,7 @@ private:
 
  Int_t         fMultiMatch;     // number of mutiple matched tracks 
 
+ PairAnalysisEvent &operator=(const PairAnalysisEvent &c);
 
  ClassDef(PairAnalysisEvent,1)         // PairAnalysis Event
 };
