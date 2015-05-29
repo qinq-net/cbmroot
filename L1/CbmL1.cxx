@@ -53,6 +53,7 @@ using std::vector;
 ClassImp(CbmL1)
 
 
+
 static L1Algo algo_static _fvecalignment;
 
 CbmL1 *CbmL1::fInstance = 0;

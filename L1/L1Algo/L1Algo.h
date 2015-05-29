@@ -6,8 +6,8 @@
 
   /// Debug features
 // #define PULLS            // triplets pulls
- //#define TRIP_PERFORMANCE // triplets efficiencies
- //#define DOUB_PERFORMANCE // doublets efficiencies
+// #define TRIP_PERFORMANCE // triplets efficiencies
+// #define DOUB_PERFORMANCE // doublets efficiencies
 // #define DRAW             // event display
 // #define XXX              // time debug
 // #define COUNTERS          diff counters (hits, doublets, ... )

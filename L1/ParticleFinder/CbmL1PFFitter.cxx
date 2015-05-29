@@ -38,6 +38,7 @@
 
 using std::vector;
 
+
 namespace NS_L1TrackFitter{
   const fvec c_light = 0.000299792458, c_light_i = 1./c_light;
   const fvec ZERO = 0.;
