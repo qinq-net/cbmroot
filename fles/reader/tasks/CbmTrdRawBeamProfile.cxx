@@ -271,6 +271,9 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
   void CbmTrdRawBeamProfile::Finish()
   {
     LOG(DEBUG) << "Finish of CbmTrdRawBeamProfile" << FairLogger::endl;
+    // Write to file
+    fHM->WriteToFile();
+    // Update Histos and Canvases
   }
 
   void CbmTrdRawBeamProfile::CreateHistograms()
