@@ -22,6 +22,8 @@
 #include "CbmStsStation_old.h"
 #include "FairRuntimeDb.h"
 
+#include "../mvd/tools/CbmMvdGeoHandler.h"
+
 #include <iostream>
 #include <list>
 #include <vector>
@@ -145,17 +147,25 @@ InitStatus CbmKF::Init()
 
 /** 					*/
   // fill vector of material
-    
+
   //=== Mvd ===
   
-  CbmMvdGeoPar* MvdPar = reinterpret_cast<CbmMvdGeoPar*>(RunDB->findContainer("CbmMvdGeoPar"));
-  if( MvdPar ){
+  FairRootManager *fManger = FairRootManager::Instance();
+  Bool_t useMVD = 0;
+  if(fManger->GetObject("MvdPoint")) useMVD = 1;
+  //CbmMvdGeoPar* MvdPar = reinterpret_cast<CbmMvdGeoPar*>(RunDB->findContainer("CbmMvdGeoPar"));
+  if( useMVD ){
+    if ( !CbmMvdDetector::Instance() ){
+      CbmMvdDetector* Detector = new CbmMvdDetector("A");
+      CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
+      mvdHandler->Init();
+      mvdHandler->Fill();
+    }
     CbmMvdDetector* mvdDetector = CbmMvdDetector::Instance();
     if(mvdDetector)
     {
-      CbmMvdStationPar* mvdStationPar = mvdDetector->GetParameterFile();  
-    
-    
+      CbmMvdStationPar* mvdStationPar = mvdDetector->GetParameterFile();
+
       if( fVerbose ) cout<<"KALMAN FILTER : === READ MVD MATERIAL ==="<<endl;
 
       int NStations = mvdStationPar->GetStationCount();
@@ -175,13 +185,13 @@ InitStatus CbmKF::Init()
         tube.RR = tube.R * tube.R;
         tube.ZThickness = tube.dz;
         tube.ZReference = tube.z;
-        
+
         vMvdMaterial.push_back(tube);
         MvdStationIDMap.insert(pair<Int_t,Int_t>(tube.ID, ist ) );
-        
+
         if( fVerbose ) cout<<" Mvd material ( id, z, dz, r, R, RadL )= ( "
                            << tube.ID<<", " << tube.z<<", " << tube.dz
-                           <<", " << tube.r<<", " << tube.R<<", " << tube.RadLength<<" )"<<endl;        
+                           <<", " << tube.r<<", " << tube.R<<", " << tube.RadLength<<" )"<<endl;
       }
     }
   }
