@@ -353,7 +353,7 @@ InitStatus CbmL1::Init()
       CbmMvdStationPar* mvdStationPar = mvdDetector->GetParameterFile();  
         
         
-        
+
       CbmKFTube &t = CbmKF::Instance()->vMvdMaterial[ist];
       geo[ind++] = t.z;
       geo[ind++] = t.dz;
@@ -495,12 +495,12 @@ InitStatus CbmL1::Init()
   if (fMatBudgetFileName != "") {
     TFile* oldfile = gFile;
     TFile *rlFile = new TFile(fMatBudgetFileName);
-
+  //MATERIAL BUDGET MVD - iSta = 0
     cout << "STS Material budget file is " << fMatBudgetFileName << "." << endl;
     for( int j = 0, iSta = 0; iSta < algo->NStations; iSta++, j++ ) {
       TString name = "Radiation Thickness [%]";
       name += ", Station";
-      name += j+1; 
+      name += j+1;
     
       TProfile2D* hStaRadLen = (TProfile2D*) rlFile->Get(name);
       if ( !hStaRadLen ) {
@@ -617,7 +617,7 @@ void CbmL1::Reconstruct()
 
   if( fVerbose>1 ) cout<<"L1 Track finder..."<<endl;
   algo->CATrackFinder();
-//  IdealTrackFinder();
+  //IdealTrackFinder();
   if( fVerbose>1 ) cout<<"L1 Track finder ok"<<endl;
   algo->L1KFTrackFitter( fExtrapolateToTheEndOfSTS );
 //  algo->KFTrackFitter_simple();
@@ -732,9 +732,14 @@ void CbmL1::IdealTrackFinder()
       algoTr.NHits++;
     }
     algoTr.Momentum = MC.p;
+    algoTr.TFirst[0] = MC.x;
+    algoTr.TFirst[1] = MC.y;
+    algoTr.TFirst[2] = MC.px/MC.pz;
+    algoTr.TFirst[3] = MC.py/MC.pz;
+    algoTr.TFirst[4] = MC.q/MC.p;
+    algoTr.TFirst[5] = MC.z;
           
     algo->vTracks.push_back(algoTr);
-
   }
   
 }; // void CbmL1::IdealTrackFinder()
