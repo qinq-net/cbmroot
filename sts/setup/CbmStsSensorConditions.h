@@ -34,7 +34,7 @@ class CbmStsSensorConditions : public TObject {
 		 ** @param bZ            Magn. field Bz at sensor centre [T]
 		 **/
 		CbmStsSensorConditions(Double_t vFD = 0., Double_t vBias = 0.,
-		                       Double_t temperature = 0.,
+		                       Double_t temperature = 273.,
 		                       Double_t cCoupling = 0., Double_t cInterstrip = 0.,
 		                       Double_t bX = 0., Double_t bY = 0.,
 		                       Double_t bZ = 0.);
