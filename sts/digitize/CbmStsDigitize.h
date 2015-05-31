@@ -120,7 +120,7 @@ class CbmStsDigitize : public FairTask
  	 fNoise          = noise;
    }
 
-  void SetPhysicalProcesses(Bool_t nonUniform = 1, Bool_t diffusion = 1, Bool_t crossTalk = 1, Bool_t lorentzShift = 1);
+  void SetPhysicalProcesses(Bool_t nonUniform, Bool_t diffusion, Bool_t crossTalk, Bool_t lorentzShift);
 
   /** Re-initialisation **/
   virtual InitStatus ReInit();
