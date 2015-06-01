@@ -53,7 +53,7 @@ protected:
 
    void DrawCutDistributions();
 
-   void DrawDistributions();
+   void DrawMinvMismatchesAll();
 
 
 	ClassDef(CbmAnaJpsiReport, 1);

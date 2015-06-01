@@ -15,7 +15,7 @@ public:
 		fCharge(0),
 		fChi2Prim(0.),
 		fChi2sts(0.),
-		fMcMotherId(-1),
+		fStsMcMotherId(-1),
 		fStsInd(-1),
 		fRichInd(-1),
 		fTrdInd(-1),
@@ -40,7 +40,7 @@ public:
 		fIsMcSignalElectron = false;
 		fIsMcPi0Electron = false;
 		fIsMcGammaElectron = false;
-		fMcMotherId = -1;
+		fStsMcMotherId = -1;
 		fStsMcTrackId = -1;
 	}
 
@@ -60,7 +60,7 @@ public:
 
 	Bool_t fIsElectron; // TRUE if candidate was identified as electron
 
-	Int_t fMcMotherId;  // McMotherId of the StsMctrack
+	Int_t fStsMcMotherId;  // McMotherId of the StsMctrack
 	Int_t fStsMcTrackId; // MCTrack Id of the STS track
 	Int_t fRichMcTrackId; // McTrack Id of the RICH ring
 	Int_t fTrdMcTrackId; // MCTrack Id of the TRD track

@@ -16,7 +16,7 @@ const vector<int> CbmAnaJpsiHist::fSourceTypesColor =
       list_of(kRed)(kBlue)(kGreen)(kOrange);
 
 const vector<string> CbmAnaJpsiHist::fAnaSteps =
-      list_of("mc")("acc")("reco")("chi2prim")("elid")("PtCut");
+      list_of("mc")("acc")("reco")("chi2prim")("elid")("ptcut");
 
 const vector<string> CbmAnaJpsiHist::fAnaStepsLatex =
       list_of("MC")("ACC")("REC")("#chi^{2}_{prim}")("ID")("p_{t}");

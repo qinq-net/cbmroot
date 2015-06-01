@@ -50,75 +50,77 @@ void CbmAnaJpsiReport::Draw()
 {
 	  SetDefaultDrawStyle();
 
-	  // Draw RICH hits distribution
-	   Draw2DCut("fhRichPmtXY");
+	  int nofEvents = H1("fh_event_number")->GetEntries();
+	  cout << "Number of events = " << nofEvents << endl;
 
-
-	  //Number of Candidates after several cuts
-	  {
-	  	  TCanvas* c = CreateCanvas("jpsi_NofCandidatesAfterCuts","jpsi_NofCandidatesAfterCuts",600,600);
-	      DrawH2(H2("fhNofCandidatesAfterCuts"));
-	  }
-
-
-	  //inv. Mass of e+- pairs from Pi0
-	  {
-	   	  TCanvas* c = CreateCanvas("jpsi_BgIdentificationRightWrong","jpsi_BgIdentificationRightWrong",600,600);
-	   	  H1("fhBgIdentificationRightWrong")->Scale(1. / H1("fhBgIdentificationRightWrong")->Integral());//Scale Yield
-	      DrawH1(H1("fhBgIdentificationRightWrong"));
-	  }
-
+	  Draw2DCut("fh_rich_pmt_xy");
 	  DrawCutDistributions();
 
-	  DrawDistributions();
+	  DrawMinvMismatchesAll();
 
-	   // Number of BG and signal tracks after each cut
+	/*  DrawAnalysisStepsH1("fh_bg_minv",false);
+	  DrawAnalysisStepsH1("fh_pi0_minv",false);
+	  DrawAnalysisStepsH2("fh_pi0_minv_pt");
+	  DrawAnalysisStepsH1("fh_gamma_minv",false);
+
+      DrawAnalysisStepsH1("fh_bg_truematch_minv",false);
+	  DrawAnalysisStepsH1("fh_bg_truematch_el_minv",false);
+	  DrawAnalysisStepsH1("fh_bg_truematch_notel_minv",false);
+	  DrawAnalysisStepsH1("fh_bg_mismatch_minv",false);
+
+	  DrawAnalysisStepsH2("fh_signal_minv_pt");
+	  DrawAnalysisStepsH1("fh_signal_mom",true);
+	  DrawAnalysisStepsH1("fh_signal_minv",true);
+	  DrawAnalysisStepsH2("fh_signal_pty");
+	  DrawAnalysisStepsH1("fh_signal_pt",true);
+	  DrawAnalysisStepsH1("fh_signal_rapidity",true);
+
+	  DrawAnalysisStepsSourceTypesH1("fh_source_mom",true);
+	  DrawAnalysisStepsSourceTypesH1("fh_source_pt",false);*/
+
 	  {
-	   	  TCanvas* c = CreateCanvas("jpsi_nof_bg_tracks","jpsi_nof_bg_tracks",600,600);
-	   	  H1("fh_nof_bg_tracks")->Scale(1. / H1("fh_nof_bg_tracks")->Integral());//Scale Yield
-	      DrawH1(H1("fh_nof_bg_tracks"));
+		  TCanvas* c = CreateCanvas("jpsi_fh_vertex_el_gamma","jpsi_fh_vertex_el_gamma",1000,1000);
+		  c->Divide(2,2);
+		  c->cd(1);
+		  H2("fh_vertex_el_gamma_xz")->Scale(1. / nofEvents);
+	  	  DrawH2(H2("fh_vertex_el_gamma_xz"));
+	  	  c->cd(2);
+		  H2("fh_vertex_el_gamma_yz")->Scale(1. / nofEvents);
+		  DrawH2(H2("fh_vertex_el_gamma_yz"));
+		  c->cd(3);
+		  H2("fh_vertex_el_gamma_xy")->Scale(1. / nofEvents);
+		  DrawH2(H2("fh_vertex_el_gamma_xy"));
+	      c->cd(4);
+		  H2("fh_vertex_el_gamma_rz")->Scale(1. / nofEvents);
+		  DrawH2(H2("fh_vertex_el_gamma_rz"));
 	  }
 
-	  {
-	  	  TCanvas* c = CreateCanvas("jpsi_nof_el_tracks","jpsi_nof_el_tracks",600,600);
-	  	  H1("fh_nof_el_tracks")->Scale(1. / H1("fh_nof_el_tracks")->Integral());//Scale Yield
+	  { // Number of BG and signal tracks after each cut
+	   	  TCanvas* c = CreateCanvas("jpsi_fh_nof_tracks","jpsi_fh_nof_tracks",1000, 500);
+	   	  c->Divide(2, 1);
+	   	  c->cd(1);
+	   	  H1("fh_nof_bg_tracks")->Scale(1. / nofEvents);
+	      DrawH1(H1("fh_nof_bg_tracks"));
+	      c->cd(2);
+	  	  H1("fh_nof_el_tracks")->Scale(1. / nofEvents);
 	  	  DrawH1(H1("fh_nof_el_tracks"));
 	  }
 
-	  {
-	   	  TCanvas* c = CreateCanvas("jpsi_fh_nof_el_tracks","jpsi_fh_nof_el_tracks",600,600);
-	  	  DrawH2(H2("fh_source_tracks"));
-	  }
-
-	  //mismatches
-	  {
-	  	  TCanvas* c = CreateCanvas("jpsi_nof_mismatches","jpsi_nof_mismatches",600,600);
-	  	  H1("fh_nof_mismatches")->Scale(1. / H1("fh_nof_mismatches")->Integral());//Scale Yield
+	  { //number of mismatches
+	  	  TCanvas* c = CreateCanvas("jpsi_fh_nof_mismatches","jpsi_fh_nof_mismatches",1000,1000);
+	  	  c->Divide(2,2);
+	  	  c->cd(1);
+	  	  H1("fh_nof_mismatches")->Scale(1. / nofEvents);
 	  	  DrawH1(H1("fh_nof_mismatches"));
-	  }
-
-	  {
-	  	  TCanvas* c = CreateCanvas("jpsi_nof_mismatches_rich","jpsi_nof_mismatches_rich",600,600);
-	  	  H1("fh_nof_mismatches_rich")->Scale(1. / H1("fh_nof_mismatches_rich")->Integral());//Scale Yield
+	  	  c->cd(2);
+	  	  H1("fh_nof_mismatches_rich")->Scale(1. / H1("fh_nof_mismatches_rich")->Integral());
 	  	  DrawH1(H1("fh_nof_mismatches_rich"));
-	  }
-
-	  {
-	  	  TCanvas* c = CreateCanvas("jpsi_nof_mismatches_trd","jpsi_nof_mismatches_trd",600,600);
-	  	  H1("fh_nof_mismatches_trd")->Scale(1. / H1("fh_nof_mismatches_trd")->Integral());//Scale Yield
+	  	  c->cd(3);
+	  	  H1("fh_nof_mismatches_trd")->Scale(1. / H1("fh_nof_mismatches_trd")->Integral());
 	  	  DrawH1(H1("fh_nof_mismatches_trd"));
-	  }
-
-	  {
-	  	  TCanvas* c = CreateCanvas("jpsi_nof_mismatches_tof","jpsi_nof_mismatches_tof",600,600);
-	  	  H1("fh_nof_mismatches_tof")->Scale(1. / H1("fh_nof_mismatches_tof")->Integral());//Scale Yield
+	  	  c->cd(4);
+	  	  H1("fh_nof_mismatches_tof")->Scale(1. / H1("fh_nof_mismatches_tof")->Integral());
 	  	  DrawH1(H1("fh_nof_mismatches_tof"));
-	  }
-
-	  {
-	  	  TCanvas* c = CreateCanvas("jpsi_nof_ghosts","jpsi_nof_ghosts",600,600);
-	  	  //H1("fh_nof_ghosts")->Scale(1. / H1("fh_nof_ghosts")->Integral());//Scale Yield
-	  	  DrawH1(H1("fh_nof_ghosts"));
 	  }
 }
 
@@ -126,8 +128,7 @@ void CbmAnaJpsiReport::DrawAnalysisStepsSourceTypesH1(
 	      const string& hName,
 	      bool doScale)
 {
-	for (int i=0; i<CbmAnaJpsiHist::fNofSourceTypes;i++)
-	{
+	for (int i=0; i<CbmAnaJpsiHist::fNofSourceTypes;i++){
 
 		{
 		TCanvas *c = CreateCanvas( ("jpsi_" + hName + "_" + CbmAnaJpsiHist::fSourceTypes[i]).c_str(), ("jpsi_" + hName + "_" + CbmAnaJpsiHist::fSourceTypes[i]).c_str(), 600, 600);
@@ -140,8 +141,6 @@ void CbmAnaJpsiReport::DrawAnalysisStepsSourceTypesH1(
 	}
 
 }
-
-
 
 void CbmAnaJpsiReport::DrawAnalysisStepsH2(
       const string& hName)
@@ -185,7 +184,12 @@ void CbmAnaJpsiReport::DrawSourceTypesH1(
       h.push_back( H1(fullName) );
       h[i]->SetLineWidth(2);
       h[i]->SetLineColor(CbmAnaJpsiHist::fSourceTypesColor[i]);
-      if (doScale) h[i]->Scale(1. / h[i]->Integral());
+      if (doScale){
+    	  Double_t integral = h[i]->Integral();
+    	  if (integral != 0.0) {
+    		  h[i]->Scale(1. / h[i]->Integral());
+    	  }
+      }
       hLegend.push_back( CbmAnaJpsiHist::fSourceTypesLatex[i] );
    }
    DrawH1(h, hLegend, kLinear, kLog, true, 0.90, 0.7, 0.99, 0.99);
@@ -218,39 +222,51 @@ void CbmAnaJpsiReport::Draw2DCut(
 
 void CbmAnaJpsiReport::DrawCutDistributions()
 {
-   DrawCutH1("fhChi2PrimEl", 2.0);
-   DrawCutH1("fhMomEl", 5.0);
-   DrawCutH1("fhChi2StsEl", 2.0);
-   DrawCutH1("fhRapidityEl", 2.0);
-   DrawCutH1("fhPtEl", 2.0);
-   DrawCutH1("fhRichAnn", 2.0);
-   DrawCutH1("fhTrdAnn", 2.0);
-   Draw2DCut("fhTofM2");
+   DrawCutH1("fh_track_chi2prim", 2.0);
+   DrawCutH1("fh_track_mom", 5.0);
+   DrawCutH1("fh_track_chi2sts", 2.0);
+   DrawCutH1("fh_track_rapidity", 2.0);
+   DrawCutH1("fh_track_pt", 2.0);
+   DrawCutH1("fh_track_rich_ann", 2.0);
+   DrawCutH1("fh_track_trd_ann", 2.0);
+   Draw2DCut("fh_track_tof_m2");
 
 }
 
-void CbmAnaJpsiReport::DrawDistributions()
+void CbmAnaJpsiReport::DrawMinvMismatchesAll()
 {
-	   DrawAnalysisStepsH2("fh_vertex_el_gamma_xz");
-	   DrawAnalysisStepsH2("fh_vertex_el_gamma_yz");
-	   DrawAnalysisStepsH2("fh_vertex_el_gamma_xy");
-	   DrawAnalysisStepsH2("fh_vertex_el_gamma_rz");
-	   DrawAnalysisStepsH1("fh_bg_minv",false);
-	   DrawAnalysisStepsH1("fh_pi0_minv",true);
-	   DrawAnalysisStepsH2("fh_pi0_minv_pt");
-	   DrawAnalysisStepsH1("fh_gamma_minv",true);
-	   DrawAnalysisStepsH1("fh_bg_truematch_minv",false);
-	   DrawAnalysisStepsH1("fh_bg_truematch_el_minv",false);
-	   DrawAnalysisStepsH1("fh_bg_truematch_notel_minv",false);
-	   DrawAnalysisStepsH1("fh_bg_mismatch_minv",false);
-	   DrawAnalysisStepsH2("fh_signal_minv_pt");
-	   DrawAnalysisStepsH1("fh_signal_mom",true);
-	   DrawAnalysisStepsH1("fh_signal_minv",true);
-	   DrawAnalysisStepsH2("fh_signal_pty");
-	   DrawAnalysisStepsH1("fh_signal_pt",true);
-	   DrawAnalysisStepsH1("fh_signal_rapidity",true);
-	   DrawAnalysisStepsSourceTypesH1("fh_source_mom",true);
-	   DrawAnalysisStepsSourceTypesH1("fh_source_pt",false);
+   // Draw mismatches and true matches minv
+   {
+   Int_t hi = 1;
+   TCanvas *c = CreateCanvas("jpsi_fh_minv_mismatches", "jpsi_fh_minv_mismatches", 1000, 1000);
+   c->Divide(2,2);
+   for (int step = kJpsiReco; step < CbmAnaJpsiHist::fNofAnaSteps; step++){
+      c->cd(hi++);
+      DrawH1(list_of( H1("fh_bg_truematch_minv_" + CbmAnaJpsiHist::fAnaSteps[step]) )
+            ( H1("fh_bg_truematch_el_minv_" + CbmAnaJpsiHist::fAnaSteps[step]) )
+            ( H1("fh_bg_truematch_notel_minv_" + CbmAnaJpsiHist::fAnaSteps[step]) )
+            ( H1("fh_bg_mismatch_minv_" + CbmAnaJpsiHist::fAnaSteps[step]) ),
+            list_of("true match")("true match (e^{#pm})")("true match (not e^{#pm})")("mismatch"), kLinear, kLinear, true, 0.5, 0.7, 0.99, 0.99);
+   }
+
+   // Draw minv after PtCut
+   double trueMatch = H1("fh_bg_truematch_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->GetEntries();
+   double trueMatchEl = H1("fh_bg_truematch_el_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->GetEntries();
+   double trueMatchNotEl = H1("fh_bg_truematch_notel_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->GetEntries();
+   double misMatch = H1("fh_bg_mismatch_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->GetEntries();
+   double nofBg = H1("fh_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->GetEntries();
+
+   TCanvas *cPtCut = CreateCanvas("jpsi_fh_minv_mismatches_ptcut", "jpsi_fh_minv_mismatches_ptcut", 600, 600);
+   DrawH1(list_of( H1("fh_bg_truematch_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut]) )
+         ( H1("fh_bg_truematch_el_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut]) )
+         ( H1("fh_bg_truematch_notel_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut]) )
+         ( H1("fh_bg_mismatch_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut]) ),
+         list_of("true match (" + Cbm::NumberToString(100. * trueMatch / nofBg, 1) + "%)")
+         ("true match (e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchEl / nofBg, 1)+ "%)")
+         ("true match (not e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchNotEl / nofBg, 1)+ "%)")
+         ("mismatch (" + Cbm::NumberToString(100. * misMatch / nofBg)+ "%)"),
+         kLinear, kLinear, true, 0.4, 0.7, 0.99, 0.99);
+   }
 }
 
 ClassImp(CbmAnaJpsiReport)

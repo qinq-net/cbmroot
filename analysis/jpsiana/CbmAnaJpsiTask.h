@@ -273,22 +273,10 @@ private:
     Bool_t IsMismatch(
     		CbmAnaJpsiCandidate* cand);
 
-    Bool_t IsGhost(
-    		CbmAnaJpsiCandidate* cand);
-
-
-    void BgIdentification();
-
     /**
      * \brief Fill histograms for signal and BG electrons
      */
     void DifferenceSignalAndBg();
-
-
-    /**
-     * \brief Calculate the number of Candidates after every Cut.
-     */
-    void NofCandidatesAfterCuts();
 
    /**
     * \brief Copy constructor.
