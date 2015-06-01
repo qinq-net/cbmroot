@@ -230,7 +230,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
       fHM->H2(histName.Data())->Fill(chID,raw->GetSamples()[0]);
 
       Float_t AdcIntegral = 0;
-      for (Int_t bin = 1; bin < nrSamples; bin++) {
+      for (Int_t bin = 0; bin < nrSamples; bin++) {
 	AdcIntegral += raw->GetSamples()[bin] + 256;// - raw->GetSamples()[0]);
 
 	histName = "Signal_Shape_" + syscore + spadic + channelId;
