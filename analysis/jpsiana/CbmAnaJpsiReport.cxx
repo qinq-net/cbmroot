@@ -17,6 +17,7 @@
 #include "CbmAnaJpsiHist.h"
 #include "CbmAnaJpsiCuts.h"
 #include "TLine.h"
+#include "TStyle.h"
 
 using boost::assign::list_of;
 using Cbm::NumberToString;
@@ -52,46 +53,36 @@ void CbmAnaJpsiReport::Draw()
 
 	  int nofEvents = H1("fh_event_number")->GetEntries();
 	  cout << "Number of events = " << nofEvents << endl;
+	  HM()->ScaleByPattern(".*", 1./nofEvents);
+
 
 	  Draw2DCut("fh_rich_pmt_xy");
 	  DrawCutDistributions();
 
 	  DrawMinvMismatchesAll();
 
-	/*  DrawAnalysisStepsH1("fh_bg_minv",false);
+	  DrawAnalysisStepsH1("fh_bg_minv",false);
 	  DrawAnalysisStepsH1("fh_pi0_minv",false);
-	  DrawAnalysisStepsH2("fh_pi0_minv_pt");
 	  DrawAnalysisStepsH1("fh_gamma_minv",false);
 
-      DrawAnalysisStepsH1("fh_bg_truematch_minv",false);
-	  DrawAnalysisStepsH1("fh_bg_truematch_el_minv",false);
-	  DrawAnalysisStepsH1("fh_bg_truematch_notel_minv",false);
-	  DrawAnalysisStepsH1("fh_bg_mismatch_minv",false);
-
 	  DrawAnalysisStepsH2("fh_signal_minv_pt");
-	  DrawAnalysisStepsH1("fh_signal_mom",true);
-	  DrawAnalysisStepsH1("fh_signal_minv",true);
+	  DrawAnalysisStepsH1("fh_signal_mom",false);
+	  DrawAnalysisStepsH1("fh_signal_minv",false);
 	  DrawAnalysisStepsH2("fh_signal_pty");
-	  DrawAnalysisStepsH1("fh_signal_pt",true);
-	  DrawAnalysisStepsH1("fh_signal_rapidity",true);
 
-	  DrawAnalysisStepsSourceTypesH1("fh_source_mom",true);
-	  DrawAnalysisStepsSourceTypesH1("fh_source_pt",false);*/
+	  //DrawAnalysisStepsSourceTypesH1("fh_source_mom",true);
+	  //DrawAnalysisStepsSourceTypesH1("fh_source_pt",false);
 
 	  {
 		  TCanvas* c = CreateCanvas("jpsi_fh_vertex_el_gamma","jpsi_fh_vertex_el_gamma",1000,1000);
 		  c->Divide(2,2);
 		  c->cd(1);
-		  H2("fh_vertex_el_gamma_xz")->Scale(1. / nofEvents);
 	  	  DrawH2(H2("fh_vertex_el_gamma_xz"));
 	  	  c->cd(2);
-		  H2("fh_vertex_el_gamma_yz")->Scale(1. / nofEvents);
 		  DrawH2(H2("fh_vertex_el_gamma_yz"));
 		  c->cd(3);
-		  H2("fh_vertex_el_gamma_xy")->Scale(1. / nofEvents);
 		  DrawH2(H2("fh_vertex_el_gamma_xy"));
 	      c->cd(4);
-		  H2("fh_vertex_el_gamma_rz")->Scale(1. / nofEvents);
 		  DrawH2(H2("fh_vertex_el_gamma_rz"));
 	  }
 
@@ -99,29 +90,35 @@ void CbmAnaJpsiReport::Draw()
 	   	  TCanvas* c = CreateCanvas("jpsi_fh_nof_tracks","jpsi_fh_nof_tracks",1000, 500);
 	   	  c->Divide(2, 1);
 	   	  c->cd(1);
-	   	  H1("fh_nof_bg_tracks")->Scale(1. / nofEvents);
 	      DrawH1(H1("fh_nof_bg_tracks"));
+	      SetAnalysisStepLabels(H1("fh_nof_bg_tracks"));
 	      c->cd(2);
-	  	  H1("fh_nof_el_tracks")->Scale(1. / nofEvents);
 	  	  DrawH1(H1("fh_nof_el_tracks"));
+	  	  SetAnalysisStepLabels(H1("fh_nof_el_tracks"));
 	  }
 
 	  { //number of mismatches
 	  	  TCanvas* c = CreateCanvas("jpsi_fh_nof_mismatches","jpsi_fh_nof_mismatches",1000,1000);
 	  	  c->Divide(2,2);
 	  	  c->cd(1);
-	  	  H1("fh_nof_mismatches")->Scale(1. / nofEvents);
 	  	  DrawH1(H1("fh_nof_mismatches"));
+	  	  DrawTextOnPad("All mismatches", 0.15, 0.9, 0.85, 0.99);
+	  	  SetAnalysisStepLabels(H1("fh_nof_mismatches"));
 	  	  c->cd(2);
-	  	  H1("fh_nof_mismatches_rich")->Scale(1. / H1("fh_nof_mismatches_rich")->Integral());
 	  	  DrawH1(H1("fh_nof_mismatches_rich"));
+	  	  DrawTextOnPad("Mismatches in RICH", 0.15, 0.9, 0.85, 0.99);
+	  	  SetAnalysisStepLabels(H1("fh_nof_mismatches_rich"));
 	  	  c->cd(3);
-	  	  H1("fh_nof_mismatches_trd")->Scale(1. / H1("fh_nof_mismatches_trd")->Integral());
 	  	  DrawH1(H1("fh_nof_mismatches_trd"));
+	  	  DrawTextOnPad("mismatches in TRD", 0.15, 0.9, 0.85, 0.99);
+	  	  SetAnalysisStepLabels(H1("fh_nof_mismatches_trd"));
 	  	  c->cd(4);
-	  	  H1("fh_nof_mismatches_tof")->Scale(1. / H1("fh_nof_mismatches_tof")->Integral());
 	  	  DrawH1(H1("fh_nof_mismatches_tof"));
+	  	  DrawTextOnPad("mismatches in TOF", 0.15, 0.9, 0.85, 0.99);
+	  	  SetAnalysisStepLabels(H1("fh_nof_mismatches_tof"));
 	  }
+
+	   DrawBgSource2D("fh_source_tracks", list_of("#gamma")("#pi^{0}")("#pi^{#pm}")("p")("K")("e^{#pm}_{sec}")("oth."), "Tracks per event");
 }
 
 void CbmAnaJpsiReport::DrawAnalysisStepsSourceTypesH1(
@@ -129,7 +126,6 @@ void CbmAnaJpsiReport::DrawAnalysisStepsSourceTypesH1(
 	      bool doScale)
 {
 	for (int i=0; i<CbmAnaJpsiHist::fNofSourceTypes;i++){
-
 		{
 		TCanvas *c = CreateCanvas( ("jpsi_" + hName + "_" + CbmAnaJpsiHist::fSourceTypes[i]).c_str(), ("jpsi_" + hName + "_" + CbmAnaJpsiHist::fSourceTypes[i]).c_str(), 600, 600);
 		vector<TH1*> h;
@@ -145,32 +141,33 @@ void CbmAnaJpsiReport::DrawAnalysisStepsSourceTypesH1(
 void CbmAnaJpsiReport::DrawAnalysisStepsH2(
       const string& hName)
 {
-   for (int i = 0;i< CbmAnaJpsiHist::fNofAnaSteps; i++)
-   {
-	   {
-		  string h = hName+"_"+CbmAnaJpsiHist::fAnaSteps[i];
-		  TCanvas* c = CreateCanvas(("jpsi_"+h).c_str(),("jpsi_"+h).c_str(),600,600);
-	   	  H1(h)->Scale(1. / H1(h)->Integral());//Scale Yield
-	   	  DrawH2(H2(h));
-	   }
-   }
+	TCanvas* c = CreateCanvas(("jpsi_"+hName).c_str(), ("jpsi_"+hName).c_str(), 1200, 800);
+	c->Divide(3,2);
+	for (int i = 0;i< CbmAnaJpsiHist::fNofAnaSteps; i++){
+		c->cd(i+1);
+		string h = hName+"_"+CbmAnaJpsiHist::fAnaSteps[i];
+		H1(h)->Scale(1. / H1(h)->Integral());//Scale Yield
+		DrawH2(H2(h));
+		DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[i], 0.6, 0.89, 0.7, 0.99);
+	}
 }
 
 void CbmAnaJpsiReport::DrawAnalysisStepsH1(
       const string& hName,
       bool doScale)
-{	TCanvas* c = CreateCanvas( ("jpsi_" + hName).c_str(), ("jpsi_" + hName).c_str(), 600, 600);
-   vector<TH1*> h;
-   vector<string> hLegend;
-   for (int i = 0; i < CbmAnaJpsiHist::fNofAnaSteps; i++){
-      string fullName = hName+"_"+CbmAnaJpsiHist::fAnaSteps[i];
-      h.push_back( H1(fullName) );
-      h[i]->SetLineWidth(2);
-      h[i]->SetLineColor(CbmAnaJpsiHist::fAnaStepsColor[i]);
-      if (doScale) h[i]->Scale(1. / h[i]->Integral());
-      hLegend.push_back( CbmAnaJpsiHist::fAnaStepsLatex[i] );
-   }
-   DrawH1(h, hLegend, kLinear, kLog, true, 0.90, 0.7, 0.99, 0.99);
+{
+	TCanvas* c = CreateCanvas( ("jpsi_" + hName).c_str(), ("jpsi_" + hName).c_str(), 600, 600);
+	vector<TH1*> h;
+	vector<string> hLegend;
+	for (int i = 0; i < CbmAnaJpsiHist::fNofAnaSteps; i++){
+		string fullName = hName+"_"+CbmAnaJpsiHist::fAnaSteps[i];
+		h.push_back( H1(fullName) );
+		h[i]->SetLineWidth(2);
+		h[i]->SetLineColor(CbmAnaJpsiHist::fAnaStepsColor[i]);
+		if (doScale) h[i]->Scale(1. / h[i]->Integral());
+		hLegend.push_back( CbmAnaJpsiHist::fAnaStepsLatex[i] );
+	}
+	DrawH1(h, hLegend, kLinear, kLog, true, 0.90, 0.7, 0.99, 0.99);
 }
 
 void CbmAnaJpsiReport::DrawSourceTypesH1(
@@ -233,40 +230,99 @@ void CbmAnaJpsiReport::DrawCutDistributions()
 
 }
 
+void CbmAnaJpsiReport::DrawMinvMismatches(
+		int step)
+{
+	double trueMatch = H1("fh_bg_truematch_minv_" + CbmAnaJpsiHist::fAnaSteps[step])->GetEntries();
+	double trueMatchEl = H1("fh_bg_truematch_el_minv_" + CbmAnaJpsiHist::fAnaSteps[step])->GetEntries();
+	double trueMatchNotEl = H1("fh_bg_truematch_notel_minv_" + CbmAnaJpsiHist::fAnaSteps[step])->GetEntries();
+	double misMatch = H1("fh_bg_mismatch_minv_" + CbmAnaJpsiHist::fAnaSteps[step])->GetEntries();
+	double nofBg = H1("fh_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[step])->GetEntries();
+
+	DrawH1(list_of( H1("fh_bg_truematch_minv_" + CbmAnaJpsiHist::fAnaSteps[step]) )
+		( H1("fh_bg_truematch_el_minv_" + CbmAnaJpsiHist::fAnaSteps[step]) )
+		( H1("fh_bg_truematch_notel_minv_" + CbmAnaJpsiHist::fAnaSteps[step]) )
+		( H1("fh_bg_mismatch_minv_" + CbmAnaJpsiHist::fAnaSteps[step]) ),
+		list_of("true match (" + Cbm::NumberToString(100. * trueMatch / nofBg, 1) + "%)")
+		("true match (e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchEl / nofBg, 1)+ "%)")
+		("true match (not e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchNotEl / nofBg, 1)+ "%)")
+		("mismatch (" + Cbm::NumberToString(100. * misMatch / nofBg)+ "%)"),
+		kLinear, kLinear, true, 0.4, 0.7, 0.99, 0.99);
+
+    DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[step], 0.15, 0.9, 0.35, 0.99);
+}
+
 void CbmAnaJpsiReport::DrawMinvMismatchesAll()
 {
-   // Draw mismatches and true matches minv
-   {
    Int_t hi = 1;
    TCanvas *c = CreateCanvas("jpsi_fh_minv_mismatches", "jpsi_fh_minv_mismatches", 1000, 1000);
    c->Divide(2,2);
    for (int step = kJpsiReco; step < CbmAnaJpsiHist::fNofAnaSteps; step++){
       c->cd(hi++);
-      DrawH1(list_of( H1("fh_bg_truematch_minv_" + CbmAnaJpsiHist::fAnaSteps[step]) )
-            ( H1("fh_bg_truematch_el_minv_" + CbmAnaJpsiHist::fAnaSteps[step]) )
-            ( H1("fh_bg_truematch_notel_minv_" + CbmAnaJpsiHist::fAnaSteps[step]) )
-            ( H1("fh_bg_mismatch_minv_" + CbmAnaJpsiHist::fAnaSteps[step]) ),
-            list_of("true match")("true match (e^{#pm})")("true match (not e^{#pm})")("mismatch"), kLinear, kLinear, true, 0.5, 0.7, 0.99, 0.99);
+      DrawMinvMismatches(step);
    }
-
-   // Draw minv after PtCut
-   double trueMatch = H1("fh_bg_truematch_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->GetEntries();
-   double trueMatchEl = H1("fh_bg_truematch_el_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->GetEntries();
-   double trueMatchNotEl = H1("fh_bg_truematch_notel_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->GetEntries();
-   double misMatch = H1("fh_bg_mismatch_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->GetEntries();
-   double nofBg = H1("fh_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->GetEntries();
 
    TCanvas *cPtCut = CreateCanvas("jpsi_fh_minv_mismatches_ptcut", "jpsi_fh_minv_mismatches_ptcut", 600, 600);
-   DrawH1(list_of( H1("fh_bg_truematch_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut]) )
-         ( H1("fh_bg_truematch_el_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut]) )
-         ( H1("fh_bg_truematch_notel_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut]) )
-         ( H1("fh_bg_mismatch_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut]) ),
-         list_of("true match (" + Cbm::NumberToString(100. * trueMatch / nofBg, 1) + "%)")
-         ("true match (e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchEl / nofBg, 1)+ "%)")
-         ("true match (not e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchNotEl / nofBg, 1)+ "%)")
-         ("mismatch (" + Cbm::NumberToString(100. * misMatch / nofBg)+ "%)"),
-         kLinear, kLinear, true, 0.4, 0.7, 0.99, 0.99);
+   DrawMinvMismatches(kJpsiPtCut);
+}
+
+void CbmAnaJpsiReport::SetAnalysisStepLabels(
+      TH1* h)
+{
+   h->GetXaxis()->SetLabelSize(0.06);
+   int x = 1;
+   for (Int_t step = 0; step < CbmAnaJpsiHist::fNofAnaSteps; step++){
+      h->GetXaxis()->SetBinLabel(x, CbmAnaJpsiHist::fAnaStepsLatex[step].c_str());
+      x++;
    }
+}
+
+void CbmAnaJpsiReport::DrawBgSource2D(
+      const string& histName,
+      const vector<string>& yLabels,
+      const string& zTitle)
+{
+	gStyle->SetPaintTextFormat("4.1f");
+	TCanvas *c1 = CreateCanvas(string("jpsi_" + histName+"_abs").c_str(), string("jpsi_"+histName+"_abs").c_str(), 900, 600);
+	TH2D* habs = (TH2D*)H2(histName)->Clone();
+	habs->SetStats(false);
+	habs->GetZaxis()->SetTitle(zTitle.c_str());
+	habs->GetXaxis()->SetRange(kJpsiReco + 1, CbmAnaJpsiHist::fNofAnaSteps);
+	habs->SetMarkerSize(1.4);
+	DrawH2(habs, kLinear, kLinear, kLog, "text COLZ");
+
+	TCanvas *c2 = CreateCanvas(string("jpsi_" + histName+"_percent").c_str(), string("jpsi_" + histName+"_percent").c_str(), 900, 600);
+	TH2D* hperc = (TH2D*)H2(histName)->Clone();
+	hperc->SetStats(false);
+	Int_t nBinsX = hperc->GetNbinsX();
+	Int_t nBinsY = hperc->GetNbinsY();
+	for (Int_t x = 1; x <= nBinsX; x++){
+		// calculate total number of BG tracks (pairs) for a current step
+		double nbg = 0.;
+		for (Int_t y = 1; y <= nBinsY; y++){
+			nbg += habs->GetBinContent(x, y);
+		}
+		Double_t sc =100. / (nbg);
+		for (Int_t y = 1; y <= nBinsY; y++){
+			Double_t val = sc * hperc->GetBinContent(x, y);
+			hperc->SetBinContent(x, y, val);
+		}
+	}
+	hperc->GetZaxis()->SetTitle("[%]");
+	hperc->GetXaxis()->SetLabelSize(0.06);
+	hperc->GetYaxis()->SetLabelSize(0.06);
+	hperc->SetMarkerColor(kBlack);
+	hperc->SetMarkerSize(1.8);
+	hperc->GetXaxis()->SetRange(kJpsiReco + 1, CbmAnaJpsiHist::fNofAnaSteps);
+	DrawH2(hperc, kLinear, kLinear, kLinear, "text COLZ");
+
+	for (Int_t y = 1; y <= yLabels.size(); y++){
+		hperc->GetYaxis()->SetBinLabel(y, yLabels[y-1].c_str());
+		habs->GetYaxis()->SetBinLabel(y, yLabels[y-1].c_str());
+	}
+
+	SetAnalysisStepLabels(hperc);
+	SetAnalysisStepLabels(habs);
 }
 
 ClassImp(CbmAnaJpsiReport)

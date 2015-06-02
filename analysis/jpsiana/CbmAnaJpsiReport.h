@@ -3,6 +3,7 @@
 #define CBMANAJPSIREPORT_H
 
 #include "CbmSimulationReport.h"
+#include "CbmAnaJpsiHist.h"
 #include "TSystem.h"
 
 class CbmAnaJpsiReport : public CbmSimulationReport
@@ -53,7 +54,18 @@ protected:
 
    void DrawCutDistributions();
 
+   void DrawMinvMismatches(
+   		int step);
+
    void DrawMinvMismatchesAll();
+
+   void SetAnalysisStepLabels(
+         TH1* h);
+
+   void DrawBgSource2D(
+         const string& histName,
+         const vector<string>& yLabels,
+         const string& zTitle);
 
 
 	ClassDef(CbmAnaJpsiReport, 1);
