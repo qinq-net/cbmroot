@@ -52,7 +52,7 @@ InitStatus CbmTrdOnlineDisplay::Init()
   gStyle->SetLabelSize(lsize);
   for (Int_t sys = 0; sys < 2; sys++){
     for (Int_t spa = 0; spa < 2; spa++){
-      fSpadic1[spa][sys] = new TCanvas(TString("fSpadic" + std::to_string(spa) + "SysCore" + std::to_string(sys)), TString("Spadic" + std::to_string(spa) + "SysCore" + std::to_string(sys)), 0, 0, 800, 600);
+      fSpadic1[spa][sys] = new TCanvas(TString("fSpadic" + std::to_string(spa) + "SysCore" + std::to_string(sys)), TString("Spadic" + std::to_string(spa) + "SysCore" + std::to_string(sys)), 0, 0, 1600, 1200);
       fSpadic1[spa][sys]->Divide(4,3);
 
       // Should be set for each pad of the Canvas
@@ -120,7 +120,7 @@ InitStatus CbmTrdOnlineDisplay::Init()
 
   for (Int_t sys = 0; sys < 2; sys++){
     for (Int_t spa = 0; spa < 2; spa++) {
-      fSpadic1a[spa][sys] = new TCanvas(TString("fSpadic"+ std::to_string(spa) +"a_sys"+ std::to_string(sys)), TString("Spadic"+ std::to_string(spa) +"_Signal_Shape_sys"+ std::to_string(sys)), 50, 50, 600, 350);
+      fSpadic1a[spa][sys] = new TCanvas(TString("fSpadic"+ std::to_string(spa) +"a_sys"+ std::to_string(sys)), TString("Spadic"+ std::to_string(spa) +"_Signal_Shape_sys"+ std::to_string(sys)), 50, 50, 1200, 700);
       fSpadic1a[spa][sys]->Divide(8,4);	
       gPad->SetFillColor(0);
 
