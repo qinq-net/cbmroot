@@ -122,23 +122,6 @@ void CbmAnaJpsiReport::Draw()
 		  DrawPtYEfficiencyAll();
 }
 
-void CbmAnaJpsiReport::DrawAnalysisStepsSourceTypesH1(
-	      const string& hName,
-	      bool doScale)
-{
-	for (int i=0; i<CbmAnaJpsiHist::fNofSourceTypes;i++){
-		{
-		TCanvas *c = CreateCanvas( ("jpsi_" + hName + "_" + CbmAnaJpsiHist::fSourceTypes[i]).c_str(), ("jpsi_" + hName + "_" + CbmAnaJpsiHist::fSourceTypes[i]).c_str(), 600, 600);
-		vector<TH1*> h;
-		vector<string> hLegend;
-		string hNameNew = "";
-		hNameNew = hName + "_" + CbmAnaJpsiHist::fSourceTypes[i];
-		DrawAnalysisStepsH1( hNameNew ,doScale);
-		}
-	}
-
-}
-
 void CbmAnaJpsiReport::DrawAnalysisStepsH2(
       const string& hName, bool DoDrawEfficiency)
 {
@@ -283,8 +266,7 @@ void CbmAnaJpsiReport::DrawEfficiency(
 void CbmAnaJpsiReport::DrawPtYEfficiency(
 		int step)
 {
-	   TH2D* Efficiency = Cbm::DivideH2(H2("fh_signal_pty_" + CbmAnaJpsiHist::fAnaSteps[kJpsiMc]),H2("fh_signal_pty_" + CbmAnaJpsiHist::fAnaSteps[step]));
-
+	   TH2D* Efficiency = Cbm::DivideH2(H2("fh_signal_pty_" + CbmAnaJpsiHist::fAnaSteps[step]), H2("fh_signal_pty_" + CbmAnaJpsiHist::fAnaSteps[kJpsiMc]));
 	   DrawH2(Efficiency);
 	  // Efficiency->SetMaximum(10.);
 	   DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[step], 0.15, 0.9, 0.35, 0.99);

@@ -89,22 +89,6 @@ private:
 
   CbmHistManager* fHM;
 
-
-  //First index is the source type: [0]-signal, [1]-bg, [2]-pi0, [3]-gamma
-  //Use SourceTypes enumeration for access.
-  //second index is the analysis step: [0]-mc, [1]-acc, [2]-reco, [3]-chi2prim, [4]-elid,
-  // [5]-gamma cut, [6]-mvd1cut, [7]-mvd2cut, [8]-stcut, [9]-ttcut, [10]-ptcut.
-  //Use AnalysisSteps enumeration for access.
-
-
-  void CreateSourceTypesAnalysisStepsH1(
-        const string& name,
-        const string& axisX,
-        const string& axisY,
-        double nBins,
-        double min,
-        double max);
-
   /*
        * \brief Creates 1D histograms for each analysis step.
        * \param[in] name Base name of the histograms.

@@ -30,10 +30,6 @@ protected:
     */
    virtual void Draw();
 
-   void DrawAnalysisStepsSourceTypesH1(
-   	      const string& hName,
-   	      bool doScale);
-
    void DrawAnalysisStepsH2(
          const string& hName,
 		 bool DoDrawEfficiency);

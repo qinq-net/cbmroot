@@ -126,25 +126,6 @@ InitStatus CbmAnaJpsiTask::Init()
    return kSUCCESS;
 }
 
-void CbmAnaJpsiTask::CreateSourceTypesAnalysisStepsH1(
-      const string& name,
-      const string& axisX,
-      const string& axisY,
-      double nBins,
-      double min,
-      double max
-      )
-{
-	for (Int_t i = 0; i < CbmAnaJpsiHist::fNofSourceTypes; i++)
-	{
-	         for (Int_t step = 0; step < CbmAnaJpsiHist::fNofAnaSteps; step++)
-	         {
-
-	            string hname = name + "_" + CbmAnaJpsiHist::fSourceTypes[i] + "_" + CbmAnaJpsiHist::fAnaSteps[step] ;
-	            fHM->Create1<TH1D>(hname,hname+";"+ axisY + ";" + axisY,nBins,min, max);
-	         }
-	}
-}
 
 void CbmAnaJpsiTask::CreateAnalysisStepsH1(
       const string& name,
