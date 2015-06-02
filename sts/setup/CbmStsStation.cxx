@@ -3,6 +3,7 @@
  ** @date 04.03.2015
  **/
 
+#include <cassert>
 #include <sstream>
 #include "TGeoBBox.h"
 #include "TGeoMatrix.h"
@@ -15,7 +16,7 @@
 CbmStsStation::CbmStsStation()
 	: CbmStsElement(),
 	  fZ(0.),
-	  fXmin(0.), fXmax(0.), fYmin(0.), fYmax(0.), fSensorD(0.),
+	  fXmin(0.), fXmax(0.), fYmin(0.), fYmax(0.), fSensorD(0.), fSensorRot(0.),
 	  fNofSensors(0),
 	  fDiffSensorD(kFALSE),
 	  fFirstSensor(NULL)
@@ -30,7 +31,7 @@ CbmStsStation::CbmStsStation(const char* name, const char* title,
 		                                 TGeoPhysicalNode* node)
 	: CbmStsElement(name, title, kStsStation, node),
 	  fZ(0.),
-    fXmin(0.), fXmax(0.), fYmin(0.), fYmax(0.), fSensorD(0.),
+    fXmin(0.), fXmax(0.), fYmin(0.), fYmax(0.), fSensorD(0.), fSensorRot(0.),
     fNofSensors(0),
     fDiffSensorD(kFALSE),
 		fFirstSensor(NULL)
@@ -131,20 +132,6 @@ Double_t CbmStsStation::GetSensorPitch(Int_t iSide) const {
 
 
 
-// -----   Rotation    -----------------------------------------------------
-// N.B.: Implementation is only correct if the first sensor is only rotated
-// in the x-y plane.
-Double_t CbmStsStation::GetSensorRotation() const {
-	TGeoPhysicalNode* sensorNode = fFirstSensor->GetNode();
-	Double_t local[3] = {1., 0., 0.}; // unit vector on local x axis
-	Double_t global[3];    // unit vector in global C.S.
-	sensorNode->GetMatrix()->LocalToMaster(local, global);
-	return atan2(global[1], global[0]); // angle from global to local x-axis
-}
-// -------------------------------------------------------------------------
-
-
-
 // -----   Stereo angle    -------------------------------------------------
 Double_t CbmStsStation::GetSensorStereoAngle(Int_t iSide) const {
 	if ( iSide < 0 || iSide > 1 ) {
@@ -188,6 +175,23 @@ void CbmStsStation::Init() {
 	if ( fDiffSensorD )
 		LOG(WARNING) << GetName() << ": Different values for sensor thickness!"
 		             << FairLogger::endl;
+
+	// Determine the rotation (in x-y) of the first sensor
+	assert(fFirstSensor);
+	TGeoPhysicalNode* sensorNode = fFirstSensor->GetNode();
+	assert(sensorNode);
+	// Transform unit vector on local x axis into global c.s.
+	Double_t unitLocal[3] = {1., 0., 0.};
+	Double_t unitGlobal[3];
+	sensorNode->GetMatrix()->LocalToMaster(unitLocal, unitGlobal);
+	// Subtract translation vector of local origin
+	Double_t* translation = sensorNode->GetMatrix()->GetTranslation();
+	unitGlobal[0] -= translation[0];
+	unitGlobal[1] -= translation[1];
+	unitGlobal[2] -= translation[2];
+	// Calculate angle between unit x vector in global and local c.s.
+	fSensorRot = atan2(unitGlobal[1], unitGlobal[0]);
+
 }
 // --------------------------------------------------------------------------
 
@@ -200,7 +204,8 @@ string CbmStsStation::ToString() const
    ss << GetName() << ": " << fNofSensors << " sensors, z = " << fZ
   	  << " cm, x = " << fXmin << " to " << fXmax << " cm, y = " << fYmin
   	  << " to " << fYmax << " cm " << "\n\t\t"
-  	  << " sensor thickness " << fSensorD << " cm"
+  	  << " rotation " << fSensorRot * 180. / 3.1415927 << " degrees,"
+  	  << " sensor thickness " << fSensorD << " cm,"
   	  << " pitch " << GetSensorPitch(0) << " cm / " << GetSensorPitch(1)
   	  << " cm, stereo angle " << GetSensorStereoAngle(0) << " / "
   	  << GetSensorStereoAngle(1);

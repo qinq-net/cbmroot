@@ -40,11 +40,14 @@ class CbmStsStation : public CbmStsElement {
 		virtual ~CbmStsStation();
 
 
-		/** Minimal and maximal x and y coordinates **/
-		Double_t GetXmin() const { return fXmin; }
-		Double_t GetXmax() const { return fXmax; }
-		Double_t GetYmin() const { return fYmin; }
-		Double_t GetYmax() const { return fYmax; }
+
+		/** Radiation length of the main material of the station (silicon)
+		 ** @value  Radiation length of silicon [cm]
+		 **
+		 ** Required from L1/KF. The value for silicon is hard-coded here,
+		 ** since it is not likely that the material will change.
+		 **/
+		Double_t GetRadLength() const { return 9.34953; }
 
 
 		/** Sensor thickness
@@ -72,6 +75,18 @@ class CbmStsStation : public CbmStsElement {
 		Double_t GetSensorPitch(Int_t iSide) const;
 
 
+		/** Sensor rotation
+		 ** @value Rotation of first sensor in station in global C.S. [rad]
+		 **
+     ** This return the rotation angle in the x-y plane of the first sensor
+     ** in the station w.r.t. the global C.S.
+		 ** Needed by L1/KF.
+		 ** Note that in general, the rotation angle will be different for each
+		 ** sensor. In particular, half of them are upside down.
+		 **/
+		Double_t GetSensorRotation() const { return fSensorRot; }
+
+
 		/** Get sensor stereo angle
 		 ** @param iSide  Sensor side (0 = front, 1 = back)
 		 ** @value Stereo angle [degrees]
@@ -85,18 +100,11 @@ class CbmStsStation : public CbmStsElement {
 		Double_t GetSensorStereoAngle(Int_t iSide) const;
 
 
-
-		/** Sensor rotation
-		 ** @value Rotation of first sensor in station in global C.S. [rad]
-		 **
-     ** This return the rotation angle in the x-y plane of the first sensor
-     ** in the station w.r.t. the global C.S.
-		 ** Needed by L1/KF.
-		 ** Note that in general, the rotation angle will be different for each
-		 ** sensor. In particular, half of the are upside down.
-		 **/
-		Double_t GetSensorRotation() const;
-
+		/** Minimal and maximal x and y coordinates **/
+		Double_t GetXmin() const { return fXmin; }
+		Double_t GetXmax() const { return fXmax; }
+		Double_t GetYmin() const { return fYmin; }
+		Double_t GetYmax() const { return fYmax; }
 
 
 		/** Station z position in global c.s.
@@ -119,14 +127,15 @@ class CbmStsStation : public CbmStsElement {
 
 	private:
 
-		Double_t fZ;          ///< z position of station [cm]
-		Double_t fXmin;       ///< minimal x coordinate [cm]
-		Double_t fXmax;       ///< maximal x coordinate [cm]
-		Double_t fYmin;       ///< minimal y coordinate [cm]
-		Double_t fYmax;       ///< maximal y coordinate [cm]
-		Double_t fSensorD;    ///< thickness of sensors [cm]
-		Int_t    fNofSensors; ///< Number of sensors in station
-		Bool_t fDiffSensorD;  ///< Flag for different sensor thicknesses
+		Double_t fZ;            ///< z position of station [cm]
+		Double_t fXmin;         ///< minimal x coordinate [cm]
+		Double_t fXmax;         ///< maximal x coordinate [cm]
+		Double_t fYmin;         ///< minimal y coordinate [cm]
+		Double_t fYmax;         ///< maximal y coordinate [cm]
+		Double_t fSensorD;      ///< thickness of sensors [cm]
+		Double_t fSensorRot;    ///< Rotation of first sensor in global c.s. [rad]
+		Int_t    fNofSensors;   ///< Number of sensors in station
+		Bool_t   fDiffSensorD;  ///< Flag for different sensor thicknesses
 		CbmStsSensor* fFirstSensor; ///< Pointer to first sensor
 
 

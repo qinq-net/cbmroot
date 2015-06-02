@@ -258,7 +258,7 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
 	LOG(INFO) << GetName() << ": Set types for " << nSensors
 			      << " sensors" << FairLogger::endl;
 
-  // --- Init the stations (get station-wide parameters like z, xmax etc.)
+  // --- Initialise stations parameters
   for (Int_t iStat = 0; iStat < GetNofDaughters(); iStat++) {
   	CbmStsStation* station =
   			dynamic_cast<CbmStsStation*>(GetDaughter(iStat));
