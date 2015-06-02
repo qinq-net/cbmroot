@@ -35,7 +35,8 @@ protected:
    	      bool doScale);
 
    void DrawAnalysisStepsH2(
-         const string& hName);
+         const string& hName,
+		 bool DoDrawEfficiency);
 
    void DrawAnalysisStepsH1(
             const string& hName,
@@ -58,6 +59,14 @@ protected:
    		int step);
 
    void DrawMinvMismatchesAll();
+
+   void DrawEfficiency(const string& h,
+		   const string& hMC);
+
+   void DrawPtYEfficiency(
+			int step);
+
+   void DrawPtYEfficiencyAll();
 
    void SetAnalysisStepLabels(
          TH1* h);

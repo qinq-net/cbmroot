@@ -96,11 +96,6 @@ private:
   // [5]-gamma cut, [6]-mvd1cut, [7]-mvd2cut, [8]-stcut, [9]-ttcut, [10]-ptcut.
   //Use AnalysisSteps enumeration for access.
 
-  //Track momentum distribution for different sources after each cut.
-  vector<vector<TH1D*> > fh_source_mom;
-  //Pt distribution for different sources after each cut.
-  vector<vector<TH1D*> > fh_source_pt;
-
 
   void CreateSourceTypesAnalysisStepsH1(
         const string& name,
@@ -277,6 +272,7 @@ private:
      * \brief Fill histograms for signal and BG electrons
      */
     void DifferenceSignalAndBg();
+
 
    /**
     * \brief Copy constructor.

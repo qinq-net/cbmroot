@@ -65,13 +65,12 @@ void CbmAnaJpsiReport::Draw()
 	  DrawAnalysisStepsH1("fh_pi0_minv",false);
 	  DrawAnalysisStepsH1("fh_gamma_minv",false);
 
-	  DrawAnalysisStepsH2("fh_signal_minv_pt");
+	  DrawAnalysisStepsH2("fh_signal_minv_pt",false);
 	  DrawAnalysisStepsH1("fh_signal_mom",false);
 	  DrawAnalysisStepsH1("fh_signal_minv",false);
-	  DrawAnalysisStepsH2("fh_signal_pty");
+	  DrawAnalysisStepsH2("fh_signal_pty",true);
 
-	  //DrawAnalysisStepsSourceTypesH1("fh_source_mom",true);
-	  //DrawAnalysisStepsSourceTypesH1("fh_source_pt",false);
+
 
 	  {
 		  TCanvas* c = CreateCanvas("jpsi_fh_vertex_el_gamma","jpsi_fh_vertex_el_gamma",1000,1000);
@@ -119,6 +118,8 @@ void CbmAnaJpsiReport::Draw()
 	  }
 
 	   DrawBgSource2D("fh_source_tracks", list_of("#gamma")("#pi^{0}")("#pi^{#pm}")("p")("K")("e^{#pm}_{sec}")("oth."), "Tracks per event");
+
+		  DrawPtYEfficiencyAll();
 }
 
 void CbmAnaJpsiReport::DrawAnalysisStepsSourceTypesH1(
@@ -139,7 +140,7 @@ void CbmAnaJpsiReport::DrawAnalysisStepsSourceTypesH1(
 }
 
 void CbmAnaJpsiReport::DrawAnalysisStepsH2(
-      const string& hName)
+      const string& hName, bool DoDrawEfficiency)
 {
 	TCanvas* c = CreateCanvas(("jpsi_"+hName).c_str(), ("jpsi_"+hName).c_str(), 1200, 800);
 	c->Divide(3,2);
@@ -149,6 +150,8 @@ void CbmAnaJpsiReport::DrawAnalysisStepsH2(
 		H1(h)->Scale(1. / H1(h)->Integral());//Scale Yield
 		DrawH2(H2(h));
 		DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[i], 0.6, 0.89, 0.7, 0.99);
+
+		if (DoDrawEfficiency) DrawEfficiency(h, hName+"_"+CbmAnaJpsiHist::fAnaSteps[0]);
 	}
 }
 
@@ -265,6 +268,38 @@ void CbmAnaJpsiReport::DrawMinvMismatchesAll()
    TCanvas *cPtCut = CreateCanvas("jpsi_fh_minv_mismatches_ptcut", "jpsi_fh_minv_mismatches_ptcut", 600, 600);
    DrawMinvMismatches(kJpsiPtCut);
 }
+
+
+void CbmAnaJpsiReport::DrawEfficiency(
+		const string& histName,
+		const string& McHistName)
+{
+	Double_t nofMCEntries =H2(McHistName)->GetEntries();
+	if (nofMCEntries!=0){
+ 	DrawTextOnPad("Efficiency: "+Cbm::NumberToString((Double_t) H2(histName)->GetEntries() / nofMCEntries*100)+"%",0.2,0.9,0.50,0.99);
+	}
+}
+
+void CbmAnaJpsiReport::DrawPtYEfficiency(
+		int step)
+{
+	   TH2D* Efficiency = Cbm::DivideH2(H2("fh_signal_pty_" + CbmAnaJpsiHist::fAnaSteps[kJpsiMc]),H2("fh_signal_pty_" + CbmAnaJpsiHist::fAnaSteps[step]));
+
+	   DrawH2(Efficiency);
+	  // Efficiency->SetMaximum(10.);
+	   DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[step], 0.15, 0.9, 0.35, 0.99);
+}
+
+void CbmAnaJpsiReport::DrawPtYEfficiencyAll()
+{
+
+	TCanvas *c = CreateCanvas("jpsi_fh_pty_efficiency", "jpsi_fh_pty_efficiency", 1000, 1000);
+	   c->Divide(3,2);
+	   for (int i = 1; i < CbmAnaJpsiHist::fNofAnaSteps; i++){
+	      c->cd(i);
+	      DrawPtYEfficiency(i);
+	   }
+	}
 
 void CbmAnaJpsiReport::SetAnalysisStepLabels(
       TH1* h)
