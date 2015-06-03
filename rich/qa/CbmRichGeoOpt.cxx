@@ -253,7 +253,7 @@ void CbmRichGeoOpt::HitsAndPoints(){
     int Zpos=int(10.*PosAtRefl.Z());//3037 0r 3038  -->take 3038 which is the entrance point 
     //of the REFLECTED photon into the sensitive plane   
     //cout<<PosAtRefl.Z()<<"    "<<Zpos<<endl;
-    if(Zpos==3037){continue;}
+    if(Zpos==3038){continue;}
     CbmRichPoint* point = GetPMTPoint(RefPointTrackId);//
     PosAtDetIn.SetX(point->GetX()); PosAtDetIn.SetY(point->GetY()); PosAtDetIn.SetZ(point->GetZ());
     
@@ -435,7 +435,7 @@ void CbmRichGeoOpt::InitHistograms()
   int nBinsX = 28; double xMin = -110.; double xMax = 110.;  
   int nBinsY = 40; double yMin = -200; double yMax = 200.;
   
-  H_Theta_TwoVectors= new TH1D("H_Theta_TwoVectors", "H_Theta_TwoVectors;#theta [deg]; Yield", 180, 0., 360.);
+  H_Theta_TwoVectors= new TH1D("H_Theta_TwoVectors", "H_Theta_TwoVectors;#theta [deg]; Yield", 100, 0., 10.);
   H_MomPrim = new TH1D("H_MomPrim", "H_MomPrim;p [GeV]; Yield", 100, 0., 10.);
   H_PtPrim = new TH1D("H_PtPrim", "H_PtPrim;p [GeV]; Yield", 80, 0., 4.);
   H_MomPt = new TH2D("H_MomPt", "H_MomPt;p [GeV];pt [GeV]; Yield", 100, 0., 10., 80, 0., 4.);
