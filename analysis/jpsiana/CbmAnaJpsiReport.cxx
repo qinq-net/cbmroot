@@ -55,7 +55,6 @@ void CbmAnaJpsiReport::Draw()
 	  cout << "Number of events = " << nofEvents << endl;
 	  HM()->ScaleByPattern(".*", 1./nofEvents);
 
-
 	  Draw2DCut("fh_rich_pmt_xy");
 	  DrawCutDistributions();
 
@@ -130,7 +129,7 @@ void CbmAnaJpsiReport::DrawAnalysisStepsH2(
 	for (int i = 0;i< CbmAnaJpsiHist::fNofAnaSteps; i++){
 		c->cd(i+1);
 		string h = hName+"_"+CbmAnaJpsiHist::fAnaSteps[i];
-		H1(h)->Scale(1. / H1(h)->Integral());//Scale Yield
+
 		DrawH2(H2(h));
 		DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[i], 0.6, 0.89, 0.7, 0.99);
 
@@ -268,8 +267,7 @@ void CbmAnaJpsiReport::DrawPtYEfficiency(
 {
 	   TH2D* Efficiency = Cbm::DivideH2(H2("fh_signal_pty_" + CbmAnaJpsiHist::fAnaSteps[step]), H2("fh_signal_pty_" + CbmAnaJpsiHist::fAnaSteps[kJpsiMc]));
 	   DrawH2(Efficiency);
-	  // Efficiency->SetMaximum(10.);
-	   DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[step], 0.15, 0.9, 0.35, 0.99);
+	   DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[step], 0.6, 0.89, 0.7, 0.99);
 }
 
 void CbmAnaJpsiReport::DrawPtYEfficiencyAll()

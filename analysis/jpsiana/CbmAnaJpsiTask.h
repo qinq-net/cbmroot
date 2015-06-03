@@ -20,8 +20,6 @@
 #include "CbmGlobalTrack.h"
 
 
-
-
 using namespace std;
 
 class CbmAnaJpsiTask : public FairTask

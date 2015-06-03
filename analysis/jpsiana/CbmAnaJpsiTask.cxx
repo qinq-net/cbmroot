@@ -227,24 +227,24 @@ void CbmAnaJpsiTask::InitHist()
    fHM->Create2<TH2D>("fh_source_tracks","fh_source_tracks;Analysis steps;Particle", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps, 7, 0., 7.);
 
    //Create invariant mass histograms
-   CreateAnalysisStepsH1("fh_signal_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_bg_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_pi0_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_gamma_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_signal_minv", "M_{ee} [GeV/c^{2}]", "Particle per event", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_bg_minv", "M_{ee} [GeV/c^{2}]", "Particle per event", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_pi0_minv", "M_{ee} [GeV/c^{2}]", "Particle per event", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_gamma_minv", "M_{ee} [GeV/c^{2}]", "Particle per event", 4000, 0. , 4.);
 
    // minv for true matched and mismatched tracks
-   CreateAnalysisStepsH1("fh_bg_truematch_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_bg_truematch_el_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_bg_truematch_notel_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_bg_mismatch_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_bg_truematch_minv", "M_{ee} [GeV/c^{2}]", "Particle per event", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_bg_truematch_el_minv", "M_{ee} [GeV/c^{2}]", "Particle per event", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_bg_truematch_notel_minv", "M_{ee} [GeV/c^{2}]", "Particle per event", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_bg_mismatch_minv", "M_{ee} [GeV/c^{2}]", "Particle per event", 4000, 0. , 4.);
 
    //Invariant mass vs. Mc Pt
-   CreateAnalysisStepsH2("fh_signal_minv_pt","M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Yield", 100, 0., 4., 20, 0., 2.);
+   CreateAnalysisStepsH2("fh_signal_minv_pt","M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Particle per event", 100, 0., 4., 20, 0., 2.);
 
    // Momentum distribution of the signal
-   CreateAnalysisStepsH1("fh_signal_mom", "P [GeV/c]", "Yield", 100, 0., 15.);
+   CreateAnalysisStepsH1("fh_signal_mom", "P [GeV/c]", "Particle per event", 100, 0., 15.);
    //Pt/y distibution of the signal
-   CreateAnalysisStepsH2("fh_signal_pty","Rapidity", "P_{t} [GeV/c]", "Yield", 40, 0., 4., 20, 0., 2.);
+   CreateAnalysisStepsH2("fh_signal_pty","Rapidity", "P_{t} [GeV/c]", "Particle per event", 40, 0., 4., 20, 0., 2.);
 
    //Number of mismatches after each cut
    fHM->Create1<TH1D>("fh_nof_mismatches","fh_nof_mismatches;Analysis steps;Tracks/event", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps);
