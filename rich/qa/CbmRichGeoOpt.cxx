@@ -56,82 +56,83 @@ CbmRichGeoOpt::CbmRichGeoOpt()
     r2(),
     n(),
     PMTPlaneX(0.),
-  PMTPlaneY(0.),
-  MirrPosition(),
-// MirrPosX(0.),
-// MirrPosY(0.),
-// MirrPosZ(0.),
-
-// PMTPlaneXatThird(0.),
-// PMTPlaneYatThird(0.),
-  H_Theta_TwoVectors(NULL),
-  H_DistancePMTtoMirrCenter(NULL),
-  H_DistancePMTtoMirr(NULL),
-  H_MomPrim(NULL),
-  H_PtPrim(NULL),
-  H_MomPt(NULL),
-  H_Hits_XY(NULL),
-  H_PointsIn_XY(NULL),
-  H_PointsOut_XY(NULL),
-  H_NofPhotonsPerEv(NULL),
-  H_NofPhotonsPerHit(NULL),
-  H_NofPhotonsSmallerThan30(NULL),
-  H_DiffXhit(NULL),
-  H_DiffYhit(NULL),
-  H_dFocalPoint_Delta(NULL),
-  H_dFocalPoint_Rho(NULL),
-  H_Alpha(NULL),
-  H_Alpha_UpLeft(NULL),
-  H_Alpha_UpLeft_II(NULL),
-  H_Alpha_UpLeft_RegularTheta(NULL),
-  H_Alpha_UpLeft_LeftHalf(NULL),
-  H_Alpha_UpLeft_RightHalf(NULL),
-  H_Alpha_UpLeft_UpperHalf(NULL),
+    PMTPlaneY(0.),
+    MirrPosition(),
+    // MirrPosX(0.),
+    // MirrPosY(0.),
+    // MirrPosZ(0.),
+    
+    // PMTPlaneXatThird(0.),
+    // PMTPlaneYatThird(0.),
+    H_Diff_LineRefPMT_MomAtPMT(NULL),
+    H_Theta_TwoVectors(NULL),
+    H_DistancePMTtoMirrCenter(NULL),
+    H_DistancePMTtoMirr(NULL),
+    H_MomPrim(NULL),
+    H_PtPrim(NULL),
+    H_MomPt(NULL),
+    H_Hits_XY(NULL),
+    H_PointsIn_XY(NULL),
+    H_PointsOut_XY(NULL),
+    H_NofPhotonsPerEv(NULL),
+    H_NofPhotonsPerHit(NULL),
+    H_NofPhotonsSmallerThan30(NULL),
+    H_DiffXhit(NULL),
+    H_DiffYhit(NULL),
+    H_dFocalPoint_Delta(NULL),
+    H_dFocalPoint_Rho(NULL),
+    H_Alpha(NULL),
+    H_Alpha_UpLeft(NULL),
+    H_Alpha_UpLeft_II(NULL),
+    H_Alpha_UpLeft_RegularTheta(NULL),
+    H_Alpha_UpLeft_LeftHalf(NULL),
+    H_Alpha_UpLeft_RightHalf(NULL),
+    H_Alpha_UpLeft_UpperHalf(NULL),
   H_Alpha_UpLeft_LowerHalf(NULL),
-  H_Alpha_XYposAtDet(NULL),
-  H_Alpha_XYposAtDet_RegularTheta(NULL),
-  H_Alpha_XYposAtDet_LeftHalf(NULL),
-  H_Alpha_XYposAtDet_RightHalf(NULL),
-  H_Alpha_XYposAtDet_UpperHalf(NULL),
-  H_Alpha_XYposAtDet_LowerHalf(NULL),
-  H_acc_mom_el(NULL),
-  H_acc_pty_el(NULL),
-  H_NofHitsAll(NULL),
-  H_NofRings(NULL),
-  H_NofRings_NofHits(NULL),
-  H_RingCenterX(NULL),
-  H_RingCenterY(NULL),
-  H_RingCenter(NULL),
-  H_Radius(NULL), 
-  H_aAxis(NULL), 
-  H_bAxis(NULL), 
-  H_boa(NULL), 
-  H_boa_RegularTheta(NULL), 
-  H_boa_LeftHalf(NULL), 
-  H_boa_RightHalf(NULL), 
-  H_boa_UpperHalf(NULL), 
-  H_boa_LowerHalf(NULL), 
-  H_dR(NULL),
-  H_dR_RegularTheta(NULL),
-  H_dR_LeftHalf(NULL), 
-  H_dR_RightHalf(NULL), 
-  H_dR_UpperHalf(NULL), 
-  H_dR_LowerHalf(NULL), 
-  H_RingCenter_Aaxis(NULL),  
-  H_RingCenter_Baxis(NULL),  
-  H_RingCenter_boa(NULL),
-  H_RingCenter_boa_RegularTheta(NULL),
-  H_RingCenter_boa_RightHalf(NULL),
-  H_RingCenter_boa_LeftHalf(NULL),
-  H_RingCenter_boa_LowerHalf(NULL),
-  H_RingCenter_boa_UpperHalf(NULL),
-  H_RingCenter_dR(NULL),
-  H_RingCenter_dR_RegularTheta(NULL),
-  H_RingCenter_dR_LeftHalf(NULL),
-  H_RingCenter_dR_RightHalf(NULL),
-  H_RingCenter_dR_UpperHalf(NULL),
-  H_RingCenter_dR_LowerHalf(NULL)
-
+    H_Alpha_XYposAtDet(NULL),
+    H_Alpha_XYposAtDet_RegularTheta(NULL),
+    H_Alpha_XYposAtDet_LeftHalf(NULL),
+    H_Alpha_XYposAtDet_RightHalf(NULL),
+    H_Alpha_XYposAtDet_UpperHalf(NULL),
+    H_Alpha_XYposAtDet_LowerHalf(NULL),
+    H_acc_mom_el(NULL),
+    H_acc_pty_el(NULL),
+    H_NofHitsAll(NULL),
+    H_NofRings(NULL),
+    H_NofRings_NofHits(NULL),
+    H_RingCenterX(NULL),
+    H_RingCenterY(NULL),
+    H_RingCenter(NULL),
+    H_Radius(NULL), 
+    H_aAxis(NULL), 
+    H_bAxis(NULL), 
+    H_boa(NULL), 
+    H_boa_RegularTheta(NULL), 
+    H_boa_LeftHalf(NULL), 
+    H_boa_RightHalf(NULL), 
+    H_boa_UpperHalf(NULL), 
+    H_boa_LowerHalf(NULL), 
+    H_dR(NULL),
+    H_dR_RegularTheta(NULL),
+    H_dR_LeftHalf(NULL), 
+    H_dR_RightHalf(NULL), 
+    H_dR_UpperHalf(NULL), 
+    H_dR_LowerHalf(NULL), 
+    H_RingCenter_Aaxis(NULL),  
+    H_RingCenter_Baxis(NULL),  
+    H_RingCenter_boa(NULL),
+    H_RingCenter_boa_RegularTheta(NULL),
+    H_RingCenter_boa_RightHalf(NULL),
+    H_RingCenter_boa_LeftHalf(NULL),
+    H_RingCenter_boa_LowerHalf(NULL),
+    H_RingCenter_boa_UpperHalf(NULL),
+    H_RingCenter_dR(NULL),
+    H_RingCenter_dR_RegularTheta(NULL),
+    H_RingCenter_dR_LeftHalf(NULL),
+    H_RingCenter_dR_RightHalf(NULL),
+    H_RingCenter_dR_UpperHalf(NULL),
+    H_RingCenter_dR_LowerHalf(NULL)
+    
 {
   /*
     fEventNum = 0;
@@ -247,16 +248,20 @@ void CbmRichGeoOpt::HitsAndPoints(){
   for (int i = 0; i < nofRefPoints; i++) {
     TVector3 PosAtRefl; TVector3 PosAtDetIn; TVector3 PosAtDetOut;
     CbmRichPoint* RefPoint = (CbmRichPoint*)fRefPoints->At(i);
+    TVector3 MomAtRef; MomAtRef.SetX(RefPoint->GetPx()); MomAtRef.SetY(RefPoint->GetPy()); MomAtRef.SetZ(RefPoint->GetPz()); //RefPoint->GetMomentum(MomAtRef);
     if (RefPoint == NULL) continue;
     int RefPointTrackId = RefPoint->GetTrackID(); if(RefPointTrackId<0) {continue;}
     RefPoint->Position(PosAtRefl);
     int Zpos=int(10.*PosAtRefl.Z());//3037 0r 3038  -->take 3038 which is the entrance point 
     //of the REFLECTED photon into the sensitive plane   
     //cout<<PosAtRefl.Z()<<"    "<<Zpos<<endl;
-    if(Zpos==3038){continue;}
+    if(Zpos==3037){continue;}
     CbmRichPoint* point = GetPMTPoint(RefPointTrackId);//
     PosAtDetIn.SetX(point->GetX()); PosAtDetIn.SetY(point->GetY()); PosAtDetIn.SetZ(point->GetZ());
-    
+    TVector3 MomAtPMT; MomAtPMT.SetX(point->GetPx()); MomAtPMT.SetY(point->GetPy()); MomAtPMT.SetZ(point->GetPz());
+    float MagMomAtPMT=MomAtPMT.Mag(); 
+   //point->GetMomentum(MomAtPMT);
+
     Int_t PointMCTrackId = point->GetTrackID();
     CbmMCTrack* PointTrack = static_cast<CbmMCTrack*>(fMcTracks->At(PointMCTrackId));
     if (NULL == PointTrack) continue;
@@ -277,21 +282,22 @@ void CbmRichGeoOpt::HitsAndPoints(){
     bool Checked=CheckPointLiesOnPlane(PosAtDetIn,PlanePoints[0],n);
     if(!Checked) continue;//cout<<" point not on plane: ("<<point->GetX()<<","<<point->GetY()<<","<<point->GetZ()<<")"<<endl; continue;
 
-    /*
-   
-      */
     TVector3 LineSensToPMT=PosAtDetIn-PosAtRefl;
-    
-    H_Theta_TwoVectors->Fill(LineSensToPMT.Angle(PointMom));
+    float MagLineSensToPMT=LineSensToPMT.Mag(); 
+    H_Diff_LineRefPMT_MomAtPMT->Fill(MagLineSensToPMT-MagMomAtPMT);
+
+    H_Theta_TwoVectors->Fill(LineSensToPMT.Angle(MomAtPMT));
     /////////// calculate alpha relative to the "tilted" PMT plane !!
     double Alpha=LineSensToPMT.Angle(n);//*TMath::RadToDeg();
     double AlphaInDeg=Alpha*TMath::RadToDeg();
     if(AlphaInDeg>90.){AlphaInDeg=180.-AlphaInDeg;}
     /////////// calculate alpha throuh the momentum vector !!
-    double Alpha2=PointMom.Angle(n);//*TMath::RadToDeg();
+    //double Alpha2=PointMom.Angle(n);//*TMath::RadToDeg();
+    double Alpha2=MomAtPMT.Angle(n);//*TMath::RadToDeg();
     double Alpha2InDeg=Alpha2*TMath::RadToDeg();
     if(Alpha2InDeg>90.){Alpha2InDeg=180.-Alpha2InDeg;}
-    
+    //cout<<PointMom.X()<<"  "<<MomAtPMT.X()<<"   "<<MomAtRef.X()<<"   "<<Alpha<<"   "<<Alpha2<<endl;
+
     H_PointsIn_XY->Fill(PosAtDetIn.X(),PosAtDetIn.Y());
     //PosAtDetOut
     CbmRichHitProducer::TiltPoint(&PosAtDetIn, &PosAtDetOut, fGP.fPmtPhi, fGP.fPmtTheta, fGP.fPmtZOrig);
@@ -316,6 +322,7 @@ void CbmRichGeoOpt::HitsAndPoints(){
   
   //***********************************************************  
   Int_t nofHits = fRichHits->GetEntriesFast();
+
   for (Int_t iH = 0; iH < nofHits; iH++){
     CbmRichHit *hit = (CbmRichHit*) fRichHits->At(iH); if ( hit == NULL ) continue;
     Int_t pointInd =  hit->GetRefId(); if (pointInd < 0) continue;
@@ -435,6 +442,8 @@ void CbmRichGeoOpt::InitHistograms()
   int nBinsX = 28; double xMin = -110.; double xMax = 110.;  
   int nBinsY = 40; double yMin = -200; double yMax = 200.;
   
+  H_Diff_LineRefPMT_MomAtPMT= new TH1D("H_Diff_LineRefPMT_MomAtPMT", "H_Diff_LineRefPMT_MomAtPMT;#Delta [cm]; Yield", 100, -10., 10.);
+
   H_Theta_TwoVectors= new TH1D("H_Theta_TwoVectors", "H_Theta_TwoVectors;#theta [deg]; Yield", 100, 0., 10.);
   H_MomPrim = new TH1D("H_MomPrim", "H_MomPrim;p [GeV]; Yield", 100, 0., 10.);
   H_PtPrim = new TH1D("H_PtPrim", "H_PtPrim;p [GeV]; Yield", 80, 0., 4.);
@@ -445,7 +454,7 @@ void CbmRichGeoOpt::InitHistograms()
   H_PointsIn_XY = new TH2D("H_PointsIn_XY", "H_PointsIn_XY;X [cm];Y [cm];Counter", 110, -100., 10.,400, 0.,400.);
   H_PointsOut_XY = new TH2D("H_PointsOut_XY", "H_PointsOut_XY;X [cm];Y [cm];Counter", 200, -150., 50.,400, 0.,400.);
   //cout<<" init hist H_NofPhotonsPerEv"<<endl;
-  H_NofPhotonsPerEv = new TH1D("H_NofPhotonsPerEv", "H_NofPhotonsPerEv;Number of photons per hit;Yield", 500, 0., 1000.);
+  H_NofPhotonsPerEv = new TH1D("H_NofPhotonsPerEv", "H_NofPhotonsPerEv;Number of photons per event;Yield", 500, 0., 1000.);
   H_NofPhotonsPerHit = new TH1D("H_NofPhotonsPerHit", "H_NofPhotonsPerHit;Number of photons per hit;Yield", 10, -0.5, 9.5);
   H_NofPhotonsSmallerThan30 = new TH1D("H_NofPhotonsSmallerThan30", "H_NofPhotonsSmallerThan30 ;Number of photons;Yield", 10, -0.5, 9.5);
   H_DiffXhit = new TH1D("H_DiffXhit", "H_DiffXhit;Y_{point}-Y_{hit} [cm];Yield", 200, -1., 1.);
@@ -529,6 +538,7 @@ void CbmRichGeoOpt::InitHistograms()
 //////////////////////////////////////////////////////////
 void CbmRichGeoOpt::WriteHistograms(){
  
+  H_Diff_LineRefPMT_MomAtPMT->Write(); 
   H_Theta_TwoVectors->Write(); 
   H_MomPrim->Write(); 
   H_PtPrim->Write(); 

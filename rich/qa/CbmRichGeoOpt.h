@@ -197,6 +197,7 @@ private:
     * \brief histograms.
     */
    
+   TH1D* H_Diff_LineRefPMT_MomAtPMT;
    TH1D* H_Theta_TwoVectors;
 
    TH1D* H_DistancePMTtoMirrCenter;
