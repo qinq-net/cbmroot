@@ -25,7 +25,7 @@
 using std::vector;
 
 
-void CbmKFParticleInterface::SetKFParticleFromStsTrack(CbmStsTrack *track, KFParticle* particle, Int_t pdg)
+void CbmKFParticleInterface::SetKFParticleFromStsTrack(CbmStsTrack *track, KFParticle* particle, Int_t pdg, Bool_t firstPoint)
 {
   vector<CbmStsTrack> vRTracks(1);
   vRTracks[0] = *track;
@@ -42,7 +42,13 @@ void CbmKFParticleInterface::SetKFParticleFromStsTrack(CbmStsTrack *track, KFPar
   //fill vector with tracks
   for(Int_t iTr=0; iTr<1; iTr++)
   {
-    const FairTrackParam* parameters = vRTracks[iTr].GetParamFirst();
+    const FairTrackParam* parameters;
+    
+    if(firstPoint)
+      parameters = vRTracks[iTr].GetParamFirst();
+    else
+      parameters = vRTracks[iTr].GetParamLast();
+      
     float par[6] = {0.f};
     
     Double_t V[15] = {0.f}; 

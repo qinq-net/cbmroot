@@ -61,6 +61,8 @@
 #pragma link C++ class CbmKFParticleFinderPID+;
 #pragma link C++ class CbmKFParticleFinderQA+;
 #pragma link C++ class CbmKFParticleInterface+;
+#pragma link C++ class CbmKFSigmaReconstructor+;
+
 #endif
 
 

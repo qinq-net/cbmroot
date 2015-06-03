@@ -16,7 +16,7 @@ class CbmKFParticleInterface : public TObject {
   CbmKFParticleInterface() {};
   ~CbmKFParticleInterface() {};
   
-  static void SetKFParticleFromStsTrack(CbmStsTrack *track, KFParticle* particle, Int_t pdg = 211);
+  static void SetKFParticleFromStsTrack(CbmStsTrack *track, KFParticle* particle, Int_t pdg = 211, Bool_t firstPoint = kTRUE);
   
  private:  
    
