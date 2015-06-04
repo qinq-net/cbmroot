@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>  
-void CreateTransGDMLfile_April2015(float pmt_pos_z_addend = 0, int RotMir=-10, float PMTrotX=5, float PMTrotY=5 ){
-
+void CreateTransGDMLfile_April2015(float pmt_pos_y_addend = 0, float pmt_pos_z_addend = 0, int RotMir=-10, float PMTrotX=5, float PMTrotY=5 ){
+  
   float DeltaPMT_Width=500., DeltaPMT_Height=400.;
   float pmt_width = 1000+DeltaPMT_Width;//
   float pmt_height = 600+DeltaPMT_Height;
@@ -11,7 +11,7 @@ void CreateTransGDMLfile_April2015(float pmt_pos_z_addend = 0, int RotMir=-10, f
   float pmt_rot_y_addend = -13.477;
 
   float pmt_pos_x_addend = 0;
-  float pmt_pos_y_addend = 0;
+  //float pmt_pos_y_addend = 0;
      
   float DefaultRotX=32.952765; float DefaultRotY=18.477;//for rotmir=-10
   if(RotMir==1){DefaultRotX=10.952765.;}
@@ -37,13 +37,17 @@ void CreateTransGDMLfile_April2015(float pmt_pos_z_addend = 0, int RotMir=-10, f
   if(PMTrotY<0){sprintf(ShiftYTxt,"Yneg%dpoint%d",-1.*IntegerYValue,-1.*ShiftYmod10);}
   /////////////////////////////////// Translation in z
   char ZTransText[256];
-  sprintf( ZTransText,"TransZ_%d",pmt_pos_z_addend);
-
+  if(pmt_pos_z_addend < 0) {sprintf( ZTransText,"TransZ_m%d",-1*pmt_pos_z_addend);}
+  else{sprintf( ZTransText,"TransZ_p%d",pmt_pos_z_addend);}
+  char YTransText[256];
+  if(pmt_pos_y_addend < 0) {sprintf( YTransText,"TransY_m%d",-1*pmt_pos_y_addend);}
+  else{sprintf( YTransText,"TransY_p%d",pmt_pos_y_addend);}
+  
 
   std::ifstream infile1 (InFileUpper);
   std::ifstream infile2 (InFileLower);
   //sprintf(GeoFileName,"/hera/cbm/users/tariq/cbmroot/geometry/rich/GeoOpt/RotPMT/NewGeo/rich_geo_%s_RotPMT_%s_%s.gdml",RotMirText,ShiftXTxt,ShiftYTxt);
-  sprintf(GeoFileName,"/data/cbmroot/geometry/rich/GeoOpt/TransPMT/rich_geo_%s_RotPMT_%s_%s_%s.gdml",RotMirText,ShiftXTxt,ShiftYTxt,ZTransText);
+  sprintf(GeoFileName,"/data/cbmroot/geometry/rich/GeoOpt/TransPMT/rich_geo_%s_RotPMT_%s_%s_%s_%s.gdml",RotMirText,ShiftXTxt,ShiftYTxt,YTransText,ZTransText);
   
   cout<<GeoFileName<<endl; //continue;
   //return;
