@@ -19,7 +19,8 @@
 #include "CbmGeoTofPar.h"
 #include "CbmGeoMuchPar.h"
 #include "CbmGeoPassivePar.h"
-#include "CbmStsStation_old.h"
+#include "setup/CbmStsSetup.h"
+#include "setup/CbmStsStation.h"
 #include "FairRuntimeDb.h"
 
 #include "../mvd/tools/CbmMvdGeoHandler.h"
@@ -156,13 +157,13 @@ InitStatus CbmKF::Init()
   if(fManger->GetObject("MvdPoint")) useMVD = 1;
   //CbmMvdGeoPar* MvdPar = reinterpret_cast<CbmMvdGeoPar*>(RunDB->findContainer("CbmMvdGeoPar"));
   if( useMVD ){
-    if ( !CbmMvdDetector::Instance() ){
-      CbmMvdDetector* Detector = new CbmMvdDetector("A");
+    CbmMvdDetector* mvdDetector = CbmMvdDetector::Instance();
+    if ( !mvdDetector ){
+      mvdDetector = new CbmMvdDetector("A");
       CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
       mvdHandler->Init();
       mvdHandler->Fill();
     }
-    CbmMvdDetector* mvdDetector = CbmMvdDetector::Instance();
     if(mvdDetector)
     {
       CbmMvdStationPar* mvdStationPar = mvdDetector->GetParameterFile();
@@ -208,18 +209,19 @@ InitStatus CbmKF::Init()
 
     for ( Int_t ist = 0; ist<NStations; ist++ )
       {
-	CbmStsStation_old *st = StsDigi.GetStation(ist);
-	if ( !st ) continue;
+	CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(ist));
+
+	if ( !station ) continue;
 
 	CbmKFTube tube;
 
-	tube.ID = 1000+st->GetStationNr();
+	tube.ID = 1000+ist;
 	tube.F = 1.;
-	tube.z  = st->GetZ();
-	tube.dz = st->GetD();
-	tube.RadLength = st->GetRadLength();
-	tube.r  = st->GetRmin();
-	tube.R  = st->GetRmax();
+	tube.z  = station->GetZ();
+	tube.dz = station->GetSensorD();
+	tube.RadLength = station->GetRadLength();
+	tube.r  = 0;
+	tube.R  = station->GetYmax() < station->GetXmax() ? station->GetXmax() : station->GetYmax();
 	tube.rr = tube.r * tube.r;
 	tube.RR = tube.R * tube.R;
 	tube.ZThickness = tube.dz;
