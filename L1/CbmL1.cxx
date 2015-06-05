@@ -23,13 +23,11 @@
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
 #include "CbmGeoStsPar.h"
-#include "CbmStsStation_old.h"
-#include "CbmStsSector.h"
-#include "legacy/CbmStsSensor_old.h" // for field approx.
 #include "CbmStsDigiPar.h" // for dynamic_cast
-#include "CbmStsDigiScheme.h"
 #include "CbmStsFindTracks.h"
 #include "CbmKF.h"
+#include "setup/CbmStsSetup.h"
+#include "setup/CbmStsStation.h"
 
 #include "TVector3.h"
 #include "TVectorD.h"
@@ -284,7 +282,7 @@ InitStatus CbmL1::Init()
 
   // field
   const int M=5; // polinom order
-  const int N=(M+1)*(M+2)/2;
+  const int N=21;//(M+1)*(M+2)/2;
 
 //   { // field at the z=0 plane
 //     const double Xmax = 10, Ymax = 10;
@@ -370,51 +368,34 @@ InitStatus CbmL1::Init()
       z = t.z;
       Xmax = Ymax = t.R;
     }else{
-      CbmStsStation_old *st = StsDigi.GetStation(ist - NMvdStations);
+      CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(ist - NMvdStations));
   
-      geo[ind++] = st->GetZ();
-      geo[ind++] = st->GetD();
-      geo[ind++] = st->GetRmin();
-      geo[ind++] = st->GetRmax();
-      geo[ind++] = st->GetRadLength();
+      geo[ind++] = station->GetZ();
+      geo[ind++] = station->GetSensorD();
+      geo[ind++] = 0;
+      geo[ind++] = station->GetYmax() < station->GetXmax() ? station->GetXmax() : station->GetYmax();
+      geo[ind++] = station->GetRadLength();
+
+      double Pi = 3.14159265358;
   
-      CbmStsSector* sector = st->GetSector(0);
       fscal f_phi, f_sigma, b_phi, b_sigma; // angle and sigma front/back  side
-      f_phi = sector->GetRotation();
-      b_phi = sector->GetRotation();
-      if( sector->GetType()==1 ){
-        b_phi += 3.14159265358/2.;
-        b_sigma = sector->GetDy()/sqrt(12.);
-        f_sigma = b_sigma; // CHECKME
-      }
-      else{
-        f_phi +=sector->GetStereoF();
-        b_phi +=sector->GetStereoB();
-        f_sigma = sector->GetDx() / TMath::Sqrt(12);
-        b_sigma  = f_sigma;
-      }
-      f_sigma *= cos(f_phi);  // TODO: think about this
-      b_sigma *= cos(b_phi);
+      f_phi = station->GetSensorRotation();
+      b_phi = f_phi;
+      f_phi += station->GetSensorStereoAngle(0) * Pi / 180.;
+      b_phi += station->GetSensorStereoAngle(1) * Pi / 180.;
+      f_sigma = station->GetSensorPitch(0) / TMath::Sqrt(12);
+      b_sigma  = f_sigma;
+      //f_sigma *= cos(f_phi);  // TODO: think about this
+      //b_sigma *= cos(b_phi);
+
       geo[ind++] = f_phi;
       geo[ind++] = f_sigma;
       geo[ind++] = b_phi;
       geo[ind++] = b_sigma;
-      z = st->GetZ();
+      z = station->GetZ();
 
-      Xmax=-100; Ymax=-100;
-
-      double x,y;
-      for(int isec = 0; isec<st->GetNSectors(); isec++)
-      {
-        CbmStsSector *sect = L1_DYNAMIC_CAST<CbmStsSector*>( st->GetSector(isec) );
-        for(int isen = 0; isen < sect->GetNSensors(); isen++)
-        {
-          x = sect->GetSensor(isen)->GetX0() + sect->GetSensor(isen)->GetLx()/2.;
-          y = sect->GetSensor(isen)->GetY0() + sect->GetSensor(isen)->GetLy()/2.;
-          if(x>Xmax) Xmax = x;
-          if(y>Ymax) Ymax = y;
-        }
-      }
+      Xmax = station->GetXmax();
+      Ymax = station->GetYmax();
     }
 
     double dx = 1.; // step for the field approximation
@@ -486,7 +467,7 @@ InitStatus CbmL1::Init()
       if (ind2 != ind)  cout << "-E- CbmL1: Read geometry from file " << fSTAPDataDir + "geo_algo.txt was NOT successful." << endl;
     };
   }
-  
+
   algo->Init(geo);
 
 
@@ -1327,39 +1308,20 @@ void CbmL1::WriteSIMDKFData()
         z = t.z;
         Xmax = Ymax = t.R;
       }else{
-        CbmStsStation_old *st = StsDigi.GetStation(ist - NMvdStations);
-        CbmStsSector* sector = st->GetSector(0);
-        f_phi = sector->GetRotation();
-        b_phi = sector->GetRotation();
-        if( sector->GetType()==1 ){
-          b_phi += 3.14159265358/2.;
-          b_sigma = sector->GetDy()/sqrt(12.);
-          f_sigma = b_sigma; // CHECKME
-        }
-        else{
-          f_phi +=sector->GetStereoF();
-          b_phi +=sector->GetStereoB();
-          f_sigma = sector->GetDx() / TMath::Sqrt(12);
+    	  CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(ist - NMvdStations));
+          f_phi = station->GetSensorRotation();
+          b_phi = f_phi;
+          double Pi = 3.14159265358;
+          f_phi += station->GetSensorStereoAngle(0) * Pi / 180.;
+          b_phi += station->GetSensorStereoAngle(1) * Pi / 180.;
+          f_sigma = station->GetSensorPitch(0) / TMath::Sqrt(12);
           b_sigma  = f_sigma;
-        }
-        f_sigma *= cos(f_phi);  // TODO: think about this
-        b_sigma *= cos(b_phi);
-        z = st->GetZ();
+          //f_sigma *= cos(f_phi);  // TODO: think about this
+          //b_sigma *= cos(b_phi);
+          z = station->GetZ();
 
-        Xmax=-100; Ymax=-100;
-
-        double x,y;
-        for(int isec = 0; isec<st->GetNSectors(); isec++)
-        {
-          CbmStsSector *sect = L1_DYNAMIC_CAST<CbmStsSector*>( st->GetSector(isec) );
-          for(int isen = 0; isen < sect->GetNSensors(); isen++)
-          {
-            x = sect->GetSensor(isen)->GetX0() + sect->GetSensor(isen)->GetLx()/2.;
-            y = sect->GetSensor(isen)->GetY0() + sect->GetSensor(isen)->GetLy()/2.;
-            if(x>Xmax) Xmax = x;
-            if(y>Ymax) Ymax = y;
-          }
-        }
+          Xmax = station->GetXmax();
+          Ymax = station->GetYmax();
       }
 
       double dx = 1.; // step for the field approximation
@@ -1434,10 +1396,10 @@ void CbmL1::WriteSIMDKFData()
       }
       else if(ist<(NStsStations+NMvdStations))
       {
-        CbmStsStation_old *st = StsDigi.GetStation(ist - NMvdStations);
-        FileGeo<<st->GetZ()<<" ";
-        FileGeo<<st->GetD()<<" ";
-        FileGeo<<st->GetRadLength()<<" ";
+    	CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(ist - NMvdStations));
+        FileGeo<<station->GetZ()<<" ";
+        FileGeo<<station->GetSensorD()<<" ";
+        FileGeo<<station->GetRadLength()<<" ";
       }
       FileGeo<<f_sigma<<" "; 
       FileGeo<<b_sigma<<" "; 

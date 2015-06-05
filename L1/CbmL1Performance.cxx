@@ -26,10 +26,8 @@
 #include "CbmKF.h"
 #include "CbmKFMath.h"
 
-#include "CbmStsDigi.h"
-#include "legacy/CbmStsSensor_old.h" // for field FieldCheck.
-#include "CbmStsSector.h" // for field FieldCheck.
-#include "CbmStsStation_old.h" // for field FieldCheck.
+#include "setup/CbmStsSetup.h"
+#include "setup/CbmStsStation.h"
 
 #include "CbmMatch.h"
 
@@ -991,8 +989,9 @@ void CbmL1::TrackFitPerformance()
 		//{"y",  "Residual Y [#mum]",                   100, -45., 45.},
         {"tx", "Residual Tx [mrad]",                  100,   -2.,   2.},
 		//{"tx", "Residual Tx [mrad]",                  100,   -7.,   7.},
-		//{"tx", "Residual Tx [mrad]",                  100,   -3.5,   3.5},
+		//{"tx", "Residual Tx [mrad]",                  100,   -2.5,   2.5},
         {"ty", "Residual Ty [mrad]",                  100,   -3.5,   3.5},
+		//{"ty", "Residual Ty [mrad]",                  100,   -2.5,   2.5},
         {"P",  "Resolution P/Q [100%]",               100,   -0.1,  0.1 },
 		//{"P",  "Resolution P/Q [100%]",               100,   -0.2,  0.2 },
         {"px", "Pull X [residual/estimated_error]",   100,  -6.,  6.},
@@ -1012,10 +1011,14 @@ void CbmL1::TrackFitPerformance()
       };
       Tab TableVertex[Nh_fit]=
       {
-        {"x",  "Residual X [cm]",                   2000, -1., 1.},
-        {"y",  "Residual Y [cm]",                   2000, -1., 1.},
-        {"tx", "Residual Tx [mrad]",                  100,   -2.,   2.},
-        {"ty", "Residual Ty [mrad]",                  100,   -2.,   2.},
+        //{"x",  "Residual X [cm]",                   200, -0.01, 0.01},
+		{"x",  "Residual X [cm]",                   2000, -1., 1.},
+        //{"y",  "Residual Y [cm]",                   200, -0.01, 0.01},
+		{"y",  "Residual Y [cm]",                   2000, -1., 1.},
+        //{"tx", "Residual Tx [mrad]",                  100,   -3.,   3.},
+		{"tx", "Residual Tx [mrad]",                  100,   -2.,   2.},
+        //{"ty", "Residual Ty [mrad]",                  100,   -3.,   3.},
+		{"ty", "Residual Ty [mrad]",                  100,   -2.,   2.},
         {"P",  "Resolution P/Q [100%]",               100,   -0.1,  0.1 },
         {"px", "Pull X [residual/estimated_error]",   100,  -6.,  6.},
         {"py", "Pull Y [residual/estimated_error]",   100,  -6.,  6.},
@@ -1075,6 +1078,15 @@ void CbmL1::TrackFitPerformance()
       h_fit[2]->Fill((mcP.pxIn/mcP.pzIn-trPar.tx[0])*1.e3);
       h_fit[3]->Fill((mcP.pyIn/mcP.pzIn-trPar.ty[0])*1.e3);
       h_fit[4]->Fill(trPar.qp[0]/mcP.q*mcP.p-1);
+
+      PRes2D->Fill( mcP.p, (1./fabs(trPar.qp[0]) - mcP.p)/mcP.p*100. );
+
+      CbmL1MCTrack mcTrack = *(it->GetMCTracks()[0]);
+      if(mcTrack.IsPrimary())
+        PRes2DPrim->Fill( mcP.p, (1./fabs(trPar.qp[0]) - mcP.p)/mcP.p*100. );
+      else
+        PRes2DSec->Fill( mcP.p, (1./fabs(trPar.qp[0]) - mcP.p)/mcP.p*100. );
+
       if( finite(trPar.C00[0]) && trPar.C00[0]>0 ) h_fit[5]->Fill( (mcP.xIn-trPar.x[0])/sqrt(trPar.C00[0]));
       if( finite(trPar.C11[0]) && trPar.C11[0]>0 ) h_fit[6]->Fill( (mcP.yIn-trPar.y[0])/sqrt(trPar.C11[0]));
       if( finite(trPar.C22[0]) && trPar.C22[0]>0 ) h_fit[7]->Fill( (mcP.pxIn/mcP.pzIn-trPar.tx[0])/sqrt(trPar.C22[0]));
@@ -1302,21 +1314,11 @@ void CbmL1::FieldApproxCheck()
       z = t.z;
       Xmax = Ymax = t.R;
     }else{
-      CbmStsStation_old *st = StsDigi.GetStation(ist - NMvdStations);
-      z = st->GetZ();
+      CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(ist - NMvdStations));
+      z = station->GetZ();
 
-      double x,y;
-      for(int isec = 0; isec < st->GetNSectors(); isec++)
-      {
-        CbmStsSector *sect = L1_DYNAMIC_CAST<CbmStsSector*>( st->GetSector(isec) );
-        for(int isen = 0; isen < sect->GetNSensors(); isen++)
-        {
-          x = sect->GetSensor(isen)->GetX0() + sect->GetSensor(isen)->GetLx()/2.;
-          y = sect->GetSensor(isen)->GetY0() + sect->GetSensor(isen)->GetLy()/2.;
-          if(x>Xmax) Xmax = x;
-          if(y>Ymax) Ymax = y;
-        }
-      }
+      Xmax = station->GetXmax();
+      Ymax = station->GetYmax();
     } // if mvd
 
 
