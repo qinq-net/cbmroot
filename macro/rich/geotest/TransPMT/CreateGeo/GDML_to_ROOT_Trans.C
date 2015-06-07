@@ -16,14 +16,14 @@ void GDML_to_ROOT_Trans(float pmt_pos_y_addend = 0, float pmt_pos_z_addend = 0, 
   
   /////////////////////////////////// Translation in z
   char ZTransText[256];
-  if(pmt_pos_z_addend < 0) {sprintf( ZTransText,"TransZ_m%d",-1*pmt_pos_z_addend);}
-  else{sprintf( ZTransText,"TransZ_p%d",pmt_pos_z_addend);}
+  if(pmt_pos_z_addend < 0) {sprintf( ZTransText,"Z_m%d",-1*pmt_pos_z_addend);}
+  else{sprintf( ZTransText,"Z_p%d",pmt_pos_z_addend);}
   char YTransText[256];
-  if(pmt_pos_y_addend < 0) {sprintf( YTransText,"TransY_m%d",-1*pmt_pos_y_addend);}
-  else{sprintf( YTransText,"TransY_p%d",pmt_pos_y_addend);}  
+  if(pmt_pos_y_addend < 0) {sprintf( YTransText,"Y_m%d",-1*pmt_pos_y_addend);}
+  else{sprintf( YTransText,"Y_p%d",pmt_pos_y_addend);}  
 
   char GeoFileName[256];
-  sprintf(GeoFileName,"/geometry/rich/GeoOpt/TransPMT/rich_geo_%s_RotPMT_%s_%s_%s_%s",RotMirText,ShiftXTxt,ShiftYTxt,YTransText,ZTransText);//geometry/rich/GeoOpt/TransPMT/rich_geo_%s_RotPMT_%s_%s_%s",RotMirText,ShiftXTxt,ShiftYTxt,ZTransText);
+  sprintf(GeoFileName,"/geometry/rich/GeoOpt/TransPMT/rich_geo_%s_RotPMT_%s_%s_TransPMT_%s_%s",RotMirText,ShiftXTxt,ShiftYTxt,YTransText,ZTransText);
 
   stringstream ss; 
   ss<<GeoFileName;

@@ -37,17 +37,17 @@ void CreateTransGDMLfile_April2015(float pmt_pos_y_addend = 0, float pmt_pos_z_a
   if(PMTrotY<0){sprintf(ShiftYTxt,"Yneg%dpoint%d",-1.*IntegerYValue,-1.*ShiftYmod10);}
   /////////////////////////////////// Translation in z
   char ZTransText[256];
-  if(pmt_pos_z_addend < 0) {sprintf( ZTransText,"TransZ_m%d",-1*pmt_pos_z_addend);}
-  else{sprintf( ZTransText,"TransZ_p%d",pmt_pos_z_addend);}
+  if(pmt_pos_z_addend < 0) {sprintf( ZTransText,"Z_m%d",-1*pmt_pos_z_addend);}
+  else{sprintf( ZTransText,"Z_p%d",pmt_pos_z_addend);}
   char YTransText[256];
-  if(pmt_pos_y_addend < 0) {sprintf( YTransText,"TransY_m%d",-1*pmt_pos_y_addend);}
-  else{sprintf( YTransText,"TransY_p%d",pmt_pos_y_addend);}
+  if(pmt_pos_y_addend < 0) {sprintf( YTransText,"Y_m%d",-1*pmt_pos_y_addend);}
+  else{sprintf( YTransText,"Y_p%d",pmt_pos_y_addend);}
   
 
   std::ifstream infile1 (InFileUpper);
   std::ifstream infile2 (InFileLower);
   //sprintf(GeoFileName,"/hera/cbm/users/tariq/cbmroot/geometry/rich/GeoOpt/RotPMT/NewGeo/rich_geo_%s_RotPMT_%s_%s.gdml",RotMirText,ShiftXTxt,ShiftYTxt);
-  sprintf(GeoFileName,"/data/cbmroot/geometry/rich/GeoOpt/TransPMT/rich_geo_%s_RotPMT_%s_%s_%s_%s.gdml",RotMirText,ShiftXTxt,ShiftYTxt,YTransText,ZTransText);
+  sprintf(GeoFileName,"/data/cbmroot/geometry/rich/GeoOpt/TransPMT/rich_geo_%s_RotPMT_%s_%s_TransPMT_%s_%s.gdml",RotMirText,ShiftXTxt,ShiftYTxt,YTransText,ZTransText);
   
   cout<<GeoFileName<<endl; //continue;
   //return;
