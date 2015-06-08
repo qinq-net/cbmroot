@@ -1,14 +1,26 @@
-#if !defined(__CINT__) || defined(__MAKECINT__)
-#include "./header.h"
-#endif
+/// \file DrawQA.C
+/// \brief A template macro with examples and explanations
+///
+/// This macro should represent a starting point for the post processing of the
+///
+///         PairAnalysis PAckage (PAPA) -- written by Julian Book
+///
+/// output.
+///
+/// - simple setup of a QA trending using meta data -
+///
+/// UPDATES, NOTES:
+/// - ...
+///
+///
+/// \author Julian Book <jbook@ikf.uni-frankfurt.de>, Goethe-University Frankfurt
+/// \date Jun 08, 2015
+///
 
 void DrawQA()
 {
-  //
-  // Draw histograms - Example macro
-  //
 
-  // files sed for QA trending
+  // files used for QA trending
   const Int_t nfiles=2;
   TString fileList[nfiles]  = {"./data/sis100_electron_TRDdigi.analysis.root",
 			       "./data/sis100_electron_TRDclustering.analysis.root"
