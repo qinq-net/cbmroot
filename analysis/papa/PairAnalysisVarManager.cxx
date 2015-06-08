@@ -16,6 +16,12 @@ ClassImp(PairAnalysisVarManager)
 
 const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNMaxValuesMC][3] = {
   {"None",                   "",                                                   ""},
+// Constant information
+  {"MEL",                    "m_{e}",                                              "(GeV/#it{c^{2}})"},
+  {"MMU",                    "m_{#mu}",                                            "(GeV/#it{c^{2}})"},
+  {"MPI",                    "m_{#pi}",                                            "(GeV/#it{c^{2}})"},
+  {"MKA",                    "m_{K}",                                              "(GeV/#it{c^{2}})"},
+  {"MPR",                    "m_{p}",                                              "(GeV/#it{c^{2}})"},
 // Hit specific variables
   {"PosX",                   "x_{hit}",                                            "(cm)"},
   {"PosY",                   "y_{hit}",                                            "(cm)"},
@@ -25,6 +31,11 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"NPhotons",               "N_{photons}^{RICH}",                                 "(a.u.)"},
   {"PmtId",                  "ID_{Pmt}^{RICH}",                                    "(a.u.)"},
   {"Beta",                   "#beta^{TOF}",                                        ""},
+  {"kTOFPidDeltaBetaEL",     "#beta^{TOF}-#beta^{TOF}_{e}",                        ""},
+  {"kTOFPidDeltaBetaMU",     "#beta^{TOF}-#beta^{TOF}_{#mu}",                      ""},
+  {"kTOFPidDeltaBetaPI",     "#beta^{TOF}-#beta^{TOF}_{#pi}",                      ""},
+  {"kTOFPidDeltaBetaKA",     "#beta^{TOF}-#beta^{TOF}_{K}",                        ""},
+  {"kTOFPidDeltaBetaPR",     "#beta^{TOF}-#beta^{TOF}_{p}",                        ""},
 // Particle specific variables
   {"Px",                     "#it{p}_{x}",                                         "(GeV/#it{c})"},
   {"Py",                     "#it{p}_{y}",                                         "(GeV/#it{c})"},

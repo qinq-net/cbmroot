@@ -24,6 +24,8 @@
 #pragma link C++ class PairAnalysisVarCuts+;
 #pragma link C++ class PairAnalysisVarManager+;
 
+#pragma link C++ class PairAnalysisMetaData+;
+
 
 
 #pragma link C++ class PairAnalysis+;

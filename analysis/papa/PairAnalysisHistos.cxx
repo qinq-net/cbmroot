@@ -75,11 +75,13 @@
 #include <TVectorD.h>
 #include <TFormula.h>
 
+#include "PairAnalysis.h"
 #include "PairAnalysisHelper.h"
 #include "PairAnalysisSignalMC.h"
 #include "PairAnalysisStyler.h"
 #include "PairAnalysisVarManager.h"
 #include "PairAnalysisHistos.h"
+#include "PairAnalysisMetaData.h"
 
 ClassImp(PairAnalysisHistos)
 
@@ -87,6 +89,7 @@ ClassImp(PairAnalysisHistos)
 PairAnalysisHistos::PairAnalysisHistos() :
 //   TCollection(),
 TNamed("PairAnalysisHistos","PairAnalysis Histogram Container"),
+  fMetaData(0x0),
   fHistoList(),
   fList(0x0),
   fUsedVars(new TBits(PairAnalysisVarManager::kNMaxValues)),
@@ -105,6 +108,7 @@ TNamed("PairAnalysisHistos","PairAnalysis Histogram Container"),
 PairAnalysisHistos::PairAnalysisHistos(const char* name, const char* title) :
   //   TCollection(),
   TNamed(name, title),
+  fMetaData(0x0),
   fHistoList(),
   fList(0x0),
   fUsedVars(new TBits(PairAnalysisVarManager::kNMaxValues)),
@@ -128,6 +132,7 @@ PairAnalysisHistos::~PairAnalysisHistos()
   fHistoList.Clear();
   if (fUsedVars) delete fUsedVars;
   if (fList) fList->Clear();
+  if (fMetaData) delete fMetaData;
   delete fReservedWords;
 }
 
@@ -407,6 +412,7 @@ void PairAnalysisHistos::AddClass(const char* histClass)
     fHistoList.Add(table);
   }
   delete arr;
+
 }
 
 //_____________________________________________________________________________
@@ -739,6 +745,12 @@ void PairAnalysisHistos::ReadFromFile(const char* file, const char *task, const 
   TKey *key=0;
   while ( (key=(TKey*)nextKey()) ){
     TString name=key->GetName();
+    // check for meta data
+    if(name.Contains(Form("PairAnalysisMetaData_%s",task))) {
+      fMetaData=new PairAnalysisMetaData();
+      fMetaData->SetMetaData(*dynamic_cast<TList*>(f.Get(key->GetName())),kFALSE);
+    }
+    // check for histos
     if(!name.Contains("PairAnalysisHistos"))    continue;
     if(!strlen(task) && !name.Contains(task)) continue;
     TObject *o=f.Get(key->GetName());
@@ -765,6 +777,7 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt)
   // if option contains 'rebin' the objects are rebinned by 2
   // if option contains 'norm' the objects are normalized to 1
   // if option contains 'logx,y,z' the axis are plotted in log
+  // if option contains 'meta' the meta data are plotted
   //
 
   Printf("hist: %s",histName.Data());
@@ -775,11 +788,13 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt)
   Bool_t optLeg=optString.Contains("leg");
   Bool_t optCan=optString.Contains("can");
   Bool_t optNorm=optString.Contains("norm");
+  Bool_t optMeta=optString.Contains("meta");
   optString.ReplaceAll("nomc","");
   optString.ReplaceAll("rebin","");
   optString.ReplaceAll("leg","");
   optString.ReplaceAll("can","");
   optString.ReplaceAll("norm","");
+  optString.ReplaceAll("meta","");
 
   TLegend *leg=0;
   TCanvas *c=0;
@@ -890,6 +905,12 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt)
       static_cast<TH1*>(obj)->SetMaximum(max*1.1);
       break;
     }
+  }
+
+
+  // draw meta data
+  if(optMeta && fMetaData && !gPad->GetListOfPrimitives()->FindObject("meta")) {
+    fMetaData->DrawSame("");
   }
 
   /*
@@ -1287,7 +1308,6 @@ void PairAnalysisHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
     if(hclass.Contains("Pair")) currentName.Prepend("p");
     hist->SetName(currentName.Data());
   }
-
 }
 
 //_____________________________________________________________________________

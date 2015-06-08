@@ -126,7 +126,7 @@ void PairAnalysisStyler::LoadStyle() {
     defaultSty->SetStatBorderSize(1);
     defaultSty->SetStatH(0.1);
     defaultSty->SetStatW(0.5);
-    // defaultSty->SetStatStyle(Style_t style = 1001);
+    defaultSty->SetStatStyle(kFEmpty);
     defaultSty->SetStatX(0.01);
     defaultSty->SetStatY(0.01);
     
@@ -142,8 +142,14 @@ void PairAnalysisStyler::LoadStyle() {
     defaultSty->SetTitleW(0.5); // Set the width of the title box
     defaultSty->SetTitleX(0.25); // Set the position of the title box
     // defaultSty->SetTitleY(0.985); // Set the position of the title box
-    // defaultSty->SetTitleStyle(Style_t style = 1001);
+    defaultSty->SetTitleStyle(kFEmpty);
     // defaultSty->SetTitleBorderSize(2);
+
+    // for Paves and boxes
+    defaultSty->SetFillColor(bgrdcolor);
+    defaultSty->SetFillStyle(kFEmpty);
+    defaultSty->SetLineColor(0);
+    defaultSty->SetLineStyle(1);
 
     // For the axis titles:
     defaultSty->SetTitleColor(1, "XYZ");

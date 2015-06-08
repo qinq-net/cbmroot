@@ -14,6 +14,7 @@
 #include "FairRootManager.h"
 #include "CbmRichElectronIdAnn.h"
 
+#include "PairAnalysisMetaData.h"
 #include "PairAnalysisEvent.h"
 #include "PairAnalysis.h"
 #include "PairAnalysisHistos.h"
@@ -28,6 +29,7 @@ ClassImp(AnalysisTaskMultiPairAnalysis)
 //_________________________________________________________________________________
 AnalysisTaskMultiPairAnalysis::AnalysisTaskMultiPairAnalysis() :
   FairTask(),
+  fMetaData(),
   fPairArray(0x0),
   fListPairAnalysis(),
   fListHistos(),
@@ -47,6 +49,7 @@ AnalysisTaskMultiPairAnalysis::AnalysisTaskMultiPairAnalysis() :
 //_________________________________________________________________________________
 AnalysisTaskMultiPairAnalysis::AnalysisTaskMultiPairAnalysis(const char *name) :
   FairTask(name),
+  fMetaData(),
   fPairArray(0x0),
   fListPairAnalysis(),
   fListHistos(),
@@ -61,9 +64,11 @@ AnalysisTaskMultiPairAnalysis::AnalysisTaskMultiPairAnalysis(const char *name) :
   //
   // Constructor
   //
+  fMetaData.SetName(Form("PairAnalysisMetaData_%s",name));
   fListHistos.SetName(Form("PairAnalysisHistos_%s",name));
   //  fListCF.SetName(Form("PairAnalysisCF_%s",name));
   fListPairAnalysis.SetOwner();
+  ((TList*)fMetaData.GetMetaData())->SetOwner();
   fListHistos.SetOwner();
   //  fListCF.SetOwner();
 }
@@ -78,6 +83,8 @@ AnalysisTaskMultiPairAnalysis::~AnalysisTaskMultiPairAnalysis()
   //histograms and CF are owned by the papa framework.
   //however they are streamed to file, so in the first place the
   //lists need to be owner...
+  fListPairAnalysis.SetOwner();
+  ((TList*)fMetaData.GetMetaData())->SetOwner(kFALSE);
   fListHistos.SetOwner(kFALSE);
   //  fListCF.SetOwner(kFALSE);
   if(fgRichElIdAnn)    { delete fgRichElIdAnn;     fgRichElIdAnn=0; }
@@ -91,6 +98,10 @@ InitStatus AnalysisTaskMultiPairAnalysis::Init()
   //
   // Add all histogram manager histogram lists to the output TList
   //
+
+  // fill metadata object
+  fMetaData.Init();
+  fMetaData.FillMeta("beamenergy",fBeamEnergy);
 
   if (!fListHistos.IsEmpty()/*||!fListCF.IsEmpty()*/) return kERROR; //already initialised
 
@@ -250,11 +261,16 @@ void AnalysisTaskMultiPairAnalysis::FinishTask()
   // Write debug tree
   //
 
-  // TODO: add mix remaining
+  // set meta data
+  Double_t nevt = fEventStat->GetBinContent(fEventStat->FindBin(kFilteredEvents));
+  fMetaData.FillMeta("events",static_cast<Int_t>(nevt));
 
+  // write output to file
   Printf("AnalysisTaskMultiPairAnalysis::FinsihTask - write histo list to %s",
 	 FairRootManager::Instance()->GetOutFile()->GetName());
   FairRootManager::Instance()->GetOutFile()->cd();
+
+  fMetaData.GetMetaData()->Write(fMetaData.GetName(),TObject::kSingleKey);
   fListHistos.Write(fListHistos.GetName(),TObject::kSingleKey);
 
 }

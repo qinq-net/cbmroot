@@ -114,16 +114,14 @@ public:
 
   // mc specific
   void SetHasMC(Bool_t hasMC) { fHasMC = hasMC; }
-  Bool_t GetHasMC() const     { return fHasMC;  }
   void AddSignalMC(PairAnalysisSignalMC* signal);
-  const TObjArray* GetMCSignals() const { return fSignalsMC; }
   void  SetMotherPdg( Int_t pdgMother ) { fPdgMother=pdgMother; }
-  Int_t GetMotherPdg() const { return fPdgMother; }
   void  SetLegPdg(Int_t pdgLeg1, Int_t pdgLeg2) { fPdgLeg1=pdgLeg1; fPdgLeg2=pdgLeg2; }
-  Int_t GetLeg1Pdg()   const { return fPdgLeg1;   }
-  Int_t GetLeg2Pdg()   const { return fPdgLeg2;   }
-
-
+  const TObjArray* GetMCSignals() const { return fSignalsMC; }
+  Bool_t GetHasMC()               const { return fHasMC;  }
+  Int_t GetMotherPdg()            const { return fPdgMother; }
+  Int_t GetLeg1Pdg()              const { return fPdgLeg1;   }
+  Int_t GetLeg2Pdg()              const { return fPdgLeg2;   }
 
   static const char* TrackClassName(Int_t i) { return (i>=0&&i<2)?fgkTrackClassNames[i]:""; }
   static const char* PairClassName(Int_t i)  { return (i>=0&&i<8)?fgkPairClassNames[i]:""; }

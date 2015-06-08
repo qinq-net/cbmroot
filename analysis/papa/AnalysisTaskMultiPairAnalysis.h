@@ -20,6 +20,7 @@
 
 #include "AnalysisCuts.h"
 #include "PairAnalysisEvent.h"
+#include "PairAnalysisMetaData.h"
 
 class PairAnalysis;
 class TH1D;
@@ -44,9 +45,11 @@ public:
 
 protected:
   enum {kAllEvents=0, kSelectedEvents, kV0andEvents, kFilteredEvents, kPileupEvents, kNbinsEvent};
-  TObjArray *fPairArray;             //! output array
+
+  PairAnalysisMetaData fMetaData;                     //! List of meta data in the framework classes
+  TObjArray *fPairArray;               //! output array
   TList fListPairAnalysis;             //  List of papa framework instances
-  TList fListHistos;                 //! List of histogram manager lists in the framework classes
+  TList fListHistos;                   //! List of histogram manager lists in the framework classes
   //  TList fListCF;                     //! List with CF Managers
 
   CbmRichElectronIdAnn *fgRichElIdAnn; // neural network for Rich electron ID

@@ -61,10 +61,18 @@ using std::vector;
 class PairAnalysisVarManager : public TNamed {
   
 public:
+  enum PIDtypes { kEL=11, kMU=13, kPI=211, kKA=321, kPR=2212, kNPIDtypes };
 
   enum ValueTypes {
+// Constant information
+    kMEL=1,                  // pdg mass of electrons
+    kMMU,                    // pdg mass of muons
+    kMPI,                    // pdg mass of pions
+    kMKA,                    // pdg mass of kaons
+    kMPR,                    // pdg mass of protons
+    kConstMax,
 // Hit specific variables
-    kPosX =1,                // X position [cm]
+    kPosX=kConstMax,         // X position [cm]
     kPosY,                   // Y position [cm]
     kPosZ,                   // Z position [cm]
     kEloss,                  // TRD energy loss dEdx+TR
@@ -72,6 +80,11 @@ public:
     kNPhotons,               // RICH number of photons in this hit
     kPmtId,                  // RICH photomultiplier number
     kBeta,                   // TOF beta
+    kTOFPidDeltaBetaEL,      // delta of TOF beta to expected beta for electrons
+    kTOFPidDeltaBetaMU,      // delta of TOF beta to expected beta for muons
+    kTOFPidDeltaBetaPI,      // delta of TOF beta to expected beta for pions
+    kTOFPidDeltaBetaKA,      // delta of TOF beta to expected beta for kaons
+    kTOFPidDeltaBetaPR,      // delta of TOF beta to expected beta for protons
     kHitMax,
 // Particle specific variables
     kPx = kHitMax,           // px
@@ -337,6 +350,7 @@ private:
   // fill functions
   static Bool_t Req(ValueTypes var) { return (fgFillMap ? fgFillMap->TestBitNumber(var) : kTRUE); }
 
+  static void FillVarConstants(Double_t * const values);
   static void FillVarPairAnalysisEvent(const PairAnalysisEvent *event, Double_t * const values);
   static void FillVarVertex(            const CbmVertex *vertex,         Double_t * const values);
   static void FillVarPairAnalysisTrack(   const PairAnalysisTrack *track,    Double_t * const values);
@@ -399,7 +413,7 @@ inline void PairAnalysisVarManager::ResetArrayData(Int_t to, Double_t * const va
   // Protect
   if (to >= kNMaxValues) return;
   // Reset
-  for (Int_t i=0; i<to; ++i) {
+  for (Int_t i=kConstMax; i<to; ++i) {
     if(i!=kEbeam)  values[i] = 0.;
   }
   // reset values different from zero
@@ -543,7 +557,6 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   values[kInclAngle] = TMath::ASin(track->Pt()/track->P());
   Fill(track->GetTofHit(),      values);
   values[kTOFHits]   = (track->GetTofHit() ? 1. : 0.);
-  values[kTrackLength] = track->GetGlobalTrack()->GetLength(); //cm
 
 }
 
@@ -997,6 +1010,14 @@ inline void PairAnalysisVarManager::FillVarTofHit(const CbmTofHit *hit, Double_t
 
   // Set
   values[kBeta]    = values[kTrackLength]/100 / (hit->GetTime()*1e-9) / TMath::C();
+  // PID value detla beta
+  values[kTOFPidDeltaBetaEL] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMEL]*values[kMEL]+values[kP]*values[kP]) );
+  values[kTOFPidDeltaBetaMU] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMMU]*values[kMMU]+values[kP]*values[kP]) );
+  values[kTOFPidDeltaBetaPI] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMPI]*values[kMPI]+values[kP]*values[kP]) );
+  values[kTOFPidDeltaBetaKA] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMKA]*values[kMKA]+values[kP]*values[kP]) );
+  values[kTOFPidDeltaBetaPR] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMPR]*values[kMPR]+values[kP]*values[kP]) );
+
+
   //  Printf("track length: %f beta: %f",values[kTrackLength],values[kBeta]);
   //  Double_t mass2 = TMath::Power(momentum, 2.) * (TMath::Power(time/ trackLength, 2) - 1);
 }
@@ -1021,6 +1042,20 @@ inline void PairAnalysisVarManager::FillVarMCPoint(const FairMCPoint *hit, Doubl
 
 }
 
+inline void PairAnalysisVarManager::FillVarConstants(Double_t * const values)
+{
+  //
+  // Fill constnat information available into an array
+  //
+
+  // Set
+  values[kMEL]          = TDatabasePDG::Instance()->GetParticle(kEL)->Mass();
+  values[kMMU]          = TDatabasePDG::Instance()->GetParticle(kMU)->Mass();
+  values[kMPI]          = TDatabasePDG::Instance()->GetParticle(kPI)->Mass();
+  values[kMKA]          = TDatabasePDG::Instance()->GetParticle(kKA)->Mass();
+  values[kMPR]          = TDatabasePDG::Instance()->GetParticle(kPR)->Mass();
+}
+
 inline void PairAnalysisVarManager::SetEvent(PairAnalysisEvent * const ev)
 {
   //
@@ -1035,6 +1070,7 @@ inline void PairAnalysisVarManager::SetEvent(PairAnalysisEvent * const ev)
   fgKFVertex=0x0;
 
   // Set
+  FillVarConstants(fgData);
   if (ev && ev->GetPrimaryVertex()) fgKFVertex=new CbmKFVertex(*ev->GetPrimaryVertex());
   Fill(fgEvent, fgData);
 }

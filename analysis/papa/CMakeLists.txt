@@ -72,6 +72,7 @@ set(SRCS
 ./PairAnalysisPairLegCuts.cxx
 ./PairAnalysisVarCuts.cxx
 ./PairAnalysisHelper.cxx
+./PairAnalysisMetaData.cxx
 ./PairAnalysisStyler.cxx
 ./PairAnalysisVarManager.cxx
 

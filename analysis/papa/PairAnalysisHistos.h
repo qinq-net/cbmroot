@@ -42,6 +42,7 @@
 
 #include "PairAnalysisHelper.h"
 #include "PairAnalysisVarManager.h"
+#include "PairAnalysisMetaData.h"
 
 class TH1;
 class TString;
@@ -178,6 +179,9 @@ public:
   TObject* GetHist(const char* cutClass, const char* histClass, const char* name) const;
   TH1* GetHistogram(const char* cutClass, const char* histClass, const char* name) const;
 
+
+  PairAnalysisMetaData* GetMetaData() const { return fMetaData; }
+
   virtual void Print(const Option_t* option = "") const;
   virtual void Draw(const Option_t* option = "");
   virtual void DrawSame(TString histName, const Option_t *opt="leg can");
@@ -199,9 +203,10 @@ private:
 
   void FillVarArray(TObject *obj, UInt_t *valType);
 
-  //  THashList fHistoList;             //-> list of histograms
-  TList    *fList;                  //! List of list of histograms
-  TBits     *fUsedVars;            // list of used variables
+  PairAnalysisMetaData *fMetaData;   //! meta data
+  //  THashList fHistoList;          //-> list of histograms
+  TList    *fList;                   //! List of list of histograms
+  TBits     *fUsedVars;              // list of used variables
 
   TString *fReservedWords;          //! list of reserved words
   void UserHistogramReservedWords(const char* histClass, const TObject *hist);
@@ -216,7 +221,7 @@ private:
   PairAnalysisHistos(const PairAnalysisHistos &hist);
   PairAnalysisHistos& operator = (const PairAnalysisHistos &hist);
 
-  ClassDef(PairAnalysisHistos,1)
+  ClassDef(PairAnalysisHistos,2)
 };
 
 template <typename valX, typename valY, typename valZ, typename valP, typename valW>

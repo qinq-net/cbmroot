@@ -216,6 +216,7 @@ const char* PairAnalysisHelper::GetPDGlabel(Int_t pdg) {
 
   TString name=TDatabasePDG::Instance()->GetParticle(pdg)->GetName();
   name.ReplaceAll("dd_1_bar","primary");
+  name.ReplaceAll("proton","p");
   // correct greek letters
   if(name.Contains("delta",TString::kIgnoreCase) ||
      name.Contains("sigma",TString::kIgnoreCase) ||
@@ -231,13 +232,14 @@ const char* PairAnalysisHelper::GetPDGlabel(Int_t pdg) {
      name.Contains("rho",TString::kIgnoreCase) ) name.Prepend("#");
   // correct anti particles
   if(name.Contains("_bar")) { name.ReplaceAll("_bar","}"); name.Prepend("#bar{"); }
+  if(name.Contains("anti")) { name.ReplaceAll("anti","#bar{"); name.Append("}"); }
     // correct indices
   name.ReplaceAll("+","^{+}");       name.ReplaceAll("-","^{-}");         name.ReplaceAll("0","^{0}");
   name.ReplaceAll("_s","_{s}");       name.ReplaceAll("_c","_{c}");       name.ReplaceAll("_b","_{b}");
   name.ReplaceAll("_1","_{1}");
   // specials
   name.ReplaceAll("/psi","/#psi");
-  //  Printf(" %d = %s \n",pdg,name.Data());
+  //  Printf(" %d = %s",pdg,name.Data());
   return name.Data();
 }
 
