@@ -278,10 +278,6 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // =========================================================================
 
 
-  // -----   RECO-to-MC matching   --------------------------------------------
-  CbmMatchRecoToMC* matchTask = new CbmMatchRecoToMC();
-  run->AddTask(matchTask);
-  // ----------------------------------------------------
 
   // ----------- TRD track Pid Wkn ----------------------
   CbmTrdSetTracksPidWkn* trdSetTracksPidTask = new CbmTrdSetTracksPidWkn(
