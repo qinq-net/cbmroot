@@ -111,9 +111,9 @@ void CbmRich::Initialize()
 Bool_t CbmRich::CheckIfSensitive(std::string name)
 {
    TString volName = name;
-   if ( volName.Contains("rich1d") || volName.Contains("Sens_plane")){
-      return kTRUE;
-   }
+   if ( volName.Contains("rich1d") || volName.Contains("Sens_plane")) return kTRUE;
+   // mirrors
+    if( volName.Contains("RICH_mirror_1") || volName.Contains("RICH_mirror_2") || volName.Contains("RICH_mirror_3") ) return kTRUE;
    return kFALSE;
 }
 
@@ -140,7 +140,7 @@ Bool_t CbmRich::ProcessHits(
          gMC->TrackMomentum(tMom);
 
          if ( pdgCode == 50000050) { // Cherenkovs only
-            AddHit(trackID, iVol, TVector3(tPos.X(), tPos.Y(), tPos.Z()), TVector3(tMom.Px(), tMom.Py(), tMom.Pz()), time, length, eLoss);
+            AddHit(trackID, iVol , TVector3(tPos.X(), tPos.Y(), tPos.Z()), TVector3(tMom.Px(), tMom.Py(), tMom.Pz()), time, length, eLoss);
 
             // Increment number of RichPoints for this track
             CbmStack* stack = (CbmStack*) gMC->GetStack();
@@ -192,15 +192,15 @@ Bool_t CbmRich::ProcessHits(
    }
 
    // Treat mirror points
-   if (volName.Contains("rich1mgl") || volName.Contains("rich1mglLU") || volName.Contains("rich1mglRU") ) {
+   Bool_t isMirror08 = (volName.Contains("rich1mgl") || volName.Contains("rich1mglLU") || volName.Contains("rich1mglRU"));
+   Bool_t isMirror = ( volName.Contains("RICH_mirror_1") || volName.Contains("RICH_mirror_2") || volName.Contains("RICH_mirror_3") );
+   if (isMirror08 || isMirror){
 
-      // Collecting points of tracks and imaginary plane intersection
+      // Collecting points
       if (gMC->IsTrackEntering()) {
          TParticle* part = gMC->GetStack()->GetCurrentTrack();
          Double_t charge = part->GetPDG()->Charge() / 3.;
-         if (charge == 0.) {
-            return kFALSE; // no neutrals
-         } else {
+         if (charge != 0.){
 
             Int_t trackID = gMC->GetStack()->GetCurrentTrackNumber();
 
@@ -212,14 +212,8 @@ Bool_t CbmRich::ProcessHits(
             gMC->TrackPosition(tPos);
             gMC->TrackMomentum(tMom);
 
-            // check number of STS points
-            //UInt_t points = gMC->GetStack()->GetCurrentTrack()->GetMother(1);
-            //Int_t nStsPoints = (points & 15);
-
-            //if (nStsPoints > 0) { // store only particles with STSpoints (at least 1)
-               AddMirrorHit(trackID, iVol, TVector3(tPos.X(), tPos.Y(), tPos.Z()), TVector3(tMom.Px(), tMom.Py(), tMom.Pz()), time, length, eLoss);
-               return kTRUE;
-            //}
+            AddMirrorHit(trackID, iVol, TVector3(tPos.X(), tPos.Y(), tPos.Z()), TVector3(tMom.Px(), tMom.Py(), tMom.Pz()), time, length, eLoss);
+            return kTRUE;
          }
       }
    }
