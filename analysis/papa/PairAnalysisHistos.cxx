@@ -653,6 +653,8 @@ void PairAnalysisHistos::PrintStructure() const
     TIter nextCutClass(fList);
     THashList *cutClass=0x0;
     while ( (cutClass=(THashList*)nextCutClass()) ) {
+      TString cla=cutClass->GetName();
+      if(cla.Contains("QAcuts")) continue;
       Printf("+ %s\n",cutClass->GetName());
       TIter nextClass(cutClass);
       THashList *classTable=0;

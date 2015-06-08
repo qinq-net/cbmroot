@@ -232,7 +232,7 @@ void PairAnalysisStyler::Style(TObject *obj, Int_t idx) {
   }
 
   if (obj->InheritsFrom(TAttMarker::Class())) {
-    dynamic_cast<TAttMarker*>(obj)->SetMarkerSize(2.);
+    dynamic_cast<TAttMarker*>(obj)->SetMarkerSize(1.5);
     dynamic_cast<TAttMarker*>(obj)->SetMarkerStyle(Marker[idx%kNMaxMarker]);
     dynamic_cast<TAttMarker*>(obj)->SetMarkerColor(Color[idx%kNMaxColor]);
   }
