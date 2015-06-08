@@ -381,19 +381,19 @@ void CbmL1::ReadEvent()
       int iMC = -1;
       if(listStsClusterMatch)
       {
-        
+
         const CbmMatch* frontClusterMatch = static_cast<const CbmMatch*>(listStsClusterMatch->At(sh->GetFrontClusterId()));
         const CbmMatch* backClusterMatch  = static_cast<const CbmMatch*>(listStsClusterMatch->At(sh->GetBackClusterId()));
-        
+
         CbmMatch stsHitMatch;
-        
+
         for(int iFrontLink = 0; iFrontLink<frontClusterMatch->GetNofLinks(); iFrontLink++)
         {
           const CbmLink& frontLink = frontClusterMatch->GetLink(iFrontLink);
           for(int iBackLink = 0; iBackLink<backClusterMatch->GetNofLinks(); iBackLink++)
           {
             const CbmLink& backLink = backClusterMatch->GetLink(iBackLink);
-            
+
             if(frontLink.GetIndex() == backLink.GetIndex())
             {
               stsHitMatch.AddLink(frontLink);
@@ -405,7 +405,7 @@ void CbmL1::ReadEvent()
         if( stsHitMatch.GetNofLinks()>0 )
         {
           Float_t bestWeight = 0.f;
-          
+
           for(int iLink=0; iLink < stsHitMatch.GetNofLinks(); iLink++)
           {
             if( stsHitMatch.GetLink(iLink).GetWeight() > bestWeight)
@@ -418,7 +418,7 @@ void CbmL1::ReadEvent()
       }
       else
         iMC = sh->GetRefId(); // TODO1: don't need this with FairLinks
-        
+
       if( listStsPts && iMC>=0 && iMC<nMC){
         CbmL1MCPoint MC;
         if( ! ReadMCPoint( &MC, iMC, 0 ) ){
@@ -447,7 +447,10 @@ void CbmL1::ReadEvent()
       if(!(isUsedMvdPoint[iMC])) {
         CbmL1MCPoint MC;
         if( ! ReadMCPoint( &MC, iMC, 1 ) ){
-          MC.iStation = (L1_DYNAMIC_CAST<CbmMvdPoint*>(listMvdPts->At(iMC)))->GetStationNr() - 1;
+          MC.iStation = -1;
+          L1Station *sta = algo->vStations;
+          for(int iSt = 0; iSt < NMvdStations; iSt++)
+            MC.iStation = (MC.z > sta[iSt].z[0] - 1) ? iSt : MC.iStation;
           isUsedMvdPoint[iMC] = 1;
           vMCPoints.push_back( MC );
         }
