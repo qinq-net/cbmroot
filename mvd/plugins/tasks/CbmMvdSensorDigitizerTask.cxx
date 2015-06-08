@@ -830,7 +830,7 @@ Float_t totCharge = (sPoint->charge * fLorentzNorm *(0.5*fPar0*fPar1/TMath::Pi()
 							    (point->GetY()+point->GetXOut())/2, point->GetTime(), point->GetFrame()
 							   );
   //cout << endl << "new charched pixel with charge " << totCharge << " at " << ix << " " << iy << endl;
- 					  fPixelChargeShort.push_back(pixel);
+//  					  fPixelChargeShort.push_back(pixel);
 // 				cout << endl << "added pixel to ChargeShort vector " << endl;   
 					
 					fChargeMap[thispoint] = pixel;
@@ -844,7 +844,7 @@ Float_t totCharge = (sPoint->charge * fLorentzNorm *(0.5*fPar0*fPar1/TMath::Pi()
 //  					if(pixel->GetCharge()>150)
 // 					{cout << endl << "added charge to pixel summing up to "<< pixel->GetCharge() << endl;}
 				}
-				
+				fPixelChargeShort.push_back(pixel);
 			}
 			else{	//pixel already linked => add charge only
 				pixel->AddCharge(totCharge);

@@ -98,25 +98,55 @@ CbmMvdPixelCharge::CbmMvdPixelCharge(Float_t charge, Int_t channelNrX, Int_t cha
   
 void CbmMvdPixelCharge::DigestCharge(Float_t pointX, Float_t pointY, Int_t pointId, Int_t trackId)
 {
-
-    if (fTrackCharge>0)
-    {
-	if (fTrackCharge>fMaxChargeContribution)
+	Float_t chargeContr = fTrackCharge;
+	
+	for(Int_t i=0;i<fContributors;i++)
 	{
-	    fDominatorIndex	   = fContributors;
-	    fMaxChargeContribution = fTrackCharge;
+		chargeContr-= fPointWeight[i];
 	}
 
-	fCharge = fCharge+fTrackCharge; // Add charge of the track
-	fTrackCharge = 0;
-	fTrackId[fContributors]=trackId;
-	fPointId[fContributors]=pointId;
-	fPointX [fContributors]=pointX;
-	fPointY [fContributors]=pointY;
-	fPointWeight[fContributors]=fTrackCharge;
-	fContributors = fContributors+1;
-	
+    if (chargeContr>0)
+    {
+		if (chargeContr>fMaxChargeContribution)
+		{
+			fDominatorIndex		   = fContributors;
+			fMaxChargeContribution = chargeContr;
+		}
+
+		if(fContributors<5)
+		{
+			fCharge = fTrackCharge;
+			fTrackId[fContributors]=trackId;
+			fPointId[fContributors]=pointId;
+			fPointX [fContributors]=pointX;
+			fPointY [fContributors]=pointY;
+			fPointWeight[fContributors]=chargeContr;
+			fContributors = fContributors+1;
+		}
+		else
+		{
+// 			cout << "-W- " << GetName() << " Nr of Digi Contributors is bigger than 5!!!" << endl;
+		}
     }
+
+//     if (fTrackCharge>0)
+//     {
+// 	if (fTrackCharge>fMaxChargeContribution)
+// 	{
+// 	    fDominatorIndex	   = fContributors;
+// 	    fMaxChargeContribution = fTrackCharge;
+// 	}
+// 
+// 	fCharge = fCharge+fTrackCharge; // Add charge of the track
+// 	fTrackCharge = 0;
+// 	fTrackId[fContributors]=trackId;
+// 	fPointId[fContributors]=pointId;
+// 	fPointX [fContributors]=pointX;
+// 	fPointY [fContributors]=pointY;
+// 	fPointWeight[fContributors]=fTrackCharge;
+// 	fContributors = fContributors+1;
+// 	
+//     }
 }
 
 // -----   Destructor   ----------------------------------------------------
