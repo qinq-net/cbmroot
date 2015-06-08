@@ -135,7 +135,11 @@ if [ $SETUP_CBMROOT -ge 1 ]; then
   cd $CBMSRCDIR
   
   cd ..
-  svn co https://subversion.gsi.de/cbmsoft/cbmroot/fieldmaps fieldmaps
+  if [ -d fieldmaps ]; then
+    svn up fieldmaps    
+  else
+    svn co https://subversion.gsi.de/cbmsoft/cbmroot/fieldmaps fieldmaps
+  fi
   
   #svn co https://subversion.gsi.de/cbmsoft/cbmroot/trunk cbm_$CBMSRCDIR
   cd $CBMSRCDIR
