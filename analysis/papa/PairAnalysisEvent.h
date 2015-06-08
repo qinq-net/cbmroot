@@ -53,6 +53,7 @@ public:
 private:
  TClonesArray *fMCTracks;       //mc tracks
  TClonesArray *fStsMatches;     //STS matches
+ TClonesArray *fMuchMatches;     //MUCH matches
  TClonesArray *fTrdMatches;     //TRD matches
  TClonesArray *fRichMatches;    //RICH matches
  TClonesArray *fTofPoints;      //TOF points
@@ -60,9 +61,12 @@ private:
  TClonesArray *fGlobalTracks;   //global tracks
  TClonesArray *fTrdTracks;      //TRD tracks
  TClonesArray *fStsTracks;      //STS tracks
+ TClonesArray *fMuchTracks;      //MUCH tracks
  TClonesArray *fRichRings;     //RICH rings
 
  TClonesArray *fStsHits;        //STS hits
+ TClonesArray *fMuchHits;       //MUCH pixel hits
+ TClonesArray *fMuchHitsStraw;  //MUCH straw hits
  TClonesArray *fTrdHits;        //TRD hits
  TClonesArray *fRichHits;       //RICH hits
  TClonesArray *fTofHits ;       //TOF hits
@@ -78,7 +82,7 @@ private:
  PairAnalysisEvent(const PairAnalysisEvent& event);
  PairAnalysisEvent &operator=(const PairAnalysisEvent &c);
 
- ClassDef(PairAnalysisEvent,1)         // PairAnalysis Event
+ ClassDef(PairAnalysisEvent,2)         // PairAnalysis Event
 };
 
 

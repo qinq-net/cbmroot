@@ -14,6 +14,7 @@
 #include "CbmTrack.h"
 #include "CbmGlobalTrack.h"
 #include "CbmStsTrack.h"
+#include "CbmMuchTrack.h"
 #include "CbmTrdTrack.h"
 #include "CbmRichRing.h"
 #include "CbmTofHit.h"
@@ -28,11 +29,13 @@ PairAnalysisTrack::PairAnalysisTrack() :
   TNamed(),
   fGlblTrack(0x0),
   fStsTrack(0x0),
+  fMuchTrack(0x0),
   fTrdTrack(0x0),
   fRichRing(0x0),
   fTofHit(0x0),
   fMCTrack(0x0),
   fStsTrackMatch(0x0),
+  fMuchTrackMatch(0x0),
   fTrdTrackMatch(0x0),
   fRichRingMatch(0x0),
   fMomentum(),
@@ -54,11 +57,13 @@ PairAnalysisTrack::PairAnalysisTrack(const char* name, const char* title) :
   TNamed(name, title),
   fGlblTrack(0x0),
   fStsTrack(0x0),
+  fMuchTrack(0x0),
   fTrdTrack(0x0),
   fRichRing(0x0),
   fTofHit(0x0),
   fMCTrack(0x0),
   fStsTrackMatch(0x0),
+  fMuchTrackMatch(0x0),
   fTrdTrackMatch(0x0),
   fRichRingMatch(0x0),
   fMomentum(),
@@ -78,22 +83,26 @@ PairAnalysisTrack::PairAnalysisTrack(const char* name, const char* title) :
 //______________________________________________
 PairAnalysisTrack::PairAnalysisTrack(CbmGlobalTrack *gtrk,
 				     CbmStsTrack *ststrk,
+				     CbmMuchTrack *muchtrk,
 				     CbmTrdTrack *trdtrk,
 				     CbmRichRing *richring,
 				     CbmTofHit *tofhit,
 				     CbmMCTrack *mctrk,
 				     CbmTrackMatchNew *stsmatch,
+				     CbmTrackMatchNew *muchmatch,
 				     CbmTrackMatchNew *trdmatch,
 				     CbmTrackMatchNew *richmatch
 				     ) :
   TNamed(),
   fGlblTrack(gtrk),
   fStsTrack(ststrk),
+  fMuchTrack(muchtrk),
   fTrdTrack(trdtrk),
   fRichRing(richring),
   fTofHit(tofhit),
   fMCTrack(mctrk),
   fStsTrackMatch(stsmatch),
+  fMuchTrackMatch(muchmatch),
   fTrdTrackMatch(trdmatch),
   fRichRingMatch(richmatch),
   fMomentum(),
@@ -139,6 +148,7 @@ CbmTrackMatchNew* PairAnalysisTrack::GetTrackMatch(DetectorId det) const
   switch(det) {
   case kSTS:  return fStsTrackMatch;
   case kTRD:  return fTrdTrackMatch;
+  case kMUCH: return fMuchTrackMatch;
   case kRICH: return fRichRingMatch;
   default:   return 0x0;
   }
@@ -154,6 +164,7 @@ CbmTrack* PairAnalysisTrack::GetTrack(DetectorId det) const
   switch(det) {
   case kSTS:  return fStsTrack;
   case kTRD:  return fTrdTrack;
+  case kMUCH: return fMuchTrack;
   case kRICH: return 0x0;
   default:   return 0x0;
   }

@@ -686,6 +686,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	  CbmRichRing *ring = 0x0;
 	  switch(idet) {
 	  case kSTS:
+	  case kMUCH:
 	  case kTRD:  trkl = track->GetTrack(static_cast<DetectorId>(idet)); break;
 	  case kRICH: ring = track->GetRichRing();   break;
 	  default:

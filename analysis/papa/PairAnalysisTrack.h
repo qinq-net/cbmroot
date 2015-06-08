@@ -20,6 +20,7 @@
 class CbmTrack;
 class CbmGlobalTrack;
 class CbmStsTrack;
+class CbmMuchTrack;
 class CbmTrdTrack;
 class CbmRichRing;
 class CbmTofHit;
@@ -35,9 +36,9 @@ public:
 
   PairAnalysisTrack();
   PairAnalysisTrack(const char* name, const char* title);
-  PairAnalysisTrack(CbmGlobalTrack *gtrk, CbmStsTrack *ststrk, CbmTrdTrack *trdtrk, CbmRichRing *richring, CbmTofHit *tofhit,
+  PairAnalysisTrack(CbmGlobalTrack *gtrk, CbmStsTrack *ststrk, CbmMuchTrack *muchtrk, CbmTrdTrack *trdtrk, CbmRichRing *richring, CbmTofHit *tofhit,
 		  CbmMCTrack *mctrk,
-		  CbmTrackMatchNew *stsmatch, CbmTrackMatchNew *trdMatch, CbmTrackMatchNew *richMatch);
+		  CbmTrackMatchNew *stsmatch, CbmTrackMatchNew *muchmatch, CbmTrackMatchNew *trdMatch, CbmTrackMatchNew *richMatch);
 
   virtual ~PairAnalysisTrack();
 
@@ -50,6 +51,7 @@ public:
   // track getters
   CbmGlobalTrack *GetGlobalTrack()  const { return fGlblTrack; }
   CbmStsTrack    *GetStsTrack()     const { return fStsTrack;  }
+  CbmMuchTrack   *GetMuchTrack()    const { return fMuchTrack;  }
   CbmTrdTrack    *GetTrdTrack()     const { return fTrdTrack;  }
   CbmRichRing    *GetRichRing()     const { return fRichRing;  }
   CbmTofHit      *GetTofHit()       const { return fTofHit;    }
@@ -87,12 +89,14 @@ public:
 private:
   CbmGlobalTrack   *fGlblTrack;       // global track
   CbmStsTrack      *fStsTrack;        // sts track
+  CbmMuchTrack     *fMuchTrack;       // much track
   CbmTrdTrack      *fTrdTrack;        // trd track
   CbmRichRing      *fRichRing;        // rich ring
   CbmTofHit        *fTofHit;          // tof hit
 
   CbmMCTrack       *fMCTrack;         // matched mc track
   CbmTrackMatchNew *fStsTrackMatch;   // sts track match
+  CbmTrackMatchNew *fMuchTrackMatch;  // much track match
   CbmTrackMatchNew *fTrdTrackMatch;   // trd track match
   CbmTrackMatchNew *fRichRingMatch;   // rich ring match
 
@@ -107,7 +111,7 @@ private:
   PairAnalysisTrack(const PairAnalysisTrack& track);
   PairAnalysisTrack &operator=(const PairAnalysisTrack &c);
 
-  ClassDef(PairAnalysisTrack,1)         // PairAnalysis Track
+  ClassDef(PairAnalysisTrack,2)         // PairAnalysis Track
 };
 
 

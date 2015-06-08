@@ -29,6 +29,8 @@
 #include <CbmRichHit.h>
 #include <CbmTrdHit.h>
 #include <CbmStsHit.h>
+#include <CbmMuchPixelHit.h>
+#include <CbmMuchStrawHit.h>
 
 #include <FairTrackParam.h>
 #include <FairMCPoint.h>
@@ -37,6 +39,7 @@
 #include <CbmKFVertex.h>
 #include <CbmGlobalTrack.h>
 #include <CbmStsTrack.h>
+#include <CbmMuchTrack.h>
 #include <CbmTrdTrack.h>
 #include <CbmRichRing.h>
 #include <CbmMCTrack.h>
@@ -154,6 +157,11 @@ public:
     kRICHRadius,             // RICH ring radius
     // tof track information
     kTOFHits,                // number of TOF hits
+    // much track information
+    kMUCHHits,               // number of MUCH hits
+    kMUCHHitsPixel,          // number of MUCH pixel hits
+    kMUCHHitsStraw,          // number of MUCH straw hits
+    kMUCHChi2NDF,            // chi2/ndf MUCH
     kTrackMax,
 
 // Pair specific variables
@@ -272,6 +280,7 @@ public:
     kTRDHitsMC=kParticleMaxMC, // number of TRD hits
     kMVDHitsMC,                // number of MVD hits
     kSTSHitsMC,                // number of STS hits
+    kMUCHHitsMC,               // number of MUCH hits
     kRICHHitsMC,               // number of RICH hits
     kTRDMCPoints,              // number of TRD MC Points in reconstructed track
     kTRDTrueHits,              // number of true TRD hits in reconstructed track
@@ -281,6 +290,7 @@ public:
     kTRDisMC,                  // status bit for matching btw. glbl. and local MC track
     kMVDisMC,                  // status bit for matching btw. glbl. and local MC track
     kSTSisMC,                  // status bit for matching btw. glbl. and local MC track
+    kMUCHisMC,                 // status bit for matching btw. glbl. and local MC track
     kRICHisMC,                 // status bit for matching btw. glbl. and local MC track
     kTOFisMC,                  // status bit for matching btw. glbl. and local MC track
     kTrackMaxMC,
@@ -351,16 +361,19 @@ private:
   static Bool_t Req(ValueTypes var) { return (fgFillMap ? fgFillMap->TestBitNumber(var) : kTRUE); }
 
   static void FillVarConstants(Double_t * const values);
-  static void FillVarPairAnalysisEvent(const PairAnalysisEvent *event, Double_t * const values);
+  static void FillVarPairAnalysisEvent( const PairAnalysisEvent *event,  Double_t * const values);
   static void FillVarVertex(            const CbmVertex *vertex,         Double_t * const values);
-  static void FillVarPairAnalysisTrack(   const PairAnalysisTrack *track,    Double_t * const values);
+  static void FillVarPairAnalysisTrack( const PairAnalysisTrack *track,  Double_t * const values);
   static void FillVarGlobalTrack(       const CbmGlobalTrack *track,     Double_t * const values);
   static void FillVarStsTrack(          const CbmStsTrack *track,        Double_t * const values);
+  static void FillVarMuchTrack(         const CbmMuchTrack *track,       Double_t * const values);
   static void FillVarTrdTrack(          const CbmTrdTrack *track,        Double_t * const values);
   static void FillVarRichRing(          const CbmRichRing *track,        Double_t * const values);
   static void FillVarMCTrack(           const CbmMCTrack *particle,      Double_t * const values);
-  static void FillVarPairAnalysisPair(    const PairAnalysisPair *pair,      Double_t * const values);
+  static void FillVarPairAnalysisPair(  const PairAnalysisPair *pair,    Double_t * const values);
   static void FillVarStsHit(            const CbmStsHit *hit,            Double_t * const values);
+  static void FillVarMuchHit(           const CbmMuchPixelHit *hit,      Double_t * const values);
+  static void FillVarMuchHit(           const CbmMuchStrawHit *hit,      Double_t * const values);
   static void FillVarTrdHit(            const CbmTrdHit *hit,            Double_t * const values);
   static void FillVarRichHit(           const CbmRichHit *hit,           Double_t * const values);
   static void FillVarTofHit(            const CbmTofHit *hit,            Double_t * const values);
@@ -395,15 +408,18 @@ inline void PairAnalysisVarManager::Fill(const TObject* object, Double_t * const
   else if (object->IsA() == PairAnalysisTrack::Class()) FillVarPairAnalysisTrack(static_cast<const PairAnalysisTrack*>(object),values);
   else if (object->IsA() == CbmGlobalTrack::Class())  FillVarGlobalTrack(    static_cast<const CbmGlobalTrack*>(object), values);
   else if (object->IsA() == CbmStsTrack::Class())     FillVarStsTrack(       static_cast<const CbmStsTrack*>(object),    values);
+  else if (object->IsA() == CbmMuchTrack::Class())    FillVarMuchTrack(      static_cast<const CbmMuchTrack*>(object),   values);
   else if (object->IsA() == CbmTrdTrack::Class())     FillVarTrdTrack(       static_cast<const CbmTrdTrack*>(object),    values);
   else if (object->IsA() == CbmRichRing::Class())     FillVarRichRing(       static_cast<const CbmRichRing*>(object),    values);
   else if (object->IsA() == CbmMCTrack::Class())      FillVarMCTrack(        static_cast<const CbmMCTrack*>(object),     values);
   else if (object->InheritsFrom(PairAnalysisPair::Class()))  FillVarPairAnalysisPair( static_cast<const PairAnalysisPair*>(object), values);
-  else if (object->IsA() == CbmStsHit::Class())       FillVarStsHit(         static_cast<const CbmStsHit*>(object),    values);
-  else if (object->IsA() == CbmTrdHit::Class())       FillVarTrdHit(         static_cast<const CbmTrdHit*>(object),    values);
-  else if (object->IsA() == CbmRichHit::Class())      FillVarRichHit(        static_cast<const CbmRichHit*>(object),   values);
-  else if (object->IsA() == CbmTofHit::Class())       FillVarTofHit(         static_cast<const CbmTofHit*>(object),    values);
-  else if (object->InheritsFrom(FairMCPoint::Class()))     FillVarMCPoint(   static_cast<const FairMCPoint*>(object),  values);
+  else if (object->IsA() == CbmStsHit::Class())       FillVarStsHit(         static_cast<const CbmStsHit*>(object),      values);
+  else if (object->IsA() == CbmMuchPixelHit::Class()) FillVarMuchHit(        static_cast<const CbmMuchPixelHit*>(object),values);
+  else if (object->IsA() == CbmMuchStrawHit::Class()) FillVarMuchHit(        static_cast<const CbmMuchStrawHit*>(object),values);
+  else if (object->IsA() == CbmTrdHit::Class())       FillVarTrdHit(         static_cast<const CbmTrdHit*>(object),      values);
+  else if (object->IsA() == CbmRichHit::Class())      FillVarRichHit(        static_cast<const CbmRichHit*>(object),     values);
+  else if (object->IsA() == CbmTofHit::Class())       FillVarTofHit(         static_cast<const CbmTofHit*>(object),      values);
+  else if (object->InheritsFrom(FairMCPoint::Class()))     FillVarMCPoint(   static_cast<const FairMCPoint*>(object),    values);
   else printf(Form("PairAnalysisVarManager::Fill: Type %s is not supported by PairAnalysisVarManager! \n", object->ClassName()));
 }
 
@@ -506,6 +522,7 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   // Set track specific variables
   Fill(track->GetGlobalTrack(), values);
   Fill(track->GetStsTrack(),    values);
+  Fill(track->GetMuchTrack(),   values);
   Fill(track->GetTrdTrack(),    values);
   Fill(track->GetRichRing(),    values);
 
@@ -521,6 +538,7 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
     values[kSTSFakeHits]    = track->GetTrackMatch(kSTS)->GetNofWrongHits();
   }
   values[kSTSisMC]   = track->TestBit( BIT(14+kSTS) );
+  values[kMUCHisMC]  = track->TestBit( BIT(14+kMUCH) );
   values[kTRDisMC]   = track->TestBit( BIT(14+kTRD) );
   values[kRICHisMC]  = track->TestBit( BIT(14+kRICH));
   values[kMVDisMC]   = track->TestBit( BIT(14+kMVD) );
@@ -710,7 +728,33 @@ inline void PairAnalysisVarManager::FillVarStsTrack(const CbmStsTrack *track, Do
 
 }
 
-inline void PairAnalysisVarManager::FillVarMCParticle(const CbmMCTrack *p1, const CbmMCTrack *p2, Double_t * const values) {
+inline void PairAnalysisVarManager::FillVarMuchTrack(const CbmMuchTrack *track, Double_t * const values)
+{
+  //
+  // Fill track information for the Much track into array
+  //
+
+  // Protect
+  if(!track) return;
+
+  // Calculate straw, (TODO:trigger) and pixel hits
+  values[kMUCHHitsPixel]  = 0.;
+  values[kMUCHHitsStraw]  = 0.;
+  for (Int_t ihit=0; ihit < track->GetNofHits(); ihit++){
+    Int_t idx = track->GetHitIndex(ihit);
+      Int_t hitType = track->GetHitType(ihit);
+      if      (hitType==kMUCHPIXELHIT) values[kMUCHHitsPixel]++;
+      else if (hitType==kMUCHSTRAWHIT) values[kMUCHHitsStraw]++;
+  }
+
+  // Set
+  // accessors via CbmTrack
+  values[kMUCHHits]        = track->GetNofHits();
+  values[kMUCHChi2NDF]     = (track->GetNDF()>0. ? track->GetChiSq()/track->GetNDF() : -999.);
+}
+
+inline void PairAnalysisVarManager::FillVarMCParticle(const CbmMCTrack *p1, const CbmMCTrack *p2, Double_t * const values)
+{
   //
   // fill 2 track information starting from MC legs
   //
@@ -819,7 +863,8 @@ inline void PairAnalysisVarManager::FillVarMCTrack(const CbmMCTrack *particle, D
   values[kRICHHitsMC]  = particle->GetNPoints(kRICH);
   values[kTRDHitsMC]   = particle->GetNPoints(kTRD);
   values[kMVDHitsMC]   = particle->GetNPoints(kMVD);
-  values[kSTSHitsMC]   = particle->GetNPoints(kSTS);  
+  values[kSTSHitsMC]   = particle->GetNPoints(kSTS);
+  values[kMUCHHitsMC]  = particle->GetNPoints(kMUCH);
 
 }
 
@@ -947,6 +992,47 @@ inline void PairAnalysisVarManager::FillVarStsHit(const CbmStsHit *hit, Double_t
 
   // Set
   // ...
+
+}
+
+inline void PairAnalysisVarManager::FillVarMuchHit(const CbmMuchPixelHit *hit, Double_t * const values)
+{
+  //
+  // Fill hit information for the much hit into array
+  //
+
+  // Protect
+  if(!hit) return;
+
+  // Reset array
+  ResetArrayData(  kHitMax,   values);
+
+  // accessors via CbmPixelHit & CbmHit
+  FillVarPixelHit(hit, values);
+
+  // Set
+  // ...
+
+}
+
+inline void PairAnalysisVarManager::FillVarMuchHit(const CbmMuchStrawHit *hit, Double_t * const values)
+{
+  //
+  // Fill hit information for the much hit into array
+  //
+
+  // Protect
+  if(!hit) return;
+
+  // Reset array
+  ResetArrayData(  kHitMax,   values);
+
+  // accessors via CbmHit
+  values[kPosZ]     = hit->GetZ();
+
+  // Set
+  values[kPosX]     = hit->GetX();
+  values[kPosY]     = hit->GetY();
 
 }
 

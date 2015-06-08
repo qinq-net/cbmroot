@@ -102,7 +102,12 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"RICHChi2NDF",            "#chi^{2}/^{}N_{df}^{RICH}",                          ""},
   {"RICHRadius",             "r_{}^{RICH}",                                        "(cm)"},
   //TOF track specific information
-  {"TOFHits",                "N_{hit}^{TOF}",                                     ""},
+  {"TOFHits",                "N_{hit}^{TOF}",                                      ""},
+  // MUCH track information
+  {"MUCHHits",               "N_{hit}^{MUCH}",                                     ""},
+  {"MUCHHitsPixel",          "N_{pixel hit}^{MUCH}",                               ""},
+  {"MUCHHitsStraw",          "N_{strip hit}^{MUCH}",                               ""},
+  {"MUCHChi2NDF",            "#chi^{2}/^{}N_{df}^{MUCH}",                          ""},
 
 // Pair specific variables
   {"Chi2NDF",                "#chi^{2}/^{}ndf",                                    ""},
@@ -212,6 +217,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"TRDHitsMC",                "N_{hit}^{TRD} (MC)",                                      ""},
   {"MVDHitsMC",                "N_{hit}^{MVD} (MC)",                                      ""},
   {"STSHitsMC",                "N_{hit}^{STS} (MC)",                                      ""},
+  {"MUCHHitsMC",               "N_{hit}^{MUCH} (MC)",                                      ""},
   {"RICHHitsMC",               "N_{hit}^{RICH} (MC)",                                     ""},
   {"TRDMCPoints",              "N_{MC,pts}^{TRD}",                                      ""},
   {"TRDTrueHits",              "N_{true,hit}^{TRD}",                                      ""},
@@ -221,6 +227,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"TRDisMC",                  "MC status TRD",                                    ""},
   {"MVDisMC",                  "MC status MVD",                                    ""},
   {"STSisMC",                  "MC status STS",                                    ""},
+  {"MUCHisMC",                 "MC status MUCH",                                    ""},
   {"RICHisMC",                 "MC status RICH",                                    ""},
   {"TOFisMC",                  "MC status TOF",                                    ""},
 
