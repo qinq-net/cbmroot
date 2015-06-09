@@ -12,7 +12,6 @@
 #include "CbmMvdPoint.h"
 #include "CbmGeoStsPar.h"
 #include "CbmGeoStsPar.h"
-#include "CbmStsDigiPar.h"
 #include "CbmMuchGeoScheme.h"
 #include "CbmTrdAddress.h"
 #include "CbmMCTrack.h"
