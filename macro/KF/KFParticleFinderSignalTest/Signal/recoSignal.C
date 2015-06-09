@@ -59,8 +59,11 @@ void recoSignal(Int_t nEvents = 10000) {
   run->SetOutputFile(outFile);
   // ------------------------------------------------------------------------
 
-
-
+  // ----- MC Data Manager   ------------------------------------------------
+  CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+  mcManager->AddFile(inFile);
+  run->AddTask(mcManager);
+  // ------------------------------------------------------------------------
 
   // =========================================================================
   // ===             Detector Response Simulation (Digitiser)              ===
