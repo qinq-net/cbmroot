@@ -12,7 +12,6 @@ public:
   CbmStsContFact();
   ~CbmStsContFact() {}
   FairParSet* createContainer(FairContainer*);
-  void  activateParIo(FairParIo* io);
   ClassDef( CbmStsContFact,0) // Factory for all STS parameter containers
 };
 

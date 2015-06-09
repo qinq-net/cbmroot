@@ -10,7 +10,6 @@ Set(LIBRARY_NAME Sts)
 # -----  Specify sources for compilation   ----------------
 # --- Sources in setup
 set(SRCS_SETUP
-#setup/CbmStsAddress.cxx
 setup/CbmStsElement.cxx
 setup/CbmStsModule.cxx
 setup/CbmStsSensor.cxx
@@ -44,11 +43,14 @@ reco/CbmStsFindHits.cxx
 set (SRCS_LEGACY
 legacy/CbmStsClusterFinder_old.cxx 
 legacy/CbmStsDigitizeTb.cxx 
+legacy/CbmStsDigiPar.cxx 
 legacy/CbmStsDigiScheme.cxx 
 legacy/CbmStsDigitize_old.cxx 
+legacy/CbmStsFindHitsQa.cxx
 legacy/CbmStsFindHits_old.cxx 
 legacy/CbmStsIdealDigitize.cxx 
 legacy/CbmStsIdealFindHits.cxx 
+legacy/CbmStsParAsciiFileIo.cxx 
 legacy/CbmStsRealClusterFinder.cxx 
 legacy/CbmStsRealDigitize.cxx 
 legacy/CbmStsRealFindHits.cxx 
@@ -65,7 +67,6 @@ ${SRCS_RECO}
 CbmGeoSts.cxx 
 CbmGeoStsPar.cxx 
 CbmStsContFact.cxx 
-CbmStsDigiPar.cxx 
 CbmStsFindTracks.cxx 
 CbmStsFindTracksQa.cxx 
 CbmStsFitTracks.cxx 
@@ -73,8 +74,6 @@ CbmStsHitProducerIdeal.cxx
 CbmStsIdealMatchHits.cxx 
 CbmStsMatchHits.cxx 
 CbmStsMatchTracks.cxx 
-CbmStsParAsciiFileIo.cxx 
-CbmStsParRootFileIo.cxx 
 CbmStsRadTool.cxx
 CbmStsSensorDigiPar.cxx 
 CbmStsSector.cxx 
@@ -83,7 +82,6 @@ CbmStsStationDigiPar.cxx
 CbmStsTrackFinderIdeal.cxx 
 CbmStsTrackFitterIdeal.cxx 
 CbmStsSimulationQa.cxx 
-CbmStsFindHitsQa.cxx
 CbmStsReconstructionQa.cxx
 CbmStsDigitizeQa.cxx
 )
@@ -97,7 +95,7 @@ ${CBMROOT_SOURCE_DIR}/sts
 ${CBMROOT_SOURCE_DIR}/sts/setup
 ${CBMROOT_SOURCE_DIR}/sts/mc
 ${CBMROOT_SOURCE_DIR}/sts/digitize
-${CBMROOT_SOURCE_DIR}/sts/legacy
+#${CBMROOT_SOURCE_DIR}/sts/legacy
 
 # needed by MatchHits???
 ${CBMROOT_SOURCE_DIR}/passive 

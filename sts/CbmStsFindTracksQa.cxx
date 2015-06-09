@@ -8,11 +8,10 @@
 
 #include "CbmStsHit.h"
 #include "CbmStsPoint.h"
+#include "CbmStsSetup.h"
 #include "CbmStsTrack.h"
 #include "CbmTrackMatch.h"
 #include "CbmGeoStsPar.h"
-#include "CbmStsDigiPar.h"
-#include "CbmStsDigiScheme.h"
 
 // Includes from base
 #include "FairGeoNode.h"
@@ -60,7 +59,6 @@ CbmStsFindTracksQa::CbmStsFindTracksQa(Int_t iVerbose)
     fMatches(NULL),
     fPassGeo(NULL),
     fStsGeo(NULL),
-    fDigiScheme(new CbmStsDigiScheme()),
     fDigiPar(NULL),
     fTargetPos(0.,0.,0.),
     fNStations(0),
@@ -124,7 +122,6 @@ CbmStsFindTracksQa::CbmStsFindTracksQa(Int_t minHits, Double_t quota,
     fMatches(NULL),
     fPassGeo(NULL),
     fStsGeo(NULL),
-    fDigiScheme(new CbmStsDigiScheme()),
     fDigiPar(),
     fTargetPos(0.,0.,0.),
     fNStations(0),
@@ -275,10 +272,6 @@ InitStatus CbmStsFindTracksQa::Init() {
 	 << endl;
     return kERROR;
   }
-
-  // Build digitisation scheme
-  Bool_t success = fDigiScheme->Init(fStsGeo, fDigiPar);
-  if ( ! success ) return kERROR;
 
 
   // Get the geometry of target and STS
@@ -596,7 +589,7 @@ InitStatus CbmStsFindTracksQa::GetGeometry() {
   // Get target geometry
   GetTargetPosition();
 
-  fNStations = fDigiScheme->GetNStations();
+  fNStations = CbmStsSetup::Instance()->GetNofDaughters();
 
 
   return kSUCCESS;

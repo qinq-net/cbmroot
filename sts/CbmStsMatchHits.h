@@ -29,8 +29,6 @@ using std::pair;
 class TClonesArray;
 class CbmGeoPassivePar;
 class CbmGeoStsPar;
-class CbmStsDigiPar;
-class CbmStsDigiScheme;
 class CbmStsHit;
 
 class CbmStsMatchHits : public FairTask
@@ -70,8 +68,6 @@ private:
 
     // -----  Data members ----------
     CbmGeoStsPar* fGeoPar;         /** Geometry parameter container **/
-    CbmStsDigiPar* fDigiPar;       /** Digitisation parameter container **/
-    CbmStsDigiScheme* fDigiScheme; /** Digitisation scheme **/
     TClonesArray* fPoints;         /** Array of CbmStsPoint **/
     TClonesArray* fDigis;          /** Array of CbmStsDigi **/
     TClonesArray* fDigiMatches;    /** Array of CbmMatch **/

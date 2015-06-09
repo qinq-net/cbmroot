@@ -40,7 +40,6 @@
 #pragma link C++ class CbmGeoSts+;
 #pragma link C++ class CbmGeoStsPar;
 #pragma link C++ class CbmStsContFact;
-#pragma link C++ class CbmStsDigiPar;
 #pragma link C++ class CbmStsFindTracks+;
 #pragma link C++ class CbmStsFindTracksQa+;
 #pragma link C++ class CbmStsFitTracks+;
@@ -48,8 +47,6 @@
 #pragma link C++ class CbmStsIdealMatchHits+;
 #pragma link C++ class CbmStsMatchHits+;
 #pragma link C++ class CbmStsMatchTracks+;
-#pragma link C++ class CbmStsParAsciiFileIo;
-#pragma link C++ class CbmStsParRootFileIo;
 #pragma link C++ class CbmStsRadTool;
 #pragma link C++ class CbmStsSector+;
 #pragma link C++ class CbmStsSensorDigiPar+;
@@ -58,7 +55,6 @@
 #pragma link C++ class CbmStsTrackFinderIdeal+;
 #pragma link C++ class CbmStsTrackFitterIdeal+;
 #pragma link C++ class CbmStsSimulationQa+;
-#pragma link C++ class CbmStsFindHitsQa+;
 #pragma link C++ class CbmStsReconstructionQa+;
 #pragma link C++ class CbmStsDigitizeQa+;
 

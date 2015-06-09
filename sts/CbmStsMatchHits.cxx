@@ -5,6 +5,10 @@
 // -----                  Created 01/07/2008  by R. Karabowicz         -----
 // -------------------------------------------------------------------------
 
+//TODO: This class has to be re-worked. It is probably obsolete with the
+//introduction of CbmLink/CbmMatch. Anyhow, it should be united with
+//CbmStsidealMatchHits and CbmStsRealMatchHits.
+
 // --- Includes from ROOT
 #include "TClonesArray.h"
 
@@ -16,13 +20,11 @@
 // --- Includes from STS
 #include "CbmGeoStsPar.h"
 #include "CbmGeoPassivePar.h"
-#include "CbmStsDigiPar.h"
-#include "CbmStsDigiScheme.h"
 #include "CbmStsHit.h"
 #include "CbmStsMatchHits.h"
 #include "CbmStsPoint.h"
-#include "CbmStsSector.h"
-#include "CbmStsStation_old.h"
+#include "CbmStsSetup.h"
+#include "CbmStsStation.h"
 #include "FairGeoVector.h"
 #include "FairGeoNode.h"
 #include "CbmStsAddress.h"
@@ -41,8 +43,6 @@ using namespace std;
 CbmStsMatchHits::CbmStsMatchHits()
     : FairTask("CbmStsMatchHits")
     , fGeoPar(NULL)
-    , fDigiPar(NULL)
-    , fDigiScheme(NULL)
     , fPoints(NULL)
     , fDigis(NULL)
     , fDigiMatches(NULL)
@@ -63,7 +63,6 @@ CbmStsMatchHits::CbmStsMatchHits()
     , fCandMap()
     , fIter()
 {
-    fDigiScheme = new CbmStsDigiScheme();
 }
 
 // -----   Destructor   ----------------------------------------------------
@@ -73,10 +72,6 @@ CbmStsMatchHits::~CbmStsMatchHits()
         delete fPassGeo;
     if (fGeoPar)
         delete fGeoPar;
-    if (fDigiPar)
-        delete fDigiPar;
-    if (fDigiScheme)
-        delete fDigiScheme;
 }
 // -------------------------------------------------------------------------
 
@@ -113,11 +108,9 @@ void CbmStsMatchHits::Exec(Option_t* opt)
         }
 
         // Determine sector type and channel numbers
-        Int_t iStation = CbmStsAddress::GetElementId(hit->GetAddress(), kStsStation); // hit->GetStationNr();
-        Int_t iSector = hit->GetSectorNr();
-        CbmStsStation_old* station = fDigiScheme->GetStationByNr(iStation);
-        CbmStsSector* sector = fDigiScheme->GetSector(iStation, iSector);
-        Int_t iType = sector->GetType();
+        CbmStsStation* station = dynamic_cast<CbmStsStation*>
+        	(CbmStsSetup::Instance()->GetElement(hit->GetAddress(), kStsStation));
+        Int_t iType = 2; //FIXME: Hardcoded sensor type (DSSD)
         CbmMatch* dMatchF = NULL;
         CbmMatch* dMatchB = NULL;
 
@@ -493,7 +486,6 @@ void CbmStsMatchHits::SetParContainers()
     // Get STS geometry and digitisation parameter container
     fPassGeo = (CbmGeoPassivePar*)db->getContainer("CbmGeoPassivePar");
     fGeoPar = (CbmGeoStsPar*)db->getContainer("CbmGeoStsPar");
-    fDigiPar = (CbmStsDigiPar*)db->getContainer("CbmStsDigiPar");
 }
 // -------------------------------------------------------------------------
 
@@ -541,23 +533,7 @@ InitStatus CbmStsMatchHits::Init()
         return geoStatus;
     }
 
-    // Build digitisation scheme
-
-    if (fDigiScheme->Init(fGeoPar, fDigiPar))
-    {
-
-        if (fVerbose == 1 || fVerbose == 2)
-            fDigiScheme->Print(kFALSE);
-        else if (fVerbose > 2)
-            fDigiScheme->Print(kTRUE);
-        cout << "-I- " << fName << "::Init: "
-             << "STS digitisation scheme succesfully initialised" << endl;
-        cout << "    Stations: " << fDigiScheme->GetNStations() << ", Sectors: " << fDigiScheme->GetNSectors() << ", Channels: " << fDigiScheme->GetNChannels()
-             << endl;
-        return kSUCCESS;
-    }
-
-    return kERROR;
+    return kSUCCESS;
 }
 // -------------------------------------------------------------------------
 
@@ -565,12 +541,6 @@ InitStatus CbmStsMatchHits::Init()
 InitStatus CbmStsMatchHits::ReInit()
 {
 
-    // Clear digitisation scheme
-    fDigiScheme->Clear();
-
-    // Build new digitisation scheme
-    if (fDigiScheme->Init(fGeoPar, fDigiPar))
-        return kSUCCESS;
 
     InitStatus geoStatus = GetGeometry();
     if (geoStatus != kSUCCESS)
@@ -601,19 +571,7 @@ InitStatus CbmStsMatchHits::GetGeometry()
         fTargetPos.SetXYZ(0., 0., 0.);
         return kERROR;
     }
-    /*  FairGeoNode* target = (FairGeoNode*) passNodes->FindObject("targ");
-    if ( ! target ) {
-      cout << "-E- " << GetName() << "::GetGeometry: No target node"
-       << endl;
-      fTargetPos.SetXYZ(0., 0., 0.);
-      return kERROR;
-    }
-    FairGeoVector targetPos = target->getLabTransform()->getTranslation();
-    FairGeoVector centerPos = target->getCenterPosition().getTranslation();
-    Double_t targetX = targetPos.X() + centerPos.X();
-    Double_t targetY = targetPos.Y() + centerPos.Y();
-    Double_t targetZ = targetPos.Z() + centerPos.Z();
-    fTargetPos.SetXYZ(targetX, targetY, targetZ);*/
+
 
     // Get STS geometry
     if (!fGeoPar)
