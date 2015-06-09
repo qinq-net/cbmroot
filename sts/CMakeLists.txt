@@ -43,30 +43,29 @@ reco/CbmStsFindHits.cxx
 # --- Legacy sources
 set (SRCS_LEGACY
 legacy/CbmStsClusterFinder_old.cxx 
+legacy/CbmStsDigitizeTb.cxx 
+legacy/CbmStsDigiScheme.cxx 
 legacy/CbmStsDigitize_old.cxx 
 legacy/CbmStsFindHits_old.cxx 
+legacy/CbmStsIdealDigitize.cxx 
+legacy/CbmStsIdealFindHits.cxx 
+legacy/CbmStsRealClusterFinder.cxx 
+legacy/CbmStsRealDigitize.cxx 
+legacy/CbmStsRealFindHits.cxx 
 legacy/CbmStsSensor_old.cxx
 legacy/CbmStsStation_old.cxx
-# --- Legacy, not compiled any longer
-# legacy/CbmStsIdealDigitize.cxx 
-# legacy/CbmStsIdealFindHits.cxx 
-# legacy/CbmStsRealClusterFinder.cxx 
-# legacy/CbmStsRealDigitize.cxx 
-# legacy/CbmStsRealFindHits.cxx 
 )
+
 # --- All sources
 set(SRCS
 ${SRCS_SETUP}
 ${SRCS_MC}
 ${SRCS_DIGITIZE}
 ${SRCS_RECO}
-${SRCS_LEGACY}
 CbmGeoSts.cxx 
 CbmGeoStsPar.cxx 
 CbmStsContFact.cxx 
 CbmStsDigiPar.cxx 
-CbmStsDigiScheme.cxx 
-CbmStsDigitizeTb.cxx 
 CbmStsFindTracks.cxx 
 CbmStsFindTracksQa.cxx 
 CbmStsFitTracks.cxx 

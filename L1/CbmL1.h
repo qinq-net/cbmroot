@@ -27,7 +27,6 @@
 #include "FairTask.h"
 #include "FairRootManager.h"
 #include "FairDetector.h"
-#include "CbmStsDigiScheme.h"
 
 #include "CbmMCTrack.h"
 #include "CbmStsPoint.h"
@@ -169,7 +168,6 @@ class CbmL1 : public FairTask
    Bool_t fUseMVD;  // really doesn't used
 //   Double_t fDetectorEfficiency;  // really doesn't used
 
-   CbmStsDigiScheme StsDigi;
    CbmL1Vtx PrimVtx;
 //    L1FieldSlice *targetFieldSlice  _fvecalignment;
 

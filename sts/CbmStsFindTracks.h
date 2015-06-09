@@ -18,7 +18,6 @@
 #ifndef CBMSTSFINDTRACKS
 #define CBMSTSFINDTRACKS 1
 
-#include "CbmStsDigiScheme.h"
 #include "CbmStsTrackFinder.h"
 
 #include "FairTask.h"
@@ -80,7 +79,7 @@ class CbmStsFindTracks : public FairTask
   Bool_t             fUseMvd;      // Inclusion of MVD hits
   CbmGeoStsPar*      fGeoPar;      // STS geometry parameters
   CbmStsDigiPar*     fDigiPar;     // STS digitisation parameters
-  CbmStsDigiScheme*  fDigiScheme;  // STS digitisation scheme
+  //CbmStsDigiScheme*  fDigiScheme;  // STS digitisation scheme
   FairField*         fField;       // Magnetic field
   CbmStsTrackFinder* fFinder;      // TrackFinder concrete class
   TClonesArray*      fMvdHits ;    // Input array of MVD hits

@@ -11,8 +11,6 @@
 #include "FairMCPoint.h"
 #include "CbmMvdPoint.h"
 #include "CbmGeoStsPar.h"
-#include "legacy/CbmStsSensor_old.h"
-#include "CbmStsDigiScheme.h"
 #include "CbmGeoStsPar.h"
 #include "CbmStsDigiPar.h"
 #include "CbmMuchGeoScheme.h"
@@ -47,8 +45,6 @@ CbmLitMCTrackCreator::CbmLitMCTrackCreator():
    FairRuntimeDb* db = FairRunAna::Instance()->GetRuntimeDb();
    fStsGeoPar = (CbmGeoStsPar*) db->getContainer("CbmGeoStsPar");
    fStsDigiPar = (CbmStsDigiPar*) db->getContainer("CbmStsDigiPar");
-   fStsDigiScheme  = new CbmStsDigiScheme();
-   fStsDigiScheme->Init(fStsGeoPar, fStsDigiPar);
 
    fTauFit = new CbmRichRingFitterEllipseTau();
 }
@@ -358,18 +354,9 @@ void CbmLitMCTrackCreator::FillStationMaps()
 	   Int_t nofStsPoints = fStsPoints->GetEntriesFast();
 	   for (Int_t iPoint = 0; iPoint < nofStsPoints; iPoint++) {
 		   const CbmStsPoint* point = static_cast<const CbmStsPoint*>(fStsPoints->At(iPoint));
-		   Double_t xin = point->GetXIn();
-		   Double_t yin = point->GetYIn();
-		   Double_t zin = point->GetZIn();
-		   gGeoManager->FindNode(xin, yin, zin);
-		   TGeoNode* curNode = gGeoManager->GetCurrentNode();  // only needed for old geometries
-		   CbmStsSensor_old* sensor = (fStsDigiScheme->IsNewGeometry()) ?
-				   fStsDigiScheme->GetSensorByName(fStsDigiScheme->GetCurrentPath()) :
-                       fStsDigiScheme->GetSensorByName(curNode->GetName());
-		   if (sensor != NULL) {
-		      Int_t stationId = sensor->GetStationNr() - 1;
-		      fStsStationsMap[iPoint] = stationId;
-		   }
+		   UInt_t address = point->GetDetectorID();
+		   Int_t stationId = CbmStsAddress::GetElementId(address, kStsStation);
+	     fStsStationsMap[iPoint] = stationId;
 	   }
    }
    // end STS

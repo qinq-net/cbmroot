@@ -18,7 +18,6 @@
 
 #include "FairField.h"
 #include "FairTask.h"
-#include "CbmStsDigiScheme.h"
 
 #include <iostream>
 #include <map>
@@ -87,10 +86,7 @@ class CbmKF :public FairTask {
 
   Int_t GetMethod(){ return fMethod; }
 
-  CbmStsDigiScheme StsDigi;
-
   int GetNMvdStations() const { return CbmKF::Instance()->vMvdMaterial.size(); }
-  int GetNStsStations() const { return const_cast<CbmStsDigiScheme*>(&StsDigi)->GetNStations();}
 
  private:
   

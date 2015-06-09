@@ -15,12 +15,12 @@
 #include "CbmGeoStsPar.h"
 #include "CbmGeoRichPar.h"
 #include "CbmGeoTrdPar.h"
-//#include "CbmGeoSttPar.h" //AZ
 #include "CbmGeoTofPar.h"
 #include "CbmGeoMuchPar.h"
 #include "CbmGeoPassivePar.h"
 #include "setup/CbmStsSetup.h"
 #include "setup/CbmStsStation.h"
+#include "CbmStsDigiPar.h"
 #include "FairRuntimeDb.h"
 
 #include "../mvd/tools/CbmMvdGeoHandler.h"
@@ -68,7 +68,6 @@ CbmKF::CbmKF(const char *name, Int_t iVerbose ):
   MuchMCID2StationMap(),
   MuchStation2MCIDMap(),
 
-  StsDigi(),
   fMagneticField(0),
   fMethod(1),
   fMaterialID2IndexMap()
@@ -99,7 +98,6 @@ void CbmKF::SetParContainers()
 
 InitStatus CbmKF::ReInit()
 {
-  StsDigi.Clear();
   return Init();
 }
 
@@ -136,7 +134,6 @@ InitStatus CbmKF::Init()
   {
     CbmGeoStsPar* StsPar = reinterpret_cast<CbmGeoStsPar*>(RunDB->findContainer("CbmGeoStsPar"));
     CbmStsDigiPar *digiPar = reinterpret_cast<CbmStsDigiPar*>(RunDB->findContainer("CbmStsDigiPar"));
-    StsDigi.Init(StsPar, digiPar);
   }
 
   if( fVerbose ) cout<<"KALMAN FILTER : === INIT MAGNETIC FIELD ==="<<endl;
@@ -205,7 +202,7 @@ InitStatus CbmKF::Init()
     
     if( fVerbose ) cout<<"KALMAN FILTER : === READ STS MATERIAL ==="<<endl;
 
-    int NStations = StsDigi.GetNStations();
+    int NStations = CbmStsSetup::Instance()->GetNofDaughters();
 
     for ( Int_t ist = 0; ist<NStations; ist++ )
       {

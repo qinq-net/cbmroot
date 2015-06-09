@@ -8,6 +8,7 @@
 #define CBMLITMCTRACKCREATOR_H_
 
 #include "CbmLitMCTrack.h"
+#include "CbmStsAddress.h"
 #include <map>
 #include <iostream>
 #include <assert.h>
@@ -20,7 +21,6 @@ class CbmTrdPoint;
 class CbmMuchPoint;
 class CbmGeoStsPar;
 class CbmStsDigiPar;
-class CbmStsDigiScheme;
 class CbmRichRingFitterEllipseTau;
 
 /**
@@ -168,7 +168,6 @@ private:
 
    CbmGeoStsPar* fStsGeoPar; // Geometry parameter container
    CbmStsDigiPar* fStsDigiPar; // Digitisation parameter container
-   CbmStsDigiScheme* fStsDigiScheme;   // Digitisation scheme
 
    CbmRichRingFitterEllipseTau* fTauFit; // Ellipse fitter algorithm
 

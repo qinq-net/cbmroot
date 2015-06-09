@@ -70,7 +70,6 @@ fMomentumCutOff(0.1),  // really doesn't used
 fGhostSuppression(1),  // really doesn't used
 fUseMVD(0),  // really doesn't used
 
-StsDigi(),
 PrimVtx(),
 
 listMCTracks (0),
@@ -112,7 +111,6 @@ fMomentumCutOff(0.1),  // really doesn't used
 fGhostSuppression(1),  // really doesn't used
 fUseMVD(0),  // really doesn't used
 
-StsDigi(),
 PrimVtx(),
 
 listMCTracks (0),
@@ -158,7 +156,6 @@ void CbmL1::SetParContainers()
 
 InitStatus CbmL1::ReInit()
 {
-  StsDigi.Clear();
   SetParContainers();
   return Init();
 }
@@ -206,7 +203,6 @@ InitStatus CbmL1::Init()
   {
     CbmGeoStsPar* StsPar = L1_DYNAMIC_CAST<CbmGeoStsPar*>( RunDB->findContainer("CbmGeoStsPar") );
     CbmStsDigiPar *digiPar = L1_DYNAMIC_CAST<CbmStsDigiPar*>( RunDB->findContainer("CbmStsDigiPar") );
-    StsDigi.Init(StsPar, digiPar);
   }
   {
     fUseMVD = 1;
@@ -275,7 +271,7 @@ InitStatus CbmL1::Init()
   }
       
   NMvdStations = ( fUseMVD ) ? CbmKF::Instance()->vMvdMaterial.size() : 0;
-  NStsStations = StsDigi.GetNStations();
+  NStsStations = CbmStsSetup::Instance()->GetNofDaughters();
   NStation = NMvdStations + NStsStations;
   geo[ind++] = NStation;
   geo[ind++] = NMvdStations;

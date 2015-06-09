@@ -36,7 +36,7 @@ CbmStsFindTracks::CbmStsFindTracks()
     fUseMvd(kFALSE),
     fGeoPar(NULL),
     fDigiPar(NULL),
-    fDigiScheme(new CbmStsDigiScheme()),
+ //   fDigiScheme(new CbmStsDigiScheme()),
     fField(NULL),
     fFinder(new CbmStsTrackFinderIdeal(1)),
     fMvdHits(NULL),
@@ -62,7 +62,7 @@ CbmStsFindTracks::CbmStsFindTracks(Int_t iVerbose,
     fUseMvd(useMvd),
     fGeoPar(NULL),
     fDigiPar(NULL),
-    fDigiScheme(new CbmStsDigiScheme()),
+ //   fDigiScheme(new CbmStsDigiScheme()),
     fField(NULL),
     fFinder(NULL),
     fMvdHits(NULL),
@@ -83,7 +83,7 @@ CbmStsFindTracks::CbmStsFindTracks(Int_t iVerbose,
 
 // -----   Destructor   ----------------------------------------------------
 CbmStsFindTracks::~CbmStsFindTracks() {
-  if ( fDigiScheme ) delete fDigiScheme;
+ // if ( fDigiScheme ) delete fDigiScheme;
   fTracks->Delete();
   if ( fFinder) delete fFinder;
 }
@@ -167,6 +167,7 @@ InitStatus CbmStsFindTracks::Init() {
   ioman->Register("StsTrack", "STS", fTracks, kTRUE);
 
   // Build digitisation scheme
+  /*
   if ( fDigiScheme->Init(fGeoPar, fDigiPar) ) {
     if      (fVerbose == 1 || fVerbose == 2) fDigiScheme->Print(kFALSE);
     else if (fVerbose >  2) fDigiScheme->Print(kTRUE);
@@ -176,6 +177,7 @@ InitStatus CbmStsFindTracks::Init() {
 	 << ", Sectors: " << fDigiScheme->GetNSectors() << ", Channels: " 
 	 << fDigiScheme->GetNChannels() << endl;
   }
+	 */
 
   // Check for Track finder
   if (! fFinder) {
@@ -188,7 +190,7 @@ InitStatus CbmStsFindTracks::Init() {
 
 
   // Set members of track finder and verbosity and initialise track finder
-  fFinder->SetDigiScheme(fDigiScheme);
+  //fFinder->SetDigiScheme(fDigiScheme);
   fFinder->SetField(fField);
   fFinder->SetMvdHitArray(fMvdHits);
   fFinder->SetStsHitArray(fStsHits);
