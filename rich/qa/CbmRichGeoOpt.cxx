@@ -445,7 +445,7 @@ void CbmRichGeoOpt::InitHistograms()
   H_Diff_LineRefPMT_MomAtPMT= new TH1D("H_Diff_LineRefPMT_MomAtPMT", "H_Diff_LineRefPMT_MomAtPMT;#Delta [cm]; Yield", 100, -10., 10.);
 
   H_Theta_TwoVectors= new TH1D("H_Theta_TwoVectors", "H_Theta_TwoVectors;#theta [deg]; Yield", 100, 0., 10.);
-  H_MomPrim = new TH1D("H_MomPrim", "H_MomPrim;p [GeV]; Yield", 100, 0., 10.);
+  H_MomPrim = new TH1D("H_MomPrim", "H_MomPrim;p [GeV]; Yield", 48, 0., 12.);
   H_PtPrim = new TH1D("H_PtPrim", "H_PtPrim;p [GeV]; Yield", 80, 0., 4.);
   H_MomPt = new TH2D("H_MomPt", "H_MomPt;p [GeV];pt [GeV]; Yield", 100, 0., 10., 80, 0., 4.);
 
@@ -486,7 +486,7 @@ void CbmRichGeoOpt::InitHistograms()
 
   //////////////////////////////////////
   // Detector acceptance efficiency vs. (pt,y) and p
-  H_acc_mom_el = new TH1D("H_acc_mom_el", "H_acc_mom_el;p [GeV/c];Yield", 24, 0., 12.);
+  H_acc_mom_el = new TH1D("H_acc_mom_el", "H_acc_mom_el;p [GeV/c];Yield", 48, 0., 12.);
   H_acc_pty_el = new TH2D("H_acc_pty_el", "H_acc_pty_el;Rapidity;P_{t} [GeV/c];Yield",25, 0., 4., 20, 0., 3.);
   //////////////////////////////////
 
