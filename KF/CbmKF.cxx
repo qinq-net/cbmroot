@@ -20,7 +20,6 @@
 #include "CbmGeoPassivePar.h"
 #include "setup/CbmStsSetup.h"
 #include "setup/CbmStsStation.h"
-#include "CbmStsDigiPar.h"
 #include "FairRuntimeDb.h"
 
 #include "../mvd/tools/CbmMvdGeoHandler.h"
@@ -93,7 +92,6 @@ void CbmKF::SetParContainers()
   rtdb->getContainer("CbmGeoTofPar");
   rtdb->getContainer("CbmGeoSttPar"); //AZ
   rtdb->getContainer("CbmFieldPar");
-  rtdb->getContainer("CbmStsDigiPar");
 }
 
 InitStatus CbmKF::ReInit()

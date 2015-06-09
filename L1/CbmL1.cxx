@@ -148,7 +148,6 @@ void CbmL1::SetParContainers()
   FairRuntimeDb* rtdb=ana->GetRuntimeDb();
   rtdb->getContainer("CbmGeoPassivePar");
   rtdb->getContainer("CbmGeoStsPar");
-  rtdb->getContainer("CbmStsDigiPar");
 }
 
 InitStatus CbmL1::ReInit()
