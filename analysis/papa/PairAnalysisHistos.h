@@ -62,7 +62,7 @@ public:
   TBits *GetUsedVars()  const { return fUsedVars; }
   void SetReservedWords(const char* words);
   void AddClass(        const char* histClass);
-  void UserHistogram(   const char* histClass, TObject* hist);
+  TString UserHistogram(   const char* histClass, TObject* hist);
   static void AdaptNameTitle(TH1 *hist, const char* histClass);
   static void StoreVariables(TObject *obj, UInt_t valType[20]);
   static void StoreVariables(TH1 *obj,     UInt_t valType[20]);
@@ -185,6 +185,8 @@ public:
   virtual void Print(const Option_t* option = "") const;
   virtual void Draw(const Option_t* option = "");
   virtual void DrawSame(TString histName, const Option_t *opt="leg can");
+  /* virtual void DrawRatioSame(TString histName, TString histClassDenom, const Option_t *opt="leg can"); */
+  /* virtual void DrawEfficiencySame(TString histName, const Option_t *opt="leg can"); */
 
   static Int_t GetPrecision(Double_t value);
 

@@ -245,7 +245,7 @@ void PairAnalysisHistos::AddSparse(const char* histClass, Int_t ndim, TObjArray 
 }
 
 //_____________________________________________________________________________
-void PairAnalysisHistos::UserHistogram(const char* histClass, TObject* hist)
+TString PairAnalysisHistos::UserHistogram(const char* histClass, TObject* hist)
 {
   //
   // Add any type of user histogram
@@ -255,10 +255,10 @@ void PairAnalysisHistos::UserHistogram(const char* histClass, TObject* hist)
   Bool_t isReserved=fReservedWords->Contains(histClass);
   if (isReserved) {
     UserHistogramReservedWords(histClass, hist);
-    return;
+    return hist->GetName();
   }
 
-  if (!IsHistogramOk(histClass,hist->GetName())) return;
+  if (!IsHistogramOk(histClass,hist->GetName())) return hist->GetName();
   THashList *classTable=(THashList*)fHistoList.FindObject(histClass);
   //  hist->SetDirectory(0);
 
@@ -270,13 +270,13 @@ void PairAnalysisHistos::UserHistogram(const char* histClass, TObject* hist)
   TString hclass=histClass;
   if(hclass.Contains("MCtruth")) {
     for(Int_t i=0;i<2;i++) {
-      //	Printf("SWITCH TO MC: before: %d %s ---->",valType[i],PairAnalysisVarManager::GetValueName(valType[i]));
+      //      Printf("SWITCH TO MC: before: %d %s ---->",valType[i],PairAnalysisVarManager::GetValueName(valType[i]));
       valType[i] = PairAnalysisVarManager::GetValueTypeMC(valType[i]);
       // if theres no corresponding MCtruth variable, skip adding this histogram
-      if(valType[i] < PairAnalysisVarManager::kNMaxValues && valType[i]>0) return;
+      if(valType[i] < PairAnalysisVarManager::kNMaxValues && valType[i]>0) return hist->GetName();
       // request filling of mc variable
       fUsedVars->SetBitNumber(valType[i],kTRUE);
-      //	Printf("after: %d %s",valType[i],PairAnalysisVarManager::GetValueName(valType[i]));
+      //      Printf("after: %d %s",valType[i],PairAnalysisVarManager::GetValueName(valType[i]));
     }
     StoreVariables(hist, valType);
     hist->SetUniqueID(valType[19]); // store weighting variable
@@ -287,16 +287,16 @@ void PairAnalysisHistos::UserHistogram(const char* histClass, TObject* hist)
       for(Int_t i=0; i<f->GetNpar(); i++) {
 	Int_t parMC=PairAnalysisVarManager::GetValueTypeMC(f->GetParameter(i));
 	// if theres none corresponding MCtruth variable, skip adding this histogram
-	if(parMC < PairAnalysisVarManager::kNMaxValues) return;
+	if(parMC < PairAnalysisVarManager::kNMaxValues) return hist->GetName();
 	f->SetParameter(   i, parMC );
 	f->SetParName(     i, PairAnalysisVarManager::GetValueName(parMC)   );
 	fUsedVars->SetBitNumber(parMC,kTRUE);
       }
     }
     // change histogram key according to mctruth information
-    //      Printf("SWITCH TO MC NAME: before: %s ---->",hist->GetName());
+    //    Printf("SWITCH TO MC NAME: before: %s ---->",hist->GetName());
     AdaptNameTitle((TH1*)hist, histClass);
-    //      Printf("after:  %s",hist->GetName());
+    //    Printf("after:  %s",hist->GetName());
   }
   else {
     StoreVariables(hist, valType);
@@ -304,7 +304,7 @@ void PairAnalysisHistos::UserHistogram(const char* histClass, TObject* hist)
   }
 
   classTable->Add(hist);
-  return;
+  return hist->GetName();
 }
 
 //_____________________________________________________________________________
@@ -780,17 +780,21 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt)
   // if option contains 'norm' the objects are normalized to 1
   // if option contains 'logx,y,z' the axis are plotted in log
   // if option contains 'meta' the meta data are plotted
+  // if option contains 'nomc' mc signals are not plotted
+  // if option contains 'eff' efficiencies are plotted
   //
 
-  Printf("hist: %s",histName.Data());
+  Printf("<PairAnalysisHistos::DrawSame>: hist: %s",histName.Data());
   TString optString(opt);
   optString.ToLower();
-  Bool_t optNoMC=optString.Contains("nomc");
-  Bool_t optRbn=optString.Contains("rebin");
-  Bool_t optLeg=optString.Contains("leg");
-  Bool_t optCan=optString.Contains("can");
-  Bool_t optNorm=optString.Contains("norm");
-  Bool_t optMeta=optString.Contains("meta");
+  Bool_t optEff  =optString.Contains("eff");
+  Bool_t optNoMC =optString.Contains("nomc");
+  Bool_t optRbn  =optString.Contains("rebin");
+  Bool_t optLeg  =optString.Contains("leg");
+  Bool_t optCan  =optString.Contains("can");
+  Bool_t optNorm =optString.Contains("norm");
+  Bool_t optMeta =optString.Contains("meta");
+  optString.ReplaceAll("eff","");
   optString.ReplaceAll("nomc","");
   optString.ReplaceAll("rebin","");
   optString.ReplaceAll("leg","");
@@ -806,12 +810,16 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt)
     //    c->Clear();
     c->cd();
   }
-  Int_t nobj = gPad->GetListOfPrimitives()->GetEntries();
+  TList *prim = gPad->GetListOfPrimitives();
+  Int_t nobj  = prim->GetEntries();
   // if(nobj) {Printf("canvas has %d entries",nobj);
   //   gPad->GetListOfPrimitives()->ls();
   // }
 
-  if (optLeg) leg=new TLegend(.75,.3,1.-gPad->GetTopMargin(),1-gPad->GetRightMargin(),GetName(),"nbNDC");
+  if (optLeg) leg=new TLegend(.75,.3,
+			      1.-gPad->GetTopMargin()-gStyle->GetTickLength("X"),
+			      1.-gPad->GetRightMargin()-gStyle->GetTickLength("Y"),
+			      GetName(),"nbNDC");
   //  else if(optLeg)      leg=(TLegend*)gPad->GetListOfPrimitives()->Last();
 
   // logaritmic style
@@ -830,32 +838,54 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt)
   TH1 *hFirst=0x0;
   while ( (classTable=(THashList*)next()) ){
     TString iname=classTable->GetName();
-    if(optNoMC) {
-      TObjArray *arr = iname.Tokenize("_");
-      if(arr->GetEntriesFast()>2) {
-	delete arr;
-	continue;
-      }
-      else
-	delete arr;
-    }
 
+    Int_t ndel = iname.CountChar('_');
+    Info("DrawSame","class name %s \t hist name %s \t ndel=%d",iname.Data(),histName.Data(),ndel);
+
+    // check MC options
+    if( (optNoMC && ndel>1) || (optEff && ndel<1) ) continue;
+
+    // find the histogram in the class table
     if ( TH1 *h=(TH1*)classTable->FindObject(histName.Data()) ){
+
+      // check if efficiency caluclation is possible
+      if(optEff && (!fHistoList.FindObject( Form("%s_MCtruth",iname.Data()) ) || iname.Contains("_MCtruth")) ) continue;
+
       if(iname.Contains("Hit")) Printf("class name: %s optMC %d ",iname.Data(),optNoMC);
       if (i==0) hFirst=h;
+
+      // style
       h->UseCurrentStyle();
       h->SetTitle("");
       PairAnalysisStyler::Style(h,i);
+
       // set geant process labels
       // if(!histName.CompareTo("GeantId")) PairAnalysisHelper::SetGEANTBinLabels(h);
-      if(optRbn)  h->Rebin();
-      if(optNorm) h=h->DrawNormalized(i>0?(optString+"same").Data():optString.Data());
-      else        h->Draw(i>0?(optString+"same").Data():optString.Data());
+
+      // drawing
+      if(optRbn)       h->Rebin();
+      if(optNorm)      h=h->DrawNormalized(i>0?(optString+"same").Data():optString.Data());
+      else if(optEff)  {
+	TString    clMC     = iname+"_MCtruth";
+	THashList *clDenom  = (THashList*)fHistoList.FindObject( clMC.Data() );
+	TH1 *hMC = (TH1*) h->Clone(); // needed to preserve the labeling of non-mc histogram
+	TH1 *hdenom         = (TH1*) clDenom->FindObject( UserHistogram(clMC.Data(),hMC).Data() );
+	if(optRbn)       hdenom->Rebin();
+	delete hMC; //delete the surplus object
+	// set title
+	switch(h->GetDimension()) {
+	case 1: h->SetYTitle("Efficiency"); break;
+	case 2: h->SetZTitle("Efficiency"); break;
+	}
+	if(hdenom && h->Divide(hdenom))  h->Draw(i>0?(optString+"same").Data():optString.Data());
+	else                            { Warning("DrawSame(eff)","Division failed!!!!"); continue; }
+      }
+      else             h->Draw(i>0?(optString+"same").Data():optString.Data());
 
       // protection e.g. normalization not possible TProfile
       if(h && h->GetEntries()>0.) {
 
-	// adapt legend name - remove reserved works prefixes
+	// adapt legend name - remove reserved words prefixes
 	iname.ReplaceAll("_"," ");
 	// remove reserved words
 	TObjArray *reservedWords = fReservedWords->Tokenize(":;");
@@ -867,6 +897,12 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt)
 	  iname.ReplaceAll(PairAnalysisSignalMC::fgkSignals[isig][0],PairAnalysisSignalMC::fgkSignals[isig][1]);
 	iname.Remove(TString::kBoth,' ');
 
+	// add efficiency to to legend
+	// if(optEff) {
+	//   iname.Prepend("#epsilon(");
+	//   iname.Append(")");
+	// }
+
 	// modify legend option
 	TString legOpt = optString+"L";
 	legOpt.ReplaceAll("hist","");
@@ -876,15 +912,19 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt)
 	//      if (leg) leg->AddEntry(h,classTable->GetName(),(optString+"L").Data());
 	max=TMath::Max(max,h->GetMaximum());
 
+	++i;
+
       }
       else if(nobj&&leg) leg->AddEntry(hFirst,"","");
 
-      ++i;
+      //++i;
+
 
     }
   }
 
-  if (leg){
+  // legend
+  if (leg) {
     leg->SetFillStyle(0);
     leg->SetTextSize(0.02);
     // shift second legend if needed
@@ -899,12 +939,14 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt)
     leg->Draw();
   }
 
+  // axis maximum
   TIter nextObj(gPad->GetListOfPrimitives());
   TObject *obj;
   while ((obj = nextObj())) {
     if(obj->InheritsFrom(TH1::Class())) {
       //      Printf("max%f \t %f",max,static_cast<TH1*>(obj)->GetMaximum());
-      static_cast<TH1*>(obj)->SetMaximum(max*1.1);
+      if(!optEff) static_cast<TH1*>(obj)->SetMaximum(max*1.1);
+      else        static_cast<TH1*>(obj)->SetMaximum(1.1);
       break;
     }
   }
