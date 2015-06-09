@@ -97,7 +97,7 @@ class L1Algo{
     fMomentumCutOff(0)// really doesn't used
   {}
        
-  void Init( const fscal geo[] );
+  void Init( const vector<fscal> geo );
 #ifdef TBB2
   void SetData( const vector< L1StsHit >      & StsHits_,
                 const vector< L1Strip >       & StsStrips_,

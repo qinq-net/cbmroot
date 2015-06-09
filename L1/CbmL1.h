@@ -145,10 +145,10 @@ class CbmL1 : public FairTask
    void HistoPerformance();        // fill some histograms and calculate efficiencies
 
       /// STandAlone Package service-functions
-   void WriteSTAPGeoData(void *geo, int size); // create geo_algo.dat
+   void WriteSTAPGeoData(vector<float> geo); // create geo_algo.dat
    void WriteSTAPAlgoData(); // create data_algo.dat
    void WriteSTAPPerfData(); // create data_perfo.dat
-   void ReadSTAPGeoData(void *geo, int &size);
+   void ReadSTAPGeoData(vector<float> geo, int &size);
    void ReadSTAPAlgoData();
    void ReadSTAPPerfData();
       /// SIMD KF Banchmark service-functions

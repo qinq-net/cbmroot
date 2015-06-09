@@ -21,9 +21,6 @@
 #include "L1Algo/L1Field.h"
 
 #include "FairRunAna.h"
-#include "FairRuntimeDb.h"
-#include "CbmGeoStsPar.h"
-#include "CbmStsDigiPar.h" // for dynamic_cast
 #include "CbmStsFindTracks.h"
 #include "CbmKF.h"
 #include "setup/CbmStsSetup.h"
@@ -199,11 +196,6 @@ InitStatus CbmL1::Init()
   FairRootManager *fManger = FairRootManager::Instance();
 
   FairRunAna *Run = FairRunAna::Instance();
-  FairRuntimeDb *RunDB = Run->GetRuntimeDb();
-  {
-    CbmGeoStsPar* StsPar = L1_DYNAMIC_CAST<CbmGeoStsPar*>( RunDB->findContainer("CbmGeoStsPar") );
-    CbmStsDigiPar *digiPar = L1_DYNAMIC_CAST<CbmStsDigiPar*>( RunDB->findContainer("CbmStsDigiPar") );
-  }
   {
     fUseMVD = 1;
     CbmStsFindTracks * FindTask = L1_DYNAMIC_CAST<CbmStsFindTracks*>( Run->GetTask("STSFindTracks") );
@@ -257,24 +249,24 @@ InitStatus CbmL1::Init()
   NStation = 0;
   algo = & algo_static;
 
-  fscal geo[10000];
+  vector<fscal> geo;
+  geo.clear();
 
-  int ind = 0;
   for( int i=0; i<3; i++ ){
     Double_t point[3] = { 0,0,2.5*i};
     Double_t B[3] = {0,0,0};
     if( CbmKF::Instance()->GetMagneticField() ) CbmKF::Instance()->GetMagneticField()->GetFieldValue( point, B );
-    geo[ind++] = 2.5*i;
-    geo[ind++] = B[0];
-    geo[ind++] = B[1];
-    geo[ind++] = B[2];
+    geo.push_back(2.5*i);
+    geo.push_back(B[0]);
+    geo.push_back(B[1]);
+    geo.push_back(B[2]);
   }
       
   NMvdStations = ( fUseMVD ) ? CbmKF::Instance()->vMvdMaterial.size() : 0;
   NStsStations = CbmStsSetup::Instance()->GetNofDaughters();
   NStation = NMvdStations + NStsStations;
-  geo[ind++] = NStation;
-  geo[ind++] = NMvdStations;
+  geo.push_back(NStation);
+  geo.push_back(NMvdStations);
 
   // field
   const int M=5; // polinom order
@@ -350,27 +342,27 @@ InitStatus CbmL1::Init()
         
 
       CbmKFTube &t = CbmKF::Instance()->vMvdMaterial[ist];
-      geo[ind++] = t.z;
-      geo[ind++] = t.dz;
-      geo[ind++] = t.r;
-      geo[ind++] = t.R;
-      geo[ind++] = t.RadLength;
+      geo.push_back(t.z);
+      geo.push_back(t.dz);
+      geo.push_back(t.r);
+      geo.push_back(t.R);
+      geo.push_back(t.RadLength);
       
       fscal f_phi=0, f_sigma=mvdStationPar->GetXRes(ist)/10000, b_phi=3.14159265358/2., b_sigma=mvdStationPar->GetYRes(ist)/10000;
-      geo[ind++] = f_phi;
-      geo[ind++] = f_sigma;
-      geo[ind++] = b_phi;
-      geo[ind++] = b_sigma;
+      geo.push_back(f_phi);
+      geo.push_back(f_sigma);
+      geo.push_back(b_phi);
+      geo.push_back(b_sigma);
       z = t.z;
       Xmax = Ymax = t.R;
     }else{
       CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(ist - NMvdStations));
   
-      geo[ind++] = station->GetZ();
-      geo[ind++] = station->GetSensorD();
-      geo[ind++] = 0;
-      geo[ind++] = station->GetYmax() < station->GetXmax() ? station->GetXmax() : station->GetYmax();
-      geo[ind++] = station->GetRadLength();
+      geo.push_back(station->GetZ());
+      geo.push_back(station->GetSensorD());
+      geo.push_back(0);
+      geo.push_back(station->GetYmax() < station->GetXmax() ? station->GetXmax() : station->GetYmax());
+      geo.push_back(station->GetRadLength());
 
       double Pi = 3.14159265358;
   
@@ -384,10 +376,10 @@ InitStatus CbmL1::Init()
       //f_sigma *= cos(f_phi);  // TODO: think about this
       //b_sigma *= cos(b_phi);
 
-      geo[ind++] = f_phi;
-      geo[ind++] = f_sigma;
-      geo[ind++] = b_phi;
-      geo[ind++] = b_sigma;
+      geo.push_back(f_phi);
+      geo.push_back(f_sigma);
+      geo.push_back(b_phi);
+      geo.push_back(b_sigma);
       z = station->GetZ();
 
       Xmax = station->GetXmax();
@@ -443,26 +435,29 @@ InitStatus CbmL1::Init()
       C[2][i] = c2(i);
     }
 
-    geo[ind++] = N;
+    geo.push_back(N);
     for( int k=0; k<3; k++ ){
-      for( int j=0; j<N; j++) geo[ind++] = C[k][j];
+      for( int j=0; j<N; j++){
+        geo.push_back(C[k][j]);
+      }
     }
   }
 
-  geo[ind++] = fTrackingLevel;
-  geo[ind++] = fMomentumCutOff;
-  geo[ind++] = fGhostSuppression;
+  geo.push_back(fTrackingLevel);
+  geo.push_back(fMomentumCutOff);
+  geo.push_back(fGhostSuppression);
 
-  {
-    if(fSTAPDataMode%2 == 1){ // 1,3
-      WriteSTAPGeoData( static_cast<void*>(geo), ind);
-    };
-    if(fSTAPDataMode >= 2){ // 2,3
-      int ind2;
-      ReadSTAPGeoData( static_cast<void*>(geo), ind2);
-      if (ind2 != ind)  cout << "-E- CbmL1: Read geometry from file " << fSTAPDataDir + "geo_algo.txt was NOT successful." << endl;
-    };
-  }
+
+    {
+        if(fSTAPDataMode%2 == 1){ // 1,3
+          WriteSTAPGeoData(geo);
+        };
+        if(fSTAPDataMode >= 2){ // 2,3
+          int ind2, ind = geo.size();
+          ReadSTAPGeoData(geo, ind2);
+          if (ind2 != ind)  cout << "-E- CbmL1: Read geometry from file " << fSTAPDataDir + "geo_algo.txt was NOT successful." << endl;
+        };
+      }
 
   algo->Init(geo);
 
@@ -725,16 +720,16 @@ void CbmL1::IdealTrackFinder()
 
 /// -----   STandAlone Package service-functions  -----------------------------
 
-void CbmL1::WriteSTAPGeoData(void* geo_, int size)
+void CbmL1::WriteSTAPGeoData(vector<float> geo_)
 {
-  fscal *geo = static_cast<fscal*>( geo_ );
     // write geo in file
   TString fgeo_name = fSTAPDataDir + "geo_algo.txt";
   ofstream fgeo(fgeo_name);
   fgeo.setf(ios::scientific,ios::floatfield);
   fgeo.precision(20);
+  int size = geo_.size();
   for (int i = 0; i < size; i++){
-    fgeo << geo[i] << endl;
+    fgeo << geo_[i] << endl;
   };
   fgeo.close();
   cout << "-I- CbmL1: Geometry data has been written in " << fgeo_name << endl;
@@ -975,9 +970,8 @@ istream& CbmL1::eatwhite(istream& is) // skip spaces
   return is;
 }
 
-void CbmL1::ReadSTAPGeoData(void* geo_, int &size)
+void CbmL1::ReadSTAPGeoData(vector<float> geo_, int &size)
 {
-  fscal *geo = static_cast<fscal*>( geo_ );
   TString fgeo_name = fSTAPDataDir + "geo_algo.txt";
   ifstream fgeo(fgeo_name);
 
@@ -986,7 +980,7 @@ void CbmL1::ReadSTAPGeoData(void* geo_, int &size)
   for (i = 0; !fgeo.eof(); i++){
     fscal tmp;
     fgeo >> tmp >> eatwhite;
-    geo[i] = tmp;
+    geo_[i] = tmp;
   };
   size = i;
   fgeo.close();

@@ -1,6 +1,6 @@
 #include "L1Algo.h"
 
-void L1Algo::Init( const fscal geo[] )
+void L1Algo::Init( const vector<fscal> geo )
 {
   int ind=0;
   {
