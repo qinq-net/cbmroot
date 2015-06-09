@@ -61,6 +61,7 @@ Set(SRCS
   tasks/CbmTrdRawBeamProfile.cxx
   tasks/CbmTrdOnlineDisplay.cxx
   tasks/CbmTrdEveOnlineDisplay.cxx
+  tasks/CbmTrdDaqBuffer.cxx
 )
 
 Set(NO_DICT_SRCS

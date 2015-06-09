@@ -4,6 +4,8 @@
 #include "CbmHistManager.h"
 #include "CbmBeamDefaults.h"
 
+#include "CbmTrdDaqBuffer.h"
+
 #include "FairLogger.h"
 
 #include "TH1.h"
