@@ -112,9 +112,10 @@ void CbmStsSensorTypeDssdReal::DiffusionAndLorentzShift (Double_t delta, Double_
 	}
 	sigmaLayer = kTq * sqrt(tau); 
     }
-    if (fLorentzShift)
+    if (fLorentzShift) {
 	if (side == 0) xLayer += muHall * mField * (fDz - zLayer) * 1.e-4;
 	else           xLayer += muHall * mField * zLayer         * 1.e-4;
+    }
 
     Double_t roX = xLayer - (fDy - yLayer) * tanphi; //read-out coordinate
     Int_t roI = Int_t(roX / pitch); //read-out channel
