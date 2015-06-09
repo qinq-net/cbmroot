@@ -103,13 +103,11 @@ void CbmL1::ReadEvent()
     algo->StsHitsStartIndex[i] = static_cast<THitI>(-1);
     algo->StsHitsStopIndex[i]  = 0;
   }
-  
-  //for a new definition of the reconstructable track (4 consequtive MC Points):
-  vector<bool> isUsedMvdPoint; //marks, whether Mvd MC Point already in the vMCPoints
-  vector<bool> isUsedStsPoint; //marks, whether Mvd MC Point already in the vMCPoints
 
+  Int_t nMvdPoints = 0;
     // get MVD hits
-  int nMvdHits=0;
+  Int_t nMvdHits = 0;
+
 #ifdef MVDIDEALHITS
   if(listMvdPts){
     Int_t nMC  = listMvdPts->GetEntries();
@@ -151,17 +149,26 @@ void CbmL1::ReadEvent()
     }
   }
 #else
+
   if( listMvdHits ){
     Int_t nEnt  = listMvdHits->GetEntries();
-    Int_t nMC = (listMvdPts) ? listMvdPts->GetEntries() : 0;
 
-    if(listMvdPts)
-    {
-      isUsedMvdPoint.resize(nMC);
-      for(int iMc=0; iMc<nMC; iMc++) isUsedMvdPoint[iMc]=0;
+    if(listMvdPts){
+      Int_t nMC = listMvdPts->GetEntriesFast();
+      for(Int_t iMC = 0; iMC < nMC; iMC++){
+        CbmL1MCPoint MC;
+        if( ! ReadMCPoint(&MC, iMC, 1) ){
+          MC.iStation = -1;
+          L1Station *sta = algo->vStations;
+          for(Int_t iSt = 0; iSt < NMvdStations; iSt++)
+            MC.iStation = (MC.z > sta[iSt].z[0] - 1) ? iSt : MC.iStation;
+          vMCPoints.push_back( MC );
+          nMvdPoints++;
+        }
+      }
     }
 
-    for (int j=0; j <nEnt; j++ ){
+    for (Int_t j = 0; j < nEnt; j++ ){
       TmpHit th;
       {
         CbmMvdHit *mh = L1_DYNAMIC_CAST<CbmMvdHit*>( listMvdHits->At(j) );
@@ -171,9 +178,9 @@ void CbmL1::ReadEvent()
         th.isStrip  = 0;
         th.iStripF = j;
         th.iStripB = -1;
-        if( th.iStripF<0 ) continue;
-        if( th.iStripF>=0 && th.iStripB>=0 ) th.isStrip  = 1;
-        if( th.iStripB <0 ) th.iStripB = th.iStripF;
+        if( th.iStripF <  0 ) continue;
+        if( th.iStripF >= 0 && th.iStripB>=0 ) th.isStrip  = 1;
+        if( th.iStripB <  0 ) th.iStripB = th.iStripF;
 
         TVector3 pos, err;
         mh->Position(pos);
@@ -186,54 +193,18 @@ void CbmL1::ReadEvent()
         th.u_front = th.x*st.frontInfo.cos_phi[0] + th.y*st.frontInfo.sin_phi[0];
         th.u_back  = th.x*st.backInfo.cos_phi[0] + th.y*st.backInfo.sin_phi[0];
       }
-      th.iMC=-1;
-      int iMC = -1;
-//   int iMCTr = -1;
-//   if( listMvdHitMatches ){
-//     CbmMvdHitMatch *match = (CbmMvdHitMatch*) listMvdHitMatches->At(j);
-//     if( match){
-//       iMC = match->GetPointId();
-//       iMCTr = match->GetTrackId();
-//     }
-//   }
-//       if( listMvdHitMatches ){
-//         CbmMvdHitMatch *match = L1_DYNAMIC_CAST<CbmMvdHitMatch*>( listMvdHitMatches->At(j) );
-//         if( match){
-//           int iDigi = match->GetIndexNumber();
-//           CbmMvdDigiMatch *digimatch =  L1_DYNAMIC_CAST<CbmMvdDigiMatch*>( listMvdDigiMatches->At(iDigi));
-//           if(digimatch)
-//           {
-//             
-//             iMC = digimatch->GetIndexNumber();
-//             std::cout << "iMC " << iMC << std::endl;
-//           }
-//         }
-//       }  
+
+      th.iMC = -1;
+      Int_t iMC = -1;
   
       if( listMvdHitMatches ){
-        CbmMatch *hm = L1_DYNAMIC_CAST<CbmMatch*>( listMvdHitMatches->At(j) );
-       
-        if( hm->GetNofLinks()>0 )
-        iMC = hm->GetLink(0).GetIndex();
+        CbmMatch *mvdHitMatch = L1_DYNAMIC_CAST<CbmMatch*>( listMvdHitMatches->At(j) );
+        if( mvdHitMatch->GetNofLinks() > 0 )
+          iMC = mvdHitMatch->GetLink(0).GetIndex();
       }
-      if( listMvdPts && iMC>=0 ){ // TODO1: don't need this with FairLinks
-        CbmL1MCPoint MC;
-        if( ! ReadMCPoint( &MC, iMC, 1 ) ){
-          MC.iStation = th.iStation;
-          isUsedMvdPoint[iMC] = 1;
-
-//       MC.ID = iMCTr; // because atch->GetPointId() == 0 !!! and ReadMCPoint don't work
-//       MC.z = th.iStation; // for sort in right order
-      
-          vMCPoints.push_back( MC );
-          th.iMC = vMCPoints.size()-1;
-        }
-      } // if listStsPts
-  //if(  h.MC_Point >=0 ) // DEBUG !!!!
-      {
-        tmpHits.push_back(th);
-        nMvdHits++;
-      }
+      th.iMC = iMC;
+      tmpHits.push_back(th);
+      nMvdHits++;
     } // for j
   } // if listMvdHits
   if (fVerbose >= 10) cout << "ReadEvent: mvd hits are gotten." << endl;
@@ -293,18 +264,26 @@ void CbmL1::ReadEvent()
     }
   }
 #else
+
   if( listStsHits ){
     Int_t nEnt = listStsHits->GetEntries();
     Int_t nMC = (listStsPts) ? listStsPts->GetEntries() : 0;
 
-    if(listStsPts)
-    {
-      isUsedStsPoint.resize(nMC);
-      for(int iMc=0; iMc<nMC; iMc++) isUsedStsPoint[iMc]=0;
+    if(listStsPts){
+      for(Int_t iMC = 0; iMC < nMC; iMC++){
+        CbmL1MCPoint MC;
+        if( ! ReadMCPoint( &MC, iMC, 0 ) ){
+          MC.iStation = -1;
+    	  L1Station *sta = algo->vStations + NMvdStations;
+    	  for(Int_t iSt=0; iSt < NStsStations; iSt++)
+    	    MC.iStation = (MC.z > sta[iSt].z[0] - 2.5) ? (NMvdStations + iSt) : MC.iStation;
+    	  vMCPoints.push_back(MC);
+        }
+      }
     }
 
-    int negF=0;
-    for (int j=0; j < nEnt; j++ ){
+    Int_t negF = 0;
+    for(Int_t j = 0; j < nEnt; j++ ){
       CbmStsHit *sh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(j) );
       TmpHit th;
       {
@@ -315,27 +294,24 @@ void CbmL1::ReadEvent()
         th.isStrip  = 0;
         th.iStripF = mh->GetFrontDigiId();
         th.iStripB = mh->GetBackDigiId();
-        if( th.iStripF<0 ){ negF++; continue;}
-        if( th.iStripF>=0 && th.iStripB>=0 ) th.isStrip  = 1;
-        if( th.iStripB <0 ) th.iStripB = th.iStripF;
+        if( th.iStripF <  0 ){ negF++; continue;}
+        if( th.iStripF >= 0 && th.iStripB >= 0 ) th.isStrip = 1;
+        if( th.iStripB <  0 ) th.iStripB = th.iStripF;
         
         //Get time
-        if(listStsClusters)
-        {
-          int iFrontCluster = mh->GetFrontClusterId();
-          int iBackCluster = mh->GetBackClusterId();
+        if(listStsClusters){
+          Int_t iFrontCluster = mh->GetFrontClusterId();
+          Int_t iBackCluster = mh->GetBackClusterId();
           CbmStsCluster *frontCluster = L1_DYNAMIC_CAST<CbmStsCluster*>( listStsClusters->At( iFrontCluster ) );
           Double_t hitTime = 0;
           Int_t nMcPointsInHit = 0;
-          for(unsigned int iDigi=0; iDigi<frontCluster->GetDigis().size(); iDigi++)
-          {
+          for(UInt_t iDigi = 0; iDigi < frontCluster->GetDigis().size(); iDigi++){
             CbmMatch *stsDigiMatch = L1_DYNAMIC_CAST<CbmMatch*>( listStsDigiMatch->At( frontCluster->GetDigis()[iDigi] ) );
 
-            int nPoints = stsDigiMatch->GetNofLinks();
+            Int_t nPoints = stsDigiMatch->GetNofLinks();
 
-            for(int iPoint=0; iPoint<nPoints; iPoint++)
-            {
-              int pointIndex = stsDigiMatch->GetLink(iPoint).GetIndex();
+            for(Int_t iPoint = 0; iPoint < nPoints; iPoint++){
+              Int_t pointIndex = stsDigiMatch->GetLink(iPoint).GetIndex();
               CbmStsPoint *stsPoint = L1_DYNAMIC_CAST<CbmStsPoint*>( listStsPts->At( pointIndex ) );
               Double_t digiTime = stsPoint->GetTime() + gRandom->Gaus(0,5);
               hitTime += digiTime;
@@ -343,15 +319,13 @@ void CbmL1::ReadEvent()
             }
           }
           CbmStsCluster *backCluster = L1_DYNAMIC_CAST<CbmStsCluster*>( listStsClusters->At( iBackCluster ) );
-          for(unsigned int iDigi=0; iDigi<backCluster->GetDigis().size(); iDigi++)
-          {
+          for(UInt_t iDigi = 0; iDigi < backCluster->GetDigis().size(); iDigi++){
             CbmMatch *stsDigiMatch = L1_DYNAMIC_CAST<CbmMatch*>( listStsDigiMatch->At( backCluster->GetDigis()[iDigi] ) );
 
             int nPoints = stsDigiMatch->GetNofLinks();
 
-            for(int iPoint=0; iPoint<nPoints; iPoint++)
-            {
-              int pointIndex = stsDigiMatch->GetLink(iPoint).GetIndex();
+            for(Int_t iPoint=0; iPoint<nPoints; iPoint++){
+              Int_t pointIndex = stsDigiMatch->GetLink(iPoint).GetIndex();
               CbmStsPoint *stsPoint = L1_DYNAMIC_CAST<CbmStsPoint*>( listStsPts->At( pointIndex ) );
               Double_t digiTime = stsPoint->GetTime() + gRandom->Gaus(0,5);
               hitTime += digiTime;
@@ -359,9 +333,9 @@ void CbmL1::ReadEvent()
             }
           }
           hitTime /= nMcPointsInHit;
-
           th.time = hitTime;
         }
+
         th.iStripF += nMvdHits;
         th.iStripB += nMvdHits;
 
@@ -376,40 +350,32 @@ void CbmL1::ReadEvent()
         th.u_front = th.x*st.frontInfo.cos_phi[0] + th.y*st.frontInfo.sin_phi[0];
         th.u_back  = th.x* st.backInfo.cos_phi[0] + th.y* st.backInfo.sin_phi[0];
       }
-      th.iMC=-1;
+      th.iMC = -1;
 
-      int iMC = -1;
-      if(listStsClusterMatch)
-      {
-
+      Int_t iMC = -1;
+      if(listStsClusterMatch){
         const CbmMatch* frontClusterMatch = static_cast<const CbmMatch*>(listStsClusterMatch->At(sh->GetFrontClusterId()));
         const CbmMatch* backClusterMatch  = static_cast<const CbmMatch*>(listStsClusterMatch->At(sh->GetBackClusterId()));
-
         CbmMatch stsHitMatch;
 
-        for(int iFrontLink = 0; iFrontLink<frontClusterMatch->GetNofLinks(); iFrontLink++)
-        {
+        for(Int_t iFrontLink = 0; iFrontLink<frontClusterMatch->GetNofLinks(); iFrontLink++){
           const CbmLink& frontLink = frontClusterMatch->GetLink(iFrontLink);
-          for(int iBackLink = 0; iBackLink<backClusterMatch->GetNofLinks(); iBackLink++)
-          {
+
+          for(Int_t iBackLink = 0; iBackLink<backClusterMatch->GetNofLinks(); iBackLink++){
             const CbmLink& backLink = backClusterMatch->GetLink(iBackLink);
 
-            if(frontLink.GetIndex() == backLink.GetIndex())
-            {
+            if(frontLink.GetIndex() == backLink.GetIndex()){
               stsHitMatch.AddLink(frontLink);
               stsHitMatch.AddLink(backLink);
             }
           }
         }
 
-        if( stsHitMatch.GetNofLinks()>0 )
-        {
+        if( stsHitMatch.GetNofLinks()>0 ){
           Float_t bestWeight = 0.f;
 
-          for(int iLink=0; iLink < stsHitMatch.GetNofLinks(); iLink++)
-          {
-            if( stsHitMatch.GetLink(iLink).GetWeight() > bestWeight)
-            {
+          for(Int_t iLink=0; iLink < stsHitMatch.GetNofLinks(); iLink++){
+            if( stsHitMatch.GetLink(iLink).GetWeight() > bestWeight){
               bestWeight = stsHitMatch.GetLink(iLink).GetWeight();
               iMC = stsHitMatch.GetLink(iLink).GetIndex();
             }
@@ -419,61 +385,14 @@ void CbmL1::ReadEvent()
       else
         iMC = sh->GetRefId(); // TODO1: don't need this with FairLinks
 
-      if( listStsPts && iMC>=0 && iMC<nMC){
-        CbmL1MCPoint MC;
-        if( ! ReadMCPoint( &MC, iMC, 0 ) ){
-          MC.iStation = th.iStation;
-          vMCPoints.push_back( MC );
-          isUsedStsPoint[iMC] = 1;
-          th.iMC = vMCPoints.size()-1;
-        }
-      }  // if listStsPts
-      
-  //if(  th.iMC >=0 ) // DEBUG !!!!
-      {
-        tmpHits.push_back(th);
-        nStsHits++;
-      }
+      th.iMC = iMC + nMvdPoints;
+      tmpHits.push_back(th);
+      nStsHits++;
     } // for j
   } // if listStsHits
   if (fVerbose >= 10) cout << "ReadEvent: sts hits are gotten." << endl;
 #endif
 
-  //add MC points, which has not been added yet
-  if(listMvdHits && listMvdPts)
-  {
-    int nMC = listMvdPts->GetEntriesFast();
-    for(int iMC=0; iMC<nMC; iMC++){
-      if(!(isUsedMvdPoint[iMC])) {
-        CbmL1MCPoint MC;
-        if( ! ReadMCPoint( &MC, iMC, 1 ) ){
-          MC.iStation = -1;
-          L1Station *sta = algo->vStations;
-          for(int iSt = 0; iSt < NMvdStations; iSt++)
-            MC.iStation = (MC.z > sta[iSt].z[0] - 1) ? iSt : MC.iStation;
-          isUsedMvdPoint[iMC] = 1;
-          vMCPoints.push_back( MC );
-        }
-      }
-    }
-  }
-  if(listStsHits && listStsPts)
-  {
-    int nMC = listStsPts->GetEntriesFast();
-    for(int iMC=0; iMC<nMC; iMC++){
-      if(!(isUsedStsPoint[iMC])) {
-        CbmL1MCPoint MC;
-        if( ! ReadMCPoint( &MC, iMC, 0 ) ){
-          MC.iStation = -1;
-          L1Station *sta = algo->vStations + NMvdStations;
-          for(int iSt=0; iSt < NStsStations; iSt++)
-            MC.iStation = ( MC.z > sta[iSt].z[0] - 2.5 ) ? (NMvdStations+iSt) : MC.iStation;
-          isUsedStsPoint[iMC] = 1;
-          vMCPoints.push_back( MC );
-        }
-      }
-    }
-  }
     // sort hits
   int nHits = nMvdHits + nStsHits;
   sort( tmpHits.begin(), tmpHits.end(), TmpHit::Compare );
