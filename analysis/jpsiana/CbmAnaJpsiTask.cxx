@@ -545,24 +545,21 @@ void CbmAnaJpsiTask::PairMcAndAcceptance()
 			}
 
 			if (motherIdP >=0 && motherIdM >=0){
-						    CbmMCTrack* mct1P = (CbmMCTrack*) fMcTracks->At(motherIdP);
-						    Int_t motherPdgP = mct1P->GetPdgCode();
+				CbmMCTrack* mct1P = (CbmMCTrack*) fMcTracks->At(motherIdP);
+				Int_t motherPdgP = mct1P->GetPdgCode();
 
-						    CbmMCTrack* mct1M = (CbmMCTrack*) fMcTracks->At(motherIdM);
-						    Int_t motherPdgM = mct1M->GetPdgCode();
+				CbmMCTrack* mct1M = (CbmMCTrack*) fMcTracks->At(motherIdM);
+				Int_t motherPdgM = mct1M->GetPdgCode();
 
-						    Bool_t isPi0 = (motherPdgP == 111 && pdgP == 11 && motherPdgM == 111 && pdgM == -11 && motherIdP == motherIdM);
+				Bool_t isPi0 = (motherPdgP == 111 && pdgP == 11 && motherPdgM == 111 && pdgM == -11 && motherIdP == motherIdM);
 
-						    if (isPi0)
-						    {
-						    	fHM->H1("fh_pi0_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Fill(p.fMinv);
-						    }
+				if (isPi0){
+					fHM->H1("fh_pi0_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Fill(p.fMinv);
+				}
 
-						    if (isAccP && isAccM && isPi0)
-						    {
-						    	fHM->H1("fh_pi0_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiAcc])->Fill(p.fMinv);
-						    }
-
+				if (isAccP && isAccM && isPi0){
+					fHM->H1("fh_pi0_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiAcc])->Fill(p.fMinv);
+				}
 			}
 
 		}//iM
@@ -636,8 +633,7 @@ void CbmAnaJpsiTask::FillPairHists(
 	if (isPi0) fHM->H1("fh_pi0_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv);
 	if (isGamma) fHM->H1("fh_gamma_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv);
 	if (isBG && isMismatch) fHM->H1("fh_bg_mismatch_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv);
-	if (isBG && !isMismatch)
-	{
+	if (isBG && !isMismatch) {
 		fHM->H1("fh_bg_truematch_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv);
 		if (candP->fMcPdg == 11 && candM->fMcPdg == 11) fHM->H1("fh_bg_truematch_el_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv);
 		if (candP->fMcPdg != 11 || candM->fMcPdg != 11) fHM->H1("fh_bg_truematch_notel_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv);
