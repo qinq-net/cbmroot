@@ -108,7 +108,7 @@ class CbmTrdDigi : public CbmDigi
   Int_t fNrSamples;
   Int_t fSamples[32];
 
-  ClassDef(CbmTrdDigi, 4);
+  ClassDef(CbmTrdDigi, 5);
 };
 
 #endif
