@@ -120,11 +120,6 @@ InitStatus CbmMvdClusterfinder::Init() {
 
     fDetector = CbmMvdDetector::Instance();
     
-    if(!fDetector)
-    	{
-	if(fVerbose) cout << endl << "-I- Try to load CbmMvdDetector -I- " << endl; 
-        GetMvdGeometry(); 
-	fDetector = CbmMvdDetector::Instance();
 	if(fDetector->GetSensorArraySize() > 1)
 		{
 		 if(fVerbose) cout << endl << "-I- succesfully loaded Geometry from file -I-" << endl;
@@ -134,7 +129,6 @@ InitStatus CbmMvdClusterfinder::Init() {
 		LOG(FATAL) <<  "Geometry couldn't be loaded from file. No MVD digitizer available."
 	        << FairLogger::endl;
 		}
-	} 
 
     CbmMvdSensorClusterfinderTask* clusterTask = new CbmMvdSensorClusterfinderTask();
    
@@ -182,11 +176,6 @@ void CbmMvdClusterfinder::Reset() {
 // -----   Private method GetMvdGeometry   ---------------------------------
 void CbmMvdClusterfinder::GetMvdGeometry() {
 
-CbmMvdDetector* Detector = new CbmMvdDetector("A");
-CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
-mvdHandler->Init();
-mvdHandler->Fill();
-Detector->PrintParameter();
 }
 // -------------------------------------------------------------------------  
 

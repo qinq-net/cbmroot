@@ -50,11 +50,12 @@ class CbmMvdSensorDataSheet;
 class CbmMvdDetector : public TNamed
 {
 
- public:
+ private:
 
    CbmMvdDetector();  
    CbmMvdDetector(const char* name);
-   
+ 
+public:
    /**
    * static instance
    */

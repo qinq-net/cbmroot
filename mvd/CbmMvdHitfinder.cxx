@@ -128,12 +128,6 @@ InitStatus CbmMvdHitfinder::Init() {
     ioman->Register("MvdHit", "Mvd Hits", fHits, kTRUE);
 
     fDetector = CbmMvdDetector::Instance();
-    if(!fDetector)
-    	{
-	cout << endl << "No CbmMvdDetector detected!" << endl; 
-        GetMvdGeometry(); 
-	fDetector = CbmMvdDetector::Instance();
-	}
 
     if(!useClusterfinder)
 	{
@@ -191,10 +185,6 @@ void CbmMvdHitfinder::Reset() {
 // -----   Private method GetMvdGeometry   ---------------------------------
 void CbmMvdHitfinder::GetMvdGeometry() {
  
-CbmMvdDetector* Detector = new CbmMvdDetector("A");
-CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
-mvdHandler->Init();
-mvdHandler->Fill();
 }
 // -------------------------------------------------------------------------  
 

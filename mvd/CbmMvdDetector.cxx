@@ -4,7 +4,7 @@
 // -------------------------------------------------------------------------
 
 #include "CbmMvdDetector.h"
-
+#include "tools/CbmMvdGeoHandler.h"
 #include <iostream>
 //#include <omp.h>
 
@@ -16,7 +16,17 @@ CbmMvdDetector* CbmMvdDetector::fInstance= 0;
 //_____________________________________________________________________________
 CbmMvdDetector* CbmMvdDetector::Instance()
 {
-  return fInstance;
+  if(fInstance)
+   return fInstance;
+  else
+	{
+   	fInstance = new CbmMvdDetector("A");
+	CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
+	mvdHandler->Init();
+	mvdHandler->Fill();
+	return fInstance;
+	}
+
 }
 
 // -----   Default constructor   -------------------------------------------

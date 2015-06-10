@@ -154,13 +154,8 @@ InitStatus CbmMvdDigitizer::Init() {
     fDigiMatch = new TClonesArray("CbmMatch", 100000);
     ioman->Register("MvdDigiMatch", "Mvd DigiMatches", fDigiMatch, kTRUE);
 
-    fDetector = CbmMvdDetector::Instance();
-    
-    if(!fDetector)
-    	{
-	if(fVerbose) cout << endl << "-I- Try to load CbmMvdDetector -I- " << endl; 
-        GetMvdGeometry(); 
-	fDetector = CbmMvdDetector::Instance();
+   fDetector = CbmMvdDetector::Instance();
+
 	if(fDetector->GetSensorArraySize() > 1)
 		{
 		 if(fVerbose) cout << endl << "-I- succesfully loaded Geometry from file -I-" << endl;
@@ -170,7 +165,6 @@ InitStatus CbmMvdDigitizer::Init() {
 		LOG(FATAL) <<  "Geometry couldn't be loaded from file. No MVD digitizer available."
 	        << FairLogger::endl;
 		}
-	} 
 
 
        // **********  Create pileup manager if necessary
@@ -253,11 +247,6 @@ void CbmMvdDigitizer::Reset() {
 // -----   Private method GetMvdGeometry   ---------------------------------
 void CbmMvdDigitizer::GetMvdGeometry() {
 
-CbmMvdDetector* Detector = new CbmMvdDetector("A");
-CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
-mvdHandler->Init();
-mvdHandler->Fill();
-if(fVerbose)Detector->PrintParameter();
 }
 // -------------------------------------------------------------------------  
 
