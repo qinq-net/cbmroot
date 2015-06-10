@@ -1,6 +1,7 @@
 #include "CbmTrdRawBeamProfile.h"
 
 #include "CbmSpadicRawMessage.h"
+#include "CbmTrdDigi.h"
 #include "CbmHistManager.h"
 #include "CbmBeamDefaults.h"
 
@@ -28,6 +29,8 @@ CbmTrdRawBeamProfile::CbmTrdRawBeamProfile()
 // ---- Destructor ----------------------------------------------------
 CbmTrdRawBeamProfile::~CbmTrdRawBeamProfile()
 {
+  fDigis->Delete();
+  delete fDigis;
   LOG(DEBUG) << "Destructor of CbmTrdRawBeamProfile" << FairLogger::endl;
 }
 
@@ -59,6 +62,9 @@ InitStatus CbmTrdRawBeamProfile::Init()
     LOG(FATAL) << "No InputDataLevelName array!\n CbmTrdRawBeamProfile will be inactive" << FairLogger::endl;
     return kERROR;
   }
+
+  fDigis = new TClonesArray("CbmTrdDigi", 100);
+  ioman->Register("TrdDigi", "TRD Digis", fDigis, kTRUE);
 
   // Do whatever else is needed at the initilization stage
   // Create histograms to be filled
@@ -127,6 +133,12 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     if (infoType > 6) infoType = 7;
     Int_t groupId=raw->GetGroupId();
     ULong_t time = raw->GetFullTime();
+    Int_t bufferOverflow(0);
+    Int_t layerId(0);
+    Int_t moduleId(0);
+    Int_t sectorId(0);
+    Int_t rowId(0);
+    Int_t columnId(0);
    
     TString syscore="";
     switch (eqID) {
@@ -180,7 +192,41 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
       LOG(ERROR) << "Source Address " << sourceA << "not known." << FairLogger::endl;
       break;
     }   
-
+    if (SysId == 0){
+      if (SpaId == 0 && SpaId == 1){
+	layerId = 0;
+	moduleId = 0;
+      } else if (SpaId == 2 && SpaId == 3){
+	layerId = 1;
+	moduleId = 1;
+      } else if (SpaId == 4 && SpaId == 5){
+	layerId = 2;
+	moduleId = 2;
+      } else { LOG(ERROR) << "SpaId " << SpaId << "not known." << FairLogger::endl;}
+    } else  if (SysId == 1){
+      if (SpaId == 0 && SpaId == 1){
+	layerId = 3;
+	moduleId = 3;
+      } else if (SpaId == 2 && SpaId == 3){
+	layerId = 4;
+	moduleId = 4;
+      } else if (SpaId == 4 && SpaId == 5){
+	layerId = 5;
+	moduleId = 5;
+      } else { LOG(ERROR) << "SpaId " << SpaId << "not known." << FairLogger::endl;}
+    } else  if (SysId == 2){
+      if (SpaId == 0 && SpaId == 1){
+	layerId = 6;
+	moduleId = 6;
+      } else if (SpaId == 2 && SpaId == 3){
+	layerId = 7;
+	moduleId = 7;
+      } else if (SpaId == 4 && SpaId == 5){
+	layerId = 8;
+	moduleId = 8;
+      } else { LOG(ERROR) << "SpaId " << SpaId << "not known." << FairLogger::endl;}
+    } else { LOG(ERROR) << "SysId " << SysId << "not known." << FairLogger::endl;}
+   
     timeBuffer[TString(syscore+spadic)][time].push_back(raw);
 
     if (time > lastSpadicTime[SysId][SpaId]){
@@ -250,6 +296,10 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
       } 
     } 
     lastSpadicTime[SysId][SpaId] = time;
+    new ((*fDigis)[i]) CbmTrdDigi(layerId,  moduleId,  sectorId,  rowId,  columnId,
+				  time,
+				  triggerType,  infoType,  stopType,  bufferOverflow, 
+				  nrSamples, raw->GetSamples());
   } //entries
   for (Int_t sy = 0; sy < 2; sy++){
     for (Int_t sp = 0; sp < 2; sp++){
@@ -266,6 +316,9 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
       LOG(DEBUG) <<  "ClusterSize:" << Int_t(it2->second.size()) << FairLogger::endl;
     }
   }
+
+  LOG(INFO) << "CbmTrdRawBeamProfile::Exec Digis:                " << fDigis->GetEntriesFast() << FairLogger::endl;
+
 }
 
 

@@ -4,6 +4,7 @@
 
 Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/cbmdata
+  ${CBMROOT_SOURCE_DIR}/cbmdata/trd
   ${CBMROOT_SOURCE_DIR}/cbmdata/raw
   ${CBMROOT_SOURCE_DIR}/cbmdata/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/cbmbase

@@ -79,6 +79,40 @@ CbmTrdDigi::CbmTrdDigi(
   for (Int_t i = 0; i < 45; i++)
     fPulseShape[i] = 0;
 }
+// CbmTrdDigi used for Testbeam fles data format CbmSpadicRawMessage
+CbmTrdDigi::CbmTrdDigi(Int_t layerId, Int_t moduleId, Int_t sectorId, Int_t rowId, Int_t columnId,
+		       Int_t fullTime,
+		       Int_t triggerType, Int_t infoType, Int_t stopType, Int_t bufferOverflow, 
+		       Int_t nrSamples, Int_t* samples)
+  : CbmDigi(),
+    fAddress(CbmTrdAddress::GetAddress(layerId,
+				       moduleId,
+				       sectorId,
+				       rowId,
+				       columnId)),
+    fTime(Double_t(fullTime)),
+    fCharge(0),
+    fTriggerType(triggerType),
+    fInfoType(infoType),
+    fStopType(stopType),
+    fNrSamples(nrSamples),
+    fSamples(),
+    fGlobalTriggered(false),
+    fPrimeTriggered(false),
+    fFNR_Triggered(false),
+    fNormalStop(true),
+    fBufferFullStop(false),
+    fDoubleHitStop(false),
+    fNeighbourTriggerIds(),
+    fPulseShape()
+{
+  for (Int_t i = 0; i < nrSamples; ++i) {
+    fSamples[i] = samples[i];
+  }
+  for (Int_t i = nrSamples; i < 32; ++i) {
+    fSamples[i] = 0;
+  }
+}
 
 CbmTrdDigi::~CbmTrdDigi()
 {

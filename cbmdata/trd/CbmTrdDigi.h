@@ -31,6 +31,10 @@ class CbmTrdDigi : public CbmDigi
    */
   CbmTrdDigi(Int_t address, Double_t charge, Double_t time);
   CbmTrdDigi(Int_t address, Double_t charge, Double_t time, Bool_t primeTriggered, Bool_t fnr_Triggered, Bool_t globalTriggered, Bool_t normalStop, Bool_t bufferFullStop, Bool_t doubleHitStop);
+  CbmTrdDigi(Int_t layerId,  Int_t moduleId, Int_t sectorId, Int_t rowId, Int_t columnId,
+	     Int_t fullTime,
+	     Int_t triggerType, Int_t infoType, Int_t stopType, Int_t bufferOverflow, 
+	     Int_t nrSamples, Int_t* samples);
   /**
    * \brief Destructor.
    */
@@ -96,6 +100,14 @@ class CbmTrdDigi : public CbmDigi
 
   Int_t fNeighbourTriggerIds[8]; // 8 direct neighbours per pad in maximum
   Float_t fPulseShape[45];
+
+  Int_t fTriggerType;
+  Int_t fInfoType;
+  Int_t fStopType;
+  Int_t fBufferOverflowCount; 
+  Int_t fNrSamples;
+  Int_t fSamples[32];
+
   ClassDef(CbmTrdDigi, 4);
 };
 
