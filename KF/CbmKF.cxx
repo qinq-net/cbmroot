@@ -22,8 +22,6 @@
 #include "setup/CbmStsStation.h"
 #include "FairRuntimeDb.h"
 
-#include "../mvd/tools/CbmMvdGeoHandler.h"
-
 #include <iostream>
 #include <list>
 #include <vector>
@@ -148,12 +146,6 @@ InitStatus CbmKF::Init()
   //CbmMvdGeoPar* MvdPar = reinterpret_cast<CbmMvdGeoPar*>(RunDB->findContainer("CbmMvdGeoPar"));
   if( useMVD ){
     CbmMvdDetector* mvdDetector = CbmMvdDetector::Instance();
-    if ( !mvdDetector ){
-      mvdDetector = new CbmMvdDetector("A");
-      CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
-      mvdHandler->Init();
-      mvdHandler->Fill();
-    }
     if(mvdDetector)
     {
       CbmMvdStationPar* mvdStationPar = mvdDetector->GetParameterFile();
