@@ -290,7 +290,7 @@ void CbmL1::ReadEvent()
         CbmStsHit *mh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(j) );
         th.ExtIndex = j;
         th.iStation = NMvdStations + CbmStsAddress::GetElementId(mh->GetAddress(), kStsStation);//mh->GetStationNr() - 1;
-        th.iSector  = mh->GetSectorNr();
+        th.iSector  = -1; /// Sector nr is obsolete. -1 was returned since a long time.
         th.isStrip  = 0;
         th.iStripF = mh->GetFrontDigiId();
         th.iStripB = mh->GetBackDigiId();

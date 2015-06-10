@@ -85,6 +85,8 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
 
 	// --- Calculate hit time (average of cluster times)
 	Double_t hitTime = 0.5 * ( clusterF->GetTime() + clusterB->GetTime());
+	Double_t hitTimeError =
+			0.5 * TMath::Abs(clusterF->GetTime() - clusterB->GetTime());
 
 	// --- Create hit
 	Int_t nHits = fHits->GetEntriesFast();
@@ -97,8 +99,8 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
 					      clusterB->GetIndex(),  // back cluster index
 					      0,                     // front digi index
 					      -1,                    // back digi index
-					      -1,                    // sectorNr
-					      hitTime);              // hit time
+					      hitTime,               // hit time
+					      hitTimeError);         // hit time error
 
 	LOG(DEBUG2) << GetName() << ": Creating hit at (" << global[0] << ", "
 			        << global[1] << ", " << global[2] << ")" << FairLogger::endl;

@@ -49,7 +49,7 @@
 #pragma link C++ class CbmStsTrackFinderIdeal+;
 #pragma link C++ class CbmStsTrackFitterIdeal+;
 #pragma link C++ class CbmStsSimulationQa+;
-#pragma link C++ class CbmStsReconstructionQa+;
+//#pragma link C++ class CbmStsReconstructionQa+;
 #pragma link C++ class CbmStsDigitizeQa+;
 
 

@@ -1,13 +1,20 @@
 /**
- * \file CbmStsHit.cxx
+ ** \file CbmStsHit.cxx
+ ** \author Volker Friese <v.friese@gsi.de>
+ ** \since 30.08.06
+ **
+ ** Updated 14/03/2014 by Andrey Lebedev <andrey.lebedev@gsi.de>.
+ ** Updated 10/06/2015 by Volker Friese <v.friese@gsi.de>.
  **/
+
 #include "CbmStsHit.h"
 
+
+// -----   Default constructor
 CbmStsHit::CbmStsHit()
     : CbmPixelHit()
     , fFrontDigiId(-1)
     , fBackDigiId(-1)
-    , fSectorNr(-1)
     , fFrontClusterId(-1)
     , fBackClusterId(-1)
     , fTime(0.)
@@ -16,22 +23,28 @@ CbmStsHit::CbmStsHit()
 }
 
 
+
+// -----   Constructor with parameters
 CbmStsHit::CbmStsHit(Int_t address, const TVector3& pos, const TVector3& dpos,
 		                 Double_t dxy, Int_t frontClusterId, Int_t backClusterId,
-		                 Int_t frontDigiId, Int_t backDigiId, Int_t sectorNr,
+		                 Int_t frontDigiId, Int_t backDigiId,
 		                 Double_t time, Double_t timeError)
     : CbmPixelHit(address, pos, dpos, dxy, -1)
     , fFrontDigiId(frontDigiId)
     , fBackDigiId(backDigiId)
-    , fSectorNr(sectorNr)
     , fFrontClusterId(frontClusterId)
     , fBackClusterId(backClusterId)
     , fTime(time)
     , fTimeError(timeError)
 {
 }
+
+
+
+// -----   Destructor
 CbmStsHit::~CbmStsHit()
 {
 }
+
 
 ClassImp(CbmStsHit)

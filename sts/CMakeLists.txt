@@ -83,7 +83,7 @@ CbmStsRadTool.cxx
 CbmStsTrackFinderIdeal.cxx 
 CbmStsTrackFitterIdeal.cxx 
 CbmStsSimulationQa.cxx 
-CbmStsReconstructionQa.cxx
+#CbmStsReconstructionQa.cxx
 CbmStsDigitizeQa.cxx
 )
 # -----  End of sources   ---------------------------------
@@ -96,7 +96,6 @@ ${CBMROOT_SOURCE_DIR}/sts
 ${CBMROOT_SOURCE_DIR}/sts/setup
 ${CBMROOT_SOURCE_DIR}/sts/mc
 ${CBMROOT_SOURCE_DIR}/sts/digitize
-#${CBMROOT_SOURCE_DIR}/sts/legacy
 
 # needed by MatchHits???
 ${CBMROOT_SOURCE_DIR}/passive 
