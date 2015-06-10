@@ -18,33 +18,19 @@ void run_reco_jpsi(Int_t nEvents = 2)
 	TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.0001.root";
 	TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.0001.root";
 
-	std::string resultDir = "recqa_0001/";
 	TString trdHitProducerType = "smearing";
-	int nofNoiseHitsInRich = 220;
-	double collectionEff = 1.0;
-	double sigmaErrorRich = 0.06;
-	double crosstalkRich = 0.02;
 	TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
     TObjString trdDigiFile = parDir + "/trd/trd_v14a_3e.digi.par"; // TRD digi file
     TObjString tofDigiFile = parDir + "/tof/tof_v13b.digi.par"; // TOF digi file
-    Double_t trdAnnCut = 0.85;
-    Int_t minNofPointsTrd = 6;
 	if (script == "yes") {
 		mcFile = TString(gSystem->Getenv("MC_FILE"));
 		recoFile = TString(gSystem->Getenv("RECO_FILE"));
 		parFile = TString(gSystem->Getenv("PAR_FILE"));
-		resultDir = TString(gSystem->Getenv("LIT_RESULT_DIR"));
-		nofNoiseHitsInRich = TString(gSystem->Getenv("NOF_NOISE_HITS_IN_RICH")).Atoi();
-		collectionEff = TString(gSystem->Getenv("RICH_COLLECTION_EFF")).Atof();
-        sigmaErrorRich = TString(gSystem->Getenv("SIGMA_ERROR_RICH")).Atof();
-        crosstalkRich = TString(gSystem->Getenv("CROSSTALK_RICH")).Atof();
         trdHitProducerType = TString(gSystem->Getenv("TRD_HIT_PRODUCER_TYPE"));
 		stsDigiFile = TString(gSystem->Getenv("STS_DIGI"));
 		trdDigiFile = TString(gSystem->Getenv("TRD_DIGI"));
 		tofDigiFile = TString(gSystem->Getenv("TOF_DIGI"));
 		stsMatBudgetFileName = TString(gSystem->Getenv("STS_MATERIAL_BUDGET_FILE"));
-		trdAnnCut = TString(gSystem->Getenv("TRD_ANN_CUT")).Atof();
-		minNofPointsTrd = TString(gSystem->Getenv("MIN_NOF_POINTS_TRD")).Atof();
 	}
 
    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
@@ -72,23 +58,6 @@ void run_reco_jpsi(Int_t nEvents = 2)
 	  mcManager->AddFile(mcFile);
 	  run->AddTask(mcManager);
 
-    // =========================================================================
-    // ===                     MVD local reconstruction                      ===
-	// =========================================================================
-	if (IsMvd(parFile)) {
-	CbmMvdDigitizeL* mvdDigitizeL = new CbmMvdDigitizeL("MVD Digitizer", 0, iVerbose);
-    run->AddTask(mvdDigitizeL);
-
-    CbmMvdFindHits* mvdFindHits = new CbmMvdFindHits("MVD Hit Finder", 0, iVerbose);
-    run->AddTask(mvdFindHits);
-
-    // MVD ideal
-    //{
-    //CbmMvdHitProducer* mvdHitProd = new CbmMvdHitProducer("MVDHitProducer", 0, iVerbose);
-    //run->AddTask(mvdHitProd);
-    //}
-	}
-
 	// =========================================================================
 	// ===                      STS local reconstruction                     ===
 	// =========================================================================
@@ -110,7 +79,6 @@ void run_reco_jpsi(Int_t nEvents = 2)
 
 	FairTask* stsHit = new CbmStsFindHits();
 	run->AddTask(stsHit);
-
 
 	CbmKF* kalman = new CbmKF();
 	run->AddTask(kalman);
@@ -148,78 +116,6 @@ void run_reco_jpsi(Int_t nEvents = 2)
 
 			CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
 			run->AddTask(trdHit);
-		} else if (trdHitProducerType == "clustering_1_1_1") {
-			Bool_t triangularPads = false;// Bucharest triangular pad-plane layout
-			Double_t triggerThreshold = 1.0e-6;//SIS300
-			CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
-			trdDigiPrf->SetTriangularPads(triangularPads);
-			trdDigiPrf->SetNCluster(1); // limits the number of iterations per MC-point to one
-			trdDigiPrf->SetPadPlaneScanArea(1,1); // limits the number of channels participating to the charge sharing (col,row)
-			run->AddTask(trdDigiPrf);
-			CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
-			trdCluster->SetNeighbourTrigger(true);
-			trdCluster->SetTriggerThreshold(triggerThreshold);
-			trdCluster->SetNeighbourRowTrigger(false);
-			trdCluster->SetPrimaryClusterRowMerger(true);
-			trdCluster->SetTriangularPads(triangularPads);
-			run->AddTask(trdCluster);
-			CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
-			trdHit->SetTriangularPads(triangularPads);
-			run->AddTask(trdHit);
-		}else if (trdHitProducerType == "clustering_1_3_3") {
-			Bool_t triangularPads = false;// Bucharest triangular pad-plane layout
-			Double_t triggerThreshold = 1.0e-6;//SIS300
-			CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
-			trdDigiPrf->SetTriangularPads(triangularPads);
-			trdDigiPrf->SetNCluster(1); // limits the number of iterations per MC-point to one
-			trdDigiPrf->SetPadPlaneScanArea(3,3); // limits the number of channels participating to the charge sharing (col,row)
-			run->AddTask(trdDigiPrf);
-			CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
-			trdCluster->SetNeighbourTrigger(true);
-			trdCluster->SetTriggerThreshold(triggerThreshold);
-			trdCluster->SetNeighbourRowTrigger(false);
-			trdCluster->SetPrimaryClusterRowMerger(true);
-			trdCluster->SetTriangularPads(triangularPads);
-			run->AddTask(trdCluster);
-			CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
-			trdHit->SetTriangularPads(triangularPads);
-			run->AddTask(trdHit);
-		}else if (trdHitProducerType == "clustering_free_1_1") {
-			Bool_t triangularPads = false;// Bucharest triangular pad-plane layout
-			Double_t triggerThreshold = 1.0e-6;//SIS300
-			CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
-			trdDigiPrf->SetTriangularPads(triangularPads);
-			//trdDigiPrf->SetNCluster(1); // limits the number of iterations per MC-point to one
-			trdDigiPrf->SetPadPlaneScanArea(1,1); // limits the number of channels participating to the charge sharing (col,row)
-			run->AddTask(trdDigiPrf);
-			CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
-			trdCluster->SetNeighbourTrigger(true);
-			trdCluster->SetTriggerThreshold(triggerThreshold);
-			trdCluster->SetNeighbourRowTrigger(false);
-			trdCluster->SetPrimaryClusterRowMerger(true);
-			trdCluster->SetTriangularPads(triangularPads);
-			run->AddTask(trdCluster);
-			CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
-			trdHit->SetTriangularPads(triangularPads);
-			run->AddTask(trdHit);
-		}else if (trdHitProducerType == "clustering_free_3_3") {
-			Bool_t triangularPads = false;// Bucharest triangular pad-plane layout
-			Double_t triggerThreshold = 1.0e-6;//SIS300
-			CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
-			trdDigiPrf->SetTriangularPads(triangularPads);
-			//trdDigiPrf->SetNCluster(1); // limits the number of iterations per MC-point to one
-			trdDigiPrf->SetPadPlaneScanArea(3,3); // limits the number of channels participating to the charge sharing (col,row)
-			run->AddTask(trdDigiPrf);
-			CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
-			trdCluster->SetNeighbourTrigger(true);
-			trdCluster->SetTriggerThreshold(triggerThreshold);
-			trdCluster->SetNeighbourRowTrigger(false);
-			trdCluster->SetPrimaryClusterRowMerger(true);
-			trdCluster->SetTriangularPads(triangularPads);
-			run->AddTask(trdCluster);
-			CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
-			trdHit->SetTriangularPads(triangularPads);
-			run->AddTask(trdHit);
 		}
 	}// isTRD
 
@@ -227,9 +123,7 @@ void run_reco_jpsi(Int_t nEvents = 2)
 	// ===                     TOF local reconstruction                      ===
 	// =========================================================================
 	if (IsTof(parFile)) {
-		// ------   TOF hit producer   ---------------------------------------------
-		//CbmTofHitProducer* tofHitProd = new CbmTofHitProducer("CbmTofHitProducer", iVerbose);
-		CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("TOF HitProducerNew",iVerbose);
+		CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("CbmTofHitProducerNew",iVerbose);
 		tofHitProd->SetInitFromAscii(kFALSE);
 		run->AddTask(tofHitProd);
 	} //isTof
@@ -252,10 +146,6 @@ void run_reco_jpsi(Int_t nEvents = 2)
 		CbmTrdSetTracksPidANN* trdSetTracksPidAnnTask = new CbmTrdSetTracksPidANN("CbmTrdSetTracksPidANN","CbmTrdSetTracksPidANN");
 		trdSetTracksPidAnnTask->SetTRDGeometryType("h++");
 		run->AddTask(trdSetTracksPidAnnTask);
-
-		//CbmTrdSetTracksPidLike* trdSetTracksPidLikeTask =
-		//		new CbmTrdSetTracksPidLike("CbmTrdSetTracksPidLike","CbmTrdSetTracksPidLike");
-		//run->AddTask(trdSetTracksPidLikeTask);
 	}//isTrd
 
     // =========================================================================
@@ -264,10 +154,10 @@ void run_reco_jpsi(Int_t nEvents = 2)
 	if (IsRich(parFile)){
 		CbmRichHitProducer* richHitProd	= new CbmRichHitProducer();
 		richHitProd->SetDetectorType(4);
-		richHitProd->SetNofNoiseHits(nofNoiseHitsInRich);
-		richHitProd->SetCollectionEfficiency(collectionEff);
-		richHitProd->SetSigmaMirror(sigmaErrorRich);
-		richHitProd->SetCrossTalkHitProb(crosstalkRich);
+		richHitProd->SetNofNoiseHits(220);
+		richHitProd->SetCollectionEfficiency(1.0);
+		richHitProd->SetSigmaMirror(0.06);
+		richHitProd->SetCrossTalkHitProb(0.02);
 		run->AddTask(richHitProd);
 
 		CbmRichReconstruction* richReco = new CbmRichReconstruction();
@@ -281,51 +171,6 @@ void run_reco_jpsi(Int_t nEvents = 2)
 	CbmMatchRecoToMC* matchRecoToMc = new CbmMatchRecoToMC();
 	run->AddTask(matchRecoToMc);
 
-	// Reconstruction Qa
-   CbmLitTrackingQa* trackingQa = new CbmLitTrackingQa();
-   trackingQa->SetMinNofPointsSts(4);
-   trackingQa->SetUseConsecutivePointsInSts(true);
-   trackingQa->SetMinNofPointsTrd(minNofPointsTrd);
-   trackingQa->SetMinNofPointsMuch(10);
-   trackingQa->SetMinNofPointsTof(1);
-   trackingQa->SetQuota(0.7);
-   trackingQa->SetMinNofHitsTrd(minNofPointsTrd);
-   trackingQa->SetMinNofHitsMuch(10);
-   trackingQa->SetVerbose(0);
-   trackingQa->SetMinNofHitsRich(7);
-   trackingQa->SetQuotaRich(0.6);
-   trackingQa->SetOutputDir(resultDir);
-   trackingQa->SetPRange(20, 0., 10.);
-   trackingQa->SetTrdAnnCut(trdAnnCut);
-   std::vector<std::string> trackCat, richCat;
-   trackCat.push_back("All");
-   trackCat.push_back("Electron");
-   richCat.push_back("Electron");
-   richCat.push_back("ElectronReference");
-   trackingQa->SetTrackCategories(trackCat);
-   trackingQa->SetRingCategories(richCat);
-  // run->AddTask(trackingQa);
-
-   CbmLitFitQa* fitQa = new CbmLitFitQa();
-   fitQa->SetMvdMinNofHits(0);
-   fitQa->SetStsMinNofHits(4);
-   fitQa->SetMuchMinNofHits(10);
-   fitQa->SetTrdMinNofHits(minNofPointsTrd);
-   fitQa->SetOutputDir(resultDir);
-  // run->AddTask(fitQa);
-
-   CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
-   clusteringQa->SetOutputDir(resultDir);
-  // run->AddTask(clusteringQa);
-
-    // =========================================================================
-    // ===                        ECAL reconstruction                        ===
-    // =========================================================================
-
-//  // -----   ECAL hit producer  ----------------------------------------------
-//  CbmEcalHitProducerFastMC* ecalHitProd
-//    = new CbmEcalHitProducerFastMC("ECAL Hitproducer");
-//  run->AddTask(ecalHitProd);
 
     // -----  Parameter database   --------------------------------------------
     FairRuntimeDb* rtdb = run->GetRuntimeDb();

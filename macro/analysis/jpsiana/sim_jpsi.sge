@@ -1,0 +1,110 @@
+#$ -wd /tmp 
+#$ -j y
+# Number of subtasks to start
+#$ -t 1-200
+
+#XXXXX=$(printf "%05d" "1")
+#XXXX=$(printf "%04d" "1")
+XXXXX=$(printf "%05d" "$SGE_TASK_ID")
+XXXX=$(printf "%04d" "$SGE_TASK_ID")
+
+# specify input and output directories
+outdir=/hera/cbm/users/slebedev/mc/dielectron/feb15/${coll_energy}/${pluto_particle}/
+cbmroot_config_path=/hera/cbm/users/slebedev/trunk/build/config.sh
+macro_dir=/hera/cbm/users/slebedev/trunk/cbmroot/macro/analysis/dielectron/
+
+
+# Needed to run macro via script
+export SCRIPT=yes
+
+# Number of events to run
+nevents=1000
+
+#create needed directories
+mkdir -p ${outdir}/log
+
+#create directory for output results
+mkdir -p ${outdir}/results/${XXXXX}/
+
+# setup the run environment
+source ${cbmroot_config_path}
+ 
+# This line is needed, otherwise root will crash
+export DISPLAY=localhost:0.0
+
+export URQMD_FILE=/hera/cbm/prod/gen/urqmd/auau/${coll_energy}/centr/urqmd.auau.${coll_energy}.centr.${XXXXX}.root
+
+export MC_FILE=${outdir}/mc.auau.${coll_energy}.centr.${XXXXX}.root
+export PAR_FILE=${outdir}/params.auau.${coll_energy}.centr.${XXXXX}.root
+export RECO_FILE=${outdir}/reco.auau.${coll_energy}.centr.${XXXXX}.root
+export LITQA_FILE=${outdir}/litqa.auau.${coll_energy}.centr.${XXXXX}.root
+export ANALYSIS_FILE=${outdir}/analysis.auau.${coll_energy}.centr.${XXXXX}.root
+export RESULT_DIR=
+
+#Simulation parameters
+#--------------------------------------------------
+export ELECTRONS=no
+# number of embedded electrons
+export NOF_ELECTRONS=0
+# number of embedded positrons
+export NOF_POSITRONS=0
+# If "yes" than UrQMD will be used as background
+export URQMD=yes
+# If "yes" PLUTO particles will be embedded
+export PLUTO=yes
+
+#Geometries
+export CAVE_GEOM=cave.geo
+
+#Set PIPE geometry
+export PIPE_GEOM=pipe/pipe_v14h.root
+
+#set STS geometry
+export STS_GEOM=sts/sts_v13d.geo.root
+export STS_DIGI=${VMCWORKDIR}/parameters/sts/sts_v13d_std.digi.par
+export STS_MATERIAL_BUDGET_FILE=${VMCWORKDIR}/parameters/sts/sts_matbudget_v13d.root
+
+#Set RICH geometry
+export RICH_GEOM=rich/rich_v14a_3e.root
+
+#Set TRD geometry
+# digi or smearing or clustering
+export TRD_HIT_PRODUCER_TYPE=smearing
+export TRD_GEOM=trd/trd_v14a_3e.geo.root
+export TRD_DIGI=${VMCWORKDIR}/parameters/trd/trd_v14a_3e.digi.par
+export TRD_ANN_CUT=0.85
+export MIN_NOF_POINTS_TRD=6
+
+#Set TOF geometry
+export TOF_GEOM=tof/tof_v13b.geo.root
+export TOF_DIGI=${VMCWORKDIR}/parameters/tof/tof_v13b.digi.par
+export TOF_HIT_PRODUCER_TYPE=v13
+
+#Set magnetic field
+export FIELD_MAP=field_v12a
+export MAGNET_GEOM=magnet/magnet_v12a.geo
+export FIELD_MAP_SCALE=${field_scale}
+
+#Set PLUTO file
+export PLUTO_PARTICLE=${pluto_particle}
+if [ ${pluto_particle} = "jpsi" ] ; then 
+   export PLUTO_FILE=/hera/cbm/users/ekrebs/pluto/jpsi/25gev/jpsi/epempluto.auau.${ENERGY}.rho0.epem.${XXXX}.root
+elif [ ${pluto_particle} = "psiprim" ] ; then 
+   export PLUTO_FILE=/hera/cbm/users/ekrebs/pluto/cktA/${ENERGY}/omega/epem/pluto.auau.${ENERGY}.omega.epem.${XXXX}.root
+fi 
+
+# create special and enter special workdir for job
+username=$(whoami)
+workdir=/tmp/$username/$JOB_ID.$SGE_TASK_ID
+mkdir -p $workdir
+cd $workdir
+
+# run the root simulation
+root -b -l -q "${macro_dir}/run_sim.C(${nevents})"
+root -b -l -q "${macro_dir}/run_reco.C(${nevents})"
+root -b -l -q "${macro_dir}/run_litqa.C(${nevents})"
+root -b -l -q "${macro_dir}/run_analysis.C(${nevents})"
+
+cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log
+
+export SCRIPT=no
