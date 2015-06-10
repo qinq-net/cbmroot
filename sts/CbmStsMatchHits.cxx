@@ -18,7 +18,6 @@
 #include "FairRuntimeDb.h"
 
 // --- Includes from STS
-#include "CbmGeoStsPar.h"
 #include "CbmGeoPassivePar.h"
 #include "CbmStsHit.h"
 #include "CbmStsMatchHits.h"
@@ -42,7 +41,6 @@ using namespace std;
 
 CbmStsMatchHits::CbmStsMatchHits()
     : FairTask("CbmStsMatchHits")
-    , fGeoPar(NULL)
     , fPoints(NULL)
     , fDigis(NULL)
     , fDigiMatches(NULL)
@@ -70,8 +68,6 @@ CbmStsMatchHits::~CbmStsMatchHits()
 {
     if (fPassGeo)
         delete fPassGeo;
-    if (fGeoPar)
-        delete fGeoPar;
 }
 // -------------------------------------------------------------------------
 
@@ -485,8 +481,7 @@ void CbmStsMatchHits::SetParContainers()
 
     // Get STS geometry and digitisation parameter container
     fPassGeo = (CbmGeoPassivePar*)db->getContainer("CbmGeoPassivePar");
-    fGeoPar = (CbmGeoStsPar*)db->getContainer("CbmGeoStsPar");
-}
+ }
 // -------------------------------------------------------------------------
 
 // -----   Private method Init   -------------------------------------------
@@ -574,64 +569,8 @@ InitStatus CbmStsMatchHits::GetGeometry()
 
 
     // Get STS geometry
-    if (!fGeoPar)
-    {
-        cout << "-W- " << GetName() << "::GetGeometry: No passive geometry!" << endl;
-        fNStations = 0;
-        return kERROR;
-    }
-    TObjArray* stsNodes = fGeoPar->GetGeoSensitiveNodes();
-    if (!stsNodes)
-    {
-        cout << "-E- " << GetName() << "::GetGeometry: No STS node array" << endl;
-        fNStations = 0;
-        return kERROR;
-    }
-    Int_t tempNofStations = stsNodes->GetEntries();
-    cout << "Nodes in STS: " << tempNofStations << endl;
+    fNStations = CbmStsSetup::Instance()->GetNofDaughters();
 
-    cout << "There are " << tempNofStations << " nodes" << (tempNofStations > 10 ? "!!!" : "") << endl;
-
-    TString geoNodeName;
-    fNStations = 0;
-    TString stationNames[1000];
-    for (Int_t ist = 0; ist < tempNofStations; ist++)
-    {
-        FairGeoNode* stsNode = (FairGeoNode*)stsNodes->At(ist);
-        if (!stsNode)
-        {
-            cout << "-W- CbmStsDigiScheme::Init: station#" << ist << " not found among sensitive nodes " << endl;
-            continue;
-        }
-        geoNodeName = stsNode->getName();
-        //    TArrayD* params = stsNode->getParameters();
-
-        Bool_t stationKnown = kFALSE;
-        // check if the node belongs to some station, save the MCId and outer radius
-        for (Int_t ikst = 0; ikst < fNStations; ikst++)
-            if (geoNodeName.Contains(stationNames[ikst]))
-            {
-                fStationNrFromMcId[stsNode->getMCid()] = ikst;
-                stationKnown = kTRUE;
-            }
-
-        if (stationKnown)
-            continue;
-
-        // if not known, register it and save MCId
-        fStationNrFromMcId[stsNode->getMCid()] = fNStations;
-
-        // it will work only if the node name is organized as:
-        // for station name is "stsstationXX", where XX is the station number (f.e. XX=07 for station number 7)
-        // for sector  name is "stsstationXXanythingHereToDistinguishDifferentSectors"
-        geoNodeName.Remove(12, geoNodeName.Length() - 12);
-        stationNames[fNStations] = geoNodeName.Data();
-        fNStations++;
-
-        cout << "station #" << fNStations << " has MCID = " << stsNode->getMCid() << " and name " << stsNode->GetName() << endl;
-
-        //    fStationsMCId[fNStations] = stsNode->getMCid(); // not used
-    }
     cout << "There are " << fNStations << " stations" << endl;
 
     return kSUCCESS;

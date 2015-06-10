@@ -48,6 +48,8 @@ legacy/CbmStsDigiScheme.cxx
 legacy/CbmStsDigitize_old.cxx 
 legacy/CbmStsFindHitsQa.cxx
 legacy/CbmStsFindHits_old.cxx 
+legacy/CbmGeoSts.cxx 
+legacy/CbmGeoStsPar.cxx 
 legacy/CbmStsIdealDigitize.cxx 
 legacy/CbmStsIdealFindHits.cxx 
 legacy/CbmStsParAsciiFileIo.cxx 
@@ -69,8 +71,6 @@ ${SRCS_SETUP}
 ${SRCS_MC}
 ${SRCS_DIGITIZE}
 ${SRCS_RECO}
-CbmGeoSts.cxx 
-CbmGeoStsPar.cxx 
 CbmStsContFact.cxx 
 CbmStsFindTracks.cxx 
 CbmStsFindTracksQa.cxx 

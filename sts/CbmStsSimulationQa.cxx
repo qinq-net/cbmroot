@@ -6,13 +6,11 @@
 #include "CbmStsSimulationQa.h"
 
 #include "CbmStsPoint.h"
-// #include "CbmStsTrack.h"
-//#include "CbmStsTrackMatch.h"
-#include "CbmGeoStsPar.h"
 
 #include "CbmDetectorList.h"
 #include "FairGeoNode.h"
 #include "CbmGeoPassivePar.h"
+#include "CbmStsSetup.h"
 #include "FairGeoTransform.h"
 #include "FairGeoVector.h"
 #include "CbmMCTrack.h"
@@ -48,7 +46,6 @@ CbmStsSimulationQa::CbmStsSimulationQa()
      fMCTracks(NULL),
      fSTSPoints(NULL),
      fPassGeo(NULL),
-     fStsGeo(NULL),
      fTargetPos(0., 0., 0.),
      fNStations(0),
      fStationsMCId(),
@@ -84,7 +81,6 @@ CbmStsSimulationQa::CbmStsSimulationQa(Bool_t visualizeBool, Int_t iVerbose)
     fMCTracks(NULL),
     fSTSPoints(NULL),
     fPassGeo(NULL),
-    fStsGeo(NULL),
     fTargetPos(0., 0., 0.),
     fNStations(0),
     fStationsMCId(),
@@ -150,14 +146,6 @@ void CbmStsSimulationQa::SetParContainers() {
   if ( ! fPassGeo ) {
     cout << "-E- " << GetName() << "::SetParContainers: "
 	 << "No passive geometry parameters!" << endl;
-    return;
-  }
-
-  // Get STS geometry parameters
-  fStsGeo = (CbmGeoStsPar*) runDb->getContainer("CbmGeoStsPar");
-  if ( ! fStsGeo ) {
-    cout << "-E- " << GetName() << "::SetParContainers: "
-	 << "No Sts geometry parameters!" << endl;
     return;
   }
 
@@ -279,7 +267,11 @@ InitStatus CbmStsSimulationQa::ReInit() {
 
 // -----   Public method Exec   --------------------------------------------
 void CbmStsSimulationQa::Exec(Option_t* opt) {
-  //  cout << "EXEC" << endl;
+
+
+	//TODO: This method will not work in the way implemented. Have a look.
+	// For the time being, just do nothing.
+	return;
 
   Int_t nofMCTracks = fMCTracks->GetEntriesFast();
   Int_t nofSTSPoints = fSTSPoints->GetEntriesFast();
@@ -434,87 +426,8 @@ void CbmStsSimulationQa::Finish()
 InitStatus CbmStsSimulationQa::GetGeometry() {
 
   cout << "GET GEOMETRY" << endl;
-  // Get Sts geometry
-  if ( ! fStsGeo ) {
-    cout << "-W- " << GetName() << "::GetGeometry: No passive geometry!"
-	 <<endl;
-    fNStations = 0;
-    return kERROR;
-  }
-  TObjArray* stsNodes = fStsGeo->GetGeoSensitiveNodes();
-  if ( ! stsNodes ) {
-    cout << "-E- " << GetName() << "::GetGeometry: No Sts node array"
-	 << endl;
-    fNStations = 0;
-    return kERROR;
-  }
-  Int_t tempNofStations = stsNodes->GetEntries();
 
-//   cout << "There are " << tempNofStations << " nodes" << (tempNofStations > 10 ? "!!!" : "" ) << endl;
-
-  TString geoNodeName;
-  fNStations = 0;
-  TString stationNames[10];
-  for ( Int_t ist = 0 ; ist < tempNofStations ; ist++ ) {
-    FairGeoNode* stsNode = (FairGeoNode*)stsNodes->At(ist);
-    if ( ! stsNode ) {
-      cout << "-W- CbmStsDigiScheme::Init: station#" << ist
-	   << " not found among sensitive nodes " << endl;
-      continue;
-    }
-    geoNodeName = stsNode->GetName();
-    TArrayD* params = stsNode->getParameters();
-
-    Bool_t stationKnown = kFALSE;
-    // check if the node belongs to some station, save the MCId and outer radius
-    for ( Int_t ikst = 0 ; ikst < fNStations ; ikst++ )
-      if ( geoNodeName.Contains(stationNames[ikst]) ) {
-	FairGeoTransform* transform = stsNode->getLabTransform();
-	FairGeoVector translat = transform->getTranslation();
-	FairGeoTransform center = stsNode->getCenterPosition();
-	FairGeoVector centerV = center.getTranslation();
-	Double_t radialSize = TMath::Sqrt((translat.X() + centerV.X() + params->At(0))*
-					  (translat.X() + centerV.X() + params->At(0)) +
-					  (translat.Y() + centerV.Y() + params->At(1))*
-					  (translat.Y() + centerV.Y() + params->At(1)));
-	if ( radialSize > fStationRadius[ikst] ) {
-// 	  cout << "Found bigger radius for station " << ikst << " -> " << radialSize << endl;
-	  fStationRadius[ikst] = radialSize;
-	}
-	fStationNrFromMcId[stsNode->getMCid()] = ikst;
-	stationKnown = kTRUE;
-      }
-
-    if ( stationKnown ) continue;
-
-    // if not known, register it and save MCId
-    fStationNrFromMcId[stsNode->getMCid()] = fNStations;
-
-    if ( geoNodeName.Length() == 12 )
-      fStationRadius[fNStations] = params->At(1);
-    else {
-      FairGeoTransform* transform = stsNode->getLabTransform();
-      FairGeoVector translat = transform->getTranslation();
-      FairGeoTransform center = stsNode->getCenterPosition();
-      FairGeoVector centerV = center.getTranslation();
-      Double_t radialSize = TMath::Sqrt((translat.X() + centerV.X() + params->At(0))*
-					(translat.X() + centerV.X() + params->At(0)) +
-					(translat.Y() + centerV.Y() + params->At(1))*
-					(translat.Y() + centerV.Y() + params->At(1)));
-      fStationRadius[fNStations] = radialSize;
-    }
-    // it will work only if the node name is organized as:
-    // for station name is "stsstationXX", where XX is the station number (f.e. XX=07 for station number 7)
-    // for sector  name is "stsstationXXanythingHereToDistinguishDifferentSectors"
-    geoNodeName.Remove(12,geoNodeName.Length()-12);
-    stationNames[fNStations] = geoNodeName.Data();
-    fNStations++;
-
-//     cout << "station #" << fNStations << " has MCID = " << stsNode->getMCid() << " and name " << stsNode->GetName() << endl;
-
-    //    fStationsMCId[fNStations] = stsNode->getMCid(); // not used
-  }
-//   cout << "There are " << fNStations << " stations" << endl;
+  fNStations = CbmStsSetup::Instance()->GetNofDaughters();
 
   return kSUCCESS;
 

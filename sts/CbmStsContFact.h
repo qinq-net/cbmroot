@@ -1,3 +1,7 @@
+/** This class is for the time being a placeholder, since now STS parameters
+ ** are implemented.
+ **/
+
 #ifndef CBMSTSCONTFACT_H
 #define CBMSTSCONTFACT_H
 

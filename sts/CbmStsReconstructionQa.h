@@ -31,7 +31,6 @@ class TH2F;
 class TH3F;
 class TList;
 class CbmGeoPassivePar;
-class CbmGeoStsPar;
 class CbmMCTrack;
 
 
@@ -135,7 +134,6 @@ class CbmStsReconstructionQa : public FairTask
 
   /** Geometry parameters **/
   CbmGeoPassivePar* fPassGeo;             // Passive geometry parameters
-  CbmGeoStsPar*     fStsGeo;              // STS geometry parameters
   TVector3 fTargetPos;                    // Target centre position
   Int_t fNStations;                       // Number of STS stations
   Int_t fStationNrFromMcId[10000];         // station number from mc id

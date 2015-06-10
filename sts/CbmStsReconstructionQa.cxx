@@ -12,8 +12,8 @@
 #include "CbmStsDigi.h"
 #include "CbmStsPoint.h"
 #include "CbmStsTrack.h"
+#include "CbmStsSetup.h"
 #include "CbmTrackMatch.h"
-#include "CbmGeoStsPar.h"
 
 // Includes from base
 #include "FairGeoNode.h"
@@ -65,7 +65,6 @@ CbmStsReconstructionQa::CbmStsReconstructionQa(Int_t iVerbose)
     fMatches(NULL),           // StsTrackMatch
     fStsDigis(NULL),          // StsDigi
     fPassGeo(NULL),
-    fStsGeo(NULL),
     fTargetPos(0., 0., 0.),
     fNStations(0),
     fStationNrFromMcId(),
@@ -163,7 +162,6 @@ CbmStsReconstructionQa::CbmStsReconstructionQa(Bool_t visualizeBool, Int_t minHi
     fMatches(NULL),           // StsTrackMatch
     fStsDigis(NULL),          // StsDigi
     fPassGeo(NULL),
-    fStsGeo(NULL),
     fTargetPos(0., 0., 0.),
     fNStations(0),
     fStationNrFromMcId(),
@@ -294,14 +292,6 @@ void CbmStsReconstructionQa::SetParContainers() {
   if ( ! fPassGeo ) {
     cout << "-E- " << GetName() << "::SetParContainers: "
 	 << "No passive geometry parameters!" << endl;
-    return;
-  }
-
-  // Get STS geometry parameters
-  fStsGeo = (CbmGeoStsPar*) runDb->getContainer("CbmGeoStsPar");
-  if ( ! fStsGeo ) {
-    cout << "-E- " << GetName() << "::SetParContainers: "
-	 << "No STS geometry parameters!" << endl;
     return;
   }
 
@@ -470,6 +460,9 @@ InitStatus CbmStsReconstructionQa::ReInit() {
 
 // -----   Public method Exec   --------------------------------------------
 void CbmStsReconstructionQa::Exec(Option_t* opt) {
+
+	// TODO: This method probably does not work since the STS geometry
+	// is not properly set becauses of changes in GetGeometry().
   // Timer
   fTimer.Start();
 
@@ -1095,84 +1088,8 @@ InitStatus CbmStsReconstructionQa::GetGeometry() {
   fTargetPos.SetXYZ(targetX, targetY, targetZ);
   
   // Get STS geometry
-  if ( ! fStsGeo ) {
-    cout << "-W- " << GetName() << "::GetGeometry: No passive geometry!"
-	 <<endl;
-    fNStations = 0;
-    return kERROR;
-  }
-  TObjArray* stsNodes = fStsGeo->GetGeoSensitiveNodes();
-  if ( ! stsNodes ) {
-    cout << "-E- " << GetName() << "::GetGeometry: No STS node array" 
-	 << endl;
-    fNStations = 0;
-    return kERROR;
-  }
-  Int_t tempNofStations = stsNodes->GetEntries();
+  fNStations = CbmStsSetup::Instance()->GetNofDaughters();
 
-  if ( fVerbose > 2 )  
-    cout << "There are " << tempNofStations << " nodes" 
-	 << (tempNofStations > 10 ? "!!!" : "" ) << endl;
-
-  TString geoNodeName;
-  fNStations = 0;
-  TString stationNames[100];
-  Bool_t stationKnown = kFALSE;
-
-  for ( Int_t istat = 0 ; istat < 20 ; istat++ )
-    fNSectors[istat] = 0;
-  
-  for ( Int_t ist = 0 ; ist < tempNofStations ; ist++ ) {
-
-    FairGeoNode* stsNode = (FairGeoNode*)stsNodes->At(ist);
-    if ( ! stsNode ) {
-      cout << "-W- CbmStsDigiScheme::Init: station#" << ist
-	   << " not found among sensitive nodes " << endl;
-      continue;
-    }
-    geoNodeName = stsNode->GetName();
-    //    TArrayD* params = stsNode->getParameters();
-
-    stationKnown = kFALSE;
-
-    FairGeoVector* pt1 = stsNode->getPoint(0);
-    FairGeoVector* pt2 = stsNode->getPoint(1);
-    Double_t sectorWidth = TMath::Abs(pt1->getX()-pt2->getX());
-    //    cout << geoNodeName.Data() << " -> " << sectorWidth << " cm wide" << endl;
-
-    // check if the node belongs to some station, save the MCId
-    for ( Int_t ikst = 0 ; ikst < fNStations ; ikst++ )
-      if ( geoNodeName.Contains(stationNames[ikst]) ) {
-	fStationNrFromMcId[stsNode->getMCid()] = ikst;
-	stationKnown = kTRUE;
-	fWidthSectors[ikst][fNSectors[ikst]] = sectorWidth;
-	fNSectors[ikst]++;
-      }
-
-    if ( stationKnown ) continue;
-
-    // if not known, register it and save MCId
-    fStationNrFromMcId[stsNode->getMCid()] = fNStations;
-    fWidthSectors[fNStations][fNSectors[fNStations]] = sectorWidth;
-    fNSectors[fNStations]++;
-
-    // it will work only if the node name is organized as:
-    // for station name is "stsstationXX", where XX is the station number (f.e. XX=07 for station number 7)
-    // for sector  name is "stsstationXXanythingHereToDistinguishDifferentSectors"
-    geoNodeName.Remove(12,geoNodeName.Length()-12);
-    stationNames[fNStations] = geoNodeName.Data();
-    fNStations++;
-
-    if ( fVerbose > 3 )
-      cout << "station #" << fNStations << " has MCID = " 
-	   << stsNode->getMCid() << " and name " << stsNode->GetName() << endl;
-    
-    //    fStationsMCId[fNStations] = stsNode->getMCid(); // not used
-  }
-  cout << "    Stations: " << fNStations << " contain" << flush;
-  for ( Int_t istat = 0 ; istat < fNStations ; istat++ )
-    cout << "  " << fNSectors[istat] << flush;
-  cout << "  sensors" << endl;
 
   return kSUCCESS;
 

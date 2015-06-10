@@ -24,7 +24,6 @@
 #include <map>
 
 class TClonesArray;
-class CbmGeoStsPar;
 class CbmStsHit;
 
 class CbmStsIdealMatchHits : public FairTask
@@ -60,8 +59,7 @@ private:
     virtual void Finish();
 
     // -----  Data members ----------
-    CbmGeoStsPar* fGeoPar;         /** Geometry parameter container **/
-    TClonesArray* fPoints;         /** Array of CbmStsPoint **/
+     TClonesArray* fPoints;         /** Array of CbmStsPoint **/
     TClonesArray* fDigis;          /** Array of CbmStsDigi **/
     TClonesArray* fDigiMatches;    /** Array of CbmMatch **/
     TClonesArray* fHits;           /** Array of CbmStsHit **/

@@ -37,8 +37,6 @@
 #pragma link C++ enum EStsElementLevel;
 
 // Others
-#pragma link C++ class CbmGeoSts+;
-#pragma link C++ class CbmGeoStsPar;
 #pragma link C++ class CbmStsContFact;
 #pragma link C++ class CbmStsFindTracks+;
 #pragma link C++ class CbmStsFindTracksQa+;

@@ -12,7 +12,6 @@
 #include "CbmMvdGeoPar.h"
 #include "CbmMvdStationPar.h"
 #include "CbmMvdDetector.h"
-#include "CbmGeoStsPar.h"
 #include "CbmGeoRichPar.h"
 #include "CbmGeoTrdPar.h"
 #include "CbmGeoTofPar.h"
@@ -83,7 +82,6 @@ void CbmKF::SetParContainers()
   rtdb->getContainer("FairBaseParSet");
   rtdb->getContainer("CbmGeoPassivePar");
   rtdb->getContainer("CbmMvdGeoPar");
-  rtdb->getContainer("CbmGeoStsPar");
   rtdb->getContainer("CbmGeoTrdPar");
   rtdb->getContainer("CbmGeoRichPar");
   rtdb->getContainer("CbmGeoMuchPar");
@@ -181,15 +179,14 @@ InitStatus CbmKF::Init()
   }
 
 
-  CbmGeoStsPar* StsPar = reinterpret_cast<CbmGeoStsPar*>(RunDB->findContainer("CbmGeoStsPar"));
 
-  if( StsPar ){ //=== Sts stations ===
+  //=== Sts stations ===
     
-    if( fVerbose ) cout<<"KALMAN FILTER : === READ STS MATERIAL ==="<<endl;
+  if( fVerbose ) cout<<"KALMAN FILTER : === READ STS MATERIAL ==="<<endl;
 
-    int NStations = CbmStsSetup::Instance()->GetNofDaughters();
+  int NStations = CbmStsSetup::Instance()->GetNofDaughters();
 
-    for ( Int_t ist = 0; ist<NStations; ist++ )
+  for ( Int_t ist = 0; ist<NStations; ist++ )
       {
 	CbmStsStation* station = dynamic_cast<CbmStsStation*> (CbmStsSetup::Instance()->GetDaughter(ist));
 
@@ -216,7 +213,6 @@ InitStatus CbmKF::Init()
 			   << tube.ID<<", " << tube.z<<", " << tube.dz
 			   <<", " << tube.r<<", " << tube.R<<", " << tube.RadLength<<" )"<<endl;	
       }
-  }
   
   //=== Rich ===
   

@@ -21,7 +21,6 @@
 #include "FairRuntimeDb.h"
 
 // --- Includes from STS
-#include "CbmGeoStsPar.h"
 #include "CbmStsHit.h"
 #include "CbmStsIdealMatchHits.h"
 #include "CbmStsPoint.h"
@@ -44,7 +43,6 @@ using std::setprecision;
 // -----   Default constructor   -------------------------------------------
 CbmStsIdealMatchHits::CbmStsIdealMatchHits()
     : FairTask("STSMatchHits", 1)
-    , fGeoPar(NULL)
     , fPoints(NULL)
     , fDigis(NULL)
     , fDigiMatches(NULL)
@@ -66,7 +64,6 @@ CbmStsIdealMatchHits::CbmStsIdealMatchHits()
 // -----   Standard constructor   ------------------------------------------
 CbmStsIdealMatchHits::CbmStsIdealMatchHits(Int_t iVerbose)
     : FairTask("STSMatchHits", iVerbose)
-    , fGeoPar(NULL)
     , fPoints(NULL)
     , fDigis(NULL)
     , fDigiMatches(NULL)
@@ -88,7 +85,6 @@ CbmStsIdealMatchHits::CbmStsIdealMatchHits(Int_t iVerbose)
 // -----   Constructor with name   -----------------------------------------
 CbmStsIdealMatchHits::CbmStsIdealMatchHits(const char* name, Int_t iVerbose)
     : FairTask(name, iVerbose)
-    , fGeoPar(NULL)
     , fPoints(NULL)
     , fDigis(NULL)
     , fDigiMatches(NULL)
@@ -110,8 +106,6 @@ CbmStsIdealMatchHits::CbmStsIdealMatchHits(const char* name, Int_t iVerbose)
 // -----   Destructor   ----------------------------------------------------
 CbmStsIdealMatchHits::~CbmStsIdealMatchHits()
 {
-    if (fGeoPar)
-        delete fGeoPar;
 }
 // -------------------------------------------------------------------------
 
@@ -379,9 +373,7 @@ void CbmStsIdealMatchHits::SetParContainers()
     if (!db)
         Fatal("SetParContainers", "No runtime database");
 
-    // Get STS geometry and digitisation parameter container
-    fGeoPar = (CbmGeoStsPar*)db->getContainer("CbmGeoStsPar");
-}
+ }
 // -------------------------------------------------------------------------
 
 // -----   Private method Init   -------------------------------------------

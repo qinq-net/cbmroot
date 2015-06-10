@@ -12,8 +12,6 @@
 
 #include "CbmStsContFact.h"
 
-#include "CbmGeoStsPar.h"
-
 #include "FairRuntimeDb.h"
 #include "CbmParTest.h"
 #include "FairParRootFileIo.h"
@@ -31,8 +29,10 @@ ClassImp(CbmStsContFact)
 
 static CbmStsContFact gCbmStsContFact;
 
+/** Constructor
+ ** Is called when the library is loaded
+ **/
 CbmStsContFact::CbmStsContFact() {
-  // Constructor (called when the library is loaded)
   fName="CbmStsContFact";
   fTitle="Factory for parameter containers in libSts";
   setAllContainers();
@@ -41,27 +41,33 @@ CbmStsContFact::CbmStsContFact() {
 
 void CbmStsContFact::setAllContainers() {
   /** Creates the Container objects with all accepted contexts and adds them to
-   *  the list of containers for the STS library.*/
+   *  the list of containers for the STS library.
+   *  Below is an example. There are at the moment no parameters to handle.
+   **/
+	/*
     FairContainer* p2= new FairContainer("CbmGeoStsPar",
                                           "Sts Geometry Parameters",
                                           "TestDefaultContext");
     p2->addContext("TestNonDefaultContext");
 
     containers->Add(p2);
+    */
 }
 
 FairParSet* CbmStsContFact::createContainer(FairContainer* c) {
   /** Calls the constructor of the corresponding parameter container.
    * For an actual context, which is not an empty string and not the default context
-   * of this container, the name is concatinated with the context. */
+   * of this container, the name is concatenated with the context.
+  *  Below is an example. There are at the moment no parameters to handle.
+  */
   const char* name=c->GetName();
   cout << " -I container name " << name << endl;
   FairParSet* p=0;
   if (strcmp(name,"CbmStsDigiPar")==0) {
- //   p=new CbmStsDigiPar(c->getConcatName().Data(),c->GetTitle(),c->getContext());
+  //  p=new CbmStsDigiPar(c->getConcatName().Data(),c->GetTitle(),c->getContext());
   }
   if (strcmp(name,"CbmGeoStsPar")==0) {
-    p=new CbmGeoStsPar(c->getConcatName().Data(),c->GetTitle(),c->getContext());
+  //  p=new CbmGeoStsPar(c->getConcatName().Data(),c->GetTitle(),c->getContext());
   }
   return p;
 }

@@ -29,9 +29,6 @@ class TH1;
 class TH1F;
 class TList;
 class CbmGeoPassivePar;
-class CbmGeoStsPar;
-class CbmStsDigiPar;
-class CbmStsDigiScheme;
 
 
 
@@ -136,10 +133,7 @@ class CbmStsFindTracksQa : public FairTask
 
   /** Geometry parameters **/
   CbmGeoPassivePar* fPassGeo;             // Passive geometry parameters
-  CbmGeoStsPar*     fStsGeo;              // STS geometry parameters
 
-  CbmStsDigiScheme* fDigiScheme;          /** Digitisation scheme for STS **/
-  CbmStsDigiPar*    fDigiPar;     /** Digitisation parameters **/
   TVector3 fTargetPos;                    // Target centre position
   Int_t fNStations;                       // Number of STS stations
 

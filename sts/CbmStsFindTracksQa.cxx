@@ -11,7 +11,6 @@
 #include "CbmStsSetup.h"
 #include "CbmStsTrack.h"
 #include "CbmTrackMatch.h"
-#include "CbmGeoStsPar.h"
 
 // Includes from base
 #include "FairGeoNode.h"
@@ -58,8 +57,6 @@ CbmStsFindTracksQa::CbmStsFindTracksQa(Int_t iVerbose)
     fStsTracks(NULL),
     fMatches(NULL),
     fPassGeo(NULL),
-    fStsGeo(NULL),
-    fDigiPar(NULL),
     fTargetPos(0.,0.,0.),
     fNStations(0),
     fMinHits(4),
@@ -121,8 +118,6 @@ CbmStsFindTracksQa::CbmStsFindTracksQa(Int_t minHits, Double_t quota,
     fStsTracks(NULL),
     fMatches(NULL),
     fPassGeo(NULL),
-    fStsGeo(NULL),
-    fDigiPar(),
     fTargetPos(0.,0.,0.),
     fNStations(0),
     fMinHits(minHits),
@@ -209,14 +204,6 @@ void CbmStsFindTracksQa::SetParContainers() {
     return;
   }
   cout << "Passive :" << fPassGeo << endl;
-
-  // Get STS geometry parameters
-  fStsGeo = (CbmGeoStsPar*) runDb->getContainer("CbmGeoStsPar");
-  cout << "StsGeo :" << fStsGeo << endl;
-
-  // Get STS digitisation parameter container
-  fDigiPar = (CbmStsDigiPar*) runDb->getContainer("CbmStsDigiPar");
-
 }
 // -------------------------------------------------------------------------
 
