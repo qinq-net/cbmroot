@@ -54,7 +54,12 @@ legacy/CbmStsParAsciiFileIo.cxx
 legacy/CbmStsRealClusterFinder.cxx 
 legacy/CbmStsRealDigitize.cxx 
 legacy/CbmStsRealFindHits.cxx 
+legacy/CbmStsRealMatchHits.cxx 
+legacy/CbmStsSector.cxx 
+legacy/CbmStsSectorDigiPar.cxx 
+legacy/CbmStsSensorDigiPar.cxx 
 legacy/CbmStsSensor_old.cxx
+legacy/CbmStsStationDigiPar.cxx 
 legacy/CbmStsStation_old.cxx
 )
 
@@ -75,10 +80,6 @@ CbmStsIdealMatchHits.cxx
 CbmStsMatchHits.cxx 
 CbmStsMatchTracks.cxx 
 CbmStsRadTool.cxx
-CbmStsSensorDigiPar.cxx 
-CbmStsSector.cxx 
-CbmStsSectorDigiPar.cxx 
-CbmStsStationDigiPar.cxx 
 CbmStsTrackFinderIdeal.cxx 
 CbmStsTrackFitterIdeal.cxx 
 CbmStsSimulationQa.cxx 

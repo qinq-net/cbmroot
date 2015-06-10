@@ -48,10 +48,6 @@
 #pragma link C++ class CbmStsMatchHits+;
 #pragma link C++ class CbmStsMatchTracks+;
 #pragma link C++ class CbmStsRadTool;
-#pragma link C++ class CbmStsSector+;
-#pragma link C++ class CbmStsSensorDigiPar+;
-#pragma link C++ class CbmStsSectorDigiPar+;
-#pragma link C++ class CbmStsStationDigiPar+;
 #pragma link C++ class CbmStsTrackFinderIdeal+;
 #pragma link C++ class CbmStsTrackFitterIdeal+;
 #pragma link C++ class CbmStsSimulationQa+;
