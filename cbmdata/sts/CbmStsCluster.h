@@ -1,11 +1,12 @@
 /**
- * \file CbmStsCluster.h
- * \author V.Friese <v.friese@gsi.de>
- * \since 28.08.06
- * \brief Data class for STS clusters.
- *
- * Updated 25/06/2008 by R. Karabowicz.
- * Updated 04/03/2014 by A. Lebedev <andrey.lebedev@gsi.de>
+ ** \file CbmStsCluster.h
+ ** \author V.Friese <v.friese@gsi.de>
+ ** \since 28.08.06
+ ** \brief Data class for STS clusters.
+ **
+ ** Updated 25/06/2008 by R. Karabowicz.
+ ** Updated 04/03/2014 by A. Lebedev <andrey.lebedev@gsi.de>
+ ** Updated 10/06/2014 by V.Friese <v.friese@gsi.de>
  **/
 
 #ifndef CBMSTSCLUSTER_H
@@ -14,38 +15,57 @@
 #include "CbmCluster.h"
 
 /**
- * \class CbmStsCluster
- * \brief Data class for STS clusters.
+ ** \class CbmStsCluster
+ ** \brief Data class for STS clusters.
+ **
+ ** The CbmStsCluster is a collection of CbmStsDigis in neighbouring
+ ** module channels. Apart from the indices of the contributing digis,
+ ** it provides address, time, total charge, mean position in channel units
+ ** and the error of the latter.
  **/
 class CbmStsCluster : public CbmCluster
 {
-public:
+
+	public:
+
     /**
      * \brief Default constructor
      **/
     CbmStsCluster();
+
 
     /**
      * \brief Destructor
      **/
     virtual ~CbmStsCluster();
 
-    /** Get cluster centre
-     ** @param Cluster centre in channel units
+
+    /** @brief Get cluster centre
+     ** @value Cluster centre in channel units
      **/
     Double_t GetCentre() const { return fChannelMean; }
 
 
-    /** Get cluster charge
+    /** @brief Get cluster charge
      ** @value  Total cluster charge [e]
+     **
+     ** This is the sum of the charges of the contributing digis.
      **/
     Double_t GetCharge() const { return fCharge; }
 
 
-    /** Get cluster index
+    /** @brief Get cluster index
      ** @return Index of cluster in cluster array
      **/
     Int_t GetIndex() const { return fIndex; }
+
+
+    /** @brief Get cluster time
+     ** @return Time of cluster [ns]
+     **
+     ** This is the average time of the contributing digis.
+     **/
+    Double_t GetTime() const { return fTime; }
 
 
     /** @brief Set cluster index
@@ -54,48 +74,12 @@ public:
      **/
     void SetIndex(Int_t index) { fIndex = index; }
 
-    /**   Sector number
-     **    Kept for bacjwrad compatibility
-     **/
-    void SetSectorNr(Int_t sectorNr)
-    {
-        fSectorNr = sectorNr;
-    }
-    void SetMean(Double_t mean)
-    {
-        fMean = mean;
-    }
-    void SetMeanError(Double_t meanError)
-    {
-        fMeanError = meanError;
-    }
 
-    /** Accessors **/
-    Double_t GetMean() const
-    {
-        return fMean;
-    }
-    Double_t GetMeanError() const
-    {
-        return fMeanError;
-    }
-    /**   Sector number
-     **    Kept for bacjwrad compatibility
-     **/
-    Int_t GetSectorNr() const
-    {
-        return fSectorNr;
-    }
-
-
-    /** Time **/
-    Double_t GetTime() const { return fTime; }
-
-
-    /** Set charge, channel mean and channel mean square
-     ** @param charge  Total charge in cluster
-     ** @param channelMean  Charge-weighted mean channel number
+    /** Set cluster properties (time, charge, mean)
+     ** @param charge         Total charge in cluster
+     ** @param channelMean    Charge-weighted mean channel number
      ** @param channelMeanSq  Charge-weighted mean square channel number
+     ** @param time           Cluster time [ns]
      **/
     void SetProperties(Double_t charge, Double_t channelMean,
     		               Double_t channelMeanSq, Double_t time = 0.) {
@@ -106,10 +90,7 @@ public:
     }
 
 
-private:
-    // This two parameters are kept for backward compatibility only.
-    Double_t fMean; // FIXME: Modify clustering algorithm and remove this parameter.
-    Double_t fMeanError; // FIXME: Modify clustering algorithm and remove this parameter.
+	private:
 
     Double_t fCharge;        ///< Total charge
     Double_t fChannelMean;   ///< Charge-weighted mean channel number
@@ -117,11 +98,8 @@ private:
     Double_t fTime;          ///< Cluster time (average of digi times)
     Int_t    fIndex;         ///< Index of cluster in input array
 
-    // TODO: fSectorNr is here for backward compatibility with classes
-    // using CbmStsDigiScheme. Should be eventually removed.
-    Int_t fSectorNr; ///< Number of sector within station
 
-    ClassDef(CbmStsCluster, 4);
+    ClassDef(CbmStsCluster, 5);
 };
 
 #endif
