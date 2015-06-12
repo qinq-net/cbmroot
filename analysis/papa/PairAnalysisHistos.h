@@ -184,9 +184,7 @@ public:
 
   virtual void Print(const Option_t* option = "") const;
   virtual void Draw(const Option_t* option = "");
-  virtual void DrawSame(TString histName, const Option_t *opt="leg can");
-  /* virtual void DrawRatioSame(TString histName, TString histClassDenom, const Option_t *opt="leg can"); */
-  /* virtual void DrawEfficiencySame(TString histName, const Option_t *opt="leg can"); */
+  virtual void DrawSame(TString histName, const Option_t *opt="leg can", TString histClassDenom="");
 
   static Int_t GetPrecision(Double_t value);
 

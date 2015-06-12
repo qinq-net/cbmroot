@@ -770,7 +770,7 @@ void PairAnalysisHistos::ReadFromFile(const char* file, const char *task, const 
 }
 
 //_____________________________________________________________________________
-void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt)
+void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, TString histClassDenom)
 {
   //
   // Draw all histograms with the same name into one canvas
@@ -778,10 +778,14 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt)
   // if option contains 'can' a new canvas is created
   // if option contains 'rebin' the objects are rebinned by 2
   // if option contains 'norm' the objects are normalized to 1
+  // if option contains 'events' use meta data to normalize
   // if option contains 'logx,y,z' the axis are plotted in log
   // if option contains 'meta' the meta data are plotted
-  // if option contains 'nomc' mc signals are not plotted
-  // if option contains 'eff' efficiencies are plotted
+  // if option contains 'NoMc' mc signals are not plotted
+  // if option contains 'NoMcTrue' mc truth signals are not plotted
+  // if option contains 'OnlyMc' only mc signals are plotted
+  // if option contains 'Eff' efficiencies are plotted
+  // if option contains 'Ratio' the ratios of any histclass to 'histClassDenom' are plotted
   //
 
   Printf("<PairAnalysisHistos::DrawSame>: hist: %s",histName.Data());
@@ -789,18 +793,26 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt)
   optString.ToLower();
   Bool_t optEff  =optString.Contains("eff");
   Bool_t optNoMC =optString.Contains("nomc");
+  Bool_t optNoMCtrue =optString.Contains("nomctrue");
+  Bool_t optOnlyMC   =optString.Contains("onlymc");
   Bool_t optRbn  =optString.Contains("rebin");
   Bool_t optLeg  =optString.Contains("leg");
   Bool_t optCan  =optString.Contains("can");
   Bool_t optNorm =optString.Contains("norm");
   Bool_t optMeta =optString.Contains("meta");
+  Bool_t optEvt  =optString.Contains("events");
+  Bool_t optRatio=optString.Contains("ratio");
   optString.ReplaceAll("eff","");
+  optString.ReplaceAll("nomctrue","");
+  optString.ReplaceAll("onlymc","");
   optString.ReplaceAll("nomc","");
   optString.ReplaceAll("rebin","");
   optString.ReplaceAll("leg","");
   optString.ReplaceAll("can","");
   optString.ReplaceAll("norm","");
   optString.ReplaceAll("meta","");
+  optString.ReplaceAll("events","");
+  optString.ReplaceAll("ratio","");
 
   TLegend *leg=0;
   TCanvas *c=0;
@@ -830,6 +842,10 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt)
   optString.ReplaceAll("logy","");
   optString.ReplaceAll("logz","");
 
+  // meta data
+  Int_t events = 1;
+  if(fMetaData && optEvt)  fMetaData->GetMeta("events",&events);
+
   //  Int_t i=(nobj ? nobj-1 : 0);
   Int_t i=(nobj ? 10 : 0);
   TIter next(&fHistoList);
@@ -843,13 +859,23 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt)
     Info("DrawSame","class name %s \t hist name %s \t ndel=%d",iname.Data(),histName.Data(),ndel);
 
     // check MC options
-    if( (optNoMC && ndel>1) || (optEff && ndel<1) ) continue;
+    if( (optNoMC && ndel>0) ||
+	(optEff && ndel<1)  ||
+	(optNoMCtrue && iname.Contains("_MCtruth")) ||
+	(optOnlyMC && ndel<1)                      ) continue;
 
     // find the histogram in the class table
     if ( TH1 *h=(TH1*)classTable->FindObject(histName.Data()) ){
 
       // check if efficiency caluclation is possible
-      if(optEff && (!fHistoList.FindObject( Form("%s_MCtruth",iname.Data()) ) || iname.Contains("_MCtruth")) ) continue;
+      if(optEff && !iname.Contains("_MCtruth")) histClassDenom = iname + "_MCtruth";
+      //      if(optEff && (!fHistoList.FindObject( histClassName.Data() ) || iname.Contains("_MCtruth")) ) continue;
+      //      if(optEff && (!fHistoList.FindObject( Form("%s_MCtruth",iname.Data()) ) || iname.Contains("_MCtruth")) ) continue;
+
+      // check if ratio should be build
+      if( (optEff || optRatio) && (iname.EqualTo(histClassDenom) || !fHistoList.FindObject(histClassDenom.Data())) ) continue;
+      Printf("iname %s denom %s ",iname.Data(),histClassDenom.Data());
+
 
       if(iname.Contains("Hit")) Printf("class name: %s optMC %d ",iname.Data(),optNoMC);
       if (i==0) hFirst=h;
@@ -858,50 +884,74 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt)
       h->UseCurrentStyle();
       h->SetTitle("");
       PairAnalysisStyler::Style(h,i);
+      if(optString.Contains("scat")) h->SetMarkerStyle(kDot);
 
       // set geant process labels
       // if(!histName.CompareTo("GeantId")) PairAnalysisHelper::SetGEANTBinLabels(h);
 
-      // drawing
-      if(optRbn)       h->Rebin();
-      if(optNorm)      h=h->DrawNormalized(i>0?(optString+"same").Data():optString.Data());
-      else if(optEff)  {
-	TString    clMC     = iname+"_MCtruth";
-	THashList *clDenom  = (THashList*)fHistoList.FindObject( clMC.Data() );
+      // normlasation
+      if(optRbn)                    h->Rebin();
+      if(optNorm && !(h->GetSumOfWeights()==0)) h=h->DrawNormalized(i>0?(optString+"same").Data():optString.Data());
+      if(optEvt)                    h->Scale(1./events);
+
+      // ratio and drawing
+      if( (optEff || optRatio) && !optNorm && !optEvt)  {
+	//	TString    clMC     = iname+"_MCtruth";
+	THashList *clDenom  = (THashList*)fHistoList.FindObject( histClassDenom.Data() );
 	TH1 *hMC = (TH1*) h->Clone(); // needed to preserve the labeling of non-mc histogram
-	TH1 *hdenom         = (TH1*) clDenom->FindObject( UserHistogram(clMC.Data(),hMC).Data() );
-	if(optRbn)       hdenom->Rebin();
+	TH1 *hdenom         = (TH1*) clDenom->FindObject( UserHistogram(histClassDenom.Data(),hMC).Data() );
+	//	TH1 *hdenom         = (TH1*) clDenom->FindObject( UserHistogram(clMC.Data(),hMC).Data() );
+	if(!hdenom) { Printf("hdenom not found"); continue; }
+	// normalize and rebin only once
+	if(optRbn && (optEff || !(i%10)) )       hdenom->Rebin();
+	if(optEvt && (optEff || !(i%10)) )       hdenom->Scale(1./events);
 	delete hMC; //delete the surplus object
 	// set title
 	switch(h->GetDimension()) {
-	case 1: h->SetYTitle("Efficiency"); break;
-	case 2: h->SetZTitle("Efficiency"); break;
+	case 1: h->SetYTitle((optEff?"Efficiency":"Ratio")); break;
+	case 2: h->SetZTitle((optEff?"Efficiency":"Ratio")); break;
+	  //	case 2: h->SetZTitle("Efficiency"); break;
 	}
 	if(hdenom && h->Divide(hdenom))  h->Draw(i>0?(optString+"same").Data():optString.Data());
-	else                            { Warning("DrawSame(eff)","Division failed!!!!"); continue; }
+	else                            { Warning("DrawSame(eff/ratio)","Division failed!!!!"); continue; }
       }
       else             h->Draw(i>0?(optString+"same").Data():optString.Data());
 
       // protection e.g. normalization not possible TProfile
       if(h && h->GetEntries()>0.) {
 
-	// adapt legend name - remove reserved words prefixes
-	iname.ReplaceAll("_"," ");
+	TString ratioName=histClassDenom;
+	// adapt legend name
 	// remove reserved words
 	TObjArray *reservedWords = fReservedWords->Tokenize(":;");
-	for(Int_t ir=0; ir<reservedWords->GetEntriesFast(); ir++)
+	for(Int_t ir=0; ir<reservedWords->GetEntriesFast(); ir++) {
 	  iname.ReplaceAll( ((TObjString*)reservedWords->At(ir))->GetString(), "");
-	delete reservedWords;
+	  ratioName.ReplaceAll( ((TObjString*)reservedWords->At(ir))->GetString(), "");
+	}
 	// change default signal names to titles
-	for(Int_t isig=0; isig<PairAnalysisSignalMC::kNSignals; isig++)
+	for(Int_t isig=0; isig<PairAnalysisSignalMC::kNSignals; isig++) {
 	  iname.ReplaceAll(PairAnalysisSignalMC::fgkSignals[isig][0],PairAnalysisSignalMC::fgkSignals[isig][1]);
+	  ratioName.ReplaceAll(PairAnalysisSignalMC::fgkSignals[isig][0],PairAnalysisSignalMC::fgkSignals[isig][1]);
+	}
+	// remove pairing name if it is a MC
+	for(Int_t iptype=0; iptype<PairAnalysis::kPairTypes; iptype++) {
+	  if(ndel>0)                     iname.ReplaceAll( PairAnalysis::PairClassName(iptype), "");
+	  if(ratioName.CountChar('_')>0) ratioName.ReplaceAll( PairAnalysis::PairClassName(iptype), "");
+	}
+	// remove delimiters
+	iname.ReplaceAll("_"," ");
+	ratioName.ReplaceAll("_"," ");
+	iname.ReplaceAll(".","");
+	ratioName.ReplaceAll(".","");
+	// remove trailing and leading spaces
 	iname.Remove(TString::kBoth,' ');
+	ratioName.Remove(TString::kBoth,' ');
 
-	// add efficiency to to legend
-	// if(optEff) {
-	//   iname.Prepend("#epsilon(");
-	//   iname.Append(")");
-	// }
+	//build final ratio name
+	if(optRatio)  iname+="/"+ratioName;
+
+	// delete the surplus
+	delete reservedWords;
 
 	// modify legend option
 	TString legOpt = optString+"L";
@@ -1219,7 +1269,7 @@ void PairAnalysisHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
   TString currentTitle = "";//hist->GetTitle();
   TString hclass       = histClass;
   //get reserved class
-  TObjArray *arr=hclass.Tokenize("_");
+  TObjArray *arr=hclass.Tokenize("_.");
   arr->SetOwner();
   hclass=((TObjString*)arr->At(0))->GetString();
   delete arr;

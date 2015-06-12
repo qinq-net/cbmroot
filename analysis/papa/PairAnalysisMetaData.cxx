@@ -164,6 +164,22 @@ void PairAnalysisMetaData::FillMeta(const char *name, const char *val) {
   par->SetTitle(val);
 }
 
+void PairAnalysisMetaData::GetMeta(const char *name, Int_t *val) {
+  //
+  // get meta data value for integers
+  //
+  TParameter<Int_t> *par = dynamic_cast<TParameter<Int_t> *>(fMetaList.FindObject(name));
+  if(par) *val=par->GetVal();
+}
+
+void PairAnalysisMetaData::GetMeta(const char *name, Double_t *val) {
+  //
+  // get meta data value for doubles
+  //
+  TParameter<Double_t> *par = dynamic_cast<TParameter<Double_t> *>(fMetaList.FindObject(name));
+  if(par) *val=par->GetVal();
+}
+
 void PairAnalysisMetaData::DrawSame(const Option_t* opt) {
   //
   // draw meta data into current pad

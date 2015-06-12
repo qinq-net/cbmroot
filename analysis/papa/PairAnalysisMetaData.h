@@ -39,6 +39,8 @@ public:
   void FillMeta(const char *name, const char *val);
 
   // functions to get and draw histograms
+  void GetMeta(const char *name, Int_t *val);
+  void GetMeta(const char *name, Double_t *val);
   //  void ReadFromFile(const char* file="metadata.root", const char *task="", const char *config="");
   //  void SetList(TList * const list)          { fList=list; }
   //  TList *GetList()                    const { return fList; }

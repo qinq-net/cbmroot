@@ -572,6 +572,7 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   values[kPdgCode]   = track->PdgCode();
 
   // special
+  values[kTrackLength] = track->GetGlobalTrack()->GetLength(); // cm
   values[kInclAngle] = TMath::ASin(track->Pt()/track->P());
   Fill(track->GetTofHit(),      values);
   values[kTOFHits]   = (track->GetTofHit() ? 1. : 0.);

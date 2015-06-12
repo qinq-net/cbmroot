@@ -388,7 +388,7 @@ void InitHistograms(PairAnalysis *papa, Int_t cutDefinition)
       if(!papa->DoProcessLS()      && (i==PairAnalysis::kSEPP || i==PairAnalysis::kSEMM) ) continue; /// check SE LS
       if(!papa->GetMixingHandler() && (i>=PairAnalysis::kMEPP && i<=PairAnalysis::kMEMM) ) continue; /// check ME OS,LS
       if(!papa->GetTrackRotator()  && (i==PairAnalysis::kSEPMRot)          ) continue; /// check SE ROT
-      histos->AddClass(Form("Pair_%s",PairAnalysis::PairClassName(i)));
+      histos->AddClass(Form("Pair.%s",PairAnalysis::PairClassName(i)));
     }
 
     /// add MC signal histograms (if any) to pair class
@@ -423,16 +423,16 @@ void InitHistograms(PairAnalysis *papa, Int_t cutDefinition)
       if(!papa->DoProcessLS()      && (i==PairAnalysis::kSEPP || i==PairAnalysis::kSEMM) ) continue; /// check SE LS
       if(!papa->GetMixingHandler() && (i>=PairAnalysis::kMEPP && i<=PairAnalysis::kMEMM) ) continue; /// check ME OS,LS
       if(!papa->GetTrackRotator()  && (i==PairAnalysis::kSEPMRot)          ) continue; /// check SE ROT
-      ///      histos->AddClass(Form("Track_Legs_%s",PairAnalysis::PairClassName(i)));
+      ///      histos->AddClass(Form("Track.Legs_%s",PairAnalysis::PairClassName(i)));
     }
   }
 
   /// Track classes - single tracks used any pairing
   /// loop over all leg types and add classes (leg types in PairAnalysis.h ELegType)
   for (Int_t i=0; i<PairAnalysis::kLegTypes; ++i)
-    histos->AddClass(Form("Track_%s", PairAnalysis::TrackClassName(i)));
+    histos->AddClass(Form("Track.%s", PairAnalysis::TrackClassName(i)));
   /// OR/AND add merged leg histograms (e.g. e+-)
-  histos->AddClass(Form("Track_%s",     PairAnalysis::PairClassName(PairAnalysis::kSEPM)));
+  histos->AddClass(Form("Track.%s",     PairAnalysis::PairClassName(PairAnalysis::kSEPM)));
 
   /// add MC signal (if any) histograms to pair class
   if(papa->GetMCSignals()) {
@@ -440,12 +440,12 @@ void InitHistograms(PairAnalysis *papa, Int_t cutDefinition)
       TString sigMCname = papa->GetMCSignals()->At(i)->GetName();
       if(i>3) continue; /// skip pair particle signals (no pairs)
       /// mc truth - pair leg class
-      ///      histos->AddClass(Form("Track_Legs_%s_MCtruth",sigMCname.Data()));
+      ///      histos->AddClass(Form("Track.Legs_%s_MCtruth",sigMCname.Data()));
       /// mc reconstructed - pair leg class
-      ///      histos->AddClass(Form("Track_Legs_%s",        sigMCname.Data()));
+      ///      histos->AddClass(Form("Track.Legs_%s",        sigMCname.Data()));
       /// single tracks (merged +-)
-      histos->AddClass(Form("Track_%s_%s",PairAnalysis::PairClassName(PairAnalysis::kSEPM),sigMCname.Data()));
-      histos->AddClass(Form("Track_%s_%s_MCtruth",PairAnalysis::PairClassName(PairAnalysis::kSEPM),sigMCname.Data()));
+      histos->AddClass(Form("Track.%s_%s",PairAnalysis::PairClassName(PairAnalysis::kSEPM),sigMCname.Data()));
+      histos->AddClass(Form("Track.%s_%s_MCtruth",PairAnalysis::PairClassName(PairAnalysis::kSEPM),sigMCname.Data()));
     }
   }
 
@@ -499,18 +499,18 @@ void InitHistograms(PairAnalysis *papa, Int_t cutDefinition)
 						 PairAnalysisVarManager::kPtMC
 						 );
   /// add track sparse, NOTE: only for SE tracks
-  //  histos->AddSparse(Form("Track_%s",PairAnalysis::PairClassName(PairAnalysis::kSEPM)), limits->GetEntriesFast(), limits, vars);
+  //  histos->AddSparse(Form("Track.%s",PairAnalysis::PairClassName(PairAnalysis::kSEPM)), limits->GetEntriesFast(), limits, vars);
 
   ////// HIT HISTOS /////
   /// add histogram class
-  histos->AddClass("Hit_STS");
+  histos->AddClass("Hit.STS");
   /// add MC signal (if any) histograms to hit class
   if(papa->GetMCSignals()) {
     for (Int_t i=0; i<papa->GetMCSignals()->GetEntriesFast(); ++i) {
       TString sigMCname = papa->GetMCSignals()->At(i)->GetName();
       if(i>3) continue; /// skip pair particle signals (only single particles)
       /// single tracks (merged +-)
-      histos->AddClass(Form("Hit_TRD_%s",sigMCname.Data()));
+      histos->AddClass(Form("Hit.TRD_%s",sigMCname.Data()));
     }
   }
   /// define output objects
@@ -570,7 +570,7 @@ void AddMCSignals(PairAnalysis *papa, Int_t cutDefinition){
   rho0->SetWeight(9 * 4.72e-05);       /// apply a weighting (fills PairAnalysisVarManager::kWeight & can be used for histogram weighting)
 
   /// single particle signals
-  PairAnalysisSignalMC* ele = new PairAnalysisSignalMC(PairAnalysisSignalMC::kSingleInclEle);
+  PairAnalysisSignalMC* ele = new PairAnalysisSignalMC(PairAnalysisSignalMC::kSinglePrimEle);
   ele->SetFillPureMCStep(kTRUE);
 
   /// Example of a MC signal configuration (see PairAnalysisSignalMC.h for full functionality)

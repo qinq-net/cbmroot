@@ -23,19 +23,22 @@
 ClassImp(PairAnalysisSignalMC)
 
 const char* PairAnalysisSignalMC::fgkSignals[kNSignals][2]= {  //default signal names+titles
-  {"InclJpsi",Form("%s#rightarrow%s%s (incl.)",PairAnalysisHelper::GetPDGlabel(443),PairAnalysisHelper::GetPDGlabel(-11),PairAnalysisHelper::GetPDGlabel(11))},
-  //  {"Conversion",Form("%s#rightarrow%s%s",PairAnalysisHelper::GetPDGlabel(22),PairAnalysisHelper::GetPDGlabel(-11),PairAnalysisHelper::GetPDGlabel(11))},
+  {"InclJpsi",       "J/#psi#rightarrow e^{+}e^{-}"},
   {"Conversion",     "#gamma#rightarrow e^{+}e^{-}"},
   {"Rho0",           "#rho^{0}"},
   {"Omega",          "#omega"},
-  {"OmegaDalitz",    "#omega_{Dalitz}"},
+  {"OmegaDalitz",    "#omega^{Dalitz}"},
   {"Phi",            "#phi"},
   {"Eta",            "#eta"},
   {"Pi0",            "#pi^{0}"},
   {"InclElePM",      "e^{+}e^{-} (incl.)"},
   {"SingleDeltaEle", "#delta rays"},
-  {"SingleInclEle",  "electrons (incl.)"},
-  {"SingleInclPio",  "pions (incl.)"},
+  {"SinglePrimEle",  "e (prim.)"},
+  {"SingleInclPio",  "#pi (prim.)"},
+  {"SingleDeuteron", "d"},
+  {"SingleTriton",   "t"},
+  {"SingleHelion",   "^{3}He"},
+  {"SingleAlpha",    "^{4}He"}
 };
 
 //_________________________________________________________________________
@@ -72,7 +75,9 @@ PairAnalysisSignalMC::PairAnalysisSignalMC() :
   fJpsiRadiative(kAll),
   fDalitz(kWhoCares),
   fDalitzPdg(0),
-  fFillPureMCStep(kFALSE) {
+  fFillPureMCStep(kFALSE),
+  fIsSingleParticle(kFALSE)
+{
 
   //
   // Default constructor
@@ -114,7 +119,9 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(const Char_t* name, const Char_t* tit
   fJpsiRadiative(kAll),
   fDalitz(kWhoCares),
   fDalitzPdg(0),
-  fFillPureMCStep(kFALSE) {
+  fFillPureMCStep(kFALSE),
+  fIsSingleParticle(kFALSE)
+{
 
   //
   // Named constructor
@@ -155,7 +162,9 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
   fJpsiRadiative(kAll),
   fDalitz(kWhoCares),
   fDalitzPdg(0),
-  fFillPureMCStep(kFALSE) {
+  fFillPureMCStep(kFALSE),
+  fIsSingleParticle(kFALSE)
+{
 
   //
   // Constructor with default signals
@@ -230,19 +239,50 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=11;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
     SetGEANTProcess(kPDeltaRay);
+    fIsSingleParticle=kTRUE;
     //    fMother1Source=kPrimary; fMother2Source=kDontCare;
     break;
-  case kSingleInclEle: //single electrons
+  case kSinglePrimEle: //single electrons
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=11;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
     //fMother1Source=kPrimary;
     SetGEANTProcess(kPPrimary);
+    fIsSingleParticle=kTRUE;
     break;
-  case kSingleInclPio: //single pions
+  case kSinglePrimPio: //single pions
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=211;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
     //fMother1Source=kPrimary;
     SetGEANTProcess(kPPrimary);
+    fIsSingleParticle=kTRUE;
+    break;
+  case kSingleDeu:
+    SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
+    fLeg1=1000010020;;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
+    //fMother1Source=kPrimary;
+    //SetGEANTProcess(kPPrimary);
+    fIsSingleParticle=kTRUE;
+    break;
+  case kSingleTri:
+    SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
+    fLeg1=1000010030;;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
+    //fMother1Source=kPrimary;
+    //SetGEANTProcess(kPPrimary);
+    fIsSingleParticle=kTRUE;
+    break;
+  case kSingleHe3:
+    SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
+    fLeg1=1000020030;;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
+    //fMother1Source=kPrimary;
+    //SetGEANTProcess(kPPrimary);
+    fIsSingleParticle=kTRUE;
+    break;
+  case kSingleAlpha:
+    SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
+    fLeg1=1000020040;;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
+    //fMother1Source=kPrimary;
+    //SetGEANTProcess(kPPrimary);
+    fIsSingleParticle=kTRUE;
     break;
   default:
     printf(" Signal NOT predefined! Either request it or configure on your own.\n");

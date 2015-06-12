@@ -92,12 +92,12 @@ void PairAnalysisStyler::LoadStyle() {
     defaultSty->SetHistLineStyle(0);
     defaultSty->SetHistLineWidth(2);
     // defaultSty->SetLegoInnerR(Float_t rad = 0.5);
-    // defaultSty->SetNumberContours(Int_t number = 20);
     defaultSty->SetHistMinimumZero();
     //    defaultSty->SetEndErrorSize(2);
     defaultSty->SetErrorX(0.);
     defaultSty->SetMarkerStyle(kOpenCircle); // Kind of dot used for points
     defaultSty->SetMarkerSize(1.5);
+
     
     //For the fit/function:
     defaultSty->SetOptFit(1);
@@ -146,7 +146,7 @@ void PairAnalysisStyler::LoadStyle() {
     // defaultSty->SetTitleBorderSize(2);
 
     // for Paves and boxes
-    defaultSty->SetFillColor(bgrdcolor);
+    //    defaultSty->SetFillColor(bgrdcolor); // this makes palettes unicolored
     defaultSty->SetFillStyle(kFEmpty);
     defaultSty->SetLineColor(0);
     defaultSty->SetLineStyle(1);
@@ -182,7 +182,17 @@ void PairAnalysisStyler::LoadStyle() {
     defaultSty->SetOptLogz(0);
 
     // For the colored palette
-    defaultSty->SetPalette(1,0);
+    //    defaultSty->SetPalette(1,0);
+    const Int_t NRGBs = 5;
+    const Int_t NCont = 255;
+    // beautiful colors blue to red
+    Double_t red[NRGBs]   = { 0.00, 0.00, 0.87, 1.00, 0.51};
+    Double_t green[NRGBs] = { 0.00, 0.81, 1.00, 0.20, 0.00};
+    Double_t blue[NRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00};
+    Double_t stops[NRGBs] = { 0.00, 0.34, 0.61, 0.84, 1.00};
+    TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
+    defaultSty->SetNumberContours(NCont);
+
 
     // For the legends:
     defaultSty->SetLegendFillColor(bgrdcolor);
@@ -234,7 +244,13 @@ void PairAnalysisStyler::Style(TObject *obj, Int_t idx) {
   if (obj->InheritsFrom(TAttMarker::Class())) {
     dynamic_cast<TAttMarker*>(obj)->SetMarkerSize(1.5);
     dynamic_cast<TAttMarker*>(obj)->SetMarkerStyle(Marker[idx%kNMaxMarker]);
-    dynamic_cast<TAttMarker*>(obj)->SetMarkerColor(Color[idx%kNMaxColor]);
+    //   dynamic_cast<TAttMarker*>(obj)->SetMarkerColor(Color[idx%kNMaxColor]);
+    if(idx>=10) {
+      idx=idx%10;
+      dynamic_cast<TAttMarker*>(obj)->SetMarkerColor(TColor::GetColorBright(Color[idx]));
+    }
+    else
+      dynamic_cast<TAttMarker*>(obj)->SetMarkerColor(TColor::GetColorDark(Color[idx%kNMaxColor]));
   }
   if (obj->InheritsFrom(TAttLine::Class())) {
     dynamic_cast<TAttLine*>(obj)->SetLineWidth(2);

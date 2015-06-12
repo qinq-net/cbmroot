@@ -74,7 +74,8 @@ class PairAnalysisSignalMC : public TNamed {
   enum EDalitz {      kWhoCares=0, kIsDalitz, kIsNotDalitz};
   enum EDefinedSignal {kInclJpsi=0, kConversion, kRho0, kOmega, kOmegaDalitz, kPhi, kEta, kPi0,
 		       kInclElePM,
-		       kSingleDeltaEle, kSingleInclEle, kSingleInclPio,
+		       kSingleDeltaEle, kSinglePrimEle, kSinglePrimPio,
+		       kSingleDeu, kSingleTri, kSingleHe3, kSingleAlpha,
 		       kNSignals};
   
   PairAnalysisSignalMC();
@@ -98,6 +99,7 @@ class PairAnalysisSignalMC : public TNamed {
   void SetGEANTProcess(TMCProcess processID)                       {fGEANTProcess = processID; fCheckGEANTProcess=kTRUE;}
   void SetWeight(Double_t wght)                                    {fWeight = wght;}
   void SetFillPureMCStep(Bool_t fill=kTRUE)                        {fFillPureMCStep = fill;}
+  void SetIsSingleParticle(Bool_t fill=kTRUE)                      {fIsSingleParticle = fill;}
 
   Int_t GetLegPDG(Int_t branch)                        const {return (branch==1 ? fLeg1 : fLeg2);}
   Int_t GetMotherPDG(Int_t branch)                     const {return (branch==1 ? fMother1 : fMother2);}
@@ -114,8 +116,9 @@ class PairAnalysisSignalMC : public TNamed {
   EBranchRelation GetMothersRelation()                 const {return fMothersRelation;}
   TMCProcess GetGEANTProcess()                         const {return fGEANTProcess;}
   Bool_t GetCheckGEANTProcess()                        const {return fCheckGEANTProcess;}
-  Bool_t GetFillPureMCStep()                           const {return fFillPureMCStep;}
   Double_t GetWeight()                                 const {return fWeight;}
+  Bool_t GetFillPureMCStep()                           const {return fFillPureMCStep;}
+  Bool_t IsSingleParticle()                            const {return fIsSingleParticle; }
 
   void SetJpsiRadiative(EJpsiRadiativ rad) { fJpsiRadiative=rad;    }
   EJpsiRadiativ GetJpsiRadiative() const   { return fJpsiRadiative; }
@@ -172,8 +175,9 @@ class PairAnalysisSignalMC : public TNamed {
   Int_t fDalitzPdg;                     // dalitz PDG
 
   Bool_t fFillPureMCStep;             // check and fill the pure MC step
+  Bool_t fIsSingleParticle;           // single particle MC signal such as e,pi,K,p
   
-  ClassDef(PairAnalysisSignalMC,3);
+  ClassDef(PairAnalysisSignalMC,4);
 };
 
 #endif

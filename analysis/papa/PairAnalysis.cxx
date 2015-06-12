@@ -75,7 +75,7 @@ const char* PairAnalysis::fgkPairClassNames[8] = {
   "ME-+",
   "ME+-",
   "ME--",
-  "SE+-_TR"
+  "SE+-TR"
 };
 
 //________________________________________________________________
@@ -404,13 +404,13 @@ void PairAnalysis::ProcessMC()
     TString sigName = fSignalsMC->At(isig)->GetName();
     if(fHistos && !bFillHist) {
       bFillHist |= fHistos->HasHistClass(Form("Pair_%s_MCtruth",sigName.Data()));
-      bFillHist |= fHistos->HasHistClass(Form("Track_Leg_%s_MCtruth",sigName.Data()));
-      bFillHist |= fHistos->HasHistClass(Form("Track_%s_%s_MCtruth",fgkPairClassNames[1],sigName.Data()));
+      bFillHist |= fHistos->HasHistClass(Form("Track.Leg_%s_MCtruth",sigName.Data()));
+      bFillHist |= fHistos->HasHistClass(Form("Track.%s_%s_MCtruth",fgkPairClassNames[1],sigName.Data()));
     }
     if(fHistoArray && !bFillHF) {
       bFillHF |= fHistoArray->HasHistClass(Form("Pair_%s_MCtruth",sigName.Data()));
-      bFillHF |= fHistoArray->HasHistClass(Form("Track_Leg_%s_MCtruth",sigName.Data()));
-      bFillHF |= fHistoArray->HasHistClass(Form("Track_%s_%s_MCtruth",fgkPairClassNames[1],sigName.Data()));
+      bFillHF |= fHistoArray->HasHistClass(Form("Track.Leg_%s_MCtruth",sigName.Data()));
+      bFillHF |= fHistoArray->HasHistClass(Form("Track.%s_%s_MCtruth",fgkPairClassNames[1],sigName.Data()));
     }
   }
 
@@ -626,7 +626,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
   PairAnalysisMC *mc = (nsig ? PairAnalysisMC::Instance() : 0x0);
   PairAnalysisSignalMC *sigMC=0x0;
   if (!pairInfoOnly){
-    className2.Form("Track_%s",fgkPairClassNames[1]);  // unlike sign, SE only
+    className2.Form("Track.%s",fgkPairClassNames[1]);  // unlike sign, SE only
     Bool_t mergedtrkClass  =  fHistos->HasHistClass(className2);
     Bool_t mergedtrkClass2 = (fHistoArray && fHistoArray->HasHistClass(className2));
     // check mc signal filling
@@ -637,7 +637,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
     }
     // loop over both track arrays
     for (Int_t i=0; i<2; ++i){
-      className.Form("Track_%s",fgkTrackClassNames[i]);
+      className.Form("Track.%s",fgkTrackClassNames[i]);
       Bool_t trkClass  =  fHistos->HasHistClass(className);
       Bool_t trkClass2 = (fHistoArray && fHistoArray->HasHistClass(className));
       Bool_t fill = (mergedtrkClass || mergedtrkClass2 || trkClass || trkClass2 );
@@ -668,7 +668,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 
 	//Fill tracks hit information
 	for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
-	  className3="Hit_"+PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet));  // detector hit
+	  className3="Hit."+PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet));  // detector hit
 	  Bool_t hitClass  =  fHistos->HasHistClass(className3);
 	  Bool_t hitClass2 = (fHistoArray && fHistoArray->HasHistClass(className3));
 	  // check mc signal filling
@@ -757,8 +757,8 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
   TBits pairClassMChf(nsig);
   TObjArray arrLegs(100);
   for (Int_t i=0; i<7; ++i){
-    className.Form("Pair_%s",fgkPairClassNames[i]);
-    className2.Form("Track_Legs_%s",fgkPairClassNames[i]);
+    className.Form("Pair.%s",fgkPairClassNames[i]);
+    className2.Form("Track.Legs.%s",fgkPairClassNames[i]);
     Bool_t pairClass  =  fHistos->HasHistClass(className);
     Bool_t pairClass2 = (fHistoArray && fHistoArray->HasHistClass(className));
     Bool_t legClass   =  fHistos->HasHistClass(className2);
@@ -771,7 +771,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	pairClassMC  .SetBitNumber(isig, fHistos->HasHistClass(sigName));
 	pairClassMChf.SetBitNumber(isig, fHistoArray && fHistoArray->HasHistClass(sigName));
 	//	Printf("fill %s: %d histos %d",sigName.Data(),pairClassMC.TestBitNumber(isig),fHistos->HasHistClass(sigName));
-	sigName =  Form("Track_Legs_%s",fSignalsMC->At(isig)->GetName());
+	sigName =  Form("Track.Legs_%s",fSignalsMC->At(isig)->GetName());
 	legClassMC  .SetBitNumber(isig, fHistos->HasHistClass(sigName));
 	legClassMChf.SetBitNumber(isig, fHistoArray && fHistoArray->HasHistClass(sigName));
       }
@@ -818,7 +818,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	  for(Int_t isig=0; isig<nsig; isig++) {
 	    if(!fillMC.TestBitNumber(isig)) continue;
 	    sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
-	    sigName = Form("Track_Legs_%s",sigMC->GetName());
+	    sigName = Form("Track.Legs_%s",sigMC->GetName());
 	    PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
 	    if(legClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
 	    if(legClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
@@ -833,7 +833,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	  for(Int_t isig=0; isig<nsig; isig++) {
 	    if(!fillMC.TestBitNumber(isig)) continue;
 	    sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
-	    sigName = Form("Track_Legs_%s",sigMC->GetName());
+	    sigName = Form("Track.Legs_%s",sigMC->GetName());
 	    PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
 	    if(legClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
 	    if(legClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
@@ -863,11 +863,11 @@ void PairAnalysis::FillHistogramsPair(PairAnalysisPair *pair,Bool_t fromPreFilte
   TObjArray arrLegs(100);
   const Int_t type=pair->GetType();
   if (fromPreFilter) {
-    className.Form("RejPair_%s",fgkPairClassNames[type]);
-    className2.Form("RejTrack_%s",fgkPairClassNames[type]);
+    className.Form("RejPair.%s",fgkPairClassNames[type]);
+    className2.Form("RejTrack.%s",fgkPairClassNames[type]);
   } else {
-    className.Form("Pair_%s",fgkPairClassNames[type]);
-    className2.Form("Track_Legs_%s",fgkPairClassNames[type]);
+    className.Form("Pair.%s",fgkPairClassNames[type]);
+    className2.Form("Track.Legs.%s",fgkPairClassNames[type]);
   }
 
   Bool_t pairClass  =  fHistos->HasHistClass(className);
@@ -1256,8 +1256,8 @@ void PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) {
 
   TString className,className2,className3;
   className.Form("Pair_%s_MCtruth",       fSignalsMC->At(nSignal)->GetName());
-  className2.Form("Track_Legs_%s_MCtruth",fSignalsMC->At(nSignal)->GetName());
-  className3.Form("Track_%s_%s_MCtruth",fgkPairClassNames[1],fSignalsMC->At(nSignal)->GetName());
+  className2.Form("Track.Legs_%s_MCtruth",fSignalsMC->At(nSignal)->GetName());
+  className3.Form("Track.%s_%s_MCtruth",fgkPairClassNames[1],fSignalsMC->At(nSignal)->GetName());
   Bool_t pairClass=fHistos->HasHistClass(className.Data());
   Bool_t legClass =fHistos->HasHistClass(className2.Data());
   Bool_t trkClass =fHistos->HasHistClass(className3.Data());
@@ -1333,8 +1333,8 @@ void PairAnalysis::FillHistogramsFromPairArray(Bool_t pairInfoOnly/*=kFALSE*/)
     Int_t npairs=PairArray(i)->GetEntriesFast();
     if(npairs<1) continue;
 
-    className.Form("Pair_%s",fgkPairClassNames[i]);
-    className2.Form("Track_Legs_%s",fgkPairClassNames[i]);
+    className.Form("Pair.%s",fgkPairClassNames[i]);
+    className2.Form("Track.Legs_%s",fgkPairClassNames[i]);
     Bool_t pairClass=fHistos->HasHistClass(className);
     Bool_t legClass=fHistos->HasHistClass(className2);
 
