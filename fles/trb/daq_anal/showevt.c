@@ -67,14 +67,14 @@ int analyseEvt(void *evt)
 			if (SubEvt_decoding(subEvt) == SubEvtDecoding_32bitData) {
 				for (i = 0; i < SubEvt_dataSize(subEvt) / sizeof(uint32_t); i++) {
 					if (i % 4 == 0) {	/* newline and the offset in the subEvt */
-						printf("\n%08x:", i * sizeof(uint32_t));
+						printf("\n%08lx:", i * sizeof(uint32_t));
 					}
 					printf("  0x%08x", SubEvt_dataValue(subEvt, i));
 				}
 			} else if (SubEvt_decoding(subEvt) == SubEvtDecoding_16bitData) {
 				for (i = 0; i < SubEvt_dataSize(subEvt) / sizeof(uint16_t); i++) {
 					if (i % 8 == 0) {	/* newline and the offset in the subEvt */
-						printf("\n%08x:", i * sizeof(uint16_t));
+						printf("\n%08lx:", i * sizeof(uint16_t));
 					}
 					printf("  0x%04x", SubEvt_dataValue(subEvt, i));
 				}
