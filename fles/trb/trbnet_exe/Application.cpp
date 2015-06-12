@@ -1,6 +1,7 @@
 #include "Application.hpp"
 #include "TimesliceReceiver.hpp"
 #include "TimesliceInputArchive.hpp"
+#include "StorableTimeslice.hpp"
 #include <iostream>
 
 #include <sys/stat.h>

@@ -30,16 +30,16 @@ Set(LINK_DIRECTORIES
 Link_Directories( ${LINK_DIRECTORIES})
 
 Set(SRCS
+ipc/src/Microslice.cpp
 ipc/src/MicrosliceView.cpp
 ipc/src/StorableMicroslice.cpp
 ipc/src/StorableTimeslice.cpp
 ipc/src/System.cpp
 ipc/src/Timeslice.cpp
-ipc/src/TimesliceInputArchive.cpp
 ipc/src/TimeslicePublisher.cpp
 ipc/src/TimesliceReceiver.cpp
-ipc/src/TimesliceView.cpp
 ipc/src/TimesliceSubscriber.cpp
+ipc/src/TimesliceView.cpp
 )
 
 
