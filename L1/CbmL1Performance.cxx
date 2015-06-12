@@ -1531,7 +1531,7 @@ void CbmL1::InputPerformance()
   if( listStsPts ){
     nMC = listStsPts->GetEntries();
   }
-  if( 0 )
+
   if( listStsHits ){
     for (unsigned int iH=0; iH < vStsHits.size(); iH++ ){
       const CbmL1StsHit &h = vStsHits[iH];
@@ -1539,18 +1539,20 @@ void CbmL1::InputPerformance()
       if (h.extIndex < 0) continue; // mvd hit
       const CbmStsHit *sh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(h.extIndex) );
               // strip - MC correspondence
-      int iStripF = sh->GetFrontDigiId();
-      int iStripB = sh->GetBackDigiId();
-      if ( iStripF >= 0 ) stripFToNHitMap[iStripF]++;
-      if ( iStripB >= 0 ) stripBToNHitMap[iStripB]++;
+//      int iStripF = sh->GetFrontDigiId();	// 0
+//      int iStripB = sh->GetBackDigiId();	// -1
+//      if ( iStripF >= 0 ) stripFToNHitMap[iStripF]++;
+//      if ( iStripB >= 0 ) stripBToNHitMap[iStripB]++;
+      stripFToNHitMap[0]++;
 
       if ( h.mcPointIds.size() == 0 ) continue; // fake
       int iMC = vMCPoints[h.mcPointIds[0]].pointId;  // TODO: adapt to linking
       if( !( iMC>=0 && iMC < nMC) )
         continue;
 
-      if ( iStripF >= 0 ) stripFToNMCMap[iStripF]++;
-      if ( iStripB >= 0 ) stripBToNMCMap[iStripB]++;
+//      if ( iStripF >= 0 ) stripFToNMCMap[iStripF]++;
+//      if ( iStripB >= 0 ) stripBToNMCMap[iStripB]++;
+      stripFToNMCMap[0]++;
 
         // hit pulls and residuals
 

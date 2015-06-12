@@ -430,10 +430,10 @@ void CbmStsFitPerformanceTask::Exec(Option_t * option){
 	CbmStsHit* h2 = (CbmStsHit*) fStsHitArray->At(jh);
 	if( !h2 ) continue;
 	if( CbmStsAddress::GetElementId(h1->GetAddress(), kStsStation) != CbmStsAddress::GetElementId(h2->GetAddress(), kStsStation) ) continue;//h1->GetStationNr() != h2->GetStationNr() ) continue;
-	if( h1->GetBackDigiId()>=0 ){
-	  if( h1->GetFrontDigiId()!=h2->GetFrontDigiId() &&
-	      h1->GetBackDigiId()!=h2->GetBackDigiId()     ) continue;
-	}
+//	if( h1->GetBackDigiId()>=0 ){
+//	  if( h1->GetFrontDigiId()!=h2->GetFrontDigiId() &&
+//	      h1->GetBackDigiId()!=h2->GetBackDigiId()     ) continue;
+//	}
 	Double_t dx = h1->GetX() - h2->GetX();
 	Double_t dy = h1->GetY() - h2->GetY();
 	Double_t d2 = fabs(dx*dx*V[0]-2*dx*dy*V[1]+dy*dy*V[2]);

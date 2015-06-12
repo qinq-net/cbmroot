@@ -52,7 +52,6 @@ struct TmpMCPoint{ // used for sort MCPoints for creation of MCTracks
 struct TmpHit{ // used for sort Hits before writing in the normal arrays
   int iStripF, iStripB;   // indices of real-strips, sts-strips (one got from detector. They consist from parts with differen positions, so will be divided before using)
   int indStripF, indStripB; // indices of L1-strips, indices in TmpStrip arrays
-  int iSector;
   int iStation;
   int ExtIndex;           // index of hit in the TClonesArray array ( negative for MVD )
   bool isStrip;
@@ -69,7 +68,7 @@ struct TmpHit{ // used for sort Hits before writing in the normal arrays
 struct TmpStrip{
   fscal u;
   int iStation;
-  int iSector, iStrip;
+  int iStrip;
   bool isStrip;
   int effIndex; // used for unefficiency
 };
@@ -126,7 +125,6 @@ void CbmL1::ReadEvent()
       else if(point->GetZOut() < 11) th.iStation = 1;
       else if(point->GetZOut() < 16) th.iStation = 2;
       else th.iStation = 3;
-      th.iSector  = 0;
       th.isStrip  = 0;
       th.iStripF = iMc;
       th.iStripB = -1;
@@ -174,7 +172,6 @@ void CbmL1::ReadEvent()
         CbmMvdHit *mh = L1_DYNAMIC_CAST<CbmMvdHit*>( listMvdHits->At(j) );
         th.ExtIndex = -(1+j);
         th.iStation = mh->GetStationNr();// - 1;
-        th.iSector  = 0;
         th.isStrip  = 0;
         th.iStripF = j;
         th.iStripB = -1;
@@ -235,7 +232,6 @@ void CbmL1::ReadEvent()
       else if(point->GetZOut() < 91) th.iStation = NMvdStations + 6;
       else if(point->GetZOut() < 101) th.iStation = NMvdStations + 7;
       else continue;
-      th.iSector = 0;
       th.isStrip = 0;
       th.iStripF = 0;
       th.iStripB = 0;
@@ -282,7 +278,6 @@ void CbmL1::ReadEvent()
       }
     }
 
-    Int_t negF = 0;
     for(Int_t j = 0; j < nEnt; j++ ){
       CbmStsHit *sh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(j) );
       TmpHit th;
@@ -290,13 +285,9 @@ void CbmL1::ReadEvent()
         CbmStsHit *mh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(j) );
         th.ExtIndex = j;
         th.iStation = NMvdStations + CbmStsAddress::GetElementId(mh->GetAddress(), kStsStation);//mh->GetStationNr() - 1;
-        th.iSector  = -1; /// Sector nr is obsolete. -1 was returned since a long time.
         th.isStrip  = 0;
-        th.iStripF = mh->GetFrontDigiId();
-        th.iStripB = mh->GetBackDigiId();
-        if( th.iStripF <  0 ){ negF++; continue;}
-        if( th.iStripF >= 0 && th.iStripB >= 0 ) th.isStrip = 1;
-        if( th.iStripB <  0 ) th.iStripB = th.iStripF;
+        th.iStripF = 0;//mh->GetFrontDigiId();
+        th.iStripB = 0;//mh->GetBackDigiId();
         
         //Get time
         if(listStsClusters){
@@ -407,14 +398,14 @@ void CbmL1::ReadEvent()
     th.indStripB = -1;
     for( int is = 0; is<NStrips; is++ ){
       TmpStrip &s = tmpStrips[is];
-      if( s.iStation!=th.iStation ||  s.iSector!=th.iSector ) continue;
+      if( s.iStation!=th.iStation ) continue;
       if( s.iStrip!=th.iStripF ) continue;
       if( fabs(s.u - th.u_front)>1.e-4 ) continue;
       th.indStripF = is;
     }
     for( int is = 0; is<NStripsB; is++ ){
       TmpStrip &s = tmpStripsB[is];
-      if( s.iStation!=th.iStation ||  s.iSector!=th.iSector ) continue;
+      if( s.iStation!=th.iStation ) continue;
       if( s.iStrip!=th.iStripB ) continue;
       if( fabs(s.u - th.u_back)>1.e-4 ) continue;
       th.indStripB = is;
@@ -423,7 +414,6 @@ void CbmL1::ReadEvent()
     if( th.indStripF<0 ){
       TmpStrip tmp;
       tmp.iStation = th.iStation;
-      tmp.iSector = th.iSector;
       tmp.iStrip = th.iStripF;
       tmp.u = th.u_front;
       tmp.isStrip = th.isStrip;
@@ -433,7 +423,6 @@ void CbmL1::ReadEvent()
     if( th.indStripB<0 ){
       TmpStrip tmp;
       tmp.iStation = th.iStation;
-      tmp.iSector = th.iSector;
       tmp.iStrip = th.iStripB;
       tmp.isStrip = th.isStrip;
       tmp.u = th.u_back;
