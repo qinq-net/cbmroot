@@ -7,15 +7,15 @@ void run_litqa_jpsi(Int_t nEvents = 1000)
 
 	//gRandom->SetSeed(10);
 
-	//TString mcFile = "/data/CbmRoot/sim_data/mc.0001.root";
-	//TString parFile = "/data/CbmRoot/sim_data/param.0001.root";
-	//TString recoFile ="/data/CbmRoot/sim_data/reco.0001.root";
-	//TString qaFile ="/data/CbmRoot/sim_data/litqa.0001.root";
+	TString mcFile = "/hera/cbm/users/adrian/data/mc.0001.root";
+	TString parFile = "/hera/cbm/users/adrian/data/param.0001.root";
+	TString recoFile ="/hera/cbm/users/adrian/data/reco.0001.root";
+	TString qaFile ="/hera/cbm/users/adrian/data/litqa.0001.root";
 
-	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.0001.root";
-	TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.0001.root";
-	TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.0001.root";
-	TString qaFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/litqa.0001.root";
+	//TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.0001.root";
+	//TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.0001.root";
+	//TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.0001.root";
+	//TString qaFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/litqa.0001.root";
 
 
    TList *parFileList = new TList();

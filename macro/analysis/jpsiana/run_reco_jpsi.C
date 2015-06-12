@@ -10,13 +10,13 @@ void run_reco_jpsi(Int_t nEvents = 2)
 
 	gRandom->SetSeed(10);
 
-	//TString mcFile = "/data/CbmRoot/sim_data/mc.0001.root";
-	//TString parFile = "/data/CbmRoot/sim_data/param.0001.root";
-	//TString recoFile ="/data/CbmRoot/sim_data/reco.0001.root";
+	TString mcFile = "/hera/cbm/users/adrian/data/mc.0001.root";
+	TString parFile = "/hera/cbm/users/adrian/data/param.0001.root";
+	TString recoFile ="/hera/cbm/users/adrian/data/reco.0001.root";
 
-	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.0001.root";
-	TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.0001.root";
-	TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.0001.root";
+	//TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.0001.root";
+	//TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.0001.root";
+	//TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.0001.root";
 
 	TString trdHitProducerType = "smearing";
 	TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file

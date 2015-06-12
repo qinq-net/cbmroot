@@ -9,9 +9,9 @@ XXXXX=$(printf "%05d" "$SGE_TASK_ID")
 XXXX=$(printf "%04d" "$SGE_TASK_ID")
 
 # specify input and output directories
-outdir=/hera/cbm/users/slebedev/mc/dielectron/feb15/${coll_energy}/${pluto_particle}/
-cbmroot_config_path=/hera/cbm/users/slebedev/trunk/build/config.sh
-macro_dir=/hera/cbm/users/slebedev/trunk/cbmroot/macro/analysis/dielectron/
+outdir=/hera/cbm/users/adrian/data/
+cbmroot_config_path=/hera/cbm/users/adrian/trunk/build/config.sh
+macro_dir=/hera/cbm/users/adrian/trunk/cbmroot/macro/analysis/jpsiana/
 
 
 # Needed to run macro via script
@@ -88,7 +88,7 @@ export FIELD_MAP_SCALE=${field_scale}
 #Set PLUTO file
 export PLUTO_PARTICLE=${pluto_particle}
 if [ ${pluto_particle} = "jpsi" ] ; then 
-   export PLUTO_FILE=/hera/cbm/users/ekrebs/pluto/jpsi/25gev/jpsi/epempluto.auau.${ENERGY}.rho0.epem.${XXXX}.root
+   export PLUTO_FILE=/hera/cbm/users/ekrebs/pluto/jpsi/25gev/jpsi/epem/pluto.auau.${ENERGY}.jpsi.epem.${XXXX}.root
 elif [ ${pluto_particle} = "psiprim" ] ; then 
    export PLUTO_FILE=/hera/cbm/users/ekrebs/pluto/cktA/${ENERGY}/omega/epem/pluto.auau.${ENERGY}.omega.epem.${XXXX}.root
 fi 
