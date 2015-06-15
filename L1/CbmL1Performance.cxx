@@ -1489,10 +1489,10 @@ void CbmL1::FieldIntegralCheck()
 
 void CbmL1::InputPerformance()
 {
-  static TH1I *nStripFHits, *nStripBHits, *nStripFMC, *nStripBMC;
+//  static TH1I *nStripFHits, *nStripBHits, *nStripFMC, *nStripBMC;
 
-  static TH1F *resX, *resY/*, *pullZ*/;
-  static TH1F *pullX, *pullY/*, *pullZ*/;
+  static TH1F *resXsts, *resYsts, *resXmvd, *resYmvd/*, *pullZ*/;
+  static TH1F *pullXsts, *pullYsts, *pullXmvd, *pullYmvd/*, *pullZ*/;
 
   static bool first_call = 1;
   if ( first_call ){
@@ -1503,28 +1503,53 @@ void CbmL1::InputPerformance()
     gDirectory->cd("L1");
     gDirectory->mkdir("Input");
     gDirectory->cd("Input");
+    gDirectory->mkdir("STS");
+    gDirectory->cd("STS");
 
-    nStripFHits = new TH1I("nHits_f", "NHits On Front Strip", 10, 0, 10);
-    nStripBHits = new TH1I("nHits_b", "NHits On Back Strip", 10, 0, 10);
-    nStripFMC = new TH1I("nMC_f", "N MC Points On Front Strip", 10, 0, 10);
-    nStripBMC = new TH1I("nMC_b", "N MC Points On Back Strip", 10, 0, 10);
+//    nStripFHits = new TH1I("nHits_f", "NHits On Front Strip", 10, 0, 10);
+//    nStripBHits = new TH1I("nHits_b", "NHits On Back Strip", 10, 0, 10);
+//    nStripFMC = new TH1I("nMC_f", "N MC Points On Front Strip", 10, 0, 10);
+//    nStripBMC = new TH1I("nMC_b", "N MC Points On Back Strip", 10, 0, 10);
 
-    pullX = new TH1F("Px", "Pull x", 50, -5, 5);
-    pullY = new TH1F("Py", "Pull y", 50, -5, 5);
+    pullXsts = new TH1F("Px_sts", "STS Pull x", 100, -5, 5);
+    pullYsts = new TH1F("Py_sts", "STS Pull y", 100, -5, 5);
 
-    resX = new TH1F("x", "Residual x", 50, -50, 50);
-    resY = new TH1F("y", "Residual y", 50, -500, 500);
+    resXsts = new TH1F("x_sts", "STS Residual x", 100, -50, 50);
+    resYsts = new TH1F("y_sts", "STS Residual y", 100, -500, 500);
+
+    gDirectory->cd("..");
+    gDirectory->mkdir("MVD");
+    gDirectory->cd("MVD");
+
+    pullXmvd = new TH1F("Px_mvd", "MVD Pull x", 100, -5, 5);
+    pullYmvd = new TH1F("Py_mvd", "MVD Pull y", 100, -5, 5);
+
+    resXmvd = new TH1F("x_mvd", "MVD Residual x", 100, -50, 50);
+    resYmvd = new TH1F("y_mvd", "MVD Residual y", 100, -50, 50);
+
     TH1* histo;
-    histo = resX;
+    histo = resXsts;
     histo->GetXaxis()->SetTitle("Residual x, um");
-    histo = resY;
+    histo = resYsts;
     histo->GetXaxis()->SetTitle("Residual y, um");
+    histo = resXmvd;
+    histo->GetXaxis()->SetTitle("Residual x, um");
+    histo = resYmvd;
+    histo->GetXaxis()->SetTitle("Residual y, um");
+    histo = pullXsts;
+    histo->GetXaxis()->SetTitle("Pull x, um");
+    histo = pullYsts;
+    histo->GetXaxis()->SetTitle("Pull y, um");
+    histo = pullXmvd;
+    histo->GetXaxis()->SetTitle("Pull x, um");
+    histo = pullYmvd;
+    histo->GetXaxis()->SetTitle("Pull y, um");
 
     gDirectory = currentDir;
   } // first_call
 
-  std::map<unsigned int, unsigned int> stripFToNHitMap,stripBToNHitMap;
-  std::map<unsigned int, unsigned int> stripFToNMCMap,stripBToNMCMap;
+//  std::map<unsigned int, unsigned int> stripFToNHitMap,stripBToNHitMap;
+//  std::map<unsigned int, unsigned int> stripFToNMCMap,stripBToNMCMap;
 
   map<unsigned int, unsigned int>::iterator it;
   Int_t nMC = -1;
@@ -1543,7 +1568,7 @@ void CbmL1::InputPerformance()
 //      int iStripB = sh->GetBackDigiId();	// -1
 //      if ( iStripF >= 0 ) stripFToNHitMap[iStripF]++;
 //      if ( iStripB >= 0 ) stripBToNHitMap[iStripB]++;
-      stripFToNHitMap[0]++;
+////      stripFToNHitMap[0]++;
 
       if ( h.mcPointIds.size() == 0 ) continue; // fake
       int iMC = vMCPoints[h.mcPointIds[0]].pointId;  // TODO: adapt to linking
@@ -1552,7 +1577,7 @@ void CbmL1::InputPerformance()
 
 //      if ( iStripF >= 0 ) stripFToNMCMap[iStripF]++;
 //      if ( iStripB >= 0 ) stripBToNMCMap[iStripB]++;
-      stripFToNMCMap[0]++;
+////      stripFToNMCMap[0]++;
 
         // hit pulls and residuals
 
@@ -1571,18 +1596,18 @@ void CbmL1::InputPerformance()
       mcPos.SetZ( hitPos.Z() );
 
 #if 0 // standard errors
-      if (hitErr.X() != 0) pullX->Fill( (hitPos.X() - mcPos.X()) / hitErr.X() ); // standard errors
-      if (hitErr.Y() != 0) pullY->Fill( (hitPos.Y() - mcPos.Y()) / hitErr.Y() );
+      if (hitErr.X() != 0) pullXsts->Fill( (hitPos.X() - mcPos.X()) / hitErr.X() ); // standard errors
+      if (hitErr.Y() != 0) pullYsts->Fill( (hitPos.Y() - mcPos.Y()) / hitErr.Y() );
 #elif 1 // qa errors
-      if (hitErr.X() != 0) pullX->Fill( (hitPos.X() - mcPos.X()) / sh->GetDx() ); // qa errors
-      if (hitErr.Y() != 0) pullY->Fill( (hitPos.Y() - mcPos.Y()) / sh->GetDy() );
+      if (hitErr.X() != 0) pullXsts->Fill( (hitPos.X() - mcPos.X()) / sh->GetDx() ); // qa errors
+      if (hitErr.Y() != 0) pullYsts->Fill( (hitPos.Y() - mcPos.Y()) / sh->GetDy() );
 #else // errors used in TF
-      if (hitErr.X() != 0) pullX->Fill( (hitPos.X() - mcPos.X()) / sqrt(algo->vStations[NMvdStations].XYInfo.C00[0]) );
-      if (hitErr.Y() != 0) pullY->Fill( (hitPos.Y() - mcPos.Y()) / sqrt(algo->vStations[NMvdStations].XYInfo.C11[0]) );
+      if (hitErr.X() != 0) pullXsts->Fill( (hitPos.X() - mcPos.X()) / sqrt(algo->vStations[NMvdStations].XYInfo.C00[0]) );
+      if (hitErr.Y() != 0) pullYsts->Fill( (hitPos.Y() - mcPos.Y()) / sqrt(algo->vStations[NMvdStations].XYInfo.C11[0]) );
 #endif
 
-      resX->Fill((hitPos.X() - mcPos.X())*10*1000);
-      resY->Fill((hitPos.Y() - mcPos.Y())*10*1000);
+      resXsts->Fill((hitPos.X() - mcPos.X())*10*1000);
+      resYsts->Fill((hitPos.Y() - mcPos.Y())*10*1000);
 
     }
   } // sts
@@ -1602,10 +1627,10 @@ void CbmL1::InputPerformance()
 //           iMC = hm->GetLink(iDigiLink).GetIndex();
 //         }
 //       }
-//       if(iMC<0) continue;
-      if( hm->GetNofLinks()>0 )
+      if( hm->GetNofLinks() > 0 )
         iMC = hm->GetLink(0).GetIndex();
 
+      if( iMC < 0 ) continue;
         // hit pulls and residuals
 
       TVector3 hitPos, mcPos, hitErr;
@@ -1613,13 +1638,13 @@ void CbmL1::InputPerformance()
       sh->PositionError(hitErr);
       CbmMvdPoint *pt = 0;
       nMC = listMvdPts->GetEntriesFast();
-      if( iMC>=0 && iMC<nMC) pt = L1_DYNAMIC_CAST<CbmMvdPoint*>( listMvdPts->At(iMC) );
+      if( iMC >= 0 && iMC < nMC) pt = L1_DYNAMIC_CAST<CbmMvdPoint*>( listMvdPts->At(iMC) );
 
       if ( !pt ){
 //         cout << " No MC points! " << "iMC=" << iMC << endl;
         continue;
       }
-//       pt->Position(mcPos); // this is wrong!
+
       mcPos.SetX( ( pt->GetX() + pt->GetXOut() )/2. );
       mcPos.SetY( ( pt->GetY() + pt->GetYOut() )/2. );
       mcPos.SetZ( hitPos.Z() );
@@ -1628,28 +1653,28 @@ void CbmL1::InputPerformance()
 //       if (hitErr.Y() != 0) pullY->Fill( (hitPos.Y() - mcPos.Y()) / hitErr.Y() );
 //       if (hitErr.X() != 0) pullX->Fill( (hitPos.X() - mcPos.X()) / sh->GetDx() ); // qa errors
 //       if (hitErr.Y() != 0) pullY->Fill( (hitPos.Y() - mcPos.Y()) / sh->GetDy() );
-      if (hitErr.X() != 0) pullX->Fill( (hitPos.X() - mcPos.X()) / sqrt(algo->vStations[0].XYInfo.C00[0]) );  // errors used in TF
-      if (hitErr.Y() != 0) pullY->Fill( (hitPos.Y() - mcPos.Y()) / sqrt(algo->vStations[0].XYInfo.C11[0]) );
+      if (hitErr.X() != 0) pullXmvd->Fill( (hitPos.X() - mcPos.X()) / sqrt(algo->vStations[0].XYInfo.C00[0]) );  // errors used in TF
+      if (hitErr.Y() != 0) pullYmvd->Fill( (hitPos.Y() - mcPos.Y()) / sqrt(algo->vStations[0].XYInfo.C11[0]) );
 
-      resX->Fill((hitPos.X() - mcPos.X())*10*1000);
-      resY->Fill((hitPos.Y() - mcPos.Y())*10*1000);
+      resXmvd->Fill((hitPos.X() - mcPos.X())*10*1000);
+      resYmvd->Fill((hitPos.Y() - mcPos.Y())*10*1000);
     }
   } // mvd
 
 
 
-  for (it = stripFToNHitMap.begin(); it != stripFToNHitMap.end(); it++){
-    nStripFHits->Fill(it->second);
-  }
-  for (it = stripBToNHitMap.begin(); it != stripBToNHitMap.end(); it++){
-    nStripBHits->Fill(it->second);
-  }
-  for (it = stripFToNMCMap.begin(); it != stripFToNMCMap.end(); it++){
-    nStripFMC->Fill(it->second);
-  }
-  for (it = stripBToNMCMap.begin(); it != stripBToNMCMap.end(); it++){
-    nStripBMC->Fill(it->second);
-  }
+//  for (it = stripFToNHitMap.begin(); it != stripFToNHitMap.end(); it++){
+//    nStripFHits->Fill(it->second);
+//  }
+//  for (it = stripBToNHitMap.begin(); it != stripBToNHitMap.end(); it++){
+//    nStripBHits->Fill(it->second);
+//  }
+//  for (it = stripFToNMCMap.begin(); it != stripFToNMCMap.end(); it++){
+//    nStripFMC->Fill(it->second);
+//  }
+//  for (it = stripBToNMCMap.begin(); it != stripBToNMCMap.end(); it++){
+//    nStripBMC->Fill(it->second);
+//  }
 
     // strips   Not ended
 //   if( listCbmStsDigi ){
