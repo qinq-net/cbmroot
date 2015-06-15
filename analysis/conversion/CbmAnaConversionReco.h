@@ -39,7 +39,7 @@ public:
 	void Finish();
 
 	void SetTracklistMC(vector<CbmMCTrack*> MCTracklist);
-	void SetTracklistReco(vector<CbmMCTrack*> MCTracklist, vector<TVector3> RecoTracklist1, vector<TVector3> RecoTracklist2, vector<int> ids);
+	void SetTracklistReco(vector<CbmMCTrack*> MCTracklist, vector<TVector3> RecoTracklist1, vector<TVector3> RecoTracklist2, vector<int> ids, vector<Double_t> chi);
 	void InvariantMassMC_all();
 	Double_t Invmass_4particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2, const CbmMCTrack* mctrack3, const CbmMCTrack* mctrack4);
 	Double_t SmearValue(Double_t value);
@@ -48,6 +48,8 @@ public:
 	Int_t NofDaughters(Int_t motherId);
 	Double_t CalculateOpeningAngleReco(TVector3 electron1, TVector3 electron2);
 	Double_t CalculateOpeningAngleMC(CbmMCTrack* mctrack1, CbmMCTrack* mctrack2);
+	Double_t CalculateOpeningAngleBetweenGammasMC(CbmMCTrack* mctrack1, CbmMCTrack* mctrack2, CbmMCTrack* mctrack3, CbmMCTrack* mctrack4);
+	Double_t CalculateOpeningAngleBetweenGammasReco(TVector3 electron1, TVector3 electron2, TVector3 electron3, TVector3 electron4);
 
 	void CalculateInvMassWithFullRecoCuts();
 	CbmLmvmKinematicParams CalculateKinematicParamsReco(const TVector3 electron1, const TVector3 electron2);
@@ -65,6 +67,7 @@ private:
 	vector<CbmMCTrack*>	fMCTracklist_all;
 	vector<CbmMCTrack*>	fRecoTracklistEPEM;
 	vector<int>			fRecoTracklistEPEM_ids;
+	vector<Double_t>	fRecoTracklistEPEM_chi;
 	vector<TVector3>	fRecoMomentum;
 	vector<TVector3>	fRecoRefittedMomentum;
 	
@@ -104,6 +107,9 @@ private:
 	TH1D * fhEPEM_openingAngle_gg_refitted;
 	TH1D * fhEPEM_openingAngle_gee_mc;
 	TH1D * fhEPEM_openingAngle_gee_refitted;
+	
+	TH1D * fhEPEM_openingAngle_betweenGammas_mc;
+	TH1D * fhEPEM_openingAngle_betweenGammas_reco;
 
 
 	TH1D * fhInvMass_EPEM_mc;
@@ -131,7 +137,10 @@ private:
    
 	TH1D * fhInvariantMass_pi0epem;
 	TH1D * fhPi0_startvertex;
-	TH1D * fhPi0_startvertexElectrons;
+	TH1D * fhPi0_startvertexElectrons_all;
+	TH1D * fhPi0_startvertexElectrons_gg;
+	TH1D * fhPi0_startvertexElectrons_gee;
+	TH2D * fhPi0_startvertex_vs_chi;
 
 	TH1D * fhInvMassWithFullRecoCuts;
 

@@ -53,7 +53,10 @@ CbmAnaConversionKF::CbmAnaConversionKF()
    fHistoList_kfparticle(),
    particlevector(),
    electronIDs(),
+   gammaIDs(),
    fhInvMassPi0WithFullReco(NULL),
+   fhInvMass2Gammas(NULL),
+   fhInvMass2Gammas_cut(NULL),
    timer(),
    fTime(0.)
 {
@@ -103,6 +106,11 @@ void CbmAnaConversionKF::InitHistos()
 
 	fhInvMassPi0WithFullReco = new TH1D("fhInvMassPi0WithFullReco", "fhInvMassPi0WithFullReco;invmass;#", 400, 0., 2.);
 	fHistoList_kfparticle.push_back(fhInvMassPi0WithFullReco);
+	
+	fhInvMass2Gammas = new TH1D("fhInvMass2Gammas", "fhInvMass2Gammas;invmass;#", 400, 0., 2.);
+	fHistoList_kfparticle.push_back(fhInvMass2Gammas);
+	fhInvMass2Gammas_cut = new TH1D("fhInvMass2Gammas_cut", "fhInvMass2Gammas_cut;invmass;#", 400, 0., 2.);
+	fHistoList_kfparticle.push_back(fhInvMass2Gammas_cut);
 
 }
 
@@ -130,12 +138,18 @@ void CbmAnaConversionKF::Finish()
 
 void CbmAnaConversionKF::Exec()
 {
+	timer.Start();
+	
 	electronIDs.clear();
+	gammaIDs.clear();
 
 	//KFParticle_Analysis();
 	test2();
 	Reconstruct();
+	ReconstructGammas();
 
+	timer.Stop();
+	fTime += timer.RealTime();
 }
 
 
@@ -457,7 +471,10 @@ void CbmAnaConversionKF::test2()
 			electronIDs.push_back(i);
 		}
 		if(TMath::Abs(particlevector[i].GetPDG()) == 111) pi0counter++;
-		if(TMath::Abs(particlevector[i].GetPDG()) == 22) gammacounter++;
+		if(TMath::Abs(particlevector[i].GetPDG()) == 22) {
+			gammacounter++;
+			gammaIDs.push_back(i);
+		}
 		
 	}
 	
@@ -473,9 +490,9 @@ void CbmAnaConversionKF::Reconstruct()
 	Int_t nof = electronIDs.size();
 	if(nof >= 4) {
 		for(int a=0; a<nof-3; a++) {
-			for(int b=a; b<nof-2; b++) {
-				for(int c=b; c<nof-1; c++) {
-					for(int d=c; d<nof; d++) {
+			for(int b=a+1; b<nof-2; b++) {
+				for(int c=b+1; c<nof-1; c++) {
+					for(int d=c+1; d<nof; d++) {
 						Int_t check1 = (particlevector[electronIDs[a]].GetPDG() > 0);
 						Int_t check2 = (particlevector[electronIDs[b]].GetPDG() > 0);
 						Int_t check3 = (particlevector[electronIDs[c]].GetPDG() > 0);
@@ -490,11 +507,34 @@ void CbmAnaConversionKF::Reconstruct()
 						KFParticle particle4 = particlevector[electronIDs[d]];
 						Double_t invmass = Invmass_4particlesRECO(particle1, particle2, particle3, particle4);
 						
-						if( (particlevector[electronIDs[a]].GetZ() == particlevector[electronIDs[b]].GetZ() && particlevector[electronIDs[c]].GetZ() == particlevector[electronIDs[d]].GetZ() )
-						 || (particlevector[electronIDs[a]].GetZ() == particlevector[electronIDs[c]].GetZ() && particlevector[electronIDs[b]].GetZ() == particlevector[electronIDs[d]].GetZ() )
-						 || (particlevector[electronIDs[a]].GetZ() == particlevector[electronIDs[d]].GetZ() && particlevector[electronIDs[b]].GetZ() == particlevector[electronIDs[c]].GetZ() ) ) {
-							fhInvMassPi0WithFullReco->Fill(invmass);
+						
+						Bool_t fill = false;
+						Double_t invmass_cut = 0.03;
+						
+						if( particle1.GetZ() == particle2.GetZ() && particle3.GetZ() == particle4.GetZ() ) {
+							Double_t invmass_12 = Invmass_2electrons(particle1, particle2);
+							Double_t invmass_34 = Invmass_2electrons(particle3, particle4);
+							if(invmass_12 < invmass_cut && invmass_34 < invmass_cut) {
+								fill = true;
+							}
 						}
+						if( particle1.GetZ() == particle3.GetZ() && particle2.GetZ() == particle4.GetZ() ) {
+							Double_t invmass_13 = Invmass_2electrons(particle1, particle3);
+							Double_t invmass_24 = Invmass_2electrons(particle2, particle4);
+							if(invmass_13 < invmass_cut && invmass_24 < invmass_cut) {
+								fill = true;
+							}
+						}
+						if( particle1.GetZ() == particle4.GetZ() && particle2.GetZ() == particle3.GetZ() ) {
+							Double_t invmass_14 = Invmass_2electrons(particle1, particle4);
+							Double_t invmass_23 = Invmass_2electrons(particle2, particle3);
+							if(invmass_14 < invmass_cut && invmass_23 < invmass_cut) {
+								fill = true;
+							}
+						}
+						
+						
+						if(fill) fhInvMassPi0WithFullReco->Fill(invmass);
 						
 						/*
 						CbmLmvmKinematicParams params1 = CalculateKinematicParamsReco(fElectrons_momenta[a], fElectrons_momenta[b]);
@@ -541,6 +581,28 @@ void CbmAnaConversionKF::Reconstruct()
 }
 
 
+void CbmAnaConversionKF::ReconstructGammas()
+{
+	Int_t nof = gammaIDs.size();
+	if(nof >= 2) {
+		for(int a=0; a<nof-1; a++) {
+			for(int b=a+1; b<nof; b++) {
+				KFParticle particle1 = particlevector[gammaIDs[a]];
+				KFParticle particle2 = particlevector[gammaIDs[b]];
+				Double_t invmass = Invmass_2gamma(particle1, particle2);
+				Double_t openingAngle = OpeningAngleBetweenPhotons(particle1, particle2);
+				
+				fhInvMass2Gammas->Fill(invmass);
+				
+				if( (TMath::Abs(particle1.GetZ() - particle2.GetZ()) < 0.01 ) && (openingAngle < 5) ) {
+					fhInvMass2Gammas_cut->Fill(invmass);
+				}
+			}
+		}
+	}
+}
+
+
 Double_t CbmAnaConversionKF::Invmass_4particlesRECO(KFParticle part1, KFParticle part2, KFParticle part3, KFParticle part4)
 // calculation of invariant mass from four electrons/positrons
 {
@@ -567,4 +629,60 @@ Double_t CbmAnaConversionKF::Invmass_4particlesRECO(KFParticle part1, KFParticle
 	return sum.Mag();
 }
 
+
+
+Double_t CbmAnaConversionKF::Invmass_2gamma(KFParticle part1, KFParticle part2)
+{
+	TVector3 momentum1(part1.GetPx(), part1.GetPy(), part1.GetPz());
+    Double_t energy1 = TMath::Sqrt(momentum1.Mag2() );
+    TLorentzVector lorVec1(momentum1, energy1);
+    
+	TVector3 momentum2(part2.GetPx(), part2.GetPy(), part2.GetPz());
+    Double_t energy2 = TMath::Sqrt(momentum2.Mag2() );
+    TLorentzVector lorVec2(momentum2, energy2);
+
+    
+    TLorentzVector sum;
+    sum = lorVec1 + lorVec2;    
+
+	return sum.Mag();
+}
+
+
+
+Double_t CbmAnaConversionKF::Invmass_2electrons(KFParticle part1, KFParticle part2)
+{
+	TVector3 momentum1(part1.GetPx(), part1.GetPy(), part1.GetPz());
+    Double_t energy1 = TMath::Sqrt(momentum1.Mag2() + M2E);
+    TLorentzVector lorVec1(momentum1, energy1);
+    
+	TVector3 momentum2(part2.GetPx(), part2.GetPy(), part2.GetPz());
+    Double_t energy2 = TMath::Sqrt(momentum2.Mag2() + M2E);
+    TLorentzVector lorVec2(momentum2, energy2);
+
+    
+    TLorentzVector sum;
+    sum = lorVec1 + lorVec2;    
+
+	return sum.Mag();
+}
+
+
+
+Double_t CbmAnaConversionKF::OpeningAngleBetweenPhotons(KFParticle part1, KFParticle part2)
+{
+	TVector3 momentum1(part1.GetPx(), part1.GetPy(), part1.GetPz());
+    Double_t energy1 = TMath::Sqrt(momentum1.Mag2() );
+    TLorentzVector lorVec1(momentum1, energy1);
+    
+	TVector3 momentum2(part2.GetPx(), part2.GetPy(), part2.GetPz());
+    Double_t energy2 = TMath::Sqrt(momentum2.Mag2() );
+    TLorentzVector lorVec2(momentum2, energy2);
+
+
+	Double_t angleBetweenPhotons = lorVec1.Angle(lorVec2.Vect());
+	Double_t theta = 180.*angleBetweenPhotons/TMath::Pi();
+
+	return theta;
+}
 

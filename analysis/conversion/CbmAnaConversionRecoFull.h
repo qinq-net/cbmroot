@@ -9,6 +9,7 @@
 #ifndef CBM_ANA_CONVERSION_RECOFULL
 #define CBM_ANA_CONVERSION_RECOFULL
 
+
 // included from ROOT
 #include <TH1.h>
 #include <TH2.h>
@@ -45,6 +46,9 @@ public:
 	Double_t Invmass_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 
 	CbmLmvmKinematicParams CalculateKinematicParamsReco(const TVector3 electron1, const TVector3 electron2);
+	
+	void CombinePhotons();
+	Double_t OpeningAngleBetweenPhotons(vector<int> photon1, vector<int> photons2);
 
 
 
@@ -65,12 +69,43 @@ private:
 	TH1I * fhElectrons;
 
 	CbmLitGlobalElectronId* electronidentifier;
+	
+	TH1D * fhMomentumFits;
+	TH1D * fhMomentumFits_electronRich;
+	TH1D * fhMomentumFits_pi0reco;
 
 	vector<CbmGlobalTrack*> fElectrons_track;
 	vector<TVector3> fElectrons_momenta;
+	vector<float> fElectrons_momentaChi;
+	vector<int> fElectrons_mctrackID;
 
 	TH1D * fhElectrons_invmass;
 	TH1D * fhElectrons_invmass_cut;
+	
+	
+	vector< vector<int> > fVector_photons_pairs;
+	vector<TVector3> fVector_photons_momenta;
+	TH1D * fhPhotons_invmass;
+	TH1D * fhPhotons_invmass_cut;
+	TH1D * fhPhotons_invmass_cut_chi1;
+	TH1D * fhPhotons_invmass_cut_chi3;
+	TH1D * fhPhotons_invmass_cut_chi5;
+	TH1D * fhPhotons_invmass_cut_chi10;
+	TH1D * fhPhotons_invmass_cut_chi25;
+	TH1D * fhPhotons_invmass_cut_chi40;
+	TH1D * fhPhotons_invmass_cut_chi65;
+	TH1D * fhPhotons_invmass_cut_chi80;
+	TH2D * fhPhotons_invmass_vs_chi;
+	TH2D * fhPhotons_startvertex_vs_chi;
+	TH1D * fhPhotons_angleBetween;
+	
+	TH1D * fhPhotons_MC_motherpdg;
+	TH1D * fhPhotons_MC_invmass1;
+	TH1D * fhPhotons_MC_invmass2;
+	TH1D * fhPhotons_MC_invmass3;
+	TH1D * fhPhotons_MC_invmass4;
+	TH1D * fhPhotons_MC_startvertexZ;
+	TH1D * fhPhotons_MC_motherIdCut;
 
 
 	// timer

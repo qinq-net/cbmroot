@@ -73,6 +73,7 @@ private:
 	TH2D * fhTomography_RICH_backplate;
 
 	TH1D * fhConversion;
+	TH1D * fhConversion_cut;
 	TH1D * fhConversion_inSTS;
 	TH1D * fhConversion_prob;
 	TH1D * fhConversion_energy;

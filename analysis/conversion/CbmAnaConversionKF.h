@@ -54,7 +54,12 @@ public:
 
 	void test2();
 	void Reconstruct();
+	void ReconstructGammas();
 	Double_t Invmass_4particlesRECO(KFParticle part1, KFParticle part2, KFParticle part3, KFParticle part4);
+	Double_t Invmass_2gamma(KFParticle part1, KFParticle part2);
+	Double_t Invmass_2electrons(KFParticle part1, KFParticle part2);
+
+	Double_t OpeningAngleBetweenPhotons(KFParticle part1, KFParticle part2);
 
 
 
@@ -95,7 +100,11 @@ private:
 
 	vector<KFParticle> particlevector;
 	vector<int> electronIDs;
+	vector<int> gammaIDs;
 	TH1D * fhInvMassPi0WithFullReco;
+	
+	TH1D * fhInvMass2Gammas;
+	TH1D * fhInvMass2Gammas_cut;
 
 
 	// timer

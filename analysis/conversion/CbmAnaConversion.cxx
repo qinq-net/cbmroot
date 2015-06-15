@@ -9,12 +9,7 @@
 
 #include "CbmAnaConversion.h"
 
-#include "TH1D.h"
-#include "TH1.h"
-#include "TH3.h"
-#include "TCanvas.h"
-#include "TClonesArray.h"
-
+// includes of CBMROOT classes
 #include "CbmMCTrack.h"
 #include "FairTrackParam.h"
 #include "CbmRichHit.h"
@@ -30,22 +25,29 @@
 
 #include "CbmUtils.h"
 
-#include <iostream>
-#include <string>
-#include <boost/assign/list_of.hpp>
-
-
 #include "L1Field.h"
 #include "CbmL1PFFitter.h"
 #include "CbmStsKFTrackFitter.h"
-
-#include "TRandom3.h"
 
 #include "CbmKFParticleFinder.h"
 #include "CbmKFParticleFinderQA.h"
 #include "KFParticleTopoReconstructor.h"
 
 
+// includes of standard c++ classes or ROOT classes
+#include <iostream>
+#include <iomanip> 
+#include <string>
+#include <boost/assign/list_of.hpp>
+#include "TRandom3.h"
+#include "TH1D.h"
+#include "TH1.h"
+#include "TH3.h"
+#include "TCanvas.h"
+#include "TClonesArray.h"
+
+
+// includes of further conversion classes
 #include "CbmAnaConversionTomography.h"
 #include "CbmAnaConversionRich.h"
 #include "CbmAnaConversionKF.h"
@@ -73,6 +75,10 @@ CbmAnaConversion::CbmAnaConversion()
     fhElectronSources(NULL),
     fhNofPi0_perEvent(NULL),
     fhNofPi0_perEvent_cut(NULL),
+    fhNofPi0_perEvent_cut2(NULL),
+    fhNofEta_perEvent(NULL),
+    fhNofEta_perEvent_cut(NULL),
+    fhNofEta_perEvent_cut2(NULL),
     fhPi0_z(NULL),
     fhPi0_z_cut(NULL),
     fhElectronsFromPi0_z(NULL),
@@ -131,6 +137,8 @@ CbmAnaConversion::CbmAnaConversion()
     fRecoRefittedMomentum(),
     timer_all(),
     fTime_all(0.),
+    timer_exec(),
+    fTime_exec(0.),
     timer_mc(),
     fTime_mc(0.),
     timer_rec(),
@@ -151,6 +159,9 @@ CbmAnaConversion::~CbmAnaConversion()
 
 InitStatus CbmAnaConversion::Init()
 {
+	//timer_all.Reset();
+	timer_all.Start();
+
 	cout << "CbmAnaConversion::Init"<<endl;
 	FairRootManager* ioman = FairRootManager::Instance();
 	if (NULL == ioman) { Fatal("CbmAnaConversion::Init","RootManager not instantised!"); }
@@ -181,7 +192,6 @@ InitStatus CbmAnaConversion::Init()
 
 	InitHistograms();
    
-	fKFtopo = fKFparticle->GetTopoReconstructor();
 	particlecounter = 0;   
    
 	testint = 0;
@@ -224,6 +234,8 @@ InitStatus CbmAnaConversion::Init()
 		fAnaRecoFull->Init();
 	}
 
+	timer_all.Stop();
+	fTime_all += timer_all.RealTime();
 
 	return kSUCCESS;
 }
@@ -239,12 +251,17 @@ void CbmAnaConversion::InitHistograms()
 	fhNofElAll				= new TH1D("fhNofElAll", "fhNofElAll;Nof All El;Entries", 30., -0.5, 29.5);
 	fhNofPi0_perEvent		= new TH1D("fhNofPi0_perEvent", "fhNofPi0_perEvent;Nof pi0;Entries", 1000., -0.5, 999.5);
 	fhNofPi0_perEvent_cut	= new TH1D("fhNofPi0_perEvent_cut", "fhNofPi0_perEvent_cut (Z<10cm);Nof pi0;Entries", 800., -0.5, 799.5);
+	fhNofPi0_perEvent_cut2	= new TH1D("fhNofPi0_perEvent_cut2", "fhNofPi0_perEvent_cut2 (motherId = -1);Nof pi0;Entries", 800., -0.5, 799.5);
+	fhNofEta_perEvent		= new TH1D("fhNofEta_perEvent", "fhNofEta_perEvent;Nof eta;Entries", 1000., -0.5, 999.5);
+	fhNofEta_perEvent_cut	= new TH1D("fhNofEta_perEvent_cut", "fhNofEta_perEvent_cut (Z<10cm);Nof eta;Entries", 800., -0.5, 799.5);
+	fhNofEta_perEvent_cut2	= new TH1D("fhNofEta_perEvent_cut2", "fhNofEta_perEvent_cut2 (motherId = -1);Nof eta;Entries", 800., -0.5, 799.5);
 	fhPi0_z					= new TH1D("fhPi0_z", "fhPi0_z;z [cm];Entries", 600., -0.5, 599.5);
 	fhPi0_z_cut				= new TH1D("fhPi0_z_cut", "fhPi0_z_cut;z [cm];Entries", 600., -0.5, 599.5);
 	fhElectronSources		= new TH1D("fhElectronSources", "fhElectronSources;Source;Entries", 6., 0., 6.);
 	fhElectronsFromPi0_z	= new TH1D("fhElectronsFromPi0_z", "fhElectronsFromPi0_z (= pos. of gamma conversion);z [cm];Entries", 600., -0.5, 599.5);
 	fHistoList.push_back(fhNofPi0_perEvent);
 	fHistoList.push_back(fhNofPi0_perEvent_cut);
+	fHistoList.push_back(fhNofPi0_perEvent_cut2);
 	fHistoList.push_back(fhPi0_z);
 	fHistoList.push_back(fhPi0_z_cut);
 	fHistoList.push_back(fhElectronSources);
@@ -306,8 +323,10 @@ void CbmAnaConversion::InitHistograms()
 
 void CbmAnaConversion::Exec(Option_t* option)
 {
-	//timer_all.Reset();
+	timer_exec.Start();
 	timer_all.Start();
+
+
 
 	cout << "=======================================================================" << endl;
 	cout << "========== CbmAnaConversion, event No. " <<  fEventNum << endl;
@@ -325,6 +344,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 	fRecoTracklist.clear();
 	fRecoTracklistEPEM.clear();
 	fRecoTracklistEPEM_id.clear();
+	fRecoTracklistEPEM_chi.clear();
 	fRecoMomentum.clear();
 	fRecoRefittedMomentum.clear();
 
@@ -338,6 +358,9 @@ void CbmAnaConversion::Exec(Option_t* option)
 	int countPi0MC = 0; 
 	int countPi0MC_cut = 0;
 	int countPi0MC_fromPrimary = 0;
+	int countEtaMC = 0;
+	int countEtaMC_cut = 0;
+	int countEtaMC_fromPrimary = 0;
    
 	if (fPrimVertex != NULL){
 		fKFVertex = CbmKFVertex(*fPrimVertex);
@@ -370,6 +393,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 	// ========================================================================================
 	// START - Analyse MC tracks
 	timer_mc.Start();
+
 	Int_t nofMcTracks = fMcTracks->GetEntriesFast();
 	for (int i = 0; i < nofMcTracks; i++) {
 		CbmMCTrack* mctrack = (CbmMCTrack*)fMcTracks->At(i);
@@ -399,18 +423,31 @@ void CbmAnaConversion::Exec(Option_t* option)
 			int motherId = mctrack->GetMotherId();
 			if (motherId == -1) countPi0MC_fromPrimary++;
 		}
+		
+		if (mctrack->GetPdgCode() == 221) {
+			countEtaMC++;
+			TVector3 v;
+			mctrack->GetStartVertex(v);
+			if(v.Z() <= 10) {
+				countEtaMC_cut++;
+			}
+			int motherId = mctrack->GetMotherId();
+			if (motherId == -1) countEtaMC_fromPrimary++;
+		}
 
 		if (TMath::Abs( mctrack->GetPdgCode())  == 11) { 
 			AnalyseElectrons(mctrack);
 		}
 	}
-	timer_mc.Stop();
-	fTime_mc += timer_mc.RealTime();
 
 	cout << "CbmAnaConversion::Exec - Number of pi0 in MC sample: " << countPi0MC << endl;
 	cout << "CbmAnaConversion::Exec - Number of pi0 from primary: " << countPi0MC_fromPrimary << endl;
 	fhNofPi0_perEvent->Fill(countPi0MC);
 	fhNofPi0_perEvent_cut->Fill(countPi0MC_cut);
+	fhNofPi0_perEvent_cut2->Fill(countPi0MC_fromPrimary);
+	fhNofEta_perEvent->Fill(countEtaMC);
+	fhNofEta_perEvent_cut->Fill(countEtaMC_cut);
+	fhNofEta_perEvent_cut2->Fill(countEtaMC_fromPrimary);
 	
 	fNofGeneratedPi0 = countPi0MC_fromPrimary;
 	fNofGeneratedPi0_allEvents += fNofGeneratedPi0;
@@ -434,12 +471,15 @@ void CbmAnaConversion::Exec(Option_t* option)
 
 	// END - Analyse MC tracks
 	// ========================================================================================
+	timer_mc.Stop();
+	fTime_mc += timer_mc.RealTime();
    
    
    
 	// ========================================================================================
 	// START - Analyse reconstructed tracks
 	timer_rec.Start();
+
 	Int_t ngTracks = fGlobalTracks->GetEntriesFast();
 	for (Int_t i = 0; i < ngTracks; i++) {
 		CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(i);
@@ -454,6 +494,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 		if (stsTrack == NULL) continue;
 		CbmTrackMatchNew* stsMatch  = (CbmTrackMatchNew*) fStsTrackMatches->At(stsInd);
 		if (stsMatch == NULL) continue;
+		if(stsMatch->GetNofLinks() <= 0) continue;
 		int stsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
 		if (stsMcTrackId < 0) continue;
 		CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId);
@@ -508,29 +549,33 @@ void CbmAnaConversion::Exec(Option_t* option)
 		//cand.chi2Prim = chiPrim[0];
 		const FairTrackParam* vtxTrack = stsTracks[0].GetParamFirst();
 		vtxTrack->Momentum(refittedMomentum);
+		
+		float result_chi = chiPrim[0];
        
 		// Fill tracklists containing momenta from mc-true, measured in sts, refitted at primary
-		FillRecoTracklistEPEM(mcTrack1, stsMomentumVec, refittedMomentum, stsMcTrackId);
+		FillRecoTracklistEPEM(mcTrack1, stsMomentumVec, refittedMomentum, stsMcTrackId, result_chi);
 	}
-	timer_rec.Stop();
-	fTime_rec += timer_rec.RealTime();
 	
 //	InvariantMassTestReco();
 
 	if(DoReconstruction) {
-		fAnaReco->SetTracklistReco(fRecoTracklistEPEM, fRecoMomentum, fRecoRefittedMomentum, fRecoTracklistEPEM_id);
+		fAnaReco->SetTracklistReco(fRecoTracklistEPEM, fRecoMomentum, fRecoRefittedMomentum, fRecoTracklistEPEM_id, fRecoTracklistEPEM_chi);
 		fAnaReco->InvariantMassTest_4epem();
-		fAnaReco->CalculateInvMassWithFullRecoCuts();
+		//fAnaReco->CalculateInvMassWithFullRecoCuts();
 	}
 
 	// END - analyse reconstructed tracks
 	// ========================================================================================
+	timer_rec.Stop();
+	fTime_rec += timer_rec.RealTime();
 
 
 
 // =========================================================================================================================
 // ============================================== END - EXEC function ======================================================
 // =========================================================================================================================
+	timer_exec.Stop();
+	fTime_exec += timer_exec.RealTime();
 	timer_all.Stop();
 	fTime_all += timer_all.RealTime();
 }
@@ -539,6 +584,8 @@ void CbmAnaConversion::Exec(Option_t* option)
 
 void CbmAnaConversion::Finish()
 {
+	timer_all.Start();
+
 	cout << "\n\n############### CALLING FINISH ROUTINES... ############" << endl;
 
 	
@@ -568,6 +615,8 @@ void CbmAnaConversion::Finish()
 	gDirectory->cd("..");
 	
 	
+	timer_all.Stop();
+	fTime_all += timer_all.RealTime();
 	
 	cout << endl;
 	cout << "############### FINISHED MAIN TASK ##############" << endl;
@@ -580,10 +629,13 @@ void CbmAnaConversion::Finish()
 	cout << "Number of generated pi0 (all events): " << fNofGeneratedPi0_allEvents << endl;
 	cout << "Number of reconstructed pi0 (all events): " << fNofPi0_kfparticle_allEvents << "\t - fraction: " << 1.0*fNofPi0_kfparticle_allEvents/fNofGeneratedPi0_allEvents << endl;
 	cout << "#####################################" << endl;
-	cout << "############### TIMER ###############" << endl;
+	cout << "############### OVERALL TIMERS ###############" << endl;
+	cout << std::fixed;
+	cout << std::setprecision(1);
 	cout << "Complete time: " << fTime_all << endl;
-	timer_all.Print();
-	cout << "mc tme: " << fTime_mc << "\t time rec: " << fTime_rec << endl;
+	cout << "Exec time: " << fTime_exec << endl;
+	cout << "MC time: " << fTime_mc << "\t RECO time: " << fTime_rec << endl;
+	cout << "############### ############## ###############" << endl;
 // =========================================================================================================================
 // ============================================== END - FINISH function ====================================================
 // =========================================================================================================================
@@ -844,13 +896,14 @@ void CbmAnaConversion::FillRecoTracklist(CbmMCTrack* mctrack)
 
 
 
-void CbmAnaConversion::FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom, int i) 
+void CbmAnaConversion::FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom, int i, Double_t chi) 
 {
 	if (TMath::Abs( mctrack->GetPdgCode())  == 11) { 
 		int motherId = mctrack->GetMotherId();
 		if (motherId != -1) {
 			fRecoTracklistEPEM.push_back(mctrack);
 			fRecoTracklistEPEM_id.push_back(i);
+			fRecoTracklistEPEM_chi.push_back(chi);
 			fRecoMomentum.push_back(stsMomentum);
 			fRecoRefittedMomentum.push_back(refittedMom);
 		}

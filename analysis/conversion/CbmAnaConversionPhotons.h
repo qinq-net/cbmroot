@@ -27,6 +27,17 @@
 
 using namespace std;
 
+class CbmAnaConversionKinematicParams
+{
+public:
+   Double_t fMomentumMag; // Absolute value of momentum
+   Double_t fPt; // Transverse momentum
+   Double_t fRapidity; // Rapidity
+   Double_t fMinv; // Invariant mass
+   Double_t fAngle; // Opening angle
+   TVector3 fMomentumPhoton;
+};
+
 
 class CbmAnaConversionPhotons
 {
@@ -44,17 +55,19 @@ public:
 	void AnalysePhotons();
 	void FillMCTracklist(CbmMCTrack* mctrack);
 	void FillMCTracklist_allElectrons(CbmMCTrack* mctrack);
+	void FillMCTracklist_allGammas(CbmMCTrack* mctrack);
 	void FillRecoTracklist_allElectrons(CbmMCTrack* mctrack, TVector3 refittedMom);
 	void CombineElectrons();
 	int CheckMC(CbmMCTrack* mctrack);
 
-	CbmLmvmKinematicParams CalculateKinematicParams(const CbmMCTrack* mctrackP, const CbmMCTrack* mctrackM);
+	CbmAnaConversionKinematicParams CalculateKinematicParams(const CbmMCTrack* mctrackP, const CbmMCTrack* mctrackM);
 	CbmLmvmKinematicParams CalculateKinematicParamsReco(const TVector3 electron1, const TVector3 electron2);
 
 
 	void AnalyseElectronsFromGammaMC();
 	void AnalyseElectronsFromGammaReco();
 	void AnalyseElectronsFromPi0Reco();
+	void AnalyseGammas();
 
 
 
@@ -98,6 +111,9 @@ private:
 	vector<TVector3>	fRecoTracklist_allElectronsFromGammaMom;
 	vector<CbmMCTrack*>	fRecoTracklist_allElectronsFromPi0;
 	vector<TVector3>	fRecoTracklist_allElectronsFromPi0Mom;
+	
+	vector<CbmMCTrack*>	fMCTracklist_allGammas;
+	vector<CbmMCTrack*>	fMCTracklist_allGammasFromPi0;
 
 	Int_t global_nof_photonsMC;
 	Int_t global_nof_photonsReco;
@@ -174,6 +190,8 @@ private:
 	TH2D * fhEFG_startvertexVSangle_direct;
 	TH2D * fhEFG_startvertexVSangle_pi0;
 	TH2D * fhEFG_startvertexVSangle_eta;
+	
+	TH1D * fhEFG_startvertex_allSameG;
 
 	// distribution of opening angles from reconstructed momenta
 	TH1D * fhEFG_angle_all_reco;
@@ -213,6 +231,10 @@ private:
 
 	// opening angles for e+e- pairs from pi0 dalitz decays (i.e. e+e- pairs directly stemming from pi0)
 	TH1D * fhEFPI0_angle_reco;
+
+	// histos for direct combination of two gammas
+	TH1D * fhG_invmass;
+	TH1D * fhG_invmass_pi0;
 
 
 	// timer

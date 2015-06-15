@@ -225,7 +225,7 @@ void CbmAnaConversionRich::InitHistos()
 
 
 
-	fhRichRings_start	= new TH1D("fhRichRings_start", "fhRichRings_start;z;#", 1000, 0, 1000);
+	fhRichRings_start	= new TH1D("fhRichRings_start", "fhRichRings_start;z;#", 10000, 0, 1000);
 	fHistoList_richrings.push_back(fhRichRings_start);
 }
 
@@ -461,6 +461,7 @@ void CbmAnaConversionRich::AnalyseRICHdata()
 
 
 	// plot momentum vs ring radius/Axis+Baxis
+	//cout << "CbmAnaConversionRich: further ring analyses..." << endl;
 	Int_t nGTracks = fGlobalTracks->GetEntriesFast();
 	for (Int_t i = 0; i < nGTracks; i++){
 		CbmGlobalTrack* gTrack  = (CbmGlobalTrack*) fGlobalTracks->At(i);
@@ -592,6 +593,7 @@ void CbmAnaConversionRich::CheckMC()
 		if (stsTrack == NULL) continue;
 		CbmTrackMatchNew* stsMatch  = (CbmTrackMatchNew*)fStsTrackMatches->At(stsInd);
 		if (stsMatch == NULL) continue;
+		if(stsMatch->GetNofLinks() <= 0) continue;
 		int stsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
 		if (stsMcTrackId < 0) continue;
 		CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId);

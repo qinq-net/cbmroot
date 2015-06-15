@@ -111,9 +111,11 @@ void CbmAnaConversionTomography::InitHistos()
 	
 	
 	fhConversion		= new TH1D("fhConversion", "fhConversion;Z [cm];# conversions", 4800, -0.5, 1199.5);
+	fhConversion_cut	= new TH1D("fhConversion_cut", "fhConversion_cut;Z [cm];# conversions", 4800, -0.5, 1199.5);
 	fhConversion_inSTS	= new TH1D("fhConversion_inSTS", "fhConversion in STS;Z [cm];# conversions", 800, -0.5, 199.5);
 	fhConversion_prob	= new TH1D("fhConversion_prob", "fhConversion_prob;Z [cm];# conversions", 1200, -0.5, 1199.5);
 	fHistoList_tomography.push_back(fhConversion);
+	fHistoList_tomography.push_back(fhConversion_cut);
 	fHistoList_tomography.push_back(fhConversion_inSTS);
 	fHistoList_tomography.push_back(fhConversion_prob);
 	
@@ -170,7 +172,6 @@ void CbmAnaConversionTomography::Finish()
 	gDirectory->cd("..");
 	
 	cout << "CbmAnaConversionTomography: Realtime - " << fTime << endl;
-	//timer.Print();
 }
 
 
@@ -186,12 +187,6 @@ void CbmAnaConversionTomography::Exec()
 	conversionsInDetector[2] = 0;	// rich
 	conversionsInDetector[3] = 0;	// trd
 	conversionsInDetector[4] = 0;	// tof
-
-	//conversionsInDetector_cut[0] = 0;	// magnet
-	//conversionsInDetector_cut[1] = 0;	// sts
-	//conversionsInDetector_cut[2] = 0;	// rich
-	//conversionsInDetector_cut[3] = 0;	// trd
-	//conversionsInDetector_cut[4] = 0;	// tof
 
 	Int_t nofMcTracks = fMcTracks->GetEntriesFast();
 	for (int i = 0; i < nofMcTracks; i++) {
@@ -354,6 +349,9 @@ void CbmAnaConversionTomography::TomographyMC(int electronID)
 	}
 
 	fhConversion->Fill(v.Z());
+	if(mctrack->GetP() > 1) {
+		fhConversion_cut->Fill(v.Z());
+	}
 
 	if( (TMath::Abs(v.X()) <= 100 && TMath::Abs(v.X()) > 3) && (TMath::Abs(v.Y()) <= 50 && TMath::Abs(v.Y()) > 3) && TMath::Abs(v.Z()) <= 169) {
 		fhConversion_inSTS->Fill(v.Z());
@@ -393,6 +391,8 @@ void CbmAnaConversionTomography::TomographyMC(int electronID)
 void CbmAnaConversionTomography::TomographyReco(CbmMCTrack* mctrack)
 // doing tomography from gamma -> e+ e- decays, RECONSTRUCTED TRACKS WITH MC DATA
 {
+	timer.Start();
+
 	if (TMath::Abs( mctrack->GetPdgCode())  == 11) {
 		int motherId = mctrack->GetMotherId();
 		if (motherId != -1) {
@@ -411,6 +411,9 @@ void CbmAnaConversionTomography::TomographyReco(CbmMCTrack* mctrack)
 			}
 		}
 	}
+
+	timer.Stop();
+	fTime += timer.RealTime();
 }
 
 

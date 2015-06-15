@@ -98,7 +98,7 @@ public:
    void		AnalyseElectrons(CbmMCTrack* mctrack);
    void		FillMCTracklists(CbmMCTrack* mctrack, int i);
    void		FillRecoTracklist(CbmMCTrack* mtrack);
-   void		FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom, int i);
+   void		FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom, int i, Double_t chi);
    void		InvariantMassTest();
    void		InvariantMassTest_4epem();
    void		InvariantMassTestReco();
@@ -127,7 +127,11 @@ private:
    TH1D * fhNofElAll;
    TH1D * fhElectronSources;
    TH1D * fhNofPi0_perEvent;		// number of pi0 per event
-   TH1D * fhNofPi0_perEvent_cut;	// number of pi0 with cut on z-axis (z <= 70cm, i.e. generated before 70cm)
+   TH1D * fhNofPi0_perEvent_cut;	// number of pi0 with cut on z-axis (z <= 10cm, i.e. generated before 10cm)
+   TH1D * fhNofPi0_perEvent_cut2;	// number of pi0 with cut motherId = -1
+   TH1D * fhNofEta_perEvent;		// number of pi0 per event
+   TH1D * fhNofEta_perEvent_cut;	// number of pi0 with cut on z-axis (z <= 10cm, i.e. generated before 10cm)
+   TH1D * fhNofEta_perEvent_cut2;	// number of pi0 with cut motherId = -1
    TH1D * fhPi0_z;					// number of pi0 per z-bin
    TH1D * fhPi0_z_cut;				// number of pi0 per z-bin with cut on acceptance (25° via x^2 + y^2 <= r^2 with r = z*tan 25°)
    TH1D * fhElectronsFromPi0_z;		//
@@ -213,6 +217,7 @@ private:
    vector<CbmMCTrack*>	fRecoTracklist;
    vector<CbmMCTrack*>	fRecoTracklistEPEM;
    vector<int>			fRecoTracklistEPEM_id; // ids of mctracks from fRecoTracklistEPEM
+   vector<Double_t>		fRecoTracklistEPEM_chi; // chi of fitted momenta from fRecoTracklistEPEM
    
    vector<TVector3> fRecoMomentum;
    vector<TVector3> fRecoRefittedMomentum;
@@ -222,6 +227,8 @@ private:
    // timer
    TStopwatch timer_all;
    Double_t fTime_all;
+   TStopwatch timer_exec;
+   Double_t fTime_exec;
    
    TStopwatch timer_mc;
    Double_t fTime_mc;
