@@ -641,7 +641,6 @@ void CbmAnaJpsiTask::FillPairHists(
 }
 
 
-
 void CbmAnaJpsiTask::SignalAndBgReco()
 {
 	Int_t ncand = fCandidates.size();
