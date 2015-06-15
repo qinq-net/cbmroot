@@ -58,6 +58,9 @@ void run_litqa_jpsi(Int_t nEvents = 1000)
 	loadlibs();
 	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/determine_setup.C");
 
+	// Remove output litQa file
+	remove(qaFile.Data());
+
 	// -----   Reconstruction run   -------------------------------------------
 	FairRunAna *run= new FairRunAna();
 	if (mcFile != "") run->SetInputFile(mcFile);

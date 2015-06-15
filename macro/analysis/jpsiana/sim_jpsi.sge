@@ -9,7 +9,7 @@ XXXXX=$(printf "%05d" "$SGE_TASK_ID")
 XXXX=$(printf "%04d" "$SGE_TASK_ID")
 
 # specify input and output directories
-outdir=/hera/cbm/users/adrian/data/
+outdir=/hera/cbm/users/adrian/data/jun15_25gev/jpsi_urqmd/
 cbmroot_config_path=/hera/cbm/users/adrian/trunk/build/config.sh
 macro_dir=/hera/cbm/users/adrian/trunk/cbmroot/macro/analysis/jpsiana/
 

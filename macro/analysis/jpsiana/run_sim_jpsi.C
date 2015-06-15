@@ -10,12 +10,10 @@ void run_sim_jpsi(Int_t nEvents = 2)
 
 	TString inFile = "/hera/cbm/users/adrian/trunk/cbmroot/input/urqmd.auau.25gev.centr.root";
 	TString parFile = "/hera/cbm/users/adrian/data/param.0001.root";
-	TString geoFile = "/hera/cbm/users/adrian/data/geofilefull.0001.root";
 	TString outFile = "/hera/cbm/users/adrian/data/mc.0001.root";
 
 	//TString inFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
 	//TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.0001.root";
-	//TString geoFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/geofilefull.0001.root";
 	//TString outFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.0001.root";
 
 	TString caveGeom = "cave.geo";
@@ -72,6 +70,10 @@ void run_sim_jpsi(Int_t nEvents = 2)
 
    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
    loadlibs();
+
+   // Remove MC file and par file before simulation started
+   remove(parFile.Data());
+   remove(outFile.Data());
 
 	FairRunSim* fRun = new FairRunSim();
 	fRun->SetName("TGeant3"); // Transport engine
@@ -203,8 +205,6 @@ void run_sim_jpsi(Int_t nEvents = 2)
 	rtdb->print();
 
 	fRun->Run(nEvents);
-
-    fRun->CreateGeometryFile(geoFile);
 
 	timer.Stop();
 	Double_t rtime = timer.RealTime();

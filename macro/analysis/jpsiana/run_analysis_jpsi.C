@@ -51,6 +51,10 @@ void run_analysis_jpsi(Int_t nEvents = 2)
    loadlibs();
 	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/determine_setup.C");
 
+
+	// Remove output jpsi analysis file
+	remove(anaFile.Data());
+
 	// -----   Reconstruction run   -------------------------------------------
 	FairRunAna *run= new FairRunAna();
 	if (mcFile != "") run->SetInputFile(mcFile);
