@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export DIR=/hera/cbm/users/slebedev/mc/dielectron/feb15/3.5gev/stsv13d/richv14a_1e/notrd/tofv13/0.5field/nomvd/
+export DIR=/hera/cbm/users/slebedev/mc/dielectron/feb15/3.5gev/stsv13d/richv14a_1e/trd4/tofv13/1.0field/nomvd/
 
 function remove_func {
    echo ${DIR}/${1}

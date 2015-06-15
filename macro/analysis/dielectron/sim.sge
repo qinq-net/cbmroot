@@ -44,9 +44,9 @@ fi
 
 export MC_FILE=${outdir}/mc.auau.${coll_energy}.centr.${XXXXX}.root
 export PAR_FILE=${outdir}/params.auau.${coll_energy}.centr.${XXXXX}.root
-export RECO_FILE=${outdir}/reco.auau.${coll_energy}.centr.${XXXXX}.root
-export LITQA_FILE=${outdir}/litqa.auau.${coll_energy}.centr.${XXXXX}.root
-export ANALYSIS_FILE=${outdir}/analysis.auau.${coll_energy}.centr.${XXXXX}.root
+export RECO_FILE=${outdir}/reco.trdclustering.auau.${coll_energy}.centr.${XXXXX}.root
+export LITQA_FILE=${outdir}/litqa.trdclustering.auau.${coll_energy}.centr.${XXXXX}.root
+export ANALYSIS_FILE=${outdir}/analysis.trdclustering.auau.${coll_energy}.centr.${XXXXX}.root
 #export ANALYSIS_FILE=${outdir}/analysis.auau.pisupp${PION_MISIDENTIFICATION_LEVEL}.${coll_energy}.centr.${XXXXX}.root 
 export RESULT_DIR=
 
@@ -106,18 +106,39 @@ if [ ${rich} = "richv08a" ] ; then
    export RICH_GEOM=rich/rich_v08a.geo
 elif [ ${rich} = "richv14a_1e" ]; then
    export RICH_GEOM=rich/rich_v14a_1e.root
+   
 elif [ ${rich} = "richv14a_3e" ]; then
    export RICH_GEOM=rich/rich_v14a_3e.root
+   
 elif [ ${rich} = "richv14a" ]; then
    export RICH_GEOM=rich/rich_v14a.root
-elif [ ${rich} = "richv14a_bepipe" ]; then
-   export RICH_GEOM=rich/rich_v14a_bepipe.root   
+   
+elif [ ${rich} = "richv08a_01" ]; then
+   export RICH_GEOM=rich/rich_v08a_01.geo
+   
+elif [ ${rich} = "richv08a_02" ]; then
+   export RICH_GEOM=rich/rich_v08a_02.geo
+   
+elif [ ${rich} = "richv08a_03" ]; then
+   export RICH_GEOM=rich/rich_v08a_03.geo
+   
+elif [ ${rich} = "richv08a_04" ]; then
+   export RICH_GEOM=rich/rich_v08a_04.geo
+   
+elif [ ${rich} = "richv08a_05" ]; then
+   export RICH_GEOM=rich/rich_v08a_05.geo
+   
+elif [ ${rich} = "richv08a_06" ]; then
+   export RICH_GEOM=rich/rich_v08a_06.geo
+   
+elif [ ${rich} = "richv08a_07" ]; then
+   export RICH_GEOM=rich/rich_v08a_07.geo   
 fi
 
 
 #Set TRD geometry
 # digi or smearing or clustering
-export TRD_HIT_PRODUCER_TYPE=smearing
+export TRD_HIT_PRODUCER_TYPE=clustering
 if [ ${trd} = "trd10" ] ; then
     export TRD_GEOM=trd/trd_v14a_3e.geo.root
     export TRD_DIGI=${VMCWORKDIR}/parameters/trd/trd_v14a_3e.digi.par
@@ -185,8 +206,8 @@ cd $workdir
 
 # run the root simulation
 #root -b -l -q "${macro_dir}/run_sim.C(${nevents})"
-#root -b -l -q "${macro_dir}/run_reco.C(${nevents})"
-#root -b -l -q "${macro_dir}/run_litqa.C(${nevents})"
+root -b -l -q "${macro_dir}/run_reco.C(${nevents})"
+root -b -l -q "${macro_dir}/run_litqa.C(${nevents})"
 root -b -l -q "${macro_dir}/run_analysis.C(${nevents})"
 
 cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log
