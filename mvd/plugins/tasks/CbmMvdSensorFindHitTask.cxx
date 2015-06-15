@@ -671,7 +671,8 @@ void CbmMvdSensorFindHitTask::UpdateDebugHistos(vector<Int_t>* clusterArray, Int
     Float_t chargeArray3D[fChargeArraySize][fChargeArraySize];
     Float_t chargeArray[fChargeArraySize*fChargeArraySize];
     Short_t seedPixelOffset=fChargeArraySize/2; // 3 for 7, 2 for 5
-    Float_t xCentralTrack, yCentralTrack;
+    Float_t xCentralTrack = 0.0;
+    Float_t yCentralTrack = 0.0;
     Float_t clusterCharge=0;
     
     Int_t clusterSize=clusterArray->size();

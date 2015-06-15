@@ -126,7 +126,7 @@ void CbmMvdSensor::SetAlignment(TGeoHMatrix* alignmentMatrix) {
 
 
 // -------Initialization tools  -----------------------------------------------------
-Int_t CbmMvdSensor::ReadSensorGeometry(TString volName, TString nodeName) {
+void CbmMvdSensor::ReadSensorGeometry(TString volName, TString nodeName) {
    
   //cout << "-I- " << GetName() << " : Searching for station: " << volName << endl;
   //cout << "-I- nodeName is " << nodeName << endl;
@@ -573,6 +573,7 @@ else
 	{ 
 	LOG(FATAL) << "undefined plugin called" << FairLogger::endl;
 	}
+	return NULL;
 }    
 // -------------------------------------------------------------------------   
 

@@ -106,6 +106,7 @@ for (Int_t i = 0; i < fStationCount; i++)
           fBeamHeights[i]=0.; 
           fBeamWidths[i]=0.; 
 	}
+	return 1;
 }
 // -------------------------------------------------------------------------
 

@@ -81,7 +81,7 @@ for (Int_t i = 0; i < nEntries; i++)
     {
     myHit = (CbmMvdHit*)fBuffer->At(i);
     time = myHit->GetTimeStamp();
-    if(tStart <= time <= ( tStop + fSensor->GetIntegrationtime()))  // building full timeslice
+    if(tStart <= time && time <= ( tStop + fSensor->GetIntegrationtime()))  // building full timeslice
 	{
          nHits = fCurrentEvent->GetEntriesFast();
 	 new((*fCurrentEvent)[nHits]) CbmMvdHit(*myHit);
@@ -106,7 +106,7 @@ for (Int_t i = 0; i < nEntries; i++)
     {
     myHit = (CbmMvdHit*)fBuffer->At(i);
     time = myHit->GetTimeStamp();
-    if(tStart<=time<tStop)
+    if(tStart<=time && time <tStop)
 	{
 	 fBuffer->Remove(myHit);
 	}

@@ -103,7 +103,7 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   
 
   /** Initialization tools **/
-  Int_t ReadSensorGeometry(TString volName, TString nodeName);
+  void ReadSensorGeometry(TString volName, TString nodeName);
   
   void Init();
   void ShowDebugHistos();
