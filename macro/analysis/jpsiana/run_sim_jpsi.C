@@ -39,7 +39,7 @@ void run_sim_jpsi(Int_t nEvents = 2)
 	Double_t fieldScale =  1.0; // field scaling factor
 
 	if (script == "yes") {
-		inFile = TString(gSystem->Getenv("IN_FILE"));
+		inFile = TString(gSystem->Getenv("URQMD_FILE"));
 		outFile = TString(gSystem->Getenv("MC_FILE"));
 		parFile = TString(gSystem->Getenv("PAR_FILE"));
 

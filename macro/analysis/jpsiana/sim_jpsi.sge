@@ -13,6 +13,10 @@ outdir=/hera/cbm/users/adrian/data/jun15_25gev/jpsi_urqmd/
 cbmroot_config_path=/hera/cbm/users/adrian/trunk/build/config.sh
 macro_dir=/hera/cbm/users/adrian/trunk/cbmroot/macro/analysis/jpsiana/
 
+#outdir=/hera/cbm/users/slebedev/mc/jpsi/jun15_25gev/jpsi_urqmd/
+#cbmroot_config_path=/hera/cbm/users/slebedev/trunk/build/config.sh
+#macro_dir=/hera/cbm/users/slebedev/trunk/cbmroot/macro/analysis/jpsiana/
+
 
 # Needed to run macro via script
 export SCRIPT=yes
@@ -21,6 +25,7 @@ export SCRIPT=yes
 nevents=1000
 
 #create needed directories
+rm -rf ${outdir}/log
 mkdir -p ${outdir}/log
 
 #create directory for output results
@@ -88,9 +93,9 @@ export FIELD_MAP_SCALE=${field_scale}
 #Set PLUTO file
 export PLUTO_PARTICLE=${pluto_particle}
 if [ ${pluto_particle} = "jpsi" ] ; then 
-   export PLUTO_FILE=/hera/cbm/users/ekrebs/pluto/jpsi/25gev/jpsi/epem/pluto.auau.${ENERGY}.jpsi.epem.${XXXX}.root
+   export PLUTO_FILE=/hera/cbm/users/ekrebs/pluto/jpsi/${coll_energy}/jpsi/epem/pluto.auau.${coll_energy}.jpsi.epem.${XXXX}.root
 elif [ ${pluto_particle} = "psiprim" ] ; then 
-   export PLUTO_FILE=/hera/cbm/users/ekrebs/pluto/cktA/${ENERGY}/omega/epem/pluto.auau.${ENERGY}.omega.epem.${XXXX}.root
+   export PLUTO_FILE=/hera/cbm/users/ekrebs/pluto/cktA/${coll_energy}/omega/epem/pluto.auau.${coll_energy}.omega.epem.${XXXX}.root
 fi 
 
 # create special and enter special workdir for job
@@ -100,10 +105,10 @@ mkdir -p $workdir
 cd $workdir
 
 # run the root simulation
-root -b -l -q "${macro_dir}/run_sim.C(${nevents})"
-root -b -l -q "${macro_dir}/run_reco.C(${nevents})"
-root -b -l -q "${macro_dir}/run_litqa.C(${nevents})"
-root -b -l -q "${macro_dir}/run_analysis.C(${nevents})"
+root -b -l -q "${macro_dir}/run_sim_jpsi.C(${nevents})"
+root -b -l -q "${macro_dir}/run_reco_jpsi.C(${nevents})"
+root -b -l -q "${macro_dir}/run_litqa_jpsi.C(${nevents})"
+root -b -l -q "${macro_dir}/run_analysis_jpsi.C(${nevents})"
 
 cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log
 
