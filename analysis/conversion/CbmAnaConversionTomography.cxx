@@ -36,10 +36,12 @@ CbmAnaConversionTomography::CbmAnaConversionTomography()
     fhTomography_RICH_frontplate(NULL),
     fhTomography_RICH_backplate(NULL),
     fhConversion(NULL),
+    fhConversion_cut(NULL),
     fhConversion_inSTS(NULL),
     fhConversion_prob(NULL),
     fhConversion_energy(NULL),
     fhConversion_p(NULL),
+    fhConversion_vs_momentum(NULL),
     fhTomography_reco(NULL),
     fhTomography_reco_XZ(NULL),
     fhTomography_reco_YZ(NULL),
@@ -123,6 +125,9 @@ void CbmAnaConversionTomography::InitHistos()
 	fhConversion_p		= new TH1D("fhConversion_p", "fhConversion_p;p;#", 1000, 0., 100.);
 	fHistoList_tomography.push_back(fhConversion_energy);
 	fHistoList_tomography.push_back(fhConversion_p);
+	
+	fhConversion_vs_momentum	= new TH2D("fhConversion_vs_momentum", "fhConversion_vs_momentum;Z [cm];momentum [GeV]", 4800, -0.5, 1199.5, 1000, 0., 10.);
+	fHistoList_tomography.push_back(fhConversion_vs_momentum);
 	
 	fhConversionsPerDetector	= new TH1I("fhConversionsPerDetector", "fhConversionsPerDetector;;#", 5, 0, 5);
 	fHistoList_tomography.push_back(fhConversionsPerDetector);
@@ -349,6 +354,8 @@ void CbmAnaConversionTomography::TomographyMC(int electronID)
 	}
 
 	fhConversion->Fill(v.Z());
+	fhConversion_vs_momentum->Fill(v.Z(), mctrack->GetP());
+	
 	if(mctrack->GetP() > 1) {
 		fhConversion_cut->Fill(v.Z());
 	}

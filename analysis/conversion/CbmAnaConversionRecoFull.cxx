@@ -80,6 +80,14 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhPhotons_MC_invmass4(NULL),
 	fhPhotons_MC_startvertexZ(NULL),
 	fhPhotons_MC_motherIdCut(NULL),
+	fhPhotons_Refit_chiDiff(NULL),
+	fhPhotons_Refit_momentumDiff(NULL),
+	fhPhotons_Refit_chiDistribution(NULL),
+	fElectrons_track_refit(),
+	fElectrons_momenta_refit(),
+	fVector_photons_pairs_refit(),
+	fhPhotons_invmass_refit(NULL),
+	fhPhotons_invmass_refit_cut(NULL),
     timer(),
     fTime(0.)
 {
@@ -205,6 +213,19 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fhPhotons_MC_motherIdCut = new TH1D("fhPhotons_MC_motherIdCut", "fhPhotons_MC_motherIdCut; invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_recofull.push_back(fhPhotons_MC_motherIdCut);
 
+	fhPhotons_Refit_chiDiff = new TH1D("fhPhotons_Refit_chiDiff", "fhPhotons_Refit_chiDiff; difference of chi; #", 1000, -0.1, 99.9);
+	fHistoList_recofull.push_back(fhPhotons_Refit_chiDiff);
+
+	fhPhotons_Refit_momentumDiff = new TH1D("fhPhotons_Refit_momentumDiff", "fhPhotons_Refit_momentumDiff; difference of momentum mag; #", 1000, -0.1, 4.9);
+	fHistoList_recofull.push_back(fhPhotons_Refit_momentumDiff);
+
+	fhPhotons_Refit_chiDistribution = new TH1D("fhPhotons_Refit_chiDistribution", "fhPhotons_Refit_chiDistribution; chi value; #", 10000, 0., 1000.);
+	fHistoList_recofull.push_back(fhPhotons_Refit_chiDistribution);
+
+	fhPhotons_invmass_refit = new TH1D("fhPhotons_invmass_refit", "fhPhotons_invmass_refit; invariant mass; #", 600, -0.0025, 2.9975);
+	fHistoList_recofull.push_back(fhPhotons_invmass_refit);
+	fhPhotons_invmass_refit_cut = new TH1D("fhPhotons_invmass_refit_cut", "fhPhotons_invmass_refit_cut; invariant mass; #", 600, -0.0025, 2.9975);
+	fHistoList_recofull.push_back(fhPhotons_invmass_refit_cut);
 }
 
 
@@ -240,6 +261,10 @@ void CbmAnaConversionRecoFull::Exec()
 	fElectrons_momentaChi.clear();
 	fElectrons_mctrackID.clear();
 	fVector_photons_pairs.clear();
+	
+	fElectrons_track_refit.clear();
+	fElectrons_momenta_refit.clear();
+	fVector_photons_pairs_refit.clear();
 
 	Int_t nofGT_richsts = 0;
 
@@ -291,6 +316,7 @@ void CbmAnaConversionRecoFull::Exec()
 		const FairTrackParam* vtxTrack = stsTracks[0].GetParamFirst();
 		vtxTrack->Momentum(refittedMomentum);
 
+		Double_t result_chi2ndf = stsTracks[0].GetChiSq() / stsTracks[0].GetNDF();
 		float result_chi = chiPrim[0];
 		fhMomentumFits->Fill(result_chi);
 
@@ -321,12 +347,38 @@ void CbmAnaConversionRecoFull::Exec()
 			TVector3 startvertex;
 			mcTrack2->GetStartVertex(startvertex);
 			fhPhotons_startvertex_vs_chi->Fill(startvertex.Z(), result_chi);
+			
+			// trying to refit momentum with electron assumption
+			CbmL1PFFitter fPFFitter_electron;
+			vector<CbmStsTrack> stsTracks_electron;
+			stsTracks_electron.resize(1);
+			stsTracks_electron[0] = *stsTrack;
+			vector<L1FieldRegion> vField_electron;
+			vector<float> chiPrim_electron;
+			vector<int> pidHypo_electron;
+			pidHypo_electron.push_back(11);
+			fPFFitter_electron.Fit(stsTracks_electron, pidHypo_electron); 
+			fPFFitter_electron.GetChiToVertex(stsTracks_electron, vField_electron, chiPrim_electron, fKFVertex, 3e6);
+			TVector3 refittedMomentum_electron;
+			const FairTrackParam* vtxTrack_electron = stsTracks_electron[0].GetParamFirst();
+			vtxTrack_electron->Momentum(refittedMomentum_electron);
+			float result_chi_electron = chiPrim_electron[0];
+			
+			fhPhotons_Refit_chiDiff->Fill(TMath::Abs(result_chi - result_chi_electron));
+			fhPhotons_Refit_momentumDiff->Fill(TMath::Abs(refittedMomentum.Mag() - refittedMomentum_electron.Mag() ));
+			fhPhotons_Refit_chiDistribution->Fill(result_chi_electron);
+			
+			fElectrons_track_refit.push_back(gTrack);
+			fElectrons_momenta_refit.push_back(refittedMomentum_electron);
 		}
 	}
 	cout << "CbmAnaConversionRecoFull: number of global tracks in STS and RICH " << nofGT_richsts << endl;
 
 	CombineElectrons();
 	CombinePhotons();
+
+	CombineElectronsRefit();
+	CombinePhotonsRefit();
 
 	timer.Stop();
 	fTime += timer.RealTime();
@@ -337,6 +389,7 @@ void CbmAnaConversionRecoFull::Exec()
 void CbmAnaConversionRecoFull::CombineElectrons()
 {
 	Int_t nof = fElectrons_momenta.size();
+	cout << "CbmAnaConversionRecoFull: CombineElectrons, nof - " << nof << endl;
 	if(nof >= 2) {
 		for(int a=0; a<nof-1; a++) {
 			for(int b=a+1; b<nof; b++) {
@@ -424,6 +477,7 @@ CbmLmvmKinematicParams CbmAnaConversionRecoFull::CalculateKinematicParamsReco(co
 void CbmAnaConversionRecoFull::CombinePhotons()
 {
 	Int_t nof = fVector_photons_pairs.size();
+	cout << "CbmAnaConversionRecoFull: CombinePhotons, nof - " << nof << endl;
 	if(nof >= 2) {
 		for(int a=0; a<nof-1; a++) {
 			for(int b=a+1; b<nof; b++) {
@@ -580,6 +634,106 @@ Double_t CbmAnaConversionRecoFull::OpeningAngleBetweenPhotons(vector<int> photon
 
 	return theta;
 }
+
+
+
+
+
+
+void CbmAnaConversionRecoFull::CombineElectronsRefit()
+{
+	Int_t nof = fElectrons_momenta_refit.size();
+	cout << "CbmAnaConversionRecoFull: CombineElectronsRefit, nof - " << nof << endl;
+	if(nof >= 2) {
+		for(int a=0; a<nof-1; a++) {
+			for(int b=a+1; b<nof; b++) {
+				Int_t check1 = (fElectrons_track_refit[a]->GetParamLast()->GetQp() > 0);	// positive or negative charge (qp = charge over momentum ratio)
+				Int_t check2 = (fElectrons_track_refit[b]->GetParamLast()->GetQp() > 0);
+				Int_t test = check1 + check2;
+				if(test != 1) continue;		// need one electron and one positron
+				//if(fElectrons_momentaChi[a] > 10 || fElectrons_momentaChi[b] > 10) continue;
+				
+				CbmLmvmKinematicParams params1 = CalculateKinematicParamsReco(fElectrons_momenta_refit[a], fElectrons_momenta_refit[b]);
+				
+				Double_t openingAngleCut = 1;
+				Double_t invMassCut = 0.03;
+				
+				Int_t IsPhoton_openingAngle1	= (params1.fAngle < openingAngleCut);
+				Int_t IsPhoton_invMass1			= (params1.fMinv < invMassCut);
+				
+				if(IsPhoton_openingAngle1 && IsPhoton_invMass1) {
+					vector<int> pair; // = {a, b};
+					pair.push_back(a);
+					pair.push_back(b);
+					fVector_photons_pairs_refit.push_back(pair);
+				}
+			}
+		}
+	}
+}
+
+
+
+
+void CbmAnaConversionRecoFull::CombinePhotonsRefit()
+{
+	Int_t nof = fVector_photons_pairs_refit.size();
+	cout << "CbmAnaConversionRecoFull: CombinePhotonsRefit, nof - " << nof << endl;
+	if(nof >= 2) {
+		for(int a=0; a<nof-1; a++) {
+			for(int b=a+1; b<nof; b++) {
+				Int_t electron11 = fVector_photons_pairs_refit[a][0];
+				Int_t electron12 = fVector_photons_pairs_refit[a][1];
+				Int_t electron21 = fVector_photons_pairs_refit[b][0];
+				Int_t electron22 = fVector_photons_pairs_refit[b][1];
+			
+				Double_t invmass = Invmass_4particlesRECO(fElectrons_momenta_refit[electron11], fElectrons_momenta_refit[electron12], fElectrons_momenta_refit[electron21], fElectrons_momenta_refit[electron22]);
+				fhPhotons_invmass_refit->Fill(invmass);
+				
+				Double_t opening_angle = OpeningAngleBetweenPhotonsRefit(fVector_photons_pairs_refit[a], fVector_photons_pairs_refit[b]);
+				//fhPhotons_angleBetween->Fill(opening_angle);
+				
+				if(opening_angle < 8) {
+					fhPhotons_invmass_refit_cut->Fill(invmass);
+					
+					//Double_t chicut = 1.0;
+					//if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
+					//	fhPhotons_invmass_cut_chi1->Fill(invmass);
+					//}
+				}
+			}
+		}
+	}
+}
+
+
+
+
+Double_t CbmAnaConversionRecoFull::OpeningAngleBetweenPhotonsRefit(vector<int> photon1, vector<int> photon2)
+{
+	Double_t energy1 = TMath::Sqrt(fElectrons_momenta_refit[photon1[0]].Mag2() + M2E);
+	TLorentzVector lorVec1(fElectrons_momenta_refit[photon1[0]], energy1);
+	
+	Double_t energy2 = TMath::Sqrt(fElectrons_momenta_refit[photon1[1]].Mag2() + M2E);
+	TLorentzVector lorVec2(fElectrons_momenta_refit[photon1[1]], energy2);
+	
+	Double_t energy3 = TMath::Sqrt(fElectrons_momenta_refit[photon2[0]].Mag2() + M2E);
+	TLorentzVector lorVec3(fElectrons_momenta_refit[photon2[0]], energy3);
+	
+	Double_t energy4 = TMath::Sqrt(fElectrons_momenta_refit[photon2[1]].Mag2() + M2E);
+	TLorentzVector lorVec4(fElectrons_momenta_refit[photon2[1]], energy4);
+
+	TLorentzVector lorPhoton1 = lorVec1 + lorVec2;
+	TLorentzVector lorPhoton2 = lorVec3 + lorVec4;
+
+	Double_t angleBetweenPhotons = lorPhoton1.Angle(lorPhoton2.Vect());
+	Double_t theta = 180.*angleBetweenPhotons/TMath::Pi();
+
+	return theta;
+}
+
+
+
 
 
 /*

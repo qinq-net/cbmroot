@@ -850,9 +850,9 @@ int CbmAnaConversionPhotons::CheckMC(CbmMCTrack* mctrack)
 }
 
 
-CbmAnaConversionKinematicParams CbmAnaConversionPhotons::CalculateKinematicParams(const CbmMCTrack* mctrackP, const CbmMCTrack* mctrackM)
+CbmLmvmKinematicParams CbmAnaConversionPhotons::CalculateKinematicParams(const CbmMCTrack* mctrackP, const CbmMCTrack* mctrackM)
 {
-	CbmAnaConversionKinematicParams params;
+	CbmLmvmKinematicParams params;
 
     TVector3 momP;  //momentum e+
     mctrackP->GetMomentum(momP);
@@ -878,7 +878,7 @@ CbmAnaConversionKinematicParams CbmAnaConversionPhotons::CalculateKinematicParam
     params.fRapidity = yPair;
     params.fMinv = minv;
     params.fAngle = theta;
-    params.fMomentumPhoton = momPair;
+    //params.fMomentumPhoton = momPair;
     return params;
 }
 
@@ -924,7 +924,7 @@ void CbmAnaConversionPhotons::AnalyseElectronsFromGammaMC()
 			int motherID_i = fMCTracklist_allElectronsFromGamma[i]->GetMotherId();
 			int motherID_j = fMCTracklist_allElectronsFromGamma[j]->GetMotherId();
 			
-			CbmAnaConversionKinematicParams paramSet = CalculateKinematicParams( fMCTracklist_allElectronsFromGamma[i], fMCTracklist_allElectronsFromGamma[j] );
+			CbmLmvmKinematicParams paramSet = CalculateKinematicParams( fMCTracklist_allElectronsFromGamma[i], fMCTracklist_allElectronsFromGamma[j] );
 			
 			CbmMCTrack* mothermctrack_i = (CbmMCTrack*)fMcTracks->At(motherID_i);
 			int grandmotherID_i = mothermctrack_i->GetMotherId();

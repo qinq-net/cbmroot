@@ -31,6 +31,7 @@ CbmAnaConversionReco::CbmAnaConversionReco()
     fMCTracklist_all(),
     fRecoTracklistEPEM(),
     fRecoTracklistEPEM_ids(),
+    fRecoTracklistEPEM_chi(),
     fRecoMomentum(),
     fRecoRefittedMomentum(),
     fHistoList_MC(),
@@ -90,6 +91,7 @@ CbmAnaConversionReco::CbmAnaConversionReco()
     fhPi0_startvertexElectrons_gg(NULL),
     fhPi0_startvertexElectrons_gee(NULL),
     fhPi0_startvertex_vs_chi(NULL),
+    fhPi0_startvertex_vs_momentum(NULL),
     fhInvMassWithFullRecoCuts(NULL),
     timer(),
     fTime(0.)
@@ -244,6 +246,9 @@ void CbmAnaConversionReco::InitHistos()
 	
 	fhPi0_startvertex_vs_chi = new TH2D("fhPi0_startvertex_vs_chi","fhPi0_startvertex_vs_chi;z[cm];chi", 400, -0.25, 199.75, 1000, 0., 10.);
 	fHistoList_reco.push_back(fhPi0_startvertex_vs_chi);
+	
+	fhPi0_startvertex_vs_momentum = new TH2D("fhPi0_startvertex_vs_momentum","fhPi0_startvertex_vs_momentum;z[cm];momentum (MC-true)", 400, -0.25, 199.75, 1000, 0., 10.);
+	fHistoList_reco.push_back(fhPi0_startvertex_vs_momentum);
 
 	fhInvMassWithFullRecoCuts = new TH1D("fhInvMassWithFullRecoCuts","fhInvMassWithFullRecoCuts;mass [GeV/c^2];#", 400, 0., 2.);
 	fHistoList_reco.push_back(fhInvMassWithFullRecoCuts);
@@ -908,6 +913,11 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						fhPi0_startvertex_vs_chi->Fill(pi0start_j.Z(), fRecoTracklistEPEM_chi[j]);
 						fhPi0_startvertex_vs_chi->Fill(pi0start_k.Z(), fRecoTracklistEPEM_chi[l]);
 						fhPi0_startvertex_vs_chi->Fill(pi0start_l.Z(), fRecoTracklistEPEM_chi[l]);
+						
+						fhPi0_startvertex_vs_momentum->Fill(pi0start_i.Z(), fRecoTracklistEPEM[i]->GetP());
+						fhPi0_startvertex_vs_momentum->Fill(pi0start_j.Z(), fRecoTracklistEPEM[j]->GetP());
+						fhPi0_startvertex_vs_momentum->Fill(pi0start_k.Z(), fRecoTracklistEPEM[k]->GetP());
+						fhPi0_startvertex_vs_momentum->Fill(pi0start_l.Z(), fRecoTracklistEPEM[l]->GetP());
 						
 						// consider only electrons from the target (only then the momenta are correctly refitted/reconstructed)
 						if(pi0start_i.Z() > 1 || pi0start_j.Z() > 1 || pi0start_k.Z() > 1 || pi0start_l.Z() > 1) continue;

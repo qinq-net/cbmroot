@@ -27,6 +27,7 @@
 
 using namespace std;
 
+/*
 class CbmAnaConversionKinematicParams
 {
 public:
@@ -37,7 +38,7 @@ public:
    Double_t fAngle; // Opening angle
    TVector3 fMomentumPhoton;
 };
-
+*/
 
 class CbmAnaConversionPhotons
 {
@@ -60,7 +61,8 @@ public:
 	void CombineElectrons();
 	int CheckMC(CbmMCTrack* mctrack);
 
-	CbmAnaConversionKinematicParams CalculateKinematicParams(const CbmMCTrack* mctrackP, const CbmMCTrack* mctrackM);
+	//CbmAnaConversionKinematicParams CalculateKinematicParams(const CbmMCTrack* mctrackP, const CbmMCTrack* mctrackM);
+	CbmLmvmKinematicParams CalculateKinematicParams(const CbmMCTrack* mctrackP, const CbmMCTrack* mctrackM);
 	CbmLmvmKinematicParams CalculateKinematicParamsReco(const TVector3 electron1, const TVector3 electron2);
 
 

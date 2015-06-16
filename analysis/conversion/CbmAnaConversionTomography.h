@@ -78,6 +78,7 @@ private:
 	TH1D * fhConversion_prob;
 	TH1D * fhConversion_energy;
 	TH1D * fhConversion_p;
+	TH2D * fhConversion_vs_momentum;
 
 
 	TH3D * fhTomography_reco;

@@ -133,6 +133,7 @@ CbmAnaConversion::CbmAnaConversion()
     fRecoTracklist(),
     fRecoTracklistEPEM(),
     fRecoTracklistEPEM_id(),
+    fRecoTracklistEPEM_chi(),
     fRecoMomentum(),
     fRecoRefittedMomentum(),
     timer_all(),

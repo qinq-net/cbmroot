@@ -141,6 +141,7 @@ private:
 	TH1D * fhPi0_startvertexElectrons_gg;
 	TH1D * fhPi0_startvertexElectrons_gee;
 	TH2D * fhPi0_startvertex_vs_chi;
+	TH2D * fhPi0_startvertex_vs_momentum;
 
 	TH1D * fhInvMassWithFullRecoCuts;
 

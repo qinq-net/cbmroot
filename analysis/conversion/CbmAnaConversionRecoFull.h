@@ -50,6 +50,9 @@ public:
 	void CombinePhotons();
 	Double_t OpeningAngleBetweenPhotons(vector<int> photon1, vector<int> photons2);
 
+	void CombineElectronsRefit();
+	void CombinePhotonsRefit();
+	Double_t OpeningAngleBetweenPhotonsRefit(vector<int> photon1, vector<int> photons2);
 
 
 private:
@@ -79,6 +82,7 @@ private:
 	vector<float> fElectrons_momentaChi;
 	vector<int> fElectrons_mctrackID;
 
+
 	TH1D * fhElectrons_invmass;
 	TH1D * fhElectrons_invmass_cut;
 	
@@ -107,6 +111,17 @@ private:
 	TH1D * fhPhotons_MC_startvertexZ;
 	TH1D * fhPhotons_MC_motherIdCut;
 
+	TH1D * fhPhotons_Refit_chiDiff;
+	TH1D * fhPhotons_Refit_momentumDiff;
+	TH1D * fhPhotons_Refit_chiDistribution;
+
+
+
+	vector<CbmGlobalTrack*> fElectrons_track_refit;
+	vector<TVector3> fElectrons_momenta_refit;
+	vector< vector<int> > fVector_photons_pairs_refit;
+	TH1D * fhPhotons_invmass_refit;
+	TH1D * fhPhotons_invmass_refit_cut;
 
 	// timer
 	TStopwatch timer;
