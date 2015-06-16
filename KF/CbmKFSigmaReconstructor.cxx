@@ -10,6 +10,8 @@
 #include "CbmL1PFFitter.h"
 #include "L1Field.h"
 #include "CbmKFVertex.h"
+#include "CbmTrackMatchNew.h"
+#include "CbmMCTrack.h"
 
 //KF Particle headers
 #include "KFPTrackVector.h"
@@ -32,7 +34,8 @@
 using std::vector;
 
 CbmKFSigmaReconstructor::CbmKFSigmaReconstructor(const char* name, Int_t iVerbose):
-  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fTrackArray(0), fPrimVtx(0), fPVFindMode(0), fPID(0),
+  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fMCTracksBranchName("MCTrack"), fTrackMatchBranchName("StsTrackMatch"),
+  fTrackArray(0), fMCTrackArray(0), fTrackMatchArray(0), fPrimVtx(0), fPVFindMode(0), fPID(0), fMCIndex(0),
   fOutFileName("CbmKFParticleSigma.root"), fOutFile(0), fDirectory(0)
 {
   TFile* curFile = gFile;
@@ -57,6 +60,9 @@ CbmKFSigmaReconstructor::CbmKFSigmaReconstructor(const char* name, Int_t iVerbos
       fHistos[0] = new TH1F("M", "M", 1000, 0, 1.);
       fHistos[1] = new TH1F("Chi2NDF", "Chi2NDF", 100, 0., 20.);
       fHistos[2] = new TH1F("Prob", "Prob", 100., 0., 1.);
+      
+      fHistos[18] = new TH1F("M_Signal", "M_Signal", 1000, 0., 1.);
+      fHistos[19] = new TH1F("M_Ghost", "M_Ghost", 1000, 0., 1.);
     }
     gDirectory->cd("..");
 
@@ -66,6 +72,9 @@ CbmKFSigmaReconstructor::CbmKFSigmaReconstructor(const char* name, Int_t iVerbos
       fHistos[3] = new TH1F("M", "M", 1000, 0.8, 1.8);
       fHistos[4] = new TH1F("Chi2NDF", "Chi2NDF", 100, 0., 20.);
       fHistos[5] = new TH1F("Prob", "Prob", 100., 0., 1.);
+      
+      fHistos[20] = new TH1F("M_Signal", "M_Signal", 1000, 0.8, 1.8);
+      fHistos[21] = new TH1F("M_Ghost", "M_Ghost", 1000, 0.8, 1.8);
     }
     gDirectory->cd("..");
   }
@@ -80,6 +89,9 @@ CbmKFSigmaReconstructor::CbmKFSigmaReconstructor(const char* name, Int_t iVerbos
       fHistos[6] = new TH1F("M", "M", 1000, 0, 1.);
       fHistos[7] = new TH1F("Chi2NDF", "Chi2NDF", 100, 0., 20.);
       fHistos[8] = new TH1F("Prob", "Prob", 100., 0., 1.);
+      
+      fHistos[22] = new TH1F("M_Signal", "M_Signal", 1000, 0., 1.);
+      fHistos[23] = new TH1F("M_Ghost", "M_Ghost", 1000, 0., 1.);
     }
     gDirectory->cd("..");
 
@@ -89,6 +101,9 @@ CbmKFSigmaReconstructor::CbmKFSigmaReconstructor(const char* name, Int_t iVerbos
       fHistos[ 9] = new TH1F("M", "M", 1000, 0.8, 1.8);
       fHistos[10] = new TH1F("Chi2NDF", "Chi2NDF", 100, 0., 20.);
       fHistos[11] = new TH1F("Prob", "Prob", 100., 0., 1.);
+      
+      fHistos[24] = new TH1F("M_Signal", "M_Signal", 1000, 0.8, 1.8);
+      fHistos[25] = new TH1F("M_Ghost", "M_Ghost", 1000, 0.8, 1.8);
     }
     gDirectory->cd("..");
   }
@@ -103,6 +118,9 @@ CbmKFSigmaReconstructor::CbmKFSigmaReconstructor(const char* name, Int_t iVerbos
       fHistos[12] = new TH1F("M", "M", 3000, -2., 1.);
       fHistos[13] = new TH1F("Chi2NDF", "Chi2NDF", 100, 0., 20.);
       fHistos[14] = new TH1F("Prob", "Prob", 100., 0., 1.);
+      
+      fHistos[26] = new TH1F("M_Signal", "M_Signal", 3000, -2., 1.);
+      fHistos[27] = new TH1F("M_Ghost", "M_Ghost", 3000, -2., 1.);
     }
     gDirectory->cd("..");
 
@@ -112,6 +130,9 @@ CbmKFSigmaReconstructor::CbmKFSigmaReconstructor(const char* name, Int_t iVerbos
       fHistos[15] = new TH1F("M", "M", 1000, 0.8, 1.8);
       fHistos[16] = new TH1F("Chi2NDF", "Chi2NDF", 100, 0., 20.);
       fHistos[17] = new TH1F("Prob", "Prob", 100., 0., 1.);
+      
+      fHistos[28] = new TH1F("M_Signal", "M_Signal", 1000, 0.8, 1.8);
+      fHistos[29] = new TH1F("M_Ghost", "M_Ghost", 1000, 0.8, 1.8);
     }
     gDirectory->cd("..");
   }
@@ -145,12 +166,33 @@ InitStatus CbmKFSigmaReconstructor::Init()
   }
   
   fPrimVtx = (CbmVertex*) ioman->GetObject("PrimaryVertex");
+  
+  //MC Tracks
+    fMCTrackArray=(TClonesArray*) ioman->GetObject(fMCTracksBranchName);
+    if(fMCTrackArray==0)
+    {
+      Error("CbmKFParticleFinderPID::Init","mc track array not found!");
+      return kERROR;
+    }
+  
+    //Track match
+    fTrackMatchArray=(TClonesArray*) ioman->GetObject(fTrackMatchBranchName);
+    if(fTrackMatchArray==0)
+    {
+      Error("CbmKFParticleFinderPID::Init","track match array not found!");
+      return kERROR;
+    }
 
   return kSUCCESS;
 }
 
 void CbmKFSigmaReconstructor::Exec(Option_t* opt)
 {
+  static int nEvents=0;
+  nEvents++;
+  std::cout << "Event " << nEvents << std::endl;
+  
+  SetMCPID();
   Int_t ntracks=0;//fTrackArray->GetEntriesFast();
 
   vector<CbmStsTrack> vRTracks(fTrackArray->GetEntriesFast());
@@ -184,7 +226,7 @@ void CbmKFSigmaReconstructor::Exec(Option_t* opt)
             && (V[9] < 1. && V[9] > 0.)
             && (V[14] < 1. && V[14] > 0.);
     ok = ok && stsTrack->GetChiSq() < 10*stsTrack->GetNDF();
-    if(!ok) continue;
+//     if(!ok) continue;
 
 //     if(fPID)
 //     {
@@ -219,11 +261,14 @@ void CbmKFSigmaReconstructor::Exec(Option_t* opt)
   
   vector<KFParticle> vSigmaMinus;
   vector<KFParticle> vPiMinusSecondary;
+  vector<int> vSigmaMinusMCIndex;
+  vector<int> vPiMinusMCIndex;
   
   vector<KFParticle> vSigmaPlus;
   vector<KFParticle> vPiPlusSecondary;
   vector<KFParticle> vProtonSecondary;
-
+  vector<int> vSigmaPlusMCIndex;
+  vector<int> vSecPlusMCIndex;  
   
   for(int iTrack=0; iTrack<ntracks; iTrack++)
   {
@@ -233,13 +278,19 @@ void CbmKFSigmaReconstructor::Exec(Option_t* opt)
     {
       CbmKFParticleInterface::SetKFParticleFromStsTrack(&vRTracks[iTrack], &tmpParticle, 3112, 0);
       if(tmpParticle.Q() < 0)
-	vSigmaMinus.push_back(tmpParticle);
+      {
+        vSigmaMinus.push_back(tmpParticle);
+        vSigmaMinusMCIndex.push_back(fMCIndex[iTrack]);
+      }
     }
     else
     {
       CbmKFParticleInterface::SetKFParticleFromStsTrack(&vRTracks[iTrack], &tmpParticle, -211, 1);
       if(tmpParticle.Q() < 0)
-	vPiMinusSecondary.push_back(tmpParticle);
+      {
+        vPiMinusSecondary.push_back(tmpParticle);
+        vPiMinusMCIndex.push_back(fMCIndex[iTrack]);
+      }
     }
   }
   
@@ -251,23 +302,29 @@ void CbmKFSigmaReconstructor::Exec(Option_t* opt)
     {
       CbmKFParticleInterface::SetKFParticleFromStsTrack(&vRTracks[iTrack], &tmpParticle, 3222, 0);
       if(tmpParticle.Q() > 0)
-	vSigmaPlus.push_back(tmpParticle);
+      {
+        vSigmaPlus.push_back(tmpParticle);
+        vSigmaPlusMCIndex.push_back(fMCIndex[iTrack]);
+      }
     }
     else
     {
       CbmKFParticleInterface::SetKFParticleFromStsTrack(&vRTracks[iTrack], &tmpParticle, 211, 1);
       if(tmpParticle.Q() > 0)
-	vPiPlusSecondary.push_back(tmpParticle);
+      {
+        vPiPlusSecondary.push_back(tmpParticle);
+        vSecPlusMCIndex.push_back(fMCIndex[iTrack]);
+      }
       
       CbmKFParticleInterface::SetKFParticleFromStsTrack(&vRTracks[iTrack], &tmpParticle, 2212, 1);
       if(tmpParticle.Q() > 0)
-	vProtonSecondary.push_back(tmpParticle);
+        vProtonSecondary.push_back(tmpParticle);
     }
   }
   
   for(unsigned int iSigma=0; iSigma<vSigmaMinus.size(); iSigma++)
   {
-   //hypothesis Sigma+ -> n Pi-
+   //hypothesis Sigma- -> n Pi-
     for(unsigned int iPi=0; iPi<vPiMinusSecondary.size(); iPi++)
     {
       float zSigma = vSigmaMinus[iSigma].Z();
@@ -291,6 +348,19 @@ void CbmKFSigmaReconstructor::Exec(Option_t* opt)
       fHistos[0]->Fill(mass);
       fHistos[1]->Fill(neutron.Chi2()/neutron.NDF());
       fHistos[2]->Fill(TMath::Prob(neutron.Chi2(), neutron.NDF()));
+      if(vSigmaMinusMCIndex[iSigma] >= 0 && vPiMinusMCIndex[iPi] >= 0)
+      {
+        CbmMCTrack *cbmMCTrackSigmaMinus = (CbmMCTrack*)fMCTrackArray->At(vSigmaMinusMCIndex[iSigma]);
+        CbmMCTrack *cbmMCTrackPiMinus = (CbmMCTrack*)fMCTrackArray->At(vPiMinusMCIndex[iPi]);
+                
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==3112 && cbmMCTrackPiMinus->GetPdgCode()== -211 &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaMinusMCIndex[iSigma])
+          fHistos[18]->Fill(mass);
+        else
+          fHistos[19]->Fill(mass);
+      }
+      else
+        fHistos[19]->Fill(mass);
       
       neutron.SetNonlinearMassConstraint(neutronMassPDG);
       
@@ -303,6 +373,21 @@ void CbmKFSigmaReconstructor::Exec(Option_t* opt)
       
       sigma.GetMass(mass, massError);
       fHistos[3]->Fill(mass);
+      
+      if(vSigmaMinusMCIndex[iSigma] >= 0 && vPiMinusMCIndex[iPi] >= 0)
+      {
+        CbmMCTrack *cbmMCTrackSigmaMinus = (CbmMCTrack*)fMCTrackArray->At(vSigmaMinusMCIndex[iSigma]);
+        CbmMCTrack *cbmMCTrackPiMinus = (CbmMCTrack*)fMCTrackArray->At(vPiMinusMCIndex[iPi]);
+                
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==3112 && cbmMCTrackPiMinus->GetPdgCode()== -211 &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaMinusMCIndex[iSigma])
+          fHistos[20]->Fill(mass);
+        else
+          fHistos[21]->Fill(mass);
+      }
+      else
+        fHistos[21]->Fill(mass);
+     
       fHistos[4]->Fill(sigma.Chi2()/sigma.NDF());
       fHistos[5]->Fill(TMath::Prob(sigma.Chi2(), sigma.NDF()));
     }
@@ -334,6 +419,19 @@ void CbmKFSigmaReconstructor::Exec(Option_t* opt)
       fHistos[6]->Fill(mass);
       fHistos[7]->Fill(neutron.Chi2()/neutron.NDF());
       fHistos[8]->Fill(TMath::Prob(neutron.Chi2(), neutron.NDF()));
+      if(vSigmaPlusMCIndex[iSigma] >= 0 && vSecPlusMCIndex[iPi] >= 0)
+      {
+        CbmMCTrack *cbmMCTrackSigmaMinus = (CbmMCTrack*)fMCTrackArray->At(vSigmaPlusMCIndex[iSigma]);
+        CbmMCTrack *cbmMCTrackPiMinus = (CbmMCTrack*)fMCTrackArray->At(vSecPlusMCIndex[iPi]);
+                
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==3222 && cbmMCTrackPiMinus->GetPdgCode()== 211 &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaPlusMCIndex[iSigma])
+          fHistos[22]->Fill(mass);
+        else
+          fHistos[23]->Fill(mass);
+      }
+      else
+        fHistos[23]->Fill(mass);
       
       neutron.SetNonlinearMassConstraint(neutronMassPDG);
       
@@ -348,6 +446,19 @@ void CbmKFSigmaReconstructor::Exec(Option_t* opt)
       fHistos[9]->Fill(mass);
       fHistos[10]->Fill(sigma.Chi2()/sigma.NDF());
       fHistos[11]->Fill(TMath::Prob(sigma.Chi2(), sigma.NDF()));
+      if(vSigmaPlusMCIndex[iSigma] >= 0 && vSecPlusMCIndex[iPi] >= 0)
+      {
+        CbmMCTrack *cbmMCTrackSigmaMinus = (CbmMCTrack*)fMCTrackArray->At(vSigmaPlusMCIndex[iSigma]);
+        CbmMCTrack *cbmMCTrackPiMinus = (CbmMCTrack*)fMCTrackArray->At(vSecPlusMCIndex[iPi]);
+                
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==3222 && cbmMCTrackPiMinus->GetPdgCode()== 211 &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaPlusMCIndex[iSigma])
+          fHistos[24]->Fill(mass);
+        else
+          fHistos[25]->Fill(mass);
+      }
+      else
+        fHistos[25]->Fill(mass);
     }
  
  //hypothesis Sigma+ -> p Pi0
@@ -373,6 +484,19 @@ void CbmKFSigmaReconstructor::Exec(Option_t* opt)
       fHistos[12]->Fill(mass);
       fHistos[13]->Fill(Pi0.Chi2()/Pi0.NDF());
       fHistos[14]->Fill(TMath::Prob(Pi0.Chi2(), Pi0.NDF()));
+      if(vSigmaPlusMCIndex[iSigma] >= 0 && vSecPlusMCIndex[iPi] >= 0)
+      {
+        CbmMCTrack *cbmMCTrackSigmaMinus = (CbmMCTrack*)fMCTrackArray->At(vSigmaPlusMCIndex[iSigma]);
+        CbmMCTrack *cbmMCTrackPiMinus = (CbmMCTrack*)fMCTrackArray->At(vSecPlusMCIndex[iPi]);
+                
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==3222 && cbmMCTrackPiMinus->GetPdgCode()== 2212 &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaPlusMCIndex[iSigma])
+          fHistos[26]->Fill(mass);
+        else
+          fHistos[27]->Fill(mass);
+      }
+      else
+        fHistos[27]->Fill(mass);
       
       Pi0.SetNonlinearMassConstraint(Pi0_MassPDG);
       
@@ -387,11 +511,59 @@ void CbmKFSigmaReconstructor::Exec(Option_t* opt)
       fHistos[15]->Fill(mass);
       fHistos[16]->Fill(sigma.Chi2()/sigma.NDF());
       fHistos[17]->Fill(TMath::Prob(sigma.Chi2(), sigma.NDF()));
+      if(vSigmaPlusMCIndex[iSigma] >= 0 && vSecPlusMCIndex[iPi] >= 0)
+      {
+        CbmMCTrack *cbmMCTrackSigmaMinus = (CbmMCTrack*)fMCTrackArray->At(vSigmaPlusMCIndex[iSigma]);
+        CbmMCTrack *cbmMCTrackPiMinus = (CbmMCTrack*)fMCTrackArray->At(vSecPlusMCIndex[iPi]);
+                
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==3222 && cbmMCTrackPiMinus->GetPdgCode()== 2212 &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaPlusMCIndex[iSigma])
+          fHistos[28]->Fill(mass);
+        else
+          fHistos[29]->Fill(mass);
+      }
+      else
+        fHistos[29]->Fill(mass);
     }
     
-  }
-  
+  }   
+ 
+ 
+ 
   timer.Stop();
+}
+
+void CbmKFSigmaReconstructor::SetMCPID()
+{
+  Int_t nMCTracks = fMCTrackArray->GetEntriesFast();
+  Int_t ntrackMatches = fTrackMatchArray->GetEntriesFast();
+  fMCIndex.resize(ntrackMatches);
+  for(int iTr=0; iTr<ntrackMatches; iTr++)
+  {
+    fMCIndex[iTr] = -2;
+    CbmTrackMatchNew* stsTrackMatch = (CbmTrackMatchNew*) fTrackMatchArray->At(iTr);
+    if(stsTrackMatch -> GetNofLinks() == 0) continue;
+    Float_t bestWeight = 0.f;
+    Float_t totalWeight = 0.f;
+    Int_t mcTrackId = -1;
+    for(int iLink=0; iLink<stsTrackMatch -> GetNofLinks(); iLink++)
+    {
+      totalWeight += stsTrackMatch->GetLink(iLink).GetWeight();
+      if( stsTrackMatch->GetLink(iLink).GetWeight() > bestWeight)
+      {
+        bestWeight = stsTrackMatch->GetLink(iLink).GetWeight();
+        mcTrackId = stsTrackMatch->GetLink(iLink).GetIndex();
+      }
+    }
+    if(bestWeight/totalWeight < 0.7) continue;
+    if(mcTrackId >= nMCTracks || mcTrackId < 0)
+    {
+      std::cout << "Sts Matching is wrong!    StsTrackId = " << mcTrackId << " N mc tracks = " << nMCTracks << std::endl;
+      continue;
+    }
+
+    fMCIndex[iTr] = mcTrackId;
+  }
 }
 
 void CbmKFSigmaReconstructor::Finish()

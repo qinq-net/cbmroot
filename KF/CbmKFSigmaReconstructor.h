@@ -35,9 +35,11 @@ class CbmKFSigmaReconstructor : public FairTask {
   virtual InitStatus Init();
   virtual void Exec(Option_t* opt);
   virtual void Finish();
+  
+  void SetMCPID();
 
  private:
-  
+     
   void WriteHistosCurFile( TObject *obj );
   
   const CbmKFSigmaReconstructor& operator = (const CbmKFSigmaReconstructor&);
@@ -45,21 +47,27 @@ class CbmKFSigmaReconstructor : public FairTask {
    
   //names of input branches
   TString fStsTrackBranchName;      //! Name of the input TCA with reco tracks
-
+  TString fMCTracksBranchName;      //! Name of the input TCA with MC tracks
+  TString fTrackMatchBranchName;      //! Name of the input TCA with track match
+  
   //input branches
   TClonesArray *fTrackArray;
+  TClonesArray *fMCTrackArray; //mc tracks
+  TClonesArray *fTrackMatchArray; //track match
   CbmVertex* fPrimVtx;
 
   int fPVFindMode;
   
-    //PID information
+  //PID information
   CbmKFParticleFinderPID* fPID;
   
+  std::vector<int> fMCIndex;
+
   //file with histos
   TString fOutFileName;
   TFile* fOutFile;
   TDirectory* fDirectory;
-  TH1F* fHistos[18];
+  TH1F* fHistos[30];
 
   ClassDef(CbmKFSigmaReconstructor,1);
 };
