@@ -32,13 +32,16 @@ const char* PairAnalysisSignalMC::fgkSignals[kNSignals][2]= {  //default signal 
   {"Eta",            "#eta"},
   {"Pi0",            "#pi^{0}"},
   {"InclElePM",      "e^{+}e^{-} (incl.)"},
-  {"SingleDeltaEle", "#delta rays"},
-  {"SinglePrimEle",  "e (prim.)"},
-  {"SingleInclPio",  "#pi (prim.)"},
-  {"SingleDeuteron", "d"},
-  {"SingleTriton",   "t"},
-  {"SingleHelion",   "^{3}He"},
-  {"SingleAlpha",    "^{4}He"}
+  {"DeltaElectron",  "#delta rays"},
+  {"PrimElectron",   "e (prim.)"},
+  {"PrimMuon",       "#mu (prim.)"},
+  {"PrimPion",       "#pi (prim.)"},
+  {"PrimKaon",       "K (prim.)"},
+  {"PrimProton",     "p (prim.)"},
+  {"Deuteron",       "d"},
+  {"Triton",         "t"},
+  {"Helion",         "^{3}He"},
+  {"Alpha",          "^{4}He"}
 };
 
 //_________________________________________________________________________
@@ -235,49 +238,70 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
     fMother1Source=kPrimary; fMother2Source=kPrimary;
     //    fMothersRelation=kSame;
     break;
-  case kSingleDeltaEle: //single delta ray electrons
+  case kDeltaElectron: //single delta ray electrons
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=11;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
     SetGEANTProcess(kPDeltaRay);
     fIsSingleParticle=kTRUE;
     //    fMother1Source=kPrimary; fMother2Source=kDontCare;
     break;
-  case kSinglePrimEle: //single electrons
+  case kPrimElectron: //single electrons
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=11;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
     //fMother1Source=kPrimary;
     SetGEANTProcess(kPPrimary);
     fIsSingleParticle=kTRUE;
     break;
-  case kSinglePrimPio: //single pions
+  case kPrimMuon: //single muoons
+    SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
+    fLeg1=13;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
+    //fMother1Source=kPrimary;
+    SetGEANTProcess(kPPrimary);
+    fIsSingleParticle=kTRUE;
+    break;
+  case kPrimPion: //single pions
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=211;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
     //fMother1Source=kPrimary;
     SetGEANTProcess(kPPrimary);
     fIsSingleParticle=kTRUE;
     break;
-  case kSingleDeu:
+  case kPrimKaon: //single kaons
+    SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
+    fLeg1=321;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
+    //fMother1Source=kPrimary;
+    SetGEANTProcess(kPPrimary);
+    fIsSingleParticle=kTRUE;
+    break;
+  case kPrimProton: //single protons
+    SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
+    fLeg1=2212;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
+    //fMother1Source=kPrimary;
+    SetGEANTProcess(kPPrimary);
+    fIsSingleParticle=kTRUE;
+    break;
+  case kDeuteron:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=1000010020;;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
     //fMother1Source=kPrimary;
     //SetGEANTProcess(kPPrimary);
     fIsSingleParticle=kTRUE;
     break;
-  case kSingleTri:
+  case kTriton:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=1000010030;;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
     //fMother1Source=kPrimary;
     //SetGEANTProcess(kPPrimary);
     fIsSingleParticle=kTRUE;
     break;
-  case kSingleHe3:
+  case kHe3:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=1000020030;;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
     //fMother1Source=kPrimary;
     //SetGEANTProcess(kPPrimary);
     fIsSingleParticle=kTRUE;
     break;
-  case kSingleAlpha:
+  case kAlpha:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=1000020040;;  fLeg2=1; fCheckBothChargesLeg1=kTRUE;
     //fMother1Source=kPrimary;

@@ -786,6 +786,7 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, TString
   // if option contains 'OnlyMc' only mc signals are plotted
   // if option contains 'Eff' efficiencies are plotted
   // if option contains 'Ratio' the ratios of any histclass to 'histClassDenom' are plotted
+  // if option contains 'meanX' quote the mean in the legend
   //
 
   Printf("<PairAnalysisHistos::DrawSame>: hist: %s",histName.Data());
@@ -802,6 +803,7 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, TString
   Bool_t optMeta =optString.Contains("meta");
   Bool_t optEvt  =optString.Contains("events");
   Bool_t optRatio=optString.Contains("ratio");
+  Bool_t optMeanX =optString.Contains("meanx");
   optString.ReplaceAll("eff","");
   optString.ReplaceAll("nomctrue","");
   optString.ReplaceAll("onlymc","");
@@ -813,6 +815,7 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, TString
   optString.ReplaceAll("meta","");
   optString.ReplaceAll("events","");
   optString.ReplaceAll("ratio","");
+  optString.ReplaceAll("mean","");
 
   TLegend *leg=0;
   TCanvas *c=0;
@@ -957,6 +960,7 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, TString
 	TString legOpt = optString+"L";
 	legOpt.ReplaceAll("hist","");
 	if (nobj) iname="";
+	else if(optMeanX) iname+=Form(" #LTx#GT=%.1e",h->GetMean());
 	if (leg) leg->AddEntry(h,iname.Data(),legOpt.Data());
 
 	//      if (leg) leg->AddEntry(h,classTable->GetName(),(optString+"L").Data());

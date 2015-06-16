@@ -74,8 +74,9 @@ class PairAnalysisSignalMC : public TNamed {
   enum EDalitz {      kWhoCares=0, kIsDalitz, kIsNotDalitz};
   enum EDefinedSignal {kInclJpsi=0, kConversion, kRho0, kOmega, kOmegaDalitz, kPhi, kEta, kPi0,
 		       kInclElePM,
-		       kSingleDeltaEle, kSinglePrimEle, kSinglePrimPio,
-		       kSingleDeu, kSingleTri, kSingleHe3, kSingleAlpha,
+		       kDeltaElectron,
+		       kPrimElectron, kPrimMuon, kPrimPion, kPrimKaon, kPrimProton,
+		       kDeuteron, kTriton, kHe3, kAlpha,
 		       kNSignals};
   
   PairAnalysisSignalMC();
@@ -96,7 +97,7 @@ class PairAnalysisSignalMC : public TNamed {
   void SetCheckBothChargesMothers(Bool_t flag1, Bool_t flag2)      {fCheckBothChargesMother1 = flag1;      fCheckBothChargesMother2 = flag2;}
   void SetCheckBothChargesGrandMothers(Bool_t flag1, Bool_t flag2) {fCheckBothChargesGrandMother1 = flag1; fCheckBothChargesGrandMother2 = flag2;}
   void SetMothersRelation(EBranchRelation relation)                {fMothersRelation = relation;}
-  void SetGEANTProcess(TMCProcess processID)                       {fGEANTProcess = processID; fCheckGEANTProcess=kTRUE;}
+  void SetGEANTProcess(TMCProcess processID, Bool_t check=kTRUE)  {fGEANTProcess = processID; fCheckGEANTProcess=check;}
   void SetWeight(Double_t wght)                                    {fWeight = wght;}
   void SetFillPureMCStep(Bool_t fill=kTRUE)                        {fFillPureMCStep = fill;}
   void SetIsSingleParticle(Bool_t fill=kTRUE)                      {fIsSingleParticle = fill;}

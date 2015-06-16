@@ -194,6 +194,9 @@ void PairAnalysis::Init()
 
   if(fEventProcess) InitPairCandidateArrays();
 
+  // compress the MC signal array
+  //  fSignalsMC->Compress();
+
   /*
   if (fCfManagerPair) {
     fCfManagerPair->SetSignalsMC(fSignalsMC);
@@ -689,18 +692,23 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	  case kMUCH:
 	  case kTRD:  trkl = track->GetTrack(static_cast<DetectorId>(idet)); break;
 	  case kRICH: ring = track->GetRichRing();   break;
+	  case kTOF:  /* */ break;
 	  default:
 	    continue;
 	  }
 	  // protection
-	  if( (!trkl && !ring) || !hits) continue;
+	  //	  if( (!trkl && !ring ) || !hits) continue;
+	  if(!hits) continue;
 
 	  // loop over all hits
 	  CbmHit   *hit  = 0x0;
-	  Int_t nhits = (trkl ? trkl->GetNofHits() : ring->GetNofHits() );
+	  Int_t nhits = 1;
+	  if(trkl) nhits = trkl->GetNofHits();
+	  if(ring) nhits = ring->GetNofHits();
 	  for (Int_t ihit=0; ihit < nhits; ihit++){
-	    if(trkl) hit = dynamic_cast<CbmHit*>(hits->At( trkl->GetHitIndex(ihit) ) );
-	    else     hit = dynamic_cast<CbmHit*>(hits->At( ring->GetHit(ihit) ) );
+	    if(trkl)          hit = dynamic_cast<CbmHit*>(hits->At( trkl->GetHitIndex(ihit) ) );
+	    else if(ring)     hit = dynamic_cast<CbmHit*>(hits->At( ring->GetHit(ihit) ) );
+	    else              hit = dynamic_cast<CbmHit*>( track->GetTofHit() );
 	    if(!hit) continue;
 	    // fill variables
 	    PairAnalysisVarManager::Fill(hit, values);
@@ -1245,6 +1253,9 @@ void PairAnalysis::AddSignalMC(PairAnalysisSignalMC* signal) {
     fSignalsMC = new TObjArray();
     fSignalsMC->SetOwner();
   }
+  // sort mc signal (first single particle, then pair signals)
+  // if(signal->IsSingleParticle()) fSignalsMC->AddAtFree(signal);
+  // else fSignalsMC->AddAtAndExpand( signal, fSignalsMC->GetLast()<10?10:fSignalsMC->GetLast()+1 );
   fSignalsMC->Add(signal);
 }
 
