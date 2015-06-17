@@ -9,13 +9,13 @@ XXXXX=$(printf "%05d" "$SGE_TASK_ID")
 XXXX=$(printf "%04d" "$SGE_TASK_ID")
 
 # specify input and output directories
-outdir=/hera/cbm/users/adrian/data/jun15_25gev/jpsi_urqmd/
-cbmroot_config_path=/hera/cbm/users/adrian/trunk/build/config.sh
-macro_dir=/hera/cbm/users/adrian/trunk/cbmroot/macro/analysis/jpsiana/
+#outdir=/hera/cbm/users/adrian/data/jun15_25gev/jpsi_urqmd/
+#cbmroot_config_path=/hera/cbm/users/adrian/trunk/build/config.sh
+#macro_dir=/hera/cbm/users/adrian/trunk/cbmroot/macro/analysis/jpsiana/
 
-#outdir=/hera/cbm/users/slebedev/mc/jpsi/jun15_25gev/jpsi_urqmd/
-#cbmroot_config_path=/hera/cbm/users/slebedev/trunk/build/config.sh
-#macro_dir=/hera/cbm/users/slebedev/trunk/cbmroot/macro/analysis/jpsiana/
+outdir=/hera/cbm/users/slebedev/data/jpsi/jun15_25gev/jpsi_urqmd/
+cbmroot_config_path=/hera/cbm/users/slebedev/trunk/build/config.sh
+macro_dir=/hera/cbm/users/slebedev/trunk/cbmroot/macro/analysis/jpsiana/
 
 
 # Needed to run macro via script
@@ -105,8 +105,8 @@ mkdir -p $workdir
 cd $workdir
 
 # run the root simulation
-root -b -l -q "${macro_dir}/run_sim_jpsi.C(${nevents})"
-root -b -l -q "${macro_dir}/run_reco_jpsi.C(${nevents})"
+#root -b -l -q "${macro_dir}/run_sim_jpsi.C(${nevents})"
+#root -b -l -q "${macro_dir}/run_reco_jpsi.C(${nevents})"
 root -b -l -q "${macro_dir}/run_litqa_jpsi.C(${nevents})"
 root -b -l -q "${macro_dir}/run_analysis_jpsi.C(${nevents})"
 

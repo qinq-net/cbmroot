@@ -106,16 +106,16 @@ void run_litqa_jpsi(Int_t nEvents = 1000)
    fitQa->SetTrdMinNofHits(minNofPointsTrd);
    fitQa->SetPRange(30, 0., 3.);
    fitQa->SetOutputDir(std::string(resultDir));
-   run->AddTask(fitQa);
+  // run->AddTask(fitQa);
 
    CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
   // clusteringQa->SetMuchDigiFileName(muchDigiFile.Data());
    clusteringQa->SetOutputDir(std::string(resultDir));
-   run->AddTask(clusteringQa);
+  // run->AddTask(clusteringQa);
 
    CbmLitTofQa* tofQa = new CbmLitTofQa();
    tofQa->SetOutputDir(std::string(resultDir));
-   run->AddTask(tofQa);
+ //  run->AddTask(tofQa);
 
 
     // -----  Parameter database   --------------------------------------------
@@ -135,7 +135,7 @@ void run_litqa_jpsi(Int_t nEvents = 1000)
     // -----   Finish   -------------------------------------------------------
     timer.Stop();
     std::cout << "Macro finished successfully." << std::endl;
-    std::cout << "Output file is "    << recoFile << std::endl;
+    std::cout << "Output QA file is "    << qaFile << std::endl;
     std::cout << "Parameter file is " << parFile << std::endl;
     std::cout << "Real time " << timer.RealTime() << " s, CPU time " << timer.CpuTime() << " s" << std::endl;
     std::cout << " Test passed" << std::endl;

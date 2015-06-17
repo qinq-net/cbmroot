@@ -94,7 +94,7 @@ void run_analysis_jpsi(Int_t nEvents = 2)
     Double_t ctime = timer.CpuTime();
     cout << endl << endl;
     cout << "Macro finished successfully." << endl;
-    cout << "Output file is "    << recoFile << endl;
+    cout << "Output ana file is "    << anaFile << endl;
     cout << "Parameter file is " << parFile << endl;
     cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
     cout << endl;

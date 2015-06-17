@@ -1,7 +1,7 @@
 #$ -wd /tmp 
 #$ -j y
 # Number of subtasks to start
-#$ -t 1-2000
+#$ -t 1-250
 
 #XXXXX=$(printf "%05d" "1")
 #XXXX=$(printf "%04d" "1")
@@ -9,7 +9,7 @@ XXXXX=$(printf "%05d" "$SGE_TASK_ID")
 XXXX=$(printf "%04d" "$SGE_TASK_ID")
 
 # specify input and output directories
-outdir=/hera/cbm/users/slebedev/mc/dielectron/feb15/${coll_energy}/${sts}/${rich}/${trd}/${tof}/${field_scale}field/${mvd}/${pluto_particle}/
+outdir=/hera/cbm/users/slebedev/data/lmvm/feb15/${coll_energy}/${sts}/${rich}/${trd}/${tof}/${field_scale}field/${mvd}/${pluto_particle}/
 cbmroot_config_path=/hera/cbm/users/slebedev/trunk/build/config.sh
 macro_dir=/hera/cbm/users/slebedev/trunk/cbmroot/macro/analysis/dielectron/
 
@@ -18,7 +18,7 @@ macro_dir=/hera/cbm/users/slebedev/trunk/cbmroot/macro/analysis/dielectron/
 export SCRIPT=yes
 
 # Number of events to run
-nevents=1000
+nevents=2
 
 #create needed directories
 mkdir -p ${outdir}/log
