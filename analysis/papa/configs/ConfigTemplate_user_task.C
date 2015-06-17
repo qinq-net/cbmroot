@@ -10,6 +10,8 @@
 ///
 /// UPDATES, NOTES:
 /// - this is a beta version of PAPA, therefore backward compatiblity is not yet granted (27.05.15)
+/// - change in histogram class delimiters (only mc has '_', otherwise use '.') (12.06.15)
+/// - mv event cuts from config to task, protection for sorted MC signals (17.06.15)
 ///
 ///
 ///
@@ -31,7 +33,7 @@ enum { kAcc,                 /// acceptance study
 void InitHistograms(   PairAnalysis *papa, Int_t cutDefinition);
 void InitHF(           PairAnalysis* papa, Int_t cutDefinition);
 ////// CUTS
-void SetupEventCuts(   PairAnalysis *papa, Int_t cutDefinition);
+void SetupEventCuts(   AnalysisTaskMultiPairAnalysis *task);
 void SetupTrackCuts(   PairAnalysis *papa, Int_t cutDefinition);
 // void SetupV0Cuts( PairAnalysis *papa,  Int_t cutDefinition);
 void SetupPairCuts(    PairAnalysis *papa,  Int_t cutDefinition);
@@ -51,6 +53,7 @@ AnalysisTaskMultiPairAnalysis *ConfigTemplate_user_task(const char *taskname)
   ///
   AnalysisTaskMultiPairAnalysis *task = new AnalysisTaskMultiPairAnalysis(taskname);
   task->SetBeamEnergy(8.); //TODO: get internally from FairBaseParSet::GetBeamMom()
+  SetupEventCuts(task);
 
   /// add PAPA analysis with different cuts to the task
   for (Int_t i=0; i<nPapa; ++i) {
@@ -86,7 +89,6 @@ PairAnalysis* Config_PairAnalysis(Int_t cutDefinition)
   papa->SetLegPdg(-11,+11); /// default: dielectron
 
   /* vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv CUTS vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv */
-  SetupEventCuts(papa,cutDefinition);
   SetupTrackCuts(papa,cutDefinition);
   // TODO: SetupV0Cuts(papa,cutDefinition);
   SetupPairCuts(papa,cutDefinition);
@@ -120,7 +122,7 @@ PairAnalysis* Config_PairAnalysis(Int_t cutDefinition)
 }
 
 //______________________________________________________________________________________
-void SetupEventCuts(PairAnalysis *papa, Int_t cutDefinition)
+void SetupEventCuts(   AnalysisTaskMultiPairAnalysis *task);
 {
   ///
   /// Setup the event cuts
@@ -136,8 +138,7 @@ void SetupEventCuts(PairAnalysis *papa, Int_t cutDefinition)
   eventCuts->Print();                                                  /// for debug purpose (recommended)
 
   /// add cuts to the event filter
-  papa->GetEventFilter().AddCuts(eventCuts);
-
+  task->SetEventFilter(eventCuts);
 }
 
 //______________________________________________________________________________________
@@ -394,11 +395,12 @@ void InitHistograms(PairAnalysis *papa, Int_t cutDefinition)
     /// add MC signal histograms (if any) to pair class
     if(papa->GetMCSignals()) {
       for (Int_t i=0; i<papa->GetMCSignals()->GetEntriesFast(); ++i) {
-	TString sigName = papa->GetMCSignals()->At(i)->GetName();
-	if(sigName.Contains("Single")) continue; /// skip single particle signals (no pairs)
-	if(i<3) continue;
-	histos->AddClass(Form("Pair_%s",        sigName.Data()));
-	histos->AddClass(Form("Pair_%s_MCtruth",sigName.Data()));
+	PairAnalysisSignalMC *sigMC = papa->GetMCSignals()->At(i);
+	if(!sigMC) continue;
+	if(sigMC->IsSingleParticle()) continue; /// skip single particle signals (only pairs)
+	TString sigMCname = sigMC->GetName();
+	histos->AddClass(Form("Pair_%s",        sigMCname.Data()));
+	histos->AddClass(Form("Pair_%s_MCtruth",sigMCname.Data()));
       }
     }
 
@@ -437,8 +439,9 @@ void InitHistograms(PairAnalysis *papa, Int_t cutDefinition)
   /// add MC signal (if any) histograms to pair class
   if(papa->GetMCSignals()) {
     for (Int_t i=0; i<papa->GetMCSignals()->GetEntriesFast(); ++i) {
-      TString sigMCname = papa->GetMCSignals()->At(i)->GetName();
-      if(i>3) continue; /// skip pair particle signals (no pairs)
+      PairAnalysisSignalMC *sigMC = papa->GetMCSignals()->At(i);
+      if(!sigMC) continue;
+      TString sigMCname = sigMC->GetName();
       /// mc truth - pair leg class
       ///      histos->AddClass(Form("Track.Legs_%s_MCtruth",sigMCname.Data()));
       /// mc reconstructed - pair leg class
@@ -507,8 +510,10 @@ void InitHistograms(PairAnalysis *papa, Int_t cutDefinition)
   /// add MC signal (if any) histograms to hit class
   if(papa->GetMCSignals()) {
     for (Int_t i=0; i<papa->GetMCSignals()->GetEntriesFast(); ++i) {
-      TString sigMCname = papa->GetMCSignals()->At(i)->GetName();
-      if(i>3) continue; /// skip pair particle signals (only single particles)
+      PairAnalysisSignalMC *sigMC = papa->GetMCSignals()->At(i);
+      if(!sigMC) continue;
+      TString sigMCname = sigMC->GetName();
+      if(!sigMC->IsSingleParticle()) continue; /// skip pair particle signals (only single particles)
       /// single tracks (merged +-)
       histos->AddClass(Form("Hit.TRD_%s",sigMCname.Data()));
     }
@@ -570,7 +575,7 @@ void AddMCSignals(PairAnalysis *papa, Int_t cutDefinition){
   rho0->SetWeight(9 * 4.72e-05);       /// apply a weighting (fills PairAnalysisVarManager::kWeight & can be used for histogram weighting)
 
   /// single particle signals
-  PairAnalysisSignalMC* ele = new PairAnalysisSignalMC(PairAnalysisSignalMC::kSinglePrimEle);
+  PairAnalysisSignalMC* ele = new PairAnalysisSignalMC(PairAnalysisSignalMC::kPrimEle);
   ele->SetFillPureMCStep(kTRUE);
 
   /// Example of a MC signal configuration (see PairAnalysisSignalMC.h for full functionality)

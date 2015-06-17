@@ -78,7 +78,7 @@ void DrawQA()
 
     // get hist you want to look at
     htest = (TH1D*) histos->GetHist("Acc",        // config
-				    "Track_SE+-", // class
+				    "Track.SE+-", // class
 				    "TRDHitsMC"   // histogram for QA
 				    );
     if(!htest) continue;

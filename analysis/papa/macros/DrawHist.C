@@ -71,7 +71,7 @@ void DrawHist(TString fin  = "./data/sis100_electron_TRDdigi.analysis.root")
   //// via PairAnalysisHistos::GetHist("config","class","key")
   TCanvas *can = new TCanvas("can","can",900,900);
   can->cd();
-  TH1D *h1 = (TH1D*) histos->GetHist("Acc","Track_SE+-","Pt");
+  TH1D *h1 = (TH1D*) histos->GetHist("Acc","Track.SE+-","Pt");
   PairAnalysisStyler::Style(h1,0);
   h1->DrawCopy("E1P");
 
