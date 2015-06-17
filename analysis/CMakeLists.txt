@@ -114,7 +114,7 @@ dielectron/CbmAnaLmvmDrawStudy.cxx
 dielectron/CbmLmvmHist.cxx
 dielectron/CbmAnaDielectronStudyReportAll.cxx
 dielectron/CbmAnaDielectronReports.cxx
-dielectron/CbmLmvmHadd.cxx
+dielectron/CbmHaddBase.cxx
 
 jpsiana/CbmAnaJpsiTask.cxx
 jpsiana/CbmAnaJpsiReport.cxx

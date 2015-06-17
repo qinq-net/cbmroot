@@ -42,7 +42,7 @@
 #pragma link C++ class CbmAnaDielectronTaskDrawAll+;
 #pragma link C++ class CbmAnaLmvmDrawStudy+;
 #pragma link C++ class CbmAnaDielectronReports+;
-#pragma link C++ class CbmLmvmHadd+;
+#pragma link C++ class CbmHaddBase+;
 
 #pragma link C++ class CbmAnaJpsiTask+;
 #pragma link C++ class CbmAnaJpsiReport+;
