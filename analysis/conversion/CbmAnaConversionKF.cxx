@@ -509,7 +509,7 @@ void CbmAnaConversionKF::Reconstruct()
 						
 						
 						Bool_t fill = false;
-						Double_t invmass_cut = 0.03;
+						Double_t invmass_cut = 0.02;
 						
 						if( particle1.GetZ() == particle2.GetZ() && particle3.GetZ() == particle4.GetZ() ) {
 							Double_t invmass_12 = Invmass_2electrons(particle1, particle2);
@@ -594,7 +594,7 @@ void CbmAnaConversionKF::ReconstructGammas()
 				
 				fhInvMass2Gammas->Fill(invmass);
 				
-				if( (TMath::Abs(particle1.GetZ() - particle2.GetZ()) < 0.01 ) && (openingAngle < 5) ) {
+				if( (TMath::Abs(particle1.GetZ() - particle2.GetZ()) < 0.005 ) && (openingAngle < 5) ) {
 					fhInvMass2Gammas_cut->Fill(invmass);
 				}
 			}

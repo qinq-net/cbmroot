@@ -81,6 +81,7 @@ CbmAnaConversion::CbmAnaConversion()
     fhNofEta_perEvent_cut2(NULL),
     fhPi0_z(NULL),
     fhPi0_z_cut(NULL),
+    fhPi0_pt(NULL),
     fhElectronsFromPi0_z(NULL),
     fhInvariantMass_test(NULL),
     fhInvariantMass_test2(NULL),
@@ -258,13 +259,18 @@ void CbmAnaConversion::InitHistograms()
 	fhNofEta_perEvent_cut2	= new TH1D("fhNofEta_perEvent_cut2", "fhNofEta_perEvent_cut2 (motherId = -1);Nof eta;Entries", 800., -0.5, 799.5);
 	fhPi0_z					= new TH1D("fhPi0_z", "fhPi0_z;z [cm];Entries", 600., -0.5, 599.5);
 	fhPi0_z_cut				= new TH1D("fhPi0_z_cut", "fhPi0_z_cut;z [cm];Entries", 600., -0.5, 599.5);
+	fhPi0_pt				= new TH1D("fhPi0_pt", "fhPi0_pt;pt [GeV];Entries", 100., 0., 100.);
 	fhElectronSources		= new TH1D("fhElectronSources", "fhElectronSources;Source;Entries", 6., 0., 6.);
 	fhElectronsFromPi0_z	= new TH1D("fhElectronsFromPi0_z", "fhElectronsFromPi0_z (= pos. of gamma conversion);z [cm];Entries", 600., -0.5, 599.5);
 	fHistoList.push_back(fhNofPi0_perEvent);
 	fHistoList.push_back(fhNofPi0_perEvent_cut);
 	fHistoList.push_back(fhNofPi0_perEvent_cut2);
+	fHistoList.push_back(fhNofEta_perEvent);
+	fHistoList.push_back(fhNofEta_perEvent_cut);
+	fHistoList.push_back(fhNofEta_perEvent_cut2);
 	fHistoList.push_back(fhPi0_z);
 	fHistoList.push_back(fhPi0_z_cut);
+	fHistoList.push_back(fhPi0_pt);
 	fHistoList.push_back(fhElectronSources);
 	fHistoList.push_back(fhElectronsFromPi0_z);
 	
@@ -422,7 +428,10 @@ void CbmAnaConversion::Exec(Option_t* option)
 			}
 			
 			int motherId = mctrack->GetMotherId();
-			if (motherId == -1) countPi0MC_fromPrimary++;
+			if (motherId == -1) {
+				countPi0MC_fromPrimary++;
+				fhPi0_pt->Fill(mctrack->GetPt() );
+			}
 		}
 		
 		if (mctrack->GetPdgCode() == 221) {
@@ -562,7 +571,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 	if(DoReconstruction) {
 		fAnaReco->SetTracklistReco(fRecoTracklistEPEM, fRecoMomentum, fRecoRefittedMomentum, fRecoTracklistEPEM_id, fRecoTracklistEPEM_chi);
 		fAnaReco->InvariantMassTest_4epem();
-		//fAnaReco->CalculateInvMassWithFullRecoCuts();
+		fAnaReco->CalculateInvMassWithFullRecoCuts();
 	}
 
 	// END - analyse reconstructed tracks

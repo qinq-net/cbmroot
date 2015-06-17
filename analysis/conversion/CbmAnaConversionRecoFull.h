@@ -44,6 +44,7 @@ public:
 
 	void CombineElectrons();
 	Double_t Invmass_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
+	Double_t Pt_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 
 	CbmLmvmKinematicParams CalculateKinematicParamsReco(const TVector3 electron1, const TVector3 electron2);
 	
@@ -102,6 +103,7 @@ private:
 	TH2D * fhPhotons_invmass_vs_chi;
 	TH2D * fhPhotons_startvertex_vs_chi;
 	TH1D * fhPhotons_angleBetween;
+	TH2D * fhPhotons_invmass_vs_pt;
 	
 	TH1D * fhPhotons_MC_motherpdg;
 	TH1D * fhPhotons_MC_invmass1;

@@ -73,6 +73,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhPhotons_invmass_vs_chi(NULL),
 	fhPhotons_startvertex_vs_chi(NULL),
 	fhPhotons_angleBetween(NULL),
+	fhPhotons_invmass_vs_pt(NULL),
 	fhPhotons_MC_motherpdg(NULL),
 	fhPhotons_MC_invmass1(NULL),
 	fhPhotons_MC_invmass2(NULL),
@@ -193,21 +194,23 @@ void CbmAnaConversionRecoFull::InitHistos()
 	
 	fhPhotons_invmass_vs_chi = new TH2D("fhPhotons_invmass_vs_chi", "fhPhotons_invmass_vs_chi; invariant mass; chi", 600, -0.0025, 2.9975, 1000, 0., 100.);
 	fHistoList_recofull.push_back(fhPhotons_invmass_vs_chi);
-	fhPhotons_startvertex_vs_chi = new TH2D("fhPhotons_startvertex_vs_chi", "fhPhotons_startvertex_vs_chi; startvertex; chi", 420, -5., 100., 1000, 0., 200.);
+	fhPhotons_startvertex_vs_chi = new TH2D("fhPhotons_startvertex_vs_chi", "fhPhotons_startvertex_vs_chi; startvertex; chi", 400, -5., 95., 1000, 0., 200.);
 	fHistoList_recofull.push_back(fhPhotons_startvertex_vs_chi);
+	fhPhotons_invmass_vs_pt = new TH2D("fhPhotons_invmass_vs_pt", "fhPhotons_invmass_vs_pt; invmass; pt", 600, -0.0025, 2.9975, 100, 0., 10.);
+	fHistoList_recofull.push_back(fhPhotons_invmass_vs_pt);
 
 	fhPhotons_MC_motherpdg = new TH1D("fhPhotons_MC_motherpdg", "fhPhotons_MC_motherpdg; pdg; #", 1000, 0., 1000.);
 	fHistoList_recofull.push_back(fhPhotons_MC_motherpdg);
-	fhPhotons_MC_invmass1 = new TH1D("fhPhotons_MC_invmass1", "fhPhotons_MC_minvmass1; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_MC_invmass1 = new TH1D("fhPhotons_MC_invmass1", "fhPhotons_MC_minvmass1 (MC-true cut: at least gamma correct reconstructed); invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_recofull.push_back(fhPhotons_MC_invmass1);
-	fhPhotons_MC_invmass2 = new TH1D("fhPhotons_MC_invmass2", "fhPhotons_MC_minvmass2; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_MC_invmass2 = new TH1D("fhPhotons_MC_invmass2", "fhPhotons_MC_minvmass2 (MC-true cut: gamma from same mother); invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_recofull.push_back(fhPhotons_MC_invmass2);
-	fhPhotons_MC_invmass3 = new TH1D("fhPhotons_MC_invmass3", "fhPhotons_MC_minvmass3; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_MC_invmass3 = new TH1D("fhPhotons_MC_invmass3", "fhPhotons_MC_minvmass3 (MC-true cut: gamma from different mother); invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_recofull.push_back(fhPhotons_MC_invmass3);
-	fhPhotons_MC_invmass4 = new TH1D("fhPhotons_MC_invmass4", "fhPhotons_MC_minvmass4; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_MC_invmass4 = new TH1D("fhPhotons_MC_invmass4", "fhPhotons_MC_minvmass4 (MC-true cut: wrong combination of electrons); invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_recofull.push_back(fhPhotons_MC_invmass4);
 
-	fhPhotons_MC_startvertexZ = new TH1D("fhPhotons_MC_startvertexZ", "fhPhotons_MC_startvertexZ; startvertexZ [cm]; #", 1000, 0., 100.);
+	fhPhotons_MC_startvertexZ = new TH1D("fhPhotons_MC_startvertexZ", "fhPhotons_MC_startvertexZ; startvertexZ [cm]; #", 1000, -5., 95.);
 	fHistoList_recofull.push_back(fhPhotons_MC_startvertexZ);
 	
 	fhPhotons_MC_motherIdCut = new TH1D("fhPhotons_MC_motherIdCut", "fhPhotons_MC_motherIdCut; invariant mass; #", 600, -0.0025, 2.9975);
@@ -444,6 +447,34 @@ Double_t CbmAnaConversionRecoFull::Invmass_4particlesRECO(const TVector3 part1, 
 
 
 
+Double_t CbmAnaConversionRecoFull::Pt_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4)
+{
+    Double_t energy1 = TMath::Sqrt(part1.Mag2() + M2E);
+    TLorentzVector lorVec1(part1, energy1);
+
+    Double_t energy2 = TMath::Sqrt(part2.Mag2() + M2E);
+    TLorentzVector lorVec2(part2, energy2);
+
+    Double_t energy3 = TMath::Sqrt(part3.Mag2() + M2E);
+    TLorentzVector lorVec3(part3, energy3);
+
+    Double_t energy4 = TMath::Sqrt(part4.Mag2() + M2E);
+    TLorentzVector lorVec4(part4, energy4);
+    
+    TLorentzVector sum;
+    sum = lorVec1 + lorVec2 + lorVec3 + lorVec4;    
+
+	Double_t perp = sum.Perp();
+	Double_t pt = TMath::Sqrt(sum.X() * sum.X() + sum.Y() * sum.Y() );
+	
+	cout << "CbmAnaConversionRecoFull::Pt_4particlesRECO: perp/pt = " << perp << " / " << pt << endl;
+
+	return perp;
+}
+
+
+
+
 CbmLmvmKinematicParams CbmAnaConversionRecoFull::CalculateKinematicParamsReco(const TVector3 electron1, const TVector3 electron2)
 {
 	CbmLmvmKinematicParams params;
@@ -489,11 +520,14 @@ void CbmAnaConversionRecoFull::CombinePhotons()
 				Double_t invmass = Invmass_4particlesRECO(fElectrons_momenta[electron11], fElectrons_momenta[electron12], fElectrons_momenta[electron21], fElectrons_momenta[electron22]);
 				fhPhotons_invmass->Fill(invmass);
 				
+				Double_t pt = Pt_4particlesRECO(fElectrons_momenta[electron11], fElectrons_momenta[electron12], fElectrons_momenta[electron21], fElectrons_momenta[electron22]);
+				
 				Double_t opening_angle = OpeningAngleBetweenPhotons(fVector_photons_pairs[a], fVector_photons_pairs[b]);
 				fhPhotons_angleBetween->Fill(opening_angle);
 				
 				if(opening_angle < 8) {
 					fhPhotons_invmass_cut->Fill(invmass);
+					fhPhotons_invmass_vs_pt->Fill(invmass, pt);
 					fhMomentumFits_pi0reco->Fill(fElectrons_momentaChi[electron11]);
 					fhMomentumFits_pi0reco->Fill(fElectrons_momentaChi[electron12]);
 					fhMomentumFits_pi0reco->Fill(fElectrons_momentaChi[electron21]);

@@ -269,12 +269,12 @@ void CbmAnaConversionPhotons::InitHistos()
 	fHistoList_EFG_invmass.push_back(fhEFG_invmass_direct);
 	fHistoList_EFG_invmass.push_back(fhEFG_invmass_pi0);
 	fHistoList_EFG_invmass.push_back(fhEFG_invmass_eta);
-	fhEFG_energy_all		= new TH1D("fhEFG_energy_all", "fhEFG_energy_all; energy [GeV]; #", 5000, 0., 50);
-	fhEFG_energy_combBack	= new TH1D("fhEFG_energy_combBack", "fhEFG_energy_combBack; energy [GeV]; #", 5000, 0., 50);
-	fhEFG_energy_allSameG	= new TH1D("fhEFG_energy_allSameG", "fhEFG_energy_allSameG; energy [GeV]; #", 5000, 0., 50);
-	fhEFG_energy_direct		= new TH1D("fhEFG_energy_direct", "fhEFG_energy_direct; energy [GeV]; #", 5000, 0., 50);
-	fhEFG_energy_pi0		= new TH1D("fhEFG_energy_pi0", "fhEFG_energy_pi0; energy [GeV]; #", 5000, 0., 50);
-	fhEFG_energy_eta		= new TH1D("fhEFG_energy_eta", "fhEFG_energy_eta; energy [GeV]; #", 5000, 0., 50);
+	fhEFG_energy_all		= new TH1D("fhEFG_energy_all", "fhEFG_energy_all; energy [GeV]; #", 1000, 0., 50);
+	fhEFG_energy_combBack	= new TH1D("fhEFG_energy_combBack", "fhEFG_energy_combBack; energy [GeV]; #", 1000, 0., 50);
+	fhEFG_energy_allSameG	= new TH1D("fhEFG_energy_allSameG", "fhEFG_energy_allSameG; energy [GeV]; #", 1000, 0., 50);
+	fhEFG_energy_direct		= new TH1D("fhEFG_energy_direct", "fhEFG_energy_direct; energy [GeV]; #", 1000, 0., 50);
+	fhEFG_energy_pi0		= new TH1D("fhEFG_energy_pi0", "fhEFG_energy_pi0; energy [GeV]; #", 1000, 0., 50);
+	fhEFG_energy_eta		= new TH1D("fhEFG_energy_eta", "fhEFG_energy_eta; energy [GeV]; #", 1000, 0., 50);
 	fHistoList_EFG_energy.push_back(fhEFG_energy_all);
 	fHistoList_EFG_energy.push_back(fhEFG_energy_combBack);
 	fHistoList_EFG_energy.push_back(fhEFG_energy_allSameG);
@@ -339,12 +339,12 @@ void CbmAnaConversionPhotons::InitHistos()
 	fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_eta);
 
 	// momentum of the e+e- pair (sum)
-	fhEFG_momentumPair_all		= new TH1D("fhEFG_momentumPair_all", "fhEFG_momentumPair_all; energy [GeV]; #", 5000, 0., 50);
-	fhEFG_momentumPair_combBack	= new TH1D("fhEFG_momentumPair_combBack", "fhEFG_momentumPair_combBack; energy [GeV]; #", 5000, 0., 50);
-	fhEFG_momentumPair_allSameG	= new TH1D("fhEFG_momentumPair_allSameG", "fhEFG_momentumPair_allSameG; energy [GeV]; #", 5000, 0., 50);
-	fhEFG_momentumPair_direct	= new TH1D("fhEFG_momentumPair_direct", "fhEFG_momentumPair_direct; energy [GeV]; #", 5000, 0., 50);
-	fhEFG_momentumPair_pi0		= new TH1D("fhEFG_momentumPair_pi0", "fhEFG_momentumPair_pi0; energy [GeV]; #", 5000, 0., 50);
-	fhEFG_momentumPair_eta		= new TH1D("fhEFG_momentumPair_eta", "fhEFG_momentumPair_eta; energy [GeV]; #", 5000, 0., 50);
+	fhEFG_momentumPair_all		= new TH1D("fhEFG_momentumPair_all", "fhEFG_momentumPair_all; energy [GeV]; #", 1000, 0., 50);
+	fhEFG_momentumPair_combBack	= new TH1D("fhEFG_momentumPair_combBack", "fhEFG_momentumPair_combBack; energy [GeV]; #", 1000, 0., 50);
+	fhEFG_momentumPair_allSameG	= new TH1D("fhEFG_momentumPair_allSameG", "fhEFG_momentumPair_allSameG; energy [GeV]; #", 1000, 0., 50);
+	fhEFG_momentumPair_direct	= new TH1D("fhEFG_momentumPair_direct", "fhEFG_momentumPair_direct; energy [GeV]; #", 1000, 0., 50);
+	fhEFG_momentumPair_pi0		= new TH1D("fhEFG_momentumPair_pi0", "fhEFG_momentumPair_pi0; energy [GeV]; #", 1000, 0., 50);
+	fhEFG_momentumPair_eta		= new TH1D("fhEFG_momentumPair_eta", "fhEFG_momentumPair_eta; energy [GeV]; #", 1000, 0., 50);
 	fHistoList_EFG.push_back(fhEFG_momentumPair_all);
 	fHistoList_EFG.push_back(fhEFG_momentumPair_combBack);
 	fHistoList_EFG.push_back(fhEFG_momentumPair_allSameG);

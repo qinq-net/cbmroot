@@ -232,22 +232,22 @@ void CbmAnaConversionReco::InitHistos()
 	fhInvariantMass_pi0epem = new TH1D("fhInvariantMass_pi0epem","fhInvariantMass_pi0epem;mass [GeV/c^2];#", 400, 0., 2.);
 	fHistoList_reco.push_back(fhInvariantMass_pi0epem);
 	
-	fhPi0_startvertex = new TH1D("fhPi0_startvertex","fhPi0_startvertex;z[cm];#", 200, -0.25, 99.75);
+	fhPi0_startvertex = new TH1D("fhPi0_startvertex","fhPi0_startvertex;z[cm];#", 210, -5., 100.);
 	fHistoList_reco.push_back(fhPi0_startvertex);
 	
-	fhPi0_startvertexElectrons_all = new TH1D("fhPi0_startvertexElectrons_all","fhPi0_startvertexElectrons_all;z[cm];#", 400, -0.25, 199.75);
+	fhPi0_startvertexElectrons_all = new TH1D("fhPi0_startvertexElectrons_all","fhPi0_startvertexElectrons_all;z[cm];#", 410, -5., 200.);
 	fHistoList_reco.push_back(fhPi0_startvertexElectrons_all);
 	
-	fhPi0_startvertexElectrons_gg = new TH1D("fhPi0_startvertexElectrons_gg","fhPi0_startvertexElectrons_gg;z[cm];#", 400, -0.25, 199.75);
+	fhPi0_startvertexElectrons_gg = new TH1D("fhPi0_startvertexElectrons_gg","fhPi0_startvertexElectrons_gg;z[cm];#", 410, -5., 200.);
 	fHistoList_reco.push_back(fhPi0_startvertexElectrons_gg);
 	
-	fhPi0_startvertexElectrons_gee = new TH1D("fhPi0_startvertexElectrons_gee","fhPi0_startvertexElectrons_gee;z[cm];#", 400, -0.25, 199.75);
+	fhPi0_startvertexElectrons_gee = new TH1D("fhPi0_startvertexElectrons_gee","fhPi0_startvertexElectrons_gee;z[cm];#", 410, -5., 200.);
 	fHistoList_reco.push_back(fhPi0_startvertexElectrons_gee);
 	
-	fhPi0_startvertex_vs_chi = new TH2D("fhPi0_startvertex_vs_chi","fhPi0_startvertex_vs_chi;z[cm];chi", 400, -0.25, 199.75, 1000, 0., 10.);
+	fhPi0_startvertex_vs_chi = new TH2D("fhPi0_startvertex_vs_chi","fhPi0_startvertex_vs_chi;z[cm];chi", 210, -5., 100., 1000, 0., 100.);
 	fHistoList_reco.push_back(fhPi0_startvertex_vs_chi);
 	
-	fhPi0_startvertex_vs_momentum = new TH2D("fhPi0_startvertex_vs_momentum","fhPi0_startvertex_vs_momentum;z[cm];momentum (MC-true)", 400, -0.25, 199.75, 1000, 0., 10.);
+	fhPi0_startvertex_vs_momentum = new TH2D("fhPi0_startvertex_vs_momentum","fhPi0_startvertex_vs_momentum;z[cm];momentum (MC-true)", 210, -5., 100., 1000, 0., 100.);
 	fHistoList_reco.push_back(fhPi0_startvertex_vs_momentum);
 
 	fhInvMassWithFullRecoCuts = new TH1D("fhInvMassWithFullRecoCuts","fhInvMassWithFullRecoCuts;mass [GeV/c^2];#", 400, 0., 2.);
@@ -1244,7 +1244,7 @@ void CbmAnaConversionReco::CalculateInvMassWithFullRecoCuts()
 						Int_t IsPhoton_openingAngle5 = (params5.fAngle < openingAngleCut);
 						Int_t IsPhoton_openingAngle6 = (params6.fAngle < openingAngleCut);
 						
-						Double_t invMassCut = 0.03;
+						Double_t invMassCut = 0.02;
 						Int_t IsPhoton_invMass1 = (params1.fMinv < invMassCut);
 						Int_t IsPhoton_invMass2 = (params2.fMinv < invMassCut);
 						Int_t IsPhoton_invMass3 = (params3.fMinv < invMassCut);
