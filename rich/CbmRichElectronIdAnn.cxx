@@ -84,7 +84,7 @@ double CbmRichElectronIdAnn::DoSelect(
     double nnEval = fNN->Evaluate(0, params);
 
     if (TMath::IsNaN(nnEval) == 1) {
-        cout << " -W- CbmRichElectronIdAnn: nnEval nan " << endl;
+        //cout << " -W- CbmRichElectronIdAnn: nnEval nan " << endl;
         nnEval = -1.;
     }
 
