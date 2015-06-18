@@ -182,19 +182,21 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   infoFile.open(infoFileName.Data(), fstream::out);
   infoFile << "STS geometry created with create_stsgeo_v15a.C" << endl << endl;
   infoFile << "Global variables: " << endl;
-  infoFile << "Sensor thickness = " << gkSensorThickness << " cm" << endl;
-  infoFile << "Vertical gap in sensor chain = " 
+  infoFile << "Sensor thickness                   = "
+	   << gkSensorThickness << " cm" << endl;
+  infoFile << "Vertical gap in sensor chain       = " 
 	   << gkChainGapY << " cm" << endl;
-  infoFile << "Vertical overlap of sensors = " 
+  infoFile << "Vertical overlap of sensors        = " 
 	   << gkSectorOverlapY << " cm" << endl;
   infoFile << "Gap in z between neighbour sensors = " 
 	   << gkSectorGapZ << " cm" << endl;
-  infoFile << "Horizontal overlap of sensors = " 
+  infoFile << "Horizontal overlap of sensors      = " 
 	   << gkLadderOverlapX << " cm" << endl;
   infoFile << "Gap in z between neighbour ladders = " 
 	   << gkLadderGapZ << " cm" << endl;
   if ( gkConstructCables ) 
-    infoFile << "Cable thickness = " << gkCableThickness << " cm" << endl;
+    infoFile << "Cable thickness                    = "
+	     << gkCableThickness << " cm" << endl;
   else
     infoFile << "No cables" << endl;
   infoFile << endl;
