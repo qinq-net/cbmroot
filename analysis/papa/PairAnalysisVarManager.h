@@ -121,7 +121,7 @@ public:
     kPout,                   // last point momentum (GeV/c)
     kPtout,                  // last point transverse momentum (GeV/c)
     // trd track information
-    kTRDSignal,              // TRD energy loss dEdx+TR
+    kTRDSignal,              // TRD energy loss dEdx+TR (keV)
     kTRDPidWkn,              // PID value Wkn method
     kTRDPidANN,              // PID value Artificial Neural Network (ANN-method)
     kTRDPidLikeEL,           // PID value Likelihood method: electron
@@ -644,7 +644,7 @@ inline void PairAnalysisVarManager::FillVarTrdTrack(const CbmTrdTrack *track, Do
   }
 
   // Set
-  values[kTRDSignal]      = track->GetELoss(); //GeV
+  values[kTRDSignal]      = track->GetELoss() * 1.e+6; //GeV->keV
   values[kTRDPidWkn]      = track->GetPidWkn(); // PID value Wkn method
   values[kTRDPidANN]      = track->GetPidANN(); // PID value ANN method
   // PID value Likelihood method
@@ -1075,8 +1075,8 @@ inline void PairAnalysisVarManager::FillVarTrdHit(const CbmTrdHit *hit, Double_t
   FillVarPixelHit(hit, values);
 
   // Set
-  values[kEloss]   = hit->GetELoss(); // dEdx + TR
-  values[kElossTR] = hit->GetELossTR();  // TR, not filled because of CbmDigi
+  values[kEloss]   = hit->GetELoss()   * 1.e+6; //GeV->keV, dEdx + TR
+  values[kElossTR] = hit->GetELossTR() * 1.e+6; //GeV->keV, TR, not filled because of CbmDigi
   //  Printf("eloss trd: %.3e (%.3e TR, %.3e dEdx)",hit->GetELoss(),hit->GetELossTR(),hit->GetELossdEdX());
 }
 

@@ -60,7 +60,7 @@ public:
   void SetNoPairing(Bool_t noPairing=kTRUE) { fNoPairing=noPairing; }
   Bool_t IsNoPairing() { return fNoPairing; }
   void SetProcessLS(Bool_t doLS=kTRUE) { fProcessLS=doLS; }
-  Bool_t DoProcessLS() { return fNoPairing; }
+  Bool_t DoProcessLS() { return fProcessLS; }
   void SetUseKF(Bool_t useKF=kTRUE) { fUseKF=useKF; }
   const TObjArray* GetTrackArray(Int_t i) const {return (i>=0&&i<2)?&fTracks[i]:0;}
   const TObjArray* GetPairArray(Int_t i)  const {return (i>=0&&i<8)?
