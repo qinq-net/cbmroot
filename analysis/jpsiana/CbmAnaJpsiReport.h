@@ -36,15 +36,18 @@ protected:
 
    void DrawAnalysisStepsH1(
             const string& hName,
-            bool doScale);
+            bool doScale,
+			double min = -1.,
+			double max = -1.);
 
    void DrawSourceTypesH1(
          const string& hName,
-         bool doScale = true);
+         bool doScale = false);
 
    void DrawCutH1(
          const string& hName,
-         double cutValue);
+         double cutValue,
+		  bool doScale = false);
 
    void Draw2DCut(
          const string& hist);

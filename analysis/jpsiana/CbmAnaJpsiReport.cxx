@@ -55,21 +55,31 @@ void CbmAnaJpsiReport::Draw()
 	  cout << "Number of events = " << nofEvents << endl;
 	  HM()->ScaleByPattern(".*", 1./nofEvents);
 
+	  //Rebin minv histograms
+	  Int_t nRebins = 20;
+	  HM()->RebinByPattern("fh_signal_minv.+", nRebins);
+	  HM()->RebinByPattern("fh_bg_minv.+", nRebins);
+	  HM()->RebinByPattern("fh_pi0_minv.+", nRebins);
+	  HM()->RebinByPattern("fh_gamma_minv.+", nRebins);
+	  HM()->RebinByPattern("fh_bg_truematch_minv.+", nRebins);
+	  HM()->RebinByPattern("fh_bg_truematch_el_minv.+", nRebins);
+	  HM()->RebinByPattern("fh_bg_truematch_notel_minv.+", nRebins);
+	  HM()->RebinByPattern("fh_bg_mismatch_minv.+", nRebins);
+
+
 	  Draw2DCut("fh_rich_pmt_xy");
 	  DrawCutDistributions();
 
 	  DrawMinvMismatchesAll();
 
-	  DrawAnalysisStepsH1("fh_bg_minv",false);
+	  DrawAnalysisStepsH1("fh_signal_minv",false, 5e-5, 0.1);
+	  DrawAnalysisStepsH1("fh_bg_minv",false, 5e-5, 0.1);
 	  DrawAnalysisStepsH1("fh_pi0_minv",false);
 	  DrawAnalysisStepsH1("fh_gamma_minv",false);
 
 	  DrawAnalysisStepsH2("fh_signal_minv_pt",false);
 	  DrawAnalysisStepsH1("fh_signal_mom",false);
-	  DrawAnalysisStepsH1("fh_signal_minv",false);
 	  DrawAnalysisStepsH2("fh_signal_pty",true);
-
-
 
 	  {
 		  TCanvas* c = CreateCanvas("jpsi_fh_vertex_el_gamma","jpsi_fh_vertex_el_gamma",1000,1000);
@@ -89,9 +99,11 @@ void CbmAnaJpsiReport::Draw()
 	   	  c->Divide(2, 1);
 	   	  c->cd(1);
 	      DrawH1(H1("fh_nof_bg_tracks"));
+	      H1("fh_nof_bg_tracks")->SetMinimum(0.0);
 	      SetAnalysisStepLabels(H1("fh_nof_bg_tracks"));
 	      c->cd(2);
 	  	  DrawH1(H1("fh_nof_el_tracks"));
+	  	  H1("fh_nof_el_tracks")->SetMinimum(0.0);
 	  	  SetAnalysisStepLabels(H1("fh_nof_el_tracks"));
 	  }
 
@@ -133,13 +145,15 @@ void CbmAnaJpsiReport::DrawAnalysisStepsH2(
 		DrawH2(H2(h));
 		DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[i], 0.6, 0.89, 0.7, 0.99);
 
-		if (DoDrawEfficiency) DrawEfficiency(h, hName+"_"+CbmAnaJpsiHist::fAnaSteps[0]);
+		if (DoDrawEfficiency) DrawEfficiency(h, hName+"_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc]);
 	}
 }
 
 void CbmAnaJpsiReport::DrawAnalysisStepsH1(
       const string& hName,
-      bool doScale)
+      bool doScale,
+	  double min,
+	  double max)
 {
 	TCanvas* c = CreateCanvas( ("jpsi_" + hName).c_str(), ("jpsi_" + hName).c_str(), 600, 600);
 	vector<TH1*> h;
@@ -151,8 +165,14 @@ void CbmAnaJpsiReport::DrawAnalysisStepsH1(
 		h[i]->SetLineColor(CbmAnaJpsiHist::fAnaStepsColor[i]);
 		if (doScale) h[i]->Scale(1. / h[i]->Integral());
 		hLegend.push_back( CbmAnaJpsiHist::fAnaStepsLatex[i] );
+		if (min != max) {
+			h[i]->SetMinimum(min);
+			h[i]->SetMaximum(max);
+		}
 	}
 	DrawH1(h, hLegend, kLinear, kLog, true, 0.90, 0.7, 0.99, 0.99);
+
+
 }
 
 void CbmAnaJpsiReport::DrawSourceTypesH1(
@@ -179,10 +199,11 @@ void CbmAnaJpsiReport::DrawSourceTypesH1(
 
 void CbmAnaJpsiReport::DrawCutH1(
       const string& hName,
-      double cutValue)
+      double cutValue,
+	  bool doScale)
 {
    TCanvas *c = CreateCanvas( ("jpsi_" + hName).c_str(), ("jpsi_" + hName).c_str(), 600, 600);
-   DrawSourceTypesH1(hName);
+   DrawSourceTypesH1(hName, doScale);
    if (cutValue != -999999.){
       TLine* cutLine = new TLine(cutValue, 0.0, cutValue, 1.);
       cutLine->SetLineWidth(2);
@@ -204,15 +225,16 @@ void CbmAnaJpsiReport::Draw2DCut(
 
 void CbmAnaJpsiReport::DrawCutDistributions()
 {
-   DrawCutH1("fh_track_chi2prim", 2.0);
-   DrawCutH1("fh_track_mom", 5.0);
-   DrawCutH1("fh_track_chi2sts", 2.0);
-   DrawCutH1("fh_track_rapidity", 2.0);
-   DrawCutH1("fh_track_pt", 2.0);
-   DrawCutH1("fh_track_rich_ann", 2.0);
-   DrawCutH1("fh_track_trd_ann", 2.0);
-   Draw2DCut("fh_track_tof_m2");
-
+	CbmAnaJpsiCuts cuts;
+	cuts.SetDefaultCuts();
+	DrawCutH1("fh_track_chi2prim", cuts.fChiPrimCut, true);
+	DrawCutH1("fh_track_mom", -999999., true);
+	DrawCutH1("fh_track_chi2sts", -999999.,true);
+	DrawCutH1("fh_track_rapidity", -999999., true);
+	DrawCutH1("fh_track_pt", cuts.fPtCut, true);
+	DrawCutH1("fh_track_rich_ann", cuts.fRichAnnCut, true);
+	DrawCutH1("fh_track_trd_ann", cuts.fTrdAnnCut, true);
+	Draw2DCut("fh_track_tof_m2");
 }
 
 void CbmAnaJpsiReport::DrawMinvMismatches(
@@ -258,7 +280,7 @@ void CbmAnaJpsiReport::DrawEfficiency(
 {
 	Double_t nofMCEntries =H2(McHistName)->GetEntries();
 	if (nofMCEntries!=0){
- 	DrawTextOnPad("Efficiency: "+Cbm::NumberToString((Double_t) H2(histName)->GetEntries() / nofMCEntries*100)+"%",0.2,0.9,0.50,0.99);
+ 	DrawTextOnPad(Cbm::NumberToString((Double_t) H2(histName)->GetEntries() / nofMCEntries*100.)+"%",0.2,0.9,0.35,0.99);
 	}
 }
 
@@ -268,12 +290,13 @@ void CbmAnaJpsiReport::DrawPtYEfficiency(
 	   TH2D* Efficiency = Cbm::DivideH2(H2("fh_signal_pty_" + CbmAnaJpsiHist::fAnaSteps[step]), H2("fh_signal_pty_" + CbmAnaJpsiHist::fAnaSteps[kJpsiMc]));
 	   DrawH2(Efficiency);
 	   DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[step], 0.6, 0.89, 0.7, 0.99);
+	   DrawEfficiency("fh_signal_pty_" + CbmAnaJpsiHist::fAnaSteps[step], "fh_signal_pty_" + CbmAnaJpsiHist::fAnaSteps[kJpsiMc]);
 }
 
 void CbmAnaJpsiReport::DrawPtYEfficiencyAll()
 {
 
-	TCanvas *c = CreateCanvas("jpsi_fh_pty_efficiency", "jpsi_fh_pty_efficiency", 1000, 1000);
+	TCanvas *c = CreateCanvas("jpsi_fh_pty_efficiency", "jpsi_fh_pty_efficiency", 1200, 800);
 	   c->Divide(3,2);
 	   for (int i = 1; i < CbmAnaJpsiHist::fNofAnaSteps; i++){
 	      c->cd(i);
@@ -297,13 +320,13 @@ void CbmAnaJpsiReport::DrawBgSource2D(
       const vector<string>& yLabels,
       const string& zTitle)
 {
-	gStyle->SetPaintTextFormat("4.1f");
+	gStyle->SetPaintTextFormat("4.2f");
 	TCanvas *c1 = CreateCanvas(string("jpsi_" + histName+"_abs").c_str(), string("jpsi_"+histName+"_abs").c_str(), 900, 600);
 	TH2D* habs = (TH2D*)H2(histName)->Clone();
 	habs->SetStats(false);
 	habs->GetZaxis()->SetTitle(zTitle.c_str());
 	habs->GetXaxis()->SetRange(kJpsiReco + 1, CbmAnaJpsiHist::fNofAnaSteps);
-	habs->SetMarkerSize(1.4);
+	habs->SetMarkerSize(1.8);
 	DrawH2(habs, kLinear, kLinear, kLog, "text COLZ");
 
 	TCanvas *c2 = CreateCanvas(string("jpsi_" + histName+"_percent").c_str(), string("jpsi_" + histName+"_percent").c_str(), 900, 600);

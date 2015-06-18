@@ -24,6 +24,7 @@
 #include "CbmAnaJpsiCuts.h"
 
 
+
 using namespace std;
 
 CbmAnaJpsiTask::CbmAnaJpsiTask()
@@ -203,7 +204,7 @@ void CbmAnaJpsiTask::InitHist()
 	fHM->Create1<TH1D>("fh_event_number", "fh_event_number;a.u.;Number of events", 1, 0, 1.);
 
    //RICH PMT plane XY
-   CreateSourceTypesH2("fh_rich_pmt_xy","X [cm]","Y [cm]","Yield", 220, -110, 110, 400, -200, 200);
+   CreateSourceTypesH2("fh_rich_pmt_xy","X [cm]","Y [cm]","Hits/cm^{2}/event", 220, -110, 110, 400, -200, 200);
 
    //distributions of ID and analysis cuts
    CreateSourceTypesH1("fh_track_chi2prim","#chi^{2}_{prim}", "Yield", 200, 0., 20.);
@@ -227,22 +228,22 @@ void CbmAnaJpsiTask::InitHist()
    fHM->Create2<TH2D>("fh_source_tracks","fh_source_tracks;Analysis steps;Particle", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps, 7, 0., 7.);
 
    //Create invariant mass histograms
-   CreateAnalysisStepsH1("fh_signal_minv", "M_{ee} [GeV/c^{2}]", "Particles per event", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_bg_minv", "M_{ee} [GeV/c^{2}]", "Particles per event", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_pi0_minv", "M_{ee} [GeV/c^{2}]", "Particles per event", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_gamma_minv", "M_{ee} [GeV/c^{2}]", "Particles per event", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_signal_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_bg_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_pi0_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_gamma_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
 
    // minv for true matched and mismatched tracks
-   CreateAnalysisStepsH1("fh_bg_truematch_minv", "M_{ee} [GeV/c^{2}]", "Particles per event", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_bg_truematch_el_minv", "M_{ee} [GeV/c^{2}]", "Particles per event", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_bg_truematch_notel_minv", "M_{ee} [GeV/c^{2}]", "Particles per event", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_bg_mismatch_minv", "M_{ee} [GeV/c^{2}]", "Particles per event", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_bg_truematch_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_bg_truematch_el_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_bg_truematch_notel_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_bg_mismatch_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
 
    //Invariant mass vs. Mc Pt
-   CreateAnalysisStepsH2("fh_signal_minv_pt","M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Particles per event", 100, 0., 4., 20, 0., 2.);
+   CreateAnalysisStepsH2("fh_signal_minv_pt","M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Yield", 100, 0., 4., 20, 0., 2.);
 
    // Momentum distribution of the signal
-   CreateAnalysisStepsH1("fh_signal_mom", "P [GeV/c]", "Particles per event", 100, 0., 15.);
+   CreateAnalysisStepsH1("fh_signal_mom", "P [GeV/c]", "Particles per event", 250, 0., 25.);
    //Pt/y distibution of the signal
    CreateAnalysisStepsH2("fh_signal_pty","Rapidity", "P_{t} [GeV/c]", "Particles per event", 40, 0., 4., 20, 0., 2.);
 
@@ -297,30 +298,14 @@ void CbmAnaJpsiTask::MCPairs()
     Int_t nMcTracks = fMcTracks->GetEntries();
     for (Int_t i = 0; i < nMcTracks; i++){
         CbmMCTrack* mctrack = (CbmMCTrack*) fMcTracks->At(i);
-        Int_t motherId = mctrack->GetMotherId();
-        Int_t pdg = TMath::Abs(mctrack->GetPdgCode());
-        Double_t mom = mctrack->GetP();
-
-        // mother pdg of e-/e+
-        Int_t mcMotherPdg = 0;
-        if (pdg == 11) {
-
-           // secondary electrons
-           if (motherId != -1){
-                CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
-                if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
-                // vertex of secondary electron from gamma conversion
-                if (mcMotherPdg == 22) {
-                    TVector3 v;
-                    mctrack->GetStartVertex(v);
-                    fHM->H2("fh_vertex_el_gamma_xz")->Fill(v.Z(),v.X());
-                    fHM->H2("fh_vertex_el_gamma_yz")->Fill(v.Z(),v.Y());
-                    fHM->H2("fh_vertex_el_gamma_xy")->Fill(v.X(),v.Y());
-                    fHM->H2("fh_vertex_el_gamma_rz")->Fill( v.Z(), sqrt(v.X()*v.X()+v.Y()*v.Y()) );
-                }
-            }else {
-                mcMotherPdg = 0;
-            }
+        Bool_t isMcGammaElectron = CbmAnaJpsiUtils::IsMcGammaElectron(mctrack, fMcTracks);
+        if (isMcGammaElectron) {
+			TVector3 v;
+			mctrack->GetStartVertex(v);
+			fHM->H2("fh_vertex_el_gamma_xz")->Fill(v.Z(),v.X());
+			fHM->H2("fh_vertex_el_gamma_yz")->Fill(v.Z(),v.Y());
+			fHM->H2("fh_vertex_el_gamma_xy")->Fill(v.X(),v.Y());
+			fHM->H2("fh_vertex_el_gamma_rz")->Fill( v.Z(), sqrt(v.X()*v.X()+v.Y()*v.Y()) );
         }
     } // nMcTracks
 } //MC Pairs
@@ -389,25 +374,11 @@ void CbmAnaJpsiTask::AssignMcToCandidates()
       if (fCandidates[i].fStsMcTrackId < 0) continue;
       CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMcTracks->At(fCandidates[i].fStsMcTrackId);
       if (mcTrack1 == NULL) continue;
-      int pdg = TMath::Abs(mcTrack1->GetPdgCode());
-      int motherId = mcTrack1->GetMotherId();
-      fCandidates[i].fStsMcMotherId = motherId;
-      fCandidates[i].fMcPdg = pdg;
-
-      // set MC signature for candidate
-      if (pdg == 11 && motherId == -1) fCandidates[i].fIsMcSignalElectron = true;
-      if (motherId >=0){
-         CbmMCTrack* mct1 = (CbmMCTrack*) fMcTracks->At(motherId);
-         int motherPdg = mct1->GetPdgCode();
-         //Pi0 electron
-         if (mct1 != NULL && motherPdg == 111 && pdg == 11) {
-            fCandidates[i].fIsMcPi0Electron = true;
-         }
-         //Gamma conversion electron
-         if (mct1 != NULL && motherPdg == 22 && pdg == 11){
-            fCandidates[i].fIsMcGammaElectron = true;
-         }
-      }
+      fCandidates[i].fStsMcMotherId = mcTrack1->GetMotherId();
+      fCandidates[i].fMcPdg = TMath::Abs(mcTrack1->GetPdgCode());
+      fCandidates[i].fIsMcSignalElectron = CbmAnaJpsiUtils::IsMcSignalElectron(mcTrack1);
+      fCandidates[i].fIsMcGammaElectron =  CbmAnaJpsiUtils::IsMcGammaElectron(mcTrack1, fMcTracks);
+      fCandidates[i].fIsMcPi0Electron =  CbmAnaJpsiUtils::IsMcPi0Electron(mcTrack1, fMcTracks);
 
       // RICH
       int richInd = fCandidates[i].fRichInd;
@@ -494,14 +465,9 @@ void CbmAnaJpsiTask::SingleParticleAcceptance()
     Int_t nMcTracks = fMcTracks->GetEntries();
     for (Int_t i = 0; i < nMcTracks; i++) {
         CbmMCTrack* mctrack = (CbmMCTrack*) fMcTracks->At(i);
-        Int_t motherId = mctrack->GetMotherId();
-        Int_t pdg = TMath::Abs(mctrack->GetPdgCode());
-        Bool_t isAcc = IsMcTrackAccepted(i);
-
-        if (pdg ==11 && motherId == -1) {
+        if (CbmAnaJpsiUtils::IsMcSignalElectron(mctrack)){
         	fHM->H1("fh_nof_el_tracks")->Fill(kJpsiMc + 0.5);
-
-        	if (isAcc) {
+        	if ( IsMcTrackAccepted(i) ) {
         		 fHM->H1("fh_nof_el_tracks")->Fill(kJpsiAcc + 0.5);
         	}
         }
@@ -513,27 +479,22 @@ void CbmAnaJpsiTask::PairMcAndAcceptance()
 	Int_t nMcTracks = fMcTracks->GetEntries();
 	for (Int_t iP = 0; iP < nMcTracks; iP++) {
 		CbmMCTrack* mctrackP = (CbmMCTrack*) fMcTracks->At(iP);
-		Int_t motherIdP = mctrackP->GetMotherId();
-		Int_t pdgP = mctrackP->GetPdgCode();
-		if ( pdgP != 11 ) continue;
+		Bool_t isMcSignalElectronP = CbmAnaJpsiUtils::IsMcSignalElectron(mctrackP);
+		if (!isMcSignalElectronP) continue;
 		Bool_t isAccP = IsMcTrackAccepted(iP);
 		for (Int_t iM = 0; iM < nMcTracks; iM++) {
 			if (iP == iM) continue;
 			CbmMCTrack* mctrackM = (CbmMCTrack*) fMcTracks->At(iM);
-			Int_t motherIdM = mctrackM->GetMotherId();
-			Int_t pdgM = mctrackM->GetPdgCode();
-			if ( pdgM != -11 ) continue;
+			Bool_t isMcSignalElectronM = CbmAnaJpsiUtils::IsMcSignalElectron(mctrackM);
+			if (!isMcSignalElectronM) continue;
 			Bool_t isAccM = IsMcTrackAccepted(iM);
 			CbmAnaJpsiKinematicParams p = CbmAnaJpsiKinematicParams::KinematicParamsWithMcTracks(mctrackP,mctrackM);
 
-			// e+/- from signal
-			if (motherIdM == -1 && pdgM == -11 && motherIdP == -1 && pdgP == 11) {
-
+			if (isMcSignalElectronM && isMcSignalElectronP) {
 				fHM->H2("fh_signal_pty_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Fill(p.fRapidity, p.fPt);
 				fHM->H1("fh_signal_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Fill(p.fMomentumMag);
 				fHM->H1("fh_signal_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Fill(p.fMinv);
 				fHM->H2("fh_signal_minv_pt_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Fill(p.fMinv, p.fPt);
-
 				//accepted e+/-
 				if (isAccP && isAccM) {
 					//no FillPairHists because we have not declared KinematicParamCand jet
@@ -543,27 +504,8 @@ void CbmAnaJpsiTask::PairMcAndAcceptance()
 					fHM->H2("fh_signal_minv_pt_"+CbmAnaJpsiHist::fAnaSteps[kJpsiAcc])->Fill(p.fMinv, p.fPt);
 				}
 			}
-
-			if (motherIdP >=0 && motherIdM >=0){
-				CbmMCTrack* mct1P = (CbmMCTrack*) fMcTracks->At(motherIdP);
-				Int_t motherPdgP = mct1P->GetPdgCode();
-
-				CbmMCTrack* mct1M = (CbmMCTrack*) fMcTracks->At(motherIdM);
-				Int_t motherPdgM = mct1M->GetPdgCode();
-
-				Bool_t isPi0 = (motherPdgP == 111 && pdgP == 11 && motherPdgM == 111 && pdgM == -11 && motherIdP == motherIdM);
-
-				if (isPi0){
-					fHM->H1("fh_pi0_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Fill(p.fMinv);
-				}
-
-				if (isAccP && isAccM && isPi0){
-					fHM->H1("fh_pi0_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiAcc])->Fill(p.fMinv);
-				}
-			}
-
-		}//iM
-	}//iP
+		}
+	}
 } // PairsAcceptance
 
 
@@ -577,12 +519,9 @@ void CbmAnaJpsiTask::TrackSource(
 	Double_t pt = cand->fMomentum.Perp();
 
 
-    if (cand->fIsMcSignalElectron)
-	{
+    if (cand->fIsMcSignalElectron) {
 		fHM->H1("fh_nof_el_tracks")->Fill(binNum);
-	}
-	else
-	{
+	} else {
 		fHM->H1("fh_nof_bg_tracks")->Fill(binNum);
 
 		if (IsMismatch(cand)) fHM->H1("fh_nof_mismatches")->Fill(binNum);
@@ -645,11 +584,9 @@ void CbmAnaJpsiTask::SignalAndBgReco()
 {
 	Int_t ncand = fCandidates.size();
 
-	for (Int_t i=0;i<ncand;i++)
-	{
+	for (Int_t i=0;i<ncand;i++) {
 		Int_t pdg = 0;
-		if (fCandidates[i].fStsMcTrackId > 0)
-		{
+		if (fCandidates[i].fStsMcTrackId > 0) {
 			CbmMCTrack* mcTrack = (CbmMCTrack*) fMcTracks->At(fCandidates[i].fStsMcTrackId);
 			if (NULL != mcTrack) pdg = mcTrack->GetPdgCode();
 		}
@@ -657,7 +594,6 @@ void CbmAnaJpsiTask::SignalAndBgReco()
 	     Bool_t isChi2Prim = (fCandidates[i].fChi2Prim < fCuts.fChiPrimCut);
 	     Bool_t isEl = (fCandidates[i].fIsElectron);
 	     Bool_t isPtCut = (fCandidates[i].fMomentum.Perp() > fCuts.fPtCut);
-
 
 	     TrackSource(&fCandidates[i], kJpsiReco, pdg);
 	     if (isChi2Prim) TrackSource(&fCandidates[i], kJpsiChi2Prim, pdg);
@@ -811,6 +747,8 @@ Bool_t CbmAnaJpsiTask::IsMismatch(
 {
 	if (cand->fStsMcTrackId == cand->fRichMcTrackId && cand->fStsMcTrackId == cand->fTrdMcTrackId &&
 	       cand->fStsMcTrackId == cand->fTofMcTrackId && cand->fStsMcTrackId !=-1) return false;
+	//cout << "cand->fStsMcTrackId=" << cand->fStsMcTrackId << " cand->fRichMcTrackId=" << cand->fRichMcTrackId << endl;
+	//if (cand->fStsMcTrackId == cand->fTrdMcTrackId &&  cand->fStsMcTrackId !=-1) return false;
 	return true;
 }
 
@@ -836,33 +774,19 @@ void CbmAnaJpsiTask::RichPmtXY() {
 		// get photon mother MC Track (electron, pion etc.)
 		Int_t photonMotherId = photonMcTrack->GetMotherId();
 		if (photonMotherId == -1) continue;
-		CbmMCTrack* photonMotherMcTrack = (CbmMCTrack*) fMcTracks->At( photonMotherId);
+		CbmMCTrack* photonMotherMcTrack = (CbmMCTrack*) fMcTracks->At(photonMotherId);
 		if (NULL == photonMotherMcTrack) continue;
-		Int_t photonMotherPdgCode = photonMotherMcTrack->GetPdgCode();
 
-		// check that the photon was produced by electron
-		if (TMath::Abs(11) == photonMotherPdgCode) {
-			Int_t photonGrandmotherId = photonMotherMcTrack->GetMotherId();
-
-			// if primary signal electron
-			if (TMath::Abs(11) == photonMotherPdgCode || photonGrandmotherId == -1) {
-				fHM->H2("fh_rich_pmt_xy_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill( richHit->GetX(), richHit->GetY());
-			}
-
-			if (photonGrandmotherId != -1) {
-				CbmMCTrack* photonGrandmotherMcTrack = (CbmMCTrack*) fMcTracks->At(photonGrandmotherId);
-				if (NULL == photonGrandmotherMcTrack) continue;
-				Int_t photonGrandmotherPdgCode = photonGrandmotherMcTrack->GetPdgCode();
-
-				if (photonGrandmotherPdgCode == 22) {
-					fHM->H2("fh_rich_pmt_xy_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(richHit->GetX(), richHit->GetY());
-				}
-
-				if (photonGrandmotherPdgCode == 111) {
-					fHM->H2("fh_rich_pmt_xy_"+ CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(richHit->GetX(), richHit->GetY());
-				}
-			}
+		Bool_t isMcSignalElectron = CbmAnaJpsiUtils::IsMcSignalElectron(photonMotherMcTrack);
+		Bool_t isMcGammaElectron = CbmAnaJpsiUtils::IsMcGammaElectron(photonMotherMcTrack, fMcTracks);
+		Bool_t isMcPi0Electron = CbmAnaJpsiUtils::IsMcPi0Electron(photonMotherMcTrack, fMcTracks);
+		if (isMcSignalElectron) {
+			fHM->H2("fh_rich_pmt_xy_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill( richHit->GetX(), richHit->GetY());
+		} else {
+			fHM->H2("fh_rich_pmt_xy_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill( richHit->GetX(), richHit->GetY());
 		}
+		if (isMcGammaElectron) fHM->H2("fh_rich_pmt_xy_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(richHit->GetX(), richHit->GetY());
+		if (isMcPi0Electron) fHM->H2("fh_rich_pmt_xy_"+ CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(richHit->GetX(), richHit->GetY());
 	}
 }
 
