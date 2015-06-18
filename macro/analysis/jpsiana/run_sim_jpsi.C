@@ -1,4 +1,4 @@
-void run_sim_jpsi(Int_t nEvents = 2)
+void run_sim_jpsi(Int_t nEvents = 1000)
 {
    TTree::SetMaxTreeSize(90000000000);
 	Int_t iVerbose = 0;
@@ -8,13 +8,13 @@ void run_sim_jpsi(Int_t nEvents = 2)
 
 	//gRandom->SetSeed(10);
 
-	TString inFile = "/hera/cbm/users/adrian/trunk/cbmroot/input/urqmd.auau.25gev.centr.root";
-	TString parFile = "/hera/cbm/users/adrian/data/param.0001.root";
-	TString outFile = "/hera/cbm/users/adrian/data/mc.0001.root";
+	//TString inFile = "/hera/cbm/users/adrian/trunk/cbmroot/input/urqmd.auau.25gev.centr.root";
+	//TString parFile = "/hera/cbm/users/adrian/data/param.0001.root";
+	//TString outFile = "/hera/cbm/users/adrian/data/mc.0001.root";
 
-	//TString inFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
-	//TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.0001.root";
-	//TString outFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.0001.root";
+	TString inFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
+	TString parFile = "/Users/slebedev/Development/cbm/data/jpsi/param.0001.root";
+	TString outFile = "/Users/slebedev/Development/cbm/data/jpsi/mc.0001.root";
 
 	TString caveGeom = "cave.geo";
 	TString pipeGeom = "pipe/pipe_v14h.root";
@@ -32,8 +32,8 @@ void run_sim_jpsi(Int_t nEvents = 2)
 	Int_t NPOSITRONS = 5; // number of e+ to be generated
 	TString urqmd = "yes"; // If "yes" than UrQMD will be used as background
 	TString pluto = "yes"; // If "yes" PLUTO particles will be embedded
-	TString plutoFile = "/hera/cbm/users/adrian/trunk/cbmroot/input/pluto.auau.25gev.jpsi.epem.0001.root";
-	//TString plutoFile = "/Users/slebedev/Development/cbm/data/jpsi/pluto.auau.25gev.jpsi.epem.0001.root";
+	//TString plutoFile = "/hera/cbm/users/adrian/trunk/cbmroot/input/pluto.auau.25gev.jpsi.epem.0001.root";
+	TString plutoFile = "/Users/slebedev/Development/cbm/data/jpsi/pluto.auau.25gev.jpsi.epem.0001.root";
 	TString plutoParticle = "";
 	Double_t fieldZ = 50.; // field center z position
 	Double_t fieldScale =  1.0; // field scaling factor

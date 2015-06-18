@@ -1,4 +1,4 @@
-void run_analysis_jpsi(Int_t nEvents = 2)
+void run_analysis_jpsi(Int_t nEvents = 1000)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -10,15 +10,15 @@ void run_analysis_jpsi(Int_t nEvents = 2)
 
 	gRandom->SetSeed(10);
 
-	TString mcFile = "/hera/cbm/users/adrian/data/mc.0001.root";
-	TString parFile = "/hera/cbm/users/adrian/data/param.0001.root";
-	TString recoFile ="/hera/cbm/users/adrian/data/reco.0001.root";
-	TString anaFile ="/hera/cbm/users/adrian/data/analysis.0001.root";
+	//TString mcFile = "/hera/cbm/users/adrian/data/mc.0001.root";
+	//TString parFile = "/hera/cbm/users/adrian/data/param.0001.root";
+	//TString recoFile ="/hera/cbm/users/adrian/data/reco.0001.root";
+	//TString anaFile ="/hera/cbm/users/adrian/data/analysis.0001.root";
 
-	//TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.0001.root";
-	//TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.0001.root";
-	//TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.0001.root";
-	//TString anaFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/analysis.0001.root";
+	TString parFile = "/Users/slebedev/Development/cbm/data/jpsi/param.0001.root";
+	TString recoFile = "/Users/slebedev/Development/cbm/data/jpsi/reco.0001.root";
+	TString mcFile = "/Users/slebedev/Development/cbm/data/jpsi/mc.0001.root";
+	TString anaFile = "/Users/slebedev/Development/cbm/data/jpsi/analysis.0001.root";
 
 	TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
     TObjString trdDigiFile = parDir + "/trd/trd_v14a_3e.digi.par"; // TRD digi file

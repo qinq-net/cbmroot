@@ -7,8 +7,8 @@ void draw_analysis_jpsi()
 	loadlibs();
 
 	std::string outputDir = "results_analysis/";
-	std::string fileName = "/hera/cbm/users/adrian/data/analysis.0001.root";
-
+	//std::string fileName = "/hera/cbm/users/adrian/data/analysis.0001.root";
+    std::string fileName = "/Users/slebedev/Development/cbm/data/jpsi/analysis.0001.root";
 	CbmSimulationReport* jpsiReport = new CbmAnaJpsiReport();
 	jpsiReport->Create(fileName, outputDir);
 }
