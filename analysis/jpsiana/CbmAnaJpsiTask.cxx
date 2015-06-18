@@ -747,8 +747,6 @@ Bool_t CbmAnaJpsiTask::IsMismatch(
 {
 	if (cand->fStsMcTrackId == cand->fRichMcTrackId && cand->fStsMcTrackId == cand->fTrdMcTrackId &&
 	       cand->fStsMcTrackId == cand->fTofMcTrackId && cand->fStsMcTrackId !=-1) return false;
-	//cout << "cand->fStsMcTrackId=" << cand->fStsMcTrackId << " cand->fRichMcTrackId=" << cand->fRichMcTrackId << endl;
-	//if (cand->fStsMcTrackId == cand->fTrdMcTrackId &&  cand->fStsMcTrackId !=-1) return false;
 	return true;
 }
 
