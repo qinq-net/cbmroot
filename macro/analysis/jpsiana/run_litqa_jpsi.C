@@ -1,4 +1,4 @@
-void run_litqa_jpsi(Int_t nEvents = 1000)
+void run_litqa_jpsi(Int_t nEvents = 100)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -7,23 +7,22 @@ void run_litqa_jpsi(Int_t nEvents = 1000)
 
 	//gRandom->SetSeed(10);
 
-	TString mcFile = "/hera/cbm/users/adrian/data/mc.0001.root";
-	TString parFile = "/hera/cbm/users/adrian/data/param.0001.root";
-	TString recoFile ="/hera/cbm/users/adrian/data/reco.0001.root";
-	TString qaFile ="/hera/cbm/users/adrian/data/litqa.0001.root";
+	//TString mcFile = "/hera/cbm/users/adrian/data/mc.0001.root";
+	//TString parFile = "/hera/cbm/users/adrian/data/param.0001.root";
+	//TString recoFile ="/hera/cbm/users/adrian/data/reco.0001.root";
+	//TString qaFile ="/hera/cbm/users/adrian/data/litqa.0001.root";
 
-	//TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.0001.root";
-	//TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.0001.root";
-	//TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.0001.root";
-	//TString qaFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/litqa.0001.root";
-
+	TString parFile = "/Users/slebedev/Development/cbm/data/jpsi/param.0001.root";
+	TString recoFile = "/Users/slebedev/Development/cbm/data/jpsi/reco.0001.root";
+	TString mcFile = "/Users/slebedev/Development/cbm/data/jpsi/mc.0001.root";
+	TString qaFile = "/Users/slebedev/Development/cbm/data/jpsi/litqa.0001.root";
 
    TList *parFileList = new TList();
-   TObjString stsDigiFile = parDir + "/sts/sts_v13c_std.digi.par"; // STS digi file
-   TObjString trdDigiFile = parDir + "/trd/trd_v13p_3e.digi.par"; // TRD digi file
-   TObjString tofDigiFile = parDir + "/tof/tof_v13b.digi.par"; // TRD digi file
+   TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
+   TObjString trdDigiFile = parDir + "/trd/trd_v14a_3e.digi.par"; // TRD digi file
+   TObjString tofDigiFile = parDir + "/tof/tof_v13b.digi.par"; // TOF digi file
 
-   TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v13c.root"; // Material budget file for L1 STS tracking
+   TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v13d.root"; // Material budget file for L1 STS tracking
 
    TString resultDir = "results_litqa/";
    Double_t trdAnnCut = 0.85;
@@ -86,7 +85,7 @@ void run_litqa_jpsi(Int_t nEvents = 1000)
    trackingQa->SetVerbose(0);
    trackingQa->SetMinNofHitsRich(7);
    trackingQa->SetQuotaRich(0.6);
-   trackingQa->SetPRange(30, 0., 3.);
+   trackingQa->SetPRange(50, 0., 15.);
    trackingQa->SetOutputDir(std::string(resultDir));
    std::vector<std::string> trackCat, richCat;
    trackCat.push_back("All");
