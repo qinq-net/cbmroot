@@ -135,10 +135,17 @@ const Bool_t   gkConstructCables = kTRUE;
 
 // --------------   Parameters of beam pipe in the STS region    --------------
 // ---> Needed to compute stations and STS such as to avoid overlaps
-const Double_t gkPipeZ1 =  27.0;
-const Double_t gkPipeR1 =   1.05;
-const Double_t gkPipeZ2 = 160.0;
-const Double_t gkPipeR2 =   3.25;
+const Double_t gkPipeZ1 =  22.0;
+const Double_t gkPipeR1 =   1.8;
+const Double_t gkPipeZ2 =  50.0;
+const Double_t gkPipeR2 =   1.8;
+const Double_t gkPipeZ3 = 125.0;
+const Double_t gkPipeR3 =   5.5;
+
+//DE const Double_t gkPipeZ1 =  27.0;
+//DE const Double_t gkPipeR1 =   1.05;
+//DE const Double_t gkPipeZ2 = 160.0;
+//DE const Double_t gkPipeR2 =   3.25;
 // ----------------------------------------------------------------------------
 
 
@@ -204,6 +211,8 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
 	   << gkPipeZ1 << " cm" << endl;
   infoFile << "Beam pipe: R2 = " << gkPipeR2 << " cm at z = " 
 	   << gkPipeZ2 << " cm" << endl;
+  infoFile << "Beam pipe: R3 = " << gkPipeR3 << " cm at z = " 
+	   << gkPipeZ3 << " cm" << endl;
   // --------------------------------------------------------------------------
 
 
@@ -349,7 +358,7 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   // --- Station 01: 8 ladders, type 3 2 2 1 1 2 2 3
   cout << endl;
   statZ = 30.;
-  rHole = 1.8;
+  rHole = 2.0;
   nLadders = 8;
   ladderTypes[0] = 3;
   ladderTypes[1] = 2;
@@ -368,7 +377,7 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   // --- Station 02: 12 ladders, type 4 3 3 2 2 1 1 2 2 3 3 4
   cout << endl;
   statZ = 40.;
-  rHole = 1.8;
+  rHole = 2.0;
   nLadders = 12;
   ladderTypes[0]  = 4;
   ladderTypes[1]  = 3;
@@ -391,7 +400,7 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   // --- Station 03: 12 ladders, type 8 7 6 6 6 5 5 6 6 6 7 8
   cout << endl;
   statZ = 50.;
-  rHole = 1.8;
+  rHole = 2.9;
   nLadders = 12;
   ladderTypes[0]  = 8;
   ladderTypes[1]  = 7;
@@ -413,7 +422,7 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   // --- Station 04: 14 ladders, type 9 8 7 6 6 6 5 5 6 6 7 8 9
   cout << endl;
   statZ = 60.;
-  rHole = 2.3;
+  rHole = 2.9;
   nLadders = 14;
   ladderTypes[0]  = 9;
   ladderTypes[1]  = 8;
@@ -438,7 +447,7 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   // --- Station 05: 14 ladders, type 14 13 12 12 11 11 10 10 11 11 12 12 13 14
   cout << endl;
   statZ = 70.;
-  rHole = 2.79;
+  rHole = 3.7;
   nLadders = 14;
   ladderTypes[0]  = 14;
   ladderTypes[1]  = 13;
@@ -464,7 +473,7 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   // --- same as station 05
   cout << endl;
   statZ = 80.;
-  rHole = 3.28;
+  rHole = 3.7;
   nLadders = 14;
   ladderTypes[0]  = 14;
   ladderTypes[1]  = 13;
@@ -489,7 +498,7 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   // --- Station 07: 16 ladders, type 14 13 17 17 16 16 16 15 15 16 16 16 17 17 13 14
   cout << endl;
   statZ = 90.;
-  rHole = 3.78;
+  rHole = 4.3;
   nLadders = 16;
   ladderTypes[0]  = 17;
   ladderTypes[1]  = 14;
@@ -517,7 +526,7 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   // --- same as station 07
   cout << endl;
   statZ = 100.;
-  rHole = 4.27;
+  rHole = 4.5;
   nLadders = 16;
   ladderTypes[0]  = 14;
   ladderTypes[1]  = 12;
@@ -554,12 +563,13 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   Double_t stsY = 0.;
   Double_t stsZ = 0.;
   Double_t stsBorder = 5.;
-  for (Int_t iStation = 1; iStation<8; iStation++) {
+  for (Int_t iStation = 1; iStation<=8; iStation++) {
     TString statName = Form("Station%02d", iStation);
     TGeoVolume* station = gGeoMan->GetVolume(statName);
     TGeoBBox* shape = (TGeoBBox*) station->GetShape();
     stsX = TMath::Max(stsX, 2.* shape->GetDX() );
     stsY = TMath::Max(stsY, 2.* shape->GetDY() );
+    cout << "Station " << iStation << ":  Y " << stsY << endl;
   }
   // --- Some border around the stations
   stsX += stsBorder;  
@@ -571,26 +581,62 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   new TGeoBBox("stsBox", stsX/2., stsY/2., stsZ/2.);
 
   // --- Create cone hosting the beam pipe
+  // --- One straight section with constant radius followed by a cone
   Double_t z1 = statPos[0] - 0.5 * stsBorder;  // start of STS box
-  Double_t z2 = statPos[7] + 0.5 * stsBorder;  // end of STS box
-  Double_t slope = (gkPipeR2 - gkPipeR1) / (gkPipeZ2 - gkPipeZ1);
-  Double_t r1 = gkPipeR1 + slope * (z1 - gkPipeZ1); // at start of STS
-  Double_t r2 = gkPipeR1 + slope * (z2 - gkPipeZ1); // at end of STS
-  r1 += 0.1;    // safety margin
-  r2 += 0.1;    // safety margin
-  //  new TGeoCone("stsCone", stsZ/2., 0., r1, 0., r2);
-  new TGeoTrd2("stsCone", r1, r2, r1, r2, stsZ/2.);
+  Double_t z2 = gkPipeZ2;
+  Double_t z3 = statPos[7] + 0.5 * stsBorder;  // end of STS box
+  Double_t r1 = BeamPipeRadius(z1);
+  Double_t r2 = BeamPipeRadius(z2);
+  Double_t r3 = BeamPipeRadius(z3);
+  r1 += 0.01;    // safety margin
+  r2 += 0.01;    // safety margin
+  r3 += 0.01;    // safety margin
+  cout << endl;
+  cout << z1 << "  " << r1 << endl;
+  cout << z2 << "  " << r2 << endl;
+  cout << z3 << "  " << r3 << endl;
+
+  cout << endl;
+
+  cout << "station1 :  " << BeamPipeRadius(statPos[0]) << endl;
+  cout << "station2 :  " << BeamPipeRadius(statPos[1]) << endl;
+  cout << "station3 :  " << BeamPipeRadius(statPos[2]) << endl;
+  cout << "station4 :  " << BeamPipeRadius(statPos[3]) << endl;
+  cout << "station5 :  " << BeamPipeRadius(statPos[4]) << endl;
+  cout << "station6 :  " << BeamPipeRadius(statPos[5]) << endl;
+  cout << "station7 :  " << BeamPipeRadius(statPos[6]) << endl;
+  cout << "station8 :  " << BeamPipeRadius(statPos[7]) << endl;
+
+  //  TGeoPcon* cutout = new TGeoPcon("stsCone", 0., 360., 3); // 2.*TMath::Pi(), 3);
+  //  cutout->DefineSection(0, z1, 0., r1);
+  //  cutout->DefineSection(1, z2, 0., r2);
+  //  cutout->DefineSection(2, z3, 0., r3);
+  new TGeoTrd2("stsCone1", r1, r2, r1, r2, (z2-z1)/2.);
+  TGeoTranslation *trans1 = new TGeoTranslation("trans1", 0., 0., -(z3-z1)/2.+(z2-z1)/2.);
+  trans1->RegisterYourself();
+  new TGeoTrd2("stsCone2", r2, r3, r2, r3, (z3-z2)/2.);
+  TGeoTranslation *trans2 = new TGeoTranslation("trans2", 0., 0., +(z3-z1)/2.-(z3-z2)/2.);
+  trans2->RegisterYourself();
+  
+//DE   Double_t z1 = statPos[0] - 0.5 * stsBorder;  // start of STS box
+//DE   Double_t z2 = statPos[7] + 0.5 * stsBorder;  // end of STS box
+//DE   Double_t slope = (gkPipeR2 - gkPipeR1) / (gkPipeZ2 - gkPipeZ1);
+//DE   Double_t r1 = gkPipeR1 + slope * (z1 - gkPipeZ1); // at start of STS
+//DE   Double_t r2 = gkPipeR1 + slope * (z2 - gkPipeZ1); // at end of STS
+//DE   r1 += 0.1;    // safety margin
+//DE   r2 += 0.1;    // safety margin
+//DE   //  new TGeoCone("stsCone", stsZ/2., 0., r1, 0., r2);
+//DE   new TGeoTrd2("stsCone", r1, r2, r1, r2, stsZ/2.);
 
   // --- Create STS volume
-  TString stsName = "STS_";  
+  TString stsName = "sts_";  
   stsName += geoTag;
   TGeoShape* stsShape = new TGeoCompositeShape("stsShape", 
-					       "stsBox-stsCone");
+                                               "stsBox-stsCone1:trans1-stsCone2:trans2");
   TGeoVolume* sts = new TGeoVolume(stsName.Data(), stsShape, gStsMedium);
 
   // --- Place stations in the STS
   for (Int_t iStation = 1; iStation <=8; iStation++) {
-  //for (Int_t iStation = 1; iStation <=1; iStation++) {
     TString statName = Form("Station%02d", iStation);
     TGeoVolume* station = gGeoMan->GetVolume(statName);
     Double_t posZ = statPos[iStation-1] - stsPosZ;
@@ -613,7 +659,7 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   CheckVolume(top);
   cout << endl << endl;
   gGeoMan->CloseGeometry();
-  gGeoMan->CheckOverlaps(0.001);
+  gGeoMan->CheckOverlaps(0.0001);
   gGeoMan->PrintOverlaps();
   gGeoMan->Test();
 
@@ -1563,7 +1609,7 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
 /** ===========================================================================
  ** Construct a station
  **
- ** The station volume is the minimal  box comprising all ladders
+ ** The station volume is the minimal box comprising all ladders
  ** minus a tube accomodating the beam pipe.
  **
  ** The ladders are arranged horizontally from left to right with
@@ -1729,4 +1775,13 @@ void CheckVolume(TGeoVolume* volume, fstream& file) {
 /** ======================================================================= **/
 
 
-   
+/** ===========================================================================
+ ** Calculate beam pipe outer radius for a given z                             
+ **/
+Double_t BeamPipeRadius(Double_t z) {
+  if ( z < gkPipeZ2 ) return gkPipeR1;
+  Double_t slope = (gkPipeR3 - gkPipeR2 ) / (gkPipeZ3 - gkPipeZ2);
+  return gkPipeR2 + slope * (z - gkPipeZ2);
+}
+/** ======================================================================= **/
+
