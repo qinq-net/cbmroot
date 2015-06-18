@@ -1,6 +1,2 @@
-root -b -l -q run_sim_jpsi.C
-root -b -l -q run_reco_jpsi.C
-
-
-#qsub -l mem=3G,ct=20:00:00 -v coll_energy=25gev -v pluto_particle=jpsi ./sim_jpsi.sge
+qsub -l mem=3G,ct=20:00:00 -v coll_energy=25gev -v pluto_particle=jpsi ./sim_jpsi.sge
 #qsub -l mem=2G,ct=20:00:00 -v coll_energy=25gev -v pluto_particle=psiprim ./sim_jpsi.sge

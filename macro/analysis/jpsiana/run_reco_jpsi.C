@@ -186,8 +186,10 @@ void run_reco_jpsi(Int_t nEvents = 1000)
     rtdb->setOutput(parIo1);
     rtdb->saveOutput();
 
+    run->SetGenerateRunInfo(true);
     run->Init();
     cout << "Starting run" << endl;
+   
     run->Run(0,nEvents);
 
     // -----   Finish   -------------------------------------------------------

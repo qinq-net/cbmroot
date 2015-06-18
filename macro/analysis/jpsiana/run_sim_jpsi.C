@@ -204,6 +204,7 @@ void run_sim_jpsi(Int_t nEvents = 1000)
 	rtdb->saveOutput();
 	rtdb->print();
 
+        fRun->SetGenerateRunInfo(true);
 	fRun->Run(nEvents);
 
 	timer.Stop();
