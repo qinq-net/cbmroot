@@ -9,7 +9,7 @@
  */
 
 
-void readTsa1(TString inFile = "data/trigger_3x_source_sync.tsa")
+void readTsa1(TString inFile = "data/82_ba2015.tsa")
 {
 
   // --- Specify input file name (this is just an example)
@@ -21,8 +21,8 @@ void readTsa1(TString inFile = "data/trigger_3x_source_sync.tsa")
   Int_t nEvents = -1;
 
   // --- Specify output file name (this is just an example)
-  TString outFile = "data/test_online.root";
-
+  TString outFile = inFile;//"data/test_online.root";
+  outFile.ReplaceAll(".tsa",".root");
   // --- Set log output levels
   FairLogger::GetLogger()->SetLogScreenLevel("INFO");
   FairLogger::GetLogger()->SetLogVerbosityLevel("LOW");
@@ -48,12 +48,12 @@ void readTsa1(TString inFile = "data/trigger_3x_source_sync.tsa")
 
   // --- Source task
   CbmFlibFileSourceNew* source = new CbmFlibFileSourceNew();
-  source->SetHostName("cbmflib01");
-  //source->SetFileName(inFile);
+  //source->SetHostName("cbmflib01");
+  source->SetFileName(inFile);
   //source->AddFile(inFile1);
-  //  source->AddUnpacker(nxyter_unpacker, 0x10);
-  source->AddUnpacker(spadic_unpacker, 0x40);
-
+  //source->AddUnpacker(nxyter_unpacker, 0x10);//fhodo or cherenkov or pb glass???
+  //source->AddUnpacker(spadic_unpacker, 0x40);// test beam 2014
+  source->AddUnpacker(spadic_unpacker, 0xE0);// Lab münster
   // --- Event header
   //  FairEventHeader* event = new CbmTbEvent();
   //  event->SetRunId(260);
