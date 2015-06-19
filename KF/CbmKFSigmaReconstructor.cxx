@@ -75,6 +75,13 @@ CbmKFSigmaReconstructor::CbmKFSigmaReconstructor(const char* name, Int_t iVerbos
       
       fHistos[20] = new TH1F("M_Signal", "M_Signal", 1000, 0.8, 1.8);
       fHistos[21] = new TH1F("M_Ghost", "M_Ghost", 1000, 0.8, 1.8);
+      
+      fHistos[30] = new TH1F("M_BG_Pi-", "M_BG_Pi-", 1000, 0.8, 1.8);
+      fHistos[31] = new TH1F("M_BG_K-", "M_BG_K-", 1000, 0.8, 1.8);
+      fHistos[32] = new TH1F("M_BG_anti_Sigma+", "M_BG_anti_Sigma+", 1000, 0.8, 1.8);
+      fHistos[33] = new TH1F("M_BG_Ksi-", "M_BG_Ksi-", 1000, 0.8, 1.8);
+      fHistos[34] = new TH1F("M_BG_Omega-", "M_BG_Omega-", 1000, 0.8, 1.8);
+      fHistos[35] = new TH1F("M_BG_Sigma_not_n_pi-", "M_BG_Sigma_not_n_pi-", 1000, 0.8, 1.8);
     }
     gDirectory->cd("..");
   }
@@ -104,6 +111,13 @@ CbmKFSigmaReconstructor::CbmKFSigmaReconstructor(const char* name, Int_t iVerbos
       
       fHistos[24] = new TH1F("M_Signal", "M_Signal", 1000, 0.8, 1.8);
       fHistos[25] = new TH1F("M_Ghost", "M_Ghost", 1000, 0.8, 1.8);
+      
+      fHistos[36] = new TH1F("M_BG_Pi+", "M_BG_Pi+", 1000, 0.8, 1.8);
+      fHistos[37] = new TH1F("M_BG_K+", "M_BG_K+", 1000, 0.8, 1.8);
+      fHistos[38] = new TH1F("M_BG_anti_Sigma-", "M_BG_anti_Sigma-", 1000, 0.8, 1.8);
+      fHistos[39] = new TH1F("M_BG_Ksi+", "M_BG_Ksi+", 1000, 0.8, 1.8);
+      fHistos[40] = new TH1F("M_BG_Omega+", "M_BG_Omega+", 1000, 0.8, 1.8);
+      fHistos[41] = new TH1F("M_BG_Sigma_not_n_pi+", "M_BG_Sigma_not_n_pi+", 1000, 0.8, 1.8);
     }
     gDirectory->cd("..");
   }
@@ -133,6 +147,13 @@ CbmKFSigmaReconstructor::CbmKFSigmaReconstructor(const char* name, Int_t iVerbos
       
       fHistos[28] = new TH1F("M_Signal", "M_Signal", 1000, 0.8, 1.8);
       fHistos[29] = new TH1F("M_Ghost", "M_Ghost", 1000, 0.8, 1.8);
+      
+      fHistos[42] = new TH1F("M_BG_Pi+", "M_BG_Pi+", 1000, 0.8, 1.8);
+      fHistos[43] = new TH1F("M_BG_K+", "M_BG_K+", 1000, 0.8, 1.8);
+      fHistos[44] = new TH1F("M_BG_anti_Sigma-", "M_BG_anti_Sigma-", 1000, 0.8, 1.8);
+      fHistos[45] = new TH1F("M_BG_Ksi+", "M_BG_Ksi+", 1000, 0.8, 1.8);
+      fHistos[46] = new TH1F("M_BG_Omega+", "M_BG_Omega+", 1000, 0.8, 1.8);
+      fHistos[47] = new TH1F("M_BG_Sigma_not_p_pi0", "M_BG_Sigma_not_p_pi0", 1000, 0.8, 1.8);
     }
     gDirectory->cd("..");
   }
@@ -384,6 +405,30 @@ void CbmKFSigmaReconstructor::Exec(Option_t* opt)
           fHistos[20]->Fill(mass);
         else
           fHistos[21]->Fill(mass);
+        
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==-211  &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaMinusMCIndex[iSigma])
+          fHistos[30]->Fill(mass);
+        
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==-321  &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaMinusMCIndex[iSigma])
+          fHistos[31]->Fill(mass);
+        
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==-3222  &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaMinusMCIndex[iSigma])
+          fHistos[32]->Fill(mass);
+        
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==3312  &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaMinusMCIndex[iSigma])
+          fHistos[33]->Fill(mass);
+          
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==3334  &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaMinusMCIndex[iSigma])
+          fHistos[34]->Fill(mass);
+          
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==3112  && cbmMCTrackPiMinus->GetPdgCode() != -211 &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaMinusMCIndex[iSigma])
+          fHistos[35]->Fill(mass);
       }
       else
         fHistos[21]->Fill(mass);
@@ -456,6 +501,30 @@ void CbmKFSigmaReconstructor::Exec(Option_t* opt)
           fHistos[24]->Fill(mass);
         else
           fHistos[25]->Fill(mass);
+        
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==211  &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaPlusMCIndex[iSigma])
+          fHistos[36]->Fill(mass);
+        
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==321  &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaPlusMCIndex[iSigma])
+          fHistos[37]->Fill(mass);
+        
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==-3112  &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaPlusMCIndex[iSigma])
+          fHistos[38]->Fill(mass);
+        
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==-3312  &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaPlusMCIndex[iSigma])
+          fHistos[39]->Fill(mass);
+          
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==-3334  &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaPlusMCIndex[iSigma])
+          fHistos[40]->Fill(mass);
+          
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==3222  && cbmMCTrackPiMinus->GetPdgCode() != 211 &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaPlusMCIndex[iSigma])
+          fHistos[41]->Fill(mass);
       }
       else
         fHistos[25]->Fill(mass);
@@ -521,6 +590,30 @@ void CbmKFSigmaReconstructor::Exec(Option_t* opt)
           fHistos[28]->Fill(mass);
         else
           fHistos[29]->Fill(mass);
+        
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==211  &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaPlusMCIndex[iSigma])
+          fHistos[42]->Fill(mass);
+        
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==321  &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaPlusMCIndex[iSigma])
+          fHistos[43]->Fill(mass);
+        
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==-3112  &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaPlusMCIndex[iSigma])
+          fHistos[44]->Fill(mass);
+        
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==-3312  &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaPlusMCIndex[iSigma])
+          fHistos[45]->Fill(mass);
+          
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==-3334  &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaPlusMCIndex[iSigma])
+          fHistos[46]->Fill(mass);
+          
+        if (cbmMCTrackSigmaMinus->GetPdgCode()==3222  && cbmMCTrackPiMinus->GetPdgCode() != 2212 &&
+         cbmMCTrackPiMinus->GetMotherId() == vSigmaPlusMCIndex[iSigma])
+          fHistos[47]->Fill(mass);
       }
       else
         fHistos[29]->Fill(mass);

@@ -152,7 +152,7 @@ void CbmKFParticleFinderPID::SetMCPID()
     if(bestWeight/totalWeight < 0.7) continue;
     if(mcTrackId >= nMCTracks || mcTrackId < 0)
     {
-      std::cout << "Sts Matching is wrong!    StsTackId = " << mcTrackId << " N mc tracks = " << nMCTracks << std::endl;
+      std::cout << "Sts Matching is wrong!    StsTrackId = " << mcTrackId << " N mc tracks = " << nMCTracks << std::endl;
       continue;
     }
     CbmMCTrack *cbmMCTrack = (CbmMCTrack*)fMCTrackArray->At(mcTrackId);

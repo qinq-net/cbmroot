@@ -67,7 +67,7 @@ class CbmKFSigmaReconstructor : public FairTask {
   TString fOutFileName;
   TFile* fOutFile;
   TDirectory* fDirectory;
-  TH1F* fHistos[30];
+  TH1F* fHistos[48];
 
   ClassDef(CbmKFSigmaReconstructor,1);
 };
