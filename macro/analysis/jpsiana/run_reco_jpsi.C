@@ -15,7 +15,7 @@ void run_reco_jpsi(Int_t nEvents = 1000)
 	//TString recoFile ="/hera/cbm/users/adrian/data/reco.0001.root";
 
 	TString parFile = "/Users/slebedev/Development/cbm/data/jpsi/param.0001.root";
-	TString recoFile = "/Users/slebedev/Development/cbm/data/jpsi/reco.0001.root";
+	TString recoFile = "/Users/slebedev/Development/cbm/data/jpsi/temp.reco.0001.root";
 	TString mcFile = "/Users/slebedev/Development/cbm/data/jpsi/mc.0001.root";
 
 	TString trdHitProducerType = "smearing";
