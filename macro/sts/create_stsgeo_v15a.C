@@ -894,7 +894,7 @@ Int_t CreateSectors() {
   sector06->AddNode(sensor04, 1, transD6);
   sector06->AddNode(sensor04, 2);
   sector06->AddNode(sensor04, 3, transU6);
-  sector05->GetShape()->ComputeBBox();
+  sector06->GetShape()->ComputeBBox();
   nSectors++;
 
   // --- Sector type 7: single sensor of type 5
