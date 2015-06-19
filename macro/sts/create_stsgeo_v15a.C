@@ -230,18 +230,29 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   // -----------------   Get and create the required media    -----------------
   FairGeoMedia*   geoMedia = geoFace->getMedia();
   FairGeoBuilder* geoBuild = geoLoad->getGeoBuilder();
+
   // ---> air
   FairGeoMedium* mAir      = geoMedia->getMedium("air");
   if ( ! mAir ) Fatal("Main", "FairMedium air not found");
   geoBuild->createMedium(mAir);
   TGeoMedium* air = gGeoMan->GetMedium("air");
   if ( ! air ) Fatal("Main", "Medium air not found");
+
   // ---> silicon
   FairGeoMedium* mSilicon  = geoMedia->getMedium("silicon");
   if ( ! mSilicon ) Fatal("Main", "FairMedium silicon not found");
   geoBuild->createMedium(mSilicon);
   TGeoMedium* silicon = gGeoMan->GetMedium("silicon");
   if ( ! silicon ) Fatal("Main", "Medium silicon not found");
+
+  // ---> STScable
+  FairGeoMedium* mSTScable  = geoMedia->getMedium("STScable");
+  if ( ! mSTScable ) Fatal("Main", "FairMedium STScable not found");
+  geoBuild->createMedium(mSTScable);
+  TGeoMedium* STScable = gGeoMan->GetMedium("STScable");
+  if ( ! STScable ) Fatal("Main", "Medium STScable not found");
+
+  // ---
   gStsMedium = air;
   // --------------------------------------------------------------------------
 
@@ -1335,8 +1346,8 @@ TGeoVolume* ConstructModule(const char* name,
   // --- Cable is centred in x and z and aligned to the top
   if ( gkConstructCables && cableLength > 0.0001 ) {
     TString cableName = TString(name) + "_cable";
-    TGeoMedium* cableMedium = gGeoMan->GetMedium("silicon");
-    if ( ! cableMedium ) Fatal("CreateModule", "Medium silicon not found!");
+    TGeoMedium* cableMedium = gGeoMan->GetMedium("STScable");
+    if ( ! cableMedium ) Fatal("CreateModule", "Medium STScable not found!");
     TGeoVolume* cable = gGeoManager->MakeBox(cableName.Data(),
 					     cableMedium,
 					     cableX / 2.,
@@ -1344,7 +1355,7 @@ TGeoVolume* ConstructModule(const char* name,
 					     cableZ / 2.);
     // add color to cables
     cable->SetLineColor(kOrange);
-//    cable->SetTransparency(50);
+    cable->SetTransparency(60);
     Double_t cableXpos = 0.;
     Double_t cableYpos = sectorY + 0.5 * cableY - 0.5 * moduleY;
     Double_t cableZpos = 0.;
