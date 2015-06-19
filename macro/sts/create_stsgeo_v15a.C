@@ -884,31 +884,17 @@ Int_t CreateSectors() {
   sector05->GetShape()->ComputeBBox();
   nSectors++;
 
-  // --- Sector type 6: three sensors of type 4
+  // --- Sector type 6: single sensor of type 5
   TGeoVolumeAssembly* sector06 = new TGeoVolumeAssembly("Sector06");
-  Double_t shift6 = gkChainGapY + 2. * box4->GetDY();
-  TGeoTranslation* transD6 = 
-    new TGeoTranslation("td", 0., -1. * shift6, 0.);
-  TGeoTranslation* transU6 = 
-    new TGeoTranslation("tu", 0., shift6, 0.);
-  sector06->AddNode(sensor04, 1, transD6);
-  sector06->AddNode(sensor04, 2);
-  sector06->AddNode(sensor04, 3, transU6);
+  sector06->AddNode(sensor05, 1);
   sector06->GetShape()->ComputeBBox();
   nSectors++;
 
-  // --- Sector type 7: single sensor of type 5
+  // --- Sector type 7: single sensor of type 6
   TGeoVolumeAssembly* sector07 = new TGeoVolumeAssembly("Sector07");
-  sector07->AddNode(sensor05, 1);
+  sector07->AddNode(sensor06, 1);
   sector07->GetShape()->ComputeBBox();
   nSectors++;
-
-  // --- Sector type 8: single sensor of type 6
-  TGeoVolumeAssembly* sector08 = new TGeoVolumeAssembly("Sector08");
-  sector08->AddNode(sensor06, 1);
-  sector08->GetShape()->ComputeBBox();
-  nSectors++;
-
 
   return nSectors;
 }
@@ -1012,7 +998,7 @@ Int_t CreateLadders() {
 
   // --- Ladder 05: 10 sectors, type 5 4 3 3 7 7 3 3 4 5
   nSectors       = 5;
-  sectorTypes[0] = 7;
+  sectorTypes[0] = 6;
   sectorTypes[1] = 3;
   sectorTypes[2] = 3;
   sectorTypes[3] = 4;
@@ -1089,7 +1075,7 @@ Int_t CreateLadders() {
 
   // --- Ladder 10: 10 sectors, type 5 5 4 3 8 8 3 4 5 5 
   nSectors       = 5;
-  sectorTypes[0] = 8;
+  sectorTypes[0] = 7;
   sectorTypes[1] = 3;
   sectorTypes[2] = 4;
   sectorTypes[3] = 5;
