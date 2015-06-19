@@ -573,7 +573,7 @@ void create_stsgeo_v13x(const char* geoTag="v13x")
   Double_t stsY = 0.;
   Double_t stsZ = 0.;
   Double_t stsBorder = 5.;
-  for (Int_t iStation = 1; iStation<8; iStation++) {
+  for (Int_t iStation = 1; iStation<=8; iStation++) {
     TString statName = Form("Station%02d", iStation);
     TGeoVolume* station = gGeoMan->GetVolume(statName);
     TGeoBBox* shape = (TGeoBBox*) station->GetShape();
@@ -628,6 +628,7 @@ void create_stsgeo_v13x(const char* geoTag="v13x")
     Double_t posZ = statPos[iStation-1] - stsPosZ;
     TGeoTranslation* trans = new TGeoTranslation(0., 0., posZ);
     sts->AddNode(station, iStation, trans);
+    sts->GetShape()->ComputeBBox();
   }
   cout << endl;
   CheckVolume(sts);
@@ -639,6 +640,7 @@ void create_stsgeo_v13x(const char* geoTag="v13x")
   // ---------------   Finish   -----------------------------------------------
   TGeoTranslation* stsTrans = new TGeoTranslation(0., 0., stsPosZ);
   top->AddNode(sts, 1, stsTrans);
+  top->GetShape()->ComputeBBox();
   cout << endl << endl;
   CheckVolume(top);
   cout << endl << endl;
@@ -835,21 +837,25 @@ Int_t CreateSectors() {
   // --- Sector type 1: single sensor of type 1
   TGeoVolumeAssembly* sector01 = new TGeoVolumeAssembly("Sector01");
   sector01->AddNode(sensor01, 1);
+  sector01->GetShape()->ComputeBBox();
   nSectors++;
   
   // --- Sector type 2: single sensor of type 2
   TGeoVolumeAssembly* sector02 = new TGeoVolumeAssembly("Sector02");
   sector02->AddNode(sensor02, 1);
+  sector02->GetShape()->ComputeBBox();
   nSectors++;
 
   // --- Sector type 3: single sensor of type 3
   TGeoVolumeAssembly* sector03 = new TGeoVolumeAssembly("Sector03");
   sector03->AddNode(sensor03, 1);
+  sector03->GetShape()->ComputeBBox();
   nSectors++;
 
   // --- Sector type 4: single sensor of type 4
   TGeoVolumeAssembly* sector04 = new TGeoVolumeAssembly("Sector04");
   sector04->AddNode(sensor04, 1);
+  sector04->GetShape()->ComputeBBox();
   nSectors++;
 
   // --- Sector type 5: two sensors of type 4
@@ -861,6 +867,7 @@ Int_t CreateSectors() {
     new TGeoTranslation("tu", 0., shift5, 0.);
   sector05->AddNode(sensor04, 1, transD5);
   sector05->AddNode(sensor04, 2, transU5);
+  sector05->GetShape()->ComputeBBox();
   nSectors++;
 
   // --- Sector type 6: three sensors of type 4
@@ -873,18 +880,20 @@ Int_t CreateSectors() {
   sector06->AddNode(sensor04, 1, transD6);
   sector06->AddNode(sensor04, 2);
   sector06->AddNode(sensor04, 3, transU6);
+  sector06->GetShape()->ComputeBBox();
   nSectors++;
 
   // --- Sector type 7: single sensor of type 5
   TGeoVolumeAssembly* sector07 = new TGeoVolumeAssembly("Sector07");
   sector07->AddNode(sensor05, 1);
+  sector07->GetShape()->ComputeBBox();
   nSectors++;
 
   // --- Sector type 8: single sensor of type 6
   TGeoVolumeAssembly* sector08 = new TGeoVolumeAssembly("Sector08");
   sector08->AddNode(sensor06, 1);
+  sector08->GetShape()->ComputeBBox();
   nSectors++;
-
 
   return nSectors;
 }
@@ -1272,6 +1281,7 @@ TGeoVolume* ConstructModule(const char* name,
     // --- Add sensor volume to module
     TGeoVolume* sensVol = sensor->GetVolume();
     module->AddNode(sensor->GetVolume(), iSensor+1, sensTrans);
+    module->GetShape()->ComputeBBox();
   }
 
 
@@ -1297,6 +1307,7 @@ TGeoVolume* ConstructModule(const char* name,
 						      cableYpos,
 						      cableZpos);
     module->AddNode(cable, 1, cableTrans);
+    module->GetShape()->ComputeBBox();
   }
 
   return module;
@@ -1398,6 +1409,7 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
     TGeoTranslation* trans = new TGeoTranslation("t", xPosMod, 
 						 yPosMod, zPosMod);
     halfLadder->AddNode(module, iSector+1, trans);
+    halfLadder->GetShape()->ComputeBBox();
     yPosSect += 0.5 * sectorY - gkSectorOverlapY;
     zPosMod  += 0.5 * moduleZ + gkSectorGapZ;
   }
@@ -1456,6 +1468,7 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
   TGeoTranslation* tu = new TGeoTranslation("tu", xPosU,
 					    yPosU, zPosU);
   ladder->AddNode(halfLadderU, 1, tu);
+  ladder->GetShape()->ComputeBBox();
   Double_t xPosD = 0.;                      // centred in x
   Double_t yPosD = 0.5 * ( yd - ladderY );  // bottom aligned
   Double_t zPosD = 0.5 * ( zd - ladderZ );  // back aligned
@@ -1463,6 +1476,7 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
   rd->RotateZ(180.);
   TGeoCombiTrans* cd = new TGeoCombiTrans(xPosD, yPosD, zPosD,  rd);
   ladder->AddNode(halfLadderD, 2, cd);
+  ladder->GetShape()->ComputeBBox();
 
   return ladder;
 }
@@ -1515,6 +1529,7 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
   TGeoTranslation* tu = new TGeoTranslation("tu", xPosU,
 					    yPosU, zPosU);
   ladder->AddNode(halfLadderU, 1, tu);
+  ladder->GetShape()->ComputeBBox();
   Double_t xPosD = 0.;                      // centred in x
   Double_t yPosD = 0.5 * ( yd - ladderY );  // bottom aligned
   Double_t zPosD = 0.5 * ( zd - ladderZ );  // back aligned
@@ -1522,6 +1537,7 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
   rd->RotateZ(180.);
   TGeoCombiTrans* cd = new TGeoCombiTrans(xPosD, yPosD, zPosD,  rd);
   ladder->AddNode(halfLadderD, 2, cd);
+  ladder->GetShape()->ComputeBBox();
 
   return ladder;
 }
@@ -1615,6 +1631,7 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
     }
     TGeoCombiTrans* trans = new TGeoCombiTrans(xPos, yPos, zPos, rot);
     station->AddNode(ladder, iLadder+1, trans);
+    station->GetShape()->ComputeBBox();
     xPos += shape->GetDX() - gkLadderOverlapX;
   }
 
