@@ -19,7 +19,9 @@ void CbmHaddBase::AddFilesInDir(
 			const string& dir,
 			const string& fileTemplate,
 			const string& addString,
-			Int_t nofFiles)
+			Int_t nofFiles,
+			Int_t fileSizeLimit,
+			Int_t nofEvents)
 {
 	Int_t maxNofFiles = 100;
 	string fileNameAna = dir + string("analysis") + fileTemplate;
@@ -40,7 +42,7 @@ void CbmHaddBase::AddFilesInDir(
 		TFile* fileAna = TFile::Open( (fileNameAna + ss.str() ).c_str(), "READ");
 		TFile* fileReco = TFile::Open( (fileNameReco + ss.str() ).c_str(), "READ");
 
-		Bool_t isGoodFile = CheckFile(fileAna) && CheckFile(fileReco);
+		Bool_t isGoodFile = CheckFile(fileAna, fileSizeLimit, nofEvents) && CheckFile(fileReco, fileSizeLimit, nofEvents);
 		if (fileReco != NULL) fileReco->Close();
 		if ( isGoodFile ){
 			if (addString == "analysis"){
@@ -49,7 +51,7 @@ void CbmHaddBase::AddFilesInDir(
 			}
 			if (addString == "litqa"){
 				TFile* fileQa = TFile::Open( (fileNameQa + ss.str() ).c_str(), "READ");
-				Bool_t isGoodQaFile = CheckFileSize(fileQa);
+				Bool_t isGoodQaFile = CheckFileSize(fileQa, fileSizeLimit);
 				if (isGoodQaFile){
 					fileList->Add( fileQa );
 					count++;

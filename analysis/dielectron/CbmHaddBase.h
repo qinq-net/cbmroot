@@ -26,7 +26,9 @@ public:
 			const string& dir,
 			const string& fileTemplate,
 			const string& addString,
-			Int_t nofFiles);
+			Int_t nofFiles,
+			Int_t fileSizeLimit = 50000,
+			Int_t nofEvents = 1000);
 
 private:
 	static TFile* CreateAndMergeTempTargetFile(
