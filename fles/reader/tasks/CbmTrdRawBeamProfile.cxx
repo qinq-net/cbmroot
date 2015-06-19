@@ -193,35 +193,35 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
       break;
     }   
     if (SysId == 0){
-      if (SpaId == 0 && SpaId == 1){
+      if (SpaId == 0 || SpaId == 1){
 	layerId = 0;
 	moduleId = 0;
-      } else if (SpaId == 2 && SpaId == 3){
+      } else if (SpaId == 2 || SpaId == 3){
 	layerId = 1;
 	moduleId = 1;
-      } else if (SpaId == 4 && SpaId == 5){
+      } else if (SpaId == 4 || SpaId == 5){
 	layerId = 2;
 	moduleId = 2;
       } else { LOG(ERROR) << "SpaId " << SpaId << "not known." << FairLogger::endl;}
     } else  if (SysId == 1){
-      if (SpaId == 0 && SpaId == 1){
+      if (SpaId == 0 || SpaId == 1){
 	layerId = 3;
 	moduleId = 3;
-      } else if (SpaId == 2 && SpaId == 3){
+      } else if (SpaId == 2 || SpaId == 3){
 	layerId = 4;
 	moduleId = 4;
-      } else if (SpaId == 4 && SpaId == 5){
+      } else if (SpaId == 4 || SpaId == 5){
 	layerId = 5;
 	moduleId = 5;
       } else { LOG(ERROR) << "SpaId " << SpaId << "not known." << FairLogger::endl;}
     } else  if (SysId == 2){
-      if (SpaId == 0 && SpaId == 1){
+      if (SpaId == 0 || SpaId == 1){
 	layerId = 6;
 	moduleId = 6;
-      } else if (SpaId == 2 && SpaId == 3){
+      } else if (SpaId == 2 || SpaId == 3){
 	layerId = 7;
 	moduleId = 7;
-      } else if (SpaId == 4 && SpaId == 5){
+      } else if (SpaId == 4 || SpaId == 5){
 	layerId = 8;
 	moduleId = 8;
       } else { LOG(ERROR) << "SpaId " << SpaId << "not known." << FairLogger::endl;}
@@ -329,6 +329,8 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     // Write to file
     fHM->WriteToFile();
     // Update Histos and Canvases
+    LOG(INFO) << "CbmTrdRawBeamProfile::Finish Digis:                " << fDigis->GetEntriesFast() << FairLogger::endl;
+
   }
 
   void CbmTrdRawBeamProfile::CreateHistograms()
