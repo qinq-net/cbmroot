@@ -52,7 +52,13 @@ class CbmSourceLmdNew : public FairSource
     ULong_t GetAuxOffset() const { return fAuxOffset; }
 
     virtual Bool_t Init();
-    virtual Int_t ReadEvent();
+
+#ifdef _NewFairSource 
+    Int_t ReadEvent(UInt_t);              
+#else
+    Int_t ReadEvent()                   
+#endif
+
     virtual void Close();
 
     virtual void Reset();

@@ -403,7 +403,11 @@ Bool_t CbmSourceLmd::Init()
 // Action: Digis are retrieved from the buffer one by one.
 // If their time is within the association window, they are added to the
 // event. If not, the event loop is stopped.
-Int_t CbmSourceLmd::ReadEvent()
+#ifdef _NewFairSource 
+Int_t CbmSourceLmd::ReadEvent(UInt_t)
+#else
+Int_t CbmSourceLmd::ReadEvent()      
+#endif
 {
 
         if ( ! fCurrentEvent ) {

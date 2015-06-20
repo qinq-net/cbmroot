@@ -12,8 +12,8 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/cbmdata/beamtime
   ${CBMROOT_SOURCE_DIR}/cbmdata/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/sts/setup
-  ${CBMROOT_BINARY_DIR}/roc/roc/roclib
-#  ${CBMROOT_SOURCE_DIR}/roclight
+#  ${CBMROOT_BINARY_DIR}/roc/roc/roclib
+  ${CBMROOT_SOURCE_DIR}/roclight
   ${CBMROOT_SOURCE_DIR}/beamtime
   ${CBMROOT_SOURCE_DIR}/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/beamtime/param
@@ -79,9 +79,9 @@ Set(SRCS
   param/CbmBeamTimeFirstPar.cxx
 
   reco/CbmStsCosyBL.cxx
-  reco/StsCosyClusterFinder.cxx
-  reco/StsCosyHitFinder.cxx
-  reco/StsCosyTrack.cxx
+#  reco/StsCosyClusterFinder.cxx
+#  reco/StsCosyHitFinder.cxx
+#  reco/StsCosyTrack.cxx
   reco/CbmStsHodoCorrelations.cxx
   reco/CbmMuchRawHistos.cxx
 )
@@ -94,14 +94,19 @@ Set_Source_Files_Properties(PROPERTIES CbmRocSource.cxx PROPERTIES
                             OBJECT_DEPENDS ${LIBRARY_OUTPUT_PATH}/libRoc.so
 )
 
+If(NOT OldFairSource)
+  Add_Definitions(-D_NewFairSource)
+  Set(DEFINITIONS _NewFairSource)
+EndIf()
+
 Set(LINKDEF  CbmBeamtimeLinkDef.h)
 Set(LIBRARY_NAME CbmBeamtime)
 Set(DEPENDENCIES
-    ${LIBRARY_OUTPUT_PATH}/libDabcRoc.so 
-    ${LIBRARY_OUTPUT_PATH}/libDabcMbs.so 
-    ${LIBRARY_OUTPUT_PATH}/libDabcBase.so 
-    ${LIBRARY_OUTPUT_PATH}/libRoc.so 
-#    RocLight
+#    ${LIBRARY_OUTPUT_PATH}/libDabcRoc.so 
+#    ${LIBRARY_OUTPUT_PATH}/libDabcMbs.so 
+#    ${LIBRARY_OUTPUT_PATH}/libDabcBase.so 
+#    ${LIBRARY_OUTPUT_PATH}/libRoc.so 
+    RocLight
     Sts
     CbmData CbmBase
 #    Base Trd
