@@ -7,6 +7,8 @@
  ** @date 09.05.2014
  ** @author Tomas Balog <T.Balog@gsi.de>
  **
+ ** v15a: with flipped ladder orientation for stations 0,2,4,6 to match CAD design
+ **
  ** The geometry hierarachy is:
  **
  ** 1. Sensors  (see function CreateSensors)
@@ -374,13 +376,12 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   ladderTypes[0] = 3;
   ladderTypes[1] = 2;
   ladderTypes[2] = 2;
-  ladderTypes[3] = 1;
-  ladderTypes[4] = 1;
+  ladderTypes[3] = 21;   // 1;
+  ladderTypes[4] = 21;   // 1;
   ladderTypes[5] = 2;
   ladderTypes[6] = 2;
   ladderTypes[7] = 3;
-  TGeoVolume* station01 = ConstructStation("Station01", nLadders, ladderTypes, 
-					rHole);
+  TGeoVolume* station01 = ConstructStation("Station01", 0, nLadders, ladderTypes, rHole);
   CheckVolume(station01);
   CheckVolume(station01, infoFile);
   infoFile << "Position z = " << statPos[0] << endl;
@@ -402,8 +403,7 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   ladderTypes[9]  = 3;
   ladderTypes[10] = 3;
   ladderTypes[11] = 4;
-  TGeoVolume* station02 = ConstructStation("Station02", nLadders, ladderTypes, 
-					rHole);
+  TGeoVolume* station02 = ConstructStation("Station02", 1, nLadders, ladderTypes, rHole);
   CheckVolume(station02);
   CheckVolume(station02, infoFile);
   infoFile << "Position z = " << statPos[1] << endl;
@@ -418,14 +418,14 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   ladderTypes[2]  = 6;
   ladderTypes[3]  = 6;
   ladderTypes[4]  = 6;
-  ladderTypes[5]  = 5;
-  ladderTypes[6]  = 5;
+  ladderTypes[5]  = 22;   // 5;
+  ladderTypes[6]  = 22;   // 5;
   ladderTypes[7]  = 6;
   ladderTypes[8]  = 6;
   ladderTypes[9]  = 6;
   ladderTypes[10] = 7;
   ladderTypes[11] = 8;
-  TGeoVolume* station03 = ConstructStation("Station03", nLadders, ladderTypes, rHole);
+  TGeoVolume* station03 = ConstructStation("Station03", 2, nLadders, ladderTypes, rHole);
   CheckVolume(station03);
   CheckVolume(station03, infoFile);
   infoFile << "Position z = " << statPos[2] << endl;
@@ -449,8 +449,7 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   ladderTypes[11] = 7;
   ladderTypes[12] = 8;
   ladderTypes[13] = 9;
-  TGeoVolume* station04 = ConstructStation("Station04", nLadders, ladderTypes, 
-					rHole);
+  TGeoVolume* station04 = ConstructStation("Station04", 3, nLadders, ladderTypes, rHole);
   CheckVolume(station04);
   CheckVolume(station04, infoFile);
   infoFile << "Position z = " << statPos[3] << endl;
@@ -466,16 +465,15 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   ladderTypes[3]  = 12;
   ladderTypes[4]  = 11;
   ladderTypes[5]  = 11;
-  ladderTypes[6]  = 10;
-  ladderTypes[7]  = 10;
+  ladderTypes[6]  = 23;   // 10;
+  ladderTypes[7]  = 23;   // 10;
   ladderTypes[8]  = 11;
   ladderTypes[9]  = 11;
   ladderTypes[10] = 12;
   ladderTypes[11] = 12;
   ladderTypes[12] = 13;
   ladderTypes[13] = 14;
-  TGeoVolume* station05 = ConstructStation("Station05", nLadders, ladderTypes, 
-					rHole);
+  TGeoVolume* station05 = ConstructStation("Station05", 4, nLadders, ladderTypes, rHole);
   CheckVolume(station05);
   CheckVolume(station05, infoFile);
   infoFile << "Position z = " << statPos[4] << endl;
@@ -500,8 +498,7 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   ladderTypes[11] = 12;
   ladderTypes[12] = 13;
   ladderTypes[13] = 14;
-  TGeoVolume* station06 = ConstructStation("Station06", nLadders, ladderTypes, 
-					rHole);
+  TGeoVolume* station06 = ConstructStation("Station06", 5, nLadders, ladderTypes, rHole);
   CheckVolume(station06);
   CheckVolume(station06, infoFile);
   infoFile << "Position z = " << statPos[5] << endl;
@@ -527,8 +524,7 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   ladderTypes[13] = 13;
   ladderTypes[14] = 14;
   ladderTypes[15] = 17;
-  TGeoVolume* station07 = ConstructStation("Station07", nLadders, ladderTypes, 
-					rHole);
+  TGeoVolume* station07 = ConstructStation("Station07", 6, nLadders, ladderTypes, rHole);
   CheckVolume(station07);
   CheckVolume(station07, infoFile);
   infoFile << "Position z = " << statPos[6] << endl;
@@ -555,8 +551,7 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   ladderTypes[13] = 20;
   ladderTypes[14] = 12;
   ladderTypes[15] = 14;
-  TGeoVolume* station08 = ConstructStation("Station08", nLadders, ladderTypes, 
-					rHole);
+  TGeoVolume* station08 = ConstructStation("Station08", 7, nLadders, ladderTypes, rHole);
   CheckVolume(station08);
   CheckVolume(station08, infoFile);
   infoFile << "Position z = " << statPos[7] << endl;
@@ -959,6 +954,23 @@ Int_t CreateLadders() {
   nLadders++;
 
 
+  // --- Ladder 21 x-mirror of 01: 10 sectors, type 4 4 3 2 1 1 2 3 4 4
+  nSectors       = 5;
+  sectorTypes[0] = 1;
+  sectorTypes[1] = 2;
+  sectorTypes[2] = 3;
+  sectorTypes[3] = 4;
+  sectorTypes[4] = 4;
+  s0name = Form("Sector%02d", sectorTypes[0]);
+  s0vol  = gGeoMan->GetVolume(s0name);
+  shape  = (TGeoBBox*) s0vol->GetShape();
+  shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
+  halfLadderU = ConstructHalfLadder("HalfLadder21u", nSectors, sectorTypes, 'r');  // mirrored
+  halfLadderD = ConstructHalfLadder("HalfLadder21d", nSectors, sectorTypes, 'l');  // mirrored
+  ConstructLadder("Ladder21", halfLadderU, halfLadderD, shiftZ);
+  nLadders++;
+
+
   // --- Ladder 02: 10 sectors, type 4 4 3 2 2 2 2 3 4 4 
   nSectors       = 5;
   sectorTypes[0] = 2;
@@ -1024,6 +1036,23 @@ Int_t CreateLadders() {
   nLadders++;
 
 
+  // --- Ladder 22 x-mirror of 05: 10 sectors, type 5 4 3 3 7 7 3 3 4 5
+  nSectors       = 5;
+  sectorTypes[0] = 6;
+  sectorTypes[1] = 3;
+  sectorTypes[2] = 3;
+  sectorTypes[3] = 4;
+  sectorTypes[4] = 5;
+  s0name = Form("Sector%02d", sectorTypes[0]);
+  s0vol  = gGeoMan->GetVolume(s0name);
+  shape  = (TGeoBBox*) s0vol->GetShape();
+  shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
+  halfLadderU = ConstructHalfLadder("HalfLadder22u", nSectors, sectorTypes, 'r');  // mirrored
+  halfLadderD = ConstructHalfLadder("HalfLadder22d", nSectors, sectorTypes, 'l');  // mirrored
+  ConstructLadder("Ladder22", halfLadderU, halfLadderD, shiftZ);
+  nLadders++;
+
+
   // --- Ladder 06: 10 sectors, type 5 4 3 3 3 3 3 3 4 5
   nSectors       = 5;
   sectorTypes[0] = 3;
@@ -1071,6 +1100,7 @@ Int_t CreateLadders() {
   ConstructLadder("Ladder08", halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
+
   // --- Ladder 09: 10 sectors, type 5 4 4 5
   nSectors       = 2;
   sectorTypes[0] = 4;
@@ -1083,6 +1113,7 @@ Int_t CreateLadders() {
   shape = (TGeoBBox*) halfLadderU->GetShape();
   ConstructLadder("Ladder09", halfLadderU, halfLadderD, shiftZ);
   nLadders++;
+
 
   // --- Ladder 10: 10 sectors, type 5 5 4 3 8 8 3 4 5 5 
   nSectors       = 5;
@@ -1100,6 +1131,24 @@ Int_t CreateLadders() {
   ConstructLadder("Ladder10", halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
+
+  // --- Ladder 23 x-mirror of 10: 10 sectors, type 5 5 4 3 8 8 3 4 5 5
+  nSectors       = 5;
+  sectorTypes[0] = 7;
+  sectorTypes[1] = 3;
+  sectorTypes[2] = 4;
+  sectorTypes[3] = 5;
+  sectorTypes[4] = 5;
+  s0vol  = gGeoMan->GetVolume(s0name);
+  shape  = (TGeoBBox*) s0vol->GetShape();
+  ladderY = 2. * shape->GetDY();
+  halfLadderU = ConstructHalfLadder("HalfLadder23u", nSectors, sectorTypes, 'r');  // mirrored
+  halfLadderD = ConstructHalfLadder("HalfLadder23d", nSectors, sectorTypes, 'l');  // mirrored
+  shape = (TGeoBBox*) halfLadderU->GetShape();
+  ConstructLadder("Ladder23", halfLadderU, halfLadderD, shiftZ);
+  nLadders++;
+
+
   // --- Ladder 11: 10 sectors, type 5 5 4 3 3 3 3 4 5 5
   nSectors       = 5;
   sectorTypes[0] = 3;
@@ -1116,6 +1165,7 @@ Int_t CreateLadders() {
   ConstructLadder("Ladder11", halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
+
   // --- Ladder 12: 8 sectors, type 5 5 4 3 3 4 5 5
   nSectors       = 4;
   sectorTypes[0] = 3;
@@ -1131,6 +1181,7 @@ Int_t CreateLadders() {
   ConstructLadder("Ladder12", halfLadderU, halfLadderD, shiftZ);
   nLadders++;
  
+
   // --- Ladder 13: 6 sectors, type 5 5 4 4 5 5
   nSectors       = 3;
   sectorTypes[0] = 4;
@@ -1145,6 +1196,7 @@ Int_t CreateLadders() {
   ConstructLadder("Ladder13", halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
+
   // --- Ladder 14: 4 sectors, type 5 5 5 5
   nSectors       = 2;
   sectorTypes[0] = 5;
@@ -1157,6 +1209,7 @@ Int_t CreateLadders() {
   shape = (TGeoBBox*) halfLadderU->GetShape();
   ConstructLadder("Ladder14", halfLadderU, halfLadderD, shiftZ);
   nLadders++;
+
 
   // --- Ladder 15: 8 sectors, type 5 5 5 4 gap 4 5 5 5, with gap, same height as Ladder 05
   nSectors       = 5;
@@ -1175,6 +1228,7 @@ Int_t CreateLadders() {
   ConstructLadderWithGap("Ladder15", halfLadderU, halfLadderD, 2*gapY);
   nLadders++;
 
+
   // --- Ladder 16: 10 sectors, type 5 5 5 4 3 3 4 5 5 5
   nSectors       = 5;
   sectorTypes[0] = 2;
@@ -1191,6 +1245,7 @@ Int_t CreateLadders() {
   ConstructLadder("Ladder16", halfLadderU, halfLadderD, shiftZ);
   nLadders++;
  
+
   // --- Ladder 17: 10 sectors, type 5 5 4 4 3 3 4 4 5 5
   nSectors       = 1;
   sectorTypes[0] = 5;
@@ -1202,6 +1257,7 @@ Int_t CreateLadders() {
   shape = (TGeoBBox*) halfLadderU->GetShape();
   ConstructLadder("Ladder17", halfLadderU, halfLadderD, shiftZ);
   nLadders++;
+
 
   // --- Ladder 18: 8 sectors, type 5 5 5 4 gap 4 5 5 5, with gap
   nSectors       = 4;
@@ -1219,6 +1275,7 @@ Int_t CreateLadders() {
   ConstructLadderWithGap("Ladder18", halfLadderU, halfLadderD, 2*gapY);
   nLadders++;
 
+
   // --- Ladder 19: 10 sectors, type 5 5 5 4 3 3 4 5 5 5 
   nSectors       = 5;
   sectorTypes[0] = 3;
@@ -1235,6 +1292,7 @@ Int_t CreateLadders() {
   ConstructLadder("Ladder19", halfLadderU, halfLadderD, shiftZ);
   nLadders++;
   
+
   // --- Ladder 20: 10 sectors, type 5 5 4 4 3 3 4 4 5 5 
   nSectors       = 5;
   sectorTypes[0] = 3;
@@ -1621,7 +1679,7 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
  **            ladderTypes      array of ladder types
  **            rHole            radius of inner hole
  **/
- TGeoVolume* ConstructStation(const char* name, Int_t nLadders,
+ TGeoVolume* ConstructStation(const char* name, Int_t iStation, Int_t nLadders,
 			      Int_t* ladderTypes, Double_t rHole) {
 
   // --- Some local variables
@@ -1679,15 +1737,34 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
     cout << "xPos2: " << xPos << endl;
     yPos = 0.;    // vertically centred  
     TGeoRotation* rot = new TGeoRotation();
-    // --- Unrotated ladders
-    if ( (nLadders/2 + iLadder) % 2 ) {
-      zPos = -0.5 * gkLadderGapZ - shape->GetDZ();
+
+    if (iStation % 2 == 0) // flip ladders for even stations to reproduce CAD layout        
+    // even station 0,2,4,6                                                                 
+    {
+      // --- Unrotated ladders
+      if ( (nLadders/2 + iLadder) % 2 ) {
+        zPos = 0.5 * gkLadderGapZ + shape->GetDZ();
+        rot->RotateY(180.);
+      }
+      // --- Rotated ladders
+      else {
+        zPos = -0.5 * gkLadderGapZ - shape->GetDZ();
+      }
     }
-    // --- Rotated ladders
-    else {
-      zPos = 0.5 * gkLadderGapZ + shape->GetDZ();
-     rot->RotateY(180.);
+    else
+    // odd station 1,3,5,7                                                                  
+    {
+      // --- Unrotated ladders
+      if ( (nLadders/2 + iLadder) % 2 ) {
+        zPos = -0.5 * gkLadderGapZ - shape->GetDZ();
+      }
+      // --- Rotated ladders
+      else {
+        zPos = 0.5 * gkLadderGapZ + shape->GetDZ();
+        rot->RotateY(180.);
+      }
     }
+
     TGeoCombiTrans* trans = new TGeoCombiTrans(xPos, yPos, zPos, rot);
     station->AddNode(ladder, iLadder+1, trans);
     station->GetShape()->ComputeBBox();
