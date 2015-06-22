@@ -1,4 +1,4 @@
-void run_reco_jpsi(Int_t nEvents = 1000)
+void run_reco_jpsi(Int_t nEvents = 20)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -14,9 +14,9 @@ void run_reco_jpsi(Int_t nEvents = 1000)
 	//TString parFile = "/hera/cbm/users/adrian/data/param.0001.root";
 	//TString recoFile ="/hera/cbm/users/adrian/data/reco.0001.root";
 
-	TString parFile = "/Users/slebedev/Development/cbm/data/jpsi/param.0001.root";
-	TString recoFile = "/Users/slebedev/Development/cbm/data/jpsi/temp.reco.0001.root";
-	TString mcFile = "/Users/slebedev/Development/cbm/data/jpsi/mc.0001.root";
+	TString parFile = "/hera/cbm/users/slebedev/data/jpsi/jun15_25gev/jpsi_urqmd/params.auau.25gev.centr.00697.root";
+	TString recoFile = "/hera/cbm/users/slebedev/data/jpsi/jun15_25gev/jpsi_urqmd/reco.auau.25gev.centr.00697.root";
+	TString mcFile = "/hera/cbm/users/slebedev/data/jpsi/jun15_25gev/jpsi_urqmd/mc.auau.25gev.centr.00697.root";
 
 	TString trdHitProducerType = "smearing";
 	TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
@@ -86,13 +86,17 @@ void run_reco_jpsi(Int_t nEvents = 1000)
 	CbmKF* kalman = new CbmKF();
 	run->AddTask(kalman);
 	CbmL1* l1 = new CbmL1();
-    l1->SetMaterialBudgetFileName(stsMatBudgetFileName);
+         l1->SetMaterialBudgetFileName(stsMatBudgetFileName);
 	run->AddTask(l1);
 
 	CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
-	Bool_t useMvd = kTRUE;
+	Bool_t useMvd = kFALSE;
 	FairTask* stsFindTracks = new CbmStsFindTracks(iVerbose, stsTrackFinder, useMvd);
 	run->AddTask(stsFindTracks);
+
+       //   CbmStsTrackFitter* stsTrackFitter = new CbmStsKFTrackFitter();
+       //   FairTask* stsFitTracks = new CbmStsFitTracks(stsTrackFitter, iVerbose);
+       //   run->AddTask(stsFitTracks);
 
 	// =========================================================================
 	// ===                     TRD local reconstruction                      ===

@@ -19,7 +19,7 @@ void hadd() {
     }
 
 
-    CbmHaddBase::AddFilesInDir(dir, fileArray, "analysis", nofFiles, fileSizeLimit, nofEventsPerFile);
-    CbmHaddBase::AddFilesInDir(dir, fileArray, "litqa", nofFiles);
+  //  CbmHaddBase::AddFilesInDir(dir, fileArray, "analysis", nofFiles, fileSizeLimit, nofEventsPerFile);
+    CbmHaddBase::AddFilesInDir(dir, fileArray, "litqa", nofFiles, fileSizeLimit, nofEventsPerFile);
 
 }

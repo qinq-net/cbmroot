@@ -103,7 +103,7 @@ void run_litqa_jpsi(Int_t nEvents = 100)
    fitQa->SetStsMinNofHits(4);
    fitQa->SetMuchMinNofHits(10);
    fitQa->SetTrdMinNofHits(minNofPointsTrd);
-   fitQa->SetPRange(30, 0., 3.);
+   fitQa->SetPRange(50, 0., 15.);
    fitQa->SetOutputDir(std::string(resultDir));
   // run->AddTask(fitQa);
 

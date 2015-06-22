@@ -3,7 +3,7 @@ void draw_litqa()
    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
    loadlibs();
 
-   std::string dir = "/Users/slebedev/Development/cbm/data/jpsi/";
+   std::string dir = "/hera/cbm/users/slebedev/data/jpsi/jun15_25gev/jpsi_urqmd/";
    std::string fileName = dir + "litqa.auau.25gev.centr.all.root";
 
    std::string script = std::string(TString(gSystem->Getenv("SCRIPT")).Data());
