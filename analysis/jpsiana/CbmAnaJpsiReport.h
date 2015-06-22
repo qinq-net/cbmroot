@@ -70,6 +70,16 @@ protected:
    void SetAnalysisStepLabels(
          TH1* h);
 
+   double SignalOverBg(
+		   int step);
+
+   void SignalOverBgAllSteps();
+
+   void DrawMinvSAndBg(
+   		int step);
+
+   void DrawMinvSAndBgAllSteps();
+
    void DrawBgSource2D(
          const string& histName,
          const vector<string>& yLabels,

@@ -131,6 +131,8 @@ void CbmAnaJpsiReport::Draw()
 	   DrawBgSource2D("fh_source_tracks", list_of("#gamma")("#pi^{0}")("#pi^{#pm}")("p")("K")("e^{#pm}_{sec}")("oth."), "Tracks per event");
 
 		  DrawPtYEfficiencyAll();
+		  SignalOverBgAllSteps();
+		  DrawMinvSAndBgAllSteps();
 }
 
 void CbmAnaJpsiReport::DrawAnalysisStepsH2(
@@ -302,7 +304,8 @@ void CbmAnaJpsiReport::DrawPtYEfficiencyAll()
 	      c->cd(i);
 	      DrawPtYEfficiency(i);
 	   }
-	}
+
+}
 
 void CbmAnaJpsiReport::SetAnalysisStepLabels(
       TH1* h)
@@ -313,6 +316,113 @@ void CbmAnaJpsiReport::SetAnalysisStepLabels(
       h->GetXaxis()->SetBinLabel(x, CbmAnaJpsiHist::fAnaStepsLatex[step].c_str());
       x++;
    }
+}
+
+double CbmAnaJpsiReport::SignalOverBg(
+		int step)
+{
+  TH1D* signal = (TH1D*) H1("fh_signal_minv_"+CbmAnaJpsiHist::fAnaSteps[step]);
+  TH1D* bg = (TH1D*) H1("fh_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[step]);
+
+  //Create Histogram for the Gaus-Fit
+  TH1D* signalFit = (TH1D*)signal->Clone();  //(TH1D*) H1("fh_signal_minv_"+CbmAnaJpsiHist::fAnaSteps[step]);
+  signalFit->Fit("gaus","Q");
+
+  //Calculate sigma and Mean
+  double_t sigmaSignal = signalFit->GetFunction("gaus")->GetParameter("Sigma");
+  double_t meanSignal = signalFit->GetFunction("gaus")->GetParameter("Mean");
+
+  //Get the number of the Bins of Min and Max
+  int signalMin = signal->FindBin(meanSignal - 2.*sigmaSignal);
+  int signalMax = signal->FindBin(meanSignal + 2.*sigmaSignal);
+
+  double NOfSignalEntries = 0.;
+  double NOfBgEntries = 0.;
+
+  //sum up all the bins
+  for (int i=signalMin; i<=signalMax; i++)
+  {
+	  NOfSignalEntries += signal->GetBinContent(i);
+	  NOfBgEntries += bg->GetBinContent(i);
+  }
+
+  //Calculate Signal/Background
+  if (NOfBgEntries <= 0.)	  {
+	  return 0.;
+  } else
+  {
+  double sOverBg = NOfSignalEntries / NOfBgEntries;
+  return sOverBg;
+  }
+
+}
+
+void CbmAnaJpsiReport::SignalOverBgAllSteps()
+{
+	TCanvas *c1 = CreateCanvas("jpsi_SignalOverBg_allAnaSteps","jpsi_SignalOverBg_allAnaSteps",600,600);
+	HM()->Create1<TH1D>("fh_SignalOverBg_allAnaSteps","fh_SignalOverBg_allAnaSteps;AnaSteps;S/Bg",6,0,6);
+
+	for (int i=0; i<CbmAnaJpsiHist::fNofAnaSteps;i++)
+	{
+		double nstep = i + 0.5;
+		double SOverBg = SignalOverBg(i);
+		HM()->H1("fh_SignalOverBg_allAnaSteps")->Fill(nstep,SOverBg);
+	}
+
+	SetAnalysisStepLabels(H1("fh_SignalOverBg_allAnaSteps"));
+	DrawH1(H1("fh_SignalOverBg_allAnaSteps"));
+}
+
+void CbmAnaJpsiReport::DrawMinvSAndBg(
+		int step)
+{
+	TH1D* signal = (TH1D*) H1("fh_signal_minv_"+CbmAnaJpsiHist::fAnaSteps[step]);
+	TH1D* background = (TH1D*) H1("fh_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[step]);
+
+	//Create new histograms for further steps
+	TH1D* s = (TH1D*)signal->Clone();
+	TH1D* bg = (TH1D*)background ->Clone();
+	TH1D* sbg = (TH1D*) background ->Clone();
+
+	sbg->Add(s);
+	sbg->SetMinimum(1e-5);
+
+	DrawH1(list_of(sbg)(bg)(s),list_of("")("")(""),kLinear, kLog, false, 0,0,0,0);
+	//DrawH1(list_of(sbg)(bg)(s),list_of("Signal And Bg")("Background")("Signal"),kLinear, kLog, true, 0.9, 0.7, 0.99, 0.9);
+	s->SetFillColor(kRed);
+	s->SetLineColor(kBlack);
+	s->SetLineWidth(1);
+	s->SetLineStyle(CbmDrawingOptions::MarkerStyle(1));
+	bg->SetFillColor(kYellow - 10);
+	bg->SetLineColor(kBlack);
+	bg->SetLineWidth(2);
+	bg->SetLineStyle(CbmDrawingOptions::MarkerStyle(1));
+	sbg->SetFillColor(kBlue);
+	sbg->SetLineColor(kBlack);
+	sbg->SetLineWidth(1);
+	sbg->SetLineStyle(CbmDrawingOptions::MarkerStyle(1));
+	s->SetMarkerStyle(1);
+	bg->SetMarkerStyle(1);
+	sbg->SetMarkerStyle(1);
+
+
+	DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[step], 0.65, 0.9, 0.85, 1.);
+}
+
+void CbmAnaJpsiReport::DrawMinvSAndBgAllSteps()
+{
+	TCanvas *c = CreateCanvas("jpsi_fh_Minv_Signal_and_Bg","jpsi_fh_Minv_Signal_and_Bg",1200,800);
+
+	c->Divide(2,3);
+
+	for (int i=0; i<CbmAnaJpsiHist::fNofAnaSteps;i++)
+	{	c->cd(i+1);
+		DrawMinvSAndBg(i);
+	}
+
+	TCanvas *cptCut = CreateCanvas("jpsi_fh_Minv_Signal_and_Bg_ptCut","jpsi_fh_Minv_Signal_and_Bg",600,600);
+	DrawMinvSAndBg(kJpsiPtCut);
+
 }
 
 void CbmAnaJpsiReport::DrawBgSource2D(
