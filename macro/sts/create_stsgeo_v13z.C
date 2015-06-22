@@ -177,15 +177,6 @@ TGeoManager*   gGeoMan           = NULL;  // will be set later
 void create_stsgeo_v13z(const char* geoTag="v13z")
 {
 
-  // -------------  Load the necessary FairRoot libraries   -------------------
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
-  // --------------------------------------------------------------------------
-
-
   // -------   Geometry file name (output)   ----------------------------------
   TString geoFileName = "sts_";
   geoFileName = geoFileName + geoTag + ".geo.root";
