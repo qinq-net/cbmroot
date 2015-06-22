@@ -44,8 +44,13 @@ class CbmTrdRawBeamProfile : public FairTask
     TClonesArray* fRawSpadic;
    /** Output array **/
     TClonesArray* fDigis; //! TRD digis
-
+    TClonesArray* fClusters;
+    Int_t fiDigi;
+    Int_t fiCluster;
     CbmHistManager* fHM;
+
+    Int_t fMessageCounter;
+    Int_t fContainerCounter;
 
     /** Output array to  new data level**/
     //  TClonesArray* <OutputDataLevel>;
