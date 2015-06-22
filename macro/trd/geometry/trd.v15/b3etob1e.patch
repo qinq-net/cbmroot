@@ -1,5 +1,5 @@
-*** Create_TRD_Geometry_v15b_3e.C	2015-01-22 23:16:13.082610631 +0100
---- Create_TRD_Geometry_v15b_1e.C	2015-01-22 23:50:30.088544244 +0100
+*** Create_TRD_Geometry_v15b_3e.C	2015-06-22 15:50:10.288959985 +0200
+--- Create_TRD_Geometry_v15b_1e.C	2015-06-22 15:51:08.581249041 +0200
 ***************
 *** 83,91 ****
   // Name of output file with geometry
@@ -69,14 +69,14 @@
   
   
 ! void Create_TRD_Geometry_v15b_3e() {
-    // Load the necessary FairRoot libraries 
-    gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-    basiclibs();
+  
+    // Load needed material definition from media.geo file
+    create_materials_from_media_file();
 --- 417,423 ----
   void dump_digi_file();
   
   
 ! void Create_TRD_Geometry_v15b_1e() {
-    // Load the necessary FairRoot libraries 
-    gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-    basiclibs();
+  
+    // Load needed material definition from media.geo file
+    create_materials_from_media_file();
