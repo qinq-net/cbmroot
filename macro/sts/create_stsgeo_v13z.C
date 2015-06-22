@@ -788,6 +788,10 @@ void create_stsgeo_v13z(const char* geoTag="v13z")
   gGeoMan->Write();  // use this is you want GeoManager format in the output
   geoFile->Close();
 
+  TString geoFileName__ = "sts_";
+  geoFileName_ = geoFileName__ + geoTag + "-geo.root";
+  top->Export(geoFileName_);
+  
   infoFile.close();
 
 }
