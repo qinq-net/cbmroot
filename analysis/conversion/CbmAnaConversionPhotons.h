@@ -219,6 +219,14 @@ private:
 	TH1D * fhEFG_invmass_pi0_reco;
 	TH1D * fhEFG_invmass_eta_reco;
 
+	// distribution of invariant masses from reconstructed momenta with cut on opening angle
+	TH1D * fhEFG_invmass_all_reco_cut;
+	TH1D * fhEFG_invmass_combBack_reco_cut;
+	TH1D * fhEFG_invmass_allSameG_reco_cut;
+	TH1D * fhEFG_invmass_direct_reco_cut;
+	TH1D * fhEFG_invmass_pi0_reco_cut;
+	TH1D * fhEFG_invmass_eta_reco_cut;
+
 	// opening angle vs pt from reconstructed data
 	//TH2D * fhEFG_angleVSpt_all_reco;
 	//TH2D * fhEFG_angleVSpt_combBack_reco;

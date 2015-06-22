@@ -61,6 +61,8 @@ CbmAnaConversionReco::CbmAnaConversionReco()
 	fhEPEM_openingAngle_gg_refitted(NULL),
 	fhEPEM_openingAngle_gee_mc(NULL),
 	fhEPEM_openingAngle_gee_refitted(NULL),
+	fhEPEM_openingAngle_gee_mc_dalitz(NULL),
+	fhEPEM_openingAngle_gee_refitted_dalitz(NULL),
 	fhEPEM_openingAngle_betweenGammas_mc(NULL),
 	fhEPEM_openingAngle_betweenGammas_reco(NULL),
     fhInvMass_EPEM_mc(NULL),
@@ -165,14 +167,18 @@ void CbmAnaConversionReco::InitHistos()
 	fHistoList_all.push_back(fhEPEM_invmass_all_mc);
 	fHistoList_all.push_back(fhEPEM_invmass_all_refitted);
 
-	fhEPEM_openingAngle_gg_mc			= new TH1D("fhEPEM_openingAngle_gg_mc","fhEPEM_openingAngle_gg_mc;angle [deg];#", 1010, -0.1, 100.9);
-	fhEPEM_openingAngle_gg_refitted		= new TH1D("fhEPEM_openingAngle_gg_refitted","fhEPEM_openingAngle_gg_refitted;angle [deg];#", 1010, -0.1, 100.9);
-	fhEPEM_openingAngle_gee_mc			= new TH1D("fhEPEM_openingAngle_gee_mc","fhEPEM_openingAngle_gee_mc;angle [deg];#", 1010, -0.1, 100.9);
-	fhEPEM_openingAngle_gee_refitted	= new TH1D("fhEPEM_openingAngle_gee_refitted","fhEPEM_openingAngle_gee_refitted;angle [deg];#", 1010, -0.1, 100.9);
+	fhEPEM_openingAngle_gg_mc			= new TH1D("fhEPEM_openingAngle_gg_mc","fhEPEM_openingAngle_gg_mc (between e+e- from g);angle [deg];#", 1010, -0.1, 100.9);
+	fhEPEM_openingAngle_gg_refitted		= new TH1D("fhEPEM_openingAngle_gg_refitted","fhEPEM_openingAngle_gg_refitted (between e+e- from g);angle [deg];#", 1010, -0.1, 100.9);
+	fhEPEM_openingAngle_gee_mc			= new TH1D("fhEPEM_openingAngle_gee_mc","fhEPEM_openingAngle_gee_mc (between e+e- from g);angle [deg];#", 1010, -0.1, 100.9);
+	fhEPEM_openingAngle_gee_refitted	= new TH1D("fhEPEM_openingAngle_gee_refitted","fhEPEM_openingAngle_gee_refitted (between e+e- from g);angle [deg];#", 1010, -0.1, 100.9);
 	fHistoList_gg.push_back(fhEPEM_openingAngle_gg_mc);
 	fHistoList_gg.push_back(fhEPEM_openingAngle_gg_refitted);
 	fHistoList_gee.push_back(fhEPEM_openingAngle_gee_mc);
 	fHistoList_gee.push_back(fhEPEM_openingAngle_gee_refitted);
+	fhEPEM_openingAngle_gee_mc_dalitz			= new TH1D("fhEPEM_openingAngle_gee_mc_dalitz","fhEPEM_openingAngle_gee_mc_dalitz (between e+e- from pi0);angle [deg];#", 1010, -0.1, 100.9);
+	fhEPEM_openingAngle_gee_refitted_dalitz		= new TH1D("fhEPEM_openingAngle_gee_refitted_dalitz","fhEPEM_openingAngle_gee_refitted_dalitz (between e+e- from pi0);angle [deg];#", 1010, -0.1, 100.9);
+	fHistoList_gee.push_back(fhEPEM_openingAngle_gee_mc_dalitz);
+	fHistoList_gee.push_back(fhEPEM_openingAngle_gee_refitted_dalitz);
 	
 	fhEPEM_openingAngle_betweenGammas_mc	= new TH1D("fhEPEM_openingAngle_betweenGammas_mc","fhEPEM_openingAngle_betweenGammas_mc;angle [deg];#", 1010, -0.1, 100.9);
 	fhEPEM_openingAngle_betweenGammas_reco	= new TH1D("fhEPEM_openingAngle_betweenGammas_reco","fhEPEM_openingAngle_betweenGammas_reco;angle [deg];#", 1010, -0.1, 100.9);
@@ -773,22 +779,36 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 								fhEPEM_invmass_all_mc->Fill(invmass1);
 								fhEPEM_invmass_all_refitted->Fill(invmass3);
 								
-								if(mcGrandmotherPdg1 == 111) {
+								if(mcGrandmotherPdg1 == 111) {	// case: i,j = electrons from gamma, k,l = electrons from pi0
 									Double_t opening_angle1_mc = 0;
 									Double_t opening_angle1_refitted = 0;
 									opening_angle1_mc = CalculateOpeningAngleMC(fRecoTracklistEPEM[i], fRecoTracklistEPEM[j]);
 									opening_angle1_refitted = CalculateOpeningAngleReco(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j]);
 									fhEPEM_openingAngle_gee_mc->Fill(opening_angle1_mc);
 									fhEPEM_openingAngle_gee_refitted->Fill(opening_angle1_refitted);
+									
+									Double_t opening_angle1_mc_dalitz = 0;
+									Double_t opening_angle1_refitted_dalitz = 0;
+									opening_angle1_mc_dalitz = CalculateOpeningAngleMC(fRecoTracklistEPEM[k], fRecoTracklistEPEM[l]);
+									opening_angle1_refitted_dalitz = CalculateOpeningAngleReco(fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
+									fhEPEM_openingAngle_gee_mc_dalitz->Fill(opening_angle1_mc_dalitz);
+									fhEPEM_openingAngle_gee_refitted_dalitz->Fill(opening_angle1_refitted_dalitz);
 								}
 								
-								if(mcMotherPdg1 == 111) {
+								if(mcMotherPdg1 == 111) {	// case: i,j = electrons from pi0, k,l = electrons from gamma
 									Double_t opening_angle1_mc = 0;
 									Double_t opening_angle1_refitted = 0;
 									opening_angle1_mc = CalculateOpeningAngleMC(fRecoTracklistEPEM[k], fRecoTracklistEPEM[l]);
 									opening_angle1_refitted = CalculateOpeningAngleReco(fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
 									fhEPEM_openingAngle_gee_mc->Fill(opening_angle1_mc);
 									fhEPEM_openingAngle_gee_refitted->Fill(opening_angle1_refitted);
+									
+									Double_t opening_angle1_mc_dalitz = 0;
+									Double_t opening_angle1_refitted_dalitz = 0;
+									opening_angle1_mc_dalitz = CalculateOpeningAngleMC(fRecoTracklistEPEM[i], fRecoTracklistEPEM[j]);
+									opening_angle1_refitted_dalitz = CalculateOpeningAngleReco(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j]);
+									fhEPEM_openingAngle_gee_mc_dalitz->Fill(opening_angle1_mc_dalitz);
+									fhEPEM_openingAngle_gee_refitted_dalitz->Fill(opening_angle1_refitted_dalitz);
 								}
 							}
 						}
@@ -827,6 +847,13 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 									opening_angle1_refitted = CalculateOpeningAngleReco(fRecoRefittedMomentum[i], fRecoRefittedMomentum[k]);
 									fhEPEM_openingAngle_gee_mc->Fill(opening_angle1_mc);
 									fhEPEM_openingAngle_gee_refitted->Fill(opening_angle1_refitted);
+									
+									Double_t opening_angle1_mc_dalitz = 0;
+									Double_t opening_angle1_refitted_dalitz = 0;
+									opening_angle1_mc_dalitz = CalculateOpeningAngleMC(fRecoTracklistEPEM[j], fRecoTracklistEPEM[l]);
+									opening_angle1_refitted_dalitz = CalculateOpeningAngleReco(fRecoRefittedMomentum[j], fRecoRefittedMomentum[l]);
+									fhEPEM_openingAngle_gee_mc_dalitz->Fill(opening_angle1_mc_dalitz);
+									fhEPEM_openingAngle_gee_refitted_dalitz->Fill(opening_angle1_refitted_dalitz);
 								}
 								
 								if(mcMotherPdg1 == 111) {
@@ -836,6 +863,13 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 									opening_angle1_refitted = CalculateOpeningAngleReco(fRecoRefittedMomentum[j], fRecoRefittedMomentum[l]);
 									fhEPEM_openingAngle_gee_mc->Fill(opening_angle1_mc);
 									fhEPEM_openingAngle_gee_refitted->Fill(opening_angle1_refitted);
+									
+									Double_t opening_angle1_mc_dalitz = 0;
+									Double_t opening_angle1_refitted_dalitz = 0;
+									opening_angle1_mc_dalitz = CalculateOpeningAngleMC(fRecoTracklistEPEM[i], fRecoTracklistEPEM[k]);
+									opening_angle1_refitted_dalitz = CalculateOpeningAngleReco(fRecoRefittedMomentum[i], fRecoRefittedMomentum[k]);
+									fhEPEM_openingAngle_gee_mc_dalitz->Fill(opening_angle1_mc_dalitz);
+									fhEPEM_openingAngle_gee_refitted_dalitz->Fill(opening_angle1_refitted_dalitz);
 								}
 							}
 						}
@@ -874,6 +908,13 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 									opening_angle1_refitted = CalculateOpeningAngleReco(fRecoRefittedMomentum[i], fRecoRefittedMomentum[l]);
 									fhEPEM_openingAngle_gee_mc->Fill(opening_angle1_mc);
 									fhEPEM_openingAngle_gee_refitted->Fill(opening_angle1_refitted);
+									
+									Double_t opening_angle1_mc_dalitz = 0;
+									Double_t opening_angle1_refitted_dalitz = 0;
+									opening_angle1_mc_dalitz = CalculateOpeningAngleMC(fRecoTracklistEPEM[j], fRecoTracklistEPEM[k]);
+									opening_angle1_refitted_dalitz = CalculateOpeningAngleReco(fRecoRefittedMomentum[j], fRecoRefittedMomentum[k]);
+									fhEPEM_openingAngle_gee_mc_dalitz->Fill(opening_angle1_mc_dalitz);
+									fhEPEM_openingAngle_gee_refitted_dalitz->Fill(opening_angle1_refitted_dalitz);
 								}
 								
 								if(mcMotherPdg1 == 111) {
@@ -883,6 +924,13 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 									opening_angle1_refitted = CalculateOpeningAngleReco(fRecoRefittedMomentum[j], fRecoRefittedMomentum[k]);
 									fhEPEM_openingAngle_gee_mc->Fill(opening_angle1_mc);
 									fhEPEM_openingAngle_gee_refitted->Fill(opening_angle1_refitted);
+									
+									Double_t opening_angle1_mc_dalitz = 0;
+									Double_t opening_angle1_refitted_dalitz = 0;
+									opening_angle1_mc_dalitz = CalculateOpeningAngleMC(fRecoTracklistEPEM[i], fRecoTracklistEPEM[l]);
+									opening_angle1_refitted_dalitz = CalculateOpeningAngleReco(fRecoRefittedMomentum[i], fRecoRefittedMomentum[l]);
+									fhEPEM_openingAngle_gee_mc_dalitz->Fill(opening_angle1_mc_dalitz);
+									fhEPEM_openingAngle_gee_refitted_dalitz->Fill(opening_angle1_refitted_dalitz);
 								}
 							}
 						}

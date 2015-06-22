@@ -107,6 +107,8 @@ private:
 	TH1D * fhEPEM_openingAngle_gg_refitted;
 	TH1D * fhEPEM_openingAngle_gee_mc;
 	TH1D * fhEPEM_openingAngle_gee_refitted;
+	TH1D * fhEPEM_openingAngle_gee_mc_dalitz;
+	TH1D * fhEPEM_openingAngle_gee_refitted_dalitz;
 	
 	TH1D * fhEPEM_openingAngle_betweenGammas_mc;
 	TH1D * fhEPEM_openingAngle_betweenGammas_reco;

@@ -55,6 +55,7 @@ public:
 	void CombinePhotonsRefit();
 	Double_t OpeningAngleBetweenPhotonsRefit(vector<int> photon1, vector<int> photons2);
 
+	void CombinePhotonsDirection();
 
 private:
 	TClonesArray* fRichPoints;
@@ -124,6 +125,15 @@ private:
 	vector< vector<int> > fVector_photons_pairs_refit;
 	TH1D * fhPhotons_invmass_refit;
 	TH1D * fhPhotons_invmass_refit_cut;
+	
+	vector< vector<int> > fVector_photons_pairs_direction;
+	TH1D * fhPhotons_invmass_direction;
+	TH1D * fhPhotons_invmass_direction_cut;
+	TH1D * fhPhotons_boostAngle;
+	
+	TH1D * fhPhotons_tX;
+	TH1D * fhPhotons_tY;
+	
 
 	// timer
 	TStopwatch timer;

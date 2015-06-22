@@ -82,6 +82,7 @@ CbmAnaConversion::CbmAnaConversion()
     fhPi0_z(NULL),
     fhPi0_z_cut(NULL),
     fhPi0_pt(NULL),
+    fhEta_pt(NULL),
     fhElectronsFromPi0_z(NULL),
     fhInvariantMass_test(NULL),
     fhInvariantMass_test2(NULL),
@@ -254,12 +255,13 @@ void CbmAnaConversion::InitHistograms()
 	fhNofPi0_perEvent		= new TH1D("fhNofPi0_perEvent", "fhNofPi0_perEvent;Nof pi0;Entries", 1000., -0.5, 999.5);
 	fhNofPi0_perEvent_cut	= new TH1D("fhNofPi0_perEvent_cut", "fhNofPi0_perEvent_cut (Z<10cm);Nof pi0;Entries", 800., -0.5, 799.5);
 	fhNofPi0_perEvent_cut2	= new TH1D("fhNofPi0_perEvent_cut2", "fhNofPi0_perEvent_cut2 (motherId = -1);Nof pi0;Entries", 800., -0.5, 799.5);
-	fhNofEta_perEvent		= new TH1D("fhNofEta_perEvent", "fhNofEta_perEvent;Nof eta;Entries", 1000., -0.5, 999.5);
-	fhNofEta_perEvent_cut	= new TH1D("fhNofEta_perEvent_cut", "fhNofEta_perEvent_cut (Z<10cm);Nof eta;Entries", 800., -0.5, 799.5);
-	fhNofEta_perEvent_cut2	= new TH1D("fhNofEta_perEvent_cut2", "fhNofEta_perEvent_cut2 (motherId = -1);Nof eta;Entries", 800., -0.5, 799.5);
+	fhNofEta_perEvent		= new TH1D("fhNofEta_perEvent", "fhNofEta_perEvent;Nof eta;Entries", 100., -0.5, 99.5);
+	fhNofEta_perEvent_cut	= new TH1D("fhNofEta_perEvent_cut", "fhNofEta_perEvent_cut (Z<10cm);Nof eta;Entries", 100., -0.5, 99.5);
+	fhNofEta_perEvent_cut2	= new TH1D("fhNofEta_perEvent_cut2", "fhNofEta_perEvent_cut2 (motherId = -1);Nof eta;Entries", 100., -0.5, 99.5);
 	fhPi0_z					= new TH1D("fhPi0_z", "fhPi0_z;z [cm];Entries", 600., -0.5, 599.5);
 	fhPi0_z_cut				= new TH1D("fhPi0_z_cut", "fhPi0_z_cut;z [cm];Entries", 600., -0.5, 599.5);
-	fhPi0_pt				= new TH1D("fhPi0_pt", "fhPi0_pt;pt [GeV];Entries", 100., 0., 100.);
+	fhPi0_pt				= new TH1D("fhPi0_pt", "fhPi0_pt;pt [GeV];Entries", 200., 0., 10.);
+	fhEta_pt				= new TH1D("fhEta_pt", "fhEta_pt;pt [GeV];Entries", 200., 0., 10.);
 	fhElectronSources		= new TH1D("fhElectronSources", "fhElectronSources;Source;Entries", 6., 0., 6.);
 	fhElectronsFromPi0_z	= new TH1D("fhElectronsFromPi0_z", "fhElectronsFromPi0_z (= pos. of gamma conversion);z [cm];Entries", 600., -0.5, 599.5);
 	fHistoList.push_back(fhNofPi0_perEvent);
@@ -271,6 +273,7 @@ void CbmAnaConversion::InitHistograms()
 	fHistoList.push_back(fhPi0_z);
 	fHistoList.push_back(fhPi0_z_cut);
 	fHistoList.push_back(fhPi0_pt);
+	fHistoList.push_back(fhEta_pt);
 	fHistoList.push_back(fhElectronSources);
 	fHistoList.push_back(fhElectronsFromPi0_z);
 	
@@ -442,7 +445,10 @@ void CbmAnaConversion::Exec(Option_t* option)
 				countEtaMC_cut++;
 			}
 			int motherId = mctrack->GetMotherId();
-			if (motherId == -1) countEtaMC_fromPrimary++;
+			if (motherId == -1) {
+				countEtaMC_fromPrimary++;
+				fhEta_pt->Fill(mctrack->GetPt() );
+			}
 		}
 
 		if (TMath::Abs( mctrack->GetPdgCode())  == 11) { 

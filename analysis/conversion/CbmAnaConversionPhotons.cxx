@@ -144,6 +144,12 @@ CbmAnaConversionPhotons::CbmAnaConversionPhotons()
 	fhEFG_invmass_direct_reco(NULL),
 	fhEFG_invmass_pi0_reco(NULL),
 	fhEFG_invmass_eta_reco(NULL),
+	fhEFG_invmass_all_reco_cut(NULL),
+	fhEFG_invmass_combBack_reco_cut(NULL),
+	fhEFG_invmass_allSameG_reco_cut(NULL),
+	fhEFG_invmass_direct_reco_cut(NULL),
+	fhEFG_invmass_pi0_reco_cut(NULL),
+	fhEFG_invmass_eta_reco_cut(NULL),
 	fhEFG_angleVSpt_allSameG_reco(NULL),
 	fhEFG_angleVSpt_direct_reco(NULL),
 	fhEFG_angleVSpt_pi0_reco(NULL),
@@ -410,6 +416,21 @@ void CbmAnaConversionPhotons::InitHistos()
 	fHistoList_EFG_invmass.push_back(fhEFG_invmass_direct_reco);
 	fHistoList_EFG_invmass.push_back(fhEFG_invmass_pi0_reco);
 	fHistoList_EFG_invmass.push_back(fhEFG_invmass_eta_reco);
+	
+	fhEFG_invmass_all_reco_cut		= new TH1D("fhEFG_invmass_all_reco_cut", "fhEFG_invmass_all_reco_cut; invmass [GeV/c^2]; #", 5000, 0., 5.);
+	fhEFG_invmass_combBack_reco_cut	= new TH1D("fhEFG_invmass_combBack_reco_cut", "fhEFG_invmass_combBack_reco_cut; invmass [GeV/c^2]; #", 5000, 0., 5.);
+	fhEFG_invmass_allSameG_reco_cut	= new TH1D("fhEFG_invmass_allSameG_reco_cut", "fhEFG_invmass_allSameG_reco_cut; invmass [GeV/c^2]; #", 5000, 0., 5);
+	fhEFG_invmass_direct_reco_cut	= new TH1D("fhEFG_invmass_direct_reco_cut", "fhEFG_invmass_direct_reco_cut; invmass [GeV/c^2]; #", 5000, 0., 5);
+	fhEFG_invmass_pi0_reco_cut		= new TH1D("fhEFG_invmass_pi0_reco_cut", "fhEFG_invmass_pi0_reco_cut; invmass [GeV/c^2]; #", 5000, 0., 5);
+	fhEFG_invmass_eta_reco_cut		= new TH1D("fhEFG_invmass_eta_reco_cut", "fhEFG_invmass_eta_reco_cut; invmass [GeV/c^2]; #", 5000, 0., 5);
+	fHistoList_EFG_invmass.push_back(fhEFG_invmass_all_reco_cut);
+	fHistoList_EFG_invmass.push_back(fhEFG_invmass_combBack_reco_cut);
+	fHistoList_EFG_invmass.push_back(fhEFG_invmass_allSameG_reco_cut);
+	fHistoList_EFG_invmass.push_back(fhEFG_invmass_direct_reco_cut);
+	fHistoList_EFG_invmass.push_back(fhEFG_invmass_pi0_reco_cut);
+	fHistoList_EFG_invmass.push_back(fhEFG_invmass_eta_reco_cut);
+
+	
 
 	// opening angle vs pt (reco)
 	//fhEFG_angleVSpt_all			= new TH2D("fhEFG_angleVSpt_all", "fhEFG_angleVSpt_all;opening angle [deg];pt [GeV/c]", 2000, 0., 100., 500, 0., 5.);
@@ -1027,6 +1048,7 @@ void CbmAnaConversionPhotons::AnalyseElectronsFromGammaReco()
 			
 			fhEFG_angle_all_reco->Fill(paramSet.fAngle);		// fill all combinations of e+e-, even if they dont come from the same origin
 			fhEFG_invmass_all_reco->Fill(paramSet.fMinv);
+			if(paramSet.fAngle < 1) fhEFG_invmass_all_reco->Fill(paramSet.fMinv);
 			
 			int motherID_i = fRecoTracklist_allElectronsFromGamma[i]->GetMotherId();
 			int motherID_j = fRecoTracklist_allElectronsFromGamma[j]->GetMotherId();
@@ -1034,12 +1056,14 @@ void CbmAnaConversionPhotons::AnalyseElectronsFromGammaReco()
 			if(motherID_i != motherID_j) {
 				fhEFG_angle_combBack_reco->Fill(paramSet.fAngle);
 				fhEFG_invmass_combBack_reco->Fill(paramSet.fMinv);
+				if(paramSet.fAngle < 1) fhEFG_invmass_combBack_reco->Fill(paramSet.fMinv);
 				continue;
 			}
 			
 			fhEFG_angle_allSameG_reco->Fill(paramSet.fAngle);		// all combinations of e+e- with the same origin
 			fhEFG_invmass_allSameG_reco->Fill(paramSet.fMinv);
 			fhEFG_angleVSpt_allSameG_reco->Fill(paramSet.fPt, paramSet.fAngle);
+			if(paramSet.fAngle < 1) fhEFG_invmass_allSameG_reco->Fill(paramSet.fMinv);
 			
 			
 			CbmMCTrack* mothermctrack_i = (CbmMCTrack*)fMcTracks->At(motherID_i);
@@ -1054,6 +1078,7 @@ void CbmAnaConversionPhotons::AnalyseElectronsFromGammaReco()
 				fhEFG_angle_direct_reco->Fill(paramSet.fAngle);
 				fhEFG_invmass_direct_reco->Fill(paramSet.fMinv);
 				fhEFG_angleVSpt_direct_reco->Fill(paramSet.fPt, paramSet.fAngle);
+				if(paramSet.fAngle < 1) fhEFG_invmass_direct_reco->Fill(paramSet.fMinv);
 			}
 			else {		// combinations of e+e- from the same gamma, with gamma estimating from another particle (pi0/eta/...)
 				CbmMCTrack* grandmothermctrack_i = (CbmMCTrack*)fMcTracks->At(grandmotherID_i);
@@ -1063,11 +1088,13 @@ void CbmAnaConversionPhotons::AnalyseElectronsFromGammaReco()
 					fhEFG_angle_pi0_reco->Fill(paramSet.fAngle);
 					fhEFG_invmass_pi0_reco->Fill(paramSet.fMinv);
 					fhEFG_angleVSpt_pi0_reco->Fill(paramSet.fPt, paramSet.fAngle);
+					if(paramSet.fAngle < 1) fhEFG_invmass_pi0_reco->Fill(paramSet.fMinv);
 				}
 				if(grandmotherpdg_i == 221) {
 					fhEFG_angle_eta_reco->Fill(paramSet.fAngle);
 					fhEFG_invmass_eta_reco->Fill(paramSet.fMinv);
 					fhEFG_angleVSpt_eta_reco->Fill(paramSet.fPt, paramSet.fAngle);
+					if(paramSet.fAngle < 1) fhEFG_invmass_eta_reco->Fill(paramSet.fMinv);
 				}
 			}
 		}
