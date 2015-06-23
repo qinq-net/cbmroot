@@ -214,7 +214,7 @@ void CbmAnaJpsiTask::InitHist()
    CreateSourceTypesH1("fh_track_pt","P_{t} [GeV/c]", "Yield", 40, 0., 4.);
    CreateSourceTypesH1("fh_track_rich_ann","RICH ANN output", "Yield", 120, -1.2, 1.2);
    CreateSourceTypesH1("fh_track_trd_ann","TRD ANN output", "Yield", 120, -1.2, 1.2);
-   CreateSourceTypesH2("fh_track_tof_m2","m^{2} [(GeV/c^{2})^{2}]","P [GeV/c]","Yield", 40, 0., 4., 280, -0.2, 1.2);
+   CreateSourceTypesH2("fh_track_tof_m2","","m^{2} [(GeV/c^{2})^{2}]P [GeV/c]","Yield", 700, 0., 7., 480, -0.4, 2.);
 
    //vertex of the secondary electrons from gamma conversion
    fHM->Create2<TH2D>("fh_vertex_el_gamma_xz","fh_vertex_el_gamma_xz;Z [cm];X [cm];Counter per event", 200, -10., 190., 400, -130.,130.);
@@ -228,10 +228,10 @@ void CbmAnaJpsiTask::InitHist()
    fHM->Create2<TH2D>("fh_source_tracks","fh_source_tracks;Analysis steps;Particle", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps, 7, 0., 7.);
 
    //Create invariant mass histograms
-   CreateAnalysisStepsH1("fh_signal_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_signal_minv", "M_{ee} [GeV/c^{2}]", "Yield", 1800, 2.0 , 3.8);
    CreateAnalysisStepsH1("fh_bg_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_pi0_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_gamma_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_pi0_minv", "M_{ee} [GeV/c^{2}]", "Yield", 600, 0. , 0.6);
+   CreateAnalysisStepsH1("fh_gamma_minv", "M_{ee} [GeV/c^{2}]", "Yield", 800, 0. , 0.8);
 
    // minv for true matched and mismatched tracks
    CreateAnalysisStepsH1("fh_bg_truematch_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);

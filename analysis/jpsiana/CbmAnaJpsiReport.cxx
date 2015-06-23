@@ -359,7 +359,7 @@ double CbmAnaJpsiReport::SignalOverBg(
 
 void CbmAnaJpsiReport::SignalOverBgAllSteps()
 {
-	TCanvas *c1 = CreateCanvas("jpsi_SignalOverBg_allAnaSteps","jpsi_SignalOverBg_allAnaSteps",600,600);
+	TCanvas *c1 = CreateCanvas("jpsi_fh_SignalOverBg_allAnaSteps","jpsi_fh_SignalOverBg_allAnaSteps",600,600);
 	HM()->Create1<TH1D>("fh_SignalOverBg_allAnaSteps","fh_SignalOverBg_allAnaSteps;AnaSteps;S/Bg",6,0,6);
 
 	for (int i=0; i<CbmAnaJpsiHist::fNofAnaSteps;i++)
@@ -411,16 +411,16 @@ void CbmAnaJpsiReport::DrawMinvSAndBg(
 
 void CbmAnaJpsiReport::DrawMinvSAndBgAllSteps()
 {
-	TCanvas *c = CreateCanvas("jpsi_fh_Minv_Signal_and_Bg","jpsi_fh_Minv_Signal_and_Bg",1200,800);
+	TCanvas *c1 = CreateCanvas("jpsi_fh_Minv_Signal_and_Bg","jpsi_fh_Minv_Signal_and_Bg",1200,800);
 
-	c->Divide(2,3);
+	c1->Divide(2,3);
 
 	for (int i=0; i<CbmAnaJpsiHist::fNofAnaSteps;i++)
-	{	c->cd(i+1);
+	{	c1->cd(i+1);
 		DrawMinvSAndBg(i);
 	}
 
-	TCanvas *cptCut = CreateCanvas("jpsi_fh_Minv_Signal_and_Bg_ptCut","jpsi_fh_Minv_Signal_and_Bg",600,600);
+	TCanvas *cptCut = CreateCanvas("jpsi_fh_Minv_Signal_and_Bg_ptCut","jpsi_fh_Minv_Signal_and_Bg_ptCut",600,600);
 	DrawMinvSAndBg(kJpsiPtCut);
 
 }
