@@ -608,10 +608,10 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   //  cutout->DefineSection(0, z1, 0., r1);
   //  cutout->DefineSection(1, z2, 0., r2);
   //  cutout->DefineSection(2, z3, 0., r3);
-  new TGeoTrd2("stsCone1", r1, r2, r1, r2, (z2-z1)/2.);
+  new TGeoTrd2("stsCone1", r1, r2, r1, r2, (z2-z1)/2.+.1);  // add .1 in z length for a clean cutout
   TGeoTranslation *trans1 = new TGeoTranslation("trans1", 0., 0., -(z3-z1)/2.+(z2-z1)/2.);
   trans1->RegisterYourself();
-  new TGeoTrd2("stsCone2", r2, r3, r2, r3, (z3-z2)/2.);
+  new TGeoTrd2("stsCone2", r2, r3, r2, r3, (z3-z2)/2.+.1);  // add .1 in z length for a clean cutout
   TGeoTranslation *trans2 = new TGeoTranslation("trans2", 0., 0., +(z3-z1)/2.-(z3-z2)/2.);
   trans2->RegisterYourself();
   
