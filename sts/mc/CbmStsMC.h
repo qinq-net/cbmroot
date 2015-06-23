@@ -18,7 +18,8 @@
 class FairVolume;
 class CbmStsPoint;
 class CbmStsSetup;
-
+class TGeoNode;
+class TGeoCombiTrans;
 
 using std::map;
 
@@ -137,8 +138,8 @@ class CbmStsMC : public FairDetector
 		 **/
 		virtual void Reset();
 
-
-
+                virtual void        ConstructRootGeometry();
+                void                ExpandStsNodes(TGeoNode* fN);
   private:
 
     CbmStsTrackStatus fStatusIn;   //! Track status at entry of sensor
@@ -147,7 +148,7 @@ class CbmStsMC : public FairDetector
     map<TString, UInt_t> fAddressMap;  ///< Map from full path to unique address
     TClonesArray*     fStsPoints;  //!  Output array (CbmStsPoint)
     CbmStsSetup*      fSetup;      //! Pointer to static instance of CbmStsSetup
-
+    TGeoCombiTrans*   fCombiTrans;  //! Transformation matrix for geometry positioning
 
     /** @brief Create a new StsPoint
      ** Creates a new CbmStsPoint using the current track status information
@@ -161,6 +162,16 @@ class CbmStsMC : public FairDetector
      ** from TVirtualMC (track ID, address, position, momentum, time, length).
      */
     void SetStatus(CbmStsTrackStatus& status);
+
+
+    /** @brief Check how the TGeoVolume in file was produced
+     *  Check how the TGeoVolume in the geometry file was produced.
+     *  The new way is to export the volume with the Export function
+     *  of TGeoVolume together with a TGeoMatrix.
+     *  To identify a file of new type check for TGeoVolume and a TGeoMatrix
+     *  derived class in the file.
+     */
+    Bool_t IsNewGeometryFile(TString filename);
 
 
     /** Copy constructor: usage prevented **/
