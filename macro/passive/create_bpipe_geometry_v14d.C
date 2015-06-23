@@ -310,7 +310,7 @@ void create_bpipe_geometry_v14d()
   top->AddNode(pipe, 1);
   cout << endl << endl;
   gGeoMan->CloseGeometry();
-  gGeoMan->CheckOverlaps(0.001);
+  gGeoMan->CheckOverlaps(0.0001);
   gGeoMan->PrintOverlaps();
   gGeoMan->Test();
   
