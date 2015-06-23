@@ -28,7 +28,8 @@ CbmTrdRawBeamProfile::CbmTrdRawBeamProfile()
     fiCluster(0),
     fHM(new CbmHistManager()),
     fMessageCounter(0),
-    fContainerCounter(0)
+    fContainerCounter(0),
+    fTimeBuffer()
 {
   LOG(DEBUG) << "Default Constructor of CbmTrdRawBeamProfile" << FairLogger::endl;
 }
@@ -40,6 +41,16 @@ CbmTrdRawBeamProfile::~CbmTrdRawBeamProfile()
   delete fDigis;
   fClusters->Delete();
   delete fClusters;
+  for (std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = fTimeBuffer.begin() ; SpaSysIt != fTimeBuffer.end(); SpaSysIt++){
+    for (std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > ::iterator timeIt = SpaSysIt->second.begin() ; timeIt != SpaSysIt->second.end(); timeIt++){
+      for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiIt = timeIt->second.begin(); combiIt != timeIt->second.end(); combiIt++){
+	if(combiIt->second != NULL)
+	  delete combiIt->second;
+      }
+      timeIt->second.clear();   
+    }
+    SpaSysIt->second.clear();
+  }
   LOG(DEBUG) << "Destructor of CbmTrdRawBeamProfile" << FairLogger::endl;
 }
 
@@ -110,15 +121,12 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 			      "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", 
 			      "30", "31"};
 
-  //std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > > timeBuffer;// <ASIC ID "Syscore%d_Spadic%d"<Time, SpadicMessage> >
-  std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > > timeBuffer;// <ASIC ID "Syscore%d_Spadic%d"<Time, <CombiId, SpadicMessage> >
-  //std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator timeBufferIt;
+  //std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > > timeBuffer;// <ASIC ID "Syscore%d_Spadic%d"<Time, <CombiId, SpadicMessage> >
 
   Int_t entriesInMessage = fRawSpadic->GetEntriesFast();
   Int_t entries = fDigis->GetEntriesFast();
   Int_t sumTrigger[3][6] = {{0}};
-  //  LOG(INFO) << "******" << FairLogger::endl;
-  //if (entriesInMessage > 0)
+
   LOG(DEBUG) << "Container:                                       " << fContainerCounter << FairLogger::endl;
   LOG(DEBUG) << "Entries in Message:                              " << entriesInMessage << FairLogger::endl;
   LOG(DEBUG) << "Entries in total:                                " << fMessageCounter << FairLogger::endl;
@@ -126,24 +134,24 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
   LOG(DEBUG) << "Clusters in TClonesArray:                        " << fClusters->GetEntriesFast() << FairLogger::endl;
   // Find info about hitType, stopType and infoType in cbmroot/fles/spadic/message/constants/..
   /*
-  TString triggerTypes[4] = {"Global trigger",
-			     "Self triggered",
-			     "Neighbor triggered",
-			     "Self and neighbor triggered"};
-  TString stopTypes[6] = {"Normal end of message", 
-			  "Channel buffer full", 
-			  "Ordering FIFO full", 
-			  "Multi hit", 
-			  "Multi hit and channel buffer full", 
-			  "Multi hit and ordering FIFO full"};
-  TString infoTypes[8] = {"Channel disabled during message building", 
-			  "Next grant timeout", 
-			  "Next request timeout", 
-			  "New grant but channel empty", 
-			  "Corruption in message builder", 
-			  "Empty word", 
-			  "Epoch out of sync", 
-			  "infoType out of array"};
+    TString triggerTypes[4] = {"Global trigger",
+    "Self triggered",
+    "Neighbor triggered",
+    "Self and neighbor triggered"};
+    TString stopTypes[6] = {"Normal end of message", 
+    "Channel buffer full", 
+    "Ordering FIFO full", 
+    "Multi hit", 
+    "Multi hit and channel buffer full", 
+    "Multi hit and ordering FIFO full"};
+    TString infoTypes[8] = {"Channel disabled during message building", 
+    "Next grant timeout", 
+    "Next request timeout", 
+    "New grant but channel empty", 
+    "Corruption in message builder", 
+    "Empty word", 
+    "Epoch out of sync", 
+    "infoType out of array"};
   */
   //if (entriesInMessage > 1000) entriesInMessage = 1000; // for fast data visualization
   ULong_t lastSpadicTime[3][6] = {{0}}; //[sys][spa]
@@ -164,10 +172,11 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     Int_t triggerType=raw->GetTriggerType();
     Int_t stopType=raw->GetStopType();
     Int_t infoType=raw->GetInfoType();
-    if (infoType > 6) {
-      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter <<  " InfoType " << infoType << " out of range. Set to 7. StopType:" << stopType << " TriggerType:" << triggerType << FairLogger::endl;
-      infoType = 7;
-    }
+    if (stopType > 0)
+      if (infoType > 6) {
+	LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter <<  " eqId " << eqID << " sourceA " << sourceA <<  " InfoType " << infoType << " out of range. Set to 7. StopType:" << stopType << " TriggerType:" << triggerType << FairLogger::endl;
+	infoType = 7;
+      }
     Int_t groupId=raw->GetGroupId();
     ULong_t time = raw->GetFullTime();
  
@@ -275,21 +284,16 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 
     //if (stopType == 0 && triggerType > 0){
 
-      //timeBuffer[TString(syscore+spadic)][time].push_back(raw);
-      //Time clustering is done here!!
-      //timeBufferIt = NULL;
-      std::map<Int_t, CbmSpadicRawMessage*>::iterator timeBufferIt = timeBuffer[TString(syscore+spadic)][time].find(combiId);
-      if (timeBufferIt == timeBuffer[TString(syscore+spadic)][time].end())
-	timeBuffer[TString(syscore+spadic)][time][combiId]=raw;
-      else
-	LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter << " SysId " << SysId << " SpaId " << SpaId << " at time " << time << " with combiId " << combiId << " already in buffer" << FairLogger::endl;
+    std::map<Int_t, CbmSpadicRawMessage*>::iterator timeBufferIt = fTimeBuffer[TString(syscore+spadic)][time].find(combiId);
+    if (timeBufferIt == fTimeBuffer[TString(syscore+spadic)][time].end())
+      fTimeBuffer[TString(syscore+spadic)][time][combiId]=raw;
+    else
+      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter << " SysId " << SysId << " SpaId " << SpaId << " at time " << time << " with combiId " << combiId << " already in buffer" << FairLogger::endl;
 
-      //}
+    //}
     if (time > lastSpadicTime[SysId][SpaId]){
       // ok, next hit
-      //LOG(DEBUG) << "ClusterSize: " << clusterSize[SysId][SpaId] << FairLogger::endl;
-      //fHM->H1(TString("ClusterSize_" + syscore + spadic).Data())->Fill(clusterSize[SysId][2*SpaId]);
-      //fHM->H1(TString("ClusterSize_" + syscore + spadic).Data())->Fill(clusterSize[SysId][2*SpaId+1]);
+    
       clusterSize[SysId][SpaId] = 1;
     } else if (time == lastSpadicTime[SysId][SpaId]) { // Clusterizer
       // possible FNR trigger
@@ -316,10 +320,10 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     TString channelId;
     channelId.Form("_Ch%02d", chID);
 
-    //if(infoType < 7) continue;
-  
-
-    fHM->H1(TString("Message_Length_" + syscore + spadic).Data())->Fill(nrSamples);
+    fHM->H1(TString("Message_Length_" + syscore + spadic).Data())->Fill(nrSamples,chID);
+    fHM->H1(TString("StopType_Message_Length_" + syscore + spadic).Data())->Fill(nrSamples,stopType);
+    fHM->H1(TString("InfoType_Message_Length_" + syscore + spadic).Data())->Fill(nrSamples,infoType);
+    fHM->H1(TString("TriggerType_Message_Length_" + syscore + spadic).Data())->Fill(nrSamples,triggerType);
     fHM->H2(TString("TriggerTypes_" + syscore + spadic).Data())->Fill(triggerType,chID);
     fHM->H2(TString("StopTypes_" + syscore + spadic).Data())->Fill(stopType,chID);
     fHM->H2(TString("Trigger_Stop_Types_" + syscore + spadic).Data())->Fill(triggerType,stopType);
@@ -328,7 +332,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     fHM->H2(TString("InfoTypes_" + syscore + spadic).Data())->Fill(infoType,chID);
    
     fHM->H1(TString("GroupId_" + syscore + spadic).Data())->Fill(groupId);
-    //sumTrigger[SysId][SpaId]++;
+
     if (stopType > 0){ //corrupt or multi message
       TString histName = "ErrorCounter_" + syscore + spadic;
       fHM->H1(histName.Data())->Fill(chID);   
@@ -370,12 +374,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 	histName = "maxADC_TimeBinCorr_" + syscore + spadic + "_TB" + timebinName[bin];
 	fHM->H2(histName.Data())->Fill(raw->GetSamples()[maxTimeBin],raw->GetSamples()[bin]);
       }
-      
-      /*
-	histName = "maxADC_TimeBinCorr_" + syscore + spadic;
-	for (Int_t bin = 0; bin < nrSamples; bin++)
-	fHM->H2(histName.Data())->Fill(raw->GetSamples()[maxTimeBin],raw->GetSamples()[bin]);
-      */
+
       histName = "maxTimeBin_" + syscore + spadic + channelId;
       fHM->H1(histName.Data())->Fill(maxTimeBin);
 
@@ -393,12 +392,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
       if (maxADC > -200){ // minimum amplitude threshold to reduce noise
 	fHM->H2(histName.Data())->Fill(columnId  ,rowId);
       }
-      /*if (chID%2 == 0) {// for raw data without remapping
-	fHM->H2(histName.Data())->Fill(chID/2,0);
-	} else {
-	fHM->H2(histName.Data())->Fill((chID-1)/2,1);
-	} 
-      */
+ 
       histName = "DeltaTime_" + syscore + spadic;
       fHM->H1(histName.Data())->Fill(time-lastSpadicTime[SysId][SpaId]);
 
@@ -423,12 +417,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     lastSpadicTime[SysId][SpaId] = time;
     lastSpadicTimeCh[SysId][SpaId][chID] = time;
     lastTriggerType[chID] = triggerType;
-    /*
-      new ((*fDigis)[entries]) CbmTrdDigi(layerId,  moduleId,  sectorId,  rowId,  columnId,
-      time,
-      triggerType,  infoType,  stopType,  bufferOverflow, 
-      nrSamples, raw->GetSamples());
-    */
+
     entries++;
   } //entriesInMessage
   for (Int_t sy = 0; sy < 2; sy++){
@@ -441,10 +430,21 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
       fHM->H1("TriggerSum")->Fill(TString("SysCore" + std::to_string(sy) + "_Spadic" + std::to_string(sp)),sumTrigger[sy][2*sp] + sumTrigger[sy][2*sp+1]);
     }
   }
+  for(Int_t syscore = 0; syscore < 3; ++syscore) {
+    for(Int_t spadic = 0; spadic < 3; ++spadic) {
+      if(wrongTimeOrder[syscore][spadic] > 0)
+	LOG(ERROR) << "SPADIC " << syscore << spadic << " Wrong time stamp order in " << Float_t(wrongTimeOrder[syscore][spadic]*100./entriesInMessage) <<"% of all events " <<  wrongTimeOrder[syscore][spadic] << FairLogger::endl;
+    }
+  }
+}
+
+
+void CbmTrdRawBeamProfile::Clusterizer()
+{
+  Int_t bufferOverflow(0), layerId(0), moduleId(0), sectorId(0), rowId(0), columnId(0);
   ULong_t lastClusterTime = 0;
   std::vector<Int_t> digiIndices;
-  //Int_t iDigi(0), iCluster(0);
-  for (std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = timeBuffer.begin() ; SpaSysIt != timeBuffer.end(); SpaSysIt++){
+  for (std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = fTimeBuffer.begin() ; SpaSysIt != fTimeBuffer.end(); SpaSysIt++){
     for (std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > ::iterator timeIt = SpaSysIt->second.begin() ; timeIt != SpaSysIt->second.end(); timeIt++){
       LOG(DEBUG) <<  "ClusterSize:" << Int_t(timeIt->second.size()) << FairLogger::endl;
       fHM->H1(TString("ClusterSize_" + SpaSysIt->first).Data())->Fill(Int_t(timeIt->second.size()));
@@ -456,17 +456,18 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
       Int_t lastCombiID = -1;
       digiIndices.clear();
       for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiIt = timeIt->second.begin(); combiIt != timeIt->second.end(); combiIt++){
-	new ((*fDigis)[fiDigi]) CbmTrdDigi(layerId,  moduleId,  sectorId,  rowId,  columnId,
-					   combiIt->second->GetFullTime(),
+	layerId = GetLayerID(combiIt->second);
+	moduleId = GetModuleID(combiIt->second);
+	sectorId = GetSectorID(combiIt->second);
+	rowId = GetRowID(combiIt->second);
+	columnId = GetColumnID(combiIt->second);
+	//printf("la%i mo%i se%i ro%i co%i\n",layerId,moduleId,sectorId,rowId,columnId);
+	new ((*fDigis)[fiDigi]) CbmTrdDigi(layerId,moduleId,sectorId,rowId,columnId,
+					   combiIt->second->GetFullTime()*57.1,//57,1ns per timestamp
 					   combiIt->second->GetTriggerType(), combiIt->second->GetInfoType(), combiIt->second->GetStopType(),  bufferOverflow, 
 					   combiIt->second->GetNrSamples(), combiIt->second->GetSamples());
 	if (combiIt != timeIt->second.begin())
 	  fHM->H1(TString("DeltaCh_Cluster_" + SpaSysIt->first).Data())->Fill(combiIt->first - lastCombiID);
-
-	//std::cout << combiIt->first << " ";
-
-	//Int_t size = fClusters->GetEntriesFast();
-	//const CbmDigi* digi = static_cast<const CbmDigi*>(fDigis->At(digiIndices.front()));
 
 	if (combiIt->first - lastCombiID == 1){
 	  digiIndices.push_back(fiDigi);
@@ -483,44 +484,95 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 	lastCombiID = combiIt->first;
 	fiDigi++;
       }
-	//std::cout << endl;
-	timeIt->second.clear();   
-      }
-	SpaSysIt->second.clear();
-      }/*
-	 for (std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > >::iterator it = timeBuffer.begin() ; it != timeBuffer.end(); it++){
-	 for (std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > ::iterator it2 = it->second.begin() ; it2 != it->second.end(); it2++){
-	 LOG(DEBUG) <<  "ClusterSize:" << Int_t(it2->second.size()) << FairLogger::endl;
-	 fHM->H1(TString("ClusterSize_" + it->first).Data())->Fill(Int_t(it2->second.size()));
-
-	 Int_t lastChID = -1;
-	 for (std::vector<CbmSpadicRawMessage*> ::iterator it3 = it2->second.begin(); it3 != it2->second.end(); it3++){
-	 if (it3 != it2->second.begin())
-	 fHM->H1(TString("DeltaCh_Cluster_" + it->first).Data())->Fill(lastChID - (*it3)->GetSourceAddress()*16 + (*it3)->GetChannelID());
-	 lastChID = (*it3)->GetSourceAddress()*16 + (*it3)->GetChannelID();
-	 }
-   
-	 //Delta time between time clusters
-	 fHM->H1(TString("DeltaTime_Cluster_" + it->first).Data())->Fill(it2->first - lastClusterTime);
-	 lastClusterTime = it2->first;
-	 }
-	 }
-       */
-
-	for(Int_t syscore = 0; syscore < 3; ++syscore) {
-	for(Int_t spadic = 0; spadic < 3; ++spadic) {
-	if(wrongTimeOrder[syscore][spadic] > 0)
-	  LOG(ERROR) << "SPADIC " << syscore << spadic << " Wrong time stamp order in " << Float_t(wrongTimeOrder[syscore][spadic]*100./entriesInMessage) <<"% of all events " <<  wrongTimeOrder[syscore][spadic] << FairLogger::endl;
-      }
-      }
+      //timeIt->second.clear();   
+    }
+    //SpaSysIt->second.clear();
+  }
+}
 
 
-      }
 
+Int_t CbmTrdRawBeamProfile::GetModuleID(CbmSpadicRawMessage* raw)
+{
+  Int_t eqID = raw->GetEquipmentID();
+  Int_t sourceA = raw->GetSourceAddress();
+  Int_t moduleId = 0;
+  switch (eqID) {
+  case kMuenster:  // Muenster
+    moduleId = 0 * 3;
+    break;
+  case kFrankfurt: // Frankfurt
+    moduleId = 1 * 3;
+    break;
+  case kBucarest: // Bucarest     
+    moduleId = 2 * 3;
+    break;
+  default:
+    LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter <<  " EquipmentID " << eqID << "not known." << FairLogger::endl;
+    break;
+  }     
+  switch (sourceA) {
+  case (SpadicBaseAddress+0):  // first spadic
+    moduleId += 0;
+    break;
+  case (SpadicBaseAddress+1):  // first spadic
+    moduleId += 0;
+    break;
+  case (SpadicBaseAddress+2):  // second spadic
+    moduleId += 1;
+    break;
+  case (SpadicBaseAddress+3):  // second spadic
+    moduleId += 1;
+    break;
+  case (SpadicBaseAddress+4):  // third spadic
+    moduleId += 2;
+    break;
+  case (SpadicBaseAddress+5):  // third spadic
+    moduleId += 2;
+    break;
+  default:
+    LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter << " Source Address " << sourceA << "not known." << FairLogger::endl;
+    break;
+  }   
+  return moduleId; // SysCoreId [0,2] * SpaId [0,2] same as layer
+}
+Int_t CbmTrdRawBeamProfile::GetLayerID(CbmSpadicRawMessage* raw)
+{
+  return GetModuleID(raw);
+}
+Int_t CbmTrdRawBeamProfile::GetSectorID(CbmSpadicRawMessage* raw)
+{
+  return 0;
+}
+Int_t CbmTrdRawBeamProfile::GetRowID(CbmSpadicRawMessage* raw)
+{
+  Int_t chID = raw->GetChannelID() + raw->GetSourceAddress() * 16;
+  Int_t columnId = GetChannelOnPadPlane(chID);
+  if (columnId > 16) 
+    return 1;
+  else
+    return 0;
+}
+Int_t CbmTrdRawBeamProfile::GetColumnID(CbmSpadicRawMessage* raw)
+{
+  Int_t chID = raw->GetChannelID() + raw->GetSourceAddress() * 16;
+  Int_t columnId = GetChannelOnPadPlane(chID);
+  if (columnId >= 16) 
+    columnId -= 16;
+  return columnId;
+}
+Int_t CbmTrdRawBeamProfile::GetChannelOnPadPlane(Int_t SpadicChannel)
+{
+  Int_t channelMapping[32] = {31,15,30,14,29,13,28,12,27,11,26,10,25, 9,24, 8,
+			      23, 7,22, 6,21, 5,20, 4,19, 3,18, 2,17, 1,16, 0};
+  return channelMapping[SpadicChannel];
+}
 
   // ---- Finish --------------------------------------------------------
   void CbmTrdRawBeamProfile::Finish()
   {
+    Clusterizer();
+
     LOG(DEBUG) << "Finish of CbmTrdRawBeamProfile" << FairLogger::endl;
     // Write to file
     fHM->WriteToFile();
@@ -594,9 +646,27 @@ void CbmTrdRawBeamProfile::CreateHistograms()
       title = histName + ";Delta t ;Counts";
       fHM->Add(histName.Data(), new TH1I(histName, title, 65, -32.5, 32.5));
 
+      histName = "StopType_Message_Length_" + syscoreName[syscore] + "_" + spadicName[spadic];
+      title = histName + ";Time-Bins ;";
+      fHM->Add(histName.Data(), new TH2I(histName, title, 33, -0.5, 32.5,6,0,6));
+      for (Int_t sType=0; sType < 6; sType++)
+	fHM->H1(histName.Data())->GetYaxis()->SetBinLabel(sType+1,stopTypes[sType]); 
+
+      histName = "InfoType_Message_Length_" + syscoreName[syscore] + "_" + spadicName[spadic];
+      title = histName + ";Time-Bins ;";
+      fHM->Add(histName.Data(), new TH2I(histName, title, 33, -0.5, 32.5, 8, 0, 8));
+      for (Int_t iType=0; iType < 8; iType++)
+	fHM->H1(histName.Data())->GetYaxis()->SetBinLabel(iType+1,infoTypes[iType]);
+
+      histName = "TriggerType_Message_Length_" + syscoreName[syscore] + "_" + spadicName[spadic];
+      title = histName + ";Time-Bins ;";
+      fHM->Add(histName.Data(), new TH2I(histName, title, 33, -0.5, 32.5,4,0,4));
+      for (Int_t tType=0; tType < 4; tType++)
+	fHM->H1(histName.Data())->GetYaxis()->SetBinLabel(tType+1,triggerTypes[tType]);
+
       histName = "Message_Length_" + syscoreName[syscore] + "_" + spadicName[spadic];
-      title = histName + "; ;Counts";
-      fHM->Add(histName.Data(), new TH1I(histName, title, 33, -0.5, 32.5));
+      title = histName + ";Time-Bins ;Channel";
+      fHM->Add(histName.Data(), new TH2I(histName, title, 33, -0.5, 32.5,32, 0, 32));
       /*
 	histName = "TriggerTypes_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	title = histName + "; ;Counts";
@@ -644,7 +714,7 @@ void CbmTrdRawBeamProfile::CreateHistograms()
 
       histName = "Trigger_Info_Types_" + syscoreName[syscore] + "_" + spadicName[spadic];
       title = histName + "; ;";
-      fHM->Add(histName.Data(), new TH2I(histName, title, 4, 0, 4, 6, 0, 6));
+      fHM->Add(histName.Data(), new TH2I(histName, title, 4, 0, 4, 8, 0, 8));
       for (Int_t tType=0; tType < 4; tType++)
 	fHM->H1(histName.Data())->GetXaxis()->SetBinLabel(tType+1,triggerTypes[tType]);
       for (Int_t iType=0; iType < 8; iType++)

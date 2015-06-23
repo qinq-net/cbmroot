@@ -2,9 +2,8 @@
 #define CBMTRDRAWBEAMPROFILE_H
 
 #include "FairTask.h"
-
 #include "CbmHistManager.h"
-
+#include "CbmSpadicRawMessage.h"
 #include "TClonesArray.h"
 
 class CbmTrdRawBeamProfile : public FairTask
@@ -38,6 +37,13 @@ class CbmTrdRawBeamProfile : public FairTask
     /** Finish task called at the end of the run **/
     virtual void Finish();
 
+    virtual Int_t GetModuleID(CbmSpadicRawMessage* raw);
+    virtual Int_t GetLayerID(CbmSpadicRawMessage* raw);
+    virtual Int_t GetSectorID(CbmSpadicRawMessage* raw);
+    virtual Int_t GetRowID(CbmSpadicRawMessage* raw);
+    virtual Int_t GetColumnID(CbmSpadicRawMessage* raw);
+    virtual Int_t GetChannelOnPadPlane(Int_t SpadicChannel);
+
   private:
 
     /** Input array from previous already existing data level **/
@@ -52,10 +58,14 @@ class CbmTrdRawBeamProfile : public FairTask
     Int_t fMessageCounter;
     Int_t fContainerCounter;
 
+    std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > > fTimeBuffer;// <ASIC ID "Syscore%d_Spadic%d"<Time, <CombiId, SpadicMessage> >
+
     /** Output array to  new data level**/
     //  TClonesArray* <OutputDataLevel>;
 
     void CreateHistograms();
+
+    void Clusterizer();
 
     CbmTrdRawBeamProfile(const CbmTrdRawBeamProfile&);
     CbmTrdRawBeamProfile operator=(const CbmTrdRawBeamProfile&);
