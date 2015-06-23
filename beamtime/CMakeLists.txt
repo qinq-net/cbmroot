@@ -12,8 +12,8 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/cbmdata/beamtime
   ${CBMROOT_SOURCE_DIR}/cbmdata/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/sts/setup
-#  ${CBMROOT_BINARY_DIR}/roc/roc/roclib
-  ${CBMROOT_SOURCE_DIR}/roclight
+  ${CBMROOT_BINARY_DIR}/roc/roc/roclib
+#  ${CBMROOT_SOURCE_DIR}/roclight
   ${CBMROOT_SOURCE_DIR}/beamtime
   ${CBMROOT_SOURCE_DIR}/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/beamtime/param
@@ -82,7 +82,7 @@ Set(SRCS
 #  reco/StsCosyClusterFinder.cxx
 #  reco/StsCosyHitFinder.cxx
 #  reco/StsCosyTrack.cxx
-  reco/CbmStsHodoCorrelations.cxx
+#  reco/CbmStsHodoCorrelations.cxx
   reco/CbmMuchRawHistos.cxx
 )
 
@@ -102,11 +102,11 @@ EndIf()
 Set(LINKDEF  CbmBeamtimeLinkDef.h)
 Set(LIBRARY_NAME CbmBeamtime)
 Set(DEPENDENCIES
-#    ${LIBRARY_OUTPUT_PATH}/libDabcRoc.so 
-#    ${LIBRARY_OUTPUT_PATH}/libDabcMbs.so 
-#    ${LIBRARY_OUTPUT_PATH}/libDabcBase.so 
-#    ${LIBRARY_OUTPUT_PATH}/libRoc.so 
-    RocLight
+    ${LIBRARY_OUTPUT_PATH}/libDabcRoc.so 
+    ${LIBRARY_OUTPUT_PATH}/libDabcMbs.so 
+    ${LIBRARY_OUTPUT_PATH}/libDabcBase.so 
+    ${LIBRARY_OUTPUT_PATH}/libRoc.so 
+#    RocLight
     Sts
     CbmData CbmBase
 #    Base Trd

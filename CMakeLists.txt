@@ -60,6 +60,7 @@ Include(ExternalProject)
 
 #Check the compiler and set the compile and link flags
 Check_Compiler()
+#Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow -Weffc++ -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-ignored-qualifiers -Wno-overloaded-virtual")
 
 Set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
 Set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
@@ -346,8 +347,8 @@ EndIf(${EveIsBuild} STREQUAL yes)
 
 #set(BUILD_BEAMTIME FALSE CACHE BOOL "Build everything needed (DABC, RocLib ...) to read testbeam data.")
 If(BUILD_BEAMTIME)
-  add_subdirectory (roclight)
-#  add_subdirectory (roc)
+#  add_subdirectory (roclight)
+  add_subdirectory (roc)
   add_subdirectory (beamtime)
 EndIf(BUILD_BEAMTIME)
 
