@@ -105,7 +105,7 @@ void create_bpipe_geometry_v14l()
   Double_t z04[nSects04]    = { 3700.,   5943.24, 5943.44, 5947.34, 5959.8,  5981.19, 5999.8  }; // mm
   Double_t rin04[nSects04]  = {    0.,      0.,      3.42,   70.,    140.,    210.,    253.23 };
   //Double_t rout04[nSects04] = {  156.2,   250.87,  250.88,  251.05,  251.57,  252.48,  253.23 };
-  Double_t rout04[nSects04] = {  156.2,   250.84,  250.85,  251.02,  251.54,  252.45,  253.23 };
+  Double_t rout04[nSects04] = {  156.2,   250.84,  250.85,  251.01,  251.54,  252.44,  253.23 };
   
   TString pipe6name = "pipe6 - second window @ 6000mm, h=0.2mm, R=600mm"; // iron !!!
   const Int_t nSects6 = 7;
