@@ -1,7 +1,7 @@
 /******************************************************************************
  ** Creation of beam pipe geometry in ROOT format (TGeo).
  **
- ** @file create_bpipe_geometry_v13e.C
+ ** @file create_bpipe_geometry_v14c.C
  ** @author Andrey Chernogorov <a.chernogorov@gsi.de>
  ** @date 17.10.2013
  **
@@ -37,11 +37,11 @@ Double_t rotangle = 1.35; // deg
 
 // -------------   Other global variables   -----------------------------------
 // ---> Macros name to info file
-TString macrosname = "create_bpipe_geometry_v13e.C";
+TString macrosname = "create_bpipe_geometry_v14c.C";
 // ---> Geometry file name (output)
-TString rootFileName = "pipe_v13e.root";
+TString rootFileName = "pipe_v14c.root";
 // ---> Geometry name
-TString pipeName = "PIPE_v13e";
+TString pipeName = "PIPE_v14c";
 // ----------------------------------------------------------------------------
 
 
@@ -49,10 +49,10 @@ TString pipeName = "PIPE_v13e";
 // ======                         Main function                           =====
 // ============================================================================
 
-void create_bpipe_geometry_v13e()
+void create_bpipe_geometry_v14c()
 {
   // -----   Define beam pipe sections   --------------------------------------
-  /** For v13e:   **/
+  /** For v14c:   **/
   TString pipe1name = "pipe1 - vacuum chamber";
   const Int_t nSects1 = 6;
   Double_t z1[nSects1]    = { -50.,  25.,   35.,  230.17, 230.17, 230.87 }; // mm

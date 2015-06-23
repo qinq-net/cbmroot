@@ -39,9 +39,9 @@ Double_t rotangle = 1.35; // deg
 // ---> Macros name to info file
 TString macrosname = "create_bpipe_geometry_v14a.C";
 // ---> Geometry file name (output)
-TString rootFileName = "pipe_v13d.root";
+TString rootFileName = "pipe_v14a.root";
 // ---> Geometry name
-TString pipeName = "PIPE_v13d";
+TString pipeName = "PIPE_v14a";
 // ----------------------------------------------------------------------------
 
 
@@ -52,7 +52,7 @@ TString pipeName = "PIPE_v13d";
 void create_bpipe_geometry_v14a()
 {
   // -----   Define beam pipe sections   --------------------------------------
-  /** For v13d:   **/
+  /** For v14a:   **/
   TString pipe1name = "pipe1 - vacuum chamber";
   const Int_t nSects1 = 6;
   Double_t z1[nSects1]    = { -50.,  25.,   35.,  230.17, 230.17, 230.87 }; // mm
