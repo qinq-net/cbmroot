@@ -14,6 +14,7 @@
 #include "TH2.h"
 
 #include "TString.h"
+#include "TStyle.h"
 
 #include <cmath>
 #include <map>
@@ -92,7 +93,7 @@ InitStatus CbmTrdRawBeamProfile::Init()
   // Do whatever else is needed at the initilization stage
   // Create histograms to be filled
   // initialize variables
-  CreateHistograms();
+  CbmTrdRawBeamProfile::CreateHistograms();
 
   return kSUCCESS;
 
@@ -477,11 +478,19 @@ void CbmTrdRawBeamProfile::Clusterizer()
 	sectorId = GetSectorID(raw);
 	rowId = GetRowID(raw);
 	columnId = GetColumnID(raw);
+	// BaseLineCorrection==
+	Float_t BaseLine = 0.;
+	const Int_t nSamples = 32;//raw->GetNrSamples();
+	Float_t Samples[nSamples] = {0.};
+	for (Int_t iBin = 0; iBin < nSamples; iBin++){
+	  Samples[iBin] = raw->GetSamples()[iBin] - BaseLine;
+	}
+	//=====================
 	//printf("la%i mo%i se%i ro%i co%i\n",layerId,moduleId,sectorId,rowId,columnId);
 	new ((*fDigis)[fiDigi]) CbmTrdDigi(layerId,moduleId,sectorId,rowId,columnId,
-					   raw->GetFullTime()*57.1,//57,1ns per timestamp
+					   raw->GetFullTime()*57.14,//57,14 ns per timestamp
 					   raw->GetTriggerType(), raw->GetInfoType(), raw->GetStopType(),  bufferOverflow, 
-					   raw->GetNrSamples(), raw->GetSamples());
+					   nSamples, &Samples[32]);
 	if (combiIt != timeIt->second.begin())
 	  fHM->H1(TString("DeltaCh_Cluster_" + SpaSysIt->first).Data())->Fill(combiIt->first - lastCombiID);
 
@@ -649,7 +658,9 @@ Int_t CbmTrdRawBeamProfile::GetChannelOnPadPlane(Int_t SpadicChannel)
 
 void CbmTrdRawBeamProfile::CreateHistograms()
 {
-
+  gStyle->SetNumberContours(99);
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
   // Create histograms for 3 Syscores with maximum 3 Spadics
 
   TString syscoreName[3] = { "SysCore0", "SysCore1", "SysCore2" };
@@ -711,25 +722,25 @@ void CbmTrdRawBeamProfile::CreateHistograms()
       fHM->Add(histName.Data(), new TH1I(histName, title, 65, -32.5, 32.5));
 
       histName = "StopType_Message_Length_" + syscoreName[syscore] + "_" + spadicName[spadic];
-      title = histName + ";Time-Bins ;";
+      title = histName + ";Message Length (Time-Bins) ;";
       fHM->Add(histName.Data(), new TH2I(histName, title, 33, -0.5, 32.5,6,-0.5,5.5));
       for (Int_t sType=0; sType < 6; sType++)
 	fHM->H1(histName.Data())->GetYaxis()->SetBinLabel(sType+1,stopTypes[sType]); 
 
       histName = "InfoType_Message_Length_" + syscoreName[syscore] + "_" + spadicName[spadic];
-      title = histName + ";Time-Bins ;";
+      title = histName + ";Message Length (Time-Bins) ;";
       fHM->Add(histName.Data(), new TH2I(histName, title, 33, -0.5, 32.5, 8, -0.5, 7.5));
       for (Int_t iType=0; iType < 8; iType++)
 	fHM->H1(histName.Data())->GetYaxis()->SetBinLabel(iType+1,infoTypes[iType]);
 
       histName = "TriggerType_Message_Length_" + syscoreName[syscore] + "_" + spadicName[spadic];
-      title = histName + ";Time-Bins ;";
+      title = histName + ";Message Length (Time-Bins) ;";
       fHM->Add(histName.Data(), new TH2I(histName, title, 33, -0.5, 32.5,4,-0.5,3.5));
       for (Int_t tType=0; tType < 4; tType++)
 	fHM->H1(histName.Data())->GetYaxis()->SetBinLabel(tType+1,triggerTypes[tType]);
 
       histName = "Message_Length_" + syscoreName[syscore] + "_" + spadicName[spadic];
-      title = histName + ";Time-Bins ;Channel";
+      title = histName + ";Message Length (Time-Bins) ;Channel";
       fHM->Add(histName.Data(), new TH2I(histName, title, 33, -0.5, 32.5, 32, -0.5, 31.5));
     
       histName = "TriggerTypes_" + syscoreName[syscore] + "_" + spadicName[spadic];

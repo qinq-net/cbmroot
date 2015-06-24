@@ -52,7 +52,7 @@ InitStatus CbmTrdOnlineDisplay::Init()
   gStyle->SetLabelSize(lsize);
   for (Int_t sys = 0; sys < 2; sys++){
     for (Int_t spa = 0; spa < 2; spa++){
-      fSpadic1[spa][sys] = new TCanvas(TString("fSpadic" + std::to_string(spa) + "SysCore" + std::to_string(sys)), TString("Spadic" + std::to_string(spa) + "SysCore" + std::to_string(sys)), 0, 0, 1600, 1200);
+      fSpadic1[spa][sys] = new TCanvas(TString("fSysCore" + std::to_string(sys) + "Spadic" + std::to_string(spa)), TString("fSysCore" + std::to_string(sys) + "Spadic" + std::to_string(spa)), 0, 0, 1600, 1200);
       fSpadic1[spa][sys]->Divide(4,3);
 
       // Should be set for each pad of the Canvas
@@ -76,7 +76,7 @@ InitStatus CbmTrdOnlineDisplay::Init()
 	h1->Draw("");
       }
 
-      fSpadic1[spa][sys]->cd(4);
+      fSpadic1[spa][sys]->cd(4)->SetLogz(1);
       h2=static_cast<TH2*>(gROOT->FindObjectAny(TString("Trigger_Heatmap_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
       if (h2!=NULL) {
 	h2->Draw("COLZ");
@@ -94,33 +94,42 @@ InitStatus CbmTrdOnlineDisplay::Init()
 	h1->Draw("");
       }    
 
-      fSpadic1[spa][sys]->cd(7)->SetLogy(1);
-      h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("StopTypes_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));  
+      fSpadic1[spa][sys]->cd(7)->SetLogy(0);
+      h1=static_cast<TH2*>(gROOT->FindObjectAny(TString("StopTypes_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));  
       if (h1!=NULL) {
-	h1->Draw("");
+	h1->Draw("colz");
       }    
-      fSpadic1[spa][sys]->cd(8)->SetLogy(1);
-      h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("InfoTypes_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));  
+      fSpadic1[spa][sys]->cd(8)->SetLogy(0);
+      h1=static_cast<TH2*>(gROOT->FindObjectAny(TString("InfoTypes_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));  
       if (h1!=NULL) {
-	h1->Draw("");
+	h1->Draw("colz");
       }
-      fSpadic1[spa][sys]->cd(9)->SetLogy(1);
-      h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("TriggerTypes_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
+      fSpadic1[spa][sys]->cd(9)->SetLogy(0);
+      h1=static_cast<TH2*>(gROOT->FindObjectAny(TString("TriggerTypes_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
       if (h1!=NULL) {
-	h1->Draw("");
+	h1->Draw("colz");
       }
       fSpadic1[spa][sys]->cd(10)->SetLogy(1);
       h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("ClusterSize_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
       if (h1!=NULL) {
 	h1->Draw("");
       }
-
+     fSpadic1[spa][sys]->cd(11)->SetLogy(0);
+      h1=static_cast<TH2*>(gROOT->FindObjectAny(TString("Message_Length_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
+      if (h1!=NULL) {
+	h1->Draw("colz");
+      }
+     fSpadic1[spa][sys]->cd(12)->SetLogy(0);
+      h1=static_cast<TH2*>(gROOT->FindObjectAny(TString("TriggerType_ClusterSize_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
+      if (h1!=NULL) {
+	h1->Draw("colz");
+      }
     }
   }
 
   for (Int_t sys = 0; sys < 2; sys++){
     for (Int_t spa = 0; spa < 2; spa++) {
-      fSpadic1a[spa][sys] = new TCanvas(TString("fSpadic"+ std::to_string(spa) +"a_sys"+ std::to_string(sys)), TString("Spadic"+ std::to_string(spa) +"_Signal_Shape_sys"+ std::to_string(sys)), 50, 50, 1200, 700);
+      fSpadic1a[spa][sys] = new TCanvas(TString("fSysCore" + std::to_string(sys) + "Spadic" + std::to_string(spa) +"_Signal_Shape"), TString("fSysCore" + std::to_string(sys) + "Spadic" + std::to_string(spa) +"_Signal_Shape"), 50, 50, 1200, 700);
       fSpadic1a[spa][sys]->Divide(8,4);	
       gPad->SetFillColor(0);
 
