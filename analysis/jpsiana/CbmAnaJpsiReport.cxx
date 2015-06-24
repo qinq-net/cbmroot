@@ -329,8 +329,8 @@ double CbmAnaJpsiReport::SignalOverBg(
   signalFit->Fit("gaus","Q");
 
   //Calculate sigma and Mean
-  double_t sigmaSignal = signalFit->GetFunction("gaus")->GetParameter("Sigma");
-  double_t meanSignal = signalFit->GetFunction("gaus")->GetParameter("Mean");
+  Double_t sigmaSignal = signalFit->GetFunction("gaus")->GetParameter("Sigma");
+  Double_t meanSignal = signalFit->GetFunction("gaus")->GetParameter("Mean");
 
   //Get the number of the Bins of Min and Max
   int signalMin = signal->FindBin(meanSignal - 2.*sigmaSignal);
