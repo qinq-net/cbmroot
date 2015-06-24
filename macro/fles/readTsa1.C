@@ -9,7 +9,7 @@
  */
 
 
-void readTsa1(TString inFile = "data/82_ba2015.tsa")
+void readTsa1(TString inFile = "data/1070_cern2014.tsa")
 {
 
   // --- Specify input file name (this is just an example)
@@ -52,8 +52,8 @@ void readTsa1(TString inFile = "data/82_ba2015.tsa")
   source->SetFileName(inFile);
   //source->AddFile(inFile1);
   //source->AddUnpacker(nxyter_unpacker, 0x10);//fhodo or cherenkov or pb glass???
-  //source->AddUnpacker(spadic_unpacker, 0x40);// test beam 2014
-  source->AddUnpacker(spadic_unpacker, 0xE0);// Lab münster
+  source->AddUnpacker(spadic_unpacker, 0x40);// test beam 2014
+  //source->AddUnpacker(spadic_unpacker, 0xE0);  // Lab münster
   // --- Event header
   //  FairEventHeader* event = new CbmTbEvent();
   //  event->SetRunId(260);
@@ -61,11 +61,14 @@ void readTsa1(TString inFile = "data/82_ba2015.tsa")
   // --- Run
   FairRunOnline *run = new FairRunOnline(source);
   run->SetOutputFile(outFile);
-//  run->SetEventHeader(event);
+  //  run->SetEventHeader(event);
 
-//  gDebug=2;
+  //  gDebug=2;
   FairTask* spadicRawBeam = new CbmTrdRawBeamProfile();
   run->AddTask(spadicRawBeam);
+
+  FairTask* spadicAnalysis = new CbmTrdClusterAnalysis();
+  run->AddTask(spadicAnalysis);
 
   CbmTrdOnlineDisplay* onlineDisplay = new CbmTrdOnlineDisplay();
   onlineDisplay->SetUpdateInterval(1000);
@@ -89,7 +92,7 @@ void readTsa1(TString inFile = "data/82_ba2015.tsa")
   std::cout << ">>> readTsa: Macro finished successfully." << std::endl;
   std::cout << ">>> readTsa: Output file is " << outFile << std::endl;
   std::cout << ">>> readTsa: Real time " << rtime << " s, CPU time "
-  					<< ctime << " s" << std::endl;
+	    << ctime << " s" << std::endl;
   std::cout << std::endl;
 
   /// --- Screen output for automatic tests
