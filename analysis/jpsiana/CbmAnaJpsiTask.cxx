@@ -214,7 +214,7 @@ void CbmAnaJpsiTask::InitHist()
    CreateSourceTypesH1("fh_track_pt","P_{t} [GeV/c]", "Yield", 40, 0., 4.);
    CreateSourceTypesH1("fh_track_rich_ann","RICH ANN output", "Yield", 120, -1.2, 1.2);
    CreateSourceTypesH1("fh_track_trd_ann","TRD ANN output", "Yield", 120, -1.2, 1.2);
-   CreateSourceTypesH2("fh_track_tof_m2","","m^{2} [(GeV/c^{2})^{2}]P [GeV/c]","Yield", 700, 0., 7., 480, -0.4, 2.);
+   CreateSourceTypesH2("fh_track_tof_m2","P [GeV/c]", "m^{2} [GeV/c^{2}]^{2}","Yield", 900, 0., 9., 360, -0.4, 1.4);
 
    //vertex of the secondary electrons from gamma conversion
    fHM->Create2<TH2D>("fh_vertex_el_gamma_xz","fh_vertex_el_gamma_xz;Z [cm];X [cm];Counter per event", 200, -10., 190., 400, -130.,130.);
