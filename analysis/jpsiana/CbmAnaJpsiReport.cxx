@@ -58,13 +58,21 @@ void CbmAnaJpsiReport::Draw()
 	  //Rebin minv histograms
 	  Int_t nRebins = 20;
 	  HM()->RebinByPattern("fh_signal_minv.+", nRebins);
+	  HM()->ScaleByPattern("fh_signal_minv.+", 10);
 	  HM()->RebinByPattern("fh_bg_minv.+", nRebins);
+	  HM()->ScaleByPattern("fh_bg_minv.+", 10);
 	  HM()->RebinByPattern("fh_pi0_minv.+", nRebins);
+	  HM()->ScaleByPattern("fh_pi0_minv.+", 10);
 	  HM()->RebinByPattern("fh_gamma_minv.+", nRebins);
+	  HM()->ScaleByPattern("fh_gamma_minv.+", 10);
 	  HM()->RebinByPattern("fh_bg_truematch_minv.+", nRebins);
+	  HM()->ScaleByPattern("fh_bg_truematch_minv.+", 10);
 	  HM()->RebinByPattern("fh_bg_truematch_el_minv.+", nRebins);
+	  HM()->ScaleByPattern("fh_bg_truematch_el_minv.+", 10);
 	  HM()->RebinByPattern("fh_bg_truematch_notel_minv.+", nRebins);
+	  HM()->ScaleByPattern("fh_bg_truematch_notel_minv.+", 10);
 	  HM()->RebinByPattern("fh_bg_mismatch_minv.+", nRebins);
+	  HM()->ScaleByPattern("fh_bg_mismatch_minv.+", 10);
 
 
 	  Draw2DCut("fh_rich_pmt_xy");
@@ -72,8 +80,8 @@ void CbmAnaJpsiReport::Draw()
 
 	  DrawMinvMismatchesAll();
 
-	  DrawAnalysisStepsH1("fh_signal_minv",false, 5e-5, 0.1);
-	  DrawAnalysisStepsH1("fh_bg_minv",false, 5e-5, 0.1);
+	  DrawAnalysisStepsH1("fh_signal_minv",false, 5e-5, 1);
+	  DrawAnalysisStepsH1("fh_bg_minv",false, 5e-5, 1);
 	  DrawAnalysisStepsH1("fh_pi0_minv",false);
 	  DrawAnalysisStepsH1("fh_gamma_minv",false);
 

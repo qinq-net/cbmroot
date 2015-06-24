@@ -727,13 +727,13 @@ Bool_t CbmAnaJpsiTask::IsTofElectron(
 
 	if (momentum >= 1.)
 	{
-		if (mass2 < (0.013*momentum - 0.003))
+		if (mass2 < (0.029*momentum-0.0409))	//(0.013*momentum - 0.003))
 			{
 		       return true;
 		    }
 	} else
 		{
-			if (mass2 < 0.01)
+			if (mass2 < 0.02)	//0.01)
 			{
 		      return true; //fTofM2
 		    }

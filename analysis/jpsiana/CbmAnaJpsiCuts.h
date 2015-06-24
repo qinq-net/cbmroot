@@ -43,7 +43,7 @@ public:
 
 		// analysis cuts
 		fPtCut = 1.0;//1.5;
-		fChiPrimCut = 5.;//3.;
+		fChiPrimCut = 3.;//5.;
 	}
 
 	/*
