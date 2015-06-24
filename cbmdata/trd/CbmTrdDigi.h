@@ -34,7 +34,7 @@ class CbmTrdDigi : public CbmDigi
   CbmTrdDigi(Int_t layerId,  Int_t moduleId, Int_t sectorId, Int_t rowId, Int_t columnId,
 	     Int_t fullTime,
 	     Int_t triggerType, Int_t infoType, Int_t stopType, Int_t bufferOverflow, 
-	     Int_t nrSamples, Int_t* samples);
+	     Int_t nrSamples, Float_t* samples);
   /**
    * \brief Destructor.
    */
@@ -60,6 +60,13 @@ class CbmTrdDigi : public CbmDigi
    */
   Double_t GetTime() const { return fTime; }
 
+  // Accessors for CbmSpadicRawMessage Testbeam input
+  Int_t GetNrSamples() { return fNrSamples; }
+  Int_t* GetSamples() { return fSamples; }
+  Int_t GetTriggerType() { return fTriggerType; }
+  Int_t GetStopType() { return fStopType; }
+  Int_t GetInfoType() { return fInfoType; }
+  //===============================================
   Bool_t GetPrimeTriggerStatus() const { return fPrimeTriggered; }
 
   Bool_t GetFNR_TriggerStatus() const { return fFNR_Triggered; }

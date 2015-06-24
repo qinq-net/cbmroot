@@ -107,7 +107,7 @@ CbmTrdDigi::CbmTrdDigi(
 CbmTrdDigi::CbmTrdDigi(Int_t layerId, Int_t moduleId, Int_t sectorId, Int_t rowId, Int_t columnId,
 		       Int_t fullTime,
 		       Int_t triggerType, Int_t infoType, Int_t stopType, Int_t bufferOverflow, 
-		       Int_t nrSamples, Int_t* samples)
+		       Int_t nrSamples, Float_t* samples)
   : CbmDigi(),
     fn_FNR_Triggers(0),
     fAddress(CbmTrdAddress::GetAddress(layerId,
