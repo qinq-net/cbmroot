@@ -269,9 +269,18 @@ void StsCosyClusterFinder::Exec(Option_t * option)
 		}
 	      new_cluster->AddDigi(digi_index);
 	    }
+/**
+ ** PAL, 19/06/15: Deprecated in rev 7648, to remove once checked
 	  new_cluster->SetMean(sumWX / sumW);
 	  new_cluster->SetProperties(0.,0.,0.,mean_time/nofStrips);
 	  new_cluster->SetMeanError((1. / (sumW)) * TMath::Sqrt(error));
+**/ 
+	  // PAL, 19/06/15, TODO: check error calculation, maybe better estimator
+	  // For now use the channelMeanSq field to store the previously used error 
+	  // and keep existing behavior
+      new_cluster->SetProperties( 0., 
+                                  (sumWX / sumW), (1. / (sumW)) * TMath::Sqrt(error), 
+                                  mean_time/nofStrips);
 	}
     }
   

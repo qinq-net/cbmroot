@@ -79,10 +79,10 @@ Set(SRCS
   param/CbmBeamTimeFirstPar.cxx
 
   reco/CbmStsCosyBL.cxx
-#  reco/StsCosyClusterFinder.cxx
-#  reco/StsCosyHitFinder.cxx
-#  reco/StsCosyTrack.cxx
-#  reco/CbmStsHodoCorrelations.cxx
+  reco/StsCosyClusterFinder.cxx
+  reco/StsCosyHitFinder.cxx
+  reco/StsCosyTrack.cxx
+  reco/CbmStsHodoCorrelations.cxx
   reco/CbmMuchRawHistos.cxx
 )
 

@@ -120,8 +120,14 @@ void StsCosyTrack::Exec(Option_t* opt) {
       hit = (CbmStsHit*) fHits->At(iHit);
       
       // Determine sector type and channel numbers
-      
+ /**
+  ** PAL, 19/06/15: Deprecated in rev 7648, to remove once checked
       Int_t detId  = hit->GetSectorNr();
+  **/
+	  // PAL, 19/06/15, TODO: check best way to keep track of the detector ID
+	  // For now use the frontDigiId of CbmStsHit instead of the deprecated SectorNb 
+      Int_t detId  = hit->GetFrontDigiId();
+      
       vector<CbmStsHit*>& vlist =  fMapPts[detId];
       vlist.push_back((CbmStsHit*) hit); 
     } 

@@ -27,9 +27,9 @@
 #pragma link C++ class CbmFiberHodoClusterFinder;
 #pragma link C++ class CbmHodoRawHistos;
 #pragma link C++ class CbmStsCosyBL;
-//#pragma link C++ class StsCosyClusterFinder;
-//#pragma link C++ class StsCosyHitFinder;
-//#pragma link C++ class StsCosyTrack;
+#pragma link C++ class StsCosyClusterFinder;
+#pragma link C++ class StsCosyHitFinder;
+#pragma link C++ class StsCosyTrack;
 #pragma link C++ class CbmStsHodoCorrelations;
 #pragma link C++ class CbmMuchRawHistos;
 //#pragma link C++ class CbmBeamTimExampleTask;

@@ -184,7 +184,11 @@ void StsCosyHitFinder::Exec(Option_t * option)
 	      Int_t size = fHits->GetEntriesFast();
 	      new ((*fHits)[size]) CbmStsHit(frontCluster->GetAddress(), 
 					     pos, dpos, 0, frontClusterId, backClusterId, 
+/**
+ ** PAL, 19/06/15: SectorNb Deprecated in rev 7648 => for now use the frontDigiId to know station index
 					     0, 0, 0,(back_time + front_time)/2.);
+ **/
+					     0, 0,(back_time + front_time)/2.);
 	    }
 	}
     }
@@ -215,7 +219,11 @@ void StsCosyHitFinder::Exec(Option_t * option)
 	      Int_t size = fHits->GetEntriesFast();
 	      new ((*fHits)[size]) CbmStsHit(frontCluster->GetAddress(), 
 					     pos, dpos, 0, frontClusterId, backClusterId, 
+/**
+ ** PAL, 19/06/15: SectorNb Deprecated in rev 7648 => for now use the frontDigiId to know station index
 					     0, 0, 4,(back_time + front_time)/2.);
+ **/
+					     4, 0,(back_time + front_time)/2.);
 	    }
 	}
     }
@@ -262,13 +270,21 @@ void StsCosyHitFinder::Exec(Option_t * option)
     {
       Int_t frontClusterId = sts_0n[i];
       const CbmStsCluster* frontCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_0n[i]));
+/**
+ ** PAL, 19/06/15: Deprecated in rev 7648, to remove once checked
       Double_t frontChannel = frontCluster->GetMean();
+**/ 
+      Double_t frontChannel = frontCluster->GetCentre();
       Double_t front_time = frontCluster->GetTime();
       for(int k=0; k< sts_0p.size(); k++)
 	{
 	  Int_t backClusterId = sts_0p[k];
 	  const CbmStsCluster* backCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_0p[k]));
+/**
+ ** PAL, 19/06/15: Deprecated in rev 7648, to remove once checked
 	  Double_t backChannel = backCluster->GetMean();
+ **/ 
+	  Double_t backChannel = backCluster->GetCentre();
 	  Double_t back_time = backCluster->GetTime();
 	  if(TMath::Abs(back_time -front_time - time_shifts[0]) < time_limits[0])
 	    {
@@ -278,11 +294,22 @@ void StsCosyHitFinder::Exec(Option_t * option)
 	      TVector3 pos(xHit, yHit, zHit);
 	      //	  cout << pos << endl;
 	      TVector3 dpos;
+/**
+ ** PAL, 19/06/15: Deprecated in rev 7648, to remove once checked
 	      dpos.SetXYZ(frontCluster->GetMeanError()*0.005,backCluster->GetMeanError()*0.005, 0.);
+ **/ 
+		  // PAL, 19/06/15, TODO: check error calculation, maybe better estimator
+		  // For now use Sqrt(pitch) as no accessor to MeanSq in current CbmStsCluster
+	      dpos.SetXYZ( TMath::Sqrt(0.005), TMath::Sqrt(0.005), 0.);
+	      
 	      Int_t size = fHits->GetEntriesFast();
 	      new ((*fHits)[size]) CbmStsHit(frontCluster->GetAddress(), 
 					     pos, dpos, 0, frontClusterId, backClusterId, 
+/**
+ ** PAL, 19/06/15: SectorNb Deprecated in rev 7648 => for now use the frontDigiId to know station index
 					     0, 0, 1,(back_time + front_time)/2.);
+ **/
+					     1, 0,(back_time + front_time)/2.);
 	    }
 	}
     }
@@ -291,13 +318,21 @@ void StsCosyHitFinder::Exec(Option_t * option)
     {
       Int_t frontClusterId = sts_1n[i];
       const CbmStsCluster* frontCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_1n[i]));
+/**
+ ** PAL, 19/06/15: Deprecated in rev 7648, to remove once checked
       Double_t frontChannel = frontCluster->GetMean();
+ **/ 
+	  Double_t frontChannel = frontCluster->GetCentre();
       Double_t front_time = frontCluster->GetTime();
       for(int k=0; k< sts_1p.size(); k++)
 	{
 	  Int_t backClusterId = sts_1p[k];
 	  const CbmStsCluster* backCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_1p[k]));
+/**
+ ** PAL, 19/06/15: Deprecated in rev 7648, to remove once checked
 	  Double_t backChannel = backCluster->GetMean();
+ **/ 
+	  Double_t backChannel = backCluster->GetCentre();
 	  Double_t back_time = backCluster->GetTime();
 	  if(TMath::Abs(back_time -front_time - time_shifts[1]) < time_limits[1])
 	    {
@@ -307,11 +342,22 @@ void StsCosyHitFinder::Exec(Option_t * option)
 	      
 	      TVector3 pos(xHit, yHit, zHit);
 	      TVector3 dpos;
+/**
+ ** PAL, 19/06/15: Deprecated in rev 7648, to remove once checked
 	      dpos.SetXYZ(frontCluster->GetMeanError()*0.005,backCluster->GetMeanError()*0.005, 0.);
+ **/ 
+		  // PAL, 19/06/15, TODO: check error calculation, maybe better estimator
+		  // For now use Sqrt(pitch) as no accessor to MeanSq in current CbmStsCluster
+	      dpos.SetXYZ( TMath::Sqrt(0.005), TMath::Sqrt(0.005), 0.);
+	      
 	      Int_t size = fHits->GetEntriesFast();
 	      new ((*fHits)[size]) CbmStsHit(frontCluster->GetAddress(), 
 					     pos, dpos, 0, frontClusterId, backClusterId, 
+/**
+ ** PAL, 19/06/15: SectorNb Deprecated in rev 7648 => for now use the frontDigiId to know station index
 					     0, 0, 3,(back_time + front_time)/2.);
+ **/
+					     3, 0,(back_time + front_time)/2.);
 	    }
 	}
     }
@@ -320,13 +366,21 @@ void StsCosyHitFinder::Exec(Option_t * option)
     {
       Int_t frontClusterId = sts_2n[i];
       const CbmStsCluster* frontCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_2n[i]));
+/**
+ ** PAL, 19/06/15: Deprecated in rev 7648, to remove once checked
       Double_t frontChannel = frontCluster->GetMean();
+ **/ 
+      Double_t frontChannel = frontCluster->GetCentre();
       Double_t front_time = frontCluster->GetTime();
       for(int k=0; k< sts_2p.size(); k++)
 	{
 	  Int_t backClusterId = sts_2p[k];
 	  const CbmStsCluster* backCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_2p[k]));
+/**
+ ** PAL, 19/06/15: Deprecated in rev 7648, to remove once checked
 	  Double_t backChannel = backCluster->GetMean();
+ **/ 
+	  Double_t backChannel = backCluster->GetCentre();
 	  Double_t back_time = backCluster->GetTime();
 	  
 	  if(TMath::Abs(back_time -front_time - time_shifts[2]) < time_limits[2])
@@ -336,11 +390,22 @@ void StsCosyHitFinder::Exec(Option_t * option)
 	      Double_t yHit = (frontChannel+448 -(backChannel+515))*0.0058/TMath::Tan(7.5*TMath::DegToRad()) + 3.;	      
 	      TVector3 pos(xHit, yHit, zHit);
 	      TVector3 dpos;
+/**
+ ** PAL, 19/06/15: Deprecated in rev 7648, to remove once checked
 	      dpos.SetXYZ(frontCluster->GetMeanError()*0.0058,backCluster->GetMeanError()*0.0058, 0.);
+ **/ 
+		  // PAL, 19/06/15, TODO: check error calculation, maybe better estimator
+		  // For now use Sqrt(pitch) as no accessor to MeanSq in current CbmStsCluster
+	      dpos.SetXYZ( TMath::Sqrt(0.0058), TMath::Sqrt(0.0058), 0.);
+	      
 	      Int_t size = fHits->GetEntriesFast();
 	      new ((*fHits)[size]) CbmStsHit(frontCluster->GetAddress(), 
 					     pos, dpos, 0, frontClusterId, backClusterId, 
+/**
+ ** PAL, 19/06/15: SectorNb Deprecated in rev 7648 => for now use the frontDigiId to know station index
 					     0, 0, 2,(back_time + front_time)/2.);
+ **/
+					     2, 0,(back_time + front_time)/2.);
 	    }
 	}
     }
