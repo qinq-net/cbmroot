@@ -781,8 +781,12 @@ void create_stsgeo_v13z(const char* geoTag="v13z")
 
   TString geoFileName__ = "sts_";
   geoFileName_ = geoFileName__ + geoTag + "-geo.root";
-  top->Export(geoFileName_);
-  
+  sts->Export(geoFileName_);
+
+  geoFile = new TFile(geoFileName_, "UPDATE");
+  stsTrans->Write();
+  geoFile->Close();
+
   infoFile.close();
 
 }
