@@ -21,6 +21,7 @@
 
 #include <TList.h>
 #include <TCollection.h>
+#include <TVectorD.h>
 
 #include "PairAnalysisCutGroup.h"
 #include "AnalysisCuts.h"
@@ -29,6 +30,8 @@
 //#include "AliVParticle.h"
 #include "PairAnalysisTrack.h"
 #include "PairAnalysisPair.h"
+
+#include "PairAnalysisHelper.h"
 
 
 ClassImp(PairAnalysisCutQA)
@@ -43,6 +46,7 @@ PairAnalysisCutQA::PairAnalysisCutQA() :
   //
   for(Int_t itype=0; itype<kNtypes; itype++) {
     fCutQA[itype]=0x0;
+    fPdgCutQA[itype]=0x0;
     fNCuts[itype]=1;
     for(Int_t i=0; i<20; i++) {
       fCutNames[i][itype]="";
@@ -64,6 +68,7 @@ PairAnalysisCutQA::PairAnalysisCutQA(const char* name, const char* title) :
   //
   for(Int_t itype=0; itype<kNtypes; itype++) {
     fCutQA[itype]=0x0;
+    fPdgCutQA[itype]=0x0;
     fNCuts[itype]=1;
     for(Int_t i=0; i<20; i++) {
       fCutNames[i][itype]="";
@@ -90,22 +95,60 @@ void PairAnalysisCutQA::Init()
 
   fQAHistArray.SetName(Form("%s",GetName()));
 
+  // const TVectorD *binsPdg = PairAnalysisHelper::MakeArbitraryBinning("-2212,-321,-211,-13,-11,11,13,211,321,2212");
+  const TVectorD *binsPdg = PairAnalysisHelper::MakeLinBinning(5,0,5);
   // loop over all types
   for(Int_t itype=0; itype<kNtypes; itype++) {
     //    printf("\n type: %d\n",itype);
     fCutNames[0][itype]="no cuts";
 
+    const TVectorD *binsX = PairAnalysisHelper::MakeLinBinning(fNCuts[itype],0,fNCuts[itype]);
     // create histogram based on added cuts
-    fCutQA[itype] = new TH1F(fTypeKeys[itype],
-			     Form("%sQA;cuts;# passed %ss",fTypeKeys[itype],fTypeKeys[itype]),
-			     fNCuts[itype],0,fNCuts[itype]);
+    fCutQA[itype] = new TH1I(fTypeKeys[itype],
+			     Form("%sQA;cuts;# passed %ss",fTypeKeys[itype],fTypeKeys[itype]), 			     fNCuts[itype], binsX->GetMatrixArray());
+
+    if(itype==kTrack) {
+      fPdgCutQA[itype] = new TH2I(Form("%sPDG",fTypeKeys[itype]),
+				  Form("%sQA;cuts;PDG code;# passed %ss",
+				       fTypeKeys[itype],fTypeKeys[itype]),
+				  fNCuts[itype],binsX->GetMatrixArray(),
+				  binsPdg->GetNrows()-1,binsPdg->GetMatrixArray() );
+
+    }
+
+    // delete surplus
+    delete binsX;
+
+    // Set labels to histograms
     // loop over all cuts
     for(Int_t i=0; i<fNCuts[itype]; i++) {
       fCutQA[itype]->GetXaxis()->SetBinLabel(i+1,fCutNames[i][itype]);
+      if(fPdgCutQA[itype]) fPdgCutQA[itype]->GetXaxis()->SetBinLabel(i+1,fCutNames[i][itype]);
       //      printf(" %s \n",fCutNames[i][itype]);
     }
+
+    // pdg label
+    if(fPdgCutQA[itype]) {
+      TString pdglbl="";
+      for(Int_t i=0; i<binsPdg->GetNrows()-1; i++) {
+	switch(i+1) {
+	case 1:  pdglbl="electron"; break; // electron
+	case 2:  pdglbl="muon";     break; // muon
+	case 3:  pdglbl="pion";     break; // pion
+	case 4:  pdglbl="kaon";     break; // kaon
+	case 5:  pdglbl="proton";   break; // proton
+	}
+	fPdgCutQA[itype]->GetYaxis()->SetBinLabel(i+1,pdglbl.Data());
+      }
+    }
+
+    // add to output array
     fQAHistArray.AddLast(fCutQA[itype]);
+    if(fPdgCutQA[itype]) fQAHistArray.AddLast(fPdgCutQA[itype]);
   }
+
+  // delete surplus
+  delete binsPdg;
 
 }
 
@@ -188,13 +231,30 @@ void PairAnalysisCutQA::Fill(UInt_t mask, TObject *obj)
 
   UInt_t idx = GetObjIndex(obj);
 
+  // pdg to pdg label
+  Int_t pdg = 0;
+  TString pdglbl="";
+  if(idx==kTrack) {
+    pdg = (Int_t) (static_cast<PairAnalysisTrack*>(obj)->PdgCode());
+    switch(TMath::Abs(pdg)) {
+    case 11:  pdglbl="electron"; break; // electron
+    case 13:  pdglbl="muon";     break; // muon
+    case 211: pdglbl="pion";     break; // pion
+    case 321: pdglbl="kaon";     break; // kaon
+    case 2212:pdglbl="proton";   break; // proton
+    }
+  }
+
+  // loop over cutmask and check decision
   Int_t cutstep=1;
   for (Int_t iCut=0; iCut<fNCuts[idx]-1;++iCut) {
     //    UInt_t cutMask=1<<iCut;         // for each cut
     UInt_t cutMask=(1<<(iCut+1))-1; // increasing cut match
 
+    // passed
     if ((mask&cutMask)==cutMask) {
       fCutQA[idx]->Fill(cutstep);
+      if(pdg) fPdgCutQA[idx]->Fill(cutstep, pdglbl.Data(),1.);
       ++cutstep;
     }
 
@@ -210,7 +270,25 @@ void PairAnalysisCutQA::FillAll(TObject *obj)
   //
 
   UInt_t idx = GetObjIndex(obj);
+
+  // pdg to pdg label
+  Int_t pdg = 0;
+  TString pdglbl="";
+  if(idx==kTrack) {
+    pdg = (Int_t) (static_cast<PairAnalysisTrack*>(obj)->PdgCode());
+    switch(TMath::Abs(pdg)) {
+    case 11:  pdglbl="electron"; break; // electron
+    case 13:  pdglbl="muon";     break; // muon
+    case 211: pdglbl="pion";     break; // pion
+    case 321: pdglbl="kaon";     break; // kaon
+    case 2212:pdglbl="proton";   break; // proton
+    }
+  }
+
+  // fill
   fCutQA[idx]->Fill(0);
+  if(pdg) fPdgCutQA[idx]->Fill(0., pdglbl.Data(),1);
+
 
 }
 

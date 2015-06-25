@@ -15,7 +15,8 @@
 //#################################################################
 
 #include <TNamed.h>
-#include <TH1F.h>
+#include <TH1I.h>
+#include <TH2I.h>
 #include <TList.h>
 #include <TObjArray.h>
 
@@ -52,7 +53,8 @@ public:
 private:
 
   TObjArray fQAHistArray;              //-> array of QA histograms
-  TH1F *fCutQA[kNtypes];               // qa histogram
+  TH1I *fCutQA[kNtypes];               // qa histogram
+  TH2I *fPdgCutQA[kNtypes];            // qa histogram for PDG codes
   Int_t fNCuts[kNtypes];               // number of cuts
   const char* fCutNames[20][kNtypes];  // cut names
   const char* fTypeKeys[kNtypes];      // type names
@@ -63,7 +65,7 @@ private:
   PairAnalysisCutQA(const PairAnalysisCutQA &);
   PairAnalysisCutQA &operator=(const PairAnalysisCutQA &);
   
-  ClassDef(PairAnalysisCutQA,1) //Group of cuts
+  ClassDef(PairAnalysisCutQA,2) //Group of cuts
 };
 
 #endif
