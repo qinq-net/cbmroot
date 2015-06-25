@@ -5,7 +5,7 @@
 #include "CbmTrdCluster.h"
 #include "CbmHistManager.h"
 #include "CbmBeamDefaults.h"
-
+#include "CbmTrdAddress.h"
 #include "CbmTrdDaqBuffer.h"
 
 #include "FairLogger.h"
@@ -159,7 +159,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
   ULong_t lastSpadicTimeCh[3][6][32] = {{0}}; //[sys][spa][ch]
   Int_t lastTriggerType[32] = {-1};
   Int_t clusterSize[3][6] = {{1}};
-  Int_t bufferOverflow(0), layerId(0), moduleId(0), sectorId(0), rowId(0), columnId(0), combiId(0);
+  Int_t rowId(0), columnId(0), combiId(0);
   Int_t wrongTimeOrder[3][6] = {{0}};
 
   for (Int_t i=0; i < entriesInMessage; ++i) {
@@ -247,51 +247,17 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 
     combiId = rowId * (maxNrColumns + 1) + columnId;
 
-
-    if (SysId == 0){
-      if (SpaId == 0 || SpaId == 1){
-	layerId = 0;
-	moduleId = 0;
-      } else if (SpaId == 2 || SpaId == 3){
-	layerId = 1;
-	moduleId = 1;
-      } else if (SpaId == 4 || SpaId == 5){
-	layerId = 2;
-	moduleId = 2;
-      } else { LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter <<  " SpaId " << SpaId << "not known." << FairLogger::endl;}
-    } else  if (SysId == 1){
-      if (SpaId == 0 || SpaId == 1){
-	layerId = 3;
-	moduleId = 3;
-      } else if (SpaId == 2 || SpaId == 3){
-	layerId = 4;
-	moduleId = 4;
-      } else if (SpaId == 4 || SpaId == 5){
-	layerId = 5;
-	moduleId = 5;
-      } else { LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter << " SpaId " << SpaId << "not known." << FairLogger::endl;}
-    } else  if (SysId == 2){
-      if (SpaId == 0 || SpaId == 1){
-	layerId = 6;
-	moduleId = 6;
-      } else if (SpaId == 2 || SpaId == 3){
-	layerId = 7;
-	moduleId = 7;
-      } else if (SpaId == 4 || SpaId == 5){
-	layerId = 8;
-	moduleId = 8;
-      } else { LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter << " SpaId " << SpaId << "not known." << FairLogger::endl;}
-    } else { LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter << " SysId " << SysId << "not known." << FairLogger::endl;}
-
     //if (stopType == 0 && triggerType > 0){
 
     std::map<Int_t, CbmSpadicRawMessage*>::iterator timeBufferIt = fTimeBuffer[TString(syscore+spadic)][time].find(combiId);
-    if (timeBufferIt == fTimeBuffer[TString(syscore+spadic)][time].end())
+    if (timeBufferIt == fTimeBuffer[TString(syscore+spadic)][time].end()){
       fTimeBuffer[TString(syscore+spadic)][time][combiId]=raw;
-    else
-      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter << " SysId " << SysId << " SpaId " << SpaId << " at time " << time << " with combiId " << combiId << " already in buffer" << FairLogger::endl;
+    } else {
 
+      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter << " SysId " << SysId << " SpaId " << SpaId << " at time " << time << " with combiId " << combiId << " already in buffer" << FairLogger::endl;
+    }
     //}
+
     if (time > lastSpadicTime[SysId][SpaId]){
       // ok, next hit
     
@@ -444,7 +410,7 @@ void CbmTrdRawBeamProfile::Clusterizer()
 {
   Int_t mapDigiCounter = 0;
   CbmSpadicRawMessage* raw = NULL;
-  Int_t bufferOverflow(0), layerId(0), moduleId(0), sectorId(0), rowId(0), columnId(0), clusterSize(0);
+  Int_t  layerId(0), moduleId(0), sectorId(0), rowId(0), columnId(0), clusterSize(0);
   ULong_t lastClusterTime = 0;
   ULong_t time = 0;
   TString SysSpaID = "";
@@ -487,9 +453,9 @@ void CbmTrdRawBeamProfile::Clusterizer()
 	}
 	//=====================
 	//printf("la%i mo%i se%i ro%i co%i\n",layerId,moduleId,sectorId,rowId,columnId);
-	new ((*fDigis)[fiDigi]) CbmTrdDigi(layerId,moduleId,sectorId,rowId,columnId,
+	new ((*fDigis)[fiDigi]) CbmTrdDigi(CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId),
 					   raw->GetFullTime()*57.14,//57,14 ns per timestamp
-					   raw->GetTriggerType(), raw->GetInfoType(), raw->GetStopType(),  bufferOverflow, 
+					   raw->GetTriggerType(), raw->GetInfoType(), raw->GetStopType(),
 					   nSamples, &Samples[32]);
 	if (combiIt != timeIt->second.begin())
 	  fHM->H1(TString("DeltaCh_Cluster_" + SpaSysIt->first).Data())->Fill(combiIt->first - lastCombiID);
@@ -520,6 +486,8 @@ void CbmTrdRawBeamProfile::Clusterizer()
 
 Int_t CbmTrdRawBeamProfile::GetModuleID(CbmSpadicRawMessage* raw)
 {
+  if (raw == NULL)
+    LOG(ERROR) << "CbmTrdRawBeamProfile::GetModuleID: CbmSpadicRawMessage == NULL" << FairLogger::endl;
   Int_t eqID = raw->GetEquipmentID();
   Int_t sourceA = raw->GetSourceAddress();
   Int_t moduleId = 0;
@@ -564,14 +532,20 @@ Int_t CbmTrdRawBeamProfile::GetModuleID(CbmSpadicRawMessage* raw)
 }
 Int_t CbmTrdRawBeamProfile::GetLayerID(CbmSpadicRawMessage* raw)
 {
+  if (raw == NULL)
+ LOG(ERROR) << "CbmTrdRawBeamProfile::GetLayerID: CbmSpadicRawMessage == NULL" << FairLogger::endl;
   return GetModuleID(raw);
 }
 Int_t CbmTrdRawBeamProfile::GetSectorID(CbmSpadicRawMessage* raw)
 {
+  if (raw == NULL)
+ LOG(ERROR) << "CbmTrdRawBeamProfile::GetSectorID: CbmSpadicRawMessage == NULL" << FairLogger::endl;
   return 0;
 }
 Int_t CbmTrdRawBeamProfile::GetRowID(CbmSpadicRawMessage* raw)
 {
+  if (raw == NULL)
+ LOG(ERROR) << "CbmTrdRawBeamProfile::GetRowID: CbmSpadicRawMessage == NULL" << FairLogger::endl;
   Int_t chID = raw->GetChannelID();
   Int_t sourceA = raw->GetSourceAddress();
   switch (sourceA) {
@@ -602,6 +576,8 @@ Int_t CbmTrdRawBeamProfile::GetRowID(CbmSpadicRawMessage* raw)
 }
 Int_t CbmTrdRawBeamProfile::GetColumnID(CbmSpadicRawMessage* raw)
 {
+  if (raw == NULL)
+    LOG(ERROR) << "CbmTrdRawBeamProfile::GetColumnID: CbmSpadicRawMessage == NULL" << FairLogger::endl;
   Int_t chID = raw->GetChannelID();
   Int_t sourceA = raw->GetSourceAddress();
   switch (sourceA) {

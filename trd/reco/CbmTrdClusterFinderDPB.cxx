@@ -122,7 +122,7 @@ void CbmTrdClusterFinderDPB::doClustering(Int_t ModuleAddress, DigiList* digiLis
     Int_t combiId = globalRow * (fModuleInfo->GetNofColumns() + 1) + iCol;
     if (combiId != (*iDigi).first) printf("Wrong CombiId %i %i\n",combiId,(*iDigi).first);
    
-    if (digi->GetPrimeTriggerStatus() == true || digi->GetFNR_TriggerStatus() == true){
+    if (digi->GetTriggerType() == 1 || digi->GetTriggerType() == 2){
     
       if ((*iDigi).first - lastCombiId > 1) {  
 	//printf("--------------------------------------------------------close\n");

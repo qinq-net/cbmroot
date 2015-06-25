@@ -215,8 +215,8 @@ void CbmTrdSPADIC::Exec(Option_t *option)
     Int_t combiId = globalRow * (fModuleInfo->GetNofColumns() + 1) + iCol;
  
     if (digi->GetCharge() >= fMinimumChargeTH){
-      digi->SetPrimeTriggerStatus(true);
-      digi->SetNormalStop(true);
+      digi->SetTriggerType(1);
+      digi->SetStopType(0);
       moduleDigiTriggerMap[moduleAddress].push_back(std::make_pair(combiId, iDigi));
     } else {    
       moduleDigiNotTriggerMap[moduleAddress][combiId] = iDigi;
@@ -265,9 +265,8 @@ void CbmTrdSPADIC::Exec(Option_t *option)
 	} else {
 	  ADC(digi);
 	}
-	digi->SetNormalStop(true);
-	digi->SetFNR_TriggerStatus(true);  
-	digi->AddNeighbourTriggerId(digiId);
+	digi->SetStopType(0);
+	digi->SetTriggerType(2);  
       }
       if (moduleDigiNotTriggerMap[moduleAddress].find(combiId+1) != moduleDigiNotTriggerMap[moduleAddress].end()){
 	digi = (CbmTrdDigi*) fDigis->At(moduleDigiNotTriggerMap[moduleAddress][combiId+1]);
@@ -287,9 +286,8 @@ void CbmTrdSPADIC::Exec(Option_t *option)
 	} else {
 	  ADC(digi);
 	}
-	digi->SetNormalStop(true);
-	digi->SetFNR_TriggerStatus(true); 
-	digi->AddNeighbourTriggerId(digiId);	
+	digi->SetStopType(0);
+	digi->SetTriggerType(2); 	
       }
       if (fPulseShape)
 	if (debug)

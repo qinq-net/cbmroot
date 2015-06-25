@@ -30,11 +30,8 @@ class CbmTrdDigi : public CbmDigi
    * \param[in] time Absolute time [ns].
    */
   CbmTrdDigi(Int_t address, Double_t charge, Double_t time);
-  CbmTrdDigi(Int_t address, Double_t charge, Double_t time, Bool_t primeTriggered, Bool_t fnr_Triggered, Bool_t globalTriggered, Bool_t normalStop, Bool_t bufferFullStop, Bool_t doubleHitStop);
-  CbmTrdDigi(Int_t layerId,  Int_t moduleId, Int_t sectorId, Int_t rowId, Int_t columnId,
-	     Int_t fullTime,
-	     Int_t triggerType, Int_t infoType, Int_t stopType, Int_t bufferOverflow, 
-	     Int_t nrSamples, Float_t* samples);
+  CbmTrdDigi(Int_t address, Double_t charge, Double_t time, Int_t triggerType, Int_t infoType, Int_t stopType);
+  CbmTrdDigi(Int_t address, Double_t fullTime, Int_t triggerType, Int_t infoType, Int_t stopType, Int_t nrSamples, Float_t* samples);
   /**
    * \brief Destructor.
    */
@@ -62,31 +59,19 @@ class CbmTrdDigi : public CbmDigi
 
   // Accessors for CbmSpadicRawMessage Testbeam input
   Int_t GetNrSamples() { return fNrSamples; }
-  Int_t* GetSamples() { return fSamples; }
+  Float_t* GetSamples() { return fSamples; }
   Int_t GetTriggerType() { return fTriggerType; }
   Int_t GetStopType() { return fStopType; }
   Int_t GetInfoType() { return fInfoType; }
   //===============================================
-  Bool_t GetPrimeTriggerStatus() const { return fPrimeTriggered; }
-
-  Bool_t GetFNR_TriggerStatus() const { return fFNR_Triggered; }
-
-  Bool_t GetGlobal_TriggerStatus() const { return fGlobalTriggered; }
-
-  Int_t* GetNeighbourTriggerIds() {return fNeighbourTriggerIds; }
-
-  Int_t GetNrFNR_Triggers() const { return fn_FNR_Triggers;}
 
   /** Accessors **/
   void SetAddress(Int_t address) { fAddress = address; }
   void SetCharge(Double_t charge) { fCharge = charge; }
   void SetTime(Double_t time) { fTime = time; }
-  void SetPrimeTriggerStatus(Bool_t primeTriggered)  { fPrimeTriggered = primeTriggered; }
-  void SetFNR_TriggerStatus(Bool_t fnr_Triggered)  { fFNR_Triggered = fnr_Triggered; }
-  void SetNormalStop(Bool_t normalStop)  { fNormalStop = normalStop; }
-  void SetBufferFullStop(Bool_t bufferFullStop)  { fBufferFullStop = bufferFullStop; }
-  void SetDoubleHitStop(Bool_t doubleHitStop)  { fDoubleHitStop = doubleHitStop; }
-  void AddNeighbourTriggerId(Int_t digiId);
+  void SetTriggerType(Int_t triggerType) {fTriggerType = triggerType; }
+  void SetInfoType(Int_t infoType) {fInfoType = infoType; }
+  void SetStopType(Int_t stopType) {fStopType = stopType; }
   void SetPulseShape(Float_t pulse[45]);
   /** Modifiers **/
   void AddCharge(Double_t charge) { fCharge += charge; }
@@ -98,22 +83,12 @@ class CbmTrdDigi : public CbmDigi
   Int_t fAddress; ///< Unique channel address
   Double_t fCharge; ///< Charge
   Double_t fTime; ///< Absolute time [ns]
-  Bool_t fGlobalTriggered;
-  Bool_t fPrimeTriggered;
-  Bool_t fFNR_Triggered;
-  Bool_t fNormalStop;
-  Bool_t fBufferFullStop;
-  Bool_t fDoubleHitStop;
-
-  Int_t fNeighbourTriggerIds[8]; // 8 direct neighbours per pad in maximum
-  Float_t fPulseShape[45];
-
   Int_t fTriggerType;
   Int_t fInfoType;
   Int_t fStopType;
   Int_t fBufferOverflowCount; 
   Int_t fNrSamples;
-  Int_t fSamples[32];
+  Float_t fSamples[45];
 
   ClassDef(CbmTrdDigi, 5);
 };
