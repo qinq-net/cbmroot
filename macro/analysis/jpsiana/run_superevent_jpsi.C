@@ -8,6 +8,9 @@ void run_superevent_jpsi()
 
 	CbmAnaJpsiSuperEvent* se = new CbmAnaJpsiSuperEvent();
 	se->AddFile("/Users/slebedev/Development/cbm/data/jpsi/analysis.0001.root");
+	//se->AddFile("/Users/slebedev/Development/cbm/data/jpsi/analysis.0001.root");
+	//se->AddFile("/Users/slebedev/Development/cbm/data/jpsi/analysis.0001.root");
+	//se->AddFile("/Users/slebedev/Development/cbm/data/jpsi/analysis.0001.root");
 
 	se->Run();
 }
