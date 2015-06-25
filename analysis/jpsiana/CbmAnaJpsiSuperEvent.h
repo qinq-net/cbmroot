@@ -9,7 +9,7 @@
 #define ANALYSIS_JPSIANA_CBMANAJPSISUPEREVENT_H_
 #include <string>
 #include "CbmAnaJpsiCandidate.h"
-#include "TClonesArray.h"
+#include "TH1D.h"
 
 using namespace std;
 
@@ -28,10 +28,13 @@ public:
 	void Run();
 
 private:
-	TClonesArray* fCandidates;
 	vector<string> fFileNames;
 	vector<CbmAnaJpsiCandidate> fMinusCandidates;
 	vector<CbmAnaJpsiCandidate> fPlusCandidates;
+
+	TH1D* fMinv;
+
+	void InitHist();
 
 	void ReadCandidates();
 
