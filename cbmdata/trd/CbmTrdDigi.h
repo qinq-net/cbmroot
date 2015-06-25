@@ -90,7 +90,7 @@ class CbmTrdDigi : public CbmDigi
   Int_t fNrSamples;
   Float_t fSamples[45];
 
-  ClassDef(CbmTrdDigi, 5);
+  ClassDef(CbmTrdDigi, 6);
 };
 
 #endif
