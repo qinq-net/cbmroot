@@ -74,6 +74,7 @@ private:
   TClonesArray* fTofPoints; 
   TClonesArray* fTofHits;
   TClonesArray* fGlobalTracks;
+  TClonesArray* fJpsiCandidates; //output array of Jpsi candidates
   
   CbmVertex* fPrimVertex;
   CbmKFVertex fKFVertex;
@@ -254,6 +255,11 @@ private:
      * \brief Fill histograms for signal and BG electrons
      */
     void DifferenceSignalAndBg();
+
+    /*
+     * \brief Copy candidates to the output array.
+     */
+    void CopyCandidatesToOutputArray();
 
 
    /**

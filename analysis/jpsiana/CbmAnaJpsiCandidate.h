@@ -3,8 +3,9 @@
 #define CBM_ANA_JPSI_CANDIDATE_H
 
 #include "TVector3.h"
+#include "TObject.h"
 
-class CbmAnaJpsiCandidate{
+class CbmAnaJpsiCandidate: public TObject{
 public:
 	CbmAnaJpsiCandidate()
 	  : fPosition(),
@@ -74,6 +75,8 @@ public:
 	Double_t fRichAnn;
 	Double_t fTrdAnn;
 	Double_t fMass2;
+
+	ClassDef(CbmAnaJpsiCandidate, 1)
 };
 
 #endif

@@ -46,6 +46,7 @@ CbmAnaJpsiTask::CbmAnaJpsiTask()
 	  fTofPoints(NULL),
 	  fTofHits(NULL),
 	  fGlobalTracks(NULL),
+	  fJpsiCandidates(NULL),
 	  fPrimVertex(NULL),
 	  fKFVertex(),
 	  fCandidates(),
@@ -116,6 +117,9 @@ InitStatus CbmAnaJpsiTask::Init()
 
    fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
    if ( NULL == fStsTrackMatches ) {Fatal("CbmAnaJpsiTask::Init","No StsTrackMatches Array!");}
+
+   fJpsiCandidates = new TClonesArray("CbmAnaJpsiCandidate");
+   ioman->Register("JpsiCandidates","Jpsi", fJpsiCandidates, kTRUE);
 
    InitHist();
 
@@ -258,6 +262,8 @@ void CbmAnaJpsiTask::InitHist()
 void CbmAnaJpsiTask::Exec(
       Option_t* option)
 {
+	fJpsiCandidates->Clear();
+
    fHM->H1("fh_event_number")->Fill(0.5);
 
    fEventNum++;
@@ -290,6 +296,8 @@ void CbmAnaJpsiTask::Exec(
   PairMcAndAcceptance();
 
   SignalAndBgReco();
+
+  CopyCandidatesToOutputArray();
 
 }
 
@@ -785,6 +793,13 @@ void CbmAnaJpsiTask::RichPmtXY() {
 		}
 		if (isMcGammaElectron) fHM->H2("fh_rich_pmt_xy_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(richHit->GetX(), richHit->GetY());
 		if (isMcPi0Electron) fHM->H2("fh_rich_pmt_xy_"+ CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(richHit->GetX(), richHit->GetY());
+	}
+}
+
+void CbmAnaJpsiTask::CopyCandidatesToOutputArray()
+{
+	for (Int_t i = 0; i < fCandidates.size(); i++) {
+		new ((*fJpsiCandidates)[i]) CbmAnaJpsiCandidate(fCandidates[i]);
 	}
 }
 
