@@ -226,6 +226,7 @@ void PairAnalysisStyler::Style(TObject *obj, Int_t idx) {
   //
   if(!obj) return;
 
+  // axis attributes
   if (obj->InheritsFrom(TH1::Class()) && gPad) {
     if(gPad->GetLogx()) {
       dynamic_cast<TH1*>(obj)->GetXaxis()->SetMoreLogLabels(kTRUE);
@@ -241,31 +242,67 @@ void PairAnalysisStyler::Style(TObject *obj, Int_t idx) {
     }
   }
 
+  // marker attributes
   if (obj->InheritsFrom(TAttMarker::Class())) {
-    dynamic_cast<TAttMarker*>(obj)->SetMarkerSize(1.5);
-    dynamic_cast<TAttMarker*>(obj)->SetMarkerStyle(Marker[idx%kNMaxMarker]);
-    //   dynamic_cast<TAttMarker*>(obj)->SetMarkerColor(Color[idx%kNMaxColor]);
-    if(idx>=10) {
-      idx=idx%10;
-      dynamic_cast<TAttMarker*>(obj)->SetMarkerColor(TColor::GetColorBright(Color[idx]));
+    if(idx>=100) { // predefined styles
+      dynamic_cast<TAttMarker*>(obj)->SetMarkerSize( fSze[idx-100]);
+      dynamic_cast<TAttMarker*>(obj)->SetMarkerStyle(fMrk[idx-100]);
+      dynamic_cast<TAttMarker*>(obj)->SetMarkerColor(fCol[idx-100]);
     }
-    else
-      dynamic_cast<TAttMarker*>(obj)->SetMarkerColor(TColor::GetColorDark(Color[idx%kNMaxColor]));
+    else {
+      dynamic_cast<TAttMarker*>(obj)->SetMarkerSize(1.5);
+      dynamic_cast<TAttMarker*>(obj)->SetMarkerStyle(Marker[idx%kNMaxMarker]);
+      dynamic_cast<TAttMarker*>(obj)->SetMarkerColor(Color[idx%kNMaxColor]);
+      if(idx>=10) {
+	idx=idx%10;
+	dynamic_cast<TAttMarker*>(obj)->SetMarkerColor(TColor::GetColorBright(Color[idx]));
+      }
+      else if(idx>=20) {
+	idx=idx%20;
+	dynamic_cast<TAttMarker*>(obj)->SetMarkerColor(TColor::GetColorDark(Color[idx%kNMaxColor]));
+      }
+    }
   }
+
+  // line attributes
   if (obj->InheritsFrom(TAttLine::Class())) {
-    dynamic_cast<TAttLine*>(obj)->SetLineWidth(2);
-    dynamic_cast<TAttLine*>(obj)->SetLineStyle(Line[(idx%10)%kNMaxLine]);
-    //    dynamic_cast<TAttLine*>(obj)->SetLineColor(Color[idx%kNMaxColor]);
-    if(idx>=10) {
-      idx=idx%10;
-      dynamic_cast<TAttLine*>(obj)->SetLineColor(TColor::GetColorBright(Color[idx]));
+    if(idx>=100) { // predefined styles
+      dynamic_cast<TAttLine*>(obj)->SetLineWidth(fWdt[idx-100]);
+      dynamic_cast<TAttLine*>(obj)->SetLineStyle(fLne[idx-100]);
+      dynamic_cast<TAttLine*>(obj)->SetLineColor(fCol[idx-100]);
     }
-    else
-      dynamic_cast<TAttLine*>(obj)->SetLineColor(TColor::GetColorDark(Color[idx%kNMaxColor]));
+    else {
+      dynamic_cast<TAttLine*>(obj)->SetLineWidth(2);
+      dynamic_cast<TAttLine*>(obj)->SetLineStyle(Line[(idx%10)%kNMaxLine]);
+      dynamic_cast<TAttLine*>(obj)->SetLineColor(Color[idx%kNMaxColor]);
+      if(idx>=10) {
+	idx=idx%10;
+	dynamic_cast<TAttLine*>(obj)->SetLineColor(TColor::GetColorBright(Color[idx]));
+      }
+      else if(idx>=20) {
+	idx=idx%20;
+	dynamic_cast<TAttLine*>(obj)->SetLineColor(TColor::GetColorDark(Color[idx%kNMaxColor]));
+      }
+    }
   }
+
+  // fill attributes
   // if (obj->InheritsFrom(TAttFill::Class()))
   //   dynamic_cast<TAttFill*>(obj)->SetFillStyle();
   //   dynamic_cast<TAttFill*>(obj)->SetFillColor();
 
+}
+
+void PairAnalysisStyler::SetStyle(Eidx idx, Int_t col, Int_t marker, Double_t size, Int_t line, Double_t width, Int_t fill)
+{
+  //
+  // change predefined style according to index
+  //
+  fCol[idx]=col;
+  fMrk[idx]=marker;
+  fSze[idx]=size;
+  fLne[idx]=line;
+  fWdt[idx]=width;
+  fFll[idx]=fill;
 }
 

@@ -182,9 +182,6 @@
 //#pragma link C++ class PairAnalysisV0Cuts+;
 //#pragma link C++ class PairAnalysisTrackCuts+;
 		       /*
-#pragma link C++ class PairAnalysisSignalBase+;
-#pragma link C++ class PairAnalysisSignalExt+;
-#pragma link C++ class PairAnalysisSignalFunc+;
 #pragma link C++ class PairAnalysisSpectrum+;
 		       */
 //#pragma link C++ class PairAnalysisDebugTree+;
@@ -194,5 +191,9 @@
 #pragma link C++ class PairAnalysisSignalMC+;
 /* #pragma link C++ class PairAnalysisEvent+; */
 /* #pragma link C++ class PairAnalysisMixingHandler+; */
+
+#pragma link C++ class PairAnalysisSignalBase+;
+#pragma link C++ class PairAnalysisSignalExt+;
+#pragma link C++ class PairAnalysisSignalFunc+;
 
 #endif

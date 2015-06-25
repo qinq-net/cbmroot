@@ -71,6 +71,7 @@
 #include <TLegend.h>
 #include <TKey.h>
 #include <TAxis.h>
+#include <TGaxis.h>
 #include <TVirtualPS.h>
 #include <TVectorD.h>
 #include <TFormula.h>
@@ -678,7 +679,8 @@ void PairAnalysisHistos::SetHistogramList(THashList &list, Bool_t setOwner/*=kTR
   //
   ResetHistogramList();
   TString name(GetName());
-  if (name == "PairAnalysisHistos") SetName(list.GetName());
+  //  if (name == "PairAnalysisHistos") 
+  SetName(list.GetName());
   TIter next(&list);
   TObject *o;
   while ( (o=next()) ){
@@ -770,7 +772,50 @@ void PairAnalysisHistos::ReadFromFile(const char* file, const char *task, const 
 }
 
 //_____________________________________________________________________________
-void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, TString histClassDenom)
+void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString histClassDenom, TString taskDenom)
+{
+
+  //  fList->Print();
+  //  fHistoList.Print();
+  fHistoList.SetOwner(kFALSE);
+
+  THashList *listDenom = dynamic_cast<THashList*>(fList->FindObject(taskDenom.Data()));
+  if(listDenom) opt+="div";
+
+  TIter nextCfg(fList);
+  THashList *listCfg=0;
+  while ( (listCfg=static_cast<THashList*>(nextCfg())) ){
+
+    TString lname=listCfg->GetName();
+
+    // exclude QAcuts
+    if( lname.Contains("QAcuts_") ) continue;
+
+    // skip same cfg if ratio
+    if( listDenom && lname.EqualTo(taskDenom)) continue;
+
+    Info("DrawClassSame"," Task name %s ",lname.Data());
+
+    // update histogram list
+    ResetHistogramList();
+    TIter next(listCfg);
+    Int_t idx=0;
+    TObject *o;
+    while ( (o=next()) ){
+      fHistoList.AddAt(o,idx++);
+    }
+
+    // adapt name for legends
+    SetName(listCfg->GetName());
+    //fHistoList.Print();
+    DrawSame(histName,(opt+"task").Data(),histClassDenom, listDenom);
+
+  }
+
+}
+
+//_____________________________________________________________________________
+TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, TString histClassDenom, THashList *listDenom)
 {
   //
   // Draw all histograms with the same name into one canvas
@@ -787,37 +832,42 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, TString
   // if option contains 'Eff' efficiencies are plotted
   // if option contains 'Ratio' the ratios of any histclass to 'histClassDenom' are plotted
   // if option contains 'meanX' quote the mean in the legend
-  //
+  // if option contains 'task' histograms of different tasks are compared (see DrawTaskSame)
+  // if option contains 'div' histograms of different tasks are divided (see DrawTaskSame)
+  // if option contains 'goff' graphics off
 
-  Printf("<PairAnalysisHistos::DrawSame>: hist: %s",histName.Data());
+  Info("DrawSame", "Plot hist: %s",histName.Data());
   TString optString(opt);
   optString.ToLower();
-  Bool_t optEff  =optString.Contains("eff");
-  Bool_t optNoMC =optString.Contains("nomc");
-  Bool_t optNoMCtrue =optString.Contains("nomctrue");
-  Bool_t optOnlyMC   =optString.Contains("onlymc");
-  Bool_t optRbn  =optString.Contains("rebin");
-  Bool_t optLeg  =optString.Contains("leg");
-  Bool_t optCan  =optString.Contains("can");
-  Bool_t optNorm =optString.Contains("norm");
-  Bool_t optMeta =optString.Contains("meta");
-  Bool_t optEvt  =optString.Contains("events");
-  Bool_t optRatio=optString.Contains("ratio");
-  Bool_t optMeanX =optString.Contains("meanx");
-  optString.ReplaceAll("eff","");
-  optString.ReplaceAll("nomctrue","");
-  optString.ReplaceAll("onlymc","");
-  optString.ReplaceAll("nomc","");
-  optString.ReplaceAll("rebin","");
-  optString.ReplaceAll("leg","");
-  optString.ReplaceAll("can","");
-  optString.ReplaceAll("norm","");
-  optString.ReplaceAll("meta","");
-  optString.ReplaceAll("events","");
-  optString.ReplaceAll("ratio","");
-  optString.ReplaceAll("mean","");
+  Bool_t optGoff     =optString.Contains("goff");      optString.ReplaceAll("goff","");
+  Bool_t optTask     =optString.Contains("task");      optString.ReplaceAll("task","");
+  Bool_t optDiv      =optString.Contains("div");       optString.ReplaceAll("div","");
+  Bool_t optEff      =optString.Contains("eff");       optString.ReplaceAll("eff","");
+  Bool_t optNoMCtrue =optString.Contains("nomctrue");  optString.ReplaceAll("nomctrue","");
+  Bool_t optNoMC     =optString.Contains("nomc");      optString.ReplaceAll("nomc","");
+  Bool_t optOnlyMC   =optString.Contains("onlymc");    optString.ReplaceAll("onlymc","");
+  Bool_t optRbn      =optString.Contains("rebin");     optString.ReplaceAll("rebin","");
+  Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
+  Bool_t optCan      =optString.Contains("can");       optString.ReplaceAll("can","");
+  Bool_t optNorm     =optString.Contains("norm");      optString.ReplaceAll("norm","");
+  Bool_t optMeta     =optString.Contains("meta");      optString.ReplaceAll("meta","");
+  Bool_t optEvt      =optString.Contains("events");    optString.ReplaceAll("events","");
+  Bool_t optRatio    =optString.Contains("ratio");     optString.ReplaceAll("ratio","");
+  Bool_t optMeanX    =optString.Contains("meanx");     optString.ReplaceAll("meanx","");
+  Bool_t optOneOver  =optString.Contains("oneover");   optString.ReplaceAll("oneover","");
+  Bool_t optSel      =optString.Contains("sel");       optString.ReplaceAll("sel","");
 
-  TLegend *leg=0;
+  // output array
+  TObjArray *arr=0x0;
+  if(optGoff) {
+    arr=(TObjArray*)gROOT->FindObject(Form("a%s",histName.Data()));
+    if(arr) arr->Clear();
+    arr = new TObjArray();
+    arr->SetName(Form("a%s",histName.Data()));
+    arr->SetOwner(kFALSE);
+  }
+
+  // add canvas
   TCanvas *c=0;
   if (optCan){
     c=(TCanvas*)gROOT->FindObject(Form("c%s",histName.Data()));
@@ -825,17 +875,28 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, TString
     //    c->Clear();
     c->cd();
   }
-  TList *prim = gPad->GetListOfPrimitives();
-  Int_t nobj  = prim->GetEntries();
-  // if(nobj) {Printf("canvas has %d entries",nobj);
-  //   gPad->GetListOfPrimitives()->ls();
-  // }
 
-  if (optLeg) leg=new TLegend(.75,.3,
-			      1.-gPad->GetTopMargin()-gStyle->GetTickLength("X"),
-			      1.-gPad->GetRightMargin()-gStyle->GetTickLength("Y"),
-			      GetName(),"nbNDC");
-  //  else if(optLeg)      leg=(TLegend*)gPad->GetListOfPrimitives()->Last();
+  Int_t nobj=0;
+  TObject *obj;
+  // count number of drawn objects in pad
+  TList *prim = gPad->GetListOfPrimitives();
+  for(Int_t io=0; io<prim->GetSize(); io++) {
+    obj=prim->At(io);
+    if(obj->InheritsFrom(TH1::Class()) && obj!=prim->At(io+1)) nobj++;
+  }
+
+  // add or get legend
+  TLegend *leg=0;
+  if ( (optLeg && optTask && !nobj) || (optLeg && !optTask) ) {
+    leg=new TLegend(.75,.3,
+		    1.-gPad->GetTopMargin()-gStyle->GetTickLength("X"),
+		    1.-gPad->GetRightMargin()-gStyle->GetTickLength("Y"),
+		    GetName(),"nbNDC");
+    if(optTask) leg->SetHeader("");
+  }
+  else if(optLeg && nobj) {
+    leg=(TLegend*)prim->FindObject("TPave");
+  }
 
   // logaritmic style
   if(optString.Contains("logx")) gPad->SetLogx();
@@ -850,37 +911,39 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, TString
   if(fMetaData && optEvt)  fMetaData->GetMeta("events",&events);
 
   //  Int_t i=(nobj ? nobj-1 : 0);
-  Int_t i=(nobj ? 10 : 0);
+  Int_t i=(nobj ? 10 : 0); // TOD: obsolete?
+  if(optTask && nobj) i=nobj;
   TIter next(&fHistoList);
   THashList *classTable=0;
-  Double_t max=-1e10;
   TH1 *hFirst=0x0;
   while ( (classTable=(THashList*)next()) ){
-    TString iname=classTable->GetName();
+    TString histClass=classTable->GetName();
 
-    Int_t ndel = iname.CountChar('_');
-    Info("DrawSame","class name %s \t hist name %s \t ndel=%d",iname.Data(),histName.Data(),ndel);
+    Int_t ndel = histClass.CountChar('_');
+    //    Info("DrawSame","class name %s \t hist name %s \t ndel=%d",histClass.Data(),histName.Data(),ndel);
 
     // check MC options
     if( (optNoMC && ndel>0) ||
 	(optEff && ndel<1)  ||
-	(optNoMCtrue && iname.Contains("_MCtruth")) ||
+	(optNoMCtrue && histClass.Contains("_MCtruth")) ||
 	(optOnlyMC && ndel<1)                      ) continue;
 
+    // histclass selection
+    if( optSel && !histClass.Contains(histClassDenom) ) continue;
+    
     // find the histogram in the class table
     if ( TH1 *h=(TH1*)classTable->FindObject(histName.Data()) ){
 
       // check if efficiency caluclation is possible
-      if(optEff && !iname.Contains("_MCtruth")) histClassDenom = iname + "_MCtruth";
-      //      if(optEff && (!fHistoList.FindObject( histClassName.Data() ) || iname.Contains("_MCtruth")) ) continue;
-      //      if(optEff && (!fHistoList.FindObject( Form("%s_MCtruth",iname.Data()) ) || iname.Contains("_MCtruth")) ) continue;
+      if(optEff && !histClass.Contains("_MCtruth")) histClassDenom = histClass + "_MCtruth";
+      //      if(optEff && (!fHistoList.FindObject( histClassName.Data() ) || histClass.Contains("_MCtruth")) ) continue;
+      //      if(optEff && (!fHistoList.FindObject( Form("%s_MCtruth",histClass.Data()) ) || histClass.Contains("_MCtruth")) ) continue;
 
       // check if ratio should be build
-      if( (optEff || optRatio) && (iname.EqualTo(histClassDenom) || !fHistoList.FindObject(histClassDenom.Data())) ) continue;
-      Printf("iname %s denom %s ",iname.Data(),histClassDenom.Data());
+      if( (optEff || optRatio) && (histClass.EqualTo(histClassDenom) || !fHistoList.FindObject(histClassDenom.Data())) ) continue;
+      Info("DrawSame","histClass %s (denom %s) ",histClass.Data(),histClassDenom.Data());
 
-
-      if(iname.Contains("Hit")) Printf("class name: %s optMC %d ",iname.Data(),optNoMC);
+      if(histClass.Contains("Hit")) Printf("class name: %s optMC %d ",histClass.Data(),optNoMC);
       if (i==0) hFirst=h;
 
       // style
@@ -893,65 +956,155 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, TString
       // if(!histName.CompareTo("GeantId")) PairAnalysisHelper::SetGEANTBinLabels(h);
 
       // normlasation
+      h->Sumw2();
       if(optRbn)                    h->Rebin();
       if(optNorm && !(h->GetSumOfWeights()==0)) h=h->DrawNormalized(i>0?(optString+"same").Data():optString.Data());
       if(optEvt)                    h->Scale(1./events);
 
+      // set title
+      TString ytitle = h->GetYaxis()->GetTitle();
+      TString ztitle = h->GetZaxis()->GetTitle();
+      switch(h->GetDimension()) {
+      case 1:
+	if(optEvt)  h->SetYTitle( (ytitle+"/N_{evt}").Data() );
+	if(optNorm) h->SetYTitle( (ytitle.Prepend("normalized ")).Data() );
+	if(optEff)  h->SetYTitle( "efficiency" );
+	if(optRatio)h->SetYTitle( "ratio" );
+	if(optDiv)  h->SetYTitle( "ratio" );
+	break;
+      case 2:
+	if(optEvt)  h->SetZTitle( (ztitle+"/N_{evt}").Data() );
+	if(optNorm) h->SetZTitle( (ztitle.Prepend("normalized ")).Data() );
+	if(optEff)  h->SetZTitle( "efficiency" );
+	if(optRatio)h->SetZTitle( "ratio" );
+	if(optDiv)  h->SetZTitle( "ratio" );
+	break;
+      }
+
       // ratio and drawing
       if( (optEff || optRatio) && !optNorm && !optEvt)  {
-	//	TString    clMC     = iname+"_MCtruth";
+	//	TString    clMC     = histClass+"_MCtruth";
 	THashList *clDenom  = (THashList*)fHistoList.FindObject( histClassDenom.Data() );
 	TH1 *hMC = (TH1*) h->Clone(); // needed to preserve the labeling of non-mc histogram
 	TH1 *hdenom         = (TH1*) clDenom->FindObject( UserHistogram(histClassDenom.Data(),hMC).Data() );
 	//	TH1 *hdenom         = (TH1*) clDenom->FindObject( UserHistogram(clMC.Data(),hMC).Data() );
-	if(!hdenom) { Printf("hdenom not found"); continue; }
+	delete hMC; //delete the surplus object
+	if(!hdenom) { Error("DrawSame","Denominator object not found"); continue; }
 	// normalize and rebin only once
+	hdenom->Sumw2();
 	if(optRbn && (optEff || !(i%10)) )       hdenom->Rebin();
 	if(optEvt && (optEff || !(i%10)) )       hdenom->Scale(1./events);
-	delete hMC; //delete the surplus object
-	// set title
-	switch(h->GetDimension()) {
-	case 1: h->SetYTitle((optEff?"Efficiency":"Ratio")); break;
-	case 2: h->SetZTitle((optEff?"Efficiency":"Ratio")); break;
-	  //	case 2: h->SetZTitle("Efficiency"); break;
-	}
-	if(hdenom && h->Divide(hdenom))  h->Draw(i>0?(optString+"same").Data():optString.Data());
-	else                            { Warning("DrawSame(eff/ratio)","Division failed!!!!"); continue; }
+	//	Printf("h %p %f hdenom %p %f",h,h->GetEntries(),hdenom,hdenom->GetEntries());
+	if(!hdenom || !h->Divide(hdenom))  { Warning("DrawSame(eff/ratio)","Division failed!!!!"); continue; }
       }
-      else             h->Draw(i>0?(optString+"same").Data():optString.Data());
+      else if( optTask && optDiv) {
+	// denominators
+	TH1* hdenom=0x0;
+	TH1* htden =0x0;
+	if(optEff || optRatio) {
+	  THashList *clDenom  = (THashList*)fHistoList.FindObject( histClassDenom.Data() );
+	  TH1 *hMC = (TH1*) h->Clone(); // needed to preserve the labeling of non-mc histogram
+	  hdenom         = (TH1*) clDenom->FindObject( UserHistogram(histClassDenom.Data(),hMC).Data() );
+	  delete hMC; //delete the surplus object
+
+	  THashList *clTaskDen = (THashList*)listDenom->FindObject( histClassDenom.Data() );
+	  htden=(TH1*)clTaskDen->FindObject(hdenom->GetName());
+	}
+
+	//	Printf("h %p %f hdenom %p %f",h,h->GetEntries(),hdenom,hdenom->GetEntries());
+
+	// task ratio
+	TH1 *htnom=0x0;
+	if(optDiv) {
+	  THashList *clTaskNom = (THashList*)listDenom->FindObject( histClass.Data() );
+	  if(!clTaskNom) continue;
+	  htnom=(TH1*)clTaskNom->FindObject(histName.Data());
+	  if(!htnom) continue;
+	}
+
+	if(hdenom) hdenom->Sumw2();
+	if(htden)  htden->Sumw2();
+	if(htnom)  htnom->Sumw2();
+
+	// normalize and rebin only once
+	if(optRbn && !i) {
+	  //Printf(" rebin spectra ");
+	  if(hdenom) hdenom->Rebin();
+	  if(htden)  htden->Rebin();
+	  if(htnom)  htnom->Rebin();
+	}
+	if(optEvt && !i ) {
+	  if(hdenom) hdenom->Scale(1./events);
+	  if(htden)  htden->Scale(1./events);
+	  if(htnom)  htnom->Scale(1./events);
+	}
+
+	// standard ratio
+	if(hdenom && !h->Divide(hdenom))          { Warning("DrawSame(eff/ratio)","Division failed!!!!"); continue; }
+	if(htden  && !i && !htnom->Divide(htden)) { Warning("DrawSame(eff/ratio)","Task division failed!!!!"); continue; }
+	if(optDiv && !h->Divide(htnom))           { Warning("DrawSame(eff/ratio)","Final task division failed!!!!"); continue; }
+      }
+
+      // flip content values
+      if(optOneOver){
+	TH1 *hOne = (TH1*) h->Clone("one");
+	hOne->Reset("ICSE");
+	for(Int_t ib=0;ib<(h->GetNbinsX()+2)*(h->GetNbinsY()+2)*(h->GetNbinsZ()+2);ib++)
+	  hOne->SetBinContent(ib,1.);
+	if(hOne->Divide(h)) h=hOne;
+      }
+
+      // change name
+      h->SetName(histClass.Data());
+      if(optGoff) arr->Add(h);
+
+      // draw prepared histogram
+      if(!optGoff) {
+	Info("Draw","draw object with option %s!",optString.Data());
+	h->Draw(i>0?(optString+"same").Data():optString.Data());
+      }
+
+
 
       // protection e.g. normalization not possible TProfile
       if(h && h->GetEntries()>0.) {
 
 	TString ratioName=histClassDenom;
+	TString divName=(listDenom?listDenom->GetName():"");
 	// adapt legend name
 	// remove reserved words
 	TObjArray *reservedWords = fReservedWords->Tokenize(":;");
 	for(Int_t ir=0; ir<reservedWords->GetEntriesFast(); ir++) {
-	  iname.ReplaceAll( ((TObjString*)reservedWords->At(ir))->GetString(), "");
+	  histClass.ReplaceAll( ((TObjString*)reservedWords->At(ir))->GetString(), "");
 	  ratioName.ReplaceAll( ((TObjString*)reservedWords->At(ir))->GetString(), "");
+	  divName.ReplaceAll( ((TObjString*)reservedWords->At(ir))->GetString(), "");
 	}
 	// change default signal names to titles
 	for(Int_t isig=0; isig<PairAnalysisSignalMC::kNSignals; isig++) {
-	  iname.ReplaceAll(PairAnalysisSignalMC::fgkSignals[isig][0],PairAnalysisSignalMC::fgkSignals[isig][1]);
+	  histClass.ReplaceAll(PairAnalysisSignalMC::fgkSignals[isig][0],PairAnalysisSignalMC::fgkSignals[isig][1]);
 	  ratioName.ReplaceAll(PairAnalysisSignalMC::fgkSignals[isig][0],PairAnalysisSignalMC::fgkSignals[isig][1]);
+	  divName.ReplaceAll(PairAnalysisSignalMC::fgkSignals[isig][0],PairAnalysisSignalMC::fgkSignals[isig][1]);
 	}
 	// remove pairing name if it is a MC
 	for(Int_t iptype=0; iptype<PairAnalysis::kPairTypes; iptype++) {
-	  if(ndel>0)                     iname.ReplaceAll( PairAnalysis::PairClassName(iptype), "");
+	  if(ndel>0)                     histClass.ReplaceAll( PairAnalysis::PairClassName(iptype), "");
 	  if(ratioName.CountChar('_')>0) ratioName.ReplaceAll( PairAnalysis::PairClassName(iptype), "");
+	  if(divName.CountChar('_')>0)   divName.ReplaceAll( PairAnalysis::PairClassName(iptype), "");
 	}
 	// remove delimiters
-	iname.ReplaceAll("_"," ");
+	histClass.ReplaceAll("_"," ");
 	ratioName.ReplaceAll("_"," ");
-	iname.ReplaceAll(".","");
+	divName.ReplaceAll("_"," ");
+	histClass.ReplaceAll(".","");
 	ratioName.ReplaceAll(".","");
+	divName.ReplaceAll(".","");
 	// remove trailing and leading spaces
-	iname.Remove(TString::kBoth,' ');
+	histClass.Remove(TString::kBoth,' ');
 	ratioName.Remove(TString::kBoth,' ');
+	divName.Remove(TString::kBoth,' ');
 
 	//build final ratio name
-	if(optRatio)  iname+="/"+ratioName;
+	if(optRatio)  histClass+="/"+ratioName;
 
 	// delete the surplus
 	delete reservedWords;
@@ -959,13 +1112,17 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, TString
 	// modify legend option
 	TString legOpt = optString+"L";
 	legOpt.ReplaceAll("hist","");
-	if (nobj) iname="";
-	else if(optMeanX) iname+=Form(" #LTx#GT=%.1e",h->GetMean());
-	if (leg) leg->AddEntry(h,iname.Data(),legOpt.Data());
+	legOpt.ReplaceAll("scat","");
+	legOpt.ReplaceAll("col","");
+	legOpt.ReplaceAll("z","");
+	if (optTask)                histClass.Prepend(Form("%s ",GetName()));
+	if (optDiv && !optOneOver)  histClass.ReplaceAll(GetName(),Form("%s/%s",GetName(),divName.Data()));
+	if (optDiv &&  optOneOver)  histClass.Prepend(Form("%s/",divName.Data()));
+	//	else if(nobj)     histClass="";
+	if(optMeanX) histClass+=Form(" #LTx#GT=%.1e",h->GetMean());
+	if (leg) leg->AddEntry(h,histClass.Data(),legOpt.Data());
 
 	//      if (leg) leg->AddEntry(h,classTable->GetName(),(optString+"L").Data());
-	max=TMath::Max(max,h->GetMaximum());
-
 	++i;
 
       }
@@ -982,29 +1139,36 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, TString
     leg->SetFillStyle(0);
     leg->SetTextSize(0.02);
     // shift second legend if needed
-    if(nobj) {
-      Float_t shift=(leg->GetX2()-leg->GetX1())*leg->GetMargin();
-      leg->SetX1(leg->GetX1()-shift);
-      leg->SetX2(leg->GetX2()-shift);
-      leg->SetY1(leg->GetY2()-(nobj-1)*.05);
-    }
-    else
-      leg->SetY1(leg->GetY2()-i*.05);
+    // if(nobj) {
+    //   Float_t shift=(leg->GetX2()-leg->GetX1())*leg->GetMargin();
+    //   leg->SetX1(leg->GetX1()-shift);
+    //   leg->SetX2(leg->GetX2()-shift);
+    //   leg->SetY1(leg->GetY2()-(nobj-1)*.05);
+    // }
+    // else
+    leg->SetY1(leg->GetY2()-i*.025); //.05
     leg->Draw();
   }
 
   // axis maximum
-  TIter nextObj(gPad->GetListOfPrimitives());
-  TObject *obj;
+  Double_t max=-1e10;
+  Double_t min=+1e10;
+  TListIter nextObj(gPad->GetListOfPrimitives(),kIterBackward);
+  //  TObject *obj;
   while ((obj = nextObj())) {
     if(obj->InheritsFrom(TH1::Class())) {
+      max=TMath::Max(max,static_cast<TH1*>(obj)->GetMaximum());
+      min=TMath::Min(min,static_cast<TH1*>(obj)->GetMinimum());
       //      Printf("max%f \t %f",max,static_cast<TH1*>(obj)->GetMaximum());
       if(!optEff) static_cast<TH1*>(obj)->SetMaximum(max*1.1);
       else        static_cast<TH1*>(obj)->SetMaximum(1.1);
-      break;
+      // automatically set log option
+      if(gPad->GetLogy() && max/min > TMath::Power(10.,TGaxis::GetMaxDigits())) {
+	static_cast<TH1*>(obj)->GetYaxis()->SetMoreLogLabels(kFALSE);
+	static_cast<TH1*>(obj)->GetYaxis()->SetNoExponent(kFALSE);
+      }
     }
   }
-
 
   // draw meta data
   if(optMeta && fMetaData && !gPad->GetListOfPrimitives()->FindObject("meta")) {
@@ -1017,6 +1181,13 @@ void PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, TString
   }
   */
 
+  // styling
+  gPad->RedrawAxis();
+
+  // remove canvas
+  if(optGoff) delete c;
+
+  return arr;
 }
 
 //_____________________________________________________________________________

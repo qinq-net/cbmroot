@@ -89,15 +89,15 @@ set(SRCS
 ./PairAnalysisMC.cxx
 #./PairAnalysisMixingHandler.cxx
 ./PairAnalysisVarCutsCombi.cxx
-#./PairAnalysisSignalBase.cxx
-#./PairAnalysisSignalExt.cxx
-#./PairAnalysisSignalFunc.cxx
 ./PairAnalysisSignalMC.cxx
 #./PairAnalysisSpectrum.cxx
 #./PairAnalysisTrackCuts.cxx
 ./PairAnalysisTrackRotator.cxx
 #./PairAnalysisV0Cuts.cxx
 #./PairAnalysisVarContainer.cxx
+./PairAnalysisSignalBase.cxx
+./PairAnalysisSignalExt.cxx
+./PairAnalysisSignalFunc.cxx
 )
 
 
