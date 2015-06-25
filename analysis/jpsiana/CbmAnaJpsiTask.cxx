@@ -76,8 +76,6 @@ InitStatus CbmAnaJpsiTask::Init()
    fRichPoints = (TClonesArray*) ioman->GetObject("RichPoint");
    if ( NULL == fRichPoints) {Fatal("CbmAnaJpsiTask::Init","No RichPoint Array! "); }
    
-   fTrdPoints = (TClonesArray*) ioman->GetObject("TrdPoint");
-   if ( NULL == fTrdPoints) {Fatal("CbmAnaJpsiTask::Init","No TrdPoint Array! "); }
    
    fTofPoints = (TClonesArray*) ioman->GetObject("TofPoint");
    if ( NULL == fTofPoints) {Fatal("CbmAnaJpsiTask::Init","No TofPoint Array! "); }
@@ -88,14 +86,22 @@ InitStatus CbmAnaJpsiTask::Init()
    fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
    if ( NULL == fRichHits) {Fatal("CbmAnaJpsiTask::Init","No RichHits Array! ");}
    
-   fTrdHits = (TClonesArray*) ioman->GetObject("TrdHit");
-   if ( NULL == fTrdHits) {Fatal("CbmAnaJpsiTask::Init","No TrdHits Array! ");}
+   if (fUseTrd == true){
+	   fTrdHits = (TClonesArray*) ioman->GetObject("TrdHit");
+	   if ( NULL == fTrdHits) {Fatal("CbmAnaJpsiTask::Init","No TrdHits Array! ");}
    
+	   fTrdPoints = (TClonesArray*) ioman->GetObject("TrdPoint");
+	   if ( NULL == fTrdPoints) {Fatal("CbmAnaJpsiTask::Init","No TrdPoint Array! "); }
+
+	   fTrdTrackMatches = (TClonesArray*) ioman->GetObject("TrdTrackMatch");
+	   if (NULL == fTrdTrackMatches) { Fatal("CbmAnaDielectronTask::Init","No TrdTrackMatch array!"); }
+
+	   fTrdTracks = (TClonesArray*) ioman->GetObject("TrdTrack");
+	   if ( NULL == fTrdTracks ) {Fatal("CbmAnaJpsiTask::Init","No TrdTracks Array!");}
+   }
+
    fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
    if ( NULL == fTofHits) {Fatal("CbmAnaJpsiTask::Init","No TofHits Array! ");}
-   
-	fTrdTrackMatches = (TClonesArray*) ioman->GetObject("TrdTrackMatch");
-	if (NULL == fTrdTrackMatches) { Fatal("CbmAnaDielectronTask::Init","No TrdTrackMatch array!"); }
 
    fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
    if ( NULL == fStsTracks) {Fatal("CbmAnaJpsiTask::Init","No StsTracks Array! ");}
@@ -105,9 +111,6 @@ InitStatus CbmAnaJpsiTask::Init()
    
    fRichRingMatches = (TClonesArray*) ioman->GetObject("RichRingMatch");
    if (NULL == fRichRingMatches) { Fatal("CbmAnaJpsiTask::Init","No RichRingMatch array!"); }
-
-   fTrdTracks = (TClonesArray*) ioman->GetObject("TrdTrack");
-   if ( NULL == fTrdTracks ) {Fatal("CbmAnaJpsiTask::Init","No TrdTracks Array!");}
    
    fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
    if ( NULL == fGlobalTracks ) {Fatal("CbmAnaJpsiTask::Init","No GlobalTracks Array!");}
@@ -232,10 +235,10 @@ void CbmAnaJpsiTask::InitHist()
    fHM->Create2<TH2D>("fh_source_tracks","fh_source_tracks;Analysis steps;Particle", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps, 7, 0., 7.);
 
    //Create invariant mass histograms
-   CreateAnalysisStepsH1("fh_signal_minv", "M_{ee} [GeV/c^{2}]", "Yield", 1800, 2.0 , 3.8);
+   CreateAnalysisStepsH1("fh_signal_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0 , 4.);
    CreateAnalysisStepsH1("fh_bg_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_pi0_minv", "M_{ee} [GeV/c^{2}]", "Yield", 600, 0. , 0.6);
-   CreateAnalysisStepsH1("fh_gamma_minv", "M_{ee} [GeV/c^{2}]", "Yield", 800, 0. , 0.8);
+   CreateAnalysisStepsH1("fh_pi0_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_gamma_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
 
    // minv for true matched and mismatched tracks
    CreateAnalysisStepsH1("fh_bg_truematch_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
@@ -347,10 +350,13 @@ void CbmAnaJpsiTask::FillCandidates()
         if (NULL == richRing) continue;
 
         // TRD
+        CbmTrdTrack* trdTrack = NULL;
+        if (fUseTrd == true){
         cand.fTrdInd = globalTrack->GetTrdTrackIndex();
         if (cand.fTrdInd < 0) continue;
-        CbmTrdTrack* trdTrack = (CbmTrdTrack*) fTrdTracks->At(cand.fTrdInd);
+        trdTrack = (CbmTrdTrack*) fTrdTracks->At(cand.fTrdInd);
         if (trdTrack == NULL) continue;
+        }
 
         // ToF
         cand.fTofInd = globalTrack->GetTofHitIndex();
@@ -395,10 +401,13 @@ void CbmAnaJpsiTask::AssignMcToCandidates()
       fCandidates[i].fRichMcTrackId = richMatch->GetMatchedLink().GetIndex();
 
       // TRD
+      CbmTrdTrack* trdTrack = NULL;
+      if (fUseTrd==true){
       int trdInd = fCandidates[i].fTrdInd;
       CbmTrackMatchNew* trdMatch = (CbmTrackMatchNew*) fTrdTrackMatches->At(trdInd);
       if (trdMatch == NULL) continue;
       fCandidates[i].fTrdMcTrackId = trdMatch->GetMatchedLink().GetIndex();
+      }
 
       // ToF
       int tofInd = fCandidates[i].fTofInd;
@@ -534,7 +543,7 @@ void CbmAnaJpsiTask::TrackSource(
 
 		if (IsMismatch(cand)) fHM->H1("fh_nof_mismatches")->Fill(binNum);
 		if (cand->fStsMcTrackId != cand->fRichMcTrackId) fHM->H1("fh_nof_mismatches_rich")->Fill(binNum);
-		if (cand->fStsMcTrackId != cand->fTrdMcTrackId) fHM->H1("fh_nof_mismatches_trd")->Fill(binNum);
+		if (fUseTrd && cand->fStsMcTrackId != cand->fTrdMcTrackId) fHM->H1("fh_nof_mismatches_trd")->Fill(binNum);
 		if (cand->fStsMcTrackId != cand->fTofMcTrackId) fHM->H1("fh_nof_mismatches_tof")->Fill(binNum);
 
 
@@ -752,8 +761,8 @@ Bool_t CbmAnaJpsiTask::IsTofElectron(
 
 Bool_t CbmAnaJpsiTask::IsMismatch(
 		CbmAnaJpsiCandidate* cand)
-{
-	if (cand->fStsMcTrackId == cand->fRichMcTrackId && cand->fStsMcTrackId == cand->fTrdMcTrackId &&
+{	Bool_t IsTrdMcTrackId = (fUseTrd) ? (cand->fStsMcTrackId == cand->fTrdMcTrackId) : true;
+	if (cand->fStsMcTrackId == cand->fRichMcTrackId && IsTrdMcTrackId &&
 	       cand->fStsMcTrackId == cand->fTofMcTrackId && cand->fStsMcTrackId !=-1) return false;
 	return true;
 }

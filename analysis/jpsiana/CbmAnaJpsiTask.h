@@ -88,6 +88,8 @@ private:
 
   CbmHistManager* fHM;
 
+  Bool_t fUseTrd = true;
+
   /*
        * \brief Creates 1D histograms for each analysis step.
        * \param[in] name Base name of the histograms.
