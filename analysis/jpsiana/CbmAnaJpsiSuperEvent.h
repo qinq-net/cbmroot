@@ -14,11 +14,12 @@
 #include "CbmAnaJpsiKinematicParams.h"
 #include "CbmHistManager.h"
 #include "TH1D.h"
-//#include "CbmSimulationReport.h"
+#include "CbmSimulationReport.h"
+#include "TSystem.h"
 
 using namespace std;
 
-class CbmAnaJpsiSuperEvent  //: public CbmSimulationReport
+class CbmAnaJpsiSuperEvent  : public CbmSimulationReport
 {
 
 public:
@@ -29,11 +30,16 @@ public:
 	/*
 	 * \brief Add file for super event.
 	 */
+
 	void AddFile(const string& fileName) { fFileNames.push_back(fileName); }
 
 	void Run();
+protected:
+	virtual void Create();
 
-private:
+	virtual void Draw();
+
+//private:
 	vector<string> fFileNames;
 	vector<CbmAnaJpsiCandidate> fMinusCandidates;
 	vector<CbmAnaJpsiCandidate> fPlusCandidates;
@@ -46,6 +52,8 @@ private:
 
 	CbmHistManager* fHM;
 	CbmAnaJpsiCuts fCuts;
+
+
 
 	void InitHist();
 

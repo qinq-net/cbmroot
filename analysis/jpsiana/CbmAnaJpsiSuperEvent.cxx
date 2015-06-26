@@ -4,34 +4,63 @@
  *  Created on: Jun 25, 2015
  *      Author: slebedev
  */
-
+#include "CbmReportElement.h"
 #include "CbmAnaJpsiSuperEvent.h"
 #include "TTree.h"
 #include "TFolder.h"
 #include "TFile.h"
 #include "TH1.h"
+#include "TPad.h"
+#include "TF1.h"
+#include "TMarker.h"
+#include <boost/assign/list_of.hpp>
+#include <map>
 #include <iostream>
 #include "TClonesArray.h"
 #include "CbmAnaJpsiKinematicParams.h"
 #include "CbmAnaJpsiCuts.h"
 #include "CbmAnaJpsiUtils.h"
+#include "CbmUtils.h"
 #include "TCanvas.h"
 #include "CbmDrawHist.h"
 #include "CbmHistManager.h"
-//#include "CbmSimulationReport.h"
-
-
+#include "TLatex.h"
+#include "TDirectory.h"
 using namespace std;
 
-CbmAnaJpsiSuperEvent::CbmAnaJpsiSuperEvent() {
-	// TODO Auto-generated constructor stub
+using boost::assign::list_of;
+using Cbm::NumberToString;
+using Cbm::Split;
+using std::map;
+using std::endl;
+using std::cout;
 
+CbmAnaJpsiSuperEvent::CbmAnaJpsiSuperEvent() :
+		CbmSimulationReport()
+{
+	// TODO Auto-generated constructor stub
+	SetReportName("jpsi_SuperEvent_qa");
 }
 
 CbmAnaJpsiSuperEvent::~CbmAnaJpsiSuperEvent() {
 	// TODO Auto-generated destructor stub
 }
 
+void CbmAnaJpsiSuperEvent::Create()
+{
+   //Out().precision(3);
+   Out() << R()->DocumentBegin();
+   Out() << R()->Title(0, GetTitle());
+
+   PrintCanvases();
+
+   Out() << R()->DocumentEnd();
+}
+
+void CbmAnaJpsiSuperEvent::Draw()
+{
+	SetDefaultDrawStyle();
+}
 
 void CbmAnaJpsiSuperEvent::Run()
 {
@@ -45,12 +74,8 @@ void CbmAnaJpsiSuperEvent::Run()
 
 void CbmAnaJpsiSuperEvent::InitHist()
 {
-	fMinv = new TH1D("fh_signal_minv", "fh_signal_minv;M_{ee} [GeV/c^{2}];Yield", 4000, 0.0 , 4.0);
-	fh_SuperEvent_signal_minv_Reco = new TH1D("fh_SuperEvent_signal_minv_Reco", "fh_SuperEvent_signal_minv_Reco;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
-	fh_SuperEvent_signal_minv_Chi2Primary = new TH1D("fh_SuperEvent_signal_minv_Chi2Primary", "fh_SuperEvent_signal_minv_Chi2Primary;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
-	fh_SuperEvent_signal_minv_ElID = new TH1D("fh_SuperEvent_signal_minv_ElID", "fh_SuperEvent_signal_minv_ElID;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
-	fh_SuperEvent_signal_minv_Pt = new TH1D("fh_SuperEvent_signal_minv_Pt", "fh_SuperEvent_signal_minv_Pt;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
-	//CreateAnalysisStepsH1("fh_SuperEvent_signal_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0 , 4.);
+	fHM = new CbmHistManager();
+	CreateAnalysisStepsH1("fh_SuperEvent_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0 , 4.);
 }
 
 void CbmAnaJpsiSuperEvent::CreateAnalysisStepsH1(
@@ -124,41 +149,25 @@ void CbmAnaJpsiSuperEvent::DoSuperEvent()
 		    Bool_t isChi2Primary = (candM->fChi2Prim < fCuts.fChiPrimCut && candP->fChi2Prim < fCuts.fChiPrimCut);
 		    Bool_t isEl = (candM->fIsElectron && candP->fIsElectron);
 		    Bool_t isPtCut = (candM->fMomentum.Perp() > fCuts.fPtCut && candP->fMomentum.Perp() > fCuts.fPtCut);
-		    fh_SuperEvent_signal_minv_Reco->Fill(pRec.fMinv);
 
-		    //fHM->H1("fh_SuperEvent_signal_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiReco])->Fill(pRec.fMinv);
-
-			if (isChi2Primary) fh_SuperEvent_signal_minv_Chi2Primary->Fill(pRec.fMinv);
-			//if (isChi2Primary) fHM->H1("fh_SuperEvent_signal_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiChi2Prim])->Fill(pRec.fMinv);
-			if (isChi2Primary && isEl) fh_SuperEvent_signal_minv_ElID->Fill(pRec.fMinv);
-			//if (isChi2Primary && isEl) fHM->H1("fh_SuperEvent_signal_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiElId])->Fill(pRec.fMinv);
-			if (isChi2Primary && isEl && isPtCut) fh_SuperEvent_signal_minv_Pt->Fill(pRec.fMinv);
-			//if (isChi2Primary && isEl && isPtCut) fHM->H1("fh_SuperEvent_signal_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->Fill(pRec.fMinv);
+		    fHM->H1("fh_SuperEvent_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiReco])->Fill(pRec.fMinv);
+			if (isChi2Primary) fHM->H1("fh_SuperEvent_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiChi2Prim])->Fill(pRec.fMinv);
+			if (isChi2Primary && isEl) fHM->H1("fh_SuperEvent_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiElId])->Fill(pRec.fMinv);
+			if (isChi2Primary && isEl && isPtCut) fHM->H1("fh_SuperEvent_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->Fill(pRec.fMinv);
 		}
 	}
 
-	TCanvas* c = new TCanvas("jpsi_fh_SuperEvent_signal_minv", "jpsi_fh_SuperEvent_signal_minv", 1200, 1200);
+	TCanvas* c = CreateCanvas("jpsi_fh_SuperEvent_signal_minv","jpsi_fh_SuperEvent_signal_minv",1200, 1200);
 
 	c->Divide(2,2);
-	c->cd(1);
-	gPad->SetLogy(true);
-	DrawH1(fh_SuperEvent_signal_minv_Reco);
-	c->cd(2);
-	gPad->SetLogy(true);
-	DrawH1(fh_SuperEvent_signal_minv_Chi2Primary);
-	c->cd(3);
-	gPad->SetLogy(true);
-	DrawH1(fh_SuperEvent_signal_minv_ElID);
-	c->cd(4);
-	gPad->SetLogy(true);
-	DrawH1(fh_SuperEvent_signal_minv_Pt);
-
-	/*
 	for (int i=2;i<CbmAnaJpsiHist::fNofAnaSteps;i++)
 	{
 		c->cd(i-1);
-		DrawH1(H1("fh_SuperEvent_signal_minv_"+CbmAnaJpsiHist::fAnaSteps[i]));
-	}*/
+		gPad->SetLogy();
+		DrawH1(fHM->H1("fh_SuperEvent_minv_"+CbmAnaJpsiHist::fAnaSteps[i]));
+		DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[i], 0.6, 0.89, 0.7, 0.99);
+	}
+
 }
 
 
