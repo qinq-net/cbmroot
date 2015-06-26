@@ -45,10 +45,10 @@ void sis18_mcbm_setup()
   fieldSymType =  3;
 
   // -----  Tags  -----------------------------------------------------------
-  stsTag       = "v15a";
-  trdTag       = "v15a_1e";
-  tofTag       = "v13-5b";
-
+  stsTag       = "v18c";  // "v18a";  // "v18b";
+  trdTag       = "v18a_1e";
+  tofTag       = "v13_5a";
+  
   // -----  DigiFiles  ------------------------------------------------------
   stsDigi      = "sts/sts_" + stsTag + "_std.digi.par";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
@@ -56,16 +56,16 @@ void sis18_mcbm_setup()
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
-  pipeGeom     = "pipe/pipe_v14l.root";
+  pipeGeom     = "mcbm/pipe_v18a.root";
   magnetGeom   = "magnet/magnet_v15a.geo.root";
-  mvdGeom      = ""; // "mvd/mvd_v15a.geo.root";
-  stsGeom      = "sts/sts_" + stsTag + ".geo.root";
+  mvdGeom      = "mvd/mvd_v15a.geo.root";
+  stsGeom      = "mcbm/sts_" + stsTag + ".geo.root";
   richGeom     = ""; // "rich/rich_v14a_1e.root";
   muchGeom     = "";
   shieldGeom   = "";
   platformGeom = ""; // "passive/platform_v13a.geo";
-  trdGeom      = ""; // "trd/trd_" + trdTag + ".geo.root";
-  tofGeom      = ""; // "tof/tof_" + tofTag + ".geo.root";
+  trdGeom      = "mcbm/trd_" + trdTag + ".geo.root";
+  tofGeom      = "mcbm/tof_" + tofTag + ".geo.root";
   ecalGeom     = "";
   psdGeom      = ""; // "psd_geo_xy.txt";
   psdZpos = 800.;
