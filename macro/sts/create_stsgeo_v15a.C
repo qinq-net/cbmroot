@@ -674,6 +674,8 @@ void create_stsgeo_v15a(const char* geoTag="v15a")
   gGeoMan->Write();  // use this is you want GeoManager format in the output
   geoFile->Close();
 
+  top->Draw("ogl");
+  
   infoFile.close();
 
 }
