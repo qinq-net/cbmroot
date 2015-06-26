@@ -45,7 +45,7 @@ void sis18_mcbm_setup()
   fieldSymType =  3;
 
   // -----  Tags  -----------------------------------------------------------
-  stsTag       = "v18c";  // "v18a";  // "v18b";
+  stsTag       = "v18a";  // "v18c";  // "v18b";
   trdTag       = "v18a_1e";
   tofTag       = "v13_5a";
   
@@ -57,11 +57,11 @@ void sis18_mcbm_setup()
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
   pipeGeom     = "mcbm/pipe_v18a.root";
-  magnetGeom   = "magnet/magnet_v15a.geo.root";
+  magnetGeom   = ""; // magnet/magnet_v15a.geo.root";
   mvdGeom      = "mvd/mvd_v15a.geo.root";
   stsGeom      = "mcbm/sts_" + stsTag + ".geo.root";
   richGeom     = ""; // "rich/rich_v14a_1e.root";
-  muchGeom     = "";
+  muchGeom     = "mcbm/much_v18a.geo"; // "";
   shieldGeom   = "";
   platformGeom = ""; // "passive/platform_v13a.geo";
   trdGeom      = "mcbm/trd_" + trdTag + ".geo.root";
