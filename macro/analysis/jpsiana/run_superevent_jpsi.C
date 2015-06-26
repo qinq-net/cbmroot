@@ -5,13 +5,13 @@ void run_superevent_jpsi()
 	timer.Start();
 	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
 	loadlibs();
-
+	std::string outputDir ="results_analysis/";
+	std::string fileName ="/data/CbmRoot/sim_data/analysis.0001.root";
 	CbmAnaJpsiSuperEvent* se = new CbmAnaJpsiSuperEvent();
-	se->AddFile("/Users/slebedev/Development/cbm/data/jpsi/analysis.0001.root");
-	//se->AddFile("/Users/slebedev/Development/cbm/data/jpsi/analysis.0001.root");
-	//se->AddFile("/Users/slebedev/Development/cbm/data/jpsi/analysis.0001.root");
+	se->AddFile("/data/CbmRoot/sim_data/analysis.0001.root");
+	se->Run();
 	//se->AddFile("/Users/slebedev/Development/cbm/data/jpsi/analysis.0001.root");
 
-	se->Run();
+	se->Create(fileName, outputDir);
 }
 
