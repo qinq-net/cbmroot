@@ -54,6 +54,7 @@ CbmAnaJpsiTask::CbmAnaJpsiTask()
 	  fHM(NULL),
 	  fCuts()
 {
+	fUseTrd=true;
 }
 
 CbmAnaJpsiTask::~CbmAnaJpsiTask()
