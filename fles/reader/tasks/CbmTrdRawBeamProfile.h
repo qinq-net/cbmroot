@@ -36,7 +36,8 @@ class CbmTrdRawBeamProfile : public FairTask
 
     /** Finish task called at the end of the run **/
     virtual void Finish();
-
+    virtual Int_t GetSysCoreID(CbmSpadicRawMessage* raw);
+    virtual Int_t GetSpadicID(CbmSpadicRawMessage* raw);
     virtual Int_t GetModuleID(CbmSpadicRawMessage* raw);
     virtual Int_t GetLayerID(CbmSpadicRawMessage* raw);
     virtual Int_t GetSectorID(CbmSpadicRawMessage* raw);
@@ -58,6 +59,7 @@ class CbmTrdRawBeamProfile : public FairTask
     Int_t fMessageCounter;
     Int_t fContainerCounter;
 
+
     std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > > fTimeBuffer;// <ASIC ID "Syscore%d_Spadic%d"<Time, <CombiId, SpadicMessage> >
 
     /** Output array to  new data level**/
@@ -70,7 +72,7 @@ class CbmTrdRawBeamProfile : public FairTask
     CbmTrdRawBeamProfile(const CbmTrdRawBeamProfile&);
     CbmTrdRawBeamProfile operator=(const CbmTrdRawBeamProfile&);
 
-    ClassDef(CbmTrdRawBeamProfile,1);
+    ClassDef(CbmTrdRawBeamProfile,2);
 };
 
 #endif
