@@ -48,8 +48,8 @@ class CbmSpadicRawMessage : public CbmRawMessage
   Int_t GetGroupId() { return fGroupId; }
 
   ULong_t GetFullTime();
-
-	
+  Int_t GetSuperEpoch() { return fSuperEpoch; }
+  Int_t GetBufferOverflowCount() {return fBufferOverflowCount; }
  private:
 
   Int_t fSuperEpoch;
@@ -61,7 +61,7 @@ class CbmSpadicRawMessage : public CbmRawMessage
   Int_t fNrSamples;
   Int_t fSamples[32];
 
-  ClassDef(CbmSpadicRawMessage,2);
+  ClassDef(CbmSpadicRawMessage,4);
 
 };
 
