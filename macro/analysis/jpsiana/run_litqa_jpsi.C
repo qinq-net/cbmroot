@@ -1,4 +1,4 @@
-void run_litqa_jpsi(Int_t nEvents = 100)
+void run_litqa_jpsi(Int_t nEvents = 1000)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -7,15 +7,15 @@ void run_litqa_jpsi(Int_t nEvents = 100)
 
 	//gRandom->SetSeed(10);
 
-	//TString mcFile = "/hera/cbm/users/adrian/data/mc.0001.root";
-	//TString parFile = "/hera/cbm/users/adrian/data/param.0001.root";
-	//TString recoFile ="/hera/cbm/users/adrian/data/reco.0001.root";
-	//TString qaFile ="/hera/cbm/users/adrian/data/litqa.0001.root";
+	TString mcFile = "/hera/cbm/users/adrian/data/mc.0001.root";
+	TString parFile = "/hera/cbm/users/adrian/data/param.0001.root";
+	TString recoFile ="/hera/cbm/users/adrian/data/reco.0001.root";
+	TString qaFile ="/hera/cbm/users/adrian/data/litqa.0001.root";
 
-	TString parFile = "/Users/slebedev/Development/cbm/data/jpsi/param.0001.root";
-	TString recoFile = "/Users/slebedev/Development/cbm/data/jpsi/reco.0001.root";
-	TString mcFile = "/Users/slebedev/Development/cbm/data/jpsi/mc.0001.root";
-	TString qaFile = "/Users/slebedev/Development/cbm/data/jpsi/litqa.0001.root";
+	//TString parFile = "/Users/slebedev/Development/cbm/data/jpsi/param.0001.root";
+	//TString recoFile = "/Users/slebedev/Development/cbm/data/jpsi/reco.0001.root";
+	//TString mcFile = "/Users/slebedev/Development/cbm/data/jpsi/mc.0001.root";
+	//TString qaFile = "/Users/slebedev/Development/cbm/data/jpsi/litqa.0001.root";
 
    TList *parFileList = new TList();
    TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file

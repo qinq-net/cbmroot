@@ -4,6 +4,7 @@ void draw_litqa()
    loadlibs();
 
    std::string dir = "/hera/cbm/users/slebedev/data/jpsi/jun15_25gev/jpsi_urqmd/";
+   std::string dir = "/hera/cbm/users/adrian/data/jun15_25gev/jpsi_urqmd/";
    std::string fileName = dir + "litqa.auau.25gev.centr.all.root";
 
    std::string script = std::string(TString(gSystem->Getenv("SCRIPT")).Data());

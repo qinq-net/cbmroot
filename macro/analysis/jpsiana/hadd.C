@@ -5,7 +5,7 @@ void hadd() {
     loadlibs();
     gSystem->Load("libAnalysis");
 
-    string dir = "/hera/cbm/users/slebedev/data/jpsi/jun15_25gev/jpsi_urqmd/";
+    string dir = "/hera/cbm/users/adrian/data/jun15_25gev/jpsi_urqmd/";
     string fileArray = ".auau.25gev.centr.";
     Int_t nofFiles = 1000;
     Int_t nofEventsPerFile = 100;
@@ -19,7 +19,7 @@ void hadd() {
     }
 
 
-  //  CbmHaddBase::AddFilesInDir(dir, fileArray, "analysis", nofFiles, fileSizeLimit, nofEventsPerFile);
+    CbmHaddBase::AddFilesInDir(dir, fileArray, "analysis", nofFiles, fileSizeLimit, nofEventsPerFile);
     CbmHaddBase::AddFilesInDir(dir, fileArray, "litqa", nofFiles, fileSizeLimit, nofEventsPerFile);
 
 }
