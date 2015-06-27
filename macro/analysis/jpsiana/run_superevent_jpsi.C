@@ -7,7 +7,7 @@ void run_superevent_jpsi()
 	loadlibs();
 	std::string outputDir ="results_analysis/";
 	//std::string fileName ="/data/CbmRoot/sim_data/analysis.0001.root";
-	std::string fileName ="/hera/cbm/users/adrian/data/jun15_25gev/jpsi_urqmd/analysis.auau.25gev.centr.00005.root";
+	std::string fileName ="/hera/cbm/users/adrian/data/jun15_25gev/jpsi_urqmd/analysis.auau.25gev.centr.all.root";
 	CbmAnaJpsiSuperEvent* se = new CbmAnaJpsiSuperEvent();
 	//se->AddFile("/data/CbmRoot/sim_data/analysis.0001.root");
         se->AddFile(fileName);
