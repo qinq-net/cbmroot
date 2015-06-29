@@ -19,7 +19,7 @@
 # 5. If detector type = 2 (straws), support will not be created. 
 
 # General information
-MuchCave Zin position [cm]  :     195
+MuchCave Zin position [cm]  :     190
 Acceptance tangent min      :     0.1
 Acceptance tangent max      :     0.5
 Number of absorbers         :       0
@@ -34,7 +34,7 @@ Absorber material           :       C       I       I       I
 Station Zcenter [cm]        :       0      85     140     210
 Number of layers            :       2       3       4       4
 Detector type               :       3       3       2       2
-Distance between layers [cm]:      10      10      10      10
+Distance between layers [cm]:      20      10      10      10
 Support thickness [cm]      :     1.5     1.5     1.5     1.5
 Use module design (0/1)     :       1       1       0       0
 
