@@ -115,6 +115,7 @@ CbmRichGeoOpt::CbmRichGeoOpt()
     H_boa_UpperHalf(NULL), 
     H_boa_LowerHalf(NULL), 
     H_dR(NULL),
+    H_dR_aa(NULL),
     H_dR_RegularTheta(NULL),
     H_dR_LeftHalf(NULL), 
     H_dR_RightHalf(NULL), 
@@ -410,6 +411,8 @@ void CbmRichGeoOpt::RingParameters()
       CbmRichHit* hit = (CbmRichHit*) fRichHits->At(ring->GetHit(iH));
       double xH=hit->GetX();
       double yH=hit->GetY();
+      double dRaa=aA-TMath::Sqrt( (CentX-xH)*(CentX-xH) + (CentY-yH)*(CentY-yH) );
+      H_dR_aa->Fill(dR);
       double dR=radius-TMath::Sqrt( (CentX-xH)*(CentX-xH) + (CentY-yH)*(CentY-yH) );
       H_dR->Fill(dR);
       H_RingCenter_dR->Fill(CentX,CentY,dR);
@@ -516,6 +519,7 @@ void CbmRichGeoOpt::InitHistograms()
   H_boa_UpperHalf= new TH1D("H_boa_UpperHalf","H_boa_UpperHalf",100, 0.5,1.);
   
 
+  H_dR_aa= new TH1D("H_dR_aa","H_dR_aa",50,-5.0,5.0);  
   H_dR= new TH1D("H_dR","H_dR",50,-5.0,5.0);  
   H_dR_RegularTheta= new TH1D("H_dR_RegularTheta","H_dR_RegularTheta",50,-5.0,5.0);  
   H_dR_LeftHalf= new TH1D("H_dR_LeftHalf","H_dR_LeftHalf",50,-5.0,5.0);  
@@ -601,6 +605,7 @@ void CbmRichGeoOpt::WriteHistograms(){
   H_boa_LowerHalf->Write(); 
   H_boa_UpperHalf->Write();
 
+  H_dR_aa->Write();
   H_dR->Write();
   H_dR_RegularTheta->Write();
   H_dR_LeftHalf->Write(); 

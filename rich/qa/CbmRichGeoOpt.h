@@ -1,4 +1,4 @@
-/**
+#/**
 * \file CbmRichGeoOpt.h
 *
 * \brief Optimization of the RICH geometry.
@@ -260,6 +260,7 @@ private:
 
 
    TH1D *H_dR;
+   TH1D *H_dR_aa;
    TH1D *H_dR_RegularTheta;
    TH1D *H_dR_LeftHalf;
    TH1D *H_dR_RightHalf;   
