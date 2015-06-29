@@ -71,6 +71,8 @@ CbmRichGeoOpt::CbmRichGeoOpt()
     H_MomPrim(NULL),
     H_PtPrim(NULL),
     H_MomPt(NULL),
+    H_MomPrim_RegularTheta(NULL),
+    H_acc_mom_el_RegularTheta(NULL),
     H_Hits_XY(NULL),
     H_PointsIn_XY(NULL),
     H_PointsOut_XY(NULL),
@@ -366,13 +368,15 @@ void CbmRichGeoOpt::RingParameters()
     // cout<<" **************************** "<<theta<<endl;
     if (pdg != 11 || motherId != -1){ H_NofRings->SetBinContent(8,H_NofRings->GetBinCenter(8)+1); continue;}// continue; // only primary electrons
     H_NofRings->Fill(nofRings);
-
     if (ring->GetNofHits() >= fMinNofHits){
       H_acc_mom_el->Fill(momentum);
+      if(theta<=25){H_acc_mom_el_RegularTheta->Fill(momentum);}
+      
       H_acc_pty_el->Fill(rapidity, pt);
+      
     }
- 
-   ///////////////////////////////////
+    
+    ///////////////////////////////////
     float radius=ring->GetRadius();
     if(radius<=0.){continue;}//with ideal finder --> many rings with radius -1. 
     //Test if radius is a NAN:
@@ -390,7 +394,7 @@ void CbmRichGeoOpt::RingParameters()
     H_RingCenter_Baxis->Fill(CentX,CentY,bA); 
     
     H_RingCenter_boa->Fill(CentX,CentY,bA/aA);
-    if(theta<=24){H_boa_RegularTheta->Fill(bA/aA); H_RingCenter_boa_RegularTheta->Fill(CentX,CentY,bA/aA);}
+    if(theta<=25){H_boa_RegularTheta->Fill(bA/aA); H_RingCenter_boa_RegularTheta->Fill(CentX,CentY,bA/aA);}
     if(CentX > PMTPlaneX){H_boa_RightHalf->Fill(bA/aA); H_RingCenter_boa_RightHalf->Fill(CentX,CentY,bA/aA);}
     if(CentX <= PMTPlaneX){H_boa_LeftHalf->Fill(bA/aA); H_RingCenter_boa_LeftHalf->Fill(CentX,CentY,bA/aA);}
     if(CentY > PMTPlaneY){H_boa_UpperHalf->Fill(bA/aA); H_RingCenter_boa_UpperHalf->Fill(CentX,CentY,bA/aA);}
@@ -406,10 +410,10 @@ void CbmRichGeoOpt::RingParameters()
       CbmRichHit* hit = (CbmRichHit*) fRichHits->At(ring->GetHit(iH));
       double xH=hit->GetX();
       double yH=hit->GetY();
-      double dR=aA-TMath::Sqrt( (CentX-xH)*(CentX-xH) + (CentY-yH)*(CentY-yH) );
+      double dR=radius-TMath::Sqrt( (CentX-xH)*(CentX-xH) + (CentY-yH)*(CentY-yH) );
       H_dR->Fill(dR);
       H_RingCenter_dR->Fill(CentX,CentY,dR);
-      if(theta<=24){H_dR_RegularTheta->Fill(dR); H_RingCenter_dR_RegularTheta->Fill(CentX,CentY,dR);}
+      if(theta<=25){H_dR_RegularTheta->Fill(dR); H_RingCenter_dR_RegularTheta->Fill(CentX,CentY,dR);}
       if(CentX > PMTPlaneX){H_dR_RightHalf->Fill(dR); H_RingCenter_dR_RightHalf->Fill(CentX,CentY,dR);}
       if(CentX <= PMTPlaneX){H_dR_LeftHalf->Fill(dR); H_RingCenter_dR_LeftHalf->Fill(CentX,CentY,dR);}
       if(CentY > PMTPlaneY){H_dR_UpperHalf->Fill(dR); H_RingCenter_dR_UpperHalf->Fill(CentX,CentY,dR);}
@@ -426,11 +430,15 @@ void CbmRichGeoOpt::FillMcHist()
     if (!mcTrack) continue;
     Int_t motherId = mcTrack->GetMotherId();
     Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
+
+    TVector3 mom; mcTrack->GetMomentum(mom);  
+    Double_t theta=mom.Theta()* 180 / TMath::Pi();
     
     if (pdg == 11 && motherId == -1){
       H_MomPt->Fill( mcTrack->GetP(), mcTrack->GetPt());
       H_MomPrim->Fill(mcTrack->GetP());
       H_PtPrim->Fill(mcTrack->GetPt());
+      if(theta<=25){H_MomPrim_RegularTheta->Fill(mcTrack->GetP());}
     }
   }
 
@@ -449,7 +457,9 @@ void CbmRichGeoOpt::InitHistograms()
   H_PtPrim = new TH1D("H_PtPrim", "H_PtPrim;p [GeV]; Yield", 80, 0., 4.);
   H_MomPt = new TH2D("H_MomPt", "H_MomPt;p [GeV];pt [GeV]; Yield", 100, 0., 10., 80, 0., 4.);
 
-  
+  H_MomPrim_RegularTheta = new TH1D("H_MomPrim_RegularTheta", "H_MomPrim_RegularTheta;p [GeV]; Yield", 48, 0., 12.);
+    H_acc_mom_el_RegularTheta = new TH1D("H_acc_mom_el_RegularTheta", "H_acc_mom_el_RegularTheta;p [GeV/c];Yield", 48, 0., 12.);
+
   H_Hits_XY = new TH2D("H_Hits_XY", "H_Hits_XY;X [cm];Y [cm];Counter", 200, -150., 50.,400, 0.,400.);
   H_PointsIn_XY = new TH2D("H_PointsIn_XY", "H_PointsIn_XY;X [cm];Y [cm];Counter", 110, -100., 10.,400, 0.,400.);
   H_PointsOut_XY = new TH2D("H_PointsOut_XY", "H_PointsOut_XY;X [cm];Y [cm];Counter", 200, -150., 50.,400, 0.,400.);
@@ -544,6 +554,8 @@ void CbmRichGeoOpt::WriteHistograms(){
   H_PtPrim->Write(); 
   H_MomPt->Write(); 
 
+  H_MomPrim_RegularTheta->Write();  
+  H_acc_mom_el_RegularTheta->Write(); 
   H_Hits_XY->Write(); 
   H_PointsIn_XY->Write();
   H_PointsOut_XY->Write();

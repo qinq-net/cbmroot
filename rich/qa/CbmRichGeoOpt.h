@@ -205,6 +205,12 @@ private:
    TH1D* H_MomPrim;
    TH1D* H_PtPrim;
    TH2D* H_MomPt;
+   TH1D* H_acc_mom_el;
+   TH2D* H_acc_pty_el;
+
+   TH1D* H_MomPrim_RegularTheta;
+   TH1D* H_acc_mom_el_RegularTheta;
+
 
    TH2D* H_Hits_XY; // distribution of X and Y position of hits
    TH2D* H_PointsIn_XY; // distribution of X and Y position of points
@@ -234,8 +240,7 @@ private:
    TH3D* H_Alpha_XYposAtDet_UpperHalf;
    TH3D* H_Alpha_XYposAtDet_LowerHalf;
 
-   TH1D* H_acc_mom_el;
-   TH2D* H_acc_pty_el;
+
 
    //////////////////////////////////
    TH1D* H_NofHitsAll;
