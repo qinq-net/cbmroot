@@ -1061,7 +1061,8 @@ void CbmL1::TrackFitPerformance()
       L1FieldRegion fld _fvecalignment;
       L1FieldValue B[3], targB _fvecalignment;
       float z[3];
-      for (int ih = 0; ih < 3; ih++){
+      for (unsigned int ih = 0; ih < 3; ih++){
+        if(ih >= mc.Points.size()) continue;	//If nofMCPoints in track < 3
         const int iMCP = mc.Points[ih];
         CbmL1MCPoint &mcP = vMCPoints[iMCP];
         L1Station &st = algo->vStations[mcP.iStation];
@@ -1152,7 +1153,8 @@ void CbmL1::TrackFitPerformance()
           L1FieldRegion fld _fvecalignment;
           L1FieldValue B[3] _fvecalignment;
           float z[3];
-          for (int ih = 0; ih < 3; ih++){
+          for (unsigned int ih = 0; ih < 3; ih++){
+            if(ih >= mc.Points.size()) continue;	//If nofMCPoints in track < 3
             const int iMCP = mc.Points[ih];
             CbmL1MCPoint &mcP = vMCPoints[iMCP];
             L1Station &st = algo->vStations[mcP.iStation];
