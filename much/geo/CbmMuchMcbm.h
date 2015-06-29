@@ -21,6 +21,7 @@ class CbmMuchPoint;
 class FairVolume;
 class CbmGeoMuchPar;
 class TGeoMedium;
+class TGeoCombiTrans;
 
 class CbmMuchMcbm : public FairDetector
 {
@@ -112,6 +113,8 @@ class CbmMuchMcbm : public FairDetector
    **/
   virtual void ConstructGeometry();
 
+  virtual void        ConstructRootGeometry();
+  void                ExpandMuchNodes(TGeoNode* fN);
 
   //  void SaveGeoParams();
 
@@ -133,6 +136,8 @@ class CbmMuchMcbm : public FairDetector
   Bool_t         kGeoSaved;          //!
   TList *flGeoPar; //!
   CbmGeoMuchPar* fPar;               //!  parameter container
+  TGeoCombiTrans* fCombiTrans;       //! Transformation matrix for geometry positioning         
+
   /** Private method AddHit
    **
    ** Adds a MuchPoint to the HitCollection
@@ -142,6 +147,14 @@ class CbmMuchMcbm : public FairDetector
 		       TVector3 momIn, TVector3 momOut,
 		       Double_t time, Double_t length, Double_t eLoss);
 
+  /** @brief Check how the TGeoVolume in file was produced
+   *  Check how the TGeoVolume in the geometry file was produced.
+   *  The new way is to export the volume with the Export function
+   *  of TGeoVolume together with a TGeoMatrix.
+   *  To identify a file of new type check for TGeoVolume and a TGeoMatrix
+   *  derived class in the file.
+   */
+  Bool_t IsNewGeometryFile(TString filename);
 
   /** Private method ResetParameters
    **
@@ -149,7 +162,9 @@ class CbmMuchMcbm : public FairDetector
    **/
   void ResetParameters();
   Int_t GetDetId(FairVolume* vol);
-private:
+
+ private:
+
   Int_t Intersect(Float_t x, Float_t y, Float_t lx, Float_t ly, Float_t r);
   TGeoMedium* CreateMedium(const char* matName);
 
@@ -171,5 +186,5 @@ inline void CbmMuchMcbm::ResetParameters() {
   fPosIndex = 0;
 };
 
+#endif /* CBMMUCHMCBM_H */
 
-#endif
