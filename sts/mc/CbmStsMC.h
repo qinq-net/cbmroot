@@ -128,7 +128,7 @@ class CbmStsMC : public FairDetector
 		 **/
 		virtual void Register() {
 			FairRootManager::Instance()->Register("StsPoint", GetName(),
-																						fStsPoints, kTRUE);
+							      fStsPoints, kTRUE);
 		}
 
 
