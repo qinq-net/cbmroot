@@ -569,7 +569,7 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   values[kE]         = track->E();
   values[kM]         = track->M();
   values[kCharge]    = track->Charge();
-  values[kPdgCode]   = track->PdgCode();
+  //  values[kPdgCode]   = track->PdgCode();
 
   // special
   values[kTrackLength] = track->GetGlobalTrack()->GetLength(); // cm

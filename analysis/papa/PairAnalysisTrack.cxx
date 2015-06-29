@@ -41,7 +41,7 @@ PairAnalysisTrack::PairAnalysisTrack() :
   fMomentum(),
   fPosition(),
   fCharge(0),
-  fPdgCode(-11),
+  fPdgCode(0),
   fLabel(-1),
   fWeight(1.),
   fMultiMatch(0)
