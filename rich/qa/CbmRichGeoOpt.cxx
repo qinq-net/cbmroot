@@ -412,7 +412,7 @@ void CbmRichGeoOpt::RingParameters()
       double xH=hit->GetX();
       double yH=hit->GetY();
       double dRaa=aA-TMath::Sqrt( (CentX-xH)*(CentX-xH) + (CentY-yH)*(CentY-yH) );
-      H_dR_aa->Fill(dR);
+      H_dR_aa->Fill(dRaa);
       double dR=radius-TMath::Sqrt( (CentX-xH)*(CentX-xH) + (CentY-yH)*(CentY-yH) );
       H_dR->Fill(dR);
       H_RingCenter_dR->Fill(CentX,CentY,dR);
