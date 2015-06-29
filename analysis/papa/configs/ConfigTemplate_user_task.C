@@ -335,18 +335,14 @@ void ConfigBgrd(PairAnalysis *papa, Int_t cutDefinition)
   rot->SetRotationType(PairAnalysisTrackRotator::kRotateBothRandom); /// kRotatePositive, kRotateNegative or kRotateBothRandom (default)
   papa->SetTrackRotator(rot);
 
-  /*
-  /// TODO: implement Event Mixing
-  /// add mixed events
+  /// Event Mixing - add event pools for event characteristics
+  /// select the type of mixed events kAll, kOSonly, kOSandLS
   PairAnalysisMixingHandler *mix=new PairAnalysisMixingHandler;
-  mix->AddVariable(PairAnalysisVarManager::kZvPrim,      "-10.,-5.,-4.,-3.,-2.,-1.,0.,1.,2.,3.,4.,5.,10.");
-  mix->AddVariable(PairAnalysisVarManager::kCentrality,  9,  0.,90.);
-  mix->AddVariable(PairAnalysisVarManager::kTPCrpH2,     10, TMath::Pi()/-2, TMath::Pi()/2);
-  mix->SetSkipFirstEvent(kTRUE);                      /// needed for flow analysis
+  mix->AddVariable(PairAnalysisVarManager::kZvPrim, PairAnalysisHelper::MakeArbitraryBinning("-10.,-3.,-2.,-1.,0.,1.,2.,3.,+10."));
+  mix->AddVariable(PairAnalysisVarManager::kNVtxContrib,  PairAnalysisHelper::MakeLinBinning(5,0.,500.));
   mix->SetMixType(PairAnalysisMixingHandler::kAll);   /// checkout PairAnalysisMixingHandler.h (LS ME, OS ME or both)
-  mix->SetDepth(150);                                 /// pool depth
+  mix->SetDepth(5);                                   /// pool depth (be carefull)
   papa->SetMixingHandler(mix);
-  */
 
 }
 
