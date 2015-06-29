@@ -196,8 +196,8 @@ const Int_t LayerArraySize[3][4] =  { { 4, 4, 9, 11 },    // for layer[1-3][i,o]
 //// v14x - module types in the inner sector of layer type 1 - looking upstream
 //const Int_t layer1i[5][5] = { { 0,   0,   0,  0,  0 },    // abc: a module type - b orientation (x90 deg) in odd - c even layer s
 const Int_t layer1i[4][4] = { { 0,   0,   0,  0 },    // abc: a module type - b orientation (x90 deg) in odd - c even layer s
-                              { 0, 301, 301,  0 },  
-                              { 0, 301, 301,  0 },  
+                              { 0, 323, 321,  0 },  
+                              { 0, 303, 301,  0 },  
                               { 0,   0,   0,  0 } };
 
 //// mCBM with 3x3 arrangement
