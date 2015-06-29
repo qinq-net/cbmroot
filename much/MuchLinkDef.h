@@ -8,6 +8,7 @@
 #pragma link C++ class  CbmGeoMuch+;
 #pragma link C++ class  CbmGeoMuchPar;
 #pragma link C++ class  CbmMuch+;
+#pragma link C++ class  CbmMuchMcbm+;
 #pragma link C++ class  CbmMuchContFact;
 #pragma link C++ class  CbmMuchGeoScheme+;
 #pragma link C++ class  CbmMuchDigitizeGem+;

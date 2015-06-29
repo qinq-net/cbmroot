@@ -43,6 +43,7 @@ set(SRCS
 geo/CbmGeoMuch.cxx  
 geo/CbmGeoMuchPar.cxx 
 geo/CbmMuch.cxx
+geo/CbmMuchMcbm.cxx
 geo/CbmMuchContFact.cxx  
 geo/CbmMuchGeoScheme.cxx
 geo/CbmMuchLayer.cxx
