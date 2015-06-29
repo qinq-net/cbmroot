@@ -195,7 +195,7 @@ void PairAnalysis::Init()
   if(fEventProcess) InitPairCandidateArrays();
 
   // compress the MC signal array
-  fSignalsMC->Compress();
+  if(fSignalsMC) fSignalsMC->Compress();
 
   /*
   if (fCfManagerPair) {
