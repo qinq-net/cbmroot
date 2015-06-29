@@ -9,7 +9,7 @@
 #include "CbmTrdPoint.h"
 #include "CbmTrdGeoHandler.h"
 
-#include "TRandom.h"
+#include "TRandom3.h"
 #include "TFile.h"
 #include "TMath.h"
 #include "TH1.h"
@@ -30,6 +30,7 @@ using std::setprecision;
 // -----   Default constructor   ---------------------------------------
 CbmTrdRadiator::CbmTrdRadiator()
  : fWindowFoil(""),
+   fRndm(0),
    fRadType(""),
    fDetType(-1),
    fFirstPass(kTRUE),
@@ -74,12 +75,14 @@ CbmTrdRadiator::CbmTrdRadiator()
   //Init();
   // Set initial parameters defining the radiator
   CreateHistograms();
+  fRndm.SetSeed(0); //TUUID -> unique seed
 }
 //-----------------------------------------------------------------------------
 
 // -----  Constructor   --------------------------------------------------
 CbmTrdRadiator::CbmTrdRadiator(Bool_t SimpleTR, Int_t Nfoils, Float_t FoilThick, Float_t GapThick)
   : fWindowFoil(""),
+    fRndm(0),
     fRadType(""),
     fDetType(-1),
     fFirstPass(kTRUE),
@@ -122,12 +125,14 @@ CbmTrdRadiator::CbmTrdRadiator(Bool_t SimpleTR, Int_t Nfoils, Float_t FoilThick,
   }
   //Init();
   CreateHistograms();
+  fRndm.SetSeed(0); //TUUID -> unique seed
 }
 //-----------------------------------------------------------------------------
 
 // -----  Constructor   --------------------------------------------------
 CbmTrdRadiator::CbmTrdRadiator(Bool_t SimpleTR, Int_t Nfoils, Float_t FoilThick, Float_t GapThick, TString material, TString prototype)
   : fWindowFoil(""),
+    fRndm(0),
     fRadType(prototype),
     fDetType(-1),
     fFirstPass(kTRUE),
@@ -170,12 +175,14 @@ CbmTrdRadiator::CbmTrdRadiator(Bool_t SimpleTR, Int_t Nfoils, Float_t FoilThick,
   }
   //Init();
   CreateHistograms();
+  fRndm.SetSeed(0); //TUUID -> unique seed
 }
 //-----------------------------------------------------------------------------
 
 // -----  Constructor   --------------------------------------------------
 CbmTrdRadiator::CbmTrdRadiator(Bool_t SimpleTR, TString prototype)
  : fWindowFoil("Kapton"), //which is the gas window of MS2012 prototypes. Anything else will result in a mylar gas window -> MuBu default
+   fRndm(0),
    fRadType(prototype),
    fDetType(-1),
    fFirstPass(kTRUE),
@@ -220,6 +227,8 @@ CbmTrdRadiator::CbmTrdRadiator(Bool_t SimpleTR, TString prototype)
   //Init(SimpleTR, prototype);
   //SetRadPrototype(prototype);
   CreateHistograms();
+  fRndm.SetSeed(0); //TUUID -> unique seed
+
 }
 //-----------------------------------------------------------------------------
 
@@ -239,7 +248,6 @@ CbmTrdRadiator::~CbmTrdRadiator()
     for(Int_t i=0; i<fNMom; i++){
 	if(fFinal[i]) delete fFinal[i];
     }
-
 }
 
 // ----- Create Histogramms --------------------------------------------------
@@ -766,7 +774,7 @@ void CbmTrdRadiator::ProduceSpectra(){
 	tmp = fDetSpectrumA->GetBinContent(j + 1);
 	fFinal[i]->SetBinContent(j + 1, tmp);
     }
-
+    fFinal[i]->SetTitle(Form("%s-momentum%.2f",fFinal[i]->GetTitle(),fTrackMomentum[i]));
   }
 
 }
@@ -873,7 +881,7 @@ Int_t CbmTrdRadiator::ELoss(Int_t index){
 	fELoss = -1;
 	return 1;
     }
-    nPhoton = gRandom->Poisson(fnTRab * fnPhotonCorr);
+    nPhoton = fRndm.Poisson(fnTRab * fnPhotonCorr);
     if (nPhoton > maxPhoton) nPhoton = maxPhoton;
     for(Int_t i = 0; i < nPhoton; i++){
 	// energy of the photon
@@ -887,7 +895,7 @@ Int_t CbmTrdRadiator::ELoss(Int_t index){
 	fELoss = -1;
 	return 1;
     }
-    nPhoton = gRandom->Poisson(fnTRabs[index] * fnPhotonCorr);
+    nPhoton = fRndm.Poisson(fnTRabs[index] * fnPhotonCorr);
     if (nPhoton > maxPhoton) nPhoton = maxPhoton;
     for(Int_t i = 0; i < nPhoton; i++){
 	// energy of the photon

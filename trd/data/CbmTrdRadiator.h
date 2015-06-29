@@ -14,6 +14,7 @@
 #define CBMTRDRADIATOR_H
 
 #include "TVector3.h"
+#include "TRandom3.h"
 
 class TH1D;
 class CbmTrdPoint;
@@ -134,6 +135,8 @@ class CbmTrdRadiator
 
   CbmTrdRadiator& operator=(const CbmTrdRadiator&);
   CbmTrdRadiator(const CbmTrdRadiator&);
+
+  TRandom3   fRndm;     // randomator
 
   /* Input parameters to be set */
   TString   fRadType;
