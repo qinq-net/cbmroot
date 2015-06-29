@@ -13,6 +13,7 @@
 #include "FairRuntimeDb.h"
 #include "FairRun.h"
 #include "FairVolume.h"
+#include "FairVolumeList.h"
 
 #include "TObjArray.h"
 #include "TClonesArray.h"
@@ -270,9 +271,31 @@ CbmMuchPoint* CbmMuchMcbm::AddHit(Int_t trackID, Int_t detID, TVector3 posIn,
 // ----------------------------------------------------------------------------
 
 
-#include "FairVolumeList.h"
-// ----------------------------------------------------------------------------
+
+// -----  ConstructGeometry  -----------------------------------------------
 void CbmMuchMcbm::ConstructGeometry() {
+
+  TString fileName = GetGeometryFileName();
+
+  if ( fileName.EndsWith(".root") ) {
+    LOG(INFO) << "Constructing MUCH geometry from ROOT  file "
+	      << fileName.Data() << FairLogger::endl;
+    ConstructRootGeometry();
+  }
+  else if ( fileName.EndsWith(".geo") ) {
+    LOG(INFO) << "Constructing MUCH geometry from ASCII file "
+	      << fileName.Data() << FairLogger::endl;
+    ConstructAsciiGeometry();
+  }
+  else
+    LOG(FATAL) <<  "Geometry format of MUCH file " << fileName.Data()
+	       << " not supported." << FairLogger::endl;
+
+}
+// -------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------
+void CbmMuchMcbm::ConstructAsciiGeometry() {
   FairGeoLoader*    geoLoad = FairGeoLoader::Instance();
   FairGeoInterface* geoFace = geoLoad->getGeoInterface();
   geoFace->addGeoModule(new CbmGeoMuch());
@@ -398,25 +421,27 @@ void CbmMuchMcbm::ConstructGeometry() {
       TGeoVolume* voLayer = new TGeoVolume(layerName,shLayer,air);
       gGeoManager->Node(layerName,0,stationName,0.,0.,layerZ,0,kTRUE,buf,0);
 
-      // Create support
-      TString  supportName1  = Form("muchstation%02ilayer%isupport1",iStation+1,iLayer+1);
-      TString  supportName2  = Form("muchstation%02ilayer%isupport2",iStation+1,iLayer+1);
-      TGeoVolume* voSupport1 = new TGeoVolume(supportName1,shSupport,supportMat);
-      TGeoVolume* voSupport2 = new TGeoVolume(supportName2,shSupport,supportMat);
-      voSupport1->SetLineColor(kYellow);
-      voSupport2->SetLineColor(kYellow);
-      if(TMath::Abs(supportDz) > 1e-5) { // Do not create support if it does not exist
-        gGeoManager->Node(supportName1,0,layerName,+supportDx/2.,0.,0.,    0,kTRUE,buf,0);
-        gGeoManager->Node(supportName2,0,layerName,-supportDx/2.,0.,0.,krotZ,kTRUE,buf,0);
-      }
+//DE      // Create support
+//DE      TString  supportName1  = Form("muchstation%02ilayer%isupport1",iStation+1,iLayer+1);
+//DE      TString  supportName2  = Form("muchstation%02ilayer%isupport2",iStation+1,iLayer+1);
+//DE      TGeoVolume* voSupport1 = new TGeoVolume(supportName1,shSupport,supportMat);
+//DE      TGeoVolume* voSupport2 = new TGeoVolume(supportName2,shSupport,supportMat);
+//DE      voSupport1->SetLineColor(kYellow);
+//DE      voSupport2->SetLineColor(kYellow);
+//DE      if(TMath::Abs(supportDz) > 1e-5) { // Do not create support if it does not exist
+//DE        gGeoManager->Node(supportName1,0,layerName,+supportDx/2.,0.,0.,    0,kTRUE,buf,0);
+//DE        gGeoManager->Node(supportName2,0,layerName,-supportDx/2.,0.,0.,krotZ,kTRUE,buf,0);
+//DE      }
 
       // Create layer sides
-      for (Int_t iSide=0;iSide<2;iSide++){
+      //DE      for (Int_t iSide=0;iSide<2;iSide++){
+      for (Int_t iSide=0;iSide<1;iSide++){
         const CbmMuchLayerSide* side = layer->GetSide(iSide);
         Char_t cside = (iSide==1) ? 'b' : 'f';
 
         // Create modules
-        for (Int_t iModule=0;iModule<side->GetNModules();iModule++){
+	//DE        for (Int_t iModule=0;iModule<side->GetNModules();iModule++){
+          for (Int_t iModule=0; iModule < 1 ;iModule++){
           CbmMuchModule* module = side->GetModule(iModule);
           TVector3 pos = module->GetPosition();
           TVector3 size = module->GetSize();
@@ -477,8 +502,10 @@ void CbmMuchMcbm::ConstructGeometry() {
             Double_t angle =  phi0*(2*iModule+iSide);
             Int_t krot;
             gMC->Matrix(krot,90,angle-90,90,angle,0,0);
-            gGeoManager->Node(activeName,0,layerName,pos[0],pos[1],pos[2]-layer->GetZ(),krot,kTRUE,buf,0);
-            gGeoManager->Node(spacerName,0,layerName,pos[0],pos[1],pos[2]-layer->GetZ(),krot,kTRUE,buf,0);
+//DE            gGeoManager->Node(activeName,0,layerName,pos[0],pos[1],pos[2]-layer->GetZ(),krot,kTRUE,buf,0);
+//DE            gGeoManager->Node(spacerName,0,layerName,pos[0],pos[1],pos[2]-layer->GetZ(),krot,kTRUE,buf,0);
+            gGeoManager->Node(activeName,0,layerName,pos[0]-75.,pos[1],pos[2]-layer->GetZ(),krot,kTRUE,buf,0);
+            gGeoManager->Node(spacerName,0,layerName,pos[0]-75.,pos[1],pos[2]-layer->GetZ(),krot,kTRUE,buf,0);
             AddSensitiveVolume(voActive);
             continue;
           }
@@ -581,26 +608,7 @@ TGeoMedium* CbmMuchMcbm::CreateMedium(const char* matName){
 }
 // -------------------------------------------------------------------------
 
-// DEDE
-// DEDE
-/*
-// -----  ConstructGeometry  -----------------------------------------------
-void CbmMuchMcbm::ConstructGeometry() {
 
-  TString fileName = GetGeometryFileName();
-
-  // --- Only ROOT geometries are supported
-  if (  ! fileName.EndsWith(".root") ) {
-    LOG(FATAL) <<  GetName() << ": Geometry format of file "
-    		       << fileName.Data() << " not supported." << FairLogger::endl;
-  }
-
-  LOG(INFO) << "Constructing " << GetName() << "  geometry from ROOT  file "
-  		      << fileName.Data() << FairLogger::endl;
-  ConstructRootGeometry();
-}
-// -------------------------------------------------------------------------
-*/
 //__________________________________________________________________________
 void CbmMuchMcbm::ConstructRootGeometry()
 {
@@ -642,8 +650,8 @@ void CbmMuchMcbm::ExpandMuchNodes(TGeoNode* fN)
       AddSensitiveVolume(v);
     }
   }
-
 }
+
 
 Bool_t CbmMuchMcbm::IsNewGeometryFile(TString filename)
 {

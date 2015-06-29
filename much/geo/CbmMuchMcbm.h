@@ -43,6 +43,19 @@ class CbmMuchMcbm : public FairDetector
   virtual ~CbmMuchMcbm();
 
 
+  /** @brief Check whether a volume is sensitive.
+   **
+   ** @param(name)  Volume name
+   ** @value        kTRUE if volume is sensitive, else kFALSE
+   **
+   ** The decision is based on the volume name (has to contain "Sensor").
+   ** Virtual from FairModule.
+   **/
+  virtual Bool_t CheckIfSensitive(std::string name) {
+    return ( TString(name).Contains("ctive") ? kTRUE : kFALSE );
+  }
+
+  
   /** Virtual method ProcessHits
    **
    ** Defines the action to be taken when a step is inside the
@@ -114,6 +127,7 @@ class CbmMuchMcbm : public FairDetector
   virtual void ConstructGeometry();
 
   virtual void        ConstructRootGeometry();
+  virtual void        ConstructAsciiGeometry();
   void                ExpandMuchNodes(TGeoNode* fN);
 
   //  void SaveGeoParams();
