@@ -45,8 +45,10 @@ public:
 	void CombineElectrons();
 	Double_t Invmass_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 	Double_t Pt_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
+	Double_t Rap_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 
 	CbmLmvmKinematicParams CalculateKinematicParamsReco(const TVector3 electron1, const TVector3 electron2);
+	CbmLmvmKinematicParams CalculateKinematicParams_4particles(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 	
 	void CombinePhotons();
 	Double_t OpeningAngleBetweenPhotons(vector<int> photon1, vector<int> photons2);
@@ -101,10 +103,19 @@ private:
 	TH1D * fhPhotons_invmass_cut_chi40;
 	TH1D * fhPhotons_invmass_cut_chi65;
 	TH1D * fhPhotons_invmass_cut_chi80;
+	
+	TH1D * fhPhotons_invmass_cut_ptBin1;
+	TH1D * fhPhotons_invmass_cut_ptBin2;
+	TH1D * fhPhotons_invmass_cut_ptBin3;
+	TH1D * fhPhotons_invmass_cut_ptBin4;
+	
 	TH2D * fhPhotons_invmass_vs_chi;
 	TH2D * fhPhotons_startvertex_vs_chi;
 	TH1D * fhPhotons_angleBetween;
 	TH2D * fhPhotons_invmass_vs_pt;
+	TH2D * fhPhotons_rapidity_vs_pt;
+	TH2D * fhPhotons_invmass_vs_openingAngle;
+	TH2D * fhPhotons_openingAngle_vs_momentum;
 	
 	TH1D * fhPhotons_MC_motherpdg;
 	TH1D * fhPhotons_MC_invmass1;
@@ -117,6 +128,7 @@ private:
 	TH1D * fhPhotons_Refit_chiDiff;
 	TH1D * fhPhotons_Refit_momentumDiff;
 	TH1D * fhPhotons_Refit_chiDistribution;
+	TH1D * fhPhotons_RefitPion_chiDistribution;
 
 
 
@@ -130,6 +142,7 @@ private:
 	TH1D * fhPhotons_invmass_direction;
 	TH1D * fhPhotons_invmass_direction_cut;
 	TH1D * fhPhotons_boostAngle;
+	TH1D * fhPhotons_boostAngleMC;
 	
 	TH1D * fhPhotons_tX;
 	TH1D * fhPhotons_tY;

@@ -235,6 +235,14 @@ private:
 	TH2D * fhEFG_angleVSpt_pi0_reco;
 	TH2D * fhEFG_angleVSpt_eta_reco;
 
+	// invariant mass vs pt from reconstructed data
+	//TH2D * fhEFG_angleVSpt_all_reco;
+	//TH2D * fhEFG_angleVSpt_combBack_reco;
+	TH2D * fhEFG_invmassVSpt_allSameG_reco;
+	TH2D * fhEFG_invmassVSpt_direct_reco;
+	TH2D * fhEFG_invmassVSpt_pi0_reco;
+	TH2D * fhEFG_invmassVSpt_eta_reco;
+
 	// momentum resolution of photons from reconstructed data
 	TH2D * fhEFG_momentumResolutionPhoton_reco;
 	TH2D * fhEFG_momentumResolutionElectrons_reco;

@@ -82,6 +82,7 @@ CbmAnaConversion::CbmAnaConversion()
     fhPi0_z(NULL),
     fhPi0_z_cut(NULL),
     fhPi0_pt(NULL),
+    fhPi0_pt_vs_rap(NULL),
     fhEta_pt(NULL),
     fhElectronsFromPi0_z(NULL),
     fhInvariantMass_test(NULL),
@@ -261,6 +262,7 @@ void CbmAnaConversion::InitHistograms()
 	fhPi0_z					= new TH1D("fhPi0_z", "fhPi0_z;z [cm];Entries", 600., -0.5, 599.5);
 	fhPi0_z_cut				= new TH1D("fhPi0_z_cut", "fhPi0_z_cut;z [cm];Entries", 600., -0.5, 599.5);
 	fhPi0_pt				= new TH1D("fhPi0_pt", "fhPi0_pt;pt [GeV];Entries", 200., 0., 10.);
+	fhPi0_pt_vs_rap			= new TH2D("fhPi0_pt_vs_rap", "fhPi0_pt_vs_rap;rap [GeV], pt [GeV]", 600, -0.0025, 5.9975, 100, 0., 10.);
 	fhEta_pt				= new TH1D("fhEta_pt", "fhEta_pt;pt [GeV];Entries", 200., 0., 10.);
 	fhElectronSources		= new TH1D("fhElectronSources", "fhElectronSources;Source;Entries", 6., 0., 6.);
 	fhElectronsFromPi0_z	= new TH1D("fhElectronsFromPi0_z", "fhElectronsFromPi0_z (= pos. of gamma conversion);z [cm];Entries", 600., -0.5, 599.5);
@@ -273,6 +275,7 @@ void CbmAnaConversion::InitHistograms()
 	fHistoList.push_back(fhPi0_z);
 	fHistoList.push_back(fhPi0_z_cut);
 	fHistoList.push_back(fhPi0_pt);
+	fHistoList.push_back(fhPi0_pt_vs_rap);
 	fHistoList.push_back(fhEta_pt);
 	fHistoList.push_back(fhElectronSources);
 	fHistoList.push_back(fhElectronsFromPi0_z);
@@ -434,6 +437,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 			if (motherId == -1) {
 				countPi0MC_fromPrimary++;
 				fhPi0_pt->Fill(mctrack->GetPt() );
+				fhPi0_pt_vs_rap->Fill(mctrack->GetRapidity(), mctrack->GetPt() );
 			}
 		}
 		
