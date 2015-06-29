@@ -53,7 +53,7 @@ The names are available via the function PairClassName(Int_t i)
 #include "PairAnalysisTrackRotator.h"
 //#include "PairAnalysisDebugTree.h"
 #include "PairAnalysisSignalMC.h"
-///#include "PairAnalysisMixingHandler.h"
+#include "PairAnalysisMixingHandler.h"
 #include "PairAnalysisPairLegCuts.h"
 //#include "PairAnalysisV0Cuts.h"
 #include "PairAnalysisHistos.h"
@@ -106,7 +106,7 @@ PairAnalysis::PairAnalysis() :
   ///  fCfManagerPair(0x0),
   fTrackRotator(0x0),
   //  fDebugTree(0x0),
-  ///  fMixing(0x0),
+  fMixing(0x0),
   fPreFilterEventPlane(kFALSE),
   fLikeSignSubEvents(kFALSE),
   fPreFilterUnlikeOnly(kFALSE),
@@ -150,7 +150,7 @@ PairAnalysis::PairAnalysis(const char* name, const char* title) :
   ///  fCfManagerPair(0x0),
   fTrackRotator(0x0),
   //  fDebugTree(0x0),
-  ///  fMixing(0x0),
+  fMixing(0x0),
   fPreFilterEventPlane(kFALSE),
   fLikeSignSubEvents(kFALSE),
   fPreFilterUnlikeOnly(kFALSE),
@@ -177,7 +177,7 @@ PairAnalysis::~PairAnalysis()
   if (fUsedVars) delete fUsedVars;
   if (fPairCandidates && fEventProcess) delete fPairCandidates;
   //  if (fDebugTree) delete fDebugTree;
-  ///  if (fMixing) delete fMixing;
+  if (fMixing) delete fMixing;
   if (fSignalsMC) delete fSignalsMC;
   //  if (fCfManagerPair) delete fCfManagerPair;
   if (fHistoArray) delete fHistoArray;
@@ -206,7 +206,7 @@ void PairAnalysis::Init()
 
   //  if (fDebugTree) fDebugTree->SetPairAnalysis(this);
 
-  ///  if (fMixing) fMixing->Init(this);
+  if (fMixing) fMixing->Init(this);
   if (fHistoArray) {
     //    fHistoArray->SetSignalsMC(fSignalsMC);
     fHistoArray->Init();
@@ -293,13 +293,13 @@ Bool_t PairAnalysis::Process(PairAnalysisEvent *ev1)
   // set event
   PairAnalysisVarManager::SetFillMap(fUsedVars);
   PairAnalysisVarManager::SetEvent(ev1);
-  /*
+  
   if (fMixing){
     //set mixing bin to event data
     Int_t bin=fMixing->FindBin(PairAnalysisVarManager::GetData());
     PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kMixingBin,bin);
   }
-  */
+  
 
   //in case we have MC load the MC event and process the MC particles
   // why do not apply the event cuts first ????
@@ -350,12 +350,11 @@ Bool_t PairAnalysis::Process(PairAnalysisEvent *ev1)
   }
 
   //process event mixing
-  /*
   if (fMixing) {
     fMixing->Fill(ev1,this);
     //     FillHistograms(0x0,kTRUE);
   }
-  */
+  
 
   //fill debug tree if a manager is attached
   //  if (fDebugTree) FillDebugTree();
@@ -1111,6 +1110,7 @@ void PairAnalysis::FillPairArrays(Int_t arr1, Int_t arr2)
   //  else
   candidate = new PairAnalysisPairLV();
   candidate->SetKFUsage(fUseKF);
+  candidate->SetType(pairIndex);
 
   UInt_t selectedMask=(1<<fPairFilter.GetCuts()->GetEntries())-1;
   
@@ -1119,7 +1119,6 @@ void PairAnalysis::FillPairArrays(Int_t arr1, Int_t arr2)
     if (arr1==arr2) end=itrack1;
     for (Int_t itrack2=0; itrack2<end; ++itrack2){
       //create the pair (direct pointer to the memory by this daughter reference are kept also for ME)
-      candidate->SetType(pairIndex);
       candidate->SetTracks(&(*static_cast<PairAnalysisTrack*>(arrTracks1.UncheckedAt(itrack1))), fPdgLeg1,
        			   &(*static_cast<PairAnalysisTrack*>(arrTracks2.UncheckedAt(itrack2))), fPdgLeg2);
       // TODO: maybe set here the mother pdg code and remove fPdgMother

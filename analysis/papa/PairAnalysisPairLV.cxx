@@ -107,6 +107,7 @@ void PairAnalysisPairLV::SetTracks(PairAnalysisTrack * const particle1, Int_t pi
 
   // build pair
   fPair=(fD1+fD2);
+  fCharge=(particle1->Charge() * particle2->Charge());
   fWeight=TMath::Sqrt(particle1->GetWeight() * particle2->GetWeight() );
   //  printf("fill pair weight: %.1f * %.1f = %.1f \n",particle1->GetWeight(),particle2->GetWeight(),fWeight);
 }
@@ -134,11 +135,11 @@ void PairAnalysisPairLV::SetMCTracks(const CbmMCTrack * const particle1, const C
 }
 
 //______________________________________________
-Short_t PairAnalysisPairLV::Charge() const
-{
-  return (dynamic_cast<PairAnalysisTrack*>(fRefD1.GetObject())->Charge() +
-	  dynamic_cast<PairAnalysisTrack*>(fRefD2.GetObject())->Charge());
-}
+// Int_t PairAnalysisPairLV::Charge() const
+// {
+//   return (dynamic_cast<PairAnalysisTrack*>(fRefD1.GetObject())->Charge() +
+// 	  dynamic_cast<PairAnalysisTrack*>(fRefD2.GetObject())->Charge());
+// }
 
 //______________________________________________
 void PairAnalysisPairLV::GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double_t &thetaCS, Double_t &phiCS) const

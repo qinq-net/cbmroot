@@ -131,6 +131,50 @@ PairAnalysisTrack::PairAnalysisTrack(CbmGlobalTrack *gtrk,
 }
 
 //______________________________________________
+PairAnalysisTrack::PairAnalysisTrack(const PairAnalysisTrack& track) :
+  TNamed(track.GetName(), track.GetTitle()),
+  fGlblTrack(0),
+  fStsTrack(0),
+  fMuchTrack(0),
+  fTrdTrack(0),
+  fRichRing(0),
+  fTofHit(0),
+  fMCTrack(0),
+  fStsTrackMatch(0),
+  fMuchTrackMatch(0),
+  fTrdTrackMatch(0),
+  fRichRingMatch(0),
+  fMomentum(track.fMomentum),
+  fPosition(track.fPosition),
+  fCharge(track.Charge()),
+  fPdgCode(track.PdgCode()),
+  fLabel(track.GetLabel()),
+  fWeight(track.GetWeight()),
+  fMultiMatch(0)
+{
+  //
+  // Copy Constructor
+  //
+
+  this->SetBit(BIT(14+kTOF),  track.TestBit(BIT(14+kTOF) ));
+  this->SetBit(BIT(14+kRICH), track.TestBit(BIT(14+kRICH)));
+  this->SetBit(BIT(14+kTRD),  track.TestBit(BIT(14+kTRD) ));
+  this->SetBit(BIT(14+kSTS),  track.TestBit(BIT(14+kSTS) ));
+  this->SetBit(BIT(14+kMUCH), track.TestBit(BIT(14+kMUCH)));
+  // TVector3 mom;
+  // ststrk->GetParamFirst()->Momentum(mom);
+  // fMomentum.SetVect(mom);
+  // Double_t m2=TMath::Power(TDatabasePDG::Instance()->GetParticle(11)->Mass(), 2);
+  // fMomentum.SetE( TMath::Sqrt(mom.Mag2()+m2) );
+  // TVector3 pos;
+  // ststrk->GetParamFirst()->Position(pos);
+  // fPosition.SetVect(pos);
+
+  // fCharge  = (ststrk->GetParamFirst()->GetQp()>0. ? +1. : -1. );
+  // if(mctrk) fPdgCode = mctrk->GetPdgCode(); 
+}
+
+//______________________________________________
 PairAnalysisTrack::~PairAnalysisTrack()
 {
   //

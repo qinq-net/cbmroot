@@ -66,7 +66,7 @@ public:
   //  virtual Double_t Eta() const { return fPair.Eta();}
   virtual Double_t Y()  const  { return fPair.Rapidity(); }
   
-  virtual Short_t Charge() const;
+  //  virtual Int_t Charge() const {return fCharge; }
 
   //inter leg information
   Double_t OpeningAngle()         const { return fD1.Angle(fD2.Vect());                    }

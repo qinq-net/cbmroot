@@ -70,7 +70,7 @@ public:
   //  virtual Double_t Eta() const { return -999.; }
   virtual Double_t Y()   const { return -999.; }
   
-  virtual Short_t Charge() const    { return -1;}
+  Short_t  Charge()     const  { return fCharge;}
   Int_t    GetLabel()   const  { return fLabel;       }
   Double_t GetWeight()  const  { return fWeight;      }
   // PID
@@ -144,6 +144,7 @@ public:
 
 protected:
   Char_t   fType;         // type of the pair e.g. like sign SE, unlike sign SE, ... see PairAnalysis
+  Short_t  fCharge;       // charge
   Int_t    fLabel;        // MC label
   Double_t fWeight;       // weighting factor
   Int_t    fPdgCode;      // pdg code in case it is a MC particle

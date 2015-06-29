@@ -18,11 +18,12 @@ class THashList;
 class PairAnalysisTrackRotator;
 class PairAnalysisPair;
 class PairAnalysisSignalMC;
-////class PairAnalysisMixingHandler;
+class PairAnalysisMixingHandler;
 
 //________________________________________________________________
 class PairAnalysis : public TNamed {
 
+  friend class PairAnalysisMixingHandler; //mixing as friend class
 public:
   enum EPairType { kSEPP=0, kSEPM, kSEMM,
 		   kMEPP, kMEMP, kMEPM, kMEMM,
@@ -62,7 +63,7 @@ public:
   void SetProcessLS(Bool_t doLS=kTRUE) { fProcessLS=doLS; }
   Bool_t DoProcessLS() { return fProcessLS; }
   void SetUseKF(Bool_t useKF=kTRUE) { fUseKF=useKF; }
-  const TObjArray* GetTrackArray(Int_t i) const {return (i>=0&&i<2)?&fTracks[i]:0;}
+  const TObjArray* GetTrackArray(Int_t i) const {return (i>=0&&i<4)?&fTracks[i]:0;}
   const TObjArray* GetPairArray(Int_t i)  const {return (i>=0&&i<8)?
       static_cast<TObjArray*>(fPairCandidates->UncheckedAt(i)):0;}
 
@@ -102,12 +103,8 @@ public:
   PairAnalysisTrackRotator* GetTrackRotator() const { return fTrackRotator; }
   void SetStoreRotatedPairs(Bool_t storeTR) {fStoreRotatedPairs = storeTR;}
   // background estimator - mixed events
-  ///  void SetMixingHandler(PairAnalysisMixingHandler *mix) { fMixing=mix; }
-  ///  PairAnalysisMixingHandler* GetMixingHandler() const { return fMixing; }
-  ////////////////////////////////////////////////// TEMPORAER
-  TObject* GetMixingHandler() const { return 0x0; }
-  ////////////////////////////////////////////////// TEMPORAER
-
+  void SetMixingHandler(PairAnalysisMixingHandler *mix) { fMixing=mix; }
+  PairAnalysisMixingHandler* GetMixingHandler() const { return fMixing; }
 
   void SetDontClearArrays(Bool_t dontClearArrays=kTRUE) { fDontClearArrays=dontClearArrays; }
   Bool_t DontClearArrays() const { return fDontClearArrays; }
@@ -161,17 +158,19 @@ private:
                                   //  by the analysis framework
   TBits *fUsedVars;               // used variables
 
-  TObjArray fTracks[2];           //! Selected track candidates
+  TObjArray fTracks[4];           //! Selected track candidates
                                   //  0: SameEvent, positive particles
                                   //  1: SameEvent, negative particles
+                                  //  2: MixedEvent, positive particles
+                                  //  3: MixedEvent, negative particles
 
   TObjArray *fPairCandidates;     //! Pair candidate arrays
                                   //TODO: better way to store it? TClonesArray?
 
   //  PairAnalysisCF *fCfManagerPair;//Correction Framework Manager for the Pair
   PairAnalysisTrackRotator *fTrackRotator; //Track rotator
+  PairAnalysisMixingHandler *fMixing; // handler for event mixing
   //  PairAnalysisDebugTree *fDebugTree;  // Debug tree output
-  //  PairAnalysisMixingHandler *fMixing; // handler for event mixing
 
   Bool_t fPreFilterEventPlane;  //Filter for the Eventplane determination in TPC
   Bool_t fLikeSignSubEvents;    //Option for dividing into subevents, sub1 ++ sub2 --
@@ -188,7 +187,7 @@ private:
   void FillPairArrays(Int_t arr1, Int_t arr2);
   void FillPairArrayTR();
   
-  Int_t GetPairIndex(Int_t arr1, Int_t arr2) const {return arr1>=arr2?arr1*(arr1+1)/2+arr2:arr2*(arr2+1)/2+arr1;}
+  Int_t GetPairIndex(Int_t arr1, Int_t arr2) const;// {return arr1>=arr2?arr1*(arr1+1)/2+arr2:arr2*(arr2+1)/2+arr1;}
 
   void InitPairCandidateArrays();
   void ClearArrays();
@@ -214,6 +213,22 @@ private:
 
   ClassDef(PairAnalysis,1);
 };
+
+inline Int_t PairAnalysis::GetPairIndex(Int_t arr1, Int_t arr2) const
+{
+  //
+  // get pair index
+  //
+  if(arr1==0 && arr2==arr1) return kSEPP;
+  if(arr1==0 && arr2==1)    return kSEPP;
+  if(arr1==1 && arr2==arr1) return kSEMM;
+  if(arr1==0 && arr2==2)    return kMEPP;
+  if(arr1==1 && arr2==2)    return kMEMP;
+  if(arr1==0 && arr2==3)    return kMEPM;
+  if(arr1==1 && arr2==3)    return kMEMM;
+  return kSEPMRot;
+}
+
 
 inline void PairAnalysis::InitPairCandidateArrays()
 {
@@ -242,7 +257,7 @@ inline void PairAnalysis::ClearArrays()
   //
   // Reset the Arrays
   //
-  for (Int_t i=0;i<2;++i){
+  for (Int_t i=0;i<4;++i){
     fTracks[i].Clear();
   }
   for (Int_t i=0;i<8;++i){

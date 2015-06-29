@@ -18,6 +18,7 @@ Double_t PairAnalysisPair::fBeamEnergy=-1.;
 
 PairAnalysisPair::PairAnalysisPair() :
   fType(-1),
+  fCharge(-1),
   fLabel(-1),
   fWeight(1.),
   fPdgCode(0),
@@ -36,6 +37,7 @@ PairAnalysisPair::PairAnalysisPair() :
 //______________________________________________
 PairAnalysisPair::PairAnalysisPair(const PairAnalysisPair& pair) :
   fType(pair.GetType()),
+  fCharge(pair.Charge()),
   fLabel(pair.GetLabel()),
   fWeight(pair.GetWeight()),
   fPdgCode(pair.PdgCode()),
@@ -54,6 +56,7 @@ PairAnalysisPair::PairAnalysisPair(const PairAnalysisPair& pair) :
 //______________________________________________
 PairAnalysisPair::PairAnalysisPair(Char_t type) :
   fType(type),
+  fCharge(-1),
   fLabel(-1),
   fWeight(1.),
   fPdgCode(0),

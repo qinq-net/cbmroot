@@ -41,6 +41,7 @@ public:
 		  CbmTrackMatchNew *stsmatch, CbmTrackMatchNew *muchmatch, CbmTrackMatchNew *trdMatch, CbmTrackMatchNew *richMatch);
 
   virtual ~PairAnalysisTrack();
+  PairAnalysisTrack(const PairAnalysisTrack& track);
 
   // setter
   void SetPdgCode(Int_t pdg)              { fPdgCode=pdg; }
@@ -82,7 +83,7 @@ public:
   Double_t Y()          const { return fMomentum.Rapidity(); }
   
   Short_t Charge()      const { return fCharge;  }
-  Short_t PdgCode()     const { return fPdgCode; }
+  Int_t PdgCode()       const { return fPdgCode; }
   Int_t   GetLabel()    const { return fLabel;   }
   Double_t GetWeight()  const { return fWeight;  }
 
@@ -108,9 +109,7 @@ private:
   Double_t       fWeight;             // weighting
   Int_t          fMultiMatch;         // MC label for n-times matched tracks
 
-  PairAnalysisTrack(const PairAnalysisTrack& track);
   PairAnalysisTrack &operator=(const PairAnalysisTrack &c);
-
   ClassDef(PairAnalysisTrack,2)         // PairAnalysis Track
 };
 

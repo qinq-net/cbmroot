@@ -87,12 +87,14 @@ set(SRCS
 ###./PairAnalysisHFhelper.cxx
 ./PairAnalysisHistos.cxx
 ./PairAnalysisMC.cxx
-#./PairAnalysisMixingHandler.cxx
+
 ./PairAnalysisVarCutsCombi.cxx
 ./PairAnalysisSignalMC.cxx
 #./PairAnalysisSpectrum.cxx
 #./PairAnalysisTrackCuts.cxx
 ./PairAnalysisTrackRotator.cxx
+./PairAnalysisMixedEvent.cxx
+./PairAnalysisMixingHandler.cxx
 #./PairAnalysisV0Cuts.cxx
 #./PairAnalysisVarContainer.cxx
 ./PairAnalysisSignalBase.cxx
