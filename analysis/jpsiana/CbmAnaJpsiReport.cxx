@@ -141,6 +141,8 @@ void CbmAnaJpsiReport::Draw()
 		  DrawPtYEfficiencyAll();
 		  SignalOverBgAllSteps();
 		  DrawMinvSAndBgAllSteps();
+		  DrawMomEffAllSteps();
+		  DrawMomMcVsRec();
 }
 
 void CbmAnaJpsiReport::DrawAnalysisStepsH2(
@@ -392,8 +394,10 @@ void CbmAnaJpsiReport::DrawMinvSAndBg(
 	TH1D* bg = (TH1D*)background ->Clone();
 	TH1D* sbg = (TH1D*) background ->Clone();
 
+	//s->Scale(0.0596);
+
 	sbg->Add(s);
-	sbg->SetMinimum(1e-5);
+	sbg->SetMinimum(1e-9);
 
 	DrawH1(list_of(sbg)(bg)(s),list_of("")("")(""),kLinear, kLog, false, 0,0,0,0);
 	//DrawH1(list_of(sbg)(bg)(s),list_of("Signal And Bg")("Background")("Signal"),kLinear, kLog, true, 0.9, 0.7, 0.99, 0.9);
@@ -431,6 +435,30 @@ void CbmAnaJpsiReport::DrawMinvSAndBgAllSteps()
 	TCanvas *cptCut = CreateCanvas("jpsi_fh_Minv_Signal_and_Bg_ptCut","jpsi_fh_Minv_Signal_and_Bg_ptCut",600,600);
 	DrawMinvSAndBg(kJpsiPtCut);
 
+}
+
+void CbmAnaJpsiReport::DrawMomEffAllSteps()
+{	TH1D* Mc = (TH1D*) H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Clone();
+	TH1D* McEff = Cbm::DivideH1((TH1D*)H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Clone(),Mc);
+	McEff->SetMinimum(0.);
+	McEff->SetMaximum(105);
+	TH1D* AccEff = Cbm::DivideH1((TH1D*)H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiAcc])->Clone(),Mc);
+	TH1D* RecEff = Cbm::DivideH1((TH1D*)H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiReco])->Clone(),Mc);
+	TH1D* Chi2PrimEff = Cbm::DivideH1((TH1D*)H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiChi2Prim])->Clone(),Mc);
+	TH1D* ElIdEff = Cbm::DivideH1((TH1D*)H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiElId])->Clone(),Mc);
+	TH1D* PtEff = Cbm::DivideH1((TH1D*)H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->Clone(),Mc);
+
+	TCanvas *c = CreateCanvas("jpsi_fh_Momentum_Efficiency_AllSteps","jpsi_fh_Momentum_Efficiency_AllSteps",800,800);
+
+	DrawH1(list_of(McEff)(AccEff)(RecEff)(Chi2PrimEff)(ElIdEff)(PtEff),list_of(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiMc])(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiAcc])
+			(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiReco])(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiChi2Prim])(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiElId])
+			(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut]), kLinear, kLinear, true, 0.9, 0.6, 0.99, 0.99);
+}
+
+void CbmAnaJpsiReport::DrawMomMcVsRec()
+{
+	TCanvas *c = CreateCanvas("jpsi_fh_Momentum_Mc_Reco","jpsi_fh_Momentum_Mc_Reco",800,800);
+	DrawH2(H2("fh_single_electron_mom_mc_rec"));
 }
 
 void CbmAnaJpsiReport::DrawBgSource2D(

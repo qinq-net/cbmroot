@@ -118,6 +118,7 @@ void CbmAnaJpsiSuperEvent::ReadCandidates()
 			//cout << "-I- nofCandidates:" << nofCandidates << endl;
 			for (Int_t iCand = 0; iCand < nofCandidates; iCand++) {
 				CbmAnaJpsiCandidate* cand = (CbmAnaJpsiCandidate*) candidates->At(iCand);
+				if (cand->fIsMcSignalElectron) continue;
 				if (cand->fCharge < 0) {
 					CbmAnaJpsiCandidate candM = CbmAnaJpsiCandidate(*cand);
 					fMinusCandidates.push_back(candM);

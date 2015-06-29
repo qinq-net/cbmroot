@@ -80,6 +80,10 @@ protected:
 
    void DrawMinvSAndBgAllSteps();
 
+   void DrawMomEffAllSteps();
+
+   void DrawMomMcVsRec();
+
    void DrawBgSource2D(
          const string& histName,
          const vector<string>& yLabels,

@@ -85,6 +85,7 @@ private:
 
   CbmRichElectronIdAnn* fElIdAnn;
 
+  Double_t fWeight; // Multiplicity * Branching Ratio of J/Psi;
 
   CbmHistManager* fHM;
 
@@ -212,6 +213,8 @@ private:
     		CbmAnaJpsiCandidate* cand,
 			CbmAnaJpsiAnalysisSteps step,
 			Int_t pdg);
+
+    void FillSingleElectronHists();
 
     void FillPairHists(
     	  CbmAnaJpsiCandidate* candP,
