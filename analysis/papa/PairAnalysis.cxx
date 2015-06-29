@@ -195,7 +195,7 @@ void PairAnalysis::Init()
   if(fEventProcess) InitPairCandidateArrays();
 
   // compress the MC signal array
-  //  fSignalsMC->Compress();
+  fSignalsMC->Compress();
 
   /*
   if (fCfManagerPair) {
@@ -1253,9 +1253,9 @@ void PairAnalysis::AddSignalMC(PairAnalysisSignalMC* signal) {
     fSignalsMC->SetOwner();
   }
   // sort mc signal (first single particle, then pair signals)
-  // if(signal->IsSingleParticle()) fSignalsMC->AddAtFree(signal);
-  // else fSignalsMC->AddAtAndExpand( signal, fSignalsMC->GetLast()<10?10:fSignalsMC->GetLast()+1 );
-  fSignalsMC->Add(signal);
+  if(signal->IsSingleParticle()) fSignalsMC->AddAtFree(signal);
+  else fSignalsMC->AddAtAndExpand( signal, fSignalsMC->GetLast()<10?10:fSignalsMC->GetLast()+1 );
+  //fSignalsMC->Add(signal);
 }
 
 //________________________________________________________________

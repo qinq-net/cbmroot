@@ -172,8 +172,7 @@ void AnalysisTaskMultiPairAnalysis::Exec(Option_t *)
   Int_t bin = fEventStat->Fill(kAllEvents);
 
   if(!(static_cast<Int_t>(fEventStat->GetBinContent(bin))%100))
-    Info("AnalysisTaskMultiPairAnalysis::Exec",
-	 Form("Process %.3e events",fEventStat->GetBinContent(fEventStat->FindBin(kAllEvents))));
+    Info("Exec", Form("Process %.3e events",fEventStat->GetBinContent(fEventStat->FindBin(kAllEvents))));
 
   // initialize track arrays and some track based variables
   fInputEvent->Init(); // NOTE: tracks are initialized with mass hypo PDG 11, and adapted later!
