@@ -117,7 +117,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   }
   
   if ( muchGeom != "" ) {
-    FairDetector* much = new CbmMuch("MUCH", kTRUE);
+    FairDetector* much = new CbmMuchMcbm("MUCH", kTRUE);
     much->SetGeometryFileName(muchGeom);
     fRun->AddModule(much);
   }
