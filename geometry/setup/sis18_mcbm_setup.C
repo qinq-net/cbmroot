@@ -61,7 +61,7 @@ void sis18_mcbm_setup()
   mvdGeom      = "mvd/mvd_v15a.geo.root";
   stsGeom      = "mcbm/sts_" + stsTag + ".geo.root";
   richGeom     = ""; // "rich/rich_v14a_1e.root";
-  muchGeom     = "mcbm/much_v18a.geo"; // "";
+  muchGeom     = "mcbm/much_v18a.geo";  // "mcbm/much_v18a-geo.root";  // "";
   shieldGeom   = "";
   platformGeom = ""; // "passive/platform_v13a.geo";
   trdGeom      = "mcbm/trd_" + trdTag + ".geo.root";
