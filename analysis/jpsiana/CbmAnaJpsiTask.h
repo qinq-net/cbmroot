@@ -214,8 +214,6 @@ private:
 			CbmAnaJpsiAnalysisSteps step,
 			Int_t pdg);
 
-    void FillSingleElectronHists();
-
     void FillPairHists(
     	  CbmAnaJpsiCandidate* candP,
           CbmAnaJpsiCandidate* candM,

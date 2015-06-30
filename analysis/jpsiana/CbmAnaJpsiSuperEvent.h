@@ -19,7 +19,7 @@
 
 using namespace std;
 
-class CbmAnaJpsiSuperEvent  : public CbmSimulationReport
+class CbmAnaJpsiSuperEvent  : public TObject
 {
 
 public:
@@ -30,30 +30,33 @@ public:
 	/*
 	 * \brief Add file for super event.
 	 */
-
 	void AddFile(const string& fileName) { fFileNames.push_back(fileName); }
 
+	/*
+	 * \brief Set output file.
+	 */
+	void SetOutputFile(const string& fileName) {fOutputFile = fileName;}
+
+	/*
+	 * \brief Set to true if you want to do super event after ptcut.
+	 * This will speed up calculation time.
+	 */
+	void SetRunAfterPtCut(Bool_t b){fRunAfterPtCut = b;}
+
 	void Run();
-protected:
-	virtual void Create();
 
-	virtual void Draw();
-
-//private:
+private:
 	vector<string> fFileNames;
 	vector<CbmAnaJpsiCandidate> fMinusCandidates;
 	vector<CbmAnaJpsiCandidate> fPlusCandidates;
 
-	TH1D* fMinv;
-	TH1D* fh_SuperEvent_signal_minv_Reco;
-	TH1D* fh_SuperEvent_signal_minv_Chi2Primary;
-	TH1D* fh_SuperEvent_signal_minv_ElID;
-	TH1D* fh_SuperEvent_signal_minv_Pt;
+	string fOutputFile;
 
 	CbmHistManager* fHM;
+
 	CbmAnaJpsiCuts fCuts;
 
-
+	Bool_t fRunAfterPtCut;
 
 	void InitHist();
 
@@ -61,14 +64,8 @@ protected:
 
 	void DoSuperEvent();
 
-	void CreateAnalysisStepsH1(
-	      const string& name,
-	      const string& axisX,
-	      const string& axisY,
-	      double nBins,
-	      double min,
-	      double max
-	      );
+	void Draw();
+
 
 	ClassDef(CbmAnaJpsiSuperEvent, 1);
 };

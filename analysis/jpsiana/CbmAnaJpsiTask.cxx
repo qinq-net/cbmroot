@@ -262,9 +262,9 @@ void CbmAnaJpsiTask::InitHist()
    fHM->Create1<TH1D>("fh_nof_mismatches_trd","fh_nof_mismatches_trd;Analysis steps;Tracks/event", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps);
    fHM->Create1<TH1D>("fh_nof_mismatches_tof","fh_nof_mismatches_tof;Analysis steps;Tracks/event", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps);
 
-   //Momentum of single electron
-   CreateAnalysisStepsH1("fh_single_electron_mom", "P [GeV/c]", "Particles per event", 250, 0., 25.);
-   fHM->Create2<TH2D>("fh_single_electron_mom_mc_rec","fh_single_electron_mom_mc_rec;P_{mc};P_{rec};Entries",  250, 0.,25., 250, 0., 25.);
+   //Momentum distribution of signal electrons
+   CreateAnalysisStepsH1("fh_track_el_mom", "P [GeV/c]", "Particles per event", 250, 0., 25.);
+   fHM->Create2<TH2D>("fh_track_el_mom_mc_rec","fh_track_el_mom_mc_rec;P_{mc};P_{rec};Entries",  250, 0.,25., 250, 0., 25.);
 
 }
 
@@ -306,8 +306,6 @@ void CbmAnaJpsiTask::Exec(
   PairMcAndAcceptance();
 
   SignalAndBgReco();
-
-  FillSingleElectronHists();
 
   CopyCandidatesToOutputArray();
 
@@ -492,9 +490,12 @@ void CbmAnaJpsiTask::SingleParticleAcceptance()
     for (Int_t i = 0; i < nMcTracks; i++) {
         CbmMCTrack* mctrack = (CbmMCTrack*) fMcTracks->At(i);
         if (CbmAnaJpsiUtils::IsMcSignalElectron(mctrack)){
+        	double_t mom = mctrack->GetP();
         	fHM->H1("fh_nof_el_tracks")->Fill(kJpsiMc + 0.5,fWeight);
+        	fHM->H1("fh_track_el_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Fill(mom, fWeight);
         	if ( IsMcTrackAccepted(i) ) {
         		 fHM->H1("fh_nof_el_tracks")->Fill(kJpsiAcc + 0.5,fWeight);
+        		 fHM->H1("fh_track_el_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiAcc])->Fill(mom, fWeight);
         	}
         }
     }
@@ -507,12 +508,14 @@ void CbmAnaJpsiTask::PairMcAndAcceptance()
 		CbmMCTrack* mctrackP = (CbmMCTrack*) fMcTracks->At(iP);
 		Bool_t isMcSignalElectronP = CbmAnaJpsiUtils::IsMcSignalElectron(mctrackP);
 		if (!isMcSignalElectronP) continue;
+		if ( mctrackP->GetPdgCode() != 11 ) continue;
 		Bool_t isAccP = IsMcTrackAccepted(iP);
 		for (Int_t iM = 0; iM < nMcTracks; iM++) {
 			if (iP == iM) continue;
 			CbmMCTrack* mctrackM = (CbmMCTrack*) fMcTracks->At(iM);
 			Bool_t isMcSignalElectronM = CbmAnaJpsiUtils::IsMcSignalElectron(mctrackM);
 			if (!isMcSignalElectronM) continue;
+			if ( mctrackM->GetPdgCode() != -11 ) continue;
 			Bool_t isAccM = IsMcTrackAccepted(iM);
 			CbmAnaJpsiKinematicParams p = CbmAnaJpsiKinematicParams::KinematicParamsWithMcTracks(mctrackP,mctrackM);
 
@@ -547,6 +550,12 @@ void CbmAnaJpsiTask::TrackSource(
 
     if (cand->fIsMcSignalElectron) {
 		fHM->H1("fh_nof_el_tracks")->Fill(binNum,fWeight);
+
+		CbmMCTrack* mcCand = (CbmMCTrack*) fMcTracks->At(cand->fStsMcTrackId);
+		if (mcCand != NULL) {
+			fHM->H1("fh_track_el_mom_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(mcCand->GetP(), fWeight);
+			if (step == kJpsiReco) fHM->H2("fh_track_el_mom_mc_rec")->Fill(mcCand->GetP(), cand->fMomentum.Mag(), fWeight);
+		}
 	} else {
 		fHM->H1("fh_nof_bg_tracks")->Fill(binNum);
 
@@ -574,50 +583,6 @@ void CbmAnaJpsiTask::TrackSource(
 	}//Signal or not
 }//TrackSource
 
-void CbmAnaJpsiTask::FillSingleElectronHists()
-{
-	Int_t nMcTracks = fMcTracks->GetEntries();
-
-	for (int i=0;i<nMcTracks;i++)
-	{
-		CbmMCTrack* mctrack = (CbmMCTrack*) fMcTracks->At(i);
-		if (mctrack == NULL) continue;
-		Bool_t isMcSignalElectron = CbmAnaJpsiUtils::IsMcSignalElectron(mctrack);
-		if (isMcSignalElectron == false) continue;
-		double_t mom = mctrack->GetP();
-		fHM->H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Fill(mom);
-
-		if (IsMcTrackAccepted(i)){
-			fHM->H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiAcc])->Fill(mom);
-		}
-	}
-
-	Int_t nCandidates = fCandidates.size();
-
-	for (int i=0;i<nCandidates;i++)
-	{
-		if (fCandidates[i].fIsMcSignalElectron==false) continue;
-
-		Bool_t isChiPrimary = (fCandidates[i].fChi2Prim < fCuts.fChiPrimCut);
-		Bool_t isEl = (fCandidates[i].fIsElectron);
-		Bool_t isPtCut = (fCandidates[i].fMomentum.Perp() > fCuts.fPtCut);
-
-		CbmMCTrack* mcCand = (CbmMCTrack*) fMcTracks->At(fCandidates[i].fStsMcTrackId);
-		if (mcCand == NULL) continue;
-		fHM->H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiReco])->Fill(mcCand->GetP());
-		fHM->H2("fh_single_electron_mom_mc_rec")->Fill(mcCand->GetP(),fCandidates[i].fMomentum.Mag());
-
-		if (isChiPrimary) {
-			fHM->H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiChi2Prim])->Fill(mcCand->GetP());
-		}
-		if (isChiPrimary && isEl) {
-			fHM->H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiElId])->Fill(mcCand->GetP());
-		}
-		if (isChiPrimary && isEl && isPtCut) {
-			fHM->H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->Fill(mcCand->GetP());
-		}
-	}
-}
 
 void CbmAnaJpsiTask::FillPairHists(
 	  CbmAnaJpsiCandidate* candP,

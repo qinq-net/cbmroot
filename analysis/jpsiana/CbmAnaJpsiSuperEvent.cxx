@@ -35,63 +35,44 @@ using std::map;
 using std::endl;
 using std::cout;
 
-CbmAnaJpsiSuperEvent::CbmAnaJpsiSuperEvent() :
-		CbmSimulationReport()
+CbmAnaJpsiSuperEvent::CbmAnaJpsiSuperEvent()
 {
-	// TODO Auto-generated constructor stub
-	SetReportName("jpsi_SuperEvent_qa");
+
 }
 
-CbmAnaJpsiSuperEvent::~CbmAnaJpsiSuperEvent() {
-	// TODO Auto-generated destructor stub
-}
-
-void CbmAnaJpsiSuperEvent::Create()
+CbmAnaJpsiSuperEvent::~CbmAnaJpsiSuperEvent()
 {
-   //Out().precision(3);
-   Out() << R()->DocumentBegin();
-   Out() << R()->Title(0, GetTitle());
 
-   PrintCanvases();
-
-   Out() << R()->DocumentEnd();
-}
-
-void CbmAnaJpsiSuperEvent::Draw()
-{
-	SetDefaultDrawStyle();
 }
 
 void CbmAnaJpsiSuperEvent::Run()
 {
 	cout << "-I- Run" << endl;
+
 	InitHist();
 
 	ReadCandidates();
 
 	DoSuperEvent();
+
+	Draw();
+
+	TFile* file = new TFile(fOutputFile.c_str(), "RECREATE");
+	fHM->WriteToFile();
+	file->Close();
+
+	cout << "-I- Output file:" << fOutputFile << endl;
 }
 
 void CbmAnaJpsiSuperEvent::InitHist()
 {
 	fHM = new CbmHistManager();
-	CreateAnalysisStepsH1("fh_SuperEvent_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0 , 4.);
-}
+	fHM->Create1<TH1D>("fh_se_bg_minv_reco", "fh_se_bg_minv_reco;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_minv_chi2prim", "fh_se_bg_minv_chi2prim;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_minv_elid", "fh_se_bg_minv_elid;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_minv_ptcut", "fh_se_bg_minv_ptcut;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
 
-void CbmAnaJpsiSuperEvent::CreateAnalysisStepsH1(
-      const string& name,
-      const string& axisX,
-      const string& axisY,
-      double nBins,
-      double min,
-      double max
-      )
-{
-   for (Int_t i = 2; i < CbmAnaJpsiHist::fNofAnaSteps; i++)
-   {
-      string hname = name + "_"+ CbmAnaJpsiHist::fAnaSteps[i];
-      fHM->Create1<TH1D>(hname, hname+";"+axisX+";"+axisY, nBins, min, max);
-   }
+	fHM->Create1<TH1D>("fh_event_number", "fh_event_number;a.u.;Number of events", 1, 0, 1.);
 }
 
 
@@ -112,19 +93,22 @@ void CbmAnaJpsiSuperEvent::ReadCandidates()
 		Int_t nofEvents = t->GetEntriesFast();
 		cout << "-I- Number of events in file: " << nofEvents << endl;
 		for (Int_t iEv = 0; iEv < nofEvents; iEv++) {
-			//cout << "-I- Analysing event No " << iEv << endl;
+			fHM->H1("fh_event_number")->Fill(0.5);
 			t->GetEntry(iEv);
 			Int_t nofCandidates = candidates->GetEntriesFast();
 			//cout << "-I- nofCandidates:" << nofCandidates << endl;
 			for (Int_t iCand = 0; iCand < nofCandidates; iCand++) {
 				CbmAnaJpsiCandidate* cand = (CbmAnaJpsiCandidate*) candidates->At(iCand);
 				if (cand->fIsMcSignalElectron) continue;
+
+				Bool_t isPtCut = (cand->fChi2Prim < fCuts.fChiPrimCut && cand->fIsElectron && cand->fMomentum.Perp() > fCuts.fPtCut);
+				Bool_t isGood = fRunAfterPtCut?(isPtCut):true;
 				if (cand->fCharge < 0) {
 					CbmAnaJpsiCandidate candM = CbmAnaJpsiCandidate(*cand);
-					fMinusCandidates.push_back(candM);
+					if (isGood) fMinusCandidates.push_back(candM);
 				} else {
 					CbmAnaJpsiCandidate candP = CbmAnaJpsiCandidate(*cand);
-					fPlusCandidates.push_back(candP);
+					if (isGood) fPlusCandidates.push_back(candP);
 				}
 			}
 		}
@@ -133,6 +117,7 @@ void CbmAnaJpsiSuperEvent::ReadCandidates()
 	}
 	cout << "-I- fMinusCandidates.size:" << fMinusCandidates.size() << endl;
 	cout << "-I- fPlusCandidates.size:" << fPlusCandidates.size() << endl;
+	cout << "-I- number of events:"<< fHM->H1("fh_event_number")->GetEntries() << endl;
 }
 
 void CbmAnaJpsiSuperEvent::DoSuperEvent()
@@ -151,23 +136,31 @@ void CbmAnaJpsiSuperEvent::DoSuperEvent()
 		    Bool_t isEl = (candM->fIsElectron && candP->fIsElectron);
 		    Bool_t isPtCut = (candM->fMomentum.Perp() > fCuts.fPtCut && candP->fMomentum.Perp() > fCuts.fPtCut);
 
-		    fHM->H1("fh_SuperEvent_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiReco])->Fill(pRec.fMinv);
-			if (isChi2Primary) fHM->H1("fh_SuperEvent_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiChi2Prim])->Fill(pRec.fMinv);
-			if (isChi2Primary && isEl) fHM->H1("fh_SuperEvent_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiElId])->Fill(pRec.fMinv);
-			if (isChi2Primary && isEl && isPtCut) fHM->H1("fh_SuperEvent_minv_"+CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->Fill(pRec.fMinv);
+		    fHM->H1("fh_se_bg_minv_reco")->Fill(pRec.fMinv);
+			if (isChi2Primary) fHM->H1("fh_se_bg_minv_chi2prim")->Fill(pRec.fMinv);
+			if (isChi2Primary && isEl) fHM->H1("fh_se_bg_minv_elid")->Fill(pRec.fMinv);
+			if (isChi2Primary && isEl && isPtCut) fHM->H1("fh_se_bg_minv_ptcut")->Fill(pRec.fMinv);
 		}
 	}
+}
 
-	TCanvas* c = CreateCanvas("jpsi_fh_SuperEvent_signal_minv","jpsi_fh_SuperEvent_signal_minv",1200, 1200);
+void CbmAnaJpsiSuperEvent::Draw()
+{
 
+	TCanvas* c = new TCanvas("jpsi_se_bg_minv","jpsi_se_bg_minv",1200, 1200);
 	c->Divide(2,2);
-	for (int i=2;i<CbmAnaJpsiHist::fNofAnaSteps;i++)
-	{
-		c->cd(i-1);
-		gPad->SetLogy();
-		DrawH1(fHM->H1("fh_SuperEvent_minv_"+CbmAnaJpsiHist::fAnaSteps[i]));
-		DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[i], 0.6, 0.89, 0.7, 0.99);
-	}
+	c->cd(1);
+	DrawH1(fHM->H1("fh_se_bg_minv_reco"));
+	DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiReco], 0.6, 0.89, 0.7, 0.99);
+	c->cd(2);
+	DrawH1(fHM->H1("fh_se_bg_minv_chi2prim"));
+	DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiChi2Prim], 0.6, 0.89, 0.7, 0.99);
+	c->cd(3);
+	DrawH1(fHM->H1("fh_se_bg_minv_elid"));
+	DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiElId], 0.6, 0.89, 0.7, 0.99);
+	c->cd(4);
+	DrawH1(fHM->H1("fh_se_bg_minv_ptcut"));
+	DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.6, 0.89, 0.7, 0.99);
 
 }
 

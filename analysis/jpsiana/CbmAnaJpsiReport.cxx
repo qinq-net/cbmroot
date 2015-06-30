@@ -58,22 +58,22 @@ void CbmAnaJpsiReport::Draw()
 	  //Rebin minv histograms
 	  Int_t nRebins = 20;
 	  HM()->RebinByPattern("fh_signal_minv.+", nRebins);
-	  HM()->ScaleByPattern("fh_signal_minv.+", 10);
 	  HM()->RebinByPattern("fh_bg_minv.+", nRebins);
-	  HM()->ScaleByPattern("fh_bg_minv.+", 10);
 	  HM()->RebinByPattern("fh_pi0_minv.+", nRebins);
-	  HM()->ScaleByPattern("fh_pi0_minv.+", 10);
 	  HM()->RebinByPattern("fh_gamma_minv.+", nRebins);
-	  HM()->ScaleByPattern("fh_gamma_minv.+", 10);
 	  HM()->RebinByPattern("fh_bg_truematch_minv.+", nRebins);
-	  HM()->ScaleByPattern("fh_bg_truematch_minv.+", 10);
 	  HM()->RebinByPattern("fh_bg_truematch_el_minv.+", nRebins);
-	  HM()->ScaleByPattern("fh_bg_truematch_el_minv.+", 10);
 	  HM()->RebinByPattern("fh_bg_truematch_notel_minv.+", nRebins);
-	  HM()->ScaleByPattern("fh_bg_truematch_notel_minv.+", 10);
 	  HM()->RebinByPattern("fh_bg_mismatch_minv.+", nRebins);
-	  HM()->ScaleByPattern("fh_bg_mismatch_minv.+", 10);
 
+	  HM()->ScaleByPattern("fh_signal_minv.+", nRebins);
+	  HM()->ScaleByPattern("fh_bg_minv.+", nRebins);
+	  HM()->ScaleByPattern("fh_pi0_minv.+", nRebins);
+	  HM()->ScaleByPattern("fh_gamma_minv.+", nRebins);
+	  HM()->ScaleByPattern("fh_bg_truematch_minv.+", nRebins);
+	  HM()->ScaleByPattern("fh_bg_truematch_el_minv.+", nRebins);
+	  HM()->ScaleByPattern("fh_bg_truematch_notel_minv.+", nRebins);
+	  HM()->ScaleByPattern("fh_bg_mismatch_minv.+", nRebins);
 
 	  Draw2DCut("fh_rich_pmt_xy");
 	  DrawCutDistributions();
@@ -425,7 +425,7 @@ void CbmAnaJpsiReport::DrawMinvSAndBgAllSteps()
 {
 	TCanvas *c1 = CreateCanvas("jpsi_fh_Minv_Signal_and_Bg","jpsi_fh_Minv_Signal_and_Bg",1200,800);
 
-	c1->Divide(2,3);
+	c1->Divide(3,2);
 
 	for (int i=0; i<CbmAnaJpsiHist::fNofAnaSteps;i++)
 	{	c1->cd(i+1);
@@ -438,27 +438,32 @@ void CbmAnaJpsiReport::DrawMinvSAndBgAllSteps()
 }
 
 void CbmAnaJpsiReport::DrawMomEffAllSteps()
-{	TH1D* Mc = (TH1D*) H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Clone();
-	TH1D* McEff = Cbm::DivideH1((TH1D*)H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Clone(),Mc);
+{
+	TH1D* Mc = (TH1D*) H1("fh_track_el_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Clone();
+	TH1D* McEff = Cbm::DivideH1((TH1D*)H1("fh_track_el_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Clone(), (TH1D*)Mc->Clone());
 	McEff->SetMinimum(0.);
 	McEff->SetMaximum(105);
-	TH1D* AccEff = Cbm::DivideH1((TH1D*)H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiAcc])->Clone(),Mc);
-	TH1D* RecEff = Cbm::DivideH1((TH1D*)H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiReco])->Clone(),Mc);
-	TH1D* Chi2PrimEff = Cbm::DivideH1((TH1D*)H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiChi2Prim])->Clone(),Mc);
-	TH1D* ElIdEff = Cbm::DivideH1((TH1D*)H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiElId])->Clone(),Mc);
-	TH1D* PtEff = Cbm::DivideH1((TH1D*)H1("fh_single_electron_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->Clone(),Mc);
+	TH1D* AccEff = Cbm::DivideH1((TH1D*)H1("fh_track_el_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiAcc])->Clone(), (TH1D*)Mc->Clone());
+	TH1D* RecEff = Cbm::DivideH1((TH1D*)H1("fh_track_el_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiReco])->Clone(), (TH1D*)Mc->Clone());
+	TH1D* Chi2PrimEff = Cbm::DivideH1((TH1D*)H1("fh_track_el_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiChi2Prim])->Clone(), (TH1D*)Mc->Clone());
+	TH1D* ElIdEff = Cbm::DivideH1((TH1D*)H1("fh_track_el_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiElId])->Clone(), (TH1D*)Mc->Clone());
+	TH1D* PtEff = Cbm::DivideH1((TH1D*)H1("fh_track_el_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->Clone(), (TH1D*)Mc->Clone());
 
 	TCanvas *c = CreateCanvas("jpsi_fh_Momentum_Efficiency_AllSteps","jpsi_fh_Momentum_Efficiency_AllSteps",800,800);
 
 	DrawH1(list_of(McEff)(AccEff)(RecEff)(Chi2PrimEff)(ElIdEff)(PtEff),list_of(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiMc])(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiAcc])
 			(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiReco])(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiChi2Prim])(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiElId])
 			(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut]), kLinear, kLinear, true, 0.9, 0.6, 0.99, 0.99);
+
+
+	DrawAnalysisStepsH1("fh_track_el_mom",false);
+	gPad->SetLogy(false);
 }
 
 void CbmAnaJpsiReport::DrawMomMcVsRec()
 {
 	TCanvas *c = CreateCanvas("jpsi_fh_Momentum_Mc_Reco","jpsi_fh_Momentum_Mc_Reco",800,800);
-	DrawH2(H2("fh_single_electron_mom_mc_rec"));
+	DrawH2(H2("fh_track_el_mom_mc_rec"));
 }
 
 void CbmAnaJpsiReport::DrawBgSource2D(

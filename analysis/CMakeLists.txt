@@ -121,6 +121,7 @@ jpsiana/CbmAnaJpsiReport.cxx
 jpsiana/CbmAnaJpsiHist.cxx
 jpsiana/CbmAnaJpsiCandidate.cxx
 jpsiana/CbmAnaJpsiSuperEvent.cxx
+jpsiana/CbmAnaJpsiSuperEventReport.cxx
 
 conversion/CbmAnaConversion.cxx
 conversion/CbmAnaConversionTomography.cxx

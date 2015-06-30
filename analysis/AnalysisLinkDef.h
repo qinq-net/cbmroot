@@ -48,6 +48,7 @@
 #pragma link C++ class CbmAnaJpsiReport+;
 #pragma link C++ class CbmAnaJpsiCandidate+;
 #pragma link C++ class CbmAnaJpsiSuperEvent+;
+#pragma link C++ class CbmAnaJpsiSuperEventReport+;
 
 #pragma link C++ class CbmAnaConversion+;
 #pragma link C++ class CbmAnaConversionTomography+;
