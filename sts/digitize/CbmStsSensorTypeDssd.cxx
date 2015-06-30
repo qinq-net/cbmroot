@@ -3,22 +3,23 @@
  ** @date 02.05.2013
  **/
 
-#include "digitize/CbmStsSensorTypeDssd.h"
+#include "CbmStsSensorTypeDssd.h"
 
 #include <iomanip>
+#include <sstream>
 
 #include "TMath.h"
 
 #include "FairLogger.h"
 
-
-#include "setup/CbmStsModule.h"
-#include "setup/CbmStsSensorPoint.h"
-#include "setup/CbmStsSensor.h"
+#include "CbmStsModule.h"
+#include "CbmStsSensor.h"
+#include "CbmStsSensorPoint.h"
 
 
 using std::fixed;
 using std::setprecision;
+using std::stringstream;
 
 
 
@@ -473,6 +474,7 @@ Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
 		      << point->GetELoss() << ", PID " << point->GetPid()
 		      << ", By = " << point->GetBy() << " T"
 		      << FairLogger::endl;
+  LOG(DEBUG4) << ToString() << FairLogger::endl;
 
   // --- Check for being in sensitive area
   // --- Note: No charge is produced if either entry or exit point
@@ -483,7 +485,10 @@ Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
   if ( TMath::Abs(point->GetX1()) > fDx/2. ||
 	   TMath::Abs(point->GetY1()) > fDy/2. ||
 	   TMath::Abs(point->GetX2()) > fDx/2. ||
-	   TMath::Abs(point->GetY2()) > fDy/2. ) return 0;
+	   TMath::Abs(point->GetY2()) > fDy/2. ) {
+  	LOG(DEBUG4) << GetName() << ": not in sensitive area" << FairLogger::endl;
+  	return 0;
+  }
 
   // --- Number of created charge signals (coded front/back side)
   Int_t nSignals = 0;
@@ -681,6 +686,50 @@ void CbmStsSensorTypeDssd::SetParameters(Double_t dx, Double_t dy,
   // --- Flag parameters to be set if test is ok
   fIsSet = SelfTest();
 
+}
+// -------------------------------------------------------------------------
+
+
+
+// ----- Set the strip pitch   ---------------------------------------------
+void CbmStsSensorTypeDssd::SetStripPitch(Double_t pitch) {
+
+	// Assert that the parameters were set before
+	if ( ! fIsSet ) {
+		LOG(ERROR) << GetName() << ": SetStripPitch is called without "
+				       << "parameters being set before! Will skip statement."
+				       << FairLogger::endl;
+		return;
+	}
+
+	// Re-calculate number of strips on front and back side
+	// If the extension in x is not a multiple of the pitch, the number
+	// of strips is determined by rounding to the next integer; i.e.,
+	// fractional strips smaller than half the pitch are neglected.
+	Int_t nStrips = Int_t( round(fDx / pitch) );
+
+	// Re-set the parameters
+	SetParameters(fDx, fDy, fDz, nStrips, nStrips, fStereo[0], fStereo[1]);
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   String output   -------------------------------------------------
+string CbmStsSensorTypeDssd::ToString() const
+{
+   stringstream ss;
+   ss << fName << ": ";
+   if ( ! fIsSet ) {
+  	 ss << "parameters are not set";
+  	 return ss.str();
+   }
+   ss << "dimension (" << fDy << ", " << fDy << ", " << fDz << ") cm, ";
+   ss << "# strips " << fNofStrips[0] << "/" << fNofStrips[1] << ", ";
+   ss << "pitch " << fPitch[0] << "/" << fPitch[1] << " cm, ";
+   ss << "stereo " << fStereo[0] << "/" << fStereo[1] << " degrees";
+   return ss.str();
 }
 // -------------------------------------------------------------------------
 

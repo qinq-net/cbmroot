@@ -73,7 +73,7 @@ Int_t CbmStsSetup::DefineSensorTypes() {
 	nStripsB = 648;      // number of strips back side  (58 mum)
 	sensor01->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
 	sensor01->SetName("Sensor01");
-	fSensorTypes[1] = sensor01;
+	fSensorTypes[0] = sensor01;
 
 	// Sensor02: DSSD, 6.2 cm x 2.2 cm
 	CbmStsSensorTypeDssd* sensor02 = new CbmStsSensorTypeDssd();
@@ -83,7 +83,7 @@ Int_t CbmStsSetup::DefineSensorTypes() {
 	nStripsB = 1024;      // number of strips back side  (58 mum)
 	sensor02->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
 	sensor02->SetName("Sensor02");
-	fSensorTypes[2] = sensor02;
+	fSensorTypes[1] = sensor02;
 
 	// Sensor03: DSSD, 6.2 cm x 4.2 cm
 	CbmStsSensorTypeDssd* sensor03 = new CbmStsSensorTypeDssd();
@@ -93,7 +93,7 @@ Int_t CbmStsSetup::DefineSensorTypes() {
 	nStripsB = 1024;      // number of strips back side  (58 mum)
 	sensor03->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
 	sensor03->SetName("Sensor03");
-	fSensorTypes[3] = sensor03;
+	fSensorTypes[2] = sensor03;
 
 	// Sensor04: DSSD, 6.2 cm x 6.2 cm
 	CbmStsSensorTypeDssd* sensor04 = new CbmStsSensorTypeDssd();
@@ -103,7 +103,7 @@ Int_t CbmStsSetup::DefineSensorTypes() {
 	nStripsB = 1024;      // number of strips back side  (58 mum)
 	sensor04->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
 	sensor04->SetName("Sensor04");
-	fSensorTypes[4] = sensor04;
+	fSensorTypes[3] = sensor04;
 
 	// Sensor05: DSSD, 3.1 cm x 3.1 cm
 	CbmStsSensorTypeDssd* sensor05 = new CbmStsSensorTypeDssd();
@@ -113,7 +113,7 @@ Int_t CbmStsSetup::DefineSensorTypes() {
 	nStripsB = 493;       // number of strips back side  (58 mum)
 	sensor05->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
 	sensor05->SetName("Sensor05");
-	fSensorTypes[5] = sensor05;
+	fSensorTypes[4] = sensor05;
 
 	// Sensor06: DSSD, 1.5 cm x 4.2 cm
 	CbmStsSensorTypeDssd* sensor06 = new CbmStsSensorTypeDssd();
@@ -123,7 +123,7 @@ Int_t CbmStsSetup::DefineSensorTypes() {
 	nStripsB = 217;       // number of strips back side  (58 mum)
 	sensor06->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
 	sensor06->SetName("Sensor06");
-	fSensorTypes[6] = sensor06;
+	fSensorTypes[5] = sensor06;
 
 	// Sensor07: DSSD, 3.1 cm x 4.2 cm
 	CbmStsSensorTypeDssd* sensor07 = new CbmStsSensorTypeDssd();
@@ -133,7 +133,7 @@ Int_t CbmStsSetup::DefineSensorTypes() {
 	nStripsB = 493;       // number of strips back side  (58 mum)
 	sensor07->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
 	sensor07->SetName("Sensor07");
-	fSensorTypes[7] = sensor07;
+	fSensorTypes[6] = sensor07;
 
 
 	return fSensorTypes.size();
@@ -312,14 +312,14 @@ Int_t CbmStsSetup::SetSensorTypes() {
 		Double_t volY = 2. * shape->GetDY();
 
 		// Assign type
-		Int_t iType = 0;
-		if ( volX > 3.99 && volX < 4.01 ) iType = 1;
-		else if ( volX > 6.19 && volX < 6.21 && volY > 2.19 && volY < 2.21 ) iType = 2;
-		else if ( volX > 6.19 && volX < 6.21 && volY > 4.19 && volY < 4.21 ) iType = 3;
-		else if ( volX > 6.19 && volX < 6.21 && volY > 6.19 && volY < 6.21 ) iType = 4;
-		else if ( volX > 3.09 && volX < 3.11 && volY > 3.09 && volY < 3.11 ) iType = 5;
-		else if ( volX > 1.49 && volX < 1.51 && volY > 4.19 && volY < 4.21 ) iType = 6;
-		else if ( volX > 3.09 && volX < 3.11 && volY > 4.19 && volY < 4.21 ) iType = 7;
+		Int_t iType = -1;
+		if ( volX > 3.99 && volX < 4.01 ) iType = 0;
+		else if ( volX > 6.19 && volX < 6.21 && volY > 2.19 && volY < 2.21 ) iType = 1;
+		else if ( volX > 6.19 && volX < 6.21 && volY > 4.19 && volY < 4.21 ) iType = 2;
+		else if ( volX > 6.19 && volX < 6.21 && volY > 6.19 && volY < 6.21 ) iType = 3;
+		else if ( volX > 3.09 && volX < 3.11 && volY > 3.09 && volY < 3.11 ) iType = 4;
+		else if ( volX > 1.49 && volX < 1.51 && volY > 4.19 && volY < 4.21 ) iType = 5;
+		else if ( volX > 3.09 && volX < 3.11 && volY > 4.19 && volY < 4.21 ) iType = 6;
 
 		// Look for type in DB
 		map<Int_t, CbmStsSensorType*>::iterator it = fSensorTypes.find(iType);

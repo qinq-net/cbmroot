@@ -71,6 +71,10 @@ class CbmStsSetup : public CbmStsElement
     Int_t GetNofSensors() const { return fSensors.size(); }
 
 
+    /** Get number of available sensor types **/
+    Int_t GetNofSensorTypes() const { return fSensorTypes.size(); }
+
+
     /** Get a module from the module array.
      ** For convenient loops over all modules.
      ** Note that the index of the module is meaningless.
@@ -87,6 +91,17 @@ class CbmStsSetup : public CbmStsElement
      ** @return  Pointer to sensor
      **/
     CbmStsSensor* GetSensor(Int_t index) { return fSensors[index]; }
+
+
+    /** Get a sensor type from the list of available ones
+     ** @param index  Index of sensor type in the array.
+     ** @value type   Pointer to sensor type. NULL if index is out of bounds.
+     **/
+    CbmStsSensorType* GetSensorType(Int_t index) {
+    	if ( fSensorTypes.find(index) != fSensorTypes.end() )
+    		return fSensorTypes[index];
+    	return NULL;
+    }
 
 
     /** Initialise setup from geometry

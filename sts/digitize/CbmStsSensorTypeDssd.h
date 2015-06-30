@@ -7,10 +7,12 @@
 #define CBMSTSSENSORTYPEDSSD_H 1
 
 #include <vector>
+#include <string>
 #include "CbmStsSensorType.h"
 
 
 using std::vector;
+using std::string;
 
 
 
@@ -148,6 +150,22 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
     void SetParameters(Double_t dx, Double_t dy, Double_t dz,
                        Int_t nStripsF, Int_t nStripsB,
                        Double_t stereoF, Double_t stereoB);
+
+
+    /** Set the strip pitch
+     ** @param pitch  Strip pitch [cm]
+     **
+     ** This overrides the strip pitch calculated from the number of strips
+     ** set before. The number of strips is re-calculated; the actual strip
+     ** pitch is slightly modified w.r.t. to the argument such that the
+     ** active width in x is an integer multiple of the pitch.
+     **/
+    void SetStripPitch(Double_t pitch);
+
+
+    /** String output **/
+    string ToString() const;
+
 
 
   protected:

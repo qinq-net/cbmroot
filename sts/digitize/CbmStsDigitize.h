@@ -101,6 +101,18 @@ class CbmStsDigitize : public FairTask
   void InitSetup();
 
 
+  /** Re-initialisation **/
+  virtual InitStatus ReInit();
+
+
+  /** Set percentage of dead channels in the modules **/
+  void SetDeadChannelFraction(Double_t fraction = 0.);
+
+
+   /** Set the digitisation parameters in the modules **/
+  void SetModuleParameters();
+
+
   /** Set the digitisation parameters (same for all modules)
    ** @param dynRagne             Dynamic range [e]
    ** @param threshold            Threshold [e]
@@ -122,20 +134,21 @@ class CbmStsDigitize : public FairTask
 
   void SetPhysicalProcesses(Bool_t nonUniform, Bool_t diffusion, Bool_t crossTalk, Bool_t lorentzShift);
 
-  /** Re-initialisation **/
-  virtual InitStatus ReInit();
 
-
-  /** Set the digitisation parameters in the modules **/
-  void SetModuleParameters();
-
-
-  /** Set percentage of dead channels **/
-  void SetDeadChannelFraction(Double_t fraction = 0.);
-
-
-  /** Set the operating parameters in the sensors **/
+ /** Set the operating parameters in the sensors **/
   void SetSensorConditions();
+
+
+  /** Set the sensor strip pitch
+   ** @param  pitch  Strip pitch [cm]
+   **
+   ** The internal sensor parameters like pitch, stereo angle etc. are normally taken
+   ** from a sensor database. This method allows to override the value for the strip
+   ** pitch defined there, in order to easily test different sensor layout options
+   ** without defining new types in the database. It has effect only for strip sensor types.
+   ** The specified strip pitch will be applied for all sensors in the setup.
+   **/
+  void SetSensorStripPitch(Double_t pitch) { fStripPitch = pitch; }
 
 
   /** Set types for the sensors in the setup **/
@@ -157,6 +170,10 @@ class CbmStsDigitize : public FairTask
   Double_t fDeadTime;            ///< Single-channel dead time [ns]
   Double_t fNoise;               ///< equivalent noise charge (sigma) [ns]
   Double_t fDeadChannelFraction; ///< fraction of dead channels [%]
+
+  // --- Strip pitch, in case it is explicitly set by the user and not taken from
+  // --- the sensor DB
+  Double_t fStripPitch = -1.;
 
   // --- Switches for charge sharing process
   Bool_t fNonUniform;   ///< Non-uniform distribution of energy loss along the track

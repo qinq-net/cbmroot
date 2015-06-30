@@ -271,17 +271,17 @@ void CbmStsDigitize::Finish() {
 // -----   Initialisation    -----------------------------------------------
 InitStatus CbmStsDigitize::Init() {
 
-	// Initialise STS setup
-	InitSetup();
-
-  // Instantiate StsPhysics
-  CbmStsPhysics::Instance();
-
 	std::cout << std::endl;
   LOG(INFO) << "=========================================================="
 		        << FairLogger::endl;
  	LOG(INFO) << GetName() << ": Initialisation" << FairLogger::endl;
 	LOG(INFO) << FairLogger::endl;
+
+	// Initialise STS setup
+	InitSetup();
+
+  // Instantiate StsPhysics
+  CbmStsPhysics::Instance();
 
 	// If the tasks CbmMCTimeSim and CbmDaq are found, run in stream mode.
 	FairTask* timeSim = FairRunAna::Instance()->GetTask("MCTimeSim");
@@ -344,6 +344,26 @@ void CbmStsDigitize::InitSetup() {
 
   // Assign types to the sensors in the setup
 	SetSensorTypes();
+
+	// Modify the strip pitch for DSSD sensor type, if explicitly set by user
+	Int_t nModified = 0;
+	if ( fStripPitch > 0. ) {
+		Int_t nTypes = fSetup->GetNofSensorTypes();
+		for (Int_t iType = 0; iType < nTypes; iType++) {
+			CbmStsSensorType* type = fSetup->GetSensorType(iType);
+			if ( ! type ) continue;
+			// Skip types other than DSSD
+			if ( type->InheritsFrom("CbmStsSensorTypeDssd") ) {
+				CbmStsSensorTypeDssd* dssdType =
+						dynamic_cast<CbmStsSensorTypeDssd*>(type);
+				dssdType->SetStripPitch(fStripPitch);
+				nModified++;
+			} //? DSSD type
+		} //# sensor types
+		LOG(INFO) << GetName() << ": modified strip pitch to " << fStripPitch
+				      << " cm for "<< nModified << " sensor types."
+				      << FairLogger::endl;
+	} //? strip pitch set by user
 
   // Set sensor conditions
 	SetSensorConditions();
