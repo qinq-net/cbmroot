@@ -7,13 +7,14 @@ void run_superevent_jpsi()
 	loadlibs();
 	std::string outputDir ="results_analysis/";
 	//std::string fileName ="/data/CbmRoot/sim_data/analysis.0001.root";
-	std::string fileName ="/hera/cbm/users/adrian/data/jun15_25gev/jpsi_urqmd/analysis.auau.25gev.centr.all.root";
-	CbmAnaJpsiSuperEvent* se = new CbmAnaJpsiSuperEvent();
-	//se->AddFile("/data/CbmRoot/sim_data/analysis.0001.root");
-        se->AddFile(fileName);
-	se->Run();
-	//se->AddFile("/Users/slebedev/Development/cbm/data/jpsi/analysis.0001.root");
+	//std::string fileName ="/hera/cbm/users/adrian/data/jun15_25gev/jpsi_urqmd/analysis.auau.25gev.centr.all.root";
+	std::string fileName ="/Users/slebedev/Development/cbm/data/jpsi/analysis.0001.root";
 
-	se->Create(fileName, outputDir);
+	CbmAnaJpsiSuperEvent* se = new CbmAnaJpsiSuperEvent();
+	se->SetRunAfterPtCut(false);
+    se->SetOutputFile("/Users/slebedev/Development/cbm/data/jpsi/analysis.superevent.root");
+	se->AddFile(fileName);
+	se->Run();
+
 }
 
