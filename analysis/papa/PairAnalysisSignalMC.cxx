@@ -309,11 +309,11 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
     fIsSingleParticle=kTRUE;
     break;
   default:
-    printf(" Signal NOT predefined! Either request it or configure on your own.\n");
+    Error("PairAnalysisSignalMC","Signal NOT predefined! Either request it or configure on your own.");
     return;
     break;
   }
-  printf(" Use predefined signal selected: %s\n",GetName());
+  //  Info("PairAnalysisSignalMC","Use predefined signal selected: %s\n",GetName());
 
   // TODO: add print command showing the signal configuration
   // e.g.: (add charge, source/origin, geant process)

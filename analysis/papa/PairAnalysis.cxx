@@ -807,7 +807,8 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	    if(!isMCtruth) continue;
 	    sigName =  Form("Pair_%s",sigMC->GetName());
 	    //	  Printf("fill %s: %d ",sigName.Data(),pairClassMC.TestBitNumber(isig));
-	    PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
+	    if(TMath::Abs(sigMC->GetWeight()-1.)>1e-8) // weight is set, don't use track weights
+	      PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
 	    if(pairClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
 	    if(pairClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
 	  }
@@ -828,7 +829,8 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	      if(!fillMC.TestBitNumber(isig)) continue;
 	      sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
 	      sigName = Form("Track.Legs_%s",sigMC->GetName());
-	      PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
+	      if(TMath::Abs(sigMC->GetWeight()-1.)>1e-8) // weight is set, don't use track weights
+		PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
 	      if(legClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
 	      if(legClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
 	    }
@@ -845,7 +847,8 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	      if(!fillMC.TestBitNumber(isig)) continue;
 	      sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
 	      sigName = Form("Track.Legs_%s",sigMC->GetName());
-	      PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
+	      if(TMath::Abs(sigMC->GetWeight()-1.)>1e-8) // weight is set, don't use track weights
+		PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
 	      if(legClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
 	      if(legClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
 	    }
