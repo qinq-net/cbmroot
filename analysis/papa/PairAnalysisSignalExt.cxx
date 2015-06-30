@@ -474,9 +474,9 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   Bool_t optNoMC     =optString.Contains("nomc");      optString.ReplaceAll("nomc","");
   Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
   Bool_t optCan      =optString.Contains("can");       optString.ReplaceAll("can","");
-  Bool_t optMeta     =optString.Contains("meta");      optString.ReplaceAll("meta","");
-  Bool_t optEvt      =optString.Contains("events");    optString.ReplaceAll("events","");
-  Bool_t optSel      =optString.Contains("sel");       optString.ReplaceAll("sel","");
+  //  Bool_t optMeta     =optString.Contains("meta");      optString.ReplaceAll("meta","");
+  //  Bool_t optEvt      =optString.Contains("events");    optString.ReplaceAll("events","");
+  //  Bool_t optSel      =optString.Contains("sel");       optString.ReplaceAll("sel","");
   Bool_t optStat     =optString.Contains("stat");      optString.ReplaceAll("stat","");
   Bool_t optSB       =optString.Contains("sb");        optString.ReplaceAll("sb","");
   Bool_t optSgn      =optString.Contains("sgn");       optString.ReplaceAll("sgn","");

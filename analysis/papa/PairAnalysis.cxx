@@ -607,7 +607,6 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
   TString  className,className2,className3;
   TString  sigName;
   Double_t *values=PairAnalysisVarManager::GetData(); //NEW CHANGED
-  /////////////
   PairAnalysisVarManager::SetFillMap(fUsedVars);
 
   //Fill event information
@@ -763,7 +762,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
   TBits pairClassMC(  nsig);
   TBits pairClassMChf(nsig);
   TObjArray arrLegs(100);
-  for (Int_t i=0; i<7; ++i){
+  for (Int_t i=0; i<(kPairTypes-1); ++i){
     className.Form("Pair.%s",fgkPairClassNames[i]);
     className2.Form("Track.Legs.%s",fgkPairClassNames[i]);
     Bool_t pairClass  =  fHistos->HasHistClass(className);
@@ -800,16 +799,18 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
         if(pairClass2) fHistoArray->FillClass(className, values);
 	// check mc filling
 	fillMC.ResetAllBits();
-	for(Int_t isig=0; isig<nsig; isig++) {
-	  sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
-	  Bool_t isMCtruth = mc->IsMCTruth(pair, sigMC);
-	  fillMC.SetBitNumber(isig,isMCtruth);
-	  if(!isMCtruth) continue;
-	  sigName =  Form("Pair_%s",sigMC->GetName());
-	  //	  Printf("fill %s: %d ",sigName.Data(),pairClassMC.TestBitNumber(isig));
-	  PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
-	  if(pairClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
-	  if(pairClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
+	if(i==kSEPM) {
+	  for(Int_t isig=0; isig<nsig; isig++) {
+	    sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
+	    Bool_t isMCtruth = mc->IsMCTruth(pair, sigMC);
+	    fillMC.SetBitNumber(isig,isMCtruth);
+	    if(!isMCtruth) continue;
+	    sigName =  Form("Pair_%s",sigMC->GetName());
+	    //	  Printf("fill %s: %d ",sigName.Data(),pairClassMC.TestBitNumber(isig));
+	    PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
+	    if(pairClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
+	    if(pairClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
+	  }
 	}
       }
 
@@ -822,28 +823,32 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
           if(legClass)  fHistos    ->FillClass(className2, values);
           if(legClass2) fHistoArray->FillClass(className2, values);
 	  // mc signal filling
-	  for(Int_t isig=0; isig<nsig; isig++) {
-	    if(!fillMC.TestBitNumber(isig)) continue;
-	    sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
-	    sigName = Form("Track.Legs_%s",sigMC->GetName());
-	    PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
-	    if(legClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
-	    if(legClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
+	  if(i==kSEPM) {
+	    for(Int_t isig=0; isig<nsig; isig++) {
+	      if(!fillMC.TestBitNumber(isig)) continue;
+	      sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
+	      sigName = Form("Track.Legs_%s",sigMC->GetName());
+	      PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
+	      if(legClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
+	      if(legClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
+	    }
 	  }
-	arrLegs.Add(d1);
+	  arrLegs.Add(d1);
         }
         if (!arrLegs.FindObject(d2)){
           PairAnalysisVarManager::Fill(d2, values);
           if(legClass)  fHistos    ->FillClass(className2, values);
           if(legClass2) fHistoArray->FillClass(className2, values);
 	  // mc signal filling
-	  for(Int_t isig=0; isig<nsig; isig++) {
-	    if(!fillMC.TestBitNumber(isig)) continue;
-	    sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
-	    sigName = Form("Track.Legs_%s",sigMC->GetName());
-	    PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
-	    if(legClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
-	    if(legClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
+	  if(i==kSEPM) {
+	    for(Int_t isig=0; isig<nsig; isig++) {
+	      if(!fillMC.TestBitNumber(isig)) continue;
+	      sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
+	      sigName = Form("Track.Legs_%s",sigMC->GetName());
+	      PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
+	      if(legClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
+	      if(legClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
+	    }
 	  }
           arrLegs.Add(d2);
         }

@@ -856,6 +856,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   Bool_t optMeanX    =optString.Contains("meanx");     optString.ReplaceAll("meanx","");
   Bool_t optOneOver  =optString.Contains("oneover");   optString.ReplaceAll("oneover","");
   Bool_t optSel      =optString.Contains("sel");       optString.ReplaceAll("sel","");
+  Bool_t optExclSel  =histClassDenom.Contains("!");    histClassDenom.ReplaceAll("!","");
 
   // output array
   TObjArray *arr=0x0;
@@ -929,7 +930,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	(optOnlyMC && ndel<1)                      ) continue;
 
     // histclass selection
-    if( optSel && !histClass.Contains(histClassDenom) ) continue;
+    if( optSel && (!histClass.Contains(histClassDenom))^optExclSel ) continue;
     
     // find the histogram in the class table
     if ( TH1 *h=(TH1*)classTable->FindObject(histName.Data()) ){
