@@ -173,7 +173,7 @@ class CbmStsDigitize : public FairTask
 
   // --- Strip pitch, in case it is explicitly set by the user and not taken from
   // --- the sensor DB
-  Double_t fStripPitch = -1.;
+  Double_t fStripPitch;
 
   // --- Switches for charge sharing process
   Bool_t fNonUniform;   ///< Non-uniform distribution of energy loss along the track

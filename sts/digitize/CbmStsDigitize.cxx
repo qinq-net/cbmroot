@@ -56,6 +56,7 @@ CbmStsDigitize::CbmStsDigitize(Int_t digiModel)
     fDeadTime(0.),
     fNoise(0.),
     fDeadChannelFraction(0.),
+    fStripPitch(-1.),
     fNonUniform(kTRUE),
     fDiffusion(kTRUE),
     fCrossTalk(kTRUE),
