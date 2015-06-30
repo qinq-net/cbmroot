@@ -87,9 +87,9 @@ void CbmAnaJpsiSuperEvent::ReadCandidates()
 		TFile *f = new TFile(fFileNames[iFile].c_str(), "R");
 		TTree* t = (TTree*)f->Get("cbmsim");
 		TFolder *fd = (TFolder*)f->Get("cbmout");
+		if (fd == NULL) continue;
 		TClonesArray* candidates = (TClonesArray*) fd->FindObjectAny("JpsiCandidates");
 		t->SetBranchAddress(candidates->GetName(), &candidates);
-
 		Int_t nofEvents = t->GetEntriesFast();
 		cout << "-I- Number of events in file: " << nofEvents << endl;
 		for (Int_t iEv = 0; iEv < nofEvents; iEv++) {

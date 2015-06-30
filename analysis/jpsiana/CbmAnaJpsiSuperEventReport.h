@@ -43,6 +43,7 @@ protected:
     */
    void DrawComparison();
 
+   void DrawMinvSignalBg();
 
    CbmHistManager* fHMSuperEvent; // histogram manager for super event histograms
    CbmHistManager* fHMEventByEvent; //histogram manager for event-by-event histograms

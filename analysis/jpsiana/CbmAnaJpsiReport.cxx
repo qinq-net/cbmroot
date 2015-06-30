@@ -442,7 +442,7 @@ void CbmAnaJpsiReport::DrawMomEffAllSteps()
 	TH1D* Mc = (TH1D*) H1("fh_track_el_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Clone();
 	TH1D* McEff = Cbm::DivideH1((TH1D*)H1("fh_track_el_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiMc])->Clone(), (TH1D*)Mc->Clone());
 	McEff->SetMinimum(0.);
-	McEff->SetMaximum(105);
+	McEff->SetMaximum(115.);
 	TH1D* AccEff = Cbm::DivideH1((TH1D*)H1("fh_track_el_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiAcc])->Clone(), (TH1D*)Mc->Clone());
 	TH1D* RecEff = Cbm::DivideH1((TH1D*)H1("fh_track_el_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiReco])->Clone(), (TH1D*)Mc->Clone());
 	TH1D* Chi2PrimEff = Cbm::DivideH1((TH1D*)H1("fh_track_el_mom_"+CbmAnaJpsiHist::fAnaSteps[kJpsiChi2Prim])->Clone(), (TH1D*)Mc->Clone());
@@ -453,7 +453,7 @@ void CbmAnaJpsiReport::DrawMomEffAllSteps()
 
 	DrawH1(list_of(McEff)(AccEff)(RecEff)(Chi2PrimEff)(ElIdEff)(PtEff),list_of(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiMc])(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiAcc])
 			(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiReco])(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiChi2Prim])(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiElId])
-			(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut]), kLinear, kLinear, true, 0.9, 0.6, 0.99, 0.99);
+			(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut]), kLinear, kLinear, true, 0.9, 0.6, 0.99, 0.99,"HIST");
 
 
 	DrawAnalysisStepsH1("fh_track_el_mom",false);

@@ -52,6 +52,7 @@ void CbmAnaJpsiSuperEventReport::Create(
 
 	SetOutputDir(outputDir);
 	CreateReports();
+	DrawMinvSignalBg();
 }
 void CbmAnaJpsiSuperEventReport::Create()
 {
@@ -101,5 +102,25 @@ void CbmAnaJpsiSuperEventReport::DrawComparison()
 	DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.6, 0.89, 0.7, 0.99);
 }
 
+void CbmAnaJpsiSuperEventReport::DrawMinvSignalBg()
+{
+  TCanvas* c1 = CreateCanvas("jpsi_se_minv_reco","jpsi_se_minv_reco",900,900);
+  fHMSuperEvent->H1("fh_se_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiReco])->SetMinimum(1e-9);
+  DrawH1(list_of(fHMSuperEvent->H1("fh_se_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiReco]))(fHMEventByEvent->H1("fh_signal_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiReco])),list_of("Background SuperEvent")("Signal Event-By-Event"), kLinear, kLog, true, 0.6, 0.75, 0.99, 0.99);
+
+  TCanvas* c2 = CreateCanvas("jpsi_se_minv_chi2prim","jpsi_se_minv_chi2prim",900,900);
+  fHMSuperEvent->H1("fh_se_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiChi2Prim])->SetMinimum(1e-9);
+  DrawH1(list_of(fHMSuperEvent->H1("fh_se_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiChi2Prim]))(fHMEventByEvent->H1("fh_signal_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiChi2Prim])),list_of("Background SuperEvent")("Signal Event-By-Event"), kLinear, kLog, true, 0.6, 0.75, 0.99, 0.99);
+
+  TCanvas* c3 = CreateCanvas("jpsi_se_minv_elid","jpsi_se_minv_elid",900,900);
+  fHMSuperEvent->H1("fh_se_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiElId])->SetMinimum(1e-9);
+  DrawH1(list_of(fHMSuperEvent->H1("fh_se_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiElId]))(fHMEventByEvent->H1("fh_signal_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiElId])),list_of("Background SuperEvent")("Signal Event-By-Event"), kLinear, kLog, true, 0.6, 0.75, 0.99, 0.99);
+
+  TCanvas* c4 = CreateCanvas("jpsi_se_minv_ptcut","jpsi_se_minv_ptcut",900,900);
+  fHMSuperEvent->H1("fh_se_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->SetMinimum(1e-9);
+  DrawH1(list_of(fHMSuperEvent->H1("fh_se_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut]))(fHMEventByEvent->H1("fh_signal_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])),list_of("Background SuperEvent")("Signal Event-By-Event"), kLinear, kLog, true, 0.6, 0.75, 0.99, 0.99);
+
+
+}
 ClassImp(CbmAnaJpsiSuperEventReport)
 
