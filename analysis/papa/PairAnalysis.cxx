@@ -637,7 +637,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
       trkClassMChf.SetBitNumber(isig, fHistoArray && fHistoArray->HasHistClass(sigName));
     }
     // loop over both track arrays
-    for (Int_t i=0; i<2; ++i){
+    for (Int_t i=0; i<kLegTypes; ++i){
       className.Form("Track.%s",fgkTrackClassNames[i]);
       Bool_t trkClass  =  fHistos->HasHistClass(className);
       Bool_t trkClass2 = (fHistoArray && fHistoArray->HasHistClass(className));

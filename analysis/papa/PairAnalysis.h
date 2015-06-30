@@ -220,7 +220,7 @@ inline Int_t PairAnalysis::GetPairIndex(Int_t arr1, Int_t arr2) const
   // get pair index
   //
   if(arr1==0 && arr2==arr1) return kSEPP;
-  if(arr1==0 && arr2==1)    return kSEPP;
+  if(arr1==0 && arr2==1)    return kSEPM;
   if(arr1==1 && arr2==arr1) return kSEMM;
   if(arr1==0 && arr2==2)    return kMEPP;
   if(arr1==1 && arr2==2)    return kMEMP;

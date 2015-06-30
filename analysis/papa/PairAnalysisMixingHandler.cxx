@@ -132,12 +132,12 @@ void PairAnalysisMixingHandler::Fill(const PairAnalysisEvent *ev, PairAnalysis *
 
   PairAnalysisMixedEvent *event=static_cast<PairAnalysisMixedEvent*>(pool.At(index1));
   if (!event){
-    Info("Fill",Form("new event at %d: %d",bin,index1));
+    //    Info("Fill",Form("new event at %d: %d",bin,index1));
     event = new(pool[index1]) PairAnalysisMixedEvent();
     event->Set();//TMath::Max(papa->GetTrackArray(0)->GetEntriesFast(),papa->GetTrackArray(1)->GetEntriesFast()));
     event->SetProcessID(fPID);
   } else {
-    Info("Fill",Form("use event at %d: %d",bin,index1));
+    //    Info("Fill",Form("use event at %d: %d",bin,index1));
   }
 
   // event->SetProcessID(fPID);
