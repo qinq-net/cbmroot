@@ -54,7 +54,7 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   //return;
   TString caveGeom = "cave.geo";
   TString magnetGeom = "magnet/magnet_v12b.geo.root";
-  //TString magnetGeom = "";
+  TString magnetGeom = "";
   TString stsGeom = "";
   TString fieldMap = "field_v12a";
   Double_t fieldZ = 50.; // field center z position
@@ -201,7 +201,7 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  return "/data/GeoOpt/RotPMT/";
+  //return "/data/GeoOpt/RotPMT/";
 
   return "/hera/cbm/users/tariq/GeoOptRootFiles/RotPMT/";
   // if(GeoCase<=0){return "/data/GeoOpt/RotPMT/OlderGeo/";}
