@@ -4,7 +4,8 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   int GeoCase=2;
   int PtNotP=1;  float MomMin=0.; float MomMax=4.;
   //int PtNotP=0;  float MomMin=3.95; float MomMax=4.;
-
+  float  EndTheta=35.;
+  int PMTtransY=0, PMTtransZ=0;
   TString script = TString(gSystem->Getenv("SCRIPT"));
   if (script == "yes"){
     cout<<" ----------------- running with script --------------------"<<endl;
@@ -12,20 +13,23 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
     RotMir=TString(gSystem->Getenv("ROTMIR")).Atof();
     PMTrotX=TString(gSystem->Getenv("PMT_ROTX")).Atof();
     PMTrotY=TString(gSystem->Getenv("PMT_ROTY")).Atof();
+    PMTtransY=TString(gSystem->Getenv("PMT_TRAY")).Atof();
+    PMTtransZ=TString(gSystem->Getenv("PMT_TRAZ")).Atof();
     
     GeoCase=TString(gSystem->Getenv("GEO_CASE")).Atof();
     
     PtNotP=TString(gSystem->Getenv("PT_NOT_P")).Atof();
     MomMin=TString(gSystem->Getenv("MOM_MIN")).Atof();
     MomMax=TString(gSystem->Getenv("MOM_MAX")).Atof();
-
+    EndTheta=TString(gSystem->Getenv("THETA")).Atof();
   }  
-  cout<<RotMir<<", "<<PMTrotX<<", "<<PMTrotY<<", "<<GeoCase<<endl;
+  //cout<<RotMir<<", "<<PMTrotX<<", "<<PMTrotY<<", "<<GeoCase<<endl;
   
   TTree::SetMaxTreeSize(90000000000);
   //******************************
   TString RotMirText=GetMirText(RotMir);
   TString PMTRotText=GetPMTRotText(PMTrotX, PMTrotY);
+  TString PMTTransText=GetPMTTransText(PMTtransY, PMTtransZ);
   TString richGeom=GetRICH_GeoFile( RotMirText, PMTRotText, GeoCase);
   TString pipeGeom=GetPipe_GeoFile( GeoCase);
   pipeGeom="";
@@ -38,12 +42,14 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   TString outDir=GetOutDir(GeoCase);//="/data/GeoOpt/RotPMT/NewGeo/";
   TString GeoText=GetGeoText(GeoCase);
   TString MomText=GetMomText(PtNotP,MomMin,MomMax);
+  TString ThetaText=GetThetaText(EndTheta);
   TString ExtraText="_RegularTheta.";
   ExtraText=".";
 
-  TString ParFile = outDir + "Parameters_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
-  TString SimFile = outDir + "Sim_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
-  TString OutPutGeoFile = outDir + "OutPutGeo_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
+  TString NamingText=GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+PMTTransText+"_"+MomText+"_"+ThetaText+ExtraText+"root";
+  TString ParFile = outDir + "Parameters_"+NamingText;//
+  TString SimFile = outDir + "Sim_"+NamingText;
+  TString OutPutGeoFile = outDir + "OutPutGeo_"+NamingText;
   gSystem->Exec( ("rm "+ParFile).Data() );
   gSystem->Exec( ("rm "+SimFile).Data() );
   gSystem->Exec( ("rm "+OutPutGeoFile).Data() );
@@ -118,7 +124,7 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   
   // e+/-
   float StartPhi=90.1, EndPhi=180.;
-  float StartTheta=2.5, EndTheta=35.;
+  float StartTheta=2.5;
   FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 1);
   if(PtNotP==1){boxGen1->SetPtRange(MomMin,MomMax); }
   else{boxGen1->SetPRange(MomMin,MomMax); }
@@ -234,6 +240,17 @@ TString  GetPMTRotText(float PMTrotX, float PMTrotY){
   ss<<"RotPMT_"<<ShiftXTxt<<"_"<<ShiftYTxt;
   return ss.str();
 }
+///////////////////////////////////////////////
+TString  GetPMTTransText(int PMTTransY, int PMTTransZ){
+  char ZTransText[256]; char YTransText[256];  
+  if(PMTTransY < 0) {sprintf( YTransText,"Y_m%d",-1*PMTTransY);}
+  else{sprintf( YTransText,"Y_p%d",PMTTransY);}
+  if(PMTTransZ < 0) {sprintf( ZTransText,"Z_m%d",-1*PMTTransZ);}
+  else{sprintf( ZTransText,"Z_p%d",PMTTransZ);}
+  stringstream ss; 
+  ss<<"TransPMT_"<<YTransText<<"_"<<ZTransText;
+  return ss.str();
+}
 
 ////////////////////////////////////////////////////////
 TString GetRICH_GeoFile( char *RotMirText, TString  PMTRotText, int GeoCase){
@@ -257,6 +274,14 @@ TString GetRICH_GeoFile( char *RotMirText, TString  PMTRotText, int GeoCase){
   stringstream ss; 
   ss<<Dir<<Dir2<<"rich_geo_"<<RotMirText<<"_"<<PMTRotText<<Endung;
   
+  return ss.str();
+}
+////////////////////////////////////////////////////////
+TString GetThetaText( float theta=25.){
+  char THtxt[256];
+  sprintf(THtxt,"Theta_%d",theta);
+  stringstream ss; 
+  ss<<THtxt;
   return ss.str();
 }
 ////////////////////////////////////////////////////////

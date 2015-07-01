@@ -1,14 +1,13 @@
-void Run_Ana_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2, int RotMir=-10)
+void Run_Ana_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=5, float PMTrotY=5, int RotMir=1)
 {
- 
   TTree::SetMaxTreeSize(90000000000);
   gRandom->SetSeed(10);
 
   int GeoCase=2;
   int PtNotP=1;  float MomMin=0.; float MomMax=4.;
   //int PtNotP=0;  float MomMin=3.95; float MomMax=4.;
-
-
+  float  EndTheta=35.;
+  int PMTtransY=0, PMTtransZ=0;
   TString script = TString(gSystem->Getenv("SCRIPT"));
   if (script == "yes"){
     cout<<" ----------------- running with script --------------------"<<endl;
@@ -16,39 +15,38 @@ void Run_Ana_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
     RotMir=TString(gSystem->Getenv("ROTMIR")).Atof();
     PMTrotX=TString(gSystem->Getenv("PMT_ROTX")).Atof();
     PMTrotY=TString(gSystem->Getenv("PMT_ROTY")).Atof();
-    
+    PMTtransY=TString(gSystem->Getenv("PMT_TRAY")).Atof();
+    PMTtransZ=TString(gSystem->Getenv("PMT_TRAZ")).Atof();    
     GeoCase=TString(gSystem->Getenv("GEO_CASE")).Atof();
     
     PtNotP=TString(gSystem->Getenv("PT_NOT_P")).Atof();
     MomMin=TString(gSystem->Getenv("MOM_MIN")).Atof();
     MomMax=TString(gSystem->Getenv("MOM_MAX")).Atof();
-
+    EndTheta=TString(gSystem->Getenv("THETA")).Atof();
   }  
 
   TString RotMirText=GetMirText(RotMir);
   TString PMTRotText=GetPMTRotText(PMTrotX, PMTrotY);
+  TString PMTTransText=GetPMTTransText(PMTtransY, PMTtransZ);
   TString outDir=GetOutDir(GeoCase);//="/data/GeoOpt/RotPMT/NewGeo/";
   TString GeoText=GetGeoText(GeoCase);
   TString MomText=GetMomText(PtNotP,MomMin,MomMax);
+  TString ThetaText=GetThetaText(EndTheta);
   TString ExtraText="_RegularTheta.";
   ExtraText=".";
 
-  TString ParFile = outDir + "Parameters_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
-  TString SimFile = outDir + "Sim_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
-  TString RecFile = outDir + "Rec_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
-
-  TString AnaFile = outDir + "Ana_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
-
-  TString RecFile = outDir + "Rec_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
-
-  TString AnaFile = outDir + "Ana_"+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
+  TString NamingText=GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+PMTTransText+"_"+MomText+"_"+ThetaText+ExtraText+"root";
+  TString ParFile = outDir + "Parameters_"+NamingText;//
+  TString SimFile = outDir + "Sim_"+NamingText;
+  TString RecFile = outDir + "Rec_"+NamingText;//+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
+  TString AnaFile = outDir + "Ana_"+NamingText;//+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
 
   gDebug = 0;
   TStopwatch timer;
   timer.Start();
   cout<<" going to load libraries"<<endl;
-  gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-  loadlibs();
+  //  gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
+  //  loadlibs();
   cout<<" got libraries"<<endl;
   
   FairRunAna *run= new FairRunAna();
@@ -120,7 +118,8 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  //return "/data/GeoOpt/RotPMT/";
+  //return "/data/GeoOpt/Display/";
+  return "/data/GeoOpt/RotPMT/";
   return "/hera/cbm/users/tariq/GeoOptRootFiles/RotPMT/";
   // if(GeoCase<=0){return "/data/GeoOpt/RotPMT/OlderGeo/";}
   // if(GeoCase==1){return "/data/GeoOpt/RotPMT/OldGeo/";}
@@ -152,4 +151,24 @@ TString  GetPMTRotText(float PMTrotX, float PMTrotY){
   ss<<"RotPMT_"<<ShiftXTxt<<"_"<<ShiftYTxt;
   return ss.str();
 }
+///////////////////////////////////////////////
+TString  GetPMTTransText(int PMTTransY, int PMTTransZ){
+  char ZTransText[256]; char YTransText[256];  
+  if(PMTTransY < 0) {sprintf( YTransText,"Y_m%d",-1*PMTTransY);}
+  else{sprintf( YTransText,"Y_p%d",PMTTransY);}
+  if(PMTTransZ < 0) {sprintf( ZTransText,"Z_m%d",-1*PMTTransZ);}
+  else{sprintf( ZTransText,"Z_p%d",PMTTransZ);}
+  stringstream ss; 
+  ss<<"TransPMT_"<<YTransText<<"_"<<ZTransText;
+  return ss.str();
+}
 
+
+////////////////////////////////////////////////////////
+TString GetThetaText( float theta=25.){
+  char THtxt[256];
+  sprintf(THtxt,"Theta_%d",theta);
+  stringstream ss; 
+  ss<<THtxt;
+  return ss.str();
+}
