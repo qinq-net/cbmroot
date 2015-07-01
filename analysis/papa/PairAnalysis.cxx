@@ -75,7 +75,7 @@ const char* PairAnalysis::fgkPairClassNames[8] = {
   "ME-+",
   "ME+-",
   "ME--",
-  "SE+-TR"
+  "TR+-"
 };
 
 //________________________________________________________________
