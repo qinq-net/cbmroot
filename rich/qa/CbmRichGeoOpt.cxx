@@ -529,23 +529,23 @@ void CbmRichGeoOpt::InitHistograms()
 
   //cout<<" init hist H_RingCenter"<<endl;
 
-  H_RingCenter= new TH2D("H_RingCenter","H_RingCenter",200, -100., 0.,500, 50.,300.);
+  H_RingCenter= new TH2D("H_RingCenter","H_RingCenter",200, -100., 0.,250, 50.,300.);
   
-  H_RingCenter_Aaxis= new TH3D("H_RingCenter_Aaxis","H_RingCenter_Aaxis",100, -100, 0,250, 50, 300, 80, 2.,10.);
-  H_RingCenter_Baxis= new TH3D("H_RingCenter_Baxis","H_RingCenter_Baxis",100, -100, 0,250, 50, 300, 80, 2.,10.);
-  H_RingCenter_boa= new TH3D("H_RingCenter_boa","H_RingCenter_boa",100, -100, 0,250, 50, 300, 50, 0.5,1.);
-  H_RingCenter_boa_RegularTheta= new TH3D("H_RingCenter_boa_RegularTheta","H_RingCenter_boa_RegularTheta",100, -100, 0,250, 50, 300, 50, 0.5,1.);
-  H_RingCenter_boa_LeftHalf= new TH3D("H_RingCenter_boa_LeftHalf","H_RingCenter_boa_LeftHalf",100, -100, 0,250, 50, 300, 50, 0.5,1.);
-  H_RingCenter_boa_RightHalf= new TH3D("H_RingCenter_boa_RightHalf","H_RingCenter_boa_RightHalf",100, -100, 0,250, 50, 300, 50, 0.5,1.);
-  H_RingCenter_boa_LowerHalf= new TH3D("H_RingCenter_boa_LowerHalf","H_RingCenter_boa_LowerHalf",100, -100, 0,250, 50, 300, 50, 0.5,1.);
-  H_RingCenter_boa_UpperHalf= new TH3D("H_RingCenter_boa_UpperHalf","H_RingCenter_boa_UpperHalf",100, -100, 0,250, 50, 300, 50, 0.5,1.);
+  H_RingCenter_Aaxis= new TH3D("H_RingCenter_Aaxis","H_RingCenter_Aaxis",100, -100, 0,300, 50, 350, 80, 2.,10.);
+  H_RingCenter_Baxis= new TH3D("H_RingCenter_Baxis","H_RingCenter_Baxis",100, -100, 0,300, 50, 350, 80, 2.,10.);
+  H_RingCenter_boa= new TH3D("H_RingCenter_boa","H_RingCenter_boa",100, -100, 0,300, 50, 350, 50, 0.5,1.);
+  H_RingCenter_boa_RegularTheta= new TH3D("H_RingCenter_boa_RegularTheta","H_RingCenter_boa_RegularTheta",100, -100, 0,300, 50, 350, 50, 0.5,1.);
+  H_RingCenter_boa_LeftHalf= new TH3D("H_RingCenter_boa_LeftHalf","H_RingCenter_boa_LeftHalf",100, -100, 0,300, 50, 350, 50, 0.5,1.);
+  H_RingCenter_boa_RightHalf= new TH3D("H_RingCenter_boa_RightHalf","H_RingCenter_boa_RightHalf",100, -100, 0,300, 50, 350, 50, 0.5,1.);
+  H_RingCenter_boa_LowerHalf= new TH3D("H_RingCenter_boa_LowerHalf","H_RingCenter_boa_LowerHalf",100, -100, 0,300, 50, 350, 50, 0.5,1.);
+  H_RingCenter_boa_UpperHalf= new TH3D("H_RingCenter_boa_UpperHalf","H_RingCenter_boa_UpperHalf",100, -100, 0,300, 50, 350, 50, 0.5,1.);
 
-  H_RingCenter_dR= new TH3D("H_RingCenter_dR","H_RingCenter_dR",100, -100, 0,250, 50, 300, 50, -0.5,0.5);
-  H_RingCenter_dR_RegularTheta= new TH3D("H_RingCenter_dR_RegularTheta","H_RingCenter_dR_RegularTheta",100, -100, 0,250, 50, 300, 50, -0.5,0.5);
-  H_RingCenter_dR_LeftHalf= new TH3D("H_RingCenter_dR_LeftHalf","H_RingCenter_dR_LeftHalf",100, -100, 0,250, 50, 300, 50, -0.5,0.5);
-  H_RingCenter_dR_RightHalf= new TH3D("H_RingCenter_dR_RightHalf","H_RingCenter_dR_RightHalf",100, -100, 0,250, 50, 300, 50, -0.5,0.5);
-  H_RingCenter_dR_LowerHalf= new TH3D("H_RingCenter_dR_LowerHalf","H_RingCenter_dR_LowerHalf",100, -100, 0,250, 50, 300, 50, -0.5,0.5);
-  H_RingCenter_dR_UpperHalf= new TH3D("H_RingCenter_dR_UpperHalf","H_RingCenter_dR_UpperHalf",100, -100, 0,250, 50, 300, 50, -0.5,0.5);
+  H_RingCenter_dR= new TH3D("H_RingCenter_dR","H_RingCenter_dR",100, -100, 0,300, 50, 350, 50, -0.5,0.5);
+  H_RingCenter_dR_RegularTheta= new TH3D("H_RingCenter_dR_RegularTheta","H_RingCenter_dR_RegularTheta",100, -100, 0,300, 50, 350, 50, -0.5,0.5);
+  H_RingCenter_dR_LeftHalf= new TH3D("H_RingCenter_dR_LeftHalf","H_RingCenter_dR_LeftHalf",100, -100, 0,300, 50, 350, 50, -0.5,0.5);
+  H_RingCenter_dR_RightHalf= new TH3D("H_RingCenter_dR_RightHalf","H_RingCenter_dR_RightHalf",100, -100, 0,300, 50, 350, 50, -0.5,0.5);
+  H_RingCenter_dR_LowerHalf= new TH3D("H_RingCenter_dR_LowerHalf","H_RingCenter_dR_LowerHalf",100, -100, 0,300, 50, 350, 50, -0.5,0.5);
+  H_RingCenter_dR_UpperHalf= new TH3D("H_RingCenter_dR_UpperHalf","H_RingCenter_dR_UpperHalf",100, -100, 0,300, 50, 350, 50, -0.5,0.5);
  
   
 }
