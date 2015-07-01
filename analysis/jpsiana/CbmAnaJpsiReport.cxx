@@ -80,8 +80,8 @@ void CbmAnaJpsiReport::Draw()
 
 	  DrawMinvMismatchesAll();
 
-	  DrawAnalysisStepsH1("fh_signal_minv",false, 5e-5, 1);
-	  DrawAnalysisStepsH1("fh_bg_minv",false, 5e-5, 1);
+	  DrawAnalysisStepsH1("fh_signal_minv",false, 1e-9, 1e-5);
+	  DrawAnalysisStepsH1("fh_bg_minv",false, 5e-5, 2);
 	  DrawAnalysisStepsH1("fh_pi0_minv",false);
 	  DrawAnalysisStepsH1("fh_gamma_minv",false);
 
@@ -377,6 +377,7 @@ void CbmAnaJpsiReport::SignalOverBgAllSteps()
 		double nstep = i + 0.5;
 		double SOverBg = SignalOverBg(i);
 		HM()->H1("fh_SignalOverBg_allAnaSteps")->Fill(nstep,SOverBg);
+		gPad->SetLogy();
 	}
 
 	SetAnalysisStepLabels(H1("fh_SignalOverBg_allAnaSteps"));
