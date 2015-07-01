@@ -17,6 +17,7 @@
 #include "CbmDetectorList.h"
 //#include "CbmTrackMatchNew.h"
 
+class FairTrackParam;
 class CbmTrack;
 class CbmGlobalTrack;
 class CbmStsTrack;
@@ -38,7 +39,8 @@ public:
   PairAnalysisTrack(const char* name, const char* title);
   PairAnalysisTrack(CbmGlobalTrack *gtrk, CbmStsTrack *ststrk, CbmMuchTrack *muchtrk, CbmTrdTrack *trdtrk, CbmRichRing *richring, CbmTofHit *tofhit,
 		  CbmMCTrack *mctrk,
-		  CbmTrackMatchNew *stsmatch, CbmTrackMatchNew *muchmatch, CbmTrackMatchNew *trdMatch, CbmTrackMatchNew *richMatch);
+		    CbmTrackMatchNew *stsmatch, CbmTrackMatchNew *muchmatch, CbmTrackMatchNew *trdMatch, CbmTrackMatchNew *richMatch,
+		    FairTrackParam *richproj);
 
   virtual ~PairAnalysisTrack();
   PairAnalysisTrack(const PairAnalysisTrack& track);
@@ -57,6 +59,8 @@ public:
   CbmRichRing    *GetRichRing()     const { return fRichRing;  }
   CbmTofHit      *GetTofHit()       const { return fTofHit;    }
   CbmTrack       *GetTrack(DetectorId det) const;
+
+  FairTrackParam *GetRichProj()     const { return fRichProj;  }
   // mc track
   CbmMCTrack     *GetMCTrack()      const { return fMCTrack;   }
   CbmTrackMatchNew *GetTrackMatch(DetectorId det) const;
@@ -101,6 +105,8 @@ private:
   CbmTrackMatchNew *fTrdTrackMatch;   // trd track match
   CbmTrackMatchNew *fRichRingMatch;   // rich ring match
 
+  FairTrackParam   *fRichProj;        // rich ring projection
+
   TLorentzVector fMomentum;           // momentum vector
   TLorentzVector fPosition;           // position vector
   Short_t        fCharge;             // charge
@@ -110,7 +116,7 @@ private:
   Int_t          fMultiMatch;         // MC label for n-times matched tracks
 
   PairAnalysisTrack &operator=(const PairAnalysisTrack &c);
-  ClassDef(PairAnalysisTrack,2)         // PairAnalysis Track
+  ClassDef(PairAnalysisTrack,3)         // PairAnalysis Track
 };
 
 

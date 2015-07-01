@@ -283,6 +283,7 @@ public:
     kMUCHHitsMC,               // number of MUCH hits
     kRICHHitsMC,               // number of RICH hits
     kTRDMCPoints,              // number of TRD MC Points in reconstructed track
+    kRICHMCPoints,              // number of TRD MC Points in reconstructed track
     kTRDTrueHits,              // number of true TRD hits in reconstructed track
     kTRDFakeHits,              // number of fake TRD hits in reconstructed track
     kSTSTrueHits,              // number of true STS hits in reconstructed track
@@ -293,6 +294,7 @@ public:
     kMUCHisMC,                 // status bit for matching btw. glbl. and local MC track
     kRICHisMC,                 // status bit for matching btw. glbl. and local MC track
     kTOFisMC,                  // status bit for matching btw. glbl. and local MC track
+    kRICHhasProj,              // weather rich ring has a prjection
     kTrackMaxMC,
 
     // Pair specific MC variables
@@ -537,6 +539,9 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
     values[kSTSTrueHits]    = track->GetTrackMatch(kSTS)->GetNofTrueHits();
     values[kSTSFakeHits]    = track->GetTrackMatch(kSTS)->GetNofWrongHits();
   }
+  if(track->GetTrackMatch(kRICH)) {
+    values[kRICHMCPoints]    = track->GetTrackMatch(kRICH)->GetNofLinks();
+  }
   values[kSTSisMC]   = track->TestBit( BIT(14+kSTS) );
   values[kMUCHisMC]  = track->TestBit( BIT(14+kMUCH) );
   values[kTRDisMC]   = track->TestBit( BIT(14+kTRD) );
@@ -544,6 +549,10 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   values[kMVDisMC]   = track->TestBit( BIT(14+kMVD) );
   values[kTOFisMC]   = track->TestBit( BIT(14+kTOF) );
   values[kWeight]    = track->GetWeight();
+
+  if(track->GetRichProj()) {
+    values[kRICHhasProj] = (TMath::Abs(track->GetRichProj()->GetX() + track->GetRichProj()->GetY()) > 0.);
+  }
 
   // Reset
   ResetArrayData(  kParticleMax,   values);

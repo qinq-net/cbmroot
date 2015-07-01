@@ -220,6 +220,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"MUCHHitsMC",               "N_{hit}^{MUCH} (MC)",                                      ""},
   {"RICHHitsMC",               "N_{hit}^{RICH} (MC)",                                     ""},
   {"TRDMCPoints",              "N_{MC,pts}^{TRD}",                                      ""},
+  {"RICHMCPoints",              "N_{MC,pts}^{RICH}",                                      ""},
   {"TRDTrueHits",              "N_{true,hit}^{TRD}",                                      ""},
   {"TRDFakeHits",              "N_{fake,hit}^{TRD}",                                      ""},
   {"STSTrueHits",              "N_{true,hit}^{STS}",                                      ""},
@@ -230,6 +231,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"MUCHisMC",                 "MC status MUCH",                                    ""},
   {"RICHisMC",                 "MC status RICH",                                    ""},
   {"TOFisMC",                  "MC status TOF",                                    ""},
+  {"RICHhasProj",              "projection status RICH",                                    ""},
 
 // Pair specific MC variables
 

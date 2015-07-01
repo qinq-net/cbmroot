@@ -9,6 +9,7 @@
 #include <TDatabasePDG.h>
 #include <TLorentzVector.h>
 
+#include "FairTrackParam.h"
 #include "CbmDetectorList.h"
 
 #include "CbmTrack.h"
@@ -38,6 +39,7 @@ PairAnalysisTrack::PairAnalysisTrack() :
   fMuchTrackMatch(0x0),
   fTrdTrackMatch(0x0),
   fRichRingMatch(0x0),
+  fRichProj(0x0),
   fMomentum(),
   fPosition(),
   fCharge(0),
@@ -66,6 +68,7 @@ PairAnalysisTrack::PairAnalysisTrack(const char* name, const char* title) :
   fMuchTrackMatch(0x0),
   fTrdTrackMatch(0x0),
   fRichRingMatch(0x0),
+  fRichProj(0x0),
   fMomentum(),
   fPosition(),
   fCharge(0),
@@ -91,7 +94,8 @@ PairAnalysisTrack::PairAnalysisTrack(CbmGlobalTrack *gtrk,
 				     CbmTrackMatchNew *stsmatch,
 				     CbmTrackMatchNew *muchmatch,
 				     CbmTrackMatchNew *trdmatch,
-				     CbmTrackMatchNew *richmatch
+				     CbmTrackMatchNew *richmatch,
+				     FairTrackParam *richproj
 				     ) :
   TNamed(),
   fGlblTrack(gtrk),
@@ -105,6 +109,7 @@ PairAnalysisTrack::PairAnalysisTrack(CbmGlobalTrack *gtrk,
   fMuchTrackMatch(muchmatch),
   fTrdTrackMatch(trdmatch),
   fRichRingMatch(richmatch),
+  fRichProj(richproj),
   fMomentum(),
   fPosition(),
   fCharge(0),
@@ -144,6 +149,7 @@ PairAnalysisTrack::PairAnalysisTrack(const PairAnalysisTrack& track) :
   fMuchTrackMatch(0),
   fTrdTrackMatch(0),
   fRichRingMatch(0),
+  fRichProj(0),
   fMomentum(track.fMomentum),
   fPosition(track.fPosition),
   fCharge(track.Charge()),

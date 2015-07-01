@@ -71,6 +71,8 @@ private:
  TClonesArray *fRichHits;       //RICH hits
  TClonesArray *fTofHits ;       //TOF hits
 
+ TClonesArray *fRichProjection;       //RICH projection
+
  TClonesArray *fTrdHitMatches;        //TRD hits
  TClonesArray *fTrdPoints;        //TRD points
 

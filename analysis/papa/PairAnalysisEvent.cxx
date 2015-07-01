@@ -16,6 +16,7 @@ Add Detailed description
 
 #include "FairRootManager.h"
 #include "FairMCPoint.h"
+#include "FairTrackParam.h"
 
 #include "CbmDetectorList.h"
 #include "CbmVertex.h"
@@ -52,6 +53,7 @@ PairAnalysisEvent::PairAnalysisEvent() :
   fTrdHits(0x0),      //TRD hits
   fRichHits(0x0),      //RICH hits
   fTofHits(0x0),      //TOF hits
+  fRichProjection(0x0),
   fTrdHitMatches(0x0),      //TRD hits
   fTrdPoints(0x0),      //TRD points
   fPrimVertex(0x0),     //primary vertices
@@ -85,6 +87,7 @@ PairAnalysisEvent::PairAnalysisEvent(const char* name, const char* title) :
   fTrdHits(0x0),      //TRD hits
   fRichHits(0x0),      //RICH hits
   fTofHits(0x0),      //TOF hits
+  fRichProjection(0x0),
   fTrdHitMatches(0x0),      //TRD hits
   fTrdPoints(0x0),      //TRD points
   fPrimVertex(0x0),     //primary vertices
@@ -125,6 +128,7 @@ PairAnalysisEvent::~PairAnalysisEvent()
   fRichHits->Delete();      //RICH hits
   fTofHits->Delete();      //TOF hits
 
+  fRichProjection->Delete();
   fTrdHitMatches->Delete();      //TRD hits
   fTrdPoints->Delete();      //TRD hits
 }
@@ -158,6 +162,8 @@ void PairAnalysisEvent::SetInput(FairRootManager *man)
   // mc points
   fTrdPoints    = (TClonesArray*) man->GetObject("TrdPoint");
   fTofPoints    = (TClonesArray*) man->GetObject("TofPoint");
+
+  fRichProjection = (TClonesArray*) man->GetObject("RichProjection");
   //  if(fMCTracks)   printf("PairAnalysisEvent::SetInput: size of mc array: %04d \n",fMCTracks->GetSize());
 }
 
@@ -217,16 +223,20 @@ void PairAnalysisEvent::Init()
     if(tofHit && tofHit->GetRefId()>0) tofPoint = static_cast<FairMCPoint*>( fTofPoints->At(tofHit->GetRefId()) );
     Int_t itofMC = (tofPoint ? tofPoint->GetTrackID() : -1 );
 
+    // rich projection
+    FairTrackParam *richProj = 0x0;
+    if(fRichProjection) richProj = static_cast<FairTrackParam*>(fRichProjection->At(i));
+
     // monte carlo track based on the STS match!!!
     Int_t iMC = istsMC;
     CbmMCTrack *mcTrack=0x0;
     if(fMCTracks && iMC>=0) mcTrack=static_cast<CbmMCTrack*>(fMCTracks->At(iMC));
-
     // increment position in matching array
     if(mcTrack && fMCTracks) matches[istsMC]++;
     // build papa track
     fTracks->AddAtAndExpand(new PairAnalysisTrack(gtrk, stsTrack,muchTrack,trdTrack,richRing,tofHit,
-						  mcTrack, stsMatch,muchMatch,trdMatch,richMatch),
+						  mcTrack, stsMatch,muchMatch,trdMatch,richMatch,
+						  richProj),
 			    i);
 
     // set MC label and matching bits
