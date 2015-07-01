@@ -125,6 +125,10 @@ void CbmAnaJpsiSuperEventReport::DrawMinvSignalBg()
   DrawH1(list_of((TH1*) fHMSuperEvent->H1("fh_se_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->Clone())((TH1*) fHMEventByEvent->H1("fh_signal_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->Clone()),list_of("Background SuperEvent")("Signal Event-By-Event"), kLinear, kLog, true, 0.6, 0.75, 0.99, 0.99);
   DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.6, 0.89, 0.7, 0.99);
 
+  TCanvas* c5 = CreateCanvas("jpsi_se_minv_test","jpsi_se_minv_test",900,900);
+  //fHMSuperEvent->H1("fh_se_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->SetMinimum(1e-9);
+  DrawH1((TH1*) fHMEventByEvent->H1("fh_signal_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->Clone());
+
 }
 ClassImp(CbmAnaJpsiSuperEventReport)
 
