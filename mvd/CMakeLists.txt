@@ -77,6 +77,7 @@ SensorDataSheets/CbmMvdSensorDataSheet.cxx
 tools/CbmMvdGeoHandler.cxx
 
 #qa/CbmMvdQa.cxx
+qa/CbmMvdClusterAna.cxx
 
 CbmMvd.cxx 
 CbmMvdContFact.cxx 
