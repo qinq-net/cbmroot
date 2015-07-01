@@ -947,6 +947,14 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
     if(fCutQA) fQAmonitor->FillAll(particle);
     if(fCutQA) fQAmonitor->Fill(cutmask,particle);
 
+    // if raw spectra before any cuts are requested then fill
+    if(fHistos && fHistos->HasHistClass("Track.noCuts")) {
+      Double_t *values=PairAnalysisVarManager::GetData();
+      PairAnalysisVarManager::SetFillMap(fUsedVars);
+      PairAnalysisVarManager::Fill(particle, values);
+      fHistos    ->FillClass("Track.noCuts", values);
+    }
+
     if (cutmask!=selectedMask) continue;
 
     //fill selected particle into the corresponding track arrays
