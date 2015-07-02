@@ -273,8 +273,8 @@ void CbmMvdClusterAna::Exec(Option_t* opt)
 	TGeoVolume*	CurrentVolume;
 	TGeoBBox*	VolumeShape;
 // -------------------
-	std::map<std::pair<std::pair<Int_t,Int_t>,TString>,std::vector<int>> 			DigisMap;
-	std::map<std::pair<std::pair<Int_t,Int_t>,TString>,std::vector<int>> ::iterator	it;
+	std::map<std::pair<std::pair<Int_t,Int_t>,TString>,std::vector<int> > 			DigisMap;
+	std::map<std::pair<std::pair<Int_t,Int_t>,TString>,std::vector<int> > ::iterator	it;
 	std::pair<std::pair<Int_t,Int_t>,TString>										DigiStation;
 	std::pair<Int_t,Int_t>															Digi;
 	std::vector<int>																McContrToHitList;
@@ -282,9 +282,9 @@ void CbmMvdClusterAna::Exec(Option_t* opt)
 	std::map<Int_t,Int_t>															McInHit;
 	std::map<Int_t,Int_t>::iterator													it2;
 	std::vector<int>																DigisInMc(nMcpoints,0);
-	std::map<Int_t,std::vector<int>>												McsInHit;
-	std::map<Int_t,std::vector<int>>												HitsInMc;
-	std::map<Int_t,std::vector<int>>::iterator										it3;
+	std::map<Int_t,std::vector<int> >												McsInHit;
+	std::map<Int_t,std::vector<int> >												HitsInMc;
+	std::map<Int_t,std::vector<int> >::iterator										it3;
 	
 	DigisMap.clear();
 	McInHit.clear();
@@ -564,7 +564,7 @@ void CbmMvdClusterAna::Exec(Option_t* opt)
 		fMvdHisto1[30]->Fill(DigisInMc[iMc]);
 	}
 	
-	for(std::map<Int_t,std::vector<int>>::iterator iterator = HitsInMc.begin(); iterator != HitsInMc.end(); iterator++)
+	for(std::map<Int_t,std::vector<int> >::iterator iterator = HitsInMc.begin(); iterator != HitsInMc.end(); iterator++)
 	{
 		McContrList = iterator->second;
 		fMvdHisto1[31]->Fill(McContrList.size());
@@ -572,7 +572,7 @@ void CbmMvdClusterAna::Exec(Option_t* opt)
 	
 	bool criteria;
 	
-	for(std::map<Int_t,std::vector<int>>::iterator iterator = McsInHit.begin(); iterator != McsInHit.end(); iterator++)
+	for(std::map<Int_t,std::vector<int> >::iterator iterator = McsInHit.begin(); iterator != McsInHit.end(); iterator++)
 	{
 		criteria = true;
 		
