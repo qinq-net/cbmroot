@@ -262,36 +262,43 @@ Else()
 EndIf()
 
 
+### Subdirectories to be compiled #####
+
+### Base directories
 add_subdirectory (cbmbase)
 add_subdirectory (cbmdata)
 add_subdirectory (field)  
+add_subdirectory (cbmgenerators)
+add_subdirectory (run)
+
+### Module directories
 add_subdirectory (passive)
-add_subdirectory (rich) 
 add_subdirectory (mvd) 
 add_subdirectory (sts) 
-add_subdirectory (tof) 
+add_subdirectory (rich) 
+add_subdirectory (much)
 add_subdirectory (trd) 
+add_subdirectory (tof) 
 add_subdirectory (ecal) 
 add_subdirectory (psd)
-add_subdirectory (much)
-#add_subdirectory (lhetrack) 
-add_subdirectory (littrack) 
-#add_subdirectory (htrack)
+
+### Reco directories
 add_subdirectory (global) 
-add_subdirectory (KF)
 add_subdirectory (L1)
-add_subdirectory (macro)
+add_subdirectory (KF)
+add_subdirectory (littrack) 
+add_subdirectory (tracking)
+
+### Analysis directories
+add_subdirectory (analysis)
 add_subdirectory (dilept)
-#add_subdirectory (stt)
+add_subdirectory (hadron)
+
+add_subdirectory (macro)
 #####add_subdirectory (trdcatrack)
 #add_subdirectory (tutorials/Tutorial1/src)
 #add_subdirectory (tutorials/Tutorial2/src)
-add_subdirectory (cbmgenerators)
-add_subdirectory (run)
-add_subdirectory (hadron)
-add_subdirectory (analysis)
 #add_subdirectory (vis)
-add_subdirectory (tracking)
 
 # Check if the compilation flag -std=c++11 is set
 # In this case the code is compiled with the new standard and it is possible
