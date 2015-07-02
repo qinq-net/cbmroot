@@ -80,7 +80,7 @@ void CbmAnaJpsiReport::Draw()
 
 	  DrawMinvMismatchesAll();
 
-	  DrawAnalysisStepsH1("fh_signal_minv",false, 1e-9, 1e-5);
+	  DrawSignalMinv();
 	  DrawAnalysisStepsH1("fh_bg_minv",false, 5e-5, 2);
 	  DrawAnalysisStepsH1("fh_pi0_minv",false);
 	  DrawAnalysisStepsH1("fh_gamma_minv",false);
@@ -247,6 +247,31 @@ void CbmAnaJpsiReport::DrawCutDistributions()
 	DrawCutH1("fh_track_rich_ann", cuts.fRichAnnCut, true);
 	DrawCutH1("fh_track_trd_ann", cuts.fTrdAnnCut, true);
 	Draw2DCut("fh_track_tof_m2");
+}
+
+void CbmAnaJpsiReport::DrawSignalMinv()
+{
+	double min = 1e-9;
+	double max = 4e-8;
+	const string hName = "fh_signal_minv";
+
+	TCanvas* c = CreateCanvas( ("jpsi_" + hName).c_str(), ("jpsi_" + hName).c_str(), 600, 600);
+	vector<TH1*> h;
+	vector<string> hLegend;
+	for (int i = 0; i < CbmAnaJpsiHist::fNofAnaSteps-2; i++){
+		string fullName = hName+"_"+CbmAnaJpsiHist::fAnaSteps[i+2];
+		h.push_back( H1(fullName) );
+		h[i]->SetAxisRange(2., 4.,"X");
+		h[i]->SetLineWidth(2);
+		h[i]->SetLineColor(CbmAnaJpsiHist::fAnaStepsColor[i+2]);
+		hLegend.push_back( CbmAnaJpsiHist::fAnaStepsLatex[i+2] );
+		if (min != max) {
+			h[i]->SetMinimum(min);
+			h[i]->SetMaximum(max);
+		}
+	}
+	DrawH1(h, hLegend, kLinear, kLog, true, 0.90, 0.7, 0.99, 0.99);
+
 }
 
 void CbmAnaJpsiReport::DrawMinvMismatches(

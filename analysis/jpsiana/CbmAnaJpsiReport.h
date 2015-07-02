@@ -54,6 +54,8 @@ protected:
 
    void DrawCutDistributions();
 
+   void DrawSignalMinv();
+
    void DrawMinvMismatches(
    		int step);
 
