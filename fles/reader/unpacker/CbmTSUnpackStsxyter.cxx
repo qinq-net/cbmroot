@@ -83,7 +83,7 @@ Bool_t CbmTSUnpackStsxyter::DoUnpack(const fles::Timeslice& timeslice, size_t co
             if( dtmSeqNumError ) {
                 printf("Microslice number %lu byte dump:\n", static_cast<unsigned long int>(iMicroslice) );
                 ByteDumpSwap( microsliceBegin, microsliceDescriptor.size );
-                printf("Error at dtm at 0x%04li\n", currDtm - microsliceBegin );
+                printf("Error at dtm at %#04x\n", static_cast<unsigned int>(currDtm - microsliceBegin) );
             }
             UnpackDtmContent( GetDtmContent( currDtm ), GetDtmContentSize( currDtm ), microsliceDescriptor.eq_id );
             currDtm += GetDtmFullSize( currDtm );
