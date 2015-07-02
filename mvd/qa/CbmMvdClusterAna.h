@@ -25,8 +25,7 @@
 // #include "base/CbmLitPtrTypes.h"
 #include "CbmTrackMatchNew.h"
 // #include "CbmStsTrack.h"
-#include "TGeoManager.h"
-#include "TROOT.h"
+//#include "TROOT.h"
 #include "tools/CbmMvdGeoHandler.h"
 
 
@@ -67,8 +66,7 @@ private:
 	TH1F *fMvdHisto1[50];
 	TH2F *fMvdHisto2[50];
 	TProfile *fProf[50]; 
-// 	
-	TGeoManager* gGeoManager;
+
 	int fNrMcPointsAll;
 	int fNrHitsAll;
 	
@@ -76,6 +74,9 @@ private:
 	Int_t	fMcperHit[11];
 	
 	Double_t fPixelpitch[2];
+
+        CbmMvdClusterAna (const CbmMvdClusterAna&);
+        CbmMvdClusterAna operator=(const CbmMvdClusterAna&);
   
  ClassDef(CbmMvdClusterAna,1);
 };

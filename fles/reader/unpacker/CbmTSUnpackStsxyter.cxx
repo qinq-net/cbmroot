@@ -81,7 +81,7 @@ Bool_t CbmTSUnpackStsxyter::DoUnpack(const fles::Timeslice& timeslice, size_t co
         while( currDtm < microsliceEnd ) {
             Bool_t dtmSeqNumError = CheckDtmNumSequence( currDtm, (iMicroslice == 0) );
             if( dtmSeqNumError ) {
-                printf("Microslice number %lu byte dump:\n", iMicroslice );
+                printf("Microslice number %u byte dump:\n", iMicroslice );
                 ByteDumpSwap( microsliceBegin, microsliceDescriptor.size );
                 printf("Error at dtm at 0x%04x\n", currDtm - microsliceBegin );
             }

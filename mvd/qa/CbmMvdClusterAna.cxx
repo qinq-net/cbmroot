@@ -35,6 +35,8 @@
 #include "TF1.h"
 #include "TLegend.h"
 #include "TProfile.h"
+#include "TGeoManager.h"
+#include "TROOT.h"
 
 //-- Include from C++ --//
 #include <iostream>
@@ -46,7 +48,25 @@ using std::flush;
 
 // -----   Default constructor   -------------------------------------------
 CbmMvdClusterAna::CbmMvdClusterAna() 
-: FairTask("MvdClusterAna")
+  : FairTask("MvdClusterAna"),
+    fMcPoints(NULL),
+    fMvdDigis(NULL),
+    fMvdClusters(NULL),
+    fMvdHits(NULL),
+    fMvdDigisMatch(NULL),	
+    fMvdClustersMatch(NULL),
+    fMvdHitsMatch(NULL), 
+    fListMCTracks(NULL),
+    fStsTrackArray(NULL),
+    fStsTrackMatches(NULL),
+    fMvdHisto1(),
+    fMvdHisto2(),
+    fProf(), 
+    fNrMcPointsAll(-1),
+    fNrHitsAll(-1),
+    fMcperDigi(),
+    fMcperHit(),
+    fPixelpitch()
 {
 ;
 }
@@ -56,7 +76,25 @@ CbmMvdClusterAna::CbmMvdClusterAna()
 
 // -----   Standard constructor   ------------------------------------------
 CbmMvdClusterAna::CbmMvdClusterAna(const char* name, Int_t iMode, Int_t iVerbose) 
-: FairTask(name, iVerbose)
+  : FairTask(name, iVerbose),
+    fMcPoints(NULL),
+    fMvdDigis(NULL),
+    fMvdClusters(NULL),
+    fMvdHits(NULL),
+    fMvdDigisMatch(NULL),	
+    fMvdClustersMatch(NULL),
+    fMvdHitsMatch(NULL), 
+    fListMCTracks(NULL),
+    fStsTrackArray(NULL),
+    fStsTrackMatches(NULL),
+    fMvdHisto1(),
+    fMvdHisto2(),
+    fProf(), 
+    fNrMcPointsAll(-1),
+    fNrHitsAll(-1),
+    fMcperDigi(),
+    fMcperHit(),
+    fPixelpitch()
 {
 ;  
 }

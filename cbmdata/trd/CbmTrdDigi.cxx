@@ -56,7 +56,10 @@ CbmTrdDigi::CbmTrdDigi(
     fTime(time),
     fTriggerType(-1),
     fInfoType(-1),
-    fStopType(-1)
+    fStopType(-1),
+    fBufferOverflowCount(-1), 
+    fNrSamples(-1),
+    fSamples()
 {
   for (Int_t i = 0; i < 45; i++)
     fSamples[i] = 0.0;
@@ -71,6 +74,7 @@ CbmTrdDigi::CbmTrdDigi(Int_t address, Double_t fullTime, Int_t triggerType, Int_
     fTriggerType(triggerType),
     fInfoType(infoType),
     fStopType(stopType),
+    fBufferOverflowCount(-1), 
     fNrSamples(nrSamples),
     fSamples()
 {
