@@ -79,7 +79,7 @@ CbmMicroSlice CbmStsDataConverter::DigiVectToMSlice(fles::MicrosliceDescriptor* 
         vector<uint8_t> StsData_TimeStamp=SplitData<ULong64_t>(vStsDigi[iDigi].GetTime());
         vector<uint8_t> StsData_Address=SplitData<UInt_t>(vStsDigi[iDigi].GetAddress());
         vector<uint8_t> StsData_Charge=SplitData<UShort_t>(vStsDigi[iDigi].GetCharge());
-        vector<uint8_t> StsData_SectorNr=SplitData<Int_t>(vStsDigi[iDigi].GetSectorNr());
+        vector<uint8_t> StsData_SectorNr=SplitData<Int_t>(0); // was sectorNr before (obsolete)
         vector<uint8_t> StsData_SystemId= SplitData<Int_t>(vStsDigi[iDigi].GetSystemId());
         
         // print 
@@ -163,7 +163,7 @@ std::shared_ptr<CbmDigi> CbmStsDataConverter::ConvertFlesPtrToDigi(uint32_t *off
     Int_t Digi_SectorNr=CombineData<Int_t>(vSectorNr_sts);
     Int_t Digi_SystemId=CombineData<Int_t>(vSystemId_sts);
     
-    std::shared_ptr<CbmDigi> spDigi(std::make_shared<CbmStsDigi>(Digi_Adress, Digi_Timestamp, Digi_Charge, Digi_SectorNr));
+    std::shared_ptr<CbmDigi> spDigi(std::make_shared<CbmStsDigi>(Digi_Adress, Digi_Timestamp, Digi_Charge));
     return spDigi;
 }
 
@@ -174,7 +174,7 @@ void CbmStsDataConverter::PrintDigiContent(const CbmDigi* digi)
     ULong64_t Digi_Timestamp=(ULong64_t)StsDigi->GetTime();
     UInt_t Digi_Adress=(UInt_t)StsDigi->GetAddress();
     UShort_t Digi_Charge=(UShort_t)StsDigi->GetCharge();
-    Int_t Digi_SectorNr=(Int_t)StsDigi->GetSectorNr();
+    Int_t Digi_SectorNr=0; // was sectorNr before (obsolete)
     Int_t Digi_SystemId=(Int_t)StsDigi->GetSystemId();
     MQLOG(INFO) << "* SystemId = "  << Digi_SystemId;
     MQLOG(INFO) << "* TimeStamp = " << Digi_Timestamp <<" ns";
