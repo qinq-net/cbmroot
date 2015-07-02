@@ -106,8 +106,9 @@ void CbmAnaJpsiReport::Draw()
 	   	  TCanvas* c = CreateCanvas("jpsi_fh_nof_tracks","jpsi_fh_nof_tracks",1000, 500);
 	   	  c->Divide(2, 1);
 	   	  c->cd(1);
+	   	  gPad->SetLogy();
 	      DrawH1(H1("fh_nof_bg_tracks"));
-	      H1("fh_nof_bg_tracks")->SetMinimum(0.0);
+	      //H1("fh_nof_bg_tracks")->SetMinimum(0.0);
 	      SetAnalysisStepLabels(H1("fh_nof_bg_tracks"));
 	      c->cd(2);
 	  	  DrawH1(H1("fh_nof_el_tracks"));
@@ -252,7 +253,7 @@ void CbmAnaJpsiReport::DrawCutDistributions()
 void CbmAnaJpsiReport::DrawSignalMinv()
 {
 	double min = 1e-9;
-	double max = 4e-8;
+	double max = 3e-8;
 	const string hName = "fh_signal_minv";
 
 	TCanvas* c = CreateCanvas( ("jpsi_" + hName).c_str(), ("jpsi_" + hName).c_str(), 600, 600);
