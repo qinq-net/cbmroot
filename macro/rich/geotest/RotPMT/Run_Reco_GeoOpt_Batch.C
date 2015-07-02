@@ -144,8 +144,8 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  return "/data/GeoOpt/RotPMT/";
-  return "/hera/cbm/users/tariq/GeoOptRootFiles/RotPMT/";
+  //return "/data/GeoOpt/RotPMT/";
+  return "/hera/cbm/users/tariq/GeoOptRootFiles/";
   // if(GeoCase<=0){return "/data/GeoOpt/RotPMT/OlderGeo/";}
   // if(GeoCase==1){return "/data/GeoOpt/RotPMT/OldGeo/";}
   // if(GeoCase==2){return "/data/GeoOpt/RotPMT/NewGeo/";}

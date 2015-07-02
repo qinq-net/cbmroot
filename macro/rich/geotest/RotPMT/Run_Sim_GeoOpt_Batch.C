@@ -30,7 +30,7 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   TString RotMirText=GetMirText(RotMir);
   TString PMTRotText=GetPMTRotText(PMTrotX, PMTrotY);
   TString PMTTransText=GetPMTTransText(PMTtransY, PMTtransZ);
-  TString richGeom=GetRICH_GeoFile( RotMirText, PMTRotText, GeoCase);
+  TString richGeom=GetRICH_GeoFile( RotMirText, PMTRotText, PMTTransText, GeoCase);
   TString pipeGeom=GetPipe_GeoFile( GeoCase);
   pipeGeom="";
   //******************************
@@ -209,7 +209,7 @@ TString GetGeoText(int GeoCase){
 TString GetOutDir(int GeoCase){
   //return "/data/GeoOpt/RotPMT/";
 
-  return "/hera/cbm/users/tariq/GeoOptRootFiles/RotPMT/";
+  return "/hera/cbm/users/tariq/GeoOptRootFiles/";
   // if(GeoCase<=0){return "/data/GeoOpt/RotPMT/OlderGeo/";}
   // if(GeoCase==1){return "/data/GeoOpt/RotPMT/OldGeo/";}
   // if(GeoCase==2){return "/data/GeoOpt/RotPMT/NewGeo/";}
@@ -253,7 +253,7 @@ TString  GetPMTTransText(int PMTTransY, int PMTTransZ){
 }
 
 ////////////////////////////////////////////////////////
-TString GetRICH_GeoFile( char *RotMirText, TString  PMTRotText, int GeoCase){
+TString GetRICH_GeoFile( char *RotMirText, TString PMTRotText, TString PMTTransText, int GeoCase){
   //GeoCase=-2 ==> old geometry with rich_v08a.geo (RICH starts at 1600, Mirror tilt -1)
   //GeoCase=-1 ==> old geometry with rich_v14a.gdml (RICH starts at 1800, Mirror tilt -1)
   if(GeoCase==-2){return "rich/rich_v08a.geo";}
@@ -264,16 +264,18 @@ TString GetRICH_GeoFile( char *RotMirText, TString  PMTRotText, int GeoCase){
   //GeoCase=2 ==> gdml-geo: RICH starts at 1800, Mirror tilt -1 or 10, 
   //                        mirror does cover full acceptance)
   
-  TString Dir="rich/GeoOpt/RotPMT/";
-  
+  //TString Dir="rich/GeoOpt/RotPMT/";
+  TString Dir="rich/GeoOpt/";
+
   TString Dir2="NewGeo/";
   TString Endung=".root";
   if(GeoCase==0){Dir2="OldGeo/"; Endung=".geo";}
   if(GeoCase==1){Dir2="OldGeo/";}
   if(GeoCase==2){Dir2="NewGeo/";}
   stringstream ss; 
-  ss<<Dir<<Dir2<<"rich_geo_"<<RotMirText<<"_"<<PMTRotText<<Endung;
-  
+  //ss<<Dir<<Dir2<<"rich_geo_"<<RotMirText<<"_"<<PMTRotText<<Endung;
+  ss<<Dir<<"rich_geo_"<<RotMirText<<"_"<<PMTRotText<<"_"<<PMTTransText<<Endung;
+
   return ss.str();
 }
 ////////////////////////////////////////////////////////
