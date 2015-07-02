@@ -1133,7 +1133,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
                    <<Form("%3u: ", uChipFullId)
                    <<Form(" EP #%6u", mess.getEpoch2Number() )
                    <<Form(" TS #%12llu", fulTsNb)
-                   <<Form(" MS #%5llu/%5u", fulMsNb, fsMaxMsNb)
+                   <<Form(" MS #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
                    <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
                    <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                    << FairLogger::endl;
@@ -1151,7 +1151,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
                  << Form(" %3d (%6u -> %6u)", iEpJump, fvuCurrEpoch2[uChipFullId],
                                          mess.getEpoch2Number() )
                  <<Form(" TS #%12llu", fulTsNb)
-                 <<Form(" MS #%5llu/%5u", fulMsNb, fsMaxMsNb)
+                 <<Form(" MS #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
                  <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
                  <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                  << FairLogger::endl;
@@ -1179,7 +1179,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
                 <<Form("%3u: ", uChipFullId)
                 <<Form(" EP #%6u", mess.getEpoch2Number() )
                 <<Form(" TS #%12llu", fulTsNb)
-                <<Form(" MS #%5llu/%5u", fulMsNb, fsMaxMsNb)
+                <<Form(" MS #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
                 <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
                 <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                 << FairLogger::endl;
@@ -1191,7 +1191,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
                 <<Form("%3u: ", uChipFullId)
                 <<Form(" EP #%6u", mess.getEpoch2Number() )
                 <<Form(" TS #%12llu", fulTsNb)
-                <<Form(" MS #%5llu/%5u", fulMsNb, fsMaxMsNb)
+                <<Form(" MS #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
                 <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
                 <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                 << FairLogger::endl;
@@ -1203,7 +1203,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
                 <<Form("%3u: ", uChipFullId)
                 <<Form(" EP #%6u", mess.getEpoch2Number() )
                 <<Form(" TS #%12llu", fulTsNb)
-                <<Form(" MS #%5llu/%5u", fulMsNb, fsMaxMsNb)
+                <<Form(" MS #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
                 <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
                 <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                 << FairLogger::endl;
@@ -1447,7 +1447,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_sys(    get4v1x::Message mess, uint16_t 
             LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_sys => SYNC DLM!"
                      <<" RocId: " << Form("%02u", cRocId)
                      <<Form(" TS  #%12llu", fulTsNb)
-                     <<Form(" MS  #%5llu/%5u", fulMsNb, fsMaxMsNb)
+                     <<Form(" MS  #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
                      <<Form(" OF  #%5u/%5u", fuOffset, fuMaxOffset)
                      <<Form(" LO  #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                      <<FairLogger::endl;
@@ -1559,7 +1559,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
                          <<Form("%3u: ", uChipFullId)
                          <<Form(" EP #%6u", mess.getGet4V10R32EpochNumber() )
                          <<Form(" TS #%12llu", fulTsNb)
-                         <<Form(" MS #%5llu/%5u", fulMsNb, fsMaxMsNb)
+                         <<Form(" MS #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
                          <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
                          <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                          << FairLogger::endl;
@@ -1577,7 +1577,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
                        << Form(" %3d (%6u -> %6u)", iEpJump, fvuCurrEpoch2[uChipFullId],
                                                     mess.getGet4V10R32EpochNumber() )
                        <<Form(" TS  #%12llu", fulTsNb)
-                       <<Form(" MS  #%5llu/%5u", fulMsNb, fsMaxMsNb)
+                       <<Form(" MS  #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
                        <<Form(" OF  #%5u/%5u", fuOffset, fuMaxOffset)
                        <<Form(" LO  #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                        << FairLogger::endl;
@@ -2043,7 +2043,7 @@ void CbmTSUnpackGet4v1x::ProcessMessage_sys(    get4v1x::Message mess, uint16_t 
             LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_sys => SYNC DLM!"
                      <<" RocId: " << Form("%02u", cRocId)
                      <<Form(" TS  #%12llu", fulTsNb)
-                     <<Form(" MS  #%5llu/%5u", fulMsNb, fsMaxMsNb)
+                     <<Form(" MS  #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
                      <<Form(" OF  #%5u/%5u", fuOffset, fuMaxOffset)
                      <<Form(" LO  #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                      <<FairLogger::endl;
@@ -2158,7 +2158,7 @@ void CbmTSUnpackGet4v1x::ProcessMessage_Get4v1( get4v1x::Message mess, uint16_t 
                          <<Form("%3u: ", uChipFullId)
                          <<Form(" EP #%6u", mess.getGet4V10R32EpochNumber() )
                          <<Form(" TS #%12llu", fulTsNb)
-                         <<Form(" MS #%5llu/%5u", fulMsNb, fsMaxMsNb)
+                         <<Form(" MS #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
                          <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
                          <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                          << FairLogger::endl;
@@ -2176,7 +2176,7 @@ void CbmTSUnpackGet4v1x::ProcessMessage_Get4v1( get4v1x::Message mess, uint16_t 
                        << Form(" %3d (%6u -> %6u)", iEpJump, fvuCurrEpoch2[uChipFullId],
                                                     mess.getGet4V10R32EpochNumber() )
                        <<Form(" TS  #%12llu", fulTsNb)
-                       <<Form(" MS  #%5llu/%5u", fulMsNb, fsMaxMsNb)
+                       <<Form(" MS  #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
                        <<Form(" OF  #%5u/%5u", fuOffset, fuMaxOffset)
                        <<Form(" LO  #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                        << FairLogger::endl;

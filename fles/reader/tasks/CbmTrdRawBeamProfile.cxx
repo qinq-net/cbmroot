@@ -156,7 +156,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
   */
   //if (entriesInMessage > 1) entriesInMessage = 1; // for fast data visualization
   ULong_t lastSpadicTime[3][6] = {{0}}; //[sys][spa]
-  ULong_t lastSpadicTimeCh[3][6][32] = {{0}}; //[sys][spa][ch]
+  ULong_t lastSpadicTimeCh[3][6][32] = {{{0}}}; //[sys][spa][ch]
   Int_t lastTriggerType[32] = {-1};
   Int_t clusterSize[3][6] = {{1}};
   Int_t rowId(0), columnId(0), combiId(0);
