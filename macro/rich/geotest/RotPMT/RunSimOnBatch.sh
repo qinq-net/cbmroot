@@ -7,16 +7,12 @@ rotmir=$3
 nEvs=$4
 transy=$5
 transz=$6
-#############$RX $RY $RotMir $nEvs 2 1 0 4
-Theta=35
+
 GeoCase=2
-#$5
 PtNotP=1
-#$6
 MomMin=0
-#$7
 MomMax=4
-#$8
+Theta=35
 
 
 # specify input and output directories
@@ -32,12 +28,12 @@ export PMT_ROTX=$rotx
 export PMT_ROTY=$roty
 export PMT_TRAY=$transy
 export PMT_TRAZ=$transz
-
 export GEO_CASE=$GeoCase
 export PT_NOT_P=$PtNotP
 export MOM_MIN=$MomMin
 export MOM_MAX=$MomMax
 export THETA=$Theta
+
 # setup the run environment
 source ${cbmroot_config_path}
  
