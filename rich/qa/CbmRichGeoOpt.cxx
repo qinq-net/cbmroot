@@ -736,7 +736,6 @@ void CbmRichGeoOpt::GetPMTRotAngels()
 void  CbmRichGeoOpt::GetPlaneCenter(float rotMir, float rotX, float rotY)
 {
   float MinX=-110., MaxX=0., MinY=120., MaxY=220.;  
-
   if(rotMir < 1.1 && rotMir > 0.9 ){//rotMir==1){
     MinX=-90., MaxX=-1.; MinY=70., MaxY=130.;
     //if( rotX > 0 && rotX <= 5){MinY=125., MaxY=192.;}
@@ -750,34 +749,58 @@ void  CbmRichGeoOpt::GetPlaneCenter(float rotMir, float rotX, float rotY)
     if( rotY > 10 && rotY <20){MinX=-88., MaxX=-1.;}
     if( rotY >= 20 && rotY <35){MinX=-85., MaxX=-4.;}
     if( rotY >= 35 && rotY <45){MinX=-82., MaxX=-12.;}
-    if( rotY >= 45){MinX=-81., MaxX=-20.;}
-   }else if(rotMir < -9.9 && rotMir > -10.1 ){//rotMir==-10){
-    MinX=-100., MaxX=-1.; MinY=125., MaxY=192.;
-
-    //if( rotX > 0 && rotX <= 5){MinY=125., MaxY=192.;}
-    if( rotX > 5 && rotX <= 10){MinY=126., MaxY=191.;}
-    if( rotX > 10 && rotX <=15){MinY=128., MaxY=190.;}
-    if( rotX > 15 && rotX <=20){MinY=132., MaxY=189.;}
-    if( rotX > 20 && rotX <=25){MinY=134., MaxY=187.;}
-    if( rotX > 25 && rotX <=30){MinY=138., MaxY=187.;}
-    if( rotX > 30 && rotX <=35){MinY=139., MaxY=187.;}
-    if( rotX > 35 && rotX <=40){MinY=141., MaxY=185.;}
-    if( rotX > 40 && rotX <=45){MinY=142., MaxY=185.;}
-    if( rotX > 45 && rotX <=50){MinY=145., MaxY=185.;}
     
-    //if( rotY > 0 && rotY <= 5){MinX=-100., MaxX=-1.;}
-    if( rotY > 5 && rotY <= 10){MinX=-99., MaxX=-1.;}
-    if( rotY > 10 && rotY <=15){MinX=-98., MaxX=-2.;}
-    if( rotY > 15 && rotY <=20){MinX=-97., MaxX=-2.;}
-    if( rotY > 20 && rotY <=25){MinX=-95., MaxX=-5.;}
-    if( rotY > 25 && rotY <=30){MinX=-95., MaxX=-7.;}
-    if( rotY > 30 && rotY <=35){MinX=-92., MaxX=-8.;}
-    if( rotY > 35 && rotY <=40){MinX=-90., MaxX=-12.;}
-    if( rotY > 40 && rotY <=45){MinX=-88., MaxX=-16.;}
-    if( rotY > 45 && rotY <=50){MinX=-87., MaxX=-19.;}
+  }else if(rotMir < -9.9 && rotMir > -10.1 ){//rotMir==-10){
+    MinY=125.133   +0.384897*rotX   +0.000821572*rotX*rotX;
+    MaxY=191.46   -0.202678*rotX  +0.00117347*rotX*rotX;
+    
+    MinX=-97.0919   -0.138495*rotY    +0.005589*rotY*rotY;
+    MaxX=-0.942185 -0.0282511*rotY -0.0101895*rotY*rotY;
   }
-
   PMTPlaneX=MinX+(MaxX-MinX)/2.; PMTPlaneY=MinY+(MaxY-MinY)/2.;
+    
+ //  if(rotMir < 1.1 && rotMir > 0.9 ){//rotMir==1){
+ //    MinX=-90., MaxX=-1.; MinY=70., MaxY=130.;
+ //    //if( rotX > 0 && rotX <= 5){MinY=125., MaxY=192.;}
+ //    if( rotX > 5 && rotX <= 15){MinY=74., MaxY=134.;}
+ //    if( rotX > 15 && rotX <=25){MinY=79., MaxY=134.;}
+ //    if( rotX > 25 && rotX <=35){MinY=81., MaxY=134.;}
+ //    if( rotX > 35){MinY=85., MaxY=134.;}
+    
+ //    //if( rotY > 0 && rotY <= 5){MinX=-100., MaxX=-1.;}
+ //    if( rotY > 5 && rotY <= 10){MinX=-88., MaxX=-1.;}
+ //    if( rotY > 10 && rotY <20){MinX=-88., MaxX=-1.;}
+ //    if( rotY >= 20 && rotY <35){MinX=-85., MaxX=-4.;}
+ //    if( rotY >= 35 && rotY <45){MinX=-82., MaxX=-12.;}
+ //    if( rotY >= 45){MinX=-81., MaxX=-20.;}
+ //   }else if(rotMir < -9.9 && rotMir > -10.1 ){//rotMir==-10){
+ //    MinX=-100., MaxX=-1.; MinY=125., MaxY=192.;
+
+ //    //if( rotX > 0 && rotX <= 5){MinY=125., MaxY=192.;}
+ //    if( rotX > 5 && rotX <= 10){MinY=126., MaxY=191.;}
+ //    if( rotX > 10 && rotX <=15){MinY=128., MaxY=190.;}
+ //    if( rotX > 15 && rotX <=20){MinY=132., MaxY=189.;}
+ //    if( rotX > 20 && rotX <=25){MinY=134., MaxY=187.;}
+ //    if( rotX > 25 && rotX <=30){MinY=138., MaxY=187.;}
+ //    if( rotX > 30 && rotX <=35){MinY=139., MaxY=187.;}
+ //    if( rotX > 35 && rotX <=40){MinY=141., MaxY=185.;}
+ //    if( rotX > 40 && rotX <=45){MinY=142., MaxY=185.;}
+ //    if( rotX > 45 && rotX <=50){MinY=145., MaxY=185.;}
+    
+ //    //if( rotY > 0 && rotY <= 5){MinX=-100., MaxX=-1.;}
+ //    if( rotY > 5 && rotY <= 10){MinX=-99., MaxX=-1.;}
+ //    if( rotY > 10 && rotY <=15){MinX=-98., MaxX=-2.;}
+ //    if( rotY > 15 && rotY <=20){MinX=-97., MaxX=-2.;}
+ //    if( rotY > 20 && rotY <=25){MinX=-95., MaxX=-5.;}
+ //    if( rotY > 25 && rotY <=30){MinX=-95., MaxX=-7.;}
+ //    if( rotY > 30 && rotY <=35){MinX=-92., MaxX=-8.;}
+ //    if( rotY > 35 && rotY <=40){MinX=-90., MaxX=-12.;}
+ //    if( rotY > 40 && rotY <=45){MinX=-88., MaxX=-16.;}
+ //    if( rotY > 45 && rotY <=50){MinX=-87., MaxX=-19.;}
+ //  }
+
+
+ //  PMTPlaneX=MinX+(MaxX-MinX)/2.; PMTPlaneY=MinY+(MaxY-MinY)/2.;
 }
 
 //////////////////////////////////////////////////////
