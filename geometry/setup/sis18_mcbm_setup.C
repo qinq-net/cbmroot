@@ -60,7 +60,7 @@ void sis18_mcbm_setup()
   magnetGeom   = ""; // magnet/magnet_v15a.geo.root";
   mvdGeom      = "mvd/mvd_v15a.geo.root";
   stsGeom      = "mcbm/sts_" + stsTag + ".geo.root";
-  richGeom     = "mcbm/rich_prototype_v18a.geo";
+  richGeom     = "mcbm/rich_prototype_v18b.geo";
   muchGeom     = "mcbm/much_v18a.geo";  // "mcbm/much_v18a-geo.root";  // "";
   shieldGeom   = "";
   platformGeom = ""; // "passive/platform_v13a.geo";
