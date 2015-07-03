@@ -28,7 +28,9 @@ using std::endl;
 using std::cout;
 
 CbmAnaJpsiSuperEventReport::CbmAnaJpsiSuperEventReport():
-		CbmSimulationReport()
+		CbmSimulationReport(),
+		fHMEventByEvent(),
+		fHMSuperEvent()
 {
 	SetReportName("jpsi_superevent_qa");
 }

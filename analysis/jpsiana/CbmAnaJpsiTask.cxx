@@ -52,7 +52,9 @@ CbmAnaJpsiTask::CbmAnaJpsiTask()
 	  fCandidates(),
 	  fElIdAnn(NULL),
 	  fHM(NULL),
-	  fCuts()
+	  fCuts(),
+	  fWeight(0.),
+	  fUseTrd(kTRUE)
 {
 	fUseTrd=true;
 	fWeight=1.14048e-6;
@@ -601,8 +603,15 @@ void CbmAnaJpsiTask::FillPairHists(
 	if (isSignal) fHM->H1("fh_signal_mom_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parMc->fMomentumMag,fWeight);
 	if (isSignal) fHM->H1("fh_signal_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv,fWeight);
 	if (isSignal) fHM->H2("fh_signal_minv_pt_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv, parMc->fPt,fWeight);
-	if (isBG) fHM->H1("fh_bg_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv);
-	//PairSource(candP, candM, step, parRec);
+	if (isBG) {
+		//if (candP->fIsMcSignalElectron || candM->fIsMcSignalElectron){
+			fHM->H1("fh_bg_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv/*,fWeight*/);
+		//}
+		//else {
+		//	fHM->H1("fh_bg_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv);
+		//}
+	}
+
 	if (isPi0) fHM->H1("fh_pi0_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv);
 	if (isGamma) fHM->H1("fh_gamma_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv);
 	if (isBG && isMismatch) fHM->H1("fh_bg_mismatch_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv);
