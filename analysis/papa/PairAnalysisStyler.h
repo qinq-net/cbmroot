@@ -26,7 +26,7 @@ namespace PairAnalysisStyler
   static Double_t fWdt[kNidx]={2.,2.,2.,2.};
   static Int_t    fFll[kNidx]={0,0,0,0}; //kFEmpty
 
-  enum Estyle { kNMaxMarker=8, kNMaxLine=6, kNMaxColor=9 };
+  enum Estyle { kNMaxMarker=8, kNMaxLine=4, kNMaxColor=9 };
   static const Int_t Marker[]= {kOpenCircle,
 				kOpenDiamond,
 				kOpenSquare,
@@ -39,7 +39,7 @@ namespace PairAnalysisStyler
   static const Int_t Line[]= {kSolid,
 			      kDashed,
 			      kDotted,
-			      9,
+			      //			      9,
 			      kDashDotted }; // kNMaxLine
 
   static const Int_t Color[]= {kGray+1,
