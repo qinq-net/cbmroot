@@ -166,7 +166,9 @@ const Int_t   LayerType[MaxLayers]        = { 10, 11, 10, 11, 20, 21, 20, 21, 30
 const Int_t   LayerNrInStation[MaxLayers] = { 1, 2, 3, 4, 1, 2, 3, 4, 1, 2 };
 
 // 5x z-positions from 260 till 550 cm
-Double_t LayerPosition[MaxLayers] = { 260. }; // start position - 2013-10-28 - DE - v14_1h - SIS 100 hadron         ( 4 layers, z = 2600 )
+Double_t LayerPosition[MaxLayers] = { 400. }; // start position - 2015-07-03 - DE - v18 - mCBM @ SIS 18
+//Double_t LayerPosition[MaxLayers] = { 260. }; // start position - 2013-10-28 - DE - v14_1h - SIS 100 hadron         ( 4 layers, z = 2600 )
+//Double_t LayerPosition[MaxLayers] = { 450. }; // start position - 2013-10-28 - DE - v14_1h - SIS 100 hadron         ( 4 layers, z = 2600 )
 //Double_t LayerPosition[MaxLayers] = { 410. }; // start position - 2013-10-28 - DE - v14_1e - SIS 100 electron       ( 4 layers, z = 4100 )
 //Double_t LayerPosition[MaxLayers] = { 360. }; // start position - 2014-06-16 - DE - v14_1m - SIS 100 muon           ( 4 layers, z = 3600 ) was 460.
 //Double_t LayerPosition[MaxLayers] = { 410. }; // start position - 2013-10-28 - DE - v14_3e - SIS 300 electron       (10 layers, z = 4100 )
