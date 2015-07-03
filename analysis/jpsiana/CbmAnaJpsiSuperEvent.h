@@ -66,7 +66,9 @@ private:
 
 	void Draw();
 
-
+        CbmAnaJpsiSuperEvent (const CbmAnaJpsiSuperEvent&);
+        CbmAnaJpsiSuperEvent operator=(const CbmAnaJpsiSuperEvent&);
+        
 	ClassDef(CbmAnaJpsiSuperEvent, 1);
 };
 

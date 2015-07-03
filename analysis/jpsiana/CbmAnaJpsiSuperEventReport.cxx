@@ -27,10 +27,10 @@ using std::map;
 using std::endl;
 using std::cout;
 
-CbmAnaJpsiSuperEventReport::CbmAnaJpsiSuperEventReport():
+CbmAnaJpsiSuperEventReport::CbmAnaJpsiSuperEventReport(): 
 		CbmSimulationReport(),
-		fHMEventByEvent(),
-		fHMSuperEvent()
+		fHMSuperEvent(),
+		fHMEventByEvent()
 {
 	SetReportName("jpsi_superevent_qa");
 }

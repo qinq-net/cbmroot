@@ -53,7 +53,9 @@ protected:
    CbmHistManager* fHMSuperEvent; // histogram manager for super event histograms
    CbmHistManager* fHMEventByEvent; //histogram manager for event-by-event histograms
 
-
+private: 
+   CbmAnaJpsiSuperEventReport (const CbmAnaJpsiSuperEventReport&);
+   CbmAnaJpsiSuperEventReport operator=(const CbmAnaJpsiSuperEventReport&);
 
 	ClassDef(CbmAnaJpsiSuperEventReport, 1);
 };

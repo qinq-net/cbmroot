@@ -36,13 +36,14 @@ using std::endl;
 using std::cout;
 
 CbmAnaJpsiSuperEvent::CbmAnaJpsiSuperEvent()
-		:fHM(NULL),
-		fRunAfterPtCut(kTRUE),
-		fFileNames(NULL),
+		: TObject(),
+		fFileNames(),
 		fMinusCandidates(),
 		fPlusCandidates(),
+		fOutputFile(""),
+                fHM(NULL),
 		fCuts(),
-		fOutputFile("")
+		fRunAfterPtCut(kTRUE)
 {
 
 }
