@@ -7,8 +7,8 @@
  ** @date 09.05.2014
  ** @author Tomas Balog <T.Balog@gsi.de>
  **
- ** v18a: 2 stations of 3x3 sensor array, sensor size 6x6 cm2
  ** v18b: 2 stations of 4x4 sensor array, sensor size 6x6 cm2
+ ** v18a: 2 stations of 3x3 sensor array, sensor size 6x6 cm2
  **
  ** The geometry hierarachy is:
  **
