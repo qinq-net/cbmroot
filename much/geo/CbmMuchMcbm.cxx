@@ -504,8 +504,8 @@ void CbmMuchMcbm::ConstructAsciiGeometry() {
             gMC->Matrix(krot,90,angle-90,90,angle,0,0);
 //DE            gGeoManager->Node(activeName,0,layerName,pos[0],pos[1],pos[2]-layer->GetZ(),krot,kTRUE,buf,0);
 //DE            gGeoManager->Node(spacerName,0,layerName,pos[0],pos[1],pos[2]-layer->GetZ(),krot,kTRUE,buf,0);
-            gGeoManager->Node(activeName,0,layerName,pos[0]-75.,pos[1],pos[2]-layer->GetZ(),krot,kTRUE,buf,0);
-            gGeoManager->Node(spacerName,0,layerName,pos[0]-75.,pos[1],pos[2]-layer->GetZ(),krot,kTRUE,buf,0);
+            gGeoManager->Node(activeName,0,layerName,pos[0]-75.,pos[1],pos[2]-layer->GetZ()-130.,krot,kTRUE,buf,0);
+            gGeoManager->Node(spacerName,0,layerName,pos[0]-75.,pos[1],pos[2]-layer->GetZ()-130.,krot,kTRUE,buf,0);
             AddSensitiveVolume(voActive);
             continue;
           }
