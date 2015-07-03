@@ -89,6 +89,8 @@ private:
 
 	TH1D * fhElectrons_invmass;
 	TH1D * fhElectrons_invmass_cut;
+	TH1D * fhElectrons_nofPerEvent;
+	TH1D * fhPhotons_nofPerEvent;
 	
 	
 	vector< vector<int> > fVector_photons_pairs;
@@ -143,6 +145,7 @@ private:
 	TH1D * fhPhotons_invmass_direction_cut;
 	TH1D * fhPhotons_boostAngle;
 	TH1D * fhPhotons_boostAngleMC;
+	TH1D * fhPhotons_boostAngleTest;
 	
 	TH1D * fhPhotons_tX;
 	TH1D * fhPhotons_tY;

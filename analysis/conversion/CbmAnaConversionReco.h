@@ -53,6 +53,7 @@ public:
 
 	void CalculateInvMassWithFullRecoCuts();
 	CbmLmvmKinematicParams CalculateKinematicParamsReco(const TVector3 electron1, const TVector3 electron2);
+	CbmLmvmKinematicParams CalculateKinematicParams_4particles(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 
 
 
@@ -112,6 +113,14 @@ private:
 	
 	TH1D * fhEPEM_openingAngle_betweenGammas_mc;
 	TH1D * fhEPEM_openingAngle_betweenGammas_reco;
+
+	TH2D * fhPi0_pt_vs_rap_gg;
+	TH2D * fhPi0_pt_vs_rap_gee;
+	TH2D * fhPi0_pt_vs_rap_all;
+
+	TH1D * fhPi0_pt_gg;
+	TH1D * fhPi0_pt_gee;
+	TH1D * fhPi0_pt_all;
 
 
 	TH1D * fhInvMass_EPEM_mc;

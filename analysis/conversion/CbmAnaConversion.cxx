@@ -262,7 +262,7 @@ void CbmAnaConversion::InitHistograms()
 	fhPi0_z					= new TH1D("fhPi0_z", "fhPi0_z;z [cm];Entries", 600., -0.5, 599.5);
 	fhPi0_z_cut				= new TH1D("fhPi0_z_cut", "fhPi0_z_cut;z [cm];Entries", 600., -0.5, 599.5);
 	fhPi0_pt				= new TH1D("fhPi0_pt", "fhPi0_pt;pt [GeV];Entries", 200., 0., 10.);
-	fhPi0_pt_vs_rap			= new TH2D("fhPi0_pt_vs_rap", "fhPi0_pt_vs_rap;rap [GeV], pt [GeV]", 600, -0.0025, 5.9975, 100, 0., 10.);
+	fhPi0_pt_vs_rap			= new TH2D("fhPi0_pt_vs_rap", "fhPi0_pt_vs_rap;rap [GeV]; pt [GeV]", 300, -3., 6., 200, 0., 10.);
 	fhEta_pt				= new TH1D("fhEta_pt", "fhEta_pt;pt [GeV];Entries", 200., 0., 10.);
 	fhElectronSources		= new TH1D("fhElectronSources", "fhElectronSources;Source;Entries", 6., 0., 6.);
 	fhElectronsFromPi0_z	= new TH1D("fhElectronsFromPi0_z", "fhElectronsFromPi0_z (= pos. of gamma conversion);z [cm];Entries", 600., -0.5, 599.5);
@@ -286,6 +286,7 @@ void CbmAnaConversion::InitHistograms()
 	fhElectronSources->GetXaxis()->SetBinLabel(4, "else");
 	fhElectronSources->GetXaxis()->SetBinLabel(5, "gamma from pi0");
 	fhElectronSources->GetXaxis()->SetBinLabel(6, "gamma from eta");
+	
 	
 
 	

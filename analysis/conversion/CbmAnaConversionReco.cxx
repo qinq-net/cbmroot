@@ -65,6 +65,12 @@ CbmAnaConversionReco::CbmAnaConversionReco()
 	fhEPEM_openingAngle_gee_refitted_dalitz(NULL),
 	fhEPEM_openingAngle_betweenGammas_mc(NULL),
 	fhEPEM_openingAngle_betweenGammas_reco(NULL),
+	fhPi0_pt_vs_rap_gg(NULL),
+	fhPi0_pt_vs_rap_gee(NULL),
+	fhPi0_pt_vs_rap_all(NULL),
+	fhPi0_pt_gg(NULL),
+	fhPi0_pt_gee(NULL),
+	fhPi0_pt_all(NULL),
     fhInvMass_EPEM_mc(NULL),
     fhInvMass_EPEM_stsMomVec(NULL),
     fhInvMass_EPEM_refitted(NULL),
@@ -187,6 +193,19 @@ void CbmAnaConversionReco::InitHistos()
 
 
 
+	fhPi0_pt_vs_rap_gg			= new TH2D("fhPi0_pt_vs_rap_gg", "fhPi0_pt_vs_rap_gg;rap [GeV]; pt [GeV]", 300, -3., 6., 200, 0., 10.);
+	fhPi0_pt_vs_rap_gee			= new TH2D("fhPi0_pt_vs_rap_gee", "fhPi0_pt_vs_rap_gee;rap [GeV]; pt [GeV]", 300, -3., 6., 200, 0., 10.);
+	fhPi0_pt_vs_rap_all			= new TH2D("fhPi0_pt_vs_rap_all", "fhPi0_pt_vs_rap_all;rap [GeV]; pt [GeV]", 300, -3., 6., 200, 0., 10.);
+	fHistoList_gg.push_back(fhPi0_pt_vs_rap_gg);
+	fHistoList_gee.push_back(fhPi0_pt_vs_rap_gee);
+	fHistoList_all.push_back(fhPi0_pt_vs_rap_all);
+	
+	fhPi0_pt_gg		= new TH1D("fhPi0_pt_gg", "fhPi0_pt_gg;pt [GeV];#", 200, 0., 10.);
+	fhPi0_pt_gee	= new TH1D("fhPi0_pt_gee", "fhPi0_pt_gee;pt [GeV];#", 200, 0., 10.);
+	fhPi0_pt_all	= new TH1D("fhPi0_pt_all", "fhPi0_pt_all;pt [GeV];#", 200, 0., 10.);
+	fHistoList_gg.push_back(fhPi0_pt_gg);
+	fHistoList_gee.push_back(fhPi0_pt_gee);
+	fHistoList_all.push_back(fhPi0_pt_all);
 
 
 	fhInvMass_EPEM_mc				= new TH1D("fhInvMass_EPEM_mc","fhInvariantMass_recoMomentum1 (mc);mass [GeV/c^2];#", 400, -0.0025, 1.9975);
@@ -779,6 +798,12 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 								fhEPEM_invmass_all_mc->Fill(invmass1);
 								fhEPEM_invmass_all_refitted->Fill(invmass3);
 								
+								CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
+								fhPi0_pt_vs_rap_gee->Fill(params1.fRapidity, params1.fPt);
+								fhPi0_pt_vs_rap_all->Fill(params1.fRapidity, params1.fPt);
+								fhPi0_pt_gee->Fill(params1.fPt);
+								fhPi0_pt_all->Fill(params1.fPt);
+								
 								if(mcGrandmotherPdg1 == 111) {	// case: i,j = electrons from gamma, k,l = electrons from pi0
 									Double_t opening_angle1_mc = 0;
 									Double_t opening_angle1_refitted = 0;
@@ -840,6 +865,12 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 								fhEPEM_invmass_all_mc->Fill(invmass1);
 								fhEPEM_invmass_all_refitted->Fill(invmass3);
 								
+								CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
+								fhPi0_pt_vs_rap_gee->Fill(params1.fRapidity, params1.fPt);
+								fhPi0_pt_vs_rap_all->Fill(params1.fRapidity, params1.fPt);
+								fhPi0_pt_gee->Fill(params1.fPt);
+								fhPi0_pt_all->Fill(params1.fPt);
+								
 								if(mcGrandmotherPdg1 == 111) {
 									Double_t opening_angle1_mc = 0;
 									Double_t opening_angle1_refitted = 0;
@@ -900,6 +931,12 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 								fhEPEM_invmass_gee_refitted->Fill(invmass3);
 								fhEPEM_invmass_all_mc->Fill(invmass1);
 								fhEPEM_invmass_all_refitted->Fill(invmass3);
+								
+								CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
+								fhPi0_pt_vs_rap_gee->Fill(params1.fRapidity, params1.fPt);
+								fhPi0_pt_vs_rap_all->Fill(params1.fRapidity, params1.fPt);
+								fhPi0_pt_gee->Fill(params1.fPt);
+								fhPi0_pt_all->Fill(params1.fPt);
 								
 								if(mcGrandmotherPdg1 == 111) {
 									Double_t opening_angle1_mc = 0;
@@ -1132,6 +1169,13 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						Double_t openingAngleBetweenGammasReco = CalculateOpeningAngleBetweenGammasReco(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
 						fhEPEM_openingAngle_betweenGammas_reco->Fill(openingAngleBetweenGammasReco);
 						
+						
+						
+						CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
+						fhPi0_pt_vs_rap_gg->Fill(params1.fRapidity, params1.fPt);
+						fhPi0_pt_vs_rap_all->Fill(params1.fRapidity, params1.fPt);
+						fhPi0_pt_gg->Fill(params1.fPt);
+						fhPi0_pt_all->Fill(params1.fPt);
 
 						cout << "reco/mc: " << fRecoMomentum[i].Mag() << " / " << fRecoTracklistEPEM[i]->GetP() << " ### "  << fRecoMomentum[j].Mag() << " / " << fRecoTracklistEPEM[j]->GetP() << " ### "  << fRecoMomentum[k].Mag() << " / " << fRecoTracklistEPEM[k]->GetP() << " ### "  << fRecoMomentum[l].Mag() << " / " << fRecoTracklistEPEM[l]->GetP() << endl;
 
@@ -1344,6 +1388,43 @@ CbmLmvmKinematicParams CbmAnaConversionReco::CalculateKinematicParamsReco(const 
     params.fRapidity = yPair;
     params.fMinv = minv;
     params.fAngle = theta;
+    return params;
+}
+
+
+CbmLmvmKinematicParams CbmAnaConversionReco::CalculateKinematicParams_4particles(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4)
+{
+	CbmLmvmKinematicParams params;
+
+    Double_t energy1 = TMath::Sqrt(part1.Mag2() + M2E);
+    TLorentzVector lorVec1(part1, energy1);
+
+    Double_t energy2 = TMath::Sqrt(part2.Mag2() + M2E);
+    TLorentzVector lorVec2(part2, energy2);
+
+    Double_t energy3 = TMath::Sqrt(part3.Mag2() + M2E);
+    TLorentzVector lorVec3(part3, energy3);
+
+    Double_t energy4 = TMath::Sqrt(part4.Mag2() + M2E);
+    TLorentzVector lorVec4(part4, energy4);
+    
+    TLorentzVector sum;
+    sum = lorVec1 + lorVec2 + lorVec3 + lorVec4; 
+
+    TVector3 momPair = part1 + part2 + part3 + part4;
+    Double_t energyPair = energy1 + energy2 + energy3 + energy4;
+    Double_t ptPair = momPair.Perp();
+    Double_t pzPair = momPair.Pz();
+    Double_t yPair = 0.5*TMath::Log((energyPair+pzPair)/(energyPair-pzPair));
+    Double_t anglePair = 0;
+    Double_t theta = 180.*anglePair/TMath::Pi();
+    Double_t minv = sum.Mag();
+
+    params.fMomentumMag = momPair.Mag();
+    params.fPt = ptPair;
+    params.fRapidity = yPair;
+    params.fMinv = minv;
+    params.fAngle = 0;
     return params;
 }
 

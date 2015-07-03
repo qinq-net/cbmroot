@@ -58,6 +58,8 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fElectrons_mctrackID(),
     fhElectrons_invmass(NULL),
     fhElectrons_invmass_cut(NULL),
+    fhElectrons_nofPerEvent(NULL),
+    fhPhotons_nofPerEvent(NULL),
     fVector_photons_pairs(),
 	fVector_photons_momenta(),
     fhPhotons_invmass(NULL),
@@ -182,6 +184,11 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fHistoList_recofull.push_back(fhElectrons_invmass);
 	fHistoList_recofull.push_back(fhElectrons_invmass_cut);
 	
+	fhElectrons_nofPerEvent = new TH1D("fhElectrons_nofPerEvent", "fhElectrons_nofPerEvent; nof electrons per event; #", 101, -0.5, 100.5);
+	fHistoList_recofull.push_back(fhElectrons_nofPerEvent);
+	fhPhotons_nofPerEvent = new TH1D("fhPhotons_nofPerEvent", "fhPhotons_nofPerEvent; nof photons per event; #", 101, -0.5, 100.5);
+	fHistoList_recofull.push_back(fhPhotons_nofPerEvent);
+	
 	fhPhotons_invmass = new TH1D("fhPhotons_invmass", "fhPhotons_invmass; invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_recofull.push_back(fhPhotons_invmass);
 	fhPhotons_invmass_cut = new TH1D("fhPhotons_invmass_cut", "fhPhotons_invmass_cut; invariant mass; #", 600, -0.0025, 2.9975);
@@ -226,7 +233,7 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fHistoList_recofull.push_back(fhPhotons_startvertex_vs_chi);
 	fhPhotons_invmass_vs_pt = new TH2D("fhPhotons_invmass_vs_pt", "fhPhotons_invmass_vs_pt; invmass; pt", 600, -0.0025, 2.9975, 100, 0., 10.);
 	fHistoList_recofull.push_back(fhPhotons_invmass_vs_pt);
-	fhPhotons_rapidity_vs_pt = new TH2D("fhPhotons_rapidity_vs_pt", "fhPhotons_rapidity_vs_pt; rapidity; pt", 600, -0.0025, 5.9975, 100, 0., 10.);
+	fhPhotons_rapidity_vs_pt = new TH2D("fhPhotons_rapidity_vs_pt", "fhPhotons_rapidity_vs_pt; rapidity; pt", 300, -3., 6., 200, 0., 10.);
 	fHistoList_recofull.push_back(fhPhotons_rapidity_vs_pt);
 	
 	fhPhotons_invmass_vs_openingAngle = new TH2D("fhPhotons_invmass_vs_openingAngle", "fhPhotons_invmass_vs_openingAngle; invmass; openingAngle", 600, -0.0025, 2.9975, 100, 0., 10.);
@@ -276,10 +283,12 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fHistoList_recofull.push_back(fhPhotons_invmass_direction);
 	fhPhotons_invmass_direction_cut = new TH1D("fhPhotons_invmass_direction_cut", "fhPhotons_invmass_direction_cut; invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_recofull.push_back(fhPhotons_invmass_direction_cut);
-	fhPhotons_boostAngle = new TH1D("fhPhotons_boostAngle", "fhPhotons_boostAngle; boostAngle; #", 740, -370., 370.);
+	fhPhotons_boostAngle = new TH1D("fhPhotons_boostAngle", "fhPhotons_boostAngle; boostAngle; #", 7400, -370., 370.);
 	fHistoList_recofull.push_back(fhPhotons_boostAngle);
-	fhPhotons_boostAngleMC = new TH1D("fhPhotons_boostAngleMC", "fhPhotons_boostAngleMC; boostAngle; #", 740, -370., 370.);
+	fhPhotons_boostAngleMC = new TH1D("fhPhotons_boostAngleMC", "fhPhotons_boostAngleMC; boostAngle; #", 7400, -370., 370.);
 	fHistoList_recofull.push_back(fhPhotons_boostAngleMC);
+	fhPhotons_boostAngleTest = new TH1D("fhPhotons_boostAngleTest", "fhPhotons_boostAngleTest; boostAngle; #", 10000, -5., 5.);
+	fHistoList_recofull.push_back(fhPhotons_boostAngleTest);
 	
 
 	fhPhotons_tX = new TH1D("fhPhotons_tX", "fhPhotons_tX; tX; #", 201, -1.005, 1.005);
@@ -331,6 +340,7 @@ void CbmAnaConversionRecoFull::Exec()
 	fVector_photons_pairs_direction.clear();
 
 	Int_t nofGT_richsts = 0;
+	Int_t nofElectrons = 0;
 
 	// everything related to reconstructed data
 	Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
@@ -403,6 +413,7 @@ void CbmAnaConversionRecoFull::Exec()
 
 
 		if(electron_rich) {
+			nofElectrons++;
 			fElectrons_track.push_back(gTrack);
 			fElectrons_momenta.push_back(refittedMomentum);
 			fElectrons_momentaChi.push_back(result_chi);
@@ -456,6 +467,8 @@ void CbmAnaConversionRecoFull::Exec()
 	}
 	cout << "CbmAnaConversionRecoFull: number of global tracks in STS and RICH " << nofGT_richsts << endl;
 
+	fhElectrons_nofPerEvent->Fill(nofElectrons);
+
 	CombineElectrons();
 	CombinePhotons();
 
@@ -474,6 +487,7 @@ void CbmAnaConversionRecoFull::CombineElectrons()
 {
 	Int_t nof = fElectrons_momenta.size();
 	cout << "CbmAnaConversionRecoFull: CombineElectrons, nof - " << nof << endl;
+	Int_t nofPhotons = 0;
 	if(nof >= 2) {
 		for(int a=0; a<nof-1; a++) {
 			for(int b=a+1; b<nof; b++) {
@@ -489,9 +503,9 @@ void CbmAnaConversionRecoFull::CombineElectrons()
 				//Double_t openingAngleCut = 1;
 				
 				// opening angle cut depending on pt of e+e- pair
-				Double_t openingAngleCut = 1.3 - 0.3 * params1.fPt;
+				Double_t openingAngleCut = 1.8 - 0.3 * params1.fPt;
 				
-				Double_t invMassCut = 0.02;
+				Double_t invMassCut = 0.03;
 				
 				Int_t IsPhoton_openingAngle1	= (params1.fAngle < openingAngleCut);
 				Int_t IsPhoton_invMass1			= (params1.fMinv < invMassCut);
@@ -502,6 +516,7 @@ void CbmAnaConversionRecoFull::CombineElectrons()
 				Double_t tYb = fElectrons_track[b]->GetParamLast()->GetTy();
 				
 				if(IsPhoton_openingAngle1 && IsPhoton_invMass1) {
+					nofPhotons++;
 					vector<int> pair; // = {a, b};
 					pair.push_back(a);
 					pair.push_back(b);
@@ -535,6 +550,7 @@ void CbmAnaConversionRecoFull::CombineElectrons()
 					TVector3 normal1 = momentumE1f.Cross(momentumE1l);
 					TVector3 normal2 = momentumE2f.Cross(momentumE2l);
 					Double_t normalAngle = normal1.Angle(normal2);
+					Double_t theta = 180.*normalAngle/TMath::Pi();
 					
 					//Double_t boostAngle = lorVecE1.Angle(lorVecE2.Vect());
 					
@@ -542,13 +558,15 @@ void CbmAnaConversionRecoFull::CombineElectrons()
 
 					
 					
-					if( TMath::Abs(tXa - tXb) < 0.5 || TMath::Abs(tYa - tYb) < 0.5 ) {
+					//if( TMath::Abs(tXa - tXb) < 0.5 || TMath::Abs(tYa - tYb) < 0.5 ) {
+					if( theta < 30 ) {
 						fVector_photons_pairs_direction.push_back(pair);
 					}
 				}
 			}
 		}
 	}
+	fhPhotons_nofPerEvent->Fill(nofPhotons);
 }
 
 
@@ -742,13 +760,15 @@ void CbmAnaConversionRecoFull::CombinePhotons()
 				TLorentzVector g2 = lorVecE21 + lorVecE22;
 				TLorentzVector pi = lorVecE11 + lorVecE12 + lorVecE21 + lorVecE22;
 					
-				g1.Boost(pi.BoostVector() );
-				g2.Boost(pi.BoostVector() );
+				g1.Boost(-pi.BoostVector() );
+				g2.Boost(-pi.BoostVector() );
 					
 				Double_t boostAngle = g1.Angle(g2.Vect());
 				Double_t theta = 180.*boostAngle/TMath::Pi();
 				
-				if(opening_angle < 8) {
+				fhPhotons_boostAngleTest->Fill(boostAngle);
+					
+				if(opening_angle < 10) {
 					fhPhotons_boostAngle->Fill(theta);
 				
 					fhPhotons_invmass_cut->Fill(invmass);
@@ -889,8 +909,8 @@ void CbmAnaConversionRecoFull::CombinePhotons()
 					TLorentzVector g2c = lorVecE21c + lorVecE22c;
 					TLorentzVector pic = lorVecE11c + lorVecE12c + lorVecE21c + lorVecE22c;
 					
-					g1c.Boost(pic.BoostVector() );
-					g2c.Boost(pic.BoostVector() );
+					g1c.Boost(-pic.BoostVector() );
+					g2c.Boost(-pic.BoostVector() );
 					
 					Double_t boostAnglec = g1c.Angle(g2c.Vect());
 					Double_t thetac = 180.*boostAnglec/TMath::Pi();
