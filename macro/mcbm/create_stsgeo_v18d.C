@@ -377,7 +377,8 @@ void create_stsgeo_v18d(const char* geoTag="v18d")
 
 
   // ----------------   Create stations   -------------------------------------
-  Int_t statPos[8] = {30., 40., 50., 60., 70., 80., 90., 100.};
+  //  Int_t statPos[8] = {30., 40., 50., 60., 70., 80., 90., 100.};
+  Int_t statPos[8] = {30., 40., 50., 60., 70., 80., 90., 40.};
   cout << endl << endl;
   cout << "===> Creating stations...." << endl;
   infoFile << endl << "Stations: ";
