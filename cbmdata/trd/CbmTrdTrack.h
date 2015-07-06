@@ -6,7 +6,7 @@
 
 /**  CbmTrdTrack.h
  *@author M.Kalisky <m.kalisky@gsi.de>
- **
+ ** 
  ** TRD local track. Holds lists of CbmTrdHits and the fitted
  ** track parameters. The fit parameters are of type FairTrackParam
  ** and can only be accessed and modified via this class.
