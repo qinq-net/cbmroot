@@ -296,7 +296,6 @@ InitStatus CbmStsDigitizeQa::Init() {
 
     // Get STS setup interface
     fSetup = CbmStsSetup::Instance();
-    fSetup -> InitDaughters();
     fNStations = fSetup -> GetNofDaughters();
 
     fMeanDigisPMCpoint  = 0.;
@@ -534,7 +533,8 @@ void CbmStsDigitizeQa::Exec(Option_t* opt) {
 		for (Int_t iMod = 0; iMod < hlad -> GetNofDaughters(); iMod++) {
 		    CbmStsModule* modu = dynamic_cast<CbmStsModule*>(hlad -> GetDaughter(iMod));
 		    moduleNumber ++;
-		    fhDigisPChannelPModuleAtStation[iStation] -> Fill (moduleNumber, 2 * Double_t(modu -> GetNofDigis()) / Double_t(modu -> GetNofChannels()));
+		    fhDigisPChannelPModuleAtStation[iStation] -> 
+			Fill (moduleNumber, Double_t(modu -> GetNofDigis()) / Double_t(modu -> GetNofChannels()));
 		}
 	    }
 	}
