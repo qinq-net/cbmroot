@@ -2,7 +2,7 @@
 ##   trd_v18a_1e information file
 #
 
-# created 20150703
+# created 20150706
 
 # envelope
  400 cm   start of TRD (z)
@@ -39,7 +39,7 @@ padplane is             : included
 backpanel is            : included
 asics are               : included
 front-end boards are    : included
-GBTX readout boards are : NOT included
+GBTX readout boards are : included
 
 # modules
      mod1     mod2     mod3     mod4     mod5     mod6     mod7     mod8    total

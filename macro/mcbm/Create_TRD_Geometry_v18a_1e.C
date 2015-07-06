@@ -103,7 +103,7 @@ const Bool_t IncludePadplane    = true;  // false;  // true, if padplane is incl
 const Bool_t IncludeBackpanel   = true;  // false;  // true, if backpanel is included in geometry
 
 const Bool_t IncludeFebs        = true;  // false;  // true, if FEBs are included in geometry
-const Bool_t IncludeRobs        = false; // false;  // true, if ROBs are included in geometry
+const Bool_t IncludeRobs        = true; // false;  // true, if ROBs are included in geometry
 const Bool_t IncludeAsics       = true;  // false;  // true, if ASICs are included in geometry
 const Bool_t IncludeSupports    = true;  // support structure must be there, otherwise there are no TRDpoints in sim
 const Bool_t IncludeLabels      = true;  // false;  // true, if TRD (I, II, III) labels are plotted in (VisLevel 5)
@@ -294,7 +294,8 @@ const Int_t ModuleType[NofModuleTypes]    = {  0,  0,  0,  0,  1,  1,  1,  1 }; 
 
 // GBTx ROB definitions
 const Int_t RobsPerModule[NofModuleTypes] = {  2,  2,  1,  1,  2,  2,  1,  1 }; // number of GBTx ROBs on module
-const Int_t GbtxPerRob[NofModuleTypes]    = {107,105,105,103,107,105,105,103 }; // number of GBTx ASICs on ROB
+const Int_t GbtxPerRob[NofModuleTypes]    = {107,105,103,103,107,105,105,103 }; // number of GBTx ASICs on ROB
+//const Int_t GbtxPerRob[NofModuleTypes]    = {107,105,105,103,107,105,105,103 }; // number of GBTx ASICs on ROB
 
 const Int_t GbtxPerModule[NofModuleTypes] = { 14,  8,  5,  0,  0, 10,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
 const Int_t RobTypeOnModule[NofModuleTypes] = { 77, 53,  5,  0,  0, 55,  5,  3 }; // for .geo.info - TODO: merge with above GbtxPerRob
