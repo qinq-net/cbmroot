@@ -98,7 +98,7 @@ public:
    void		AnalyseElectrons(CbmMCTrack* mctrack);
    void		FillMCTracklists(CbmMCTrack* mctrack, int i);
    void		FillRecoTracklist(CbmMCTrack* mtrack);
-   void		FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom, int i, Double_t chi);
+   void		FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom, int i, Double_t chi, Int_t GlobalTrackId);
    void		InvariantMassTest();
    void		InvariantMassTest_4epem();
    void		InvariantMassTestReco();
@@ -221,6 +221,7 @@ private:
    vector<CbmMCTrack*>	fRecoTracklistEPEM;
    vector<int>			fRecoTracklistEPEM_id; // ids of mctracks from fRecoTracklistEPEM
    vector<Double_t>		fRecoTracklistEPEM_chi; // chi of fitted momenta from fRecoTracklistEPEM
+   vector<Int_t>		fRecoTracklistEPEM_gtid; // GlobalTrack ID from fRecoTracklistEPEM
    
    vector<TVector3> fRecoMomentum;
    vector<TVector3> fRecoRefittedMomentum;

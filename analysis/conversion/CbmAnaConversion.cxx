@@ -262,7 +262,7 @@ void CbmAnaConversion::InitHistograms()
 	fhPi0_z					= new TH1D("fhPi0_z", "fhPi0_z;z [cm];Entries", 600., -0.5, 599.5);
 	fhPi0_z_cut				= new TH1D("fhPi0_z_cut", "fhPi0_z_cut;z [cm];Entries", 600., -0.5, 599.5);
 	fhPi0_pt				= new TH1D("fhPi0_pt", "fhPi0_pt;pt [GeV];Entries", 200., 0., 10.);
-	fhPi0_pt_vs_rap			= new TH2D("fhPi0_pt_vs_rap", "fhPi0_pt_vs_rap;rap [GeV]; pt [GeV]", 300, -3., 6., 200, 0., 10.);
+	fhPi0_pt_vs_rap			= new TH2D("fhPi0_pt_vs_rap", "fhPi0_pt_vs_rap;pt [GeV]; rap [GeV]", 200, 0., 10., 210, 0., 7.);
 	fhEta_pt				= new TH1D("fhEta_pt", "fhEta_pt;pt [GeV];Entries", 200., 0., 10.);
 	fhElectronSources		= new TH1D("fhElectronSources", "fhElectronSources;Source;Entries", 6., 0., 6.);
 	fhElectronsFromPi0_z	= new TH1D("fhElectronsFromPi0_z", "fhElectronsFromPi0_z (= pos. of gamma conversion);z [cm];Entries", 600., -0.5, 599.5);
@@ -574,13 +574,13 @@ void CbmAnaConversion::Exec(Option_t* option)
 		float result_chi = chiPrim[0];
        
 		// Fill tracklists containing momenta from mc-true, measured in sts, refitted at primary
-		FillRecoTracklistEPEM(mcTrack1, stsMomentumVec, refittedMomentum, stsMcTrackId, result_chi);
+		FillRecoTracklistEPEM(mcTrack1, stsMomentumVec, refittedMomentum, stsMcTrackId, result_chi, i);
 	}
 	
 //	InvariantMassTestReco();
 
 	if(DoReconstruction) {
-		fAnaReco->SetTracklistReco(fRecoTracklistEPEM, fRecoMomentum, fRecoRefittedMomentum, fRecoTracklistEPEM_id, fRecoTracklistEPEM_chi);
+		fAnaReco->SetTracklistReco(fRecoTracklistEPEM, fRecoMomentum, fRecoRefittedMomentum, fRecoTracklistEPEM_id, fRecoTracklistEPEM_chi, fRecoTracklistEPEM_gtid);
 		fAnaReco->InvariantMassTest_4epem();
 		fAnaReco->CalculateInvMassWithFullRecoCuts();
 	}
@@ -917,7 +917,7 @@ void CbmAnaConversion::FillRecoTracklist(CbmMCTrack* mctrack)
 
 
 
-void CbmAnaConversion::FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom, int i, Double_t chi) 
+void CbmAnaConversion::FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom, int i, Double_t chi, Int_t GlobalTrackId) 
 {
 	if (TMath::Abs( mctrack->GetPdgCode())  == 11) { 
 		int motherId = mctrack->GetMotherId();
@@ -925,6 +925,7 @@ void CbmAnaConversion::FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMo
 			fRecoTracklistEPEM.push_back(mctrack);
 			fRecoTracklistEPEM_id.push_back(i);
 			fRecoTracklistEPEM_chi.push_back(chi);
+			fRecoTracklistEPEM_gtid.push_back(GlobalTrackId);
 			fRecoMomentum.push_back(stsMomentum);
 			fRecoRefittedMomentum.push_back(refittedMom);
 		}

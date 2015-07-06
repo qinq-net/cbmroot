@@ -28,6 +28,7 @@ using namespace std;
 
 CbmAnaConversionReco::CbmAnaConversionReco()
   : fMcTracks(NULL),
+    electronidentifier(NULL),
     fMCTracklist_all(),
     fRecoTracklistEPEM(),
     fRecoTracklistEPEM_ids(),
@@ -71,6 +72,7 @@ CbmAnaConversionReco::CbmAnaConversionReco()
 	fhPi0_pt_gg(NULL),
 	fhPi0_pt_gee(NULL),
 	fhPi0_pt_all(NULL),
+	fhEPEM_efficiencyCuts(NULL),
     fhInvMass_EPEM_mc(NULL),
     fhInvMass_EPEM_stsMomVec(NULL),
     fhInvMass_EPEM_refitted(NULL),
@@ -121,6 +123,8 @@ void CbmAnaConversionReco::Init()
 
 
 	InitHistos();
+	electronidentifier = new CbmLitGlobalElectronId();
+	electronidentifier->Init();
 }
 
 
@@ -193,9 +197,9 @@ void CbmAnaConversionReco::InitHistos()
 
 
 
-	fhPi0_pt_vs_rap_gg			= new TH2D("fhPi0_pt_vs_rap_gg", "fhPi0_pt_vs_rap_gg;rap [GeV]; pt [GeV]", 300, -3., 6., 200, 0., 10.);
-	fhPi0_pt_vs_rap_gee			= new TH2D("fhPi0_pt_vs_rap_gee", "fhPi0_pt_vs_rap_gee;rap [GeV]; pt [GeV]", 300, -3., 6., 200, 0., 10.);
-	fhPi0_pt_vs_rap_all			= new TH2D("fhPi0_pt_vs_rap_all", "fhPi0_pt_vs_rap_all;rap [GeV]; pt [GeV]", 300, -3., 6., 200, 0., 10.);
+	fhPi0_pt_vs_rap_gg			= new TH2D("fhPi0_pt_vs_rap_gg", "fhPi0_pt_vs_rap_gg;pt [GeV]; rap [GeV]", 200, 0., 10., 210, 0., 7.);
+	fhPi0_pt_vs_rap_gee			= new TH2D("fhPi0_pt_vs_rap_gee", "fhPi0_pt_vs_rap_gee;pt [GeV]; rap [GeV]", 200, 0., 10., 210, 0., 7.);
+	fhPi0_pt_vs_rap_all			= new TH2D("fhPi0_pt_vs_rap_all", "fhPi0_pt_vs_rap_all;pt [GeV]; rap [GeV]", 200, 0., 10., 210, 0., 7.);
 	fHistoList_gg.push_back(fhPi0_pt_vs_rap_gg);
 	fHistoList_gee.push_back(fhPi0_pt_vs_rap_gee);
 	fHistoList_all.push_back(fhPi0_pt_vs_rap_all);
@@ -206,6 +210,13 @@ void CbmAnaConversionReco::InitHistos()
 	fHistoList_gg.push_back(fhPi0_pt_gg);
 	fHistoList_gee.push_back(fhPi0_pt_gee);
 	fHistoList_all.push_back(fhPi0_pt_all);
+
+	fhEPEM_efficiencyCuts	= new TH1D("fhEPEM_efficiencyCuts", "fhEPEM_efficiencyCuts;cut;#", 5, 0., 5.);
+	fHistoList_all.push_back(fhEPEM_efficiencyCuts);
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(1, "no cut");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(2, "4 rich electrons");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(3, "a");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(4, "b");
 
 
 	fhInvMass_EPEM_mc				= new TH1D("fhInvMass_EPEM_mc","fhInvariantMass_recoMomentum1 (mc);mass [GeV/c^2];#", 400, -0.0025, 1.9975);
@@ -350,11 +361,12 @@ void CbmAnaConversionReco::SetTracklistMC(vector<CbmMCTrack*> MCTracklist)
 }
 
 
-void CbmAnaConversionReco::SetTracklistReco(vector<CbmMCTrack*> MCTracklist, vector<TVector3> RecoTracklist1, vector<TVector3> RecoTracklist2, vector<int> ids, vector<Double_t> chi)
+void CbmAnaConversionReco::SetTracklistReco(vector<CbmMCTrack*> MCTracklist, vector<TVector3> RecoTracklist1, vector<TVector3> RecoTracklist2, vector<int> ids, vector<Double_t> chi, vector<Int_t> GlobalTrackId)
 {
 	fRecoTracklistEPEM = MCTracklist;
 	fRecoTracklistEPEM_ids = ids;
 	fRecoTracklistEPEM_chi = chi;
+	fRecoTracklistEPEM_gtid = GlobalTrackId;
 	fRecoMomentum = RecoTracklist1;
 	fRecoRefittedMomentum = RecoTracklist2;
 }
@@ -799,8 +811,8 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 								fhEPEM_invmass_all_refitted->Fill(invmass3);
 								
 								CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
-								fhPi0_pt_vs_rap_gee->Fill(params1.fRapidity, params1.fPt);
-								fhPi0_pt_vs_rap_all->Fill(params1.fRapidity, params1.fPt);
+								fhPi0_pt_vs_rap_gee->Fill(params1.fPt, params1.fRapidity);
+								fhPi0_pt_vs_rap_all->Fill(params1.fPt, params1.fRapidity);
 								fhPi0_pt_gee->Fill(params1.fPt);
 								fhPi0_pt_all->Fill(params1.fPt);
 								
@@ -866,8 +878,8 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 								fhEPEM_invmass_all_refitted->Fill(invmass3);
 								
 								CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
-								fhPi0_pt_vs_rap_gee->Fill(params1.fRapidity, params1.fPt);
-								fhPi0_pt_vs_rap_all->Fill(params1.fRapidity, params1.fPt);
+								fhPi0_pt_vs_rap_gee->Fill(params1.fPt, params1.fRapidity);
+								fhPi0_pt_vs_rap_all->Fill(params1.fPt, params1.fRapidity);
 								fhPi0_pt_gee->Fill(params1.fPt);
 								fhPi0_pt_all->Fill(params1.fPt);
 								
@@ -933,8 +945,8 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 								fhEPEM_invmass_all_refitted->Fill(invmass3);
 								
 								CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
-								fhPi0_pt_vs_rap_gee->Fill(params1.fRapidity, params1.fPt);
-								fhPi0_pt_vs_rap_all->Fill(params1.fRapidity, params1.fPt);
+								fhPi0_pt_vs_rap_gee->Fill(params1.fPt, params1.fRapidity);
+								fhPi0_pt_vs_rap_all->Fill(params1.fPt, params1.fRapidity);
 								fhPi0_pt_gee->Fill(params1.fPt);
 								fhPi0_pt_all->Fill(params1.fPt);
 								
@@ -1172,10 +1184,62 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						
 						
 						CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
-						fhPi0_pt_vs_rap_gg->Fill(params1.fRapidity, params1.fPt);
-						fhPi0_pt_vs_rap_all->Fill(params1.fRapidity, params1.fPt);
+						fhPi0_pt_vs_rap_gg->Fill(params1.fPt, params1.fRapidity);
+						fhPi0_pt_vs_rap_all->Fill(params1.fPt, params1.fRapidity);
 						fhPi0_pt_gg->Fill(params1.fPt);
 						fhPi0_pt_all->Fill(params1.fPt);
+						
+						
+						
+						// ####################################
+						// STUDIES: efficiency of cuts
+						// ####################################
+						Bool_t IsRichElectron1 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[i], fRecoRefittedMomentum[i].Mag());
+						Bool_t IsRichElectron2 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[j], fRecoRefittedMomentum[j].Mag());
+						Bool_t IsRichElectron3 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[k], fRecoRefittedMomentum[k].Mag());
+						Bool_t IsRichElectron4 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[l], fRecoRefittedMomentum[l].Mag());
+						
+						
+						CbmLmvmKinematicParams paramsCut1;
+						CbmLmvmKinematicParams paramsCut2;
+						
+						if(motherId1 == motherId2) {
+							paramsCut1 = CalculateKinematicParamsReco(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j]);
+							paramsCut2 = CalculateKinematicParamsReco(fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
+						}
+						if(motherId1 == motherId3) {
+							paramsCut1 = CalculateKinematicParamsReco(fRecoRefittedMomentum[i], fRecoRefittedMomentum[k]);
+							paramsCut2 = CalculateKinematicParamsReco(fRecoRefittedMomentum[j], fRecoRefittedMomentum[l]);
+						}
+						if(motherId1 == motherId4) {
+							paramsCut1 = CalculateKinematicParamsReco(fRecoRefittedMomentum[i], fRecoRefittedMomentum[l]);
+							paramsCut2 = CalculateKinematicParamsReco(fRecoRefittedMomentum[j], fRecoRefittedMomentum[k]);
+						}
+						
+						
+						Double_t Value_invariantMassCut = 0.03;
+						Double_t Value_openingAngleCut1 = 1.8 - 0.3 * paramsCut1.fPt;
+						Double_t Value_openingAngleCut2 = 1.8 - 0.3 * paramsCut2.fPt;
+						
+						Bool_t OpeningAngleCut1 = (opening_angle1_refitted < Value_openingAngleCut1);
+						Bool_t OpeningAngleCut2 = (opening_angle2_refitted < Value_openingAngleCut2);
+						Bool_t InvariantMassCut1 = (paramsCut1.fMinv < Value_invariantMassCut);
+						Bool_t InvariantMassCut2 = (paramsCut2.fMinv < Value_invariantMassCut);
+						
+						
+						
+						fhEPEM_efficiencyCuts->Fill(1);		// no further cuts applied
+						if( IsRichElectron1 && IsRichElectron2 && IsRichElectron3 && IsRichElectron4 ) {		// all 4 electrons correctly identified with the RICH
+								fhEPEM_efficiencyCuts->Fill(2);
+								if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
+									fhEPEM_efficiencyCuts->Fill(3);
+									if(InvariantMassCut1 && InvariantMassCut2) {
+										fhEPEM_efficiencyCuts->Fill(4);
+									}
+								}
+						}
+
+
 
 						cout << "reco/mc: " << fRecoMomentum[i].Mag() << " / " << fRecoTracklistEPEM[i]->GetP() << " ### "  << fRecoMomentum[j].Mag() << " / " << fRecoTracklistEPEM[j]->GetP() << " ### "  << fRecoMomentum[k].Mag() << " / " << fRecoTracklistEPEM[k]->GetP() << " ### "  << fRecoMomentum[l].Mag() << " / " << fRecoTracklistEPEM[l]->GetP() << endl;
 

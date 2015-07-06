@@ -19,6 +19,7 @@
 // included from CbmRoot
 #include "CbmMCTrack.h"
 #include "CbmVertex.h"
+#include "../../littrack/cbm/elid/CbmLitGlobalElectronId.h"
 #include "../dielectron/CbmLmvmKinematicParams.h"
 
 
@@ -39,7 +40,7 @@ public:
 	void Finish();
 
 	void SetTracklistMC(vector<CbmMCTrack*> MCTracklist);
-	void SetTracklistReco(vector<CbmMCTrack*> MCTracklist, vector<TVector3> RecoTracklist1, vector<TVector3> RecoTracklist2, vector<int> ids, vector<Double_t> chi);
+	void SetTracklistReco(vector<CbmMCTrack*> MCTracklist, vector<TVector3> RecoTracklist1, vector<TVector3> RecoTracklist2, vector<int> ids, vector<Double_t> chi, vector<Int_t> GlobalTrackId);
 	void InvariantMassMC_all();
 	Double_t Invmass_4particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2, const CbmMCTrack* mctrack3, const CbmMCTrack* mctrack4);
 	Double_t SmearValue(Double_t value);
@@ -64,11 +65,14 @@ public:
 private:
 	TClonesArray* fMcTracks;
 
+	CbmLitGlobalElectronId* electronidentifier;
+
 
 	vector<CbmMCTrack*>	fMCTracklist_all;
 	vector<CbmMCTrack*>	fRecoTracklistEPEM;
 	vector<int>			fRecoTracklistEPEM_ids;
 	vector<Double_t>	fRecoTracklistEPEM_chi;
+	vector<Int_t>		fRecoTracklistEPEM_gtid;	// globalTrack Id
 	vector<TVector3>	fRecoMomentum;
 	vector<TVector3>	fRecoRefittedMomentum;
 	
@@ -121,6 +125,8 @@ private:
 	TH1D * fhPi0_pt_gg;
 	TH1D * fhPi0_pt_gee;
 	TH1D * fhPi0_pt_all;
+
+	TH1D * fhEPEM_efficiencyCuts;
 
 
 	TH1D * fhInvMass_EPEM_mc;

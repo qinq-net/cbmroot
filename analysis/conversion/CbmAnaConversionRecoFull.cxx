@@ -233,7 +233,7 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fHistoList_recofull.push_back(fhPhotons_startvertex_vs_chi);
 	fhPhotons_invmass_vs_pt = new TH2D("fhPhotons_invmass_vs_pt", "fhPhotons_invmass_vs_pt; invmass; pt", 600, -0.0025, 2.9975, 100, 0., 10.);
 	fHistoList_recofull.push_back(fhPhotons_invmass_vs_pt);
-	fhPhotons_rapidity_vs_pt = new TH2D("fhPhotons_rapidity_vs_pt", "fhPhotons_rapidity_vs_pt; rapidity; pt", 300, -3., 6., 200, 0., 10.);
+	fhPhotons_rapidity_vs_pt = new TH2D("fhPhotons_rapidity_vs_pt", "fhPhotons_rapidity_vs_pt; pt [GeV]; rap [GeV]", 200, 0., 10., 210, 0., 7.);
 	fHistoList_recofull.push_back(fhPhotons_rapidity_vs_pt);
 	
 	fhPhotons_invmass_vs_openingAngle = new TH2D("fhPhotons_invmass_vs_openingAngle", "fhPhotons_invmass_vs_openingAngle; invmass; openingAngle", 600, -0.0025, 2.9975, 100, 0., 10.);
@@ -768,12 +768,13 @@ void CbmAnaConversionRecoFull::CombinePhotons()
 				
 				fhPhotons_boostAngleTest->Fill(boostAngle);
 					
-				if(opening_angle < 10) {
+				//if(opening_angle < 10) {
+				if(true) {
 					fhPhotons_boostAngle->Fill(theta);
 				
 					fhPhotons_invmass_cut->Fill(invmass);
 					fhPhotons_invmass_vs_pt->Fill(invmass, pt);
-					fhPhotons_rapidity_vs_pt->Fill(rap, pt);
+					fhPhotons_rapidity_vs_pt->Fill(pt, rap);
 					fhPhotons_invmass_vs_openingAngle->Fill(invmass, opening_angle);
 					fhPhotons_openingAngle_vs_momentum->Fill(opening_angle, params1.fMomentumMag);
 					
