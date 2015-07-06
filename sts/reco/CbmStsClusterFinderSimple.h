@@ -24,9 +24,11 @@ using std::map;
  **
  ** The simple cluster finder connects neighbouring active channels
  ** (containing one digi) of a module into a cluster. It disregards the
- ** charge information in the digis for cluster finding. Similarly,
- ** inactive channels (strips) are not taken into account; they will lead
- ** to splitting one cluster into two.
+ ** charge information in the digis for cluster finding. 
+ ** if fGap == kFALSE: inactive channels (strips) are not taken into account; 
+ ** they will lead to splitting one cluster into two.
+ ** if fGap == kTRUE: 1-strip gap is allowed in cluster, 
+ ** if the gap is at dead channel
  ** A created cluster is assigned the sum of charges of all contributing
  ** digis, the charge-weighted mean of the channel number (equivalent
  ** to the x coordinate on the read-out edge), and the charge-weighted
@@ -47,14 +49,22 @@ class CbmStsClusterFinderSimple : public TObject {
 		/** Cluster finding engine **/
 		Int_t FindClusters(CbmStsModule* module);
 
+		/** Get nof clusters with gap**/
+		Int_t GetNofClustersWithGap(){return fNofClustersWithGap;}
+
 
 		/** Set the cluster array **/
-		void SetOutputArray(TClonesArray* clusters) { fClusters = clusters;		}
+		void SetOutputArray(TClonesArray* clusters) { fClusters = clusters;}
+
+		/** Set the gap-flag **/
+		void SetGapFlag(Bool_t gapFlag = 0) { fGap = gapFlag;}
 
 
 	private:
 
 		Int_t fIndex[2048];  ///< Array of digi indices in channels
+		Bool_t fGap;         ///< flag to allow 1 gap in cluster
+		Int_t fNofClustersWithGap; ///< Counter for clusters with gap
 
 		TClonesArray* fClusters;   ///< Output array of clusters
 

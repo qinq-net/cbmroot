@@ -72,6 +72,9 @@ class CbmStsFindClusters : public FairTask
     virtual InitStatus Init();
 
 
+    /** Set the gap-flag **/
+    void SetGap(Bool_t gapFlag = 0) { fGap = gapFlag;}
+
 	private:
 
     TClonesArray* fDigis;             ///< Input array of CbmStsDigi
@@ -79,6 +82,7 @@ class CbmStsFindClusters : public FairTask
     CbmStsSetup*  fSetup;             ///< Instance of STS setup
     CbmStsClusterFinderSimple* fFinder;  ///< Cluster finder
     TStopwatch    fTimer;             ///< ROOT timer
+    Bool_t        fGap;		      ///< flag to allow a one-strip gap in a cluster
 
     // --- Run counters
     Int_t     fNofEvents;       ///< Total number of events processed

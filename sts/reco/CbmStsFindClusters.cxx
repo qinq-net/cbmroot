@@ -37,6 +37,7 @@ CbmStsFindClusters::CbmStsFindClusters()
     , fNofClustersTot(0.)
     , fTimeTot(0.)
     , fActiveModules()
+    , fGap(0)
 {
 }
 // -------------------------------------------------------------------------
@@ -98,15 +99,18 @@ void CbmStsFindClusters::Finish() {
 	std::cout << std::endl;
 	LOG(INFO) << "=====================================" << FairLogger::endl;
 	LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
-	LOG(INFO) << "Events processed  : " << fNofEvents << FairLogger::endl;
-	LOG(INFO) << "Digis / event     : " << fNofDigisTot / Double_t(fNofEvents)
+	LOG(INFO) << "Events processed   : " << fNofEvents << FairLogger::endl;
+	LOG(INFO) << "Digis / event      : " << fNofDigisTot / Double_t(fNofEvents)
 			      << FairLogger::endl;
-	LOG(INFO) << "Clusters / event  : "
+	LOG(INFO) << "Clusters / event   : "
 			      << fNofClustersTot / Double_t(fNofEvents)
 			      << FairLogger::endl;
-	LOG(INFO) << "Digis per cluster : " << fNofDigisTot / fNofClustersTot
+	LOG(INFO) << "ClustersWithGap / e: " 
+			      << Double_t(fFinder -> GetNofClustersWithGap()) / Double_t (fNofEvents)
 			      << FairLogger::endl;
-	LOG(INFO) << "Time per event    : " << fTimeTot / Double_t(fNofEvents)
+	LOG(INFO) << "Digis per cluster  : " << fNofDigisTot / fNofClustersTot
+			      << FairLogger::endl;
+	LOG(INFO) << "Time per event     : " << fTimeTot / Double_t(fNofEvents)
 			      << " s " << FairLogger::endl;
 	LOG(INFO) << "=====================================" << FairLogger::endl;
 
@@ -162,6 +166,7 @@ InitStatus CbmStsFindClusters::Init()
     // --- Create cluster finder
     fFinder = new CbmStsClusterFinderSimple();
     fFinder->SetOutputArray(fClusters);
+    fFinder->SetGapFlag(fGap);
 
     LOG(INFO) << GetName() << ": Initialisation successful"
     		      << FairLogger::endl;

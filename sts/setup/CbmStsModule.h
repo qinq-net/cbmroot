@@ -155,6 +155,8 @@ class CbmStsModule : public CbmStsElement
      /** Current number of digis **/
      Int_t GetNofDigis() const { return fDigis.size(); }
 
+     /** Set of dead channels **/
+     set <Int_t> GetSetOfDeadChannels() const {return fDeadChannels;}
 
      /** Initialise the analog buffer
       ** The analog buffer contains a std::multiset for each channel, to be
@@ -228,7 +230,7 @@ class CbmStsModule : public CbmStsElement
     Double_t fDeadTime;          ///< Channel dead time [ns]
     Double_t fNoise;             ///< Equivalent noise charge (sigma) [e]
     Bool_t   fIsSet;             ///< Flag whether parameters are set
-    set<Int_t> fDeadChannels;    ///< List of inactive channels
+    set <Int_t> fDeadChannels;    ///< List of inactive channels
 
     /** Buffer for analog signals, key is channel number.
      ** Because signals do not, in general, arrive time-sorted,
