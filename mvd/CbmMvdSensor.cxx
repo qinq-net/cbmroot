@@ -326,7 +326,7 @@ initialized = kTRUE;
 
 // -------------------------------------------------------------------------
 void CbmMvdSensor::ShowDebugHistos(){
-if(fDetectorID == 1)
+if(fDetectorID == 1537)
 	{
 	CbmMvdSensorPlugin* pluginLast;
 	pluginLast=(CbmMvdSensorPlugin*)fPluginArray->At(fPluginArray->GetEntriesFast()-1);

@@ -58,6 +58,7 @@ public:
    Int_t    GetStation(const TString& path);
    void     Fill();
    map<Int_t, Int_t> GetMap() {return fStationMap;};
+   void PrintGeoParameter();
 
 private:
 

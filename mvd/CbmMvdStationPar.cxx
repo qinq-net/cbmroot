@@ -44,6 +44,7 @@ CbmMvdStationPar::CbmMvdStationPar(Int_t count)
     fBeamHeights(), 
     fBeamWidths()
 {
+if (fStationCount > 4) fStationCount = 4;
 }
 // -------------------------------------------------------------------------
 

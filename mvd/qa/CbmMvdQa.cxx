@@ -46,15 +46,10 @@ CbmMvdQa::CbmMvdQa()
   fStsTrackMatches(),
   fListMCTracks(),
   fMvdHitMatchArray(),
-  fMvdResHisto(),
-  fMvd4ResHisto(),
-  fVtxResHisto(),
-  fMvdAngleResHisto(),
-  fMvdAngleResHisto1GeV(),
-  fMvdAngleResHistolarger1GeV(),
-  fMvdAngleResHisto2GeV(),
-  fMvdAngleResHistolarger2GeV(),
-  fMvdResHistoTrasMom(),
+  fMvdResHistoX(),
+  fMvdResHistoR(),
+  fMvdResHistoY(),
+  fMvdResHistoXY(),
   fMatchingEffiHisto(),
   fInfoArray(),
   fExtrapolator(),
@@ -81,15 +76,10 @@ CbmMvdQa::CbmMvdQa(const char* name, Int_t iMode, Int_t iVerbose)
   fStsTrackMatches(),
   fListMCTracks(),
   fMvdHitMatchArray(),
-  fMvdResHisto(),
-  fMvd4ResHisto(),
-  fVtxResHisto(),
-  fMvdAngleResHisto(),
-  fMvdAngleResHisto1GeV(),
-  fMvdAngleResHistolarger1GeV(),
-  fMvdAngleResHisto2GeV(),
-  fMvdAngleResHistolarger2GeV(),
-  fMvdResHistoTrasMom(),
+  fMvdResHistoX(),
+  fMvdResHistoR(),
+  fMvdResHistoY(),
+  fMvdResHistoXY(),
   fMatchingEffiHisto(),
   fInfoArray(),
   fExtrapolator(),
@@ -146,61 +136,35 @@ cout << "-----------------------------------------------------------------------
     
 
     // --- all the histogramms --- //
-    fMvdResHisto=new TH2F("MvdResMom","Mvd Resolution Momentum",70,0,10,70,0,0.05);
-    fMvdResHisto->GetYaxis()->SetTitle("Impact Radius [cm]");
-    fMvdResHisto->GetXaxis()->SetTitle("Momentum [GeV/c]");
+    fMvdResHistoX=new TH2F("MvdResMom","Mvd Resolution Momentum in x",70,0,10,70,-0.03,0.03);
+    fMvdResHistoX->GetYaxis()->SetTitle("Impactparameter x [cm]");
+    fMvdResHistoX->GetXaxis()->SetTitle("Momentum [GeV/c]");
 
-    fMvdResHisto->GetYaxis()->SetTitleOffset(1.5);
-    fMvdResHisto->GetXaxis()->SetTitleOffset(1.5);
+    fMvdResHistoX->GetYaxis()->SetTitleOffset(1.5);
+    fMvdResHistoX->GetXaxis()->SetTitleOffset(1.5);
 
-   fMvd4ResHisto=new TH2F("Mvd4ResMom","Mvd Resolution Momentum [>2 Mvd Hits]",70,0,10,70,0,0.05);
-   fMvd4ResHisto->GetYaxis()->SetTitle("Impact Radius [cm]");
-   fMvd4ResHisto->GetXaxis()->SetTitle("Momentum [GeV/c]");
 
-    fMvd4ResHisto->GetYaxis()->SetTitleOffset(1.5);
-    fMvd4ResHisto->GetXaxis()->SetTitleOffset(1.5);
+    fMvdResHistoR=new TH2F("MvdResMom","Mvd Resolution Momentum in r",70,0,10,70, 0,0.05);
+    fMvdResHistoR->GetYaxis()->SetTitle("Impactparameter r [cm]");
+    fMvdResHistoR->GetXaxis()->SetTitle("Momentum [GeV/c]");
 
-   fMvdAngleResHisto=new TH2F("MvdResAngle","Mvd Resolution Angle",70,0,45,70,0,0.01);
-   fMvdAngleResHisto->GetYaxis()->SetTitle("Impact Radius [cm]");
-   fMvdAngleResHisto->GetXaxis()->SetTitle("Angle");
+    fMvdResHistoR->GetYaxis()->SetTitleOffset(1.5);
+    fMvdResHistoR->GetXaxis()->SetTitleOffset(1.5);
 
-    fMvdAngleResHisto->GetYaxis()->SetTitleOffset(1.5);
-    fMvdAngleResHisto->GetXaxis()->SetTitleOffset(1.5);
 
-   fMvdAngleResHisto1GeV=new TH2F("MvdResAngle1GeV","Mvd Resolution Angle [p<1GeV]",70,0,45,70,0,0.01);
-   fMvdAngleResHisto1GeV->GetYaxis()->SetTitle("Impact Radius [cm]");
-   fMvdAngleResHisto1GeV->GetXaxis()->SetTitle("Angle");
+   fMvdResHistoY=new TH2F("Mvd4ResMom","Mvd Resolution Momentum in y",70,0,10,70,-0.03,0.03);
+   fMvdResHistoY->GetYaxis()->SetTitle("Impactparameter y [cm]");
+   fMvdResHistoY->GetXaxis()->SetTitle("Momentum [GeV/c]");
 
-     fMvdAngleResHisto1GeV->GetYaxis()->SetTitleOffset(1.5);
-     fMvdAngleResHisto1GeV->GetXaxis()->SetTitleOffset(1.5);
+    fMvdResHistoY->GetYaxis()->SetTitleOffset(1.5);
+    fMvdResHistoY->GetXaxis()->SetTitleOffset(1.5);
 
-   fMvdAngleResHistolarger1GeV=new TH2F("MvdResAnglelarger1GeV","Mvd Resolution Angle [p>1GeV]",70,0,45,70,0,0.01);
-   fMvdAngleResHistolarger1GeV->GetYaxis()->SetTitle("Impact Radius [cm]");
-   fMvdAngleResHistolarger1GeV->GetXaxis()->SetTitle("Angle");
+    fMvdResHistoXY=new TH2F("MvdResMom","Mvd Resolution Momentum X vs Y",70,-0.03,0.03,70,-0.03,0.03);
+    fMvdResHistoXY->GetYaxis()->SetTitle("Impactparameter x [cm]");
+    fMvdResHistoXY->GetXaxis()->SetTitle("Impactparameter y [cm]");
 
-    fMvdAngleResHistolarger1GeV->GetYaxis()->SetTitleOffset(1.5);
-    fMvdAngleResHistolarger1GeV->GetXaxis()->SetTitleOffset(1.5);
-
-   fMvdAngleResHisto2GeV=new TH2F("MvdResAngle2GeV","Mvd Resolution Angle [p<2GeV]",70,0,45,70,0,0.01);
-   fMvdAngleResHisto2GeV->GetYaxis()->SetTitle("Impact Radius [cm]");
-   fMvdAngleResHisto2GeV->GetXaxis()->SetTitle("Angle");
-
-    fMvdAngleResHisto2GeV->GetYaxis()->SetTitleOffset(1.5);
-    fMvdAngleResHisto2GeV->GetXaxis()->SetTitleOffset(1.5);
-
-   fMvdAngleResHistolarger2GeV=new TH2F("MvdResAnglelarger2GeV","Mvd Resolution Angle [p>2GeV]",70,0,45,70,0,0.01);
-   fMvdAngleResHistolarger2GeV->GetYaxis()->SetTitle("Impact Radius [cm]");
-   fMvdAngleResHistolarger2GeV->GetXaxis()->SetTitle("Angle");
-
-    fMvdAngleResHistolarger2GeV->GetYaxis()->SetTitleOffset(1.5);
-    fMvdAngleResHistolarger2GeV->GetXaxis()->SetTitleOffset(1.5);
-
-   fVtxResHisto=new TH2F("VtxRes","Vertex Resolution",70,0,0.01,70,0,0.01);
-   fVtxResHisto->GetXaxis()->SetTitle("Impact Radius x [cm]");
-   fVtxResHisto->GetYaxis()->SetTitle("Impact Radius y [cm]");
-
-    fVtxResHisto->GetYaxis()->SetTitleOffset(1.5);
-    fVtxResHisto->GetXaxis()->SetTitleOffset(1.5);
+    fMvdResHistoXY->GetYaxis()->SetTitleOffset(1.5);
+    fMvdResHistoXY->GetXaxis()->SetTitleOffset(1.5);
 
    fMatchingEffiHisto=new TH1F("MvdMatchingEffi","Matching Efficiency",70,0,1.1);
    fMatchingEffiHisto->GetXaxis()->SetTitle("Matching Efficiency");
@@ -274,52 +238,34 @@ for ( Int_t itr=0; itr<nTracks; itr++ )
        if(mvdHitsInTrack > 0) 
 		mvdStsRatio = stsTrack->GetNofHits() / mvdHitsInTrack;
        else mvdStsRatio = 10;
-
+       if(stsTrack->GetNofHits() - mvdHitsInTrack > 3)
+	{
         if(mvdHitsInTrack >= fminHitReq && motherID == -1)
 		{
 		fUsedTracks++;
 		//cout << endl << "found good track" << endl;
                 SetMatches(trackIndex, stsTrack);
-			if(fMvdRecoRatio != 1) 
-				{
-				new((*fBadTracks)[fBadTracks->GetEntriesFast()]) CbmStsTrack(*((CbmStsTrack*)stsTrack));
-				fBadTrack++;
-				continue;
-				}
+		//	if(fMvdRecoRatio != 1) 
+		//		{
+		//		new((*fBadTracks)[fBadTracks->GetEntriesFast()]) CbmStsTrack(*((CbmStsTrack*)stsTrack));
+		//		fBadTrack++;
+		//		continue;
+		//		}
     		const FairTrackParam *paramIn = stsTrack->GetParamFirst();
    	 	CbmLitTrackParam litParamIn; // parameter at last attached Hit
    	 	CbmLitConverter::FairTrackParamToCbmLitTrackParam(paramIn, &litParamIn);
     		CbmLitTrackParam litParamOut; // parameter at vertex
 	
    	 	fExtrapolator->Extrapolate(&litParamIn, &litParamOut,0, NULL);
-		       fMvdResHisto->Fill(GetMomentum(litParamOut), GetImpactParameterRadius(litParamOut));
-                       fVtxResHisto->Fill(GetImpactParameterX(litParamOut),GetImpactParameterY(litParamOut));
-		  fMvdAngleResHisto->Fill(GetAngle(litParamOut),GetImpactParameterRadius(litParamOut));	
+		fMvdResHistoX->Fill(GetMomentum(litParamOut), GetImpactParameterX(litParamOut));
+		fMvdResHistoR->Fill(GetMomentum(litParamOut), GetImpactParameterRadius(litParamOut));
+		fMvdResHistoY->Fill(GetMomentum(litParamOut),GetImpactParameterY(litParamOut));
+		fMvdResHistoXY->Fill(GetImpactParameterX(litParamOut),GetImpactParameterY(litParamOut));
 		
-	   if(mvdHitsInTrack > 2)
-			{
-	        	fMvd4ResHisto->Fill(GetMomentum(litParamOut),GetImpactParameterRadius(litParamOut) );
-                	
-			}
-           if (GetMomentum(litParamOut) < 1)
-			{
-			fMvdAngleResHisto1GeV->Fill(GetAngle(litParamOut),GetImpactParameterRadius(litParamOut));	
-			}
-	   if (GetMomentum(litParamOut) > 1)
-			{
-			fMvdAngleResHistolarger1GeV->Fill(GetAngle(litParamOut),GetImpactParameterRadius(litParamOut));	
-          		}
-           if (GetMomentum(litParamOut) < 2)
-			{
-			fMvdAngleResHisto2GeV->Fill(GetAngle(litParamOut),GetImpactParameterRadius(litParamOut));	
-			}
-	   if (GetMomentum(litParamOut) > 4)
-			{
-			fMvdAngleResHistolarger2GeV->Fill(GetAngle(litParamOut),GetImpactParameterRadius(litParamOut));	
-	  		}
 		}
 
         }
+      }
 fStsTrackArray->Clear();
 fStsTrackMatches->Clear();
 
@@ -472,33 +418,19 @@ cout << endl << "-I- " << GetName() << " Finished" << endl
 TCanvas* c=new TCanvas();
 c->Divide(2,2);
 c->cd(1);
-fMvdResHisto->Draw("COL");
-fMvdResHisto->Write();
+fMvdResHistoX->Draw("COL");
+fMvdResHistoX->Write();
 c->cd(2);
-fMvd4ResHisto->Draw("COL");
-fMvd4ResHisto->Write();
+fMvdResHistoY->Draw("COL");
+fMvdResHistoY->Write();
 c->cd(3);
-fMatchingEffiHisto->Draw("COL");
-fMatchingEffiHisto->Write();
+fMvdResHistoXY->Draw("COL");
+fMvdResHistoXY->Write();
 c->cd(4);
-fMvdAngleResHisto->Draw("COL");
-fMvdAngleResHisto->Write();
+fMvdResHistoR->Draw("COL");
+fMvdResHistoR->Write();
 
 
-TCanvas* c2 = new TCanvas();
-c2->Divide(2,2);
-c2->cd(1);
-fMvdAngleResHisto1GeV->Draw("COL");
-fMvdAngleResHisto1GeV->Write();
-c2->cd(2);
-fMvdAngleResHistolarger1GeV->Draw("COL");
-fMvdAngleResHistolarger1GeV->Write();
-c2->cd(3);
-fMvdAngleResHisto2GeV->Draw("COL");
-fMvdAngleResHisto2GeV->Write();
-c2->cd(4);
-fMvdAngleResHistolarger2GeV->Draw("COL");
-fMvdAngleResHistolarger2GeV->Write();
 }
 //-----------------------------------------------------------------------------------------
 

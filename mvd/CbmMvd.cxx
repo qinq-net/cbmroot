@@ -309,6 +309,7 @@ CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
 mvdHandler->Init(kTRUE);
 mvdHandler->Fill();
 fStationMap = mvdHandler->GetMap();
+cout << endl << "filled mvd StationMap with: " << fStationMap.size() << " new Sensors" << endl;
 }
 // -------------------------------------------------------------------------
 

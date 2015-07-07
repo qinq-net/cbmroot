@@ -501,17 +501,15 @@ void CbmMvdSensorDigitizerTask::ProduceIonisationPoints(CbmMvdPoint* point) {
   Double_t globalPositionOut[3]={point->GetXOut(), point->GetYOut(), point->GetZOut()};
   
   Double_t localPositionIn[3]  ={0,0,0};
+
   Double_t localPositionOut[3] ={0,0,0};
     
   fSensor->TopToLocal(globalPositionIn, localPositionIn);
   fSensor->TopToLocal(globalPositionOut, localPositionOut);
 
-  //if (fShowDebugHistos)cout << endl << " partical from global " << globalPositionIn[0] << " to local " << localPositionIn[0] << endl;
-
   Int_t pixelX, pixelY;
   fSensor->LocalToPixel(&localPositionIn[0],pixelX, pixelY); 
 
-  //if (fShowDebugHistos)cout << endl << "hit pixel number " << pixelX << ", " << pixelY << endl;
   // Copy results into variables used by earlier versions
   
   Double_t entryX = localPositionIn [0];
@@ -777,9 +775,9 @@ Int_t ix, iy;
 
     
     for (ix = ixLo; ix < ixUp+1; ix++) {
-// cout << endl <<"loop for " << ix << endl;
+
 	    for (iy = iyLo; iy < iyUp+1; iy++) {
-// cout << endl <<"loop in " << iy << endl;
+
 		//calculate the position of the current pixel in the lab-system
 
 		Double_t Current[3];
@@ -811,11 +809,11 @@ Float_t totCharge = (sPoint->charge * fLorentzNorm *(0.5*fPar0*fPar1/TMath::Pi()
 			
 			if(totCharge<1){
 			 
-//    			 cout << endl << "charge is " << totCharge << " < 1 electron thus charge is negligible" << endl;
+// 			 cout << endl << "charge is " << totCharge << " < 1 electron thus charge is negligible" << endl;
 			   continue;
 			} //ignore negligible charge (< 1 electron)
 			if(!pixel) {
-//      			  cout << endl << "charge is " << totCharge << " > 1 electron thus pixel is firred at "<< ix << " " << iy << endl;
+// cout << endl << "charge is " << totCharge << " > 1 electron thus pixel is firred at "<< ix << " " << iy << endl;
 		 		// Look for pixel in charge map if not yet linked.
      				thispoint = std::make_pair(ix,iy);
 //   				cout << endl << "creat pair at "<< ix << " " << iy << endl;
@@ -829,7 +827,7 @@ Float_t totCharge = (sPoint->charge * fLorentzNorm *(0.5*fPar0*fPar1/TMath::Pi()
 							    (point->GetX()+point->GetXOut())/2, 
 							    (point->GetY()+point->GetXOut())/2, point->GetTime(), point->GetFrame()
 							   );
-  //cout << endl << "new charched pixel with charge " << totCharge << " at " << ix << " " << iy << endl;
+//cout << endl << "new charched pixel with charge " << totCharge << " at " << ix << " " << iy << endl;
 //  					  fPixelChargeShort.push_back(pixel);
 // 				cout << endl << "added pixel to ChargeShort vector " << endl;   
 					

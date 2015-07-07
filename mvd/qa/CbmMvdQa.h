@@ -89,15 +89,10 @@ private:
   TClonesArray* fBadTracks;
 
   TClonesArray* fInfoArray;
-  TH2F* fMvdResHisto;
-  TH2F* fMvd4ResHisto;
-  TH2F* fVtxResHisto;
-  TH2F* fMvdAngleResHisto;
-  TH2F* fMvdAngleResHisto1GeV;
-  TH2F* fMvdAngleResHistolarger1GeV;
-  TH2F* fMvdAngleResHisto2GeV;
-  TH2F* fMvdAngleResHistolarger2GeV;
-  TH2F* fMvdResHistoTrasMom;
+  TH2F* fMvdResHistoX;
+  TH2F* fMvdResHistoR;
+  TH2F* fMvdResHistoY;
+  TH2F* fMvdResHistoXY;
   TH1F* fMatchingEffiHisto;
 
 

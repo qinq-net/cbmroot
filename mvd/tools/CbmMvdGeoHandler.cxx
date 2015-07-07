@@ -197,7 +197,7 @@ void CbmMvdGeoHandler::NavigateTo(
       fGeoPathHash = path.Hash();
       fCurrentVolume = gGeoManager->GetCurrentVolume();
       TString name = fCurrentVolume->GetName();
-      //cout << endl << "this volume#include "SensorDataSheets/CbmMvdMimosa26AHR.h" is " << name << endl;
+      //cout << endl << "this volume is " << name << endl;
       fVolumeShape = (TGeoBBox*)fCurrentVolume->GetShape();
       Double_t local[3] = {0., 0., 0.};  // Local center of volume
       gGeoManager->LocalToMaster(local, fGlobal);
@@ -285,6 +285,12 @@ else if (gGeoManager->CheckPath(fMother + "/MVDo0123ohoFPCoextoHSoSo0123_0"))
 	fGeoTyp = 4;
 	fDetectorName = "/MVDo0123ohoFPCoextoHSoSo0123_0";
 	}
+else if (gGeoManager->CheckPath(fMother + "/MVDo1123ohoFPCoextoHSoSo1123_0"))
+	{
+	LOG(INFO) << "Found shifted MVD with 4 Stations" << FairLogger::endl;
+	fGeoTyp = 5;
+	fDetectorName = "/MVDo1123ohoFPCoextoHSoSo1123_0";
+	}
 else 
 	{
 	cout << endl << "Try standard Geometry" << endl;
@@ -312,7 +318,7 @@ void CbmMvdGeoHandler::FillDetector()
 if(fGeoTyp == 1)
 	LOG(FATAL) << "Using old Geometry files within the new Digitizer is not supported, "
 		   << "please use CbmMvdDigitizeL if you want to use this Geometry" << FairLogger::endl;
-if(fGeoTyp != 4)
+if(fGeoTyp < 4)
 	LOG(FATAL) <<  "Geometry format of MVD file " 
 		   <<  " not yet supported." << FairLogger::endl;
 else
@@ -328,13 +334,13 @@ fDetector->SetParameterFile(fStationPar);
 Int_t iStation = 0;
   	for(Int_t StatNr = 0; StatNr < 4; StatNr++)
       	{
-	if(StatNr == 0)
+	if(StatNr == 0 && fGeoTyp == 4)
 		fStationName = "/MVDo0ohoFPCoHSoS_1";
 	else
 		fStationName = Form("/MVDo%iohoFPCoextoHSoS_1",StatNr);
 		for(Int_t QuadNr = 0; QuadNr < 4; QuadNr++)
 	    	{
-		if(StatNr == 0)
+		if(StatNr == 0  && fGeoTyp == 4)
 	        fQuadrantName = Form("/St0Q%iohoFPC_1", QuadNr);
 		else
 		fQuadrantName = Form("/St%iQ%iohoFPCoext_1",StatNr, QuadNr);
@@ -388,20 +394,27 @@ if(fBeamwidth > 0)fStationPar->SetBeamWidth(fStationNumber, fBeamwidth);
 //--------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------
+void CbmMvdGeoHandler::PrintGeoParameter()
+{
+fStationPar->Print();
+}
+//--------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------
 void CbmMvdGeoHandler::FillStationMap()
 {
-if(fGeoTyp == 4)
+if(fGeoTyp >= 4)
 {
 Int_t iStation = 0;
   	for(Int_t StatNr = 0; StatNr < 4; StatNr++)
       	{
-	if(StatNr == 0)
+	if(StatNr == 0 && fGeoTyp == 4)
 		fStationName = "/MVDo0ohoFPCoHSoS_1";
 	else
 		fStationName = Form("/MVDo%iohoFPCoextoHSoS_1",StatNr);
 		for(Int_t QuadNr = 0; QuadNr < 4; QuadNr++)
 	    	{
-		if(StatNr == 0)
+		if(StatNr == 0  && fGeoTyp == 4)
 	        fQuadrantName = Form("/St0Q%iohoFPC_1", QuadNr);
 		else
 		fQuadrantName = Form("/St%iQ%iohoFPCoext_1",StatNr, QuadNr);

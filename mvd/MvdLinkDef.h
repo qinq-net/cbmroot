@@ -40,7 +40,7 @@
 
 #pragma link C++ class CbmMvdGeoHandler+;
 
-//#pragma link C++ class CbmMvdQa+;
+#pragma link C++ class CbmMvdQa+;
 #pragma link C++ class CbmMvdClusterAna+;
 
 
