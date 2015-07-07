@@ -114,9 +114,10 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     This function is reinitialized for each new TimeSliceContainer
   */
   fContainerCounter++;
+  /*
   Int_t channelMapping[32] = {31,15,30,14,29,13,28,12,27,11,26,10,25, 9,24, 8,
 			      23, 7,22, 6,21, 5,20, 4,19, 3,18, 2,17, 1,16, 0};
-
+  */
   TString timebinName[32] = { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", 
 			      "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", 
 			      "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", 
@@ -235,17 +236,22 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
       LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter << " Source Address " << sourceA << "not known." << FairLogger::endl;
       break;
     }   
+    /*
     if(chID % 2 == 0)
       rowId = 0;
     else
       rowId = 1;
     //printf("EI%i SA%i ->|\n",eqID,sourceA);
-    chID = channelMapping[chID];// Remapping from ASIC to pad-plane
+    */
+    chID = GetChannelOnPadPlane(chID);//channelMapping[chID];// Remapping from ASIC to pad-plane
+    /*
     // Compare to channel mapping from pad-plane to ASIC
     columnId = chID;
     if (columnId > 16) 
       columnId -= 16;
-
+    */
+    columnId = GetColumnID(raw);
+    rowId = GetRowID(raw);
     combiId = rowId * (maxNrColumns + 1) + columnId;
 
     //if (stopType == 0 && triggerType > 0){
@@ -258,7 +264,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 										  raw->GetEpochMarker(), raw->GetTime(), raw->GetSuperEpoch(), raw->GetTriggerType(),
 										   raw->GetInfoType(), raw->GetStopType(), raw->GetGroupId(), raw->GetBufferOverflowCount(), raw->GetNrSamples(), raw->GetSamples());
     } else {
-      fTimeBuffer[TString(syscore+spadic)][time][-1]=raw;
+      //fTimeBuffer[TString(syscore+spadic)][time][-1]=raw;
       LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter << " SysId " << SysId << " SpaId " << SpaId << " at time " << time << " with combiId " << combiId << " already in buffer" << FairLogger::endl;
       LOG(ERROR) << "                        " << TString(syscore+spadic) << " at time " << time << " with combiId " << combiId << " row " << rowId << " column " << columnId << FairLogger::endl;
     }
@@ -423,10 +429,12 @@ void CbmTrdRawBeamProfile::Clusterizer()
   std::vector<Int_t> digiIndices;
   for (std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = fTimeBuffer.begin() ; SpaSysIt != fTimeBuffer.end(); SpaSysIt++){
     SysSpaID = SpaSysIt->first;
+    //printf("%s\n",SysSpaID.Data());
     for (std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > ::iterator timeIt = (SpaSysIt->second).begin() ; timeIt != (SpaSysIt->second).end(); timeIt++){
       LOG(DEBUG) <<  "ClusterSize:" << Int_t((timeIt->second).size()) << FairLogger::endl;
       clusterSize = Int_t((timeIt->second).size());
       time = timeIt->first;
+      //printf("      %lu\n",time);
       fHM->H1(TString("ClusterSize_" + SysSpaID).Data())->Fill(clusterSize);
 
       //Delta time between time clusters
@@ -455,6 +463,7 @@ void CbmTrdRawBeamProfile::Clusterizer()
 	sectorId = GetSectorID(raw);
 	rowId = GetRowID(raw);
 	columnId = GetColumnID(raw);
+
 	// BaseLineCorrection==
 	Float_t Baseline = 0.;
 	if (raw->GetStopType() == 0){
@@ -476,21 +485,23 @@ void CbmTrdRawBeamProfile::Clusterizer()
 					   raw->GetFullTime()*57.14,//57,14 ns per timestamp
 					   raw->GetTriggerType(), raw->GetInfoType(), raw->GetStopType(),
 					   raw->GetNrSamples(), Samples/*&Samples[32]*/);
-	digiIndices.push_back(fiDigi);
+	//digiIndices.push_back(fiDigi);
 
 	if (combiIt != timeIt->second.begin()){
 	  fHM->H1(TString("DeltaCh_Cluster_" + SpaSysIt->first).Data())->Fill(combiIt->first - lastCombiID);
 	}
 
-	if (combiIt->first - lastCombiID > 1){
+	if (combiIt->first - lastCombiID != 1 && digiIndices.size() > 0){
 	  //printf("\n");
+	  //printf("|>------------------Cluster %i finished (%02i)\n", fiCluster,Int_t(digiIndices.size()));
 	  CbmTrdCluster* cluster = new ((*fClusters)[fiCluster]) CbmTrdCluster();
 	  cluster->SetAddress(CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId));
 	  cluster->SetDigis(digiIndices);
 	  digiIndices.clear();
 	  fiCluster++;
 	}
-	
+	digiIndices.push_back(fiDigi);
+	//printf("             %02i row%i col%02i %i\n",combiIt->first,rowId,columnId,Int_t(digiIndices.size()));
 	//printf("%i ",combiIt->first);
 	//delete combiIt->second;
 	lastCombiID = combiIt->first;
@@ -498,6 +509,7 @@ void CbmTrdRawBeamProfile::Clusterizer()
       }
       if (digiIndices.size() > 0){
 	//printf("digiIndices %i > 0\n",(Int_t)digiIndices.size());
+	//printf("|>------------------Cluster %i finished (%02i)\n", fiCluster,Int_t(digiIndices.size()));
 	CbmTrdCluster* cluster = new ((*fClusters)[fiCluster]) CbmTrdCluster();
 	cluster->SetAddress(CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId));
 	cluster->SetDigis(digiIndices);
