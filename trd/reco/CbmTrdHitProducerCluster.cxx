@@ -112,6 +112,7 @@ void CbmTrdHitProducerCluster::TriangularPadReconstruction(Int_t clusterId){
   TVector3 local_pad_posV;
   TVector3 local_pad_dposV;
   Double_t totalCharge = 0;
+  Double_t totalChargeTR = 0;
   Int_t moduleAddress = 0;
   Int_t nofDigis = cluster->GetNofDigis();
   Int_t digiMaxId(-1), digiMaxCombiId(-1), maxRow(-1), maxCol(-1), maxDigiAddress(-1);
@@ -143,8 +144,10 @@ void CbmTrdHitProducerCluster::TriangularPadReconstruction(Int_t clusterId){
     //digiList.push_back(make_pair(combiId,digiId));  
     moduleAddress = CbmTrdAddress::GetModuleAddress(digi->GetAddress());
     Double_t charge = digi->GetCharge();
+    Double_t chargeTR = digi->GetChargeTR();
     digiMap[combiId] = charge;
     totalCharge += charge;
+    totalChargeTR += chargeTR;
     if (charge > maxCharge){
       maxCharge = charge;
       maxRow = rowId;
@@ -257,7 +260,8 @@ void CbmTrdHitProducerCluster::TriangularPadReconstruction(Int_t clusterId){
   }
  
   Int_t nofHits = fHits->GetEntriesFast();
-  new ((*fHits)[nofHits]) CbmTrdHit(moduleAddress, hit_posV, local_pad_dposV, 0, clusterId, 0, 0, totalCharge);
+  new ((*fHits)[nofHits]) CbmTrdHit(moduleAddress, hit_posV, local_pad_dposV, 0, clusterId, 
+				    totalChargeTR, totalCharge-totalChargeTR, totalCharge);
 }
 
 
@@ -274,6 +278,7 @@ void CbmTrdHitProducerCluster::CenterOfGravity(Int_t clusterId)
     local_pad_dposV[iDim] = 0.0;
   }
   Double_t totalCharge = 0;
+  Double_t totalChargeTR = 0;
   Int_t moduleAddress = 0;
   Int_t nofDigis = cluster->GetNofDigis();
   for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++) {
@@ -289,6 +294,7 @@ void CbmTrdHitProducerCluster::CenterOfGravity(Int_t clusterId)
       return;
     }
     totalCharge += digi->GetCharge();
+    totalChargeTR += digi->GetChargeTR();
     //printf("DigiAddress:%i ModuleAddress:%i\n",digi->GetAddress(), CbmTrdAddress::GetModuleAddress(digi->GetAddress()));
     moduleInfo->GetPadPosition(digi->GetAddress(), local_pad_posV, local_pad_dposV);//local_pad_pos[0], local_pad_pos[1], local_pad_pos[2]);
     if (fTrianglePads){
@@ -332,6 +338,7 @@ void CbmTrdHitProducerCluster::CenterOfGravity(Int_t clusterId)
     hit_posV[iDim] = global_hit[iDim];
   }
   Int_t nofHits = fHits->GetEntriesFast();
-  new ((*fHits)[nofHits]) CbmTrdHit(moduleAddress, hit_posV, local_pad_dposV, 0, clusterId, 0, 0, totalCharge);
+  new ((*fHits)[nofHits]) CbmTrdHit(moduleAddress, hit_posV, local_pad_dposV, 0, clusterId,
+				    totalChargeTR, totalCharge-totalChargeTR, totalCharge);
 }
     ClassImp(CbmTrdHitProducerCluster)

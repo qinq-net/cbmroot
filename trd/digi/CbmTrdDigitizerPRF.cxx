@@ -198,7 +198,7 @@ void CbmTrdDigitizerPRF::Exec(Option_t * option)
     fnCol = fModuleInfo->GetNofColumns();
     fnRow = fModuleInfo->GetNofRows();
 
-    SplitTrackPath(point, ELoss);
+    SplitTrackPath(point, ELoss, ELossTR);
   }
 
   // Fill data from internally used stl map into output TClonesArray
@@ -241,7 +241,7 @@ Double_t CbmTrdDigitizerPRF::CalcPRF(Double_t x, Double_t W, Double_t h)
 	      );
 }
 
-void CbmTrdDigitizerPRF::ScanPadPlaneTriangle(const Double_t* local_point, Double_t clusterELoss)
+void CbmTrdDigitizerPRF::ScanPadPlaneTriangle(const Double_t* local_point, Double_t clusterELoss, Double_t clusterELossTR)
 {
   /*
   // In order to get this algorithm as perfromant as possible the pad plane in the digipar containes twice pad rows without further information on the pad geomatry itself.
@@ -398,8 +398,9 @@ void CbmTrdDigitizerPRF::ScanPadPlaneTriangle(const Double_t* local_point, Doubl
 	if (iRow % 2 != 0){
 	  if ((chargeFractionRectangle - chargeFractionTriangle) < 0.0)
 	    printf("-------------------------------\nc:%i r:%i even: %E  odd %E        R: %E   T:%E\n-------------------------------\n",iCol, iRow, chargeFractionTriangle, chargeFractionRectangle - chargeFractionTriangle, chargeFractionRectangle, chargeFractionTriangle);
-	  AddDigi(fMCPointId, addressEven, Double_t(chargeFractionTriangle * clusterELoss), fTime);
-	  AddDigi(fMCPointId, addressOdd, Double_t((chargeFractionRectangle - chargeFractionTriangle) * clusterELoss), fTime);
+	  AddDigi(fMCPointId, addressEven, Double_t(chargeFractionTriangle * clusterELoss),
+Double_t(chargeFractionTriangle * clusterELossTR), fTime);
+	  AddDigi(fMCPointId, addressOdd, Double_t((chargeFractionRectangle - chargeFractionTriangle) * clusterELoss), Double_t((chargeFractionRectangle - chargeFractionTriangle) * clusterELossTR), fTime);
 	}     
       } // for iRow      
     } // for iCol
@@ -478,7 +479,7 @@ Double_t CbmTrdDigitizerPRF::TriangleIntegration(Bool_t even, Double_t dis_x, Do
   return chargeFraction;
 }
 
-void CbmTrdDigitizerPRF::ScanPadPlane(const Double_t* local_point, Double_t clusterELoss)
+void CbmTrdDigitizerPRF::ScanPadPlane(const Double_t* local_point, Double_t clusterELoss, Double_t clusterELossTR)
 {
   Int_t sectorId(-1), columnId(-1), rowId(-1);
   fModuleInfo->GetPadInfo( local_point, sectorId, columnId, rowId);
@@ -560,7 +561,7 @@ void CbmTrdDigitizerPRF::ScanPadPlane(const Double_t* local_point, Double_t clus
 	  if(CbmTrdAddress::GetColumnId(address) < 0) printf("address:%i amod:%i\n            icol:%i   irow:%i\n asec:%i     acol:%i   arow:%i\n",address,CbmTrdAddress::GetModuleId(address),iCol,secRow,CbmTrdAddress::GetSectorId(address),CbmTrdAddress::GetColumnId(address),CbmTrdAddress::GetRowId(address));
 	  if(iCol >= 128) printf("\n---------\n");
 	*/
-	AddDigi(fMCPointId, address, Double_t(chargeFraction * clusterELoss), fTime);
+	AddDigi(fMCPointId, address, Double_t(chargeFraction * clusterELoss), Double_t(chargeFraction * clusterELossTR), fTime);
 
 	if (fDebug) {
 	  if (rowId == iRow && columnId == iCol)
@@ -587,7 +588,7 @@ void CbmTrdDigitizerPRF::ScanPadPlane(const Double_t* local_point, Double_t clus
   }
 }
 
-void CbmTrdDigitizerPRF::SplitTrackPath(const CbmTrdPoint* point, Double_t ELoss)
+void CbmTrdDigitizerPRF::SplitTrackPath(const CbmTrdPoint* point, Double_t ELoss, Double_t ELossTR)
 {
   const Double_t nClusterPerCm = 1.0;
   Double_t point_in[3] = {
@@ -631,6 +632,7 @@ void CbmTrdDigitizerPRF::SplitTrackPath(const CbmTrdPoint* point, Double_t ELoss
     cluster_delta[i] /= Double_t(nCluster);
   }
   Double_t clusterELoss = ELoss / Double_t(nCluster);
+  Double_t clusterELossTR = ELossTR / Double_t(nCluster);
 
   for (Int_t iCluster = 0; iCluster < nCluster; iCluster++){
     for (Int_t i = 0; i < 3; i++){
@@ -646,13 +648,13 @@ void CbmTrdDigitizerPRF::SplitTrackPath(const CbmTrdPoint* point, Double_t ELoss
 
     fModuleInfo->ProjectPositionToNextAnodeWire(cluster_pos);
     if (!fTrianglePads) 
-      ScanPadPlane(cluster_pos, clusterELoss);
+      ScanPadPlane(cluster_pos, clusterELoss, clusterELossTR);
     else
-      ScanPadPlaneTriangle(cluster_pos, clusterELoss);
+      ScanPadPlaneTriangle(cluster_pos, clusterELoss, clusterELossTR);
   }
 }
 
-void CbmTrdDigitizerPRF::AddDigi(Int_t pointId, Int_t address, Double_t charge, Double_t time)
+void CbmTrdDigitizerPRF::AddDigi(Int_t pointId, Int_t address, Double_t charge, Double_t chargeTR, Double_t time)
 {
   //if (address < 0)
   //printf("DigiAddress:%u ModuleAddress:%i\n",address, CbmTrdAddress::GetModuleAddress(address));
@@ -678,9 +680,13 @@ void CbmTrdDigitizerPRF::AddDigi(Int_t pointId, Int_t address, Double_t charge, 
 
     CbmMatch* digiMatch = new CbmMatch();
     digiMatch->AddLink(CbmLink(weighting, pointId));
+    //    fDigiMap[address] = make_pair(new CbmTrdDigi(address, charge, chargeTR, time), digiMatch);
     fDigiMap[address] = make_pair(new CbmTrdDigi(address, charge, time), digiMatch);
+    it = fDigiMap.find(address);
+    it->second.first->SetChargeTR(chargeTR);
   } else { // Pixel already in map -> Add charge
     it->second.first->AddCharge(charge);
+    it->second.first->AddChargeTR(chargeTR);
     it->second.first->SetTime(max(time, it->second.first->GetTime()));
     it->second.second->AddLink(CbmLink(weighting, pointId));
   }

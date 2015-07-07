@@ -46,6 +46,7 @@ class CbmTrdDigi : public CbmDigi
    * \brief Inherited from CbmDigi.
    */
   Double_t GetCharge() const { return fCharge; }
+  Double_t GetChargeTR() const { return fChargeTR; }
 
   /**
    * \brief Inherited from CbmDigi.
@@ -68,6 +69,7 @@ class CbmTrdDigi : public CbmDigi
   /** Accessors **/
   void SetAddress(Int_t address) { fAddress = address; }
   void SetCharge(Double_t charge) { fCharge = charge; }
+  void SetChargeTR(Double_t charge) { fChargeTR = charge; }
   void SetTime(Double_t time) { fTime = time; }
   void SetTriggerType(Int_t triggerType) {fTriggerType = triggerType; }
   void SetInfoType(Int_t infoType) {fInfoType = infoType; }
@@ -75,6 +77,7 @@ class CbmTrdDigi : public CbmDigi
   void SetPulseShape(Float_t pulse[45]);
   /** Modifiers **/
   void AddCharge(Double_t charge) { fCharge += charge; }
+  void AddChargeTR(Double_t charge) { fChargeTR += charge; }
 
   string ToString() const;
   
@@ -82,6 +85,7 @@ class CbmTrdDigi : public CbmDigi
   Int_t fn_FNR_Triggers;
   Int_t fAddress; ///< Unique channel address
   Double_t fCharge; ///< Charge
+  Double_t fChargeTR; ///< Charge TR
   Double_t fTime; ///< Absolute time [ns]
   Int_t fTriggerType;
   Int_t fInfoType;

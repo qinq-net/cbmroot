@@ -707,7 +707,7 @@ void CbmTrdDigitizerPRF_TB::AddDigi(Int_t pointId, Int_t address, Double_t charg
 	CbmMatch* digiMatch = new CbmMatch();
 	//digiMatch->AddLink(CbmLink(charge, pointId));
 	fDigiMap[address] = make_pair(new CbmTrdDigi(address, charge, time), digiMatch);
-	//fTimeAddressMap[time].push_back(address);
+    //fTimeAddressMap[time].push_back(address);
       } else { // Pixel already in map -> Add charge
 	printf("          %4ins (delta:%8.2fns)\n",(*previous).first,time - (*previous).first);
 	printf("                          ------> Add Info to existing digi %8i\n",fnDigi);

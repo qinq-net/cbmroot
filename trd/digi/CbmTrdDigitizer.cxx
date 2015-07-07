@@ -128,7 +128,8 @@ void CbmTrdDigitizer::AddDigi(
    mcPoint->Momentum(mom);
 
    Bool_t isElectron = abs(mcTrack->GetPdgCode()) == 11;
-   Double_t energyLoss = (isElectron) ? mcPoint->GetEnergyLoss() + fRadiator->GetTR(mom) :  mcPoint->GetEnergyLoss();
+   Double_t elossTR = (isElectron ? fRadiator->GetTR(mom) : 0.);
+   Double_t energyLoss = (isElectron) ? mcPoint->GetEnergyLoss() + elossTR :  mcPoint->GetEnergyLoss();
    Double_t time = mcPoint->GetTime();
 
    Int_t sectorId = 0, columnId = 0, rowId = 0;
@@ -156,9 +157,12 @@ void CbmTrdDigitizer::AddDigi(
       CbmMatch* digiMatch = new CbmMatch();
       digiMatch->AddLink(CbmLink(energyLoss, pointId));
       fDigiMap[address] = make_pair(new CbmTrdDigi(address, energyLoss, time), digiMatch);
+      it = fDigiMap.find(address);
+      it->second.first->SetChargeTR(elossTR);
    } else { // Pixel already in map -> Add charge
       CbmTrdDigi* digi = it->second.first;
       digi->AddCharge(energyLoss);
+      digi->AddChargeTR(elossTR);
       digi->SetTime(max(time, digi->GetTime()));
       CbmMatch* digiMatch = it->second.second;
       digiMatch->AddLink(CbmLink(energyLoss, pointId));

@@ -56,17 +56,17 @@ class CbmTrdDigitizerPRF : public FairTask {
 
   Double_t CalcPRF(Double_t x, Double_t W, Double_t h);
 
-  void ScanPadPlane(const Double_t* local_point, Double_t clusterELoss);
+  void ScanPadPlane(const Double_t* local_point, Double_t clusterELoss, Double_t clusterELossTR);
 
-  void ScanPadPlaneTriangle(const Double_t* local_point, Double_t clusterELoss);
+  void ScanPadPlaneTriangle(const Double_t* local_point, Double_t clusterELoss, Double_t clusterELossTR);
 
   Double_t TriangleIntegration(Bool_t even, Double_t displacement_x, Double_t W, Double_t displacement_y, Double_t H, Double_t h);
 
   Double_t TriangleIteration(Bool_t even, Int_t step, Double_t displacement_x, Double_t W, Double_t displacement_y, Double_t H, Double_t h);
 
-  void SplitTrackPath(const CbmTrdPoint* point, Double_t ELoss);
+  void SplitTrackPath(const CbmTrdPoint* point, Double_t ELoss, Double_t ELossTR);
 
-  void AddDigi(Int_t pointId, Int_t address, Double_t charge, Double_t time);
+  void AddDigi(Int_t pointId, Int_t address, Double_t charge, Double_t chargeTR, Double_t time);
 
   Bool_t fDebug;
   Bool_t fTrianglePads;

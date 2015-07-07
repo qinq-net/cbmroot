@@ -65,6 +65,7 @@ void CbmTrdHitProducerDigi::Exec(
       CbmTrdDigi* digi = (CbmTrdDigi*) fTrdDigis->At(iDigi);
 
       Double_t charge = digi->GetCharge();
+      Double_t chargeTR = digi->GetChargeTR();
       Int_t address = digi->GetAddress();
       Int_t moduleAddress = CbmTrdAddress::GetModuleAddress(address);
       Int_t sectorId = CbmTrdAddress::GetSectorId(address);
@@ -87,7 +88,7 @@ void CbmTrdHitProducerDigi::Exec(
       cluster->SetAddress(address);
       cluster->AddDigi(iDigi);
 
-      new ((*fTrdHits)[iDigi]) CbmTrdHit(address, hitPos, hitError, 0., iDigi, 0., 0., charge);
+      new ((*fTrdHits)[iDigi]) CbmTrdHit(address, hitPos, hitError, 0., iDigi, chargeTR, charge-chargeTR, charge);
    }
 
    static Int_t eventNo = 0;
