@@ -1633,7 +1633,7 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
   Double_t zPosD = 0.5 * ( zd - ladderZ );  // back aligned
   TGeoRotation* rd = new TGeoRotation();
   rd->RotateZ(180.);
-  TGeoCombiTrans* cd = new TGeoCombiTrans(xPosD, yPosD, zPosD,  rd);
+  TGeoCombiTrans* cd = new TGeoCombiTrans(xPosD, yPosD, zPosD, rd);
   ladder->AddNode(halfLadderD, 2, cd);
   ladder->GetShape()->ComputeBBox();
 
@@ -1652,15 +1652,16 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
     TGeoRotation* fullFrameRot = new TGeoRotation;
     fullFrameRot->RotateY(180);
 
-//  Int_t inum = 1; // 9;  // YnumOfFrameBoxes;
-    Int_t inum = YnumOfFrameBoxes;
+    Int_t inum = YnumOfFrameBoxes; // 6; // 9;
     for (i=1; i<=inum; i++)
     {
       j=-(inum-1)/2.+(i-1); 
 	//        cout << "DE: i " << i << " j " << j << endl;
+
       if (LadderIndex == 1 || LadderIndex == 5 || LadderIndex == 10 || LadderIndex == 15 || LadderIndex == 18 || LadderIndex == 19 || LadderIndex == 20)  // central ladders in stations 1 to 8
-        if ((j>=-3/2.) && (j<=3/2.))   // keep the inner 4 elements free for the cone
+        if ((j>=-2) && (j<=2))   // keep the inner 4 elements free for the cone
           continue;
+
       ladder->AddNode(fullFrameBoxVol, i, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., j*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
     }
     //      cout << endl;
@@ -1698,6 +1699,8 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
 
   // --- Some variables
   TGeoBBox* shape = NULL;
+  Int_t i;
+  Double_t j;
 
   // --- Dimensions of half ladders
   shape = (TGeoBBox*) halfLadderU->GetShape();
@@ -1729,39 +1732,41 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
   Double_t zPosD = 0.5 * ( zd - ladderZ );  // back aligned
   TGeoRotation* rd = new TGeoRotation();
   rd->RotateZ(180.);
-  TGeoCombiTrans* cd = new TGeoCombiTrans(xPosD, yPosD, zPosD,  rd);
+  TGeoCombiTrans* cd = new TGeoCombiTrans(xPosD, yPosD, zPosD, rd);
   ladder->AddNode(halfLadderD, 2, cd);
   ladder->GetShape()->ComputeBBox();
 
   // ----------------   Create and place frame boxes   ------------------------
 
   if (gkConstructFrames) {
-    if (LadderIndex != 1 && LadderIndex != 5 && LadderIndex != 10 && LadderIndex != 15 && LadderIndex != 18 && LadderIndex != 19 && LadderIndex != 20) {
-      Int_t YnumOfFrameBoxes = (Int_t)(ladderY / gkFrameStep)+1;
-      TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
-      TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_FullFrameBox", fullFrameShp, gStsMedium);
 
-      ConstructFrameElement("FrameBox", fullFrameBoxVol, xu/2.);
-      TGeoRotation* fullFrameRot = new TGeoRotation;
-      fullFrameRot->RotateY(180);
+    Int_t YnumOfFrameBoxes = (Int_t)(ladderY / gkFrameStep)+1;
+    if (LadderIndex == 5 || LadderIndex == 19)  // set even number of ladder elements
+	YnumOfFrameBoxes++;
+    //      cout << "DE: lad " << LadderIndex << " inum " << YnumOfFrameBoxes << endl;
+    TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
+    TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_FullFrameBox", fullFrameShp, gStsMedium);
 
-      ladder->AddNode(fullFrameBoxVol, 1, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., 0., -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
-      ladder->GetShape()->ComputeBBox();
+    ConstructFrameElement("FrameBox", fullFrameBoxVol, xu/2.);
+    TGeoRotation* fullFrameRot = new TGeoRotation;
+    fullFrameRot->RotateY(180);
 
-    } else {
-      Int_t YnumOfFrameBoxes = (Int_t)(ladderY / gkFrameStep)/2-2;
-      TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
-      TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_FullFrameBox", fullFrameShp, gStsMedium);
+    Int_t inum = YnumOfFrameBoxes;
+    for (i=1; i<=inum; i++)
+    {
+      j=-(inum-1)/2.+(i-1); 
+	//        cout << "DE: i " << i << " j " << j << endl;
 
-      ConstructFrameElement("FrameBox", fullFrameBoxVol, xu/2.);
-      TGeoRotation* fullFrameRot = new TGeoRotation;
-      fullFrameRot->RotateY(180);
+      if (LadderIndex == 1 || LadderIndex == 5 || LadderIndex == 10 || LadderIndex == 15 || LadderIndex == 18 || LadderIndex == 19 || LadderIndex == 20)  // central ladders in stations 1 to 8
+        if ((j>=-2) && (j<=2))   // keep the inner 4 elements free for the cone
+          continue;
 
-      ladder->AddNode(fullFrameBoxVol, 1, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0.,  (2.+(Double_t)YnumOfFrameBoxes/2.)*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
-      ladder->AddNode(fullFrameBoxVol, 2, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., -(2.+(Double_t)YnumOfFrameBoxes/2.)*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
-      ladder->GetShape()->ComputeBBox();
+      ladder->AddNode(fullFrameBoxVol, i, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., j*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
     }
-  }
+    //      cout << endl;
+    ladder->GetShape()->ComputeBBox();
+
+  }  // gkConstructFrames
 
   // --------------------------------------------------------------------------
 
