@@ -83,6 +83,8 @@ private:
 	TH1D * fRichRings_Baxis_part2;
 	TH1D * fRichRings_Baxis_part3;
 	TH1D * fRichRings_radius;
+	TH2D * fRichRings_radius_vs_momentum;
+	TH2D * fRichRings_radius_vs_pt;
 	TH1D * fRichRings_distance;
 	TH2D * fhRingtest;
 	TH2D * fhRichRings_AaxisVSmom;

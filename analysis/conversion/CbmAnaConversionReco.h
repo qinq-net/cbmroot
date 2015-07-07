@@ -21,6 +21,7 @@
 #include "CbmVertex.h"
 #include "../../littrack/cbm/elid/CbmLitGlobalElectronId.h"
 #include "../dielectron/CbmLmvmKinematicParams.h"
+#include "CbmRichElectronIdAnn.h"
 
 
 
@@ -56,6 +57,8 @@ public:
 	CbmLmvmKinematicParams CalculateKinematicParamsReco(const TVector3 electron1, const TVector3 electron2);
 	CbmLmvmKinematicParams CalculateKinematicParams_4particles(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 
+	Bool_t IsRichElectronANN(Int_t globalTrackIndex, Double_t momentum);
+	Bool_t IsRichElectronNormal(Int_t globalTrackIndex, Double_t momentum);
 
 
 
@@ -64,6 +67,9 @@ public:
 
 private:
 	TClonesArray* fMcTracks;
+	TClonesArray* fGlobalTracks;
+	TClonesArray* fRichRings;
+	CbmRichElectronIdAnn* fRichElIdAnn;
 
 	CbmLitGlobalElectronId* electronidentifier;
 

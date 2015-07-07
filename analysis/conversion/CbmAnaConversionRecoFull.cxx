@@ -104,6 +104,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhPhotons_invmass_direction_cut(NULL),
 	fhPhotons_boostAngle(NULL),
 	fhPhotons_boostAngleMC(NULL),
+	fhPhotons_boostAngleTest(NULL),
 	fhPhotons_tX(NULL),
 	fhPhotons_tY(NULL),
     timer(),

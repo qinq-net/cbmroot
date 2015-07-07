@@ -19,6 +19,9 @@
 // included from CbmRoot
 #include "FairRootManager.h"
 #include "CbmMCTrack.h"
+#include "CbmGlobalTrack.h"
+#include "CbmRichRing.h"
+#include "CbmRichElectronIdAnn.h"
 
 
 #define M2E 2.6112004954086e-7
@@ -28,11 +31,15 @@ using namespace std;
 
 CbmAnaConversionReco::CbmAnaConversionReco()
   : fMcTracks(NULL),
+	fGlobalTracks(NULL),
+	fRichRings(NULL),
+	fRichElIdAnn(NULL),
     electronidentifier(NULL),
     fMCTracklist_all(),
     fRecoTracklistEPEM(),
     fRecoTracklistEPEM_ids(),
     fRecoTracklistEPEM_chi(),
+    fRecoTracklistEPEM_gtid(),
     fRecoMomentum(),
     fRecoRefittedMomentum(),
     fHistoList_MC(),
@@ -121,10 +128,19 @@ void CbmAnaConversionReco::Init()
 	fMcTracks = (TClonesArray*) ioman->GetObject("MCTrack");
 	if ( NULL == fMcTracks) { Fatal("CbmAnaConversion::Init","No MCTrack array!"); }
 
+	fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
+	if (NULL == fGlobalTracks) { Fatal("CbmAnaConversion::Init","No GlobalTrack array!"); }
+
+	fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
+	if (NULL == fRichRings) { Fatal("CbmAnaConversion::Init","No RichRing array!"); }
+
 
 	InitHistos();
 	electronidentifier = new CbmLitGlobalElectronId();
 	electronidentifier->Init();
+	
+	fRichElIdAnn = new CbmRichElectronIdAnn();
+	fRichElIdAnn->Init();
 }
 
 
@@ -211,12 +227,15 @@ void CbmAnaConversionReco::InitHistos()
 	fHistoList_gee.push_back(fhPi0_pt_gee);
 	fHistoList_all.push_back(fhPi0_pt_all);
 
-	fhEPEM_efficiencyCuts	= new TH1D("fhEPEM_efficiencyCuts", "fhEPEM_efficiencyCuts;cut;#", 5, 0., 5.);
+	fhEPEM_efficiencyCuts	= new TH1D("fhEPEM_efficiencyCuts", "fhEPEM_efficiencyCuts;cut;#", 7, 0., 7.);
 	fHistoList_all.push_back(fhEPEM_efficiencyCuts);
-	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(1, "no cut");
-	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(2, "4 rich electrons");
-	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(3, "a");
-	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(4, "b");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(1, "no cuts");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(2, "ANN: 4 rich electrons");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(3, "ANN: opening angle of e+e- pairs");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(4, "ANN: invariant mass of e+e- pairs");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(5, "Normal: 4 rich electrons");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(6, "Normal: opening angle of e+e- pairs");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(7, "Normal: invariant mass of e+e- pairs");
 
 
 	fhInvMass_EPEM_mc				= new TH1D("fhInvMass_EPEM_mc","fhInvariantMass_recoMomentum1 (mc);mass [GeV/c^2];#", 400, -0.0025, 1.9975);
@@ -1194,11 +1213,25 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						// ####################################
 						// STUDIES: efficiency of cuts
 						// ####################################
-						Bool_t IsRichElectron1 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[i], fRecoRefittedMomentum[i].Mag());
-						Bool_t IsRichElectron2 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[j], fRecoRefittedMomentum[j].Mag());
-						Bool_t IsRichElectron3 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[k], fRecoRefittedMomentum[k].Mag());
-						Bool_t IsRichElectron4 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[l], fRecoRefittedMomentum[l].Mag());
+						//fRichElIdAnn = new CbmRichElectronIdAnn();
+						//fRichElIdAnn->Init();
+						//Double_t ann = fRichElIdAnn->DoSelect(ring, momentum);
+						//if (ann > fCuts.fRichAnnCut) return true;		// cut = 0.0
 						
+						//Bool_t IsRichElectron1 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[i], fRecoRefittedMomentum[i].Mag());
+						//Bool_t IsRichElectron2 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[j], fRecoRefittedMomentum[j].Mag());
+						//Bool_t IsRichElectron3 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[k], fRecoRefittedMomentum[k].Mag());
+						//Bool_t IsRichElectron4 = electronidentifier->IsRichElectron(fRecoTracklistEPEM_gtid[l], fRecoRefittedMomentum[l].Mag());
+						
+						Bool_t IsRichElectron1ann = IsRichElectronANN(fRecoTracklistEPEM_gtid[i], fRecoRefittedMomentum[i].Mag());
+						Bool_t IsRichElectron2ann = IsRichElectronANN(fRecoTracklistEPEM_gtid[j], fRecoRefittedMomentum[j].Mag());
+						Bool_t IsRichElectron3ann = IsRichElectronANN(fRecoTracklistEPEM_gtid[k], fRecoRefittedMomentum[k].Mag());
+						Bool_t IsRichElectron4ann = IsRichElectronANN(fRecoTracklistEPEM_gtid[l], fRecoRefittedMomentum[l].Mag());
+						
+						Bool_t IsRichElectron1normal = IsRichElectronNormal(fRecoTracklistEPEM_gtid[i], fRecoRefittedMomentum[i].Mag());
+						Bool_t IsRichElectron2normal = IsRichElectronNormal(fRecoTracklistEPEM_gtid[j], fRecoRefittedMomentum[j].Mag());
+						Bool_t IsRichElectron3normal = IsRichElectronNormal(fRecoTracklistEPEM_gtid[k], fRecoRefittedMomentum[k].Mag());
+						Bool_t IsRichElectron4normal = IsRichElectronNormal(fRecoTracklistEPEM_gtid[l], fRecoRefittedMomentum[l].Mag());
 						
 						CbmLmvmKinematicParams paramsCut1;
 						CbmLmvmKinematicParams paramsCut2;
@@ -1228,15 +1261,26 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						
 						
 						
-						fhEPEM_efficiencyCuts->Fill(1);		// no further cuts applied
-						if( IsRichElectron1 && IsRichElectron2 && IsRichElectron3 && IsRichElectron4 ) {		// all 4 electrons correctly identified with the RICH
+						fhEPEM_efficiencyCuts->Fill(0);		// no further cuts applied
+						// first ANN usage for electron identification
+						if( IsRichElectron1ann && IsRichElectron2ann && IsRichElectron3ann && IsRichElectron4ann ) {		// all 4 electrons correctly identified with the RICH
+							fhEPEM_efficiencyCuts->Fill(1);
+							if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
 								fhEPEM_efficiencyCuts->Fill(2);
-								if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
+								if(InvariantMassCut1 && InvariantMassCut2) {
 									fhEPEM_efficiencyCuts->Fill(3);
-									if(InvariantMassCut1 && InvariantMassCut2) {
-										fhEPEM_efficiencyCuts->Fill(4);
-									}
 								}
+							}
+						}
+						// then standard method for electron identification
+						if( IsRichElectron1normal && IsRichElectron2normal && IsRichElectron3normal && IsRichElectron4normal ) {		// all 4 electrons correctly identified with the RICH
+							fhEPEM_efficiencyCuts->Fill(4);
+							if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
+								fhEPEM_efficiencyCuts->Fill(5);
+								if(InvariantMassCut1 && InvariantMassCut2) {
+									fhEPEM_efficiencyCuts->Fill(6);
+								}
+							}
 						}
 
 
@@ -1491,5 +1535,70 @@ CbmLmvmKinematicParams CbmAnaConversionReco::CalculateKinematicParams_4particles
     params.fAngle = 0;
     return params;
 }
+
+
+
+Bool_t CbmAnaConversionReco::IsRichElectronANN(Int_t globalTrackIndex, Double_t momentum)
+{
+   if (NULL == fGlobalTracks || NULL == fRichRings) return false;
+   //CbmGlobalTrack* globalTrack = (CbmGlobalTrack*) fGlobalTracks->At(globalTrackIndex);
+   const CbmGlobalTrack* globalTrack = static_cast<const CbmGlobalTrack*>(fGlobalTracks->At(globalTrackIndex));
+   Int_t richId = globalTrack->GetRichRingIndex();
+   if (richId < 0) return false;
+   CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richId));
+   if (NULL == ring) return false;
+
+   Double_t fRichAnnCut = -0.5;
+   Double_t ann = fRichElIdAnn->DoSelect(ring, momentum);
+   if (ann > fRichAnnCut) return true;
+   else return false;   
+}
+
+
+
+Bool_t CbmAnaConversionReco::IsRichElectronNormal(Int_t globalTrackIndex, Double_t momentum)
+{
+   if (NULL == fGlobalTracks || NULL == fRichRings) return false;
+   CbmGlobalTrack* globalTrack = (CbmGlobalTrack*) fGlobalTracks->At(globalTrackIndex);
+   Int_t richId = globalTrack->GetRichRingIndex();
+   if (richId < 0) return false;
+   CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richId));
+   if (NULL == ring) return false;
+
+   Double_t axisA = ring->GetAaxis();
+   Double_t axisB = ring->GetBaxis();
+   Double_t dist = ring->GetDistance();
+            
+   Double_t fMeanA = 4.95;
+   Double_t fMeanB = 4.54;
+   Double_t fRmsA = 0.30;
+   Double_t fRmsB = 0.22;
+   Double_t fRmsCoeff = 3.5;
+   Double_t fDistCut = 1.;
+
+   Bool_t isElectronRICH = 0;
+
+	if (momentum < 5.5) {
+		if ( fabs(axisA-fMeanA) < fRmsCoeff*fRmsA && fabs(axisB-fMeanB) < fRmsCoeff*fRmsB && dist < fDistCut) isElectronRICH = 1;
+	}
+	else {
+              ///3 sigma
+              // Double_t polAaxis = 5.80008 - 4.10118 / (momentum - 3.67402);
+              // Double_t polBaxis = 5.58839 - 4.75980 / (momentum - 3.31648);
+              // Double_t polRaxis = 5.87252 - 7.64641/(momentum - 1.62255);
+              ///2 sigma          
+              Double_t polAaxis = 5.64791 - 4.24077 / (momentum - 3.65494);
+              Double_t polBaxis = 5.41106 - 4.49902 / (momentum - 3.52450);
+              //Double_t polRaxis = 5.66516 - 6.62229/(momentum - 2.25304);
+              if ( axisA < (fMeanA + fRmsCoeff*fRmsA) &&
+                   axisA > polAaxis &&
+                   axisB < (fMeanB + fRmsCoeff*fRmsB) && 
+                   axisB > polBaxis &&
+                   dist < fDistCut ) isElectronRICH = 1;
+	}
+
+	return isElectronRICH;
+}
+
 
 

@@ -52,6 +52,8 @@ CbmAnaConversionRich::CbmAnaConversionRich()
     fRichRings_Baxis_part2(NULL),
     fRichRings_Baxis_part3(NULL),
     fRichRings_radius(NULL),
+    fRichRings_radius_vs_momentum(NULL),
+    fRichRings_radius_vs_pt(NULL),
     fRichRings_distance(NULL),
     fhRingtest(NULL),
     fhRichRings_AaxisVSmom(NULL),
@@ -174,19 +176,21 @@ void CbmAnaConversionRich::InitHistos()
 	
 	
 	
-	fRichRings_Aaxis		= new TH1D("fRichRings_Aaxis", "fRichRings_Aaxis;A-axis;#", 300, 0., 30.);
-	fRichRings_Aaxis_part1	= new TH1D("fRichRings_Aaxis_part1", "fRichRings_Aaxis_part1;A-axis;#", 300, 0., 30.);
-	fRichRings_Aaxis_part2	= new TH1D("fRichRings_Aaxis_part2", "fRichRings_Aaxis_part2;A-axis;#", 300, 0., 30.);
-	fRichRings_Aaxis_part3	= new TH1D("fRichRings_Aaxis_part3", "fRichRings_Aaxis_part3;A-axis;#", 300, 0., 30.);
-	fRichRings_Baxis		= new TH1D("fRichRings_Baxis", "fRichRings_Baxis;B-axis;#", 300, 0., 30.);  
-	fRichRings_Baxis_part1	= new TH1D("fRichRings_Baxis_part1", "fRichRings_Baxis_part1;B-axis;#", 300, 0., 30.);
-	fRichRings_Baxis_part2	= new TH1D("fRichRings_Baxis_part2", "fRichRings_Baxis_part2;B-axis;#", 300, 0., 30.);
-	fRichRings_Baxis_part3	= new TH1D("fRichRings_Baxis_part3", "fRichRings_Baxis_part3;B-axis;#", 300, 0., 30.);  
-	fRichRings_radius		= new TH1D("fRichRings_radius", "fRichRings_radius;radius;#", 300, 0., 30.);  
-	fRichRings_distance		= new TH1D("fRichRings_distance", "fRichRings_distance;distance;#", 500, 0., 5.);  
-	fhRingtest				= new TH2D("fhRingtest", "fhRingtest;momentum [GeV/c];radius [cm]", 200, 0., 10., 200, 0., 10.);
-	fhRichRings_AaxisVSmom	= new TH2D("fhRichRings_AaxisVSmom", "fhRichRings_AaxisVSmom;momentum [GeV/c];a-axis [cm]", 200, 0., 10., 200, 0., 10.);
-	fhRichRings_BaxisVSmom	= new TH2D("fhRichRings_BaxisVSmom", "fhRichRings_BaxisVSmom;momentum [GeV/c];b-axis [cm]", 200, 0., 10., 200, 0., 10.);
+	fRichRings_Aaxis				= new TH1D("fRichRings_Aaxis", "fRichRings_Aaxis;A-axis;#", 300, 0., 30.);
+	fRichRings_Aaxis_part1			= new TH1D("fRichRings_Aaxis_part1", "fRichRings_Aaxis_part1;A-axis;#", 300, 0., 30.);
+	fRichRings_Aaxis_part2			= new TH1D("fRichRings_Aaxis_part2", "fRichRings_Aaxis_part2;A-axis;#", 300, 0., 30.);
+	fRichRings_Aaxis_part3			= new TH1D("fRichRings_Aaxis_part3", "fRichRings_Aaxis_part3;A-axis;#", 300, 0., 30.);
+	fRichRings_Baxis				= new TH1D("fRichRings_Baxis", "fRichRings_Baxis;B-axis;#", 300, 0., 30.);  
+	fRichRings_Baxis_part1			= new TH1D("fRichRings_Baxis_part1", "fRichRings_Baxis_part1;B-axis;#", 300, 0., 30.);
+	fRichRings_Baxis_part2			= new TH1D("fRichRings_Baxis_part2", "fRichRings_Baxis_part2;B-axis;#", 300, 0., 30.);
+	fRichRings_Baxis_part3			= new TH1D("fRichRings_Baxis_part3", "fRichRings_Baxis_part3;B-axis;#", 300, 0., 30.);  
+	fRichRings_radius				= new TH1D("fRichRings_radius", "fRichRings_radius;radius;#", 300, 0., 30.);   
+	fRichRings_radius_vs_momentum	= new TH2D("fRichRings_radius_vs_momentum", "fRichRings_radius_vs_momentum;momentum;radius", 100, 0., 10., 300, 0., 30.);  
+	fRichRings_radius_vs_pt			= new TH2D("fRichRings_radius_vs_pt", "fRichRings_radius_vs_pt;pt;radius", 100, 0., 10., 300, 0., 30.);
+	fRichRings_distance				= new TH1D("fRichRings_distance", "fRichRings_distance;distance;#", 500, 0., 5.);  
+	fhRingtest						= new TH2D("fhRingtest", "fhRingtest;momentum [GeV/c];radius [cm]", 200, 0., 10., 200, 0., 10.);
+	fhRichRings_AaxisVSmom			= new TH2D("fhRichRings_AaxisVSmom", "fhRichRings_AaxisVSmom;momentum [GeV/c];a-axis [cm]", 200, 0., 10., 200, 0., 10.);
+	fhRichRings_BaxisVSmom			= new TH2D("fhRichRings_BaxisVSmom", "fhRichRings_BaxisVSmom;momentum [GeV/c];b-axis [cm]", 200, 0., 10., 200, 0., 10.);
 	fHistoList_richrings.push_back(fRichRings_Aaxis);
 	fHistoList_richrings.push_back(fRichRings_Aaxis_part1);
 	fHistoList_richrings.push_back(fRichRings_Aaxis_part2);
@@ -325,6 +329,13 @@ void CbmAnaConversionRich::AnalyseRICHdata()
 			// stsMcTrackId == richMcTrackId -> track was reconstructed in STS and made a ring in RICH, track matching was correct
 			// in case they are not equal, the ring comes either from a secondary particle or STS track was not reconstructed
 			if(stsMcTrackId != richMcTrackId) continue;
+			
+			CbmRichRing* ring = static_cast<CbmRichRing*> (fRichRings->At(richInd));
+			TVector3 momentum;
+			mcTrack1->GetMomentum(momentum);
+			fRichRings_radius_vs_momentum->Fill(momentum.Mag(), ring->GetRadius());
+			fRichRings_radius_vs_pt->Fill(momentum.Perp(), ring->GetRadius());
+			
 
 			int pdg = TMath::Abs(mcTrack2->GetPdgCode());	// extract pdg code of particle directly from rich ring
 

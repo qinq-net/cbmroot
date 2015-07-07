@@ -137,6 +137,7 @@ CbmAnaConversion::CbmAnaConversion()
     fRecoTracklistEPEM(),
     fRecoTracklistEPEM_id(),
     fRecoTracklistEPEM_chi(),
+    fRecoTracklistEPEM_gtid(),
     fRecoMomentum(),
     fRecoRefittedMomentum(),
     timer_all(),
@@ -359,6 +360,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 	fRecoTracklistEPEM.clear();
 	fRecoTracklistEPEM_id.clear();
 	fRecoTracklistEPEM_chi.clear();
+	fRecoTracklistEPEM_gtid.clear();
 	fRecoMomentum.clear();
 	fRecoRefittedMomentum.clear();
 
