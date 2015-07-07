@@ -142,7 +142,7 @@ const Bool_t   gkConstructSmallFrames = kTRUE;  // kFALSE;
 // ---> Size of the frame
 const Double_t gkFrameThickness     = 0.2;
 const Double_t gkThinFrameThickness = 0.05;
-const Double_t gkFrameStep          = 4.;
+const Double_t gkFrameStep          = 4.;  // size of frame cell along y direction
 
 // ----------------------------------------------------------------------------
 
@@ -786,6 +786,8 @@ void create_stsgeo_v13z(const char* geoTag="v13z")
   geoFile = new TFile(geoFileName_, "UPDATE");
   stsTrans->Write();
   geoFile->Close();
+
+  top->Draw("ogl");
 
   infoFile.close();
 
@@ -1640,14 +1642,10 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
  **            shiftZ           relative displacement along the z axis
  **/
 
-// TGeoVolume* ConstructLadder(const char* name,
  TGeoVolume* ConstructLadder(Int_t LadderIndex,
 			     TGeoVolume* halfLadderU,
 			     TGeoVolume* halfLadderD,
 			     Double_t shiftZ) {
-
-  TString name;
-  name = Form("Ladder%02d", LadderIndex);
 
   // --- Some variables
   TGeoBBox* shape = NULL;
@@ -1657,25 +1655,26 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
   Double_t xu = 2. * shape->GetDX();
   Double_t yu = 2. * shape->GetDY();
   Double_t zu = 2. * shape->GetDZ();
+
   shape = (TGeoBBox*) halfLadderD->GetShape();
   Double_t xd = 2. * shape->GetDX();
   Double_t yd = 2. * shape->GetDY();
   Double_t zd = 2. * shape->GetDZ();
 
   // --- Create ladder volume assembly
+  TString name = Form("Ladder%02d", LadderIndex);
+  TGeoVolumeAssembly* ladder = new TGeoVolumeAssembly(name);
   Double_t ladderX = TMath::Max(xu, xd);
   Double_t ladderY = yu + yd - gkSectorOverlapY;
   Double_t ladderZ = TMath::Max(zu, zd + shiftZ);
-  TGeoVolumeAssembly* ladder = new TGeoVolumeAssembly(name);
 
   // --- Place half ladders
   Double_t xPosU = 0.;                      // centred in x
   Double_t yPosU = 0.5 * ( ladderY - yu );  // top aligned
   Double_t zPosU = 0.5 * ( ladderZ - zu );  // front aligned
-  TGeoTranslation* tu = new TGeoTranslation("tu", xPosU,
-					    yPosU, zPosU);
+  TGeoTranslation* tu = new TGeoTranslation("tu", xPosU, yPosU, zPosU);
   ladder->AddNode(halfLadderU, 1, tu);
-  ladder->GetShape()->ComputeBBox();
+
   Double_t xPosD = 0.;                      // centred in x
   Double_t yPosD = 0.5 * ( yd - ladderY );  // bottom aligned
   Double_t zPosD = 0.5 * ( zd - ladderZ );  // back aligned
@@ -1685,31 +1684,19 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
   ladder->AddNode(halfLadderD, 2, cd);
   ladder->GetShape()->ComputeBBox();
 
-
   // ----------------   Create and place frame boxes   ------------------------
 
   if (gkConstructFrames) {
-    if (LadderIndex == 5 || LadderIndex == 10 || LadderIndex == 19 || LadderIndex == 20 || LadderIndex == 15) {
+    if (LadderIndex == 1 || LadderIndex == 5 || LadderIndex == 10 || LadderIndex == 15 || LadderIndex == 18 || LadderIndex == 19 || LadderIndex == 20) {  // central ladders in stations 1 to 8
       Int_t YnumOfFrameBoxes = (Int_t)(ladderY / gkFrameStep)/2-1;
       TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., YnumOfFrameBoxes*gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
       TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_FullFrameBox", fullFrameShp, gStsMedium);
-      TGeoVolume* sliceVol = fullFrameBoxVol->Divide(name+"_FullFrameBox_slice", 2, -YnumOfFrameBoxes*gkFrameStep/2., 0., gkFrameStep);
+      //      TGeoVolume* sliceVol = fullFrameBoxVol->Divide(name+"_FullFrameBox_slice", 2, -YnumOfFrameBoxes*gkFrameStep/2., 0., gkFrameStep);
+      //      ConstructFrameBox("FrameBox", sliceVol, xu/2.);
 
-      ConstructFrameBox("FrameBox", sliceVol, xu/2.);
+      ConstructFrameBox("FrameBox", fullFrameBoxVol, xu/2.);
       TGeoRotation* fullFrameRot = new TGeoRotation (name+"_FullFrameBox_rot", 90., 180., -90.);
-      ladder->AddNode(fullFrameBoxVol, 1, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., (2.+(Double_t)YnumOfFrameBoxes/2.)*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
-      ladder->AddNode(fullFrameBoxVol, 2, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., -(2.+(Double_t)YnumOfFrameBoxes/2.)*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
-      ladder->GetShape()->ComputeBBox();
-
-    } else if (LadderIndex == 1 || LadderIndex == 18) {
-      Int_t YnumOfFrameBoxes = (Int_t)(ladderY / gkFrameStep)/2-1;
-      TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., YnumOfFrameBoxes*gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
-      TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_FullFrameBox", fullFrameShp, gStsMedium);
-      TGeoVolume* sliceVol = fullFrameBoxVol->Divide(name+"_FullFrameBox_slice", 2, -YnumOfFrameBoxes*gkFrameStep/2., 0., gkFrameStep);
-
-      ConstructFrameBox("FrameBox", sliceVol, xu/2.);
-      TGeoRotation* fullFrameRot = new TGeoRotation (name+"_FullFrameBox_rot", 90., 180., -90.);
-      ladder->AddNode(fullFrameBoxVol, 1, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., (2.+(Double_t)YnumOfFrameBoxes/2.)*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
+      ladder->AddNode(fullFrameBoxVol, 1, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0.,  (2.+(Double_t)YnumOfFrameBoxes/2.)*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
       ladder->AddNode(fullFrameBoxVol, 2, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., -(2.+(Double_t)YnumOfFrameBoxes/2.)*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
       ladder->GetShape()->ComputeBBox();
 
@@ -1717,9 +1704,10 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
       Int_t YnumOfFrameBoxes = (Int_t)(ladderY / gkFrameStep)+1;
       TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., YnumOfFrameBoxes*gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
       TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_FullFrameBox", fullFrameShp, gStsMedium);
-      TGeoVolume* sliceVol = fullFrameBoxVol->Divide(name+"_FullFrameBox_slice", 2, -YnumOfFrameBoxes*gkFrameStep/2., 0., gkFrameStep);
+      //      TGeoVolume* sliceVol = fullFrameBoxVol->Divide(name+"_FullFrameBox_slice", 2, -YnumOfFrameBoxes*gkFrameStep/2., 0., gkFrameStep);
+      //      ConstructFrameBox("FrameBox", sliceVol, xu/2.);
 
-      ConstructFrameBox("FrameBox", sliceVol, xu/2.);
+      ConstructFrameBox("FrameBox", fullFrameBoxVol, xu/2.);
       TGeoRotation* fullFrameRot = new TGeoRotation (name+"_FullFrameBox_rot", 90., 180., -90.);
       ladder->AddNode(fullFrameBoxVol, 1, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., 0., -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
       ladder->GetShape()->ComputeBBox();
@@ -1749,14 +1737,10 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
  **            gapY             vertical gap
  **/
 
-// TGeoVolume* ConstructLadderWithGap(const char* name,
  TGeoVolume* ConstructLadderWithGap(Int_t LadderIndex,
 				    TGeoVolume* halfLadderU,
 				    TGeoVolume* halfLadderD,
 				    Double_t gapY) {
-
-  TString name;
-  name = Form("Ladder%02d", LadderIndex);
 
   // --- Some variables
   TGeoBBox* shape = NULL;
@@ -1766,25 +1750,26 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
   Double_t xu = 2. * shape->GetDX();
   Double_t yu = 2. * shape->GetDY();
   Double_t zu = 2. * shape->GetDZ();
+
   shape = (TGeoBBox*) halfLadderD->GetShape();
   Double_t xd = 2. * shape->GetDX();
   Double_t yd = 2. * shape->GetDY();
   Double_t zd = 2. * shape->GetDZ();
 
   // --- Create ladder volume assembly
+  TString name = Form("Ladder%02d", LadderIndex);
+  TGeoVolumeAssembly* ladder = new TGeoVolumeAssembly(name);
   Double_t ladderX = TMath::Max(xu, xd);
   Double_t ladderY = yu + yd + gapY;
   Double_t ladderZ = TMath::Max(zu, zd);
-  TGeoVolumeAssembly* ladder = new TGeoVolumeAssembly(name);
 
   // --- Place half ladders
   Double_t xPosU = 0.;                      // centred in x
   Double_t yPosU = 0.5 * ( ladderY - yu );  // top aligned
   Double_t zPosU = 0.5 * ( ladderZ - zu );  // front aligned
-  TGeoTranslation* tu = new TGeoTranslation("tu", xPosU,
-					    yPosU, zPosU);
+  TGeoTranslation* tu = new TGeoTranslation("tu", xPosU, yPosU, zPosU);
   ladder->AddNode(halfLadderU, 1, tu);
-  ladder->GetShape()->ComputeBBox();
+
   Double_t xPosD = 0.;                      // centred in x
   Double_t yPosD = 0.5 * ( yd - ladderY );  // bottom aligned
   Double_t zPosD = 0.5 * ( zd - ladderZ );  // back aligned
@@ -1801,9 +1786,10 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
       Int_t YnumOfFrameBoxes = (Int_t)(ladderY / gkFrameStep)+1;
       TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., YnumOfFrameBoxes*gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
       TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_FullFrameBox", fullFrameShp, gStsMedium);
-      TGeoVolume* sliceVol = fullFrameBoxVol->Divide(name+"_FullFrameBox_slice", 2, -YnumOfFrameBoxes*gkFrameStep/2., 0., gkFrameStep);
+      //      TGeoVolume* sliceVol = fullFrameBoxVol->Divide(name+"_FullFrameBox_slice", 2, -YnumOfFrameBoxes*gkFrameStep/2., 0., gkFrameStep);
+      //      ConstructFrameBox("FrameBox", sliceVol, xu/2.);
 
-      ConstructFrameBox("FrameBox", sliceVol, xu/2.);
+      ConstructFrameBox("FrameBox", fullFrameBoxVol, xu/2.);
       TGeoRotation* fullFrameRot = new TGeoRotation (name+"_FullFrameBox_rot", 90., 180., -90.);
       ladder->AddNode(fullFrameBoxVol, 1, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., 0., -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
       ladder->GetShape()->ComputeBBox();
@@ -1812,11 +1798,12 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
       Int_t YnumOfFrameBoxes = (Int_t)(ladderY / gkFrameStep)/2-2;
       TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., YnumOfFrameBoxes*gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
       TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_FullFrameBox", fullFrameShp, gStsMedium);
-      TGeoVolume* sliceVol = fullFrameBoxVol->Divide(name+"_FullFrameBox_slice", 2, -YnumOfFrameBoxes*gkFrameStep/2., 0., gkFrameStep);
+      //      TGeoVolume* sliceVol = fullFrameBoxVol->Divide(name+"_FullFrameBox_slice", 2, -YnumOfFrameBoxes*gkFrameStep/2., 0., gkFrameStep);
+      //      ConstructFrameBox("FrameBox", sliceVol, xu/2.);
 
-      ConstructFrameBox("FrameBox", sliceVol, xu/2.);
+      ConstructFrameBox("FrameBox", fullFrameBoxVol, xu/2.);
       TGeoRotation* fullFrameRot = new TGeoRotation (name+"_FullFrameBox_rot", 90., 180., -90.);
-      ladder->AddNode(fullFrameBoxVol, 1, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., (2.+(Double_t)YnumOfFrameBoxes/2.)*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
+      ladder->AddNode(fullFrameBoxVol, 1, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0.,  (2.+(Double_t)YnumOfFrameBoxes/2.)*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
       ladder->AddNode(fullFrameBoxVol, 2, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., -(2.+(Double_t)YnumOfFrameBoxes/2.)*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
       ladder->GetShape()->ComputeBBox();
 
