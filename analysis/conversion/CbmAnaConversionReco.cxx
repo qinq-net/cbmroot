@@ -213,9 +213,9 @@ void CbmAnaConversionReco::InitHistos()
 
 
 
-	fhPi0_pt_vs_rap_gg			= new TH2D("fhPi0_pt_vs_rap_gg", "fhPi0_pt_vs_rap_gg;pt [GeV]; rap [GeV]", 200, 0., 10., 210, 0., 7.);
-	fhPi0_pt_vs_rap_gee			= new TH2D("fhPi0_pt_vs_rap_gee", "fhPi0_pt_vs_rap_gee;pt [GeV]; rap [GeV]", 200, 0., 10., 210, 0., 7.);
-	fhPi0_pt_vs_rap_all			= new TH2D("fhPi0_pt_vs_rap_all", "fhPi0_pt_vs_rap_all;pt [GeV]; rap [GeV]", 200, 0., 10., 210, 0., 7.);
+	fhPi0_pt_vs_rap_gg			= new TH2D("fhPi0_pt_vs_rap_gg", "fhPi0_pt_vs_rap_gg;pt [GeV]; rap [GeV]", 240, -2., 10., 210, 0., 7.);
+	fhPi0_pt_vs_rap_gee			= new TH2D("fhPi0_pt_vs_rap_gee", "fhPi0_pt_vs_rap_gee;pt [GeV]; rap [GeV]", 240, -2., 10., 210, 0., 7.);
+	fhPi0_pt_vs_rap_all			= new TH2D("fhPi0_pt_vs_rap_all", "fhPi0_pt_vs_rap_all;pt [GeV]; rap [GeV]", 240, -2., 10., 210, 0., 7.);
 	fHistoList_gg.push_back(fhPi0_pt_vs_rap_gg);
 	fHistoList_gee.push_back(fhPi0_pt_vs_rap_gee);
 	fHistoList_all.push_back(fhPi0_pt_vs_rap_all);
@@ -1582,21 +1582,16 @@ Bool_t CbmAnaConversionReco::IsRichElectronNormal(Int_t globalTrackIndex, Double
 		if ( fabs(axisA-fMeanA) < fRmsCoeff*fRmsA && fabs(axisB-fMeanB) < fRmsCoeff*fRmsB && dist < fDistCut) isElectronRICH = 1;
 	}
 	else {
-              ///3 sigma
-              // Double_t polAaxis = 5.80008 - 4.10118 / (momentum - 3.67402);
-              // Double_t polBaxis = 5.58839 - 4.75980 / (momentum - 3.31648);
-              // Double_t polRaxis = 5.87252 - 7.64641/(momentum - 1.62255);
-              ///2 sigma          
-              Double_t polAaxis = 5.64791 - 4.24077 / (momentum - 3.65494);
-              Double_t polBaxis = 5.41106 - 4.49902 / (momentum - 3.52450);
-              //Double_t polRaxis = 5.66516 - 6.62229/(momentum - 2.25304);
-              if ( axisA < (fMeanA + fRmsCoeff*fRmsA) &&
-                   axisA > polAaxis &&
-                   axisB < (fMeanB + fRmsCoeff*fRmsB) && 
-                   axisB > polBaxis &&
-                   dist < fDistCut ) isElectronRICH = 1;
+		///3 sigma
+		// Double_t polAaxis = 5.80008 - 4.10118 / (momentum - 3.67402);
+		// Double_t polBaxis = 5.58839 - 4.75980 / (momentum - 3.31648);
+		// Double_t polRaxis = 5.87252 - 7.64641/(momentum - 1.62255);
+		///2 sigma          
+		Double_t polAaxis = 5.64791 - 4.24077 / (momentum - 3.65494);
+		Double_t polBaxis = 5.41106 - 4.49902 / (momentum - 3.52450);
+		//Double_t polRaxis = 5.66516 - 6.62229/(momentum - 2.25304);
+		if ( axisA < (fMeanA + fRmsCoeff*fRmsA) && axisA > polAaxis && axisB < (fMeanB + fRmsCoeff*fRmsB) && axisB > polBaxis && dist < fDistCut ) isElectronRICH = 1;
 	}
-
 	return isElectronRICH;
 }
 

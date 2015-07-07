@@ -200,6 +200,8 @@ void CbmAnaConversionRich::InitHistos()
 	fHistoList_richrings.push_back(fRichRings_Baxis_part2);
 	fHistoList_richrings.push_back(fRichRings_Baxis_part3);
 	fHistoList_richrings.push_back(fRichRings_radius);
+	fHistoList_richrings.push_back(fRichRings_radius_vs_momentum);
+	fHistoList_richrings.push_back(fRichRings_radius_vs_pt);
 	fHistoList_richrings.push_back(fRichRings_distance);
 	fHistoList_richrings.push_back(fhRingtest);
 	fHistoList_richrings.push_back(fhRichRings_AaxisVSmom);

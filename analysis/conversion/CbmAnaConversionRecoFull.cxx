@@ -234,7 +234,7 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fHistoList_recofull.push_back(fhPhotons_startvertex_vs_chi);
 	fhPhotons_invmass_vs_pt = new TH2D("fhPhotons_invmass_vs_pt", "fhPhotons_invmass_vs_pt; invmass; pt", 600, -0.0025, 2.9975, 100, 0., 10.);
 	fHistoList_recofull.push_back(fhPhotons_invmass_vs_pt);
-	fhPhotons_rapidity_vs_pt = new TH2D("fhPhotons_rapidity_vs_pt", "fhPhotons_rapidity_vs_pt; pt [GeV]; rap [GeV]", 200, 0., 10., 210, 0., 7.);
+	fhPhotons_rapidity_vs_pt = new TH2D("fhPhotons_rapidity_vs_pt", "fhPhotons_rapidity_vs_pt; pt [GeV]; rap [GeV]", 240, -2., 10., 210, 0., 7.);
 	fHistoList_recofull.push_back(fhPhotons_rapidity_vs_pt);
 	
 	fhPhotons_invmass_vs_openingAngle = new TH2D("fhPhotons_invmass_vs_openingAngle", "fhPhotons_invmass_vs_openingAngle; invmass; openingAngle", 600, -0.0025, 2.9975, 100, 0., 10.);
