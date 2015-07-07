@@ -142,7 +142,7 @@ const Bool_t   gkConstructSmallFrames = kTRUE;  // kFALSE;
 // ---> Size of the frame
 const Double_t gkFrameThickness     = 0.2;
 const Double_t gkThinFrameThickness = 0.05;
-const Double_t gkFrameStep          = 4.;  // size of frame cell along y direction
+const Double_t gkFrameStep          = 4.0;  // size of frame cell along y direction
 
 // ----------------------------------------------------------------------------
 
@@ -1068,25 +1068,13 @@ Int_t CreateLadders() {
   shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
   halfLadderU = ConstructHalfLadder("HalfLadder01u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder01d", nSectors, sectorTypes, 'r');
-  //  ConstructLadder("Ladder01", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(1, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
 
   // --- Ladder 18 x-mirror of 01: 10 sectors, type 4 4 3 2 1 1 2 3 4 4
-//  nSectors       = 5;
-//  sectorTypes[0] = 1;
-//  sectorTypes[1] = 2;
-//  sectorTypes[2] = 3;
-//  sectorTypes[3] = 4;
-//  sectorTypes[4] = 4;
-//  s0name = Form("Sector%02d", sectorTypes[0]);
-//  s0vol  = gGeoMan->GetVolume(s0name);
-//  shape  = (TGeoBBox*) s0vol->GetShape();
-//  shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
   halfLadderU = ConstructHalfLadder("HalfLadder18u", nSectors, sectorTypes, 'r');  // mirrored
   halfLadderD = ConstructHalfLadder("HalfLadder18d", nSectors, sectorTypes, 'l');  // mirrored
-  //  ConstructLadder("Ladder18", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(18, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
@@ -1104,7 +1092,6 @@ Int_t CreateLadders() {
   shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
   halfLadderU = ConstructHalfLadder("HalfLadder02u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder02d", nSectors, sectorTypes, 'r');
-  //  ConstructLadder("Ladder02", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(2, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
@@ -1121,7 +1108,6 @@ Int_t CreateLadders() {
   shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
   halfLadderU = ConstructHalfLadder("HalfLadder03u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder03d", nSectors, sectorTypes, 'r');
-  //  ConstructLadder("Ladder03", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(3, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
@@ -1136,7 +1122,6 @@ Int_t CreateLadders() {
   shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
   halfLadderU = ConstructHalfLadder("HalfLadder04u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder04d", nSectors, sectorTypes, 'r');
-  //  ConstructLadder("Ladder04", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(4, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
@@ -1154,25 +1139,13 @@ Int_t CreateLadders() {
   shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
   halfLadderU = ConstructHalfLadder("HalfLadder05u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder05d", nSectors, sectorTypes, 'r');
-  //  ConstructLadder("Ladder05", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(5, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
 
   // --- Ladder 19 x-mirror of 05: 10 sectors, type 5 4 3 3 7 7 3 3 4 5
-//  nSectors       = 5;
-//  sectorTypes[0] = 7;
-//  sectorTypes[1] = 3;
-//  sectorTypes[2] = 3;
-//  sectorTypes[3] = 4;
-//  sectorTypes[4] = 5;
-//  s0name = Form("Sector%02d", sectorTypes[0]);
-//  s0vol  = gGeoMan->GetVolume(s0name);
-//  shape  = (TGeoBBox*) s0vol->GetShape();
-//  shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
   halfLadderU = ConstructHalfLadder("HalfLadder19u", nSectors, sectorTypes, 'r');  // mirrored
   halfLadderD = ConstructHalfLadder("HalfLadder19d", nSectors, sectorTypes, 'l');  // mirrored
-  //  ConstructLadder("Ladder19", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(19, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
@@ -1190,7 +1163,6 @@ Int_t CreateLadders() {
   halfLadderU = ConstructHalfLadder("HalfLadder06u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder06d", nSectors, sectorTypes, 'r');
   shape = (TGeoBBox*) halfLadderU->GetShape();
-  //  ConstructLadder("Ladder06", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(6, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
@@ -1207,7 +1179,6 @@ Int_t CreateLadders() {
   shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
   halfLadderU = ConstructHalfLadder("HalfLadder07u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder07d", nSectors, sectorTypes, 'r');
-  //  ConstructLadder("Ladder07", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(7, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
@@ -1223,7 +1194,6 @@ Int_t CreateLadders() {
   halfLadderU = ConstructHalfLadder("HalfLadder08u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder08d", nSectors, sectorTypes, 'r');
   shape = (TGeoBBox*) halfLadderU->GetShape();
-  //  ConstructLadder("Ladder08", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(8, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
@@ -1238,7 +1208,6 @@ Int_t CreateLadders() {
   halfLadderU = ConstructHalfLadder("HalfLadder09u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder09d", nSectors, sectorTypes, 'r');
   shape = (TGeoBBox*) halfLadderU->GetShape();
-  //  ConstructLadder("Ladder09", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(9, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
@@ -1256,25 +1225,14 @@ Int_t CreateLadders() {
   halfLadderU = ConstructHalfLadder("HalfLadder10u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder10d", nSectors, sectorTypes, 'r');
   shape = (TGeoBBox*) halfLadderU->GetShape();
-  //  ConstructLadder("Ladder10", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(10, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
 
   // --- Ladder 20 x-mirror of 10: 10 sectors, type 5 5 4 3 8 8 3 4 5 5 
-//  nSectors       = 5;
-//  sectorTypes[0] = 8;
-//  sectorTypes[1] = 3;
-//  sectorTypes[2] = 4;
-//  sectorTypes[3] = 5;
-//  sectorTypes[4] = 5;
-//  s0vol  = gGeoMan->GetVolume(s0name);
-//  shape  = (TGeoBBox*) s0vol->GetShape();
-//  ladderY = 2. * shape->GetDY();
   halfLadderU = ConstructHalfLadder("HalfLadder20u", nSectors, sectorTypes, 'r');  // mirrored
   halfLadderD = ConstructHalfLadder("HalfLadder20d", nSectors, sectorTypes, 'l');  // mirrored
   shape = (TGeoBBox*) halfLadderU->GetShape();
-  //  ConstructLadder("Ladder20", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(20, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
@@ -1292,7 +1250,6 @@ Int_t CreateLadders() {
   halfLadderU = ConstructHalfLadder("HalfLadder11u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder11d", nSectors, sectorTypes, 'r');
   shape = (TGeoBBox*) halfLadderU->GetShape();
-  //  ConstructLadder("Ladder11", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(11, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
@@ -1309,7 +1266,6 @@ Int_t CreateLadders() {
   halfLadderU = ConstructHalfLadder("HalfLadder12u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder12d", nSectors, sectorTypes, 'r');
   shape = (TGeoBBox*) halfLadderU->GetShape();
-  //  ConstructLadder("Ladder12", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(12, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
  
@@ -1325,7 +1281,6 @@ Int_t CreateLadders() {
   halfLadderU = ConstructHalfLadder("HalfLadder13u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder13d", nSectors, sectorTypes, 'r');
   shape = (TGeoBBox*) halfLadderU->GetShape();
-  //  ConstructLadder("Ladder13", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(13, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
@@ -1340,7 +1295,6 @@ Int_t CreateLadders() {
   halfLadderU = ConstructHalfLadder("HalfLadder14u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder14d", nSectors, sectorTypes, 'r');
   shape = (TGeoBBox*) halfLadderU->GetShape();
-  //  ConstructLadder("Ladder14", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(14, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
@@ -1358,7 +1312,6 @@ Int_t CreateLadders() {
   halfLadderD = ConstructHalfLadder("HalfLadder15d", nSectors, sectorTypes, 'r');
   shape =(TGeoBBox*) halfLadderU->GetShape();
   gapY = 4.4;
-  //  ConstructLadderWithGap("Ladder15", halfLadderU, halfLadderD, 2*gapY);
   ConstructLadderWithGap(15, halfLadderU, halfLadderD, 2*gapY);
   nLadders++;
 
@@ -1376,7 +1329,6 @@ Int_t CreateLadders() {
   halfLadderU = ConstructHalfLadder("HalfLadder16u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder16d", nSectors, sectorTypes, 'r');
   shape = (TGeoBBox*) halfLadderU->GetShape();
-  //  ConstructLadder("Ladder16", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(16, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
  
@@ -1394,7 +1346,6 @@ Int_t CreateLadders() {
   halfLadderU = ConstructHalfLadder("HalfLadder17u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder17d", nSectors, sectorTypes, 'r');
   shape = (TGeoBBox*) halfLadderU->GetShape();
-  //  ConstructLadder("Ladder17", halfLadderU, halfLadderD, shiftZ);
   ConstructLadder(17, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
  
@@ -1649,6 +1600,8 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
 
   // --- Some variables
   TGeoBBox* shape = NULL;
+  Int_t i;
+  Double_t j;
 
   // --- Dimensions of half ladders
   shape = (TGeoBBox*) halfLadderU->GetShape();
@@ -1687,32 +1640,33 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
   // ----------------   Create and place frame boxes   ------------------------
 
   if (gkConstructFrames) {
-    if (LadderIndex == 1 || LadderIndex == 5 || LadderIndex == 10 || LadderIndex == 15 || LadderIndex == 18 || LadderIndex == 19 || LadderIndex == 20) {  // central ladders in stations 1 to 8
-      Int_t YnumOfFrameBoxes = (Int_t)(ladderY / gkFrameStep)/2-1;
-      TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., YnumOfFrameBoxes*gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
-      TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_FullFrameBox", fullFrameShp, gStsMedium);
-      //      TGeoVolume* sliceVol = fullFrameBoxVol->Divide(name+"_FullFrameBox_slice", 2, -YnumOfFrameBoxes*gkFrameStep/2., 0., gkFrameStep);
-      //      ConstructFrameBox("FrameBox", sliceVol, xu/2.);
 
-      ConstructFrameBox("FrameBox", fullFrameBoxVol, xu/2.);
-      TGeoRotation* fullFrameRot = new TGeoRotation (name+"_FullFrameBox_rot", 90., 180., -90.);
-      ladder->AddNode(fullFrameBoxVol, 1, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0.,  (2.+(Double_t)YnumOfFrameBoxes/2.)*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
-      ladder->AddNode(fullFrameBoxVol, 2, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., -(2.+(Double_t)YnumOfFrameBoxes/2.)*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
-      ladder->GetShape()->ComputeBBox();
+    Int_t YnumOfFrameBoxes = (Int_t)(ladderY / gkFrameStep)+1;
+    if (LadderIndex == 5 || LadderIndex == 19)  // set even number of ladder elements
+	YnumOfFrameBoxes++;
+    //      cout << "DE: lad " << LadderIndex << " inum " << YnumOfFrameBoxes << endl;
+    TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
+    TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_FullFrameBox", fullFrameShp, gStsMedium);
 
-    } else {
-      Int_t YnumOfFrameBoxes = (Int_t)(ladderY / gkFrameStep)+1;
-      TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., YnumOfFrameBoxes*gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
-      TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_FullFrameBox", fullFrameShp, gStsMedium);
-      //      TGeoVolume* sliceVol = fullFrameBoxVol->Divide(name+"_FullFrameBox_slice", 2, -YnumOfFrameBoxes*gkFrameStep/2., 0., gkFrameStep);
-      //      ConstructFrameBox("FrameBox", sliceVol, xu/2.);
+    ConstructFrameElement("FrameBox", fullFrameBoxVol, xu/2.);
+    TGeoRotation* fullFrameRot = new TGeoRotation;
+    fullFrameRot->RotateY(180);
 
-      ConstructFrameBox("FrameBox", fullFrameBoxVol, xu/2.);
-      TGeoRotation* fullFrameRot = new TGeoRotation (name+"_FullFrameBox_rot", 90., 180., -90.);
-      ladder->AddNode(fullFrameBoxVol, 1, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., 0., -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
-      ladder->GetShape()->ComputeBBox();
+//  Int_t inum = 1; // 9;  // YnumOfFrameBoxes;
+    Int_t inum = YnumOfFrameBoxes;
+    for (i=1; i<=inum; i++)
+    {
+      j=-(inum-1)/2.+(i-1); 
+	//        cout << "DE: i " << i << " j " << j << endl;
+      if (LadderIndex == 1 || LadderIndex == 5 || LadderIndex == 10 || LadderIndex == 15 || LadderIndex == 18 || LadderIndex == 19 || LadderIndex == 20)  // central ladders in stations 1 to 8
+        if ((j>=-3/2.) && (j<=3/2.))   // keep the inner 4 elements free for the cone
+          continue;
+      ladder->AddNode(fullFrameBoxVol, i, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., j*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
     }
-  }
+    //      cout << endl;
+    ladder->GetShape()->ComputeBBox();
+
+  }  // gkConstructFrames
 
   // --------------------------------------------------------------------------
 
@@ -1782,31 +1736,30 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
   // ----------------   Create and place frame boxes   ------------------------
 
   if (gkConstructFrames) {
-    if (LadderIndex != 1 && LadderIndex != 5 && LadderIndex != 10 && LadderIndex != 18 && LadderIndex != 19 && LadderIndex != 20 && LadderIndex != 15 ) {
+    if (LadderIndex != 1 && LadderIndex != 5 && LadderIndex != 10 && LadderIndex != 15 && LadderIndex != 18 && LadderIndex != 19 && LadderIndex != 20) {
       Int_t YnumOfFrameBoxes = (Int_t)(ladderY / gkFrameStep)+1;
-      TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., YnumOfFrameBoxes*gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
+      TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
       TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_FullFrameBox", fullFrameShp, gStsMedium);
-      //      TGeoVolume* sliceVol = fullFrameBoxVol->Divide(name+"_FullFrameBox_slice", 2, -YnumOfFrameBoxes*gkFrameStep/2., 0., gkFrameStep);
-      //      ConstructFrameBox("FrameBox", sliceVol, xu/2.);
 
-      ConstructFrameBox("FrameBox", fullFrameBoxVol, xu/2.);
-      TGeoRotation* fullFrameRot = new TGeoRotation (name+"_FullFrameBox_rot", 90., 180., -90.);
+      ConstructFrameElement("FrameBox", fullFrameBoxVol, xu/2.);
+      TGeoRotation* fullFrameRot = new TGeoRotation;
+      fullFrameRot->RotateY(180);
+
       ladder->AddNode(fullFrameBoxVol, 1, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., 0., -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
       ladder->GetShape()->ComputeBBox();
 
     } else {
       Int_t YnumOfFrameBoxes = (Int_t)(ladderY / gkFrameStep)/2-2;
-      TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., YnumOfFrameBoxes*gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
+      TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
       TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_FullFrameBox", fullFrameShp, gStsMedium);
-      //      TGeoVolume* sliceVol = fullFrameBoxVol->Divide(name+"_FullFrameBox_slice", 2, -YnumOfFrameBoxes*gkFrameStep/2., 0., gkFrameStep);
-      //      ConstructFrameBox("FrameBox", sliceVol, xu/2.);
 
-      ConstructFrameBox("FrameBox", fullFrameBoxVol, xu/2.);
-      TGeoRotation* fullFrameRot = new TGeoRotation (name+"_FullFrameBox_rot", 90., 180., -90.);
+      ConstructFrameElement("FrameBox", fullFrameBoxVol, xu/2.);
+      TGeoRotation* fullFrameRot = new TGeoRotation;
+      fullFrameRot->RotateY(180);
+
       ladder->AddNode(fullFrameBoxVol, 1, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0.,  (2.+(Double_t)YnumOfFrameBoxes/2.)*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
       ladder->AddNode(fullFrameBoxVol, 2, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0., -(2.+(Double_t)YnumOfFrameBoxes/2.)*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
       ladder->GetShape()->ComputeBBox();
-
     }
   }
 
@@ -1884,6 +1837,9 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
 
   //  cout << "statZ/2.: " << statZ/2. << endl;
   statZ = 2 * 3.6;  // changed Z size of the station for cone
+
+  cout << "DF statY: " << statY << endl;
+  //  statY = 106.;
   TGeoBBox* statBox = new TGeoBBox(boxName, statX/2., statY/2., statZ/2.);
 
   TString tubName(name);
@@ -1922,13 +1878,11 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
     {
       // --- Unrotated ladders
       if ( (nLadders/2 + iLadder) % 2 ) {
-//        zPos = 0.5 * gkLadderGapZ + shape->GetDZ();
 	zPos = 0.5 * gkLadderGapZ + (shape->GetDZ()-subtractedVal/2.);
         rot->RotateY(180.);
       }
       // --- Rotated ladders
       else {
-//        zPos = -0.5 * gkLadderGapZ - shape->GetDZ();
 	zPos = -0.5 * gkLadderGapZ - (shape->GetDZ()-subtractedVal/2.);
       }
     }
@@ -1937,12 +1891,10 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
     {
       // --- Unrotated ladders
       if ( (nLadders/2 + iLadder) % 2 ) {
-//        zPos = -0.5 * gkLadderGapZ - shape->GetDZ();
 	zPos = -0.5 * gkLadderGapZ - (shape->GetDZ()-subtractedVal/2.);
       }
       // --- Rotated ladders
       else {
-//        zPos = 0.5 * gkLadderGapZ + shape->GetDZ();
 	zPos = 0.5 * gkLadderGapZ + (shape->GetDZ()-subtractedVal/2.);
         rot->RotateY(180.);
       }
@@ -2044,7 +1996,7 @@ Double_t BeamPipeRadius(Double_t z) {
 
    
 /** ======================================================================= **/
-TGeoVolume* ConstructFrameBox(const TString& name, TGeoVolume* frameBoxVol, Double_t x)
+TGeoVolume* ConstructFrameElement(const TString& name, TGeoVolume* frameBoxVol, Double_t x)
 {
 	// --- Material of the frames
 	TGeoMedium* framesMaterial = gGeoMan->GetMedium("carbon");
