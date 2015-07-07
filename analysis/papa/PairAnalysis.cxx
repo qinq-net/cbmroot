@@ -1115,7 +1115,7 @@ void PairAnalysis::FillPairArrays(Int_t arr1, Int_t arr2)
 
   //process pre filter if set
   //  if ((!fPreFilterAllSigns) && (!fPreFilterUnlikeOnly) && ( fPairPreFilter.GetCuts()->GetEntries()>0 ))  PairPreFilter(arr1, arr2, arrTracks1, arrTracks2);
-  
+
   Int_t pairIndex=GetPairIndex(arr1,arr2);
 
   Int_t ntrack1=arrTracks1.GetEntriesFast();
@@ -1129,7 +1129,7 @@ void PairAnalysis::FillPairArrays(Int_t arr1, Int_t arr2)
   candidate->SetType(pairIndex);
 
   UInt_t selectedMask=(1<<fPairFilter.GetCuts()->GetEntries())-1;
-  
+
   for (Int_t itrack1=0; itrack1<ntrack1; ++itrack1){
     Int_t end=ntrack2;
     if (arr1==arr2) end=itrack1;
@@ -1168,6 +1168,7 @@ void PairAnalysis::FillPairArrays(Int_t arr1, Int_t arr2)
       //else
       candidate = new PairAnalysisPairLV();
       candidate->SetKFUsage(fUseKF);
+      candidate->SetType(pairIndex);
     }
   }
   //delete the surplus candidate
