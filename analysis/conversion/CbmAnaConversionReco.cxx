@@ -81,6 +81,7 @@ CbmAnaConversionReco::CbmAnaConversionReco()
 	fhPi0_pt_all(NULL),
 	fhEPEM_efficiencyCuts(NULL),
 	fhEPEM_rap_vs_chi(NULL),
+	fhEPEM_rap_vs_invmass(NULL),
     fhInvMass_EPEM_mc(NULL),
     fhInvMass_EPEM_stsMomVec(NULL),
     fhInvMass_EPEM_refitted(NULL),
@@ -241,8 +242,10 @@ void CbmAnaConversionReco::InitHistos()
 	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(9, "MC: opening angle of e+e- pairs");
 	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(10, "MC: invariant mass of e+e- pairs");
 
-	fhEPEM_rap_vs_chi	= new TH2D("fhEPEM_rap_vs_chi", "fhEPEM_rap_vs_chi; rap [GeV]; chi of electrons", 300, 0., 10., 100, 0., 100.);
+	fhEPEM_rap_vs_chi		= new TH2D("fhEPEM_rap_vs_chi", "fhEPEM_rap_vs_chi; rap [GeV]; chi of electrons", 300, 0., 10., 100, 0., 100.);
 	fHistoList_all.push_back(fhEPEM_rap_vs_chi);
+	fhEPEM_rap_vs_invmass	= new TH2D("fhEPEM_rap_vs_invmass", "fhEPEM_rap_vs_invmass; rap [GeV]; invmass", 300, 0., 10., 100, 0., 10.);
+	fHistoList_all.push_back(fhEPEM_rap_vs_invmass);
 
 
 	fhInvMass_EPEM_mc				= new TH1D("fhInvMass_EPEM_mc","fhInvariantMass_recoMomentum1 (mc);mass [GeV/c^2];#", 400, -0.0025, 1.9975);
@@ -1221,6 +1224,8 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						fhEPEM_rap_vs_chi->Fill(params1.fRapidity, fRecoTracklistEPEM_chi[k]);
 						fhEPEM_rap_vs_chi->Fill(params1.fRapidity, fRecoTracklistEPEM_chi[l]);
 						
+						fhEPEM_rap_vs_invmass->Fill(params1.fRapidity, invmass3);
+						
 						
 						// ####################################
 						// STUDIES: efficiency of cuts
@@ -1245,10 +1250,10 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						Bool_t IsRichElectron3normal = IsRichElectronNormal(fRecoTracklistEPEM_gtid[k], fRecoRefittedMomentum[k].Mag());
 						Bool_t IsRichElectron4normal = IsRichElectronNormal(fRecoTracklistEPEM_gtid[l], fRecoRefittedMomentum[l].Mag());
 						
-						Bool_t IsRichElectron1MC = (fRecoTracklistEPEM[i]->GetPdgCode() == 11);
-						Bool_t IsRichElectron2MC = (fRecoTracklistEPEM[j]->GetPdgCode() == 11);
-						Bool_t IsRichElectron3MC = (fRecoTracklistEPEM[k]->GetPdgCode() == 11);
-						Bool_t IsRichElectron4MC = (fRecoTracklistEPEM[l]->GetPdgCode() == 11);
+						Bool_t IsRichElectron1MC = (TMath::Abs(fRecoTracklistEPEM[i]->GetPdgCode()) == 11);
+						Bool_t IsRichElectron2MC = (TMath::Abs(fRecoTracklistEPEM[j]->GetPdgCode()) == 11);
+						Bool_t IsRichElectron3MC = (TMath::Abs(fRecoTracklistEPEM[k]->GetPdgCode()) == 11);
+						Bool_t IsRichElectron4MC = (TMath::Abs(fRecoTracklistEPEM[l]->GetPdgCode()) == 11);
 						
 						CbmLmvmKinematicParams paramsCut1;
 						CbmLmvmKinematicParams paramsCut2;
@@ -1600,7 +1605,7 @@ Bool_t CbmAnaConversionReco::IsRichElectronNormal(Int_t globalTrackIndex, Double
    Double_t fMeanB = 4.54;
    Double_t fRmsA = 0.30;
    Double_t fRmsB = 0.22;
-   Double_t fRmsCoeff = 3.5;
+   Double_t fRmsCoeff = 4.5;
    Double_t fDistCut = 1.;
 
    Bool_t isElectronRICH = 0;

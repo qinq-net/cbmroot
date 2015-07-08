@@ -414,7 +414,7 @@ void CbmAnaConversionRecoFull::Exec()
 		if( (electron_rich && electron_trd) || (electron_rich && electron_tof) || (electron_trd && electron_tof) ) fhElectrons->Fill(7);
 
 
-		if(electron_rich && result_chi <= 3) {
+		if(electron_rich) {		// maybe with chi2 cut applied here && result_chi <= 3
 			nofElectrons++;
 			fElectrons_track.push_back(gTrack);
 			fElectrons_momenta.push_back(refittedMomentum);

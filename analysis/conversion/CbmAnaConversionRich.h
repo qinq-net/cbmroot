@@ -78,14 +78,18 @@ private:
 	TH1D * fRichRings_Aaxis_part1;
 	TH1D * fRichRings_Aaxis_part2;
 	TH1D * fRichRings_Aaxis_part3;
+	TH1D * fRichRings_Aaxis_electrons;
 	TH1D * fRichRings_Baxis;
 	TH1D * fRichRings_Baxis_part1;
 	TH1D * fRichRings_Baxis_part2;
 	TH1D * fRichRings_Baxis_part3;
+	TH1D * fRichRings_Baxis_electrons;
 	TH1D * fRichRings_radius;
+	TH1D * fRichRings_radius_electrons;
 	TH2D * fRichRings_radius_vs_momentum;
 	TH2D * fRichRings_radius_vs_pt;
 	TH1D * fRichRings_distance;
+	TH1D * fRichRings_distance_electrons;
 	TH2D * fhRingtest;
 	TH2D * fhRichRings_AaxisVSmom;
 	TH2D * fhRichRings_BaxisVSmom;

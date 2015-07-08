@@ -47,14 +47,18 @@ CbmAnaConversionRich::CbmAnaConversionRich()
     fRichRings_Aaxis_part1(NULL),
     fRichRings_Aaxis_part2(NULL),
     fRichRings_Aaxis_part3(NULL),
+    fRichRings_Aaxis_electrons(NULL),
     fRichRings_Baxis(NULL),
     fRichRings_Baxis_part1(NULL),
     fRichRings_Baxis_part2(NULL),
     fRichRings_Baxis_part3(NULL),
+    fRichRings_Baxis_electrons(NULL),
     fRichRings_radius(NULL),
+    fRichRings_radius_electrons(NULL),
     fRichRings_radius_vs_momentum(NULL),
     fRichRings_radius_vs_pt(NULL),
     fRichRings_distance(NULL),
+    fRichRings_distance_electrons(NULL),
     fhRingtest(NULL),
     fhRichRings_AaxisVSmom(NULL),
     fhRichRings_BaxisVSmom(NULL),
@@ -180,14 +184,18 @@ void CbmAnaConversionRich::InitHistos()
 	fRichRings_Aaxis_part1			= new TH1D("fRichRings_Aaxis_part1", "fRichRings_Aaxis_part1;A-axis;#", 300, 0., 30.);
 	fRichRings_Aaxis_part2			= new TH1D("fRichRings_Aaxis_part2", "fRichRings_Aaxis_part2;A-axis;#", 300, 0., 30.);
 	fRichRings_Aaxis_part3			= new TH1D("fRichRings_Aaxis_part3", "fRichRings_Aaxis_part3;A-axis;#", 300, 0., 30.);
+	fRichRings_Aaxis_electrons		= new TH1D("fRichRings_Aaxis_electrons", "fRichRings_Aaxis_electrons;A-axis;#", 300, 0., 30.);
 	fRichRings_Baxis				= new TH1D("fRichRings_Baxis", "fRichRings_Baxis;B-axis;#", 300, 0., 30.);  
 	fRichRings_Baxis_part1			= new TH1D("fRichRings_Baxis_part1", "fRichRings_Baxis_part1;B-axis;#", 300, 0., 30.);
 	fRichRings_Baxis_part2			= new TH1D("fRichRings_Baxis_part2", "fRichRings_Baxis_part2;B-axis;#", 300, 0., 30.);
 	fRichRings_Baxis_part3			= new TH1D("fRichRings_Baxis_part3", "fRichRings_Baxis_part3;B-axis;#", 300, 0., 30.);  
+	fRichRings_Baxis_electrons		= new TH1D("fRichRings_Baxis_electrons", "fRichRings_Baxis_electrons;B-axis;#", 300, 0., 30.);  
 	fRichRings_radius				= new TH1D("fRichRings_radius", "fRichRings_radius;radius;#", 300, 0., 30.);   
+	fRichRings_radius_electrons		= new TH1D("fRichRings_radius_electrons", "fRichRings_radius_electrons;radius;#", 300, 0., 30.);   
 	fRichRings_radius_vs_momentum	= new TH2D("fRichRings_radius_vs_momentum", "fRichRings_radius_vs_momentum;momentum;radius", 100, 0., 10., 300, 0., 30.);  
 	fRichRings_radius_vs_pt			= new TH2D("fRichRings_radius_vs_pt", "fRichRings_radius_vs_pt;pt;radius", 100, 0., 10., 300, 0., 30.);
 	fRichRings_distance				= new TH1D("fRichRings_distance", "fRichRings_distance;distance;#", 500, 0., 5.);  
+	fRichRings_distance_electrons	= new TH1D("fRichRings_distance_electrons", "fRichRings_distance_electrons;distance;#", 500, 0., 5.);  
 	fhRingtest						= new TH2D("fhRingtest", "fhRingtest;momentum [GeV/c];radius [cm]", 200, 0., 10., 200, 0., 10.);
 	fhRichRings_AaxisVSmom			= new TH2D("fhRichRings_AaxisVSmom", "fhRichRings_AaxisVSmom;momentum [GeV/c];a-axis [cm]", 200, 0., 10., 200, 0., 10.);
 	fhRichRings_BaxisVSmom			= new TH2D("fhRichRings_BaxisVSmom", "fhRichRings_BaxisVSmom;momentum [GeV/c];b-axis [cm]", 200, 0., 10., 200, 0., 10.);
@@ -195,14 +203,18 @@ void CbmAnaConversionRich::InitHistos()
 	fHistoList_richrings.push_back(fRichRings_Aaxis_part1);
 	fHistoList_richrings.push_back(fRichRings_Aaxis_part2);
 	fHistoList_richrings.push_back(fRichRings_Aaxis_part3);
+	fHistoList_richrings.push_back(fRichRings_Aaxis_electrons);
 	fHistoList_richrings.push_back(fRichRings_Baxis);
 	fHistoList_richrings.push_back(fRichRings_Baxis_part1);
 	fHistoList_richrings.push_back(fRichRings_Baxis_part2);
 	fHistoList_richrings.push_back(fRichRings_Baxis_part3);
+	fHistoList_richrings.push_back(fRichRings_Baxis_electrons);
 	fHistoList_richrings.push_back(fRichRings_radius);
+	fHistoList_richrings.push_back(fRichRings_radius_electrons);
 	fHistoList_richrings.push_back(fRichRings_radius_vs_momentum);
 	fHistoList_richrings.push_back(fRichRings_radius_vs_pt);
 	fHistoList_richrings.push_back(fRichRings_distance);
+	fHistoList_richrings.push_back(fRichRings_distance_electrons);
 	fHistoList_richrings.push_back(fhRingtest);
 	fHistoList_richrings.push_back(fhRichRings_AaxisVSmom);
 	fHistoList_richrings.push_back(fhRichRings_BaxisVSmom);
@@ -479,8 +491,10 @@ void CbmAnaConversionRich::AnalyseRICHdata()
 	for (Int_t i = 0; i < nGTracks; i++){
 		CbmGlobalTrack* gTrack  = (CbmGlobalTrack*) fGlobalTracks->At(i);
 		if(NULL == gTrack) continue;
-		Int_t richInd = gTrack->GetRichRingIndex();
+		int stsInd = gTrack->GetStsTrackIndex();
+		int richInd = gTrack->GetRichRingIndex();
 		if (richInd < 0) continue;
+		if (stsInd < 0) continue;
 		CbmRichRing* richRing = (CbmRichRing*) fRichRings->At(richInd);
 
 		CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*) fRichRingMatches->At(richInd);
@@ -490,10 +504,13 @@ void CbmAnaConversionRich::AnalyseRICHdata()
 		CbmMCTrack* mctrack = (CbmMCTrack*)fMcTracks->At(richMcTrackId);
 		if (mctrack == NULL) continue;   
 		
+		int pdg = TMath::Abs(mctrack->GetPdgCode());
+		
 		Double_t momentum = mctrack->GetP();
 		Double_t radius = richRing->GetRadius();
 		Double_t axisA = richRing->GetAaxis();
 		Double_t axisB = richRing->GetBaxis();
+		Double_t distance = richRing->GetDistance();
 		
 		fhRingtest->Fill(momentum, radius);
 		fhRichRings_AaxisVSmom->Fill(momentum, axisA);
@@ -501,6 +518,13 @@ void CbmAnaConversionRich::AnalyseRICHdata()
 		
 		if(richRing->GetPhi() <= 5) {
 			fhRichRings_test1->Fill(axisA);
+		}
+		
+		if(pdg == 11) {
+			fRichRings_Aaxis_electrons->Fill(axisA);
+			fRichRings_Baxis_electrons->Fill(axisB);
+			fRichRings_radius_electrons->Fill(radius);
+			fRichRings_distance_electrons->Fill(distance);
 		}
 		
 		Double_t ringX = richRing->GetCenterX();
