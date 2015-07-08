@@ -80,6 +80,7 @@ CbmAnaConversionReco::CbmAnaConversionReco()
 	fhPi0_pt_gee(NULL),
 	fhPi0_pt_all(NULL),
 	fhEPEM_efficiencyCuts(NULL),
+	fhEPEM_rap_vs_chi(NULL),
     fhInvMass_EPEM_mc(NULL),
     fhInvMass_EPEM_stsMomVec(NULL),
     fhInvMass_EPEM_refitted(NULL),
@@ -213,9 +214,9 @@ void CbmAnaConversionReco::InitHistos()
 
 
 
-	fhPi0_pt_vs_rap_gg			= new TH2D("fhPi0_pt_vs_rap_gg", "fhPi0_pt_vs_rap_gg;pt [GeV]; rap [GeV]", 240, -2., 10., 210, 0., 7.);
-	fhPi0_pt_vs_rap_gee			= new TH2D("fhPi0_pt_vs_rap_gee", "fhPi0_pt_vs_rap_gee;pt [GeV]; rap [GeV]", 240, -2., 10., 210, 0., 7.);
-	fhPi0_pt_vs_rap_all			= new TH2D("fhPi0_pt_vs_rap_all", "fhPi0_pt_vs_rap_all;pt [GeV]; rap [GeV]", 240, -2., 10., 210, 0., 7.);
+	fhPi0_pt_vs_rap_gg			= new TH2D("fhPi0_pt_vs_rap_gg", "fhPi0_pt_vs_rap_gg;pt [GeV]; rap [GeV]", 240, -2., 10., 300, 0., 10.);
+	fhPi0_pt_vs_rap_gee			= new TH2D("fhPi0_pt_vs_rap_gee", "fhPi0_pt_vs_rap_gee;pt [GeV]; rap [GeV]", 240, -2., 10., 300, 0., 10.);
+	fhPi0_pt_vs_rap_all			= new TH2D("fhPi0_pt_vs_rap_all", "fhPi0_pt_vs_rap_all;pt [GeV]; rap [GeV]", 240, -2., 10., 300, 0., 10.);
 	fHistoList_gg.push_back(fhPi0_pt_vs_rap_gg);
 	fHistoList_gee.push_back(fhPi0_pt_vs_rap_gee);
 	fHistoList_all.push_back(fhPi0_pt_vs_rap_all);
@@ -227,7 +228,7 @@ void CbmAnaConversionReco::InitHistos()
 	fHistoList_gee.push_back(fhPi0_pt_gee);
 	fHistoList_all.push_back(fhPi0_pt_all);
 
-	fhEPEM_efficiencyCuts	= new TH1D("fhEPEM_efficiencyCuts", "fhEPEM_efficiencyCuts;cut;#", 7, 0., 7.);
+	fhEPEM_efficiencyCuts	= new TH1D("fhEPEM_efficiencyCuts", "fhEPEM_efficiencyCuts;cut;#", 10, 0., 10.);
 	fHistoList_all.push_back(fhEPEM_efficiencyCuts);
 	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(1, "no cuts");
 	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(2, "ANN: 4 rich electrons");
@@ -236,6 +237,12 @@ void CbmAnaConversionReco::InitHistos()
 	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(5, "Normal: 4 rich electrons");
 	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(6, "Normal: opening angle of e+e- pairs");
 	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(7, "Normal: invariant mass of e+e- pairs");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(8, "MC: 4 rich electrons");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(9, "MC: opening angle of e+e- pairs");
+	fhEPEM_efficiencyCuts->GetXaxis()->SetBinLabel(10, "MC: invariant mass of e+e- pairs");
+
+	fhEPEM_rap_vs_chi	= new TH2D("fhEPEM_rap_vs_chi", "fhEPEM_rap_vs_chi; rap [GeV]; chi of electrons", 300, 0., 10., 100, 0., 100.);
+	fHistoList_all.push_back(fhEPEM_rap_vs_chi);
 
 
 	fhInvMass_EPEM_mc				= new TH1D("fhInvMass_EPEM_mc","fhInvariantMass_recoMomentum1 (mc);mass [GeV/c^2];#", 400, -0.0025, 1.9975);
@@ -1209,6 +1216,11 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						fhPi0_pt_all->Fill(params1.fPt);
 						
 						
+						fhEPEM_rap_vs_chi->Fill(params1.fRapidity, fRecoTracklistEPEM_chi[i]);
+						fhEPEM_rap_vs_chi->Fill(params1.fRapidity, fRecoTracklistEPEM_chi[j]);
+						fhEPEM_rap_vs_chi->Fill(params1.fRapidity, fRecoTracklistEPEM_chi[k]);
+						fhEPEM_rap_vs_chi->Fill(params1.fRapidity, fRecoTracklistEPEM_chi[l]);
+						
 						
 						// ####################################
 						// STUDIES: efficiency of cuts
@@ -1232,6 +1244,11 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						Bool_t IsRichElectron2normal = IsRichElectronNormal(fRecoTracklistEPEM_gtid[j], fRecoRefittedMomentum[j].Mag());
 						Bool_t IsRichElectron3normal = IsRichElectronNormal(fRecoTracklistEPEM_gtid[k], fRecoRefittedMomentum[k].Mag());
 						Bool_t IsRichElectron4normal = IsRichElectronNormal(fRecoTracklistEPEM_gtid[l], fRecoRefittedMomentum[l].Mag());
+						
+						Bool_t IsRichElectron1MC = (fRecoTracklistEPEM[i]->GetPdgCode() == 11);
+						Bool_t IsRichElectron2MC = (fRecoTracklistEPEM[j]->GetPdgCode() == 11);
+						Bool_t IsRichElectron3MC = (fRecoTracklistEPEM[k]->GetPdgCode() == 11);
+						Bool_t IsRichElectron4MC = (fRecoTracklistEPEM[l]->GetPdgCode() == 11);
 						
 						CbmLmvmKinematicParams paramsCut1;
 						CbmLmvmKinematicParams paramsCut2;
@@ -1279,6 +1296,16 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 								fhEPEM_efficiencyCuts->Fill(5);
 								if(InvariantMassCut1 && InvariantMassCut2) {
 									fhEPEM_efficiencyCuts->Fill(6);
+								}
+							}
+						}
+						// MC-true data for electron identification
+						if( IsRichElectron1MC && IsRichElectron2MC && IsRichElectron3MC && IsRichElectron4MC ) {		// all 4 electrons correctly identified with the RICH
+							fhEPEM_efficiencyCuts->Fill(7);
+							if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
+								fhEPEM_efficiencyCuts->Fill(8);
+								if(InvariantMassCut1 && InvariantMassCut2) {
+									fhEPEM_efficiencyCuts->Fill(9);
 								}
 							}
 						}

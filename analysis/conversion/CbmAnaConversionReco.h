@@ -134,6 +134,8 @@ private:
 
 	TH1D * fhEPEM_efficiencyCuts;
 
+	TH2D * fhEPEM_rap_vs_chi;
+
 
 	TH1D * fhInvMass_EPEM_mc;
 	TH1D * fhInvMass_EPEM_stsMomVec;

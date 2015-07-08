@@ -440,7 +440,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 			if (motherId == -1) {
 				countPi0MC_fromPrimary++;
 				fhPi0_pt->Fill(mctrack->GetPt() );
-				fhPi0_pt_vs_rap->Fill(mctrack->GetRapidity(), mctrack->GetPt() );
+				fhPi0_pt_vs_rap->Fill(mctrack->GetPt(), mctrack->GetRapidity() );
 			}
 		}
 		
