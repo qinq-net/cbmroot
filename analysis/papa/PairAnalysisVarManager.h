@@ -79,6 +79,7 @@ public:
     kPosY,                   // Y position [cm]
     kPosZ,                   // Z position [cm]
     kEloss,                  // TRD energy loss dEdx+TR
+    kElossdEdx,              // TRD energy loss dEdx only
     kElossTR,                // TRD energy loss TR only
     kNPhotons,               // RICH number of photons in this hit
     kPmtId,                  // RICH photomultiplier number
@@ -642,18 +643,20 @@ inline void PairAnalysisVarManager::FillVarTrdTrack(const CbmTrdTrack *track, Do
   // Calculate eloss
   TClonesArray *hits   = fgEvent->GetHits(kTRD);
   if(hits &&  track->GetELoss()<1.e-8 /*&& Req(kTRDSignal)*/ ) {
-    Double_t eloss = 0;
+    Double_t eloss   = 0;
     for (Int_t ihit=0; ihit < track->GetNofHits(); ihit++){
       Int_t idx = track->GetHitIndex(ihit);
       CbmTrdHit* hit = (CbmTrdHit*) hits->At(idx);
-      if(hit) eloss += hit->GetELoss(); // dEdx + TR
+      if(hit) {
+	eloss   += hit->GetELoss(); // dEdx + TR
+      }
     }
     //   printf("track %p \t eloss %.3e \n",track,eloss);
     const_cast<CbmTrdTrack*>(track)->SetELoss(eloss);
   }
 
   // Set
-  values[kTRDSignal]      = track->GetELoss() * 1.e+6; //GeV->keV
+  values[kTRDSignal]      = track->GetELoss()     * 1.e+6; //GeV->keV
   values[kTRDPidWkn]      = track->GetPidWkn(); // PID value Wkn method
   values[kTRDPidANN]      = track->GetPidANN(); // PID value ANN method
   // PID value Likelihood method
@@ -1084,8 +1087,9 @@ inline void PairAnalysisVarManager::FillVarTrdHit(const CbmTrdHit *hit, Double_t
   FillVarPixelHit(hit, values);
 
   // Set
-  values[kEloss]   = hit->GetELoss()   * 1.e+6; //GeV->keV, dEdx + TR
-  values[kElossTR] = hit->GetELossTR() * 1.e+6; //GeV->keV, TR, not filled because of CbmDigi
+  values[kEloss]     = hit->GetELoss()     * 1.e+6; //GeV->keV, dEdx + TR
+  values[kElossdEdx] = hit->GetELossdEdX() * 1.e+6; //GeV->keV, dEdx
+  values[kElossTR]   = hit->GetELossTR()   * 1.e+6; //GeV->keV, TR, not filled because of CbmDigi
   //  Printf("eloss trd: %.3e (%.3e TR, %.3e dEdx)",hit->GetELoss(),hit->GetELossTR(),hit->GetELossdEdX());
 }
 
