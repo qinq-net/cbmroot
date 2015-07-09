@@ -7,6 +7,10 @@
  ** @date 09.05.2014
  ** @author Tomas Balog <T.Balog@gsi.de>
  **
+ ** TODO:
+ ** v15b - within a station the ladders should be aligned in z, defined by ladder with most sensors
+ ** v15b - within a station the ladders of 1 units should not touch eachother
+ **
  ** v15b: introduce carbon ladders from v13z
  ** v15a: with flipped ladder orientation for stations 0,2,4,6 to match CAD design
  **
@@ -397,13 +401,19 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   TGeoVolume* station01 = ConstructStation(0, nLadders, ladderTypes, rHole);
 
   if (gkConstructCones) {
-    TGeoRotation* coneRot11 = new TGeoRotation (name+"coneRot1", +90., 0., 0.);
-    TGeoCombiTrans* conePosRot11 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3, coneRot11);
+    // upstream
+    TGeoRotation* coneRot11 = new TGeoRotation;
+    coneRot11->RotateZ(90);
+    coneRot11->RotateY(180);
+    TGeoCombiTrans* conePosRot11 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3, coneRot11);
     station01->AddNode(coneVolum, 1, conePosRot11);
 
-    TGeoRotation* coneRot12 = new TGeoRotation (name+"coneRot2", +90., 180., 0.);
-    TGeoCombiTrans* conePosRot12 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3, coneRot12);
+    // downstream
+    TGeoRotation* coneRot12 = new TGeoRotation;
+    coneRot12->RotateZ(90);
+    TGeoCombiTrans* conePosRot12 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3, coneRot12);
     station01->AddNode(coneVolum, 2, conePosRot12);
+
     station01->GetShape()->ComputeBBox();
   }
   
@@ -431,13 +441,19 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   TGeoVolume* station02 = ConstructStation(1, nLadders, ladderTypes, rHole);
 
   if (gkConstructCones) {
-    TGeoRotation* coneRot21 = new TGeoRotation (name+"coneRot1", -90., 0., 0.);
-    TGeoCombiTrans* conePosRot21 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3, coneRot21);
+    // upstream
+    TGeoRotation* coneRot21 = new TGeoRotation;
+    coneRot21->RotateZ(-90);
+    coneRot21->RotateY(180);
+    TGeoCombiTrans* conePosRot21 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3, coneRot21);
     station02->AddNode(coneVolum, 1, conePosRot21);
 
-    TGeoRotation* coneRot22 = new TGeoRotation (name+"coneRot2", -90., 180., 0.);
-    TGeoCombiTrans* conePosRot22 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3, coneRot22);
+    // downstream
+    TGeoRotation* coneRot22 = new TGeoRotation;
+    coneRot22->RotateZ(-90);
+    TGeoCombiTrans* conePosRot22 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3, coneRot22);
     station02->AddNode(coneVolum, 2, conePosRot22);
+
     station02->GetShape()->ComputeBBox();
   }
   
@@ -465,13 +481,19 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   TGeoVolume* station03 = ConstructStation(2, nLadders, ladderTypes, rHole);
 
   if (gkConstructCones) {
-    TGeoRotation* coneRot31 = new TGeoRotation (name+"coneRot1", +90., 0., 0.);
-    TGeoCombiTrans* conePosRot31 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3, coneRot31);
+    // upstream
+    TGeoRotation* coneRot31 = new TGeoRotation;
+    coneRot31->RotateZ(90);
+    coneRot31->RotateY(180);
+    TGeoCombiTrans* conePosRot31 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3, coneRot31);
     station03->AddNode(coneVolum, 1, conePosRot31);
 
-    TGeoRotation* coneRot32 = new TGeoRotation (name+"coneRot2", +90., 180., 0.);
-    TGeoCombiTrans* conePosRot32 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3, coneRot32);
+    // downstream
+    TGeoRotation* coneRot32 = new TGeoRotation;
+    coneRot32->RotateZ(90);
+    TGeoCombiTrans* conePosRot32 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3, coneRot32);
     station03->AddNode(coneVolum, 2, conePosRot32);
+
     station03->GetShape()->ComputeBBox();
   }
   
@@ -501,13 +523,19 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   TGeoVolume* station04 = ConstructStation(3, nLadders, ladderTypes, rHole);
 
   if (gkConstructCones) {
-    TGeoRotation* coneRot41 = new TGeoRotation (name+"coneRot1", -90., 0., 0.);
-    TGeoCombiTrans* conePosRot41 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3, coneRot41);
+    // upstream
+    TGeoRotation* coneRot41 = new TGeoRotation;
+    coneRot41->RotateZ(-90);
+    coneRot41->RotateY(180);
+    TGeoCombiTrans* conePosRot41 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3, coneRot41);
     station04->AddNode(coneVolum, 1, conePosRot41);
 
-    TGeoRotation* coneRot42 = new TGeoRotation (name+"coneRot2", -90., 180., 0.);
-    TGeoCombiTrans* conePosRot42 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3, coneRot42);
+    // downstream
+    TGeoRotation* coneRot42 = new TGeoRotation;
+    coneRot42->RotateZ(-90);
+    TGeoCombiTrans* conePosRot42 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3, coneRot42);
     station04->AddNode(coneVolum, 2, conePosRot42);
+
     station04->GetShape()->ComputeBBox();
   }
   
@@ -537,13 +565,19 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   TGeoVolume* station05 = ConstructStation(4, nLadders, ladderTypes, rHole);
 
   if (gkConstructCones) {
-    TGeoRotation* coneRot51 = new TGeoRotation (name+"coneRot1", +90., 0., 0.);
-    TGeoCombiTrans* conePosRot51 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3, coneRot51);
+    // upstream
+    TGeoRotation* coneRot51 = new TGeoRotation;
+    coneRot51->RotateZ(90);
+    coneRot51->RotateY(180);
+    TGeoCombiTrans* conePosRot51 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3, coneRot51);
     station05->AddNode(coneVolum, 1, conePosRot51);
 
-    TGeoRotation* coneRot52 = new TGeoRotation (name+"coneRot2", +90., 180., 0.);
-    TGeoCombiTrans* conePosRot52 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3, coneRot52);
+    // downstream
+    TGeoRotation* coneRot52 = new TGeoRotation;
+    coneRot52->RotateZ(90);
+    TGeoCombiTrans* conePosRot52 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3, coneRot52);
     station05->AddNode(coneVolum, 2, conePosRot52);
+
     station05->GetShape()->ComputeBBox();
   }
   
@@ -574,13 +608,19 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   TGeoVolume* station06 = ConstructStation(5, nLadders, ladderTypes, rHole);
 
   if (gkConstructCones) {
-    TGeoRotation* coneRot61 = new TGeoRotation (name+"coneRot1", -90., 0., 0.);
-    TGeoCombiTrans* conePosRot61 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3, coneRot61);
+    // upstream
+    TGeoRotation* coneRot61 = new TGeoRotation;
+    coneRot61->RotateZ(-90);
+    coneRot61->RotateY(180);
+    TGeoCombiTrans* conePosRot61 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3, coneRot61);
     station06->AddNode(coneVolum, 1, conePosRot61);
 
-    TGeoRotation* coneRot62 = new TGeoRotation (name+"coneRot2", -90., 180., 0.);
-    TGeoCombiTrans* conePosRot62 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3, coneRot62);
+    // downstream
+    TGeoRotation* coneRot62 = new TGeoRotation;
+    coneRot62->RotateZ(-90);
+    TGeoCombiTrans* conePosRot62 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3, coneRot62);
     station06->AddNode(coneVolum, 2, conePosRot62);
+
     station06->GetShape()->ComputeBBox();
   }
   
@@ -612,13 +652,19 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   TGeoVolume* station07 = ConstructStation(6, nLadders, ladderTypes, rHole);
 
   if (gkConstructCones) {
-    TGeoRotation* coneRot71 = new TGeoRotation (name+"coneRot1", +90., 0., 0.);
-    TGeoCombiTrans* conePosRot71 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3, coneRot71);
+    // upstream
+    TGeoRotation* coneRot71 = new TGeoRotation;
+    coneRot71->RotateZ(90);
+    coneRot71->RotateY(180);
+    TGeoCombiTrans* conePosRot71 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3, coneRot71);
     station07->AddNode(coneVolum, 1, conePosRot71);
 
-    TGeoRotation* coneRot72 = new TGeoRotation (name+"coneRot2", +90., 180., 0.);
-    TGeoCombiTrans* conePosRot72 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3, coneRot72);
+    // downstream
+    TGeoRotation* coneRot72 = new TGeoRotation;
+    coneRot72->RotateZ(90);
+    TGeoCombiTrans* conePosRot72 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3, coneRot72);
     station07->AddNode(coneVolum, 2, conePosRot72);
+
     station07->GetShape()->ComputeBBox();
   }
   
@@ -651,13 +697,19 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   TGeoVolume* station08 = ConstructStation(7, nLadders, ladderTypes, rHole);
 
   if (gkConstructCones) {
-    TGeoRotation* coneRot81 = new TGeoRotation (name+"coneRot1", -90., 0., 0.);
-    TGeoCombiTrans* conePosRot81 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3, coneRot81);
+    // upstream
+    TGeoRotation* coneRot81 = new TGeoRotation;
+    coneRot81->RotateZ(-90);
+    coneRot81->RotateY(180);
+    TGeoCombiTrans* conePosRot81 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3, coneRot81);
     station08->AddNode(coneVolum, 1, conePosRot81);
 
-    TGeoRotation* coneRot82 = new TGeoRotation (name+"coneRot2", -90., 180., 0.);
-    TGeoCombiTrans* conePosRot82 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3, coneRot82);
+    // downstream
+    TGeoRotation* coneRot82 = new TGeoRotation;
+    coneRot82->RotateZ(-90);
+    TGeoCombiTrans* conePosRot82 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3, coneRot82);
     station08->AddNode(coneVolum, 2, conePosRot82);
+
     station08->GetShape()->ComputeBBox();
   }
   
@@ -802,7 +854,8 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   geoFile->Close();
 
   top->Draw("ogl");
-
+  gGeoManager->SetVisLevel(6);
+  
   infoFile.close();
 
 }
@@ -1652,9 +1705,11 @@ void AddCarbonLadder(Int_t LadderIndex,
   Double_t j;
     
   Int_t YnumOfFrameBoxes = (Int_t)(ladderY / gkFrameStep)+1;    // calculate number of elements
-  if (LadderIndex == 5 || LadderIndex == 22)  // set even number of ladder elements for these ladders
+  if (LadderIndex == 21 || LadderIndex == 1)  // set even number of ladder elements for these ladders in station 1 and 2
+	YnumOfFrameBoxes--;
+  if (LadderIndex == 22 || LadderIndex == 5)  // set even number of ladder elements for these ladders in station 3 and 4
 	YnumOfFrameBoxes++;
-  //      cout << "DE: lad " << LadderIndex << " inum " << YnumOfFrameBoxes << endl;
+//  //      cout << "DE: lad " << LadderIndex << " inum " << YnumOfFrameBoxes << endl;
 
   TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
   TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_FullFrameBox", fullFrameShp, gStsMedium);
@@ -1669,7 +1724,6 @@ void AddCarbonLadder(Int_t LadderIndex,
     j=-(inum-1)/2.+(i-1); 
 	//        cout << "DE: i " << i << " j " << j << endl;
 
-    //    if (LadderIndex == 1 || LadderIndex == 5 || LadderIndex == 10 || LadderIndex == 15 || LadderIndex == 18 || LadderIndex == 19 || LadderIndex == 20)  // central ladders in stations 1 to 8
     if (LadderIndex == 21 || LadderIndex == 1 || LadderIndex == 22 || LadderIndex == 5 || LadderIndex == 23 || LadderIndex == 10 || LadderIndex == 15 || LadderIndex == 18)  // central ladders in stations 1 to 8
       if ((j>=-2) && (j<=2))   // keep the inner 4 elements free for the cone
         continue;
