@@ -71,7 +71,7 @@ void CbmAnaJpsiSuperEventReport::Draw()
 	SetDefaultDrawStyle();
 
 	long nofSEEvents = fHMSuperEvent->H1("fh_se_event_number")->GetEntries();
-        long  nofSEEventsSquared = nofSEEvents * nofSEEvents;
+    long nofSEEventsSquared = nofSEEvents * nofSEEvents;
 	cout << "Number of SE events = " << nofSEEventsSquared << endl;
 	fHMSuperEvent->ScaleByPattern(".*", 1./(nofSEEventsSquared));
 
@@ -80,15 +80,15 @@ void CbmAnaJpsiSuperEventReport::Draw()
 	fHMEventByEvent->ScaleByPattern(".*", 1./nofEEEvents);
 
 
-        Int_t nRebins = 20;
+    Int_t nRebins = 20;
 	fHMEventByEvent->RebinByPattern("fh_signal_minv.+", nRebins);
 	fHMEventByEvent->RebinByPattern("fh_bg_minv.+", nRebins);
-        fHMSuperEvent->RebinByPattern("fh_se_bg_participants_minv.+", nRebins);
+    fHMSuperEvent->RebinByPattern("fh_se_bg_participants_minv.+", nRebins);
 
 
 	fHMEventByEvent->ScaleByPattern("fh_signal_minv.+", nRebins);
 	fHMEventByEvent->ScaleByPattern("fh_bg_minv.+", nRebins);
-        fHMSuperEvent->ScaleByPattern("fh_se_bg_participants_minv.+", nRebins);
+    fHMSuperEvent->ScaleByPattern("fh_se_bg_participants_minv.+", nRebins);
 
 	DrawComparison();
 

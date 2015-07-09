@@ -198,7 +198,6 @@ void CbmAnaJpsiSuperEvent::DoSuperEvent()
 
 void CbmAnaJpsiSuperEvent::Draw()
 {
-
 	TCanvas* c = new TCanvas("jpsi_se_bg_minv","jpsi_se_bg_minv",1200, 1200);
 
 	fHM->RebinByPattern("fh_se_bg_minv.*", 20);
