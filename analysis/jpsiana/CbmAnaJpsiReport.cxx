@@ -56,7 +56,7 @@ void CbmAnaJpsiReport::Draw()
 	  HM()->ScaleByPattern(".*", 1./nofEvents);
 
 	 //Rebin minv histograms
-	  Int_t nRebins = 25;
+	  Int_t nRebins = 20;
 	  //Double_t nRebinScale = 1/((Double_t) nRebins);
 	  HM()->RebinByPattern("fh_signal_minv.+", nRebins);  //Rebin scales with 1/(binWith)
 	  HM()->RebinByPattern("fh_bg_minv.+", nRebins);
@@ -511,7 +511,7 @@ void CbmAnaJpsiReport::DrawPairSourceAnaSteps(
 		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_og"))
 		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_op"))
 		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_oo")),
-		list_of("whole BG")("#gamma + #gamma")("#gamma + #pi^{0}")("#gamma + others")
+		list_of("#gamma + #gamma")("whole BG")("#gamma + #pi^{0}")("#gamma + others")
 		("#pi^{0} + #gamma")("#pi^{0} + #pi^{0}")("#pi^{0} + others")
 		("others + #gamma")("others + #pi^{0}")("others + others"),
 		kLinear, kLog, true, 0.85, 0.6, 0.99, 0.99);

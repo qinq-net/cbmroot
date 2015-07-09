@@ -79,7 +79,7 @@ void CbmAnaJpsiSuperEventReport::Draw()
 	fHMEventByEvent->ScaleByPattern(".*", 1./nofEEEvents);
 
 
-	Int_t nRebins = 25;
+	Int_t nRebins = 20;
 	fHMEventByEvent->RebinByPattern("fh_signal_minv.+", nRebins);
 	fHMEventByEvent->RebinByPattern("fh_bg_minv.+", nRebins);
 	fHMSuperEvent->RebinByPattern("fh_se_bg_minv.+", nRebins);
