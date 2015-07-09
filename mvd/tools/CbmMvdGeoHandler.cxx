@@ -538,15 +538,18 @@ Int_t iStation = 0;
 				//cout << endl << "try to find: " << fSensorName << endl;
 			  	fVolId = gGeoManager->GetUID(fSensorName);
 				if(fVolId > -1)
+				{
 				fnodeName = fMother + fDetectorName + fStationName + fQuadrantName + fSensorHolding + "/" + fSensorName + "_1";
 				//cout << endl << "sensorfound check for node " << fnodeName << endl;
 				Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
 				        if(nodeFound)
 					{
-					cout << endl << "node found" << endl;
+					//cout << endl << "node found " << fnodeName << endl;
 					fStationMap[fVolId] = iStation;
 					iStation++;
+					
 				        }
+				}
 				}
 			}
 		
