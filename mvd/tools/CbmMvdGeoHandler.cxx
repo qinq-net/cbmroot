@@ -412,6 +412,7 @@ Int_t iStation = 0;
 			    	fSensorName = Form("MVD-S%i-Q0-L%i-C%02i-P0", StatNr, Layer, SensNr);
 			  	fVolId = gGeoManager->GetUID(fSensorName);
 				if(fVolId > -1)
+				{
 				fnodeName = fMother + fDetectorName + fStationName + fQuadrantName + fSensorHolding + "/" + fSensorName + "_1";
 				Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
 				        if(nodeFound)
@@ -420,6 +421,7 @@ Int_t iStation = 0;
 					iStation++;
 					FillParameter();
 				        }
+				}
 				}
 			}
 		
