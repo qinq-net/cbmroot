@@ -718,7 +718,8 @@ void create_stsgeo_v13z(const char* geoTag="v13z")
   r3 += 0.01;    // safety margin
   cout << z1 << "  " << r1 << endl; 
   cout << z2 << "  " << r2 << endl; 
-  cout << z3 << "  " << r3 << endl; 
+  cout << z3 << "  " << r3 << endl;
+  
 //  TGeoPcon* cutout = new TGeoPcon("stsCone", 0., 360., 3); // 2.*TMath::Pi(), 3);
 //  cutout->DefineSection(0, z1, 0., r1);
 //  cutout->DefineSection(1, z2, 0., r2);
@@ -788,7 +789,8 @@ void create_stsgeo_v13z(const char* geoTag="v13z")
   geoFile->Close();
 
   top->Draw("ogl");
-
+  gGeoManager->SetVisLevel(6);
+  
   infoFile.close();
 
 }
