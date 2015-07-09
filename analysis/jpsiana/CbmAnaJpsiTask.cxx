@@ -54,9 +54,11 @@ CbmAnaJpsiTask::CbmAnaJpsiTask()
 	  fHM(NULL),
 	  fCuts(),
 	  fWeight(0.),
-	  fUseTrd(kTRUE)
+	  fUseTrd(kTRUE),
+	  fUseTof(kTRUE)
 {
     fUseTrd=true;
+    fUseTof=false;
 	fWeight=1.14048e-6;
 }
 
@@ -77,19 +79,27 @@ InitStatus CbmAnaJpsiTask::Init()
    fStsPoints = (TClonesArray*) ioman->GetObject("StsPoint");
    if ( NULL == fStsPoints) {Fatal("CbmAnaJpsiTask::Init","No StsPoint Array! "); }
    
-   fRichPoints = (TClonesArray*) ioman->GetObject("RichPoint");
-   if ( NULL == fRichPoints) {Fatal("CbmAnaJpsiTask::Init","No RichPoint Array! "); }
-   
-   
-   fTofPoints = (TClonesArray*) ioman->GetObject("TofPoint");
-   if ( NULL == fTofPoints) {Fatal("CbmAnaJpsiTask::Init","No TofPoint Array! "); }
-   
    fStsHits = (TClonesArray*) ioman->GetObject("StsHit");
    if ( NULL == fStsHits) {Fatal("CbmAnaJpsiTask::Init","No StsHit Array! "); }
+   
+   fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
+   if ( NULL == fStsTracks) {Fatal("CbmAnaJpsiTask::Init","No StsTracks Array! ");}
+   
+   fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
+   if ( NULL == fStsTrackMatches ) {Fatal("CbmAnaJpsiTask::Init","No StsTrackMatches Array!");}
    
    fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
    if ( NULL == fRichHits) {Fatal("CbmAnaJpsiTask::Init","No RichHits Array! ");}
    
+   fRichPoints = (TClonesArray*) ioman->GetObject("RichPoint");
+   if ( NULL == fRichPoints) {Fatal("CbmAnaJpsiTask::Init","No RichPoint Array! "); }
+
+   fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
+   if ( NULL == fRichRings) {Fatal("CbmAnaJpsiTask::Init","No RichRings Array! ");}
+
+   fRichRingMatches = (TClonesArray*) ioman->GetObject("RichRingMatch");
+   if (NULL == fRichRingMatches) { Fatal("CbmAnaJpsiTask::Init","No RichRingMatch array!"); }
+
    if (fUseTrd == true){
 	   fTrdHits = (TClonesArray*) ioman->GetObject("TrdHit");
 	   if ( NULL == fTrdHits) {Fatal("CbmAnaJpsiTask::Init","No TrdHits Array! ");}
@@ -106,15 +116,9 @@ InitStatus CbmAnaJpsiTask::Init()
 
    fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
    if ( NULL == fTofHits) {Fatal("CbmAnaJpsiTask::Init","No TofHits Array! ");}
-
-   fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
-   if ( NULL == fStsTracks) {Fatal("CbmAnaJpsiTask::Init","No StsTracks Array! ");}
    
-   fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
-   if ( NULL == fRichRings) {Fatal("CbmAnaJpsiTask::Init","No RichRings Array! ");}
-   
-   fRichRingMatches = (TClonesArray*) ioman->GetObject("RichRingMatch");
-   if (NULL == fRichRingMatches) { Fatal("CbmAnaJpsiTask::Init","No RichRingMatch array!"); }
+   fTofPoints = (TClonesArray*) ioman->GetObject("TofPoint");
+   if ( NULL == fTofPoints) {Fatal("CbmAnaJpsiTask::Init","No TofPoint Array! "); }
    
    fGlobalTracks = (TClonesArray*) ioman->GetObject("GlobalTrack");
    if ( NULL == fGlobalTracks ) {Fatal("CbmAnaJpsiTask::Init","No GlobalTracks Array!");}
@@ -122,8 +126,6 @@ InitStatus CbmAnaJpsiTask::Init()
    fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
    if (NULL == fPrimVertex) { Fatal("CbmAnaJpsiTask::Init","No PrimaryVertex array!"); }
 
-   fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
-   if ( NULL == fStsTrackMatches ) {Fatal("CbmAnaJpsiTask::Init","No StsTrackMatches Array!");}
 
    fJpsiCandidates = new TClonesArray("CbmAnaJpsiCandidate");
    ioman->Register("JpsiCandidates","Jpsi", fJpsiCandidates, kTRUE);
@@ -822,8 +824,11 @@ void CbmAnaJpsiTask::IsElectron(
 	if (trdEl) {cand->fIsTrdEl = true;}
 	else {cand->fIsTrdEl = false;}
 
-	if (tofEl) {cand->fIsTofEl = true;}
-	else {cand->fIsTofEl = false;}
+	if (fUseTof == false) {
+		tofEl=true;
+	}
+		if (tofEl) {cand->fIsTofEl = true;}
+		else {cand->fIsTofEl = false;}
 
 	if (richEl && trdEl && tofEl)
 	{

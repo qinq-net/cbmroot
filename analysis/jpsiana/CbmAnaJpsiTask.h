@@ -90,6 +90,7 @@ private:
   CbmHistManager* fHM;
 
   Bool_t fUseTrd;
+  Bool_t fUseTof;
 
   /*
        * \brief Creates 1D histograms for each analysis step.
