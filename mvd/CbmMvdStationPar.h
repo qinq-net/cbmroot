@@ -62,7 +62,7 @@ class CbmMvdStationPar : public TNamed
   void SetRadLength(Int_t stationNumber, Double_t length);
   void SetBeamHeight(Int_t stationNumber, Double_t beamheight);
   void SetBeamWidth(Int_t stationNumber, Double_t beamwidth);
-
+  void SetNofStations(Int_t nrOfStations) {fStationCount = nrOfStations;};
 
   /** Output to screen **/
   void Print(Option_t* opt="") const;

@@ -80,7 +80,22 @@ void CbmMvdGeoHandler::Init(Bool_t isSimulation)
    GetGeometryTyp();
    if(!isSimulation)
 	{
-   	fStationPar = new CbmMvdStationPar(fGeoTyp);
+   	fStationPar = new CbmMvdStationPar();
+	switch (fGeoTyp)
+	{
+	case FourStation:
+	case FourStationShift:
+	fStationPar->SetNofStations(4);
+	break;
+	case ThreeStation:
+	fStationPar->SetNofStations(3);
+	break;
+	case MiniCbm:
+	fStationPar->SetNofStations(2);
+	break;
+	default:
+	fStationPar->SetNofStations(0);
+	}
 	fStationPar->Init();
 	}
 }
@@ -272,29 +287,35 @@ void CbmMvdGeoHandler::GetGeometryTyp()
 if ( gGeoManager->CheckPath(fMother + "/Beamtimeosetupoobgnum_0"))
 	{
 	cout << endl << "Found Beamtimesetup" << endl;
-	fGeoTyp = 2;
+	fGeoTyp = beamtest;
 	}
 else if (gGeoManager->CheckPath(fMother + "/MVDoMistraloquero012oStationo150umodigi_0"))
 	{
 	LOG(INFO) << "Found MVD with 3 Stations" << FairLogger::endl;
-	fGeoTyp = 3;
+	fGeoTyp = ThreeStation;
 	}
 else if (gGeoManager->CheckPath(fMother + "/MVDo0123ohoFPCoextoHSoSo0123_0"))
 	{
 	LOG(INFO) << "Found MVD with 4 Stations" << FairLogger::endl;
-	fGeoTyp = 4;
+	fGeoTyp = FourStation;
 	fDetectorName = "/MVDo0123ohoFPCoextoHSoSo0123_0";
 	}
 else if (gGeoManager->CheckPath(fMother + "/MVDo1123ohoFPCoextoHSoSo1123_0"))
 	{
 	LOG(INFO) << "Found shifted MVD with 4 Stations" << FairLogger::endl;
-	fGeoTyp = 5;
+	fGeoTyp = FourStationShift;
 	fDetectorName = "/MVDo1123ohoFPCoextoHSoSo1123_0";
+	}
+else if (gGeoManager->CheckPath(fMother + "/MVDomCBM_0"))
+	{
+	LOG(INFO) << "Found mCBM MVD configuration" << FairLogger::endl;
+	fDetectorName = "/MVDomCBM_0";
+	fGeoTyp = MiniCbm;
 	}
 else 
 	{
 	cout << endl << "Try standard Geometry" << endl;
-	fGeoTyp = 1;
+	fGeoTyp = Default;
 	}
  
 }
@@ -315,13 +336,11 @@ else
 //--------------------------------------------------------------------------
 void CbmMvdGeoHandler::FillDetector()
 {
-if(fGeoTyp == 1)
+if(fGeoTyp == Default)
 	LOG(FATAL) << "Using old Geometry files within the new Digitizer is not supported, "
 		   << "please use CbmMvdDigitizeL if you want to use this Geometry" << FairLogger::endl;
-if(fGeoTyp < 4)
-	LOG(FATAL) <<  "Geometry format of MVD file " 
-		   <<  " not yet supported." << FairLogger::endl;
-else
+
+if(fGeoTyp == FourStation || fGeoTyp == FourStationShift)
 {
 fDetector = CbmMvdDetector::Instance();
 
@@ -334,7 +353,7 @@ fDetector->SetParameterFile(fStationPar);
 Int_t iStation = 0;
   	for(Int_t StatNr = 0; StatNr < 4; StatNr++)
       	{
-	if(StatNr == 0 && fGeoTyp == 4)
+	if(StatNr == 0 && fGeoTyp == FourStation)
 		fStationName = "/MVDo0ohoFPCoHSoS_1";
 	else
 		fStationName = Form("/MVDo%iohoFPCoextoHSoS_1",StatNr);
@@ -371,6 +390,45 @@ Int_t iStation = 0;
 		}
 	}
 }
+else if(fGeoTyp == MiniCbm)
+{
+	if(!fDetector)
+	LOG(FATAL) <<  "GeometryHandler coulden't find a valide Detector"
+		   << FairLogger::endl;
+
+fDetector->SetParameterFile(fStationPar);
+
+Int_t iStation = 0;
+  	for(Int_t StatNr = 0; StatNr < 2; StatNr++)
+      	{
+	fStationName = Form("/MVDomCBMoS%i_1",StatNr);
+                     
+	     		for(Int_t Layer = 0; Layer < 2; Layer++)
+		 	 {
+		     		 for(Int_t SensNr = 0; SensNr < 50; SensNr++)
+			  	{
+                                fQuadrantName = Form("/MVD-S%i-Q0-L%i-C%02i_1",StatNr, Layer, SensNr);
+				fSensorHolding = Form("/MVD-S%i-Q0-L%i-C%02i-P0oPartAss_1",  StatNr, Layer, SensNr);
+			    	fSensorName = Form("MVD-S%i-Q0-L%i-C%02i-P0", StatNr, Layer, SensNr);
+			  	fVolId = gGeoManager->GetUID(fSensorName);
+				if(fVolId > -1)
+				fnodeName = fMother + fDetectorName + fStationName + fQuadrantName + fSensorHolding + "/" + fSensorName + "_1";
+				Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
+				        if(nodeFound)
+					{
+					fDetector->AddSensor(fSensorName, fSensorName, fnodeName, new CbmMvdMimosa26AHR, iStation, fVolId, 0.0, StatNr);
+					iStation++;
+					FillParameter();
+				        }
+				}
+			}
+		
+	}
+}
+else
+{
+LOG(FATAL) << "Tryed to load an unsupported MVD Geometry" << FairLogger::endl;
+}
 }
 //--------------------------------------------------------------------------
 
@@ -403,12 +461,12 @@ fStationPar->Print();
 //--------------------------------------------------------------------------
 void CbmMvdGeoHandler::FillStationMap()
 {
-if(fGeoTyp >= 4)
+if(fGeoTyp == FourStation || fGeoTyp == FourStationShift)
 {
 Int_t iStation = 0;
   	for(Int_t StatNr = 0; StatNr < 4; StatNr++)
       	{
-	if(StatNr == 0 && fGeoTyp == 4)
+	if(StatNr == 0 && fGeoTyp == FourStation)
 		fStationName = "/MVDo0ohoFPCoHSoS_1";
 	else
 		fStationName = Form("/MVDo%iohoFPCoextoHSoS_1",StatNr);
@@ -446,7 +504,7 @@ Int_t iStation = 0;
 
 }
 }
-else if(fGeoTyp == 1)
+else if(fGeoTyp == Default)
 {
   Int_t iStation =  1;
   Int_t volId    = -1;
@@ -461,9 +519,41 @@ else if(fGeoTyp == 1)
       iStation++;
     }
   } while ( volId > -1 );
-
-
 }
+
+else if(fGeoTyp == MiniCbm)
+{
+Int_t iStation = 0;
+  	for(Int_t StatNr = 0; StatNr < 2; StatNr++)
+      	{
+	fStationName = Form("/MVDomCBMoS%i_1",StatNr);
+                     
+	     		for(Int_t Layer = 0; Layer < 2; Layer++)
+		 	 {
+		     		 for(Int_t SensNr = 0; SensNr < 50; SensNr++)
+			  	{
+                                fQuadrantName = Form("/MVD-S%i-Q0-L%i-C%02i_1",StatNr, Layer, SensNr);
+				fSensorHolding = Form("/MVD-S%i-Q0-L%i-C%02i-P0oPartAss_1",  StatNr, Layer, SensNr);
+			    	fSensorName = Form("MVD-S%i-Q0-L%i-C%02i-P0", StatNr, Layer, SensNr);
+				//cout << endl << "try to find: " << fSensorName << endl;
+			  	fVolId = gGeoManager->GetUID(fSensorName);
+				if(fVolId > -1)
+				fnodeName = fMother + fDetectorName + fStationName + fQuadrantName + fSensorHolding + "/" + fSensorName + "_1";
+				//cout << endl << "sensorfound check for node " << fnodeName << endl;
+				Bool_t nodeFound = gGeoManager->CheckPath(fnodeName.Data());
+				        if(nodeFound)
+					{
+					cout << endl << "node found" << endl;
+					fStationMap[fVolId] = iStation;
+					iStation++;
+				        }
+				}
+			}
+		
+	}
+}
+
+
 else
 	LOG(FATAL) << "You tried to use an unsoported Geometry" << FairLogger::endl;
 }

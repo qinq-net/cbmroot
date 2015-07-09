@@ -16,7 +16,6 @@ using std::endl;
 // -----   Default constructor   -------------------------------------------
 CbmMvdStationPar::CbmMvdStationPar() 
   : TNamed(),
-    fStationCount(0),
     fZPositions(), 
     fThicknesses(), 
     fHeights(), 
@@ -29,25 +28,6 @@ CbmMvdStationPar::CbmMvdStationPar()
 {
 }
 // -------------------------------------------------------------------------
-
-// -----   Standart constructor   -------------------------------------------
-CbmMvdStationPar::CbmMvdStationPar(Int_t count) 
-  : TNamed(),
-    fStationCount(count),
-    fZPositions(), 
-    fThicknesses(), 
-    fHeights(), 
-    fWidths(), 
-    fXResolutions(), 
-    fYResolutions(), 
-    fRadiationLength(), 
-    fBeamHeights(), 
-    fBeamWidths()
-{
-if (fStationCount > 4) fStationCount = 4;
-}
-// -------------------------------------------------------------------------
-
 
 // -----   Destructor   ----------------------------------------------------
 CbmMvdStationPar::~CbmMvdStationPar() {
@@ -58,7 +38,7 @@ CbmMvdStationPar::~CbmMvdStationPar() {
 void CbmMvdStationPar::Print(Option_t* opt) const {
 
 cout 	<< endl << "--I--" << GetName() << "--I--" << endl
-	<< endl << "Initialized ParameterFile with " << fStationCount << " Stations" << endl
+	<< endl << "Initialized ParameterFile with " << fZPositions.size() << " Stations" << endl
 	<< endl << "-------------------------------------------------------------------------" << endl
 	<< endl << "fZPositions[0] " << fZPositions.at(0) << " z position" << endl
 	<< endl << "fZPositions[1] " << fZPositions.at(1) << " z position" << endl

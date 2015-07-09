@@ -23,6 +23,8 @@ class TGeoBBox;
 class TGeoVolume;
 class TGeoHMatrix;
 
+enum CbmMvdGeoTyp {Default, beamtest, TwoStation, ThreeStation, FourStation, FourStationShift, MiniCbm};
+
 class CbmMvdGeoHandler : public TObject
 {
 public:
@@ -87,7 +89,7 @@ private:
    Int_t        fModuleType;    //!
    Int_t        fStation;       //! StationTypeID, 1..3
    TString      fMother;
-   Int_t	fGeoTyp;
+   CbmMvdGeoTyp	fGeoTyp;
    Int_t	fVolId;
    Int_t        fStationNumber;
 
