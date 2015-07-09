@@ -56,7 +56,7 @@ CbmAnaJpsiTask::CbmAnaJpsiTask()
 	  fWeight(0.),
 	  fUseTrd(kTRUE)
 {
-	fUseTrd=true;
+    fUseTrd=true;
 	fWeight=1.14048e-6;
 }
 

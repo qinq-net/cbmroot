@@ -200,6 +200,10 @@ void CbmAnaJpsiSuperEvent::Draw()
 {
 
 	TCanvas* c = new TCanvas("jpsi_se_bg_minv","jpsi_se_bg_minv",1200, 1200);
+
+	fHM->RebinByPattern("fh_se_bg_minv.*", 20);
+	fHM->ScaleByPattern("fh_se_bg_minv.*", 20);
+
 	c->Divide(2,2);
 	c->cd(1);
 	DrawH1(fHM->H1("fh_se_bg_minv_reco"));
@@ -211,6 +215,8 @@ void CbmAnaJpsiSuperEvent::Draw()
 	DrawH1(fHM->H1("fh_se_bg_minv_elid"));
 	DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiElId], 0.6, 0.89, 0.7, 0.99);
 	c->cd(4);
+	fHM->H1("fh_se_bg_minv_ptcut")->SetMinimum(1e-11);
+	gPad->SetLogy();
 	DrawH1(fHM->H1("fh_se_bg_minv_ptcut"));
 	DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.6, 0.89, 0.7, 0.99);
 
