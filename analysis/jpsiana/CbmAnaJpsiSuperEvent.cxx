@@ -80,7 +80,17 @@ void CbmAnaJpsiSuperEvent::InitHist()
 	fHM->Create1<TH1D>("fh_se_bg_minv_elid", "fh_se_bg_minv_elid;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
 	fHM->Create1<TH1D>("fh_se_bg_minv_ptcut", "fh_se_bg_minv_ptcut;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
 
-	fHM->Create1<TH1D>("fh_event_number", "fh_event_number;a.u.;Number of events", 1, 0, 1.);
+	fHM->Create1<TH1D>("fh_se_event_number", "fh_se_event_number;a.u.;Number of events", 1, 0, 1.);
+
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_gg", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_gp", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_go", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_pg", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_pp", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_po", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_og", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_op", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_oo", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
 }
 
 
@@ -101,7 +111,7 @@ void CbmAnaJpsiSuperEvent::ReadCandidates()
 		Int_t nofEvents = t->GetEntriesFast();
 		cout << "-I- Number of events in file: " << nofEvents << endl;
 		for (Int_t iEv = 0; iEv < nofEvents; iEv++) {
-			fHM->H1("fh_event_number")->Fill(0.5);
+			fHM->H1("fh_se_event_number")->Fill(0.5);
 			t->GetEntry(iEv);
 			Int_t nofCandidates = candidates->GetEntriesFast();
 			//cout << "-I- nofCandidates:" << nofCandidates << endl;
@@ -125,7 +135,7 @@ void CbmAnaJpsiSuperEvent::ReadCandidates()
 	}
 	cout << "-I- fMinusCandidates.size:" << fMinusCandidates.size() << endl;
 	cout << "-I- fPlusCandidates.size:" << fPlusCandidates.size() << endl;
-	cout << "-I- number of events:"<< fHM->H1("fh_event_number")->GetEntries() << endl;
+	cout << "-I- number of events:"<< fHM->H1("fh_se_event_number")->GetEntries() << endl;
 }
 
 void CbmAnaJpsiSuperEvent::DoSuperEvent()
@@ -144,10 +154,44 @@ void CbmAnaJpsiSuperEvent::DoSuperEvent()
 		    Bool_t isEl = (candM->fIsElectron && candP->fIsElectron);
 		    Bool_t isPtCut = (candM->fMomentum.Perp() > fCuts.fPtCut && candP->fMomentum.Perp() > fCuts.fPtCut);
 
+		    Bool_t isSignal = candP->fIsMcSignalElectron && candM->fIsMcSignalElectron;
+			//Bool_t isPi0 = (candP->fIsMcPi0Electron && candM->fIsMcPi0Electron && candP->fStsMcMotherId == candM->fStsMcMotherId);
+			//Bool_t isGamma = (candP->fIsMcGammaElectron && candM->fIsMcGammaElectron && candP->fStsMcMotherId == candM->fStsMcMotherId);
+		    Bool_t isBG = !isSignal;// (!isGamma) && (!isPi0);// && (!(candP->fIsMcSignalElectron || candM->fIsMcSignalElectron));
+
+		    if (!isBG) continue;
 		    fHM->H1("fh_se_bg_minv_reco")->Fill(pRec.fMinv);
 			if (isChi2Primary) fHM->H1("fh_se_bg_minv_chi2prim")->Fill(pRec.fMinv);
 			if (isChi2Primary && isEl) fHM->H1("fh_se_bg_minv_elid")->Fill(pRec.fMinv);
-			if (isChi2Primary && isEl && isPtCut) fHM->H1("fh_se_bg_minv_ptcut")->Fill(pRec.fMinv);
+			if (isChi2Primary && isEl && isPtCut){
+					fHM->H1("fh_se_bg_minv_ptcut")->Fill(pRec.fMinv);
+
+			    	if (candM->fIsMcGammaElectron) {
+			    		if (candP->fIsMcGammaElectron && candP->fStsMcMotherId!=candM->fStsMcMotherId){
+			    			fHM->H1("fh_se_bg_participants_minv_gg")->Fill(pRec.fMinv); //gamma + gamma
+			    		} else if (candP->fIsMcPi0Electron) {
+			    			fHM->H1("fh_se_bg_participants_minv_gp")->Fill(pRec.fMinv); //gamma + Pi0
+			    		} else {
+			    			fHM->H1("fh_se_bg_participants_minv_go")->Fill(pRec.fMinv);	//gamma + other
+			    		}
+			    	} else if (candM->fIsMcPi0Electron) {
+			    		if (candP->fIsMcGammaElectron) {
+			    			fHM->H1("fh_se_bg_participants_minv_pg")->Fill(pRec.fMinv); //pi0 + gamma
+			    		} else if (candP->fIsMcPi0Electron && candP->fStsMcMotherId!=candM->fStsMcMotherId) {
+			    			fHM->H1("fh_se_bg_participants_minv_pp")->Fill(pRec.fMinv); //pi0 + Pi0
+			    		} else {
+			    			fHM->H1("fh_se_bg_participants_minv_po")->Fill(pRec.fMinv);	//pi0 + other
+			    		}
+			    	} else {
+			    		if (candP->fIsMcGammaElectron) {
+			    			fHM->H1("fh_se_bg_participants_minv_og")->Fill(pRec.fMinv);	//other + gamma
+			    		} else if (candP->fIsMcPi0Electron) {
+			    		    fHM->H1("fh_se_bg_participants_minv_op")->Fill(pRec.fMinv); //other + Pi0
+			    		} else {
+			    		 	fHM->H1("fh_se_bg_participants_minv_oo")->Fill(pRec.fMinv);	//other + other
+			    		}
+			    	}
+			}
 		}
 	}
 }
@@ -171,6 +215,7 @@ void CbmAnaJpsiSuperEvent::Draw()
 	DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.6, 0.89, 0.7, 0.99);
 
 }
+
 
 
 ClassImp(CbmAnaJpsiSuperEvent)

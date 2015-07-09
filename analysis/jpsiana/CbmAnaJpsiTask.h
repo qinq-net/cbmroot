@@ -177,6 +177,14 @@ private:
         double minY,
         double maxY);
 
+  void CreateAnaStepsPairSourceH1(
+        const string& name,
+        const string& axisX,
+        const string& axisY,
+        double nBins,
+        double min,
+        double max);
+
     void InitHist();
 
     void MCPairs();
@@ -207,7 +215,11 @@ private:
      */
     void PairMcAndAcceptance();
 
-
+    void PairSource(
+    		  CbmAnaJpsiCandidate* candP,
+    		  CbmAnaJpsiCandidate* candM,
+    	      CbmAnaJpsiAnalysisSteps step,
+    		  CbmAnaJpsiKinematicParams* parRec);
 
     void TrackSource(
     		CbmAnaJpsiCandidate* cand,

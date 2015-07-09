@@ -86,6 +86,11 @@ protected:
 
    void DrawMomMcVsRec();
 
+   void DrawPairSourceAnaSteps(
+		int step);
+
+   void DrawPairSource();
+
    void DrawBgSource2D(
          const string& histName,
          const vector<string>& yLabels,

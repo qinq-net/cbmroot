@@ -207,6 +207,36 @@ void CbmAnaJpsiTask::CreateSourceTypesH2(
    }
 }
 
+void CbmAnaJpsiTask::CreateAnaStepsPairSourceH1(
+      const string& name,
+      const string& axisX,
+      const string& axisY,
+      double nBins,
+      double min,
+      double max)
+{
+   for (Int_t i= 0; i < CbmAnaJpsiHist::fNofAnaSteps-2; i++)
+   {   string hname1 = name + "_" + CbmAnaJpsiHist::fAnaSteps[i+2] + "_"+ "gg";
+	   fHM->Create1<TH1D>(hname1, hname1+";"+axisX+";"+axisY, nBins, min, max);
+	   string hname2 = name + "_" + CbmAnaJpsiHist::fAnaSteps[i+2] + "_"+ "gp";
+	   fHM->Create1<TH1D>(hname2, hname2+";"+axisX+";"+axisY, nBins, min, max);
+	   string hname3 = name + "_" + CbmAnaJpsiHist::fAnaSteps[i+2] + "_"+ "go";
+	   fHM->Create1<TH1D>(hname3, hname3+";"+axisX+";"+axisY, nBins, min, max);
+	   string hname4 = name + "_" + CbmAnaJpsiHist::fAnaSteps[i+2] + "_"+ "pg";
+	   fHM->Create1<TH1D>(hname4, hname4+";"+axisX+";"+axisY, nBins, min, max);
+	   string hname5 = name + "_" + CbmAnaJpsiHist::fAnaSteps[i+2] + "_"+ "pp";
+	   fHM->Create1<TH1D>(hname5, hname5+";"+axisX+";"+axisY, nBins, min, max);
+	   string hname6 = name + "_" + CbmAnaJpsiHist::fAnaSteps[i+2] + "_"+ "po";
+	   fHM->Create1<TH1D>(hname6, hname6+";"+axisX+";"+axisY, nBins, min, max);
+	   string hname7 = name + "_" + CbmAnaJpsiHist::fAnaSteps[i+2] + "_"+ "og";
+	   fHM->Create1<TH1D>(hname7, hname7+";"+axisX+";"+axisY, nBins, min, max);
+	   string hname8 = name + "_" + CbmAnaJpsiHist::fAnaSteps[i+2] + "_"+ "op";
+	   fHM->Create1<TH1D>(hname8, hname8+";"+axisX+";"+axisY, nBins, min, max);
+	   string hname9 = name + "_" + CbmAnaJpsiHist::fAnaSteps[i+2] + "_"+ "oo";
+	   fHM->Create1<TH1D>(hname9, hname9+";"+axisX+";"+axisY, nBins, min, max);
+   }
+}
+
 void CbmAnaJpsiTask::InitHist()
 {
 	fHM = new CbmHistManager();
@@ -267,6 +297,8 @@ void CbmAnaJpsiTask::InitHist()
    //Momentum distribution of signal electrons
    CreateAnalysisStepsH1("fh_track_el_mom", "P [GeV/c]", "Particles per event", 250, 0., 25.);
    fHM->Create2<TH2D>("fh_track_el_mom_mc_rec","fh_track_el_mom_mc_rec;P_{mc};P_{rec};Entries",  250, 0.,25., 250, 0., 25.);
+
+   CreateAnaStepsPairSourceH1("fh_bg_participants_minv" , "m_{inv}" , "Particles per Event", 4000 , 0. , 4.);
 
 }
 
@@ -437,42 +469,90 @@ void CbmAnaJpsiTask::DifferenceSignalAndBg()
     for (Int_t i = 0; i < nCand; i++){
         if (fCandidates[i].fIsMcSignalElectron){
             fHM->H1("fh_track_chi2prim_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fChi2Prim,fWeight);
-            fHM->H1("fh_track_mom_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fMomentum.Mag(),fWeight);
-            fHM->H1("fh_track_chi2sts_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fChi2sts,fWeight);
-            fHM->H1("fh_track_rapidity_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fRapidity,fWeight);
-            fHM->H1("fh_track_pt_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fMomentum.Perp(),fWeight);
-            fHM->H1("fh_track_rich_ann_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fRichAnn,fWeight);
-            fHM->H1("fh_track_trd_ann_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fTrdAnn,fWeight);
-            fHM->H2("fh_track_tof_m2_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2, fWeight);
         } else {
         	fHM->H1("fh_track_chi2prim_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fChi2Prim);
-        	fHM->H1("fh_track_mom_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fMomentum.Mag());
-        	fHM->H1("fh_track_chi2sts_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fChi2sts);
-        	fHM->H1("fh_track_rapidity_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fRapidity);
-        	fHM->H1("fh_track_pt_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fMomentum.Perp());
-        	fHM->H1("fh_track_rich_ann_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fRichAnn);
-            fHM->H1("fh_track_trd_ann_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fTrdAnn);
-            fHM->H2("fh_track_tof_m2_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
         }
         if (fCandidates[i].fIsMcGammaElectron){
         	fHM->H1("fh_track_chi2prim_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fChi2Prim);
-        	fHM->H1("fh_track_mom_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fMomentum.Mag());
-        	fHM->H1("fh_track_chi2sts_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fChi2sts);
-        	fHM->H1("fh_track_rapidity_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fRapidity);
-        	fHM->H1("fh_track_pt_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fMomentum.Perp());
-        	fHM->H1("fh_track_rich_ann_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fRichAnn);
-            fHM->H1("fh_track_trd_ann_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fTrdAnn);
-            fHM->H2("fh_track_tof_m2_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
         }
         if (fCandidates[i].fIsMcPi0Electron) {
         	fHM->H1("fh_track_chi2prim_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fChi2Prim);
+        }
+        if (fCandidates[i].fChi2Prim >= fCuts.fChiPrimCut) continue;
+
+
+        if (fCandidates[i].fIsMcSignalElectron){
+            fHM->H1("fh_track_rich_ann_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fRichAnn,fWeight);
+        } else {
+           	fHM->H1("fh_track_rich_ann_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fRichAnn);
+        }
+        if (fCandidates[i].fIsMcGammaElectron){
+           	fHM->H1("fh_track_rich_ann_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fRichAnn);
+        }
+        if (fCandidates[i].fIsMcPi0Electron) {
+           	fHM->H1("fh_track_rich_ann_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fRichAnn);
+        }
+        if (!fCandidates[i].fIsRichEl) continue;
+
+        if (fCandidates[i].fIsMcSignalElectron){
+            fHM->H1("fh_track_trd_ann_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fTrdAnn,fWeight);
+        } else {
+           	fHM->H1("fh_track_trd_ann_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fTrdAnn);
+        }
+        if (fCandidates[i].fIsMcGammaElectron){
+           	fHM->H1("fh_track_trd_ann_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fTrdAnn);
+        }
+        if (fCandidates[i].fIsMcPi0Electron) {
+           	fHM->H1("fh_track_trd_ann_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fTrdAnn);
+        }
+        if (!fCandidates[i].fIsTrdEl) continue;
+
+        if (fCandidates[i].fIsMcSignalElectron){
+            fHM->H2("fh_track_tof_m2_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2,fWeight);
+        } else {
+           	fHM->H2("fh_track_tof_m2_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
+        }
+        if (fCandidates[i].fIsMcGammaElectron){
+           	fHM->H2("fh_track_tof_m2_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
+        }
+        if (fCandidates[i].fIsMcPi0Electron) {
+           	fHM->H2("fh_track_tof_m2_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
+        }
+        if (!fCandidates[i].fIsElectron) continue;
+
+        if (fCandidates[i].fIsMcSignalElectron){
+            fHM->H1("fh_track_pt_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fMomentum.Perp(),fWeight);
+        } else {
+           	fHM->H1("fh_track_pt_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fMomentum.Perp());
+        }
+        if (fCandidates[i].fIsMcGammaElectron){
+           	fHM->H1("fh_track_pt_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fMomentum.Perp());
+        }
+        if (fCandidates[i].fIsMcPi0Electron) {
+           	fHM->H1("fh_track_pt_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fMomentum.Perp());
+        }
+
+    } // loop over candidates
+
+    for (Int_t i = 0; i < nCand; i++){
+        if (fCandidates[i].fIsMcSignalElectron){
+            fHM->H1("fh_track_mom_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fMomentum.Mag(),fWeight);
+            fHM->H1("fh_track_chi2sts_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fChi2sts,fWeight);
+            fHM->H1("fh_track_rapidity_" + CbmAnaJpsiHist::fSourceTypes[kJpsiSignal])->Fill(fCandidates[i].fRapidity,fWeight);
+        } else {
+        	fHM->H1("fh_track_mom_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fMomentum.Mag());
+        	fHM->H1("fh_track_chi2sts_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fChi2sts);
+        	fHM->H1("fh_track_rapidity_" + CbmAnaJpsiHist::fSourceTypes[kJpsiBg])->Fill(fCandidates[i].fRapidity);
+        }
+        if (fCandidates[i].fIsMcGammaElectron){
+        	fHM->H1("fh_track_mom_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fMomentum.Mag());
+        	fHM->H1("fh_track_chi2sts_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fChi2sts);
+        	fHM->H1("fh_track_rapidity_" + CbmAnaJpsiHist::fSourceTypes[kJpsiGamma])->Fill(fCandidates[i].fRapidity);
+        }
+        if (fCandidates[i].fIsMcPi0Electron) {
         	fHM->H1("fh_track_mom_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fMomentum.Mag());
         	fHM->H1("fh_track_chi2sts_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fChi2sts);
         	fHM->H1("fh_track_rapidity_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fRapidity);
-        	fHM->H1("fh_track_pt_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fMomentum.Perp());
-        	fHM->H1("fh_track_rich_ann_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fRichAnn);
-            fHM->H1("fh_track_trd_ann_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fTrdAnn);
-            fHM->H2("fh_track_tof_m2_" + CbmAnaJpsiHist::fSourceTypes[kJpsiPi0])->Fill(fCandidates[i].fMomentum.Mag(), fCandidates[i].fMass2);
         }
     } // loop over candidates
 }
@@ -540,6 +620,45 @@ void CbmAnaJpsiTask::PairMcAndAcceptance()
 } // PairsAcceptance
 
 
+void CbmAnaJpsiTask::PairSource(
+		  CbmAnaJpsiCandidate* candP,
+		  CbmAnaJpsiCandidate* candM,
+	      CbmAnaJpsiAnalysisSteps step,
+		  CbmAnaJpsiKinematicParams* parRec)
+{
+    Bool_t isBG = !(candP->fIsMcSignalElectron && candM->fIsMcSignalElectron);
+    Double_t weight=1.;
+    if (candP->fIsMcSignalElectron || candM->fIsMcSignalElectron) weight=fWeight;
+    if (isBG){
+    	if (candM->fIsMcGammaElectron) {
+    		if (candP->fIsMcGammaElectron && candP->fStsMcMotherId!=candM->fStsMcMotherId){
+    			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_gg")->Fill(parRec->fMinv,weight); //gamma + gamma
+    		} else if (candP->fIsMcPi0Electron) {
+    			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_gp")->Fill(parRec->fMinv,weight); //gamma + Pi0
+    		} else {
+    			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_go")->Fill(parRec->fMinv,weight);	//gamma + other
+    		}
+    	} else if (candM->fIsMcPi0Electron) {
+    		if (candP->fIsMcGammaElectron) {
+    			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_pg")->Fill(parRec->fMinv,weight); //pi0 + gamma
+    		} else if (candP->fIsMcPi0Electron && candP->fStsMcMotherId!=candM->fStsMcMotherId) {
+    			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_pp")->Fill(parRec->fMinv,weight); //pi0 + Pi0
+    		} else {
+    			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_po")->Fill(parRec->fMinv,weight);	//pi0 + other
+    		}
+    	} else {
+    		if (candP->fIsMcGammaElectron) {
+    			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_og")->Fill(parRec->fMinv,weight);	//other + gamma
+    		} else if (candP->fIsMcPi0Electron) {
+    		    fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_op")->Fill(parRec->fMinv,weight); //other + Pi0
+    		} else {
+    		 	fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_oo")->Fill(parRec->fMinv,weight);	//other + other
+    		}
+    	}
+}
+}
+
+
 void CbmAnaJpsiTask::TrackSource(
 		CbmAnaJpsiCandidate* cand,
     	CbmAnaJpsiAnalysisSteps step,
@@ -596,7 +715,7 @@ void CbmAnaJpsiTask::FillPairHists(
 	Bool_t isSignal = candP->fIsMcSignalElectron && candM->fIsMcSignalElectron;
 	Bool_t isPi0 = (candP->fIsMcPi0Electron && candM->fIsMcPi0Electron && candP->fStsMcMotherId == candM->fStsMcMotherId);
 	Bool_t isGamma = (candP->fIsMcGammaElectron && candM->fIsMcGammaElectron && candP->fStsMcMotherId == candM->fStsMcMotherId);
-    Bool_t isBG = (!isGamma) && (!isPi0) && (!(candP->fIsMcSignalElectron || candM->fIsMcSignalElectron));
+    Bool_t isBG = !isSignal;//(!isGamma) && (!isPi0) && (!(candP->fIsMcSignalElectron || candM->fIsMcSignalElectron));
 	Bool_t isMismatch = (IsMismatch(candP) || IsMismatch(candM));
 
 	if (isSignal) fHM->H2("fh_signal_pty_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parMc->fRapidity, parMc->fPt,fWeight);
@@ -604,14 +723,14 @@ void CbmAnaJpsiTask::FillPairHists(
 	if (isSignal) fHM->H1("fh_signal_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv,fWeight);
 	if (isSignal) fHM->H2("fh_signal_minv_pt_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv, parMc->fPt,fWeight);
 	if (isBG) {
-		//if (candP->fIsMcSignalElectron || candM->fIsMcSignalElectron){
-			fHM->H1("fh_bg_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv/*,fWeight*/);
-		//}
-		//else {
-		//	fHM->H1("fh_bg_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv);
-		//}
+		if (candP->fIsMcSignalElectron || candM->fIsMcSignalElectron){
+			fHM->H1("fh_bg_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv,fWeight);
+		}
+		else {
+			fHM->H1("fh_bg_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv);
+		}
 	}
-
+	PairSource(candP, candM, step, parRec);
 	if (isPi0) fHM->H1("fh_pi0_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv);
 	if (isGamma) fHM->H1("fh_gamma_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv);
 	if (isBG && isMismatch) fHM->H1("fh_bg_mismatch_minv_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parRec->fMinv);
@@ -696,6 +815,15 @@ void CbmAnaJpsiTask::IsElectron(
 	Double_t annTrd = cand->fTrdAnn;
 	Bool_t tofEl = IsTofElectron(gTrack, momentum, cand);
 	//Bool_t momCut = (fCuts.fMomentumCut > 0.)?(momentum < fCuts.fMomentumCut):true;
+
+	if (richEl) {cand->fIsRichEl = true;}
+	else {cand->fIsRichEl = false;}
+
+	if (trdEl) {cand->fIsTrdEl = true;}
+	else {cand->fIsTrdEl = false;}
+
+	if (tofEl) {cand->fIsTofEl = true;}
+	else {cand->fIsTofEl = false;}
 
 	if (richEl && trdEl && tofEl)
 	{

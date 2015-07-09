@@ -32,7 +32,10 @@ public:
 		fMcPdg(-1),
 		fRichAnn(0.),
 		fTrdAnn(0.),
-		fMass2(0.)
+		fMass2(0.),
+		fIsRichEl(false),
+		fIsTrdEl(false),
+		fIsTofEl(false)
 	{
 	}
 
@@ -75,6 +78,10 @@ public:
 	Double_t fRichAnn;
 	Double_t fTrdAnn;
 	Double_t fMass2;
+
+	Bool_t fIsRichEl;
+	Bool_t fIsTrdEl;
+	Bool_t fIsTofEl;
 
 	ClassDef(CbmAnaJpsiCandidate, 1)
 };

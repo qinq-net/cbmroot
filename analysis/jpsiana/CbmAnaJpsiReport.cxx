@@ -55,9 +55,10 @@ void CbmAnaJpsiReport::Draw()
 	  cout << "Number of events = " << nofEvents << endl;
 	  HM()->ScaleByPattern(".*", 1./nofEvents);
 
-	  //Rebin minv histograms
-	  Int_t nRebins = 20;
-	  HM()->RebinByPattern("fh_signal_minv.+", nRebins);
+	 //Rebin minv histograms
+	  Int_t nRebins = 25;
+	  //Double_t nRebinScale = 1/((Double_t) nRebins);
+	  HM()->RebinByPattern("fh_signal_minv.+", nRebins);  //Rebin scales with 1/(binWith)
 	  HM()->RebinByPattern("fh_bg_minv.+", nRebins);
 	  HM()->RebinByPattern("fh_pi0_minv.+", nRebins);
 	  HM()->RebinByPattern("fh_gamma_minv.+", nRebins);
@@ -65,6 +66,7 @@ void CbmAnaJpsiReport::Draw()
 	  HM()->RebinByPattern("fh_bg_truematch_el_minv.+", nRebins);
 	  HM()->RebinByPattern("fh_bg_truematch_notel_minv.+", nRebins);
 	  HM()->RebinByPattern("fh_bg_mismatch_minv.+", nRebins);
+	  HM()->RebinByPattern("fh_bg_participants_minv.+", nRebins);
 
 	  HM()->ScaleByPattern("fh_signal_minv.+", nRebins);
 	  HM()->ScaleByPattern("fh_bg_minv.+", nRebins);
@@ -74,6 +76,7 @@ void CbmAnaJpsiReport::Draw()
 	  HM()->ScaleByPattern("fh_bg_truematch_el_minv.+", nRebins);
 	  HM()->ScaleByPattern("fh_bg_truematch_notel_minv.+", nRebins);
 	  HM()->ScaleByPattern("fh_bg_mismatch_minv.+", nRebins);
+	  HM()->ScaleByPattern("fh_bg_participants_minv.+", nRebins);
 
 	  Draw2DCut("fh_rich_pmt_xy");
 	  DrawCutDistributions();
@@ -144,6 +147,7 @@ void CbmAnaJpsiReport::Draw()
 		  DrawMinvSAndBgAllSteps();
 		  DrawMomEffAllSteps();
 		  DrawMomMcVsRec();
+		  DrawPairSource();
 }
 
 void CbmAnaJpsiReport::DrawAnalysisStepsH2(
@@ -424,7 +428,7 @@ void CbmAnaJpsiReport::DrawMinvSAndBg(
 	//s->Scale(0.0596);
 
 	sbg->Add(s);
-	sbg->SetMinimum(1e-9);
+	sbg->SetMinimum(1e-12);
 
 	DrawH1(list_of(sbg)(bg)(s),list_of("")("")(""),kLinear, kLog, false, 0,0,0,0);
 	//DrawH1(list_of(sbg)(bg)(s),list_of("Signal And Bg")("Background")("Signal"),kLinear, kLog, true, 0.9, 0.7, 0.99, 0.9);
@@ -491,6 +495,37 @@ void CbmAnaJpsiReport::DrawMomMcVsRec()
 {
 	TCanvas *c = CreateCanvas("jpsi_fh_Momentum_Mc_Reco","jpsi_fh_Momentum_Mc_Reco",800,800);
 	DrawH2(H2("fh_track_el_mom_mc_rec"));
+}
+
+void CbmAnaJpsiReport::DrawPairSourceAnaSteps(
+		int step)
+{	H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_gg")->SetMaximum(1e-2);
+	H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_gg")->SetMinimum(1e-6);
+	DrawH1(list_of(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_gg"))
+		((TH1*) H1("fh_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[step])->Clone())
+		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_gp"))
+		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_go"))
+		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_pg"))
+		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_pp"))
+		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_po"))
+		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_og"))
+		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_op"))
+		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_oo")),
+		list_of("whole BG")("#gamma + #gamma")("#gamma + #pi^{0}")("#gamma + others")
+		("#pi^{0} + #gamma")("#pi^{0} + #pi^{0}")("#pi^{0} + others")
+		("others + #gamma")("others + #pi^{0}")("others + others"),
+		kLinear, kLog, true, 0.85, 0.6, 0.99, 0.99);
+}
+
+void CbmAnaJpsiReport::DrawPairSource()
+{
+	TCanvas* c = CreateCanvas("jpsi_fh_bg_pair_source", "jpsi_fh_bg_pair_source" , 1200, 800);
+	c->Divide(2,2);
+	for (int i = 0;i< CbmAnaJpsiHist::fNofAnaSteps-2; i++){
+		c->cd(i+1);
+		DrawPairSourceAnaSteps(i+2);
+		DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[i+2], 0.6, 0.89, 0.7, 0.99);
+	}
 }
 
 void CbmAnaJpsiReport::DrawBgSource2D(

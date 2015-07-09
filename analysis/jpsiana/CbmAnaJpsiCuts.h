@@ -42,7 +42,7 @@ public:
 		fDistCut = -1.;
 
 		// analysis cuts
-		fPtCut = 0.6;//1.0;//1.5;
+		fPtCut = 1.;//1.0;//1.5;
 		fChiPrimCut = 3;//3.;
 	}
 
