@@ -47,6 +47,7 @@ class CbmTrdRawPulseMonitor : public FairTask
     TCanvas *fRatio;
     TH1I* fRawpulse;
     TH1I* fS_N;
+    TH2I* fSignalMap;
 
     CbmHistManager* fHM;
 

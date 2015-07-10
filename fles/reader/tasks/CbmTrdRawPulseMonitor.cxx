@@ -27,7 +27,8 @@ CbmTrdRawPulseMonitor::CbmTrdRawPulseMonitor()
     fRawSpadic(NULL),
     fMonitor(NULL),
     fRatio(NULL),
-    fS_N(NULL)
+    fS_N(NULL),
+    fSignalMap(NULL)
 {
   LOG(DEBUG) << "Default Constructor of CbmTrdRawPulseMonitor" << FairLogger::endl;
 }
@@ -70,10 +71,12 @@ InitStatus CbmTrdRawPulseMonitor::Init()
   fMonitor->Divide(8,4);
   fRawpulse = new TH1I("rawPulse","rawPulse",32,-0.5,31.5);
   fRawpulse->GetYaxis()->SetRangeUser(-255,256);
-  fRatio = new TCanvas("Ratio","Ratio", 0, 0, 800, 600);
+  fRatio = new TCanvas("Ratio","Ratio", 0, 0, 1600, 600);
+  fRatio->Divide(2,1);
   fS_N = new TH1I("S/N","S/N",2,-0.5,1.5);
   fS_N->GetXaxis()->SetBinLabel(1,"Noise");
   fS_N->GetXaxis()->SetBinLabel(2,"Signal");
+  fSignalMap = new TH2I("SignalMap","SignalMap",16,-0.5,15.5,2,-0.5,1.5);
   return kSUCCESS;
 }
 
@@ -220,7 +223,8 @@ void CbmTrdRawPulseMonitor::Exec(Option_t*)
     chID = dummy->GetChannelOnPadPlane(chID);//channelMapping[chID];// Remapping from ASIC to pad-plane
 
     columnId = dummy->GetColumnID(raw);
-    rowId = dummy->GetRowID(raw);
+    rowId = dummy->GetRowID(raw);  
+
     combiId = rowId * (maxNrColumns + 1) + columnId;
 
     fRawpulse->Reset();
@@ -242,6 +246,7 @@ void CbmTrdRawPulseMonitor::Exec(Option_t*)
     if (maxAdcTimeBin < 15 && maxAdc > -175 && raw->GetSamples()[raw->GetNrSamples()-1] < -175){
       fS_N->Fill(1);//Signal
       fRawpulse->SetLineColor(2);
+      fSignalMap->Fill(columnId,rowId);
     } else {
       fS_N->Fill(0);//Noise
       fRawpulse->SetLineColor(15);
@@ -260,8 +265,10 @@ void CbmTrdRawPulseMonitor::Exec(Option_t*)
     fMonitor->cd(pad);
     fRawpulse->DrawCopy();
   }  
-  fRatio->cd()->SetLogy(1);
+  fRatio->cd(1)->SetLogy(1);
   fS_N->DrawCopy();
+  fRatio->cd(2);
+  fSignalMap->DrawCopy("colz");
   fRatio->Update();
 }
 
@@ -269,8 +276,6 @@ void CbmTrdRawPulseMonitor::Exec(Option_t*)
   void CbmTrdRawPulseMonitor::Finish()
   {
     LOG(DEBUG) << "Finish of CbmTrdRawPulseMonitor" << FairLogger::endl;
-    // Write to file
-    fHM->WriteToFile();
     // Update Histos and Canvases
   
     LOG(INFO) << "CbmTrdRawPulseMonitor::Finish Container:            " << fContainerCounter << FairLogger::endl;
