@@ -167,7 +167,7 @@ void CbmAnaJpsiSuperEvent::DoSuperEvent()
 					fHM->H1("fh_se_bg_minv_ptcut")->Fill(pRec.fMinv);
 
 			    	if (candM->fIsMcGammaElectron) {
-			    		if (candP->fIsMcGammaElectron && candP->fStsMcMotherId!=candM->fStsMcMotherId){
+			    		if (candP->fIsMcGammaElectron /* && candP->fStsMcMotherId!=candM->fStsMcMotherId*/){
 			    			fHM->H1("fh_se_bg_participants_minv_gg")->Fill(pRec.fMinv); //gamma + gamma
 			    		} else if (candP->fIsMcPi0Electron) {
 			    			fHM->H1("fh_se_bg_participants_minv_gp")->Fill(pRec.fMinv); //gamma + Pi0
@@ -176,17 +176,17 @@ void CbmAnaJpsiSuperEvent::DoSuperEvent()
 			    		}
 			    	} else if (candM->fIsMcPi0Electron) {
 			    		if (candP->fIsMcGammaElectron) {
-			    			fHM->H1("fh_se_bg_participants_minv_pg")->Fill(pRec.fMinv); //pi0 + gamma
-			    		} else if (candP->fIsMcPi0Electron && candP->fStsMcMotherId!=candM->fStsMcMotherId) {
+			    			fHM->H1("fh_se_bg_participants_minv_gp")->Fill(pRec.fMinv); //pi0 + gamma
+			    		} else if (candP->fIsMcPi0Electron /*&& candP->fStsMcMotherId!=candM->fStsMcMotherId*/) {
 			    			fHM->H1("fh_se_bg_participants_minv_pp")->Fill(pRec.fMinv); //pi0 + Pi0
 			    		} else {
 			    			fHM->H1("fh_se_bg_participants_minv_po")->Fill(pRec.fMinv);	//pi0 + other
 			    		}
 			    	} else {
 			    		if (candP->fIsMcGammaElectron) {
-			    			fHM->H1("fh_se_bg_participants_minv_og")->Fill(pRec.fMinv);	//other + gamma
+			    			fHM->H1("fh_se_bg_participants_minv_go")->Fill(pRec.fMinv);	//other + gamma
 			    		} else if (candP->fIsMcPi0Electron) {
-			    		    fHM->H1("fh_se_bg_participants_minv_op")->Fill(pRec.fMinv); //other + Pi0
+			    		    fHM->H1("fh_se_bg_participants_minv_po")->Fill(pRec.fMinv); //other + Pi0
 			    		} else {
 			    		 	fHM->H1("fh_se_bg_participants_minv_oo")->Fill(pRec.fMinv);	//other + other
 			    		}
