@@ -30,8 +30,6 @@ class CbmMvdStationPar : public TNamed
 
   /** Default constructor **/
   CbmMvdStationPar();
-
-  CbmMvdStationPar(Int_t stationCount);
   
   /** Destructor **/
   virtual ~CbmMvdStationPar();
