@@ -60,6 +60,7 @@ Set(SRCS
   unpacker/CbmTSUnpackGet4v1x.cxx
 
   tasks/CbmTrdRawBeamProfile.cxx
+  tasks/CbmTrdRawPulseMonitor.cxx
   tasks/CbmTrdOnlineDisplay.cxx
   tasks/CbmTrdEveOnlineDisplay.cxx
   tasks/CbmTrdDaqBuffer.cxx
