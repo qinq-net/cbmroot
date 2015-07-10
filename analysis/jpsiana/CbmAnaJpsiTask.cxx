@@ -58,7 +58,7 @@ CbmAnaJpsiTask::CbmAnaJpsiTask()
 	  fUseTof(kTRUE)
 {
     fUseTrd=true;
-    fUseTof=false;
+    fUseTof=true;
 	fWeight=1.14048e-6;
 }
 
@@ -901,7 +901,7 @@ Bool_t CbmAnaJpsiTask::IsTofElectron(
 	Double_t mass2 = TMath::Power(momentum,2.)* (TMath::Power(time/ trackLength, 2) - 1);
 	cand->fMass2 = mass2;
 
-	if (momentum >= 2.1)
+	/*if (momentum >= 2.1)
 	{
 		if (mass2 < (0.029*momentum-0.0409))	//(0.013*momentum - 0.003))
 			{
@@ -914,6 +914,22 @@ Bool_t CbmAnaJpsiTask::IsTofElectron(
 		      return true; //fTofM2
 		    }
 		}
+		*/
+
+	if (momentum >= 1.5)
+		{
+			if (mass2 < (0.077*momentum-0.1155))	//(0.013*momentum - 0.003))
+				{
+					return true;
+			    }
+			else {
+					return false;
+				}
+		} else
+			{
+			      return false;
+			}
+
 	return false;
 }
 
