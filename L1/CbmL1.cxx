@@ -87,9 +87,10 @@ vMCPoints(),
 vMCTracks(),
 vHitMCRef(),
 histodir(0),
-    fFindParticlesMode(),
-  fMatBudgetFileName(""),
-  fExtrapolateToTheEndOfSTS(false)
+fFindParticlesMode(),
+fStsMatBudgetFileName(""),
+fMvdMatBudgetFileName(""),
+fExtrapolateToTheEndOfSTS(false)
 {
   if( !fInstance ) fInstance = this;
 }
@@ -128,9 +129,10 @@ vMCPoints(),
 vMCTracks(),
 vHitMCRef(),
 histodir(0),
-    fFindParticlesMode(findParticleMode_),
-  fMatBudgetFileName(""),
-  fExtrapolateToTheEndOfSTS(false)
+fFindParticlesMode(findParticleMode_),
+fStsMatBudgetFileName(""),
+fMvdMatBudgetFileName(""),
+fExtrapolateToTheEndOfSTS(false)
 {
   if( !fInstance ) fInstance = this;
 }
@@ -463,25 +465,65 @@ InitStatus CbmL1::Init()
 
   
   algo->fRadThick.resize(algo->NStations);
-    // Read STS Radiation Thickness table
-  if (fMatBudgetFileName != "") {
-    TFile* oldfile = gFile;
-    TFile *rlFile = new TFile(fMatBudgetFileName);
-  //MATERIAL BUDGET MVD - iSta = 0
-    cout << "STS Material budget file is " << fMatBudgetFileName << "." << endl;
-    for( int j = 0, iSta = 0; iSta < algo->NStations; iSta++, j++ ) {
-      TString name = "Radiation Thickness [%]";
-      name += ", Station";
-      name += j+1;
-    
-      TProfile2D* hStaRadLen = (TProfile2D*) rlFile->Get(name);
-      if ( !hStaRadLen ) {
-        cout << "L1: incorrect " << fMatBudgetFileName << " file. No " << name << endl; exit(1);
+  // Read STS and MVD Radiation Thickness table
+  TString stationName = "Radiation Thickness [%], Station";
+  if ( fUseMVD ) {
+    if ( fMvdMatBudgetFileName != "" ) {
+      TFile* oldfile = gFile;
+      TFile *rlFile = new TFile(fMvdMatBudgetFileName);
+      cout << "MVD Material budget file is " << fMvdMatBudgetFileName << ".\n";
+      for( int j = 0, iSta = 0; iSta < algo->NMvdStations; iSta++, j++ ) {
+        TString stationNameMvd = stationName;
+        stationNameMvd += j;
+        TProfile2D* hStaRadLen = (TProfile2D*) rlFile->Get(stationNameMvd);
+        if ( !hStaRadLen ) {
+          cout << "L1: incorrect " << fMvdMatBudgetFileName << " file. No " << stationNameMvd << "\n";
+          exit(1);
+    	}
+        const int NBins = hStaRadLen->GetNbinsX(); // should be same in Y
+        const float RMax = hStaRadLen->GetXaxis()->GetXmax(); // should be same as min
+        algo->fRadThick[iSta].SetBins(NBins,RMax);
+        algo->fRadThick[iSta].table.resize(NBins);
+
+        for( int iB = 0; iB < NBins; iB++ ) {
+          algo->fRadThick[iSta].table[iB].resize(NBins);
+          for( int iB2 = 0; iB2 < NBins; iB2++ ) {
+            algo->fRadThick[iSta].table[iB][iB2] = 0.01 * hStaRadLen->GetBinContent(iB,iB2);
+            if(algo->fRadThick[iSta].table[iB][iB2] < algo->vStations[iSta].materialInfo.RadThick[0]){
+              algo->fRadThick[iSta].table[iB][iB2] = algo->vStations[iSta].materialInfo.RadThick[0];}
+          }
+        }
       }
-      
+      rlFile->Close();
+      rlFile->Delete();
+      gFile = oldfile;
+    }
+    else {
+     cout << "No MVD material budget file is found. Homogenious budget will be used" << endl;
+     for( int iSta = 0; iSta < algo->NMvdStations; iSta++ ) {
+       cout << iSta << endl;
+       algo->fRadThick[iSta].SetBins(1, 100); // mvd should be in +-100 cm square
+       algo->fRadThick[iSta].table.resize(1);
+       algo->fRadThick[iSta].table[0].resize(1);
+       algo->fRadThick[iSta].table[0][0] = algo->vStations[iSta].materialInfo.RadThick[0];
+     }
+    }
+  }
+  if (fStsMatBudgetFileName != "") {
+    TFile* oldfile = gFile;
+    TFile *rlFile = new TFile(fStsMatBudgetFileName);
+    cout << "STS Material budget file is " << fStsMatBudgetFileName << ".\n";
+    for( int j = 1, iSta = algo->NMvdStations; iSta < algo->NStations; iSta++, j++ ) {
+      TString stationNameSts = stationName;
+      stationNameSts += j;
+      TProfile2D* hStaRadLen = (TProfile2D*) rlFile->Get(stationNameSts);
+      if ( !hStaRadLen ) {
+        cout << "L1: incorrect " << fStsMatBudgetFileName << " file. No " << stationNameSts << "\n";
+        exit(1);
+      }
       const int NBins = hStaRadLen->GetNbinsX(); // should be same in Y
       const float RMax = hStaRadLen->GetXaxis()->GetXmax(); // should be same as min
-      algo->fRadThick[iSta].SetBins(NBins,RMax); // TODO
+      algo->fRadThick[iSta].SetBins(NBins,RMax);
       algo->fRadThick[iSta].table.resize(NBins);
 
       for( int iB = 0; iB < NBins; iB++ ) {
@@ -489,7 +531,7 @@ InitStatus CbmL1::Init()
         for( int iB2 = 0; iB2 < NBins; iB2++ ) {
           algo->fRadThick[iSta].table[iB][iB2] = 0.01 * hStaRadLen->GetBinContent(iB,iB2);
           if(algo->fRadThick[iSta].table[iB][iB2] < algo->vStations[iSta].materialInfo.RadThick[0]){
-        	  algo->fRadThick[iSta].table[iB][iB2] = algo->vStations[iSta].materialInfo.RadThick[0];}
+            algo->fRadThick[iSta].table[iB][iB2] = algo->vStations[iSta].materialInfo.RadThick[0];}
         }
       }
     }
@@ -497,9 +539,9 @@ InitStatus CbmL1::Init()
     rlFile->Delete();
     gFile = oldfile;
   }
-  else{
-    cout << "No material budget file is found. Homogenious budget will be used" << endl;
-    for( int iSta = 0; iSta < algo->NStations; iSta++ ) {
+  else {
+    cout << "No STS material budget file is found. Homogenious budget will be used" << endl;
+    for( int iSta = algo->NMvdStations; iSta < algo->NStations; iSta++ ) {
       cout << iSta << endl;
       algo->fRadThick[iSta].SetBins(1, 100); // mvd should be in +-100 cm square
       algo->fRadThick[iSta].table.resize(1);
@@ -507,9 +549,6 @@ InitStatus CbmL1::Init()
       algo->fRadThick[iSta].table[0][0] = algo->vStations[iSta].materialInfo.RadThick[0];
     }
   }
-  
-
-  
   return kSUCCESS;
 }
 
