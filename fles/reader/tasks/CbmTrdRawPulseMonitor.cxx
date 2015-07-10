@@ -67,7 +67,7 @@ InitStatus CbmTrdRawPulseMonitor::Init()
     return kERROR;
   }
   fMonitor = new TCanvas("PulseMonitor","PulseMonitor", 0, 0, 1700, 1000);
-  fMonitor->Divide(4,4);
+  fMonitor->Divide(8,4);
   fRawpulse = new TH1I("rawPulse","rawPulse",32,-0.5,31.5);
   fRawpulse->GetYaxis()->SetRangeUser(-255,256);
   fRatio = new TCanvas("Ratio","Ratio", 0, 0, 800, 600);
@@ -234,12 +234,12 @@ void CbmTrdRawPulseMonitor::Exec(Option_t*)
     */
     for (Int_t iBin = 0; iBin < raw->GetNrSamples(); iBin++){
       fRawpulse->SetBinContent(iBin+1,raw->GetSamples()[iBin]);
-      if (maxAdc < raw->GetSamples()[iBin]){
+      if (maxAdc <= raw->GetSamples()[iBin]){
 	maxAdcTimeBin = iBin;
 	maxAdc = raw->GetSamples()[iBin];
       }
     }
-    if (maxAdcTimeBin < 15 && maxAdc > -175){
+    if (maxAdcTimeBin < 15 && maxAdc > -175 && raw->GetSamples()[raw->GetNrSamples()-1] < -175){
       fS_N->Fill(1);//Signal
       fRawpulse->SetLineColor(2);
     } else {
