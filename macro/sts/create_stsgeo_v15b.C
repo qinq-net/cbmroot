@@ -11,11 +11,11 @@
  ** v15a: with flipped ladder orientation for stations 0,2,4,6 to match CAD design
  **
  ** TODO:
- ** v15b - within a station the ladders should be aligned in z, defined either by the unit or the ladder with most sensors
  ** v15b - z offset of cones to ladders should not be 0.3 by default, depends on number os sensors per ladder
  ** v15b - for all ladders set an even number of ladder elements 
  **
  ** DONE:
+ ** v15b - within a station the ladders should be aligned in z, defined either by the unit or the ladder with most sensors
  ** v15b - get rid of cone overlap in stations 7 and 8 - done by adapting rHole size
  ** v15b - within a station the ladders of 1 units should not touch eachother - set gkLadderGapZ
  **
@@ -137,7 +137,7 @@ const Double_t gkSectorGapZ      = 0.02;
 const Double_t gkLadderOverlapX  = 0.30;
 
 // ---> Gap in z between neighbouring ladders [cm]
-const Double_t gkLadderGapZ      = 1.00;
+const Double_t gkLadderGapZ      = 0.00; // 1.00;
 
 // ---> Switch to construct / not to construct readout cables
 const Bool_t   gkConstructCables = kTRUE;
@@ -2006,6 +2006,17 @@ TGeoVolume* ConstructLadder(Int_t LadderIndex,
   cout << "xPos1: " << xPos << endl;
   Double_t yPos = 0.;
   Double_t zPos = 0.;
+
+  Double_t maxdz = 0.;
+  for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {
+    Int_t ladderType = ladderTypes[iLadder];
+    ladderName = Form("Ladder%02d", ladderType);
+    ladder = gGeoManager->GetVolume(ladderName);
+    shape = (TGeoBBox*) ladder->GetShape();
+    if (maxdz < shape->GetDZ())
+      maxdz = shape->GetDZ();
+  }
+ 
   for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {
     Int_t ladderType = ladderTypes[iLadder];
     ladderName = Form("Ladder%02d", ladderType);
@@ -2020,30 +2031,46 @@ TGeoVolume* ConstructLadder(Int_t LadderIndex,
       subtractedVal = sqrt(2.)*gkFrameThickness/2. + shape->GetDX();
     else
       subtractedVal = 0.;
+
+    //    zPos = 0.5 * gkLadderGapZ + (shape->GetDZ()-subtractedVal/2.);  // non z-aligned ladders
+    zPos = 0.5 * gkLadderGapZ + (2*maxdz-shape->GetDZ()-subtractedVal/2.);  // z-aligned ladders
     
+    cout << "DE ladder" << ladderTypes[iLadder]
+	 << "  dx: " << shape->GetDX() 
+	 << "  dy: " << shape->GetDY() 
+	 << "  dz: " << shape->GetDZ() 
+	 << "  max dz: " << maxdz << endl;
+
+    cout << "DE ladder" << ladderTypes[iLadder]
+	 << "  fra: " << gkFrameThickness/2.
+	 << "  sub: " << subtractedVal
+	 << "  zpo: " << zPos << endl << endl;
+
     if (iStation % 2 == 0) // flip ladders for even stations to reproduce CAD layout
     // even station 0,2,4,6
     {
-      // --- Unrotated ladders
+      // --- Unrotated ladders --- downstream
       if ( (nLadders/2 + iLadder) % 2 ) {
-        zPos = 0.5 * gkLadderGapZ + (shape->GetDZ()-subtractedVal/2.);
+	//        zPos = 0.5 * gkLadderGapZ + (shape->GetDZ()-subtractedVal/2.);
         rot->RotateY(180.);
       }
-      // --- Rotated ladders
+      // --- Rotated ladders --- upstream
       else {
-        zPos = -0.5 * gkLadderGapZ - (shape->GetDZ()-subtractedVal/2.);
+	//        zPos = -0.5 * gkLadderGapZ - (shape->GetDZ()-subtractedVal/2.);
+        zPos = -zPos;
       }
     }
     else
     // odd station 1,3,5,7
     {
-      // --- Unrotated ladders
+      // --- Unrotated ladders --- upstream
       if ( (nLadders/2 + iLadder) % 2 ) {
-        zPos = -0.5 * gkLadderGapZ - (shape->GetDZ()-subtractedVal/2.);
+	//        zPos = -0.5 * gkLadderGapZ - (shape->GetDZ()-subtractedVal/2.);
+        zPos = -zPos;
       }
-      // --- Rotated ladders
+      // --- Rotated ladders --- downstream
       else {
-        zPos = 0.5 * gkLadderGapZ + (shape->GetDZ()-subtractedVal/2.);
+	//        zPos = 0.5 * gkLadderGapZ + (shape->GetDZ()-subtractedVal/2.);
         rot->RotateY(180.);
       }
     }
