@@ -56,6 +56,9 @@ void CbmTrdRawPulseMonitor::SetParContainers()
 // ---- Init ----------------------------------------------------------
 InitStatus CbmTrdRawPulseMonitor::Init()
 {
+  gStyle->SetNumberContours(99);
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
   LOG(DEBUG) << "Initilization of CbmTrdRawPulseMonitor" << FairLogger::endl;
 
   // Get a handle from the IO manager
