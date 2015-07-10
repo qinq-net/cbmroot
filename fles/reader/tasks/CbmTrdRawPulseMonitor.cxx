@@ -239,12 +239,13 @@ void CbmTrdRawPulseMonitor::Exec(Option_t*)
 	maxAdc = raw->GetSamples()[iBin];
       }
     }
-    if (maxAdcTimeBin < 15 && maxAdc > -175)
+    if (maxAdcTimeBin < 15 && maxAdc > -175){
       fS_N->Fill(1);//Signal
-    else
+      fRawpulse->SetLineColor(2);
+    } else {
       fS_N->Fill(0);//Noise
-
-
+      fRawpulse->SetLineColor(15);
+    }
     fMonitor->cd(chID+1);   
     fRawpulse->DrawCopy("same");
     if (eventCounter % 10 == 0)
