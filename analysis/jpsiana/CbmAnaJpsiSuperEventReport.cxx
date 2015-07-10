@@ -220,15 +220,15 @@ void CbmAnaJpsiSuperEventReport::DrawPairSource()
 		(fHMSuperEvent->H1("fh_se_bg_participants_minv_gg"))
 		(fHMSuperEvent->H1("fh_se_bg_participants_minv_gp"))
 		(fHMSuperEvent->H1("fh_se_bg_participants_minv_go"))
-		(fHMSuperEvent->H1("fh_se_bg_participants_minv_pg"))
+		//(fHMSuperEvent->H1("fh_se_bg_participants_minv_pg"))
 		(fHMSuperEvent->H1("fh_se_bg_participants_minv_pp"))
 		(fHMSuperEvent->H1("fh_se_bg_participants_minv_po"))
-		(fHMSuperEvent->H1("fh_se_bg_participants_minv_og"))
-		(fHMSuperEvent->H1("fh_se_bg_participants_minv_op"))
+		//(fHMSuperEvent->H1("fh_se_bg_participants_minv_og"))
+		//(fHMSuperEvent->H1("fh_se_bg_participants_minv_op"))
 		(fHMSuperEvent->H1("fh_se_bg_participants_minv_oo")),
 		list_of("whole BG")("#gamma + #gamma")("#gamma + #pi^{0}")("#gamma + others")
-		("#pi^{0} + #gamma")("#pi^{0} + #pi^{0}")("#pi^{0} + others")
-		("others + #gamma")("others + #pi^{0}")("others + others"),
+		/*("#pi^{0} + #gamma")*/("#pi^{0} + #pi^{0}")("#pi^{0} + others")
+		/*("others + #gamma")("others + #pi^{0}")*/("others + others"),
 		kLinear, kLog, true, 0.85, 0.6, 0.99, 0.99);
 
 		DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.6, 0.89, 0.7, 0.99);
