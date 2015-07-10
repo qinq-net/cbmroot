@@ -44,7 +44,9 @@ class CbmTrdRawPulseMonitor : public FairTask
     TClonesArray* fRawSpadic;
    /** Output array **/
     TCanvas *fMonitor;
-    TH1I* rawpulse;
+    TCanvas *fRatio;
+    TH1I* fRawpulse;
+    TH1I* fS_N;
 
     CbmHistManager* fHM;
 

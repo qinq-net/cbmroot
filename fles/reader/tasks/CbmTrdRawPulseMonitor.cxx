@@ -25,7 +25,9 @@
 CbmTrdRawPulseMonitor::CbmTrdRawPulseMonitor()
   : FairTask("CbmTrdRawPulseMonitor"),
     fRawSpadic(NULL),
-    fMonitor(NULL)
+    fMonitor(NULL),
+    fRatio(NULL),
+    fS_N(NULL)
 {
   LOG(DEBUG) << "Default Constructor of CbmTrdRawPulseMonitor" << FairLogger::endl;
 }
@@ -66,8 +68,12 @@ InitStatus CbmTrdRawPulseMonitor::Init()
   }
   fMonitor = new TCanvas("PulseMonitor","PulseMonitor", 0, 0, 1700, 1000);
   fMonitor->Divide(4,4);
-  rawpulse = new TH1I("rawPulse","rawPulse",32,-0.5,31.5);
-  rawpulse->GetYaxis()->SetRangeUser(-255,256);
+  fRawpulse = new TH1I("rawPulse","rawPulse",32,-0.5,31.5);
+  fRawpulse->GetYaxis()->SetRangeUser(-255,256);
+  fRatio = new TCanvas("Ratio","Ratio", 0, 0, 800, 600);
+  fS_N = new TH1I("S/N","S/N",2,-0.5,1.5);
+  fS_N->GetXaxis()->SetBinLabel(1,"Noise");
+  fS_N->GetXaxis()->SetBinLabel(2,"Signal");
   return kSUCCESS;
 }
 
@@ -131,6 +137,7 @@ void CbmTrdRawPulseMonitor::Exec(Option_t*)
  
   Int_t rowId(0), columnId(0), combiId(0);
   Int_t eventCounter = 0;
+  Int_t maxAdcTimeBin(-1), maxAdc(-300);
   for (Int_t i=0; i < entriesInMessage; ++i) {
     fMessageCounter++;
     CbmSpadicRawMessage* raw = /*static_cast<*/(CbmSpadicRawMessage*)/*>*/(fRawSpadic->At(i));
@@ -207,7 +214,8 @@ void CbmTrdRawPulseMonitor::Exec(Option_t*)
 
     if (SysId > 0 || SpaId > 1) continue;
     eventCounter++;
-
+    maxAdcTimeBin= -1;
+    maxAdc = -300;
 
     chID = dummy->GetChannelOnPadPlane(chID);//channelMapping[chID];// Remapping from ASIC to pad-plane
 
@@ -215,33 +223,45 @@ void CbmTrdRawPulseMonitor::Exec(Option_t*)
     rowId = dummy->GetRowID(raw);
     combiId = rowId * (maxNrColumns + 1) + columnId;
 
-    rawpulse->Reset();
+    fRawpulse->Reset();
     /*
       if (eventCounter % 10 == 0){
       for (Int_t pad = 1; pad <=32; pad++) {
       fMonitor->cd(pad);
-      rawpulse->DrawCopy();
+      fRawpulse->DrawCopy();
       }
       }
     */
     for (Int_t iBin = 0; iBin < raw->GetNrSamples(); iBin++){
-      rawpulse->SetBinContent(iBin+1,raw->GetSamples()[iBin]);
+      fRawpulse->SetBinContent(iBin+1,raw->GetSamples()[iBin]);
+      if (maxAdc < raw->GetSamples()[iBin]){
+	maxAdcTimeBin = iBin;
+	maxAdc = raw->GetSamples()[iBin];
+      }
     }
+    if (maxAdcTimeBin < 15 && maxAdc > -175)
+      fS_N->Fill(1);//Signal
+    else
+      fS_N->Fill(0);//Noise
+
 
     fMonitor->cd(chID+1);   
-    rawpulse->DrawCopy("same");
+    fRawpulse->DrawCopy("same");
     if (eventCounter % 10 == 0)
       fMonitor->Update();
   } //entriesInMessage
   fMonitor->Update();
-  rawpulse->Reset();
+  fRawpulse->Reset();
   for (Int_t iBin = 0; iBin < 32; iBin++){
-    rawpulse->SetBinContent(iBin+1,-256);
+    fRawpulse->SetBinContent(iBin+1,-256);
   }
   for (Int_t pad = 1; pad <=32; pad++) {
     fMonitor->cd(pad);
-    rawpulse->DrawCopy();
+    fRawpulse->DrawCopy();
   }  
+  fRatio->cd()->SetLogy(1);
+  fS_N->DrawCopy();
+  fRatio->Update();
 }
 
   // ---- Finish --------------------------------------------------------
