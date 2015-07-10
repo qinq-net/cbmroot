@@ -217,12 +217,12 @@ void CbmTrdRawPulseMonitor::Exec(Option_t*)
 
     rawpulse->Reset();
     /*
-    if (eventCounter % 10 == 0){
+      if (eventCounter % 10 == 0){
       for (Int_t pad = 1; pad <=32; pad++) {
-	fMonitor->cd(pad);
-	rawpulse->DrawCopy();
+      fMonitor->cd(pad);
+      rawpulse->DrawCopy();
       }
-    }
+      }
     */
     for (Int_t iBin = 0; iBin < raw->GetNrSamples(); iBin++){
       rawpulse->SetBinContent(iBin+1,raw->GetSamples()[iBin]);
@@ -235,6 +235,9 @@ void CbmTrdRawPulseMonitor::Exec(Option_t*)
   } //entriesInMessage
   fMonitor->Update();
   rawpulse->Reset();
+  for (Int_t iBin = 0; iBin < 32; iBin++){
+    rawpulse->SetBinContent(iBin+1,-256);
+  }
   for (Int_t pad = 1; pad <=32; pad++) {
     fMonitor->cd(pad);
     rawpulse->DrawCopy();
