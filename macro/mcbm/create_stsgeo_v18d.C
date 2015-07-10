@@ -1725,10 +1725,9 @@ TGeoVolume* ConstructHalfLadder(const TString& name,
       TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., YnumOfFrameBoxes*gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
       TGeoVolume* fullFrameBoxVol = new TGeoVolume(name+"_FullFrameBox", fullFrameShp, gStsMedium);
       //      TGeoVolume* sliceVol = fullFrameBoxVol->Divide(name+"_FullFrameBox_slice", 2, -YnumOfFrameBoxes*gkFrameStep/2., 0., gkFrameStep);
-
-     //      ConstructFrameBox("FrameBox", sliceVol, xu/2.);
+      //      ConstructFrameBox("FrameBox", sliceVol, xu/2.);
       ConstructFrameBox("FrameBox", fullFrameBoxVol, xu/2.);
-      //      TGeoRotation* fullFrameRot = new TGeoRotation (name+"_FullFrameBox_rot", 90., 180., -90.);
+
       TGeoRotation* fullFrameRot = new TGeoRotation;
       fullFrameRot->RotateY(180);
       ladder->AddNode(fullFrameBoxVol, 1, new TGeoCombiTrans(name+"_FullFrameBox_posrot", 0.,  2*gkFrameStep, -ladderZ/2.-(xu/2.+sqrt(2.)*gkFrameThickness/2.)/2., fullFrameRot));
