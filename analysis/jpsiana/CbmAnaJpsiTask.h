@@ -75,6 +75,10 @@ private:
   TClonesArray* fTofHits;
   TClonesArray* fGlobalTracks;
   TClonesArray* fJpsiCandidates; //output array of Jpsi candidates
+
+
+  // Number of hits in the MC RICH ring
+  std::map<Int_t, Int_t> fNofHitsInRingMap;
   
   CbmVertex* fPrimVertex;
   CbmKFVertex fKFVertex;
@@ -188,6 +192,8 @@ private:
 
     void InitHist();
 
+    void FillRichRingNofHits();
+
     void MCPairs();
 
     void RichPmtXY();
@@ -208,6 +214,9 @@ private:
      */
     Bool_t IsMcTrackAccepted(
     		Int_t mcTrackInd);
+
+    void IsRecoTrackAccepted(
+    		CbmAnaJpsiCandidate* cand);
 
     void SingleParticleAcceptance();
 

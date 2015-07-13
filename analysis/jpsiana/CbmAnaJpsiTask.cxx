@@ -327,6 +327,8 @@ void CbmAnaJpsiTask::Exec(
      Fatal("CbmAnaDielectronTask::Exec","No PrimaryVertex array!");
   }
 
+  FillRichRingNofHits();
+
   MCPairs();
 
   RichPmtXY();
@@ -345,6 +347,31 @@ void CbmAnaJpsiTask::Exec(
 
   CopyCandidatesToOutputArray();
 
+}
+
+void CbmAnaJpsiTask::FillRichRingNofHits()
+{
+	fNofHitsInRingMap.clear();
+    Int_t nofRichHits = fRichHits->GetEntriesFast();
+    for (Int_t iHit=0; iHit < nofRichHits; iHit++) {
+        CbmRichHit* hit = static_cast<CbmRichHit*>(fRichHits->At(iHit));
+        if (NULL == hit) continue;
+
+        Int_t iPoint = hit->GetRefId();
+        if (iPoint < 0) continue;
+
+        FairMCPoint* point = static_cast<FairMCPoint*>(fRichPoints->At(iPoint));
+        if (NULL == point) continue;
+
+        Int_t iMCTrack = point->GetTrackID();
+        CbmMCTrack* track = static_cast<CbmMCTrack*>(fMcTracks->At(iMCTrack));
+        if (NULL == track) continue;
+
+        Int_t iMother = track->GetMotherId();
+        if (iMother == -1) continue;
+
+        fNofHitsInRingMap[iMother]++;
+    }
 }
 
 void CbmAnaJpsiTask::MCPairs()
@@ -408,7 +435,8 @@ void CbmAnaJpsiTask::FillCandidates()
         if (tofHit == NULL) continue;
 
         IsElectron(richRing, cand.fMomentum.Mag(), trdTrack, globalTrack, &cand);
-
+        IsRecoTrackAccepted(&cand);
+        if (!cand.fIsRecoTrackAccepted) continue;
         // push candidate to the array
         // we store only candidate which have all local segments: STS, RICH, TRD, TOF
         fCandidates.push_back(cand);
@@ -564,8 +592,29 @@ Bool_t CbmAnaJpsiTask::IsMcTrackAccepted(
 {
 	CbmMCTrack* tr = (CbmMCTrack*) fMcTracks->At(mcTrackInd);
 	if (tr == NULL) return false;
-	//Int_t nRichPoints = fNofHitsInRingMap[mcTrackInd];
-	return (tr->GetNPoints(kMVD) + tr->GetNPoints(kSTS) >= 4);// && nRichPoints >= 7 && tr->GetNPoints(kTRD) >= 2 && tr->GetNPoints(kTOF) > 0) ;
+	Int_t nRichPoints = fNofHitsInRingMap[mcTrackInd];
+	return (tr->GetNPoints(kMVD) + tr->GetNPoints(kSTS) >= 4 && nRichPoints >= 7 && tr->GetNPoints(kTRD) >= 6 /*2*/ && tr->GetNPoints(kTOF) > 0) ;
+}
+
+
+void CbmAnaJpsiTask::IsRecoTrackAccepted( CbmAnaJpsiCandidate* cand)
+{
+	CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(cand->fStsInd);
+	if (stsTrack == NULL) cand->fIsRecoTrackAccepted = false;
+	int nStsHits = stsTrack->GetNofHits();
+	int nMvdHits = stsTrack->GetNofMvdHits();
+	CbmRichRing* richRing = (CbmRichRing*) fRichRings->At(cand->fRichInd);
+	if (richRing == NULL) cand->fIsRecoTrackAccepted = false;
+	int nRichHits = richRing->GetNofHits();
+	CbmTrdTrack* trdTrack = (CbmTrdTrack*) fTrdTracks->At(cand->fTrdInd);
+	if (trdTrack == NULL) cand->fIsRecoTrackAccepted = false;
+	int nTrdHits = trdTrack->GetNofHits();
+	CbmTofHit* tofHit = (CbmTofHit*) fTofHits->At(cand->fTofInd);
+	bool nTofHitsGreaterZero = false;
+	if (tofHit == NULL) {cand->fIsRecoTrackAccepted = false;}
+	else {nTofHitsGreaterZero = true;}
+	if ((nMvdHits + nStsHits) >= 4 && nRichHits >= 7 && nTrdHits >= 6 && nTofHitsGreaterZero) cand->fIsRecoTrackAccepted = true;
+
 }
 
 void CbmAnaJpsiTask::SingleParticleAcceptance()
@@ -633,7 +682,7 @@ void CbmAnaJpsiTask::PairSource(
     if (candP->fIsMcSignalElectron || candM->fIsMcSignalElectron) weight=fWeight;
     if (isBG){
     	if (candM->fIsMcGammaElectron) {
-    		if (candP->fIsMcGammaElectron && candP->fStsMcMotherId!=candM->fStsMcMotherId){
+    		if (candP->fIsMcGammaElectron /*&& candP->fStsMcMotherId!=candM->fStsMcMotherId*/){
     			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_gg")->Fill(parRec->fMinv,weight); //gamma + gamma
     		} else if (candP->fIsMcPi0Electron) {
     			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_gp")->Fill(parRec->fMinv,weight); //gamma + Pi0
@@ -642,8 +691,8 @@ void CbmAnaJpsiTask::PairSource(
     		}
     	} else if (candM->fIsMcPi0Electron) {
     		if (candP->fIsMcGammaElectron) {
-    			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_pg")->Fill(parRec->fMinv,weight); //pi0 + gamma
-    		} else if (candP->fIsMcPi0Electron && candP->fStsMcMotherId!=candM->fStsMcMotherId) {
+    			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_gp")->Fill(parRec->fMinv,weight); //pi0 + gamma
+    		} else if (candP->fIsMcPi0Electron/* && candP->fStsMcMotherId!=candM->fStsMcMotherId*/) {
     			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_pp")->Fill(parRec->fMinv,weight); //pi0 + Pi0
     		} else {
     			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_po")->Fill(parRec->fMinv,weight);	//pi0 + other
@@ -652,7 +701,7 @@ void CbmAnaJpsiTask::PairSource(
     		if (candP->fIsMcGammaElectron) {
     			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_og")->Fill(parRec->fMinv,weight);	//other + gamma
     		} else if (candP->fIsMcPi0Electron) {
-    		    fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_op")->Fill(parRec->fMinv,weight); //other + Pi0
+    		    fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_po")->Fill(parRec->fMinv,weight); //other + Pi0
     		} else {
     		 	fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_oo")->Fill(parRec->fMinv,weight);	//other + other
     		}
@@ -765,17 +814,17 @@ void CbmAnaJpsiTask::SignalAndBgReco()
 	     if (isChi2Prim && isEl && isPtCut) TrackSource(&fCandidates[i], kJpsiPtCut, pdg);
 	}
 
-	for (Int_t iP=0;iP<ncand;iP++)
+	for (Int_t iM=0;iM<ncand;iM++)
 	{
-		if (fCandidates[iP].fCharge < 0) continue;
-		CbmMCTrack* mctrackP = NULL;
-		if (fCandidates[iP].fStsMcTrackId >=0) mctrackP = (CbmMCTrack*) fMcTracks->At(fCandidates[iP].fStsMcTrackId);
+		if (fCandidates[iM].fCharge < 0) continue;
+		CbmMCTrack* mctrackM = NULL;
+		if (fCandidates[iM].fStsMcTrackId >=0) mctrackM = (CbmMCTrack*) fMcTracks->At(fCandidates[iM].fStsMcTrackId);
 
-		for (Int_t iM=0;iM<ncand;iM++)
+		for (Int_t iP=0;iP<ncand;iP++)
 		{
-			if (fCandidates[iM].fCharge > 0) continue;
-			CbmMCTrack* mctrackM = NULL;
-			if (fCandidates[iM].fStsMcTrackId >=0) mctrackM = (CbmMCTrack*) fMcTracks->At(fCandidates[iM].fStsMcTrackId);
+			if (fCandidates[iP].fCharge > 0) continue;
+			CbmMCTrack* mctrackP = NULL;
+			if (fCandidates[iP].fStsMcTrackId >=0) mctrackP = (CbmMCTrack*) fMcTracks->At(fCandidates[iP].fStsMcTrackId);
 			if (iM == iP ) continue;
 
 			CbmAnaJpsiKinematicParams pMC;

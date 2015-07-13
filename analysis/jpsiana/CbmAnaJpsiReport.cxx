@@ -265,7 +265,9 @@ void CbmAnaJpsiReport::DrawSignalMinv()
 	vector<string> hLegend;
 	for (int i = 0; i < CbmAnaJpsiHist::fNofAnaSteps-2; i++){
 		string fullName = hName+"_"+CbmAnaJpsiHist::fAnaSteps[i+2];
-		h.push_back( H1(fullName) );
+		h.push_back( (TH1*)H1(fullName)->Clone() );
+		cout<<i<< " Integral "<<h[i]->Integral()<<endl;
+		cout<<i<< " Entries "<<h[i]->GetEntries()<<endl;
 		h[i]->SetAxisRange(2., 4.,"X");
 		h[i]->SetLineWidth(2);
 		h[i]->SetLineColor(CbmAnaJpsiHist::fAnaStepsColor[i+2]);
@@ -505,15 +507,15 @@ void CbmAnaJpsiReport::DrawPairSourceAnaSteps(
 		((TH1*) H1("fh_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[step])->Clone())
 		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_gp"))
 		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_go"))
-		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_pg"))
+		//(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_pg"))
 		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_pp"))
 		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_po"))
-		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_og"))
-		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_op"))
+		//(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_og"))
+		//(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_op"))
 		(H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_oo")),
 		list_of("#gamma + #gamma")("whole BG")("#gamma + #pi^{0}")("#gamma + others")
-		("#pi^{0} + #gamma")("#pi^{0} + #pi^{0}")("#pi^{0} + others")
-		("others + #gamma")("others + #pi^{0}")("others + others"),
+		/*("#pi^{0} + #gamma")*/("#pi^{0} + #pi^{0}")("#pi^{0} + others")
+		/*("others + #gamma")("others + #pi^{0}")*/("others + others"),
 		kLinear, kLog, true, 0.85, 0.6, 0.99, 0.99);
 }
 

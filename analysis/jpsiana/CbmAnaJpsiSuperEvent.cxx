@@ -41,7 +41,7 @@ CbmAnaJpsiSuperEvent::CbmAnaJpsiSuperEvent()
 		fMinusCandidates(),
 		fPlusCandidates(),
 		fOutputFile(""),
-                fHM(NULL),
+        fHM(NULL),
 		fCuts(),
 		fRunAfterPtCut(kTRUE)
 {
@@ -117,6 +117,7 @@ void CbmAnaJpsiSuperEvent::ReadCandidates()
 			//cout << "-I- nofCandidates:" << nofCandidates << endl;
 			for (Int_t iCand = 0; iCand < nofCandidates; iCand++) {
 				CbmAnaJpsiCandidate* cand = (CbmAnaJpsiCandidate*) candidates->At(iCand);
+
 				if (cand->fIsMcSignalElectron) continue;
 
 				Bool_t isPtCut = (cand->fChi2Prim < fCuts.fChiPrimCut && cand->fIsElectron && cand->fMomentum.Perp() > fCuts.fPtCut);

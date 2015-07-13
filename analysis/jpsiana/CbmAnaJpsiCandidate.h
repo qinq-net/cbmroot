@@ -35,7 +35,8 @@ public:
 		fMass2(0.),
 		fIsRichEl(false),
 		fIsTrdEl(false),
-		fIsTofEl(false)
+		fIsTofEl(false),
+		fIsRecoTrackAccepted(false)
 	{
 	}
 
@@ -82,6 +83,8 @@ public:
 	Bool_t fIsRichEl;
 	Bool_t fIsTrdEl;
 	Bool_t fIsTofEl;
+
+	Bool_t fIsRecoTrackAccepted;
 
 	ClassDef(CbmAnaJpsiCandidate, 1)
 };
