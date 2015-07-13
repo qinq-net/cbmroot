@@ -105,6 +105,12 @@ private:
 	
 	TH1D * fhInvMass2Gammas;
 	TH1D * fhInvMass2Gammas_cut;
+	
+	TH1D * fhKF_particlevector;
+	TH1D * fhKF_trackvector;
+	
+	TH1D * fhKF_NofPi0;
+	TH1D * fhKF_NofPi0_trackvector;
 
 
 	// timer

@@ -371,7 +371,7 @@ void CbmAnaConversionRecoFull::Exec()
 		CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
 		if (mcTrack2 == NULL) continue;
 
-		if(stsMcTrackId != richMcTrackId) continue;
+		//if(stsMcTrackId != richMcTrackId) continue;
 		nofGT_richsts++;
 
 		int pdg = TMath::Abs(mcTrack1->GetPdgCode());
@@ -414,7 +414,7 @@ void CbmAnaConversionRecoFull::Exec()
 		if( (electron_rich && electron_trd) || (electron_rich && electron_tof) || (electron_trd && electron_tof) ) fhElectrons->Fill(7);
 
 
-		if(electron_rich) {		// maybe with chi2 cut applied here && result_chi <= 3
+		if(electron_rich) {		// maybe with chi2 cut applied here: && result_chi <= 3
 			nofElectrons++;
 			fElectrons_track.push_back(gTrack);
 			fElectrons_momenta.push_back(refittedMomentum);
@@ -505,7 +505,7 @@ void CbmAnaConversionRecoFull::CombineElectrons()
 				//Double_t openingAngleCut = 1;
 				
 				// opening angle cut depending on pt of e+e- pair
-				Double_t openingAngleCut = 1.8 - 0.3 * params1.fPt;
+				Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
 				
 				Double_t invMassCut = 0.03;
 				

@@ -521,6 +521,18 @@ void CbmAnaConversion::Exec(Option_t* option)
 		int stsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
 		if (stsMcTrackId < 0) continue;
 		CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId);
+		
+		
+		if (richInd < 0) continue;
+		CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(richInd);
+		if (richMatch == NULL) continue;
+		int richMcTrackId = richMatch->GetMatchedLink().GetIndex();
+		if (richMcTrackId < 0) continue;
+		CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
+		if (mcTrack2 == NULL) continue;
+
+		if(stsMcTrackId != richMcTrackId) continue;
+		
 		if (mcTrack1 == NULL) continue;
 		int pdg = TMath::Abs(mcTrack1->GetPdgCode());
 		int motherId = mcTrack1->GetMotherId();
@@ -535,7 +547,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 		CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
 		if (mcTrack2 == NULL) continue;
 */
-		//if(stsMcTrackId != richMcTrackId) continue;
+		if(stsMcTrackId != richMcTrackId) continue;
 
        
 		if(DoTomography) {

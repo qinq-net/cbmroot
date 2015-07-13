@@ -57,6 +57,10 @@ CbmAnaConversionKF::CbmAnaConversionKF()
    fhInvMassPi0WithFullReco(NULL),
    fhInvMass2Gammas(NULL),
    fhInvMass2Gammas_cut(NULL),
+   fhKF_particlevector(NULL),
+   fhKF_trackvector(NULL),
+   fhKF_NofPi0(NULL),
+   fhKF_NofPi0_trackvector(NULL),
    timer(),
    fTime(0.)
 {
@@ -111,6 +115,22 @@ void CbmAnaConversionKF::InitHistos()
 	fHistoList_kfparticle.push_back(fhInvMass2Gammas);
 	fhInvMass2Gammas_cut = new TH1D("fhInvMass2Gammas_cut", "fhInvMass2Gammas_cut;invmass;#", 400, 0., 2.);
 	fHistoList_kfparticle.push_back(fhInvMass2Gammas_cut);
+	
+	fhKF_particlevector = new TH1D("fhKF_particlevector", "fhKF_particlevector;;#", 10, 0., 10.);
+	fHistoList_kfparticle.push_back(fhKF_particlevector);
+	fhKF_particlevector->GetXaxis()->SetBinLabel(1, "electrons");
+	fhKF_particlevector->GetXaxis()->SetBinLabel(2, "gamma");
+	fhKF_particlevector->GetXaxis()->SetBinLabel(3, "pi0");
+	fhKF_trackvector = new TH1D("fhKF_trackvector", "fhKF_trackvector;;#", 10, 0., 10.);
+	fHistoList_kfparticle.push_back(fhKF_trackvector);
+	fhKF_trackvector->GetXaxis()->SetBinLabel(1, "electrons");
+	fhKF_trackvector->GetXaxis()->SetBinLabel(2, "gamma");
+	fhKF_trackvector->GetXaxis()->SetBinLabel(3, "pi0");
+	
+	fhKF_NofPi0 = new TH1D("fhKF_NofPi0", "fhKF_NofPi0;nof;#", 10, 0., 10.);
+	fHistoList_kfparticle.push_back(fhKF_NofPi0);
+	fhKF_NofPi0_trackvector = new TH1D("fhKF_NofPi0_trackvector", "fhKF_NofPi0_trackvector;nof;#", 10, 0., 10.);
+	fHistoList_kfparticle.push_back(fhKF_NofPi0_trackvector);
 
 }
 
@@ -442,19 +462,31 @@ Double_t CbmAnaConversionKF::Invmass_4particles(const CbmMCTrack* mctrack1, cons
 
 void CbmAnaConversionKF::test2()
 {
+	Int_t pi0counter_trackvector = 0;
 	const KFPTrackVector* kftrackvector;
 	kftrackvector = fKFtopo->GetTracks();
 	Int_t kftv_size = kftrackvector->Size();
 	cout << "CbmAnaConversionKF: size of kftrackvector: " << kftv_size << endl;
 	
-        kfvector_int vector_pdgs = kftrackvector->PDG();
+	kfvector_int vector_pdgs = kftrackvector->PDG();
 	
 	cout << "CbmAnaConversionKF: pdgs in trackvector: ";
 	for(int i=0; i<kftv_size; i++) {
 		cout << vector_pdgs[i] << " / ";
+		if(TMath::Abs(vector_pdgs[i]) == 111) {
+			pi0counter_trackvector++;
+			fhKF_trackvector->Fill(2);
+		}
+		if(TMath::Abs(vector_pdgs[i]) == 11) {
+			fhKF_trackvector->Fill(0);
+		}
+		if(TMath::Abs(vector_pdgs[i]) == 22) {
+			fhKF_trackvector->Fill(1);
+		}
 	}
 	cout << endl;
 	
+	fhKF_NofPi0_trackvector->Fill(pi0counter_trackvector);
 	
 	particlevector.clear();
 	//vector<KFParticle> particlevector;
@@ -469,14 +501,22 @@ void CbmAnaConversionKF::test2()
 		if(TMath::Abs(particlevector[i].GetPDG()) == 11) {
 			electroncounter++;
 			electronIDs.push_back(i);
+			fhKF_particlevector->Fill(0);
 		}
-		if(TMath::Abs(particlevector[i].GetPDG()) == 111) pi0counter++;
+		if(TMath::Abs(particlevector[i].GetPDG()) == 111) {
+			pi0counter++;
+			fhKF_particlevector->Fill(2);
+		}
 		if(TMath::Abs(particlevector[i].GetPDG()) == 22) {
 			gammacounter++;
 			gammaIDs.push_back(i);
+			fhKF_particlevector->Fill(1);
 		}
 		
 	}
+	
+	
+	fhKF_NofPi0->Fill(pi0counter);
 	
 	cout << "CbmAnaConversionKF: nof electrons in particlevector: " << electroncounter << endl;
 	cout << "CbmAnaConversionKF: nof pi0 in particlevector: " << pi0counter << endl;
