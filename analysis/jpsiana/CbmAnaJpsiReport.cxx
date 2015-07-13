@@ -148,6 +148,14 @@ void CbmAnaJpsiReport::Draw()
 		  DrawMomEffAllSteps();
 		  DrawMomMcVsRec();
 		  DrawPairSource();
+
+	 { TCanvas* c = CreateCanvas("jpsi_fh_PdgCode_of Others_BG","jpsi_fh_PdgCode_of Others_BG",1000,1000);
+	 	 	 	 c->Divide(2,2);
+		 	  	  for (int i=0;i<CbmAnaJpsiHist::fNofAnaSteps-2;i++){
+		 	  		  c->cd(i+1);
+		 	  		  DrawH1(H1("fh_PdgCode_of Others_BG_" + CbmAnaJpsiHist::fAnaSteps[i+2]));
+		 	  	  }
+	 }
 }
 
 void CbmAnaJpsiReport::DrawAnalysisStepsH2(

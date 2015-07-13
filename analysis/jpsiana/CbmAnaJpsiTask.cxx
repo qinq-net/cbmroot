@@ -302,6 +302,8 @@ void CbmAnaJpsiTask::InitHist()
 
    CreateAnaStepsPairSourceH1("fh_bg_participants_minv" , "m_{inv}" , "Particles per Event", 4000 , 0. , 4.);
 
+   CreateAnalysisStepsH1("fh_PdgCode_of Others_BG","PDGCode", "Tracks per Event",500,-0.5,499.5);
+
 }
 
 
@@ -688,6 +690,7 @@ void CbmAnaJpsiTask::PairSource(
     			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_gp")->Fill(parRec->fMinv,weight); //gamma + Pi0
     		} else {
     			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_go")->Fill(parRec->fMinv,weight);	//gamma + other
+    			fHM->H1("fh_PdgCode_of Others_BG_" + CbmAnaJpsiHist::fAnaSteps[step])->Fill((double)candP->fMcPdg-0.5);
     		}
     	} else if (candM->fIsMcPi0Electron) {
     		if (candP->fIsMcGammaElectron) {
@@ -696,14 +699,17 @@ void CbmAnaJpsiTask::PairSource(
     			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_pp")->Fill(parRec->fMinv,weight); //pi0 + Pi0
     		} else {
     			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_po")->Fill(parRec->fMinv,weight);	//pi0 + other
+    			fHM->H1("fh_PdgCode_of Others_BG_" + CbmAnaJpsiHist::fAnaSteps[step])->Fill((double)candP->fMcPdg-0.5);
     		}
     	} else {
+    		fHM->H1("fh_PdgCode_of Others_BG_" + CbmAnaJpsiHist::fAnaSteps[step])->Fill((double)candM->fMcPdg-0.5);
     		if (candP->fIsMcGammaElectron) {
     			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_og")->Fill(parRec->fMinv,weight);	//other + gamma
     		} else if (candP->fIsMcPi0Electron) {
     		    fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_po")->Fill(parRec->fMinv,weight); //other + Pi0
     		} else {
     		 	fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_oo")->Fill(parRec->fMinv,weight);	//other + other
+    		 	fHM->H1("fh_PdgCode_of Others_BG_" + CbmAnaJpsiHist::fAnaSteps[step])->Fill((double)candP->fMcPdg-0.5);
     		}
     	}
 }

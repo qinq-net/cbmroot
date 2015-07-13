@@ -91,6 +91,8 @@ void CbmAnaJpsiSuperEvent::InitHist()
 	fHM->Create1<TH1D>("fh_se_bg_participants_minv_og", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
 	fHM->Create1<TH1D>("fh_se_bg_participants_minv_op", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
 	fHM->Create1<TH1D>("fh_se_bg_participants_minv_oo", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
+
+	fHM->Create1<TH1D>("fh_SE_PdgCode_of Others_BG", "fh_SE_PdgCode_of Others_BG;PDGCode;Tracks per Event", 500,-0.5,499.5);
 }
 
 
@@ -168,28 +170,32 @@ void CbmAnaJpsiSuperEvent::DoSuperEvent()
 					fHM->H1("fh_se_bg_minv_ptcut")->Fill(pRec.fMinv);
 
 			    	if (candM->fIsMcGammaElectron) {
-			    		if (candP->fIsMcGammaElectron /* && candP->fStsMcMotherId!=candM->fStsMcMotherId*/){
+			    		if (candP->fIsMcGammaElectron){
 			    			fHM->H1("fh_se_bg_participants_minv_gg")->Fill(pRec.fMinv); //gamma + gamma
 			    		} else if (candP->fIsMcPi0Electron) {
 			    			fHM->H1("fh_se_bg_participants_minv_gp")->Fill(pRec.fMinv); //gamma + Pi0
 			    		} else {
 			    			fHM->H1("fh_se_bg_participants_minv_go")->Fill(pRec.fMinv);	//gamma + other
+			    			fHM->H1("fh_SE_PdgCode_of Others_BG")->Fill((double)candP->fMcPdg-0.5);
 			    		}
 			    	} else if (candM->fIsMcPi0Electron) {
 			    		if (candP->fIsMcGammaElectron) {
 			    			fHM->H1("fh_se_bg_participants_minv_gp")->Fill(pRec.fMinv); //pi0 + gamma
-			    		} else if (candP->fIsMcPi0Electron /*&& candP->fStsMcMotherId!=candM->fStsMcMotherId*/) {
+			    		} else if (candP->fIsMcPi0Electron) {
 			    			fHM->H1("fh_se_bg_participants_minv_pp")->Fill(pRec.fMinv); //pi0 + Pi0
 			    		} else {
 			    			fHM->H1("fh_se_bg_participants_minv_po")->Fill(pRec.fMinv);	//pi0 + other
+			    			fHM->H1("fh_SE_PdgCode_of Others_BG")->Fill((double)candP->fMcPdg-0.5);
 			    		}
 			    	} else {
+			    		fHM->H1("fh_SE_PdgCode_of Others_BG")->Fill((double)candM->fMcPdg-0.5);
 			    		if (candP->fIsMcGammaElectron) {
 			    			fHM->H1("fh_se_bg_participants_minv_go")->Fill(pRec.fMinv);	//other + gamma
 			    		} else if (candP->fIsMcPi0Electron) {
 			    		    fHM->H1("fh_se_bg_participants_minv_po")->Fill(pRec.fMinv); //other + Pi0
 			    		} else {
 			    		 	fHM->H1("fh_se_bg_participants_minv_oo")->Fill(pRec.fMinv);	//other + other
+			    		 	fHM->H1("fh_SE_PdgCode_of Others_BG")->Fill((double)candP->fMcPdg-0.5);
 			    		}
 			    	}
 			}

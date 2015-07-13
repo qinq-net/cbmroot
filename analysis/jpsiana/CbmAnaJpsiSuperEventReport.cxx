@@ -97,6 +97,10 @@ void CbmAnaJpsiSuperEventReport::Draw()
 	SignalOverBgAllSteps();
 
 	DrawPairSource();
+
+	 { TCanvas* c = CreateCanvas("jpsi_fh_SE_PdgCode_of Others_BG","jpsi_fh_SE_PdgCode_of Others_BG",1000,1000);
+		 DrawH1(fHMSuperEvent->H1("fh_SE_PdgCode_of Others_BG"));
+	 }
 }
 
 void CbmAnaJpsiSuperEventReport::DrawComparison()
