@@ -78,7 +78,7 @@ void much_reco(
    FairTask* kalman = new CbmKF();
    run->AddTask(kalman);
    CbmL1* l1 = new CbmL1();
-   l1->SetMaterialBudgetFileName(stsMatBudgetFile);
+   l1->SetStsMaterialBudgetFileName(stsMatBudgetFile);
    run->AddTask(l1);
    CbmStsTrackFinder* trackFinder = new CbmL1StsTrackFinder();
    FairTask* findTracks = new CbmStsFindTracks(iVerbose, trackFinder);
