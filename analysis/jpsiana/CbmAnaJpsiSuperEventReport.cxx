@@ -100,6 +100,7 @@ void CbmAnaJpsiSuperEventReport::Draw()
 
 	 { TCanvas* c = CreateCanvas("jpsi_fh_SE_PdgCode_of Others_BG","jpsi_fh_SE_PdgCode_of Others_BG",1000,1000);
 		 DrawH1(fHMSuperEvent->H1("fh_SE_PdgCode_of Others_BG"));
+		 DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.4, 0.89, 0.5, 0.99);
 	 }
 }
 
@@ -145,6 +146,15 @@ void CbmAnaJpsiSuperEventReport::DrawMinvSignalBg()
   TCanvas* c4 = CreateCanvas("jpsi_se_minv_ptcut","jpsi_se_minv_ptcut",900,900);
   fHMSuperEvent->H1("fh_se_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->SetMinimum(1e-9);
   DrawH1(list_of((TH1*) fHMSuperEvent->H1("fh_se_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->Clone())((TH1*) fHMEventByEvent->H1("fh_signal_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->Clone()),list_of("Background SuperEvent")("Signal Event-By-Event"), kLinear, kLog, true, 0.7, 0.9, 0.99, 0.95);
+  DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.4, 0.89, 0.5, 0.99);
+
+  TCanvas* c5 = CreateCanvas("jpsi_se_ee_minv_ptcut","jpsi_se_ee_minv_ptcut",900,900);
+  TH1D* fhBg = (TH1D*) fHMSuperEvent->H1("fh_se_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->Clone();
+  TH1D* fhSignal = (TH1D*) fHMEventByEvent->H1("fh_signal_minv_" + CbmAnaJpsiHist::fAnaSteps[kJpsiPtCut])->Clone();
+  TH1D* fhBgSignal = (TH1D*)fhBg->Clone();
+  fhBgSignal->Add(fhSignal);
+  fhBgSignal->SetMinimum(1e-9);
+  DrawH1(list_of(fhBg)(fhSignal)(fhBgSignal),list_of("Background SuperEvent")("Signal Event-By-Event")("Signal and Background"), kLinear, kLog, true, 0.7, 0.9, 0.99, 0.95);
   DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.4, 0.89, 0.5, 0.99);
 
 }
