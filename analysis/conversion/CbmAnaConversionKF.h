@@ -23,6 +23,8 @@
 #include "CbmKFParticleFinderQA.h"
 #include "CbmKFParticle.h"
 #include "KFParticle.h"
+#include "../../KF/KFParticlePerformance/KFPartMatch.h"
+#include "../../KF/KFParticlePerformance/KFTopoPerformance.h"
 
 
 
@@ -74,6 +76,7 @@ private:
 	CbmKFParticleFinderQA* fKFparticleFinderQA;
 	
 	const KFParticleTopoReconstructor* fKFtopo;
+	KFTopoPerformance* fKFtopoPerf;
 	vector<int> trackindexarray;
 	Int_t particlecounter;
 	Int_t particlecounter_2daughters;
@@ -99,6 +102,7 @@ private:
 	
 
 	vector<KFParticle> particlevector;
+	vector<KFPartMatch> particleMatch;
 	vector<int> electronIDs;
 	vector<int> gammaIDs;
 	TH1D * fhInvMassPi0WithFullReco;
@@ -110,6 +114,7 @@ private:
 	TH1D * fhKF_trackvector;
 	
 	TH1D * fhKF_NofPi0;
+	TH1D * fhKF_NofPi0_signal;
 	TH1D * fhKF_NofPi0_trackvector;
 
 

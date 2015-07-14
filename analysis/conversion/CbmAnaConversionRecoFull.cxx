@@ -397,8 +397,8 @@ void CbmAnaConversionRecoFull::Exec()
 
 		Int_t pidHypo = gTrack->GetPidHypo();
 
-		//Bool_t electron_rich = electronidentifier->IsRichElectron(iG, refittedMomentum.Mag());
-		Bool_t electron_rich = (pdg == 11);
+		Bool_t electron_rich = electronidentifier->IsRichElectron(iG, refittedMomentum.Mag());
+		//Bool_t electron_rich = (pdg == 11);
 		Bool_t electron_trd = electronidentifier->IsTrdElectron(iG, refittedMomentum.Mag());
 		Bool_t electron_tof = electronidentifier->IsTofElectron(iG, refittedMomentum.Mag());
 
@@ -426,7 +426,7 @@ void CbmAnaConversionRecoFull::Exec()
 			fhPhotons_startvertex_vs_chi->Fill(startvertex.Z(), result_chi);
 			
 			// trying to refit momentum with electron assumption
-			CbmL1PFFitter fPFFitter_electron;
+		/*	CbmL1PFFitter fPFFitter_electron;
 			vector<CbmStsTrack> stsTracks_electron;
 			stsTracks_electron.resize(1);
 			stsTracks_electron[0] = *stsTrack;
@@ -445,9 +445,11 @@ void CbmAnaConversionRecoFull::Exec()
 			fhPhotons_Refit_momentumDiff->Fill(TMath::Abs(refittedMomentum.Mag() - refittedMomentum_electron.Mag() ));
 			fhPhotons_Refit_chiDistribution->Fill(result_chi_electron);
 			
-			fElectrons_track_refit.push_back(gTrack);
-			fElectrons_momenta_refit.push_back(refittedMomentum_electron);
-			
+			if(result_chi_electron <= 3) {
+				fElectrons_track_refit.push_back(gTrack);
+				fElectrons_momenta_refit.push_back(refittedMomentum_electron);
+			}
+			*/
 			
 			// for comparison: trying to refit momentum with pion assumption
 			CbmL1PFFitter fPFFitter_pion;
@@ -466,6 +468,36 @@ void CbmAnaConversionRecoFull::Exec()
 			float result_chi_pion = chiPrim_pion[0];
 			fhPhotons_RefitPion_chiDistribution->Fill(result_chi_pion);
 		}
+		
+		// trying to refit momentum with electron assumption
+		CbmL1PFFitter fPFFitter_electron;
+		vector<CbmStsTrack> stsTracks_electron;
+		stsTracks_electron.resize(1);
+		stsTracks_electron[0] = *stsTrack;
+		vector<L1FieldRegion> vField_electron;
+		vector<float> chiPrim_electron;
+		vector<int> pidHypo_electron;
+		pidHypo_electron.push_back(11);
+		fPFFitter_electron.Fit(stsTracks_electron, pidHypo_electron); 
+		fPFFitter_electron.GetChiToVertex(stsTracks_electron, vField_electron, chiPrim_electron, fKFVertex, 3e6);
+		TVector3 refittedMomentum_electron;
+		const FairTrackParam* vtxTrack_electron = stsTracks_electron[0].GetParamFirst();
+		vtxTrack_electron->Momentum(refittedMomentum_electron);
+		float result_chi_electron = chiPrim_electron[0];
+		
+		Bool_t electron_rich_refit = electronidentifier->IsRichElectron(iG, refittedMomentum_electron.Mag());
+		
+		if(electron_rich_refit) {
+			fhPhotons_Refit_chiDiff->Fill(TMath::Abs(result_chi - result_chi_electron));
+			fhPhotons_Refit_momentumDiff->Fill(TMath::Abs(refittedMomentum.Mag() - refittedMomentum_electron.Mag() ));
+			fhPhotons_Refit_chiDistribution->Fill(result_chi_electron);
+		
+			if(result_chi_electron <= 3) {
+				fElectrons_track_refit.push_back(gTrack);
+				fElectrons_momenta_refit.push_back(refittedMomentum_electron);
+			}
+		}
+
 	}
 	cout << "CbmAnaConversionRecoFull: number of global tracks in STS and RICH " << nofGT_richsts << endl;
 

@@ -547,7 +547,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 		CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
 		if (mcTrack2 == NULL) continue;
 */
-		if(stsMcTrackId != richMcTrackId) continue;
+		//if(stsMcTrackId != richMcTrackId) continue;
 
        
 		if(DoTomography) {

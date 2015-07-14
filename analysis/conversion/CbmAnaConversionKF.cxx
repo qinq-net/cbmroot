@@ -16,6 +16,7 @@
 #include "CbmKFParticleFinder.h"
 #include "CbmKFParticleFinderQA.h"
 #include "KFParticleTopoReconstructor.h"
+#include "../../KF/KFParticlePerformance/KFTopoPerformance.h"
 #include "CbmStsTrack.h"
 #include "CbmMCTrack.h"
 #include "CbmTrackMatchNew.h"
@@ -35,6 +36,7 @@ CbmAnaConversionKF::CbmAnaConversionKF()
    fKFparticle(NULL),
    fKFparticleFinderQA(NULL),
    fKFtopo(NULL),
+   fKFtopoPerf(0),
    trackindexarray(),
    particlecounter(0),
    particlecounter_2daughters(0),
@@ -90,6 +92,8 @@ void CbmAnaConversionKF::Init()
 	
 
 	fKFtopo = fKFparticle->GetTopoReconstructor();
+	fKFtopoPerf = new KFTopoPerformance;
+	fKFtopoPerf->SetTopoReconstructor(fKFtopo);
 
 	InitHistos();
 }
@@ -127,9 +131,11 @@ void CbmAnaConversionKF::InitHistos()
 	fhKF_trackvector->GetXaxis()->SetBinLabel(2, "gamma");
 	fhKF_trackvector->GetXaxis()->SetBinLabel(3, "pi0");
 	
-	fhKF_NofPi0 = new TH1D("fhKF_NofPi0", "fhKF_NofPi0;nof;#", 10, 0., 10.);
+	fhKF_NofPi0 = new TH1D("fhKF_NofPi0", "fhKF_NofPi0;nof;#", 10, -0.5, 9.5);
 	fHistoList_kfparticle.push_back(fhKF_NofPi0);
-	fhKF_NofPi0_trackvector = new TH1D("fhKF_NofPi0_trackvector", "fhKF_NofPi0_trackvector;nof;#", 10, 0., 10.);
+	fhKF_NofPi0_signal = new TH1D("fhKF_NofPi0_signal", "fhKF_NofPi0_signal;nof;#", 10, -0.5, 9.5);
+	fHistoList_kfparticle.push_back(fhKF_NofPi0_signal);
+	fhKF_NofPi0_trackvector = new TH1D("fhKF_NofPi0_trackvector", "fhKF_NofPi0_trackvector;nof;#", 10, -0.5, 9.5);
 	fHistoList_kfparticle.push_back(fhKF_NofPi0_trackvector);
 
 }
@@ -488,14 +494,23 @@ void CbmAnaConversionKF::test2()
 	
 	fhKF_NofPi0_trackvector->Fill(pi0counter_trackvector);
 	
+	
+	
+	
+	
+	// particlevector to get all pi0 detected by KFParticlePackage (including signal, ghost, background); trackvector DOES NOT WORK
 	particlevector.clear();
+	particleMatch.clear();
 	//vector<KFParticle> particlevector;
+	
 	particlevector = fKFtopo->GetParticles();
+	particleMatch = fKFtopoPerf->ParticlesMatch();
 	Int_t pv_size = particlevector.size();
 	cout << "CbmAnaConversionKF: size of particlevector: " << pv_size << endl;
 
 	Int_t electroncounter = 0;
 	Int_t pi0counter = 0;
+	Int_t pi0counter_signal = 0;
 	Int_t gammacounter = 0;
 	for(int i=0; i<pv_size; i++) {
 		if(TMath::Abs(particlevector[i].GetPDG()) == 11) {
@@ -506,6 +521,9 @@ void CbmAnaConversionKF::test2()
 		if(TMath::Abs(particlevector[i].GetPDG()) == 111) {
 			pi0counter++;
 			fhKF_particlevector->Fill(2);
+			if(particleMatch[i].IsMatchedWithPdg()) {
+				pi0counter_signal++;
+			}
 		}
 		if(TMath::Abs(particlevector[i].GetPDG()) == 22) {
 			gammacounter++;
@@ -517,6 +535,7 @@ void CbmAnaConversionKF::test2()
 	
 	
 	fhKF_NofPi0->Fill(pi0counter);
+	fhKF_NofPi0_signal->Fill(pi0counter_signal);
 	
 	cout << "CbmAnaConversionKF: nof electrons in particlevector: " << electroncounter << endl;
 	cout << "CbmAnaConversionKF: nof pi0 in particlevector: " << pi0counter << endl;
