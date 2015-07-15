@@ -65,6 +65,7 @@ Set(SRCS
   tasks/CbmTrdEveOnlineDisplay.cxx
   tasks/CbmTrdDaqBuffer.cxx
   tasks/CbmTrdClusterAnalysis.cxx
+  tasks/CbmTrdTestBeamAnalysis.cxx
 )
 
 Set(NO_DICT_SRCS

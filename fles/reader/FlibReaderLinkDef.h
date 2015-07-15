@@ -27,5 +27,6 @@
 #pragma link C++ class CbmTrdEveOnlineDisplay;
 #pragma link C++ class CbmTrdClusterAnalysis;
 //#pragma link C++ class CbmTrdDaqBuffer;
+#pragma link C++ class CbmTrdTestBeamAnalysis;
 
 #endif
