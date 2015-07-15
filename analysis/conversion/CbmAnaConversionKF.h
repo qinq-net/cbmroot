@@ -55,6 +55,8 @@ public:
 	Double_t Invmass_4particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2, const CbmMCTrack* mctrack3, const CbmMCTrack* mctrack4);
 
 	void test2();
+	void CombineElectrons();
+	void CombinePhotons();
 	void Reconstruct();
 	void ReconstructGammas();
 	Double_t Invmass_4particlesRECO(KFParticle part1, KFParticle part2, KFParticle part3, KFParticle part4);
@@ -106,16 +108,20 @@ private:
 	vector<int> electronIDs;
 	vector<int> gammaIDs;
 	TH1D * fhInvMassPi0WithFullReco;
-	
+
 	TH1D * fhInvMass2Gammas;
 	TH1D * fhInvMass2Gammas_cut;
-	
+
 	TH1D * fhKF_particlevector;
 	TH1D * fhKF_trackvector;
-	
+
 	TH1D * fhKF_NofPi0;
 	TH1D * fhKF_NofPi0_signal;
 	TH1D * fhKF_NofPi0_trackvector;
+
+
+	vector< vector<int> > fKF_photon_pairs;
+	TH1D * fhKF_invmass_fullReco;
 
 
 	// timer

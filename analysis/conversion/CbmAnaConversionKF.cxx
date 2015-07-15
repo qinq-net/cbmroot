@@ -63,6 +63,8 @@ CbmAnaConversionKF::CbmAnaConversionKF()
    fhKF_trackvector(NULL),
    fhKF_NofPi0(NULL),
    fhKF_NofPi0_trackvector(NULL),
+   fKF_photon_pairs(),
+   fhKF_invmass_fullReco(NULL),
    timer(),
    fTime(0.)
 {
@@ -138,6 +140,10 @@ void CbmAnaConversionKF::InitHistos()
 	fhKF_NofPi0_trackvector = new TH1D("fhKF_NofPi0_trackvector", "fhKF_NofPi0_trackvector;nof;#", 10, -0.5, 9.5);
 	fHistoList_kfparticle.push_back(fhKF_NofPi0_trackvector);
 
+
+	fhKF_invmass_fullReco = new TH1D("fhKF_invmass_fullReco", "fhKF_invmass_fullReco;invmass;#", 400, 0., 2.);
+	fHistoList_kfparticle.push_back(fhKF_invmass_fullReco);
+
 }
 
 
@@ -168,6 +174,7 @@ void CbmAnaConversionKF::Exec()
 	
 	electronIDs.clear();
 	gammaIDs.clear();
+	fKF_photon_pairs.clear();
 
 	//KFParticle_Analysis();
 	test2();
@@ -541,6 +548,61 @@ void CbmAnaConversionKF::test2()
 	cout << "CbmAnaConversionKF: nof pi0 in particlevector: " << pi0counter << endl;
 	cout << "CbmAnaConversionKF: nof gamma in particlevector: " << gammacounter << endl;
 }
+
+
+
+
+
+
+void CbmAnaConversionKF::CombineElectrons()
+{
+	Int_t nof = electronIDs.size();
+	if(nof >= 2) {
+		for(int a=0; a<nof-1; a++) {
+			for(int b=a+1; b<nof; b++) {
+				KFParticle electron1 = particlevector[electronIDs[a]];
+				KFParticle electron2 = particlevector[electronIDs[b]];
+				Double_t openingAngle = electron1.GetAngle(electron2);
+				
+				TLorentzVector lorentzE1;
+				lorentzE1.SetPxPyPzE(electron1.GetPx(), electron1.GetPy(), electron1.GetPz(), electron1.GetE());
+				TLorentzVector lorentzE2;
+				lorentzE2.SetPxPyPzE(electron2.GetPx(), electron2.GetPy(), electron2.GetPz(), electron2.GetE());
+				TLorentzVector sum = lorentzE1 + lorentzE2;
+				Double_t invmass = sum.Mag();
+				
+				if(openingAngle < 1 && invmass < 0.03) {
+					vector<int> pair; // = {a, b};
+					pair.push_back(a);
+					pair.push_back(b);
+					fKF_photon_pairs.push_back(pair);
+				}
+			}
+		}
+	}
+}
+
+
+void CbmAnaConversionKF::CombinePhotons()
+{
+	Int_t nof = fKF_photon_pairs.size();
+	if(nof >= 2) {
+		for(int a=0; a<nof-1; a++) {
+			for(int b=a+1; b<nof; b++) {
+				Int_t electron11 = fKF_photon_pairs[a][0];
+				Int_t electron12 = fKF_photon_pairs[a][1];
+				Int_t electron21 = fKF_photon_pairs[b][0];
+				Int_t electron22 = fKF_photon_pairs[b][1];
+				
+				Double_t invmass = Invmass_4particlesRECO(particlevector[electron11], particlevector[electron12], particlevector[electron21], particlevector[electron22]);
+				fhKF_invmass_fullReco->Fill(invmass);
+			}
+		}
+	}
+
+}
+
+
 
 
 
