@@ -81,6 +81,7 @@ void CbmMicroSliceMerger<TPolicyTask>::Run()
     int NumTSinSampler=16;
     int NumTStoSend=NumTSinSampler/fMaxMicroSliceNumber;
     
+//    while (GetCurrentState() == RUNNING ) 
     while (fState == RUNNING ) 
     {    
 

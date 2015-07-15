@@ -26,7 +26,6 @@ ${CBMROOT_SOURCE_DIR}/cbmdata/mvd
 ${CBMROOT_SOURCE_DIR}/cbmdata/psd
 ${CBMROOT_SOURCE_DIR}/cbmdata/rich
 ${CBMROOT_SOURCE_DIR}/cbmdata/sts
-${CBMROOT_SOURCE_DIR}/cbmdata/stt
 ${CBMROOT_SOURCE_DIR}/cbmdata/tof
 ${CBMROOT_SOURCE_DIR}/cbmdata/trd
 )
