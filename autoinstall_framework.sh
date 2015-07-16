@@ -17,8 +17,10 @@
 #-------------------------------------
 
 # put your desired variants here:
-export FSOFTVER=mar15p2
-export FROOTVER=v-15.03a
+export FSOFTVER=jul15
+export FROOTVER=v-15.07
+#export FSOFTVER=mar15p2
+#export FROOTVER=v-15.03a
 export NUMOFCPU=`cat /proc/cpuinfo | grep processor | wc -l`
 export CBMSRCDIR=`pwd`
 
