@@ -58,7 +58,7 @@ CbmAnaJpsiTask::CbmAnaJpsiTask()
 	  fUseTof(kTRUE)
 {
     fUseTrd=true;
-    fUseTof=true;
+    fUseTof=false;
 	fWeight=1.14048e-6;
 }
 
@@ -250,14 +250,14 @@ void CbmAnaJpsiTask::InitHist()
    CreateSourceTypesH2("fh_rich_pmt_xy","X [cm]","Y [cm]","Hits/cm^{2}/event", 220, -110, 110, 400, -200, 200);
 
    //distributions of ID and analysis cuts
-   CreateSourceTypesH1("fh_track_chi2prim","#chi^{2}_{prim}", "Yield", 200, 0., 20.);
-   CreateSourceTypesH1("fh_track_mom","P [GeV/c]", "Yield", 160, 0., 16.);
-   CreateSourceTypesH1("fh_track_chi2sts","#chi^{2}_{STS}", "Yield", 80, 0., 8.);
-   CreateSourceTypesH1("fh_track_rapidity","Rapidity", "Yield", 40, 0., 4.);
-   CreateSourceTypesH1("fh_track_pt","P_{t} [GeV/c]", "Yield", 40, 0., 4.);
-   CreateSourceTypesH1("fh_track_rich_ann","RICH ANN output", "Yield", 120, -1.2, 1.2);
-   CreateSourceTypesH1("fh_track_trd_ann","TRD ANN output", "Yield", 120, -1.2, 1.2);
-   CreateSourceTypesH2("fh_track_tof_m2","P [GeV/c]", "m^{2} [GeV/c^{2}]^{2}","Yield", 900, 0., 9., 360, -0.4, 1.4);
+   CreateSourceTypesH1("fh_track_chi2prim","#chi^{2}_{prim}", "particles/event", 200, 0., 20.);
+   CreateSourceTypesH1("fh_track_mom","P [GeV/c]", "particles/event", 160, 0., 16.);
+   CreateSourceTypesH1("fh_track_chi2sts","#chi^{2}_{STS}", "particles/event", 80, 0., 8.);
+   CreateSourceTypesH1("fh_track_rapidity","Rapidity", "particles/event", 40, 0., 4.);
+   CreateSourceTypesH1("fh_track_pt","P_{t} [GeV/c]", "particles/event", 40, 0., 4.);
+   CreateSourceTypesH1("fh_track_rich_ann","RICH ANN output", "particles/event", 120, -1.2, 1.2);
+   CreateSourceTypesH1("fh_track_trd_ann","TRD ANN output", "particles/event", 120, -1.2, 1.2);
+   CreateSourceTypesH2("fh_track_tof_m2","P [GeV/c]", "m^{2} [GeV/c^{2}]^{2}","particles/event", 900, 0., 9., 360, -0.4, 1.4);
 
    //vertex of the secondary electrons from gamma conversion
    fHM->Create2<TH2D>("fh_vertex_el_gamma_xz","fh_vertex_el_gamma_xz;Z [cm];X [cm];Counter per event", 200, -10., 190., 400, -130.,130.);
@@ -266,43 +266,43 @@ void CbmAnaJpsiTask::InitHist()
    fHM->Create2<TH2D>("fh_vertex_el_gamma_rz","fh_vertex_el_gamma_rz;Z [cm];#sqrt{X^{2}+Y^{2}} [cm];Counter per event",  300, -10., 190., 300, 0., 150.);
 
    // Number of BG and signal tracks after each cut
-   fHM->Create1<TH1D>("fh_nof_bg_tracks","fh_nof_bg_tracks;Analysis steps;Number of BG tracks/event", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps);
-   fHM->Create1<TH1D>("fh_nof_el_tracks","fh_nof_el_tracks;Analysis steps;Number of signal tracks/event", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps);
+   fHM->Create1<TH1D>("fh_nof_bg_tracks","fh_nof_bg_tracks;Analysis steps;Number of BG particles/event", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps);
+   fHM->Create1<TH1D>("fh_nof_el_tracks","fh_nof_el_tracks;Analysis steps;Number of signal particles/event", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps);
    fHM->Create2<TH2D>("fh_source_tracks","fh_source_tracks;Analysis steps;Particle", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps, 7, 0., 7.);
 
    //Create invariant mass histograms
-   CreateAnalysisStepsH1("fh_signal_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0 , 4.);
-   CreateAnalysisStepsH1("fh_bg_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_pi0_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_gamma_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_signal_minv", "M_{ee} [GeV/c^{2}]", "particles/event", 4000, 0 , 4.);
+   CreateAnalysisStepsH1("fh_bg_minv", "M_{ee} [GeV/c^{2}]", "particles/event", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_pi0_minv", "M_{ee} [GeV/c^{2}]", "particles/event", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_gamma_minv", "M_{ee} [GeV/c^{2}]", "particles/event", 4000, 0. , 4.);
 
    // minv for true matched and mismatched tracks
-   CreateAnalysisStepsH1("fh_bg_truematch_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_bg_truematch_el_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_bg_truematch_notel_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
-   CreateAnalysisStepsH1("fh_bg_mismatch_minv", "M_{ee} [GeV/c^{2}]", "Yield", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_bg_truematch_minv", "M_{ee} [GeV/c^{2}]", "particles/event", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_bg_truematch_el_minv", "M_{ee} [GeV/c^{2}]", "particles/event", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_bg_truematch_notel_minv", "M_{ee} [GeV/c^{2}]", "particles/event", 4000, 0. , 4.);
+   CreateAnalysisStepsH1("fh_bg_mismatch_minv", "M_{ee} [GeV/c^{2}]", "particles/event", 4000, 0. , 4.);
 
    //Invariant mass vs. Mc Pt
-   CreateAnalysisStepsH2("fh_signal_minv_pt","M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "Yield", 100, 0., 4., 20, 0., 2.);
+   CreateAnalysisStepsH2("fh_signal_minv_pt","M_{ee} [GeV/c^{2}]", "P_{t} [GeV/c]", "particles/event", 100, 0., 4., 20, 0., 2.);
 
    // Momentum distribution of the signal
-   CreateAnalysisStepsH1("fh_signal_mom", "P [GeV/c]", "Particles per event", 250, 0., 25.);
+   CreateAnalysisStepsH1("fh_signal_mom", "P [GeV/c]", "particles/event", 250, 0., 25.);
    //Pt/y distibution of the signal
-   CreateAnalysisStepsH2("fh_signal_pty","Rapidity", "P_{t} [GeV/c]", "Particles per event", 40, 0., 4., 20, 0., 2.);
+   CreateAnalysisStepsH2("fh_signal_pty","Rapidity", "P_{t} [GeV/c]", "particles/event", 40, 0., 4., 20, 0., 2.);
 
    //Number of mismatches after each cut
-   fHM->Create1<TH1D>("fh_nof_mismatches","fh_nof_mismatches;Analysis steps;Tracks/event", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps);
-   fHM->Create1<TH1D>("fh_nof_mismatches_rich","fh_nof_mismatches_rich;Analysis steps;Tracks/event", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps);
-   fHM->Create1<TH1D>("fh_nof_mismatches_trd","fh_nof_mismatches_trd;Analysis steps;Tracks/event", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps);
-   fHM->Create1<TH1D>("fh_nof_mismatches_tof","fh_nof_mismatches_tof;Analysis steps;Tracks/event", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps);
+   fHM->Create1<TH1D>("fh_nof_mismatches","fh_nof_mismatches;Analysis steps;particles/event", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps);
+   fHM->Create1<TH1D>("fh_nof_mismatches_rich","fh_nof_mismatches_rich;Analysis steps;particles/event", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps);
+   fHM->Create1<TH1D>("fh_nof_mismatches_trd","fh_nof_mismatches_trd;Analysis steps;particles/event", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps);
+   fHM->Create1<TH1D>("fh_nof_mismatches_tof","fh_nof_mismatches_tof;Analysis steps;particles/event", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps);
 
    //Momentum distribution of signal electrons
-   CreateAnalysisStepsH1("fh_track_el_mom", "P [GeV/c]", "Particles per event", 250, 0., 25.);
+   CreateAnalysisStepsH1("fh_track_el_mom", "P [GeV/c]", "particles/event", 250, 0., 25.);
    fHM->Create2<TH2D>("fh_track_el_mom_mc_rec","fh_track_el_mom_mc_rec;P_{mc};P_{rec};Entries",  250, 0.,25., 250, 0., 25.);
 
-   CreateAnaStepsPairSourceH1("fh_bg_participants_minv" , "m_{inv}" , "Particles per Event", 4000 , 0. , 4.);
+   CreateAnaStepsPairSourceH1("fh_bg_participants_minv" , "m_{inv}" , "particles/event", 4000 , 0. , 4.);
 
-   CreateAnalysisStepsH1("fh_PdgCode_of Others_BG","PDGCode", "Tracks per Event",500,-0.5,499.5);
+   CreateAnalysisStepsH1("fh_PdgCode_of Others_BG","PDGCode", "particles/event",500,-0.5,499.5);
 
 }
 
@@ -492,7 +492,7 @@ void CbmAnaJpsiTask::AssignMcToCandidates()
       FairMCPoint* tofPoint = (FairMCPoint*) fTofPoints->At(tofPointIndex);
       if (tofPoint == NULL) continue;
       fCandidates[i].fTofMcTrackId = tofPoint->GetTrackID();
-   }// candidates
+   	}// candidates
 }
 
 void CbmAnaJpsiTask::DifferenceSignalAndBg()
@@ -595,7 +595,9 @@ Bool_t CbmAnaJpsiTask::IsMcTrackAccepted(
 	CbmMCTrack* tr = (CbmMCTrack*) fMcTracks->At(mcTrackInd);
 	if (tr == NULL) return false;
 	Int_t nRichPoints = fNofHitsInRingMap[mcTrackInd];
-	return (tr->GetNPoints(kMVD) + tr->GetNPoints(kSTS) >= 4 && nRichPoints >= 7 && tr->GetNPoints(kTRD) >= 6 /*2*/ && tr->GetNPoints(kTOF) > 0) ;
+	//TVector3 v;
+	//tr->GetStartVertex(v);
+	return (tr->GetNPoints(kMVD) + tr->GetNPoints(kSTS) >= 4 && nRichPoints >= 7 && tr->GetNPoints(kTRD) >= 6 && tr->GetNPoints(kTOF) > 0 /*&& tr->GetPt()>fCuts.fPtCut && v.Mag()<0.01*/);
 }
 
 
@@ -684,7 +686,7 @@ void CbmAnaJpsiTask::PairSource(
     if (candP->fIsMcSignalElectron || candM->fIsMcSignalElectron) weight=fWeight;
     if (isBG){
     	if (candM->fIsMcGammaElectron) {
-    		if (candP->fIsMcGammaElectron /*&& candP->fStsMcMotherId!=candM->fStsMcMotherId*/){
+    		if (candP->fIsMcGammaElectron){
     			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_gg")->Fill(parRec->fMinv,weight); //gamma + gamma
     		} else if (candP->fIsMcPi0Electron) {
     			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_gp")->Fill(parRec->fMinv,weight); //gamma + Pi0
@@ -695,7 +697,7 @@ void CbmAnaJpsiTask::PairSource(
     	} else if (candM->fIsMcPi0Electron) {
     		if (candP->fIsMcGammaElectron) {
     			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_gp")->Fill(parRec->fMinv,weight); //pi0 + gamma
-    		} else if (candP->fIsMcPi0Electron/* && candP->fStsMcMotherId!=candM->fStsMcMotherId*/) {
+    		} else if (candP->fIsMcPi0Electron) {
     			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_pp")->Fill(parRec->fMinv,weight); //pi0 + Pi0
     		} else {
     			fHM->H1("fh_bg_participants_minv_" + CbmAnaJpsiHist::fAnaSteps[step] + "_po")->Fill(parRec->fMinv,weight);	//pi0 + other
@@ -955,21 +957,6 @@ Bool_t CbmAnaJpsiTask::IsTofElectron(
     // Calculate mass squared
 	Double_t mass2 = TMath::Power(momentum,2.)* (TMath::Power(time/ trackLength, 2) - 1);
 	cand->fMass2 = mass2;
-
-	/*if (momentum >= 2.1)
-	{
-		if (mass2 < (0.029*momentum-0.0409))	//(0.013*momentum - 0.003))
-			{
-		       return true;
-		    }
-	} else
-		{
-			if (mass2 < 0.02)	//0.01)
-			{
-		      return true; //fTofM2
-		    }
-		}
-		*/
 
 	if (momentum >= 1.5)
 		{

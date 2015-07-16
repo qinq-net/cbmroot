@@ -154,6 +154,7 @@ void CbmAnaJpsiReport::Draw()
 		 	  	  for (int i=0;i<CbmAnaJpsiHist::fNofAnaSteps-2;i++){
 		 	  		  c->cd(i+1);
 		 	  		  DrawH1(H1("fh_PdgCode_of Others_BG_" + CbmAnaJpsiHist::fAnaSteps[i+2]));
+		 	  		  DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[i+2], 0.6, 0.92, 0.7, 0.99);
 		 	  	  }
 	 }
 }
@@ -375,8 +376,8 @@ double CbmAnaJpsiReport::SignalOverBg(
   TH1D* bg = (TH1D*) H1("fh_bg_minv_" + CbmAnaJpsiHist::fAnaSteps[step]);
 
   //Create Histogram for the Gaus-Fit
-  TH1D* signalFit = (TH1D*)signal->Clone();  //(TH1D*) H1("fh_signal_minv_"+CbmAnaJpsiHist::fAnaSteps[step]);
-  signalFit->Fit("gaus","Q");
+  TH1D* signalFit = (TH1D*)signal->Clone();
+  signalFit->Fit("gaus");
 
   //Calculate sigma and Mean
   Double_t sigmaSignal = signalFit->GetFunction("gaus")->GetParameter("Sigma");

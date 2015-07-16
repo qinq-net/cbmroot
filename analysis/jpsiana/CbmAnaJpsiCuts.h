@@ -31,8 +31,8 @@ public:
 	void SetDefaultCuts()
 	{
 		//electron ID cuts
-		fTrdAnnCut = 0.35;//0.6;//0.85;
-		fRichAnnCut = 0.2;//0.6;
+		fTrdAnnCut = 0.8;//0.35;//0.6;//0.85;
+		fRichAnnCut = 0.7;//0.2;//0.6;
 		fUseRichAnn = true;
 		fMeanA = -1.;
 		fMeanB = -1.;

@@ -167,7 +167,7 @@ double CbmAnaJpsiSuperEventReport::SignalOverBg(
 
   //Create Histogram for the Gaus-Fit
   TH1D* signalFit_ee = (TH1D*)signal_ee->Clone();
-  signalFit_ee->Fit("gaus","Q","",2.,4.);
+  signalFit_ee->Fit("gaus","","",2.9,3.3);
 
   //Calculate sigma and Mean
   Double_t sigmaSignal = signalFit_ee->GetFunction("gaus")->GetParameter("Sigma");
@@ -186,11 +186,7 @@ double CbmAnaJpsiSuperEventReport::SignalOverBg(
 	  NOfSignalEntries += signal_ee->GetBinContent(i);
 	  NOfBgEntries += bg_se->GetBinContent(i);
   }
- cout<<"Signals in step "<< step<< " : "<<NOfSignalEntries<<endl;
- cout<<"Background in step "<< step<< " : "<<NOfBgEntries<<endl;
- cout<<"Min in step "<< step<< " : "<<signalMin*0.02<<endl;
- cout<<"Max in step "<< step<< " : "<<signalMax*0.02<<endl;
- cout<<"Mean in step "<< step<< " : "<<meanSignal<<endl;
+
  //Calculate Signal/Background
   if (NOfBgEntries <= 0.)	  {
 	  return 0.;
@@ -223,7 +219,7 @@ void CbmAnaJpsiSuperEventReport::SignalOverBgAllSteps()
 	      x++;
 	   }
 
-	DrawH1(fHMSuperEvent->H1("fh_se_SignalOverBg_allAnaSteps"));
+	DrawH1(fHMSuperEvent->H1("fh_se_SignalOverBg_allAnaSteps"),kLinear,kLinear,"Text COLZ");
 }
 
 void CbmAnaJpsiSuperEventReport::DrawPairSource()
@@ -234,15 +230,11 @@ void CbmAnaJpsiSuperEventReport::DrawPairSource()
 		(fHMSuperEvent->H1("fh_se_bg_participants_minv_gg"))
 		(fHMSuperEvent->H1("fh_se_bg_participants_minv_gp"))
 		(fHMSuperEvent->H1("fh_se_bg_participants_minv_go"))
-		//(fHMSuperEvent->H1("fh_se_bg_participants_minv_pg"))
 		(fHMSuperEvent->H1("fh_se_bg_participants_minv_pp"))
 		(fHMSuperEvent->H1("fh_se_bg_participants_minv_po"))
-		//(fHMSuperEvent->H1("fh_se_bg_participants_minv_og"))
-		//(fHMSuperEvent->H1("fh_se_bg_participants_minv_op"))
 		(fHMSuperEvent->H1("fh_se_bg_participants_minv_oo")),
 		list_of("whole BG")("#gamma + #gamma")("#gamma + #pi^{0}")("#gamma + others")
-		/*("#pi^{0} + #gamma")*/("#pi^{0} + #pi^{0}")("#pi^{0} + others")
-		/*("others + #gamma")("others + #pi^{0}")*/("others + others"),
+		("#pi^{0} + #pi^{0}")("#pi^{0} + others")("others + others"),
 		kLinear, kLog, true, 0.85, 0.6, 0.99, 0.99);
 
 		DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.6, 0.89, 0.7, 0.99);
