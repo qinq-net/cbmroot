@@ -699,7 +699,8 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	  if(!hits) continue;
 
 	  // loop over all hits
-	  CbmHit   *hit  = 0x0;
+	  CbmHit      *hit  = 0x0;
+	  FairMCPoint *pnt  = 0x0;
 	  Int_t nhits = 1;
 	  if(trkl) nhits = trkl->GetNofHits();
 	  if(ring) nhits = ring->GetNofHits();
@@ -708,8 +709,12 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	    else if(ring)     hit = dynamic_cast<CbmHit*>(hits->At( ring->GetHit(ihit) ) );
 	    else              hit = dynamic_cast<CbmHit*>( track->GetTofHit() );
 	    if(!hit) continue;
+	    // access to mc points
+	    if(hit->GetRefId()>=0 && ev->GetPoints(static_cast<DetectorId>(idet)))
+	      pnt = static_cast<FairMCPoint*>( ev->GetPoints(static_cast<DetectorId>(idet))->At(hit->GetRefId()) );
 	    // fill variables
 	    PairAnalysisVarManager::Fill(hit, values);
+	    PairAnalysisVarManager::Fill(pnt, values);
 	    if(hitClass)	    fHistos    ->FillClass(className3, values);
 	    if(hitClass2)	    fHistoArray->FillClass(className3, values);
 	    // check and fill mc signal histos
@@ -720,6 +725,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 		if(hitClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
 	      }
 	    }
+
 
 	    // only TRD for the moment
 	    if(idet!=kTRD) continue;
@@ -735,7 +741,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	    if(!hmatch) continue;
 	    //Printf("Hit match found");
 	    for (Int_t iLink = 0; iLink < hmatch->GetNofLinks(); iLink++) {
-	      const FairMCPoint* point = static_cast<const FairMCPoint*>(ev->GetTrdPoints()->At(hmatch->GetLink(iLink).GetIndex())); //mc
+	      const FairMCPoint* point = static_cast<const FairMCPoint*>(ev->GetPoints(static_cast<DetectorId>(idet))->At(hmatch->GetLink(iLink).GetIndex())); //mc
 	      if(!point) continue;
 	      // fill mc truth information
 	      PairAnalysisVarManager::Fill(point, values);

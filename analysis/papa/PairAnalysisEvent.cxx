@@ -41,7 +41,11 @@ PairAnalysisEvent::PairAnalysisEvent() :
   fMuchMatches(0x0),     //MUCH matches
   fTrdMatches(0x0),     //TRD matches
   fRichMatches(0x0),     //RICH matches
-  fTofPoints(0x0),     //TOF matches
+  fStsPoints(0x0),      //STS points
+  fMuchPoints(0x0),      //MUCH points
+  fRichPoints(0x0),      //RICH points
+  fTrdPoints(0x0),      //TRD points
+  fTofPoints(0x0),     //TOF points
   fGlobalTracks(0x0),   //global tracks
   fTrdTracks(0x0),      //TRD tracks
   fStsTracks(0x0),      //STS tracks
@@ -55,7 +59,6 @@ PairAnalysisEvent::PairAnalysisEvent() :
   fTofHits(0x0),      //TOF hits
   fRichProjection(0x0),
   fTrdHitMatches(0x0),      //TRD hits
-  fTrdPoints(0x0),      //TRD points
   fPrimVertex(0x0),     //primary vertices
   fTracks(new TObjArray(1)), // array of papa tracks
   fMultiMatch(0)
@@ -75,6 +78,10 @@ PairAnalysisEvent::PairAnalysisEvent(const char* name, const char* title) :
   fMuchMatches(0x0),     //MUCH matches
   fTrdMatches(0x0),     //TRD matches
   fRichMatches(0x0),     //RICH matches
+  fStsPoints(0x0),      //STS points
+  fMuchPoints(0x0),      //MUCH points
+  fRichPoints(0x0),      //RICH points
+  fTrdPoints(0x0),      //TRD points
   fTofPoints(0x0),     //TOF matches
   fGlobalTracks(0x0),   //global tracks
   fTrdTracks(0x0),      //TRD tracks
@@ -89,7 +96,6 @@ PairAnalysisEvent::PairAnalysisEvent(const char* name, const char* title) :
   fTofHits(0x0),      //TOF hits
   fRichProjection(0x0),
   fTrdHitMatches(0x0),      //TRD hits
-  fTrdPoints(0x0),      //TRD points
   fPrimVertex(0x0),     //primary vertices
   fTracks(new TObjArray(1)), // array of papa tracks
   fMultiMatch(0)
@@ -119,6 +125,11 @@ PairAnalysisEvent::~PairAnalysisEvent()
   fMuchMatches->Delete();     //MUCH matches
   fTrdMatches->Delete();     //TRD matches
   fRichMatches->Delete();     //RICH matches
+
+  fStsPoints->Delete();      //STS hits
+  fMuchPoints->Delete();      //MUCH hits
+  fRichPoints->Delete();      //RICH hits
+  fTrdPoints->Delete();      //TRD hits
   fTofPoints->Delete();     //TOF matches
 
   fStsHits->Delete();      //STS hits
@@ -130,7 +141,6 @@ PairAnalysisEvent::~PairAnalysisEvent()
 
   fRichProjection->Delete();
   fTrdHitMatches->Delete();      //TRD hits
-  fTrdPoints->Delete();      //TRD hits
 }
 
 //______________________________________________
@@ -160,6 +170,9 @@ void PairAnalysisEvent::SetInput(FairRootManager *man)
   fTofHits      = (TClonesArray*) man->GetObject("TofHit");
   fTrdHitMatches = (TClonesArray*) man->GetObject("TrdHitMatch");
   // mc points
+  fStsPoints    = (TClonesArray*) man->GetObject("StsPoint");
+  fRichPoints   = 0x0;//(TClonesArray*) man->GetObject("RichPoint");
+  fMuchPoints   = (TClonesArray*) man->GetObject("MuchPoint");
   fTrdPoints    = (TClonesArray*) man->GetObject("TrdPoint");
   fTofPoints    = (TClonesArray*) man->GetObject("TofPoint");
 
@@ -220,7 +233,7 @@ void PairAnalysisEvent::Init()
     if(richRing) richMatch = static_cast<CbmTrackMatchNew*>( fRichMatches->At(irich) );
     Int_t irichMC = (richMatch ? richMatch->GetMatchedLink().GetIndex() : -1 );
     FairMCPoint *tofPoint = 0x0;
-    if(tofHit && tofHit->GetRefId()>0) tofPoint = static_cast<FairMCPoint*>( fTofPoints->At(tofHit->GetRefId()) );
+    if(tofHit && tofHit->GetRefId()>=0) tofPoint = static_cast<FairMCPoint*>( fTofPoints->At(tofHit->GetRefId()) );
     Int_t itofMC = (tofPoint ? tofPoint->GetTrackID() : -1 );
 
     // rich projection
@@ -301,6 +314,22 @@ TClonesArray *PairAnalysisEvent::GetHits(DetectorId det) const {
   case kTRD: return fTrdHits;
   case kRICH:return fRichHits;
   case kTOF: return fTofHits;
+  default:   return 0x0;
+  }
+
+}
+
+//______________________________________________
+TClonesArray *PairAnalysisEvent::GetPoints(DetectorId det) const {
+  //
+  // get mc points array for certain detector
+  //
+  switch(det) {
+  case kSTS: return fStsPoints;
+  case kMUCH:return fMuchPoints;
+  case kTRD: return fTrdPoints;
+  case kRICH:return fRichPoints;
+  case kTOF: return fTofPoints;
   default:   return 0x0;
   }
 

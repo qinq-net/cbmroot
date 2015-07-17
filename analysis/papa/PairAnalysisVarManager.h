@@ -1138,7 +1138,7 @@ inline void PairAnalysisVarManager::FillVarMCPoint(const FairMCPoint *hit, Doubl
   values[kPosXMC]     = hit->GetX();
   values[kPosYMC]     = hit->GetY();
   values[kPosZMC]     = hit->GetZ();
-  values[kElossMC]    = hit->GetEnergyLoss();
+  values[kElossMC]    = hit->GetEnergyLoss() * 1.e+6; //GeV->keV, dEdx
 
 }
 

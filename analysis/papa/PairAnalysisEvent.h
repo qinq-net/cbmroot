@@ -39,6 +39,7 @@ public:
   Int_t      GetNumberOfMatches(DetectorId det) const;
 
   TClonesArray *GetHits(DetectorId det) const;
+  TClonesArray *GetPoints(DetectorId det) const;
 
   TClonesArray *GetTrdHits()          const { return fTrdHits; }
   TClonesArray *GetTrdHitMatches()    const { return fTrdHitMatches; }
@@ -56,6 +57,11 @@ private:
  TClonesArray *fMuchMatches;     //MUCH matches
  TClonesArray *fTrdMatches;     //TRD matches
  TClonesArray *fRichMatches;    //RICH matches
+
+ TClonesArray *fStsPoints;        //STS points
+ TClonesArray *fMuchPoints;      //MUCH points
+ TClonesArray *fRichPoints;      //RICH points
+ TClonesArray *fTrdPoints;        //TRD points
  TClonesArray *fTofPoints;      //TOF points
 
  TClonesArray *fGlobalTracks;   //global tracks
@@ -74,7 +80,6 @@ private:
  TClonesArray *fRichProjection;       //RICH projection
 
  TClonesArray *fTrdHitMatches;        //TRD hits
- TClonesArray *fTrdPoints;        //TRD points
 
  CbmVertex    *fPrimVertex;     //primary vertex
  TObjArray    *fTracks;         //papa tracks
@@ -84,7 +89,7 @@ private:
  PairAnalysisEvent(const PairAnalysisEvent& event);
  PairAnalysisEvent &operator=(const PairAnalysisEvent &c);
 
- ClassDef(PairAnalysisEvent,2)         // PairAnalysis Event
+ ClassDef(PairAnalysisEvent,3)         // PairAnalysis Event
 };
 
 

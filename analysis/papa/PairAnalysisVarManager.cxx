@@ -187,7 +187,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"PosXMC",                   "x_{hit}^{MC}",                                            "(cm)"},
   {"PosYMC",                   "y_{hit}^{MC}",                                            "(cm)"},
   {"PosZMC",                   "z_{hit}^{MC}",                                            "(cm)"},
-  {"ElossMC",                  "d#it{E}/d#it{x} + TR",                              "(a.u.)"},
+  {"ElossMC",                  "d#it{E}/d#it{x} (MC)",                                    "(a.u.)"},
 // Particle specific variables
   {"PxMC",                     "#it{p}_{x}^{MC}",                                         "(GeV/#it{c})"},
   {"PyMC",                     "#it{p}_{y}^{MC}",                                         "(GeV/#it{c})"},
