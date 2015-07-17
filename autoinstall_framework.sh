@@ -170,9 +170,15 @@ if [ $SETUP_CBMROOT -ge 1 ]; then
   nice make -j$NUMOFCPU
   cd ..
   
-  cd input
-  ln -s ../../fieldmaps/* .
-  cd ..
+  # make softlink only if not already there
+  FIELD=`ls -1 input/field* | head -n1`
+  if [ -h $FIELD ]; then
+    echo the field does already exist
+  else
+    cd input
+    ln -s ../../fieldmaps/* .
+    cd ..
+  fi
   
   . build/config.sh
   
