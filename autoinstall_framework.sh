@@ -3,6 +3,7 @@
 ##   semi-automated script installing FairSoft, FairRoot and CbmRoot
 #
 
+# 17.07.2015 - introduce option to compile dev settings 
 # 02.06.2015 - introduce parameters for individual package selection
 # 13.03.2015 - initial version
 # by David Emschermann
@@ -17,14 +18,32 @@
 #-------------------------------------
 
 # put your desired variants here:
-#export FSOFTVER=jul15
-#export FROOTVER=v-15.07
-export FSOFTVER=mar15p2
-export FROOTVER=v-15.03a
+export FSOFTDEV=jul15
+export FROOTDEV=v-15.07
+
+export FSOFTPRO=mar15p2
+export FROOTPRO=v-15.03a
+
 export NUMOFCPU=`cat /proc/cpuinfo | grep processor | wc -l`
 export CBMSRCDIR=`pwd`
 
 #-------------------------------------
+
+# set default version to pro
+export FSOFTVER=$FSOFTPRO
+export FROOTVER=$FROOTPRO
+
+# check if we want to run with dev
+if [ $# -ge 1 ]; then
+  if [ "$1" == "dev" ]; then
+    export FSOFTVER=$FSOFTDEV
+    export FROOTVER=$FROOTDEV
+    shift
+  fi
+fi
+
+echo FSOFTVER: $FSOFTVER
+echo FROOTVER: $FROOTVER
 
 # install everything by default
 SETUP_FAIRSOFT=1
