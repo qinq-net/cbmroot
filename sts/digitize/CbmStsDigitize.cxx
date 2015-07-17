@@ -399,9 +399,7 @@ void CbmStsDigitize::ProcessMCBuffer() {
   	Int_t entry = point->GetEventID();
 
   	// --- Point index in original array
-  	// TODO: This uses the FairLink set in CbmMCPointBuffer::Fill.
-  	// To be redone with redesign of MCPoint classes.
-    Int_t index = (point->GetLink(1)).GetIndex();
+    Int_t index = point->GetIndex();
 
     CbmLink* link = new CbmLink(1., index, entry, 0);
     LOG(DEBUG2) << GetName() << ": Processing point at " << index

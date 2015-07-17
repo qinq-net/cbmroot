@@ -255,9 +255,10 @@ CbmStsPoint* CbmStsMC::CreatePoint() {
               << "), energy loss " << fEloss << FairLogger::endl;
               
   // --- Add new point to output array
+  Int_t newIndex = fStsPoints->GetEntriesFast();
   return new ( (*fStsPoints)[fStsPoints->GetEntriesFast()] )
     CbmStsPoint(fStatusIn.fTrackId, fStatusIn.fAddress, posIn, posOut,
-                momIn, momOut, time, length, fEloss, fStatusIn.fPid);
+                momIn, momOut, time, length, fEloss, fStatusIn.fPid, newIndex);
                 
 }
 // -------------------------------------------------------------------------
