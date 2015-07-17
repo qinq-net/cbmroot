@@ -170,20 +170,17 @@ if [ $SETUP_CBMROOT -ge 1 ]; then
   nice make -j$NUMOFCPU
   cd ..
   
-  # make softlink only if not already there
-  FIELD=`ls -1 input/field* | head -n1`
-  if [ -h $FIELD ]; then
-    echo the field does already exist
-  else
-    cd input
-    ln -s ../../fieldmaps/* .
-    cd ..
-  fi
+  cd input
+  ln -s ../../fieldmaps/* .
+  cd ..
   
   . build/config.sh
   
   echo done installing CbmRoot
 fi
+
+echo "export SIMPATH=$SIMPATH"
+echo "export FAIRROOTPATH=$FAIRROOTPATH"
 
 
 #####################################################################################
