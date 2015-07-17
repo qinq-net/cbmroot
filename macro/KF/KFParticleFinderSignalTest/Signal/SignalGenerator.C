@@ -6,7 +6,7 @@
 // macro to generate signal events for KFParticleFinder
 //_________________________________________________________________________________
 
-void SignalGenerator(Int_t iParticle = 0 )
+void SignalGenerator(Int_t iParticle = 0, Int_t NEvent = 10000 )
 {
   gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
   basiclibs();
@@ -72,7 +72,6 @@ void SignalGenerator(Int_t iParticle = 0 )
     return;
   }
   
-  int NEvent = 100000;
   int PionsPerEvent = 1;
   for (int i=0; i<NEvent; i++){
   // Generate rapidity, pt and azimuth

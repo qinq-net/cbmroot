@@ -20,6 +20,11 @@ cd $WORKDIR
 
 rm -rf *
 
+NNN=40
+TASKS=0
+ONE=1
+NOL=0
+
 PID=""
 for i in {0..74}
 do
@@ -34,6 +39,16 @@ do
   PID=$PID" "$!
   
   sleep 0.1
+  
+  if [ $TASKS -eq $NNN ]
+  then
+    wait $PID
+    PID=""
+    TASKS=0
+  fi
+  
+  TASKS=`expr $TASKS + $ONE`
+  
   cd ../
 done
 wait $PID

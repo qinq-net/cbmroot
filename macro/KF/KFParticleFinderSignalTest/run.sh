@@ -20,6 +20,4 @@ fi
 bash runSimAll.sh  $NEVENTS $WORKDIR
 bash runPhysAll.sh $NEVENTS $WORKDIR
 
-root -l -b -q 'CalculateEfficincy.C("'$WORKDIR'")' > Efficiencies.txt
-
 bash CollectHisto.sh $WORKDIR

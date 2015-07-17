@@ -8,6 +8,9 @@
 
 void recoSignal(Int_t nEvents = 10000) {
 
+  //macro to check the setup put into the simulation
+  gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/determine_setup.C");
+  
   // ========================================================================
   //          Adjust this part according to your requirements
 
@@ -71,16 +74,18 @@ void recoSignal(Int_t nEvents = 10000) {
   // =========================================================================
 
 
-//   // -----   MVD Digitiser   -------------------------------------------------
-//   CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose);
-//   run->AddTask(mvdDigitise);
-//   // -------------------------------------------------------------------------
+//   if(IsMvd(parFile))
+  {
+    // -----   MVD Digitiser   -------------------------------------------------
+    CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose);
+    run->AddTask(mvdDigitise);
+    // -------------------------------------------------------------------------
 // 
 //   // -----   MVD Clusterfinder   ---------------------------------------------
 //   CbmMvdClusterfinder* mvdCluster = new CbmMvdClusterfinder("MVD Clusterfinder", 0, iVerbose);
 //   run->AddTask(mvdCluster);
 //   // -------------------------------------------------------------------------
- 
+  }
 
   // -----   STS digitizer   -------------------------------------------------
   // -----   The parameters of the STS digitizer are set such as to match
@@ -104,13 +109,13 @@ void recoSignal(Int_t nEvents = 10000) {
   // ===                     MVD local reconstruction                      ===
   // =========================================================================
 
-
   // -----   MVD Hit Finder   ------------------------------------------------
-  CbmMvdHitfinder* mvdHitfinder = new CbmMvdHitfinder("MVD Hit Finder", 0, iVerbose);
-  mvdHitfinder->UseClusterfinder(kTRUE);
-  run->AddTask(mvdHitfinder);
+//   if(IsMvd(parFile))
+  {
+    CbmMvdHitfinder* mvdHitfinder = new CbmMvdHitfinder("MVD Hit Finder", 0, iVerbose);
+    run->AddTask(mvdHitfinder);
+  }
   // -------------------------------------------------------------------------
-
 
   // ===                 End of MVD local reconstruction                   ===
   // =========================================================================
@@ -151,17 +156,84 @@ void recoSignal(Int_t nEvents = 10000) {
   CbmL1* l1 = new CbmL1("CbmL1",1, 3);
   TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
   const TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v13d.root";
-  l1->SetMaterialBudgetFileName(stsMatBudgetFileName.Data());
+  const TString mvdMatBudgetFileName = parDir + "/mvd/mvd_matbudget_v14b.root";
+  l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
+  l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
   run->AddTask(l1);
   CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
   FairTask* stsFindTracks = new CbmStsFindTracks(iVerbose, stsTrackFinder);
   run->AddTask(stsFindTracks);
   // -------------------------------------------------------------------------
 
+  if (IsTrd(parFile)) {
+    // ----- TRD reconstruction-----------------------------------------
+    CbmTrdRadiator *radiator = new CbmTrdRadiator(kTRUE , "H++");
+    if (trdHitProducerType == "smearing") {
+      CbmTrdHitProducerSmearing* trdHitProd = new CbmTrdHitProducerSmearing(radiator);
+      trdHitProd->SetUseDigiPar(false);
+      run->AddTask(trdHitProd);
+    } else if (trdHitProducerType == "digi") {
+      CbmTrdDigitizer* trdDigitizer = new CbmTrdDigitizer(radiator);
+      run->AddTask(trdDigitizer);
 
+      CbmTrdHitProducerDigi* trdHitProd = new CbmTrdHitProducerDigi();
+      run->AddTask(trdHitProd);
+    } else if (trdHitProducerType == "clustering") {
+      // ----- TRD clustering -----
+        CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
+        run->AddTask(trdDigiPrf);
+
+        CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
+        run->AddTask(trdCluster);
+
+        CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
+        run->AddTask(trdHit);
+      // ----- End TRD Clustering -----
+    }
+    // ------------------------------------------------------------------------
+  }
+
+  if (IsTof(parFile)) {
+    // ------ TOF hits --------------------------------------------------------
+      CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("TOF HitProducerNew",iVerbose);
+      tofHitProd->SetInitFromAscii(kFALSE);
+      run->AddTask(tofHitProd);
+    // ------------------------------------------------------------------------
+  }
+
+  if (IsTof(parFile) || IsRich(parFile) || IsTrd(parFile)) {
+    // ------ Global track reconstruction -------------------------------------
+    CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
+    //CbmLitFindGlobalTracksParallel* finder = new CbmLitFindGlobalTracksParallel();
+    // Tracking method to be used
+    // "branch" - branching tracking
+    // "nn" - nearest neighbor tracking
+    // "nn_parallel" - nearest neighbor parallel tracking
+    TString globalTrackingType = "nn";
+    finder->SetTrackingType(std::string(globalTrackingType));
+
+    // Hit-to-track merger method to be used
+    // "nearest_hit" - assigns nearest hit to track
+    // "all_hits" - assigns all hits in the searching area to track
+    finder->SetMergerType("nearest_hit");
+
+    run->AddTask(finder);
+  }
+  
+  if (IsRich(parFile)) {
+    CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
+    run->AddTask(richHitProd);
+
+    CbmRichReconstruction* richReco = new CbmRichReconstruction();
+    run->AddTask(richReco);
+
+    CbmRichMatchRings* matchRings = new CbmRichMatchRings();
+    run->AddTask(matchRings);
+  }
+  
   // ---   STS track matching   ----------------------------------------------
-   CbmMatchRecoToMC* matchTask = new CbmMatchRecoToMC();
-   run->AddTask(matchTask);
+  CbmMatchRecoToMC* matchTask = new CbmMatchRecoToMC();
+  run->AddTask(matchTask);
   // -------------------------------------------------------------------------
 
   // -----  Parameter database   --------------------------------------------

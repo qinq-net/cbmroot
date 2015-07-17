@@ -64,7 +64,9 @@ void physSignal(int nEventsToRun = 10000;) {
 
   CbmL1* l1 = new CbmL1("CbmL1",1, 3);
   const TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v13d.root";
-  l1->SetMaterialBudgetFileName(stsMatBudgetFileName.Data());
+  const TString mvdMatBudgetFileName = parDir + "/mvd/mvd_matbudget_v14b.root";
+  l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
+  l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
   run->AddTask(l1);
 
     // ----- PID for KF Particle Finder --------------------------------------------

@@ -6,7 +6,7 @@
 // macro to simulate signal events for KFParticleFinder
 //_________________________________________________________________________________
 
-void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000)
+void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000, bool useMvd = 0)
 {
   // ========================================================================
   //          Adjust this part according to your requirements
@@ -29,8 +29,10 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000)
   gSystem->Load("libKF");
   gSystem->Load("libL1");
   
-  // Number of events
-  const bool useMvd = 0; // 2maps
+  //For charm particles MVD should be on
+  if(iParticle >= 46 && iParticle<=63)
+    useMvd = 1;
+  
   const bool sameZ = 0;
   const bool usePipe = 1;
   const int  nElectrons = 0;
@@ -48,7 +50,7 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000)
   TString caveGeom   = "cave.geo";
   TString pipeGeom   = "pipe/pipe_v13b.geo.root"; //===>>>
   TString magnetGeom = "magnet/magnet_v12b.geo.root";
-  TString mvdGeom    = "mvd/mvd_v07a.geo";
+  TString mvdGeom    = "mvd/mvd_v14b.geo.root";
 
   TString stsGeom;
   if (sameZ) stsGeom    = "sts_same_z.geo";
@@ -63,7 +65,7 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000)
 
   // -----   Magnetic field   -----------------------------------------------
   TString fieldMap    = "field_v12b";   // name of field map
-  Double_t fieldZ     = 50.;             // field centre z position
+  Double_t fieldZ     = 40.;             // field centre z position
   Double_t fieldScale =  1.;             // field scaling factor
   
   // -----   Input file name   ----------------------------------------------  
@@ -114,6 +116,7 @@ void simSignal(Int_t iParticle = 0, Int_t nEvents = 10000)
   if ( mvdGeom != "" ) {
     FairDetector* mvd = new CbmMvd("MVD", kTRUE);
     mvd->SetGeometryFileName(mvdGeom);
+        mvd->SetMotherVolume("pipevac1");
     fRun->AddModule(mvd);
   }
 
