@@ -258,7 +258,7 @@ CbmStsPoint* CbmStsMC::CreatePoint() {
   Int_t newIndex = fStsPoints->GetEntriesFast();
   return new ( (*fStsPoints)[fStsPoints->GetEntriesFast()] )
     CbmStsPoint(fStatusIn.fTrackId, fStatusIn.fAddress, posIn, posOut,
-                momIn, momOut, time, length, fEloss, fStatusIn.fPid, newIndex);
+                momIn, momOut, time, length, fEloss, fStatusIn.fPid, 0, newIndex);
                 
 }
 // -------------------------------------------------------------------------
