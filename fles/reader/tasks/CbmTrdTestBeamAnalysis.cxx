@@ -127,7 +127,7 @@ void CbmTrdTestBeamAnalysis::Exec(Option_t* option)
 			  "infoType out of array"};
 
   ULong_t lastSpadicTime[3][6] = {{0}}; //[sys][spa]
-  ULong_t firstSpadicTime[3][6] = {{9e+99}}; //[sys][spa]
+  ULong_t firstSpadicTime[3][6] = {{static_cast<ULong_t>(9e+99)}}; //[sys][spa]
   Int_t clusterSize[3][6] = {{1}};
   //  Double_t centreOfGravity =0.;
 
