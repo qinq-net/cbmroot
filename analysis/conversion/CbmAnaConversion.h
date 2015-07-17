@@ -25,6 +25,7 @@
 #include "CbmAnaConversionReco.h"
 #include "CbmAnaConversionPhotons.h"
 #include "CbmAnaConversionRecoFull.h"
+#include "CbmAnaConversionTest.h"
 
 class TH1;
 class TH2;
@@ -121,6 +122,7 @@ private:
 	Int_t DoReconstruction;
 	Int_t DoPhotons;
 	Int_t DoRecoFull;
+	Int_t DoTest;
    
    TH1D * fhNofElPrim;
    TH1D * fhNofElSec;
@@ -246,6 +248,7 @@ private:
    CbmAnaConversionReco			*fAnaReco;
    CbmAnaConversionPhotons		*fAnaPhotons;
    CbmAnaConversionRecoFull		*fAnaRecoFull;
+   CbmAnaConversionTest			*fAnaTest;
    
    
    

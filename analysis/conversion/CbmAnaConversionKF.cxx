@@ -20,6 +20,7 @@
 #include "CbmStsTrack.h"
 #include "CbmMCTrack.h"
 #include "CbmTrackMatchNew.h"
+#include "TDatabasePDG.h"
 
 
 #define M2E 2.6112004954086e-7
@@ -178,6 +179,10 @@ void CbmAnaConversionKF::Exec()
 
 	//KFParticle_Analysis();
 	test2();
+
+	CombineElectrons();
+	CombinePhotons();
+
 	Reconstruct();
 	ReconstructGammas();
 
@@ -509,11 +514,20 @@ void CbmAnaConversionKF::test2()
 	particlevector.clear();
 	particleMatch.clear();
 	//vector<KFParticle> particlevector;
-	
+
+
+
+
+
+
+
 	particlevector = fKFtopo->GetParticles();
+
+
 	particleMatch = fKFtopoPerf->ParticlesMatch();
 	Int_t pv_size = particlevector.size();
 	cout << "CbmAnaConversionKF: size of particlevector: " << pv_size << endl;
+	cout << "CbmAnaConversionKF: size of particleMatch: " << particleMatch.size() << endl;
 
 	Int_t electroncounter = 0;
 	Int_t pi0counter = 0;
@@ -528,9 +542,9 @@ void CbmAnaConversionKF::test2()
 		if(TMath::Abs(particlevector[i].GetPDG()) == 111) {
 			pi0counter++;
 			fhKF_particlevector->Fill(2);
-			if(particleMatch[i].IsMatchedWithPdg()) {
-				pi0counter_signal++;
-			}
+			//if(particleMatch[i].IsMatchedWithPdg()) {
+			//	pi0counter_signal++;
+			//}
 		}
 		if(TMath::Abs(particlevector[i].GetPDG()) == 22) {
 			gammacounter++;

@@ -54,6 +54,7 @@
 #include "CbmAnaConversionReco.h"
 #include "CbmAnaConversionPhotons.h"
 #include "CbmAnaConversionRecoFull.h"
+#include "CbmAnaConversionTest.h"
 
 
 #define M2E 2.6112004954086e-7
@@ -69,6 +70,7 @@ CbmAnaConversion::CbmAnaConversion()
     DoReconstruction(0),
     DoPhotons(0),
     DoRecoFull(0),
+    DoTest(0),
     fhNofElPrim(NULL),
     fhNofElSec(NULL),
     fhNofElAll(NULL),
@@ -153,7 +155,8 @@ CbmAnaConversion::CbmAnaConversion()
     fAnaKF(NULL),
     fAnaReco(NULL),
     fAnaPhotons(NULL),
-    fAnaRecoFull(NULL)  
+    fAnaRecoFull(NULL), 
+    fAnaTest(NULL)  
 {
 }
 
@@ -212,6 +215,7 @@ InitStatus CbmAnaConversion::Init()
 	DoReconstruction = 1;
 	DoPhotons = 1;
 	DoRecoFull = 1;
+	DoTest = 1;
 	
 	if(DoTomography) {
 		fAnaTomography = new CbmAnaConversionTomography();
@@ -237,6 +241,10 @@ InitStatus CbmAnaConversion::Init()
 	if(DoRecoFull) {
 		fAnaRecoFull = new CbmAnaConversionRecoFull();
 		fAnaRecoFull->Init();
+	}
+	if(DoTest) {
+		fAnaTest = new CbmAnaConversionTest();
+		fAnaTest->Init();
 	}
 
 	timer_all.Stop();
@@ -404,6 +412,10 @@ void CbmAnaConversion::Exec(Option_t* option)
 
 	if(DoTomography) {
 		fAnaTomography->Exec();		// analyse gamma-conversions with MC data
+	}
+
+	if(DoTest) {
+		fAnaTest->Exec();
 	}
 
 	// ========================================================================================
@@ -643,6 +655,7 @@ void CbmAnaConversion::Finish()
 	if(DoReconstruction)	{ fAnaReco->Finish(); }
 	if(DoRecoFull)			{ fAnaRecoFull->Finish(); }
 	if(DoPhotons)			{ fAnaPhotons->Finish(); }
+	if(DoTest)				{ fAnaTest->Finish(); }
 
 	for (Int_t i = 0; i < fHistoList.size(); i++){
 		fHistoList[i]->Write();
