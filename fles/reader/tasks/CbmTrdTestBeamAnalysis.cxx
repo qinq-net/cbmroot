@@ -29,10 +29,13 @@ CbmTrdTestBeamAnalysis::CbmTrdTestBeamAnalysis()
     fTimeCounter(0),
     fBaseMethod(kLastTimeBins),
     fBaselineBins(1),
-    fBaseline({0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}),
+    fBaseline(),
     fNoiseCounter(0),
   fNT(0x0)
 {
+  for (Int_t i=0; i<32; ++i) {
+    fBaseline[i] = 0L; 
+  }
   LOG(DEBUG) << "Default Constructor of CbmTrdTestBeamAnalysis" << FairLogger::endl;
 }
 
