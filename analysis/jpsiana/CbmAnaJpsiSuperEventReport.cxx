@@ -102,6 +102,8 @@ void CbmAnaJpsiSuperEventReport::Draw()
 		 DrawH1(fHMSuperEvent->H1("fh_SE_PdgCode_of Others_BG"));
 		 DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.4, 0.89, 0.5, 0.99);
 	 }
+
+	 DrawMinvMismatchPt();
 }
 
 void CbmAnaJpsiSuperEventReport::DrawComparison()
@@ -238,6 +240,29 @@ void CbmAnaJpsiSuperEventReport::DrawPairSource()
 		kLinear, kLog, true, 0.85, 0.6, 0.99, 0.99);
 
 		DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.6, 0.89, 0.7, 0.99);
+}
+
+void CbmAnaJpsiSuperEventReport::DrawMinvMismatchPt()
+{
+	TCanvas* c = CreateCanvas("jpsi_fh_se_bg_Minv_Mismatch_pt", "jpsi_fh_se_bg_Minv_Mismatch_pt", 800, 800);
+
+	double trueMatch = fHMSuperEvent->H1("fh_se_bg_truematch_minv_ptCut")->GetEntries();
+	double trueMatchEl = fHMSuperEvent->H1("fh_se_bg_truematch_el_minv_ptCut")->GetEntries();
+	double trueMatchNotEl = fHMSuperEvent->H1("fh_se_bg_truematch_notel_minv_ptCut")->GetEntries();
+	double misMatch = fHMSuperEvent->H1("fh_se_bg_mismatch_minv_ptCut")->GetEntries();
+	double nofBg = fHMSuperEvent->H1("fh_se_bg_minv_ptcut")->GetEntries();
+
+		DrawH1(list_of( fHMSuperEvent->H1("fh_se_bg_truematch_minv_ptCut") )
+			( fHMSuperEvent->H1("fh_se_bg_truematch_el_minv_ptCut") )
+			( fHMSuperEvent->H1("fh_se_bg_truematch_notel_minv_ptCut") )
+			( fHMSuperEvent->H1("fh_se_bg_mismatch_minv_ptCut") ),
+			list_of("true match (" + Cbm::NumberToString(100. * trueMatch / nofBg, 1) + "%)")
+			("true match (e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchEl / nofBg, 1)+ "%)")
+			("true match (not e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchNotEl / nofBg, 1)+ "%)")
+			("mismatch (" + Cbm::NumberToString(100. * misMatch / nofBg)+ "%)"),
+			kLinear, kLinear, true, 0.4, 0.7, 0.99, 0.99);
+
+	    DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.15, 0.9, 0.35, 0.99);
 }
 
 ClassImp(CbmAnaJpsiSuperEventReport)

@@ -36,7 +36,8 @@ public:
 		fIsRichEl(false),
 		fIsTrdEl(false),
 		fIsTofEl(false),
-		fIsRecoTrackAccepted(false)
+		fIsRecoTrackAccepted(false),
+		fIsMismatch(false)
 	{
 	}
 
@@ -85,6 +86,8 @@ public:
 	Bool_t fIsTofEl;
 
 	Bool_t fIsRecoTrackAccepted;
+
+	Bool_t fIsMismatch;
 
 	ClassDef(CbmAnaJpsiCandidate, 1)
 };

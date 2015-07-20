@@ -273,7 +273,7 @@ private:
     	      Double_t momentum,
     		  CbmAnaJpsiCandidate* cand);
 
-    Bool_t IsMismatch(
+    void IsMismatch(
     		CbmAnaJpsiCandidate* cand);
 
     /**

@@ -93,6 +93,11 @@ void CbmAnaJpsiSuperEvent::InitHist()
 	fHM->Create1<TH1D>("fh_se_bg_participants_minv_oo", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
 
 	fHM->Create1<TH1D>("fh_SE_PdgCode_of Others_BG", "fh_SE_PdgCode_of Others_BG;PDGCode;Tracks per Event", 500,-0.5,499.5);
+
+	fHM->Create1<TH1D>("fh_se_bg_mismatch_minv_ptCut", "fh_se_bg_mismatch_minv_ptCut;M_{ee} [GeV/c^{2}];particles/event", 4000, 0. , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_truematch_minv_ptCut", "fh_se_bg_truematch_minv_ptCut;M_{ee} [GeV/c^{2}];particles/event", 4000, 0. , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_truematch_el_minv_ptCut", "fh_se_bg_truematch_el_minv_ptCut;M_{ee} [GeV/c^{2}];particles/event", 4000, 0. , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_truematch_notel_minv_ptCut", "fh_se_bg_truematch_notel_minv_ptCut;M_{ee} [GeV/c^{2}];particles/event", 4000, 0. , 4.);
 }
 
 
@@ -198,6 +203,14 @@ void CbmAnaJpsiSuperEvent::DoSuperEvent()
 			    		 	fHM->H1("fh_SE_PdgCode_of Others_BG")->Fill((double)candP->fMcPdg-0.5);
 			    		}
 			    	}
+
+			    	Bool_t isMismatch = (candP->fIsMismatch || candM->fIsMismatch);
+			    	if (isBG && isMismatch) fHM->H1("fh_se_bg_mismatch_minv_ptCut")->Fill(pRec.fMinv);
+			    		if (isBG && !isMismatch) {
+			    			fHM->H1("fh_se_bg_truematch_minv_ptCut")->Fill(pRec.fMinv);
+			    			if (candP->fMcPdg == 11 && candM->fMcPdg == 11) fHM->H1("fh_se_bg_truematch_el_minv_ptCut")->Fill(pRec.fMinv);
+			    			if (candP->fMcPdg != 11 || candM->fMcPdg != 11) fHM->H1("fh_se_bg_truematch_notel_minv_ptCut")->Fill(pRec.fMinv);
+			    		}
 			}
 		}
 	}

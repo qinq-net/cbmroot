@@ -288,7 +288,7 @@ void CbmAnaJpsiTask::InitHist()
    // Momentum distribution of the signal
    CreateAnalysisStepsH1("fh_signal_mom", "P [GeV/c]", "particles/event", 250, 0., 25.);
    //Pt/y distibution of the signal
-   CreateAnalysisStepsH2("fh_signal_pty","Rapidity", "P_{t} [GeV/c]", "particles/event", 40, 0., 4., 20, 0., 2.);
+   CreateAnalysisStepsH2("fh_signal_pty","Rapidity", "P_{t} [GeV/c]", "particles/event", 80, 0., 4., 80, 0., 4.);
 
    //Number of mismatches after each cut
    fHM->Create1<TH1D>("fh_nof_mismatches","fh_nof_mismatches;Analysis steps;particles/event", CbmAnaJpsiHist::fNofAnaSteps, 0., CbmAnaJpsiHist::fNofAnaSteps);
@@ -492,6 +492,9 @@ void CbmAnaJpsiTask::AssignMcToCandidates()
       FairMCPoint* tofPoint = (FairMCPoint*) fTofPoints->At(tofPointIndex);
       if (tofPoint == NULL) continue;
       fCandidates[i].fTofMcTrackId = tofPoint->GetTrackID();
+
+
+      IsMismatch(&fCandidates[i]);
    	}// candidates
 }
 
@@ -739,7 +742,7 @@ void CbmAnaJpsiTask::TrackSource(
 	} else {
 		fHM->H1("fh_nof_bg_tracks")->Fill(binNum);
 
-		if (IsMismatch(cand)) fHM->H1("fh_nof_mismatches")->Fill(binNum);
+		if (cand->fIsMismatch) fHM->H1("fh_nof_mismatches")->Fill(binNum);
 		if (cand->fStsMcTrackId != cand->fRichMcTrackId) fHM->H1("fh_nof_mismatches_rich")->Fill(binNum);
 		if (fUseTrd && cand->fStsMcTrackId != cand->fTrdMcTrackId) fHM->H1("fh_nof_mismatches_trd")->Fill(binNum);
 		if (cand->fStsMcTrackId != cand->fTofMcTrackId) fHM->H1("fh_nof_mismatches_tof")->Fill(binNum);
@@ -775,7 +778,7 @@ void CbmAnaJpsiTask::FillPairHists(
 	Bool_t isPi0 = (candP->fIsMcPi0Electron && candM->fIsMcPi0Electron && candP->fStsMcMotherId == candM->fStsMcMotherId);
 	Bool_t isGamma = (candP->fIsMcGammaElectron && candM->fIsMcGammaElectron && candP->fStsMcMotherId == candM->fStsMcMotherId);
     Bool_t isBG = !isSignal;//(!isGamma) && (!isPi0) && (!(candP->fIsMcSignalElectron || candM->fIsMcSignalElectron));
-	Bool_t isMismatch = (IsMismatch(candP) || IsMismatch(candM));
+	Bool_t isMismatch = (candP->fIsMismatch || candM->fIsMismatch);
 
 	if (isSignal) fHM->H2("fh_signal_pty_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parMc->fRapidity, parMc->fPt,fWeight);
 	if (isSignal) fHM->H1("fh_signal_mom_"+CbmAnaJpsiHist::fAnaSteps[step])->Fill(parMc->fMomentumMag,fWeight);
@@ -976,12 +979,14 @@ Bool_t CbmAnaJpsiTask::IsTofElectron(
 }
 
 
-Bool_t CbmAnaJpsiTask::IsMismatch(
+void CbmAnaJpsiTask::IsMismatch(
 		CbmAnaJpsiCandidate* cand)
 {	Bool_t IsTrdMcTrackId = (fUseTrd) ? (cand->fStsMcTrackId == cand->fTrdMcTrackId) : true;
 	if (cand->fStsMcTrackId == cand->fRichMcTrackId && IsTrdMcTrackId &&
-	       cand->fStsMcTrackId == cand->fTofMcTrackId && cand->fStsMcTrackId !=-1) return false;
-	return true;
+	       cand->fStsMcTrackId == cand->fTofMcTrackId && cand->fStsMcTrackId !=-1) cand->fIsMismatch = false;
+	else {
+		cand->fIsMismatch = true;
+	}
 }
 
 void CbmAnaJpsiTask::RichPmtXY() {
