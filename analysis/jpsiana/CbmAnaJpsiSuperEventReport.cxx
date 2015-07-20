@@ -84,11 +84,14 @@ void CbmAnaJpsiSuperEventReport::Draw()
 	fHMEventByEvent->RebinByPattern("fh_signal_minv.+", nRebins);
 	fHMEventByEvent->RebinByPattern("fh_bg_minv.+", nRebins);
     fHMSuperEvent->RebinByPattern("fh_se_bg_participants_minv.+", nRebins);
-
+    fHMSuperEvent->RebinByPattern("fh_se_bg_truematch.+", nRebins);
+    fHMSuperEvent->RebinByPattern("fh_se_bg_mismatch.+", nRebins);
 
 	fHMEventByEvent->ScaleByPattern("fh_signal_minv.+", nRebins);
 	fHMEventByEvent->ScaleByPattern("fh_bg_minv.+", nRebins);
     fHMSuperEvent->ScaleByPattern("fh_se_bg_participants_minv.+", nRebins);
+    fHMSuperEvent->ScaleByPattern("fh_se_bg_truematch.+", nRebins);
+    fHMSuperEvent->ScaleByPattern("fh_se_bg_mismatch.+", nRebins);
 
 	DrawComparison();
 
@@ -167,7 +170,7 @@ void CbmAnaJpsiSuperEventReport::DrawMinvSignalBg()
   TH1D* fhBgSignaldiffPtCuts = (TH1D*) fHMSuperEvent->H1("fh_se_bg_minv_diff_ptcuts_" + Cbm::NumberToString(i))->Clone();
   fhBgSignaldiffPtCuts->Add((TH1D*) fHMEventByEvent->H1("fh_ee_signal_minv_diff_ptcuts_" + Cbm::NumberToString(i))->Clone());
   fhBgSignaldiffPtCuts->SetMinimum(1e-9);
-  DrawH1(list_of(fhBgSignaldiffPtCuts),list_of("Signal and Background"), kLinear, kLog, true, 0.7, 0.9, 0.99, 0.95);
+  DrawH1(list_of(fhBgSignaldiffPtCuts),list_of("Signal and Background"), kLinear, kLog, true, 0.65, 0.9, 0.99, 0.95);
   }
 }
 
