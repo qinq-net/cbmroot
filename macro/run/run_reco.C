@@ -172,7 +172,12 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   CbmKF* kalman = new CbmKF();
   run->AddTask(kalman);
   CbmL1* l1 = new CbmL1();
+  TString mvdMatBudgetFileName = paramDir + mvdMatBudget;
+  TString stsMatBudgetFileName = paramDir + stsMatBudget;
+  l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
+  l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
   run->AddTask(l1);
+
   CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
   FairTask* stsFindTracks = new CbmStsFindTracks(iVerbose, stsTrackFinder);
   run->AddTask(stsFindTracks);
@@ -186,9 +191,9 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
 
   // ---   STS track fitting   -----------------------------------------------
-  CbmStsTrackFitter* stsTrackFitter = new CbmStsKFTrackFitter();
-  FairTask* stsFitTracks = new CbmStsFitTracks(stsTrackFitter, iVerbose);
-  run->AddTask(stsFitTracks);
+//  CbmStsTrackFitter* stsTrackFitter = new CbmStsKFTrackFitter();
+//  FairTask* stsFitTracks = new CbmStsFitTracks(stsTrackFitter, iVerbose);
+//  run->AddTask(stsFitTracks);
   // -------------------------------------------------------------------------
 
   // ===                 End of STS local reconstruction                   ===
