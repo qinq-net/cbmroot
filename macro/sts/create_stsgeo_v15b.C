@@ -1746,8 +1746,10 @@ void AddCarbonLadder(Int_t LadderIndex,
   Int_t YnumOfFrameBoxes = (Int_t)(ladderY / gkFrameStep)+1;    // calculate number of elements
   if (LadderIndex == 1 || LadderIndex == 2)  // set even number of ladder elements for these ladders in station 1 and 2
 	YnumOfFrameBoxes--;
-  if (LadderIndex == 3 || LadderIndex == 4)  // set even number of ladder elements for these ladders in station 3 and 4
-	YnumOfFrameBoxes++;
+//  if (LadderIndex == 3 || LadderIndex == 4)  // set even number of ladder elements for these ladders in station 3 and 4
+//	YnumOfFrameBoxes++;
+  YnumOfFrameBoxes += YnumOfFrameBoxes % 2;                     // use even number of frame elements for all ladders
+
   //      cout << "DE: lad " << LadderIndex << " inum " << YnumOfFrameBoxes << endl;
 
   TGeoBBox* fullFrameShp = new TGeoBBox (name+"_FullFrameBox_shp", xu/2., gkFrameStep/2., (xu/2.+sqrt(2.)*gkFrameThickness/2.)/2.);
