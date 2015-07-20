@@ -33,7 +33,7 @@ class CbmSpadicRawMessage : public CbmRawMessage
   /** Constructor  **/
   CbmSpadicRawMessage(Int_t EquipmentID, Int_t SourceAddress, Int_t ChannelId,
 		      Int_t EpochMarker, Int_t Time, Int_t SuperEpoch, Int_t TriggerType,
-		      Int_t InfoType, Int_t StopType, Int_t GroupId, Int_t BufferOverflow, 
+		      Int_t InfoType, Int_t StopType, Int_t GroupId, Int_t BufferOverflowCounter, 
 		      Int_t NrSamples, Int_t* Samples);
 
 	
