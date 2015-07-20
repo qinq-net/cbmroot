@@ -98,6 +98,15 @@ void CbmAnaJpsiSuperEvent::InitHist()
 	fHM->Create1<TH1D>("fh_se_bg_truematch_minv_ptCut", "fh_se_bg_truematch_minv_ptCut;M_{ee} [GeV/c^{2}];particles/event", 4000, 0. , 4.);
 	fHM->Create1<TH1D>("fh_se_bg_truematch_el_minv_ptCut", "fh_se_bg_truematch_el_minv_ptCut;M_{ee} [GeV/c^{2}];particles/event", 4000, 0. , 4.);
 	fHM->Create1<TH1D>("fh_se_bg_truematch_notel_minv_ptCut", "fh_se_bg_truematch_notel_minv_ptCut;M_{ee} [GeV/c^{2}];particles/event", 4000, 0. , 4.);
+
+	fHM->Create1<TH1D>("fh_se_bg_minv_diff_ptcuts_0", "fh_se_bg_minv_diff_ptcuts_0;M_{ee} [GeV/c^{2}];particles/event", 4000, 0., 4.);
+	fHM->Create1<TH1D>("fh_se_bg_minv_diff_ptcuts_1", "fh_se_bg_minv_diff_ptcuts_1;M_{ee} [GeV/c^{2}];particles/event", 4000, 0., 4.);
+	fHM->Create1<TH1D>("fh_se_bg_minv_diff_ptcuts_2", "fh_se_bg_minv_diff_ptcuts_2;M_{ee} [GeV/c^{2}];particles/event", 4000, 0., 4.);
+	fHM->Create1<TH1D>("fh_se_bg_minv_diff_ptcuts_3", "fh_se_bg_minv_diff_ptcuts_3;M_{ee} [GeV/c^{2}];particles/event", 4000, 0., 4.);
+	fHM->Create1<TH1D>("fh_se_bg_minv_diff_ptcuts_4", "fh_se_bg_minv_diff_ptcuts_4;M_{ee} [GeV/c^{2}];particles/event", 4000, 0., 4.);
+	fHM->Create1<TH1D>("fh_se_bg_minv_diff_ptcuts_5", "fh_se_bg_minv_diff_ptcuts_5;M_{ee} [GeV/c^{2}];particles/event", 4000, 0., 4.);
+	fHM->Create1<TH1D>("fh_se_bg_minv_diff_ptcuts_6", "fh_se_bg_minv_diff_ptcuts_6;M_{ee} [GeV/c^{2}];particles/event", 4000, 0., 4.);
+	fHM->Create1<TH1D>("fh_se_bg_minv_diff_ptcuts_7", "fh_se_bg_minv_diff_ptcuts_7;M_{ee} [GeV/c^{2}];particles/event", 4000, 0., 4.);
 }
 
 
@@ -212,6 +221,15 @@ void CbmAnaJpsiSuperEvent::DoSuperEvent()
 			    			if (candP->fMcPdg != 11 || candM->fMcPdg != 11) fHM->H1("fh_se_bg_truematch_notel_minv_ptCut")->Fill(pRec.fMinv);
 			    		}
 			}
+
+			if (isChi2Primary && isEl && pRec.fPt<0.4){fHM->H1("fh_se_bg_minv_diff_ptcuts_0")->Fill(pRec.fMinv);}
+			if (isChi2Primary && isEl && pRec.fPt>=0.4 && pRec.fPt<0.8){fHM->H1("fh_se_bg_minv_diff_ptcuts_1")->Fill(pRec.fMinv);}
+			if (isChi2Primary && isEl && pRec.fPt>=0.8 && pRec.fPt<1.2){fHM->H1("fh_se_bg_minv_diff_ptcuts_2")->Fill(pRec.fMinv);}
+			if (isChi2Primary && isEl && pRec.fPt>=1.2 && pRec.fPt<1.6){fHM->H1("fh_se_bg_minv_diff_ptcuts_3")->Fill(pRec.fMinv);}
+			if (isChi2Primary && isEl && pRec.fPt>=1.6 && pRec.fPt<2.0){fHM->H1("fh_se_bg_minv_diff_ptcuts_4")->Fill(pRec.fMinv);}
+			if (isChi2Primary && isEl && pRec.fPt>=2.0 && pRec.fPt<2.4){fHM->H1("fh_se_bg_minv_diff_ptcuts_5")->Fill(pRec.fMinv);}
+			if (isChi2Primary && isEl && pRec.fPt>=2.4 && pRec.fPt<3.0){fHM->H1("fh_se_bg_minv_diff_ptcuts_6")->Fill(pRec.fMinv);}
+			if (isChi2Primary && isEl && pRec.fPt>=3.0 && pRec.fPt<6.0){fHM->H1("fh_se_bg_minv_diff_ptcuts_7")->Fill(pRec.fMinv);}
 		}
 	}
 }

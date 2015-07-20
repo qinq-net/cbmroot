@@ -159,6 +159,16 @@ void CbmAnaJpsiSuperEventReport::DrawMinvSignalBg()
   DrawH1(list_of(fhBg)(fhSignal)(fhBgSignal),list_of("Background SuperEvent")("Signal Event-By-Event")("Signal and Background"), kLinear, kLog, true, 0.7, 0.9, 0.99, 0.95);
   DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.4, 0.89, 0.5, 0.99);
 
+
+  TCanvas* c6 = CreateCanvas("jpsi_se_ee_minv_diff_ptCuts","jpsi_se_ee_minv_diff_ptCuts",1600,800);
+  c6->Divide(4,2);
+  for (int i=0;i<8;i++){
+  c6->cd(i+1);
+  TH1D* fhBgSignaldiffPtCuts = (TH1D*) fHMSuperEvent->H1("fh_se_bg_minv_diff_ptcuts_" + Cbm::NumberToString(i))->Clone();
+  fhBgSignaldiffPtCuts->Add((TH1D*) fHMEventByEvent->H1("fh_ee_signal_minv_diff_ptcuts_" + Cbm::NumberToString(i))->Clone());
+  fhBgSignaldiffPtCuts->SetMinimum(1e-9);
+  DrawH1(list_of(fhBgSignaldiffPtCuts),list_of("Signal and Background"), kLinear, kLog, true, 0.7, 0.9, 0.99, 0.95);
+  }
 }
 
 double CbmAnaJpsiSuperEventReport::SignalOverBg(
