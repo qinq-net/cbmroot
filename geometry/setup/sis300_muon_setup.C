@@ -1,6 +1,8 @@
 //
 //   comments
 //
+// 2015-07-20 - FU - magnet v15a is v12b with correct keeping volume material
+// 2015-07-20 - FU - add material budget files
 // 2015-01-19 - DE - use TRD v15a as new default
 // 2014-06-30 - DE - make TRD v14a the new default
 // 2014-06-25 - DE - define digi files through tags for STS, TRD and TOF
@@ -25,6 +27,7 @@ static TString psdGeom;
 static Double_t psdZpos;
 static Double_t psdXpos;
 
+static TString mvdTag;
 static TString stsTag;
 static TString trdTag;
 static TString tofTag;
@@ -32,6 +35,9 @@ static TString tofTag;
 static TString stsDigi;
 static TString trdDigi;
 static TString tofDigi;
+
+static TString stsMatBudget;
+static TString mvdMatBudget;
 
 static TString  fieldMap;
 static Double_t fieldZ;
@@ -49,6 +55,7 @@ void sis300_muon_setup()
   fieldSymType =  3;
 
   // -----  Tags  -----------------------------------------------------------
+  mvdTag       = "";
   stsTag       = "v13d";
   trdTag       = "v15a_3m";
   tofTag       = "v13-5e";
@@ -57,6 +64,10 @@ void sis300_muon_setup()
   stsDigi      = "sts/sts_" + stsTag + "_std.digi.par";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
+
+  // -----  Material budget files -------------------------------------------
+  stsMatBudget      = "sts/sts_matbudget_" + stsTag + ".root";
+  mvdMatBudget      = "";
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";

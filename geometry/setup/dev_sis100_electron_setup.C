@@ -2,6 +2,8 @@
 //   comments
 //
 
+// 2015-07-20 - FU - magnet v15a is v12b with correct keeping volume material
+// 2015-07-20 - FU - add material budget files
 // 2015-01-28 - DE - use STS v13x fitting with with PIPE v14l
 // 2015-01-22 - DE - use MVD v14b with PIPE v14l as default
 // 2015-01-19 - DE - use TRD v15a as new defaut
@@ -33,6 +35,7 @@ static TString psdGeom;
 static Double_t psdZpos;
 static Double_t psdXpos;
 
+static TString mvdTag;
 static TString stsTag;
 static TString trdTag;
 static TString tofTag;
@@ -40,6 +43,9 @@ static TString tofTag;
 static TString stsDigi;
 static TString trdDigi;
 static TString tofDigi;
+
+static TString stsMatBudget;
+static TString mvdMatBudget;
 
 static TString  fieldMap;
 static Double_t fieldZ;
@@ -57,6 +63,7 @@ void dev_sis100_electron_setup()
   fieldSymType =  3;
 
   // -----  Tags  -----------------------------------------------------------
+  mvdTag       = "v15a";
   stsTag       = "v13x";
   trdTag       = "v15a_1e";
   tofTag       = "v13-5b";
@@ -66,11 +73,15 @@ void dev_sis100_electron_setup()
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
 
+  // -----  Material budget files -------------------------------------------
+  stsMatBudget      = "sts/sts_matbudget_" + stsTag + ".root";
+  mvdMatBudget      = "mvd/mvd_matbudget_" + mvdTag + ".root";
+
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
   pipeGeom     = "pipe/pipe_v14l.root";
-  magnetGeom   = "magnet/magnet_v12b.geo.root";
-  mvdGeom      = "mvd/mvd_v15a.geo.root";
+  magnetGeom   = "magnet/magnet_v15a.geo.root";
+  mvdGeom      = "mvd/mvd_" + mvdTag + ".geo.root";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
   richGeom     = "rich/rich_v14a_1e.root";
   muchGeom     = "";
