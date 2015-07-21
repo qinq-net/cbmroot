@@ -870,14 +870,14 @@ void CbmAnaJpsiTask::SignalAndBgReco()
 		    	FillPairHists(&fCandidates[iP], &fCandidates[iM], &pMC, &pRec, kJpsiPtCut);
 		    }
 
-			if (isChiPrimary && isEl && pRec.fPt<0.4){fHM->H1("fh_ee_signal_minv_diff_ptcuts_0")->Fill(pRec.fMinv);}
-			if (isChiPrimary && isEl && pRec.fPt>=0.4 && pRec.fPt<0.8){fHM->H1("fh_ee_signal_minv_diff_ptcuts_1")->Fill(pRec.fMinv);}
-			if (isChiPrimary && isEl && pRec.fPt>=0.8 && pRec.fPt<1.2){fHM->H1("fh_ee_signal_minv_diff_ptcuts_2")->Fill(pRec.fMinv);}
-			if (isChiPrimary && isEl && pRec.fPt>=1.2 && pRec.fPt<1.6){fHM->H1("fh_ee_signal_minv_diff_ptcuts_3")->Fill(pRec.fMinv);}
-			if (isChiPrimary && isEl && pRec.fPt>=1.6 && pRec.fPt<2.0){fHM->H1("fh_ee_signal_minv_diff_ptcuts_4")->Fill(pRec.fMinv);}
-			if (isChiPrimary && isEl && pRec.fPt>=2.0 && pRec.fPt<2.4){fHM->H1("fh_ee_signal_minv_diff_ptcuts_5")->Fill(pRec.fMinv);}
-			if (isChiPrimary && isEl && pRec.fPt>=2.4 && pRec.fPt<3.0){fHM->H1("fh_ee_signal_minv_diff_ptcuts_6")->Fill(pRec.fMinv);}
-			if (isChiPrimary && isEl && pRec.fPt>=3.0 && pRec.fPt<6.0){fHM->H1("fh_ee_signal_minv_diff_ptcuts_7")->Fill(pRec.fMinv);}
+			if (isChiPrimary && isEl && pRec.fPt<0.4){fHM->H1("fh_ee_signal_minv_diff_ptcuts_0")->Fill(pRec.fMinv, fWeight);}
+			if (isChiPrimary && isEl && pRec.fPt>=0.4 && pRec.fPt<0.8){fHM->H1("fh_ee_signal_minv_diff_ptcuts_1")->Fill(pRec.fMinv, fWeight);}
+			if (isChiPrimary && isEl && pRec.fPt>=0.8 && pRec.fPt<1.2){fHM->H1("fh_ee_signal_minv_diff_ptcuts_2")->Fill(pRec.fMinv, fWeight);}
+			if (isChiPrimary && isEl && pRec.fPt>=1.2 && pRec.fPt<1.6){fHM->H1("fh_ee_signal_minv_diff_ptcuts_3")->Fill(pRec.fMinv, fWeight);}
+			if (isChiPrimary && isEl && pRec.fPt>=1.6 && pRec.fPt<2.0){fHM->H1("fh_ee_signal_minv_diff_ptcuts_4")->Fill(pRec.fMinv, fWeight);}
+			if (isChiPrimary && isEl && pRec.fPt>=2.0 && pRec.fPt<2.4){fHM->H1("fh_ee_signal_minv_diff_ptcuts_5")->Fill(pRec.fMinv, fWeight);}
+			if (isChiPrimary && isEl && pRec.fPt>=2.4 && pRec.fPt<3.0){fHM->H1("fh_ee_signal_minv_diff_ptcuts_6")->Fill(pRec.fMinv, fWeight);}
+			if (isChiPrimary && isEl && pRec.fPt>=3.0 && pRec.fPt<6.0){fHM->H1("fh_ee_signal_minv_diff_ptcuts_7")->Fill(pRec.fMinv, fWeight);}
 
 		}//iM
 	}//iP

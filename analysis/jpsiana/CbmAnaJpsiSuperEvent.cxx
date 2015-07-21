@@ -75,22 +75,22 @@ void CbmAnaJpsiSuperEvent::Run()
 void CbmAnaJpsiSuperEvent::InitHist()
 {
 	fHM = new CbmHistManager();
-	fHM->Create1<TH1D>("fh_se_bg_minv_reco", "fh_se_bg_minv_reco;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
-	fHM->Create1<TH1D>("fh_se_bg_minv_chi2prim", "fh_se_bg_minv_chi2prim;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
-	fHM->Create1<TH1D>("fh_se_bg_minv_elid", "fh_se_bg_minv_elid;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
-	fHM->Create1<TH1D>("fh_se_bg_minv_ptcut", "fh_se_bg_minv_ptcut;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_minv_reco", "fh_se_bg_minv_reco;M_{ee} [GeV/c^{2}];particles/event", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_minv_chi2prim", "fh_se_bg_minv_chi2prim;M_{ee} [GeV/c^{2}];particles/event", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_minv_elid", "fh_se_bg_minv_elid;M_{ee} [GeV/c^{2}];particles/event", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_minv_ptcut", "fh_se_bg_minv_ptcut;M_{ee} [GeV/c^{2}];particles/event", 4000, 0 , 4.);
 
 	fHM->Create1<TH1D>("fh_se_event_number", "fh_se_event_number;a.u.;Number of events", 1, 0, 1.);
 
-	fHM->Create1<TH1D>("fh_se_bg_participants_minv_gg", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
-	fHM->Create1<TH1D>("fh_se_bg_participants_minv_gp", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
-	fHM->Create1<TH1D>("fh_se_bg_participants_minv_go", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
-	fHM->Create1<TH1D>("fh_se_bg_participants_minv_pg", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
-	fHM->Create1<TH1D>("fh_se_bg_participants_minv_pp", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
-	fHM->Create1<TH1D>("fh_se_bg_participants_minv_po", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
-	fHM->Create1<TH1D>("fh_se_bg_participants_minv_og", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
-	fHM->Create1<TH1D>("fh_se_bg_participants_minv_op", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
-	fHM->Create1<TH1D>("fh_se_bg_participants_minv_oo", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];Yield", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_gg", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];particles/event", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_gp", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];particles/event", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_go", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];particles/event", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_pg", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];particles/event", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_pp", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];particles/event", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_po", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];particles/event", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_og", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];particles/event", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_op", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];particles/event", 4000, 0 , 4.);
+	fHM->Create1<TH1D>("fh_se_bg_participants_minv_oo", "fh_se_bg_participants_minv_gg;M_{ee} [GeV/c^{2}];particles/event", 4000, 0 , 4.);
 
 	fHM->Create1<TH1D>("fh_SE_PdgCode_of Others_BG", "fh_SE_PdgCode_of Others_BG;PDGCode;Tracks per Event", 500,-0.5,499.5);
 

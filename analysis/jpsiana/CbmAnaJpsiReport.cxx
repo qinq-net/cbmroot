@@ -307,7 +307,7 @@ void CbmAnaJpsiReport::DrawMinvMismatches(
 		("true match (e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchEl / nofBg, 1)+ "%)")
 		("true match (not e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchNotEl / nofBg, 1)+ "%)")
 		("mismatch (" + Cbm::NumberToString(100. * misMatch / nofBg)+ "%)"),
-		kLinear, kLinear, true, 0.4, 0.7, 0.99, 0.99);
+		kLinear, kLog, true, 0.63, 0.8, 0.99, 0.99);
 
     DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[step], 0.15, 0.9, 0.35, 0.99);
 }

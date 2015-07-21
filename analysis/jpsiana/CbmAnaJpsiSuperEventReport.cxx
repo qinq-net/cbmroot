@@ -83,12 +83,15 @@ void CbmAnaJpsiSuperEventReport::Draw()
     Int_t nRebins = 20;
 	fHMEventByEvent->RebinByPattern("fh_signal_minv.+", nRebins);
 	fHMEventByEvent->RebinByPattern("fh_bg_minv.+", nRebins);
+	fHMEventByEvent->RebinByPattern("fh_ee_signal_minv_diff_ptcuts.+", nRebins);
     fHMSuperEvent->RebinByPattern("fh_se_bg_participants_minv.+", nRebins);
     fHMSuperEvent->RebinByPattern("fh_se_bg_truematch.+", nRebins);
     fHMSuperEvent->RebinByPattern("fh_se_bg_mismatch.+", nRebins);
 
+
 	fHMEventByEvent->ScaleByPattern("fh_signal_minv.+", nRebins);
 	fHMEventByEvent->ScaleByPattern("fh_bg_minv.+", nRebins);
+	fHMEventByEvent->ScaleByPattern("fh_ee_signal_minv_diff_ptcuts.+", nRebins);
     fHMSuperEvent->ScaleByPattern("fh_se_bg_participants_minv.+", nRebins);
     fHMSuperEvent->ScaleByPattern("fh_se_bg_truematch.+", nRebins);
     fHMSuperEvent->ScaleByPattern("fh_se_bg_mismatch.+", nRebins);
@@ -167,10 +170,12 @@ void CbmAnaJpsiSuperEventReport::DrawMinvSignalBg()
   c6->Divide(4,2);
   for (int i=0;i<8;i++){
   c6->cd(i+1);
-  TH1D* fhBgSignaldiffPtCuts = (TH1D*) fHMSuperEvent->H1("fh_se_bg_minv_diff_ptcuts_" + Cbm::NumberToString(i))->Clone();
-  fhBgSignaldiffPtCuts->Add((TH1D*) fHMEventByEvent->H1("fh_ee_signal_minv_diff_ptcuts_" + Cbm::NumberToString(i))->Clone());
-  fhBgSignaldiffPtCuts->SetMinimum(1e-9);
-  DrawH1(list_of(fhBgSignaldiffPtCuts),list_of("Signal and Background"), kLinear, kLog, true, 0.65, 0.9, 0.99, 0.95);
+  TH1D* fhBgDiffPtCuts = (TH1D*) fHMSuperEvent->H1("fh_se_bg_minv_diff_ptcuts_" + Cbm::NumberToString(i))->Clone();
+  TH1D* fhSignalDiffPtCuts = (TH1D*) fHMEventByEvent->H1("fh_ee_signal_minv_diff_ptcuts_" + Cbm::NumberToString(i))->Clone();
+  TH1D* fhBgSignalDiffPtCuts = (TH1D*) fhBgDiffPtCuts->Clone();
+  fhBgSignalDiffPtCuts->Add(fhSignalDiffPtCuts);
+  fhBgSignalDiffPtCuts->SetMinimum(1e-9);
+  DrawH1(list_of(fhBgDiffPtCuts)(fhSignalDiffPtCuts)(fhBgSignalDiffPtCuts),list_of("Background")("Signal")("Signal and Background"), kLinear, kLog, true, 0.65, 0.8, 0.99, 0.95);
   }
 }
 
@@ -273,7 +278,7 @@ void CbmAnaJpsiSuperEventReport::DrawMinvMismatchPt()
 			("true match (e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchEl / nofBg, 1)+ "%)")
 			("true match (not e^{#pm}) (" + Cbm::NumberToString(100. * trueMatchNotEl / nofBg, 1)+ "%)")
 			("mismatch (" + Cbm::NumberToString(100. * misMatch / nofBg)+ "%)"),
-			kLinear, kLinear, true, 0.4, 0.7, 0.99, 0.99);
+			kLinear, kLog, true, 0.65, 0.8, 0.99, 0.99);
 
 	    DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.15, 0.9, 0.35, 0.99);
 }
