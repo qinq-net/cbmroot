@@ -173,12 +173,11 @@ if [ $SETUP_CBMROOT -ge 1 ]; then
   cd input
   ln -s ../../fieldmaps/* .
   cd ..
-  
-  . build/config.sh
-  
+    
   echo done installing CbmRoot
 fi
 
+echo". build/config.sh"
 echo "export SIMPATH=$SIMPATH"
 echo "export FAIRROOTPATH=$FAIRROOTPATH"
 
