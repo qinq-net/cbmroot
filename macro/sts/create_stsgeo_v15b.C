@@ -2290,8 +2290,10 @@ TGeoVolume* ConstructSmallCone(Double_t coneDz)
 //	TGeoConeSeg* A = new TGeoConeSeg ("A", coneDz, 6., 7.6, 6., 6.04, 0., 180.);
 //	TGeoBBox* B = new TGeoBBox ("B", 8., 6., 10.);
 
-//	TGeoConeSeg* A = new TGeoConeSeg ("A", coneDz, 3., 4.6, 3., 3.04, 0., 180.);
-	TGeoConeSeg* A = new TGeoConeSeg ("A", coneDz, 3., 3.2, 3., 3.2, 0., 180.);
+	Double_t radius    = 3.0;
+	Double_t thickness = 0.02;
+//	TGeoConeSeg* A = new TGeoConeSeg ("A", coneDz, 3., 3.2, 3., 3.2, 0., 180.);
+	TGeoConeSeg* A = new TGeoConeSeg ("A", coneDz, radius, radius+thickness, radius, radius+thickness, 0., 180.);
 	TGeoBBox* B = new TGeoBBox ("B", 8., 6., 10.);
 
 	TGeoCombiTrans* M = new TGeoCombiTrans ("M");
