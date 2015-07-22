@@ -37,8 +37,8 @@ static TString stsDigi;
 static TString trdDigi;
 static TString tofDigi;
 
-static TString stsMatBudget;
 static TString mvdMatBudget;
+static TString stsMatBudget;
 
 static TString  fieldMap;
 static Double_t fieldZ;
@@ -67,8 +67,8 @@ void sis300_muon_setup()
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
 
   // -----  Material budget files -------------------------------------------
-  stsMatBudget      = "sts/sts_matbudget_" + stsTag + ".root";
-  mvdMatBudget      = "";
+  mvdMatBudget = "";
+  stsMatBudget = "sts/sts_matbudget_" + stsTag + ".root";
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";

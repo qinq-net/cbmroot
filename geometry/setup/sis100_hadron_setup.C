@@ -39,8 +39,8 @@ static TString stsDigi;
 static TString trdDigi;
 static TString tofDigi;
 
-static TString stsMatBudget;
 static TString mvdMatBudget;
+static TString stsMatBudget;
 
 static TString  fieldMap;
 static Double_t fieldZ;
@@ -69,8 +69,8 @@ void sis100_hadron_setup()
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
 
   // -----  Material budget files -------------------------------------------
-  stsMatBudget      = "sts/sts_matbudget_" + stsTag + ".root";
-  mvdMatBudget      = "mvd/mvd_matbudget_" + mvdTag + ".root";
+  stsMatBudget = "sts/sts_matbudget_" + stsTag + ".root";
+  mvdMatBudget = "mvd/mvd_matbudget_" + mvdTag + ".root";
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
