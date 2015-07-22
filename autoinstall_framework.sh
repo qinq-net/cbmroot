@@ -177,7 +177,8 @@ if [ $SETUP_CBMROOT -ge 1 ]; then
   echo done installing CbmRoot
 fi
 
-echo". build/config.sh"
+echo
+echo ". build/config.sh"
 echo "export SIMPATH=$SIMPATH"
 echo "export FAIRROOTPATH=$FAIRROOTPATH"
 
