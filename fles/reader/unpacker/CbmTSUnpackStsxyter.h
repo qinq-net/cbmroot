@@ -79,7 +79,7 @@ private:
 
     static const uint8_t kHitSignatureFirstBit = __SWAPWORDS( 30 );
     static const uint8_t kHitSignatureNBits = 31 - 30 + 1 ;
-    static const uint8_t kHitSignatureValue = 0b10 ;
+    static const uint8_t kHitSignatureValue = 2; // 0b10 ;
 
     static const uint8_t kHitLinkFirstBit = __SWAPWORDS( 28 );
     static const uint8_t kHitLinkNBits = 29 - 28 + 1 ;
@@ -102,7 +102,7 @@ private:
 
     static const uint8_t kHitUnusedBits23FirstBit = __SWAPWORDS( 12 );
     static const uint8_t kHitUnusedBits23NBits = 13 - 12 + 1;
-    static const uint32_t kHitUnusedBits23Value = 0b00;
+    static const uint32_t kHitUnusedBits23Value = 0; // 0b00;
 
     static const uint8_t kHitTimestampFirstBit = __SWAPWORDS( 0 );
     static const uint8_t kHitTimestampNBits = 11 - 0 + 1;
@@ -110,7 +110,7 @@ private:
 
     static const uint8_t kEpochSignatureFirstBit = __SWAPWORDS( 29 );
     static const uint8_t kEpochSignatureNBits = 3;
-    static const uint8_t kEpochSignatureValue = 0b001;
+    static const uint8_t kEpochSignatureValue = 1; // 0b001;
 
     static const uint8_t kEpochLinkFirstBit = __SWAPWORDS( 27 );
     static const uint8_t kEpochLinkNBits = 28 - 27 + 1;
