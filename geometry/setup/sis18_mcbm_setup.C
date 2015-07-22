@@ -45,7 +45,7 @@ void sis18_mcbm_setup()
   fieldSymType =  3;
 
   // -----  Tags  -----------------------------------------------------------
-  stsTag       = "v18d";  // "v18c";  // "v18a";  // "v18b";
+  stsTag       = "v18e";  // "v18d";  // "v18c";  // "v18a";  // "v18b";
   trdTag       = "v18a_1e";
   tofTag       = "v13_5a";
   
