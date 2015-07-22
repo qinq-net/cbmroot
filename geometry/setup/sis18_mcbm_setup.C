@@ -50,9 +50,9 @@ void sis18_mcbm_setup()
   tofTag       = "v13_5a";
   
   // -----  DigiFiles  ------------------------------------------------------
-  stsDigi      = "sts/sts_" + stsTag + "_std.digi.par";
-  trdDigi      = "trd/trd_" + trdTag + ".digi.par";
-  tofDigi      = "tof/tof_" + tofTag + ".digi.par";
+  stsDigi      = "mcbm/sts_" + stsTag + "_std.digi.par";
+  trdDigi      = "mcbm/trd_" + trdTag + ".digi.par";
+  tofDigi      = "mcbm/tof_" + tofTag + ".digi.par";
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
