@@ -1,5 +1,5 @@
 *** Create_TRD_Geometry_v15a_3e.C	2015-07-21 13:38:02.141683474 +0200
---- Create_TRD_Geometry_v15a_2e.C	2015-07-22 09:43:06.756222696 +0200
+--- Create_TRD_Geometry_v15a_2e.C	2015-07-22 10:15:49.717956498 +0200
 ***************
 *** 83,90 ****
   const TString tagVersion   = "v15a";
@@ -78,3 +78,20 @@
   
     // Load needed material definition from media.geo file
     create_materials_from_media_file();
+***************
+*** 2691,2697 ****
+    PilPosZ[0] = LayerPosition[0] + I_width/2.;
+    PilPosZ[1] = LayerPosition[3] - I_width/2. + LayerThickness;
+    PilPosZ[2] = LayerPosition[4] + I_width/2.;		      
+!   PilPosZ[3] = LayerPosition[7] - I_width/2. + LayerThickness;
+    PilPosZ[4] = LayerPosition[8] + I_width/2.;		      
+    PilPosZ[5] = LayerPosition[9] - I_width/2. + LayerThickness;
+  
+--- 2693,2699 ----
+    PilPosZ[0] = LayerPosition[0] + I_width/2.;
+    PilPosZ[1] = LayerPosition[3] - I_width/2. + LayerThickness;
+    PilPosZ[2] = LayerPosition[4] + I_width/2.;		      
+!   PilPosZ[3] = LayerPosition[5] - I_width/2. + LayerThickness;
+    PilPosZ[4] = LayerPosition[8] + I_width/2.;		      
+    PilPosZ[5] = LayerPosition[9] - I_width/2. + LayerThickness;
+  
