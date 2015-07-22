@@ -21,6 +21,7 @@ static TString psdGeom;
 static Double_t psdZpos;
 static Double_t psdXpos;
 
+static TString mvdTag;
 static TString stsTag;
 static TString trdTag;
 static TString tofTag;
@@ -48,6 +49,7 @@ void sis18_mcbm_setup()
   fieldSymType =  3;
 
   // -----  Tags  -----------------------------------------------------------
+  mvdTag       = "v18a";
   stsTag       = "v18e";  // "v18d";
   trdTag       = "v18a_1e";
   tofTag       = "v13_5a";
@@ -65,7 +67,7 @@ void sis18_mcbm_setup()
   caveGeom     = "cave.geo";
   pipeGeom     = "mcbm/pipe_v18b.root";
   magnetGeom   = ""; // magnet/magnet_v15a.geo.root";
-  mvdGeom      = "mcbm/mvd_v18a.geo.root";
+  mvdGeom      = "mvd/mvd_" + mvdTag + ".geo.root";
   stsGeom      = "mcbm/sts_" + stsTag + ".geo.root";
   richGeom     = "mcbm/rich_prototype_v18b.geo";
   muchGeom     = "mcbm/much_v18a.geo";
