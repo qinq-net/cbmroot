@@ -29,6 +29,9 @@ static TString stsDigi;
 static TString trdDigi;
 static TString tofDigi;
 
+static TString mvdMatBudget;
+static TString stsMatBudget;
+
 static TString  fieldMap;
 static Double_t fieldZ;
 static Double_t fieldScale;
@@ -53,6 +56,10 @@ void sis18_mcbm_setup()
   stsDigi      = "mcbm/sts_" + stsTag + "_std.digi.par";
   trdDigi      = "mcbm/trd_" + trdTag + ".digi.par";
   tofDigi      = "mcbm/tof_" + tofTag + ".digi.par";
+
+  // -----  Material budget files -------------------------------------------
+  mvdMatBudget = "mcbm/mvd_matbudget_" + mvdTag + ".root";
+  stsMatBudget = "mcbm/sts_matbudget_" + stsTag + ".root";
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
