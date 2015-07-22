@@ -47,7 +47,8 @@ CbmRich::CbmRich() :
    fRichRefPlanePoints(new TClonesArray("CbmRichPoint")),
    fRichMirrorPoints(new TClonesArray("CbmRichPoint")),
    fRotation(NULL),
-   fPositionRotation(NULL)
+   fPositionRotation(NULL),
+   fConstructMirrorSupport(false)
 {
   /*
    fRichPoints = ;
@@ -75,7 +76,8 @@ CbmRich::CbmRich(
    fRichRefPlanePoints(new TClonesArray("CbmRichPoint")),
    fRichMirrorPoints(new TClonesArray("CbmRichPoint")),
    fRotation(new TGeoRotation("", rx, ry, rz)),
-   fPositionRotation(new TGeoCombiTrans(px, py, pz, fRotation))
+   fPositionRotation(new TGeoCombiTrans(px, py, pz, fRotation)),
+   fConstructMirrorSupport(false)
 {
    fVerboseLevel = 1;
 }
@@ -338,18 +340,20 @@ void CbmRich::ConstructAsciiGeometry()
    ProcessNodes ( volList );
 
    // add support structure for mirrors
-   TGeoMaterial * matAl = new TGeoMaterial("Al", 26.98, 13, 2.7);
-   TGeoMedium * Al = new TGeoMedium("Al",1, matAl);
-   TGeoVolume * volume = gGeoManager->MakeTube("grid", Al, 1.3, 1.5, 180);
+   if (fConstructMirrorSupport) {
+	   TGeoMaterial * matAl = new TGeoMaterial("Al", 26.98, 13, 2.7);
+	   TGeoMedium * Al = new TGeoMedium("Al",1, matAl);
+	   TGeoVolume * volume = gGeoManager->MakeTube("grid", Al, 1.3, 1.5, 180);
 
-   gGeoManager->Matrix(123456, 180, 0, 90, 90 , 90 , 0);//z rotation
-   gGeoManager->Matrix(123457, 90, 0, 180, 0, 90, 90);// y rotation
+	   gGeoManager->Matrix(123456, 180, 0, 90, 90 , 90 , 0);//z rotation
+	   gGeoManager->Matrix(123457, 90, 0, 180, 0, 90, 90);// y rotation
 
-   Double_t * buf = 0;
-   for (Int_t i = 0; i< 11; i++) {
-      if (i == 5) continue;
-      gGeoManager->Node("grid", 2*i+1, "rich1gas3", 36*i - 180, 0, 40, 123457, kTRUE, buf, 0);
-      gGeoManager->Node("grid", 2*i+2, "rich1gas3", 0, 36*i - 180, 48, 123456, kTRUE, buf, 0);
+	   Double_t * buf = 0;
+	   for (Int_t i = 0; i< 11; i++) {
+		  if (i == 5) continue;
+		  gGeoManager->Node("grid", 2*i+1, "rich1gas3", 36*i - 180, 0, 40, 123457, kTRUE, buf, 0);
+		  gGeoManager->Node("grid", 2*i+2, "rich1gas3", 0, 36*i - 180, 48, 123456, kTRUE, buf, 0);
+	   }
    }
 }
 

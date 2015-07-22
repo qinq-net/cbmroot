@@ -179,12 +179,18 @@ public:
     */
    void SetRegisterPhotonsOnSensitivePlane(Bool_t b) {fRegisterPhotonsOnSensitivePlane = b;}
 
+   void SetConstructMirrorSupport(Bool_t b) {fConstructMirrorSupport = b;}
+
 private:
 
    Int_t fPosIndex;
    // set to true if you want to register photons onto the sensitive gas plane,
    // if false then only charged particles are registered
    Bool_t fRegisterPhotonsOnSensitivePlane;
+
+   // only for .geo geometry
+   // if true: the mirror support will be added to .geo geometry
+   Bool_t fConstructMirrorSupport;
 
    TClonesArray* fRichPoints; // MC points onto the photodetector plane
    TClonesArray* fRichRefPlanePoints; // points on the reference plane
