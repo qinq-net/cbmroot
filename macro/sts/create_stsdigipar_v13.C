@@ -43,7 +43,7 @@ Double_t gkStereoFront =  0.;
 Double_t gkStereoBack  =  7.5;
 
 // ---> Geometry and digitisation tags
-TString gkGeoTag = "v13y";
+TString gkGeoTag  = "v13y"; // "v15a"; // "v15b"; // "v18e"; 
 TString gkDigiTag = "std";
 // ----------------------------------------------------------------------------
 
@@ -201,7 +201,7 @@ void create_stsdigipar_v13(const char* geoTag  = gkGeoTag,
 
   delete geoMan;
   fclose(parFile);
-  cout << "-I- Parameters successfully written to " << parFileName << endl;
+  cout << "[INFO   ] Parameters successfully written to " << parFileName << endl;
 }
 // ============================================================================
 // ======                   End of main function                          =====
