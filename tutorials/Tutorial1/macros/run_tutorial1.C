@@ -32,14 +32,6 @@ void run_tutorial1(Int_t nEvents = 10)
 			 momentum,
 			 theta,
 			 nEvents);
-/*
-  TString parFile = Form("%s/tutorial1_%s.params_p%1.3f_t%1.0f_n%d.txt",
-			 outDir.Data(),
-			 partName[chosenPart].Data(),
-			 momentum,
-			 theta,
-			 nEvents);
-*/  
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -53,20 +45,6 @@ void run_tutorial1(Int_t nEvents = 10)
   timer.Start();
   // ------------------------------------------------------------------------
 
-  // ----  Load libraries   -------------------------------------------------
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
-  gSystem->Load("libCbmBase");
-  gSystem->Load("libField");
-  gSystem->Load("libGen");
-  gSystem->Load("libPassive");
-  gSystem->Load("libTutorial1");
-  // ------------------------------------------------------------------------
-
-   
  
   // -----   Create simulation run   ----------------------------------------
   FairRunSim* run = new FairRunSim();
@@ -80,11 +58,9 @@ void run_tutorial1(Int_t nEvents = 10)
   // ------------------------------------------------------------------------
   
   // -----   Create geometry   ----------------------------------------------
-//  TString cave_geo = dir + "/tutorials/geometry/cave_vacuum.geo";
 
   FairModule* cave= new CbmCave("CAVE");
   cave->SetGeometryFileName("cave_vacuum.geo"); 
-//  cave->SetGeometryFileName(cave_geo.Data()); 
   run->AddModule(cave);
 
   FairDetector* tutdet = new CbmTutorialDet("TUTDET", kTRUE);
@@ -110,15 +86,8 @@ void run_tutorial1(Int_t nEvents = 10)
   // ------------------------------------------------------------------------
 
   // -----   Runtime database   ---------------------------------------------
-  /*
-  CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
-  fieldPar->SetParameters(magField);
-  fieldPar->setChanged();
-  fieldPar->setInputVersion(run->GetRunId(),1);
-  */
   Bool_t kParameterMerged = kTRUE;
   FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
-//  FairParAsciiFileIo* parOut = new FairParAsciiFileIo();
   parOut->open(parFile.Data());
   rtdb->setOutput(parOut);
   rtdb->saveOutput();

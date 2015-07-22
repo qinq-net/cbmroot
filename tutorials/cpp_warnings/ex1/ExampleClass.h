@@ -14,7 +14,7 @@ class ExampleClass
 
   std::vector<int> fVal3;
   
-//  int* fVal4;
+  int* fVal4;
 
 };
 
