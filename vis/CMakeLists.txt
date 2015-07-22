@@ -13,12 +13,12 @@ ${CBMROOT_SOURCE_DIR}/much/geo
 #${CBMROOT_SOURCE_DIR}/field 
 #${CBMROOT_SOURCE_DIR}/passive 
 
-#${CBMROOT_SOURCE_DIR}/cbmbase 
+#${CBMROOT_SOURCE_DIR}/base 
 
-${CBMROOT_SOURCE_DIR}/cbmdata 
-${CBMROOT_SOURCE_DIR}/cbmdata/much 
-${CBMROOT_SOURCE_DIR}/cbmdata/mvd 
-${CBMROOT_SOURCE_DIR}/cbmdata/sts 
+${CBMROOT_SOURCE_DIR}/data 
+${CBMROOT_SOURCE_DIR}/data/much 
+${CBMROOT_SOURCE_DIR}/data/mvd 
+${CBMROOT_SOURCE_DIR}/data/sts 
 )
 
 Include_Directories(${INCLUDE_DIRECTORIES})

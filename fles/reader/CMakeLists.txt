@@ -3,11 +3,11 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 Set(INCLUDE_DIRECTORIES
-  ${CBMROOT_SOURCE_DIR}/cbmdata
-  ${CBMROOT_SOURCE_DIR}/cbmdata/trd
-  ${CBMROOT_SOURCE_DIR}/cbmdata/raw
-  ${CBMROOT_SOURCE_DIR}/cbmdata/beamtime/fhodo
-  ${CBMROOT_SOURCE_DIR}/cbmbase
+  ${CBMROOT_SOURCE_DIR}/data
+  ${CBMROOT_SOURCE_DIR}/data/trd
+  ${CBMROOT_SOURCE_DIR}/data/raw
+  ${CBMROOT_SOURCE_DIR}/data/beamtime/fhodo
+  ${CBMROOT_SOURCE_DIR}/base
   ${CBMROOT_SOURCE_DIR}/fles/reader
   ${CBMROOT_SOURCE_DIR}/fles/reader/unpacker
   ${CBMROOT_SOURCE_DIR}/fles/reader/tasks

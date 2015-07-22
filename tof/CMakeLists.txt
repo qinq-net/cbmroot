@@ -14,10 +14,10 @@ ${CBMROOT_SOURCE_DIR}/tof/TofTests
 #${CBMROOT_SOURCE_DIR}/unpack/tof/tdc
 #${CBMROOT_SOURCE_DIR}/unpack/tof/mapping
 
-${CBMROOT_SOURCE_DIR}/cbmbase 
+${CBMROOT_SOURCE_DIR}/base 
 
-${CBMROOT_SOURCE_DIR}/cbmdata
-${CBMROOT_SOURCE_DIR}/cbmdata/tof
+${CBMROOT_SOURCE_DIR}/data
+${CBMROOT_SOURCE_DIR}/data/tof
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})

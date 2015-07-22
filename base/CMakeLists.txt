@@ -10,11 +10,11 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
 Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 
 Set(INCLUDE_DIRECTORIES
-  ${CBMROOT_SOURCE_DIR}/cbmbase 
-  ${CBMROOT_SOURCE_DIR}/cbmdata
-  ${CBMROOT_SOURCE_DIR}/cbmdata/sts
+  ${CBMROOT_SOURCE_DIR}/base 
+  ${CBMROOT_SOURCE_DIR}/data
+  ${CBMROOT_SOURCE_DIR}/data/sts
   # needed by rootcling
-  ${CBMROOT_SOURCE_DIR}/cbmbase/report
+  ${CBMROOT_SOURCE_DIR}/base/report
 )
 Include_Directories( ${INCLUDE_DIRECTORIES})
 

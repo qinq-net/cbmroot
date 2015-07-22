@@ -4,13 +4,13 @@
 
 Set(INCLUDE_DIRECTORIES
   ${BASE_INCLUDE_DIRECTORIES} 
-  ${CBMROOT_SOURCE_DIR}/cbmbase
-  ${CBMROOT_SOURCE_DIR}/cbmdata
+  ${CBMROOT_SOURCE_DIR}/base
+  ${CBMROOT_SOURCE_DIR}/data
 #  ${CBMROOT_SOURCE_DIR}/trd/param
-  ${CBMROOT_SOURCE_DIR}/cbmdata/sts
-  ${CBMROOT_SOURCE_DIR}/cbmdata/much
-  ${CBMROOT_SOURCE_DIR}/cbmdata/beamtime
-  ${CBMROOT_SOURCE_DIR}/cbmdata/beamtime/fhodo
+  ${CBMROOT_SOURCE_DIR}/data/sts
+  ${CBMROOT_SOURCE_DIR}/data/much
+  ${CBMROOT_SOURCE_DIR}/data/beamtime
+  ${CBMROOT_SOURCE_DIR}/data/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/sts/setup
   ${CBMROOT_BINARY_DIR}/roc/roc/roclib
 #  ${CBMROOT_SOURCE_DIR}/roclight

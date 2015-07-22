@@ -1,8 +1,8 @@
 set(INCLUDE_DIRECTORIES
  ${ROOT_INCLUDE_DIR}
  ${GTEST_INCLUDE_DIRS} 
- ${CMAKE_SOURCE_DIR}/cbmdata/trd
- ${CMAKE_SOURCE_DIR}/cbmbase
+ ${CMAKE_SOURCE_DIR}/data/trd
+ ${CMAKE_SOURCE_DIR}/base
 )
 
 include_directories( ${INCLUDE_DIRECTORIES})
@@ -16,7 +16,7 @@ link_directories( ${LINK_DIRECTORIES})
 ###############################
 Set ( Sources
     _GTestCbmTrdDetectorId.cxx
-    ${CMAKE_SOURCE_DIR}/cbmdata/trd/CbmTrdDetectorId.cxx
+    ${CMAKE_SOURCE_DIR}/data/trd/CbmTrdDetectorId.cxx
     )  
 
 add_executable(_GTestCbmTrdDetectorId ${Sources})
@@ -26,7 +26,7 @@ add_test(_GTestCbmTrdDetectorId ${PROJECT_BINARY_DIR}/bin/_GTestCbmTrdDetectorId
 ###############################
 #Set ( Sources
 #    _GTestCbmTrdDetectorId_simple.cxx
-#    ${CMAKE_SOURCE_DIR}/cbmdata/trd/CbmTrdDetectorId.cxx
+#    ${CMAKE_SOURCE_DIR}/data/trd/CbmTrdDetectorId.cxx
 #    )  
 #
 #add_executable(_GTestCbmTrdDetectorId_simple ${Sources})
@@ -36,7 +36,7 @@ add_test(_GTestCbmTrdDetectorId ${PROJECT_BINARY_DIR}/bin/_GTestCbmTrdDetectorId
 ################################
 #Set ( Sources
 #    _GTestCbmTrdDetectorId_simple1.cxx
-#    ${CMAKE_SOURCE_DIR}/cbmdata/trd/CbmTrdDetectorId.cxx
+#    ${CMAKE_SOURCE_DIR}/data/trd/CbmTrdDetectorId.cxx
 #    )  
 #
 #add_executable(_GTestCbmTrdDetectorId_simple1 ${Sources})
@@ -46,7 +46,7 @@ add_test(_GTestCbmTrdDetectorId ${PROJECT_BINARY_DIR}/bin/_GTestCbmTrdDetectorId
 ################################
 #Set ( Sources
 #    _GTestCbmTrdDetectorId_simple2.cxx
-#    ${CMAKE_SOURCE_DIR}/cbmdata/trd/CbmTrdDetectorId.cxx
+#    ${CMAKE_SOURCE_DIR}/data/trd/CbmTrdDetectorId.cxx
 #    )  
 #
 #add_executable(_GTestCbmTrdDetectorId_simple2 ${Sources})
@@ -56,7 +56,7 @@ add_test(_GTestCbmTrdDetectorId ${PROJECT_BINARY_DIR}/bin/_GTestCbmTrdDetectorId
 ################################
 #Set ( Sources
 #    _GTestCbmTrdDetectorId_simple3.cxx
-#    ${CMAKE_SOURCE_DIR}/cbmdata/trd/CbmTrdDetectorId.cxx
+#    ${CMAKE_SOURCE_DIR}/data/trd/CbmTrdDetectorId.cxx
 #    )  
 #
 #add_executable(_GTestCbmTrdDetectorId_simple3 ${Sources})

@@ -5,21 +5,21 @@
 Set(INCLUDE_DIRECTORIES
 # needed by run/FairMCBuffer.h
 ${CBMROOT_SOURCE_DIR}/run 
-${CBMROOT_SOURCE_DIR}/cbmdata/mvd 
-${CBMROOT_SOURCE_DIR}/cbmdata/rich 
-${CBMROOT_SOURCE_DIR}/cbmdata/much 
-${CBMROOT_SOURCE_DIR}/cbmdata/trd 
-${CBMROOT_SOURCE_DIR}/cbmdata/tof 
-${CBMROOT_SOURCE_DIR}/cbmdata/ecal 
-${CBMROOT_SOURCE_DIR}/cbmdata/psd 
+${CBMROOT_SOURCE_DIR}/data/mvd 
+${CBMROOT_SOURCE_DIR}/data/rich 
+${CBMROOT_SOURCE_DIR}/data/much 
+${CBMROOT_SOURCE_DIR}/data/trd 
+${CBMROOT_SOURCE_DIR}/data/tof 
+${CBMROOT_SOURCE_DIR}/data/ecal 
+${CBMROOT_SOURCE_DIR}/data/psd 
 
-${CBMROOT_SOURCE_DIR}/cbmbase
-${CBMROOT_SOURCE_DIR}/cbmbase/draw
+${CBMROOT_SOURCE_DIR}/base
+${CBMROOT_SOURCE_DIR}/base/draw
 
-${CBMROOT_SOURCE_DIR}/cbmdata
-${CBMROOT_SOURCE_DIR}/cbmdata/sts
-${CBMROOT_SOURCE_DIR}/cbmdata/trd
-${CBMROOT_SOURCE_DIR}/cbmdata/global
+${CBMROOT_SOURCE_DIR}/data
+${CBMROOT_SOURCE_DIR}/data/sts
+${CBMROOT_SOURCE_DIR}/data/trd
+${CBMROOT_SOURCE_DIR}/data/global
 
 ${CBMROOT_SOURCE_DIR}/L1/vectors
 

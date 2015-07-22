@@ -12,17 +12,17 @@ ${CBMROOT_SOURCE_DIR}/rich/selection
 # needed by rootcling
 ${CBMROOT_SOURCE_DIR}/rich/prototype/beamtime
 
-${CBMROOT_SOURCE_DIR}/cbmbase 
-${CBMROOT_SOURCE_DIR}/cbmbase/report
-${CBMROOT_SOURCE_DIR}/cbmbase/draw
-${CBMROOT_SOURCE_DIR}/cbmbase/utils
+${CBMROOT_SOURCE_DIR}/base 
+${CBMROOT_SOURCE_DIR}/base/report
+${CBMROOT_SOURCE_DIR}/base/draw
+${CBMROOT_SOURCE_DIR}/base/utils
 
-${CBMROOT_SOURCE_DIR}/cbmdata
-${CBMROOT_SOURCE_DIR}/cbmdata/rich
-${CBMROOT_SOURCE_DIR}/cbmdata/raw
-${CBMROOT_SOURCE_DIR}/cbmdata/trd
-${CBMROOT_SOURCE_DIR}/cbmdata/sts
-${CBMROOT_SOURCE_DIR}/cbmdata/global
+${CBMROOT_SOURCE_DIR}/data
+${CBMROOT_SOURCE_DIR}/data/rich
+${CBMROOT_SOURCE_DIR}/data/raw
+${CBMROOT_SOURCE_DIR}/data/trd
+${CBMROOT_SOURCE_DIR}/data/sts
+${CBMROOT_SOURCE_DIR}/data/global
 
 ${CBMROOT_SOURCE_DIR}/littrack
 

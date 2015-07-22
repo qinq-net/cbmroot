@@ -14,13 +14,13 @@ ${CBMROOT_SOURCE_DIR}/mvd/plugins/tasks
 ${CBMROOT_SOURCE_DIR}/mvd/plugins/buffers
 ${CBMROOT_SOURCE_DIR}/mvd/SensorDataSheets
 
-#${CBMROOT_SOURCE_DIR}/cbmbase 
+#${CBMROOT_SOURCE_DIR}/base 
 
-${CBMROOT_SOURCE_DIR}/cbmdata
-#${CBMROOT_SOURCE_DIR}/cbmdata/sts
+${CBMROOT_SOURCE_DIR}/data
+#${CBMROOT_SOURCE_DIR}/data/sts
 
-${CBMROOT_SOURCE_DIR}/cbmdata/mvd
-#${CBMROOT_SOURCE_DIR}/cbmdata/global
+${CBMROOT_SOURCE_DIR}/data/mvd
+#${CBMROOT_SOURCE_DIR}/data/global
 
 
 #${CBMROOT_SOURCE_DIR}/sts

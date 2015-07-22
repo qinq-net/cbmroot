@@ -8,7 +8,7 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
 
 set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/tutorials/Tutorial1/src
-  ${CBMROOT_SOURCE_DIR}/cbmdata
+  ${CBMROOT_SOURCE_DIR}/data
 )
 
 include_directories( ${INCLUDE_DIRECTORIES})

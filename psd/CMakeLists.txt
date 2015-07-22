@@ -4,8 +4,8 @@
 
 Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/psd
-${CBMROOT_SOURCE_DIR}/cbmdata
-${CBMROOT_SOURCE_DIR}/cbmdata/psd
+${CBMROOT_SOURCE_DIR}/data
+${CBMROOT_SOURCE_DIR}/data/psd
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})

@@ -3,16 +3,16 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 Set(INCLUDE_DIRECTORIES
-${CBMROOT_SOURCE_DIR}/cbmbase 
-${CBMROOT_SOURCE_DIR}/cbmdata 
+${CBMROOT_SOURCE_DIR}/base 
+${CBMROOT_SOURCE_DIR}/data 
 # needed by rootcling
-${CBMROOT_SOURCE_DIR}/cbmdata/raw
-${CBMROOT_SOURCE_DIR}/cbmdata/beamtime/fhodo
-${CBMROOT_SOURCE_DIR}/cbmdata/mvd
-${CBMROOT_SOURCE_DIR}/cbmdata/much
-${CBMROOT_SOURCE_DIR}/cbmdata/trd
-${CBMROOT_SOURCE_DIR}/cbmdata/tof
-${CBMROOT_SOURCE_DIR}/cbmdata/ecal
+${CBMROOT_SOURCE_DIR}/data/raw
+${CBMROOT_SOURCE_DIR}/data/beamtime/fhodo
+${CBMROOT_SOURCE_DIR}/data/mvd
+${CBMROOT_SOURCE_DIR}/data/much
+${CBMROOT_SOURCE_DIR}/data/trd
+${CBMROOT_SOURCE_DIR}/data/tof
+${CBMROOT_SOURCE_DIR}/data/ecal
 )
 Include_Directories( ${INCLUDE_DIRECTORIES})
 

@@ -2,8 +2,8 @@ set(INCLUDE_DIRECTORIES
  ${ROOT_INCLUDE_DIR}
  ${GTEST_INCLUDE_DIRS} 
  ${CMAKE_SOURCE_DIR}/trd
- ${CMAKE_SOURCE_DIR}/cbmdata/trd
- ${CMAKE_SOURCE_DIR}/cbmbase
+ ${CMAKE_SOURCE_DIR}/data/trd
+ ${CMAKE_SOURCE_DIR}/base
  ${CMAKE_SOURCE_DIR}/fairtools
  ${CMAKE_SOURCE_DIR}/test/mock
  ${CMAKE_CURRENT_SOURCE_DIR}
@@ -18,7 +18,7 @@ set(LINK_DIRECTORIES
 link_directories( ${LINK_DIRECTORIES})
 
 Set(Sources
-    ${CMAKE_SOURCE_DIR}/cbmbase/CbmDetectorList.cxx	    
+    ${CMAKE_SOURCE_DIR}/base/CbmDetectorList.cxx	    
     ${CMAKE_SOURCE_DIR}/trd/CbmTrdGeoHandler.cxx
 )
 
@@ -29,7 +29,7 @@ ROOT_GENERATE_DICTIONARY()
 
 set(Sources ${Sources} ${DICTIONARY}
     _GTestTrdGeoHandler.cxx
-    ${CMAKE_SOURCE_DIR}/cbmdata/trd/CbmTrdDetectorId.cxx
+    ${CMAKE_SOURCE_DIR}/data/trd/CbmTrdDetectorId.cxx
     )  
  
 ############### build the test #####################

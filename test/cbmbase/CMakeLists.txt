@@ -1,7 +1,7 @@
 set(INCLUDE_DIRECTORIES
  ${ROOT_INCLUDE_DIR}
  ${GTEST_INCLUDE_DIRS} 
- ${CMAKE_SOURCE_DIR}/cbmbase
+ ${CMAKE_SOURCE_DIR}/base
  ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
@@ -14,7 +14,7 @@ set(LINK_DIRECTORIES
 link_directories( ${LINK_DIRECTORIES})
 
 Set ( Sources
-    ${CMAKE_SOURCE_DIR}/cbmbase/CbmDetectorList.cxx
+    ${CMAKE_SOURCE_DIR}/base/CbmDetectorList.cxx
     )  
 
 CHANGE_FILE_EXTENSION(*.cxx *.h HDRS "${Sources}")

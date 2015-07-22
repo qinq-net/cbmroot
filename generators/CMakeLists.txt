@@ -3,8 +3,8 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 Set(INCLUDE_DIRECTORIES
-${CBMROOT_SOURCE_DIR}/cbmdata
-${CBMROOT_SOURCE_DIR}/cbmgenerators
+${CBMROOT_SOURCE_DIR}/data
+${CBMROOT_SOURCE_DIR}/generators
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})

@@ -6,11 +6,11 @@
 Set(INCLUDE_DIRECTORIES
   ${BASE_INCLUDE_DIRECTORIES} 
   ${CBMROOT_SOURCE_DIR}/tracking/lx
-  ${CBMROOT_SOURCE_DIR}/cbmbase 
-  ${CBMROOT_SOURCE_DIR}/cbmdata 
-  ${CBMROOT_SOURCE_DIR}/cbmdata/much 
-  ${CBMROOT_SOURCE_DIR}/cbmdata/sts 
-  ${CBMROOT_SOURCE_DIR}/cbmdata/global
+  ${CBMROOT_SOURCE_DIR}/base 
+  ${CBMROOT_SOURCE_DIR}/data 
+  ${CBMROOT_SOURCE_DIR}/data/much 
+  ${CBMROOT_SOURCE_DIR}/data/sts 
+  ${CBMROOT_SOURCE_DIR}/data/global
   ${CBMROOT_SOURCE_DIR}/much/geo
   ${CBMROOT_SOURCE_DIR}/KF
   ${CBMROOT_SOURCE_DIR}/KF/Interface

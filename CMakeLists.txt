@@ -204,19 +204,6 @@ If(BUILD_BEAMTIME)
   Set(BUILD_MBS FALSE)
 EndIf(BUILD_BEAMTIME)
 
-IF(NOT FAIRROOT_FOUND)
-
-add_subdirectory (fairtools)
-add_subdirectory (MbsAPI)
-add_subdirectory (base)
-add_subdirectory (dbase)
-add_subdirectory (geobase)
-add_subdirectory (parbase) 
-add_subdirectory (generators)
-add_subdirectory (geane)
-add_subdirectory (trackbase)
-ENDIF (NOT FAIRROOT_FOUND)
-
 Execute_Process(COMMAND ${ROOT_CONFIG_EXECUTABLE} --has-vc
                 OUTPUT_VARIABLE ROOT_HAS_VC
                )
@@ -265,10 +252,10 @@ EndIf()
 ### Subdirectories to be compiled #####
 
 ### Base directories
-add_subdirectory (cbmbase)
-add_subdirectory (cbmdata)
+add_subdirectory (base)
+add_subdirectory (data)
 add_subdirectory (field)  
-add_subdirectory (cbmgenerators)
+add_subdirectory (generators)
 add_subdirectory (run)
 
 ### Module directories
@@ -342,11 +329,8 @@ Execute_Process(COMMAND ${ROOT_CONFIG_EXECUTABLE} --has-opengl
 
 If(${EveIsBuild} STREQUAL yes)
   Message(STATUS "Build the eventdisplay.")
-IF(NOT FAIRROOT_FOUND)
-  add_subdirectory (eventdisplay)
-ENDIF(NOT FAIRROOT_FOUND)
 
-  add_subdirectory (cbmdisplay)
+  add_subdirectory (eventdisplay)
 
 Else(${EveIsBuild} STREQUAL yes)
   Message(STATUS "The eventdisplay is not build, there is no OpenGL support.")
