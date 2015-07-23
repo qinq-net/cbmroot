@@ -37,8 +37,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 
   TString inFile  = inDir + defaultInputFile;
 
-  CbmTarget* target = new CbmTarget("Gold", 0.025);
-  
+  CbmTarget* target = new CbmTarget("Gold", 0.25, 30, 2.5);  // set target at 30 degrees rotation angle around y
 
   // In general, the following parts need not be touched
   // ========================================================================

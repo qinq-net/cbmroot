@@ -20,6 +20,7 @@ CbmTarget::CbmTarget() : FairModule("Target", "CBM target"),
                          fDiameter(0.),
                          fDensity(0.),
                          fPosX(0.), fPosY(0.), fPosZ(0.),
+                         fRotY(0.),
                          fMaterial(""),
                          fBuildFromFile(kFALSE) {
 }
@@ -35,6 +36,7 @@ CbmTarget::CbmTarget(const char* fileName) :
                          fDiameter(0.),
                          fDensity(0.),
                          fPosX(0.), fPosY(0.), fPosZ(0.),
+                         fRotY(0.),
                          fMaterial(""),
                          fBuildFromFile(kFALSE) {
  SetGeometryFileName(fileName);
@@ -44,7 +46,7 @@ CbmTarget::CbmTarget(const char* fileName) :
 
 
 // -----   Constructor with properties   ------------------------------------
-CbmTarget::CbmTarget(const char* element, Double_t thickness,
+CbmTarget::CbmTarget(const char* element, Double_t thickness, Double_t yrotation,
                      Double_t diameter, Double_t density) :
                      FairModule("Target", "CBM target"),
                      fZ(0),
@@ -52,6 +54,7 @@ CbmTarget::CbmTarget(const char* element, Double_t thickness,
                      fDiameter(diameter),
                      fDensity(density),
                      fPosX(0.), fPosY(0.), fPosZ(0.),
+                     fRotY(yrotation),
                      fMaterial(element),
                      fBuildFromFile(kFALSE) {
 }
@@ -60,7 +63,7 @@ CbmTarget::CbmTarget(const char* element, Double_t thickness,
 
 
 // -----   Constructor with properties   ------------------------------------
-CbmTarget::CbmTarget(Int_t z, Double_t thickness,
+CbmTarget::CbmTarget(Int_t z, Double_t thickness, Double_t yrotation,
                      Double_t diameter, Double_t density) :
                      FairModule("Target", "CBM target"),
                      fZ(z),
@@ -68,6 +71,7 @@ CbmTarget::CbmTarget(Int_t z, Double_t thickness,
                      fDiameter(diameter),
                      fDensity(density),
                      fPosX(0.), fPosY(0.), fPosZ(0.),
+                     fRotY(yrotation),
                      fMaterial(""),
                      fBuildFromFile(kFALSE) {
 }
@@ -175,9 +179,9 @@ void CbmTarget::ConstructGeometry() {
   // in the global c.s. defined by the desired target position.
   TGeoHMatrix r1 = geoMan->GetCurrentMatrix()->Inverse();
   TGeoTranslation r2 = TGeoTranslation(fPosX, fPosY, fPosZ);
+  TGeoRotation* target_rotation = new TGeoRotation(); target_rotation->RotateY(fRotY);
   TGeoHMatrix* targetMatrix = new TGeoHMatrix("targetToGlobal");
-  *targetMatrix = r1 * r2;
-
+  *targetMatrix = r1 * r2 * *target_rotation;
 
   // Create target volume and add it as node to the mother volume
   TGeoVolume* target = geoMan->MakeTube("target", targMedium, 0.,
