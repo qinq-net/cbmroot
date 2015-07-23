@@ -67,10 +67,10 @@ void sis18_mcbm_setup()
   caveGeom     = "cave.geo";
   pipeGeom     = "mcbm/pipe_v18b.root";
   magnetGeom   = ""; // magnet/magnet_v15a.geo.root";
-  mvdGeom      = "mcbm/mvd_" + mvdTag + ".geo.root";
+  mvdGeom      = ""; //no reco// "mcbm/mvd_" + mvdTag + ".geo.root";
   stsGeom      = "mcbm/sts_" + stsTag + ".geo.root";
-  richGeom     = "mcbm/rich_prototype_v18b.geo";
-  muchGeom     = "mcbm/much_v18a.geo";
+  richGeom     = ""; //no reco// "mcbm/rich_prototype_v18b.geo";
+  muchGeom     = ""; //no reco// "mcbm/much_v18a.geo";
   shieldGeom   = "";
   platformGeom = ""; // "passive/platform_v13a.geo";
   trdGeom      = "mcbm/trd_" + trdTag + ".geo.root";
