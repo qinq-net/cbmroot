@@ -226,7 +226,7 @@ void CbmMvdGeoHandler::NavigateTo(
 	else if(name.Contains("S3"))
 	fStationNumber = 3;
         else
-	LOG(FATAL) <<  "couldn't find Station in volume name, somthing seems fishy " << FairLogger::endl;
+	LOG(FATAL) <<  "couldn't find Station in volume name, something seems fishy " << FairLogger::endl;
 	local[0] = fVolumeShape->GetDX();
         local[1] = fVolumeShape->GetDY();
 	Double_t fGlobalMax[3]; 
@@ -345,7 +345,7 @@ if(fGeoTyp == FourStation || fGeoTyp == FourStationShift)
 fDetector = CbmMvdDetector::Instance();
 
 if(!fDetector)
-	LOG(FATAL) <<  "GeometryHandler coulden't find a valide Detector"
+	LOG(FATAL) <<  "GeometryHandler couldn't find a valid Detector"
 		   << FairLogger::endl;
 
 fDetector->SetParameterFile(fStationPar);
@@ -393,7 +393,7 @@ Int_t iStation = 0;
 else if(fGeoTyp == MiniCbm)
 {
 	if(!fDetector)
-	LOG(FATAL) <<  "GeometryHandler coulden't find a valide Detector"
+	LOG(FATAL) <<  "GeometryHandler couldn't find a valid Detector"
 		   << FairLogger::endl;
 
 fDetector->SetParameterFile(fStationPar);
