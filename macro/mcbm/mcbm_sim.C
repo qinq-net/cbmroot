@@ -163,7 +163,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   } 
   magField->SetPosition(0., 0., fieldZ);
   magField->SetScale(fieldScale);
-  fRun->SetField(magField);
+  //  fRun->SetField(magField);
   // ------------------------------------------------------------------------
 
   // Use the experiment specific MC Event header instead of the default one
@@ -178,6 +178,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
   uniGen->SetEventPlane(0. , 360.);
   primGen->AddGenerator(uniGen);
+  primGen->SetBeamAngle(30*3.141/180.,0,0,0);  // set direction of beam to 30 degrees
   fRun->SetGenerator(primGen);       
   // ------------------------------------------------------------------------
 
