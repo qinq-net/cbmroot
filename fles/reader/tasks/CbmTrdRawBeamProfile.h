@@ -44,11 +44,13 @@ class CbmTrdRawBeamProfile : public FairTask
     virtual Int_t GetRowID(CbmSpadicRawMessage* raw);
     virtual Int_t GetColumnID(CbmSpadicRawMessage* raw);
     virtual Int_t GetChannelOnPadPlane(Int_t SpadicChannel);
+    virtual Bool_t FragmentedPulseTest(CbmSpadicRawMessage* raw);
 
   private:
 
     /** Input array from previous already existing data level **/
     TClonesArray* fRawSpadic;
+    TClonesArray* fNxyterRaw;
    /** Output array **/
     TClonesArray* fDigis; //! TRD digis
     TClonesArray* fClusters;
@@ -56,9 +58,16 @@ class CbmTrdRawBeamProfile : public FairTask
     Int_t fiCluster;
     CbmHistManager* fHM;
 
-    Int_t fMessageCounter;
+    Int_t fSpadicMessageCounter;
+    Int_t fNxyterMessageCounter;
     Int_t fContainerCounter;
-
+    Int_t fInfoCounter;
+    Int_t fHitCounter;
+    Int_t fMultiHitCounter;
+    Int_t fErrorCounter;
+    Int_t fLostHitCounter;
+    Int_t fDoubleCounter;
+    Int_t fFragmentedCounter;
 
     std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > > fTimeBuffer;// <ASIC ID "Syscore%d_Spadic%d"<Time, <CombiId, SpadicMessage> >
 

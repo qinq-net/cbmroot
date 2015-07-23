@@ -1,6 +1,7 @@
 #include "CbmTrdRawBeamProfile.h"
 
 #include "CbmSpadicRawMessage.h"
+#include "CbmNxyterRawMessage.h"
 #include "CbmTrdDigi.h"
 #include "CbmTrdCluster.h"
 #include "CbmHistManager.h"
@@ -12,6 +13,7 @@
 
 #include "TH1.h"
 #include "TH2.h"
+#include "TCanvas.h"
 
 #include "TString.h"
 #include "TStyle.h"
@@ -28,8 +30,16 @@ CbmTrdRawBeamProfile::CbmTrdRawBeamProfile()
     fiDigi(0),
     fiCluster(0),
     fHM(new CbmHistManager()),
-    fMessageCounter(0),
+    fSpadicMessageCounter(0),
+    fNxyterMessageCounter(0),
     fContainerCounter(0),
+    fInfoCounter(0),
+    fHitCounter(0),
+    fMultiHitCounter(0),
+    fErrorCounter(0),
+    fLostHitCounter(0),
+    fDoubleCounter(0),
+    fFragmentedCounter(0),
     fTimeBuffer()
 {
   LOG(DEBUG) << "Default Constructor of CbmTrdRawBeamProfile" << FairLogger::endl;
@@ -80,9 +90,16 @@ InitStatus CbmTrdRawBeamProfile::Init()
   // Get a pointer to the previous already existing data level
   fRawSpadic = static_cast<TClonesArray*>(ioman->GetObject("SpadicRawMessage"));
   if ( ! fRawSpadic ) {
-    LOG(FATAL) << "No InputDataLevelName array!\n CbmTrdRawBeamProfile will be inactive" << FairLogger::endl;
+    LOG(FATAL) << "No InputDataLevelName SpadicRawMessage array!\n CbmTrdRawBeamProfile will be inactive" << FairLogger::endl;
     return kERROR;
   }
+  fNxyterRaw = static_cast<TClonesArray*>(ioman->GetObject("NxyterRawMessage"/*"CbmNxyterRawMessage"*/));
+  if ( ! fNxyterRaw ) {
+    LOG(ERROR) << "No InputDataLevelName CbmNxyterRawMessage array!\n Nxyter data within CbmTrdRawBeamProfile will be inactive" << FairLogger::endl;
+    //return kERROR;
+  }
+
+
 
   fDigis = new TClonesArray("CbmTrdDigi", 100);
   ioman->Register("TrdDigi", "TRD Digis", fDigis, kTRUE);
@@ -115,8 +132,8 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
   */
   fContainerCounter++;
   /*
-  Int_t channelMapping[32] = {31,15,30,14,29,13,28,12,27,11,26,10,25, 9,24, 8,
-			      23, 7,22, 6,21, 5,20, 4,19, 3,18, 2,17, 1,16, 0};
+    Int_t channelMapping[32] = {31,15,30,14,29,13,28,12,27,11,26,10,25, 9,24, 8,
+    23, 7,22, 6,21, 5,20, 4,19, 3,18, 2,17, 1,16, 0};
   */
   TString timebinName[32] = { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", 
 			      "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", 
@@ -125,13 +142,29 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 
   //std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > > timeBuffer;// <ASIC ID "Syscore%d_Spadic%d"<Time, <CombiId, SpadicMessage> >
 
+
+  Int_t entriesInNxyterMessage = fNxyterRaw->GetEntriesFast();
+  for (Int_t i=0; i < entriesInNxyterMessage; ++i) {
+    fNxyterMessageCounter++;
+    CbmNxyterRawMessage* raw = /*static_cast<*/(CbmNxyterRawMessage*)/*>*/(fNxyterRaw->At(i));
+    Int_t eqID = raw->GetEquipmentID();
+    Int_t sourceA = raw->GetSourceAddress();
+    //printf("EI%i SA%i ->",eqID,sourceA);
+    Int_t chID = raw->GetChannelID();
+    Int_t AdcValue = raw->GetADCvalue();
+    ULong_t time = raw->GetFullTime();
+  }
+
   Int_t entriesInMessage = fRawSpadic->GetEntriesFast();
   Int_t entries = fDigis->GetEntriesFast();
   Int_t sumTrigger[3][6] = {{0}};
+  Int_t sumError[3][6] = {{0}};
+  Int_t sumOverflow[3][6] = {{0}};
 
   LOG(DEBUG) << "Container:                                       " << fContainerCounter << FairLogger::endl;
-  LOG(DEBUG) << "Entries in Message:                              " << entriesInMessage << FairLogger::endl;
-  LOG(DEBUG) << "Entries in total:                                " << fMessageCounter << FairLogger::endl;
+  LOG(DEBUG) << "SPADIC Entries in Message:                       " << entriesInMessage << FairLogger::endl;
+  LOG(DEBUG) << "Nxyter Entries in Message:                       " << entriesInNxyterMessage << FairLogger::endl;
+  LOG(DEBUG) << "Entries in total:                                " << fSpadicMessageCounter << FairLogger::endl;
   LOG(DEBUG) << "Digis in TClonesArray:                           " << fDigis->GetEntriesFast() << FairLogger::endl;
   LOG(DEBUG) << "Clusters in TClonesArray:                        " << fClusters->GetEntriesFast() << FairLogger::endl;
   // Find info about hitType, stopType and infoType in cbmroot/fles/spadic/message/constants/..
@@ -162,9 +195,9 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
   Int_t clusterSize[3][6] = {{1}};
   Int_t rowId(0), columnId(0), combiId(0);
   Int_t wrongTimeOrder[3][6] = {{0}};
- 
+  Bool_t isHit(false), isInfo(false);
   for (Int_t i=0; i < entriesInMessage; ++i) {
-    fMessageCounter++;
+    fSpadicMessageCounter++;
     CbmSpadicRawMessage* raw = /*static_cast<*/(CbmSpadicRawMessage*)/*>*/(fRawSpadic->At(i));
     Int_t eqID = raw->GetEquipmentID();
     Int_t sourceA = raw->GetSourceAddress();
@@ -175,9 +208,26 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     Int_t triggerType=raw->GetTriggerType();
     Int_t stopType=raw->GetStopType();
     Int_t infoType=raw->GetInfoType();
+    Int_t bufferOverflowCount = raw->GetBufferOverflowCount();
+    fLostHitCounter += bufferOverflowCount;
+    if (triggerType == -1 && stopType == -1){
+      isHit = false;
+      isInfo = true;
+      fInfoCounter++;
+    } else {
+      isHit = true;
+      isInfo = false;
+      if (stopType == 3)
+	fMultiHitCounter++;
+      else if (stopType == 0)
+	fHitCounter++;
+      else
+	fErrorCounter++;
+    }
+
     if (stopType != 0 && stopType != 3)
       if (infoType > 6) {
-	LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter <<  " eqId " << eqID << " sourceA " << sourceA <<  " InfoType " << infoType << " out of range. Set to 7. StopType:" << stopType << " TriggerType:" << triggerType << FairLogger::endl;
+	LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter <<  " eqId " << eqID << " sourceA " << sourceA <<  " InfoType " << infoType << " out of range. Set to 7. StopType:" << stopType << " TriggerType:" << triggerType << FairLogger::endl;
 	infoType = 7;
       }
     Int_t groupId=raw->GetGroupId();
@@ -199,7 +249,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
       SysId = 2;
       break;
     default:
-      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter <<  " EquipmentID " << eqID << "not known." << FairLogger::endl;
+      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter <<  " EquipmentID " << eqID << "not known." << FairLogger::endl;
       break;
     }     
       
@@ -233,43 +283,44 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
       chID += 16;
       break;
     default:
-      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter << " Source Address " << sourceA << "not known." << FairLogger::endl;
+      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter << " Source Address " << sourceA << "not known." << FairLogger::endl;
       break;
     }   
     /*
-    if(chID % 2 == 0)
+      if(chID % 2 == 0)
       rowId = 0;
-    else
+      else
       rowId = 1;
-    //printf("EI%i SA%i ->|\n",eqID,sourceA);
-    */
+      //printf("EI%i SA%i ->|\n",eqID,sourceA);
+      */
     chID = GetChannelOnPadPlane(chID);//channelMapping[chID];// Remapping from ASIC to pad-plane
     /*
     // Compare to channel mapping from pad-plane to ASIC
     columnId = chID;
     if (columnId > 16) 
-      columnId -= 16;
+    columnId -= 16;
     */
     columnId = GetColumnID(raw);
     rowId = GetRowID(raw);
     combiId = rowId * (maxNrColumns + 1) + columnId;
 
     //if (stopType == 0 && triggerType > 0){
-
-    std::map<Int_t, CbmSpadicRawMessage*>::iterator timeBufferIt = fTimeBuffer[TString(syscore+spadic)][time].find(combiId);
-    if (timeBufferIt == fTimeBuffer[TString(syscore+spadic)][time].end()){
-      //printf("%p  time %12lu %12lu %s CI%i EI%i SA%i TT%i\n",std::addressof(raw),time,raw->GetFullTime(),(syscore+spadic).Data(),combiId,Int_t(raw->GetEquipmentID()),Int_t(raw->GetSourceAddress()),raw->GetTriggerType());
-     
-      fTimeBuffer[TString(syscore+spadic)][time][combiId]= new CbmSpadicRawMessage((Int_t)raw->GetEquipmentID(), (Int_t)raw->GetSourceAddress(), raw->GetChannelID(),
-										  raw->GetEpochMarker(), raw->GetTime(), raw->GetSuperEpoch(), raw->GetTriggerType(),
-										   raw->GetInfoType(), raw->GetStopType(), raw->GetGroupId(), raw->GetBufferOverflowCount(), raw->GetNrSamples(), raw->GetSamples());
-    } else {
-      //fTimeBuffer[TString(syscore+spadic)][time][-1]=raw;
-      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter << " SysId " << SysId << " SpaId " << SpaId << " at time " << time << " with combiId " << combiId << " already in buffer" << FairLogger::endl;
-      LOG(ERROR) << "                        " << TString(syscore+spadic) << " at time " << time << " with combiId " << combiId << " row " << rowId << " column " << columnId << FairLogger::endl;
+    if (isHit){
+      std::map<Int_t, CbmSpadicRawMessage*>::iterator timeBufferIt = fTimeBuffer[TString(syscore+spadic)][time].find(combiId);
+      if (timeBufferIt == fTimeBuffer[TString(syscore+spadic)][time].end()){
+	//printf("%p  time %12lu %12lu %s CI%i EI%i SA%i TT%i\n",std::addressof(raw),time,raw->GetFullTime(),(syscore+spadic).Data(),combiId,Int_t(raw->GetEquipmentID()),Int_t(raw->GetSourceAddress()),raw->GetTriggerType());
+	if (raw->GetStopType() == 0 )//|| raw->GetStopType() == 3 )
+	  fTimeBuffer[TString(syscore+spadic)][time][combiId]= new CbmSpadicRawMessage((Int_t)raw->GetEquipmentID(), (Int_t)raw->GetSourceAddress(), raw->GetChannelID(),
+										       raw->GetEpochMarker(), raw->GetTime(), raw->GetSuperEpoch(), raw->GetTriggerType(),
+										       raw->GetInfoType(), raw->GetStopType(), raw->GetGroupId(), raw->GetBufferOverflowCount(), raw->GetNrSamples(), raw->GetSamples());
+      } else {
+	//fTimeBuffer[TString(syscore+spadic)][time][-1]=raw;
+	LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter << " SysId " << SysId << " SpaId " << SpaId << " at time " << time << " with combiId " << combiId << " already in buffer" << FairLogger::endl;
+	LOG(ERROR) << "                        " << TString(syscore+spadic) << " at time " << time << " with combiId " << combiId << " row " << rowId << " column " << columnId << FairLogger::endl;
+	fDoubleCounter++;
+      }
+      //}
     }
-    //}
-
     if (time > lastSpadicTime[SysId][SpaId]){
       // ok, next hit
     
@@ -294,7 +345,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
       }
     } else {
       wrongTimeOrder[SysId][SpaId]++;
-      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter << " SPADIC " << SysId << SpaId << " event time " << time << " < last time " << lastSpadicTime[SysId][SpaId] << " entry " << i << " of " << entriesInMessage << FairLogger::endl;
+      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter << " SPADIC " << SysId << SpaId << " event time " << time << " < last time " << lastSpadicTime[SysId][SpaId] << " entry " << i << " of " << entriesInMessage << FairLogger::endl;
     }
     TString channelId;
     channelId.Form("_Ch%02d", chID);
@@ -313,84 +364,197 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     fHM->H1(TString("GroupId_" + syscore + spadic).Data())->Fill(groupId);
 
     if (stopType > 0){ //corrupt or multi message
-      TString histName = "ErrorCounter_" + syscore + spadic;
-      fHM->H1(histName.Data())->Fill(chID);   
+      //TString histName = "ErrorCounter_" + syscore + spadic;
+      //fHM->H1(histName.Data())->Fill(chID);  
+      sumError[SysId][SpaId]++;
     } else  {  //only normal message end
-      sumTrigger[SysId][SpaId]++;
-      TString histName = "CountRate_" + syscore + spadic;
-      fHM->H1(histName.Data())->Fill(chID);
+      if (isHit)
+	sumTrigger[SysId][SpaId]++;
+      if (isInfo)
+	sumOverflow[SysId][SpaId] += bufferOverflowCount;
 
-      histName = "Noise1_" + syscore + spadic + channelId;
-      Float_t Baseline = 0;
-      for (Int_t bin = 1; bin < 4; bin++){
-	Baseline += raw->GetSamples()[nrSamples-bin];
-	fHM->H1(histName.Data())->Fill(raw->GetSamples()[nrSamples-bin]);
-      }
-      Baseline /= 3.;
-   
-      histName = "BaseLine_" + syscore + spadic;
-      fHM->H2(histName.Data())->Fill(chID, Baseline);
+      if (isHit){
+	TString histName = "CountRate_" + syscore + spadic;
+	fHM->H1(histName.Data())->Fill(chID);
 
-      Float_t AdcIntegral = 0;
-      Float_t maxADC(-300);
-      Int_t maxTimeBin(-1);
-
-      for (Int_t bin = 0; bin < nrSamples; bin++) {
-	if (raw->GetSamples()[bin] > maxADC){
-	  maxADC = raw->GetSamples()[bin];
-	  maxTimeBin = bin;
+	histName = "Noise1_" + syscore + spadic + channelId;
+	Float_t Baseline = 0;
+	for (Int_t bin = 1; bin < 4; bin++){
+	  Baseline += raw->GetSamples()[nrSamples-bin];
+	  fHM->H1(histName.Data())->Fill(raw->GetSamples()[nrSamples-bin]);
 	}
-	AdcIntegral += raw->GetSamples()[bin] - Baseline;
+	Baseline /= 3.;
+   
+	histName = "BaseLine_" + syscore + spadic;
+	fHM->H2(histName.Data())->Fill(chID, Baseline);
 
-	histName = "Signal_Shape_" + syscore + spadic + channelId;
-	fHM->H2(histName.Data())->Fill(bin,raw->GetSamples()[bin] - Baseline);
-	histName = "Pulse_" + syscore + spadic + channelId;
-	fHM->H2(histName.Data())->Fill(bin,raw->GetSamples()[bin]);
-      }
-      
-      for (Int_t bin = 0; bin < nrSamples; bin++) {
-	histName = "maxADC_TimeBinCorr_" + syscore + spadic + "_TB" + timebinName[bin];
-	fHM->H2(histName.Data())->Fill(raw->GetSamples()[maxTimeBin],raw->GetSamples()[bin]);
-      }
+	Float_t AdcIntegral = 0;
+	Int_t maxADC(-300);
+	Int_t maxTimeBin(-1);
 
-      histName = "maxTimeBin_" + syscore + spadic + channelId;
-      fHM->H1(histName.Data())->Fill(maxTimeBin);
+	for (Int_t bin = 0; bin < nrSamples; bin++) {
+	  if (raw->GetSamples()[bin] > maxADC){
+	    maxADC = raw->GetSamples()[bin];
+	    maxTimeBin = bin;
+	  }
+	  AdcIntegral += raw->GetSamples()[bin] - Baseline;
 
-      histName = "maxADC_" + syscore + spadic + channelId;
-      fHM->H1(histName.Data())->Fill(maxADC);
+	  histName = "Signal_Shape_" + syscore + spadic + channelId;
 
-      histName = "maxADC_maxTimeBin_" + syscore + spadic + channelId;
-      fHM->H2(histName.Data())->Fill(maxTimeBin,maxADC);
+	  fHM->H2(histName.Data())->Fill(bin,raw->GetSamples()[bin] - Baseline);
+	  histName = "Pulse_" + syscore + spadic + channelId;
 
-      histName = "Integrated_ADC_Spectrum_" + syscore + spadic;
-      if (maxADC > -200) // minimum amplitude threshold to reduce noise
-	fHM->H2(histName.Data())->Fill(chID, AdcIntegral);
+	  fHM->H2(histName.Data())->Fill(bin,raw->GetSamples()[bin]);
+	  if (stopType == 0)
+	    if (triggerType == 1 || triggerType == 3){
+	      if (kMuenster){
+		if (maxADC > -200 && maxADC <= -190 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-200")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -190 && maxADC <= -180 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-190")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -180 && maxADC <= -170 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-180")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -170 && maxADC <= -160 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-170")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -160 && maxADC <= -150 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-160")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -150 && maxADC <= -140 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-150")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -140 && maxADC <= -130 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-140")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -130 && maxADC <= -120 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-130")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -120 && maxADC <= -110 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-120")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -110 && maxADC <= -100 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-110")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -100 && maxADC <= -90 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-100")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -90 && maxADC <= -80 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-090")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -80 && maxADC <= -70 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-080")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -70 && maxADC <= -60 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-070")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -60 && maxADC <= -50 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-060")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -50 && maxADC <= -40 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-050")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -40 && maxADC <= -30 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-040")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -30 && maxADC <= -20 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-030")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -20 && maxADC <= -10 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-020")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > -10 && maxADC <= 0 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger-010")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 0 && maxADC <= 10 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0000")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 200 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0200")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 190 && maxADC <= 200 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0190")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 180 && maxADC <= 190 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0180")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 170 && maxADC <= 180 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0170")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 160 && maxADC <= 170 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0160")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 150 && maxADC <= 160 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0150")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 140 && maxADC <= 150 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0140")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 130 && maxADC <= 140 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0130")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 120 && maxADC <= 130 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0120")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 110 && maxADC <= 120 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0110")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 100 && maxADC <= 110 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0100")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 90 && maxADC <= 100 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0090")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 80 && maxADC <= 90 && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0080")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 70 && maxADC <= 80  && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0070")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 60 && maxADC <= 70  && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0060")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 50 && maxADC <= 60  && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0050")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 40 && maxADC <= 50  && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0040")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 30 && maxADC <= 40  && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0030")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 20 && maxADC <= 30  && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0020")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (maxADC > 10 && maxADC <= 20  && maxTimeBin < 5) {
+		  fHM->H2("MeanPulseShape_maxAdcLarger0010")->Fill(bin,raw->GetSamples()[bin]);
+		}
+		if (FragmentedPulseTest(raw) && maxADC < 0){//maxADC > 0 /*&& maxADC > -200 */&& maxTimeBin < 5){	  
+		  fHM->H2("MeanPulseShape_Fragmented")->Fill(bin,raw->GetSamples()[bin]);
+		  fHM->H1("MeanPulseProfile_Fragmented")->Fill(bin,raw->GetSamples()[bin]);
+		} else if (!FragmentedPulseTest(raw) && maxADC > 0) {// {//if (maxADC < 0 /*&& maxADC > -200 */&& maxTimeBin < 5) {	  
+		  fHM->H2("MeanPulseShape_Unfragmented")->Fill(bin,raw->GetSamples()[bin]);
+		  fHM->H1("MeanPulseProfile_Unfragmented")->Fill(bin,raw->GetSamples()[bin]);
+		}
+	      }
+	    }
+	}
+	if (FragmentedPulseTest(raw))
+	  fFragmentedCounter++;
+	if (stopType == 0)
+	  if (triggerType == 1/* || triggerType == 3*/) {
+	    if (FragmentedPulseTest(raw)){
+	  
+	      fHM->H2("FragmentedVsUnfragmentedPulses")->Fill(0.0,raw->GetSamples()[maxTimeBin]);
+	    } else {
+	      fHM->H2("FragmentedVsUnfragmentedPulses")->Fill(1,raw->GetSamples()[maxTimeBin]);
+	    }
+	  }
+	for (Int_t bin = 0; bin < nrSamples; bin++) {
+	  histName = "maxADC_TimeBinCorr_" + syscore + spadic + "_TB" + timebinName[bin];
+	  fHM->H2(histName.Data())->Fill(raw->GetSamples()[maxTimeBin],raw->GetSamples()[bin]);
+	}
 
-      histName = "Trigger_Heatmap_" + syscore + spadic;
-      if (maxADC > -200){ // minimum amplitude threshold to reduce noise
-	fHM->H2(histName.Data())->Fill(columnId  ,rowId);
-      }
+	histName = "maxTimeBin_" + syscore + spadic + channelId;
+	fHM->H1(histName.Data())->Fill(maxTimeBin);
+
+	histName = "maxADC_" + syscore + spadic + channelId; 
+	fHM->H1(histName.Data())->Fill(maxADC);
+
+	histName = "maxADC_maxTimeBin_" + syscore + spadic + channelId;
+	fHM->H2(histName.Data())->Fill(maxTimeBin,maxADC);
+
+	histName = "Integrated_ADC_Spectrum_" + syscore + spadic;
+	if (maxADC > -200) // minimum amplitude threshold to reduce noise
+	  fHM->H2(histName.Data())->Fill(chID, AdcIntegral);
+
+	histName = "Trigger_Heatmap_" + syscore + spadic;
+	if (maxADC > -200){ // minimum amplitude threshold to reduce noise
+	  fHM->H2(histName.Data())->Fill(columnId  ,rowId);
+	}
  
-      histName = "DeltaTime_" + syscore + spadic;
-      fHM->H1(histName.Data())->Fill(time-lastSpadicTime[SysId][SpaId]);
+	histName = "DeltaTime_" + syscore + spadic;
+	fHM->H1(histName.Data())->Fill(time-lastSpadicTime[SysId][SpaId]);
 
-      histName = "DeltaTime_Left_Right_" + syscore + spadic;
-      if (chID < 31)
-	fHM->H1(histName.Data())->Fill(time-lastSpadicTimeCh[SysId][SpaId][chID+1]);
-      if (chID > 0)
-	fHM->H1(histName.Data())->Fill(time-lastSpadicTimeCh[SysId][SpaId][chID-1]);
-
-      histName = "DeltaTime_Left_Right_Trigger_" + syscore + spadic;
-      if (triggerType == 1 || triggerType == 3){
+	histName = "DeltaTime_Left_Right_" + syscore + spadic;
 	if (chID < 31)
-	  if (lastTriggerType[chID+1] == 2 || lastTriggerType[chID+1] == 3)
-	    fHM->H1(histName.Data())->Fill(time-lastSpadicTimeCh[SysId][SpaId][chID+1]);
+	  fHM->H1(histName.Data())->Fill(time-lastSpadicTimeCh[SysId][SpaId][chID+1]);
 	if (chID > 0)
-	  if (lastTriggerType[chID-1] == 2 || lastTriggerType[chID-1] == 3)
-	    fHM->H1(histName.Data())->Fill(time-lastSpadicTimeCh[SysId][SpaId][chID-1]);
+	  fHM->H1(histName.Data())->Fill(time-lastSpadicTimeCh[SysId][SpaId][chID-1]);
+
+	histName = "DeltaTime_Left_Right_Trigger_" + syscore + spadic;
+	if (triggerType == 1 || triggerType == 3){
+	  if (chID < 31)
+	    if (lastTriggerType[chID+1] == 2 || lastTriggerType[chID+1] == 3)
+	      fHM->H1(histName.Data())->Fill(time-lastSpadicTimeCh[SysId][SpaId][chID+1]);
+	  if (chID > 0)
+	    if (lastTriggerType[chID-1] == 2 || lastTriggerType[chID-1] == 3)
+	      fHM->H1(histName.Data())->Fill(time-lastSpadicTimeCh[SysId][SpaId][chID-1]);
+	}
       }
     }
-
 
     lastSpadicTime[SysId][SpaId] = time;
     lastSpadicTimeCh[SysId][SpaId][chID] = time;
@@ -401,11 +565,15 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 
   for (Int_t sy = 0; sy < 2; sy++){
     for (Int_t sp = 0; sp < 2; sp++){
-      TString histName = "TriggerCounter_SysCore" + std::to_string(sy) + "_Spadic" + std::to_string(sp);
-      for (Int_t timeSlice = 1; timeSlice <= fHM->H1(histName.Data())->GetNbinsX(); timeSlice++){
-	fHM->H1(histName.Data())->SetBinContent(timeSlice,fHM->H1(histName.Data())->GetBinContent(timeSlice+1)); // shift all bin one to the left
+      TString histName = "_SysCore" + std::to_string(sy) + "_Spadic" + std::to_string(sp);
+      for (Int_t timeSlice = 1; timeSlice <= fHM->H1((TString("TriggerCounter") + histName).Data())->GetNbinsX(); timeSlice++){
+	fHM->H1((TString("TriggerCounter") + histName).Data())->SetBinContent(timeSlice,fHM->H1((TString("TriggerCounter") + histName).Data())->GetBinContent(timeSlice+1)); // shift all bin one to the left
+	fHM->H1((TString("OverFlowCounter") + histName).Data())->SetBinContent(timeSlice,fHM->H1((TString("OverFlowCounter") + histName).Data())->GetBinContent(timeSlice+1));
+	fHM->H1((TString("ErrorCounter") + histName).Data())->SetBinContent(timeSlice,fHM->H1((TString("ErrorCounter") + histName).Data())->GetBinContent(timeSlice+1));
       }
-      fHM->H1(histName.Data())->SetBinContent(fHM->H1(histName.Data())->GetNbinsX(),sumTrigger[sy][2*sp] + sumTrigger[sy][2*sp+1]);// set only the spa sys combi to new value
+      fHM->H1((TString("TriggerCounter") + histName).Data())->SetBinContent(fHM->H1((TString("TriggerCounter") + histName).Data())->GetNbinsX(),sumTrigger[sy][2*sp] + sumTrigger[sy][2*sp+1]);// set only the spa sys combi to new value
+      fHM->H1((TString("OverFlowCounter") + histName).Data())->SetBinContent(fHM->H1((TString("OverFlowCounter") + histName).Data())->GetNbinsX(),sumOverflow[sy][2*sp] + sumOverflow[sy][2*sp+1]);
+      fHM->H1((TString("ErrorCounter") + histName).Data())->SetBinContent(fHM->H1((TString("ErrorCounter") + histName).Data())->GetNbinsX(),sumError[sy][2*sp] + sumError[sy][2*sp+1]);
       fHM->H1("TriggerSum")->Fill(TString("SysCore" + std::to_string(sy) + "_Spadic" + std::to_string(sp)),sumTrigger[sy][2*sp] + sumTrigger[sy][2*sp+1]);
     }
   }
@@ -415,11 +583,33 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 	LOG(ERROR) << "SPADIC " << syscore << spadic << " Wrong time stamp order in " << Float_t(wrongTimeOrder[syscore][spadic]*100./entriesInMessage) <<"% of all events " <<  wrongTimeOrder[syscore][spadic] << FairLogger::endl;
     }
   }
+  
 }
-
+Bool_t CbmTrdRawBeamProfile::FragmentedPulseTest(CbmSpadicRawMessage* raw)
+{
+  Int_t maxAdcValue(-300),maxTimeBin(-1), sample(-300);
+  Int_t nrSamples=raw->GetNrSamples();
+  for (Int_t bin = 0; bin < nrSamples; bin++) {
+    sample = raw->GetSamples()[bin];
+    if (sample > maxAdcValue){
+      maxAdcValue = sample;
+      maxTimeBin = bin;
+    }
+  }
+  if (maxTimeBin == 0)
+    return true;
+  else if (raw->GetSamples()[maxTimeBin] - raw->GetSamples()[/*maxTimeBin-1*/0] <= 0)
+    return true;
+  else
+    return false;
+}
 
 void CbmTrdRawBeamProfile::Clusterizer()
 {
+
+  TCanvas* b = new TCanvas("rawpulseshape","rawpulseshape",800,600);
+  TH1F* rawpulse = new TH1F("rawpulse","rawpulse",32,-0.5,31.5);
+  rawpulse->GetYaxis()->SetRangeUser(-255,256);
   Int_t mapDigiCounter = 0;
   CbmSpadicRawMessage* raw = NULL;
   Int_t  layerId(0), moduleId(0), sectorId(0), rowId(0), columnId(0), clusterSize(0);
@@ -446,6 +636,7 @@ void CbmTrdRawBeamProfile::Clusterizer()
       //printf("\nTime: %lu\n",time);
       for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiIt = (timeIt->second).begin(); combiIt != (timeIt->second).end(); combiIt++){
 	mapDigiCounter++;
+	rawpulse->SetLineColor(Int_t(digiIndices.size())+1);
 	raw = combiIt->second;
 	fHM->H2(TString("StopType_ClusterSize_" + SysSpaID).Data())->Fill(clusterSize,Int_t(raw->GetStopType()));
 
@@ -477,8 +668,15 @@ void CbmTrdRawBeamProfile::Clusterizer()
 	const Int_t nSamples = 32;//raw->GetNrSamples();
 	Float_t Samples[nSamples] = {0.};
 	for (Int_t iBin = 0; iBin < raw->GetNrSamples(); iBin++){
+	  rawpulse->SetBinContent(iBin+1,raw->GetSamples()[iBin]);
 	  Samples[iBin] = raw->GetSamples()[iBin] - Baseline;
 	}
+	b->cd();
+	if(Int_t(digiIndices.size())==0)
+	  rawpulse->DrawCopy();
+	else
+	  rawpulse->DrawCopy("same");
+	rawpulse->Reset();
 	//=====================
 	//printf("la%i mo%i se%i ro%i co%i\n",layerId,moduleId,sectorId,rowId,columnId);
 	new ((*fDigis)[fiDigi]) CbmTrdDigi(CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId),
@@ -498,6 +696,13 @@ void CbmTrdRawBeamProfile::Clusterizer()
 	  cluster->SetAddress(CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId));
 	  cluster->SetDigis(digiIndices);
 	  digiIndices.clear();
+	  TString pulseId;
+	  pulseId.Form("pics/%08iRawCluster.png",fiCluster);
+	  b->Update();
+	  if (fiCluster % 100 == 0){
+	    //b->SaveAs(pulseId);
+	  }
+	  b->Clear();
 	  fiCluster++;
 	}
 	digiIndices.push_back(fiDigi);
@@ -514,6 +719,13 @@ void CbmTrdRawBeamProfile::Clusterizer()
 	cluster->SetAddress(CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId));
 	cluster->SetDigis(digiIndices);
 	digiIndices.clear();
+	TString pulseId;
+	pulseId.Form("pics/%08iRawCluster.png",fiCluster);
+	b->Update();
+	if (fiCluster % 100 == 0){
+	  //b->SaveAs(pulseId);
+	}
+	b->Clear();
 	fiCluster++;
       }
       //timeIt->second.clear();   
@@ -533,7 +745,7 @@ Int_t CbmTrdRawBeamProfile::GetSysCoreID(CbmSpadicRawMessage* raw)
   }  else if (eqID == (Int_t)kBucarest){  
     return 2;
   } else
-    LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter <<  " EquipmentID " << eqID << "not known." << FairLogger::endl;   
+    LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter <<  " EquipmentID " << eqID << "not known." << FairLogger::endl;   
   return -1;
 }
 Int_t CbmTrdRawBeamProfile::GetSpadicID(CbmSpadicRawMessage* raw)
@@ -546,7 +758,7 @@ Int_t CbmTrdRawBeamProfile::GetSpadicID(CbmSpadicRawMessage* raw)
   else  if (sourceA == 4 || sourceA == 5)
     return 2;
   else 
-    LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter <<  " Source Address " << sourceA << "not known." << FairLogger::endl;  
+    LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter <<  " Source Address " << sourceA << "not known." << FairLogger::endl;  
   return -1; 
 }
 Int_t CbmTrdRawBeamProfile::GetModuleID(CbmSpadicRawMessage* raw)
@@ -602,7 +814,7 @@ Int_t CbmTrdRawBeamProfile::GetModuleID(CbmSpadicRawMessage* raw)
       chID += 16;
       break;
     default:
-      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter << " Source Address " << sourceA << "not known." << FairLogger::endl;
+      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter << " Source Address " << sourceA << "not known." << FairLogger::endl;
       break;
     }   
     Int_t columnId = GetChannelOnPadPlane(chID);
@@ -634,7 +846,7 @@ Int_t CbmTrdRawBeamProfile::GetModuleID(CbmSpadicRawMessage* raw)
       chID += 16;
       break;
     default:
-      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fMessageCounter << " Source Address " << sourceA << "not known." << FairLogger::endl;
+      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter << " Source Address " << sourceA << "not known." << FairLogger::endl;
       break;
     }   
     Int_t columnId = GetChannelOnPadPlane(chID);
@@ -665,7 +877,15 @@ Int_t CbmTrdRawBeamProfile::GetModuleID(CbmSpadicRawMessage* raw)
     // Update Histos and Canvases
   
     LOG(INFO) << "CbmTrdRawBeamProfile::Finish Container:            " << fContainerCounter << FairLogger::endl;
-    LOG(INFO) << "CbmTrdRawBeamProfile::Finish Messages:             " << fMessageCounter << FairLogger::endl;
+    LOG(INFO) << "CbmTrdRawBeamProfile::Finish Spadic Messages:      " << fSpadicMessageCounter << FairLogger::endl;
+    LOG(INFO) << "CbmTrdRawBeamProfile::Finish Nxyter Messages:      " << fNxyterMessageCounter << FairLogger::endl;
+    LOG(INFO) << "CbmTrdRawBeamProfile::Finish Infos:                " << fInfoCounter << FairLogger::endl;
+    LOG(INFO) << "CbmTrdRawBeamProfile::Finish Hits:                 " << fHitCounter << FairLogger::endl;
+    LOG(INFO) << "CbmTrdRawBeamProfile::Finish Multihits:            " << fMultiHitCounter << FairLogger::endl;
+    LOG(INFO) << "CbmTrdRawBeamProfile::Finish Errors:               " << fErrorCounter << " (stoptype != 0 && != 3)" << FairLogger::endl;
+    LOG(INFO) << "CbmTrdRawBeamProfile::Finish LostHits:             " << fLostHitCounter << " (buffer full)" << FairLogger::endl;
+    LOG(INFO) << "CbmTrdRawBeamProfile::Finish Identical Messages:   " << fDoubleCounter << FairLogger::endl;
+    LOG(INFO) << "CbmTrdRawBeamProfile::Finish Fragemented Signals:  " << fFragmentedCounter <<  FairLogger::endl;
     LOG(INFO) << "CbmTrdRawBeamProfile::Finish Digis:                " << fDigis->GetEntriesFast() << FairLogger::endl;
     LOG(INFO) << "CbmTrdRawBeamProfile::Finish Clusters:             " << fClusters->GetEntriesFast() << FairLogger::endl;
   }
@@ -676,7 +896,7 @@ Int_t CbmTrdRawBeamProfile::GetModuleID(CbmSpadicRawMessage* raw)
     gStyle->SetPadTickX(1);
     gStyle->SetPadTickY(1);
     // Create histograms for 3 Syscores with maximum 3 Spadics
-
+    TString histName = "";
     TString syscoreName[3] = { "SysCore0", "SysCore1", "SysCore2" };
     TString spadicName[3]  = { "Spadic0",  "Spadic1",  "Spadic2" };
     TString channelName[32] = { "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", 
@@ -719,11 +939,29 @@ Int_t CbmTrdRawBeamProfile::GetModuleID(CbmSpadicRawMessage* raw)
 	fHM->H1("ModuleId")->GetYaxis()->SetBinLabel(syscore*3+spadic+1,syscoreName[syscore]+"_"+spadicName[spadic]); 
       }
     }
+    for (Int_t maxAdcThreshold = -200; maxAdcThreshold < 200; maxAdcThreshold+=10){
+      histName.Form("maxAdcLarger%04i",maxAdcThreshold);
+      fHM->Add(TString("MeanPulseShape_"+histName).Data(), new TH2I(TString("MeanPulseShape_"+histName).Data(),TString("MeanPulseShape_"+histName).Data(),32,-0.5,31.5,2*256,-256.5,255.5));
+      //cout << "MeanPulseShape_" << histName << endl;
+      //fHM->Add(TString("MeanPulseProfile_")+histName.Data(), new TProfile(TString("MeanPulseProfile_")+histName.Data(),TString("MeanPulseProfile_")+histName.Data(),32,-0.5,31.5,-256.5,255.5));
+    }
+
+    fHM->Add("FragmentedVsUnfragmentedPulses", new TH2I("FragmentedVsUnfragmentedPulses","FragmentedVsUnfragmentedPulses",2,-0.5,1.5,2*256,-256.5,255.5));
+    fHM->H2("FragmentedVsUnfragmentedPulses")->GetXaxis()->SetBinLabel(1,"fragmented");
+    fHM->H2("FragmentedVsUnfragmentedPulses")->GetXaxis()->SetBinLabel(2,"normal");
+
+    fHM->Add("MeanPulseShape_Fragmented", new TH2I("MeanPulseShape_Fragmented","MeanPulseShape_Fragmented",32,-0.5,31.5,2*256,-256.5,255.5));
+    fHM->Add("MeanPulseProfile_Fragmented", new TProfile("MeanPulseProfile_Fragmented","MeanPulseProfile_Fragmented",32,-0.5,31.5,-256.5,255.5));
+
+    fHM->Add("MeanPulseShape_Unfragmented", new TH2I("MeanPulseShape_UnfragmentedPulses","MeanPulseShape_Unfragmented",32,-0.5,31.5,2*256,-256.5,255.5));
+    fHM->Add("MeanPulseProfile_Unfragmented", new TProfile("MeanPulseProfile_UnfragmentedPulses","MeanPulseProfile_Unfragmented",32,-0.5,31.5,-256.5,255.5));
+
+
     for(Int_t syscore = 0; syscore < 3; ++syscore) {
       for(Int_t spadic = 0; spadic < 3; ++spadic) {
 	fHM->H1("TriggerSum")->GetXaxis()->SetBinLabel(3*syscore+spadic+1,TString(syscoreName[syscore]+"_"+spadicName[spadic]));
 
-	TString histName = "CountRate_" + syscoreName[syscore] + "_" + spadicName[spadic];
+	 histName = "CountRate_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	TString title = histName + ";Channel;Counts";
 	fHM->Add(histName.Data(), new TH1I(histName, title, 32, -0.5, 31.5));
 
@@ -848,11 +1086,18 @@ Int_t CbmTrdRawBeamProfile::GetModuleID(CbmSpadicRawMessage* raw)
 
 	histName = "TriggerCounter_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	title = histName + ";TimeSlice;Trigger / TimeSlice";
-	fHM->Add(histName.Data(), new TH1I(histName, title, 500, 0, 500));
+	fHM->Add(histName.Data(), new TH1I(histName, title, 1000, 0, 1000));
+
+	histName = "OverFlowCounter_" + syscoreName[syscore] + "_" + spadicName[spadic];
+	title = histName + ";TimeSlice;OverFlow / TimeSlice";
+	fHM->Add(histName.Data(), new TH1I(histName, title, 1000, 0, 1000));
+
 
 	histName = "ErrorCounter_" + syscoreName[syscore] + "_" + spadicName[spadic];
-	title = histName + ";Channel;ADC value in Bin 0";
-	fHM->Add(histName.Data(), new TH1I(histName, title, 32, -0.5, 31.5));
+	title = histName + ";TimeSlice;Error / TimeSlice";
+	fHM->Add(histName.Data(), new TH1I(histName, title, 1000, 0, 1000));
+	//title = histName + ";Channel;ADC value in Bin 0";
+	//fHM->Add(histName.Data(), new TH1I(histName, title, 32, -0.5, 31.5));
 
 	histName = "BaseLine_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	title = histName + ";Channel;ADC value";

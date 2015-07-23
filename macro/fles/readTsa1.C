@@ -9,7 +9,11 @@
  */
 
 
-void readTsa1(TString inFile = "data/1070_cern2014.tsa")
+void readTsa1(TString inFile = 
+	      //"data/98_ba2015.tsa"
+	      //"data/129_ba2015.tsa"
+	      "data/1070_cern2014.tsa"
+)
 {
 
   // --- Specify input file name (this is just an example)
@@ -44,14 +48,14 @@ void readTsa1(TString inFile = "data/1070_cern2014.tsa")
   CbmTSUnpackSpadic* spadic_unpacker = new CbmTSUnpackSpadic();
 
   // NXyter Unpacker
-  // CbmTSUnpackNxyter* nxyter_unpacker = new CbmTSUnpackNxyter();
+   CbmTSUnpackNxyter* nxyter_unpacker = new CbmTSUnpackNxyter();
 
   // --- Source task
   CbmFlibFileSourceNew* source = new CbmFlibFileSourceNew();
   //source->SetHostName("cbmflib01");
   source->SetFileName(inFile);
   //source->AddFile(inFile1);
-  //source->AddUnpacker(nxyter_unpacker, 0x10);//fhodo or cherenkov or pb glass???
+  source->AddUnpacker(nxyter_unpacker, 0x10);//fhodo or cherenkov or pb glass???
   source->AddUnpacker(spadic_unpacker, 0x40);// test beam 2014
   //source->AddUnpacker(spadic_unpacker, 0xE0);  // Lab münster
   // --- Event header

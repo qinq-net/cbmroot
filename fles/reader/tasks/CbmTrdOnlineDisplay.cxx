@@ -81,11 +81,21 @@ InitStatus CbmTrdOnlineDisplay::Init()
       if (h2!=NULL) {
 	h2->Draw("COLZ");
       }
-      fSpadic1[spa][sys]->cd(5)->SetLogy(0);
+      fSpadic1[spa][sys]->cd(5)->SetLogy(1);
   
       h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("TriggerCounter_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
       if (h1!=NULL) {
 	h1->Draw("");
+      }
+     h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("OverFlowCounter_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
+     h1->SetLineColor(2);
+      if (h1!=NULL) {
+	h1->Draw("same");
+      }
+     h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("ErrorCounter_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
+     h1->SetLineColor(3);
+      if (h1!=NULL) {
+	h1->Draw("same");
       }
 
       fSpadic1[spa][sys]->cd(6)->SetLogy(1);
