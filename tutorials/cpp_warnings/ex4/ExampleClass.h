@@ -6,6 +6,9 @@ class ExampleClass
  public:
 
   ExampleClass();
+  ExampleClass(int _val1);
+  ExampleClass(int _val1, int _val2);
+
 
  private:
 

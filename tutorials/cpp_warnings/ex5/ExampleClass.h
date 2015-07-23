@@ -13,6 +13,7 @@ class ExampleClass
   int fVal2;
 
   std::vector<int> fVal3;
-  
+
+  int* fVal4;  
 };
 
