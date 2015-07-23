@@ -39,37 +39,7 @@ void CbmMvdStationPar::Print(Option_t* opt) const {
 
 cout 	<< endl << "--I--" << GetName() << "--I--" << endl
 	<< endl << "Initialized ParameterFile with " << fZPositions.size() << " Stations" << endl
-	<< endl << "-------------------------------------------------------------------------" << endl
-	<< endl << "fZPositions[0] " << fZPositions.at(0) << " z position" << endl
-	<< endl << "fZPositions[1] " << fZPositions.at(1) << " z position" << endl
-	<< endl << "fZPositions[2] " << fZPositions.at(2) << " z position" << endl
-        << endl << "fZPositions[3] " << fZPositions.at(3) << " z position" << endl
-	<< endl << "-------------------------------------------------------------------------" << endl
-        << endl << "fBeamWidths[0] " << fBeamWidths.at(0) << " beam hole halfwidth" << endl
-	<< endl << "fBeamWidths[1] " << fBeamWidths.at(1) << " beam hole halfwidth" << endl
-	<< endl << "fBeamWidths[2] " << fBeamWidths.at(2) << " beam hole halfwidth" << endl
-        << endl << "fBeamWidths[3] " << fBeamWidths.at(3) << " beam hole halfwidth" << endl
-	<< endl << "-------------------------------------------------------------------------" << endl
-        << endl << "fBeamHeights[0] " << fBeamHeights.at(0) << " beam hole halfheight" << endl
-	<< endl << "fBeamHeights[1] " << fBeamHeights.at(1) << " beam hole halfheight" << endl
-	<< endl << "fBeamHeights[2] " << fBeamHeights.at(2) << " beam hole halfheight" << endl
-        << endl << "fBeamHeights[3] " << fBeamHeights.at(3) << " beam hole halfheight" << endl 
-	<< endl << "-------------------------------------------------------------------------" << endl
-	<< endl << "fThicknesses[0] " << fThicknesses.at(0) << " station thickness" << endl
-	<< endl << "fThicknesses[1] " << fThicknesses.at(1) << " station thickness" << endl
-	<< endl << "fThicknesses[2] " << fThicknesses.at(2) << " station thickness" << endl
-        << endl << "fThicknesses[3] " << fThicknesses.at(3) << " station thickness" << endl   
-	<< endl << "-------------------------------------------------------------------------" << endl
-        << endl << "fWidths[0] " << fWidths.at(0) << " station halfwidth" << endl
-	<< endl << "fWidths[1] " << fWidths.at(1) << " station halfwidth" << endl
-	<< endl << "fWidths[2] " << fWidths.at(2) << " station halfwidth" << endl
-        << endl << "fWidths[3] " << fWidths.at(3) << " station halfwidth" << endl
-	<< endl << "-------------------------------------------------------------------------" << endl
-        << endl << "fHeights[0] " << fHeights.at(0) << " station halfheight" << endl
-	<< endl << "fHeights[1] " << fHeights.at(1) << " station halfheight" << endl
-	<< endl << "fHeights[2] " << fHeights.at(2) << " station halfheight" << endl
-        << endl << "fHeights[3] " << fHeights.at(3) << " station halfheight" << endl   
-	<< endl << "--I--" << GetName() << "--I--" << endl;
+	<< endl << "-------------------------------------------------------------------------" << endl;
 }
 // -------------------------------------------------------------------------
 

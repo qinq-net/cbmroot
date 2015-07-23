@@ -24,7 +24,7 @@ CbmMvdDetector* CbmMvdDetector::Instance()
 	CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
 	mvdHandler->Init();
 	mvdHandler->Fill();
-	mvdHandler->PrintGeoParameter();
+        mvdHandler->PrintGeoParameter();
 	return fInstance;
 	}
 
