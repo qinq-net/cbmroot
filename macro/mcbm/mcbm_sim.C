@@ -156,13 +156,14 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // ------------------------------------------------------------------------
 
   // -----   Create magnetic field   ----------------------------------------
-  if ( 2 == fieldSymType ) {
-    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
-  }  else if ( 3 == fieldSymType ) {
-    CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
-  } 
-  magField->SetPosition(0., 0., fieldZ);
-  magField->SetScale(fieldScale);
+//  if ( 2 == fieldSymType ) {
+//    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+//  }  else if ( 3 == fieldSymType ) {
+//    CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
+//  } 
+//  magField->SetPosition(0., 0., fieldZ);
+//  magField->SetScale(fieldScale);
+  FairConstField* magField = new FairConstField();
   fRun->SetField(magField);
   // ------------------------------------------------------------------------
 
