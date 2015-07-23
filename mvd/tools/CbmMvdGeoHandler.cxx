@@ -392,8 +392,10 @@ Int_t iStation = 0;
 }
 else if(fGeoTyp == MiniCbm)
 {
-	if(!fDetector)
-	LOG(FATAL) <<  "GeometryHandler couldn't find a valid Detector"
+fDetector = CbmMvdDetector::Instance();
+
+if(!fDetector)
+	LOG(FATAL) <<  "GeometryHandler couldn't find a valid mCBM Detector"
 		   << FairLogger::endl;
 
 fDetector->SetParameterFile(fStationPar);
@@ -429,7 +431,7 @@ Int_t iStation = 0;
 }
 else
 {
-LOG(FATAL) << "Tryed to load an unsupported MVD Geometry" << FairLogger::endl;
+LOG(FATAL) << "Tried to load an unsupported MVD Geometry" << FairLogger::endl;
 }
 }
 //--------------------------------------------------------------------------
