@@ -153,6 +153,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     Int_t chID = raw->GetChannelID();
     Int_t AdcValue = raw->GetADCvalue();
     ULong_t time = raw->GetFullTime();
+    LOG(INFO) << "NxyterMessage: EqId:" << eqID << " sourceA:" << sourceA << " ChID:" << chID << FairLogger::endl;
   }
 
   Int_t entriesInMessage = fRawSpadic->GetEntriesFast();
