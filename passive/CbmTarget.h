@@ -81,6 +81,24 @@ class CbmTarget : public FairModule {
     virtual void ConstructGeometry();
 
 
+    /** Get target position
+     ** @param[out] x  target x position in global c.s. [cm]
+     ** @param[out] y  target y position in global c.s. [cm]
+     ** @param[out] z  target z position in global c.s. [cm]
+     **/
+    void GetPosition(Double_t& x, Double_t& y, Double_t& z) const {
+    	x = fPosX;
+    	y = fPosY;
+    	z = fPosZ;
+    }
+
+
+    /** Target thickness
+     ** @value  Full target thickness in z [cm]
+     **/
+    Double_t GetThickness() const { return fThickness; }
+
+
     /** Output to stdout **/
     virtual void Print(Option_t* opt = "");
 

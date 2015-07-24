@@ -37,7 +37,48 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
   TString inFile  = inDir + defaultInputFile;
 
-  CbmTarget* target = new CbmTarget("Gold", 0.025);
+
+  // --- Logger settings ----------------------------------------------------
+  TString logLevel = "DEBUG";
+  TString logVerbosity = "LOW";
+  // ------------------------------------------------------------------------
+
+
+  // --- Define the target geometry -----------------------------------------
+  //
+  // The target is not part of the setup, since one and the same setup can
+  // and will be used with different targets.
+  // The target is constructed as a tube in z direction with the specified
+  // diameter (in x and y) and thickness (in z). It will be placed at the
+  // specified position as daughter volume of the volume present there. It is
+  // in the responsibility of the user that no overlaps or extrusions are
+  // created by the placement of the target.
+  //
+  TString  targetElement   = "Gold";
+  Double_t targetThickness = 0.025;  // full thickness in cm
+  Double_t targetDiameter  = 2.5;    // diameter in cm
+  Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
+  Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
+  Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
+  // ------------------------------------------------------------------------
+
+
+  // --- Define the creation of the primary vertex   ------------------------
+  //
+  // By default, the primary vertex point is sampled from a Gaussian
+  // distribution in both x and y with the specified beam profile width,
+  // and from a flat distribution in z over the extension of the target.
+  // By setting the respective flags to kFALSE, the primary vertex will always
+  // at the (0., 0.) in x and y and in the z centre of the target, respectively.
+  //
+  Bool_t smearVertexXY = kTRUE;
+  Bool_t smearVertexZ  = kTRUE;
+  Double_t beamWidthX   = 1.;  // Gaussian sigma of the beam profile in x [cm]
+  Double_t beamWidthY   = 1.;  // Gaussian sigma of the beam profile in y [cm]
+  // ------------------------------------------------------------------------
+
+
+
   
 
   // In general, the following parts need not be touched
@@ -65,6 +106,12 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // ------------------------------------------------------------------------
 
 
+  // -----   Logger settings   ----------------------------------------------
+  gLogger->SetLogScreenLevel(logLevel.Data());
+  gLogger->SetLogVerbosityLevel(logVerbosity.Data());
+  // ------------------------------------------------------------------------
+
+
   // -----   Create media   -------------------------------------------------
   fRun->SetMaterials("media.geo");       // Materials
   // ------------------------------------------------------------------------
@@ -83,7 +130,13 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
     fRun->AddModule(pipe);
   }
   
-  if ( target ) fRun->AddModule(target);
+
+  // --- Target
+  CbmTarget* target = new CbmTarget(targetElement.Data(),
+  		                              targetThickness,
+  		                              targetDiameter);
+  target->SetPosition(targetPosX, targetPosY, targetPosZ);
+  fRun->AddModule(target);
 
   if ( magnetGeom != "" ) {
     FairModule* magnet = new CbmMagnet("MAGNET");
@@ -174,6 +227,26 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
   // -----   Create PrimaryGenerator   --------------------------------------
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
+  // --- Get target parameters
+  Double_t tX = 0.;
+  Double_t tY = 0.;
+  Double_t tZ = 0.;
+  Double_t tDz = 0.;
+  if ( target ) {
+  	target->GetPosition(tX, tY, tZ);
+  	tDz = target->GetThickness();
+  }
+  primGen->SetTarget(tZ, tDz);
+  primGen->SetBeam(0., 0., beamWidthX, beamWidthY);
+  primGen->SmearGausVertexXY(smearVertexXY);
+  primGen->SmearVertexZ(smearVertexZ);
+  //
+  // TODO: Currently, there is no guaranteed consistency of the beam profile
+  // and the transversal target dimension, i.e., that the sampled primary
+  // vertex falls into the target volume. This would require changes
+  // in the FairPrimaryGenerator class.
+  // ------------------------------------------------------------------------
+
   // Use the CbmUnigenGenrator which calculates a reaction plane and
   // rotate all particles accordingly
   CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);

@@ -38,7 +38,7 @@ CbmTarget::CbmTarget(const char* fileName) :
                          fPosX(0.), fPosY(0.), fPosZ(0.),
                          fRotY(0.),
                          fMaterial(""),
-                         fBuildFromFile(kFALSE) {
+                         fBuildFromFile(kTRUE) {
  SetGeometryFileName(fileName);
 }
 // --------------------------------------------------------------------------
