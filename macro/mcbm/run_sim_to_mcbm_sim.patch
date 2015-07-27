@@ -1,5 +1,5 @@
-*** ../run/run_sim.C	2015-07-27 10:02:53.524279881 +0200
---- mcbm_sim.C	2015-07-27 10:09:07.030131997 +0200
+*** ../run/run_sim.C	2015-07-27 10:15:05.775910921 +0200
+--- mcbm_sim.C	2015-07-27 11:56:17.422018588 +0200
 ***************
 *** 14,20 ****
   //
@@ -98,7 +98,7 @@
     uniGen->SetEventPlane(0. , 360.);
     primGen->AddGenerator(uniGen);
 + 
-+   primGen->SetBeamAngle(30*3.141/180.,0,0,0);  // set direction of beam to 30 degrees
++   primGen->SetBeamAngle(targetRotY * 3.141/180.,0,0,0);  // set direction of beam to 30 degrees
 + 
     fRun->SetGenerator(primGen);       
     // ------------------------------------------------------------------------
