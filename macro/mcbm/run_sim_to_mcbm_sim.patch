@@ -1,5 +1,5 @@
-*** ../run/run_sim.C	2015-07-27 09:41:49.170010287 +0200
---- mcbm_sim.C	2015-07-27 09:24:55.756985043 +0200
+*** ../run/run_sim.C	2015-07-27 10:02:53.524279881 +0200
+--- mcbm_sim.C	2015-07-27 10:09:07.030131997 +0200
 ***************
 *** 14,20 ****
   //
@@ -18,30 +18,34 @@
   
     // ========================================================================
 ***************
-*** 37,45 ****
+*** 55,66 ****
+    // created by the placement of the target.
+    //
+    TString  targetElement   = "Gold";
+!   Double_t targetThickness = 0.025;  // full thickness in cm
+    Double_t targetDiameter  = 2.5;    // diameter in cm
+    Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
+    Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
+    Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
+!   Double_t targetRotY      = 0.;     // target rotation angle around the y axis [deg]
+    // ------------------------------------------------------------------------
   
-    TString inFile  = inDir + defaultInputFile;
   
--   CbmTarget* target = new CbmTarget("Gold", 0.025);
--   
-- 
-    // In general, the following parts need not be touched
-    // ========================================================================
+--- 55,66 ----
+    // created by the placement of the target.
+    //
+    TString  targetElement   = "Gold";
+!   Double_t targetThickness = 0.25;   // full thickness in cm
+    Double_t targetDiameter  = 2.5;    // diameter in cm
+    Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
+    Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
+    Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
+!   Double_t targetRotY      = 30.;    // target rotation angle around the y axis [deg]
+    // ------------------------------------------------------------------------
   
---- 37,42 ----
+  
 ***************
-*** 83,88 ****
---- 80,87 ----
-      fRun->AddModule(pipe);
-    }
-    
-+   CbmTarget* target = new CbmTarget("Gold", 0.25, 2.5);
-+   target->SetRotation(90.); // 30.);   // set target at 30 degrees rotation angle around y
-    if ( target ) fRun->AddModule(target);
-  
-    if ( magnetGeom != "" ) {
-***************
-*** 117,123 ****
+*** 168,174 ****
     }
     
     if ( muchGeom != "" ) {
@@ -49,7 +53,7 @@
       much->SetGeometryFileName(muchGeom);
       fRun->AddModule(much);
     }
---- 116,122 ----
+--- 168,174 ----
     }
     
     if ( muchGeom != "" ) {
@@ -58,7 +62,7 @@
       fRun->AddModule(much);
     }
 ***************
-*** 157,169 ****
+*** 208,220 ****
     // ------------------------------------------------------------------------
   
     // -----   Create magnetic field   ----------------------------------------
@@ -72,7 +76,7 @@
     fRun->SetField(magField);
     // ------------------------------------------------------------------------
   
---- 156,169 ----
+--- 208,221 ----
     // ------------------------------------------------------------------------
   
     // -----   Create magnetic field   ----------------------------------------
@@ -88,8 +92,8 @@
     // ------------------------------------------------------------------------
   
 ***************
-*** 179,187 ****
---- 179,211 ----
+*** 250,258 ****
+--- 251,283 ----
     CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
     uniGen->SetEventPlane(0. , 360.);
     primGen->AddGenerator(uniGen);
