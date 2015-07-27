@@ -39,7 +39,7 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
 
   // --- Logger settings ----------------------------------------------------
-  TString logLevel = "DEBUG";
+  TString logLevel = "INFO";   // "DEBUG";
   TString logVerbosity = "LOW";
   // ------------------------------------------------------------------------
 
@@ -60,6 +60,7 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
   Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
   Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
+  Double_t targetRotY      = 0.;     // target rotation angle around the y axis [deg]
   // ------------------------------------------------------------------------
 
 
@@ -76,9 +77,6 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   Double_t beamWidthX   = 1.;  // Gaussian sigma of the beam profile in x [cm]
   Double_t beamWidthY   = 1.;  // Gaussian sigma of the beam profile in y [cm]
   // ------------------------------------------------------------------------
-
-
-
   
 
   // In general, the following parts need not be touched
@@ -91,12 +89,12 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // ------------------------------------------------------------------------
 
 
-
   // -----   Timer   --------------------------------------------------------
   TStopwatch timer;
   timer.Start();
   // ------------------------------------------------------------------------
 
+  
   // -----   Create simulation run   ----------------------------------------
   FairRunSim* fRun = new FairRunSim();
   fRun->SetName("TGeant3");              // Transport engine
@@ -130,12 +128,12 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
     fRun->AddModule(pipe);
   }
   
-
   // --- Target
   CbmTarget* target = new CbmTarget(targetElement.Data(),
   		                              targetThickness,
   		                              targetDiameter);
   target->SetPosition(targetPosX, targetPosY, targetPosZ);
+  target->SetRotation(targetRotY);
   fRun->AddModule(target);
 
   if ( magnetGeom != "" ) {
