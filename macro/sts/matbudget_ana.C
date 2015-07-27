@@ -20,7 +20,8 @@ using std::endl;
 using std::vector;
 #endif
 
-Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10000000)
+//Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10000000)
+Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10)
 {
   TString dir = gSystem->Getenv("VMCWORKDIR");
   TString file = dir + "/gconfig/basiclibs.C";
