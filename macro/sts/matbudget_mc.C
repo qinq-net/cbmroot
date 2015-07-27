@@ -1,11 +1,11 @@
 // --------------------------------------------------------------------------
 //
-// Macro for transport simulation with the STS to determine the
-// material budget of the STS stations.
-// ROOTinos parallel to the z axis will be transported, using the 
-// RadLenRegister functionality of FairRunSim.
-// From the output MC file, the metarial budget cna be determined
-// with the macro matbudget_ana.C
+// Macro for transport simulation with the STS 
+// to determine the material budget of the STS stations.
+// ROOTinos parallel to the z axis will be transported, 
+// using the RadLenRegister functionality of FairRunSim.
+// From the output MC file, the material budget can be 
+// determined with the macro matbudget_ana.C
 //
 // T. Balog, 11.05.2015
 //
