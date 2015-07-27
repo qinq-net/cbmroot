@@ -1,0 +1,125 @@
+*** ../run/run_sim.C	2015-07-27 09:41:49.170010287 +0200
+--- mcbm_sim.C	2015-07-27 09:24:55.756985043 +0200
+***************
+*** 14,20 ****
+  //
+  // --------------------------------------------------------------------------
+  
+! void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
+  {
+  
+    // ========================================================================
+--- 14,20 ----
+  //
+  // --------------------------------------------------------------------------
+  
+! void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
+  {
+  
+    // ========================================================================
+***************
+*** 37,45 ****
+  
+    TString inFile  = inDir + defaultInputFile;
+  
+-   CbmTarget* target = new CbmTarget("Gold", 0.025);
+-   
+- 
+    // In general, the following parts need not be touched
+    // ========================================================================
+  
+--- 37,42 ----
+***************
+*** 83,88 ****
+--- 80,87 ----
+      fRun->AddModule(pipe);
+    }
+    
++   CbmTarget* target = new CbmTarget("Gold", 0.25, 2.5);
++   target->SetRotation(90.); // 30.);   // set target at 30 degrees rotation angle around y
+    if ( target ) fRun->AddModule(target);
+  
+    if ( magnetGeom != "" ) {
+***************
+*** 117,123 ****
+    }
+    
+    if ( muchGeom != "" ) {
+!     FairDetector* much = new CbmMuch("MUCH", kTRUE);
+      much->SetGeometryFileName(muchGeom);
+      fRun->AddModule(much);
+    }
+--- 116,122 ----
+    }
+    
+    if ( muchGeom != "" ) {
+!     FairDetector* much = new CbmMuchMcbm("MUCH", kTRUE);
+      much->SetGeometryFileName(muchGeom);
+      fRun->AddModule(much);
+    }
+***************
+*** 157,169 ****
+    // ------------------------------------------------------------------------
+  
+    // -----   Create magnetic field   ----------------------------------------
+!   if ( 2 == fieldSymType ) {
+!     CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+!   }  else if ( 3 == fieldSymType ) {
+!     CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
+!   } 
+!   magField->SetPosition(0., 0., fieldZ);
+!   magField->SetScale(fieldScale);
+    fRun->SetField(magField);
+    // ------------------------------------------------------------------------
+  
+--- 156,169 ----
+    // ------------------------------------------------------------------------
+  
+    // -----   Create magnetic field   ----------------------------------------
+! //  if ( 2 == fieldSymType ) {
+! //    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+! //  }  else if ( 3 == fieldSymType ) {
+! //    CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
+! //  } 
+! //  magField->SetPosition(0., 0., fieldZ);
+! //  magField->SetScale(fieldScale);
+!   FairConstField* magField = new FairConstField();
+    fRun->SetField(magField);
+    // ------------------------------------------------------------------------
+  
+***************
+*** 179,187 ****
+--- 179,211 ----
+    CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
+    uniGen->SetEventPlane(0. , 360.);
+    primGen->AddGenerator(uniGen);
++ 
++   primGen->SetBeamAngle(30*3.141/180.,0,0,0);  // set direction of beam to 30 degrees
++ 
+    fRun->SetGenerator(primGen);       
+    // ------------------------------------------------------------------------
+  
++ //  // -----   Create Electron gun as alternative -----------------------------
++ //  FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
++ //  // Use the FairBoxGenerator which generates a soingle electron
++ //  FairBoxGenerator *eminus = new FairBoxGenerator();
++ //  eminus->SetPDGType(11);
++ //  eminus->SetMultiplicity(1000);
++ //  //  eminus->SetBoxXYZ(32.,-32.,32.,-32.,0.);  // shoot at corner of diagonal modules
++ //  //  eminus->SetBoxXYZ(0., 0., 0., 0., 0.);  // shoot at corner of diagonal modules
++ //  //  eminus->SetBoxXYZ(57.,-57., 0., 0.,0.);  // shoot at corner of diagonal modules
++ //  //  eminus->SetBoxXYZ(-57.,-57., 57., 57.,0.);  // shoot at corner of diagonal modules
++ //  eminus->SetBoxXYZ(-180.,-15.,-150.,15.,0.);  // shoot at corner of diagonal modules
++ //  eminus->SetPRange(2.,2.);
++ //  eminus->SetPhiRange(0.,360.);
++ //  eminus->SetThetaRange(0.,0.);
++ //  primGen->AddGenerator(eminus);
++ //
++ //  //  primGen->SetBeamAngle(30*3.141/180.,0,0,0);  // set direction of beam to 30 degrees
++ //
++ //  fRun->SetGenerator(primGen);
++ //  // ------------------------------------------------------------------------
++ 
+   
+    // Trajectories Visualization (TGeoManager Only)
+    // Switch this on if you want to visualize tracks in the
