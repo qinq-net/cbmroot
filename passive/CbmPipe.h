@@ -1,14 +1,18 @@
-#ifndef PIPE_H
-#define PIPE_H
+#ifndef CBMPIPE_H
+#define CBMPIPE_H 1
 
 #include "FairModule.h"
 
 class CbmPipe : public FairModule {
+
   public:
-    CbmPipe(const char * name, const char *Title="CBM Pipe");
+
     CbmPipe();
 
+    CbmPipe(const char * name, const char *Title="CBM Pipe");
+
     virtual ~CbmPipe();
+
     virtual void ConstructGeometry();
 
     virtual void ConstructAsciiGeometry();
@@ -19,5 +23,5 @@ class CbmPipe : public FairModule {
 
 };
 
-#endif //PIPE_H
+#endif //CBMPIPE_H
 

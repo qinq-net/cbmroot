@@ -13,18 +13,28 @@
 #include "TList.h"
 #include "TObjArray.h"
 
-CbmPipe::~CbmPipe()
-{
-}
+
+// -----  Default constructor  ------------------------------------------------
 CbmPipe::CbmPipe()
   : FairModule()
 {
 }
+// ----------------------------------------------------------------------------
 
+
+// -----  Constructor  --------------------------------------------------------
 CbmPipe::CbmPipe(const char * name, const char * title)
-  : FairModule(name ,title)
+  : FairModule(name, title)
 {
 }
+// ----------------------------------------------------------------------------
+
+
+// -----  Destructor  ---------------------------------------------------------
+CbmPipe::~CbmPipe()
+{
+}
+// ----------------------------------------------------------------------------
 
 
 // -----  ConstructGeometry  --------------------------------------------------
@@ -48,6 +58,7 @@ void CbmPipe::ConstructGeometry()
 // ----------------------------------------------------------------------------
 
 
+// -----  ConstructAsciiGeometry  ---------------------------------------------
 void CbmPipe::ConstructAsciiGeometry()
 {
         FairGeoLoader *loader=FairGeoLoader::Instance();
@@ -89,6 +100,7 @@ void CbmPipe::ConstructAsciiGeometry()
         par->setChanged();
         par->setInputVersion(fRun->GetRunId(),1);
 }
+// ----------------------------------------------------------------------------
 	
 ClassImp(CbmPipe)
 
