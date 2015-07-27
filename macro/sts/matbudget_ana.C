@@ -35,8 +35,7 @@ Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10000000)
   TFile* input = new TFile(inFile);
 	if ( ! input ) {
 		cout << "*** matbudget_ana: Input file " << inFile << " not found!\n"
-				 << "Bes sure to run matbudget_mc.C before for the respective "
-				 << "STS geometry!" << endl;
+		     << "Be sure to run matbudget_mc.C before for the respective STS geometry!" << endl;
 		exit;
 	}
 
@@ -147,7 +146,7 @@ Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10000000)
 
   // Plot file
   TString plotFile = "sts_matbudget_" + stsVersion + ".png";
-  can1->SaveAs("plot");
+  can1->SaveAs(plotFile);
 
   // Close files
   input->Close();
