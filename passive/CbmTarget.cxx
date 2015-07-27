@@ -46,7 +46,7 @@ CbmTarget::CbmTarget(const char* fileName) :
 
 
 // -----   Constructor with properties   ------------------------------------
-CbmTarget::CbmTarget(const char* element, Double_t thickness, Double_t yrotation,
+CbmTarget::CbmTarget(const char* element, Double_t thickness,
                      Double_t diameter, Double_t density) :
                      FairModule("Target", "CBM target"),
                      fZ(0),
@@ -54,7 +54,7 @@ CbmTarget::CbmTarget(const char* element, Double_t thickness, Double_t yrotation
                      fDiameter(diameter),
                      fDensity(density),
                      fPosX(0.), fPosY(0.), fPosZ(0.),
-                     fRotY(yrotation),
+                     fRotY(0.),
                      fMaterial(element),
                      fBuildFromFile(kFALSE) {
 }
@@ -63,7 +63,7 @@ CbmTarget::CbmTarget(const char* element, Double_t thickness, Double_t yrotation
 
 
 // -----   Constructor with properties   ------------------------------------
-CbmTarget::CbmTarget(Int_t z, Double_t thickness, Double_t yrotation,
+CbmTarget::CbmTarget(Int_t z, Double_t thickness, 
                      Double_t diameter, Double_t density) :
                      FairModule("Target", "CBM target"),
                      fZ(z),
@@ -71,7 +71,7 @@ CbmTarget::CbmTarget(Int_t z, Double_t thickness, Double_t yrotation,
                      fDiameter(diameter),
                      fDensity(density),
                      fPosX(0.), fPosY(0.), fPosZ(0.),
-                     fRotY(yrotation),
+                     fRotY(0.),
                      fMaterial(""),
                      fBuildFromFile(kFALSE) {
 }

@@ -46,7 +46,6 @@ class CbmTarget : public FairModule {
      ** @param element   Element name of target material
      **                  (Full name or element symbol, e.g. "Gold", "Au");
      ** @param thickness Thickness in z [cm]
-     ** @param yrotation Rotation angle around the y axis [deg]
      ** @param diameter  Diameter [cm]. Default is 0.25 cm.
      ** @param density   Density [g/cm^3]. If negative (default), density under standard
      **                  conditions will be taken, if available.
@@ -54,14 +53,13 @@ class CbmTarget : public FairModule {
      ** By using this constructor, the target geometry will be constructed
      ** as a tube with material and parameters specified as arguments.
      **/
-    CbmTarget(const char* element, Double_t thickness, Double_t yrotation = 0.,
+    CbmTarget(const char* element, Double_t thickness, 
               Double_t diameter = 0.25, Double_t density = -1.);
 
 
     /** Constructor with target properties
      ** @param z         Atomic charge of target material element
      ** @param thickness Thickness in z [cm]
-     ** @param yrotation Rotation angle around the y axis [deg]
      ** @param diameter  Diameter [cm]. Default is 0.25 cm.
      ** @param density   Density [g/cm^3]. If negative, density under standard
      **                  conditions will be taken.
@@ -69,7 +67,7 @@ class CbmTarget : public FairModule {
      ** By using this constructor, the target geometry will be constructed
      ** as a tube with material and parameters specified as arguments.
      **/
-    CbmTarget(Int_t z, Double_t thickness, Double_t yrotation = 0.,
+    CbmTarget(Int_t z, Double_t thickness, 
               Double_t diameter = 0.25, Double_t density = -1.);
 
 
@@ -90,6 +88,14 @@ class CbmTarget : public FairModule {
     	x = fPosX;
     	y = fPosY;
     	z = fPosZ;
+    }
+
+
+    /** Get target rotation angle
+     ** @param[out] yr  target rotation angle around the y axis [deg]
+     **/
+    void GetRotation(Double_t& yr) const {
+    	yr = fRotY;
     }
 
 
@@ -122,6 +128,14 @@ class CbmTarget : public FairModule {
       fPosX = x;
       fPosY = y;
       fPosZ = z;
+    }
+
+
+    /** Set the Rotation of the target w.r.t. the global coordinate system.
+     ** @param roty target rotation angle around the y axis [deg]
+     **/
+    void SetRotation(Double_t roty) {
+      fRotY = roty;
     }
 
 
