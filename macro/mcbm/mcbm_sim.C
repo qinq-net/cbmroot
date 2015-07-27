@@ -252,7 +252,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   uniGen->SetEventPlane(0. , 360.);
   primGen->AddGenerator(uniGen);
 
-  primGen->SetBeamAngle(targetRotY * 3.141/180.,0,0,0);  // set direction of beam to 30 degrees
+  primGen->SetBeamAngle(targetRotY * TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees
 
   fRun->SetGenerator(primGen);       
   // ------------------------------------------------------------------------
@@ -273,7 +273,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 //  eminus->SetThetaRange(0.,0.);
 //  primGen->AddGenerator(eminus);
 //
-//  //  primGen->SetBeamAngle(30*3.141/180.,0,0,0);  // set direction of beam to 30 degrees
+//  //  primGen->SetBeamAngle(30*TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees
 //
 //  fRun->SetGenerator(primGen);
 //  // ------------------------------------------------------------------------
