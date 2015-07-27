@@ -11,8 +11,8 @@
 //
 // --------------------------------------------------------------------------
 
-//void matbudget_mc(const char* stsGeo, Int_t nEvents = 10000000)
-void matbudget_mc(const char* stsGeo, Int_t nEvents = 10)
+//void matbudget_mc(const char* stsGeo, Int_t nEvents = 10)
+void matbudget_mc(const char* stsGeo, Int_t nEvents = 10000000)
 {
 
   // ========================================================================
@@ -33,8 +33,7 @@ void matbudget_mc(const char* stsGeo, Int_t nEvents = 10)
   TString pipeGeom   = "";
   TString magnetGeom = "";
   TString mvdGeom    = "";
-  //  TString stsGeom    = "sts/sts_"+stsVersion+".geo.root";
-  TString stsGeom    = "mcbm/sts_" +stsVersion+ ".geo.root";
+  TString stsGeom    = "sts/sts_"+stsVersion+".geo.root";
   TString richGeom   = "";
   TString trdGeom    = "";
   TString tofGeom    = "";

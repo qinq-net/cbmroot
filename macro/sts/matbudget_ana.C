@@ -11,7 +11,7 @@
 #include "TROOT.h"
 #include "TProfile2D.h"
 
-#include "../../base/event/FairRadLenPoint.h"
+#include "FairRadLenPoint.h"
 
 #include <iostream>
 #include <vector>
@@ -20,17 +20,14 @@ using std::endl;
 using std::vector;
 #endif
 
-//Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10000000)
-Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10)
+// need to set this root include path:
+// include path: -I/opt/cbm/fairsoft_jul15p1/installation/include/root -I/opt/cbm/fairroot_v-15.07-fairsoft_jul15p1/include -I/opt/cbm/fairsoft_jul15p1/installation/include
+//.include $SIMPATH/include
+//.include $FAIRROOTPATH/include
+
+//Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10)
+Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10000000)
 {
-  TString dir = gSystem->Getenv("VMCWORKDIR");
-  TString file = dir + "/gconfig/basiclibs.C";
-  gROOT->LoadMacro(file);
-  gROOT->ProcessLine("basiclibs()");
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
-  gSystem->Load("libCbmBase");
 	
   // Input file (MC)
   TString stsVersion(stsGeo);
