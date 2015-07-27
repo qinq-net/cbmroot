@@ -59,7 +59,7 @@ CbmTofDigiExp::~CbmTofDigiExp()
 
 TString CbmTofDigiExp::ToString() const 
 {
-   TString string = Form( "CbmTrdDigi: address = 0x%08X time = %7f tot = %7f", 
+   TString string = Form( "CbmTofDigi: address = 0x%08X time = %f tot = %f", 
                           fuAddress, fdTime, fdTot);
    return string;
 }
@@ -83,5 +83,12 @@ Int_t	  CbmTofDigiExp::Compare(      const CbmTofDigiExp*  obj) const
    // obj = hit
    else return 0;
 }
+
+void CbmTofDigiExp::SetAddress( UInt_t Sm, UInt_t Rpc, UInt_t Channel,
+                  UInt_t Side, UInt_t SmType )
+{
+   fuAddress = CbmTofAddress::GetUniqueAddress( Sm, Rpc, Channel, Side, SmType );
+}
+
 
 ClassImp(CbmTofDigiExp) 

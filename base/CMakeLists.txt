@@ -37,6 +37,9 @@ CbmPropagator.cxx
 CbmTrdTrackFinder.cxx  
 CbmTrdTrackFitter.cxx  
 
+CbmTofTrackFinder.cxx
+CbmTofTrackFitter.cxx
+
 CbmStsTrackFinder.cxx 
 CbmStsTrackFitter.cxx 
 

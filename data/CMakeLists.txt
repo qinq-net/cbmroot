@@ -99,6 +99,8 @@ tof/CbmTofDetectorId_v14a.cxx
 tof/CbmTofAddress.cxx
 tof/CbmTofDigi.cxx
 tof/CbmTofDigiExp.cxx
+tof/CbmTofTracklet.cxx
+tof/CbmTofTrackletParam.cxx
 
 ecal/CbmEcalHit.cxx 
 ecal/CbmEcalPoint.cxx

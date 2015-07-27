@@ -69,11 +69,11 @@ public:
 
 private:
 
-  Double32_t fTime; ///< Time since event start [ns]
+  Double_t fTime; ///< Time since event start [ps]
   Int_t fFlag; ///< Flag for general purposes [TDC, event tagging...]
   Int_t fChannel; ///< Channel identifier
 
-  ClassDef(CbmTofHit, 2)
+  ClassDef(CbmTofHit, 3)
 };
 
 #endif

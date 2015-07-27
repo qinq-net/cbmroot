@@ -67,6 +67,8 @@
 #pragma link C++ class CbmTofDigiExp+;
 #pragma link C++ class CbmTofDigi+;
 #pragma link C++ class CbmTofAddress+;
+#pragma link C++ class CbmTofTracklet+;
+#pragma link C++ class CbmTofTrackletParam+;
 
 #pragma link C++ class CbmEcalPoint+;
 #pragma link C++ class CbmEcalHit+;
@@ -84,7 +86,7 @@
 #pragma link C++ class CbmPsdEventData;
 
 #pragma link C++ class CbmGlobalTrack+;
-#pragma link C++ class CbmTofTrack;
+#pragma link C++ class CbmTofTrack+;
 #pragma link C++ class CbmVertex+;
 
 #pragma link C++ class CbmAuxDigi;

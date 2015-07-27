@@ -6,7 +6,6 @@
 
 #include "CbmTofDetectorId_v14a.h"
 #include "CbmDetectorList.h"
-#include "FairLogger.h"
 
 const Int_t CbmTofDetectorId_v14a::shiftarray[] = {0,4,12,16,23,24};
 const Int_t CbmTofDetectorId_v14a::bitarray[]   = {4,8,4,7,1,8};
@@ -22,7 +21,7 @@ CbmTofDetectorId_v14a::CbmTofDetectorId_v14a()
 	maskarray[i]=(1 << bitarray[i]) - 1;
   }
 
-  modulemask =(   (maskarray[0] << shiftarray[0]) |
+  modulemask =( (maskarray[0] << shiftarray[0]) |
 		  (maskarray[1] << shiftarray[1]) |
 		  (maskarray[2] << shiftarray[2]) |
 		  (maskarray[3] << shiftarray[3])  |
@@ -37,7 +36,7 @@ CbmTofDetectorInfo CbmTofDetectorId_v14a::GetDetectorInfo(const Int_t detectorId
    result_array[i] = (( detectorId >> shiftarray[i] ) & maskarray[i] );
   }
 
-  return CbmTofDetectorInfo(result_array[0], result_array[2], result_array[1], 
+  return CbmTofDetectorInfo(result_array[0], result_array[1], result_array[2], 
 			    result_array[3], result_array[4], result_array[5]);
 
 }
@@ -51,13 +50,6 @@ Int_t  CbmTofDetectorId_v14a::GetSystemId(Int_t detectorId)
 
 Int_t CbmTofDetectorId_v14a::GetSMType(const Int_t detectorId)
 {
-  /*
-  Int_t iRet=( detectorId >> shiftarray[2] ) & maskarray[2];
-  LOG(DEBUG)<< " V14a::GetSMType "
-	    <<detectorId<<" "<<shiftarray[2]<<" "<<maskarray[2]
-	    <<" -> " << iRet 
-	    <<FairLogger::endl;
-  */
   return (( detectorId >> shiftarray[2] ) & maskarray[2] );
 }
 

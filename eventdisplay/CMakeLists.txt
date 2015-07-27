@@ -8,6 +8,7 @@ ${BASE_INCLUDE_DIRECTORIES}
 ${CBMROOT_SOURCE_DIR}/eventdisplay 
 ${CBMROOT_SOURCE_DIR}/data
 ${CBMROOT_SOURCE_DIR}/data/trd
+${CBMROOT_SOURCE_DIR}/data/tof
 
 ${CBMROOT_SOURCE_DIR}/trd/data
 ${CBMROOT_SOURCE_DIR}/trd/param
@@ -26,6 +27,7 @@ link_directories( ${LINK_DIRECTORIES})
 set(SRCS
 CbmTrdDigiDraw.cxx
 CbmPixelHitSetDraw.cxx
+CbmEvDisTracks.cxx
 )
 
 set(LINKDEF  CbmDisplayLinkDef.h)

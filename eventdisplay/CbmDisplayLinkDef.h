@@ -8,5 +8,6 @@
 
 #pragma link C++ class CbmTrdDigiDraw;
 #pragma link C++ class CbmPixelHitSetDraw;
+#pragma link C++ class CbmEvDisTracks;
 
 #endif

@@ -12,6 +12,9 @@
 #pragma link C++ class CbmTrdTrackFitter+;
 #pragma link C++ class CbmTrdTrackFinder+;
 
+#pragma link C++ class CbmTofTrackFitter+;
+#pragma link C++ class CbmTofTrackFinder+;
+
 #pragma link C++ class CbmStsTrackFitter+;
 #pragma link C++ class CbmStsTrackFinder+;
 
