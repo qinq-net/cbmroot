@@ -229,6 +229,18 @@ Generate_Version_Info()
 set(BUILD_BEAMTIME FALSE CACHE BOOL "Build everything needed (DABC, RocLib ...) to read testbeam data.")
 If(BUILD_BEAMTIME)
   Set(BUILD_MBS FALSE)
+  Set(DEFINITIONS BUILD_BEAMTIME)
+  
+  If(EXISTS "${FAIRROOTPATH}/include/FairLmdSource.h")
+    Message(FATAL_ERROR "FairRoot compiled with MBS support => lead to conflict with roc library needed by beamtime." 
+                        "See https://lxcbmredmine01.gsi.de/projects/cbmroot/wiki/BeamtimeSoftRocLib for more details")
+  EndIf()
+  
+  Message(WARNING "The TOF beamtime library (CBMROOT/beamtime/tof) will not be compiled.\n"
+                  " => Due to this CbmTofAnaTestbeam (tof/TofTests), CbmTofTestBeamClusterizer (tof/TofReco) "
+                  "and CbmGet4EventDumper (fles/reader/get4) will also not be compiled!!!")
+Else(BUILD_BEAMTIME)
+  Message(WARNING "The general Beamtime library (CBMROOT/beamtime) will not be compiled!")
 EndIf(BUILD_BEAMTIME)
 
 Execute_Process(COMMAND ${ROOT_CONFIG_EXECUTABLE} --has-vc
@@ -368,8 +380,13 @@ If(BUILD_BEAMTIME)
 #  add_subdirectory (roclight)
   add_subdirectory (roc)
   add_subdirectory (beamtime)
+else(BUILD_BEAMTIME)
+# tof beamtime software is needed for the new tof tracking and fles
+# It requires EITHER roc OR roclight to be compiled
+  add_subdirectory (roclight)
+  add_subdirectory (beamtime/tof)
 EndIf(BUILD_BEAMTIME)
-
+  
 
 Option(BUILD_DOXYGEN "Build Doxygen" OFF)
 if(BUILD_DOXYGEN)
