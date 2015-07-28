@@ -253,13 +253,13 @@ void CbmAnaJpsiReport::DrawCutDistributions()
 {
 	CbmAnaJpsiCuts cuts;
 	cuts.SetDefaultCuts();
-	DrawCutH1("fh_track_chi2prim", cuts.fChiPrimCut, true);
-	DrawCutH1("fh_track_mom", -999999., true);
-	DrawCutH1("fh_track_chi2sts", -999999.,true);
-	DrawCutH1("fh_track_rapidity", -999999., true);
-	DrawCutH1("fh_track_pt", cuts.fPtCut, true);
-	DrawCutH1("fh_track_rich_ann", cuts.fRichAnnCut, true);
-	DrawCutH1("fh_track_trd_ann", cuts.fTrdAnnCut, true);
+	DrawCutH1("fh_track_chi2prim", cuts.fChiPrimCut, false);
+	DrawCutH1("fh_track_mom", -999999., false);
+	DrawCutH1("fh_track_chi2sts", -999999., false);
+	DrawCutH1("fh_track_rapidity", -999999., false);
+	DrawCutH1("fh_track_pt", cuts.fPtCut, false);
+	DrawCutH1("fh_track_rich_ann", cuts.fRichAnnCut, false);
+	DrawCutH1("fh_track_trd_ann", cuts.fTrdAnnCut, false);
 	Draw2DCut("fh_track_tof_m2");
 }
 
