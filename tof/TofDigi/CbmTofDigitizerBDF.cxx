@@ -465,9 +465,9 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
          Int_t    iNbBinsSize  = hClusterSize->GetNbinsX();
          Double_t dNbBinsProb = fh1ClusterSizeProb[iSmType]->GetNbinsX();
          Int_t    iProbBin   = 1;
-         Double_t dIntegral  = 0;
-         Double_t dIntSize    = hClusterSize->GetEntries();
-         Double_t dSizeVal;
+         Double_t dIntegral  = 0.;
+         Double_t dIntSize   = hClusterSize->GetEntries();
+         Double_t dSizeVal   = 0.;
 
          for( Int_t iBin = 1; iBin <= iNbBinsSize; iBin++ )
          {
@@ -518,9 +518,9 @@ Bool_t   CbmTofDigitizerBDF::LoadBeamtimeValues()
       Int_t    iNbBinsTot  = hClusterTot->GetNbinsX();
       Double_t dNbBinsProb = fh1ClusterTotProb[iSmType]->GetNbinsX();
       Int_t    iProbBin   = 1;
-      Double_t dIntegral  = 0;
+      Double_t dIntegral  = 0.;
       Double_t dIntTot    = hClusterTot->GetEntries();
-      Double_t dTotVal;
+      Double_t dTotVal    = 0.;
       Double_t dPsToNs = 1e3; // FIXME? Most histograms from analysis are in ps, simulation used ns !!
 
       for( Int_t iBin = 1; iBin <= iNbBinsTot; iBin++ )
@@ -1848,7 +1848,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 
 	      TGeoNode *fNode=        // prepare global->local trafo
 			gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
-	      LOG(DEBUG)<<Form(" TofDigitizerBDF:: (%3d,%3d,%3d,%3d) - node at (%6.1f,%6.1f,%6.1f) : 0x%p",
+	      LOG(DEBUG)<<Form(" TofDigitizerBDF:: (%3d,%3d,%3d,%3d) - node at (%6.1f,%6.1f,%6.1f) : 0x%p Pos(%6.1f,%6.1f,%6.1f)",
 			      iSmType,iSM,iRpc,iChannel,
 			       fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode, 
 			       vPntPos.X(), vPntPos.Y(), vPntPos.Z())
@@ -3439,9 +3439,9 @@ Double_t CbmTofDigitizerBDF::ComputeClusterAreaOnChannel(
          // starting at the included corner. Those 2 points and the corner form a
          // triangle. The cluster/channel intersection area is this triangle area +
          // the area of the disc section having the 2 intersections for base
-         Double_t dIntPtX[2];
-         Double_t dIntPtY[2];
-         Double_t dArea;
+         Double_t dIntPtX[2] = {0., 0.};
+         Double_t dIntPtY[2] = {0., 0.};
+         Double_t dArea      = 0.;
 
          if( dCornersR[0] < dClustRadius )
          {
@@ -3584,10 +3584,10 @@ Double_t CbmTofDigitizerBDF::ComputeClusterAreaOnChannel(
 
          LOG(DEBUG3)<<"Corners In check "<<(iCorners[0])<<" "<<(iCorners[1])<<FairLogger::endl;
          // Get the interesting points info
-         Double_t dIntPtX[2];
-         Double_t dIntPtY[2];
+         Double_t dIntPtX[2] = {0., 0.};
+         Double_t dIntPtY[2] = {0., 0.};
          Double_t dEdgeR;
-         Int_t    iOppCorner;
+         Int_t    iOppCorner = 0;
          if( 0 == iCorners[0] && 1 == iCorners[1] )
          {
             LOG(DEBUG3)<<"Test upper edge"<<FairLogger::endl;
@@ -3701,9 +3701,9 @@ Double_t CbmTofDigitizerBDF::ComputeClusterAreaOnChannel(
          // minus the area of the triangle formed by the out corner and the 2
          // intersection, plus the area of the disc section having the 2
          // intersection points for base.
-         Int_t  iOutCorner;
-         Double_t dIntPtX[2];
-         Double_t dIntPtY[2];
+         Int_t  iOutCorner   = 0;
+         Double_t dIntPtX[2] = {0., 0.};
+         Double_t dIntPtY[2] = {0., 0.};
 
          if( dCornersR[0] > dClustRadius )
          {

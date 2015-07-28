@@ -22,10 +22,16 @@
 #pragma link C++ class CbmTofDigitizerBDF+;
 
 #pragma link C++ class CbmTofSimpClusterizer+;
-//#pragma link C++ class CbmTofTestBeamClusterizer+;
+#pragma link C++ class CbmTofFindTracks+;
+#pragma link C++ class CbmTofTrackFinderNN+;
+#pragma link C++ class LKFMinuit+;
 
 #pragma link C++ class CbmTofTests+;
-//#pragma link C++ class CbmTofAnaTestbeam+;
+
+#ifndef BUILD_BEAMTIME
+ #pragma link C++ class CbmTofTestBeamClusterizer+;
+ #pragma link C++ class CbmTofAnaTestbeam+;
+#endif // NOT BUILD_BEAMTIME
 
 #endif
 

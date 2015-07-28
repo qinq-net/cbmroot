@@ -39,6 +39,7 @@ CbmTofDigiBdfPar::CbmTofDigiBdfPar( const char* name,
   fiNbRpc(),
   fiNbGaps(),  
   fdGapSize(),
+  fdSigVel(),
   fiNbCh(),
   fiChType(),
   fiChOrientation(),
@@ -105,6 +106,8 @@ void CbmTofDigiBdfPar::putParams(FairParamList* l)
    for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
       l->add(Form("GapSize%03d", iSmType), fdGapSize[iSmType]);
    for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
+      l->add(Form("SigVel%03d", iSmType), fdSigVel[iSmType]);
+   for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
       l->add(Form("NbCh%03d", iSmType), fiNbCh[iSmType]);
    for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
       l->add(Form("ChType%03d", iSmType), fiChType[iSmType]);
@@ -168,6 +171,13 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
    {
       fdGapSize[iSmType].Set( fiNbRpc[iSmType] );
       if ( ! l->fill( Form("GapSize%03d", iSmType), &(fdGapSize[iSmType]) ) ) return kFALSE;
+   } // for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
+
+   fdSigVel.resize(fiNbSmTypes);
+   for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
+   {
+      fdSigVel[iSmType].Set( fiNbRpc[iSmType] );
+      if ( ! l->fill( Form("SigVel%03d", iSmType), &(fdSigVel[iSmType]) ) ) return kFALSE;
    } // for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
 
    fiNbCh.resize(fiNbSmTypes);
@@ -234,12 +244,13 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
    fh1ClusterSize.resize(fiNbSmTypes);
    fh1ClusterTot.resize(fiNbSmTypes);
 
-   TDirectory * oldir = gDirectory;
    return kTRUE;
 }
 
 Bool_t CbmTofDigiBdfPar::LoadBeamtimeHistos()
 {
+   TDirectory * oldir = gDirectory;
+   
    TFile * fBeamtimeInput = new TFile( fsBeamInputFile, "READ");
    if( kFALSE == fBeamtimeInput->IsOpen() )
    {
@@ -258,6 +269,7 @@ Bool_t CbmTofDigiBdfPar::LoadBeamtimeHistos()
    if( 0 == pInputRes)
    {
       LOG(ERROR)<<"CbmTofDigiBdfPar => Could not recover the Time Resolution array from the beamtime data file."<<FairLogger::endl;
+      gDirectory->cd( oldir->GetPath() );
       fBeamtimeInput->Close();
       return kFALSE;
    } // if( 0 == pInputEff)
@@ -265,6 +277,7 @@ Bool_t CbmTofDigiBdfPar::LoadBeamtimeHistos()
        pInputEff->GetSize() != pInputRes->GetSize() )
    {
       LOG(ERROR)<<"CbmTofDigiBdfPar => Efficiency or Time Resolution array from the beamtime data file have wrong size."<<FairLogger::endl;
+      gDirectory->cd( oldir->GetPath() );
       fBeamtimeInput->Close();
       return kFALSE;
    } // if wrong array size
@@ -302,6 +315,7 @@ Bool_t CbmTofDigiBdfPar::LoadBeamtimeHistos()
          {
             LOG(ERROR)<<"CbmTofDigiBdfPar => Could not recover the Cluster Size histogram for Sm Type "
                       <<iSmType<<", mapped to input type "<<fiSmTypeInpMapp[iSmType]<<FairLogger::endl;
+            gDirectory->cd( oldir->GetPath() );
             fBeamtimeInput->Close();
             return kFALSE;
          } // if( 0 == pH1Temp )
@@ -314,6 +328,7 @@ Bool_t CbmTofDigiBdfPar::LoadBeamtimeHistos()
          {
             LOG(ERROR)<<"CbmTofDigiBdfPar => Could not recover the Cluster Size histogram for Sm Type "
                       <<iSmType<<", mapped to input type "<<fiSmTypeInpMapp[iSmType]<<FairLogger::endl;
+            gDirectory->cd( oldir->GetPath() );
             fBeamtimeInput->Close();
             return kFALSE;
          } // if( 0 == pH1Temp )
@@ -323,6 +338,7 @@ Bool_t CbmTofDigiBdfPar::LoadBeamtimeHistos()
          {
             LOG(ERROR)<<"CbmTofDigiBdfPar => Wrong mapping index for Sm Type "
                       <<iSmType<<": Out of input boundaries"<<FairLogger::endl;
+            gDirectory->cd( oldir->GetPath() );
             fBeamtimeInput->Close();
             return kFALSE;
          }
@@ -331,6 +347,7 @@ Bool_t CbmTofDigiBdfPar::LoadBeamtimeHistos()
    {
       GetLandauParFromBeamDataFit();
    } // if( 2 == fiClusterRadiusModel )
+   gDirectory->cd( oldir->GetPath() );
    fBeamtimeInput->Close();
 
    return kTRUE;
@@ -447,6 +464,16 @@ Double_t CbmTofDigiBdfPar::GetGapSize( Int_t iSmType, Int_t iRpc) const
    {
       if( iRpc < fiNbRpc[iSmType] )
          return fdGapSize[iSmType][iRpc];
+         else return 0.0;
+   } // if( iSmType < fiNbSmTypes )
+      else return 0.0;
+}
+Double_t CbmTofDigiBdfPar::GetSigVel( Int_t iSmType, Int_t iRpc) const
+{
+   if( iSmType < fiNbSmTypes )
+   {
+      if( iRpc < fiNbRpc[iSmType] )
+         return fdSigVel[iSmType][iRpc];
          else return 0.0;
    } // if( iSmType < fiNbSmTypes )
       else return 0.0;
@@ -578,6 +605,7 @@ void CbmTofDigiBdfPar::printParams()
 
    TString* sGapsNb = new TString[fiNbSmTypes];
    TString* sGapsSz = new TString[fiNbSmTypes];
+   TString* sSigVel = new TString[fiNbSmTypes];
    TString* sChNb = new TString[fiNbSmTypes];
    TString* sChType = new TString[fiNbSmTypes];
    TString* sChOrient = new TString[fiNbSmTypes];
@@ -586,11 +614,12 @@ void CbmTofDigiBdfPar::printParams()
    {
       sSmNb  += Form( "%3d ", GetNbSm(iSmType) );
       sRpcNb += Form( "%3d ", GetNbRpc(iSmType) );
-      sGapsNb[iSmType] =   Form("  Nb of Gaps in SM type   %3d:|->  ", iSmType);
-      sGapsSz[iSmType] =   Form("  Gap Size(mm) in SM type %3d:|-> ", iSmType);
-      sChNb[iSmType] =     Form("  Nb of Chan in SM type   %3d:|->  ", iSmType);
-      sChType[iSmType] =   Form("  Chan Type in SM type    %3d:|->  ", iSmType);
-      sChOrient[iSmType] = Form("  Chan orient. in SM type %3d:|->  ", iSmType);
+      sGapsNb[iSmType] =   Form("  Nb of Gaps in SM type    %3d:|->  ", iSmType);
+      sGapsSz[iSmType] =   Form("  Gap Size(mm) in SM type  %3d:|-> ", iSmType);
+      sSigVel[iSmType] =   Form("  SigVel(cm/ps) in SM type %3d:|-> ", iSmType);
+      sChNb[iSmType] =     Form("  Nb of Chan in SM type    %3d:|->  ", iSmType);
+      sChType[iSmType] =   Form("  Chan Type in SM type     %3d:|->  ", iSmType);
+      sChOrient[iSmType] = Form("  Chan orient. in SM type  %3d:|->  ", iSmType);
       if( iMaxRpcNb < fiNbRpc[iSmType])
          iMaxRpcNb = fiNbRpc[iSmType];
 
@@ -599,6 +628,7 @@ void CbmTofDigiBdfPar::printParams()
       {
          sGapsNb[iSmType] += Form( "%3d  ", GetNbGaps( iSmType, iRpc) );
          sGapsSz[iSmType] += Form( "%3.2f ", GetGapSize( iSmType, iRpc) );
+         sSigVel[iSmType] += Form( "%4.3f ", GetSigVel( iSmType, iRpc) );
          sChNb[iSmType] += Form( "%3d  ", GetNbChan( iSmType, iRpc) );
          if( 1 == GetChanType( iSmType, iRpc) )
             sChType[iSmType] += "pad  ";

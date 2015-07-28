@@ -12,7 +12,7 @@
 #define CBMTOFTESTBEAMCLUSTERIZER_H  1
 
 // TOF Classes and includes
-   // Input/Output
+// Input/Output
 //class CbmTofPoint;
 class CbmTofDigi;
 class CbmTofDigiExp;
@@ -23,6 +23,7 @@ class CbmTofDetectorId;
 class CbmTofDigiPar;
 class CbmTofDigiBdfPar;
 class CbmTofCell;
+class CbmTofFindTracks;
 
 class TMbsMappingTofPar;
 class TTofCalibData;
@@ -77,13 +78,31 @@ class CbmTofTestBeamClusterizer : public FairTask
        ** @brief Inherited from FairTask.
        **/
       virtual void Finish();
+      virtual void Finish(Double_t calMode);
 
       inline void SetCalMode    (Int_t iMode)           { fCalMode     = iMode;}
-      inline void SetTRefDetId  (Int_t Id)              { fTRefMode    = Id;}
-      inline void SetTRefDifMax (Double_t TRefMax)      { fTRefDifMax  = TRefMax;}
-      inline void PosYMaxScal   (Double_t PosYmaxScal)  { fPosYMaxScal = PosYmaxScal;}
-      inline void TotMax        (Double_t TOTMax)       { fTotMax      = TOTMax;}
+      inline void SetCalSel     (Int_t iSel)            { fCalSel      = iSel;}
+      inline void SetCalSmType  (Int_t iCalSmType)      { fCalSmType   = iCalSmType;}
+      inline void SetCaldXdYMax (Double_t dCaldXdYMax)  { fdCaldXdYMax = dCaldXdYMax;}
+      inline void SetCalCluMulMax (Int_t ival)          { fiCluMulMax  = ival;}
+      inline void SetTRefId     (Int_t Id)              { fTRefMode    = Id;}
+      inline void SetDutId      (Int_t Id)              { fDutId       = Id;}
+      inline void SetSelId      (Int_t Id)              { fSelId       = Id;}
+      inline void SetBeamRefType   (Int_t Id)           { fiBeamRefType      = Id;}
+      inline void SetBeamRefSm     (Int_t Id)           { fiBeamRefSm        = Id;}
+      inline void SetBeamRefDet    (Int_t Id)           { fiBeamRefDet       = Id;}
+      inline void SetBeamAddRefMul (Int_t ival)         { fiBeamAddRefMul  = ival;}
+      inline void SetTRefDifMax (Double_t val)          { fTRefDifMax  = val;}
+      inline void SetdTRefMax   (Double_t val)          { fdTRefMax    = val;}
+      inline void PosYMaxScal   (Double_t val)          { fPosYMaxScal = val;}
+      inline void SetTotMax     (Double_t val)          { fTotMax      = val;}
+      inline void SetTotMin     (Double_t val)          { fTotMin      = val;}
+      inline void SetTotMean    (Double_t val)          { fTotMean     = val;}
+      inline void SetTotPreRange(Double_t val)          { fTotPreRange = val;}
+      inline void SetMaxTimeDist(Double_t val)          { fMaxTimeDist = val;}
+      inline void SetSel2Id     (Int_t ival)            { fSel2Id = ival;}
 
+      inline void SetOutHstFileName(TString OutHstFileName) { fOutHstFileName = OutHstFileName; }
       inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
 
    protected:
@@ -134,6 +153,7 @@ class CbmTofTestBeamClusterizer : public FairTask
        ** @brief Build clusters out of ToF Digis and store the resulting info in a TofHit.
        **/
       Bool_t   BuildClusters();
+      Bool_t   MergeClusters();
 
       // ToF geometry variables
       CbmTofGeoHandler      * fGeoHandler;
@@ -206,23 +226,41 @@ class CbmTofTestBeamClusterizer : public FairTask
       std::vector< TH2* > fhRpcDigiCor;     //[nbDet]
       std::vector< TH1* > fhRpcCluMul;      //[nbDet]
       std::vector< TH2* > fhRpcCluPosition; //[nbDet]
-      std::vector< TH2* > fhRpcCluTOff;     //[nbDet] 
+      std::vector< TH2* > fhRpcCluDelPos;   //[nbDet]
+      std::vector< TH2* > fhRpcCluDelMatPos;   //[nbDet]
+      std::vector< TH2* > fhRpcCluTOff;        //[nbDet] 
+      std::vector< TH2* > fhRpcCluDelTOff;     //[nbDet] 
+      std::vector< TH2* > fhRpcCluDelMatTOff;  //[nbDet] 
+      std::vector< TH2* > fhRpcCluTrms;     //[nbDet] 
       std::vector< TH2* > fhRpcCluTot;      // [nbDet]
       std::vector< TH2* > fhRpcCluSize;     // [nbDet]
       std::vector< TH2* > fhRpcCluAvWalk;   // [nbDet]
-      std::vector< std::vector<TH2 *> > fhRpcCluWalk; // [nbDet][nbCh]
+      std::vector< TH2* > fhRpcCluAvLnWalk; // [nbDet]
+      std::vector< std::vector< std::vector<TH2 *> > >fhRpcCluWalk; // [nbDet][nbCh][nSide]
 
-      std::vector< std::vector< TH1* > > fhTRpcCluMul;      //[nbDet][nbTrg]
-      std::vector< std::vector< TH2* > > fhTRpcCluPosition; //[nbDet][nbTrg]
-      std::vector< std::vector< TH2* > > fhTRpcCluTOff;     //[nbDet] [nbTrg]
-      std::vector< std::vector< TH2* > > fhTRpcCluTot;      // [nbDet][nbTrg]
-      std::vector< std::vector< TH2* > > fhTRpcCluSize;     // [nbDet][nbTrg]
-      std::vector< std::vector< TH2* > > fhTRpcCluAvWalk;   // [nbDet][nbTrg]
-      std::vector< std::vector< std::vector<TH2 *> > > fhTRpcCluWalk; // [nbDet][nbTrg][nbCh]
+      std::vector< TH2* > fhSmCluPosition; //[nbSmTypes]
+      std::vector< TH2* > fhSmCluTOff; 
 
+      std::vector< std::vector< TH1* > > fhTRpcCluMul;      //[nbDet][nbSel]
+      std::vector< std::vector< TH2* > > fhTRpcCluPosition; //[nbDet][nbSel]
+      std::vector< std::vector< TH2* > > fhTRpcCluTOff;     //[nbDet] [nbSel]
+      std::vector< std::vector< TH2* > > fhTRpcCluTot;      // [nbDet][nbSel]
+      std::vector< std::vector< TH2* > > fhTRpcCluSize;     // [nbDet][nbSel]
+      std::vector< std::vector< TH2* > > fhTRpcCluAvWalk;   // [nbDet][nbSel]
+      std::vector< std::vector< TH2* > > fhTRpcCluDelTof;   // [nbDet][nbSel]
+      std::vector< std::vector< TH2* > > fhTRpcCludXdY;     // [nbDet][nbSel]
+      std::vector< std::vector< std::vector< std::vector<TH2 *> > > >fhTRpcCluWalk; // [nbDet][nbSel][nbCh][nSide]
 
+      std::vector< std::vector< TH2* > > fhTSmCluPosition; //[nbSmTypes][nbSel]
+      std::vector< std::vector< TH2* > > fhTSmCluTOff;     //[nbSmTypes][nbSel]
+      std::vector< std::vector< TH2* > > fhTSmCluTRun;     //[nbSmTypes][nbSel]
+
+      std::vector< TH1* > fhSeldT;  //[nbSel] 
+
+      std::vector< std::vector< std::vector< std::vector< Double_t > > > > fvCPDelTof;   //[nSMT][nRpc][nbClDelTofBinX][nbSel]
       std::vector< std::vector< std::vector< std::vector< Double_t > > > > fvCPTOff;     //[nSMT][nRpc][nCh][nbSide]
       std::vector< std::vector< std::vector< std::vector< Double_t > > > > fvCPTotGain;  //[nSMT][nRpc][nCh][nbSide]
+      std::vector< std::vector< std::vector< std::vector< Double_t > > > > fvCPTotOff;  //[nSMT][nRpc][nCh][nbSide]
       std::vector< std::vector< std::vector< std::vector< std::vector< Double_t > > > > > fvCPWalk; //[nSMT][nRpc][nCh][nbSide][nbWalkBins]
 
       // Digis quality
@@ -236,15 +274,47 @@ class CbmTofTestBeamClusterizer : public FairTask
 
       // Calib
       Double_t dTRef;
+      Double_t fdTRefMax;
       Int_t    fCalMode;
+      Int_t    fCalSel;
+      Int_t    fCalSmType;
+      Double_t fdCaldXdYMax;
+      Int_t    fiCluMulMax;
       Int_t    fTRefMode;
       Int_t    fTRefHits;
+      Int_t    fDutId;
+      Int_t    fSelId;
+      Int_t    fiBeamRefType;
+      Int_t    fiBeamRefSm;
+      Int_t    fiBeamRefDet;
+      Int_t    fiBeamAddRefMul;
+      Int_t    fSel2Id;
+
       Double_t fPosYMaxScal;
       Double_t fTRefDifMax;
       Double_t fTotMax;
+      Double_t fTotMin;
+      Double_t fTotOff;
+      Double_t fTotMean;
+      Double_t fTotPreRange;
+      Double_t fMaxTimeDist;
 
       TString       fCalParFileName;      // name of the file name with Calibration Parameters
+      TString       fOutHstFileName;      // name of the histogram output file name with Calibration Parameters
       TFile*        fCalParFile;          // pointer to Calibration Parameter file 
+
+      // Constants or setting parameters
+      Int_t    fiNevtBuild;
+      Int_t    fiMsgCnt;
+
+      Double_t fdTOTMax;
+      Double_t fdTOTMin;
+      Double_t fdTTotMean;
+
+      Double_t fdMaxTimeDist; // Isn't this just a local variable? Why make it global and preset?!?
+      Double_t fdMaxSpaceDist; // Isn't this just a local variable? Why make it global and preset?!?
+
+      Double_t fdEvent;
 
    ClassDef(CbmTofTestBeamClusterizer, 1);
 };

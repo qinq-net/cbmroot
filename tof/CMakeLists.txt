@@ -11,8 +11,10 @@ ${CBMROOT_SOURCE_DIR}/tof/TofTools
 ${CBMROOT_SOURCE_DIR}/tof/TofData
 ${CBMROOT_SOURCE_DIR}/tof/TofDigi
 ${CBMROOT_SOURCE_DIR}/tof/TofTests
-#${CBMROOT_SOURCE_DIR}/unpack/tof/tdc
-#${CBMROOT_SOURCE_DIR}/unpack/tof/mapping
+
+${CBMROOT_SOURCE_DIR}/beamtime/tof
+${CBMROOT_SOURCE_DIR}/beamtime/tof/tdc
+${CBMROOT_SOURCE_DIR}/beamtime/tof/mapping
 
 ${CBMROOT_SOURCE_DIR}/base 
 
@@ -36,6 +38,21 @@ ${Boost_LIBRARY_DIRS}
  
 link_directories( ${LINK_DIRECTORIES})
 
+If(BUILD_BEAMTIME)
+  Set(TOF_BEAM_SOURCES 
+  )
+  Set(TOF_BEAM_DEPEND
+  )
+Else(BUILD_BEAMTIME)
+  Set(TOF_BEAM_SOURCES 
+    TofReco/CbmTofTestBeamClusterizer.cxx 
+    TofTests/CbmTofAnaTestbeam.cxx 
+  )
+  Set(TOF_BEAM_DEPEND
+    TofUnpack
+  )
+EndIf(BUILD_BEAMTIME)
+
 set(SRCS
 TofMC/CbmGeoTof.cxx 
 TofMC/CbmTof.cxx 
@@ -57,17 +74,20 @@ TofData/CbmTofCell.cxx
 TofDigi/CbmTofDigitizerBDF.cxx
 
 TofReco/CbmTofSimpClusterizer.cxx 
-
-#TofReco/CbmTofTestBeamClusterizer.cxx 
+TofReco/CbmTofFindTracks.cxx 
+TofReco/CbmTofTrackFinderNN.cxx 
+TofReco/LKFMinuit.cxx 
 
 TofTests/CbmTofTests.cxx 
-#TofTests/CbmTofAnaTestbeam.cxx 
+
+  ${TOF_BEAM_SOURCES}
 )
 
 set(LINKDEF TofLinkDef.h)
 Set(LIBRARY_NAME Tof)
 Set(DEPENDENCIES
     CbmBase CbmData Base 
+    ${TOF_BEAM_DEPEND}
 )
 
 GENERATE_LIBRARY()

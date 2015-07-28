@@ -106,6 +106,9 @@ Int_t CbmTofGeoHandler::CheckGeometryVersion()
       }
     }
   }
+   LOG(FATAL)<< "No TOF geometry found!" << FairLogger::endl;
+   fGeoVersion = -1;
+   return fGeoVersion;
 }
 
 Int_t CbmTofGeoHandler::GetUniqueDetectorId(TString volName)
