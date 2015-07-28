@@ -99,7 +99,8 @@ class CbmMvdSensor : public TNamed, CbmMvdDetectorId
   Int_t GetClusterPlugin() {return fClusterPlugin;}
   
   void SetAlignment(TGeoHMatrix* alignmentMatrix);
-  TGeoHMatrix* GetAlignmentCorr(){return fAlignmentCorr;};
+  TGeoHMatrix* GetAlignmentCorr()	{return fAlignmentCorr;};
+  TGeoHMatrix* GetRecoMatrix()		{return fRecoMatrix;};
   
 
   /** Initialization tools **/

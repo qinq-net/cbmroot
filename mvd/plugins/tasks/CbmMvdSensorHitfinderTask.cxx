@@ -27,6 +27,7 @@
 #include "TObjArray.h"
 #include "TRefArray.h"
 #include "TCanvas.h"
+#include <TMatrixD.h>
 
 #include "TClonesArray.h"
 
@@ -306,81 +307,122 @@ void CbmMvdSensorHitfinderTask::UpdateDebugHistos(vector<Int_t>* clusterArray, I
 
 //--------------------------------------------------------------------------
 
-void CbmMvdSensorHitfinderTask::ComputeCenterOfGravity(CbmMvdCluster* cluster, TVector3& pos, 
-					    TVector3& dpos){
-  Double_t numeratorX  = 0;
-  Double_t numeratorY  = 0;
-  Double_t denominator = 0;
-  Double_t pixelSizeX  = 0;
-  Double_t pixelSizeY  = 0;
-  Int_t charge;
-  Int_t xIndex;
-  Int_t yIndex;
-  Double_t x,y;
-  Double_t layerPosZ=fSensor->GetZ();
-  Double_t lab[3]={0,0,0};
-  std::map<pair<Int_t,Int_t>,Int_t> PixelMap = cluster->GetPixelMap();
-  Int_t clusterSize=cluster->GetNofDigis();
-
-  for(map<pair<Int_t,Int_t>,Int_t>::iterator it = PixelMap.begin(); it != PixelMap.end(); ++it )
+void CbmMvdSensorHitfinderTask::ComputeCenterOfGravity(CbmMvdCluster* cluster, TVector3& pos,TVector3& dpos){
+	
+	Double_t numeratorX  = 0;
+	Double_t numeratorY  = 0;
+	Double_t denominator = 0;
+	Double_t pixelSizeX  = 0;
+	Double_t pixelSizeY  = 0;
+	Int_t charge;
+	Int_t xIndex;
+	Int_t yIndex;
+	Double_t x,y;
+	Double_t layerPosZ=fSensor->GetZ();
+	Double_t lab[3]={0,0,0};
+	std::map<pair<Int_t,Int_t>,Int_t> PixelMap = cluster->GetPixelMap();
+	Int_t clusterSize=cluster->GetNofDigis();
+	
+	UInt_t		shape	= 0;
+	Int_t		xIndex0;
+	Int_t		yIndex0;
+	Double_t	sigmaIn[3], sigmaOut[3], shiftIn[3], shiftOut[3];
+	
+	for(map<pair<Int_t,Int_t>,Int_t>::iterator it = PixelMap.begin(); it != PixelMap.end(); ++it )
 	{         
-
-	pair<Int_t,Int_t> pixel = it->first;
-
-	charge      = GetAdcCharge(it->second);
-	xIndex      = pixel.first;
-	yIndex      = pixel.second;
-
-	if(gDebug>0){
-	    cout << "-I- " << "CbmMvdSensorHitfinderTask:: iCluster= "<<cluster->GetRefId() << " , clusterSize= " << clusterSize << endl;
-	    cout << "-I- " << "CbmMvdSensorHitfinderTask::xIndex " << xIndex << " , yIndex " << yIndex << " , charge = " << charge << endl;
+		pair<Int_t,Int_t> pixel = it->first;
+		
+		charge      = GetAdcCharge(it->second);
+		xIndex      = pixel.first;
+		yIndex      = pixel.second;
+		
+// Determine Cluster Shape
+		if( PixelMap.size()<=4 )
+		{
+			if( it==PixelMap.begin() )
+			{
+				xIndex0 = xIndex;
+				yIndex0 = yIndex;
+			}
+			shape+= TMath::Power(2, (4*(yIndex-yIndex0+3))+(xIndex-xIndex0) );
+		}
+		
+		if(gDebug>0)
+		{
+			cout << "-I- " << "CbmMvdSensorHitfinderTask:: iCluster= "<<cluster->GetRefId() << " , clusterSize= " << clusterSize << endl;
+			cout << "-I- " << "CbmMvdSensorHitfinderTask::xIndex " << xIndex << " , yIndex " << yIndex << " , charge = " << charge << endl;
+		}
+		
+		fSensor->PixelToTop(xIndex, yIndex, lab);
+		
+		x = lab[0];
+		y = lab[1];
+		
+		Double_t xc = x*charge;
+		Double_t yc = y*charge;
+		
+		numeratorX   += xc;
+		numeratorY   += yc;
+		denominator  += charge;
 	}
 	
-	fSensor->PixelToTop(xIndex, yIndex, lab);
+	if(gDebug>0)
+	{
+		cout << "-I- " << "CbmMvdSensorHitfinderTask::=========================\n " << endl;
+		cout << "-I- " << "CbmMvdSensorHitfinderTask::numeratorX: " <<numeratorX<<" , numeratorY: " <<numeratorY << ", denominator: " << denominator << endl;
+	}
+
+	//Calculate x,y coordinates of the pixel in the laboratory ref frame
+	if(denominator!=0)
+	{
+		fHitPosX = (numeratorX/denominator);
+		fHitPosY = (numeratorY/denominator);
+		fHitPosZ = layerPosZ;
+	}
+	else
+	{
+		fHitPosX = 0;
+		fHitPosY = 0;
+		fHitPosZ = 0;
+	}
 	
-	x = lab[0];
-	y = lab[1];
+	if(gDebug>0)
+	{
+		cout << "-I- " << "CbmMvdSensorHitfinderTask::-----------------------------------" << endl;
+		cout << "-I- " << "CbmMvdSensorHitfinderTask::X hit= " << fHitPosX << " Y hit= "<<fHitPosY << " Z hit= "<<fHitPosZ <<endl;
+		cout << "-I- " << "CbmMvdSensorHitfinderTask::-----------------------------------\n" << endl;
+	}
 	
-        //cout << endl << "x = " << x << " y = " << y << endl;
-
-	Double_t xc = x*charge;
-	Double_t yc = y*charge;
-
+// Treat Sigma/Shift of the Cluster according to the Shape
+	if		( shape == 12288	)	{ sigmaIn[0]=0.00053; sigmaIn[1]=0.00063; sigmaIn[2]=0.; shiftIn[0]=-0.00000; shiftIn[1]=-0.00001; shiftIn[2]=0.; }
+	else if	( shape ==208896	)	{ sigmaIn[0]=0.00035; sigmaIn[1]=0.00036; sigmaIn[2]=0.; shiftIn[0]=-0.00000; shiftIn[1]=-0.00002; shiftIn[2]=0.; }
+	else if	( shape == 69632	)	{ sigmaIn[0]=0.00028; sigmaIn[1]=0.00028; sigmaIn[2]=0.; shiftIn[0]=-0.00000; shiftIn[1]=-0.00002; shiftIn[2]=0.; }
+	else if	( shape == 28672	)	{ sigmaIn[0]=0.00028; sigmaIn[1]=0.00039; sigmaIn[2]=0.; shiftIn[0]=-0.00000; shiftIn[1]=-0.00001; shiftIn[2]=0.; }
+	else if	( shape ==143360	)	{ sigmaIn[0]=0.00024; sigmaIn[1]=0.00022; sigmaIn[2]=0.; shiftIn[0]=+0.00020; shiftIn[1]=+0.00008; shiftIn[2]=0.; }
+	else if	( shape ==200704	)	{ sigmaIn[0]=0.00024; sigmaIn[1]=0.00022; sigmaIn[2]=0.; shiftIn[0]=-0.00020; shiftIn[1]=-0.00011; shiftIn[2]=0.; }
+	else if	( shape == 77824	)	{ sigmaIn[0]=0.00024; sigmaIn[1]=0.00022; sigmaIn[2]=0.; shiftIn[0]=-0.00020; shiftIn[1]=+0.00008; shiftIn[2]=0.; }
+	else if	( shape == 12800	)	{ sigmaIn[0]=0.00024; sigmaIn[1]=0.00022; sigmaIn[2]=0.; shiftIn[0]=+0.00020; shiftIn[1]=-0.00011; shiftIn[2]=0.; }
+	else if	( shape ==  4096	)	{ sigmaIn[0]=0.00027; sigmaIn[1]=0.00092; sigmaIn[2]=0.; shiftIn[0]=+0.00002; shiftIn[1]=+0.00004; shiftIn[2]=0.; }
+	else							{ sigmaIn[0]=0.00036; sigmaIn[1]=0.00044; sigmaIn[2]=0.; shiftIn[0]=-0.00000; shiftIn[1]=-0.00002; shiftIn[2]=0.; }
+// Consider Sensor Orientation
+	TGeoHMatrix*	RecoMatrix = fSensor->GetRecoMatrix();
+	TGeoHMatrix		RotMatrix;
+	RotMatrix.SetRotation(RecoMatrix->GetRotationMatrix());
+		
+	RotMatrix.LocalToMaster(sigmaIn, sigmaOut);
+	RotMatrix.LocalToMaster(shiftIn, shiftOut);
 	
-	numeratorX   += xc;
-	numeratorY   += yc;
-	denominator  += charge;
-
-    }
-
-    if(gDebug>0){
-	cout << "-I- " << "CbmMvdSensorHitfinderTask::=========================\n " << endl;
-	cout << "-I- " << "CbmMvdSensorHitfinderTask::numeratorX: " <<numeratorX<<" , numeratorY: " <<numeratorY << ", denominator: " << denominator << endl;
-    }
-
-    //Calculate x,y coordinates of the pixel in the laboratory ref frame
-    if(denominator!=0) {
-	fHitPosX = (numeratorX/denominator);
-	fHitPosY = (numeratorY/denominator);
-	fHitPosZ = layerPosZ;
-    }else{
-	fHitPosX = 0;
-	fHitPosY = 0;
-	fHitPosZ = 0;
-    }
-    if(gDebug>0){
-	cout << "-I- " << "CbmMvdSensorHitfinderTask::-----------------------------------" << endl;
-	cout << "-I- " << "CbmMvdSensorHitfinderTask::X hit= " << fHitPosX << " Y hit= "<<fHitPosY << " Z hit= "<<fHitPosZ <<endl;
+	fHitPosErrX = TMath::Abs(sigmaOut[0]);
+	fHitPosErrY = TMath::Abs(sigmaOut[1]);
+	fHitPosErrZ = TMath::Abs(sigmaOut[2]);
 	
-	cout << "-I- " << "CbmMvdSensorHitfinderTask::-----------------------------------\n" << endl;
-    }
-
-    // pos = center of gravity (labframe), dpos uncertainty
-    pos.SetXYZ(fHitPosX,fHitPosY,fHitPosZ);
-    dpos.SetXYZ(fHitPosErrX, fHitPosErrY, fHitPosErrZ);
-    
-   
-
+	fHitPosX+= shiftOut[0];
+	fHitPosY+= shiftOut[1];
+	fHitPosZ+= shiftOut[2];
+	
+	// pos = center of gravity (labframe), dpos uncertaintycout<<setw(10)<<setprecision(2)<< VolumeShape->GetDX();
+	pos.SetXYZ(fHitPosX,fHitPosY,fHitPosZ);
+	dpos.SetXYZ(fHitPosErrX, fHitPosErrY, fHitPosErrZ);
 }
 
 //--------------------------------------------------------------------------
