@@ -39,7 +39,7 @@ Include_Directories(
 
 Set(LINK_DIRECTORIES
   ${ROOT_LIBRARY_DIR}
-  ${Boost_LIBRARY_DIR}
+  ${Boost_LIBRARY_DIRS}
   ${GEANT4_LIBRARY_DIR}
   ${FAIRROOT_LIBRARY_DIR}
 )
