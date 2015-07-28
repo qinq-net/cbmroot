@@ -38,7 +38,15 @@ class TDirectory;
 
    // C++
 #include <vector>
+#ifdef __APPLE__
+#include <_types/_uint8_t.h>
+#include <_types/_uint16_t.h>
+#include <_types/_uint32_t.h>
+#include <_types/_uint64_t.h>
+#else
 #include <stdint.h>
+#endif
+
    // GET4
 class TGet4v1Param;
 #include "TGet4v1Event.h"

@@ -144,7 +144,7 @@ void TMbsMappingTofPar::printParams()
       TString sUnIdTdc = "TDC Unique Id:        |-> ";
       
       TString sChanInd = "Channel Index:               --- ";
-      TString sMapping[fiNbMappedTdc];
+      TString* sMapping = new TString[fiNbMappedTdc];
       
       Int_t iMappingIndex = 0;
       Int_t iMaxChannels  = fiNbChTdc[0];
@@ -178,8 +178,11 @@ void TMbsMappingTofPar::printParams()
       LOG(INFO)<<sChanInd<<FairLogger::endl;
       for( Int_t iMappTdcIndex = 0; iMappTdcIndex < fiNbMappedTdc; iMappTdcIndex++)
          LOG(INFO)<<sMapping[iMappTdcIndex]<<FairLogger::endl;
+
+      delete [] sMapping;
    } // if( 0 < fiNbMappedTdc )
-      
+   
+   
    if(1 == fiUseExtendedDigi)
       LOG(INFO)<<"  Type of Digis used:                 Extended"<<FairLogger::endl;
       else LOG(INFO)<<"  Type of Digis used:                 Compressed"<<FairLogger::endl;   

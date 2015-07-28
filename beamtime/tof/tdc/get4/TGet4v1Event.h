@@ -47,7 +47,14 @@ GetTriggerNumber()      Not available (TCBMBeamtimeProc method)
 GetEventNumber()        Not available (TCBMBeamtimeProc method)
 */
 
+#ifdef __APPLE__
+#include <_types/_uint8_t.h>
+#include <_types/_uint16_t.h>
+#include <_types/_uint32_t.h>
+#include <_types/_uint64_t.h>
+#else
 #include <stdint.h>
+#endif
 
 /*
  * Extended message container. Keeps original ROC message, but adds full timestamp and
