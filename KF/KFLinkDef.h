@@ -12,6 +12,7 @@
 #pragma link C++ class  CbmKFHit+;
 #pragma link C++ class  CbmKFStsHit+;
 #pragma link C++ class  CbmKFTrdHit+;
+#pragma link C++ class  CbmKFTofHit+;
 #pragma link C++ class  CbmKFUMeasurement+;
 #pragma link C++ class  CbmKFPixelMeasurement+;
 #pragma link C++ class  CbmKFTrackInterface+;
@@ -29,6 +30,7 @@
 #pragma link C++ class  CbmStsFitPerformanceTask+;
 #pragma link C++ class  CbmEcalTrackExtrapolationKF+;
 #pragma link C++ class  CbmTrdTrackFitterKF+;
+#pragma link C++ class  CbmTofTrackFitterKF+;
 #pragma link C++ class  CbmGlobalTrackFitterKF+;
 // #pragma link C++ class  CbmKFParticle+;
 

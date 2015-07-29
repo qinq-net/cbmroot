@@ -83,11 +83,13 @@ Interface/CbmEcalTrackExtrapolationKF.cxx
 Interface/CbmKFStsHit.cxx 
 Interface/CbmKFTrack.cxx 
 Interface/CbmKFTrdHit.cxx 
+Interface/CbmKFTofHit.cxx 
 Interface/CbmPVFinderKF.cxx 
 Interface/CbmStsFitPerformanceTask.cxx 
 Interface/CbmStsKFTrackFitter.cxx 
 Interface/CbmStsKFSecondaryVertexFinder.cxx 
 Interface/CbmTrdTrackFitterKF.cxx 
+Interface/CbmTofTrackFitterKF.cxx 
 Interface/CbmGlobalTrackFitterKF.cxx
 # CbmKFParticle.cxx
 # CbmKFParticle_simd.cxx
@@ -162,11 +164,13 @@ Interface/CbmEcalTrackExtrapolationKF.h
 Interface/CbmKFStsHit.h
 Interface/CbmKFTrack.h 
 Interface/CbmKFTrdHit.h 
+Interface/CbmKFTofHit.h 
 Interface/CbmPVFinderKF.h
 Interface/CbmStsFitPerformanceTask.h
 Interface/CbmStsKFTrackFitter.h
 Interface/CbmStsKFSecondaryVertexFinder.h
 Interface/CbmTrdTrackFitterKF.h
+Interface/CbmTofTrackFitterKF.h
 Interface/CbmGlobalTrackFitterKF.h
 # CbmKFParticle.h
 KFModelParameters/CbmModelBase.h
