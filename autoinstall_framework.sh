@@ -18,7 +18,7 @@
 #-------------------------------------
 
 # put your desired variants here:
-export FSOFTDEV=jul15p1
+export FSOFTDEV=jul15p2
 export FROOTDEV=v-15.07
 
 export FSOFTPRO=mar15p2
@@ -93,6 +93,8 @@ if [ $SETUP_FAIRSOFT -ge 1 ]; then
   #emacs -nw automatic.conf
   #./configure.sh automatic.conf
   sed s/compiler=/compiler=gcc/ automatic.conf > automatic_gcc.conf
+  # sed s/build_root6=no/build_root6=yes/ automatic.conf > automatic_root6.conf
+  # sed s/compiler=/compiler=gcc/ automatic_root6.conf > automatic_gcc.conf
   ./configure.sh automatic_gcc.conf
   
   cd $CBMSRCDIR
