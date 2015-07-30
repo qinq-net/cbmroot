@@ -65,7 +65,7 @@ class CbmMuchModuleGem : public CbmMuchModule{
   void AddSector(CbmMuchSector* sector) { fSectors.push_back(sector); }
   
   /** */
-  virtual Bool_t InitModule(){}
+  virtual Bool_t InitModule(){return kTRUE;}
   
   /** */
   void DrawModule(Color_t color);

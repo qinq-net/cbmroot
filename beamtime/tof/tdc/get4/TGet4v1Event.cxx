@@ -6,6 +6,10 @@
 #include "Riostream.h"
 #include "TString.h"
 
+#include <iostream>
+
+using std::cout;
+using std::endl;
 
 /*
  * Conversion of definitions to constants:

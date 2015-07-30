@@ -77,6 +77,10 @@ GetEventNumber()        Not available (TCBMBeamtimeProc method)
 #include "roc/Board.h"
    // C++
 #include <algorithm>
+#include <iostream>
+
+using std::cout;
+using std::endl;
 
 TTofGet4Unpacker::TTofGet4Unpacker():
    fParUnpack(0),

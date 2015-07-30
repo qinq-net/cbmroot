@@ -8,7 +8,10 @@
 
 #include "Riostream.h"
 
+#include <iostream>
 
+using std::cout;
+using std::endl;
 
 TGet4v1Param::TGet4v1Param():
    TNamed("", "TGet4v1Param"),

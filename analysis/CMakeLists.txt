@@ -5,6 +5,8 @@ add_subdirectory (papa)
 Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/analysis
 #${CBMROOT_SOURCE_DIR}/analysis/hyperon
+${CBMROOT_SOURCE_DIR}/analysis/dielectron
+${CBMROOT_SOURCE_DIR}/analysis/jpsiana
 
 ${CBMROOT_SOURCE_DIR}/base 
 ${CBMROOT_SOURCE_DIR}/base/draw
@@ -159,6 +161,7 @@ Set(LINKDEF AnalysisLinkDef.h)
 Set(LIBRARY_NAME Analysis)
 Set(DEPENDENCIES
     Littrack KF L1 Much Rich Sts CbmBase CbmData CbmGenerators Base Vc.a)
+Set(DEFINITIONS -DDO_TPCCATRACKER_EFF_PERFORMANCE -DNonhomogeneousField -DCBM -DUSE_TIMERS)
 
 GENERATE_LIBRARY()
 

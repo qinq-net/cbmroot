@@ -1,4 +1,4 @@
-#pragma once
+//#pragma once
 #ifndef THERMALMODELEVMF_H
 #define THERMALMODELEVMF_H
 #include "ThermalModelBase.h"
