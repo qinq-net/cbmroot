@@ -49,14 +49,16 @@ void readTsa1(TString inFile =
   CbmTSUnpackSpadic* spadic_unpacker = new CbmTSUnpackSpadic();
 
   // NXyter Unpacker
-   CbmTSUnpackNxyter* nxyter_unpacker = new CbmTSUnpackNxyter();
+  CbmTSUnpackNxyter* nxyter_unpacker = new CbmTSUnpackNxyter();
+
+  CbmTSUnpackTrb* trb_unpacker = new CbmTSUnpackTrb();
 
   // --- Source task
   CbmFlibFileSourceNew* source = new CbmFlibFileSourceNew();
   //source->SetHostName("cbmflib01");
   source->SetFileName(inFile);
   //source->AddFile(inFile1);
-  source->AddUnpacker(nxyter_unpacker, 0xE0);// RICH + REF
+  source->AddUnpacker(trb_unpacker, 0xE0);// RICH + REF
   //source->AddUnpacker(nxyter_unpacker, 0x10);//fhodo or cherenkov or pb glass???
   source->AddUnpacker(nxyter_unpacker, 0xE1);//HODO 1 + 2
   source->AddUnpacker(spadic_unpacker, 0x40);// test beam 2014

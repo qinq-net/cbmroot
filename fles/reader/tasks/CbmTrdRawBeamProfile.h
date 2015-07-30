@@ -51,6 +51,7 @@ class CbmTrdRawBeamProfile : public FairTask
     /** Input array from previous already existing data level **/
     TClonesArray* fRawSpadic;
     TClonesArray* fNxyterRaw;
+    TClonesArray* fTrbRaw;
    /** Output array **/
     TClonesArray* fDigis; //! TRD digis
     TClonesArray* fClusters;
@@ -60,6 +61,7 @@ class CbmTrdRawBeamProfile : public FairTask
 
     Int_t fSpadicMessageCounter;
     Int_t fNxyterMessageCounter;
+    Int_t fTrbMessageCounter;
     Int_t fContainerCounter;
     Int_t fInfoCounter;
     Int_t fHitCounter;

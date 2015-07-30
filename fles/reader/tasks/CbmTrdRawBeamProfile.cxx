@@ -2,6 +2,7 @@
 
 #include "CbmSpadicRawMessage.h"
 #include "CbmNxyterRawMessage.h"
+#include "CbmTrbRawMessage.h"
 #include "CbmTrdDigi.h"
 #include "CbmTrdCluster.h"
 #include "CbmHistManager.h"
@@ -25,6 +26,8 @@
 CbmTrdRawBeamProfile::CbmTrdRawBeamProfile()
   : FairTask("CbmTrdRawBeamProfile"),
     fRawSpadic(NULL),
+    fNxyterRaw(NULL),
+    fTrbRaw(NULL),
     fDigis(NULL),
     fClusters(NULL),
     fiDigi(0),
@@ -32,6 +35,7 @@ CbmTrdRawBeamProfile::CbmTrdRawBeamProfile()
     fHM(new CbmHistManager()),
     fSpadicMessageCounter(0),
     fNxyterMessageCounter(0),
+    fTrbMessageCounter(0),
     fContainerCounter(0),
     fInfoCounter(0),
     fHitCounter(0),
@@ -93,12 +97,16 @@ InitStatus CbmTrdRawBeamProfile::Init()
     LOG(FATAL) << "No InputDataLevelName SpadicRawMessage array!\n CbmTrdRawBeamProfile will be inactive" << FairLogger::endl;
     return kERROR;
   }
-  fNxyterRaw = static_cast<TClonesArray*>(ioman->GetObject("NxyterRawMessage"/*"CbmNxyterRawMessage"*/));
+  fNxyterRaw = static_cast<TClonesArray*>(ioman->GetObject("NxyterRawMessage"));
   if ( ! fNxyterRaw ) {
     LOG(ERROR) << "No InputDataLevelName CbmNxyterRawMessage array!\n Nxyter data within CbmTrdRawBeamProfile will be inactive" << FairLogger::endl;
-    //return kERROR;
+    return kERROR;
   }
-
+  fTrbRaw = static_cast<TClonesArray*>(ioman->GetObject("TrbRawMessage"));
+  if ( ! fTrbRaw ) {
+    LOG(ERROR) << "No InputDataLevelName CbmTrbRawMessage array!\n TRB data within CbmTrdRawBeamProfile will be inactive" << FairLogger::endl;
+    return kERROR;
+  }
 
 
   fDigis = new TClonesArray("CbmTrdDigi", 100);
@@ -141,6 +149,20 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 			      "30", "31"};
 
   //std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > > timeBuffer;// <ASIC ID "Syscore%d_Spadic%d"<Time, <CombiId, SpadicMessage> >
+
+ 
+  Int_t entriesInTrbMessage = fTrbRaw->GetEntriesFast();
+  for (Int_t i=0; i < entriesInTrbMessage; ++i) {
+    fTrbMessageCounter++;
+    CbmTrbRawMessage* raw = /*static_cast<*/(CbmTrbRawMessage*)/*>*/(fTrbRaw->At(i));
+    Int_t eqID = raw->GetEquipmentID();
+    Int_t sourceA = raw->GetSourceAddress();
+    //printf("EI%i SA%i ->",eqID,sourceA);
+    Int_t chID = raw->GetChannelID();
+    //Int_t AdcValue = raw->GetGetADCvalue();
+    ULong_t time = raw->GetFullTime();
+    LOG(INFO) << "TrbMessage: EqId:" << eqID << " sourceA:" << sourceA << " ChID:" << chID << FairLogger::endl;
+  }
 
 
   Int_t entriesInNxyterMessage = fNxyterRaw->GetEntriesFast();
@@ -880,6 +902,7 @@ Int_t CbmTrdRawBeamProfile::GetModuleID(CbmSpadicRawMessage* raw)
     LOG(INFO) << "CbmTrdRawBeamProfile::Finish Container:            " << fContainerCounter << FairLogger::endl;
     LOG(INFO) << "CbmTrdRawBeamProfile::Finish Spadic Messages:      " << fSpadicMessageCounter << FairLogger::endl;
     LOG(INFO) << "CbmTrdRawBeamProfile::Finish Nxyter Messages:      " << fNxyterMessageCounter << FairLogger::endl;
+    LOG(INFO) << "CbmTrdRawBeamProfile::Finish Trb Messages:         " << fTrbMessageCounter << FairLogger::endl;
     LOG(INFO) << "CbmTrdRawBeamProfile::Finish Infos:                " << fInfoCounter << FairLogger::endl;
     LOG(INFO) << "CbmTrdRawBeamProfile::Finish Hits:                 " << fHitCounter << FairLogger::endl;
     LOG(INFO) << "CbmTrdRawBeamProfile::Finish Multihits:            " << fMultiHitCounter << FairLogger::endl;
