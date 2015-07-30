@@ -110,6 +110,8 @@ void CbmAnaJpsiSuperEventReport::Draw()
 	 }
 
 	 DrawMinvMismatchPt();
+
+	 DrawMinvDiffPtBins();
 }
 
 void CbmAnaJpsiSuperEventReport::DrawComparison()
@@ -165,18 +167,6 @@ void CbmAnaJpsiSuperEventReport::DrawMinvSignalBg()
   DrawH1(list_of(fhBg)(fhSignal)(fhBgSignal),list_of("Background SuperEvent")("Signal Event-By-Event")("Signal and Background"), kLinear, kLog, true, 0.7, 0.9, 0.99, 0.95);
   DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.4, 0.89, 0.5, 0.99);
 
-
-  TCanvas* c6 = CreateCanvas("jpsi_se_ee_minv_diff_ptCuts","jpsi_se_ee_minv_diff_ptCuts",1600,800);
-  c6->Divide(4,2);
-  for (int i=0;i<8;i++){
-  c6->cd(i+1);
-  TH1D* fhBgDiffPtCuts = (TH1D*) fHMSuperEvent->H1("fh_se_bg_minv_diff_ptcuts_" + Cbm::NumberToString(i))->Clone();
-  TH1D* fhSignalDiffPtCuts = (TH1D*) fHMEventByEvent->H1("fh_ee_signal_minv_diff_ptcuts_" + Cbm::NumberToString(i))->Clone();
-  TH1D* fhBgSignalDiffPtCuts = (TH1D*) fhBgDiffPtCuts->Clone();
-  fhBgSignalDiffPtCuts->Add(fhSignalDiffPtCuts);
-  fhBgSignalDiffPtCuts->SetMinimum(1e-9);
-  DrawH1(list_of(fhBgDiffPtCuts)(fhSignalDiffPtCuts)(fhBgSignalDiffPtCuts),list_of("Background")("Signal")("Signal and Background"), kLinear, kLog, true, 0.65, 0.8, 0.99, 0.95);
-  }
 }
 
 double CbmAnaJpsiSuperEventReport::SignalOverBg(
@@ -281,6 +271,71 @@ void CbmAnaJpsiSuperEventReport::DrawMinvMismatchPt()
 			kLinear, kLog, true, 0.65, 0.8, 0.99, 0.99);
 
 	    DrawTextOnPad(CbmAnaJpsiHist::fAnaStepsLatex[kJpsiPtCut], 0.15, 0.9, 0.35, 0.99);
+}
+
+void CbmAnaJpsiSuperEventReport::DrawMinvDiffPtBins()
+{
+	TCanvas* c6 = CreateCanvas("jpsi_se_ee_minv_diff_ptCuts","jpsi_se_ee_minv_diff_ptCuts",1600,800);
+	  c6->Divide(4,2);
+	  for (int i=0;i<8;i++){
+	  c6->cd(i+1);
+	  TH1D* fhBgDiffPtCuts = (TH1D*) fHMSuperEvent->H1("fh_se_bg_minv_diff_ptcuts_" + Cbm::NumberToString(i))->Clone();
+	  TH1D* fhSignalDiffPtCuts = (TH1D*) fHMEventByEvent->H1("fh_ee_signal_minv_diff_ptcuts_" + Cbm::NumberToString(i))->Clone();
+	  TH1D* fhBgSignalDiffPtCuts = (TH1D*) fhBgDiffPtCuts->Clone();
+	  fhBgSignalDiffPtCuts->Add(fhSignalDiffPtCuts);
+	  fhBgSignalDiffPtCuts->SetMinimum(1e-9);
+	  DrawH1(list_of(fhBgDiffPtCuts)(fhSignalDiffPtCuts)(fhBgSignalDiffPtCuts),list_of("Background")("Signal")("Signal and Background"), kLinear, kLog, true, 0.65, 0.8, 0.99, 0.95);
+	  double lowerCut = 0;
+	  double upperCut = 0;
+	  if (i<6){
+		  upperCut = (0.4*(i+1));
+		  lowerCut = (upperCut-0.4);
+	  } else if (i==6) {
+		  upperCut = 3.0;
+		  lowerCut = 2.4;
+	  }
+	  else if (i==7) {
+		  upperCut = 6.0;
+		  lowerCut = 3.0;
+	  }
+	  string text = Cbm::NumberToString(lowerCut,2)+ "<P_t<"+ Cbm::NumberToString(upperCut,2);
+	  DrawTextOnPad(text,0.38, 0.88, 0.65, 0.95);
+
+	  //SignalOverBackground
+	  //Create Histogram for the Gaus-Fit
+	  TH1D* signalFit_DiffPt_ee = (TH1D*)fhSignalDiffPtCuts->Clone();
+	  signalFit_DiffPt_ee->Fit("gaus","","",2.9,3.3);
+
+	  //Calculate sigma and Mean
+	  Double_t sigmaSignal = signalFit_DiffPt_ee->GetFunction("gaus")->GetParameter("Sigma");
+	  Double_t meanSignal = signalFit_DiffPt_ee->GetFunction("gaus")->GetParameter("Mean");
+
+	  //Get the number of the Bins of Min and Max
+	  int signalMin = signalFit_DiffPt_ee->FindBin(meanSignal - 2.*sigmaSignal);
+	  int signalMax = signalFit_DiffPt_ee->FindBin(meanSignal + 2.*sigmaSignal);
+
+	  double NOfSignalEntries = 0.;
+	  double NOfBgEntries = 0.;
+
+	  //sum up all the bins
+	  for (int j=signalMin; j<=signalMax; j++)
+	  {
+		  NOfSignalEntries += signalFit_DiffPt_ee->GetBinContent(j);
+		  NOfBgEntries += fhBgDiffPtCuts->GetBinContent(j);
+	  }
+
+	 //Calculate Signal/Background
+	  double SOverBg = 0. ;
+	  if (NOfBgEntries <= 0.)	  {
+		  SOverBg = 0;
+	  } else
+	  {
+		  SOverBg = NOfSignalEntries / NOfBgEntries;
+
+	  }
+	  string textSOverBg = "S/Bg = " + Cbm::NumberToString(SOverBg,3);
+	  DrawTextOnPad(textSOverBg,0.1, 0.88, 0.35, 0.95);
+	  }
 }
 
 ClassImp(CbmAnaJpsiSuperEventReport)

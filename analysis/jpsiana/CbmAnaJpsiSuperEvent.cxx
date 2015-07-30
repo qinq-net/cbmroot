@@ -43,7 +43,8 @@ CbmAnaJpsiSuperEvent::CbmAnaJpsiSuperEvent()
 		fOutputFile(""),
         fHM(NULL),
 		fCuts(),
-		fRunAfterPtCut(kTRUE)
+		fRunAfterPtCut(kTRUE),
+		fRunAfterIdCut(kTRUE)
 {
 
 }
@@ -136,14 +137,18 @@ void CbmAnaJpsiSuperEvent::ReadCandidates()
 
 				if (cand->fIsMcSignalElectron) continue;
 
-				Bool_t isPtCut = (cand->fChi2Prim < fCuts.fChiPrimCut && cand->fIsElectron && cand->fMomentum.Perp() > fCuts.fPtCut);
+				Bool_t isIdCut = (cand->fChi2Prim < fCuts.fChiPrimCut && cand->fIsElectron);
+				Bool_t isPtCut = (isIdCut && cand->fMomentum.Perp() > fCuts.fPtCut);
+				Bool_t isGoodId = fRunAfterIdCut?(isIdCut):true;
 				Bool_t isGood = fRunAfterPtCut?(isPtCut):true;
 				if (cand->fCharge < 0) {
 					CbmAnaJpsiCandidate candM = CbmAnaJpsiCandidate(*cand);
-					if (isGood) fMinusCandidates.push_back(candM);
+					if (isGoodId) {
+						if (isGood) fMinusCandidates.push_back(candM);}
 				} else {
 					CbmAnaJpsiCandidate candP = CbmAnaJpsiCandidate(*cand);
-					if (isGood) fPlusCandidates.push_back(candP);
+					if (isGoodId) {
+						if (isGood) fPlusCandidates.push_back(candP);}
 				}
 			}
 		}

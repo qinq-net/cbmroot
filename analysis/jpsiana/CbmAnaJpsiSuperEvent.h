@@ -43,6 +43,8 @@ public:
 	 */
 	void SetRunAfterPtCut(Bool_t b){fRunAfterPtCut = b;}
 
+	void SetRunAfterIdCut(Bool_t b){fRunAfterIdCut = b;}
+
 	void Run();
 
 private:
@@ -57,6 +59,7 @@ private:
 	CbmAnaJpsiCuts fCuts;
 
 	Bool_t fRunAfterPtCut;
+	Bool_t fRunAfterIdCut;
 
 	void InitHist();
 
