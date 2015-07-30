@@ -84,8 +84,6 @@ Set(SRCS
   get4/CbmGet4EventBuilder.cxx
   get4/CbmGet4EventBuffer.cxx
 
-  ${FLES_TOF_BEAM_SOURCES}
-
   tasks/CbmTrdRawBeamProfile.cxx
   tasks/CbmTrdRawPulseMonitor.cxx
   tasks/CbmTrdOnlineDisplay.cxx
@@ -93,6 +91,8 @@ Set(SRCS
   tasks/CbmTrdDaqBuffer.cxx
   tasks/CbmTrdClusterAnalysis.cxx
   tasks/CbmTrdTestBeamAnalysis.cxx
+
+  ${FLES_TOF_BEAM_SOURCES}
 )
 
 Set(NO_DICT_SRCS
