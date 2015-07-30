@@ -139,7 +139,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
   if (0 == fFindTracks->GetStationType(0)){ // Generate Pseudo TofHit at origin
     const Int_t iDetId = CbmTofAddress::GetUniqueAddress(0,0,0,0,0);
     const TVector3 hitPos(0.,0.,0.);
-    const TVector3 hitPosErr(0.1, 0.1, 0.1);
+    const TVector3 hitPosErr(0.5, 0.5, 0.5); // initialize fake hit error
     const Double_t dTime0 = 0.;  // FIXME
 
     Int_t iNbHits = fHits->GetEntries(); 
@@ -196,7 +196,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	CbmTofHit* pHit1 = (CbmTofHit*) fHits->At( iHit1 );
 	Int_t iSmType1 = CbmTofAddress::GetSmType( pHit1->GetAddress() & DetMask );
         if (iSmType1 == fFindTracks->GetStationType(1)) { // generate new track seed
-	  Int_t iChId1 = pHit->GetAddress();
+	  Int_t iChId1 = pHit1->GetAddress();
 	  CbmTofCell* fChannelInfo1 = fDigiPar->GetCell( iChId1 );
 	  Int_t iCh1 = CbmTofAddress::GetChannelId(iChId1);	
 	  Double_t hitpos1[3]={3*0.};
@@ -220,13 +220,16 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	  Double_t dDT = 0.;
 	  if(iSmType>0) dDT = pHit1->GetTime()- pHit->GetTime();
      
-     Double_t dLz =  pHit1->GetZ()   - pHit->GetZ();
-     Double_t dTx = (pHit1->GetX()   - pHit->GetX())/dLz;
-     Double_t dTy = (pHit1->GetY()   - pHit->GetY())/dLz;
+	  Double_t dLz =  pHit1->GetZ()   - pHit->GetZ();
+	  Double_t dTx = (pHit1->GetX()   - pHit->GetX())/dLz;
+	  Double_t dTy = (pHit1->GetY()   - pHit->GetY())/dLz;
 
-	  LOG(DEBUG1) << Form("<I> TofTracklet %d, Hits %d, %d check, add = 0x%08x,0x%08x - DT %6.2f, Tx %6.2f Ty %6.2f ",
-			      fiNtrks,iHit,iHit1,pHit->GetAddress(),pHit1->GetAddress(), dDT, dTx, dTy )
+	  LOG(DEBUG1) << Form("<I> TofTracklet %d, Hits %d, %d check, add = 0x%08x,0x%08x - DT %6.2f, Tx %6.2f Ty %6.2f Tt %6.2f pos %6.2f ",
+			      fiNtrks,iHit,iHit1,pHit->GetAddress(),pHit1->GetAddress(), dDT, dTx, dTy, dDT/dLz, hitpos1_local[1] )
 	   	      <<FairLogger::endl; 
+          LOG(DEBUG1) << Form(" Pair selection parameter:  %6.2f, %6.2f, %6.2f, %6.2f, %6.2f, %6.2f",
+			      dSizey1,fPosYMaxScal,fMaxTofTimeDifference,fTxLIM,fTyMean,fTyLIM)
+  	   	      <<FairLogger::endl; 
 
 	  if(TMath::Abs(hitpos1_local[1])<dSizey1*fPosYMaxScal)
 	  if(    TMath::Abs(dDT/dLz)<fMaxTofTimeDifference && TMath::Abs(dTx)<fTxLIM 
@@ -422,7 +425,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
 	  
 	  Line3Dfit(pTrk);                   // full MINUIT fit for debugging overwrites ParamLast!
 	  
-	  pTrk->SetTime(pTrk->UpdateT0());      // update reference time
+	  pTrk->SetTime(pTrk->UpdateT0());   // update reference time (and fake hit time) 
 
 	  //FairTrackParam paramExtr;
 	  //fFitter->Extrapolate(pTrk->GetParamLast(),0.,&paramExtr);
@@ -486,7 +489,7 @@ void  CbmTofTrackFinderNN::TrklSeed(Int_t iHit)
       CbmTofHit* pHit1 = (CbmTofHit*) fHits->At( iHit1 );
       Int_t iSmType1 = CbmTofAddress::GetSmType( pHit1->GetAddress() & DetMask );
       if (iSmType1 == fFindTracks->GetStationType(iDet1)) {      // generate candidate for new track seed
-	Int_t iChId1 = pHit->GetAddress();
+	Int_t iChId1 = pHit1->GetAddress();
 	CbmTofCell* fChannelInfo1 = fDigiPar->GetCell( iChId1 );
 	Int_t iCh1 = CbmTofAddress::GetChannelId(iChId1);
 	Double_t hitpos1[3]={3*0.};
