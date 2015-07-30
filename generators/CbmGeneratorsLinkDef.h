@@ -15,8 +15,11 @@
 #pragma link C++ class UEvent+;
 #pragma link C++ class UParticle+;
 #pragma link C++ class CbmIonGenerator+;
+
+#ifdef HAS_PLUTO
 #pragma link C++ class CbmPlutoGenerator+;
 #pragma link C++ class CbmPlutoReactionGenerator+;
+#endif
 
 #endif
 
