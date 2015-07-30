@@ -236,6 +236,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   	tDz = target->GetThickness();
   }
   primGen->SetTarget(tZ, tDz);
+  //  primGen->SetTargetRotAngle(0., targetRotY * TMath::Pi()/180.);
   primGen->SetBeam(0., 0., beamWidthX, beamWidthY);
   primGen->SmearGausVertexXY(smearVertexXY);
   primGen->SmearVertexZ(smearVertexZ);

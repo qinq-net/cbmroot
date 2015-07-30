@@ -1,5 +1,5 @@
-*** ../run/run_sim.C	2015-07-27 20:37:13.765418235 +0200
---- mcbm_sim.C	2015-07-27 22:01:19.289409309 +0200
+*** ../run/run_sim.C	2015-07-30 09:35:38.057473432 +0200
+--- mcbm_sim.C	2015-07-30 09:38:08.954221688 +0200
 ***************
 *** 14,20 ****
   //
@@ -92,8 +92,18 @@
     // ------------------------------------------------------------------------
   
 ***************
+*** 235,240 ****
+--- 236,242 ----
+    	tDz = target->GetThickness();
+    }
+    primGen->SetTarget(tZ, tDz);
++   //  primGen->SetTargetRotAngle(0., targetRotY * TMath::Pi()/180.);
+    primGen->SetBeam(0., 0., beamWidthX, beamWidthY);
+    primGen->SmearGausVertexXY(smearVertexXY);
+    primGen->SmearVertexZ(smearVertexZ);
+***************
 *** 250,258 ****
---- 251,283 ----
+--- 252,284 ----
     CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
     uniGen->SetEventPlane(0. , 360.);
     primGen->AddGenerator(uniGen);
