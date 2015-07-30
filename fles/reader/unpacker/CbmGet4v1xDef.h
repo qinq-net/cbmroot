@@ -13,6 +13,13 @@ namespace get4v1x {
       GET4_32B_DATA  = 3
    };
 
+   enum Get4Message32bSlC {
+      GET4_32B_SLC_SCALER    = 0,
+      GET4_32B_SLC_DEADT     = 1,
+      GET4_32B_SLC_SPIREAD   = 2,
+      GET4_32B_SLC_START_SEU = 3
+   };
+
    enum Get4Message32bErrors {
       GET4_V1X_ERR_READ_INIT   = 0x00,
       GET4_V1X_ERR_SYNC        = 0x01,
@@ -34,9 +41,12 @@ namespace get4v1x {
    };
    // Hardware max Number
    const uint32_t kuMaxRoc        =  15;
-   const uint32_t kuMaxGet4       = 256; // For ROC v3
-   const uint32_t kuMaxGet4PerRoc = 128; // For ROC v3
+   const uint32_t kuMaxGet4       = 128; // For ROC v3
+   const uint32_t kuMaxGet4PerRoc =  64; // For ROC v3
    const uint32_t kuChanPerGet4   =   4;
+   const uint32_t kuGet4PerFee    =   8;
+   const uint32_t kuChanPerFee    = kuChanPerGet4 * kuGet4PerFee;
+
 
    // Size of one clock cycle (=1 coarse bin)
    const double   kdClockCycleSize  = 6400.0; //[ps]
@@ -48,8 +58,10 @@ namespace get4v1x {
    const uint32_t kuCoarseTime  = 0x0007FF80; // Coarse Counter value
    const uint32_t kuCtShift     =          7; // Coarse Counter offset
 
+   const uint32_t kuFineCounterSize    = ( (kuFineTime>>kuFtShift)+1 );
    const uint32_t kuCoarseCounterSize  = ( (kuCoarseTime>>kuCtShift)+1 );
    const uint32_t kuCoarseOverflowTest = kuCoarseCounterSize / 2 ; // Limit for overflow check
+   const uint32_t kuTotCounterSize     = 256;
 
    // Nominal bin size of NL are neglected
    const double   kdBinSize     = kdClockCycleSize / static_cast<double>(kuFineTime + 1);

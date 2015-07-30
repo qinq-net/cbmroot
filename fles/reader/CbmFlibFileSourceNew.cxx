@@ -105,7 +105,7 @@ Int_t CbmFlibFileSourceNew::ReadEvent()
   //while( fFileCounter < fInputFileList.GetSize() ) {
     while (auto timeslice = fSource->get()) {
       fTSCounter++;
-      if ( 0 == fTSCounter%100 ) {
+      if ( 0 == fTSCounter%10000 ) {
 	/*
         fTimer.Stop();
 	Double_t rtime = fTimer.RealTime(); 

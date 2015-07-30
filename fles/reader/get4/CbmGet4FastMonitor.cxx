@@ -1,17 +1,16 @@
 // -----------------------------------------------------------------------------
 // -----                                                                   -----
-// -----                      CbmTSUnpackGet4v1x                           -----
+// -----                      CbmGet4FastMonitor                           -----
 // -----                    Created 15.12.2014 by                          -----
 // -----                        P.-A. Loizeau                              -----
-// -----                  Based on CbmTSUnpackGet4v1x                       -----
+// -----                  Based on CbmGet4FastMonitor                       -----
 // -----                                                                   -----
 // -----------------------------------------------------------------------------
 
-#include "CbmTSUnpackGet4v1x.h"
+#include "CbmGet4FastMonitor.h"
 
 // Specific headers
 #include "CbmGet4v1xDef.h"
-#include "CbmGet4EpochBuffer.h"
 
 // FAIRROOT headers
 #include "FairLogger.h"
@@ -32,12 +31,9 @@
 #include <stdint.h>
 
 /*********
- * TODO
- * 1) Use the time sorted data => ~OK
+ * DONE
  * 2) Counts as function of time (s bin, per ch/chip/ROC/Det) => / OK / OK / OK
- * 3) Split class
- * 4) Time sorted data output => ~OK
- * 5) Monitor size of closed epochs => OK
+ * 3) Split class => OK
  *********/
 
 // Default values
@@ -76,9 +72,12 @@ struct DTM_header
    }
 };
 
-CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
+CbmGet4FastMonitor::CbmGet4FastMonitor()
 : CbmTSUnpack(),
   fbVerbose(kFALSE),
+  fbDebug(kFALSE),
+  fiDebugTsStart(-1),
+  fiDebugTsStop(-1),
   fiMode(0),
   fsHistoFilename("./get4Monitor.hst.root"),
   fuNbRocs(0),
@@ -93,6 +92,7 @@ CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
   fuMaxOffset(0),
   fuLocalOffset(0),
   fuMaxLocalOffset(0),
+  fvbRocFeetFirstSyncDlm(kFALSE),
   fvbRocFeetSyncStart(kFALSE),
   fvbGet4WaitFirstSync(kTRUE),
   fvuCurrEpoch(),
@@ -112,6 +112,9 @@ CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
   fhGet4ChanTotMap(NULL),
   fhGet4ChanErrors(NULL),
   fhGet4ChanSlowContM(NULL),
+  fhGet4ChanEdgesCounts(NULL),
+  fhGet4ChanDeadtime(NULL),
+  fhGet4SeuCounter(NULL),
   fdEvoBinSizeS(kdEvoBinSizeS),
   fdEvoLengthSec(kdEvoLengthSec),
   fdMsLengthSec(kdMsSizeSec),
@@ -119,26 +122,43 @@ CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
   fvhRocDataCntEvo(),
   fvhRocEpochCntEvo(),
   fvhRocErrorCntEvo(),
+  fvhRocTotErrorCntEvo(),
+  fvhRocEpochMissmCntEvo(),
   fvhRocDataLossCntEvo(),
   fvhRocEpochLossCntEvo(),
   fvhGet4DataCntEvo(),
   fvhGet4ErrorCntEvo(),
+  fvhGet4EpochMissmCntEvo(),
   fvhGet4DataLossCntEvo(),
   fvhGet4EpochLossCntEvo(),
   fvhGet4ChDataCntEvo(),
   fvhGet4ChErrorCntEvo(),
   fvhDetDataCntEvo(),
   fvhDetErrorCntEvo(),
+  fvhDetEpochMissmCntEvo(),
   fvhDetDataLossCntEvo(),
   fvhDetEpochLossCntEvo(),
   fhClosedEpSizeEvo(NULL),
-/*
   fbPulserMode(kFALSE),
   fuPulserFee(0),
   fuPulserChan(),
+  fvuLastHitEp(),
+  fvmLastHit(),
   fhTimeResFee(),
   fhTimeRmsAllFee(NULL),
   fhTimeResAllFee(NULL),
+  fbPulserFeeB(kFALSE),
+  fuPulserFeeB(kFALSE),
+  fhTimeResFeeB(),
+  fhTimeRmsAllFeeB(NULL),
+  fhTimeResAllFeeB(NULL),
+  fhTimeResFeeAB(),
+  fhTimeRmsAllFeeAB(NULL),
+  fhTimeResAllFeeAB(NULL),
+  fhTimeRmsAllPairs(NULL),
+  fhTimeResAllPairs(NULL),
+  fhTimeRmsAllCombi(NULL),
+  fhTimeResAllCombi(NULL),
   fhTimeResPairs(),
   fhTimeResCombi(),
   fhPulserHitDistNs(NULL),
@@ -146,32 +166,45 @@ CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
   fhPulserHitDistMs(NULL),
   fhPulserFeeDnl(NULL),
   fhPulserFeeInl(NULL),
+  fvuPrevHitEp(),
+  fvmPrevHit(),
+  fhFtSmallDtFeeA(NULL),
+  fhFtSmallDtFeeB(NULL),
+  fhFtBigDtFeeA(NULL),
+  fhFtBigDtFeeB(NULL),
+  fhFtPrevSmallDtFeeA(NULL),
+  fhFtPrevSmallDtFeeB(NULL),
+  fhFtPrevBigDtFeeA(NULL),
+  fhFtPrevBigDtFeeB(NULL),
   fbOldReadoutOk(kFALSE),
   fhGet4ChanTotCount(NULL),
-  fhPulserFeeTotDnl(NULL),
-  fhPulserFeeTotInl(NULL),
-  fvvhChannelsCoinc(),
-*/
-  fdMaxCoincDist(100.0),
-  fvuLastHitEp(),
-  fvmLastHit(),
   fvuLastOldTotEp(),
   fvmLastOldTot(),
-  fmsOrderedEpochsData(),
-  fmsOrderedEpochsBuffStat(),
-  fvuCurrEpochBuffer(),
-  fvuCurrEpochBufferIt(),
-  fuLastEpBufferReady(0),
-  fuCurrEpReadBuffer(0),
-  fEpochBuffer(NULL)
+  fhPulserFeeTotDnl(NULL),
+  fhPulserFeeTotInl(NULL),
+  fvuPrevOldTotEp(),
+  fvmPrevOldTot(),
+  fhFtTotSmallDtFeeA(NULL),
+  fhFtTotSmallDtFeeB(NULL),
+  fhFtTotBigDtFeeA(NULL),
+  fhFtTotBigDtFeeB(NULL),
+  fhFtPrevTotSmallDtFeeA(NULL),
+  fhFtPrevTotSmallDtFeeB(NULL),
+  fhFtPrevTotBigDtFeeA(NULL),
+  fhFtPrevTotBigDtFeeB(NULL),
+  fvvhChannelsCoinc(),
+  fdMaxCoincDist(100.0),
+  fbEnaCalibOutput(kFALSE),
+  fsCalibOutFoldername(""),
+  fsCalibFilename("")
 {
 }
 
-CbmTSUnpackGet4v1x::~CbmTSUnpackGet4v1x()
+CbmGet4FastMonitor::~CbmGet4FastMonitor()
 {
 }
 
-Bool_t CbmTSUnpackGet4v1x::Init()
+Bool_t CbmGet4FastMonitor::Init()
 {
   LOG(INFO) << "Initializing" << FairLogger::endl;
 
@@ -184,7 +217,7 @@ Bool_t CbmTSUnpackGet4v1x::Init()
 
   if( 0 >= fuNbRocs || 0 >= fuNbGet4 )
   {
-     LOG(ERROR) << "CbmTSUnpackGet4v1x::Init => Nb of ROCs or GET4s not defined!!! " << FairLogger::endl;
+     LOG(ERROR) << "CbmGet4FastMonitor::Init => Nb of ROCs or GET4s not defined!!! " << FairLogger::endl;
      LOG(ERROR) << "Nb of ROCs:"<< fuNbRocs << " Nb of GET4s : " << fuNbGet4 << FairLogger::endl;
      LOG(FATAL) << "Please use the functions SetRocNb and/or SetGet4Nb before running!!" << FairLogger::endl;
   }
@@ -195,9 +228,13 @@ Bool_t CbmTSUnpackGet4v1x::Init()
   // At start all ROCs and GET4 are considered "unsynchronized"
   // Stay so until the DLM 10 is issued: ~/flesnet/build/sync_frontend
   // The GET4 are synchronized after reception of 1st epoch2 with SYNC
+  fvbRocFeetFirstSyncDlm.resize( fuNbRocs);
   fvbRocFeetSyncStart.resize( fuNbRocs);
   for( UInt_t uRoc = 0; uRoc < fuNbRocs; uRoc++)
+  {
+     fvbRocFeetFirstSyncDlm[uRoc] = kFALSE;
      fvbRocFeetSyncStart[uRoc] = kFALSE;
+  } // for( UInt_t uRoc = 0; uRoc < fuNbRocs; uRoc++)
   fvbGet4WaitFirstSync.resize(fuNbGet4);
   for( UInt_t uChip = 0; uChip < fuNbGet4; uChip++)
      fvbGet4WaitFirstSync[uChip] = kTRUE;
@@ -219,33 +256,63 @@ Bool_t CbmTSUnpackGet4v1x::Init()
   } // for( UInt_t uRoc = 0; uRoc < fuNbRocs; uRoc++)
   fvuCurrEpoch2.resize(fuNbGet4);
   fvuCurrEpoch2Cycle.resize(fuNbGet4);
-  fvuCurrEpochBuffer.resize(fuNbGet4);
-  fvuCurrEpochBufferIt.resize(fuNbGet4);
   for( UInt_t uChip = 0; uChip < fuNbGet4; uChip++)
   {
      fvuCurrEpoch2[uChip] = 0;
      fvuCurrEpoch2Cycle[uChip] = 0;
-     fvuCurrEpochBuffer[uChip] = 0;
-     fvuCurrEpochBufferIt[uChip] = fmsOrderedEpochsData.end();
   } // for( UInt_t uChip = 0; uChip < fuNbGet4; uChip++)
 
   LOG(INFO) << "Initializing Histos" << FairLogger::endl;
   InitMonitorHistograms();
   LOG(INFO) << "Initialization done" << FairLogger::endl;
 
-  if( 2 == fiMode )
-  {
-     LOG(INFO) << "Initializing Epoch buffer" << FairLogger::endl;
-     fEpochBuffer = CbmGet4EpochBuffer::Instance();
-     if( NULL == fEpochBuffer )
-        LOG(FATAL) << "Failed to Obtain the epoch buffer instance!" << FairLogger::endl;
-        else LOG(INFO) << "Initialization done" << FairLogger::endl;
-  } // if( 2 == fiMode )
+  PrintOptions();
 
   return kTRUE;
 }
 
-void CbmTSUnpackGet4v1x::SetActiveGet4( UInt_t uChipsIndex, Bool_t bActiveFlag)
+void CbmGet4FastMonitor::PrintOptions()
+{
+   LOG(INFO) << "Nb of ROCs: "<< fuNbRocs << " Nb of GET4s : " << fuNbGet4 << FairLogger::endl;
+   LOG(INFO) << "TS overlap: "<< fuMsOverlapTs << " MS " << FairLogger::endl;
+
+   LOG(INFO) << "Monitor mode: "<< fiMode << FairLogger::endl;
+
+   LOG(INFO) << "Active chips: "<< FairLogger::endl;
+   for( UInt_t iChip = 0; iChip < fuNbGet4; iChip++)
+      LOG(INFO) << Form(" %3u", iChip);
+   LOG(INFO) << FairLogger::endl;
+   for( UInt_t iChip = 0; iChip < fuNbGet4; iChip++)
+      LOG(INFO) << Form(" %3d", (Int_t)fvbActiveChips[iChip] );
+   LOG(INFO) << FairLogger::endl;
+
+   LOG(INFO) << "Pulser mode: "<< fbPulserMode << FairLogger::endl;
+   LOG(INFO) << "Pulser FEE board: "<< fuPulserFee << FairLogger::endl;
+   if( kTRUE == fbPulserFeeB )
+   {
+      LOG(INFO) << "Second FEE B board: ON"<< FairLogger::endl;
+      LOG(INFO) << "Pulser FEE B board: "<< fuPulserFeeB << FairLogger::endl;
+   } // if( kTRUE == fbPulserFeeB )
+   LOG(INFO) << "Pulser channels: " << FairLogger::endl;
+   for( UInt_t iChan = 0; iChan < kuNbChanTest; iChan++)
+      LOG(INFO) << Form(" %3d", fuPulserChan[iChan] );
+   LOG(INFO) << FairLogger::endl;
+
+   LOG(INFO) << "Binning evolution plots: "<< fdEvoBinSizeS  << " s" << FairLogger::endl;
+   LOG(INFO) << "Length  evolution plots: "<< fdEvoLengthSec << " s"<< FairLogger::endl;
+   LOG(INFO) << "MS length: "<< fdMsLengthSec << " s" << FairLogger::endl;
+   LOG(INFO) << "24b mode allowed: "<< fbOldReadoutOk << FairLogger::endl;
+
+   LOG(INFO) << "Max time dist for coincidences:  "<< fdMaxCoincDist  << " ps" << FairLogger::endl;
+   LOG(INFO) << "Max time dist for multiple hits: "<< fdMaxDtMultiHit << " ps" << FairLogger::endl;
+
+   LOG(INFO) << "Calibration saving enabled: "<< fbEnaCalibOutput << FairLogger::endl;
+   LOG(INFO) << "Calibration out folder: "<< fsCalibOutFoldername << FairLogger::endl;
+   LOG(INFO) << "Calibration out file: "<< fsCalibFilename << FairLogger::endl;
+
+}
+
+void CbmGet4FastMonitor::SetActiveGet4( UInt_t uChipsIndex, Bool_t bActiveFlag)
 {
    if( 0 == fvbActiveChips.size() && 0 < fuNbGet4 )
    {
@@ -256,11 +323,11 @@ void CbmTSUnpackGet4v1x::SetActiveGet4( UInt_t uChipsIndex, Bool_t bActiveFlag)
 
    if( uChipsIndex < fuNbGet4 )
       fvbActiveChips[uChipsIndex] = bActiveFlag;
-      else LOG(ERROR)<<" CbmTSUnpackGet4v1x::SetActiveGet4 => Invalid chip index "
+      else LOG(ERROR)<<" CbmGet4FastMonitor::SetActiveGet4 => Invalid chip index "
                      << uChipsIndex <<FairLogger::endl;
 }
-/*
-void CbmTSUnpackGet4v1x::SetPulserChans(
+
+void CbmGet4FastMonitor::SetPulserChans(
       UInt_t inPulserChanA, UInt_t inPulserChanB, UInt_t inPulserChanC, UInt_t inPulserChanD,
       UInt_t inPulserChanE, UInt_t inPulserChanF, UInt_t inPulserChanG, UInt_t inPulserChanH,
       UInt_t inPulserChanI, UInt_t inPulserChanJ, UInt_t inPulserChanK, UInt_t inPulserChanL,
@@ -283,18 +350,20 @@ void CbmTSUnpackGet4v1x::SetPulserChans(
    fuPulserChan[14] = inPulserChanO;
    fuPulserChan[15] = inPulserChanP;
 }
-*/
-void CbmTSUnpackGet4v1x::SetHistoFilename( TString sNameIn )
+
+void CbmGet4FastMonitor::SetHistoFilename( TString sNameIn )
 {
    fsHistoFilename = sNameIn;
 
-   LOG(INFO)<<" CbmTSUnpackGet4v1x::SetHistoFilename => Histograms output file is now \n"
+   LOG(INFO)<<" CbmGet4FastMonitor::SetHistoFilename => Histograms output file is now \n"
              <<fsHistoFilename<<FairLogger::endl;
 }
-Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
+Bool_t CbmGet4FastMonitor::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
    fulTsNb++;
-   if( 0 == fiMode || kTRUE == fbVerbose )
+   if( 0 == fiMode || kTRUE == fbVerbose ||
+       (kTRUE == fbDebug && fiDebugTsStart <= fulTsNb
+                         && fulTsNb <= fiDebugTsStop ) )
       LOG(INFO)<<" ++++++++++++ Ts # "<<fulTsNb<<FairLogger::endl;
 
    if( 2 == fiMode )
@@ -374,7 +443,6 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
                // debug mode, nothing to do here (printout already done)
                break;
             } // case 0
-/*
             case 1:
             {
                // Monitor mode, fill histograms
@@ -391,6 +459,9 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
                         + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 4] ) & 0xFF) <<  8)
                         + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 5] ) & 0xFF));
                   mess.setData( dataContent );
+
+                  if( kTRUE == fbDebug && fiDebugTsStart <= fulTsNb && fulTsNb <= fiDebugTsStop )
+                     mess.printDataLog();
 
                   fhMessageTypePerRoc->Fill( cur_DTM_header.ROC_ID, mess.getMessageType() );
 
@@ -451,88 +522,6 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
                } // while (local_offset < packageSize)
                break;
             } // case 1
-*/
-            case 2:
-            {
-               // Normal mode, unpack data and fill TClonesArray of CbmRawMessage
-               while (local_offset < packageSize)
-               {
-                  fuLocalOffset = local_offset;
-                  get4v1x::Message mess;
-                  uint64_t dataContent =
-                          ( static_cast<uint64_t>( cur_DTM_header.ROC_ID                & 0xFFFF) << 48)
-                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 0] ) & 0xFF) << 40)
-                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 1] ) & 0xFF) << 32)
-                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 2] ) & 0xFF) << 24)
-                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 3] ) & 0xFF) << 16)
-                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 4] ) & 0xFF) <<  8)
-                        + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 5] ) & 0xFF));
-                  mess.setData( dataContent );
-
-                  fhMessageTypePerRoc->Fill( cur_DTM_header.ROC_ID, mess.getMessageType() );
-                  switch( mess.getMessageType() )
-                  {
-                     case get4v1x::MSG_HIT:
-                     {
-                        // This is NXYTER in a GET4 unpacker => ignore
-                        break;
-                     } // case get4v1x::MSG_HIT:
-                     case get4v1x::MSG_EPOCH:
-                     {
-                        // Ignore all messages before RocFeet system SYNC
-                        if (kFALSE == fvbRocFeetSyncStart[cur_DTM_header.ROC_ID] )
-                           break;
-
-                        this->ProcessMessage_epoch(mess, msDescriptor.eq_id);
-                        break;
-                     } // case get4v1x::MSG_EPOCH:
-                     case get4v1x::MSG_SYNC:
-                     {
-                        // Ignore all messages before RocFeet system SYNC
-                        if (kFALSE == fvbRocFeetSyncStart[cur_DTM_header.ROC_ID] )
-                           break;
-
-                        this->ProcessMessage_sync(mess, msDescriptor.eq_id);
-                        break;
-                     } // case get4v1x::MSG_SYNC:
-                     case get4v1x::MSG_AUX:
-                     {
-                        // Ignore all messages before RocFeet system SYNC
-                        if (kFALSE == fvbRocFeetSyncStart[cur_DTM_header.ROC_ID] )
-                           break;
-
-                        this->ProcessMessage_aux(mess, msDescriptor.eq_id);
-                        break;
-                     } // case get4v1x::MSG_AUX:
-                     case get4v1x::MSG_EPOCH2:
-                     {
-                        // Ignore all messages before RocFeet system SYNC
-                        if (kFALSE == fvbRocFeetSyncStart[cur_DTM_header.ROC_ID] )
-                           break;
-
-                        this->ProcessMessage_epoch2(mess, msDescriptor.eq_id);
-                        break;
-                     } // case get4v1x::MSG_EPOCH2:
-                     case get4v1x::MSG_GET4:
-                     {
-                        // Ignore all messages before RocFeet system SYNC
-                        if (kFALSE == fvbRocFeetSyncStart[cur_DTM_header.ROC_ID] )
-                           break;
-
-                        this->ProcessMessage_get4(mess, msDescriptor.eq_id);
-                        break;
-                     } // case get4v1x::MSG_GET4:
-                     case get4v1x::MSG_SYS:
-                        this->ProcessMessage_sys(mess, msDescriptor.eq_id);
-                        break;
-                     default:
-                        break;
-                  } // switch( mess.getMessageType() )
-
-                  local_offset += 6; // next message
-               } // while (local_offset < packageSize)
-               break;
-            } // case 2
             default:
                break;
          } // switch(fiMode)
@@ -554,211 +543,17 @@ Bool_t CbmTSUnpackGet4v1x::DoUnpack(const fles::Timeslice& ts, size_t component)
   return kTRUE;
 }
 
-void CbmTSUnpackGet4v1x::FinishUnpack()
+void CbmGet4FastMonitor::FinishUnpack()
 {
-   // Something to do only in Processing mode
-   // TODO: Use the stored data for something usefull !!!
-   if( 2 == fiMode )
-   {
-      if( kFALSE == fvbGet4WaitFirstSync[0] )
-      {
-      LOG(DEBUG)<<" CbmTSUnpackGet4v1x::FinishUnpack => Stored epochs: "
-               <<fmsOrderedEpochsData.size()<<" "
-               <<fmsOrderedEpochsBuffStat.size()<<FairLogger::endl;
-      UInt_t uNbClosedEpochs = 0;
-//      Bool_t bOneEpochPrinted = kFALSE;
-      auto itBuffer = fmsOrderedEpochsData.begin();
-      for( auto itFlag = fmsOrderedEpochsBuffStat.begin();  itFlag!=fmsOrderedEpochsBuffStat.end(); ++itFlag )
-      {
-         if( kTRUE == itFlag->second )
-         {
-            uNbClosedEpochs++;
-            LOG(DEBUG)<<" CbmTSUnpackGet4v1x::FinishUnpack => Epochs: "<<uNbClosedEpochs
-//                    <<" Size: "<< (itBuffer->second).size() << FairLogger::endl; // OLD
-            <<" Size: "<< (itBuffer->second)->size() << FairLogger::endl;
-
-            fhClosedEpSizeEvo->Fill(
-                  (itBuffer->first)*get4v1x::kdEpochInPs*(1e-12),
-//                  (itBuffer->second).size() ); // OLD
-                  (itBuffer->second)->size() );
-
-            // Fill the closed epochs to the epoch buffer
-            // We transmit only epoch with data
-            // TODO: move this to the place where Epochs are "closed"
-            if( 0 < (itBuffer->second)->size() )
-               fEpochBuffer->InsertEpoch( itBuffer->second );
-
-               // Use data for monitoring
-/*
-            if( kTRUE == fbPulserMode )
-            {
-               // Loop on data
-//               for( auto itData = (itBuffer->second).begin(); itData != (itBuffer->second).end(); ++itData) // OLD
-               for( auto itData = (itBuffer->second)->begin(); itData != (itBuffer->second)->end(); ++itData)
-               {
-                  get4v1x::FullMessage mess = *itData;
-                  uint8_t  cRocId    = mess.getRocNumber();
-                  uint8_t  cChipId   = mess.getGet4V10R32ChipId();
-                  uint32_t uChipFullId = cChipId + get4v1x::kuMaxGet4PerRoc*cRocId;
-//                  uint8_t  cMessType = mess.getGet4V10R32MessageType();
-                  UInt_t uFullChId =
-                     get4v1x::kuChanPerGet4*( uChipFullId )
-                     + mess.getGet4V10R32HitChan();
-
-                  // As long as the 1st epoch with sync flag after SYNC DLM is found,
-                  // consider data as not good
-                  if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
-                     return;
-
-                  fhGet4ChanDataCount->Fill( uFullChId );
-                  fhGet4ChanDllStatus->Fill( uFullChId, mess.getGet4V10R32HitDllFlag() );
-                  fhGet4ChanTotMap->Fill(    uFullChId, mess.getGet4V10R32HitTot()
-                                                        *get4v1x::kdTotBinSize/1000.0 );
-
-                  // Save the hit info in order to fill later the pulser histos
-
-                  // First fill time interval histos
-                  if( fuPulserFee == (uFullChId/kuNbChanFee) )
-                  {
-                     Double_t dHitsDt = mess.CalcGet4V10R32HitTimeDiff(
-                                 fvuCurrEpoch2[uChipFullId],
-                                 fvuLastHitEp[ uFullChId ],
-                                 fvmLastHit[   uFullChId ] );
-                     if( 0 == fvuLastHitEp[uFullChId])
-                        {}
-                     else if( dHitsDt < 1e6 )
-                        fhPulserHitDistNs->Fill( uFullChId%kuNbChanFee, dHitsDt / 1e3 );
-                     else if( dHitsDt < 1e9)
-                        fhPulserHitDistUs->Fill( uFullChId%kuNbChanFee, dHitsDt / 1e6 );
-                     else
-                        fhPulserHitDistMs->Fill( uFullChId%kuNbChanFee, dHitsDt / 1e9 );
-
-                     if( 0 < fvuLastHitEp[uFullChId] && dHitsDt < 5e3 )
-                        LOG(DEBUG) <<uFullChId<<" "<<dHitsDt<<" "
-                            <<fvuLastHitEp[ uFullChId ]<<" "<<fvuCurrEpoch2[uChipFullId]<<" "
-                            <<fvmLastHit[   uFullChId ].getGet4V10R32HitTot()*get4v1x::kdTotBinSize/1000.0<<" "
-                            <<mess.getGet4V10R32HitTot()*get4v1x::kdTotBinSize/1000.0<<FairLogger::endl;;
-
-
-                     // Fill the DNL histos
-                     fhPulserFeeDnl->Fill( uFullChId%kuNbChanFee, mess.getGet4V10R32HitFt() );
-                  } // if( fuPulserFee == (uFullChId/kuNbChanFee) )
-
-                  // Epoch of Last hit message (one per GET4 chip & channel)
-                  fvuLastHitEp[ uFullChId ] = itData->getExtendedEpoch();
-                  // Last hit message (one per GET4 chip & channel)
-                  fvmLastHit[ uFullChId ] = mess;
-               } // for( auto itData = (itBuffer->second).begin(); itData != (itBuffer->second).begin(); ++itData)
-
-               // Fill the time difference for all channels pairs in
-               // the chosen Fee
-               UInt_t uHistoFeeIdx = 0;
-               for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
-                  for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < kuNbChanFee; uChanFeeB++)
-                  {
-                     if( ( 0xF0 <= fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeA].getSysMesType() ) &&
-                         ( 0xF0 <= fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeB].getSysMesType() ) &&
-                         (   fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeA ]
-                           < fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeB ] + 2 ) &&
-                         (   fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeA ] + 2
-                           > fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeB ] ) )
-                     {
-                        Double_t dTimeDiff = 0.0;
-                        dTimeDiff = fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeA].CalcGet4V10R32HitTimeDiff(
-                              fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeA],
-                              fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeB],
-                              fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeB] );
-
-                        fhTimeResFee[uHistoFeeIdx]->Fill( dTimeDiff );
-                     } // if both channels have matching data
-                     uHistoFeeIdx++;
-                  } // for any unique pair of channel in chosen Fee
-
-               // Fill the time difference for the chosen channel pairs
-               UInt_t uHistoCombiIdx = 0;
-               for( UInt_t uChanA = 0; uChanA < kuNbChanTest-1; uChanA++)
-               {
-                  if( ( 0xF0 <= fvmLastHit[ fuPulserChan[uChanA]   ].getSysMesType() ) &&
-                      ( 0xF0 <= fvmLastHit[ fuPulserChan[uChanA+1] ].getSysMesType() ) &&
-                      ( fvuLastHitEp[ fuPulserChan[uChanA]   ]
-                            < fvuLastHitEp[ fuPulserChan[uChanA+1] ] + 2 ) &&
-                      ( fvuLastHitEp[ fuPulserChan[uChanA]   ] + 2
-                            > fvuLastHitEp[ fuPulserChan[uChanA+1] ]     ) )
-                  {
-                     Double_t dTimeDiff =
-                           fvmLastHit[   fuPulserChan[uChanA]   ].CalcGet4V10R32HitTimeDiff(
-                           fvuLastHitEp[ fuPulserChan[uChanA]   ],
-                           fvuLastHitEp[ fuPulserChan[uChanA+1] ],
-                           fvmLastHit[   fuPulserChan[uChanA+1] ] );
-                     fhTimeResPairs[uChanA]->Fill( dTimeDiff );
-                  } // // if both channels have data
-
-                  for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
-                  {
-                     if( ( 0xF0 <= fvmLastHit[ fuPulserChan[uChanA] ].getSysMesType() ) &&
-                         ( 0xF0 <= fvmLastHit[ fuPulserChan[uChanB] ].getSysMesType() ) &&
-                         ( fvuLastHitEp[ fuPulserChan[uChanA] ]
-                               < fvuLastHitEp[ fuPulserChan[uChanB] ] + 2 ) &&
-                         ( fvuLastHitEp[ fuPulserChan[uChanA] ] + 2
-                               > fvuLastHitEp[ fuPulserChan[uChanB] ]     ) )
-                     {
-                        Double_t dTimeDiff =
-                              fvmLastHit[   fuPulserChan[uChanA] ].CalcGet4V10R32HitTimeDiff(
-                              fvuLastHitEp[ fuPulserChan[uChanA] ],
-                              fvuLastHitEp[ fuPulserChan[uChanB] ],
-                              fvmLastHit[   fuPulserChan[uChanB] ] );
-                        fhTimeResCombi[uHistoCombiIdx]->Fill( dTimeDiff );
-                     } // if both channels have data
-                     uHistoCombiIdx++;
-                  } // for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
-               } // for( UInt_t uChanA = 0; uChanA < kuNbChanTest; uChanA++)
-            } // if( kTRUE == fbPulserMode )
-*/
-         }
-         /*
-         if( kFALSE == bOneEpochPrinted && 0 < (itBuffer->second).size() )
-         {
-            for( auto itData = (itBuffer->second).begin(); itData != (itBuffer->second).end(); ++itData)
-            {
-               LOG(DEBUG)<<" Epoch: "<< itData->getExtendedEpoch() <<" ";
-               itData->printDataLog();
-            } // for( auto itData = (itBuffer->second).begin(); itData != (itBuffer->second).begin(); ++itData)
-            bOneEpochPrinted = kTRUE;
-         } // if( kFALSE == bOneEpochPrinted && 0 < (itBuffer->second).size() )
-         */
-         ++itBuffer;
-      } // for( auto itFlag = fmsOrderedEpochsBuffStat.begin();  itFlag!=fmsOrderedEpochsBuffStat.end(); ++itFlag )
-      LOG(DEBUG)<<" CbmTSUnpackGet4v1x::FinishUnpack => Closed epochs: "<<uNbClosedEpochs<<FairLogger::endl;
-      } // if( kFALSE == fvbGet4WaitFirstSync[0] )
-
-
-      auto itBuffer = fmsOrderedEpochsData.begin();
-      for( auto itFlag = fmsOrderedEpochsBuffStat.begin();  itFlag!=fmsOrderedEpochsBuffStat.end(); ++itFlag )
-      {
-         if( kTRUE == itFlag->second )
-         {
-//            (itBuffer->second).clear(); // OLD, now done in Epoch buffer or Epoch consumer!!
-            fmsOrderedEpochsData.erase( itBuffer );
-            fmsOrderedEpochsBuffStat.erase( itFlag );
-         } // if( kTRUE == itFlag->second )
-         ++itBuffer;
-      } // for( auto itFlag = fmsOrderedEpochsBuffStat.begin();  itFlag!=fmsOrderedEpochsBuffStat.end(); ++itFlag )
-      if( 0 < fmsOrderedEpochsBuffStat.size() )
-         fuLastEpBufferReady = (fmsOrderedEpochsBuffStat.begin())->first ;
-         else fuLastEpBufferReady = 0;
-
-
-      LOG(DEBUG)<<" ++++++++++++ Ts # "<<fulTsNb<<" Done!"<<FairLogger::endl;
-   } // if( 2 == fiMode )
 }
 
-void CbmTSUnpackGet4v1x::Reset()
+void CbmGet4FastMonitor::Reset()
 {
 //  fGet4Raw->Clear();
 //  fGet4RawSync->Clear();
 }
 
-void CbmTSUnpackGet4v1x::Finish()
+void CbmGet4FastMonitor::Finish()
 {
    WriteMonitorHistograms();
    if( kTRUE == fbEnaCalibOutput )
@@ -766,26 +561,10 @@ void CbmTSUnpackGet4v1x::Finish()
    DeleteMonitorHistograms();
 }
 
-/*
-void CbmTSUnpackGet4v1x::Register()
-{
-}
-*/
-/*
-void CbmTSUnpackGet4v1x::Print6bytesMessage(const uint8_t* msContent_shifted)
-{
-   if( kTRUE == fbVerbose )
-      printf("0x%02X%02X%02X%02X%02X%02X :\t",
-            msContent_shifted[0], msContent_shifted[1],
-            msContent_shifted[2], msContent_shifted[3],
-            msContent_shifted[4], msContent_shifted[5]);
-}
-*/
-
 //************** Monitor functions *************/
 
 
-void CbmTSUnpackGet4v1x::InitMonitorHistograms()
+void CbmGet4FastMonitor::InitMonitorHistograms()
 {
    // FIXME: maybe changed current folder to TRoot and back
    //        as for now all histos are placed in the analysis output file
@@ -909,6 +688,18 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
    fhGet4ChanSlowContM->GetYaxis()->SetBinLabel(2,  "1: Dead time counter event ");
    fhGet4ChanSlowContM->GetYaxis()->SetBinLabel(3,  "2: SPI receiver data        ");
    fhGet4ChanSlowContM->GetYaxis()->SetBinLabel(4,  "3: Start message/Hamming Er.");
+   fhGet4ChanEdgesCounts = new TH2I("hGet4ChanEdgesCounts",
+         "Detected edges scaler per GET4 channel; GET4 channel # ; Scaler Value [det. edges]",
+         fuNbGet4*get4v1x::kuChanPerGet4*2, -0.5, fuNbGet4*get4v1x::kuChanPerGet4 -0.5,
+         128, -0.5, 127.5);
+   fhGet4ChanDeadtime = new TH2I("hGet4ChanDeadtime",
+         "Deadtime per GET4 channel; GET4 channel # ; Deadtime [Clock cycles]",
+         fuNbGet4*get4v1x::kuChanPerGet4*2, -0.5, fuNbGet4*get4v1x::kuChanPerGet4 -0.5,
+         100, -0.5, 999.5);
+   fhGet4SeuCounter = new TH2I("hGet4SeuCounter",
+         "SEU count per GET4 ; GET4 channel # ; SEU [events]",
+         fuNbGet4, -0.5, fuNbGet4 -0.5,
+         128, -0.5, 127.5);
 
       // Time evolution histos
    Int_t    iNbBinsEvo    = fdEvoLengthSec / fdEvoBinSizeS;
@@ -920,6 +711,9 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
    fvhRocDataCntEvo.resize(fuNbRocs);
    fvhRocEpochCntEvo.resize(fuNbRocs);
    fvhRocErrorCntEvo.resize(fuNbRocs);
+   fvhRocTotErrorCntEvo.resize(fuNbRocs);
+   fvhRocTotErrorCntEvo.resize(fuNbRocs);
+   fvhRocEpochMissmCntEvo.resize(fuNbRocs);
    fvhRocDataLossCntEvo.resize(fuNbRocs);
    fvhRocEpochLossCntEvo.resize(fuNbRocs);
    for( UInt_t uRoc = 0; uRoc < fuNbRocs; uRoc++)
@@ -936,6 +730,14 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
             Form("hRocErrorCntEvo_%03u", uRoc),
             Form("Evolution of error rate for ROC #%03d; Time [s] ; Error rate [1/s]", uRoc),
             iNbBinsEvo, -0.5, fdEvoLengthSec - 0.5 );
+      fvhRocTotErrorCntEvo[uRoc] = new TH1I(
+            Form("hRocTotErrorCntEvo_%03u", uRoc),
+            Form("Evolution of TOT error rate for ROC #%03d; Time [s] ; TOT Error rate [1/s]", uRoc),
+            iNbBinsEvo, -0.5, fdEvoLengthSec - 0.5 );
+      fvhRocEpochMissmCntEvo[uRoc] = new TH1I(
+            Form("hRocEpochMissmCntEvo_%03u", uRoc),
+            Form("Evolution of epoch missmatch rate for ROC #%03d; Time [s] ; Epoch missmatch rate [1/s]", uRoc),
+            iNbBinsEvo, -0.5, fdEvoLengthSec - 0.5 );
       fvhRocDataLossCntEvo[uRoc] = new TH1I(
             Form("hRocDataLossCntEvo_%03u", uRoc),
             Form("Evolution of data loss rate for ROC #%03d; Time [s] ; Data loss rate [1/s]", uRoc),
@@ -948,6 +750,7 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
          // GET4
    fvhGet4DataCntEvo.resize(fuNbGet4);
    fvhGet4ErrorCntEvo.resize(fuNbGet4);
+   fvhGet4EpochMissmCntEvo.resize(fuNbGet4);
    fvhGet4DataLossCntEvo.resize(fuNbGet4);
    fvhGet4EpochLossCntEvo.resize(fuNbGet4);
    fvhGet4ChDataCntEvo.resize(fuNbGet4);
@@ -964,6 +767,10 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
          fvhGet4ErrorCntEvo[uGet4] = new TH1I(
             Form("hGet4ErrorCntEvo_%03u", uGet4),
             Form("Evolution of error rate for GET4 #%03d; Time [s] ; Error rate [1/s]", uGet4),
+            iNbBinsEvo, -0.5, fdEvoLengthSec - 0.5 );
+         fvhGet4EpochMissmCntEvo[uGet4] = new TH1I(
+            Form("hGet4EpochMissmCntEvo_%03u", uGet4),
+            Form("Evolution of epoch missmatch rate for GET4 #%03d; Time [s] ; Error missmatch rate [1/s]", uGet4),
             iNbBinsEvo, -0.5, fdEvoLengthSec - 0.5 );
          fvhGet4DataLossCntEvo[uGet4] = new TH1I(
             Form("hGet4DataLossCntEvo_%03u", uGet4),
@@ -1004,6 +811,7 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
          // DETECTORS
    fvhDetDataCntEvo.resize(kiNbDet);
    fvhDetErrorCntEvo.resize(kiNbDet);
+   fvhDetEpochMissmCntEvo.resize(kiNbDet);
    fvhDetDataLossCntEvo.resize(kiNbDet);
    fvhDetEpochLossCntEvo.resize(kiNbDet);
    for( Int_t iDet = 0; iDet < kiNbDet; iDet++)
@@ -1016,6 +824,11 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
       fvhDetErrorCntEvo[iDet] = new TH1I(
             Form("hDetErrorCntEvo_%s", ksDetName[iDet].Data()),
             Form("Evolution of error rate for %s; Time [s] ; Error rate [1/s]",
+                  ksDetName[iDet].Data()),
+            iNbBinsEvo, -0.5, fdEvoLengthSec - 0.5 );
+      fvhDetEpochMissmCntEvo[iDet] = new TH1I(
+            Form("hDetEpochMissmCntEvo_%s", ksDetName[iDet].Data()),
+            Form("Evolution of epoch missmatch rate for %s; Time [s] ; Error missmatch rate [1/s]",
                   ksDetName[iDet].Data()),
             iNbBinsEvo, -0.5, fdEvoLengthSec - 0.5 );
       fvhDetDataLossCntEvo[iDet] = new TH1I(
@@ -1034,7 +847,6 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
          "Evolution of the size of closed epochs; Time [s] ; Mean size rate [Messages]",
          iNbBinsEvo, -0.5, fdEvoLengthSec - 0.5 );
 
-/*
    if( kTRUE == fbPulserMode )
    {
       // Full Fee test
@@ -1044,40 +856,118 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
       Double_t dMaxDt     =  1.*(uNbBinsDt*get4v1x::kdBinSize/2.) +get4v1x::kdBinSize/2.;
       uNbBinsDt ++; // To account for extra bin due to shift by 1/2 bin of both ranges
       for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
+      {
          for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < kuNbChanFee; uChanFeeB++)
          {
             fhTimeResFee[uHistoFeeIdx] = new TH1I(
                   Form("hTimeResFee_%03u_%03u", uChanFeeA, uChanFeeB),
-                  Form("Time difference for channels %03u an %03u in chosen Fee; DeltaT [ps]; Counts",
+                  Form("Time difference for channels %03u and %03u in chosen Fee; DeltaT [ps]; Counts",
                         uChanFeeA, uChanFeeB),
                   uNbBinsDt, dMinDt, dMaxDt);
+            if( kTRUE == fbPulserFeeB )
+            {
+               fhTimeResFeeB[uHistoFeeIdx] = new TH1I(
+                     Form("hTimeResFeeB_%03u_%03u", uChanFeeA, uChanFeeB),
+                     Form("Time difference for channels %03u and %03u in 2nd chosen Fee; DeltaT [ps]; Counts",
+                           uChanFeeA, uChanFeeB),
+                     uNbBinsDt, dMinDt, dMaxDt);
+            } // if( kTRUE == fbPulserFeeB )
             uHistoFeeIdx++;
          } // for any unique pair of channel in chosen Fee
+
+         if( kTRUE == fbPulserFeeB )
+         {
+            for( UInt_t uChanFeeB = 0; uChanFeeB < kuNbChanFee; uChanFeeB++)
+               fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB] = new TH1I(
+                     Form("hTimeResFeeAB_%03u_%03u", uChanFeeA, uChanFeeB),
+                     Form("Time difference for channels %03u in 1st chosen Fee and %03u in 2nd chosen Fee; DeltaT [ps]; Counts",
+                           uChanFeeA, uChanFeeB),
+                     uNbBinsDt, dMinDt, dMaxDt);
+         } // if( kTRUE == fbPulserFeeB )
+      } // for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
       fhTimeRmsAllFee = new TH2D( "hTimeRmsAllFee",
-            "Time difference RMS for any channels pair in chosen Fee; Ch A; Ch B",
+            "Time difference RMS for any channels pair in chosen Fee; Ch A; Ch B; [ps]",
             kuNbChanFee - 1, -0.5, kuNbChanFee - 1.5,
             kuNbChanFee - 1,  0.5, kuNbChanFee - 0.5);
       fhTimeResAllFee = new TH2D( "hTimeResAllFee",
-            "Time resolution for any channels pair in chosen Fee; Ch A; Ch B",
+            "Time resolution for any channels pair in chosen Fee (for single channel); Ch A; Ch B; [ps]",
             kuNbChanFee - 1, -0.5, kuNbChanFee - 1.5,
             kuNbChanFee - 1,  0.5, kuNbChanFee - 0.5);
 
+      if( kTRUE == fbPulserFeeB )
+      {
+         fhTimeRmsAllFeeB = new TH2D( "hTimeRmsAllFeeB",
+               "Time difference RMS for any channels pair in 2nd chosen Fee; Ch A; Ch B; [ps]",
+               kuNbChanFee - 1, -0.5, kuNbChanFee - 1.5,
+               kuNbChanFee - 1,  0.5, kuNbChanFee - 0.5);
+         fhTimeResAllFeeB = new TH2D( "hTimeResAllFeeB",
+               "Time resolution for any channels pair in 2nd chosen Fee (for single channel); Ch A; Ch B; [ps]",
+               kuNbChanFee - 1, -0.5, kuNbChanFee - 1.5,
+               kuNbChanFee - 1,  0.5, kuNbChanFee - 0.5);
+         fhTimeRmsAllFeeAB = new TH2D( "hTimeRmsAllFeeAB",
+               "Time difference RMS for any channels pair in 1st and 2nd chosen Fee; Ch A FEE A; Ch B FEE B; [ps]",
+               kuNbChanFee, -0.5, kuNbChanFee - 0.5,
+               kuNbChanFee, -0.5, kuNbChanFee - 0.5);
+         fhTimeResAllFeeAB = new TH2D( "hTimeResAllFeeAB",
+               "Time resolution for any channels pair in 1st and 2nd chosen Fee (for single channel); Ch A FEE A; Ch B FEE B; [ps]",
+               kuNbChanFee, -0.5, kuNbChanFee - 0.5,
+               kuNbChanFee, -0.5, kuNbChanFee - 0.5);
+      } // if( kTRUE == fbPulserFeeB )
+
       // Chosen channels test
+      fhTimeRmsAllPairs = new TH1D( "hTimeRmsAllPairs",
+            "Time difference RMS for chosen channels pairs; Pair # ; [ps]",
+            kuNbChanTest - 1, -0.5, kuNbChanTest - 1.5);
+      fhTimeResAllPairs = new TH1D( "hTimeResAllPairs",
+            "Time resolution for chosen channels pairs (for single channel); Pair # ; [ps]",
+            kuNbChanTest - 1, -0.5, kuNbChanTest - 1.5);
+      fhTimeRmsAllCombi = new TH2D( "hTimeRmsAllCombi",
+            "Time difference RMS for chosen channels pairs; Ch A; Ch B; [ps]",
+            kuNbChanComb - 1, -0.5, kuNbChanComb - 1.5,
+            kuNbChanComb - 1,  0.5, kuNbChanComb - 0.5);
+      fhTimeResAllCombi = new TH2D( "hTimeResAllCombi",
+            "Time resolution for chosen channels combinations (for single channel); Ch A; Ch B; [ps]",
+            kuNbChanComb - 1, -0.5, kuNbChanComb - 1.5,
+            kuNbChanComb - 1,  0.5, kuNbChanComb - 0.5);
       UInt_t uHistoCombiIdx = 0;
       for( UInt_t uChanA = 0; uChanA < kuNbChanTest-1; uChanA++)
       {
          fhTimeResPairs[uChanA]  = new TH1I(
                Form("hTimeResPairs_%03u_%03u", fuPulserChan[uChanA], fuPulserChan[uChanA+1]),
-               Form("Time difference for selected channels %03u an %03u; DeltaT [ps]; Counts",
+               Form("Time difference for selected channels %03u and %03u; DeltaT [ps]; Counts",
                      fuPulserChan[uChanA], fuPulserChan[uChanA+1]),
                uNbBinsDt, dMinDt, dMaxDt);
+         fhTimeResPairsTot[2*uChanA]  = new TH2I(
+               Form("hTimeResPairsTot_%03u_%03u_A", fuPulserChan[uChanA], fuPulserChan[uChanA+1]),
+               Form("Time difference for selected channels %03u and %03u; DeltaT [ps]; TOT %03u [bin]; Counts",
+                     fuPulserChan[uChanA], fuPulserChan[uChanA+1], fuPulserChan[uChanA] ),
+               uNbBinsDt, dMinDt, dMaxDt,
+               get4v1x::kuTotCounterSize, 0, get4v1x::kuTotCounterSize );
+         fhTimeResPairsTot[2*uChanA+1]  = new TH2I(
+               Form("hTimeResPairsTot_%03u_%03u_B", fuPulserChan[uChanA], fuPulserChan[uChanA+1]),
+               Form("Time difference for selected channels %03u and %03u; DeltaT [ps]; TOT %03u [bin]; Counts",
+                     fuPulserChan[uChanA], fuPulserChan[uChanA+1], fuPulserChan[uChanA+1] ),
+               uNbBinsDt, dMinDt, dMaxDt,
+               get4v1x::kuTotCounterSize, 0, get4v1x::kuTotCounterSize );
          for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
          {
             fhTimeResCombi[uHistoCombiIdx]  = new TH1I(
                Form("hTimeResCombi_%03u_%03u", fuPulserChan[uChanA], fuPulserChan[uChanB]),
-               Form("Time difference for selected channels %03u an %03u; DeltaT [ps]; Counts",
+               Form("Time difference for selected channels %03u and %03u; DeltaT [ps]; Counts",
                      fuPulserChan[uChanA], fuPulserChan[uChanB]),
                uNbBinsDt, dMinDt, dMaxDt);
+            fhTimeResCombiTot[2*uHistoCombiIdx]  = new TH2I(
+               Form("hTimeResCombiTot_%03u_%03u_A", fuPulserChan[uChanA], fuPulserChan[uChanB]),
+               Form("Time difference for selected channels %03u and %03u; DeltaT [ps]; TOT %03u [bin]; Counts",
+                     fuPulserChan[uChanA], fuPulserChan[uChanB], fuPulserChan[uChanA]),
+               uNbBinsDt, dMinDt, dMaxDt,
+               get4v1x::kuTotCounterSize, 0, get4v1x::kuTotCounterSize );
+            fhTimeResCombiTot[2*uHistoCombiIdx+1]  = new TH2I(
+               Form("hTimeResCombiTot_%03u_%03u_B", fuPulserChan[uChanA], fuPulserChan[uChanB]),
+               Form("Time difference for selected channels %03u and %03u; DeltaT [ps]; TOT %03u [bin]; Counts",
+                     fuPulserChan[uChanA], fuPulserChan[uChanB], fuPulserChan[uChanB]),
+               uNbBinsDt, dMinDt, dMaxDt,
+               get4v1x::kuTotCounterSize, 0, get4v1x::kuTotCounterSize );
             uHistoCombiIdx++;
          } // for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
       } // for( UInt_t uChanA = 0; uChanA < kuNbChanTest; uChanA++)
@@ -1104,6 +994,42 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
             "INL for all channels in chosen FEE board; Chan # ; FT Bin; INL [bin]",
             kuNbChanFee, -0.5, kuNbChanFee - 0.5,
             get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+
+      fhFtSmallDtFeeA = new TH2D( "hFtSmallDtFeeA",
+            "FT of both channels when normal time difference in FEE A; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+      fhFtSmallDtFeeB = new TH2D( "hFtSmallDtFeeB",
+            "FT of both channels when normal time difference in FEE B; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+
+      fhFtBigDtFeeA = new TH2D( "hFtBigDtFeeA",
+            "FT of both channels when big time difference in FEE A; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+      fhFtBigDtFeeB = new TH2D( "hFtBigDtFeeB",
+            "FT of both channels when big time difference in FEE B; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+
+      fhFtPrevSmallDtFeeA = new TH2D( "hFtPrevSmallDtFeeA",
+            "FT of Previous time for both channels when normal time difference in FEE A; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+      fhFtPrevSmallDtFeeB = new TH2D( "hFtPrevSmallDtFeeB",
+            "FT of Previous time for both channels when normal time difference in FEE B; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+
+      fhFtPrevBigDtFeeA = new TH2D( "hFtPrevBigDtFeeA",
+            "FT of Previous time for both channels when big time difference in FEE A; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+      fhFtPrevBigDtFeeB = new TH2D( "hFtPrevBigDtFeeB",
+            "FT of Previous time for both channels when big time difference in FEE B; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
    } // if( kTRUE == fbPulserMode )
 
    if( kTRUE == fbOldReadoutOk )
@@ -1112,7 +1038,7 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
             "Data Messages per GET4 TOT channel; GET4 channel # ; Data Count",
             fuNbGet4*get4v1x::kuChanPerGet4, -0.5, fuNbGet4*get4v1x::kuChanPerGet4 -0.5);
 
-      fhPulserFeeTotDnl = new TH2D( "fhPulserFeeTotDnl",
+      fhPulserFeeTotDnl = new TH2D( "hPulserFeeTotDnl",
             "DNL for all TOT channels in chosen FEE board; Chan # ; FT Bin; DNL [bin]",
             kuNbChanFee, -0.5, kuNbChanFee - 0.5,
             get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
@@ -1121,15 +1047,55 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
             "INL for all TOT channels in chosen FEE board; Chan # ; FT Bin; INL [bin]",
             kuNbChanFee, -0.5, kuNbChanFee - 0.5,
             get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+
+      fhFtTotSmallDtFeeA = new TH2D( "hFtTotSmallDtFeeA",
+            "FT of Tot for both channels when normal time difference in FEE A; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+      fhFtTotSmallDtFeeB = new TH2D( "hFtTotSmallDtFeeB",
+            "FT of Tot for both channels when normal time difference in FEE B; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+
+      fhFtTotBigDtFeeA = new TH2D( "hFtTotBigDtFeeA",
+            "FT of Tot for both channels when big time difference in FEE A; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+      fhFtTotBigDtFeeB = new TH2D( "hFtTotBigDtFeeB",
+            "FT of Tot for both channels when big time difference in FEE B; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+
+      fhFtPrevTotSmallDtFeeA = new TH2D( "hFtPrevTotSmallDtFeeA",
+            "FT of Previous Tot for both channels when normal time difference in FEE A; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+      fhFtPrevTotSmallDtFeeB = new TH2D( "hFtPrevTotSmallDtFeeB",
+            "FT of Previous Tot for both channels when normal time difference in FEE B; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+
+      fhFtPrevTotBigDtFeeA = new TH2D( "hFtPrevTotBigDtFeeA",
+            "FT of Previous Tot for both channels when big time difference in FEE A; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+      fhFtPrevTotBigDtFeeB = new TH2D( "hFtPrevTotBigDtFeeB",
+            "FT of Previous Tot for both channels when big time difference in FEE B; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
+            get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
    } // if( kTRUE == fbOldReadoutOk )
-*/
+
    // Prepare the vector storing the hit data for time diff calculation
    fvuLastHitEp.resize( fuNbGet4 * get4v1x::kuChanPerGet4);
    fvmLastHit.resize(   fuNbGet4 * get4v1x::kuChanPerGet4);
-//   if( kTRUE == fbOldReadoutOk )
+   fvuPrevHitEp.resize( fuNbGet4 * get4v1x::kuChanPerGet4);
+   fvmPrevHit.resize(   fuNbGet4 * get4v1x::kuChanPerGet4);
+   if( kTRUE == fbOldReadoutOk )
    {
       fvuLastOldTotEp.resize(   fuNbGet4 * get4v1x::kuChanPerGet4);
       fvmLastOldTot.resize(   fuNbGet4 * get4v1x::kuChanPerGet4);
+      fvuPrevOldTotEp.resize(   fuNbGet4 * get4v1x::kuChanPerGet4);
+      fvmPrevOldTot.resize(   fuNbGet4 * get4v1x::kuChanPerGet4);
    } // if( kTRUE == fbOldReadoutOk )
 
    // Now clear the hits
@@ -1137,10 +1103,14 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
    {
       fvuLastHitEp[uChan] = 0;
       fvmLastHit[uChan].reset();
-//      if( kTRUE == fbOldReadoutOk )
+      fvuPrevHitEp[uChan] = 0;
+      fvmPrevHit[uChan].reset();
+      if( kTRUE == fbOldReadoutOk )
       {
          fvuLastOldTotEp[uChan] = 0;
          fvmLastOldTot[uChan].reset();
+         fvuPrevOldTotEp[uChan] = 0;
+         fvmPrevOldTot[uChan].reset();
       } // if( kTRUE == fbOldReadoutOk )
    } // for( UInt_t uChan = 0; uChan < fuNbGet4 * get4v1x::kuChanPerGet4; uChan++)
 
@@ -1165,7 +1135,7 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
                       get4v1x::kuChanPerFee, -0.5, get4v1x::kuChanPerFee - 0.5);
       }
    } // for( UInt_t uFee = 0; uFee < fuNbFee; uFee++)
-/*
+
    // Multiple hits (reflections, ...) detection
    if( 1 == fiMode )
    {
@@ -1207,22 +1177,23 @@ void CbmTSUnpackGet4v1x::InitMonitorHistograms()
             fvhGet4MultipleHitsVsTot[uGet4] = new TH2I(
                   Form("hGet4MultipleHitsVsTot_%03u", uGet4),
                   Form("Multiple hits for GET4 #%03d; TOT [ns] ; Close hit # [1]; Counts[1]", uGet4),
-                  10, 0.0, 10.0,
+                  26, 0.0, 26.0,
                   4, 0.5, 4.5 );
             fvdChanFirstHitTot[uGet4].resize(get4v1x::kuChanPerGet4, 0.0);
          } // if( kTRUE == fvbActiveChips[uGet4] )
       } // for( UInt_t uGet4 = 0; uGet4 < fuNbGet4; uGet4++)
    } // if( 1 == fiMode )
-*/
 }
-void CbmTSUnpackGet4v1x::FillMonitorHistograms()
+void CbmGet4FastMonitor::FillMonitorHistograms()
 {
 }
-void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
+void CbmGet4FastMonitor::WriteMonitorHistograms()
 {
    TDirectory * oldir = gDirectory;
    TFile *fHist;
    fHist = new TFile( fsHistoFilename,"RECREATE");
+
+   LOG(INFO)<<" Saving monitor histograms to : "<<fsHistoFilename<<FairLogger::endl;
 
    fHist->cd();
 
@@ -1239,6 +1210,9 @@ void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
    fhGet4ChanTotMap   ->Write();
    fhGet4ChanErrors   ->Write();
    fhGet4ChanSlowContM->Write();
+   fhGet4ChanEdgesCounts->Write();
+   fhGet4ChanDeadtime->Write();
+   fhGet4SeuCounter->Write();
 
    fhMsSizeEvo->Write();
    for( UInt_t uRoc = 0; uRoc < fuNbRocs; uRoc++)
@@ -1248,11 +1222,15 @@ void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
       fvhRocDataCntEvo[uRoc]     ->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
       fvhRocEpochCntEvo[uRoc]    ->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
       fvhRocErrorCntEvo[uRoc]    ->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
+      fvhRocTotErrorCntEvo[uRoc] ->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
+      fvhRocEpochMissmCntEvo[uRoc]->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
       fvhRocDataLossCntEvo[uRoc] ->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
       fvhRocEpochLossCntEvo[uRoc]->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
       fvhRocDataCntEvo[uRoc]     ->Write();
       fvhRocEpochCntEvo[uRoc]    ->Write();
       fvhRocErrorCntEvo[uRoc]    ->Write();
+      fvhRocTotErrorCntEvo[uRoc] ->Write();
+      fvhRocEpochMissmCntEvo[uRoc]->Write();
       fvhRocDataLossCntEvo[uRoc] ->Write();
       fvhRocEpochLossCntEvo[uRoc]->Write();
    } // for( Int_t uRoc = 0; uRoc < fuNbRocs; uRoc++)
@@ -1262,12 +1240,14 @@ void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
       {
          fvhGet4DataCntEvo[uGet4]     ->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
          fvhGet4ErrorCntEvo[uGet4]    ->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
+         fvhGet4EpochMissmCntEvo[uGet4]->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
          fvhGet4DataLossCntEvo[uGet4] ->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
          fvhGet4EpochLossCntEvo[uGet4]->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
          fvhGet4ChDataCntEvo[uGet4]   ->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
          fvhGet4ChErrorCntEvo[uGet4]  ->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
          fvhGet4DataCntEvo[uGet4]     ->Write();
          fvhGet4ErrorCntEvo[uGet4]    ->Write();
+         fvhGet4EpochMissmCntEvo[uGet4]->Write();
          fvhGet4DataLossCntEvo[uGet4] ->Write();
          fvhGet4EpochLossCntEvo[uGet4]->Write();
          fvhGet4ChDataCntEvo[uGet4]   ->Write();
@@ -1278,22 +1258,40 @@ void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
    {
       fvhDetDataCntEvo[iDet]     ->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
       fvhDetErrorCntEvo[iDet]    ->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
+      fvhDetEpochMissmCntEvo[iDet]->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
       fvhDetDataLossCntEvo[iDet] ->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
       fvhDetEpochLossCntEvo[iDet]->Scale( 1/fdEvoBinSizeS ); // Weight factor to account for bin size in s
       fvhDetDataCntEvo[iDet]     ->Write();
       fvhDetErrorCntEvo[iDet]    ->Write();
+      fvhDetEpochMissmCntEvo[iDet]->Write();
       fvhDetDataLossCntEvo[iDet] ->Write();
       fvhDetEpochLossCntEvo[iDet]->Write();
    } // for( Int_t iDet = 0; iDet < kiNbDet; iDet++)
    fhClosedEpSizeEvo->Write();
-/*
+
    if( kTRUE == fbPulserMode )
    {
+      // Reset summary histograms for safety
+      fhTimeRmsAllFee->Reset();
+      fhTimeResAllFee->Reset();
+      if( kTRUE == fbPulserFeeB )
+      {
+         fhTimeRmsAllFeeB->Reset();
+         fhTimeResAllFeeB->Reset();
+         fhTimeRmsAllFeeAB->Reset();
+         fhTimeResAllFeeAB->Reset();
+      } // if( kTRUE == fbPulserFeeB )
+
       // First make a gauss fit to obtain the time resolution data
       // for all Fee channels pairs
       UInt_t uHistoFeeIdx = 0;
+      UInt_t uHistoFeeIdxB = 0;
       TF1 *fitFunc[kuNbChanFee*(kuNbChanFee-1)/2];
+      TF1 *fitFuncB[kuNbChanFee*(kuNbChanFee-1)/2];
+      TF1 *fitFuncAB[kuNbChanFee*kuNbChanFee];
       for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
+      {
+         TString sFitRes = "";
          for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < kuNbChanFee; uChanFeeB++)
          {
             Double_t dRes = 0.0;
@@ -1301,8 +1299,7 @@ void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
             // No need to fit if not data in histo
             if( 0 == fhTimeResFee[uHistoFeeIdx]->Integral() )
             {
-
-               LOG(INFO)<<" FMC histo empty: "<<uHistoFeeIdx<<" "
+               LOG(DEBUG)<<" FEE histo empty: "<<uHistoFeeIdx<<" "
                      <<uChanFeeA<<" "<<uChanFeeB<<FairLogger::endl;
                uHistoFeeIdx++;
                continue;
@@ -1312,38 +1309,198 @@ void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
                   fhTimeResFee[uHistoFeeIdx]->GetMean() - 5*fhTimeResFee[uHistoFeeIdx]->GetRMS() ,
                   fhTimeResFee[uHistoFeeIdx]->GetMean() + 5*fhTimeResFee[uHistoFeeIdx]->GetRMS());
 
-            fhTimeResFee[uHistoFeeIdx]->Fit( Form("f_%03d_%03d",uChanFeeA,uChanFeeB), "IQRM0");
+            // Using integral instead of bin center seems to lead to unrealistic values => no "I"
+//            fhTimeResFee[uHistoFeeIdx]->Fit( Form("f_%03d_%03d",uChanFeeA,uChanFeeB), "IQRM0");
+            fhTimeResFee[uHistoFeeIdx]->Fit( Form("f_%03d_%03d",uChanFeeA,uChanFeeB), "QRM0");
 
             dRes = fitFunc[uHistoFeeIdx]->GetParameter(2);
 
             // If needed uncomment for debugging
             //(WARNING: this adds 1024 histos to the file!)
-            fhTimeResFee[uHistoFeeIdx]->Write();
+//            fhTimeResFee[uHistoFeeIdx]->Write();
 
             delete fitFunc[uHistoFeeIdx];
 
             fhTimeRmsAllFee->Fill(uChanFeeA, uChanFeeB, fhTimeResFee[uHistoFeeIdx]->GetRMS() );
             fhTimeResAllFee->Fill(uChanFeeA, uChanFeeB, dRes/TMath::Sqrt2() );
 //            fhTimeResAllFee->Fill(uChanFeeA, uChanFeeB, dRes/TMath::Sqrt2() );
+            sFitRes += Form("%4.0f (%4.0f) ", dRes, dRes/TMath::Sqrt2() );
 
             uHistoFeeIdx++;
-         } // for any unique pair of channel in chosen Fee
+         } // for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < kuNbChanFee; uChanFeeB++)
+         LOG(INFO)<<" FEE Fit ch "<<uChanFeeA<<" Results: "<<sFitRes<<FairLogger::endl;
+
+         if( kTRUE == fbPulserFeeB )
+         {
+            for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < kuNbChanFee; uChanFeeB++)
+            {
+               Double_t dResB = 0.0;
+
+               // No need to fit if not data in histo
+               if( 0 == fhTimeResFeeB[uHistoFeeIdxB]->Integral() )
+               {
+                  LOG(DEBUG)<<" FEE B histo empty: "<<uHistoFeeIdxB<<" "
+                        <<uChanFeeA<<" "<<uChanFeeB<<FairLogger::endl;
+                  uHistoFeeIdxB++;
+                  continue;
+               } //  if( 0 == fhTimeResFeeB[uHistoFeeIdx]->Integral() )
+
+               fitFuncB[uHistoFeeIdxB] = new TF1( Form("fB_%03d_%03d",uChanFeeA,uChanFeeB), "gaus",
+                     fhTimeResFeeB[uHistoFeeIdxB]->GetMean() - 5*fhTimeResFeeB[uHistoFeeIdxB]->GetRMS() ,
+                     fhTimeResFeeB[uHistoFeeIdxB]->GetMean() + 5*fhTimeResFeeB[uHistoFeeIdxB]->GetRMS());
+
+               // Using integral instead of bin center seems to lead to unrealistic values => no "I"
+   //            fhTimeResFee[uHistoFeeIdx]->Fit( Form("f_%03d_%03d",uChanFeeA,uChanFeeB), "IQRM0");
+               fhTimeResFeeB[uHistoFeeIdxB]->Fit( Form("fB_%03d_%03d",uChanFeeA,uChanFeeB), "QRM0");
+
+               dResB = fitFuncB[uHistoFeeIdxB]->GetParameter(2);
+
+               // If needed uncomment for debugging
+               //(WARNING: this adds 1024 histos to the file!)
+//               fhTimeResFeeB[uHistoFeeIdxB]->Write();
+
+               delete fitFuncB[uHistoFeeIdxB];
+
+               fhTimeRmsAllFeeB->Fill(uChanFeeA, uChanFeeB, fhTimeResFeeB[uHistoFeeIdxB]->GetRMS() );
+               fhTimeResAllFeeB->Fill(uChanFeeA, uChanFeeB, dResB/TMath::Sqrt2() );
+
+               uHistoFeeIdxB++;
+            } // for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < kuNbChanFee; uChanFeeB++)
+
+            for( UInt_t uChanFeeB = 0; uChanFeeB < kuNbChanFee; uChanFeeB++)
+            {
+               Double_t dResAB = 0.0;
+
+               // No need to fit if not data in histo
+               if( 0 == fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->Integral() )
+               {
+                  LOG(DEBUG)<<" FEE AB histo empty: "
+                        <<uChanFeeA<<" "<<uChanFeeB<<FairLogger::endl;
+                  continue;
+               } //  if( 0 == fhTimeResFeeAB[uHistoFeeIdx]->Integral() )
+
+               fitFuncAB[uChanFeeA*kuNbChanFee + uChanFeeB] = new TF1( Form("fAB_%03d_%03d",uChanFeeA,uChanFeeB), "gaus",
+                     fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetMean() - 5*fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetRMS() ,
+                     fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetMean() + 5*fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetRMS());
+
+               // Using integral instead of bin center seems to lead to unrealistic values => no "I"
+   //            fhTimeResFee[uHistoFeeIdx]->Fit( Form("f_%03d_%03d",uChanFeeA,uChanFeeB), "IQRM0");
+               fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->Fit( Form("fAB_%03d_%03d",uChanFeeA,uChanFeeB), "QRM0");
+
+               dResAB = fitFuncAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetParameter(2);
+
+               // If needed uncomment for debugging
+               //(WARNING: this adds 1024 histos to the file!)
+//               fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->Write();
+
+               delete fitFuncAB[uChanFeeA*kuNbChanFee + uChanFeeB];
+
+               fhTimeRmsAllFeeAB->Fill(uChanFeeA, uChanFeeB, fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetRMS() );
+               fhTimeResAllFeeAB->Fill(uChanFeeA, uChanFeeB, dResAB/TMath::Sqrt2() );
+            } // for( UInt_t uChanFeeB = 0; uChanFeeB < kuNbChanFee; uChanFeeB++)
+         } // if( kTRUE == fbPulserFeeB )
+      } // for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
 
       // Then write the Fee summary histo
       fhTimeRmsAllFee->Write();
       fhTimeResAllFee->Write();
+      if( kTRUE == fbPulserFeeB )
+      {
+         fhTimeRmsAllFeeB->Write();
+         fhTimeResAllFeeB->Write();
+         fhTimeRmsAllFeeAB->Write();
+         fhTimeResAllFeeAB->Write();
+      } // if( kTRUE == fbPulserFeeB )
+
+      // Reset summary histograms for safety
+      fhTimeRmsAllPairs->Reset();
+      fhTimeResAllPairs->Reset();
+      fhTimeRmsAllCombi->Reset();
+      fhTimeResAllCombi->Reset();
 
       // Write the histos for the test on chosen channel pairs
       UInt_t uHistoCombiIdx = 0;
+      TF1 *fitFuncPairs[kuNbChanTest - 1];
+      TF1 *fitFuncCombi[kuNbChanComb*(kuNbChanComb-1)/2];
+      TString sFitCombRes = "\n";
       for( UInt_t uChanA = 0; uChanA < kuNbChanTest-1; uChanA++)
       {
+         Double_t dSigPair = 0.0;
+         Double_t dResPair = 0.0;
+         // No need to fit if not data in histo
+         if( 0 == fhTimeResPairs[uChanA]->Integral() )
+         {
+
+            LOG(DEBUG)<<" Pair histo empty: "<<uHistoFeeIdx<<" "
+                  <<uChanA<<" "<<uChanA+1<<FairLogger::endl;
+            continue;
+         } //  if( 0 == fhTimeResFee[uHistoFeeIdx]->Integral() )
+
+         fitFuncPairs[uChanA] = new TF1( Form("fPair_%03d_%03d",uChanA, uChanA+1), "gaus",
+               fhTimeResPairs[uChanA]->GetMean() - 5*fhTimeResPairs[uChanA]->GetRMS() ,
+               fhTimeResPairs[uChanA]->GetMean() + 5*fhTimeResPairs[uChanA]->GetRMS());
+
+         // Using integral instead of bin center seems to lead to unrealistic values => no "I"
+//         fhTimeResPairs[uChanA]->Fit( Form("fPair_%03d_%03d",uChanA,uChanA+1), "IQRM0");
+         fhTimeResPairs[uChanA]->Fit( Form("fPair_%03d_%03d",uChanA,uChanA+1), "QRM0");
+         dSigPair = fitFuncPairs[uChanA]->GetParameter(2);
+         dResPair = dSigPair/TMath::Sqrt2();
+
          fhTimeResPairs[uChanA]->Write();
+         fhTimeResPairsTot[2*uChanA]->Write();
+         fhTimeResPairsTot[2*uChanA+1]->Write();
+
+         delete fitFuncPairs[uChanA];
+
+         fhTimeRmsAllPairs->Fill(uChanA, fhTimeResPairs[uChanA]->GetRMS() );
+         fhTimeResAllPairs->Fill(uChanA, dResPair );
+         LOG(INFO)<<" Pair Fit ch "<<uChanA<<" ch "<<uChanA+1<<" Results: "
+                  <<Form("%4.0f (%4.0f) ", dSigPair, dResPair )<<FairLogger::endl;
+
          for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
          {
+            Double_t dSigCombi = 0.0;
+            Double_t dResCombi = 0.0;
+            // No need to fit if not data in histo
+            if( 0 == fhTimeResCombi[uHistoCombiIdx]->Integral() )
+            {
+
+               LOG(DEBUG)<<" Combi histo empty: "<<uHistoCombiIdx<<" "
+                     <<uChanA<<" "<<uChanA+1<<FairLogger::endl;
+               uHistoCombiIdx++;
+               continue;
+            } //  if( 0 == fhTimeResFee[uHistoFeeIdx]->Integral() )
+
+            fitFuncCombi[uHistoCombiIdx] = new TF1( Form("fCombi_%03d_%03d",uChanA, uChanB), "gaus",
+                  fhTimeResCombi[uHistoCombiIdx]->GetMean() - 5*fhTimeResCombi[uHistoCombiIdx]->GetRMS() ,
+                  fhTimeResCombi[uHistoCombiIdx]->GetMean() + 5*fhTimeResCombi[uHistoCombiIdx]->GetRMS());
+
+            // Using integral instead of bin center seems to lead to unrealistic values => no "I"
+//            fhTimeResCombi[uHistoCombiIdx]->Fit( Form("fCombi_%03d_%03d",uChanA,uChanB), "IQRM0");
+            fhTimeResCombi[uHistoCombiIdx]->Fit( Form("fCombi_%03d_%03d",uChanA,uChanB), "QRM0");
+            dSigCombi = fitFuncCombi[uHistoCombiIdx]->GetParameter(2);
+            dResCombi = dSigCombi/TMath::Sqrt2();
+
             fhTimeResCombi[uHistoCombiIdx]->Write();
+            fhTimeResCombiTot[2*uHistoCombiIdx]->Write();
+            fhTimeResCombiTot[2*uHistoCombiIdx+1]->Write();
+
+            delete fitFuncCombi[uHistoCombiIdx];
+
+            fhTimeRmsAllCombi->Fill(uChanA, uChanB, fhTimeResCombi[uHistoCombiIdx]->GetRMS() );
+            fhTimeResAllCombi->Fill(uChanA, uChanB, dResCombi );
+
+            sFitCombRes += Form("Pair Fit ch %d ch %d Results:  %4.0f (%4.0f)\n",
+                  uChanA, uChanB, dSigCombi, dResCombi );
+
             uHistoCombiIdx++;
          } // for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
       } // for( UInt_t uChanA = 0; uChanA < kuNbChanTest; uChanA++)
+      LOG(INFO)<<sFitCombRes<<FairLogger::endl;
+      fhTimeRmsAllPairs->Write();
+      fhTimeResAllPairs->Write();
+      fhTimeRmsAllCombi->Write();
+      fhTimeResAllCombi->Write();
 
       // Write the hists interval histos
       fhPulserHitDistNs->Write();
@@ -1373,6 +1530,17 @@ void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
       } // for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
       fhPulserFeeInl->Write();
 
+      fhFtSmallDtFeeA->Write();
+      fhFtSmallDtFeeB->Write();
+
+      fhFtBigDtFeeA->Write();
+      fhFtBigDtFeeB->Write();
+
+      fhFtPrevSmallDtFeeA->Write();
+      fhFtPrevSmallDtFeeB->Write();
+
+      fhFtPrevBigDtFeeA->Write();
+      fhFtPrevBigDtFeeB->Write();
 
       if( kTRUE == fbOldReadoutOk )
       {
@@ -1400,13 +1568,25 @@ void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
             } // for( UInt_t uBin = 1; uBin <= get4v1x::kuFineTime+1; uBin ++)
          } // for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
          fhPulserFeeTotInl->Write();
+
+         fhFtTotSmallDtFeeA->Write();
+         fhFtTotSmallDtFeeB->Write();
+
+         fhFtTotBigDtFeeA->Write();
+         fhFtTotBigDtFeeB->Write();
+
+         fhFtPrevTotSmallDtFeeA->Write();
+         fhFtPrevTotSmallDtFeeB->Write();
+
+         fhFtPrevTotBigDtFeeA->Write();
+         fhFtPrevTotBigDtFeeB->Write();
       } // if( kTRUE == fbOldReadoutOk )
    } // if( kTRUE == fbPulserMode )
-*/
+
    for( UInt_t uFeeA = 0; uFeeA < fuNbFee; uFeeA++)
       for( UInt_t uFeeB = uFeeA; uFeeB < fuNbFee; uFeeB++)
          fvvhChannelsCoinc[uFeeA][uFeeB]->Write();
-/*
+
    // Multiple hits (reflections, ...) detection
    if( 1 == fiMode )
    {
@@ -1422,21 +1602,20 @@ void CbmTSUnpackGet4v1x::WriteMonitorHistograms()
          } // if( kTRUE == fvbActiveChips[uGet4] )
       } // for( UInt_t uGet4 = 0; uGet4 < fuNbGet4; uGet4++)
    } // if( 1 == fiMode )
-*/
+
    gDirectory->cd( oldir->GetPath() );
    fHist->Close();
 }
-void CbmTSUnpackGet4v1x::DeleteMonitorHistograms()
+void CbmGet4FastMonitor::DeleteMonitorHistograms()
 {
 
 }
-/*
-void CbmTSUnpackGet4v1x::MonitorMessage_epoch(  get4v1x::Message mess, uint16_t EqID)
+void CbmGet4FastMonitor::MonitorMessage_epoch(  get4v1x::Message mess, uint16_t EqID)
 {
    // ROC epoch message: 250 MHz clock for now
    // TODO: check compatibility when ROC clock changed to 200 MHz
    uint8_t  cRocId    = mess.getRocNumber();
-   LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_epoch => ROC Epoch: EqId "
+   LOG(DEBUG3)<<"CbmGet4FastMonitor::MonitorMessage_epoch => ROC Epoch: EqId "
                <<EqID<<" roc "
                <<cRocId<<FairLogger::endl;
 
@@ -1447,27 +1626,27 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch(  get4v1x::Message mess, uint16_t 
 
    fvuCurrEpoch[cRocId] = mess.getEpochNumber();
 }
-void CbmTSUnpackGet4v1x::MonitorMessage_sync(   get4v1x::Message mess, uint16_t EqID)
+void CbmGet4FastMonitor::MonitorMessage_sync(   get4v1x::Message mess, uint16_t EqID)
 {
    // ROC sync message: TS in 250 MHz clock for now
    // TODO: check compatibility when ROC clock changed to 200 MHz
    uint8_t  cRocId    = mess.getRocNumber();
    fhRocSyncTypePerRoc->Fill( cRocId, mess.getSyncChNum() );
-   LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_sync => ROC Sync: EqId "
+   LOG(DEBUG3)<<"CbmGet4FastMonitor::MonitorMessage_sync => ROC Sync: EqId "
                <<EqID<<" roc "
                <<cRocId<<FairLogger::endl;
 }
-void CbmTSUnpackGet4v1x::MonitorMessage_aux(    get4v1x::Message mess, uint16_t EqID)
+void CbmGet4FastMonitor::MonitorMessage_aux(    get4v1x::Message mess, uint16_t EqID)
 {
    // ROC aux message: TS in 250 MHz clock for now
    // TODO: check compatibility when ROC clock changed to 200 MHz
    uint8_t  cRocId    = mess.getRocNumber();
    fhRocAuxTypePerRoc->Fill( cRocId, mess.getAuxChNum() );
-   LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_aux => ROC Aux: EqId "
+   LOG(DEBUG3)<<"CbmGet4FastMonitor::MonitorMessage_aux => ROC Aux: EqId "
                <<EqID<<" roc "
                <<cRocId<<FairLogger::endl;
 }
-void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t EqID)
+void CbmGet4FastMonitor::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t EqID)
 {
    // GET4 v1.x epoch message (24b only for now)
    // TODO: check compatibility when 32b format without hack ready
@@ -1475,7 +1654,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
    uint8_t  cChipId   = mess.getEpoch2ChipNumber();
    uint32_t uChipFullId = cChipId + get4v1x::kuMaxGet4PerRoc*cRocId;
 
-   LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_epoch2 => GET4 Epoch2: EqId "
+   LOG(DEBUG3)<<"CbmGet4FastMonitor::MonitorMessage_epoch2 => GET4 Epoch2: EqId "
                <<EqID<<" roc "
                <<cRocId<<" chip "
                <<cChipId<<FairLogger::endl;
@@ -1484,7 +1663,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
    if( fuNbGet4 <= uChipFullId )
    {
       if( kTRUE == fbVerbose )
-         LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_epoch2 => Ignored message with ChipId above limit!"
+         LOG(INFO)<<"CbmGet4FastMonitor::MonitorMessage_epoch2 => Ignored message with ChipId above limit!"
                   <<" ChipId: "<<cChipId
                   <<" RocId: " <<cRocId
                   <<" Limit: " <<fuNbGet4<<FairLogger::endl;
@@ -1495,7 +1674,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
    if( kFALSE == fvbActiveChips[uChipFullId])
    {
       if( kTRUE == fbVerbose )
-         LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_epoch2 => Ignored message with Inactive Chip!"
+         LOG(INFO)<<"CbmGet4FastMonitor::MonitorMessage_epoch2 => Ignored message with Inactive Chip!"
                   <<" ChipId: "<<cChipId
                   <<" RocId: " <<cRocId <<FairLogger::endl;
       return;
@@ -1513,7 +1692,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
                    <<Form("%3u: ", uChipFullId)
                    <<Form(" EP #%6u", mess.getEpoch2Number() )
                    <<Form(" TS #%12llu", fulTsNb)
-                   <<Form(" MS #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
+                   <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
                    <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
                    <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                    << FairLogger::endl;
@@ -1529,15 +1708,27 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
    {
       Int_t iEpJump = mess.getEpoch2Number();
       iEpJump      -= fvuCurrEpoch2[uChipFullId];
-      LOG(DEBUG) << "Epoch nb jump in chip "
+
+      // If debug mode, print the message
+      if( kTRUE == fbDebug )
+         LOG(INFO) << "Epoch nb jump in chip "
                  <<Form("%3u: ", uChipFullId)
                  << Form(" %3d (%6u -> %6u)", iEpJump, fvuCurrEpoch2[uChipFullId],
                                          mess.getEpoch2Number() )
                  <<Form(" TS #%12llu", fulTsNb)
-                 <<Form(" MS #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
+                 <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
                  <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
                  <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                  << FairLogger::endl;
+      else LOG(DEBUG) << "Epoch nb jump in chip "
+            <<Form("%3u: ", uChipFullId)
+            << Form(" %3d (%6u -> %6u)", iEpJump, fvuCurrEpoch2[uChipFullId],
+                                    mess.getEpoch2Number() )
+            <<Form(" TS #%12llu", fulTsNb)
+            <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+            <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
+            <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+            << FairLogger::endl;
 
       fhGet4EpochJumps->Fill(uChipFullId, iEpJump);
    } // if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
@@ -1554,7 +1745,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
          ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
           ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
           *get4v1x::kdEpochInPs*(1e-12) ); // Time since start in s
-/ *
+/*
    fvhGet4EpochCntEvo[uChipFullId]->Fill(
             ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
               ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
@@ -1565,7 +1756,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
              ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
               ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
              *get4v1x::kdEpochInPs*(1e-12) ); // Time since start in s
-* /
+*/
 
    if( 1 == mess.getEpoch2Sync() )
    {
@@ -1576,24 +1767,58 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
    if( 1 == mess.getEpoch2EpochMissmatch() )
    {
       fhGet4EpochFlags->Fill(uChipFullId, 1);
-      LOG(DEBUG) << "Epoch missmatch in chip "
+      // If debug mode, print the message
+      if( kTRUE == fbDebug )
+         LOG(DEBUG) << "Epoch missmatch in chip "
                 <<Form("%3u: ", uChipFullId)
                 <<Form(" EP #%6u", mess.getEpoch2Number() )
                 <<Form(" TS #%12llu", fulTsNb)
-                <<Form(" MS #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
+                <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
                 <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
                 <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                 << FairLogger::endl;
-      // TODO: evlution plot
+      else LOG(DEBUG) << "Epoch missmatch in chip "
+             <<Form("%3u: ", uChipFullId)
+             <<Form(" EP #%6u", mess.getEpoch2Number() )
+             <<Form(" TS #%12llu", fulTsNb)
+             <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+             <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
+             <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+             << FairLogger::endl;
+
+      fvhRocEpochMissmCntEvo[cRocId]->Fill(
+            ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
+              ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
+            *get4v1x::kdEpochInPs*(1e-12) ); // Time since start in s
+      fvhGet4EpochMissmCntEvo[uChipFullId]->Fill(
+               ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
+                 ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
+               *get4v1x::kdEpochInPs*(1e-12) ); // Time since start in s
+      if( uChipFullId < kuNbTdcMappedDet )
+         if( kiTdcDetMap[uChipFullId] < kiNbDet )
+            fvhDetEpochMissmCntEvo[ kiTdcDetMap[uChipFullId] ]->Fill(
+                ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
+                 ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
+                *get4v1x::kdEpochInPs*(1e-12) ); // Time since start in s
    } // if( 1 == mess.getEpoch2EpochMissmatch() )
    if( 1 == mess.getEpoch2EpochLost() )
    {
       fhGet4EpochFlags->Fill(uChipFullId, 2);
-      LOG(DEBUG) << "Epoch loss in chip      "
+      // If debug mode, print the message
+      if( kTRUE == fbDebug )
+         LOG(INFO) << "Epoch loss in chip      "
                 <<Form("%3u: ", uChipFullId)
                 <<Form(" EP #%6u", mess.getEpoch2Number() )
                 <<Form(" TS #%12llu", fulTsNb)
-                <<Form(" MS #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
+                <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+                <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
+                <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+                << FairLogger::endl;
+      else LOG(DEBUG) << "Epoch loss in chip      "
+                <<Form("%3u: ", uChipFullId)
+                <<Form(" EP #%6u", mess.getEpoch2Number() )
+                <<Form(" TS #%12llu", fulTsNb)
+                <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
                 <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
                 <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                 << FairLogger::endl;
@@ -1616,14 +1841,24 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
    if( 1 == mess.getEpoch2DataLost() )
    {
       fhGet4EpochFlags->Fill(uChipFullId, 3);
-      LOG(DEBUG) << "Data Loss in chip       "
+      // If debug mode, print the message
+      if( kTRUE == fbDebug )
+         LOG(INFO) << "Data Loss in chip       "
                 <<Form("%3u: ", uChipFullId)
                 <<Form(" EP #%6u", mess.getEpoch2Number() )
                 <<Form(" TS #%12llu", fulTsNb)
-                <<Form(" MS #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
+                <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
                 <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
                 <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                 << FairLogger::endl;
+      else LOG(DEBUG) << "Data Loss in chip       "
+            <<Form("%3u: ", uChipFullId)
+            <<Form(" EP #%6u", mess.getEpoch2Number() )
+            <<Form(" TS #%12llu", fulTsNb)
+            <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
+            <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
+            <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
+            << FairLogger::endl;
 
       fvhRocDataLossCntEvo[cRocId]->Fill(
             ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
@@ -1648,12 +1883,15 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
    // HHHHEHHHH.......E......HHHHEHHHH leads to
    // (HHHHHHHH)             (HHHHHHHH) and
    //     (HHHH              HHHH)
-   if( kTRUE == fbPulserMode && 0 == uChipFullId && kTRUE == fbOldReadoutOk )
+   if( kTRUE == fbPulserMode && kTRUE == fbOldReadoutOk
+         && 0 == (uChipFullId%kuNbChipFee)
+         && fuPulserFee == (uChipFullId/kuNbChipFee))
    {
       // Fill the time difference for all channels pairs in
       // the chosen Fee
       UInt_t uHistoFeeIdx = 0;
       for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
+      {
          for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < kuNbChanFee; uChanFeeB++)
          {
             if(
@@ -1671,9 +1909,121 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
                      fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeB] );
 
                fhTimeResFee[uHistoFeeIdx]->Fill( dTimeDiff );
+
+               if( TMath::Abs(dTimeDiff) <= 5000 )
+               {
+                  fhFtSmallDtFeeA->Fill(
+                        (fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeA ].getGet4Ts()) & get4v1x::kuFineTime,
+                        (fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeB ].getGet4Ts()) & get4v1x::kuFineTime );
+                  fhFtTotSmallDtFeeA->Fill(
+                        (fvmLastOldTot[ fuPulserFee * kuNbChanFee+ uChanFeeA ].getGet4Ts()) & get4v1x::kuFineTime,
+                        (fvmLastOldTot[ fuPulserFee * kuNbChanFee+ uChanFeeB ].getGet4Ts()) & get4v1x::kuFineTime );
+                  fhFtPrevSmallDtFeeA->Fill(
+                        (fvmPrevHit[ fuPulserFee * kuNbChanFee+ uChanFeeA ].getGet4Ts()) & get4v1x::kuFineTime,
+                        (fvmPrevHit[ fuPulserFee * kuNbChanFee+ uChanFeeB ].getGet4Ts()) & get4v1x::kuFineTime );
+                  fhFtPrevTotSmallDtFeeA->Fill(
+                        (fvmPrevOldTot[ fuPulserFee * kuNbChanFee+ uChanFeeA ].getGet4Ts()) & get4v1x::kuFineTime,
+                        (fvmPrevOldTot[ fuPulserFee * kuNbChanFee+ uChanFeeB ].getGet4Ts()) & get4v1x::kuFineTime );
+               } // if( TMath::Abs(dTimeDiff) < 5000  )
+               else if(  TMath::Abs(dTimeDiff) < 15000)
+               {
+                  fhFtBigDtFeeA->Fill(
+                        (fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeA ].getGet4Ts()) & get4v1x::kuFineTime,
+                        (fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeB ].getGet4Ts()) & get4v1x::kuFineTime );
+                  fhFtTotBigDtFeeA->Fill(
+                        (fvmLastOldTot[ fuPulserFee * kuNbChanFee+ uChanFeeA ].getGet4Ts()) & get4v1x::kuFineTime,
+                        (fvmLastOldTot[ fuPulserFee * kuNbChanFee+ uChanFeeB ].getGet4Ts()) & get4v1x::kuFineTime );
+                  fhFtPrevBigDtFeeA->Fill(
+                        (fvmPrevHit[ fuPulserFee * kuNbChanFee+ uChanFeeA ].getGet4Ts()) & get4v1x::kuFineTime,
+                        (fvmPrevHit[ fuPulserFee * kuNbChanFee+ uChanFeeB ].getGet4Ts()) & get4v1x::kuFineTime );
+                  fhFtPrevTotBigDtFeeA->Fill(
+                        (fvmPrevOldTot[ fuPulserFee * kuNbChanFee+ uChanFeeA ].getGet4Ts()) & get4v1x::kuFineTime,
+                        (fvmPrevOldTot[ fuPulserFee * kuNbChanFee+ uChanFeeB ].getGet4Ts()) & get4v1x::kuFineTime );
+
+                  if( kTRUE == fbDebug )
+                  {
+                     LOG(INFO) << "Big time difference for FEE A channels "
+                          <<Form("%3u %3u: ", uChanFeeA, uChanFeeB)
+                          <<Form(" TS  #%12llu", fulTsNb)
+                          << FairLogger::endl;
+                     fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeA ].printDataLog();
+                     fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeB ].printDataLog();
+                  } // if( kTRUE == fbDebug )
+               } // if( TMath::Abs(dTimeDiff) > 5000  && TMath::Abs(dTimeDiff) < 15000)
             } // if both channels have matching data
+
+            if( kTRUE == fbPulserFeeB )
+               if(
+                ( get4v1x::MSG_GET4 == fvmLastHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeA].getMessageType() ) &&
+                ( get4v1x::MSG_GET4 == fvmLastHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeB].getMessageType() ) &&
+                (   fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeA ]
+                  < fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeB ] + 2 ) &&
+                (   fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeA ] + 2
+                  > fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeB ] ) )
+            {
+               Double_t dTimeDiffB = 0.0;
+               dTimeDiffB = fvmLastHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeA].CalcGet4V10R24HitTimeDiff(
+                     fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeA],
+                     fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeB],
+                     fvmLastHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeB] );
+
+               fhTimeResFeeB[uHistoFeeIdx]->Fill( dTimeDiffB );
+
+               if( TMath::Abs(dTimeDiffB) <= 5000 )
+               {
+                  fhFtSmallDtFeeB->Fill(
+                        (fvmLastHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeA ].getGet4Ts()) & get4v1x::kuFineTime,
+                        (fvmLastHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeB ].getGet4Ts()) & get4v1x::kuFineTime );
+                  fhFtTotSmallDtFeeB->Fill(
+                        (fvmLastOldTot[ fuPulserFeeB * kuNbChanFee+ uChanFeeA ].getGet4Ts()) & get4v1x::kuFineTime,
+                        (fvmLastOldTot[ fuPulserFeeB * kuNbChanFee+ uChanFeeB ].getGet4Ts()) & get4v1x::kuFineTime );
+                  fhFtPrevSmallDtFeeB->Fill(
+                        (fvmPrevHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeA ].getGet4Ts()) & get4v1x::kuFineTime,
+                        (fvmPrevHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeB ].getGet4Ts()) & get4v1x::kuFineTime );
+                  fhFtPrevTotSmallDtFeeB->Fill(
+                        (fvmPrevOldTot[ fuPulserFeeB * kuNbChanFee+ uChanFeeA ].getGet4Ts()) & get4v1x::kuFineTime,
+                        (fvmPrevOldTot[ fuPulserFeeB * kuNbChanFee+ uChanFeeB ].getGet4Ts()) & get4v1x::kuFineTime );
+               } // if( TMath::Abs(dTimeDiff) < 5000  )
+               else if(  TMath::Abs(dTimeDiffB) < 15000)
+               {
+                  fhFtBigDtFeeB->Fill(
+                        (fvmLastHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeA ].getGet4Ts()) & get4v1x::kuFineTime,
+                        (fvmLastHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeB ].getGet4Ts()) & get4v1x::kuFineTime );
+                  fhFtTotBigDtFeeB->Fill(
+                        (fvmLastOldTot[ fuPulserFeeB * kuNbChanFee+ uChanFeeA ].getGet4Ts()) & get4v1x::kuFineTime,
+                        (fvmLastOldTot[ fuPulserFeeB * kuNbChanFee+ uChanFeeB ].getGet4Ts()) & get4v1x::kuFineTime );
+                  fhFtPrevBigDtFeeB->Fill(
+                        (fvmPrevHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeA ].getGet4Ts()) & get4v1x::kuFineTime,
+                        (fvmPrevHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeB ].getGet4Ts()) & get4v1x::kuFineTime );
+                  fhFtPrevTotBigDtFeeB->Fill(
+                        (fvmPrevOldTot[ fuPulserFeeB * kuNbChanFee+ uChanFeeA ].getGet4Ts()) & get4v1x::kuFineTime,
+                        (fvmPrevOldTot[ fuPulserFeeB * kuNbChanFee+ uChanFeeB ].getGet4Ts()) & get4v1x::kuFineTime );
+               } // if( TMath::Abs(dTimeDiff) > 5000  && TMath::Abs(dTimeDiff) < 15000)
+            } // if both channels  in FEE B have matching data
             uHistoFeeIdx++;
          } // for any unique pair of channel in chosen Fee
+
+         if( kTRUE == fbPulserFeeB )
+            for( UInt_t uChanFeeB = 0; uChanFeeB < kuNbChanFee; uChanFeeB++)
+         {
+            if(
+                ( get4v1x::MSG_GET4 == fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeA].getMessageType() ) &&
+                ( get4v1x::MSG_GET4 == fvmLastHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeB].getMessageType() ) &&
+                (   fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeA ]
+                  < fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeB ] + 2 ) &&
+                (   fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeA ] + 2
+                  > fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeB ] ) )
+            {
+               Double_t dTimeDiffAB = 0.0;
+               dTimeDiffAB = fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeA].CalcGet4V10R24HitTimeDiff(
+                     fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeA],
+                     fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeB],
+                     fvmLastHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeB] );
+
+               fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->Fill( dTimeDiffAB );
+            } // if both channels in FEE A and B have matching data
+         } // if( kTRUE == fbPulserFeeB ) && for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < kuNbChanFee; uChanFeeB++)
+      } // for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
 
       // Fill the time difference for the chosen channel pairs
       UInt_t uHistoCombiIdx = 0;
@@ -1692,6 +2042,19 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
                   fvuLastHitEp[ fuPulserChan[uChanA+1] ],
                   fvmLastHit[   fuPulserChan[uChanA+1] ] );
             fhTimeResPairs[uChanA]->Fill( dTimeDiff );
+
+            if( TMath::Abs(dTimeDiff) > 5000  && TMath::Abs(dTimeDiff) < 15000)
+            {
+               if( kTRUE == fbDebug )
+               {
+                  LOG(INFO) << "Big time difference for channel pair "
+                       <<Form("%3u: ", uChanA)
+                       <<Form(" TS  #%12llu", fulTsNb)
+                       << FairLogger::endl;
+                  fvmLastHit[   fuPulserChan[uChanA] ].printDataLog();
+                  fvmLastHit[   fuPulserChan[uChanA+1] ].printDataLog();
+               } // if( kTRUE == fbDebug )
+            } // if( TMath::Abs(dTimeDiff) > 5000 && TMath::Abs(dTimeDiff) < 15000)
          } // // if both channels have data
 
          for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
@@ -1709,6 +2072,20 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
                      fvuLastHitEp[ fuPulserChan[uChanB] ],
                      fvmLastHit[   fuPulserChan[uChanB] ] );
                fhTimeResCombi[uHistoCombiIdx]->Fill( dTimeDiff );
+
+               if( TMath::Abs(dTimeDiff) > 5000  && TMath::Abs(dTimeDiff) < 15000)
+               {
+                  if( kTRUE == fbDebug )
+                  {
+                     LOG(INFO) << "Big time difference for channel combination "
+                          <<Form("%3u: ", uHistoCombiIdx)
+                          <<Form(" TS  #%12llu", fulTsNb)
+                          << FairLogger::endl;
+                     fvmLastHit[   fuPulserChan[uChanA] ].printDataLog();
+                     fvmLastHit[   fuPulserChan[uChanB] ].printDataLog();
+                  } // if( kTRUE == fbDebug )
+               } // if( TMath::Abs(dTimeDiff) > 5000 && TMath::Abs(dTimeDiff) < 15000)
+
             } // if both channels have data
             uHistoCombiIdx++;
          } // for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
@@ -1717,12 +2094,12 @@ void CbmTSUnpackGet4v1x::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
    } // if( kTRUE == fbPulserMode && 0 == uChipFullId && kTRUE == fbOldReadoutOk )
 
 }
-void CbmTSUnpackGet4v1x::MonitorMessage_get4(   get4v1x::Message mess, uint16_t EqID)
+void CbmGet4FastMonitor::MonitorMessage_get4(   get4v1x::Message mess, uint16_t EqID)
 {
    // GET4 v1.x data message (24b only for now)
    // TODO: check compatibility when 32b format without hack ready
    uint8_t  cRocId    = mess.getRocNumber();
-   LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_get4 => GET4 Data: EqId "
+   LOG(DEBUG3)<<"CbmGet4FastMonitor::MonitorMessage_get4 => GET4 Data: EqId "
                <<EqID<<" roc "
                <<cRocId<<FairLogger::endl;
 
@@ -1737,7 +2114,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_get4(   get4v1x::Message mess, uint16_t 
    if( fuNbGet4 <= uChipFullId )
    {
       if( kTRUE == fbVerbose )
-         LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_get4 => Ignored message with ChipId above limit!"
+         LOG(INFO)<<"CbmGet4FastMonitor::MonitorMessage_get4 => Ignored message with ChipId above limit!"
                   <<" ChipId: "<<cChipId
                   <<" RocId: " <<cRocId
                   <<" Limit: " <<fuNbGet4<<FairLogger::endl;
@@ -1748,7 +2125,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_get4(   get4v1x::Message mess, uint16_t 
    if( kFALSE == fvbActiveChips[uChipFullId])
    {
       if( kTRUE == fbVerbose )
-         LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_get4 => Ignored message with Inactive Chip!"
+         LOG(INFO)<<"CbmGet4FastMonitor::MonitorMessage_get4 => Ignored message with Inactive Chip!"
                   <<" ChipId: "<<cChipId
                   <<" RocId: " <<cRocId <<FairLogger::endl;
       return;
@@ -1858,6 +2235,12 @@ void CbmTSUnpackGet4v1x::MonitorMessage_get4(   get4v1x::Message mess, uint16_t 
       if( 1 == mess.getGet4Edge() )
       {
          fhGet4ChanTotCount->Fill( uFullChId );
+
+         // Keep Epoch of Previous hit message (one per GET4 chip & channel)
+         fvuPrevOldTotEp[ uFullChId ] = fvuLastOldTotEp[ uFullChId ];
+         // Keep Previous hit message (one per GET4 chip & channel)
+         fvmPrevOldTot[ uFullChId ]   = fvmLastOldTot[ uFullChId ];
+
          // Epoch of Last hit message (one per GET4 chip & channel)
          fvuLastOldTotEp[ uFullChId ] = fvuCurrEpoch2[uChipFullId];
          // Last hit message (one per GET4 chip & channel)
@@ -1942,6 +2325,11 @@ void CbmTSUnpackGet4v1x::MonitorMessage_get4(   get4v1x::Message mess, uint16_t 
                } // else of if( dHitsDt < fdMaxDtMultiHit )
          } // if( 1 == fiMode)
 
+         // Keep Epoch of Previous hit message (one per GET4 chip & channel)
+         fvuPrevHitEp[ uFullChId ] = fvuLastHitEp[ uFullChId ];
+         // Keep Previous hit message (one per GET4 chip & channel)
+         fvmPrevHit[ uFullChId ] = fvmLastHit[ uFullChId ];
+
          // Epoch of Last hit message (one per GET4 chip & channel)
          fvuLastHitEp[ uFullChId ] = fvuCurrEpoch2[uChipFullId];
          // Last hit message (one per GET4 chip & channel)
@@ -1949,10 +2337,10 @@ void CbmTSUnpackGet4v1x::MonitorMessage_get4(   get4v1x::Message mess, uint16_t 
       } // else of if( 1 == mess.getGet4Edge() )
    } // if( kTRUE == fbOldReadoutOk )
 }
-void CbmTSUnpackGet4v1x::MonitorMessage_sys(    get4v1x::Message mess, uint16_t EqID)
+void CbmGet4FastMonitor::MonitorMessage_sys(    get4v1x::Message mess, uint16_t EqID)
 {
    uint8_t  cRocId    = mess.getRocNumber();
-   LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_sys => System message: EqId "
+   LOG(DEBUG3)<<"CbmGet4FastMonitor::MonitorMessage_sys => System message: EqId "
                <<EqID<<" roc "
                <<cRocId<<FairLogger::endl;
 
@@ -1992,14 +2380,18 @@ void CbmTSUnpackGet4v1x::MonitorMessage_sys(    get4v1x::Message mess, uint16_t 
       {
          if( get4v1x::SYSMSG_USER_ROCFEET_SYNC == mess.getSysMesData() )
          {
-            LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_sys => SYNC DLM!"
+            LOG(INFO)<<"CbmGet4FastMonitor::MonitorMessage_sys => SYNC DLM!"
                      <<" RocId: " << Form("%02u", cRocId)
                      <<Form(" TS  #%12llu", fulTsNb)
-                     <<Form(" MS  #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
+                     <<Form(" MS  #%5llu/%5lu", fulMsNb, fsMaxMsNb)
                      <<Form(" OF  #%5u/%5u", fuOffset, fuMaxOffset)
                      <<Form(" LO  #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                      <<FairLogger::endl;
-            fvbRocFeetSyncStart[cRocId] = kTRUE;
+            if( kTRUE == fvbRocFeetFirstSyncDlm[cRocId] &&
+                kFALSE == fvbRocFeetSyncStart[cRocId])
+               fvbRocFeetSyncStart[cRocId] = kTRUE;
+            else if( kFALSE == fvbRocFeetFirstSyncDlm[cRocId]  )
+               fvbRocFeetFirstSyncDlm[cRocId] = kTRUE;
          } // if( get4v1x::SYSMSG_USER_ROCFEET_SYNC == mess.getSysMesData() )
          break;
       } // case get4v1x::SYSMSG_USER
@@ -2014,6 +2406,12 @@ void CbmTSUnpackGet4v1x::MonitorMessage_sys(    get4v1x::Message mess, uint16_t 
          uint8_t  cChipId   = mess.getGet4V10R24ErrorChip();
          uint32_t uChipFullId = cChipId + get4v1x::kuMaxGet4PerRoc*cRocId;
          uint8_t  uErrorType= mess.getGet4V10R24ErrorData();
+
+         // As long as the 1st epoch with sync flag after SYNC DLM is found,
+         // consider data as not good
+         if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
+            return;
+
          // Count error messages per ROC
          fvhRocErrorCntEvo[cRocId]->Fill(
                ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
@@ -2084,13 +2482,13 @@ void CbmTSUnpackGet4v1x::MonitorMessage_sys(    get4v1x::Message mess, uint16_t 
       default:
       {
          if( kTRUE == fbVerbose )
-            LOG(WARNING)<<"CbmTSUnpackGet4v1x::MonitorMessage_sys => Unknown sysMess type ignored: "
+            LOG(WARNING)<<"CbmGet4FastMonitor::MonitorMessage_sys => Unknown sysMess type ignored: "
                         <<mess.getSysMesType()<<FairLogger::endl;
          break;
       } // default:
    } // switch( mess.getSysMesType() )
 }
-void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t EqID)
+void CbmGet4FastMonitor::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t EqID)
 {
    // GET4 v1.x 32b raw message using hack
    uint8_t  cRocId    = mess.getRocNumber();
@@ -2098,7 +2496,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
    uint32_t uChipFullId = cChipId + get4v1x::kuMaxGet4PerRoc*cRocId;
    uint8_t  cMessType = mess.getGet4V10R32MessageType();
 
-   LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_Get4v1 => 32b GET4 message: EqId "
+   LOG(DEBUG3)<<"CbmGet4FastMonitor::MonitorMessage_Get4v1 => 32b GET4 message: EqId "
                <<EqID<<" roc "
                <<cRocId<<FairLogger::endl;
 
@@ -2106,7 +2504,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
    if( fuNbGet4 <= uChipFullId )
    {
       if( kTRUE == fbVerbose )
-         LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_Get4v1 => Ignored message with ChipId above limit!"
+         LOG(INFO)<<"CbmGet4FastMonitor::MonitorMessage_Get4v1 => Ignored message with ChipId above limit!"
                   <<" ChipId: "<<cChipId
                   <<" RocId: " <<cRocId
                   <<" Limit: " <<fuNbGet4<<FairLogger::endl;
@@ -2117,7 +2515,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
    if( kFALSE == fvbActiveChips[uChipFullId])
    {
       if( kTRUE == fbVerbose )
-         LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_Get4v1 => Ignored message with Inactive Chip!"
+         LOG(INFO)<<"CbmGet4FastMonitor::MonitorMessage_Get4v1 => Ignored message with Inactive Chip!"
                   <<" ChipId: "<<cChipId
                   <<" RocId: " <<cRocId <<FairLogger::endl;
       return;
@@ -2142,7 +2540,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
                          <<Form("%3u: ", uChipFullId)
                          <<Form(" EP #%6u", mess.getGet4V10R32EpochNumber() )
                          <<Form(" TS #%12llu", fulTsNb)
-                         <<Form(" MS #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
+                         <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
                          <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
                          <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                          << FairLogger::endl;
@@ -2156,15 +2554,18 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
             Int_t iEpJump = mess.getGet4V10R32EpochNumber();
             iEpJump      -= fvuCurrEpoch2[uChipFullId];
             if( TMath::Abs(iEpJump) < 200 )
-               LOG(DEBUG) << "Epoch nb jump in chip "
+            {
+               if( kTRUE == fbDebug )
+                  LOG(INFO) << "Epoch nb jump in chip "
                        <<Form("%3u: ", uChipFullId)
                        << Form(" %3d (%6u -> %6u)", iEpJump, fvuCurrEpoch2[uChipFullId],
                                                     mess.getGet4V10R32EpochNumber() )
                        <<Form(" TS  #%12llu", fulTsNb)
-                       <<Form(" MS  #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
+                       <<Form(" MS  #%5llu/%5lu", fulMsNb, fsMaxMsNb)
                        <<Form(" OF  #%5u/%5u", fuOffset, fuMaxOffset)
                        <<Form(" LO  #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
                        << FairLogger::endl;
+            } // if( TMath::Abs(iEpJump) < 200 )
             else LOG(INFO) << "Epoch nb jump in chip "
                        <<Form("%3u: ", uChipFullId)
                        << Form(" %3d (%6u -> %6u)", iEpJump, fvuCurrEpoch2[uChipFullId],
@@ -2203,12 +2604,14 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
          // HHHHEHHHH.......E......HHHHEHHHH leads to
          // (HHHHHHHH)             (HHHHHHHH) and
          //     (HHHH              HHHH)
-         if( kTRUE == fbPulserMode && 0 == uChipFullId )
+         if( kTRUE == fbPulserMode && 0 == (uChipFullId%kuNbChipFee)
+               && fuPulserFee == (uChipFullId/kuNbChipFee) )
          {
             // Fill the time difference for all channels pairs in
             // the chosen Fee
             UInt_t uHistoFeeIdx = 0;
             for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
+            {
                for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < kuNbChanFee; uChanFeeB++)
                {
                   if( ( 0xF0 <= fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeA].getSysMesType() ) &&
@@ -2226,8 +2629,48 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
 
                      fhTimeResFee[uHistoFeeIdx]->Fill( dTimeDiff );
                   } // if both channels have matching data
+
+                  if( kTRUE == fbPulserFeeB )
+                     if(
+                      ( 0xF0 <= fvmLastHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeA].getSysMesType() ) &&
+                      ( 0xF0 <= fvmLastHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeB].getSysMesType() ) &&
+                      (   fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeA ]
+                        < fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeB ] + 2 ) &&
+                      (   fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeA ] + 2
+                        > fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeB ] ) )
+                  {
+                     Double_t dTimeDiffB = 0.0;
+                     dTimeDiffB = fvmLastHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeA].CalcGet4V10R32HitTimeDiff(
+                           fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeA],
+                           fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeB],
+                           fvmLastHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeB] );
+
+                     fhTimeResFeeB[uHistoFeeIdx]->Fill( dTimeDiffB );
+                  } // if both channels  in FEE B have matching data
                   uHistoFeeIdx++;
                } // for any unique pair of channel in chosen Fee
+
+               if( kTRUE == fbPulserFeeB )
+                  for( UInt_t uChanFeeB = 0; uChanFeeB < kuNbChanFee; uChanFeeB++)
+               {
+                  if(
+                      ( 0xF0 <= fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeA].getSysMesType() ) &&
+                      ( 0xF0 <= fvmLastHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeB].getSysMesType() ) &&
+                      (   fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeA ]
+                        < fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeB ] + 2 ) &&
+                      (   fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeA ] + 2
+                        > fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeB ] ) )
+                  {
+                     Double_t dTimeDiffAB = 0.0;
+                     dTimeDiffAB = fvmLastHit[ fuPulserFee * kuNbChanFee+ uChanFeeA].CalcGet4V10R32HitTimeDiff(
+                           fvuLastHitEp[ fuPulserFee * kuNbChanFee+ uChanFeeA],
+                           fvuLastHitEp[ fuPulserFeeB * kuNbChanFee+ uChanFeeB],
+                           fvmLastHit[ fuPulserFeeB * kuNbChanFee+ uChanFeeB] );
+
+                     fhTimeResFeeAB[uChanFeeA * kuNbChanFee + uChanFeeB]->Fill( dTimeDiffAB );
+                  } // if both channels in FEE A and B have matching data
+               } // if( kTRUE == fbPulserFeeB ) && for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < kuNbChanFee; uChanFeeB++)
+            } // for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
 
             // Fill the time difference for the chosen channel pairs
             UInt_t uHistoCombiIdx = 0;
@@ -2246,6 +2689,10 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
                         fvuLastHitEp[ fuPulserChan[uChanA+1] ],
                         fvmLastHit[   fuPulserChan[uChanA+1] ] );
                   fhTimeResPairs[uChanA]->Fill( dTimeDiff );
+                  Double_t dTotA = fvmLastHit[   fuPulserChan[uChanA]   ].getGet4V10R32HitTot();
+                  Double_t dTotB = fvmLastHit[   fuPulserChan[uChanA+1] ].getGet4V10R32HitTot();
+                  fhTimeResPairsTot[2*uChanA]->Fill(   dTimeDiff, dTotA );
+                  fhTimeResPairsTot[2*uChanA+1]->Fill( dTimeDiff, dTotB );
                } // // if both channels have data
 
                for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
@@ -2263,6 +2710,10 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
                            fvuLastHitEp[ fuPulserChan[uChanB] ],
                            fvmLastHit[   fuPulserChan[uChanB] ] );
                      fhTimeResCombi[uHistoCombiIdx]->Fill( dTimeDiff );
+                     Double_t dTotA = fvmLastHit[   fuPulserChan[uChanA] ].getGet4V10R32HitTot();
+                     Double_t dTotB = fvmLastHit[   fuPulserChan[uChanB] ].getGet4V10R32HitTot();
+                     fhTimeResCombiTot[2*uHistoCombiIdx]->Fill(   dTimeDiff, dTotA );
+                     fhTimeResCombiTot[2*uHistoCombiIdx+1]->Fill( dTimeDiff, dTotB );
                   } // if both channels have data
                   uHistoCombiIdx++;
                } // for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
@@ -2284,6 +2735,37 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
             return;
 
          fhGet4ChanSlowContM->Fill( dFullChId, mess.getGet4V10R32SlType() );
+
+         switch( mess.getGet4V10R32SlType() )
+         {
+            case get4v1x::GET4_32B_SLC_SCALER:
+            {
+               fhGet4ChanEdgesCounts->Fill( dFullChId, mess.getGet4V10R32SlData() );
+               break;
+            }
+            case get4v1x::GET4_32B_SLC_DEADT:
+            {
+               fhGet4ChanDeadtime->Fill( dFullChId, mess.getGet4V10R32SlData() );
+               break;
+            }
+            case get4v1x::GET4_32B_SLC_SPIREAD:
+            {
+               break;
+            }
+            case get4v1x::GET4_32B_SLC_START_SEU:
+            {
+               // If Ch = 0 and Edge = 1 => SEU counter
+               // Otherwise => Start message!
+               if( 0 == mess.getGet4V10R32SlChan() &&
+                   1 == mess.getGet4V10R32SlEdge() )
+                  fhGet4SeuCounter->Fill( uChipFullId, mess.getGet4V10R32SlData() );
+               break;
+            }
+            default:
+            {
+               break;
+            }
+         } // switch( mess.getGet4V10R32SlType() )
          break;
       } // case get4v1x::GET4_32B_SLCM
       case get4v1x::GET4_32B_ERROR: // => Error message
@@ -2300,12 +2782,25 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
          if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
             return;
 
+         // If debug mode, print the message
+         if( kTRUE == fbDebug )
+         {
+            LOG(INFO) <<Form(" TS  #%12llu ", fulTsNb);
+            mess.printDataLog();
+         } // if( kTRUE == fbDebug )
+
          // Count error messages per ROC
          fvhRocErrorCntEvo[cRocId]->Fill(
                ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
                  ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
                 *get4v1x::kdEpochInPs )
                *(1e-12) ); // Time since start in s
+         if( 0x11 <= uErrorType && uErrorType <= 0x13 )
+            fvhRocTotErrorCntEvo[cRocId]->Fill(
+                  ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
+                    ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
+                   *get4v1x::kdEpochInPs )
+                  *(1e-12) ); // Time since start in s
 
          fvhGet4ErrorCntEvo[uChipFullId]->Fill(
                   ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
@@ -2335,7 +2830,7 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
          {
             case get4v1x::GET4_V1X_ERR_READ_INIT:
                fhGet4ChanErrors->Fill( dFullChId, 0);
-               LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_Get4v1 => Readout Init!"
+               LOG(INFO)<<"CbmGet4FastMonitor::MonitorMessage_Get4v1 => Readout Init!"
                         <<" ChipId: "<<Form("%02u", cChipId)
                         <<" RocId: " <<Form("%02u", cRocId)
                         <<" TS: " <<fulTsNb<<FairLogger::endl;
@@ -2553,798 +3048,9 @@ void CbmTSUnpackGet4v1x::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
    } // switch( cMessType )
 
 }
-*/
 //**********************************************/
 
-//************ Processing functions ************/
-void CbmTSUnpackGet4v1x::ProcessMessage_epoch(  get4v1x::Message mess, uint16_t EqID)
-{
-   // ROC epoch message: 250 MHz clock for now
-   // TODO: check compatibility when ROC clock changed to 200 MHz
-   uint8_t  cRocId    = mess.getRocNumber();
-   LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_epoch => ROC Epoch: EqId "
-               <<EqID<<" roc "
-               <<cRocId<<FairLogger::endl;
-
-   // Epoch counter overflow book keeping
-   if( (get4v1x::kulMainEpochCycleSz - 2) < fvuCurrEpoch[cRocId] &&
-       mess.getEpochNumber() < 2  )
-      fvuCurrEpochCycle[cRocId]++;
-
-   fvuCurrEpoch[cRocId] = mess.getEpochNumber();
-}
-void CbmTSUnpackGet4v1x::ProcessMessage_sync(   get4v1x::Message mess, uint16_t EqID)
-{
-   // ROC sync message: TS in 250 MHz clock for now
-   // TODO: check compatibility when ROC clock changed to 200 MHz
-   uint8_t  cRocId    = mess.getRocNumber();
-   fhRocSyncTypePerRoc->Fill( cRocId, mess.getSyncChNum() );
-
-   LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_sync => ROC Sync: EqId "
-               <<EqID<<" roc "
-               <<cRocId<<FairLogger::endl;
-}
-void CbmTSUnpackGet4v1x::ProcessMessage_aux(    get4v1x::Message mess, uint16_t EqID)
-{
-   // ROC aux message: TS in 250 MHz clock for now
-   // TODO: check compatibility when ROC clock changed to 200 MHz
-   uint8_t  cRocId    = mess.getRocNumber();
-   fhRocSyncTypePerRoc->Fill( cRocId, mess.getSyncChNum() );
-
-   LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_aux => ROC Aux: EqId "
-               <<EqID<<" roc "
-               <<cRocId<<FairLogger::endl;
-}
-void CbmTSUnpackGet4v1x::ProcessMessage_epoch2( get4v1x::Message mess, uint16_t EqID)
-{
-   // GET4 v1.x epoch message (24b only for now)
-   // TODO: check compatibility when 32b format without hack ready
-   uint8_t  cRocId    = mess.getRocNumber();
-   uint8_t  cChipId   = mess.getEpoch2ChipNumber();
-   uint32_t uChipFullId = cChipId + get4v1x::kuMaxGet4PerRoc*cRocId;
-
-   if( kTRUE == fbVerbose )
-      LOG(INFO)<<"CbmTSUnpackGet4v1x::ProcessMessage_epoch2 => Found a GET4 24b message: ignore it"
-               <<FairLogger::endl;
-
-   LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_epoch2 => GET4 Epoch2: EqId "
-               <<EqID<<" roc "
-               <<cRocId<<FairLogger::endl;
-
-   // Reject data of chips above defined limit to avoid overflow/seg fault
-   if( fuNbGet4 <= uChipFullId )
-   {
-      if( kTRUE == fbVerbose )
-         LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_epoch2 => Ignored message with ChipId above limit!"
-                  <<" ChipId: "<<cChipId
-                  <<" RocId: " <<cRocId
-                  <<" Limit: " <<fuNbGet4<<FairLogger::endl;
-      return;
-   } // if( fuNbGet4 <= cChipId + kuMaxGet4PerRoc*mess.getRocNumber() )
-
-   // Reject data of Inactive chips
-   if( kFALSE == fvbActiveChips[uChipFullId])
-   {
-      if( kTRUE == fbVerbose )
-         LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_epoch2 => Ignored message with Inactive Chip!"
-                  <<" ChipId: "<<cChipId
-                  <<" RocId: " <<cRocId <<FairLogger::endl;
-      return;
-   } // if( kFALSE == fvbActiveChips[uChipFullId])
-
-   // As long as the 1st epoch with sync flag after SYNC DLM is found,
-   // consider data as not good
-   if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
-   {
-      if( 1 == mess.getEpoch2Sync() )
-      {
-         fvbGet4WaitFirstSync[uChipFullId] = kFALSE;
-
-         LOG(INFO) << "First SYNC Epoch after DLM in chip "
-                   <<Form("%3u: ", uChipFullId)
-                   <<Form(" EP #%6u", mess.getEpoch2Number() )
-                   <<Form(" TS #%12llu", fulTsNb)
-                   <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
-                   <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
-                   <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
-                   << FairLogger::endl;
-      } // if( 1 == mess.getEpoch2Sync() )
-         else return;
-   } // if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
-
-   // Count epoch messages per chip
-   fhMessTypePerGet4->Fill( uChipFullId, get4v1x::GET4_32B_EPOCH);
-
-   if( fvuCurrEpoch2[uChipFullId] +1 != mess.getEpoch2Number() &&
-         0 != fvuCurrEpoch2[uChipFullId] )
-   {
-      Int_t iEpJump = mess.getEpoch2Number();
-      iEpJump      -= fvuCurrEpoch2[uChipFullId];
-      LOG(INFO) << "Epoch nb jump in chip "
-                 <<Form("%3u: ", uChipFullId)
-                 << Form(" %3d (%6u -> %6u)", iEpJump, fvuCurrEpoch2[uChipFullId],
-                                         mess.getEpoch2Number() )
-                 <<Form(" TS #%12llu", fulTsNb)
-                 <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
-                 <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
-                 <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
-                 << FairLogger::endl;
-
-      fhGet4EpochJumps->Fill(uChipFullId, iEpJump);
-   } // if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
-
-   // Epoch counter overflow book keeping
-   if( (get4v1x::kul24bGet4EpochCycleSz - 2) < fvuCurrEpoch2[uChipFullId] &&
-       mess.getEpoch2Number() < 2  )
-      fvuCurrEpoch2Cycle[uChipFullId]++;
-
-   fvuCurrEpoch2[uChipFullId] = mess.getEpoch2Number();
-
-   // Monitoring of data Time evolution
-   fvhRocEpochCntEvo[cRocId]->Fill(
-         ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-          ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-         *get4v1x::kdEpochInPs*(1e-12) ); // Time since start in s
-/*
-   fvhGet4EpochCntEvo[uChipFullId]->Fill(
-            ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-              ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-             *get4v1x::kdEpochInPs*(1e-12) ); // Time since start in s
-   if( uChipFullId < kuNbTdcMappedDet )
-      if( kiTdcDetMap[uChipFullId] < kiNbDet )
-         fvhDetEpochCntEvo[ kiTdcDetMap[uChipFullId] ]->Fill(
-             ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-              ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-             *get4v1x::kdEpochInPs*(1e-12) ); // Time since start in s
-*/
-   if( 1 == mess.getEpoch2Sync() )
-   {
-      fhGet4EpochFlags->Fill(uChipFullId, 0);
-      fhGet4EpochSyncDist->Fill( uChipFullId, fvuCurrEpoch2[uChipFullId] % get4v1x::kuSyncCycleSzGet4 );
-   } // if( 1 == mess.getEpoch2Sync() )
-
-   if( 1 == mess.getEpoch2EpochMissmatch() )
-   {
-      fhGet4EpochFlags->Fill(uChipFullId, 1);
-      LOG(INFO) << "Epoch missmatch in chip "
-                <<Form("%3u: ", uChipFullId)
-                <<Form(" EP #%6u", mess.getEpoch2Number() )
-                <<Form(" TS #%12llu", fulTsNb)
-                <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
-                <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
-                <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
-                << FairLogger::endl;
-   } // if( 1 == mess.getEpoch2EpochMissmatch() )
-   if( 1 == mess.getEpoch2EpochLost() )
-   {
-      fhGet4EpochFlags->Fill(uChipFullId, 2);
-      LOG(INFO) << "Epoch loss in chip      "
-                <<Form("%3u: ", uChipFullId)
-                <<Form(" EP #%6u", mess.getEpoch2Number() )
-                <<Form(" TS #%12llu", fulTsNb)
-                <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
-                <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
-                <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
-                << FairLogger::endl;
-
-      fvhRocEpochLossCntEvo[cRocId]->Fill(
-            ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-              ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-            *get4v1x::kdEpochInPs*(1e-12) ); // Time since start in s
-      fvhGet4EpochLossCntEvo[uChipFullId]->Fill(
-               ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                 ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-               *get4v1x::kdEpochInPs*(1e-12) ); // Time since start in s
-      if( uChipFullId < kuNbTdcMappedDet )
-         if( kiTdcDetMap[uChipFullId] < kiNbDet )
-            fvhDetEpochLossCntEvo[ kiTdcDetMap[uChipFullId] ]->Fill(
-                ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                 ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-                *get4v1x::kdEpochInPs*(1e-12) ); // Time since start in s
-   } // if( 1 == mess.getEpoch2EpochLost() )
-   if( 1 == mess.getEpoch2DataLost() )
-   {
-      fhGet4EpochFlags->Fill(uChipFullId, 3);
-      LOG(INFO) << "Data Loss in chip       "
-                <<Form("%3u: ", uChipFullId)
-                <<Form(" EP #%6u", mess.getEpoch2Number() )
-                <<Form(" TS #%12llu", fulTsNb)
-                <<Form(" MS #%5llu/%5lu", fulMsNb, fsMaxMsNb)
-                <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
-                <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
-                << FairLogger::endl;
-
-      fvhRocDataLossCntEvo[cRocId]->Fill(
-            ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-              ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-            *get4v1x::kdEpochInPs*(1e-12) ); // Time since start in s
-      fvhGet4DataLossCntEvo[uChipFullId]->Fill(
-               ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                 ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-               *get4v1x::kdEpochInPs*(1e-12) ); // Time since start in s
-      if( uChipFullId < kuNbTdcMappedDet )
-         if( kiTdcDetMap[uChipFullId] < kiNbDet )
-            fvhDetDataLossCntEvo[ kiTdcDetMap[uChipFullId] ]->Fill(
-                ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                 ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-                *get4v1x::kdEpochInPs*(1e-12) ); // Time since start in s
-   } // if( 1 == mess.getEpoch2DataLost() )
-
-   // TODO: real processing ?
-   // For now do nothing to go faster
-}
-void CbmTSUnpackGet4v1x::ProcessMessage_get4(   get4v1x::Message mess, uint16_t EqID)
-{
-   // GET4 v1.x data message (24b only for now)
-   // TODO: check compatibility when 32b format without hack ready
-   uint8_t  cRocId    = mess.getRocNumber();
-   if( kTRUE == fbVerbose )
-      LOG(DEBUG)<<"CbmTSUnpackGet4v1x::ProcessMessage_get4   => Found a GET4 24b message: ignore it"
-               <<FairLogger::endl;
-
-   LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_get4 => GET4 Data: EqId "
-               <<EqID<<" roc "
-               <<cRocId<<FairLogger::endl;
-
-   uint8_t  cChipId   = mess.getGet4Number();
-   UInt_t uChipFullId = cChipId + get4v1x::kuMaxGet4PerRoc*cRocId;
-   UInt_t uFullChId =
-         get4v1x::kuChanPerGet4*( uChipFullId )
-         + mess.getGet4ChNum();
-   UInt_t uTimeStamp = mess.getGet4Ts();
-
-   // Reject data of chips above defined limit to avoid overflow/seg fault
-   if( fuNbGet4 <= uChipFullId )
-   {
-      if( kTRUE == fbVerbose )
-         LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_get4 => Ignored message with ChipId above limit!"
-                  <<" ChipId: "<<cChipId
-                  <<" RocId: " <<cRocId
-                  <<" Limit: " <<fuNbGet4<<FairLogger::endl;
-      return;
-   } // if( fuNbGet4 <= cChipId + kuMaxGet4PerRoc*mess.getRocNumber() )
-
-   // Reject data of Inactive chips
-   if( kFALSE == fvbActiveChips[uChipFullId])
-   {
-      if( kTRUE == fbVerbose )
-         LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_get4 => Ignored message with Inactive Chip!"
-                  <<" ChipId: "<<cChipId
-                  <<" RocId: " <<cRocId <<FairLogger::endl;
-      return;
-   } // if( kFALSE == fvbActiveChips[uChipFullId])
-
-   // As long as the 1st epoch with sync flag after SYNC DLM is found,
-   // consider data as not good
-   if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
-      return;
-
-   fvhRocDataCntEvo[cRocId]->Fill(
-            ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-              ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-             *get4v1x::kdEpochInPs
-             + uTimeStamp*get4v1x::kdBinSize )
-            *(1e-12) ); // Time since start in s
-   fvhGet4DataCntEvo[uChipFullId]->Fill(
-            ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-              ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-             *get4v1x::kdEpochInPs
-             + uTimeStamp*get4v1x::kdBinSize )
-            *(1e-12) ); // Time since start in s
-   fvhGet4ChDataCntEvo[uChipFullId]->Fill( mess.getGet4ChNum(),
-            ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-              ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-             *get4v1x::kdEpochInPs
-             + uTimeStamp*get4v1x::kdBinSize )
-            *(1e-12) ); // Time since start in s
-   if( uChipFullId < kuNbTdcMappedDet )
-      if( kiTdcDetMap[uChipFullId] < kiNbDet )
-         fvhDetDataCntEvo[ kiTdcDetMap[uChipFullId] ]->Fill(
-            ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-              ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-             *get4v1x::kdEpochInPs
-             + uTimeStamp*get4v1x::kdBinSize )
-            *(1e-12) ); // Time since start in s
-
-   // Count data messages per chip
-   fhMessTypePerGet4->Fill( uChipFullId, get4v1x::GET4_32B_DATA);
-
-   if( kTRUE == fbEnaCalibOutput )
-      fvhFineTime[ uChipFullId ][ mess.getGet4ChNum() ]->Fill( mess.getGet4FineTs() );
-
-   // TODO: real processing ?
-   // For now do nothing to go faster
-}
-void CbmTSUnpackGet4v1x::ProcessMessage_sys(    get4v1x::Message mess, uint16_t EqID)
-{
-   uint8_t  cRocId    = mess.getRocNumber();
-   LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::MonitorMessage_sys => System message: EqId "
-               <<EqID<<" roc "
-               <<cRocId<<FairLogger::endl;
-
-   if( mess.getSysMesType() < get4v1x::SYSMSG_GET4V1_32BIT_0 )
-      fhSysMessTypePerRoc->Fill( cRocId, mess.getSysMesType() );
-
-   switch( mess.getSysMesType() )
-   {
-      case get4v1x::SYSMSG_DAQ_START:
-      {
-         break;
-      } // case get4v1x::SYSMSG_DAQ_START
-      case get4v1x::SYSMSG_DAQ_FINISH:
-      {
-         break;
-      } // case get4v1x::SYSMSG_DAQ_FINISH
-      case get4v1x::SYSMSG_NX_PARITY:
-      case get4v1x::SYSMSG_ADC:
-      case get4v1x::SYSMSG_PCTIME:
-      {
-         // NXYTER related => don't care in this unpacker
-         break;
-      } // case get4v1x::SYSMSG_NX_PARITY
-      case get4v1x::SYSMSG_SYNC_PARITY:
-      {
-         break;
-      } // case get4v1x::SYSMSG_SYNC_PARITY
-      case get4v1x::SYSMSG_DAQ_RESUME:
-      {
-         break;
-      } // case get4v1x::SYSMSG_DAQ_RESUME
-      case get4v1x::SYSMSG_FIFO_RESET:
-      {
-         break;
-      } // case get4v1x::SYSMSG_FIFO_RESET
-      case get4v1x::SYSMSG_USER:
-      {
-         if( get4v1x::SYSMSG_USER_ROCFEET_SYNC == mess.getSysMesData() )
-         {
-            LOG(INFO)<<"CbmTSUnpackGet4v1x::MonitorMessage_sys => SYNC DLM!"
-                     <<" RocId: " << Form("%02u", cRocId)
-                     <<Form(" TS  #%12llu", fulTsNb)
-                     <<Form(" MS  #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
-                     <<Form(" OF  #%5u/%5u", fuOffset, fuMaxOffset)
-                     <<Form(" LO  #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
-                     <<FairLogger::endl;
-            fvbRocFeetSyncStart[cRocId] = kTRUE;
-         } // if( get4v1x::SYSMSG_USER_ROCFEET_SYNC == mess.getSysMesData() )
-         break;
-      } // case get4v1x::SYSMSG_USER
-      case get4v1x::SYSMSG_PACKETLOST:
-      {
-         break;
-      } // case get4v1x::SYSMSG_PACKETLOST
-      case get4v1x::SYSMSG_GET4_EVENT:
-      {
-         // GET4 v1.x error message (24b only for now)
-         // TODO: check compatibility when 32b format without hack ready
-         uint8_t  cChipId   = mess.getGet4V10R24ErrorChip();
-         uint32_t uChipFullId = cChipId + get4v1x::kuMaxGet4PerRoc*cRocId;
-         uint8_t  uErrorType= mess.getGet4V10R24ErrorData();
-
-         // Count error messages per ROC
-         fvhRocErrorCntEvo[cRocId]->Fill(
-               ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                 ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-                *get4v1x::kdEpochInPs )
-               *(1e-12) ); // Time since start in s
-
-         // Count error messages per chip
-         fhMessTypePerGet4->Fill( uChipFullId, get4v1x::GET4_32B_ERROR);
-         fvhGet4ErrorCntEvo[uChipFullId]->Fill(
-                  ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                    ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-                   *get4v1x::kdEpochInPs)
-                  *(1e-12) ); // Time since start in s
-
-         if( ( get4v1x::GET4_V1X_ERR_EP < uErrorType &&
-               uErrorType < get4v1x::GET4_V1X_ERR_TOK_RING_ST ) )
-            fvhGet4ChErrorCntEvo[uChipFullId]->Fill( mess.getGet4V10R24ErrorChan(),
-                     ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                       ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-                      *get4v1x::kdEpochInPs)
-                     *(1e-12) ); // Time since start in s
-
-         if( uChipFullId < kuNbTdcMappedDet )
-            if( kiTdcDetMap[uChipFullId] < kiNbDet )
-               fvhDetErrorCntEvo[ kiTdcDetMap[uChipFullId] ]->Fill(
-                  ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                    ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-                   *get4v1x::kdEpochInPs)
-                  *(1e-12) ); // Time since start in s
-         break;
-      } // case get4v1x::SYSMSG_GET4_EVENT
-      case get4v1x::SYSMSG_CLOSYSYNC_ERROR:
-      {
-         // GET4 v1.x error message (24b only for now)
-         // TODO: check compatibility when 32b format without hack ready
-         break;
-      } // case get4v1x::SYSMSG_CLOSYSYNC_ERROR
-      case get4v1x::SYSMSG_TS156_SYNC:
-      {
-         break;
-      } // case get4v1x::SYSMSG_TS156_SYNC
-      case get4v1x::SYSMSG_GET4V1_32BIT_0:
-      case get4v1x::SYSMSG_GET4V1_32BIT_1:
-      case get4v1x::SYSMSG_GET4V1_32BIT_2:
-      case get4v1x::SYSMSG_GET4V1_32BIT_3:
-      case get4v1x::SYSMSG_GET4V1_32BIT_4:
-      case get4v1x::SYSMSG_GET4V1_32BIT_5:
-      case get4v1x::SYSMSG_GET4V1_32BIT_6:
-      case get4v1x::SYSMSG_GET4V1_32BIT_7:
-      case get4v1x::SYSMSG_GET4V1_32BIT_8:
-      case get4v1x::SYSMSG_GET4V1_32BIT_9:
-      case get4v1x::SYSMSG_GET4V1_32BIT_10:
-      case get4v1x::SYSMSG_GET4V1_32BIT_11:
-      case get4v1x::SYSMSG_GET4V1_32BIT_12:
-      case get4v1x::SYSMSG_GET4V1_32BIT_13:
-      case get4v1x::SYSMSG_GET4V1_32BIT_14:
-      case get4v1x::SYSMSG_GET4V1_32BIT_15:
-      {
-         // Ignore all messages before RocFeet system SYNC
-         if (kFALSE == fvbRocFeetSyncStart[cRocId] )
-            break;
-
-         // GET4 v1.x 32b raw message using hack
-         fhMessageTypePerRoc->Fill( cRocId, 15 );
-         fhSysMessTypePerRoc->Fill( cRocId, 15 );
-
-         ProcessMessage_Get4v1( mess, EqID);
-         break;
-      } // case get4v1x::SYSMSG_TS156_SYNC
-      default:
-      {
-         if( kTRUE == fbVerbose )
-            LOG(WARNING)<<"CbmTSUnpackGet4v1x::ProcessMessage_sys => Unknown sysMess type ignored: "
-                        <<mess.getSysMesType()<<FairLogger::endl;
-         break;
-      } // default:
-   } // switch( mess.getSysMesType() )
-}
-void CbmTSUnpackGet4v1x::ProcessMessage_Get4v1( get4v1x::Message mess, uint16_t EqID)
-{
-   // GET4 v1.x 32b raw message using hack
-   uint8_t  cRocId    = mess.getRocNumber();
-   uint8_t  cChipId   = mess.getGet4V10R32ChipId();
-   uint32_t uChipFullId = cChipId + get4v1x::kuMaxGet4PerRoc*cRocId;
-   uint8_t  cMessType = mess.getGet4V10R32MessageType();
-
-   LOG(DEBUG3)<<"CbmTSUnpackGet4v1x::ProcessMessage_Get4v1 => 32b GET4 message: EqId "
-               <<EqID<<" roc "
-               <<cRocId<<FairLogger::endl;
-
-   // Reject data of chips above defined limit to avoid overflow/seg fault
-   if( fuNbGet4 <= uChipFullId )
-   {
-      if( kTRUE == fbVerbose )
-         LOG(INFO)<<"CbmTSUnpackGet4v1x::ProcessMessage_Get4v1 => Ignored message with ChipId above limit!"
-                  <<" ChipId: "<<cChipId
-                  <<" RocId: " <<cRocId
-                  <<" Limit: " <<fuNbGet4<<FairLogger::endl;
-      return;
-   } // if( fuNbGet4 <= cChipId + kuMaxGet4PerRoc*mess.getRocNumber() )
-
-   // Reject data of Inactive chips
-   if( kFALSE == fvbActiveChips[uChipFullId])
-   {
-      if( kTRUE == fbVerbose )
-         LOG(INFO)<<"CbmTSUnpackGet4v1x::ProcessMessage_Get4v1 => Ignored message with Inactive Chip!"
-                  <<" ChipId: "<<cChipId
-                  <<" RocId: " <<cRocId <<FairLogger::endl;
-      return;
-   } // if( kFALSE == fvbActiveChips[uChipFullId])
-
-   // Count epoch messages per chip
-   fhMessTypePerGet4->Fill( uChipFullId, cMessType);
-
-   switch( cMessType )
-   {
-      case get4v1x::GET4_32B_EPOCH: // => Epoch message
-      {
-
-         // As long as the 1st epoch with sync flag after SYNC DLM is found,
-         // consider data as not good
-         if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
-         {
-            if( 1 == mess.getGet4V10R32SyncFlag() )
-            {
-               fvbGet4WaitFirstSync[uChipFullId] = kFALSE;
-
-               LOG(INFO) << "First SYNC Epoch after DLM in chip "
-                         <<Form("%3u: ", uChipFullId)
-                         <<Form(" EP #%6u", mess.getGet4V10R32EpochNumber() )
-                         <<Form(" TS #%12llu", fulTsNb)
-                         <<Form(" MS #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
-                         <<Form(" OF #%5u/%5u", fuOffset, fuMaxOffset)
-                         <<Form(" LO #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
-                         << FairLogger::endl;
-            } // if( 1 == mess.getGet4V10R32SyncFlag() )
-               else return;
-         } // if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
-
-         if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber() &&
-               0 != fvuCurrEpoch2[uChipFullId] )
-         {
-            Int_t iEpJump = mess.getGet4V10R32EpochNumber();
-            iEpJump      -= fvuCurrEpoch2[uChipFullId];
-            LOG(DEBUG) << "Epoch nb jump in chip "
-                       <<Form("%3u: ", uChipFullId)
-                       << Form(" %3d (%6u -> %6u)", iEpJump, fvuCurrEpoch2[uChipFullId],
-                                                    mess.getGet4V10R32EpochNumber() )
-                       <<Form(" TS  #%12llu", fulTsNb)
-                       <<Form(" MS  #%5llu/%5lu", fulMsNb, static_cast<ULong_t>(fsMaxMsNb))
-                       <<Form(" OF  #%5u/%5u", fuOffset, fuMaxOffset)
-                       <<Form(" LO  #%5u/%5u", fuLocalOffset, fuMaxLocalOffset)
-                       << FairLogger::endl;
-
-            fhGet4EpochJumps->Fill(uChipFullId, iEpJump);
-         } // if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
-
-         // Epoch counter overflow book keeping
-         if( (get4v1x::kulGet4EpochCycleSz - 2) < fvuCurrEpoch2[uChipFullId] &&
-             mess.getEpoch2Number() < 2  )
-            fvuCurrEpoch2Cycle[uChipFullId]++;
-
-         fvuCurrEpoch2[uChipFullId] = mess.getGet4V10R32EpochNumber();
-
-         fvhRocEpochCntEvo[cRocId]->Fill(
-                  ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                    ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-                  *get4v1x::kdEpochInPs*(1e-12) ); // Time since start in s
-
-         if( 1 == mess.getGet4V10R32SyncFlag() )
-         {
-            fhGet4EpochFlags->Fill(uChipFullId , 0);
-            fhGet4EpochSyncDist->Fill( uChipFullId, fvuCurrEpoch2[uChipFullId] % get4v1x::kuSyncCycleSzGet4 );
-         } // if( 1 == mess.getGet4V10R32SyncFlag() )
-
-         // Check other active chips current epoch and close all epochs which all chips passed
-         fvuCurrEpochBuffer[uChipFullId] = static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-               ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24);
-         ULong64_t uLowerCurrentReadyEp = fvuCurrEpochBuffer[uChipFullId];
-//         LOG(DEBUG2)<<"CbmTSUnpackGet4v1x::MonitorMessage_Get4v1 => Check close "
-//               << uLowerCurrentReadyEp << " => ";
-         for( UInt_t uChipScan = 0; uChipScan < fuNbGet4; uChipScan++)
-         {
-//            LOG(DEBUG2)<<"( "<<fvbActiveChips[uChipScan]<<", "<<fvuCurrEpochBuffer[uChipScan]<<") ";
-            if( kTRUE == fvbActiveChips[uChipScan] &&
-                  fvuCurrEpochBuffer[uChipScan] < uLowerCurrentReadyEp )
-               uLowerCurrentReadyEp = fvuCurrEpochBuffer[uChipScan];
-         } // for( UInt_t uChipScan = 0; uChipScan < fuNbGet4; uChipScan++)
-
-         //
-
-//         LOG(INFO)<<" => ( "<<fuLastEpBufferReady<<", "<<uLowerCurrentReadyEp<<") "<<FairLogger::endl;
-
-         // The map is ordered so we can just loop over
-         if( fuLastEpBufferReady < uLowerCurrentReadyEp )
-         {
-//            for( std::map<ULong64_t, Bool_t>::iterator it= fmsOrderedEpochsBuffStat.find(fuLastEpBufferReady);
-            // Check to avoid starting at an entry already removed in previous loops
-            auto it_Start = fmsOrderedEpochsBuffStat.find(fuLastEpBufferReady);
-            if( fmsOrderedEpochsBuffStat.end() == it_Start )
-               it_Start = fmsOrderedEpochsBuffStat.begin();
-
-            for( auto it= it_Start;
-                 it!=fmsOrderedEpochsBuffStat.find(uLowerCurrentReadyEp);
-                 ++it)
-               it->second = kTRUE;
-            auto it = fmsOrderedEpochsBuffStat.find(uLowerCurrentReadyEp);
-            --it; // Go back to previous element
-            fuLastEpBufferReady = it->first;
-         }
-
-         // Start new buffer for this epoch if it does not already exist
-         if( fmsOrderedEpochsData.end() == fmsOrderedEpochsData.find(fvuCurrEpochBuffer[uChipFullId]) )
-         {
-            // new entry in map with empty multiset
-/*
-            fmsOrderedEpochsData.insert( fmsOrderedEpochsData.end(),
-                  std::pair< ULong64_t, std::multiset< get4v1x::FullMessage > >(
-                        fvuCurrEpochBuffer[uChipFullId],
-                        std::multiset< get4v1x::FullMessage >() ) );
-*/
-            std::multiset< get4v1x::FullMessage > * newEpochBuff = new std::multiset< get4v1x::FullMessage >();
-            fmsOrderedEpochsData.insert( fmsOrderedEpochsData.end(),
-                  std::pair< ULong64_t, std::multiset< get4v1x::FullMessage >* >(
-                        fvuCurrEpochBuffer[uChipFullId], newEpochBuff) );
-
-            // new entry in map with kFALSE flag
-            fmsOrderedEpochsBuffStat.insert( fmsOrderedEpochsBuffStat.end(),
-                  std::pair<ULong64_t, Bool_t>(fvuCurrEpochBuffer[uChipFullId], kFALSE) );
-         } // if( fmsOrderedEpochsData.end() == fmsOrderedEpochsData.find(fvuCurrEpochBuffer[uChipFullId]) )
-
-         fvuCurrEpochBufferIt[uChipFullId] = fmsOrderedEpochsData.find(fvuCurrEpochBuffer[uChipFullId]);
-
-         break;
-      } // case get4v1x::GET4_32B_EPOCH
-      case get4v1x::GET4_32B_SLCM:  // => Slow control
-      {
-         Double_t dFullChId =
-               get4v1x::kuChanPerGet4*2*( uChipFullId )
-               + mess.getGet4V10R32SlChan()
-               + 0.5*mess.getGet4V10R32SlEdge();
-
-         // As long as the 1st epoch with sync flag after SYNC DLM is found,
-         // consider data as not good
-         if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
-            return;
-
-         fhGet4ChanSlowContM->Fill( dFullChId, mess.getGet4V10R32SlType() );
-         break;
-      } // case get4v1x::GET4_32B_SLCM
-      case get4v1x::GET4_32B_ERROR: // => Error message
-      {
-         Double_t dFullChId =
-               get4v1x::kuChanPerGet4*2*( uChipFullId )
-               + mess.getGet4V10R32ErrorChan()
-               + 0.5*mess.getGet4V10R32ErrorEdge();
-         UInt_t   uErrorType = mess.getGet4V10R32ErrorData();
-
-         // As long as the 1st epoch with sync flag after SYNC DLM is found,
-         // consider data as not good
-         if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
-            return;
-
-         // Count error messages per ROC
-         fvhRocErrorCntEvo[cRocId]->Fill(
-               ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                 ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-                *get4v1x::kdEpochInPs )
-               *(1e-12) ); // Time since start in s
-
-         fvhGet4ErrorCntEvo[uChipFullId]->Fill(
-                  ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                    ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-                   *get4v1x::kdEpochInPs)
-                  *(1e-12) ); // Time since start in s
-
-         if( ( get4v1x::GET4_V1X_ERR_EP < uErrorType &&
-               uErrorType < get4v1x::GET4_V1X_ERR_TOK_RING_ST ) ||
-               get4v1x::GET4_V1X_ERR_TOT_OVERWRT == uErrorType ||
-               get4v1x::GET4_V1X_ERR_TOT_RANGE == uErrorType )
-            fvhGet4ChErrorCntEvo[uChipFullId]->Fill( mess.getGet4V10R32ErrorChan(),
-                  ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                    ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-                   *get4v1x::kdEpochInPs)
-                  *(1e-12) ); // Time since start in s
-
-         if( uChipFullId < kuNbTdcMappedDet )
-            if( kiTdcDetMap[uChipFullId] < kiNbDet )
-               fvhDetErrorCntEvo[ kiTdcDetMap[uChipFullId] ]->Fill(
-                  ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                    ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-                   *get4v1x::kdEpochInPs)
-                  *(1e-12) ); // Time since start in s
-
-         switch( uErrorType )
-         {
-            case get4v1x::GET4_V1X_ERR_READ_INIT:
-               fhGet4ChanErrors->Fill( dFullChId, 0);
-               LOG(DEBUG)<<"CbmTSUnpackGet4v1x::MonitorMessage_Get4v1 => Readout Init!"
-                        <<" ChipId: "<<Form("%02u", cChipId)
-                        <<" RocId: " <<Form("%02u", cRocId)
-                        <<" TS: " <<fulTsNb<<FairLogger::endl;
-               break;
-            case get4v1x::GET4_V1X_ERR_SYNC:
-               fhGet4ChanErrors->Fill( dFullChId, 1);
-               break;
-            case get4v1x::GET4_V1X_ERR_EP_CNT_SYNC:
-               fhGet4ChanErrors->Fill( dFullChId, 2);
-               break;
-            case get4v1x::GET4_V1X_ERR_EP:
-               fhGet4ChanErrors->Fill( dFullChId, 3);
-               break;
-            case get4v1x::GET4_V1X_ERR_FIFO_WRITE:
-               fhGet4ChanErrors->Fill( dFullChId, 4);
-               break;
-            case get4v1x::GET4_V1X_ERR_LOST_EVT:
-               fhGet4ChanErrors->Fill( dFullChId, 5);
-               break;
-            case get4v1x::GET4_V1X_ERR_CHAN_STATE:
-               fhGet4ChanErrors->Fill( dFullChId, 6);
-               break;
-            case get4v1x::GET4_V1X_ERR_TOK_RING_ST:
-               fhGet4ChanErrors->Fill( dFullChId, 7);
-               break;
-            case get4v1x::GET4_V1X_ERR_TOKEN:
-               fhGet4ChanErrors->Fill( dFullChId, 8);
-               break;
-            case get4v1x::GET4_V1X_ERR_READOUT_ERR:
-               fhGet4ChanErrors->Fill( dFullChId, 9);
-               break;
-            case get4v1x::GET4_V1X_ERR_SPI:
-               fhGet4ChanErrors->Fill( dFullChId, 10);
-               break;
-            case get4v1x::GET4_V1X_ERR_DLL_LOCK:
-               fhGet4ChanErrors->Fill( dFullChId, 11);
-               break;
-            case get4v1x::GET4_V1X_ERR_DLL_RESET:
-               fhGet4ChanErrors->Fill( dFullChId, 12);
-               break;
-            case get4v1x::GET4_V1X_ERR_TOT_OVERWRT:
-               fhGet4ChanErrors->Fill( dFullChId, 13);
-               break;
-            case get4v1x::GET4_V1X_ERR_TOT_RANGE:
-               fhGet4ChanErrors->Fill( dFullChId, 14);
-               break;
-            case get4v1x::GET4_V1X_ERR_EVT_DISCARD:
-               fhGet4ChanErrors->Fill( dFullChId, 15);
-               break;
-            case get4v1x::GET4_V1X_ERR_UNKNOWN:
-               fhGet4ChanErrors->Fill( dFullChId, 16);
-               break;
-            default: // Corrupt error or not yet supported error
-               fhGet4ChanErrors->Fill( dFullChId, 17);
-               break;
-         } // switch( mess.getGet4V10R32ErrorData() )
-         break;
-      } // case get4v1x::GET4_32B_ERROR
-      case get4v1x::GET4_32B_DATA:  // => Hit Data
-      {
-         UInt_t uFullChId =
-               get4v1x::kuChanPerGet4*( uChipFullId )
-               + mess.getGet4V10R32HitChan();
-
-         // As long as the 1st epoch with sync flag after SYNC DLM is found,
-         // consider data as not good
-         if( kTRUE == fvbGet4WaitFirstSync[uChipFullId] )
-            return;
-
-         fvhRocDataCntEvo[cRocId]->Fill(
-                  ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                    ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-                   *get4v1x::kdEpochInPs
-                   + mess.getGet4V10R32HitTimeBin() *get4v1x::kdBinSize )
-                  *(1e-12) ); // Time since start in s
-         fvhGet4DataCntEvo[uChipFullId]->Fill(
-                  ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                    ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-                   *get4v1x::kdEpochInPs
-                   + mess.getGet4V10R32HitTimeBin() *get4v1x::kdBinSize )
-                  *(1e-12) ); // Time since start in s
-         fvhGet4ChDataCntEvo[uChipFullId]->Fill( mess.getGet4V10R32HitChan(),
-                  ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                    ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-                   *get4v1x::kdEpochInPs
-                   + mess.getGet4V10R32HitTimeBin() *get4v1x::kdBinSize )
-                  *(1e-12) ); // Time since start in s
-         if( uChipFullId < kuNbTdcMappedDet )
-            if( kiTdcDetMap[uChipFullId] < kiNbDet )
-               fvhDetDataCntEvo[ kiTdcDetMap[uChipFullId] ]->Fill(
-                  ( ( static_cast<ULong64_t>(fvuCurrEpoch2[uChipFullId]) +
-                    ( static_cast<ULong64_t>(fvuCurrEpoch2Cycle[uChipFullId]) << 24) )
-                   *get4v1x::kdEpochInPs
-                   + mess.getGet4V10R32HitTimeBin() *get4v1x::kdBinSize )
-                  *(1e-12) ); // Time since start in s
-
-         fhGet4ChanDataCount->Fill( uFullChId );
-         fhGet4ChanDllStatus->Fill( uFullChId, mess.getGet4V10R32HitDllFlag() );
-         fhGet4ChanTotMap->Fill(    uFullChId, mess.getGet4V10R32HitTot()
-                                               *get4v1x::kdTotBinSize/1000.0 );
-
-         LOG(DEBUG)<<"CbmTSUnpackGet4v1x::MonitorMessage_Get4v1 => Data!"
-                  <<" ChipId: "<<Form("%02u", cChipId)
-                  <<" RocId: " <<Form("%02u", cRocId)
-                  <<" TS: " <<fulTsNb<<FairLogger::endl;
-
-         if( kTRUE == fbEnaCalibOutput )
-            fvhFineTime[ uChipFullId ][ mess.getGet4V10R32HitChan() ]->Fill( mess.getGet4V10R32HitFt() );
-
-         // Save the message in the corresponding epoch vector
-         get4v1x::FullMessage fullMess( mess, fvuCurrEpochBuffer[uChipFullId] );
-//         std::map< ULong64_t, std::multiset< get4v1x::FullMessage > >::iterator it;
-//         auto it = fmsOrderedEpochsData.find( fvuCurrEpochBuffer[uChipFullId] );
-         auto it = fvuCurrEpochBufferIt[uChipFullId];
-//         (it->second).insert( (it->second).end(), fullMess ); // OLD
-         (it->second)->insert( (it->second)->end(), fullMess );
-
-         break;
-      } // case get4v1x::GET4_32B_DATA
-   } // switch( cMessType )
-}
-//**********************************************/
-
-Bool_t CbmTSUnpackGet4v1x::WriteCalibrationFile()
+Bool_t CbmGet4FastMonitor::WriteCalibrationFile()
 {
    TTimeStamp timeCurrent;
    TDirectory* oldDir = gDirectory;
@@ -3364,7 +3070,7 @@ Bool_t CbmTSUnpackGet4v1x::WriteCalibrationFile()
 
       if( 0 == uNbChan  )
       {
-         LOG(INFO)<<"CbmTSUnpackGet4v1x::WriteCalibrationFile Undefined tdc parameters for type ";
+         LOG(INFO)<<"CbmGet4FastMonitor::WriteCalibrationFile Undefined tdc parameters for type ";
          LOG(INFO)<<"get4"<<FairLogger::endl;
          LOG(INFO)<<" => No calib histo saving!"<<FairLogger::endl;
          return kFALSE;
@@ -3404,7 +3110,7 @@ Bool_t CbmTSUnpackGet4v1x::WriteCalibrationFile()
       LOG(INFO)<<"Parameter line: InitialCalibFilename: Text_t   "
                << (static_cast<TString>( sCalibOutFilename(0, sCalibOutFilename.Length() -2 ) ))<<FairLogger::endl;
    } // if( kTRUE == fileCalibrationOut->IsOpen() )
-      else LOG(WARNING)<<"CbmTSUnpackGet4v1x::WriteCalibrationFile => Unable to open root file "
+      else LOG(WARNING)<<"CbmGet4FastMonitor::WriteCalibrationFile => Unable to open root file "
                         <<sCalibOutFilename
                         <<" to save calibration data, please check settings"<<FairLogger::endl;
    gDirectory->Cd(oldDir->GetPath());
@@ -3412,4 +3118,4 @@ Bool_t CbmTSUnpackGet4v1x::WriteCalibrationFile()
    return kTRUE;
 }
 
-ClassImp(CbmTSUnpackGet4v1x)
+ClassImp(CbmGet4FastMonitor)

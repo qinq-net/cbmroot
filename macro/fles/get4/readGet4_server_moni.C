@@ -10,7 +10,7 @@
  */
 
 
-void readTsa_file_get4( Int_t nEvents = -1, TString inFile = "data/get4Test.tsa" )
+void readGet4_server_moni( Int_t nEvents = -1, TString inFile = "data/get4Test.tsa" )
 {
 
   // --- Specify input file name (this is just an example)
@@ -32,7 +32,7 @@ void readTsa_file_get4( Int_t nEvents = -1, TString inFile = "data/get4Test.tsa"
 
   // --- Set debug level
   gDebug = 0;
-  
+
   std::cout << std::endl;
   //std::cout << ">>> readTsa:  input file is " << inFile  << std::endl;
   std::cout << ">>> readTsa: output file is " << outFile << std::endl;
@@ -50,32 +50,27 @@ void readTsa_file_get4( Int_t nEvents = -1, TString inFile = "data/get4Test.tsa"
 //  CbmTSUnpackSpadic* spadic_unpacker = new CbmTSUnpackSpadic();
 
   // GET4 Unpacker
-  CbmTSUnpackGet4v1x* get4_unpacker = new CbmTSUnpackGet4v1x();
+  CbmGet4FastMonitor* get4_unpacker = new CbmGet4FastMonitor();
   get4_unpacker->SetRocNb(      2); // Min 1
   get4_unpacker->SetGet4Nb(    88); // Min 1
   get4_unpacker->SetMsOverlapTs(0); // Min 1
-  get4_unpacker->SetMode(       1); // 0 = debug, 1 = moni, 2 = unpack
+  get4_unpacker->SetMode(       1); // 0 = debug, 1 = moni
      // Disable unconnected chips
   for( UInt_t uChipIndex = 24; uChipIndex < 64; uChipIndex++)
      get4_unpacker->SetActiveGet4( uChipIndex, kFALSE );
   // Disable unread USTC RPC chips
   for( UInt_t uChipIndex = 80; uChipIndex < 88; uChipIndex++)
      get4_unpacker->SetActiveGet4( uChipIndex, kFALSE );
-  get4_unpacker->SetPulserMode( kFALSE ); // kTRUE = ON, kFALSE = OFF (default is ON)
-  get4_unpacker->SetPulserFee(   ); // 1 value (default is 0)
-  get4_unpacker->SetPulserChans(  0,  4,  8, 12,
-                                 16, 20, 24, 28,
-                                 32, 36, 40, 44,
-                                 48, 52, 56, 60); // 1-16 values (default is 0-15)
   get4_unpacker->SetOldReadoutSupp();
   get4_unpacker->SetMaxCoincDist(500.0);
 
   // --- Source task
   CbmFlibFileSourceNew* source = new CbmFlibFileSourceNew();
-  source->SetFileName(inFile);
+//  source->SetFileName(inFile);
 //  source->AddUnpacker(nxyter_unpacker, 0x10);
 //  source->AddUnpacker(spadic_unpacker, 0x40);
   source->AddUnpacker(get4_unpacker, 0x60);
+  source->SetHostName("cbmflib03");
 
   // --- Event header
 //  FairEventHeader* event = new CbmTbEvent();
@@ -119,7 +114,7 @@ void readTsa_file_get4( Int_t nEvents = -1, TString inFile = "data/get4Test.tsa"
   std::cout << ">>> readTsa: Macro finished successfully." << std::endl;
   std::cout << ">>> readTsa: Output file is " << outFile << std::endl;
   std::cout << ">>> readTsa: Real time " << rtime << " s, CPU time "
-  					<< ctime << " s" << std::endl;
+               << ctime << " s" << std::endl;
   std::cout << std::endl;
 
   /// --- Screen output for automatic tests

@@ -45,7 +45,7 @@ int SendSpi(CbmNet::ControlClient & conn, uint32_t nodeid,
    uint32_t uMaskOldMsbs;
    conn.Read( nodeid, ROC_GET4_TRANSMIT_MASK_LSBS, uMaskOldLsbs );
    conn.Read( nodeid, ROC_GET4_TRANSMIT_MASK_MSBS, uMaskOldMsbs );
-   printf("SendSpi: Restore Get4 chip mask %08X %08X\n", uMaskOldMsbs, uMaskOldLsbs);
+   printf("SendSpi: Save Get4 chip mask %08X %08X\n", uMaskOldMsbs, uMaskOldLsbs);
 
    // Send only to chosen get4
    uint32_t uMaskLsbs = 0x00000000;
@@ -119,6 +119,191 @@ int SetRocDef(CbmNet::ControlClient & conn, uint32_t nodeid)
    return conn.DoListSeq(nodeid, initList);
 }
 
+int SetGet4ChanEna(CbmNet::ControlClient & conn, uint32_t nodeid,
+                   uint32_t get4idx, uint32_t configBits = 0x0000000F )
+{
+   CbmNet::ListSeq initList;
+   int ret_val = 0;
+
+   // Read current chips mask
+   uint32_t uMaskOldLsbs;
+   uint32_t uMaskOldMsbs;
+   conn.Read( nodeid, ROC_GET4_TRANSMIT_MASK_LSBS, uMaskOldLsbs );
+   conn.Read( nodeid, ROC_GET4_TRANSMIT_MASK_MSBS, uMaskOldMsbs );
+//   printf("SetGet4ChanEna: Save Get4 chip mask %08X %08X\n", uMaskOldMsbs, uMaskOldLsbs);
+
+   // Send only to chosen get4
+   uint32_t uMaskLsbs = 0x00000000;
+   uint32_t uMaskMsbs = 0x00000000;
+   if( get4idx < 32 )
+   {
+      uMaskLsbs += 0x1 << get4idx;
+      uMaskMsbs = 0x00000000;
+   } // if( get4idx < 32 )
+      else if( get4idx < 64 )
+      {
+         uMaskLsbs = 0x00000000;
+         uMaskMsbs = 0x1 << (get4idx - 32);
+      } // else of if( get4idx < 32 )
+      else
+      {
+         printf("SetGet4ChanEna: Invalid get4 chip index (%u) or link stopping there\n", get4idx);
+         return 0;
+      }
+//   printf("SetGet4ChanEna: Get4 chip mask (index %u) %08X %08X\n", get4idx, uMaskMsbs, uMaskLsbs);
+   initList.AddWrite(ROC_GET4_TRANSMIT_MASK_LSBS, uMaskLsbs);
+   initList.AddWrite(ROC_GET4_TRANSMIT_MASK_MSBS, uMaskMsbs);
+
+
+   //# ROC_GET4_CMD_TO_GET4 => SCv3 test: disable bad channels
+   configBits = (~configBits) & 0x0000000F;
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_HIT_MASK             + configBits );
+
+   // Process the list of commands
+   ret_val = conn.DoListSeq(nodeid, initList);
+
+   // restore original chips mask
+//   printf("SetGet4ChanEna: Restore Get4 chip mask %08X %08X\n", uMaskOldMsbs, uMaskOldLsbs);
+   conn.Write( nodeid, ROC_GET4_TRANSMIT_MASK_LSBS, uMaskOldLsbs );
+   conn.Write( nodeid, ROC_GET4_TRANSMIT_MASK_MSBS, uMaskOldMsbs );
+
+   return ret_val;
+}
+
+int SetRocGet4ChanEna(CbmNet::ControlClient & conn, uint32_t nodeid,
+                      uint32_t configBitsLsbA = 0xFFFFFFFF,
+                      uint32_t configBitsLsbB = 0xFFFFFFFF,
+                      uint32_t configBitsLsbC = 0xFFFFFFFF,
+                      uint32_t configBitsLsbD = 0xFFFFFFFF,
+                      uint32_t configBitsMsbA = 0x00000000,
+                      uint32_t configBitsMsbB = 0x00000000,
+                      uint32_t configBitsMsbC = 0x00000000,
+                      uint32_t configBitsMsbD = 0x00000000 )
+{
+   int ret_val = 0;
+   // 4 channel per chip
+   // 8 chips per FEE-GET4
+   // 8 FEE-GET4 max per ROC firmware (registers)
+   // For now only 4 FEE-GET4 max per SYSCORE3
+   for( uint32_t uChip = 0; uChip < 8; uChip++ )
+   {
+      ret_val += SetGet4ChanEna(conn, nodeid, uChip,
+            (configBitsLsbA >> (4*uChip)) & 0x0000000F );
+      ret_val += SetGet4ChanEna(conn, nodeid, uChip +  8,
+            (configBitsLsbB >> (4*uChip)) & 0x0000000F );
+      ret_val += SetGet4ChanEna(conn, nodeid, uChip + 16,
+            (configBitsLsbC >> (4*uChip)) & 0x0000000F );
+      ret_val += SetGet4ChanEna(conn, nodeid, uChip + 24,
+            (configBitsLsbD >> (4*uChip)) & 0x0000000F );
+      /*
+      ret_val += SetGet4ChanEna(conn, nodeid, uChip + 32,
+            (configBitsMsbA >> (4*uChip)) & 0x0000000F );
+      ret_val += SetGet4ChanEna(conn, nodeid, uChip + 40,
+            (configBitsMsbB >> (4*uChip)) & 0x0000000F );
+      ret_val += SetGet4ChanEna(conn, nodeid, uChip + 48,
+            (configBitsMsbC >> (4*uChip)) & 0x0000000F );
+      ret_val += SetGet4ChanEna(conn, nodeid, uChip + 56,
+            (configBitsMsbD >> (4*uChip)) & 0x0000000F );
+      */
+   } // for( uint32_t uChip = 0; uChip < 8, uChip++ )
+
+   return ret_val;
+}
+
+
+int SetGet4CoreDelay(CbmNet::ControlClient & conn, uint32_t nodeid,
+                   uint32_t get4idx, uint32_t delayOn = false, uint32_t configBits = 0x00000000 )
+{
+   CbmNet::ListSeq initList;
+   int ret_val = 0;
+
+   // Read current chips mask
+   uint32_t uMaskOldLsbs;
+   uint32_t uMaskOldMsbs;
+   conn.Read( nodeid, ROC_GET4_TRANSMIT_MASK_LSBS, uMaskOldLsbs );
+   conn.Read( nodeid, ROC_GET4_TRANSMIT_MASK_MSBS, uMaskOldMsbs );
+//   printf("SetGet4ChanEna: Save Get4 chip mask %08X %08X\n", uMaskOldMsbs, uMaskOldLsbs);
+
+   // Send only to chosen get4
+   uint32_t uMaskLsbs = 0x00000000;
+   uint32_t uMaskMsbs = 0x00000000;
+   if( get4idx < 32 )
+   {
+      uMaskLsbs += 0x1 << get4idx;
+      uMaskMsbs = 0x00000000;
+   } // if( get4idx < 32 )
+      else if( get4idx < 64 )
+      {
+         uMaskLsbs = 0x00000000;
+         uMaskMsbs = 0x1 << (get4idx - 32);
+      } // else of if( get4idx < 32 )
+      else
+      {
+         printf("SetGet4CoreDelay: Invalid get4 chip index (%u) or link stopping there\n", get4idx);
+         return 0;
+      }
+//   printf("SetGet4CoreDelay: Get4 chip mask (index %u) %08X %08X\n", get4idx, uMaskMsbs, uMaskLsbs);
+   initList.AddWrite(ROC_GET4_TRANSMIT_MASK_LSBS, uMaskLsbs);
+   initList.AddWrite(ROC_GET4_TRANSMIT_MASK_MSBS, uMaskMsbs);
+
+   //# GET4V1X_TDC_CORE_TIMING_CONF => DLL TDC core timing
+   //   (bit 4 enable, bits3..0 : phase shift in 400ps steps)
+   configBits = (delayOn << 4) + (configBits) & 0x0000000F;
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + configBits );
+
+   // Process the list of commands
+   ret_val = conn.DoListSeq(nodeid, initList);
+
+   // restore original chips mask
+//   printf("SetGet4ChanEna: Restore Get4 chip mask %08X %08X\n", uMaskOldMsbs, uMaskOldLsbs);
+   conn.Write( nodeid, ROC_GET4_TRANSMIT_MASK_LSBS, uMaskOldLsbs );
+   conn.Write( nodeid, ROC_GET4_TRANSMIT_MASK_MSBS, uMaskOldMsbs );
+
+   return ret_val;
+}
+
+int SetRocGet4CoreDelay(CbmNet::ControlClient & conn, uint32_t nodeid,
+                      bool     delayOn        = false,
+                      uint32_t configBitsLsbA = 0x00000000,
+                      uint32_t configBitsLsbB = 0x00000000,
+                      uint32_t configBitsLsbC = 0x00000000,
+                      uint32_t configBitsLsbD = 0x00000000,
+                      uint32_t configBitsMsbA = 0x00000000,
+                      uint32_t configBitsMsbB = 0x00000000,
+                      uint32_t configBitsMsbC = 0x00000000,
+                      uint32_t configBitsMsbD = 0x00000000 )
+{
+   int ret_val = 0;
+   // 4 bits (16 steps) per chip
+   // 8 chips per FEE-GET4
+   // 8 FEE-GET4 max per ROC firmware (registers)
+   // For now only 4 FEE-GET4 max per SYSCORE3
+   for( uint32_t uChip = 0; uChip < 8; uChip++ )
+   {
+      ret_val += SetGet4CoreDelay(conn, nodeid, uChip, delayOn,
+            (configBitsLsbA >> (4*uChip)) & 0x0000000F );
+      ret_val += SetGet4CoreDelay(conn, nodeid, uChip +  8, delayOn,
+            (configBitsLsbB >> (4*uChip)) & 0x0000000F );
+      ret_val += SetGet4CoreDelay(conn, nodeid, uChip + 16, delayOn,
+            (configBitsLsbC >> (4*uChip)) & 0x0000000F );
+      ret_val += SetGet4CoreDelay(conn, nodeid, uChip + 24, delayOn,
+            (configBitsLsbD >> (4*uChip)) & 0x0000000F );
+      /*
+      ret_val += SetGet4CoreDelay(conn, nodeid, uChip + 32,
+            (configBitsMsbA >> (4*uChip)) & 0x0000000F );
+      ret_val += SetGet4CoreDelay(conn, nodeid, uChip + 40,
+            (configBitsMsbB >> (4*uChip)) & 0x0000000F );
+      ret_val += SetGet4CoreDelay(conn, nodeid, uChip + 48,
+            (configBitsMsbC >> (4*uChip)) & 0x0000000F );
+      ret_val += SetGet4CoreDelay(conn, nodeid, uChip + 56,
+            (configBitsMsbD >> (4*uChip)) & 0x0000000F );
+      */
+   } // for( uint32_t uChip = 0; uChip < 8, uChip++ )
+
+   return ret_val;
+}
+
+
 int Set24bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 {
    CbmNet::ListSeq initList;
@@ -147,7 +332,7 @@ int Set24bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000F0);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x0000FFFF);
 ///////// For ROC v3 symmetric dual board setup
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000FF);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00FFFFFF);
    initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
 
 
@@ -275,7 +460,7 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0xFF000000);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x0000FFFF);
 ///////// For ROC v3 symmetric dual board setup
-   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x000000FF);
+   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00FFFFFF);
 //   initList.AddWrite(ROC_GET4_RECEIVE_MASK_LSBS, 0x00000001);
    initList.AddWrite(ROC_GET4_RECEIVE_MASK_MSBS, 0x00000000);
 
@@ -283,10 +468,15 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 //  => Change the edge on which the data from the GET4 are sampled
 //  => Can be necessary with some ROC v2 systems
 //   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x00000004);
-//   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x000000B4);
+//   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x000000B4);;
 //   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, 0x00000000);
 ///////// For ROC v3 single board setup
+//   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x00000000);
+   // ROC #1
    initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x00000000);
+   // ROC #2
+//   initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_LSBS, 0x00000C00);
+
    initList.AddWrite(ROC_GET4_SAMPLE_FALLING_EDGE_MSBS, 0x00000000);
 
 // ROC_GET4_SUPRESS_EPOCHS_LSBS & ROC_GET4_SUPRESS_EPOCHS_MSBS
@@ -330,7 +520,24 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
 // GET4 configuration
    //# GET4V1X_TDC_CORE_TIMING_CONF => DLL TDC core timing
    //   (bit 4 enable, bits3..0 : phase shift in 400ps steps)
+         // Nominal
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x000012 );
+         // Test
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x000010 );
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x000011 );
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x000013 );
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x000014 );
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x000015 );
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x000016 );
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x000017 );
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x000018 );
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x000019 );
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x00001A );
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x00001B );
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x00001C );
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x00001D );
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x00001E );
+//   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_TDC_CORE_TIMING_CONF + 0x00001F );
 
    //# GET4V1X_DLL_DAC_MIN => lower DLL monitoring threshold 450 mV
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_DLL_DAC_MIN          + 0x000100 );
@@ -366,12 +573,20 @@ int Set32bDef(CbmNet::ControlClient & conn, uint32_t nodeid)
    // => Set here to to 1FF
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_TOT_MAX +  0x1FF );
 
+
    // ROC_GET4_CMD_TO_GET4 => Set link speed to 156.25 MBit/s
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_LNK_RATE +   0x6 );
 
 // ROC_GET4_RECEIVE_CLK_CFG => Set link speed to 156.25 MBit/s
    initList.AddWrite(ROC_GET4_RECEIVE_CLK_CFG,           0x3);
 
+/*
+   // ROC_GET4_CMD_TO_GET4 => Set link speed to 78.125 MBit/s
+   initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_32B_RO_CONF_LNK_RATE +   0x3 );
+
+// ROC_GET4_RECEIVE_CLK_CFG => Set link speed to 78.125 MBit/s
+   initList.AddWrite(ROC_GET4_RECEIVE_CLK_CFG,           0x0);
+*/
    // ROC_GET4_CMD_TO_GET4 => Re-Initialize the readout unit state machine
    initList.AddWrite(ROC_GET4_CMD_TO_GET4, GET4V1X_INIT_RO_INIT );
 

@@ -11,6 +11,7 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/fles/reader
   ${CBMROOT_SOURCE_DIR}/fles/reader/unpacker
   ${CBMROOT_SOURCE_DIR}/fles/reader/tasks
+  ${CBMROOT_SOURCE_DIR}/fles/reader/get4
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
@@ -22,6 +23,9 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/fles/spadic
   ${CBMROOT_SOURCE_DIR}/fles/trb/trbnet_lib
   ${CBMROOT_SOURCE_DIR}/rich/prototype/beamtime
+  ${CBMROOT_SOURCE_DIR}/beamtime/tof
+  ${CBMROOT_SOURCE_DIR}/beamtime/tof/tdc
+  ${CBMROOT_SOURCE_DIR}/beamtime/tof/tdc/get4
 
   # needed by rootcling
   ${CBMROOT_SOURCE_DIR}/fles/spadic/message/wrap/cpp
@@ -42,6 +46,22 @@ Link_Directories(
   ${LINK_DIRECTORIES}
 )
 
+If(BUILD_BEAMTIME)
+  add_definitions(-DBUILD_BEAMTIME)
+  Set(FLES_TOF_BEAM_SOURCES 
+  )
+  Set(FLES_TOF_BEAM_DEPEND
+  )
+Else(BUILD_BEAMTIME)
+  Set(FLES_TOF_BEAM_SOURCES 
+    get4/CbmGet4EventDumper.cxx
+#    get4/CbmGet4EventMonitor.cxx
+  )
+  Set(FLES_TOF_BEAM_DEPEND
+    TofUnpack
+  )
+EndIf(BUILD_BEAMTIME)
+
 Set(SRCS
   CbmFlibFileSource.cxx   
 #  CbmNxFlibFileSource.cxx   
@@ -58,6 +78,13 @@ Set(SRCS
   unpacker/CbmTSUnpackTrb.cxx
   unpacker/CbmGet4v1xHackDef.cxx
   unpacker/CbmTSUnpackGet4v1x.cxx
+  
+  get4/CbmGet4FastMonitor.cxx
+  get4/CbmGet4EpochBuffer.cxx
+  get4/CbmGet4EventBuilder.cxx
+  get4/CbmGet4EventBuffer.cxx
+
+  ${FLES_TOF_BEAM_SOURCES}
 
   tasks/CbmTrdRawBeamProfile.cxx
   tasks/CbmTrdRawPulseMonitor.cxx
@@ -80,7 +107,7 @@ EndIf()
 Set(LINKDEF  FlibReaderLinkDef.h )
 Set(LIBRARY_NAME CbmFlibReader)
 Set(DEPENDENCIES
-    Eve Base CbmBase Rich fles_ipc flib_dpb spadicMessage trbnet
+    Eve Base CbmBase Rich fles_ipc flib_dpb spadicMessage trbnet ${FLES_TOF_BEAM_DEPEND}
 )
 
 GENERATE_LIBRARY()

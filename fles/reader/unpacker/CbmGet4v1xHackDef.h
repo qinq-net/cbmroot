@@ -345,7 +345,7 @@ namespace get4v1x {
          // ---------- Epoch2 marker access methods ------------
 
          //! For Epoch2 data: Returns epoch missmatch flag (set in ROC when 
-			//! ROC timestamp and timestamp send by GET4 did not match) (1 bit field)
+         //! ROC timestamp and timestamp send by GET4 did not match) (1 bit field)
          inline uint32_t getEpoch2EpochMissmatch() const { return getBit(4); }
 
          //! For Epoch2 data: Returns epoch-lost flag (1 bit field)
@@ -358,8 +358,8 @@ namespace get4v1x {
          inline uint32_t getEpoch2Sync() const { return getBit(7); }
 
          //! For Epoch2 data: Returns the LTS156 bits 11 to 8. This
-			//! gives information at what time in the Epoche the epoche number
-			//! was set (2 bit field)
+         //! gives information at what time in the Epoche the epoche number
+         //! was set (2 bit field)
          inline uint32_t getEpoch2StampTime() const { return getField(8, 2); }
 
          //! For Epoch2 data: Returns the epoch number (32 bit field)
@@ -367,7 +367,7 @@ namespace get4v1x {
          inline uint32_t getEpoch2Number() const { return (data >> 10) & 0xFFFFFFFF; }
 
          //! For Epoch2 data: Returns the number of the GET4 chip that send
-			//! the epoche message (6 bit field)
+         //! the epoche message (6 bit field)
          inline uint32_t getEpoch2ChipNumber() const { return getField(42, 6); }
 
          //! For Epoch2 data: Set epoch missmatch flag (1 bit field)
@@ -383,15 +383,15 @@ namespace get4v1x {
          inline void setEpoch2Sync(uint32_t v) { setBit(7, v); }
 
          //! For Epoch2 data: Set the LTS156 bits 11 to 8. This
-			//! gives information at what time in the Epoche the epoche number
-			//! was set (2 bit field)
+         //! gives information at what time in the Epoche the epoche number
+         //! was set (2 bit field)
          inline void setEpoch2StampTime(uint32_t v) { setField(8, 2, v); }
 
          //! For Epoch2 data: Set the epoch number (32 bit field)
          inline void setEpoch2Number(uint32_t v) { setField(10, 32, v); }
 
          //! For Epoch2 data: Set the number of the GET4 chip that send
-			//! the epoche message (6 bit field)
+         //! the epoche message (6 bit field)
          inline void setEpoch2ChipNumber(uint32_t v) { setField(42, 6, v); }
 
          // ---------- Get4 Hit data access methods ----------------
@@ -405,11 +405,17 @@ namespace get4v1x {
          //! For Get4 data: Returns Get4 time stamp, 50 ps binning (19 bit field)
          inline uint32_t getGet4Ts() const { return getField(14, 19); }
 
+         //! For Get4 data: Returns Get4 fine time stamp, 50 ps binning (7 bit field)
+         inline uint32_t getGet4FineTs() const { return getField(14, 7); }
+
+         //! For Get4 data: Returns Get4 coarse time stamp, 6.4 ns binning (12 bit field)
+         inline uint32_t getGet4CoarseTs() const { return getField(21, 12); }
+
          //! For Get4 data: Returns Get4 rising or falling edge (1 bit field)
          inline uint32_t getGet4Edge() const { return getBit(33); }
 
          //! For Get4 data: Returns the CRC-8 of the rest of the message.
-			//! For details check the ROC documentation. (8 bit field)
+         //! For details check the ROC documentation. (8 bit field)
          inline uint32_t getGet4CRC() const { return getField(40, 8); }
 
 
@@ -426,7 +432,7 @@ namespace get4v1x {
          inline void setGet4Edge(uint32_t v) { setBit(33, v); }
 
          //! For Get4 data: Set the CRC-8 of the rest of the message 
-			//! For details check the ROC documentation. (8 bit field)
+         //! For details check the ROC documentation. (8 bit field)
          inline void setGet4CRC(uint32_t v) { setField(40, 8, v); }
 
          // ---------- System message access methods ----------
@@ -453,8 +459,10 @@ namespace get4v1x {
          inline uint8_t   getGet4V10R24ErrorChan()   const { return getField( 26, 2); }
          inline bool      getGet4V10R24ErrorEdge()   const { return getBit(   28); }
          inline uint8_t   getGet4V10R24ErrorUnused() const { return getField( 29, 6); }
-         inline uint8_t   getGet4V10R24ErrorChip()   const { return getField( 35, 6); } // or getField(40, 8)
-         inline uint8_t   getGet4V10R24ErrorData()   const { return getField( 41, 7); }
+//         inline uint8_t   getGet4V10R24ErrorChip()   const { return getField( 35, 6); } // or getField(40, 8)
+//         inline uint8_t   getGet4V10R24ErrorData()   const { return getField( 41, 7); } // or getField(16,10)
+         inline uint8_t   getGet4V10R24ErrorChip()   const { return getField( 40, 8); }
+         inline uint8_t   getGet4V10R24ErrorData()   const { return getField( 16, 10); }
 
          // ---------- Get4 v1.x 24b tool methods -----------------------
          double CalcGet4V10R24HitTimeDiff(uint32_t epochA, uint32_t epochB, Message& messB);
@@ -508,6 +516,10 @@ namespace get4v1x {
          inline bool isGet4SlCtrMsg() const { return getMessageType() == MSG_GET4_SLC; }
          //! Returns \a true is message type is #MSG_GET4_32B (system message)
          inline bool isGet4Hit32Msg() const { return getMessageType() == MSG_GET4_32B; }
+         //! Returns \a true is message type is #MSG_SYS (system message) and subtype is 32bHack
+         inline bool isGet4Hack32Msg() const { return
+               ( (getMessageType() == MSG_SYS) &&
+                 (SYSMSG_GET4V1_32BIT_0 <= getSysMesType()) ); }
 
          //! Returns \a true if system message and subtype #ROC_SYSMSG_DAQ_START
          inline bool isStartDaqMsg() const
@@ -522,7 +534,7 @@ namespace get4v1x {
 
 //         void printData(std::ostream& os, unsigned kind = msg_print_Human, uint32_t epoch = 0) const;
          void printData(unsigned outType = msg_print_Cout, unsigned kind = msg_print_Human,
-        		        uint32_t epoch = 0) const;
+                      uint32_t epoch = 0) const;
 
          uint64_t getMsgFullTime(uint32_t epoch) const;
 

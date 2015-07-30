@@ -15,8 +15,19 @@
 #pragma link C++ class CbmTSUnpackFiberHodo;
 #pragma link C++ class CbmTSUnpackDummy;
 #pragma link C++ class CbmTSUnpackTrb;
-#pragma link C++ class get4v1x::Message+;
+#pragma link C++ class get4v1x::Message;
+#pragma link C++ class get4v1x::FullMessage;
 #pragma link C++ class CbmTSUnpackGet4v1x;
+
+#pragma link C++ class CbmGet4FastMonitor;
+#pragma link C++ class CbmGet4EpochBuffer;
+#pragma link C++ class CbmGet4EventBuilder;
+#pragma link C++ class CbmGet4EventBuffer;
+
+#ifndef BUILD_BEAMTIME
+ #pragma link C++ class CbmGet4EventDumper;
+ // #pragma link C++ class CbmGet4EventMonitor;
+#endif // NOT BUILD_BEAMTIME_LIB
 
 #pragma link C++ class CbmDaqBuffer;
 #pragma link C++ class CbmFiberHodoMapping;
