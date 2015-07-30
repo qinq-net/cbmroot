@@ -48,6 +48,7 @@ Link_Directories(
 
 If(BUILD_BEAMTIME)
   add_definitions(-DBUILD_BEAMTIME)
+  Set(DEFINITION -DBUILD_BEAMTIME)
   Set(FLES_TOF_BEAM_SOURCES 
   )
   Set(FLES_TOF_BEAM_DEPEND
@@ -101,7 +102,7 @@ Set(NO_DICT_SRCS
 
 If(NOT OldFairSource)
   Add_Definitions(-D_NewFairSource)
-  Set(DEFINITIONS _NewFairSource)
+  Set(DEFINITIONS ${DEFINITIONS} _NewFairSource)
 EndIf()
 
 Set(LINKDEF  FlibReaderLinkDef.h )
