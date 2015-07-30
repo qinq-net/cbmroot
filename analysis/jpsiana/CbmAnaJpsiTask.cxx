@@ -878,7 +878,7 @@ void CbmAnaJpsiTask::SignalAndBgReco()
 			if (isSignal && isChiPrimary && isEl && pRec.fPt>=1.6 && pRec.fPt<2.0){fHM->H1("fh_ee_signal_minv_diff_ptcuts_4")->Fill(pRec.fMinv, fWeight);}
 			if (isSignal && isChiPrimary && isEl && pRec.fPt>=2.0 && pRec.fPt<2.4){fHM->H1("fh_ee_signal_minv_diff_ptcuts_5")->Fill(pRec.fMinv, fWeight);}
 			if (isSignal && isChiPrimary && isEl && pRec.fPt>=2.4 && pRec.fPt<3.0){fHM->H1("fh_ee_signal_minv_diff_ptcuts_6")->Fill(pRec.fMinv, fWeight);}
-			if (isSignal && isChiPrimary && isEl && pRec.fPt>=1.0 && pRec.fPt<6.0){fHM->H1("fh_ee_signal_minv_diff_ptcuts_7")->Fill(pRec.fMinv, fWeight);}
+			if (isSignal && isChiPrimary && isEl && pRec.fPt>=3.0 && pRec.fPt<6.0){fHM->H1("fh_ee_signal_minv_diff_ptcuts_7")->Fill(pRec.fMinv, fWeight);}
 
 		}//iM
 	}//iP
