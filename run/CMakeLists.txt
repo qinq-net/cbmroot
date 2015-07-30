@@ -57,6 +57,7 @@ CbmTimeSlice.cxx
 
 CbmMCStreamer.cxx
 CbmRunAna.cxx
+CbmRunOnline.cxx
 CbmMCStreamerQa.cxx
 
 CbmSetup.cxx
