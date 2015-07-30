@@ -284,7 +284,7 @@ void CbmAnaJpsiSuperEventReport::DrawMinvDiffPtBins()
 	  TH1D* fhBgSignalDiffPtCuts = (TH1D*) fhBgDiffPtCuts->Clone();
 	  fhBgSignalDiffPtCuts->Add(fhSignalDiffPtCuts);
 	  fhBgSignalDiffPtCuts->SetMinimum(1e-9);
-	  DrawH1(list_of(fhBgDiffPtCuts)(fhSignalDiffPtCuts)(fhBgSignalDiffPtCuts),list_of("Background")("Signal")("Signal and Background"), kLinear, kLog, true, 0.65, 0.8, 0.99, 0.95);
+
 	  double lowerCut = 0;
 	  double upperCut = 0;
 	  if (i<6){
@@ -299,7 +299,6 @@ void CbmAnaJpsiSuperEventReport::DrawMinvDiffPtBins()
 		  lowerCut = 3.0;
 	  }
 	  string text = Cbm::NumberToString(lowerCut,2)+ "<P_t<"+ Cbm::NumberToString(upperCut,2);
-	  DrawTextOnPad(text,0.38, 0.88, 0.65, 0.95);
 
 	  //SignalOverBackground
 	  //Create Histogram for the Gaus-Fit
@@ -333,8 +332,10 @@ void CbmAnaJpsiSuperEventReport::DrawMinvDiffPtBins()
 		  SOverBg = NOfSignalEntries / NOfBgEntries;
 
 	  }
-	  string textSOverBg = "S/Bg = " + Cbm::NumberToString(SOverBg,3);
-	  DrawTextOnPad(textSOverBg,0.1, 0.88, 0.35, 0.95);
+	  string textSOverBg = "S/Bg = " + Cbm::NumberToString(SOverBg,3) + "    " + text;
+
+	  DrawH1(list_of(fhBgDiffPtCuts)(fhSignalDiffPtCuts)(fhBgSignalDiffPtCuts),list_of("Background")("Signal")("Signal and Background"), kLinear, kLog, true, 0.65, 0.8, 0.99, 0.95);
+	  DrawTextOnPad(textSOverBg,0.07, 0.88, 0.65, 0.95);
 	  }
 }
 
