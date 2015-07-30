@@ -4,6 +4,7 @@ Set(CTEST_SITE $ENV{SITE})
 Set(CTEST_BUILD_NAME $ENV{LABEL})
 Set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
 Set(CTEST_PROJECT_NAME "CBMROOT")
+Set(EXTRA_FLAGS $ENV{EXTRA_FLAGS})
 
 Set(CTEST_UPDATE_COMMAND "svn")
 
@@ -25,7 +26,7 @@ If($ENV{ctest_model} MATCHES Nightly OR $ENV{ctest_model} MATCHES Profile)
   String(TOUPPER $ENV{ctest_model} _Model)
   Set(ENV{ctest_model} Nightly)
 
-  Set(CTEST_CONFIGURE_COMMAND " \"${CMAKE_EXECUTABLE_NAME}\" \"-G${CTEST_CMAKE_GENERATOR}\" \"${CTEST_SOURCE_DIRECTORY}\" \"-DCMAKE_BUILD_TYPE=${_Model}\" \"-DUSE_PATH_INFO=TRUE\" ")
+  Set(CTEST_CONFIGURE_COMMAND " \"${CMAKE_EXECUTABLE_NAME}\" \"-G${CTEST_CMAKE_GENERATOR}\" \"${CTEST_SOURCE_DIRECTORY}\" \"-DCMAKE_BUILD_TYPE=${_Model}\" \"${EXTRA_FLAGS}\" ")
 
   # get the information about conflicting or localy modified files
   # from svn, extract the relavant information about the file name
