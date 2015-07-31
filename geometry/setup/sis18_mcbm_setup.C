@@ -82,7 +82,8 @@ void sis18_mcbm_setup()
 
   // ------ Input file ------------------------------------------------------
 
-  defaultInputFile = "/input/urqmd.auau.10gev.centr.root";
+  //  defaultInputFile = "/input/urqmd.auau.10gev.centr.root";
+  defaultInputFile = "/input/urqmd.nini.1.93gev.centr.00001.root";
 
   cout << "Reading geometry setup and magnetic field settings from "
        << gSystem->UnixPathName(gInterpreter->GetCurrentMacroName())
