@@ -348,10 +348,11 @@ void CbmMatchRecoToMC::MatchHits(
    if (!(matches && hits && hitMatches)) return;
    Int_t nofHits = hits->GetEntriesFast();
    for (Int_t iHit = 0; iHit < nofHits; iHit++) {
-      const CbmHit* hit = static_cast<const CbmHit*>(hits->At(iHit));
+      CbmHit* hit = static_cast<CbmHit*>(hits->At(iHit));
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
       const CbmMatch* clusterMatch = static_cast<const CbmMatch*>(matches->At(hit->GetRefId()));
       hitMatch->AddLinks(*clusterMatch);
+      hit->SetMatch(hitMatch);
    }
 }
 
@@ -363,13 +364,14 @@ void CbmMatchRecoToMC::MatchHitsSts(
    if (!(matches && hits && hitMatches)) return;
    Int_t nofHits = hits->GetEntriesFast();
    for (Int_t iHit = 0; iHit < nofHits; iHit++) {
-      const CbmStsHit* hit = static_cast<const CbmStsHit*>(hits->At(iHit));
+      CbmStsHit* hit = static_cast<CbmStsHit*>(hits->At(iHit));
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
       const CbmMatch* frontClusterMatch = static_cast<const CbmMatch*>(matches->At(hit->GetFrontClusterId()));
       const CbmMatch* backClusterMatch = static_cast<const CbmMatch*>(matches->At(hit->GetBackClusterId()));
 //      std::cout << "hit " << iHit << " " << frontClusterMatch;
       hitMatch->AddLinks(*frontClusterMatch);
       hitMatch->AddLinks(*backClusterMatch);
+      hit->SetMatch(hitMatch);
    }
 }
 
@@ -381,10 +383,11 @@ void CbmMatchRecoToMC::MatchHitsMvd(
   if (!(matches && hits && hitMatches)) return;
   Int_t nofHits = hits->GetEntriesFast();
   for (Int_t iHit = 0; iHit < nofHits; iHit++) {
-	const CbmPixelHit* hit = static_cast<const CbmPixelHit*>(hits->At(iHit));
- 	CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
-	const CbmMatch* digiMatch = static_cast<const CbmMatch*>(matches->At(hit->GetRefId()));
-	hitMatch->AddLinks(*digiMatch);
+    CbmPixelHit* hit = static_cast<CbmPixelHit*>(hits->At(iHit));
+    CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
+    const CbmMatch* digiMatch = static_cast<const CbmMatch*>(matches->At(hit->GetRefId()));
+    hitMatch->AddLinks(*digiMatch);
+    hit->SetMatch(hitMatch);
   }
 }
 
@@ -396,11 +399,12 @@ void CbmMatchRecoToMC::MatchHitsToPoints(
    if (!(hits && hitMatches)) return;
    Int_t nofHits = hits->GetEntriesFast();
    for (Int_t iHit = 0; iHit < nofHits; iHit++) {
-      const CbmHit* hit = static_cast<const CbmHit*>(hits->At(iHit));
+      CbmHit* hit = static_cast<CbmHit*>(hits->At(iHit));
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
       const FairMCPoint* point = static_cast<const FairMCPoint*>(points->At(hit->GetRefId()));
       hitMatch->AddLink(CbmLink(point->GetEnergyLoss(), hit->GetRefId()));
     //  std::cout << "hit " << iHit << " " << hitMatch->ToString();
+      hit->SetMatch(hitMatch);
    }
 }
 
