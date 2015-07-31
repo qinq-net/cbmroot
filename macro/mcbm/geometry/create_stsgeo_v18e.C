@@ -769,6 +769,9 @@ void create_stsgeo_v18e(const char* geoTag="v18e")
   cout << endl << endl;
   cout << "===> Creating STS...." << endl;
 
+  TString stsName = "sts_";  
+  stsName += geoTag;
+
   // --- Determine size of STS box
   Double_t stsX = 0.;
   Double_t stsY = 0.;
@@ -786,50 +789,50 @@ void create_stsgeo_v18e(const char* geoTag="v18e")
   // --- Some border around the stations
   stsX += stsBorder;  
   stsY += stsBorder; 
-  stsZ = ( statPos[7] - statPos[0] ) + stsBorder;
-  Double_t stsPosZ = 0.5 * ( statPos[7] + statPos[0] );
+  stsZ = ( statPos[1] - statPos[0] ) + stsBorder;
+  Double_t stsPosZ = 0.5 * ( statPos[1] + statPos[0] );
 
   // --- Create box  around the stations
-  new TGeoBBox("stsBox", stsX/2., stsY/2., stsZ/2.);
+  TGeoBBox* stsBox = new TGeoBBox("stsBox", stsX/2., stsY/2., stsZ/2.);
   cout << "size of STS box: x " <<  stsX << " - y " << stsY << " - z " << stsZ << endl;
 
-  // --- Create cone hosting the beam pipe
-  // --- One straight section with constant radius followed by a cone
-  Double_t z1 = statPos[0] - 0.5 * stsBorder;  // start of STS box
-  Double_t z2 = gkPipeZ2;
-  Double_t z3 = statPos[7] + 0.5 * stsBorder;  // end of STS box
-  Double_t r1 = BeamPipeRadius(z1);
-  Double_t r2 = BeamPipeRadius(z2);
-  Double_t r3 = BeamPipeRadius(z3);
-  r1 += 0.01;    // safety margin
-  r2 += 0.01;    // safety margin
-  r3 += 0.01;    // safety margin
-
-  cout << endl;
-  cout << z1 << "  " << r1 << endl;
-  cout << z2 << "  " << r2 << endl;
-  cout << z3 << "  " << r3 << endl;
-
-  cout << endl;
-  cout << "station1 :  " << BeamPipeRadius(statPos[0]) << endl;
-  cout << "station2 :  " << BeamPipeRadius(statPos[1]) << endl;
-  cout << "station3 :  " << BeamPipeRadius(statPos[2]) << endl;
-  cout << "station4 :  " << BeamPipeRadius(statPos[3]) << endl;
-  cout << "station5 :  " << BeamPipeRadius(statPos[4]) << endl;
-  cout << "station6 :  " << BeamPipeRadius(statPos[5]) << endl;
-  cout << "station7 :  " << BeamPipeRadius(statPos[6]) << endl;
-  cout << "station8 :  " << BeamPipeRadius(statPos[7]) << endl;
-
-  //  TGeoPcon* cutout = new TGeoPcon("stsCone", 0., 360., 3); // 2.*TMath::Pi(), 3);
-  //  cutout->DefineSection(0, z1, 0., r1);
-  //  cutout->DefineSection(1, z2, 0., r2);
-  //  cutout->DefineSection(2, z3, 0., r3);
-  new TGeoTrd2("stsCone1", r1, r2, r1, r2, (z2-z1)/2.+.1);  // add .1 in z length for a clean cutout
-  TGeoTranslation *trans1 = new TGeoTranslation("trans1", 0., 0., -(z3-z1)/2.+(z2-z1)/2.);
-  trans1->RegisterYourself();
-  new TGeoTrd2("stsCone2", r2, r3, r2, r3, (z3-z2)/2.+.1);  // add .1 in z length for a clean cutout
-  TGeoTranslation *trans2 = new TGeoTranslation("trans2", 0., 0., +(z3-z1)/2.-(z3-z2)/2.);
-  trans2->RegisterYourself();
+//  // --- Create cone hosting the beam pipe
+//  // --- One straight section with constant radius followed by a cone
+//  Double_t z1 = statPos[0] - 0.5 * stsBorder;  // start of STS box
+//  Double_t z2 = gkPipeZ2;
+//  Double_t z3 = statPos[1] + 0.5 * stsBorder;  // end of STS box
+//  Double_t r1 = BeamPipeRadius(z1);
+//  Double_t r2 = BeamPipeRadius(z2);
+//  Double_t r3 = BeamPipeRadius(z3);
+//  r1 += 0.01;    // safety margin
+//  r2 += 0.01;    // safety margin
+//  r3 += 0.01;    // safety margin
+//
+//  cout << endl;
+//  cout << z1 << "  " << r1 << endl;
+//  cout << z2 << "  " << r2 << endl;
+//  cout << z3 << "  " << r3 << endl;
+//
+//  cout << endl;
+//  cout << "station1 :  " << BeamPipeRadius(statPos[0]) << endl;
+//  cout << "station2 :  " << BeamPipeRadius(statPos[1]) << endl;
+//  cout << "station3 :  " << BeamPipeRadius(statPos[2]) << endl;
+//  cout << "station4 :  " << BeamPipeRadius(statPos[3]) << endl;
+//  cout << "station5 :  " << BeamPipeRadius(statPos[4]) << endl;
+//  cout << "station6 :  " << BeamPipeRadius(statPos[5]) << endl;
+//  cout << "station7 :  " << BeamPipeRadius(statPos[6]) << endl;
+//  cout << "station8 :  " << BeamPipeRadius(statPos[7]) << endl;
+//
+//  //  TGeoPcon* cutout = new TGeoPcon("stsCone", 0., 360., 3); // 2.*TMath::Pi(), 3);
+//  //  cutout->DefineSection(0, z1, 0., r1);
+//  //  cutout->DefineSection(1, z2, 0., r2);
+//  //  cutout->DefineSection(2, z3, 0., r3);
+//  new TGeoTrd2("stsCone1", r1, r2, r1, r2, (z2-z1)/2.+.1);  // add .1 in z length for a clean cutout
+//  TGeoTranslation *trans1 = new TGeoTranslation("trans1", 0., 0., -(z3-z1)/2.+(z2-z1)/2.);
+//  trans1->RegisterYourself();
+//  new TGeoTrd2("stsCone2", r2, r3, r2, r3, (z3-z2)/2.+.1);  // add .1 in z length for a clean cutout
+//  TGeoTranslation *trans2 = new TGeoTranslation("trans2", 0., 0., +(z3-z1)/2.-(z3-z2)/2.);
+//  trans2->RegisterYourself();
   
 //DE   Double_t z1 = statPos[0] - 0.5 * stsBorder;  // start of STS box
 //DE   Double_t z2 = statPos[7] + 0.5 * stsBorder;  // end of STS box
@@ -842,11 +845,10 @@ void create_stsgeo_v18e(const char* geoTag="v18e")
 //DE   new TGeoTrd2("stsCone", r1, r2, r1, r2, stsZ/2.);
 
   // --- Create STS volume
-  TString stsName = "sts_";  
-  stsName += geoTag;
-  TGeoShape* stsShape = new TGeoCompositeShape("stsShape", 
-                                               "stsBox-stsCone1:trans1-stsCone2:trans2");
-  TGeoVolume* sts = new TGeoVolume(stsName.Data(), stsShape, gStsMedium);
+//  TGeoShape* stsShape = new TGeoCompositeShape("stsShape", 
+//                                               "stsBox-stsCone1:trans1-stsCone2:trans2");
+//  TGeoVolume* sts = new TGeoVolume(stsName.Data(), stsShape, gStsMedium);
+  TGeoVolume* sts = new TGeoVolume(stsName.Data(), stsBox, gStsMedium);
 
   // --- Place stations in the STS
   //  for (Int_t iStation = 1; iStation <=8; iStation++) {
