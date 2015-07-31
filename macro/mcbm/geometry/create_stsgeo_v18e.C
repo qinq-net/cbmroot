@@ -2041,16 +2041,17 @@ TGeoVolume* ConstructLadder(Int_t LadderIndex,
   cout << "fixed to statZ/2.: " << statZ/2. << endl;
   TGeoBBox* statBox = new TGeoBBox(boxName, statX/2., statY/2., statZ/2.);
 
-  TString tubName(name);
-  tubName += "_tub";
-  TString expression = boxName + "-" + tubName;
-  //  TGeoTube* statTub = new TGeoTube(tubName, 0., rHole, statZ/2.);
-  //  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.);
-  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.+.1);  // .1 opens the hole in z direction
+//  TString tubName(name);
+//  tubName += "_tub";
+//  TString expression = boxName + "-" + tubName;
+//  //  TGeoTube* statTub = new TGeoTube(tubName, 0., rHole, statZ/2.);
+//  //  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.);
+//  TGeoBBox* statTub = new TGeoBBox(tubName, rHole, rHole, statZ/2.+.1);  // .1 opens the hole in z direction
+//  
+//  statShape = new TGeoCompositeShape(name, expression.Data());
+//  TGeoVolume* station = new TGeoVolume(name, statShape, gStsMedium);
+  TGeoVolume* station = new TGeoVolume(name, statBox, gStsMedium);
   
-  statShape = new TGeoCompositeShape(name, expression.Data());
-  TGeoVolume* station = new TGeoVolume(name, statShape, gStsMedium);
-
   Double_t subtractedVal;
   
   // --- Place ladders in station
