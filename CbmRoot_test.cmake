@@ -15,6 +15,13 @@ EndIf($ENV{ctest_model} MATCHES Continuous)
 Set(BUILD_COMMAND "make")
 Set(CTEST_BUILD_COMMAND "${BUILD_COMMAND} -j$ENV{number_of_processors}")
 
+String(TOUPPER $ENV{ctest_model} _Model)
+If(EXTRA_FLAGS)
+  Set(CTEST_CONFIGURE_COMMAND " \"${CMAKE_EXECUTABLE_NAME}\" \"-G${CTEST_CMAKE_GENERATOR}\" \"-DCMAKE_BUILD_TYPE=${_Model}\" \"${EXTRA_FLAGS}\" \"${CTEST_SOURCE_DIRECTORY}\" ")
+Else()
+  Set(CTEST_CONFIGURE_COMMAND " \"${CMAKE_EXECUTABLE_NAME}\" \"-G${CTEST_CMAKE_GENERATOR}\" \"-DCMAKE_BUILD_TYPE=${_Model}\" \"${CTEST_SOURCE_DIRECTORY}\" ")
+EndIf()
+
 If($ENV{ctest_model} MATCHES Nightly OR $ENV{ctest_model} MATCHES Profile)
 
   Find_Program(GCOV_COMMAND gcov)
@@ -23,10 +30,7 @@ If($ENV{ctest_model} MATCHES Nightly OR $ENV{ctest_model} MATCHES Profile)
     Set(CTEST_COVERAGE_COMMAND ${GCOV_COMMAND})
   EndIf(GCOV_COMMAND)
 
-  String(TOUPPER $ENV{ctest_model} _Model)
   Set(ENV{ctest_model} Nightly)
-
-  Set(CTEST_CONFIGURE_COMMAND " \"${CMAKE_EXECUTABLE_NAME}\" \"-G${CTEST_CMAKE_GENERATOR}\" \"${CTEST_SOURCE_DIRECTORY}\" \"-DCMAKE_BUILD_TYPE=${_Model}\" \"${EXTRA_FLAGS}\" ")
 
   # get the information about conflicting or localy modified files
   # from svn, extract the relavant information about the file name
