@@ -159,9 +159,11 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     Int_t sourceA = raw->GetSourceAddress();
     //printf("EI%i SA%i ->",eqID,sourceA);
     Int_t chID = raw->GetChannelID();
-    //Int_t AdcValue = raw->GetGetADCvalue();
+    Int_t tdcFine = raw->GetTDCfine();
+    Int_t tdcCoarse = raw->GetTDCcoarse();
+    Int_t edge = raw->GetEdge();
     ULong_t time = raw->GetFullTime();
-    LOG(INFO) << "TrbMessage: EqId:" << eqID << " sourceA:" << sourceA << " ChID:" << chID << FairLogger::endl;
+    LOG(INFO) << "TrbMessage: EqId:" << eqID << " sourceA:" << sourceA << " ChID:" << chID << " tdcFine:" << tdcFine << " tdcCoarse:" << tdcCoarse << " edge:" << edge << FairLogger::endl;
   }
 
 
