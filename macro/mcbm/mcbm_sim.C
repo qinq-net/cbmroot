@@ -291,18 +291,18 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   fRun->Init();
   // ------------------------------------------------------------------------
   
-  // Set cuts for storing the trajectories.
-  // Switch this on only if trajectories are stored.
-  // Choose this cuts according to your needs, but be aware
-  // that the file size of the output file depends on these cuts
-
-   FairTrajFilter* trajFilter = FairTrajFilter::Instance();
-   trajFilter->SetStepSizeCut(0.01); // 1 cm
-   trajFilter->SetVertexCut(-2000., -2000., 4., 2000., 2000., 100.);
-   trajFilter->SetMomentumCutP(10e-3); // p_lab > 10 MeV
-   trajFilter->SetEnergyCut(0., 1.02); // 0 < Etot < 1.04 GeV
-   trajFilter->SetStorePrimaries(kTRUE);
-   trajFilter->SetStoreSecondaries(kTRUE);
+//  // Set cuts for storing the trajectories.
+//  // Switch this on only if trajectories are stored.
+//  // Choose this cuts according to your needs, but be aware
+//  // that the file size of the output file depends on these cuts
+//
+//   FairTrajFilter* trajFilter = FairTrajFilter::Instance();
+//   trajFilter->SetStepSizeCut(0.01); // 1 cm
+//   trajFilter->SetVertexCut(-2000., -2000., 4., 2000., 2000., 100.);
+//   trajFilter->SetMomentumCutP(10e-3); // p_lab > 10 MeV
+//   trajFilter->SetEnergyCut(0., 1.02); // 0 < Etot < 1.04 GeV
+//   trajFilter->SetStorePrimaries(kTRUE);
+//   trajFilter->SetStoreSecondaries(kTRUE);
 
   // -----   Runtime database   ---------------------------------------------
   CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
