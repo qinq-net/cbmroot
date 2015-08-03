@@ -60,7 +60,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
   Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
   Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
-  Double_t targetRotY      = 30.;    // target rotation angle around the y axis [deg]
+  Double_t targetRotY      = -30.;   // target rotation angle around the y axis [deg]
   // ------------------------------------------------------------------------
 
 

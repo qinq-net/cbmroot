@@ -50,9 +50,9 @@ void sis18_mcbm_setup()
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "v18a";
-  stsTag       = "v18e";  // "v18d";
-  trdTag       = "v18a_1e";
-  tofTag       = "v13_5a";
+  stsTag       = "v18e";     // "v18d";
+  trdTag       = "v18a_1e";  // "v18b_1e";
+  tofTag       = "v13_5a";   // "v13_6a";
   
   // -----  DigiFiles  ------------------------------------------------------
   stsDigi      = "mcbm/sts_" + stsTag + "_std.digi.par";
