@@ -27,14 +27,14 @@ void make_geofile(TString stofGeom = "tof_v13c" )
   //TString pipeGeom   = "pipe_standard.geo";
   TString targetGeom = "";
   TString pipeGeom   = "";
-  TString magnetGeom = "magnet/magnet_v12a.geo";
-  TString stsGeom    = "sts/sts_v12b.geo.root";
+  TString magnetGeom = "magnet/magnet_v15a.geo.root";
+  TString stsGeom    = "sts/sts_v15a.geo.root";
   //  TString tofGeom    = "tof/tof_V13-2b.geo";
-  TString tofGeom    = "tof/"+ stofGeom +".root";
+  TString tofGeom    = "tof/"+ stofGeom +".geo.root";
   
   // -----   Magnetic field   -----------------------------------------------
-  TString fieldMap    = "field_v12a";   // name of field map
-  Double_t fieldZ     = 50.;             // field centre z position
+  TString fieldMap    = "field_v12b";   // name of field map
+  Double_t fieldZ     = 40.;             // field centre z position
   Double_t fieldScale = 0.8;             // field scaling factor
   
   // In general, the following parts need not be touched
@@ -48,25 +48,6 @@ void make_geofile(TString stofGeom = "tof_v13c" )
   TStopwatch timer;
   timer.Start();
   // ------------------------------------------------------------------------
-
-  // ----  Load libraries   -------------------------------------------------
-//  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-//  basiclibs();
-//  gSystem->Load("libGeoBase");
-//  gSystem->Load("libParBase");
-//  gSystem->Load("libBase");
-//  gSystem->Load("libCbmBase");
-//  gSystem->Load("libCbmData");
-//  gSystem->Load("libCbmGenerators");
-//  gSystem->Load("libField");
-//  gSystem->Load("libGen");
-//  gSystem->Load("libPassive");
-//  gSystem->Load("libEcal");
-//  gSystem->Load("libKF");
-//  gSystem->Load("libSts");
-//  gSystem->Load("libLittrack");
-//  gSystem->Load("libTof");
-  // -----------------------------------------------------------------------
 
   //  gLogger->SetLogScreenLevel("DEBUG2");
 
@@ -110,7 +91,7 @@ void make_geofile(TString stofGeom = "tof_v13c" )
   }
   
   if ( stsGeom != "" ) {
-    FairDetector* sts = new CbmSts("STS", kTRUE);
+    FairDetector* sts = new CbmStsMC(kTRUE);
     sts->SetGeometryFileName(stsGeom);
     fRun->AddModule(sts);
   }
@@ -126,7 +107,7 @@ void make_geofile(TString stofGeom = "tof_v13c" )
 
 
   // -----   Create magnetic field   ----------------------------------------
-  CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+  CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
   magField->SetPosition(0., 0., fieldZ);
   magField->SetScale(fieldScale);
   fRun->SetField(magField);
