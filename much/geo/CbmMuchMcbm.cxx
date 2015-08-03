@@ -217,8 +217,7 @@ TClonesArray* CbmMuchMcbm::GetCollection(Int_t iColl) const {
 // -------------------------------------------------------------------------
 void CbmMuchMcbm::Print() const {
   Int_t nHits = fMuchCollection->GetEntriesFast();
-  cout << "-I- CbmMuchMcbm: " << nHits << " points registered in this event."
-       << endl;
+  LOG(INFO) << fName << ": " << nHits << " points registered in this event." << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
@@ -236,7 +235,7 @@ void CbmMuchMcbm::Reset() {
 // -------------------------------------------------------------------------
 void CbmMuchMcbm::CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset) {
   Int_t nEntries = cl1->GetEntriesFast();
-  cout << "-I- CbmMuchMcbm: " << nEntries << " entries to add." << endl;
+  LOG(INFO) << fName << ": " << nEntries << " entries to add." << FairLogger::endl;
   TClonesArray& clref = *cl2;
   CbmMuchPoint* oldpoint = NULL;
   for (Int_t i=0; i<nEntries; i++) {
@@ -246,8 +245,7 @@ void CbmMuchMcbm::CopyClones(TClonesArray* cl1, TClonesArray* cl2, Int_t offset)
     new (clref[fPosIndex]) CbmMuchPoint(*oldpoint);
     fPosIndex++;
   }
-  cout << " -I- CbmMuchMcbm: " << cl2->GetEntriesFast() << " merged entries."
-       << endl;
+  LOG(INFO) << fName << ": " << cl2->GetEntriesFast() << " merged entries." << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
@@ -261,9 +259,9 @@ CbmMuchPoint* CbmMuchMcbm::AddHit(Int_t trackID, Int_t detID, TVector3 posIn,
   TClonesArray& clref = *fMuchCollection;
   Int_t size = clref.GetEntriesFast();
   if (fVerboseLevel>1)
-    cout << "-I- CbmMuchMcbm: Adding Point at (" << posIn.X() << ", " << posIn.Y()
+    LOG(INFO) << fName << ": Adding Point at (" << posIn.X() << ", " << posIn.Y()
 	 << ", " << posIn.Z() << ") cm,  detector " << detID << ", track "
-	 << trackID << ", energy loss " << eLoss*1e06 << " keV" << endl;
+	 << trackID << ", energy loss " << eLoss*1e06 << " keV" << FairLogger::endl;
 
   return new(clref[size]) CbmMuchPoint(trackID, detID, posIn, posOut,
 				       momIn, momOut, time, length, eLoss);
