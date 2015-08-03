@@ -22,8 +22,9 @@ using std::vector;
 
 // need to set this root include path:
 // include path: -I/opt/cbm/fairsoft_jul15p1/installation/include/root -I/opt/cbm/fairroot_v-15.07-fairsoft_jul15p1/include -I/opt/cbm/fairsoft_jul15p1/installation/include
-//.include $SIMPATH/include
-//.include $FAIRROOTPATH/include
+// .include $SIMPATH/include
+// .include $FAIRROOTPATH/include
+// .x 'matbudget_ana_mcbm_sts.C++("sts_v18e")'
 
 Int_t matbudget_ana_mcbm_sts(const char* inGeo, Int_t nEvents=10000000)
 {
