@@ -33,11 +33,11 @@ Int_t matbudget_ana_mcbm_sts(const char* inGeo, Int_t nEvents=10000000)
   TString geoVersion(inGeo);
   TString inFile = "data/matbudget." + geoVersion + ".mc.root";
   TFile* input = new TFile(inFile);
-	if ( ! input ) {
-		cout << "*** matbudget_ana: Input file " << inFile << " not found!\n"
-		     << "Be sure to run matbudget_mc.C before for the respective " + geoVersion + " geometry!" << endl;
-		exit;
-	}
+  if ( ! input ) {  // this is not checked in compiled mode
+  	cout << "*** matbudget_ana: Input file " << inFile << " not found!\n"
+  	     << "Be sure to run matbudget_mc.C before for the respective " + geoVersion + " geometry!" << endl;
+  	exit;
+  }
 
   // Output file (material maps)
   TString outFile = geoVersion + "_matbudget.root";
