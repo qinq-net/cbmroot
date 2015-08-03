@@ -60,8 +60,8 @@ void sis18_mcbm_setup()
   tofDigi      = "mcbm/tof_" + tofTag + ".digi.par";
 
   // -----  Material budget files -------------------------------------------
-  mvdMatBudget = "mcbm/mvd_matbudget_" + mvdTag + ".root";
-  stsMatBudget = "mcbm/sts_matbudget_" + stsTag + ".root";
+  mvdMatBudget = "mcbm/mvd_" + mvdTag + "_matbudget.root";
+  stsMatBudget = "mcbm/sts_" + stsTag + "_matbudget.root";
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "mcbm/cave_mcbm.geo";
