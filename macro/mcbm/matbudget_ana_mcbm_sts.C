@@ -25,7 +25,7 @@ using std::vector;
 //.include $SIMPATH/include
 //.include $FAIRROOTPATH/include
 
-Int_t matbudget_ana_mcbm_mvd(const char* inGeo, Int_t nEvents=10000000)
+Int_t matbudget_ana_mcbm_sts(const char* inGeo, Int_t nEvents=10000000)
 {
 	
   // Input file (MC)
@@ -53,14 +53,12 @@ Int_t matbudget_ana_mcbm_mvd(const char* inGeo, Int_t nEvents=10000000)
   //  const int rMax      = 55;      // maximal radius for histograms (for both x and y)
   const int nStations = 2;       // number of STS stations
   const int nBins     = 300;    // number of bins in histograms (in both x and y)
-  //  const int rMax      = 16;      // maximal radius for histograms (for both x and y)
-  const int rMax      = 8;      // maximal radius for histograms (for both x and y)
+  const int rMax      = 16;      // maximal radius for histograms (for both x and y)
   TProfile2D* hStaRadLen[nStations];
   for ( int i = 0; i < nStations; ++i ) {
     TString name = "Radiation Thickness [%],";
     name += " Station";
-//    name += i+1;  // STS
-    name += i;  // MVD
+    name += i+1;
     hStaRadLen[i] = new TProfile2D(name, name, nBins,-rMax, rMax, nBins,-rMax, rMax);
   }
   
@@ -108,10 +106,8 @@ Int_t matbudget_ana_mcbm_mvd(const char* inGeo, Int_t nEvents=10000000)
       TrackLength[point->GetTrackID()] += posDif.Mag();
 
       // Determine station number
-//      int iStation    =  posIn.Z()/10  - 3 + 0.5; // STS // suppose equidistant stations at 30-100 cm
-//      int iStationOut =  posOut.Z()/10 - 3 + 0.5; // STS 
-      int iStation    =  posIn.Z()/5  - 1 + 0.5; // MVD
-      int iStationOut =  posOut.Z()/5 - 1 + 0.5; // MVD
+      int iStation    =  posIn.Z()/10  - 3 + 0.5; // suppose equidistant stations at 30-100 cm
+      int iStationOut =  posOut.Z()/10 - 3 + 0.5;
       if ( iStationOut != iStation) continue;
       if ( iStation >= nStations || iStation < 0 ) continue;
       RadThick[iStation] += radThick;
@@ -146,8 +142,7 @@ Int_t matbudget_ana_mcbm_mvd(const char* inGeo, Int_t nEvents=10000000)
     hStaRadLen[iStation]->GetXaxis()->SetTitle("x [cm]");
     hStaRadLen[iStation]->GetYaxis()->SetTitle("y [cm]");
     //hStaRadLen[i]->GetZaxis()->SetTitle("radiation thickness [%]");
-    //    hStaRadLen[iStation]->SetAxisRange(0, 2, "Z");  // STS
-    hStaRadLen[iStation]->SetAxisRange(0, 0.5, "Z");  // MVD
+    hStaRadLen[iStation]->SetAxisRange(0, 2, "Z");
     hStaRadLen[iStation]->Draw("colz");
     hStaRadLen[iStation]->Write();
   }

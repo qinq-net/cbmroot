@@ -11,9 +11,8 @@
 //
 // --------------------------------------------------------------------------
 
-//void matbudget_mc(const char* stsGeo, Int_t nEvents = 10)
-//void matbudget_mc_mcbm(const char* stsGeo, Int_t nEvents = 10000000)  // +-50 x +-50
-void matbudget_mc_mcbm(const char* stsGeo, Int_t nEvents = 900000)  // +-15 x +-15 = 0.09 ratio
+//void matbudget_mc_mcbm_sts(const char* inGeo, Int_t nEvents = 10000000)  // +-50 x +-50
+void matbudget_mc_mcbm_sts(const char* inGeo, Int_t nEvents = 1000000)  // +-15 x +-15 = 0.09 ratio
 {
 
   // ========================================================================
@@ -21,12 +20,12 @@ void matbudget_mc_mcbm(const char* stsGeo, Int_t nEvents = 900000)  // +-15 x +-
   	
 
   // ----- Paths and file names  --------------------------------------------
-  TString stsVersion(stsGeo); 
+  TString geoVersion(inGeo); 
   TString inDir   = gSystem->Getenv("VMCWORKDIR");
   TString inFile  = inDir + "/input/urqmd.ftn14";
   TString outDir  = "data";
-  TString outFile = outDir + "/matbudget." + stsVersion + ".mc.root";
-  TString parFile = outDir + "/matbudget." + stsVersion + ".params.root";
+  TString outFile = outDir + "/matbudget." + geoVersion + ".mc.root";
+  TString parFile = outDir + "/matbudget." + geoVersion + ".params.root";
   
   // -----  Geometries  -----------------------------------------------------
   TString caveGeom   = "cave.geo";
@@ -34,7 +33,7 @@ void matbudget_mc_mcbm(const char* stsGeo, Int_t nEvents = 900000)  // +-15 x +-
   TString pipeGeom   = "";
   TString magnetGeom = "";
   TString mvdGeom    = "";
-  TString stsGeom    = "mcbm/sts_"+stsVersion+".geo.root";
+  TString stsGeom    = "mcbm/sts_" + geoVersion + ".geo.root";
   TString richGeom   = "";
   TString trdGeom    = "";
   TString tofGeom    = "";
@@ -145,8 +144,8 @@ void matbudget_mc_mcbm(const char* stsGeo, Int_t nEvents = 900000)  // +-15 x +-
   // starting at z = 0.
   // The starting points in x and y are chosen such as to illuminate the STS.
   FairBoxGenerator* boxGen = new FairBoxGenerator(0, 1);
-  //  boxGen->SetBoxXYZ(-50.,-50.,50.,50.,0.);
-  boxGen->SetBoxXYZ(-15.,-15.,15.,15.,0.);
+  //  boxGen->SetBoxXYZ(-50.,-50.,50.,50.,0.);  // STS SIS100
+  boxGen->SetBoxXYZ(-15.,-15.,15.,15.,0.);  // STS mCBM
   boxGen->SetPRange(0.1,0.5);
   boxGen->SetThetaRange(0.,0.);
   boxGen->SetPhiRange(0.,360.);
