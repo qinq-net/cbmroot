@@ -1,4 +1,4 @@
-void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Cern", Int_t iSet=0, Int_t iSel2=0) 
+void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Cern", Int_t iSet=0, Int_t iSel2=0, Int_t iTrackingSetup=3) 
 {
    Int_t iVerbose = 1;
    // Specify log level (INFO, DEBUG, DEBUG1, ...)
@@ -18,7 +18,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    TString InputDigiFile = paramDir + "/digi_" + cFileId + Form("_%03d",iSet) + ".out.root";
    TString OutputFile    = paramDir + "/hits_" + cFileId + Form("_%03d%1d",iSet,iSel2) + ".out.root";
    TString cAnaFile=Form("%s_%03d%1d_%1d_tofAnaTestBeam.hst.root",cFileId,iSet,iSel2,iSel);
-   TString cTrkFile=Form("%s_%03d%1d_%1d_tofFindTracks.hst.root",cFileId,iSet,iSel2,iSel);
+   TString cTrkFile=Form("%s_tofFindTracks.hst.root",cFileId);
 
    cout << " InputDigiFile = "
 	<< InputDigiFile
@@ -92,12 +92,12 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    CbmKF* kalman = new CbmKF();
 
    CbmTofTrackFinder* tofTrackFinder= new CbmTofTrackFinderNN();
-   tofTrackFinder->SetMaxTofTimeDifference(10000.);  // in ps/cm 
+   tofTrackFinder->SetMaxTofTimeDifference(5000.);// in ps/cm 
    tofTrackFinder->SetTxLIM(0.3);                  // max slope dx/dz
    tofTrackFinder->SetTyLIM(0.2);                  // max dev from mean slope dy/dz
-   tofTrackFinder->SetTyMean(0.18);                // mean slope dy/dz
-   tofTrackFinder->SetSIGLIM(3.);                 // max matching chi2
-   tofTrackFinder->SetSIGT(100.);               // in ps
+   tofTrackFinder->SetTyMean(0.1);                // mean slope dy/dz
+   tofTrackFinder->SetSIGLIM(2.);                 // max matching chi2
+   tofTrackFinder->SetSIGT(100.);                // in ps
    tofTrackFinder->SetSIGX(1.);                  // in cm
    tofTrackFinder->SetSIGY(1.);                  // in cm
    CbmTofTrackFitter* tofTrackFitter= new CbmTofTrackFitterKF(0,211);
@@ -107,9 +107,9 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
    tofFindTracks->UseFinder(tofTrackFinder);
    tofFindTracks->UseFitter(tofTrackFitter);
    tofFindTracks->SetCorMode(iGenCor);           // valid options: 0,1,2
-   tofFindTracks->SetTtTarg(33.3);                // target value for inverse velocity
-   tofFindTracks->SetCalParFileName(cTrkFile);   // Tracker parameter file name  
-   switch (Int_t iTrackingSetup=3){
+   tofFindTracks->SetTtTarg(33.7);               // target value for inverse velocity, > 33.3 !
+   tofFindTracks->SetCalParFileName(cTrkFile);   // Tracker parameter value file name  
+   switch (iTrackingSetup){
    case 0:                                       // calibration mode
      tofFindTracks->SetMinNofHits(4);
      tofFindTracks->SetNStations(5);
@@ -122,7 +122,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      break;
    case 2:                                         // for vertex
      tofFindTracks->SetMinNofHits(2);
-     tofFindTracks->SetNStations(5);
+     tofFindTracks->SetNStations(4);
      tofFindTracks->SetStations(3974);             // upper part of Feb15 setup 
      break;
    case 3:                                         //"Standard" for timing resolution 
@@ -131,24 +131,39 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      tofFindTracks->SetStations(3974);             // upper part of Feb15 setup 
      break;
    case 4:                                         //"Standard" 
-     tofFindTracks->SetMinNofHits(3);
+     tofFindTracks->SetMinNofHits(4);
      tofFindTracks->SetNStations(5);
      tofFindTracks->SetStations(53974);             // upper part of Feb15 setup 
      break;
    case 5:                                         //for vertex analysis 
-     tofFindTracks->SetMinNofHits(2);
-     tofFindTracks->SetNStations(4);
-     tofFindTracks->SetStations(3974);             // upper part of Feb15 setup 
+     tofFindTracks->SetMinNofHits(3);
+     tofFindTracks->SetNStations(5);
+     tofFindTracks->SetStations(53974);             // upper part of Feb15 setup 
      break;
    case 6:                                         //for open vertex analysis 
      tofFindTracks->SetMinNofHits(1);
-     tofFindTracks->SetNStations(4);
-     tofFindTracks->SetStations(3974);             // upper part of Feb15 setup 
+     tofFindTracks->SetNStations(5);
+     tofFindTracks->SetStations(53974);             // upper part of Feb15 setup 
      break;
    case 10:
      tofFindTracks->SetMinNofHits(2);
      tofFindTracks->SetNStations(3);
      tofFindTracks->SetStations(681);         // lower part: Buc2013, THUpad, BucRef  
+     break;
+   case 73:                                         //for Ana - class, Dut=7, sel2=3
+     tofFindTracks->SetMinNofHits(2);
+     tofFindTracks->SetNStations(3);
+     tofFindTracks->SetStations(394);             // upper part of Feb15 setup 
+     break;
+   case 93:                                         //for Ana - class, Dut=9, sel2=3 
+     tofFindTracks->SetMinNofHits(2);
+     tofFindTracks->SetNStations(3);
+     tofFindTracks->SetStations(374);             // upper part of Feb15 setup 
+     break;
+   case 34:                                       //for Ana - class, Dut=3, sel2=4 
+     tofFindTracks->SetMinNofHits(2);
+     tofFindTracks->SetNStations(3);
+     tofFindTracks->SetStations(974);             // upper part of Feb15 setup 
      break;
    default:
      cout << "Tracking setup "<<iTrackingSetup<<" not implemented "<<endl;
@@ -194,10 +209,14 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
      iRSel=iSel2;
      tofAnaTestbeam->SetTShift(50.);  // initialization
    }
-   tofAnaTestbeam->SetMrpcSel2(iSel2); // initialization of second selector Mrpc 
+   tofAnaTestbeam->SetMrpcSel2(iSel2);     // initialization of second selector Mrpc 
    tofAnaTestbeam->SetChi2Lim(10000.);     // initialization of Chi2 selection limit  
    tofAnaTestbeam->SetBeamRefSmType(iRSel); // common reaction reference 
    tofAnaTestbeam->SetBeamRefSmId(0);
+   tofAnaTestbeam->SetSIGLIM(3.);                // max matching chi2
+   tofAnaTestbeam->SetSIGT(100.);                // in ps
+   tofAnaTestbeam->SetSIGX(1.);                  // in cm
+   tofAnaTestbeam->SetSIGY(1.);                  // in cm
 
    switch (iSel) {
    case 0:                                 // upper part of setup: P2 - P5
@@ -394,18 +413,19 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	 }
 	 break;
 
-   case 97:                                 // upper part of setup: P2 - USTC
+   case 97:                                 // upper part of setup: THU - USTC
 	 tofAnaTestbeam->SetDut(9);        // Device under test   
 	 tofAnaTestbeam->SetMrpcRef(7);    // Reference RPC     
 	 tofAnaTestbeam->SetCh4Sel(8.5);    // Center of channel selection window
 	 tofAnaTestbeam->SetDCh4Sel(7.);   // Width  of channel selection window
 	 tofAnaTestbeam->SetTOffD4(13000.);  // initialization
-	 tofAnaTestbeam->SetChi2Lim(10.);     // initialization of Chi2 selection limit  
+	 tofAnaTestbeam->SetChi2Lim(1000.);     // initialization of Chi2 selection limit  
 	 tofAnaTestbeam->SetSel2TOff(450.);   // Shift Sel2 time peak to 0 
 	 switch(iSel2){
 	 case 3:
 	   tofAnaTestbeam->SetChi2Lim(10.);     // initialization of Chi2 selection limit  
-	   tofAnaTestbeam->SetSel2TOff(450.);   // Shift Sel2 time peak to 0 
+	   tofAnaTestbeam->SetSel2TOff(-2180.);   // Shift Sel2 time peak to 0 
+	   tofAnaTestbeam->SetTShift(-2500.);     // Shift D vs 4 (BRef vs MRef)	  
 	   break;
 
 	 case 4:
@@ -419,17 +439,24 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	 tofAnaTestbeam->SetDut(3);        // Device under test   
 	 tofAnaTestbeam->SetMrpcRef(9);    // Reference RPC     
 	 tofAnaTestbeam->SetCh4Sel(12.5);    // Center of channel selection window
-	 tofAnaTestbeam->SetDCh4Sel(11.);   // Width  of channel selection window
+	 tofAnaTestbeam->SetDCh4Sel(111.5);   // Width  of channel selection window
 	 switch(iSel2){
 	 case 4:
 	   tofAnaTestbeam->SetTOffD4(12000.);  // initialization
 	   tofAnaTestbeam->SetChi2Lim(10.);     // initialization of Chi2 selection limit  
-	   tofAnaTestbeam->SetSel2TOff(-150.);   // Shift Sel2 time peak to 0 
+	   tofAnaTestbeam->SetTShift(2300.);     // Shift D vs 4 (BRef vs MRef)	  
+	   tofAnaTestbeam->SetSel2TOff(2400.);   // Shift Sel2 time peak to 0 
 	   break;
 	 case 7:
 	   tofAnaTestbeam->SetChi2Lim(10.);     // initialization of Chi2 selection limit  
-	   tofAnaTestbeam->SetSel2TOff(1200.);   // Shift Sel2 time peak to 0 
-	   tofAnaTestbeam->SetTShift(800.);      // Shift D vs 4 (BRef vs MRef)
+	   if(iRSel==5){
+	    tofAnaTestbeam->SetSel2TOff(1200.);   // Shift Sel2 time peak to 0 
+	    tofAnaTestbeam->SetTShift(-9750.);     // Shift D vs 4 (BRef vs MRef)	  
+	   }
+	   else{
+	    tofAnaTestbeam->SetSel2TOff(1200.);   // Shift Sel2 time peak to 0 
+	    tofAnaTestbeam->SetTShift(800.);      // Shift D vs 4 (BRef vs MRef)
+	   }
 	   break;
 	 }
 	 break;
@@ -467,7 +494,7 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	 tofAnaTestbeam->SetMrpcRef(9);    // Reference RPC     
 	 tofAnaTestbeam->SetPlaSelect(0);  // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
 	 tofAnaTestbeam->SetCh4Sel(12.5);    // Center of channel selection window
-	 tofAnaTestbeam->SetDCh4Sel(11.);   // Width  of channel selection window
+	 tofAnaTestbeam->SetDCh4Sel(12.);   // Width  of channel selection window
 	 switch(iSel2){
 	 case 4:
 	   tofAnaTestbeam->SetTOffD4(12000.);  // initialization
@@ -475,8 +502,9 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	   tofAnaTestbeam->SetSel2TOff(40.);   // Shift Sel2 time peak to 0 
 	   break;
 	 case 3:
-	   tofAnaTestbeam->SetChi2Lim(10.);     // initialization of Chi2 selection limit  
-	   tofAnaTestbeam->SetSel2TOff(-400.);   // Shift Sel2 time peak to 0 
+	   tofAnaTestbeam->SetChi2Lim(10.);       // initialization of Chi2 selection limit  
+	   tofAnaTestbeam->SetTShift(-1300.);     // Shift D vs 4 (BRef vs MRef)	  
+	   tofAnaTestbeam->SetSel2TOff(-1080.);   // Shift Sel2 time peak to 0 
 	   break;
 	 }
 	 break;
