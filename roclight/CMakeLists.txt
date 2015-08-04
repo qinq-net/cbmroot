@@ -23,6 +23,13 @@ Set(SRCS
   src_roc/OperList.cxx
 )
 
+Set(HEADERS 
+  roc/Message.h
+  roc/Board.h
+  roc/Iterator.h
+  roc/OperList.h
+)
+
 Set(LIBRARY_NAME RocLight)
 
 GENERATE_LIBRARY()
