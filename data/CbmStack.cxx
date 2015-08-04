@@ -207,7 +207,7 @@ void CbmStack::AddParticle(TParticle* oldPart)
 void CbmStack::FillTrackArray()
 {
 
-  LOG(INFO) << "Filling MCTrack array..." << FairLogger::endl;
+  LOG(DEBUG) << "Filling MCTrack array..." << FairLogger::endl;
 
   // --> Reset index map and number of output tracks
   fIndexMap.clear();
@@ -255,7 +255,7 @@ void CbmStack::FillTrackArray()
 void CbmStack::UpdateTrackIndex(TRefArray* detList)
 {
 
-  LOG(INFO) << "Updating track indizes..." << FairLogger::endl;
+  LOG(DEBUG) << "Updating track indizes..." << FairLogger::endl;
   Int_t nColl = 0;
 
   // First update mother ID in MCTracks
@@ -302,7 +302,7 @@ void CbmStack::UpdateTrackIndex(TRefArray* detList)
   }     // List of active detectors
 
   delete detIter;
-  LOG(INFO) << "...stack and " << nColl << " collections updated." << FairLogger::endl;
+  LOG(DEBUG) << "...stack and " << nColl << " collections updated." << FairLogger::endl;
 
 }
 // -------------------------------------------------------------------------
@@ -336,11 +336,11 @@ void CbmStack::Register()
 // -----   Public method Print  --------------------------------------------
 void CbmStack::Print(Int_t iVerbose) const
 {
-  LOG(INFO) << "Number of primaries        = "
+  LOG(DEBUG) << "Number of primaries        = "
             << fNPrimaries << FairLogger::endl;
-  LOG(INFO) << "Total number of particles  = "
+  LOG(DEBUG) << "Total number of particles  = "
             << fNParticles << FairLogger::endl;
-  LOG(INFO) << "Number of tracks in output = "
+  LOG(DEBUG) << "Number of tracks in output = "
             << fNTracks << FairLogger::endl;
   for (Int_t iTrack=0; iTrack<fNTracks; iTrack++) {
     ((CbmMCTrack*) fTracks->At(iTrack))->Print(iTrack);
