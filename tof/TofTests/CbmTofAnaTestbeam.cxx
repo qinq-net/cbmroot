@@ -17,6 +17,7 @@
 #include "CbmTofDigiBdfPar.h" // in tof/TofParam
 #include "CbmTofAddress.h"    // in cbmdata/tof
 #include "CbmMatch.h"
+#include "CbmTofTracklet.h"
 
 #include "CbmTofTestBeamClusterizer.h"
 
@@ -35,6 +36,7 @@
 #include "TClonesArray.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TH3.h"
 #include "TProfile.h"
 #include "TString.h"
 #include "TFile.h"
@@ -215,6 +217,17 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fhDT04DX4_2(NULL),
     fhDT04DY4_2(NULL),
     fhDT04DT4_2(NULL),
+    fhDutPullX(NULL),
+    fhDutPullY(NULL),
+    fhDutPullZ(NULL),
+    fhDutPullT(NULL),
+    fhDutPullTB(NULL),
+    fhDutChiFound(NULL),
+    fhDutChiMissed(NULL),
+    fhDutChiMatch(NULL),
+    fhDutXY_Found(NULL),     
+    fhDutXY_Missed(NULL), 
+    fhDutXYDT(NULL),
     fStart(),
     fStop(),
     fCalParFileName(""),
@@ -249,7 +262,12 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fiPlaSelect(0),
     fiBeamRefSmType(0),
     fiBeamRefSmId(0),
-    fiDutNch(0)
+    fiDutNch(0),
+    fSIGLIM(3.),
+    fSIGT(100.),
+    fSIGX(1.),
+    fSIGY(1.),
+    fFindTracks(NULL)
 {
   cout << "CbmTofTests: Task started " << endl;
 }
@@ -414,6 +432,17 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhDT04DX4_2(NULL),
     fhDT04DY4_2(NULL),
     fhDT04DT4_2(NULL),
+    fhDutPullX(NULL),
+    fhDutPullY(NULL),
+    fhDutPullZ(NULL),
+    fhDutPullT(NULL),
+    fhDutPullTB(NULL), 
+    fhDutChiFound(NULL),
+    fhDutChiMissed(NULL),
+    fhDutChiMatch(NULL),
+    fhDutXY_Found(NULL),     
+    fhDutXY_Missed(NULL), 
+    fhDutXYDT(NULL),
     fStart(),
     fStop(),
     fCalParFileName(""),
@@ -448,7 +477,12 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fiPlaSelect(0),
     fiBeamRefSmType(0),
     fiBeamRefSmId(0),
-    fiDutNch(0)
+    fiDutNch(0),
+    fSIGLIM(3.),
+    fSIGT(100.),
+    fSIGX(1.),
+    fSIGY(1.),
+    fFindTracks(NULL)
 {
 }
 // ------------------------------------------------------------------
@@ -478,6 +512,11 @@ InitStatus CbmTofAnaTestbeam::Init()
 
    if( kFALSE == CreateHistos() )
       return kFATAL;
+
+  fFindTracks = CbmTofFindTracks::Instance();
+  if (NULL == fFindTracks) 
+  LOG(WARNING) << Form("CbmTofAnaTestbeam::Init : no FindTracks instance found")
+	     << FairLogger::endl;
 
    return kSUCCESS;
 }
@@ -596,7 +635,7 @@ Bool_t   CbmTofAnaTestbeam::RegisterInputs()
    fTofTrackColl   = (TClonesArray *) fManager->GetObject("TofTracks");
    if( NULL == fTofTrackColl)
    {
-      LOG(ERROR)<<"CbmTofAnaTestbeam::RegisterInputs => Could not get the TofTrack TClonesArray!!!"<<FairLogger::endl;
+      LOG(ERROR)<<"CbmTofAnaTestbeam::RegisterInputs => Could not get the TofTracklet TClonesArray!!!"<<FairLogger::endl;
      //      return kFALSE;
    } // if( NULL == fTofHitsColl)
 
@@ -1063,6 +1102,48 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			    Form("Time - time correlation; #DeltaT4 [ps]; #DeltaT04 [ps]"),
 			    50, -5000., 5000., 100, -DTMAX, DTMAX); 
 
+  // Dut histos
+
+    fhDutPullX=new TH1F(  Form("hDutPullX_Sm_%d",fiDut),
+			    Form("hDutPullX_Sm_%d;  #DeltaX",fiDut),
+			    100, -10., 10.);  
+    fhDutPullY=new TH1F(  Form("hDutPullY_Sm_%d",fiDut),
+			    Form("hDutPullY_Sm_%d;  #DeltaY",fiDut),
+			    100, -10., 10.);  
+    fhDutPullZ=new TH1F(  Form("hDutPullZ_Sm_%d",fiDut),
+			    Form("hDutPullZ_Sm_%d;  #DeltaZ",fiDut),
+			    100, -200., 200.);  
+    fhDutPullT=new TH1F(  Form("hDutPullT_Sm_%d",fiDut),
+			    Form("hDutPullT_Sm_%d;  #DeltaT",fiDut),
+			    100, -500., 500.); 
+    fhDutPullTB=new TH1F( Form("hDutPullTB_Sm_%d",fiDut),
+			    Form("hDutPullTB_Sm_%d;  #DeltaT",fiDut),
+			    150, -750., 750.); 
+
+    fhDutChiFound=new TH1F(  Form("hDutChi_Found_Sm_%d",fiDut),
+			    Form("hDutChi_Found_Sm_%d;  #chi",fiDut),
+			    50, 0., 10.);  
+    fhDutChiMissed=new TH1F(  Form("hDutChi_Missed_Sm_%d",fiDut),
+			    Form("hDutChi_Missed_Sm_%d;  #chi",fiDut),
+			    50, 0., 10.);  
+
+    fhDutChiMatch=new TH1F(  Form("hDutChi_Match_Sm_%d",fiDut),
+			    Form("hDutChi_Match_Sm_%d;  #chi",fiDut),
+			    50, 0., 10.);  
+    Double_t XSIZ=20.; 
+    Double_t DTSIZ=500;
+    Int_t Nbins=40.;
+    fhDutXY_Found = new TH2F( Form("hDutXY_Found_%d",fiDut),
+			    Form("hDutXY_Found_%d;  x(cm); y (cm)",fiDut),
+			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ); 
+    fhDutXY_Missed = new TH2F( Form("hDutXY_Missed_%d",fiDut),
+			    Form("hDutXY_Missed_%d;  x(cm); y (cm)",fiDut),
+			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ); 
+
+    fhDutXYDT      = new TH3F( Form("hDutXYDT_%d",fiDut), 
+			    Form("hDutXYDT_%d;  x(cm); y (cm); #Deltat (ps)",fiDut),
+			    Nbins, -XSIZ, XSIZ, Nbins, -XSIZ, XSIZ, Nbins, -DTSIZ, DTSIZ); 
+
    gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
 
    return kTRUE;
@@ -1089,10 +1170,11 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    CbmTofCell  *fChannelInfo3;
    CbmTofCell  *fChannelInfo4;
 
-   Int_t iNbTofDigis, iNbTofHits;
+   Int_t iNbTofDigis, iNbTofHits, iNbTofTracks;
 
-   iNbTofDigis   = fTofDigisColl->GetEntriesFast();
+   //   iNbTofDigis   = fTofDigisColl->GetEntriesFast();
    iNbTofHits    = fTofHitsColl->GetEntriesFast();
+
    /*
    LOG(INFO)<<Form("CbmTofAnaTestbeam::FillHistos for %d digis and %d Tof hits",iNbTofDigis,iNbTofHits)
 	    <<FairLogger::endl;
@@ -1179,7 +1261,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
       }
    } // reaction loop end;
    fhBRefMul->Fill(dMulD);
-   LOG(DEBUG)<<Form("CbmTofAnaTestbeam::FillHistos: Diamond mul %f, time: %f",dMulD,dTDia)
+   LOG(DEBUG)<<Form("CbmTofAnaTestbeam::FillHistos: Diamond mul %f, time: %6.2e",dMulD,dTDia)
 	     <<FairLogger::endl;
 
    // process counter hits, fill Chi2List, check selectors 
@@ -1353,7 +1435,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	     dDTD4=pHit2->GetTime()-dTDia + fdTShift;
 	     fhDTD4->Fill(dDTD4);
 
-	     LOG(DEBUG1)<<Form("CbmTofAnaTestbeam:FillHisto: dDTD4 %f, min: %f",dDTD4,dDTD4Min)
+	     LOG(DEBUG1)<<Form("CbmTofAnaTestbeam:FillHisto: dDTD4 %6.2f, min: %6.2e",dDTD4,dDTD4Min)
 			<<FairLogger::endl;
 
 	     if( TMath::Abs(dDTD4)<fdDTD4MAX &&        // single selection scheme, selector 0
@@ -1576,6 +1658,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      hitpos2[0]=pHit2->GetX();
      hitpos2[1]=pHit2->GetY();
      hitpos2[2]=pHit2->GetZ();
+
      TGeoNode* cNode= gGeoManager->GetCurrentNode();
      gGeoManager->MasterToLocal(hitpos2, hitpos2_local);
 
@@ -1844,11 +1927,190 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
     } // end of if(iNbMatchedHits>0)
    }
 
+ // Tracklet based analysis
+
+
    if(NULL!=fTofTrackColl){
-     if(fTofTrackColl->GetEntries()>0){
-       // Track Analysis 
-     }
-   }
+     iNbTofTracks  = fTofTrackColl->GetEntries();
+     Int_t NStations = fFindTracks->GetNStations();
+     LOG(DEBUG)<<Form("Tracklet analysis of %d tracklets from %d stations",iNbTofTracks,NStations)<< FairLogger::endl;
+
+     if(iNbTofTracks>0){   // Tracklet Analysis
+                           // prepare Dut Hit List
+
+       Int_t iChIdDut   = CbmTofAddress::GetUniqueAddress(0,0,0,0,fiDut);
+       fChannelInfo = fDigiPar->GetCell( iChIdDut );
+       TGeoNode *fNode=        // prepare global->local trafo
+	 gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
+       TGeoNode* cNode= gGeoManager->GetCurrentNode();
+       Double_t  dDutzPos=fChannelInfo->GetZ();
+       Double_t  hitpos[3], hitpos_local[3];
+
+       vector <CbmTofHit *> vDutHit;
+       for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
+       {
+	 pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
+	 if(NULL == pHit) continue;
+	 Int_t iDetId = (pHit->GetAddress() & DetMask);
+	 Int_t iSmType=CbmTofAddress::GetSmType( iDetId );
+
+	 if(iSmType == fiDut) {
+	   vDutHit.push_back(pHit);
+	 }
+       }
+	
+       LOG(DEBUG)<<Form("Tracklet analysis of %d tracks and %d Dut Hits ",iNbTofTracks,(int)vDutHit.size())<< FairLogger::endl;
+
+       std::vector<std::map <Double_t, Int_t> > vTrkMap; //contains the tracks for a given hit
+       std::vector<std::map <Double_t, Int_t> > vHitMap; //contains the hits for a given track
+
+       vTrkMap.resize(vDutHit.size());
+       vHitMap.resize(iNbTofTracks);
+
+       for (Int_t iTrk=0; iTrk<iNbTofTracks;iTrk++) { // loop over all Tracklets
+	 CbmTofTracklet *pTrk = (CbmTofTracklet*)fTofTrackColl->At(iTrk);
+	 if(NULL == pTrk) continue;
+	 if (pTrk->GetNofHits() < NStations) continue;  
+
+	 // Calculate positions and time in Dut plane
+	 Double_t dXex=pTrk->GetFitX(dDutzPos);
+	 Double_t dYex=pTrk->GetFitY(dDutzPos);
+	 Double_t dR=TMath::Sqrt(dXex*dXex + dYex*dYex + dDutzPos*dDutzPos);
+	 Double_t dTex=pTrk->GetFitT(dR);
+
+	 for (Int_t i=0; i<vDutHit.size();i++){ // loop over Dut Hits
+	  Double_t dChi = TMath::Sqrt(TMath::Power(TMath::Abs(dTex-vDutHit[i]->GetTime())/fSIGT,2)
+				     +TMath::Power(TMath::Abs(dXex-vDutHit[i]->GetX())/fSIGX,2)
+	   			     +TMath::Power(TMath::Abs(dYex-vDutHit[i]->GetY())/fSIGY,2))/3;
+	  LOG(DEBUG1)<<Form(" Inspect track %d, hit %d Chi %6.2f,%6.2f, T  %6.2f,%6.2f ",
+			    iTrk,i,dChi,fSIGLIM,dTex,vDutHit[i]->GetTime())
+		    << FairLogger::endl;
+
+	  if(dChi < fSIGLIM) {       // acceptable match
+            if(vHitMap[iTrk].size()>0) {
+	      Int_t iCnt=0;
+	      for ( std::map<Double_t,Int_t>::iterator it=vHitMap[iTrk].begin(); it!=vHitMap[iTrk].end(); it++){
+		iCnt++;
+		// LOG(DEBUG)<<Form(" HitMap[%d]: cnt %d, check %d, %6.2f > %6.2f ?",iTrk,iCnt, it->second,it->first,dChi)
+		// << FairLogger::endl;
+                if(it->first > dChi) {
+		  vHitMap[iTrk].insert(--it,std::pair<Double_t, Int_t>(dChi,i));
+		  //LOG(DEBUG)<<Form(" HitMap[%d]: ins at %d:  %d, %6.2f ",iTrk,iCnt,it->second,it->first)<< FairLogger::endl;
+		  break;
+		}
+	      }
+	    }
+	    else{
+	      vHitMap[iTrk].insert(std::pair<Double_t, Int_t>(dChi,i));
+	      //LOG(DEBUG)<<Form(" HitMap[%d]:ins  %d, %6.2f ",iTrk,i,dChi)<< FairLogger::endl;
+	    }
+
+            if(vTrkMap[i].size()>0) {
+	      for ( std::map<Double_t,Int_t>::iterator it=vTrkMap[i].begin(); it!=vTrkMap[i].end(); it++){
+               if(it->first > dChi) {
+		  vTrkMap[i].insert(--it,std::pair<Double_t, Int_t>(dChi,iTrk));
+		  break;
+		}	
+	      }
+	    }
+	    else{
+	      vTrkMap[i].insert(std::pair<Double_t, Int_t>(dChi,iTrk));
+	    }
+
+	  }  // end of Chi condition 
+	  if(vTrkMap[i].size()>0)
+	  LOG(DEBUG1)<<Form(" TrkMap[%d]: best %d, %6.4f ",i,vTrkMap[i].begin()->second,vTrkMap[i].begin()->first)
+		    <<FairLogger::endl;
+	 }
+	 if(vHitMap[iTrk].size()>0)
+	 LOG(DEBUG)<<Form(" HitMap[%d]: best %d, %6.4f ",iTrk,vHitMap[iTrk].begin()->second,vHitMap[iTrk].begin()->first)
+		   <<FairLogger::endl;
+       } // tracklet loop end 
+       
+       // inspect assignment results
+       Int_t iCheck = 1;
+       while(iCheck-- > 0)
+       for(Int_t iHit=0; iHit<vDutHit.size(); iHit++) {
+	 if(vTrkMap[iHit].size()>0){ 
+	   Int_t iTrk=vTrkMap[iHit].begin()->second;     // hit was assigned best to track iTrk
+	   if(vHitMap[iTrk].begin()->second == iHit) {   // unique/consistent assignment
+	     LOG(DEBUG)<<Form(" Hit %d -> HitMap[%d]: uni %d, %6.4f ",iHit,iTrk,vHitMap[iTrk].begin()->second,vHitMap[iTrk].begin()->first)
+		       <<FairLogger::endl;
+	     // remove all other assignments of this hit and this track
+	     for ( std::map<Double_t,Int_t>::iterator it=vTrkMap[iHit].begin()++; it != vTrkMap[iHit].end(); it++){
+	       Int_t iTrk1=it->second;
+	       if(iTrk != iTrk1)
+	       for ( std::map<Double_t,Int_t>::iterator it1=vHitMap[iTrk1].begin()++; it1 != vHitMap[iTrk1].end(); it1++){
+		 if(it1->second == iHit) {
+		   vHitMap[iTrk1].erase(it1);
+  	           LOG(DEBUG1)<<Form("    Erase hit %d from  HitMap[%d]",iHit,iTrk1)<<FairLogger::endl;
+		 }
+	       }
+	     }
+	     for ( std::map<Double_t,Int_t>::iterator it=vHitMap[iTrk].begin()++; it != vHitMap[iTrk].end(); it++){
+	       Int_t iHit1=it->second;
+	       if(iHit != iHit1)
+	       for ( std::map<Double_t,Int_t>::iterator it1=vTrkMap[iHit1].begin()++; it1 != vTrkMap[iHit1].end(); it1++){
+		 if(it1->second == iTrk) {
+		   vTrkMap[iHit1].erase(it1);
+  	           LOG(DEBUG1)<<Form("    Erase trk %d from  TrkMap[%d]",iHit1,iTrk)<<FairLogger::endl;
+		 }
+	       }
+	     }
+	   }else{      // mismatch, other track fits even better
+	     LOG(DEBUG)<<Form(" Hit %d -> HitMap[%d]: mis %d, %6.4f < %6.4f ",iHit,iTrk,
+			      vHitMap[iTrk].begin()->second,vHitMap[iTrk].begin()->first,vTrkMap[iHit].begin()->first)
+		       <<FairLogger::endl;
+	   }
+	   LOG(DEBUG)<<Form(" Hit %d -> TrkMap.size:  %d  ",iHit,(int)vTrkMap[iHit].size())
+		     <<FairLogger::endl;
+
+	 }
+       }
+
+
+       // fill tracklet histos 
+       for (Int_t iTrk=0; iTrk<iNbTofTracks;iTrk++) { // loop over all Tracklets
+	 CbmTofTracklet *pTrk = (CbmTofTracklet*)fTofTrackColl->At(iTrk);
+	 if(NULL == pTrk) continue;
+	 if (pTrk->GetNofHits() < NStations) continue;  
+
+	 // Calculate positions and time in Dut plane
+	 Double_t dXex=pTrk->GetFitX(dDutzPos);
+	 Double_t dYex=pTrk->GetFitY(dDutzPos);
+	 Double_t dTex=pTrk->GetFitT(dDutzPos);
+
+	 hitpos[0]=pTrk->GetFitX(dDutzPos);
+	 hitpos[1]=pTrk->GetFitY(dDutzPos);
+	 hitpos[2]=dDutzPos;
+	 gGeoManager->MasterToLocal(hitpos, hitpos_local);
+	 if(vHitMap[iTrk].size()>0){  // matched hit found 
+	   LOG(DEBUG)<<Form(" Fill/process Trk %d, HMul %d,  with DutHitMap.size:  %d,  best hit %d, %6.2f ",
+			    iTrk,pTrk->GetNofHits(),(int)vHitMap[iTrk].size(),vHitMap[iTrk].begin()->second,vHitMap[iTrk].begin()->first)
+		     <<FairLogger::endl;
+
+	   pHit = vDutHit[vHitMap[iTrk].begin()->second];
+	   Double_t dDX = pHit->GetX() - pTrk->GetFitX(pHit->GetZ());    // - tPar->GetX() - tPar->GetTx()*dDZ;
+	   Double_t dDY = pHit->GetY() - pTrk->GetFitY(pHit->GetZ());    // - tPar->GetTy()*dDZ;
+	   Double_t dDT = pHit->GetTime() - pTrk->GetFitT(pHit->GetR()); //pTrk->GetTdif(fStationType[iSt]);
+	   Double_t dDTB= pTrk->GetTdif(fiDut, pHit);                    // ignore pHit in calc of reference
+	   fhDutPullX->Fill(dDX);
+	   fhDutPullY->Fill(dDY);
+	   fhDutPullT->Fill(dDT);
+	   fhDutPullTB->Fill(dDTB);
+	   fhDutChiFound->Fill(pTrk->GetChiSq());
+	   fhDutChiMatch->Fill(vHitMap[iTrk].begin()->first);
+	   fhDutXY_Found->Fill(hitpos_local[0],hitpos_local[1]);  
+	   fhDutXYDT->Fill(hitpos_local[0],hitpos_local[1],dDTB);
+  
+	 }else{                       // no match for this track
+	   fhDutChiMissed->Fill(pTrk->GetChiSq());
+	   fhDutXY_Missed->Fill(hitpos_local[0],hitpos_local[1]);
+	 }                 
+       }
+
+     } // #tracklets > 0 end
+   }  // TclonesArray existing end
    return kTRUE;  
 }  //FillHistos
 // ------------------------------------------------------------------

@@ -5,6 +5,9 @@
 #ifndef _CBMTOFANATESTBEAM_H_
 #define _CBMTOFANATESTBEAM_H_ 1
 
+#include "CbmTofFindTracks.h"
+
+
 class CbmTofGeoHandler;
 class CbmTofCell;
 // Geometry
@@ -110,6 +113,16 @@ class CbmTofAnaTestbeam : public FairTask {
       inline void SetBeamRefSmId    (Int_t ival)        { fiBeamRefSmId   = ival;}
 
       inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
+
+      inline void SetSIGLIM ( Double_t val ) { fSIGLIM = val; }
+      inline void SetSIGT   ( Double_t val ) { fSIGT = val; }
+      inline void SetSIGX   ( Double_t val ) { fSIGX = val; }
+      inline void SetSIGY   ( Double_t val ) { fSIGY = val; }
+
+      inline Double_t GetSIGLIM () { return fSIGLIM; }
+      inline Double_t GetSIGT () { return fSIGT; }
+      inline Double_t GetSIGX () { return fSIGX; }
+      inline Double_t GetSIGY () { return fSIGY; }
 
    private:
       Bool_t   LoadGeometry();
@@ -302,6 +315,18 @@ class CbmTofAnaTestbeam : public FairTask {
       TH2 *fhDT04DX0_2, *fhDT04DY0_2, *fhDT04DT0_2;
       TH2 *fhDT04DX4_2, *fhDT04DY4_2, *fhDT04DT4_2;
 
+      TH1 * fhDutPullX;
+      TH1 * fhDutPullY;
+      TH1 * fhDutPullZ;
+      TH1 * fhDutPullT;
+      TH1 * fhDutPullTB;
+      TH1 * fhDutChiFound;
+      TH1 * fhDutChiMissed;
+      TH1 * fhDutChiMatch;
+      TH2 * fhDutXY_Found;     
+      TH2 * fhDutXY_Missed; 
+      TH3 * fhDutXYDT;     
+
       // Test class performance
  
       // Rates and data rates
@@ -346,7 +371,14 @@ class CbmTofAnaTestbeam : public FairTask {
       Int_t      fiPlaSelect; // Select plastics: 0 - P2, 2 - Buc2013
       Int_t  fiBeamRefSmType; // Beam reference counter 
       Int_t    fiBeamRefSmId; // Beam reference counter 
-      Int_t         fiDutNch; // Number of celss in Device under test
+      Int_t         fiDutNch; // Number of cells in Device under test
+
+      Double_t fSIGLIM;
+      Double_t fSIGT;
+      Double_t fSIGX;
+      Double_t fSIGY;
+
+      CbmTofFindTracks*  fFindTracks;  // Pointer to Task 
 
       ClassDef(CbmTofAnaTestbeam, 1);
 };
