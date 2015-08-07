@@ -27,6 +27,7 @@
 #include "TGeoManager.h"
 #include "TMath.h"
 
+
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -44,7 +45,8 @@ CbmTrd::CbmTrd()
     fELoss(0),
     fPosIndex(0),
     fTrdPoints(new TClonesArray("CbmTrdPoint")),
-    fGeoHandler(new CbmTrdGeoHandler())
+    fGeoHandler(new CbmTrdGeoHandler()),
+    fUseGlobalPhysicsProcesses(kTRUE)
 {
   fVerboseLevel = 1;
 }
@@ -63,7 +65,8 @@ CbmTrd::CbmTrd(const char* name, Bool_t active)
     fELoss(0),
     fPosIndex(0),
     fTrdPoints(new TClonesArray("CbmTrdPoint")),
-    fGeoHandler(new CbmTrdGeoHandler())
+    fGeoHandler(new CbmTrdGeoHandler()),
+    fUseGlobalPhysicsProcesses(kTRUE)
 {
   fVerboseLevel = 1;
 }
@@ -110,6 +113,7 @@ void CbmTrd::SetSpecialPhysicsCuts()
       // the geomanager
       Int_t mat = gGeoManager->GetMaterialIndex("TRDgas");
       TGeoMaterial *trdgas =  gGeoManager->GetMaterial(mat);
+      trdgas->Print();
       Double_t mass = trdgas->GetA();
       Double_t charge = trdgas->GetZ();
 
@@ -142,21 +146,24 @@ void CbmTrd::SetSpecialPhysicsCuts()
       }
 
       // Set new properties, physics cuts etc. for the TRDgas
-      gMC->Gstpar(matIdVMC,"STRA",1.0);
-      gMC->Gstpar(matIdVMC,"PAIR",1.0);
-      gMC->Gstpar(matIdVMC,"COMP",1.0);
-      gMC->Gstpar(matIdVMC,"PHOT",1.0);
-      gMC->Gstpar(matIdVMC,"LOSS",2.0);
-      //gMC->Gstpar(matIdVMC,"PFIS",0.0);
-      gMC->Gstpar(matIdVMC,"ANNI",1.0);
-      gMC->Gstpar(matIdVMC,"BREM",1.0);
-      gMC->Gstpar(matIdVMC,"HADR",1.0);
-      //gMC->Gstpar(matIdVMC,"MUNU",1.0);
-      gMC->Gstpar(matIdVMC,"DCAY",1.0);
-      gMC->Gstpar(matIdVMC,"MULS",1.0);
-      //gMC->Gstpar(matIdVMC,"LABS",0.0);
-      gMC->Gstpar(matIdVMC,"DRAY",1.0);
-      gMC->Gstpar(matIdVMC,"RAYL",1.0);
+      if(!fUseGlobalPhysicsProcesses) {
+	gMC->Gstpar(matIdVMC,"STRA",1.0);
+	gMC->Gstpar(matIdVMC,"PAIR",1.0);
+	gMC->Gstpar(matIdVMC,"COMP",1.0);
+	gMC->Gstpar(matIdVMC,"PHOT",1.0);
+	gMC->Gstpar(matIdVMC,"LOSS",2.0);
+	//gMC->Gstpar(matIdVMC,"PFIS",0.0);
+	gMC->Gstpar(matIdVMC,"ANNI",1.0);
+	gMC->Gstpar(matIdVMC,"BREM",1.0);
+	gMC->Gstpar(matIdVMC,"HADR",1.0);
+	//gMC->Gstpar(matIdVMC,"MUNU",1.0);
+	gMC->Gstpar(matIdVMC,"DCAY",1.0);
+	gMC->Gstpar(matIdVMC,"MULS",1.0);
+	//gMC->Gstpar(matIdVMC,"LABS",0.0);
+	gMC->Gstpar(matIdVMC,"DRAY",1.0);
+	gMC->Gstpar(matIdVMC,"RAYL",1.0);
+      }
+      // cut values
       gMC->Gstpar(matIdVMC,"CUTELE",10.e-6);
       gMC->Gstpar(matIdVMC,"CUTGAM",10.e-6);
       gMC->Gstpar(matIdVMC,"CUTNEU",10.e-4);
@@ -167,6 +174,7 @@ void CbmTrd::SetSpecialPhysicsCuts()
       gMC->Gstpar(matIdVMC,"DCUTE",10.e-6);
       gMC->Gstpar(matIdVMC,"DCUTM",10.e-6);
       gMC->Gstpar(matIdVMC,"PPCUTM",-1.);
+
    }
 }
 // ----------------------------------------------------------------------------

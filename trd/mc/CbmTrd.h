@@ -99,6 +99,8 @@ public:
 
    Bool_t CheckIfSensitive(string name);
 
+   void   UseGlobalPhysicsProcesses(Bool_t use) { fUseGlobalPhysicsProcesses=use; }
+
 private:
 
    /** Track information to be stored until the track leaves the
@@ -115,6 +117,7 @@ private:
    TClonesArray* fTrdPoints; //! MC point collection
    CbmTrdGeoHandler* fGeoHandler; //! Interface to gMC and gGeoManager
 
+   Bool_t         fUseGlobalPhysicsProcesses; //! weather to follow the global switch for physics cuts for the TRDgas
    /**
     * \brief Resets the private members for the track parameters.
     **/
@@ -125,7 +128,7 @@ private:
    CbmTrd(const CbmTrd&);
    CbmTrd operator=(const CbmTrd&);
 
-   ClassDef(CbmTrd, 7);
+   ClassDef(CbmTrd, 8);
 };
 
 
