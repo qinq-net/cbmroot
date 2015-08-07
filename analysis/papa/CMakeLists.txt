@@ -30,7 +30,7 @@ ${CBMROOT_SOURCE_DIR}/KF/KFParticle
 #${CBMROOT_SOURCE_DIR}/L1
 #${CBMROOT_SOURCE_DIR}/L1/ParticleFinder
 #${CBMROOT_SOURCE_DIR}/L1/L1Algo
-#${CBMROOT_SOURCE_DIR}/L1/vectors
+##${CBMROOT_SOURCE_DIR}/L1/vectors
 
 )
 
@@ -60,46 +60,40 @@ link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
 
-./AnalysisCuts.cxx
-./AnalysisFilter.cxx
-./PairAnalysisCutGroup.cxx
-./PairAnalysisTrack.cxx
-./PairAnalysisEvent.cxx
-./PairAnalysisPair.cxx
-#./PairAnalysisPairKF.cxx
-./PairAnalysisPairLV.cxx
-./PairAnalysisCutQA.cxx
-./PairAnalysisPairLegCuts.cxx
-./PairAnalysisVarCuts.cxx
-./PairAnalysisHelper.cxx
-./PairAnalysisMetaData.cxx
-./PairAnalysisStyler.cxx
-./PairAnalysisVarManager.cxx
+AnalysisCuts.cxx
+AnalysisFilter.cxx
+PairAnalysisCutGroup.cxx
+PairAnalysisTrack.cxx
+PairAnalysisEvent.cxx
+PairAnalysisPair.cxx
+#PairAnalysisPairKF.cxx
+PairAnalysisPairLV.cxx
+PairAnalysisCutQA.cxx
+PairAnalysisPairLegCuts.cxx
+PairAnalysisVarCuts.cxx
+PairAnalysisHelper.cxx
+PairAnalysisMetaData.cxx
+PairAnalysisStyler.cxx
+PairAnalysisVarManager.cxx
 
-./AnalysisTaskMultiPairAnalysis.cxx
-#./PairAnalysisCF.cxx
-#./PairAnalysisCFdraw.cxx
-./PairAnalysis.cxx
-#./PairAnalysisDebugTree.cxx
-#./PairAnalysisEventCuts.cxx
-#./PairAnalysisMixedEvent.cxx
-./PairAnalysisHF.cxx
-###./PairAnalysisHFhelper.cxx
-./PairAnalysisHistos.cxx
-./PairAnalysisMC.cxx
+AnalysisTaskMultiPairAnalysis.cxx
+PairAnalysis.cxx
+#PairAnalysisDebugTree.cxx
+#PairAnalysisMixedEvent.cxx
+PairAnalysisHF.cxx
+###PairAnalysisHFhelper.cxx
+PairAnalysisHistos.cxx
+PairAnalysisMC.cxx
 
-./PairAnalysisVarCutsCombi.cxx
-./PairAnalysisSignalMC.cxx
-#./PairAnalysisSpectrum.cxx
-#./PairAnalysisTrackCuts.cxx
-./PairAnalysisTrackRotator.cxx
-./PairAnalysisMixedEvent.cxx
-./PairAnalysisMixingHandler.cxx
-#./PairAnalysisV0Cuts.cxx
-#./PairAnalysisVarContainer.cxx
-./PairAnalysisSignalBase.cxx
-./PairAnalysisSignalExt.cxx
-./PairAnalysisSignalFunc.cxx
+PairAnalysisVarCutsCombi.cxx
+PairAnalysisSignalMC.cxx
+#PairAnalysisSpectrum.cxx
+PairAnalysisTrackRotator.cxx
+PairAnalysisMixedEvent.cxx
+PairAnalysisMixingHandler.cxx
+PairAnalysisSignalBase.cxx
+PairAnalysisSignalExt.cxx
+PairAnalysisSignalFunc.cxx
 )
 
 

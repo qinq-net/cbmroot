@@ -173,20 +173,13 @@
 #pragma link C++ function PairAnalysisHistos::AddProfile(char*, TVectorD*, char*, TVectorD*, char*, TVectorD*, UInt_t, char*, TString, char*);
 #pragma link C++ function PairAnalysisHistos::AddProfile(char*, TVectorD*, char*, TVectorD*, char*, TVectorD*, char*, char*, TString, char*);
 
-//#pragma link C++ class PairAnalysisCF+;
-//#pragma link C++ class PairAnalysisCFdraw+;
 #pragma link C++ class PairAnalysisHF+;
 //#pragma link C++ class PairAnalysisHFhelper+;
 #pragma link C++ class PairAnalysisMC+;
 #pragma link C++ class AnalysisTaskMultiPairAnalysis+;
-//#pragma link C++ class PairAnalysisV0Cuts+;
-//#pragma link C++ class PairAnalysisTrackCuts+;
-		       /*
-#pragma link C++ class PairAnalysisSpectrum+;
-		       */
+
 //#pragma link C++ class PairAnalysisDebugTree+;
 #pragma link C++ class PairAnalysisVarCutsCombi+;
-//#pragma link C++ class PairAnalysisEventCuts+;
 #pragma link C++ class PairAnalysisSignalMC+;
 
 #pragma link C++ class PairAnalysisTrackRotator+;
@@ -196,5 +189,6 @@
 #pragma link C++ class PairAnalysisSignalBase+;
 #pragma link C++ class PairAnalysisSignalExt+;
 #pragma link C++ class PairAnalysisSignalFunc+;
+//#pragma link C++ class PairAnalysisSpectrum+;
 
 #endif

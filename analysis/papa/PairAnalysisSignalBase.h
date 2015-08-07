@@ -25,6 +25,9 @@ class TObjArray;
 class TPaveText;
 
 class PairAnalysisSignalBase : public TNamed {
+
+  //  friend class PairAnalysisSpectrum; //extraction as friend class
+
 public:
   enum EBackgroundMethod {
     kFittedMC = 0,

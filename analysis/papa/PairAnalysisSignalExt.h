@@ -34,9 +34,12 @@ public:
 
   virtual void Draw(const Option_t* option = "");
 
+ 
+  PairAnalysisSignalExt(const PairAnalysisSignalExt &c);
+
 private:
 
-  PairAnalysisSignalExt(const PairAnalysisSignalExt &c);
+  //  PairAnalysisSignalExt(const PairAnalysisSignalExt &c);
   PairAnalysisSignalExt &operator=(const PairAnalysisSignalExt &c);
 
   ClassDef(PairAnalysisSignalExt,1)    // class for signal extraction using LS, ME or ROT

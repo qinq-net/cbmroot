@@ -46,7 +46,9 @@
 #include <CbmDetectorList.h>
 #include <CbmTrackMatchNew.h>
 
-//#include <CbmL1PFFitter.h>
+
+/* #include "L1Field.h" */
+/* #include "CbmL1PFFitter.h" */
 #include <CbmStsKFTrackFitter.h>
 
 #include "PairAnalysisEvent.h"
@@ -78,6 +80,7 @@ public:
     kPosX=kConstMax,         // X position [cm]
     kPosY,                   // Y position [cm]
     kPosZ,                   // Z position [cm]
+    kLinksMC,                // number of matched MC links
     kEloss,                  // TRD energy loss dEdx+TR
     kElossdEdx,              // TRD energy loss dEdx only
     kElossTR,                // TRD energy loss TR only
@@ -241,7 +244,8 @@ public:
     kRunNumber,              // run number
     kYbeam,                  // beam rapdity
     kEbeam,                  // beam energy
-    kMixingBin,
+    kMixingBin,              // event mixing pool number
+    kTotalTRDHits,           // size of trd hit array
     kNMaxValues,              //
 
 // MC information
@@ -306,6 +310,7 @@ public:
     kSTSMatches,             // number of matched STS tracks
     kTRDMatches,             // number of matched TRD tracks
     kVageMatches,            // number of MC tracks (STS) matched to multiple reconstr. track
+    kTotalTRDHitsMC,         // size of trd MC point array
     kNMaxValuesMC
 
   };
@@ -316,7 +321,7 @@ public:
   virtual ~PairAnalysisVarManager();
 
   static void InitFormulas();
-  static void InitKFFitter();
+  static void InitFitter();
 
   static void Fill(             const TObject* particle,                    Double_t * const values);
   static void FillVarMCParticle(const CbmMCTrack *p1, const CbmMCTrack *p2, Double_t * const values);
@@ -476,10 +481,13 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisEvent(const PairAnalysisE
   values[kSTSMatches]   = event->GetNumberOfMatches(kSTS);
   values[kTRDMatches]   = event->GetNumberOfMatches(kTRD);
   values[kVageMatches]  = event->GetNumberOfVageMatches();
-  values[kNTrkMC]       = event->GetNumberOfMCTracks();
+  values[kTotalTRDHits] = event->GetNumberOfHits(kTRD);
   const Double_t proMass = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
   values[kYbeam]        = TMath::ATanH( TMath::Sqrt(1-1/TMath::Power(values[kEbeam] / proMass,2)) );
   //  Printf("beam rapidity new: %f",values[kYbeam]);
+  values[kNTrkMC]         = event->GetNumberOfMCTracks();
+  values[kTotalTRDHitsMC] = event->GetNumberOfPoints(kTRD);
+
 
   // Set vertex
   FillVarVertex(event->GetPrimaryVertex(),values);
@@ -532,9 +540,9 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   // mc
   Fill(track->GetMCTrack(),     values); // this contains particle infos as well
   if(track->GetTrackMatch(kTRD)) {       // track match specific (accessors via CbmTrackMatchNew)
-    values[kTRDMCPoints]    = track->GetTrackMatch(kTRD)->GetNofLinks();
-    values[kTRDTrueHits]    = track->GetTrackMatch(kTRD)->GetNofTrueHits();
-    values[kTRDFakeHits]    = track->GetTrackMatch(kTRD)->GetNofWrongHits();
+    values[kTRDMCPoints]    = track->GetTrackMatch(kTRD)->GetNofLinks(); //TODO: check is number of mc tracks or mc points? ANSWER: number of different! mc tracks
+    values[kTRDTrueHits]    = track->GetTrackMatch(kTRD)->GetNofTrueHits(); //TODO: changed defintion
+    values[kTRDFakeHits]    = track->GetTrackMatch(kTRD)->GetNofWrongHits(); //TODO: changed definition
   }
   if(track->GetTrackMatch(kSTS)) {
     values[kSTSTrueHits]    = track->GetTrackMatch(kSTS)->GetNofTrueHits();
@@ -724,19 +732,18 @@ inline void PairAnalysisVarManager::FillVarStsTrack(const CbmStsTrack *track, Do
   values[kSTSPtout]       = mom.Pt();
   //  values[kSTSCharge]      = (track->GetParamFirst()->GetQp()>0. ? +1. : -1. );
 
-  // TODO propberly implement 
   // using CbmL1PFFitter
-  /*
-   CbmL1PFFitter fPFFitter;
-   vector<CbmStsTrack> stsTracks;
-   stsTracks.resize(1);
-   stsTracks[0] = *track;
-   vector<L1FieldRegion> vField;
-   vector<float> chiPrim;
-   fPFFitter.GetChiToVertex(stsTracks, vField, chiPrim, fgKFVertex, 3e6);
-   values[kSTSChi2NDF] = (stsTracks[0].GetNDF()>0. ? stsTracks[0].GetChiSq() / stsTracks[0].GetNDF() : -999.);
-  */
+  /* vector<CbmStsTrack> stsTracks; */
+  /* stsTracks.resize(1); */
+  /* stsTracks[0] = *track; */
+  /* vector<L1FieldRegion> vField; */
+  /* vector<float> chiPrim; */
+  /* fgL1Fitter->GetChiToVertex(stsTracks, vField, chiPrim, fgKFVertex, 3.e+6); */
+  /* values[kSTSChi2NDFtoVtx]  = chiPrim[0]; */
+  /* printf("L1fitter: %f\n", values[kSTSChi2NDFtoVtx]); */
   values[kSTSChi2NDFtoVtx]  = fgKFFitter->GetChiToVertex(const_cast<CbmStsTrack*>(track),fgEvent->GetPrimaryVertex());
+  //  printf("KFfitter: %f\n", values[kSTSChi2NDFtoVtx]);
+
   values[kSTSFirstHitPosZ]  = min;
 
 }
@@ -985,6 +992,8 @@ inline void PairAnalysisVarManager::FillVarPixelHit(const CbmPixelHit *hit, Doub
   values[kPosY]     = hit->GetY();
   // accessors via CbmHit
   values[kPosZ]     = hit->GetZ();
+  // accessors via CbmMatch
+  values[kLinksMC]  = (hit->GetMatch() ? hit->GetMatch()->GetNofLinks() : 0.);
 
 }
 
@@ -1131,6 +1140,7 @@ inline void PairAnalysisVarManager::FillVarMCPoint(const FairMCPoint *hit, Doubl
   // Protect
   if(!hit) return;
 
+  //  Printf("hitMC: %s ",hit->ClassName());
   // Reset array
   ResetArrayDataMC(  kHitMaxMC,   values);
 
@@ -1213,9 +1223,12 @@ inline void PairAnalysisVarManager::InitFormulas() {
   }
 }
 
-inline void PairAnalysisVarManager::InitKFFitter() {
-  fgKFFitter = new CbmStsKFTrackFitter();
-  fgKFFitter->Init();
+inline void PairAnalysisVarManager::InitFitter() {
+  if(!fgKFFitter) {
+    fgKFFitter = new CbmStsKFTrackFitter();
+    fgKFFitter->Init();
+  }
+  //  if(!fgL1Fitter) fgL1Fitter = new CbmL1PFFitter();
 }
 
 #endif

@@ -65,7 +65,7 @@ PairAnalysisPairLV::~PairAnalysisPairLV()
 
 //______________________________________________
 void PairAnalysisPairLV::SetTracks(PairAnalysisTrack * const particle1, Int_t pid1,
-			       PairAnalysisTrack * const particle2, Int_t pid2)
+				   PairAnalysisTrack * const particle2, Int_t pid2)
 {
   //
   // Sort particles by pt, first particle larget Pt

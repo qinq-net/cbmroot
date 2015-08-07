@@ -127,6 +127,45 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const char* name, const char* tit
 }
 
 //______________________________________________
+PairAnalysisSignalBase::PairAnalysisSignalBase(const PairAnalysisSignalBase &c) :
+  TNamed(c.GetName(), c.GetTitle()),
+  fArrHists(c.fArrHists),
+  fHistSignal(c.GetSignalHistogram()),
+  fHistSB(c.GetSoverBHistogram()),
+  fHistSign(c.GetSignificanceHistogram()),
+  fHistBackground(c.GetBackgroundHistogram()),
+  fHistDataPM(c.GetUnlikeSignHistogram()),
+  fHistDataPP(0x0),
+  fHistDataMM(0x0),
+  fHistDataME(0x0),
+  fHistRfactor(c.GetRfactorHistogram()),
+  fHistSignalMC(c.GetMCSignalShape()),
+  fValues(c.GetValues()),
+  fErrors(c.GetErrors()),
+  fIntMin(c.GetIntegralMin()),
+  fIntMax(c.GetIntegralMax()),
+  fFitMin(c.GetFitMin()),
+  fFitMax(c.GetFitMax()),
+  fRebin(c.GetRebin()),
+  fMethod(c.GetMethod()),
+  fScaleMin(c.GetScaleMin()),
+  fScaleMax(c.GetScaleMax()),
+  fScaleMin2(c.GetScaleMin2()),
+  fScaleMax2(c.GetScaleMax2()),
+  fNiterTR(1),
+  fScaleFactor(c.GetScaleFactor()),
+  fMixingCorr(kFALSE),
+  fPeakMethod(c.GetExtractionMethod()),
+  fProcessed(kFALSE),
+  fPeakIsTF1(kFALSE),
+  fPOIpdg(c.GetParticleOfInterest())
+{
+  //
+  // Copy Constructor
+  //
+}
+
+//______________________________________________
 PairAnalysisSignalBase::~PairAnalysisSignalBase()
 {
   //

@@ -106,6 +106,15 @@ PairAnalysisSignalExt::PairAnalysisSignalExt(const char* name, const char* title
 }
 
 //______________________________________________
+PairAnalysisSignalExt::PairAnalysisSignalExt(const PairAnalysisSignalExt &c) :
+  PairAnalysisSignalBase(c)
+{
+  //
+  // Copy Constructor
+  //
+}
+
+//______________________________________________
 PairAnalysisSignalExt::~PairAnalysisSignalExt()
 {
   //
@@ -469,7 +478,8 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   Info("Draw", "Signal extraction results for '%s'",fgkBackgroundMethodNames[fMethod]);
   TString optString(option);
   optString.ToLower();
-  Bool_t optTask     =optString.Contains("task");      optString.ReplaceAll("task","");
+  optString.ReplaceAll(" ","");
+  Bool_t optTask     =optString.Contains("same");      optString.ReplaceAll("same","");
   Bool_t optNoMCtrue =optString.Contains("nomctrue");  optString.ReplaceAll("nomctrue","");
   Bool_t optNoMC     =optString.Contains("nomc");      optString.ReplaceAll("nomc","");
   Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
@@ -480,6 +490,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   Bool_t optStat     =optString.Contains("stat");      optString.ReplaceAll("stat","");
   Bool_t optSB       =optString.Contains("sb");        optString.ReplaceAll("sb","");
   Bool_t optSgn      =optString.Contains("sgn");       optString.ReplaceAll("sgn","");
+  Bool_t optOnlyRaw  =optString.Contains("onlyraw");   optString.ReplaceAll("onlyraw","");
 
   // load style
   PairAnalysisStyler::LoadStyle();
@@ -508,7 +519,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
     leg=new TLegend(.75,.3,
 		    1.-gPad->GetTopMargin()-gStyle->GetTickLength("X"),
 		    1.-gPad->GetRightMargin()-gStyle->GetTickLength("Y"),
-		    GetName(),"nbNDC");
+		    fArrHists->GetName(),"nbNDC");
     if(optTask) leg->SetHeader("");
   }
   else if(optLeg && nobj) {
@@ -523,7 +534,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   optString.ReplaceAll("logy","");
   optString.ReplaceAll("logz","");
 
-  Int_t i=(nobj ? 10 : 0); // TOD: obsolete?
+  Int_t i=nobj; // TOD: obsolete?
 
   TString ytitle = fHistDataPM->GetYaxis()->GetTitle();
   // add bin width to y-axis title
@@ -570,32 +581,38 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   PairAnalysisStyler::Style(fgPeakShape,PairAnalysisStyler::kFit);
 
   // draw stuff
-  c->cd(1);
-  TString drawOpt="EP";
-  if(optSB)       { fHistSB->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
-  else if(optSgn) { fHistSign->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
+  if(c)  c->cd(1);
+  Info("Draw","Start plotting stuff with option -%s-",optString.Data());
+  TString drawOpt=(optString.IsNull()?"EP":optString);
+  if(optSB && !optOnlyRaw)       { fHistSB->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
+  else if(optSgn && !optOnlyRaw) { fHistSign->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
   else {
-    fHistDataPM->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
-    if(fMethod==kRotation || fMethod==kEventMixing) drawOpt="HIST";
-    fHistBackground->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
-    drawOpt="EP";
-    fHistSignal->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
-    drawOpt="L same";
-    if(dynamic_cast<TF1*>(fgPeakShape)) { static_cast<TF1*>(fgPeakShape)->Draw(drawOpt); i++; }
+    fHistDataPM->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
+    if(fMethod==kRotation || fMethod==kEventMixing)  drawOpt=(optString.IsNull()?"HIST":optString);
+    fHistBackground->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
+    drawOpt=(optString.IsNull()?"EP":optString);
+    if(!optOnlyRaw) {
+      drawOpt=(optString.IsNull()?"EP":optString);
+      fHistSignal->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
+      drawOpt=(optString.IsNull()?"L same":optString);
+      if(dynamic_cast<TF1*>(fgPeakShape)) { static_cast<TF1*>(fgPeakShape)->DrawCopy(drawOpt); i++; }
+    }
   }
 
   // draw MC signals
-  if(!optNoMC || !optSgn) {
-    TIter nextObj(fArrHists);
-    TH1 *hmc;
-    Int_t isty=0;
-    while ( (hmc = dynamic_cast<TH1*>(nextObj())) ) {
-      TString key=hmc->GetName();
-      if(key.CountChar('_')!=1) continue; // only reconstr. MC signals
-      PairAnalysisStyler::Style(hmc,isty++);
-      if(optSB) hmc->Divide(fHistSignal);
-      hmc->Draw("HISTsame");
-      i++;
+  if(!optNoMC) {
+    if(!optSgn) {
+      TIter nextObj(fArrHists);
+      TH1 *hmc;
+      Int_t isty=0;
+      while ( (hmc = dynamic_cast<TH1*>(nextObj())) ) {
+	TString key=hmc->GetName();
+	if(key.CountChar('_')!=1) continue; // only reconstr. MC signals
+	PairAnalysisStyler::Style(hmc,isty++);
+	if(optSB) hmc->Divide(fHistSignal);
+	hmc->Draw("HISTsame");
+	i++;
+      }
     }
   }
 
@@ -622,9 +639,11 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   // add legend entries
   if(optLeg && leg) {
     nextObj.Reset();
+    Int_t ileg=0;
     while ((obj = nextObj())) {
       if(obj->InheritsFrom(TH1::Class())) {
-	TH1 *hleg = static_cast<TH1*>(obj);
+       	TH1 *hleg = static_cast<TH1*>(obj);
+	if(nobj && ileg<nobj)  { ileg++; continue; }
 
 	TString histClass=hleg->GetName();
 	histClass.ReplaceAll("Pair.", "");
@@ -649,7 +668,9 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 	legOpt.ReplaceAll("z","");
 	legOpt.ReplaceAll("e","");
 	//	Printf("hist %s legopt %s",histClass.Data(),legOpt.Data());
+	if(ileg==nobj) leg->AddEntry((TObject*)0x0,fArrHists->GetName(),"");
 	leg->AddEntry(hleg,histClass.Data(),legOpt.Data());
+	ileg++;
       }
     }
   }
@@ -658,7 +679,8 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   if (leg) {
     leg->SetFillStyle(0);
     leg->SetTextSize(0.02);
-    leg->SetY1(leg->GetY2()-i*.025); //.05
+    Int_t nleg = ((TList*)leg->GetListOfPrimitives())->GetSize();
+    leg->SetY1(leg->GetY2()-nleg*.025); //i*.05
     leg->Draw();
   }
 

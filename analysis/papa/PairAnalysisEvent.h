@@ -37,9 +37,12 @@ public:
   Int_t      GetNumberOfMCTracks()    const { return (fMCTracks ? fMCTracks->GetEntriesFast() : -1); }
   Int_t      GetNumberOfVageMatches() const { return fMultiMatch; }
   Int_t      GetNumberOfMatches(DetectorId det) const;
+  Int_t      GetNumberOfHits(   DetectorId det) const;
+  Int_t      GetNumberOfPoints( DetectorId det) const;
 
-  TClonesArray *GetHits(DetectorId det) const;
-  TClonesArray *GetPoints(DetectorId det) const;
+  TClonesArray *GetHits(      DetectorId det) const;
+  TClonesArray *GetHitMatches(DetectorId det) const;
+  TClonesArray *GetPoints(    DetectorId det) const;
 
   TClonesArray *GetTrdHits()          const { return fTrdHits; }
   TClonesArray *GetTrdHitMatches()    const { return fTrdHitMatches; }
@@ -78,8 +81,12 @@ private:
  TClonesArray *fTofHits ;       //TOF hits
 
  TClonesArray *fRichProjection;       //RICH projection
-
- TClonesArray *fTrdHitMatches;        //TRD hits
+ 
+ TClonesArray *fStsHitMatches;    // hit matches
+ TClonesArray *fRichHitMatches;    // hit matches
+ TClonesArray *fMuchHitMatches;    // hit matches
+ TClonesArray *fTrdHitMatches;    // hit matches
+ TClonesArray *fTofHitMatches;    // hit matches
 
  CbmVertex    *fPrimVertex;     //primary vertex
  TObjArray    *fTracks;         //papa tracks

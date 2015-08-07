@@ -58,7 +58,11 @@ PairAnalysisEvent::PairAnalysisEvent() :
   fRichHits(0x0),      //RICH hits
   fTofHits(0x0),      //TOF hits
   fRichProjection(0x0),
+  fStsHitMatches(0x0),      //STS hits
+  fMuchHitMatches(0x0),      //MUCH hits
+  fRichHitMatches(0x0),      //RICH hits
   fTrdHitMatches(0x0),      //TRD hits
+  fTofHitMatches(0x0),      //TOF hits
   fPrimVertex(0x0),     //primary vertices
   fTracks(new TObjArray(1)), // array of papa tracks
   fMultiMatch(0)
@@ -95,7 +99,11 @@ PairAnalysisEvent::PairAnalysisEvent(const char* name, const char* title) :
   fRichHits(0x0),      //RICH hits
   fTofHits(0x0),      //TOF hits
   fRichProjection(0x0),
+  fStsHitMatches(0x0),      //STS hits
+  fMuchHitMatches(0x0),      //MUCH hits
+  fRichHitMatches(0x0),      //RICH hits
   fTrdHitMatches(0x0),      //TRD hits
+  fTofHitMatches(0x0),      //TOF hits
   fPrimVertex(0x0),     //primary vertices
   fTracks(new TObjArray(1)), // array of papa tracks
   fMultiMatch(0)
@@ -140,7 +148,11 @@ PairAnalysisEvent::~PairAnalysisEvent()
   fTofHits->Delete();      //TOF hits
 
   fRichProjection->Delete();
+  fStsHitMatches->Delete();      //STS hits
+  fMuchHitMatches->Delete();      //MUCH hits
+  fRichHitMatches->Delete();      //RICH hits
   fTrdHitMatches->Delete();      //TRD hits
+  fTofHitMatches->Delete();      //TOF hits
 }
 
 //______________________________________________
@@ -168,7 +180,12 @@ void PairAnalysisEvent::SetInput(FairRootManager *man)
   fTrdHits      = (TClonesArray*) man->GetObject("TrdHit");
   fRichHits     = (TClonesArray*) man->GetObject("RichHit");
   fTofHits      = (TClonesArray*) man->GetObject("TofHit");
+  // hit matches
+  fStsHitMatches = (TClonesArray*) man->GetObject("StsHitMatch");
+  fRichHitMatches = 0x0;//(TClonesArray*) man->GetObject("RichHitMatch");
+  fMuchHitMatches = (TClonesArray*) man->GetObject("MuchHitMatch");
   fTrdHitMatches = (TClonesArray*) man->GetObject("TrdHitMatch");
+  fTofHitMatches = 0x0;//(TClonesArray*) man->GetObject("TofHitMatch");
   // mc points
   fStsPoints    = (TClonesArray*) man->GetObject("StsPoint");
   fRichPoints   = 0x0;//(TClonesArray*) man->GetObject("RichPoint");
@@ -231,7 +248,7 @@ void PairAnalysisEvent::Init()
     Int_t itrdMC = (trdMatch ? trdMatch->GetMatchedLink().GetIndex() : -1 );
     CbmTrackMatchNew *richMatch = 0x0;
     if(richRing) richMatch = static_cast<CbmTrackMatchNew*>( fRichMatches->At(irich) );
-    Int_t irichMC = (richMatch ? richMatch->GetMatchedLink().GetIndex() : -1 );
+    Int_t irichMC = (richMatch && richMatch->GetNofHits()>0 ? richMatch->GetMatchedLink().GetIndex() : -1 );
     FairMCPoint *tofPoint = 0x0;
     if(tofHit && tofHit->GetRefId()>=0) tofPoint = static_cast<FairMCPoint*>( fTofPoints->At(tofHit->GetRefId()) );
     Int_t itofMC = (tofPoint ? tofPoint->GetTrackID() : -1 );
@@ -303,6 +320,26 @@ Int_t PairAnalysisEvent::GetNumberOfMatches(DetectorId det) const
 }
 
 //______________________________________________
+Int_t PairAnalysisEvent::GetNumberOfHits(DetectorId det) const
+{
+  //
+  // number of reconstructed hits
+  //
+  if(!GetHits(det)) { return 0; }
+  else {              return (GetHits(det)->GetEntriesFast()); }
+}
+
+//______________________________________________
+Int_t PairAnalysisEvent::GetNumberOfPoints(DetectorId det) const
+{
+  //
+  // number of reconstructed hits
+  //
+  if(!GetPoints(det)) { return 0; }
+  else {                return (GetPoints(det)->GetEntriesFast()); }
+}
+
+//______________________________________________
 TClonesArray *PairAnalysisEvent::GetHits(DetectorId det) const {
   //
   // get hits array for certain detector
@@ -314,6 +351,23 @@ TClonesArray *PairAnalysisEvent::GetHits(DetectorId det) const {
   case kTRD: return fTrdHits;
   case kRICH:return fRichHits;
   case kTOF: return fTofHits;
+  default:   return 0x0;
+  }
+
+}
+
+//______________________________________________
+TClonesArray *PairAnalysisEvent::GetHitMatches(DetectorId det) const {
+  //
+  // get hit matches array for certain detector
+  //
+  //TODO: add much straw hits
+  switch(det) {
+  case kSTS: return fStsHitMatches;
+  case kMUCH:return fMuchHitMatches; //pixel
+  case kTRD: return fTrdHitMatches;
+  case kRICH:return fRichHitMatches;
+  case kTOF: return fTofHitMatches;
   default:   return 0x0;
   }
 

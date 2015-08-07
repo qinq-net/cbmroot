@@ -26,9 +26,10 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"PosX",                   "x_{hit}",                                            "(cm)"},
   {"PosY",                   "y_{hit}",                                            "(cm)"},
   {"PosZ",                   "z_{hit}",                                            "(cm)"},
-  {"Eloss",                  "TRD d#it{E}/d#it{x} + TR",                           "(a.u.)"},
-  {"ElossdEdx",              "TRD d#it{E}/d#it{x}",                                "(a.u.)"},
-  {"ElossTR",                "TRD TR",                                             "(a.u.)"},
+  {"LinksMC",                "N_{links}^{MC}",                                     ""},
+  {"Eloss",                  "d#it{E}/d#it{x} + TR",                           "(keV#upointcm^{2/g})"},
+  {"ElossdEdx",              "d#it{E}/d#it{x}",                                "(keV#upointcm^{2/g)"},
+  {"ElossTR",                "TR",                                             "(keV#upointcm^{2/g)"},
   {"NPhotons",               "N_{photons}^{RICH}",                                 "(a.u.)"},
   {"PmtId",                  "ID_{Pmt}^{RICH}",                                    "(a.u.)"},
   {"Beta",                   "#beta^{TOF}",                                        ""},
@@ -180,6 +181,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"Ybeam",                  "#it{y}_{beam}",                                      ""},
   {"Ebeam",                  "#sqrt{s}",                                           "(#it{A}GeV)"},
   {"MixingBin",              "mixing bin",                                         ""},
+  {"TotalTRDHits",           "N_{tot.hit}^{TRD}",                                  ""},
 
 
 // MC information
@@ -240,7 +242,8 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"NTrkMC",                   "N_{trk}^{MC}",                                       ""},
   {"STSMatches",               "N_{trk.matches}^{STS}",                              ""},
   {"TRDMatches",               "N_{trk.matches}^{TRD}",                              ""},
-  {"VageMatches",              "N_{vage.matches}^{STS}",                             ""}
+  {"VageMatches",              "N_{vage.matches}^{STS}",                             ""},
+  {"TotalTRDHitsMC",           "N_{tot.hit}^{TRD} (MC)",                             ""},
 
 };
 

@@ -100,7 +100,7 @@ PairAnalysisHF::~PairAnalysisHF()
 
 //________________________________________________________________
 void PairAnalysisHF::AddCutVariable(PairAnalysisVarManager::ValueTypes type,
-				  TVectorD * binLimits, Bool_t leg)
+				    TVectorD * binLimits, Bool_t leg)
 {
   //
   // Add a variable to the histogram array with a vector
