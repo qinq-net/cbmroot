@@ -33,6 +33,17 @@ export CBMSRCDIR=`pwd`
 export FSOFTVER=$FSOFTPRO
 export FROOTVER=$FROOTPRO
 
+# check if we want to run with GSI compiler
+if [ $# -ge 1 ]; then
+  if [ "$1" == "gsi" ]; then
+    # use a different compiler from GSI
+    module use /cvmfs/it.gsi.de/modulefiles/
+    module load compiler/gcc/4.9.2
+    export CXX=g++
+    shift
+  fi
+fi
+
 # check if we want to run with dev
 if [ $# -ge 1 ]; then
   if [ "$1" == "dev" ]; then
