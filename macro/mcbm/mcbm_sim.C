@@ -60,7 +60,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
   Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
   Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
-  Double_t targetRotY      = -30.;   // target rotation angle around the y axis [deg]
+  Double_t beamRotY      = -30.;   // beam rotation angle around the y axis [deg]
   // ------------------------------------------------------------------------
 
 
@@ -74,8 +74,8 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   //
   Bool_t smearVertexXY = kTRUE;
   Bool_t smearVertexZ  = kTRUE;
-  Double_t beamWidthX   = 1.;  // Gaussian sigma of the beam profile in x [cm]
-  Double_t beamWidthY   = 1.;  // Gaussian sigma of the beam profile in y [cm]
+  Double_t beamWidthX   = 0.5;  // Gaussian sigma of the beam profile in x [cm]
+  Double_t beamWidthY   = 0.5;  // Gaussian sigma of the beam profile in y [cm]
   // ------------------------------------------------------------------------
   
 
@@ -133,7 +133,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   		                              targetThickness,
   		                              targetDiameter);
   target->SetPosition(targetPosX, targetPosY, targetPosZ);
-  target->SetRotation(targetRotY);
+  //  target->SetRotation(beamRotY);
   fRun->AddModule(target);
 
   if ( magnetGeom != "" ) {
@@ -236,7 +236,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   	tDz = target->GetThickness();
   }
   primGen->SetTarget(tZ, tDz);
-  //  primGen->SetTargetRotAngle(0., targetRotY * TMath::Pi()/180.);
+  //  primGen->SetTargetRotAngle(0., beamRotY * TMath::Pi()/180.);
   primGen->SetBeam(0., 0., beamWidthX, beamWidthY);
   primGen->SmearGausVertexXY(smearVertexXY);
   primGen->SmearVertexZ(smearVertexZ);
@@ -253,7 +253,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   uniGen->SetEventPlane(0. , 360.);
   primGen->AddGenerator(uniGen);
 
-  primGen->SetBeamAngle(targetRotY * TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees
+  primGen->SetBeamAngle(beamRotY * TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees
 
   fRun->SetGenerator(primGen);       
   // ------------------------------------------------------------------------
