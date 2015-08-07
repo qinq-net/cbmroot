@@ -312,6 +312,12 @@ else if (gGeoManager->CheckPath(fMother + "/MVDomCBM_0"))
 	fDetectorName = "/MVDomCBM_0";
 	fGeoTyp = MiniCbm;
 	}
+else if (gGeoManager->CheckPath(fMother + "/MVDomCBMorotated_0"))
+        {
+        LOG(INFO) << "Found mCBM MVD rotated configuration" << FairLogger::endl;
+        fDetectorName = "/MVDomCBMorotated_0";
+        fGeoTyp = MiniCbm;
+        }
 else 
 	{
 	cout << endl << "Try standard Geometry" << endl;
@@ -408,8 +414,8 @@ Int_t iStation = 0;
 	     		for(Int_t Layer = 0; Layer < 2; Layer++)
 		 	 {
 		     		 for(Int_t SensNr = 0; SensNr < 50; SensNr++)
-			  	{
-                                fQuadrantName = Form("/MVD-S%i-Q0-L%i-C%02i_1",StatNr, Layer, SensNr);
+				 {
+				fQuadrantName = Form("/MVD-S%i-Q0-L%i-C%02i_1",StatNr, Layer, SensNr);
 				fSensorHolding = Form("/MVD-S%i-Q0-L%i-C%02i-P0oPartAss_1",  StatNr, Layer, SensNr);
 			    	fSensorName = Form("MVD-S%i-Q0-L%i-C%02i-P0", StatNr, Layer, SensNr);
 			  	fVolId = gGeoManager->GetUID(fSensorName);
