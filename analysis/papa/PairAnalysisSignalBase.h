@@ -20,6 +20,7 @@
 #include <TF1.h>
 
 #include "PairAnalysis.h"
+#include "PairAnalysisFunction.h"
 
 class TObjArray;
 class TPaveText;
@@ -48,7 +49,8 @@ public:
     kMCScaledInt,
     kMCFitted,
     kCrystalBall,
-    kGaus
+    kGaus,
+    kUserFunc
   };
 
   PairAnalysisSignalBase();
@@ -63,7 +65,8 @@ public:
   void SetIntegralRange(Double_t min, Double_t max)        { fIntMin=min; fIntMax=max; }
   void SetFitRange(Double_t min, Double_t max)             { fFitMin=min; fFitMax=max; }
   void SetRebin(Int_t factor)                              { fRebin=factor; }
-  void SetExtractionMethod(ESignalExtractionMethod method) { fPeakMethod=method; }
+  void SetExtractionMethod(ESignalExtractionMethod method, PairAnalysisFunction *sigF=0x0) { 
+    fPeakMethod=method; fExtrFunc=sigF;}
   void SetMixingCorrection(Bool_t mixcorr=kTRUE)           { fMixingCorr=mixcorr; }
   // background
   void SetMethod(EBackgroundMethod method)                 { fMethod = method;}
@@ -178,10 +181,12 @@ protected:
   TPaveText* DrawStats(Double_t x1=0., Double_t y1=0., Double_t x2=0., Double_t y2=0.);
   TObject* FindObject(TObjArray *arrhist, PairAnalysis::EPairType type);
 
+  PairAnalysisFunction *fExtrFunc; // signal extraction function
+
   PairAnalysisSignalBase(const PairAnalysisSignalBase &c);
   PairAnalysisSignalBase &operator=(const PairAnalysisSignalBase &c);
 
-  ClassDef(PairAnalysisSignalBase,1) // base and abstract class for signal extraction
+  ClassDef(PairAnalysisSignalBase,2) // base and abstract class for signal extraction
 };
 
 inline TObject* PairAnalysisSignalBase::FindObject(TObjArray *arrhist, PairAnalysis::EPairType type)

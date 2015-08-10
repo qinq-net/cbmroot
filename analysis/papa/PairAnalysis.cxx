@@ -716,43 +716,35 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	    else if(ring)     hit = dynamic_cast<CbmHit*>(hits->At( ring->GetHit(ihit) ) );
 	    else              hit = dynamic_cast<CbmHit*>( track->GetTofHit() );
 	    if(!hit) continue;
+
 	    // fill rec hit variables
 	    PairAnalysisVarManager::Fill(hit, values);
+	    Bool_t truePnt=kFALSE;
 
 	    // access to mc points
 	    if( (mtch=hit->GetMatch()) && ev->GetPoints(static_cast<DetectorId>(idet))) {
-	      // loop over all linked mc points
 	      Int_t nlinks=mtch->GetNofLinks();
-	      for (Int_t iLink = 0; iLink < nlinks; iLink++) {
+
+
+	      pnt = static_cast<FairMCPoint*>( ev->GetPoints(static_cast<DetectorId>(idet))
+					       ->At(mtch->GetLink(0).GetIndex())
+					       );
+	      // check if mc point corresponds to the matched track (true or fake pnt)
+	      // DEFINITION: always a fake hit if you link to >1 mc points?
+	      truePnt = (pnt->GetTrackID() == mctrk && mctrk>-1 && nlinks==1);
+
+	      // fill MC hit variables
+	      PairAnalysisVarManager::Fill(pnt, values);
+
+	      // loop over all linked mc points
+	      for (Int_t iLink = 1; iLink < nlinks; iLink++) {
 		pnt = static_cast<FairMCPoint*>( ev->GetPoints(static_cast<DetectorId>(idet))
 						 ->At(mtch->GetLink(iLink).GetIndex())
 						 );
-		// fill MC hit variables
-		PairAnalysisVarManager::Fill(pnt, values);
-		// fill rec histos (TODO: really fill nlinks-times rec hit histos )
-		if(hitClass)	    fHistos    ->FillClass(className3, values);
-		if(hitClass2)	    fHistoArray->FillClass(className3, values);
-		// check if mc point corresponds to the matched track (true or fake pnt)
-		// DEFINITION: always a fake hit if you link to >1 mc points?
-		Printf("mc track (match:%p) link: %d \t pnt track id %d \t nlinks %d ",tmtch,mctrk,pnt->GetTrackID(),nlinks);
-		Bool_t truePnt = (pnt->GetTrackID() == mctrk && mctrk>-1 && nlinks==1);
-		if(truePnt) {
-		  if(hitClass)	    fHistos    ->FillClass(className3+"_true", values);
-		  if(hitClass2)     fHistoArray->FillClass(className3+"_true", values);
-		}
-		else {
-		  if(hitClass)	    fHistos    ->FillClass(className3+"_fake", values);
-		  if(hitClass2)     fHistoArray->FillClass(className3+"_fake", values);
-		}
-		// check and fill mc signal histos
-		for(Int_t isig=0; isig<nsig; isig++) {
-		  sigName = className3 + "_" + fSignalsMC->At(isig)->GetName();
-		  if(fillMC.TestBitNumber(isig)) {
-		    if(hitClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
-		    if(hitClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
-		  }
-		}
+		// Fill the MC hit variables
+		PairAnalysisVarManager::FillSum(pnt, values);
 	      } //end links
+
 	    } //end match found
 	    else {
 	      // fill only once
@@ -775,6 +767,28 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 		}
 	      }
 	    }
+
+	    // fill rec hit histos
+	    if(hitClass)	    fHistos    ->FillClass(className3, values);
+	    if(hitClass2)	    fHistoArray->FillClass(className3, values);
+	    // true or fake hit histos
+	    if(truePnt) {
+	      if(hitClass)	    fHistos    ->FillClass(className3+"_true", values);
+	      if(hitClass2)         fHistoArray->FillClass(className3+"_true", values);
+	    }
+	    else {
+	      if(hitClass)	    fHistos    ->FillClass(className3+"_fake", values);
+	      if(hitClass2)         fHistoArray->FillClass(className3+"_fake", values);
+	    }
+	    // check and fill mc signal histos
+	    for(Int_t isig=0; isig<nsig; isig++) {
+	      sigName = className3 + "_" + fSignalsMC->At(isig)->GetName();
+	      if(fillMC.TestBitNumber(isig)) {
+		if(hitClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
+		if(hitClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
+	      }
+	    }
+
 
 	    // only TRD for the moment
 	    /*

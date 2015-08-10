@@ -287,7 +287,7 @@ public:
     kSTSHitsMC,                // number of STS hits
     kMUCHHitsMC,               // number of MUCH hits
     kRICHHitsMC,               // number of RICH hits
-    kTRDMCPoints,              // number of TRD MC Points in reconstructed track
+    kTRDMCTracks,              // number of TRD MC Points in reconstructed track
     kRICHMCPoints,              // number of TRD MC Points in reconstructed track
     kTRDTrueHits,              // number of true TRD hits in reconstructed track
     kTRDFakeHits,              // number of fake TRD hits in reconstructed track
@@ -325,6 +325,7 @@ public:
 
   static void Fill(             const TObject* particle,                    Double_t * const values);
   static void FillVarMCParticle(const CbmMCTrack *p1, const CbmMCTrack *p2, Double_t * const values);
+  static void FillSum(          const TObject* particle,                    Double_t * const values);
 
   // Setter
   static void SetFillMap(        TBits   *map)                   { fgFillMap=map;     }
@@ -387,6 +388,7 @@ private:
   static void FillVarTofHit(            const CbmTofHit *hit,            Double_t * const values);
   static void FillVarPixelHit(          const CbmPixelHit *hit,          Double_t * const values);
   static void FillVarMCPoint(           const FairMCPoint *hit,          Double_t * const values);
+  static void FillSumVarMCPoint(        const FairMCPoint *hit,          Double_t * const values);
 
   //  static void FillVarKFParticle(const AliKFParticle *pair,   Double_t * const values);
 
@@ -431,6 +433,19 @@ inline void PairAnalysisVarManager::Fill(const TObject* object, Double_t * const
   else printf(Form("PairAnalysisVarManager::Fill: Type %s is not supported by PairAnalysisVarManager! \n", object->ClassName()));
 }
 
+
+inline void PairAnalysisVarManager::FillSum(const TObject* object, Double_t * const values)
+{
+  //
+  // Main function to incremenebt available variables according to the type
+  //
+
+  //Protect
+  if (!object) return;
+  else if (object->InheritsFrom(FairMCPoint::Class()))     FillSumVarMCPoint(   static_cast<const FairMCPoint*>(object),    values);
+  else printf(Form("PairAnalysisVarManager::FillSum: Type %s is not supported by PairAnalysisVarManager! \n", object->ClassName()));
+
+}
 
 inline void PairAnalysisVarManager::ResetArrayData(Int_t to, Double_t * const values)
 {
@@ -540,9 +555,33 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   // mc
   Fill(track->GetMCTrack(),     values); // this contains particle infos as well
   if(track->GetTrackMatch(kTRD)) {       // track match specific (accessors via CbmTrackMatchNew)
-    values[kTRDMCPoints]    = track->GetTrackMatch(kTRD)->GetNofLinks(); //TODO: check is number of mc tracks or mc points? ANSWER: number of different! mc tracks
-    values[kTRDTrueHits]    = track->GetTrackMatch(kTRD)->GetNofTrueHits(); //TODO: changed defintion
-    values[kTRDFakeHits]    = track->GetTrackMatch(kTRD)->GetNofWrongHits(); //TODO: changed definition
+    CbmTrackMatchNew *tmtch = track->GetTrackMatch(kTRD);
+    values[kTRDMCTracks]    = tmtch->GetNofLinks(); //number of different! mc tracks
+    Int_t mctrk = tmtch->GetMatchedLink().GetIndex();
+
+    // Calculate true and fake hits
+    TClonesArray *hits   = fgEvent->GetHits(kTRD);
+    TClonesArray *pnts   = fgEvent->GetPoints(kTRD);
+    Int_t trueH=0;
+    Int_t fakeH=0;
+    if(hits && pnts) {
+      for (Int_t ihit=0; ihit < track->GetTrack(kTRD)->GetNofHits(); ihit++){
+	Int_t idx      = track->GetTrack(kTRD)->GetHitIndex(ihit);
+	CbmHit *hit    = dynamic_cast<CbmHit*>(hits->At(idx));
+	if(!hit)  { fakeH++; continue; }
+	CbmMatch *mtch = hit->GetMatch();
+	if(!mtch)  { fakeH++; continue; }
+	Int_t nlinks=mtch->GetNofLinks();
+	if(nlinks!=1) { fakeH++; continue; }
+	FairMCPoint *pnt = static_cast<FairMCPoint*>( pnts->At(mtch->GetLink(0).GetIndex()) );
+	if(pnt->GetTrackID() == mctrk && mctrk>-1) trueH++;
+	else                                       fakeH++;
+      }
+    }
+    values[kTRDTrueHits]    = trueH;
+    values[kTRDFakeHits]    = fakeH;
+    /* values[kTRDTrueHits]    = tmtch->GetNofTrueHits(); //TODO: changed defintion */
+    /* values[kTRDFakeHits]    = tmtch->GetNofWrongHits(); //TODO: changed definition */
   }
   if(track->GetTrackMatch(kSTS)) {
     values[kSTSTrueHits]    = track->GetTrackMatch(kSTS)->GetNofTrueHits();
@@ -1149,6 +1188,25 @@ inline void PairAnalysisVarManager::FillVarMCPoint(const FairMCPoint *hit, Doubl
   values[kPosYMC]     = hit->GetY();
   values[kPosZMC]     = hit->GetZ();
   values[kElossMC]    = hit->GetEnergyLoss() * 1.e+6; //GeV->keV, dEdx
+
+}
+
+inline void PairAnalysisVarManager::FillSumVarMCPoint(const FairMCPoint *hit, Double_t * const values)
+{
+  //
+  // Sum upMC hit information
+  //
+
+  // Protect
+  if(!hit) return;
+
+  // DO NOT reset array
+
+  // Set
+  values[kPosXMC]     += hit->GetX();
+  values[kPosYMC]     += hit->GetY();
+  values[kPosZMC]     += hit->GetZ();
+  values[kElossMC]    += hit->GetEnergyLoss() * 1.e+6; //GeV->keV, dEdx
 
 }
 

@@ -91,9 +91,11 @@ PairAnalysisSignalMC.cxx
 PairAnalysisTrackRotator.cxx
 PairAnalysisMixedEvent.cxx
 PairAnalysisMixingHandler.cxx
+
+PairAnalysisFunction.cxx
 PairAnalysisSignalBase.cxx
 PairAnalysisSignalExt.cxx
-PairAnalysisSignalFunc.cxx
+PairAnalysisSignalFit.cxx
 )
 
 

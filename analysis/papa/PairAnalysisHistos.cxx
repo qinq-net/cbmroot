@@ -899,9 +899,14 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   // add or get legend
   TLegend *leg=0;
   if ( (optLeg && optTask && !nobj) || (optLeg && !optTask) ) {
-    leg=new TLegend(.75,.3,
+    leg=new TLegend(
+		    gPad->GetLeftMargin()+gStyle->GetTickLength("Y"),
+		    .3,
+		    gPad->GetLeftMargin()+gStyle->GetTickLength("Y")+0.25,
 		    1.-gPad->GetTopMargin()-gStyle->GetTickLength("X"),
-		    1.-gPad->GetRightMargin()-gStyle->GetTickLength("Y"),
+		    // .75,.3,
+		    // 1.-gPad->GetTopMargin()-gStyle->GetTickLength("X"),
+		    // 1.-gPad->GetRightMargin()-gStyle->GetTickLength("Y"),
 		    GetName(),"nbNDC");
     if(optTask) leg->SetHeader("");
   }
@@ -953,8 +958,6 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
       // check if ratio should be build
       if( (optEff || optRatio) && (histClass.EqualTo(histClassDenom) || !fHistoList.FindObject(histClassDenom.Data())) ) continue;
       Info("DrawSame","histClass %s (denom %s) ",histClass.Data(),histClassDenom.Data());
-
-      if(histClass.Contains("Hit")) Printf("class name: %s optMC %d ",histClass.Data(),optNoMC);
       if (i==0) hFirst=h;
 
       // style
@@ -1095,6 +1098,12 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	  histClass.ReplaceAll(PairAnalysisSignalMC::fgkSignals[isig][0],PairAnalysisSignalMC::fgkSignals[isig][1]);
 	  ratioName.ReplaceAll(PairAnalysisSignalMC::fgkSignals[isig][0],PairAnalysisSignalMC::fgkSignals[isig][1]);
 	  divName.ReplaceAll(PairAnalysisSignalMC::fgkSignals[isig][0],PairAnalysisSignalMC::fgkSignals[isig][1]);
+	}
+	// change MCtruth to MC
+	for(Int_t isig=0; isig<PairAnalysisSignalMC::kNSignals; isig++) {
+	  histClass.ReplaceAll("MCtruth","MC");
+	  ratioName.ReplaceAll("MCtruth","MC");
+	  divName.ReplaceAll("MCtruth","MC");
 	}
 	// remove pairing name if it is a MC
 	for(Int_t iptype=0; iptype<PairAnalysis::kPairTypes; iptype++) {

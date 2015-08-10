@@ -22,7 +22,7 @@ resulting from single and mixed events, as defined in PairAnalysis.cxx
 #include <TDatabasePDG.h>
 #include <TList.h>
 
-#include "PairAnalysisSignalFunc.h"
+#include "PairAnalysisFunction.h"
 #include "PairAnalysisSignalBase.h"
 
 ClassImp(PairAnalysisSignalBase)
@@ -80,7 +80,8 @@ PairAnalysisSignalBase::PairAnalysisSignalBase() :
   fPeakMethod(kBinCounting),
   fProcessed(kFALSE),
   fPeakIsTF1(kFALSE),
-  fPOIpdg(443)
+  fPOIpdg(443),
+  fExtrFunc(0x0)
 {
   //
   // Default Constructor
@@ -119,7 +120,8 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const char* name, const char* tit
   fPeakMethod(kBinCounting),
   fProcessed(kFALSE),
   fPeakIsTF1(kFALSE),
-  fPOIpdg(443)
+  fPOIpdg(443),
+  fExtrFunc(0x0)
 {
   //
   // Named Constructor
@@ -158,7 +160,8 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const PairAnalysisSignalBase &c) 
   fPeakMethod(c.GetExtractionMethod()),
   fProcessed(kFALSE),
   fPeakIsTF1(kFALSE),
-  fPOIpdg(c.GetParticleOfInterest())
+  fPOIpdg(c.GetParticleOfInterest()),
+  fExtrFunc(0x0) //TODO: needed
 {
   //
   // Copy Constructor
@@ -182,6 +185,7 @@ PairAnalysisSignalBase::~PairAnalysisSignalBase()
   if (fHistDataME)     delete fHistDataME;
   if (fHistRfactor)    delete fHistRfactor;
   if (fHistSignalMC)   delete fHistSignalMC;
+  if (fExtrFunc)       delete fExtrFunc;
 }
 
 //______________________________________________
@@ -377,7 +381,9 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
   Int_t fitResult=0;
   Int_t parMass =-1;
   Int_t parSigma=-1;
-  PairAnalysisSignalFunc fct;// = 0;//new PairAnalysisSignalFunc();
+  if(!fExtrFunc) fExtrFunc = new PairAnalysisFunction();
+  //PairAnalysisSignalFit *fExtrFunc = new PairAnalysisSignalFit();
+  //  PairAnalysisSignalFunc fct;// = 0;//new PairAnalysisSignalFunc();
 
   // do the scaling/fitting
   switch(method) {
@@ -406,13 +412,13 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
     if(!fgHistSimPM) fgHistSimPM=mcShape;
     if(fgHistSimPM->GetBinWidth(1)!=fHistSignal->GetBinWidth(1)) fgHistSimPM->Rebin(fRebin);
     //    fit = new TF1("fitMC",PairAnalysisSignalFunc::PeakFunMC,fFitMin,fFitMax,1);
-    fit = new TF1("fitMC",&fct,&PairAnalysisSignalFunc::PeakFunMC,fFitMin,fFitMax,1);
+    fit = new TF1("fitMC",fExtrFunc,&PairAnalysisFunction::PeakFunMC,fFitMin,fFitMax,1);
     fit->SetParNames("N");
     fitResult = fHistSignal->Fit(fit,"RNI0Q");
     break;
 
   case kCrystalBall:
-    fit = new TF1("fitCB",&fct,&PairAnalysisSignalFunc::PeakFunCB,fFitMin,fFitMax,5);
+    fit = new TF1("fitCB",fExtrFunc,&PairAnalysisFunction::PeakFunCB,fFitMin,fFitMax,5);
     fit->SetParNames("alpha","n","meanx","sigma","N");
     //  fit->SetParameters(-.2,5.,gMjpsi,.06,20);
     //  fit->SetParameters(1.,3.6,gMjpsi,.08,700);
@@ -428,7 +434,7 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
     break;
 
   case kGaus:
-    fit = new TF1("fitGaus",&fct,&PairAnalysisSignalFunc::PeakFunGaus,fFitMin,fFitMax,3);
+    fit = new TF1("fitGaus",fExtrFunc,&PairAnalysisFunction::PeakFunGaus,fFitMin,fFitMax,3);
     //fit = new TF1("fitGaus","gaus",fFitMin,fFitMax);
     fit->SetParNames("N","meanx","sigma");
     fit->SetParameters(1.3*nPOI, massPOI, 0.025);
@@ -440,7 +446,12 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
     fitResult = fHistSignal->Fit(fit,"RNI0Q");
     break;
 
+  case kUserFunc:
+    fit = fExtrFunc->GetCombinedFunction();
+    fitResult = fHistSignal->Fit(fit,"RNI0Q");
+    break;
   }
+
   // warning in case of fit issues
   if(fitResult!=0)   Warning("DescripePeakShape","fit has error/issue (%d)",fitResult);
 
@@ -488,13 +499,13 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
   switch(method) {
   case kBinCounting:
     if(replaceValErr) fgPeakShape=(TH1F*)fHistSignal->Clone("BinCount");
-    //    delete fct;
+    //    delete fExtrFunc;
     return (TH1F*)fHistSignal->Clone("BinCountReturn");
     break;
   case kMCScaledMax:
   case kMCScaledInt:
     if(replaceValErr) fgPeakShape=mcShape;
-    //    delete fct;
+    //    delete fExtrFunc;
     return mcShape;
     break;
   case kMCFitted:
@@ -502,15 +513,18 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
   case kGaus:
     if(fgHistSimPM) fit->SetName(Form("mcShapeFunc-%s",fgHistSimPM->GetName()));
     if(replaceValErr) fgPeakShape=fit;
-    //    delete fct;
+    //    delete fExtrFunc;
     return fit;
+  case kUserFunc:
+    if(fgHistSimPM) fit->SetName(Form("mcShapeFunc-%s",fgHistSimPM->GetName()));
+    if(replaceValErr) fgPeakShape=fit;
     break;
   }
 
   // printf("true integration range: %f %f \n",
   //  	 fHistSignal->GetBinLowEdge(fHistSignal->FindBin(fIntMin)),
   // 	 fHistSignal->GetBinLowEdge(fHistSignal->FindBin(fIntMax))+fHistSignal->GetBinWidth(fHistSignal->FindBin(fIntMax)));
-  //  delete fct;
+  //delete fExtrFunc;
   if(replaceValErr && fgPeakShape->IsA()==TF1::Class()) fPeakIsTF1=kTRUE;
   return fgPeakShape;
 
