@@ -213,23 +213,30 @@ void PairAnalysisSignalExt::ProcessLS(TObjArray* const arrhist)
   fHistSignal = new TH1D("HistSignal", "Like-Sign substracted signal",
 			 fHistDataPM->GetXaxis()->GetNbins(),
 			 fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
+  fHistSignal->Sumw2();
   fHistSignal->SetDirectory(0);
   fHistBackground = new TH1D("HistBackground", "Like-sign contribution",
 			     fHistDataPM->GetXaxis()->GetNbins(),
 			     fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
+  fHistBackground->Sumw2();
   fHistBackground->SetDirectory(0);
 
   // fill background histogram
   for(Int_t ibin=1; ibin<=fHistDataPM->GetXaxis()->GetNbins(); ibin++) {
-    Float_t pp = fHistDataPP->GetBinContent(ibin);
-    Float_t mm = fHistDataMM->GetBinContent(ibin);
+    Float_t pp  = fHistDataPP->GetBinContent(ibin);
+    Float_t ppe = fHistDataPP->GetBinError(ibin);
+    Float_t mm  = fHistDataMM->GetBinContent(ibin);
+    Float_t mme = fHistDataMM->GetBinError(ibin);
 
     Float_t background = 2*TMath::Sqrt(pp*mm);
-    Float_t ebackground = TMath::Sqrt(mm+pp);
+    // do not use it since LS could be weighted err!=sqrt(entries)
+    // Float_t ebackground = TMath::Sqrt(mm+pp);
+    Float_t ebackground = TMath::Sqrt(mm/pp*ppe*ppe + pp/mm*mme*mme);
     // Arithmetic mean instead of geometric
     if (fMethod==kLikeSignArithm || fMethod==kLikeSignArithmRcorr ){
       background=(pp+mm);
-      ebackground=TMath::Sqrt(pp+mm);
+      //      ebackground=TMath::Sqrt(pp+mm);
+      ebackground=TMath::Sqrt(ppe*ppe+mme*mme);
       if (TMath::Abs(ebackground)<1e-30) ebackground=1;
     }
     // set contents
@@ -620,19 +627,21 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   Double_t max=-1e10;
   Double_t min=+1e10;
   TListIter nextObj(gPad->GetListOfPrimitives(),kIterForward);
+  //TListIter nextObj(gPad->GetListOfPrimitives(),kIterBackward);
   //  TObject *obj;
   while ((obj = nextObj())) {
     if(obj->InheritsFrom(TH1::Class())) {
-      max=TMath::Max(max,static_cast<TH1*>(obj)->GetMaximum());
-      min=TMath::Min(min,static_cast<TH1*>(obj)->GetMinimum());
+      TH1 *hobj = static_cast<TH1*>(obj);
+      max=TMath::Max(max,hobj->GetMaximum());
+      min=TMath::Min(min,PairAnalysisHelper::GetContentMinimum(hobj));//hobj->GetBinContent(hobj->GetMinimumBin()));
       // automatically set log option
       if(gPad->GetLogy() && max/(min>0.?min:1.) > TMath::Power(10.,TGaxis::GetMaxDigits())) {
-	static_cast<TH1*>(obj)->GetYaxis()->SetMoreLogLabels(kFALSE);
-	static_cast<TH1*>(obj)->GetYaxis()->SetNoExponent(kFALSE);
+	hobj->GetYaxis()->SetMoreLogLabels(kFALSE);
+	hobj->GetYaxis()->SetNoExponent(kFALSE);
       }
       if(gPad->GetLogy()) break;
-      static_cast<TH1*>(obj)->SetMaximum(max*1.1);
-      static_cast<TH1*>(obj)->SetMinimum(min*1.1); //TODO: doesnt work, why??
+      hobj->SetMaximum(max*1.1);
+      hobj->SetMinimum(min*1.1); //TODO: doesnt work, why?? Negative values?
     }
   }
 

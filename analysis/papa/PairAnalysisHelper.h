@@ -48,7 +48,7 @@ namespace PairAnalysisHelper
 
   // misc
   TString GetDetName(DetectorId det);
-
+  Double_t GetContentMinimum(TH1 *h);
 }
 
 #endif

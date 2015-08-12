@@ -268,3 +268,32 @@ TString PairAnalysisHelper::GetDetName(DetectorId det) {
   CbmDetectorList::GetSystemNameCaps(det, name);
   return name;
 }
+
+//_____________________________________________________________________________
+Double_t PairAnalysisHelper::GetContentMinimum(TH1 *h) {
+  //
+  // get minimum bin content of histogram (having entries)
+  //
+  Int_t bin, binx, biny, binz;
+  Int_t xfirst  = h->GetXaxis()->GetFirst();
+  Int_t xlast   = h->GetXaxis()->GetLast();
+  Int_t yfirst  = h->GetYaxis()->GetFirst();
+  Int_t ylast   = h->GetYaxis()->GetLast();
+  Int_t zfirst  = h->GetZaxis()->GetFirst();
+  Int_t zlast   = h->GetZaxis()->GetLast();
+  Double_t minimum = FLT_MAX, value=0.;
+  for (binz=zfirst;binz<=zlast;binz++) {
+    for (biny=yfirst;biny<=ylast;biny++) {
+      for (binx=xfirst;binx<=xlast;binx++) {
+	bin = h->GetBin(binx,biny,binz);
+	value = h->GetBinContent(bin);
+	if (value < minimum && 
+	    TMath::Abs(h->GetBinError(bin)-1.e-15) > 1.e-15) {
+	  minimum = value;
+	}
+      }
+    }
+  }
+  return minimum;
+
+}
