@@ -30,7 +30,8 @@ class PairAnalysisFunction : public TNamed {
   //  virtual void Fit(Option_t *opt);
 
   // Setter
-  void SetUseIntegral(Bool_t flag=kTRUE) {fUseIntegral = flag;};
+  void SetFitRange(Double_t min, Double_t max)   { fMin=min; fMax=max;  }
+  void SetUseIntegral(Bool_t flag=kTRUE)         { fUseIntegral = flag; }
   void SetFitOption(const char* opt) {
     fFitOpt=opt;    fFitOpt.ToLower();
     if(!fFitOpt.Contains("s")) fFitOpt += "s";
@@ -56,7 +57,7 @@ class PairAnalysisFunction : public TNamed {
   Double_t GetChi2Dof()         const { return fChi2Dof;           }
   
   //virtual void Draw(const Option_t* option = "");
-  virtual void Print(Option_t *option="") const;
+  //  virtual void Print(Option_t *option="") const;
 
 
 protected:

@@ -248,15 +248,15 @@ void PairAnalysisFunction::CombineFunc(TF1 * const peak, TF1 * const bgnd) {
   // combine the bgnd and the peak function
   //
 
-  if (!peak||!bgnd) {
-    Error("CombineFunc","Both, signal and background function need to be set!");
+  if (!peak) {
+    Error("CombineFunc","signal function need to be set!");
     return;
   }
   fFuncSignal=peak;
   fFuncBackground=bgnd;
 
   fNparPeak     = fFuncSignal->GetNpar();
-  fNparBgnd     = fFuncBackground->GetNpar();
+  fNparBgnd     = (bgnd?fFuncBackground->GetNpar():0);
 
   fFuncSigBack = new TF1("BgndPeak",this,&PairAnalysisFunction::PeakBgndFun, fMin,fMax, fNparPeak+fNparBgnd);
   return;

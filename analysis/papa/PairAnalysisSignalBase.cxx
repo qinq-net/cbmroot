@@ -385,6 +385,8 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
   //PairAnalysisSignalFit *fExtrFunc = new PairAnalysisSignalFit();
   //  PairAnalysisSignalFunc fct;// = 0;//new PairAnalysisSignalFunc();
 
+  Printf("this is signal extraction method: %d",(Int_t)fPeakMethod);
+
   // do the scaling/fitting
   switch(method) {
   case kBinCounting: /*nothing needs to be done*/ 
@@ -447,6 +449,10 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
     break;
 
   case kUserFunc:
+    if(!fExtrFunc || !fExtrFunc->GetCombinedFunction()) {
+      Fatal("DescribePeakShape","Function class not added!");
+      return 0x0;
+    }
     fit = fExtrFunc->GetCombinedFunction();
     fitResult = fHistSignal->Fit(fit,"RNI0Q");
     break;
@@ -516,8 +522,9 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
     //    delete fExtrFunc;
     return fit;
   case kUserFunc:
-    if(fgHistSimPM) fit->SetName(Form("mcShapeFunc-%s",fgHistSimPM->GetName()));
+    fit->SetName(Form("UserFunc"));
     if(replaceValErr) fgPeakShape=fit;
+    fit->Print();
     break;
   }
 
