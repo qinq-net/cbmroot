@@ -39,32 +39,6 @@ reco/CbmStsClusterFinderSimple.cxx
 reco/CbmStsFindClusters.cxx
 reco/CbmStsFindHits.cxx
 )
-# --- Legacy sources
-set (SRCS_LEGACY
-legacy/CbmStsClusterFinder_old.cxx 
-legacy/CbmStsDigitizeTb.cxx 
-legacy/CbmStsDigiPar.cxx 
-legacy/CbmStsDigiScheme.cxx 
-legacy/CbmStsDigitize_old.cxx 
-legacy/CbmStsFindHitsQa.cxx
-legacy/CbmStsFindHits_old.cxx 
-legacy/CbmGeoSts.cxx 
-legacy/CbmGeoStsPar.cxx 
-legacy/CbmStsIdealDigitize.cxx 
-legacy/CbmStsIdealFindHits.cxx 
-legacy/CbmStsParAsciiFileIo.cxx 
-legacy/CbmStsRealClusterFinder.cxx 
-legacy/CbmStsRealDigitize.cxx 
-legacy/CbmStsRealFindHits.cxx 
-legacy/CbmStsRealMatchHits.cxx 
-legacy/CbmStsSector.cxx 
-legacy/CbmStsSectorDigiPar.cxx 
-legacy/CbmStsSensorDigiPar.cxx 
-legacy/CbmStsSensor_old.cxx
-legacy/CbmStsStationDigiPar.cxx 
-legacy/CbmStsStation_old.cxx
-)
-
 # --- All sources
 set(SRCS
 ${SRCS_SETUP}
@@ -76,8 +50,8 @@ CbmStsFindTracks.cxx
 CbmStsFindTracksQa.cxx 
 CbmStsFitTracks.cxx 
 CbmStsHitProducerIdeal.cxx 
-CbmStsIdealMatchHits.cxx 
-CbmStsMatchHits.cxx 
+#CbmStsIdealMatchHits.cxx 
+#CbmStsMatchHits.cxx 
 CbmStsMatchTracks.cxx 
 CbmStsRadTool.cxx
 CbmStsTrackFinderIdeal.cxx 

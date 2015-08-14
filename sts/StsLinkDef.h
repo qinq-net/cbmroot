@@ -42,8 +42,8 @@
 #pragma link C++ class CbmStsFindTracksQa+;
 #pragma link C++ class CbmStsFitTracks+;
 #pragma link C++ class CbmStsHitProducerIdeal+;
-#pragma link C++ class CbmStsIdealMatchHits+;
-#pragma link C++ class CbmStsMatchHits+;
+//#pragma link C++ class CbmStsIdealMatchHits+;
+//#pragma link C++ class CbmStsMatchHits+;
 #pragma link C++ class CbmStsMatchTracks+;
 #pragma link C++ class CbmStsRadTool;
 #pragma link C++ class CbmStsTrackFinderIdeal+;

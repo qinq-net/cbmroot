@@ -97,8 +97,6 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
 					      0.,                    // covariance xy
 					      clusterF->GetIndex(),  // front cluster index
 					      clusterB->GetIndex(),  // back cluster index
-					      0,                     // front digi index
-					      -1,                    // back digi index
 					      hitTime,               // hit time
 					      hitTimeError);         // hit time error
 
