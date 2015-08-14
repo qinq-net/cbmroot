@@ -27,9 +27,9 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"PosY",                   "y_{hit}",                                            "(cm)"},
   {"PosZ",                   "z_{hit}",                                            "(cm)"},
   {"LinksMC",                "N_{links}^{MC}",                                     ""},
-  {"Eloss",                  "d#it{E}/d#it{x} + TR",                           "(keV#upointcm^{2/g})"},
-  {"ElossdEdx",              "d#it{E}/d#it{x}",                                "(keV#upointcm^{2/g)"},
-  {"ElossTR",                "TR",                                             "(keV#upointcm^{2/g)"},
+  {"Eloss",                  "d#it{E}/d#it{x} + TR",                           "(keV#upointcm^{2}/g})"},
+  {"ElossdEdx",              "d#it{E}/d#it{x}",                                "(keV#upointcm^{2}/g)"},
+  {"ElossTR",                "TR",                                             "(keV#upointcm^{2}/g)"},
   {"NPhotons",               "N_{photons}^{RICH}",                                 "(a.u.)"},
   {"PmtId",                  "ID_{Pmt}^{RICH}",                                    "(a.u.)"},
   {"Beta",                   "#beta^{TOF}",                                        ""},
@@ -110,6 +110,8 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"MUCHHitsPixel",          "N_{pixel hit}^{MUCH}",                               ""},
   {"MUCHHitsStraw",          "N_{strip hit}^{MUCH}",                               ""},
   {"MUCHChi2NDF",            "#chi^{2}/^{}N_{df}^{MUCH}",                          ""},
+  // technical information
+  {"RndmTrack",               "P",                                                  ""},
 
 // Pair specific variables
   {"Chi2NDF",                "#chi^{2}/^{}ndf",                                    ""},
@@ -189,7 +191,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"PosXMC",                   "x_{hit}^{MC}",                                            "(cm)"},
   {"PosYMC",                   "y_{hit}^{MC}",                                            "(cm)"},
   {"PosZMC",                   "z_{hit}^{MC}",                                            "(cm)"},
-  {"ElossMC",                  "d#it{E}/d#it{x}^{MC}",                                    "(keV#upointcm^{2/g})"},
+  {"ElossMC",                  "d#it{E}/d#it{x}^{MC}",                                    "(keV#upointcm^{2}/g})"},
 // Particle specific variables
   {"PxMC",                     "#it{p}_{x}^{MC}",                                         "(GeV/#it{c})"},
   {"PyMC",                     "#it{p}_{y}^{MC}",                                         "(GeV/#it{c})"},

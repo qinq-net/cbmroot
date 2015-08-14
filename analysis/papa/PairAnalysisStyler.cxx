@@ -14,6 +14,10 @@
 #include <TColor.h>
 #include <TH1.h>
 #include <TPad.h>
+#include <TLegend.h>
+#include <TLegendEntry.h>
+#include <TLatex.h>
+
 #include "PairAnalysisStyler.h"
 
 // const Int_t PairAnalysisStyler::Marker[] = {kOpenCircle,
@@ -197,6 +201,7 @@ void PairAnalysisStyler::LoadStyle() {
     // For the legends:
     defaultSty->SetLegendFillColor(bgrdcolor);
     defaultSty->SetLegendFont(font);
+    //  defaultSty->SetLegendTextSize(0.025); //for root>v5-34-26
 
     //                                       Additions -- transparent style
     defaultSty->SetFillStyle(4000);
@@ -307,3 +312,63 @@ void PairAnalysisStyler::SetStyle(Eidx idx, Int_t col, Int_t marker, Double_t si
   fFll[idx]=fill;
 }
 
+
+UInt_t PairAnalysisStyler::fLegAlign=22; //top-right
+void PairAnalysisStyler::SetLegendAlign(UInt_t align) { fLegAlign=align; }
+void PairAnalysisStyler::SetLegendCoordinates(TLegend *leg)
+{
+  //
+  // set/update legend cooordinates according to alignement (stored in uniqueID)
+  //
+  // if(leg->GetUniqueID()==0) leg->SetUniqueID(fLegAlign);
+  // UInt_t fLegAlign = leg->GetUniqueID();
+
+  // calculate get legend width
+  Double_t maxwdth=0.0;
+  TList *llist = leg->GetListOfPrimitives();
+  Int_t nent = llist->GetEntries();
+  for(Int_t il=0; il<nent; il++) {
+    TLegendEntry *lent = static_cast<TLegendEntry*>(llist->At(il));
+    TString lst(lent->GetLabel());
+    lst.ReplaceAll("#it","");
+    lst.ReplaceAll("^","");
+    lst.ReplaceAll("_","");
+    lst.ReplaceAll("#LT","#");
+    lst.ReplaceAll("#GT","#");
+    lst.ReplaceAll("#phi","#");
+    lst.ReplaceAll("#rho","#");
+    lst.ReplaceAll("#omega","#");
+    lst.ReplaceAll("#eta","#");
+    lst.ReplaceAll("#psi","#");
+    lst.ReplaceAll("#alpha","#");
+    TLatex entrytex( 0, 0, lst.Data());
+    entrytex.SetTextSize(0.025);
+    //entrytex.SetTextFont(lent->GetTextFont());
+    entrytex.SetNDC(kTRUE);
+    Double_t wdth = entrytex.GetXsize();
+    if(maxwdth<wdth) maxwdth=wdth;
+  }
+  //    Printf("max width: %f",maxwdth);
+
+  // set legend coordinates
+  if(fLegAlign==12 || fLegAlign==22) { //top
+    leg->SetY2(1.-gPad->GetTopMargin()-gStyle->GetTickLength("X"));
+    leg->SetY1(leg->GetY2()-nent*0.025); // 0.05
+  }
+  else { // bottom
+    leg->SetY1(0.+gPad->GetBottomMargin()+gStyle->GetTickLength("X"));
+    leg->SetY2(leg->GetY1()+nent*0.025);
+  }
+  if(fLegAlign==22 || fLegAlign==21) {  //right
+    leg->SetX2(1.-gPad->GetRightMargin()-gStyle->GetTickLength("Y"));
+    leg->SetX1(leg->GetX2()-maxwdth*1.0 - 0.035);
+  }
+  else if(fLegAlign==12 || fLegAlign==11) { //left
+    leg->SetX1(0.+gPad->GetLeftMargin()+gStyle->GetTickLength("Y"));
+    leg->SetX2(leg->GetX1()+maxwdth*1.0 + 0.035);
+  }
+
+  // fix margin such that lines allways have the same length 
+  leg->SetMargin(leg->GetMargin() / (leg->GetX2()-leg->GetX1()));
+
+}

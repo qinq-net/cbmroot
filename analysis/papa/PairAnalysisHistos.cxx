@@ -69,6 +69,8 @@
 #include <TMath.h>
 #include <TROOT.h>
 #include <TLegend.h>
+#include <TLegendEntry.h>
+#include <TLatex.h>
 #include <TKey.h>
 #include <TAxis.h>
 #include <TGaxis.h>
@@ -1160,17 +1162,10 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 
   // legend
   if (leg) {
+    leg->SetMargin(0.075);
     leg->SetFillStyle(0);
-    leg->SetTextSize(0.02);
-    // shift second legend if needed
-    // if(nobj) {
-    //   Float_t shift=(leg->GetX2()-leg->GetX1())*leg->GetMargin();
-    //   leg->SetX1(leg->GetX1()-shift);
-    //   leg->SetX2(leg->GetX2()-shift);
-    //   leg->SetY1(leg->GetY2()-(nobj-1)*.05);
-    // }
-    // else
-    leg->SetY1(leg->GetY2()-i*.025); //.05
+    leg->SetTextSize(0.02); // TODO: replaced by global legend textsize for root > v5-34-26
+    PairAnalysisStyler::SetLegendCoordinates(leg);
     leg->Draw();
   }
 

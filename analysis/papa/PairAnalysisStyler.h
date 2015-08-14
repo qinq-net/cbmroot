@@ -14,6 +14,7 @@
 #include <TStyle.h>
 #include <TAttMarker.h>
 #include <Rtypes.h>
+#include <TLegend.h>
 
 namespace PairAnalysisStyler
 {
@@ -60,6 +61,9 @@ namespace PairAnalysisStyler
   void LoadStyle();
   void Style(TObject *obj, Int_t idx=0);
 
+  extern UInt_t fLegAlign;           // legend alignement (11,12,21,22)
+  void SetLegendAlign(UInt_t align);
+  void SetLegendCoordinates(TLegend *leg);
 
 }
 

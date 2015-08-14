@@ -218,7 +218,6 @@ private:
 
   Bool_t IsHistogramOk(const char* classTable, const char* name);
 
-
   PairAnalysisHistos(const PairAnalysisHistos &hist);
   PairAnalysisHistos& operator = (const PairAnalysisHistos &hist);
 

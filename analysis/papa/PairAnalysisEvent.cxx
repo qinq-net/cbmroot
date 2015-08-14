@@ -120,6 +120,8 @@ PairAnalysisEvent::~PairAnalysisEvent()
   //
   // Default Destructor
   //
+  delete fPrimVertex;
+
   fTracks->Clear("C");
   fGlobalTracks->Delete();   //global tracks
   fMCTracks->Delete();       //mc tracks

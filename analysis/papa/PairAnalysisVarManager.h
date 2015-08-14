@@ -166,6 +166,8 @@ public:
     kMUCHHitsPixel,          // number of MUCH pixel hits
     kMUCHHitsStraw,          // number of MUCH straw hits
     kMUCHChi2NDF,            // chi2/ndf MUCH
+    // technical variables
+    kRndmTrack,              // randomly created number (used to apply special selection cuts)
     kTrackMax,
 
 // Pair specific variables
@@ -633,6 +635,7 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   values[kInclAngle] = TMath::ASin(track->Pt()/track->P());
   Fill(track->GetTofHit(),      values);
   values[kTOFHits]   = (track->GetTofHit() ? 1. : 0.);
+  values[kRndmTrack] = gRandom->Rndm();
 
 }
 
