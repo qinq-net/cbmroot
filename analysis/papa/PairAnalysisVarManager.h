@@ -1245,8 +1245,9 @@ inline void PairAnalysisVarManager::SetEvent(PairAnalysisEvent * const ev)
 
 inline void PairAnalysisVarManager::SetEventData(const Double_t data[PairAnalysisVarManager::kNMaxValuesMC])
 {
-  for (Int_t i=0; i<kNMaxValuesMC;++i) fgData[i]=0.;
-  //  for (Int_t i=kPairMax; i<kNMaxValuesMC;++i) fgData[i]=data[i];
+  /* for (Int_t i=0; i<kNMaxValuesMC;++i) fgData[i]=0.; */
+  for (Int_t i=kPairMax; i<kNMaxValues;++i)     fgData[i]=data[i];
+  for (Int_t i=kPairMaxMC; i<kNMaxValuesMC;++i) fgData[i]=data[i];
 }
 
 
