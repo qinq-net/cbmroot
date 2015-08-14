@@ -375,7 +375,17 @@ void CbmKFSigmaReconstructor::Exec(Option_t* opt)
       
       float mass, massError;
       neutron.GetMass(mass, massError);
-      fHistos[0]->Fill(mass);
+
+      neutron.SetNonlinearMassConstraint(neutronMassPDG);
+      
+      const KFParticle * sigmaDaughters[2] = {&neutron, &vPiMinusSecondary[iPi]};
+      KFParticle sigma;
+      sigma.Construct(sigmaDaughters, 2);
+      
+      if(sigma.NDF() < 0) continue;
+      if(sigma.Chi2()/sigma.NDF() > 3.) continue;
+      
+            fHistos[0]->Fill(mass);
       fHistos[1]->Fill(neutron.Chi2()/neutron.NDF());
       fHistos[2]->Fill(TMath::Prob(neutron.Chi2(), neutron.NDF()));
       if(vSigmaMinusMCIndex[iSigma] >= 0 && vPiMinusMCIndex[iPi] >= 0)
@@ -392,14 +402,6 @@ void CbmKFSigmaReconstructor::Exec(Option_t* opt)
       else
         fHistos[19]->Fill(mass);
       
-      neutron.SetNonlinearMassConstraint(neutronMassPDG);
-      
-      const KFParticle * sigmaDaughters[2] = {&neutron, &vPiMinusSecondary[iPi]};
-      KFParticle sigma;
-      sigma.Construct(sigmaDaughters, 2);
-      
-      if(sigma.NDF() < 0) continue;
-      if(sigma.Chi2()/sigma.NDF() > 3.) continue;
       
       sigma.GetMass(mass, massError);
       fHistos[3]->Fill(mass);

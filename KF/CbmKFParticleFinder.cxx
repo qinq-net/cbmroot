@@ -132,13 +132,7 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
     const FairTrackParam* parameters = vRTracks[iTr].GetParamFirst();
     float par[6] = {0.f};
     
-    Double_t V[15] = {0.f}; 
-    
-    for (Int_t i=0,iCov=0; i<5; i++) 
-      for (Int_t j=0; j<=i; j++,iCov++)
-        V[iCov] = parameters->GetCovariance(i,j);
-    
-    float a = parameters->GetTx(), b = parameters->GetTy(), qp = parameters->GetQp();
+    float tx = parameters->GetTx(), ty = parameters->GetTy(), qp = parameters->GetQp();
   
     Int_t q = 0;
     if(qp>0.f)
@@ -148,15 +142,13 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
     if( TMath::Abs(pdg[iTr]) == 1000020030 || TMath::Abs(pdg[iTr]) == 1000020040 ) q *= 2;
       
     
-    float c2 = 1.f/(1.f + a*a + b*b);
+    float c2 = 1.f/(1.f + tx*tx + ty*ty);
     float pq = 1.f/qp * TMath::Abs(q);
     float p2 = pq*pq;
     float pz = sqrt(p2*c2);
-    float px = a*pz;
-    float py = b*pz;
+    float px = tx*pz;
+    float py = ty*pz;
       
-    float H[3] = { -px*c2, -py*c2, -pz*pq };
-
     par[0] = parameters->GetX();
     par[1] = parameters->GetY();
     par[2] = parameters->GetZ();
@@ -164,35 +156,47 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
     par[4] = py;
     par[5] = pz;
 
-    float cxpz = H[0]*V[ 3] + H[1]*V[ 6] + H[2]*V[10];
-    float cypz = H[0]*V[ 4] + H[1]*V[ 7] + H[2]*V[11];
-    float capz = H[0]*V[ 5] + H[1]*V[ 8] + H[2]*V[12];
-    float cbpz = H[0]*V[ 8] + H[1]*V[ 9] + H[2]*V[13];
-    float cpzpz = H[0]*H[0]*V[5] +H[1]*H[1]*V[9] + H[2]*H[2]*V[14] 
-      + 2*( H[0]*H[1]*V[8] +H[0]*H[2]*V[12] +H[1]*H[2]*V[13]);
-
+    //calculate covariance matrix
+    float t = sqrt(1.f + tx*tx + ty*ty);
+    float t3 = t*t*t;
+    float dpxdtx = q/qp*(1.f+ty*ty)/t3;
+    float dpxdty = -q/qp*tx*ty/t3;
+    float dpxdqp = -q/(qp*qp)*tx/t;
+    float dpydtx = -q/qp*tx*ty/t3;
+    float dpydty = q/qp*(1.f+tx*tx)/t3;
+    float dpydqp = -q/(qp*qp)*ty/t;
+    float dpzdtx = -q/qp*tx/t3;
+    float dpzdty = -q/qp*ty/t3;
+    float dpzdqp = -q/(qp*qp*t3);
+    
+    float F[6][5] = { {1.f, 0.f, 0.f,    0.f,    0.f},
+                      {0.f, 1.f, 0.f,    0.f,    0.f},
+                      {0.f, 0.f, 0.f,    0.f,    0.f},
+                      {0.f, 0.f, dpxdtx, dpxdty, dpxdqp},
+                      {0.f, 0.f, dpydtx, dpydty, dpydqp},
+                      {0.f, 0.f, dpzdtx, dpzdty, dpzdqp} };
+    
+    float VFT[5][6];
+    for(int i=0; i<5; i++)
+      for(int j=0; j<6; j++)
+      {
+        VFT[i][j] = 0;
+        for(int k=0; k<5; k++)
+        {
+          VFT[i][j] +=  parameters->GetCovariance(i,k) * F[j][k];
+        }
+      }
+    
     float cov[21];
-    cov[ 0] = V[0];
-    cov[ 1] = V[1];
-    cov[ 2] = V[2];
-    cov[ 3] = 0.f;
-    cov[ 4] = 0.f;
-    cov[ 5] = 0.f;
-    cov[ 6] = V[3]*pz + a*cxpz; 
-    cov[ 7] = V[4]*pz + a*cypz; 
-    cov[ 8] = 0.f;
-    cov[ 9] = V[5]*pz*pz + 2.f*a*pz*capz + a*a*cpzpz;
-    cov[10] = V[6]*pz+b*cxpz; 
-    cov[11] = V[7]*pz+b*cypz; 
-    cov[12] = 0.f;
-    cov[13] = V[8]*pz*pz + a*pz*cbpz + b*pz*capz + a*b*cpzpz;
-    cov[14] = V[9]*pz*pz + 2.f*b*pz*cbpz + b*b*cpzpz;
-    cov[15] = cxpz; 
-    cov[16] = cypz; 
-    cov[17] = 0.f;
-    cov[18] = capz*pz + a*cpzpz;
-    cov[19] = cbpz*pz + b*cpzpz;
-    cov[20] = cpzpz;
+    for(int i=0, l=0; i<6; i++)
+      for(int j=0; j<=i; j++, l++)
+      {
+        cov[l] = 0;
+        for(int k=0; k<5; k++)
+        {
+          cov[l] += F[i][k] * VFT[k][j];
+        }
+      }
     
     float field[10];
     int entrSIMD = iTr % fvecLen;
