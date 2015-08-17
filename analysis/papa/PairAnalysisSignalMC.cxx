@@ -26,10 +26,12 @@ const char* PairAnalysisSignalMC::fgkSignals[kNSignals][2]= {  //default signal 
   {"InclJpsi",       "J/#psi#rightarrow e^{+}e^{-}"},
   {"Conversion",     "#gamma#rightarrow e^{+}e^{-}"},
   {"Rho0",           "#rho^{0}"},
-  {"OmegaDalitz",    "#omega^{Dalitz}"},
+  {"OmegaDalitz",    "#omega_{Dalitz}"},
   {"Omega",          "#omega"},
   {"Phi",            "#phi"},
+  {"EtaDalitz",      "#eta_{Dalitz}"},
   {"Eta",            "#eta"},
+  {"Pi0Dalitz",      "#pi^{0}_{Dalitz}"},
   {"Pi0",            "#pi^{0}"},
   {"InclElePM",      "e^{+}e^{-} (incl.)"},
   {"DeltaElectron",  "#delta rays"},
@@ -218,6 +220,14 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
     fMothersRelation=kSame;
     SetGEANTProcess(kPPrimary); //pluto
     break;
+  case kEtaDalitz:
+    SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
+    fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
+    fMother1=221; fMother2=221;
+    fMothersRelation=kSame;
+    fDalitz=kIsDalitz; fDalitzPdg=22;
+    SetGEANTProcess(kPPrimary); //pluto
+    break;
   case kEta:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
@@ -231,6 +241,14 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
     fMother1=111; fMother2=111; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
     fMothersRelation=kSame;
     //    SetGEANTProcess(kPUserDefined);
+    break;
+  case kPi0Dalitz:
+    SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
+    fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
+    fMother1=111; fMother2=111;
+    fMothersRelation=kSame;
+    fDalitz=kIsDalitz; fDalitzPdg=22;
+    // SetGEANTProcess(kPPrimary); //pluto
     break;
   case kInclElePM:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
