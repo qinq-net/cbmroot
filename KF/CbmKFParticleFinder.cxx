@@ -4,7 +4,6 @@
 // Cbm Headers ----------------------
 #include "CbmKFParticleFinderPID.h"
 #include "CbmKFParticleFinder.h"
-#include "CbmStsTrack.h"
 #include "FairRunAna.h"
 #include "CbmL1PFFitter.h"
 #include "L1Field.h"
@@ -26,7 +25,8 @@
 using std::vector;
 
 CbmKFParticleFinder::CbmKFParticleFinder(const char* name, Int_t iVerbose):
-  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fTrackArray(0), fPrimVtx(0), fTopoReconstructor(0), fPVFindMode(1), fPID(0)
+  FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fTrackArray(0), fPrimVtx(0), fTopoReconstructor(0), fPVFindMode(1), fPID(0),
+  fSuperEventAnalysis(0), fSETracks(0), fSEField(0), fSEpdg(0), fSETrackId(0), fSEChiPrim(0)
 {
   fTopoReconstructor = new KFParticleTopoReconstructor;
   
@@ -123,9 +123,150 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
   vector<L1FieldRegion> vField;
   fitter.Fit(vRTracks, pdg);
   fitter.GetChiToVertex(vRTracks, vField, vChiToPrimVtx, kfVertex, -3);
+  vector<KFFieldVector> vFieldVector(ntracks);
+  for(Int_t iTr=0; iTr<ntracks; iTr++)
+  {
+    int entrSIMD = iTr % fvecLen;
+    int entrVec  = iTr / fvecLen;
+    vFieldVector[iTr].fField[0] = vField[entrVec].cx0[entrSIMD];
+    vFieldVector[iTr].fField[1] = vField[entrVec].cx1[entrSIMD];
+    vFieldVector[iTr].fField[2] = vField[entrVec].cx2[entrSIMD];
+    vFieldVector[iTr].fField[3] = vField[entrVec].cy0[entrSIMD];
+    vFieldVector[iTr].fField[4] = vField[entrVec].cy1[entrSIMD];
+    vFieldVector[iTr].fField[5] = vField[entrVec].cy2[entrSIMD];
+    vFieldVector[iTr].fField[6] = vField[entrVec].cz0[entrSIMD];
+    vFieldVector[iTr].fField[7] = vField[entrVec].cz1[entrSIMD];
+    vFieldVector[iTr].fField[8] = vField[entrVec].cz2[entrSIMD];
+    vFieldVector[iTr].fField[9] = vField[entrVec].z0[entrSIMD];
+  }
   
-  KFPTrackVector tracks;
-  tracks.Resize(ntracks);
+  if(!fSuperEventAnalysis)
+  {
+    KFPTrackVector tracks;
+    FillKFPTrackVector(&tracks, vRTracks, vFieldVector, pdg, trackId, vChiToPrimVtx);
+      
+    TStopwatch timer;
+    timer.Start();
+    
+    fTopoReconstructor->Init(tracks);
+    if(fPVFindMode == 0)
+    {
+      KFPVertex primVtx_tmp;
+      primVtx_tmp.SetXYZ(0,0,0);
+      primVtx_tmp.SetCovarianceMatrix( 0,0,0,0,0,0 );
+      primVtx_tmp.SetNContributors( 0 );
+      primVtx_tmp.SetChi2( -100 );
+
+      vector<int> pvTrackIds;
+      KFVertex pv(primVtx_tmp);
+      fTopoReconstructor->AddPV(pv, pvTrackIds);
+    }
+    else if(fPVFindMode == 1)
+      fTopoReconstructor->ReconstructPrimVertex();
+    else if(fPVFindMode == 2)
+      fTopoReconstructor->ReconstructPrimVertex(0);
+    
+  //   {
+  //     KFPVertex primVtx_tmp;
+  //     primVtx_tmp.SetXYZ(kfVertex.GetRefX(), kfVertex.GetRefY(), kfVertex.GetRefZ());
+  //     primVtx_tmp.SetCovarianceMatrix( kfVertex.GetCovMatrix()[0], kfVertex.GetCovMatrix()[1], 
+  //                                      kfVertex.GetCovMatrix()[2], kfVertex.GetCovMatrix()[3], 
+  //                                      kfVertex.GetCovMatrix()[4], kfVertex.GetCovMatrix()[5] );
+  //     primVtx_tmp.SetNContributors( kfVertex.GetRefNTracks() );
+  //     primVtx_tmp.SetChi2( kfVertex.GetRefChi2() );
+  // 
+  //     vector<short int> pvTrackIds;
+  //     KFVertex pv(primVtx_tmp);
+  //     fTopoReconstructor->AddPV(pv, pvTrackIds);
+  //   }
+
+    fTopoReconstructor->SortTracks();
+    fTopoReconstructor->ReconstructParticles();
+    
+    timer.Stop();
+    fTopoReconstructor->SetTime(timer.RealTime());
+  }
+  else
+  {
+    for(int iTr=0; iTr<ntracks; iTr++)
+    {
+      const FairTrackParam* parameters = vRTracks[iTr].GetParamFirst();
+      float a = parameters->GetTx(), b = parameters->GetTy(), qp = parameters->GetQp();
+      Int_t q = 0;
+      if(qp>0.f)
+        q = 1;
+      if(qp<0.f)
+        q=-1;
+      float c2 = 1.f/(1.f + a*a + b*b);
+      float pq = 1.f/qp * TMath::Abs(q);
+      float p2 = pq*pq;
+      float pz = sqrt(p2*c2);
+      float px = a*pz;
+      float py = b*pz;
+      float pt = sqrt(px*px + py*py);
+      
+      bool save=0;
+      
+      if(vChiToPrimVtx[iTr] < 3)
+      {
+        if( (fabs(pdg[iTr]) == 11 || fabs(pdg[iTr]) == 13) && pt > 1.0f )
+          save=1;
+      }
+      
+      if(vChiToPrimVtx[iTr] > 3)
+      {
+        if( ( fabs(pdg[iTr]) == 211 || fabs(pdg[iTr]) == 321 || fabs(pdg[iTr]) == 2212 ) && pt > 0.2f )
+          save = 1;
+      }
+      
+      if(save)
+      {
+        fSETracks.push_back(vRTracks[iTr]);
+        fSEField.push_back(vFieldVector[iTr]);
+        fSEpdg.push_back(pdg[iTr]);
+        fSETrackId.push_back(fSETrackId.size());
+        fSEChiPrim.push_back(vChiToPrimVtx[iTr]);
+      }
+    }
+  }
+}
+
+void CbmKFParticleFinder::Finish()
+{
+  if(fSuperEventAnalysis)
+  {
+    KFPTrackVector tracks;
+    FillKFPTrackVector(&tracks, fSETracks, fSEField, fSEpdg, fSETrackId, fSEChiPrim);
+      
+    std::cout << "CbmKFParticleFinder: Start SE analysis" << std::endl;
+    TStopwatch timer;
+    timer.Start();
+
+    fTopoReconstructor->Init(tracks);
+
+    KFPVertex primVtx_tmp;
+    primVtx_tmp.SetXYZ(0,0,0);
+    primVtx_tmp.SetCovarianceMatrix( 0,0,0,0,0,0 );
+    primVtx_tmp.SetNContributors( 0 );
+    primVtx_tmp.SetChi2( -100 );
+    vector<int> pvTrackIds;
+    KFVertex pv(primVtx_tmp);
+    fTopoReconstructor->AddPV(pv, pvTrackIds);
+
+    fTopoReconstructor->SortTracks();
+    fTopoReconstructor->ReconstructParticles();
+
+    timer.Stop();
+    fTopoReconstructor->SetTime(timer.RealTime());
+    std::cout << "CbmKFParticleFinder: Finish SE analysis" << timer.RealTime() << std::endl;
+  }
+}
+
+void CbmKFParticleFinder::FillKFPTrackVector(KFPTrackVector* tracks, const vector<CbmStsTrack>& vRTracks, const vector<KFFieldVector>& vField, 
+                                             const vector<int>& pdg, const vector<int>& trackId, const vector<float>& vChiToPrimVtx) const
+{
+  int ntracks = vRTracks.size();
+  tracks->Resize(ntracks);
   //fill vector with tracks
   for(Int_t iTr=0; iTr<ntracks; iTr++)
   {
@@ -198,81 +339,26 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
         }
       }
     
-    float field[10];
-    int entrSIMD = iTr % fvecLen;
-    int entrVec  = iTr / fvecLen;
-    field[0] = vField[entrVec].cx0[entrSIMD];
-    field[1] = vField[entrVec].cx1[entrSIMD];
-    field[2] = vField[entrVec].cx2[entrSIMD];
-    field[3] = vField[entrVec].cy0[entrSIMD];
-    field[4] = vField[entrVec].cy1[entrSIMD];
-    field[5] = vField[entrVec].cy2[entrSIMD];
-    field[6] = vField[entrVec].cz0[entrSIMD];
-    field[7] = vField[entrVec].cz1[entrSIMD];
-    field[8] = vField[entrVec].cz2[entrSIMD];
-    field[9] = vField[entrVec].z0[entrSIMD];
-    
     for(Int_t iP=0; iP<6; iP++)
-      tracks.SetParameter(par[iP], iP, iTr);
+      tracks->SetParameter(par[iP], iP, iTr);
     for(Int_t iC=0; iC<21; iC++)
-      tracks.SetCovariance(cov[iC], iC, iTr);
+      tracks->SetCovariance(cov[iC], iC, iTr);
     for(Int_t iF=0; iF<10; iF++)
-      tracks.SetFieldCoefficient(field[iF], iF, iTr);
-    tracks.SetId(trackId[iTr], iTr);
-    tracks.SetPDG(pdg[iTr], iTr);
-    tracks.SetQ(q, iTr);
+      tracks->SetFieldCoefficient(vField[iTr].fField[iF], iF, iTr);
+    tracks->SetId(trackId[iTr], iTr);
+    tracks->SetPDG(pdg[iTr], iTr);
+    tracks->SetQ(q, iTr);
 
     if(fPVFindMode == 0)
     {    
       if(vChiToPrimVtx[iTr] < 3)
-        tracks.SetPVIndex(0, iTr);
+        tracks->SetPVIndex(0, iTr);
       else
-        tracks.SetPVIndex(-1, iTr);
+        tracks->SetPVIndex(-1, iTr);
     }
     else
-      tracks.SetPVIndex(-1, iTr);
+      tracks->SetPVIndex(-1, iTr);
   }
-    
-  TStopwatch timer;
-  timer.Start();
-  
-  fTopoReconstructor->Init(tracks);
-  if(fPVFindMode == 0)
-  {
-    KFPVertex primVtx_tmp;
-    primVtx_tmp.SetXYZ(0,0,0);
-    primVtx_tmp.SetCovarianceMatrix( 0,0,0,0,0,0 );
-    primVtx_tmp.SetNContributors( 0 );
-    primVtx_tmp.SetChi2( -100 );
-
-    vector<int> pvTrackIds;
-    KFVertex pv(primVtx_tmp);
-    fTopoReconstructor->AddPV(pv, pvTrackIds);
-  }
-  else if(fPVFindMode == 1)
-    fTopoReconstructor->ReconstructPrimVertex();
-  else if(fPVFindMode == 2)
-    fTopoReconstructor->ReconstructPrimVertex(0);
-  
-//   {
-//     KFPVertex primVtx_tmp;
-//     primVtx_tmp.SetXYZ(kfVertex.GetRefX(), kfVertex.GetRefY(), kfVertex.GetRefZ());
-//     primVtx_tmp.SetCovarianceMatrix( kfVertex.GetCovMatrix()[0], kfVertex.GetCovMatrix()[1], 
-//                                      kfVertex.GetCovMatrix()[2], kfVertex.GetCovMatrix()[3], 
-//                                      kfVertex.GetCovMatrix()[4], kfVertex.GetCovMatrix()[5] );
-//     primVtx_tmp.SetNContributors( kfVertex.GetRefNTracks() );
-//     primVtx_tmp.SetChi2( kfVertex.GetRefChi2() );
-// 
-//     vector<short int> pvTrackIds;
-//     KFVertex pv(primVtx_tmp);
-//     fTopoReconstructor->AddPV(pv, pvTrackIds);
-//   }
-
-  fTopoReconstructor->SortTracks();
-  fTopoReconstructor->ReconstructParticles();
-  
-  timer.Stop();
-  fTopoReconstructor->SetTime(timer.RealTime());
 }
 
 double CbmKFParticleFinder::InversedChi2Prob(double p, int ndf) const
@@ -308,6 +394,12 @@ double CbmKFParticleFinder::InversedChi2Prob(double p, int ndf) const
 void CbmKFParticleFinder::SetPrimaryProbCut(float prob)
 { 
   fTopoReconstructor->SetChi2PrimaryCut( InversedChi2Prob(prob, 2) );
+}
+
+void CbmKFParticleFinder::SetSuperEventAnalysis()
+{ 
+  fSuperEventAnalysis=1; 
+  fTopoReconstructor->SetMixedEventAnalysis();
 }
 
 ClassImp(CbmKFParticleFinder);

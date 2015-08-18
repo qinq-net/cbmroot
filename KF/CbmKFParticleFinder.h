@@ -5,15 +5,21 @@
 #define CbmKFParticleFinder_HH
 
 #include "FairTask.h"
+#include "CbmStsTrack.h"
 
 #include "TString.h"
-
 #include <vector>
 
 class CbmKFParticleFinderPID;
 class KFParticleTopoReconstructor;
 class TClonesArray;
 class CbmVertex;
+class KFPTrackVector;
+
+struct KFFieldVector
+{
+  float fField[10];
+};
 
 class CbmKFParticleFinder : public FairTask {
  public:
@@ -30,18 +36,24 @@ class CbmKFParticleFinder : public FairTask {
 
   virtual InitStatus Init();
   virtual void Exec(Option_t* opt);
-
+  virtual void Finish();
+  
   const KFParticleTopoReconstructor * GetTopoReconstructor() const { return fTopoReconstructor; }
   
   void SetPIDInformation(CbmKFParticleFinderPID* pid) { fPID = pid; }
   
   // set cuts
   void SetPrimaryProbCut(float prob);
+    
+  // Set SE analysis
+  void SetSuperEventAnalysis();
   
  private:
   
   double InversedChi2Prob(double p, int ndf) const;
-  
+  void FillKFPTrackVector(KFPTrackVector* tracks, const std::vector<CbmStsTrack>& vRTracks, const std::vector<KFFieldVector>& vField, 
+                          const std::vector<int>& pdg, const std::vector<int>& trackId, const std::vector<float>& vChiToPrimVtx) const;
+                                             
   const CbmKFParticleFinder& operator = (const CbmKFParticleFinder&);
   CbmKFParticleFinder(const CbmKFParticleFinder&);
    
@@ -58,6 +70,14 @@ class CbmKFParticleFinder : public FairTask {
   
   //PID information
   CbmKFParticleFinderPID* fPID;
+  
+  //for super event analysis
+  bool fSuperEventAnalysis;
+  std::vector<CbmStsTrack> fSETracks;
+  std::vector<KFFieldVector> fSEField;
+  std::vector<int> fSEpdg;
+  std::vector<int> fSETrackId;
+  std::vector<float> fSEChiPrim;
   
   ClassDef(CbmKFParticleFinder,1);
 };

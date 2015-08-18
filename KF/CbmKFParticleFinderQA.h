@@ -37,6 +37,9 @@ class CbmKFParticleFinderQA : public FairTask {
   void SaveParticles(Bool_t b = 1) { fSaveParticles = b; }
   void SaveMCParticles(Bool_t b = 1) { fSaveMCParticles = b; }
   
+  // Set SE analysis
+  void SetSuperEventAnalysis() { fSuperEventAnalysis=1; }
+
  private:
   
   const CbmKFParticleFinderQA& operator = (const CbmKFParticleFinderQA&);
@@ -70,6 +73,9 @@ class CbmKFParticleFinderQA : public FairTask {
   Int_t fPrintFrequency;
   Int_t fNEvents;
   Double_t fTime[5];
+  
+  //for super event analysis
+  bool fSuperEventAnalysis;
   
   ClassDef(CbmKFParticleFinderQA,1);
 };
