@@ -127,7 +127,9 @@ roc::Board::Board() :
    fDefaultTimeout(2.),
    fVerbosity(0),
    fOperTrace(1),
-   fConnector(0)
+   fConnector(0),
+   fMapName2Addr(),
+   fMapAddr2Name()
 {
 
   // current ROC address def's from defines.h

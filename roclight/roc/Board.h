@@ -105,6 +105,12 @@ namespace roc {
 
       friend class BoardConnector;
 
+      private:
+         // For now disable usage of assignment OP to remove warnings, 
+         // if needed implement it correctly
+         Board(const roc::Board&);
+         Board& operator=(const Board&);
+         
       protected:
          ClientRole      fRole;              //!< client role (access rights)
          uint32_t        fRocNumber;         //!< number of connected ROC

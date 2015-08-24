@@ -8,6 +8,10 @@
 namespace roc {
 
    class Iterator {
+      private:
+         // For now disable usage of assignment OP to remove warnings, 
+         // if needed implement it in the same way as the copy constructor
+         Iterator& operator=(const Iterator&);
       protected:
          enum { MaxGet4=16 };
       
