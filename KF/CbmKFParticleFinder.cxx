@@ -209,7 +209,7 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
       
       if(vChiToPrimVtx[iTr] < 3)
       {
-        if( (fabs(pdg[iTr]) == 11 || fabs(pdg[iTr]) == 13) && pt > 1.0f )
+        if( (fabs(pdg[iTr]) == 11 && pt > 0.2f) || (fabs(pdg[iTr]) == 13) )
           save=1;
       }
       
@@ -399,6 +399,7 @@ void CbmKFParticleFinder::SetPrimaryProbCut(float prob)
 void CbmKFParticleFinder::SetSuperEventAnalysis()
 { 
   fSuperEventAnalysis=1; 
+  fPVFindMode = 0;
   fTopoReconstructor->SetMixedEventAnalysis();
 }
 
