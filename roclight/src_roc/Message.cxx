@@ -60,58 +60,58 @@ bool roc::Message::convertFromOld(void* src)
 
 bool roc::Message::convertToOld(void* tgt)
 {
-   uint8_t* data = (uint8_t*) tgt;
-   for (int n=0;n<6;n++) data[n] = 0;
+   uint8_t* dataPtr = (uint8_t*) tgt;
+   for (int n=0;n<6;n++) dataPtr[n] = 0;
 
-   data[0] = ((getMessageType() & 0x7) << 5) | ((getRocNumber() & 0x7) << 2);
+   dataPtr[0] = ((getMessageType() & 0x7) << 5) | ((getRocNumber() & 0x7) << 2);
 
    switch (getMessageType()) {
       case MSG_HIT:
-         data[0] = data[0] | (getNxNumber() & 0x3);
-         data[1] = ((getNxTs() >> 9) & 0x1f) | ((getNxLtsMsb() << 5) & 0xe0);
-         data[2] = (getNxTs() >> 1);
-         data[3] = ((getNxTs() << 7) & 0x80) | (getNxChNum() & 0x7f);
-         data[4] = (getNxAdcValue() >> 5) & 0x7f;
-         data[5] = ((getNxAdcValue() << 3) & 0xf8) |
+         dataPtr[0] = dataPtr[0] | (getNxNumber() & 0x3);
+         dataPtr[1] = ((getNxTs() >> 9) & 0x1f) | ((getNxLtsMsb() << 5) & 0xe0);
+         dataPtr[2] = (getNxTs() >> 1);
+         dataPtr[3] = ((getNxTs() << 7) & 0x80) | (getNxChNum() & 0x7f);
+         dataPtr[4] = (getNxAdcValue() >> 5) & 0x7f;
+         dataPtr[5] = ((getNxAdcValue() << 3) & 0xf8) |
                     (getNxLastEpoch() & 0x1) |
                     ((getNxOverflow() & 0x1) << 1) |
                     ((getNxPileup() & 0x1) << 2);
          break;
 
       case MSG_EPOCH:
-         data[1] = (getEpochNumber() >> 24) & 0xff;
-         data[2] = (getEpochNumber() >> 16) & 0xff;
-         data[3] = (getEpochNumber() >> 8) & 0xff;
-         data[4] = getEpochNumber() & 0xff;
-         data[5] = getEpochMissed();
+         dataPtr[1] = (getEpochNumber() >> 24) & 0xff;
+         dataPtr[2] = (getEpochNumber() >> 16) & 0xff;
+         dataPtr[3] = (getEpochNumber() >> 8) & 0xff;
+         dataPtr[4] = getEpochNumber() & 0xff;
+         dataPtr[5] = getEpochMissed();
          break;
 
       case MSG_SYNC:
-         data[0] = data[0] | (getSyncChNum() & 0x3);
-         data[1] = (getSyncEpochLSB() << 7) | ((getSyncTs() >> 7) & 0x7f);
-         data[2] = ((getSyncTs() << 1) & 0xfc) | ((getSyncData() >> 22) & 0x3);
-         data[3] = (getSyncData() >> 14) & 0xff;
-         data[4] = (getSyncData() >> 6) & 0xff;
-         data[5] = ((getSyncData() << 2) & 0xfc) | (getSyncStFlag() & 0x3);
+         dataPtr[0] = dataPtr[0] | (getSyncChNum() & 0x3);
+         dataPtr[1] = (getSyncEpochLSB() << 7) | ((getSyncTs() >> 7) & 0x7f);
+         dataPtr[2] = ((getSyncTs() << 1) & 0xfc) | ((getSyncData() >> 22) & 0x3);
+         dataPtr[3] = (getSyncData() >> 14) & 0xff;
+         dataPtr[4] = (getSyncData() >> 6) & 0xff;
+         dataPtr[5] = ((getSyncData() << 2) & 0xfc) | (getSyncStFlag() & 0x3);
          break;
 
       case MSG_AUX:
-         data[0] = data[0] | (getAuxChNum() >> 5) & 0x3;
-         data[1] = ((getAuxChNum() << 3) & 0xf8) |
+         dataPtr[0] = dataPtr[0] | ( (getAuxChNum() >> 5) & 0x3 );
+         dataPtr[1] = ((getAuxChNum() << 3) & 0xf8) |
                     ((getAuxEpochLSB() << 2) & 0x4) |
                     ((getAuxTs() >> 12) & 0x3);
-         data[2] = (getAuxTs() >> 4) & 0xff;
-         data[3] = ((getAuxTs() << 4) & 0xe0) |
+         dataPtr[2] = (getAuxTs() >> 4) & 0xff;
+         dataPtr[3] = ((getAuxTs() << 4) & 0xe0) |
                     (getAuxFalling() << 4) |
                     (getAuxOverflow() << 3);
          break;
 
       case MSG_SYS:
-         data[1] = getSysMesType();
-         data[2] = (getSysMesData() >> 24) & 0xff;
-         data[3] = (getSysMesData() >> 16) & 0xff;
-         data[4] = (getSysMesData() >> 8) & 0xff;
-         data[5] = getSysMesData() & 0xff;
+         dataPtr[1] = getSysMesType();
+         dataPtr[2] = (getSysMesData() >> 24) & 0xff;
+         dataPtr[3] = (getSysMesData() >> 16) & 0xff;
+         dataPtr[4] = (getSysMesData() >> 8) & 0xff;
+         dataPtr[5] = getSysMesData() & 0xff;
          break;
 
       default:
@@ -406,15 +406,15 @@ void roc::Message::printData(std::ostream& os, unsigned kind, uint32_t epoch) co
                  snprintf(sysbuf, sizeof(sysbuf), "DAQ finished");
                  break;
               case SYSMSG_NX_PARITY: {
-                   uint32_t data = getSysMesData();
-                   uint32_t nxb3_flg = (data>>31) & 0x01;
-                   uint32_t nxb3_val = (data>>24) & 0x7f;
-                   uint32_t nxb2_flg = (data>>23) & 0x01;
-                   uint32_t nxb2_val = (data>>16) & 0x7f;
-                   uint32_t nxb1_flg = (data>>15) & 0x01;
-                   uint32_t nxb1_val = (data>>8 ) & 0x7f;
-                   uint32_t nxb0_flg = (data>>7 ) & 0x01;
-                   uint32_t nxb0_val = (data    ) & 0x7f;
+                   uint32_t dataMes = getSysMesData();
+                   uint32_t nxb3_flg = (dataMes>>31) & 0x01;
+                   uint32_t nxb3_val = (dataMes>>24) & 0x7f;
+                   uint32_t nxb2_flg = (dataMes>>23) & 0x01;
+                   uint32_t nxb2_val = (dataMes>>16) & 0x7f;
+                   uint32_t nxb1_flg = (dataMes>>15) & 0x01;
+                   uint32_t nxb1_val = (dataMes>>8 ) & 0x7f;
+                   uint32_t nxb0_flg = (dataMes>>7 ) & 0x01;
+                   uint32_t nxb0_val = (dataMes    ) & 0x7f;
                    snprintf(sysbuf, sizeof(sysbuf),"Nx:%1x %1d%1d%1d%1d:%02x:%02x:%02x:%02x nX parity error", getNxNumber(), 
                             nxb3_flg, nxb2_flg, nxb1_flg, nxb0_flg,
                             nxb3_val, nxb2_val, nxb1_val, nxb0_val);
@@ -441,11 +441,11 @@ void roc::Message::printData(std::ostream& os, unsigned kind, uint32_t epoch) co
                  snprintf(sysbuf, sizeof(sysbuf), "Packet lost");
                  break;
               case SYSMSG_GET4_EVENT: {
-                    uint32_t data           = getSysMesData();
-                    uint32_t get4_pattern   = getField(16, 6); //(data>>16) & 0x3f;
-                    uint32_t get4_eventType = getBit(22);      //(data>>7)  & 0xfff;
-                    uint32_t get4_TS        = getField(23,12); //(data>>6)  & 0x1; 
-                    uint32_t get4_chip      = getField(40, 8); // data      & 0xff;
+                    uint32_t dataMes           = getSysMesData();
+                    uint32_t get4_pattern   = getField(16, 6); //(dataMes>>16) & 0x3f;
+                    uint32_t get4_eventType = getBit(22);      //(dataMes>>7)  & 0xfff;
+                    uint32_t get4_TS        = getField(23,12); //(dataMes>>6)  & 0x1; 
+                    uint32_t get4_chip      = getField(40, 8); // dataMes      & 0xff;
                     if(get4_eventType==1) 
                        snprintf(sysbuf, sizeof(sysbuf), 
                                 "Get4:0x%02x TS:0x%03x Pattern:0x%02x - GET4 External Sync Event", get4_chip, get4_TS, get4_pattern);

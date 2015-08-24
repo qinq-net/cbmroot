@@ -76,7 +76,7 @@ namespace roc {
 
          void assign(const Message& src) { data = src.data; }
 
-         void operator=(const Message& src) { assign(src); }
+//         void operator=(const Message& src) { assign(src); }
 
          inline void reset() { data = 0; }
 

@@ -46,7 +46,7 @@ namespace roc {
 
       public:
          OperList();
-         OperList(int noper, bool* isput, uint32_t* addr, uint32_t* value);
+         OperList(int noper, bool* isputIn, uint32_t* addr, uint32_t* value);
          OperList(const OperList& src);
          virtual ~OperList();
 
@@ -57,11 +57,11 @@ namespace roc {
 
          void clear() { fList.clear(); fErrorOper = -1; fErrorCode = 0; }
 
-         void addOper(const Oper& oper)
-           { fList.push_back(oper); }
+         void addOper(const Oper& operIn )
+           { fList.push_back(operIn); }
 
-         void addOper(bool isput, uint32_t addr, uint32_t value)
-           { addOper(Oper(isput, addr, value)); }
+         void addOper(bool isputIn, uint32_t addr, uint32_t value)
+           { addOper(Oper(isputIn, addr, value)); }
 
          void addPut(uint32_t addr, uint32_t value) { addOper(true, addr, value); }
 

@@ -319,17 +319,17 @@ int roc::Board::downloadCommandsList(unsigned num, OperList& lst, double tmout)
    if (res!=0) return res;
 
    for (int n=0;n<getlst.number();n+=2) {
-      uint32_t addr = getlst.oper(n).value;
+      uint32_t addrVal = getlst.oper(n).value;
       uint32_t value = getlst.oper(n+1).value;
 
-      if ((addr & ROC_CMD_LST_PUT) == 0) {
+      if ((addrVal & ROC_CMD_LST_PUT) == 0) {
          Debug(-1, "Commands list %u has non-Put operation", num);
          return ROC_VALUE_ERROR;
       }
 
-      addr = addr & ROC_CMD_LST_ADDRMASK;
-      if (addr==ROC_CMD_LST_ACTIVE) break;
-      lst.addPut(addr, value);
+      addrVal = addrVal & ROC_CMD_LST_ADDRMASK;
+      if (addrVal==ROC_CMD_LST_ACTIVE) break;
+      lst.addPut(addrVal, value);
    }
 
    return 0;

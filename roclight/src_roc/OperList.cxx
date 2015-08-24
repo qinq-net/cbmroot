@@ -10,13 +10,13 @@ roc::OperList::OperList() :
 
 }
 
-roc::OperList::OperList(int noper, bool* isput, uint32_t* addr, uint32_t* value) :
+roc::OperList::OperList(int noper, bool* isputIn, uint32_t* addr, uint32_t* value) :
    fList(),
    fErrorOper(-1),
    fErrorCode(0)
 {
    for (int n=0;n<noper;n++)
-      addOper(isput[n], addr[n], value[n]);
+      addOper(isputIn[n], addr[n], value[n]);
 }
 
 roc::OperList::OperList(const OperList& src) :
