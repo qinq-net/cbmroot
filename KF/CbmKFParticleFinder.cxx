@@ -215,7 +215,7 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
       
       if(vChiToPrimVtx[iTr] > 3)
       {
-        if( ( fabs(pdg[iTr]) == 211 || fabs(pdg[iTr]) == 321 || fabs(pdg[iTr]) == 2212 ) && pt > 0.2f )
+        if( ( fabs(pdg[iTr]) == 211 || fabs(pdg[iTr]) == 321 || fabs(pdg[iTr]) == 2212 || pdg[iTr] == -1) && pt > 0.2f )
           save = 1;
       }
       
