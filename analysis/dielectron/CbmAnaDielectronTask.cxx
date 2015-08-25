@@ -616,6 +616,7 @@ void CbmAnaDielectronTask::Exec(
     fh_event_number->Fill(0.5);
 
     cout << "-I- CbmAnaDielectronTask, event number " << fh_event_number->GetEntries() << endl;
+    cout << "fPionMisidLevel = " << fPionMisidLevel << endl;
     fCuts.Print();
     cout << "fWeight = " << fWeight << endl;
 
@@ -895,6 +896,7 @@ void CbmAnaDielectronTask::FillElPiMomHist()
        if (stsTrack == NULL) continue;
        CbmTrackMatchNew* stsMatch  = (CbmTrackMatchNew*) fStsTrackMatches->At(stsInd);
        if (stsMatch == NULL) continue;
+       if (stsMatch->GetNofLinks() == 0) continue;
        int stsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
        if (stsMcTrackId < 0) continue;
        CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMCTracks->At(stsMcTrackId);
@@ -1036,6 +1038,7 @@ void CbmAnaDielectronTask::FillCandidates()
       if (fPionMisidLevel >= 0.0){
     	  CbmTrackMatchNew* stsMatch  = (CbmTrackMatchNew*) fStsTrackMatches->At(cand.fStsInd);
          if (stsMatch == NULL) continue;
+         if ( stsMatch->GetNofLinks() == 0 ) continue;
          cand.fStsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
          if (cand.fStsMcTrackId < 0) continue;
          CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMCTracks->At(cand.fStsMcTrackId);
@@ -1097,6 +1100,7 @@ void CbmAnaDielectronTask::AssignMcToCandidates()
       int stsInd = fCandidates[i].fStsInd;
       CbmTrackMatchNew* stsMatch  = (CbmTrackMatchNew*) fStsTrackMatches->At(stsInd);
       if (stsMatch == NULL) continue;
+      if ( stsMatch->GetNofLinks() == 0 ) continue;
       fCandidates[i].fStsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
       if (fCandidates[i].fStsMcTrackId < 0) continue;
       CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMCTracks->At(fCandidates[i].fStsMcTrackId);
@@ -1172,11 +1176,13 @@ void CbmAnaDielectronTask::AssignMcToTopologyCandidates(
       if (stsInd < 0) continue;
       CbmTrackMatchNew* stsMatch  = (CbmTrackMatchNew*) fStsTrackMatches->At(stsInd);
       if (stsMatch == NULL) continue;
+      if ( stsMatch->GetNofLinks() == 0 ) continue;
       int stsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
       cutCandidates[i].fStsMcTrackId = stsMcTrackId;
       if (stsMcTrackId < 0) continue;
       CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMCTracks->At(stsMcTrackId);
       if (mcTrack1 == NULL) continue;
+
       int pdg = TMath::Abs(mcTrack1->GetPdgCode());
       int motherId = mcTrack1->GetMotherId();
       cutCandidates[i].fMcMotherId = motherId;
