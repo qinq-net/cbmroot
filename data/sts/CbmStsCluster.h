@@ -46,6 +46,12 @@ class CbmStsCluster : public CbmCluster
     Double_t GetCentre() const { return fChannelMean; }
 
 
+    /** Get the channel mean square
+     ** @value Mean square channel number, weighted with charge
+     **/
+    Double_t GetChannelMeanSquare() const { return fChannelMeanSq; }
+
+
     /** @brief Get cluster charge
      ** @value  Total cluster charge [e]
      **
