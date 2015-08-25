@@ -143,6 +143,7 @@ InitStatus CbmTofHitProducer::ReInit()
                (rtdb->getContainer("CbmTofDigiPar"));
 
   }
+   return kSUCCESS;
 }
 
 // ---- Init ----------------------------------------------------------
