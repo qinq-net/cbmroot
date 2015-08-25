@@ -7,6 +7,7 @@
 
 #include "StsCosyTrack.h"
 #include "CbmStsHit.h"
+#include "CbmStsAddress.h"
 
 #include "TMath.h"
 #include "TF1.h"
@@ -124,9 +125,41 @@ void StsCosyTrack::Exec(Option_t* opt) {
   ** PAL, 19/06/15: Deprecated in rev 7648, to remove once checked
       Int_t detId  = hit->GetSectorNr();
   **/
+ /**
 	  // PAL, 19/06/15, TODO: check best way to keep track of the detector ID
 	  // For now use the frontDigiId of CbmStsHit instead of the deprecated SectorNb 
+  *** PAL, 25/08/15: frontDigiId Deprecated in rev 8277 => Try to use directly the frontCluster Address
       Int_t detId  = hit->GetFrontDigiId();
+  **/
+      // Addr(Side, Station) Detector Index detID
+      //       (1, 0)          Hodo     1     0
+      //       (1, 1)          Hodo     2     4
+      //       (0, 0)          Hodo     1     1
+      //       (0, 1)          Hodo     2     3
+      //       (0, 2)          Hodo     3     2
+      Int_t iFrontSide    = CbmStsAddress::GetElementId(hit->GetAddress(),kStsSide);
+      Int_t iFrontStation = CbmStsAddress::GetElementId(hit->GetAddress(),kStsStation);
+      Int_t detId; 
+      if( 1 == iFrontSide )
+      {
+         // Hodoscope Hit
+         if( 0 == iFrontStation )
+            detId = 0;
+         else if( 1 == iFrontStation )
+            detId = 4;
+            else continue; // Unknown address, just jump for now, need error
+      } // if( 1 == iFrontSide )
+         else
+         {
+            // STS hit
+            if( 0 == iFrontStation )
+               detId = 1;
+            else if( 1 == iFrontStation )
+               detId = 3;
+            else if( 2 == iFrontStation )
+               detId = 2;
+               else continue; // Unknown address, just jump for now, need error
+         } // else of if( 1 == iFrontSide )
       
       vector<CbmStsHit*>& vlist =  fMapPts[detId];
       vlist.push_back((CbmStsHit*) hit); 

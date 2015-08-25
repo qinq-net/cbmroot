@@ -186,9 +186,12 @@ void StsCosyHitFinder::Exec(Option_t * option)
 					     pos, dpos, 0, frontClusterId, backClusterId, 
 /**
  ** PAL, 19/06/15: SectorNb Deprecated in rev 7648 => for now use the frontDigiId to know station index
-					     0, 0, 0,(back_time + front_time)/2.);
+ **                 0, 0, 0,(back_time + front_time)/2.);
+ *** PAL, 25/08/15: frontDigiId Deprecated in rev 8277 => Try to use directly the frontCluster Address
+ ***                Should be Station = 0 and Side = 1 from l.148-158 and data/beamtime/fhodo/CbmFiberHodoAddress.h
+ ***                0, 0,(back_time + front_time)/2.);
  **/
-					     0, 0,(back_time + front_time)/2.);
+					     (back_time + front_time)/2.);
 	    }
 	}
     }
@@ -221,9 +224,12 @@ void StsCosyHitFinder::Exec(Option_t * option)
 					     pos, dpos, 0, frontClusterId, backClusterId, 
 /**
  ** PAL, 19/06/15: SectorNb Deprecated in rev 7648 => for now use the frontDigiId to know station index
-					     0, 0, 4,(back_time + front_time)/2.);
+ **                 0, 0, 4,(back_time + front_time)/2.);
+ *** PAL, 25/08/15: frontDigiId Deprecated in rev 8277 => Try to use directly the frontCluster Address
+ ***                Should be Station = 1 and Side = 1 from l.148-158 and data/beamtime/fhodo/CbmFiberHodoAddress.h
+ ***                4, 0,(back_time + front_time)/2.);
  **/
-					     4, 0,(back_time + front_time)/2.);
+					     (back_time + front_time)/2.);
 	    }
 	}
     }
@@ -299,17 +305,20 @@ void StsCosyHitFinder::Exec(Option_t * option)
 	      dpos.SetXYZ(frontCluster->GetMeanError()*0.005,backCluster->GetMeanError()*0.005, 0.);
  **/ 
 		  // PAL, 19/06/15, TODO: check error calculation, maybe better estimator
-		  // For now use Sqrt(pitch) as no accessor to MeanSq in current CbmStsCluster
-	      dpos.SetXYZ( TMath::Sqrt(0.005), TMath::Sqrt(0.005), 0.);
+	      dpos.SetXYZ( frontCluster->GetChannelMeanSquare()*0.005,
+                      backCluster->GetChannelMeanSquare()*0.005, 0.);
 	      
 	      Int_t size = fHits->GetEntriesFast();
 	      new ((*fHits)[size]) CbmStsHit(frontCluster->GetAddress(), 
 					     pos, dpos, 0, frontClusterId, backClusterId, 
 /**
  ** PAL, 19/06/15: SectorNb Deprecated in rev 7648 => for now use the frontDigiId to know station index
-					     0, 0, 1,(back_time + front_time)/2.);
+ **                 0, 0, 1,(back_time + front_time)/2.);
+ *** PAL, 25/08/15: frontDigiId Deprecated in rev 8277 => Try to use directly the frontCluster Address
+ ***                Should be Station = 0 and Side = 0 from l.249-272
+ ***                1, 0,(back_time + front_time)/2.);
  **/
-					     1, 0,(back_time + front_time)/2.);
+					     (back_time + front_time)/2.);
 	    }
 	}
     }
@@ -347,17 +356,20 @@ void StsCosyHitFinder::Exec(Option_t * option)
 	      dpos.SetXYZ(frontCluster->GetMeanError()*0.005,backCluster->GetMeanError()*0.005, 0.);
  **/ 
 		  // PAL, 19/06/15, TODO: check error calculation, maybe better estimator
-		  // For now use Sqrt(pitch) as no accessor to MeanSq in current CbmStsCluster
-	      dpos.SetXYZ( TMath::Sqrt(0.005), TMath::Sqrt(0.005), 0.);
+	      dpos.SetXYZ( frontCluster->GetChannelMeanSquare()*0.005,
+                      backCluster->GetChannelMeanSquare()*0.005, 0.);
 	      
 	      Int_t size = fHits->GetEntriesFast();
 	      new ((*fHits)[size]) CbmStsHit(frontCluster->GetAddress(), 
 					     pos, dpos, 0, frontClusterId, backClusterId, 
 /**
  ** PAL, 19/06/15: SectorNb Deprecated in rev 7648 => for now use the frontDigiId to know station index
-					     0, 0, 3,(back_time + front_time)/2.);
+ **                 0, 0, 3,(back_time + front_time)/2.);
+ *** PAL, 25/08/15: frontDigiId Deprecated in rev 8277 => Try to use directly the frontCluster Address
+ ***                Should be Station = 1 and Side = 0 from l.249-272
+ ***                (back_time + front_time)/2.);
  **/
-					     3, 0,(back_time + front_time)/2.);
+					     (back_time + front_time)/2.);
 	    }
 	}
     }
@@ -395,17 +407,20 @@ void StsCosyHitFinder::Exec(Option_t * option)
 	      dpos.SetXYZ(frontCluster->GetMeanError()*0.0058,backCluster->GetMeanError()*0.0058, 0.);
  **/ 
 		  // PAL, 19/06/15, TODO: check error calculation, maybe better estimator
-		  // For now use Sqrt(pitch) as no accessor to MeanSq in current CbmStsCluster
-	      dpos.SetXYZ( TMath::Sqrt(0.0058), TMath::Sqrt(0.0058), 0.);
+	      dpos.SetXYZ( frontCluster->GetChannelMeanSquare()*0.0058,
+                      backCluster->GetChannelMeanSquare()*0.0058, 0.);
 	      
 	      Int_t size = fHits->GetEntriesFast();
 	      new ((*fHits)[size]) CbmStsHit(frontCluster->GetAddress(), 
 					     pos, dpos, 0, frontClusterId, backClusterId, 
 /**
  ** PAL, 19/06/15: SectorNb Deprecated in rev 7648 => for now use the frontDigiId to know station index
-					     0, 0, 2,(back_time + front_time)/2.);
+ **                 0, 0, 2,(back_time + front_time)/2.);
+ *** PAL, 25/08/15: frontDigiId Deprecated in rev 8277 => Try to use directly the frontCluster Address
+ ***                Should be Station = 2 and Side = 0 from l.249-272
+ ***                2, 0,(back_time + front_time)/2.);
  **/
-					     2, 0,(back_time + front_time)/2.);
+					     (back_time + front_time)/2.);
 	    }
 	}
     }
