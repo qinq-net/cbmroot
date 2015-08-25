@@ -4,53 +4,57 @@
  * @version 1.0
  **/
 
-void run_analysis(Int_t nEvents = 1000)
+void run_analysis(Int_t nEvents = 3)
 {
    TString script = TString(gSystem->Getenv("SCRIPT"));
    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
 
    //gRandom->SetSeed(10);
-	TString dir = "/hera/cbm/users/slebedev/mc/dielectron/sep13/25gev/trd/1.0field/nomvd/rho0/";
+/*	TString dir = "/hera/cbm/users/slebedev/mc/dielectron/sep13/25gev/trd/1.0field/nomvd/rho0/";
 	TString mcFile = dir + "mc.auau.25gev.centr.00001.root";
 	TString parFile = dir + "/params.auau.25gev.centr.00001.root";
 	TString recoFile = dir + "/reco.auau.25gev.centr.00001.root";
-	TString analysisFile = dir + "/test.analysis.test.auau.25gev.centr.00001.root";
+	TString analysisFile = dir + "/test.analysis.test.auau.25gev.centr.00001.root";*/
 
-  // TString parFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.param.root";
-  // TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.mc.root";
-  // TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.reco.root";
-  // TString analysisFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.analysis.root";
+   TString parFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.param.root";
+   TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.mc.root";
+   TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.reco.root";
+   TString analysisFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.analysis.root";
 
 	TString energy = "25gev";
 	TString plutoParticle = "rho0";
-	Double_t pionMisidLevel = -1.;
-   Double_t trdAnnCut = 0.85;
 
-   TList *parFileList = new TList();
-   TObjString stsDigiFile = parDir + "/sts/sts_v12b_std.digi.par"; // STS digi file
-   TObjString trdDigiFile = parDir + "/trd/trd_v13g.digi.par"; // TRD digi file
-   TObjString tofDigiFile = parDir + "/tof/tof_v13b.digi.par"; // TRD digi file
-
-   TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v12b.root"; // Material budget file for L1 STS tracking
+   TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/analysis/dielectron/geosetup/geo_setup_lmvm.C";
 
    if (script == "yes") {
       mcFile = TString(gSystem->Getenv("MC_FILE"));
       recoFile = TString(gSystem->Getenv("RECO_FILE"));
       parFile = TString(gSystem->Getenv("PAR_FILE"));
       analysisFile = TString(gSystem->Getenv("ANALYSIS_FILE"));
-      pionMisidLevel = TString(gSystem->Getenv("PION_MISIDENTIFICATION_LEVEL")).Atof();
       energy = TString(gSystem->Getenv("ENERGY"));
       plutoParticle = TString(gSystem->Getenv("PLUTO_PARTICLE"));
-      trdAnnCut = TString(gSystem->Getenv("TRD_ANN_CUT")).Atof();
-      stsMatBudgetFileName = TString(gSystem->Getenv("STS_MATERIAL_BUDGET_FILE"));
-      stsDigiFile = TString(gSystem->Getenv("STS_DIGI"));
-      trdDigiFile = TString(gSystem->Getenv("TRD_DIGI"));
-      tofDigiFile = TString(gSystem->Getenv("TOF_DIGI"));
+
+      geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/analysis/dielectron/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
    }
 
-    parFileList->Add(&stsDigiFile);
-   if (trdDigiFile.GetString() != "") parFileList->Add(&trdDigiFile);
-   parFileList->Add(&tofDigiFile);
+   //setup all geometries from macro
+   	cout << "geoSetupName:" << geoSetupFile << endl;
+   	gROOT->LoadMacro(geoSetupFile);
+   	init_geo_setup();
+
+   	// digi parameters
+   	TList *parFileList = new TList();
+   	TObjString stsDigiFile = parDir + "/" + stsDigi;
+   	TObjString trdDigiFile = parDir + "/" + trdDigi;
+   	TObjString tofDigiFile = parDir + "/" + tofDigi;
+   	parFileList->Add(&stsDigiFile);
+   	if (trdDigiFile.GetString() != "") parFileList->Add(&trdDigiFile);
+   	parFileList->Add(&tofDigiFile);
+
+   	// material budget for STS and MVD
+   	TString mvdMatBudgetFileName = "";
+   	TString stsMatBudgetFileName = parDir + "/" + stsMatBudget;
+
 
    // load libraries
    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
@@ -67,13 +71,13 @@ void run_analysis(Int_t nEvents = 1000)
    fRun->SetOutputFile(analysisFile);
    fRun->AddFriend(recoFile);
 
-   //CbmKF is needed for Extrapolation
-   CbmKF* kf = new CbmKF();
-   fRun->AddTask(kf);
+	CbmKF* kalman = new CbmKF();
+	fRun->AddTask(kalman);
+	CbmL1* l1 = new CbmL1();
+	l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
+	if (mvdMatBudgetFileName != "") l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
+	fRun->AddTask(l1);
 
-   CbmL1* l1 = new CbmL1();
-    l1->SetMaterialBudgetFileName(stsMatBudgetFileName);
-   fRun->AddTask(l1);
 
    CbmAnaDielectronTask *task = new CbmAnaDielectronTask();
    if (energy == "8gev" || energy == "10gev") {
@@ -116,18 +120,19 @@ void run_analysis(Int_t nEvents = 1000)
    fRun->AddTask(task);
 
 
-  FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
-  FairParRootFileIo* parIo1 = new FairParRootFileIo();
-  FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
-  parIo1->open(parFile.Data());
-  parIo2->open(parFileList, "in");
-  rtdb->setFirstInput(parIo1);
-  rtdb->setSecondInput(parIo2);
-  rtdb->setOutput(parIo1);
-  rtdb->saveOutput();
+	// -----  Parameter database   --------------------------------------------
+	FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
+	FairParRootFileIo* parIo1 = new FairParRootFileIo();
+	FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
+	parIo1->open(parFile.Data());
+	parIo2->open(parFileList, "in");
+	rtdb->setFirstInput(parIo1);
+	rtdb->setSecondInput(parIo2);
+	rtdb->setOutput(parIo1);
+	rtdb->saveOutput();
 
-   fRun->Init();
-   fRun->Run(0, nEvents);
+	fRun->Init();
+	fRun->Run(0, nEvents);
 
    timer.Stop();
    std::cout << "Macro finished succesfully." << std::endl;

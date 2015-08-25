@@ -9,10 +9,9 @@ XXXXX=$(printf "%05d" "$SGE_TASK_ID")
 XXXX=$(printf "%04d" "$SGE_TASK_ID")
 
 # specify input and output directories
-outdir=/hera/cbm/users/slebedev/data/lmvm/feb15/${coll_energy}/${sts}/${rich}/${trd}/${tof}/${field_scale}field/${mvd}/${pluto_particle}/
+outdir=/hera/cbm/users/slebedev/data/lmvm/sep15/${coll_energy}/${setupDirName}/${pluto_particle}/
 cbmroot_config_path=/hera/cbm/users/slebedev/trunk/build/config.sh
 macro_dir=/hera/cbm/users/slebedev/trunk/cbmroot/macro/analysis/dielectron/
-
 
 # Needed to run macro via script
 export SCRIPT=yes
@@ -32,7 +31,6 @@ source ${cbmroot_config_path}
 # This line is needed, otherwise root will crash
 export DISPLAY=localhost:0.0
 
-export PION_MISIDENTIFICATION_LEVEL=-1.0
 
 #Temporary set 4gev for 3.5gev since 3.5 is not available
 if [ ${coll_energy} = "3.5gev" ] ; then
@@ -63,114 +61,8 @@ export PLUTO=yes
 #Collision energy: 25gev or 8gev -> set proper weight into analysis
 export ENERGY=${coll_energy}
 
-#Geometries
-export CAVE_GEOM=cave.geo
-
-
-#Set PIPE geometry
-if [ ${pipe} = "pipe_standard" ] ; then
-   export PIPE_GEOM=pipe/pipe_standard.geo
-elif [ ${pipe} = "pipe_v14f" ]; then
-   export PIPE_GEOM=pipe/pipe_v14f.root
-elif [ ${pipe} = "pipe_v14h" ]; then
-   export PIPE_GEOM=pipe/pipe_v14h.root
-fi
-
-
-#set MVD geometry
-if [ ${mvd} = "mvd4" ] ; then
-   export MVD_GEOM=mvd/mvd_Nov_2012.geo
-elif [ ${mvd} = "nomvd" ]; then
-   export MVD_GEOM=
-elif [ ${mvd} = "mvd" ]; then
-   export MVD_GEOM=mvd/mvd_v08a.geo
-fi
-
-#set STS geometry
-if [ ${sts} = "stsv13d" ] ; then
-  export STS_GEOM=sts/sts_v13d.geo.root
-  export STS_DIGI=${VMCWORKDIR}/parameters/sts/sts_v13d_std.digi.par
-  export STS_MATERIAL_BUDGET_FILE=${VMCWORKDIR}/parameters/sts/sts_matbudget_v13d.root
-elif [ ${sts} = "stsv14_2cm" ]; then
-  export STS_GEOM=sts/sts_v14-2cm.geo.root
-  export STS_DIGI=${VMCWORKDIR}/parameters/sts/sts_v14-2cm.digi.par
-  export STS_MATERIAL_BUDGET_FILE=${VMCWORKDIR}/parameters/sts/sts_matbudget_v14-2cm.root
-elif [ ${sts} = "stsv14_4cm" ]; then
-  export STS_GEOM=sts/sts_v14-4cm.geo.root
-  export STS_DIGI=${VMCWORKDIR}/parameters/sts/sts_v14-4cm.digi.par
-  export STS_MATERIAL_BUDGET_FILE=${VMCWORKDIR}/parameters/sts/sts_matbudget_v14-4cm.root
-fi
-
-#Set RICH geometry
-if [ ${rich} = "richv08a" ] ; then
-   export RICH_GEOM=rich/rich_v08a.geo
-elif [ ${rich} = "richv14a_1e" ]; then
-   export RICH_GEOM=rich/rich_v14a_1e.root
-   
-elif [ ${rich} = "richv14a_3e" ]; then
-   export RICH_GEOM=rich/rich_v14a_3e.root
-   
-elif [ ${rich} = "richv14a" ]; then
-   export RICH_GEOM=rich/rich_v14a.root
-   
-elif [ ${rich} = "richv08a_01" ]; then
-   export RICH_GEOM=rich/rich_v08a_01.geo
-   
-elif [ ${rich} = "richv08a_02" ]; then
-   export RICH_GEOM=rich/rich_v08a_02.geo
-   
-elif [ ${rich} = "richv08a_03" ]; then
-   export RICH_GEOM=rich/rich_v08a_03.geo
-   
-elif [ ${rich} = "richv08a_04" ]; then
-   export RICH_GEOM=rich/rich_v08a_04.geo
-   
-elif [ ${rich} = "richv08a_05" ]; then
-   export RICH_GEOM=rich/rich_v08a_05.geo
-   
-elif [ ${rich} = "richv08a_06" ]; then
-   export RICH_GEOM=rich/rich_v08a_06.geo
-   
-elif [ ${rich} = "richv08a_07" ]; then
-   export RICH_GEOM=rich/rich_v08a_07.geo   
-fi
-
-
-#Set TRD geometry
-# digi or smearing or clustering
-export TRD_HIT_PRODUCER_TYPE=clustering
-if [ ${trd} = "trd10" ] ; then
-    export TRD_GEOM=trd/trd_v14a_3e.geo.root
-    export TRD_DIGI=${VMCWORKDIR}/parameters/trd/trd_v14a_3e.digi.par
-    export TRD_ANN_CUT=0.85
-    export MIN_NOF_POINTS_TRD=6
-elif [ ${trd} = "notrd" ] ; then
-    export TRD_GEOM=
-    export TRD_DIGI=
-    export TRD_ANN_CUT=0.0
-    export MIN_NOF_POINTS_TRD=0
-elif [ ${trd} = "trd4" ] ; then
-    export TRD_GEOM=trd/trd_v14a_1e.geo.root
-    export TRD_DIGI=${VMCWORKDIR}/parameters/trd/trd_v14a_1e.digi.par
-    export TRD_ANN_CUT=-0.1
-    export MIN_NOF_POINTS_TRD=2
-fi
-
-
-if [ ${tof} = "tofv13" ] ; then
-   export TOF_GEOM=tof/tof_v13b.geo.root
-   export TOF_DIGI=${VMCWORKDIR}/parameters/tof/tof_v13b.digi.par
-   export TOF_HIT_PRODUCER_TYPE=v13
-elif [ ${tof} = "tofv07" ] ; then
-   export TOF_GEOM=tof/tof_v07a.geo
-   export TOF_DIGI=
-   export TOF_HIT_PRODUCER_TYPE=v07
-fi
-
-
-export FIELD_MAP=field_v12a
-export MAGNET_GEOM=magnet/magnet_v12a.geo
-export FIELD_MAP_SCALE=${field_scale}
+#Geometry setup macro
+export GEO_SETUP_FILE=geo_setup_lmvm.C
 
 #If "yes" DELTA electrons will be embedded
 export DELTA=no
@@ -205,7 +97,7 @@ mkdir -p $workdir
 cd $workdir
 
 # run the root simulation
-#root -b -l -q "${macro_dir}/run_sim.C(${nevents})"
+root -b -l -q "${macro_dir}/run_sim.C(${nevents})"
 root -b -l -q "${macro_dir}/run_reco.C(${nevents})"
 root -b -l -q "${macro_dir}/run_litqa.C(${nevents})"
 root -b -l -q "${macro_dir}/run_analysis.C(${nevents})"

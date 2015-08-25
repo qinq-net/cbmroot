@@ -7,49 +7,48 @@ void run_litqa(Int_t nEvents = 1000)
 
 	//gRandom->SetSeed(10);
 
-    TString dir = "/hera/cbm/users/slebedev/mc/dielectron/sep13/25gev/trd/1.0field/nomvd/rho0/";
+   /* TString dir = "/hera/cbm/users/slebedev/mc/dielectron/sep13/25gev/trd/1.0field/nomvd/rho0/";
 	TString mcFile = dir + "mc.auau.25gev.centr.00001.root";
 	TString parFile = dir + "/params.auau.25gev.centr.00001.root";
 	TString recoFile = dir + "/test.reco.test.auau.25gev.centr.00001.root";
-	TString qaFile = dir + "/test.litqa.test.auau.25gev.centr.00001.root";
+	TString qaFile = dir + "/test.litqa.test.auau.25gev.centr.00001.root";*/
 
-	TString delta = "no"; // if "yes" Delta electrons will be embedded
-	TString deltaFile = "";
-
-   TList *parFileList = new TList();
-   TObjString stsDigiFile = parDir + "/sts/sts_v13c_std.digi.par"; // STS digi file
-   TObjString trdDigiFile = parDir + "/trd/trd_v13p_3e.digi.par"; // TRD digi file
-   TObjString tofDigiFile = parDir + "/tof/tof_v13b.digi.par"; // TRD digi file
-
-   TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v13c.root"; // Material budget file for L1 STS tracking
+	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.param.root";
+	TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.mc.root";
+	TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.reco.root";
+	TString qaFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.litqa.root";
 
    TString resultDir = "results_litqa/";
-   Double_t trdAnnCut = 0.85;
-   Int_t minNofPointsTrd = 6;
+
+   TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/analysis/dielectron/geosetup/geo_setup_lmvm.C";
 
 	if (script == "yes") {
 		mcFile = TString(gSystem->Getenv("MC_FILE"));
 		parFile = TString(gSystem->Getenv("PAR_FILE"));
 		recoFile = TString(gSystem->Getenv("RECO_FILE"));
 		qaFile = TString(gSystem->Getenv("LITQA_FILE"));
-
-		delta = TString(gSystem->Getenv("DELTA"));
-		deltaFile = TString(gSystem->Getenv("DELTA_FILE"));
-
-		stsDigiFile = TString(gSystem->Getenv("STS_DIGI"));
-		trdDigiFile = TString(gSystem->Getenv("TRD_DIGI"));
-		tofDigiFile = TString(gSystem->Getenv("TOF_DIGI"));
-
 		resultDir = TString(gSystem->Getenv("RESULT_DIR"));
 
-		stsMatBudgetFileName = TString(gSystem->Getenv("STS_MATERIAL_BUDGET_FILE"));
-		trdAnnCut = TString(gSystem->Getenv("TRD_ANN_CUT")).Atof();
-		minNofPointsTrd = TString(gSystem->Getenv("MIN_NOF_POINTS_TRD")).Atof();
+		geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/analysis/dielectron/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
 	}
 
-   parFileList->Add(&stsDigiFile);
-   if (trdDigiFile.GetString() != "") parFileList->Add(&trdDigiFile);
-   parFileList->Add(&tofDigiFile);
+	//setup all geometries from macro
+	cout << "geoSetupName:" << geoSetupFile << endl;
+	gROOT->LoadMacro(geoSetupFile);
+	init_geo_setup();
+
+	// digi parameters
+	TList *parFileList = new TList();
+	TObjString stsDigiFile = parDir + "/" + stsDigi;
+	TObjString trdDigiFile = parDir + "/" + trdDigi;
+	TObjString tofDigiFile = parDir + "/" + tofDigi;
+	parFileList->Add(&stsDigiFile);
+	if (trdDigiFile.GetString() != "") parFileList->Add(&trdDigiFile);
+	parFileList->Add(&tofDigiFile);
+
+	// material budget for STS and MVD
+	TString mvdMatBudgetFileName = "";
+	TString stsMatBudgetFileName = parDir + "/" + stsMatBudget;
 
    TStopwatch timer;
    timer.Start();
@@ -68,18 +67,19 @@ void run_litqa(Int_t nEvents = 1000)
 	CbmKF* kalman = new CbmKF();
 	run->AddTask(kalman);
 	CbmL1* l1 = new CbmL1();
-	l1->SetMaterialBudgetFileName(stsMatBudgetFileName);
+	l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
+	if (mvdMatBudgetFileName != "") l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
 	run->AddTask(l1);
 
    // Reconstruction Qa
    CbmLitTrackingQa* trackingQa = new CbmLitTrackingQa();
    trackingQa->SetMinNofPointsSts(4);
    trackingQa->SetUseConsecutivePointsInSts(true);
-   trackingQa->SetMinNofPointsTrd(minNofPointsTrd);
+   trackingQa->SetMinNofPointsTrd(litQaMinNofPointsTrd);
    trackingQa->SetMinNofPointsMuch(10);
    trackingQa->SetMinNofPointsTof(1);
    trackingQa->SetQuota(0.7);
-   trackingQa->SetMinNofHitsTrd(minNofPointsTrd);
+   trackingQa->SetMinNofHitsTrd(litQaMinNofPointsTrd);
    trackingQa->SetMinNofHitsMuch(10);
    trackingQa->SetVerbose(0);
    trackingQa->SetMinNofHitsRich(7);
@@ -101,7 +101,7 @@ void run_litqa(Int_t nEvents = 1000)
    fitQa->SetMvdMinNofHits(0);
    fitQa->SetStsMinNofHits(4);
    fitQa->SetMuchMinNofHits(10);
-   fitQa->SetTrdMinNofHits(minNofPointsTrd);
+   fitQa->SetTrdMinNofHits(litQaMinNofPointsTrd);
    fitQa->SetPRange(30, 0., 3.);
    fitQa->SetOutputDir(std::string(resultDir));
    run->AddTask(fitQa);
@@ -113,7 +113,7 @@ void run_litqa(Int_t nEvents = 1000)
 
    CbmLitTofQa* tofQa = new CbmLitTofQa();
    tofQa->SetOutputDir(std::string(resultDir));
-   run->AddTask(tofQa);
+  // run->AddTask(tofQa);
 
 
     // -----  Parameter database   --------------------------------------------
