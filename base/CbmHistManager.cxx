@@ -165,7 +165,7 @@ void CbmHistManager::ShrinkEmptyBinsH1(
    }
    if (isSet) {
       hist->GetXaxis()->SetRange(minShrinkBin, maxShrinkBin);
-      hist->GetYaxis()->SetRange(minShrinkBin, maxShrinkBin);
+     // hist->GetYaxis()->SetRange(minShrinkBin, maxShrinkBin);
    }
 }
 
