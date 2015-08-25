@@ -150,8 +150,8 @@ CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
   fhGet4ChanTotCount(NULL),
   fhPulserFeeTotDnl(NULL),
   fhPulserFeeTotInl(NULL),
-  fvvhChannelsCoinc(),
 */
+  fvvhChannelsCoinc(),
   fdMaxCoincDist(100.0),
   fvuLastHitEp(),
   fvmLastHit(),
@@ -163,7 +163,11 @@ CbmTSUnpackGet4v1x::CbmTSUnpackGet4v1x()
   fvuCurrEpochBufferIt(),
   fuLastEpBufferReady(0),
   fuCurrEpReadBuffer(0),
-  fEpochBuffer(NULL)
+  fEpochBuffer(NULL),
+  fbEnaCalibOutput(kFALSE),
+  fsCalibOutFoldername(""),
+  fsCalibFilename(""),
+  fvhFineTime()
 {
 }
 

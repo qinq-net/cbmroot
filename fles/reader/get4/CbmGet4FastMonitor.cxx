@@ -194,9 +194,19 @@ CbmGet4FastMonitor::CbmGet4FastMonitor()
   fhFtPrevTotBigDtFeeB(NULL),
   fvvhChannelsCoinc(),
   fdMaxCoincDist(100.0),
+  fvhGet4MultipleHits(),
+  fvhGet4DistDoubleHits(),
+  fvhGet4DistTripleHits(),
+  fvhGet4DistMultipleHits(),
+  fvhGet4MultipleHitsVsTot(),
+  fdMaxDtMultiHit(20.0),
+  fvbChanSecondHit(),
+  fvbChanThirdHit(),
+  fvdChanFirstHitTot(),
   fbEnaCalibOutput(kFALSE),
   fsCalibOutFoldername(""),
-  fsCalibFilename("")
+  fsCalibFilename(""),
+  fvhFineTime()
 {
 }
 
@@ -283,7 +293,7 @@ void CbmGet4FastMonitor::PrintOptions()
       LOG(INFO) << Form(" %3u", iChip);
    LOG(INFO) << FairLogger::endl;
    for( UInt_t iChip = 0; iChip < fuNbGet4; iChip++)
-      LOG(INFO) << Form(" %3d", (Int_t)fvbActiveChips[iChip] );
+      LOG(INFO) << Form(" %3d", static_cast<Int_t> (fvbActiveChips[iChip]) );
    LOG(INFO) << FairLogger::endl;
 
    LOG(INFO) << "Pulser mode: "<< fbPulserMode << FairLogger::endl;
@@ -362,8 +372,9 @@ Bool_t CbmGet4FastMonitor::DoUnpack(const fles::Timeslice& ts, size_t component)
 {
    fulTsNb++;
    if( 0 == fiMode || kTRUE == fbVerbose ||
-       (kTRUE == fbDebug && fiDebugTsStart <= fulTsNb
-                         && fulTsNb <= fiDebugTsStop ) )
+       (kTRUE == fbDebug && fiDebugTsStart <= fiDebugTsStop &&
+       static_cast<UInt_t> (fiDebugTsStart) <= fulTsNb && 
+      fulTsNb <= static_cast<UInt_t> (fiDebugTsStop) ) )
       LOG(INFO)<<" ++++++++++++ Ts # "<<fulTsNb<<FairLogger::endl;
 
    if( 2 == fiMode )
@@ -460,7 +471,9 @@ Bool_t CbmGet4FastMonitor::DoUnpack(const fles::Timeslice& ts, size_t component)
                         + ( static_cast<uint64_t>( (msContent_shifted[local_offset + 5] ) & 0xFF));
                   mess.setData( dataContent );
 
-                  if( kTRUE == fbDebug && fiDebugTsStart <= fulTsNb && fulTsNb <= fiDebugTsStop )
+                  if( kTRUE == fbDebug && fiDebugTsStart <= fiDebugTsStop &&
+                      static_cast<UInt_t> (fiDebugTsStart) <= fulTsNb && 
+                      fulTsNb <= static_cast<UInt_t> (fiDebugTsStop) )
                      mess.printDataLog();
 
                   fhMessageTypePerRoc->Fill( cur_DTM_header.ROC_ID, mess.getMessageType() );

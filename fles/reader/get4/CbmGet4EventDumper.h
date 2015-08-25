@@ -50,6 +50,11 @@ class CbmGet4EventDumper : public FairTask
    protected:
 
    private:
+      // To get rid of warning due to pointer member
+      // Implement properly if needed
+      CbmGet4EventDumper(const CbmGet4EventDumper&);
+      CbmGet4EventDumper& operator=(const CbmGet4EventDumper&);
+  
       Bool_t   RegisterInputs();
       Bool_t   RegisterOutputs();
       Bool_t   ClearOutput();
