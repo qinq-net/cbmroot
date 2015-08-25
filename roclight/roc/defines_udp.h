@@ -111,6 +111,10 @@ namespace roc {
       uint32_t id;
       uint32_t address;
       uint32_t value;
+      
+      // Add virtual destructor to get rid of warning when using as 
+      // base struct
+      virtual ~UdpMessage();
    };
 
    struct UdpMessageFull : public UdpMessage
@@ -125,6 +129,10 @@ namespace roc {
       uint32_t frontpktid;
       uint32_t tailpktid;
       uint32_t numresend;
+      
+      // Add virtual destructor to get rid of warning when using as 
+      // base struct
+      virtual ~UdpDataRequest();
    };
 
    struct UdpDataRequestFull : public UdpDataRequest
@@ -138,6 +146,10 @@ namespace roc {
       uint32_t lastreqid;
       uint32_t nummsg;
    // here all messages should follow
+      
+      // Add virtual destructor to get rid of warning when using as 
+      // base struct
+      virtual ~UdpDataPacket();
    };
 
    struct UdpDataPacketFull : public UdpDataPacket

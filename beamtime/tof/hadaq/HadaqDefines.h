@@ -51,7 +51,10 @@ namespace hadaq {
             tuSize(0),
             tuDecoding(0)
             {}
-         ~HadTu() {}
+            
+         // Makes destructor virtual to get rid of warning when using as 
+         // base struct
+         virtual ~HadTu() {}
 
          /** msb of decode word is always non zero...? */
          inline Bool_t IsSwapped() const  { return  tuDecoding > 0xffffff; }
@@ -100,7 +103,9 @@ namespace hadaq {
       public:
 
          HadTuId() : tuId(0) {}
-         ~HadTuId() {}
+         // Makes destructor virtual to get rid of warning when using as 
+         // base struct
+         virtual ~HadTuId() {}
 
          inline UInt_t GetId() const { return Value(&tuId); }
          void SetId(UInt_t id) { SetValue(&tuId, id); }
