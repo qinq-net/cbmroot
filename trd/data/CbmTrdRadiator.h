@@ -179,9 +179,9 @@ class CbmTrdRadiator
   static const Int_t     fSpRange=50;  // Maximum (keV) of eloss spectrum 
   Float_t   fSpBinWidth;               // Bin width=fSpNBins/fSpRange
 
-  Float_t*  fSigma;       // [fSpNBins] Array of sigma values for the foil of the radiator
-  Float_t*  fSigmaWin;     // [fSpNBins] Array of sigma values for the entrance window of detector
-  Float_t*  fSigmaDet;    // [fSpNBins] Array of sigma values for the active gas
+  Float_t*  fSigma;       //! [fSpNBins] Array of sigma values for the foil of the radiator
+  Float_t*  fSigmaWin;     //! [fSpNBins] Array of sigma values for the entrance window of detector
+  Float_t*  fSigmaDet;    //! [fSpNBins] Array of sigma values for the active gas
 
   TH1D*     fSpectrum;    //! TR photon energy spectrum
   TH1D*     fWinSpectrum;  //! TR spectra in gas-window foil
@@ -189,7 +189,7 @@ class CbmTrdRadiator
   TH1D*     fDetSpectrum; //! TR passed through Detector
 
   static const Int_t fNMom=14; // number of momentum spectra  
-  Double_t *fTrackMomentum;    // [fNMom] Track momenta for which spectra
+  Double_t *fTrackMomentum;    //! [fNMom] Track momenta for which spectra
                                // are available
 
   TH1D*     fFinal[fNMom];     //! Absorption spectra for different momenta
