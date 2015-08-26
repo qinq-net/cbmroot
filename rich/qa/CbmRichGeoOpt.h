@@ -108,7 +108,7 @@ private:
    TVector3 r1; 
    TVector3 r2; 
    TVector3 n;
-   double PMTPlaneX; double PMTPlaneY;
+   double PMTPlaneCenterX; double PMTPlaneCenterY; double PMTPlaneThirdX; 
    TVector3 MirrPosition;   //double MirrPosX; double MirrPosY; double MirrPosZ;
    //double PMTPlaneXatThird; double PMTPlaneYatThird;
 
@@ -134,7 +134,11 @@ private:
 
 
    /**
-    * \brief Calculate residuals between hits and MC points and fill histograms.
+    * \ With Reference points from sensitive plane
+    */
+   void HitsAndPointsWithRef();
+   /**
+    * \ without sensitive plane
     */
    void HitsAndPoints();
    /**
@@ -179,7 +183,7 @@ private:
     * \get the x-y coordinate of the center of illuminated area of PMT plane
     */
 
-   void GetPlaneCenter(float RotMir, float RotX, float RotY);
+   //  void GetPlaneCenter(float RotMir, float RotX, float RotY);
 
    /**
     * \get rotation angles of pmt plane around x- and y-axis
@@ -205,6 +209,8 @@ private:
    TH1D* H_MomPrim;
    TH1D* H_PtPrim;
    TH2D* H_MomPt;
+
+   TH1D* H_MomRing;
    TH1D* H_acc_mom_el;
    TH2D* H_acc_pty_el;
 
@@ -213,7 +219,17 @@ private:
 
 
    TH2D* H_Hits_XY; // distribution of X and Y position of hits
-   TH2D* H_PointsIn_XY; // distribution of X and Y position of points
+   TH2D* H_Hits_XY_LeftHalf;;
+   TH2D* H_Hits_XY_RightHalf;
+   TH2D* H_Hits_XY_Left2Thirds;
+   TH2D* H_Hits_XY_RightThird;
+   
+   TH2D* H_PointsIn_XY; // distribution of X and Y position of points 
+   TH2D* H_PointsIn_XY_LeftHalf;
+   TH2D* H_PointsIn_XY_RightHalf;
+   TH2D* H_PointsIn_XY_Left2Thirds;
+   TH2D* H_PointsIn_XY_RightThird;
+
    TH2D* H_PointsOut_XY; // distribution of X and Y position of points (tilting pmt plane)
    TH1D* H_NofPhotonsPerEv; // Number of photons per hit
    TH1D* H_NofPhotonsPerHit; // Number of photons per hit
@@ -230,15 +246,15 @@ private:
    TH1D* H_Alpha_UpLeft_RegularTheta;
    TH1D* H_Alpha_UpLeft_LeftHalf;
    TH1D* H_Alpha_UpLeft_RightHalf;
-   TH1D* H_Alpha_UpLeft_UpperHalf;
-   TH1D* H_Alpha_UpLeft_LowerHalf;
+   TH1D* H_Alpha_UpLeft_RightThird;
+   TH1D* H_Alpha_UpLeft_Left2Thirds;
    //H_Alpha_UpLeft_RighttHalf
    TH3D* H_Alpha_XYposAtDet;
    TH3D* H_Alpha_XYposAtDet_RegularTheta;
    TH3D* H_Alpha_XYposAtDet_LeftHalf;
    TH3D* H_Alpha_XYposAtDet_RightHalf;
-   TH3D* H_Alpha_XYposAtDet_UpperHalf;
-   TH3D* H_Alpha_XYposAtDet_LowerHalf;
+   TH3D* H_Alpha_XYposAtDet_RightThird;
+   TH3D* H_Alpha_XYposAtDet_Left2Thirds;
 
 
 
@@ -255,8 +271,8 @@ private:
    TH1D *H_boa_RegularTheta; 
    TH1D *H_boa_LeftHalf;
    TH1D *H_boa_RightHalf;
-   TH1D *H_boa_UpperHalf;
-   TH1D *H_boa_LowerHalf;
+   TH1D *H_boa_RightThird;
+   TH1D *H_boa_Left2Thirds;
 
 
    TH1D *H_dR;
@@ -264,8 +280,8 @@ private:
    TH1D *H_dR_RegularTheta;
    TH1D *H_dR_LeftHalf;
    TH1D *H_dR_RightHalf;   
-   TH1D *H_dR_UpperHalf;
-   TH1D *H_dR_LowerHalf;
+   TH1D *H_dR_RightThird;
+   TH1D *H_dR_Left2Thirds;
 
    TH3D *H_RingCenter_Aaxis;  TH3D *H_RingCenter_Baxis;
 
@@ -273,15 +289,15 @@ private:
    TH3D *H_RingCenter_boa_RegularTheta;
    TH3D *H_RingCenter_boa_LeftHalf;
    TH3D *H_RingCenter_boa_RightHalf;
-   TH3D *H_RingCenter_boa_UpperHalf;
-   TH3D *H_RingCenter_boa_LowerHalf;
+   TH3D *H_RingCenter_boa_RightThird;
+   TH3D *H_RingCenter_boa_Left2Thirds;
 
    TH3D *H_RingCenter_dR;
    TH3D *H_RingCenter_dR_RegularTheta;
    TH3D *H_RingCenter_dR_LeftHalf;
    TH3D *H_RingCenter_dR_RightHalf;
-   TH3D *H_RingCenter_dR_UpperHalf;
-   TH3D *H_RingCenter_dR_LowerHalf;
+   TH3D *H_RingCenter_dR_RightThird;
+   TH3D *H_RingCenter_dR_Left2Thirds;
 
    /**
     * \brief Assignment operator.
