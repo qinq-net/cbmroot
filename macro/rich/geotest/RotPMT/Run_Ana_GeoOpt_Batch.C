@@ -7,7 +7,10 @@ void Run_Ana_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=5, float PMTrotY=5,
   int PtNotP=1;  float MomMin=0.; float MomMax=4.;
   //int PtNotP=0;  float MomMin=3.95; float MomMax=4.;
   float  EndTheta=35.;
+  float StartPhi=140, EndPhi=180.;
   int PMTtransY=0, PMTtransZ=0;
+  int DefaultDims=0;
+  int DefaultDims_LargePMT=0;
   TString script = TString(gSystem->Getenv("SCRIPT"));
   if (script == "yes"){
     cout<<" ----------------- running with script --------------------"<<endl;
@@ -23,7 +26,11 @@ void Run_Ana_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=5, float PMTrotY=5,
     MomMin=TString(gSystem->Getenv("MOM_MIN")).Atof();
     MomMax=TString(gSystem->Getenv("MOM_MAX")).Atof();
     EndTheta=TString(gSystem->Getenv("THETA")).Atof();
-  }  
+    StartPhi=TString(gSystem->Getenv("STARTPHI")).Atof();
+    EndPhi=TString(gSystem->Getenv("ENDPHI")).Atof();
+    DefaultDims=TString(gSystem->Getenv("DEFAULDIMS")).Atof();
+    DefaultDims_LargePMT=TString(gSystem->Getenv("DEFAULDIMSLPMT")).Atof();
+ }  
 
   TString RotMirText=GetMirText(RotMir);
   TString PMTRotText=GetPMTRotText(PMTrotX, PMTrotY);
@@ -32,10 +39,15 @@ void Run_Ana_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=5, float PMTrotY=5,
   TString GeoText=GetGeoText(GeoCase);
   TString MomText=GetMomText(PtNotP,MomMin,MomMax);
   TString ThetaText=GetThetaText(EndTheta);
-  TString ExtraText="_RegularTheta.";
-  ExtraText=".";
+  TString PhiText=GetPhiText(StartPhi, EndPhi);
+ TString ExtraText=".";//
+  if(DefaultDims ==1){
+    ExtraText="_DefaultRichDims.";
+    if(DefaultDims_LargePMT ==1){ExtraText="_DefaultRichDims_LargePMT.";}
+  }
 
   TString NamingText=GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+PMTTransText+"_"+MomText+"_"+ThetaText+ExtraText+"root";
+
   TString ParFile = outDir + "Parameters_"+NamingText;//
   TString SimFile = outDir + "Sim_"+NamingText;
   TString RecFile = outDir + "Rec_"+NamingText;//+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
@@ -118,7 +130,7 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  //return "/data/GeoOpt/Display/";
+  //return "/data/GeoOpt/";
   //return "/data/GeoOpt/RotPMT/";
   return "/hera/cbm/users/tariq/GeoOptRootFiles/";
   // if(GeoCase<=0){return "/data/GeoOpt/RotPMT/OlderGeo/";}
@@ -170,5 +182,13 @@ TString GetThetaText( float theta=25.){
   sprintf(THtxt,"Theta_%d",theta);
   stringstream ss; 
   ss<<THtxt;
+  return ss.str();
+}
+////////////////////////////////////////////////////////
+TString GetPhiText(float StartPhi,float EndPhi){
+  char PHtxt[256];
+  sprintf(PHtxt,"Phi_%d_to_%d",StartPhi, EndPhi);
+  stringstream ss; 
+  ss<<PHtxt;
   return ss.str();
 }

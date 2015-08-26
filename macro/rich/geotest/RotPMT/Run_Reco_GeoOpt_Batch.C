@@ -1,4 +1,4 @@
-void Run_Reco_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=10, float PMTrotY=19, int RotMir=1)
+void Run_Reco_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=10, float PMTrotY=19, int RotMir=-10)
 {
  
   TTree::SetMaxTreeSize(90000000000);
@@ -7,8 +7,11 @@ void Run_Reco_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=10, float PMTrotY=
   int GeoCase=2;
   int PtNotP=1;  float MomMin=0.; float MomMax=4.;
   //int PtNotP=0;  float MomMin=3.95; float MomMax=4.;
-  float  EndTheta=35.;
+  float  EndTheta=25.;
+  float StartPhi=90, EndPhi=180.;
   int PMTtransY=0, PMTtransZ=0;
+  int DefaultDims=0;
+  int DefaultDims_LargePMT=0;
 
   TString script = TString(gSystem->Getenv("SCRIPT"));
   if (script == "yes"){
@@ -25,6 +28,11 @@ void Run_Reco_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=10, float PMTrotY=
     MomMin=TString(gSystem->Getenv("MOM_MIN")).Atof();
     MomMax=TString(gSystem->Getenv("MOM_MAX")).Atof();
     EndTheta=TString(gSystem->Getenv("THETA")).Atof();
+    StartPhi=TString(gSystem->Getenv("STARTPHI")).Atof();
+    EndPhi=TString(gSystem->Getenv("ENDPHI")).Atof();
+   DefaultDims=TString(gSystem->Getenv("DEFAULDIMS")).Atof();
+    DefaultDims_LargePMT=TString(gSystem->Getenv("DEFAULDIMSLPMT")).Atof();
+ 
   }  
 
   TString RotMirText=GetMirText(RotMir);
@@ -33,11 +41,16 @@ void Run_Reco_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=10, float PMTrotY=
   TString outDir=GetOutDir(GeoCase);//="/data/GeoOpt/RotPMT/NewGeo/";
   TString GeoText=GetGeoText(GeoCase);
   TString MomText=GetMomText(PtNotP,MomMin,MomMax);
+  TString PhiText=GetPhiText(StartPhi, EndPhi);
   TString ThetaText=GetThetaText(EndTheta);
-  TString ExtraText="_RegularTheta.";
-  ExtraText=".";
+ TString ExtraText=".";//
+  if(DefaultDims ==1){
+    ExtraText="_DefaultRichDims.";
+    if(DefaultDims_LargePMT ==1){ExtraText="_DefaultRichDims_LargePMT.";}
+  }
 
   TString NamingText=GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+PMTTransText+"_"+MomText+"_"+ThetaText+ExtraText+"root";
+
   TString ParFile = outDir + "Parameters_"+NamingText;//+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
   TString SimFile = outDir + "Sim_"+NamingText;//+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
   TString RecFile = outDir + "Rec_"+NamingText;//+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
@@ -77,8 +90,7 @@ void Run_Reco_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=10, float PMTrotY=
   
   CbmRichMatchRings* matchRings = new CbmRichMatchRings();
   run->AddTask(matchRings);
-
-
+  
   // //Tariq's routine for geometry optimization
   // CbmRichGeoOpt* richGeoOpt = new CbmRichGeoOpt();
   // run->AddTask(richGeoOpt);  
@@ -144,7 +156,7 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  //return "/data/GeoOpt/RotPMT/";
+  //return "/data/GeoOpt/";
   return "/hera/cbm/users/tariq/GeoOptRootFiles/";
   // if(GeoCase<=0){return "/data/GeoOpt/RotPMT/OlderGeo/";}
   // if(GeoCase==1){return "/data/GeoOpt/RotPMT/OldGeo/";}
@@ -193,5 +205,13 @@ TString GetThetaText( float theta=25.){
   sprintf(THtxt,"Theta_%d",theta);
   stringstream ss; 
   ss<<THtxt;
+  return ss.str();
+}
+////////////////////////////////////////////////////////
+TString GetPhiText( float StartPhi, float EndPhi){
+  char PHtxt[256];
+  sprintf(PHtxt,"Phi_%d_to_%d",StartPhi, EndPhi);
+  stringstream ss; 
+  ss<<PHtxt;
   return ss.str();
 }

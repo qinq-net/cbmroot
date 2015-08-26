@@ -1,11 +1,15 @@
-void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2, int RotMir=-10)
+void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1,  float PMTrotX=5, float PMTrotY=5, int RotMir=-10)
 {
 
   int GeoCase=2;
   int PtNotP=1;  float MomMin=0.; float MomMax=4.;
   //int PtNotP=0;  float MomMin=3.95; float MomMax=4.;
-  float  EndTheta=35.;
+  float StartTheta=2.5; float  EndTheta=25.;
   int PMTtransY=0, PMTtransZ=0;
+  int DefaultDims=0;
+  int DefaultDims_LargePMT=;
+
+  float StartPhi=90., EndPhi=180.;
   TString script = TString(gSystem->Getenv("SCRIPT"));
   if (script == "yes"){
     cout<<" ----------------- running with script --------------------"<<endl;
@@ -22,31 +26,42 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
     MomMin=TString(gSystem->Getenv("MOM_MIN")).Atof();
     MomMax=TString(gSystem->Getenv("MOM_MAX")).Atof();
     EndTheta=TString(gSystem->Getenv("THETA")).Atof();
+    StartPhi=TString(gSystem->Getenv("STARTPHI")).Atof();
+    EndPhi=TString(gSystem->Getenv("ENDPHI")).Atof();
+    DefaultDims=TString(gSystem->Getenv("DEFAULDIMS")).Atof();
+    DefaultDims_LargePMT=TString(gSystem->Getenv("DEFAULDIMSLPMT")).Atof();
   }  
   //cout<<RotMir<<", "<<PMTrotX<<", "<<PMTrotY<<", "<<GeoCase<<endl;
-  
+  // float  EndTheta=35.;
+    
   TTree::SetMaxTreeSize(90000000000);
   //******************************
   TString RotMirText=GetMirText(RotMir);
   TString PMTRotText=GetPMTRotText(PMTrotX, PMTrotY);
   TString PMTTransText=GetPMTTransText(PMTtransY, PMTtransZ);
-  TString richGeom=GetRICH_GeoFile( RotMirText, PMTRotText, PMTTransText, GeoCase);
   TString pipeGeom=GetPipe_GeoFile( GeoCase);
   pipeGeom="";
   //******************************
 
   cout<<"RotMirText = "<<RotMirText<<endl;
   cout<<"PMTRotText = "<<PMTRotText<<endl;
-  cout<<"rich geo = "<<richGeom<<endl;
 
   TString outDir=GetOutDir(GeoCase);//="/data/GeoOpt/RotPMT/NewGeo/";
   TString GeoText=GetGeoText(GeoCase);
   TString MomText=GetMomText(PtNotP,MomMin,MomMax);
+  TString PhiText=GetPhiText(StartPhi, EndPhi);
   TString ThetaText=GetThetaText(EndTheta);
-  TString ExtraText="_RegularTheta.";
-  ExtraText=".";
+  TString ExtraText=".";//
+  if(DefaultDims ==1){
+    ExtraText="_DefaultRichDims.";
+    if(DefaultDims_LargePMT ==1){ExtraText="_DefaultRichDims_LargePMT.";}
+  }
+
+  TString richGeom=GetRICH_GeoFile( RotMirText, PMTRotText, PMTTransText, GeoCase, ExtraText);
+  cout<<"rich geo = "<<richGeom<<endl;
 
   TString NamingText=GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+PMTTransText+"_"+MomText+"_"+ThetaText+ExtraText+"root";
+  //  TString NamingText=GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+PMTTransText+"_"+MomText+"_"+ThetaText+PhiText+ExtraText+"root";
   TString ParFile = outDir + "Parameters_"+NamingText;//
   TString SimFile = outDir + "Sim_"+NamingText;
   TString OutPutGeoFile = outDir + "OutPutGeo_"+NamingText;
@@ -123,8 +138,6 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
   
   // e+/-
-  float StartPhi=90.1, EndPhi=180.;
-  float StartTheta=2.5;
   FairBoxGenerator* boxGen1 = new FairBoxGenerator(11, 1);
   if(PtNotP==1){boxGen1->SetPtRange(MomMin,MomMax); }
   else{boxGen1->SetPRange(MomMin,MomMax); }
@@ -175,6 +188,20 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=2, float PMTrotY=2,
   cout << "Real time " << rtime << " s, CPU time " << ctime << "s" << endl << endl;
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
+  cout << "====================================================" << endl;
+  cout << "=================== Test Overlaps ==================" << endl;
+  gGeoManager->CheckOverlaps(0.001);
+  gGeoManager->PrintOverlaps();
+  TObjArray *overlapArray = gGeoManager->GetListOfOverlaps();
+  Int_t numOverlaps = overlapArray->GetEntries();
+  if ( numOverlaps != 0 ) {
+    cout << "=================== Test failed =============="<< endl;
+    cout << " We have in total "<<numOverlaps<<" overlaps."<<endl;
+  }
+
+  cout << "=================== Overlaps Tested ================" << endl;
+  cout << "====================================================" << endl;
+
 }
 ////////////////////////////////////////////
 TString GetMomText(int PtNotP, float MomMin, float MomMax){
@@ -207,7 +234,7 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  //return "/data/GeoOpt/RotPMT/";
+  //return "/data/GeoOpt/";
 
   return "/hera/cbm/users/tariq/GeoOptRootFiles/";
   // if(GeoCase<=0){return "/data/GeoOpt/RotPMT/OlderGeo/";}
@@ -253,7 +280,7 @@ TString  GetPMTTransText(int PMTTransY, int PMTTransZ){
 }
 
 ////////////////////////////////////////////////////////
-TString GetRICH_GeoFile( char *RotMirText, TString PMTRotText, TString PMTTransText, int GeoCase){
+TString GetRICH_GeoFile( char *RotMirText, TString PMTRotText, TString PMTTransText, int GeoCase, TString ExtraText){
   //GeoCase=-2 ==> old geometry with rich_v08a.geo (RICH starts at 1600, Mirror tilt -1)
   //GeoCase=-1 ==> old geometry with rich_v14a.gdml (RICH starts at 1800, Mirror tilt -1)
   if(GeoCase==-2){return "rich/rich_v08a.geo";}
@@ -263,18 +290,21 @@ TString GetRICH_GeoFile( char *RotMirText, TString PMTRotText, TString PMTTransT
   //                        mirror does NOT cover full acceptance)
   //GeoCase=2 ==> gdml-geo: RICH starts at 1800, Mirror tilt -1 or 10, 
   //                        mirror does cover full acceptance)
-  
-  //TString Dir="rich/GeoOpt/RotPMT/";
-  TString Dir="rich/GeoOpt/";
 
-  TString Dir2="NewGeo/";
-  TString Endung=".root";
-  if(GeoCase==0){Dir2="OldGeo/"; Endung=".geo";}
-  if(GeoCase==1){Dir2="OldGeo/";}
-  if(GeoCase==2){Dir2="NewGeo/";}
+  //return "/media/sf_Shared/2015_minus10deg.gdml";
+  // return "/data/cbmroot/macro/rich/geotest/RotPMT/CreateGeo/RichGeo_NominalDimensions_minus10deg_07122014.gdml";
+  // return "rich/GeoOpt/rich_geo_RotMir_m10_RotPMT_Xpos5point0_Ypos5point0_TransPMT_Y_p0_Z_p0_New.root";
+  //TString Dir="rich/GeoOpt/RotPMT/";
+  TString Dir="rich/GeoOpt";
+
+  TString Dir2="/NewGeo/";
+  TString Endung="root";
+  if(GeoCase==0){Dir2="/OldGeo/"; Endung=".geo";}
+  if(GeoCase==1){Dir2="/OldGeo/";}
+  if(GeoCase==2){Dir2="/";}
   stringstream ss; 
   //ss<<Dir<<Dir2<<"rich_geo_"<<RotMirText<<"_"<<PMTRotText<<Endung;
-  ss<<Dir<<"rich_geo_"<<RotMirText<<"_"<<PMTRotText<<"_"<<PMTTransText<<Endung;
+  ss<<Dir<<Dir2<<"rich_geo_"<<RotMirText<<"_"<<PMTRotText<<"_"<<PMTTransText<<ExtraText<<Endung;
 
   return ss.str();
 }
@@ -284,6 +314,14 @@ TString GetThetaText( float theta=25.){
   sprintf(THtxt,"Theta_%d",theta);
   stringstream ss; 
   ss<<THtxt;
+  return ss.str();
+}
+////////////////////////////////////////////////////////
+TString GetPhiText(float StartPhi, float EndPhi){
+  char PHtxt[256];
+  sprintf(PHtxt,"Phi_%d_to_%d",StartPhi, EndPhi);
+  stringstream ss; 
+  ss<<PHtxt;
   return ss.str();
 }
 ////////////////////////////////////////////////////////
