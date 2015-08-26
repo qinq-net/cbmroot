@@ -31,6 +31,9 @@ void run_reco(Int_t nEvents = 3)
 
 		geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/analysis/dielectron/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
 	}
+
+        remove(recoFile.Data());
+
        
 	//setup all geometries from macro
 	cout << "geoSetupName:" << geoSetupFile << endl;

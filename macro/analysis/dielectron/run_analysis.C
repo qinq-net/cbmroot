@@ -37,6 +37,8 @@ void run_analysis(Int_t nEvents = 3)
       geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/analysis/dielectron/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
    }
 
+    remove(analysisFile.Data());
+
    //setup all geometries from macro
    	cout << "geoSetupName:" << geoSetupFile << endl;
    	gROOT->LoadMacro(geoSetupFile);

@@ -82,7 +82,7 @@ void init_geo_setup()
   // define some LMVM and QA cuts
   trdAnnCut = 0.85;
   pionMisidLevel = -1.;
-  litQaMinNofPointsTrd = 6;
+  litQaMinNofPointsTrd = 8;
 
 
   // ------ Input file ------------------------------------------------------

@@ -32,6 +32,8 @@ void run_litqa(Int_t nEvents = 1000)
 		geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/analysis/dielectron/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
 	}
 
+         remove(qaFile.Data());
+
 	//setup all geometries from macro
 	cout << "geoSetupName:" << geoSetupFile << endl;
 	gROOT->LoadMacro(geoSetupFile);

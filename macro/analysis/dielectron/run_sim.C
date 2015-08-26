@@ -33,6 +33,9 @@ void run_sim(Int_t nEvents = 3)
 		plutoParticle = TString(gSystem->Getenv("PLUTO_PARTICLE"));
 	}
 
+        remove(parFile.Data());
+	remove(mcFile.Data());
+
 	//setup all geometries from macro
 	cout << "geoSetupName:" << geoSetupFile << endl;
 	gROOT->LoadMacro(geoSetupFile);
