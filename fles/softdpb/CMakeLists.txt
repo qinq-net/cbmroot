@@ -3,6 +3,8 @@
 # in the tsa format
 # This file is only called if the compiler provides c++11 support
 
+Set(CMAKE_CXX_FLAGS_BAK ${CMAKE_CXX_FLAGS})
+
 # Add some extra compile warnings 
 Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Winit-self -Wundef -Wold-style-cast -Woverloaded-virtual -Wwrite-strings -Wnon-virtual-dtor")
 
@@ -42,3 +44,4 @@ EndIf()
 
 GENERATE_EXECUTABLE()
 
+Set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_BAK})

@@ -3,6 +3,8 @@
 # This executable uses the fles_ipc library to read timeslices
 # This file is only called if the compiler provides c++11 support
 
+Set(CMAKE_CXX_FLAGS_BAK ${CMAKE_CXX_FLAGS})
+
 # Add some extra compile warnings 
 Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Winit-self -Wundef -Wold-style-cast -Woverloaded-virtual -Wwrite-strings -Wnon-virtual-dtor")
 
@@ -39,3 +41,4 @@ Set(LIBRARY_NAME trbnet)
 
 GENERATE_LIBRARY()
 
+Set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_BAK})
