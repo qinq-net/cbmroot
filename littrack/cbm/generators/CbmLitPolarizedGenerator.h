@@ -78,12 +78,12 @@ public:
   inline void SetDecayMode(DecayMode_t decayMode=kDiMuon) {fDecayMode=decayMode;}
   
   /** Set beam momentum (used in Collins-Soper reference frame)
-  /* @param mom  beam momentum in GeV/c 
+   * @param mom  beam momentum in GeV/c 
    **/
   inline void SetBeamMomentum(Double_t mom)               {fBeamMomentum = mom;}
   
   /** Set box generator - flat distributions in rapidity and pt
-  /* @param box = 1 - box, 0 - thermal
+   * @param box = 1 - box, 0 - thermal
    */ 
   inline void SetBox(Bool_t box)                          {fBox = box;}
   
