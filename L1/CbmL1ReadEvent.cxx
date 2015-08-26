@@ -197,7 +197,8 @@ void CbmL1::ReadEvent()
       if( listMvdHitMatches ){
         CbmMatch *mvdHitMatch = L1_DYNAMIC_CAST<CbmMatch*>( listMvdHitMatches->At(j) );
         if( mvdHitMatch->GetNofLinks() > 0 )
-          iMC = mvdHitMatch->GetLink(0).GetIndex();
+          if( mvdHitMatch->GetLink(0).GetIndex() < nMvdPoints )
+            iMC = mvdHitMatch->GetLink(0).GetIndex();
       }
       th.iMC = iMC;
       tmpHits.push_back(th);
@@ -741,7 +742,7 @@ void CbmL1::ReadEvent()
         
         CbmL1MCTrack T(mass, q, vr, vp, iMCTrack, mother_ID, pdg);
         T.time = MCTrack->GetStartT();
-        
+
         if(vtmpMCPoints.size()>0)
           while( vtmpMCPoints[iMCPoint].ID == iMCTrack && iMCPoint < vtmpMCPoints.size() ) 
           {
@@ -864,7 +865,7 @@ void CbmL1::HitMatch()
     CbmL1StsHit& hit = vStsHits[iH];
 
     int iP = vHitMCRef[iH];
-    if (iP >= 0){
+    if ( iP >= 0 ){
       hit.mcPointIds.push_back( iP );
       vMCPoints[iP].hitIds.push_back(iH);
     }
