@@ -13,6 +13,7 @@
 #include "CbmStsTrack.h"
 #include "CbmKFVertex.h"
 #include "CbmL1PFFitter.h"
+#include "TMCProcess.h"
 
 class CbmLmvmUtils{
 public:
@@ -79,6 +80,87 @@ public:
 		ptt= (ptm>=0.)?  pn*sqrt(ptm) :0;
 		alpha = (plp-pln)/(plp+pln);
     }
+
+    /*
+	 * \brief Return true if MC track is signal primary electron.
+	 */
+	static Bool_t IsMcSignalElectron(
+			CbmMCTrack* mctrack)
+	{
+		if (mctrack == NULL) return false;
+		Int_t pdg = TMath::Abs(mctrack->GetPdgCode());
+		if (mctrack->GetGeantProcessId() == kPPrimary && pdg == 11) return true;
+		return false;
+	}
+
+	/*
+	 * \brief Return true if MC track is electron from gamma conversion.
+	 */
+	static Bool_t IsMcGammaElectron(
+			CbmMCTrack* mctrack,
+			TClonesArray* mcTracks)
+	{
+		if (mctrack == NULL) return false;
+		Int_t pdg = TMath::Abs(mctrack->GetPdgCode());
+		if (pdg != 11) return false;
+		Int_t motherId = mctrack->GetMotherId();
+		if (motherId < 0){
+			return false;
+		} else {
+			CbmMCTrack* mct1 = static_cast<CbmMCTrack*>(mcTracks->At(motherId));
+			Int_t motherPdg = mct1->GetPdgCode();
+			if (mct1 != NULL && motherPdg == 22 && pdg == 11){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/*
+	 * \brief Return true if MC track is electron from Pi0 dalitz decay.
+	 */
+	static Bool_t IsMcPi0Electron(
+			CbmMCTrack* mctrack,
+			TClonesArray* mcTracks)
+	{
+		if (mctrack == NULL) return false;
+		Int_t pdg = TMath::Abs(mctrack->GetPdgCode());
+		if (pdg != 11) return false;
+		Int_t motherId = mctrack->GetMotherId();
+		if (motherId < 0){
+			return false;
+		} else {
+			CbmMCTrack* mct1 = static_cast<CbmMCTrack*>(mcTracks->At(motherId));
+			Int_t motherPdg = mct1->GetPdgCode();
+			if (mct1 != NULL && motherPdg == 111 && pdg == 11){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/*
+	 * \brief Return true if MC track is electron from Eta decay.
+	 */
+	static Bool_t IsMcEtaElectron(
+			CbmMCTrack* mctrack,
+			TClonesArray* mcTracks)
+	{
+		if (mctrack == NULL) return false;
+		Int_t pdg = TMath::Abs(mctrack->GetPdgCode());
+		if (pdg != 11) return false;
+		Int_t motherId = mctrack->GetMotherId();
+		if (motherId < 0){
+			return false;
+		} else {
+			CbmMCTrack* mct1 = static_cast<CbmMCTrack*>(mcTracks->At(motherId));
+			Int_t motherPdg = mct1->GetPdgCode();
+			if (mct1 != NULL && motherPdg == 221 && pdg == 11){
+				return true;
+			}
+		}
+		return false;
+	}
 
 };
 

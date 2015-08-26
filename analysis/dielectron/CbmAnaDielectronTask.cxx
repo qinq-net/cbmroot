@@ -676,25 +676,26 @@ void CbmAnaDielectronTask::MCPairs()
         Int_t pdg = TMath::Abs(mctrack->GetPdgCode());
         Double_t mom = mctrack->GetP();
 
+        Bool_t isMcSignalElectron = CbmLmvmUtils::IsMcSignalElectron(mctrack);
+        Bool_t isMcGammaElectron = CbmLmvmUtils::IsMcGammaElectron(mctrack, fMCTracks);
+        if (isMcSignalElectron) {
+        	fh_source_mom[kSignal][kMc]->Fill(mom, fWeight);
+        }
+        if (isMcGammaElectron) {
+        	TVector3 v;
+			mctrack->GetStartVertex(v);
+			fh_vertex_el_gamma_xz[kMc]->Fill(v.Z(),v.X());
+			fh_vertex_el_gamma_yz[kMc]->Fill(v.Z(),v.Y());
+			fh_vertex_el_gamma_xy[kMc]->Fill(v.X(),v.Y());
+			fh_vertex_el_gamma_rz[kMc]->Fill( v.Z(), sqrt(v.X()*v.X()+v.Y()*v.Y()) );
+        }
+
         // mother pdg of e-/e+
         Int_t mcMotherPdg = 0;
         if (pdg == 11) {
-           // momentum distribution for electrons from signal
-           if (motherId == -1) fh_source_mom[kSignal][kMc]->Fill(mom, fWeight);
-
-           // secondary electrons
            if (motherId != -1){
                 CbmMCTrack* mother = (CbmMCTrack*) fMCTracks->At(motherId);
                 if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
-                // vertex of secondary electron from gamma conversion
-                if (mcMotherPdg == 22) {
-                    TVector3 v;
-                    mctrack->GetStartVertex(v);
-                    fh_vertex_el_gamma_xz[kMc]->Fill(v.Z(),v.X());
-                    fh_vertex_el_gamma_yz[kMc]->Fill(v.Z(),v.Y());
-                    fh_vertex_el_gamma_xy[kMc]->Fill(v.X(),v.Y());
-                    fh_vertex_el_gamma_rz[kMc]->Fill( v.Z(), sqrt(v.X()*v.X()+v.Y()*v.Y()) );
-                }
             }else {
                 mcMotherPdg = 0;
             }
@@ -725,25 +726,22 @@ void CbmAnaDielectronTask::RichPmtXY()
         CbmMCTrack* mctrack = static_cast<CbmMCTrack*>(fMCTracks->At(iMCTrack));
         if (NULL == mctrack) continue;
 
-        Int_t pdg = TMath::Abs(mctrack->GetPdgCode());
-        Int_t motherId = mctrack->GetMotherId();
         TVector3 v;
 		mctrack->GetStartVertex(v);
 		Bool_t isPrim = (v.Z() < 2.);
 
-		if (pdg == 11 && motherId == -1) { //signal
+		Bool_t isMcSignalElectron = CbmLmvmUtils::IsMcSignalElectron(mctrack);
+		Bool_t isMcGammaElectron = CbmLmvmUtils::IsMcGammaElectron(mctrack, fMCTracks);
+		Bool_t isMcPi0Electron = CbmLmvmUtils::IsMcPi0Electron(mctrack, fMCTracks);
+
+		if (isMcSignalElectron) {
 			fh_signal_pmtXY->Fill(richHit->GetX(), richHit->GetY(), fWeight);
 		}
-		if (motherId >=0 && isPrim){
-
-			CbmMCTrack* mct1 = (CbmMCTrack*) fMCTracks->At(motherId);
-			int motherPdg = mct1->GetPdgCode();
-			if (mct1 != NULL && motherPdg == 111 && pdg == 11) { //pi0
-				fh_pi0_pmtXY->Fill(richHit->GetX(), richHit->GetY());
-			}
-			if (mct1 != NULL && motherPdg == 22 && pdg == 11){ //gamma
-				fh_gamma_pmtXY->Fill(richHit->GetX(), richHit->GetY());
-			}
+		if (isMcGammaElectron && isPrim){
+			fh_gamma_pmtXY->Fill(richHit->GetX(), richHit->GetY());
+		}
+		if (isMcPi0Electron && isPrim){
+			fh_pi0_pmtXY->Fill(richHit->GetX(), richHit->GetY());
 		}
     }
 }
@@ -770,22 +768,22 @@ void CbmAnaDielectronTask::SingleParticleAcceptance()
         Int_t nRichPoints = fNofHitsInRingMap[i];
 
         Bool_t isAcc = ( nMvdPoints+nStsPoints >= 4 && nRichPoints >= 7);
+        Bool_t isMcGammaElectron = CbmLmvmUtils::IsMcGammaElectron(mctrack, fMCTracks);
+
+        if (isMcGammaElectron) {
+        	TVector3 v;
+			mctrack->GetStartVertex(v);
+			fh_vertex_el_gamma_xz[kAcc]->Fill(v.Z(),v.X());
+			fh_vertex_el_gamma_yz[kAcc]->Fill(v.Z(),v.Y());
+			fh_vertex_el_gamma_xy[kAcc]->Fill(v.X(),v.Y());
+			fh_vertex_el_gamma_rz[kAcc]->Fill( v.Z(), sqrt(v.X()*v.X()+v.Y()*v.Y()) );
+        }
 
         Int_t mcMotherPdg = 0;
         if (pdg == 11 && isAcc) {
            if (motherId != -1){
                CbmMCTrack* mother = (CbmMCTrack*) fMCTracks->At(motherId);
                if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
-               // vertex of secondary electron from gamma conversion
-               if (mcMotherPdg == 22) {
-                  TVector3 v;
-                  mctrack->GetStartVertex(v);
-                  fh_vertex_el_gamma_xz[kAcc]->Fill(v.Z(),v.X());
-                  fh_vertex_el_gamma_yz[kAcc]->Fill(v.Z(),v.Y());
-                  fh_vertex_el_gamma_xy[kAcc]->Fill(v.X(),v.Y());
-                  fh_vertex_el_gamma_rz[kAcc]->Fill( v.Z(), sqrt(v.X()*v.X()+v.Y()*v.Y()) );
-               }
-
             }else {
                 mcMotherPdg = 0;
             }
@@ -811,9 +809,11 @@ void CbmAnaDielectronTask::PairMcAndAcceptance()
 			if ( pdgM != -11 ) continue;
 			Bool_t isAccM = IsMcTrackAccepted(iM);
 			CbmLmvmKinematicParams p = CbmLmvmKinematicParams::KinematicParamsWithMcTracks(mctrackP,mctrackM);
+			Bool_t isMcSignal = CbmLmvmUtils::IsMcSignalElectron(mctrackM) && CbmLmvmUtils::IsMcSignalElectron(mctrackP);
+			Bool_t isMcPi0 = CbmLmvmUtils::IsMcPi0Electron(mctrackM, fMCTracks) && CbmLmvmUtils::IsMcPi0Electron(mctrackP, fMCTracks);
+			Bool_t isMcEta = CbmLmvmUtils::IsMcEtaElectron(mctrackM, fMCTracks) && CbmLmvmUtils::IsMcEtaElectron(mctrackP, fMCTracks);
 
-			// e+/- from signal
-			if (motherIdM == -1 && pdgM == -11 && motherIdP == -1 && pdgP == 11) {
+			if (isMcSignal) {
 				fh_signal_pty[kMc]->Fill(p.fRapidity,p.fPt, fWeight);
 				fh_signal_mom[kMc]->Fill(p.fMomentumMag, fWeight);
 				fh_signal_minv[kMc]->Fill(p.fMinv, fWeight);
@@ -825,20 +825,14 @@ void CbmAnaDielectronTask::PairMcAndAcceptance()
 				}
 			}
 
-			if (motherIdP >=0 && motherIdM >=0){
-			    CbmMCTrack* mct1P = (CbmMCTrack*) fMCTracks->At(motherIdP);
-			    Int_t motherPdgP = mct1P->GetPdgCode();
+			if (isMcPi0) {
+				fh_pi0_minv[kMc]->Fill(p.fMinv);
+				if (isAccP && isAccM) fh_pi0_minv[kAcc]->Fill(p.fMinv);
+			}
 
-			    CbmMCTrack* mct1M = (CbmMCTrack*) fMCTracks->At(motherIdM);
-			    Int_t motherPdgM = mct1M->GetPdgCode();
-
-			    Bool_t isPi0 = (motherPdgP == 111 && pdgP == 11 && motherPdgM == 111 && pdgM == -11 && motherIdP == motherIdM);
-			    Bool_t isEta = (motherPdgP == 221 && pdgP == 11 && motherPdgM == 221 && pdgM == -11 && motherIdP == motherIdM);
-
-			    if (isPi0) fh_pi0_minv[kMc]->Fill(p.fMinv);
-			    if (isEta) fh_eta_minv[kMc]->Fill(p.fMinv);
-			    if (isAccP && isAccM && isPi0) fh_pi0_minv[kAcc]->Fill(p.fMinv);
-			    if (isAccP && isAccM && isEta) fh_eta_minv[kAcc]->Fill(p.fMinv);
+			if (isMcEta) {
+				fh_eta_minv[kMc]->Fill(p.fMinv);
+				if (isAccP && isAccM) fh_eta_minv[kAcc]->Fill(p.fMinv);
 			}
 		}//iM
 	}//iP
@@ -1117,25 +1111,11 @@ void CbmAnaDielectronTask::AssignMcToCandidates()
       CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*) fRichRingMatches->At(richInd);
       if (richMatch == NULL) continue;
       fCandidates[i].fRichMcTrackId = richMatch->GetMatchedLink().GetIndex();
-      //if (fCandidates[i].richMcTrackId < 0) continue;
-      //CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMCTracks->At(fCandidates[i].richMcTrackId);
-      //if (mcTrack2 == NULL) continue;
 
-      if (pdg == 11 && motherId == -1) fCandidates[i].fIsMcSignalElectron = true;
-
-      if (motherId >=0){
-         CbmMCTrack* mct1 = (CbmMCTrack*) fMCTracks->At(motherId);
-         int motherPdg = mct1->GetPdgCode();
-         if (mct1 != NULL && motherPdg == 111 && pdg == 11) {
-            fCandidates[i].fIsMcPi0Electron = true;
-         }
-         if (mct1 != NULL && motherPdg == 22 && pdg == 11){
-            fCandidates[i].fIsMcGammaElectron = true;
-         }
-         if(mct1 != NULL && motherPdg == 221 && pdg == 11){
-            fCandidates[i].fIsMcEtaElectron = true;
-         }
-      }
+      fCandidates[i].fIsMcSignalElectron = CbmLmvmUtils::IsMcSignalElectron(mcTrack1);
+      fCandidates[i].fIsMcPi0Electron = CbmLmvmUtils::IsMcPi0Electron(mcTrack1, fMCTracks);
+      fCandidates[i].fIsMcGammaElectron = CbmLmvmUtils::IsMcGammaElectron(mcTrack1, fMCTracks);
+      fCandidates[i].fIsMcEtaElectron = CbmLmvmUtils::IsMcEtaElectron(mcTrack1, fMCTracks);
 
       // TRD
       CbmTrdTrack* trdTrack = NULL;
@@ -1144,9 +1124,6 @@ void CbmAnaDielectronTask::AssignMcToCandidates()
          CbmTrackMatchNew* trdMatch = (CbmTrackMatchNew*) fTrdTrackMatches->At(trdInd);
          if (trdMatch == NULL) continue;
          fCandidates[i].fTrdMcTrackId = trdMatch->GetMatchedLink().GetIndex();
-         //if (fCandidates[i].trdMcTrackId < 0) continue;
-         //CbmMCTrack* mcTrack3 = (CbmMCTrack*) fMCTracks->At(fCandidates[i].trdMcTrackId);
-         //if (mcTrack3 == NULL) continue;
       }
 
       // ToF
@@ -1159,9 +1136,6 @@ void CbmAnaDielectronTask::AssignMcToCandidates()
       FairMCPoint* tofPoint = (FairMCPoint*) fTofPoints->At(tofPointIndex);
       if (tofPoint == NULL) continue;
       fCandidates[i].fTofMcTrackId = tofPoint->GetTrackID();
-    //  if (cand.tofMcTrackId < 0) continue;
-    //  CbmMCTrack* mcTrack4 = (CbmMCTrack*) fMCTracks->At(cand.tofMcTrackId);
-    //  if (mcTrack4 == NULL) continue;
    }// candidates
 }
 
@@ -1188,21 +1162,10 @@ void CbmAnaDielectronTask::AssignMcToTopologyCandidates(
       cutCandidates[i].fMcMotherId = motherId;
       cutCandidates[i].fMcPdg = pdg;
 
-      if (pdg == 11 && motherId == -1) cutCandidates[i].fIsMcSignalElectron = true;
-
-      if (motherId >=0){
-         CbmMCTrack* mct1 = (CbmMCTrack*) fMCTracks->At(motherId);
-         int motherPdg = mct1->GetPdgCode();
-         if (mct1 != NULL && motherPdg == 111 && pdg == 11) {
-            cutCandidates[i].fIsMcPi0Electron = true;
-         }
-         if (mct1 != NULL && motherPdg == 22 && pdg == 11){
-            cutCandidates[i].fIsMcGammaElectron = true;
-         }
-         if(mct1 != NULL && motherPdg == 221 && pdg == 11){
-            cutCandidates[i].fIsMcEtaElectron = true;
-         }
-      }
+      cutCandidates[i].fIsMcSignalElectron = CbmLmvmUtils::IsMcSignalElectron(mcTrack1);
+      cutCandidates[i].fIsMcPi0Electron = CbmLmvmUtils::IsMcPi0Electron(mcTrack1, fMCTracks);
+      cutCandidates[i].fIsMcGammaElectron = CbmLmvmUtils::IsMcGammaElectron(mcTrack1, fMCTracks);
+      cutCandidates[i].fIsMcEtaElectron = CbmLmvmUtils::IsMcEtaElectron(mcTrack1, fMCTracks);
    }
 }
 
