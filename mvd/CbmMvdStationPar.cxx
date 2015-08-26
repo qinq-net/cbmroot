@@ -24,7 +24,8 @@ CbmMvdStationPar::CbmMvdStationPar()
     fYResolutions(), 
     fRadiationLength(), 
     fBeamHeights(), 
-    fBeamWidths()
+    fBeamWidths(),
+    fStationCount()
 {
 }
 // -------------------------------------------------------------------------
