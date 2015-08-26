@@ -172,19 +172,19 @@ private:
      // TDC pulser test, works up to 1 hits per 2 epoch
   Bool_t fbPulserMode;
   UInt_t fuPulserFee;
-  UInt_t fuPulserChan[kuNbChanTest];
+  UInt_t fuPulserChan[kuNbChanTest]; //!
   std::vector< UInt_t >           fvuLastHitEp; // Epoch of Last hit message (one per GET4 chip & channel)
   std::vector< get4v1x::Message > fvmLastHit;   // Last hit message (one per GET4 chip & channel)
-  TH1 * fhTimeResFee[kuNbChanFee*(kuNbChanFee-1)/2];
+  TH1 * fhTimeResFee[kuNbChanFee*(kuNbChanFee-1)/2]; //!
   TH2 * fhTimeRmsAllFee;
   TH2 * fhTimeResAllFee;
   //--------------------------------------------------------------//
   Bool_t fbPulserFeeB;
   UInt_t fuPulserFeeB;
-  TH1 * fhTimeResFeeB[kuNbChanFee*(kuNbChanFee-1)/2];
+  TH1 * fhTimeResFeeB[kuNbChanFee*(kuNbChanFee-1)/2]; //!
   TH2 * fhTimeRmsAllFeeB;
   TH2 * fhTimeResAllFeeB;
-  TH1 * fhTimeResFeeAB[kuNbChanFee*kuNbChanFee];
+  TH1 * fhTimeResFeeAB[kuNbChanFee*kuNbChanFee]; //!
   TH2 * fhTimeRmsAllFeeAB;
   TH2 * fhTimeResAllFeeAB;
   //--------------------------------------------------------------//
@@ -193,17 +193,17 @@ private:
   TH2 * fhTimeRmsAllCombi;
   TH2 * fhTimeResAllCombi;
   TH1 * fhTimeResPairs[kuNbChanTest - 1];
-  TH1 * fhTimeResCombi[kuNbChanComb*(kuNbChanComb-1)/2];
-  TH2 * fhTimeResPairsTot[(kuNbChanTest - 1)*2];
-  TH2 * fhTimeResCombiTot[(kuNbChanComb*(kuNbChanComb-1)/2)*2];
+  TH1 * fhTimeResCombi[kuNbChanComb*(kuNbChanComb-1)/2]; //!
+  TH2 * fhTimeResPairsTot[(kuNbChanTest - 1)*2]; //!
+  TH2 * fhTimeResCombiTot[(kuNbChanComb*(kuNbChanComb-1)/2)*2]; //!
   TH2 * fhPulserHitDistNs;
   TH2 * fhPulserHitDistUs;
   TH2 * fhPulserHitDistMs;
   TH2 * fhPulserFeeDnl;
   TH2 * fhPulserFeeInl;
   //--------------------------------------------------------------//
-  std::vector< UInt_t >           fvuPrevHitEp; // Epoch of previous hit message (one per GET4 chip & channel)
-  std::vector< get4v1x::Message > fvmPrevHit;   // Previous hit message (one per GET4 chip & channel)
+  std::vector< UInt_t >           fvuPrevHitEp; //! Epoch of previous hit message (one per GET4 chip & channel)
+  std::vector< get4v1x::Message > fvmPrevHit;   //! Previous hit message (one per GET4 chip & channel)
   TH2 * fhFtSmallDtFeeA;
   TH2 * fhFtSmallDtFeeB;
   TH2 * fhFtBigDtFeeA;
@@ -215,14 +215,14 @@ private:
      // Monitoring of 24b mode for debugging purpose
   Bool_t fbOldReadoutOk;
   TH1 * fhGet4ChanTotCount;
-  std::vector< UInt_t >           fvuLastOldTotEp; // Epoch of Last TOT message (one per GET4 chip & channel)
-  std::vector< get4v1x::Message > fvmLastOldTot;   // Last TOT message (one per GET4 chip & channel)
+  std::vector< UInt_t >           fvuLastOldTotEp; //! Epoch of Last TOT message (one per GET4 chip & channel)
+  std::vector< get4v1x::Message > fvmLastOldTot;   //! Last TOT message (one per GET4 chip & channel)
      //
   TH2 * fhPulserFeeTotDnl;
   TH2 * fhPulserFeeTotInl;
   //--------------------------------------------------------------//
-  std::vector< UInt_t >           fvuPrevOldTotEp; // Epoch of previous TOT message (one per GET4 chip & channel)
-  std::vector< get4v1x::Message > fvmPrevOldTot;   // Previous TOT message (one per GET4 chip & channel)
+  std::vector< UInt_t >           fvuPrevOldTotEp; //! Epoch of previous TOT message (one per GET4 chip & channel)
+  std::vector< get4v1x::Message > fvmPrevOldTot;   //! Previous TOT message (one per GET4 chip & channel)
   TH2 * fhFtTotSmallDtFeeA;
   TH2 * fhFtTotSmallDtFeeB;
   TH2 * fhFtTotBigDtFeeA;
@@ -232,19 +232,19 @@ private:
   TH2 * fhFtPrevTotBigDtFeeA;
   TH2 * fhFtPrevTotBigDtFeeB;
      // Channel coincidences
-  std::vector< std::vector< TH2 * > > fvvhChannelsCoinc;
+  std::vector< std::vector< TH2 * > > fvvhChannelsCoinc; //!
   Double_t fdMaxCoincDist;
 
   // Multiple hits (reflections, ...) detection
-  std::vector< TH2 * > fvhGet4MultipleHits;
-  std::vector< TH2 * > fvhGet4DistDoubleHits;
-  std::vector< TH2 * > fvhGet4DistTripleHits;
-  std::vector< TH2 * > fvhGet4DistMultipleHits;
-  std::vector< TH2 * > fvhGet4MultipleHitsVsTot;
+  std::vector< TH2 * > fvhGet4MultipleHits; //!
+  std::vector< TH2 * > fvhGet4DistDoubleHits; //!
+  std::vector< TH2 * > fvhGet4DistTripleHits; //!
+  std::vector< TH2 * > fvhGet4DistMultipleHits; //!
+  std::vector< TH2 * > fvhGet4MultipleHitsVsTot; //!
   Double_t fdMaxDtMultiHit;
-  std::vector< std::vector< Bool_t > > fvbChanSecondHit;
-  std::vector< std::vector< Bool_t > > fvbChanThirdHit;
-  std::vector< std::vector< Double_t > > fvdChanFirstHitTot;
+  std::vector< std::vector< Bool_t > > fvbChanSecondHit; //!
+  std::vector< std::vector< Bool_t > > fvbChanThirdHit; //!
+  std::vector< std::vector< Double_t > > fvdChanFirstHitTot; //!
 
   // Monitoring functions
   void InitMonitorHistograms();
@@ -263,7 +263,7 @@ private:
   Bool_t  fbEnaCalibOutput;
   TString fsCalibOutFoldername;
   TString fsCalibFilename;
-  std::vector< std::vector< TH1 * > >  fvhFineTime;
+  std::vector< std::vector< TH1 * > >  fvhFineTime; //!
   Bool_t WriteCalibrationFile();
 
   CbmGet4FastMonitor(const CbmGet4FastMonitor&);

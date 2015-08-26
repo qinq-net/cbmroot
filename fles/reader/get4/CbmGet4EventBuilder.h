@@ -112,7 +112,7 @@ class CbmGet4EventBuilder : public FairTask
       UInt_t              fuInputEpochs; // Number of received input epochs
       CbmGet4EpochBuffer* fInputBuffer;  // Epoch buffer
       CbmGet4EventBuffer* fOutputBuffer; // Event buffer
-      std::multiset< get4v1x::FullMessage >* fpEpoch[kiMaxEpochInUse]; // Pointers on epochs in use
+      std::multiset< get4v1x::FullMessage >* fpEpoch[kiMaxEpochInUse]; //! Pointers on epochs in use
       Int_t               fiCurrentEpoch;// Which of the 3 epoch is in use
 
       // Control
