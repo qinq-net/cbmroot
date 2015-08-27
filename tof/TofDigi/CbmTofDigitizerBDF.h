@@ -295,6 +295,7 @@ class CbmTofDigitizerBDF : public FairTask
 
       TH1 * fhElecChOccup;
       TH1 * fhMultiDigiEvtElCh;
+      TH2 * fhNbDigiEvtElCh;
       TH1 * fhFiredEvtElCh;
       TH1 * fhMultiProbElCh;
 
