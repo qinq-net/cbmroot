@@ -27,8 +27,12 @@ CbmTrdRawPulseMonitor::CbmTrdRawPulseMonitor()
     fRawSpadic(NULL),
     fMonitor(NULL),
     fRatio(NULL),
+    fRawpulse(NULL),
     fS_N(NULL),
-    fSignalMap(NULL)
+    fSignalMap(NULL),
+    fHM(NULL),
+    fMessageCounter(0),
+    fContainerCounter(0)
 {
   LOG(DEBUG) << "Default Constructor of CbmTrdRawPulseMonitor" << FairLogger::endl;
 }
