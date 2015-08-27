@@ -2709,25 +2709,25 @@ Bool_t TMbsCalibTdcTof::LoadSingleCalibrationsRef()
 }
 Bool_t TMbsCalibTdcTof::CalibFactorsInitReference( UInt_t uType, UInt_t uBoard)
 {     
-   Double_t dClockCycle = 0.0;
+//   Double_t dClockCycle = 0.0; // -> Comment to remove warning because set but never used
    UInt_t   uFtBinNb    = 0;
    
    switch( uType )
    {
       case toftdc::caenV1290:
-         dClockCycle = caentdc::kdClockCycleSize;
+//         dClockCycle = caentdc::kdClockCycleSize; // -> Comment to remove warning because set but never used
          uFtBinNb    = caentdc::kiFineTime + 1;
          break;
       case toftdc::vftx:
-         dClockCycle = vftxtdc::kdClockCycleSize;
+//         dClockCycle = vftxtdc::kdClockCycleSize; // -> Comment to remove warning because set but never used
          uFtBinNb    = vftxtdc::kiFifoFineTime + 1;
          break;
       case toftdc::trb:
-         dClockCycle = trbtdc::kdClockCycleSize;
+//         dClockCycle = trbtdc::kdClockCycleSize; // -> Comment to remove warning because set but never used
          uFtBinNb    = trbtdc::kiFineCounterSize;
          break;
       case toftdc::get4:
-         dClockCycle = get4tdc::kdClockCycleSize;
+//         dClockCycle = get4tdc::kdClockCycleSize; // -> Comment to remove warning because set but never used
          uFtBinNb    = get4tdc::kiFineTime + 1;
          break;
       default:
@@ -2779,25 +2779,25 @@ Bool_t TMbsCalibTdcTof::CalibFactorsInitReference( UInt_t uType, UInt_t uBoard)
 }
 Bool_t TMbsCalibTdcTof::CalibFactorsCalcReference( UInt_t uType, UInt_t uBoard, Bool_t bWithInitial )
 {     
-   Double_t dClockCycle = 0.0;
+//   Double_t dClockCycle = 0.0;
    UInt_t   uFtBinNb    = 0;
    
    switch( uType )
    {
       case toftdc::caenV1290:
-         dClockCycle = caentdc::kdClockCycleSize;
+//         dClockCycle = caentdc::kdClockCycleSize; // -> Comment to remove warning because set but never used
          uFtBinNb    = caentdc::kiFineTime + 1;
          break;
       case toftdc::vftx:
-         dClockCycle = vftxtdc::kdClockCycleSize;
+//         dClockCycle = vftxtdc::kdClockCycleSize; // -> Comment to remove warning because set but never used
          uFtBinNb    = vftxtdc::kiFifoFineTime + 1;
          break;
       case toftdc::trb:
-         dClockCycle = trbtdc::kdClockCycleSize;
+//         dClockCycle = trbtdc::kdClockCycleSize; // -> Comment to remove warning because set but never used
          uFtBinNb    = trbtdc::kiFineCounterSize;
          break;
       case toftdc::get4:
-         dClockCycle = get4tdc::kdClockCycleSize;
+//         dClockCycle = get4tdc::kdClockCycleSize; // -> Comment to remove warning because set but never used
          uFtBinNb    = get4tdc::kiFineTime + 1;
          break;
       default:
@@ -3101,13 +3101,13 @@ Bool_t TMbsCalibTdcTof::CalibrateReference(UInt_t uType, UInt_t uBoard)
    if( uBoard < fMbsUnpackPar->GetNbActiveBoards( uType ) )
    {
       // TDC type specific values
-      UInt_t         uNbChan        = 0;
+//      UInt_t         uNbChan        = 0; // -> Comment to remove warning because set but never used
       TClonesArray * xUnpDataArray  = NULL;
       Double_t       dClockCycle    = 0.0;
       Bool_t         bInvertFt      = kFALSE;
       Double_t       dTotBinToPs    = 0.0;
-      Int_t          iCoarseSize    = 0;
-      Int_t          iCoarseOfLim   = 0;
+//      Int_t          iCoarseSize    = 0; // -> Comment to remove warning because set but never used
+//      Int_t          iCoarseOfLim   = 0; // -> Comment to remove warning because set but never used
       switch( uType )
       {
          case toftdc::caenV1290:
@@ -3133,12 +3133,12 @@ Bool_t TMbsCalibTdcTof::CalibrateReference(UInt_t uType, UInt_t uBoard)
             return kFALSE;
             break;
          case toftdc::trb:
-            uNbChan        = trbtdc::kuNbChan;
+//            uNbChan        = trbtdc::kuNbChan; // -> Comment to remove warning because set but never used
             xUnpDataArray  = fTrb3BoardCollection;
             dClockCycle    = trbtdc::kdClockCycleSize;
             bInvertFt      = trbtdc::kbInvertFt;
-            iCoarseSize    = trbtdc::kiCoarseCounterSize;
-            iCoarseOfLim   = trbtdc::kiCoarseOverflowTest;
+//            iCoarseSize    = trbtdc::kiCoarseCounterSize; // -> Comment to remove warning because set but never used
+//            iCoarseOfLim   = trbtdc::kiCoarseOverflowTest; // -> Comment to remove warning because set but never used
             break;
          case toftdc::get4:
 /*
@@ -3386,6 +3386,7 @@ Bool_t TMbsCalibTdcTof::CreateReferenceHistogramms()
 
       if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
       {    
+/*  // -> Comment to remove warning because set but never used
          UInt_t   uNbChan     = 0;
          Double_t dClockCycle = 0.0;
          UInt_t   uFtBinNb    = 0;
@@ -3422,6 +3423,7 @@ Bool_t TMbsCalibTdcTof::CreateReferenceHistogramms()
             default:
                break;
          } // switch( uType )
+*/
          
          // Reference histograms initialization
          Int_t iNbBoards = fMbsUnpackPar->GetNbActiveBoards( uType );
@@ -3487,6 +3489,7 @@ Bool_t TMbsCalibTdcTof::FillReferenceHistograms()
 
       if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
       {    
+/*  // -> Comment to remove warning because set but never used
          UInt_t   uNbChan     = 0;
          Double_t dClockCycle = 0.0;
          UInt_t   uFtBinNb    = 0;
@@ -3523,6 +3526,7 @@ Bool_t TMbsCalibTdcTof::FillReferenceHistograms()
             default:
                break;
          } // switch( uType )
+*/
 
          // Reference histograms initialization
          Int_t iNbBoards = fMbsUnpackPar->GetNbActiveBoards( uType );
@@ -3642,6 +3646,7 @@ Bool_t TMbsCalibTdcTof::WriteReferenceHistogramms( TDirectory* inDir)
 
       if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
       {
+/*  // -> Comment to remove warning because set but never used
          UInt_t uNbChan  = 0;
          
          switch( uType )
@@ -3663,6 +3668,7 @@ Bool_t TMbsCalibTdcTof::WriteReferenceHistogramms( TDirectory* inDir)
             default:
                break;
          } // switch( uType )
+*/
 
          // create a subdirectory "Cal_type" in this file
          TDirectory *cdRef = inDir->mkdir( Form( "Ref_%s", toftdc::ksTdcHistName[ uType ].Data() ) );

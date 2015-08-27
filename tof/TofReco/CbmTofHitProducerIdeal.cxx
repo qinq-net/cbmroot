@@ -76,7 +76,7 @@ void CbmTofHitProducerIdeal::Exec(Option_t* opt) {
   // Declare some variables
   CbmTofPoint* point = NULL;
   Int_t detID   = 0;        // Detector ID
-  Int_t trackID = 0;        // Track index
+//  Int_t trackID = 0;        // Track index -> Comment to remove warning because set but never used
   Double_t x, y, z;         // Position
   Double_t dx = 0.0001;     // Position error
   Double_t tof = 0.;        // Time of flight
@@ -92,7 +92,7 @@ void CbmTofHitProducerIdeal::Exec(Option_t* opt) {
     detID = point->GetDetectorID();
 
     // MCTrack ID
-    trackID = point->GetTrackID();
+//    trackID = point->GetTrackID();  // -> Comment to remove warning because set but never used
 
     // Determine hit position
     x  = point->GetX();

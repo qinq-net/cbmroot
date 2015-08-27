@@ -490,6 +490,8 @@ void TTofGet4Unpacker::ProcessGet4( UInt_t* pMbsData, UInt_t uLength )
          {
             ROC[rocid].fSysTypes->Fill(data->getSysMesType());
 
+            UShort_t ucSysMesType = data->getSysMesType(); // change type to avoid warning if last Chip id reach char type size
+      
             if (data->getSysMesType() == roc::SYSMSG_USER)
             {
                ROC[rocid].fSysUserTypes->Fill(data->getSysMesData());
@@ -564,7 +566,7 @@ void TTofGet4Unpacker::ProcessGet4( UInt_t* pMbsData, UInt_t uLength )
 
             } // if( data->getSysMesType() == roc::SYSMSG_GET4_EVENT )
             else if( get4v10::SYSMSG_GET4V1_32BIT_0 <= data->getSysMesType()   &&
-                      data->getSysMesType() <= get4v10::SYSMSG_GET4V1_32BIT_15 )
+                     ucSysMesType <= get4v10::SYSMSG_GET4V1_32BIT_15 )
             {
                if( 3 == Process32BitGet4Message(rocid, exmess) )
                   ProcessExtendedMessage(rocid, exmess);
@@ -1807,20 +1809,27 @@ void TTofGet4Unpacker::ProcessExtendedMessage(UInt_t uRocId, TGet4v1MessageExten
       } // if( fParam->IsActiveGet4Chip(uChip) )
    }
    // 32 Bits data message => already contains a full hit!
-   else if( roc::MSG_SYS == uType &&
-       get4v10::SYSMSG_GET4V1_32BIT_0 <= extMess.GetSysMesType()   &&
-       extMess.GetSysMesType() <= get4v10::SYSMSG_GET4V1_32BIT_15 )
+   else if( roc::MSG_SYS == uType )
    {
-      UInt_t uGet4Id =  extMess.getGet4V10R32ChipId() ;
-      uGet4Id = fParam->RemapGet4Chip( uRocId, uGet4Id);
-
-      // Check if chip is activated
-      if( fParam->IsActiveGet4Chip(uGet4Id) )
+      UShort_t ucSysMesType = extMess.GetSysMesType(); // change type to avoid warning if last Chip id reach char type size
+      if( get4v10::SYSMSG_GET4V1_32BIT_0 <= ucSysMesType   &&
+          ucSysMesType <= get4v10::SYSMSG_GET4V1_32BIT_15 )
       {
-         // Save message anyway in previous epochs buffer in case two triggers come close
-         ROC[uRocId].fPrevEpochs2Buffer[uGet4Id][
-             ROC[uRocId].fbBufferWithLastFullEpoch2[uGet4Id]].push_back(extMess);
-      } // if( fParam->IsActiveGet4Chip(uChip) )
+         UInt_t uGet4Id =  extMess.getGet4V10R32ChipId() ;
+         uGet4Id = fParam->RemapGet4Chip( uRocId, uGet4Id);
+
+         // Check if chip is activated
+         if( fParam->IsActiveGet4Chip(uGet4Id) )
+         {
+            // Save message anyway in previous epochs buffer in case two triggers come close
+            ROC[uRocId].fPrevEpochs2Buffer[uGet4Id][
+                ROC[uRocId].fbBufferWithLastFullEpoch2[uGet4Id]].push_back(extMess);
+         } // if( fParam->IsActiveGet4Chip(uChip) )
+      }
+      else
+      {
+         cout<<"Rejected message because type not recognised in ProcessExtendedMessage"<<endl;
+      }// else of else if( Get4 32 bits) of if( Get4 24 bits )
    } // else if( Get4 32 bits) of if( Get4 24 bits )
    // Other ROC data messages => Saved in their own vector for each event if needed
    else
@@ -3093,10 +3102,12 @@ Bool_t TTofGet4Unpacker::ProcessGet4SuppDataMessage( UInt_t uRocId, TGet4v1Messa
       ROC[uRocId].fb24bitsReadoutDetected = kTRUE;
    } // if( kFALSE == ROC[uRocId].fb24bitsReadoutDetected )
 
-   UInt_t    uGet4Id(0), uGet4Ch(0), uGet4Edge(0);
+   UInt_t    uGet4Id(0); 
+//   UInt_t    uGet4Ch(0); // -> Comment to remove warning because set but never used
+//   UInt_t    uGet4Edge(0); // -> Comment to remove warning because set but never used
    uGet4Id   = (extMess.GetRocMessage()).getGet4Number();
-   uGet4Ch   = (extMess.GetRocMessage()).getGet4ChNum();
-   uGet4Edge = (extMess.GetRocMessage()).getGet4Edge();
+//   uGet4Ch   = (extMess.GetRocMessage()).getGet4ChNum(); // -> Comment to remove warning because set but never used
+//   uGet4Edge = (extMess.GetRocMessage()).getGet4Edge(); // -> Comment to remove warning because set but never used
 
    // Remap the Get4 chip index
    uGet4Id = (extMess.GetRocMessage()).getGet4Number();

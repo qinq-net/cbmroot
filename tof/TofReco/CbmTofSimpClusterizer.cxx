@@ -1213,7 +1213,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
    Int_t    iNbChanInHit  = 0;
    // Last Channel Temp variables
    Int_t    iLastChan = -1;
-   Double_t dLastPosX = 0.0;
+//   Double_t dLastPosX = 0.0; // -> Comment to remove warning because set but never used
    Double_t dLastPosY = 0.0;
    Double_t dLastTime = 0.0;
    // Channel Temp variables
@@ -1251,7 +1251,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                   vPtsRef.clear();
                   // For safety reinitialize everything
                   iLastChan = -1;
-                  dLastPosX = 0.0;
+//                  dLastPosX = 0.0; // -> Comment to remove warning because set but never used
                   dLastPosY = 0.0;
                   dLastTime = 0.0;
                   LOG(DEBUG2)<<"CbmTofSimpClusterizer::BuildClusters: ChanOrient "
@@ -1417,23 +1417,23 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     iNbChanInHit  += 1;
                                     // if one of the side digi comes from a CbmTofPoint not already found
                                     // in this cluster, save its pointer
-                                    Bool_t bFoundA = kFALSE;
-                                    Bool_t bFoundB = kFALSE;
+//                                    Bool_t bFoundA = kFALSE; // -> Comment to remove warning because set but never used
+//                                    Bool_t bFoundB = kFALSE; // -> Comment to remove warning because set but never used
                                     if(NULL != fTofPointsColl){ // MC 
                                     if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
                                        for( Int_t iPtRef = 0; iPtRef < vPtsRef.size(); iPtRef++)
                                        {
 					     //if( ((CbmTofPoint*)(vPtsRef[iPtRef]))->GetTrackID() == ((CbmTofPoint*)(xDigiA->GetLinks()))->GetTrackID() )
-                                             bFoundA = kTRUE;
+//                                             bFoundA = kTRUE; // -> Comment to remove warning because set but never used
 					     //if( ((CbmTofPoint*)(vPtsRef[iPtRef]))->GetTrackID() == ((CbmTofPoint*)(xDigiB->GetLinks()))->GetTrackID() )
-                                             bFoundB = kTRUE;
+//                                             bFoundB = kTRUE; // -> Comment to remove warning because set but never used
                                        } // for( Int
                                        else for( Int_t iPtRef = 0; iPtRef < vPtsRef.size(); iPtRef++)
                                        {
 					 //                                          if( vPtsRef[iPtRef] == (CbmTofPoint*)xDigiA->GetLinks() )
-                                             bFoundA = kTRUE;
+//                                             bFoundA = kTRUE; // -> Comment to remove warning because set but never used
 					 //                                          if( vPtsRef[iPtRef] == (CbmTofPoint*)xDigiB->GetLinks() )
-                                             bFoundB = kTRUE;
+//                                             bFoundB = kTRUE; // -> Comment to remove warning because set but never used
                                        } // for( Int_t iPtRef = 0; iPtRef < vPtsRef.size(); iPtRef++)
 
                                     // CbmTofPoint pointer for 1st digi not found => save it
@@ -1621,7 +1621,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 				    //    vPtsRef.push_back( (CbmTofPoint*)(xDigiB->GetLinks()) );
                                  } // else of if( 0 < iNbChanInHit)
                               iLastChan = iCh;
-                              dLastPosX = dPosX;
+//                              dLastPosX = dPosX; // -> Comment to remove warning because set but never used
                               dLastPosY = dPosY;
                               dLastTime = dTime;
                            } // if( 2 == fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size() )

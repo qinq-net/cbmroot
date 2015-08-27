@@ -3068,7 +3068,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 
             Double_t dClusterDist = 0;
             Int_t    iRow;
-            Bool_t   bCheckOtherRow = kFALSE;
+ //           Bool_t   bCheckOtherRow = kFALSE; // -> Comment to remove warning because set but never used
             if( iChannel < iNbCh/2.0 )
                iRow = 0;
                else iRow = 1;
@@ -3251,7 +3251,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 
             if( fDigiBdfPar->GetFeeThreshold() < dChargeSideCh )
             {
-               bCheckOtherRow = kTRUE;
+//               bCheckOtherRow = kTRUE; // -> Comment to remove warning because set but never used
 
                for( Int_t iChanInd  = iMinChanInd + (1-2*iRow)*iNbCh/2.0;
                           iChanInd <= iMaxChanInd + (1-2*iRow)*iNbCh/2.0;

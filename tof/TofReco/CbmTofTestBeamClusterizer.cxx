@@ -1906,7 +1906,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
      TH1      *htempTOff_px  = NULL;
      TProfile *hAvPos_pfx    = NULL;  
      TProfile *hAvTOff_pfx   = NULL;
-     TH2      *htempTOff     = NULL;
+//     TH2      *htempTOff     = NULL; // -> Comment to remove warning because set but never used
      TH2      *htempTot      = NULL;
      TProfile *htempTot_pfx  = NULL; 
      TH1      *htempTot_Mean = NULL; 
@@ -1914,7 +1914,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
 
      if(-1<fCalSel){
        htempPos_pfx  = fhTRpcCluPosition[iDetIndx][fCalSel]->ProfileX("_pfx",1,fhTRpcCluPosition[iDetIndx][fCalSel]->GetNbinsY());
-       htempTOff     = fhTRpcCluTOff[iDetIndx][fCalSel];
+//       htempTOff     = fhTRpcCluTOff[iDetIndx][fCalSel]; // -> Comment to remove warning because set but never used
        htempTOff_pfx = fhTRpcCluTOff[iDetIndx][fCalSel]->ProfileX("_pfx",1,fhTRpcCluTOff[iDetIndx][fCalSel]->GetNbinsY());
        htempTOff_px  = fhTRpcCluTOff[iDetIndx][fCalSel]->ProjectionX("_px",1,fhTRpcCluTOff[iDetIndx][fCalSel]->GetNbinsY());
        htempTot      = fhTRpcCluTot[iDetIndx][fCalSel]; 
@@ -1929,24 +1929,23 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
        hAvTOff_pfx   = fhSmCluTOff[iSmType]->ProfileX("_pfx",1,fhSmCluTOff[iSmType]->GetNbinsY());
        if(-1==fCalSel){    // take corrections from untriggered distributions 
          htempPos_pfx  = fhRpcCluPosition[iDetIndx]->ProfileX("_pfx",1,fhRpcCluPosition[iDetIndx]->GetNbinsY());
-         htempTOff     = fhRpcCluTOff[iDetIndx];
+//         htempTOff     = fhRpcCluTOff[iDetIndx]; // -> Comment to remove warning because set but never used
          htempTOff_pfx = fhRpcCluTOff[iDetIndx]->ProfileX("_pfx",1,fhRpcCluTOff[iDetIndx]->GetNbinsY(),"s");
          htempTOff_px  = fhRpcCluTOff[iDetIndx]->ProjectionX("_px",1,fhRpcCluTOff[iDetIndx]->GetNbinsY());
        }else
 	 { if(-2==fCalSel){ //take corrections from Cluster deviations 
 	   htempPos_pfx  = fhRpcCluDelPos[iDetIndx]->ProfileX("_pfx",1,fhRpcCluDelPos[iDetIndx]->GetNbinsY());
-           htempTOff     = fhRpcCluDelTOff[iDetIndx];
+//           htempTOff     = fhRpcCluDelTOff[iDetIndx]; // -> Comment to remove warning because set but never used
            htempTOff_pfx = fhRpcCluDelTOff[iDetIndx]->ProfileX("_pfx",1,fhRpcCluDelTOff[iDetIndx]->GetNbinsY());
            htempTOff_px  = fhRpcCluDelTOff[iDetIndx]->ProjectionX("_px",1,fhRpcCluDelTOff[iDetIndx]->GetNbinsY());
          }else
 	 {
 	   if(-3==fCalSel){  // take corrections from deviations to matched trigger hit
 	     htempPos_pfx  = fhRpcCluDelMatPos[iDetIndx]->ProfileX("_pfx",1,fhRpcCluDelMatPos[iDetIndx]->GetNbinsY());
-	     htempTOff     = fhRpcCluDelMatTOff[iDetIndx];
+//	     htempTOff     = fhRpcCluDelMatTOff[iDetIndx]; // -> Comment to remove warning because set but never used
 	     htempTOff_pfx = fhRpcCluDelMatTOff[iDetIndx]->ProfileX("_pfx",1,fhRpcCluDelMatTOff[iDetIndx]->GetNbinsY());
 	     htempTOff_px  = fhRpcCluDelMatTOff[iDetIndx]->ProjectionX("_px",1,fhRpcCluDelMatTOff[iDetIndx]->GetNbinsY());
 	   }
-      // FIXME: PAL 17/07/2015-> Here if fCalSel<-3, pointers are left uninitialized !!
 	 }
        }
      }
@@ -2936,7 +2935,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
    Int_t    iNbChanInHit  = 0;
    // Last Channel Temp variables
    Int_t    iLastChan = -1;
-   Double_t dLastPosX = 0.0;
+//   Double_t dLastPosX = 0.0; // -> Comment to remove warning because set but never used
    Double_t dLastPosY = 0.0;
    Double_t dLastTime = 0.0;
    // Channel Temp variables
@@ -2975,7 +2974,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                   vPtsRef.clear();
                   // For safety reinitialize everything
                   iLastChan = -1;
-                  dLastPosX = 0.0;
+//                  dLastPosX = 0.0; // -> Comment to remove warning because set but never used
                   dLastPosY = 0.0;
                   dLastTime = 0.0;
                   LOG(DEBUG2)<<"CbmTofTestBeamClusterizer::BuildClusters: ChanOrient "
@@ -3357,7 +3356,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 				    //   vPtsRef.push_back( (CbmTofPoint*)(xDigiB->GetLinks()) );
                                  } // else of if( 0 < iNbChanInHit)
                               iLastChan = iCh;
-                              dLastPosX = dPosX;
+//                              dLastPosX = dPosX; // -> Comment to remove warning because set but never used
                               dLastPosY = dPosY;
                               dLastTime = dTime;
                            } // if( 2 == fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size() )

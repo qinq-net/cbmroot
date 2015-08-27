@@ -403,35 +403,35 @@ Bool_t TMbsCalibScalTof::FillHistograms()
    {
       TTofCalibScaler  * xCalibScaler  = (TTofCalibScaler*)  fCalibScalCollection->ConstructedAt(uScalBdIndx);
       UInt_t   uType = xCalibScaler->GetScalerType();
-      Double_t dRefClkFreq;
+//      Double_t dRefClkFreq; // -> Comment to remove warning because set but never used
       UInt_t   uNbScalers;
       UInt_t   uNbChan;
       switch( uType )
       {
          case tofscaler::triglog :
          case tofscaler::triglogscal :
-            dRefClkFreq = triglog::kdRefClkFreq;
+//            dRefClkFreq = triglog::kdRefClkFreq; // -> Comment to remove warning because set but never used
             uNbScalers  = triglog::kuNbScalers;
             uNbChan     = triglog::kuNbChan;
             break;
          case tofscaler::scalormu :
-            dRefClkFreq = scalormu::kdRefClkFreq;
+//            dRefClkFreq = scalormu::kdRefClkFreq; // -> Comment to remove warning because set but never used
             uNbScalers  = scalormu::kuNbScalers;
             uNbChan     = scalormu::kuNbChan;
             break;
          case tofscaler::scalormubig :
-            dRefClkFreq = scalormuBig::kdRefClkFreq;
+//            dRefClkFreq = scalormuBig::kdRefClkFreq; // -> Comment to remove warning because set but never used
             uNbScalers  = scalormuBig::kuNbScalers;
             uNbChan     = scalormuBig::kuNbChan;
             break;
          case tofscaler::scaler2014 :
-            dRefClkFreq = scaler2014::kdRefClkFreq;
+//            dRefClkFreq = scaler2014::kdRefClkFreq; // -> Comment to remove warning because set but never used
             uNbScalers  = scaler2014::kuNbScalers;
             uNbChan     = scaler2014::kuNbChan;
             break;
          case tofscaler::undef :
          default:
-            dRefClkFreq = -1.0;
+//            dRefClkFreq = -1.0; // -> Comment to remove warning because set but never used
             uNbScalers  =  0;
             uNbChan     =  0;
             // Here we go to next board for all undefined/invalid types
@@ -654,35 +654,35 @@ Bool_t TMbsCalibScalTof::InitCalibration()
       if( tofscaler::undef == xCalibScaler->GetScalerType() )
          xCalibScaler->SetType( uType );
          
-      Double_t dRefClkFreq;
+//      Double_t dRefClkFreq; // -> Comment to remove warning because set but never used
       UInt_t   uNbScalers;
       UInt_t   uNbChan;
       switch( uType )
       {
          case tofscaler::triglog :
          case tofscaler::triglogscal :
-            dRefClkFreq = triglog::kdRefClkFreq;
+//            dRefClkFreq = triglog::kdRefClkFreq; // -> Comment to remove warning because set but never used
             uNbScalers  = triglog::kuNbScalers;
             uNbChan     = triglog::kuNbChan;
             break;
          case tofscaler::scalormu :
-            dRefClkFreq = scalormu::kdRefClkFreq;
+//            dRefClkFreq = scalormu::kdRefClkFreq; // -> Comment to remove warning because set but never used
             uNbScalers  = scalormu::kuNbScalers;
             uNbChan     = scalormu::kuNbChan;
             break;
          case tofscaler::scalormubig :
-            dRefClkFreq = scalormuBig::kdRefClkFreq;
+//            dRefClkFreq = scalormuBig::kdRefClkFreq; // -> Comment to remove warning because set but never used
             uNbScalers  = scalormuBig::kuNbScalers;
             uNbChan     = scalormuBig::kuNbChan;
             break;
          case tofscaler::scaler2014 :
-            dRefClkFreq = scaler2014::kdRefClkFreq;
+//            dRefClkFreq = scaler2014::kdRefClkFreq; // -> Comment to remove warning because set but never used
             uNbScalers  = scaler2014::kuNbScalers;
             uNbChan     = scaler2014::kuNbChan;
             break;
          case tofscaler::undef :
          default:
-            dRefClkFreq = -1.0;
+//            dRefClkFreq = -1.0; // -> Comment to remove warning because set but never used
             uNbScalers  =  0;
             uNbChan     =  0;
             // Here we go to next board for all undefined/invalid types

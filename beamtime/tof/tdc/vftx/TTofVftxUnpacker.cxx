@@ -120,16 +120,17 @@ void TTofVftxUnpacker::ProcessVFTX( Int_t iTdcIndex, UInt_t* pMbsData, UInt_t uL
    } // if( l_dat & vftxtdc::kiFifoMessageType ) 
       else LOG(WARNING)<<"Vftx #"<<fParUnpack->GetActiveToAllTypeInd(iTdcIndex, tofMbs::vftx)<<" fifo header missing... "<<FairLogger::endl;
    
-   // uMbsNbData is always 0xAA in current versions of VFTX!!! 
-/*   
    if (uMbsNbData != uFifoNbData)
    {
+   // uMbsNbData is always 0xAA in current versions of VFTX!!!    
+/*
       LOG(WARNING)<<"Wrong length in vftx #"<<fParUnpack->GetActiveToAllTypeInd(iTdcIndex, tofMbs::vftx)
                   <<" FIFO header compared to its MBS header, jumping this sub-event... "
                   <<uFifoNbData<<" vs "<<uMbsNbData<<FairLogger::endl;
       return;
+*/
    } // if (uMbsNbData-2 != uFifoNbData)
-*/   
+   
    while (uMbsNbData-- > 0) 
    {
       UInt_t l_da0 = *pMbsData++;

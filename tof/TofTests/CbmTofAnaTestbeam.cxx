@@ -1659,7 +1659,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      hitpos2[1]=pHit2->GetY();
      hitpos2[2]=pHit2->GetZ();
 
-     TGeoNode* cNode= gGeoManager->GetCurrentNode();
+//     TGeoNode* cNode= gGeoManager->GetCurrentNode(); // -> Comment to remove warning because set but never used
      gGeoManager->MasterToLocal(hitpos2, hitpos2_local);
 
      Double_t dTofD4  = fdTOffD4 + dDTD4Min;
@@ -1792,7 +1792,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 hitpos4[1]=pChi2Hit2[iM]->GetY();
 	 hitpos4[2]=pChi2Hit2[iM]->GetZ();
 
-	 cNode= gGeoManager->GetCurrentNode();
+//	 cNode= gGeoManager->GetCurrentNode(); // -> Comment to remove warning because set but never used
 	 gGeoManager->MasterToLocal(hitpos4, hitpos4_local);
 
 	 if(TMath::Abs(hitpos4_local[1])>fdPosY4Sel*fChannelInfo4->GetSizey()) continue;

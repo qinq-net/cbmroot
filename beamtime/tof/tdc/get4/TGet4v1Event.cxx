@@ -122,9 +122,9 @@ void TGet4v1MessageExtended::Print( unsigned kind ) const
 {
    if( roc::MSG_SYS == fxMessage.getMessageType() )
    {
-      UChar_t ucSysMesType = fxMessage.getSysMesType();
+      UShort_t ucSysMesType = fxMessage.getSysMesType(); // change type to avoid warning if last Chip id reach char type size
       if( get4v10::SYSMSG_GET4V1_32BIT_0  <= ucSysMesType &&
-          get4v10::SYSMSG_GET4V1_32BIT_15 >= ucSysMesType   )
+          ucSysMesType <= get4v10::SYSMSG_GET4V1_32BIT_15 ) 
       {
          Print32Bit( kind );
       } // case SYSMSG_GET4V1_32BIT + channel!
