@@ -810,8 +810,8 @@ void CbmAnaDielectronTask::PairMcAndAcceptance()
 			Bool_t isAccM = IsMcTrackAccepted(iM);
 			CbmLmvmKinematicParams p = CbmLmvmKinematicParams::KinematicParamsWithMcTracks(mctrackP,mctrackM);
 			Bool_t isMcSignal = CbmLmvmUtils::IsMcSignalElectron(mctrackM) && CbmLmvmUtils::IsMcSignalElectron(mctrackP);
-			Bool_t isMcPi0 = CbmLmvmUtils::IsMcPi0Electron(mctrackM, fMCTracks) && CbmLmvmUtils::IsMcPi0Electron(mctrackP, fMCTracks);
-			Bool_t isMcEta = CbmLmvmUtils::IsMcEtaElectron(mctrackM, fMCTracks) && CbmLmvmUtils::IsMcEtaElectron(mctrackP, fMCTracks);
+			Bool_t isMcPi0 = (mctrackM->GetMotherId() == mctrackP->GetMotherId()) && CbmLmvmUtils::IsMcPi0Electron(mctrackM, fMCTracks) && CbmLmvmUtils::IsMcPi0Electron(mctrackP, fMCTracks);
+			Bool_t isMcEta = (mctrackM->GetMotherId() == mctrackP->GetMotherId()) && CbmLmvmUtils::IsMcEtaElectron(mctrackM, fMCTracks) && CbmLmvmUtils::IsMcEtaElectron(mctrackP, fMCTracks);
 
 			if (isMcSignal) {
 				fh_signal_pty[kMc]->Fill(p.fRapidity,p.fPt, fWeight);

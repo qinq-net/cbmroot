@@ -138,6 +138,9 @@ void CbmAnaDielectronTaskDrawAll::DrawMinvAll()
     TCanvas *cMc = CreateCanvas("minv_all_mc", "minv_all_mc", 800, 800);
    DrawMinv(kMc);
 
+   TCanvas *cAcc = CreateCanvas("minv_all_acc", "minv_all_acc", 800, 800);
+   DrawMinv(kAcc);
+
    TCanvas *c = CreateCanvas("minv_all_ptcut", "minv_all_ptcut", 800, 800);
    DrawMinv(kPtCut);
 
