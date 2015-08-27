@@ -171,7 +171,6 @@ void run_sim(Int_t nEvents = 3)
 	    CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(urqmdFile);
 	    uniGen->SetEventPlane(0. , 360.);
 	    primGen->AddGenerator(uniGen);
-	    fRun->SetGenerator(primGen);
 	}
 
 	// Add electrons

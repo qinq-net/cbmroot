@@ -3,8 +3,8 @@ void draw_litqa()
    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
    loadlibs();
 
-   std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/feb15/25gev/stsv13d/richv14a_3e/trd10/tofv13/1.0field/nomvd/phi/";
-   std::string fileName = dir + "litqa.auau.25gev.centr.all.root";
+   std::string dir = "/Users/slebedev/Development/cbm/data/lmvm/sep15/sep15/25gev/geo_setup_lmvm/rho0/";
+   std::string fileName = dir + "litqa.trdclustering.auau.25gev.centr.all.root";
 
    std::string script = std::string(TString(gSystem->Getenv("SCRIPT")).Data());
     if (script == "yes"){
