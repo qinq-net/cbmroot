@@ -10,7 +10,6 @@ run_hadd() {
 
 run_hadd_ana_litqa() {
 	run_hadd ${1} ${2} ${3}
-        run_hadd ${1} ${2} ${3}
 }
 
 run_hadd_ana_litqa ${1} ${2} ${3}
