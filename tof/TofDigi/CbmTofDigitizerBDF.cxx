@@ -116,6 +116,7 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF():
    fhToTDist(NULL),
    fhElecChOccup(NULL),
    fhMultiDigiEvtElCh(NULL),
+   fhNbDigiEvtElCh(NULL),
    fhFiredEvtElCh(NULL),
    fhMultiProbElCh(NULL),
    fStart(),
@@ -177,6 +178,7 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF(const char *name, Int_t verbose, Bool_t w
    fhToTDist(NULL),
    fhElecChOccup(NULL),
    fhMultiDigiEvtElCh(NULL),
+   fhNbDigiEvtElCh(NULL),
    fhFiredEvtElCh(NULL),
    fhMultiProbElCh(NULL),
    fStart(),
@@ -698,6 +700,10 @@ Bool_t   CbmTofDigitizerBDF::CreateHistos()
    fhMultiDigiEvtElCh = new TH1D( "TofDigiBdf_MultiDigiEvtElCh",
          "Number of events with multiple digi (~MC track) per electronic channel; Elect. chan index []",
          fiNbElecChTot, 0.0, fiNbElecChTot );
+   fhNbDigiEvtElCh = new TH2D( "TofDigiBdf_NbDigiEvtElCh",
+         "Number of digis per event before merging for each electronic channel; Elect. chan index []; Nb Digis in Event []",
+         fiNbElecChTot, 0.0, fiNbElecChTot,
+         10, 0.5, 10.5 );
    fhFiredEvtElCh = new TH1D( "TofDigiBdf_FiredEvtElCh",
          "Number of events with at least 1 digi per electronic channel; Elect. chan index []",
          fiNbElecChTot, 0.0, fiNbElecChTot );
@@ -857,6 +863,7 @@ Bool_t   CbmTofDigitizerBDF::WriteHistos()
 
    fhElecChOccup->Write();
    fhMultiDigiEvtElCh->Write();
+   fhNbDigiEvtElCh->Write();
    fhFiredEvtElCh->Write();
    fhMultiProbElCh->Divide(fhMultiDigiEvtElCh, fhFiredEvtElCh);
    fhMultiProbElCh->Scale( 100.0 );
@@ -907,6 +914,7 @@ Bool_t   CbmTofDigitizerBDF::DeleteHistos()
 
    delete fhElecChOccup;
    delete fhMultiDigiEvtElCh;
+   delete fhNbDigiEvtElCh;
    delete fhFiredEvtElCh;
    delete fhMultiProbElCh;
 
@@ -947,6 +955,8 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                      Int_t iNbDigis = fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size();
                      if( 0 < iNbDigis )
                      {
+                        fhNbDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbDigis);
+                        
                         fhDigiNbElecCh->Fill(iNbDigis);
 
                         fhFiredEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide );
@@ -955,8 +965,8 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
 
                         Int_t iChosenDigi = -1;
                         Double_t dMinTime = 1e18;
-			Int_t    ivDigiInd[iNbDigis];
-			Double_t dvDigiTime[iNbDigis];
+//                        Int_t    ivDigiInd[iNbDigis]; // Never used?
+//                        Double_t dvDigiTime[iNbDigis]; // Never used?
                         for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++)
                           if( fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime()
                                                                                           < dMinTime )
@@ -965,43 +975,45 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                               dMinTime = fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime();
                           }
 
-		        if (0 == fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size()){
-			  LOG(ERROR)<<Form(" cannot add digiMatch for (%d,%d,%d,%d,%d) at pos  %d",
-					   iSmType,iSm,iRpc,iCh,iSide,fiNbDigis)<<FairLogger::endl;
-			  break;
-			}
+                        if (0 == fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size()){
+                           LOG(ERROR)<<Form(" cannot add digiMatch for (%d,%d,%d,%d,%d) at pos  %d",
+                              iSmType,iSm,iRpc,iCh,iSide,fiNbDigis)<<FairLogger::endl;
+                           break;
+                        }
 
                         new((*fTofDigisColl)[fiNbDigis]) CbmTofDigiExp(
                               *fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] );
 
-			LOG(DEBUG)<<Form("Add digi %d (%zu) match of (%d,%d,%d,%d,%d) at pos %d", 
-					iChosenDigi, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size(),
-					iSmType,iSm,iRpc,iCh,iSide,fiNbDigis)<<FairLogger::endl;
+                        LOG(DEBUG)<<Form("Add digi %d (%zu) match of (%d,%d,%d,%d,%d) at pos %d", 
+                              iChosenDigi, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size(),
+                              iSmType,iSm,iRpc,iCh,iSide,fiNbDigis)<<FairLogger::endl;
 
 
-			CbmMatch* digiMatch = new CbmMatch();
-			digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] ));
-			
-			new((*fTofDigiMatchPointsColl)[fiNbDigis]) CbmMatch(*digiMatch);
-			CbmLink LP = digiMatch->GetLink(0); 
-			Int_t lp=LP.GetIndex();
-			delete digiMatch;
+                        CbmMatch* digiMatch = new CbmMatch();
+                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] ));
 
-			LOG(DEBUG)<<"CbmTofDigitizerBDF:: TofDigiMatchColl entry "
-				  <<fTofDigiMatchPointsColl->GetEntries()-1
-				  <<", Poi: "<<fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi]
-				  <<", lp: "<<lp
-				  <<", MCt: "<<((CbmTofPoint*) fTofPointsColl->At(lp))->GetTrackID()
-				  <<FairLogger::endl;
+                        new((*fTofDigiMatchPointsColl)[fiNbDigis]) CbmMatch(*digiMatch);
+                        CbmLink LP = digiMatch->GetLink(0); 
+                        Int_t lp=LP.GetIndex();
+                        delete digiMatch;
+
+                        LOG(DEBUG)<<"CbmTofDigitizerBDF:: TofDigiMatchColl entry "
+                             <<fTofDigiMatchPointsColl->GetEntries()-1
+                             <<", Poi: "<<fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi]
+                             <<", lp: "<<lp
+                             <<", MCt: "<<((CbmTofPoint*) fTofPointsColl->At(lp))->GetTrackID()
+                             <<FairLogger::endl;
+                        
                         if(lp != fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] )
-			  LOG(ERROR)<<Form("CbmTofDigitizerBDF::MergeSameChanDigis inconsistent links: %d <-> %d for (%d,%d,%d,%d,%d)",
-				    lp, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],
-				    iSmType,iSm,iRpc,iCh,iSide)<<FairLogger::endl;
+                          LOG(ERROR)<<Form("CbmTofDigitizerBDF::MergeSameChanDigis inconsistent links: %d <-> %d for (%d,%d,%d,%d,%d)",
+                               lp, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],
+                               iSmType,iSm,iRpc,iCh,iSide)<<FairLogger::endl;
+                        
                         fiNbDigis++;
-			for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++){
+                        for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++){
                            delete fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi];
-			   //delete fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi];
-			}
+                           //delete fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi];
+                        }
                         fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].clear();
                         fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].clear();
                      } // if( 0 < iNbDigis )
@@ -1031,6 +1043,8 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                      Int_t iNbDigis = fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size();
                      if( 0 < iNbDigis )
                      {
+                        fhNbDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbDigis);
+                        
                         fhDigiNbElecCh->Fill(iNbDigis);
 
                         fhFiredEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide );
