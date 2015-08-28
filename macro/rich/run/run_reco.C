@@ -6,55 +6,53 @@ void run_reco(Int_t nEvents = 2)
 
 	TString script = TString(gSystem->Getenv("SCRIPT"));
 	TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
-    TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v13d.root"; // Material budget file for L1 STS tracking
 
 	gRandom->SetSeed(10);
 
 	TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.00090.root";
 	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.00090.root";
 	TString recoFile ="/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.00090.root";
+
+	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
+
 	std::string resultDir = "recqa_0001/";
-	TString trdHitProducerType = "smearing";
-	int nofNoiseHitsInRich = 220;
-	double collectionEff = 1.0;
-	double sigmaErrorRich = 0.06;
-	double crosstalkRich = 0.02;
-	TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
-    TObjString trdDigiFile = parDir + "/trd/trd_v14a_3e.digi.par"; // TRD digi file
-    TObjString tofDigiFile = parDir + "/tof/tof_v13b.digi.par"; // TOF digi file
-    Double_t trdAnnCut = 0.85;
-    Int_t minNofPointsTrd = 6;
+
 	if (script == "yes") {
 		mcFile = TString(gSystem->Getenv("MC_FILE"));
 		recoFile = TString(gSystem->Getenv("RECO_FILE"));
 		parFile = TString(gSystem->Getenv("PAR_FILE"));
 		resultDir = TString(gSystem->Getenv("LIT_RESULT_DIR"));
-		nofNoiseHitsInRich = TString(gSystem->Getenv("NOF_NOISE_HITS_IN_RICH")).Atoi();
-		collectionEff = TString(gSystem->Getenv("RICH_COLLECTION_EFF")).Atof();
-        sigmaErrorRich = TString(gSystem->Getenv("SIGMA_ERROR_RICH")).Atof();
-        crosstalkRich = TString(gSystem->Getenv("CROSSTALK_RICH")).Atof();
-        trdHitProducerType = TString(gSystem->Getenv("TRD_HIT_PRODUCER_TYPE"));
-		stsDigiFile = TString(gSystem->Getenv("STS_DIGI"));
-		trdDigiFile = TString(gSystem->Getenv("TRD_DIGI"));
-		tofDigiFile = TString(gSystem->Getenv("TOF_DIGI"));
-		stsMatBudgetFileName = TString(gSystem->Getenv("STS_MATERIAL_BUDGET_FILE"));
-		trdAnnCut = TString(gSystem->Getenv("TRD_ANN_CUT")).Atof();
-		minNofPointsTrd = TString(gSystem->Getenv("MIN_NOF_POINTS_TRD")).Atof();
+		geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/" + TString(gSystem->Getenv("GEO_SETUP_FILE"));
 	}
 
-   TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
-   TList *parFileList = new TList();
-   if (stsDigiFile.GetString() != "") parFileList->Add(&stsDigiFile);
-   if (trdDigiFile.GetString() != "") parFileList->Add(&trdDigiFile);
-   if (tofDigiFile.GetString() != "") parFileList->Add(&tofDigiFile);
-   gDebug = 0;
+	remove(recoFile.Data());
+
+	//setup all geometries from macro
+	cout << "geoSetupName:" << geoSetupFile << endl;
+	gROOT->LoadMacro(geoSetupFile);
+	init_geo_setup();
+
+	// digi parameters
+	TList *parFileList = new TList();
+	TObjString stsDigiFile = parDir + "/" + stsDigi;
+	TObjString trdDigiFile = parDir + "/" + trdDigi;
+	TObjString tofDigiFile = parDir + "/" + tofDigi;
+	parFileList->Add(&stsDigiFile);
+	if (trdDigiFile.GetString() != "") parFileList->Add(&trdDigiFile);
+	parFileList->Add(&tofDigiFile);
+
+	// material budget for STS and MVD
+	TString mvdMatBudgetFileName = "";
+	TString stsMatBudgetFileName = parDir + "/" + stsMatBudget;
+
+	gDebug = 0;
 
     TStopwatch timer;
     timer.Start();
 
 	// ----  Load libraries   -------------------------------------------------
-   gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-   loadlibs();
+	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
+	loadlibs();
 	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/determine_setup.C");
 
 	// -----   Reconstruction run   -------------------------------------------
@@ -62,63 +60,65 @@ void run_reco(Int_t nEvents = 2)
 	if (mcFile != "") run->SetInputFile(mcFile);
 	if (recoFile != "") run->SetOutputFile(recoFile);
 
+	// ----- MC Data Manager   ------------------------------------------------
+	CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+	mcManager->AddFile(mcFile);
+	run->AddTask(mcManager);
 
-    // =========================================================================
-    // ===                     MVD local reconstruction                      ===
-	// =========================================================================
+	Bool_t useMvdInTracking = kFALSE;
 	if (IsMvd(parFile)) {
-	CbmMvdDigitizeL* mvdDigitizeL = new CbmMvdDigitizeL("MVD Digitizer", 0, iVerbose);
-    run->AddTask(mvdDigitizeL);
+		  CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("CbmMvdDigitizer", 0, 0);
+		  run->AddTask(mvdDigitise);
 
-    CbmMvdFindHits* mvdFindHits = new CbmMvdFindHits("MVD Hit Finder", 0, iVerbose);
-    run->AddTask(mvdFindHits);
+		  CbmMvdClusterfinder* mvdCluster = new CbmMvdClusterfinder("CbmMvdClusterfinder", 0, 0);
+		  run->AddTask(mvdCluster);
 
-    // MVD ideal
-    //{
-    //CbmMvdHitProducer* mvdHitProd = new CbmMvdHitProducer("MVDHitProducer", 0, iVerbose);
-    //run->AddTask(mvdHitProd);
-    //}
+		  CbmMvdHitfinder* mvdHitfinder = new CbmMvdHitfinder("CbmMvdHitfinder", 0, 0);
+		  mvdHitfinder->UseClusterfinder(kTRUE);
+		  run->AddTask(mvdHitfinder);
+
+		  useMvdInTracking = kTRUE;
+		  mvdMatBudgetFileName = parDir + "/" + mvdMatBudget;
 	}
 
 	// =========================================================================
 	// ===                      STS local reconstruction                     ===
 	// =========================================================================
-
-	Double_t dynRange       =   40960.;  // Dynamic range [e]
-	Double_t threshold      =    4000.;  // Digitisation threshold [e]
-	Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
-	Double_t timeResolution =       5.;  // time resolution [ns]
-	Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
-	Double_t noise          =       0.;  // ENC [e]
-	Int_t digiModel         = 1;  // Model: 1 = uniform charge distribution along track
+	Double_t dynRange = 40960.;  // Dynamic range [e]
+	Double_t threshold = 4000.;  // Digitisation threshold [e]
+	Int_t nAdc = 4096;   // Number of ADC channels (12 bit)
+	Double_t timeResolution = 5.;  // time resolution [ns]
+	Double_t deadTime = 9999999.;  // infinite dead time (integrate entire event)
+	Double_t noise = 0.;  // ENC [e]
+	Int_t digiModel = 1;   // Model: 1 = uniform charge distribution along track
 
 	CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
 	stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
 	run->AddTask(stsDigi);
 
-	FairTask* stsCluster = new CbmStsFindClusters();
-	run->AddTask(stsCluster);
+	FairTask* stsClusterFinder = new CbmStsFindClusters();
+	run->AddTask(stsClusterFinder);
 
-	FairTask* stsHit = new CbmStsFindHits();
-	run->AddTask(stsHit);
-
+	FairTask* stsFindHits = new CbmStsFindHits();
+	run->AddTask(stsFindHits);
 
 	CbmKF* kalman = new CbmKF();
 	run->AddTask(kalman);
 	CbmL1* l1 = new CbmL1();
-    l1->SetMaterialBudgetFileName(stsMatBudgetFileName);
+	l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
+	if (mvdMatBudgetFileName != "") l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
 	run->AddTask(l1);
 
 	CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
-	Bool_t useMvd = kTRUE;
-	FairTask* stsFindTracks = new CbmStsFindTracks(iVerbose, stsTrackFinder, useMvd);
+	FairTask* stsFindTracks = new CbmStsFindTracks(1, stsTrackFinder);
 	run->AddTask(stsFindTracks);
 
 	// =========================================================================
 	// ===                     TRD local reconstruction                      ===
 	// =========================================================================
 	if (IsTrd(parFile)) {
-		CbmTrdRadiator *radiator = new CbmTrdRadiator(kTRUE , "H++");
+		Bool_t simpleTR = kTRUE; // use fast and simple version for TR production
+		CbmTrdRadiator *radiator = new CbmTrdRadiator(simpleTR , "K++");
 
 		if (trdHitProducerType == "smearing") {
 			CbmTrdHitProducerSmearing* trdHitProd = new CbmTrdHitProducerSmearing(radiator);
@@ -131,83 +131,24 @@ void run_reco(Int_t nEvents = 2)
 			CbmTrdHitProducerDigi* trdHitProd = new CbmTrdHitProducerDigi();
 			run->AddTask(trdHitProd);
 		} else if (trdHitProducerType == "clustering") {
+			Bool_t triangularPads = false;// Bucharest triangular pad-plane layout
+			//Double_t triggerThreshold = 0.5e-6;//SIS100
+			Double_t triggerThreshold = 1.0e-6;//SIS300
+			Double_t trdNoiseSigma_keV = 0.1; //default best matching to test beam PRF
+
 			CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
+			trdDigiPrf->SetTriangularPads(triangularPads);
+			trdDigiPrf->SetNoiseLevel(trdNoiseSigma_keV);
 			run->AddTask(trdDigiPrf);
 
 			CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
+			trdCluster->SetNeighbourTrigger(true);
+			trdCluster->SetTriggerThreshold(triggerThreshold);
+			trdCluster->SetNeighbourRowTrigger(false);
+			trdCluster->SetPrimaryClusterRowMerger(true);
+			trdCluster->SetTriangularPads(triangularPads);
 			run->AddTask(trdCluster);
 
-			CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
-			run->AddTask(trdHit);
-		} else if (trdHitProducerType == "clustering_1_1_1") {
-			Bool_t triangularPads = false;// Bucharest triangular pad-plane layout
-			Double_t triggerThreshold = 1.0e-6;//SIS300
-			CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
-			trdDigiPrf->SetTriangularPads(triangularPads);
-			trdDigiPrf->SetNCluster(1); // limits the number of iterations per MC-point to one
-			trdDigiPrf->SetPadPlaneScanArea(1,1); // limits the number of channels participating to the charge sharing (col,row)
-			run->AddTask(trdDigiPrf);
-			CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
-			trdCluster->SetNeighbourTrigger(true);
-			trdCluster->SetTriggerThreshold(triggerThreshold);
-			trdCluster->SetNeighbourRowTrigger(false);
-			trdCluster->SetPrimaryClusterRowMerger(true);
-			trdCluster->SetTriangularPads(triangularPads);
-			run->AddTask(trdCluster);
-			CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
-			trdHit->SetTriangularPads(triangularPads);
-			run->AddTask(trdHit);
-		}else if (trdHitProducerType == "clustering_1_3_3") {
-			Bool_t triangularPads = false;// Bucharest triangular pad-plane layout
-			Double_t triggerThreshold = 1.0e-6;//SIS300
-			CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
-			trdDigiPrf->SetTriangularPads(triangularPads);
-			trdDigiPrf->SetNCluster(1); // limits the number of iterations per MC-point to one
-			trdDigiPrf->SetPadPlaneScanArea(3,3); // limits the number of channels participating to the charge sharing (col,row)
-			run->AddTask(trdDigiPrf);
-			CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
-			trdCluster->SetNeighbourTrigger(true);
-			trdCluster->SetTriggerThreshold(triggerThreshold);
-			trdCluster->SetNeighbourRowTrigger(false);
-			trdCluster->SetPrimaryClusterRowMerger(true);
-			trdCluster->SetTriangularPads(triangularPads);
-			run->AddTask(trdCluster);
-			CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
-			trdHit->SetTriangularPads(triangularPads);
-			run->AddTask(trdHit);
-		}else if (trdHitProducerType == "clustering_free_1_1") {
-			Bool_t triangularPads = false;// Bucharest triangular pad-plane layout
-			Double_t triggerThreshold = 1.0e-6;//SIS300
-			CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
-			trdDigiPrf->SetTriangularPads(triangularPads);
-			//trdDigiPrf->SetNCluster(1); // limits the number of iterations per MC-point to one
-			trdDigiPrf->SetPadPlaneScanArea(1,1); // limits the number of channels participating to the charge sharing (col,row)
-			run->AddTask(trdDigiPrf);
-			CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
-			trdCluster->SetNeighbourTrigger(true);
-			trdCluster->SetTriggerThreshold(triggerThreshold);
-			trdCluster->SetNeighbourRowTrigger(false);
-			trdCluster->SetPrimaryClusterRowMerger(true);
-			trdCluster->SetTriangularPads(triangularPads);
-			run->AddTask(trdCluster);
-			CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
-			trdHit->SetTriangularPads(triangularPads);
-			run->AddTask(trdHit);
-		}else if (trdHitProducerType == "clustering_free_3_3") {
-			Bool_t triangularPads = false;// Bucharest triangular pad-plane layout
-			Double_t triggerThreshold = 1.0e-6;//SIS300
-			CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
-			trdDigiPrf->SetTriangularPads(triangularPads);
-			//trdDigiPrf->SetNCluster(1); // limits the number of iterations per MC-point to one
-			trdDigiPrf->SetPadPlaneScanArea(3,3); // limits the number of channels participating to the charge sharing (col,row)
-			run->AddTask(trdDigiPrf);
-			CbmTrdClusterFinderFast* trdCluster = new CbmTrdClusterFinderFast();
-			trdCluster->SetNeighbourTrigger(true);
-			trdCluster->SetTriggerThreshold(triggerThreshold);
-			trdCluster->SetNeighbourRowTrigger(false);
-			trdCluster->SetPrimaryClusterRowMerger(true);
-			trdCluster->SetTriangularPads(triangularPads);
-			run->AddTask(trdCluster);
 			CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
 			trdHit->SetTriangularPads(triangularPads);
 			run->AddTask(trdHit);
@@ -218,9 +159,7 @@ void run_reco(Int_t nEvents = 2)
 	// ===                     TOF local reconstruction                      ===
 	// =========================================================================
 	if (IsTof(parFile)) {
-		// ------   TOF hit producer   ---------------------------------------------
-		//CbmTofHitProducer* tofHitProd = new CbmTofHitProducer("CbmTofHitProducer", iVerbose);
-		CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("TOF HitProducerNew",iVerbose);
+		CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("CbmTofHitProducer", 1);
 		tofHitProd->SetInitFromAscii(kFALSE);
 		run->AddTask(tofHitProd);
 	} //isTof
@@ -243,10 +182,6 @@ void run_reco(Int_t nEvents = 2)
 		CbmTrdSetTracksPidANN* trdSetTracksPidAnnTask = new CbmTrdSetTracksPidANN("CbmTrdSetTracksPidANN","CbmTrdSetTracksPidANN");
 		trdSetTracksPidAnnTask->SetTRDGeometryType("h++");
 		run->AddTask(trdSetTracksPidAnnTask);
-
-		//CbmTrdSetTracksPidLike* trdSetTracksPidLikeTask =
-		//		new CbmTrdSetTracksPidLike("CbmTrdSetTracksPidLike","CbmTrdSetTracksPidLike");
-		//run->AddTask(trdSetTracksPidLikeTask);
 	}//isTrd
 
     // =========================================================================
@@ -273,61 +208,53 @@ void run_reco(Int_t nEvents = 2)
 	run->AddTask(matchRecoToMc);
 
 	// Reconstruction Qa
-   CbmLitTrackingQa* trackingQa = new CbmLitTrackingQa();
-   trackingQa->SetMinNofPointsSts(4);
-   trackingQa->SetUseConsecutivePointsInSts(true);
-   trackingQa->SetMinNofPointsTrd(minNofPointsTrd);
-   trackingQa->SetMinNofPointsMuch(10);
-   trackingQa->SetMinNofPointsTof(1);
-   trackingQa->SetQuota(0.7);
-   trackingQa->SetMinNofHitsTrd(minNofPointsTrd);
-   trackingQa->SetMinNofHitsMuch(10);
-   trackingQa->SetVerbose(0);
-   trackingQa->SetMinNofHitsRich(7);
-   trackingQa->SetQuotaRich(0.6);
-   trackingQa->SetOutputDir(resultDir);
-   trackingQa->SetPRange(20, 0., 10.);
-   trackingQa->SetTrdAnnCut(trdAnnCut);
-   std::vector<std::string> trackCat, richCat;
-   trackCat.push_back("All");
-   trackCat.push_back("Electron");
-   richCat.push_back("Electron");
-   richCat.push_back("ElectronReference");
-   trackingQa->SetTrackCategories(trackCat);
-   trackingQa->SetRingCategories(richCat);
-   run->AddTask(trackingQa);
+	CbmLitTrackingQa* trackingQa = new CbmLitTrackingQa();
+	trackingQa->SetMinNofPointsSts(4);
+	trackingQa->SetUseConsecutivePointsInSts(true);
+	trackingQa->SetMinNofPointsTrd(minNofPointsTrd);
+	trackingQa->SetMinNofPointsMuch(10);
+	trackingQa->SetMinNofPointsTof(1);
+	trackingQa->SetQuota(0.7);
+	trackingQa->SetMinNofHitsTrd(minNofPointsTrd);
+	trackingQa->SetMinNofHitsMuch(10);
+	trackingQa->SetVerbose(0);
+	trackingQa->SetMinNofHitsRich(7);
+	trackingQa->SetQuotaRich(0.6);
+	trackingQa->SetOutputDir(resultDir);
+	trackingQa->SetPRange(20, 0., 10.);
+	trackingQa->SetTrdAnnCut(trdAnnCut);
+	std::vector<std::string> trackCat, richCat;
+	trackCat.push_back("All");
+	trackCat.push_back("Electron");
+	richCat.push_back("Electron");
+	richCat.push_back("ElectronReference");
+	trackingQa->SetTrackCategories(trackCat);
+	trackingQa->SetRingCategories(richCat);
+	run->AddTask(trackingQa);
 
-   CbmLitFitQa* fitQa = new CbmLitFitQa();
-   fitQa->SetMvdMinNofHits(0);
-   fitQa->SetStsMinNofHits(4);
-   fitQa->SetMuchMinNofHits(10);
-   fitQa->SetTrdMinNofHits(minNofPointsTrd);
-   fitQa->SetOutputDir(resultDir);
-  // run->AddTask(fitQa);
+	CbmLitFitQa* fitQa = new CbmLitFitQa();
+	fitQa->SetMvdMinNofHits(0);
+	fitQa->SetStsMinNofHits(4);
+	fitQa->SetMuchMinNofHits(10);
+	fitQa->SetTrdMinNofHits(minNofPointsTrd);
+	fitQa->SetOutputDir(resultDir);
+	// run->AddTask(fitQa);
 
-   CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
-   clusteringQa->SetOutputDir(resultDir);
-   run->AddTask(clusteringQa);
+	CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
+	clusteringQa->SetOutputDir(resultDir);
+	run->AddTask(clusteringQa);
 
-    // =========================================================================
-    // ===                        ECAL reconstruction                        ===
-    // =========================================================================
 
-//  // -----   ECAL hit producer  ----------------------------------------------
-//  CbmEcalHitProducerFastMC* ecalHitProd
-//    = new CbmEcalHitProducerFastMC("ECAL Hitproducer");
-//  run->AddTask(ecalHitProd);
-
-    // -----  Parameter database   --------------------------------------------
-    FairRuntimeDb* rtdb = run->GetRuntimeDb();
-    FairParRootFileIo* parIo1 = new FairParRootFileIo();
-    FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
-    parIo1->open(parFile.Data());
-    parIo2->open(parFileList, "in");
-    rtdb->setFirstInput(parIo1);
-    rtdb->setSecondInput(parIo2);
-    rtdb->setOutput(parIo1);
-    rtdb->saveOutput();
+	// -----  Parameter database   --------------------------------------------
+	FairRuntimeDb* rtdb = run->GetRuntimeDb();
+	FairParRootFileIo* parIo1 = new FairParRootFileIo();
+	FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
+	parIo1->open(parFile.Data());
+	parIo2->open(parFileList, "in");
+	rtdb->setFirstInput(parIo1);
+	rtdb->setSecondInput(parIo2);
+	rtdb->setOutput(parIo1);
+	rtdb->saveOutput();
 
     run->Init();
     cout << "Starting run" << endl;
