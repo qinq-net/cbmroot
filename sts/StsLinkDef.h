@@ -23,6 +23,7 @@
 
 // Digitization
 #pragma link C++ class CbmStsDigitize;
+#pragma link C++ class CbmStsPhysics;
 #pragma link C++ class CbmStsSensorTypeDssd;
 #pragma link C++ class CbmStsSensorTypeDssdIdeal;
 #pragma link C++ class CbmStsSensorTypeDssdReal;

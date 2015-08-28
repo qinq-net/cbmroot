@@ -75,7 +75,7 @@ class CbmStsSensorConditions : public TObject {
 		/** Temperature
 		 ** @return Temperature [K]
 	   **/
-		Double_t GetTemperatur() const { return fTemperature; }
+		Double_t GetTemperature() const { return fTemperature; }
 
 
 		/** Bias voltage
@@ -95,8 +95,20 @@ class CbmStsSensorConditions : public TObject {
 		 **/
 		Double_t GetMeanLorentzShift(Int_t side) const { return fMeanLorentzShift[side]; }
 
+		Double_t GetHallParameter(Int_t index, Int_t chargeType);
+
                 /** Get parameters for Hall mobility calculation into array**/
 		void GetHallMobilityParametersInto(Double_t * hallMobilityParameters, Int_t chargeType) const;
+
+
+
+		/** Hall mobility
+		 ** @param eField  Electric field [V/cm]
+		 ** @param chargeType (0 = electron, 1 = hole)
+		 ** @value Hall mobility [cm**2/(Vs)]
+		 */
+		Double_t HallMobility(Double_t eField, Int_t chargeType) const;
+
 
                 /** Parameters for Hall mobility calculation **/
 		void SetHallMobilityParameters();

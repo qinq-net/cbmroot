@@ -70,7 +70,7 @@ class CbmStsSensorTypeDssdReal : public CbmStsSensorTypeDssd
 	 ** sensor characterised by the CbmStsSensorPoint object.
 	 **/
 	virtual Int_t ProcessPoint(CbmStsSensorPoint* point,
-		const CbmStsSensor* sensor) const;
+		const CbmStsSensor* sensor);
 
 	/** Set switches for physical processes
 	 ** @param dx,dy,dz          Size in x,y,z [cm]

@@ -42,8 +42,16 @@ CbmStsSensorConditions::CbmStsSensorConditions(Double_t vFd,
 CbmStsSensorConditions::~CbmStsSensorConditions() { }
 // -------------------------------------------------------------------------
 
+
+
 // -----   Set parameters for Hall mobility calculation   ------------------
 void CbmStsSensorConditions::SetHallMobilityParameters() {
+
+	  // These are the parameters needed for the calculation of the Hall
+	  // mobility, i.e. the mobility of charge carriers in the silicon
+	  // in the presence of a magnetic field. They depend on the temperature.
+	  // Values and formulae are taken from
+	  // V. Bartsch et al., Nucl. Instrum. Methods A 497 (2003) 389
 
     Double_t muLow[2], vSat[2], beta[2], rHall[2], muHall[2];
 
@@ -92,6 +100,28 @@ void CbmStsSensorConditions::SetHallMobilityParameters() {
 // -------------------------------------------------------------------------
 
 
+
+// -----   Get one of the Hall mobility parameters   -----------------------
+Double_t CbmStsSensorConditions::GetHallParameter(Int_t index,
+		                                              Int_t chargeType) {
+	if ( index < 0 || index > 3 ) {
+		LOG(ERROR) << "SensorConditions: Invalid hall parameter index "
+				       << index << FairLogger::endl;
+		return 0.;
+	}
+	if      ( chargeType == 0 ) return fHallMobilityParametersE[index];
+	else if ( chargeType == 1 ) return fHallMobilityParametersH[index];
+	else {
+		LOG(ERROR) << "SensorConditions: Invalid charge type "
+				       << chargeType << FairLogger::endl;
+	}
+
+	return 0.;
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Get parameters for Hall mobility calculation into array  --------
 void CbmStsSensorConditions::GetHallMobilityParametersInto(Double_t * hallMobilityParameters, Int_t chargeType) const {
 
@@ -105,6 +135,42 @@ void CbmStsSensorConditions::GetHallMobilityParametersInto(Double_t * hallMobili
 
 }
 // -------------------------------------------------------------------------
+
+
+
+// -----   Hall mobility   -------------------------------------------------
+Double_t CbmStsSensorConditions::HallMobility(Double_t eField,
+		                                          Int_t chargeType) const {
+
+	Double_t muLow = 0.;   // mobility at low electric field
+	Double_t beta  = 0.;   // exponent
+	Double_t vSat  = 0.;   // saturation velocity
+	Double_t rHall = 0.;   // Hall scattering factor
+
+	if ( chargeType == 0 ) {   // electrons
+	  muLow = fHallMobilityParametersE[0];
+	  beta  = fHallMobilityParametersE[1];
+	  vSat  = fHallMobilityParametersE[2];
+	  rHall = fHallMobilityParametersE[3];
+	}  //? electron
+	else if ( chargeType == 1 ) {  // holes
+	  muLow = fHallMobilityParametersH[0];
+	  beta  = fHallMobilityParametersH[1];
+	  vSat  = fHallMobilityParametersH[2];
+	  rHall = fHallMobilityParametersH[3];
+	}  //? holes
+	else {
+		LOG(ERROR) << "SensorConditions: illegal charge type "
+				       << chargeType << FairLogger::endl;
+		return 0.;
+	}
+
+	Double_t factor = pow( muLow * eField / vSat, beta );
+	Double_t muHall = rHall * muLow / pow( 1 + factor, 1./beta );
+	return muHall;
+}
+// -------------------------------------------------------------------------
+
 
 
 

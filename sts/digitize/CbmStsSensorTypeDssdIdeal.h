@@ -36,6 +36,17 @@ class CbmStsSensorTypeDssdIdeal : public CbmStsSensorTypeDssd
     /** Destructor  **/
     virtual ~CbmStsSensorTypeDssdIdeal() { };
 
+  	/** Process one STS Point
+  	 **
+  	 ** @param point   Pointer to CbmStsSensorPoint with relevant parameters
+  	 ** @param sensor  Pointer to CbmStsSensor object
+  	 ** @return  1000* # signals on front side + # signals on back side
+  	 **
+  	 ** Perform the appropriate action for a particle trajectory in the
+  	 ** sensor characterised by the CbmStsSensorPoint object.
+  	 **/
+  	virtual Int_t ProcessPoint(CbmStsSensorPoint* point,
+  		const CbmStsSensor* sensor);
 
 
 
@@ -50,7 +61,7 @@ class CbmStsSensorTypeDssdIdeal : public CbmStsSensorTypeDssd
      ** Re-implements CbmStsSensorTypeDssd::ProduceCharge
      **/
     virtual Int_t ProduceCharge(CbmStsSensorPoint* point, Int_t side,
-                                const CbmStsSensor* sensor) const;
+                                const CbmStsSensor* sensor);
 
 
 

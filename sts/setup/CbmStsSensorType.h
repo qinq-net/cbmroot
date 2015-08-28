@@ -66,7 +66,7 @@ class CbmStsSensorType : public TNamed
      ** sensor characterised by the CbmStsSensorPoint object.
      **/
     virtual Int_t ProcessPoint(CbmStsSensorPoint* point,
-                               const CbmStsSensor* sensor) const = 0;
+                               const CbmStsSensor* sensor) = 0;
 
 
   private:

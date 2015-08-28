@@ -5,14 +5,17 @@
 
 #include "CbmStsSensorTypeDssd.h"
 
+#include <cassert>
 #include <iomanip>
 #include <sstream>
 
+#include "TArrayD.h"
 #include "TMath.h"
 
 #include "FairLogger.h"
 
 #include "CbmStsModule.h"
+#include "CbmStsPhysics.h"
 #include "CbmStsSensor.h"
 #include "CbmStsSensorPoint.h"
 
@@ -33,8 +36,88 @@ CbmStsSensorTypeDssd::CbmStsSensorTypeDssd()
     : CbmStsSensorType(), 
       fDx(-1.), fDy(-1.), fDz(-1.),
       fNofStrips(), fStereo(), fIsSet(kFALSE),
-      fPitch(), fTanStereo(), fStripShift()
+      fPitch(), fTanStereo(), fCosStereo(), fStripShift(),
+      fStripCharge(),
+      fPhysics(NULL)
 {
+	fPhysics = CbmStsPhysics::Instance();
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Cross talk   ----------------------------------------------------
+void CbmStsSensorTypeDssd::CrossTalk(Double_t ctcoeff) {
+
+	for (Int_t side = 0; side < 2; side++) {  // front and back side
+		Int_t nStrips = fNofStrips[side];
+
+		// First strip
+		Double_t qLeft    = 0.;
+		Double_t qCurrent = fStripCharge[side][0];
+		fStripCharge[side][0] =
+				(1. - ctcoeff ) * qCurrent + ctcoeff * fStripCharge[side][1];
+
+		// Strips 1 to n-2
+		for (Int_t strip = 1; strip < nStrips - 1; strip++) {
+			qLeft    = qCurrent;
+			qCurrent = fStripCharge[side][strip];
+			fStripCharge[side][strip] =
+					ctcoeff * ( qLeft + fStripCharge[side][strip+1] ) +
+					( 1. - 2. * ctcoeff ) * qCurrent;
+		} //# strips
+
+		// Last strip
+		qLeft = qCurrent;
+		qCurrent = fStripCharge[side][nStrips-1];
+		fStripCharge[side][nStrips-1] =
+				ctcoeff * qLeft + ( 1. - ctcoeff ) * qCurrent;
+
+	} //# front and back side
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Diffusion   -----------------------------------------------------
+void CbmStsSensorTypeDssd::Diffusion(Double_t x, Double_t y,
+		                                 Double_t sigma, Int_t side,
+		                                 Double_t& fracL, Double_t& fracC,
+		                                 Double_t& fracR) {
+
+	// Check side qualifier
+	assert( side == 0 || side == 1);
+
+	// x coordinate at the readout edge (y = fDy/2 )
+	// This x is counted from the left edge.
+	Double_t xRo = x + fDx / 2. - ( fDy / 2. - y ) * fTanStereo[side];
+
+	// Centre strip number (w/o cross connection; may be negative or large than
+	// the number of strips)
+	Int_t iStrip = TMath::FloorNint(xRo / fPitch[side]);
+
+	// Strip boundaries at the readout edge (y = fDy/2)
+	Double_t xLeftRo  = Double_t(iStrip) * fPitch[side];
+	Double_t xRightRo = xLeftRo + fPitch[side];
+
+	// Distance from strip boundaries across the strip
+	Double_t dLeft  = ( xRo - xLeftRo )  * fCosStereo[side];
+	Double_t dRight = ( xRightRo - xRo ) * fCosStereo[side];
+
+	// Charge fractions
+	// The value 0.707107 is 1/sqrt(2)
+	fracL = 0.;
+	if ( dLeft < 3. * sigma )
+		fracL = 0.5 * ( 1. - TMath::Erf( 0.707107 * dLeft  / sigma) );
+	fracR = 0.;
+	if ( dRight < 3. * sigma )
+		fracR = 0.5 * ( 1. - TMath::Erf( 0.707107 * dRight / sigma) );
+	fracC = 1. - fracL - fracR;
+
+	LOG(DEBUG4) << GetName() << ": Distances to next strip " << dLeft << " / "
+			        << dRight << ", charge fractions " << fracL << " / " << fracC
+			        << " / " << fracR << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
@@ -239,10 +322,6 @@ Int_t CbmStsSensorTypeDssd::GetStripNumber(Double_t x, Double_t y,
   while ( iStrip < 0 )        iStrip += nStrips;
   while ( iStrip >= nStrips ) iStrip -= nStrips;
 
-  if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG4)) Print();
-  LOG(DEBUG3) << setprecision(6) << GetName() << ": (x,y) = (" << x << ", " << y
-  		        << ") cm, x(ro) = " << xro << " cm, strip "
-  		        << iStrip << FairLogger::endl;
   return iStrip;
 }
 // -------------------------------------------------------------------------
@@ -323,7 +402,10 @@ Bool_t CbmStsSensorTypeDssd::Intersect(Double_t xF, Double_t xB,
 	x = ( fTanStereo[1] * xF - fTanStereo[0] * xB ) /
 			( fTanStereo[1] - fTanStereo[0]);
 	y = fDy + ( xB - xF ) / ( fTanStereo[1] - fTanStereo[0]);
-	return IsInside(x, y);
+
+
+	// --- Check for being in active area.
+	return IsInside(x-fDx/2., y-fDy/2.);
 
 }
 // -------------------------------------------------------------------------
@@ -425,8 +507,67 @@ Int_t CbmStsSensorTypeDssd::IntersectClusters(CbmStsCluster* clusterF,
 
 // -----   Check whether a point is inside the active area   ---------------
 Bool_t CbmStsSensorTypeDssd::IsInside(Double_t x, Double_t y) {
-	if ( x > 0. && x < fDx && y > 0. && y < fDy) return kTRUE;
-	return kFALSE;
+	if ( x < -fDx/2. ) return kFALSE;
+	if ( x >  fDx/2. ) return kFALSE;
+	if ( y < -fDy/2. ) return kFALSE;
+	if ( y >  fDy/2. ) return kFALSE;
+	return kTRUE;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Lorentz shift   -------------------------------------------------
+Double_t CbmStsSensorTypeDssd::LorentzShift(Double_t z, Int_t chargeType,
+		                                        const CbmStsSensor* sensor)
+	                                          const {
+
+	// --- Magnetic field (y component) in sensor centre
+	Double_t bY = sensor->GetConditions().GetBy();
+
+	return LorentzShift(z, chargeType, sensor, bY);
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Lorentz shift   -------------------------------------------------
+Double_t CbmStsSensorTypeDssd::LorentzShift(Double_t z, Int_t chargeType,
+		                                        const CbmStsSensor* sensor,
+		                                        Double_t bY) const {
+
+	// --- Drift distance to readout plane
+	// Electrons drift to the front side (z = d/2), holes to the back side (z = -d/2)
+	Double_t driftZ = 0.;
+	if      ( chargeType == 0 ) driftZ = fDz / 2. - z;  // electrons
+	else if ( chargeType == 1 ) driftZ = fDz / 2. + z;  // holes
+	else {
+		LOG(ERROR) << GetName() << ": illegal charge type " << chargeType
+				       << FairLogger::endl;
+		return 0.;
+	}
+
+	// --- Hall mobility
+	Double_t vBias = sensor->GetConditions().GetVbias();
+	Double_t vFd   = sensor->GetConditions().GetVfd();
+	Double_t eField = CbmStsPhysics::ElectricField(vBias, vFd, fDz, z);
+	Double_t muHall = sensor->GetConditions().HallMobility(eField, chargeType);
+
+	// --- The direction of the shift is the same for electrons and holes.
+	// --- Holes drift in negative z direction, the field is in
+	// --- positive y direction, thus the Lorentz force v x B acts in positive
+	// --- x direction. Electrons drift in the opposite (positive z) direction,
+	// --- but the have also the opposite charge sign, so the Lorentz force
+	// --- on them is also in the positive x direction.
+	Double_t shift = muHall * bY * driftZ * 1.e-4;
+	LOG(DEBUG4) << GetName() << ": Drift " << driftZ
+			        << " cm, mobility " << muHall
+			        << " cm**2/(Vs), field " << bY
+			        << " T, shift " << shift << " cm" << FairLogger::endl;
+	// The factor 1.e-4 is because bZ is in T = Vs/m**2, but muHall is in
+	// cm**2/(Vs) and z in cm.
+
+	return shift;
 }
 // -------------------------------------------------------------------------
 
@@ -456,9 +597,32 @@ void CbmStsSensorTypeDssd::Print(Option_t* opt) const {
 
 
 
+// -----   Print charge status   -------------------------------------------
+void CbmStsSensorTypeDssd::PrintChargeStatus() const {
+	LOG(INFO) << GetName() << ": Charge status: \n";
+	for (Int_t side = 0; side < 2; side++) {
+		for (Int_t strip = 0; strip < fNofStrips[side]; strip++) {
+			if ( fStripCharge[side][strip] > 0. )
+				LOG(INFO) << "          " << (side ? "Back  " : "Front ") << "strip "
+				     << strip << "  charge " << fStripCharge[side][strip] << "\n";
+		} //# strips
+	} //# front and back side
+	LOG(INFO) << "          Total: front side "
+			 << (fStripCharge[0]).GetSum() << ", back side "
+			 << (fStripCharge[1]).GetSum() << FairLogger::endl;
+}
+// -------------------------------------------------------------------------
+
+
+
 // -----   Process an MC Point  --------------------------------------------
 Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
-                                         const CbmStsSensor* sensor) const {
+                                         const CbmStsSensor* sensor) {
+
+
+	// --- For the time being, use the old ProcessPoint method
+	Int_t nSignalsOld = ProcessPointOld(point, sensor);
+	return nSignalsOld;
 
   // --- Catch if parameters are not set
   if ( ! fIsSet ) {
@@ -468,13 +632,84 @@ Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
   }
 
   // --- Debug
-  LOG(DEBUG4) << GetName() << ": processing sensor point at ( "
-		      << point->GetX1() << ", " << point->GetX2()
-		      << " ) cm at " << point->GetTime() << " ns, energy loss "
-		      << point->GetELoss() << ", PID " << point->GetPid()
-		      << ", By = " << point->GetBy() << " T"
-		      << FairLogger::endl;
-  LOG(DEBUG4) << ToString() << FairLogger::endl;
+  LOG(DEBUG3) << ToString() << FairLogger::endl;
+  LOG(DEBUG3) << GetName() << ": Processing point " << point->ToString()
+  		        << FairLogger::endl;
+
+  // --- Number of created charge signals (coded front/back side)
+  Int_t nSignals = 0;
+
+  // --- Reset the strip charge arrays
+  fStripCharge[0].Reset();   // front side
+  fStripCharge[1].Reset();   // back side
+
+  // --- Produce charge and propagate it to the readout strips
+  ProduceCharge(point, sensor);
+
+  // --- Cross talk
+  if ( fPhysics->UseCrossTalk() ) {
+    if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG4) ) {
+    	LOG(DEBUG4) << GetName() << ": Status before cross talk"
+    			        << FairLogger::endl;
+    	PrintChargeStatus();
+    }
+  	Double_t ctcoeff =  sensor -> GetConditions().GetCrossTalk();
+  	LOG(DEBUG4) << GetName() << ": Cross-talk coefficient is "
+  			        << ctcoeff << FairLogger::endl;
+  	CrossTalk(ctcoeff);
+  }
+
+  // --- Debug
+  if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG3) )
+  	PrintChargeStatus();
+
+  // --- Stop here if no module is connected (e.g. for test purposes)
+  if ( ! sensor->GetModule() ) {
+  	/*
+  	LOG(WARNING) << GetName() << ": No module connected to sensor!"
+  			         << FairLogger::endl;
+  			         */
+  	return 0;
+  }
+
+  // --- Register charges in strips to the module
+  Int_t nCharges[2] = { 0, 0 };
+  for (Int_t side = 0; side < 2; side ++) {  // front and back side
+
+  	for (Int_t strip = 0; strip < fNofStrips[side]; strip++) {
+  		if ( fStripCharge[side][strip] > 0. ) {
+  			RegisterCharge(sensor, side, strip, fStripCharge[side][strip],
+  					           point->GetTime());
+  			nCharges[side]++;
+  		} //? charge in strip
+  	} //# strips
+
+  } //# front and back side
+
+  // Code number of signals
+  nSignals = 1000 * nCharges[0] + nCharges[1];
+
+  return nSignals;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Process an MC Point (old)   -------------------------------------
+Int_t CbmStsSensorTypeDssd::ProcessPointOld(CbmStsSensorPoint* point,
+                                            const CbmStsSensor* sensor) {
+
+  // --- Catch if parameters are not set
+  if ( ! fIsSet ) {
+    LOG(FATAL) << fName << ": parameters are not set!"
+               << FairLogger::endl;
+    return -1;
+  }
+
+  // --- Debug
+  LOG(DEBUG3) << ToString() << FairLogger::endl;
+  LOG(DEBUG3) << GetName() << ": Processing point " << point->ToString()
+  		        << FairLogger::endl;
 
   // --- Check for being in sensitive area
   // --- Note: No charge is produced if either entry or exit point
@@ -498,6 +733,200 @@ Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
   nSignals +=        ProduceCharge(point, 1, sensor); // back
 
   return nSignals;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Produce charge and propagate it to the readout strips   ---------
+void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
+		                                     const CbmStsSensor* sensor) {
+
+	// Total charge created in the sensor: is calculated from the energy loss
+	Double_t chargeTotal = point->GetELoss() / kPairEnergy;  // in e
+
+
+	// For ideal energy loss, just have all charge in the mid-point of the
+	// trajectory
+	if ( fPhysics->EnergyLossModel() == 0 ) {
+	  Double_t xP = 0.5 * ( point->GetX1() + point->GetX2() );
+	  Double_t yP = 0.5 * ( point->GetY1() + point->GetY2() );
+	  Double_t zP = 0.5 * ( point->GetZ1() + point->GetZ2() );
+	  PropagateCharge(xP, yP, zP, chargeTotal, point->GetBy(),
+	  		            0, sensor); // front side
+	  PropagateCharge(xP, yP, zP, chargeTotal, point->GetBy(),
+	  		            1, sensor); // back side
+	  return;
+	}
+
+	// Kinetic energy
+	Double_t mass = CbmStsPhysics::ParticleMass(point->GetPid());
+	Double_t eKin = TMath::Sqrt( point->GetP() * point->GetP() + mass * mass )
+	              - mass;
+
+	// Length of trajectory inside sensor and its projections
+	Double_t trajLx = point->GetX2() - point->GetX1();
+	Double_t trajLy = point->GetY2() - point->GetY1();
+	Double_t trajLz = point->GetZ2() - point->GetZ1();
+	Double_t trajLength = TMath::Sqrt( trajLx*trajLx +
+			                               trajLy*trajLy +
+			                               trajLz*trajLz );
+
+	// The trajectory is sub-divided into equidistant steps, with a step size
+	// close to 3 micrometer.
+	Double_t stepSizeTarget = 3.e-4;   // targeted step size is 3 micrometer
+  Int_t nSteps = TMath::Nint( trajLength / stepSizeTarget );
+	Double_t stepSize  = trajLength / nSteps;
+	Double_t stepSizeX = trajLx / nSteps;
+	Double_t stepSizeY = trajLy / nSteps;
+	Double_t stepSizeZ = trajLz / nSteps;
+
+	// Average charge per step, used for uniform distribution
+	Double_t chargePerStep = chargeTotal / nSteps;
+	LOG(DEBUG4) << GetName() << ": Trajectory length " << trajLength
+			        << " cm, steps " << nSteps << ", step size " << stepSize * 1.e4
+			        << " mu, charge per step " << chargePerStep << FairLogger::endl;
+
+	// Stopping power, needed for energy loss fluctuations
+	Double_t dedx = 0.;
+	if ( fPhysics->EnergyLossModel() == 2 )
+		dedx = fPhysics->StoppingPower(eKin, point->GetPid());
+
+	// Stepping over the trajectory
+	Double_t chargeSum = 0.;
+	Double_t xStep = point->GetX1() - 0.5 * stepSizeX;
+	Double_t yStep = point->GetY1() - 0.5 * stepSizeY;
+	Double_t zStep = point->GetZ1() - 0.5 * stepSizeZ;
+	for (Int_t iStep = 0; iStep < nSteps; iStep++ ) {
+		xStep += stepSizeX;
+		yStep += stepSizeY;
+		zStep += stepSizeZ;
+
+		// Charge for this step
+		Double_t chargeInStep = chargePerStep;  // uniform energy loss
+		if ( fPhysics->EnergyLossModel() == 2 ) // energy loss fluctuations
+			chargeInStep = fPhysics->EnergyLoss(stepSize, mass, eKin, dedx)
+			               / kPairEnergy;
+		chargeSum += chargeInStep;
+
+		// Propagate charge to strips
+		PropagateCharge(xStep, yStep, zStep, chargeInStep, point->GetBy(),
+				            0, sensor);  // front
+		PropagateCharge(xStep, yStep, zStep, chargeInStep, point->GetBy(),
+				            1, sensor);  // back
+
+	} //# steps of the trajectory
+
+	// For fluctuations: normalise to the total charge from GEANT.
+	// Since the number of steps is finite (about 100), the average
+	// charge per step does not coincide with the expectation value.
+	// In order to be consistent with the transport, the charges are
+	// re-normalised.
+	if ( fPhysics->EnergyLossModel() == 2) {
+		for (Int_t side = 0; side < 2; side++) {  // front and back side
+			for (Int_t strip = 0; strip < fNofStrips[side]; strip++)
+				fStripCharge[side][strip] *= ( chargeTotal / chargeSum );
+		} //# front and back side
+	} //? fluctuations on
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Propagate charge to the readout strips   ------------------------
+void CbmStsSensorTypeDssd::PropagateCharge(Double_t x, Double_t y,
+		                                       Double_t z, Double_t charge,
+		                                       Double_t bY, Int_t side,
+		                                       const CbmStsSensor* sensor) {
+
+	// Check side qualifier
+	assert( side == 0 || side == 1);
+
+	Double_t xCharge = x;
+	Double_t yCharge = y;
+	Double_t zCharge = z;
+
+	// Debug
+	LOG(DEBUG4) << GetName() << ": Propagating charge " << charge
+			        << " from (" << x << ", " << y << ", " << z
+			        << ") on side " << side << " of sensor " << sensor->GetName()
+			        << FairLogger::endl;
+
+	// Lorentz shift on the drift to the readout plane
+	if ( fPhysics->UseLorentzShift() ) {
+		xCharge += LorentzShift(z, side, sensor, bY);
+    LOG(DEBUG4) << GetName() << ": After Lorentz shift: (" << xCharge << ", "
+		   	        << yCharge << ", " << zCharge << ") cm" << FairLogger::endl;
+	}
+
+	// Stop is the charge after Lorentz shift is not in the active area.
+	// Diffusion into the active area is not treated.
+	if ( ! IsInside(xCharge, yCharge) ) {
+		LOG(DEBUG4) << GetName() << ": Charge outside active area"
+				        << FairLogger::endl;
+		return;
+	}
+
+	// No diffusion: all charge is in one strip
+	if ( ! fPhysics->UseDiffusion() ) {
+		Int_t iStrip = GetStripNumber(xCharge, yCharge, side);
+		fStripCharge[side][iStrip] += charge;
+		LOG(DEBUG4) << GetName() << ": Adding charge " << charge << " to strip "
+				        << iStrip << FairLogger::endl;
+	} //? Do not use diffusion
+
+	// Diffusion: charge is distributed over centre strip and neighbours
+	else {
+		// Calculate diffusion width
+		Double_t diffusionWidth =
+			CbmStsPhysics::DiffusionWidth(z + fDz / 2.,// distance from back side
+																		fDz,
+																		sensor->GetConditions().GetVbias(),
+																		sensor->GetConditions().GetVfd(),
+																		sensor->GetConditions().GetTemperature(),
+																		side);
+		LOG(DEBUG4) << GetName() << ": Diffusion width = " << diffusionWidth
+				        << " cm" << FairLogger::endl;
+		// Calculate charge fractions in strips
+		Double_t fracL = 0.;  // fraction of charge in left neighbour
+		Double_t fracC = 1.;  // fraction of charge in centre strip
+		Double_t fracR = 0.;  // fraction of charge in right neighbour
+		Diffusion(xCharge, yCharge, diffusionWidth, side, fracL, fracC, fracR);
+		// Calculate strip numbers
+		// Note: In this implementation, charge can diffuse out of the sensitive
+		// area only for vertical strips. In case of stereo angle (cross-connection
+		// of strips), all charge is assigned to some strip, so the edge effects
+		// are not treated optimally.
+		Int_t iStripC  = GetStripNumber(xCharge, yCharge, side);  // centre strip
+		Int_t iStripL  = 0;                                     // left neighbour
+		Int_t iStripR  = 0;                                    // right neighbour
+		if ( fTanStereo[side] < 0.0001 )  {   // vertical strips, no cross connection
+			iStripL = iStripC - 1;  // might be = -1
+			iStripR = iStripC + 1;  // might be = nOfStrips
+		}
+		else {   // stereo angle, cross connection
+			iStripL = ( iStripC == 0 ? fNofStrips[side] - 1 : iStripC - 1);
+			iStripR = ( iStripC == fNofStrips[side] - 1 ? 0 : iStripC + 1);
+		}
+		// Collect charge on the readout strips
+		if ( fracC > 0. ) {
+			fStripCharge[side][iStripC] += charge * fracC;    // centre strip
+			LOG(DEBUG4) << GetName() << ": Adding charge " << charge * fracC
+				          << " to strip " << iStripC << FairLogger::endl;
+		}
+		if ( fracL > 0. && iStripL >= 0 ) {
+			fStripCharge[side][iStripL] += charge * fracL;  // right neighbour
+			LOG(DEBUG4) << GetName() << ": Adding charge " << charge * fracL
+					        << " to strip " << iStripL << FairLogger::endl;
+		}
+		if ( fracR > 0. && iStripR < fNofStrips[side] ) {
+			fStripCharge[side][iStripR] += charge * fracR;  // left neighbour
+		  LOG(DEBUG4) << GetName() << ": Adding charge " << charge * fracR
+				          << " to strip " << iStripR << FairLogger::endl;
+		}
+	} //? Use diffusion
+
 }
 // -------------------------------------------------------------------------
 
@@ -592,6 +1021,13 @@ void CbmStsSensorTypeDssd::RegisterCharge(const CbmStsSensor* sensor,
                                           Double_t charge,
                                           Double_t time) const {
 
+	// --- Check existence of module
+	if ( ! sensor->GetModule() ) {
+		LOG(ERROR) << GetName() << ": No module connected to sensor!"
+				       << FairLogger::endl;
+		return;
+	}
+
   // --- Determine module channel for given sensor strip
   Int_t channel = GetModuleChannel(strip, side, sensor->GetSensorId() );
 
@@ -680,8 +1116,11 @@ void CbmStsSensorTypeDssd::SetParameters(Double_t dx, Double_t dy,
   for (Int_t side = 0; side < 2; side++) {
     fPitch[side] = fDx / Double_t(fNofStrips[side]);
     fTanStereo[side] = TMath::Tan( fStereo[side] * TMath::DegToRad() );
+    fCosStereo[side] = TMath::Cos( fStereo[side] * TMath::DegToRad() );
     fStripShift[side] = TMath::Nint(fDy * fTanStereo[side] / fPitch[side]);
   }
+  fStripCharge[0].Set(fNofStrips[0]);
+  fStripCharge[1].Set(fNofStrips[1]);
 
   // --- Flag parameters to be set if test is ok
   fIsSet = SelfTest();
@@ -725,7 +1164,7 @@ string CbmStsSensorTypeDssd::ToString() const
   	 ss << "parameters are not set";
   	 return ss.str();
    }
-   ss << "dimension (" << fDy << ", " << fDy << ", " << fDz << ") cm, ";
+   ss << "Dimension (" << fDx << ", " << fDy << ", " << fDz << ") cm, ";
    ss << "# strips " << fNofStrips[0] << "/" << fNofStrips[1] << ", ";
    ss << "pitch " << fPitch[0] << "/" << fPitch[1] << " cm, ";
    ss << "stereo " << fStereo[0] << "/" << fStereo[1] << " degrees";

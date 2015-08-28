@@ -342,8 +342,10 @@ void CbmStack::Print(Int_t iVerbose) const
             << fNParticles << FairLogger::endl;
   LOG(DEBUG) << "Number of tracks in output = "
             << fNTracks << FairLogger::endl;
-  for (Int_t iTrack=0; iTrack<fNTracks; iTrack++) {
+  if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG1) ) {
+  	for (Int_t iTrack=0; iTrack<fNTracks; iTrack++) {
     ((CbmMCTrack*) fTracks->At(iTrack))->Print(iTrack);
+  	}
   }
 }
 // -------------------------------------------------------------------------

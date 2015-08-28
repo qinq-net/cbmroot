@@ -156,7 +156,7 @@ void CbmStsSensorTypeDssdReal::DiffusionAndLorentzShift (Double_t delta, Double_
 
 // -----   Process an MC Point  --------------------------------------------
 Int_t CbmStsSensorTypeDssdReal::ProcessPoint(CbmStsSensorPoint* point,
-	const CbmStsSensor* sensor) const {
+	const CbmStsSensor* sensor) {
 
 
     // --- Catch if parameters are not set
@@ -340,7 +340,7 @@ const {
 
     Double_t chargeLayerUni = qtot / (Int_t (trajLength / delta));
     //calculate some value for thermal diffusion
-    Double_t kTq = sqrt (2. * sensor -> GetConditions().GetTemperatur() * 1.38e-4 / 1.6);
+    Double_t kTq = sqrt (2. * sensor -> GetConditions().GetTemperature() * 1.38e-4 / 1.6);
     Double_t Vdepletion = sensor -> GetConditions().GetVfd();
     Double_t Vbias = sensor -> GetConditions().GetVbias();
     //Double_t mField = sensor -> GetConditions().GetBy();
@@ -397,9 +397,11 @@ const {
 	    LOG(DEBUG4) << GetName() << ": charge at strip#" << iStrip << " = " << stripChargeCT[iStrip] 
 		<< ", after norm (*qtot/totalProducedCharge) = " << chargeNorm << FairLogger::endl;
 	    // --- Register charge to module
+	    if ( sensor->GetModule() ) {
 	    RegisterCharge(sensor, side, iStrip, chargeNorm, 
 		    (point -> GetTime()));
 	    nSignals++;
+	    }
 	}
     } // Loop over fired strips
 

@@ -8,7 +8,10 @@
 
 #include <vector>
 #include <string>
+#include "TArrayD.h"
 #include "CbmStsSensorType.h"
+
+class CbmStsPhysics;
 
 
 using std::vector;
@@ -128,6 +131,10 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
     virtual void Print(Option_t* opt = "") const;
 
 
+    /** Print charge status **/
+    void PrintChargeStatus() const;
+
+
     /** Process one STS Point
      **
      ** @param point   Pointer to CbmStsSensorPoint with relevant parameters
@@ -138,8 +145,20 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** sensor characterised by the CbmStsSensorPoint object.
      **/
     virtual Int_t ProcessPoint(CbmStsSensorPoint* point,
-                               const CbmStsSensor* sensor) const;
+                               const CbmStsSensor* sensor);
 
+
+    /** Process one STS Point (old)
+     **
+     ** @param point   Pointer to CbmStsSensorPoint with relevant parameters
+     ** @param sensor  Pointer to CbmStsSensor object
+     ** @return  1000* # signals on front side + # signals on back side
+     **
+     ** Old implementation. Temporary here until new implementation is
+     ** validated.
+     **/
+    virtual Int_t ProcessPointOld(CbmStsSensorPoint* point,
+                                  const CbmStsSensor* sensor);
 
 
     /** Set the parameters
@@ -176,12 +195,53 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
     Int_t    fNofStrips[2];   ///< Number of strips on front/back side
     Double_t fStereo[2];      ///< Stereo angle front/back side [degrees]
     Bool_t   fIsSet;          ///< Flag whether parameters are set
+    CbmStsPhysics* fPhysics;  //!  Pointer to CbmStsPhysics instance
 
 
     /** Temporary variables to avoid frequent calculations **/
     Double_t fPitch[2];     //! Strip pitch front/back side [cm]
     Double_t fTanStereo[2]; //! tangent of stereo angle front/back side
+    Double_t fCosStereo[2]; //! cosine of stereo angle front/back side
     Int_t   fStripShift[2]; //! Shift in number of strips from bottom to top
+
+    /** Analog charge in strips (for front and back side).
+     ** Used during analog response simulation. **/
+    TArrayD fStripCharge[2];   //!
+
+
+    /** Cross talk
+     ** @param ctcoeff  Cross-talk coefficient
+     **
+     ** Operates on the strip charge arrays and re-distributes charges
+     ** between adjacent strips according to the cross-talk coefficient.
+     **/
+    void CrossTalk(Double_t ctcoeff);
+
+
+    /** Charge diffusion into adjacent strips
+     ** @param[in] x      x coordinate of charge centre (local c.s.) [cm]
+     ** @param[in] y      y coordinate of charge centre (local c.s.) [cm]
+     ** @param[in] sigma  Diffusion width [cm]
+     ** @param[in] side   0 = front (p) side, 1 = back (n) side
+     ** @param[out] fracL  Fraction of charge in left neighbour strip
+     ** @param[out] fracC  Fraction of charge in centre strip
+     ** @param[out] fracR  Fraction of charge in right neighbour strip
+     **
+     ** Calculates the fraction of charge in the most significant (centre)
+     ** strip and its left and right neighbours. The charge distribution is
+     ** assumed to be a 2-d Gaussian (resulting from thermal diffusion)
+     ** with centre (x,y) and width sigma in both dimensions. The integration
+     ** is performed in the coordinate across the strips. For simplicity,
+     ** all charge left (right) of the centre strip is accumulated in the left
+     ** (right) neighbour; this is justified since typical values of the
+     ** diffusion width are much smaller than the strip pitch. The charge in
+     ** the neighbouring strip is neglected if it is more distant than 3 sigma
+     ** from the charge centre.
+     ** Edge effects are neglected, i.e. diffusion into the inactive area is
+     ** allowed.
+     **/
+    void Diffusion(Double_t x, Double_t y, Double_t sigma, Int_t side,
+    		           Double_t& fracL, Double_t& fracC, Double_t& fracR);
 
 
     /** Get the cluster position at the top edge of the sensor.
@@ -258,14 +318,44 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
 
 
     /** Check whether a point (x,y) is inside the active area.
-     ** Note that the coordinates have to be given in w.r.t. the bottom
-     ** left corner of the active area of the sensor.
      **
-     ** @param x  x coordinate in sensor frame (w.r.t. bottom left corner)
-     ** @param y  y coordinate in sensor frame (w.r.t. bottom left corner)
+     ** @param x  x coordinate in the local c.s. [cm]
+     ** @param y  y coordinate in the local c.s. [cm]
      ** @return  kTRUE if inside active area.
+     **
+     ** The coordinates have to be given in the local
+     ** coordinate system (origin in the sensor centre).
      **/
     Bool_t IsInside(Double_t x, Double_t y);
+
+
+    /** Lorentz shift in the x coordinate
+     ** @param z           coordinate of charge origin in local c.s. [cm]
+     ** @param chargeType  Type of charge carrier (0 = electron, 1 = hole)
+     ** @param sensor      Pointer to sensor object
+     ** @value Displacement in x due to Lorentz shift [cm]
+     **
+     ** Calculates the displacement in x of a charge propagating to
+     ** the readout edge of the sensor. Uses the magnetic field in the
+     ** centre of the sensor.
+     **/
+    Double_t LorentzShift(Double_t z, Int_t chargeType,
+    		                  const CbmStsSensor* sensor) const;
+
+
+    /** Lorentz shift in the x coordinate
+     ** @param z           Coordinate of charge origin in local c.s. [cm]
+     ** @param chargeType  Type of charge carrier (0 = electron, 1 = hole)
+     ** @param sensor      Pointer to sensor object
+     ** @param bY          Magnetic field (y component) [T]
+     ** @value Displacement in x due to Lorentz shift [cm]
+     **
+     ** Calculates the displacement in x of a charge propagating to
+     ** the readout edge of the sensor. Uses the magnetic field in the
+     ** centre of the sensor.
+     **/
+    Double_t LorentzShift(Double_t z, Int_t chargeType,
+    		                  const CbmStsSensor* sensor, Double_t bY) const;
 
 
     /** Produce charge on front or back side from a CbmStsSensorPoint
@@ -276,6 +366,28 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      **/
     virtual Int_t ProduceCharge(CbmStsSensorPoint* point, Int_t side,
                                 const CbmStsSensor* sensor) const;
+
+
+    /** Produce charge from a CbmStsSensorPoint
+     ** @param point  Pointer to CbmStsSensorType object
+     ** @param sensor Pointer to sensor object
+     **/
+    void ProduceCharge(CbmStsSensorPoint* point,
+    	                 const CbmStsSensor* sensor);
+
+
+    /** Propagate a charge created in the sensor to the readout strips
+     ** @param x       x origin of charge in local c.s. [cm]
+     ** @param y       y origin of charge in local c.s. [cm]
+     ** @param z       z origin of charge in local c.s. [cm]
+     ** @param charge  Charge [e]
+     ** @param bY      Magnetic field (y component) [T]
+     ** @param side    0 = front (n) side; 1 = back (p) side
+     ** @param sensor  Pointer to sensor object
+     **/
+    void PropagateCharge(Double_t x, Double_t y, Double_t z,
+    		                 Double_t charge, Double_t bY, Int_t side,
+    		                 const CbmStsSensor* sensor);
 
 
     /** Register produced charge in one strip
@@ -296,7 +408,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
 
 
 
-    ClassDef(CbmStsSensorTypeDssd,1);
+    ClassDef(CbmStsSensorTypeDssd,2);
 
 };
 

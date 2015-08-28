@@ -6,8 +6,12 @@
 #ifndef CBMSTSSENSORPOINT_H
 #define CBMSTSSENSORPOINT_H 1
 
-
+#include <string>
 #include "Rtypes.h"
+
+using std::string;
+
+
 
 /** @class CbmStsSensorPoint
  ** @brief Container class for a local point in a STS sensor
@@ -16,8 +20,6 @@
  **
  ** Stores parameters needed for digitisation in the sensor C.S.
  **/
-
-
 class CbmStsSensorPoint
 {
 
@@ -64,6 +66,8 @@ class CbmStsSensorPoint
     Int_t    GetPid()   const { return fPid; }    ///< Particle ID [PDG]
 
 
+		/** String output **/
+		string ToString() const;
 
 
   private:
