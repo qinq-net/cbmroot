@@ -500,8 +500,8 @@ Bool_t   CbmTofTestBeamClusterizer::InitParameters()
    }
 
    LOG(INFO)<<" BuildCluster with MaxTimeDist "<<fdMaxTimeDist<<", MaxSpaceDist "
-	     <<fdMaxSpaceDist
-	     <<FairLogger::endl;
+             <<fdMaxSpaceDist
+             <<FairLogger::endl;
 
    if(fiCluMulMax==0) fiCluMulMax=100;
    if (fOutHstFileName==""){
@@ -509,7 +509,7 @@ Bool_t   CbmTofTestBeamClusterizer::InitParameters()
    }
 
    LOG(INFO)<<" Hst Output filename = "<<fOutHstFileName
-	     <<FairLogger::endl;
+             <<FairLogger::endl;
 
    if(fiBeamRefType == 0) {  // initialize defaults of sep14
      fiBeamRefType  = 5;
@@ -522,7 +522,7 @@ Bool_t   CbmTofTestBeamClusterizer::InitParameters()
    }
 
    LOG(INFO)<<"<I>  BeamRefType = "<<fiBeamRefType<<", SM "<<fiBeamRefSm
-	     <<FairLogger::endl;
+             <<FairLogger::endl;
 
    return kTRUE;
 }
@@ -553,44 +553,44 @@ Bool_t   CbmTofTestBeamClusterizer::InitCalibParameter()
       {
         for( Int_t iRpc = 0; iRpc < iNbRpc; iRpc++ )
         {
-	  //	  LOG(INFO)<<Form(" fvCPDelTof resize for SmT %d, R %d, B %d ",iSmType,iNbSm*iNbRpc,nbClDelTofBinX)
-	  //	   <<FairLogger::endl;
-	  fvCPDelTof[iSmType][iSm*iNbRpc+iRpc].resize( nbClDelTofBinX );
-	  for(Int_t iBx=0; iBx<nbClDelTofBinX; iBx++){ 
-	    // LOG(INFO)<<Form(" fvCPDelTof for SmT %d, R %d, B %d",iSmType,iSm*iNbRpc+iRpc,iBx)<<FairLogger::endl;
-  	    fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx].resize( iNSel );
+          //          LOG(INFO)<<Form(" fvCPDelTof resize for SmT %d, R %d, B %d ",iSmType,iNbSm*iNbRpc,nbClDelTofBinX)
+          //           <<FairLogger::endl;
+          fvCPDelTof[iSmType][iSm*iNbRpc+iRpc].resize( nbClDelTofBinX );
+          for(Int_t iBx=0; iBx<nbClDelTofBinX; iBx++){ 
+            // LOG(INFO)<<Form(" fvCPDelTof for SmT %d, R %d, B %d",iSmType,iSm*iNbRpc+iRpc,iBx)<<FairLogger::endl;
+              fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx].resize( iNSel );
             for(Int_t iSel=0; iSel<iNSel; iSel++)
-      	    fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx][iSel]=0.;  // initialize
-	  }
+                  fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx][iSel]=0.;  // initialize
+          }
 
           Int_t iNbChan = fDigiBdfPar->GetNbChan( iSmType, iRpc );
-	  fvCPTOff[iSmType][iSm*iNbRpc+iRpc].resize( iNbChan );
-	  fvCPTotGain[iSmType][iSm*iNbRpc+iRpc].resize( iNbChan );
-	  fvCPTotOff[iSmType][iSm*iNbRpc+iRpc].resize( iNbChan );
-	  fvCPWalk[iSmType][iSm*iNbRpc+iRpc].resize( iNbChan );
-	  Int_t nbSide  =2 - fDigiBdfPar->GetChanType( iSmType, iRpc );
-	  for (Int_t iCh=0; iCh<iNbChan; iCh++)
-	  {
-	    fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh].resize( nbSide );
-	    fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh].resize( nbSide );
-	    fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh].resize( nbSide );
-	    fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh].resize( nbSide );	  
-	    for(Int_t iSide=0; iSide<nbSide; iSide++){
-	      fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]=0.;      //initialize
-	      fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]=1.;   //initialize
-	      fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]=0.;   //initialize
+          fvCPTOff[iSmType][iSm*iNbRpc+iRpc].resize( iNbChan );
+          fvCPTotGain[iSmType][iSm*iNbRpc+iRpc].resize( iNbChan );
+          fvCPTotOff[iSmType][iSm*iNbRpc+iRpc].resize( iNbChan );
+          fvCPWalk[iSmType][iSm*iNbRpc+iRpc].resize( iNbChan );
+          Int_t nbSide  =2 - fDigiBdfPar->GetChanType( iSmType, iRpc );
+          for (Int_t iCh=0; iCh<iNbChan; iCh++)
+          {
+            fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh].resize( nbSide );
+            fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh].resize( nbSide );
+            fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh].resize( nbSide );
+            fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh].resize( nbSide );          
+            for(Int_t iSide=0; iSide<nbSide; iSide++){
+              fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]=0.;      //initialize
+              fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]=1.;   //initialize
+              fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]=0.;   //initialize
               fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][iSide].resize( nbClWalkBinX );
-	      for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
-		fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][iSide][iWx]=0.;
-	      }
-	    }    
-	  }
-	}
+              for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
+                fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][iSide][iWx]=0.;
+              }
+            }    
+          }
+        }
       }
   }
 
   LOG(INFO)<<"CbmTofTestBeamClusterizer::InitCalibParameter: defaults set"
-	   <<FairLogger::endl;
+           <<FairLogger::endl;
 
   TDirectory * oldir = gDirectory; // <= To prevent histos from being sucked in by the param file of the TRootManager!
   /*
@@ -599,7 +599,7 @@ Bool_t   CbmTofTestBeamClusterizer::InitCalibParameter()
 
   if(0<fCalMode){
     LOG(INFO) << "CbmTofTestBeamClusterizer::InitCalibParameter: read histos from "
-		 << "file " << fCalParFileName << FairLogger::endl;
+                 << "file " << fCalParFileName << FairLogger::endl;
 
   // read parameter from histos
     if(fCalParFileName.IsNull()) return kTRUE;
@@ -607,7 +607,7 @@ Bool_t   CbmTofTestBeamClusterizer::InitCalibParameter()
     fCalParFile = new TFile(fCalParFileName,"");
     if(NULL == fCalParFile) {
       LOG(ERROR) << "CbmTofTestBeamClusterizer::InitCalibParameter: "
-		 << "file " << fCalParFileName << " does not exist!" << FairLogger::endl;
+                 << "file " << fCalParFileName << " does not exist!" << FairLogger::endl;
       return kTRUE;
     }
     /*
@@ -623,117 +623,117 @@ Bool_t   CbmTofTestBeamClusterizer::InitCalibParameter()
       for( Int_t iSm = 0; iSm < iNbSm; iSm++ )
         for( Int_t iRpc = 0; iRpc < iNbRpc; iRpc++ )
         {
-	  TH2F *htempPos_pfx =(TH2F*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Pos_pfx",iSmType,iSm,iRpc));
-	  TH2F *htempTOff_pfx=(TH2F*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_TOff_pfx",iSmType,iSm,iRpc));
-	  TH1D *htempTot_Mean =(TH1D*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Tot_Mean",iSmType,iSm,iRpc));
-	  TH1D *htempTot_Off  =(TH1D*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Tot_Off",iSmType,iSm,iRpc));
+          TH2F *htempPos_pfx =(TH2F*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Pos_pfx",iSmType,iSm,iRpc));
+          TH2F *htempTOff_pfx=(TH2F*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_TOff_pfx",iSmType,iSm,iRpc));
+          TH1D *htempTot_Mean =(TH1D*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Tot_Mean",iSmType,iSm,iRpc));
+          TH1D *htempTot_Off  =(TH1D*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Tot_Off",iSmType,iSm,iRpc));
           if(NULL != htempPos_pfx && NULL != htempTOff_pfx && NULL != htempTot_Mean && NULL != htempTot_Off)   
-	  {
-	    Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
+          {
+            Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
             Int_t iNbinTot = htempTot_Mean->GetNbinsX();
-	    for( Int_t iCh = 0; iCh < iNbCh; iCh++ )
-	      {
-		Double_t YMean=((TProfile *)htempPos_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(?)
-		Double_t TMean=((TProfile *)htempTOff_pfx)->GetBinContent(iCh+1);
+            for( Int_t iCh = 0; iCh < iNbCh; iCh++ )
+              {
+                Double_t YMean=((TProfile *)htempPos_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(?)
+                Double_t TMean=((TProfile *)htempTOff_pfx)->GetBinContent(iCh+1);
                 //Double_t dTYOff=YMean/fDigiBdfPar->GetSignalSpeed() ;
                 Double_t dTYOff=YMean/fDigiBdfPar->GetSigVel(iSmType,iRpc) ;
-		fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] += -dTYOff + TMean ;
-		fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean ;
+                fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] += -dTYOff + TMean ;
+                fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean ;
  
-		for(Int_t iSide=0; iSide<2; iSide++){
-		  Double_t TotMean=htempTot_Mean->GetBinContent(iCh*2+1+iSide);  //nh +1 empirical(?)
-		  if(1<TotMean){
-		    fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide] *= fdTTotMean / TotMean;
-		  }
-		  fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]=htempTot_Off->GetBinContent(iCh*2+1+iSide);
-		}
+                for(Int_t iSide=0; iSide<2; iSide++){
+                  Double_t TotMean=htempTot_Mean->GetBinContent(iCh*2+1+iSide);  //nh +1 empirical(?)
+                  if(1<TotMean){
+                    fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide] *= fdTTotMean / TotMean;
+                  }
+                  fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]=htempTot_Off->GetBinContent(iCh*2+1+iSide);
+                }
 
-		if(5 == iSmType || 8 == iSmType){
-		  fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]=fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0];
-		  fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1] = fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0];
-		  fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]=fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][0];
-		}
+                if(5 == iSmType || 8 == iSmType){
+                  fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]=fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0];
+                  fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1] = fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0];
+                  fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]=fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][0];
+                }
 
-		LOG(DEBUG)<<"CbmTofTestBeamClusterizer::InitCalibParameter:" 
-			   <<" SmT "<< iSmType<<" Sm "<<iSm<<" Rpc "<<iRpc<<" Ch "<<iCh
-			 << Form(": YMean %f, TMean %f",YMean, TMean)
-			 <<" -> " << Form(" %f, %f, %f, %f ",fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
-				    fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1],
-				    fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0],
-				    fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1]) 
-			   <<", NbinTot "<< iNbinTot
-			   <<FairLogger::endl;
+                LOG(DEBUG)<<"CbmTofTestBeamClusterizer::InitCalibParameter:" 
+                           <<" SmT "<< iSmType<<" Sm "<<iSm<<" Rpc "<<iRpc<<" Ch "<<iCh
+                         << Form(": YMean %f, TMean %f",YMean, TMean)
+                         <<" -> " << Form(" %f, %f, %f, %f ",fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
+                                    fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1],
+                                    fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0],
+                                    fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1]) 
+                           <<", NbinTot "<< iNbinTot
+                           <<FairLogger::endl;
 
-		TH1D *htempWalk0=(TH1D*)gDirectory->FindObjectAny( 
-			         Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
-		TH1D *htempWalk1=(TH1D*)gDirectory->FindObjectAny( 
-			         Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
-		if(NULL != htempWalk0 && NULL != htempWalk1 ) { // reinitialize Walk array 
-		  LOG(DEBUG)<<"Initialize Walk correction for "
-			    <<Form(" SmT%01d_sm%03d_rpc%03d_Ch%03d",iSmType, iSm, iRpc, iCh)
-			    <<FairLogger::endl;
+                TH1D *htempWalk0=(TH1D*)gDirectory->FindObjectAny( 
+                                 Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
+                TH1D *htempWalk1=(TH1D*)gDirectory->FindObjectAny( 
+                                 Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
+                if(NULL != htempWalk0 && NULL != htempWalk1 ) { // reinitialize Walk array 
+                  LOG(DEBUG)<<"Initialize Walk correction for "
+                            <<Form(" SmT%01d_sm%03d_rpc%03d_Ch%03d",iSmType, iSm, iRpc, iCh)
+                            <<FairLogger::endl;
                   if(htempWalk0->GetNbinsX() != nbClWalkBinX) 
-		    LOG(ERROR)<<"CbmTofTestBeamClusterizer::InitCalibParameter: Inconsistent Walk histograms"
-			      <<FairLogger::endl;
+                    LOG(ERROR)<<"CbmTofTestBeamClusterizer::InitCalibParameter: Inconsistent Walk histograms"
+                              <<FairLogger::endl;
                    for( Int_t iBin = 0; iBin < nbClWalkBinX; iBin++ )
-		   {
-		     fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iBin]=htempWalk0->GetBinContent(iBin+1);
-		     fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iBin]=htempWalk1->GetBinContent(iBin+1);
-		     LOG(DEBUG1)<<Form(" SmT%01d_sm%03d_rpc%03d_Ch%03d bin %d walk %f ",iSmType, iSm, iRpc, iCh, iBin,
-				       fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iBin])
-			      <<FairLogger::endl;
-		     if(5 == iSmType || 8 == iSmType){
-		       fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iBin]=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iBin];
-		     }
-		   }
-		}
-	    }
-	  }
-	  else {
-	    LOG(WARNING)<<" Calibration histos " << Form("cl_SmT%01d_sm%03d_rpc%03d_XXX", iSmType, iSm, iRpc) 
-		      << " not found. "
-		      <<FairLogger::endl;
-	  }
-	  for(Int_t iSel=0; iSel<iNSel; iSel++){
-	   TH1D *htmpDelTof =(TH1D*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
-	   if (NULL==htmpDelTof) {
-	    LOG(DEBUG)<<" Histos " << Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof", iSmType, iSm, iRpc, iSel) << " not found. "
-		      <<FairLogger::endl;
-	    continue;
-	   }
-	   LOG(DEBUG)<<" Load DelTof from histos "<< Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel)<<"."
-	            <<FairLogger::endl;
+                   {
+                     fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iBin]=htempWalk0->GetBinContent(iBin+1);
+                     fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iBin]=htempWalk1->GetBinContent(iBin+1);
+                     LOG(DEBUG1)<<Form(" SmT%01d_sm%03d_rpc%03d_Ch%03d bin %d walk %f ",iSmType, iSm, iRpc, iCh, iBin,
+                                       fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iBin])
+                              <<FairLogger::endl;
+                     if(5 == iSmType || 8 == iSmType){
+                       fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iBin]=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iBin];
+                     }
+                   }
+                }
+            }
+          }
+          else {
+            LOG(WARNING)<<" Calibration histos " << Form("cl_SmT%01d_sm%03d_rpc%03d_XXX", iSmType, iSm, iRpc) 
+                      << " not found. "
+                      <<FairLogger::endl;
+          }
+          for(Int_t iSel=0; iSel<iNSel; iSel++){
+           TH1D *htmpDelTof =(TH1D*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
+           if (NULL==htmpDelTof) {
+            LOG(DEBUG)<<" Histos " << Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof", iSmType, iSm, iRpc, iSel) << " not found. "
+                      <<FairLogger::endl;
+            continue;
+           }
+           LOG(DEBUG)<<" Load DelTof from histos "<< Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel)<<"."
+                    <<FairLogger::endl;
            for(Int_t iBx=0; iBx<nbClDelTofBinX; iBx++){
-	    fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx][iSel] += htmpDelTof->GetBinContent(iBx+1);
-	   }
+            fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx][iSel] += htmpDelTof->GetBinContent(iBx+1);
+           }
 
-	   // copy Histo to memory
-	   TDirectory * curdir = gDirectory;
-	   gDirectory->cd( oldir->GetPath() );
-	   TH1D *h1DelTof=(TH1D *)htmpDelTof->Clone(Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
+           // copy Histo to memory
+           TDirectory * curdir = gDirectory;
+           gDirectory->cd( oldir->GetPath() );
+           TH1D *h1DelTof=(TH1D *)htmpDelTof->Clone(Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
 
-	   LOG(DEBUG)<<" copy histo "
-	 	     <<h1DelTof->GetName()
-	 	     <<" to directory "
-		     <<oldir->GetName()
-		     <<FairLogger::endl;
+           LOG(DEBUG)<<" copy histo "
+                      <<h1DelTof->GetName()
+                      <<" to directory "
+                     <<oldir->GetName()
+                     <<FairLogger::endl;
 
-	   gDirectory->cd( curdir->GetPath() );
-	  }
-	}
+           gDirectory->cd( curdir->GetPath() );
+          }
+        }
     }
   }
   //   fCalParFile->Delete();
   gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
   LOG(INFO)<<"CbmTofTestBeamClusterizer::InitCalibParameter: initialization done"
-	   <<FairLogger::endl; 
+           <<FairLogger::endl; 
   return kTRUE;
 }
 /************************************************************************************/
 Bool_t   CbmTofTestBeamClusterizer::LoadGeometry()
 {
    LOG(INFO)<<"CbmTofTestBeamClusterizer::LoadGeometry starting for  "
-	    <<fMbsMappingPar->GetNbMappedDet() << " mapped detectors, "
+            <<fMbsMappingPar->GetNbMappedDet() << " mapped detectors, "
             <<fDigiPar->GetNrOfModules() << " geometrically known ones "
             <<FairLogger::endl;
 
@@ -758,16 +758,16 @@ Bool_t   CbmTofTestBeamClusterizer::LoadGeometry()
      Double_t dy = fChannelInfo->GetSizey();
      LOG(DEBUG)
        << "-I- InitPar "<<icell<<" Id: "<< Form("0x%08x",cellId)
-	    << " "<< cell << " tmcs: "<< smtype <<" "<<smodule<<" "<<module<<" "<<cell   
+            << " "<< cell << " tmcs: "<< smtype <<" "<<smodule<<" "<<module<<" "<<cell   
             << " x="<<Form("%6.2f",x)<<" y="<<Form("%6.2f",y)<<" z="<<Form("%6.2f",z)
             <<" dx="<<dx<<" dy="<<dy<<FairLogger::endl;
 
       TGeoNode *fNode=        // prepare local->global trafo
       gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
       LOG(DEBUG2)<<Form(" Node at (%6.1f,%6.1f,%6.1f) : 0x%p",
-		          fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode)
-		 <<FairLogger::endl;
-      //      fNode->Print();	
+                          fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode)
+                 <<FairLogger::endl;
+      //      fNode->Print();        
 
    }
 
@@ -779,20 +779,20 @@ Bool_t   CbmTofTestBeamClusterizer::LoadGeometry()
        Int_t iRpcId    = CbmTofAddress::GetRpcId( iUniqueId );
        LOG(INFO) << " DetIndx "<<iDetIndx<<", SmType "<<iSmType<<", SmId "<<iSmId
                  << ", RpcId "<<iRpcId<<" => UniqueId "<<Form("0x%08x ",iUniqueId)
-		 << Form(" Svel %6.3f ",fDigiBdfPar->GetSigVel(iSmType,iRpcId))
+                 << Form(" Svel %6.3f ",fDigiBdfPar->GetSigVel(iSmType,iRpcId))
                  <<FairLogger::endl;
        Int_t iCell=-1; 
        while (kTRUE){
-	 Int_t iUCellId= CbmTofAddress::GetUniqueAddress(iSmId,iRpcId,++iCell,0,iSmType);
+         Int_t iUCellId= CbmTofAddress::GetUniqueAddress(iSmId,iRpcId,++iCell,0,iSmType);
          fChannelInfo = fDigiPar->GetCell(iUCellId);
          if (NULL == fChannelInfo) break;
-	 LOG(DEBUG) << " Cell " << iCell << Form(" 0x%08x ",iUCellId)
+         LOG(DEBUG) << " Cell " << iCell << Form(" 0x%08x ",iUCellId)
                    << Form(", fCh 0x%p ",fChannelInfo)
                    << ", x: " << fChannelInfo->GetX()
                    << ", y: " << fChannelInfo->GetY()
                    << ", z: " << fChannelInfo->GetZ()
                    << FairLogger::endl; 
-	 }
+         }
 
    }
 
@@ -830,10 +830,10 @@ Bool_t   CbmTofTestBeamClusterizer::LoadGeometry()
            fviClusterMul[iSmType].resize( iNbSm );
            for( Int_t iRpc = 0; iRpc < iNbRpc; iRpc++ )
             {
- 	       fviClusterMul[iSmType][iSm].resize( iNbRpc );
+                fviClusterMul[iSmType][iSm].resize( iNbRpc );
                Int_t iNbChan = fDigiBdfPar->GetNbChan( iSmType, iRpc );
                LOG(DEBUG)<<"CbmTofTestBeamClusterizer::LoadGeometry: StoreDigi with "
-			 << Form(" %3d %3d %3d %3d %5d ",iSmType,iSm,iNbRpc,iRpc,iNbChan)
+                         << Form(" %3d %3d %3d %3d %5d ",iSmType,iSm,iNbRpc,iRpc,iNbChan)
                          << FairLogger::endl;
                fStorDigiExp[iSmType][iSm*iNbRpc+iRpc].resize( iNbChan );
                fStorDigiInd[iSmType][iSm*iNbRpc+iRpc].resize( iNbChan );
@@ -892,10 +892,10 @@ Bool_t   CbmTofTestBeamClusterizer::DeleteGeometry()
          Int_t iNbRpc = fDigiBdfPar->GetNbRpc( iSmType);
          for( Int_t iSm = 0; iSm < iNbSm; iSm++ )
          {
-	   for( Int_t iRpc = 0; iRpc < iNbRpc; iRpc++ ) {
+           for( Int_t iRpc = 0; iRpc < iNbRpc; iRpc++ ) {
                fStorDigiExp[iSmType][iSm*iNbRpc+iRpc].clear();
                fStorDigiInd[iSmType][iSm*iNbRpc+iRpc].clear();
-	   }
+           }
          } // for( Int_t iSm = 0; iSm < iNbSm; iSm++ )
          fStorDigiExp[iSmType].clear();
          fStorDigiInd[iSmType].clear();
@@ -911,10 +911,10 @@ Bool_t   CbmTofTestBeamClusterizer::DeleteGeometry()
             Int_t iNbRpc = fDigiBdfPar->GetNbRpc( iSmType);
             for( Int_t iSm = 0; iSm < iNbSm; iSm++ )
             {
-	      for( Int_t iRpc = 0; iRpc < iNbRpc; iRpc++ ){
+              for( Int_t iRpc = 0; iRpc < iNbRpc; iRpc++ ){
                  fStorDigi[iSmType][iSm*iNbRpc+iRpc].clear();
                  fStorDigiInd[iSmType][iSm*iNbRpc+iRpc].clear();
-	      }
+              }
             } // for( Int_t iSm = 0; iSm < iNbSm; iSm++ )
             fStorDigi[iSmType].clear();
             fStorDigiInd[iSmType].clear();
@@ -947,10 +947,10 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
      Int_t iUCellId  = CbmTofAddress::GetUniqueAddress(0,0,0,0,iS);
      fChannelInfo = fDigiPar->GetCell(iUCellId);
      if(NULL == fChannelInfo){
-	 LOG(WARNING)<<"CbmTofTestBeamClusterizer::CreateHistos: No DigiPar for SmType "
+         LOG(WARNING)<<"CbmTofTestBeamClusterizer::CreateHistos: No DigiPar for SmType "
                    <<Form("%d, 0x%08x", iS, iUCellId)
-		   <<FairLogger::endl;
-	 continue;     
+                   <<FairLogger::endl;
+         continue;     
      }
      Double_t YDMAX=TMath::Max(2.,fChannelInfo->GetSizey())*YSCAL;
 
@@ -973,17 +973,17 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
      fhTSmCluTRun[iS].resize( iNSel );
      for (Int_t iSel=0; iSel<iNSel; iSel++){  // Loop over selectors 
        fhTSmCluPosition[iS][iSel] =  new TH2F( 
-	  Form("cl_TSmT%01d_Sel%02d_Pos", iS, iSel),
+          Form("cl_TSmT%01d_Sel%02d_Pos", iS, iSel),
           Form("Clu position of SmType %d under Selector %02d; Sm+Rpc# []; ypos [cm]", iS, iSel ),
           fDigiBdfPar->GetNbSm(iS)*fDigiBdfPar->GetNbRpc(iS), 0, fDigiBdfPar->GetNbSm(iS)*fDigiBdfPar->GetNbRpc(iS),
           99, -YDMAX,YDMAX); 
        fhTSmCluTOff[iS][iSel] =  new TH2F( 
-	  Form("cl_TSmT%01d_Sel%02d_TOff", iS, iSel),
+          Form("cl_TSmT%01d_Sel%02d_TOff", iS, iSel),
           Form("Clu TimeZero in SmType %d under Selector %02d; Sm+Rpc# []; TOff [ps]", iS, iSel ),
           fDigiBdfPar->GetNbSm(iS)*fDigiBdfPar->GetNbRpc(iS), 0, fDigiBdfPar->GetNbSm(iS)*fDigiBdfPar->GetNbRpc(iS),
           99, -TSumMax,TSumMax );    
        fhTSmCluTRun[iS][iSel] =  new TH2F( 
-	  Form("cl_TSmT%01d_Sel%02d_TRun", iS, iSel),
+          Form("cl_TSmT%01d_Sel%02d_TRun", iS, iSel),
           Form("Clu TimeZero in SmType %d under Selector %02d; Event# []; TMean [ps]", iS, iSel ),
           100, 0, MaxNbEvent,
           99, -TSumMax,TSumMax );    
@@ -1017,24 +1017,24 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
        Int_t iUCellId  = CbmTofAddress::GetUniqueAddress(iSmId,iRpcId,0,0,iSmType);
        fChannelInfo = fDigiPar->GetCell(iUCellId);
        if (NULL==fChannelInfo) {
-	 LOG(WARNING)<<"CbmTofTestBeamClusterizer::CreateHistos: No DigiPar for Det "
+         LOG(WARNING)<<"CbmTofTestBeamClusterizer::CreateHistos: No DigiPar for Det "
                      <<Form("0x%08x", iUCellId)
                      <<FairLogger::endl;
-	 continue;
+         continue;
        }      
        LOG(INFO) << "CbmTofTestBeamClusterizer::CreateHistos: DetIndx "<<iDetIndx<<", SmType "<<iSmType<<", SmId "<<iSmId
-	 	 << ", RpcId "<<iRpcId<<" => UniqueId "<<Form("(0x%08x, 0x%08x)",iUniqueId,iUCellId)
+                  << ", RpcId "<<iRpcId<<" => UniqueId "<<Form("(0x%08x, 0x%08x)",iUniqueId,iUCellId)
                  <<", dx "<<fChannelInfo->GetSizex()
                  <<", dy "<<fChannelInfo->GetSizey()
                  <<Form(" poi: 0x%p ",fChannelInfo)
-	 	 <<", nbCh "<<fMbsMappingPar->GetSmTypeNbCh(iSmType)
+                  <<", nbCh "<<fMbsMappingPar->GetSmTypeNbCh(iSmType)
                  <<FairLogger::endl;
 
        fhRpcDigiCor[iDetIndx] =  new TH2I(
           Form("cl_SmT%01d_sm%03d_rpc%03d_DigiCor", iSmType, iSmId, iRpcId ),
           Form("Digi Correlation of Rpc #%03d in Sm %03d of type %d; digi 0; digi 1", iRpcId, iSmId, iSmType ),
           fMbsMappingPar->GetSmTypeNbCh(iSmType),0,fMbsMappingPar->GetSmTypeNbCh(iSmType),
-	  fMbsMappingPar->GetSmTypeNbCh(iSmType),0,fMbsMappingPar->GetSmTypeNbCh(iSmType));
+          fMbsMappingPar->GetSmTypeNbCh(iSmType),0,fMbsMappingPar->GetSmTypeNbCh(iSmType));
 
        fhRpcCluMul[iDetIndx] =  new TH1I(
           Form("cl_SmT%01d_sm%03d_rpc%03d_Mul", iSmType, iSmId, iRpcId ),
@@ -1104,25 +1104,25 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
 
        // Walk histos 
        fhRpcCluAvWalk[iDetIndx] = new TH2F( 
-			  Form("cl_SmT%01d_sm%03d_rpc%03d_AvWalk", iSmType, iSmId, iRpcId),
-			  Form("Walk in SmT%01d_sm%03d_rpc%03d_AvWalk", iSmType, iSmId, iRpcId),
-			  nbClWalkBinX,fdTOTMin,fdTOTMax,nbClWalkBinY,-TSumMax,TSumMax);
+                          Form("cl_SmT%01d_sm%03d_rpc%03d_AvWalk", iSmType, iSmId, iRpcId),
+                          Form("Walk in SmT%01d_sm%03d_rpc%03d_AvWalk", iSmType, iSmId, iRpcId),
+                          nbClWalkBinX,fdTOTMin,fdTOTMax,nbClWalkBinY,-TSumMax,TSumMax);
    
        fhRpcCluAvLnWalk[iDetIndx] = new TH2F( 
-			  Form("cl_SmT%01d_sm%03d_rpc%03d_AvLnWalk", iSmType, iSmId, iRpcId),
-			  Form("Walk in SmT%01d_sm%03d_rpc%03d_AvLnWalk", iSmType, iSmId, iRpcId),
-			  nbClWalkBinX,6.,TMath::Log(fdTOTMax),nbClWalkBinY,-TSumMax,TSumMax);
+                          Form("cl_SmT%01d_sm%03d_rpc%03d_AvLnWalk", iSmType, iSmId, iRpcId),
+                          Form("Walk in SmT%01d_sm%03d_rpc%03d_AvLnWalk", iSmType, iSmId, iRpcId),
+                          nbClWalkBinX,6.,TMath::Log(fdTOTMax),nbClWalkBinY,-TSumMax,TSumMax);
 
        fhRpcCluWalk[iDetIndx].resize( fMbsMappingPar->GetSmTypeNbCh(iSmType) );
        for( Int_t iCh=0; iCh<fMbsMappingPar->GetSmTypeNbCh(iSmType); iCh++){
-	 fhRpcCluWalk[iDetIndx][iCh].resize( 2 );
-	 for (Int_t iSide=0; iSide<2; iSide++)
-	 {
-	   fhRpcCluWalk[iDetIndx][iCh][iSide]= new TH2F( 
-			  Form("cl_SmT%01d_sm%03d_rpc%03d_Ch%03d_S%01d_Walk", iSmType, iSmId, iRpcId, iCh, iSide ),
-			  Form("Walk in SmT%01d_sm%03d_rpc%03d_Ch%03d_S%01d_Walk", iSmType, iSmId, iRpcId, iCh, iSide ),
-			  nbClWalkBinX,fdTOTMin,fdTOTMax,nbClWalkBinY,-TSumMax,TSumMax );
-	 }
+         fhRpcCluWalk[iDetIndx][iCh].resize( 2 );
+         for (Int_t iSide=0; iSide<2; iSide++)
+         {
+           fhRpcCluWalk[iDetIndx][iCh][iSide]= new TH2F( 
+                          Form("cl_SmT%01d_sm%03d_rpc%03d_Ch%03d_S%01d_Walk", iSmType, iSmId, iRpcId, iCh, iSide ),
+                          Form("Walk in SmT%01d_sm%03d_rpc%03d_Ch%03d_S%01d_Walk", iSmType, iSmId, iRpcId, iCh, iSide ),
+                          nbClWalkBinX,fdTOTMin,fdTOTMax,nbClWalkBinY,-TSumMax,TSumMax );
+         }
        /*
          (fhRpcCluWalk[iDetIndx]).push_back( hTemp );
        */
@@ -1163,8 +1163,8 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
    fhSeldT.resize( iNSel );
    for (Int_t iSel=0; iSel<iNSel; iSel++){
        fhSeldT[iSel] =  new TH1F(  Form("cl_dt_Sel%02d", iSel ),
-				   Form("Selector time %02d; dT [ps]",iSel ),
-				   99, -DelTofMax*10., DelTofMax*10.); 
+                                   Form("Selector time %02d; dT [ps]",iSel ),
+                                   99, -DelTofMax*10., DelTofMax*10.); 
    }
  
    fhTRpcCluMul.resize( iNbDet  );
@@ -1184,17 +1184,17 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
        Int_t iUCellId  = CbmTofAddress::GetUniqueAddress(iSmId,iRpcId,0,0,iSmType);
        fChannelInfo = fDigiPar->GetCell(iUCellId);
        if (NULL==fChannelInfo) {
-	 LOG(WARNING)<<"CbmTofTestBeamClusterizer::CreateHistos: No DigiPar for Det "
+         LOG(WARNING)<<"CbmTofTestBeamClusterizer::CreateHistos: No DigiPar for Det "
                      <<Form("0x%08x", iUCellId)
                  <<FairLogger::endl;
-	 break;
+         break;
        }      
        LOG(DEBUG1) << "CbmTofTestBeamClusterizer::CreateHistos: DetIndx "<<iDetIndx<<", SmType "<<iSmType<<", SmId "<<iSmId
-	 	 << ", RpcId "<<iRpcId<<" => UniqueId "<<Form("(0x%08x, 0x%08x)",iUniqueId,iUCellId)
+                  << ", RpcId "<<iRpcId<<" => UniqueId "<<Form("(0x%08x, 0x%08x)",iUniqueId,iUCellId)
                  <<", dx "<<fChannelInfo->GetSizex()
                  <<", dy "<<fChannelInfo->GetSizey()
                  <<Form(" poi: 0x%p ",fChannelInfo)
-	 	 <<", nbCh "<<fMbsMappingPar->GetSmTypeNbCh(iSmType)
+                  <<", nbCh "<<fMbsMappingPar->GetSmTypeNbCh(iSmType)
                  <<FairLogger::endl;
        fhTRpcCluMul[iDetIndx].resize( iNSel  );
        fhTRpcCluPosition[iDetIndx].resize( iNSel  );
@@ -1208,15 +1208,15 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
 
        for (Int_t iSel=0; iSel<iNSel; iSel++){
        fhTRpcCluMul[iDetIndx][iSel] =  new TH1I(
-	  Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_Mul", iSmType, iSmId, iRpcId, iSel ),
-	  Form("Clu multiplicity of Rpc #%03d in Sm %03d of type %d under Selector %02d; M []; cnts", iRpcId, iSmId, iSmType, iSel ),
+          Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_Mul", iSmType, iSmId, iRpcId, iSel ),
+          Form("Clu multiplicity of Rpc #%03d in Sm %03d of type %d under Selector %02d; M []; cnts", iRpcId, iSmId, iSmType, iSel ),
           fMbsMappingPar->GetSmTypeNbCh(iSmType),1.,fMbsMappingPar->GetSmTypeNbCh(iSmType)+1);
 
        Double_t YSCAL=50.;
        if (fPosYMaxScal !=0.) YSCAL=fPosYMaxScal;
        Double_t YDMAX=TMath::Max(2.,fChannelInfo->GetSizey())*YSCAL;
        fhTRpcCluPosition[iDetIndx][iSel] =  new TH2F( 
-	  Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_Pos", iSmType, iSmId, iRpcId, iSel ),
+          Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_Pos", iSmType, iSmId, iRpcId, iSel ),
           Form("Clu position of Rpc #%03d in Sm %03d of type %d under Selector %02d; Strip []; ypos [cm]", iRpcId, iSmId, iSmType, iSel ),
           fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
           100, -YDMAX,YDMAX ); 
@@ -1224,8 +1224,8 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
        Double_t TSumMax=1.E4;
        if (fTRefDifMax !=0.) TSumMax=fTRefDifMax;
        fhTRpcCluTOff[iDetIndx][iSel] =  new TH2F( 
-	  Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_TOff", iSmType, iSmId, iRpcId, iSel ),
-	  Form("Clu TimeZero of Rpc #%03d in Sm %03d of type %d under Selector %02d; Strip []; TOff [ps]", iRpcId, iSmId, iSmType, iSel ),
+          Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_TOff", iSmType, iSmId, iRpcId, iSel ),
+          Form("Clu TimeZero of Rpc #%03d in Sm %03d of type %d under Selector %02d; Strip []; TOff [ps]", iRpcId, iSmId, iSmType, iSel ),
           fMbsMappingPar->GetSmTypeNbCh(iSmType), 0, fMbsMappingPar->GetSmTypeNbCh(iSmType),
           99, -TSumMax,TSumMax ); 
 
@@ -1244,32 +1244,32 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
 
        // Walk histos 
        fhTRpcCluAvWalk[iDetIndx][iSel]  = new TH2F( 
-			  Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_AvWalk", iSmType, iSmId, iRpcId, iSel),
-			  Form("Walk in SmT%01d_sm%03d_rpc%03d_Sel%02d_AvWalk; TOT; T-TSel", iSmType, iSmId, iRpcId, iSel),
-			  nbClWalkBinX,fdTOTMin,fdTOTMax,nbClWalkBinY,-TSumMax,TSumMax);
+                          Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_AvWalk", iSmType, iSmId, iRpcId, iSel),
+                          Form("Walk in SmT%01d_sm%03d_rpc%03d_Sel%02d_AvWalk; TOT; T-TSel", iSmType, iSmId, iRpcId, iSel),
+                          nbClWalkBinX,fdTOTMin,fdTOTMax,nbClWalkBinY,-TSumMax,TSumMax);
 
        // Tof Histos 
        fhTRpcCluDelTof[iDetIndx][iSel] = new TH2F( 
-	  Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof", iSmType, iSmId, iRpcId, iSel),
-	  Form("SmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof; TRef-TSel; T-TSel", iSmType, iSmId, iRpcId, iSel),
-	  nbClDelTofBinX,-DelTofMax,DelTofMax,nbClDelTofBinY,-TSumMax,TSumMax);
+          Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof", iSmType, iSmId, iRpcId, iSel),
+          Form("SmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof; TRef-TSel; T-TSel", iSmType, iSmId, iRpcId, iSel),
+          nbClDelTofBinX,-DelTofMax,DelTofMax,nbClDelTofBinY,-TSumMax,TSumMax);
       
        // Position deviation histos  
        fhTRpcCludXdY[iDetIndx][iSel] = new TH2F( 
-	  Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_dXdY", iSmType, iSmId, iRpcId, iSel),
-	  Form("SmT%01d_sm%03d_rpc%03d_Sel%02d_dXdY; #Delta x [cm]; #Delta y [cm];", iSmType, iSmId, iRpcId, iSel),
-	  nbCldXdYBinX,-dXdYMax,dXdYMax,nbCldXdYBinY,-dXdYMax,dXdYMax);
+          Form("cl_SmT%01d_sm%03d_rpc%03d_Sel%02d_dXdY", iSmType, iSmId, iRpcId, iSel),
+          Form("SmT%01d_sm%03d_rpc%03d_Sel%02d_dXdY; #Delta x [cm]; #Delta y [cm];", iSmType, iSmId, iRpcId, iSel),
+          nbCldXdYBinX,-dXdYMax,dXdYMax,nbCldXdYBinY,-dXdYMax,dXdYMax);
 
        fhTRpcCluWalk[iDetIndx][iSel].resize( fMbsMappingPar->GetSmTypeNbCh(iSmType) );
        for( Int_t iCh=0; iCh<fMbsMappingPar->GetSmTypeNbCh(iSmType); iCh++){
-	 fhTRpcCluWalk[iDetIndx][iSel][iCh].resize( 2 );
-	 for (Int_t iSide=0; iSide<2; iSide++)
-	 {
-	   fhTRpcCluWalk[iDetIndx][iSel][iCh][iSide]= new TH2F( 
+         fhTRpcCluWalk[iDetIndx][iSel][iCh].resize( 2 );
+         for (Int_t iSide=0; iSide<2; iSide++)
+         {
+           fhTRpcCluWalk[iDetIndx][iSel][iCh][iSide]= new TH2F( 
            Form("cl_SmT%01d_sm%03d_rpc%03d_Ch%03d_S%01d_Sel%02d_Walk", iSmType, iSmId, iRpcId, iCh, iSide, iSel ),
-	   Form("Walk in SmT%01d_sm%03d_rpc%03d_Ch%03d_S%01d_Sel%02d_Walk", iSmType, iSmId, iRpcId, iCh, iSide, iSel ),
-	   nbClWalkBinX,fdTOTMin,fdTOTMax,nbClWalkBinY,-TSumMax,TSumMax);
-	 }
+           Form("Walk in SmT%01d_sm%03d_rpc%03d_Ch%03d_S%01d_Sel%02d_Walk", iSmType, iSmId, iRpcId, iCh, iSide, iSel ),
+           nbClWalkBinX,fdTOTMin,fdTOTMax,nbClWalkBinY,-TSumMax,TSumMax);
+         }
        }
       }
      }
@@ -1351,21 +1351,21 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
   CbmTofHit  *pTrig[iNSel]; 
   if(0<iNSel){                  // check software triggers
     LOG(DEBUG) <<"CbmTofTestBeamClusterizer::FillHistos() for "<<iNSel<<" triggers, "
-	       <<" Muls "<<fviClusterMul[0][0][0]
-	       <<", "<<fviClusterMul[1][0][0]
+               <<" Muls "<<fviClusterMul[0][0][0]
+               <<", "<<fviClusterMul[1][0][0]
       /*
-	       <<", "<<fviClusterMul[2][0][0]
-	       <<", "<<fviClusterMul[2][1][0]
-	       <<", "<<fviClusterMul[2][2][0]
-	       <<", "<<fviClusterMul[2][3][0]
+               <<", "<<fviClusterMul[2][0][0]
+               <<", "<<fviClusterMul[2][1][0]
+               <<", "<<fviClusterMul[2][2][0]
+               <<", "<<fviClusterMul[2][3][0]
       */
-	       <<", "<<fviClusterMul[3][0][0]
-	       <<", "<<fviClusterMul[4][0][0]
-	       <<", "<<fviClusterMul[5][0][0]
-	       <<", "<<fviClusterMul[5][1][0]
-	       <<", "<<fviClusterMul[5][2][0]
-	       <<", "<<fviClusterMul[6][0][0]
-	       <<", Dut "<<fDutId<<", Sel "<<fSelId
+               <<", "<<fviClusterMul[3][0][0]
+               <<", "<<fviClusterMul[4][0][0]
+               <<", "<<fviClusterMul[5][0][0]
+               <<", "<<fviClusterMul[5][1][0]
+               <<", "<<fviClusterMul[5][2][0]
+               <<", "<<fviClusterMul[6][0][0]
+               <<", Dut "<<fDutId<<", Sel "<<fSelId
                <<FairLogger::endl;
 
    // do reference first 
@@ -1380,13 +1380,13 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
       if( fiBeamRefType == CbmTofAddress::GetSmType( iDetId )){
        if(fiBeamRefSm   ==  CbmTofAddress::GetSmId( iDetId ))
        {
-	  fTRefHits=1;
+          fTRefHits=1;
             if(pHit->GetTime() < dTRef)
-	    {
-	      dTRef = pHit->GetTime();
-	    }
+            {
+              dTRef = pHit->GetTime();
+            }
        }else{ //additional reference type multiplicity
-	 iBeamAddRefMul++;
+         iBeamAddRefMul++;
        }
       }
    }
@@ -1398,61 +1398,61 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
 
        switch(iSel) {
        case 0 :         //  Detector under Test (Dut) && Diamonds,BeamRef
-	 if(   fviClusterMul[fDutId][0][0]>0.
-	    && fviClusterMul[fiBeamRefType][fiBeamRefSm][fiBeamRefDet]>0   // request beam reference counter 
-	    && iBeamAddRefMul>fiBeamAddRefMul) {                           // ask for confirmation by other beam counters 
-	     LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos(): Found selector 0"<<FairLogger::endl;
-	     dTTrig[iSel]=dDoubleMax;
-	     for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
-	     {
-	      pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
+         if(   fviClusterMul[fDutId][0][0]>0.
+            && fviClusterMul[fiBeamRefType][fiBeamRefSm][fiBeamRefDet]>0   // request beam reference counter 
+            && iBeamAddRefMul>fiBeamAddRefMul) {                           // ask for confirmation by other beam counters 
+             LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos(): Found selector 0"<<FairLogger::endl;
+             dTTrig[iSel]=dDoubleMax;
+             for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
+             {
+              pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
               if(NULL == pHit) continue;
 
-	      Int_t iDetId = (pHit->GetAddress() & DetMask);
+              Int_t iDetId = (pHit->GetAddress() & DetMask);
 
-	      if( fDutId == CbmTofAddress::GetSmType( iDetId ))
-	      {
+              if( fDutId == CbmTofAddress::GetSmType( iDetId ))
+              {
                  if(pHit->GetTime() < dTTrig[iSel])
-		 {
-		  dTTrig[iSel] = pHit->GetTime();
-		  pTrig[iSel]  = pHit;
-		  BSel[iSel]=kTRUE;
-		 }	 
-	      }
-	     }
-	 } 
-	 break; 
+                 {
+                  dTTrig[iSel] = pHit->GetTime();
+                  pTrig[iSel]  = pHit;
+                  BSel[iSel]=kTRUE;
+                 }         
+              }
+             }
+         } 
+         break; 
        case 1 :         // MRef & BRef 
-	 if(fviClusterMul[fSelId][0][0]>0 
-	    && fviClusterMul[fiBeamRefType][fiBeamRefSm][fiBeamRefDet]>0   // request beam reference counter 
-	    && iBeamAddRefMul>fiBeamAddRefMul) {                           // ask for confirmation by other beam counters 
-	     LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos(): Found selector 1"<<FairLogger::endl;
-	     dTTrig[iSel]=dDoubleMax;
-	     for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
-	     {
-	      pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
-	      if(NULL == pHit) continue;
+         if(fviClusterMul[fSelId][0][0]>0 
+            && fviClusterMul[fiBeamRefType][fiBeamRefSm][fiBeamRefDet]>0   // request beam reference counter 
+            && iBeamAddRefMul>fiBeamAddRefMul) {                           // ask for confirmation by other beam counters 
+             LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos(): Found selector 1"<<FairLogger::endl;
+             dTTrig[iSel]=dDoubleMax;
+             for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
+             {
+              pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
+              if(NULL == pHit) continue;
 
-	      Int_t iDetId = (pHit->GetAddress() & DetMask);
-	      if( fSelId == CbmTofAddress::GetSmType( iDetId ))
-	      {
-		if(0 == CbmTofAddress::GetSmId( iDetId )) 
-		{
-		  if(pHit->GetTime() < dTTrig[iSel])
-		  {
-		    dTTrig[iSel] = pHit->GetTime();
-		    pTrig[iSel]  = pHit;
-		    BSel[iSel]=kTRUE;
-		  }
-		}
-	      }
-	     }
-	 }
-	 break;
+              Int_t iDetId = (pHit->GetAddress() & DetMask);
+              if( fSelId == CbmTofAddress::GetSmType( iDetId ))
+              {
+                if(0 == CbmTofAddress::GetSmId( iDetId )) 
+                {
+                  if(pHit->GetTime() < dTTrig[iSel])
+                  {
+                    dTTrig[iSel] = pHit->GetTime();
+                    pTrig[iSel]  = pHit;
+                    BSel[iSel]=kTRUE;
+                  }
+                }
+              }
+             }
+         }
+         break;
 
        default :
        LOG(INFO)<<"CbmTofTestBeamClusterizer::FillHistos: selection not implemented "<<iSel<<FairLogger::endl;
-	 ;
+         ;
        }  // switch end 
        if(fTRefMode>10){
         dTTrig[iSel]=dTRef;
@@ -1461,37 +1461,37 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
 
     if (fSel2Id > 0 ) {  // confirm selector by independent match 
       for (Int_t iSel=0; iSel<iNSel; iSel++){
-	if (BSel[iSel]){
-	  BSel[iSel]=kFALSE;
+        if (BSel[iSel]){
+          BSel[iSel]=kFALSE;
 
-	  for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
-	  {
-	     pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
+          for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
+          {
+             pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
              if(NULL == pHit) continue;
 
-	     Int_t iDetId = (pHit->GetAddress() & DetMask);
+             Int_t iDetId = (pHit->GetAddress() & DetMask);
 
-	     if( fSel2Id == CbmTofAddress::GetSmType( iDetId ))
-	     {
-	       if (TMath::Sqrt(TMath::Power(Zref/pHit->GetZ()*pHit->GetX()-Zref/pTrig[iSel]->GetZ()*pTrig[iSel]->GetX(),2.)
-			      +TMath::Power(Zref/pHit->GetZ()*pHit->GetY()-Zref/pTrig[iSel]->GetZ()*pTrig[iSel]->GetY(),2.))<fdCaldXdYMax)
-		 {
-		   BSel[iSel]=kTRUE;
-		   break;
-		 }
-	     }
-	  }
-	} // BSel condition end 
+             if( fSel2Id == CbmTofAddress::GetSmType( iDetId ))
+             {
+               if (TMath::Sqrt(TMath::Power(Zref/pHit->GetZ()*pHit->GetX()-Zref/pTrig[iSel]->GetZ()*pTrig[iSel]->GetX(),2.)
+                              +TMath::Power(Zref/pHit->GetZ()*pHit->GetY()-Zref/pTrig[iSel]->GetZ()*pTrig[iSel]->GetY(),2.))<fdCaldXdYMax)
+                 {
+                   BSel[iSel]=kTRUE;
+                   break;
+                 }
+             }
+          }
+        } // BSel condition end 
       } // iSel lopp end 
     } // Sel2Id condition end
     /*
     LOG(INFO)<<"CbmTofTestBeamClusterizer: dtTrig "<<fTRefMode<<" - "
-	     <<dTRef<<", "<<dTTrig[0]<<", "<<dTTrig[1]<<", "<<dTTrig[2]<<", "<<dTTrig[3]
-	     <<FairLogger::endl;
+             <<dTRef<<", "<<dTTrig[0]<<", "<<dTTrig[1]<<", "<<dTTrig[2]<<", "<<dTTrig[3]
+             <<FairLogger::endl;
     */
     for (Int_t iSel=0; iSel<iNSel; iSel++){
       if(BSel[iSel]){
-	if (dTRef!=0. && fTRefHits>0) fhSeldT[iSel]->Fill(dTTrig[iSel]-dTRef);    
+        if (dTRef!=0. && fTRefHits>0) fhSeldT[iSel]->Fill(dTTrig[iSel]-dTRef);    
       }
     }
   } // 0<iNSel end 
@@ -1509,103 +1509,103 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
 
        LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos: Inspect Hit  "
                   << Form(" %d %08x %08x %d %08x ", iHitInd, pHit->GetAddress(), DetMask, iDetIndx, iUniqueId)
-		  <<FairLogger::endl;
+                  <<FairLogger::endl;
        if(iDetId == iUniqueId){    // detector index found
-	 Int_t iSmType = CbmTofAddress::GetSmType( iUniqueId );
-	 Int_t iSm     = CbmTofAddress::GetSmId( iUniqueId );
-	 Int_t iRpc    = CbmTofAddress::GetRpcId( iUniqueId );
+         Int_t iSmType = CbmTofAddress::GetSmType( iUniqueId );
+         Int_t iSm     = CbmTofAddress::GetSmId( iUniqueId );
+         Int_t iRpc    = CbmTofAddress::GetRpcId( iUniqueId );
          Int_t iNbRpc  = fDigiBdfPar->GetNbRpc( iSmType );
          if(-1<fviClusterMul[iSmType][iSm][iRpc]){           // fill only once per detector 
-	   fhRpcCluMul[iDetIndx]->Fill(fviClusterMul[iSmType][iSm][iRpc]);
-	   for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){
-	       fhTRpcCluMul[iDetIndx][iSel]->Fill(fviClusterMul[iSmType][iSm][iRpc]);
-	   }	 
-	   //	   fviClusterMul[iSmType][iSm][iRpc]=-1;  // invalidate
-	 }
+           fhRpcCluMul[iDetIndx]->Fill(fviClusterMul[iSmType][iSm][iRpc]);
+           for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){
+               fhTRpcCluMul[iDetIndx][iSel]->Fill(fviClusterMul[iSmType][iSm][iRpc]);
+           }         
+           //           fviClusterMul[iSmType][iSm][iRpc]=-1;  // invalidate
+         }
 
-	 if(fviClusterMul[iSmType][iSm][iRpc] > fiCluMulMax) break; // skip this event 
+         if(fviClusterMul[iSmType][iSm][iRpc] > fiCluMulMax) break; // skip this event 
 
          Int_t iChId = pHit->GetAddress();
          fChannelInfo = fDigiPar->GetCell( iChId );
-	 Int_t iCh = CbmTofAddress::GetChannelId(iChId);
-	 if(NULL == fChannelInfo){
-	   LOG(ERROR) << "CbmTofTestBeamClusterizer::FillHistos: Invalid Channel Pointer for ChId "
-		      << Form(" 0x%08x ",iChId)<<", Ch "<<iCh
-		      <<FairLogger::endl;
-	   continue;
-	 }
-	 TGeoNode *fNode=        // prepare global->local trafo
-	 gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
+         Int_t iCh = CbmTofAddress::GetChannelId(iChId);
+         if(NULL == fChannelInfo){
+           LOG(ERROR) << "CbmTofTestBeamClusterizer::FillHistos: Invalid Channel Pointer for ChId "
+                      << Form(" 0x%08x ",iChId)<<", Ch "<<iCh
+                      <<FairLogger::endl;
+           continue;
+         }
+         TGeoNode *fNode=        // prepare global->local trafo
+         gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
 
          LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos: Hit  "
-		    <<Form(" 0x%08x %d %f %f %f %f %f %d",iChId,iCh,
-			   pHit->GetX(),pHit->GetY(),pHit->GetTime(),fChannelInfo->GetX(),fChannelInfo->GetY(), pHit->GetRefId() )
-		    <<FairLogger::endl;
+                    <<Form(" 0x%08x %d %f %f %f %f %f %d",iChId,iCh,
+                           pHit->GetX(),pHit->GetY(),pHit->GetTime(),fChannelInfo->GetX(),fChannelInfo->GetY(), pHit->GetRefId() )
+                    <<FairLogger::endl;
 
-	 Double_t hitpos[3];
-	 hitpos[0]=pHit->GetX();
-	 hitpos[1]=pHit->GetY();
-	 hitpos[2]=pHit->GetZ();
+         Double_t hitpos[3];
+         hitpos[0]=pHit->GetX();
+         hitpos[1]=pHit->GetY();
+         hitpos[2]=pHit->GetZ();
          Double_t hitpos_local[3];
-	 TGeoNode* cNode= gGeoManager->GetCurrentNode();
-	 gGeoManager->MasterToLocal(hitpos, hitpos_local);
-	 LOG(DEBUG1)<<
-	    Form(" MasterToLocal for node 0x%p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)", 
-		 cNode, hitpos[0], hitpos[1], hitpos[2], 
-		 hitpos_local[0], hitpos_local[1], hitpos_local[2])
-		   <<FairLogger::endl;
+         TGeoNode* cNode= gGeoManager->GetCurrentNode();
+         gGeoManager->MasterToLocal(hitpos, hitpos_local);
+         LOG(DEBUG1)<<
+            Form(" MasterToLocal for node 0x%p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)", 
+                 cNode, hitpos[0], hitpos[1], hitpos[2], 
+                 hitpos_local[0], hitpos_local[1], hitpos_local[2])
+                   <<FairLogger::endl;
 
          fhRpcCluPosition[iDetIndx]->Fill((Double_t)iCh,hitpos_local[1]); //pHit->GetY()-fChannelInfo->GetY());
-	 fhSmCluPosition[iSmType]->Fill((Double_t)(iSm*iNbRpc+iRpc),hitpos_local[1]);
+         fhSmCluPosition[iSmType]->Fill((Double_t)(iSm*iNbRpc+iRpc),hitpos_local[1]);
 
-	 for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){
-	     fhTRpcCluPosition[iDetIndx][iSel]->Fill((Double_t)iCh,hitpos_local[1]);  //pHit->GetY()-fChannelInfo->GetY());
-	     fhTSmCluPosition[iSmType][iSel]->Fill((Double_t)(iSm*iNbRpc+iRpc),hitpos_local[1]);
-	 }
+         for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){
+             fhTRpcCluPosition[iDetIndx][iSel]->Fill((Double_t)iCh,hitpos_local[1]);  //pHit->GetY()-fChannelInfo->GetY());
+             fhTSmCluPosition[iSmType][iSel]->Fill((Double_t)(iSm*iNbRpc+iRpc),hitpos_local[1]);
+         }
 
-	 if(TMath::Abs(hitpos_local[1])>fChannelInfo->GetSizey()*fPosYMaxScal) continue;
+         if(TMath::Abs(hitpos_local[1])>fChannelInfo->GetSizey()*fPosYMaxScal) continue;
 
-	 LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos: TofDigiMatchColl entries:"
-		    <<fTofDigiMatchColl->GetEntries()
-		    <<FairLogger::endl;
+         LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos: TofDigiMatchColl entries:"
+                    <<fTofDigiMatchColl->GetEntries()
+                    <<FairLogger::endl;
 
-	 if(pHit->GetRefId()>fTofDigiMatchColl->GetEntries()){
-	   LOG(ERROR)<<"CbmTofTestBeamClusterizer::FillHistos: Inconsistent DigiMatches for Hit "
-		     <<iHitInd<<" Ref: "<<pHit->GetRefId()
-		     <<", TClonesArraySize: "<<fTofDigiMatchColl->GetEntries()
-		     <<FairLogger::endl;
-	 }
+         if(pHit->GetRefId()>fTofDigiMatchColl->GetEntries()){
+           LOG(ERROR)<<"CbmTofTestBeamClusterizer::FillHistos: Inconsistent DigiMatches for Hit "
+                     <<iHitInd<<" Ref: "<<pHit->GetRefId()
+                     <<", TClonesArraySize: "<<fTofDigiMatchColl->GetEntries()
+                     <<FairLogger::endl;
+         }
 
          CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(pHit->GetRefId());
          LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos: got matches: "
-		    <<digiMatch->GetNofLinks()<<":";
-	 fhRpcCluSize[iDetIndx]->Fill((Double_t)iCh,digiMatch->GetNofLinks()/2.);
+                    <<digiMatch->GetNofLinks()<<":";
+         fhRpcCluSize[iDetIndx]->Fill((Double_t)iCh,digiMatch->GetNofLinks()/2.);
 
-	 for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){
-	   fhTRpcCluSize[iDetIndx][iSel]->Fill((Double_t)iCh,digiMatch->GetNofLinks()/2.);
-	 }
+         for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){
+           fhTRpcCluSize[iDetIndx][iSel]->Fill((Double_t)iCh,digiMatch->GetNofLinks()/2.);
+         }
 
-	 Double_t TotSum=0.;
+         Double_t TotSum=0.;
          for (Int_t iLink=0; iLink<digiMatch->GetNofLinks(); iLink++){  // loop over digis
            CbmLink L0 = digiMatch->GetLink(iLink);   //vDigish.at(ivDigInd);
-	   Int_t iDigInd0=L0.GetIndex(); 
+           Int_t iDigInd0=L0.GetIndex(); 
            if (iDigInd0 < fTofDigisColl->GetEntries()){
             CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
             TotSum += pDig0->GetTot();
-	   }
-	 }
+           }
+         }
 
 
-	 Double_t dMeanTimeSquared=0.;
-	 Double_t dNstrips=0.;
-	 
-	 Double_t dDelTof=0.;
-	 Double_t dTcor=0.;
-	 Double_t dTTcor=0.;
- 		
+         Double_t dMeanTimeSquared=0.;
+         Double_t dNstrips=0.;
+         
+         Double_t dDelTof=0.;
+         Double_t dTcor=0.;
+         Double_t dTTcor=0.;
+                 
          for (Int_t iLink=0; iLink<digiMatch->GetNofLinks(); iLink+=2){  // loop over digis
            CbmLink L0 = digiMatch->GetLink(iLink);   //vDigish.at(ivDigInd);
-	   Int_t iDigInd0=L0.GetIndex(); 
+           Int_t iDigInd0=L0.GetIndex(); 
            Int_t iDigInd1=(digiMatch->GetLink(iLink+1)).GetIndex(); //vDigish.at(ivDigInd+1);
            LOG(DEBUG1)<<" " << iDigInd0<<", "<<iDigInd1<<FairLogger::endl;
 
@@ -1613,181 +1613,181 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
             CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
             CbmTofDigiExp *pDig1 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd1));
             if((Int_t)pDig0->GetType()!=iSmType){
-		LOG(ERROR)<<Form(" Wrong Digi SmType for Tofhit %d in iDetIndx %d, Ch %d with %3.0f strips at Indx %d, %d",
-				 iHitInd,iDetIndx,iCh,dNstrips,iDigInd0,iDigInd1)
-			  << FairLogger::endl; 
-	    }
-	    LOG(DEBUG2)<<" Digi 0 "<<iDigInd0<<": Ch "<<pDig0->GetChannel()<<", Side "<<pDig0->GetSide()
-		     <<" Digi 1 "<<iDigInd1<<": Ch "<<pDig1->GetChannel()<<", Side "<<pDig1->GetSide()<<FairLogger::endl;
+                LOG(ERROR)<<Form(" Wrong Digi SmType for Tofhit %d in iDetIndx %d, Ch %d with %3.0f strips at Indx %d, %d",
+                                 iHitInd,iDetIndx,iCh,dNstrips,iDigInd0,iDigInd1)
+                          << FairLogger::endl; 
+            }
+            LOG(DEBUG2)<<" Digi 0 "<<iDigInd0<<": Ch "<<pDig0->GetChannel()<<", Side "<<pDig0->GetSide()
+                     <<" Digi 1 "<<iDigInd1<<": Ch "<<pDig1->GetChannel()<<", Side "<<pDig1->GetSide()<<FairLogger::endl;
 
-	    fhRpcCluTot[iDetIndx]->Fill((Double_t)iCh*2+pDig0->GetSide(),pDig0->GetTot());
-	    fhRpcCluTot[iDetIndx]->Fill((Double_t)iCh*2+pDig1->GetSide(),pDig1->GetTot());
+            fhRpcCluTot[iDetIndx]->Fill((Double_t)iCh*2+pDig0->GetSide(),pDig0->GetTot());
+            fhRpcCluTot[iDetIndx]->Fill((Double_t)iCh*2+pDig1->GetSide(),pDig1->GetTot());
 
             if (digiMatch->GetNofLinks()>2 && digiMatch->GetNofLinks()<8 ) // FIXME: hardwired limits on CluSize
-	    {
-	      dNstrips+=1.;
+            {
+              dNstrips+=1.;
               dMeanTimeSquared += TMath::Power(0.5*(pDig0->GetTime()+pDig1->GetTime())-pHit->GetTime(),2);
-	      Int_t iCh0=pDig0->GetChannel();
-	      Int_t iCh1=pDig1->GetChannel();
-	      Int_t iS0=pDig0->GetSide();
-	      Int_t iS1=pDig1->GetSide();
-	      if(iCh0 != iCh1 || iS0==iS1){
-    	       LOG(ERROR)<<Form(" MT2 for Tofhit %d in iDetIndx %d, Ch %d from %3.0f strips: ",iHitInd,iDetIndx,iCh,dNstrips)
-		         <<Form(" Dig0: Ch %d, Side %d, T: %6.1f ",iCh0,iS0,pDig0->GetTime())
-	 	         <<Form(" Dig1: Ch %d, Side %d, T: %6.1f ",iCh1,iS1,pDig1->GetTime())
-		         << FairLogger::endl; 
-	       continue;
-	      }
+              Int_t iCh0=pDig0->GetChannel();
+              Int_t iCh1=pDig1->GetChannel();
+              Int_t iS0=pDig0->GetSide();
+              Int_t iS1=pDig1->GetSide();
+              if(iCh0 != iCh1 || iS0==iS1){
+                   LOG(ERROR)<<Form(" MT2 for Tofhit %d in iDetIndx %d, Ch %d from %3.0f strips: ",iHitInd,iDetIndx,iCh,dNstrips)
+                         <<Form(" Dig0: Ch %d, Side %d, T: %6.1f ",iCh0,iS0,pDig0->GetTime())
+                          <<Form(" Dig1: Ch %d, Side %d, T: %6.1f ",iCh1,iS1,pDig1->GetTime())
+                         << FairLogger::endl; 
+               continue;
+              }
  
-	      if(0>iCh0 ||  fDigiBdfPar->GetNbChan( iSmType, iRpc )<=iCh0) {
-		LOG(ERROR)<<Form(" Wrong Digi for Tofhit %d in iDetIndx %d, Ch %d at Indx %d, %d from %3.0f strips:  %d, %d, %d, %d",
-				 iHitInd,iDetIndx,iCh,iDigInd0,iDigInd1,dNstrips,iCh0,iCh1,iS0,iS1)
-			  << FairLogger::endl; 
-		continue;
-	      }
+              if(0>iCh0 ||  fDigiBdfPar->GetNbChan( iSmType, iRpc )<=iCh0) {
+                LOG(ERROR)<<Form(" Wrong Digi for Tofhit %d in iDetIndx %d, Ch %d at Indx %d, %d from %3.0f strips:  %d, %d, %d, %d",
+                                 iHitInd,iDetIndx,iCh,iDigInd0,iDigInd1,dNstrips,iCh0,iCh1,iS0,iS1)
+                          << FairLogger::endl; 
+                continue;
+              }
 
 
-	      fhRpcCluAvWalk[iDetIndx]->Fill(0.5*(pDig0->GetTot()+pDig1->GetTot()),
-					0.5*(pDig0->GetTime()+pDig1->GetTime())-pHit->GetTime());
-	      fhRpcCluAvLnWalk[iDetIndx]->Fill(TMath::Log(0.5*(pDig0->GetTot()+pDig1->GetTot())),
-					0.5*(pDig0->GetTime()+pDig1->GetTime())-pHit->GetTime());
+              fhRpcCluAvWalk[iDetIndx]->Fill(0.5*(pDig0->GetTot()+pDig1->GetTot()),
+                                        0.5*(pDig0->GetTime()+pDig1->GetTime())-pHit->GetTime());
+              fhRpcCluAvLnWalk[iDetIndx]->Fill(TMath::Log(0.5*(pDig0->GetTot()+pDig1->GetTot())),
+                                        0.5*(pDig0->GetTime()+pDig1->GetTime())-pHit->GetTime());
 
-	      Double_t dTotWeigth=(pDig0->GetTot()+pDig1->GetTot())/TotSum;
-	      Double_t dCorWeigth=1.-dTotWeigth;
+              Double_t dTotWeigth=(pDig0->GetTot()+pDig1->GetTot())/TotSum;
+              Double_t dCorWeigth=1.-dTotWeigth;
 
-	      fhRpcCluDelTOff[iDetIndx]->Fill(pDig0->GetChannel(),
-					      dCorWeigth*(0.5*(pDig0->GetTime()+pDig1->GetTime())-pHit->GetTime()));
+              fhRpcCluDelTOff[iDetIndx]->Fill(pDig0->GetChannel(),
+                                              dCorWeigth*(0.5*(pDig0->GetTime()+pDig1->GetTime())-pHit->GetTime()));
 
-	      Double_t dDelPos=0.5*(pDig0->GetTime()-pDig1->GetTime())*fDigiBdfPar->GetSigVel(iSmType,iRpc);
-	      if(0==pDig0->GetSide()) dDelPos *= -1.;
-	      fhRpcCluDelPos[iDetIndx]->Fill(pDig0->GetChannel(),dCorWeigth*(dDelPos-hitpos_local[1]));
+              Double_t dDelPos=0.5*(pDig0->GetTime()-pDig1->GetTime())*fDigiBdfPar->GetSigVel(iSmType,iRpc);
+              if(0==pDig0->GetSide()) dDelPos *= -1.;
+              fhRpcCluDelPos[iDetIndx]->Fill(pDig0->GetChannel(),dCorWeigth*(dDelPos-hitpos_local[1]));
 
-	      fhRpcCluWalk[iDetIndx][iCh0][iS0]->Fill(pDig0->GetTot(),
-	      pDig0->GetTime()-(pHit->GetTime()-(1.-2.*pDig0->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iRpc)));
-	      
-	      fhRpcCluWalk[iDetIndx][iCh1][iS1]->Fill(pDig1->GetTot(),
-	      pDig1->GetTime()-(pHit->GetTime()-(1.-2.*pDig1->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iRpc)));
+              fhRpcCluWalk[iDetIndx][iCh0][iS0]->Fill(pDig0->GetTot(),
+              pDig0->GetTime()-(pHit->GetTime()-(1.-2.*pDig0->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iRpc)));
+              
+              fhRpcCluWalk[iDetIndx][iCh1][iS1]->Fill(pDig1->GetTot(),
+              pDig1->GetTime()-(pHit->GetTime()-(1.-2.*pDig1->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iRpc)));
 
-	    }
+            }
 
-	    for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){
-		fhTRpcCluTot[iDetIndx][iSel]->Fill((Double_t)iCh*2+pDig0->GetSide(),pDig0->GetTot());
-		fhTRpcCluTot[iDetIndx][iSel]->Fill((Double_t)iCh*2+pDig1->GetSide(),pDig1->GetTot());
-	    }
+            for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){
+                fhTRpcCluTot[iDetIndx][iSel]->Fill((Double_t)iCh*2+pDig0->GetSide(),pDig0->GetTot());
+                fhTRpcCluTot[iDetIndx][iSel]->Fill((Double_t)iCh*2+pDig1->GetSide(),pDig1->GetTot());
+            }
 
-	    for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){  
-	     if (NULL == pHit  || NULL == pTrig[iSel]) {
-	       LOG(INFO)<<"CbmTofTestBeamClusterizer::FillHistos: invalid pHit, iSel "
-			 <<iSel<<", iDetIndx "<< iDetIndx
-			 <<FairLogger::endl;
-	       break;
-	     }
+            for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){  
+             if (NULL == pHit  || NULL == pTrig[iSel]) {
+               LOG(INFO)<<"CbmTofTestBeamClusterizer::FillHistos: invalid pHit, iSel "
+                         <<iSel<<", iDetIndx "<< iDetIndx
+                         <<FairLogger::endl;
+               break;
+             }
 
-	     if(iLink==0) {      // Fill histo only once (for 1. digi entry)
-	       fhTRpcCludXdY[iDetIndx][iSel]->Fill(
-			 Zref/pHit->GetZ()*pHit->GetX()-Zref/pTrig[iSel]->GetZ()*pTrig[iSel]->GetX(),
-			 Zref/pHit->GetZ()*pHit->GetY()-Zref/pTrig[iSel]->GetZ()*pTrig[iSel]->GetY());
-	     }
+             if(iLink==0) {      // Fill histo only once (for 1. digi entry)
+               fhTRpcCludXdY[iDetIndx][iSel]->Fill(
+                         Zref/pHit->GetZ()*pHit->GetX()-Zref/pTrig[iSel]->GetZ()*pTrig[iSel]->GetX(),
+                         Zref/pHit->GetZ()*pHit->GetY()-Zref/pTrig[iSel]->GetZ()*pTrig[iSel]->GetY());
+             }
 
-	     if(iSmType==5       // to get entries in diamond histos  
+             if(iSmType==5       // to get entries in diamond histos  
              || TMath::Sqrt(TMath::Power(Zref/pHit->GetZ()*pHit->GetX()-Zref/pTrig[iSel]->GetZ()*pTrig[iSel]->GetX(),2.)
-	       +TMath::Power(Zref/pHit->GetZ()*pHit->GetY()-Zref/pTrig[iSel]->GetZ()*pTrig[iSel]->GetY(),2.))<fdCaldXdYMax)
-	     {
-	      if (dTRef !=0.  && TMath::Abs(dTRef-dTTrig[iSel])<DelTofMax) {  // correct times for DelTof - velocity spread 
+               +TMath::Power(Zref/pHit->GetZ()*pHit->GetY()-Zref/pTrig[iSel]->GetZ()*pTrig[iSel]->GetY(),2.))<fdCaldXdYMax)
+             {
+              if (dTRef !=0.  && TMath::Abs(dTRef-dTTrig[iSel])<DelTofMax) {  // correct times for DelTof - velocity spread 
 
-		if(iLink==0){   // do calculations only once (at 1. digi entry)
-		 Int_t iBx = (dTRef-dTTrig[iSel]+DelTofMax)/2./DelTofMax*nbClDelTofBinX;
-		 if(iBx<0) iBx=0;
-		 if(iBx>nbClDelTofBinX-1) iBx=nbClDelTofBinX-1;
-		 dDelTof=fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx][iSel];
-		 LOG(DEBUG1)<<Form(" DelTof for SmT %d, Sm %d, R %d, T %d, dTRef %f, iBx %d -> DelT %f",
-			       iSmType, iSm, iRpc, iSel, dTRef-dTTrig[iSel], iBx, dDelTof)
-			    <<FairLogger::endl;
-		 dTcor=pHit->GetTime()-dDelTof-dTTrig[iSel];  // corrected CbmTofHit time
-		 if(fCalSel == iSel) dTTcor=dDelTof;
-	       }
-
-	       Double_t dDt=0.5*(pDig0->GetTime()+pDig1->GetTime())-dDelTof-dTTrig[iSel];
-	       Double_t dAvTot=0.5*(pDig0->GetTot()+pDig1->GetTot());
-	       /*
-	       fhTRpcCluWalk[iDetIndx][iSel][pDig0->GetChannel()][pDig0->GetSide()]->Fill(dAvTot,dDt);
-	       fhTRpcCluWalk[iDetIndx][iSel][pDig1->GetChannel()][pDig1->GetSide()]->Fill(dAvTot,dDt);
-	       */
-	       
-	       fhTRpcCluWalk[iDetIndx][iSel][pDig0->GetChannel()][pDig0->GetSide()]->Fill(pDig0->GetTot(),pDig0->GetTime()
-		+((1.-2.*pDig0->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iRpc))-dDelTof-dTTrig[iSel]);
-	       fhTRpcCluWalk[iDetIndx][iSel][pDig1->GetChannel()][pDig1->GetSide()]->Fill(pDig1->GetTot(),pDig1->GetTime()
-		+((1.-2.*pDig1->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iRpc))-dDelTof-dTTrig[iSel]);
-	       
-	       if(iLink==0){          // Fill histo only once (for 1. digi entry)
-		 fhTRpcCluAvWalk[iDetIndx][iSel]->Fill(dAvTot,dTcor);
-		 fhTRpcCluDelTof[iDetIndx][iSel]->Fill(dTRef-dTTrig[iSel],dTcor);
-		 fhTSmCluTOff[iSmType][iSel]->Fill((Double_t)(iSm*iNbRpc+iRpc),dTcor);
-		 fhTSmCluTRun[iSmType][iSel]->Fill(fdEvent,dTcor);
-		 if( iDetId != (pTrig[iSel]->GetAddress() & DetMask) ){ // transform matched hit-pair back into detector frame
-		   hitpos[0]=pHit->GetX()-pHit->GetZ()/pTrig[iSel]->GetZ()*pTrig[iSel]->GetX() + fChannelInfo->GetX();
-		   hitpos[1]=pHit->GetY()-pHit->GetZ()/pTrig[iSel]->GetZ()*pTrig[iSel]->GetY() + fChannelInfo->GetY();
-                   hitpos[2]=pHit->GetZ();
-		   gGeoManager->MasterToLocal(hitpos, hitpos_local); //  transform into local frame
-	           fhRpcCluDelMatPos[iDetIndx]->Fill(pDig0->GetChannel(),hitpos_local[1]);
-		   fhRpcCluDelMatTOff[iDetIndx]->Fill(pDig0->GetChannel(),dTcor);
-		   /*
-		   if(iSmType == 4 || iSmType ==3)
-		   LOG(INFO)<<" Match for T "<<iSmType
-		            <<" M "<< iSm
-			    <<" R "<<iRpc
-			    <<" dTcor "<< dTcor
-			    <<" pos: "<<hitpos[0]<<", "<<hitpos[1]<<", "<<hitpos[2]
-			    <<" loc: "<<hitpos_local[0]<<", "<<hitpos_local[1]<<", "<<hitpos_local[2]
+                if(iLink==0){   // do calculations only once (at 1. digi entry)
+                 Int_t iBx = (dTRef-dTTrig[iSel]+DelTofMax)/2./DelTofMax*nbClDelTofBinX;
+                 if(iBx<0) iBx=0;
+                 if(iBx>nbClDelTofBinX-1) iBx=nbClDelTofBinX-1;
+                 dDelTof=fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx][iSel];
+                 LOG(DEBUG1)<<Form(" DelTof for SmT %d, Sm %d, R %d, T %d, dTRef %f, iBx %d -> DelT %f",
+                               iSmType, iSm, iRpc, iSel, dTRef-dTTrig[iSel], iBx, dDelTof)
                             <<FairLogger::endl;
-		   */
-		 }
-	       }    // iLink==0 condition end 
-	      }
-	     } // Match condition end
-	    }  // closing of trigger loop
-	   } 
-	   else {
-	     LOG(ERROR)<<"CbmTofTestBeamClusterizer::FillHistos: invalid digi index "<<iDetIndx
-		       <<" digi0,1"<<iDigInd0<<", "<<iDigInd1<<" - max:"
-		       << fTofDigisColl->GetEntries() 
-	       //                       << " in event " << XXX 
-		       << FairLogger::endl;  
+                 dTcor=pHit->GetTime()-dDelTof-dTTrig[iSel];  // corrected CbmTofHit time
+                 if(fCalSel == iSel) dTTcor=dDelTof;
+               }
+
+               Double_t dDt=0.5*(pDig0->GetTime()+pDig1->GetTime())-dDelTof-dTTrig[iSel];
+               Double_t dAvTot=0.5*(pDig0->GetTot()+pDig1->GetTot());
+               /*
+               fhTRpcCluWalk[iDetIndx][iSel][pDig0->GetChannel()][pDig0->GetSide()]->Fill(dAvTot,dDt);
+               fhTRpcCluWalk[iDetIndx][iSel][pDig1->GetChannel()][pDig1->GetSide()]->Fill(dAvTot,dDt);
+               */
+               
+               fhTRpcCluWalk[iDetIndx][iSel][pDig0->GetChannel()][pDig0->GetSide()]->Fill(pDig0->GetTot(),pDig0->GetTime()
+                +((1.-2.*pDig0->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iRpc))-dDelTof-dTTrig[iSel]);
+               fhTRpcCluWalk[iDetIndx][iSel][pDig1->GetChannel()][pDig1->GetSide()]->Fill(pDig1->GetTot(),pDig1->GetTime()
+                +((1.-2.*pDig1->GetSide())*hitpos_local[1]/fDigiBdfPar->GetSigVel(iSmType,iRpc))-dDelTof-dTTrig[iSel]);
+               
+               if(iLink==0){          // Fill histo only once (for 1. digi entry)
+                 fhTRpcCluAvWalk[iDetIndx][iSel]->Fill(dAvTot,dTcor);
+                 fhTRpcCluDelTof[iDetIndx][iSel]->Fill(dTRef-dTTrig[iSel],dTcor);
+                 fhTSmCluTOff[iSmType][iSel]->Fill((Double_t)(iSm*iNbRpc+iRpc),dTcor);
+                 fhTSmCluTRun[iSmType][iSel]->Fill(fdEvent,dTcor);
+                 if( iDetId != (pTrig[iSel]->GetAddress() & DetMask) ){ // transform matched hit-pair back into detector frame
+                   hitpos[0]=pHit->GetX()-pHit->GetZ()/pTrig[iSel]->GetZ()*pTrig[iSel]->GetX() + fChannelInfo->GetX();
+                   hitpos[1]=pHit->GetY()-pHit->GetZ()/pTrig[iSel]->GetZ()*pTrig[iSel]->GetY() + fChannelInfo->GetY();
+                   hitpos[2]=pHit->GetZ();
+                   gGeoManager->MasterToLocal(hitpos, hitpos_local); //  transform into local frame
+                   fhRpcCluDelMatPos[iDetIndx]->Fill(pDig0->GetChannel(),hitpos_local[1]);
+                   fhRpcCluDelMatTOff[iDetIndx]->Fill(pDig0->GetChannel(),dTcor);
+                   /*
+                   if(iSmType == 4 || iSmType ==3)
+                   LOG(INFO)<<" Match for T "<<iSmType
+                            <<" M "<< iSm
+                            <<" R "<<iRpc
+                            <<" dTcor "<< dTcor
+                            <<" pos: "<<hitpos[0]<<", "<<hitpos[1]<<", "<<hitpos[2]
+                            <<" loc: "<<hitpos_local[0]<<", "<<hitpos_local[1]<<", "<<hitpos_local[2]
+                            <<FairLogger::endl;
+                   */
+                 }
+               }    // iLink==0 condition end 
+              }
+             } // Match condition end
+            }  // closing of trigger loop
+           } 
+           else {
+             LOG(ERROR)<<"CbmTofTestBeamClusterizer::FillHistos: invalid digi index "<<iDetIndx
+                       <<" digi0,1"<<iDigInd0<<", "<<iDigInd1<<" - max:"
+                       << fTofDigisColl->GetEntries() 
+               //                       << " in event " << XXX 
+                       << FairLogger::endl;  
            }
-	 } // digi loop end;
-	 if (2<dNstrips){
-	   //	   Double_t dVar=dMeanTimeSquared/dNstrips - TMath::Power(pHit->GetTime(),2);
-	   Double_t dVar=dMeanTimeSquared/(dNstrips-1);
-	   if(dVar<0.) dVar=0.;
-	   Double_t dTrms=TMath::Sqrt(dVar);
-	   LOG(DEBUG)<<Form(" Trms for Tofhit %d in iDetIndx %d, Ch %d from %3.0f strips: %6.1f ps",
-			     iHitInd,iDetIndx,iCh,dNstrips,dTrms)
-		    << FairLogger::endl;  
-	   fhRpcCluTrms[iDetIndx]->Fill((Double_t)iCh,dTrms);
+         } // digi loop end;
+         if (2<dNstrips){
+           //           Double_t dVar=dMeanTimeSquared/dNstrips - TMath::Power(pHit->GetTime(),2);
+           Double_t dVar=dMeanTimeSquared/(dNstrips-1);
+           if(dVar<0.) dVar=0.;
+           Double_t dTrms=TMath::Sqrt(dVar);
+           LOG(DEBUG)<<Form(" Trms for Tofhit %d in iDetIndx %d, Ch %d from %3.0f strips: %6.1f ps",
+                             iHitInd,iDetIndx,iCh,dNstrips,dTrms)
+                    << FairLogger::endl;  
+           fhRpcCluTrms[iDetIndx]->Fill((Double_t)iCh,dTrms);
 
-	 }
+         }
 
-	 LOG(DEBUG1)<<" Fill Time of iDetIndx "<<iDetIndx<<" for |y| <"
+         LOG(DEBUG1)<<" Fill Time of iDetIndx "<<iDetIndx<<" for |y| <"
                   <<fhRpcCluPosition[iDetIndx]->GetYaxis()->GetXmax()
-		  <<FairLogger::endl;
-	 if(TMath::Abs(hitpos_local[1])< (fhRpcCluPosition[iDetIndx]->GetYaxis()->GetXmax())){
-	   if (dTRef !=0. && fTRefHits==1){ 
-	     fhRpcCluTOff[iDetIndx]->Fill((Double_t)iCh,pHit->GetTime()-dTTcor-dTRef);
-	     fhSmCluTOff[iSmType]->Fill((Double_t)(iSm*iNbRpc+iRpc),pHit->GetTime()-dTTcor-dTRef);
-	     /*
-	     if(iUniqueId == fTRefMode && (pHit->GetTime()-dTRef) !=0.){
-	     LOG(WARNING)<<Form(" Inconsistent dTRef %f for detetor 0x%08x with %d hits ",dTRef,iUniqueId,fTRefHits)
-			 <<FairLogger::endl;
-	     }
-	     */
-	     for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){
-	       LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos: TRpcCluTOff "<< iDetIndx <<", "<< iSel
-		        <<FairLogger::endl;
-	       fhTRpcCluTOff[iDetIndx][iSel]->Fill((Double_t)iCh,pHit->GetTime()-dTTcor-dTTrig[iSel]);
-	     }
-	   }
-	 }
-	 break;  // iDetId found       
+                  <<FairLogger::endl;
+         if(TMath::Abs(hitpos_local[1])< (fhRpcCluPosition[iDetIndx]->GetYaxis()->GetXmax())){
+           if (dTRef !=0. && fTRefHits==1){ 
+             fhRpcCluTOff[iDetIndx]->Fill((Double_t)iCh,pHit->GetTime()-dTTcor-dTRef);
+             fhSmCluTOff[iSmType]->Fill((Double_t)(iSm*iNbRpc+iRpc),pHit->GetTime()-dTTcor-dTRef);
+             /*
+             if(iUniqueId == fTRefMode && (pHit->GetTime()-dTRef) !=0.){
+             LOG(WARNING)<<Form(" Inconsistent dTRef %f for detetor 0x%08x with %d hits ",dTRef,iUniqueId,fTRefHits)
+                         <<FairLogger::endl;
+             }
+             */
+             for (Int_t iSel=0; iSel<iNSel; iSel++) if(BSel[iSel]){
+               LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos: TRpcCluTOff "<< iDetIndx <<", "<< iSel
+                        <<FairLogger::endl;
+               fhTRpcCluTOff[iDetIndx][iSel]->Fill((Double_t)iCh,pHit->GetTime()-dTTcor-dTTrig[iSel]);
+             }
+           }
+         }
+         break;  // iDetId found       
        }
      }
    }
@@ -1799,7 +1799,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                     <<Form(" %3d %3d %3lu ",iSmType,iRpc,fviClusterSize[iSmType][iRpc].size())
                     <<FairLogger::endl;
     
-	 for( Int_t iCluster = 0; iCluster < fviClusterSize[iSmType][iRpc].size(); iCluster++ )
+         for( Int_t iCluster = 0; iCluster < fviClusterSize[iSmType][iRpc].size(); iCluster++ )
          {
             LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos:  "
                        <<Form(" %3d %3d %3d ",iSmType,iRpc,iCluster)
@@ -1895,8 +1895,8 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
 
      if(0==iNent){
        LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: No entries in Walk histos for " 
-		 <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc 
-		 <<FairLogger::endl;
+                 <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc 
+                 <<FairLogger::endl;
        // continue;
      }
      //     if(-1<fCalSmType && fcalType != iSmType) continue;
@@ -1933,26 +1933,26 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
          htempTOff_pfx = fhRpcCluTOff[iDetIndx]->ProfileX("_pfx",1,fhRpcCluTOff[iDetIndx]->GetNbinsY(),"s");
          htempTOff_px  = fhRpcCluTOff[iDetIndx]->ProjectionX("_px",1,fhRpcCluTOff[iDetIndx]->GetNbinsY());
        }else
-	 { if(-2==fCalSel){ //take corrections from Cluster deviations 
-	   htempPos_pfx  = fhRpcCluDelPos[iDetIndx]->ProfileX("_pfx",1,fhRpcCluDelPos[iDetIndx]->GetNbinsY());
+         { if(-2==fCalSel){ //take corrections from Cluster deviations 
+           htempPos_pfx  = fhRpcCluDelPos[iDetIndx]->ProfileX("_pfx",1,fhRpcCluDelPos[iDetIndx]->GetNbinsY());
 //           htempTOff     = fhRpcCluDelTOff[iDetIndx]; // -> Comment to remove warning because set but never used
            htempTOff_pfx = fhRpcCluDelTOff[iDetIndx]->ProfileX("_pfx",1,fhRpcCluDelTOff[iDetIndx]->GetNbinsY());
            htempTOff_px  = fhRpcCluDelTOff[iDetIndx]->ProjectionX("_px",1,fhRpcCluDelTOff[iDetIndx]->GetNbinsY());
          }else
-	 {
-	   if(-3==fCalSel){  // take corrections from deviations to matched trigger hit
-	     htempPos_pfx  = fhRpcCluDelMatPos[iDetIndx]->ProfileX("_pfx",1,fhRpcCluDelMatPos[iDetIndx]->GetNbinsY());
-//	     htempTOff     = fhRpcCluDelMatTOff[iDetIndx]; // -> Comment to remove warning because set but never used
-	     htempTOff_pfx = fhRpcCluDelMatTOff[iDetIndx]->ProfileX("_pfx",1,fhRpcCluDelMatTOff[iDetIndx]->GetNbinsY());
-	     htempTOff_px  = fhRpcCluDelMatTOff[iDetIndx]->ProjectionX("_px",1,fhRpcCluDelMatTOff[iDetIndx]->GetNbinsY());
-	   }
-	 }
+         {
+           if(-3==fCalSel){  // take corrections from deviations to matched trigger hit
+             htempPos_pfx  = fhRpcCluDelMatPos[iDetIndx]->ProfileX("_pfx",1,fhRpcCluDelMatPos[iDetIndx]->GetNbinsY());
+//             htempTOff     = fhRpcCluDelMatTOff[iDetIndx]; // -> Comment to remove warning because set but never used
+             htempTOff_pfx = fhRpcCluDelMatTOff[iDetIndx]->ProfileX("_pfx",1,fhRpcCluDelMatTOff[iDetIndx]->GetNbinsY());
+             htempTOff_px  = fhRpcCluDelMatTOff[iDetIndx]->ProjectionX("_px",1,fhRpcCluDelMatTOff[iDetIndx]->GetNbinsY());
+           }
+         }
        }
      }
 
      if(NULL == htempPos_pfx) {
        LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: Projections not available, continue " 
-		<< FairLogger::endl;
+                << FairLogger::endl;
        continue;
      }
 
@@ -1973,26 +1973,26 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
        TH1 *hbins[200];
        Int_t nbins=htempTot->GetNbinsX();
        for (int i=0;i<nbins;i++) {
-	 hbins[i] = htempTot->ProjectionY(Form("bin%d",i+1),i+1,i+1);
-	 Double_t Ymax=hbins[i]->GetMaximum();
-	 Int_t iBmax=hbins[i]->GetMaximumBin();
-	 TAxis *xaxis = hbins[i]->GetXaxis();
-	 Double_t Xmax=xaxis->GetBinCenter(iBmax);
-	 Double_t XOff=Xmax-fTotPreRange;
-	 XOff = (Double_t)(Int_t)XOff;
-	 if(XOff<0) XOff=0;    
-	 htempTot_Off->SetBinContent(i+1,XOff);
-	 Double_t Xmean=htempTot_Mean->GetBinContent(i+1);
-	 if(Xmean<XOff) {
-	   LOG(WARNING)<<"Inconsistent  Tot numbers for "
-		       <<Form("SmT%01d_sm%03d_rpc%03d bin%d: mean %f, Off %f",iSmType,iSm,iRpc,i,Xmean,XOff)
-		       <<FairLogger::endl; 
-	 }
-	 htempTot_Mean->SetBinContent(i+1,(Xmean-XOff));
-	 if ( htempTot_Mean->GetBinContent(i+1) != (Xmean-XOff))
-	   LOG(WARNING)<<"Tot numbers not stored properly for "
-		       <<Form("SmT%01d_sm%03d_rpc%03d bin%d: mean %f, target %f",iSmType,iSm,iRpc,i,htempTot_Mean->GetBinContent(i+1),Xmean-XOff)
-		       <<FairLogger::endl; 
+         hbins[i] = htempTot->ProjectionY(Form("bin%d",i+1),i+1,i+1);
+         Double_t Ymax=hbins[i]->GetMaximum();
+         Int_t iBmax=hbins[i]->GetMaximumBin();
+         TAxis *xaxis = hbins[i]->GetXaxis();
+         Double_t Xmax=xaxis->GetBinCenter(iBmax);
+         Double_t XOff=Xmax-fTotPreRange;
+         XOff = (Double_t)(Int_t)XOff;
+         if(XOff<0) XOff=0;    
+         htempTot_Off->SetBinContent(i+1,XOff);
+         Double_t Xmean=htempTot_Mean->GetBinContent(i+1);
+         if(Xmean<XOff) {
+           LOG(WARNING)<<"Inconsistent  Tot numbers for "
+                       <<Form("SmT%01d_sm%03d_rpc%03d bin%d: mean %f, Off %f",iSmType,iSm,iRpc,i,Xmean,XOff)
+                       <<FairLogger::endl; 
+         }
+         htempTot_Mean->SetBinContent(i+1,(Xmean-XOff));
+         if ( htempTot_Mean->GetBinContent(i+1) != (Xmean-XOff))
+           LOG(WARNING)<<"Tot numbers not stored properly for "
+                       <<Form("SmT%01d_sm%03d_rpc%03d bin%d: mean %f, target %f",iSmType,iSm,iRpc,i,htempTot_Mean->GetBinContent(i+1),Xmean-XOff)
+                       <<FairLogger::endl; 
        }
        htempPos_pfx->Write();
        htempTOff_pfx->Write();
@@ -2004,35 +2004,35 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
      case 1 :                  //save offsets, update walks 
      {
         Int_t iNbRpc = fDigiBdfPar->GetNbRpc( iSmType);
-	Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
+        Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
         LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: restore Offsets and Gains and save Walk for "
-		 <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc 
-		 <<FairLogger::endl;
-	htempPos_pfx->Reset();    //reset to restore means of original histos
-	htempTOff_pfx->Reset();
-	htempTot_Mean->Reset();
-	htempTot_Off->Reset();
-	for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) 
-	{
-	 Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iRpc)*0.5
-	                   *(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]-fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
-	 Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
-	 htempPos_pfx->Fill(iCh,YMean);
+                 <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc 
+                 <<FairLogger::endl;
+        htempPos_pfx->Reset();    //reset to restore means of original histos
+        htempTOff_pfx->Reset();
+        htempTot_Mean->Reset();
+        htempTot_Off->Reset();
+        for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) 
+        {
+         Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iRpc)*0.5
+                           *(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]-fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
+         Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
+         htempPos_pfx->Fill(iCh,YMean);
          if( ((TProfile *)htempPos_pfx)->GetBinContent(iCh+1)!=YMean) {
-	   LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! ch "<<iCh
-		     <<" got "<< htempPos_pfx->GetBinContent(iCh)<<","<<htempPos_pfx->GetBinContent(iCh+1)
-		     <<","<<htempPos_pfx->GetBinContent(iCh+2)
-	             <<", expected "<<YMean
-		     <<FairLogger::endl;
-	 }
-	 htempTOff_pfx->Fill(iCh,TMean); 
+           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! ch "<<iCh
+                     <<" got "<< htempPos_pfx->GetBinContent(iCh)<<","<<htempPos_pfx->GetBinContent(iCh+1)
+                     <<","<<htempPos_pfx->GetBinContent(iCh+2)
+                     <<", expected "<<YMean
+                     <<FairLogger::endl;
+         }
+         htempTOff_pfx->Fill(iCh,TMean); 
 
-	 for(Int_t iSide=0; iSide<2; iSide++){
-	   htempTot_Mean->SetBinContent(iCh*2+1+iSide,
+         for(Int_t iSide=0; iSide<2; iSide++){
+           htempTot_Mean->SetBinContent(iCh*2+1+iSide,
                           fdTTotMean/fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide] );  //nh +1 empirical(?)
-	   htempTot_Off->SetBinContent(iCh*2+1+iSide,fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]);
-	 }
-	}
+           htempTot_Off->SetBinContent(iCh*2+1+iSide,fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]);
+         }
+        }
 
         LOG(DEBUG1)<<" Offset, gain restoring done ... "<<FairLogger::endl;
         htempPos_pfx->Write();
@@ -2042,19 +2042,19 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         htempTot_Off->Write();
 
         for(Int_t iSel=0; iSel<iNSel; iSel++){
-	 // Store DelTof corrections 
-	 TDirectory * curdir = gDirectory;
-	 gROOT->cd(); //
-	 TH1D *hCorDelTof =(TH1D*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
-	 gDirectory->cd( curdir->GetPath() );
-	 if (NULL!=hCorDelTof) {
-	   TH1D *hCorDelTofout=(TH1D*)hCorDelTof->Clone(Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
-	  hCorDelTofout->Write();
-	 }else {
+         // Store DelTof corrections 
+         TDirectory * curdir = gDirectory;
+         gROOT->cd(); //
+         TH1D *hCorDelTof =(TH1D*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
+         gDirectory->cd( curdir->GetPath() );
+         if (NULL!=hCorDelTof) {
+           TH1D *hCorDelTofout=(TH1D*)hCorDelTof->Clone(Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
+          hCorDelTofout->Write();
+         }else {
          LOG(INFO)<<" No CorDelTof histo "
-		  <<Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel)<<FairLogger::endl;
-	 }
-	}
+                  <<Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel)<<FairLogger::endl;
+         }
+        }
 
         if(   (fCalSmType < 0 && TMath::Abs(fCalSmType) != iSmType)
            || fCalSmType == iSmType)  // select detectors for determination of walk correction
@@ -2062,330 +2062,330 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
           TH2 *h2tmp0;
           TH2 *h2tmp1;
           if(-1<fCalSel){
-	    h2tmp0=fhTRpcCluWalk[iDetIndx][fCalSel][iCh][0];
-	    h2tmp1=fhTRpcCluWalk[iDetIndx][fCalSel][iCh][1];
-	  }else{ // take correction from deviation within clusters 
-	    h2tmp0=fhRpcCluWalk[iDetIndx][iCh][0];
-	    h2tmp1=fhRpcCluWalk[iDetIndx][iCh][1];
-	  }
+            h2tmp0=fhTRpcCluWalk[iDetIndx][fCalSel][iCh][0];
+            h2tmp1=fhTRpcCluWalk[iDetIndx][fCalSel][iCh][1];
+          }else{ // take correction from deviation within clusters 
+            h2tmp0=fhRpcCluWalk[iDetIndx][iCh][0];
+            h2tmp1=fhRpcCluWalk[iDetIndx][iCh][1];
+          }
           if(NULL == h2tmp0){
-	    LOG(INFO)<<Form("CbmTofTestBeamClusterizer::WriteHistos: Walk histo not available for SmT %d, Sm %d, Rpc %d, Ch %d",iSmType,iSm,iRpc,iCh)
- 		    <<FairLogger::endl;
-	    continue;
-	  }
+            LOG(INFO)<<Form("CbmTofTestBeamClusterizer::WriteHistos: Walk histo not available for SmT %d, Sm %d, Rpc %d, Ch %d",iSmType,iSm,iRpc,iCh)
+                     <<FairLogger::endl;
+            continue;
+          }
           Int_t iNEntries=h2tmp0->GetEntries();
-	  if(iCh==0)  // condition to print message only once
-	  LOG(INFO)<<Form(" Update Walk correction for SmT %d, Sm %d, Rpc %d, Ch %d, Sel%d: Entries %d",
-			  iSmType,iSm,iRpc,iCh,fCalSel,iNEntries)
- 		    <<FairLogger::endl;
+          if(iCh==0)  // condition to print message only once
+          LOG(INFO)<<Form(" Update Walk correction for SmT %d, Sm %d, Rpc %d, Ch %d, Sel%d: Entries %d",
+                          iSmType,iSm,iRpc,iCh,fCalSel,iNEntries)
+                     <<FairLogger::endl;
 
-	 h2tmp0->Write();
-	 h2tmp1->Write();
+         h2tmp0->Write();
+         h2tmp1->Write();
          if(-1<iNEntries){  // always done 
-	  TProfile *htmp0 = h2tmp0->ProfileX("_pfx",1,h2tmp0->GetNbinsY());
+          TProfile *htmp0 = h2tmp0->ProfileX("_pfx",1,h2tmp0->GetNbinsY());
           TProfile *htmp1 = h2tmp1->ProfileX("_pfx",1,h2tmp1->GetNbinsY());
           TH1D *h1tmp0    = h2tmp0->ProjectionX("_px",1,h2tmp0->GetNbinsY());
           TH1D *h1tmp1    = h2tmp1->ProjectionX("_px",1,h2tmp1->GetNbinsY());
           TH1D *h1ytmp0   = h2tmp0->ProjectionY("_py",1,nbClWalkBinX);  // preserve means
           TH1D *h1ytmp1   = h2tmp1->ProjectionY("_py",1,nbClWalkBinX);
-	  Double_t dWMean0=h1ytmp0->GetMean();
-	  Double_t dWMean1=h1ytmp1->GetMean();
-	  Double_t dWMean=0.5*(dWMean0+dWMean1);
-	  Int_t iWalkUpd=1;                        // Walk update mode flag
+          Double_t dWMean0=h1ytmp0->GetMean();
+          Double_t dWMean1=h1ytmp1->GetMean();
+          Double_t dWMean=0.5*(dWMean0+dWMean1);
+          Int_t iWalkUpd=1;                        // Walk update mode flag
           if(5==iSmType || 8==iSmType) iWalkUpd=0; // keep both sides consistent for diamonds and pads 
-	  for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
+          for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
            if(iSmType==2)
-	     LOG(INFO)<<"Update Walk iSm = "<<iSm<<"("<<iNbRpc<<")," << iWx << ": "
-		      <<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]<<" + "
-		      <<((TProfile *)htmp0)->GetBinContent(iWx+1)
-		      <<FairLogger::endl;
-	   switch(iWalkUpd){
-	   case 0 :
-	     if(h1tmp0->GetBinContent(iWx+1)>WalkNHmin && h1tmp1->GetBinContent(iWx+1)>WalkNHmin ){
-	     // preserve y - position (difference) on average 
-	       Double_t dWcor=(((TProfile *)htmp0)->GetBinContent(iWx+1) + ((TProfile *)htmp1)->GetBinContent(iWx+1))*0.5;
-	       fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]+=dWcor-dWMean;
-	       fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]+=dWcor-dWMean;
-	     }
-	     break;
-	   case 1 :
-	     if(h1tmp0->GetBinContent(iWx+1)>WalkNHmin)
-	       fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]+=((TProfile *)htmp0)->GetBinContent(iWx+1)-dWMean0;
-	     if(h1tmp1->GetBinContent(iWx+1)>WalkNHmin)
-	       fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]+=((TProfile *)htmp1)->GetBinContent(iWx+1)-dWMean1;
-	     break;
-	   default :
-	     ;
-	   }
-	  }
+             LOG(INFO)<<"Update Walk iSm = "<<iSm<<"("<<iNbRpc<<")," << iWx << ": "
+                      <<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]<<" + "
+                      <<((TProfile *)htmp0)->GetBinContent(iWx+1)
+                      <<FairLogger::endl;
+           switch(iWalkUpd){
+           case 0 :
+             if(h1tmp0->GetBinContent(iWx+1)>WalkNHmin && h1tmp1->GetBinContent(iWx+1)>WalkNHmin ){
+             // preserve y - position (difference) on average 
+               Double_t dWcor=(((TProfile *)htmp0)->GetBinContent(iWx+1) + ((TProfile *)htmp1)->GetBinContent(iWx+1))*0.5;
+               fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]+=dWcor-dWMean;
+               fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]+=dWcor-dWMean;
+             }
+             break;
+           case 1 :
+             if(h1tmp0->GetBinContent(iWx+1)>WalkNHmin)
+               fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]+=((TProfile *)htmp0)->GetBinContent(iWx+1)-dWMean0;
+             if(h1tmp1->GetBinContent(iWx+1)>WalkNHmin)
+               fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]+=((TProfile *)htmp1)->GetBinContent(iWx+1)-dWMean1;
+             break;
+           default :
+             ;
+           }
+          }
           h1tmp0->Reset();
           h1tmp1->Reset();
-	  for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
-	   h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
-	   h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
+          for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
+           h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
+           h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
            if( h1tmp0->GetBinContent(iWx+1)!=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]) {
-	   LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
-		     <<" got "<< h1tmp0->GetBinContent(iWx+1)
-	             <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
-		     <<FairLogger::endl;	 }
-	  }
-	  h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
-	  h1tmp0->Smooth(iNWalkSmooth);
+           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
+                     <<" got "<< h1tmp0->GetBinContent(iWx+1)
+                     <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
+                     <<FairLogger::endl;         }
+          }
+          h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
+          h1tmp0->Smooth(iNWalkSmooth);
           htmp0->Write();
           h1tmp0->Write();
-	  h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
-	  h1tmp1->Smooth(iNWalkSmooth);
+          h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
+          h1tmp1->Smooth(iNWalkSmooth);
           htmp1->Write();
           h1tmp1->Write();
-	 }
+         }
         }else{  // preserve whatever is there for fCalSmType !
-	 for( Int_t iCh = 0; iCh < fMbsMappingPar->GetSmTypeNbCh(iSmType); iCh++ ) // restore old values 
-	 {
+         for( Int_t iCh = 0; iCh < fMbsMappingPar->GetSmTypeNbCh(iSmType); iCh++ ) // restore old values 
+         {
           TProfile *htmp0 = fhRpcCluWalk[iDetIndx][iCh][0]->ProfileX("_pfx",1,nbClWalkBinY);
           TProfile *htmp1 = fhRpcCluWalk[iDetIndx][iCh][1]->ProfileX("_pfx",1,nbClWalkBinY);
           TH1D *h1tmp0    = fhRpcCluWalk[iDetIndx][iCh][0]->ProjectionX("_px",1,nbClWalkBinY);
           TH1D *h1tmp1    = fhRpcCluWalk[iDetIndx][iCh][1]->ProjectionX("_px",1,nbClWalkBinY);
-	  for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
-	   h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
-	   h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
+          for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
+           h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
+           h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
            if( h1tmp0->GetBinContent(iWx+1)!=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]) {
-	   LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
-		     <<" got "<< h1tmp0->GetBinContent(iWx+1)
-	             <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
-		     <<FairLogger::endl;	 }
-	  }
-	  h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
+           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
+                     <<" got "<< h1tmp0->GetBinContent(iWx+1)
+                     <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
+                     <<FairLogger::endl;         }
+          }
+          h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
           htmp0->Write();
           h1tmp0->Write();
-	  h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
+          h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
           htmp1->Write();
           h1tmp1->Write();
-	 }
-	}     
+         }
+        }     
      }
      break;
 
      case 2 :         //update time offsets from positions and times with Sm averages, save walks and DELTOF 
      {    
         Int_t iNbRpc = fDigiBdfPar->GetNbRpc( iSmType);
-	Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
+        Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
         if((fCalSmType < 0) || (fCalSmType != iSmType)){   // select detectors for updating offsets
          LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: (case 2) update Offsets and keep Gains, Walk and DELTOF for "
-		  <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc 
-		  <<FairLogger::endl;
-	 Int_t iB=iSm*iNbRpc+iRpc;
-	 Double_t YMean=((TProfile *)hAvPos_pfx)->GetBinContent(iB+1);  //nh +1 empirical(?)
-	 Double_t TMean=((TProfile *)hAvTOff_pfx)->GetBinContent(iB+1);
-	 Double_t TWidth=((TProfile *)hAvTOff_pfx)->GetBinError(iB+1);
+                  <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc 
+                  <<FairLogger::endl;
+         Int_t iB=iSm*iNbRpc+iRpc;
+         Double_t YMean=((TProfile *)hAvPos_pfx)->GetBinContent(iB+1);  //nh +1 empirical(?)
+         Double_t TMean=((TProfile *)hAvTOff_pfx)->GetBinContent(iB+1);
+         Double_t TWidth=((TProfile *)hAvTOff_pfx)->GetBinError(iB+1);
          Double_t dTYOff=YMean/fDigiBdfPar->GetSigVel(iSmType,iRpc) ;
 
 
-	 if (fiBeamRefType == iSmType && fiBeamRefSm == iSm && fiBeamRefDet == iRpc) TMean=0.; // don't shift reference counter
+         if (fiBeamRefType == iSmType && fiBeamRefSm == iSm && fiBeamRefDet == iRpc) TMean=0.; // don't shift reference counter
          
-	 LOG(INFO)<<Form("<ICor> Correct %d %d %d by TMean=%8.2f, TYOff=%8.2f, TWidth=%8.2f, ",iSmType,iSm,iRpc,TMean,dTYOff,TWidth)
-		  <<FairLogger::endl;
-	
-		  
-	 for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // update Offset and Gain 
-	 {
-	  fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] += -dTYOff + TMean ;
-	  fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean ;
+         LOG(INFO)<<Form("<ICor> Correct %d %d %d by TMean=%8.2f, TYOff=%8.2f, TWidth=%8.2f, ",iSmType,iSm,iRpc,TMean,dTYOff,TWidth)
+                  <<FairLogger::endl;
+        
+                  
+         for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // update Offset and Gain 
+         {
+          fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] += -dTYOff + TMean ;
+          fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean ;
 
-	  LOG(INFO)<<"CbmTofTestBeamClusterizer::FillCalHist:" 
-		   <<" SmT "<< iSmType<<" Sm "<<iSm<<" Rpc "<<iRpc<<" Ch "<<iCh
-		   <<": YMean "<<YMean<<", TMean "<< TMean
-		   <<" -> " << Form(" %f, %f, %f, %f ",fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
-				    fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1],
-				    fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0],
-				    fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1])
-		   <<FairLogger::endl;
-	 } // for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) 
-	}
-	htempPos_pfx->Reset();    //reset to store new values 
-	htempTOff_pfx->Reset();
-	htempTot_Mean->Reset();
-	htempTot_Off->Reset();
-	for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // store new values 
-	{
-	  Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iRpc)*0.5
-	  *(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]-fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
-	  Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
-	  htempPos_pfx->Fill(iCh,YMean);
-	  if( ((TProfile *)htempPos_pfx)->GetBinContent(iCh+1)!=YMean) {
-	   LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! ch "<<iCh
-		     <<" got "<< htempPos_pfx->GetBinContent(iCh)<<","<<htempPos_pfx->GetBinContent(iCh+1)
-		     <<","<<htempPos_pfx->GetBinContent(iCh+2)
-	             <<", expected "<<YMean
-		     <<FairLogger::endl;
-	  }
-	  htempTOff_pfx->Fill(iCh,TMean); 
+          LOG(INFO)<<"CbmTofTestBeamClusterizer::FillCalHist:" 
+                   <<" SmT "<< iSmType<<" Sm "<<iSm<<" Rpc "<<iRpc<<" Ch "<<iCh
+                   <<": YMean "<<YMean<<", TMean "<< TMean
+                   <<" -> " << Form(" %f, %f, %f, %f ",fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
+                                    fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1],
+                                    fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0],
+                                    fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1])
+                   <<FairLogger::endl;
+         } // for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) 
+        }
+        htempPos_pfx->Reset();    //reset to store new values 
+        htempTOff_pfx->Reset();
+        htempTot_Mean->Reset();
+        htempTot_Off->Reset();
+        for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // store new values 
+        {
+          Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iRpc)*0.5
+          *(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]-fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
+          Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
+          htempPos_pfx->Fill(iCh,YMean);
+          if( ((TProfile *)htempPos_pfx)->GetBinContent(iCh+1)!=YMean) {
+           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! ch "<<iCh
+                     <<" got "<< htempPos_pfx->GetBinContent(iCh)<<","<<htempPos_pfx->GetBinContent(iCh+1)
+                     <<","<<htempPos_pfx->GetBinContent(iCh+2)
+                     <<", expected "<<YMean
+                     <<FairLogger::endl;
+          }
+          htempTOff_pfx->Fill(iCh,TMean); 
 
-	  for(Int_t iSide=0; iSide<2; iSide++){
-	   htempTot_Mean->SetBinContent(iCh*2+1+iSide,
+          for(Int_t iSide=0; iSide<2; iSide++){
+           htempTot_Mean->SetBinContent(iCh*2+1+iSide,
                           fdTTotMean/fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide] );  //nh +1 empirical(?)
-	   htempTot_Off->SetBinContent(iCh*2+1+iSide,fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]);
-	  }
+           htempTot_Off->SetBinContent(iCh*2+1+iSide,fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]);
+          }
         } // for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) 
 
-	LOG(DEBUG1)<<" Updating done ... write to file "<<FairLogger::endl;
-	htempPos_pfx->Write();
-	htempTOff_pfx->Write();
-	htempTot_pfx->Write();
-	htempTot_Mean->Write();
-	htempTot_Off->Write();
+        LOG(DEBUG1)<<" Updating done ... write to file "<<FairLogger::endl;
+        htempPos_pfx->Write();
+        htempTOff_pfx->Write();
+        htempTot_pfx->Write();
+        htempTot_Mean->Write();
+        htempTot_Off->Write();
 
-	// store old DELTOF histos
-	LOG(DEBUG)<<" Copy old DelTof histos from "<< gDirectory->GetName()<<" to file "<<FairLogger::endl;
+        // store old DELTOF histos
+        LOG(DEBUG)<<" Copy old DelTof histos from "<< gDirectory->GetName()<<" to file "<<FairLogger::endl;
 
-	for(Int_t iSel=0; iSel<iNSel; iSel++){
-	 // Store DelTof corrections 
+        for(Int_t iSel=0; iSel<iNSel; iSel++){
+         // Store DelTof corrections 
           TDirectory * curdir = gDirectory;
-	  gROOT->cd(); //
-	  TH1D *hCorDelTof =(TH1D*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
-	  gDirectory->cd( curdir->GetPath() );
-	  if (NULL!=hCorDelTof) {
-	     TH1D *hCorDelTofout=(TH1D*)hCorDelTof->Clone(Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
-	     hCorDelTofout->Write();
-	  }else {
-	     LOG(DEBUG)<<" No CorDelTof histo "
-		  <<Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel)<<FairLogger::endl;
+          gROOT->cd(); //
+          TH1D *hCorDelTof =(TH1D*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
+          gDirectory->cd( curdir->GetPath() );
+          if (NULL!=hCorDelTof) {
+             TH1D *hCorDelTofout=(TH1D*)hCorDelTof->Clone(Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
+             hCorDelTofout->Write();
+          }else {
+             LOG(DEBUG)<<" No CorDelTof histo "
+                  <<Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel)<<FairLogger::endl;
           }
-	}
+        }
 
         // store walk histos
-	for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // store new values 
-	{
+        for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // store new values 
+        {
           TProfile *htmp0 = fhRpcCluWalk[iDetIndx][iCh][0]->ProfileX("_pfx",1,nbClWalkBinY);
           TProfile *htmp1 = fhRpcCluWalk[iDetIndx][iCh][1]->ProfileX("_pfx",1,nbClWalkBinY);
           TH1D *h1tmp0    = fhRpcCluWalk[iDetIndx][iCh][0]->ProjectionX("_px",1,nbClWalkBinY);
           TH1D *h1tmp1    = fhRpcCluWalk[iDetIndx][iCh][1]->ProjectionX("_px",1,nbClWalkBinY);
-	  for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
-	   h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
-	   h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
+          for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
+           h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
+           h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
            if( h1tmp0->GetBinContent(iWx+1)!=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]) {
-	   LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
-		     <<" got "<< h1tmp0->GetBinContent(iWx+1)
-	             <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
-		     <<FairLogger::endl;	 }
-	  }
-	  h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
+           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
+                     <<" got "<< h1tmp0->GetBinContent(iWx+1)
+                     <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
+                     <<FairLogger::endl;         }
+          }
+          h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
           htmp0->Write();
           h1tmp0->Write();
-	  h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
+          h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
           htmp1->Write();
           h1tmp1->Write();
-	}
+        }
      }
      break;
      case 3 :    //update offsets, gains, save walks and DELTOF 
      {     
         Int_t iNbRpc = fDigiBdfPar->GetNbRpc(  iSmType);
-	Int_t iNbCh  = fDigiBdfPar->GetNbChan( iSmType, iRpc );
+        Int_t iNbCh  = fDigiBdfPar->GetNbChan( iSmType, iRpc );
         if((fCalSmType < 0) || (fCalSmType != iSmType) ){     // select detectors for updating offsets
          LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos (calMode==3): update Offsets and Gains, keep Walk and DelTof for "
-		  <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc<<" with " <<  iNbCh << " channels "
-	 	  <<" using selector "<<fCalSel
-		  <<FairLogger::endl;
-	 /*
-	 Double_t dTRefMean=0.;
-	 if (5 == iSmType && fTRefMode%10 == iSm){   // reference counter
-	   dTRefMean=htempTOff->GetMean(2);
-	 }
-	 */
-	 for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // update Offset and Gain 
-	 {
-	  Double_t YMean=((TProfile *)htempPos_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(?)
-	  Double_t TMean=((TProfile *)htempTOff_pfx)->GetBinContent(iCh+1);
+                  <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc<<" with " <<  iNbCh << " channels "
+                   <<" using selector "<<fCalSel
+                  <<FairLogger::endl;
+         /*
+         Double_t dTRefMean=0.;
+         if (5 == iSmType && fTRefMode%10 == iSm){   // reference counter
+           dTRefMean=htempTOff->GetMean(2);
+         }
+         */
+         for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // update Offset and Gain 
+         {
+          Double_t YMean=((TProfile *)htempPos_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(?)
+          Double_t TMean=((TProfile *)htempTOff_pfx)->GetBinContent(iCh+1);
           Double_t dTYOff=YMean/fDigiBdfPar->GetSigVel(iSmType,iRpc) ;
 
-	  if (fiBeamRefType == iSmType && fiBeamRefSm == iSm && fiBeamRefDet == iRpc) {
-	    TMean-=((TProfile *)hAvTOff_pfx)->GetBinContent(iSm*iNbRpc+iRpc+1); // don't shift reference counter
-	  }
+          if (fiBeamRefType == iSmType && fiBeamRefSm == iSm && fiBeamRefDet == iRpc) {
+            TMean-=((TProfile *)hAvTOff_pfx)->GetBinContent(iSm*iNbRpc+iRpc+1); // don't shift reference counter
+          }
 
           if(htempTOff_px->GetBinContent(iCh+1)>WalkNHmin){
- 	   fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] += -dTYOff + TMean;
-	   fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean;
-	  }
-	  /*
- 	  Double_t TotMean=((TProfile *)htempTot_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(!)
-	  if(1<TotMean){
-	    fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0] *= fdTTotMean / TotMean;
-	    fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1] *= fdTTotMean / TotMean;
-	  }
-	  */
-	  for(Int_t iSide=0; iSide<2; iSide++){
-	    Int_t ib=iCh*2+1+iSide;
-	    TH1 * hbin=htempTot->ProjectionY(Form("bin%d",ib),ib,ib);
-	    if(100>hbin->GetEntries()) continue;  //request min number of entries
-	    Double_t Ymax=hbin->GetMaximum();
-	    Int_t iBmax=hbin->GetMaximumBin();
-	    TAxis *xaxis = hbin->GetXaxis();
-	    Double_t Xmax=xaxis->GetBinCenter(iBmax)/fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide];
-	    Double_t XOff=Xmax-fTotPreRange;
-	    if(0){//TMath::Abs(XOff - fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide])>100){
-	      LOG(WARNING)<<"XOff changed for "
-			  <<Form("SmT%01d_sm%03d_rpc%03d_Side%d: XOff %f, old %f",iSmType,iSm,iRpc,iSide,XOff,fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide])
-		          <<FairLogger::endl; 
-	    }
-	    //	    Double_t TotMean=htempTot_Mean->GetBinContent(ib);
-	    Double_t TotMean=hbin->GetMean();
-	    if(15==iSmType){
-	      LOG(WARNING)<<"Gain for "
-			  <<Form("SmT%01d_sm%03d_rpc%03d_Side%d: TotMean %f, prof %f, gain %f, modg %f ",
-				 iSmType,iSm,iRpc,iSide,TotMean,htempTot_Mean->GetBinContent(ib),
-				 fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide],fdTTotMean / TotMean)
-		          <<FairLogger::endl; 	    }
-	    if(1<TotMean){
-	      fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide] *= fdTTotMean / TotMean;
-	    }
-	  }
+            fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] += -dTYOff + TMean;
+           fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean;
+          }
+          /*
+           Double_t TotMean=((TProfile *)htempTot_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(!)
+          if(1<TotMean){
+            fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0] *= fdTTotMean / TotMean;
+            fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1] *= fdTTotMean / TotMean;
+          }
+          */
+          for(Int_t iSide=0; iSide<2; iSide++){
+            Int_t ib=iCh*2+1+iSide;
+            TH1 * hbin=htempTot->ProjectionY(Form("bin%d",ib),ib,ib);
+            if(100>hbin->GetEntries()) continue;  //request min number of entries
+            Double_t Ymax=hbin->GetMaximum();
+            Int_t iBmax=hbin->GetMaximumBin();
+            TAxis *xaxis = hbin->GetXaxis();
+            Double_t Xmax=xaxis->GetBinCenter(iBmax)/fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide];
+            Double_t XOff=Xmax-fTotPreRange;
+            if(0){//TMath::Abs(XOff - fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide])>100){
+              LOG(WARNING)<<"XOff changed for "
+                          <<Form("SmT%01d_sm%03d_rpc%03d_Side%d: XOff %f, old %f",iSmType,iSm,iRpc,iSide,XOff,fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide])
+                          <<FairLogger::endl; 
+            }
+            //            Double_t TotMean=htempTot_Mean->GetBinContent(ib);
+            Double_t TotMean=hbin->GetMean();
+            if(15==iSmType){
+              LOG(WARNING)<<"Gain for "
+                          <<Form("SmT%01d_sm%03d_rpc%03d_Side%d: TotMean %f, prof %f, gain %f, modg %f ",
+                                 iSmType,iSm,iRpc,iSide,TotMean,htempTot_Mean->GetBinContent(ib),
+                                 fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide],fdTTotMean / TotMean)
+                          <<FairLogger::endl;             }
+            if(1<TotMean){
+              fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide] *= fdTTotMean / TotMean;
+            }
+          }
           if(5==iSmType && 
-	    fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] != fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]) {// diamond 
-	    LOG(WARNING)<<"CbmTofTestBeamClusterizer::FillCalHist:" 
-			<<" SmT "<< iSmType<<" Sm "<<iSm<<" Rpc "<<iRpc<<" Ch "<<iCh
-			<<": YMean "<<YMean<<", TMean "<< TMean
-			<<" -> " 
+            fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] != fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]) {// diamond 
+            LOG(WARNING)<<"CbmTofTestBeamClusterizer::FillCalHist:" 
+                        <<" SmT "<< iSmType<<" Sm "<<iSm<<" Rpc "<<iRpc<<" Ch "<<iCh
+                        <<": YMean "<<YMean<<", TMean "<< TMean
+                        <<" -> " 
                         <<Form(" %f %f %f %f ",fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
-			                       fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1],
-			                       fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0],
-			                       fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1])
-			<<FairLogger::endl;
-	    Double_t dTOff=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]);
-	    Double_t dGain=0.5*(fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0]+fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1]);        
-	    fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]   =dTOff;
-	    fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]   =dTOff;
-	    fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0]=dGain;
-	    fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1]=dGain;
-	  }   // diamond warning end 
-	 }    // for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) 
-	}     // iSmType selection condition  
+                                               fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1],
+                                               fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0],
+                                               fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1])
+                        <<FairLogger::endl;
+            Double_t dTOff=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]);
+            Double_t dGain=0.5*(fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0]+fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1]);        
+            fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]   =dTOff;
+            fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]   =dTOff;
+            fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][0]=dGain;
+            fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1]=dGain;
+          }   // diamond warning end 
+         }    // for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) 
+        }     // iSmType selection condition  
 
-	htempPos_pfx->Reset();    //reset to store new values 
-	htempTOff_pfx->Reset();
-	htempTot_Mean->Reset();
-	htempTot_Off->Reset();
-	for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // store new values 
-	{
-	 Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iRpc)*0.5
-	  *(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]-fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
-	 Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
-	 htempPos_pfx->Fill(iCh,YMean);
+        htempPos_pfx->Reset();    //reset to store new values 
+        htempTOff_pfx->Reset();
+        htempTot_Mean->Reset();
+        htempTot_Off->Reset();
+        for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // store new values 
+        {
+         Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iRpc)*0.5
+          *(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]-fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
+         Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
+         htempPos_pfx->Fill(iCh,YMean);
          if( ((TProfile *)htempPos_pfx)->GetBinContent(iCh+1)!=YMean) {
-	   LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! ch "<<iCh
-		     <<" got "<< htempPos_pfx->GetBinContent(iCh)<<","<<htempPos_pfx->GetBinContent(iCh+1)
-		     <<","<<htempPos_pfx->GetBinContent(iCh+2)
-	             <<", expected "<<YMean
-		     <<FairLogger::endl;
-	 }
-	 htempTOff_pfx->Fill(iCh,TMean); 
+           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! ch "<<iCh
+                     <<" got "<< htempPos_pfx->GetBinContent(iCh)<<","<<htempPos_pfx->GetBinContent(iCh+1)
+                     <<","<<htempPos_pfx->GetBinContent(iCh+2)
+                     <<", expected "<<YMean
+                     <<FairLogger::endl;
+         }
+         htempTOff_pfx->Fill(iCh,TMean); 
 
-	  for(Int_t iSide=0; iSide<2; iSide++){
-	   htempTot_Mean->SetBinContent(iCh*2+1+iSide,
+          for(Int_t iSide=0; iSide<2; iSide++){
+           htempTot_Mean->SetBinContent(iCh*2+1+iSide,
                           fdTTotMean/fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide] );
-	   htempTot_Off->SetBinContent(iCh*2+1+iSide,fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]);
-	  }
-	  //	 htempTot_pfx->Fill(iCh,fdTTotMean/fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1]);
-	} // for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) 
+           htempTot_Off->SetBinContent(iCh*2+1+iSide,fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]);
+          }
+          //         htempTot_pfx->Fill(iCh,fdTTotMean/fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][1]);
+        } // for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) 
 
 
         LOG(DEBUG1)<<" Updating done ... write to file "<<FairLogger::endl;
@@ -2395,82 +2395,82 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         htempTot_Mean->Write();
         htempTot_Off->Write();
 
-	// store old DELTOF histos
+        // store old DELTOF histos
         LOG(DEBUG)<<" Copy old DelTof histos from "<< gDirectory->GetName()<<" to file "<<FairLogger::endl;
 
         for(Int_t iSel=0; iSel<iNSel; iSel++){
-	 // Store DelTof corrections 
-	 TDirectory * curdir = gDirectory;
-	 gROOT->cd(); //
-	 TH1D *hCorDelTof =(TH1D*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
-	 gDirectory->cd( curdir->GetPath() );
-	 if (NULL!=hCorDelTof) {
-	   TH1D *hCorDelTofout=(TH1D*)hCorDelTof->Clone(Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
-	  hCorDelTofout->Write();
-	 }else {
+         // Store DelTof corrections 
+         TDirectory * curdir = gDirectory;
+         gROOT->cd(); //
+         TH1D *hCorDelTof =(TH1D*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
+         gDirectory->cd( curdir->GetPath() );
+         if (NULL!=hCorDelTof) {
+           TH1D *hCorDelTofout=(TH1D*)hCorDelTof->Clone(Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
+          hCorDelTofout->Write();
+         }else {
          LOG(DEBUG)<<" No CorDelTof histo "
-		  <<Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel)<<FairLogger::endl;
-	 }
-	}
+                  <<Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel)<<FairLogger::endl;
+         }
+        }
 
         LOG(DEBUG)<<" Store old walk histos to file "<<FairLogger::endl;
-	// store walk histos
-	for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // restore old values 
-	{
+        // store walk histos
+        for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // restore old values 
+        {
           TProfile *htmp0 = fhRpcCluWalk[iDetIndx][iCh][0]->ProfileX("_pfx",1,nbClWalkBinY);
           TProfile *htmp1 = fhRpcCluWalk[iDetIndx][iCh][1]->ProfileX("_pfx",1,nbClWalkBinY);
           TH1D *h1tmp0    = fhRpcCluWalk[iDetIndx][iCh][0]->ProjectionX("_px",1,nbClWalkBinY);
           TH1D *h1tmp1    = fhRpcCluWalk[iDetIndx][iCh][1]->ProjectionX("_px",1,nbClWalkBinY);
-	  for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
-	   h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
-	   h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
+          for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
+           h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
+           h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
            if( h1tmp0->GetBinContent(iWx+1)!=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]) {
-	   LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
-		     <<" got "<< h1tmp0->GetBinContent(iWx+1)
-	             <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
-		     <<FairLogger::endl;	 }
-	  }
-	  h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
+           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
+                     <<" got "<< h1tmp0->GetBinContent(iWx+1)
+                     <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
+                     <<FairLogger::endl;         }
+          }
+          h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
           htmp0->Write();
           h1tmp0->Write();
-	  h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
+          h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
           htmp1->Write();
           h1tmp1->Write();
-	}
+        }
      }
      break;
      case 4 :   //update DelTof save offsets, gains and walks 
      {    
         Int_t iNbRpc = fDigiBdfPar->GetNbRpc( iSmType);
-	Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
+        Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
         LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: restore Offsets, Gains and Walk, save DelTof for "
-		 <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc 
-		 <<FairLogger::endl;
-	htempPos_pfx->Reset();    //reset to restore mean of original histos
-	htempTOff_pfx->Reset();
-	htempTot_Mean->Reset();
-	htempTot_Off->Reset();
-	for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) 
-	{
-	 Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iRpc)*0.5
-	                   *(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]-fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
-	 Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
-	 htempPos_pfx->Fill(iCh,YMean);
+                 <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc 
+                 <<FairLogger::endl;
+        htempPos_pfx->Reset();    //reset to restore mean of original histos
+        htempTOff_pfx->Reset();
+        htempTot_Mean->Reset();
+        htempTot_Off->Reset();
+        for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) 
+        {
+         Double_t YMean=fDigiBdfPar->GetSigVel(iSmType,iRpc)*0.5
+                           *(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]-fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
+         Double_t TMean=0.5*(fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1]+fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0]);
+         htempPos_pfx->Fill(iCh,YMean);
          if( ((TProfile *)htempPos_pfx)->GetBinContent(iCh+1)!=YMean) {
-	   LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! ch "<<iCh
-		     <<" got "<< htempPos_pfx->GetBinContent(iCh)<<","<<htempPos_pfx->GetBinContent(iCh+1)
-		     <<","<<htempPos_pfx->GetBinContent(iCh+2)
-	             <<", expected "<<YMean
-		     <<FairLogger::endl;
-	 }
-	 htempTOff_pfx->Fill(iCh,TMean); 
+           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! ch "<<iCh
+                     <<" got "<< htempPos_pfx->GetBinContent(iCh)<<","<<htempPos_pfx->GetBinContent(iCh+1)
+                     <<","<<htempPos_pfx->GetBinContent(iCh+2)
+                     <<", expected "<<YMean
+                     <<FairLogger::endl;
+         }
+         htempTOff_pfx->Fill(iCh,TMean); 
 
-	 for(Int_t iSide=0; iSide<2; iSide++){
-	   htempTot_Mean->SetBinContent(iCh*2+1+iSide,
+         for(Int_t iSide=0; iSide<2; iSide++){
+           htempTot_Mean->SetBinContent(iCh*2+1+iSide,
                           fdTTotMean/fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide] );  //nh +1 empirical(?)
-	   htempTot_Off->SetBinContent(iCh*2+1+iSide,fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]);
-	 }
-	}
+           htempTot_Off->SetBinContent(iCh*2+1+iSide,fvCPTotOff[iSmType][iSm*iNbRpc+iRpc][iCh][iSide]);
+         }
+        }
 
         LOG(DEBUG1)<<" Restoring of Offsets and Gains done ... "<<FairLogger::endl;
         htempPos_pfx->Write();
@@ -2479,83 +2479,83 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         htempTot_Mean->Write();
         htempTot_Off->Write();
 
-	// restore walk histos
-	for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // restore old values 
-	{
+        // restore walk histos
+        for( Int_t iCh = 0; iCh < iNbCh; iCh++ ) // restore old values 
+        {
           TProfile *htmp0 = fhRpcCluWalk[iDetIndx][iCh][0]->ProfileX("_pfx",1,nbClWalkBinY);
           TProfile *htmp1 = fhRpcCluWalk[iDetIndx][iCh][1]->ProfileX("_pfx",1,nbClWalkBinY);
           TH1D *h1tmp0    = fhRpcCluWalk[iDetIndx][iCh][0]->ProjectionX("_px",1,nbClWalkBinY);
           TH1D *h1tmp1    = fhRpcCluWalk[iDetIndx][iCh][1]->ProjectionX("_px",1,nbClWalkBinY);
-	  for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
-	   h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
-	   h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
+          for(Int_t iWx=0; iWx<nbClWalkBinX; iWx++){
+           h1tmp0->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]);
+           h1tmp1->SetBinContent(iWx+1,fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][1][iWx]);
            if( h1tmp0->GetBinContent(iWx+1)!=fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]) {
-	   LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
-		     <<" got "<< h1tmp0->GetBinContent(iWx+1)
-	             <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
-		     <<FairLogger::endl;	 }
-	  }
-	  h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
+           LOG(ERROR)<<"CbmTofTestBeamClusterizer::WriteHistos: restore unsuccessful! iWx "<<iWx
+                     <<" got "<< h1tmp0->GetBinContent(iWx+1)
+                     <<", expected "<<fvCPWalk[iSmType][iSm*iNbRpc+iRpc][iCh][0][iWx]
+                     <<FairLogger::endl;         }
+          }
+          h1tmp0->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S0_Walk_px", iSmType, iSm, iRpc, iCh ));
           htmp0->Write();
           h1tmp0->Write();
-	  h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
+          h1tmp1->SetName(Form("Cor_SmT%01d_sm%03d_rpc%03d_Ch%03d_S1_Walk_px", iSmType, iSm, iRpc, iCh ));
           htmp1->Write();
           h1tmp1->Write();
-	}
+        }
 
-	// generate/update DelTof corrections 
+        // generate/update DelTof corrections 
         if((fCalSmType < 0 && fCalSmType != iSmType) || (fCalSmType == iSmType))  // select detectors for determination of DelTof correction
-	{
-	  // if( fiBeamRefType == iSmType ) continue;  // no DelTof correction for Diamonds
+        {
+          // if( fiBeamRefType == iSmType ) continue;  // no DelTof correction for Diamonds
 
-	  for(Int_t iSel=0; iSel<iNSel; iSel++){
-	  TH2 *h2tmp=fhTRpcCluDelTof[iDetIndx][iSel];
+          for(Int_t iSel=0; iSel<iNSel; iSel++){
+          TH2 *h2tmp=fhTRpcCluDelTof[iDetIndx][iSel];
           if(NULL == h2tmp){
-	   LOG(INFO)<<Form("CbmTofTestBeamClusterizer::WriteHistos:  histo not available for SmT %d, Sm %d, Rpc %d",
-			  iSmType,iSm,iRpc)
- 		    <<FairLogger::endl;
-	    break;
-	  }
+           LOG(INFO)<<Form("CbmTofTestBeamClusterizer::WriteHistos:  histo not available for SmT %d, Sm %d, Rpc %d",
+                          iSmType,iSm,iRpc)
+                     <<FairLogger::endl;
+            break;
+          }
           Int_t iNEntries=h2tmp->GetEntries();
-	  LOG(INFO)<<Form(" Update DelTof correction for SmT %d, Sm %d, Rpc %d, Sel%d: Entries %d",
-			  iSmType,iSm,iRpc,iSel,iNEntries)
- 	 	  <<FairLogger::endl;
-	  h2tmp->Write();
+          LOG(INFO)<<Form(" Update DelTof correction for SmT %d, Sm %d, Rpc %d, Sel%d: Entries %d",
+                          iSmType,iSm,iRpc,iSel,iNEntries)
+                    <<FairLogger::endl;
+          h2tmp->Write();
           TProfile *htmp = h2tmp->ProfileX("_pfx",1,h2tmp->GetNbinsY());
           TH1D *h1tmp    = h2tmp->ProjectionX("_px",1,h2tmp->GetNbinsY());
           TH1D *h1ytmp   = h2tmp->ProjectionY("_py",1,h2tmp->GetNbinsX());
-	  Double_t dDelMean=0.;//h1ytmp->GetMean();// inspect normalization, interferes with mode 3 for diamonds, nh, 10.01.2015 (?) 
-	  for(Int_t iBx=0; iBx<nbClDelTofBinX; iBx++){
-	    fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx][iSel]+=((TProfile *)htmp)->GetBinContent(iBx+1)-dDelMean;
-	    h1tmp->SetBinContent(iBx+1,fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx][iSel]);
-	  }
-	  h1tmp->SetName(Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof", iSmType, iSm, iRpc,iSel));
-	  h1tmp->Write();
-	 }
-	}else{  // copy existing histograms  
+          Double_t dDelMean=0.;//h1ytmp->GetMean();// inspect normalization, interferes with mode 3 for diamonds, nh, 10.01.2015 (?) 
+          for(Int_t iBx=0; iBx<nbClDelTofBinX; iBx++){
+            fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx][iSel]+=((TProfile *)htmp)->GetBinContent(iBx+1)-dDelMean;
+            h1tmp->SetBinContent(iBx+1,fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx][iSel]);
+          }
+          h1tmp->SetName(Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof", iSmType, iSm, iRpc,iSel));
+          h1tmp->Write();
+         }
+        }else{  // copy existing histograms  
          for(Int_t iSel=0; iSel<iNSel; iSel++){
-	  // Store DelTof corrections 
-	  TDirectory * curdir = gDirectory;
-	  gROOT->cd(); //
-	  TH1D *hCorDelTof =(TH1D*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
-	  gDirectory->cd( curdir->GetPath() );
-	  if (NULL!=hCorDelTof) {
-	   TH1D *hCorDelTofout=(TH1D*)hCorDelTof->Clone(Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
+          // Store DelTof corrections 
+          TDirectory * curdir = gDirectory;
+          gROOT->cd(); //
+          TH1D *hCorDelTof =(TH1D*) gDirectory->FindObjectAny( Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
+          gDirectory->cd( curdir->GetPath() );
+          if (NULL!=hCorDelTof) {
+           TH1D *hCorDelTofout=(TH1D*)hCorDelTof->Clone(Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel));
            LOG(INFO)<<" Save existing CorDelTof histo "
-		  <<Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel)<<FairLogger::endl;
-	   hCorDelTofout->Write();
-	  }else {
+                  <<Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel)<<FairLogger::endl;
+           hCorDelTofout->Write();
+          }else {
           LOG(DEBUG)<<" No CorDelTof histo "
-	 	   <<Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel)<<FairLogger::endl;
-	  }
-	 }
-	}
+                    <<Form("cl_CorSmT%01d_sm%03d_rpc%03d_Sel%02d_DelTof",iSmType,iSm,iRpc,iSel)<<FairLogger::endl;
+          }
+         }
+        }
      }
      break;
      default: 
          LOG(DEBUG)<<"CbmTofTestBeamClusterizer::WriteHistos: update mode "
-		   <<fCalMode<<" not yet implemented"
-		   <<FairLogger::endl;
+                   <<fCalMode<<" not yet implemented"
+                   <<FairLogger::endl;
      }
    }
 
@@ -2648,7 +2648,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
   }
   fiNevtBuild++;
   LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters from "
-	    <<fTofDigisColl->GetEntries()<<" digis in event "<<fiNevtBuild<<FairLogger::endl;
+            <<fTofDigisColl->GetEntries()<<" digis in event "<<fiNevtBuild<<FairLogger::endl;
 
    dTRef=0.;     // reset reference time offset 
    fTRefHits=0.;
@@ -2660,82 +2660,82 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
       {
        CbmTofDigiExp *pDigi = (CbmTofDigiExp*) fTofDigisColl->At( iDigInd );
        LOG(DEBUG1)<<iDigInd<<" "<<pDigi<<Form(" Address : 0x%08x ",pDigi->GetAddress())
-		 <<" SmT " << pDigi->GetType()
-		 <<" Sm " << pDigi->GetSm()
-		 <<" Rpc "<< pDigi->GetRpc()
-		 <<" Ch " << pDigi->GetChannel()
-		 <<" S " << pDigi->GetSide()
-		 <<" : " << pDigi->ToString()
-	 //	 <<" Time "<<pDigi->GetTime()
-	 //	 <<" Tot " <<pDigi->GetTot()
-		 <<FairLogger::endl;
+                 <<" SmT " << pDigi->GetType()
+                 <<" Sm " << pDigi->GetSm()
+                 <<" Rpc "<< pDigi->GetRpc()
+                 <<" Ch " << pDigi->GetChannel()
+                 <<" S " << pDigi->GetSide()
+                 <<" : " << pDigi->ToString()
+         //         <<" Time "<<pDigi->GetTime()
+         //         <<" Tot " <<pDigi->GetTot()
+                 <<FairLogger::endl;
 
        Int_t iDetIndx= fMbsMappingPar->GetMappedDetInd( pDigi->GetAddress() );
        if (fMbsMappingPar->GetNbMappedDet()-1<iDetIndx || iDetIndx<0){
-	 LOG(DEBUG)<<Form(" Wrong DetIndx %d >< %d,0 ",iDetIndx,fMbsMappingPar->GetNbMappedDet())
-		   <<FairLogger::endl;
-	 break;
+         LOG(DEBUG)<<Form(" Wrong DetIndx %d >< %d,0 ",iDetIndx,fMbsMappingPar->GetNbMappedDet())
+                   <<FairLogger::endl;
+         break;
        }
                
        Double_t dTDifMin=dDoubleMax;
        CbmTofDigiExp *pDigi2Min=NULL;
        //       for (Int_t iDigI2 =iDigInd+1; iDigI2<iNbTofDigi;iDigI2++){
        for (Int_t iDigI2 =0; iDigI2<iNbTofDigi;iDigI2++){
-	 CbmTofDigiExp *pDigi2 = (CbmTofDigiExp*) fTofDigisColl->At( iDigI2 );
+         CbmTofDigiExp *pDigi2 = (CbmTofDigiExp*) fTofDigisColl->At( iDigI2 );
          if( iDetIndx == fMbsMappingPar->GetMappedDetInd( pDigi2->GetAddress() )){
-	   if(0.==pDigi->GetSide() && 1.==pDigi2->GetSide()){
-	     fhRpcDigiCor[iDetIndx]->Fill( pDigi->GetChannel(),  pDigi2->GetChannel() );
-	   }
-	   else 
-	   {
-	     if (1.==pDigi->GetSide() && 0.==pDigi2->GetSide()){
-		 fhRpcDigiCor[iDetIndx]->Fill( pDigi2->GetChannel(),  pDigi->GetChannel() );
-	     }
-	   }
-	   if(   pDigi->GetChannel() == pDigi2->GetChannel()
+           if(0.==pDigi->GetSide() && 1.==pDigi2->GetSide()){
+             fhRpcDigiCor[iDetIndx]->Fill( pDigi->GetChannel(),  pDigi2->GetChannel() );
+           }
+           else 
+           {
+             if (1.==pDigi->GetSide() && 0.==pDigi2->GetSide()){
+                 fhRpcDigiCor[iDetIndx]->Fill( pDigi2->GetChannel(),  pDigi->GetChannel() );
+             }
+           }
+           if(   pDigi->GetChannel() == pDigi2->GetChannel()
               && pDigi->GetSide()    != pDigi2->GetSide()){
             Double_t dTDif=TMath::Abs(pDigi->GetTime()-pDigi2->GetTime());
-	    if(dTDif<dTDifMin){
-	     dTDifMin=dTDif;
-	     pDigi2Min=pDigi2;
-	    }
-	   }
-	 }
+            if(dTDif<dTDifMin){
+             dTDifMin=dTDif;
+             pDigi2Min=pDigi2;
+            }
+           }
+         }
        }
        
        if( pDigi2Min !=NULL ){
-	 CbmTofDetectorInfo xDetInfo(kTOF, pDigi->GetType(), pDigi->GetSm(), pDigi->GetRpc(), 0, pDigi->GetChannel());
+         CbmTofDetectorInfo xDetInfo(kTOF, pDigi->GetType(), pDigi->GetSm(), pDigi->GetRpc(), 0, pDigi->GetChannel());
          Int_t iChId = fTofId->SetDetectorInfo( xDetInfo );
          fChannelInfo = fDigiPar->GetCell( iChId );
-	 if(NULL == fChannelInfo){
-	   LOG(WARNING)<<Form("BuildClusters: invalid ChannelInfo for 0x%08x",iChId)<<FairLogger::endl;
-	   continue;
-	 }
+         if(NULL == fChannelInfo){
+           LOG(WARNING)<<Form("BuildClusters: invalid ChannelInfo for 0x%08x",iChId)<<FairLogger::endl;
+           continue;
+         }
          if(  fDigiBdfPar->GetSigVel(pDigi->GetType(),pDigi->GetRpc()) * dTDifMin * 0.5 
-	    < fPosYMaxScal*fChannelInfo->GetSizey()) {
-	 //check consistency
-	   if(8==pDigi->GetType() || 5==pDigi->GetType()){
-	     if(pDigi->GetTime() != pDigi2Min->GetTime()){
-	       if(fiMsgCnt-- >0){
-		   LOG(WARNING)<<" BuildClusters: Inconsistent duplicated digis in event " << fiNevtBuild
-			       <<", Ind: "<<iDigInd<< FairLogger::endl;
+            < fPosYMaxScal*fChannelInfo->GetSizey()) {
+         //check consistency
+           if(8==pDigi->GetType() || 5==pDigi->GetType()){
+             if(pDigi->GetTime() != pDigi2Min->GetTime()){
+               if(fiMsgCnt-- >0){
+                   LOG(WARNING)<<" BuildClusters: Inconsistent duplicated digis in event " << fiNevtBuild
+                               <<", Ind: "<<iDigInd<< FairLogger::endl;
                    LOG(WARNING)<<"   "<<pDigi->ToString()<< FairLogger::endl;
                    LOG(WARNING)<<"   "<<pDigi2Min->ToString()<< FairLogger::endl;
-	       }
-	       pDigi2Min->SetTot(pDigi->GetTot());
-	       pDigi2Min->SetTime(pDigi->GetTime());
-	     }
-	 }
+               }
+               pDigi2Min->SetTot(pDigi->GetTot());
+               pDigi2Min->SetTime(pDigi->GetTime());
+             }
+         }
 
-	 // average ToTs! temporary fix, FIXME
-	 /*
-	 Double_t dAvTot=0.5*(pDigi->GetTot()+pDigi2Min->GetTot());
+         // average ToTs! temporary fix, FIXME
+         /*
+         Double_t dAvTot=0.5*(pDigi->GetTot()+pDigi2Min->GetTot());
          pDigi->SetTot(dAvTot);
          pDigi2Min->SetTot(dAvTot);
-	 LOG(DEBUG)<<" BuildClusters: TDif "<<dTDifMin<<", Average Tot "<<dAvTot<<FairLogger::endl;
-	 LOG(DEBUG)<<"      "<<pDigi->ToString()<< FairLogger::endl;
+         LOG(DEBUG)<<" BuildClusters: TDif "<<dTDifMin<<", Average Tot "<<dAvTot<<FairLogger::endl;
+         LOG(DEBUG)<<"      "<<pDigi->ToString()<< FairLogger::endl;
          LOG(DEBUG)<<"      "<<pDigi2Min->ToString()<< FairLogger::endl;
-	 */
+         */
        }
       }
    }
@@ -2753,143 +2753,143 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
       {
          pDigi = (CbmTofDigiExp*) fTofDigisColl->At( iDigInd );
          LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters: "
-	           <<iDigInd<<" "<<pDigi<<" "
-		   <<pDigi->GetType()<<" "
-		   <<pDigi->GetSm()<<" "
-		   <<pDigi->GetRpc()<<" "
-		   <<pDigi->GetChannel()<<" "
-		   <<pDigi->GetTime()<<" "
-		   <<pDigi->GetTot()
-		   <<FairLogger::endl;
+                   <<iDigInd<<" "<<pDigi<<" "
+                   <<pDigi->GetType()<<" "
+                   <<pDigi->GetSm()<<" "
+                   <<pDigi->GetRpc()<<" "
+                   <<pDigi->GetChannel()<<" "
+                   <<pDigi->GetTime()<<" "
+                   <<pDigi->GetTot()
+                   <<FairLogger::endl;
          if(    fDigiBdfPar->GetNbSmTypes() > pDigi->GetType()  // prevent crash due to misconfiguration 
-	     &&	fDigiBdfPar->GetNbSm(  pDigi->GetType()) > pDigi->GetSm()
-	     && fDigiBdfPar->GetNbRpc( pDigi->GetType()) > pDigi->GetRpc()
-	     && fDigiBdfPar->GetNbChan(pDigi->GetType(),0) >pDigi->GetChannel() 
-		)
-	 {
+             &&        fDigiBdfPar->GetNbSm(  pDigi->GetType()) > pDigi->GetSm()
+             && fDigiBdfPar->GetNbRpc( pDigi->GetType()) > pDigi->GetRpc()
+             && fDigiBdfPar->GetNbChan(pDigi->GetType(),0) >pDigi->GetChannel() 
+                )
+         {
          fStorDigiExp[pDigi->GetType()]
                      [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
                      [pDigi->GetChannel()].push_back(pDigi);
          fStorDigiInd[pDigi->GetType()]
                      [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
                      [pDigi->GetChannel()].push_back(iDigInd);
-	 LOG(DEBUG1)<<FairLogger::endl<<" CluCal-Init: "<<pDigi->ToString()<<FairLogger::endl;
-	 // apply calibration vectors 
-	 pDigi->SetTime(pDigi->GetTime()- // calibrate Digi Time 
-			fvCPTOff[pDigi->GetType()]
-		       [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-		       [pDigi->GetChannel()]
-		       [pDigi->GetSide()]);
-	 LOG(DEBUG1)<<" CluCal-TOff: "<<pDigi->ToString()<<FairLogger::endl;
+         LOG(DEBUG1)<<FairLogger::endl<<" CluCal-Init: "<<pDigi->ToString()<<FairLogger::endl;
+         // apply calibration vectors 
+         pDigi->SetTime(pDigi->GetTime()- // calibrate Digi Time 
+                        fvCPTOff[pDigi->GetType()]
+                       [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                       [pDigi->GetChannel()]
+                       [pDigi->GetSide()]);
+         LOG(DEBUG1)<<" CluCal-TOff: "<<pDigi->ToString()<<FairLogger::endl;
 
-	 Double_t dTot = pDigi->GetTot()-  // subtract Offset 
-		       fvCPTotOff[pDigi->GetType()]
-		       [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-		       [pDigi->GetChannel()]
-	               [pDigi->GetSide()];
-	 if (dTot<1.)  dTot=1;
-	 pDigi->SetTot(dTot *  // calibrate Digi ToT 
-		       fvCPTotGain[pDigi->GetType()]
-		       [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-		       [pDigi->GetChannel()]
-		       [pDigi->GetSide()]);
+         Double_t dTot = pDigi->GetTot()-  // subtract Offset 
+                       fvCPTotOff[pDigi->GetType()]
+                       [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                       [pDigi->GetChannel()]
+                       [pDigi->GetSide()];
+         if (dTot<1.)  dTot=1;
+         pDigi->SetTot(dTot *  // calibrate Digi ToT 
+                       fvCPTotGain[pDigi->GetType()]
+                       [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                       [pDigi->GetChannel()]
+                       [pDigi->GetSide()]);
 
-	 // walk correction 
+         // walk correction 
          Double_t dTotBinSize = (fdTOTMax-fdTOTMin)/ nbClWalkBinX;
          Int_t iWx = (Int_t)((pDigi->GetTot()-fdTOTMin)/dTotBinSize);
          if (0>iWx) iWx=0;
-         if (iWx>nbClWalkBinX) iWx=nbClWalkBinX-1;	
-	 Double_t dDTot = (pDigi->GetTot()-fdTOTMin)/dTotBinSize-(Double_t)iWx-0.5;
-	 Double_t dWT  = fvCPWalk[pDigi->GetType()]
-		         [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-		         [pDigi->GetChannel()]
-		         [pDigi->GetSide()]
+         if (iWx>nbClWalkBinX) iWx=nbClWalkBinX-1;        
+         Double_t dDTot = (pDigi->GetTot()-fdTOTMin)/dTotBinSize-(Double_t)iWx-0.5;
+         Double_t dWT  = fvCPWalk[pDigi->GetType()]
+                         [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                         [pDigi->GetChannel()]
+                         [pDigi->GetSide()]
                          [iWx];
          if(dDTot > 0) {    // linear interpolation to next bin
-	   dWT += dDTot * (fvCPWalk[pDigi->GetType()]
-		          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-		          [pDigi->GetChannel()]
-		          [pDigi->GetSide()]
+           dWT += dDTot * (fvCPWalk[pDigi->GetType()]
+                          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                          [pDigi->GetChannel()]
+                          [pDigi->GetSide()]
                           [iWx+1]
-	                 -fvCPWalk[pDigi->GetType()]
-		          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-		          [pDigi->GetChannel()]
-		          [pDigi->GetSide()]
-			  [iWx]); //memory leak???
-	 }else  // dDTot < 0,  linear interpolation to next bin
-	 {
-	   dWT -= dDTot * (fvCPWalk[pDigi->GetType()]
-		          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-		          [pDigi->GetChannel()]
-		          [pDigi->GetSide()]
+                         -fvCPWalk[pDigi->GetType()]
+                          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                          [pDigi->GetChannel()]
+                          [pDigi->GetSide()]
+                          [iWx]); //memory leak???
+         }else  // dDTot < 0,  linear interpolation to next bin
+         {
+           dWT -= dDTot * (fvCPWalk[pDigi->GetType()]
+                          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                          [pDigi->GetChannel()]
+                          [pDigi->GetSide()]
                           [iWx-1]
-	                 -fvCPWalk[pDigi->GetType()]
-		          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-		          [pDigi->GetChannel()]
-		          [pDigi->GetSide()]
-			  [iWx]); //memory leak???
-	 }
-	     
+                         -fvCPWalk[pDigi->GetType()]
+                          [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                          [pDigi->GetChannel()]
+                          [pDigi->GetSide()]
+                          [iWx]); //memory leak???
+         }
+             
          pDigi->SetTime(pDigi->GetTime() - dWT); // calibrate Digi Time 
-	 LOG(DEBUG1)<<" CluCal-Walk: "<<pDigi->ToString()<<FairLogger::endl;
+         LOG(DEBUG1)<<" CluCal-Walk: "<<pDigi->ToString()<<FairLogger::endl;
 
-	 if(0) {//pDigi->GetType()==7 && pDigi->GetSm()==0){
-	  LOG(INFO)<<"CbmTofTestBeamClusterizer::BuildClusters: CalDigi "
-	            <<iDigInd<<",  T "
-		    <<pDigi->GetType()<<", Sm "
-		    <<pDigi->GetSm()<<", R "
-		    <<pDigi->GetRpc()<<", Ch "
-		    <<pDigi->GetChannel()<<", S "
-		    <<pDigi->GetSide()<<", T "
-		    <<pDigi->GetTime()<<", Tot "
-		    <<pDigi->GetTot()
-		    <<", TotGain "<<
-	               fvCPTotGain[pDigi->GetType()]
-		       [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-		       [pDigi->GetChannel()]
-		       [pDigi->GetSide()]
-		    <<", TotOff "<<
-	               fvCPTotOff[pDigi->GetType()]
-		       [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-		       [pDigi->GetChannel()]
-		       [pDigi->GetSide()]
-	            <<", Walk "<<iWx<<": "<<
-		        fvCPWalk[pDigi->GetType()]
-		        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-		        [pDigi->GetChannel()]
-		        [pDigi->GetSide()]
+         if(0) {//pDigi->GetType()==7 && pDigi->GetSm()==0){
+          LOG(INFO)<<"CbmTofTestBeamClusterizer::BuildClusters: CalDigi "
+                    <<iDigInd<<",  T "
+                    <<pDigi->GetType()<<", Sm "
+                    <<pDigi->GetSm()<<", R "
+                    <<pDigi->GetRpc()<<", Ch "
+                    <<pDigi->GetChannel()<<", S "
+                    <<pDigi->GetSide()<<", T "
+                    <<pDigi->GetTime()<<", Tot "
+                    <<pDigi->GetTot()
+                    <<", TotGain "<<
+                       fvCPTotGain[pDigi->GetType()]
+                       [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                       [pDigi->GetChannel()]
+                       [pDigi->GetSide()]
+                    <<", TotOff "<<
+                       fvCPTotOff[pDigi->GetType()]
+                       [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                       [pDigi->GetChannel()]
+                       [pDigi->GetSide()]
+                    <<", Walk "<<iWx<<": "<<
+                        fvCPWalk[pDigi->GetType()]
+                        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                        [pDigi->GetChannel()]
+                        [pDigi->GetSide()]
                         [iWx]
-		   <<FairLogger::endl;
+                   <<FairLogger::endl;
 
-	  LOG(INFO)<<" dDTot "<<dDTot
-		   <<" BinSize: "<<dTotBinSize
-		   <<", CPWalk "<<fvCPWalk[pDigi->GetType()]
-		        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-		        [pDigi->GetChannel()]
-		        [pDigi->GetSide()]
-	                [iWx-1]
-		  <<", "<<fvCPWalk[pDigi->GetType()]
-		        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-		        [pDigi->GetChannel()]
-		        [pDigi->GetSide()]
+          LOG(INFO)<<" dDTot "<<dDTot
+                   <<" BinSize: "<<dTotBinSize
+                   <<", CPWalk "<<fvCPWalk[pDigi->GetType()]
+                        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                        [pDigi->GetChannel()]
+                        [pDigi->GetSide()]
+                        [iWx-1]
+                  <<", "<<fvCPWalk[pDigi->GetType()]
+                        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                        [pDigi->GetChannel()]
+                        [pDigi->GetSide()]
                         [iWx]
-		  <<", "<<fvCPWalk[pDigi->GetType()]
-		        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
-		        [pDigi->GetChannel()]
-		        [pDigi->GetSide()]
+                  <<", "<<fvCPWalk[pDigi->GetType()]
+                        [pDigi->GetSm()*fDigiBdfPar->GetNbRpc( pDigi->GetType()) + pDigi->GetRpc()]
+                        [pDigi->GetChannel()]
+                        [pDigi->GetSide()]
                         [iWx+1]
-		  <<" -> dWT = "<< dWT
-		  <<FairLogger::endl;
-	  }
- 	 } else 
-	   {
+                  <<" -> dWT = "<< dWT
+                  <<FairLogger::endl;
+          }
+          } else 
+           {
            LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Skip Digi "
-		     <<" Type "<<pDigi->GetType()<<" "<< fDigiBdfPar->GetNbSmTypes()
-		     <<" Sm "  <<pDigi->GetSm()<<" " << fDigiBdfPar->GetNbSm(pDigi->GetType())
-		     <<" Rpc " <<pDigi->GetRpc()<<" "<< fDigiBdfPar->GetNbRpc(pDigi->GetType())
-		     <<" Ch "  <<pDigi->GetChannel()<<" "<<fDigiBdfPar->GetNbChan(pDigi->GetType(),0)
-		     <<FairLogger::endl;
-	   }
+                     <<" Type "<<pDigi->GetType()<<" "<< fDigiBdfPar->GetNbSmTypes()
+                     <<" Sm "  <<pDigi->GetSm()<<" " << fDigiBdfPar->GetNbSm(pDigi->GetType())
+                     <<" Rpc " <<pDigi->GetRpc()<<" "<< fDigiBdfPar->GetNbRpc(pDigi->GetType())
+                     <<" Ch "  <<pDigi->GetChannel()<<" "<<fDigiBdfPar->GetNbChan(pDigi->GetType(),0)
+                     <<FairLogger::endl;
+           }
       } // for( Int_t iDigInd = 0; iDigInd < nTofDigi; iDigInd++ )
    } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
       else
@@ -2957,8 +2957,8 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
             {
                Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
                Int_t iChType = fDigiBdfPar->GetChanType( iSmType, iRpc );
-	       LOG(DEBUG2)<<"CbmTofTestBeamClusterizer::BuildClusters: RPC - Loop  "
-			 << Form(" %3d %3d %3d %3d ",iSmType,iSm,iRpc,iChType)
+               LOG(DEBUG2)<<"CbmTofTestBeamClusterizer::BuildClusters: RPC - Loop  "
+                         << Form(" %3d %3d %3d %3d ",iSmType,iSm,iRpc,iChType)
                          <<FairLogger::endl;
                fviClusterMul[iSmType][iSm][iRpc]=0; 
                Int_t  iChId = 0;
@@ -2990,8 +2990,8 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                         // Vertical strips => Y comes from bottom top time difference
                         for( Int_t iCh = 0; iCh < iNbCh; iCh++ )
                         {
-			  LOG(DEBUG3)<<"CbmTofTestBeamClusterizer::BuildClusters: VDigisize "
-			     << Form(" T %3d Sm %3d R %3d Ch %3d Size %3lu ",
+                          LOG(DEBUG3)<<"CbmTofTestBeamClusterizer::BuildClusters: VDigisize "
+                             << Form(" T %3d Sm %3d R %3d Ch %3d Size %3lu ",
                         iSmType,iSm,iRpc,iCh,fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
                              <<FairLogger::endl;
 
@@ -3006,92 +3006,92 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                  // Not one Digi of each end!
                                  fiNbSameSide++;
                                  LOG(DEBUG) << "CbmTofTestBeamClusterizer::BuildClusters: SameSide Hits! Times: "
-					      <<   (fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime()
-					      << ", "<<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime()
-					      <<", DeltaT " <<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime() - 
+                                              <<   (fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime()
+                                              << ", "<<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime()
+                                              <<", DeltaT " <<(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1])->GetTime() - 
                                                               (fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0])->GetTime()
-				              <<FairLogger::endl;
+                                              <<FairLogger::endl;
                                  LOG(DEBUG2)<<" SameSide Erase fStor entries(d) "<<iSmType<<", SR "<<iSm*iNbRpc+iRpc<<", Ch"<<iCh
-					       <<FairLogger::endl;
-				 fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
-				 fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
-				 if(2 > fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size()) break;
-				 continue;  
+                                               <<FairLogger::endl;
+                                 fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                 fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                 if(2 > fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size()) break;
+                                 continue;  
                               }
 
-			      LOG(DEBUG2) << "CbmTofTestBeamClusterizer::BuildClusters: digis processing for " 
-					  << Form(" SmT %3d Sm %3d Rpc %3d Ch %3d # %3lu ",iSmType,iSm,iRpc,iCh,
-						  fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
-		  	                  <<FairLogger::endl;
+                              LOG(DEBUG2) << "CbmTofTestBeamClusterizer::BuildClusters: digis processing for " 
+                                          << Form(" SmT %3d Sm %3d Rpc %3d Ch %3d # %3lu ",iSmType,iSm,iRpc,iCh,
+                                                  fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
+                                            <<FairLogger::endl;
                               if(2 > fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size()) break;
                               Int_t iLastChId = iChId; // Save Last hit channel
 
                               // 2 Digis = both sides present
                               CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
                               iChId = fTofId->SetDetectorInfo( xDetInfo );
-			      Int_t iUCellId=CbmTofAddress::GetUniqueAddress(iSm,iRpc,iCh,0,iSmType);
-			      LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters:" 
-					 << Form(" T %3d Sm %3d R %3d Ch %3d size %3lu ",
-						 iSmType,iSm,iRpc,iCh,fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
-					 << Form(" ChId: 0x%08x 0x%08x ",iChId,iUCellId)
-					 <<FairLogger::endl;
+                              Int_t iUCellId=CbmTofAddress::GetUniqueAddress(iSm,iRpc,iCh,0,iSmType);
+                              LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters:" 
+                                         << Form(" T %3d Sm %3d R %3d Ch %3d size %3lu ",
+                                                 iSmType,iSm,iRpc,iCh,fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
+                                         << Form(" ChId: 0x%08x 0x%08x ",iChId,iUCellId)
+                                         <<FairLogger::endl;
                               fChannelInfo = fDigiPar->GetCell( iChId );
                               if(NULL == fChannelInfo){
-			      LOG(ERROR)<<"CbmTofTestBeamClusterizer::BuildClusters: no geometry info! "
-					<< Form(" %3d %3d %3d %3d 0x%08x 0x%08x ",iSmType, iSm, iRpc, iCh, iChId,iUCellId)
-					<<FairLogger::endl;
-			      break;
-			      }
+                              LOG(ERROR)<<"CbmTofTestBeamClusterizer::BuildClusters: no geometry info! "
+                                        << Form(" %3d %3d %3d %3d 0x%08x 0x%08x ",iSmType, iSm, iRpc, iCh, iChId,iUCellId)
+                                        <<FairLogger::endl;
+                              break;
+                              }
 
                               CbmTofDigiExp * xDigiA = fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][0];
                               CbmTofDigiExp * xDigiB = fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh][1];
 
-			      LOG(DEBUG2) << "    "<<xDigiA->ToString()<<FairLogger::endl;
-			      LOG(DEBUG2) << "    "<<xDigiB->ToString()<<FairLogger::endl;
+                              LOG(DEBUG2) << "    "<<xDigiA->ToString()<<FairLogger::endl;
+                              LOG(DEBUG2) << "    "<<xDigiB->ToString()<<FairLogger::endl;
 
                               // The "Strip" time is the mean time between each end
                               dTime    =0.5 * ( xDigiA->GetTime() + xDigiB->GetTime() ) ; 
                               dTimeDif =      ( xDigiA->GetTime() - xDigiB->GetTime() ) ; 
-			      if(5==iSmType && dTimeDif !=0.) { 
-				// FIXME -> Overflow treatment in calib/tdc/TMbsCalibTdcTof.cxx
-				LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Diamond hit in "
-					  << iSm <<" with inconsistent digits " 
-					  <<  xDigiA->GetTime() << ", " << xDigiB->GetTime()
-				          << " -> "<<dTimeDif
-				    <<FairLogger::endl;
-				LOG(DEBUG) << "    "<<xDigiA->ToString()<<FairLogger::endl;
-				LOG(DEBUG) << "    "<<xDigiB->ToString()<<FairLogger::endl;
-			      }
+                              if(5==iSmType && dTimeDif !=0.) { 
+                                // FIXME -> Overflow treatment in calib/tdc/TMbsCalibTdcTof.cxx
+                                LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Diamond hit in "
+                                          << iSm <<" with inconsistent digits " 
+                                          <<  xDigiA->GetTime() << ", " << xDigiB->GetTime()
+                                          << " -> "<<dTimeDif
+                                    <<FairLogger::endl;
+                                LOG(DEBUG) << "    "<<xDigiA->ToString()<<FairLogger::endl;
+                                LOG(DEBUG) << "    "<<xDigiB->ToString()<<FairLogger::endl;
+                              }
 
                               // Weight is the total charge => sum of both ends ToT
                               dTotS = xDigiA->GetTot() + xDigiB->GetTot();
 
-			      TGeoNode *fNode=        // prepare local->global trafo
-			      gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
-			      LOG(DEBUG2)<<Form(" Node at (%6.1f,%6.1f,%6.1f) : 0x%p",
-					       fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode)
-					<<FairLogger::endl;
-			      //	  fNode->Print();			 
-			      // switch to local coordinates, (0,0,0) is in the center of counter  ?
-			      dPosX=((Double_t)(-iNbCh/2 + iCh)+0.5)*fChannelInfo->GetSizex();
-			      dPosY=0.;
-			      dPosZ=0.;
+                              TGeoNode *fNode=        // prepare local->global trafo
+                              gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
+                              LOG(DEBUG2)<<Form(" Node at (%6.1f,%6.1f,%6.1f) : 0x%p",
+                                               fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode)
+                                        <<FairLogger::endl;
+                              //          fNode->Print();                         
+                              // switch to local coordinates, (0,0,0) is in the center of counter  ?
+                              dPosX=((Double_t)(-iNbCh/2 + iCh)+0.5)*fChannelInfo->GetSizex();
+                              dPosY=0.;
+                              dPosZ=0.;
 
                               if( 1 == xDigiA->GetSide() )
                                  // 0 is the top side, 1 is the bottom side
-				dPosY += fDigiBdfPar->GetSigVel(iSmType,iRpc) * dTimeDif * 0.5;
-                              else			      
+                                dPosY += fDigiBdfPar->GetSigVel(iSmType,iRpc) * dTimeDif * 0.5;
+                              else                              
                                  // 0 is the bottom side, 1 is the top side
-				dPosY += -fDigiBdfPar->GetSigVel(iSmType,iRpc) * dTimeDif * 0.5;
+                                dPosY += -fDigiBdfPar->GetSigVel(iSmType,iRpc) * dTimeDif * 0.5;
 
-			      LOG(DEBUG1)
-				   <<"CbmTofTestBeamClusterizer::BuildClusters: NbChanInHit  "
-				   << Form(" %3d %3d %3d %3d %3d 0x%p %1.0f Time %f PosX %f PosY %f Svel %f ",
-					   iNbChanInHit,iSmType,iRpc,iCh,iLastChan,xDigiA,xDigiA->GetSide(),
-					   dTime,dPosX,dPosY,fDigiBdfPar->GetSigVel(iSmType,iRpc))
-				//  << Form( ", Offs %f, %f ",fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
-				//                            fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1])
-				   <<FairLogger::endl;
+                              LOG(DEBUG1)
+                                   <<"CbmTofTestBeamClusterizer::BuildClusters: NbChanInHit  "
+                                   << Form(" %3d %3d %3d %3d %3d 0x%p %1.0f Time %f PosX %f PosY %f Svel %f ",
+                                           iNbChanInHit,iSmType,iRpc,iCh,iLastChan,xDigiA,xDigiA->GetSide(),
+                                           dTime,dPosX,dPosY,fDigiBdfPar->GetSigVel(iSmType,iRpc))
+                                //  << Form( ", Offs %f, %f ",fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
+                                //                            fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1])
+                                   <<FairLogger::endl;
 
                               // Now check if a hit/cluster is already started
                               if( 0 < iNbChanInHit) 
@@ -3103,7 +3103,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                     fhDigDistClust->Fill( dPosY - dLastPosY,
                                                           dTime - dLastTime );
                                  } 
-				 // if( iLastChan == iCh - 1 )
+                                 // if( iLastChan == iCh - 1 )
                                  // a cluster is already started => check distance in space/time
                                  // For simplicity, just check along strip direction for now
                                  // and break cluster when a not fired strip is found
@@ -3126,37 +3126,37 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                     if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
                                        for( Int_t iPtRef = 0; iPtRef < vPtsRef.size(); iPtRef++)
                                        {
-					//if( ((CbmTofPoint*)(vPtsRef[iPtRef]))->GetTrackID() == ((CbmTofPoint*)(xDigiA->GetLinks()))->GetTrackID() )
+                                        //if( ((CbmTofPoint*)(vPtsRef[iPtRef]))->GetTrackID() == ((CbmTofPoint*)(xDigiA->GetLinks()))->GetTrackID() )
                                         //bFoundA = kTRUE;
-					//if( ((CbmTofPoint*)(vPtsRef[iPtRef]))->GetTrackID() == ((CbmTofPoint*)(xDigiB->GetLinks()))->GetTrackID() )
+                                        //if( ((CbmTofPoint*)(vPtsRef[iPtRef]))->GetTrackID() == ((CbmTofPoint*)(xDigiB->GetLinks()))->GetTrackID() )
                                         //bFoundB = kTRUE;
                                        } // for( Int
                                        else for( Int_t iPtRef = 0; iPtRef < vPtsRef.size(); iPtRef++)
                                        {
-					 //if( vPtsRef[iPtRef] == (CbmTofPoint*)xDigiA->GetLinks() )
-					 //bFoundA = kTRUE;
-					 //if( vPtsRef[iPtRef] == (CbmTofPoint*)xDigiB->GetLinks() )
-					 //bFoundB = kTRUE;
+                                         //if( vPtsRef[iPtRef] == (CbmTofPoint*)xDigiA->GetLinks() )
+                                         //bFoundA = kTRUE;
+                                         //if( vPtsRef[iPtRef] == (CbmTofPoint*)xDigiB->GetLinks() )
+                                         //bFoundB = kTRUE;
                                        } // for( Int_t iPtRef = 0; iPtRef < vPtsRef.size(); iPtRef++)
 
                                     // CbmTofPoint pointer for 1st digi not found => save it
                                     //if( kFALSE == bFoundA )
-				      //                                       vPtsRef.push_back( (CbmTofPoint*)(xDigiA->GetLinks()) );
+                                      //                                       vPtsRef.push_back( (CbmTofPoint*)(xDigiA->GetLinks()) );
                                     // CbmTofPoint pointer for 2nd digi not found => save it
-				      //                                    if( kFALSE == bFoundB )
-				      //                                       vPtsRef.push_back( (CbmTofPoint*)(xDigiB->GetLinks()) );
-				    } // MC end 
-				    vDigiIndRef.push_back( (Int_t )(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][0]));
-				    vDigiIndRef.push_back( (Int_t )(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][1]));
+                                      //                                    if( kFALSE == bFoundB )
+                                      //                                       vPtsRef.push_back( (CbmTofPoint*)(xDigiB->GetLinks()) );
+                                    } // MC end 
+                                    vDigiIndRef.push_back( (Int_t )(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][0]));
+                                    vDigiIndRef.push_back( (Int_t )(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][1]));
 
                                     LOG(DEBUG1)<<" Add Digi and erase fStor entries(a): NbChanInHit "<< iNbChanInHit<<", "
-					     <<iSmType<<", SR "<<iSm*iNbRpc+iRpc<<", Ch"<<iCh
-					     <<FairLogger::endl;
-		
-				    fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
-				    fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
-				    fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
-				    fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                             <<iSmType<<", SR "<<iSm*iNbRpc+iRpc<<", Ch"<<iCh
+                                             <<FairLogger::endl;
+                
+                                    fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                    fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                    fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                    fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
  
                                 } // if current Digis compatible with last fired chan
                                  else
@@ -3166,115 +3166,115 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                     dWeightedPosX /= dWeightsSum;
                                     dWeightedPosY /= dWeightsSum;
                                     dWeightedPosZ /= dWeightsSum;
-				    //  TVector3 hitPosLocal(dWeightedPosX, dWeightedPosY, dWeightedPosZ);
-				    //TVector3 hitPos;
+                                    //  TVector3 hitPosLocal(dWeightedPosX, dWeightedPosY, dWeightedPosZ);
+                                    //TVector3 hitPos;
                                     Double_t hitpos_local[3];
-				    hitpos_local[0] = dWeightedPosX;
-				    hitpos_local[1] = dWeightedPosY;
-				    hitpos_local[2] = dWeightedPosZ;
+                                    hitpos_local[0] = dWeightedPosX;
+                                    hitpos_local[1] = dWeightedPosY;
+                                    hitpos_local[2] = dWeightedPosZ;
 
-				    Double_t hitpos[3];
-				    TGeoNode*	 cNode   = gGeoManager->GetCurrentNode();
-				    TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();
-				    //cNode->Print();
-				    //cMatrix->Print();
+                                    Double_t hitpos[3];
+                                    TGeoNode*         cNode   = gGeoManager->GetCurrentNode();
+                                    TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();
+                                    //cNode->Print();
+                                    //cMatrix->Print();
 
-				    gGeoManager->LocalToMaster(hitpos_local, hitpos);
-				    LOG(DEBUG1)<<
-				    Form(" LocalToMaster for node 0x%p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)", 
-					 cNode, hitpos_local[0], hitpos_local[1], hitpos_local[2], 
-					 hitpos[0], hitpos[1], hitpos[2])
-					      <<FairLogger::endl;
+                                    gGeoManager->LocalToMaster(hitpos_local, hitpos);
+                                    LOG(DEBUG1)<<
+                                    Form(" LocalToMaster for node 0x%p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)", 
+                                         cNode, hitpos_local[0], hitpos_local[1], hitpos_local[2], 
+                                         hitpos[0], hitpos[1], hitpos[2])
+                                              <<FairLogger::endl;
 
                                     TVector3 hitPos(hitpos[0],hitpos[1],hitpos[2]);
 
                                     // Simple errors, not properly done at all for now
                                     // Right way of doing it should take into account the weight distribution
                                     // and real system time resolution
-				    TVector3 hitPosErr(0.5,0.5,0.5);  // including positioning uncertainty
-				    /*
+                                    TVector3 hitPosErr(0.5,0.5,0.5);  // including positioning uncertainty
+                                    /*
                                     TVector3 hitPosErr( fChannelInfo->GetSizex()/TMath::Sqrt(12.0),   // Single strips approximation
                                        0.5, // Use generic value 
-				       1.);
+                                       1.);
 
-				    */				       // fDigiBdfPar->GetFeeTimeRes() * fDigiBdfPar->GetSigVel(iSmType,iRpc), // Use the electronics resolution
+                                    */                                       // fDigiBdfPar->GetFeeTimeRes() * fDigiBdfPar->GetSigVel(iSmType,iRpc), // Use the electronics resolution
                                        //fDigiBdfPar->GetNbGaps( iSmType, iRpc)*
-				       //fDigiBdfPar->GetGapSize( iSmType, iRpc)/ //10.0 / // Change gap size in cm
+                                       //fDigiBdfPar->GetGapSize( iSmType, iRpc)/ //10.0 / // Change gap size in cm
                                        //TMath::Sqrt(12.0) ); // Use full RPC thickness as "Channel" Z size
 
-				    // Int_t iDetId = vPtsRef[0]->GetDetectorID();// detID = pt->GetDetectorID() <= from TofPoint
-			            // calc mean ch from dPosX=((Double_t)(-iNbCh/2 + iCh)+0.5)*fChannelInfo->GetSizex();
+                                    // Int_t iDetId = vPtsRef[0]->GetDetectorID();// detID = pt->GetDetectorID() <= from TofPoint
+                                    // calc mean ch from dPosX=((Double_t)(-iNbCh/2 + iCh)+0.5)*fChannelInfo->GetSizex();
 
-			            Int_t iChm=floor(dWeightedPosX/fChannelInfo->GetSizex())+iNbCh/2;
+                                    Int_t iChm=floor(dWeightedPosX/fChannelInfo->GetSizex())+iNbCh/2;
                                     Int_t iDetId = CbmTofAddress::GetUniqueAddress(iSm,iRpc,iChm,0,iSmType);
                                     Int_t iRefId = 0; // Index of the correspondng TofPoint
                                     if(NULL != fTofPointsColl) {
-				      iRefId = fTofPointsColl->IndexOf( vPtsRef[0] );
-				    }
-				    LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Save Hit  "
-					       << Form(" %3d %3d 0x%08x %3d %3d %3d %f %f",
-						       fiNbHits,iNbChanInHit,iDetId,iCh,iLastChan,iRefId,
-						       dWeightedTime,dWeightedPosY)
-				               <<", DigiSize: "<<vDigiIndRef.size()
-					       <<", DigiInds: ";
+                                      iRefId = fTofPointsColl->IndexOf( vPtsRef[0] );
+                                    }
+                                    LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Save Hit  "
+                                               << Form(" %3d %3d 0x%08x %3d %3d %3d %f %f",
+                                                       fiNbHits,iNbChanInHit,iDetId,iCh,iLastChan,iRefId,
+                                                       dWeightedTime,dWeightedPosY)
+                                               <<", DigiSize: "<<vDigiIndRef.size()
+                                               <<", DigiInds: ";
 
                                     fviClusterMul[iSmType][iSm][iRpc]++; 
 
-				    for (Int_t i=0; i<vDigiIndRef.size();i++){
-				      LOG(DEBUG)<<" "<<vDigiIndRef.at(i);
-				    }
-				    LOG(DEBUG)  <<FairLogger::endl;
-				    if(	vDigiIndRef.size() < 2 ){
-				      LOG(WARNING)<<"CbmTofTestBeamClusterizer::BuildClusters: Digi refs for Hit "
-					  	  << fiNbHits<<":	vDigiIndRef.size()"
-				                  <<FairLogger::endl;
-				    }			    
+                                    for (Int_t i=0; i<vDigiIndRef.size();i++){
+                                      LOG(DEBUG)<<" "<<vDigiIndRef.at(i);
+                                    }
+                                    LOG(DEBUG)  <<FairLogger::endl;
+                                    if(        vDigiIndRef.size() < 2 ){
+                                      LOG(WARNING)<<"CbmTofTestBeamClusterizer::BuildClusters: Digi refs for Hit "
+                                                    << fiNbHits<<":        vDigiIndRef.size()"
+                                                  <<FairLogger::endl;
+                                    }                            
                                     if(fiNbHits>0){
                                       CbmTofHit *pHitL = (CbmTofHit*) fTofHitsColl->At(fiNbHits-1);
                                       if(iDetId == pHitL->GetAddress() && dWeightedTime==pHitL->GetTime()){
-				      LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Store Hit twice? "
-						  <<" fiNbHits "<<fiNbHits<<", "<<Form("0x%08x",iDetId)
-				                  <<FairLogger::endl;
+                                      LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Store Hit twice? "
+                                                  <<" fiNbHits "<<fiNbHits<<", "<<Form("0x%08x",iDetId)
+                                                  <<FairLogger::endl;
 
-				       for (Int_t i=0; i<vDigiIndRef.size();i++){
-				 	 CbmTofDigiExp *pDigiC = (CbmTofDigiExp*) fTofDigisColl->At(vDigiIndRef.at(i));
-					 LOG(DEBUG)<<" Digi  "<<pDigiC->ToString()<<FairLogger::endl;
-				       }
-				       CbmMatch* digiMatchL=(CbmMatch *)fTofDigiMatchColl->At(pHitL->GetRefId());
-				       for (Int_t i=0; i<digiMatchL->GetNofLinks();i++){
-					 CbmLink L0 = digiMatchL->GetLink(i);  
-					 Int_t iDigIndL=L0.GetIndex();
-					 CbmTofDigiExp *pDigiC = (CbmTofDigiExp*) fTofDigisColl->At(iDigIndL);
-					 LOG(DEBUG)<<" DigiL "<<pDigiC->ToString()<<FairLogger::endl;
-				       }
-				      }
-				    }
+                                       for (Int_t i=0; i<vDigiIndRef.size();i++){
+                                          CbmTofDigiExp *pDigiC = (CbmTofDigiExp*) fTofDigisColl->At(vDigiIndRef.at(i));
+                                         LOG(DEBUG)<<" Digi  "<<pDigiC->ToString()<<FairLogger::endl;
+                                       }
+                                       CbmMatch* digiMatchL=(CbmMatch *)fTofDigiMatchColl->At(pHitL->GetRefId());
+                                       for (Int_t i=0; i<digiMatchL->GetNofLinks();i++){
+                                         CbmLink L0 = digiMatchL->GetLink(i);  
+                                         Int_t iDigIndL=L0.GetIndex();
+                                         CbmTofDigiExp *pDigiC = (CbmTofDigiExp*) fTofDigisColl->At(iDigIndL);
+                                         LOG(DEBUG)<<" DigiL "<<pDigiC->ToString()<<FairLogger::endl;
+                                       }
+                                      }
+                                    }
                                     new((*fTofHitsColl)[fiNbHits]) CbmTofHit( iDetId,
-							hitPos, hitPosErr,  //local detector coordinates
-							fiNbHits,  // this number is used as reference!!
+                                                        hitPos, hitPosErr,  //local detector coordinates
+                                                        fiNbHits,  // this number is used as reference!!
                                                         dWeightedTime,
-							vPtsRef.size(), // flag  = number of TofPoints generating the cluster
-							0) ; //channel
-				      //		vDigiIndRef);
+                                                        vPtsRef.size(), // flag  = number of TofPoints generating the cluster
+                                                        0) ; //channel
+                                      //                vDigiIndRef);
 
-				    new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch();
-				    CbmMatch* digiMatch = (CbmMatch *)fTofDigiMatchColl->At(fiNbHits);
-				    for (Int_t i=0; i<vDigiIndRef.size();i++){
-				      Double_t dTot = ((CbmTofDigiExp*) (fTofDigisColl->At(vDigiIndRef.at(i))))->GetTot();
-				      digiMatch->AddLink(CbmLink(dTot,vDigiIndRef.at(i)));
-				    }
-				  				    
+                                    new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch();
+                                    CbmMatch* digiMatch = (CbmMatch *)fTofDigiMatchColl->At(fiNbHits);
+                                    for (Int_t i=0; i<vDigiIndRef.size();i++){
+                                      Double_t dTot = ((CbmTofDigiExp*) (fTofDigisColl->At(vDigiIndRef.at(i))))->GetTot();
+                                      digiMatch->AddLink(CbmLink(dTot,vDigiIndRef.at(i)));
+                                    }
+                                                                      
                                     fiNbHits++;
                                     // For Histogramming
                                     fviClusterSize[iSmType][iRpc].push_back(iNbChanInHit);
                                     fviTrkMul[iSmType][iRpc].push_back( vPtsRef.size() );
                                     fvdX[iSmType][iRpc].push_back(dWeightedPosX);
                                     fvdY[iSmType][iRpc].push_back(dWeightedPosY);
-				    /*  no TofPoint available for data!  
+                                    /*  no TofPoint available for data!  
                                     fvdDifX[iSmType][iRpc].push_back( vPtsRef[0]->GetX() - dWeightedPosX);
                                     fvdDifY[iSmType][iRpc].push_back( vPtsRef[0]->GetY() - dWeightedPosY);
                                     fvdDifCh[iSmType][iRpc].push_back( fGeoHandler->GetCell( vPtsRef[0]->GetDetectorID() ) -1 -iLastChan );
-				    */
+                                    */
                                     vPtsRef.clear();
                                     vDigiIndRef.clear();
 
@@ -3286,41 +3286,41 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                     dWeightsSum   = dTotS;
                                     iNbChanInHit  = 1;
                                     // Save pointer on CbmTofPoint
-				    // vPtsRef.push_back( (CbmTofPoint*)(xDigiA->GetLinks()) );
+                                    // vPtsRef.push_back( (CbmTofPoint*)(xDigiA->GetLinks()) );
                                     // Save next digi address
                                     LOG(DEBUG2)<<" Next fStor Digi "<<iSmType<<", SR "<<iSm*iNbRpc+iRpc<<", Ch"<<iCh
-					       <<", Dig0 "<<(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][0])
-					       <<", Dig1 "<<(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][1])
-					       <<FairLogger::endl;
+                                               <<", Dig0 "<<(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][0])
+                                               <<", Dig1 "<<(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][1])
+                                               <<FairLogger::endl;
 
-				    vDigiIndRef.push_back( (Int_t )(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][0]));
-				    vDigiIndRef.push_back( (Int_t )(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][1]));
+                                    vDigiIndRef.push_back( (Int_t )(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][0]));
+                                    vDigiIndRef.push_back( (Int_t )(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][1]));
                                     LOG(DEBUG2)<<" Erase fStor entries(b) "<<iSmType<<", SR "<<iSm*iNbRpc+iRpc<<", Ch"<<iCh
-					       <<FairLogger::endl;
-				    fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
-				    fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
-				    fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
-				    fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                               <<FairLogger::endl;
+                                    fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                    fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                    fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                    fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
 
                                     if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
                                     {
-				      //                                       if( ((CbmTofPoint*)(xDigiA->GetLinks()))->GetTrackID() !=
-				      //                       ((CbmTofPoint*)(xDigiB->GetLinks()))->GetTrackID() )
+                                      //                                       if( ((CbmTofPoint*)(xDigiA->GetLinks()))->GetTrackID() !=
+                                      //                       ((CbmTofPoint*)(xDigiB->GetLinks()))->GetTrackID() )
                                           // if other side come from a different Track,
                                           // also save the pointer on CbmTofPoint
-				      //  vPtsRef.push_back( (CbmTofPoint*)(xDigiB->GetLinks()) );
+                                      //  vPtsRef.push_back( (CbmTofPoint*)(xDigiB->GetLinks()) );
                                     } // if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
-				    //else if( xDigiA->GetLinks() != xDigiB->GetLinks() )
+                                    //else if( xDigiA->GetLinks() != xDigiB->GetLinks() )
                                           // if other side come from a different TofPoint,
                                           // also save the pointer on CbmTofPoint
-				    //    vPtsRef.push_back( (CbmTofPoint*)(xDigiB->GetLinks()) );
+                                    //    vPtsRef.push_back( (CbmTofPoint*)(xDigiB->GetLinks()) );
                                  } // else of if current Digis compatible with last fired chan
                               } // if( 0 < iNbChanInHit)
                                  else
                                  {
- 		                    LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters: "
-					       <<Form("1.Hit on channel %d, time: %f",iCh,dTime) 
-					       <<FairLogger::endl;
+                                     LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters: "
+                                               <<Form("1.Hit on channel %d, time: %f",iCh,dTime) 
+                                               <<FairLogger::endl;
 
                                     // first fired strip in this RPC
                                     dWeightedTime = dTime*dTotS;
@@ -3331,29 +3331,29 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                     iNbChanInHit  = 1;
                                     // Save pointer on CbmTofPoint
                                     //if(NULL != fTofPointsColl)
-				    //                                    vPtsRef.push_back( (CbmTofPoint*)(xDigiA->GetLinks()) );
-				    vDigiIndRef.push_back( (Int_t )(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][0]));
-				    vDigiIndRef.push_back( (Int_t )(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][1]));
+                                    //                                    vPtsRef.push_back( (CbmTofPoint*)(xDigiA->GetLinks()) );
+                                    vDigiIndRef.push_back( (Int_t )(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][0]));
+                                    vDigiIndRef.push_back( (Int_t )(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][1]));
 
                                     LOG(DEBUG2)<<" Erase fStor entries(c) "<<iSmType<<", SR "<<iSm*iNbRpc+iRpc<<", Ch"<<iCh
-					       <<FairLogger::endl;
-				    fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
-				    fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
-				    fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
-				    fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                               <<FairLogger::endl;
+                                    fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                    fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                    fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                    fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
 
                                     if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
                                     {
-				      // if( ((CbmTofPoint*)(xDigiA->GetLinks()))->GetTrackID() !=
-				      //     ((CbmTofPoint*)(xDigiB->GetLinks()))->GetTrackID() )
+                                      // if( ((CbmTofPoint*)(xDigiA->GetLinks()))->GetTrackID() !=
+                                      //     ((CbmTofPoint*)(xDigiB->GetLinks()))->GetTrackID() )
                                       // if other side come from a different Track,
                                       // also save the pointer on CbmTofPoint
-				      // vPtsRef.push_back( (CbmTofPoint*)(xDigiB->GetLinks()) );
+                                      // vPtsRef.push_back( (CbmTofPoint*)(xDigiB->GetLinks()) );
                                     } // if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
-				      // else if( xDigiA->GetLinks() != xDigiB->GetLinks() )
+                                      // else if( xDigiA->GetLinks() != xDigiB->GetLinks() )
                                       // if other side come from a different TofPoint,
                                       // also save the pointer on CbmTofPoint
-				    //   vPtsRef.push_back( (CbmTofPoint*)(xDigiB->GetLinks()) );
+                                    //   vPtsRef.push_back( (CbmTofPoint*)(xDigiB->GetLinks()) );
                                  } // else of if( 0 < iNbChanInHit)
                               iLastChan = iCh;
 //                              dLastPosX = dPosX; // -> Comment to remove warning because set but never used
@@ -3363,9 +3363,9 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                            fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].clear();
                            fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].clear();
                         } // for( Int_t iCh = 0; iCh < iNbCh; iCh++ )
-			LOG(DEBUG2)<<"CbmTofTestBeamClusterizer::BuildClusters: finished V-RPC"
-				   << Form(" %3d %3d %3d %d",iSmType,iSm,iRpc,fTofHitsColl->GetEntries())
-				   <<FairLogger::endl;
+                        LOG(DEBUG2)<<"CbmTofTestBeamClusterizer::BuildClusters: finished V-RPC"
+                                   << Form(" %3d %3d %3d %d",iSmType,iSm,iRpc,fTofHitsColl->GetEntries())
+                                   <<FairLogger::endl;
                      } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                } // if( 0 == iChType)
                   else
@@ -3380,104 +3380,104 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                // and save it if it's the case
                if( 0 < iNbChanInHit)
                {
-		   LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters: Process cluster " 
-			      <<iNbChanInHit<<FairLogger::endl;
+                   LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters: Process cluster " 
+                              <<iNbChanInHit<<FairLogger::endl;
 
                   // Check orientation to properly assign errors
                   if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                   {
-		     LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters: H-Hit " <<FairLogger::endl;
+                     LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::BuildClusters: H-Hit " <<FairLogger::endl;
                   } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                   else
                   {
-		     LOG(DEBUG2)<<"CbmTofTestBeamClusterizer::BuildClusters: V-Hit " <<FairLogger::endl;
+                     LOG(DEBUG2)<<"CbmTofTestBeamClusterizer::BuildClusters: V-Hit " <<FairLogger::endl;
                      // Save Hit
                      dWeightedTime /= dWeightsSum;
                      dWeightedPosX /= dWeightsSum;
                      dWeightedPosY /= dWeightsSum;
                      dWeightedPosZ /= dWeightsSum;
-		     //TVector3 hitPos(dWeightedPosX, dWeightedPosY, dWeightedPosZ);
+                     //TVector3 hitPos(dWeightedPosX, dWeightedPosY, dWeightedPosZ);
 
                      Double_t hitpos_local[3];
-		     hitpos_local[0] = dWeightedPosX;
-		     hitpos_local[1] = dWeightedPosY;
-		     hitpos_local[2] = dWeightedPosZ;
+                     hitpos_local[0] = dWeightedPosX;
+                     hitpos_local[1] = dWeightedPosY;
+                     hitpos_local[2] = dWeightedPosZ;
 
-		     Double_t hitpos[3];
-		     TGeoNode*	cNode= gGeoManager->GetCurrentNode();
-		     TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();
-		     //cNode->Print();
-		     //cMatrix->Print();
+                     Double_t hitpos[3];
+                     TGeoNode*        cNode= gGeoManager->GetCurrentNode();
+                     TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();
+                     //cNode->Print();
+                     //cMatrix->Print();
 
-		     gGeoManager->LocalToMaster(hitpos_local, hitpos);
-		     LOG(DEBUG1)<<
-		     Form(" LocalToMaster for V-node 0x%p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)", 
-			 cNode, hitpos_local[0], hitpos_local[1], hitpos_local[2], 
-			 hitpos[0], hitpos[1], hitpos[2])
-			     <<FairLogger::endl;
+                     gGeoManager->LocalToMaster(hitpos_local, hitpos);
+                     LOG(DEBUG1)<<
+                     Form(" LocalToMaster for V-node 0x%p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)", 
+                         cNode, hitpos_local[0], hitpos_local[1], hitpos_local[2], 
+                         hitpos[0], hitpos[1], hitpos[2])
+                             <<FairLogger::endl;
 
                      TVector3 hitPos(hitpos[0],hitpos[1],hitpos[2]);
                      // TestBeam errors, not properly done at all for now
                      // Right way of doing it should take into account the weight distribution
                      // and real system time resolution
- 		     TVector3 hitPosErr(0.5,0.5,0.5);  // including positioning uncertainty
-		     /*
+                      TVector3 hitPosErr(0.5,0.5,0.5);  // including positioning uncertainty
+                     /*
                      TVector3 hitPosErr( fChannelInfo->GetSizex()/TMath::Sqrt(12.0),   // Single strips approximation
                                        0.5, // Use generic value 
-				       1.);
-		     */
-		     //                fDigiBdfPar->GetFeeTimeRes() * fDigiBdfPar->GetSigVel(iSmType,iRpc), // Use the electronics resolution
-		     //                fDigiBdfPar->GetNbGaps( iSmType, iRpc)*
-		     //                fDigiBdfPar->GetGapSize( iSmType, iRpc)/10.0 / // Change gap size in cm
-		     //                TMath::Sqrt(12.0) ); // Use full RPC thickness as "Channel" Z size
+                                       1.);
+                     */
+                     //                fDigiBdfPar->GetFeeTimeRes() * fDigiBdfPar->GetSigVel(iSmType,iRpc), // Use the electronics resolution
+                     //                fDigiBdfPar->GetNbGaps( iSmType, iRpc)*
+                     //                fDigiBdfPar->GetGapSize( iSmType, iRpc)/10.0 / // Change gap size in cm
+                     //                TMath::Sqrt(12.0) ); // Use full RPC thickness as "Channel" Z size
 //                     cout<<"a "<<vPtsRef.size()<<endl;
 //                     cout<<"b "<<vPtsRef[0]<<endl;
 //                     cout<<"c "<<vPtsRef[0]->GetDetectorID()<<endl;
 //                     Int_t iDetId = vPtsRef[0]->GetDetectorID();// detID = pt->GetDetectorID() <= from TofPoint
 //                     Int_t iDetId = iChId;
- 	             Int_t iChm=floor(dWeightedPosX/fChannelInfo->GetSizex())+iNbCh/2;
+                      Int_t iChm=floor(dWeightedPosX/fChannelInfo->GetSizex())+iNbCh/2;
                      Int_t iDetId = CbmTofAddress::GetUniqueAddress(iSm,iRpc,iChm,0,iSmType);
                      Int_t iRefId = 0; // Index of the correspondng TofPoint
                      if(NULL != fTofPointsColl) iRefId = fTofPointsColl->IndexOf( vPtsRef[0] );
-		     LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Save V-Hit  "
-		     << Form(" %3d %3d 0x%08x %3d 0x%08x", // %3d %3d 
-			     fiNbHits,iNbChanInHit,iDetId,iLastChan,iRefId) //vPtsRef.size(),vPtsRef[0])
-		       //   dWeightedTime,dWeightedPosY)
-				<<", DigiSize: "<<vDigiIndRef.size();
-		     LOG(DEBUG)<<", DigiInds: ";
+                     LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Save V-Hit  "
+                     << Form(" %3d %3d 0x%08x %3d 0x%08x", // %3d %3d 
+                             fiNbHits,iNbChanInHit,iDetId,iLastChan,iRefId) //vPtsRef.size(),vPtsRef[0])
+                       //   dWeightedTime,dWeightedPosY)
+                                <<", DigiSize: "<<vDigiIndRef.size();
+                     LOG(DEBUG)<<", DigiInds: ";
                      for (Int_t i=0; i<vDigiIndRef.size();i++){
-		       LOG(DEBUG)<<" "<<vDigiIndRef.at(i);
-		     }
-		     LOG(DEBUG)  <<FairLogger::endl;
+                       LOG(DEBUG)<<" "<<vDigiIndRef.at(i);
+                     }
+                     LOG(DEBUG)  <<FairLogger::endl;
                      
-		     fviClusterMul[iSmType][iSm][iRpc]++; 
+                     fviClusterMul[iSmType][iSm][iRpc]++; 
 
-		     if( vDigiIndRef.size() < 2 ){
-		      LOG(WARNING)<<"CbmTofTestBeamClusterizer::BuildClusters: Digi refs for Hit "
-				  << fiNbHits<<":	vDigiIndRef.size()"
-		                  <<FairLogger::endl;
-		     }	
+                     if( vDigiIndRef.size() < 2 ){
+                      LOG(WARNING)<<"CbmTofTestBeamClusterizer::BuildClusters: Digi refs for Hit "
+                                  << fiNbHits<<":        vDigiIndRef.size()"
+                                  <<FairLogger::endl;
+                     }        
                      if(fiNbHits>0){
                        CbmTofHit *pHitL = (CbmTofHit*) fTofHitsColl->At(fiNbHits-1);
                        if(iDetId == pHitL->GetAddress() && dWeightedTime==pHitL->GetTime())
-  		        LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Store Hit twice? "
-				    <<" fiNbHits "<<fiNbHits<<", "<<Form("0x%08x",iDetId)
-				    <<FairLogger::endl;
-		     }
+                          LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters: Store Hit twice? "
+                                    <<" fiNbHits "<<fiNbHits<<", "<<Form("0x%08x",iDetId)
+                                    <<FairLogger::endl;
+                     }
                      new((*fTofHitsColl)[fiNbHits]) CbmTofHit( iDetId,
                                          hitPos, hitPosErr,
-					 fiNbHits,     // -> iRefId
+                                         fiNbHits,     // -> iRefId
                                          dWeightedTime,
-					 vPtsRef.size(),
-					 0);
+                                         vPtsRef.size(),
+                                         0);
 
-		     //		                         vDigiIndRef);
-		     new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch();
-		     CbmMatch* digiMatch = (CbmMatch *)fTofDigiMatchColl->At(fiNbHits);
+                     //                                         vDigiIndRef);
+                     new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch();
+                     CbmMatch* digiMatch = (CbmMatch *)fTofDigiMatchColl->At(fiNbHits);
                      for (Int_t i=0; i<vDigiIndRef.size();i++){
-		       Double_t dTot = ((CbmTofDigiExp*) (fTofDigisColl->At(vDigiIndRef.at(i))))->GetTot();
-		       digiMatch->AddLink(CbmLink(dTot,vDigiIndRef.at(i)));
-		     }
+                       Double_t dTot = ((CbmTofDigiExp*) (fTofDigisColl->At(vDigiIndRef.at(i))))->GetTot();
+                       digiMatch->AddLink(CbmLink(dTot,vDigiIndRef.at(i)));
+                     }
 
                      fiNbHits++;
                      // For Histogramming
@@ -3485,18 +3485,18 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                      fviTrkMul[iSmType][iRpc].push_back( vPtsRef.size() );
                      fvdX[iSmType][iRpc].push_back(dWeightedPosX);
                      fvdY[iSmType][iRpc].push_back(dWeightedPosY);
-		     /*
+                     /*
                      fvdDifX[iSmType][iRpc].push_back( vPtsRef[0]->GetX() - dWeightedPosX);
                      fvdDifY[iSmType][iRpc].push_back( vPtsRef[0]->GetY() - dWeightedPosY);
                      fvdDifCh[iSmType][iRpc].push_back( fGeoHandler->GetCell( vPtsRef[0]->GetDetectorID() ) -1 -iLastChan );
-		     */
+                     */
                      vPtsRef.clear();
                      vDigiIndRef.clear();
                   } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                } // if( 0 < iNbChanInHit)
-	       LOG(DEBUG2)<<" Fini-A "<<Form(" %3d %3d %3d ",iSmType, iSm, iRpc)<<FairLogger::endl;
+               LOG(DEBUG2)<<" Fini-A "<<Form(" %3d %3d %3d ",iSmType, iSm, iRpc)<<FairLogger::endl;
             } // for each sm/rpc pair
-	       LOG(DEBUG2)<<" Fini-B "<<Form(" %3d ",iSmType)<<FairLogger::endl;
+               LOG(DEBUG2)<<" Fini-B "<<Form(" %3d ",iSmType)<<FairLogger::endl;
       } // for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
    } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
    else
@@ -3529,104 +3529,104 @@ Bool_t   CbmTofTestBeamClusterizer::MergeClusters()
        fChannelInfo = fDigiPar->GetCell( iChId );
        Int_t iCh = CbmTofAddress::GetChannelId(iChId);
        LOG(DEBUG)<<"MergeClusters: Check for mergers in "
-		<<Form(" SmT %d, Sm %d, Rpc %d, Ch %d - hit %d",iSmType,iSm,iRpc,iCh,iHitInd)
-		<<FairLogger::endl;
+                <<Form(" SmT %d, Sm %d, Rpc %d, Ch %d - hit %d",iSmType,iSm,iRpc,iCh,iHitInd)
+                <<FairLogger::endl;
        for( Int_t iHitInd2 = iHitInd+1; iHitInd2 < fTofHitsColl->GetEntries(); iHitInd2++)
        {
-	  CbmTofHit *pHit2 = (CbmTofHit*) fTofHitsColl->At( iHitInd2 );
-	  if(NULL == pHit2) continue;
-	  Int_t iDetId2    = (pHit2->GetAddress() & DetMask);
-	  Int_t iSmType2   = CbmTofAddress::GetSmType( iDetId2 );
-	  if(iSmType2 == iSmType) {
-	    Int_t iSm2     = CbmTofAddress::GetSmId( iDetId2 );
-	    if(iSm2 == iSm){
-	      Int_t iRpc2  = CbmTofAddress::GetRpcId( iDetId2 );
-	      if(TMath::Abs(iRpc-iRpc2)==1){  // Found neighbour 
-		Int_t iChId2 = pHit2->GetAddress();
-		CbmTofCell  *fChannelInfo2 = fDigiPar->GetCell( iChId2 );
-		Int_t iCh2 = CbmTofAddress::GetChannelId(iChId2);
-		Double_t xPos=pHit->GetX();
-		Double_t yPos=pHit->GetY();
-		Double_t tof=pHit->GetTime();
-		Double_t xPos2=pHit2->GetX();
-		Double_t yPos2=pHit2->GetY();
-		Double_t tof2=pHit2->GetTime();		
-		LOG(DEBUG)<<"MergeClusters: Found hit in neighbour "
-		<<Form(" SmT %d, Sm %d, Rpc %d, Ch %d - hit %d",iSmType2,iSm2,iRpc2,iCh2,iHitInd2)
-		<<Form(" DX %6.1f, DY %6.1f, DT %6.1f",xPos-xPos2,yPos-yPos2,tof-tof2)
-		<<FairLogger::endl;
+          CbmTofHit *pHit2 = (CbmTofHit*) fTofHitsColl->At( iHitInd2 );
+          if(NULL == pHit2) continue;
+          Int_t iDetId2    = (pHit2->GetAddress() & DetMask);
+          Int_t iSmType2   = CbmTofAddress::GetSmType( iDetId2 );
+          if(iSmType2 == iSmType) {
+            Int_t iSm2     = CbmTofAddress::GetSmId( iDetId2 );
+            if(iSm2 == iSm){
+              Int_t iRpc2  = CbmTofAddress::GetRpcId( iDetId2 );
+              if(TMath::Abs(iRpc-iRpc2)==1){  // Found neighbour 
+                Int_t iChId2 = pHit2->GetAddress();
+                CbmTofCell  *fChannelInfo2 = fDigiPar->GetCell( iChId2 );
+                Int_t iCh2 = CbmTofAddress::GetChannelId(iChId2);
+                Double_t xPos=pHit->GetX();
+                Double_t yPos=pHit->GetY();
+                Double_t tof=pHit->GetTime();
+                Double_t xPos2=pHit2->GetX();
+                Double_t yPos2=pHit2->GetY();
+                Double_t tof2=pHit2->GetTime();                
+                LOG(DEBUG)<<"MergeClusters: Found hit in neighbour "
+                <<Form(" SmT %d, Sm %d, Rpc %d, Ch %d - hit %d",iSmType2,iSm2,iRpc2,iCh2,iHitInd2)
+                <<Form(" DX %6.1f, DY %6.1f, DT %6.1f",xPos-xPos2,yPos-yPos2,tof-tof2)
+                <<FairLogger::endl;
 
-		CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(pHit->GetRefId());
+                CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(pHit->GetRefId());
 
-		if(      TMath::Abs(xPos-xPos2)<fdCaldXdYMax*2.
-		      && TMath::Abs(yPos-yPos2)<fdCaldXdYMax*2.
-		      && TMath::Abs(tof-tof2)<fMaxTimeDist ){
+                if(      TMath::Abs(xPos-xPos2)<fdCaldXdYMax*2.
+                      && TMath::Abs(yPos-yPos2)<fdCaldXdYMax*2.
+                      && TMath::Abs(tof-tof2)<fMaxTimeDist ){
 
-		  Double_t dTot=0;
-		  for (Int_t iLink=0; iLink<digiMatch->GetNofLinks(); iLink+=2){  // loop over digis
-		    CbmLink L0 = digiMatch->GetLink(iLink);  
-		    Int_t iDigInd0=L0.GetIndex(); 
-		    Int_t iDigInd1=(digiMatch->GetLink(iLink+1)).GetIndex(); 
-		    if (iDigInd0 < fTofDigisColl->GetEntries() && iDigInd1 < fTofDigisColl->GetEntries()){
-		      CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
-		      CbmTofDigiExp *pDig1 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd1));
-		      dTot += pDig0->GetTot(); 
-		      dTot += pDig1->GetTot();
-		    } 
-		  }
+                  Double_t dTot=0;
+                  for (Int_t iLink=0; iLink<digiMatch->GetNofLinks(); iLink+=2){  // loop over digis
+                    CbmLink L0 = digiMatch->GetLink(iLink);  
+                    Int_t iDigInd0=L0.GetIndex(); 
+                    Int_t iDigInd1=(digiMatch->GetLink(iLink+1)).GetIndex(); 
+                    if (iDigInd0 < fTofDigisColl->GetEntries() && iDigInd1 < fTofDigisColl->GetEntries()){
+                      CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
+                      CbmTofDigiExp *pDig1 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd1));
+                      dTot += pDig0->GetTot(); 
+                      dTot += pDig1->GetTot();
+                    } 
+                  }
 
-		  CbmMatch* digiMatch2=(CbmMatch *)fTofDigiMatchColl->At(pHit2->GetRefId());
-		  Double_t dTot2=0;
-		  for (Int_t iLink=0; iLink<digiMatch2->GetNofLinks(); iLink+=2){  // loop over digis
-		    CbmLink L0 = digiMatch2->GetLink(iLink);  
-		    Int_t iDigInd0=L0.GetIndex(); 
-		    Int_t iDigInd1=(digiMatch2->GetLink(iLink+1)).GetIndex(); 
-		    if (iDigInd0 < fTofDigisColl->GetEntries() && iDigInd1 < fTofDigisColl->GetEntries()){
-		      CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
-		      CbmTofDigiExp *pDig1 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd1));
-		      dTot2 += pDig0->GetTot(); 
-		      dTot2 += pDig1->GetTot();
-		      digiMatch->AddLink(CbmLink(pDig0->GetTot(),iDigInd0));
-		      digiMatch->AddLink(CbmLink(pDig1->GetTot(),iDigInd1));
-		    } 
-		  }
-		  LOG(DEBUG)<<"MergeClusters: Found merger in neighbour "
-			    <<Form(" SmT %d, Sm %d, Rpc %d, Ch %d - hit %d(%d)",
-				   iSmType2,iSm2,iRpc2,iCh2,iHitInd2,fTofHitsColl->GetEntries())
-			    <<Form(" DX %6.1f, DY %6.1f, DT %6.1f",xPos-xPos2,yPos-yPos2,tof-tof2)
-			    <<Form(" Tots %6.1f - %6.1f", dTot, dTot2) 
-			    <<FairLogger::endl;
-		  Double_t dTotSum=dTot+dTot2;
-		  Double_t dxPosM = (xPos*dTot + xPos2*dTot2)/dTotSum;
-		  Double_t dyPosM = (yPos*dTot + yPos2*dTot2)/dTotSum;
-		  Double_t dtofM  = (tof*dTot  + tof2*dTot2) /dTotSum;
-		  pHit->SetX(dxPosM);
-		  pHit->SetY(dyPosM);
-		  pHit->SetTime(dtofM);
+                  CbmMatch* digiMatch2=(CbmMatch *)fTofDigiMatchColl->At(pHit2->GetRefId());
+                  Double_t dTot2=0;
+                  for (Int_t iLink=0; iLink<digiMatch2->GetNofLinks(); iLink+=2){  // loop over digis
+                    CbmLink L0 = digiMatch2->GetLink(iLink);  
+                    Int_t iDigInd0=L0.GetIndex(); 
+                    Int_t iDigInd1=(digiMatch2->GetLink(iLink+1)).GetIndex(); 
+                    if (iDigInd0 < fTofDigisColl->GetEntries() && iDigInd1 < fTofDigisColl->GetEntries()){
+                      CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
+                      CbmTofDigiExp *pDig1 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd1));
+                      dTot2 += pDig0->GetTot(); 
+                      dTot2 += pDig1->GetTot();
+                      digiMatch->AddLink(CbmLink(pDig0->GetTot(),iDigInd0));
+                      digiMatch->AddLink(CbmLink(pDig1->GetTot(),iDigInd1));
+                    } 
+                  }
+                  LOG(DEBUG)<<"MergeClusters: Found merger in neighbour "
+                            <<Form(" SmT %d, Sm %d, Rpc %d, Ch %d - hit %d(%d)",
+                                   iSmType2,iSm2,iRpc2,iCh2,iHitInd2,fTofHitsColl->GetEntries())
+                            <<Form(" DX %6.1f, DY %6.1f, DT %6.1f",xPos-xPos2,yPos-yPos2,tof-tof2)
+                            <<Form(" Tots %6.1f - %6.1f", dTot, dTot2) 
+                            <<FairLogger::endl;
+                  Double_t dTotSum=dTot+dTot2;
+                  Double_t dxPosM = (xPos*dTot + xPos2*dTot2)/dTotSum;
+                  Double_t dyPosM = (yPos*dTot + yPos2*dTot2)/dTotSum;
+                  Double_t dtofM  = (tof*dTot  + tof2*dTot2) /dTotSum;
+                  pHit->SetX(dxPosM);
+                  pHit->SetY(dyPosM);
+                  pHit->SetTime(dtofM);
 
-		  // remove merged hit at iHitInd2 and update digiMatch
-		  if( pHit2->GetRefId() != iHitInd2 )
-		    LOG(ERROR)<<"CbmTofTestBeamClusterizer::MergeClusters: Inconsistent Links! Check!"
-			      <<FairLogger::endl;
+                  // remove merged hit at iHitInd2 and update digiMatch
+                  if( pHit2->GetRefId() != iHitInd2 )
+                    LOG(ERROR)<<"CbmTofTestBeamClusterizer::MergeClusters: Inconsistent Links! Check!"
+                              <<FairLogger::endl;
 
-		  fTofDigiMatchColl->RemoveAt( pHit2->GetRefId() );
-		  fTofDigiMatchColl->Compress();
-		  fTofHitsColl->RemoveAt( iHitInd2 );
-		  fTofHitsColl->Compress();
-		  LOG(DEBUG)<<"MergeClusters: Compress TClonesArrays to "
-			    <<fTofHitsColl->GetEntries()<<", "
-			    <<fTofDigiMatchColl->GetEntries()
-			    <<FairLogger::endl;
-		  for(Int_t i=iHitInd2; i<fTofHitsColl->GetEntries(); i++){ // update RefLinks
- 	            CbmTofHit *pHiti = (CbmTofHit*) fTofHitsColl->At( i );
-		    pHiti->SetRefId(i);
-		  }
-		  //check merged hit (cluster)
-		  //pHit->Print();
-		}
-	      }
-	    }
-	  }
+                  fTofDigiMatchColl->RemoveAt( pHit2->GetRefId() );
+                  fTofDigiMatchColl->Compress();
+                  fTofHitsColl->RemoveAt( iHitInd2 );
+                  fTofHitsColl->Compress();
+                  LOG(DEBUG)<<"MergeClusters: Compress TClonesArrays to "
+                            <<fTofHitsColl->GetEntries()<<", "
+                            <<fTofDigiMatchColl->GetEntries()
+                            <<FairLogger::endl;
+                  for(Int_t i=iHitInd2; i<fTofHitsColl->GetEntries(); i++){ // update RefLinks
+                     CbmTofHit *pHiti = (CbmTofHit*) fTofHitsColl->At( i );
+                    pHiti->SetRefId(i);
+                  }
+                  //check merged hit (cluster)
+                  //pHit->Print();
+                }
+              }
+            }
+          }
        }
      }
   }
