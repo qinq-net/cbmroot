@@ -7,6 +7,7 @@ ${CBMROOT_SOURCE_DIR}/base
 ${CBMROOT_SOURCE_DIR}/data
 ${CBMROOT_SOURCE_DIR}/data/sts
 ${CBMROOT_SOURCE_DIR}/data/mvd
+${CBMROOT_SOURCE_DIR}/data/much
 ${CBMROOT_SOURCE_DIR}/data/trd
 ${CBMROOT_SOURCE_DIR}/data/rich
 ${CBMROOT_SOURCE_DIR}/data/tof
