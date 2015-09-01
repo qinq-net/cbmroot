@@ -10,6 +10,7 @@
 #include "CbmGlobalTrack.h"
 #include "CbmTrdTrack.h"
 #include "CbmRichRing.h"
+#include "CbmMuchTrack.h"
 
 #include "FairRunAna.h"
 
@@ -22,8 +23,12 @@
 CbmKFParticleFinderPID::CbmKFParticleFinderPID(const char* name, Int_t iVerbose):
   FairTask(name, iVerbose), fStsTrackBranchName("StsTrack"), fGlobalTrackBranchName("GlobalTrack"), 
   fTofBranchName("TofHit"), fMCTracksBranchName("MCTrack"), fTrackMatchBranchName("StsTrackMatch"), fTrdBranchName ("TrdTrack"), fRichBranchName ("RichRing"),
+  fMuchTrackBranchName("MuchTrack"),
   fTrackArray(0), fGlobalTrackArray(0), fTofHitArray(0), fMCTrackArray(0), fTrackMatchArray(0), fTrdTrackArray(0), fRichRingArray(0),
-  fPIDMode(0), fSisMode(0), fTrdPIDMode(0), fRichPIDMode(0), fPID(0)
+  fMuchTrackArray(0),
+  fPIDMode(0), fSisMode(1), fTrdPIDMode(0), fRichPIDMode(0),
+  fMuchMode(1),
+  fPID(0)
 {
 }
 
@@ -34,7 +39,7 @@ CbmKFParticleFinderPID::~CbmKFParticleFinderPID()
 InitStatus CbmKFParticleFinderPID::Init()
 {
   //Get ROOT Manager
-  FairRootManager* ioman= FairRootManager::Instance();
+  FairRootManager* ioman = FairRootManager::Instance();
   
   if(ioman==0)
   {
@@ -64,8 +69,8 @@ InitStatus CbmKFParticleFinderPID::Init()
     fTofHitArray=(TClonesArray*) ioman->GetObject(fTofBranchName);
     if(fTofHitArray==0)
     {
-      Error("CbmKFParticleFinderPID::Init","track-array not found!");
-      return kERROR;
+      Error("CbmKFParticleFinderPID::Init","TOF track-array not found!");
+      //return kERROR;
     }
     
     if(fTrdPIDMode > 0)
@@ -74,7 +79,7 @@ InitStatus CbmKFParticleFinderPID::Init()
       if(fTrdTrackArray==0)
       {
         Error("CbmKFParticleFinderPID::Init","TRD track-array not found!");
-        return kERROR;
+        //return kERROR;
       }
     }
     
@@ -84,7 +89,7 @@ InitStatus CbmKFParticleFinderPID::Init()
       if(fRichRingArray == 0)
       {
         Error("CbmKFParticleFinderPID::Init","Rich ring array not found!");
-        return kERROR;
+        //return kERROR;
       }
     }
   }
@@ -108,6 +113,16 @@ InitStatus CbmKFParticleFinderPID::Init()
     }
   }
   
+   if (fMuchMode > 0)
+   {
+     fMuchTrackArray = (TClonesArray*) ioman->GetObject(fMuchTrackBranchName);
+     if (fMuchTrackArray == 0)
+     {
+       Error("CbmKFParticleFinderPID::Init", "Much track-array not found!");
+       return kERROR;
+      }
+    }
+   
   return kSUCCESS;
 }
 
@@ -156,16 +171,16 @@ void CbmKFParticleFinderPID::SetMCPID()
       continue;
     }
     CbmMCTrack *cbmMCTrack = (CbmMCTrack*)fMCTrackArray->At(mcTrackId);
-    if(!(TMath::Abs(cbmMCTrack->GetPdgCode()) == 11 ||
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 13 ||
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 211 ||
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 321 ||
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 2212 ||
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 3112 ||
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000010020 ||
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000010030 ||
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000020030 ||
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000020040 ) )
+    if(!(TMath::Abs(cbmMCTrack->GetPdgCode()) == 11 || ///electron
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 13 || ///muon
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 211 || ///charged pion (pi meson)
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 321 || ///charged kaon (K+)
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 2212 || ///proton
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 3112 || ///SigmaUpperCase-minus Baryon (E-)
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000010020 || ///deuteron
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000010030 || ///triton
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000020030 || ///Не3
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000020040 ) ) ///
       continue;
     fPID[iTr] = cbmMCTrack->GetPdgCode();
   }
@@ -175,7 +190,7 @@ void CbmKFParticleFinderPID::SetRecoPID()
 {
   if (NULL == fGlobalTrackArray) { Fatal("KF Particle Finder", "No GlobalTrack array!"); }
   if (NULL == fTofHitArray) { Fatal("KF Particle Finder", "No TOF hits array!"); }
-
+  
   const Double_t m2TOF[7] = { 0.885, 0.245, 0.019479835, 0., 3.49, 7.83, 1.95};
   
   Double_t sP[7][5];
@@ -187,13 +202,13 @@ void CbmKFParticleFinderPID::SetRecoPID()
                                {0.00218401, 0.00152391, 0.00895357, -0.000533423, 3.70326e-05},
                                {0.261491, -0.103121, 0.0247587, -0.00123286, 2.61731e-05},
                                {0.657274, -0.22355, 0.0430177, -0.0026822, 7.34146e-05},
-                               {0.116525, -0.045522,0.0151319, -0.000495545, 4.43144e-06}  }; 
+                               {0.116525, -0.045522,0.0151319, -0.000495545, 4.43144e-06}  };
     for(Int_t iSp=0; iSp<7; iSp++)
       for(Int_t jSp=0; jSp<5; jSp++)
         sP[iSp][jSp] = sPLocal[iSp][jSp];
   }
   
-  if(fSisMode == 1) //SIS-300
+  if(fSisMode == 1) //SIS-300 
   {
     Double_t sPLocal[7][5] = { {0.0337428,-0.013939,0.00567602,-0.000202229,4.07531e-06},
                                {0.00717827,-0.00257353, 0.00389851,-9.83097e-05, 1.33011e-06},
@@ -207,9 +222,12 @@ void CbmKFParticleFinderPID::SetRecoPID()
         sP[iSp][jSp] = sPLocal[iSp][jSp];
   }
 
-  const Int_t PdgHypo[7] = {2212, 321, 211, -11, 1000010020, 1000010030, 1000020030};
+  const Int_t PdgHypo[8] = {2212, 321, 211, -11, 1000010020, 1000010030, 1000020030, -13};
+  //2212 - proton, 321 - kaon, 211 - pion, -11 - electron, 1000010020 - deuteron,
+  //1000010030 - triton, 1000020030 - Не3, -13 - muon
 
-  for (Int_t igt = 0; igt < fGlobalTrackArray->GetEntriesFast(); igt++) {
+  for (Int_t igt = 0; igt < fGlobalTrackArray->GetEntriesFast(); igt++)
+  {
     const CbmGlobalTrack* globalTrack = static_cast<const CbmGlobalTrack*>(fGlobalTrackArray->At(igt));
 
     Int_t stsTrackIndex = globalTrack->GetStsTrackIndex();
@@ -219,8 +237,10 @@ void CbmKFParticleFinderPID::SetRecoPID()
     Bool_t isElectronRICH = 0;
     Bool_t isElectron = 0;
 
+    
     CbmStsTrack* cbmStsTrack = (CbmStsTrack*) fTrackArray->At(stsTrackIndex);
-    const FairTrackParam *stsPar = cbmStsTrack->GetParamFirst();
+    
+    const FairTrackParam *stsPar = cbmStsTrack->GetParamFirst(); 
     TVector3 mom;
     stsPar->Momentum(mom);
 
@@ -286,7 +306,7 @@ void CbmKFParticleFinderPID::SetRecoPID()
           if (trdTrack)
           {
             if (trdTrack->GetPidWkn() > 0.635)
-              isElectronTRD = 1;
+              isElectronTRD = 1; 
           }
         }
       }
@@ -309,40 +329,37 @@ void CbmKFParticleFinderPID::SetRecoPID()
       }
     }
 
-    Double_t l = globalTrack->GetLength();// l is calculated by global tracking
-    if(fSisMode==0) //SIS-100
-      if( !((l>500.) && (l<900.)) ) continue;
-    if(fSisMode==1) //SIS 300
-      if( !((l>700.) && (l<1500.)) ) continue;
-      
-    Double_t time;
-    Int_t tofHitIndex = globalTrack->GetTofHitIndex();
-    if (tofHitIndex >= 0) {
-      const CbmTofHit* tofHit = static_cast<const CbmTofHit*>(fTofHitArray->At(tofHitIndex));
-      if(!tofHit) continue;
-      time = tofHit->GetTime();
-    }
-    else
-      continue;
-
-    if(fSisMode==0) //SIS-100
-      if( !((time>16.) && (time<42.)) ) continue;
-    if(fSisMode==1) //SIS 300
-      if( !((time>26.) && (time<52.)) ) continue;
-
-    Double_t m2 = p*p*(1./((l/time/29.9792458)*(l/time/29.9792458))-1.);
-
-    Double_t sigma[7];
-    Double_t dm2[7];
-
-    for(int iSigma=0; iSigma<7; iSigma++)
-    {
-      sigma[iSigma] = sP[iSigma][0] + sP[iSigma][1]*p + sP[iSigma][2]*p*p + sP[iSigma][3]*p*p*p + sP[iSigma][4]*p*p*p*p;
-      dm2[iSigma] = fabs(m2 - m2TOF[iSigma])/sigma[iSigma];
-    }
-
-    int iPdg=2;
-    Double_t dm2min = dm2[2];
+    
+    
+     Bool_t isMuonSts = 0;
+     Bool_t isMuon = 0;
+     if(fMuchMode == 1)
+     {
+       if(cbmStsTrack->GetNofHits() >= 7) isMuonSts = 1;
+       if(fMuchTrackArray)
+       {
+         Int_t muchIndex = globalTrack->GetMuchTrackIndex();
+         if(muchIndex > -1)
+         {
+           CbmMuchTrack* muchTrack = (CbmMuchTrack*)fMuchTrackArray->At(muchIndex);
+           if(muchTrack)
+           {
+             if((muchTrack->GetChiSq()/muchTrack->GetNDF())<1.5 && isMuonSts)
+             {
+               if(fSisMode==0) //SIS-100
+               {
+                 if(muchTrack->GetNofHits()>=17) isMuon=1;
+               }
+               if(fSisMode==1) //SIS-300
+               {
+                 if(muchTrack->GetNofHits()>=17) isMuon=1;
+               }
+             }
+           }
+         }
+       }
+     }
+     
     
     if( p>1.5 )
     {
@@ -353,29 +370,75 @@ void CbmKFParticleFinderPID::SetRecoPID()
     else
       if( isElectronRICH ) isElectron = 1;
     
-    if(isElectron)
+    if(fTofHitArray && !isMuon)
     {
-      if(dm2[3] > 3.)
-        isElectron = 0;
-    }
+      Double_t l = globalTrack->GetLength();// l is calculated by global tracking
+      if(fSisMode==0) //SIS-100
+        if( !((l>500.) && (l<900.)) ) continue;
+      if(fSisMode==1) //SIS 300
+        if( !((l>700.) && (l<1500.)) ) continue;
+        
+      Double_t time;
+      Int_t tofHitIndex = globalTrack->GetTofHitIndex();
+      if (tofHitIndex >= 0) {
+        const CbmTofHit* tofHit = static_cast<const CbmTofHit*>(fTofHitArray->At(tofHitIndex));
+        if(!tofHit) continue;
+        time = tofHit->GetTime();
+      }
+      else
+        continue;
+
+      if(fSisMode==0) //SIS-100
+        if( !((time>16.) && (time<42.)) ) continue;
+      if(fSisMode==1) //SIS 300
+        if( !((time>26.) && (time<52.)) ) continue;
     
-    if(!isElectron)
-    {
-      if(p>12.) continue;
-      
-      for(int jPDG=0; jPDG<7; jPDG++)
+      Double_t m2 = p*p*(1./((l/time/29.9792458)*(l/time/29.9792458))-1.);
+
+      Double_t sigma[7];
+      Double_t dm2[7];
+
+      for(int iSigma=0; iSigma<7; iSigma++)
       {
-        if(jPDG==3) continue;
-        if(dm2[jPDG] < dm2min) { iPdg = jPDG; dm2min = dm2[jPDG]; }
+        sigma[iSigma] = sP[iSigma][0] + sP[iSigma][1]*p + sP[iSigma][2]*p*p + sP[iSigma][3]*p*p*p + sP[iSigma][4]*p*p*p*p;
+        dm2[iSigma] = fabs(m2 - m2TOF[iSigma])/sigma[iSigma];
       }
 
-      if(dm2min > 2) iPdg=-1;
+      if(isElectron)
+      {
+        if(dm2[3] > 3.)
+          isElectron = 0;
+      }
+    
+      int iPdg=2;
+      Double_t dm2min = dm2[2];
+    
+      if(!isElectron && !isMuon)
+      {
+        if(p>12.) continue;
+        
+        for(int jPDG=0; jPDG<7; jPDG++)
+        {
+          if(jPDG==3) continue;
+          if(dm2[jPDG] < dm2min) { iPdg = jPDG; dm2min = dm2[jPDG]; }
+        }
 
-      if(iPdg > -1)
-        fPID[stsTrackIndex] = q*PdgHypo[iPdg];
+        if(dm2min > 2) iPdg=-1;
+
+        if(iPdg > -1)
+          fPID[stsTrackIndex] = q*PdgHypo[iPdg];
+      }
     }
-    else
+    
+    if (isElectron)
+    {
       fPID[stsTrackIndex] = q*PdgHypo[3];
+    }
+    
+    if (isMuon)
+    {
+      fPID[stsTrackIndex] = q*PdgHypo[7];
+    }
   }
 }
 

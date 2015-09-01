@@ -1,8 +1,8 @@
 //-----------------------------------------------------------
 //-----------------------------------------------------------
 
-#ifndef CbmKFParticleFinderPID_HH
-#define CbmKFParticleFinderPID_HH
+#ifndef CbmKFTrackQA_HH
+#define CbmKFTrackQA_HH
 
 #include "FairTask.h"
 
@@ -10,55 +10,42 @@
 
 #include <vector>
 
+class KFParticleTopoReconstructor;
+class KFTopoPerformance;
 class TClonesArray;
 class TFile;
+class TDirectory;
+class TH1F;
 class TObject;
 
-class CbmKFParticleFinderPID : public FairTask {
+class CbmKFTrackQA : public FairTask {
  public:
 
   // Constructors/Destructors ---------
-  CbmKFParticleFinderPID(const char* name = "CbmKFParticleFinderPID", Int_t iVerbose = 0);
-  ~CbmKFParticleFinderPID();
+  CbmKFTrackQA(const char* name = "CbmKFTrackQA", Int_t iVerbose = 0, TString outFileName="CbmKFTrackQA.root");
+  ~CbmKFTrackQA();
 
   void SetStsTrackBranchName(const TString& name)   { fStsTrackBranchName = name;  }
   void SetGlobalTrackBranchName(const TString& name)   { fGlobalTrackBranchName = name;  }
   void SetTofBranchName(const TString& name)   { fTofBranchName = name;  }
   void SetMCTrackBranchName(const TString& name)   { fMCTracksBranchName = name;  }
   void SetTrackMatchBranchName(const TString& name)   { fTrackMatchBranchName = name;  }
+  void SetMuchTrackMatchBranchName(const TString& name)   { fMuchTrackMatchBranchName = name;  }
   void SetTrdBranchName (const TString& name)      {   fTrdBranchName = name;  }
   void SetRichBranchName (const TString& name)      {   fRichBranchName = name;   }
   void SetMuchTrackBranchName (const TString& name) { fMuchTrackBranchName = name; }
-  
+  Int_t GetZtoNStation(Double_t getZ);
+
   virtual InitStatus Init();
   virtual void Exec(Option_t* opt);
   virtual void Finish();
   
-  void SetPIDMode(int mode) { fPIDMode = mode; }
-  void SetSIS100() { fSisMode = 0; }
-  void SetSIS300() { fSisMode = 1; }
-  
-  void DoNotUseTRD() { fTrdPIDMode = 0; }
-  void UseTRDWknPID() { fTrdPIDMode = 1; }
-  void UseTRDANNPID() { fTrdPIDMode = 2; }
-  
-  void DoNotUseRICH() { fRichPIDMode = 0; }
-  void UseRICHRvspPID() { fRichPIDMode = 1; }
-  void UseRICHANNPID() { fRichPIDMode = 2; }
-  
-  void DoNotUseMuch() { fMuchMode = 0; }
-  void UseMuch() { fMuchMode = 1; }
- 
-  
-  const std::vector<int>& GetPID() const { return fPID; }
-  
  private:
   
-  const CbmKFParticleFinderPID& operator = (const CbmKFParticleFinderPID&);
-  CbmKFParticleFinderPID(const CbmKFParticleFinderPID&);
+  const CbmKFTrackQA& operator = (const CbmKFTrackQA&);
+  CbmKFTrackQA(const CbmKFTrackQA&);
   
-  void SetMCPID();
-  void SetRecoPID();
+  void WriteHistosCurFile( TObject *obj );
   
   //names of input branches
   TString fStsTrackBranchName;      //! Name of the input TCA with reco tracks
@@ -66,6 +53,7 @@ class CbmKFParticleFinderPID : public FairTask {
   TString fTofBranchName;      //! Name of the input TCA with tof hits
   TString fMCTracksBranchName;      //! Name of the input TCA with MC tracks
   TString fTrackMatchBranchName;      //! Name of the input TCA with track match
+  TString fMuchTrackMatchBranchName;
   TString fTrdBranchName;
   TString fRichBranchName;
   TString fMuchTrackBranchName;
@@ -76,20 +64,27 @@ class CbmKFParticleFinderPID : public FairTask {
   TClonesArray *fTofHitArray; //input reco tracks
   TClonesArray *fMCTrackArray; //mc tracks
   TClonesArray *fTrackMatchArray; //track match
+  TClonesArray *fMuchTrackMatchArray;//MuCh track match
   TClonesArray *fTrdTrackArray;
   TClonesArray *fRichRingArray;
   TClonesArray *fMuchTrackArray;//input much tracks
+   
+  //output file with histograms
+  TString fOutFileName;
+  TFile* fOutFile;
+  TDirectory* fHistoDir;
   
-  //PID variables
-  Int_t fPIDMode;
-  Int_t fSisMode;
-  Int_t fTrdPIDMode;
-  Int_t fRichPIDMode;
-  Int_t fMuchMode;
+  Int_t fNEvents;
   
-  std::vector<int> fPID;
+  //histograms
+    //STS
+  static const int NStsHisto = 3;
+  TH1F* hStsHisto[8][NStsHisto]; //All tracks, electrons, muons, pion, kaon, protons, fragments, ghost
+    //Much
+  static const int NMuchHisto = 5;
+  TH1F* hMuchHisto[3][NMuchHisto]; //Muons, Background, Ghost
   
-  ClassDef(CbmKFParticleFinderPID,1);
+  ClassDef(CbmKFTrackQA,1);
 };
 
 #endif
