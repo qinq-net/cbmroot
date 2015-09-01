@@ -28,6 +28,8 @@
 
 #pragma link C++ class CbmTofTests+;
 
+#pragma link C++ class CbmTofHitFinderQa+;
+
 #ifndef BUILD_BEAMTIME
  #pragma link C++ class CbmTofTestBeamClusterizer+;
  #pragma link C++ class CbmTofAnaTestbeam+;

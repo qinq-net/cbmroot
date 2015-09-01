@@ -11,6 +11,7 @@ ${CBMROOT_SOURCE_DIR}/tof/TofTools
 ${CBMROOT_SOURCE_DIR}/tof/TofData
 ${CBMROOT_SOURCE_DIR}/tof/TofDigi
 ${CBMROOT_SOURCE_DIR}/tof/TofTests
+${CBMROOT_SOURCE_DIR}/tof/TofQA
 
 ${CBMROOT_SOURCE_DIR}/beamtime/tof
 ${CBMROOT_SOURCE_DIR}/beamtime/tof/tdc
@@ -79,6 +80,8 @@ TofReco/CbmTofTrackFinderNN.cxx
 TofReco/LKFMinuit.cxx 
 
 TofTests/CbmTofTests.cxx 
+
+TofQA/CbmTofHitFinderQa.cxx
 
   ${TOF_BEAM_SOURCES}
 )
