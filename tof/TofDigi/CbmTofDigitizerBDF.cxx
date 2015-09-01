@@ -117,6 +117,7 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF():
    fhElecChOccup(NULL),
    fhMultiDigiEvtElCh(NULL),
    fhNbDigiEvtElCh(NULL),
+   fhNbTracksEvtElCh(NULL),
    fhFiredEvtElCh(NULL),
    fhMultiProbElCh(NULL),
    fStart(),
@@ -179,6 +180,7 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF(const char *name, Int_t verbose, Bool_t w
    fhElecChOccup(NULL),
    fhMultiDigiEvtElCh(NULL),
    fhNbDigiEvtElCh(NULL),
+   fhNbTracksEvtElCh(NULL),
    fhFiredEvtElCh(NULL),
    fhMultiProbElCh(NULL),
    fStart(),
@@ -704,11 +706,15 @@ Bool_t   CbmTofDigitizerBDF::CreateHistos()
          "Number of digis per event before merging for each electronic channel; Elect. chan index []; Nb Digis in Event []",
          fiNbElecChTot, 0.0, fiNbElecChTot,
          10, 0.5, 10.5 );
+   fhNbTracksEvtElCh = new TH2D( "TofDigiBdf_NbTracksEvtElCh",
+         "Number of tracks per event before merging for each electronic channel; Elect. chan index []; Nb tracks in Event []",
+         fiNbElecChTot, 0.0, fiNbElecChTot,
+         10, 0.5, 10.5 );
    fhFiredEvtElCh = new TH1D( "TofDigiBdf_FiredEvtElCh",
          "Number of events with at least 1 digi per electronic channel; Elect. chan index []",
          fiNbElecChTot, 0.0, fiNbElecChTot );
    fhMultiProbElCh = new TH1D( "TofDigiBdf_MultiProbElCh",
-         "Probability of having a multiple digi (~MC track) event per electronic channel; Elect. chan index []; Multiple signal prob. [%]",
+         "Probability of having multiple digi (~MC track) event per electronic channel; Elect. chan index []; Multiple signal prob. [%]",
          fiNbElecChTot, 0.0, fiNbElecChTot );
 
    gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
@@ -864,6 +870,7 @@ Bool_t   CbmTofDigitizerBDF::WriteHistos()
    fhElecChOccup->Write();
    fhMultiDigiEvtElCh->Write();
    fhNbDigiEvtElCh->Write();
+   fhNbTracksEvtElCh->Write();
    fhFiredEvtElCh->Write();
    fhMultiProbElCh->Divide(fhMultiDigiEvtElCh, fhFiredEvtElCh);
    fhMultiProbElCh->Scale( 100.0 );
@@ -915,6 +922,7 @@ Bool_t   CbmTofDigitizerBDF::DeleteHistos()
    delete fhElecChOccup;
    delete fhMultiDigiEvtElCh;
    delete fhNbDigiEvtElCh;
+   delete fhNbTracksEvtElCh;
    delete fhFiredEvtElCh;
    delete fhMultiProbElCh;
 
@@ -953,6 +961,10 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                   for( Int_t iSide = 0; iSide < iNbSides; iSide++ )
                   {
                      Int_t iNbDigis = fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size();
+                     
+                     // TOF QA: monitor number of tracks leading to digi before merging them
+                     Int_t iNbTracks = 0;
+                     std::vector<Int_t> vPrevTrackIdList;
                      if( 0 < iNbDigis )
                      {
                         fhNbDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbDigis);
@@ -962,6 +974,12 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                         fhFiredEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide );
                         if( 1 < iNbDigis )
                            fhMultiDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide );
+
+                        if (0 == fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size()){
+                           LOG(ERROR)<<Form(" cannot add digiMatch for (%d,%d,%d,%d,%d) at pos  %d",
+                              iSmType,iSm,iRpc,iCh,iSide,fiNbDigis)<<FairLogger::endl;
+                           break;
+                        }
 
                         Int_t iChosenDigi = -1;
                         Double_t dMinTime = 1e18;
@@ -973,13 +991,30 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                           {
                               iChosenDigi = iDigi;
                               dMinTime = fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime();
+                              
+                              // TOF QA: monitor number of tracks leading to digi before merging them
+                              Bool_t bTrackFound = kFALSE;
+                              for( Int_t iTrkId = 0; iTrkId < vPrevTrackIdList.size(); iTrkId++ )
+                                 if( vPrevTrackIdList[iTrkId] == 
+                                     ((CbmTofPoint*) fTofPointsColl->At(
+                                          fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi] 
+                                                ))->GetTrackID() )
+                                 {
+                                    bTrackFound = kTRUE;
+                                    break;
+                                 } // If TrackId already found for this Elec. Chan in this event
+                              if( kFALSE ==  bTrackFound )
+                              {
+                                 // New track or first track
+                                 iNbTracks++;
+                                 vPrevTrackIdList.push_back(
+                                    ((CbmTofPoint*) fTofPointsColl->At(
+                                          fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi] 
+                                                ))->GetTrackID() );
+                              }  // if( kFALSE ==  bTrackFound )
                           }
-
-                        if (0 == fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size()){
-                           LOG(ERROR)<<Form(" cannot add digiMatch for (%d,%d,%d,%d,%d) at pos  %d",
-                              iSmType,iSm,iRpc,iCh,iSide,fiNbDigis)<<FairLogger::endl;
-                           break;
-                        }
+                        // TOF QA: monitor number of tracks leading to digi before merging them
+                        fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
 
                         new((*fTofDigisColl)[fiNbDigis]) CbmTofDigiExp(
                               *fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] );
@@ -1041,6 +1076,10 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                   for( Int_t iSide = 0; iSide < iNbSides; iSide++ )
                   {
                      Int_t iNbDigis = fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size();
+                     
+                     // TOF QA: monitor number of tracks leading to digi before merging them
+                     Int_t iNbTracks = 0;
+                     std::vector<Int_t> vPrevTrackIdList;
                      if( 0 < iNbDigis )
                      {
                         fhNbDigiEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbDigis);
@@ -1059,7 +1098,30 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                            {
                               iChosenDigi = iDigi;
                               dMinTime = fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime();
+                              
+                              // TOF QA: monitor number of tracks leading to digi before merging them
+                              Bool_t bTrackFound = kFALSE;
+                              for( Int_t iTrkId = 0; iTrkId < vPrevTrackIdList.size(); iTrkId++ )
+                                 if( vPrevTrackIdList[iTrkId] == 
+                                     ((CbmTofPoint*) fTofPointsColl->At(
+                                          fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi] 
+                                                ))->GetTrackID() )
+                                 {
+                                    bTrackFound = kTRUE;
+                                    break;
+                                 } // If TrackId already found for this Elec. Chan in this event
+                              if( kFALSE ==  bTrackFound )
+                              {
+                                 // New track or first track
+                                 iNbTracks++;
+                                 vPrevTrackIdList.push_back(
+                                    ((CbmTofPoint*) fTofPointsColl->At(
+                                          fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi] 
+                                                ))->GetTrackID() );
+                              }  // if( kFALSE ==  bTrackFound )
                            }
+                           // TOF QA: monitor number of tracks leading to digi before merging them
+                           fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
 
 			LOG(DEBUG)<<Form(" New Tof Digi ")<<FairLogger::endl;
 
