@@ -21,6 +21,7 @@
 #include "FairVolume.h"
 
 #include "TClonesArray.h"
+#include "TParticle.h"
 #include "TVirtualMC.h"
 #include "TObjArray.h"
 
@@ -110,7 +111,8 @@ Bool_t  CbmTof::ProcessHits(FairVolume* vol)
   fELoss += gMC->Edep();
 
   // Create CbmTofPoint at exit of active volume
-  if ( gMC->TrackCharge()!=0 &&
+  if (((0 == gMC->GetStack()->GetCurrentTrack()->GetPdgCode()) || // Add geantinos/rootinos
+       (gMC->TrackCharge()!=0) )&&
       (gMC->IsTrackExiting()    ||
        gMC->IsTrackStop()       ||
        gMC->IsTrackDisappeared()) 
