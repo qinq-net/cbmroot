@@ -306,7 +306,8 @@ void CbmTofSimpClusterizer::SetParContainers()
 void CbmTofSimpClusterizer::Exec(Option_t * option)
 {
    fTofHitsColl->Clear("C");
-   fTofDigiMatchColl->Clear("C");
+//   fTofDigiMatchColl->Clear("C"); // Not enough => CbmMatch has no Clear functions!!
+   fTofDigiMatchColl->Delete();
 
    fiNbHits = 0;
 

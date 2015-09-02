@@ -255,7 +255,9 @@ void CbmTofDigitizerBDF::SetParContainers()
 void CbmTofDigitizerBDF::Exec(Option_t * option)
 {
    fTofDigisColl->Clear("C");
-   fTofDigiMatchPointsColl->Clear("C");
+//   fTofDigiMatchPointsColl->Clear("C"); // Not enough => CbmMatch has no Clear functions!!
+   fTofDigiMatchPointsColl->Delete();
+
 
    fiNbDigis = 0;
 
@@ -1052,6 +1054,7 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                         fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].clear();
                         fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].clear();
                      } // if( 0 < iNbDigis )
+                     vPrevTrackIdList.clear();
                   } // for each (Ch, Side) pair
             } // for each (Sm, rpc) pair
       } // for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
@@ -1141,6 +1144,7 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                         fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].clear();
                         fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].clear();
                      } // if( 0 < iNbDigis )
+                     vPrevTrackIdList.clear();
                   } // for each (Ch, Side) pair
             } // for each (Sm, rpc) pair
       } // for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
