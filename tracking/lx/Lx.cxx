@@ -110,7 +110,6 @@ static bool GetHistoRMS(const char* histoNameBase, Int_t histoNumber, Double_t& 
   return result;
 }
 
-/*
 static bool GetHistoCOV(const char* histoNameBase, Int_t histoNumber, Int_t axis1, Int_t axis2, Double_t& retVal)
 {
   char name[256];
@@ -131,7 +130,6 @@ static bool GetHistoCOV(const char* histoNameBase, Int_t histoNumber, Int_t axis
   TFile::CurrentFile() = curFile;
   return result;
 }
-*/
 
 InitStatus LxFinder::Init()
 {
@@ -978,7 +976,7 @@ void LxFinder::CalcInvMass()
       continue;
 
     extFitter.DoFit(&t1, 13);
-//    Double_t chi2Prim = extFitter.GetChiToVertex(&t1, fPrimVtx);
+    Double_t chi2Prim = extFitter.GetChiToVertex(&t1, fPrimVtx);
     FairTrackParam t1param;
     extFitter.Extrapolate(&t1, fPrimVtx->GetZ(), &t1param);
 
@@ -1009,7 +1007,7 @@ void LxFinder::CalcInvMass()
 
       CbmStsTrack t2 = *secondTrack->externalTrack->track;
       extFitter.DoFit(&t2, 13);
-//      chi2Prim = extFitter.GetChiToVertex(&t2, fPrimVtx);
+      chi2Prim = extFitter.GetChiToVertex(&t2, fPrimVtx);
       FairTrackParam t2param;
       extFitter.Extrapolate(&t2, fPrimVtx->GetZ(), &t2param);
 
