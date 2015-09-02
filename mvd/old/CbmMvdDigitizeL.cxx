@@ -776,13 +776,15 @@ void CbmMvdDigitizeL::ProducePixelCharge(CbmMvdPoint* point, CbmMvdStation* stat
     Float_t xCharge=0.,yCharge=0.,totClusterCharge=0.;
     CbmMvdPixelCharge* pixel;
     pair<Int_t, Int_t> a;
-    Double_t xCentre,yCentre,sigmaX,sigmaY,xLo,xUp, yLo,yUp;
+    Double_t xCentre,yCentre;
+//sigmaX,sigmaY,xLo,xUp, yLo,yUp;
     
     SignalPoint* sPoint;
     sPoint= &fSignalPoints[0];
     
     xCentre = sPoint->x;  //of segment
     yCentre = sPoint->y;  /// idem
+/*
     sigmaX  = sPoint->sigmaX;
     sigmaY  = sPoint->sigmaY;
         
@@ -790,6 +792,7 @@ void CbmMvdDigitizeL::ProducePixelCharge(CbmMvdPoint* point, CbmMvdStation* stat
     xUp = sPoint->x + fWidthOfCluster*sPoint->sigmaX;
     yLo = sPoint->y - fWidthOfCluster*sPoint->sigmaY;
     yUp = sPoint->y + fWidthOfCluster*sPoint->sigmaY;
+*/
 
     if (fNumberOfSegments<2)
 	{Fatal("-E- CbmMvdDigitizer: ","fNumberOfSegments < 2, this makes no sense, check parameters.");}
@@ -821,8 +824,8 @@ void CbmMvdDigitizeL::ProducePixelCharge(CbmMvdPoint* point, CbmMvdStation* stat
     
    	xCentre = sPoint->x;  //of segment
     	yCentre = sPoint->y;  /// idem
-    	sigmaX  = sPoint->sigmaX;
-    	sigmaY  = sPoint->sigmaY;
+//    	sigmaX  = sPoint->sigmaX;
+//    	sigmaY  = sPoint->sigmaY;
 
 	TransformXYtoPixelIndex(sPoint->x - fWidthOfCluster*sPoint->sigmaX,
 				sPoint->y - fWidthOfCluster*sPoint->sigmaY,
@@ -869,8 +872,8 @@ void CbmMvdDigitizeL::ProducePixelCharge(CbmMvdPoint* point, CbmMvdStation* stat
 
 			xCentre = sPoint->x;  //of segment
 			yCentre = sPoint->y;  // idem
-			sigmaX  = sPoint->sigmaX;
-			sigmaY  = sPoint->sigmaY;
+//			sigmaX  = sPoint->sigmaX;
+//			sigmaY  = sPoint->sigmaY;
         
 			fCurrentTotalCharge += sPoint->charge;
 			
@@ -1248,10 +1251,9 @@ InitStatus CbmMvdDigitizeL::Init() {
 	fPileupManager = new CbmMvdPileupManager(fBgFileName,
 						 fBranchName, fBgBufferSize);
 	if(fPileupManager->GetNEvents()< 2* fNPileup) {
-	  cout <<"-E- "<< GetName() << ": The size of your BG-File is insufficient to perform the requested pileup" << endl;
-	  cout <<"    You need at least events > 2* fNPileup." << endl;
-	  cout <<"    Detected: fPileUp = " << fNPileup << ", events in file " << fPileupManager->GetNEvents() << endl; 
-	  Fatal("","");  
+	  LOG(FATAL) << GetName() << ": The size of your BG-File is insufficient to perform the requested pileup \n" 
+	  <<"    You need at least events > 2* fNPileup.\n"
+	  <<"    Detected: fPileUp = " << fNPileup << ", events in file " << fPileupManager->GetNEvents() << FairLogger::endl; 
 	  return kERROR;}
     }
 
@@ -1265,10 +1267,9 @@ InitStatus CbmMvdDigitizeL::Init() {
 	fDeltaManager = new CbmMvdPileupManager(fDeltaFileName,
 						fBranchName, fDeltaBufferSize);
 	if(fDeltaManager->GetNEvents()< 2* fNDeltaElect ) {
-	  cout <<"-E- "<< GetName() << ": The size of your Delta-File is insufficient to perform the requested pileup" << endl;
-	  cout <<"    You need at least events > 2* fNDeltaElect." << endl;
-	  cout <<"    Detected: fNDeltaElect = " << fNDeltaElect << ", events in file " << fDeltaManager->GetNEvents() << endl; 
-	  Fatal("","");
+	  LOG(FATAL) << GetName() << ": The size of your Delta-File is insufficient to perform the requested pileup\n"
+	  <<"    You need at least events > 2* fNDeltaElect.\n"
+	  <<"    Detected: fNDeltaElect = " << fNDeltaElect << ", events in file " << fDeltaManager->GetNEvents() << FairLogger::endl; 
 	  return kERROR;}
 	   
     }

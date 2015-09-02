@@ -1926,8 +1926,8 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 			gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
 	      LOG(DEBUG)<<Form(" TofDigitizerBDF:: (%3d,%3d,%3d,%3d) - node at (%6.1f,%6.1f,%6.1f) : 0x%p Pos(%6.1f,%6.1f,%6.1f)",
 			      iSmType,iSM,iRpc,iChannel,
-			       fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode, 
-			       vPntPos.X(), vPntPos.Y(), vPntPos.Z())
+			       fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode)
+//			       vPntPos.X(), vPntPos.Y(), vPntPos.Z())
 			<<FairLogger::endl;
 	      TGeoNode*	cNode= gGeoManager->GetCurrentNode();
 	      TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();

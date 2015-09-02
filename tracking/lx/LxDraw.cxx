@@ -74,7 +74,7 @@ void LxDraw::Ask()
         ask = false;
 
       if (symbol == 'q')
-        exit;
+        exit(42);
     } while (symbol != '\n');
 
     cout << endl;
@@ -97,22 +97,22 @@ void LxDraw::DrawMCTracks()
     //if ((13 != T.pdg && -13 != T.pdg) || T.mother_ID >= 0)
       //continue;
 
-    bool mcPointOnSta[18] = { true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
+//    bool mcPointOnSta[18] = { true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
     int mcpCount = 0;
 
     for (vector<LxMCPoint*>::iterator j = T.Points.begin(); j != T.Points.end(); ++j)
     {
       LxMCPoint* pMCPoint = *j;
-      mcPointOnSta[pMCPoint->stationNumber * 3 + pMCPoint->layerNumber] = true;
+//      mcPointOnSta[pMCPoint->stationNumber * 3 + pMCPoint->layerNumber] = true;
       ++mcpCount;
     }
 
-    bool isRefTrack = true;
+//    bool isRefTrack = true;
 
     for (int j = 0; j < 18; ++j)
     {
-      if (!mcPointOnSta[j])
-        isRefTrack = false;
+//      if (!mcPointOnSta[j])
+//        isRefTrack = false;
     }
 
     //if (!isRefTrack)

@@ -86,7 +86,7 @@ Bool_t  CbmPsdWoutv1_for44mods_full_holes::ProcessHits(FairVolume* vol)
   //if (TMath::Abs(gMC->TrackCharge()) <= 0) return kFALSE;
 
   TVector3 position;
-  Int_t pdg;
+//  Int_t pdg;
     Int_t copyNo,copyNoWOUT,copyNoVHLE;
     Int_t iCell, iNumm ;
   // Set parameters at entrance of volume. Reset ELoss.
@@ -117,7 +117,7 @@ Bool_t  CbmPsdWoutv1_for44mods_full_holes::ProcessHits(FairVolume* vol)
     fVolumeID=1;
     fModuleID=1;
 
-    pdg = gMC->TrackPid();
+//    pdg = gMC->TrackPid();
 
       CbmPsdPoint *fPoint =  AddHit(fTrackID, fVolumeID, TVector3(fPos.X(),  fPos.Y(),  fPos.Z()),
 				    TVector3(fMom.Px(), fMom.Py(), fMom.Pz()),fTime, fLength,fEloss);
