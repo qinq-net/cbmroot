@@ -40,8 +40,8 @@ CbmShieldGeo.cxx
 CbmTarget.cxx 
 )
 
-set(LINKDEF PassiveLinkDef.h)
-Set(LIBRARY_NAME Passive)
+set(LINKDEF CbmPassiveLinkDef.h)
+Set(LIBRARY_NAME CbmPassive)
 Set(DEPENDENCIES
     CbmBase Base 
 )

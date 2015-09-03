@@ -154,8 +154,8 @@ ENDIF (SSE_FOUND)
 
 
 
-set(LINKDEF TrdLinkDef.h)
-Set(LIBRARY_NAME Trd)
+set(LINKDEF CbmTrdLinkDef.h)
+Set(LIBRARY_NAME CbmTrd)
 Set(DEPENDENCIES
     CbmBase CbmData Base TMVA
 )

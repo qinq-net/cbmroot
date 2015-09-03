@@ -119,10 +119,10 @@ Else()
   ADD_DEFINITIONS(-DDO_TPCCATRACKER_EFF_PERFORMANCE -DNonhomogeneousField -DCBM -DUSE_TIMERS)
 EndIf()
 
-Set(LINKDEF PapaLinkDef.h)
-Set(LIBRARY_NAME Papa)
+Set(LINKDEF CbmPapaLinkDef.h)
+Set(LIBRARY_NAME CbmPapa)
 Set(DEPENDENCIES
-    KF Sts CbmBase CbmData Base Vc.a)
+    KF CbmSts CbmBase CbmData Base Vc.a)
 
 GENERATE_LIBRARY()
 

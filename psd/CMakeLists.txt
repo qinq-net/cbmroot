@@ -38,8 +38,8 @@ CbmPsdWoutv1_for44mods_sub3.cxx
 
 )
 
-set(LINKDEF PsdLinkDef.h)
-Set(LIBRARY_NAME Psd)
+set(LINKDEF CbmPsdLinkDef.h)
+Set(LIBRARY_NAME CbmPsd)
 Set(DEPENDENCIES
     CbmData Base 
 )

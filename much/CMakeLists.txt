@@ -78,8 +78,8 @@ tracking/CbmMuchMatchTracks.cxx
 tracking/CbmMuchTrackFinderIdeal.cxx
 )
 
-set(LINKDEF MuchLinkDef.h)
-Set(LIBRARY_NAME Much)
+set(LINKDEF CbmMuchLinkDef.h)
+Set(LIBRARY_NAME CbmMuch)
 Set(DEPENDENCIES
     CbmBase CbmData Base 
 )

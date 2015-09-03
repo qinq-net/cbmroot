@@ -46,8 +46,8 @@ CbmDileptonAssignMCid.cxx
 )
 
 
-set(LINKDEF DileptonLinkDef.h)
-Set(LIBRARY_NAME Dilept)
+set(LINKDEF CbmDileptonLinkDef.h)
+Set(LIBRARY_NAME CbmDilept)
 Set(DEPENDENCIES
     KF CbmBase CbmData Base 
 )

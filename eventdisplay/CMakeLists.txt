@@ -33,7 +33,7 @@ CbmEvDisTracks.cxx
 set(LINKDEF  CbmDisplayLinkDef.h)
 Set(LIBRARY_NAME CbmDisplay)
 Set(DEPENDENCIES
-    Trd CbmData EventDisplay Base 
+    CbmTrd CbmData EventDisplay Base 
 )
 
 GENERATE_LIBRARY()

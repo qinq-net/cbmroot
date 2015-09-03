@@ -142,7 +142,7 @@ set(LINKDEF L1LinkDef.h)
 Set(LIBRARY_NAME L1)
 Set(DEPENDENCIES
     #Rich 
-    KF Trd Sts CbmBase CbmData Base boost_regex
+    KF CbmTrd CbmSts CbmBase CbmData Base boost_regex
 )
 
 GENERATE_LIBRARY()

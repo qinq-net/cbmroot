@@ -71,10 +71,10 @@ If (Boost_FOUND)
   set(DEFINITIONS BOOST_FOUND)
 EndIf (Boost_FOUND)
 
-set(LINKDEF ClusteringLinkDef.h)
-Set(LIBRARY_NAME Clustering)
+set(LINKDEF CbmClusteringLinkDef.h)
+Set(LIBRARY_NAME CbmClustering)
 Set(DEPENDENCIES
-    Much Mvd CbmBase CbmData Base 
+    CbmMuch CbmMvd CbmBase CbmData Base 
 )
 
 GENERATE_LIBRARY()

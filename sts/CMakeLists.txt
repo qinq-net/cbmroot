@@ -3,7 +3,7 @@
 
 
 # -----   Specify library name   --------------------------
-Set(LIBRARY_NAME Sts)
+Set(LIBRARY_NAME CbmSts)
 # ---------------------------------------------------------
 
 
@@ -108,7 +108,7 @@ ${Boost_LIBRARY_DIRS}
 
 # -----   Specify library dependences   -------------------
 Set(DEPENDENCIES
-    Passive Run CbmBase CbmData Base 
+    CbmPassive CbmRun CbmBase CbmData Base 
 )
 # ---------------------------------------------------------
 

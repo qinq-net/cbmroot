@@ -71,8 +71,8 @@ CbmEcalDigi.cxx CbmEcalPrepare.cxx CbmEcalAnalysisCalib.cxx
 CbmEcalInf.cxx
 )
 
-set(LINKDEF EcalLinkDef.h)
-Set(LIBRARY_NAME Ecal)
+set(LINKDEF CbmEcalLinkDef.h)
+Set(LIBRARY_NAME CbmEcal)
 Set(DEPENDENCIES
     #KF ????
     CbmBase CbmData Base MLP ASImage Minuit2

@@ -157,10 +157,10 @@ ENDIF (SSE_FOUND)
 ADD_DEFINITIONS(-DDO_TPCCATRACKER_EFF_PERFORMANCE -DNonhomogeneousField -DCBM -DUSE_TIMERS)
 
 
-Set(LINKDEF AnalysisLinkDef.h)
-Set(LIBRARY_NAME Analysis)
+Set(LINKDEF CbmAnalysisLinkDef.h)
+Set(LIBRARY_NAME CbmAnalysis)
 Set(DEPENDENCIES
-    Littrack KF L1 Much Rich Sts CbmBase CbmData CbmGenerators Base Vc.a)
+    Littrack KF L1 CbmMuch CbmRich CbmSts CbmBase CbmData CbmGenerators Base Vc.a)
 Set(DEFINITIONS -DDO_TPCCATRACKER_EFF_PERFORMANCE -DNonhomogeneousField -DCBM -DUSE_TIMERS)
 
 GENERATE_LIBRARY()

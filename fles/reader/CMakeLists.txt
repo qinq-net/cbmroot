@@ -59,7 +59,7 @@ Else(BUILD_BEAMTIME)
 #    get4/CbmGet4EventMonitor.cxx
   )
   Set(FLES_TOF_BEAM_DEPEND
-    TofUnpack
+    CbmTofUnpack
   )
 EndIf(BUILD_BEAMTIME)
 
@@ -105,10 +105,10 @@ If(NOT OldFairSource)
   Set(DEFINITIONS ${DEFINITIONS} _NewFairSource)
 EndIf()
 
-Set(LINKDEF  FlibReaderLinkDef.h )
+Set(LINKDEF  CbmFlibReaderLinkDef.h )
 Set(LIBRARY_NAME CbmFlibReader)
 Set(DEPENDENCIES
-    Eve Base CbmBase Rich fles_ipc flib_dpb spadicMessage trbnet ${FLES_TOF_BEAM_DEPEND}
+    CbmBase CbmRich fles_ipc flib_dpb spadicMessage trbnet ${FLES_TOF_BEAM_DEPEND} Eve Base 
 )
 
 GENERATE_LIBRARY()

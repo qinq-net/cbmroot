@@ -193,8 +193,8 @@ else(BUILD_BEAMTIME)
 EndIf(BUILD_BEAMTIME)
 
 
-Set(LINKDEF TofUnpackLinkDef.h)
-Set(LIBRARY_NAME TofUnpack)
+Set(LINKDEF CbmTofUnpackLinkDef.h)
+Set(LIBRARY_NAME CbmTofUnpack)
 Set(DEPENDENCIES
     Base ParBase 
 #    FairTools MbsAPI 

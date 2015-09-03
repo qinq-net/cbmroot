@@ -50,7 +50,7 @@ Else(BUILD_BEAMTIME)
     TofTests/CbmTofAnaTestbeam.cxx 
   )
   Set(TOF_BEAM_DEPEND
-    TofUnpack
+    CbmTofUnpack
   )
 EndIf(BUILD_BEAMTIME)
 
@@ -86,8 +86,8 @@ TofQA/CbmTofHitFinderQa.cxx
   ${TOF_BEAM_SOURCES}
 )
 
-set(LINKDEF TofLinkDef.h)
-Set(LIBRARY_NAME Tof)
+set(LINKDEF CbmTofLinkDef.h)
+Set(LIBRARY_NAME CbmTof)
 Set(DEPENDENCIES
     CbmBase CbmData Base 
     ${TOF_BEAM_DEPEND}

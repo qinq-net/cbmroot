@@ -181,9 +181,9 @@ ENDIF (SSE_FOUND)
 # END SSE
 
 If(TBB_FOUND)
-  set(LINKDEF  RichLinkDef_tbb.h)
+  set(LINKDEF  CbmRichLinkDef_tbb.h)
 Else(TBB_FOUND)
-  set(LINKDEF  RichLinkDef.h)
+  set(LINKDEF  CbmRichLinkDef.h)
 EndIf(TBB_FOUND)
 
 If(NOT OldFairSource)
@@ -191,7 +191,7 @@ If(NOT OldFairSource)
   Set(DEFINITIONS _NewFairSource)
 EndIf()
 
-Set(LIBRARY_NAME Rich)
+Set(LIBRARY_NAME CbmRich)
 Set(DEPENDENCIES
     # KF L1 ????
     KF L1 CbmBase CbmData Base MLP boost_regex Gdml)

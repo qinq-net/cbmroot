@@ -38,8 +38,8 @@ CbmFieldMapDistorted.cxx
 CbmFieldMapSym1.cxx     
 )
 
-set(LINKDEF FieldLinkDef.h)
-Set(LIBRARY_NAME Field)
+set(LINKDEF CbmFieldLinkDef.h)
+Set(LIBRARY_NAME CbmField)
 Set(DEPENDENCIES
     Base 
 )

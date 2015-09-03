@@ -46,10 +46,10 @@ CbmMixedEventsProducer.cxx
 CbmEbefluctPYR.cxx
 )
 
-set(LINKDEF HadronLinkDef.h)
-Set(LIBRARY_NAME Hadron)
+set(LINKDEF CbmHadronLinkDef.h)
+Set(LIBRARY_NAME CbmHadron)
 Set(DEPENDENCIES
-    KF CbmBase CbmData Base Tof
+    KF CbmTof CbmBase CbmData Base 
 )
 
 GENERATE_LIBRARY()

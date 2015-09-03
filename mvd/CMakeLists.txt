@@ -103,8 +103,8 @@ old/MyG4UniversalFluctuationForSi.cxx
 #CbmMvdMatchTracks.cxx 
 
 
-set(LINKDEF MvdLinkDef.h)
-Set(LIBRARY_NAME Mvd)
+set(LINKDEF CbmMvdLinkDef.h)
+Set(LIBRARY_NAME CbmMvd)
 Set(DEPENDENCIES
     CbmBase CbmData Base G4clhep
    # CbmBase CbmData Base G4clhep KF Littrack

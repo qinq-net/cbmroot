@@ -48,10 +48,10 @@ CbmTofMergerIdeal.cxx
 )
 
 
-set(LINKDEF GlobalLinkDef.h)
-Set(LIBRARY_NAME Global)
+set(LINKDEF CbmGlobalLinkDef.h)
+Set(LIBRARY_NAME CbmGlobal)
 Set(DEPENDENCIES
-    KF Ecal
+    KF CbmEcal
     CbmBase CbmData Base 
 )
 
