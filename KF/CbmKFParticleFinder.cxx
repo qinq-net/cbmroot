@@ -122,7 +122,7 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
   
   vector<L1FieldRegion> vField;
   fitter.Fit(vRTracks, pdg);
-  fitter.GetChiToVertex(vRTracks, vField, vChiToPrimVtx, kfVertex, -3);
+  fitter.GetChiToVertex(vRTracks, vField, vChiToPrimVtx, kfVertex, 3);
   vector<KFFieldVector> vFieldVector(ntracks);
   for(Int_t iTr=0; iTr<ntracks; iTr++)
   {
@@ -166,19 +166,6 @@ void CbmKFParticleFinder::Exec(Option_t* opt)
     else if(fPVFindMode == 2)
       fTopoReconstructor->ReconstructPrimVertex(0);
     
-  //   {
-  //     KFPVertex primVtx_tmp;
-  //     primVtx_tmp.SetXYZ(kfVertex.GetRefX(), kfVertex.GetRefY(), kfVertex.GetRefZ());
-  //     primVtx_tmp.SetCovarianceMatrix( kfVertex.GetCovMatrix()[0], kfVertex.GetCovMatrix()[1], 
-  //                                      kfVertex.GetCovMatrix()[2], kfVertex.GetCovMatrix()[3], 
-  //                                      kfVertex.GetCovMatrix()[4], kfVertex.GetCovMatrix()[5] );
-  //     primVtx_tmp.SetNContributors( kfVertex.GetRefNTracks() );
-  //     primVtx_tmp.SetChi2( kfVertex.GetRefChi2() );
-  // 
-  //     vector<short int> pvTrackIds;
-  //     KFVertex pv(primVtx_tmp);
-  //     fTopoReconstructor->AddPV(pv, pvTrackIds);
-  //   }
 
     fTopoReconstructor->SortTracks();
     fTopoReconstructor->ReconstructParticles();
@@ -271,9 +258,9 @@ void CbmKFParticleFinder::FillKFPTrackVector(KFPTrackVector* tracks, const vecto
   for(Int_t iTr=0; iTr<ntracks; iTr++)
   {
     const FairTrackParam* parameters = vRTracks[iTr].GetParamFirst();
-    float par[6] = {0.f};
+    double par[6] = {0.f};
     
-    float tx = parameters->GetTx(), ty = parameters->GetTy(), qp = parameters->GetQp();
+    double tx = parameters->GetTx(), ty = parameters->GetTy(), qp = parameters->GetQp();
   
     Int_t q = 0;
     if(qp>0.f)
@@ -283,12 +270,12 @@ void CbmKFParticleFinder::FillKFPTrackVector(KFPTrackVector* tracks, const vecto
     if( TMath::Abs(pdg[iTr]) == 1000020030 || TMath::Abs(pdg[iTr]) == 1000020040 ) q *= 2;
       
     
-    float c2 = 1.f/(1.f + tx*tx + ty*ty);
-    float pq = 1.f/qp * TMath::Abs(q);
-    float p2 = pq*pq;
-    float pz = sqrt(p2*c2);
-    float px = tx*pz;
-    float py = ty*pz;
+    double c2 = 1.f/(1.f + tx*tx + ty*ty);
+    double pq = 1.f/qp * TMath::Abs(q);
+    double p2 = pq*pq;
+    double pz = sqrt(p2*c2);
+    double px = tx*pz;
+    double py = ty*pz;
       
     par[0] = parameters->GetX();
     par[1] = parameters->GetY();
@@ -298,26 +285,26 @@ void CbmKFParticleFinder::FillKFPTrackVector(KFPTrackVector* tracks, const vecto
     par[5] = pz;
 
     //calculate covariance matrix
-    float t = sqrt(1.f + tx*tx + ty*ty);
-    float t3 = t*t*t;
-    float dpxdtx = q/qp*(1.f+ty*ty)/t3;
-    float dpxdty = -q/qp*tx*ty/t3;
-    float dpxdqp = -q/(qp*qp)*tx/t;
-    float dpydtx = -q/qp*tx*ty/t3;
-    float dpydty = q/qp*(1.f+tx*tx)/t3;
-    float dpydqp = -q/(qp*qp)*ty/t;
-    float dpzdtx = -q/qp*tx/t3;
-    float dpzdty = -q/qp*ty/t3;
-    float dpzdqp = -q/(qp*qp*t3);
+    double t = sqrt(1.f + tx*tx + ty*ty);
+    double t3 = t*t*t;
+    double dpxdtx = q/qp*(1.f+ty*ty)/t3;
+    double dpxdty = -q/qp*tx*ty/t3;
+    double dpxdqp = -q/(qp*qp)*tx/t;
+    double dpydtx = -q/qp*tx*ty/t3;
+    double dpydty = q/qp*(1.f+tx*tx)/t3;
+    double dpydqp = -q/(qp*qp)*ty/t;
+    double dpzdtx = -q/qp*tx/t3;
+    double dpzdty = -q/qp*ty/t3;
+    double dpzdqp = -q/(qp*qp*t3);
     
-    float F[6][5] = { {1.f, 0.f, 0.f,    0.f,    0.f},
-                      {0.f, 1.f, 0.f,    0.f,    0.f},
-                      {0.f, 0.f, 0.f,    0.f,    0.f},
-                      {0.f, 0.f, dpxdtx, dpxdty, dpxdqp},
-                      {0.f, 0.f, dpydtx, dpydty, dpydqp},
-                      {0.f, 0.f, dpzdtx, dpzdty, dpzdqp} };
+    double F[6][5] = { {1.f, 0.f, 0.f,    0.f,    0.f},
+                       {0.f, 1.f, 0.f,    0.f,    0.f},
+                       {0.f, 0.f, 0.f,    0.f,    0.f},
+                       {0.f, 0.f, dpxdtx, dpxdty, dpxdqp},
+                       {0.f, 0.f, dpydtx, dpydty, dpydqp},
+                       {0.f, 0.f, dpzdtx, dpzdty, dpzdqp} };
     
-    float VFT[5][6];
+    double VFT[5][6];
     for(int i=0; i<5; i++)
       for(int j=0; j<6; j++)
       {
@@ -328,7 +315,7 @@ void CbmKFParticleFinder::FillKFPTrackVector(KFPTrackVector* tracks, const vecto
         }
       }
     
-    float cov[21];
+    double cov[21];
     for(int i=0, l=0; i<6; i++)
       for(int j=0; j<=i; j++, l++)
       {

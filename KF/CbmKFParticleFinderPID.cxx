@@ -27,7 +27,7 @@ CbmKFParticleFinderPID::CbmKFParticleFinderPID(const char* name, Int_t iVerbose)
   fTrackArray(0), fGlobalTrackArray(0), fTofHitArray(0), fMCTrackArray(0), fTrackMatchArray(0), fTrdTrackArray(0), fRichRingArray(0),
   fMuchTrackArray(0),
   fPIDMode(0), fSisMode(1), fTrdPIDMode(0), fRichPIDMode(0),
-  fMuchMode(1),
+  fMuchMode(0),
   fPID(0)
 {
 }
@@ -92,6 +92,16 @@ InitStatus CbmKFParticleFinderPID::Init()
         //return kERROR;
       }
     }
+    
+    if (fMuchMode > 0)
+    {
+      fMuchTrackArray = (TClonesArray*) ioman->GetObject(fMuchTrackBranchName);
+      if (fMuchTrackArray == 0)
+      {
+        Error("CbmKFParticleFinderPID::Init", "Much track-array not found!");
+        return kERROR;
+      }
+    }
   }
   
   if(fPIDMode==1)
@@ -112,16 +122,6 @@ InitStatus CbmKFParticleFinderPID::Init()
       return kERROR;
     }
   }
-  
-   if (fMuchMode > 0)
-   {
-     fMuchTrackArray = (TClonesArray*) ioman->GetObject(fMuchTrackBranchName);
-     if (fMuchTrackArray == 0)
-     {
-       Error("CbmKFParticleFinderPID::Init", "Much track-array not found!");
-       return kERROR;
-      }
-    }
    
   return kSUCCESS;
 }
@@ -171,26 +171,23 @@ void CbmKFParticleFinderPID::SetMCPID()
       continue;
     }
     CbmMCTrack *cbmMCTrack = (CbmMCTrack*)fMCTrackArray->At(mcTrackId);
-    if(!(TMath::Abs(cbmMCTrack->GetPdgCode()) == 11 || ///electron
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 13 || ///muon
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 211 || ///charged pion (pi meson)
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 321 || ///charged kaon (K+)
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 2212 || ///proton
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 3112 || ///SigmaUpperCase-minus Baryon (E-)
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000010020 || ///deuteron
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000010030 || ///triton
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000020030 || ///Не3
-         TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000020040 ) ) ///
+    if(!(TMath::Abs(cbmMCTrack->GetPdgCode()) == 11 ||
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 13 ||
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 211 ||
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 321 ||
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 2212 ||
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 3112 ||
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000010020 ||
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000010030 ||
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000020030 ||
+         TMath::Abs(cbmMCTrack->GetPdgCode()) == 1000020040 ) )
       continue;
     fPID[iTr] = cbmMCTrack->GetPdgCode();
   }
 }
 
 void CbmKFParticleFinderPID::SetRecoPID()
-{
-  if (NULL == fGlobalTrackArray) { Fatal("KF Particle Finder", "No GlobalTrack array!"); }
-  if (NULL == fTofHitArray) { Fatal("KF Particle Finder", "No TOF hits array!"); }
-  
+{  
   const Double_t m2TOF[7] = { 0.885, 0.245, 0.019479835, 0., 3.49, 7.83, 1.95};
   
   Double_t sP[7][5];
@@ -222,9 +219,7 @@ void CbmKFParticleFinderPID::SetRecoPID()
         sP[iSp][jSp] = sPLocal[iSp][jSp];
   }
 
-  const Int_t PdgHypo[8] = {2212, 321, 211, -11, 1000010020, 1000010030, 1000020030, -13};
-  //2212 - proton, 321 - kaon, 211 - pion, -11 - electron, 1000010020 - deuteron,
-  //1000010030 - triton, 1000020030 - Не3, -13 - muon
+  const Int_t PdgHypo[9] = {2212, 321, 211, -11, 1000010020, 1000010030, 1000020030, -13, -19};
 
   for (Int_t igt = 0; igt < fGlobalTrackArray->GetEntriesFast(); igt++)
   {
@@ -329,37 +324,23 @@ void CbmKFParticleFinderPID::SetRecoPID()
       }
     }
 
-    
-    
-     Bool_t isMuonSts = 0;
-     Bool_t isMuon = 0;
-     if(fMuchMode == 1)
-     {
-       if(cbmStsTrack->GetNofHits() >= 7) isMuonSts = 1;
-       if(fMuchTrackArray)
-       {
-         Int_t muchIndex = globalTrack->GetMuchTrackIndex();
-         if(muchIndex > -1)
-         {
-           CbmMuchTrack* muchTrack = (CbmMuchTrack*)fMuchTrackArray->At(muchIndex);
-           if(muchTrack)
-           {
-             if((muchTrack->GetChiSq()/muchTrack->GetNDF())<1.5 && isMuonSts)
-             {
-               if(fSisMode==0) //SIS-100
-               {
-                 if(muchTrack->GetNofHits()>=17) isMuon=1;
-               }
-               if(fSisMode==1) //SIS-300
-               {
-                 if(muchTrack->GetNofHits()>=17) isMuon=1;
-               }
-             }
-           }
-         }
-       }
-     }
-     
+    int isMuon = 0;
+    if(fMuchTrackArray && fMuchMode > 0)
+    {
+      Int_t muchIndex = globalTrack->GetMuchTrackIndex();
+      if(muchIndex > -1)
+      {
+        CbmMuchTrack* muchTrack = (CbmMuchTrack*)fMuchTrackArray->At(muchIndex);
+        if(muchTrack)
+        {
+          if((muchTrack->GetChiSq()/muchTrack->GetNDF())<1.5 && cbmStsTrack->GetNofHits() >= 7 )
+          {
+            if(muchTrack->GetNofHits()>=14) isMuon=2;
+            if(muchTrack->GetNofHits()>=17) isMuon=1;
+          }
+        }
+      }
+    }
     
     if( p>1.5 )
     {
@@ -370,7 +351,7 @@ void CbmKFParticleFinderPID::SetRecoPID()
     else
       if( isElectronRICH ) isElectron = 1;
     
-    if(fTofHitArray && !isMuon)
+    if(fTofHitArray && isMuon==0)
     {
       Double_t l = globalTrack->GetLength();// l is calculated by global tracking
       if(fSisMode==0) //SIS-100
@@ -413,9 +394,9 @@ void CbmKFParticleFinderPID::SetRecoPID()
       int iPdg=2;
       Double_t dm2min = dm2[2];
     
-      if(!isElectron && !isMuon)
+      if(!isElectron && isMuon==0)
       {
-        if(p>12.) continue;
+//         if(p>12.) continue;
         
         for(int jPDG=0; jPDG<7; jPDG++)
         {
@@ -430,15 +411,13 @@ void CbmKFParticleFinderPID::SetRecoPID()
       }
     }
     
-    if (isElectron)
-    {
+    if(isElectron)
       fPID[stsTrackIndex] = q*PdgHypo[3];
-    }
     
-    if (isMuon)
-    {
+    if(isMuon==1)
       fPID[stsTrackIndex] = q*PdgHypo[7];
-    }
+    if(isMuon==2)
+      fPID[stsTrackIndex] = q*PdgHypo[8];
   }
 }
 
