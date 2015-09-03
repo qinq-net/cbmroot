@@ -30,6 +30,6 @@ Set(HEADERS
   roc/OperList.h
 )
 
-Set(LIBRARY_NAME RocLight)
+Set(LIBRARY_NAME CbmRocLight)
 
 GENERATE_LIBRARY()

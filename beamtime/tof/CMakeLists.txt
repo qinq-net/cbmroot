@@ -188,7 +188,7 @@ If(BUILD_BEAMTIME)
   )
 else(BUILD_BEAMTIME)
   set(ROC_DEPENDENCIES
-      RocLight
+      CbmRocLight
   )
 EndIf(BUILD_BEAMTIME)
 
