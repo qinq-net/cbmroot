@@ -388,14 +388,14 @@ Bool_t CbmStsSensorTypeDssd::Intersect(Double_t xF, Double_t xB,
 	if ( TMath::Abs(fStereo[0]) < 0.001 ) {
 		x = xF;
 		y = fDy - ( xF - xB ) / fTanStereo[1];
-		return IsInside(x, y);
+		return IsInside(x-fDx/2., y-fDy/2.);
 	}
 
 	// --- Maybe the back side has vertical strips?
 	if ( TMath::Abs(fStereo[1]) < 0.001 ) {
 		x = xB;
 		y = fDy - ( xB - xF ) / fTanStereo[0];
-		return IsInside(x, y);
+		return IsInside(x-fDx/2., y-fDy/2.);
 	}
 
 	// --- OK, both sides have stereo angle
