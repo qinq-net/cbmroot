@@ -108,7 +108,7 @@ class CbmTofHitFinderQa : public FairTask {
       TString fsHistoOutFilename;   
          // Position of the TOF wall on Z axis for centering histos with Z
       Double_t fdWallPosZ;
-         // Mapping
+         // Geometric Mapping
       TH2 * fhTrackMapXY;  // Only when creating normalization histos
       TH2 * fhTrackMapXZ;  // Only when creating normalization histos
       TH2 * fhTrackMapYZ;  // Only when creating normalization histos
@@ -134,56 +134,128 @@ class CbmTofHitFinderQa : public FairTask {
          // Nb different MC Points and Tracks in Hit
       TH1 * fhNbPointsInHit;
       TH1 * fhNbTracksInHit;
+         // Mapping of position for hits coming from a single MC Point
+      TH2 * fhHitMapSingPntXY;
+      TH2 * fhHitMapSingPntXZ;
+      TH2 * fhHitMapSingPntYZ;
+      TH2 * fhHitMapSingPntAng;
+      TH2 * fhHitMapSingPntSph;
+         // Mapping of position for hits coming from multiple MC Points
+      TH2 * fhHitMapMultPntXY;
+      TH2 * fhHitMapMultPntXZ;
+      TH2 * fhHitMapMultPntYZ;
+      TH2 * fhHitMapMultPntAng;
+      TH2 * fhHitMapMultPntSph;
+         // Mapping of position for hits coming from a single MC Track
+      TH2 * fhHitMapSingTrkXY;
+      TH2 * fhHitMapSingTrkXZ;
+      TH2 * fhHitMapSingTrkYZ;
+      TH2 * fhHitMapSingTrkAng;
+      TH2 * fhHitMapSingTrkSph;
+         // Mapping of position for hits coming from multiple MC Tracks
+      TH2 * fhHitMapMultTrkXY;
+      TH2 * fhHitMapMultTrkXZ;
+      TH2 * fhHitMapMultTrkYZ;
+      TH2 * fhHitMapMultTrkAng;
+      TH2 * fhHitMapMultTrkSph;
          // Hit Quality for Hits coming from a single MC Point
       TH1 * fhSinglePointHitDeltaX;
       TH1 * fhSinglePointHitDeltaY;
       TH1 * fhSinglePointHitDeltaZ;
       TH1 * fhSinglePointHitDeltaR;
       TH1 * fhSinglePointHitDeltaT;
-         // Hit Quality for Hits coming from a multiple MC Points
+      TH1 * fhSinglePointHitPullX;
+      TH1 * fhSinglePointHitPullY;
+      TH1 * fhSinglePointHitPullZ;
+      TH1 * fhSinglePointHitPullR;
+         // Hit Quality for Hits coming from multiple MC Points
             // To Point closest to Hit
       TH1 * fhMultiPntHitClosestDeltaX;
       TH1 * fhMultiPntHitClosestDeltaY;
       TH1 * fhMultiPntHitClosestDeltaZ;
       TH1 * fhMultiPntHitClosestDeltaR;
       TH1 * fhMultiPntHitClosestDeltaT;
+      TH1 * fhMultiPntHitClosestPullX;
+      TH1 * fhMultiPntHitClosestPullY;
+      TH1 * fhMultiPntHitClosestPullZ;
+      TH1 * fhMultiPntHitClosestPullR;
             // To Point furthest from Hit
       TH1 * fhMultiPntHitFurthestDeltaX;
       TH1 * fhMultiPntHitFurthestDeltaY;
       TH1 * fhMultiPntHitFurthestDeltaZ;
       TH1 * fhMultiPntHitFurthestDeltaR;
       TH1 * fhMultiPntHitFurthestDeltaT;
+      TH1 * fhMultiPntHitFurthestPullX;
+      TH1 * fhMultiPntHitFurthestPullY;
+      TH1 * fhMultiPntHitFurthestPullZ;
+      TH1 * fhMultiPntHitFurthestPullR;
             // To mean Point position
       TH1 * fhMultiPntHitMeanDeltaX;
       TH1 * fhMultiPntHitMeanDeltaY;
       TH1 * fhMultiPntHitMeanDeltaZ;
       TH1 * fhMultiPntHitMeanDeltaR;
       TH1 * fhMultiPntHitMeanDeltaT;
+      TH1 * fhMultiPntHitMeanPullX;
+      TH1 * fhMultiPntHitMeanPullY;
+      TH1 * fhMultiPntHitMeanPullZ;
+      TH1 * fhMultiPntHitMeanPullR;
          // Hit Quality for Hits coming from a single MC Track
       TH1 * fhSingleTrackHitDeltaX;
       TH1 * fhSingleTrackHitDeltaY;
       TH1 * fhSingleTrackHitDeltaZ;
       TH1 * fhSingleTrackHitDeltaR;
       TH1 * fhSingleTrackHitDeltaT;
-         // Hit Quality for Hits coming from a multiple MC Points
+      TH1 * fhSingleTrackHitPullX;
+      TH1 * fhSingleTrackHitPullY;
+      TH1 * fhSingleTrackHitPullZ;
+      TH1 * fhSingleTrackHitPullR;
+         // Hit Quality for Hits coming from multiple MC Tracks
             // To Track closest to Hit
       TH1 * fhMultiTrkHitClosestDeltaX;
       TH1 * fhMultiTrkHitClosestDeltaY;
       TH1 * fhMultiTrkHitClosestDeltaZ;
       TH1 * fhMultiTrkHitClosestDeltaR;
       TH1 * fhMultiTrkHitClosestDeltaT;
+      TH1 * fhMultiTrkHitClosestPullX;
+      TH1 * fhMultiTrkHitClosestPullY;
+      TH1 * fhMultiTrkHitClosestPullZ;
+      TH1 * fhMultiTrkHitClosestPullR;
             // To Track furthest from Hit
       TH1 * fhMultiTrkHitFurthestDeltaX;
       TH1 * fhMultiTrkHitFurthestDeltaY;
       TH1 * fhMultiTrkHitFurthestDeltaZ;
       TH1 * fhMultiTrkHitFurthestDeltaR;
       TH1 * fhMultiTrkHitFurthestDeltaT;
+      TH1 * fhMultiTrkHitFurthestPullX;
+      TH1 * fhMultiTrkHitFurthestPullY;
+      TH1 * fhMultiTrkHitFurthestPullZ;
+      TH1 * fhMultiTrkHitFurthestPullR;
             // To mean Track position
       TH1 * fhMultiTrkHitMeanDeltaX;
       TH1 * fhMultiTrkHitMeanDeltaY;
       TH1 * fhMultiTrkHitMeanDeltaZ;
       TH1 * fhMultiTrkHitMeanDeltaR;
       TH1 * fhMultiTrkHitMeanDeltaT;
+      TH1 * fhMultiTrkHitMeanPullX;
+      TH1 * fhMultiTrkHitMeanPullY;
+      TH1 * fhMultiTrkHitMeanPullZ;
+      TH1 * fhMultiTrkHitMeanPullR;
+      
+         // Physics coord mapping, 1 per particle type
+            // Phase space
+      std::vector<TH2 *> fvhPtmRapGenTrk;
+      std::vector<TH2 *> fvhPtmRapStsPnt;
+      std::vector<TH2 *> fvhPtmRapTofPnt;
+      std::vector<TH2 *> fvhPtmRapTofHit;
+      std::vector<TH2 *> fvhPtmRapTofHitSinglePnt;
+      std::vector<TH2 *> fvhPtmRapTofHitSingleTrk;
+            // PLab
+      std::vector<TH1 *> fvhPlabGenTrk;
+      std::vector<TH1 *> fvhPlabStsPnt;
+      std::vector<TH1 *> fvhPlabTofPnt;
+      std::vector<TH1 *> fvhPlabTofHit;
+      std::vector<TH1 *> fvhPlabTofHitSinglePnt;
+      std::vector<TH1 *> fvhPlabTofHitSingleTrk;
 
       ClassDef(CbmTofHitFinderQa, 1);
 };
