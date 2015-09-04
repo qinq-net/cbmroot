@@ -92,7 +92,7 @@ CbmEcalCluster::CbmEcalCluster(Int_t num, const std::list<CbmEcalCell*>& cluster
   Double_t e;
   Double_t x;
   Double_t y;
-  Double_t r;
+//  Double_t r;
   Int_t i;
 
   fMaxs=maximums.size();

@@ -490,7 +490,7 @@ bool roc::Board::findRocNameByAddress(uint32_t addr, const char*& name)
 
 //----------------------------------------------------------------------------
 
-void roc::Board::printRocAddressMap(std::ostream& os, bool byname)
+void roc::Board::printRocAddressMap(std::ostream& /*os*/, bool byname)
 {
   static boost::format fmt("0x%|08x| : %s");
   if (byname) {
@@ -898,7 +898,8 @@ uint32_t roc::Board::getRocHardwareType()
 
 void roc::Board::clearRocFifo()
 {
-   int rc = operPP(ROC_NX_FIFO_RESET, 1,
+//   int rc = operPP(ROC_NX_FIFO_RESET, 1,
+   operPP(ROC_NX_FIFO_RESET, 1,
                    ROC_NX_FIFO_RESET, 0);
 }
 

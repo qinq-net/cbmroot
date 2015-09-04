@@ -441,7 +441,7 @@ void roc::Message::printData(std::ostream& os, unsigned kind, uint32_t epoch) co
                  snprintf(sysbuf, sizeof(sysbuf), "Packet lost");
                  break;
               case SYSMSG_GET4_EVENT: {
-                    uint32_t dataMes           = getSysMesData();
+//                    uint32_t dataMes           = getSysMesData();
                     uint32_t get4_pattern   = getField(16, 6); //(dataMes>>16) & 0x3f;
                     uint32_t get4_eventType = getBit(22);      //(dataMes>>7)  & 0xfff;
                     uint32_t get4_TS        = getField(23,12); //(dataMes>>6)  & 0x1; 

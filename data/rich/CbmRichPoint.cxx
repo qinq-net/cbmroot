@@ -33,7 +33,7 @@ CbmRichPoint::~CbmRichPoint() { }
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmRichPoint::Print(const Option_t* opt) const {
+void CbmRichPoint::Print(const Option_t* /*opt*/) const {
   cout << "-I- CbmRichPoint: RICH Point for track " << fTrackID 
        << " in detector " << fDetectorID << endl;
   cout << "    Position (" << fX << ", " << fY << ", " << fZ

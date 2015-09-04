@@ -92,7 +92,7 @@ CbmMvdHit::~CbmMvdHit() {}
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmMvdHit::Print(const Option_t* opt) const {
+void CbmMvdHit::Print(const Option_t* /*opt*/) const {
   //cout.precision(10);
   cout << "MvdHit in station " << GetStationNr() << " at (" 
        << GetX() << ", "  << GetY() << ", " 

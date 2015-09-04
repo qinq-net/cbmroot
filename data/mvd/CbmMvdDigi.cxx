@@ -125,7 +125,7 @@ Int_t CbmMvdDigi::GetAdcCharge(Int_t adcDynamic, Int_t adcOffset, Int_t adcBits)
 
    
     Double_t stepSize;
-    Int_t adcMax = adcOffset + adcDynamic;
+//    Int_t adcMax = adcOffset + adcDynamic;
 
     stepSize  = adcDynamic/TMath::Power(2,adcBits);
     adcCharge = int( (fCharge-adcOffset)/stepSize );

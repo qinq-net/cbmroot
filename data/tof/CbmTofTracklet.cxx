@@ -89,7 +89,7 @@ void CbmTofTracklet::GetFairTrackParamLast(){
 }
 
 Double_t CbmTofTracklet::GetMatChi2(Int_t iSm){
-  for (Int_t iHit=0; iHit<fTofHit.size(); iHit++){
+  for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
     //cout << Form(" -v- ind %d, sm %d==%d ?, chi %f ",fTofHit[iHit],iSm,fTofDet[iHit],fMatChi[iHit])<<endl;
     //if(0==fTofDet[iHit]) LOG(FATAL) << " CbmTofTracklet::GetMatChi2 Invalid Detector Type! "<<FairLogger::endl;
     if (iSm == fTofDet[iHit]) return fMatChi[iHit];
@@ -98,7 +98,7 @@ Double_t CbmTofTracklet::GetMatChi2(Int_t iSm){
 }
 
 Int_t CbmTofTracklet::GetFirstInd(Int_t iSm){
-  for (Int_t iHit=0; iHit<fTofHit.size(); iHit++){
+  for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
     //    cout << "     GFI "<< iSm <<", "<<iHit<<", "<< fTofDet[iHit] << endl;
     if (iSm != fTofDet[iHit]) return fTofHit[iHit];
   }
@@ -122,7 +122,7 @@ Double_t CbmTofTracklet::UpdateT0(){ //returns estimated time at R==0
   Double_t dT0=0.;
   Double_t nValidHits=0.;
   if(fTofHit.size()>2) UpdateTt();  // update Tt first
-  for (Int_t iHit=0; iHit<fTofHit.size(); iHit++){
+  for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
     //cout << fpHit[iHit]->ToString()<<endl;
     if( fTofDet[iHit]>0) {  // exlude fake hits
       dT0 += fpHit[iHit]->GetTime() - fTt*fpHit[iHit]->GetR();
@@ -138,9 +138,9 @@ Double_t CbmTofTracklet::UpdateT0(){ //returns estimated time at R==0
 Double_t CbmTofTracklet::UpdateTt(){
   Double_t dTt=0.;
   Int_t iNt=0;
-  for (Int_t iHL=0; iHL<fpHit.size()-1; iHL++){
+  for (UInt_t iHL=0; iHL<fpHit.size()-1; iHL++){
       if( fTofDet[iHL]>0 )                         // exclude faked hits 
-      for (Int_t iHH=iHL+1; iHH<fpHit.size(); iHH++){
+      for (UInt_t iHH=iHL+1; iHH<fpHit.size(); iHH++){
       if( fTofDet[iHH]>0) {                        // exclude faked hits 	      
 	dTt+=(fpHit[iHH]->GetTime()-fpHit[iHL]->GetTime())/(fpHit[iHH]->GetR()-fpHit[iHL]->GetR());
 	iNt++;
@@ -160,7 +160,7 @@ Double_t CbmTofTracklet::GetTdif(Int_t iSmType, CbmTofHit* pHit){
   Double_t dTref=0.;
   Double_t Nref=0;
 
-  for (Int_t iHit=0; iHit<fTofHit.size(); iHit++){
+  for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
     if (iSmType == fTofDet[iHit] || 0 == fTofDet[iHit]) continue;  
     dTref += fpHit[iHit]->GetTime() - fTt*(fpHit[iHit]->GetR()-pHit->GetR());
     Nref++;

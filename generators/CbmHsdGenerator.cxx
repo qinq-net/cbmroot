@@ -93,7 +93,8 @@ Bool_t CbmHsdGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
   // ---> Define event variables to be read from file
   int pid, ntracks=1;
   float ppx=0., ppy=0., ppz=0., pp0=0., m = 0.;
-  int dummy1 = 0, dummy2 = 0, dummy3 = 0, dummy4 = 0;
+//  int dummy1 = 0, dummy2 = 0, dummy3 = 0, dummy4 = 0;
+  int dummy2 = 0, dummy3 = 0, dummy4 = 0;
   
   // ---> Read and check first event header line from input file
   char read[114];

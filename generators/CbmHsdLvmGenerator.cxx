@@ -135,7 +135,7 @@ Bool_t CbmHsdLvmGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
 
   // ---> Define event variables to be read from file
   float m0, px0, py0, pz0, e0, t1, t2, b;
-  char read[100];
+//  char read[100];
 
 
   // ---> Read one line from input file. Check for eof.

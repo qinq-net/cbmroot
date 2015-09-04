@@ -88,7 +88,7 @@ Bool_t CbmShieldGenerator::ReadEvent(FairPrimaryGenerator* primGen) {
 
 
   // Define track variables to be read from file
-  Int_t    iPid    = 0;
+//  Int_t    iPid    = 0;
   Int_t    iMass   = 0;
   Int_t    iCharge = 0;
   Double_t px      = 0.;
@@ -188,8 +188,10 @@ Int_t CbmShieldGenerator::RegisterIons() {
 
   cout<<" CbmShieldGenerator::RegisterIons() start "<<endl;
   Int_t nIons = 0;
-  Int_t eventId, nTracks, iPid, iMass, iCharge;
-  Double_t pBeam, bx, by, px, py, pz;
+//  Int_t eventId, nTracks, iPid, iMass, iCharge;
+//  Double_t pBeam, bx, by, px, py, pz;
+  Int_t eventId, nTracks, iMass, iCharge;
+  Double_t bx, by, px, py, pz;
   Double_t b;           //SELIM
   Double_t etot = 0.;   //SELIM
   Int_t pdgType = 0;    //SELIM

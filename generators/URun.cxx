@@ -82,7 +82,7 @@ URun::~URun()
 
 
 //--------------------------------------------------------------------
-void URun::Print(Option_t* option)
+void URun::Print(Option_t* /*option*/)
 {
   // Print all data members to the standard output
   cout << "--------------------------------------------------" << endl

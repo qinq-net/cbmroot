@@ -48,7 +48,7 @@ CbmEcalHitFastMC::~CbmEcalHitFastMC(){}
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmEcalHitFastMC::Print(const Option_t* opt) const {
+void CbmEcalHitFastMC::Print(const Option_t* /*opt*/) const {
   printf("ECAL hit: (x,y)=(%f.1,%f.1) cm, Amp=%f GeV\n",
 	 fX,fY,fAmplitude);
 }

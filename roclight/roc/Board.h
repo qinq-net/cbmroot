@@ -232,7 +232,7 @@ op[04](3,0x00010020 ROC_I2C1_ERROR             ) -> 0x00000000          0 ok
           * when any amount of data will be flushed.
           * \param tmout timeout value in sec.
           */
-         virtual void setFlushTimeout(double tmout) {}
+         virtual void setFlushTimeout(double /*tmout*/) {}
 
          //! General operate, arbitrary list of get/put accesses to ROC control space.
          /*!
@@ -326,7 +326,7 @@ op[04](3,0x00010020 ROC_I2C1_ERROR             ) -> 0x00000000          0 ok
 
          int uploadStopDaqCmdList();
 
-         virtual int invokeDLM(unsigned num, double tmout = 0.) { return 0; }
+         virtual int invokeDLM(unsigned /*num*/, double /*tmout = 0.*/) { return 0; }
 
          void clearRocFifo();
          void restartRoc();
@@ -410,7 +410,7 @@ op[04](3,0x00010020 ROC_I2C1_ERROR             ) -> 0x00000000          0 ok
          *     >0 - perform calibration periodically
          *     <0 - disable calibration
          */
-         virtual bool enableCalibration(double period = 10., double calibr = 0.1, int cnt = -1) { return false; }
+         virtual bool enableCalibration(double /*period = 10.*/, double /*calibr = 0.1*/, int /*cnt = -1*/) { return false; }
 
          virtual bool disableCalibration() { return enableCalibration(-1., -1., 0); }
 

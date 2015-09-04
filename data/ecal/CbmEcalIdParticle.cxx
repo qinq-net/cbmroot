@@ -98,7 +98,7 @@ CbmEcalIdParticle::~CbmEcalIdParticle()
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmEcalIdParticle::Print(const Option_t* opt) const {
+void CbmEcalIdParticle::Print(const Option_t* /*opt*/) const {
   printf("-I- CbmEcalIdParticle: ECAL id particle :(track, E, PSE, Shape) = (%d,%f,%f,%f)\n", fTrack, fE, fPSE, fShape);
   printf("                                        :(x, y) = (%f,%f)\n", fX, fY);
 }

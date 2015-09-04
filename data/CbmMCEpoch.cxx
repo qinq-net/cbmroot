@@ -160,7 +160,7 @@ Bool_t CbmMCEpoch::IsEmpty() {
 
 
 // -----   Print epoch info   ------------------------------------------------
-void CbmMCEpoch::Print(Option_t* opt) const { 
+void CbmMCEpoch::Print(Option_t* /*opt*/) const { 
 
   cout << "-I- " << GetName() << " Start time " << fStartTime << ", Points: ";
   TString sysName;

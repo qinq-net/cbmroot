@@ -32,7 +32,7 @@ CbmEcalPoint::~CbmEcalPoint() { }
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmEcalPoint::Print(const Option_t* opt) const {
+void CbmEcalPoint::Print(const Option_t* /*opt*/) const {
   cout << "-I- CbmEcalPoint: ECAL point for track " << fTrackID 
        << " in detector " << fDetectorID << endl;
   cout << "    Position (" << fX << ", " << fY << ", " << fZ

@@ -81,7 +81,7 @@ CbmPsdv1::~CbmPsdv1() {
 
 
 // -----   Public method ProcessHits  --------------------------------------
-Bool_t  CbmPsdv1::ProcessHits(FairVolume* vol)
+Bool_t  CbmPsdv1::ProcessHits(FairVolume* /*vol*/)
 {
   //  cout<<" CbmPsdv1::ProcessHits in "<<vol->GetName()<<endl;
   if (TMath::Abs(gMC->TrackCharge()) <= 0) return kFALSE;
@@ -197,9 +197,9 @@ void CbmPsdv1::ConstructGeometry() {
   //-----------List of Tracking Media--------------
   
   TGeoMedium *med1 = new TGeoMedium("AIR",      1,15,0,1,0.19,0.25,-1,-1,0.1000000E-02,-1);
-  TGeoMedium *med2 = new TGeoMedium("VACUUM",   2,16,0,1,0.19,0.25,-1,-1,0.1000000E-02,-1);
+//  TGeoMedium *med2 = new TGeoMedium("VACUUM",   2,16,0,1,0.19,0.25,-1,-1,0.1000000E-02,-1);
   TGeoMedium *med9 = new TGeoMedium("IRON",     9,10,0,1,0.19,1,-1,-1,0.1,-1);
-  TGeoMedium *med10 = new TGeoMedium("HE_GAS", 10,24,0,1,0.19,0.25,-1,-1,0.1000000E-02,-1);
+//  TGeoMedium *med10 = new TGeoMedium("HE_GAS", 10,24,0,1,0.19,0.25,-1,-1,0.1000000E-02,-1);
   TGeoMedium *med11 = new TGeoMedium("PLASTIC",11,25,1,0,0,1,-1,-1,0.1000000E-02,-1);
   TGeoMedium *med24 = new TGeoMedium("LEAD",   24,13,0,0,0,1,-1,-1,0.1000000E-02,-1);
   TGeoMedium *med27 = new TGeoMedium("PLASTIC",27,25,0,1,0.19,1,-1,-1,0.1000000E-02,-1);
@@ -208,10 +208,11 @@ void CbmPsdv1::ConstructGeometry() {
  
   //-----------List of Rotation matrices--------------
   
-  TGeoMaterial *material = 0;
-  TGeoMedium   *medium   = 0;
+//  TGeoMaterial *material = 0;
+//  TGeoMedium   *medium   = 0;
   Float_t *buf = 0;
   
+/*
   TGeoVolume *VETO = gGeoManager->MakeBox("VETO",med1, 70, 70, 62.4);
   TGeoVolume *VHLL = gGeoManager->MakeBox("VHLL",med1,10,10,62.4);//hole
   
@@ -226,6 +227,22 @@ void CbmPsdv1::ConstructGeometry() {
   TGeoVolume *VRYL = gGeoManager->MakeBox("VRYL",med27,0.01,8.6,0.22);
   TGeoVolume *VRAL = gGeoManager->MakeBox("VRAL",med27,0.09,8.6,0.01);
   TGeoVolume *VRSL = gGeoManager->MakeBox("VRSL",med27,0.09,8.6,0.2);
+*/
+
+  TGeoVolume *VETO = gGeoManager->MakeBox("VETO",med1, 70, 70, 62.4);
+  gGeoManager->MakeBox("VHLL",med1,10,10,62.4);//hole
+  
+  //Large modules
+  gGeoManager->MakeBox("VMDL",med9,10,10,62.4);
+  gGeoManager->MakeBox("VFEL",med9,9.9,9.85,1);
+  gGeoManager->MakeBox("VPBL",med24,9.9,9.85,0.8);
+  gGeoManager->MakeBox("VTYL",med32,9.9,9.85,0.22);
+  TGeoVolume *VSCL = gGeoManager->MakeBox("VSCL",med11,9.88,9.83,0.2);
+  gGeoManager->MakeBox("VRFL",med27,0.1,8.6,1);
+  gGeoManager->MakeBox("VRPL",med27,0.1,8.6,0.8);
+  gGeoManager->MakeBox("VRYL",med27,0.01,8.6,0.22);
+  gGeoManager->MakeBox("VRAL",med27,0.09,8.6,0.01);
+  gGeoManager->MakeBox("VRSL",med27,0.09,8.6,0.2);
  
   
   Float_t xPSD = fXshift;

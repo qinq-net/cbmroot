@@ -83,7 +83,7 @@ Int_t CbmTofDetectorId_v12b::GetCell(const Int_t detectorId)
 
 //-----------------------------------------------------------
 
-Int_t CbmTofDetectorId_v12b::GetRegion(const Int_t detectorId)
+Int_t CbmTofDetectorId_v12b::GetRegion(const Int_t /*detectorId*/)
 {
   return -1;
 }

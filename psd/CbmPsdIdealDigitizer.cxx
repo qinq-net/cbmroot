@@ -77,7 +77,7 @@ InitStatus CbmPsdIdealDigitizer::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmPsdIdealDigitizer::Exec(Option_t* opt) {
+void CbmPsdIdealDigitizer::Exec(Option_t* /*opt*/) {
 
   cout<<" CbmPsdIdealDigitizer::Exec begin "<<endl;
   // Reset output array
@@ -88,7 +88,7 @@ void CbmPsdIdealDigitizer::Exec(Option_t* opt) {
   CbmPsdPoint* point = NULL;
   Int_t modID   = -1;        // module ID
   Int_t scinID = -1;        // #sciillator
-  Double_t x, y, z;         // Position
+//  Double_t x, y, z;         // Position
  
  //const Int_t NB_PSD_MODS = 45;//marina: if we have mod #45 with small hole
   //const Int_t NB_PSD_MODS = 100;

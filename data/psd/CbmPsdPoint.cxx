@@ -39,7 +39,7 @@ CbmPsdPoint::~CbmPsdPoint() { }
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmPsdPoint::Print(const Option_t* opt) const {
+void CbmPsdPoint::Print(const Option_t* /*opt*/) const {
   cout << "-I- CbmPsdPoint: ECAL point for track " << fTrackID 
        << " in detector " << fDetectorID << endl;
   cout << "    Position (" << fX << ", " << fY << ", " << fZ

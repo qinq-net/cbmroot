@@ -75,7 +75,7 @@ CbmMuchPoint::~CbmMuchPoint() { }
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmMuchPoint::Print(const Option_t* opt) const {
+void CbmMuchPoint::Print(const Option_t* /*opt*/) const {
   cout << "-I- CbmMuchPoint: MUCH Point for track " << fTrackID
        << " in detector " << fDetectorID << endl;
   cout << "    Position (" << fX << ", " << fY << ", " << fZ

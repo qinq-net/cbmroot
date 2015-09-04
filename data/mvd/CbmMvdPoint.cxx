@@ -68,7 +68,7 @@ CbmMvdPoint::~CbmMvdPoint() { }
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmMvdPoint::Print(const Option_t* opt) const {
+void CbmMvdPoint::Print(const Option_t* /*opt*/) const {
   cout << "-I- CbmMvdPoint: MVD Point for track " << fTrackID 
        << " in station " << GetStationNr() << endl;
   cout << "    Position (" << fX << ", " << fY << ", " << fZ

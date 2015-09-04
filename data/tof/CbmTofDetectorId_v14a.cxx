@@ -74,7 +74,7 @@ Int_t CbmTofDetectorId_v14a::GetSide(const Int_t detectorId)
    return (( detectorId >> shiftarray[4] ) & maskarray[4] );
 }
 
-Int_t CbmTofDetectorId_v14a::GetGap(const Int_t detectorId)
+Int_t CbmTofDetectorId_v14a::GetGap(const Int_t /*detectorId*/)
 {
   return -1; 
 }
@@ -93,7 +93,7 @@ Int_t CbmTofDetectorId_v14a::GetStrip(const Int_t detectorId)
 
 //-----------------------------------------------------------
 
-Int_t CbmTofDetectorId_v14a::GetRegion(const Int_t detectorId)
+Int_t CbmTofDetectorId_v14a::GetRegion(const Int_t /*detectorId*/)
 {
   return -1;
 }

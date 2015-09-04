@@ -57,9 +57,9 @@ CbmTrdDigi::CbmTrdDigi(
     fCharge(charge),
     fChargeTR(-1.),
     fTime(time),
-    fTriggerType(-1),
-    fInfoType(-1),
-    fStopType(-1),
+    fTriggerType(triggerType),
+    fInfoType(infoType),
+    fStopType(stopType),
     fBufferOverflowCount(-1), 
     fNrSamples(-1),
     fSamples()

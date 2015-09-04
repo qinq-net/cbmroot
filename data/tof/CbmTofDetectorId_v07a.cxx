@@ -69,7 +69,7 @@ Int_t CbmTofDetectorId_v07a::GetSModule(const Int_t detectorId)
 
 //-----------------------------------------------------------
 
-Int_t CbmTofDetectorId_v07a::GetCounter(const Int_t detectorId)
+Int_t CbmTofDetectorId_v07a::GetCounter(const Int_t /*detectorId*/)
 {
   return -1;
 }
@@ -90,7 +90,7 @@ Int_t CbmTofDetectorId_v07a::GetCell(const Int_t detectorId)
 
 //-----------------------------------------------------------
 
-Int_t CbmTofDetectorId_v07a::GetRegion(const Int_t detectorId)
+Int_t CbmTofDetectorId_v07a::GetRegion(const Int_t /*detectorId*/)
 {
    return -1;
 }

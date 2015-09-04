@@ -216,7 +216,7 @@ const UParticle& UParticle::operator = (const TParticle &right)
 
 
 //--------------------------------------------------------------------
-const Bool_t UParticle::operator == (const UParticle& right) const
+Bool_t UParticle::operator == (const UParticle& right) const
 {
   // If equal operator
   return (
@@ -253,7 +253,7 @@ const Bool_t UParticle::operator == (const UParticle& right) const
 
 
 //--------------------------------------------------------------------
-void UParticle::Print(Option_t* option)
+void UParticle::Print(Option_t* /*option*/)
 {
   // Print the data members to the standard output
   cout << "------------------------------------------------" << endl

@@ -26,7 +26,7 @@ Int_t checked_index_max(Int_t suggested_index,Int_t array_size)
     return (suggested_index-5);  
 }
 
-CbmBsField::CbmBsField(const char* pBsName, Int_t  symType) 
+CbmBsField::CbmBsField(const char* pBsName, Int_t /*symType*/) 
   : CbmFieldMap(),
     NDIM(0), 
     LL1(0), 

@@ -29,7 +29,7 @@ class CbmMvdHitMatch: public CbmMatch
   /** Constructor with all parameters **/
   CbmMvdHitMatch(Double_t weight, Int_t index, Int_t entry = -1, Int_t file = -1);
 
-  CbmMvdHitMatch(Int_t par1, Int_t par2, Int_t par3, Int_t par4, Int_t par5) 
+  CbmMvdHitMatch(Int_t /*par1*/, Int_t /*par2*/, Int_t /*par3*/, Int_t /*par4*/, Int_t /*par5*/) 
    : CbmMatch(),
      fFileNumber(-1),
      fIndex(-1),

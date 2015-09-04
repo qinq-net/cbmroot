@@ -48,7 +48,7 @@ CbmTrdPoint::~CbmTrdPoint() { }
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmTrdPoint::Print(const Option_t* opt) const {
+void CbmTrdPoint::Print(const Option_t* /*opt*/) const {
   cout << "-I- CbmTrdPoint: TRD point for track " << fTrackID 
        << " in detector " << fDetectorID << endl;
   cout << "    Position In (" << fX << ", " << fY << ", " << fZ

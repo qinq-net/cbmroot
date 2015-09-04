@@ -96,7 +96,7 @@ InitStatus CbmPsdHitProducer::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmPsdHitProducer::Exec(Option_t* opt) {
+void CbmPsdHitProducer::Exec(Option_t* /*opt*/) {
 
     cout<<" CbmPsdHitProducer::Exec(Option_t* opt) "<<endl;
     fhModXNewEn->Print();
@@ -113,7 +113,7 @@ void CbmPsdHitProducer::Exec(Option_t* opt) {
     const Int_t NB_PSD_MODS = 48; //with 4 central mods
     //const Int_t NB_PSD_MODS = 60; //with central mods hole6cm
     //const Int_t NB_PSD_MODS = 176; //with mod10cm
-    const Int_t NB_PSD_SECT = 10;
+//    const Int_t NB_PSD_SECT = 10;
 
     //Double_t edep[100];                                   //SELIM: 49 modules, including central & corner modules (rejected in analysis/flow/eventPlane.cxx)
     Double_t edep[NB_PSD_MODS];//marina

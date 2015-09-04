@@ -80,15 +80,15 @@ CbmPsdWoutv1_for44mods_sub1::~CbmPsdWoutv1_for44mods_sub1() {
 
 
 // -----   Public method ProcessHits  --------------------------------------
-Bool_t  CbmPsdWoutv1_for44mods_sub1::ProcessHits(FairVolume* vol)
+Bool_t  CbmPsdWoutv1_for44mods_sub1::ProcessHits(FairVolume* /*vol*/)
 {
   //  cout<<" CbmPsdWoutv1_for44mods_sub1::ProcessHits in "<<vol->GetName()<<endl;
   //if (TMath::Abs(gMC->TrackCharge()) <= 0) return kFALSE;
 
   TVector3 position;
-  Int_t pdg;
-    Int_t copyNo,copyNoWOUT,copyNoVHLE;
-    Int_t iCell, iNumm ;
+//  Int_t pdg;
+//    Int_t copyNo,copyNoWOUT,copyNoVHLE;
+//    Int_t iCell, iNumm ;
   // Set parameters at entrance of volume. Reset ELoss.
   //if(gMC->VolId("VHLE") == gMC->CurrentVolID(copyNoVHLE)) return false;
   //if(gMC->VolId("WOUT") == gMC->CurrentVolID(copyNoWOUT)) {
@@ -116,7 +116,7 @@ Bool_t  CbmPsdWoutv1_for44mods_sub1::ProcessHits(FairVolume* vol)
     fVolumeID=1;
     fModuleID=1;
 
-    pdg = gMC->TrackPid();
+//    pdg = gMC->TrackPid();
       CbmPsdPoint *fPoint =  AddHit(fTrackID, fVolumeID, TVector3(fPos.X(),  fPos.Y(),  fPos.Z()),
 				    TVector3(fMom.Px(), fMom.Py(), fMom.Pz()),fTime, fLength,fEloss);
       fPoint->SetModuleID(fModuleID);
@@ -219,7 +219,7 @@ void CbmPsdWoutv1_for44mods_sub1::ConstructGeometry() {
   TGeoMedium *med1 = new TGeoMedium("AIR",      1,15,0,1,0.19,0.25,-1,-1,0.1000000E-02,-1);
   TGeoMedium *med2 = new TGeoMedium("VACUUM",   2,16,0,1,0.19,0.25,-1,-1,0.1000000E-02,-1);
   TGeoMedium *med9 = new TGeoMedium("IRON",     9,10,0,1,0.19,1,-1,-1,0.1,-1);
-  TGeoMedium *med10 = new TGeoMedium("HE_GAS", 10,24,0,1,0.19,0.25,-1,-1,0.1000000E-02,-1);
+//  TGeoMedium *med10 = new TGeoMedium("HE_GAS", 10,24,0,1,0.19,0.25,-1,-1,0.1000000E-02,-1);
   TGeoMedium *med11 = new TGeoMedium("PLASTIC",11,25,1,0,0,1,-1,-1,0.1000000E-02,-1);
   TGeoMedium *med24 = new TGeoMedium("LEAD",   24,13,0,0,0,1,-1,-1,0.1000000E-02,-1);
   TGeoMedium *med27 = new TGeoMedium("PLASTIC",27,25,0,1,0.19,1,-1,-1,0.1000000E-02,-1);
@@ -228,10 +228,33 @@ void CbmPsdWoutv1_for44mods_sub1::ConstructGeometry() {
  
   //-----------List of Rotation matrices--------------
   
-  TGeoMaterial *material = 0;
-  TGeoMedium   *medium   = 0;
+//  TGeoMaterial *material = 0;
+//  TGeoMedium   *medium   = 0;
   Float_t *buf = 0;
   
+  gGeoManager->MakeBox("VETO",med1, 70, 70, 62.4);
+  //TGeoVolume *WOUT = gGeoManager->MakeBox("WOUT",med11, 70, 70, 0.2);
+  gGeoManager->MakeBox("VWOT",med2, 20, 20, 0.05);
+  TGeoVolume *WOUT = gGeoManager->MakeBox("WOUT",med2, 20, 20, 0.05);
+  gGeoManager->MakeBox("VHLL",med1,10,10,62.4);//hole
+  //TGeoVolume *VHLE = gGeoManager->MakeBox("VHLE",med1,10,10,0.2);//hole
+  //TGeoVolume *VHLT = gGeoManager->MakeTube("VHLT",med1,0,3,0.2);//hole
+  gGeoManager->MakeBox("VHLE",med2,10,10,0.05);//hole
+  gGeoManager->MakeTube("VHLT",med2,0,3,0.05);//hole
+  
+  //Large modules
+  gGeoManager->MakeBox("VMDL",med9,10,10,62.4);
+  gGeoManager->MakeBox("VFEL",med9,9.9,9.85,1);
+  gGeoManager->MakeBox("VPBL",med24,9.9,9.85,0.8);
+  gGeoManager->MakeBox("VTYL",med32,9.9,9.85,0.22);
+  gGeoManager->MakeBox("VSCL",med11,9.88,9.83,0.2);
+  gGeoManager->MakeBox("VRFL",med27,0.1,8.6,1);
+  gGeoManager->MakeBox("VRPL",med27,0.1,8.6,0.8);
+  gGeoManager->MakeBox("VRYL",med27,0.01,8.6,0.22);
+  gGeoManager->MakeBox("VRAL",med27,0.09,8.6,0.01);
+  gGeoManager->MakeBox("VRSL",med27,0.09,8.6,0.2);
+
+/*
   TGeoVolume *VETO = gGeoManager->MakeBox("VETO",med1, 70, 70, 62.4);
   //TGeoVolume *WOUT = gGeoManager->MakeBox("WOUT",med11, 70, 70, 0.2);
   TGeoVolume *VWOT = gGeoManager->MakeBox("VWOT",med2, 20, 20, 0.05);
@@ -253,11 +276,11 @@ void CbmPsdWoutv1_for44mods_sub1::ConstructGeometry() {
   TGeoVolume *VRYL = gGeoManager->MakeBox("VRYL",med27,0.01,8.6,0.22);
   TGeoVolume *VRAL = gGeoManager->MakeBox("VRAL",med27,0.09,8.6,0.01);
   TGeoVolume *VRSL = gGeoManager->MakeBox("VRSL",med27,0.09,8.6,0.2);
- 
+*/ 
   
   Float_t xPSD = fXshift;
   Float_t zPSD = fZposition;
-  Float_t zdcSize[3]   = {  70.,   70.,  62.4 }; // SELIM: fZposition = 1 scintillator, not PSD center
+//  Float_t zdcSize[3]   = {  70.,   70.,  62.4 }; // SELIM: fZposition = 1 scintillator, not PSD center
   //zPSD += zdcSize[2];
 
   //gGeoManager->Node("VETO", 1, "cave", xPSD, 0, zPSD, 0, kTRUE, buf, 0);
@@ -298,9 +321,9 @@ void CbmPsdWoutv1_for44mods_sub1::ConstructGeometry() {
 
   for (Int_t ivol=2; ivol<61; ivol++)
     {
-      Float_t zvtyl = -60.18 + 2.04*(ivol-1); 
+//      Float_t zvtyl = -60.18 + 2.04*(ivol-1); 
       //gGeoManager->Node("VTYL",ivol, "VMDL", 0, 0, zvtyl , 0,kTRUE, buf, 0);
-      Float_t zvpbl = -59.16 + 2.04*(ivol-1); 
+//      Float_t zvpbl = -59.16 + 2.04*(ivol-1); 
       //gGeoManager->Node("VPBL",ivol+1, "VMDL", 0, 0, zvpbl , 0, kTRUE, buf, 0); 
       //fNbOfSensitiveVol++; //marina -> comment for WOUT
     }

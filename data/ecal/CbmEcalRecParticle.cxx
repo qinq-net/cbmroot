@@ -125,7 +125,7 @@ CbmEcalRecParticle::~CbmEcalRecParticle()
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmEcalRecParticle::Print(const Option_t* opt) const {
+void CbmEcalRecParticle::Print(const Option_t* /*opt*/) const {
   printf("-I- CbmEcalRecParticle: ECAL rec.particle :(px,py,pz,E) = (%f,%f,%f,%f) GeV\n",
 	 fPx,fPy,fPz,fE);
 }

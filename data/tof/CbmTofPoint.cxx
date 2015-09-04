@@ -34,7 +34,7 @@ CbmTofPoint::~CbmTofPoint() { }
 
 
 // -----   Public method Print   -------------------------------------------
-void CbmTofPoint::Print(const Option_t* opt) const {
+void CbmTofPoint::Print(const Option_t* /*opt*/) const {
   cout << "-I- CbmTofPoint: TOF point for track " << fTrackID 
        << " in detector " << fDetectorID << endl;
   cout << "    Position (" << fX << ", " << fY << ", " << fZ

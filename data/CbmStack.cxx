@@ -84,7 +84,7 @@ void CbmStack::PushTrack(Int_t toBeDone, Int_t parentId, Int_t pdgCode,
                          Double_t e, Double_t vx, Double_t vy, Double_t vz,
                          Double_t time, Double_t polx, Double_t poly,
                          Double_t polz, TMCProcess proc, Int_t& ntr,
-                         Double_t weight, Int_t is, Int_t secondparentID)
+                         Double_t weight, Int_t /*is*/, Int_t secondparentID)
 {
 
   // --> Get TParticle array
@@ -334,7 +334,7 @@ void CbmStack::Register()
 
 
 // -----   Public method Print  --------------------------------------------
-void CbmStack::Print(Int_t iVerbose) const
+void CbmStack::Print(Int_t /*iVerbose*/) const
 {
   LOG(DEBUG) << "Number of primaries        = "
             << fNPrimaries << FairLogger::endl;

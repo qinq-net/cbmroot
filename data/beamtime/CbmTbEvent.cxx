@@ -94,7 +94,7 @@ void CbmTbEvent::Clear() {
 
 
 // -----   Print   -----------------------------------------------------------
-void CbmTbEvent::Print(Option_t* opt) { 
+void CbmTbEvent::Print(Option_t* /*opt*/) { 
   cout.setf(ios::fixed, ios::floatfield);
   cout << "-I- Cbm Testbeam Event: " << setprecision(9) << fixed << "Event time " 
        << fEventTime << " s, duration " << setprecision(0) << GetDuration()
