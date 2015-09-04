@@ -256,6 +256,12 @@ class CbmTofHitFinderQa : public FairTask {
       std::vector<TH1 *> fvhPlabTofHit;
       std::vector<TH1 *> fvhPlabTofHitSinglePnt;
       std::vector<TH1 *> fvhPlabTofHitSingleTrk;
+      
+         // MC Tracks losses
+      std::vector<TH2 *> fvhPtmRapGenTrkTofPnt;
+      std::vector<TH2 *> fvhPtmRapGenTrkTofHit;
+      std::vector<TH1 *> fvhPlabGenTrkTofPnt;
+      std::vector<TH1 *> fvhPlabGenTrkTofhit;
 
       ClassDef(CbmTofHitFinderQa, 1);
 };
