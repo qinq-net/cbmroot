@@ -30,10 +30,12 @@ void much_seg_auto(const char* mcFile = "",
   TString outFile  = "data/dummy.root";
 
   // ----  Load libraries   -------------------------------------------------
+/*
   gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
   basiclibs();
   gROOT->LoadMacro("$VMCWORKDIR/macro/much/muchlibs.C");
   muchlibs();
+*/
   // ------------------------------------------------------------------------
 
   // -----   Analysis run   -------------------------------------------------
