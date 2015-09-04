@@ -231,7 +231,7 @@ void CbmTofTests::SetParContainers()
    fDigiBdfPar = (CbmTofDigiBdfPar*) (rtdb->getContainer("CbmTofDigiBdfPar"));
 }
 
-void CbmTofTests::Exec(Option_t * option)
+void CbmTofTests::Exec(Option_t * /*option*/)
 {
    // Task execution
 
@@ -441,7 +441,7 @@ Bool_t CbmTofTests::CreateHistos()
    // Test class performance
    fhTestingTime = new TH1I( "TofDigiBdf_TestingTime", "Time needed to for the test processing in each event; Time [s]",
                                   4000, 0.0, 4.0 );
-
+/*
    Double_t ymin=-1.;
    Double_t ymax=4.;
    Double_t ptmmax=2.5;
@@ -451,7 +451,7 @@ Bool_t CbmTofTests::CreateHistos()
    Double_t v1_nbx=20.;
    Double_t v1_nby=20.;
    Double_t yvmax=1.3;
-
+*/
    // xy - hit densities and rates
    Int_t nbinx=1500;
    Int_t nbiny=1000;

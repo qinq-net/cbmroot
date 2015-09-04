@@ -456,7 +456,7 @@ void CbmTofHitFinderQa::SetParContainers()
    fDigiBdfPar = (CbmTofDigiBdfPar*) (rtdb->getContainer("CbmTofDigiBdfPar"));
 }
 
-void CbmTofHitFinderQa::Exec(Option_t * option)
+void CbmTofHitFinderQa::Exec(Option_t * /*option*/)
 {
    // Task execution
 
@@ -1350,8 +1350,6 @@ Bool_t CbmTofHitFinderQa::FillHistos()
    // Loop Over Hits
    for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++ )
    {
-      Int_t iNbTofPoint = 0;
-      Int_t iNbTofTrack = 0;
       std::vector<Int_t> vTofPointsId;
       std::vector<Int_t> vTofTracksId;
       Double_t dPntMeanPosX = 0;
@@ -1406,7 +1404,6 @@ Bool_t CbmTofHitFinderQa::FillHistos()
          if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
          {
             CbmTofDigiExp *pTofDigi;
-            CbmTofDigiExp *pTofDigiB;
             for( Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++)
             {
                CbmLink lDigi    = pMatchHitDigi->GetLink(iDigi); 
@@ -1462,12 +1459,12 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                
                // Count Nb different MC Points in Hit
                Bool_t bPointFound = kFALSE;
-               for( Int_t iPrevPtIdx = 0; iPrevPtIdx < vTofPointsId.size(); iPrevPtIdx++)
-                  if( iPtIdx == vTofPointsId[iPrevPtIdx] )
+               for( UInt_t uPrevPtIdx = 0; uPrevPtIdx < vTofPointsId.size(); uPrevPtIdx++)
+                  if( iPtIdx == vTofPointsId[uPrevPtIdx] )
                   {
                      bPointFound = kTRUE;
                      break;
-                  } // if( iPtIdx == vTofPointsId[iPrevPtIdx] )
+                  } // if( iPtIdx == vTofPointsId[uPrevPtIdx] )
                if( kFALSE == bPointFound )
                {
                   vTofPointsId.push_back(iPtIdx);
@@ -1503,12 +1500,12 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                   
                // Count Nb different MC Tracks in Hit
                Bool_t bTrackFound = kFALSE;
-               for( Int_t iPrevTrkIdx = 0; iPrevTrkIdx < vTofTracksId.size(); iPrevTrkIdx++)
-                  if( iTrkId == vTofTracksId[iPrevTrkIdx] )
+               for( UInt_t uPrevTrkIdx = 0; uPrevTrkIdx < vTofTracksId.size(); uPrevTrkIdx++)
+                  if( iTrkId == vTofTracksId[uPrevTrkIdx] )
                   {
                      bTrackFound = kTRUE;
                      break;
-                  } // if( iTrkId == vTofPointsId[iPrevTrkIdx] )
+                  } // if( iTrkId == vTofPointsId[uPrevTrkIdx] )
                if( kFALSE == bTrackFound )
                {
                   vTofTracksId.push_back(iTrkId);
@@ -1546,7 +1543,6 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             else
             {
                CbmTofDigi *pTofDigi;
-               CbmTofDigi *pTofDigiB;
                for( Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++)
                {
                   CbmLink lDigi    = pMatchHitDigi->GetLink(iDigi); 
@@ -1602,12 +1598,12 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                   
                   // Count Nb different MC Points in Hit
                   Bool_t bPointFound = kFALSE;
-                  for( Int_t iPrevPtIdx = 0; iPrevPtIdx < vTofPointsId.size(); iPrevPtIdx++)
-                     if( iPtIdx == vTofPointsId[iPrevPtIdx] )
+                  for( UInt_t uPrevPtIdx = 0; uPrevPtIdx < vTofPointsId.size(); uPrevPtIdx++)
+                     if( iPtIdx == vTofPointsId[uPrevPtIdx] )
                      {
                         bPointFound = kTRUE;
                         break;
-                     } // if( iPtIdx == vTofPointsId[iPrevPtIdx] )
+                     } // if( iPtIdx == vTofPointsId[uPrevPtIdx] )
                   if( kFALSE == bPointFound )
                   {
                      vTofPointsId.push_back(iPtIdx);
@@ -1643,12 +1639,12 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                      
                   // Count Nb different MC Tracks in Hit
                   Bool_t bTrackFound = kFALSE;
-                  for( Int_t iPrevTrkIdx = 0; iPrevTrkIdx < vTofTracksId.size(); iPrevTrkIdx++)
-                     if( iTrkId == vTofTracksId[iPrevTrkIdx] )
+                  for( UInt_t uPrevTrkIdx = 0; uPrevTrkIdx < vTofTracksId.size(); uPrevTrkIdx++)
+                     if( iTrkId == vTofTracksId[uPrevTrkIdx] )
                      {
                         bTrackFound = kTRUE;
                         break;
-                     } // if( iTrkId == vTofPointsId[iPrevTrkIdx] )
+                     } // if( iTrkId == vTofPointsId[uPrevTrkIdx] )
                   if( kFALSE == bTrackFound )
                   {
                      vTofTracksId.push_back(iTrkId);

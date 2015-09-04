@@ -91,6 +91,7 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer():
    fvdDifX(),
    fvdDifY(),
    fvdDifCh(),
+   fsHistoOutFilename("./tofSimpClust.hst.root"),
    fhClustBuildTime(NULL),
    fhHitsPerTracks(NULL),
    fhPtsPerHit(NULL),
@@ -185,6 +186,7 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer(const char *name, Int_t verbose, Bo
    fvdDifX(),
    fvdDifY(),
    fvdDifCh(),
+   fsHistoOutFilename("./tofSimpClust.hst.root"),
    fhClustBuildTime(NULL),
    fhHitsPerTracks(NULL),
    fhPtsPerHit(NULL),
@@ -303,7 +305,7 @@ void CbmTofSimpClusterizer::SetParContainers()
               (rtdb->getContainer("CbmTofDigiBdfPar"));
 }
 
-void CbmTofSimpClusterizer::Exec(Option_t * option)
+void CbmTofSimpClusterizer::Exec(Option_t * /*option*/)
 {
    fTofHitsColl->Clear("C");
 //   fTofDigiMatchColl->Clear("C"); // Not enough => CbmMatch has no Clear functions!!
@@ -900,32 +902,32 @@ Bool_t   CbmTofSimpClusterizer::FillHistos()
    for( Int_t iSmType = 0; iSmType < fDigiBdfPar->GetNbSmTypes(); iSmType++ )
       for( Int_t iRpc = 0; iRpc < fDigiBdfPar->GetNbRpc( iSmType); iRpc++ )
       {
-         for( Int_t iCluster = 0; iCluster < fviClusterSize[iSmType][iRpc].size(); iCluster++ )
+         for( UInt_t uCluster = 0; uCluster < fviClusterSize[iSmType][iRpc].size(); uCluster++ )
          {
-            fhClusterSize->Fill( fviClusterSize[iSmType][iRpc][iCluster]);
-            fhClusterSizeType->Fill( fviClusterSize[iSmType][iRpc][iCluster], 40*iSmType + iRpc );
+            fhClusterSize->Fill( fviClusterSize[iSmType][iRpc][uCluster]);
+            fhClusterSizeType->Fill( fviClusterSize[iSmType][iRpc][uCluster], 40*iSmType + iRpc );
             if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
             {
-               fhTrackMul->Fill( fviTrkMul[iSmType][iRpc][iCluster] );
-               fhClusterSizeMulti->Fill( fviClusterSize[iSmType][iRpc][iCluster],
-                                         fviTrkMul[iSmType][iRpc][iCluster] );
-               if( 1 == fviTrkMul[iSmType][iRpc][iCluster] )
-                  fhTrk1MulPos->Fill( fvdX[iSmType][iRpc][iCluster], fvdY[iSmType][iRpc][iCluster] );
-               if( 1 < fviTrkMul[iSmType][iRpc][iCluster] )
-                  fhHiTrkMulPos->Fill(fvdX[iSmType][iRpc][iCluster], fvdY[iSmType][iRpc][iCluster] );
-               fhAllTrkMulPos->Fill(fvdX[iSmType][iRpc][iCluster], fvdY[iSmType][iRpc][iCluster] );
+               fhTrackMul->Fill( fviTrkMul[iSmType][iRpc][uCluster] );
+               fhClusterSizeMulti->Fill( fviClusterSize[iSmType][iRpc][uCluster],
+                                         fviTrkMul[iSmType][iRpc][uCluster] );
+               if( 1 == fviTrkMul[iSmType][iRpc][uCluster] )
+                  fhTrk1MulPos->Fill( fvdX[iSmType][iRpc][uCluster], fvdY[iSmType][iRpc][uCluster] );
+               if( 1 < fviTrkMul[iSmType][iRpc][uCluster] )
+                  fhHiTrkMulPos->Fill(fvdX[iSmType][iRpc][uCluster], fvdY[iSmType][iRpc][uCluster] );
+               fhAllTrkMulPos->Fill(fvdX[iSmType][iRpc][uCluster], fvdY[iSmType][iRpc][uCluster] );
             } // if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
-            if( 1 == fviTrkMul[iSmType][iRpc][iCluster] )
+            if( 1 == fviTrkMul[iSmType][iRpc][uCluster] )
             {
-               fhClustSizeDifX->Fill( fviClusterSize[iSmType][iRpc][iCluster], fvdDifX[iSmType][iRpc][iCluster]);
-               fhClustSizeDifY->Fill( fviClusterSize[iSmType][iRpc][iCluster], fvdDifY[iSmType][iRpc][iCluster]);
-               if( 1 == fviClusterSize[iSmType][iRpc][iCluster] )
+               fhClustSizeDifX->Fill( fviClusterSize[iSmType][iRpc][uCluster], fvdDifX[iSmType][iRpc][uCluster]);
+               fhClustSizeDifY->Fill( fviClusterSize[iSmType][iRpc][uCluster], fvdDifY[iSmType][iRpc][uCluster]);
+               if( 1 == fviClusterSize[iSmType][iRpc][uCluster] )
                {
-                  fhChDifDifX->Fill( fvdDifCh[iSmType][iRpc][iCluster], fvdDifX[iSmType][iRpc][iCluster]);
-                  fhChDifDifY->Fill( fvdDifCh[iSmType][iRpc][iCluster], fvdDifY[iSmType][iRpc][iCluster]);
+                  fhChDifDifX->Fill( fvdDifCh[iSmType][iRpc][uCluster], fvdDifX[iSmType][iRpc][uCluster]);
+                  fhChDifDifY->Fill( fvdDifCh[iSmType][iRpc][uCluster], fvdDifY[iSmType][iRpc][uCluster]);
                }
             }
-         } // for( Int_t iCluster = 0; iCluster < fviClusterSize[iSmType][iRpc].size(); iCluster++ )
+         } // for( UInt_t uCluster = 0; uCluster < fviClusterSize[iSmType][iRpc].size(); uCluster++ )
          fviClusterSize[iSmType][iRpc].clear();
          fviTrkMul[iSmType][iRpc].clear();
          fvdX[iSmType][iRpc].clear();
@@ -942,7 +944,7 @@ Bool_t   CbmTofSimpClusterizer::FillHistos()
 Bool_t   CbmTofSimpClusterizer::WriteHistos()
 {
    TDirectory * oldir = gDirectory;
-   TFile *fHist = new TFile("./tofSimpClust.hst.root","RECREATE");
+   TFile *fHist = new TFile(fsHistoOutFilename,"RECREATE");
 
    fHist->cd();
    fhClustBuildTime->Write();
@@ -982,6 +984,11 @@ Bool_t   CbmTofSimpClusterizer::WriteHistos()
 
    fHist->Close();
 
+   return kTRUE;
+}
+Bool_t CbmTofSimpClusterizer::SetHistoFileName( TString sFilenameIn )
+{
+   fsHistoOutFilename = sFilenameIn;
    return kTRUE;
 }
 Bool_t   CbmTofSimpClusterizer::DeleteHistos()
@@ -1312,7 +1319,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                                   fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
                                             <<FairLogger::endl;
                               if(2 > fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size()) break;
-                              Int_t iLastChId = iChId; // Save Last hit channel
+/*                              Int_t iLastChId = iChId; // Save Last hit channel */
 
                               // 2 Digis = both sides present
                               Int_t iCh1=iCh;
@@ -1422,21 +1429,25 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 //                                    Bool_t bFoundA = kFALSE; // -> Comment to remove warning because set but never used
 //                                    Bool_t bFoundB = kFALSE; // -> Comment to remove warning because set but never used
                                     if(NULL != fTofPointsColl){ // MC 
+                                    
+                                    /** **Comment the full Block as not used anymore** **/
+/*
                                     if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
-                                       for( Int_t iPtRef = 0; iPtRef < vPtsRef.size(); iPtRef++)
+                                       for( UInt_t uPtRef = 0; uPtRef < vPtsRef.size(); uPtRef++)
                                        {
-                                             //if( ((CbmTofPoint*)(vPtsRef[iPtRef]))->GetTrackID() == ((CbmTofPoint*)(xDigiA->GetLinks()))->GetTrackID() )
+                                             //if( ((CbmTofPoint*)(vPtsRef[uPtRef]))->GetTrackID() == ((CbmTofPoint*)(xDigiA->GetLinks()))->GetTrackID() )
 //                                             bFoundA = kTRUE; // -> Comment to remove warning because set but never used
-                                             //if( ((CbmTofPoint*)(vPtsRef[iPtRef]))->GetTrackID() == ((CbmTofPoint*)(xDigiB->GetLinks()))->GetTrackID() )
+                                             //if( ((CbmTofPoint*)(vPtsRef[uPtRef]))->GetTrackID() == ((CbmTofPoint*)(xDigiB->GetLinks()))->GetTrackID() )
 //                                             bFoundB = kTRUE; // -> Comment to remove warning because set but never used
                                        } // for( Int
-                                       else for( Int_t iPtRef = 0; iPtRef < vPtsRef.size(); iPtRef++)
+                                       else for( UInt_t uPtRef = 0; uPtRef < vPtsRef.size(); uPtRef++)
                                        {
-                                         //                                          if( vPtsRef[iPtRef] == (CbmTofPoint*)xDigiA->GetLinks() )
+                                         //                                          if( vPtsRef[uPtRef] == (CbmTofPoint*)xDigiA->GetLinks() )
 //                                             bFoundA = kTRUE; // -> Comment to remove warning because set but never used
-                                         //                                          if( vPtsRef[iPtRef] == (CbmTofPoint*)xDigiB->GetLinks() )
+                                         //                                          if( vPtsRef[uPtRef] == (CbmTofPoint*)xDigiB->GetLinks() )
 //                                             bFoundB = kTRUE; // -> Comment to remove warning because set but never used
-                                       } // for( Int_t iPtRef = 0; iPtRef < vPtsRef.size(); iPtRef++)
+                                       } // for( Int_t uPtRef = 0; uPtRef < vPtsRef.size(); uPtRef++)
+*/
 
                                     // CbmTofPoint pointer for 1st digi not found => save it
                                     //if( kFALSE == bFoundA )
@@ -1474,7 +1485,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
                                     Double_t hitpos[3];
                                     TGeoNode*        cNode= gGeoManager->GetCurrentNode();
-                                    TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();
+/*                                    TGeoHMatrix* cMatrix = */gGeoManager->GetCurrentMatrix();
                                     //cMatrix->Print();
 
                                     gGeoManager->LocalToMaster(hitpos_local, hitpos);
@@ -1509,7 +1520,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                                <<", DigiSize: "<<vDigiIndRef.size()
                                                <<", DigiInds: ";
                                     fviClusterMul[iSmType][iSm][iRpc]++; 
-                                    for (Int_t i=0; i<vDigiIndRef.size();i++){
+                                    for (UInt_t i=0; i<vDigiIndRef.size();i++){
                                       LOG(DEBUG)<<" "<<vDigiIndRef.at(i);
                                     }
                                     LOG(DEBUG)  <<FairLogger::endl;
@@ -1523,7 +1534,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                       //                vDigiIndRef);
 
                                     CbmMatch* digiMatch = new CbmMatch();
-                                    for (Int_t i=0; i<vDigiIndRef.size();i++){
+                                    for (UInt_t i=0; i<vDigiIndRef.size();i++){
                                       digiMatch->AddLink(CbmLink(0.,vDigiIndRef.at(i)));
                                     }
                                     new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch(*digiMatch);
@@ -1672,7 +1683,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
                      Double_t hitpos[3];
                      TGeoNode*        cNode= gGeoManager->GetCurrentNode();
-                     TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();
+/*                     TGeoHMatrix* cMatrix =*/ gGeoManager->GetCurrentMatrix();
                      //cMatrix->Print();
 
                      gGeoManager->LocalToMaster(hitpos_local, hitpos);
@@ -1707,7 +1718,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                        //   dWeightedTime,dWeightedPosY)
                                 <<", DigiSize: "<<vDigiIndRef.size();
                      LOG(DEBUG)<<", DigiInds: ";
-                     for (Int_t i=0; i<vDigiIndRef.size();i++){
+                     for (UInt_t i=0; i<vDigiIndRef.size();i++){
                        LOG(DEBUG)<<" "<<vDigiIndRef.at(i);
                      }
                      LOG(DEBUG)  <<FairLogger::endl;
@@ -1722,7 +1733,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                          0);
                      //                                         vDigiIndRef);
                      CbmMatch* digiMatch = new CbmMatch();
-                     for (Int_t i=0; i<vDigiIndRef.size();i++){
+                     for (UInt_t i=0; i<vDigiIndRef.size();i++){
                        digiMatch->AddLink(CbmLink(0.,vDigiIndRef.at(i)));
                      }
                      new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch(*digiMatch);

@@ -90,12 +90,12 @@ void CbmTof::Initialize()
   // Initialize the CbmTofGeoHandler helper class from the
   // TVirtualMC interface
   Bool_t isSimulation=kTRUE;
-  Int_t bla = fGeoHandler->Init(isSimulation);
+  /*Int_t bla =*/ fGeoHandler->Init(isSimulation);
 
 }
 
 // -----   Public method ProcessHits  --------------------------------------
-Bool_t  CbmTof::ProcessHits(FairVolume* vol)
+Bool_t  CbmTof::ProcessHits(FairVolume* /*vol*/)
 {
 
   // Set parameters at entrance of volume. Reset ELoss.

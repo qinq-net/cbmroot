@@ -41,7 +41,7 @@ CbmTofCreateDigiPar::CbmTofCreateDigiPar()
 // --------------------------------------------------------------------
 
 // ---- Constructor ----------------------------------------------------
-CbmTofCreateDigiPar::CbmTofCreateDigiPar(const char *name, const char *title)
+CbmTofCreateDigiPar::CbmTofCreateDigiPar(const char *name, const char * /*title*/)
   :FairTask(name),
    fSMType(-1),
    fSModule(-1),
@@ -146,7 +146,7 @@ void CbmTofCreateDigiPar::FinishTask(){
 }
 
 // ---- Exec ----------------------------------------------------------
-void CbmTofCreateDigiPar::Exec(Option_t * option)
+void CbmTofCreateDigiPar::Exec(Option_t * /*option*/)
 {
 }
 
@@ -168,7 +168,7 @@ void CbmTofCreateDigiPar::FillCellMapAsciiGeometry(){
   // Example for full path to gap
   //   /cave/tof1_0/t1reg1mod_1/t1reg1cel_1/t1reg1gap_1
 
-  Int_t nrCells = 0;
+/*  Int_t nrCells = 0;*/
   std::vector<CbmTofCell*> cellVector;
   CbmTofCell *tofCell;
 
@@ -281,7 +281,7 @@ void CbmTofCreateDigiPar::FillCellMapRootGeometry(){
   //   /cave_0/tof_v12b_0/module_0_0/gas_box_0/counter_0/Gap_0/Cell_1
 
 
-  Int_t nrCells = 0;
+/*  Int_t nrCells = 0;*/
   std::vector<CbmTofCell*> cellVector;
   CbmTofCell *tofCell;
 
@@ -473,8 +473,8 @@ void CbmTofCreateDigiPar::FillDigiPar()
     // sanity check
     std::vector<CbmTofCell*>::iterator vcellIt;
     Int_t id;
-    Int_t oldid;
-    Bool_t first=kTRUE;
+/*    Int_t oldid;*/
+/*    Bool_t first=kTRUE;*/
     CbmTofCell* tofcell;
     Double_t x=0.;
     Double_t y=0.;

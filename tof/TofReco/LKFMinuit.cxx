@@ -56,7 +56,7 @@ int LKFMinuit::DoFit(TGraph2DErrors * gr){
  return 0;
 }
 
-double LKFMinuit::myFunction(double par){
+double LKFMinuit::myFunction(double /*par*/){
   double result=0;
 
   return result;
@@ -122,7 +122,7 @@ double LKFMinuit::SumDistance2(double par[]) {
 }
 
 
-void LKFMinuit::minuitFunction(int& nDim, double* gout, double& result, double par[], int flg){
+void LKFMinuit::minuitFunction(int& /*nDim*/, double* /*gout*/, double& result, double par[], int /*flg*/){
   //    result = LKF_obj->myFunction(par[0]);
   result = LKF_obj->SumDistance2(par);
 }

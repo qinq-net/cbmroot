@@ -98,6 +98,7 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF():
    fTofDigiMatchPointsColl(NULL),
    fiNbDigis(0),
    fVerbose(1),
+   fsHistoOutFilename("./tofDigiBdf.hst.root"),
    fhTofPointsPerTrack(NULL),
    fhTofPtsInTrkVsGapInd(NULL),
    fhTofPtsInTrkVsGapIndPrm(NULL),
@@ -161,6 +162,7 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF(const char *name, Int_t verbose, Bool_t w
    fTofDigiMatchPointsColl(NULL),
    fiNbDigis(0),
    fVerbose(verbose),
+   fsHistoOutFilename("./tofDigiBdf.hst.root"),
    fhTofPointsPerTrack(NULL),
    fhTofPtsInTrkVsGapInd(NULL),
    fhTofPtsInTrkVsGapIndPrm(NULL),
@@ -252,7 +254,7 @@ void CbmTofDigitizerBDF::SetParContainers()
               (rtdb->getContainer("CbmTofDigiBdfPar"));
 }
 
-void CbmTofDigitizerBDF::Exec(Option_t * option)
+void CbmTofDigitizerBDF::Exec(Option_t * /*option*/)
 {
    fTofDigisColl->Clear("C");
 //   fTofDigiMatchPointsColl->Clear("C"); // Not enough => CbmMatch has no Clear functions!!
@@ -837,10 +839,15 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
 
    return kTRUE;
 }
+Bool_t CbmTofDigitizerBDF::SetHistoFileName( TString sFilenameIn )
+{
+   fsHistoOutFilename = sFilenameIn;
+   return kTRUE;
+}
 Bool_t   CbmTofDigitizerBDF::WriteHistos()
 {
    TDirectory * oldir = gDirectory;
-   TFile *fHist = new TFile("./tofDigiBdf.hst.root","RECREATE");
+   TFile *fHist = new TFile(fsHistoOutFilename,"RECREATE");
 
    fHist->cd();
 
@@ -996,8 +1003,8 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                               
                               // TOF QA: monitor number of tracks leading to digi before merging them
                               Bool_t bTrackFound = kFALSE;
-                              for( Int_t iTrkId = 0; iTrkId < vPrevTrackIdList.size(); iTrkId++ )
-                                 if( vPrevTrackIdList[iTrkId] == 
+                              for( UInt_t uTrkId = 0; uTrkId < vPrevTrackIdList.size(); uTrkId++ )
+                                 if( vPrevTrackIdList[uTrkId] == 
                                      ((CbmTofPoint*) fTofPointsColl->At(
                                           fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi] 
                                                 ))->GetTrackID() )
@@ -1104,8 +1111,8 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                               
                               // TOF QA: monitor number of tracks leading to digi before merging them
                               Bool_t bTrackFound = kFALSE;
-                              for( Int_t iTrkId = 0; iTrkId < vPrevTrackIdList.size(); iTrkId++ )
-                                 if( vPrevTrackIdList[iTrkId] == 
+                              for( UInt_t uTrkId = 0; uTrkId < vPrevTrackIdList.size(); uTrkId++ )
+                                 if( vPrevTrackIdList[uTrkId] == 
                                      ((CbmTofPoint*) fTofPointsColl->At(
                                           fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi] 
                                                 ))->GetTrackID() )
@@ -1361,8 +1368,8 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
       if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
       {
          Bool_t bFoundIt = kFALSE;
-         for( Int_t iTrkMainCh = 0; iTrkMainCh < fvlTrckChAddr[iTrkId].size(); iTrkMainCh ++)
-            if( uAddr == fvlTrckChAddr[iTrkId][iTrkMainCh])
+         for( UInt_t uTrkMainCh = 0; uTrkMainCh < fvlTrckChAddr[iTrkId].size(); uTrkMainCh ++)
+            if( uAddr == fvlTrckChAddr[iTrkId][uTrkMainCh])
             {
                bFoundIt = kTRUE;
                break;
@@ -1801,8 +1808,8 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
       {
          Bool_t bFoundIt = kFALSE;
-         for( Int_t iTrkMainCh = 0; iTrkMainCh < fvlTrckChAddr[iTrkId].size(); iTrkMainCh ++)
-            if( uAddr == fvlTrckChAddr[iTrkId][iTrkMainCh])
+         for( UInt_t uTrkMainCh = 0; uTrkMainCh < fvlTrckChAddr[iTrkId].size(); uTrkMainCh ++)
+            if( uAddr == fvlTrckChAddr[iTrkId][uTrkMainCh])
             {
                bFoundIt = kTRUE;
                break;
@@ -1933,8 +1940,8 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 			       fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode, 
 			       vPntPos.X(), vPntPos.Y(), vPntPos.Z())
 			<<FairLogger::endl;
-	      TGeoNode*	cNode= gGeoManager->GetCurrentNode();
-	      TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();
+	      /*TGeoNode*	cNode=*/ gGeoManager->GetCurrentNode();
+	      /*TGeoHMatrix* cMatrix =*/ gGeoManager->GetCurrentMatrix();
 	      Double_t hitpos[3]={fChannelInfo->GetX(),vPntPos.Y(),fChannelInfo->GetZ()};
 	      Double_t hitpos_local[3];
 	      gGeoManager->MasterToLocal(hitpos, hitpos_local);
@@ -2220,8 +2227,8 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 			      iSmType,iSM,iRpc,iChanInd,
 			      fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode)
 			<<FairLogger::endl;
-		 TGeoNode*	cNode= gGeoManager->GetCurrentNode();
-		 TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();
+		 /*TGeoNode*	cNode=*/ gGeoManager->GetCurrentNode();
+		 /*TGeoHMatrix* cMatrix =*/ gGeoManager->GetCurrentMatrix();
 		 Double_t hitpos[3]={fChannelInfo->GetX(),vPntPos.Y(),fChannelInfo->GetZ()};
 		 Double_t hitpos_local[3];
 		 gGeoManager->MasterToLocal(hitpos, hitpos_local);
@@ -2642,8 +2649,8 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
       if( kTRUE == fDigiBdfPar->UseOneGapPerTrk() )
       {
          Bool_t bFoundIt = kFALSE;
-         for( Int_t iTrkMainCh = 0; iTrkMainCh < fvlTrckChAddr[iTrkId].size(); iTrkMainCh ++)
-            if( uAddr == fvlTrckChAddr[iTrkId][iTrkMainCh])
+         for( UInt_t uTrkMainCh = 0; uTrkMainCh < fvlTrckChAddr[iTrkId].size(); uTrkMainCh ++)
+            if( uAddr == fvlTrckChAddr[iTrkId][uTrkMainCh])
             {
                bFoundIt = kTRUE;
                break;
@@ -3146,7 +3153,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
             Int_t iMinChanInd = iChannel;
             Int_t iMaxChanInd = iChannel;
 
-            Double_t dClusterDist = 0;
+ //           Double_t dClusterDist = 0;// -> Comment to remove warning because set but never used
             Int_t    iRow;
  //           Bool_t   bCheckOtherRow = kFALSE; // -> Comment to remove warning because set but never used
             if( iChannel < iNbCh/2.0 )

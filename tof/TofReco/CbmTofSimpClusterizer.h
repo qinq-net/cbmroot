@@ -87,6 +87,7 @@ class CbmTofSimpClusterizer : public FairTask
       inline void SetTotMin     (Double_t TOTMin)       { fTotMin      = TOTMin;}
 
       inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
+      Bool_t   SetHistoFileName( TString sFilenameIn );
 
    protected:
 
@@ -180,6 +181,8 @@ class CbmTofSimpClusterizer : public FairTask
       std::vector< std::vector< std::vector< Double_t > > > fvdDifY; //[nbType][nbRpc][nClusters]
       std::vector< std::vector< std::vector< Double_t > > > fvdDifCh; //[nbType][nbRpc][nClusters]
 
+      // Output file name and path
+      TString fsHistoOutFilename;   
       // Histograms
       TH1* fhClustBuildTime;
       TH1* fhHitsPerTracks;

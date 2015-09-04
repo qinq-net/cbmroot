@@ -66,7 +66,7 @@ InitStatus CbmTofHitProducerIdeal::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmTofHitProducerIdeal::Exec(Option_t* opt) {
+void CbmTofHitProducerIdeal::Exec(Option_t* /*opt*/) {
 
   // Reset output array
   if ( ! fHitArray ) Fatal("Exec", "No TofHitArray");

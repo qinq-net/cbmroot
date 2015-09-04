@@ -357,7 +357,7 @@ void CbmTofTestBeamClusterizer::SetParContainers()
 }
 
 
-void CbmTofTestBeamClusterizer::Exec(Option_t * option)
+void CbmTofTestBeamClusterizer::Exec(Option_t * /*option*/)
 {
    fTofHitsColl->Clear("C");
    //for (Int_t i=0; i<fTofDigiMatchColl->GetEntries(); i++) ((CbmMatch *)(fTofDigiMatchColl->At(i)))->ClearLinks();  // FIXME, try to tamper memory leak (did not help)
@@ -530,7 +530,7 @@ Bool_t   CbmTofTestBeamClusterizer::InitParameters()
 Bool_t   CbmTofTestBeamClusterizer::InitCalibParameter()
 {
   // dimension and initialize calib parameter
-  Int_t iNbDet=fMbsMappingPar->GetNbMappedDet();
+/*  Int_t iNbDet=fMbsMappingPar->GetNbMappedDet();*/
   Int_t iNbSmTypes = fDigiBdfPar->GetNbSmTypes();
 
   if (fTotMean !=0.) fdTTotMean=fTotMean;   // adjust target mean for TTT
@@ -932,7 +932,7 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
    gROOT->cd(); // <= To prevent histos from being sucked in by the param file of the TRootManager !
    fhClustBuildTime = new TH1I( "TofTestBeamClus_ClustBuildTime", "Time needed to build clusters in each event; Time [s]",4000, 0.0, 4.0 );
 
-   TH2* hTemp = 0;
+/*   TH2* hTemp = 0;*/
 
    // Sm related distributions 
    fhSmCluPosition.resize( fDigiBdfPar->GetNbSmTypes() );
@@ -1345,7 +1345,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
  CbmTofHit  *pHit;
 
  if(0<iNbTofHits){
-  Double_t    dCluMul=0.;
+ /* Double_t    dCluMul=0.;*/
   Bool_t      BSel[iNSel];
   Double_t    dTTrig[iNSel];
   CbmTofHit  *pTrig[iNSel]; 
@@ -1394,7 +1394,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
    for (Int_t iSel=0; iSel<iNSel; iSel++){
        BSel[iSel]=kFALSE;
        pTrig[iSel]=NULL;
-       Int_t    iNbRpc  = fDigiBdfPar->GetNbRpc( fDutId );
+/*       Int_t    iNbRpc  = fDigiBdfPar->GetNbRpc( fDutId );*/
 
        switch(iSel) {
        case 0 :         //  Detector under Test (Dut) && Diamonds,BeamRef
@@ -1534,7 +1534,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                       <<FairLogger::endl;
            continue;
          }
-         TGeoNode *fNode=        // prepare global->local trafo
+         /*TGeoNode *fNode=*/        // prepare global->local trafo
          gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
 
          LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos: Hit  "
@@ -1707,7 +1707,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                  if(fCalSel == iSel) dTTcor=dDelTof;
                }
 
-               Double_t dDt=0.5*(pDig0->GetTime()+pDig1->GetTime())-dDelTof-dTTrig[iSel];
+/*               Double_t dDt=0.5*(pDig0->GetTime()+pDig1->GetTime())-dDelTof-dTTrig[iSel];*/
                Double_t dAvTot=0.5*(pDig0->GetTot()+pDig1->GetTot());
                /*
                fhTRpcCluWalk[iDetIndx][iSel][pDig0->GetChannel()][pDig0->GetSide()]->Fill(dAvTot,dDt);
@@ -1799,36 +1799,36 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
                     <<Form(" %3d %3d %3lu ",iSmType,iRpc,fviClusterSize[iSmType][iRpc].size())
                     <<FairLogger::endl;
     
-         for( Int_t iCluster = 0; iCluster < fviClusterSize[iSmType][iRpc].size(); iCluster++ )
+         for( UInt_t uCluster = 0; uCluster < fviClusterSize[iSmType][iRpc].size(); uCluster++ )
          {
             LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos:  "
-                       <<Form(" %3d %3d %3d ",iSmType,iRpc,iCluster)
+                       <<Form(" %3d %3d %3d ",iSmType,iRpc,uCluster)
                        <<FairLogger::endl;
 
-            fhClusterSize->Fill( fviClusterSize[iSmType][iRpc][iCluster]);
-            fhClusterSizeType->Fill( fviClusterSize[iSmType][iRpc][iCluster], 40*iSmType + iRpc );
+            fhClusterSize->Fill( fviClusterSize[iSmType][iRpc][uCluster]);
+            fhClusterSizeType->Fill( fviClusterSize[iSmType][iRpc][uCluster], 40*iSmType + iRpc );
             if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
             {
-               fhTrackMul->Fill( fviTrkMul[iSmType][iRpc][iCluster] );
-               fhClusterSizeMulti->Fill( fviClusterSize[iSmType][iRpc][iCluster],
-                                         fviTrkMul[iSmType][iRpc][iCluster] );
-               if( 1 == fviTrkMul[iSmType][iRpc][iCluster] )
-                  fhTrk1MulPos->Fill( fvdX[iSmType][iRpc][iCluster], fvdY[iSmType][iRpc][iCluster] );
-               if( 1 < fviTrkMul[iSmType][iRpc][iCluster] )
-                  fhHiTrkMulPos->Fill(fvdX[iSmType][iRpc][iCluster], fvdY[iSmType][iRpc][iCluster] );
-               fhAllTrkMulPos->Fill(fvdX[iSmType][iRpc][iCluster], fvdY[iSmType][iRpc][iCluster] );
+               fhTrackMul->Fill( fviTrkMul[iSmType][iRpc][uCluster] );
+               fhClusterSizeMulti->Fill( fviClusterSize[iSmType][iRpc][uCluster],
+                                         fviTrkMul[iSmType][iRpc][uCluster] );
+               if( 1 == fviTrkMul[iSmType][iRpc][uCluster] )
+                  fhTrk1MulPos->Fill( fvdX[iSmType][iRpc][uCluster], fvdY[iSmType][iRpc][uCluster] );
+               if( 1 < fviTrkMul[iSmType][iRpc][uCluster] )
+                  fhHiTrkMulPos->Fill(fvdX[iSmType][iRpc][uCluster], fvdY[iSmType][iRpc][uCluster] );
+               fhAllTrkMulPos->Fill(fvdX[iSmType][iRpc][uCluster], fvdY[iSmType][iRpc][uCluster] );
             } // if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
-            if(kFALSE) //  1 == fviTrkMul[iSmType][iRpc][iCluster] )
+            if(kFALSE) //  1 == fviTrkMul[iSmType][iRpc][uCluster] )
             {
-               fhClustSizeDifX->Fill( fviClusterSize[iSmType][iRpc][iCluster], fvdDifX[iSmType][iRpc][iCluster]);
-               fhClustSizeDifY->Fill( fviClusterSize[iSmType][iRpc][iCluster], fvdDifY[iSmType][iRpc][iCluster]);
-               if( 1 == fviClusterSize[iSmType][iRpc][iCluster] )
+               fhClustSizeDifX->Fill( fviClusterSize[iSmType][iRpc][uCluster], fvdDifX[iSmType][iRpc][uCluster]);
+               fhClustSizeDifY->Fill( fviClusterSize[iSmType][iRpc][uCluster], fvdDifY[iSmType][iRpc][uCluster]);
+               if( 1 == fviClusterSize[iSmType][iRpc][uCluster] )
                {
-                  fhChDifDifX->Fill( fvdDifCh[iSmType][iRpc][iCluster], fvdDifX[iSmType][iRpc][iCluster]);
-                  fhChDifDifY->Fill( fvdDifCh[iSmType][iRpc][iCluster], fvdDifY[iSmType][iRpc][iCluster]);
+                  fhChDifDifX->Fill( fvdDifCh[iSmType][iRpc][uCluster], fvdDifX[iSmType][iRpc][uCluster]);
+                  fhChDifDifY->Fill( fvdDifCh[iSmType][iRpc][uCluster], fvdDifY[iSmType][iRpc][uCluster]);
                }
             }
-         } // for( Int_t iCluster = 0; iCluster < fviClusterSize[iSmType][iRpc].size(); iCluster++ )
+         } // for( UInt_t uCluster = 0; uCluster < fviClusterSize[iSmType][iRpc].size(); uCluster++ )
          fviClusterSize[iSmType][iRpc].clear();
          fviTrkMul[iSmType][iRpc].clear();
          fvdX[iSmType][iRpc].clear();
@@ -1974,7 +1974,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
        Int_t nbins=htempTot->GetNbinsX();
        for (int i=0;i<nbins;i++) {
          hbins[i] = htempTot->ProjectionY(Form("bin%d",i+1),i+1,i+1);
-         Double_t Ymax=hbins[i]->GetMaximum();
+/*         Double_t Ymax=hbins[i]->GetMaximum();*/
          Int_t iBmax=hbins[i]->GetMaximumBin();
          TAxis *xaxis = hbins[i]->GetXaxis();
          Double_t Xmax=xaxis->GetBinCenter(iBmax);
@@ -2317,7 +2317,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
             Int_t ib=iCh*2+1+iSide;
             TH1 * hbin=htempTot->ProjectionY(Form("bin%d",ib),ib,ib);
             if(100>hbin->GetEntries()) continue;  //request min number of entries
-            Double_t Ymax=hbin->GetMaximum();
+/*            Double_t Ymax=hbin->GetMaximum();*/
             Int_t iBmax=hbin->GetMaximumBin();
             TAxis *xaxis = hbin->GetXaxis();
             Double_t Xmax=xaxis->GetBinCenter(iBmax)/fvCPTotGain[iSmType][iSm*iNbRpc+iRpc][iCh][iSide];
@@ -2523,7 +2523,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
           h2tmp->Write();
           TProfile *htmp = h2tmp->ProfileX("_pfx",1,h2tmp->GetNbinsY());
           TH1D *h1tmp    = h2tmp->ProjectionX("_px",1,h2tmp->GetNbinsY());
-          TH1D *h1ytmp   = h2tmp->ProjectionY("_py",1,h2tmp->GetNbinsX());
+/*          TH1D *h1ytmp   = h2tmp->ProjectionY("_py",1,h2tmp->GetNbinsX());*/
           Double_t dDelMean=0.;//h1ytmp->GetMean();// inspect normalization, interferes with mode 3 for diamonds, nh, 10.01.2015 (?) 
           for(Int_t iBx=0; iBx<nbClDelTofBinX; iBx++){
             fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx][iSel]+=((TProfile *)htmp)->GetBinContent(iBx+1)-dDelMean;
@@ -3024,7 +3024,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                                   fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size())
                                             <<FairLogger::endl;
                               if(2 > fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].size()) break;
-                              Int_t iLastChId = iChId; // Save Last hit channel
+/*                              Int_t iLastChId = iChId; // Save Last hit channel*/
 
                               // 2 Digis = both sides present
                               CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
@@ -3123,21 +3123,25 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                     // Bool_t bFoundA = kFALSE;
                                     // Bool_t bFoundB = kFALSE;
                                     if(NULL != fTofPointsColl){ // MC - FIXME 
+                                    
+                                    /** **Comment the full Block as not used anymore** **/
+/*                                    
                                     if( kTRUE == fDigiBdfPar->ClustUseTrackId() )
-                                       for( Int_t iPtRef = 0; iPtRef < vPtsRef.size(); iPtRef++)
+                                       for( UInt_t uPtRef = 0; uPtRef < vPtsRef.size(); uPtRef++)
                                        {
-                                        //if( ((CbmTofPoint*)(vPtsRef[iPtRef]))->GetTrackID() == ((CbmTofPoint*)(xDigiA->GetLinks()))->GetTrackID() )
+                                        //if( ((CbmTofPoint*)(vPtsRef[uPtRef]))->GetTrackID() == ((CbmTofPoint*)(xDigiA->GetLinks()))->GetTrackID() )
                                         //bFoundA = kTRUE;
-                                        //if( ((CbmTofPoint*)(vPtsRef[iPtRef]))->GetTrackID() == ((CbmTofPoint*)(xDigiB->GetLinks()))->GetTrackID() )
+                                        //if( ((CbmTofPoint*)(vPtsRef[uPtRef]))->GetTrackID() == ((CbmTofPoint*)(xDigiB->GetLinks()))->GetTrackID() )
                                         //bFoundB = kTRUE;
                                        } // for( Int
-                                       else for( Int_t iPtRef = 0; iPtRef < vPtsRef.size(); iPtRef++)
+                                       else for( UInt_t uPtRef = 0; uPtRef < vPtsRef.size(); uPtRef++)
                                        {
-                                         //if( vPtsRef[iPtRef] == (CbmTofPoint*)xDigiA->GetLinks() )
+                                         //if( vPtsRef[uPtRef] == (CbmTofPoint*)xDigiA->GetLinks() )
                                          //bFoundA = kTRUE;
-                                         //if( vPtsRef[iPtRef] == (CbmTofPoint*)xDigiB->GetLinks() )
+                                         //if( vPtsRef[uPtRef] == (CbmTofPoint*)xDigiB->GetLinks() )
                                          //bFoundB = kTRUE;
-                                       } // for( Int_t iPtRef = 0; iPtRef < vPtsRef.size(); iPtRef++)
+                                       } // for( UInt_t uPtRef = 0; uPtRef < vPtsRef.size(); uPtRef++)
+*/
 
                                     // CbmTofPoint pointer for 1st digi not found => save it
                                     //if( kFALSE == bFoundA )
@@ -3175,7 +3179,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 
                                     Double_t hitpos[3];
                                     TGeoNode*         cNode   = gGeoManager->GetCurrentNode();
-                                    TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();
+                                    /*TGeoHMatrix* cMatrix =*/ gGeoManager->GetCurrentMatrix();
                                     //cNode->Print();
                                     //cMatrix->Print();
 
@@ -3220,7 +3224,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 
                                     fviClusterMul[iSmType][iSm][iRpc]++; 
 
-                                    for (Int_t i=0; i<vDigiIndRef.size();i++){
+                                    for (UInt_t i=0; i<vDigiIndRef.size();i++){
                                       LOG(DEBUG)<<" "<<vDigiIndRef.at(i);
                                     }
                                     LOG(DEBUG)  <<FairLogger::endl;
@@ -3236,7 +3240,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                                                   <<" fiNbHits "<<fiNbHits<<", "<<Form("0x%08x",iDetId)
                                                   <<FairLogger::endl;
 
-                                       for (Int_t i=0; i<vDigiIndRef.size();i++){
+                                       for (UInt_t i=0; i<vDigiIndRef.size();i++){
                                           CbmTofDigiExp *pDigiC = (CbmTofDigiExp*) fTofDigisColl->At(vDigiIndRef.at(i));
                                          LOG(DEBUG)<<" Digi  "<<pDigiC->ToString()<<FairLogger::endl;
                                        }
@@ -3259,7 +3263,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 
                                     new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch();
                                     CbmMatch* digiMatch = (CbmMatch *)fTofDigiMatchColl->At(fiNbHits);
-                                    for (Int_t i=0; i<vDigiIndRef.size();i++){
+                                    for (UInt_t i=0; i<vDigiIndRef.size();i++){
                                       Double_t dTot = ((CbmTofDigiExp*) (fTofDigisColl->At(vDigiIndRef.at(i))))->GetTot();
                                       digiMatch->AddLink(CbmLink(dTot,vDigiIndRef.at(i)));
                                     }
@@ -3405,7 +3409,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
 
                      Double_t hitpos[3];
                      TGeoNode*        cNode= gGeoManager->GetCurrentNode();
-                     TGeoHMatrix* cMatrix = gGeoManager->GetCurrentMatrix();
+                     /*TGeoHMatrix* cMatrix =*/ gGeoManager->GetCurrentMatrix();
                      //cNode->Print();
                      //cMatrix->Print();
 
@@ -3445,7 +3449,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                        //   dWeightedTime,dWeightedPosY)
                                 <<", DigiSize: "<<vDigiIndRef.size();
                      LOG(DEBUG)<<", DigiInds: ";
-                     for (Int_t i=0; i<vDigiIndRef.size();i++){
+                     for (UInt_t i=0; i<vDigiIndRef.size();i++){
                        LOG(DEBUG)<<" "<<vDigiIndRef.at(i);
                      }
                      LOG(DEBUG)  <<FairLogger::endl;
@@ -3474,7 +3478,7 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
                      //                                         vDigiIndRef);
                      new((*fTofDigiMatchColl)[fiNbHits]) CbmMatch();
                      CbmMatch* digiMatch = (CbmMatch *)fTofDigiMatchColl->At(fiNbHits);
-                     for (Int_t i=0; i<vDigiIndRef.size();i++){
+                     for (UInt_t i=0; i<vDigiIndRef.size();i++){
                        Double_t dTot = ((CbmTofDigiExp*) (fTofDigisColl->At(vDigiIndRef.at(i))))->GetTot();
                        digiMatch->AddLink(CbmLink(dTot,vDigiIndRef.at(i)));
                      }
@@ -3543,7 +3547,7 @@ Bool_t   CbmTofTestBeamClusterizer::MergeClusters()
               Int_t iRpc2  = CbmTofAddress::GetRpcId( iDetId2 );
               if(TMath::Abs(iRpc-iRpc2)==1){  // Found neighbour 
                 Int_t iChId2 = pHit2->GetAddress();
-                CbmTofCell  *fChannelInfo2 = fDigiPar->GetCell( iChId2 );
+/*                CbmTofCell  *fChannelInfo2 = fDigiPar->GetCell( iChId2 );*/
                 Int_t iCh2 = CbmTofAddress::GetChannelId(iChId2);
                 Double_t xPos=pHit->GetX();
                 Double_t yPos=pHit->GetY();

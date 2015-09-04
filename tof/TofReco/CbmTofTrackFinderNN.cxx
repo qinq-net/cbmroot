@@ -97,7 +97,7 @@ CbmTofTrackFinderNN::CbmTofTrackFinderNN(const CbmTofTrackFinderNN &finder) :
 }
 
 // assignement operator 
-CbmTofTrackFinderNN& CbmTofTrackFinderNN::operator=(const CbmTofTrackFinderNN &fSource){
+CbmTofTrackFinderNN& CbmTofTrackFinderNN::operator=(const CbmTofTrackFinderNN &/*fSource*/){
   // do copy
   // ... (too lazy) ...
   // return the existing object
@@ -143,7 +143,7 @@ Int_t CbmTofTrackFinderNN::DoFind(
     const Double_t dTime0 = 0.;  // FIXME
 
     Int_t iNbHits = fHits->GetEntries(); 
-    CbmTofHit *pHit0 =  new((*fHits)[iNbHits]) CbmTofHit( 
+    /*CbmTofHit *pHit0 =*/  new((*fHits)[iNbHits]) CbmTofHit( 
 			iDetId,
 			hitPos, 
 			hitPosErr, // local detector coordinates
@@ -181,12 +181,12 @@ Int_t CbmTofTrackFinderNN::DoFind(
 		   <<FairLogger::endl;
 	//	continue;
       }else{
-	TGeoNode *fNode=        // prepare global->local trafo
+	/*TGeoNode *fNode= */       // prepare global->local trafo
 	  gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
 	hitpos[0]=pHit->GetX();
 	hitpos[1]=pHit->GetY();
 	hitpos[2]=pHit->GetZ();
-	TGeoNode* cNode= gGeoManager->GetCurrentNode();
+	/*TGeoNode* cNode=*/ gGeoManager->GetCurrentNode();
 	gGeoManager->MasterToLocal(hitpos, hitpos_local);
 	dSizey=fChannelInfo->GetSizey();
       }
@@ -208,12 +208,12 @@ Int_t CbmTofTrackFinderNN::DoFind(
 		       <<FairLogger::endl;
 	    //	    continue;
 	  }else{
-	    TGeoNode *fNode1=        // prepare global->local trafo
+	    /*TGeoNode *fNode1=*/        // prepare global->local trafo
 	    gGeoManager->FindNode(fChannelInfo1->GetX(),fChannelInfo1->GetY(),fChannelInfo1->GetZ());
 	    hitpos1[0]=pHit1->GetX();
 	    hitpos1[1]=pHit1->GetY();
 	    hitpos1[2]=pHit1->GetZ();
-	    TGeoNode* cNode1= gGeoManager->GetCurrentNode();
+	    /*TGeoNode* cNode1=*/ gGeoManager->GetCurrentNode();
 	    gGeoManager->MasterToLocal(hitpos1, hitpos1_local);
 	    dSizey1=fChannelInfo1->GetSizey();
 	  }
@@ -292,12 +292,12 @@ Int_t CbmTofTrackFinderNN::DoFind(
 		   <<FairLogger::endl;
 	//	continue;
       }else{
-	TGeoNode *fNode=        // prepare global->local trafo
+	/*TGeoNode *fNode=*/        // prepare global->local trafo
 	  gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
 	hitpos[0]=pHit->GetX();
 	hitpos[1]=pHit->GetY();
 	hitpos[2]=pHit->GetZ();
-	TGeoNode* cNode= gGeoManager->GetCurrentNode();
+	/*TGeoNode* cNode=*/ gGeoManager->GetCurrentNode();
 	gGeoManager->MasterToLocal(hitpos, hitpos_local);
 	dSizey=fChannelInfo->GetSizey();
       }
@@ -502,12 +502,12 @@ void  CbmTofTrackFinderNN::TrklSeed(Int_t iHit)
 	      <<FairLogger::endl;
 	  //  continue;
 	}else{
-	  TGeoNode *fNode1=        // prepare global->local trafo
+	  /*TGeoNode *fNode1=*/        // prepare global->local trafo
 	  gGeoManager->FindNode(fChannelInfo1->GetX(),fChannelInfo1->GetY(),fChannelInfo1->GetZ());
 	  hitpos1[0]=pHit1->GetX();
 	  hitpos1[1]=pHit1->GetY();
 	  hitpos1[2]=pHit1->GetZ();
-	  TGeoNode* cNode1= gGeoManager->GetCurrentNode();
+	  /*TGeoNode* cNode1=*/ gGeoManager->GetCurrentNode();
 	  gGeoManager->MasterToLocal(hitpos1, hitpos1_local);
 	  dSizey1=fChannelInfo1->GetSizey();
 	}
@@ -562,7 +562,7 @@ Int_t  CbmTofTrackFinderNN::HitUsed(Int_t iHit)
 {
   CbmTofHit* pHit = (CbmTofHit*) fHits->At( iHit );
   Int_t iSmType   = CbmTofAddress::GetSmType( pHit->GetAddress() & DetMask );
-  Int_t iDet      = fFindTracks->GetTypeStation(iSmType);
+  /*Int_t iDet      =*/ fFindTracks->GetTypeStation(iSmType);
   Int_t iUsed     = 0;
 
   LOG(DEBUG1)<<"CbmTofTrackFinderNN::HitUsed of Hind "<<iHit<<", TrkMap.size "<<fvTrkMap[iHit].size()

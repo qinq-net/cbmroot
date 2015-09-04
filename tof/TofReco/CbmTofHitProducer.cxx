@@ -156,7 +156,7 @@ InitStatus CbmTofHitProducer::Init() {
 
    // Initialize the TOF GeoHandler
    Bool_t isSimulation=kFALSE;
-   Int_t bla = fGeoHandler->Init(isSimulation);
+   /*Int_t bla =*/ fGeoHandler->Init(isSimulation);
 
    if (fParInitFromAscii) {
      ReadTofZPosition();
@@ -176,12 +176,12 @@ InitStatus CbmTofHitProducer::Init() {
 
 // ---- Exec ----------------------------------------------------------
 
-void CbmTofHitProducer::Exec(Option_t * option) {
+void CbmTofHitProducer::Exec(Option_t * /*option*/) {
    fTofHits->Clear();
    fNHits = -1; // Must start in -1
 
    // Some numbers on TOF distributions
-   Int_t tof_tracks = 0, tof_tracks_vert = 0, tof_tracks_local = 0;
+   Int_t tof_tracks = 0, tof_tracks_vert = 0/*, tof_tracks_local = 0*/;
    Int_t nofMCTracks = fMCTracks->GetEntries();
    for (Int_t p = 0; p < nofMCTracks; p++) {
       const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(fMCTracks->At(p));
@@ -327,7 +327,7 @@ void CbmTofHitProducer::Exec(Option_t * option) {
       zHitErr = Dz / sqrt(12.);
 
       // Reference to the point that contributes to the left side.
-      Int_t ref = point_left[region][module][cell];
+/*      Int_t ref = point_left[region][module][cell];*/
 
       // Reference to the point that contributes to the right side.
       if (type[region][module][cell] == "s"

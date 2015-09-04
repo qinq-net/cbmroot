@@ -84,6 +84,9 @@ class CbmTofDigitizerBDF : public FairTask
       virtual void Finish();
 
       void SetInputFileName (TString FileName) { fsBeamInputFile = FileName; }
+      
+      Bool_t   SetHistoFileName( TString sFilenameIn );
+      
    protected:
 
    private:
@@ -268,6 +271,8 @@ class CbmTofDigitizerBDF : public FairTask
       // Generic
       Int_t fVerbose;
 
+      // Output file name and path
+      TString fsHistoOutFilename;   
       // Histograms
       TH1 * fhTofPointsPerTrack;
       TH2 * fhTofPtsInTrkVsGapInd;

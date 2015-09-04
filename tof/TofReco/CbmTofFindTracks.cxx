@@ -119,7 +119,7 @@ CbmTofFindTracks::CbmTofFindTracks()  : FairTask(),
 
 // -----   Standard constructor   ------------------------------------------
 CbmTofFindTracks::CbmTofFindTracks(const char* name,
-				   const char* title,
+				   const char* /*title*/,
 				   CbmTofTrackFinder* finder)
   : FairTask(name),
     fFinder(finder),
@@ -411,12 +411,15 @@ Bool_t CbmTofFindTracks::WriteHistos()
    default: 
      ;
    }
+
+   gDirectory->cd( oldir->GetPath() );
+
    return kTRUE;
 }
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmTofFindTracks::Exec(Option_t* opt)
+void CbmTofFindTracks::Exec(Option_t* /*opt*/)
 {
   // recalibrate hits  
   for (Int_t iHit=0; iHit<fTofHitArray->GetEntries(); iHit++){
@@ -679,10 +682,10 @@ void CbmTofFindTracks::FillHistograms(){
       for (Int_t iSt=0; iSt<fNTofStations; iSt++){
 	Int_t iH  = pTrk->GetStationHitIndex(fStationType[iSt]); // Station Hit index
 	if(iH<0) continue;                                       // Station not part of tracklet
-	Int_t iH0 = pTrk->GetFirstInd(fStationType[iSt]);        // Closest station to target
+/*	Int_t iH0 = pTrk->GetFirstInd(fStationType[iSt]);        // Closest station to target*/
 	fhUsedHitsStation->Fill(iSt); 
 	CbmTofHit* pHit  = (CbmTofHit*)fTofHitArray->At(iH);	
-	CbmTofHit* pHit0 = (CbmTofHit*)fTofHitArray->At(iH0);
+/*	CbmTofHit* pHit0 = (CbmTofHit*)fTofHitArray->At(iH0); -> Comment to remove warning because unused */ 
 	
         if (0 == fStationType[iSt]) pHit->SetTime(pTrk->GetT0()); 
 	/*
@@ -747,12 +750,12 @@ void CbmTofFindTracks::FillHistograms(){
        if(NULL == fChannelInfo){
 	 //faked hit, take init values 
        }else{
-	 TGeoNode *fNode=        // prepare global->local trafo
+/*	 TGeoNode *fNode=*/        // prepare global->local trafo
 	   gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
 	 hitpos[0]=pHit->GetX();
 	 hitpos[1]=pHit->GetY();
 	 hitpos[2]=pHit->GetZ();
-	 TGeoNode* cNode= gGeoManager->GetCurrentNode();
+/*	 TGeoNode* cNode= gGeoManager->GetCurrentNode();*/
 	 gGeoManager->MasterToLocal(hitpos, hitpos_local);
        }      
        vhXY_AllStations[iSt]->Fill(hitpos_local[0],hitpos_local[1]);  
@@ -766,7 +769,7 @@ void CbmTofFindTracks::FillHistograms(){
 	   if (iSmType < 1) continue;
 	   Int_t iChId   = CbmTofAddress::GetUniqueAddress(0,0,0,0,iSmType);
 	   CbmTofCell* fChannelInfo = fDigiPar->GetCell( iChId );
-	   TGeoNode *fNode=        // prepare global->local trafo
+/*	   TGeoNode *fNode=  */      // prepare global->local trafo
 	   gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
 	   Double_t zPos=fChannelInfo->GetZ();
 	   Double_t hitpos[3];
@@ -774,7 +777,7 @@ void CbmTofFindTracks::FillHistograms(){
 	   hitpos[1]=pTrk->GetFitY(zPos);
 	   hitpos[2]=zPos;
 	   Double_t hitpos_local[3];
-	   TGeoNode* cNode= gGeoManager->GetCurrentNode();
+/*	   TGeoNode* cNode=*/ gGeoManager->GetCurrentNode();
 	   gGeoManager->MasterToLocal(hitpos, hitpos_local);
 	   vhXY_MissedStation[iSt]->Fill(hitpos_local[0],hitpos_local[1]);
 	   // correlation analysis
@@ -824,11 +827,11 @@ void CbmTofFindTracks::FillHistograms(){
     }
   }
 
-  for (Int_t iHMul=2; iHMul<HMul.size(); iHMul++){
-    LOG(DEBUG) << Form("CbmTofFindTracks::FillHistograms() HMul %d, #%d",iHMul,HMul[iHMul])
+  for (UInt_t uHMul=2; uHMul<HMul.size(); uHMul++){
+    LOG(DEBUG) << Form("CbmTofFindTracks::FillHistograms() HMul %u, #%d",uHMul,HMul[uHMul])
 	    <<FairLogger::endl;
-    if(HMul[iHMul]>0) {
-      fhTrklHMul->Fill(iHMul,HMul[iHMul]);
+    if(HMul[uHMul]>0) {
+      fhTrklHMul->Fill(uHMul,HMul[uHMul]);
     }
   }
 

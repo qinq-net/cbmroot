@@ -75,10 +75,10 @@ void CbmTofDigiBdfPar::clear(void)
 }
 void CbmTofDigiBdfPar::ClearHistos()
 {
-   for( Int_t iSmType = 0; iSmType < fh1ClusterSize.size(); iSmType ++)
-      delete fh1ClusterSize[iSmType];
-   for( Int_t iSmType = 0; iSmType < fh1ClusterTot.size(); iSmType ++)
-      delete fh1ClusterTot[iSmType];
+   for( UInt_t uSmType = 0; uSmType < fh1ClusterSize.size(); uSmType ++)
+      delete fh1ClusterSize[uSmType];
+   for( UInt_t uSmType = 0; uSmType < fh1ClusterTot.size(); uSmType ++)
+      delete fh1ClusterTot[uSmType];
    fh1ClusterSize.clear();
    fh1ClusterTot.clear();
 }

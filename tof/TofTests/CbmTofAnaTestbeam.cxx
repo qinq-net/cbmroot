@@ -572,7 +572,7 @@ Bool_t   CbmTofAnaTestbeam::LoadGeometry()
    } else return kFALSE;
 }
 
-void CbmTofAnaTestbeam::Exec(Option_t * option)
+void CbmTofAnaTestbeam::Exec(Option_t * /*option*/)
 {
    // Task execution
 
@@ -759,8 +759,8 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
    Double_t DTMAX=1000.;
    Double_t DXMAX=10.;
    Double_t DYMAX=10.;
-   Double_t XMAX=100.;
-   Double_t YMAX=100.;
+/*   Double_t XMAX=100.;*/
+/*   Double_t YMAX=100.;*/
 
    TDirectory * oldir = gDirectory; // <= To prevent histos from being sucked in by the param file of the TRootManager!
    gROOT->cd(); // <= To prevent histos from being sucked in by the param file of the TRootManager !
@@ -907,8 +907,8 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			    Form("Time - velocity correlation; #DeltaTD4 [ps]; #DeltaT04 [ps]"),
 			    100, -DTMAX*6., DTMAX*6., 100, -DTMAX*2., DTMAX*2.); 
 
-     Double_t dXMAX=30.;
-     Double_t dYMAX=20.; 
+/*     Double_t dXMAX=30.;*/
+/*     Double_t dYMAX=20.;*/
      fhDTMul4D4best = new TH2F( Form("hDTMul4D4best"),
 			    Form("Time - Multiplicity correlation; Mul4 ; #DeltaT04 [ps]"),
 			    10, 0., 10., 100, -DTMAX, DTMAX);
@@ -1154,7 +1154,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 {
    // Constants, TODO => put as parameter !!!
 
-  Int_t kTOF=6;
+/*  Int_t kTOF=6;*/
 
    // Declare variables outside the loop
    CbmTofHit   *pHit;
@@ -1170,7 +1170,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    CbmTofCell  *fChannelInfo3;
    CbmTofCell  *fChannelInfo4;
 
-   Int_t iNbTofDigis, iNbTofHits, iNbTofTracks;
+/*   Int_t iNbTofDigis;*/
+   Int_t iNbTofHits, iNbTofTracks;
 
    //   iNbTofDigis   = fTofDigisColl->GetEntriesFast();
    iNbTofHits    = fTofHitsColl->GetEntriesFast();
@@ -1201,7 +1202,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    Int_t iNbMatchedHits = 0;
    Int_t iNbMaxMatch=100;
    Double_t Zref=300.;
-   Double_t Chi2MatchMin=1.E8;
+/*   Double_t Chi2MatchMin=1.E8;*/
    Double_t Chi2List[iNbMaxMatch];
    CbmTofHit *pChi2Hit1[iNbMaxMatch];
    CbmTofHit *pChi2Hit2[iNbMaxMatch];
@@ -1287,7 +1288,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	continue;
       }
 
-      if(iSmType<fhXYPos.size())
+      if(static_cast<UInt_t>(iSmType)<fhXYPos.size())
       fhXYPos[iSmType]->Fill(pHit->GetX(),pHit->GetY());
 
       if(fiDut == iSmType) {
@@ -1441,13 +1442,13 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	     if( TMath::Abs(dDTD4)<fdDTD4MAX &&        // single selection scheme, selector 0
 	         TMath::Abs(CbmTofAddress::GetChannelId( iChId2 ) - fdCh4Sel) < fdDCh4Sel     )
 	       {
-		 TGeoNode *fNode=        // prepare global->local trafo
+		 /*TGeoNode *fNode=*/        // prepare global->local trafo
 		   gGeoManager->FindNode(fChannelInfo2->GetX(),fChannelInfo2->GetY(),fChannelInfo2->GetZ());
 		 Double_t hitpos[3],  hitpos_local[3];
 		 hitpos[0]=pHit2->GetX();
 		 hitpos[1]=pHit2->GetY();
 		 hitpos[2]=pHit2->GetZ();
-		 TGeoNode* cNode= gGeoManager->GetCurrentNode();
+		 /*TGeoNode* cNode=*/ gGeoManager->GetCurrentNode();
 		 gGeoManager->MasterToLocal(hitpos, hitpos_local);
 	         if( TMath::Abs(hitpos_local[1]-fdPosY4SelOff)<fdPosY4Sel*fChannelInfo2->GetSizey()
 		   &&TMath::Abs(dDTD4)<TMath::Abs(dDTD4Min)){
@@ -1485,12 +1486,12 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 		       }
 		       if( fiMrpcSel2 == CbmTofAddress::GetSmType( iDetId3 )){   // Sel2 RPC hit
 			 if(TMath::Abs(CbmTofAddress::GetChannelId( iChId3 ) - fdChS2Sel) < fdDChS2Sel) {
-			   TGeoNode *fNode3=        // prepare global->local trafo
+			   /*TGeoNode *fNode3= */       // prepare global->local trafo
 			     gGeoManager->FindNode(fChannelInfo3->GetX(),fChannelInfo3->GetY(),fChannelInfo3->GetZ());
 			   hitpos3[0]=pHit3->GetX();
 			   hitpos3[1]=pHit3->GetY();
 			   hitpos3[2]=pHit3->GetZ();
-			   TGeoNode* cNode3= gGeoManager->GetCurrentNode();
+			   /*TGeoNode* cNode3=*/ gGeoManager->GetCurrentNode();
 			   gGeoManager->MasterToLocal(hitpos3, hitpos3_local);
 			   if( TMath::Abs(hitpos3_local[1]-fdPosYS2SelOff)<fdPosYS2Sel*fChannelInfo3->GetSizey() ){
 			     Double_t xPos3=Zref/pHit3->GetZ()*pHit3->GetX();
@@ -1547,14 +1548,14 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
     
     if(fChannelInfoDut != NULL){
      // Project into Dut reference frame
-     TGeoNode *fNodeDut=        // prepare global->local trafo
+     /*TGeoNode *fNodeDut=*/        // prepare global->local trafo
      gGeoManager->FindNode(fChannelInfoDut->GetX(),fChannelInfoDut->GetY(),fChannelInfoDut->GetZ());
 
      hitpos1[0]=fChannelInfoDut->GetZ()/pHitRef->GetZ()*pHitRef->GetX();
      hitpos1[1]=fChannelInfoDut->GetZ()/pHitRef->GetZ()*pHitRef->GetY();
      hitpos1[2]=fChannelInfoDut->GetZ();
 
-     TGeoNode* cNodeDut= gGeoManager->GetCurrentNode();
+     /*TGeoNode* cNodeDut=*/ gGeoManager->GetCurrentNode();
      gGeoManager->MasterToLocal(hitpos1, hitpos1_local);
      //hitpos1_local[0] -= fiDutNch/2 * fChannelInfoDut->GetSizex();
      fhXY0D4sel->Fill(hitpos1_local[0],hitpos1_local[1]);
@@ -1562,26 +1563,26 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
     }
 
     // Monitor selected Reference Hit position
-    TGeoNode *fNodeRef=        // prepare global->local trafo
+    /*TGeoNode *fNodeRef=*/        // prepare global->local trafo
     gGeoManager->FindNode(fChannelInfoRef->GetX(),fChannelInfoRef->GetY(),fChannelInfoRef->GetZ());
 
     hitpos2[0]=pHitRef->GetX();
     hitpos2[1]=pHitRef->GetY();
     hitpos2[2]=pHitRef->GetZ();
-    TGeoNode* cNodeRef= gGeoManager->GetCurrentNode();
+    /*TGeoNode* cNodeRef=*/ gGeoManager->GetCurrentNode();
     gGeoManager->MasterToLocal(hitpos2, hitpos2_local);
     fhXY4D4sel->Fill(hitpos2_local[0],hitpos2_local[1]);
 
     if(NULL != pHitSel2){  
-      Int_t iDetId3 = (pHitSel2->GetAddress() & DetMask);
+      /*Int_t iDetId3 = (pHitSel2->GetAddress() & DetMask);*/
       Int_t iChId3  = pHitSel2->GetAddress();
       fChannelInfo3 = fDigiPar->GetCell( iChId3 );
-      TGeoNode *fNode3=        // prepare global->local trafo
+      /*TGeoNode *fNode3=*/        // prepare global->local trafo
 	gGeoManager->FindNode(fChannelInfo3->GetX(),fChannelInfo3->GetY(),fChannelInfo3->GetZ());
       hitpos3[0]=pHitSel2->GetX();
       hitpos3[1]=pHitSel2->GetY();
       hitpos3[2]=pHitSel2->GetZ();
-      TGeoNode* cNode3= gGeoManager->GetCurrentNode();
+      /*TGeoNode* cNode3=*/ gGeoManager->GetCurrentNode();
       gGeoManager->MasterToLocal(hitpos3, hitpos3_local);
       fhXYSel2D4sel->Fill(hitpos3_local[0],hitpos3_local[1]);
     }
@@ -1652,14 +1653,14 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      fhCluMul04D4best->Fill(dMul0,dMul4);
 
      // check for dependence in counter reference frame
-     TGeoNode *fNode=        // prepare global->local trafo
+     /*TGeoNode *fNode=*/        // prepare global->local trafo
      gGeoManager->FindNode(fChannelInfo2->GetX(),fChannelInfo2->GetY(),fChannelInfo2->GetZ());
 
      hitpos2[0]=pHit2->GetX();
      hitpos2[1]=pHit2->GetY();
      hitpos2[2]=pHit2->GetZ();
 
-//     TGeoNode* cNode= gGeoManager->GetCurrentNode(); // -> Comment to remove warning because set but never used
+/*     TGeoNode* cNode=*/ gGeoManager->GetCurrentNode(); // -> Comment to remove warning because set but never used
      gGeoManager->MasterToLocal(hitpos2, hitpos2_local);
 
      Double_t dTofD4  = fdTOffD4 + dDTD4Min;
@@ -1726,14 +1727,14 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      fhDTMul0D4best->Fill(dMul0,tof1-tof2-dTcor);
 
      // check for dependence in counter reference frame
-     TGeoNode *fNode1=        // prepare global->local trafo
+     /*TGeoNode *fNode1=*/        // prepare global->local trafo
      gGeoManager->FindNode(fChannelInfo1->GetX(),fChannelInfo1->GetY(),fChannelInfo1->GetZ());
 
      hitpos1[0]=pHit1->GetX();
      hitpos1[1]=pHit1->GetY();
      hitpos1[2]=pHit1->GetZ();
 
-     TGeoNode* cNode1= gGeoManager->GetCurrentNode();
+     /*TGeoNode* cNode1=*/ gGeoManager->GetCurrentNode();
      gGeoManager->MasterToLocal(hitpos1, hitpos1_local);
 
      fhXY0D4best->Fill(hitpos1_local[0],hitpos1_local[1]);
@@ -1776,23 +1777,23 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 pHit3=pChi2Hit1[iM];
 	 pHit4=pChi2Hit2[iM];
 
-	 Int_t iDetId3 = (pHit1->GetAddress() & DetMask);
+	 /*Int_t iDetId3 = (pHit1->GetAddress() & DetMask);*/
 	 Int_t iChId3 = pHit1->GetAddress();
 	 fChannelInfo3 = fDigiPar->GetCell( iChId3 );
 
-	 Int_t iDetId4 = (pHit4->GetAddress() & DetMask);
+	 /*Int_t iDetId4 = (pHit4->GetAddress() & DetMask);*/
 	 Int_t iChId4 = pHit4->GetAddress();
 	 fChannelInfo4 = fDigiPar->GetCell( iChId4 );
 
 	 // check for dependence in counter reference frame
-	 TGeoNode *fNode4=        // prepare global->local trafo
+	 /*TGeoNode *fNode4= */       // prepare global->local trafo
 	   gGeoManager->FindNode(fChannelInfo4->GetX(),fChannelInfo4->GetY(),fChannelInfo4->GetZ());
 
 	 hitpos4[0]=pChi2Hit2[iM]->GetX();
 	 hitpos4[1]=pChi2Hit2[iM]->GetY();
 	 hitpos4[2]=pChi2Hit2[iM]->GetZ();
 
-//	 cNode= gGeoManager->GetCurrentNode(); // -> Comment to remove warning because set but never used
+/*	 cNode=*/ gGeoManager->GetCurrentNode(); // -> Comment to remove warning because set but never used
 	 gGeoManager->MasterToLocal(hitpos4, hitpos4_local);
 
 	 if(TMath::Abs(hitpos4_local[1])>fdPosY4Sel*fChannelInfo4->GetSizey()) continue;
@@ -1879,14 +1880,14 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 fhDTMul0D4sbest->Fill(dMul0,tof3-tof4-dTcor4);
 
 	 // check for dependence in counter reference frame
-	 TGeoNode *fNode3=        // prepare global->local trafo
+	 /*TGeoNode *fNode3=*/        // prepare global->local trafo
 	   gGeoManager->FindNode(fChannelInfo3->GetX(),fChannelInfo3->GetY(),fChannelInfo3->GetZ());
 
 	 hitpos3[0]=pChi2Hit1[iM]->GetX();
 	 hitpos3[1]=pChi2Hit1[iM]->GetY();
 	 hitpos3[2]=pChi2Hit1[iM]->GetZ();
 
-	 TGeoNode* cNode3= gGeoManager->GetCurrentNode();
+	 /*TGeoNode* cNode3=*/ gGeoManager->GetCurrentNode();
 	 gGeoManager->MasterToLocal(hitpos3, hitpos3_local);
 
 	 fhDTX0D4sbest->Fill(hitpos3_local[0],tof3-tof4-dTcor4);
@@ -1940,9 +1941,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
        Int_t iChIdDut   = CbmTofAddress::GetUniqueAddress(0,0,0,0,fiDut);
        fChannelInfo = fDigiPar->GetCell( iChIdDut );
-       TGeoNode *fNode=        // prepare global->local trafo
+       /*TGeoNode *fNode=*/        // prepare global->local trafo
 	 gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
-       TGeoNode* cNode= gGeoManager->GetCurrentNode();
+       /*TGeoNode* cNode=*/ gGeoManager->GetCurrentNode();
        Double_t  dDutzPos=fChannelInfo->GetZ();
        Double_t  hitpos[3], hitpos_local[3];
 
@@ -1978,7 +1979,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 Double_t dR=TMath::Sqrt(dXex*dXex + dYex*dYex + dDutzPos*dDutzPos);
 	 Double_t dTex=pTrk->GetFitT(dR);
 
-	 for (Int_t i=0; i<vDutHit.size();i++){ // loop over Dut Hits
+	 for (UInt_t i=0; i<vDutHit.size();i++){ // loop over Dut Hits
 	  Double_t dChi = TMath::Sqrt(TMath::Power(TMath::Abs(dTex-vDutHit[i]->GetTime())/fSIGT,2)
 				     +TMath::Power(TMath::Abs(dXex-vDutHit[i]->GetX())/fSIGX,2)
 	   			     +TMath::Power(TMath::Abs(dYex-vDutHit[i]->GetY())/fSIGY,2))/3;
@@ -2030,7 +2031,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        // inspect assignment results
        Int_t iCheck = 1;
        while(iCheck-- > 0)
-       for(Int_t iHit=0; iHit<vDutHit.size(); iHit++) {
+       for(Int_t iHit=0; static_cast<UInt_t>(iHit)<vDutHit.size(); iHit++) {
 	 if(vTrkMap[iHit].size()>0){ 
 	   Int_t iTrk=vTrkMap[iHit].begin()->second;     // hit was assigned best to track iTrk
 	   if(vHitMap[iTrk].begin()->second == iHit) {   // unique/consistent assignment
@@ -2076,9 +2077,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	 if (pTrk->GetNofHits() < NStations) continue;  
 
 	 // Calculate positions and time in Dut plane
-	 Double_t dXex=pTrk->GetFitX(dDutzPos);
-	 Double_t dYex=pTrk->GetFitY(dDutzPos);
-	 Double_t dTex=pTrk->GetFitT(dDutzPos);
+/*	 Double_t dXex=pTrk->GetFitX(dDutzPos);*/
+/*	 Double_t dYex=pTrk->GetFitY(dDutzPos);*/
+/*	 Double_t dTex=pTrk->GetFitT(dDutzPos);*/
 
 	 hitpos[0]=pTrk->GetFitX(dDutzPos);
 	 hitpos[1]=pTrk->GetFitY(dDutzPos);

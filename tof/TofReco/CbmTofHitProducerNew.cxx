@@ -170,16 +170,22 @@ InitStatus CbmTofHitProducerNew::Init()
     
     // Initialize the TOF GeoHandler
     Bool_t isSimulation=kFALSE;
-    Int_t bla = fGeoHandler->Init(isSimulation);
-    Int_t   nsmtyp=10, nsm=255, nmodules=10, ncells=255;
+    /*Int_t bla =*/ fGeoHandler->Init(isSimulation);
+/*    Int_t   nsmtyp=10, nsm=255, nmodules=10, ncells=255;*/
     Int_t iCh=0; // channel identifier 
   
     //    Initialize the matrixes [make this index visible in all the macro]. FIXME
-
+/** Use the same constant variables as for the arrays initialization for safety and 
+ ** to remove warnings
     for(int t=0;t<nsmtyp;t++){
      for(int i=0;i<nsm;i++){
       for(int j=0;j<nmodules;j++){
 	for(int k=0;k<ncells;k++){
+ **/ 
+    for(int t=0;t<maxSMtyp;t++){
+     for(int i=0;i<maxnSM;i++){
+      for(int j=0;j<maxnMod;j++){
+	for(int k=0;k<maxnCell;k++){
 	  X[t][i][j][k] = -1;
 	  Y[t][i][j][k] = -1;
 	  Z[t][i][j][k] = -1;
@@ -296,12 +302,20 @@ void CbmTofHitProducerNew::InitParametersFromContainer()
 {
 
    //    Initialize the matrixes [make this index visible in all the macro]. FIXME
-    Int_t   nsmtyp=10, nsm=255, nmodules=10, ncells=255;
+/*    Int_t   nsmtyp=10, nsm=255, nmodules=10, ncells=255;*/
 
+/** Use the same constant variables as for the arrays initialization for safety and 
+ ** to remove warnings and error => the used size for the first dimensions was
+ ** bigger than the real size of the array
     for(int t=0;t<nsmtyp;t++){
      for(int i=0;i<nsm;i++){
       for(int j=0;j<nmodules;j++){
 	for(int k=0;k<ncells;k++){
+ **/
+    for(int t=0;t<maxSMtyp;t++){
+     for(int i=0;i<maxnSM;i++){
+      for(int j=0;j<maxnMod;j++){
+	for(int k=0;k<maxnCell;k++){
 	  X[t][i][j][k] = -1;
 	  Y[t][i][j][k] = -1;
 	  Z[t][i][j][k] = -1;
@@ -354,7 +368,7 @@ void CbmTofHitProducerNew::InitParametersFromContainer()
 
 // ---- Exec ----------------------------------------------------------
 
-void CbmTofHitProducerNew::Exec(Option_t * option)
+void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
 {
   fHitCollection->Clear();
   fNHits = -1;              //Must start in -1
@@ -364,7 +378,7 @@ void CbmTofHitProducerNew::Exec(Option_t * option)
   
   Int_t nTofPoint = fTofPoints->GetEntries();  
   Int_t nMCTracks = fMCTracks ->GetEntries();
-  Int_t tof_tracks = 0, tof_tracks_vert = 0, tof_tracks_local = 0;
+  Int_t tof_tracks = 0, tof_tracks_vert = 0/*, tof_tracks_local = 0*/;
 
   cout << "-I- CbmTofHitProducerNew(Exec): " << nTofPoint
        << " points in Tof for this event with " << nMCTracks
@@ -388,7 +402,11 @@ void CbmTofHitProducerNew::Exec(Option_t * option)
   Double_t xHit, yHit, zHit, tHit, xHitErr, yHitErr, zHitErr;
   Double_t tl_new, tr_new;
   Double_t Dz=2.04;  //FIXME: Introduce also Dz and Z as (constant) parameters 
-  Double_t sigma_T=0.098, sigma_Y=0.7, sigma_t_gap, t_o, T_smearing = 0, sigma_el=0.04, 
+  Double_t sigma_T=0.098;
+/*  Double_t sigma_Y=0.7;*/
+/*  Double_t sigma_t_gap;*/
+/*  Double_t t_o;*/
+  Double_t T_smearing = 0, sigma_el=0.04, 
     vprop = 15., Pgap = 0.75;
   //time[ns], position[cm], velocity[cm/ns]
   //FIXME: these parameters must be provided externally
@@ -602,7 +620,7 @@ void CbmTofHitProducerNew::Exec(Option_t * option)
 // ---- Add Hit to HitCollection --------------------------------------
 
 void CbmTofHitProducerNew::AddHit(Int_t detID, TVector3 &posHit, TVector3 &posHitErr,
-			       Int_t ref, Double_t tHit, Int_t flag, Int_t iChannel)
+			       Int_t ref, Double_t tHit, Int_t flag, Int_t /*iChannel*/)
 {
 //  new((*fHitCollection)[fNHits]) CbmTofHit(detID, posHit, posHitErr, ref, tHit, flag, iChannel);
   new((*fHitCollection)[fNHits]) CbmTofHit(detID, posHit, posHitErr, ref, tHit, flag);
