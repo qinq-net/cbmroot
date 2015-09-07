@@ -281,7 +281,7 @@ void CbmLitFindGlobalTracks::CalculateLength()
 
       if (stsId > -1) {
          const CbmStsTrack* stsTrack = static_cast<const CbmStsTrack*>(fStsTracks->At(stsId));
-         Int_t nofStsHits = stsTrack->GetNofHits();
+         Int_t nofStsHits = stsTrack->GetNofStsHits();
          for(Int_t ih = 0; ih < nofStsHits; ih++) {
             CbmStsHit* hit = (CbmStsHit*) fStsHits->At(stsTrack->GetHitIndex(ih));
             X.push_back(hit->GetX());

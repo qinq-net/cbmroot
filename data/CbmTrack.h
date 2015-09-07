@@ -48,7 +48,7 @@ public:
 			HitType type);
 
 	/** Accessors  **/
-	Int_t GetNofHits() const { return fHitIndex.size(); }
+	virtual Int_t GetNofHits() const { return fHitIndex.size(); }
 	Int_t GetHitIndex(Int_t iHit) const {return fHitIndex[iHit];}
 	HitType GetHitType(Int_t iHit) const {return fHitType[iHit];}
 	Int_t GetPidHypo() const { return fPidHypo; }
