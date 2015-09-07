@@ -30,7 +30,7 @@ class TGet4v1Param : public TNamed
 
       UInt_t numRocs;  // maximum roc id in use +1
 
-      Bool_t activeRoc[get4v10::kiMaxRoc]; //enable roc of id
+      Bool_t activeRoc[get4v10::kuMaxRoc]; //enable roc of id
 
       Bool_t noTrigger;  // ignore trigger window and take all messages with initial event division
 
@@ -43,9 +43,9 @@ class TGet4v1Param : public TNamed
       UInt_t maxBufferTriggers; // maximum number of triggers in same mbs input buffer until retrieving next
       UInt_t maxBufferLoops; // maximum number of loops over same mbs input buffer until retrieving next
 
-      Double_t timeScale[get4v10::kiMaxRoc]; // scaling factor for time correction
+      Double_t timeScale[get4v10::kuMaxRoc]; // scaling factor for time correction
 
-      Int_t timeShift[get4v10::kiMaxRoc]; // instrumental time shift between triggers of each ROC
+      Int_t timeShift[get4v10::kuMaxRoc]; // instrumental time shift between triggers of each ROC
 
       Bool_t doSorting;  // perform time sorting of messages
 
@@ -64,11 +64,11 @@ class TGet4v1Param : public TNamed
       ULong64_t uRocCycleSize;        // No Online Change - Size of roc epoch counter cycle in epochs
       UInt_t    uMainSyncCycleSize;   // No Online Change - Size of the synchronization cycle in Main clock (250MHz) epochs
       UInt_t    uNbRocsGet4;          // No Online Change - Nb of Rocs "GET4" in setup
-      UInt_t    uGet4RocsMapping[get4v10::kiMaxRoc]; // No Online Change - Roc-GET4 id among indexes of all rocs
+      UInt_t    uGet4RocsMapping[get4v10::kuMaxRoc]; // No Online Change - Roc-GET4 id among indexes of all rocs
       UInt_t    uNbGet4;                   // No Online Change - Total Nb of active FEET boards in setup
-      UInt_t    uGet4Mapping[get4v10::kiMaxGet4];    // No Online Change - Get4 Mapping: there should be always at least 2*nbfeets entries here
-      UInt_t    uGet4Active[get4v10::kiMaxGet4];          // Activated Get4 chips (indexes after remapping => not hardware map !)
-      UInt_t    uGet4EdgeInversion[get4v10::kiMaxGet4];   // Edges inversion: affect all channels of a GET4 chip
+      UInt_t    uGet4Mapping[get4v10::kuMaxGet4];    // No Online Change - Get4 Mapping: there should be always at least 2*nbfeets entries here
+      UInt_t    uGet4Active[get4v10::kuMaxGet4];          // Activated Get4 chips (indexes after remapping => not hardware map !)
+      UInt_t    uGet4EdgeInversion[get4v10::kuMaxGet4];   // Edges inversion: affect all channels of a GET4 chip
       UInt_t    uSilentMode;          // Remove all printouts => Blind mode!
       UInt_t    uDebugHistoOn;        // No Online Change - Enable/Disable general debug histograms
       UInt_t    uDebugPrintOn;        // Number of data messages to be printed on screen for debug

@@ -59,7 +59,7 @@ UInt_t TTofVftxBoard::AddData( TTofVftxData & dataIn )
    if( NULL != fDataCollection )
    {
       Int_t iNextIndex = fDataCollection->GetEntriesFast();
-      if( iNextIndex < vftxtdc::kuNbMulti * GetChannelNb() )
+      if( iNextIndex < static_cast<Int_t>(vftxtdc::kuNbMulti * GetChannelNb()) )
       {
          TTofVftxData * dataSlot = (TTofVftxData *)fDataCollection->ConstructedAt( iNextIndex );
          *dataSlot = dataIn;
@@ -72,7 +72,7 @@ TTofVftxData * TTofVftxBoard::GetDataPtr( UInt_t uDataIndex )
 {
    if( NULL != fDataCollection )
    {
-      if( uDataIndex < fDataCollection->GetEntriesFast() )
+      if( static_cast<Int_t>(uDataIndex) < fDataCollection->GetEntriesFast() )
          return (TTofVftxData *)fDataCollection->At( uDataIndex );
          else return NULL;
    } // if( NULL != fDataCollection )

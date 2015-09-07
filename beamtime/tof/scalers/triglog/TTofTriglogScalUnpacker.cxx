@@ -92,14 +92,14 @@ TTofTriglogScalUnpacker::TTofTriglogScalUnpacker( TMbsUnpackTofPar * parIn ):
             LOG(DEBUG)<<"TTofTriglogScalUnpacker::TTofTriglogScalUnpacker : Initialize objects for "
                   << fuNbTriglogScal << " Triglog boards used as scaler "<<FairLogger::endl;
 
-            for( Int_t iScalIndex = 0; iScalIndex < fuNbTriglogScal; iScalIndex++)
+            for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
             {
              // TRIGLOG always first scaler board!
              // SCALORMU are always next, followed by Triglog used as scalers!
-               fScalerBoard  = (TTofScalerBoard*)  fScalerBoardCollection->ConstructedAt( iScalIndex + fuTrigOff);
+               fScalerBoard  = (TTofScalerBoard*)  fScalerBoardCollection->ConstructedAt( uScalIndex + fuTrigOff);
                if( tofscaler::undef == fScalerBoard->GetScalerType() )
                   fScalerBoard->SetType( tofscaler::triglogscal );
-            } // for( Int_t iScalIndex = 0; iScalIndex < fuNbTriglogScal; iScalIndex++)
+            } // for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
          } // else of if(NULL == fScalerBoardCollection)
 
       fuTotalTriggerCount.resize(fuNbTriglogScal);
@@ -111,25 +111,25 @@ TTofTriglogScalUnpacker::TTofTriglogScalUnpacker( TMbsUnpackTofPar * parIn ):
       fdPrevMbsTime.resize(fuNbTriglogScal);
       fdCurrMbsTime.resize(fuNbTriglogScal);
       fuLastRefClk.resize(fuNbTriglogScal);
-      for( Int_t iScalIndex = 0; iScalIndex < fuNbTriglogScal; iScalIndex++)
+      for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
       {
          // Initialize variable used in filling
-         fdFirstMbsTime[iScalIndex] = 0;
-         fdPrevMbsTime[iScalIndex]  = -1;
-         fdCurrMbsTime[iScalIndex]  = -1;
-         fuLastRefClk[iScalIndex]   = 0;
-         fuTotalTriggerCount[iScalIndex] = 0;
-         fuFirstMbsTime[iScalIndex] = 0;
-         fuLastMbsTime[iScalIndex]  = 0;
+         fdFirstMbsTime[uScalIndex] = 0;
+         fdPrevMbsTime[uScalIndex]  = -1;
+         fdCurrMbsTime[uScalIndex]  = -1;
+         fuLastRefClk[uScalIndex]   = 0;
+         fuTotalTriggerCount[uScalIndex] = 0;
+         fuFirstMbsTime[uScalIndex] = 0;
+         fuLastMbsTime[uScalIndex]  = 0;
 
-         fuFirstScaler[iScalIndex].resize(triglog::kuNbScalers);
-         fuLastScaler[iScalIndex].resize(triglog::kuNbScalers);
+         fuFirstScaler[uScalIndex].resize(triglog::kuNbScalers);
+         fuLastScaler[uScalIndex].resize(triglog::kuNbScalers);
          for( UInt_t uScaler = 0; uScaler < triglog::kuNbScalers; uScaler++)
          {
-            fuFirstScaler[iScalIndex][uScaler].resize(triglog::kuNbChan);
-            fuLastScaler[iScalIndex][uScaler].resize(triglog::kuNbChan);
+            fuFirstScaler[uScalIndex][uScaler].resize(triglog::kuNbChan);
+            fuLastScaler[uScalIndex][uScaler].resize(triglog::kuNbChan);
          } // for( UInt_t uScaler = 0; uScaler <triglog::kuNbScalers; uScaler++)
-      } // for( Int_t iScalIndex = 0; iScalIndex < fuNbTriglogScal; iScalIndex++)
+      } // for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
    } // if(  0 < fuNbTriglogScal )
       else LOG(ERROR)<<"TTofTriglogScalUnpacker::TTofTriglogScalUnpacker => No TRIGLOG board active as scaler!!!!!"
                    <<" recheck your VME address matrix "<<FairLogger::endl;
@@ -139,16 +139,16 @@ TTofTriglogScalUnpacker::~TTofTriglogScalUnpacker()
    // Some triglog board can be used as scaler board instead of trigger source
    if(  0 < fuNbTriglogScal )
    {
-      for( Int_t iScalIndex = 0; iScalIndex < fuNbTriglogScal; iScalIndex++)
+      for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
       {
          for( UInt_t uScaler = 0; uScaler <triglog::kuNbScalers; uScaler++)
          {
-            fuFirstScaler[iScalIndex][uScaler].clear();
-            fuLastScaler[iScalIndex][uScaler].clear();
+            fuFirstScaler[uScalIndex][uScaler].clear();
+            fuLastScaler[uScalIndex][uScaler].clear();
          } // for( UInt_t uScaler = 0; uScaler <triglog::kuNbScalers; uScaler++)
-         fuFirstScaler[iScalIndex].clear();
-         fuLastScaler[iScalIndex].clear();
-      } // for( Int_t iScalIndex = 0; iScalIndex < fuNbTriglogScal; iScalIndex++)
+         fuFirstScaler[uScalIndex].clear();
+         fuLastScaler[uScalIndex].clear();
+      } // for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
       fuTotalTriggerCount.clear();
       fuFirstMbsTime.clear();
       fuLastMbsTime.clear();
@@ -161,7 +161,7 @@ TTofTriglogScalUnpacker::~TTofTriglogScalUnpacker()
 //   DeleteHistos();
 }
 
-void TTofTriglogScalUnpacker::Clear(Option_t *option)
+void TTofTriglogScalUnpacker::Clear(Option_t */*option*/)
 {
    fParUnpack = NULL;
    fuNbTriglogScal    = 0;
@@ -170,7 +170,7 @@ void TTofTriglogScalUnpacker::Clear(Option_t *option)
 
 void TTofTriglogScalUnpacker::ProcessTriglogScal( Int_t iTrigScalIndex, UInt_t* pMbsData, UInt_t uLength )
 {
-   if( (iTrigScalIndex<0) || (fuNbTriglogScal <= iTrigScalIndex) )
+   if( (iTrigScalIndex<0) || (fuNbTriglogScal <= static_cast<UInt_t>(iTrigScalIndex)) )
    {
       LOG(ERROR)<<"Error TriglogScal number "<<iTrigScalIndex<<" out of bound (max "<<fuNbTriglogScal<<") "<<FairLogger::endl;
       return;
@@ -183,9 +183,9 @@ void TTofTriglogScalUnpacker::ProcessTriglogScal( Int_t iTrigScalIndex, UInt_t* 
    {
       // First check if ScalerBoard object for Triglog was created already
       // and check if ScalerBoard object for ScalOrMu14 were created already
-      if( 1 + fuTrigOff + iTrigScalIndex <= fScalerBoardCollection->GetEntriesFast() )
+      if( 1 + static_cast<Int_t>(fuTrigOff) + iTrigScalIndex <= fScalerBoardCollection->GetEntriesFast() )
          fScalerBoard = (TTofScalerBoard*) fScalerBoardCollection->ConstructedAt( fuTrigOff + iTrigScalIndex, "C");
-         else for( Int_t iScalBd = fScalerBoardCollection->GetEntriesFast(); iScalBd <= fuTrigOff + iTrigScalIndex; iScalBd++ )
+         else for( Int_t iScalBd = fScalerBoardCollection->GetEntriesFast(); iScalBd <= static_cast<Int_t>(fuTrigOff) + iTrigScalIndex; iScalBd++ )
             fScalerBoard = (TTofScalerBoard*) fScalerBoardCollection->ConstructedAt( iScalBd);
    } // if( kTRUE == fParUnpack->WithActiveTriglog() )
       else fScalerBoard = (TTofScalerBoard*) fScalerBoardCollection->ConstructedAt( fuTrigOff + iTrigScalIndex, "C");
@@ -252,7 +252,7 @@ void TTofTriglogScalUnpacker::ProcessTriglogScal( Int_t iTrigScalIndex, UInt_t* 
 }
 void TTofTriglogScalUnpacker::UpdateStats( Int_t iTrigScalIndex, UInt_t uMbsTime )
 {
-   if( (iTrigScalIndex<0) || (fuNbTriglogScal <= iTrigScalIndex) )
+   if( (iTrigScalIndex<0) || (fuNbTriglogScal <= static_cast<UInt_t>(iTrigScalIndex)) )
    {
       LOG(ERROR)<<"Error TriglogScal number "<<iTrigScalIndex<<" out of bound (max "<<fuNbTriglogScal<<") "<<FairLogger::endl;
       return;
@@ -293,10 +293,10 @@ void TTofTriglogScalUnpacker::FinishTriglog( )
    // Some triglog board can be used as scaler board instead of trigger source
    if(  0 < fuNbTriglogScal )
    {
-      for( Int_t iScalIndex = 0; iScalIndex < fuNbTriglogScal; iScalIndex++)
+      for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
       {
-         LOG(INFO)<<Form("-------- Triglog Scaler board %02d ----", iScalIndex)<<FairLogger::endl;
-         Double_t dRuntime = fuLastMbsTime[iScalIndex] - fuFirstMbsTime[iScalIndex];
+         LOG(INFO)<<Form("-------- Triglog Scaler board %02u ----", uScalIndex)<<FairLogger::endl;
+         Double_t dRuntime = fuLastMbsTime[uScalIndex] - fuFirstMbsTime[uScalIndex];
          LOG(INFO)<<Form("Total MBS run time %6.0f sec.", dRuntime)<<FairLogger::endl;
 
          if( 0 < dRuntime )
@@ -306,7 +306,7 @@ void TTofTriglogScalUnpacker::FinishTriglog( )
             {
                sLine = Form("  Ch %2d", uCh );
                for( UInt_t uScaler = 0; uScaler <triglog::kuNbScalers; uScaler++)
-                  sLine += Form("   %9u", fuLastScaler[iScalIndex][uScaler][uCh] - fuFirstScaler[iScalIndex][uScaler][uCh]);
+                  sLine += Form("   %9u", fuLastScaler[uScalIndex][uScaler][uCh] - fuFirstScaler[uScalIndex][uScaler][uCh]);
                LOG(INFO)<<sLine<<FairLogger::endl;
             } // for( UInt_t uCh = 0; uCh < triglog::kuNbChan; uCh++)
 
@@ -316,12 +316,12 @@ void TTofTriglogScalUnpacker::FinishTriglog( )
             {
                sLine = Form("  Ch %2d", uCh );
                for( UInt_t uScaler = 0; uScaler <triglog::kuNbScalers; uScaler++)
-                  sLine += Form("   %9.2f", (fuLastScaler[iScalIndex][uScaler][uCh] - fuFirstScaler[iScalIndex][uScaler][uCh])/dRuntime);
+                  sLine += Form("   %9.2f", (fuLastScaler[uScalIndex][uScaler][uCh] - fuFirstScaler[uScalIndex][uScaler][uCh])/dRuntime);
                LOG(INFO)<<sLine<<FairLogger::endl;
             } // for( UInt_t uCh = 0; uCh < triglog::kuNbChan; uCh++)
          } // if( 0 < dRuntime )
          LOG(INFO)<<Form("---------------------------------------")<<FairLogger::endl;
-      } // for( Int_t iScalIndex = 0; iScalIndex < fuNbTriglogScal; iScalIndex++)
+      } // for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
    } // if(  0 < fuNbTriglogScal )
       else LOG(ERROR)<<"TTofTriglogScalUnpacker::FinishTriglog => No TRIGLOG board active as scaler!!!!!"
              <<" recheck your VME address matrix "<<FairLogger::endl;
@@ -341,23 +341,23 @@ void TTofTriglogScalUnpacker::CreateHistos()
       fhRefClkRate.resize(fuNbTriglogScal);
       fhRefClkRateEvo.resize(fuNbTriglogScal);
       fhScalers.resize(fuNbTriglogScal);
-      for( Int_t iScalIndex = 0; iScalIndex < fuNbTriglogScal; iScalIndex++)
+      for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
       {
-         fhRefClkRate[iScalIndex]    = new TH1I( Form("tof_%s_%02d_refclk", tofscaler::ksTdcHistName[ tofscaler::triglogscal ].Data(),
-                                                                            iScalIndex ),
+         fhRefClkRate[uScalIndex]    = new TH1I( Form("tof_%s_%02u_refclk", tofscaler::ksTdcHistName[ tofscaler::triglogscal ].Data(),
+                                                                            uScalIndex ),
                               "Rate of the reference clock; Freq. [Hz]",
                               (Int_t)(2*triglog::kdRefClkFreq/1000), 0.0 , 2*triglog::kdRefClkFreq );
-         fhRefClkRateEvo[iScalIndex] = new TH1I( Form("tof_%s_%02d_refclk_evo", tofscaler::ksTdcHistName[ tofscaler::triglogscal ].Data(),
-               iScalIndex ),
+         fhRefClkRateEvo[uScalIndex] = new TH1I( Form("tof_%s_%02u_refclk_evo", tofscaler::ksTdcHistName[ tofscaler::triglogscal ].Data(),
+               uScalIndex ),
                               "Reference clock counts per second; Time [s]; Counts []", 3600, 0.0, 3600 );
 
-         fhScalers[iScalIndex].resize(triglog::kuNbScalers);
+         fhScalers[uScalIndex].resize(triglog::kuNbScalers);
          for( UInt_t uScaler = 0; uScaler <triglog::kuNbScalers; uScaler++)
-            fhScalers[iScalIndex][uScaler] = new TH1I( Form("tof_%s_%02d_scalers%02d", tofscaler::ksTdcHistName[ tofscaler::triglogscal ].Data(),
-                                                                                       iScalIndex, uScaler ),
-                                           Form("Counts per scaler channel in scaler %02d; Channel []; Total counts []", uScaler),
+            fhScalers[uScalIndex][uScaler] = new TH1I( Form("tof_%s_%02u_scalers%02u", tofscaler::ksTdcHistName[ tofscaler::triglogscal ].Data(),
+                                                                                       uScalIndex, uScaler ),
+                                           Form("Counts per scaler channel in scaler %02u; Channel []; Total counts []", uScaler),
                                            triglog::kuNbChan, 0, triglog::kuNbChan);
-      } // for( Int_t iScalIndex = 0; iScalIndex < fuNbTriglogScal; iScalIndex++)
+      } // for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
 
       gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
    } // if(  0 < fuNbTriglogScal )
@@ -367,11 +367,11 @@ void TTofTriglogScalUnpacker::CreateHistos()
 void TTofTriglogScalUnpacker::FillHistos()
 {
    // Some triglog board can be used as scaler board instead of trigger source
-   for( Int_t iScalIndex = 0; iScalIndex < fuNbTriglogScal; iScalIndex++)
+   for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
    {
       // Getting output objects
       // TRIGLOG always first scaler board! then ScalOrMu/Scal2014
-      TTofScalerBoard  * fScalerBoard  = (TTofScalerBoard*)  fScalerBoardCollection->At(fuTrigOff + iScalIndex);
+      TTofScalerBoard  * fScalerBoard  = (TTofScalerBoard*)  fScalerBoardCollection->At(fuTrigOff + uScalIndex);
 
       if( NULL == fScalerBoard )
       {
@@ -384,49 +384,49 @@ void TTofTriglogScalUnpacker::FillHistos()
       LOG(DEBUG3)<<(fScalerBoardCollection->GetEntries())<<FairLogger::endl;
 
       // BROKEN: Will not work as data filling in different instance
-      if( 0 == fdFirstMbsTime[iScalIndex] )
+      if( 0 == fdFirstMbsTime[uScalIndex] )
          // MBS time is time in s since LINUX epoch (circa 1970) => never 0 except on first event!
-         fdFirstMbsTime[iScalIndex] = fdCurrMbsTime[iScalIndex];
+         fdFirstMbsTime[uScalIndex] = fdCurrMbsTime[uScalIndex];
 
-      if( ( 0 == fdPrevMbsTime[iScalIndex] ) || ( fdPrevMbsTime[iScalIndex] + 0.05 < fdCurrMbsTime[iScalIndex] ) )
+      if( ( 0 == fdPrevMbsTime[uScalIndex] ) || ( fdPrevMbsTime[uScalIndex] + 0.05 < fdCurrMbsTime[uScalIndex] ) )
       {
-         Double_t dTimeDiff = fdCurrMbsTime[iScalIndex] - fdPrevMbsTime[iScalIndex];
-         if( 0 < fdPrevMbsTime[iScalIndex] && dTimeDiff < 0.3 )
+         Double_t dTimeDiff = fdCurrMbsTime[uScalIndex] - fdPrevMbsTime[uScalIndex];
+         if( 0 < fdPrevMbsTime[uScalIndex] && dTimeDiff < 0.3 )
          {
-            fhRefClkRate[iScalIndex]->Fill( (Double_t)(fScalerBoard->GetRefClk() - fuLastRefClk[iScalIndex] ) /
+            fhRefClkRate[uScalIndex]->Fill( (Double_t)(fScalerBoard->GetRefClk() - fuLastRefClk[uScalIndex] ) /
                                 dTimeDiff );
-            fhRefClkRateEvo[iScalIndex]->Fill(fdCurrMbsTime[iScalIndex] - fdFirstMbsTime[iScalIndex],
-                                              fScalerBoard->GetRefClk() - fuLastRefClk[iScalIndex]);
+            fhRefClkRateEvo[uScalIndex]->Fill(fdCurrMbsTime[uScalIndex] - fdFirstMbsTime[uScalIndex],
+                                              fScalerBoard->GetRefClk() - fuLastRefClk[uScalIndex]);
          } // if( 0 < fdPrevMbsTime )
 
-         fdPrevMbsTime[iScalIndex] = fdCurrMbsTime[iScalIndex];
-         fuLastRefClk[iScalIndex] = fScalerBoard->GetRefClk();
+         fdPrevMbsTime[uScalIndex] = fdCurrMbsTime[uScalIndex];
+         fuLastRefClk[uScalIndex] = fScalerBoard->GetRefClk();
       } // if( ( 0 == fdPrevMbsTime ) || ( dMbsTime > fdPrevMbsTime + 0.1 ) )
 
       for( UInt_t uScaler = 0; uScaler <triglog::kuNbScalers; uScaler++)
          for( UInt_t uCh = 0; uCh < triglog::kuNbChan; uCh++)
-            fhScalers[iScalIndex][uScaler]->SetBinContent( 1 + uCh, fScalerBoard->GetScalerValue( uCh, uScaler)
-                                                      - fuFirstScaler[iScalIndex][uScaler][uCh] );
+            fhScalers[uScalIndex][uScaler]->SetBinContent( 1 + uCh, fScalerBoard->GetScalerValue( uCh, uScaler)
+                                                      - fuFirstScaler[uScalIndex][uScaler][uCh] );
 
-   } // for( Int_t iScalIndex = 0; iScalIndex < fuNbTriglogScal; iScalIndex++)
+   } // for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
 }
 void TTofTriglogScalUnpacker::WriteHistos( TDirectory* inDir)
 {
    // Some triglog board can be used as scaler board instead of trigger source
-   for( Int_t iScalIndex = 0; iScalIndex < fuNbTriglogScal; iScalIndex++)
+   for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
    {
       TDirectory * oldir = gDirectory;
 
-      TDirectory *cdTriglog = inDir->mkdir( Form( "Unp_%s_%02d", tofscaler::ksTdcHistName[ tofscaler::triglogscal ].Data(), iScalIndex ) );
+      TDirectory *cdTriglog = inDir->mkdir( Form( "Unp_%s_%02u", tofscaler::ksTdcHistName[ tofscaler::triglogscal ].Data(), uScalIndex ) );
       cdTriglog->cd();    // make the "Unp_triglog" directory the current directory
 
-      fhRefClkRate[iScalIndex]->Write();
-      fhRefClkRateEvo[iScalIndex]->Write();
+      fhRefClkRate[uScalIndex]->Write();
+      fhRefClkRateEvo[uScalIndex]->Write();
       for( UInt_t uScaler = 0; uScaler <triglog::kuNbScalers; uScaler++)
-         fhScalers[iScalIndex][uScaler]->Write();
+         fhScalers[uScalIndex][uScaler]->Write();
 
       gDirectory->cd( oldir->GetPath() );
-   } // for( Int_t iScalIndex = 0; iScalIndex < fuNbTriglogScal; iScalIndex++)
+   } // for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
 }
 void TTofTriglogScalUnpacker::DeleteHistos()
 {

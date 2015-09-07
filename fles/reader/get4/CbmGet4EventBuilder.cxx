@@ -309,7 +309,7 @@ InitStatus CbmGet4EventBuilder::Init()
    return kSUCCESS;
 }
 
-void CbmGet4EventBuilder::Exec(Option_t * option)
+void CbmGet4EventBuilder::Exec(Option_t * /*option*/)
 {
    // Task execution
 

@@ -120,7 +120,7 @@ InitStatus TMbsUnpTofMonitor::Init()
    
    return kSUCCESS;
 }
-void TMbsUnpTofMonitor::Exec(Option_t* option)
+void TMbsUnpTofMonitor::Exec(Option_t* /*option*/)
 {
    // No output => no clear needed
    

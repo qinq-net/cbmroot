@@ -332,7 +332,7 @@ Int_t TMbsUnpackTofPar::GetMappingField( UInt_t uBoard, UInt_t uField)
 {
    LOG(DEBUG3)<<"TMbsUnpackTofPar::GetMappingField: Trying to get combination ("
               <<uBoard<<"/"<<uField<<") => Index "<<uBoard*tofMbs::kuNbFieldsMapping + uField<<FairLogger::endl;
-   if( fuNbVmeBoards*tofMbs::kuNbFieldsMapping == fiMbsVmeMapping.GetSize() )
+   if( static_cast<Int_t>(fuNbVmeBoards*tofMbs::kuNbFieldsMapping) == fiMbsVmeMapping.GetSize() )
    {
       if( uBoard < fuNbVmeBoards && uField < tofMbs::kuNbFieldsMapping )
          return fiMbsVmeMapping[ uBoard*tofMbs::kuNbFieldsMapping + uField ];
@@ -353,7 +353,7 @@ Int_t TMbsUnpackTofPar::GetMappingField( UInt_t uBoard, UInt_t uField)
 }
 ULong64_t TMbsUnpackTofPar::GetBoardTag( UInt_t uBoard)
 {
-   if( fuNbVmeBoards*tofMbs::kuNbFieldsMapping == fiMbsVmeMapping.GetSize() )
+   if( static_cast<Int_t>(fuNbVmeBoards*tofMbs::kuNbFieldsMapping) == fiMbsVmeMapping.GetSize() )
    {
       if( uBoard < fuNbVmeBoards )
       {
@@ -379,7 +379,7 @@ ULong64_t TMbsUnpackTofPar::GetBoardTag( UInt_t uBoard)
 }
 Bool_t TMbsUnpackTofPar::IsActive( UInt_t uBoard)
 {
-   if( fuNbVmeBoards*tofMbs::kuNbFieldsMapping == fiMbsVmeMapping.GetSize() )
+   if( static_cast<Int_t>(fuNbVmeBoards*tofMbs::kuNbFieldsMapping) == fiMbsVmeMapping.GetSize() )
    {
       if( uBoard < fuNbVmeBoards )
          return (1 == GetMappingField( uBoard, tofMbs::Active ) )? kTRUE: kFALSE;
@@ -449,7 +449,7 @@ UInt_t TMbsUnpackTofPar::GetActiveToAllTypeInd( UInt_t uBoardToFind, UInt_t uTyp
            kTRUE == IsActive( uBoard ))
          return uIndBoardSameType;
       // Count all boards of same type as target
-      if( uType == GetBoardType( uBoard ) )
+      if( static_cast<Int_t>(uType) == GetBoardType( uBoard ) )
       {
          uIndBoardSameType++;
          // Count active boards of same type as target
@@ -476,7 +476,7 @@ Int_t TMbsUnpackTofPar::GetNotVmeMappingField( UInt_t uBoard, UInt_t uField)
 {
    LOG(DEBUG3)<<"TMbsUnpackTofPar::GetNotVmeMappingField: Trying to get combination ("
               <<uBoard<<"/"<<uField<<") => Index "<<uBoard*tofMbs::kuNbFieldsMapping + uField<<FairLogger::endl;
-   if( fuNbNonVmeBoards*tofMbs::kuNbFieldsMapping == fiNonVmeMapping.GetSize() )
+   if( static_cast<Int_t>(fuNbNonVmeBoards*tofMbs::kuNbFieldsMapping) == fiNonVmeMapping.GetSize() )
    {
       if( uBoard < fuNbNonVmeBoards && uField < tofMbs::kuNbFieldsMapping )
          return fiNonVmeMapping[ uBoard*tofMbs::kuNbFieldsMapping + uField ];
@@ -497,7 +497,7 @@ Int_t TMbsUnpackTofPar::GetNotVmeMappingField( UInt_t uBoard, UInt_t uField)
 }
 ULong64_t TMbsUnpackTofPar::GetNotVmeBoardTag( UInt_t uBoard)
 {
-   if( fuNbNonVmeBoards*tofMbs::kuNbFieldsMapping == fiNonVmeMapping.GetSize() )
+   if( static_cast<Int_t>(fuNbNonVmeBoards*tofMbs::kuNbFieldsMapping) == fiNonVmeMapping.GetSize() )
    {
       if( uBoard < fuNbNonVmeBoards )
       {
@@ -522,7 +522,7 @@ ULong64_t TMbsUnpackTofPar::GetNotVmeBoardTag( UInt_t uBoard)
 }
 Bool_t TMbsUnpackTofPar::IsActiveNotVme( UInt_t uBoard)
 {
-   if( fuNbNonVmeBoards*tofMbs::kuNbFieldsMapping == fiNonVmeMapping.GetSize() )
+   if( static_cast<Int_t>(fuNbNonVmeBoards*tofMbs::kuNbFieldsMapping) == fiNonVmeMapping.GetSize() )
    {
       if( uBoard < fuNbNonVmeBoards )
          return (1 == GetNotVmeMappingField( uBoard, tofMbs::Active ) )? kTRUE: kFALSE;
@@ -592,7 +592,7 @@ UInt_t TMbsUnpackTofPar::GetActivToAllTypeIndNoVme( UInt_t uBoardToFind, UInt_t 
            kTRUE == IsActiveNotVme( uBoard ))
          return uIndBoardSameType;
       // Count all boards of same type as target
-      if( uType == GetNotVmeBoardType( uBoard ) )
+      if( static_cast<Int_t>(uType) == GetNotVmeBoardType( uBoard ) )
       {
          uIndBoardSameType++;
          // Count active boards of same type as target
@@ -624,13 +624,13 @@ UInt_t TMbsUnpackTofPar::GetNbActiveBoards( UInt_t uType )
 
    // Count active boards of asked type
    for( UInt_t uBoard = 0; uBoard < fuNbVmeBoards; uBoard++)
-      if( uType == GetBoardType( uBoard ) &&
+      if( static_cast<Int_t>(uType) == GetBoardType( uBoard ) &&
           kTRUE == IsActive( uBoard ) )
           uNbActiveSameBoard++;
 
    // Count active boards of asked type
    for( UInt_t uBoard = 0; uBoard < fuNbNonVmeBoards; uBoard++)
-      if( uType == GetNotVmeBoardType( uBoard ) &&
+      if( static_cast<Int_t>(uType) == GetNotVmeBoardType( uBoard ) &&
           kTRUE == IsActiveNotVme( uBoard ) )
           uNbActiveSameBoard++;
 
@@ -991,7 +991,7 @@ void TMbsUnpackTofPar::FillTrbMaps()
 {
    LOG(DEBUG2)<<"**** TMbsUnpackTofPar: Call FillTrbMaps()..."<<FairLogger::endl;
 
-   if( fuNbNonVmeBoards*tofMbs::kuNbFieldsMapping == fiNonVmeMapping.GetSize() )
+   if( static_cast<Int_t>(fuNbNonVmeBoards*tofMbs::kuNbFieldsMapping) == fiNonVmeMapping.GetSize() )
    {
 
      Int_t iActiveTrbTdcIndex = 0;
@@ -1081,7 +1081,7 @@ Int_t TMbsUnpackTofPar::GetCtsTrigMappingField( UInt_t uChannel, UInt_t uField)
 {
    LOG(DEBUG3)<<"TMbsUnpackTofPar::GetCtsTrigMappingField: Trying to get combination ("
               <<uChannel<<"/"<<uField<<") => Index "<<uChannel*tofMbs::kuNbFieldsCtsMapping + uField<<FairLogger::endl;
-   if( fuNbCtsTrigChs*tofMbs::kuNbFieldsCtsMapping == fiCtsTriggerMap.GetSize() )
+   if( static_cast<Int_t>(fuNbCtsTrigChs*tofMbs::kuNbFieldsCtsMapping) == fiCtsTriggerMap.GetSize() )
    {
       if( uChannel < fuNbCtsTrigChs && uField < tofMbs::kuNbFieldsCtsMapping )
          return fiCtsTriggerMap[ uChannel*tofMbs::kuNbFieldsCtsMapping + uField ];

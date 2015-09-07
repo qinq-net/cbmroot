@@ -754,23 +754,23 @@ void TMbsCalibTofPar::printParams()
          LOG(INFO)<<"  ------- VFTX TDC ------- "<<FairLogger::endl;;
          LOG(INFO)<<"  Channel:                       |-  ";
          TString sTemp="";
-         for( Int_t iIndexChannel = 0; iIndexChannel < vftxtdc::kuNbChan/2; iIndexChannel++)
-            sTemp += Form("%5d ", iIndexChannel);
+         for( UInt_t uIndexChannel = 0; uIndexChannel < vftxtdc::kuNbChan/2; uIndexChannel++)
+            sTemp += Form("%5u ", uIndexChannel);
          LOG(INFO)<<sTemp<<FairLogger::endl;
          
          for( Int_t iIndexVftx = 0; iIndexVftx < fiNbVftxOffset; iIndexVftx++)
             if( -1 < fiBoardIndexVftx[iIndexVftx] && fiBoardIndexVftx[iIndexVftx] < fiNbVftxOffset )
             {
                sTemp = Form("  Slot %02d Board #%02d Time offset: |-> ", iIndexVftx, fiBoardIndexVftx[iIndexVftx]);
-               for( Int_t iIndexChannel = 0; iIndexChannel < vftxtdc::kuNbChan/2; iIndexChannel++)
-                  sTemp += Form("%5.0f ", fdTimeOffsetVftx[ vftxtdc::kuNbChan/2 * fiBoardIndexVftx[iIndexVftx] + iIndexChannel]);
+               for( UInt_t uIndexChannel = 0; uIndexChannel < vftxtdc::kuNbChan/2; uIndexChannel++)
+                  sTemp += Form("%5.0f ", fdTimeOffsetVftx[ vftxtdc::kuNbChan/2 * fiBoardIndexVftx[iIndexVftx] + uIndexChannel]);
                LOG(INFO)<<sTemp<<FairLogger::endl;
             } // if( -1 < fiBoardIndexVftx[iIndexVftx] )
                else
                {
                   sTemp = Form("  Slot %02d def. mean Time offset: |-> ", iIndexVftx );
-                  for( Int_t iIndexChannel = 0; iIndexChannel < vftxtdc::kuNbChan/2; iIndexChannel++)
-                     sTemp += Form("%5.0f ", fdMeanTimeOffsetVftx[iIndexChannel] );
+                  for( UInt_t uIndexChannel = 0; uIndexChannel < vftxtdc::kuNbChan/2; uIndexChannel++)
+                     sTemp += Form("%5.0f ", fdMeanTimeOffsetVftx[uIndexChannel] );
                   LOG(INFO)<<sTemp<<FairLogger::endl;
                } // else of if( -1 < fiBoardIndexVftx[iIndexVftx] )
          LOG(INFO)<<FairLogger::endl;
@@ -781,23 +781,23 @@ void TMbsCalibTofPar::printParams()
          LOG(INFO)<<"  ------- CAEN V1290 TDC ------- "<<FairLogger::endl;;
          LOG(INFO)<<"  Channel:                       |-  ";
          TString sTemp="";
-         for( Int_t iIndexChannel = 0; iIndexChannel < caentdc::kuNbChan; iIndexChannel++)
-            sTemp += Form("%5d ", iIndexChannel);
+         for( UInt_t uIndexChannel = 0; uIndexChannel < caentdc::kuNbChan; uIndexChannel++)
+            sTemp += Form("%5u ", uIndexChannel);
          LOG(INFO)<<sTemp<<FairLogger::endl;
          
          for( Int_t iIndexCaen = 0; iIndexCaen < fiNbCaenOffset; iIndexCaen++)
             if( -1 < fiBoardIndexCaen[iIndexCaen] && fiBoardIndexCaen[iIndexCaen] < fiNbCaenOffset )
             {
                sTemp = Form("  Slot %02d Board #%02d Time offset: |-> ", iIndexCaen, fiBoardIndexCaen[iIndexCaen]);
-               for( Int_t iIndexChannel = 0; iIndexChannel < caentdc::kuNbChan; iIndexChannel++)
-                  sTemp += Form("%5.0f ", fdTimeOffsetCaen[ caentdc::kuNbChan * fiBoardIndexCaen[iIndexCaen] + iIndexChannel]);
+               for( UInt_t uIndexChannel = 0; uIndexChannel < caentdc::kuNbChan; uIndexChannel++)
+                  sTemp += Form("%5.0f ", fdTimeOffsetCaen[ caentdc::kuNbChan * fiBoardIndexCaen[iIndexCaen] + uIndexChannel]);
                LOG(INFO)<<sTemp<<FairLogger::endl;
             } // if( -1 < fiBoardIndexCaen[iIndexCaen] )
                else
                {
                   sTemp = Form("  Slot %02d def. mean Time offset: |-> ", iIndexCaen );
-                  for( Int_t iIndexChannel = 0; iIndexChannel < caentdc::kuNbChan/2; iIndexChannel++)
-                     sTemp += Form("%5.0f ", fdMeanTimeOffsetCaen[iIndexChannel] );
+                  for( UInt_t uIndexChannel = 0; uIndexChannel < caentdc::kuNbChan/2; uIndexChannel++)
+                     sTemp += Form("%5.0f ", fdMeanTimeOffsetCaen[uIndexChannel] );
                   LOG(INFO)<<sTemp<<FairLogger::endl;
                } // else of if( -1 < fiBoardIndexCaen[iIndexCaen] )
          LOG(INFO)<<FairLogger::endl;
@@ -807,23 +807,23 @@ void TMbsCalibTofPar::printParams()
          LOG(INFO)<<"  ------- TRB3 TDC ------- "<<FairLogger::endl;;
          LOG(INFO)<<"  Channel:                       |-  ";
          TString sTemp="";
-         for( Int_t iIndexChannel = 0; iIndexChannel < trbtdc::kuNbChan/2; iIndexChannel++)
-            sTemp += Form("%5d ", iIndexChannel);
+         for( UInt_t uIndexChannel = 0; uIndexChannel < trbtdc::kuNbChan/2; uIndexChannel++)
+            sTemp += Form("%5u ", uIndexChannel);
          LOG(INFO)<<sTemp<<FairLogger::endl;
          
          for( Int_t iIndexTrb3 = 0; iIndexTrb3 < fiNbTrb3Offset; iIndexTrb3++)
             if( -1 < fiBoardIndexTrb3[iIndexTrb3] && fiBoardIndexTrb3[iIndexTrb3] < fiNbTrb3Offset )
             {
                sTemp = Form("  Slot %02d Board #%02d Time offset: |-> ", iIndexTrb3, fiBoardIndexTrb3[iIndexTrb3]);
-               for( Int_t iIndexChannel = 0; iIndexChannel < trbtdc::kuNbChan/2; iIndexChannel++)
-                  sTemp += Form("%5.0f ", fdTimeOffsetTrb3[ trbtdc::kuNbChan/2 * fiBoardIndexTrb3[iIndexTrb3] + iIndexChannel]);
+               for( UInt_t uIndexChannel = 0; uIndexChannel < trbtdc::kuNbChan/2; uIndexChannel++)
+                  sTemp += Form("%5.0f ", fdTimeOffsetTrb3[ trbtdc::kuNbChan/2 * fiBoardIndexTrb3[iIndexTrb3] + uIndexChannel]);
                LOG(INFO)<<sTemp<<FairLogger::endl;
             } // if( -1 < fiBoardIndexTrb3[iIndexTrb3] )
                else
                {
                   sTemp = Form("  Slot %02d def. mean Time offset: |-> ", iIndexTrb3 );
-                  for( Int_t iIndexChannel = 0; iIndexChannel < trbtdc::kuNbChan/2; iIndexChannel++)
-                     sTemp += Form("%5.0f ", fdMeanTimeOffsetTrb3[iIndexChannel] );
+                  for( UInt_t uIndexChannel = 0; uIndexChannel < trbtdc::kuNbChan/2; uIndexChannel++)
+                     sTemp += Form("%5.0f ", fdMeanTimeOffsetTrb3[uIndexChannel] );
                   LOG(INFO)<<sTemp<<FairLogger::endl;
                } // else of if( -1 < fiBoardIndexTrb3[iIndexTrb3] )
          LOG(INFO)<<FairLogger::endl;
@@ -833,23 +833,23 @@ void TMbsCalibTofPar::printParams()
          LOG(INFO)<<"  ------- GET4 TDC ------- "<<FairLogger::endl;;
          LOG(INFO)<<"  Channel:                       |-  ";
          TString sTemp="";
-         for( Int_t iIndexChannel = 0; iIndexChannel < get4tdc::kuNbChan/2; iIndexChannel++)
-            sTemp += Form("%5d ", iIndexChannel);
+         for( UInt_t uIndexChannel = 0; uIndexChannel < get4tdc::kuNbChan/2; uIndexChannel++)
+            sTemp += Form("%5u ", uIndexChannel);
          LOG(INFO)<<sTemp<<FairLogger::endl;
          
          for( Int_t iIndexGet4 = 0; iIndexGet4 < fiNbGet4Offset; iIndexGet4++)
             if( -1 < fiBoardIndexGet4[iIndexGet4] && fiBoardIndexGet4[iIndexGet4] < fiNbGet4Offset )
             {
                sTemp = Form("  Slot %02d Board #%02d Time offset: |-> ", iIndexGet4, fiBoardIndexGet4[iIndexGet4]);
-               for( Int_t iIndexChannel = 0; iIndexChannel < get4tdc::kuNbChan/2; iIndexChannel++)
-                  sTemp += Form("%5.0f ", fdTimeOffsetGet4[ get4tdc::kuNbChan/2 * fiBoardIndexGet4[iIndexGet4] + iIndexChannel]);
+               for( UInt_t uIndexChannel = 0; uIndexChannel < get4tdc::kuNbChan/2; uIndexChannel++)
+                  sTemp += Form("%5.0f ", fdTimeOffsetGet4[ get4tdc::kuNbChan/2 * fiBoardIndexGet4[iIndexGet4] + uIndexChannel]);
                LOG(INFO)<<sTemp<<FairLogger::endl;
             } // if( -1 < fiBoardIndexGet4[iIndexGet4] )
                else
                {
                   sTemp = Form("  Slot %02d def. mean Time offset: |-> ", iIndexGet4 );
-                  for( Int_t iIndexChannel = 0; iIndexChannel < get4tdc::kuNbChan/2; iIndexChannel++)
-                     sTemp += Form("%5.0f ", fdMeanTimeOffsetGet4[iIndexChannel] );
+                  for( UInt_t uIndexChannel = 0; uIndexChannel < get4tdc::kuNbChan/2; uIndexChannel++)
+                     sTemp += Form("%5.0f ", fdMeanTimeOffsetGet4[uIndexChannel] );
                   LOG(INFO)<<sTemp<<FairLogger::endl;
                } // else of if( -1 < fiBoardIndexGet4[iIndexGet4] )
          LOG(INFO)<<FairLogger::endl;
@@ -866,23 +866,23 @@ void TMbsCalibTofPar::printParams()
          LOG(INFO)<<"  ------- VFTX TDC ------- "<<FairLogger::endl;;
          LOG(INFO)<<"  Channel:                       |-  ";
          TString sTemp="";
-         for( Int_t iIndexChannel = 0; iIndexChannel < vftxtdc::kuNbChan/2; iIndexChannel++)
-            sTemp += Form("%5d ", iIndexChannel);
+         for( UInt_t uIndexChannel = 0; uIndexChannel < vftxtdc::kuNbChan/2; uIndexChannel++)
+            sTemp += Form("%5u ", uIndexChannel);
          LOG(INFO)<<sTemp<<FairLogger::endl;
          
          for( Int_t iIndexVftx = 0; iIndexVftx < fiNbVftxOffset; iIndexVftx++)
             if( -1 < fiBoardIndexVftx[iIndexVftx] && fiBoardIndexVftx[iIndexVftx] < fiNbVftxOffset )
             {
                sTemp = Form("  Slot %02d Board #%02d Tot offset:  |-> ", iIndexVftx, fiBoardIndexVftx[iIndexVftx]);
-               for( Int_t iIndexChannel = 0; iIndexChannel < vftxtdc::kuNbChan/2; iIndexChannel++)
-                  sTemp += Form("%5.0f ", fdTotOffsetVftx[ vftxtdc::kuNbChan/2 * fiBoardIndexVftx[iIndexVftx] + iIndexChannel]);
+               for( UInt_t uIndexChannel = 0; uIndexChannel < vftxtdc::kuNbChan/2; uIndexChannel++)
+                  sTemp += Form("%5.0f ", fdTotOffsetVftx[ vftxtdc::kuNbChan/2 * fiBoardIndexVftx[iIndexVftx] + uIndexChannel]);
                LOG(INFO)<<sTemp<<FairLogger::endl;
             } // if( -1 < fiBoardIndexVftx[iIndexVftx] )
                else
                {
                   sTemp = Form("  Slot %02d def. mean Tot offset:  |-> ", iIndexVftx );
-                  for( Int_t iIndexChannel = 0; iIndexChannel < vftxtdc::kuNbChan/2; iIndexChannel++)
-                     sTemp += Form("%5.0f ", fdMeanTotOffsetVftx[iIndexChannel] );
+                  for( UInt_t uIndexChannel = 0; uIndexChannel < vftxtdc::kuNbChan/2; uIndexChannel++)
+                     sTemp += Form("%5.0f ", fdMeanTotOffsetVftx[uIndexChannel] );
                   LOG(INFO)<<sTemp<<FairLogger::endl;
                } // else of if( -1 < fiBoardIndexVftx[iIndexVftx] )
          LOG(INFO)<<FairLogger::endl;
@@ -893,23 +893,23 @@ void TMbsCalibTofPar::printParams()
          LOG(INFO)<<"  ------- CAEN V1290 TDC ------- "<<FairLogger::endl;;
          LOG(INFO)<<"  Channel:                       |-  ";
          TString sTemp="";
-         for( Int_t iIndexChannel = 0; iIndexChannel < caentdc::kuNbChan; iIndexChannel++)
-            sTemp += Form("%5d ", iIndexChannel);
+         for( UInt_t uIndexChannel = 0; uIndexChannel < caentdc::kuNbChan; uIndexChannel++)
+            sTemp += Form("%5u ", uIndexChannel);
          LOG(INFO)<<sTemp<<FairLogger::endl;
          
          for( Int_t iIndexCaen = 0; iIndexCaen < fiNbCaenOffset; iIndexCaen++)
             if( -1 < fiBoardIndexCaen[iIndexCaen] && fiBoardIndexCaen[iIndexCaen] < fiNbCaenOffset )
             {
                sTemp = Form("  Slot %02d Board #%02d Tot offset:  |-> ", iIndexCaen, fiBoardIndexCaen[iIndexCaen]);
-               for( Int_t iIndexChannel = 0; iIndexChannel < caentdc::kuNbChan; iIndexChannel++)
-                  sTemp += Form("%5.0f ", fdTotOffsetCaen[ caentdc::kuNbChan * fiBoardIndexCaen[iIndexCaen] + iIndexChannel]);
+               for( UInt_t uIndexChannel = 0; uIndexChannel < caentdc::kuNbChan; uIndexChannel++)
+                  sTemp += Form("%5.0f ", fdTotOffsetCaen[ caentdc::kuNbChan * fiBoardIndexCaen[iIndexCaen] + uIndexChannel]);
                LOG(INFO)<<sTemp<<FairLogger::endl;
             } // if( -1 < fiBoardIndexCaen[iIndexCaen] )
                else
                {
                   sTemp = Form("  Slot %02d def. mean Tot offset:  |-> ", iIndexCaen );
-                  for( Int_t iIndexChannel = 0; iIndexChannel < caentdc::kuNbChan/2; iIndexChannel++)
-                     sTemp += Form("%5.0f ", fdMeanTotOffsetCaen[iIndexChannel] );
+                  for( UInt_t uIndexChannel = 0; uIndexChannel < caentdc::kuNbChan/2; uIndexChannel++)
+                     sTemp += Form("%5.0f ", fdMeanTotOffsetCaen[uIndexChannel] );
                   LOG(INFO)<<sTemp<<FairLogger::endl;
                } // else of if( -1 < fiBoardIndexCaen[iIndexCaen] )
          LOG(INFO)<<FairLogger::endl;
@@ -919,23 +919,23 @@ void TMbsCalibTofPar::printParams()
          LOG(INFO)<<"  ------- TRB3 TDC ------- "<<FairLogger::endl;;
          LOG(INFO)<<"  Channel:                       |-  ";
          TString sTemp="";
-         for( Int_t iIndexChannel = 0; iIndexChannel < trbtdc::kuNbChan/2; iIndexChannel++)
-            sTemp += Form("%5d ", iIndexChannel);
+         for( UInt_t uIndexChannel = 0; uIndexChannel < trbtdc::kuNbChan/2; uIndexChannel++)
+            sTemp += Form("%5u ", uIndexChannel);
          LOG(INFO)<<sTemp<<FairLogger::endl;
          
          for( Int_t iIndexTrb3 = 0; iIndexTrb3 < fiNbTrb3Offset; iIndexTrb3++)
             if( -1 < fiBoardIndexTrb3[iIndexTrb3] && fiBoardIndexTrb3[iIndexTrb3] < fiNbTrb3Offset )
             {
                sTemp = Form("  Slot %02d Board #%02d Tot offset:  |-> ", iIndexTrb3, fiBoardIndexTrb3[iIndexTrb3]);
-               for( Int_t iIndexChannel = 0; iIndexChannel < trbtdc::kuNbChan/2; iIndexChannel++)
-                  sTemp += Form("%5.0f ", fdTotOffsetTrb3[ trbtdc::kuNbChan/2 * fiBoardIndexTrb3[iIndexTrb3] + iIndexChannel]);
+               for( UInt_t uIndexChannel = 0; uIndexChannel < trbtdc::kuNbChan/2; uIndexChannel++)
+                  sTemp += Form("%5.0f ", fdTotOffsetTrb3[ trbtdc::kuNbChan/2 * fiBoardIndexTrb3[iIndexTrb3] + uIndexChannel]);
                LOG(INFO)<<sTemp<<FairLogger::endl;
             } // if( -1 < fiBoardIndexTrb3[iIndexTrb3] )
                else
                {
                   sTemp = Form("  Slot %02d def. mean Tot offset:  |-> ", iIndexTrb3 );
-                  for( Int_t iIndexChannel = 0; iIndexChannel < trbtdc::kuNbChan/2; iIndexChannel++)
-                     sTemp += Form("%5.0f ", fdMeanTotOffsetTrb3[iIndexChannel] );
+                  for( UInt_t uIndexChannel = 0; uIndexChannel < trbtdc::kuNbChan/2; uIndexChannel++)
+                     sTemp += Form("%5.0f ", fdMeanTotOffsetTrb3[uIndexChannel] );
                   LOG(INFO)<<sTemp<<FairLogger::endl;
                } // else of if( -1 < fiBoardIndexTrb3[iIndexTrb3] )
          LOG(INFO)<<FairLogger::endl;
@@ -945,23 +945,23 @@ void TMbsCalibTofPar::printParams()
          LOG(INFO)<<"  ------- GET4 TDC ------- "<<FairLogger::endl;;
          LOG(INFO)<<"  Channel:                       |-  ";
          TString sTemp="";
-         for( Int_t iIndexChannel = 0; iIndexChannel < 4 * get4tdc::kuNbChan/2; iIndexChannel++)
-            sTemp += Form("%5d ", iIndexChannel);
+         for( UInt_t uIndexChannel = 0; uIndexChannel < 4 * get4tdc::kuNbChan/2; uIndexChannel++)
+            sTemp += Form("%5u ", uIndexChannel);
          LOG(INFO)<<sTemp<<FairLogger::endl;
          
          for( Int_t iIndexGet4 = 0; iIndexGet4 < fiNbGet4Offset; iIndexGet4++)
             if( -1 < fiBoardIndexGet4[iIndexGet4] && fiBoardIndexGet4[iIndexGet4] < fiNbGet4Offset )
             {
                sTemp = Form("  Slot %02d Board #%02d Tot offset:  |-> ", iIndexGet4, fiBoardIndexGet4[iIndexGet4]);
-               for( Int_t iIndexChannel = 0; iIndexChannel < get4tdc::kuNbChan/2; iIndexChannel++)
-                  sTemp += Form("%5f ", fdTotOffsetGet4[ get4tdc::kuNbChan/2 * fiBoardIndexGet4[iIndexGet4] + iIndexChannel]);
+               for( UInt_t uIndexChannel = 0; uIndexChannel < get4tdc::kuNbChan/2; uIndexChannel++)
+                  sTemp += Form("%5f ", fdTotOffsetGet4[ get4tdc::kuNbChan/2 * fiBoardIndexGet4[iIndexGet4] + uIndexChannel]);
                LOG(INFO)<<sTemp<<FairLogger::endl;
             } // if( -1 < fiBoardIndexGet4[iIndexGet4] )
                else
                {
                   sTemp = Form("  Slot %02d def. mean Tot offset:  |-> ", iIndexGet4 );
-                  for( Int_t iIndexChannel = 0; iIndexChannel < get4tdc::kuNbChan/2; iIndexChannel++)
-                     sTemp += Form("%5f ", fdMeanTotOffsetGet4[iIndexChannel] );
+                  for( UInt_t uIndexChannel = 0; uIndexChannel < get4tdc::kuNbChan/2; uIndexChannel++)
+                     sTemp += Form("%5f ", fdMeanTotOffsetGet4[uIndexChannel] );
                   LOG(INFO)<<sTemp<<FairLogger::endl;
                } // else of if( -1 < fiBoardIndexGet4[iIndexGet4] )
          LOG(INFO)<<FairLogger::endl;
@@ -1102,15 +1102,15 @@ void TMbsCalibTofPar::printParams()
       LOG(INFO)<<"  VFTX TOT Inversion flags:"<<FairLogger::endl;
       LOG(INFO)<<"  Channel:                    |-  ";
       TString sTemp="";
-      for( Int_t iIndexChannel = 0; iIndexChannel < vftxtdc::kuNbChan/2; iIndexChannel++)
-         sTemp += Form("%3d ", iIndexChannel);
+      for( UInt_t uIndexChannel = 0; uIndexChannel < vftxtdc::kuNbChan/2; uIndexChannel++)
+         sTemp += Form("%3u ", uIndexChannel);
       LOG(INFO)<<sTemp<<FairLogger::endl;
       
       for( Int_t iIndexTdc = 0; iIndexTdc < fiNbVftxTotInvFlag; iIndexTdc++)
       {
          sTemp = Form("  Slot %02d Tot Inversion flags: |-> ", iIndexTdc);
-         for( Int_t iIndexChannel = 0; iIndexChannel < vftxtdc::kuNbChan/2; iIndexChannel++)
-            sTemp += Form("%3d ", fiTotInversionFlagVftx[ vftxtdc::kuNbChan/2 * iIndexTdc + iIndexChannel]);
+         for( UInt_t uIndexChannel = 0; uIndexChannel < vftxtdc::kuNbChan/2; uIndexChannel++)
+            sTemp += Form("%3d ", fiTotInversionFlagVftx[ vftxtdc::kuNbChan/2 * iIndexTdc + uIndexChannel]);
          LOG(INFO)<<sTemp<<FairLogger::endl;
       }  // for( Int_t iIndexTdc = 0; iIndexTdc < fiNbVftxTotInvFlag; iIndexTdc++)
       LOG(INFO)<<FairLogger::endl;
@@ -1121,15 +1121,15 @@ void TMbsCalibTofPar::printParams()
       LOG(INFO)<<"  CAEN TOT Inversion flags:"<<FairLogger::endl;
       LOG(INFO)<<"  Channel:                    |-  ";
       TString sTemp="";
-      for( Int_t iIndexChannel = 0; iIndexChannel < caentdc::kuNbChan; iIndexChannel++)
-         sTemp += Form("%3d ", iIndexChannel);
+      for( UInt_t uIndexChannel = 0; uIndexChannel < caentdc::kuNbChan; uIndexChannel++)
+         sTemp += Form("%3u ", uIndexChannel);
       LOG(INFO)<<sTemp<<FairLogger::endl;
       
       for( Int_t iIndexTdc = 0; iIndexTdc < fiNbCaenTotInvFlag; iIndexTdc++)
       {
          sTemp = Form("  Slot %02d Tot Inversion flags: |-> ", iIndexTdc);
-         for( Int_t iIndexChannel = 0; iIndexChannel < caentdc::kuNbChan; iIndexChannel++)
-            sTemp += Form("%3d ", fiTotInversionFlagCaen[ caentdc::kuNbChan * iIndexTdc + iIndexChannel]);
+         for( UInt_t uIndexChannel = 0; uIndexChannel < caentdc::kuNbChan; uIndexChannel++)
+            sTemp += Form("%3d ", fiTotInversionFlagCaen[ caentdc::kuNbChan * iIndexTdc + uIndexChannel]);
          LOG(INFO)<<sTemp<<FairLogger::endl;
       }  // for( Int_t iIndexTdc = 0; iIndexTdc < fiNbCaenTotInvFlag; iIndexTdc++)
       LOG(INFO)<<FairLogger::endl;
@@ -1139,15 +1139,15 @@ void TMbsCalibTofPar::printParams()
       LOG(INFO)<<"  TRB3 TOT Inversion flags:"<<FairLogger::endl;
       LOG(INFO)<<"  Channel:                    |-  ";
       TString sTemp="";
-      for( Int_t iIndexChannel = 0; iIndexChannel < trbtdc::kuNbChan/2; iIndexChannel++)
-         sTemp += Form("%3d ", iIndexChannel);
+      for( UInt_t uIndexChannel = 0; uIndexChannel < trbtdc::kuNbChan/2; uIndexChannel++)
+         sTemp += Form("%3u ", uIndexChannel);
       LOG(INFO)<<sTemp<<FairLogger::endl;
       
       for( Int_t iIndexTdc = 0; iIndexTdc < fiNbTrb3TotInvFlag; iIndexTdc++)
       {
          sTemp = Form("  Slot %02d Tot Inversion flags: |-> ", iIndexTdc);
-         for( Int_t iIndexChannel = 0; iIndexChannel < trbtdc::kuNbChan/2; iIndexChannel++)
-            sTemp += Form("%3d ", fiTotInversionFlagTrb3[ trbtdc::kuNbChan/2 * iIndexTdc + iIndexChannel]);
+         for( UInt_t uIndexChannel = 0; uIndexChannel < trbtdc::kuNbChan/2; uIndexChannel++)
+            sTemp += Form("%3d ", fiTotInversionFlagTrb3[ trbtdc::kuNbChan/2 * iIndexTdc + uIndexChannel]);
          LOG(INFO)<<sTemp<<FairLogger::endl;
       }  // for( Int_t iIndexTdc = 0; iIndexTdc < fiNbTrb3TotInvFlag; iIndexTdc++)
       LOG(INFO)<<FairLogger::endl;
@@ -1157,15 +1157,15 @@ void TMbsCalibTofPar::printParams()
       LOG(INFO)<<"  GET4 TOT Inversion flags:"<<FairLogger::endl;
       LOG(INFO)<<"  Channel:                    |-  ";
       TString sTemp="";
-      for( Int_t iIndexChannel = 0; iIndexChannel < get4tdc::kuNbChan/2; iIndexChannel++)
-         sTemp += Form("%3d ", iIndexChannel);
+      for( UInt_t uIndexChannel = 0; uIndexChannel < get4tdc::kuNbChan/2; uIndexChannel++)
+         sTemp += Form("%3u ", uIndexChannel);
       LOG(INFO)<<sTemp<<FairLogger::endl;
       
       for( Int_t iIndexTdc = 0; iIndexTdc < fiNbGet4TotInvFlag; iIndexTdc++)
       {
          sTemp = Form("  Slot %02d Tot Inversion flags: |-> ", iIndexTdc);
-         for( Int_t iIndexChannel = 0; iIndexChannel < get4tdc::kuNbChan/2; iIndexChannel++)
-            sTemp += Form("%3d ", fiTotInversionFlagGet4[ get4tdc::kuNbChan/2 * iIndexTdc + iIndexChannel]);
+         for( UInt_t uIndexChannel = 0; uIndexChannel < get4tdc::kuNbChan/2; uIndexChannel++)
+            sTemp += Form("%3d ", fiTotInversionFlagGet4[ get4tdc::kuNbChan/2 * iIndexTdc + uIndexChannel]);
          LOG(INFO)<<sTemp<<FairLogger::endl;
       }  // for( Int_t iIndexTdc = 0; iIndexTdc < fiNbGet4TotInvFlag; iIndexTdc++)
       LOG(INFO)<<FairLogger::endl;
@@ -1289,22 +1289,22 @@ Int_t TMbsCalibTofPar::GetInitialCalInd( UInt_t uType, UInt_t uBoard ) const
    switch( uType )
    {
       case toftdc::caenV1290:
-         if( uBoard < fiNbCaenCalib && 0 < fiInitialCalIndexCaen.GetSize() )
+         if( static_cast<Int_t>(uBoard) < fiNbCaenCalib && 0 < fiInitialCalIndexCaen.GetSize() )
             return fiInitialCalIndexCaen[uBoard];
             else return -1;
          break;
       case toftdc::vftx:
-         if( uBoard < fiNbVftxCalib && 0 < fiInitialCalIndexVftx.GetSize() )
+         if( static_cast<Int_t>(uBoard) < fiNbVftxCalib && 0 < fiInitialCalIndexVftx.GetSize() )
             return fiInitialCalIndexVftx[uBoard];
             else return -1;
          break;
       case toftdc::trb:
-         if( uBoard < fiNbTrb3Calib && 0 < fiInitialCalIndexTrb3.GetSize() )
+         if( static_cast<Int_t>(uBoard) < fiNbTrb3Calib && 0 < fiInitialCalIndexTrb3.GetSize() )
             return fiInitialCalIndexTrb3[uBoard];
             else return -1;
          break;
       case toftdc::get4:
-         if( uBoard < fiNbGet4Calib && 0 < fiInitialCalIndexGet4.GetSize() )
+         if( static_cast<Int_t>(uBoard) < fiNbGet4Calib && 0 < fiInitialCalIndexGet4.GetSize() )
             return fiInitialCalIndexGet4[uBoard];
             else return -1;
          break;
@@ -1341,22 +1341,22 @@ Int_t TMbsCalibTofPar::GetOffsetBoardInd( UInt_t uType, UInt_t uSlot ) const
    switch( uType )
    {
       case toftdc::caenV1290:
-         if( uSlot < fiNbCaenOffset && 0 < fiBoardIndexCaen.GetSize() )
+         if( static_cast<Int_t>(uSlot) < fiNbCaenOffset && 0 < fiBoardIndexCaen.GetSize() )
             return fiBoardIndexCaen[uSlot];
             else return -1;
          break;
       case toftdc::vftx:
-         if( uSlot < fiNbVftxOffset && 0 < fiBoardIndexVftx.GetSize() )
+         if( static_cast<Int_t>(uSlot) < fiNbVftxOffset && 0 < fiBoardIndexVftx.GetSize() )
             return fiBoardIndexVftx[uSlot];
             else return -1;
          break;
       case toftdc::trb:
-         if( uSlot < fiNbTrb3Offset && 0 < fiBoardIndexTrb3.GetSize() )
+         if( static_cast<Int_t>(uSlot) < fiNbTrb3Offset && 0 < fiBoardIndexTrb3.GetSize() )
             return fiBoardIndexTrb3[uSlot];
             else return -1;
          break;
       case toftdc::get4:
-         if( uSlot < fiNbGet4Offset && 0 < fiBoardIndexGet4.GetSize() )
+         if( static_cast<Int_t>(uSlot) < fiNbGet4Offset && 0 < fiBoardIndexGet4.GetSize() )
             return fiBoardIndexGet4[uSlot];
             else return -1;
          break;
@@ -1406,25 +1406,25 @@ Int_t TMbsCalibTofPar::GetTimeOffsetVal( UInt_t uType, UInt_t uSlot, UInt_t uCha
       else switch( uType )
       {
          case toftdc::caenV1290:
-            if( caentdc::kuNbChan == fdMeanTimeOffsetCaen.GetSize() && 
+            if( static_cast<Int_t>(caentdc::kuNbChan) == fdMeanTimeOffsetCaen.GetSize() && 
                 uChan < caentdc::kuNbChan )
                return fdMeanTimeOffsetCaen[uChan];
                else return 0;
             break;
          case toftdc::vftx:
-            if( vftxtdc::kuNbChan/2 == fdMeanTimeOffsetVftx.GetSize() && 
+            if( static_cast<Int_t>(vftxtdc::kuNbChan/2) == fdMeanTimeOffsetVftx.GetSize() && 
                 uChan < vftxtdc::kuNbChan/2 )
                return fdMeanTimeOffsetVftx[uChan];
                else return 0;
             break;
          case toftdc::trb:
-            if( trbtdc::kuNbChan/2 == fdMeanTimeOffsetTrb3.GetSize() && 
+            if( static_cast<Int_t>(trbtdc::kuNbChan/2) == fdMeanTimeOffsetTrb3.GetSize() && 
                 uChan < trbtdc::kuNbChan/2 )
                return fdMeanTimeOffsetTrb3[uChan];
                else return 0;
             break;
          case toftdc::get4:
-            if( get4tdc::kuNbChan == fdMeanTimeOffsetGet4.GetSize() &&
+            if( static_cast<Int_t>(get4tdc::kuNbChan) == fdMeanTimeOffsetGet4.GetSize() &&
                 uChan < get4tdc::kuNbChan/2 )
                return fdMeanTimeOffsetGet4[uChan];
                else return 0;
@@ -1475,25 +1475,25 @@ Int_t TMbsCalibTofPar::GetTotOffsetVal( UInt_t uType, UInt_t uSlot, UInt_t uChan
       else switch( uType )
       {
          case toftdc::caenV1290:
-            if( caentdc::kuNbChan == fdMeanTotOffsetCaen.GetSize() && 
+            if( static_cast<Int_t>(caentdc::kuNbChan) == fdMeanTotOffsetCaen.GetSize() && 
                 uChan < caentdc::kuNbChan )
                return fdMeanTotOffsetCaen[uChan];
                else return 0;
             break;
          case toftdc::vftx:
-            if( vftxtdc::kuNbChan/2 == fdMeanTotOffsetVftx.GetSize() && 
+            if( static_cast<Int_t>(vftxtdc::kuNbChan/2) == fdMeanTotOffsetVftx.GetSize() && 
                 uChan < vftxtdc::kuNbChan/2 )
                return fdMeanTotOffsetVftx[uChan];
                else return 0;
             break;
          case toftdc::trb:
-            if( trbtdc::kuNbChan/2 == fdMeanTotOffsetTrb3.GetSize() && 
+            if( static_cast<Int_t>(trbtdc::kuNbChan/2) == fdMeanTotOffsetTrb3.GetSize() && 
                 uChan < trbtdc::kuNbChan/2 )
                return fdMeanTotOffsetTrb3[uChan];
                else return 0;
             break;
          case toftdc::get4:
-            if( get4tdc::kuNbChan == fdMeanTotOffsetGet4.GetSize() &&
+            if( static_cast<Int_t>(get4tdc::kuNbChan) == fdMeanTotOffsetGet4.GetSize() &&
                 uChan < get4tdc::kuNbChan/2 )
                return fdMeanTotOffsetGet4[uChan];
                else return 0;
@@ -1509,22 +1509,22 @@ Int_t TMbsCalibTofPar::GetTdcTdcOffset( UInt_t uType, UInt_t uBoard ) const
    switch( uType )
    {
       case toftdc::caenV1290:
-         if( uBoard < fiNbCaenCalib && 0 < fiTdcToTdcOffsetCaen.GetSize() )
+         if( static_cast<Int_t>(uBoard) < fiNbCaenCalib && 0 < fiTdcToTdcOffsetCaen.GetSize() )
             return fiTdcToTdcOffsetCaen[uBoard];
             else return 0;
          break;
       case toftdc::vftx:
-         if( uBoard < fiNbVftxCalib && 0 < fiTdcToTdcOffsetVftx.GetSize() )
+         if( static_cast<Int_t>(uBoard) < fiNbVftxCalib && 0 < fiTdcToTdcOffsetVftx.GetSize() )
             return fiTdcToTdcOffsetVftx[uBoard];
             else return 0;
          break;
       case toftdc::trb:
-         if( uBoard < fiNbTrb3Calib && 0 < fiTdcToTdcOffsetTrb3.GetSize() )
+         if( static_cast<Int_t>(uBoard) < fiNbTrb3Calib && 0 < fiTdcToTdcOffsetTrb3.GetSize() )
             return fiTdcToTdcOffsetTrb3[uBoard];
             else return 0;
          break;
       case toftdc::get4:
-         if( uBoard < fiNbGet4Calib && 0 < fiTdcToTdcOffsetGet4.GetSize() )
+         if( static_cast<Int_t>(uBoard) < fiNbGet4Calib && 0 < fiTdcToTdcOffsetGet4.GetSize() )
             return fiTdcToTdcOffsetGet4[uBoard];
             else return 0;
          break;
@@ -1583,28 +1583,28 @@ Int_t TMbsCalibTofPar::GetTotInvFlag( UInt_t uType, UInt_t uSlot, UInt_t uChan )
    switch( uType )
    {
       case toftdc::caenV1290:
-         if( uSlot < fiNbCaenTotInvFlag && 
+         if( static_cast<Int_t>(uSlot) < fiNbCaenTotInvFlag && 
              0 < fiTotInversionFlagCaen.GetSize() && 
              uChan < caentdc::kuNbChan )
          return fiTotInversionFlagCaen[uSlot * caentdc::kuNbChan + uChan];
             else return 0;
          break;
       case toftdc::vftx:
-         if( uSlot < fiNbVftxTotInvFlag && 
+         if( static_cast<Int_t>(uSlot) < fiNbVftxTotInvFlag && 
              0 < fiTotInversionFlagVftx.GetSize() && 
              uChan < vftxtdc::kuNbChan/2 )
          return fiTotInversionFlagVftx[uSlot * vftxtdc::kuNbChan/2 + uChan];
             else return 0;
          break;
       case toftdc::trb:
-         if( uSlot < fiNbTrb3TotInvFlag && 
+         if( static_cast<Int_t>(uSlot) < fiNbTrb3TotInvFlag && 
              0 < fiTotInversionFlagTrb3.GetSize() && 
              uChan < trbtdc::kuNbChan/2 )
          return fiTotInversionFlagTrb3[uSlot * trbtdc::kuNbChan/2 + uChan];
             else return 0;
          break;
       case toftdc::get4:
-         if( uSlot < fiNbGet4TotInvFlag && 
+         if( static_cast<Int_t>(uSlot) < fiNbGet4TotInvFlag && 
              0 < fiTotInversionFlagGet4.GetSize() && 
              uChan < get4tdc::kuNbChan/2 )
             return fiTotInversionFlagGet4[uSlot * get4tdc::kuNbChan/2 + uChan];
@@ -1626,22 +1626,22 @@ Bool_t TMbsCalibTofPar::GetTdcOffEnaFlag( UInt_t uType, UInt_t uBoard ) const
       switch( uType )
       {
          case toftdc::caenV1290:
-            if( uBoard < fiNbCaenCalib && 0 < fiTdcOffsetEnaFlagVftx.GetSize() )
+            if( static_cast<Int_t>(uBoard) < fiNbCaenCalib && 0 < fiTdcOffsetEnaFlagVftx.GetSize() )
                return (1 == fiTdcOffsetEnaFlagVftx[uBoard])? kTRUE: kFALSE;
                else return kFALSE;
             break;
          case toftdc::vftx:
-            if( uBoard < fiNbVftxCalib && 0 < fiTdcOffsetEnaFlagCaen.GetSize() )
+            if( static_cast<Int_t>(uBoard) < fiNbVftxCalib && 0 < fiTdcOffsetEnaFlagCaen.GetSize() )
                return (1 == fiTdcOffsetEnaFlagCaen[uBoard])? kTRUE: kFALSE;
                else return kFALSE;
             break;
          case toftdc::trb:
-            if( uBoard < fiNbTrb3Calib && 0 < fiTdcOffsetEnaFlagTrb3.GetSize() )
+            if( static_cast<Int_t>(uBoard) < fiNbTrb3Calib && 0 < fiTdcOffsetEnaFlagTrb3.GetSize() )
                return (1 == fiTdcOffsetEnaFlagTrb3[uBoard])? kTRUE: kFALSE;
                else return kFALSE;
             break;
          case toftdc::get4:
-            if( uBoard < fiNbGet4Calib && 0 < fiTdcOffsetEnaFlagGet4.GetSize() )
+            if( static_cast<Int_t>(uBoard) < fiNbGet4Calib && 0 < fiTdcOffsetEnaFlagGet4.GetSize() )
                return (1 == fiTdcOffsetEnaFlagGet4[uBoard])? kTRUE: kFALSE;
                else return kFALSE;
             break;

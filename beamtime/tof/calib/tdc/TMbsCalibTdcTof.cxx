@@ -94,7 +94,7 @@ TMbsCalibTdcTof::~TMbsCalibTdcTof()
    LOG(INFO)<<"**** TMbsCalibTdcTof: Delete instance "<<FairLogger::endl;
 } 
 
-void TMbsCalibTdcTof::Clear(Option_t *option)
+void TMbsCalibTdcTof::Clear(Option_t */*option*/)
 {
    fMbsUnpackPar = NULL;
    fMbsCalibPar = NULL;
@@ -150,18 +150,18 @@ Bool_t TMbsCalibTdcTof::CalibTdc()
          CalibrateReference( uType, fMbsCalibPar->GetTdcOffsetMainTdc());
 
       // loop over all active TDCs
-      for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+      for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
       {
          // Make Main TDC reference is not calibrated twice (would spoil the calibration stats)
-         if( iTdc != fMbsCalibPar->GetTdcOffsetMainTdc() )
-            CalibrateReference( uType, iTdc);
+         if( uTdc != fMbsCalibPar->GetTdcOffsetMainTdc() )
+            CalibrateReference( uType, uTdc);
 
-         if( kTRUE == fMbsCalibPar->GetTdcOffEnaFlag(uType, iTdc) )
+         if( kTRUE == fMbsCalibPar->GetTdcOffEnaFlag(uType, uTdc) )
          {
-            TdcOffsetCalc( uType, iTdc);
-         } // if( kTRUE == fMbsCalibPar->GetTdcOffEnaFlag(uType, iTdc) )
+            TdcOffsetCalc( uType, uTdc);
+         } // if( kTRUE == fMbsCalibPar->GetTdcOffEnaFlag(uType, uTdc) )
 
-         Calibration( uType, iTdc);
+         Calibration( uType, uTdc);
       }
          
       // TOT mode 1 and 4 are already done.
@@ -292,7 +292,7 @@ Bool_t TMbsCalibTdcTof::CheckAllTdcValid()
    // Loop over all TDC types
    for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
    {
-      for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+      for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
       {
          // TDC type specific values
          TClonesArray * xUnpDataArray = NULL;
@@ -318,31 +318,31 @@ Bool_t TMbsCalibTdcTof::CheckAllTdcValid()
          {
             LOG(ERROR)<<"TMbsCalibTdcTof::CheckAllTdcValid => Data pt failed Type "<<uType
                   <<" Active bd "<<fMbsUnpackPar->GetNbActiveBoards( uType )
-                  <<" Board "<<iTdc<<" Unp array "<<xUnpDataArray<<FairLogger::endl;
+                  <<" Board "<<uTdc<<" Unp array "<<xUnpDataArray<<FairLogger::endl;
             return kFALSE;
          }
          
          // Board raw data recovery
-         TTofTdcBoard * xBoardUnpData = (TTofTdcBoard*) xUnpDataArray->At(iTdc);
+         TTofTdcBoard * xBoardUnpData = (TTofTdcBoard*) xUnpDataArray->At(uTdc);
                
          if( NULL == xBoardUnpData )
          {
-            fdBoardTriggerTime[uType][iTdc] = 0.0;
+            fdBoardTriggerTime[uType][uTdc] = 0.0;
             LOG(ERROR)<<"TMbsCalibTdcTof::CheckAllTdcValid => Bd pt failed Type "<<uType
                   <<" Active bd "<<fMbsUnpackPar->GetNbActiveBoards( uType )
-                  <<" Board "<<iTdc<<FairLogger::endl;
+                  <<" Board "<<uTdc<<FairLogger::endl;
             return kFALSE;
          } // if( NULL == xBoardUnpData )
 
          if( kFALSE == xBoardUnpData->IsValid() )
          {
-            fdBoardTriggerTime[uType][iTdc] = 0.0;
+            fdBoardTriggerTime[uType][uTdc] = 0.0;
             LOG(DEBUG)<<"TMbsCalibTdcTof::CheckAllTdcValid => Bd data invalid Type "<<uType
                   <<" Active bds "<<fMbsUnpackPar->GetNbActiveBoards( uType )
-                  <<" Board "<<iTdc<<FairLogger::endl;
+                  <<" Board "<<uTdc<<FairLogger::endl;
             return kFALSE;
          } // if( kFALSE == xBoardUnpData->IsValid() )
-      } // for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+      } // for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
    } // for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
    return kTRUE;
 }
@@ -426,35 +426,35 @@ Bool_t TMbsCalibTdcTof::CreateHistogramms()
          fhDnlChan[uType].resize( fMbsUnpackPar->GetNbActiveBoards( uType ) * uNbChan, NULL );
          fhDnlSum[uType].resize( fMbsUnpackPar->GetNbActiveBoards( uType ) * uNbChan, NULL );
          fhBinSizeChan[uType].resize( fMbsUnpackPar->GetNbActiveBoards( uType ) * uNbChan, NULL );
-         for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
-            for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++) 
+         for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
+            for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++) 
             {
-               Int_t iHistoIndex = iTdc*uNbChan + iChanInd;
+               Int_t iHistoIndex = uTdc*uNbChan + uChanInd;
                
                // Current Dnl correction per bin
                fhDnlChan[uType][iHistoIndex] =  new TH1D( 
-                                 Form("tof_%s_dnlch_b%03d_ch%03d", toftdc::ksTdcHistName[ uType ].Data(),
-                                                                   iTdc, iChanInd),
-                                 Form("Current Dnl factor for channel %3d in %s TDC #%03d", iChanInd, 
-                                 toftdc::ksTdcHistName[ uType ].Data(), iTdc),
+                                 Form("tof_%s_dnlch_b%03u_ch%03u", toftdc::ksTdcHistName[ uType ].Data(),
+                                                                   uTdc, uChanInd),
+                                 Form("Current Dnl factor for channel %3u in %s TDC #%03u", uChanInd, 
+                                 toftdc::ksTdcHistName[ uType ].Data(), uTdc),
                                  uFtBinNb, -0.5, uFtBinNb-0.5 );
                
                // Current Dnl Sum per bin
                fhDnlSum[uType][iHistoIndex] =  new TH1D( 
-                                 Form("tof_%s_dnlsum_b%03d_ch%03d", toftdc::ksTdcHistName[ uType ].Data(),
-                                                                    iTdc, iChanInd),
-                                 Form("Current Dnl Sum for channel %3d in %s TDC #%03d; Bin[]; ", iChanInd,
-                                 toftdc::ksTdcHistName[ uType ].Data(), iTdc),
+                                 Form("tof_%s_dnlsum_b%03u_ch%03u", toftdc::ksTdcHistName[ uType ].Data(),
+                                                                    uTdc, uChanInd),
+                                 Form("Current Dnl Sum for channel %3u in %s TDC #%03u; Bin[]; ", uChanInd,
+                                 toftdc::ksTdcHistName[ uType ].Data(), uTdc),
                                  uFtBinNb, -0.5, uFtBinNb-0.5 );
 
                // Current Bin sizes from Dnl correction
                fhBinSizeChan[uType][iHistoIndex] =  new TH1D(
-                                 Form("tof_%s_binszch_b%03d_ch%03d", toftdc::ksTdcHistName[ uType ].Data(),
-                                                                   iTdc, iChanInd),
-                                 Form("Current Bin size from Dnl factor for channel %3d in %s TDC #%03d; Bin size [ps]; Bins []",
-                                       iChanInd, toftdc::ksTdcHistName[ uType ].Data(), iTdc),
+                                 Form("tof_%s_binszch_b%03u_ch%03u", toftdc::ksTdcHistName[ uType ].Data(),
+                                                                   uTdc, uChanInd),
+                                 Form("Current Bin size from Dnl factor for channel %3u in %s TDC #%03u; Bin size [ps]; Bins []",
+                                       uChanInd, toftdc::ksTdcHistName[ uType ].Data(), uTdc),
                                  (Int_t)(20*dClockCycle/uFtBinNb), -0.5, 20*dClockCycle/uFtBinNb -0.5 );
-            } // for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++) 
+            } // for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++) 
             
          // Monitoring histograms
          UInt_t uNbDataChan = uNbChan;
@@ -474,57 +474,57 @@ Bool_t TMbsCalibTdcTof::CreateHistogramms()
             
          fhMultiplicity[uType].resize( fMbsUnpackPar->GetNbActiveBoards( uType ), NULL );
          
-         for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+         for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
          {
-            for( Int_t iChanInd = 0; iChanInd< uNbDataChan; iChanInd++) 
+            for( UInt_t uChanInd = 0; uChanInd< uNbDataChan; uChanInd++) 
             {
-               Int_t iHistoIndex = iTdc*uNbDataChan + iChanInd;
+               Int_t iHistoIndex = uTdc*uNbDataChan + uChanInd;
                
                // Time to board trigger in ps
                if( kTRUE == fMbsCalibPar->IsTimeHistEna() )
                   fhTimeToTrigg[uType][iHistoIndex] =  new TH1I( 
-                                    Form("tof_%s_t2trig_b%03d_ch%03d", toftdc::ksTdcHistName[ uType ].Data(),
-                                                                      iTdc, iChanInd),
-                                    Form("Time to board trigger for channel %3d in %s TDC #%03d; Trigger time - Calibrated Time [ps]", 
-                                          iChanInd, toftdc::ksTdcHistName[ uType ].Data(), iTdc),
+                                    Form("tof_%s_t2trig_b%03u_ch%03u", toftdc::ksTdcHistName[ uType ].Data(),
+                                                                      uTdc, uChanInd),
+                                    Form("Time to board trigger for channel %3u in %s TDC #%03u; Trigger time - Calibrated Time [ps]", 
+                                          uChanInd, toftdc::ksTdcHistName[ uType ].Data(), uTdc),
                                     11000, -2000000.0, 200000.0 );
 //                                    8000, -700000.0, 100000.0 );
                // Time to board trigger in ps for events with a single hit in the channel
                if( kTRUE == fMbsCalibPar->IsSingleTimeHistEna() )
                   fhTimeToTriggSingles[uType][iHistoIndex] =  new TH1I( 
-                                    Form("tof_%s_t2trig_sing_b%03d_ch%03d", toftdc::ksTdcHistName[ uType ].Data(),
-                                                                      iTdc, iChanInd),
-                                    Form("Time to board trigger for events with a single hit for channel %3d in %s TDC #%03d; Trigger time - Calibrated Time [ps]", 
-                                          iChanInd, toftdc::ksTdcHistName[ uType ].Data(), iTdc),
+                                    Form("tof_%s_t2trig_sing_b%03u_ch%03u", toftdc::ksTdcHistName[ uType ].Data(),
+                                                                      uTdc, uChanInd),
+                                    Form("Time to board trigger for events with a single hit for channel %3u in %s TDC #%03u; Trigger time - Calibrated Time [ps]", 
+                                          uChanInd, toftdc::ksTdcHistName[ uType ].Data(), uTdc),
                                     8000, -700000.0, 100000.0 );
                // Tot in ps
                if( kTRUE == fMbsCalibPar->IsTotHistEna() && 0 < fMbsCalibPar->GetTotMode(uType)  )
                   fhToT[uType][iHistoIndex] =  new TH1I( 
-                                    Form("tof_%s_tot_b%03d_ch%03d", toftdc::ksTdcHistName[ uType ].Data(),
-                                                                      iTdc, iChanInd),
-                                    Form("Time over threshold for channel %3d in %s TDC #%03d; ToT [ps]", 
-                                          iChanInd, toftdc::ksTdcHistName[ uType ].Data(), iTdc),
+                                    Form("tof_%s_tot_b%03u_ch%03u", toftdc::ksTdcHistName[ uType ].Data(),
+                                                                      uTdc, uChanInd),
+                                    Form("Time over threshold for channel %3d in %s TDC #%03u; ToT [ps]", 
+                                          uChanInd, toftdc::ksTdcHistName[ uType ].Data(), uTdc),
                                     30000, -150000, 150000 );
                                     
                // Distance between consecutive multiple hits on same channel in ps
                if( kTRUE == fMbsCalibPar->IsMultiDistHistEna() )
                   fhMultiDist[uType][iHistoIndex] =  new TH2I( 
-                                    Form("tof_%s_muldist_b%03d_ch%03d", toftdc::ksTdcHistName[ uType ].Data(),
-                                                                      iTdc, iChanInd),
-                                    Form("Time to previous hit for multiple hits for channel %3d in %s TDC #%03d; T(n) - T(n-1) [ps]; n (Multiple hits index) []", 
-                                          iChanInd, toftdc::ksTdcHistName[ uType ].Data(), iTdc),
+                                    Form("tof_%s_muldist_b%03u_ch%03u", toftdc::ksTdcHistName[ uType ].Data(),
+                                                                      uTdc, uChanInd),
+                                    Form("Time to previous hit for multiple hits for channel %3u in %s TDC #%03u; T(n) - T(n-1) [ps]; n (Multiple hits index) []", 
+                                          uChanInd, toftdc::ksTdcHistName[ uType ].Data(), uTdc),
                                     7500, -50000, 100000,
                                     vftxtdc::kuNbMulti, 1, vftxtdc::kuNbMulti + 1 );
-            } // for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++) 
+            } // for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++) 
             
             //Multiplicity
-            fhMultiplicity[uType][iTdc] =  new TH2I( 
-                                    Form("tof_%s_mul_b%03d", toftdc::ksTdcHistName[ uType ].Data(), iTdc),
-                                    Form("Data multiplicty per channel in %s TDC #%03d; Channel []; Multiplicity []", 
-                                          toftdc::ksTdcHistName[ uType ].Data(), iTdc),
+            fhMultiplicity[uType][uTdc] =  new TH2I( 
+                                    Form("tof_%s_mul_b%03u", toftdc::ksTdcHistName[ uType ].Data(), uTdc),
+                                    Form("Data multiplicty per channel in %s TDC #%03u; Channel []; Multiplicity []", 
+                                          toftdc::ksTdcHistName[ uType ].Data(), uTdc),
                                     uNbDataChan, 0.0, uNbDataChan,
                                     uMaxMul + 1, 0, uMaxMul + 1 );
-         } // for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+         } // for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
       } // if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
    } // for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
 
@@ -608,23 +608,23 @@ Bool_t TMbsCalibTdcTof::FillHistograms()
    
    // Time to board trigger in ps for events with a single hit in the channel
    for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
-      for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+      for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
       {
-         TString sTemp = Form( "TMbsCalibTdcTof::FillHistos: %s Board #%03d Trigger Time %7.0f ",
-                  toftdc::ksTdcHistName[ uType ].Data(), iTdc, fdBoardTriggerTime[uType][iTdc] );
+         TString sTemp = Form( "TMbsCalibTdcTof::FillHistos: %s Board #%03u Trigger Time %7.0f ",
+                  toftdc::ksTdcHistName[ uType ].Data(), uTdc, fdBoardTriggerTime[uType][uTdc] );
          LOG(DEBUG)<<sTemp<<FairLogger::endl;
-         for( Int_t iChanInd = 0; iChanInd< uNbChan[uType]; iChanInd++) 
+         for( UInt_t uChanInd = 0; uChanInd< uNbChan[uType]; uChanInd++) 
          {
-            fhMultiplicity[uType][iTdc]->Fill(iChanInd, uMul[uType][ iTdc*uNbChan[uType] + iChanInd ] );
-            if( 1 == uMul[uType][ iTdc*uNbChan[uType] + iChanInd ] &&
+            fhMultiplicity[uType][uTdc]->Fill(uChanInd, uMul[uType][ uTdc*uNbChan[uType] + uChanInd ] );
+            if( 1 == uMul[uType][ uTdc*uNbChan[uType] + uChanInd ] &&
                 kTRUE == fMbsCalibPar->IsSingleTimeHistEna() )
             {
-               Int_t iHistoIndex = iTdc*uNbChan[uType] + iChanInd;
+               Int_t iHistoIndex = uTdc*uNbChan[uType] + uChanInd;
                fhTimeToTriggSingles[uType][iHistoIndex]->Fill( dLastTime[uType][iHistoIndex]
-                                                             - fdBoardTriggerTime[uType][iTdc] );
-            } // if( 1 == uMul[uType][ iTdc*uNbChan[uType] + iChanInd ] )
-         } // for( Int_t iChanInd = 0; iChanInd< uNbChan[uType]; iChanInd++) 
-      } // for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+                                                             - fdBoardTriggerTime[uType][uTdc] );
+            } // if( 1 == uMul[uType][ uTdc*uNbChan[uType] + uChanInd ] )
+         } // for( UInt_t uChanInd = 0; uChanInd< uNbChan[uType]; uChanInd++) 
+      } // for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
    
 
 //   if( kTRUE == fMbsCalibPar->IsTdcOffsetEna() )
@@ -671,35 +671,35 @@ Bool_t TMbsCalibTdcTof::WriteHistogramms( TDirectory* inDir)
          TDirectory *cdCalTdcHist[ fMbsUnpackPar->GetNbActiveBoards( uType ) ][3];
          
          // loop over active TDCs
-         for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+         for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
          {
             // Create a sub folder for each TDC
-            cdCalTdc[iTdc] = cdCal->mkdir( Form( "cTdc%03d", iTdc) );
-            cdCalTdc[iTdc]->cd();
+            cdCalTdc[uTdc] = cdCal->mkdir( Form( "cTdc%03u", uTdc) );
+            cdCalTdc[uTdc]->cd();
             
             // Create a sub folder for each histogram type
-            cdCalTdcHist[iTdc][0] = cdCalTdc[iTdc]->mkdir( Form( "dnl%03d", iTdc) );
-            cdCalTdcHist[iTdc][1] = cdCalTdc[iTdc]->mkdir( Form( "dnlSum%03d", iTdc) );
-            cdCalTdcHist[iTdc][2] = cdCalTdc[iTdc]->mkdir( Form( "binSz%03d", iTdc) );
+            cdCalTdcHist[uTdc][0] = cdCalTdc[uTdc]->mkdir( Form( "dnl%03u", uTdc) );
+            cdCalTdcHist[uTdc][1] = cdCalTdc[uTdc]->mkdir( Form( "dnlSum%03u", uTdc) );
+            cdCalTdcHist[uTdc][2] = cdCalTdc[uTdc]->mkdir( Form( "binSz%03u", uTdc) );
             
             // Loop over all TDC channels
-            for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++) 
+            for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++) 
             {
-               Int_t iHistoIndex = iTdc*uNbChan + iChanInd;
+               Int_t iHistoIndex = uTdc*uNbChan + uChanInd;
                
                // Current Dnl correction per bin
-               cdCalTdcHist[iTdc][0]->cd();
+               cdCalTdcHist[uTdc][0]->cd();
                fhDnlChan[uType][iHistoIndex]->Write();
                
                // Current Dnl Sum per bin
-               cdCalTdcHist[iTdc][1]->cd();
+               cdCalTdcHist[uTdc][1]->cd();
                fhDnlSum[uType][iHistoIndex]->Write();
 
                // Current Bin sizes from Dnl correction
-               cdCalTdcHist[iTdc][2]->cd();
+               cdCalTdcHist[uTdc][2]->cd();
                fhBinSizeChan[uType][iHistoIndex]->Write();
-            } // for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++) 
-         } // for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+            } // for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++) 
+         } // for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
             
          // Monitoring histograms
          UInt_t uNbDataChan = uNbChan;
@@ -715,54 +715,54 @@ Bool_t TMbsCalibTdcTof::WriteHistogramms( TDirectory* inDir)
          TDirectory *cdMonTdcHist[ fMbsUnpackPar->GetNbActiveBoards( uType ) ][4];
          
          // loop over active TDCs
-         for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+         for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
          {
             // Create a sub folder for each TDC
-            cdMonTdc[iTdc] = cdMon->mkdir( Form( "mTdc%03d", iTdc) );
-            cdMonTdc[iTdc]->cd();
+            cdMonTdc[uTdc] = cdMon->mkdir( Form( "mTdc%03u", uTdc) );
+            cdMonTdc[uTdc]->cd();
             
-            fhMultiplicity[uType][iTdc]->Write();
+            fhMultiplicity[uType][uTdc]->Write();
             
             // Create a sub folder for each histogram type
             if( kTRUE == fMbsCalibPar->IsTimeHistEna() )
-               cdMonTdcHist[iTdc][0] = cdMonTdc[iTdc]->mkdir( Form( "t2trig%03d", iTdc) );
+               cdMonTdcHist[uTdc][0] = cdMonTdc[uTdc]->mkdir( Form( "t2trig%03u", uTdc) );
             if( kTRUE == fMbsCalibPar->IsSingleTimeHistEna() )
-               cdMonTdcHist[iTdc][1] = cdMonTdc[iTdc]->mkdir( Form( "t2trig_sing%03d", iTdc) );
+               cdMonTdcHist[uTdc][1] = cdMonTdc[uTdc]->mkdir( Form( "t2trig_sing%03u", uTdc) );
             if( kTRUE == fMbsCalibPar->IsTotHistEna() )
-               cdMonTdcHist[iTdc][2] = cdMonTdc[iTdc]->mkdir( Form( "tot%03d", iTdc) );
+               cdMonTdcHist[uTdc][2] = cdMonTdc[uTdc]->mkdir( Form( "tot%03u", uTdc) );
             if( kTRUE == fMbsCalibPar->IsMultiDistHistEna() )
-               cdMonTdcHist[iTdc][3] = cdMonTdc[iTdc]->mkdir( Form( "mulDist%03d", iTdc) );
+               cdMonTdcHist[uTdc][3] = cdMonTdc[uTdc]->mkdir( Form( "mulDist%03u", uTdc) );
             
             // Loop over all input channels
-            for( Int_t iChanInd = 0; iChanInd< uNbDataChan; iChanInd++) 
+            for( UInt_t uChanInd = 0; uChanInd< uNbDataChan; uChanInd++) 
             {
-               Int_t iHistoIndex = iTdc*uNbDataChan + iChanInd;
+               Int_t iHistoIndex = uTdc*uNbDataChan + uChanInd;
                
                if( kTRUE == fMbsCalibPar->IsTimeHistEna() )
                {
-                  cdMonTdcHist[iTdc][0]->cd();
+                  cdMonTdcHist[uTdc][0]->cd();
                   fhTimeToTrigg[uType][iHistoIndex]->Write();
                } // if( kTRUE == fMbsCalibPar->IsTimeHistEna() )
                   
                if( kTRUE == fMbsCalibPar->IsSingleTimeHistEna() )
                {
-                  cdMonTdcHist[iTdc][1]->cd();
+                  cdMonTdcHist[uTdc][1]->cd();
                   fhTimeToTriggSingles[uType][iHistoIndex]->Write();
                } // if( kTRUE == fMbsCalibPar->IsSingleTimeHistEna() )
                   
                if( kTRUE == fMbsCalibPar->IsTotHistEna() )
                {
-                  cdMonTdcHist[iTdc][2]->cd();
+                  cdMonTdcHist[uTdc][2]->cd();
                   fhToT[uType][iHistoIndex]->Write();
                } // if( kTRUE == fMbsCalibPar->IsTotHistEna() )
                   
                if( kTRUE == fMbsCalibPar->IsMultiDistHistEna() )
                {
-                  cdMonTdcHist[iTdc][3]->cd();
+                  cdMonTdcHist[uTdc][3]->cd();
                   fhMultiDist[uType][iHistoIndex]->Write();
                } // if( kTRUE == fMbsCalibPar->IsMultiDistHistEna() )
-            } // for( Int_t iChanInd = 0; iChanInd< uNbDataChan[uType]; iChanInd++) 
-         } // for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+            } // for( UInt_t uChanInd = 0; uChanInd< uNbDataChan[uType]; uChanInd++) 
+         } // for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
       } // if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
       
  //  if( kTRUE == fMbsCalibPar->IsTdcOffsetEna() )
@@ -842,16 +842,16 @@ Bool_t TMbsCalibTdcTof::InitCalibration()
          fdTdcReferenceFirstEvent[uType].resize( fMbsUnpackPar->GetNbActiveBoards( uType ), 0.0 );
 
          // loop over all active TDC & all channels
-         for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+         for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
          {
-            for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++) 
+            for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++) 
             {
-               Int_t iHistoIndex = iTdc*uNbChan + iChanInd;
+               Int_t iHistoIndex = uTdc*uNbChan + uChanInd;
                fdCorr[uType][iHistoIndex].resize(uFtBinNb, 0.0);
-            } // for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++) 
+            } // for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++) 
 
-            fdCorrRef[uType][iTdc].resize( uFtBinNb, 0.0 );
-         } // for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+            fdCorrRef[uType][uTdc].resize( uFtBinNb, 0.0 );
+         } // for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
       } // if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
    } // for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
    
@@ -900,19 +900,19 @@ Bool_t TMbsCalibTdcTof::GetHistosFromUnpack()
          LOG(INFO)<<sInfoLoading<<FairLogger::endl;
          
          sInfoLoading = "          ";
-         for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++)
-            sInfoLoading += Form("%3d ", iChanInd);
+         for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++)
+            sInfoLoading += Form("%3u ", uChanInd);
          LOG(INFO)<<sInfoLoading<<FairLogger::endl;
             
          // Loop over all active TDCs and all channels
-         for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+         for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
          {
-            sInfoLoading = Form("tdc #%3d: ",iTdc );
-            for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++) 
+            sInfoLoading = Form("tdc #%3u: ",uTdc );
+            for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++) 
             {
-               Int_t iHistoIndex = iTdc*uNbChan + iChanInd;
+               Int_t iHistoIndex = uTdc*uNbChan + uChanInd;
 //               gDirectory->GetObject( Form("tof_%s_ft_b%03d_ch%03d", toftdc::ksTdcHistName[ uType ].Data(), 
-//                                                                     iTdc, iChanInd), 
+//                                                                     uTdc, uChanInd), 
 //                                       fhFineTime[uType][iHistoIndex]);
 
                if( 0 == fMbsCalibPar->GetMinHitCalib() )
@@ -925,13 +925,13 @@ Bool_t TMbsCalibTdcTof::GetHistosFromUnpack()
                      continue;
                   } // if( NULL != fhInitialCalibHisto[uType][iHistoIndex] )
 
-               fhFineTime[uType][iHistoIndex] = (TH1*) gDirectory->FindObject( Form("tof_%s_ft_b%03d_ch%03d", toftdc::ksTdcHistName[ uType ].Data(), 
-                                                                     iTdc, iChanInd));
+               fhFineTime[uType][iHistoIndex] = (TH1*) gDirectory->FindObject( Form("tof_%s_ft_b%03u_ch%03u", toftdc::ksTdcHistName[ uType ].Data(), 
+                                                                     uTdc, uChanInd));
                if( NULL == fhFineTime[uType][iHistoIndex] )
                {
                   LOG(ERROR)<<" TMbsCalibTdcTof::GetHistosFromUnpack => Could not get FT histo for "
                             <<toftdc::ksTdcHistName[ uType ]<<" #"
-                            <<iTdc<<" ch "<<iChanInd<<" from the unpack step"
+                            <<uTdc<<" ch "<<uChanInd<<" from the unpack step"
                             <<FairLogger::endl;
                   sInfoLoading += "  0 ";
                   LOG(INFO)<<sInfoLoading<<FairLogger::endl;
@@ -941,14 +941,14 @@ Bool_t TMbsCalibTdcTof::GetHistosFromUnpack()
                } // if( NULL == fhFineTime[uType][iHistoIndex] )
                   else LOG(DEBUG)<<" TMbsCalibTdcTof::GetHistosFromUnpack =>Got FT histo for "
                                   <<toftdc::ksTdcHistName[ uType ]<<" #"
-                                  <<iTdc<<" ch "<<iChanInd<<" from the unpack step: 0x"
+                                  <<uTdc<<" ch "<<uChanInd<<" from the unpack step: 0x"
                                   <<fhFineTime[uType][iHistoIndex]<<" "
                                   <<fhFineTime[uType][iHistoIndex]->GetEntries()
                                   <<FairLogger::endl;
                sInfoLoading += "  1 ";
-            } // for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++) 
+            } // for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++) 
             LOG(INFO)<<sInfoLoading<<FairLogger::endl;
-         } // for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+         } // for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
       } // if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
          else LOG(INFO)<<" TMbsCalibTdcTof::GetHistosFromUnpack => no boards for "<<toftdc::ksTdcHistName[ uType ]<<FairLogger::endl;
    } // for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
@@ -1017,34 +1017,34 @@ Bool_t TMbsCalibTdcTof::LoadCalibrationFile()
             LOG(INFO)<<sInfoLoading<<FairLogger::endl;
             
             sInfoLoading = "          ";
-            for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++)
-               sInfoLoading += Form("%3d ", iChanInd);
+            for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++)
+               sInfoLoading += Form("%3u ", uChanInd);
             LOG(INFO)<<sInfoLoading<<FairLogger::endl;
 
             //define correction variables
             fhInitialCalibHisto[ uType ].resize( fMbsCalibPar->GetNbCalibBoards( uType ) *
                                                  uNbChan, NULL );
-            Bool_t bincontrol[uFtBinNb];
-            Int_t iSum[fMbsCalibPar->GetNbCalibBoards( uType )][uNbChan];
+/*            Bool_t bincontrol[uFtBinNb];*/ // Commented out to remove warning bec. unused
+/*            Int_t iSum[fMbsCalibPar->GetNbCalibBoards( uType )][uNbChan];*/ // Commented out to remove warning bec. unused
 
             // Temp variable to store pointer on calib histo in File
             TH1* fInitialCalibHistoFromFile = 0;
 
-            for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+            for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
             {
-               if( -1 < fMbsCalibPar->GetInitialCalInd( uType, iTdc ) )
+               if( -1 < fMbsCalibPar->GetInitialCalInd( uType, uTdc ) )
                {
-                  sInfoLoading = Form("tdc #%3d: ",iTdc );
-                  for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++) 
+                  sInfoLoading = Form("tdc #%3u: ",uTdc );
+                  for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++) 
                   {
-                     Int_t iHistoIndex = iTdc*uNbChan + iChanInd;
+                     Int_t iHistoIndex = uTdc*uNbChan + uChanInd;
                      
                      // Initialize pointer to NULL
                      fInitialCalibHistoFromFile = NULL;
 
                      // Find histogram in file and store its pointer in a temp variable
-                     sInitialCalibHistoName = Form("tof_%s_ft_b%03d_ch%03d", toftdc::ksTdcHistName[ uType ].Data(), 
-                                                   fMbsCalibPar->GetInitialCalInd( uType, iTdc ), iChanInd );
+                     sInitialCalibHistoName = Form("tof_%s_ft_b%03u_ch%03u", toftdc::ksTdcHistName[ uType ].Data(), 
+                                                   fMbsCalibPar->GetInitialCalInd( uType, uTdc ), uChanInd );
                      
                      fileCalibrationIn->GetObject( sInitialCalibHistoName, fInitialCalibHistoFromFile);
 
@@ -1060,11 +1060,11 @@ Bool_t TMbsCalibTdcTof::LoadCalibrationFile()
                         } // else of if( 0 == fInitialCalibHistoFromFile )
                         
                      // Extract calibration factors from initialization histo
-                     CalibFactorsInit( uType, iTdc, iChanInd );
-                  } // for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++)
+                     CalibFactorsInit( uType, uTdc, uChanInd );
+                  } // for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++)
                   LOG(INFO)<<sInfoLoading<<FairLogger::endl;
-               } // if( -1 < fMbsCalibPar->GetInitialCalInd( uType, iTdc ) )
-            } // for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+               } // if( -1 < fMbsCalibPar->GetInitialCalInd( uType, uTdc ) )
+            } // for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
          } // for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
          
          // File closing and going back to online ROOT folder
@@ -1170,39 +1170,39 @@ Bool_t TMbsCalibTdcTof::LoadSingleCalibrations()
       LOG(INFO)<<sInfoLoading<<FairLogger::endl;
    
       sInfoLoading = "          ";
-      for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++) 
-         sInfoLoading += Form("%3d ", iChanInd);
+      for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++) 
+         sInfoLoading += Form("%3u ", uChanInd);
       LOG(INFO)<<sInfoLoading<<FairLogger::endl;
 
       //define correction variables
       fhInitialCalibHisto[ uType ].resize( fMbsCalibPar->GetNbCalibBoards( uType ) *
                                            uNbChan, NULL );
-      Bool_t bincontrol[uFtBinNb];
-      Int_t iSum[fMbsCalibPar->GetNbCalibBoards( uType )][uNbChan];
+/*      Bool_t bincontrol[uFtBinNb];*/ // Commented out to remove warning bec. unused
+/*      Int_t iSum[fMbsCalibPar->GetNbCalibBoards( uType )][uNbChan];*/ // Commented out to remove warning bec. unused
 
       // Save online ROOT directory as the File opening auto change current Dir
       oldDir = gDirectory;
 
-      for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
-         if( -1 < fMbsCalibPar->GetInitialCalInd( uType, iTdc ) )
+      for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
+         if( -1 < fMbsCalibPar->GetInitialCalInd( uType, uTdc ) )
          {
-            sInfoLoading = Form("tdc #%3d: ",iTdc );
-            for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++) 
+            sInfoLoading = Form("tdc #%3u: ",uTdc );
+            for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++) 
             {
-               TString sInitialCalibFileName = Form("./calib/%s_Tdc%03dChan%03d.root ", toftdc::ksTdcHistName[ uType ].Data(),
-                                                      fMbsCalibPar->GetInitialCalInd( uType, iTdc ), iChanInd);
+               TString sInitialCalibFileName = Form("./calib/%s_Tdc%03dChan%03u.root ", toftdc::ksTdcHistName[ uType ].Data(),
+                                                      fMbsCalibPar->GetInitialCalInd( uType, uTdc ), uChanInd);
                TString sInitialCalibHistoName = "";
                fileCalibrationIn = new TFile( sInitialCalibFileName, "READ");
                if( kTRUE == fileCalibrationIn->IsOpen() )
                {
                   // Initialize pointer to NULL
                   TH1* fInitialCalibHistoFromFile = NULL;
-                  sInitialCalibHistoName = Form("tof_%s_ft_b%03d_ch%03d", toftdc::ksTdcHistName[ uType ].Data(), 
-                                                fMbsCalibPar->GetInitialCalInd( uType, iTdc ), iChanInd );
+                  sInitialCalibHistoName = Form("tof_%s_ft_b%03d_ch%03u", toftdc::ksTdcHistName[ uType ].Data(), 
+                                                fMbsCalibPar->GetInitialCalInd( uType, uTdc ), uChanInd );
                         
                   fileCalibrationIn->GetObject( sInitialCalibHistoName, fInitialCalibHistoFromFile);
 
-                  Int_t iHistoIndex = iTdc*uNbChan + iChanInd;
+                  Int_t iHistoIndex = uTdc*uNbChan + uChanInd;
                   
                   if( NULL == fInitialCalibHistoFromFile )
                      sInfoLoading += "  0 ";
@@ -1214,14 +1214,14 @@ Bool_t TMbsCalibTdcTof::LoadSingleCalibrations()
                         fhInitialCalibHisto[ uType ][ iHistoIndex ]->SetDirectory( oldDir );
                         
                         // Extract calibration factors from initialization histo
-                        CalibFactorsInit( uType, iTdc, iChanInd );
+                        CalibFactorsInit( uType, uTdc, uChanInd );
                      } // else of if( NULL == fInitialCalibHistoFromFile )
                   fileCalibrationIn->Close();
                } // if( kTRUE == fileCalibrationIn->IsOpen() )
                   else sInfoLoading += "  0 ";
-            } // for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++) 
+            } // for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++) 
             LOG(INFO)<<sInfoLoading<<FairLogger::endl;
-         } // if( -1 < fMbsCalibPar->GetInitialCalInd( uType, iTdc ) )
+         } // if( -1 < fMbsCalibPar->GetInitialCalInd( uType, uTdc ) )
    } // for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
    
 //   if( kTRUE == fMbsCalibPar->IsTdcOffsetEna() )
@@ -1307,7 +1307,7 @@ Bool_t TMbsCalibTdcTof::CalibFactorsInit( UInt_t uType, UInt_t uBoard, UInt_t uC
          fhDnlSum[uType][iHistoIndex]->Fill(iBin, fdCorr[uType][iHistoIndex][iBin] );
       } // for(Int_t iBin=0; iBin < (Int_t)uFtBinNb; iBin++)
       fbCalibAvailable[uType][iHistoIndex] = kTRUE;
-   } // if( NULL != fInitialCalibHisto[iTdc][iChanInd])
+   } // if( NULL != fInitialCalibHisto[uTdc][uChanInd])
       else return kFALSE;
       
    return kTRUE;
@@ -1335,7 +1335,7 @@ Bool_t TMbsCalibTdcTof::Calibration( UInt_t uType, UInt_t uBoard)
             dClockCycle   = caentdc::kdClockCycleSize;
             bInvertFt     = caentdc::kbInvertFt;
             iCoarseSize   = caentdc::kiCoarseCounterSize;
-            iCoarseOfLim  = caentdc::kiCoarseOverflowTest;
+            iCoarseOfLim  = caentdc::kuCoarseOverflowTest;
             break;
          case toftdc::vftx:
             uNbChan       = vftxtdc::kuNbChan;
@@ -1343,7 +1343,7 @@ Bool_t TMbsCalibTdcTof::Calibration( UInt_t uType, UInt_t uBoard)
             dClockCycle   = vftxtdc::kdClockCycleSize;
             bInvertFt     = vftxtdc::kbInvertFt;
             iCoarseSize   = vftxtdc::kiCoarseCounterSize;
-            iCoarseOfLim  = vftxtdc::kiCoarseOverflowTest;
+            iCoarseOfLim  = vftxtdc::kuCoarseOverflowTest;
             break;
          case toftdc::trb:
             uNbChan       = trbtdc::kuNbChan;
@@ -1351,7 +1351,7 @@ Bool_t TMbsCalibTdcTof::Calibration( UInt_t uType, UInt_t uBoard)
             dClockCycle   = trbtdc::kdClockCycleSize;
             bInvertFt     = trbtdc::kbInvertFt;
             iCoarseSize   = trbtdc::kiCoarseCounterSize;
-            iCoarseOfLim  = trbtdc::kiCoarseOverflowTest;
+            iCoarseOfLim  = trbtdc::kuCoarseOverflowTest;
             break;
          case toftdc::get4:
             uNbChan       = get4tdc::kuNbChan;
@@ -1360,7 +1360,7 @@ Bool_t TMbsCalibTdcTof::Calibration( UInt_t uType, UInt_t uBoard)
             bInvertFt     = get4tdc::kbInvertFt;
             dTotBinToPs   = get4tdc::kdTotBinSize;
             iCoarseSize   = get4tdc::kiCoarseCounterSize;
-            iCoarseOfLim  = get4tdc::kiCoarseOverflowTest;
+            iCoarseOfLim  = get4tdc::kuCoarseOverflowTest;
             if( 4 == fMbsCalibPar->GetTotMode( uType ) )
                uNbChan  = get4v10::kuNbChan;
             break;
@@ -1475,7 +1475,7 @@ Bool_t TMbsCalibTdcTof::Calibration( UInt_t uType, UInt_t uBoard)
       // Data calibration
       Int_t iNbUnpData = xBoardUnpData->GetDataNb();
       TTofTdcData   * xUnpDataPtr;
-      TTofCalibData * xCalData;
+/*      TTofCalibData * xCalData;*/ // Commented out to remove warning bec. unused
 
       LOG(DEBUG)<<"TMbsCalibTdcTof::Calibration Type "<<uType<<" Board "<<uBoard<<" N Data "<<iNbUnpData<<FairLogger::endl;
          // Loop over unpacked data
@@ -1536,7 +1536,7 @@ Bool_t TMbsCalibTdcTof::Calibration( UInt_t uType, UInt_t uBoard)
             {
                Int_t  iDataIndex = uBoard*uNbChan + xUnpDataPtr->GetChannel();
                UInt_t uChan = xUnpDataPtr->GetChannel();
-               if( fMbsCalibPar->GetTotInvFlag( uType, uBoard, uChan ) == xUnpDataPtr->GetEdge() )
+               if( fMbsCalibPar->GetTotInvFlag( uType, uBoard, uChan ) == static_cast<Int_t>(xUnpDataPtr->GetEdge()) )
                {
                   if( NULL != xTofTdcDataPrevArray[uType]->At( iDataIndex ) )
                      ((TTofCalibData*)(xTofTdcDataPrevArray[uType]->At( iDataIndex )))->Clear();
@@ -1692,9 +1692,9 @@ Bool_t TMbsCalibTdcTof::Calibration( UInt_t uType, UInt_t uBoard)
          bBoardInitialThere = kTRUE;
          
          // loop over channels
-      for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++)
+      for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++)
       {
-         Int_t iHistoIndex      = uBoard*uNbChan + iChanInd;
+         Int_t iHistoIndex      = uBoard*uNbChan + uChanInd;
          
          if( 0 < fMbsCalibPar->GetMinHitCalib() )
          {
@@ -1714,9 +1714,9 @@ Bool_t TMbsCalibTdcTof::Calibration( UInt_t uType, UInt_t uBoard)
                   
             if( 0 < iNbHitsThisCh &&
                 0 == iNbHitsThisCh % fMbsCalibPar->GetMinHitCalib() )
-               CalibFactorsCalc( uType, uBoard, iChanInd, bUseInitial);
+               CalibFactorsCalc( uType, uBoard, uChanInd, bUseInitial);
          } // if( 0 < fMbsCalibPar->GetMinHitCalib() )
-      } // for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++)
+      } // for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++)
    } // if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
       else return kFALSE;
       
@@ -1900,25 +1900,25 @@ Bool_t TMbsCalibTdcTof::WriteCalibrationFile()
             LOG(INFO)<<sInfoSaving<<FairLogger::endl;
             
             sInfoSaving = "          ";
-            for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++)
-               sInfoSaving += Form("%3d ", iChanInd);
+            for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++)
+               sInfoSaving += Form("%3u ", uChanInd);
             LOG(INFO)<<sInfoSaving<<FairLogger::endl;
 
-            for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+            for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
             {
-               sInfoSaving = Form("tdc #%3d: ",iTdc );
-               for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++)
+               sInfoSaving = Form("tdc #%3u: ",uTdc );
+               for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++)
                {
-                  TString sCalibHistoOutputName = Form("tof_%s_ft_b%03d_ch%03d", toftdc::ksTdcHistName[ uType ].Data(), 
-                                                         iTdc, iChanInd );
-                  Int_t iHistoIndex      = iTdc*uNbChan + iChanInd;
+                  TString sCalibHistoOutputName = Form("tof_%s_ft_b%03u_ch%03u", toftdc::ksTdcHistName[ uType ].Data(), 
+                                                         uTdc, uChanInd );
+                  Int_t iHistoIndex      = uTdc*uNbChan + uChanInd;
 
                   // If only initial calib was used and the histogram is not there try again to get it as it was not accessed before
                   if( 0 == fMbsCalibPar->GetMinHitCalib() && NULL == fhFineTime[uType][iHistoIndex] )
-                    fhFineTime[uType][iHistoIndex] = (TH1*) gROOT->FindObjectAny( Form("tof_%s_ft_b%03d_ch%03d", toftdc::ksTdcHistName[ uType ].Data(), 
-                                                                     iTdc, iChanInd));
+                    fhFineTime[uType][iHistoIndex] = (TH1*) gROOT->FindObjectAny( Form("tof_%s_ft_b%03u_ch%03u", toftdc::ksTdcHistName[ uType ].Data(), 
+                                                                     uTdc, uChanInd));
                   if( NULL == fhFineTime[uType][iHistoIndex] )
-                     LOG(INFO)<<uType<<" "<<iHistoIndex<<" "<<iTdc<<" "<<iChanInd<<FairLogger::endl;
+                     LOG(INFO)<<uType<<" "<<iHistoIndex<<" "<<uTdc<<" "<<uChanInd<<FairLogger::endl;
 
                   // New Calibration histo using only new data
                   if( 0 < (fhFineTime[ uType ][ iHistoIndex ]->GetEntries() ) )
@@ -1927,9 +1927,9 @@ Bool_t TMbsCalibTdcTof::WriteCalibrationFile()
                      sInfoSaving += "  1 ";
                   } // if( 0 < (fhFineTime[ uType ][ iHistoIndex ]->GetEntries() ) )
                      else sInfoSaving += "  0 ";
-               } // for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++)
+               } // for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++)
                LOG(INFO)<<sInfoSaving<<FairLogger::endl;
-            } // for( Int_t iTdc = 0; iTdc < fMbsCalibPar->GetNbCalibBoards( uType ); iTdc ++)
+            } // for( UInt_t uTdc = 0; uTdc < fMbsCalibPar->GetNbCalibBoards( uType ); uTdc ++)
          } // if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
       
 //      if( kTRUE == fMbsCalibPar->IsTdcOffsetEna() )
@@ -1990,8 +1990,8 @@ Bool_t TMbsCalibTdcTof::WriteSingleCalibrations()
          LOG(INFO)<<sInfoSaving<<FairLogger::endl;
          
          sInfoSaving = "          ";
-         for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++)
-            sInfoSaving += Form("%3d ", iChanInd);
+         for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++)
+            sInfoSaving += Form("%3u ", uChanInd);
          LOG(INFO)<<sInfoSaving<<FairLogger::endl;
 
          // Save current directory as TFile opening change it!
@@ -2002,15 +2002,15 @@ Bool_t TMbsCalibTdcTof::WriteSingleCalibrations()
          if( fhInitialCalibHisto[ uType ].size() == fMbsUnpackPar->GetNbActiveBoards( uType )*uNbChan )
             bBoardInitialThere = kTRUE;
                
-         for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+         for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
          {
-            sInfoSaving = Form("tdc #%3d: ",iTdc );
+            sInfoSaving = Form("tdc #%3u: ",uTdc );
                
-            for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++)
+            for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++)
             {
                Bool_t bDataToSave = kFALSE;
                Bool_t bInitialThere = kFALSE;
-               Int_t iHistoIndex      = iTdc*uNbChan + iChanInd;
+               Int_t iHistoIndex      = uTdc*uNbChan + uChanInd;
                
                if( kTRUE == bBoardInitialThere )
                   if( NULL != fhInitialCalibHisto[ uType ][ iHistoIndex ] )
@@ -2023,20 +2023,20 @@ Bool_t TMbsCalibTdcTof::WriteSingleCalibrations()
                {
                   if( kTRUE == bDataToSave )
                   {
-                     TString sCalibOutFilename = Form("./calib/%s_Tdc%03dChan%03d.root", 
+                     TString sCalibOutFilename = Form("./calib/%s_Tdc%03uChan%03u.root", 
                                                          toftdc::ksTdcHistName[ uType ].Data(),
-                                                         iTdc, iChanInd);
+                                                         uTdc, uChanInd);
                      TFile* fileCalibrationOut = new TFile( sCalibOutFilename, "RECREATE",
-                                                            Form("Calibration Data for %s TDC %02d channel %02d", 
+                                                            Form("Calibration Data for %s TDC %03u channel %03u", 
                                                             toftdc::ksTdcHistName[ uType ].Data(),
-                                                            iTdc, iChanInd ),
+                                                            uTdc, uChanInd ),
                                                             9);
                      if( kTRUE == fileCalibrationOut->IsOpen() )
                      {
                         sCalibOutFilename += ":/";
                         gDirectory->Cd(sCalibOutFilename);
-                        TString sCalibHistoOutputName = Form("tof_%s_ft_b%03d_ch%03d", toftdc::ksTdcHistName[ uType ].Data(), 
-                                                               iTdc, iChanInd );
+                        TString sCalibHistoOutputName = Form("tof_%s_ft_b%03u_ch%03u", toftdc::ksTdcHistName[ uType ].Data(), 
+                                                               uTdc, uChanInd );
                         fhFineTime[ uType ][ iHistoIndex ]->Write( sCalibHistoOutputName, TObject::kOverwrite);
                         sInfoSaving += "  1 ";
                         
@@ -2051,20 +2051,20 @@ Bool_t TMbsCalibTdcTof::WriteSingleCalibrations()
                   else if( kTRUE == bDataToSave )
                   {
                      // Update old calibration histo with new data
-                     TString sCalibOutFilename = Form("./calib/%s_Tdc%03dChan%03d.root ", 
+                     TString sCalibOutFilename = Form("./calib/%s_Tdc%03uChan%03u.root ", 
                                                          toftdc::ksTdcHistName[ uType ].Data(),
-                                                         iTdc, iChanInd);
+                                                         uTdc, uChanInd);
                      TFile* fileCalibrationOut = new TFile( sCalibOutFilename, "RECREATE",
-                                                            Form("Calibration Data for %s TDC %02d channel %02d", 
+                                                            Form("Calibration Data for %s TDC %03u channel %03u", 
                                                             toftdc::ksTdcHistName[ uType ].Data(),
-                                                            iTdc, iChanInd ),
+                                                            uTdc, uChanInd ),
                                                             9);
                      if( kTRUE == fileCalibrationOut->IsOpen() )
                      {
                         sCalibOutFilename += ":/";
                         gDirectory->Cd(sCalibOutFilename);
-                        TString sCalibHistoOutputName = Form("tof_%s_ft_b%03d_ch%03d", toftdc::ksTdcHistName[ uType ].Data(), 
-                                                               fMbsCalibPar->GetInitialCalInd( uType, iTdc ), iChanInd );
+                        TString sCalibHistoOutputName = Form("tof_%s_ft_b%03d_ch%03u", toftdc::ksTdcHistName[ uType ].Data(), 
+                                                               fMbsCalibPar->GetInitialCalInd( uType, uTdc ), uChanInd );
                         // Try to update old calibration histo with new data
                         fhInitialCalibHisto[ uType ][ iHistoIndex ]->Add( fhFineTime[ uType ][ iHistoIndex ] );
                         fhInitialCalibHisto[ uType ][ iHistoIndex ]->Write( sCalibHistoOutputName, TObject::kOverwrite);
@@ -2078,9 +2078,9 @@ Bool_t TMbsCalibTdcTof::WriteSingleCalibrations()
                   } // else of if( 1 == fMbsCalibPar->uSingleChannelCalibFilesOutput )
                      // No new Data => no need to update calibration!!!
                      else sInfoSaving += "  0 "; 
-            } // for( Int_t iChanInd = 0; iChanInd< uNbChan; iChanInd++)
+            } // for( UInt_t uChanInd = 0; uChanInd< uNbChan; uChanInd++)
             LOG(INFO)<<sInfoSaving<<FairLogger::endl;
-         } // for( Int_t iTdc = 0; iTdc < fMbsCalibPar->GetNbCalibBoards( uType ); iTdc ++)
+         } // for( UInt_t uTdc = 0; uTdc < fMbsCalibPar->GetNbCalibBoards( uType ); uTdc ++)
          
          // Go back to original directory
          gDirectory->Cd(oldDir->GetPath());
@@ -2458,17 +2458,17 @@ Bool_t TMbsCalibTdcTof::GetRefHistosFromUnpack()
          LOG(INFO)<<sInfoLoading<<FairLogger::endl;
             
          // Loop over all active TDCs and all channels
-         for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+         for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
          {
-            sInfoLoading = Form("tdc #%3d: ",iTdc );
+            sInfoLoading = Form("tdc #%3u: ",uTdc );
 
-            fhFineTimeRef[uType][iTdc] = (TH1*) gDirectory->FindObject( Form("tof_%s_ft_b%03d_ref", toftdc::ksTdcHistName[ uType ].Data(), 
-                                                                  iTdc));
-            if( NULL == fhFineTimeRef[uType][iTdc] )
+            fhFineTimeRef[uType][uTdc] = (TH1*) gDirectory->FindObject( Form("tof_%s_ft_b%03u_ref", toftdc::ksTdcHistName[ uType ].Data(), 
+                                                                  uTdc));
+            if( NULL == fhFineTimeRef[uType][uTdc] )
             {
                LOG(ERROR)<<" TMbsCalibTdcTof::GetRefHistosFromUnpack => Could not get FT histo for "
                          <<toftdc::ksTdcHistName[ uType ]<<" #"
-                         <<iTdc<<" reference channel from the unpack step"
+                         <<uTdc<<" reference channel from the unpack step"
                          <<FairLogger::endl;
                sInfoLoading += "  0 ";
                gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
@@ -2476,14 +2476,14 @@ Bool_t TMbsCalibTdcTof::GetRefHistosFromUnpack()
             } // if( NULL == fhFineTime[uType][iHistoIndex] )
                else LOG(DEBUG)<<" TMbsCalibTdcTof::GetHistosFromUnpack =>Got FT histo for "
                                <<toftdc::ksTdcHistName[ uType ]<<" #"
-                               <<iTdc<<" reference channel from the unpack step: 0x"
-                               <<fhFineTimeRef[uType][iTdc]<<" "
-                               <<fhFineTimeRef[uType][iTdc]->GetEntries()
+                               <<uTdc<<" reference channel from the unpack step: 0x"
+                               <<fhFineTimeRef[uType][uTdc]<<" "
+                               <<fhFineTimeRef[uType][uTdc]->GetEntries()
                                <<FairLogger::endl;
 
             sInfoLoading += "  1 ";
             LOG(INFO)<<sInfoLoading<<FairLogger::endl;
-         } // for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+         } // for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
       } // if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
          else LOG(INFO)<<" TMbsCalibTdcTof::GetRefHistosFromUnpack => no boards for "<<toftdc::ksTdcHistName[ uType ]<<" "<<uType<<FairLogger::endl;
    } // for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
@@ -2552,24 +2552,24 @@ Bool_t TMbsCalibTdcTof::LoadCalibrationFileRef()
 
             //define correction variables
             fhInitialCalibHistoRef[ uType ].resize( fMbsCalibPar->GetNbCalibBoards( uType ), NULL );
-            Bool_t bincontrol[uFtBinNb];
+/*            Bool_t bincontrol[uFtBinNb];*/ // Commented out to remove warning bec. unused
 //            Int_t iSum[fMbsCalibPar->GetNbCalibBoards( uType )][uNbChan];
 
             // Temp variable to store pointer on calib histo in File
             TH1* fInitialCalibHistoFromFile = 0;
 
-            for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+            for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
             {
-               if( -1 < fMbsCalibPar->GetInitialCalInd( uType, iTdc ) )
+               if( -1 < fMbsCalibPar->GetInitialCalInd( uType, uTdc ) )
                {
-                  sInfoLoading = Form("tdc #%3d: ",iTdc );
+                  sInfoLoading = Form("tdc #%3u: ",uTdc );
                      
                   // Initialize pointer to NULL
                   fInitialCalibHistoFromFile = NULL;
 
                   // Find histogram in file and store its pointer in a temp variable
                   sInitialCalibHistoName = Form("tof_%s_ft_b%03d_ref", toftdc::ksTdcHistName[ uType ].Data(), 
-                                                fMbsCalibPar->GetInitialCalInd( uType, iTdc ) );
+                                                fMbsCalibPar->GetInitialCalInd( uType, uTdc ) );
                   
                   fileCalibrationIn->GetObject( sInitialCalibHistoName, fInitialCalibHistoFromFile);
 
@@ -2579,17 +2579,17 @@ Bool_t TMbsCalibTdcTof::LoadCalibrationFileRef()
                      {
                         sInfoLoading += "  1 ";
                         // Clone the found histo and move it to online ROOT directory instead of File
-                        fhInitialCalibHistoRef[ uType ][ iTdc ] = (TH1*)fInitialCalibHistoFromFile->Clone( 
+                        fhInitialCalibHistoRef[ uType ][ uTdc ] = (TH1*)fInitialCalibHistoFromFile->Clone( 
                                                 Form("%s_CalibFile", sInitialCalibHistoName.Data() ) );
-                        fhInitialCalibHistoRef[ uType ][ iTdc ]->SetDirectory( oldDir );
+                        fhInitialCalibHistoRef[ uType ][ uTdc ]->SetDirectory( oldDir );
                      } // else of if( 0 == fInitialCalibHistoFromFile )
                      
                   // Extract calibration factors from initialization histo
-                  CalibFactorsInitReference( uType, iTdc );
+                  CalibFactorsInitReference( uType, uTdc );
 
                   LOG(INFO)<<sInfoLoading<<FairLogger::endl;
-               } // if( -1 < fMbsCalibPar->GetInitialCalInd( uType, iTdc ) )
-            } // for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+               } // if( -1 < fMbsCalibPar->GetInitialCalInd( uType, uTdc ) )
+            } // for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
          } // for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
          
          // File closing and going back to online ROOT folder
@@ -2662,18 +2662,18 @@ Bool_t TMbsCalibTdcTof::LoadSingleCalibrationsRef()
 
       //define correction variables
       fhInitialCalibHistoRef[ uType ].resize( fMbsCalibPar->GetNbCalibBoards( uType ), NULL );
-      Bool_t bincontrol[uFtBinNb];
+/*      Bool_t bincontrol[uFtBinNb];*/ // Commented out to remove warning bec. unused
 
       // Save online ROOT directory as the File opening auto change current Dir
       oldDir = gDirectory;
 
-      for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
-         if( -1 < fMbsCalibPar->GetInitialCalInd( uType, iTdc ) )
+      for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
+         if( -1 < fMbsCalibPar->GetInitialCalInd( uType, uTdc ) )
          {
-            sInfoLoading = Form("tdc #%3d: ",iTdc );
+            sInfoLoading = Form("tdc #%3u: ",uTdc );
 
             TString sInitialCalibFileName = Form("./calib/%s_Tdc%03dRefChan.root ", toftdc::ksTdcHistName[ uType ].Data(),
-                                                   fMbsCalibPar->GetInitialCalInd( uType, iTdc ) );
+                                                   fMbsCalibPar->GetInitialCalInd( uType, uTdc ) );
             TString sInitialCalibHistoName = "";
             fileCalibrationIn = new TFile( sInitialCalibFileName, "READ");
             if( kTRUE == fileCalibrationIn->IsOpen() )
@@ -2681,7 +2681,7 @@ Bool_t TMbsCalibTdcTof::LoadSingleCalibrationsRef()
                // Initialize pointer to NULL
                TH1* fInitialCalibHistoFromFile = NULL;
                sInitialCalibHistoName = Form("tof_%s_ft_b%03d_ref", toftdc::ksTdcHistName[ uType ].Data(), 
-                                             fMbsCalibPar->GetInitialCalInd( uType, iTdc ) );
+                                             fMbsCalibPar->GetInitialCalInd( uType, uTdc ) );
                      
                fileCalibrationIn->GetObject( sInitialCalibHistoName, fInitialCalibHistoFromFile);
                
@@ -2690,19 +2690,19 @@ Bool_t TMbsCalibTdcTof::LoadSingleCalibrationsRef()
                   else
                   {
                      sInfoLoading += "  1 ";
-                     fhInitialCalibHistoRef[ uType ][ iTdc ] = (TH1*)fInitialCalibHistoFromFile->Clone(
+                     fhInitialCalibHistoRef[ uType ][ uTdc ] = (TH1*)fInitialCalibHistoFromFile->Clone(
                                                    Form("%s_CalibFile", sInitialCalibHistoName.Data() ) );
-                     fhInitialCalibHistoRef[ uType ][ iTdc ]->SetDirectory( oldDir );
+                     fhInitialCalibHistoRef[ uType ][ uTdc ]->SetDirectory( oldDir );
                      
                      // Extract calibration factors from initialization histo
-                     CalibFactorsInitReference( uType, iTdc );
+                     CalibFactorsInitReference( uType, uTdc );
                   } // else of if( NULL == fInitialCalibHistoFromFile )
                fileCalibrationIn->Close();
             } // if( kTRUE == fileCalibrationIn->IsOpen() )
                else sInfoLoading += "  0 ";
 
             LOG(INFO)<<sInfoLoading<<FairLogger::endl;
-         } // if( -1 < fMbsCalibPar->GetInitialCalInd( uType, iTdc ) )
+         } // if( -1 < fMbsCalibPar->GetInitialCalInd( uType, uTdc ) )
    } // for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
    
    return kTRUE;
@@ -2772,7 +2772,7 @@ Bool_t TMbsCalibTdcTof::CalibFactorsInitReference( UInt_t uType, UInt_t uBoard)
             } // else of if(bincontrol[iBin])
 //         fhDnlSum[uType][uBoard]->Fill(iBin, fdCorrRef[uType][uBoard][iBin] );
       } // for(Int_t iBin=0; iBin < (Int_t)uFtBinNb; iBin++)
-   } // if( NULL != fhInitialCalibHistoRef[iTdc][uBoard])
+   } // if( NULL != fhInitialCalibHistoRef[uTdc][uBoard])
       else return kFALSE;
       
    return kTRUE;
@@ -2936,21 +2936,21 @@ Bool_t TMbsCalibTdcTof::WriteCalibrationFileRef( TString outDir )
                                + toftdc::ksTdcHistName[ uType ] +" reference channel:";
          LOG(INFO)<<sInfoSaving<<FairLogger::endl;
 
-         for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+         for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
          {
-            sInfoSaving = Form("tdc #%3d: ",iTdc );
-            TString sCalibHistoOutputName = Form("tof_%s_ft_b%03d_ref", toftdc::ksTdcHistName[ uType ].Data(), 
-                                                   iTdc );
+            sInfoSaving = Form("tdc #%3u: ",uTdc );
+            TString sCalibHistoOutputName = Form("tof_%s_ft_b%03u_ref", toftdc::ksTdcHistName[ uType ].Data(), 
+                                                   uTdc );
                  
             // New Calibration histo using only new data
-            if( 0 < (fhFineTimeRef[ uType ][ iTdc ]->GetEntries() ) )
+            if( 0 < (fhFineTimeRef[ uType ][ uTdc ]->GetEntries() ) )
             {
-               fhFineTimeRef[ uType ][ iTdc ]->Write( sCalibHistoOutputName, TObject::kOverwrite);
+               fhFineTimeRef[ uType ][ uTdc ]->Write( sCalibHistoOutputName, TObject::kOverwrite);
                sInfoSaving += "  1 ";
-            } // if( 0 < (fhFineTime[ uType ][ iTdc ]->GetEntries() ) )
+            } // if( 0 < (fhFineTime[ uType ][ uTdc ]->GetEntries() ) )
                else sInfoSaving += "  0 ";
             LOG(INFO)<<sInfoSaving<<FairLogger::endl;
-         } // for( Int_t iTdc = 0; iTdc < fMbsCalibPar->GetNbCalibBoards( uType ); iTdc ++)
+         } // for( UInt_t uTdc = 0; uTdc < fMbsCalibPar->GetNbCalibBoards( uType ); uTdc ++)
       } // if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
    } // for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
    return kTRUE;
@@ -3008,39 +3008,39 @@ Bool_t TMbsCalibTdcTof::WriteSingleCalibrationsRef()
          if( fhInitialCalibHisto[ uType ].size() == fMbsUnpackPar->GetNbActiveBoards( uType )*uNbChan )
             bBoardInitialThere = kTRUE;
                
-         for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+         for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
          {
-            sInfoSaving = Form("tdc #%3d: ",iTdc );
+            sInfoSaving = Form("tdc #%3u: ",uTdc );
                
             Bool_t bDataToSave = kFALSE;
             Bool_t bInitialThere = kFALSE;
             
             if( kTRUE == bBoardInitialThere )
-               if( NULL != fhInitialCalibHistoRef[ uType ][ iTdc ] )
+               if( NULL != fhInitialCalibHistoRef[ uType ][ uTdc ] )
                   bInitialThere = kTRUE;
                   
-            if( 0 < (fhFineTimeRef[ uType ][ iTdc ]->GetEntries() ) )
+            if( 0 < (fhFineTimeRef[ uType ][ uTdc ]->GetEntries() ) )
                bDataToSave = kTRUE;
                                           
             if( 1 == fMbsCalibPar->GetSingleCalOutMode() || kFALSE == bInitialThere )
             {
                if( kTRUE == bDataToSave )
                {
-                  TString sCalibOutFilename = Form("./calib/%s_Tdc%03dRefChan.root", 
+                  TString sCalibOutFilename = Form("./calib/%s_Tdc%03uRefChan.root", 
                                                       toftdc::ksTdcHistName[ uType ].Data(),
-                                                      iTdc);
+                                                      uTdc);
                   TFile* fileCalibrationOut = new TFile( sCalibOutFilename, "RECREATE",
-                                                         Form("Calibration Data for %s TDC %02d Reference channel ", 
+                                                         Form("Calibration Data for %s TDC %03d Reference channel ", 
                                                          toftdc::ksTdcHistName[ uType ].Data(),
-                                                         iTdc ),
+                                                         uTdc ),
                                                          9);
                   if( kTRUE == fileCalibrationOut->IsOpen() )
                   {
                      sCalibOutFilename += ":/";
                      gDirectory->Cd(sCalibOutFilename);
-                     TString sCalibHistoOutputName = Form("tof_%s_ft_b%03d_ref", toftdc::ksTdcHistName[ uType ].Data(), 
-                                                            iTdc );
-                     fhFineTimeRef[ uType ][ iTdc ]->Write( sCalibHistoOutputName, TObject::kOverwrite);
+                     TString sCalibHistoOutputName = Form("tof_%s_ft_b%03u_ref", toftdc::ksTdcHistName[ uType ].Data(), 
+                                                            uTdc );
+                     fhFineTimeRef[ uType ][ uTdc ]->Write( sCalibHistoOutputName, TObject::kOverwrite);
                      sInfoSaving += "  1 ";
                      
                      //fileCalibrationOut->Write("",TObject::kOverwrite);
@@ -3054,23 +3054,23 @@ Bool_t TMbsCalibTdcTof::WriteSingleCalibrationsRef()
                else if( kTRUE == bDataToSave )
                {
                   // Update old calibration histo with new data
-                  TString sCalibOutFilename = Form("./calib/%s_Tdc%03ddRefChan.root ", 
+                  TString sCalibOutFilename = Form("./calib/%s_Tdc%03uRefChan.root ", 
                                                       toftdc::ksTdcHistName[ uType ].Data(),
-                                                      iTdc );
+                                                      uTdc );
                   TFile* fileCalibrationOut = new TFile( sCalibOutFilename, "RECREATE",
-                                                         Form("Calibration Data for %s TDC %02d Reference", 
+                                                         Form("Calibration Data for %s TDC %03u Reference", 
                                                          toftdc::ksTdcHistName[ uType ].Data(),
-                                                         iTdc ),
+                                                         uTdc ),
                                                          9);
                   if( kTRUE == fileCalibrationOut->IsOpen() )
                   {
                      sCalibOutFilename += ":/";
                      gDirectory->Cd(sCalibOutFilename);
                      TString sCalibHistoOutputName = Form("tof_%s_ft_b%03d_ref", toftdc::ksTdcHistName[ uType ].Data(), 
-                                                            fMbsCalibPar->GetInitialCalInd( uType, iTdc ) );
+                                                            fMbsCalibPar->GetInitialCalInd( uType, uTdc ) );
                      // Try to update old calibration histo with new data
-                     fhInitialCalibHistoRef[ uType ][ iTdc ]->Add( fhFineTimeRef[ uType ][ iTdc ] );
-                     fhInitialCalibHistoRef[ uType ][ iTdc ]->Write( sCalibHistoOutputName, TObject::kOverwrite);
+                     fhInitialCalibHistoRef[ uType ][ uTdc ]->Add( fhFineTimeRef[ uType ][ uTdc ] );
+                     fhInitialCalibHistoRef[ uType ][ uTdc ]->Write( sCalibHistoOutputName, TObject::kOverwrite);
                      sInfoSaving += "  1 ";
                      
                      //fileCalibrationOut->Write("",TObject::kOverwrite);
@@ -3083,7 +3083,7 @@ Bool_t TMbsCalibTdcTof::WriteSingleCalibrationsRef()
                   else sInfoSaving += "  0 "; 
 
             LOG(INFO)<<sInfoSaving<<FairLogger::endl;
-         } // for( Int_t iTdc = 0; iTdc < fMbsCalibPar->GetNbCalibBoards( uType ); iTdc ++)
+         } // for( UInt_t uTdc = 0; uTdc < fMbsCalibPar->GetNbCalibBoards( uType ); uTdc ++)
          
          // Go back to original directory
          gDirectory->Cd(oldDir->GetPath());
@@ -3105,7 +3105,7 @@ Bool_t TMbsCalibTdcTof::CalibrateReference(UInt_t uType, UInt_t uBoard)
       TClonesArray * xUnpDataArray  = NULL;
       Double_t       dClockCycle    = 0.0;
       Bool_t         bInvertFt      = kFALSE;
-      Double_t       dTotBinToPs    = 0.0;
+/*      Double_t       dTotBinToPs    = 0.0;*/ // Commented out to remove warning bec. unused
 //      Int_t          iCoarseSize    = 0; // -> Comment to remove warning because set but never used
 //      Int_t          iCoarseOfLim   = 0; // -> Comment to remove warning because set but never used
       switch( uType )
@@ -3117,7 +3117,7 @@ Bool_t TMbsCalibTdcTof::CalibrateReference(UInt_t uType, UInt_t uBoard)
             dClockCycle    = caentdc::kdClockCycleSize;
             bInvertFt      = caentdc::kbInvertFt;
             iCoarseSize    = caentdc::kiCoarseCounterSize;
-            iCoarseOfLim   = caentdc::kiCoarseOverflowTest;
+            iCoarseOfLim   = caentdc::kuCoarseOverflowTest;
 */
             return kFALSE;
             break;
@@ -3128,7 +3128,7 @@ Bool_t TMbsCalibTdcTof::CalibrateReference(UInt_t uType, UInt_t uBoard)
             dClockCycle    = vftxtdc::kdClockCycleSize;
             bInvertFt      = vftxtdc::kbInvertFt;
             iCoarseSize    = vftxtdc::kiCoarseCounterSize;
-            iCoarseOfLim   = vftxtdc::kiCoarseOverflowTest;
+            iCoarseOfLim   = vftxtdc::kuCoarseOverflowTest;
 */
             return kFALSE;
             break;
@@ -3138,7 +3138,7 @@ Bool_t TMbsCalibTdcTof::CalibrateReference(UInt_t uType, UInt_t uBoard)
             dClockCycle    = trbtdc::kdClockCycleSize;
             bInvertFt      = trbtdc::kbInvertFt;
 //            iCoarseSize    = trbtdc::kiCoarseCounterSize; // -> Comment to remove warning because set but never used
-//            iCoarseOfLim   = trbtdc::kiCoarseOverflowTest; // -> Comment to remove warning because set but never used
+//            iCoarseOfLim   = trbtdc::kuCoarseOverflowTest; // -> Comment to remove warning because set but never used
             break;
          case toftdc::get4:
 /*
@@ -3148,7 +3148,7 @@ Bool_t TMbsCalibTdcTof::CalibrateReference(UInt_t uType, UInt_t uBoard)
             bInvertFt      = get4tdc::kbInvertFt;
             dTotBinToPs    = get4tdc::kdTotBinSize;
             iCoarseSize    = get4tdc::kiCoarseCounterSize;
-            iCoarseOfLim   = get4tdc::kiCoarseOverflowTest;
+            iCoarseOfLim   = get4tdc::kuCoarseOverflowTest;
                if( 4 == fMbsCalibPar->GetTotMode( uType ) )
                   uNbChan  = get4v10::kuNbChan;
 */
@@ -3308,11 +3308,11 @@ Bool_t TMbsCalibTdcTof::ClearTdcReference()
    // Loop over all TDC types
    for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
    {
-      for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+      for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
       {
-         fdTdcOffsets[ uType ][ iTdc ] = 0.0;
-         fdTdcReference[uType][iTdc] = -1;
-      } // for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc ++)
+         fdTdcOffsets[ uType ][ uTdc ] = 0.0;
+         fdTdcReference[uType][uTdc] = -1;
+      } // for( UInt_t uTdc = 0; uTdc < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc ++)
    } // for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
    return kTRUE;
 }
@@ -3608,7 +3608,7 @@ Bool_t TMbsCalibTdcTof::FillReferenceHistograms()
                   continue;
 
                Double_t dTime = fCalibData->GetTime();
-               Double_t dTot  = fCalibData->GetTot(); 
+/*               Double_t dTot  = fCalibData->GetTot(); */ // Commented out to remove warning bec. unused
 
                bChannelFound[uTdc] = kTRUE;
                dTimeDebugCheck[uTdc] = dTime;

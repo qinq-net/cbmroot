@@ -38,7 +38,7 @@ class TMbsUnpackTofPar : public FairParGenericSet
       Bool_t IsDebug() const { return (1 == fuVftxDebug)? kTRUE: kFALSE; };
 
       void SetBoardsNumber( UInt_t uNbBoards ){ fuNbVmeBoards = uNbBoards; };
-      Int_t GetBoardsNumber() { return fuNbVmeBoards; };
+      UInt_t GetBoardsNumber() { return fuNbVmeBoards; };
       Int_t GetActiveBoardsNumber();
       Int_t GetMappingField( UInt_t uBoard, UInt_t uField);
       ULong64_t GetBoardTag( UInt_t uBoard);
@@ -52,7 +52,7 @@ class TMbsUnpackTofPar : public FairParGenericSet
       UInt_t GetActiveToAllTypeInd( UInt_t uBoardToFind, UInt_t uType );
 
       void SetNotVmeBoardsNumber( UInt_t uNbBoards ){ fuNbNonVmeBoards = uNbBoards; };
-      Int_t GetNotVmeBoardsNumber() { return fuNbNonVmeBoards; };
+      UInt_t GetNotVmeBoardsNumber() { return fuNbNonVmeBoards; };
       Int_t GetActiveNotVmeBoardsNumber();
       Int_t GetNotVmeMappingField( UInt_t uBoard, UInt_t uField);
       ULong64_t GetNotVmeBoardTag( UInt_t uBoard);

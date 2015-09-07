@@ -6,11 +6,11 @@
 /*
  * Conversion of definitions to constants:
  *
-MAX_ROC               get4v10::kiMaxRoc
-MAX_GET4              get4v10::kiMaxGet4
-MAX_GET4_PER_ROC      get4v10::kiMaxGet4Roc
-MAX_AUX               get4v10::kiMaxAux
-MAX_SYNC              get4v10::kiMaxSync
+MAX_ROC               get4v10::kuMaxRoc
+MAX_GET4              get4v10::kuMaxGet4
+MAX_GET4_PER_ROC      get4v10::kuMaxGet4Roc
+MAX_AUX               get4v10::kuMaxAux
+MAX_SYNC              get4v10::kuMaxSync
 GET4_PRINT            get4v10::kiGet4MessPr
 GET4_EPOCH_CYCLE_SIZE get4v10::kulGet4EpochCycleSz
 MAIN_EPOCH_CYCLE_SIZE get4v10::kulMainEpochCycleSz
@@ -174,7 +174,7 @@ TTofGet4Unpacker::~TTofGet4Unpacker()
    ROC.clear();
 }
 
-void TTofGet4Unpacker::Clear(Option_t *option)
+void TTofGet4Unpacker::Clear(Option_t * /*option*/)
 {
    fParUnpack = NULL;
    fuNbTdc    = 0;
@@ -196,10 +196,13 @@ void TTofGet4Unpacker::ProcessGet4( UInt_t* pMbsData, UInt_t uLength )
    // Use a flag to insure only the first detected event is saved in each MBS event
    fbDataSavedForThisEvent = kFALSE;
 
-   uint32_t g4id(0), auxid(0), syncid(0);
+/*   uint32_t g4id(0);*/ // Commented out as unused to remove warning
+   uint32_t auxid(0);
+/*   uint32_t syncid(0);*/ // Commented out as unused to remove warning
    uint64_t fulltm(0);
-   uint32_t typ(0), rocid(0), lastevrocid(0);
-   static int cnt=0;
+   uint32_t typ(0), rocid(0);
+/*   uint32_t lastevrocid(0);*/ // Commented out as unused to remove warning
+/*   static int cnt=0;*/ // Commented out as unused to remove warning
    unsigned msgcount=0;
 
 
@@ -281,11 +284,11 @@ void TTofGet4Unpacker::ProcessGet4( UInt_t* pMbsData, UInt_t uLength )
          /*
           * TODO: Option to choose between removing final epoch+SYNC or initial epoch+SYNC
           */
-         UInt_t uSyncId    = msg1.getSyncChNum();
-         UInt_t uSyncTs    = msg1.getSyncTs();
-         UInt_t uSyncEpLsb = msg1.getSyncEpochLSB();
-         UInt_t uSyncData  = msg1.getSyncData();
-         UInt_t uSyncFlag  = msg1.getSyncStFlag();
+/*         UInt_t uSyncId    = msg1.getSyncChNum();*/ // Commented out as unused to remove warning
+/*         UInt_t uSyncTs    = msg1.getSyncTs();*/ // Commented out as unused to remove warning
+/*         UInt_t uSyncEpLsb = msg1.getSyncEpochLSB();*/ // Commented out as unused to remove warning
+/*         UInt_t uSyncData  = msg1.getSyncData();*/ // Commented out as unused to remove warning
+/*         UInt_t uSyncFlag  = msg1.getSyncStFlag();*/ // Commented out as unused to remove warning
          ULong64_t ulFulltime = msg1.getMsgFullTime( ROC[rocid].GetFullEpochNumber( ) );
          ulFulltime += ROC[rocid].GetSuperCycleEpOffset();
 /*
@@ -433,11 +436,11 @@ void TTofGet4Unpacker::ProcessGet4( UInt_t* pMbsData, UInt_t uLength )
          } // case roc::MSG_EPOCH2:
          case roc::MSG_SYNC:
          {
-            UInt_t uSyncId    = data->getSyncChNum();
-            UInt_t uSyncTs    = data->getSyncTs();
-            UInt_t uSyncEpLsb = data->getSyncEpochLSB();
-            UInt_t uSyncData  = data->getSyncData();
-            UInt_t uSyncFlag  = data->getSyncStFlag();
+/*            UInt_t uSyncId    = data->getSyncChNum();*/ // Commented out as unused to remove warning
+/*            UInt_t uSyncTs    = data->getSyncTs();*/ // Commented out as unused to remove warning
+/*            UInt_t uSyncEpLsb = data->getSyncEpochLSB();*/ // Commented out as unused to remove warning
+/*            UInt_t uSyncData  = data->getSyncData();*/ // Commented out as unused to remove warning
+/*            UInt_t uSyncFlag  = data->getSyncStFlag();*/ // Commented out as unused to remove warning
             ULong64_t ulFulltime = data->getMsgFullTime( ROC[rocid].GetFullEpochNumber( ) );
             ulFulltime += ROC[rocid].GetSuperCycleEpOffset();
 
@@ -463,7 +466,7 @@ void TTofGet4Unpacker::ProcessGet4( UInt_t* pMbsData, UInt_t uLength )
          {
             auxid = data->getAuxChNum();
             ROC[rocid].fAUXch->Fill(auxid);
-            if (auxid < get4v10::kiMaxAux)
+            if (auxid < get4v10::kuMaxAux)
             {
                ROC[rocid].fLastAuxTm[auxid] = fulltm;
 
@@ -482,7 +485,7 @@ void TTofGet4Unpacker::ProcessGet4( UInt_t* pMbsData, UInt_t uLength )
                   {
                      ProcessTriggerMessage(rocid, exmess);
                   }
-            } // if (auxid < get4v10::kiMaxAux)
+            } // if (auxid < get4v10::kuMaxAux)
 
             break;
          } // case roc::MSG_AUX:
@@ -515,7 +518,7 @@ void TTofGet4Unpacker::ProcessGet4( UInt_t* pMbsData, UInt_t uLength )
             } // if (data->getSysMesType() == roc::SYSMSG_USER)
             else if( data->getSysMesType() == roc::SYSMSG_GET4_EVENT )
             {
-               UInt_t uGet4SysMessType = (data->getSysMesData()>>6) & 0x1;
+/*               UInt_t uGet4SysMessType = (data->getSysMesData()>>6) & 0x1;*/ // Commented out as unused to remove warning
 
                // Get4 system message types histogram
                /*
@@ -592,7 +595,7 @@ void TTofGet4Unpacker::ProcessGet4( UInt_t* pMbsData, UInt_t uLength )
    if( kFALSE == fbDataSavedForThisEvent )
    {
       // First event found in this MBS event
-      for( UInt_t uGet4 = 0; uGet4 < get4v10::kiMaxGet4; uGet4++)
+      for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4; uGet4++)
       {
          TTofGet4Board * fGet4Board = (TTofGet4Board*) fGet4BoardCollection->ConstructedAt(uGet4);
 
@@ -660,7 +663,7 @@ void TTofGet4Unpacker::ProcessGet4( UInt_t* pMbsData, UInt_t uLength )
 
             } // if( 0 < (fCurrentGet4Event.fGet4Boards[uGet4]).Size() )
          } // if( kFALSE == fCurrentGet4Event.IsEmpty() )
-      } // for( UInt_t uGet4 = 0; uGet4 < get4v10::kiMaxGet4; uGet4++)
+      } // for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4; uGet4++)
       fbDataSavedForThisEvent = kTRUE;
    } // if( kFALSE == fbDataSavedForThisEvent )
    return;
@@ -706,8 +709,8 @@ Bool_t TTofGet4Unpacker::InitParameters( )
    }
 
    fParam->PrintGet4Options();
-   if (fParam->numRocs > get4v10::kiMaxRoc) fParam->numRocs = get4v10::kiMaxRoc;
-   if (fParam->uNbGet4 > get4v10::kiMaxGet4) fParam->uNbGet4 = get4v10::kiMaxGet4;
+   if (fParam->numRocs > get4v10::kuMaxRoc) fParam->numRocs = get4v10::kuMaxRoc;
+   if (fParam->uNbGet4 > get4v10::kuMaxGet4) fParam->uNbGet4 = get4v10::kuMaxGet4;
 
    printData = 0;
 
@@ -891,12 +894,12 @@ Bool_t TTofGet4Unpacker::CreateHistos()
       ROC[uRoc].fAllSelectedT = new TH1I( Form("Roc%u_AllSel_t",uRoc), Form("Time distribution of all selected hits on ROC%u; s", uRoc),
             36000, 0., 3600.);
 
-      for (unsigned nsync=0; nsync<get4v10::kiMaxSync; nsync++)
+      for (unsigned nsync=0; nsync<get4v10::kuMaxSync; nsync++)
          ROC[uRoc].fSYNCt[nsync] = new TH1I( Form("Roc%u_Sync%u_t", uRoc, nsync),
                Form("Time distribution of SYNC%u signal on ROC%u; s", nsync, uRoc),
                36000, 0., 3600.);
 
-      for (unsigned naux=0; naux<get4v10::kiMaxAux; naux++)
+      for (unsigned naux=0; naux<get4v10::kuMaxAux; naux++)
          ROC[uRoc].fAUXt[naux] = new TH1I( Form("Roc%u_Aux%u_t", uRoc, naux),
                Form("Time distribution of AUX%u signal on ROC%u; s", naux, uRoc),
                36000, 0., 3600.);
@@ -928,7 +931,7 @@ Bool_t TTofGet4Unpacker::CreateHistos()
          ROC[uRoc].fAllSelLongT = new TH1I( Form("Roc%u_AllSel_lt",uRoc), Form("Time distribution of all selected hits on ROC%u; t [h]", uRoc),
                18720, 0., 312.);
 
-         for (unsigned nsync=0; nsync<get4v10::kiMaxSync; nsync++)
+         for (unsigned nsync=0; nsync<get4v10::kuMaxSync; nsync++)
             ROC[uRoc].fSyncLongT[nsync] = new TH1I( Form("Roc%u_Sync%u_lt", uRoc, nsync),
                   Form("Time distribution of SYNC%u signal on ROC%u; t [h]", nsync, uRoc),
                   18720, 0., 312.);
@@ -955,146 +958,146 @@ Bool_t TTofGet4Unpacker::CreateHistos()
       ROC[uRoc].fAUXWind     = new TimeWindowCond( Form("Roc%u_AUXWindow",uRoc),  -100., 100. );
       gROOT->GetListOfSpecials()->Add(ROC[uRoc].fAUXWind); // Register Condition so it can be retrieved by gROOT->FindObject
 
-      for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+      for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
       {
          char folderGet4[30];
-         sprintf(folderGet4,"%sGet4_%u/",folder, iGet4);
-         UInt_t uRemappedGet4Index = fParam->RemapGet4Chip(uRoc, iGet4);
+         sprintf(folderGet4,"%sGet4_%u/",folder, uGet4);
+         UInt_t uRemappedGet4Index = fParam->RemapGet4Chip(uRoc, uGet4);
          if( kTRUE == fParam->IsValidGet4Chip(uRemappedGet4Index) &&
              kTRUE == fParam->IsActiveGet4Chip(uRemappedGet4Index) )
          {
-            ROC[uRoc].fEPOCH2t[iGet4] = new TH1I( Form("Roc%u_EPOCH2_t_%d",uRoc, iGet4),
-                  Form("Time distribution of GET4 Epochs on ROC%u Get4 %d; s", uRoc, iGet4),
+            ROC[uRoc].fEPOCH2t[uGet4] = new TH1I( Form("Roc%u_EPOCH2_t_%u",uRoc, uGet4),
+                  Form("Time distribution of GET4 Epochs on ROC%u Get4 %u; s", uRoc, uGet4),
                   36000, 0., 3600.);
-            for( Int_t iGet4Chan = 0; iGet4Chan < get4v10::kuNbChan; iGet4Chan++)
+            for( UInt_t uGet4Chan = 0; uGet4Chan < get4v10::kuNbChan; uGet4Chan++)
             {
-               ROC[uRoc].fSelectedT[iGet4][iGet4Chan] = new TH1I( Form("Roc%u_Selected_t_%d_Ch%d",uRoc, iGet4, iGet4Chan),
-                     Form("Time distribution of selected hits on ROC%u Get4 %d Channel %d; s", uRoc, iGet4, iGet4Chan),
+               ROC[uRoc].fSelectedT[uGet4][uGet4Chan] = new TH1I( Form("Roc%u_Selected_t_%u_Ch%u",uRoc, uGet4, uGet4Chan),
+                     Form("Time distribution of selected hits on ROC%u Get4 %u Channel %u; s", uRoc, uGet4, uGet4Chan),
                      36000, 0., 3600.);
 
-               ROC[uRoc].fTrigger_Get4Channel[iGet4][iGet4Chan] =
-                     new TH1I( Form("Roc%u_Get%d_Ch%d_Trigger",
-                                    uRoc, iGet4, iGet4Chan),
-                              Form("Time difference between all hits on GET4 %d Channel %d and last trigger signal on ROC%u; [ns]",
-                                    iGet4, iGet4Chan, uRoc),
+               ROC[uRoc].fTrigger_Get4Channel[uGet4][uGet4Chan] =
+                     new TH1I( Form("Roc%u_Get%u_Ch%u_Trigger",
+                                    uRoc, uGet4, uGet4Chan),
+                              Form("Time difference between all hits on GET4 %u Channel %u and last trigger signal on ROC%u; [ns]",
+                                    uGet4, uGet4Chan, uRoc),
                               10000, -5000., 5000.);
-               ROC[uRoc].fTriggerMs_Get4Channel[iGet4][iGet4Chan] =
-                     new TH1I( Form("Roc%u_Get%d_Ch%d_TriggerMs",
-                                    uRoc, iGet4, iGet4Chan),
-                              Form("Time difference between all hits on GET4 %d Channel %d and last trigger signal on ROC%u; [ns]",
-                                    iGet4, iGet4Chan, uRoc),
+               ROC[uRoc].fTriggerMs_Get4Channel[uGet4][uGet4Chan] =
+                     new TH1I( Form("Roc%u_Get%u_Ch%u_TriggerMs",
+                                    uRoc, uGet4, uGet4Chan),
+                              Form("Time difference between all hits on GET4 %u Channel %u and last trigger signal on ROC%u; [ns]",
+                                    uGet4, uGet4Chan, uRoc),
                               20000, -100*1e3, 100*1e3);
-               ROC[uRoc].fTriggerS_Get4Channel[iGet4][iGet4Chan] =
-                     new TH1I( Form("Roc%u_Get%d_Ch%d_TriggerS",
-                                    uRoc, iGet4, iGet4Chan),
-                              Form("Time difference between all hits on GET4 %d Channel %d and last trigger signal on ROC%u; [ns]",
-                                    iGet4, iGet4Chan, uRoc),
+               ROC[uRoc].fTriggerS_Get4Channel[uGet4][uGet4Chan] =
+                     new TH1I( Form("Roc%u_Get%u_Ch%u_TriggerS",
+                                    uRoc, uGet4, uGet4Chan),
+                              Form("Time difference between all hits on GET4 %u Channel %u and last trigger signal on ROC%u; [ns]",
+                                    uGet4, uGet4Chan, uRoc),
                               20000, -100*1e9, 1900*1e9);
 
                /*
                 * Debug Histograms for GET4 v1.x
                 */
                if( 1 == fParam->bTotHistoEnable )
-                  ROC[uRoc].fTot[iGet4][iGet4Chan] =
-                        new TH1I( Form("Roc%u_Get%d_Ch%d_Tot",
-                              uRoc, iGet4, iGet4Chan),
-                        Form("Tot for channel %d in chip %d on ROC %d;Tot [ps];Counts [1]", iGet4Chan, iGet4, uRoc),
+                  ROC[uRoc].fTot[uGet4][uGet4Chan] =
+                        new TH1I( Form("Roc%u_Get%u_Ch%u_Tot",
+                              uRoc, uGet4, uGet4Chan),
+                        Form("Tot for channel %u in chip %u on ROC %u;Tot [ps];Counts [1]", uGet4Chan, uGet4, uRoc),
                         1200, -25, 59975 );
                if( 1 == fParam->bDebugHistoEnable )
                {
                   // Change Name to make it compatible with calibration step
-                  ROC[uRoc].fLeadingFTS[iGet4][iGet4Chan] =
+                  ROC[uRoc].fLeadingFTS[uGet4][uGet4Chan] =
 //                        new TH1I( Form("Roc%u_Get%d_Ch%d_FTS_Leading",
-//                                    uRoc, iGet4, iGet4Chan),
-                        new TH1I( Form("tof_%s_ft_b%03d_ch%03d",
+//                                    uRoc, uGet4, uGet4Chan),
+                        new TH1I( Form("tof_%s_ft_b%03u_ch%03u",
                                     toftdc::ksTdcHistName[ toftdc::get4 ].Data(),
-                                    iGet4, 2*iGet4Chan + 1),
-                              Form("FTS of Leading edge of channel %d in chip %d on ROC %d",
-                                    iGet4Chan, iGet4, uRoc),
+                                    uGet4, 2*uGet4Chan + 1),
+                              Form("FTS of Leading edge of channel %u in chip %u on ROC %u",
+                                    uGet4Chan, uGet4, uRoc),
                               get4tdc::kiFineTime, 0., get4tdc::kiFineTime);
                   // Change Name to make it compatible with calibration step
-                  ROC[uRoc].fTrailingFTS[iGet4][iGet4Chan] =
+                  ROC[uRoc].fTrailingFTS[uGet4][uGet4Chan] =
 //                        new TH1I( Form("Roc%u_Get%d_Ch%d_FTS_Trailing",
-//                                    uRoc, iGet4, iGet4Chan),
-                        new TH1I( Form("tof_%s_ft_b%03d_ch%03d",
+//                                    uRoc, uGet4, uGet4Chan),
+                        new TH1I( Form("tof_%s_ft_b%03u_ch%03u",
                                     toftdc::ksTdcHistName[ toftdc::get4 ].Data(),
-                                    iGet4, 2*iGet4Chan),
-                              Form("FTS of Trailing edge of channel %d in chip %d on ROC %d",
-                                    iGet4Chan, iGet4, uRoc),
+                                    uGet4, 2*uGet4Chan),
+                              Form("FTS of Trailing edge of channel %u in chip %u on ROC %u",
+                                    uGet4Chan, uGet4, uRoc),
                               get4tdc::kiFineTime, 0., get4tdc::kiFineTime);
-                  ROC[uRoc].fLeadingDnl[iGet4][iGet4Chan] =
-                        new TH1D( Form("Roc%u_Get%d_Ch%d_Dnl_Leading",
-                                    uRoc, iGet4, iGet4Chan),
-                              Form("DNL of Leading edge of channel %d in chip %d on ROC %d",
-                                    iGet4Chan, iGet4, uRoc),
+                  ROC[uRoc].fLeadingDnl[uGet4][uGet4Chan] =
+                        new TH1D( Form("Roc%u_Get%u_Ch%u_Dnl_Leading",
+                                    uRoc, uGet4, uGet4Chan),
+                              Form("DNL of Leading edge of channel %u in chip %u on ROC %u",
+                                    uGet4Chan, uGet4, uRoc),
                               get4tdc::kiFineTime, -0.5, get4tdc::kiFineTime-0.5);
-                  ROC[uRoc].fLeadingDnlSum[iGet4][iGet4Chan] =
-                        new TH1D( Form("Roc%u_Get%d_Ch%d_DnlSum_Leading",
-                                    uRoc, iGet4, iGet4Chan),
-                              Form("DNL Integral of Leading edge of channel %d in chip %d on ROC %d",
-                                    iGet4Chan, iGet4, uRoc),
+                  ROC[uRoc].fLeadingDnlSum[uGet4][uGet4Chan] =
+                        new TH1D( Form("Roc%u_Get%u_Ch%u_DnlSum_Leading",
+                                    uRoc, uGet4, uGet4Chan),
+                              Form("DNL Integral of Leading edge of channel %u in chip %u on ROC %u",
+                                    uGet4Chan, uGet4, uRoc),
                               get4tdc::kiFineTime, -0.5, get4tdc::kiFineTime-0.5);
-                  ROC[uRoc].fTrailingDnl[iGet4][iGet4Chan] =
-                        new TH1D( Form("Roc%u_Get%d_Ch%d_Dnl_Trailing",
-                                    uRoc, iGet4, iGet4Chan),
-                              Form("DNL of Trailing edge of channel %d in chip %d on ROC %d",
-                                    iGet4Chan, iGet4, uRoc),
+                  ROC[uRoc].fTrailingDnl[uGet4][uGet4Chan] =
+                        new TH1D( Form("Roc%u_Get%u_Ch%u_Dnl_Trailing",
+                                    uRoc, uGet4, uGet4Chan),
+                              Form("DNL of Trailing edge of channel %u in chip %u on ROC %u",
+                                    uGet4Chan, uGet4, uRoc),
                               get4tdc::kiFineTime, -0.5, get4tdc::kiFineTime-0.5);
-                  ROC[uRoc].fTrailingDnlSum[iGet4][iGet4Chan] =
-                        new TH1D( Form("Roc%u_Get%d_Ch%d_DnlSum_Trailing",
-                                    uRoc, iGet4, iGet4Chan),
-                              Form("DNL Integral of Trailing edge of channel %d in chip %d on ROC %d",
-                                    iGet4Chan, iGet4, uRoc),
+                  ROC[uRoc].fTrailingDnlSum[uGet4][uGet4Chan] =
+                        new TH1D( Form("Roc%u_Get%u_Ch%u_DnlSum_Trailing",
+                                    uRoc, uGet4, uGet4Chan),
+                              Form("DNL Integral of Trailing edge of channel %u in chip %u on ROC %u",
+                                    uGet4Chan, uGet4, uRoc),
                               get4tdc::kiFineTime, -0.5, get4tdc::kiFineTime-0.5);
                } // if( 1 == fParam->bDebugHistoEnable )
 
                // Event statistics
                if( kTRUE == fParam->bChannelRateHistoEnable )
-                  ROC[uRoc].fChannelRateEvolution[iGet4][iGet4Chan] = new TH1I(
-                        Form("Roc%u_Get%d_Ch%d_RateEvolution",
-                              uRoc, iGet4, iGet4Chan),
-                        Form("Time distribution of hits of channel %d in chip %d on ROC %d; Time [s]; (Nb hits)/(bin size in s) []",
-                              iGet4Chan, iGet4, uRoc),
+                  ROC[uRoc].fChannelRateEvolution[uGet4][uGet4Chan] = new TH1I(
+                        Form("Roc%u_Get%u_Ch%u_RateEvolution",
+                              uRoc, uGet4, uGet4Chan),
+                        Form("Time distribution of hits of channel %u in chip %u on ROC %u; Time [s]; (Nb hits)/(bin size in s) []",
+                              uGet4Chan, uGet4, uRoc),
                         36000, 0., 7200.);
 
-            } // for( Int_t iGet4Chan = 0; iGet4Chan < get4v10::kuNbChan; iGet4Chan++)
+            } // for( UInt_t uGet4Chan = 0; uGet4Chan < get4v10::kuNbChan; uGet4Chan++)
 
             // Event statistics
             if( kTRUE == fParam->bChipRateHistoEnable )
             {
-               ROC[uRoc].fChipRateEvolution[iGet4] = new TH1I(
-                     Form("Roc%u_Get%d_RateEvolution",
-                           uRoc, iGet4 ),
-                     Form("Time distribution of hits for all channels of chip %d on ROC %d; Time [s]; (Nb hits)/(bin size in s) []",
-                           iGet4, uRoc),
+               ROC[uRoc].fChipRateEvolution[uGet4] = new TH1I(
+                     Form("Roc%u_Get%u_RateEvolution",
+                           uRoc, uGet4 ),
+                     Form("Time distribution of hits for all channels of chip %u on ROC %u; Time [s]; (Nb hits)/(bin size in s) []",
+                           uGet4, uRoc),
                      36000, 0., 7200.);
-               ROC[uRoc].fdRateEvolutionBinSize = ROC[uRoc].fChipRateEvolution[iGet4]->GetBinWidth( 1 );
+               ROC[uRoc].fdRateEvolutionBinSize = ROC[uRoc].fChipRateEvolution[uGet4]->GetBinWidth( 1 );
             } // if( kTRUE == fParam->bChipRateHistoEnable )
-            ROC[uRoc].fuNbHitsChipEpoch[iGet4] = 0;
+            ROC[uRoc].fuNbHitsChipEpoch[uGet4] = 0;
 
             // Epochs
-            ROC[uRoc].fEpochShiftsDuration[iGet4] = new TH2I( Form("Roc%u_Get%d_EpochShiftsDuration",
-                        uRoc, iGet4 ),
-                  Form("Time distribution of hits for all channels of chip %d on ROC %d; Shift [GET4 epochs]; Duration [GET4 epochs]",
-                        iGet4, uRoc),
+            ROC[uRoc].fEpochShiftsDuration[uGet4] = new TH2I( Form("Roc%u_Get%u_EpochShiftsDuration",
+                        uRoc, uGet4 ),
+                  Form("Time distribution of hits for all channels of chip %u on ROC %u; Shift [GET4 epochs]; Duration [GET4 epochs]",
+                        uGet4, uRoc),
                   52, -26., 26.,
                   5000, 0., 5000.);
          } // if remapped chip is valid and active
-      } // for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+      } // for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
       ROC[uRoc].fDistribEpochs = new TH1I( Form("Roc%u_DistribEpochs", uRoc),
             "Distribution of epoch counter value for 250MHz epoch messages; Value of Local Epoch Cnt []; Counts []",
             get4v10::kulMainEpochCycleSz/100000, 0, get4v10::kulMainEpochCycleSz );
       ROC[uRoc].fDistribEpochs2 = new TH2I( Form("Roc%u_DistribEpochs2", uRoc),
             "Distribution of epoch counter value for Roc epoch messages; chip []; Value of Roc Epoch Cnt []; Counts []",
-            get4v10::kiMaxGet4Roc, -0.5, get4v10::kiMaxGet4Roc -0.5,
+            get4v10::kuMaxGet4Roc, -0.5, get4v10::kuMaxGet4Roc -0.5,
             get4v10::kulGet4EpochCycleSz/100000, 0, get4v10::kulGet4EpochCycleSz );
       ROC[uRoc].fEpochShiftsPerChip = new TH2I( Form("Roc%u_EpochShiftsPerChip", uRoc),
             "Value of shift in Epochs when non consecutive epoch index are detected, per chip; chip []; Epoch indec Shift in GET4 epochs []; Counts []",
-            get4v10::kiMaxGet4Roc, -0.5, get4v10::kiMaxGet4Roc -0.5,
+            get4v10::kuMaxGet4Roc, -0.5, get4v10::kuMaxGet4Roc -0.5,
             512, -256, 256 );
       ROC[uRoc].fEpochShiftsDurationPerChip = new TH2I( Form("Roc%u_EpochShiftsDurationPerChip", uRoc ),
             Form("Duration of epoch shifts for all chips on ROC %d; chip []; Duration [GET4 epochs]", uRoc),
-            get4v10::kiMaxGet4Roc, -0.5, get4v10::kiMaxGet4Roc -0.5,
+            get4v10::kuMaxGet4Roc, -0.5, get4v10::kuMaxGet4Roc -0.5,
             5000, 0., 5000.);
 
       ROC[uRoc].fNbEventsPerMbsEvent = new TH1I( Form("Roc%u_EventsCount", uRoc),
@@ -1105,11 +1108,11 @@ Bool_t TTofGet4Unpacker::CreateHistos()
             50, 0, 50 );
       ROC[uRoc].fChannelsMapping = new TH2I( Form("Roc%u_ChanMap", uRoc),
             "Events with both channels present; 1st channel []; 2nd channel []; Counts []",
-            get4v10::kuNbChan*get4v10::kiMaxGet4Roc, 0, get4v10::kiMaxGet4Roc ,
-            get4v10::kuNbChan*get4v10::kiMaxGet4Roc, 0, get4v10::kiMaxGet4Roc );
+            get4v10::kuNbChan*get4v10::kuMaxGet4Roc, 0, get4v10::kuMaxGet4Roc ,
+            get4v10::kuNbChan*get4v10::kuMaxGet4Roc, 0, get4v10::kuMaxGet4Roc );
       ROC[uRoc].fChannelMultiplicity = new TH2I( Form("Roc%u_ChanMul", uRoc),
             "Channel multiplicity per event; Channel []; # Hits []; events []",
-            get4v10::kuNbChan*get4v10::kiMaxGet4Roc, 0, get4v10::kiMaxGet4Roc ,
+            get4v10::kuNbChan*get4v10::kuMaxGet4Roc, 0, get4v10::kuMaxGet4Roc ,
             20, 0, 20 );
 
       if( kTRUE ==  fParam->bFreeStreaming && 0 < fParam->uNbTriggers )
@@ -1292,10 +1295,10 @@ void TTofGet4Unpacker::WriteHistos( TDirectory* inDir)
    TDirectory *cdRocLong[fParam->numRocs];
 
    // GET4
-   TDirectory *cdRocGet4[fParam->numRocs][get4v10::kiMaxGet4Roc];
-   TDirectory *cdRocGet4FtL[fParam->numRocs][get4v10::kiMaxGet4Roc];
-   TDirectory *cdRocGet4FtT[fParam->numRocs][get4v10::kiMaxGet4Roc];
-   TDirectory *cdRocGet4Rate[fParam->numRocs][get4v10::kiMaxGet4Roc];
+   TDirectory *cdRocGet4[fParam->numRocs][get4v10::kuMaxGet4Roc];
+   TDirectory *cdRocGet4FtL[fParam->numRocs][get4v10::kuMaxGet4Roc];
+   TDirectory *cdRocGet4FtT[fParam->numRocs][get4v10::kuMaxGet4Roc];
+   TDirectory *cdRocGet4Rate[fParam->numRocs][get4v10::kuMaxGet4Roc];
 
    // DEBUG
    TDirectory *cdRocDebug[fParam->numRocs];
@@ -1344,10 +1347,10 @@ void TTofGet4Unpacker::WriteHistos( TDirectory* inDir)
       ROC[uRoc].fEPOCHt->Write();
       ROC[uRoc].fAllSelectedT->Write();
 
-      for (unsigned nsync=0; nsync<get4v10::kiMaxSync; nsync++)
+      for (unsigned nsync=0; nsync<get4v10::kuMaxSync; nsync++)
          ROC[uRoc].fSYNCt[nsync]->Write();
 
-      for (unsigned naux=0; naux<get4v10::kiMaxAux; naux++)
+      for (unsigned naux=0; naux<get4v10::kuMaxAux; naux++)
          ROC[uRoc].fAUXt[naux]->Write();
 
       // Long duration time distribution (1 min. bin, 10 days length)
@@ -1365,74 +1368,74 @@ void TTofGet4Unpacker::WriteHistos( TDirectory* inDir)
          ROC[uRoc].fAllEpoch2LongT->Write();
          ROC[uRoc].fAllSelLongT->Write();
 
-         for (unsigned nsync=0; nsync<get4v10::kiMaxSync; nsync++)
+         for (unsigned nsync=0; nsync<get4v10::kuMaxSync; nsync++)
             ROC[uRoc].fSyncLongT[nsync]->Write();
       } // if( kTRUE == fParam->bLongTimeHistos )
 
-      for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+      for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
       {
-         UInt_t uRemappedGet4Index = fParam->RemapGet4Chip(uRoc, iGet4);
+         UInt_t uRemappedGet4Index = fParam->RemapGet4Chip(uRoc, uGet4);
 
          if( kTRUE == fParam->IsValidGet4Chip(uRemappedGet4Index) &&
              kTRUE == fParam->IsActiveGet4Chip(uRemappedGet4Index) )
          {
-            cdRocGet4[uRoc][iGet4] = cdRoc[uRoc]->mkdir( Form("Get4_%u", iGet4) );
-            cdRocGet4[uRoc][iGet4]->cd();    // make the "ROCXX/Get4_YY" directory the current directory
+            cdRocGet4[uRoc][uGet4] = cdRoc[uRoc]->mkdir( Form("Get4_%u", uGet4) );
+            cdRocGet4[uRoc][uGet4]->cd();    // make the "ROCXX/Get4_YY" directory the current directory
             if( 1 == fParam->bDebugHistoEnable )
             {
-               cdRocGet4FtL[uRoc][iGet4] = cdRocGet4[uRoc][iGet4]->mkdir( "FTS_L" );
-               cdRocGet4FtT[uRoc][iGet4] = cdRocGet4[uRoc][iGet4]->mkdir( "FTS_T" );
+               cdRocGet4FtL[uRoc][uGet4] = cdRocGet4[uRoc][uGet4]->mkdir( "FTS_L" );
+               cdRocGet4FtT[uRoc][uGet4] = cdRocGet4[uRoc][uGet4]->mkdir( "FTS_T" );
             } // if( 1 == fParam->bDebugHistoEnable )
             if( kTRUE == fParam->bChannelRateHistoEnable )
-               cdRocGet4Rate[uRoc][iGet4] = cdRocGet4[uRoc][iGet4]->mkdir( "RateCh" );
+               cdRocGet4Rate[uRoc][uGet4] = cdRocGet4[uRoc][uGet4]->mkdir( "RateCh" );
 
-            ROC[uRoc].fEPOCH2t[iGet4]->Write();
-            for( Int_t iGet4Chan = 0; iGet4Chan < get4v10::kuNbChan; iGet4Chan++)
+            ROC[uRoc].fEPOCH2t[uGet4]->Write();
+            for( UInt_t uGet4Chan = 0; uGet4Chan < get4v10::kuNbChan; uGet4Chan++)
             {
-               ROC[uRoc].fSelectedT[iGet4][iGet4Chan]->Write();
+               ROC[uRoc].fSelectedT[uGet4][uGet4Chan]->Write();
 
-               ROC[uRoc].fTrigger_Get4Channel[iGet4][iGet4Chan]->Write();
-               ROC[uRoc].fTriggerMs_Get4Channel[iGet4][iGet4Chan]->Write();
-               ROC[uRoc].fTriggerS_Get4Channel[iGet4][iGet4Chan]->Write();
+               ROC[uRoc].fTrigger_Get4Channel[uGet4][uGet4Chan]->Write();
+               ROC[uRoc].fTriggerMs_Get4Channel[uGet4][uGet4Chan]->Write();
+               ROC[uRoc].fTriggerS_Get4Channel[uGet4][uGet4Chan]->Write();
 
                /*
                 * Debug Histograms for GET4 v1.x
                 */
                if( 1 == fParam->bTotHistoEnable )
-                  ROC[uRoc].fTot[iGet4][iGet4Chan]->Write();
+                  ROC[uRoc].fTot[uGet4][uGet4Chan]->Write();
                if( 1 == fParam->bDebugHistoEnable )
                {
-                  cdRocGet4FtL[uRoc][iGet4]->cd();    // make the "ROCXX/Get4_YY/FTS_L" directory the current directory
+                  cdRocGet4FtL[uRoc][uGet4]->cd();    // make the "ROCXX/Get4_YY/FTS_L" directory the current directory
 
-                  ROC[uRoc].fLeadingFTS[iGet4][iGet4Chan]->Write();
-                  ROC[uRoc].fLeadingDnl[iGet4][iGet4Chan]->Write();
-                  ROC[uRoc].fLeadingDnlSum[iGet4][iGet4Chan]->Write();
+                  ROC[uRoc].fLeadingFTS[uGet4][uGet4Chan]->Write();
+                  ROC[uRoc].fLeadingDnl[uGet4][uGet4Chan]->Write();
+                  ROC[uRoc].fLeadingDnlSum[uGet4][uGet4Chan]->Write();
 
-                  cdRocGet4FtT[uRoc][iGet4]->cd();    // make the "ROCXX/Get4_YY/FTS_T" directory the current directory
+                  cdRocGet4FtT[uRoc][uGet4]->cd();    // make the "ROCXX/Get4_YY/FTS_T" directory the current directory
 
-                  ROC[uRoc].fTrailingFTS[iGet4][iGet4Chan]->Write();
-                  ROC[uRoc].fTrailingDnl[iGet4][iGet4Chan]->Write();
-                  ROC[uRoc].fTrailingDnlSum[iGet4][iGet4Chan]->Write();
+                  ROC[uRoc].fTrailingFTS[uGet4][uGet4Chan]->Write();
+                  ROC[uRoc].fTrailingDnl[uGet4][uGet4Chan]->Write();
+                  ROC[uRoc].fTrailingDnlSum[uGet4][uGet4Chan]->Write();
                } // if( 1 == fParam->bDebugHistoEnable )
 
                // Event statistics
                if( kTRUE == fParam->bChannelRateHistoEnable )
                {
-                  cdRocGet4Rate[uRoc][iGet4]->cd();    // make the "ROCXX/Get4_YY/RateCh" directory the current directory
-                  ROC[uRoc].fChannelRateEvolution[iGet4][iGet4Chan]->Write();
+                  cdRocGet4Rate[uRoc][uGet4]->cd();    // make the "ROCXX/Get4_YY/RateCh" directory the current directory
+                  ROC[uRoc].fChannelRateEvolution[uGet4][uGet4Chan]->Write();
                } // if( kTRUE == fParam->bChannelRateHistoEnable )
 
-            } // for( Int_t iGet4Chan = 0; iGet4Chan < get4v10::kuNbChan; iGet4Chan++)
+            } // for( UInt_t uGet4Chan = 0; uGet4Chan < get4v10::kuNbChan; uGet4Chan++)
 
-            cdRocGet4[uRoc][iGet4]->cd();    // make the "ROCXX/Get4_YY" directory the current directory
+            cdRocGet4[uRoc][uGet4]->cd();    // make the "ROCXX/Get4_YY" directory the current directory
             // Event statistics
             if( kTRUE == fParam->bChipRateHistoEnable )
-               ROC[uRoc].fChipRateEvolution[iGet4]->Write();
+               ROC[uRoc].fChipRateEvolution[uGet4]->Write();
 
             // Epochs
-            ROC[uRoc].fEpochShiftsDuration[iGet4]->Write();
+            ROC[uRoc].fEpochShiftsDuration[uGet4]->Write();
          } // if remapped chip is valid and active
-      } // for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+      } // for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
 
       cdRoc[uRoc]->cd();    // make the "ROCXX" directory the current directory
       ROC[uRoc].fDistribEpochs->Write();
@@ -1506,6 +1509,8 @@ void TTofGet4Unpacker::WriteHistos( TDirectory* inDir)
          } // for(UInt_t uFirstGet4Channel = 0; uFirstGet4Channel < get4v10::kuNbChan; uFirstGet4Channel++)
       } // if( 1 == fParam->bDebugHistoEnable )
    } // for( UInt_t  uRoc =0; uRoc<fParam->numRocs; uRoc++ )
+   
+   oldir->cd();
 }
 void TTofGet4Unpacker::DeleteHistos()
 {
@@ -1579,7 +1584,7 @@ void TTofGet4Unpacker::ProcessTriggerMessage(UInt_t uRocId, TGet4v1MessageExtend
                // do not check for non-used ROC
                if (!fParam->IsActiveRoc(uRocTempId)) continue;
 
-               for( UInt_t uGet4 = 0; uGet4 < get4v10::kiMaxGet4Roc; uGet4++)
+               for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
                {
                   UInt_t uRemappedGet4Index = fParam->RemapGet4Chip(uRocTempId, uGet4);
                   if( kFALSE == fParam->IsValidGet4Chip(uRemappedGet4Index) ||
@@ -1604,7 +1609,7 @@ void TTofGet4Unpacker::ProcessTriggerMessage(UInt_t uRocId, TGet4v1MessageExtend
                      BuildHits(uRocTempId, uRemappedGet4Index, ROC[uRocTempId].fbBufferWithLastFullEpoch2[uRemappedGet4Index]);
                      ROC[uRocTempId].fbSelectionDone[uRemappedGet4Index] = kTRUE;
                   }
-               } // for( UInt_t uGet4 = 0; uGet4 < get4v10::kiMaxGet4Roc; uGet4++)
+               } // for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
             } // for( UInt_t  uRocId =0; uRocId<fParam->numRocs; uRocId++ )
 
             // Save previous event if not empty
@@ -1618,7 +1623,7 @@ void TTofGet4Unpacker::ProcessTriggerMessage(UInt_t uRocId, TGet4v1MessageExtend
                if( kFALSE == fbDataSavedForThisEvent )
                {
                   // First event found in this MBS event
-                  for( UInt_t uGet4 = 0; uGet4 < get4v10::kiMaxGet4; uGet4++)
+                  for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4; uGet4++)
                   {
                      TTofGet4Board * fGet4Board = (TTofGet4Board*) fGet4BoardCollection->ConstructedAt(uGet4);
                      if( 0 < (fCurrentGet4Event.fGet4Boards[uGet4]).Size() )
@@ -1682,7 +1687,7 @@ void TTofGet4Unpacker::ProcessTriggerMessage(UInt_t uRocId, TGet4v1MessageExtend
                            } // scan over all hits in this board object
 
                      } // if( 0 < (fCurrentGet4Event.fGet4Boards[uGet4]).Size() )
-                  } // for( UInt_t uGet4 = 0; uGet4 < get4v10::kiMaxGet4; uGet4++)
+                  } // for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4; uGet4++)
                   fbDataSavedForThisEvent = kTRUE;
                } // if( kFALSE == fbDataSavedForThisEvent )
                ///////////////////////////////////////////////
@@ -2015,7 +2020,7 @@ void TTofGet4Unpacker::CheckEventClosure()
       if( kFALSE == ROC[uRocId].fbSelectionRocDone )
          bAllFutureEpochsFinished = kFALSE;
 
-      for( UInt_t uGet4 = 0; uGet4 < get4v10::kiMaxGet4Roc; uGet4++)
+      for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
       {
          UInt_t uRemappedGet4Index = fParam->RemapGet4Chip(uRocId, uGet4);
          if( kTRUE == fParam->IsValidGet4Chip(uRemappedGet4Index) &&
@@ -2038,7 +2043,7 @@ void TTofGet4Unpacker::CheckEventClosure()
          if( kFALSE == fbDataSavedForThisEvent )
          {
             // First event found in this MBS event
-            for( UInt_t uGet4 = 0; uGet4 < get4v10::kiMaxGet4; uGet4++)
+            for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4; uGet4++)
             {
                TTofGet4Board * fGet4Board = (TTofGet4Board*) fGet4BoardCollection->ConstructedAt(uGet4);
                if( 0 < (fCurrentGet4Event.fGet4Boards[uGet4]).Size() )
@@ -2101,7 +2106,7 @@ void TTofGet4Unpacker::CheckEventClosure()
                      } // scan over all hits in this board object
 
                } // if( 0 < (fCurrentGet4Event.fGet4Boards[uGet4]).Size() )
-            } // for( UInt_t uGet4 = 0; uGet4 < get4v10::kiMaxGet4; uGet4++)
+            } // for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4; uGet4++)
             fbDataSavedForThisEvent = kTRUE;
          } // if( kFALSE == fbDataSavedForThisEvent )
          ///////////////////////////////////////////////
@@ -2152,7 +2157,7 @@ Bool_t TTofGet4Unpacker::ProcessRocSyncMessage( UInt_t uRocId, TGet4v1MessageExt
    ulFulltime += ROC[uRocId].GetSuperCycleEpOffset();
    extMess.SetFullTime(ulFulltime);
 
-   if( uSyncId < get4v10::kiMaxSync )
+   if( uSyncId < get4v10::kuMaxSync )
    {
       ROC[uRocId].fLastSyncTm[uSyncId] = ulFulltime;
       ROC[uRocId].fLastSyncId[uSyncId] = (extMess.GetRocMessage()).getSyncData();
@@ -2172,7 +2177,7 @@ Bool_t TTofGet4Unpacker::ProcessRocSyncMessage( UInt_t uRocId, TGet4v1MessageExt
       if( kFALSE ==  fParam->bFreeStreaming || 0 == fParam->uNbTriggers )
          if( fParam->triggerSignal == (Int_t) (uSyncId + 10) ) // then may use it for new trigger
             ProcessTriggerMessage( uRocId, extMess );
-   } // if( uSyncId < get4v10::kiMaxSync )
+   } // if( uSyncId < get4v10::kuMaxSync )
    return kTRUE;
 }
 /**********************************************************************/
@@ -2233,7 +2238,7 @@ Bool_t TTofGet4Unpacker::ProcessRocEpochMessage( UInt_t uRocId, TGet4v1MessageEx
    // should anyway have the flag ON and an epoch2 message coming after,
    // thus keeping the ordering containment
    if( kTRUE == fParam->bSuppressedEpochs && kTRUE == fCurrentGet4Event.HasTrigger())
-      for( UInt_t uGet4Id = 0; uGet4Id < get4v10::kiMaxGet4Roc; uGet4Id ++)
+      for( UInt_t uGet4Id = 0; uGet4Id < get4v10::kuMaxGet4Roc; uGet4Id ++)
          if( kTRUE == fParam->IsActiveGet4Chip(uGet4Id) &&
               0 == ROC[uRocId].fuEpochWithData[uGet4Id] &&
               kFALSE == ROC[uRocId].fbSelectionDone[uGet4Id]  )
@@ -2398,7 +2403,7 @@ Bool_t TTofGet4Unpacker::ProcessGet4EpochMessage( UInt_t uRocId, TGet4v1MessageE
       // Assume Chip 0 are always there, even if disabled
       // TODO: test this and at some other behavior if needed
       if( 0 == uGet4Id )
-         for( UInt_t uGet4IdBis = uGet4Id + 1; uGet4IdBis < get4v10::kiMaxGet4Roc; uGet4IdBis ++)
+         for( UInt_t uGet4IdBis = uGet4Id + 1; uGet4IdBis < get4v10::kuMaxGet4Roc; uGet4IdBis ++)
             if( kTRUE == fParam->IsActiveGet4Chip(uGet4IdBis) )
             {
                // In case no data was found in previous epoch for this chip, we use the epoch info
@@ -2514,7 +2519,7 @@ Bool_t TTofGet4Unpacker::ProcessGet4DataMessage( UInt_t uRocId, TGet4v1MessageEx
        */
       ROC[uRocId].fChannelInputMessCount = new TH1I( Form("Roc%u_ChanCounts", uRocId),
             "Channel multiplicity per event; Channel []; # Mess []" ,
-            2*get4v10::kuNbChan*get4v10::kiMaxGet4Roc, 0, get4v10::kiMaxGet4Roc);
+            2*get4v10::kuNbChan*get4v10::kuMaxGet4Roc, 0, get4v10::kuMaxGet4Roc);
       ROC[uRocId].fb24bitsReadoutDetected = kTRUE;
    } // if( kFALSE == ROC[uRocId].fb24bitsReadoutDetected )
 
@@ -2942,7 +2947,7 @@ Bool_t TTofGet4Unpacker::ProcessGet4DataMessage( UInt_t uRocId, TGet4v1MessageEx
 /*
  * This function process the data message when it is a GET4 External Synch
  */
-Bool_t TTofGet4Unpacker::ProcessGet4ExtSyncMessage( UInt_t uRocId, TGet4v1MessageExtended& extMess )
+Bool_t TTofGet4Unpacker::ProcessGet4ExtSyncMessage( UInt_t /*uRocId*/, TGet4v1MessageExtended& /*extMess*/ )
 {
    /* TODO FILL ME
     * 24bit Get4 external sync message specific processing
@@ -3098,7 +3103,7 @@ Bool_t TTofGet4Unpacker::ProcessGet4SuppDataMessage( UInt_t uRocId, TGet4v1Messa
        */
       ROC[uRocId].fChannelInputMessCount = new TH1I( Form("Roc%u_ChanCounts", uRocId),
             "Channel multiplicity per event; Channel []; # Mess []",
-            2*get4v10::kuNbChan*get4v10::kiMaxGet4Roc, 0, get4v10::kiMaxGet4Roc );
+            2*get4v10::kuNbChan*get4v10::kuMaxGet4Roc, 0, get4v10::kuMaxGet4Roc );
       ROC[uRocId].fb24bitsReadoutDetected = kTRUE;
    } // if( kFALSE == ROC[uRocId].fb24bitsReadoutDetected )
 
@@ -3153,9 +3158,9 @@ Bool_t TTofGet4Unpacker::ProcessGet4ReprocessSuppData( UInt_t uRocId, UInt_t uGe
     * Make the get4_index consistent everywhere between global get4 index and inside roc get4 index
     */
    // Loop over the temporary buffer
-   for( Int_t iDataIndex = 0; iDataIndex < ROC[uRocId].fEpSuppBuffer[uGet4Id].size(); iDataIndex++ )
+   for( UInt_t uDataIndex = 0; uDataIndex < ROC[uRocId].fEpSuppBuffer[uGet4Id].size(); uDataIndex++ )
    {
-      TGet4v1MessageExtended extMess = ROC[uRocId].fEpSuppBuffer[uGet4Id][iDataIndex];
+      TGet4v1MessageExtended extMess = ROC[uRocId].fEpSuppBuffer[uGet4Id][uDataIndex];
       UInt_t   uGet4Ch(0), uGet4Edge(0);
       uGet4Ch   = (extMess.GetRocMessage()).getGet4ChNum();
       uGet4Edge = (extMess.GetRocMessage()).getGet4Edge();
@@ -3556,7 +3561,7 @@ Bool_t TTofGet4Unpacker::ProcessGet4ReprocessSuppData( UInt_t uRocId, UInt_t uGe
       } // if( kTRUE ==  fParam->bFreeStreaming && 0 < fParam->uNbTriggers && 0 == uGet4Edge )
 
       ProcessExtendedMessage(uRocId, extMess);
-   } // for( Int_t iDataIndex = 0; iDataIndex < ROC[uRocId].fEpSuppBuffer[uGet4Id].size(); iDataIndex++ )
+   } // for( UInt_t uDataIndex = 0; uDataIndex < ROC[uRocId].fEpSuppBuffer[uGet4Id].size(); uDataIndex++ )
    ROC[uRocId].fEpSuppBuffer[uGet4Id].clear();
 
    return kTRUE;
@@ -3601,7 +3606,7 @@ Int_t TTofGet4Unpacker::Process32BitGet4Message( UInt_t uRocId, TGet4v1MessageEx
        */
       ROC[uRocId].fChannelInputMessCount = new TH1I( Form("Roc%u_ChanCounts", uRocId),
             "Channel multiplicity per event; Channel []; # Mess []",
-            get4v10::kuNbChan*get4v10::kiMaxGet4Roc, 0, get4v10::kiMaxGet4Roc );
+            get4v10::kuNbChan*get4v10::kuMaxGet4Roc, 0, get4v10::kuMaxGet4Roc );
 
          // Slow control messages
       ROC[uRocId].fGet4V1SlowControlType = new TH2I( Form("Roc%u_Get4SlowControl", uRocId),
@@ -3631,52 +3636,52 @@ Int_t TTofGet4Unpacker::Process32BitGet4Message( UInt_t uRocId, TGet4v1MessageEx
             fParam->uNbGet4*get4v10::kuNbChan, -0.5 , fParam->uNbGet4*get4v10::kuNbChan -0.5,
             2, -0.5, 1.5 );
 
-      for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+      for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
       {
          char folderGet4[30];
-         sprintf(folderGet4,"%sGet4_%u/",folder, iGet4);
-         UInt_t uRemappedGet4Index = fParam->RemapGet4Chip(uRocId, iGet4);
+         sprintf(folderGet4,"%sGet4_%u/",folder, uGet4);
+         UInt_t uRemappedGet4Index = fParam->RemapGet4Chip(uRocId, uGet4);
          if( kTRUE == fParam->IsValidGet4Chip(uRemappedGet4Index) &&
              kTRUE == fParam->IsActiveGet4Chip(uRemappedGet4Index) )
          {
-            ROC[uRocId].fGet4V1HitsDistanceNs[iGet4] =
-                  new TH2I( Form("Roc%u_Get%d_HitDistNs",
-                                 uRocId, iGet4),
-                           Form("Time difference since last hit on same channel in GET4 %d Channels on ROC%u; [ns]",
-                                 iGet4, uRocId),
+            ROC[uRocId].fGet4V1HitsDistanceNs[uGet4] =
+                  new TH2I( Form("Roc%u_Get%u_HitDistNs",
+                                 uRocId, uGet4),
+                           Form("Time difference since last hit on same channel in GET4 %u Channels on ROC%u; [ns]",
+                                 uGet4, uRocId),
                            1002, -2., 1000.,
                            get4v10::kuNbChan, 0, get4v10::kuNbChan );
-            ROC[uRocId].fGet4V1HitsDistanceUs[iGet4] =
-                  new TH2I( Form("Roc%u_Get%d_HitDistUs",
-                                 uRocId, iGet4),
-                           Form("Time difference since last hit on same channel in GET4 %d Channels on ROC%u; [us]",
-                                 iGet4, uRocId),
+            ROC[uRocId].fGet4V1HitsDistanceUs[uGet4] =
+                  new TH2I( Form("Roc%u_Get%u_HitDistUs",
+                                 uRocId, uGet4),
+                           Form("Time difference since last hit on same channel in GET4 %u Channels on ROC%u; [us]",
+                                 uGet4, uRocId),
                            999, 1., 1000.,
                            get4v10::kuNbChan, 0, get4v10::kuNbChan );
-            ROC[uRocId].fGet4V1HitsDistanceMs[iGet4] =
-                  new TH2I( Form("Roc%u_Get%d_HitDistMs",
-                                 uRocId, iGet4),
-                           Form("Time difference since last hit on same channel in GET4 %d Channels on ROC%u; [ms]",
-                                 iGet4, uRocId),
+            ROC[uRocId].fGet4V1HitsDistanceMs[uGet4] =
+                  new TH2I( Form("Roc%u_Get%u_HitDistMs",
+                                 uRocId, uGet4),
+                           Form("Time difference since last hit on same channel in GET4 %u Channels on ROC%u; [ms]",
+                                 uGet4, uRocId),
                            999, 1., 1000.,
                            get4v10::kuNbChan, 0, get4v10::kuNbChan );
-            ROC[uRocId].fGet4V1HitsDistanceS[iGet4]  =
-                  new TH2I( Form("Roc%u_Get%d_HitDistS",
-                                 uRocId, iGet4),
-                           Form("Time difference since last hit on same channel in GET4 %d Channels on ROC%u; [s]",
-                                 iGet4, uRocId),
+            ROC[uRocId].fGet4V1HitsDistanceS[uGet4]  =
+                  new TH2I( Form("Roc%u_Get%u_HitDistS",
+                                 uRocId, uGet4),
+                           Form("Time difference since last hit on same channel in GET4 %u Channels on ROC%u; [s]",
+                                 uGet4, uRocId),
                            999, 1., 1000.,
                            get4v10::kuNbChan, 0, get4v10::kuNbChan );
 
             if( 1 == fParam->bTotHistoEnable )
-               for( Int_t iGet4Chan = 0; iGet4Chan < get4v10::kuNbChan; iGet4Chan++)
-                  ROC[uRocId].fRawTot[iGet4][iGet4Chan] =
-                        new TH1I( Form("RawTot_Ch%d_Get%d_Roc%u",
-                              iGet4Chan, iGet4, uRocId ),
-                        Form("Tot for channel %d in chip %d on ROC %d; Tot [ps]; Counts [1]", iGet4Chan, iGet4, uRocId),
+               for( UInt_t uGet4Chan = 0; uGet4Chan < get4v10::kuNbChan; uGet4Chan++)
+                  ROC[uRocId].fRawTot[uGet4][uGet4Chan] =
+                        new TH1I( Form("RawTot_Ch%u_Get%u_Roc%u",
+                              uGet4Chan, uGet4, uRocId ),
+                        Form("Tot for channel %u in chip %u on ROC %u; Tot [ps]; Counts [1]", uGet4Chan, uGet4, uRocId),
                         1200, -25, 59975 );
          }
-      } // for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+      } // for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
    } // if( kFALSE == fb32bitsReadoutDetected )
    extMess.Set32BitFlag();
 
@@ -3686,7 +3691,7 @@ Int_t TTofGet4Unpacker::Process32BitGet4Message( UInt_t uRocId, TGet4v1MessageEx
       case 0: // epoch message
       {
          UInt_t get4_32b_ep_epoch = extMess.getGet4V10R32EpochNumber();
-         UInt_t get4_32b_ep_sync  = extMess.getGet4V10R32SyncFlag();
+/*         UInt_t get4_32b_ep_sync  = extMess.getGet4V10R32SyncFlag();*/ // Commented out as unused to remove warning
 
          if( kTRUE == fCurrentGet4Event.HasTrigger() && kFALSE == ROC[uRocId].fbSelectionDone[get4_index]  )
          {
@@ -3747,7 +3752,7 @@ Int_t TTofGet4Unpacker::Process32BitGet4Message( UInt_t uRocId, TGet4v1MessageEx
             ROC[uRocId].fEpochShiftsPerChip->Fill( get4_index, (Int_t)get4_32b_ep_epoch - (Int_t)(ROC[uRocId].fuCurrEpoch2[get4_index]+1) );
 
             if( ROC[uRocId].fuCurrEpoch2[get4_index] > get4_32b_ep_epoch &&
-                get4v10::kulGet4EpochCycleSz < ROC[uRocId].fuCurrEpoch2[get4_index] + 100 &&
+                get4v10::kulGet4EpochCycleSz < ROC[uRocId].fuCurrEpoch2[get4_index] + 100ul &&
                 100 < get4_32b_ep_epoch )
                // Epoch close to a cycle change on both sides
                ROC[uRocId].fuEpoch2Cycle[get4_index]++;
@@ -3947,8 +3952,8 @@ Int_t TTofGet4Unpacker::Process32BitGet4Message( UInt_t uRocId, TGet4v1MessageEx
       case 3: // data event
       {
          UInt_t get4_32b_dat_tot  = extMess.getGet4V10R32HitTot();
-         UInt_t get4_32b_dat_ft   = extMess.getGet4V10R32HitFt();
-         UInt_t get4_32b_dat_ts   = extMess.getGet4V10R32HitTs();
+/*         UInt_t get4_32b_dat_ft   = extMess.getGet4V10R32HitFt();*/ // Commented out as unused to remove warning
+/*         UInt_t get4_32b_dat_ts   = extMess.getGet4V10R32HitTs();*/ // Commented out as unused to remove warning
          UInt_t get4_32b_dat_chan = extMess.getGet4V10R32HitChan();
          UInt_t get4_32b_dat_dll  = extMess.getGet4V10R32HitDllFlag();
          if( get4v10::kuNbChan <= get4_32b_dat_chan )
@@ -4193,25 +4198,25 @@ Bool_t TTofGet4Unpacker::AnalyzeAllGet4Channels( Get4v1Event &eventFull )
    {
       if( !fParam->IsActiveRoc(uRocId) ) continue;
 
-      for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
-         for( Int_t iGet4Chan = 0; iGet4Chan < get4v10::kuNbChan; iGet4Chan++)
+      for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
+         for( UInt_t uGet4Chan = 0; uGet4Chan < get4v10::kuNbChan; uGet4Chan++)
          {
-            if( 0 < ( (eventFull.fGet4Boards[iGet4]).fHits[iGet4Chan]).size() )
+            if( 0 < ( (eventFull.fGet4Boards[uGet4]).fHits[uGet4Chan]).size() )
             {
-               for( Int_t iGet4Chan_2 = iGet4Chan+1; iGet4Chan_2 < get4v10::kuNbChan; iGet4Chan_2++)
-                  if( 0 < ( (eventFull.fGet4Boards[iGet4]).fHits[iGet4Chan_2]).size() )
-                     ROC[uRocId].fChannelsMapping->Fill( iGet4 + (Double_t)iGet4Chan/(Double_t)get4v10::kuNbChan,
-                                             iGet4 + (Double_t)iGet4Chan_2/(Double_t)get4v10::kuNbChan );
+               for( UInt_t uGet4Chan_2 = uGet4Chan+1; uGet4Chan_2 < get4v10::kuNbChan; uGet4Chan_2++)
+                  if( 0 < ( (eventFull.fGet4Boards[uGet4]).fHits[uGet4Chan_2]).size() )
+                     ROC[uRocId].fChannelsMapping->Fill( uGet4 + (Double_t)uGet4Chan/(Double_t)get4v10::kuNbChan,
+                                             uGet4 + (Double_t)uGet4Chan_2/(Double_t)get4v10::kuNbChan );
 
-               for( Int_t iGet4_2 = iGet4+1; iGet4_2 < get4v10::kiMaxGet4Roc; iGet4_2++)
-                  for( Int_t iGet4Chan_2 = 0; iGet4Chan_2 < get4v10::kuNbChan; iGet4Chan_2++)
-                     if( 0 < ( (eventFull.fGet4Boards[iGet4_2]).fHits[iGet4Chan_2]).size() )
-                        ROC[uRocId].fChannelsMapping->Fill( iGet4 + (Double_t)iGet4Chan/(Double_t)get4v10::kuNbChan,
-                                                iGet4_2 + (Double_t)iGet4Chan_2/(Double_t)get4v10::kuNbChan );
+               for( UInt_t uGet4_2 = uGet4+1; uGet4_2 < get4v10::kuMaxGet4Roc; uGet4_2++)
+                  for( UInt_t uGet4Chan_2 = 0; uGet4Chan_2 < get4v10::kuNbChan; uGet4Chan_2++)
+                     if( 0 < ( (eventFull.fGet4Boards[uGet4_2]).fHits[uGet4Chan_2]).size() )
+                        ROC[uRocId].fChannelsMapping->Fill( uGet4 + (Double_t)uGet4Chan/(Double_t)get4v10::kuNbChan,
+                                                uGet4_2 + (Double_t)uGet4Chan_2/(Double_t)get4v10::kuNbChan );
             }
 
-            ROC[uRocId].fChannelMultiplicity->Fill( iGet4 + (Double_t)iGet4Chan/(Double_t)get4v10::kuNbChan,
-                  ( (eventFull.fGet4Boards[iGet4]).fHits[iGet4Chan]).size());
+            ROC[uRocId].fChannelMultiplicity->Fill( uGet4 + (Double_t)uGet4Chan/(Double_t)get4v10::kuNbChan,
+                  ( (eventFull.fGet4Boards[uGet4]).fHits[uGet4Chan]).size());
          }
 
       if( 1 == fParam->bDebugHistoEnable )
@@ -4338,12 +4343,12 @@ Bool_t TTofGet4Unpacker::PrintRocEpochCycles(UInt_t uRocId, Int_t uMessagePriori
    return kTRUE;
 }
 /**********************************************************************/
-void TTofGet4Unpacker::UpdateLeadingDnlHistograms( Get4v1Event &eventFull, UInt_t uRocId )
+void TTofGet4Unpacker::UpdateLeadingDnlHistograms( Get4v1Event & /*eventFull*/, UInt_t uRocId )
 {
-   for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
-      for( Int_t iGet4Chan = 0; iGet4Chan < get4v10::kuNbChan; iGet4Chan++)
+   for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
+      for( UInt_t uGet4Chan = 0; uGet4Chan < get4v10::kuNbChan; uGet4Chan++)
       {
-         UInt_t uRemappedGet4Index = fParam->RemapGet4Chip(uRocId, iGet4);
+         UInt_t uRemappedGet4Index = fParam->RemapGet4Chip(uRocId, uGet4);
          if( kTRUE == fParam->IsValidGet4Chip(uRemappedGet4Index) &&
              kTRUE == fParam->IsActiveGet4Chip(uRemappedGet4Index) )
          {
@@ -4351,35 +4356,35 @@ void TTofGet4Unpacker::UpdateLeadingDnlHistograms( Get4v1Event &eventFull, UInt_
             Double_t dSumLeading = 0;
 
             // First Resets everything
-            ROC[uRocId].fLeadingDnl[iGet4][iGet4Chan]->Reset();
-            ROC[uRocId].fLeadingDnlSum[iGet4][iGet4Chan]->Reset();
+            ROC[uRocId].fLeadingDnl[uGet4][uGet4Chan]->Reset();
+            ROC[uRocId].fLeadingDnlSum[uGet4][uGet4Chan]->Reset();
 
             // First bin
-            dDnlLeading = ( ROC[uRocId].fLeadingFTS[iGet4][iGet4Chan]->GetBinContent(1)
-                           - (ROC[uRocId].fLeadingFTS[iGet4][iGet4Chan]->GetEntries()/(Double_t)get4tdc::kiFineTime) ) /
-                            (ROC[uRocId].fLeadingFTS[iGet4][iGet4Chan]->GetEntries()/(Double_t)get4tdc::kiFineTime);
-            ROC[uRocId].fLeadingDnl[iGet4][iGet4Chan]->Fill( 0.0, dDnlLeading);
+            dDnlLeading = ( ROC[uRocId].fLeadingFTS[uGet4][uGet4Chan]->GetBinContent(1)
+                           - (ROC[uRocId].fLeadingFTS[uGet4][uGet4Chan]->GetEntries()/(Double_t)get4tdc::kiFineTime) ) /
+                            (ROC[uRocId].fLeadingFTS[uGet4][uGet4Chan]->GetEntries()/(Double_t)get4tdc::kiFineTime);
+            ROC[uRocId].fLeadingDnl[uGet4][uGet4Chan]->Fill( 0.0, dDnlLeading);
             dSumLeading += dDnlLeading;
-            ROC[uRocId].fLeadingDnlSum[iGet4][iGet4Chan]->Fill( 0.0, dSumLeading );
+            ROC[uRocId].fLeadingDnlSum[uGet4][uGet4Chan]->Fill( 0.0, dSumLeading );
 
             for( int j = 2; j <= get4tdc::kiFineTime; j++)
             {
-             dDnlLeading = ( ROC[uRocId].fLeadingFTS[iGet4][iGet4Chan]->GetBinContent(j)
-                             - (ROC[uRocId].fLeadingFTS[iGet4][iGet4Chan]->GetEntries()/(Double_t)get4tdc::kiFineTime) ) /
-                            (ROC[uRocId].fLeadingFTS[iGet4][iGet4Chan]->GetEntries()/(Double_t)get4tdc::kiFineTime);
-             ROC[uRocId].fLeadingDnl[iGet4][iGet4Chan]->Fill( (Double_t)(j-1), dDnlLeading );
+             dDnlLeading = ( ROC[uRocId].fLeadingFTS[uGet4][uGet4Chan]->GetBinContent(j)
+                             - (ROC[uRocId].fLeadingFTS[uGet4][uGet4Chan]->GetEntries()/(Double_t)get4tdc::kiFineTime) ) /
+                            (ROC[uRocId].fLeadingFTS[uGet4][uGet4Chan]->GetEntries()/(Double_t)get4tdc::kiFineTime);
+             ROC[uRocId].fLeadingDnl[uGet4][uGet4Chan]->Fill( (Double_t)(j-1), dDnlLeading );
              dSumLeading += dDnlLeading;
-             ROC[uRocId].fLeadingDnlSum[iGet4][iGet4Chan]->Fill( (Double_t)j-1, dSumLeading );
+             ROC[uRocId].fLeadingDnlSum[uGet4][uGet4Chan]->Fill( (Double_t)j-1, dSumLeading );
             }
          }
       } // For get4 in ROC, for channel in GET4
 }
-void TTofGet4Unpacker::UpdateTrailingDnlHistograms( Get4v1Event &eventFull, UInt_t uRocId )
+void TTofGet4Unpacker::UpdateTrailingDnlHistograms( Get4v1Event & /*eventFull*/, UInt_t uRocId )
 {
-   for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
-      for( Int_t iGet4Chan = 0; iGet4Chan < get4v10::kuNbChan; iGet4Chan++)
+   for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
+      for( UInt_t uGet4Chan = 0; uGet4Chan < get4v10::kuNbChan; uGet4Chan++)
       {
-         UInt_t uRemappedGet4Index = fParam->RemapGet4Chip(uRocId, iGet4);
+         UInt_t uRemappedGet4Index = fParam->RemapGet4Chip(uRocId, uGet4);
          if( kTRUE == fParam->IsValidGet4Chip(uRemappedGet4Index) &&
              kTRUE == fParam->IsActiveGet4Chip(uRemappedGet4Index) )
          {
@@ -4387,25 +4392,25 @@ void TTofGet4Unpacker::UpdateTrailingDnlHistograms( Get4v1Event &eventFull, UInt
             Double_t dSumTrailing = 0;
 
             // First Resets everything
-            ROC[uRocId].fTrailingDnl[iGet4][iGet4Chan]->Reset();
-            ROC[uRocId].fTrailingDnlSum[iGet4][iGet4Chan]->Reset();
+            ROC[uRocId].fTrailingDnl[uGet4][uGet4Chan]->Reset();
+            ROC[uRocId].fTrailingDnlSum[uGet4][uGet4Chan]->Reset();
 
             // First bin
-            dDnlTrailing = ( ROC[uRocId].fTrailingFTS[iGet4][iGet4Chan]->GetBinContent(1)
-                            - (ROC[uRocId].fTrailingFTS[iGet4][iGet4Chan]->GetEntries()/(Double_t)get4tdc::kiFineTime) ) /
-                            (ROC[uRocId].fTrailingFTS[iGet4][iGet4Chan]->GetEntries()/(Double_t)get4tdc::kiFineTime);
-            ROC[uRocId].fTrailingDnl[iGet4][iGet4Chan]->Fill( 0.0, dDnlTrailing );
+            dDnlTrailing = ( ROC[uRocId].fTrailingFTS[uGet4][uGet4Chan]->GetBinContent(1)
+                            - (ROC[uRocId].fTrailingFTS[uGet4][uGet4Chan]->GetEntries()/(Double_t)get4tdc::kiFineTime) ) /
+                            (ROC[uRocId].fTrailingFTS[uGet4][uGet4Chan]->GetEntries()/(Double_t)get4tdc::kiFineTime);
+            ROC[uRocId].fTrailingDnl[uGet4][uGet4Chan]->Fill( 0.0, dDnlTrailing );
             dSumTrailing += dDnlTrailing;
-            ROC[uRocId].fTrailingDnlSum[iGet4][iGet4Chan]->Fill( 0.0, dSumTrailing );
+            ROC[uRocId].fTrailingDnlSum[uGet4][uGet4Chan]->Fill( 0.0, dSumTrailing );
 
             for( int j = 2; j <= get4tdc::kiFineTime; j++)
             {
-             dDnlTrailing = ( ROC[uRocId].fTrailingFTS[iGet4][iGet4Chan]->GetBinContent(j)
-                             - (ROC[uRocId].fTrailingFTS[iGet4][iGet4Chan]->GetEntries()/(Double_t)get4tdc::kiFineTime) ) /
-                            (ROC[uRocId].fTrailingFTS[iGet4][iGet4Chan]->GetEntries()/(Double_t)get4tdc::kiFineTime);
-             ROC[uRocId].fTrailingDnl[iGet4][iGet4Chan]->Fill( (Double_t)(j-1), dDnlTrailing );
+             dDnlTrailing = ( ROC[uRocId].fTrailingFTS[uGet4][uGet4Chan]->GetBinContent(j)
+                             - (ROC[uRocId].fTrailingFTS[uGet4][uGet4Chan]->GetEntries()/(Double_t)get4tdc::kiFineTime) ) /
+                            (ROC[uRocId].fTrailingFTS[uGet4][uGet4Chan]->GetEntries()/(Double_t)get4tdc::kiFineTime);
+             ROC[uRocId].fTrailingDnl[uGet4][uGet4Chan]->Fill( (Double_t)(j-1), dDnlTrailing );
              dSumTrailing += dDnlTrailing;
-             ROC[uRocId].fTrailingDnlSum[iGet4][iGet4Chan]->Fill( (Double_t)(j-1), dSumTrailing );
+             ROC[uRocId].fTrailingDnlSum[uGet4][uGet4Chan]->Fill( (Double_t)(j-1), dSumTrailing );
             }
          }
       } // For get4 in ROC, for channel in GET4

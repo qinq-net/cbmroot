@@ -92,7 +92,7 @@ TMbsConvTof::TMbsConvTof() :
 {
 }
 
-TMbsConvTof::TMbsConvTof(const char* name, Int_t mode, Int_t verbose) :
+TMbsConvTof::TMbsConvTof(const char* name, Int_t /*mode*/, Int_t verbose) :
    FairTask(name, verbose),
    fMbsUnpackPar(0),
    fMbsCalibPar(NULL),
@@ -177,7 +177,7 @@ InitStatus TMbsConvTof::Init()
    
    return kSUCCESS;
 }
-void TMbsConvTof::Exec(Option_t* option)
+void TMbsConvTof::Exec(Option_t* /*option*/)
 {
    ClearOutput();
    ClearTriglogData();
@@ -199,7 +199,7 @@ void TMbsConvTof::Exec(Option_t* option)
 //         return kFALSE;
 //      if( 1 == ( 0x1 & ( (xTriglogBoard->GetTriggPatt()) >> (fMbsUnpackPar->GetTriggerToReject()) ) ) )
       // Reject selected trigger only when alone (accept when both not rejected trigger and rejected trigger are present)
-      if( (xTriglogBoard->GetTriggPatt()) == ( 1 << (fMbsUnpackPar->GetTriggerToReject()) ) )
+      if( (xTriglogBoard->GetTriggPatt()) == ( 1ul << (fMbsUnpackPar->GetTriggerToReject()) ) )
          // Jump this event !
          return;
    } // if trigger rejection enabled and trigger board enabled
@@ -382,21 +382,21 @@ Bool_t TMbsConvTof::FillHistograms()
          {
             Int_t iUniqueId = fMbsConvPar->GetRpcUid( iRpcIndx );
             Int_t iSmType   = CbmTofAddress::GetSmType( iUniqueId );
-            for( Int_t iHitInd = 0; iHitInd < fvRpcHits[iRpcIndx].size(); iHitInd ++)
-               fhRpcHitPosition[iRpcIndx]->Fill( fvRpcHits[iRpcIndx][iHitInd].iStrip % fMbsMappingPar->GetSmTypeNbCh(iSmType),  // Column
-                                                 fvRpcHits[iRpcIndx][iHitInd].iStrip / fMbsMappingPar->GetSmTypeNbCh(iSmType) );// Row
+            for( UInt_t uHitInd = 0; uHitInd < fvRpcHits[iRpcIndx].size(); uHitInd ++)
+               fhRpcHitPosition[iRpcIndx]->Fill( fvRpcHits[iRpcIndx][uHitInd].iStrip % fMbsMappingPar->GetSmTypeNbCh(iSmType),  // Column
+                                                 fvRpcHits[iRpcIndx][uHitInd].iStrip / fMbsMappingPar->GetSmTypeNbCh(iSmType) );// Row
             break;
          }
          case 2: // STRIPs
          {
-            for( Int_t iHitInd = 0; iHitInd < fvRpcHits[iRpcIndx].size(); iHitInd ++)
+            for( UInt_t uHitInd = 0; uHitInd < fvRpcHits[iRpcIndx].size(); uHitInd ++)
             {
-               fhRpcHitPosition[iRpcIndx]->Fill( fvRpcHits[iRpcIndx][iHitInd].iStrip,
-                                                   fvRpcHits[iRpcIndx][iHitInd].dTimeRight
-                                                 - fvRpcHits[iRpcIndx][iHitInd].dTimeLeft  );
-               fhRpcTotComp[iRpcIndx]->Fill( fvRpcHits[iRpcIndx][iHitInd].dTotLeft,
-                                             fvRpcHits[iRpcIndx][iHitInd].dTotRight );
-            } // for( Int_t iHitInd = 0; iHitInd < fvRpcHits[iRpcIndx].size(); iHitInd ++)
+               fhRpcHitPosition[iRpcIndx]->Fill( fvRpcHits[iRpcIndx][uHitInd].iStrip,
+                                                   fvRpcHits[iRpcIndx][uHitInd].dTimeRight
+                                                 - fvRpcHits[iRpcIndx][uHitInd].dTimeLeft  );
+               fhRpcTotComp[iRpcIndx]->Fill( fvRpcHits[iRpcIndx][uHitInd].dTotLeft,
+                                             fvRpcHits[iRpcIndx][uHitInd].dTotRight );
+            } // for( UInt_t uHitInd = 0; uHitInd < fvRpcHits[iRpcIndx].size(); uHitInd ++)
             break;
          }
          default:
@@ -409,13 +409,13 @@ Bool_t TMbsConvTof::FillHistograms()
       {
          case 2: // Both ends
          {
-            for( Int_t iHitInd = 0; iHitInd < fvPlasticHits[iPlastIndx].size(); iHitInd ++)
+            for( UInt_t uHitInd = 0; uHitInd < fvPlasticHits[iPlastIndx].size(); uHitInd ++)
             {
-               fhPlasticHitPosition[iPlastIndx]->Fill( fvPlasticHits[iPlastIndx][iHitInd].dTimeRight
-                                                       - fvPlasticHits[iPlastIndx][iHitInd].dTimeLeft  );
-               fhPlasticTotComp[iPlastIndx]->Fill( fvPlasticHits[iPlastIndx][iHitInd].dTotLeft,
-                                                   fvPlasticHits[iPlastIndx][iHitInd].dTotRight );
-            } // for( Int_t iHitInd = 0; iHitInd < fvPlasticHits[iPlastIndx].size(); iHitInd ++)
+               fhPlasticHitPosition[iPlastIndx]->Fill( fvPlasticHits[iPlastIndx][uHitInd].dTimeRight
+                                                       - fvPlasticHits[iPlastIndx][uHitInd].dTimeLeft  );
+               fhPlasticTotComp[iPlastIndx]->Fill( fvPlasticHits[iPlastIndx][uHitInd].dTotLeft,
+                                                   fvPlasticHits[iPlastIndx][uHitInd].dTotRight );
+            } // for( UInt_t uHitInd = 0; uHitInd < fvPlasticHits[iPlastIndx].size(); uHitInd ++)
             break;
          }
          case 1: // Single ended
@@ -575,7 +575,7 @@ Bool_t TMbsConvTof::RegisterOutput()
       
       for( Int_t iScalEvtIdx = 0; iScalEvtIdx < fMbsConvPar->GetNbOutScal(); iScalEvtIdx ++)
       {
-         Scalers_Event * test = &(fvScalerEvents[iScalEvtIdx]);
+/*         Scalers_Event * test = &(fvScalerEvents[iScalEvtIdx]);*/
          fOutputTree->Branch( Form("CalScal%02d.", iScalEvtIdx), "Scalers_Event", 
                               &( fvScalerEvents[iScalEvtIdx] ) );
       }
@@ -703,7 +703,7 @@ Bool_t TMbsConvTof::FillVftxBoards()
       
    // Board data
    for( Int_t iVftxIndex = 0; iVftxIndex < fMbsConvPar->GetNbOutVftx(); iVftxIndex ++)
-      if( fMbsConvPar->GetVftxInd( iVftxIndex ) < fMbsUnpackPar->GetNbActiveBoards( toftdc::vftx ) )
+      if( static_cast<UInt_t>(fMbsConvPar->GetVftxInd( iVftxIndex )) < fMbsUnpackPar->GetNbActiveBoards( toftdc::vftx ) )
       {
          Int_t iInputVftxInd = fMbsConvPar->GetVftxInd( iVftxIndex );
          TTofTdcBoard * vftxPtr = ( TTofTdcBoard * )fVftxBoardCollection->At( iInputVftxInd );
@@ -762,7 +762,7 @@ Bool_t TMbsConvTof::FillVftxBoards()
 Bool_t TMbsConvTof::ClearVftxBoards()
 {
    for( Int_t iVftxIndex = 0; iVftxIndex < fMbsConvPar->GetNbOutVftx(); iVftxIndex ++)
-      if( fMbsConvPar->GetVftxInd( iVftxIndex ) < fMbsUnpackPar->GetNbActiveBoards( toftdc::vftx ) )
+      if( static_cast<UInt_t>(fMbsConvPar->GetVftxInd( iVftxIndex )) < fMbsUnpackPar->GetNbActiveBoards( toftdc::vftx ) )
       {
          fvVftxCalibBoards[ fMbsConvPar->GetVftxInd( iVftxIndex ) ].Clear();
       } // if( fMbsConvPar->GetVftxInd( iVftxIndex ) < fMbsUnpackPar->GetNbActiveBoards( toftdc::vftx ) )
@@ -775,14 +775,14 @@ Bool_t TMbsConvTof::FillCalibScaler()
 {
    UInt_t uNbScalBd = fMbsUnpackPar->GetNbActiveScalersB();
    
-   for( UInt_t uScalBdIndx = 0; uScalBdIndx < fMbsConvPar->GetNbOutScal(); uScalBdIndx++ )
-      if( -1 < fMbsConvPar->GetScalerInd( uScalBdIndx ) &&
-          fMbsConvPar->GetScalerInd( uScalBdIndx )< uNbScalBd )
+   for( Int_t iScalBdIndx = 0; iScalBdIndx < fMbsConvPar->GetNbOutScal(); iScalBdIndx++ )
+      if( -1 < fMbsConvPar->GetScalerInd( iScalBdIndx ) &&
+          static_cast<UInt_t>(fMbsConvPar->GetScalerInd( iScalBdIndx ))< uNbScalBd )
       {
          if( NULL == fCalibScalCollection )
             return kFALSE;
             
-         TTofCalibScaler * xCalibScaler  = (TTofCalibScaler*)  fCalibScalCollection->At(fMbsConvPar->GetScalerInd( uScalBdIndx ) );
+         TTofCalibScaler * xCalibScaler  = (TTofCalibScaler*)  fCalibScalCollection->At(fMbsConvPar->GetScalerInd( iScalBdIndx ) );
             
          if( NULL == xCalibScaler )
             return kFALSE;
@@ -792,42 +792,42 @@ Bool_t TMbsConvTof::FillCalibScaler()
             case tofscaler::triglog:
             {
                // Filling event times from internal reference clock
-               fvScalerEvents[uScalBdIndx].fDTimeSinceFirstEventSecondsTriglog = xCalibScaler->GetTimeToFirst();
-               fvScalerEvents[uScalBdIndx].fDTimeSinceLastEventSecondsTriglog  = xCalibScaler->GetTimeToLast(); 
+               fvScalerEvents[iScalBdIndx].fDTimeSinceFirstEventSecondsTriglog = xCalibScaler->GetTimeToFirst();
+               fvScalerEvents[iScalBdIndx].fDTimeSinceLastEventSecondsTriglog  = xCalibScaler->GetTimeToLast(); 
                
                // Filling scaler rates since last event
                for( UInt_t uScalIndx = 0; uScalIndx < xCalibScaler->GetScalerNumber(); uScalIndx++)
                   for( UInt_t uCh = 0; uCh < xCalibScaler->GetChannelNumber(); uCh++)
-                     fvScalerEvents[uScalBdIndx].fDTriglogRate[uScalIndx][uCh] = xCalibScaler->GetScalerValue( uCh, uScalIndx);
+                     fvScalerEvents[iScalBdIndx].fDTriglogRate[uScalIndx][uCh] = xCalibScaler->GetScalerValue( uCh, uScalIndx);
                break;
             }
             case tofscaler::scalormu:
             {  
                // Filling event times from internal reference clock
-               fvScalerEvents[uScalBdIndx].fDTimeSinceFirstEventSecondsScalOrMu = xCalibScaler->GetTimeToFirst(); 
-               fvScalerEvents[uScalBdIndx].fDTimeSinceLastEventSecondsScalOrMu  = xCalibScaler->GetTimeToLast(); 
+               fvScalerEvents[iScalBdIndx].fDTimeSinceFirstEventSecondsScalOrMu = xCalibScaler->GetTimeToFirst(); 
+               fvScalerEvents[iScalBdIndx].fDTimeSinceLastEventSecondsScalOrMu  = xCalibScaler->GetTimeToLast(); 
                
                // Filling scaler rates since last event
                for( UInt_t uCh = 0; uCh < xCalibScaler->GetChannelNumber(); uCh++)
-                  fvScalerEvents[uScalBdIndx].fDScalOrMuRate[uCh] = xCalibScaler->GetScalerValue( uCh );
+                  fvScalerEvents[iScalBdIndx].fDScalOrMuRate[uCh] = xCalibScaler->GetScalerValue( uCh );
                break;
             }
             case tofscaler::scalormubig:
             {
                // Filling event times from internal reference clock
-               fvScalerEvents[uScalBdIndx].fDTimeSinceFirstEventSecondsScalOrMu = xCalibScaler->GetTimeToFirst(); 
-               fvScalerEvents[uScalBdIndx].fDTimeSinceLastEventSecondsScalOrMu  = xCalibScaler->GetTimeToLast(); 
+               fvScalerEvents[iScalBdIndx].fDTimeSinceFirstEventSecondsScalOrMu = xCalibScaler->GetTimeToFirst(); 
+               fvScalerEvents[iScalBdIndx].fDTimeSinceLastEventSecondsScalOrMu  = xCalibScaler->GetTimeToLast(); 
                
                // Filling scaler rates since last event
                for( UInt_t uCh = 0; uCh < xCalibScaler->GetChannelNumber(); uCh++)
-                  fvScalerEvents[uScalBdIndx].fDScalOrMuRate[uCh] = xCalibScaler->GetScalerValue( uCh );
+                  fvScalerEvents[iScalBdIndx].fDScalOrMuRate[uCh] = xCalibScaler->GetScalerValue( uCh );
                break;
             }
             case tofscaler::undef:
             default:
                break;
          } // switch( xCalibScaler->GetScalerType() )
-      } // if( fMbsConvPar->GetScalerInd( uScalBdIndx ) < uNbScalBd )
+      } // if( fMbsConvPar->GetScalerInd( iScalBdIndx ) < uNbScalBd )
    
    return kTRUE;
 }
@@ -840,8 +840,8 @@ Bool_t TMbsConvTof::FillMappedScaler()
 Bool_t TMbsConvTof::ClearScalerEvent()
 {
    // Clear all Scalers_Event objects
-   for( Int_t iScalerEvt = 0; iScalerEvt < fvScalerEvents.size(); iScalerEvt++)
-      fvScalerEvents[iScalerEvt].Clear();
+   for( UInt_t uScalerEvt = 0; uScalerEvt < fvScalerEvents.size(); uScalerEvt++)
+      fvScalerEvents[uScalerEvt].Clear();
       
    return kTRUE;
 }
@@ -978,13 +978,13 @@ Bool_t TMbsConvTof::BuildFiredChannels()
                         hit.fbMultiEdge = 1 < fvClassedExpDigis[iDetInd][iChanInd].size() ? kTRUE : kFALSE;
                         fvRpcHits[iDetInd].push_back( hit );
                      } // if( iDetInd < fMbsConvPar->GetNbRpc() )
-                     else for( Int_t iHit = 0; 
-                                iHit < fvClassedExpDigis[iDetInd][iChanInd].size();
-                                iHit++)
+                     else for( UInt_t uHit = 0; 
+                                uHit < fvClassedExpDigis[iDetInd][iChanInd].size();
+                                uHit++)
                      {
                         Plastics_Hit hit;
-                        hit.dTimeLeft = fvClassedExpDigis[iDetInd][iChanInd][iHit].GetTime();  // in ps
-                        hit.dTotLeft  = fvClassedExpDigis[iDetInd][iChanInd][iHit].GetTot();   // in ps
+                        hit.dTimeLeft = fvClassedExpDigis[iDetInd][iChanInd][uHit].GetTime();  // in ps
+                        hit.dTotLeft  = fvClassedExpDigis[iDetInd][iChanInd][uHit].GetTot();   // in ps
                         hit.fbMultiEdge = 1 < fvClassedExpDigis[iDetInd][iChanInd].size() ? kTRUE : kFALSE;
                         fvPlasticHits[iDetInd - fMbsConvPar->GetNbRpc() ].push_back( hit );
                      } // else of if( iDetInd < fMbsConvPar->GetNbRpc() )
@@ -1015,20 +1015,20 @@ Bool_t TMbsConvTof::BuildFiredChannels()
                                           kTRUE : kFALSE;
                         fvRpcHits[iDetInd].push_back( hit );
                      } // if( iDetInd < fMbsConvPar->GetNbRpc() )
-                     else for( Int_t iHit = 0; 
-                                iHit < fvClassedExpDigis[iDetInd][iChanInd].size() &&
-                                iHit < fvClassedExpDigis[iDetInd][iChanInd + fviNbChannels[iDetInd] ].size();
-                                iHit++)
+                     else for( UInt_t uHit = 0; 
+                                uHit < fvClassedExpDigis[iDetInd][iChanInd].size() &&
+                                uHit < fvClassedExpDigis[iDetInd][iChanInd + fviNbChannels[iDetInd] ].size();
+                                uHit++)
                      {
                         Plastics_Hit hit;
-                        hit.dTimeLeft   = fvClassedExpDigis[iDetInd][iChanInd][iHit].GetTime();  // in ps
-                        hit.dTotLeft    = fvClassedExpDigis[iDetInd][iChanInd][iHit].GetTot();   // in ps
+                        hit.dTimeLeft   = fvClassedExpDigis[iDetInd][iChanInd][uHit].GetTime();  // in ps
+                        hit.dTotLeft    = fvClassedExpDigis[iDetInd][iChanInd][uHit].GetTot();   // in ps
                         hit.dTimeRight  = fvClassedExpDigis[iDetInd]
                                                            [iChanInd+  fviNbChannels[iDetInd] ]
-                                                           [iHit].GetTime();  // in ps
+                                                           [uHit].GetTime();  // in ps
                         hit.dTotRight   = fvClassedExpDigis[iDetInd]
                                                            [iChanInd + fviNbChannels[iDetInd] ]
-                                                           [iHit].GetTot();   // in ps
+                                                           [uHit].GetTot();   // in ps
                         hit.fbMultiEdge = ( 1 < fvClassedExpDigis[iDetInd][iChanInd].size() ||
                                             1 < fvClassedExpDigis[iDetInd]
                                                                  [iChanInd + fviNbChannels[iDetInd] ].size() ) ? 
@@ -1061,13 +1061,13 @@ Bool_t TMbsConvTof::BuildFiredChannels()
                         hit.fbMultiEdge = 1 < fvClassedDigis[iDetInd][iChanInd].size() ? kTRUE : kFALSE;
                         fvRpcHits[iDetInd].push_back( hit );
                      } // if( iDetInd < fMbsConvPar->GetNbRpc() )
-                     else for( Int_t iHit = 0; 
-                                iHit < fvClassedDigis[iDetInd][iChanInd].size();
-                                iHit++)
+                     else for( UInt_t uHit = 0; 
+                                uHit < fvClassedDigis[iDetInd][iChanInd].size();
+                                uHit++)
                      {
                         Plastics_Hit hit;
-                        hit.dTimeLeft = fvClassedDigis[iDetInd][iChanInd][iHit].GetTime();  // in ps
-                        hit.dTotLeft  = fvClassedDigis[iDetInd][iChanInd][iHit].GetTot();   // in ps
+                        hit.dTimeLeft = fvClassedDigis[iDetInd][iChanInd][uHit].GetTime();  // in ps
+                        hit.dTotLeft  = fvClassedDigis[iDetInd][iChanInd][uHit].GetTot();   // in ps
                         hit.fbMultiEdge = 1 < fvClassedDigis[iDetInd][iChanInd].size() ? kTRUE : kFALSE;
                         fvPlasticHits[iDetInd - fMbsConvPar->GetNbRpc() ].push_back( hit );
                      } // else of if( iDetInd < fMbsConvPar->GetNbRpc() )
@@ -1098,20 +1098,20 @@ Bool_t TMbsConvTof::BuildFiredChannels()
                                           kTRUE : kFALSE;
                         fvRpcHits[iDetInd].push_back( hit );
                      } // if( iDetInd < fMbsConvPar->GetNbRpc() )
-                     else for( Int_t iHit = 0; 
-                                iHit < fvClassedDigis[iDetInd][iChanInd].size() &&
-                                iHit < fvClassedDigis[iDetInd][iChanInd + fviNbChannels[iDetInd] ].size();
-                                iHit++)
+                     else for( UInt_t uHit = 0; 
+                                uHit < fvClassedDigis[iDetInd][iChanInd].size() &&
+                                uHit < fvClassedDigis[iDetInd][iChanInd + fviNbChannels[iDetInd] ].size();
+                                uHit++)
                      {
                         Plastics_Hit hit;
-                        hit.dTimeLeft   = fvClassedDigis[iDetInd][iChanInd][iHit].GetTime();  // in ps
-                        hit.dTotLeft    = fvClassedDigis[iDetInd][iChanInd][iHit].GetTot();   // in ps
+                        hit.dTimeLeft   = fvClassedDigis[iDetInd][iChanInd][uHit].GetTime();  // in ps
+                        hit.dTotLeft    = fvClassedDigis[iDetInd][iChanInd][uHit].GetTot();   // in ps
                         hit.dTimeRight  = fvClassedDigis[iDetInd]
                                                         [iChanInd+  fviNbChannels[iDetInd] ]
-                                                        [iHit].GetTime();  // in ps
+                                                        [uHit].GetTime();  // in ps
                         hit.dTotRight   = fvClassedDigis[iDetInd]
                                                         [iChanInd + fviNbChannels[iDetInd] ]
-                                                        [iHit].GetTot();   // in ps
+                                                        [uHit].GetTot();   // in ps
                         hit.fbMultiEdge = ( 1 < fvClassedDigis[iDetInd][iChanInd].size() ||
                                             1 < fvClassedDigis[iDetInd]
                                                               [iChanInd + fviNbChannels[iDetInd] ].size() ) ? 

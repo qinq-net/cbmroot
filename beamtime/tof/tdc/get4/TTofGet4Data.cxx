@@ -62,13 +62,13 @@ Bool_t TTofGet4Data::operator <( const TTofGet4Data& rhs) const
       else
       {
          // At least one of the Full time is not available
-         if( rhs.GetCoarseTime() < get4tdc::kiCoarseOverflowTest &&
-               this->GetCoarseTime() >= rhs.GetCoarseTime() + get4tdc::kiCoarseOverflowTest )
+         if( rhs.GetCoarseTime() < get4tdc::kuCoarseOverflowTest &&
+               this->GetCoarseTime() >= rhs.GetCoarseTime() + get4tdc::kuCoarseOverflowTest )
             // Corse counter overflow between this hit and checked one
             // hit ... Ovflw ... rhs
             return kTRUE;
-         else if( this->GetCoarseTime() < get4tdc::kiCoarseOverflowTest &&
-               this->GetCoarseTime() + get4tdc::kiCoarseOverflowTest <= rhs.GetCoarseTime() )
+         else if( this->GetCoarseTime() < get4tdc::kuCoarseOverflowTest &&
+               this->GetCoarseTime() + get4tdc::kuCoarseOverflowTest <= rhs.GetCoarseTime() )
             // Corse counter overflow between checked hit and this one
             // rhs ... Ovflw ... hit
             return kFALSE;
@@ -91,13 +91,13 @@ Bool_t TTofGet4Data::operator <( const TTofGet4Data& rhs) const
 Bool_t TTofGet4Data::operator <( const TTofTdcData& rhs) const
 {
    // TTofTdcData does not have full time => rely on generic method
-   if( rhs.GetCoarseTime() < get4tdc::kiCoarseOverflowTest &&
-         this->GetCoarseTime() >= rhs.GetCoarseTime() + get4tdc::kiCoarseOverflowTest )
+   if( rhs.GetCoarseTime() < get4tdc::kuCoarseOverflowTest &&
+         this->GetCoarseTime() >= rhs.GetCoarseTime() + get4tdc::kuCoarseOverflowTest )
       // Corse counter overflow between this hit and checked one
       // hit ... Ovflw ... rhs
       return kTRUE;
-   else if( this->GetCoarseTime() < get4tdc::kiCoarseOverflowTest &&
-         this->GetCoarseTime() + get4tdc::kiCoarseOverflowTest <= rhs.GetCoarseTime() )
+   else if( this->GetCoarseTime() < get4tdc::kuCoarseOverflowTest &&
+         this->GetCoarseTime() + get4tdc::kuCoarseOverflowTest <= rhs.GetCoarseTime() )
       // Corse counter overflow between checked hit and this one
       // rhs ... Ovflw ... hit
       return kFALSE;
@@ -137,13 +137,13 @@ Int_t	TTofGet4Data::Compare(      const TTofGet4Data* obj) const
       else
       {
          // At least one of the Full time is not available
-         if( obj->GetCoarseTime() < get4tdc::kiCoarseOverflowTest &&
-               this->GetCoarseTime() >= obj->GetCoarseTime() + get4tdc::kiCoarseOverflowTest )
+         if( obj->GetCoarseTime() < get4tdc::kuCoarseOverflowTest &&
+               this->GetCoarseTime() >= obj->GetCoarseTime() + get4tdc::kuCoarseOverflowTest )
             // Corse counter overflow between this hit and checked one
             // hit ... Ovflw ... rhs
             return -1;
-         else if( this->GetCoarseTime() < get4tdc::kiCoarseOverflowTest &&
-               this->GetCoarseTime() + get4tdc::kiCoarseOverflowTest <= obj->GetCoarseTime() )
+         else if( this->GetCoarseTime() < get4tdc::kuCoarseOverflowTest &&
+               this->GetCoarseTime() + get4tdc::kuCoarseOverflowTest <= obj->GetCoarseTime() )
             // Corse counter overflow between checked hit and this one
             // rhs ... Ovflw ... hit
             return 1;
@@ -170,13 +170,13 @@ Int_t	TTofGet4Data::Compare(      const TTofTdcData*  obj) const
 {
    // TTofTdcData does not have full time => rely on generic method
 
-   if( obj->GetCoarseTime() < get4tdc::kiCoarseOverflowTest &&
-         this->GetCoarseTime() >= obj->GetCoarseTime() + get4tdc::kiCoarseOverflowTest )
+   if( obj->GetCoarseTime() < get4tdc::kuCoarseOverflowTest &&
+         this->GetCoarseTime() >= obj->GetCoarseTime() + get4tdc::kuCoarseOverflowTest )
       // Corse counter overflow between this hit and checked one
       // hit ... Ovflw ... rhs
       return -1;
-   else if( this->GetCoarseTime() < get4tdc::kiCoarseOverflowTest &&
-         this->GetCoarseTime() + get4tdc::kiCoarseOverflowTest <= obj->GetCoarseTime() )
+   else if( this->GetCoarseTime() < get4tdc::kuCoarseOverflowTest &&
+         this->GetCoarseTime() + get4tdc::kuCoarseOverflowTest <= obj->GetCoarseTime() )
       // Corse counter overflow between checked hit and this one
       // rhs ... Ovflw ... hit
       return 1;

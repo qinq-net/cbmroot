@@ -10,7 +10,7 @@
    #endif
 #endif // WITHGO4ROC
 
-void Plastics_Hit::Clear(Option_t *t)
+void Plastics_Hit::Clear(Option_t * /*t*/)
 {
    dTimeLeft  = -1 ;
    dTotLeft   = -1 ;
@@ -19,7 +19,7 @@ void Plastics_Hit::Clear(Option_t *t)
    fbMultiEdge = kFALSE;
 }
 
-void  Plastics_Event::Clear(Option_t *t)
+void  Plastics_Event::Clear(Option_t * /*t*/)
 {
   // all members should be cleared.
    for(Int_t iPlastic = 0; iPlastic<NB_PLASTICS_MAX; iPlastic++)

@@ -60,7 +60,7 @@ TTofVftxUnpacker::~TTofVftxUnpacker()
 //   DeleteHistos();
 }
 
-void TTofVftxUnpacker::Clear(Option_t *option)
+void TTofVftxUnpacker::Clear(Option_t */*option*/)
 {
    fParUnpack = NULL;
    fuNbTdc    = 0;
@@ -72,7 +72,7 @@ void TTofVftxUnpacker::ProcessVFTX( Int_t iTdcIndex, UInt_t* pMbsData, UInt_t uL
 {
 //   if( (iTdcIndex<0) || (fuNbTdc <= iTdcIndex) || 
 //       (fVftxBoardCollection->GetEntriesFast() <= iTdcIndex )) 
-   if( (iTdcIndex<0) || (fuNbTdc <= iTdcIndex) ) 
+   if( (iTdcIndex<0) || (fuNbTdc <= static_cast<UInt_t>(iTdcIndex)) ) 
    {
       LOG(ERROR)<<"Error VFTX number "<<iTdcIndex<<" out of bound (max "<<fuNbTdc<<") "<<FairLogger::endl;
       return;
@@ -80,11 +80,11 @@ void TTofVftxUnpacker::ProcessVFTX( Int_t iTdcIndex, UInt_t* pMbsData, UInt_t uL
    
    TTofVftxBoard * fVftxBoard = (TTofVftxBoard*) fVftxBoardCollection->ConstructedAt(iTdcIndex);
 
-   for(Int_t ch=0; ch < vftxtdc::kuNbChan; ch++)
+   for(UInt_t ch=0; ch < vftxtdc::kuNbChan; ch++)
       fiLastFpgaTdcCoarse[iTdcIndex*vftxtdc::kuNbChan + ch] = -1;
 
    UInt_t l_dat = *pMbsData++; // module header
-   if ( (l_dat & vftxtdc::kiHeaderKeyMask)>>vftxtdc::kiHeaderKeyShift != vftxtdc::kiHeaderKeyword ) 
+   if ( (l_dat & vftxtdc::kiHeaderKeyMask)>>vftxtdc::kiHeaderKeyShift != static_cast<UInt_t>(vftxtdc::kiHeaderKeyword) ) 
    {
       LOG(WARNING)<<"This is not a vftx #"<< fParUnpack->GetActiveToAllTypeInd(iTdcIndex, tofMbs::vftx)
                   <<" header, jumping this sub-event..."<<FairLogger::endl;
@@ -101,7 +101,7 @@ void TTofVftxUnpacker::ProcessVFTX( Int_t iTdcIndex, UInt_t* pMbsData, UInt_t uL
       //return;
    } // if (uMbsNbData+2 != uLength && uMbsNbData+2 + 256 != uLength)
    
-   UInt_t uModIndex  = ((l_dat & vftxtdc::kiHeaderModMask) >> vftxtdc::kiHeaderModShift); 
+/*   UInt_t uModIndex  = ((l_dat & vftxtdc::kiHeaderModMask) >> vftxtdc::kiHeaderModShift); */
 /*
    // Not true when first VFTX are disabled!!!
    if( uModIndex != fParUnpack->GetActiveToAllTypeInd(iTdcIndex, tofMbs::vftx) )
@@ -111,13 +111,13 @@ void TTofVftxUnpacker::ProcessVFTX( Int_t iTdcIndex, UInt_t* pMbsData, UInt_t uL
    
    l_dat = *pMbsData++;  // vulom tdc fifo header
    UInt_t uFifoNbData;
-   if( l_dat & vftxtdc::kiFifoMessageType ) 
+   if( l_dat & vftxtdc::kuFifoMessageType ) 
    {
       // Found proper TDC FIFO header => unpack it
       fVftxBoard->SetTriggerType( (l_dat & vftxtdc::kiFifoHeadTrigType) >> vftxtdc::kiFifoHeadTrigTypeShift );
       fVftxBoard->SetTriggerTime( (l_dat & vftxtdc::kiFifoHeadTrigTime) >> vftxtdc::kiFifoHeadTrigTimeShift );
       uFifoNbData = (l_dat & vftxtdc::kiFifoHeadDataCnt)  >> vftxtdc::kiFifoHeadDataCntShift;
-   } // if( l_dat & vftxtdc::kiFifoMessageType ) 
+   } // if( l_dat & vftxtdc::kuFifoMessageType ) 
       else LOG(WARNING)<<"Vftx #"<<fParUnpack->GetActiveToAllTypeInd(iTdcIndex, tofMbs::vftx)<<" fifo header missing... "<<FairLogger::endl;
    
    if (uMbsNbData != uFifoNbData)
@@ -136,11 +136,11 @@ void TTofVftxUnpacker::ProcessVFTX( Int_t iTdcIndex, UInt_t* pMbsData, UInt_t uL
       UInt_t l_da0 = *pMbsData++;
 
       TTofVftxData hit;
-      if ((l_da0 & vftxtdc::kiFifoMessageType) == vftxtdc::kiFifoMessageType) 
+      if ((l_da0 & vftxtdc::kuFifoMessageType) == vftxtdc::kuFifoMessageType) 
       {
          TString sTemp = Form("Wrong data item in vftx #%d: type %d (message %08x, header %08x), jumping this sub-event...", 
                        fParUnpack->GetActiveToAllTypeInd(iTdcIndex, tofMbs::vftx), 
-                       (l_da0 & vftxtdc::kiFifoMessageType) >> vftxtdc::kiFifoMessageTypeShift, l_da0, l_dat);
+                       (l_da0 & vftxtdc::kuFifoMessageType) >> vftxtdc::kiFifoMessageTypeShift, l_da0, l_dat);
          LOG(WARNING)<<sTemp<<FairLogger::endl;
          sTemp = Form("Message: tt %01u ct %5u nd %3u", 
                       (l_da0 & vftxtdc::kiFifoHeadTrigType) >> vftxtdc::kiFifoHeadTrigTypeShift,
@@ -153,7 +153,7 @@ void TTofVftxUnpacker::ProcessVFTX( Int_t iTdcIndex, UInt_t* pMbsData, UInt_t uL
                       (l_dat & vftxtdc::kiFifoHeadDataCnt)  >> vftxtdc::kiFifoHeadDataCntShift );
          LOG(WARNING)<<sTemp<<FairLogger::endl;
          return;
-      } // if ((l_da0 & vftxtdc::kiFifoMessageType) == vftxtdc::kiFifoMessageType) 
+      } // if ((l_da0 & vftxtdc::kuFifoMessageType) == vftxtdc::kuFifoMessageType) 
       
       hit.SetChannel( (l_da0 & vftxtdc::kiChannel) >> vftxtdc::kiChannelShift ); //4-5 bit
       if ( hit.GetChannel() > vftxtdc::kuNbChan - 1)
@@ -166,8 +166,8 @@ void TTofVftxUnpacker::ProcessVFTX( Int_t iTdcIndex, UInt_t* pMbsData, UInt_t uL
 
       if( kTRUE == fParUnpack->IsDebug() )
       {
-         if( (Int_t)( hit.GetCoarseTime() ) - fiLastFpgaTdcCoarse[iTdcIndex*vftxtdc::kuNbChan + hit.GetChannel()] < 6 &&
-               -6 < ( hit.GetCoarseTime() ) - fiLastFpgaTdcCoarse[iTdcIndex*vftxtdc::kuNbChan + hit.GetChannel()] &&
+         if( static_cast<Int_t>( hit.GetCoarseTime() ) - fiLastFpgaTdcCoarse[iTdcIndex*vftxtdc::kuNbChan + hit.GetChannel()] < 6 &&
+               -6 < static_cast<Int_t>( hit.GetCoarseTime() ) - fiLastFpgaTdcCoarse[iTdcIndex*vftxtdc::kuNbChan + hit.GetChannel()] &&
                -1 < fiLastFpgaTdcCoarse[iTdcIndex*vftxtdc::kuNbChan + hit.GetChannel()] )
          {
             TString sTemp = Form("Too close hits in vftx #%d channel %d: old coarse %d new coarse %d diff %d ft %3x",
@@ -206,34 +206,34 @@ void TTofVftxUnpacker::CreateHistos()
    
    // 2D vector of histograms
    fh1VftxChFt.resize( fuNbTdc );
-   for( Int_t iBoardIndex = 0; iBoardIndex < fuNbTdc; iBoardIndex++)
+   for( UInt_t uBoardIndex = 0; uBoardIndex < fuNbTdc; uBoardIndex++)
    {
       // Board specific histograms
-      hTemp = new TH1I( Form("tof_%s_ch_%03d", toftdc::ksTdcHistName[ toftdc::vftx ].Data(), iBoardIndex),
-                        Form("Counts per TDC channel for vftx #%03d", iBoardIndex),
+      hTemp = new TH1I( Form("tof_%s_ch_%03u", toftdc::ksTdcHistName[ toftdc::vftx ].Data(), uBoardIndex),
+                        Form("Counts per TDC channel for vftx #%03u", uBoardIndex),
                         vftxtdc::kuNbChan, 0.0, vftxtdc::kuNbChan );
       fh1VftxRawChMap.push_back( hTemp );
       
-      for( Int_t iChannelIndex = 0; iChannelIndex < vftxtdc::kuNbChan; iChannelIndex++)
+      for( UInt_t uChannelIndex = 0; uChannelIndex < vftxtdc::kuNbChan; uChannelIndex++)
       {
          // Channel specific histograms
-         hTemp = new TH1I( Form("tof_%s_ft_b%03d_ch%03d", 
+         hTemp = new TH1I( Form("tof_%s_ft_b%03u_ch%03u", 
                                     toftdc::ksTdcHistName[ toftdc::vftx ].Data(), 
-                                    iBoardIndex, iChannelIndex),
-                           Form("Counts per Finetime bin for TDC channel %3d on vftx #%03d", 
-                                 iChannelIndex, iBoardIndex),
+                                    uBoardIndex, uChannelIndex),
+                           Form("Counts per Finetime bin for TDC channel %3u on vftx #%03u", 
+                                 uChannelIndex, uBoardIndex),
                            vftxtdc::kiFifoFineTime + 1, -0.5, vftxtdc::kiFifoFineTime + 1 - 0.5 );
-         (fh1VftxChFt[iBoardIndex]).push_back( hTemp );
+         (fh1VftxChFt[uBoardIndex]).push_back( hTemp );
          
          LOG(DEBUG)<<" TTofVftxUnpacker::CreateHistos => Create FT histo for "
                                   <<toftdc::ksTdcHistName[ toftdc::vftx ]<<" #"
-                                  <<iBoardIndex<<" ch "<<iChannelIndex<<" from the unpack step: 0x"
-                                  <<fh1VftxChFt[iBoardIndex][iChannelIndex]<<" "
-                                  <<fh1VftxChFt[iBoardIndex][iChannelIndex]->GetEntries()
+                                  <<uBoardIndex<<" ch "<<uChannelIndex<<" from the unpack step: 0x"
+                                  <<fh1VftxChFt[uBoardIndex][uChannelIndex]<<" "
+                                  <<fh1VftxChFt[uBoardIndex][uChannelIndex]->GetEntries()
                                   <<FairLogger::endl;
-      } // for( Int_t iChannelIndex = 0; iChannelIndex < vftxtdc::kuNbChan; iChannelIndex++)
+      } // for( UInt_t uChannelIndex = 0; uChannelIndex < vftxtdc::kuNbChan; uChannelIndex++)
       
-   } // for( Int_t iBoardIndex = 0; iBoardIndex < fuNbTdc; iBoardIndex++)
+   } // for( UInt_t uBoardIndex = 0; uBoardIndex < fuNbTdc; uBoardIndex++)
    
    gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
 }
@@ -241,47 +241,49 @@ void TTofVftxUnpacker::FillHistos()
 {
    // loop over TDC boards
    TTofVftxBoard * fVftxBoard;
-   for( Int_t iBoardIndex = 0; iBoardIndex < fuNbTdc; iBoardIndex++)
+   for( UInt_t uBoardIndex = 0; uBoardIndex < fuNbTdc; uBoardIndex++)
    { 
-      fVftxBoard = (TTofVftxBoard*) fVftxBoardCollection->ConstructedAt(iBoardIndex);
+      fVftxBoard = (TTofVftxBoard*) fVftxBoardCollection->ConstructedAt(uBoardIndex);
       // Loop over hits data
-      for( Int_t iDataIndex = 0; iDataIndex < fVftxBoard->GetDataNb() ; iDataIndex++ )
+      for( UInt_t uDataIndex = 0; uDataIndex < fVftxBoard->GetDataNb() ; uDataIndex++ )
       {
-         TTofVftxData data = fVftxBoard->GetData( iDataIndex);
-         TString sTemp = Form( " TTofVftxUnpacker::FillHistos: Board #%03d Data #%04d Chan %3d CT %7d FT %7d",
-                  iBoardIndex, iDataIndex, data.GetChannel(), 
+         TTofVftxData data = fVftxBoard->GetData( uDataIndex);
+         TString sTemp = Form( " TTofVftxUnpacker::FillHistos: Board #%03u Data #%04u Chan %3d CT %7d FT %7d",
+                  uBoardIndex, uDataIndex, data.GetChannel(), 
                   data.GetCoarseTime(), data.GetFineTime() );
          LOG(DEBUG)<<sTemp<<FairLogger::endl;
          
-         fh1VftxRawChMap[iBoardIndex]->Fill(  data.GetChannel() );
-         fh1VftxChFt[iBoardIndex][ data.GetChannel() ]->Fill( data.GetFineTime() );
+         fh1VftxRawChMap[uBoardIndex]->Fill(  data.GetChannel() );
+         fh1VftxChFt[uBoardIndex][ data.GetChannel() ]->Fill( data.GetFineTime() );
          
-      } // for( Int_t iDataIndex = 0; iDataIndex < fVftxBoard[iBoardIndex]->GetDataNb() ; iDataIndex++ )
-   } // for( Int_t iBoardIndex = 0; iBoardIndex < fuNbTdc; IBoardIndex++)
+      } // for( UInt_t uDataIndex = 0; uDataIndex < fVftxBoard[uBoardIndex]->GetDataNb() ; uDataIndex++ )
+   } // for( UInt_t uBoardIndex = 0; uBoardIndex < fuNbTdc; uBoardIndex++)
 }
 void TTofVftxUnpacker::WriteHistos( TDirectory* inDir)
 {
    TDirectory * oldir = gDirectory;
    TDirectory *cdVftxUnp[fuNbTdc];
    
-   for( Int_t iBoardIndex = 0; iBoardIndex < fuNbTdc; iBoardIndex++)
+   for( UInt_t uBoardIndex = 0; uBoardIndex < fuNbTdc; uBoardIndex++)
    { 
-      cdVftxUnp[iBoardIndex] = inDir->mkdir( Form( "Unp_%s_%03d", toftdc::ksTdcHistName[ toftdc::vftx ].Data(), iBoardIndex) );
-      cdVftxUnp[iBoardIndex]->cd();    // make the "Unp_triglog" directory the current directory
+      cdVftxUnp[uBoardIndex] = inDir->mkdir( Form( "Unp_%s_%03u", toftdc::ksTdcHistName[ toftdc::vftx ].Data(), uBoardIndex) );
+      cdVftxUnp[uBoardIndex]->cd();    // make the "Unp_triglog" directory the current directory
       
-      fh1VftxRawChMap[iBoardIndex]->Write();
+      fh1VftxRawChMap[uBoardIndex]->Write();
       
-      for( Int_t iChannelIndex = 0; iChannelIndex < vftxtdc::kuNbChan; iChannelIndex++)
+      for( UInt_t uChannelIndex = 0; uChannelIndex < vftxtdc::kuNbChan; uChannelIndex++)
       {
-         fh1VftxChFt[iBoardIndex][iChannelIndex]->Write();
-      } // for( Int_t iChannelIndex = 0; iChannelIndex < vftxtdc::kuNbChan; iChannelIndex++)
+         fh1VftxChFt[uBoardIndex][uChannelIndex]->Write();
+      } // for( UInt_t uChannelIndex = 0; uChannelIndex < vftxtdc::kuNbChan; uChannelIndex++)
       
-   } // for( Int_t iBoardIndex = 0; iBoardIndex < fuNbTdc; iBoardIndex++)
+   } // for( UInt_t uBoardIndex = 0; uBoardIndex < fuNbTdc; uBoardIndex++)
+   
+   oldir->cd();
 }
 void TTofVftxUnpacker::DeleteHistos()
 {
    fh1VftxRawChMap.clear();
-   for( Int_t iBoardIndex = 0; iBoardIndex < fuNbTdc; iBoardIndex++)
-      (fh1VftxChFt[iBoardIndex]).clear();
+   for( UInt_t uBoardIndex = 0; uBoardIndex < fuNbTdc; uBoardIndex++)
+      (fh1VftxChFt[uBoardIndex]).clear();
    fh1VftxChFt.clear();
 }

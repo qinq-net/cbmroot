@@ -50,7 +50,7 @@ TMbsCalibTof::TMbsCalibTof() :
 {
 }
 
-TMbsCalibTof::TMbsCalibTof(const char* name, Int_t mode, Int_t verbose) :
+TMbsCalibTof::TMbsCalibTof(const char* name, Int_t /*mode*/, Int_t verbose) :
    FairTask(name, verbose),
    fMbsUnpackPar(0),
    fMbsCalibPar(NULL),
@@ -99,7 +99,7 @@ InitStatus TMbsCalibTof::Init()
    
    return kSUCCESS;
 }
-void TMbsCalibTof::Exec(Option_t* option)
+void TMbsCalibTof::Exec(Option_t* /*option*/)
 {   
    // Run processing functions of all enables calibrators
    ExecCalibrators();
@@ -208,7 +208,7 @@ Bool_t TMbsCalibTof::ExecCalibrators()
 //         return kFALSE;
 //      if( 1 == ( 0x1 & ( (xTriglogBoard->GetTriggPatt()) >> (fMbsUnpackPar->GetTriggerToReject()) ) ) )
       // Reject selected trigger only when alone (accept when both not rejected trigger and rejected trigger are present)
-      if( (xTriglogBoard->GetTriggPatt()) == ( 1 << (fMbsUnpackPar->GetTriggerToReject()) ) )
+      if( (xTriglogBoard->GetTriggPatt()) == ( 1ul << (fMbsUnpackPar->GetTriggerToReject()) ) )
          // Jump this event !
          return kTRUE;
    } // if trigger rejection enabled and trigger board enabled

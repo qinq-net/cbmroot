@@ -132,7 +132,7 @@ TTofTriglogUnpacker::~TTofTriglogUnpacker()
 //   DeleteHistos();
 }
 
-void TTofTriglogUnpacker::Clear(Option_t *option)
+void TTofTriglogUnpacker::Clear(Option_t */*option*/)
 {
    fParUnpack = NULL;
    fTriglogBoardCollection = NULL;

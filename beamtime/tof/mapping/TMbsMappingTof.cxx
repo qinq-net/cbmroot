@@ -58,7 +58,7 @@ TMbsMappingTof::TMbsMappingTof() :
 {
 }
 
-TMbsMappingTof::TMbsMappingTof(const char* name, Int_t mode, Int_t verbose) :
+TMbsMappingTof::TMbsMappingTof(const char* name, Int_t /*mode*/, Int_t verbose) :
    FairTask(name, verbose),
    fMbsUnpackPar(0),
    fMbsCalibPar(NULL),
@@ -116,7 +116,7 @@ InitStatus TMbsMappingTof::Init()
    
    return kSUCCESS;
 }
-void TMbsMappingTof::Exec(Option_t* option)
+void TMbsMappingTof::Exec(Option_t* /*option*/)
 {
    ClearOutput();
    
@@ -134,7 +134,7 @@ void TMbsMappingTof::Exec(Option_t* option)
 //         return kFALSE;
 //      if( 1 == ( 0x1 & ( (xTriglogBoard->GetTriggPatt()) >> (fMbsUnpackPar->GetTriggerToReject()) ) ) )
       // Reject selected trigger only when alone (accept when both not rejected trigger and rejected trigger are present)
-      if( (xTriglogBoard->GetTriggPatt()) == ( 1 << (fMbsUnpackPar->GetTriggerToReject()) ) )
+      if( (xTriglogBoard->GetTriggPatt()) == ( 1ul << (fMbsUnpackPar->GetTriggerToReject()) ) )
          // Jump this event !
          return;
    } // if trigger rejection enabled and trigger board enabled
@@ -283,30 +283,30 @@ Bool_t TMbsMappingTof::CreateHistogramms()
 
             // Calibration variable initialization
             Int_t iHistoIndex = 0;
-            for( Int_t iTdc1 = 0; iTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc1 ++)
-               for( Int_t iTdc2 = iTdc1; iTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc2 ++)
+            for( UInt_t uTdc1 = 0; uTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc1 ++)
+               for( UInt_t uTdc2 = uTdc1; uTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc2 ++)
                   iHistoIndex ++;
             fhDebTdcChEvtCoinc[uType].resize( iHistoIndex, NULL );
             iHistoIndex = 0;
 //            fhDebTdcChEvtCoinc[uType].resize( fMbsUnpackPar->GetNbActiveBoards( uType ) -1 );
             fbDebTdcChEvtThere[uType].resize( fMbsUnpackPar->GetNbActiveBoards( uType ) );
-            for( Int_t iTdc1 = 0; iTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc1 ++)
+            for( UInt_t uTdc1 = 0; uTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc1 ++)
             {
-//               fhDebTdcChEvtCoinc[uType][iTdc1].resize( fMbsUnpackPar->GetNbActiveBoards( uType ) - iTdc1 -1, NULL );
-               fbDebTdcChEvtThere[uType][iTdc1].resize( uNbChan, kFALSE );
-               for( Int_t iTdc2 = iTdc1; iTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc2 ++)
+//               fhDebTdcChEvtCoinc[uType][uTdc1].resize( fMbsUnpackPar->GetNbActiveBoards( uType ) - uTdc1 -1, NULL );
+               fbDebTdcChEvtThere[uType][uTdc1].resize( uNbChan, kFALSE );
+               for( UInt_t uTdc2 = uTdc1; uTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc2 ++)
                {
-//                  LOG(INFO)<<"TMbsMappingTof::CreateHistogramms => "<< uType << " " << iTdc1 << " " << iTdc2;
+//                  LOG(INFO)<<"TMbsMappingTof::CreateHistogramms => "<< uType << " " << uTdc1 << " " << uTdc2;
                   fhDebTdcChEvtCoinc[uType][iHistoIndex] =  new TH2I(
-                        Form("tof_map_deb_ty%01u_tdc%03d_tdc%03d", uType, iTdc1, iTdc2 ),
-                        Form("Number of events with hits for in both channels for TDC #%03d and %03d of type %d; Channel TDC #%03d []; Channel TDC #%03d []; Events with hits in both[]",
-                              iTdc1, iTdc2, uType, iTdc1, iTdc2 ),
+                        Form("tof_map_deb_ty%01u_tdc%03u_tdc%03u", uType, uTdc1, uTdc2 ),
+                        Form("Number of events with hits for in both channels for TDC #%03u and %03u of type %d; Channel TDC #%03u []; Channel TDC #%03u []; Events with hits in both[]",
+                              uTdc1, uTdc2, uType, uTdc1, uTdc2 ),
                         uNbChan, 0, uNbChan,
                         uNbChan, 0, uNbChan );
 //                  LOG(INFO)<<" => OK "<<FairLogger::endl;
                   iHistoIndex++;
-               } // for( Int_t iTdc2 = iTdc1 + 1; iTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc2 ++)
-            } // for( Int_t iTdc1 = 0; iTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc1 ++)
+               } // for( UInt_t uTdc2 = uTdc1 + 1; uTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc2 ++)
+            } // for( UInt_t uTdc1 = 0; uTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc1 ++)
          } // if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
       } // for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
    } // if( kTRUE == fMbsMappingPar->IsDebug() )
@@ -457,21 +457,21 @@ Bool_t TMbsMappingTof::FillHistograms()
 
             // Debug Fill and clear
             Int_t iHistoIndex = 0;
-            for( Int_t iTdc1 = 0; iTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc1 ++)
+            for( UInt_t uTdc1 = 0; uTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc1 ++)
             {
-               for( Int_t iTdc2 = iTdc1; iTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc2 ++)
+               for( UInt_t uTdc2 = uTdc1; uTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc2 ++)
                {
-                  for( Int_t iChIndx1 = 0 ; iChIndx1 < uNbChan; iChIndx1++)
-                     for( Int_t iChIndx2 = 0 ; iChIndx2 < uNbChan; iChIndx2++)
-                        if( kTRUE == fbDebTdcChEvtThere[uType][iTdc1][iChIndx1] &&
-                            kTRUE == fbDebTdcChEvtThere[uType][iTdc2][iChIndx2]  )
-                           fhDebTdcChEvtCoinc[uType][iHistoIndex]->Fill(iChIndx1, iChIndx2);
+                  for( UInt_t uChIndx1 = 0 ; uChIndx1 < uNbChan; uChIndx1++)
+                     for( UInt_t uChIndx2 = 0 ; uChIndx2 < uNbChan; uChIndx2++)
+                        if( kTRUE == fbDebTdcChEvtThere[uType][uTdc1][uChIndx1] &&
+                            kTRUE == fbDebTdcChEvtThere[uType][uTdc2][uChIndx2]  )
+                           fhDebTdcChEvtCoinc[uType][iHistoIndex]->Fill(uChIndx1, uChIndx2);
                   iHistoIndex++;
-               } // for( Int_t iTdc2 = iTdc1 + 1; iTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc2 ++)
+               } // for( UInt_t uTdc2 = uTdc1 + 1; uTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc2 ++)
 
-               for( Int_t iChIndx1 = 0 ; iChIndx1 < uNbChan; iChIndx1++)
-                  fbDebTdcChEvtThere[uType][iTdc1][iChIndx1] = kFALSE;
-            } // for( Int_t iTdc1 = 0; iTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc1 ++)
+               for( UInt_t uChIndx1 = 0 ; uChIndx1 < uNbChan; uChIndx1++)
+                  fbDebTdcChEvtThere[uType][uTdc1][uChIndx1] = kFALSE;
+            } // for( UInt_t uTdc1 = 0; uTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc1 ++)
          } // if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
       } // for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
    } // if( kTRUE == fMbsMappingPar->IsDebug() )
@@ -530,17 +530,17 @@ void TMbsMappingTof::WriteHistogramms()
             TDirectory *cdDebugMapTdcFirst[fMbsUnpackPar->GetNbActiveBoards( uType )];
             // Debug Write
             Int_t iHistoIndex = 0;
-            for( Int_t iTdc1 = 0; iTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc1 ++)
+            for( UInt_t uTdc1 = 0; uTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc1 ++)
             {
-               cdDebugMapTdcFirst[iTdc1] = cdDebugMapTdc->mkdir( Form("%s%03d_Map",
-                      toftdc::ksTdcHistName[ uType ].Data(), iTdc1 ) );
-               cdDebugMapTdcFirst[iTdc1]->cd();
-               for( Int_t iTdc2 = iTdc1; iTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc2 ++)
+               cdDebugMapTdcFirst[uTdc1] = cdDebugMapTdc->mkdir( Form("%s%03u_Map",
+                      toftdc::ksTdcHistName[ uType ].Data(), uTdc1 ) );
+               cdDebugMapTdcFirst[uTdc1]->cd();
+               for( UInt_t uTdc2 = uTdc1; uTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc2 ++)
                {
                   fhDebTdcChEvtCoinc[uType][iHistoIndex]->Write();
                   iHistoIndex++;
-               } // for( Int_t iTdc2 = iTdc1 + 1; iTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc2 ++)
-            } // for( Int_t iTdc1 = 0; iTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); iTdc1 ++)
+               } // for( UInt_t uTdc2 = uTdc1 + 1; uTdc2 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc2 ++)
+            } // for( UInt_t uTdc1 = 0; uTdc1 < fMbsUnpackPar->GetNbActiveBoards( uType ); uTdc1 ++)
          } // if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
       } // for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
    } // if( kTRUE == fMbsMappingPar->IsDebug() )
@@ -658,7 +658,7 @@ Bool_t  TMbsMappingTof::MapTdcDataToDet()
       if( -1 < iMappedTdcInd && 2 == uEdge )
       {
          Int_t iChanUId = fMbsMappingPar->GetMapping( iMappedTdcInd, uChan );
-         if( 0xFFFFFFFF != iChanUId )
+         if( 0xFFFFFFFF != static_cast<UInt_t>(iChanUId) )
          {
             // Create Digi and store it 
             if( kTRUE == fMbsMappingPar->UseDigiExp() )

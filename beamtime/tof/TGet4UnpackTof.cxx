@@ -90,7 +90,7 @@ Bool_t TGet4UnpackTof::Init()
 }
 Bool_t TGet4UnpackTof::DoUnpack(Int_t* data, Int_t size)
 {
-   Int_t  * pData   = data;
+/*   Int_t  * pData   = data;*/
 
    LOG(DEBUG)<<"TGet4UnpackTof::ProcessSubevent => Found ROC subevent! LEN"
             <<size<<FairLogger::endl;

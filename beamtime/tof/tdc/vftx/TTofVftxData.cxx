@@ -35,13 +35,13 @@ void TTofVftxData::Clear(Option_t *option)
 // Define < operator for vector sorting
 Bool_t TTofVftxData::operator <( const TTofVftxData& rhs) const
 {
-   if( rhs.GetCoarseTime() < vftxtdc::kiCoarseOverflowTest &&
-         this->GetCoarseTime() >= rhs.GetCoarseTime() + vftxtdc::kiCoarseOverflowTest )
+   if( rhs.GetCoarseTime() < vftxtdc::kuCoarseOverflowTest &&
+         this->GetCoarseTime() >= rhs.GetCoarseTime() + vftxtdc::kuCoarseOverflowTest )
       // Corse counter overflow between this hit and checked one
       // hit ... Ovflw ... rhs
       return kTRUE;
-   else if( this->GetCoarseTime() < vftxtdc::kiCoarseOverflowTest &&
-         this->GetCoarseTime() + vftxtdc::kiCoarseOverflowTest <= rhs.GetCoarseTime() )
+   else if( this->GetCoarseTime() < vftxtdc::kuCoarseOverflowTest &&
+         this->GetCoarseTime() + vftxtdc::kuCoarseOverflowTest <= rhs.GetCoarseTime() )
       // Corse counter overflow between checked hit and this one
       // rhs ... Ovflw ... hit
       return kFALSE;
@@ -64,13 +64,13 @@ Bool_t TTofVftxData::operator <( const TTofVftxData& rhs) const
 
 Bool_t TTofVftxData::operator <( const TTofTdcData& rhs) const
 {
-   if( rhs.GetCoarseTime() < vftxtdc::kiCoarseOverflowTest &&
-         this->GetCoarseTime() >= rhs.GetCoarseTime() + vftxtdc::kiCoarseOverflowTest )
+   if( rhs.GetCoarseTime() < vftxtdc::kuCoarseOverflowTest &&
+         this->GetCoarseTime() >= rhs.GetCoarseTime() + vftxtdc::kuCoarseOverflowTest )
       // Corse counter overflow between this hit and checked one
       // hit ... Ovflw ... rhs
       return kTRUE;
-   else if( this->GetCoarseTime() < vftxtdc::kiCoarseOverflowTest &&
-         this->GetCoarseTime() + vftxtdc::kiCoarseOverflowTest <= rhs.GetCoarseTime() )
+   else if( this->GetCoarseTime() < vftxtdc::kuCoarseOverflowTest &&
+         this->GetCoarseTime() + vftxtdc::kuCoarseOverflowTest <= rhs.GetCoarseTime() )
       // Corse counter overflow between checked hit and this one
       // rhs ... Ovflw ... hit
       return kFALSE;
@@ -96,13 +96,13 @@ Int_t	TTofVftxData::Compare(      const TObject*  obj) const
 }
 Int_t	TTofVftxData::Compare(      const TTofVftxData* obj) const
 {
-   if( obj->GetCoarseTime() < vftxtdc::kiCoarseOverflowTest &&
-         this->GetCoarseTime() >= obj->GetCoarseTime() + vftxtdc::kiCoarseOverflowTest )
+   if( obj->GetCoarseTime() < vftxtdc::kuCoarseOverflowTest &&
+         this->GetCoarseTime() >= obj->GetCoarseTime() + vftxtdc::kuCoarseOverflowTest )
       // Corse counter overflow between this hit and checked one
       // hit ... Ovflw ... rhs
       return -1;
-   else if( this->GetCoarseTime() < vftxtdc::kiCoarseOverflowTest &&
-         this->GetCoarseTime() + vftxtdc::kiCoarseOverflowTest <= obj->GetCoarseTime() )
+   else if( this->GetCoarseTime() < vftxtdc::kuCoarseOverflowTest &&
+         this->GetCoarseTime() + vftxtdc::kuCoarseOverflowTest <= obj->GetCoarseTime() )
       // Corse counter overflow between checked hit and this one
       // rhs ... Ovflw ... hit
       return 1;
@@ -130,13 +130,13 @@ Int_t	TTofVftxData::Compare(      const TTofVftxData* obj) const
 }
 Int_t	TTofVftxData::Compare(      const TTofTdcData*  obj) const
 {
-   if( obj->GetCoarseTime() < vftxtdc::kiCoarseOverflowTest &&
-         this->GetCoarseTime() >= obj->GetCoarseTime() + vftxtdc::kiCoarseOverflowTest )
+   if( obj->GetCoarseTime() < vftxtdc::kuCoarseOverflowTest &&
+         this->GetCoarseTime() >= obj->GetCoarseTime() + vftxtdc::kuCoarseOverflowTest )
       // Corse counter overflow between this hit and checked one
       // hit ... Ovflw ... rhs
       return -1;
-   else if( this->GetCoarseTime() < vftxtdc::kiCoarseOverflowTest &&
-         this->GetCoarseTime() + vftxtdc::kiCoarseOverflowTest <= obj->GetCoarseTime() )
+   else if( this->GetCoarseTime() < vftxtdc::kuCoarseOverflowTest &&
+         this->GetCoarseTime() + vftxtdc::kuCoarseOverflowTest <= obj->GetCoarseTime() )
       // Corse counter overflow between checked hit and this one
       // rhs ... Ovflw ... hit
       return 1;

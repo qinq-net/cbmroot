@@ -806,34 +806,34 @@ void TTrbUnpackTof::CreateHistograms()
 
    TH1* hTemp = 0;
 
-   for( Int_t iTrbSeb = 0; iTrbSeb < fuInDataTrbSebNb; iTrbSeb++ )
+   for( UInt_t uTrbSeb = 0; uTrbSeb < fuInDataTrbSebNb; uTrbSeb++ )
    {
-     UInt_t uTrbNetAddress = fMbsUnpackPar->GetTrbSebAddr(iTrbSeb);
+     UInt_t uTrbNetAddress = fMbsUnpackPar->GetTrbSebAddr(uTrbSeb);
 
-     hTemp = new TH1I( Form("tof_trb_size_subevent_%03d", iTrbSeb),
+     hTemp = new TH1I( Form("tof_trb_size_subevent_%03u", uTrbSeb),
                        Form("data sent by TRB-SEB 0x%04x", uTrbNetAddress),
                        65, 0, 65);
 
      fTrbSubeventSize.push_back( hTemp );
 
-     hTemp = new TH1I( Form("tof_trb_status_subevent_%03d", iTrbSeb),
+     hTemp = new TH1I( Form("tof_trb_status_subevent_%03u", uTrbSeb),
                        Form("status bits of TRB-SEB 0x%04x", uTrbNetAddress),
     		           32, 0, 32);
 
      fTrbSubeventStatus.push_back( hTemp );
    }
 
-   for( Int_t iTrbTdc = 0; iTrbTdc < fuActiveTrbTdcNb; iTrbTdc++)
+   for( UInt_t uTrbTdc = 0; uTrbTdc < fuActiveTrbTdcNb; uTrbTdc++)
    {
-     UInt_t uTrbNetAddress = fMbsUnpackPar->GetActiveTrbTdcAddr(iTrbTdc);
+     UInt_t uTrbNetAddress = fMbsUnpackPar->GetActiveTrbTdcAddr(uTrbTdc);
 
-     hTemp = new TH1I( Form("tof_trb_words_tdc_%03d", iTrbTdc),
+     hTemp = new TH1I( Form("tof_trb_words_tdc_%03u", uTrbTdc),
                        Form("words sent by TRB-TDC 0x%04x", uTrbNetAddress),
                        800, 0, 800);
 
      fTrbTdcWords.push_back( hTemp );
 
-     hTemp = new TH1I( Form("tof_trb_process_status_tdc_%03d", iTrbTdc),
+     hTemp = new TH1I( Form("tof_trb_process_status_tdc_%03u", uTrbTdc),
                        Form("data processing status of TRB-TDC 0x%04x", uTrbNetAddress),
                        trbtdc::process_StatusMessages, 0, trbtdc::process_StatusMessages);
 
@@ -856,16 +856,16 @@ void TTrbUnpackTof::WriteHistograms()
    fTrbTriggerType->Write();
    fTrbEventNumberJump->Write();
 
-   for( Int_t iTrbSeb = 0; iTrbSeb < fuInDataTrbSebNb; iTrbSeb++ )
+   for( UInt_t uTrbSeb = 0; uTrbSeb < fuInDataTrbSebNb; uTrbSeb++ )
    {
-     fTrbSubeventSize[iTrbSeb]->Write();
-     fTrbSubeventStatus[iTrbSeb]->Write();
+     fTrbSubeventSize[uTrbSeb]->Write();
+     fTrbSubeventStatus[uTrbSeb]->Write();
    }
 
-   for( Int_t iTrbTdc = 0; iTrbTdc < fuActiveTrbTdcNb; iTrbTdc++)
+   for( UInt_t uTrbTdc = 0; uTrbTdc < fuActiveTrbTdcNb; uTrbTdc++)
    {
-     fTrbTdcWords[iTrbTdc]->Write();
-     fTrbTdcProcessStatus[iTrbTdc]->Write();
+     fTrbTdcWords[uTrbTdc]->Write();
+     fTrbTdcProcessStatus[uTrbTdc]->Write();
    }
 
    gDirectory->cd( oldir->GetPath() );

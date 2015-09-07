@@ -159,11 +159,11 @@ Bool_t TMbsUnpackTof::DoUnpack(Int_t* data, Int_t size)
    Int_t* iTagPos[ fMbsUnpackPar->GetBoardsNumber() ];
    Int_t  iTagLen[ fMbsUnpackPar->GetBoardsNumber() ];
 
-   for(Int_t iBoard = 0; iBoard < fMbsUnpackPar->GetBoardsNumber(); iBoard++) 
+   for(UInt_t uBoard = 0; uBoard < fMbsUnpackPar->GetBoardsNumber(); uBoard++) 
    {
-      iTagPos[iBoard] = NULL;
-      iTagLen[iBoard] = 0;
-   } // for(Int_t iBoard = 0; iBoard < fMbsUnpackPar->GetBoardsNumber(); iBoard++) 
+      iTagPos[uBoard] = NULL;
+      iTagLen[uBoard] = 0;
+   } // for(UInt_t uBoard = 0; uBoard < fMbsUnpackPar->GetBoardsNumber(); uBoard++) 
 
    Int_t iLastTag = -1;
 
@@ -175,9 +175,9 @@ Bool_t TMbsUnpackTof::DoUnpack(Int_t* data, Int_t size)
       Bool_t bFound = kFALSE;
 
       // loop over boards until finding a matching one0
-      for( Int_t iBoard=0;iBoard< fMbsUnpackPar->GetBoardsNumber(); iBoard++ )
-         if( kTRUE == fMbsUnpackPar->IsActive( iBoard ) )
-            if ((*plTag == fMbsUnpackPar->GetBoardTag( iBoard )) && (fMbsUnpackPar->GetBoardTag( iBoard )!=0)) 
+      for( UInt_t uBoard=0;uBoard< fMbsUnpackPar->GetBoardsNumber(); uBoard++ )
+         if( kTRUE == fMbsUnpackPar->IsActive( uBoard ) )
+            if ((*plTag == fMbsUnpackPar->GetBoardTag( uBoard )) && (fMbsUnpackPar->GetBoardTag( uBoard )!=0)) 
             {
                if (iLastTag>=0) 
                {
@@ -187,27 +187,27 @@ Bool_t TMbsUnpackTof::DoUnpack(Int_t* data, Int_t size)
                   iLastTag = -1;
                } // if (iLastTag>=0) 
 
-               if (iTagPos[iBoard]==0) 
+               if (iTagPos[uBoard]==0) 
                {
 //                  if( 411 == fiNbEvents )
-//                     cout<<"Found board "<<iBoard<<" Tag "
-//                         <<Form("%08llX %08llX", fMbsUnpackPar->GetBoardTag( iBoard )>>32, (fMbsUnpackPar->GetBoardTag( iBoard )&0xFFFFFFFF) )<<" at word "<<uCurrWord<<endl;
+//                     cout<<"Found board "<<uBoard<<" Tag "
+//                         <<Form("%08llX %08llX", fMbsUnpackPar->GetBoardTag( uBoard )>>32, (fMbsUnpackPar->GetBoardTag( uBoard )&0xFFFFFFFF) )<<" at word "<<uCurrWord<<endl;
                   // if Tag of this board was never found
                   pData+=2; 
                   uCurrWord+=1;
-                  iTagPos[iBoard] = pData;
-                  iLastTag = iBoard;
-               } // if (iTagPos[iBoard]==0) 
+                  iTagPos[uBoard] = pData;
+                  iLastTag = uBoard;
+               } // if (iTagPos[uBoard]==0) 
                   else 
                   {
                      LOG(ERROR)<<"----------------------------------------------------------------"<<FairLogger::endl;
                      LOG(ERROR)<<"TMbsUnpackTof::ProcessSubevent => size "<<size<<" nbWords "<<uNbWords<<FairLogger::endl;
                      LOG(ERROR)<<"TMbsUnpackTof::ProcessSubevent => FORMAT ERROR found tag "
-                               <<Form("%08llX %08llX", fMbsUnpackPar->GetBoardTag( iBoard )>>32, 
-                                      fMbsUnpackPar->GetBoardTag( iBoard ) )
+                               <<Form("%08llX %08llX", fMbsUnpackPar->GetBoardTag( uBoard )>>32, 
+                                      fMbsUnpackPar->GetBoardTag( uBoard ) )
                                <<" twice in event "<<fiNbEvents<<FairLogger::endl;
-                     LOG(ERROR)<<" First: "<<iTagPos[iBoard]<<" Second "<<pData<<" Origin "<<data
-                               <<" Last Board "<<iLastTag<<" This Board "<<iBoard<<FairLogger::endl;
+                     LOG(ERROR)<<" First: "<<iTagPos[uBoard]<<" Second "<<pData<<" Origin "<<data
+                               <<" Last Board "<<iLastTag<<" This Board "<<uBoard<<FairLogger::endl;
                      LOG(ERROR)<<" Current word: "<<uCurrWord<<FairLogger::endl;
                      LOG(ERROR)<<" Buffer: "<<Form("%08llX %08llX", (*plTag)>>32, (*plTag)&0xFFFFFFFF )<<FairLogger::endl;
                      // Display full sub-event for debug
@@ -226,11 +226,11 @@ Bool_t TMbsUnpackTof::DoUnpack(Int_t* data, Int_t size)
                      // jump this tag
                      pData+=2; 
                      uCurrWord+=1;
-                  } // else of if (iTagPos[iBoard]==0) 
+                  } // else of if (iTagPos[uBoard]==0) 
 
                bFound = kTRUE;
                break;
-            } // if ((*plTag == fMbsUnpackPar->GetBoardTag( iBoard )) && (fMbsUnpackPar->GetBoardTag( iBoard )!=0))
+            } // if ((*plTag == fMbsUnpackPar->GetBoardTag( uBoard )) && (fMbsUnpackPar->GetBoardTag( uBoard )!=0))
 
       if( kFALSE == bFound ) 
          pData++;
@@ -280,7 +280,7 @@ Bool_t TMbsUnpackTof::DoUnpack(Int_t* data, Int_t size)
                               <<fMbsUnpackPar->GetBoardType( uBoard )
                               <<"!!!!" <<FairLogger::endl;
             } // switch( fMbsUnpackPar->GetBoardType( uBoard ) )
-      } // if (iTagPos[iBoard])
+      } // if( NULL != iTagPos[uBoard] )
 /*
    if (iTagPos[VME__ID_1182] && iTagLen[VME__ID_1182])
       Process1182(0, iTagPos[VME__ID_1182], iTagLen[VME__ID_1182]);  // 1182

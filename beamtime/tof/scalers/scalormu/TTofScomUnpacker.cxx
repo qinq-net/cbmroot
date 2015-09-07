@@ -80,7 +80,7 @@ TTofScomUnpacker::~TTofScomUnpacker()
    DeleteHistos();
 }
 
-void TTofScomUnpacker::Clear(Option_t *option)
+void TTofScomUnpacker::Clear(Option_t */*option*/)
 {
    fParUnpack = NULL;
    fuNbScom    = 0;
@@ -89,7 +89,7 @@ void TTofScomUnpacker::Clear(Option_t *option)
 
 void TTofScomUnpacker::ProcessScom( Int_t iScomIndex, UInt_t* pMbsData, UInt_t uLength )
 {
-   if( (iScomIndex<0) || (fuNbScom <= iScomIndex) ) 
+   if( (iScomIndex<0) || (fuNbScom <= static_cast<UInt_t>(iScomIndex) ) ) 
    {
       LOG(ERROR)<<"Error ScalOrMu number "<<iScomIndex<<" out of bound (max "<<fuNbScom<<") "<<FairLogger::endl;
       return;
@@ -124,15 +124,15 @@ void TTofScomUnpacker::ProcessScom( Int_t iScomIndex, UInt_t* pMbsData, UInt_t u
    }
       else uNbScalCh = 0;
    
-   for( Int_t iScalerInd=0; iScalerInd < uNbScalCh; iScalerInd++)
+   for( UInt_t uScalerInd=0; uScalerInd < uNbScalCh; uScalerInd++)
    {
       // Check is needed to analyse old data with the early version used for tests
       // October 2012:  Only 1 version of the board, 16 channels, testing concept, need clock from TRIGLOG for ref.
       // November 2012: 24 channel version for BUC + small HD (#0), 32 channel version for big HD (#2), both include reference clock
       UInt_t uValue = (UInt_t)( uIndx < uLength ? pMbsData[uIndx] : 0 );
       uIndx++;
-      fScalerBoard->SetScalerValue(iScalerInd, uValue);
-   } // for( Int_t iScalerInd=0; iScalerInd < uNbScalCh; iScalerInd++)
+      fScalerBoard->SetScalerValue(uScalerInd, uValue);
+   } // for( UInt_t uScalerInd=0; uScalerInd < uNbScalCh; uScalerInd++)
    if( uIndx < uLength)
    {
       // Reference clock is inside Tof MBS event only since November 2012
@@ -162,16 +162,16 @@ void TTofScomUnpacker::CreateHistos()
       fhScalers[0] = new TH1I( Form("tof_%s_scalers", tofscaler::ksTdcHistName[ tofscaler::scalormu ].Data() ),
                                 "Counts per scaler channel; Channel []; Total counts []", scalormu::kuNbChan, 0, scalormu::kuNbChan);
       fvuFirstScalers[0].resize( scalormu::kuNbChan );
-      for( Int_t iScalerInd=0; iScalerInd < scalormu::kuNbChan; iScalerInd++)
-         fvuFirstScalers[0][iScalerInd] = 0;
+      for( UInt_t uScalerInd=0; uScalerInd < scalormu::kuNbChan; uScalerInd++)
+         fvuFirstScalers[0][uScalerInd] = 0;
          
       if( 1 < fuNbScom )
       {
          fhScalers[1] = new TH1I( Form("tof_%s_scalers", tofscaler::ksTdcHistName[ tofscaler::scalormubig ].Data() ),
                                 "Counts per scaler channel; Channel []; Total counts []", scalormuBig::kuNbChan, 0, scalormuBig::kuNbChan);
          fvuFirstScalers[1].resize( scalormu::kuNbChan );
-         for( Int_t iScalerInd=0; iScalerInd < scalormuBig::kuNbChan; iScalerInd++)
-            fvuFirstScalers[1][iScalerInd] = 0;
+         for( UInt_t uScalerInd=0; uScalerInd < scalormuBig::kuNbChan; uScalerInd++)
+            fvuFirstScalers[1][uScalerInd] = 0;
       }
    } // if( 0 < fuNbScom )
    
@@ -187,13 +187,13 @@ void TTofScomUnpacker::FillHistos()
          fScalerBoard = (TTofScalerBoard*) fScalerBoardCollection->ConstructedAt( 1 ); 
          else fScalerBoard = (TTofScalerBoard*) fScalerBoardCollection->ConstructedAt( 0 ); 
          
-      for( Int_t iScalerInd=0; iScalerInd < scalormu::kuNbChan; iScalerInd++)
+      for( UInt_t uScalerInd=0; uScalerInd < scalormu::kuNbChan; uScalerInd++)
       {
          if( kTRUE == bFirstEvent )
-            fvuFirstScalers[0][iScalerInd] = fScalerBoard->GetScalerValue( iScalerInd );
-            else fhScalers[0]->SetBinContent( 1 + iScalerInd, fScalerBoard->GetScalerValue( iScalerInd )
-                                                             - fvuFirstScalers[0][iScalerInd] );
-      } // for( Int_t iScalerInd=0; iScalerInd < scalormu::kuNbChan; iScalerInd++)
+            fvuFirstScalers[0][uScalerInd] = fScalerBoard->GetScalerValue( uScalerInd );
+            else fhScalers[0]->SetBinContent( 1 + uScalerInd, fScalerBoard->GetScalerValue( uScalerInd )
+                                                             - fvuFirstScalers[0][uScalerInd] );
+      } // for( UInt_t uScalerInd=0; uScalerInd < scalormu::kuNbChan; uScalerInd++)
          
       if( 1 < fuNbScom )
       {
@@ -201,13 +201,13 @@ void TTofScomUnpacker::FillHistos()
             fScalerBoard = (TTofScalerBoard*) fScalerBoardCollection->ConstructedAt( 2 ); 
             else fScalerBoard = (TTofScalerBoard*) fScalerBoardCollection->ConstructedAt( 1 ); 
          
-         for( Int_t iScalerInd=0; iScalerInd < scalormu::kuNbChan; iScalerInd++)
+         for( UInt_t uScalerInd=0; uScalerInd < scalormu::kuNbChan; uScalerInd++)
          {
             if( kTRUE == bFirstEvent )
-               fvuFirstScalers[1][iScalerInd] = fScalerBoard->GetScalerValue( iScalerInd );
-               else fhScalers[1]->SetBinContent( 1 + iScalerInd, fScalerBoard->GetScalerValue( iScalerInd ) 
-                                                               - fvuFirstScalers[1][iScalerInd] );
-         } // for( Int_t iScalerInd=0; iScalerInd < scalormu::kuNbChan; iScalerInd++)
+               fvuFirstScalers[1][uScalerInd] = fScalerBoard->GetScalerValue( uScalerInd );
+               else fhScalers[1]->SetBinContent( 1 + uScalerInd, fScalerBoard->GetScalerValue( uScalerInd ) 
+                                                               - fvuFirstScalers[1][uScalerInd] );
+         } // for( UInt_t uScalerInd=0; uScalerInd < scalormu::kuNbChan; uScalerInd++)
       } // if( 1 < fuNbScom )
       
       if( kTRUE == bFirstEvent )

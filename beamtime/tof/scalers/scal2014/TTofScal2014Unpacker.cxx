@@ -66,13 +66,13 @@ TTofScal2014Unpacker::TTofScal2014Unpacker( TMbsUnpackTofPar * parIn ):
          LOG(DEBUG)<<"TTofScal2014Unpacker::TTofScal2014Unpacker : Initialize objects for  "
                   <<fuNbScal2014<<" boards "<<FairLogger::endl;
 
-         for( Int_t iScalIndex = 0; iScalIndex < fuNbScal2014; iScalIndex++)
+         for( UInt_t uScalIndex = 0; uScalIndex < fuNbScal2014; uScalIndex++)
          {
         	 // TRIGLOG always first scaler board!
-            fScalerBoard  = (TTofScalerBoard*)  fScalerBoardCollection->ConstructedAt( iScalIndex + uTrigOff);
+            fScalerBoard  = (TTofScalerBoard*)  fScalerBoardCollection->ConstructedAt( uScalIndex + uTrigOff);
             if( tofscaler::undef == fScalerBoard->GetScalerType() )
                fScalerBoard->SetType( tofscaler::scaler2014 );
-         } // for( Int_t iScalIndex = 0; iScalIndex < fuNbScal2014; iScalIndex++)
+         } // for( UInt_t uScalIndex = 0; uScalIndex < fuNbScal2014; uScalIndex++)
       } // else of if(NULL == fScalerBoardCollection) 
    bFirstEvent = kTRUE;
 }
@@ -81,7 +81,7 @@ TTofScal2014Unpacker::~TTofScal2014Unpacker()
 //   DeleteHistos();
 }
 
-void TTofScal2014Unpacker::Clear(Option_t *option)
+void TTofScal2014Unpacker::Clear(Option_t */*option*/)
 {
    fParUnpack = NULL;
    fuNbScal2014    = 0;
@@ -90,7 +90,7 @@ void TTofScal2014Unpacker::Clear(Option_t *option)
 
 void TTofScal2014Unpacker::ProcessScal2014( Int_t iScalIndex, UInt_t* pMbsData, UInt_t uLength )
 {
-   if( (iScalIndex<0) || (fuNbScal2014 <= iScalIndex) )
+   if( (iScalIndex<0) || (fuNbScal2014 <= static_cast<UInt_t>(iScalIndex) ) )
    {
       LOG(ERROR)<<"Error Scaler2014 number "<<iScalIndex<<" out of bound (max "<<fuNbScal2014<<") "<<FairLogger::endl;
       return;
@@ -110,30 +110,30 @@ void TTofScal2014Unpacker::ProcessScal2014( Int_t iScalIndex, UInt_t* pMbsData, 
 
    UInt_t uIndx = 0;
    
-   UInt_t uNbScalCh = scaler2014::kuNbChan;
+/*   UInt_t uNbScalCh = scaler2014::kuNbChan;*/
 
    if( tofscaler::undef == fScalerBoard->GetScalerType() )
 	   fScalerBoard->SetType( tofscaler::scaler2014 );
    
    // First readout scalers for the input channels
-   for( Int_t iScalerInd=0; iScalerInd < scaler2014::kuNbChanIn; iScalerInd++)
+   for( UInt_t uScalerInd=0; uScalerInd < scaler2014::kuNbChanIn; uScalerInd++)
    {
       UInt_t uValue = (UInt_t)( uIndx < uLength ? pMbsData[uIndx] : 0 );
       uIndx++;
-      fScalerBoard->SetScalerValue(iScalerInd, uValue);
-   } // for( Int_t iScalerInd=0; iScalerInd < uNbScalCh; iScalerInd++)
-
+      fScalerBoard->SetScalerValue(uScalerInd, uValue);
+   } // for( UInt_t uScalerInd=0; uScalerInd < scaler2014::kuNbChanIn; uScalerInd++)
+   
    // Then readout the reference clock scaler
    fScalerBoard->SetRefClk( pMbsData[uIndx] );
    uIndx++;
 
    // Finally readout the scalers for the AND of the input signal pairs
-   for( Int_t iScalerInd=0; iScalerInd < scaler2014::kuNbChanAnd; iScalerInd++)
+   for( UInt_t uScalerInd=0; uScalerInd < scaler2014::kuNbChanAnd; uScalerInd++)
    {
       UInt_t uValue = (UInt_t)( uIndx < uLength ? pMbsData[uIndx] : 0 );
       uIndx++;
-	   fScalerBoard->SetScalerValue( scaler2014::kuNbChanIn + iScalerInd, uValue);
-   } // for( Int_t iScalerInd=0; iScalerInd < uNbScalCh; iScalerInd++)
+	   fScalerBoard->SetScalerValue( scaler2014::kuNbChanIn + uScalerInd, uValue);
+   } // for( UInt_t uScalerInd=0; uScalerInd < scaler2014::kuNbChanAnd; uScalerInd++)
 
    if( uLength != uIndx )
       LOG(ERROR)<<" TTofScal2014Unpacker::ProcessScal2014 => Scaler 2014 #"
@@ -166,25 +166,25 @@ void TTofScal2014Unpacker::CreateHistos()
    fhScalersAnd.resize(fuNbScal2014, NULL);
    fvuFirstScalersAnd.resize(fuNbScal2014);
 
-   for( Int_t iScalIndex = 0; iScalIndex < fuNbScal2014; iScalIndex++)
+   for( UInt_t uScalIndex = 0; uScalIndex < fuNbScal2014; uScalIndex++)
    {
-      fhScalers[iScalIndex] = new TH1I(
-            Form("tof_%s_%02d_scalersIn", tofscaler::ksTdcHistName[ tofscaler::scaler2014 ].Data(), iScalIndex ),
+      fhScalers[uScalIndex] = new TH1I(
+            Form("tof_%s_%02u_scalersIn", tofscaler::ksTdcHistName[ tofscaler::scaler2014 ].Data(), uScalIndex ),
             "Counts per scaler channel; Channel []; Total counts []", scaler2014::kuNbChanIn, 0., scaler2014::kuNbChanIn);
 
-      fvuFirstScalers[iScalIndex].resize( scaler2014::kuNbChanIn );
-      for( Int_t iScalerInd=0; iScalerInd < scaler2014::kuNbChanIn; iScalerInd++)
-         fvuFirstScalers[iScalIndex][iScalerInd] = 0;
+      fvuFirstScalers[uScalIndex].resize( scaler2014::kuNbChanIn );
+      for( UInt_t uScalerInd=0; uScalerInd < scaler2014::kuNbChanIn; uScalerInd++)
+         fvuFirstScalers[uScalIndex][uScalerInd] = 0;
 
-      fhScalersAnd[iScalIndex] = new TH1I(
-            Form("tof_%s_%02d_scalersAnd", tofscaler::ksTdcHistName[ tofscaler::scaler2014 ].Data(), iScalIndex ),
+      fhScalersAnd[uScalIndex] = new TH1I(
+            Form("tof_%s_%02u_scalersAnd", tofscaler::ksTdcHistName[ tofscaler::scaler2014 ].Data(), uScalIndex ),
             "Counts per scaler channel; Channel []; Total counts []", scaler2014::kuNbChanAnd, 0., scaler2014::kuNbChanAnd);
 
-      fvuFirstScalersAnd[iScalIndex].resize( scaler2014::kuNbChanAnd );
-      for( Int_t iScalerInd=0; iScalerInd < scaler2014::kuNbChanAnd; iScalerInd++)
-         fvuFirstScalersAnd[iScalIndex][iScalerInd] = 0;
+      fvuFirstScalersAnd[uScalIndex].resize( scaler2014::kuNbChanAnd );
+      for( UInt_t uScalerInd=0; uScalerInd < scaler2014::kuNbChanAnd; uScalerInd++)
+         fvuFirstScalersAnd[uScalIndex][uScalerInd] = 0;
 
-   } // for( Int_t iScalIndex = 0; iScalIndex < fuNbScal2014; iScalIndex++)
+   } // for( UInt_t uScalIndex = 0; uScalIndex < fuNbScal2014; uScalIndex++)
    
    gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
 
@@ -196,35 +196,35 @@ void TTofScal2014Unpacker::FillHistos()
    LOG(DEBUG)<<"TTofScal2014Unpacker::FillHistos : Fill histos for  "
             <<fuNbScal2014<<" boards "<<FairLogger::endl;
 
-   for( Int_t iScalIndex = 0; iScalIndex < fuNbScal2014; iScalIndex++)
+   for( UInt_t uScalIndex = 0; uScalIndex < fuNbScal2014; uScalIndex++)
    {
 
       // TRIGLOG is always considered as first scaler board!
       TTofScalerBoard * fScalerBoard;
       if( kTRUE == fParUnpack->WithActiveTriglog() )
-         fScalerBoard = (TTofScalerBoard*) fScalerBoardCollection->ConstructedAt( 1 + iScalIndex );
-         else fScalerBoard = (TTofScalerBoard*) fScalerBoardCollection->ConstructedAt( 0 + iScalIndex );
+         fScalerBoard = (TTofScalerBoard*) fScalerBoardCollection->ConstructedAt( 1 + uScalIndex );
+         else fScalerBoard = (TTofScalerBoard*) fScalerBoardCollection->ConstructedAt( 0 + uScalIndex );
 
       if( kFALSE == fScalerBoard->IsUpdated() )
          continue;
 
-      for( Int_t iScalerInd=0; iScalerInd < scaler2014::kuNbChanIn; iScalerInd++)
+      for( UInt_t uScalerInd=0; uScalerInd < scaler2014::kuNbChanIn; uScalerInd++)
       {
          if( kTRUE == bFirstEvent )
-            fvuFirstScalers[iScalIndex][iScalerInd] = fScalerBoard->GetScalerValue( iScalerInd );
-            else fhScalers[iScalIndex]->SetBinContent( 1 + iScalerInd, fScalerBoard->GetScalerValue( iScalerInd )
-                                                             - fvuFirstScalers[iScalIndex][iScalerInd] );
-      } // for( Int_t iScalerInd=0; iScalerInd < scaler2014::kuNbChanIn; iScalerInd++)
-      for( Int_t iScalerInd=0; iScalerInd < scaler2014::kuNbChanAnd; iScalerInd++)
+            fvuFirstScalers[uScalIndex][uScalerInd] = fScalerBoard->GetScalerValue( uScalerInd );
+            else fhScalers[uScalIndex]->SetBinContent( 1 + uScalerInd, fScalerBoard->GetScalerValue( uScalerInd )
+                                                             - fvuFirstScalers[uScalIndex][uScalerInd] );
+      } // for( UInt_t uScalerInd=0; uScalerInd < scaler2014::kuNbChanIn; uScalerInd++)
+      for( UInt_t uScalerInd=0; uScalerInd < scaler2014::kuNbChanAnd; uScalerInd++)
       {
          if( kTRUE == bFirstEvent )
-            fvuFirstScalersAnd[iScalIndex][iScalerInd] = fScalerBoard->GetScalerValue(
-                  scaler2014::kuNbChanIn + iScalerInd );
-            else fhScalersAnd[iScalIndex]->SetBinContent( 1 + iScalerInd,
-                     fScalerBoard->GetScalerValue( scaler2014::kuNbChanIn +iScalerInd )
-                     - fvuFirstScalersAnd[iScalIndex][iScalerInd] );
-      } // for( Int_t iScalerInd=0; iScalerInd < scaler2014::kuNbChanAnd; iScalerInd++)
-   } // for( Int_t iScalIndex = 0; iScalIndex < fuNbScal2014; iScalIndex++)
+            fvuFirstScalersAnd[uScalIndex][uScalerInd] = fScalerBoard->GetScalerValue(
+                  scaler2014::kuNbChanIn + uScalerInd );
+            else fhScalersAnd[uScalIndex]->SetBinContent( 1 + uScalerInd,
+                     fScalerBoard->GetScalerValue( scaler2014::kuNbChanIn +uScalerInd )
+                     - fvuFirstScalersAnd[uScalIndex][uScalerInd] );
+      } // for( UInt_t uScalerInd=0; uScalerInd < scaler2014::kuNbChanAnd; uScalerInd++)
+   } // for( UInt_t uScalIndex = 0; uScalIndex < fuNbScal2014; uScalIndex++)
    if( kTRUE == bFirstEvent )
       bFirstEvent = kFALSE;
 
@@ -237,14 +237,14 @@ void TTofScal2014Unpacker::WriteHistos( TDirectory* inDir)
 
    LOG(DEBUG)<<"TTofScal2014Unpacker::WriteHistos : Write histos for  "
             <<fuNbScal2014<<" boards "<<FairLogger::endl;
-   for( Int_t iScalIndex = 0; iScalIndex < fuNbScal2014; iScalIndex++)
+   for( UInt_t uScalIndex = 0; uScalIndex < fuNbScal2014; uScalIndex++)
    {
       TDirectory *cdScal2014 = inDir->mkdir(
-            Form( "Unp_%s_%02d", tofscaler::ksTdcHistName[ tofscaler::scaler2014 ].Data(), iScalIndex ) );
+            Form( "Unp_%s_%02u", tofscaler::ksTdcHistName[ tofscaler::scaler2014 ].Data(), uScalIndex ) );
       cdScal2014->cd();    // make the "Unp_Scal2014" directory the current directory
-      fhScalers[iScalIndex]->Write();
-      fhScalersAnd[iScalIndex]->Write();
-   } // for( Int_t iScalIndex = 0; iScalIndex < fuNbScal2014; iScalIndex++)
+      fhScalers[uScalIndex]->Write();
+      fhScalersAnd[uScalIndex]->Write();
+   } // for( UInt_t uScalIndex = 0; uScalIndex < fuNbScal2014; uScalIndex++)
    
    gDirectory->cd( oldir->GetPath() );
 }
@@ -253,11 +253,11 @@ void TTofScal2014Unpacker::DeleteHistos()
    // not sure if it will not make problems for seeing them
    // => for now just delete histograming variables
 
-   for( Int_t iScalIndex = 0; iScalIndex < fuNbScal2014; iScalIndex++)
+   for( UInt_t uScalIndex = 0; uScalIndex < fuNbScal2014; uScalIndex++)
    {
-      fvuFirstScalers[iScalIndex].clear();
-      fvuFirstScalersAnd[iScalIndex].clear();
-   } // for( Int_t iScalIndex = 0; iScalIndex < fuNbScal2014; iScalIndex++)
+      fvuFirstScalers[uScalIndex].clear();
+      fvuFirstScalersAnd[uScalIndex].clear();
+   } // for( UInt_t uScalIndex = 0; uScalIndex < fuNbScal2014; uScalIndex++)
    fvuFirstScalers.clear();
    fvuFirstScalersAnd.clear();
 } 

@@ -59,7 +59,7 @@ TGet4v1Param::TGet4v1Param():
    iReference2Channel      (-1)
 {
 //   numRocs = 0;
-   for (int roc=0;roc<get4v10::kiMaxRoc;roc++) {
+   for (UInt_t roc=0;roc<get4v10::kuMaxRoc;roc++) {
       activeRoc[roc] = kFALSE;
       timeScale[roc] = 1.0;
       timeShift[roc] = 0;
@@ -112,7 +112,7 @@ TGet4v1Param::TGet4v1Param():
 */
    /*************************************/
 
-   for (int n=0;n<get4v10::kiMaxGet4;n++) {
+   for (UInt_t n=0;n<get4v10::kuMaxGet4;n++) {
       uGet4Mapping[n] = 0; // No Online Change - Get4 Mapping: there should be always at least 2*nbfeets entries here
       uGet4Active[n] = 0; // Activated Get4 chips (indexes after remapping => not hardware map !)
       uGet4EdgeInversion[n] = 0;   // Edges inversion: affect all channels of a GET4 chip
@@ -172,7 +172,7 @@ TGet4v1Param::TGet4v1Param(const char* name):
    iReference2Channel      (-1)
 {
 //   numRocs = 4;
-   for (UInt_t rocid=0;rocid<get4v10::kiMaxRoc; rocid++) {
+   for (UInt_t rocid=0;rocid<get4v10::kuMaxRoc; rocid++) {
       if(rocid<numRocs)
          activeRoc[rocid]=kTRUE;
       else
@@ -229,7 +229,7 @@ TGet4v1Param::TGet4v1Param(const char* name):
 */
    /*************************************/
 
-   for (int n=0;n<get4v10::kiMaxGet4;n++) {
+   for (UInt_t n=0;n<get4v10::kuMaxGet4;n++) {
       uGet4Mapping[n] = 0; // No Online Change - Get4 Mapping: there should be always at least 2*nbfeets entries here
       uGet4Active[n] = 0; // Activated Get4 chips (indexes after remapping => not hardware map !)
       uGet4EdgeInversion[n] = 0;   // Edges inversion: affect all channels of a GET4 chip
@@ -252,7 +252,7 @@ TGet4v1Param::~TGet4v1Param()
 Bool_t TGet4v1Param::SetConfigRocs()
 {
    /*
-   for (UInt_t rocid=0;rocid<get4v10::kiMaxRoc; rocid++)
+   for (UInt_t rocid=0;rocid<get4v10::kuMaxRoc; rocid++)
    {
       TGet4v1Event::ConfigRocs[rocid] = rocid < numRocs ? (UInt_t) activeRoc[rocid] : 0;
       cout <<"TGet4v1Param::SetConfigRocs sets rocid " << rocid << " to active:" << TGet4v1Event::ConfigRocs[rocid] << endl;
@@ -266,7 +266,7 @@ void TGet4v1Param::SetNbRocsGet4(UInt_t num)
 {
    uNbRocsGet4 = num;
 
-   if (uNbRocsGet4 > get4v10::kiMaxRoc) uNbRocsGet4 = get4v10::kiMaxRoc;
+   if (uNbRocsGet4 > get4v10::kuMaxRoc) uNbRocsGet4 = get4v10::kuMaxRoc;
 
    if (uNbRocsGet4==0) return;
    for (unsigned n=0;n<uNbRocsGet4;n++)
@@ -284,14 +284,14 @@ Int_t TGet4v1Param::FindGet4RocId(UInt_t rocid) const
 UInt_t TGet4v1Param::DefineGet4IndexOffset(UInt_t rocid) const
 {
    Int_t id = FindGet4RocId(rocid);
-   return id>=0 ? id*get4v10::kiMaxGet4Roc : 0;
+   return id>=0 ? id*get4v10::kuMaxGet4Roc : 0;
 }
 
 void TGet4v1Param::SetNbGet4(UInt_t num)
 {
 
    uNbGet4  = num;
-   if (uNbGet4>get4v10::kiMaxGet4) uNbGet4 = get4v10::kiMaxGet4;
+   if (uNbGet4>get4v10::kuMaxGet4) uNbGet4 = get4v10::kuMaxGet4;
 
    if (uNbGet4==0) return;
 

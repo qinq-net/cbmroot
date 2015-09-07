@@ -132,8 +132,8 @@ TGet4v1Rec::TGet4v1Rec() :
    fLastTm = 0;  //
    fLastTriggerTm = 0;
 */
-   for (int n=0;n<get4v10::kiMaxAux;n++) fLastAuxTm[n] = 0;
-   for (int n=0;n<get4v10::kiMaxSync;n++) {
+   for (unsigned n=0;n<get4v10::kuMaxAux;n++) fLastAuxTm[n] = 0;
+   for (unsigned n=0;n<get4v10::kuMaxSync;n++) {
       fLastSyncTm[n] = 0;
       fLastSyncId[n] = 0;
    }
@@ -141,9 +141,9 @@ TGet4v1Rec::TGet4v1Rec() :
    fStartSyncTm = 0;
    fStopSyncTm = 0;
 */
-   for (int aux=0;aux<get4v10::kiMaxAux;aux++)
+   for (unsigned aux=0;aux<get4v10::kuMaxAux;aux++)
       fAUXt[aux] = 0; // time distribution of aux signals
-   for (int n=0;n<get4v10::kiMaxSync;n++)
+   for (unsigned n=0;n<get4v10::kuMaxSync;n++)
    {
       fSYNCt[n] = 0; // time distribution of sync signals
       fSyncLongT[n] = 0; // time distribution of sync signals
@@ -186,16 +186,16 @@ TGet4v1Rec::TGet4v1Rec() :
    fuCurrEpoch = 0;             // current epoch on the roc
    fuEpochCycle = 0;            // Number of time the epoch counter cycled
 */
-   for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+   for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
    {
-      fEPOCH2t[iGet4] = 0;
-      fuCurrEpoch2[iGet4] = 0;  // current epoch2 for each get4 chip
-      fuEpoch2Cycle[iGet4] = 0; // Number of time the epoch2 counter cycled
-      fiEpochShift[iGet4] = 0;
-      fuNbShiftedEpochs[iGet4] = 0;
-      fEpochShiftsDuration[iGet4] = 0;
-      fuEpochWithData[iGet4] = 0; // Data flag for suppressed epoch mode
-      fEpSuppBuffer[iGet4].clear(); // temp buffer in supp epoch mode to wait for epoch message
+      fEPOCH2t[uGet4] = 0;
+      fuCurrEpoch2[uGet4] = 0;  // current epoch2 for each get4 chip
+      fuEpoch2Cycle[uGet4] = 0; // Number of time the epoch2 counter cycled
+      fiEpochShift[uGet4] = 0;
+      fuNbShiftedEpochs[uGet4] = 0;
+      fEpochShiftsDuration[uGet4] = 0;
+      fuEpochWithData[uGet4] = 0; // Data flag for suppressed epoch mode
+      fEpSuppBuffer[uGet4].clear(); // temp buffer in supp epoch mode to wait for epoch message
    }
 /*
    fDistribEpochs      = 0;
@@ -209,33 +209,33 @@ TGet4v1Rec::TGet4v1Rec() :
    fPrevEpochsBuffer[0].clear(); // buffer of all ROC messages in current epoch and previous one
    fPrevEpochsBuffer[1].clear(); // buffer of all ROC messages in current epoch and previous one
 //   fbEpochSinceTrigger = kFALSE;
-   for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+   for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
    {
-      fbBufferWithLastFullEpoch2[iGet4] = kFALSE;
-      fPrevEpochs2Buffer[iGet4][0].clear(); // buffer of all get4 messages in current epoch and previous one
-      fPrevEpochs2Buffer[iGet4][1].clear(); // buffer of all get4 messages in current epoch and previous one
-      bLookInPreviousEpoch[iGet4] = kFALSE;
-      bLookInNextEpoch[iGet4] = kFALSE;
-      fbEpoch2SinceTrigger[iGet4]= kFALSE;
+      fbBufferWithLastFullEpoch2[uGet4] = kFALSE;
+      fPrevEpochs2Buffer[uGet4][0].clear(); // buffer of all get4 messages in current epoch and previous one
+      fPrevEpochs2Buffer[uGet4][1].clear(); // buffer of all get4 messages in current epoch and previous one
+      bLookInPreviousEpoch[uGet4] = kFALSE;
+      bLookInNextEpoch[uGet4] = kFALSE;
+      fbEpoch2SinceTrigger[uGet4]= kFALSE;
 
-      for( Int_t iGet4Chan = 0; iGet4Chan < get4v10::kuNbChan; iGet4Chan++)
+      for( UInt_t uGet4Chan = 0; uGet4Chan < get4v10::kuNbChan; uGet4Chan++)
       {
-         fSelectedT[iGet4][iGet4Chan] = 0;
-         fTrigger_Get4Channel[iGet4][iGet4Chan] = 0;
-         fTriggerMs_Get4Channel[iGet4][iGet4Chan] = 0;
-         fTriggerS_Get4Channel[iGet4][iGet4Chan] = 0;
-         fbDllFlag[iGet4][iGet4Chan] = kFALSE;
+         fSelectedT[uGet4][uGet4Chan] = 0;
+         fTrigger_Get4Channel[uGet4][uGet4Chan] = 0;
+         fTriggerMs_Get4Channel[uGet4][uGet4Chan] = 0;
+         fTriggerS_Get4Channel[uGet4][uGet4Chan] = 0;
+         fbDllFlag[uGet4][uGet4Chan] = kFALSE;
 
-         fbDataTimeOut[iGet4][iGet4Chan] = kFALSE;
-         fbDataFallingOut[iGet4][iGet4Chan] = kFALSE;
+         fbDataTimeOut[uGet4][uGet4Chan] = kFALSE;
+         fbDataFallingOut[uGet4][uGet4Chan] = kFALSE;
 
-         fLastExtMess[iGet4][iGet4Chan].Clear();
-      } // for( Int_t iGet4Chan = 0; iGet4Chan < get4v10::kuNbChan; iGet4Chan++)
-      fGet4V1HitsDistanceNs[iGet4] = 0;
-      fGet4V1HitsDistanceUs[iGet4] = 0;
-      fGet4V1HitsDistanceMs[iGet4] = 0;
-      fGet4V1HitsDistanceS[iGet4]  = 0;
-   } // for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+         fLastExtMess[uGet4][uGet4Chan].Clear();
+      } // for( UInt_t uGet4Chan = 0; uGet4Chan < get4v10::kuNbChan; uGet4Chan++)
+      fGet4V1HitsDistanceNs[uGet4] = 0;
+      fGet4V1HitsDistanceUs[uGet4] = 0;
+      fGet4V1HitsDistanceMs[uGet4] = 0;
+      fGet4V1HitsDistanceS[uGet4]  = 0;
+   } // for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
 /*
    fb24bitsReadoutDetected = kFALSE;
    fb32bitsReadoutDetected = kFALSE;
@@ -243,9 +243,9 @@ TGet4v1Rec::TGet4v1Rec() :
       // HitsSelection
    fbSelectionRocDone   = kTRUE;
 */
-   for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+   for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
    {
-      fbSelectionDone[iGet4]      = kTRUE;
+      fbSelectionDone[uGet4]      = kTRUE;
    }
 
       // Triggering on data themselves
@@ -278,15 +278,15 @@ TGet4v1Rec::TGet4v1Rec() :
    fChannelMultiplicity = 0;
    fdRateEvolutionBinSize = 0;
 */
-   for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+   for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
    {
-      fuNbHitsChipEpoch[iGet4] = 0;
-      fChipRateEvolution[iGet4]    = 0;
-      for( Int_t iGet4Chan = 0; iGet4Chan < get4v10::kuNbChan; iGet4Chan++)
+      fuNbHitsChipEpoch[uGet4] = 0;
+      fChipRateEvolution[uGet4]    = 0;
+      for( UInt_t uGet4Chan = 0; uGet4Chan < get4v10::kuNbChan; uGet4Chan++)
       {
-         fChannelRateEvolution[iGet4][iGet4Chan] = 0;
-      } // for( Int_t iGet4Chan = 0; iGet4Chan < get4v10::kuNbChan; iGet4Chan++)
-   } //  for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+         fChannelRateEvolution[uGet4][uGet4Chan] = 0;
+      } // for( UInt_t uGet4Chan = 0; uGet4Chan < get4v10::kuNbChan; uGet4Chan++)
+   } //  for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
 
 }
 TGet4v1Rec::TGet4v1Rec(const TGet4v1Rec& src):
@@ -364,70 +364,70 @@ TGet4v1Rec::TGet4v1Rec(const TGet4v1Rec& src):
    fGet4V1DllLockBit         (src.fGet4V1DllLockBit)
 {
    
-   for (int n=0;n<get4v10::kiMaxAux;n++) 
+   for (unsigned n=0;n<get4v10::kuMaxAux;n++) 
       fLastAuxTm[n] = src.fLastAuxTm[n] ;
-   for (int n=0;n<get4v10::kiMaxSync;n++) {
+   for (unsigned n=0;n<get4v10::kuMaxSync;n++) {
       fLastSyncTm[n] = src.fLastSyncTm[n];
       fLastSyncId[n] = src.fLastSyncId[n];
-   } // for (int n=0;n<get4v10::kiMaxSync;n++)
+   } // for (unsigned n=0;n<get4v10::kuMaxSync;n++)
    
-   for (int aux=0;aux<get4v10::kiMaxAux;aux++)
+   for (unsigned aux=0;aux<get4v10::kuMaxAux;aux++)
       fAUXt[aux] = src.fAUXt[aux];
-   for (int n=0;n<get4v10::kiMaxSync;n++)
+   for (unsigned n=0;n<get4v10::kuMaxSync;n++)
    {
       fSYNCt[n]     = src.fSYNCt[n] ;
       fSyncLongT[n] = src.fSyncLongT[n];
-   } // for (int n=0;n<get4v10::kiMaxSync;n++)
+   } // for (int n=0;n<get4v10::kuMaxSync;n++)
    
    /** GET4 unpacking & pre-processing **/
    /*************************************/
    
-   for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+   for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
    {
-      fEPOCH2t[iGet4]             = src.fEPOCH2t[iGet4];
-      fuCurrEpoch2[iGet4]         = src.fuCurrEpoch2[iGet4];
-      fuEpoch2Cycle[iGet4]        = src.fuEpoch2Cycle[iGet4];
-      fiEpochShift[iGet4]         = src.fiEpochShift[iGet4];
-      fuNbShiftedEpochs[iGet4]    = src.fuNbShiftedEpochs[iGet4];
-      fEpochShiftsDuration[iGet4] = src.fEpochShiftsDuration[iGet4];
-      fuEpochWithData[iGet4]      = src.fuEpochWithData[iGet4];
-      fEpSuppBuffer[iGet4]        = src.fEpSuppBuffer[iGet4];
-   } // for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+      fEPOCH2t[uGet4]             = src.fEPOCH2t[uGet4];
+      fuCurrEpoch2[uGet4]         = src.fuCurrEpoch2[uGet4];
+      fuEpoch2Cycle[uGet4]        = src.fuEpoch2Cycle[uGet4];
+      fiEpochShift[uGet4]         = src.fiEpochShift[uGet4];
+      fuNbShiftedEpochs[uGet4]    = src.fuNbShiftedEpochs[uGet4];
+      fEpochShiftsDuration[uGet4] = src.fEpochShiftsDuration[uGet4];
+      fuEpochWithData[uGet4]      = src.fuEpochWithData[uGet4];
+      fEpSuppBuffer[uGet4]        = src.fEpSuppBuffer[uGet4];
+   } // for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
    
    fPrevEpochsBuffer[0] = src.fPrevEpochsBuffer[0]; 
    fPrevEpochsBuffer[1] = src.fPrevEpochsBuffer[1]; 
-   for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+   for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
    {
-      fbBufferWithLastFullEpoch2[iGet4]  = src.fbBufferWithLastFullEpoch2[iGet4]; 
-      fPrevEpochs2Buffer[iGet4][0] = src.fPrevEpochs2Buffer[iGet4][0]; 
-      fPrevEpochs2Buffer[iGet4][1] = src.fPrevEpochs2Buffer[iGet4][1]; 
-      bLookInPreviousEpoch[iGet4]  = src.bLookInPreviousEpoch[iGet4]; 
-      bLookInNextEpoch[iGet4]      = src.bLookInNextEpoch[iGet4]; 
-      fbEpoch2SinceTrigger[iGet4]  = src.fbEpoch2SinceTrigger[iGet4]; 
+      fbBufferWithLastFullEpoch2[uGet4]  = src.fbBufferWithLastFullEpoch2[uGet4]; 
+      fPrevEpochs2Buffer[uGet4][0] = src.fPrevEpochs2Buffer[uGet4][0]; 
+      fPrevEpochs2Buffer[uGet4][1] = src.fPrevEpochs2Buffer[uGet4][1]; 
+      bLookInPreviousEpoch[uGet4]  = src.bLookInPreviousEpoch[uGet4]; 
+      bLookInNextEpoch[uGet4]      = src.bLookInNextEpoch[uGet4]; 
+      fbEpoch2SinceTrigger[uGet4]  = src.fbEpoch2SinceTrigger[uGet4]; 
 
-      for( Int_t iGet4Chan = 0; iGet4Chan < get4v10::kuNbChan; iGet4Chan++)
+      for( UInt_t uGet4Chan = 0; uGet4Chan < get4v10::kuNbChan; uGet4Chan++)
       {
-         fSelectedT[iGet4][iGet4Chan]             = src.fSelectedT[iGet4][iGet4Chan]; 
-         fTrigger_Get4Channel[iGet4][iGet4Chan]   = src.fTrigger_Get4Channel[iGet4][iGet4Chan]; 
-         fTriggerMs_Get4Channel[iGet4][iGet4Chan] = src.fTriggerMs_Get4Channel[iGet4][iGet4Chan]; 
-         fTriggerS_Get4Channel[iGet4][iGet4Chan]  = src.fTriggerS_Get4Channel[iGet4][iGet4Chan]; 
-         fbDllFlag[iGet4][iGet4Chan]              = src.fbDllFlag[iGet4][iGet4Chan]; 
+         fSelectedT[uGet4][uGet4Chan]             = src.fSelectedT[uGet4][uGet4Chan]; 
+         fTrigger_Get4Channel[uGet4][uGet4Chan]   = src.fTrigger_Get4Channel[uGet4][uGet4Chan]; 
+         fTriggerMs_Get4Channel[uGet4][uGet4Chan] = src.fTriggerMs_Get4Channel[uGet4][uGet4Chan]; 
+         fTriggerS_Get4Channel[uGet4][uGet4Chan]  = src.fTriggerS_Get4Channel[uGet4][uGet4Chan]; 
+         fbDllFlag[uGet4][uGet4Chan]              = src.fbDllFlag[uGet4][uGet4Chan]; 
 
-         fbDataTimeOut[iGet4][iGet4Chan]          = src.fbDataTimeOut[iGet4][iGet4Chan]; 
-         fbDataFallingOut[iGet4][iGet4Chan]       = src.fbDataFallingOut[iGet4][iGet4Chan]; 
+         fbDataTimeOut[uGet4][uGet4Chan]          = src.fbDataTimeOut[uGet4][uGet4Chan]; 
+         fbDataFallingOut[uGet4][uGet4Chan]       = src.fbDataFallingOut[uGet4][uGet4Chan]; 
 
-         fLastExtMess[iGet4][iGet4Chan]           = src.fLastExtMess[iGet4][iGet4Chan]; 
-      } // for( Int_t iGet4Chan = 0; iGet4Chan < get4v10::kuNbChan; iGet4Chan++)
-      fGet4V1HitsDistanceNs[iGet4] = src.fGet4V1HitsDistanceNs[iGet4]; 
-      fGet4V1HitsDistanceUs[iGet4] = src.fGet4V1HitsDistanceUs[iGet4]; 
-      fGet4V1HitsDistanceMs[iGet4] = src.fGet4V1HitsDistanceMs[iGet4]; 
-      fGet4V1HitsDistanceS[iGet4]  = src.fGet4V1HitsDistanceS[iGet4]; 
-   } // for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+         fLastExtMess[uGet4][uGet4Chan]           = src.fLastExtMess[uGet4][uGet4Chan]; 
+      } // for( UInt_t uGet4Chan = 0; uGet4Chan < get4v10::kuNbChan; uGet4Chan++)
+      fGet4V1HitsDistanceNs[uGet4] = src.fGet4V1HitsDistanceNs[uGet4]; 
+      fGet4V1HitsDistanceUs[uGet4] = src.fGet4V1HitsDistanceUs[uGet4]; 
+      fGet4V1HitsDistanceMs[uGet4] = src.fGet4V1HitsDistanceMs[uGet4]; 
+      fGet4V1HitsDistanceS[uGet4]  = src.fGet4V1HitsDistanceS[uGet4]; 
+   } // for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
    
-   for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+   for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
    {
-      fbSelectionDone[iGet4] = src.fbSelectionDone[iGet4]; 
-   } // for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+      fbSelectionDone[uGet4] = src.fbSelectionDone[uGet4]; 
+   } // for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
    
    for( Int_t iTrigger = 0; iTrigger < get4v10::kiMaxNbDataTriggs; iTrigger++)
    {
@@ -442,15 +442,15 @@ TGet4v1Rec::TGet4v1Rec(const TGet4v1Rec& src):
       } // for( Int_t iSecTriggerChan = 0; iSecTriggerChan < get4v10::kiMaxNbSecTriggCh; iSecTriggerChan++)
    } // for( Int_t iTrigger = 0; iTrigger < get4v10::kiMaxNbDataTriggs; iTrigger++)
    
-   for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+   for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
    {
-      fuNbHitsChipEpoch[iGet4]  = src.fuNbHitsChipEpoch[iGet4]; 
-      fChipRateEvolution[iGet4] = src.fChipRateEvolution[iGet4]; 
-      for( Int_t iGet4Chan = 0; iGet4Chan < get4v10::kuNbChan; iGet4Chan++)
+      fuNbHitsChipEpoch[uGet4]  = src.fuNbHitsChipEpoch[uGet4]; 
+      fChipRateEvolution[uGet4] = src.fChipRateEvolution[uGet4]; 
+      for( UInt_t uGet4Chan = 0; uGet4Chan < get4v10::kuNbChan; uGet4Chan++)
       {
-         fChannelRateEvolution[iGet4][iGet4Chan] = src.fChannelRateEvolution[iGet4][iGet4Chan]; 
-      } // for( Int_t iGet4Chan = 0; iGet4Chan < get4v10::kuNbChan; iGet4Chan++)
-   } //  for( Int_t iGet4 = 0; iGet4 < get4v10::kiMaxGet4Roc; iGet4++)
+         fChannelRateEvolution[uGet4][uGet4Chan] = src.fChannelRateEvolution[uGet4][uGet4Chan]; 
+      } // for( UInt_t uGet4Chan = 0; uGet4Chan < get4v10::kuNbChan; uGet4Chan++)
+   } //  for( UInt_t uGet4 = 0; uGet4 < get4v10::kuMaxGet4Roc; uGet4++)
 }
 
 ULong64_t TGet4v1Rec::GetFullEpochNumber()

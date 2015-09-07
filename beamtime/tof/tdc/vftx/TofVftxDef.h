@@ -38,7 +38,7 @@ namespace vftxtdc
    const Int_t kiHeaderModShift =          8;
    const Int_t kiHeaderNbMask   = 0x000000FF;
    
-   const Int_t kiFifoMessageType = 0x80000000; // Message Type: 1 = header, 0 = data
+   const UInt_t kuFifoMessageType = 0x80000000; // Message Type: 1 = header, 0 = data
    const Int_t kiFifoMessageTypeShift =    31;
 
    // FIFO header data word (TDC generated, not modified by MBS)
@@ -112,7 +112,7 @@ namespace vftxtdc
 #endif
 
    const Int_t kiCoarseCounterSize  = ( (kiFifoCoarseTime>>kiFifoCtShift)+1 ); 
-   const Int_t kiCoarseOverflowTest = kiCoarseCounterSize / 2 ; // Limit for overflow check
+   const UInt_t kuCoarseOverflowTest = kiCoarseCounterSize / 2 ; // Limit for overflow check
 }
 /**************** End FPGA TDC data unpacking definitions *************/
 

@@ -70,7 +70,7 @@ TTofTrbTdcUnpacker::~TTofTrbTdcUnpacker()
   // Creation and clean-up of member histogram vectors done by TMbsUnpTofMonitor
 }
 
-void TTofTrbTdcUnpacker::Clear(Option_t *option)
+void TTofTrbTdcUnpacker::Clear(Option_t */*option*/)
 {
    LOG(INFO)<<"**** TTofTrbTdcUnpacker: Call Clear()..."<<FairLogger::endl;
 
@@ -381,62 +381,62 @@ void TTofTrbTdcUnpacker::CreateHistos()
    fTrbTdcChannelFineTime.resize( fuNbActiveTrbTdc );
    fTrbTdcChannelCoarseTime.resize( fuNbActiveTrbTdc );
 
-   for( Int_t iBoardIndex = 0; iBoardIndex < fuNbActiveTrbTdc; iBoardIndex++)
+   for( UInt_t uBoardIndex = 0; uBoardIndex < fuNbActiveTrbTdc; uBoardIndex++)
    {
-      UInt_t uTrbNetAddress = fParUnpack->GetActiveTrbTdcAddr(iBoardIndex);
+      UInt_t uTrbNetAddress = fParUnpack->GetActiveTrbTdcAddr(uBoardIndex);
 
       // Board specific histograms
-      hTemp = new TH1I( Form("tof_%s_ch_occ_%03d", toftdc::ksTdcHistName[ toftdc::trb ].Data(), iBoardIndex),
-                        Form("Channel occupancy in TRB-TDC #%03d (0x%04x)", iBoardIndex, uTrbNetAddress),
+      hTemp = new TH1I( Form("tof_%s_ch_occ_%03u", toftdc::ksTdcHistName[ toftdc::trb ].Data(), uBoardIndex),
+                        Form("Channel occupancy in TRB-TDC #%03u (0x%04x)", uBoardIndex, uTrbNetAddress),
                         trbtdc::kuNbChan+1, 0.0, trbtdc::kuNbChan+1 );
       fTrbTdcChannelOccupancy.push_back( hTemp );
 
-      hTemp = new TH1I( Form("tof_%s_ch_highft_%03d", toftdc::ksTdcHistName[ toftdc::trb ].Data(), iBoardIndex),
-                        Form("Fine time overshoot in TRB-TDC #%03d (0x%04x)", iBoardIndex, uTrbNetAddress),
+      hTemp = new TH1I( Form("tof_%s_ch_highft_%03u", toftdc::ksTdcHistName[ toftdc::trb ].Data(), uBoardIndex),
+                        Form("Fine time overshoot in TRB-TDC #%03u (0x%04x)", uBoardIndex, uTrbNetAddress),
                         trbtdc::kuNbChan+1, 0.0, trbtdc::kuNbChan+1 );
       fTrbTdcChannelFineTimeOvershoot.push_back( hTemp );
 
 
-      hTemp = new TH1I( Form("tof_%s_ch_unproc_%03d", toftdc::ksTdcHistName[ toftdc::trb ].Data(), iBoardIndex),
-                        Form("Unprocessed hits in TRB-TDC #%03d (0x%04x)", iBoardIndex, uTrbNetAddress),
+      hTemp = new TH1I( Form("tof_%s_ch_unproc_%03u", toftdc::ksTdcHistName[ toftdc::trb ].Data(), uBoardIndex),
+                        Form("Unprocessed hits in TRB-TDC #%03u (0x%04x)", uBoardIndex, uTrbNetAddress),
                         trbtdc::kuNbChan+1, 0.0, trbtdc::kuNbChan+1 );
       fTrbTdcChannelUnprocessedHits.push_back( hTemp );
       
       // Reference Channel specific histograms
-      hTemp = new TH1I( Form("tof_%s_ft_b%03d_ref", 
+      hTemp = new TH1I( Form("tof_%s_ft_b%03u_ref", 
                                  toftdc::ksTdcHistName[ toftdc::trb ].Data(), 
-                                 iBoardIndex),
-                        Form("Counts per fine-time bin for reference channel on TRB-TDC #%03d (0x%04x)", iBoardIndex, uTrbNetAddress),
+                                 uBoardIndex),
+                        Form("Counts per fine-time bin for reference channel on TRB-TDC #%03u (0x%04x)", uBoardIndex, uTrbNetAddress),
                         trbtdc::kiFineCounterSize, -0.5, trbtdc::kiFineCounterSize - 0.5 );
 
-      (fTrbTdcChannelFineTime[iBoardIndex]).push_back( hTemp );
+      (fTrbTdcChannelFineTime[uBoardIndex]).push_back( hTemp );
 
-      hTemp = new TH1I( Form("tof_%s_ct_b%03d_ref", 
+      hTemp = new TH1I( Form("tof_%s_ct_b%03u_ref", 
                                  toftdc::ksTdcHistName[ toftdc::trb ].Data(), 
-                                 iBoardIndex),
-                        Form("Counts per coarse-time bin for reference channel on TRB-TDC #%03d (0x%04x)", iBoardIndex, uTrbNetAddress),
+                                 uBoardIndex),
+                        Form("Counts per coarse-time bin for reference channel on TRB-TDC #%03u (0x%04x)", uBoardIndex, uTrbNetAddress),
                            trbtdc::kiCoarseCounterSize/1024/512, -0.5, trbtdc::kiCoarseCounterSize/1024/512 - 0.5 );
       // TODO: remove hard coding
-      (fTrbTdcChannelCoarseTime[iBoardIndex]).push_back( hTemp );
+      (fTrbTdcChannelCoarseTime[uBoardIndex]).push_back( hTemp );
 
-      for( Int_t iChannelIndex = 0; iChannelIndex < trbtdc::kuNbChan; iChannelIndex++)
+      for( UInt_t uChannelIndex = 0; uChannelIndex < trbtdc::kuNbChan; uChannelIndex++)
       {
          // Channel specific histograms
-         hTemp = new TH1I( Form("tof_%s_ft_b%03d_ch%03d", 
+         hTemp = new TH1I( Form("tof_%s_ft_b%03u_ch%03u", 
                                     toftdc::ksTdcHistName[ toftdc::trb ].Data(), 
-                                    iBoardIndex, iChannelIndex),
-                           Form("Counts per fine-time bin for channel %3d on TRB-TDC #%03d (0x%04x)", iChannelIndex, iBoardIndex, uTrbNetAddress),
+                                    uBoardIndex, uChannelIndex),
+                           Form("Counts per fine-time bin for channel %3u on TRB-TDC #%03u (0x%04x)", uChannelIndex, uBoardIndex, uTrbNetAddress),
                            trbtdc::kiFineCounterSize, -0.5, trbtdc::kiFineCounterSize - 0.5 );
 
-         (fTrbTdcChannelFineTime[iBoardIndex]).push_back( hTemp );
+         (fTrbTdcChannelFineTime[uBoardIndex]).push_back( hTemp );
 
-         hTemp = new TH1I( Form("tof_%s_ct_b%03d_ch%03d", 
+         hTemp = new TH1I( Form("tof_%s_ct_b%03u_ch%03u", 
                                     toftdc::ksTdcHistName[ toftdc::trb ].Data(), 
-                                    iBoardIndex, iChannelIndex),
-                           Form("Counts per coarse-time bin for channel %3d on TRB-TDC #%03d (0x%04x)", iChannelIndex, iBoardIndex, uTrbNetAddress),
+                                    uBoardIndex, uChannelIndex),
+                           Form("Counts per coarse-time bin for channel %3u on TRB-TDC #%03u (0x%04x)", uChannelIndex, uBoardIndex, uTrbNetAddress),
                            trbtdc::kiCoarseCounterSize/1024/512, -0.5, trbtdc::kiCoarseCounterSize/1024/512 - 0.5 );
 // TODO: remove hard coding
-         (fTrbTdcChannelCoarseTime[iBoardIndex]).push_back( hTemp );
+         (fTrbTdcChannelCoarseTime[uBoardIndex]).push_back( hTemp );
 
          
       }
@@ -457,52 +457,52 @@ void TTofTrbTdcUnpacker::FillHistos()
    // loop over TDC boards
    TTofTrbTdcBoard * tTrbTdcBoard;
 
-   for( Int_t iBoardIndex = 0; iBoardIndex < fuNbActiveTrbTdc; iBoardIndex++)
+   for( UInt_t uBoardIndex = 0; uBoardIndex < fuNbActiveTrbTdc; uBoardIndex++)
    { 
-      UInt_t uTrbNetAddress = fParUnpack->GetActiveTrbTdcAddr(iBoardIndex);
+      UInt_t uTrbNetAddress = fParUnpack->GetActiveTrbTdcAddr(uBoardIndex);
 
-      tTrbTdcBoard = (TTofTrbTdcBoard*) fTrbTdcBoardCollection->ConstructedAt(iBoardIndex);
+      tTrbTdcBoard = (TTofTrbTdcBoard*) fTrbTdcBoardCollection->ConstructedAt(uBoardIndex);
 
       // Loop over regular channels
-      for( Int_t iDataIndex = 0; iDataIndex < tTrbTdcBoard->GetDataNb() ; iDataIndex++ )
+      for( UInt_t uDataIndex = 0; uDataIndex < tTrbTdcBoard->GetDataNb() ; uDataIndex++ )
       {
-         TTofTrbTdcData data = tTrbTdcBoard->GetData( iDataIndex );
-         TString sTemp = Form( " TTofTrbTdcUnpacker::FillHistos: Addr 0x%04x Board #%03d Data #%04d Chan %3d CT %7d FT %7d Edge %1u",
-                  uTrbNetAddress, iBoardIndex, iDataIndex, data.GetChannel()+1, 
+         TTofTrbTdcData data = tTrbTdcBoard->GetData( uDataIndex );
+         TString sTemp = Form( " TTofTrbTdcUnpacker::FillHistos: Addr 0x%04x Board #%03u Data #%04u Chan %3d CT %7d FT %7d Edge %1u",
+                  uTrbNetAddress, uBoardIndex, uDataIndex, data.GetChannel()+1, 
                   data.GetCoarseTime(), data.GetFineTime(), data.GetEdge() );
          LOG(DEBUG2)<<sTemp<<FairLogger::endl;
          
-         fTrbTdcChannelOccupancy[iBoardIndex]->Fill( data.GetChannel() + 1 );
+         fTrbTdcChannelOccupancy[uBoardIndex]->Fill( data.GetChannel() + 1 );
 
          if( trbtdc::time_FineTimeBitMask == data.GetFineTime() )
          {
-           fTrbTdcChannelUnprocessedHits[iBoardIndex]->Fill( data.GetChannel() + 1 );
+           fTrbTdcChannelUnprocessedHits[uBoardIndex]->Fill( data.GetChannel() + 1 );
          }
 
          if( trbtdc::kuHighestReasonableFineTimeBin < data.GetFineTime() )
          {
-           fTrbTdcChannelFineTimeOvershoot[iBoardIndex]->Fill( data.GetChannel() + 1 );           
+           fTrbTdcChannelFineTimeOvershoot[uBoardIndex]->Fill( data.GetChannel() + 1 );           
          }
 
-         fTrbTdcChannelFineTime[iBoardIndex][ data.GetChannel() +1 ]->Fill( data.GetFineTime() );
-         fTrbTdcChannelCoarseTime[iBoardIndex][ data.GetChannel() +1 ]->Fill( data.GetCoarseTime()%2048 );
+         fTrbTdcChannelFineTime[uBoardIndex][ data.GetChannel() +1 ]->Fill( data.GetFineTime() );
+         fTrbTdcChannelCoarseTime[uBoardIndex][ data.GetChannel() +1 ]->Fill( data.GetCoarseTime()%2048 );
       }
 
       // Consider the respective reference channel
-      fTrbTdcChannelOccupancy[iBoardIndex]->Fill(0);
+      fTrbTdcChannelOccupancy[uBoardIndex]->Fill(0);
 
       if( trbtdc::time_FineTimeBitMask == ( tTrbTdcBoard->GetRefChannelData() ).GetFineTime() )
       {
-        fTrbTdcChannelUnprocessedHits[iBoardIndex]->Fill(0);
+        fTrbTdcChannelUnprocessedHits[uBoardIndex]->Fill(0);
       }
 
       if( trbtdc::kuHighestReasonableFineTimeBin < ( tTrbTdcBoard->GetRefChannelData() ).GetFineTime() )
       {
-        fTrbTdcChannelFineTimeOvershoot[iBoardIndex]->Fill(0);           
+        fTrbTdcChannelFineTimeOvershoot[uBoardIndex]->Fill(0);           
       }
 
-      fTrbTdcChannelFineTime[iBoardIndex][0]->Fill( ( tTrbTdcBoard->GetRefChannelData() ).GetFineTime() );
-      fTrbTdcChannelCoarseTime[iBoardIndex][0]->Fill( ( tTrbTdcBoard->GetRefChannelData() ).GetCoarseTime()%2048 );
+      fTrbTdcChannelFineTime[uBoardIndex][0]->Fill( ( tTrbTdcBoard->GetRefChannelData() ).GetFineTime() );
+      fTrbTdcChannelCoarseTime[uBoardIndex][0]->Fill( ( tTrbTdcBoard->GetRefChannelData() ).GetCoarseTime()%2048 );
 
    }
 
@@ -525,19 +525,19 @@ void TTofTrbTdcUnpacker::WriteHistos( TDirectory* inDir)
    TDirectory * oldDir = gDirectory;
    TDirectory * cdTrbTdcUnp[fuNbActiveTrbTdc];
    
-   for( Int_t iBoardIndex = 0; iBoardIndex < fuNbActiveTrbTdc; iBoardIndex++)
+   for( UInt_t uBoardIndex = 0; uBoardIndex < fuNbActiveTrbTdc; uBoardIndex++)
    { 
-      cdTrbTdcUnp[iBoardIndex] = inDir->mkdir( Form( "Unp_%s_%03d", toftdc::ksTdcHistName[ toftdc::trb ].Data(), iBoardIndex) );
-      cdTrbTdcUnp[iBoardIndex]->cd();    // make the "Unp..." directory the current directory
+      cdTrbTdcUnp[uBoardIndex] = inDir->mkdir( Form( "Unp_%s_%03u", toftdc::ksTdcHistName[ toftdc::trb ].Data(), uBoardIndex) );
+      cdTrbTdcUnp[uBoardIndex]->cd();    // make the "Unp..." directory the current directory
       
-      fTrbTdcChannelOccupancy[iBoardIndex]->Write();
-      fTrbTdcChannelFineTimeOvershoot[iBoardIndex]->Write();
-      fTrbTdcChannelUnprocessedHits[iBoardIndex]->Write();
+      fTrbTdcChannelOccupancy[uBoardIndex]->Write();
+      fTrbTdcChannelFineTimeOvershoot[uBoardIndex]->Write();
+      fTrbTdcChannelUnprocessedHits[uBoardIndex]->Write();
       
-      for( Int_t iChannelIndex = 0; iChannelIndex <= trbtdc::kuNbChan; iChannelIndex++)
+      for( UInt_t uChannelIndex = 0; uChannelIndex <= trbtdc::kuNbChan; uChannelIndex++)
       {
-         fTrbTdcChannelFineTime[iBoardIndex][iChannelIndex]->Write();
-         fTrbTdcChannelCoarseTime[iBoardIndex][iChannelIndex]->Write();
+         fTrbTdcChannelFineTime[uBoardIndex][uChannelIndex]->Write();
+         fTrbTdcChannelCoarseTime[uBoardIndex][uChannelIndex]->Write();
       }
       
    }
@@ -557,10 +557,10 @@ void TTofTrbTdcUnpacker::DeleteHistos()
    fTrbTdcChannelFineTimeOvershoot.clear();
    fTrbTdcChannelUnprocessedHits.clear();
 
-   for( Int_t iBoardIndex = 0; iBoardIndex < fuNbActiveTrbTdc; iBoardIndex++)
+   for( UInt_t uBoardIndex = 0; uBoardIndex < fuNbActiveTrbTdc; uBoardIndex++)
    {
-      (fTrbTdcChannelFineTime[iBoardIndex]).clear();
-      (fTrbTdcChannelCoarseTime[iBoardIndex]).clear();
+      (fTrbTdcChannelFineTime[uBoardIndex]).clear();
+      (fTrbTdcChannelCoarseTime[uBoardIndex]).clear();
    }
 
    fTrbTdcChannelFineTime.clear();

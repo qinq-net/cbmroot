@@ -79,7 +79,7 @@ UInt_t TTofTdcBoard::AddData( TTofTdcData & dataIn )
    if( NULL != fDataCollection )
    {
       Int_t iNextIndex = fDataCollection->GetEntriesFast();
-      if( iNextIndex < toftdc::kuDefNbMulti * fuChannelNumber )
+      if( iNextIndex < static_cast<Int_t>(toftdc::kuDefNbMulti * fuChannelNumber) )
       {
          TTofTdcData * dataSlot = (TTofTdcData *)fDataCollection->ConstructedAt( iNextIndex );
          *dataSlot = dataIn;
@@ -92,7 +92,7 @@ TTofTdcData * TTofTdcBoard::GetDataPtr( UInt_t uDataIndex )
 {
    if( NULL != fDataCollection )
    {
-      if( uDataIndex < fDataCollection->GetEntriesFast() )
+      if( static_cast<Int_t>(uDataIndex) < fDataCollection->GetEntriesFast() )
          return (TTofTdcData *)fDataCollection->At( uDataIndex );
          else return NULL;
    } // if( NULL != fDataCollection )

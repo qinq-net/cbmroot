@@ -21,7 +21,7 @@ namespace caentdc
    const Int_t kiCtShift     =          0; // Coarse Counter offset
    
    const Int_t kiCoarseCounterSize  = ( (kiCoarseTime>>kiCtShift)+1 ); 
-   const Int_t kiCoarseOverflowTest = kiCoarseCounterSize / 2 ; // Limit for overflow check
+   const UInt_t kuCoarseOverflowTest = kiCoarseCounterSize / 2 ; // Limit for overflow check
 }
 
 #endif // TOFCAENDEF_H_   

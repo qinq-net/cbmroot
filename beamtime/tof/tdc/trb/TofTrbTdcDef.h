@@ -123,7 +123,7 @@ namespace trbtdc
                 needs to be changed when running in 'triggerless' mode!!!
    */
    const Int_t kiCoarseCounterSize  = 0x3FFFFFFF + 1;
-   const Int_t kiCoarseOverflowTest = kiCoarseCounterSize / 2 ; // Limit for overflow check
+   const UInt_t kuCoarseOverflowTest = kiCoarseCounterSize / 2 ; // Limit for overflow check
 
    // Size of one clock cycle (=1 coarse bin)
    const Double_t kdClockCycleSize    = 5000.0; // [ps]

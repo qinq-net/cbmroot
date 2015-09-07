@@ -276,7 +276,7 @@ InitStatus CbmTofOnlineDisplay::ReInit()
 }
 
 // ---- Exec ----------------------------------------------------------
-void CbmTofOnlineDisplay::Exec(Option_t* option)
+void CbmTofOnlineDisplay::Exec(Option_t* /*option*/)
 {
 
   fEventCounter++;

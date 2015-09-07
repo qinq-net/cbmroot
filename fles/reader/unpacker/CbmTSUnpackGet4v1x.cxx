@@ -2792,9 +2792,9 @@ void CbmTSUnpackGet4v1x::ProcessMessage_get4(   get4v1x::Message mess, uint16_t 
 
    uint8_t  cChipId   = mess.getGet4Number();
    UInt_t uChipFullId = cChipId + get4v1x::kuMaxGet4PerRoc*cRocId;
-   UInt_t uFullChId =
+/*   UInt_t uFullChId =
          get4v1x::kuChanPerGet4*( uChipFullId )
-         + mess.getGet4ChNum();
+         + mess.getGet4ChNum();*/
    UInt_t uTimeStamp = mess.getGet4Ts();
 
    // Reject data of chips above defined limit to avoid overflow/seg fault

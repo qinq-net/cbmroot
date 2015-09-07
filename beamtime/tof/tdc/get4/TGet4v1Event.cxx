@@ -15,7 +15,7 @@ using std::endl;
  * Conversion of definitions to constants:
  *
 MAX_ROC               get4v10::kiMaxRoc
-MAX_GET4              get4v10::kiMaxGet4
+MAX_GET4              get4v10::kuMaxGet4
 MAX_GET4_PER_ROC      get4v10::kiMaxGet4Roc
 MAX_AUX               get4v10::kiMaxAux
 MAX_SYNC              get4v10::kiMaxSync
@@ -222,7 +222,7 @@ Get4v1Hit::Get4v1Hit() :
 { 
    Clear(); 
 }
-void  Get4v1Hit::Clear( Option_t *t )
+void  Get4v1Hit::Clear( Option_t * /*t*/ )
 {
    fbTimeSet = kFALSE;
    fbTotSet  = kFALSE;
@@ -353,7 +353,7 @@ Get4v1Tdc & Get4v1Tdc::operator=(const Get4v1Tdc& src)
    return *this;
 }
 */
-void  Get4v1Tdc::Clear(Option_t *t )
+void  Get4v1Tdc::Clear(Option_t * /*t*/ )
 {
    for(UInt_t uChannelIndex = 0; uChannelIndex < get4v10::kuNbChan; uChannelIndex++)
    {
@@ -388,17 +388,17 @@ Get4v1Event::~Get4v1Event()
 {
    Clear();
 }
-void  Get4v1Event::Clear( Option_t *t )
+void  Get4v1Event::Clear( Option_t * /*t*/ )
 {
   // all members should be cleared.
-   for(UInt_t uGet4Index = 0; uGet4Index < get4v10::kiMaxGet4; uGet4Index++)
+   for(UInt_t uGet4Index = 0; uGet4Index < get4v10::kuMaxGet4; uGet4Index++)
       fGet4Boards[uGet4Index].Clear( );
 
-   for(UInt_t uRocIndex = 0; uRocIndex < get4v10::kiMaxRoc; uRocIndex++)
+   for(UInt_t uRocIndex = 0; uRocIndex < get4v10::kuMaxRoc; uRocIndex++)
    {
       fPureRocMessages[uRocIndex].clear();
       fdTriggerFullTime[uRocIndex] = 0.0;
-   } // for(UInt_t uRocIndex = 0; uRocIndex < get4v10::kiMaxGet4; uRocIndex++)
+   } // for(UInt_t uRocIndex = 0; uRocIndex < get4v10::kuMaxGet4; uRocIndex++)
 
    fuMbsEventNumber      = 0;
    fuEventNbInsideMbsEvt = 0;
@@ -409,21 +409,21 @@ void  Get4v1Event::Clear( Option_t *t )
 UInt_t  Get4v1Event::Size()
 {
    UInt_t uSize = 0;
-   for(UInt_t uGet4Index = 0; uGet4Index < get4v10::kiMaxGet4; uGet4Index++)
+   for(UInt_t uGet4Index = 0; uGet4Index < get4v10::kuMaxGet4; uGet4Index++)
       uSize += fGet4Boards[uGet4Index].Size( );
    return uSize;
 }
 Bool_t  Get4v1Event::IsEmpty()
 {
    Bool_t bEmpty = kTRUE;
-   for(UInt_t uGet4Index = 0; uGet4Index < get4v10::kiMaxGet4; uGet4Index++)
+   for(UInt_t uGet4Index = 0; uGet4Index < get4v10::kuMaxGet4; uGet4Index++)
       bEmpty &= ( 0 == fGet4Boards[uGet4Index].Size( ) );
    return bEmpty;
 }
 Bool_t  Get4v1Event::HasTrigger()
 {
    Bool_t bTrigger = kFALSE;
-   for(UInt_t uRocIndex = 0; uRocIndex < get4v10::kiMaxRoc; uRocIndex++)
+   for(UInt_t uRocIndex = 0; uRocIndex < get4v10::kuMaxRoc; uRocIndex++)
       if( 0 < fdTriggerFullTime[uRocIndex] )
       {
          bTrigger = kTRUE;

@@ -159,7 +159,7 @@ void TMbsMappingTofPar::printParams()
             sChanInd = "Channel Index:           ---";
          for( Int_t iChanInd = 0; iChanInd < fiNbChTdc[iMappTdcIndex]; iChanInd++)
          {
-            if( 0xFFFFFFFF == fiMapping[ iMappingIndex + iChanInd ] )
+            if( 0xFFFFFFFF == static_cast<UInt_t>(fiMapping[ iMappingIndex + iChanInd ]) )
                sMapping[iMappTdcIndex] += "0xFFFFFFFF ";
                else sMapping[iMappTdcIndex] += Form("0x%08X ", fiMapping[ iMappingIndex + iChanInd ]);
             if( 0 == iMappTdcIndex )
@@ -242,7 +242,7 @@ Int_t TMbsMappingTofPar::GetMappedDetUId( Int_t iMappedDetInd ) const
 }
 Int_t TMbsMappingTofPar::GetMappedDetInd( Int_t iMappedDetUId ) const
 {
-   if( 0xFFFFFFFF == iMappedDetUId )
+   if( 0xFFFFFFFF == static_cast<UInt_t>(iMappedDetUId) )
       return -1; // Equal to 0xFFFFFFFF => inactive
       
    for( Int_t iDetIndx = 0; iDetIndx < fiNbMappedDet; iDetIndx++)

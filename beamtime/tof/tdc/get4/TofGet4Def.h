@@ -30,7 +30,7 @@ namespace get4tdc
    const Int_t kiCtShift     =          7; // Coarse Counter offset
    
    const Int_t kiCoarseCounterSize  = ( (kiCoarseTime>>kiCtShift)+1 ); 
-   const Int_t kiCoarseOverflowTest = kiCoarseCounterSize / 2 ; // Limit for overflow check
+   const UInt_t kuCoarseOverflowTest = kiCoarseCounterSize / 2 ; // Limit for overflow check
 
    const Double_t kdBinSize     = kdClockCycleSize / Double_t(kiFineTime + 1); // <- GET4_BIN_SIZE_IN_PS
    const Int_t    kiEpochInBins = kiFineTime + kiCoarseTime + 1; // <- GET4_EPOCH_IN_BINS
@@ -60,13 +60,13 @@ namespace get4v10 {
    };
 
    // Hardware max Number
-   const Int_t kiMaxRoc     = 15; // <- MAX_ROC
-   const Int_t kiMaxGet4    = 32; // <- MAX_GET4
-   const Int_t kiMaxGet4Roc = 16; // <- MAX_GET4_PER_ROC
+   const UInt_t kuMaxRoc     = 15; // <- MAX_ROC
+   const UInt_t kuMaxGet4    = 32; // <- MAX_GET4
+   const UInt_t kuMaxGet4Roc = 16; // <- MAX_GET4_PER_ROC
 
    // Max nb of each external trigger signal type
-   const Int_t kiMaxAux     =  4; // <- MAX_AUX
-   const Int_t kiMaxSync    =  2; // <- MAX_SYNC
+   const UInt_t kuMaxAux     =  4; // <- MAX_AUX
+   const UInt_t kuMaxSync    =  2; // <- MAX_SYNC
 
    // Nb of ROC message to be printed?
    const Int_t kiGet4MessPr =  6; // <- GET4_PRINT

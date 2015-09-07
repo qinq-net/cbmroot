@@ -104,7 +104,7 @@ TMbsCalibScalTof::~TMbsCalibScalTof()
    LOG(INFO)<<"**** TMbsCalibScalTof: Delete instance "<<FairLogger::endl;
 } 
 
-void TMbsCalibScalTof::Clear(Option_t *option)
+void TMbsCalibScalTof::Clear(Option_t * /*option*/)
 {
    fMbsUnpackPar = NULL;
    fMbsCalibPar  = NULL;

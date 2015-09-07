@@ -17,8 +17,8 @@
 /*
  * Conversion of definitions to constants:
  *
-MAX_ROC               get4v10::kiMaxRoc
-MAX_GET4              get4v10::kiMaxGet4
+MAX_ROC               get4v10::kuMaxRoc
+MAX_GET4              get4v10::kuMaxGet4
 MAX_GET4_PER_ROC      get4v10::kiMaxGet4Roc
 MAX_AUX               get4v10::kiMaxAux
 MAX_SYNC              get4v10::kiMaxSync
@@ -393,13 +393,13 @@ class Get4v1Event : public TObject {
       Bool_t HasTrigger();
       Bool_t IsMbsSynced(){ return fbMbsSyncedEvent;};
       /*************************************/
-      Get4v1Tdc fGet4Boards[get4v10::kiMaxGet4];
+      Get4v1Tdc fGet4Boards[get4v10::kuMaxGet4];
 
-      std::vector<TGet4v1MessageExtended> fPureRocMessages[get4v10::kiMaxRoc];
+      std::vector<TGet4v1MessageExtended> fPureRocMessages[get4v10::kuMaxRoc];
 
       /* last time of trigger signal (defined by parameter)
        * can be sync or aux message, depending on TGet4Parameter::triggerSignal setup*/
-      Double_t fdTriggerFullTime[get4v10::kiMaxRoc];
+      Double_t fdTriggerFullTime[get4v10::kuMaxRoc];
 
       // Event number of the corresponding MBS event
       UInt_t   fuMbsEventNumber;

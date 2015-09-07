@@ -180,15 +180,15 @@ class TTofGet4Unpacker : public TObject
 
       // General counters (allow for example event jumps by stream server)
       UInt_t     printData;
-      UInt_t     uNbEvents[get4v10::kiMaxRoc];
-      UInt_t     uFirstEventIndex[get4v10::kiMaxRoc];
-      UInt_t     uPrevEventIndex[get4v10::kiMaxRoc];
+      UInt_t     uNbEvents[get4v10::kuMaxRoc];
+      UInt_t     uFirstEventIndex[get4v10::kuMaxRoc];
+      UInt_t     uPrevEventIndex[get4v10::kuMaxRoc];
       
       // Real events counters
-      UInt_t     uEventInsideMbsEvtCount[get4v10::kiMaxRoc];
-      UInt_t     uRealEventsCount[get4v10::kiMaxRoc];
-      UInt_t     uNotEmptyEventInsideMbsEvtCount[get4v10::kiMaxRoc];
-      UInt_t     uNotEmptyRealEventsCount[get4v10::kiMaxRoc];
+      UInt_t     uEventInsideMbsEvtCount[get4v10::kuMaxRoc];
+      UInt_t     uRealEventsCount[get4v10::kuMaxRoc];
+      UInt_t     uNotEmptyEventInsideMbsEvtCount[get4v10::kuMaxRoc];
+      UInt_t     uNotEmptyRealEventsCount[get4v10::kuMaxRoc];
 
       // Variables
       Get4v1Hit fHitTemp;

@@ -67,7 +67,7 @@ UInt_t TTofGet4Board::AddData( TTofGet4Data & dataIn )
    if( NULL != fDataCollection )
    {
       Int_t iNextIndex = fDataCollection->GetEntriesFast();
-      if( iNextIndex < get4tdc::kuNbMulti * GetChannelNb() )
+      if( iNextIndex < static_cast<Int_t>(get4tdc::kuNbMulti * GetChannelNb()) )
       {
          TTofGet4Data * dataSlot = (TTofGet4Data *)fDataCollection->ConstructedAt( iNextIndex );
          *dataSlot = dataIn;
@@ -80,7 +80,7 @@ TTofGet4Data * TTofGet4Board::GetDataPtr( UInt_t uDataIndex )
 {
    if( NULL != fDataCollection )
    {
-      if( uDataIndex < fDataCollection->GetEntriesFast() )
+      if( static_cast<Int_t>(uDataIndex) < fDataCollection->GetEntriesFast() )
          return (TTofGet4Data *)fDataCollection->At( uDataIndex );
          else return NULL;
    } // if( NULL != fDataCollection )
