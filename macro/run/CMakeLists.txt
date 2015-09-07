@@ -26,6 +26,8 @@ ForEach(setup IN LISTS cbm_setup)
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_sim})
+  Set(_FileName_Dependency data/run_sim_${setup}_ok)
+  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
 
   Set(dep_reco ${testname})
 
@@ -34,18 +36,24 @@ ForEach(setup IN LISTS cbm_setup)
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_sim})
+  Set(_FileName_Dependency data/run_sim_${setup}_ok)
+  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
 
   Set(testname ${setup}_run_qa)
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/run_qa.sh ${NumEvents} \"${setup}\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "300")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_reco})
+  Set(_FileName_Dependency data/run_reco_${setup}_ok)
+  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
 
   Set(testname ${setup}_overlap)
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/run/check_overlaps.sh \"${setup}\")
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "600")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${dep_sim})
+  Set(_FileName_Dependency data/run_sim_${setup}_ok)
+  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
 
 EndForEach(setup IN LISTS cbm_setup)
 # end of test CBM setups from geometry/setup

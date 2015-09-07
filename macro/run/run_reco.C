@@ -17,6 +17,30 @@
 //
 // --------------------------------------------------------------------------
 
+// Functions needed for CTest runtime dependency
+// The only way to introduce such a runtime dependency is via a file
+// which is created at the end of the macro if everything worked as
+// expected 
+void Generate_CTest_Dependency_File(TString filename)
+{
+  TString touchCommand = "touch " + filename;
+  gSystem->Exec(touchCommand);
+}
+
+TString Remove_CTest_Dependency_File(TString outDir, TString macroName, const char* setup)
+{
+  TString _setup(setup);
+  TString testDir = outDir;
+  TString testFile = macroName + "_" + _setup + "_ok";
+
+  if (gSystem->FindFile(testDir, testFile)) {
+    TString rmCommand = "rm " + testFile;
+    gSystem->Exec(rmCommand);
+  }
+  TString depFile = outDir + "/" + macroName + "_" + _setup + "_ok";
+  depFile.ReplaceAll("//", "/");
+  return depFile;
+}
 
 void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
 {
@@ -64,6 +88,9 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   parFileList->Add(&tofDigiFile);
   cout << "macro/run/run_reco.C using: " << tofDigi << endl;
 
+
+  // Function needed for CTest runtime dependency
+  TString depFile = Remove_CTest_Dependency_File(outDir, "run_reco" , setup);
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -393,4 +420,7 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
+
+  // Function needed for CTest runtime dependency
+  Generate_CTest_Dependency_File(depFile);
 }
