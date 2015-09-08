@@ -88,7 +88,7 @@ void CbmMagnet::ConstructASCIIGeometry()
         par->setInputVersion(fRun->GetRunId(),1);	
 }
 
-Bool_t CbmMagnet::CheckIfSensitive(std::string name) 
+Bool_t CbmMagnet::CheckIfSensitive(std::string) 
 {
   // There are no sensitive volumes in the magnet
   return kFALSE;

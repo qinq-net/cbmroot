@@ -26,7 +26,7 @@ string CbmHtmlReportElement::TableBegin(
    ss << "<h2>" << caption << "</h2>";
    ss << "<table id=\"efficiency\" >" << endl;
    ss << "<tr>";
-   for (int i = 0; i < colNames.size(); i++) {
+   for (unsigned int i = 0; i < colNames.size(); i++) {
       ss << "<th>" << colNames[i] << "</th>";
    }
    ss << "</tr>" << endl;
@@ -51,7 +51,7 @@ string CbmHtmlReportElement::TableRow(
       const vector<string>& row) const
 {
    string st = "<tr>";
-   for (int i = 0; i < row.size(); i++) {
+   for (unsigned int i = 0; i < row.size(); i++) {
       st += "<td>" + row[i] + "</td>";
    }
    st += "</tr> \n";

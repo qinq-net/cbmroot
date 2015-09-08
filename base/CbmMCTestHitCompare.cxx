@@ -83,7 +83,7 @@ void CbmMCTestHitCompare::SetParContainers()
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmMCTestHitCompare::Exec(Option_t* opt)
+void CbmMCTestHitCompare::Exec(Option_t* /*opt*/)
 {
 	//fMCMatch->CreateArtificialStage(kMCTrack, "", "");
 

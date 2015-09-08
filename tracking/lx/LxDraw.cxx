@@ -74,7 +74,7 @@ void LxDraw::Ask()
         ask = false;
 
       if (symbol == 'q')
-        exit;
+        exit(42);
     } while (symbol != '\n');
 
     cout << endl;
@@ -83,7 +83,7 @@ void LxDraw::Ask()
 
 void LxDraw::DrawMCTracks()
 {
-  char buf[128];
+//  char buf[128];
   int NRegMCTracks = 0;
   LxFinder* finder = LxFinder::Instance();
   TPolyLine pline;
@@ -97,22 +97,22 @@ void LxDraw::DrawMCTracks()
     //if ((13 != T.pdg && -13 != T.pdg) || T.mother_ID >= 0)
       //continue;
 
-    bool mcPointOnSta[18] = { true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
+//    bool mcPointOnSta[18] = { true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
     int mcpCount = 0;
 
     for (vector<LxMCPoint*>::iterator j = T.Points.begin(); j != T.Points.end(); ++j)
     {
-      LxMCPoint* pMCPoint = *j;
-      mcPointOnSta[pMCPoint->stationNumber * 3 + pMCPoint->layerNumber] = true;
+//      LxMCPoint* pMCPoint = *j;
+//      mcPointOnSta[pMCPoint->stationNumber * 3 + pMCPoint->layerNumber] = true;
       ++mcpCount;
     }
 
-    bool isRefTrack = true;
+//    bool isRefTrack = true;
 
     for (int j = 0; j < 18; ++j)
     {
-      if (!mcPointOnSta[j])
-        isRefTrack = false;
+//      if (!mcPointOnSta[j])
+//        isRefTrack = false;
     }
 
     //if (!isRefTrack)
@@ -208,7 +208,7 @@ void LxDraw::DrawMCTracks()
 
         float xl = ( w1*par[0] + w*par1[0])/(w+w1);
         float yl = ( w1*par[1] + w*par1[1])/(w+w1);
-        float zl = ( w1*par[5] + w*par1[5])/(w+w1);
+//        float zl = ( w1*par[5] + w*par1[5])/(w+w1);
 
         if ((fabs(xl) > 400.0)||(fabs(yl) > 400.0)){
           //cout << "*** track " << NRegMCTracks+1 << " xl = " << xl << ", zl = " << zl << endl;
@@ -498,7 +498,7 @@ void LxDraw::DrawMuch(TGeoNode* node)
 
   while (childO)
   {
-    TGeoNode* child = dynamic_cast<TGeoNode*> (childO);
+//    TGeoNode* child = dynamic_cast<TGeoNode*> (childO);
 
     //if (child) Commented because this version on CdDown() is not supported in older versions on ROOT. Possibly should be fixed.
     //{
@@ -723,7 +723,7 @@ void LxDraw::DrawRecoTracks()
 {
   LxFinder* finder = LxFinder::Instance();
   LxSpace& caSpace = finder->caSpace;
-  int stationsNumber = caSpace.stations.size();
+//  int stationsNumber = caSpace.stations.size();
 
   for (list<LxTrack*>::iterator i = caSpace.tracks.begin(); i != caSpace.tracks.end(); ++i)
   {

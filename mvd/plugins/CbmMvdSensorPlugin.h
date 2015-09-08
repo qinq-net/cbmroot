@@ -46,9 +46,9 @@ class CbmMvdSensorPlugin : public TObject
   virtual TClonesArray* GetMatchArray(){return 0;}
   virtual TClonesArray* GetWriteArray(){return 0;}
   
-  virtual void SetInputArray(TClonesArray* inputArray){;}
-  virtual void SetInput(CbmMvdPoint* point){;}
-  virtual void SetOutputArray(TClonesArray* outputArray){;}
+  virtual void SetInputArray(TClonesArray*){;}
+  virtual void SetInput(CbmMvdPoint*){;}
+  virtual void SetOutputArray(TClonesArray*){;}
   
   virtual void SetNextPlugin(CbmMvdSensorPlugin* plugin) {fNextPlugin=plugin;}
   virtual void SetPreviousPlugin(CbmMvdSensorPlugin* plugin) {fPreviousPlugin=plugin;}

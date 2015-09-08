@@ -34,7 +34,7 @@ string CbmTextReportElement::TableBegin(
    ss << right;
    ss << setfill('_') << setw(colNames.size() * fColW) << "_"<< endl;
    ss << setfill(' ');
-   for (Int_t i = 0; i < colNames.size(); i++) {
+   for (UInt_t i = 0; i < colNames.size(); i++) {
       ss << FormatCell(colNames[i]); //setw(fColW) << colNames[i];
    }
    ss << endl;
@@ -65,7 +65,7 @@ string CbmTextReportElement::TableRow(
 {
    stringstream ss;
    ss << right;
-   for (Int_t i = 0; i < row.size(); i++) {
+   for (UInt_t i = 0; i < row.size(); i++) {
       ss << FormatCell(row[i]); //setw(fColW) << row[i];
    }
    ss << endl;
@@ -73,8 +73,8 @@ string CbmTextReportElement::TableRow(
 }
 
 string CbmTextReportElement::Image(
-      const string& title,
-      const string& file) const
+      const string& /*title*/,
+      const string& /*file*/) const
 {
    return "";
 }
@@ -92,7 +92,7 @@ string CbmTextReportElement::DocumentEnd() const
 }
 
 string CbmTextReportElement::Title(
-      Int_t size,
+      Int_t /*size*/,
       const string& title) const
 {
    return title;

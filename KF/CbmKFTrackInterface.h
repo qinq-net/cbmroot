@@ -52,7 +52,7 @@ class CbmKFTrackInterface {
    */
 
   virtual Int_t     GetNOfHits()     { return 0; } /// Number of hits
-  virtual CbmKFHit *GetHit( Int_t i ){ return 0; } /// Access to i-th hit
+  virtual CbmKFHit *GetHit(Int_t){ return 0; } /// Access to i-th hit
 
   /** Methods
    */

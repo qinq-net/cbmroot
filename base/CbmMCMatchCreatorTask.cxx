@@ -109,7 +109,7 @@ void CbmMCMatchCreatorTask::SetParContainers()
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmMCMatchCreatorTask::Exec(Option_t* opt)
+void CbmMCMatchCreatorTask::Exec(Option_t* /*opt*/)
 {
 
 	if (!fMCLink) Fatal("Exec", "No fMCLinkDet");

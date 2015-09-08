@@ -77,7 +77,7 @@ void CbmMCMatchSelectorTask::SetParContainers()
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmMCMatchSelectorTask::Exec(Option_t* opt)
+void CbmMCMatchSelectorTask::Exec(Option_t* /*opt*/)
 {
 	cout << "Output Selector: " << endl;
 	SetWeights();
@@ -88,7 +88,7 @@ void CbmMCMatchSelectorTask::SetWeights()
 {
 //	cout << "SetWeights: CommonWeight " << fCommonWeight << " NStageWeights " << fStageWeights.size() << endl;
 	fMCMatch->SetCommonWeightStages(fCommonWeight);
-	for (int i = 0; i < fStageWeights.size();i++){
+	for (unsigned int i = 0; i < fStageWeights.size();i++){
 		fMCMatch->GetMCStageType(fStageWeights[i].first)->SetWeight(fStageWeights[i].second);
 	}
 }

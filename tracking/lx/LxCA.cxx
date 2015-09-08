@@ -1756,7 +1756,7 @@ void LxSpace::JoinExtTracks()
     for (list<LxExtTrack>::iterator j = extTracks.begin(); j != extTracks.end(); ++j)
     {
       LxExtTrack* extTrack = &(*j);
-      const FairTrackParam* firstParam = extTrack->track->GetParamFirst();
+//      const FairTrackParam* firstParam = extTrack->track->GetParamFirst();
       const FairTrackParam* lastParam = extTrack->track->GetParamLast();
 
 #ifndef USE_OLD_STS_LINKING_RULE

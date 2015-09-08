@@ -126,7 +126,7 @@ void DrawH1(
 {
    assert(histos.size() != 0 && histLabels.size() == histos.size());
    Double_t max = std::numeric_limits<Double_t>::min();
-   Int_t nofHistos = histos.size();
+   UInt_t nofHistos = histos.size();
    TLegend* legend = new TLegend(x1, y1, x2, y2);
    legend->SetFillColor(kWhite);
    for (UInt_t iHist = 0; iHist < nofHistos; iHist++) {
@@ -195,7 +195,7 @@ void DrawGraph(
    Double_t min = std::numeric_limits<Double_t>::max();
    TLegend* legend = new TLegend(x1, y1, x2, y2);
    legend->SetFillColor(kWhite);
-   Int_t nofGraphs = graphs.size();
+   UInt_t nofGraphs = graphs.size();
    for (UInt_t iGraph = 0; iGraph < nofGraphs; iGraph++) {
       TGraph* graph = graphs[iGraph];
       string opt = (iGraph == 0) ? "ACP" : "CP";

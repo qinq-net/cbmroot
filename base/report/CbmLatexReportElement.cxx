@@ -26,12 +26,12 @@ string CbmLatexReportElement::TableBegin(
    st += "\\centering";
    if (caption != "") st += "\\caption{" + caption + "} \n";
    st += "\\begin{tabular}{|";
-   for (int i = 0; i < colNames.size(); i++) {
+   for (unsigned int i = 0; i < colNames.size(); i++) {
       st += "c|";
    }
    st += "} \\hline \n";
    // names start from the second column
-   for (int i = 0; i < colNames.size(); i++) {
+   for (unsigned int i = 0; i < colNames.size(); i++) {
       st += (i < (colNames.size() - 1)) ? (colNames[i] + " & ") : (colNames[i]);
    }
    st += "\\\\ \\hline \n";
@@ -56,7 +56,7 @@ string CbmLatexReportElement::TableRow(
       const vector<string>& row) const
 {
    string st;
-   for (int i = 0; i < row.size(); i++) {
+   for (unsigned int i = 0; i < row.size(); i++) {
       st += (i < (row.size() - 1)) ? (row[i] + " & ") : (row[i]);
    }
    st += " \\\\ \\hline \n";

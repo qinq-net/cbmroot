@@ -34,7 +34,7 @@ struct LxSimpleTrack
   Double_t e;
   Double_t charge;
   LxSimpleTrack(Int_t pdgc, Int_t mid, Double_t P, Double_t Pt, Double_t Px, Double_t Py, Double_t Pz, Double_t E) : pdgCode(pdgc),
-      motherId(mid), p(P), pt(Pt), px(Px), py(Px), pz(Pz), e(E), charge(0), linkedMuchTrack(0, 0), linkedStsTrack(0) {}
+      motherId(mid), p(P), pt(Pt), px(Px), py(Py), pz(Pz), e(E), charge(0), linkedMuchTrack(0, 0), linkedStsTrack(0) {}
   std::list<LxSimplePoint> stsPoints[LXSTSSTATIONS];
   std::list<LxSimplePoint> muchPoints[LXSTATIONS][LXLAYERS];
   std::list<LxSimplePoint> muchMCPts[LXSTATIONS][LXLAYERS];// These array is used for storing MUCH MC points when the 'main' array contains hits.

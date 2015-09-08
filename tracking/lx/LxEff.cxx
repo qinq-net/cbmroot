@@ -245,8 +245,8 @@ void LxEff::CalcRecoEff(bool joinExt)
   Double_t result = 0;
   static Int_t signalRecoTracks = 0;
   static Int_t signalMCTracks = 0;
-  static Int_t bgrRecoTracks = 0;
-  static Int_t bgrMCTracks = 0;
+//  static Int_t bgrRecoTracks = 0;
+//  static Int_t bgrMCTracks = 0;
   static Int_t stsNotFound = 0;
   static Int_t stsPresentButWronglyLinked = 0;
   static Int_t stsAbsentButLinked = 0;

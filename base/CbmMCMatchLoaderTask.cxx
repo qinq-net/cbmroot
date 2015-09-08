@@ -71,7 +71,7 @@ void CbmMCMatchLoaderTask::SetParContainers()
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmMCMatchLoaderTask::Exec(Option_t* opt)
+void CbmMCMatchLoaderTask::Exec(Option_t* /*opt*/)
 {
 /*	for (int trackIndex = 0; trackIndex < fTrack->GetEntriesFast(); trackIndex++){
 		CbmTrack* myTrack = (CbmTrack*)fTrack->At(trackIndex);

@@ -34,7 +34,7 @@ void CbmMCObject::SetEntry(CbmMCEntry entry){
 void CbmMCObject::SetEntry(std::vector<Int_t> type, std::vector<Int_t> link, int index){
 	CbmMCEntry myEntry;
 	myEntry.SetPos(index);
-	for (int i = 0; i < type.size(); i++){
+	for (unsigned int i = 0; i < type.size(); i++){
 		myEntry.AddLink(FairLink(type[i],link[i]));
 	}
 	SetEntry(myEntry);
@@ -77,7 +77,7 @@ void CbmMCObject::AdoptSize(int index){
 
 FairMultiLinkedData CbmMCObject::PosInList(FairLink link){
 	FairMultiLinkedData result;
-	for (int i = 0; i < fStage.size(); i++){
+	for (unsigned int i = 0; i < fStage.size(); i++){
 		if (fStage[i].IsLinkInList(link.GetType(), link.GetIndex()))
 			result.AddLink(FairLink(GetStageId(), i));
 	}

@@ -110,6 +110,7 @@ static bool GetHistoRMS(const char* histoNameBase, Int_t histoNumber, Double_t& 
   return result;
 }
 
+/*
 static bool GetHistoCOV(const char* histoNameBase, Int_t histoNumber, Int_t axis1, Int_t axis2, Double_t& retVal)
 {
   char name[256];
@@ -130,6 +131,7 @@ static bool GetHistoCOV(const char* histoNameBase, Int_t histoNumber, Int_t axis
   TFile::CurrentFile() = curFile;
   return result;
 }
+*/
 
 InitStatus LxFinder::Init()
 {
@@ -291,7 +293,7 @@ InitStatus LxFinder::Init()
   }
 
 #ifdef MAKE_HISTOS
-  char histoName[128];
+//  char histoName[128];
 
   for (int i = 0; i < 6; ++i)
   {
@@ -366,7 +368,7 @@ InitStatus LxFinder::Init()
 
 static Int_t nTimes = 1;
 
-void LxFinder::Exec(Option_t* opt)
+void LxFinder::Exec(Option_t*)
 {
   cout << "LxFinder::Exec() called at " << nTimes++ << " time" << endl;
   timeval bTime, eTime;
@@ -474,7 +476,7 @@ void LxFinder::Exec(Option_t* opt)
   Int_t* root2lxmcpointmap = new Int_t[nEnt];// Unfortunately we have to use this map because in the loop
                                              // below some iterations can not to produce a point.
   mapCnt = 0;
-  Int_t mcPtsCount = nEnt;
+//  Int_t mcPtsCount = nEnt;
   Int_t maxReferencedPtsIndex = 0;
 
   for (int i = 0; i < nEnt; ++i)
@@ -520,7 +522,7 @@ void LxFinder::Exec(Option_t* opt)
     Int_t ptId = root2lxmcpointmap[i];
 
 #ifdef MAKE_HISTOS
-    Double_t trackPt2 = MCTracks[trackId].px * MCTracks[trackId].px + MCTracks[trackId].py * MCTracks[trackId].py;
+//    Double_t trackPt2 = MCTracks[trackId].px * MCTracks[trackId].px + MCTracks[trackId].py * MCTracks[trackId].py;
 #endif//MAKE_HISTOS
 
     MCTracks[trackId].Points.push_back(&MCPoints[ptId]);
@@ -777,8 +779,8 @@ void LxFinder::Exec(Option_t* opt)
     if (p2 < 3.0 * 3.0)
       continue;
 
-    Double_t xDelta = 0.05;//5.0 * sqrt(params.GetCovariance(0, 0));
-    Double_t yDelta = 0.05;//5.0 * sqrt(params.GetCovariance(1, 1));
+//    Double_t xDelta = 0.05;//5.0 * sqrt(params.GetCovariance(0, 0));
+ //   Double_t yDelta = 0.05;//5.0 * sqrt(params.GetCovariance(1, 1));
 
     //if (params.GetX() < -xDelta  || params.GetX() > xDelta || params.GetY() < -yDelta || params.GetY() > yDelta)
       //continue;
@@ -976,7 +978,7 @@ void LxFinder::CalcInvMass()
       continue;
 
     extFitter.DoFit(&t1, 13);
-    Double_t chi2Prim = extFitter.GetChiToVertex(&t1, fPrimVtx);
+//    Double_t chi2Prim = extFitter.GetChiToVertex(&t1, fPrimVtx);
     FairTrackParam t1param;
     extFitter.Extrapolate(&t1, fPrimVtx->GetZ(), &t1param);
 
@@ -1007,7 +1009,7 @@ void LxFinder::CalcInvMass()
 
       CbmStsTrack t2 = *secondTrack->externalTrack->track;
       extFitter.DoFit(&t2, 13);
-      chi2Prim = extFitter.GetChiToVertex(&t2, fPrimVtx);
+//      chi2Prim = extFitter.GetChiToVertex(&t2, fPrimVtx);
       FairTrackParam t2param;
       extFitter.Extrapolate(&t2, fPrimVtx->GetZ(), &t2param);
 
@@ -1077,7 +1079,7 @@ void LxFinder::FinishTask()
   }*/
   TFile* curFile = TFile::CurrentFile();
 #ifdef MAKE_HISTOS
-  char histoFileName[128];
+//  char histoFileName[128];
 
   for (int i = 0; i < 6; ++i)
   {

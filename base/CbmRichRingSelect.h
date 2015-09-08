@@ -40,12 +40,12 @@ class CbmRichRingSelect : public TObject
 
   virtual void Init() { };
 
-  virtual void DoSelect(CbmRichRing* ring) = 0;
+  virtual void DoSelect(CbmRichRing* /*ring*/) = 0;
 
    void SetVerbose(Int_t verbose) { fVerbose = verbose; };
    
-  Int_t GetNofHitsOnRing(CbmRichRing* ring) { return -42; };
-  Double_t GetAngle(CbmRichRing* ring) { return -42.0; };   
+  Int_t GetNofHitsOnRing(CbmRichRing* /*ring*/) { return -42; };
+  Double_t GetAngle(CbmRichRing* /*ring*/) { return -42.0; };   
  protected:
 
   Int_t fVerbose;      // Verbosity level

@@ -111,7 +111,7 @@ void CbmModule::ExpandNodeForGDML(TGeoNode* curNode)
 	}
 }
 #else
-void CbmModule::ConstructGDMLGeometry(TGeoMatrix* posrot)
+void CbmModule::ConstructGDMLGeometry(TGeoMatrix* /*posrot*/)
 {
   gLogger->Error(MESSAGE_ORIGIN," Could not construct magnet geometry from gdml file. ");
   gLogger->Error(MESSAGE_ORIGIN," The used ROOT version does not support gdml. ");
@@ -119,7 +119,7 @@ void CbmModule::ConstructGDMLGeometry(TGeoMatrix* posrot)
   gLogger->Fatal(MESSAGE_ORIGIN," Stop execution at this point. ");
 }
 
-void CbmModule::ExpandNodeForGDML(TGeoNode* curNode)
+void CbmModule::ExpandNodeForGDML(TGeoNode* /*curNode*/)
 {
 }
 #endif

@@ -29,7 +29,7 @@ public:
 	}
 	CbmMCList(Cbm::DataType type, Int_t entry, std::vector<Int_t> list)
 	  : TObject(),
-	  fList(),
+	  fList(list),
 	  fEntry(entry),
 	  fType(type)
 	{

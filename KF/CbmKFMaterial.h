@@ -34,7 +34,7 @@ class CbmKFMaterial :public TObject
   Double_t RadLength  ;
   Double_t F;
   Double_t Fe;
-  virtual Bool_t IsOutside( Double_t x, Double_t y ){ return 0; }
+  virtual Bool_t IsOutside( Double_t, Double_t){ return 0; }
  
   virtual Int_t Pass( Double_t ZCross, Double_t ZThick, 
 		      CbmKFTrackInterface &track,		    

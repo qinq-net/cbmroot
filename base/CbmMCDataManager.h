@@ -62,7 +62,7 @@ class CbmMCDataManager : public FairTask
 
 
 		/** Execution (empty; just to match FairTask structure) **/
-		virtual void Exec(Option_t* option) { };
+		virtual void Exec(Option_t* /*option*/) { };
 
 
 		/** End of event action **/

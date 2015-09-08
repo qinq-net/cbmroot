@@ -52,7 +52,7 @@ class CbmRichRingFitter : public TObject
    **
    *@param pRing      Pointer to CbmRichRing
    */
-  virtual void DoFit(CbmRichRing* pRing) = 0;
+  virtual void DoFit(CbmRichRing* /*pRing*/) = 0;
 
   /** Set verbosity
    *@param verbose   Verbosity level
@@ -65,7 +65,7 @@ class CbmRichRingFitter : public TObject
        Rich Ring fitting algorithms.
        Task: Calculate chi2 for reconstructed ring.
     **/
-   virtual void CalcChi2(CbmRichRing* pRing) {};
+   virtual void CalcChi2(CbmRichRing* /*pRing*/) {};
 
    Int_t fVerbose;      // Verbosity level
 

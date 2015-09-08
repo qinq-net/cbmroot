@@ -126,7 +126,7 @@ void CbmHistManager::ReadFromFile(
    TDirectory* dir = gDirectory;
    TIter nextkey(dir->GetListOfKeys());
    TKey *key;
-   Int_t c = 0;
+//   Int_t c = 0;
    while ((key = (TKey*) nextkey())) {
       TObject* obj = key->ReadObj();
       if (obj->IsA()->InheritsFrom (TH1::Class()) || obj->IsA()->InheritsFrom (TGraph::Class()) || obj->IsA()->InheritsFrom (TGraph2D::Class())) {

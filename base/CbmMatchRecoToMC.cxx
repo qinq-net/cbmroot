@@ -138,7 +138,7 @@ InitStatus CbmMatchRecoToMC::Init()
 }
 
 void CbmMatchRecoToMC::Exec(
-    Option_t* opt)
+    Option_t* /*opt*/)
 {
    if (fStsClusterMatches != NULL) fStsClusterMatches->Delete();
    if (fStsHitMatches != NULL) fStsHitMatches->Delete();

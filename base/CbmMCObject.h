@@ -80,7 +80,7 @@ class CbmMCObject: public TObject {
 
 	friend std::ostream& operator<< (std::ostream& out, const CbmMCObject& obj){
 		std::vector<CbmMCEntry> stages = obj.GetEntryVector();
-		for (int i = 0; i < stages.size(); i++){
+		for (unsigned int i = 0; i < stages.size(); i++){
 			out << i << ": ";
 			stages[i].print(out);
 		}
