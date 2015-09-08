@@ -49,7 +49,7 @@ namespace PairAnalysisStyler
 			       kGreen+1,
 			       kAzure+1,
 			       kOrange+1,
-			       kSpring+2,
+			       kSpring+4,
 			       kViolet+1,
 			       kCyan+2 }; // kNMaxColor
 
@@ -64,7 +64,7 @@ namespace PairAnalysisStyler
   extern UInt_t fLegAlign;           // legend alignement (11,12,21,22)
   void SetLegendAlign(UInt_t align);
   void SetLegendCoordinates(TLegend *leg);
-
+  
 }
 
 #endif

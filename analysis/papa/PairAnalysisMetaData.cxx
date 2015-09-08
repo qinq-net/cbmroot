@@ -65,6 +65,7 @@ void PairAnalysisMetaData::Init()
   // Init meta data objects and add to list
   //
 
+
   TNamed *pSetup = new TNamed("setup", "undefined");
   //  pSetup->SetTitle(gSystem->Getenv("USER")); //e.g. sis100
   fMetaList.Add(pSetup);
@@ -186,9 +187,9 @@ void PairAnalysisMetaData::DrawSame(const Option_t* opt) {
   //
   if(fMetaList.GetEntries()<1) return;
 
-  TPaveText *pt = new TPaveText(gPad->GetLeftMargin(),
+  TPaveText *pt = new TPaveText(gPad->GetLeftMargin()+0.05,
 				1.-gPad->GetTopMargin(),
-				1.-gPad->GetRightMargin(),
+				1.-gPad->GetRightMargin()-0.05,
 				0.99,"NDCNB");
   pt->SetName("meta");
   pt->SetTextAlign(kHAlignLeft+kVAlignCenter);
@@ -197,24 +198,29 @@ void PairAnalysisMetaData::DrawSame(const Option_t* opt) {
   TString line="CBM";
   TString tmp="";
 
-  // system
-  TNamed *par = dynamic_cast<TNamed *>(fMetaList.FindObject("system"));
-  if(par)           tmp=par->GetTitle();
-  if(!tmp.IsNull()) line+=" " + tmp;
-  // beamenergy
-  TParameter<Double_t> *parD = dynamic_cast<TParameter<Double_t> *>(fMetaList.FindObject("beamenergy"));
-  if(parD)          tmp=Form("#sqrt{#it{s}_{NN}} = %.2f GeV",parD->GetVal());
-  if(!tmp.IsNull()) line+=" " + tmp;
-
   // simulation (only if true)
   TParameter<Bool_t> *parB = dynamic_cast<TParameter<Bool_t> *>(fMetaList.FindObject("mc"));
   if(parB && parB->GetVal()) {
-      tmp=Form(", Simulation");
+      tmp=Form(" Simulation");
       line+=tmp;
   }
+
+  // system
+  TNamed *par = dynamic_cast<TNamed *>(fMetaList.FindObject("system"));
+  if(par)           tmp=par->GetTitle();
+  if(!tmp.IsNull()) line+=", " + tmp;
+  // beamenergy
+  TParameter<Double_t> *parD = dynamic_cast<TParameter<Double_t> *>(fMetaList.FindObject("beamenergy"));
+  if(parD)          tmp=Form("#it{E}_{beam} = %.2f #it{A}GeV",parD->GetVal());
+  //  if(parD)          tmp=Form("#sqrt{#it{s}_{NN}} = %.2f GeV",parD->GetVal());
+  if(!tmp.IsNull()) line+=" " + tmp;
+
   pt->AddText(line.Data());
 
 
+  pt->SetLineColorAlpha(0, 1.0);
+  pt->SetFillColorAlpha(0, 1.0);
+  pt->SetFillStyle(kFEmpty);
   //  pt->Print();
   pt->Draw();
 

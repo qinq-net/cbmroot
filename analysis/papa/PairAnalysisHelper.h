@@ -15,6 +15,7 @@
 
 
 #include <TVectorDfwd.h>
+#include <TArrayD.h>
 
 #include <CbmDetectorList.h>
 
@@ -31,6 +32,8 @@ namespace PairAnalysisHelper
   TVectorD* MakeLogBinning(Int_t nbinsX, Double_t xmin, Double_t xmax);
   TVectorD* MakeLinBinning(Int_t nbinsX, Double_t xmin, Double_t xmax);
   TVectorD* MakeArbitraryBinning(const char* bins);
+
+  TArrayD* MakeStatBinLimits(TH1* h, Double_t stat);
 
   TVectorD* MakePdgBinning();
 

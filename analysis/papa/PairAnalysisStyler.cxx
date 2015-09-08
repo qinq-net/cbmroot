@@ -220,7 +220,9 @@ void PairAnalysisStyler::LoadStyle() {
     fUserDielStyle=defaultSty;
 
     // axis
-    TGaxis::SetMaxDigits(4);
+    //    TGaxis::SetMaxDigits(4);
+    TGaxis::SetMaxDigits(3);
+    TGaxis::SetExponentOffset(-1.*0.06,0.,"y");
   }
 
 }
@@ -234,6 +236,10 @@ void PairAnalysisStyler::Style(TObject *obj, Int_t idx) {
 
   // axis attributes
   if (obj->InheritsFrom(TH1::Class()) && gPad) {
+    // reset axis names in order to allow repositioning of exponents 
+    dynamic_cast<TH1*>(obj)->GetXaxis()->SetName("xaxis");
+    dynamic_cast<TH1*>(obj)->GetYaxis()->SetName("yaxis");
+    // logarithmic labels
     if(gPad->GetLogx()) {
       dynamic_cast<TH1*>(obj)->GetXaxis()->SetMoreLogLabels(kTRUE);
       dynamic_cast<TH1*>(obj)->GetXaxis()->SetNoExponent(kTRUE);

@@ -324,12 +324,12 @@ Bool_t PairAnalysis::Process(PairAnalysisEvent *ev1)
   if (fCutQA) fQAmonitor->Fill(cutmask,ev1);
   if (ev1 && cutmask!=selectedMask) return kFALSE;
 
-  //fill track arrays for the first event
+  // fill track arrays for tracks that pass cuts
   FillTrackArrays(ev1);
 
   // prefilter track
-  // if ( (fPreFilterAllSigns||fPreFilterUnlikeOnly) && (fPairPreFilter.GetCuts()->GetEntries()>0) )
-  //   PairPreFilter(0, 1, fTracks[0], fTracks[1]);
+  if ( (fPreFilterAllSigns||fPreFilterUnlikeOnly) && (fPairPreFilter.GetCuts()->GetEntries()>0) )
+    PairPreFilter(0, 1, fTracks[0], fTracks[1]);
 
   // event plane corrections
   // if ( fPreFilterEventPlane && (fEventPlanePreFilter.GetCuts()->GetEntries()>0 || fEventPlanePOIPreFilter.GetCuts()->GetEntries()>0) )
@@ -719,30 +719,40 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 
 	    // fill rec hit variables
 	    PairAnalysisVarManager::Fill(hit, values);
-	    Bool_t truePnt=kFALSE;
-
+	    Bool_t trueHit=kTRUE;
+	    Bool_t fakeHit=kTRUE;
 	    // access to mc points
 	    if( (mtch=hit->GetMatch()) && ev->GetPoints(static_cast<DetectorId>(idet))) {
 	      Int_t nlinks=mtch->GetNofLinks();
 
 
-	      pnt = static_cast<FairMCPoint*>( ev->GetPoints(static_cast<DetectorId>(idet))
-					       ->At(mtch->GetLink(0).GetIndex())
-					       );
+	      // pnt = static_cast<FairMCPoint*>( ev->GetPoints(static_cast<DetectorId>(idet))
+	      // 				       ->At(mtch->GetLink(0).GetIndex())
+	      // 				       );
 	      // check if mc point corresponds to the matched track (true or fake pnt)
 	      // DEFINITION: always a fake hit if you link to >1 mc points?
-	      truePnt = (pnt->GetTrackID() == mctrk && mctrk>-1 && nlinks==1);
-
+	      //  trueHit = (pnt->GetTrackID() == mctrk && mctrk>-1 && nlinks==1);
 	      // fill MC hit variables
-	      PairAnalysisVarManager::Fill(pnt, values);
 
 	      // loop over all linked mc points
-	      for (Int_t iLink = 1; iLink < nlinks; iLink++) {
+	      for (Int_t iLink = 0; iLink < nlinks; iLink++) {
 		pnt = static_cast<FairMCPoint*>( ev->GetPoints(static_cast<DetectorId>(idet))
 						 ->At(mtch->GetLink(iLink).GetIndex())
 						 );
 		// Fill the MC hit variables
-		PairAnalysisVarManager::FillSum(pnt, values);
+		if(!iLink) PairAnalysisVarManager::Fill(pnt, values);
+		else       PairAnalysisVarManager::FillSum(pnt, values);
+
+		// hit defintion
+		if(!pnt) trueHit=kFALSE;
+		else {
+		  Int_t lbl  = pnt->GetTrackID();
+		  Int_t lblM = mc->GetMothersLabel(lbl);
+		  Int_t lblG = mc->GetMothersLabel(lblM);
+		  if(lbl!=mctrk && lblM!=mctrk && lblG!=mctrk) trueHit=kFALSE;
+		  else                                         fakeHit=kFALSE;
+		}
+
 	      } //end links
 
 	    } //end match found
@@ -771,14 +781,18 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	    // fill rec hit histos
 	    if(hitClass)	    fHistos    ->FillClass(className3, values);
 	    if(hitClass2)	    fHistoArray->FillClass(className3, values);
-	    // true or fake hit histos
-	    if(truePnt) {
+	    // true, distorted or fake hit histos
+	    if(trueHit) {
 	      if(hitClass)	    fHistos    ->FillClass(className3+"_true", values);
 	      if(hitClass2)         fHistoArray->FillClass(className3+"_true", values);
 	    }
-	    else {
+	    else if(fakeHit){
 	      if(hitClass)	    fHistos    ->FillClass(className3+"_fake", values);
 	      if(hitClass2)         fHistoArray->FillClass(className3+"_fake", values);
+	    }
+	    else {
+	      if(hitClass)	    fHistos    ->FillClass(className3+"_dist", values);
+	      if(hitClass2)         fHistoArray->FillClass(className3+"_dist", values);
 	    }
 	    // check and fill mc signal histos
 	    for(Int_t isig=0; isig<nsig; isig++) {
@@ -1028,6 +1042,7 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
       fHistos    ->FillClass("Track.noCuts", values);
     }
 
+    // rejection
     if (cutmask!=selectedMask) continue;
 
     //fill selected particle into the corresponding track arrays
@@ -1049,79 +1064,90 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
 
   Int_t ntrack1=arrTracks1.GetEntriesFast();
   Int_t ntrack2=arrTracks2.GetEntriesFast();
-  PairAnalysisPair *candidate;
-  //  if(fUseKF) candidate = new PairAnalysisPairKF();
-  //else
-  candidate = new PairAnalysisPairLV();
-  candidate->SetKFUsage(fUseKF);
+
   // flag arrays for track removal
   Bool_t *bTracks1 = new Bool_t[ntrack1];
   for (Int_t itrack1=0; itrack1<ntrack1; ++itrack1) bTracks1[itrack1]=kFALSE;
   Bool_t *bTracks2 = new Bool_t[ntrack2];
   for (Int_t itrack2=0; itrack2<ntrack2; ++itrack2) bTracks2[itrack2]=kFALSE;
 
+  // candiate
+  PairAnalysisPair *candidate;
+  //  if(fUseKF) candidate = new PairAnalysisPairKF();
+  //else
+  candidate = new PairAnalysisPairLV();
+  candidate->SetKFUsage(fUseKF);
+
   UInt_t selectedMask=(1<<fPairPreFilter.GetCuts()->GetEntries())-1;
-  UInt_t selectedMaskPair=(1<<fPairFilter.GetCuts()->GetEntries())-1;
+  //  UInt_t selectedMaskPair=(1<<fPairFilter.GetCuts()->GetEntries())-1;
 
   Int_t nRejPasses = 1; //for fPreFilterUnlikeOnly and no set flag 
   if (fPreFilterAllSigns) nRejPasses = 3;
 
+  // loop over rejection passes: OS (+ 2xLS)
   for (Int_t iRP=0; iRP < nRejPasses; ++iRP) {
-	Int_t arr1RP=arr1, arr2RP=arr2;
-	TObjArray *arrTracks1RP=&arrTracks1;
-	TObjArray *arrTracks2RP=&arrTracks2;
-	Bool_t *bTracks1RP = bTracks1;
-	Bool_t *bTracks2RP = bTracks2;
-	switch (iRP) {
-		case 1: arr1RP=arr1;arr2RP=arr1;
-				arrTracks1RP=&arrTracks1;
-				arrTracks2RP=&arrTracks1;
-				bTracks1RP = bTracks1;
-				bTracks2RP = bTracks1;
-				break;
-		case 2: arr1RP=arr2;arr2RP=arr2;
-				arrTracks1RP=&arrTracks2;
-				arrTracks2RP=&arrTracks2;
-				bTracks1RP = bTracks2;
-				bTracks2RP = bTracks2;
-				break;
-		default: ;//nothing to do
-	}
-	Int_t ntrack1RP=(*arrTracks1RP).GetEntriesFast();
-	Int_t ntrack2RP=(*arrTracks2RP).GetEntriesFast();
 
-	Int_t pairIndex=GetPairIndex(arr1RP,arr2RP);
+    // default rejection pass OS
+    Int_t arr1RP=arr1, arr2RP=arr2;
+    TObjArray *arrTracks1RP=&arrTracks1;
+    TObjArray *arrTracks2RP=&arrTracks2;
+    Bool_t *bTracks1RP = bTracks1;
+    Bool_t *bTracks2RP = bTracks2;
 
-	for (Int_t itrack1=0; itrack1<ntrack1RP; ++itrack1){
-	  Int_t end=ntrack2RP;
-	  if (arr1RP==arr2RP) end=itrack1;
-	  for (Int_t itrack2=0; itrack2<end; ++itrack2){
-		TObject *track1=(*arrTracks1RP).UncheckedAt(itrack1);
-		TObject *track2=(*arrTracks2RP).UncheckedAt(itrack2);
-		if (!track1 || !track2) continue;
-		//create the pair
-		candidate->SetTracks(static_cast<PairAnalysisTrack*>(track1), fPdgLeg1,
-				     static_cast<PairAnalysisTrack*>(track2), fPdgLeg2);
+    // change for LS rejection passes
+    switch (iRP) {
+    case 1: arr1RP=arr1;arr2RP=arr1;
+      arrTracks1RP=&arrTracks1;
+      arrTracks2RP=&arrTracks1;
+      bTracks1RP = bTracks1;
+      bTracks2RP = bTracks1;
+      break;
+    case 2: arr1RP=arr2;arr2RP=arr2;
+      arrTracks1RP=&arrTracks2;
+      arrTracks2RP=&arrTracks2;
+      bTracks1RP = bTracks2;
+      bTracks2RP = bTracks2;
+      break;
+    default: ;//nothing to do
+    }
+	
+    Int_t ntrack1RP=(*arrTracks1RP).GetEntriesFast();
+    Int_t ntrack2RP=(*arrTracks2RP).GetEntriesFast();
+    
+    Int_t pairIndex=GetPairIndex(arr1RP,arr2RP);
+    // loop over all tracks in both arrays
+    for (Int_t itrack1=0; itrack1<ntrack1RP; ++itrack1){
+      Int_t end=ntrack2RP;
+      if (arr1RP==arr2RP) end=itrack1;
+      for (Int_t itrack2=0; itrack2<end; ++itrack2){
+	TObject *track1=(*arrTracks1RP).UncheckedAt(itrack1);
+	TObject *track2=(*arrTracks2RP).UncheckedAt(itrack2);
+	if (!track1 || !track2) continue;
+	//create the pair
+	candidate->SetTracks(static_cast<PairAnalysisTrack*>(track1), fPdgLeg1,
+			     static_cast<PairAnalysisTrack*>(track2), fPdgLeg2);
+	
+	candidate->SetType(pairIndex);
+	candidate->SetLabel(PairAnalysisMC::Instance()->GetLabelMotherWithPdg(candidate,fPdgMother));
 
-		candidate->SetType(pairIndex);
-		candidate->SetLabel(PairAnalysisMC::Instance()->GetLabelMotherWithPdg(candidate,fPdgMother));
-		//relate to the production vertex
-		//       if (PairAnalysisVarManager::GetKFVertex()) candidate->SetProductionVertex(*PairAnalysisVarManager::GetKFVertex());
+	//pre filter pair cuts
+	UInt_t cutMask=fPairPreFilter.IsSelected(candidate);
 
-		//pair cuts
-		UInt_t cutMask=fPairPreFilter.IsSelected(candidate);
+	//apply cut
+	if (cutMask!=selectedMask) continue;
 
-		//apply cut
-		if (cutMask!=selectedMask) continue;
-		//		if (fCfManagerPair) fCfManagerPair->Fill(selectedMaskPair+1 ,candidate);
-		if (fHistos) FillHistogramsPair(candidate,kTRUE);
-		//set flags for track removal
-		bTracks1RP[itrack1]=kTRUE;
-		bTracks2RP[itrack2]=kTRUE;
-	  }
-	}
-  }
-  //clear
+	// fill histos
+	if (fHistos) FillHistogramsPair(candidate,kTRUE); // kTRUE: fromPrefilter
+
+	//set flags for track removal
+	bTracks1RP[itrack1]=kTRUE;
+	bTracks2RP[itrack2]=kTRUE;
+      }
+    }
+
+  } // end rejection passes
+
+  //clear surplus candiate
   delete candidate;
 
   //remove the tracks from the Track arrays
@@ -1140,6 +1166,7 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
   arrTracks1.Compress();
   arrTracks2.Compress();
   
+  /*
   //apply leg cuts after the pre filter
   if ( fPairPreFilterLegs.GetCuts()->GetEntries()>0 ) {
     selectedMask=(1<<fPairPreFilterLegs.GetCuts()->GetEntries())-1;
@@ -1174,6 +1201,8 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
     TObjArray *unlikesignArray[2] = {&arrTracks1,&arrTracks2};
     FillHistogramsTracks(unlikesignArray);
   }
+  */
+
 }
 
 //________________________________________________________________
@@ -1248,6 +1277,7 @@ void PairAnalysis::FillPairArrays(Int_t arr1, Int_t arr2)
   delete candidate;
 }
 
+//________________________________________________________________
 void PairAnalysis::FillPairArrayTR()
 {
   //

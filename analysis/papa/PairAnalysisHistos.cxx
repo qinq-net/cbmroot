@@ -848,25 +848,31 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   // Bool_t optEps      =optString.Contains("eps");       optString.ReplaceAll("eps","");
   // Bool_t optPng      =optString.Contains("png");       optString.ReplaceAll("png","");
   Bool_t optTask     =optString.Contains("task");      optString.ReplaceAll("task","");
+  // options - calulation
   Bool_t optDiv      =optString.Contains("div");       optString.ReplaceAll("div","");
   Bool_t optEff      =optString.Contains("eff");       optString.ReplaceAll("eff","");
+  Bool_t optRatio    =optString.Contains("ratio");     optString.ReplaceAll("ratio","");
+  Bool_t optOneOver  =optString.Contains("oneover");   optString.ReplaceAll("oneover","");
+  // options - selection
   Bool_t optNoMCtrue =optString.Contains("nomctrue");  optString.ReplaceAll("nomctrue","");
   Bool_t optNoMC     =optString.Contains("nomc");      optString.ReplaceAll("nomc","");
   Bool_t optOnlyMC   =optString.Contains("onlymc");    optString.ReplaceAll("onlymc","");
-  Bool_t optRbn      =optString.Contains("rebin");     optString.ReplaceAll("rebin","");
-  Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
-  Bool_t optCan      =optString.Contains("can");       optString.ReplaceAll("can","");
-  Bool_t optNorm     =optString.Contains("norm");      optString.ReplaceAll("norm","");
-  Bool_t optMeta     =optString.Contains("meta");      optString.ReplaceAll("meta","");
-  Bool_t optEvt      =optString.Contains("events");    optString.ReplaceAll("events","");
-  Bool_t optRatio    =optString.Contains("ratio");     optString.ReplaceAll("ratio","");
-  Bool_t optMeanX    =optString.Contains("meanx");     optString.ReplaceAll("meanx","");
-  Bool_t optRmsX     =optString.Contains("rmsx");     optString.ReplaceAll("rmsx","");
-  Bool_t optMeanY    =optString.Contains("meany");     optString.ReplaceAll("meany","");
-  Bool_t optRmsY     =optString.Contains("rmsy");     optString.ReplaceAll("rmsy","");
-  Bool_t optOneOver  =optString.Contains("oneover");   optString.ReplaceAll("oneover","");
   Bool_t optSel      =optString.Contains("sel");       optString.ReplaceAll("sel","");
   Bool_t optExclSel  =histClassDenom.Contains("!");    histClassDenom.ReplaceAll("!","");
+  // options - representation
+  Bool_t optCan      =optString.Contains("can");       optString.ReplaceAll("can","");
+  Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
+  Bool_t optMeta     =optString.Contains("meta");      optString.ReplaceAll("meta","");
+  Bool_t optRbn      =optString.Contains("rebin");     optString.ReplaceAll("rebin","");
+  Bool_t optSclMax   =optString.Contains("sclmax");    optString.ReplaceAll("sclmax","");
+  Bool_t optNorm     =optString.Contains("norm");      optString.ReplaceAll("norm","");
+  Bool_t optEvt      =optString.Contains("events");    optString.ReplaceAll("events","");
+  // options - information
+  Bool_t optMeanX    =optString.Contains("meanx");     optString.ReplaceAll("meanx","");
+  Bool_t optRmsX     =optString.Contains("rmsx");      optString.ReplaceAll("rmsx","");
+  Bool_t optMeanY    =optString.Contains("meany");     optString.ReplaceAll("meany","");
+  Bool_t optRmsY     =optString.Contains("rmsy");      optString.ReplaceAll("rmsy","");
+  Bool_t optGeant    =optString.Contains("geant");     optString.ReplaceAll("geant","");
 
   // output array
   TObjArray *arr=0x0;
@@ -885,14 +891,15 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   if (optCan){
     c=(TCanvas*)gROOT->FindObject(Form("c%s",histName.Data()));
     if (!c) c=new TCanvas(Form("c%s",histName.Data()),Form("All '%s' histograms",histName.Data()));
-    //    c->Clear();
+    // c->Clear();
     c->cd();
   }
 
-  Int_t nobj=0;
-  TObject *obj;
   // count number of drawn objects in pad
+  TObject *obj;
+  Int_t nobj=0;
   TList *prim = gPad->GetListOfPrimitives();
+  if(prim->GetSize()>1) prim->RemoveLast(); // remove redraw axis histogram
   for(Int_t io=0; io<prim->GetSize(); io++) {
     obj=prim->At(io);
     if(obj->InheritsFrom(TH1::Class()) && obj!=prim->At(io+1)) nobj++;
@@ -928,8 +935,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   Int_t events = 1;
   if(fMetaData && optEvt)  fMetaData->GetMeta("events",&events);
 
-  //  Int_t i=(nobj ? nobj-1 : 0);
-  Int_t i=(nobj ? 10 : 0); // TOD: obsolete?
+  Int_t i=(nobj ? 10 : 0); // TOD0: obsolete?
   if(optTask && nobj) i=nobj;
   TIter next(&fHistoList);
   THashList *classTable=0;
@@ -967,6 +973,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
       h->SetTitle("");
       PairAnalysisStyler::Style(h,i);
       if(optString.Contains("scat")) h->SetMarkerStyle(kDot);
+      if(optString.Contains("e"))    h->SetLineStyle(kSolid);
 
       // set geant process labels
       // if(!histName.CompareTo("GeantId")) PairAnalysisHelper::SetGEANTBinLabels(h);
@@ -976,24 +983,27 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
       if(optRbn)                    h->Rebin();
       if(optNorm && !(h->GetSumOfWeights()==0)) h=h->DrawNormalized(i>0?(optString+"same").Data():optString.Data());
       if(optEvt)                    h->Scale(1./events);
+      if(optSclMax)                 h->Scale(1./h->GetBinContent(h->GetMaximumBin()));
 
       // set title
       TString ytitle = h->GetYaxis()->GetTitle();
       TString ztitle = h->GetZaxis()->GetTitle();
       switch(h->GetDimension()) {
       case 1:
-	if(optEvt)  h->SetYTitle( (ytitle+"/N_{evt}").Data() );
-	if(optNorm) h->SetYTitle( (ytitle.Append(" (normalized)")).Data() );
-	if(optEff)  h->SetYTitle( "efficiency" );
-	if(optRatio)h->SetYTitle( "ratio" );
-	if(optDiv)  h->SetYTitle( "ratio" );
+	if(optEvt)    h->SetYTitle( (ytitle+"/N_{evt}").Data() );
+	if(optNorm)   h->SetYTitle( (ytitle.Append(" (normalized)")).Data() );
+	if(optEff)    h->SetYTitle( "efficiency" );
+	if(optRatio)  h->SetYTitle( "ratio" );
+	if(optDiv)    h->SetYTitle( "ratio" );
+	if(optSclMax) h->SetYTitle( (ytitle+"/N_{max}").Data() );
 	break;
       case 2:
-	if(optEvt)  h->SetZTitle( (ztitle+"/N_{evt}").Data() );
-	if(optNorm) h->SetZTitle( (ztitle.Prepend("normalized ")).Data() );
-	if(optEff)  h->SetZTitle( "efficiency" );
-	if(optRatio)h->SetZTitle( "ratio" );
-	if(optDiv)  h->SetZTitle( "ratio" );
+	if(optEvt)    h->SetZTitle( (ztitle+"/N_{evt}").Data() );
+	if(optNorm)   h->SetZTitle( (ztitle.Prepend("normalized ")).Data() );
+	if(optEff)    h->SetZTitle( "efficiency" );
+	if(optRatio)  h->SetZTitle( "ratio" );
+	if(optDiv)    h->SetZTitle( "ratio" );
+	if(optSclMax) h->SetZTitle( (ztitle+"/N_{max}").Data() );
 	break;
       }
 
@@ -1070,6 +1080,9 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	if(hOne->Divide(h)) h=hOne;
       }
 
+      // geant labels
+      if(optGeant) PairAnalysisHelper::SetGEANTBinLabels(h);
+
       // change name
       h->SetName(histClass.Data());
       if(optGoff) arr->Add(h);
@@ -1113,6 +1126,10 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	  if(ratioName.CountChar('_')>0) ratioName.ReplaceAll( PairAnalysis::PairClassName(iptype), "");
 	  if(divName.CountChar('_')>0)   divName.ReplaceAll( PairAnalysis::PairClassName(iptype), "");
 	}
+	// save Dalitz underscore
+	histClass.ReplaceAll("_{Dalitz}","#{Dalitz}");
+	ratioName.ReplaceAll("_{Dalitz}","#{Dalitz}");
+	divName.ReplaceAll("_{Dalitz}","#{Dalitz}");
 	// remove delimiters
 	histClass.ReplaceAll("_"," ");
 	ratioName.ReplaceAll("_"," ");
@@ -1120,6 +1137,10 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	histClass.ReplaceAll(".","");
 	ratioName.ReplaceAll(".","");
 	divName.ReplaceAll(".","");
+	// get Dalitz back
+	histClass.ReplaceAll("#{Dalitz}","_{Dalitz}");
+	ratioName.ReplaceAll("#{Dalitz}","_{Dalitz}");
+	divName.ReplaceAll("#{Dalitz}","_{Dalitz}");
 	// remove trailing and leading spaces
 	histClass.Remove(TString::kBoth,' ');
 	ratioName.Remove(TString::kBoth,' ');
@@ -1135,8 +1156,9 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	TString legOpt = optString+"L";
 	legOpt.ReplaceAll("hist","");
 	legOpt.ReplaceAll("scat","");
-	legOpt.ReplaceAll("col","");
+	//	legOpt.ReplaceAll("col","");
 	legOpt.ReplaceAll("z","");
+	legOpt.ReplaceAll("e","");
 	if (optTask)                histClass.Prepend(Form("%s ",GetName()));
 	if (optDiv && !optOneOver)  histClass.ReplaceAll(GetName(),Form("%s/%s",GetName(),divName.Data()));
 	if (optDiv &&  optOneOver)  histClass.Prepend(Form("%s/",divName.Data()));
@@ -1146,7 +1168,8 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	if(optMeanY) histClass+=Form(" #LTy#GT=%.2e",h->GetMean(2));
 	if(optRmsY)  histClass+=Form(" RMS(y)=%.2e",h->GetRMS(2));
 	histClass.ReplaceAll("e+00","");
-	if (leg) leg->AddEntry(h,histClass.Data(),legOpt.Data());
+	// no entry for colored plots
+	if (leg && !legOpt.Contains("col")) leg->AddEntry(h,histClass.Data(),legOpt.Data());
 
 	//      if (leg) leg->AddEntry(h,classTable->GetName(),(optString+"L").Data());
 	++i;
@@ -1166,7 +1189,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
     leg->SetFillStyle(0);
     leg->SetTextSize(0.02); // TODO: replaced by global legend textsize for root > v5-34-26
     PairAnalysisStyler::SetLegendCoordinates(leg);
-    leg->Draw();
+    if(!nobj) leg->Draw(); // only draw the legend once
   }
 
   // axis maximum
@@ -1177,13 +1200,15 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   while ((obj = nextObj())) {
     if(obj->InheritsFrom(TH1::Class())) {
       TH1* h1 = static_cast<TH1*>(obj);
+      //      Printf("max%f \t min%f",h1->GetMaximum(),PairAnalysisHelper::GetContentMinimum(h1));
       max=TMath::Max(max,h1->GetMaximum());
-      min=TMath::Min(min,h1->GetMinimum());
-      //      Printf("max%f \t %f",max,h1->GetMaximum());
+      min=TMath::Min(min,PairAnalysisHelper::GetContentMinimum(h1));//hobj->GetBinContent(hobj->GetMinimumBin()));
+      //Printf("max%f \t min%f",max,min);
       if(!optEff) h1->SetMaximum(max*1.1);
       else        h1->SetMaximum(1.1);
+      h1->SetMinimum( min*(min<0.?1.1:0.9) ); //TODO: doesnt work, why?? Negative values?
       // automatically set log option
-      if(gPad->GetLogy() && max/min > TMath::Power(10.,TGaxis::GetMaxDigits())) {
+      if(gPad->GetLogy() && max/(min>0.?min:1.) > TMath::Power(10.,TGaxis::GetMaxDigits())) {
 	h1->GetYaxis()->SetMoreLogLabels(kFALSE);
 	h1->GetYaxis()->SetNoExponent(kFALSE);
       }
@@ -1195,18 +1220,25 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   }
 
   // draw meta data
-  if(optMeta && fMetaData && !gPad->GetListOfPrimitives()->FindObject("meta")) {
+  if(!nobj && optMeta && fMetaData && !gPad->GetPrimitive("meta")) {
     fMetaData->DrawSame("");
   }
 
-  /*
-  if (hFirst&&(hFirst->GetYaxis()->GetXmax()<max)){
-    hFirst->SetMaximum(max);
+  // force legend to be drawn always on top, remove multiple versions of it
+  // they show up when one uses the 'task' draw option
+  if(leg) leg->DrawClone();
+  nextObj.Reset();
+  Int_t ileg = 0;
+  while ((obj = nextObj())) {
+    if(obj->InheritsFrom(TLegend::Class())) {
+      if(ileg>0) delete obj;
+      ileg++;
+    }
   }
-  */
 
   // styling
-  gPad->RedrawAxis();
+  // NOTE: this draws a copy of the first histogram
+  gPad->RedrawAxis(); 
 
   // remove canvas
   if(optGoff) delete c;

@@ -114,6 +114,51 @@ TVectorD* PairAnalysisHelper::MakeArbitraryBinning(const char* bins)
   return binLimits;
 }
 
+//_____________________________________________________________________________
+TArrayD *PairAnalysisHelper::MakeStatBinLimits(TH1* h, Double_t stat)
+{
+  //
+  // get bin limits for stat. error less than 'stat'
+  //
+  if(!h || stat>1.) return 0x0;
+
+  Double_t cont = 0.0;
+  Double_t err  = 0.0;
+  Double_t from = h->GetBinLowEdge(1);
+  Double_t to   = 0.0;
+
+  TArrayD  *vBins  = new TArrayD(1+1);
+  vBins->AddAt(from, 0);
+  Int_t     vEle   = 1;
+
+  for(Int_t i=1; i<=h->GetNbinsX(); i++) {
+    if(h->GetBinContent(i)==0.0 && h->GetBinError(i)==0.) continue;
+
+    to=h->GetBinLowEdge(i+1);
+    cont+=h->GetBinContent(i);
+    err+=(h->GetBinError(i)*h->GetBinError(i));
+    vBins->AddAt(to, vEle);
+
+    Printf("cont %f err %f(%f) sum of -> rel err %f%% (current: %f%%)",
+           h->GetBinContent(i), h->GetBinError(i), TMath::Sqrt(h->GetBinContent(i)),h->GetBinError(i)/h->GetBinContent(i)*100, TMath::Sqrt(err)/cont*100);
+
+    // check for new bin                                                                                                                                                                                                                                            
+    if(TMath::Sqrt(err)/cont <= stat) {
+      Printf("bin from %f to %f with err %f%%",from,to,TMath::Sqrt(err)/cont*100);
+      err=0.0;
+      cont=0.0;
+      vEle++;
+      from=to;
+      vBins->Set(vEle+1);
+    }
+
+  }
+
+  vBins->AddAt(h->GetXaxis()->GetXmax(), vBins->GetSize()-1);
+
+  for(Int_t i=0;i<vBins->GetSize();i++)  Printf("%d %f",i,vBins->At(i));
+  return vBins;
+}
 
 //_____________________________________________________________________________
 TVectorD* PairAnalysisHelper::MakePdgBinning()
@@ -252,7 +297,9 @@ void PairAnalysisHelper::SetGEANTBinLabels( TH1 *hist) {
   for(Int_t i=1; i<hist->GetNbinsX()+1; i++) {
     xaxis->SetBinLabel(i,TMCProcessName[i-1]);
   }
+  xaxis->LabelsOption("v"); // vertical labels
   if(gPad) {
+    xaxis->SetTitleOffset(3.6);
     gPad->SetTopMargin(0.01);
     gPad->SetBottomMargin(0.4);
   }
