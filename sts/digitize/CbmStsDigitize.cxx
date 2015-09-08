@@ -43,6 +43,16 @@
 #include "digitize/CbmStsSensorTypeDssdReal.h"
 
 
+// -----   Static member variables   ---------------------------------------
+// The default setting is the fully realistic response.
+Int_t  CbmStsDigitize::fElossModel      = 2;  //  energy loss fluctuations
+Bool_t CbmStsDigitize::fUseLorentzShift = kTRUE;  // Lorentz shift on
+Bool_t CbmStsDigitize::fUseDiffusion    = kTRUE;  // Diffusion on
+Bool_t CbmStsDigitize::fUseCrossTalk    = kTRUE;  // Cross talk on
+Bool_t CbmStsDigitize::fIsInitialised   = kFALSE;
+// -------------------------------------------------------------------------
+
+
 
 // -----   Standard constructor   ------------------------------------------
 CbmStsDigitize::CbmStsDigitize(Int_t digiModel)
@@ -57,10 +67,6 @@ CbmStsDigitize::CbmStsDigitize(Int_t digiModel)
     fNoise(0.),
     fDeadChannelFraction(0.),
     fStripPitch(-1.),
-    fNonUniform(kTRUE),
-    fDiffusion(kTRUE),
-    fCrossTalk(kTRUE),
-    fLorentzShift(kTRUE),
     fSetup(NULL),
     fPoints(NULL),
     fDigis(NULL),
@@ -330,6 +336,9 @@ InitStatus CbmStsDigitize::Init() {
 		        << FairLogger::endl;
 	std::cout << std::endl;
 
+	// Set static initialisation flag
+	fIsInitialised = kTRUE;
+
 	return kSUCCESS;
 
 }
@@ -584,17 +593,26 @@ void CbmStsDigitize::SetDeadChannelFraction(Double_t fraction) {
 // -------------------------------------------------------------------------
 
 
-// -----   Set the switches for physical processes for real digitizer model -
-void CbmStsDigitize::SetPhysicalProcesses(Bool_t nonUniform, Bool_t diffusion, Bool_t crossTalk, Bool_t lorentzShift){
-      if (fDigiModel != 2) LOG(WARNING) << GetName() << ": cannot switch the physical processes for the simple(1) or for hte ideal (0) model of the Digitizer. Please use the real model: CbmStsDigitize(2). Continue without physical processes" << FairLogger::endl;
-      else  {
-	  fNonUniform   = nonUniform;
-	  fDiffusion    = diffusion;
-	  fCrossTalk    = crossTalk;
-	  fLorentzShift = lorentzShift;
-      }
-  }
+
+// -----   Set the switches for physical processes for real digitiser model
+void CbmStsDigitize::SetProcesses(Int_t eLossModel,
+		                              Bool_t useLorentzShift,
+		                              Bool_t useDiffusion,
+		                              Bool_t useCrossTalk) {
+	  if ( fIsInitialised ) {
+	  	LOG(ERROR) << "STS digitize: physics processes must be set before "
+	  			       << "initialisation! Statement will have no effect."
+	  			       << FairLogger::endl;
+	  	return;
+	  }
+	  fElossModel      = eLossModel;
+	  fUseLorentzShift = useLorentzShift;
+	  fUseDiffusion    = useDiffusion;
+	  fUseCrossTalk    = useCrossTalk;
+}
 // -------------------------------------------------------------------------
+
+
 
 // -----   Set the operating parameters for the sensors   ------------------
 // TODO: Currently, all sensors have the same parameters. In future,
@@ -660,7 +678,7 @@ void CbmStsDigitize::SetSensorTypes() {
 	Int_t nSensorsSet = 0;
 
 	// --- Catch unknown response model
-	if ( fDigiModel < 0 || fDigiModel > 2 )
+	if ( fDigiModel < 0 || fDigiModel > 3 )
 		LOG(FATAL) << GetName() << ": Unknown response model " << fDigiModel
 				       << FairLogger::endl;
 
@@ -671,6 +689,27 @@ void CbmStsDigitize::SetSensorTypes() {
 				      << FairLogger::endl;
 		return;
 	}
+
+	// --- Type Dssd, but with old ProcessPoint implementation
+	if ( fDigiModel == 3 ) {
+		LOG(INFO) << GetName() << ": Detector response model SIMPLE OLD"
+				      << FairLogger::endl;
+		Int_t nSensors = fSetup->GetNofSensors();
+		for (Int_t iSensor = 0; iSensor < fSetup->GetNofSensors(); iSensor++) {
+			CbmStsSensor* sensor = fSetup->GetSensor(iSensor);
+
+			// --- Get sensor type. Catch non-DSSD types.
+			if ( ! sensor->GetType()->IsA()->InheritsFrom(CbmStsSensorTypeDssd::Class()) )
+				LOG(FATAL) << GetName() << ": Sensor " << sensor->GetName()
+				           << " is not of type DSSD!" << FairLogger::endl;
+			CbmStsSensorTypeDssd* type =
+					dynamic_cast<CbmStsSensorTypeDssd*>(sensor->GetType());
+			type->SetOld();
+
+		}
+	return;
+	}
+
 
 	// --- Log
 	LOG(INFO) << GetName() << ": Detector response model "
@@ -712,7 +751,9 @@ void CbmStsDigitize::SetSensorTypes() {
 		else if ( fDigiModel == 2 ) {
 			newType = new CbmStsSensorTypeDssdReal();
 			newType->SetTitle("DssdReal");
-			((CbmStsSensorTypeDssdReal*)newType)->SetPhysicalProcesses(fNonUniform, fDiffusion, fCrossTalk, fLorentzShift);
+			Bool_t nonUniform = ( fElossModel == 2 );
+			((CbmStsSensorTypeDssdReal*)newType)->SetPhysicalProcesses(nonUniform, fUseDiffusion,
+					                                         fUseCrossTalk, fUseLorentzShift);
 		}
 		else
 			LOG(FATAL) << GetName() << ": Unknown response model " << fDigiModel

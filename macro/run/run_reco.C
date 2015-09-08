@@ -25,6 +25,10 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
   // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
   Int_t iVerbose = 0;
+  FairLogger* logger = FairLogger::GetLogger();
+  logger->SetLogScreenLevel("INFO");
+  logger->SetLogVerbosityLevel("LOW");
+	
 
   TString outDir  = "data/";
   TString inFile  = outDir + setup + "_test.mc.root";       // Input file (MC events)
@@ -121,9 +125,17 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   Double_t timeResolution =       5.;  // time resolution [ns]
   Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
   Double_t noise          =       0.;  // ENC [e]
-  Int_t digiModel         =       1;   // Model: 1 = uniform charge distribution along track
+  Int_t digiModel         =       1;   // User sensor type DSSD
+	
+  // The following settings correspond to a validated implementation. 
+  // Changing them is on your own risk.
+  Int_t  eLossModel       = 1;         // Energy loss model: uniform 
+  Bool_t useLorentzShift  = kFALSE;    // Deactivate Lorentz shift
+  Bool_t useDiffusion     = kFALSE;    // Deactivate diffusion
+  Bool_t useCrossTalk     = kFALSE;    // Deactivate cross talk
 
   CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
+  stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
   stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution,
   		                 deadTime, noise);
   run->AddTask(stsDigi);

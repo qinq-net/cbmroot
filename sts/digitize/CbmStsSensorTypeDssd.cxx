@@ -14,6 +14,7 @@
 
 #include "FairLogger.h"
 
+#include "CbmStsDigitize.h"
 #include "CbmStsModule.h"
 #include "CbmStsPhysics.h"
 #include "CbmStsSensor.h"
@@ -35,7 +36,7 @@ const double kPairEnergy = 3.57142e-9;
 CbmStsSensorTypeDssd::CbmStsSensorTypeDssd()
     : CbmStsSensorType(), 
       fDx(-1.), fDy(-1.), fDz(-1.),
-      fNofStrips(), fStereo(), fIsSet(kFALSE),
+      fNofStrips(), fStereo(), fIsSet(kFALSE), fOld(kFALSE),
       fPitch(), fTanStereo(), fCosStereo(), fStripShift(),
       fStripCharge(),
       fPhysics(NULL)
@@ -621,8 +622,10 @@ Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
 
 
 	// --- For the time being, use the old ProcessPoint method
-	Int_t nSignalsOld = ProcessPointOld(point, sensor);
-	return nSignalsOld;
+	if ( fOld ) {
+	  Int_t nSignalsOld = ProcessPointOld(point, sensor);
+	  return nSignalsOld;
+	}
 
   // --- Catch if parameters are not set
   if ( ! fIsSet ) {
@@ -647,7 +650,7 @@ Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
   ProduceCharge(point, sensor);
 
   // --- Cross talk
-  if ( fPhysics->UseCrossTalk() ) {
+  if ( CbmStsDigitize::UseCrossTalk() ) {
     if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG4) ) {
     	LOG(DEBUG4) << GetName() << ": Status before cross talk"
     			        << FairLogger::endl;
@@ -748,7 +751,7 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 
 	// For ideal energy loss, just have all charge in the mid-point of the
 	// trajectory
-	if ( fPhysics->EnergyLossModel() == 0 ) {
+	if ( CbmStsDigitize::GetElossModel() == 0 ) {
 	  Double_t xP = 0.5 * ( point->GetX1() + point->GetX2() );
 	  Double_t yP = 0.5 * ( point->GetY1() + point->GetY2() );
 	  Double_t zP = 0.5 * ( point->GetZ1() + point->GetZ2() );
@@ -789,7 +792,7 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 
 	// Stopping power, needed for energy loss fluctuations
 	Double_t dedx = 0.;
-	if ( fPhysics->EnergyLossModel() == 2 )
+	if ( CbmStsDigitize::GetElossModel() == 2 )
 		dedx = fPhysics->StoppingPower(eKin, point->GetPid());
 
 	// Stepping over the trajectory
@@ -804,7 +807,7 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 
 		// Charge for this step
 		Double_t chargeInStep = chargePerStep;  // uniform energy loss
-		if ( fPhysics->EnergyLossModel() == 2 ) // energy loss fluctuations
+		if ( CbmStsDigitize::GetElossModel() == 2 ) // energy loss fluctuations
 			chargeInStep = fPhysics->EnergyLoss(stepSize, mass, eKin, dedx)
 			               / kPairEnergy;
 		chargeSum += chargeInStep;
@@ -822,7 +825,7 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 	// charge per step does not coincide with the expectation value.
 	// In order to be consistent with the transport, the charges are
 	// re-normalised.
-	if ( fPhysics->EnergyLossModel() == 2) {
+	if ( CbmStsDigitize::GetElossModel() == 2) {
 		for (Int_t side = 0; side < 2; side++) {  // front and back side
 			for (Int_t strip = 0; strip < fNofStrips[side]; strip++)
 				fStripCharge[side][strip] *= ( chargeTotal / chargeSum );
@@ -854,7 +857,7 @@ void CbmStsSensorTypeDssd::PropagateCharge(Double_t x, Double_t y,
 			        << FairLogger::endl;
 
 	// Lorentz shift on the drift to the readout plane
-	if ( fPhysics->UseLorentzShift() ) {
+	if ( CbmStsDigitize::UseLorentzShift() ) {
 		xCharge += LorentzShift(z, side, sensor, bY);
     LOG(DEBUG4) << GetName() << ": After Lorentz shift: (" << xCharge << ", "
 		   	        << yCharge << ", " << zCharge << ") cm" << FairLogger::endl;
@@ -869,7 +872,7 @@ void CbmStsSensorTypeDssd::PropagateCharge(Double_t x, Double_t y,
 	}
 
 	// No diffusion: all charge is in one strip
-	if ( ! fPhysics->UseDiffusion() ) {
+	if ( ! CbmStsDigitize::UseDiffusion() ) {
 		Int_t iStrip = GetStripNumber(xCharge, yCharge, side);
 		fStripCharge[side][iStrip] += charge;
 		LOG(DEBUG4) << GetName() << ": Adding charge " << charge << " to strip "
@@ -960,7 +963,7 @@ Int_t CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
   Int_t nStrips   = fNofStrips[side];
 
   // Debug output
-  LOG(DEBUG4) << GetName() << ": Side " << side << ", dx = " << fDx
+  LOG(DEBUG3) << GetName() << ": Side " << side << ", dx = " << fDx
   		        << " cm, dy = " << fDy << " cm, stereo " << fStereo[side]
   		        << " degrees, strips " << fNofStrips[side] << ", pitch "
   		        << pitch << " mum" << FairLogger::endl;
@@ -972,7 +975,7 @@ Int_t CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
                 - ( 0.5 * fDy - point->GetY1() ) * tanphi;
   Double_t x2 = point->GetX2() + 0.5 * fDx
                 - ( 0.5 * fDy - point->GetY2() ) * tanphi;
-  LOG(DEBUG4) << GetName() << ": R/O x coordinates are " << x1 << " "
+  LOG(DEBUG3) << GetName() << ": R/O x coordinates are " << x1 << " "
   		        << x2 << FairLogger::endl;
 
 
@@ -992,6 +995,8 @@ Int_t CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
     x1 = x2;
     x2 = tempX;
   }
+  LOG(DEBUG3) << GetName() << ": R/O strips are " << i1 << " to "
+  		        << i2 << FairLogger::endl;
 
 
   // --- Loop over fired strips
@@ -1021,10 +1026,15 @@ void CbmStsSensorTypeDssd::RegisterCharge(const CbmStsSensor* sensor,
                                           Double_t charge,
                                           Double_t time) const {
 
+  // --- Protect against invalid sensor pointer
+	assert ( sensor );
+
 	// --- Check existence of module
 	if ( ! sensor->GetModule() ) {
-		LOG(ERROR) << GetName() << ": No module connected to sensor!"
-				       << FairLogger::endl;
+  	LOG(ERROR) << GetName() << ": No module connected to sensor "
+  			       << sensor->GetName() << ", side " << side << ", strip "
+  			       << strip << ", time " << time << ", charge " << charge
+  			       << FairLogger::endl;
 		return;
 	}
 

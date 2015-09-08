@@ -69,7 +69,15 @@ class CbmStsDigitize : public FairTask
   }
 
   /** Digitize model **/
+  // TODO: can be removed after validation of SensorTypeDssd
   Int_t GetDigitizeModel() const { return fDigiModel;}
+
+
+  /** Flag for energy loss model
+   ** @value 0 = ideal, 1 = uniform, 2 = fluctuations
+   **/
+  static Int_t GetElossModel() { return fElossModel; }
+
 
   /** Get number of signals front side **/
   Int_t GetNofSignalsF() const {return fNofSignalsF;}
@@ -132,7 +140,20 @@ class CbmStsDigitize : public FairTask
  	 fNoise          = noise;
    }
 
-  void SetPhysicalProcesses(Bool_t nonUniform, Bool_t diffusion, Bool_t crossTalk, Bool_t lorentzShift);
+
+
+  /** Set physics processes
+   ** @param eLossModel       0 = ideal, 1 = uniform, 2 = fluctuations
+   ** @param useLorentzShift  If kTRUE, activate Lorentz shift
+   ** @param useDiffusion     If kTRUE, activate diffusion
+   ** @param useCrossTalk     If kTRUE; activate cross talk
+   **
+   ** Changing the physics flags is only allowed before Init() is called.
+   **/
+  void SetProcesses(Int_t eLossModel,
+  		              Bool_t useLorentzShift = kTRUE,
+  		              Bool_t useDiffusion = kTRUE,
+  		              Bool_t useCrossTalk = kTRUE);
 
 
  /** Set the operating parameters in the sensors **/
@@ -155,12 +176,30 @@ class CbmStsDigitize : public FairTask
   void SetSensorTypes();
 
 
+  /** Flag for cross talk
+   ** @value kTRUE if cross talk is activated
+   **/
+  static Bool_t UseCrossTalk() { return fUseCrossTalk; }
+
+
+  /** Flag for diffusion
+   ** @value kTRUE if diffusion is activated
+   **/
+  static Bool_t UseDiffusion() { return fUseDiffusion; }
+
+
+   /** Flag for Lorentz shift
+   ** @value kTRUE if Lorentz shift is activated
+   **/
+  static Bool_t UseLorentzShift() { return fUseLorentzShift; }
+
 
 
  private:
 
   Int_t fMode;       ///< Run mode. 0 = stream, 1 = event
   Int_t fDigiModel;  ///< Detector response model. 0 = ideal, 1 = simple, 2 = real
+  static Bool_t fIsInitialised;   ///< kTRUE if Init() was called
 
   // --- Digitisation parameters
   Double_t fDynRange;            ///< Dynamic range [e]
@@ -175,11 +214,11 @@ class CbmStsDigitize : public FairTask
   // --- the sensor DB
   Double_t fStripPitch;
 
-  // --- Switches for charge sharing process
-  Bool_t fNonUniform;   ///< Non-uniform distribution of energy loss along the track
-  Bool_t fDiffusion;    ///< Diffusion of charge carriers
-  Bool_t fCrossTalk;    ///< Cross talk due to interstrip capaciance
-  Bool_t fLorentzShift; ///< Lorentz shift of charge carriers in magneic field
+  // --- Switches for physics process
+  static Int_t  fElossModel;      ///< Energy loss model (0, 1 or 2)
+  static Bool_t fUseLorentzShift; ///< Lorentz shift of charge carriers in magnetic field
+  static Bool_t fUseDiffusion;    ///< Diffusion of charge carriers
+  static Bool_t fUseCrossTalk;    ///< Cross talk due to inter-strip capacitance
 
   CbmStsSetup*   fSetup;        ///< STS setup interface
   TClonesArray*  fPoints;       ///< Input array of CbmStsPoint

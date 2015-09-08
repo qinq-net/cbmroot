@@ -18,7 +18,7 @@ using namespace std;
 
 
 // --- Energy for creation of an electron-hole pair in silicon [GeV]  ------
-const double kPairEnergy = 3.6e-9;
+const double kPairEnergy = 3.57142e-9;
 
 
 
@@ -114,7 +114,7 @@ Int_t CbmStsSensorTypeDssdIdeal::ProduceCharge(CbmStsSensorPoint* point,
   Double_t qtot = point->GetELoss() / kPairEnergy;
 
   // Register charge to module, if inside active area.
-  if ( iStrip >= 0 && sensor->GetModule() )
+  if ( iStrip >= 0 )
   	RegisterCharge(sensor, side, iStrip, qtot, point->GetTime() );
 
   return 1;

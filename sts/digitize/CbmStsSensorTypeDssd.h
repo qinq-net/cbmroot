@@ -161,6 +161,10 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
                                   const CbmStsSensor* sensor);
 
 
+    /** Set usage of old ProcessPoint implementation **/
+    void SetOld() { fOld = kTRUE; }
+
+
     /** Set the parameters
      ** @param dx,dy,dz          Size in x,y,z [cm]
      ** @param pitchF,pitchB     Strip pitch foint and back side [cm]
@@ -195,6 +199,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
     Int_t    fNofStrips[2];   ///< Number of strips on front/back side
     Double_t fStereo[2];      ///< Stereo angle front/back side [degrees]
     Bool_t   fIsSet;          ///< Flag whether parameters are set
+    Bool_t   fOld;            ///< Use old ProcessPoint implementation
     CbmStsPhysics* fPhysics;  //!  Pointer to CbmStsPhysics instance
 
 

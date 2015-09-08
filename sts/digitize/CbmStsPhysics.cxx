@@ -30,11 +30,7 @@ const Double_t CbmStsPhysics::fgkProtonMass = 0.938272081;  // GeV
 
 // -----   Constructor   ---------------------------------------------------
 CbmStsPhysics::CbmStsPhysics() 
-	: fEnergyLossModel(2),
-	  fUseLorentzShift(kTRUE),
-	  fUseDiffusion(kTRUE),
-	  fUseCrossTalk(kTRUE),
-	  fUrbanI(0.),
+	: fUrbanI(0.),
 	  fUrbanE1(0.),
 	  fUrbanE2(0.),
 	  fUrbanF1(0.),

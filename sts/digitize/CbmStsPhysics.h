@@ -75,16 +75,6 @@ class CbmStsPhysics : public TObject {
 				                Double_t eKin, Double_t dedx) const;
 
 
-		/** Energy loss model
-		 ** @value Flag for energy loss model
-		 **
-		 ** 0 = ideal (all energy loss in one point)
-		 ** 1 = simple (uniform energy loss)
-		 ** 2 = realistic (energy loss fluctuations)
-		 **/
-		Int_t EnergyLossModel() const { return fEnergyLossModel; }
-
-
 		/** Atomic charge of Silicon
 		 ** @value Atomic charge of Silicon [e]
 		 **/
@@ -97,7 +87,7 @@ class CbmStsPhysics : public TObject {
 		static CbmStsPhysics* Instance();
 
 
-		/** Particle charge from PDG particle ID
+  	/** Particle charge from PDG particle ID
 		 ** @param pid   PID (PDG code)
 		 ** @value particle charge [e]
 		 **
@@ -118,28 +108,6 @@ class CbmStsPhysics : public TObject {
 		 **/
 		static Double_t ParticleMass(Int_t pid);
 
-
-		/** Set the physical processes
-		 ** @param energyLoss    Energy loss model   (default: 2)
-		 ** @param lorentzShift  LorentzShift        (default:kTRUE)
-		 ** @param diffusion     Charge diffusion    (default: kTRUE)
-		 ** @param crossTalk     Cross talk between strips (default: kTRUE)
-		 **
-		 ** For the energy loss model, 0 means ideal (all energy loss in the
-		 ** midpoint of the trajectory), 1 is simple (uniform energy loss),
-		 ** 2 is realistic (energy loss fluctuations).
-		 ** By default, all processes are on, and the energy loss model is
-		 ** realistic.
-		 */
-		void SetProcesses(Int_t energyLoss,
-				              Bool_t lorentzShift = kTRUE,
-				              Bool_t diffusion = kTRUE,
-				              Bool_t crossTalk = kTRUE) {
-			fEnergyLossModel = energyLoss;
-			fUseLorentzShift = lorentzShift;
-			fUseDiffusion    = diffusion;
-			fUseCrossTalk    = crossTalk;
-		}
 
 
 		/** Stopping power (average specific energy loss) in Silicon
@@ -169,11 +137,6 @@ class CbmStsPhysics : public TObject {
 				                   Double_t charge, Bool_t isElectron);
 
 
-		/** Accessors to physics flags **/
-		Bool_t UseLorentzShift() const { return fUseLorentzShift; }
-		Bool_t UseDiffusion()    const { return fUseDiffusion; }
-		Bool_t UseCrossTalk()    const { return fUseCrossTalk; }
-
 
 	private:
 
@@ -188,18 +151,6 @@ class CbmStsPhysics : public TObject {
 
     /** Pointer to singleton instance **/
 		static CbmStsPhysics* fgInstance;
-
-		/** Flag for energy loss calculation
-		 ** 0 = ideal (all charge is created in the mid-point of the trajectory)
-		 ** 1 = simple (uniform charge distribution along the trajectory)
-		 ** 2 = realistic (charge fluctuations along the trajectory) [default]
-		 **/
-		Int_t fEnergyLossModel;
-
-		// --- Flag for physical processes
-		Bool_t fUseLorentzShift;  ///< Lorentz Shift on/off [default: on]
-		Bool_t fUseDiffusion;     ///< Charge diffusion on/off [default: on]
-		Bool_t fUseCrossTalk;     ///< Cross talk on/off [default: on]
 
 		// --- Physical constants
 		static const Double_t fgkSiCharge;     ///< Silicon atomic charge number

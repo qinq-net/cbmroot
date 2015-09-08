@@ -148,6 +148,8 @@ void CbmStsSensorTypeDssdReal::DiffusionAndLorentzShift (Double_t delta, Double_
 	    if (iStrip < 0) iStrip += nStrips;
 	    if (iStrip >= nStrips) iStrip -= nStrips;
 	    stripCharge[iStrip] += stripChargeMap[iStrip];
+	    LOG(DEBUG4) << GetName() << ": Adding charge " << stripChargeMap[iStrip]
+	                << " to strip " << iStrip << FairLogger::endl;
 	}
     }
 }
@@ -379,13 +381,13 @@ const {
 	if (stripCharge[iStrip] > 0) LOG(DEBUG4) << GetName() << ": charge after thermal diffusion at strip#" 
 	    << iStrip << " = " << stripCharge[iStrip] << FairLogger::endl;
     }
-    if (fCrossTalk) {
-	Double_t CTcoef =  sensor -> GetConditions().GetCrossTalk();
-	stripChargeCT = new Double_t[nStrips];
-	memset(stripChargeCT, 0, nStrips * sizeof(Double_t) );
-	CrossTalk (stripCharge, stripChargeCT, nStrips, tanphi, CTcoef);
+  if (fCrossTalk) {
+    	Double_t CTcoef =  sensor -> GetConditions().GetCrossTalk();
+    	stripChargeCT = new Double_t[nStrips];
+    	memset(stripChargeCT, 0, nStrips * sizeof(Double_t) );
+    	CrossTalk (stripCharge, stripChargeCT, nStrips, tanphi, CTcoef);
     }
-    else stripChargeCT = stripCharge;
+  else stripChargeCT = stripCharge;
 
     // --- Loop over fired strips
     Int_t nSignals = 0;
@@ -397,17 +399,16 @@ const {
 	    LOG(DEBUG4) << GetName() << ": charge at strip#" << iStrip << " = " << stripChargeCT[iStrip] 
 		<< ", after norm (*qtot/totalProducedCharge) = " << chargeNorm << FairLogger::endl;
 	    // --- Register charge to module
-	    if ( sensor->GetModule() ) {
 	    RegisterCharge(sensor, side, iStrip, chargeNorm, 
 		    (point -> GetTime()));
 	    nSignals++;
 	    }
-	}
+
     } // Loop over fired strips
 
     //deleting pointers
     delete stripCharge;
-    delete stripChargeCT;
+    if ( fCrossTalk ) delete stripChargeCT;
     
     return nSignals;
 }
