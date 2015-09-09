@@ -153,6 +153,7 @@ void global_reco(Int_t nEvents = 10, // number of events
 			  Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
 			  Double_t timeResolution =       5.;  // time resolution [ns]
 			  Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
+		  	  Double_t noise          =       0.;  // ENC [e]
 			  Int_t digiModel         = 1;  // Model: 1 = uniform charge distribution along track
 
 			  // The following settings correspond to a validated implementation. 
