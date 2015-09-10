@@ -30,7 +30,7 @@ SET_TESTS_PROPERTIES(trd_digi1 PROPERTIES TIMEOUT "300")
 SET_TESTS_PROPERTIES(trd_digi1 PROPERTIES DEPENDS trd_sim)
 SET_TESTS_PROPERTIES(trd_digi1 PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
 Set(_FileName_Dependency data/trd_sim_ok)
-Set_Tests_Properties(trd_digi_gen PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
+Set_Tests_Properties(trd_digi1 PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
 
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/trd/trd_digi2.C)
 add_test(trd_digi2 ${CBMROOT_BINARY_DIR}/macro/trd/trd_digi2.sh)
@@ -38,7 +38,7 @@ SET_TESTS_PROPERTIES(trd_digi2 PROPERTIES TIMEOUT "300")
 SET_TESTS_PROPERTIES(trd_digi2 PROPERTIES DEPENDS trd_digi1)
 SET_TESTS_PROPERTIES(trd_digi2 PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
 Set(_FileName_Dependency data/trd_digi1_ok)
-Set_Tests_Properties(trd_digi_gen PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
+Set_Tests_Properties(trd_digi2 PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
 
 # 
 
