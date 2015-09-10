@@ -27,7 +27,7 @@ class TCollection;
 class PairAnalysisCutQA : public TNamed {
   
 public:
-  enum { kEvent=0, kTrack, kPair, kNtypes };
+  enum { kEvent=0, kTrack, kTrack2, kPair, kPrePair, kNtypes };
 
   PairAnalysisCutQA();
   PairAnalysisCutQA(const char*name, const char* title);
@@ -38,14 +38,14 @@ public:
   //
   void Init();
   void AddTrackFilter(     AnalysisFilter *trkFilter);
-  /*  void AddPrePairFilter(   AnalysisFilter *prePairFilter);*/
-  /* void AddPrePairLegFilter(AnalysisFilter *prePairLegFilter); */
+  void AddPrePairFilter(   AnalysisFilter *pairFilter);
+  void AddTrackFilter2(    AnalysisFilter *trkFilter2);
   void AddPairFilter(      AnalysisFilter *pairFilter);
   void AddEventFilter(     AnalysisFilter *eventFilter);
 
   //  void Fill(AnalysisCuts *cut);
-  void Fill(UInt_t mask, TObject *obj);
-  void FillAll(TObject *obj);// { fCutQA->Fill(0); }
+  void Fill(UInt_t mask, TObject *obj, UInt_t addIdx=0);
+  void FillAll(TObject *obj, UInt_t addIdx=0);// { fCutQA->Fill(0); }
 
   const TObjArray * GetQAHistArray() const { return &fQAHistArray; }
 

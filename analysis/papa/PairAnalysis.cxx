@@ -230,6 +230,8 @@ void PairAnalysis::Init()
   if (fCutQA) {
     fQAmonitor = new PairAnalysisCutQA(Form("QAcuts_%s",GetName()),"QAcuts");
     fQAmonitor->AddTrackFilter(&fTrackFilter);
+    fQAmonitor->AddPrePairFilter(&fPairPreFilter);
+    fQAmonitor->AddTrackFilter2(&fPairPreFilterLegs);
     if(!fNoPairing) fQAmonitor->AddPairFilter(&fPairFilter);
     fQAmonitor->AddEventFilter(&fEventFilter);
     fQAmonitor->Init();
@@ -1227,7 +1229,8 @@ void PairAnalysis::FilterTrackArrays(TObjArray &arrTracks1, TObjArray &arrTracks
     //apply cuts
     UInt_t cutmask=fPairPreFilterLegs.IsSelected(arrTracks1.UncheckedAt(itrack));
     //fill cut QA
-    if(fCutQA) fQAmonitor->Fill(cutmask,arrTracks1.UncheckedAt(itrack));
+    if(fCutQA) fQAmonitor->FillAll(arrTracks1.UncheckedAt(itrack),     1);
+    if(fCutQA) fQAmonitor->Fill(cutmask,arrTracks1.UncheckedAt(itrack),1);
 
     // rejection
     if (cutmask!=selectedMask) arrTracks1.AddAt(0x0,itrack);
@@ -1242,7 +1245,8 @@ void PairAnalysis::FilterTrackArrays(TObjArray &arrTracks1, TObjArray &arrTracks
     //apply cuts
     UInt_t cutmask=fPairPreFilterLegs.IsSelected(arrTracks2.UncheckedAt(itrack));
     //fill cut QA
-    if(fCutQA) fQAmonitor->Fill(cutmask,arrTracks2.UncheckedAt(itrack));
+    if(fCutQA) fQAmonitor->FillAll(arrTracks2.UncheckedAt(itrack),     1);
+    if(fCutQA) fQAmonitor->Fill(cutmask,arrTracks2.UncheckedAt(itrack),1);
 
     // rejection
     if (cutmask!=selectedMask) arrTracks2.AddAt(0x0,itrack);

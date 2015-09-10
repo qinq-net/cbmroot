@@ -52,9 +52,10 @@ PairAnalysisCutQA::PairAnalysisCutQA() :
       fCutNames[i][itype]="";
     }
   }
-  fTypeKeys[kTrack] = "Track";
-  fTypeKeys[kPair]  = "Pair";
-  fTypeKeys[kEvent] = "Event";
+  fTypeKeys[kTrack]  = "Track";
+  fTypeKeys[kTrack2] = "Track2";
+  fTypeKeys[kPair]   = "Pair";
+  fTypeKeys[kEvent]  = "Event";
   fQAHistArray.SetOwner();
 }
 
@@ -74,9 +75,10 @@ PairAnalysisCutQA::PairAnalysisCutQA(const char* name, const char* title) :
       fCutNames[i][itype]="";
     }
   }
-  fTypeKeys[kTrack] = "Track";
-  fTypeKeys[kPair]  = "Pair";
-  fTypeKeys[kEvent] = "Event";
+  fTypeKeys[kTrack]  = "Track";
+  fTypeKeys[kTrack2] = "Track2";
+  fTypeKeys[kPair]   = "Pair";
+  fTypeKeys[kEvent]  = "Event";
   fQAHistArray.SetOwner();
 }
 
@@ -107,7 +109,7 @@ void PairAnalysisCutQA::Init()
     fCutQA[itype] = new TH1I(fTypeKeys[itype],
 			     Form("%sQA;cuts;# passed %ss",fTypeKeys[itype],fTypeKeys[itype]), 			     fNCuts[itype], binsX->GetMatrixArray());
 
-    if(itype==kTrack) {
+    if(itype==kTrack || itype==kTrack2) {
       fPdgCutQA[itype] = new TH2I(Form("%sPDG",fTypeKeys[itype]),
 				  Form("%sQA;cuts;PDG code;# passed %ss",
 				       fTypeKeys[itype],fTypeKeys[itype]),
@@ -175,6 +177,29 @@ void PairAnalysisCutQA::AddTrackFilter(AnalysisFilter *trackFilter)
 
 }
 
+//_____________________________________________________________________
+void PairAnalysisCutQA::AddTrackFilter2(AnalysisFilter *trackFilter)
+{
+  //
+  // add track filter cuts to the qa histogram
+  //
+  if(!trackFilter) return;
+
+  TIter listIterator(trackFilter->GetCuts());
+  while (AnalysisCuts *thisCut = (AnalysisCuts*) listIterator()) {
+    Bool_t addCut=kTRUE;
+
+    // add new cut class to the array
+    if(addCut) {
+      fCutNames[fNCuts[kTrack2]][kTrack2]=thisCut->GetTitle();
+      //      printf("add cut %s to %d \n",thisCut->GetTitle(),fNCuts[kTrack]);
+      fNCuts[kTrack2]++;
+    }
+
+  } // pair filter loop
+
+}
+
 
 //_____________________________________________________________________
 void PairAnalysisCutQA::AddPairFilter(AnalysisFilter *pairFilter)
@@ -182,7 +207,6 @@ void PairAnalysisCutQA::AddPairFilter(AnalysisFilter *pairFilter)
   //
   // add track filter cuts to the qa histogram
   //
-
 
   TIter listIterator(pairFilter->GetCuts());
   while (AnalysisCuts *thisCut = (AnalysisCuts*) listIterator()) {
@@ -193,6 +217,29 @@ void PairAnalysisCutQA::AddPairFilter(AnalysisFilter *pairFilter)
       fCutNames[fNCuts[kPair]][kPair]=thisCut->GetTitle();
       //  printf("add cut %s to %d \n",thisCut->GetTitle(),fNCuts[kPair]);
       fNCuts[kPair]++;
+    }
+
+  } // trk filter loop
+
+}
+
+//_____________________________________________________________________
+void PairAnalysisCutQA::AddPrePairFilter(AnalysisFilter *pairFilter)
+{
+  //
+  // add track filter cuts to the qa histogram
+  //
+  if(!pairFilter) return;
+
+  TIter listIterator(pairFilter->GetCuts());
+  while (AnalysisCuts *thisCut = (AnalysisCuts*) listIterator()) {
+    Bool_t addCut=kTRUE;
+
+    // add new cut class to the array
+    if(addCut) {
+      fCutNames[fNCuts[kPrePair]][kPrePair]=thisCut->GetTitle();
+      //  printf("add cut %s to %d \n",thisCut->GetTitle(),fNCuts[kPair]);
+      fNCuts[kPrePair]++;
     }
 
   } // trk filter loop
@@ -223,18 +270,18 @@ void PairAnalysisCutQA::AddEventFilter(AnalysisFilter *eventFilter)
 }
 
 //_____________________________________________________________________
-void PairAnalysisCutQA::Fill(UInt_t mask, TObject *obj)
+void PairAnalysisCutQA::Fill(UInt_t mask, TObject *obj, UInt_t addIdx)
 {
   //
   // fill the corresponding step in the qa histogram
   //
 
-  UInt_t idx = GetObjIndex(obj);
+  UInt_t idx = GetObjIndex(obj)+addIdx;
 
   // pdg to pdg label
   Int_t pdg = 0;
   TString pdglbl="";
-  if(idx==kTrack) {
+  if(idx==kTrack || idx==kTrack2) {
     pdg = (Int_t) (static_cast<PairAnalysisTrack*>(obj)->PdgCode());
     switch(TMath::Abs(pdg)) {
     case 11:  pdglbl="electron"; break; // electron
@@ -263,18 +310,18 @@ void PairAnalysisCutQA::Fill(UInt_t mask, TObject *obj)
 }
 
 //_____________________________________________________________________
-void PairAnalysisCutQA::FillAll(TObject *obj)
+void PairAnalysisCutQA::FillAll(TObject *obj, UInt_t addIdx)
 {
   //
   // fill the corresponding step in the qa histogram
   //
 
-  UInt_t idx = GetObjIndex(obj);
+  UInt_t idx = GetObjIndex(obj)+addIdx;
 
   // pdg to pdg label
   Int_t pdg = 0;
   TString pdglbl="";
-  if(idx==kTrack) {
+  if(idx==kTrack || idx==kTrack2) {
     pdg = (Int_t) (static_cast<PairAnalysisTrack*>(obj)->PdgCode());
     switch(TMath::Abs(pdg)) {
     case 11:  pdglbl="electron"; break; // electron
