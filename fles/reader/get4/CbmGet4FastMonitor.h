@@ -204,6 +204,7 @@ private:
   //--------------------------------------------------------------//
   std::vector< UInt_t >           fvuPrevHitEp; //! Epoch of previous hit message (one per GET4 chip & channel)
   std::vector< get4v1x::Message > fvmPrevHit;   //! Previous hit message (one per GET4 chip & channel)
+     // Finetime monitoring for hits with normal pulser time difference and too big difference
   TH2 * fhFtSmallDtFeeA;
   TH2 * fhFtSmallDtFeeB;
   TH2 * fhFtBigDtFeeA;
@@ -212,6 +213,12 @@ private:
   TH2 * fhFtPrevSmallDtFeeB;
   TH2 * fhFtPrevBigDtFeeA;
   TH2 * fhFtPrevBigDtFeeB;
+     // Coarse time and Tot full coarse time of last hits in 32b mode when epoch jumps found
+  std::vector<TH2 *> fhFullCtEpJumpFeeA;
+  std::vector<TH2 *> fhFullCtEpJumpFeeACh;
+  std::vector<TH2 *> fhFullCtEpJumpFeeAChSort;
+  TH2 *              fhFullCtEpJumpFeeAChOrder;
+  std::vector<std::vector<UInt_t>> fvChanOrder;
      // Monitoring of 24b mode for debugging purpose
   Bool_t fbOldReadoutOk;
   TH1 * fhGet4ChanTotCount;
@@ -223,6 +230,7 @@ private:
   //--------------------------------------------------------------//
   std::vector< UInt_t >           fvuPrevOldTotEp; //! Epoch of previous TOT message (one per GET4 chip & channel)
   std::vector< get4v1x::Message > fvmPrevOldTot;   //! Previous TOT message (one per GET4 chip & channel)
+     // TOT Finetime monitoring for hits with normal pulser time difference and too big difference
   TH2 * fhFtTotSmallDtFeeA;
   TH2 * fhFtTotSmallDtFeeB;
   TH2 * fhFtTotBigDtFeeA;

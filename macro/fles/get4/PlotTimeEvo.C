@@ -317,7 +317,7 @@
    hRocDataLossCntEvo_001->SetLineColor( kBlue );
    hRocDataLossCntEvo_001->Draw("same");
 */
-
+/*
    TCanvas *cInlDnl= new TCanvas("cInlDnl", "INL DNL for FEE A");
    cInlDnl->Divide(2, 2);
 
@@ -332,5 +332,5 @@
 
    cInlDnl->cd( 4);
    hPulserFeeTotInl->Draw("colz");
-
+*/
 }
