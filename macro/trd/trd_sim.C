@@ -22,41 +22,50 @@ void trd_sim(Int_t nEvents = 1, Int_t CbmSetup = 4)
   
   CbmTarget* target = new CbmTarget("Gold", 0.025);
 
+  TString setup;
   if (CbmSetup == 1)
     {
       TString macro = inDir + "/geometry/setup/sis100_hadron_setup.C";
       gROOT->LoadMacro(macro);
       gInterpreter->ProcessLine("sis100_hadron_setup()");
+      setup=sis100_hadron_setup;
     }
   if (CbmSetup == 2)
     {
       TString macro = inDir + "/geometry/setup/sis100_electron_setup.C";
       gROOT->LoadMacro(macro);
       gInterpreter->ProcessLine("sis100_electron_setup()");
+      setup=sis100_electron_setup;
     }
   if (CbmSetup == 3)
     {
       TString macro = inDir + "/geometry/setup/sis100_muon_setup.C";
       gROOT->LoadMacro(macro);
       gInterpreter->ProcessLine("sis100_muon_setup()");
+      setup=sis100_muon_setup;
     }
   if (CbmSetup == 4)  // default setup
     {
       TString macro = inDir + "/geometry/setup/sis300_electron_setup.C";
       gROOT->LoadMacro(macro);
       gInterpreter->ProcessLine("sis300_electron_setup()");
+      setup=sis300_electron_setup;
     }
   if (CbmSetup == 5)
     {
       TString macro = inDir + "/geometry/setup/sis300_muon_setup.C";
       gROOT->LoadMacro(macro);
       gInterpreter->ProcessLine("sis300_muon_setup()");
+      setup=sis300_muon_setup;
     }
 
   if (CbmSetup <= 3)
     platformGeom = "passive/platform_v13a.geo";
   else
     platformGeom = "passive/platform_v13b.geo";
+
+   // Function needed for CTest runtime dependency
+   TString depFile = Remove_CTest_Dependency_File(outDir, "trd_sim");
   
   // In general, the following parts need not be touched
   // ========================================================================
@@ -238,5 +247,8 @@ void trd_sim(Int_t nEvents = 1, Int_t CbmSetup = 4)
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
+
+  // Function needed for CTest runtime dependency
+  Generate_CTest_Dependency_File(depFile);
 }
 

@@ -24,6 +24,9 @@ void create_geometry_file_root_test(TString geoName = "trd_v15a_1e")
    TString trdGeom    = inDir + "/geometry/trd/" + geoName + ".geo.root";
    TString trdGeomOut = outDir + "geofile_" + geoName + ".root";
 
+   // Function needed for CTest runtime dependency
+   TString depFile = Remove_CTest_Dependency_File(outDir, "create_geometry_file_root_test");
+
    FairRunSim* run = new FairRunSim();
    run->SetName("TGeant3");
    run->SetOutputFile(outFile);
@@ -66,5 +69,9 @@ void create_geometry_file_root_test(TString geoName = "trd_v15a_1e")
 
    cout << " Test passed" << endl;
    cout << " All ok " << endl;
+
+  // Function needed for CTest runtime dependency
+  Generate_CTest_Dependency_File(depFile);
+
 }
 

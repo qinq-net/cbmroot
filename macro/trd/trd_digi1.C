@@ -37,6 +37,9 @@ void trd_digi1(Int_t nEvents = 1, const char* setup = "sis300_electron")
   // Parameter file
   TString parFile = "data/params.root";
 
+  // Output directory
+  TString outDir = "data";
+
   // Output file
   TString outFile = "data/test.eds.root";
 
@@ -68,6 +71,9 @@ void trd_digi1(Int_t nEvents = 1, const char* setup = "sis300_electron")
   parFileList->Add(&tofDigiFile);
 
   cout << "finally using     : >> " << trdDigi << " << " << endl;
+
+   // Function needed for CTest runtime dependency
+   TString depFile = Remove_CTest_Dependency_File(outDir, "trd_digi1");
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -150,4 +156,7 @@ void trd_digi1(Int_t nEvents = 1, const char* setup = "sis300_electron")
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
+
+  // Function needed for CTest runtime dependency
+  Generate_CTest_Dependency_File(depFile);
 }

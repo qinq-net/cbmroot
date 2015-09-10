@@ -8,17 +8,23 @@ void Generate_CTest_Dependency_File(TString filename)
   gSystem->Exec(touchCommand);
 }
 
-TString Remove_CTest_Dependency_File(TString outDir, TString macroName, const char* setup)
+TString Remove_CTest_Dependency_File(TString outDir, TString macroName, const char* setup = "")
 {
   TString _setup(setup);
   TString testDir = outDir;
-  TString testFile = macroName + "_" + _setup + "_ok";
+  TString testFile = "";
 
+  if (_setup.EqualTo("")) {
+    testFile = macroName + "_ok";
+  } else {
+    testFile = macroName + "_" + _setup + "_ok";
+  }
+  TString depFile =  outDir + "/" + testFile;
+  
   if (gSystem->FindFile(testDir, testFile)) {
     TString rmCommand = "rm " + testFile;
     gSystem->Exec(rmCommand);
   }
-  TString depFile = outDir + "/" + macroName + "_" + _setup + "_ok";
   depFile.ReplaceAll("//", "/");
   return depFile;
 }
