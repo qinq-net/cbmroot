@@ -331,6 +331,9 @@ Bool_t PairAnalysis::Process(PairAnalysisEvent *ev1)
   if ( (fPreFilterAllSigns||fPreFilterUnlikeOnly) && (fPairPreFilter.GetCuts()->GetEntries()>0) )
     PairPreFilter(0, 1, fTracks[0], fTracks[1]);
 
+  // remove tracks from arrays that DO NOT pass 2nd cut iteration
+  FilterTrackArrays(fTracks[0], fTracks[1]);
+
   // event plane corrections
   // if ( fPreFilterEventPlane && (fEventPlanePreFilter.GetCuts()->GetEntries()>0 || fEventPlanePOIPreFilter.GetCuts()->GetEntries()>0) )
   //   EventPlanePreFilter(0, 1, fTracks[0], fTracks[1], ev1);
@@ -1202,6 +1205,50 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
     FillHistogramsTracks(unlikesignArray);
   }
   */
+
+}
+
+//________________________________________________________________
+void PairAnalysis::FilterTrackArrays(TObjArray &arrTracks1, TObjArray &arrTracks2)
+{
+  //
+  // select tracks and adapt track candidate arrays
+  // second and final track selection
+  //
+
+  //apply leg cuts after the pre filter
+  if ( fPairPreFilterLegs.GetCuts()->GetEntries()<1 ) return;
+
+  UInt_t selectedMask=(1<<fPairPreFilterLegs.GetCuts()->GetEntries())-1;
+  //loop over tracks from array 1
+  for (Int_t itrack=0; itrack<arrTracks1.GetEntriesFast();++itrack){
+    //test cuts
+      
+    //apply cuts
+    UInt_t cutmask=fPairPreFilterLegs.IsSelected(arrTracks1.UncheckedAt(itrack));
+    //fill cut QA
+    if(fCutQA) fQAmonitor->Fill(cutmask,arrTracks1.UncheckedAt(itrack));
+
+    // rejection
+    if (cutmask!=selectedMask) arrTracks1.AddAt(0x0,itrack);
+
+  }
+  arrTracks1.Compress();
+
+  //loop over tracks from array 2
+  for (Int_t itrack=0; itrack<arrTracks2.GetEntriesFast();++itrack){
+    //test cuts
+      
+    //apply cuts
+    UInt_t cutmask=fPairPreFilterLegs.IsSelected(arrTracks2.UncheckedAt(itrack));
+    //fill cut QA
+    if(fCutQA) fQAmonitor->Fill(cutmask,arrTracks2.UncheckedAt(itrack));
+
+    // rejection
+    if (cutmask!=selectedMask) arrTracks2.AddAt(0x0,itrack);
+
+  }
+  arrTracks2.Compress();
 
 }
 
