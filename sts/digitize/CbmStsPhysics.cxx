@@ -83,11 +83,11 @@ Double_t CbmStsPhysics::DiffusionWidth(Double_t z, Double_t d,
 	// --- Drift time times mobility [cm**2 * C / J]
 	// For the formula, see the STS digitiser note.
 	Double_t tau = 0.;
-	if ( chargeType == 0 ) {   // electrons, drift to n (back) side
+	if ( chargeType == 0 ) {   // electrons, drift to n (front) side
 		tau = 0.5 * d * d / vFd
 				* log( ( vBias + ( 1. - 2. * z / d ) * vFd ) / ( vBias - vFd ) );
 	}
-	else if ( chargeType == 1 ) { // holes, drift to the p (front) side
+	else if ( chargeType == 1 ) { // holes, drift to the p (back) side
 		tau = -0.5 * d * d / vFd
 				* log( 1. - 2. * vFd * z / d / ( vBias + vFd ) );
 	}

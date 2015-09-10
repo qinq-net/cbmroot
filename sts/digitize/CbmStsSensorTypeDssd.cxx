@@ -551,7 +551,7 @@ Double_t CbmStsSensorTypeDssd::LorentzShift(Double_t z, Int_t chargeType,
 	// --- Hall mobility
 	Double_t vBias = sensor->GetConditions().GetVbias();
 	Double_t vFd   = sensor->GetConditions().GetVfd();
-	Double_t eField = CbmStsPhysics::ElectricField(vBias, vFd, fDz, z);
+	Double_t eField = CbmStsPhysics::ElectricField(vBias, vFd, fDz, z + fDz/2.);
 	Double_t muHall = sensor->GetConditions().HallMobility(eField, chargeType);
 
 	// --- The direction of the shift is the same for electrons and holes.
@@ -621,7 +621,7 @@ Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
                                          const CbmStsSensor* sensor) {
 
 
-	// --- For the time being, use the old ProcessPoint method
+	// --- If desired, use the old ProcessPoint method
 	if ( fOld ) {
 	  Int_t nSignalsOld = ProcessPointOld(point, sensor);
 	  return nSignalsOld;
@@ -702,6 +702,8 @@ Int_t CbmStsSensorTypeDssd::ProcessPoint(CbmStsSensorPoint* point,
 Int_t CbmStsSensorTypeDssd::ProcessPointOld(CbmStsSensorPoint* point,
                                             const CbmStsSensor* sensor) {
 
+	// TODO: This implementation can be removed after validation of the new one.
+
   // --- Catch if parameters are not set
   if ( ! fIsSet ) {
     LOG(FATAL) << fName << ": parameters are not set!"
@@ -756,9 +758,9 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 	  Double_t yP = 0.5 * ( point->GetY1() + point->GetY2() );
 	  Double_t zP = 0.5 * ( point->GetZ1() + point->GetZ2() );
 	  PropagateCharge(xP, yP, zP, chargeTotal, point->GetBy(),
-	  		            0, sensor); // front side
+	  		            0, sensor); // front side (n)
 	  PropagateCharge(xP, yP, zP, chargeTotal, point->GetBy(),
-	  		            1, sensor); // back side
+	  		            1, sensor); // back side (p)
 	  return;
 	}
 
@@ -779,6 +781,7 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 	// close to 3 micrometer.
 	Double_t stepSizeTarget = 3.e-4;   // targeted step size is 3 micrometer
   Int_t nSteps = TMath::Nint( trajLength / stepSizeTarget );
+  if ( nSteps == 0 ) nSteps = 1;     // assure at least one step
 	Double_t stepSize  = trajLength / nSteps;
 	Double_t stepSizeX = trajLx / nSteps;
 	Double_t stepSizeY = trajLy / nSteps;
@@ -786,7 +789,7 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 
 	// Average charge per step, used for uniform distribution
 	Double_t chargePerStep = chargeTotal / nSteps;
-	LOG(DEBUG4) << GetName() << ": Trajectory length " << trajLength
+	LOG(DEBUG3) << GetName() << ": Trajectory length " << trajLength
 			        << " cm, steps " << nSteps << ", step size " << stepSize * 1.e4
 			        << " mu, charge per step " << chargePerStep << FairLogger::endl;
 
@@ -832,6 +835,94 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 		} //# front and back side
 	} //? fluctuations on
 
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Produce charge on the strips   ----------------------------------
+Int_t CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
+                                          Int_t side,
+                                          const CbmStsSensor* sensor)
+                                          const {
+
+	// TODO: This implementation can be removed after validation of the new one.
+  // It projects a uniform charge distribution on the strips.
+
+  // --- Protect against being called without parameters being set
+  if ( ! fIsSet ) LOG(FATAL) << "Parameters of sensor " << fName
+                             << " are not set!" << FairLogger::endl;
+
+  // This implementation assumes a straight trajectory in the sensor
+  // and a constant charge distribution along it.
+
+  // Check for side qualifier
+  if ( side < 0 || side > 1 )  {
+    LOG(ERROR) << "Illegal side qualifier!" << FairLogger::endl;
+    return -1;
+  }
+
+  // Total produced charge
+  Double_t qtot = point->GetELoss() / kPairEnergy;
+
+  // Stereo angle and strip pitch
+  Double_t tanphi = fTanStereo[side];
+  Double_t pitch  = fPitch[side];
+  Int_t nStrips   = fNofStrips[side];
+
+  // Debug output
+  LOG(DEBUG3) << GetName() << ": Side " << side << ", dx = " << fDx
+  		        << " cm, dy = " << fDy << " cm, stereo " << fStereo[side]
+  		        << " degrees, strips " << fNofStrips[side] << ", pitch "
+  		        << pitch << " mum" << FairLogger::endl;
+
+  // Project point coordinates (in / out) along strips to readout (top) edge
+  // Keep in mind that the SensorPoint gives coordinates with
+  // respect to the centre of the active area.
+  Double_t x1 = point->GetX1() + 0.5 * fDx
+                - ( 0.5 * fDy - point->GetY1() ) * tanphi;
+  Double_t x2 = point->GetX2() + 0.5 * fDx
+                - ( 0.5 * fDy - point->GetY2() ) * tanphi;
+  LOG(DEBUG3) << GetName() << ": R/O x coordinates are " << x1 << " "
+  		        << x2 << FairLogger::endl;
+
+
+  // Calculate corresponding strip numbers
+  // This can be negative or larger than the number of channels if the
+  // strip does not extend to the top edge.
+  Int_t i1 = TMath::FloorNint( x1 / pitch );
+  Int_t i2 = TMath::FloorNint( x2 / pitch );
+
+
+  // --- More than one strip: sort strips
+  if ( i1 > i2 ) {
+    Int_t tempI = i1;
+    i1 = i2;
+    i2 = tempI;
+    Double_t tempX = x1;
+    x1 = x2;
+    x2 = tempX;
+  }
+  LOG(DEBUG3) << GetName() << ": R/O strips are " << i1 << " to "
+  		        << i2 << FairLogger::endl;
+
+
+  // --- Loop over fired strips
+  Int_t nSignals = 0;
+  for (Int_t iStrip = i1; iStrip <= i2; iStrip++) {
+
+    // --- Calculate charge in strip
+    Double_t y1 = TMath::Max(x1, Double_t(iStrip) * pitch);  // start in strip
+    Double_t y2 = TMath::Min(x2, Double_t(iStrip+1) * pitch); // stop in strip
+    Double_t charge = (y2 - y1) * qtot / ( x2 - x1 );
+
+    // --- Register charge to module
+    RegisterCharge(sensor, side, iStrip, charge, point->GetTime());
+    nSignals++;
+
+  } // Loop over fired strips
+
+  return nSignals;
 }
 // -------------------------------------------------------------------------
 
@@ -930,91 +1021,6 @@ void CbmStsSensorTypeDssd::PropagateCharge(Double_t x, Double_t y,
 		}
 	} //? Use diffusion
 
-}
-// -------------------------------------------------------------------------
-
-
-
-// -----   Produce charge on the strips   ----------------------------------
-Int_t CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
-                                          Int_t side,
-                                          const CbmStsSensor* sensor)
-                                          const {
-
-  // --- Protect against being called without parameters being set
-  if ( ! fIsSet ) LOG(FATAL) << "Parameters of sensor " << fName
-                             << " are not set!" << FairLogger::endl;
-
-  // This implementation assumes a straight trajectory in the sensor
-  // and a constant charge distribution along it.
-
-  // Check for side qualifier
-  if ( side < 0 || side > 1 )  {
-    LOG(ERROR) << "Illegal side qualifier!" << FairLogger::endl;
-    return -1;
-  }
-
-  // Total produced charge
-  Double_t qtot = point->GetELoss() / kPairEnergy;
-
-  // Stereo angle and strip pitch
-  Double_t tanphi = fTanStereo[side];
-  Double_t pitch  = fPitch[side];
-  Int_t nStrips   = fNofStrips[side];
-
-  // Debug output
-  LOG(DEBUG3) << GetName() << ": Side " << side << ", dx = " << fDx
-  		        << " cm, dy = " << fDy << " cm, stereo " << fStereo[side]
-  		        << " degrees, strips " << fNofStrips[side] << ", pitch "
-  		        << pitch << " mum" << FairLogger::endl;
-
-  // Project point coordinates (in / out) along strips to readout (top) edge
-  // Keep in mind that the SensorPoint gives coordinates with
-  // respect to the centre of the active area.
-  Double_t x1 = point->GetX1() + 0.5 * fDx
-                - ( 0.5 * fDy - point->GetY1() ) * tanphi;
-  Double_t x2 = point->GetX2() + 0.5 * fDx
-                - ( 0.5 * fDy - point->GetY2() ) * tanphi;
-  LOG(DEBUG3) << GetName() << ": R/O x coordinates are " << x1 << " "
-  		        << x2 << FairLogger::endl;
-
-
-  // Calculate corresponding strip numbers
-  // This can be negative or larger than the number of channels if the
-  // strip does not extend to the top edge.
-  Int_t i1 = TMath::FloorNint( x1 / pitch );
-  Int_t i2 = TMath::FloorNint( x2 / pitch );
-
-
-  // --- More than one strip: sort strips
-  if ( i1 > i2 ) {
-    Int_t tempI = i1;
-    i1 = i2;
-    i2 = tempI;
-    Double_t tempX = x1;
-    x1 = x2;
-    x2 = tempX;
-  }
-  LOG(DEBUG3) << GetName() << ": R/O strips are " << i1 << " to "
-  		        << i2 << FairLogger::endl;
-
-
-  // --- Loop over fired strips
-  Int_t nSignals = 0;
-  for (Int_t iStrip = i1; iStrip <= i2; iStrip++) {
-
-    // --- Calculate charge in strip
-    Double_t y1 = TMath::Max(x1, Double_t(iStrip) * pitch);  // start in strip
-    Double_t y2 = TMath::Min(x2, Double_t(iStrip+1) * pitch); // stop in strip
-    Double_t charge = (y2 - y1) * qtot / ( x2 - x1 );
-
-    // --- Register charge to module
-    RegisterCharge(sensor, side, iStrip, charge, point->GetTime());
-    nSignals++;
-
-  } // Loop over fired strips
-
-  return nSignals;
 }
 // -------------------------------------------------------------------------
 

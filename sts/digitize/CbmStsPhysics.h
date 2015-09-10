@@ -50,11 +50,11 @@ class CbmStsPhysics : public TObject {
 				                           Int_t chargeType);
 
 
-		/** Electric field in a silicon sensor as function of z
+		/** Electric field magnitude in a silicon sensor as function of z
 		 ** @param vBias  Bias voltage [V]
 		 ** @param vFd    Full depletion voltage [V]
 		 ** @param dZ     Thickness of sensor [cm]
-		 ** @param z      z coordinate, measured from the front side [cm]
+		 ** @param z      z coordinate, measured from the p side [cm]
 		 ** @value        z component of electric field [V/cm]
 		 **/
 		static Double_t ElectricField(Double_t vBias, Double_t vFd,

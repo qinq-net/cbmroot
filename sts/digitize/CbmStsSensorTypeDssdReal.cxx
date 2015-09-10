@@ -85,10 +85,11 @@ void CbmStsSensorTypeDssdReal::DiffusionAndLorentzShift (Double_t delta, Double_
 
     Double_t yLayer = locY1 + (iLayer + 0.5) * delta * (locY2 - locY1) / trajLength;
     Double_t xLayer = locX1 + (iLayer + 0.5) * delta * (locX2 - locX1) / trajLength;
-    Double_t zLayer;
+    Double_t zLayer = locZ1 + (iLayer + 0.5) * delta * (locZ2 - locZ1) / trajLength;
 
-    if (locZ1 < 0) zLayer = fDz - (iLayer + 0.5) * delta * fDz / trajLength;//inverted coordinates
-    else zLayer = (iLayer + 0.5) * delta * fDz / trajLength;
+    //  Inversion of z coordinate removed
+    //    if (locZ1 < 0) zLayer = fDz - (iLayer + 0.5) * delta * fDz / trajLength;//inverted coordinates
+    //    else zLayer = (iLayer + 0.5) * delta * fDz / trajLength;
 
     Double_t muHall, muLow, vSat, beta, rHall;
 
@@ -102,7 +103,9 @@ void CbmStsSensorTypeDssdReal::DiffusionAndLorentzShift (Double_t delta, Double_
     }
 
     Double_t tau, sigmaLayer;
-    if (fDiffusion){
+  	LOG(DEBUG4) << "Charge position: xL = " << xLayer << ": yL = " << yLayer
+  			<< ": zL = " << zLayer << FairLogger::endl;
+   if (fDiffusion){
 	if (side == 0) {
 	    tau = fDz * fDz / (2. * Vdepletion) * log ((Vbias + Vdepletion) / (Vbias - Vdepletion) * 
 		    (1. - 2. * zLayer / fDz * Vdepletion / (Vbias + Vdepletion)));
@@ -111,10 +114,13 @@ void CbmStsSensorTypeDssdReal::DiffusionAndLorentzShift (Double_t delta, Double_
 		    (1. - 2. * (fDz - zLayer) / fDz * Vdepletion / (Vbias + Vdepletion))); 
 	}
 	sigmaLayer = kTq * sqrt(tau); 
+	LOG(DEBUG4) << ": Diffusion width = " << sigmaLayer << FairLogger::endl;
     }
     if (fLorentzShift) {
 	if (side == 0) xLayer += muHall * mField * (fDz - zLayer) * 1.e-4;
 	else           xLayer += muHall * mField * zLayer         * 1.e-4;
+	LOG(DEBUG4) << "After Lorentz: xL = " << xLayer << ", yL = " << yLayer
+			<< ", zL = " << zLayer << FairLogger::endl;
     }
 
     Double_t roX = xLayer - (fDy - yLayer) * tanphi; //read-out coordinate
@@ -241,8 +247,8 @@ const {
     Double_t locX2 = point->GetX2() + 0.5 * fDx;
     Double_t locY1 = point->GetY1() + 0.5 * fDy;
     Double_t locY2 = point->GetY2() + 0.5 * fDy;
-    Double_t locZ1 = point->GetZ1();
-    Double_t locZ2 = point->GetZ2();
+    Double_t locZ1 = point->GetZ1() + 0.5 * fDz;
+    Double_t locZ2 = point->GetZ2() + 0.5 * fDz;
     // Debug output
     LOG(DEBUG4) << GetName() << ": Side " << side 
 	<< ", x1 = " << locX1 << " cm, x2 = " << locX2 
