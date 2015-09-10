@@ -108,7 +108,11 @@ void run()
   
   // Initialize the simulation
 
+  gRandom->Print();
+
   fRun->Init();
+
+  gRandom->Print();
 
  // -Trajectories Visualization (TGeoManager Only )
  // -----------------------------------------------
@@ -138,6 +142,8 @@ void run()
 
   Int_t nEvents = 3;
   fRun->Run(nEvents);
+
+  gRandom->Print();
 
   timer.Stop();
   Double_t rtime = timer.RealTime();

@@ -89,6 +89,7 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   FairRunAna *run = new FairRunAna();
   run->SetInputFile(inFile);
   run->SetOutputFile(outFile);
+  run->SetGenerateRunInfo(kTRUE);
   // ------------------------------------------------------------------------
 
   // ----- MC Data Manager   ------------------------------------------------
