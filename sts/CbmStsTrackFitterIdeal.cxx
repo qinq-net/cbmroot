@@ -89,7 +89,7 @@ Int_t CbmStsTrackFitterIdeal::DoFit(CbmStsTrack* pTrack, Int_t pidHypo)
     Int_t hitIndex = -1;
     CbmStsHit* hit;
     Int_t pointIndex;
-    if(pTrack->GetNofHits() > 0) {
+    if(pTrack->GetNofStsHits() > 0) {
 	hitIndex = pTrack->GetHitIndex(0);
 	if(hitIndex < 0) return 0;
 	hit = (CbmStsHit*) fArrayStsHit->At(hitIndex);
@@ -104,8 +104,8 @@ Int_t CbmStsTrackFitterIdeal::DoFit(CbmStsTrack* pTrack, Int_t pidHypo)
     pTrack->SetParamFirst(&parFirst);
 
     // Parameters at the last plane
-    if(pTrack->GetNofHits() > 0) {
-	hitIndex = pTrack->GetHitIndex( pTrack->GetNofHits()-1 );
+    if(pTrack->GetNofStsHits() > 0) {
+	hitIndex = pTrack->GetHitIndex( pTrack->GetNofStsHits()-1 );
 	if(hitIndex < 0) return 0;
 	hit = (CbmStsHit*) fArrayStsHit->At(hitIndex);
 	if(NULL == hit) return 0;

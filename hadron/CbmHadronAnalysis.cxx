@@ -2786,7 +2786,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
        vtxb = fTrackFitter.GetChiToVertex(StsTrack, fPrimVertex); //impact paramter ???
        fa_VtxB->Fill(vtxb);
 
-       Int_t NStsHits = StsTrack->GetNofHits();
+       Int_t NStsHits = StsTrack->GetNofStsHits();
        //if(NStsHits<8) continue; // nh-debugging
        for(Int_t ih = 0; ih < NStsHits; ih++) {
         CbmStsHit* hit = (CbmStsHit*) fStsHits->At(StsTrack->GetHitIndex(ih));

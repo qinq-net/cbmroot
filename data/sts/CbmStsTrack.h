@@ -54,34 +54,38 @@ public:
    void AddStsHit(Int_t hitIndex) { AddHit( hitIndex, kSTSHIT); }
 
 
-   /** Total number of hits
-    ** @value  Sum of numbers of STS and MVD hits
-    **
-    ** TODO: For the time being, the old functionality (return
-    ** number of STS hitsonly ) is kept, until all calling instances
-    ** are identified and changed.
+   /** Impact parameter
+    ** @return  Impact parameter at target z in units of error [cm]
     **/
-    virtual Int_t GetNofHits() const { return CbmTrack::GetNofHits(); }
+   Double_t GetB() const { return fB; }
+
+
+    /** Index of a MVD hit
+    ** @return Array index of the ith MVD hit of the track
+    **
+    ** Throws std::vector exception if out of bounds.
+    **/
+   Int_t GetMvdHitIndex(Int_t iHit) const { return fMvdHitIndex.at(iHit); }
+
+
+   /** Total number of hits
+    ** @return  Sum of numbers of STS and MVD hits
+    **/
+   virtual Int_t GetNofHits() const {
+  	 return ( GetNofStsHits() + GetNofMvdHits() );
+   }
 
 
    /** Number of MVD hits
-    ** @value  Number of MVD hits associated to the track
+    ** @return  Number of MVD hits associated to the track
     **/
    Int_t GetNofMvdHits() const { return fMvdHitIndex.size(); }
 
 
    /** Number of STS hits
-    ** @value  Number of STS hits associated to the track
+    ** @return  Number of STS hits associated to the track
     **/
    Int_t GetNofStsHits() const { return CbmTrack::GetNofHits(); }
-
-
-   /** Index of a MVD hit
-    ** @value Array index of the ith MVD hit of the track
-    **
-    ** Throws std::vector exception if out of bounds.
-    **/
-   Int_t GetMvdHitIndex(Int_t iHit) const { return fMvdHitIndex.at(iHit); }
 
 
    /** Index of a STS hit
@@ -95,13 +99,7 @@ public:
    }
 
 
-   /** Impact parameter
-    ** @value  Impact parameter at target z in units of error [cm]
-    **/
-   Double_t GetB() const { return fB; }
-
-
-   /** Set the impact parameter
+  /** Set the impact parameter
     ** @param  Impact parameter at target z in units of error [cm]
     **/
    void SetB(Double_t b) { fB = b; }

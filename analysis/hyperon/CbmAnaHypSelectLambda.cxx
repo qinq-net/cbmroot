@@ -115,7 +115,7 @@ void CbmAnaHypSelectLambda::Exec(Option_t * option){
     CbmStsTrack* tr = (CbmStsTrack*) fRCTracks->At(i);
     Int_t sign = (tr->GetParamFirst()->GetQp()>0) ? 1 : -1;
     if (fVerbose>1) printf("Track: %4i sign=%2i",i,sign);
-    if (tr->GetNofHits()<4) {
+    if (tr->GetNofStsHits()<4) {
       if (fVerbose>1) printf("\n");
       continue;
     }

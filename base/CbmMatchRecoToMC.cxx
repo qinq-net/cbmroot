@@ -485,7 +485,7 @@ void CbmMatchRecoToMC::MatchStsTracks(
       CbmTrackMatchNew* trackMatch = (editMode) ?
             static_cast<CbmTrackMatchNew*>(trackMatches->At(iTrack)) :
                new ((*trackMatches)[iTrack]) CbmTrackMatchNew();
-      Int_t nofStsHits = track->GetNofHits();
+      Int_t nofStsHits = track->GetNofStsHits();
       for (Int_t iHit = 0; iHit < nofStsHits; iHit++) {
          const CbmMatch* hitMatch = static_cast<CbmMatch*>(stsHitMatches->At(track->GetHitIndex(iHit)));
          Int_t nofLinks = hitMatch->GetNofLinks();

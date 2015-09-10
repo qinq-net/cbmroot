@@ -132,7 +132,7 @@ void CbmStsMatchTracks::Exec(Option_t* opt) {
       warn = kTRUE;
       continue;
     }
-    nHits = track->GetNofHits();
+    nHits = track->GetNofStsHits();
     nAll = nTrue = nWrong = nFake = nMCTracks = 0;
     fMatchMap.clear();
     if (fVerbose > 2) cout << endl << "Track " << iTrack << ", Hits "

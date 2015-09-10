@@ -75,7 +75,7 @@ void CbmRichTrackExtrapolationKF::DoExtrapolation(
 
       KF.Extrapolate(pSTStr, z, &ExTrack);
 
-      Int_t Nsts = pSTStr->GetNofHits();
+      Int_t Nsts = pSTStr->GetNofStsHits();
 
       if ( Nsts >= minNofStsHits) {
          *(FairTrackParam*)(extrapolatedTrackParams->At(iTrack)) = ExTrack;

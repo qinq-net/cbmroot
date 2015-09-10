@@ -300,7 +300,7 @@ void CbmKFTrackQA::Exec(Option_t* opt)
     CbmStsTrack* cbmStsTrack = (CbmStsTrack*) fTrackArray->At(stsTrackIndex);
     int stsTrackMCIndex = trackMatch[stsTrackIndex];
     Double_t* stsHistoData = new Double_t[NStsHisto];
-    stsHistoData[0] = cbmStsTrack->GetNofHits();//NHits
+    stsHistoData[0] = cbmStsTrack->GetNofStsHits();//NHits
     stsHistoData[1] = cbmStsTrack->GetChiSq()/cbmStsTrack->GetNDF();//Chi2/NDF
     stsHistoData[2] = TMath::Prob(cbmStsTrack->GetChiSq(),cbmStsTrack->GetNDF());//prob
     if(stsTrackMCIndex>-1)

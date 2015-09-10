@@ -521,7 +521,7 @@ void CbmStsFitPerformanceTask::Exec(Option_t * option){
 
       // Get MC points;
       vector<CbmStsPoint*> vPoints;
-      for( Int_t i=0; i<track->GetNofHits(); i++ ){
+      for( Int_t i=0; i<track->GetNofStsHits(); i++ ){
 	Int_t hitID = track->GetHitIndex(i);
 	if( hitID<0 ) continue;
 	CbmStsHit* hit = (CbmStsHit*) fStsHitArray->At(hitID);
@@ -556,7 +556,7 @@ void CbmStsFitPerformanceTask::Exec(Option_t * option){
       mci[5] = mcTrack->GetStartZ();
       if( !vPoints.empty() )
 	{
-	  if( track->GetNofHits()+track->GetNofMvdHits()>=8 ){
+	  if( track->GetNofStsHits()+track->GetNofMvdHits()>=8 ){
 	    Double_t p1 = mcTrack->GetP();
 	    TVector3 mom;
 	    vPoints.back()->MomentumOut(mom);
@@ -920,7 +920,7 @@ Double_t CbmStsFitPerformanceTask::GetCharge(CbmMCTrack* mcTrack){
 
 // -------------------------------------------------------------------------
 Bool_t CbmStsFitPerformanceTask::IsLong(CbmStsTrack* track){
-  Int_t nHits = track->GetNofHits();
+  Int_t nHits = track->GetNofStsHits();
   if (nHits <4) return 0;
   Int_t stmin=1000, stmax=-1000;
   Int_t st,iHit,hitID;

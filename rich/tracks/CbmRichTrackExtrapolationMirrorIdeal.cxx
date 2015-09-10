@@ -88,7 +88,7 @@ void CbmRichTrackExtrapolationMirrorIdeal::DoExtrapolation(
       if (idSTS < 0 ) continue;
       CbmStsTrack* pSTStr = (CbmStsTrack*) fSTSArray->At(idSTS);
       if ( NULL == pSTStr ) continue;
-      Int_t Nsts = pSTStr->GetNofHits() + pSTStr->GetNofMvdHits();
+      Int_t Nsts = pSTStr->GetNofStsHits() + pSTStr->GetNofMvdHits();
       if ( Nsts >= minNofStsHits) {
          CbmTrackMatchNew* pTrackMatch = (CbmTrackMatchNew*)fTrackMatchArray->At(idSTS);
          if (NULL == pTrackMatch) continue;
