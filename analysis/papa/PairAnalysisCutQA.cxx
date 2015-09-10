@@ -55,6 +55,7 @@ PairAnalysisCutQA::PairAnalysisCutQA() :
   fTypeKeys[kTrack]  = "Track";
   fTypeKeys[kTrack2] = "Track2";
   fTypeKeys[kPair]   = "Pair";
+  fTypeKeys[kPrePair]= "Pair0";
   fTypeKeys[kEvent]  = "Event";
   fQAHistArray.SetOwner();
 }
@@ -78,6 +79,7 @@ PairAnalysisCutQA::PairAnalysisCutQA(const char* name, const char* title) :
   fTypeKeys[kTrack]  = "Track";
   fTypeKeys[kTrack2] = "Track2";
   fTypeKeys[kPair]   = "Pair";
+  fTypeKeys[kPrePair]= "Pair0";
   fTypeKeys[kEvent]  = "Event";
   fQAHistArray.SetOwner();
 }
