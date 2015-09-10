@@ -37,8 +37,10 @@ void run_tof_disim(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
   TString inFile  = inDir + defaultInputFile;
 
-  CbmTarget* target = new CbmTarget("Gold", 0.025);
-  
+  // Function needed for CTest runtime dependency
+  TString depFile = Remove_CTest_Dependency_File(outDir, "run_tof_disim" , setup);
+
+  CbmTarget* target = new CbmTarget("Gold", 0.025);  
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -240,5 +242,8 @@ void run_tof_disim(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
+  
+  // Function needed for CTest runtime dependency
+  Generate_CTest_Dependency_File(depFile);
 }
 
