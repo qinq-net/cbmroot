@@ -14,17 +14,6 @@ void FieldMapTest(TString fieldMap = "field_v12b",
 		  Bool_t create_file = kFALSE)
 {
   
-  // -----   Load libraries   ---------------------------------------------
-  // Load libraries
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
-  gSystem->Load("libField");
-  // ----------------------------------------------------------------------
-  
-  
   // -------  Get magnetic field  -----------------------------------------
   // Somehow this information should be extracted from the map itself
   CbmFieldMap* magField = NULL;
@@ -42,15 +31,15 @@ void FieldMapTest(TString fieldMap = "field_v12b",
     CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
   else if (fieldMap == "field_muon_standard" )
     CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
-  else if (fieldMap == "FieldMuonMagnet" )
   else {
     cout << "===> ERROR: Unknown field map " << fieldMap << endl;
-    exit;
+    exit(1);
   }
   
   magField->Init();
   magField->Print();
   
+
   if (create_file) {
 
     // Number of test positions for which magnetic field values are
@@ -292,6 +281,7 @@ void FieldMapTest(TString fieldMap = "field_v12b",
     }
     
   }    
+
 }
 
 
