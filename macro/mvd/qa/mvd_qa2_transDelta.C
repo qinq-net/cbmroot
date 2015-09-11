@@ -7,7 +7,7 @@
 //
 // --------------------------------------------------------------------------
 
-Int_t mvd_qa2_transDelta()
+void mvd_qa2_transDelta()
 {
   // ========================================================================
   //          Adjust this part according to your requirements
@@ -111,6 +111,7 @@ Int_t mvd_qa2_transDelta()
 
 
   // -----   Create magnetic field   ----------------------------------------
+  CbmFieldMap* magField =NULL;
   if ( fieldMap == "field_electron_standard")
     magField = new CbmFieldMapSym2(fieldMap);
   else if ( fieldMap == "field_v10e")
@@ -123,7 +124,7 @@ Int_t mvd_qa2_transDelta()
     magField = new CbmFieldMapSym3(fieldMap);
   else {
     cout << "===> ERROR: Field map " << fieldMap << " unknown! " << endl;
-    exit;
+    exit(1);
   }
   magField->SetPosition(0., 0., fieldZ);
   magField->SetScale(fieldScale);

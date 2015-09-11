@@ -33,13 +33,6 @@ void much_seg_auto(const char* mcFile = "",
   TString depFile = Remove_CTest_Dependency_File("data", "much_seg");  
 
 
-  // ----  Load libraries   -------------------------------------------------
-/*
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gROOT->LoadMacro("$VMCWORKDIR/macro/much/muchlibs.C");
-  muchlibs();
-*/
   // ------------------------------------------------------------------------
 
   // -----   Analysis run   -------------------------------------------------

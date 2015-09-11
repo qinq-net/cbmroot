@@ -90,15 +90,15 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   
   // --- STS digipar file is there only for L1. It is no longer required
   // ---  for STS digitisation and should be eventually removed.
-  //TObjString stsDigiFile = paramDir + stsDigi;
+  //TObjString stsDigiFile(paramDir + stsDigi);
   //parFileList->Add(&stsDigiFile);
   //cout << "macro/run/run_reco.C using: " << stsDigi << endl;
 
-  TObjString trdDigiFile = paramDir + trdDigi;
+  TObjString trdDigiFile(paramDir + trdDigi);
   parFileList->Add(&trdDigiFile);
   cout << "macro/run/run_reco.C using: " << trdDigi << endl;
 
-  TObjString tofDigiFile = paramDir + tofDigi;
+  TObjString tofDigiFile(paramDir + tofDigi);
   parFileList->Add(&tofDigiFile);
   cout << "macro/run/run_reco.C using: " << tofDigi << endl;
 

@@ -25,7 +25,7 @@ void much_sim(TString inputSignal = "",
     inputSignal = inputdir + "/macro/much/data/jpsi.root";
   }
   if (inputBgr == "") {
-    inputBgr = inputdir + "/input/urqmd.ftn14";
+    inputBgr = inputdir + "/input/urqmd.auau.25gev.centr.root";
   }
   if (outFile == "") {
     outFile = "data/mc.root";
@@ -85,6 +85,7 @@ void much_sim(TString inputSignal = "",
   FairRunSim* fRun = new FairRunSim();
   fRun->SetName("TGeant3");              // Transport engine
   fRun->SetOutputFile(outFile);          // Output file
+  fRun->SetGenerateRunInfo(kTRUE);       // Create FairRunInfo file
   FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
   // ------------------------------------------------------------------------
 
@@ -151,13 +152,15 @@ void much_sim(TString inputSignal = "",
   cout << endl << "=== much_sim.C : Create generators ..." << endl;
 //  FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
+#ifndef __CLING__
   if ( inputSignal != "" ) {
   	CbmPlutoGenerator *plutoGen= new CbmPlutoGenerator(inputSignal);
   	primGen->AddGenerator(plutoGen);
   }
+#endif
   if ( inputBgr != "" ) {
-  	FairUrqmdGenerator*  urqmdGen = new FairUrqmdGenerator(inputBgr);
-  	primGen->AddGenerator(urqmdGen);
+  	CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inputBgr);
+  	primGen->AddGenerator(uniGen);
   }
   fRun->SetGenerator(primGen);
   // ------------------------------------------------------------------------

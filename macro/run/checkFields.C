@@ -46,8 +46,8 @@ int checkFields (const char *field_basename="field_v12a", double field_Z_origin=
   } else if ( fieldName == "field_v12a" ) {
 	field = new CbmFieldMapSym2(field_basename);
   } else { 
-	out << "=====> ERROR: Field map " << fieldName << " unknown!" << endl;
-	exit;
+	cout << "=====> ERROR: Field map " << fieldName << " unknown!" << endl;
+	exit(1);
   }
   field->Init();
   field->Print();

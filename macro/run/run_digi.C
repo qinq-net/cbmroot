@@ -88,7 +88,7 @@ void run_digi(Int_t nEvents = 2, const char* setup = "sis100_electron")
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
 
-  TObjString stsDigiFile = paramDir + stsDigi;
+  TObjString stsDigiFile(paramDir + stsDigi);
   parFileList->Add(&stsDigiFile);
   cout << "macro/run/run_digi.C using: " << stsDigi << endl;
 

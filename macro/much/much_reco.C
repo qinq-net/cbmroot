@@ -34,6 +34,7 @@ void much_reco(
 	FairRunAna* run = new FairRunAna();
 	run->SetInputFile(mcFile);
 	run->SetOutputFile(globalRecoFile);
+        run->SetGenerateRunInfo(kTRUE);
 
   // ----- MC Data Manager   ------------------------------------------------
   CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);

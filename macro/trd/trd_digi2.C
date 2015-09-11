@@ -103,13 +103,13 @@ void trd_digi2(Int_t nEvents = 1, const char* setup = "sis300_electron")
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
 
-  TObjString stsDigiFile = paramDir + "/" + stsDigi;
+  TObjString stsDigiFile(paramDir + "/" + stsDigi);
   parFileList->Add(&stsDigiFile);
 
-  TObjString trdDigiFile =  paramDir + "/" + trdDigi;
+  TObjString trdDigiFile(paramDir + "/" + trdDigi);
   parFileList->Add(&trdDigiFile);
 
-  TObjString tofDigiFile =  paramDir + "/" + tofDigi;
+  TObjString tofDigiFile(paramDir + "/" + tofDigi);
   parFileList->Add(&tofDigiFile);
 
   cout << "finally using     : >> " << trdDigi << " << " << endl;
