@@ -29,6 +29,10 @@ void much_seg_auto(const char* mcFile = "",
   // Dummy ROOT file (neede as an output)
   TString outFile  = "data/dummy.root";
 
+  // Function needed for CTest runtime dependency 
+  TString depFile = Remove_CTest_Dependency_File("data", "much_seg");  
+
+
   // ----  Load libraries   -------------------------------------------------
 /*
   gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
@@ -83,5 +87,8 @@ void much_seg_auto(const char* mcFile = "",
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
-//  exit(0);
+
+  // Function needed for CTest runtime dependency
+  Generate_CTest_Dependency_File(depFile);
+
 }
