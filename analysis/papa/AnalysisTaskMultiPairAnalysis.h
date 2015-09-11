@@ -12,6 +12,7 @@
 //#                                                   #
 //#####################################################
 
+#include "TStopwatch.h"
 #include "TList.h"
 
 
@@ -62,9 +63,10 @@ protected:
 
   PairAnalysisEvent *fInputEvent; //! event handler
 
+  TStopwatch fTimer;                 //! stopwatch
   AnalysisTaskMultiPairAnalysis(const AnalysisTaskMultiPairAnalysis &c);
   AnalysisTaskMultiPairAnalysis& operator= (const AnalysisTaskMultiPairAnalysis &c);
   
-  ClassDef(AnalysisTaskMultiPairAnalysis, 1); //Analysis Task handling multiple instances of PairAnalysis
+  ClassDef(AnalysisTaskMultiPairAnalysis, 2); //Analysis Task handling multiple instances of PairAnalysis
 };
 #endif

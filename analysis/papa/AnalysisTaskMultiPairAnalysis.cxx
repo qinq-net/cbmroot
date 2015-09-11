@@ -8,6 +8,7 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+#include <TStopwatch.h>
 #include <TChain.h>
 #include <TH1D.h>
 
@@ -39,7 +40,8 @@ AnalysisTaskMultiPairAnalysis::AnalysisTaskMultiPairAnalysis() :
   fWeight(1.),
   fEventFilter(0x0),
   fEventStat(0x0),
-  fInputEvent(0x0)
+  fInputEvent(0x0),
+  fTimer()
 {
   //
   // Constructor
@@ -59,7 +61,8 @@ AnalysisTaskMultiPairAnalysis::AnalysisTaskMultiPairAnalysis(const char *name) :
   fWeight(1.),
   fEventFilter(0x0),
   fEventStat(0x0),
-  fInputEvent(0x0)
+  fInputEvent(0x0),
+  fTimer()
 {
   //
   // Constructor
@@ -98,6 +101,8 @@ InitStatus AnalysisTaskMultiPairAnalysis::Init()
   //
   // Add all histogram manager histogram lists to the output TList
   //
+
+  fTimer.Start();
 
   // fill metadata object
   fMetaData.Init();
@@ -153,6 +158,10 @@ InitStatus AnalysisTaskMultiPairAnalysis::Init()
   fgRichElIdAnn->Init();
   PairAnalysisVarManager::SetRichPidResponse(fgRichElIdAnn);
 
+  // initialization time
+  printf("AnalysisTaskMultiPairAnalysis::Init:"" Real time %fs  , CPU time %fs \n",fTimer.RealTime(),fTimer.CpuTime());
+  fTimer.ResetCpuTime();
+
   return kSUCCESS;
 }
 
@@ -163,6 +172,7 @@ void AnalysisTaskMultiPairAnalysis::Exec(Option_t *)
   // Main loop. Called for every event
   //
 
+  fTimer.Start(kFALSE);
   //  printf("\n\nAnalysisTaskMultiPairAnalysis::Exec: NEW event with %04d global tracks !!!!\r",
   //  fInputEvent->GetNumberOfTracks());
   //  printf("AnalysisTaskMultiPairAnalysis::Exec: global tracks %04d\n",fInputEvent->GetNumberOfTracks());
@@ -171,8 +181,13 @@ void AnalysisTaskMultiPairAnalysis::Exec(Option_t *)
   if (fListHistos.IsEmpty()/*&&fListCF.IsEmpty()*/) return;
   Int_t bin = fEventStat->Fill(kAllEvents);
 
-  if(!(static_cast<Int_t>(fEventStat->GetBinContent(bin))%100))
-    Info("Exec", Form("Process %.3e events",fEventStat->GetBinContent(fEventStat->FindBin(kAllEvents))));
+  Double_t evts = fEventStat->GetBinContent(bin);
+  if(!(static_cast<Int_t>(evts)%100)) {
+    printf("AnalysisTaskMultiPairAnalysis::Exec: Process %.3e events, CPU time %.1fs, (%fs per event) \n",
+	   evts, fTimer.CpuTime(), fTimer.CpuTime()/evts);
+    fTimer.Continue();
+  }
+  //    Info("Exec", Form("Process %.3e events",fEventStat->GetBinContent(fEventStat->FindBin(kAllEvents))));
 
   // initialize track arrays and some track based variables
   fInputEvent->Init(); // NOTE: tracks are initialized with mass hypo PDG 11, and adapted later!
