@@ -182,7 +182,7 @@ void AnalysisTaskMultiPairAnalysis::Exec(Option_t *)
   Int_t bin = fEventStat->Fill(kAllEvents);
 
   Double_t evts = fEventStat->GetBinContent(bin);
-  if(!(static_cast<Int_t>(evts)%100)) {
+  if(!(static_cast<Int_t>(evts)%10)) {
     printf("AnalysisTaskMultiPairAnalysis::Exec: Process %.3e events, CPU time %.1fs, (%fs per event) \n",
 	   evts, fTimer.CpuTime(), fTimer.CpuTime()/evts);
     fTimer.Continue();
