@@ -160,7 +160,7 @@ InitStatus AnalysisTaskMultiPairAnalysis::Init()
 
   // initialization time
   printf("AnalysisTaskMultiPairAnalysis::Init:"" Real time %fs  , CPU time %fs \n",fTimer.RealTime(),fTimer.CpuTime());
-  fTimer.ResetCpuTime();
+  fTimer.Reset();
 
   return kSUCCESS;
 }
@@ -183,8 +183,8 @@ void AnalysisTaskMultiPairAnalysis::Exec(Option_t *)
 
   Double_t evts = fEventStat->GetBinContent(bin);
   if(!(static_cast<Int_t>(evts)%10)) {
-    printf("AnalysisTaskMultiPairAnalysis::Exec: Process %.3e events, CPU time %.1fs, (%fs per event) \n",
-	   evts, fTimer.CpuTime(), fTimer.CpuTime()/evts);
+    printf("AnalysisTaskMultiPairAnalysis::Exec: Process %.3e events, CPU time %.1fs, (%fs per event, eff %.3f) \n",
+	   evts, fTimer.CpuTime(), fTimer.CpuTime()/evts, fTimer.CpuTime()/fTimer.RealTime());
     fTimer.Continue();
   }
   //    Info("Exec", Form("Process %.3e events",fEventStat->GetBinContent(fEventStat->FindBin(kAllEvents))));
