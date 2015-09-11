@@ -101,7 +101,7 @@ InitStatus CbmTrdHitProducerSmearing::Init()
   return kSUCCESS;
 }
 
-void CbmTrdHitProducerSmearing::Exec(Option_t * option)
+void CbmTrdHitProducerSmearing::Exec(Option_t*)
 {
    fTrdHits->Delete();
 
@@ -123,7 +123,7 @@ void CbmTrdHitProducerSmearing::Exec(Option_t * option)
    if (fHitMergingDistance > 0) MergeHits(hits);
 
    // Copy hits to TClonesArray and clean the memory
-   for (Int_t iHit = 0; iHit < hits.size(); iHit++) {
+   for (UInt_t iHit = 0; iHit < hits.size(); iHit++) {
       new ((*fTrdHits)[iHit]) CbmTrdHit(*hits[iHit]);
       delete hits[iHit];
    }
@@ -215,7 +215,7 @@ CbmTrdHit* CbmTrdHitProducerSmearing::CreateHit(Int_t pointId)
       Double_t moduleYmax = fModuleInfo->GetY() + fModuleInfo->GetSizeY();
       Double_t moduleYmin = fModuleInfo->GetY() - fModuleInfo->GetSizeY();
       isOutside = (hitPosX > moduleXmax || hitPosX < moduleXmin)
-	|| (hitPosX > moduleXmax || hitPosX < moduleXmin);
+	|| (hitPosY > moduleYmax || hitPosY < moduleYmin);
       counter++;
       if (!isOutside) { // If hit position is inside active volume
 	hitPos.SetX(hitPosX);
@@ -253,8 +253,8 @@ CbmTrdHit* CbmTrdHitProducerSmearing::CreateGhostHit(
 void CbmTrdHitProducerSmearing::MergeHits(
       vector<CbmTrdHit*>& hits)
 {
-   for (Int_t i = 0; i < hits.size() - 1; i++) {
-      for (Int_t j = i + 1; j < hits.size(); j++) {
+   for (UInt_t i = 0; i < hits.size() - 1; i++) {
+      for (UInt_t j = i + 1; j < hits.size(); j++) {
          CbmTrdHit* hit1 = hits[i];
          CbmTrdHit* hit2 = hits[j];
          Double_t dx = hit1->GetX() - hit2->GetX();

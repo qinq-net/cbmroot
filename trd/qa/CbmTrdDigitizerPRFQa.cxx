@@ -27,7 +27,7 @@ CbmTrdDigitizerPRFQa::CbmTrdDigitizerPRFQa()
 : FairTask()
 {
 }
-CbmTrdDigitizerPRFQa::CbmTrdDigitizerPRFQa(const char* name,const char* title)
+CbmTrdDigitizerPRFQa::CbmTrdDigitizerPRFQa(const char* name,const char*)
 : FairTask(name)
 {
 }
@@ -45,7 +45,7 @@ InitStatus CbmTrdDigitizerPRFQa::Init()
   PrepareHistograms();
   return kSUCCESS;
 }
-void CbmTrdDigitizerPRFQa::Exec(Option_t* option)
+void CbmTrdDigitizerPRFQa::Exec(Option_t*)
 {
 }
 void CbmTrdDigitizerPRFQa::Finish()

@@ -61,7 +61,7 @@ InitStatus CbmTrdClusterFinderDPB::Init()
 Bool_t CbmDigiSorter2(std::pair< Int_t, Int_t> a, std::pair< Int_t, Int_t> b)
 {return (a.first < b.first);}
 
-void CbmTrdClusterFinderDPB::Exec(Option_t *option)
+void CbmTrdClusterFinderDPB::Exec(Option_t*)
 {
   cout << "================CbmTrdClusterFinderDPB===============" << endl;
 
@@ -91,7 +91,7 @@ void CbmTrdClusterFinderDPB::Exec(Option_t *option)
   ModuleDigiMap.clear();
 }
 
-void CbmTrdClusterFinderDPB::doClustering(Int_t ModuleAddress, DigiList* digiList)
+void CbmTrdClusterFinderDPB::doClustering(Int_t /*ModuleAddress*/, DigiList* digiList)
 {
   /*
     Any sorting of the digi stream is done here. 
@@ -108,16 +108,16 @@ void CbmTrdClusterFinderDPB::doClustering(Int_t ModuleAddress, DigiList* digiLis
     CbmTrdDigi *digi =  (CbmTrdDigi*) fDigis->At((*iDigi).second);  //(*iDigi).second; 
     
     Int_t digiAddress  = digi->GetAddress();
-    Int_t layerId      = CbmTrdAddress::GetLayerId(digiAddress);
-    Int_t moduleId     = CbmTrdAddress::GetModuleId(digiAddress);
+//    Int_t layerId      = CbmTrdAddress::GetLayerId(digiAddress);
+//    Int_t moduleId     = CbmTrdAddress::GetModuleId(digiAddress);
     Int_t moduleAddress = CbmTrdAddress::GetModuleAddress(digiAddress);
     fModuleInfo        = fDigiPar->GetModule(moduleAddress);
     Int_t secRow       = CbmTrdAddress::GetRowId(digiAddress);
     Int_t iSector      = CbmTrdAddress::GetSectorId(digiAddress);
     Int_t iCol = CbmTrdAddress::GetColumnId(digiAddress);
     Int_t globalRow    = 0;
-    Double_t charge    = digi->GetCharge();
-    Double_t time      = digi->GetTime();
+//    Double_t charge    = digi->GetCharge();
+//    Double_t time      = digi->GetTime();
     globalRow          = fModuleInfo->GetModuleRow(iSector,secRow);
     Int_t combiId = globalRow * (fModuleInfo->GetNofColumns() + 1) + iCol;
     if (combiId != (*iDigi).first) printf("Wrong CombiId %i %i\n",combiId,(*iDigi).first);

@@ -222,7 +222,7 @@ Int_t CbmTrdUtils::GetModuleType(Int_t moduleAddress, CbmTrdModule *fModuleInfo,
 }
 
    
-  void CbmTrdUtils::CreateLayerView(std::map<Int_t/*moduleAddress*/, TH1*>& Map, CbmTrdModule *fModuleInfo, CbmTrdDigiPar *fDigiPar, const TString folder, const TString pics, const TString zAxisTitle, const Double_t fmax, const Double_t fmin, const Bool_t logScale){
+  void CbmTrdUtils::CreateLayerView(std::map<Int_t/*moduleAddress*/, TH1*>& Map, CbmTrdModule *fModuleInfo, CbmTrdDigiPar *fDigiPar, const TString /*folder*/, const TString pics, const TString zAxisTitle, const Double_t fmax, const Double_t fmin, const Bool_t logScale){
     TString title(""), name("");
     //name.Form("_TH_%.2EGeV_",fTriggerThreshold);
     TPaveText *text=NULL;

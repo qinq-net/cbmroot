@@ -110,7 +110,7 @@ CbmTrdHitRateQa::CbmTrdHitRateQa()
 // --------------------------------------------------------------------
 
 // ---- Constructor ----------------------------------------------------
-CbmTrdHitRateQa::CbmTrdHitRateQa(const char *name, const char *title)
+CbmTrdHitRateQa::CbmTrdHitRateQa(const char *name, const char*)
   : FairTask(name),
     Digicounter(-1),
     tFile(NULL),
@@ -264,7 +264,7 @@ InitStatus CbmTrdHitRateQa::Init()
 
 
 // ---- Exec ----------------------------------------------------------
-void CbmTrdHitRateQa::Exec(Option_t * option)
+void CbmTrdHitRateQa::Exec(Option_t*)
 {
   //TStyle::SetNumberContours(99); 
   gStyle->SetNumberContours(99); 
@@ -282,7 +282,7 @@ void CbmTrdHitRateQa::Exec(Option_t * option)
   HitRateGeoPara *GeoPara = new HitRateGeoPara;
   Bool_t Lines;
   Bool_t Fast = true; // false; // true; // false;  // will not fill the root file (in Histo)!!
-  Bool_t firstLayer = false;
+//  Bool_t firstLayer = false;
   fDraw = true; // false;
   Double_t ZRangeL = 1e00;//1e05;
   Double_t ZRangeU = 1e05;//1e06;
@@ -349,7 +349,7 @@ void CbmTrdHitRateQa::Exec(Option_t * option)
   vector<int> Plane10;
 
   Int_t ModuleID;
-  Int_t Sector = 0;
+//  Int_t Sector = 0;
   const Int_t NofModules = fDigiPar->GetNrOfModules();
 
   //const Int_t NofModules = 80; // DE
@@ -411,8 +411,8 @@ void CbmTrdHitRateQa::Exec(Option_t * option)
   Char_t OutFile1[200];
   Char_t OutFile2[200];
 
-  TImage *Outimage1;
-  TImage *Outimage2;
+  TImage *Outimage1=NULL;
+  TImage *Outimage2=NULL;
 
   TLine* MaxHitRatePerPad = new TLine(1e05,0,1e05,1e04);  // 100.000 hits per pad
   MaxHitRatePerPad->SetLineColor(2);  // make it red
@@ -434,7 +434,7 @@ void CbmTrdHitRateQa::Exec(Option_t * option)
       fLayer   = fPlane % 4 + 1;  // OK for SIS100 and SIS300
       //      cout << fStation << ", " << fLayer << endl;
 
-      Int_t nModulesInThisLayer = LiSi[j].size();
+      UInt_t nModulesInThisLayer = LiSi[j].size();
       //      cout << nModulesInThisLayer << " modules in this layer" << endl;
  
       h2Topview[0]->Reset();
@@ -978,15 +978,16 @@ void CbmTrdHitRateQa::GetModuleInformationFromDigiPar(HitRateGeoPara *GeoPara, B
 }
 
 
-Double_t CbmTrdHitRateQa::CalcHitRate(HitRateGeoPara *GeoPara, Double_t StartX, Double_t StopX, Int_t xSteps, Double_t StartY, Double_t StopY, Int_t ySteps, Double_t* Mpos, TH2F* Topview[3], TCanvas* c0)
+Double_t CbmTrdHitRateQa::CalcHitRate(HitRateGeoPara *GeoPara, Double_t StartX, Double_t /*StopX*/, Int_t xSteps, Double_t StartY, Double_t /*StopY*/, 
+Int_t ySteps, Double_t* /*Mpos*/, TH2F* Topview[3], TCanvas* /*c0*/)
 {
   //cout << "CalcHitRate" << endl;
   Double_t HitRate = 0;//1. / sqrt( pow( StartX,2) + pow( StartY,2));
   Double_t r = 0;
   Double_t alpha = 0;
-  Int_t counter = 0;
-  Double_t a[3] = { 7.66582e+00,  6.97712e+00,  6.53780e+00};
-  Double_t b[3] = {-2.72375e-03, -1.85168e-03, -1.42673e-03};
+//  Int_t counter = 0;
+//  Double_t a[3] = { 7.66582e+00,  6.97712e+00,  6.53780e+00};
+//  Double_t b[3] = {-2.72375e-03, -1.85168e-03, -1.42673e-03};
 
   Double_t xStepWidth = GeoPara->cosX;
   Double_t yStepWidth = GeoPara->cosY;
@@ -1030,7 +1031,7 @@ Double_t CbmTrdHitRateQa::CalcHitRate(HitRateGeoPara *GeoPara, Double_t StartX, 
 }
 
 
-void CbmTrdHitRateQa::Histo(HitRateGeoPara *GeoPara, Bool_t Fast, TH2F* h2Layer, TCanvas* c1, TH1F* h1HitPad, TCanvas* c2, TH2F* Topview[3], TCanvas* c0, Double_t mm2bin)
+void CbmTrdHitRateQa::Histo(HitRateGeoPara *GeoPara, Bool_t Fast, TH2F* h2Layer, TCanvas* /*c1*/, TH1F* h1HitPad, TCanvas* /*c2*/, TH2F* Topview[3], TCanvas* c0, Double_t mm2bin)
 {
   Double_t ZRangeL = 1e00;//1e05;
   Double_t ZRangeU = 1e05;//1e06;
@@ -1229,7 +1230,7 @@ void CbmTrdHitRateQa::Histo(HitRateGeoPara *GeoPara, Bool_t Fast, TH2F* h2Layer,
 }
 
 
-void CbmTrdHitRateQa::DrawBorders(HitRateGeoPara *GeoPara, TH2F* Layer, TCanvas* c1)
+void CbmTrdHitRateQa::DrawBorders(HitRateGeoPara *GeoPara, TH2F* /*Layer*/, TCanvas* c1)
 {
   //----------------------Sector--------------------------------------
   Double_t SecXStart = 0.0;
@@ -1310,7 +1311,7 @@ void CbmTrdHitRateQa::DrawBorders(HitRateGeoPara *GeoPara, TH2F* Layer, TCanvas*
 // --------------------------------------------------------------------
 
 
-void CbmTrdHitRateQa::DrawPads(HitRateGeoPara *GeoPara, TH2F* Layer, TCanvas* c1)
+void CbmTrdHitRateQa::DrawPads(HitRateGeoPara *GeoPara, TH2F* /*Layer*/, TCanvas* c1)
 {
   //----------------------Pad--------------------------------------
 //  const Int_t nR = GeoPara->nRow;

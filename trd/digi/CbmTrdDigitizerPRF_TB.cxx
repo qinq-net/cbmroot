@@ -112,7 +112,7 @@ void CbmTrdDigitizerPRF_TB::SetTriangularPads(Bool_t triangles)
 	fTrianglePads = triangles;
 }
 
-void CbmTrdDigitizerPRF_TB::Exec(Option_t * option)
+void CbmTrdDigitizerPRF_TB::Exec(Option_t *)
 {
   fDigis->Delete();
   fDigiMatches->Delete();
@@ -259,7 +259,7 @@ void CbmTrdDigitizerPRF_TB::ScanPadPlaneTriangle(const Double_t* local_point, Do
  
     //printf("%i x %i\n",maxCol,maxRow);
     //Estimate starting column and row and limits due to chamber dimensions
-    Int_t startCol(columnId-maxCol/2), stopCol(columnId+maxCol/2), startRow(rowId-maxRow/2), stopRow(rowId+maxRow/2+1), startSec(0);
+    Int_t startCol(columnId-maxCol/2), stopCol(columnId+maxCol/2), startRow(rowId-maxRow/2), stopRow(rowId+maxRow/2+1);// startSec(0);
     if (startRow % 2 != 0){ // It does not make sence to start scanning in odd rows for triangluar pad geometry since the triangles are later combined to rectangles and parallelograms
       startRow -= 1;
       stopRow  -= 1;
@@ -477,7 +477,8 @@ void CbmTrdDigitizerPRF_TB::ScanPadPlane(const Double_t* local_point, Double_t c
       const Int_t maxCol(5/W+0.5), maxRow(5/H+3);// 7 and 3 in orig. minimum 5 times 5 cm area has to be scanned
       //printf("%i x %i\n",maxCol,maxRow);
       //Estimate starting column and row and limits due to chamber dimensions
-      Int_t startCol(columnId-maxCol/2), stopCol(columnId+maxCol/2), startRow(rowId-maxRow/2), stopRow(rowId+maxRow/2), startSec(0);
+//      Int_t startCol(columnId-maxCol/2), stopCol(columnId+maxCol/2), startRow(rowId-maxRow/2), stopRow(rowId+maxRow/2), startSec(0);
+      Int_t startCol(columnId-maxCol/2), startRow(rowId-maxRow/2);
       Double_t sum = 0;
       Int_t secRow(-1), targCol(-1), targRow(-1), targSec(-1), address(-1);
       if (fDebug) {
@@ -679,12 +680,12 @@ void CbmTrdDigitizerPRF_TB::AddDigi(Int_t pointId, Int_t address, Double_t charg
       printf("          time:%10i\n  %8i digis in time map  %8i digis in data map\n",(Int_t)fAddressTimeMap.size(),(Int_t)fTimeAddressMap.size(),(Int_t)fDigiMap.size());
       printf("          %4ins (delta:%8.2fns)\n",(*previous).first,time - (*previous).first);
       printf("                          ------> Push to DAQ\n");
-      for (Int_t i = 0; i < (*previous).second.size(); i++) { // loop over all addresses with the same time stamp
+      for (UInt_t i = 0; i < (*previous).second.size(); i++) { // loop over all addresses with the same time stamp
 	//std::vector<Int_t> ::iterator AddressIt = (*previous).second.begin();
 	//while ((*previous).second.size() > 0){
 	data = fDigiMap.find((*previous).second[/*(*AddressIt)*/i]);  
 	if (data != fDigiMap.end()) { 
-	  Int_t iDigi = fDigis->GetEntries();
+	  //Int_t iDigi = fDigis->GetEntries();
 	  CbmDaqBuffer::Instance()->InsertData(data->second.first);
 	  delete data->second.first;
 	  delete data->second.second;
@@ -715,7 +716,7 @@ void CbmTrdDigitizerPRF_TB::AddDigi(Int_t pointId, Int_t address, Double_t charg
 	data->second.first->SetTime(max(time, data->second.first->GetTime()));
 	data->second.second->AddLink(CbmLink(charge, pointId));
 
-	for (Int_t i = 0; i < (*previous).second.size(); i++) { 
+	for (UInt_t i = 0; i < (*previous).second.size(); i++) { 
 	  if (address == (*previous).second[i]){
 	    fTimeAddressMap[time].push_back((*previous).second[i]);
 	    (*previous).second.erase((*previous).second.begin()+i);

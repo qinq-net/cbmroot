@@ -49,7 +49,7 @@ InitStatus CbmTrdHitProducerIdeal::Init()
 }
 
 void CbmTrdHitProducerIdeal::Exec(
-      Option_t *option)
+      Option_t*)
 {
    fTrdHits->Clear();
 

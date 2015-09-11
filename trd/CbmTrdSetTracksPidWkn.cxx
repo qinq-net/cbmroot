@@ -34,7 +34,7 @@ CbmTrdSetTracksPidWkn::CbmTrdSetTracksPidWkn()
 
 // -----   Standard constructor   ------------------------------------------
 CbmTrdSetTracksPidWkn::CbmTrdSetTracksPidWkn(const char* name,
-				 const char* title)
+				 const char*)
   : FairTask(name),
     fTrackArray(NULL),
     fTrdHitArray(NULL),
@@ -98,7 +98,7 @@ InitStatus CbmTrdSetTracksPidWkn::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmTrdSetTracksPidWkn::Exec(Option_t* opt) {
+void CbmTrdSetTracksPidWkn::Exec(Option_t*) {
 
   if ( !fTrackArray ) return;
 

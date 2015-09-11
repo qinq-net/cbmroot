@@ -33,7 +33,7 @@ CbmTrdFitTracks::CbmTrdFitTracks()
 
 // -----   Standard constructor   ------------------------------------------
 CbmTrdFitTracks::CbmTrdFitTracks(const char* name,
-				 const char* title,
+				 const char*,
 				 CbmTrdTrackFitter* fitter)
   : FairTask(name),
     fFitter(fitter),
@@ -101,7 +101,7 @@ InitStatus CbmTrdFitTracks::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmTrdFitTracks::Exec(Option_t* opt) {
+void CbmTrdFitTracks::Exec(Option_t*) {
   if ( !fTrackArray ) return; // =>SG
   Int_t nTracks = fTrackArray->GetEntriesFast();
   for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {

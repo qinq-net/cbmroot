@@ -75,7 +75,7 @@ CbmTrdTracksPidQa::CbmTrdTracksPidQa()
 
 // ---- Standard constructor ------------------------------------------------
 CbmTrdTracksPidQa::CbmTrdTracksPidQa(const char* name,
-					 const char* title)
+					 const char*)
   : FairTask(name),
     fTrdTrackCollection(NULL),
     fTrdHitCollection(NULL),
@@ -187,7 +187,7 @@ InitStatus CbmTrdTracksPidQa::Init()
 
 
 // ---- Task execution ------------------------------------------------------
-void CbmTrdTracksPidQa::Exec(Option_t* option)
+void CbmTrdTracksPidQa::Exec(Option_t*)
 {
     // Declare variables
     CbmTrdTrack* trdTrack = NULL;

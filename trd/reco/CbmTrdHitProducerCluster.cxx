@@ -61,7 +61,7 @@ void CbmTrdHitProducerCluster::SetTriangularPads(Bool_t triangles)
 {
   fTrianglePads = triangles;
 }
-void CbmTrdHitProducerCluster::Exec(Option_t * option)
+void CbmTrdHitProducerCluster::Exec(Option_t*)
 {
   fHits->Delete();
 
@@ -115,7 +115,8 @@ void CbmTrdHitProducerCluster::TriangularPadReconstruction(Int_t clusterId){
   Double_t totalChargeTR = 0;
   Int_t moduleAddress = 0;
   Int_t nofDigis = cluster->GetNofDigis();
-  Int_t digiMaxId(-1), digiMaxCombiId(-1), maxRow(-1), maxCol(-1), maxDigiAddress(-1);
+//  Int_t digiMaxId(-1), digiMaxCombiId(-1), maxRow(-1), maxCol(-1), maxDigiAddress(-1);
+  Int_t digiMaxCombiId(-1), maxRow(-1), maxCol(-1), maxDigiAddress(-1);
   Double_t maxCharge = 0;
   Int_t digiId = -1;
   Int_t combiId(-1), secId(-1), colId(-1), rowId(-1), nCol(0);
@@ -156,7 +157,7 @@ void CbmTrdHitProducerCluster::TriangularPadReconstruction(Int_t clusterId){
       maxDigiAddress = digiAddress;
       padW = moduleInfo->GetPadSizeX(secId);
       padH = moduleInfo->GetPadSizeY(secId);
-      digiMaxId = cluster->GetDigi(iDigi);
+//      digiMaxId = cluster->GetDigi(iDigi);
     }
   }
   //digiList.sort(combiIdSorter);

@@ -92,8 +92,8 @@ void CbmTrdSPADIC::InitSpadicResponseFunction(){
   fSpadicResponse = new TH1D("SpadicResponseFunction","SpadicResponseFunction", fnBins, 0 -(1.8/fnBins), 1.8 -(1.8/fnBins));// 1/25MHz * 45Timebins = 1.8µs200000,0,20);
   Double_t t = 0; //[µs]
   Double_t h = 0;
-  Double_t T = 0.09; //[µs]
-  Double_t t_peak   = fSpadicResponse->GetBinCenter(fPeakBin);
+//  Double_t T = 0.09; //[µs]
+//  Double_t t_peak   = fSpadicResponse->GetBinCenter(fPeakBin);
   for (Int_t k = 1; k <= fSpadicResponse->GetNbinsX(); k++) {
     t = fSpadicResponse->GetBinCenter(k);
     //t = fSpadicResponse->GetBinCenter(k) * t_peak;
@@ -138,17 +138,17 @@ void CbmTrdSPADIC::CR_RC_Shaper(CbmTrdDigi* digi, TH1D* spadicPulse){
     event->SetBinContent(k,amplitude*exp(-0.65*(k-fPeakBin)));
   }
   spadicPulse->Reset();
-  Double_t t = 0; //[µs]
+//  Double_t t = 0; //[µs]
   Double_t x = 0;
   Double_t h = 0;
-  Double_t T_0 = event->GetBinWidth(1); //[µs]
-  Double_t t_peak   = event->GetBinCenter(event->GetMaximumBin());
-  Double_t max_ampl = event->GetBinContent(event->GetMaximumBin());
+//  Double_t T_0 = event->GetBinWidth(1); //[µs]
+//  Double_t t_peak   = event->GetBinCenter(event->GetMaximumBin());
+//  Double_t max_ampl = event->GetBinContent(event->GetMaximumBin());
  
   for (Int_t k = 1; k <= event->GetNbinsX(); k++) { 
     Double_t y = 0;
     for (Int_t i = 1; i <= event->GetNbinsX(); i++) {
-      t = event->GetBinCenter(i);// * t_peak;
+      //t = event->GetBinCenter(i);// * t_peak;
       //h = (pow(t / fShapingTime,fShaperOrder) * exp(-1. * t / fShapingTime)); // with time compesation
       h = fSpadicResponse->GetBinContent(i);
       x = event->GetBinContent(k-i);
@@ -164,7 +164,7 @@ void CbmTrdSPADIC::CR_RC_Shaper(CbmTrdDigi* digi, TH1D* spadicPulse){
   
 
   // ---- Exec ----------------------------------------------------------
-void CbmTrdSPADIC::Exec(Option_t *option)
+void CbmTrdSPADIC::Exec(Option_t*)
 {
   cout << "================CbmTrdSPADIC===============" << endl;
   LOG(INFO) << "CbmTrdSPADIC::Exec : fPulseShape:    " << (Bool_t)fPulseShape << FairLogger::endl;

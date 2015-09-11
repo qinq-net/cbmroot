@@ -80,7 +80,7 @@ InitStatus CbmTrdDigitizer::Init()
    return kSUCCESS;
 }
 
-void CbmTrdDigitizer::Exec(Option_t * option)
+void CbmTrdDigitizer::Exec(Option_t*)
 {
    fTrdDigis->Clear();
    fTrdDigiMatches->Clear();

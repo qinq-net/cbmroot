@@ -27,7 +27,7 @@ CbmTrdClusterizerFastQa::CbmTrdClusterizerFastQa()
 : FairTask()
 {
 }
-CbmTrdClusterizerFastQa::CbmTrdClusterizerFastQa(const char* name,const char* title)
+CbmTrdClusterizerFastQa::CbmTrdClusterizerFastQa(const char* name,const char*)
 : FairTask(name)
 {
 }
@@ -45,7 +45,7 @@ InitStatus CbmTrdClusterizerFastQa::Init()
   PrepareHistograms();
   return kSUCCESS;
 }
-void CbmTrdClusterizerFastQa::Exec(Option_t* option)
+void CbmTrdClusterizerFastQa::Exec(Option_t*)
 {
 }
 void CbmTrdClusterizerFastQa::Finish()

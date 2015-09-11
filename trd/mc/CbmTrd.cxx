@@ -182,7 +182,7 @@ void CbmTrd::SetSpecialPhysicsCuts()
 
 // -----   Public method ProcessHits   ----------------------------------------
 Bool_t  CbmTrd::ProcessHits(
-      FairVolume* vol)
+      FairVolume*)
 {
    // Set parameters at entrance of volume. Reset ELoss.
    if ( gMC->IsTrackEntering() ) {

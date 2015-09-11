@@ -69,7 +69,7 @@ CbmTrdRecoQa::CbmTrdRecoQa()
 
 // ---- Standard constructor ------------------------------------------------
 CbmTrdRecoQa::CbmTrdRecoQa(const char* name,
-					 const char* title)
+					 const char*)
   : FairTask(name),
     fTrianglePads(false),
     fTriggerTH(1.0e-6),
@@ -204,7 +204,7 @@ TPolyLine *CbmTrdRecoQa::CreateTriangularPad(Int_t column, Int_t row, Double_t c
 }
 */
 // ---- Task execution ------------------------------------------------------
-void CbmTrdRecoQa::Exec(Option_t* option)
+void CbmTrdRecoQa::Exec(Option_t*)
 {
   CbmTrdUtils *utils = new CbmTrdUtils();
   TStopwatch timer;
@@ -231,7 +231,7 @@ void CbmTrdRecoQa::Exec(Option_t* option)
   LOG(INFO) << "CbmTrdRecoQa::Exec : Hits:     " <<  nHits << FairLogger::endl;
   Int_t moduleAddress(-1), moduleId(-1);
 
-  Double_t dummy_x(-1), dummy_y(-1);
+//  Double_t dummy_x(-1), dummy_y(-1);
   TString name;
   //cout << "Points" << endl;
   Int_t pointCounter = 0;
@@ -479,7 +479,7 @@ void CbmTrdRecoQa::Exec(Option_t* option)
       }
     }
 
-    for (Int_t t = 0; t < fModuleMapTrack[it->first]->size(); t++)
+    for (UInt_t t = 0; t < fModuleMapTrack[it->first]->size(); t++)
       fModuleMapTrack[it->first]->at(t)->Draw("same");
     /*
     it->second->cd(3)->SetLogz(1);
@@ -506,7 +506,7 @@ void CbmTrdRecoQa::Exec(Option_t* option)
     */
 
 
-    for (Int_t t = 0; t < fModuleMapTrack[it->first]->size(); t++)
+    for (UInt_t t = 0; t < fModuleMapTrack[it->first]->size(); t++)
       fModuleMapTrack[it->first]->at(t)->Draw("same");
 
     it->second->cd(3);
@@ -529,7 +529,7 @@ void CbmTrdRecoQa::Exec(Option_t* option)
 	}
       }
     }  
-    for (Int_t t = 0; t < fModuleMapTrack[it->first]->size(); t++)
+    for (UInt_t t = 0; t < fModuleMapTrack[it->first]->size(); t++)
       fModuleMapTrack[it->first]->at(t)->Draw("same");
     it->second->cd(3)->Update();
     it->second->cd(4);

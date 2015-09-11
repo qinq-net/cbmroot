@@ -56,7 +56,7 @@ InitStatus CbmTrdHitProducerDigi::Init()
 }
 
 void CbmTrdHitProducerDigi::Exec(
-      Option_t * option)
+      Option_t*)
 {
    fTrdClusters->Clear();
    fTrdHits->Clear();

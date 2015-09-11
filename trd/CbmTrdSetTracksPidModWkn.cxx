@@ -51,7 +51,7 @@ CbmTrdSetTracksPidModWkn::CbmTrdSetTracksPidModWkn()
 
 // -----   Standard constructor   ------------------------------------------
 CbmTrdSetTracksPidModWkn::CbmTrdSetTracksPidModWkn(const char* name,
-				 const char* title)
+				 const char*)
   : FairTask(name),
     fTrackArray(NULL),
     fTrdHitArray(NULL),
@@ -110,7 +110,7 @@ InitStatus CbmTrdSetTracksPidModWkn::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmTrdSetTracksPidModWkn::Exec(Option_t* opt) {
+void CbmTrdSetTracksPidModWkn::Exec(Option_t*) {
 
   TStopwatch timer;
   timer.Start();
@@ -126,9 +126,9 @@ void CbmTrdSetTracksPidModWkn::Exec(Option_t* opt) {
   fvec resWkn=0; 
   fvec numTr=0;
  
-  int nTracks_SIMD = fvecLen,
-      NHits=0,
-      iV = 0;
+//  int nTracks_SIMD = fvecLen;
+  int    NHits=0;
+  int    iV = 0;
 
   unsigned short nTracks = fTrackArray->GetEntriesFast();
   unsigned short nTrue = 0;
@@ -156,12 +156,12 @@ void CbmTrdSetTracksPidModWkn::Exec(Option_t* opt) {
         eLossVector.push_back((trdHit->GetELoss())*1000000);
     }
 
-    for (int jVec = 0; jVec<eLossVector.size(); jVec++) 
+    for (unsigned int jVec = 0; jVec<eLossVector.size(); jVec++) 
         eLossVector[jVec]=(eLossVector[jVec]-fEmp)/fXi-0.225;
 
     sort(eLossVector.begin(), eLossVector.end());
 
-    for (int jVec = 0; jVec<eLossVector.size(); jVec++) 
+    for (unsigned int jVec = 0; jVec<eLossVector.size(); jVec++) 
         eLossVector[jVec]=TMath::LandauI(eLossVector[jVec]);
 
     for (Int_t iHit=0; iHit < fnSet; iHit++)

@@ -293,7 +293,7 @@ void CbmTrdModule::InitAsics() {
     Int_t counter(0), AsicAddress(-1);
     std::map<Int_t, CbmTrdAsic*>::iterator it;
     for (it = fAsicMap.begin(); it != fAsicMap.end(); it++)
-      for (Int_t ch = 0; ch < it->second->fChannelAddresses.size(); ch++) {
+      for (UInt_t ch = 0; ch < it->second->fChannelAddresses.size(); ch++) {
 	if (it->second->fChannelAddresses[ch] == channelAddress){
 	  counter++;
 	  AsicAddress = it->first;

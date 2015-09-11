@@ -112,7 +112,7 @@ void CbmTrdClusterFinderFast::SetPrimaryClusterRowMerger(Bool_t rowMerger){
   fRowClusterMerger = rowMerger;
 }
 // ---- Exec ----------------------------------------------------------
-void CbmTrdClusterFinderFast::Exec(Option_t *option)
+void CbmTrdClusterFinderFast::Exec(Option_t*)
 {
   fClusters->Delete();
 
@@ -332,8 +332,8 @@ void CbmTrdClusterFinderFast::Exec(Option_t *option)
       if (dynamic) {
 	fModuleInfo = fDigiPar->GetModule(it->first);
 	  
-	Float_t mSizeX   = (fModuleInfo->GetSizeX()) * 2 * 10;
-	Float_t mSizeY   = (fModuleInfo->GetSizeY()) * 2 * 10;
+//	Float_t mSizeX   = (fModuleInfo->GetSizeX()) * 2 * 10;
+//	Float_t mSizeY   = (fModuleInfo->GetSizeY()) * 2 * 10;
 	Float_t mPosXC   = fModuleInfo->GetX() * 10;
 	Float_t mPosYC   = fModuleInfo->GetY() * 10;
 	Float_t mR = sqrt(pow(mPosXC,2) + pow(mPosYC,2));
@@ -909,7 +909,7 @@ Double_t CbmTrdClusterFinderFast::CenterOfGravity(RowCluster *rowCluster)
   }
   Double_t totalCharge = 0;
   Int_t moduleAddress = 0;
-  Int_t nofDigis = (Int_t)rowCluster->digis->size();//cluster->GetNofDigis();
+//  Int_t nofDigis = (Int_t)rowCluster->digis->size();//cluster->GetNofDigis();
   //for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++) {
   for (MyDigiList::iterator iDigi = rowCluster->digis->begin(); iDigi != rowCluster->digis->end(); iDigi++) {
     const CbmTrdDigi* digi = static_cast<const CbmTrdDigi*>(fDigis->At((*iDigi)->digiId));//cluster->GetDigi(iDigi)));

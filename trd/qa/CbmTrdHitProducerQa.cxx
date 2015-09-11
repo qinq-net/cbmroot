@@ -60,7 +60,7 @@ CbmTrdHitProducerQa::CbmTrdHitProducerQa()
 
 // ---- Standard constructor ------------------------------------------------
 CbmTrdHitProducerQa::CbmTrdHitProducerQa(const char* name,
-					 const char* title)
+					 const char*)
   : FairTask(name),
     fTrdHitCollection(NULL),
     fTrdDigiCollection(NULL),
@@ -236,11 +236,11 @@ InitStatus CbmTrdHitProducerQa::Init()
 
 
 // ---- Task execution ------------------------------------------------------
-void CbmTrdHitProducerQa::Exec(Option_t* option)
+void CbmTrdHitProducerQa::Exec(Option_t*)
 {
     // Declare variables
     CbmTrdHit* trdHit = NULL;
-    CbmTrdDigi* trdDigi = NULL;
+//    CbmTrdDigi* trdDigi = NULL;
     CbmMatch* trdDigiMatch = NULL;
     CbmTrdPoint* trdPoint = NULL;
     //    CbmMCTrack* mctrack = NULL;
@@ -250,8 +250,8 @@ void CbmTrdHitProducerQa::Exec(Option_t* option)
     Float_t  hitPoolY = 0;
     Float_t  hitPosX  = 0;
     Float_t  hitPosY  = 0;
-    Float_t  hitErrX  = 0;
-    Float_t  hitErrY  = 0;
+//    Float_t  hitErrX  = 0;
+//    Float_t  hitErrY  = 0;
 
     Float_t     pointPosX = 0;
     Float_t     pointPosY = 0;
@@ -330,7 +330,7 @@ void CbmTrdHitProducerQa::Exec(Option_t* option)
         if (plane ==1 ) {
 	// compute the Hit pools for X and Y coordinate
 	hitPosX   = trdHit->GetX();
-	hitErrX   = trdHit->GetDx();
+//	hitErrX   = trdHit->GetDx();
 	//        hitErrX  /= 10000;           // micrometers to centimeters
 	pointPosX = trdPoint->GetX();
 	hitPoolX  = (hitPosX - pointPosX);///hitErrX;
@@ -338,7 +338,7 @@ void CbmTrdHitProducerQa::Exec(Option_t* option)
 
 
 	hitPosY   = trdHit->GetY();
-	hitErrY   = trdHit->GetDy();
+//	hitErrY   = trdHit->GetDy();
 	//        hitErrY  /= 10000;          // micrometers to centimeters
 	pointPosY = trdPoint->GetY();
 	hitPoolY  = (hitPosY - pointPosY);///hitErrY;

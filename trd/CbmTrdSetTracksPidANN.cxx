@@ -36,7 +36,7 @@ CbmTrdSetTracksPidANN::CbmTrdSetTracksPidANN()
 
 CbmTrdSetTracksPidANN::CbmTrdSetTracksPidANN(
       const char* name,
-      const char* title)
+      const char*)
   : FairTask(name),
     fTrackArray(NULL),
     fTrdHitArray(NULL),
@@ -80,7 +80,7 @@ Bool_t CbmTrdSetTracksPidANN::ReadData()
 	   fANNPar2 = 0.57;
 	}
 
-	for (Int_t i = 0; i < weightsFilesANN.size(); i++) {
+	for (UInt_t i = 0; i < weightsFilesANN.size(); i++) {
 		ifstream myfile(weightsFilesANN[i].c_str());
 		if (!myfile.is_open()) {
 			cout << "-E- CbmTrdSetTracksPidANN::Init: "<< "Could not open input file:" << weightsFilesANN[i] <<  endl;
@@ -145,7 +145,7 @@ InitStatus CbmTrdSetTracksPidANN::Init()
 }
 
 void CbmTrdSetTracksPidANN::Exec(
-      Option_t* opt)
+      Option_t*)
 {
 	Int_t nTracks = fTrackArray->GetEntriesFast();
 	std::vector<Double_t> eLossVector;

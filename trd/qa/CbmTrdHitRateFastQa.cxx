@@ -125,7 +125,7 @@ CbmTrdHitRateFastQa::CbmTrdHitRateFastQa()
 // --------------------------------------------------------------------
 
 // ---- Constructor ----------------------------------------------------
-CbmTrdHitRateFastQa::CbmTrdHitRateFastQa(const char *name, const char *title)
+CbmTrdHitRateFastQa::CbmTrdHitRateFastQa(const char *name, const char *)
   : FairTask(name),
     myfile(),
     nTotalAsics(0),
@@ -288,7 +288,7 @@ InitStatus CbmTrdHitRateFastQa::Init()
 
 
 // ---- Exec ----------------------------------------------------------
-void CbmTrdHitRateFastQa::Exec(Option_t * option)
+void CbmTrdHitRateFastQa::Exec(Option_t*)
 {
   myfile.open("hits_per_asic.txt",std::fstream::out);
   myfile << "#" << endl;
@@ -314,10 +314,10 @@ void CbmTrdHitRateFastQa::Exec(Option_t * option)
     Int_t a = TColor::CreateGradientColorTable(Number,length,r,g,b,nb);
   */
   printf("Introduction:\n");
-  HitRateGeoPara2 *GeoPara = new HitRateGeoPara2;
-  Bool_t Lines;
-  Bool_t Fast = true; // false; // true; // false;  // will not fill the root file (in Histo)!!
-  Bool_t firstLayer = false;
+//  HitRateGeoPara2 *GeoPara = new HitRateGeoPara2;
+//  Bool_t Lines;
+//  Bool_t Fast = true; // false; // true; // false;  // will not fill the root file (in Histo)!!
+//  Bool_t firstLayer = false;
   fDraw = true; // false;
   Double_t ZRangeL = 1;
   Double_t ZRangeU = 1e05;
@@ -464,7 +464,7 @@ void CbmTrdHitRateFastQa::Exec(Option_t * option)
   vector<int> Plane10;
 
   Int_t ModuleID;
-  Int_t Sector = 0;
+//  Int_t Sector = 0;
   const Int_t NofModules = fDigiPar->GetNrOfModules();
 
   //const Int_t NofModules = 10; // DE
@@ -544,7 +544,7 @@ void CbmTrdHitRateFastQa::Exec(Option_t * option)
   if ( (Int_t)LiSi.size() > 0)
     for (vector< vector<Int_t> >::size_type j = 0; j < LiSi.size(); j++){
       // fix layer number
-      Int_t nModulesInThisLayer = LiSi[j].size();
+      UInt_t nModulesInThisLayer = LiSi[j].size();
       if (nModulesInThisLayer == 0) break;
       fPlane   = CbmTrdAddress::GetLayerId(LiSi[j][0]);
       fStation = fPlane / 4 + 1;  // OK for SIS100 and SIS300
@@ -567,7 +567,7 @@ void CbmTrdHitRateFastQa::Exec(Option_t * option)
       }
       // generate HitPerPadSpectra
       // generate png files
-      Lines = false;
+//      Lines = false;
       //c3 = (TCanvas*)c1->Clone("c3");
       if (nModulesInThisLayer > 0)
 	for (vector<int>::size_type i = 0; i < nModulesInThisLayer; i++){
@@ -745,8 +745,9 @@ void CbmTrdHitRateFastQa::ScanModulePlane(const Int_t moduleAddress, TCanvas*& c
 	//printf("    %i %i %i  (%f, %f)   (%f, %f)   %f\n",s,r,c,local_min[0],local_min[1],global_min[0],global_min[1],rate);
 	pad->SetLineColor(0);
 	pad->SetLineWidth(0);	
-	Int_t color(0), j(0);
-	while ((rate > fZLevel[j]) && (j < (Int_t)fZLevel.size())){
+//	Int_t color(0), j(0);
+	UInt_t  j(0);
+	while ((rate > fZLevel[j]) && (j < fZLevel.size())){
 	  //printf ("              %i<%i %i    %E <= %E\n",j,(Int_t)fZLevel.size(),fColors[j], rate, fZLevel[j]);
 	  j++;
 	}
@@ -1343,14 +1344,14 @@ void CbmTrdHitRateFastQa::HistoInit(TCanvas*& c1, TCanvas*& c2, TCanvas*& c3, TH
       printf("fModuleInfo == NULL\n");
   }
   Double_t CbmTrdHitRateFastQa::CalcHitRatePad(const Double_t x_min, const Double_t x_max, const Double_t y_min, const Double_t y_max, const Double_t z){ //[mm]
-    Double_t a[3] = { 7.66582e+00,  6.97712e+00,  6.53780e+00};
-    Double_t b[3] = {-2.72375e-03, -1.85168e-03, -1.42673e-03};
+//    Double_t a[3] = { 7.66582e+00,  6.97712e+00,  6.53780e+00};
+//    Double_t b[3] = {-2.72375e-03, -1.85168e-03, -1.42673e-03};
     Double_t r(0), alpha(0), HitRate(0);
     Double_t xStepWidth(1), yStepWidth(1); // [mm]
     const Int_t xSteps = Int_t(fabs(x_max - x_min)/xStepWidth)-1;
     const Int_t ySteps = Int_t(fabs(y_max - y_min)/yStepWidth)-1;
     Double_t x(x_min + 0.5), y(y_min + 0.5);
-    const Double_t padArea = fabs(x_max - x_min) * fabs(y_max - y_min);
+//    const Double_t padArea = fabs(x_max - x_min) * fabs(y_max - y_min);
     for (Int_t yStep = 0; yStep < ySteps; yStep++) {
       x = x_min + 0.5;
       for (Int_t xStep = 0; xStep < xSteps; xStep++) {
@@ -1367,15 +1368,15 @@ void CbmTrdHitRateFastQa::HistoInit(TCanvas*& c1, TCanvas*& c2, TCanvas*& c3, TH
     return (HitRate);// [Hz/mm^2]
   }
 
-  Double_t CbmTrdHitRateFastQa::CalcHitRate(HitRateGeoPara2 *GeoPara, Double_t StartX, Double_t StopX, Int_t xSteps, Double_t StartY, Double_t StopY, Int_t ySteps, Double_t* Mpos, TH2F* Topview[3], TCanvas* c0)
+  Double_t CbmTrdHitRateFastQa::CalcHitRate(HitRateGeoPara2 *GeoPara, Double_t StartX, Double_t /*StopX*/, Int_t xSteps, Double_t StartY, Double_t /*StopY*/, Int_t ySteps, Double_t* /*Mpos*/, TH2F** /*Topview[3]*/, TCanvas* /*c0*/)
   {
     //cout << "CalcHitRate" << endl;
     Double_t HitRate = 0;//1. / sqrt( pow( StartX,2) + pow( StartY,2));
     Double_t r = 0;
     Double_t alpha = 0;
-    Int_t counter = 0;
-    Double_t a[3] = { 7.66582e+00,  6.97712e+00,  6.53780e+00};
-    Double_t b[3] = {-2.72375e-03, -1.85168e-03, -1.42673e-03};
+//    Int_t counter = 0;
+//    Double_t a[3] = { 7.66582e+00,  6.97712e+00,  6.53780e+00};
+//    Double_t b[3] = {-2.72375e-03, -1.85168e-03, -1.42673e-03};
 
     Double_t xStepWidth = GeoPara->cosX;
     Double_t yStepWidth = GeoPara->cosY;
@@ -1419,7 +1420,7 @@ void CbmTrdHitRateFastQa::HistoInit(TCanvas*& c1, TCanvas*& c2, TCanvas*& c3, TH
   }
 
 
-void CbmTrdHitRateFastQa::Histo(HitRateGeoPara2 *GeoPara, Bool_t Fast, TH2F* h2Layer, TCanvas* c1, TH1F* h1HitPad, TCanvas* c2, TH2F* Topview[3], TCanvas* c0, Double_t mm2bin)
+void CbmTrdHitRateFastQa::Histo(HitRateGeoPara2 *GeoPara, Bool_t Fast, TH2F* h2Layer, TCanvas* /*c1*/, TH1F* h1HitPad, TCanvas* /*c2*/, TH2F* Topview[3], TCanvas* c0, Double_t mm2bin)
 {
   Double_t ZRangeL = 1e00;//1e05;
   Double_t ZRangeU = 1e05;//1e06;
@@ -1620,7 +1621,7 @@ void CbmTrdHitRateFastQa::Histo(HitRateGeoPara2 *GeoPara, Bool_t Fast, TH2F* h2L
 }
 
 
-  void CbmTrdHitRateFastQa::DrawBorders(HitRateGeoPara2 *GeoPara, TH2F* Layer, TCanvas* c1)
+  void CbmTrdHitRateFastQa::DrawBorders(HitRateGeoPara2 *GeoPara, TH2F* /*Layer*/, TCanvas* c1)
   {
     //----------------------Sector--------------------------------------
     Double_t SecXStart = 0.0;
@@ -1701,7 +1702,7 @@ void CbmTrdHitRateFastQa::Histo(HitRateGeoPara2 *GeoPara, Bool_t Fast, TH2F* h2L
   // --------------------------------------------------------------------
 
 
-  void CbmTrdHitRateFastQa::DrawPads(HitRateGeoPara2 *GeoPara, TH2F* Layer, TCanvas* c1)
+  void CbmTrdHitRateFastQa::DrawPads(HitRateGeoPara2 *GeoPara, TH2F* /*Layer*/, TCanvas* c1)
   {
     //----------------------Pad--------------------------------------
     //  const Int_t nR = GeoPara->nRow;

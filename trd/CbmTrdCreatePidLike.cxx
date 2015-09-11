@@ -40,7 +40,7 @@ CbmTrdCreatePidLike::CbmTrdCreatePidLike()
 
 // ---- Standard constructor ------------------------------------------------
 CbmTrdCreatePidLike::CbmTrdCreatePidLike(const char* name,
-        const char* title)
+        const char*)
   : FairTask(name),
     fTrdHitCollection(NULL),
     fTrdPointCollection(NULL),
@@ -104,7 +104,7 @@ InitStatus CbmTrdCreatePidLike::Init() {
 
 
 // ---- Task execution ------------------------------------------------------
-void CbmTrdCreatePidLike::Exec(Option_t* option) {
+void CbmTrdCreatePidLike::Exec(Option_t*) {
     // Declare variables
     CbmTrdHit* trdHit = NULL;
     CbmTrdPoint* trdPoint = NULL;

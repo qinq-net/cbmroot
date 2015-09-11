@@ -55,7 +55,7 @@ void CbmTrdCreateDigiPar::Finish()
 }
 
 void CbmTrdCreateDigiPar::Exec(
-      Option_t * option)
+      Option_t *)
 {
 }
 

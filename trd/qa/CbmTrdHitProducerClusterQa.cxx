@@ -27,7 +27,7 @@ CbmTrdHitProducerClusterQa::CbmTrdHitProducerClusterQa()
 : FairTask()
 {
 }
-CbmTrdHitProducerClusterQa::CbmTrdHitProducerClusterQa(const char* name,const char* title)
+CbmTrdHitProducerClusterQa::CbmTrdHitProducerClusterQa(const char* name,const char*)
 : FairTask(name)
 {
 }
@@ -45,7 +45,7 @@ InitStatus CbmTrdHitProducerClusterQa::Init()
   PrepareHistograms();
   return kSUCCESS;
 }
-void CbmTrdHitProducerClusterQa::Exec(Option_t* option)
+void CbmTrdHitProducerClusterQa::Exec(Option_t*)
 {
 }
 void CbmTrdHitProducerClusterQa::Finish()

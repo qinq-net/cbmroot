@@ -154,7 +154,7 @@ CbmTrdQa::CbmTrdQa(CbmTrdRadiator *radiator)
 {
 }
 
-CbmTrdQa::CbmTrdQa(const char *name, const char *title, const char *geo, Double_t triggerThreshold, CbmTrdRadiator *radiator) 
+CbmTrdQa::CbmTrdQa(const char *name, const char* /*title*/, const char *geo, Double_t triggerThreshold, CbmTrdRadiator *radiator) 
   : FairTask("TrdQa"),
     fMCTracks(NULL),
     fPoints(NULL),
@@ -822,16 +822,16 @@ TPolyLine *CbmTrdQa::CreateTriangularPad(Int_t column, Int_t row, Double_t conte
   return pad;
 }
 
-void CbmTrdQa::Exec(Option_t * option)
+void CbmTrdQa::Exec(Option_t*)
 {
   Bool_t samePadMerge = false;//true;
   //fTriggerThreshold = CbmTrdClusterFinderFast::GetTriggerThreshold();
   TStopwatch timer;
   timer.Start();
   cout << endl << "==================CbmTrdQa===================" << endl;
-  Int_t nEntries(0), iTrack(-1), mother_iTrack(-1), moduleAddress(-1), Station(-1), Layer(-1), combiId(-1), dEdx(0), rPos(0), PDG(-1), ghostCount(0), lostCount(0), nStsPoints(0);
+  Int_t nEntries(0), iTrack(-1), mother_iTrack(-1), moduleAddress(-1), Station(-1), Layer(-1), combiId(-1), /*dEdx(0), rPos(0), PDG(-1), ghostCount(0), lostCount(0),*/ nStsPoints(0);
   TString title;
-  Bool_t debug = false;
+//  Bool_t debug = false;
   CbmMCTrack *track = NULL;
   CbmMCTrack *track2 = NULL;
   CbmMCTrack *track_mother = NULL;
@@ -841,7 +841,7 @@ void CbmTrdQa::Exec(Option_t * option)
   CbmTrdDigi *digi = NULL;
   CbmTrdCluster *cluster = NULL;
   CbmTrdHit *hit = NULL;
-  CbmTrdPoint *point_temp = NULL;
+//  CbmTrdPoint *point_temp = NULL;
   std::map<Int_t, Int_t> deltaEMap;
   std::map<Int_t, Int_t> TrackableMap;
   std::map<Int_t, std::map<Int_t, Int_t> > doubleHitSinglePadMap; // digiAddress, std::map[MC_track_ID]
@@ -1081,7 +1081,7 @@ void CbmTrdQa::Exec(Option_t * option)
       fClusterSize->Fill(cluster->GetNofDigis());
       fDigiPerCluster->Fill(cluster->GetNofDigis());
       if (cluster->GetNofDigis() >= 3) {
-	Double_t qLeft(0.0), qCenter(.0), qRight(0.0);
+//	Double_t qLeft(0.0), qCenter(.0), qRight(0.0);
 	for (Int_t i = 0; i < cluster->GetNofDigis(); i++) {
 	  digi = (CbmTrdDigi*) fDigis->At(cluster->GetDigi(i));
 	 
@@ -1135,7 +1135,7 @@ void CbmTrdQa::Exec(Option_t * option)
   }
   //printf(Int_t(fModulePointMapIt->second.size()),Int_t(->second.size()),Int_t(->second.size()));
   std::map<Int_t, Int_t> notMultiPointTRDPoints;
-  Int_t allPoints(0), allHits(0);//, notMultiPointTRDPoints(0);
+  Int_t allPoints(0);//, allHits(0);//, notMultiPointTRDPoints(0);
   for (fModulePointMapIt = fModulePointMap.begin(); // Loop for all module ids which have mc points
        fModulePointMapIt != fModulePointMap.end(); fModulePointMapIt++) {
     if (fModuleHitMap.find(fModulePointMapIt->first) == fModuleHitMap.end()) {
@@ -1146,7 +1146,7 @@ void CbmTrdQa::Exec(Option_t * option)
       fModuleInfo = fDigiPar->GetModule(moduleAddress);
       allPoints = Int_t(fModulePointMapIt->second.size());
       fModuleAveragePointsMap[moduleAddress]->Fill(allPoints);
-      allHits = Int_t(fModuleHitMap[moduleAddress].size());
+//      allHits = Int_t(fModuleHitMap[moduleAddress].size());
       fModuleDeltaEMap[moduleAddress]->Fill(100. * deltaEMap[moduleAddress] / allPoints);
       fModuleTrackableMap[moduleAddress]->Fill(100. * TrackableMap[moduleAddress] / allPoints);
       fModuleTrackableMap2[moduleAddress]->Fill(TrackableMap[moduleAddress]);
@@ -1198,7 +1198,7 @@ void CbmTrdQa::Exec(Option_t * option)
 				0.5 * (point->GetZOut() + point->GetZIn())};
 	
 	gGeoManager->FindNode(p_global[0], p_global[1], p_global[2]);
-	const Double_t *global_point = gGeoManager->GetCurrentPoint();
+//	const Double_t *global_point = gGeoManager->GetCurrentPoint();
 	Double_t p_local[3] = {0.0};
 	gGeoManager->MasterToLocal(p_global, p_local);
 	//p_local[0] = p_global[0] - fModuleInfo->GetX();
@@ -1239,7 +1239,7 @@ void CbmTrdQa::Exec(Option_t * option)
 				   0.5 * (point2->GetZOut() + point2->GetZIn())};
 	
 	  gGeoManager->FindNode(p_global2[0], p_global2[1], p_global2[2]);
-	  const Double_t *global_point2 = gGeoManager->GetCurrentPoint();
+//	  const Double_t *global_point2 = gGeoManager->GetCurrentPoint();
 	  Double_t p_local2[3] = {0.0};
 	  gGeoManager->MasterToLocal(p_global2, p_local2);
 	  Int_t xPpad2(0), yPpad2(0), pSectorId2(-1); // correspoondig digi from point point of view
@@ -1308,14 +1308,14 @@ void CbmTrdQa::Exec(Option_t * option)
 	Int_t minDHitId = -1;
 	Double_t mergedELoss = 0.0;
 	Double_t hitELoss = 0.0;
-	Int_t multiHitCounter = 0;
+//	Int_t multiHitCounter = 0;
 	for (Int_t iHit = 0; iHit < Int_t(fModuleHitMap[moduleAddress].size()); iHit++) {
 	  hit = (CbmTrdHit*) fHits->At(fModuleHitMap[moduleAddress][iHit]);
 	  Double_t h_global[3] = {hit->GetX(),
 				  hit->GetY(),
 				  hit->GetZ()};
 	  gGeoManager->FindNode(h_global[0], h_global[1], h_global[2]);
-	  const Double_t *global_hit = gGeoManager->GetCurrentPoint();
+//	  const Double_t *global_hit = gGeoManager->GetCurrentPoint();
 	  Double_t h_local[3] = {0.0};
 	  gGeoManager->MasterToLocal(h_global, h_local);
 	  //h_local[0] = h_global[0] - fModuleInfo->GetX();
@@ -1323,7 +1323,7 @@ void CbmTrdQa::Exec(Option_t * option)
 	  Int_t xHpad(0), yHpad(0), hSectorId(-1); // correspoondig digi from hit point of view
 	  fModuleInfo->GetPadInfo(h_local, hSectorId, xHpad, yHpad);
 	  yHpad = fModuleInfo->GetModuleRow(hSectorId, yHpad);
-	  Double_t xHPadSize(fModuleInfo->GetPadSizeX(hSectorId)), yHPadSize(fModuleInfo->GetPadSizeY(hSectorId)); // correspoondig pad sizes from point point of view 
+//	  Double_t xHPadSize(fModuleInfo->GetPadSizeX(hSectorId)), yHPadSize(fModuleInfo->GetPadSizeY(hSectorId)); // correspoondig pad sizes from point point of view 
 	  //Double_t xHPadSize(0), yHPadSize(0); // correspoondig pad sizes from hit point of view
 	  //GetPadInfos( moduleAddress, h_local[0], h_local[1], xHpad, yHpad, xHPadSize, yHPadSize);
 	  //point_temp = new CbmTrdPoint(iTrack, hit->GetDetId(), );

@@ -77,7 +77,7 @@ class CbmTrdSetTracksPidANN : public FairTask
   
   ///deprecated method, will be deleted soon
   // use SetTRDGeometryName
-  void SetInputFile(TString infile) { };
+  void SetInputFile(TString) { };
   
   //should be "mb" or "st"
   //set the geometry, you use "mb" for Munster-Buharest; "st" for standard

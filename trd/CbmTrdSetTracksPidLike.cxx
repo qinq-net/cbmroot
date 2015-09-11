@@ -42,7 +42,7 @@ CbmTrdSetTracksPidLike::CbmTrdSetTracksPidLike()
 
 // -----   Standard constructor   ------------------------------------------
 CbmTrdSetTracksPidLike::CbmTrdSetTracksPidLike(const char* name,
-				 const char* title)
+				 const char*)
   : FairTask(name), 
     fTrackArray(NULL), 
     fTrdHitArray(0), 
@@ -230,7 +230,7 @@ InitStatus CbmTrdSetTracksPidLike::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmTrdSetTracksPidLike::Exec(Option_t* opt) {
+void CbmTrdSetTracksPidLike::Exec(Option_t*) {
 
   Double_t momentum;
   Double_t prob[fgkNParts];

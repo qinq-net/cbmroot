@@ -116,8 +116,8 @@ void CbmTrdHitDensityQa::SetParContainers()
 InitStatus CbmTrdHitDensityQa::ReInit()
 {  
   cout << " * CbmTrdHitDensityQa * :: ReInit()" << endl;
-  FairRunAna* ana = FairRunAna::Instance();
-  FairRuntimeDb* rtdb=ana->GetRuntimeDb();
+  //FairRunAna* ana = FairRunAna::Instance();
+  //FairRuntimeDb* rtdb=ana->GetRuntimeDb();
   
   //fDigiPar = (CbmTrdDigiPar*)(rtdb->getContainer("CbmTrdDigiPar"));
   
@@ -200,7 +200,7 @@ void CbmTrdHitDensityQa::SetRatioTwoFiles(Bool_t ratioPlot){
   fPlotResults = true;
 }
 
-void CbmTrdHitDensityQa::Exec(Option_t * option)
+void CbmTrdHitDensityQa::Exec(Option_t*)
 {
  
 
@@ -231,7 +231,7 @@ void CbmTrdHitDensityQa::Exec(Option_t * option)
 	digi = (CbmTrdDigi*)fDigis->At(cluster->GetDigi(iDigi));
 	Int_t digiAddress = digi->GetAddress();
 	Int_t moduleAddress = CbmTrdAddress::GetModuleAddress(digiAddress);
-	Int_t moduleId = CbmTrdAddress::GetModuleId(moduleAddress);// TODO
+//	Int_t moduleId = CbmTrdAddress::GetModuleId(moduleAddress);// TODO
 	fLayer    = CbmTrdAddress::GetLayerId(moduleAddress);
 	fModuleInfo = fDigiPar->GetModule(moduleAddress);
 	if (fModuleHitMap.find(moduleAddress) == fModuleHitMap.end()){
@@ -266,7 +266,7 @@ void CbmTrdHitDensityQa::Exec(Option_t * option)
       digi = (CbmTrdDigi*) fDigis->At(iDigi);
       Int_t digiAddress = digi->GetAddress();
       Int_t moduleAddress = CbmTrdAddress::GetModuleAddress(digiAddress);
-      Int_t moduleId = CbmTrdAddress::GetModuleId(moduleAddress);// TODO
+//      Int_t moduleId = CbmTrdAddress::GetModuleId(moduleAddress);// TODO
       fLayer    = CbmTrdAddress::GetLayerId(moduleAddress);
       fModuleInfo = fDigiPar->GetModule(moduleAddress);
       if (digi->GetCharge() > fTriggerThreshold) {
@@ -559,7 +559,8 @@ void CbmTrdHitDensityQa::Finish()
 	  //printf("    %i %i %i  (%f, %f)   (%f, %f)   %f\n",s,r,c,local_min[0],local_min[1],global_min[0],global_min[1],rate);
 	  pad->SetLineColor(0);
 	  pad->SetLineWidth(0);	
-	  Int_t color(0), j(0);
+//	  Int_t color(0), j(0);
+	  Int_t j(0);
 	  rate *= fScaleCentral2mBias;
 	  //if (rate > min && rate <= max){
 	  while ((rate > fZLevel[j]) && (j < (Int_t)fZLevel.size())){
@@ -608,7 +609,8 @@ void CbmTrdHitDensityQa::Finish()
 	       << ratePerAsicMap[AsicAddresses[iAsic]] << endl;
       }
       //Double_t dataPerAsic = ratePerAsicMap[AsicAddresses[iAsic]]  * 1e-6 * fBitPerHit;  // Mbit, incl. neighbor
-      Double_t dataPerAsic = TriggerRate2DataRate(ratePerAsicMap[AsicAddresses[iAsic]])  * 1e-6;  // Mbit, incl. neighbor
+      TriggerRate2DataRate(ratePerAsicMap[AsicAddresses[iAsic]])  * 1e-6;  // Mbit, incl. neighbor
+//      Double_t dataPerAsic = TriggerRate2DataRate(ratePerAsicMap[AsicAddresses[iAsic]])  * 1e-6;  // Mbit, incl. neighbor
       //HitAsic->Fill(dataPerAsic);
     }
     //if (fPlotResults)

@@ -35,7 +35,7 @@ CbmTrdFindTracks::CbmTrdFindTracks()
 
 // -----   Standard constructor   ------------------------------------------
 CbmTrdFindTracks::CbmTrdFindTracks(const char* name,
-				   const char* title,
+				   const char*,
 				   CbmTrdTrackFinder* finder)
   : FairTask(name),
     fFinder(finder),
@@ -119,7 +119,7 @@ void CbmTrdFindTracks::SetParContainers()
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmTrdFindTracks::Exec(Option_t* opt)
+void CbmTrdFindTracks::Exec(Option_t*)
 {
   fTrackArray->Delete();
   fNofTracks = fFinder->DoFind(fTrdHitArray, fTrackArray);

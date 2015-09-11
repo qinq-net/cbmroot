@@ -102,7 +102,7 @@ CbmTrdOccupancyQa::CbmTrdOccupancyQa(const char *name, const char *title, const 
 {
 }
 */
-CbmTrdOccupancyQa::CbmTrdOccupancyQa(const char *name, const char *title, const char *geo, Double_t triggerThreshold)
+CbmTrdOccupancyQa::CbmTrdOccupancyQa(const char *name, const char*, const char *geo, Double_t triggerThreshold)
   : FairTask(name),
     fDigis(NULL),
     fClusters(NULL),
@@ -235,13 +235,13 @@ void CbmTrdOccupancyQa::SetNeighbourTrigger(Bool_t trigger){
 }
 
 // ---- Exec ----------------------------------------------------------
-void CbmTrdOccupancyQa::Exec(Option_t * option)
+void CbmTrdOccupancyQa::Exec(Option_t*)
 {
   printf("================CbmTrdOccupancyQa=====================\n");
   //fTriggerThreshold = CbmTrdClusterFinderFast::GetTriggerThreshold();
   printf("TriggerThreshold: %.2E\n",fTriggerThreshold);
   printf("NeigbourReadout:%i\n",Int_t(fNeigbourReadout));
-  Bool_t debug = false;
+//  Bool_t debug = false;
   //TFile *outFile = new TFile("data/CbmTrdOccupancyQa.root","UPDATE","output of CbmTrdOccupancyQa");
   TStopwatch timer;
   timer.Start();
@@ -272,7 +272,7 @@ void CbmTrdOccupancyQa::Exec(Option_t * option)
 	  digiCounter++;
 	Int_t digiAddress = digi->GetAddress();
 	Int_t moduleAddress = CbmTrdAddress::GetModuleAddress(digiAddress);
-	Int_t moduleId = CbmTrdAddress::GetModuleId(moduleAddress);
+//	Int_t moduleId = CbmTrdAddress::GetModuleId(moduleAddress);
 	Int_t Station  = CbmTrdAddress::GetLayerId(moduleAddress) / 4 + 1;//fGeoHandler->GetStation(moduleId);
 	Int_t Layer    = CbmTrdAddress::GetLayerId(moduleAddress) % 4 + 1;//fGeoHandler->GetLayer(moduleId);
 	Int_t combiId = 10 * Station + Layer;
@@ -503,7 +503,8 @@ void CbmTrdOccupancyQa::CreateLayerView()
       //fZLevel.push_back(min + TMath::Power(10, TMath::Log10(max) / TColor::GetNumberOfColors() * i));// log scale
       fZLevel.push_back(fmin + (fmax / TColor::GetNumberOfColors() * i)); // lin scale
     }
-    Int_t color(0), j(0);
+//    Int_t color(0), j(0);
+    Int_t j(0);
     while ((occupancy > fZLevel[j]) && (j < (Int_t)fZLevel.size())){
       //printf ("              %i<%i %i    %E <= %E\n",j,(Int_t)fZLevel.size(),fColors[j], rate, fZLevel[j]);
       j++;

@@ -126,7 +126,7 @@ void CbmTrdDigitizerPRF::SetNoiseLevel(Double_t sigma_keV)
 	fSigma_noise_keV = sigma_keV;
 }
 
-void CbmTrdDigitizerPRF::Exec(Option_t * option)
+void CbmTrdDigitizerPRF::Exec(Option_t*)
 {
   cout << "================CbmTrdDigitizerPRF===============" << endl;
  LOG(INFO) << "CbmTrdDigitizerPRF::Exec : Triangular Pads: " << (Bool_t)fTrianglePads << FairLogger::endl;
@@ -280,7 +280,7 @@ void CbmTrdDigitizerPRF::ScanPadPlaneTriangle(const Double_t* local_point, Doubl
 
     //printf("%i x %i\n",maxCol,maxRow);
     //Estimate starting column and row and limits due to chamber dimensions
-    Int_t startCol(columnId-maxCol/2), stopCol(columnId+maxCol/2), startRow(rowId-maxRow/2), stopRow(rowId+maxRow/2+1), startSec(0);
+    Int_t startCol(columnId-maxCol/2), stopCol(columnId+maxCol/2), startRow(rowId-maxRow/2), stopRow(rowId+maxRow/2+1); // startSec(0);
     if (startRow % 2 != 0){ // It does not make sence to start scanning in odd rows for triangluar pad geometry since the triangles are later combined to rectangles and parallelograms
       startRow -= 1;
       stopRow  -= 1;
@@ -506,7 +506,8 @@ void CbmTrdDigitizerPRF::ScanPadPlane(const Double_t* local_point, Double_t clus
 //    const_cast<const Int_t&>(maxCol);
     //printf("%i x %i\n",maxCol,maxRow);
     //Estimate starting column and row and limits due to chamber dimensions
-    Int_t startCol(columnId-maxCol/2), stopCol(columnId+maxCol/2), startRow(rowId-maxRow/2), stopRow(rowId+maxRow/2), startSec(0);
+//    Int_t startCol(columnId-maxCol/2), stopCol(columnId+maxCol/2), startRow(rowId-maxRow/2), stopRow(rowId+maxRow/2), startSec(0);
+    Int_t startCol(columnId-maxCol/2), startRow(rowId-maxRow/2);
     Double_t sum = 0;
     Int_t secRow(-1), targCol(-1), targRow(-1), targSec(-1), address(-1);
     if (fDebug) {
