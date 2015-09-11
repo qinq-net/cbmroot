@@ -14,10 +14,10 @@ void much_seg_auto(const char* mcFile = "",
   // ========================================================================
   //          Adjust this part according to your requirements
 
-  if (mcFile == "") {
+  if (strcmp (mcFile,"") == 0) {
     mcFile = "data/mc.root";
   }
-  if (digiFile == "") {
+  if (strcmp (digiFile,"") == 0) {
     digiFile = "data/much_digi.root";
   }
   TString parFile="data/params.root";

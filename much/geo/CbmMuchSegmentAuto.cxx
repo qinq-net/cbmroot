@@ -59,7 +59,7 @@ CbmMuchSegmentAuto::CbmMuchSegmentAuto()
 // -------------------------------------------------------------------------
 
 // -----   Standard constructor   ------------------------------------------
-CbmMuchSegmentAuto::CbmMuchSegmentAuto(char* digiFileName)
+CbmMuchSegmentAuto::CbmMuchSegmentAuto(const char* digiFileName)
   : FairTask(),
     fEvents(0),
     fPoints(NULL),
@@ -455,7 +455,7 @@ Int_t CbmMuchSegmentAuto::IntersectsRad(CbmMuchSectorRectangular* sector, Double
 // -------------------------------------------------------------------------
 
 void CbmMuchSegmentAuto::Print(){
-  printf("Segmentation written to file %s\n", fDigiFileName);
+  printf("Segmentation written to file %s\n", fDigiFileName.Data());
   Int_t nTotSectors = 0;
   Int_t nTotChannels = 0;
   Int_t nTotGems = 0;

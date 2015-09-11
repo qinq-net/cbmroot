@@ -19,9 +19,9 @@ void much_reco(
    // Digi files
    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
    TList* parFileList = new TList();
-   TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
-   TString muchDigiFile = parDir + "/much/much_v12b.digi.root"; // MUCH digi file
-   TString stsMatBudgetFile = parDir + "/sts/sts_matbudget_v13d.root";
+   TObjString stsDigiFile(parDir + "/sts/sts_v13d_std.digi.par"); // STS digi file
+   TString muchDigiFile(parDir + "/much/much_v12b.digi.root"); // MUCH digi file
+   TString stsMatBudgetFile(parDir + "/sts/sts_matbudget_v13d.root");
    parFileList->Add(&stsDigiFile);
 
 	Int_t iVerbose = 1;
@@ -29,7 +29,7 @@ void much_reco(
 	timer.Start();
 
 	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-	loadlibs();
+	gInterpreter->ProcessLine("loadlibs()");
 
 	FairRunAna* run = new FairRunAna();
 	run->SetInputFile(mcFile);

@@ -31,7 +31,7 @@ class CbmMuchSegmentAuto : public FairTask{
   CbmMuchSegmentAuto();
 
   /** Default constructor **/
-  CbmMuchSegmentAuto(char* digiFileName);
+  CbmMuchSegmentAuto(const char* digiFileName);
 
   void SetNStations(Int_t nStations);
   void SetSigmaMin(Double_t* sigmaXmin, Double_t* sigmaYmin);
@@ -53,7 +53,7 @@ class CbmMuchSegmentAuto : public FairTask{
   Int_t         fNStations;
   TObjArray*    fStations;
 
-  Char_t*           fDigiFileName;          // Digitization file
+  TString           fDigiFileName;          // Digitization file
   CbmGeoMuchPar*    fGeoPar;                // Geometry parameters container
   vector<Double_t>  fExp0;                  // Fit parameters for EXP distribution for each station
   vector<Double_t>  fExp1;                  // Fit parameters for EXP distribution for each station
@@ -80,7 +80,7 @@ class CbmMuchSegmentAuto : public FairTask{
   CbmMuchSegmentAuto(const CbmMuchSegmentAuto&);
   CbmMuchSegmentAuto& operator=(const CbmMuchSegmentAuto&);
 
-  ClassDef(CbmMuchSegmentAuto,1)
+  ClassDef(CbmMuchSegmentAuto,2)
 };
 
 #endif
