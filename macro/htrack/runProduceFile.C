@@ -7,7 +7,7 @@
 //
 // --------------------------------------------------------------------------
 
-Int_t runProduceFile(Int_t nEvents=2)
+void runProduceFile(Int_t nEvents=2)
 {
 
   // ========================================================================
@@ -87,17 +87,18 @@ Int_t runProduceFile(Int_t nEvents=2)
   // ------------------------------------------------------------------------
 
   // -----   Create magnetic field   ----------------------------------------
+  CbmFieldMap* magField = NULL;
   if (fieldMap == "field_electron_standard" ) 
-    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+    magField = new CbmFieldMapSym2(fieldMap);
   else if (fieldMap == "field_muon_standard" )
-    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+    magField = new CbmFieldMapSym2(fieldMap);
   else if (fieldMap == "field_v10e" )
-    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+    magField = new CbmFieldMapSym2(fieldMap);
   else if (fieldMap == "field_v12b" )
-    CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
+    magField = new CbmFieldMapSym3(fieldMap);
   else {
     cout << "===> ERROR: Unknown field map " << fieldMap << endl;
-    exit;
+    exit(1);
   }
   if (magField != NULL) {
     magField->SetPosition(0., 0., fieldZ);
