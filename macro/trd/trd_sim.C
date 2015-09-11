@@ -7,8 +7,44 @@
 //
 // --------------------------------------------------------------------------
 
+TString caveGeom="";
+TString pipeGeom="";
+TString magnetGeom="";
+TString mvdGeom="";
+TString stsGeom="";
+TString richGeom="";
+TString muchGeom="";
+TString shieldGeom="";
+TString trdGeom="";
+TString tofGeom="";
+TString ecalGeom="";
+TString platformGeom="";
+TString psdGeom="";
+Double_t psdZpos=0.;
+Double_t psdXpos=0.;
+
+TString mvdTag="";
+TString stsTag="";
+TString trdTag="";
+TString tofTag="";
+
+TString stsDigi="";
+TString trdDigi="";
+TString tofDigi="";
+
+TString mvdMatBudget="";
+TString stsMatBudget="";
+
+TString  fieldMap="";
+Double_t fieldZ=0.;
+Double_t fieldScale=0.;
+Int_t    fieldSymType=0;
+
+TString defaultInputFile="";
+
 void trd_sim(Int_t nEvents = 1, Int_t CbmSetup = 4)
 {
+
 
   // ========================================================================
   //          Adjust this part according to your requirements
@@ -28,35 +64,35 @@ void trd_sim(Int_t nEvents = 1, Int_t CbmSetup = 4)
       TString macro = inDir + "/geometry/setup/sis100_hadron_setup.C";
       gROOT->LoadMacro(macro);
       gInterpreter->ProcessLine("sis100_hadron_setup()");
-      setup=sis100_hadron_setup;
+      setup="sis100_hadron_setup";
     }
   if (CbmSetup == 2)
     {
       TString macro = inDir + "/geometry/setup/sis100_electron_setup.C";
       gROOT->LoadMacro(macro);
       gInterpreter->ProcessLine("sis100_electron_setup()");
-      setup=sis100_electron_setup;
+      setup="sis100_electron_setup";
     }
   if (CbmSetup == 3)
     {
       TString macro = inDir + "/geometry/setup/sis100_muon_setup.C";
       gROOT->LoadMacro(macro);
       gInterpreter->ProcessLine("sis100_muon_setup()");
-      setup=sis100_muon_setup;
+      setup="sis100_muon_setup";
     }
   if (CbmSetup == 4)  // default setup
     {
       TString macro = inDir + "/geometry/setup/sis300_electron_setup.C";
       gROOT->LoadMacro(macro);
       gInterpreter->ProcessLine("sis300_electron_setup()");
-      setup=sis300_electron_setup;
+      setup="sis300_electron_setup";
     }
   if (CbmSetup == 5)
     {
       TString macro = inDir + "/geometry/setup/sis300_muon_setup.C";
       gROOT->LoadMacro(macro);
       gInterpreter->ProcessLine("sis300_muon_setup()");
-      setup=sis300_muon_setup;
+      setup="sis300_muon_setup";
     }
 
   if (CbmSetup <= 3)
@@ -163,10 +199,11 @@ void trd_sim(Int_t nEvents = 1, Int_t CbmSetup = 4)
   // ------------------------------------------------------------------------
 
   // -----   Create magnetic field   ----------------------------------------
+  CbmFieldMap* magField =NULL;
   if ( 2 == fieldSymType ) {
-    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+    magField = new CbmFieldMapSym2(fieldMap);
   }  else if ( 3 == fieldSymType ) {
-    CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
+    magField = new CbmFieldMapSym3(fieldMap);
   } 
   magField->SetPosition(0., 0., fieldZ);
   magField->SetScale(fieldScale);

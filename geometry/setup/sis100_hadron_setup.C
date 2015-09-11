@@ -14,6 +14,7 @@
 // 2013-10-07 - DE - pipe_v13c.geo fixes overlap with TOF, fills RICH section
 //
 
+/*
 static TString caveGeom;
 static TString pipeGeom;
 static TString magnetGeom;
@@ -48,6 +49,7 @@ static Double_t fieldScale;
 static Int_t    fieldSymType;
 
 static TString defaultInputFile;
+*/
 
 void sis100_hadron_setup()
 {

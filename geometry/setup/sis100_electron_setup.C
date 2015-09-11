@@ -20,6 +20,7 @@
 // 2013-10-07 - DE - rich_v13a is not at nominal position 1800mm, but at 1600mm
 //
 
+/*
 static TString caveGeom;
 static TString pipeGeom;
 static TString magnetGeom;
@@ -54,6 +55,7 @@ static Double_t fieldScale;
 static Int_t    fieldSymType;
 
 static TString defaultInputFile;
+*/
 
 void sis100_electron_setup()
 {

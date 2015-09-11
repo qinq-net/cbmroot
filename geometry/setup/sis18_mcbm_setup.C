@@ -5,6 +5,7 @@
 // 2015-06-18 - DE - mCBM @ SIS18 setup
 //
 
+/*
 static TString caveGeom;
 static TString pipeGeom;
 static TString magnetGeom;
@@ -39,6 +40,7 @@ static Double_t fieldScale;
 static Int_t    fieldSymType;
 
 static TString defaultInputFile;
+*/
 
 void sis18_mcbm_setup()
 {

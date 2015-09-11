@@ -8,6 +8,41 @@
 // 20130605 - checked by DE
 // --------------------------------------------------------------------------
 
+TString caveGeom="";
+TString pipeGeom="";
+TString magnetGeom="";
+TString mvdGeom="";
+TString stsGeom="";
+TString richGeom="";
+TString muchGeom="";
+TString shieldGeom="";
+TString trdGeom="";
+TString tofGeom="";
+TString ecalGeom="";
+TString platformGeom="";
+TString psdGeom="";
+Double_t psdZpos=0.;
+Double_t psdXpos=0.;
+
+TString mvdTag="";
+TString stsTag="";
+TString trdTag="";
+TString tofTag="";  
+
+TString stsDigi="";
+TString trdDigi="";
+TString tofDigi="";
+
+TString mvdMatBudget="";
+TString stsMatBudget="";
+
+TString  fieldMap="";
+Double_t fieldZ=0.;
+Double_t fieldScale=0.;  
+Int_t    fieldSymType=0;
+
+TString defaultInputFile="";
+   
 void trd_digi1(Int_t nEvents = 1, const char* setup = "sis300_electron")
 {
 
@@ -61,13 +96,13 @@ void trd_digi1(Int_t nEvents = 1, const char* setup = "sis300_electron")
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
 
-  TObjString stsDigiFile = paramDir + "/" + stsDigi;
+  TObjString stsDigiFile(paramDir + "/" + stsDigi);
   parFileList->Add(&stsDigiFile);
 
-  TObjString trdDigiFile =  paramDir + "/" + trdDigi;
+  TObjString trdDigiFile(paramDir + "/" + trdDigi);
   parFileList->Add(&trdDigiFile);
 
-  TObjString tofDigiFile =  paramDir + "/" + tofDigi;
+  TObjString tofDigiFile(paramDir + "/" + tofDigi);
   parFileList->Add(&tofDigiFile);
 
   cout << "finally using     : >> " << trdDigi << " << " << endl;

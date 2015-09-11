@@ -12,6 +12,7 @@
 // 2013-10-07 - DE - pipe_v13e.geo fixes overlap with TOF, also avoids TRD
 //
 
+/*
 static TString caveGeom;
 static TString pipeGeom;
 static TString magnetGeom;
@@ -46,6 +47,7 @@ static Double_t fieldScale;
 static Int_t    fieldSymType;
 
 static TString defaultInputFile;
+*/
 
 void sis300_muon_setup()
 {
