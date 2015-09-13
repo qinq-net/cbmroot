@@ -18,7 +18,8 @@
 #define CBMTOFFINDTRACKS 1
 
 #include "FairTask.h"
-#include "CbmTofTypes.h"
+//#include "CbmTofTypes.h"
+#include <vector>
 
 class CbmTofTrackFinder;
 class CbmTofTrackFitter;
@@ -147,13 +148,13 @@ class CbmTofFindTracks : public FairTask
   TH2* fhTrklXY0_4;
   TH2* fhTrklXY0_5;
 
-  vector<TH1 *> vhPullX;
-  vector<TH1 *> vhPullY;
-  vector<TH1 *> vhPullZ;
-  vector<TH1 *> vhPullT;
-  vector<TH1 *> vhPullTB;
-  vector<TH2 *> vhXY_AllStations;      // for efficiency estimation
-  vector<TH2 *> vhXY_MissedStation;    // for efficiency estimation
+  std::vector<TH1 *> vhPullX;
+  std::vector<TH1 *> vhPullY;
+  std::vector<TH1 *> vhPullZ;
+  std::vector<TH1 *> vhPullT;
+  std::vector<TH1 *> vhPullTB;
+  std::vector<TH2 *> vhXY_AllStations;      // for efficiency estimation
+  std::vector<TH2 *> vhXY_MissedStation;    // for efficiency estimation
 
   TH1* fhVTXNorm;
   TH2* fhVTX_XY0;
