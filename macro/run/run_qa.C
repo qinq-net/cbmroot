@@ -77,15 +77,15 @@ void run_qa(Int_t nEvents = 1, const char* setup = "sis300_electron")
   gInterpreter->ProcessLine(setupFunct);
 
   // STS digitisation file
-  TObjString stsDigiFile = paramDir + stsDigi;
+  TObjString stsDigiFile(paramDir + stsDigi);
   parFileList->Add(&stsDigiFile);
   cout << "macro/run/run_qa.C using: " << stsDigi << endl;
 
-//  TObjString trdDigiFile = paramDir + trdDigi;
+//  TObjString trdDigiFile(paramDir + trdDigi);
 //  parFileList->Add(&trdDigiFile);
 //  cout << "macro/run/macro_qa.C using: " << trdDigi << endl;
 //
-//  TObjString tofDigiFile = paramDir + tofDigi;
+//  TObjString tofDigiFile(paramDir + tofDigi);
 //  parFileList->Add(&tofDigiFile);
 //  cout << "macro/run/macro_qa.C using: " << tofDigi << endl;
 
