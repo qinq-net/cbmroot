@@ -19,18 +19,18 @@ void FieldMapTest(TString fieldMap = "field_v12b",
   CbmFieldMap* magField = NULL;
 
   if (fieldMap == "field_v12b" )
-    CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
+    magField = new CbmFieldMapSym3(fieldMap);
   // old magnetic field maps
   else if (fieldMap == "field_v09e" )
-    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+    magField = new CbmFieldMapSym2(fieldMap);
   else if (fieldMap == "field_v09m" )
-    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+    magField = new CbmFieldMapSym2(fieldMap);
   else if (fieldMap == "field_v10e" )
-    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+    magField = new CbmFieldMapSym2(fieldMap);
   else if (fieldMap == "field_electron_standard" ) 
-    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+    magField = new CbmFieldMapSym2(fieldMap);
   else if (fieldMap == "field_muon_standard" )
-    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+    magField = new CbmFieldMapSym2(fieldMap);
   else {
     cout << "===> ERROR: Unknown field map " << fieldMap << endl;
     exit(1);
