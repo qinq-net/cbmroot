@@ -1,34 +1,62 @@
 // --------------------------------------------------------------------------
 //
-// Macro for TOF digitzer testing
+// Macro for TOF digitzer and clusterizer QA
 //
 // Digitizer in TOF
 // Clusterizer in TOF
-// Test class for TOF (Point/Digi/Hit)
+// QA class for TOF (Point/Digi/Hit)
 //
-// P.-A. Loizeau   13/03/2015
-// Version         13/03/2015 (P.-A. Loizeau)
+// P.-A. Loizeau   08/09/2015
+// Version         08/09/2015 (P.-A. Loizeau)
 //
 // --------------------------------------------------------------------------
 
+TString caveGeom="";
 
-void tof_map_norm_gen_ana(TString geoVersion, Int_t iCoordType = 0, Int_t iPartType = 0, Int_t nEvents = 10000000)
+TString pipeGeom="";
+TString magnetGeom="";
+TString mvdGeom="";
+TString stsGeom="";
+TString richGeom="";
+TString muchGeom="";
+TString shieldGeom="";
+TString trdGeom="";
+TString tofGeom="";
+TString ecalGeom="";
+TString platformGeom="";
+TString psdGeom="";
+
+Double_t psdZpos=0.;
+Double_t psdXpos=0.;
+
+TString mvdTag="";
+TString stsTag="";
+TString trdTag="";
+TString tofTag="";
+
+TString stsDigi="";
+TString trdDigi="";
+TString tofDigi="";
+
+TString mvdMatBudget="";
+TString stsMatBudget="";
+
+TString  fieldMap="";
+Double_t fieldZ=0.;
+Double_t fieldScale=0.;
+Int_t    fieldSymType=0;
+
+TString defaultInputFile="";
+
+
+void tof_qa_ana(Int_t nEvents = 2, const char* setup = "sis100_electron")
 {
-   TString sCoordType = ""; 
-   if( 0 == iCoordType )
-      sCoordType = "xyz"; 
-   else if( 1 == iCoordType )
-      sCoordType = "ang"; 
-   else if( 2 == iCoordType )
-      sCoordType = "sph";
-      else return; // No reason to enter other values!
 
-   TString sPartType = ""; 
-   if( 0 == iPartType )
-      sPartType = "geantino"; 
-   else if( 1 == iPartType )
-      sPartType = "proton"; 
-      else return; // No reason to enter other values!
+  // ========================================================================
+  //          Adjust this part according to your requirements
+
+  // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
+  Int_t iVerbose = 0;
 
 //  TString logLevel = "FATAL";
   //TString logLevel = "ERROR";
@@ -39,39 +67,35 @@ void tof_map_norm_gen_ana(TString geoVersion, Int_t iCoordType = 0, Int_t iPartT
   //TString logLevel = "DEBUG2";
   //TString logLevel = "DEBUG3";
 
-  // ========================================================================
-  //          Adjust this part according to your requirements
-
-  // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
-  Int_t iVerbose = 0;
-
   // ----- Paths and file names  --------------------------------------------
   TString inDir   = gSystem->Getenv("VMCWORKDIR");
+
   TString outDir  = "data/";
 
   // Input file (MC events)
-  TString inFile  = outDir + "/norm." + geoVersion + "_" + sCoordType + "_" + sPartType + ".mc.root";
+  TString inFile = outDir + setup + "_test.mc.root";
   // Parameter file
-  TString parFile = outDir + "/norm." + geoVersion + "_" + sCoordType + "_" + sPartType + ".params.root";
-
-  // Output file
-  TString outFile = outDir + "/norm." + geoVersion + "_" + sCoordType + "_" + sPartType + "_qa.eds.root";
-  TString digiOutFile  = outDir + "/norm." + geoVersion + "_" + sCoordType + "_" + sPartType + "_DigiBdf.hst.root";
-  TString clustOutFile = outDir + "/norm." + geoVersion + "_" + sCoordType + "_" + sPartType + "_SimpClust.hst.root"; 
-  TString qaOutFile    = outDir + "/norm." + geoVersion + "_" + sCoordType + "_" + sPartType + "_qa.hst.root"; 
+  TString parFile = outDir + setup + "_params.root";
 
   // -----  Geometries  -----------------------------------------------------
-  TString caveGeom   = "cave.geo";
-  TString targetGeom = "";
-  TString pipeGeom   = "";
-  TString magnetGeom = "";
-  TString mvdGeom    = "";
-  TString stsGeom    = "";
-  TString richGeom   = "";
-  TString trdGeom    = "";
-  TString tofGeom    = "tof/tof_" + geoVersion + ".geo.root";
-  TString tofDigi    = "tof/tof_" + geoVersion + ".digi.par";
+  TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
+  TString setupFunct = setup;
+  setupFunct += "_setup()";
+  
+  gROOT->LoadMacro(setupFile);
+  gInterpreter->ProcessLine(setupFunct);
 
+  // TOF maps normalization
+  TString normCartInFile = inDir + "/macro/tof/qa/data/norm." + tofTag + "_xyz_geantino_qa.hst.root"; 
+  TString normAngInFile  = inDir + "/macro/tof/qa/data/norm." + tofTag + "_ang_geantino_qa.hst.root"; 
+  TString normSphInFile  = inDir + "/macro/tof/qa/data/norm." + tofTag + "_sph_geantino_qa.hst.root"; 
+
+  // Output file
+  TString outFile = outDir + "/tofqa." + setup + "_qa.eds.root";
+  TString digiOutFile  = outDir + "/tofqa." + setup + "_DigiBdf.hst.root";
+  TString clustOutFile = outDir + "/tofqa." + setup + "_SimpClust.hst.root"; 
+  TString qaOutFile    = outDir + "/tofqa." + setup + "_qa.hst.root"; 
+  
   //  Digitisation files.
   // Add TObjectString containing the different file names to
   // a TList which is passed as input to the FairParAsciiFileIo.
@@ -86,11 +110,20 @@ void tof_map_norm_gen_ana(TString geoVersion, Int_t iCoordType = 0, Int_t iPartT
   TObjString tofDigiFile = paramDir + tofDigi;
   parFileList->Add(&tofDigiFile);
 
-  TObjString tofDigiBdfFile = "./tof.digibdf_norm.par";
-  if( "v14-0a" == geoVersion  || "v14-0b" == geoVersion)
-      tofDigiBdfFile = "./tof.digibdf_norm_v14_0.par";
+  TObjString tofDigiBdfFile = paramDir + "/tof/tof_" + tofTag + ".digibdf.par";
   parFileList->Add(&tofDigiBdfFile);
 
+   // If SCRIPT environment variable is set to "yes", i.e. macro is run via script
+   TString script = TString(gSystem->Getenv("LIT_SCRIPT"));
+   if (script == "yes") 
+   {
+      inFile       = TString(gSystem->Getenv("LIT_MC_FILE"));
+      parFile      = TString(gSystem->Getenv("LIT_PAR_FILE"));
+      outFile      = TString(gSystem->Getenv("LIT_RECO_FILE"));
+      digiOutFile  = TString(gSystem->Getenv("LIT_HSTDIGI_FILE"));
+      clustOutFile = TString(gSystem->Getenv("LIT_HSTCLUST_FILE"));
+      qaOutFile    = TString(gSystem->Getenv("LIT_HSTTOFQA_FILE"));
+   } // if (script == "yes")
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -143,12 +176,15 @@ void tof_map_norm_gen_ana(TString geoVersion, Int_t iCoordType = 0, Int_t iPartT
 
   // Digitizer/custerizer testing
   CbmTofHitFinderQa* tofQa = new CbmTofHitFinderQa("TOF QA",iVerbose);
+  tofQa->SetHistoFileNameCartCoordNorm( normCartInFile );
+  tofQa->SetHistoFileNameAngCoordNorm(  normAngInFile );
+  tofQa->SetHistoFileNameSphCoordNorm(  normSphInFile );
   tofQa->SetHistoFileName( qaOutFile );
-  tofQa->SetNormHistGenerationMode();
   // TODO: add the position for the other versions
-  if( "v13-5a" == geoVersion || "v14-0a" == geoVersion )
+  //       or recover it from the geometry?
+  if( "v13-5a" == tofTag || "v14-0a" == tofTag )
       tofQa->SetWallPosZ(  550 );
-  else if( "v13-5d" == geoVersion || "v14-0b" == geoVersion)
+  else if( "v13-5d" == tofTag || "v14-0b" == tofTag)
       tofQa->SetWallPosZ(  900 );
       else tofQa->SetWallPosZ( 1000 ); // default position of the wall
   run->AddTask(tofQa);
