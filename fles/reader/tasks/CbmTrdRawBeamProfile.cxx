@@ -44,7 +44,8 @@ CbmTrdRawBeamProfile::CbmTrdRawBeamProfile()
     fLostHitCounter(0),
     fDoubleCounter(0),
     fFragmentedCounter(0),
-    fTimeBuffer()
+    fTimeBuffer(),
+    fTrbBuffer()
 {
   LOG(DEBUG) << "Default Constructor of CbmTrdRawBeamProfile" << FairLogger::endl;
 }
@@ -66,72 +67,86 @@ CbmTrdRawBeamProfile::~CbmTrdRawBeamProfile()
     }
     SpaSysIt->second.clear();
   }
+  for (std::map<Int_t, std::map<Int_t, std::map<Int_t, std::map<Int_t, CbmTrbRawMessage*> > > >::iterator SourceAIt = fTrbBuffer.begin() ; SourceAIt != fTrbBuffer.end(); SourceAIt++){
+    for (std::map<Int_t, std::map<Int_t, std::map<Int_t, CbmTrbRawMessage*> > >::iterator epochIt = SourceAIt->second.begin() ; epochIt != SourceAIt->second.end(); epochIt++){
+      for (std::map<Int_t, std::map<Int_t, CbmTrbRawMessage*> > ::iterator chIdIt = epochIt->second.begin() ; chIdIt != epochIt->second.end(); chIdIt++){
+	for (std::map<Int_t, CbmTrbRawMessage*> ::iterator timeIt = chIdIt->second.begin(); timeIt != chIdIt->second.end(); timeIt++){
+	  if(timeIt->second != NULL)
+	    delete timeIt->second;
+	}
+       chIdIt->second.clear();   
+      }
+      epochIt->second.clear();
+    }
+    SourceAIt->second.clear();
+  }
+  //fTrbBuffer has to be cleaned here!!!!!
   LOG(DEBUG) << "Destructor of CbmTrdRawBeamProfile" << FairLogger::endl;
 }
 
-// ----  Initialisation  ----------------------------------------------
-void CbmTrdRawBeamProfile::SetParContainers()
-{
-  LOG(DEBUG) << "SetParContainers of CbmTrdRawBeamProfile" << FairLogger::endl;
-  // Load all necessary parameter containers from the runtime data base
-  /*
-  FairRunAna* ana = FairRunAna::Instance();
-  FairRuntimeDb* rtdb=ana->GetRuntimeDb();
+  // ----  Initialisation  ----------------------------------------------
+  void CbmTrdRawBeamProfile::SetParContainers()
+  {
+    LOG(DEBUG) << "SetParContainers of CbmTrdRawBeamProfile" << FairLogger::endl;
+    // Load all necessary parameter containers from the runtime data base
+    /*
+      FairRunAna* ana = FairRunAna::Instance();
+      FairRuntimeDb* rtdb=ana->GetRuntimeDb();
 
-  <CbmTrdRawBeamProfileDataMember> = (<ClassPointer>*)
-    (rtdb->getContainer("<ContainerName>"));
-  */
-}
-
-// ---- Init ----------------------------------------------------------
-InitStatus CbmTrdRawBeamProfile::Init()
-{
-  LOG(DEBUG) << "Initilization of CbmTrdRawBeamProfile" << FairLogger::endl;
-
-  // Get a handle from the IO manager
-  FairRootManager* ioman = FairRootManager::Instance();
-
-  // Get a pointer to the previous already existing data level
-  fRawSpadic = static_cast<TClonesArray*>(ioman->GetObject("SpadicRawMessage"));
-  if ( ! fRawSpadic ) {
-    LOG(FATAL) << "No InputDataLevelName SpadicRawMessage array!\n CbmTrdRawBeamProfile will be inactive" << FairLogger::endl;
-    return kERROR;
-  }
-  fNxyterRaw = static_cast<TClonesArray*>(ioman->GetObject("NxyterRawMessage"));
-  if ( ! fNxyterRaw ) {
-    LOG(ERROR) << "No InputDataLevelName CbmNxyterRawMessage array!\n Nxyter data within CbmTrdRawBeamProfile will be inactive" << FairLogger::endl;
-    return kERROR;
-  }
-  fTrbRaw = static_cast<TClonesArray*>(ioman->GetObject("TrbRawMessage"));
-  if ( ! fTrbRaw ) {
-    LOG(ERROR) << "No InputDataLevelName CbmTrbRawMessage array!\n TRB data within CbmTrdRawBeamProfile will be inactive" << FairLogger::endl;
-    return kERROR;
+      <CbmTrdRawBeamProfileDataMember> = (<ClassPointer>*)
+      (rtdb->getContainer("<ContainerName>"));
+    */
   }
 
+  // ---- Init ----------------------------------------------------------
+  InitStatus CbmTrdRawBeamProfile::Init()
+  {
+    LOG(DEBUG) << "Initilization of CbmTrdRawBeamProfile" << FairLogger::endl;
 
-  fDigis = new TClonesArray("CbmTrdDigi", 100);
-  ioman->Register("TrdDigi", "TRD Digis", fDigis, kTRUE);
+    // Get a handle from the IO manager
+    FairRootManager* ioman = FairRootManager::Instance();
 
-  fClusters = new TClonesArray("CbmTrdCluster",100);
-  ioman->Register("TrdCluster", "TRD Clusters", fClusters, kTRUE);
+    // Get a pointer to the previous already existing data level
+    fRawSpadic = static_cast<TClonesArray*>(ioman->GetObject("SpadicRawMessage"));
+    if ( ! fRawSpadic ) {
+      LOG(FATAL) << "No InputDataLevelName SpadicRawMessage array!\n CbmTrdRawBeamProfile will be inactive" << FairLogger::endl;
+      return kERROR;
+    }
+    fNxyterRaw = static_cast<TClonesArray*>(ioman->GetObject("NxyterRawMessage"));
+    if ( ! fNxyterRaw ) {
+      LOG(ERROR) << "No InputDataLevelName CbmNxyterRawMessage array!\n Nxyter data within CbmTrdRawBeamProfile will be inactive" << FairLogger::endl;
+      return kERROR;
+    }
+    fTrbRaw = static_cast<TClonesArray*>(ioman->GetObject("TrbRawMessage"));
+    if ( ! fTrbRaw ) {
+      LOG(ERROR) << "No InputDataLevelName CbmTrbRawMessage array!\n TRB data within CbmTrdRawBeamProfile will be inactive" << FairLogger::endl;
+      return kERROR;
+    }
 
-  // Do whatever else is needed at the initilization stage
-  // Create histograms to be filled
-  // initialize variables
-  CbmTrdRawBeamProfile::CreateHistograms();
 
-  return kSUCCESS;
+    fDigis = new TClonesArray("CbmTrdDigi", 100);
+    ioman->Register("TrdDigi", "TRD Digis", fDigis, kTRUE);
 
-}
+    fClusters = new TClonesArray("CbmTrdCluster",100);
+    ioman->Register("TrdCluster", "TRD Clusters", fClusters, kTRUE);
 
-// ---- ReInit  -------------------------------------------------------
-InitStatus CbmTrdRawBeamProfile::ReInit()
-{
-  LOG(DEBUG) << "Initilization of CbmTrdRawBeamProfile" << FairLogger::endl;
-  return kSUCCESS;
-}
+    // Do whatever else is needed at the initilization stage
+    // Create histograms to be filled
+    // initialize variables
+    CbmTrdRawBeamProfile::CreateHistograms();
 
-// ---- Exec ----------------------------------------------------------
+    return kSUCCESS;
+
+  }
+
+  // ---- ReInit  -------------------------------------------------------
+  InitStatus CbmTrdRawBeamProfile::ReInit()
+  {
+    LOG(DEBUG) << "Initilization of CbmTrdRawBeamProfile" << FairLogger::endl;
+    return kSUCCESS;
+  }
+
+  // ---- Exec ----------------------------------------------------------
 void CbmTrdRawBeamProfile::Exec(Option_t*)
 {
   const Int_t maxNrColumns = 16;
@@ -152,18 +167,52 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 
  
   Int_t entriesInTrbMessage = fTrbRaw->GetEntriesFast();
+  Int_t lastGlobalEpoch(0);
+  Int_t lastEpoch[4][16] = {{0}}; 
+  Int_t lastTdcCoarse[4][16] = {{0}};
   for (Int_t i=0; i < entriesInTrbMessage; ++i) {
     fTrbMessageCounter++;
     CbmTrbRawMessage* raw = /*static_cast<*/(CbmTrbRawMessage*)/*>*/(fTrbRaw->At(i));
     Int_t eqID = raw->GetEquipmentID();
     Int_t sourceA = raw->GetSourceAddress();
+    if (sourceA == 272) continue; //RICH
     //printf("EI%i SA%i ->",eqID,sourceA);
     Int_t chID = raw->GetChannelID();
+    if (chID == 0) continue;// seems to be not connected
+    Int_t epoch = raw->GetEpochMarker();
     Int_t tdcFine = raw->GetTDCfine();
     Int_t tdcCoarse = raw->GetTDCcoarse();
     Int_t edge = raw->GetEdge();
     ULong_t time = raw->GetFullTime();
-    LOG(INFO) << "TrbMessage: EqId:" << eqID << " sourceA:" << sourceA << " ChID:" << chID << " tdcFine:" << tdcFine << " tdcCoarse:" << tdcCoarse << " edge:" << edge << FairLogger::endl;
+    LOG(INFO) << "TrbMessage: " << fTrbMessageCounter << " EqId:" << eqID << " sourceA:" << sourceA << " ChID:" << chID << " Epoch:" << epoch << " tdcFine:" << tdcFine << " tdcCoarse:" << tdcCoarse << " edge:" << edge << FairLogger::endl;
+    
+    std::map<Int_t, CbmTrbRawMessage*>::iterator timeBufferIt = fTrbBuffer[sourceA][epoch][chID].find(tdcCoarse);
+    if (timeBufferIt == fTrbBuffer[sourceA][epoch][chID].end()){
+      fTrbBuffer[sourceA][epoch][chID][tdcCoarse] = new CbmTrbRawMessage(eqID, sourceA, chID, epoch, tdcCoarse, tdcFine, (Bool_t)edge);
+    } else {
+      LOG(ERROR) << "Message already in buffer <<<<<<<  TrbMessage: EqId:" << eqID << " sourceA:" << sourceA << " ChID:" << chID << " tdcFine:" << tdcFine << " tdcCoarse:" << tdcCoarse << " edge:" << edge << FairLogger::endl;
+    }
+    if (i > 0){
+      if (epoch - lastGlobalEpoch < 0)
+	LOG(ERROR) << "-------------------->GlobalEpoch:" << epoch <<  " LastGlobalEpoch:"<< lastGlobalEpoch << FairLogger::endl;
+      if (epoch - lastEpoch[sourceA-272][chID] < 0){
+	// ERROR
+	LOG(ERROR) << ":::::::::::::::::::::::::::Epoch:" << epoch <<  " LastEpoch:"<< lastEpoch[sourceA-272][chID] << FairLogger::endl;
+      } else if (epoch - lastEpoch[sourceA-272][chID] == 0) {
+    
+	if (tdcCoarse - lastTdcCoarse[sourceA-272][chID] < 0) {
+	  // ERROR
+	  LOG(ERROR) << "======================Coarse:" << tdcCoarse <<  " LastCoarse:"<< lastTdcCoarse[sourceA-272][chID] << FairLogger::endl;
+	} else {
+
+	}
+      } else {
+	//next epoch
+      }
+    }
+    lastGlobalEpoch = epoch;
+    lastEpoch[sourceA-272][chID] = epoch;
+    lastTdcCoarse[sourceA-272][chID] = tdcCoarse;
   }
 
 
@@ -610,112 +659,135 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
   }
   
 }
-Bool_t CbmTrdRawBeamProfile::FragmentedPulseTest(CbmSpadicRawMessage* raw)
-{
-  Int_t maxAdcValue(-300),maxTimeBin(-1), sample(-300);
-  Int_t nrSamples=raw->GetNrSamples();
-  for (Int_t bin = 0; bin < nrSamples; bin++) {
-    sample = raw->GetSamples()[bin];
-    if (sample > maxAdcValue){
-      maxAdcValue = sample;
-      maxTimeBin = bin;
+  Bool_t CbmTrdRawBeamProfile::FragmentedPulseTest(CbmSpadicRawMessage* raw)
+  {
+    Int_t maxAdcValue(-300),maxTimeBin(-1), sample(-300);
+    Int_t nrSamples=raw->GetNrSamples();
+    for (Int_t bin = 0; bin < nrSamples; bin++) {
+      sample = raw->GetSamples()[bin];
+      if (sample > maxAdcValue){
+	maxAdcValue = sample;
+	maxTimeBin = bin;
+      }
     }
+    if (maxTimeBin == 0)
+      return true;
+    else if (raw->GetSamples()[maxTimeBin] - raw->GetSamples()[/*maxTimeBin-1*/0] <= 0)
+      return true;
+    else
+      return false;
   }
-  if (maxTimeBin == 0)
-    return true;
-  else if (raw->GetSamples()[maxTimeBin] - raw->GetSamples()[/*maxTimeBin-1*/0] <= 0)
-    return true;
-  else
-    return false;
-}
 
-void CbmTrdRawBeamProfile::Clusterizer()
-{
+  void CbmTrdRawBeamProfile::Clusterizer()
+  {
 
-  TCanvas* b = new TCanvas("rawpulseshape","rawpulseshape",800,600);
-  TH1F* rawpulse = new TH1F("rawpulse","rawpulse",32,-0.5,31.5);
-  rawpulse->GetYaxis()->SetRangeUser(-255,256);
-  Int_t mapDigiCounter = 0;
-  CbmSpadicRawMessage* raw = NULL;
-  Int_t  layerId(0), moduleId(0), sectorId(0), rowId(0), columnId(0), clusterSize(0);
-  ULong_t lastClusterTime = 0;
-  ULong_t time = 0;
-  TString SysSpaID = "";
-  std::vector<Int_t> digiIndices;
-  for (std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = fTimeBuffer.begin() ; SpaSysIt != fTimeBuffer.end(); SpaSysIt++){
-    SysSpaID = SpaSysIt->first;
-    //printf("%s\n",SysSpaID.Data());
-    for (std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > ::iterator timeIt = (SpaSysIt->second).begin() ; timeIt != (SpaSysIt->second).end(); timeIt++){
-      LOG(DEBUG) <<  "ClusterSize:" << Int_t((timeIt->second).size()) << FairLogger::endl;
-      clusterSize = Int_t((timeIt->second).size());
-      time = timeIt->first;
-      //printf("      %lu\n",time);
-      fHM->H1(TString("ClusterSize_" + SysSpaID).Data())->Fill(clusterSize);
+    TCanvas* b = new TCanvas("rawpulseshape","rawpulseshape",800,600);
+    TH1F* rawpulse = new TH1F("rawpulse","rawpulse",32,-0.5,31.5);
+    rawpulse->GetYaxis()->SetRangeUser(-255,256);
+    Int_t mapDigiCounter = 0;
+    CbmSpadicRawMessage* raw = NULL;
+    Int_t  layerId(0), moduleId(0), sectorId(0), rowId(0), columnId(0), clusterSize(0);
+    ULong_t lastClusterTime = 0;
+    ULong_t time = 0;
+    TString SysSpaID = "";
+    std::vector<Int_t> digiIndices;
+    for (std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = fTimeBuffer.begin() ; SpaSysIt != fTimeBuffer.end(); SpaSysIt++){
+      SysSpaID = SpaSysIt->first;
+      //printf("%s\n",SysSpaID.Data());
+      for (std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > ::iterator timeIt = (SpaSysIt->second).begin() ; timeIt != (SpaSysIt->second).end(); timeIt++){
+	LOG(DEBUG) <<  "ClusterSize:" << Int_t((timeIt->second).size()) << FairLogger::endl;
+	clusterSize = Int_t((timeIt->second).size());
+	time = timeIt->first;
+	//printf("      %lu\n",time);
+	fHM->H1(TString("ClusterSize_" + SysSpaID).Data())->Fill(clusterSize);
 
-      //Delta time between time clusters
-      fHM->H1(TString("DeltaTime_Cluster_" + SysSpaID).Data())->Fill(time - lastClusterTime);
-      lastClusterTime = time;
+	//Delta time between time clusters
+	fHM->H1(TString("DeltaTime_Cluster_" + SysSpaID).Data())->Fill(time - lastClusterTime);
+	lastClusterTime = time;
 
-      Int_t lastCombiID = -1;
-      //digiIndices.clear();
-      //printf("\nTime: %lu\n",time);
-      for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiIt = (timeIt->second).begin(); combiIt != (timeIt->second).end(); combiIt++){
-	mapDigiCounter++;
-	rawpulse->SetLineColor(Int_t(digiIndices.size())+1);
-	raw = combiIt->second;
-	fHM->H2(TString("StopType_ClusterSize_" + SysSpaID).Data())->Fill(clusterSize,Int_t(raw->GetStopType()));
+	Int_t lastCombiID = -1;
+	//digiIndices.clear();
+	//printf("\nTime: %lu\n",time);
+	for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiIt = (timeIt->second).begin(); combiIt != (timeIt->second).end(); combiIt++){
+	  mapDigiCounter++;
+	  rawpulse->SetLineColor(Int_t(digiIndices.size())+1);
+	  raw = combiIt->second;
+	  fHM->H2(TString("StopType_ClusterSize_" + SysSpaID).Data())->Fill(clusterSize,Int_t(raw->GetStopType()));
 
-	if (Int_t(raw->GetStopType()) != 0 && Int_t(raw->GetStopType() != 3))
-	  fHM->H2(TString("InfoType_ClusterSize_" + SysSpaID).Data())->Fill(clusterSize,Int_t(raw->GetInfoType()));
-	fHM->H2(TString("TriggerType_ClusterSize_" + SysSpaID).Data())->Fill(clusterSize,Int_t(raw->GetTriggerType()));
+	  if (Int_t(raw->GetStopType()) != 0 && Int_t(raw->GetStopType() != 3))
+	    fHM->H2(TString("InfoType_ClusterSize_" + SysSpaID).Data())->Fill(clusterSize,Int_t(raw->GetInfoType()));
+	  fHM->H2(TString("TriggerType_ClusterSize_" + SysSpaID).Data())->Fill(clusterSize,Int_t(raw->GetTriggerType()));
 
-	fHM->H2(TString("ClusterSize_Message_Length_" + SysSpaID).Data())->Fill(clusterSize,Int_t(raw->GetNrSamples()));
-	layerId = GetLayerID(raw);
-	moduleId = GetModuleID(raw);
-	//printf("%p  time %12lu %12lu %s CI%2i layer %i EI%i SA%i TT%i\n",std::addressof(raw),time,raw->GetFullTime(),(SysSpaID).Data(),combiIt->first,layerId,Int_t(raw->GetEquipmentID()),Int_t(raw->GetSourceAddress()),raw->GetTriggerType());
-	fHM->H2(TString("LayerId").Data())->Fill(layerId,SysSpaID,1);
-	fHM->H2(TString("ModuleId").Data())->Fill(moduleId,SysSpaID,1);
+	  fHM->H2(TString("ClusterSize_Message_Length_" + SysSpaID).Data())->Fill(clusterSize,Int_t(raw->GetNrSamples()));
+	  layerId = GetLayerID(raw);
+	  moduleId = GetModuleID(raw);
+	  //printf("%p  time %12lu %12lu %s CI%2i layer %i EI%i SA%i TT%i\n",std::addressof(raw),time,raw->GetFullTime(),(SysSpaID).Data(),combiIt->first,layerId,Int_t(raw->GetEquipmentID()),Int_t(raw->GetSourceAddress()),raw->GetTriggerType());
+	  fHM->H2(TString("LayerId").Data())->Fill(layerId,SysSpaID,1);
+	  fHM->H2(TString("ModuleId").Data())->Fill(moduleId,SysSpaID,1);
 
-	sectorId = GetSectorID(raw);
-	rowId = GetRowID(raw);
-	columnId = GetColumnID(raw);
+	  sectorId = GetSectorID(raw);
+	  rowId = GetRowID(raw);
+	  columnId = GetColumnID(raw);
 
-	// BaseLineCorrection==
-	Float_t Baseline = 0.;
-	if (raw->GetStopType() == 0){
-	  for (Int_t bin = 1; bin < 4; bin++){
-	    Baseline += raw->GetSamples()[raw->GetNrSamples()-bin];
+	  // BaseLineCorrection==
+	  Float_t Baseline = 0.;
+	  if (raw->GetStopType() == 0){
+	    for (Int_t bin = 1; bin < 4; bin++){
+	      Baseline += raw->GetSamples()[raw->GetNrSamples()-bin];
+	    }
+	    Baseline /= 3.;
+	  } else {
+	    // Use average baseline estimated for full message length
 	  }
-	  Baseline /= 3.;
-	} else {
-	  // Use average baseline estimated for full message length
-	}
-	const Int_t nSamples = 32;//raw->GetNrSamples();
-	Float_t Samples[nSamples] = {0.};
-	for (Int_t iBin = 0; iBin < raw->GetNrSamples(); iBin++){
-	  rawpulse->SetBinContent(iBin+1,raw->GetSamples()[iBin]);
-	  Samples[iBin] = raw->GetSamples()[iBin] - Baseline;
-	}
-	b->cd();
-	if(Int_t(digiIndices.size())==0)
-	  rawpulse->DrawCopy();
-	else
-	  rawpulse->DrawCopy("same");
-	rawpulse->Reset();
-	//=====================
-	//printf("la%i mo%i se%i ro%i co%i\n",layerId,moduleId,sectorId,rowId,columnId);
-	new ((*fDigis)[fiDigi]) CbmTrdDigi(CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId),
-					   raw->GetFullTime()*57.14,//57,14 ns per timestamp
-					   raw->GetTriggerType(), raw->GetInfoType(), raw->GetStopType(),
-					   raw->GetNrSamples(), Samples/*&Samples[32]*/);
-	//digiIndices.push_back(fiDigi);
+	  const Int_t nSamples = 32;//raw->GetNrSamples();
+	  Float_t Samples[nSamples] = {0.};
+	  for (Int_t iBin = 0; iBin < raw->GetNrSamples(); iBin++){
+	    rawpulse->SetBinContent(iBin+1,raw->GetSamples()[iBin]);
+	    Samples[iBin] = raw->GetSamples()[iBin] - Baseline;
+	  }
+	  b->cd();
+	  if(Int_t(digiIndices.size())==0)
+	    rawpulse->DrawCopy();
+	  else
+	    rawpulse->DrawCopy("same");
+	  rawpulse->Reset();
+	  //=====================
+	  //printf("la%i mo%i se%i ro%i co%i\n",layerId,moduleId,sectorId,rowId,columnId);
+	  new ((*fDigis)[fiDigi]) CbmTrdDigi(CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId),
+					     raw->GetFullTime()*57.14,//57,14 ns per timestamp
+					     raw->GetTriggerType(), raw->GetInfoType(), raw->GetStopType(),
+					     raw->GetNrSamples(), Samples/*&Samples[32]*/);
+	  //digiIndices.push_back(fiDigi);
 
-	if (combiIt != timeIt->second.begin()){
-	  fHM->H1(TString("DeltaCh_Cluster_" + SpaSysIt->first).Data())->Fill(combiIt->first - lastCombiID);
-	}
+	  if (combiIt != timeIt->second.begin()){
+	    fHM->H1(TString("DeltaCh_Cluster_" + SpaSysIt->first).Data())->Fill(combiIt->first - lastCombiID);
+	  }
 
-	if (combiIt->first - lastCombiID != 1 && digiIndices.size() > 0){
-	  //printf("\n");
+	  if (combiIt->first - lastCombiID != 1 && digiIndices.size() > 0){
+	    //printf("\n");
+	    //printf("|>------------------Cluster %i finished (%02i)\n", fiCluster,Int_t(digiIndices.size()));
+	    CbmTrdCluster* cluster = new ((*fClusters)[fiCluster]) CbmTrdCluster();
+	    cluster->SetAddress(CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId));
+	    cluster->SetDigis(digiIndices);
+	    digiIndices.clear();
+	    TString pulseId;
+	    pulseId.Form("pics/%08iRawCluster.png",fiCluster);
+	    b->Update();
+	    if (fiCluster % 100 == 0){
+	      //b->SaveAs(pulseId);
+	    }
+	    b->Clear();
+	    fiCluster++;
+	  }
+	  digiIndices.push_back(fiDigi);
+	  //printf("             %02i row%i col%02i %i\n",combiIt->first,rowId,columnId,Int_t(digiIndices.size()));
+	  //printf("%i ",combiIt->first);
+	  //delete combiIt->second;
+	  lastCombiID = combiIt->first;
+	  fiDigi++;
+	}
+	if (digiIndices.size() > 0){
+	  //printf("digiIndices %i > 0\n",(Int_t)digiIndices.size());
 	  //printf("|>------------------Cluster %i finished (%02i)\n", fiCluster,Int_t(digiIndices.size()));
 	  CbmTrdCluster* cluster = new ((*fClusters)[fiCluster]) CbmTrdCluster();
 	  cluster->SetAddress(CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId));
@@ -730,82 +802,59 @@ void CbmTrdRawBeamProfile::Clusterizer()
 	  b->Clear();
 	  fiCluster++;
 	}
-	digiIndices.push_back(fiDigi);
-	//printf("             %02i row%i col%02i %i\n",combiIt->first,rowId,columnId,Int_t(digiIndices.size()));
-	//printf("%i ",combiIt->first);
-	//delete combiIt->second;
-	lastCombiID = combiIt->first;
-	fiDigi++;
+	//timeIt->second.clear();   
       }
-      if (digiIndices.size() > 0){
-	//printf("digiIndices %i > 0\n",(Int_t)digiIndices.size());
-	//printf("|>------------------Cluster %i finished (%02i)\n", fiCluster,Int_t(digiIndices.size()));
-	CbmTrdCluster* cluster = new ((*fClusters)[fiCluster]) CbmTrdCluster();
-	cluster->SetAddress(CbmTrdAddress::GetAddress(layerId,moduleId,sectorId,rowId,columnId));
-	cluster->SetDigis(digiIndices);
-	digiIndices.clear();
-	TString pulseId;
-	pulseId.Form("pics/%08iRawCluster.png",fiCluster);
-	b->Update();
-	if (fiCluster % 100 == 0){
-	  //b->SaveAs(pulseId);
-	}
-	b->Clear();
-	fiCluster++;
-      }
-      //timeIt->second.clear();   
+      //SpaSysIt->second.clear();
     }
-    //SpaSysIt->second.clear();
+    printf("[INFO   ] CbmTrdRawBeamProfile::Clusterizer Digis:           %i\n",mapDigiCounter);
   }
-  printf("[INFO   ] CbmTrdRawBeamProfile::Clusterizer Digis:           %i\n",mapDigiCounter);
-}
 
-Int_t CbmTrdRawBeamProfile::GetSysCoreID(CbmSpadicRawMessage* raw)
-{
-  Int_t eqID = raw->GetEquipmentID();
-  if (eqID == (Int_t)kMuenster) {  
-    return 0;
-  }  else if (eqID == (Int_t)kFrankfurt){
-    return 1;
-  }  else if (eqID == (Int_t)kBucarest){  
-    return 2;
-  } else
-    LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter <<  " EquipmentID " << eqID << "not known." << FairLogger::endl;   
-  return -1;
-}
-Int_t CbmTrdRawBeamProfile::GetSpadicID(CbmSpadicRawMessage* raw)
-{
-  Int_t sourceA = raw->GetSourceAddress() - SpadicBaseAddress;
-  if (sourceA == 0 || sourceA == 1)
-    return 0;
-  else if (sourceA == 2 || sourceA == 3)
-    return 1;
-  else  if (sourceA == 4 || sourceA == 5)
-    return 2;
-  else 
-    LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter <<  " Source Address " << sourceA << "not known." << FairLogger::endl;  
-  return -1; 
-}
-Int_t CbmTrdRawBeamProfile::GetModuleID(CbmSpadicRawMessage* raw)
-{
-  if (raw == NULL){
-    LOG(ERROR) << "CbmTrdRawBeamProfile::GetModuleID: CbmSpadicRawMessage == NULL" << FairLogger::endl;
+  Int_t CbmTrdRawBeamProfile::GetSysCoreID(CbmSpadicRawMessage* raw)
+  {
+    Int_t eqID = raw->GetEquipmentID();
+    if (eqID == (Int_t)kMuenster) {  
+      return 0;
+    }  else if (eqID == (Int_t)kFrankfurt){
+      return 1;
+    }  else if (eqID == (Int_t)kBucarest){  
+      return 2;
+    } else
+      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter <<  " EquipmentID " << eqID << "not known." << FairLogger::endl;   
     return -1;
-  } else {
-    Int_t sys = GetSysCoreID(raw);
-    Int_t spa = GetSpadicID(raw);
-
-    return sys * 3 + spa;  
   }
-}
+  Int_t CbmTrdRawBeamProfile::GetSpadicID(CbmSpadicRawMessage* raw)
+  {
+    Int_t sourceA = raw->GetSourceAddress() - SpadicBaseAddress;
+    if (sourceA == 0 || sourceA == 1)
+      return 0;
+    else if (sourceA == 2 || sourceA == 3)
+      return 1;
+    else  if (sourceA == 4 || sourceA == 5)
+      return 2;
+    else 
+      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter <<  " Source Address " << sourceA << "not known." << FairLogger::endl;  
+    return -1; 
+  }
+  Int_t CbmTrdRawBeamProfile::GetModuleID(CbmSpadicRawMessage* raw)
+  {
+    if (raw == NULL){
+      LOG(ERROR) << "CbmTrdRawBeamProfile::GetModuleID: CbmSpadicRawMessage == NULL" << FairLogger::endl;
+      return -1;
+    } else {
+      Int_t sys = GetSysCoreID(raw);
+      Int_t spa = GetSpadicID(raw);
+
+      return sys * 3 + spa;  
+    }
+  }
   Int_t CbmTrdRawBeamProfile::GetLayerID(CbmSpadicRawMessage* raw)
   {
     if (raw == NULL){
       LOG(ERROR) << "CbmTrdRawBeamProfile::GetModuleID: CbmSpadicRawMessage == NULL" << FairLogger::endl;
       return -1;
     } else {
-    Int_t sys = GetSysCoreID(raw);
-    Int_t spa = GetSpadicID(raw);
+      Int_t sys = GetSysCoreID(raw);
+      Int_t spa = GetSpadicID(raw);
 
       return sys * 3 + spa; 
     }
@@ -987,7 +1036,7 @@ Int_t CbmTrdRawBeamProfile::GetModuleID(CbmSpadicRawMessage* raw)
       for(Int_t spadic = 0; spadic < 3; ++spadic) {
 	fHM->H1("TriggerSum")->GetXaxis()->SetBinLabel(3*syscore+spadic+1,TString(syscoreName[syscore]+"_"+spadicName[spadic]));
 
-	 histName = "CountRate_" + syscoreName[syscore] + "_" + spadicName[spadic];
+	histName = "CountRate_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	TString title = histName + ";Channel;Counts";
 	fHM->Add(histName.Data(), new TH1I(histName, title, 32, -0.5, 31.5));
 
