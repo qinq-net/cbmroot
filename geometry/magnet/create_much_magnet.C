@@ -1,7 +1,7 @@
 // This macro removes yoke screens and adds absorber inside the magnet
 void create_much_magnet(){
-  const char* infilename  = "magnet_v12b.geo.root";
-  const char* outfilename = "magnet_v12b_much.geo.root";
+  const char* infilename  = "magnet_v15a.geo.root";
+  const char* outfilename = "magnet_v15a_much.geo.root";
   // absorber parameters - check compatibility with much geometry
   Double_t atanmin = 0.1;    // Acceptance tangent min
   Double_t atanmax = 0.5;    // Acceptance tangent max
@@ -49,7 +49,7 @@ void create_much_magnet(){
   //geometryFromGDML->Draw("ogl");
   //return;
   
-  TGeoNode* magnet_node = geometryFromGDML->FindNode("Magnet_container_1");
+  TGeoNode* magnet_node = geometryFromGDML->FindNode("magnet_v15a_1");
   TGeoVolume* magnet_volume = magnet_node->GetVolume();
   
   if (remove_screens) { // remove yoke screens
