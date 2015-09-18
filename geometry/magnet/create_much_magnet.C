@@ -63,21 +63,21 @@ void create_much_magnet(){
     magnet_volume->RemoveNode(screen4);
   }
   
-  // Calculate absorber dimensions and position
-  Double_t dz = lz/2.;
-  Double_t z2 = z1 + lz;
-  Double_t rmin1 = z1*atanmin;
-  Double_t rmin2 = z2*atanmin;
-  Double_t rmax1 = z1*atanmax+edge;
-  Double_t rmax2 = z2*atanmax+edge;
-  Double_t magnetZ0 = magnet_node->GetMatrix()->GetTranslation()[2];
-  Double_t z0 = z1+dz-magnetZ0;
-  
-  // Create absorber shape, volume, translation and node
-  TGeoShape* absorber_shape    = new TGeoCone(dz, rmin1, rmax1, rmin2, rmax2);
-  TGeoVolume* absorber_volume  = new TGeoVolume("Absorber",absorber_shape,tmat);
-  TGeoTranslation* translation = new TGeoTranslation("absorber_translation",0,0,z0);
-  magnet_volume->AddNodeOverlap(absorber_volume,0,translation);
+//  // Calculate absorber dimensions and position
+//  Double_t dz = lz/2.;
+//  Double_t z2 = z1 + lz;
+//  Double_t rmin1 = z1*atanmin;
+//  Double_t rmin2 = z2*atanmin;
+//  Double_t rmax1 = z1*atanmax+edge;
+//  Double_t rmax2 = z2*atanmax+edge;
+//  Double_t magnetZ0 = magnet_node->GetMatrix()->GetTranslation()[2];
+//  Double_t z0 = z1+dz-magnetZ0;
+//  
+//  // Create absorber shape, volume, translation and node
+//  TGeoShape* absorber_shape    = new TGeoCone(dz, rmin1, rmax1, rmin2, rmax2);
+//  TGeoVolume* absorber_volume  = new TGeoVolume("Absorber",absorber_shape,tmat);
+//  TGeoTranslation* translation = new TGeoTranslation("absorber_translation",0,0,z0);
+//  magnet_volume->AddNodeOverlap(absorber_volume,0,translation);
   
   // Draw result
   geometryFromGDML->Draw("ogl");
