@@ -170,35 +170,35 @@ class CbmTofHitFinderQa : public FairTask {
       TH1 * fhSinglePointHitPullR;
          // Hit Quality for Hits coming from multiple MC Points
             // To Point closest to Hit
-      TH1 * fhMultiPntHitClosestDeltaX;
-      TH1 * fhMultiPntHitClosestDeltaY;
-      TH1 * fhMultiPntHitClosestDeltaZ;
-      TH1 * fhMultiPntHitClosestDeltaR;
-      TH1 * fhMultiPntHitClosestDeltaT;
-      TH1 * fhMultiPntHitClosestPullX;
-      TH1 * fhMultiPntHitClosestPullY;
-      TH1 * fhMultiPntHitClosestPullZ;
-      TH1 * fhMultiPntHitClosestPullR;
+      TH2 * fhMultiPntHitClosestDeltaX;
+      TH2 * fhMultiPntHitClosestDeltaY;
+      TH2 * fhMultiPntHitClosestDeltaZ;
+      TH2 * fhMultiPntHitClosestDeltaR;
+      TH2 * fhMultiPntHitClosestDeltaT;
+      TH2 * fhMultiPntHitClosestPullX;
+      TH2 * fhMultiPntHitClosestPullY;
+      TH2 * fhMultiPntHitClosestPullZ;
+      TH2 * fhMultiPntHitClosestPullR;
             // To Point furthest from Hit
-      TH1 * fhMultiPntHitFurthestDeltaX;
-      TH1 * fhMultiPntHitFurthestDeltaY;
-      TH1 * fhMultiPntHitFurthestDeltaZ;
-      TH1 * fhMultiPntHitFurthestDeltaR;
-      TH1 * fhMultiPntHitFurthestDeltaT;
-      TH1 * fhMultiPntHitFurthestPullX;
-      TH1 * fhMultiPntHitFurthestPullY;
-      TH1 * fhMultiPntHitFurthestPullZ;
-      TH1 * fhMultiPntHitFurthestPullR;
+      TH2 * fhMultiPntHitFurthestDeltaX;
+      TH2 * fhMultiPntHitFurthestDeltaY;
+      TH2 * fhMultiPntHitFurthestDeltaZ;
+      TH2 * fhMultiPntHitFurthestDeltaR;
+      TH2 * fhMultiPntHitFurthestDeltaT;
+      TH2 * fhMultiPntHitFurthestPullX;
+      TH2 * fhMultiPntHitFurthestPullY;
+      TH2 * fhMultiPntHitFurthestPullZ;
+      TH2 * fhMultiPntHitFurthestPullR;
             // To mean Point position
-      TH1 * fhMultiPntHitMeanDeltaX;
-      TH1 * fhMultiPntHitMeanDeltaY;
-      TH1 * fhMultiPntHitMeanDeltaZ;
-      TH1 * fhMultiPntHitMeanDeltaR;
-      TH1 * fhMultiPntHitMeanDeltaT;
-      TH1 * fhMultiPntHitMeanPullX;
-      TH1 * fhMultiPntHitMeanPullY;
-      TH1 * fhMultiPntHitMeanPullZ;
-      TH1 * fhMultiPntHitMeanPullR;
+      TH2 * fhMultiPntHitMeanDeltaX;
+      TH2 * fhMultiPntHitMeanDeltaY;
+      TH2 * fhMultiPntHitMeanDeltaZ;
+      TH2 * fhMultiPntHitMeanDeltaR;
+      TH2 * fhMultiPntHitMeanDeltaT;
+      TH2 * fhMultiPntHitMeanPullX;
+      TH2 * fhMultiPntHitMeanPullY;
+      TH2 * fhMultiPntHitMeanPullZ;
+      TH2 * fhMultiPntHitMeanPullR;
          // Hit Quality for Hits coming from a single MC Track
       TH1 * fhSingleTrackHitDeltaX;
       TH1 * fhSingleTrackHitDeltaY;
@@ -209,37 +209,47 @@ class CbmTofHitFinderQa : public FairTask {
       TH1 * fhSingleTrackHitPullY;
       TH1 * fhSingleTrackHitPullZ;
       TH1 * fhSingleTrackHitPullR;
+         // Hit Quality for Hits coming from a single MC Track but multi Pnt
+      TH1 * fhSingTrkMultiPntHitDeltaX;
+      TH1 * fhSingTrkMultiPntHitDeltaY;
+      TH1 * fhSingTrkMultiPntHitDeltaZ;
+      TH1 * fhSingTrkMultiPntHitDeltaR;
+      TH1 * fhSingTrkMultiPntHitDeltaT;
+      TH1 * fhSingTrkMultiPntHitPullX;
+      TH1 * fhSingTrkMultiPntHitPullY;
+      TH1 * fhSingTrkMultiPntHitPullZ;
+      TH1 * fhSingTrkMultiPntHitPullR;
          // Hit Quality for Hits coming from multiple MC Tracks
             // To Track closest to Hit
-      TH1 * fhMultiTrkHitClosestDeltaX;
-      TH1 * fhMultiTrkHitClosestDeltaY;
-      TH1 * fhMultiTrkHitClosestDeltaZ;
-      TH1 * fhMultiTrkHitClosestDeltaR;
-      TH1 * fhMultiTrkHitClosestDeltaT;
-      TH1 * fhMultiTrkHitClosestPullX;
-      TH1 * fhMultiTrkHitClosestPullY;
-      TH1 * fhMultiTrkHitClosestPullZ;
-      TH1 * fhMultiTrkHitClosestPullR;
+      TH2 * fhMultiTrkHitClosestDeltaX;
+      TH2 * fhMultiTrkHitClosestDeltaY;
+      TH2 * fhMultiTrkHitClosestDeltaZ;
+      TH2 * fhMultiTrkHitClosestDeltaR;
+      TH2 * fhMultiTrkHitClosestDeltaT;
+      TH2 * fhMultiTrkHitClosestPullX;
+      TH2 * fhMultiTrkHitClosestPullY;
+      TH2 * fhMultiTrkHitClosestPullZ;
+      TH2 * fhMultiTrkHitClosestPullR;
             // To Track furthest from Hit
-      TH1 * fhMultiTrkHitFurthestDeltaX;
-      TH1 * fhMultiTrkHitFurthestDeltaY;
-      TH1 * fhMultiTrkHitFurthestDeltaZ;
-      TH1 * fhMultiTrkHitFurthestDeltaR;
-      TH1 * fhMultiTrkHitFurthestDeltaT;
-      TH1 * fhMultiTrkHitFurthestPullX;
-      TH1 * fhMultiTrkHitFurthestPullY;
-      TH1 * fhMultiTrkHitFurthestPullZ;
-      TH1 * fhMultiTrkHitFurthestPullR;
+      TH2 * fhMultiTrkHitFurthestDeltaX;
+      TH2 * fhMultiTrkHitFurthestDeltaY;
+      TH2 * fhMultiTrkHitFurthestDeltaZ;
+      TH2 * fhMultiTrkHitFurthestDeltaR;
+      TH2 * fhMultiTrkHitFurthestDeltaT;
+      TH2 * fhMultiTrkHitFurthestPullX;
+      TH2 * fhMultiTrkHitFurthestPullY;
+      TH2 * fhMultiTrkHitFurthestPullZ;
+      TH2 * fhMultiTrkHitFurthestPullR;
             // To mean Track position
-      TH1 * fhMultiTrkHitMeanDeltaX;
-      TH1 * fhMultiTrkHitMeanDeltaY;
-      TH1 * fhMultiTrkHitMeanDeltaZ;
-      TH1 * fhMultiTrkHitMeanDeltaR;
-      TH1 * fhMultiTrkHitMeanDeltaT;
-      TH1 * fhMultiTrkHitMeanPullX;
-      TH1 * fhMultiTrkHitMeanPullY;
-      TH1 * fhMultiTrkHitMeanPullZ;
-      TH1 * fhMultiTrkHitMeanPullR;
+      TH2 * fhMultiTrkHitMeanDeltaX;
+      TH2 * fhMultiTrkHitMeanDeltaY;
+      TH2 * fhMultiTrkHitMeanDeltaZ;
+      TH2 * fhMultiTrkHitMeanDeltaR;
+      TH2 * fhMultiTrkHitMeanDeltaT;
+      TH2 * fhMultiTrkHitMeanPullX;
+      TH2 * fhMultiTrkHitMeanPullY;
+      TH2 * fhMultiTrkHitMeanPullZ;
+      TH2 * fhMultiTrkHitMeanPullR;
       
          // Physics coord mapping, 1 per particle type
             // Phase space
