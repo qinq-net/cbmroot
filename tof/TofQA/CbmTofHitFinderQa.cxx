@@ -221,16 +221,32 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fvhPtmRapTofHit(),
     fvhPtmRapTofHitSinglePnt(),
     fvhPtmRapTofHitSingleTrk(),
+    fvhPtmRapSecGenTrk(),
+    fvhPtmRapSecStsPnt(),
+    fvhPtmRapSecTofPnt(),
+    fvhPtmRapSecTofHit(),
+    fvhPtmRapSecTofHitSinglePnt(),
+    fvhPtmRapSecTofHitSingleTrk(),
     fvhPlabGenTrk(),
     fvhPlabStsPnt(),
     fvhPlabTofPnt(),
     fvhPlabTofHit(),
     fvhPlabTofHitSinglePnt(),
     fvhPlabTofHitSingleTrk(),
+    fvhPlabSecGenTrk(),
+    fvhPlabSecStsPnt(),
+    fvhPlabSecTofPnt(),
+    fvhPlabSecTofHit(),
+    fvhPlabSecTofHitSinglePnt(),
+    fvhPlabSecTofHitSingleTrk(),
     fvhPtmRapGenTrkTofPnt(),
     fvhPtmRapGenTrkTofHit(),
     fvhPlabGenTrkTofPnt(),
-    fvhPlabGenTrkTofhit()
+    fvhPlabGenTrkTofhit(),
+    fvhPtmRapSecGenTrkTofPnt(),
+    fvhPtmRapSecGenTrkTofHit(),
+    fvhPlabSecGenTrkTofPnt(),
+    fvhPlabSecGenTrkTofhit()
 {
   cout << "CbmTofHitFinderQa: Task started " << endl;
 }
@@ -394,16 +410,32 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fvhPtmRapTofHit(),
     fvhPtmRapTofHitSinglePnt(),
     fvhPtmRapTofHitSingleTrk(),
+    fvhPtmRapSecGenTrk(),
+    fvhPtmRapSecStsPnt(),
+    fvhPtmRapSecTofPnt(),
+    fvhPtmRapSecTofHit(),
+    fvhPtmRapSecTofHitSinglePnt(),
+    fvhPtmRapSecTofHitSingleTrk(),
     fvhPlabGenTrk(),
     fvhPlabStsPnt(),
     fvhPlabTofPnt(),
     fvhPlabTofHit(),
     fvhPlabTofHitSinglePnt(),
     fvhPlabTofHitSingleTrk(),
+    fvhPlabSecGenTrk(),
+    fvhPlabSecStsPnt(),
+    fvhPlabSecTofPnt(),
+    fvhPlabSecTofHit(),
+    fvhPlabSecTofHitSinglePnt(),
+    fvhPlabSecTofHitSingleTrk(),
     fvhPtmRapGenTrkTofPnt(),
     fvhPtmRapGenTrkTofHit(),
     fvhPlabGenTrkTofPnt(),
-    fvhPlabGenTrkTofhit()
+    fvhPlabGenTrkTofhit(),
+    fvhPtmRapSecGenTrkTofPnt(),
+    fvhPtmRapSecGenTrkTofHit(),
+    fvhPlabSecGenTrkTofPnt(),
+    fvhPlabSecGenTrkTofhit()
 {
 }
 // ------------------------------------------------------------------
@@ -1114,6 +1146,12 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
    fvhPtmRapTofHit.resize(kiNbPart);
    fvhPtmRapTofHitSinglePnt.resize(kiNbPart);
    fvhPtmRapTofHitSingleTrk.resize(kiNbPart);
+   fvhPtmRapSecGenTrk.resize(kiNbPart);
+   fvhPtmRapSecStsPnt.resize(kiNbPart);
+   fvhPtmRapSecTofPnt.resize(kiNbPart);
+   fvhPtmRapSecTofHit.resize(kiNbPart);
+   fvhPtmRapSecTofHitSinglePnt.resize(kiNbPart);
+   fvhPtmRapSecTofHitSingleTrk.resize(kiNbPart);
          // PLab
    Int_t    iNbBinsPlab = 100;
    Double_t dMinPlab    =   0.0;
@@ -1124,74 +1162,180 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
    fvhPlabTofHit.resize(kiNbPart);
    fvhPlabTofHitSinglePnt.resize(kiNbPart);
    fvhPlabTofHitSingleTrk.resize(kiNbPart);
+   fvhPlabSecGenTrk.resize(kiNbPart);
+   fvhPlabSecStsPnt.resize(kiNbPart);
+   fvhPlabSecTofPnt.resize(kiNbPart);
+   fvhPlabSecTofHit.resize(kiNbPart);
+   fvhPlabSecTofHitSinglePnt.resize(kiNbPart);
+   fvhPlabSecTofHitSingleTrk.resize(kiNbPart);
          // MC Tracks losses      
    fvhPtmRapGenTrkTofPnt.resize(kiNbPart);
    fvhPtmRapGenTrkTofHit.resize(kiNbPart);
    fvhPlabGenTrkTofPnt.resize(kiNbPart);
    fvhPlabGenTrkTofhit.resize(kiNbPart);
+   fvhPtmRapSecGenTrkTofPnt.resize(kiNbPart);
+   fvhPtmRapSecGenTrkTofHit.resize(kiNbPart);
+   fvhPlabSecGenTrkTofPnt.resize(kiNbPart);
+   fvhPlabSecGenTrkTofhit.resize(kiNbPart);
    for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    {
          // Phase space
       fvhPtmRapGenTrk[iPartIdx] = new TH2D( Form("TofTests_PtmRapGenTrk_%s", ksPartTag[iPartIdx].Data() ) ,  
-                              Form("P_{t}/M vs y distribution for MC tracks, %s; y; P_{t}/M; # []", ksPartName[iPartIdx].Data()  ),
+                              Form("P_{t}/M vs y distribution for MC tracks, %s, primary tracks; y; P_{t}/M; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
                               iNbBinsY,    dMinY,   dMaxY,
                               iNbBNinsPtm, dMinPtm, dMaxPtm);
       fvhPtmRapStsPnt[iPartIdx] = new TH2D( Form("TofTests_PtmRapStsPnt_%s", ksPartTag[iPartIdx].Data() ) ,
-                              Form("P_{t}/M vs y distribution from MC Track with STS points, %s; y; P_{t}/M; # []", ksPartName[iPartIdx].Data()  ),
+                              Form("P_{t}/M vs y distribution from MC Track with STS points, %s, primary tracks; y; P_{t}/M; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
                               iNbBinsY,    dMinY,   dMaxY,
                               iNbBNinsPtm, dMinPtm, dMaxPtm);
       fvhPtmRapTofPnt[iPartIdx] = new TH2D( Form("TofTests_PtmRapTofPnt_%s", ksPartTag[iPartIdx].Data() ) ,
-                              Form("P_{t}/M vs y distribution from MC Track for TOF points, %s; y; P_{t}/M; # []", ksPartName[iPartIdx].Data()  ),
+                              Form("P_{t}/M vs y distribution from MC Track for TOF points, %s, primary tracks; y; P_{t}/M; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
                               iNbBinsY,    dMinY,   dMaxY,
                               iNbBNinsPtm, dMinPtm, dMaxPtm);
       fvhPtmRapTofHit[iPartIdx] = new TH2D( Form("TofTests_PtmRapTofHit_%s", ksPartTag[iPartIdx].Data() ) ,
-                              Form("P_{t}/M vs y distribution from MC Track for TOF Hits, %s; y; P_{t}/M; # []", ksPartName[iPartIdx].Data()  ),
+                              Form("P_{t}/M vs y distribution from MC Track for TOF Hits, %s, primary tracks; y; P_{t}/M; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
                               iNbBinsY,    dMinY,   dMaxY,
                               iNbBNinsPtm, dMinPtm, dMaxPtm);
       fvhPtmRapTofHitSinglePnt[iPartIdx] = new TH2D( Form("TofTests_PtmRapTofHitSinglePnt_%s", ksPartTag[iPartIdx].Data() ),
-                              Form("P_{t}/M vs y distribution from MC Track for TOF Hits from a single TOF Point, %s; y; P_{t}/M; # []", ksPartName[iPartIdx].Data()  ),
+                              Form("P_{t}/M vs y distribution from MC Track for TOF Hits from a single TOF Point, %s, primary tracks; y; P_{t}/M; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
                               iNbBinsY,    dMinY,   dMaxY,
                               iNbBNinsPtm, dMinPtm, dMaxPtm);
       fvhPtmRapTofHitSingleTrk[iPartIdx] = new TH2D( Form("TofTests_PtmRapTofHitSingleTrk_%s", ksPartTag[iPartIdx].Data() ),
-                              Form("P_{t}/M vs y distribution from MC Track for TOF Hits from a single MC track, %s; y; P_{t}/M; # []", ksPartName[iPartIdx].Data()  ),
+                              Form("P_{t}/M vs y distribution from MC Track for TOF Hits from a single MC track, %s, primary tracks; y; P_{t}/M; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
                               iNbBinsY,    dMinY,   dMaxY,
                               iNbBNinsPtm, dMinPtm, dMaxPtm);
          // PLab
       fvhPlabGenTrk[iPartIdx] = new TH1D( Form("TofTests_PlabGenTrk_%s", ksPartTag[iPartIdx].Data() ), 
-                              Form("P_{lab} distribution for MC tracks, %s; P_{lab} [GeV/c]; # []", ksPartName[iPartIdx].Data()  ),
+                              Form("P_{lab} distribution for MC tracks, %s, primary tracks; P_{lab} [GeV/c]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
       fvhPlabStsPnt[iPartIdx] = new TH1D( Form("TofTests_PlabStsPnt_%s", ksPartTag[iPartIdx].Data() ),
-                              Form("P_{lab} distribution from MC Track with STS points, %s; P_{lab} [GeV/c]; # []", ksPartName[iPartIdx].Data()  ),
+                              Form("P_{lab} distribution from MC Track with STS points, %s, primary tracks; P_{lab} [GeV/c]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
       fvhPlabTofPnt[iPartIdx] = new TH1D( Form("TofTests_PlabTofPnt_%s", ksPartTag[iPartIdx].Data() ),
-                              Form("P_{lab} distribution from MC Track for TOF points, %s; P_{lab} [GeV/c]; # []", ksPartName[iPartIdx].Data()  ),
+                              Form("P_{lab} distribution from MC Track for TOF points, %s, primary tracks; P_{lab} [GeV/c]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
       fvhPlabTofHit[iPartIdx] = new TH1D( Form("TofTests_PlabTofHit_%s", ksPartTag[iPartIdx].Data() ),
-                              Form("P_{lab} distribution from MC Track for TOF Hits, %s; P_{lab} [GeV/c]; # []", ksPartName[iPartIdx].Data()  ),
+                              Form("P_{lab} distribution from MC Track for TOF Hits, %s, primary tracks; P_{lab} [GeV/c]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
       fvhPlabTofHitSinglePnt[iPartIdx] = new TH1D( Form("TofTests_PlabTofHitSinglePnt_%s", ksPartTag[iPartIdx].Data() ), 
-                              Form("P_{lab} distribution from MC Track for TOF Hits from a single TOF Point, %s; P_{lab} [GeV/c]; # []", ksPartName[iPartIdx].Data()  ),
+                              Form("P_{lab} distribution from MC Track for TOF Hits from a single TOF Point, %s, primary tracks; P_{lab} [GeV/c]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
       fvhPlabTofHitSingleTrk[iPartIdx] = new TH1D( Form("TofTests_PlabTofHitSingleTrk_%s", ksPartTag[iPartIdx].Data() ),
-                              Form("P_{lab} distribution from MC Track for TOF Hits from a single MC tracks, %s; P_{lab} [GeV/c]; # []", ksPartName[iPartIdx].Data()  ),
+                              Form("P_{lab} distribution from MC Track for TOF Hits from a single MC tracks, %s, primary tracks; P_{lab} [GeV/c]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
                               
                               
          // MC Tracks losses      
       fvhPtmRapGenTrkTofPnt[iPartIdx] = new TH2D( Form("TofTests_PtmRapGenTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ) ,  
-                              Form("P_{t}/M vs y distribution for MC tracks with TOF Point(s), %s; y; P_{t}/M; # []", ksPartName[iPartIdx].Data()  ),
+                              Form("P_{t}/M vs y distribution for MC tracks with TOF Point(s), %s, primary tracks; y; P_{t}/M; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
                               iNbBinsY,    dMinY,   dMaxY,
                               iNbBNinsPtm, dMinPtm, dMaxPtm);
       fvhPtmRapGenTrkTofHit[iPartIdx] = new TH2D( Form("TofTests_PtmRapGenTrkTofHit_%s", ksPartTag[iPartIdx].Data() ) ,  
-                              Form("P_{t}/M vs y distribution for MC tracks with TOF Hit(s), %s; y; P_{t}/M; # []", ksPartName[iPartIdx].Data()  ),
+                              Form("P_{t}/M vs y distribution for MC tracks with TOF Hit(s), %s, primary tracks; y; P_{t}/M; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
                               iNbBinsY,    dMinY,   dMaxY,
                               iNbBNinsPtm, dMinPtm, dMaxPtm);
       
       fvhPlabGenTrkTofPnt[iPartIdx] = new TH1D( Form("TofTests_PlabGenTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ), 
-                              Form("P_{lab} distribution for MC tracks with TOF Point(s), %s; P_{lab} [GeV/c]; # []", ksPartName[iPartIdx].Data()  ),
+                              Form("P_{lab} distribution for MC tracks with TOF Point(s), %s, primary tracks; P_{lab} [GeV/c]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
       fvhPlabGenTrkTofhit[iPartIdx] = new TH1D( Form("TofTests_PlabGenTrkTofHit_%s", ksPartTag[iPartIdx].Data() ),
-                              Form("P_{lab} distribution from MC Track with TOF Hit(s), %s; P_{lab} [GeV/c]; # []", ksPartName[iPartIdx].Data()  ),
+                              Form("P_{lab} distribution from MC Track with TOF Hit(s), %s, primary tracks; P_{lab} [GeV/c]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsPlab, dMinPlab, dMaxPlab);
+
+      // Secondary tracks
+         // Phase space
+      fvhPtmRapSecGenTrk[iPartIdx] = new TH2D( Form("TofTests_PtmRapSecGenTrk_%s", ksPartTag[iPartIdx].Data() ) ,  
+                              Form("P_{t}/M vs y distribution for MC tracks, %s, secondary tracks; y; P_{t}/M; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsY,    dMinY,   dMaxY,
+                              iNbBNinsPtm, dMinPtm, dMaxPtm);
+      fvhPtmRapSecStsPnt[iPartIdx] = new TH2D( Form("TofTests_PtmRapSecStsPnt_%s", ksPartTag[iPartIdx].Data() ) ,
+                              Form("P_{t}/M vs y distribution from MC Track with STS points, %s, secondary tracks; y; P_{t}/M; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsY,    dMinY,   dMaxY,
+                              iNbBNinsPtm, dMinPtm, dMaxPtm);
+      fvhPtmRapSecTofPnt[iPartIdx] = new TH2D( Form("TofTests_PtmRapSecTofPnt_%s", ksPartTag[iPartIdx].Data() ) ,
+                              Form("P_{t}/M vs y distribution from MC Track for TOF points, %s, secondary tracks; y; P_{t}/M; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsY,    dMinY,   dMaxY,
+                              iNbBNinsPtm, dMinPtm, dMaxPtm);
+      fvhPtmRapSecTofHit[iPartIdx] = new TH2D( Form("TofTests_PtmRapSecTofHit_%s", ksPartTag[iPartIdx].Data() ) ,
+                              Form("P_{t}/M vs y distribution from MC Track for TOF Hits, %s, secondary tracks; y; P_{t}/M; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsY,    dMinY,   dMaxY,
+                              iNbBNinsPtm, dMinPtm, dMaxPtm);
+      fvhPtmRapSecTofHitSinglePnt[iPartIdx] = new TH2D( Form("TofTests_PtmRapSecTofHitSinglePnt_%s", ksPartTag[iPartIdx].Data() ),
+                              Form("P_{t}/M vs y distribution from MC Track for TOF Hits from a single TOF Point, %s, secondary tracks; y; P_{t}/M; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsY,    dMinY,   dMaxY,
+                              iNbBNinsPtm, dMinPtm, dMaxPtm);
+      fvhPtmRapSecTofHitSingleTrk[iPartIdx] = new TH2D( Form("TofTests_PtmRapSecTofHitSingleTrk_%s", ksPartTag[iPartIdx].Data() ),
+                              Form("P_{t}/M vs y distribution from MC Track for TOF Hits from a single MC track, %s, secondary tracks; y; P_{t}/M; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsY,    dMinY,   dMaxY,
+                              iNbBNinsPtm, dMinPtm, dMaxPtm);
+         // PLab
+      fvhPlabSecGenTrk[iPartIdx] = new TH1D( Form("TofTests_PlabSecGenTrk_%s", ksPartTag[iPartIdx].Data() ), 
+                              Form("P_{lab} distribution for MC tracks, %s, secondary tracks; P_{lab} [GeV/c]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsPlab, dMinPlab, dMaxPlab);
+      fvhPlabSecStsPnt[iPartIdx] = new TH1D( Form("TofTests_PlabSecStsPnt_%s", ksPartTag[iPartIdx].Data() ),
+                              Form("P_{lab} distribution from MC Track with STS points, %s, secondary tracks; P_{lab} [GeV/c]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsPlab, dMinPlab, dMaxPlab);
+      fvhPlabSecTofPnt[iPartIdx] = new TH1D( Form("TofTests_PlabSecTofPnt_%s", ksPartTag[iPartIdx].Data() ),
+                              Form("P_{lab} distribution from MC Track for TOF points, %s, secondary tracks; P_{lab} [GeV/c]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsPlab, dMinPlab, dMaxPlab);
+      fvhPlabSecTofHit[iPartIdx] = new TH1D( Form("TofTests_PlabSecTofHit_%s", ksPartTag[iPartIdx].Data() ),
+                              Form("P_{lab} distribution from MC Track for TOF Hits, %s, secondary tracks; P_{lab} [GeV/c]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsPlab, dMinPlab, dMaxPlab);
+      fvhPlabSecTofHitSinglePnt[iPartIdx] = new TH1D( Form("TofTests_PlabSecTofHitSinglePnt_%s", ksPartTag[iPartIdx].Data() ), 
+                              Form("P_{lab} distribution from MC Track for TOF Hits from a single TOF Point, %s, secondary tracks; P_{lab} [GeV/c]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsPlab, dMinPlab, dMaxPlab);
+      fvhPlabSecTofHitSingleTrk[iPartIdx] = new TH1D( Form("TofTests_PlabSecTofHitSingleTrk_%s", ksPartTag[iPartIdx].Data() ),
+                              Form("P_{lab} distribution from MC Track for TOF Hits from a single MC tracks, %s, secondary tracks; P_{lab} [GeV/c]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsPlab, dMinPlab, dMaxPlab);
+                              
+                              
+         // MC Tracks losses      
+      fvhPtmRapSecGenTrkTofPnt[iPartIdx] = new TH2D( Form("TofTests_PtmRapSecGenTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ) ,  
+                              Form("P_{t}/M vs y distribution for MC tracks with TOF Point(s), %s, secondary tracks; y; P_{t}/M; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsY,    dMinY,   dMaxY,
+                              iNbBNinsPtm, dMinPtm, dMaxPtm);
+      fvhPtmRapSecGenTrkTofHit[iPartIdx] = new TH2D( Form("TofTests_PtmRapSecGenTrkTofHit_%s", ksPartTag[iPartIdx].Data() ) ,  
+                              Form("P_{t}/M vs y distribution for MC tracks with TOF Hit(s), %s, secondary tracks; y; P_{t}/M; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsY,    dMinY,   dMaxY,
+                              iNbBNinsPtm, dMinPtm, dMaxPtm);
+      
+      fvhPlabSecGenTrkTofPnt[iPartIdx] = new TH1D( Form("TofTests_PlabSecGenTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ), 
+                              Form("P_{lab} distribution for MC tracks with TOF Point(s), %s, secondary tracks; P_{lab} [GeV/c]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsPlab, dMinPlab, dMaxPlab);
+      fvhPlabSecGenTrkTofhit[iPartIdx] = new TH1D( Form("TofTests_PlabSecGenTrkTofHit_%s", ksPartTag[iPartIdx].Data() ),
+                              Form("P_{lab} distribution from MC Track with TOF Hit(s), %s, secondary tracks; P_{lab} [GeV/c]; # []", 
+                                   ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
    } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    
@@ -1276,43 +1420,88 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             iPartIdx = iPart;
             break;
          } // if( kiPartPdgCode[iPart] == iPdgCode )
-      if( -1 < iPartIdx )
+      if( -1 == pMcTrk->GetMotherId() )
       {
-         // Phase space
-         fvhPtmRapGenTrk[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
-         // PLab
-         fvhPlabGenTrk[iPartIdx]->Fill( pMcTrk->GetP() );
-         // Do the same for tracks within STS acceptance
-         if( 0 < pMcTrk->GetNPoints(kSTS) )
-         {
-            fvhPtmRapStsPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
-            fvhPlabStsPnt[iPartIdx]->Fill( pMcTrk->GetP() );
-         } // if( 0 < pMcTrk->GetNPoints(kSTS) )
-         // Do the same for tracks within STS acceptance
-         if( 0 < pMcTrk->GetNPoints(kTOF) )
-         {
-            fvhPtmRapGenTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
-            fvhPlabGenTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetP() );
-         } // if( 0 < pMcTrk->GetNPoints(kTOF) )
-      } // if( -1 < iPartIdx )
-         else 
+         // primary track
+         if( -1 < iPartIdx )
          {
             // Phase space
-            fvhPtmRapGenTrk[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+            fvhPtmRapGenTrk[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
             // PLab
-            fvhPlabGenTrk[0]->Fill( pMcTrk->GetP() );
+            fvhPlabGenTrk[iPartIdx]->Fill( pMcTrk->GetP() );
             // Do the same for tracks within STS acceptance
             if( 0 < pMcTrk->GetNPoints(kSTS) )
             {
-               fvhPtmRapStsPnt[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
-               fvhPlabStsPnt[0]->Fill( pMcTrk->GetP() );
+               fvhPtmRapStsPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+               fvhPlabStsPnt[iPartIdx]->Fill( pMcTrk->GetP() );
             } // if( 0 < pMcTrk->GetNPoints(kSTS) )
+            // Do the same for tracks within STS acceptance
             if( 0 < pMcTrk->GetNPoints(kTOF) )
             {
-               fvhPtmRapGenTrkTofPnt[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
-               fvhPlabGenTrkTofPnt[0]->Fill( pMcTrk->GetP() );
+               fvhPtmRapGenTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+               fvhPlabGenTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetP() );
             } // if( 0 < pMcTrk->GetNPoints(kTOF) )
-         } // else of if( -1 < iPartIdx )
+         } // if( -1 < iPartIdx )
+            else 
+            {
+               // Phase space
+               fvhPtmRapGenTrk[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+               // PLab
+               fvhPlabGenTrk[0]->Fill( pMcTrk->GetP() );
+               // Do the same for tracks within STS acceptance
+               if( 0 < pMcTrk->GetNPoints(kSTS) )
+               {
+                  fvhPtmRapStsPnt[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                  fvhPlabStsPnt[0]->Fill( pMcTrk->GetP() );
+               } // if( 0 < pMcTrk->GetNPoints(kSTS) )
+               if( 0 < pMcTrk->GetNPoints(kTOF) )
+               {
+                  fvhPtmRapGenTrkTofPnt[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                  fvhPlabGenTrkTofPnt[0]->Fill( pMcTrk->GetP() );
+               } // if( 0 < pMcTrk->GetNPoints(kTOF) )
+            } // else of if( -1 < iPartIdx )
+         } // if( -1 == pMcTrk->GetMotherId() )
+            else
+            {
+               // secondary track
+               if( -1 < iPartIdx )
+               {
+                  // Phase space
+                  fvhPtmRapSecGenTrk[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                  // PLab
+                  fvhPlabSecGenTrk[iPartIdx]->Fill( pMcTrk->GetP() );
+                  // Do the same for tracks within STS acceptance
+                  if( 0 < pMcTrk->GetNPoints(kSTS) )
+                  {
+                     fvhPtmRapSecStsPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                     fvhPlabSecStsPnt[iPartIdx]->Fill( pMcTrk->GetP() );
+                  } // if( 0 < pMcTrk->GetNPoints(kSTS) )
+                  // Do the same for tracks within STS acceptance
+                  if( 0 < pMcTrk->GetNPoints(kTOF) )
+                  {
+                     fvhPtmRapSecGenTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                     fvhPlabSecGenTrkTofPnt[iPartIdx]->Fill( pMcTrk->GetP() );
+                  } // if( 0 < pMcTrk->GetNPoints(kTOF) )
+               } // if( -1 < iPartIdx )
+                  else 
+                  {
+                     // Phase space
+                     fvhPtmRapSecGenTrk[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                     // PLab
+                     fvhPlabSecGenTrk[0]->Fill( pMcTrk->GetP() );
+                     // Do the same for tracks within STS acceptance
+                     if( 0 < pMcTrk->GetNPoints(kSTS) )
+                     {
+                        fvhPtmRapSecStsPnt[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                        fvhPlabSecStsPnt[0]->Fill( pMcTrk->GetP() );
+                     } // if( 0 < pMcTrk->GetNPoints(kSTS) )
+                     if( 0 < pMcTrk->GetNPoints(kTOF) )
+                     {
+                        fvhPtmRapSecGenTrkTofPnt[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                        fvhPlabSecGenTrkTofPnt[0]->Fill( pMcTrk->GetP() );
+                     } // if( 0 < pMcTrk->GetNPoints(kTOF) )
+                  } // else of if( -1 < iPartIdx )
+            } // else of if( -1 == pMcTrk->GetMotherId() )
    } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
    
    // Loop over Points and map them?
@@ -1367,20 +1556,43 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             iPartIdx = iPart;
             break;
          } // if( kiPartPdgCode[iPart] == iPdgCode )
-      if( -1 < iPartIdx )
+         
+      if( -1 == pMcTrk->GetMotherId() )
       {
-         // Phase space
-         fvhPtmRapTofPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
-         // PLab
-         fvhPlabTofPnt[iPartIdx]->Fill( pMcTrk->GetP() );
-      } // if( -1 < iPartIdx )
-         else 
+         // primary track
+         if( -1 < iPartIdx )
          {
             // Phase space
-            fvhPtmRapTofPnt[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+            fvhPtmRapTofPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
             // PLab
-            fvhPlabTofPnt[0]->Fill( pMcTrk->GetP() );
-         } // else of if( -1 < iPartIdx )
+            fvhPlabTofPnt[iPartIdx]->Fill( pMcTrk->GetP() );
+         } // if( -1 < iPartIdx )
+            else 
+            {
+               // Phase space
+               fvhPtmRapTofPnt[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+               // PLab
+               fvhPlabTofPnt[0]->Fill( pMcTrk->GetP() );
+            } // else of if( -1 < iPartIdx )
+      } // if( -1 == pMcTrk->GetMotherId() )
+         else
+         {
+            // secondary track
+            if( -1 < iPartIdx )
+            {
+               // Phase space
+               fvhPtmRapSecTofPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+               // PLab
+               fvhPlabSecTofPnt[iPartIdx]->Fill( pMcTrk->GetP() );
+            } // if( -1 < iPartIdx )
+               else 
+               {
+                  // Phase space
+                  fvhPtmRapSecTofPnt[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                  // PLab
+                  fvhPlabSecTofPnt[0]->Fill( pMcTrk->GetP() );
+               } // else of if( -1 < iPartIdx )
+         } // else of if( -1 == pMcTrk->GetMotherId() )
    } // for (Int_t iPntInd = 0; iPntInd < nTofPoint; iPntInd++ )
  
    // Loop over Digis and map them?
@@ -1396,7 +1608,9 @@ Bool_t CbmTofHitFinderQa::FillHistos()
          Int_t iRpc    = pTofDigi->GetRpc();
          Int_t iCh     = pTofDigi->GetChannel();
          // First Get X/Y position info
-         CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh + 1);
+         if(fGeoHandler->GetGeoVersion() < k14a) 
+            iCh = iCh + 1; //FIXME: Due to change in tofGeoHandler
+         CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
          Int_t iChId =  fTofId->SetDetectorInfo( xDetInfo );
          fChannelInfo = fDigiPar->GetCell( iChId );
 
@@ -1429,6 +1643,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             Int_t iRpc    = pTofDigi->GetRpc();
             Int_t iCh     = pTofDigi->GetChannel();
             // First Get X/Y position info
+            if(fGeoHandler->GetGeoVersion() < k14a) 
+               iCh = iCh + 1; //FIXME: Due to change in tofGeoHandler
             CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh + 1);
             Int_t iChId = fTofId->SetDetectorInfo( xDetInfo );
             fChannelInfo = fDigiPar->GetCell( iChId );
@@ -2060,41 +2276,82 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                iPartIdx = iPart;
                break;
             } // if( kiPartPdgCode[iPart] == iPdgCode )
-         if( -1 < iPartIdx )
+         if( -1 == pMcTrk->GetMotherId() )
          {
-            // Phase space
-            fvhPtmRapTofHit[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
-            // PLab
-            fvhPlabTofHit[iPartIdx]->Fill( pMcTrk->GetP() );
-            if( 1 == vTofPointsId.size() )
-            {
-               fvhPtmRapTofHitSinglePnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
-               fvhPlabTofHitSinglePnt[iPartIdx]->Fill( pMcTrk->GetP() );
-            } // if( 1 == vTofPointsId.size() )
-            if( 1 == vTofTracksId.size() )
-            {
-               fvhPtmRapTofHitSingleTrk[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
-               fvhPlabTofHitSingleTrk[iPartIdx]->Fill( pMcTrk->GetP() );
-            } // if( 1 == vTofTracksId.size() )
-         } // if( -1 < iPartIdx )
-            else 
+            // primary track
+            if( -1 < iPartIdx )
             {
                // Phase space
-               fvhPtmRapTofHit[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+               fvhPtmRapTofHit[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
                // PLab
-               fvhPlabTofHit[0]->Fill( pMcTrk->GetP() );
+               fvhPlabTofHit[iPartIdx]->Fill( pMcTrk->GetP() );
                if( 1 == vTofPointsId.size() )
                {
-                  fvhPtmRapTofHitSinglePnt[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
-                  fvhPlabTofHitSinglePnt[0]->Fill( pMcTrk->GetP() );
+                  fvhPtmRapTofHitSinglePnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                  fvhPlabTofHitSinglePnt[iPartIdx]->Fill( pMcTrk->GetP() );
                } // if( 1 == vTofPointsId.size() )
                if( 1 == vTofTracksId.size() )
                {
-                  fvhPtmRapTofHitSingleTrk[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
-                  fvhPlabTofHitSingleTrk[0]->Fill( pMcTrk->GetP() );
+                  fvhPtmRapTofHitSingleTrk[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                  fvhPlabTofHitSingleTrk[iPartIdx]->Fill( pMcTrk->GetP() );
                } // if( 1 == vTofTracksId.size() )
-            } // else of if( -1 < iPartIdx )
-         
+            } // if( -1 < iPartIdx )
+               else 
+               {
+                  // Phase space
+                  fvhPtmRapTofHit[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                  // PLab
+                  fvhPlabTofHit[0]->Fill( pMcTrk->GetP() );
+                  if( 1 == vTofPointsId.size() )
+                  {
+                     fvhPtmRapTofHitSinglePnt[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                     fvhPlabTofHitSinglePnt[0]->Fill( pMcTrk->GetP() );
+                  } // if( 1 == vTofPointsId.size() )
+                  if( 1 == vTofTracksId.size() )
+                  {
+                     fvhPtmRapTofHitSingleTrk[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                     fvhPlabTofHitSingleTrk[0]->Fill( pMcTrk->GetP() );
+                  } // if( 1 == vTofTracksId.size() )
+               } // else of if( -1 < iPartIdx )
+         } // if( -1 == pMcTrk->GetMotherId() )
+            else
+            {
+               // secondary track
+               if( -1 < iPartIdx )
+               {
+                  // Phase space
+                  fvhPtmRapSecTofHit[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                  // PLab
+                  fvhPlabSecTofHit[iPartIdx]->Fill( pMcTrk->GetP() );
+                  if( 1 == vTofPointsId.size() )
+                  {
+                     fvhPtmRapSecTofHitSinglePnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                     fvhPlabSecTofHitSinglePnt[iPartIdx]->Fill( pMcTrk->GetP() );
+                  } // if( 1 == vTofPointsId.size() )
+                  if( 1 == vTofTracksId.size() )
+                  {
+                     fvhPtmRapSecTofHitSingleTrk[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                     fvhPlabSecTofHitSingleTrk[iPartIdx]->Fill( pMcTrk->GetP() );
+                  } // if( 1 == vTofTracksId.size() )
+               } // if( -1 < iPartIdx )
+                  else 
+                  {
+                     // Phase space
+                     fvhPtmRapSecTofHit[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                     // PLab
+                     fvhPlabSecTofHit[0]->Fill( pMcTrk->GetP() );
+                     if( 1 == vTofPointsId.size() )
+                     {
+                        fvhPtmRapSecTofHitSinglePnt[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                        fvhPlabSecTofHitSinglePnt[0]->Fill( pMcTrk->GetP() );
+                     } // if( 1 == vTofPointsId.size() )
+                     if( 1 == vTofTracksId.size() )
+                     {
+                        fvhPtmRapSecTofHitSingleTrk[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                        fvhPlabSecTofHitSingleTrk[0]->Fill( pMcTrk->GetP() );
+                     } // if( 1 == vTofTracksId.size() )
+               } // else of if( -1 < iPartIdx )
+            } // else of if( -1 == pMcTrk->GetMotherId() )
          // clear storage of point and track IDs
          vTofPointsId.clear();
          vTofTracksId.clear();
@@ -2117,16 +2374,34 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                iPartIdx = iPart;
                break;
             } // if( kiPartPdgCode[iPart] == iPdgCode )
-         if( -1 < iPartIdx )
+         if( -1 == pMcTrk->GetMotherId() )
          {
+            // primary track
+            if( -1 < iPartIdx )
+            {
                fvhPtmRapGenTrkTofHit[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
                fvhPlabGenTrkTofhit[iPartIdx]->Fill( pMcTrk->GetP() );
-         } // if( -1 < iPartIdx )
-            else 
-            {
+            } // if( -1 < iPartIdx )
+               else 
+               {
                   fvhPtmRapGenTrkTofHit[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
                   fvhPlabGenTrkTofhit[0]->Fill( pMcTrk->GetP() );
-            } // else of if( -1 < iPartIdx )
+               } // else of if( -1 < iPartIdx )
+         } // if( -1 == pMcTrk->GetMotherId() )
+            else
+            {
+               // secondary track
+               if( -1 < iPartIdx )
+               {
+                  fvhPtmRapSecGenTrkTofHit[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                  fvhPlabSecGenTrkTofhit[iPartIdx]->Fill( pMcTrk->GetP() );
+               } // if( -1 < iPartIdx )
+                  else 
+                  {
+                     fvhPtmRapSecGenTrkTofHit[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+                     fvhPlabSecGenTrkTofhit[0]->Fill( pMcTrk->GetP() );
+                  } // else of if( -1 < iPartIdx )
+            } // else of if( -1 == pMcTrk->GetMotherId() )
       } // if( kTRUE == vbTrackHasHit[iTrkId] )
    } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
    vbTrackHasHit.clear();
@@ -2609,6 +2884,32 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
          fvhPlabGenTrkTofPnt[iPartIdx]->Write();
          fvhPlabGenTrkTofhit[iPartIdx]->Write();
       } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
+      
+      TDirectory *cdPhysMapSec = fHist->mkdir( "PhysMapSec" );
+      cdPhysMapSec->cd();    // make the "PhysMap" directory the current directory
+         // Physics coord mapping, 1 per particle type
+      for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
+      {
+            // Phase space
+         fvhPtmRapSecGenTrk[iPartIdx]->Write();
+         fvhPtmRapSecStsPnt[iPartIdx]->Write();
+         fvhPtmRapSecTofPnt[iPartIdx]->Write();
+         fvhPtmRapSecTofHit[iPartIdx]->Write();
+         fvhPtmRapSecTofHitSinglePnt[iPartIdx]->Write();
+         fvhPtmRapSecTofHitSingleTrk[iPartIdx]->Write();
+            // PLab
+         fvhPlabSecGenTrk[iPartIdx]->Write();
+         fvhPlabSecStsPnt[iPartIdx]->Write();
+         fvhPlabSecTofPnt[iPartIdx]->Write();
+         fvhPlabSecTofHit[iPartIdx]->Write();
+         fvhPlabSecTofHitSinglePnt[iPartIdx]->Write();
+         fvhPlabSecTofHitSingleTrk[iPartIdx]->Write();
+         // MC Tracks losses 
+         fvhPtmRapSecGenTrkTofPnt[iPartIdx]->Write();
+         fvhPtmRapSecGenTrkTofHit[iPartIdx]->Write();
+         fvhPlabSecGenTrkTofPnt[iPartIdx]->Write();
+         fvhPlabSecGenTrkTofhit[iPartIdx]->Write();
+      } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    } // if( kFALSE == fbNormHistGenMode )
 
    gDirectory->cd( oldir->GetPath() );
@@ -2788,6 +3089,27 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
       delete fvhPtmRapGenTrkTofHit[iPartIdx];    
       delete fvhPlabGenTrkTofPnt[iPartIdx];
       delete fvhPlabGenTrkTofhit[iPartIdx]; 
+      
+      // Secondary tracks
+         // Phase space
+      delete fvhPtmRapSecGenTrk[iPartIdx];
+      delete fvhPtmRapSecStsPnt[iPartIdx];
+      delete fvhPtmRapSecTofPnt[iPartIdx];
+      delete fvhPtmRapSecTofHit[iPartIdx];
+      delete fvhPtmRapSecTofHitSinglePnt[iPartIdx];
+      delete fvhPtmRapSecTofHitSingleTrk[iPartIdx];
+         // PLab
+      delete fvhPlabSecGenTrk[iPartIdx];
+      delete fvhPlabSecStsPnt[iPartIdx];
+      delete fvhPlabSecTofPnt[iPartIdx];
+      delete fvhPlabSecTofHit[iPartIdx];
+      delete fvhPlabSecTofHitSinglePnt[iPartIdx];
+      delete fvhPlabSecTofHitSingleTrk[iPartIdx];
+         // MC Tracks losses 
+      delete fvhPtmRapSecGenTrkTofPnt[iPartIdx];
+      delete fvhPtmRapSecGenTrkTofHit[iPartIdx];    
+      delete fvhPlabSecGenTrkTofPnt[iPartIdx];
+      delete fvhPlabSecGenTrkTofhit[iPartIdx]; 
    } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
          // Phase space
    fvhPtmRapGenTrk.clear();
@@ -2808,6 +3130,27 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    fvhPtmRapGenTrkTofHit.clear();
    fvhPlabGenTrkTofPnt.clear();
    fvhPlabGenTrkTofhit.clear();
+   
+   // Secondary tracks
+         // Phase space
+   fvhPtmRapSecGenTrk.clear();
+   fvhPtmRapSecStsPnt.clear();
+   fvhPtmRapSecTofPnt.clear();
+   fvhPtmRapSecTofHit.clear();
+   fvhPtmRapSecTofHitSinglePnt.clear();
+   fvhPtmRapSecTofHitSingleTrk.clear();
+         // PLab 
+   fvhPlabSecGenTrk.clear();
+   fvhPlabSecStsPnt.clear();
+   fvhPlabSecTofPnt.clear();
+   fvhPlabSecTofHit.clear();
+   fvhPlabSecTofHitSinglePnt.clear();
+   fvhPlabSecTofHitSingleTrk.clear();
+         // MC Tracks losses      
+   fvhPtmRapSecGenTrkTofPnt.clear();
+   fvhPtmRapSecGenTrkTofHit.clear();
+   fvhPlabSecGenTrkTofPnt.clear();
+   fvhPlabSecGenTrkTofhit.clear();
    
    return kTRUE;
 }

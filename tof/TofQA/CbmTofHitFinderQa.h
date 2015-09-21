@@ -253,25 +253,48 @@ class CbmTofHitFinderQa : public FairTask {
       
          // Physics coord mapping, 1 per particle type
             // Phase space
+               // Primary tracks
       std::vector<TH2 *> fvhPtmRapGenTrk;
       std::vector<TH2 *> fvhPtmRapStsPnt;
       std::vector<TH2 *> fvhPtmRapTofPnt;
       std::vector<TH2 *> fvhPtmRapTofHit;
       std::vector<TH2 *> fvhPtmRapTofHitSinglePnt;
       std::vector<TH2 *> fvhPtmRapTofHitSingleTrk;
+               // Secondary tracks
+      std::vector<TH2 *> fvhPtmRapSecGenTrk;
+      std::vector<TH2 *> fvhPtmRapSecStsPnt;
+      std::vector<TH2 *> fvhPtmRapSecTofPnt;
+      std::vector<TH2 *> fvhPtmRapSecTofHit;
+      std::vector<TH2 *> fvhPtmRapSecTofHitSinglePnt;
+      std::vector<TH2 *> fvhPtmRapSecTofHitSingleTrk;
+      
             // PLab
+               // Primary tracks
       std::vector<TH1 *> fvhPlabGenTrk;
       std::vector<TH1 *> fvhPlabStsPnt;
       std::vector<TH1 *> fvhPlabTofPnt;
       std::vector<TH1 *> fvhPlabTofHit;
       std::vector<TH1 *> fvhPlabTofHitSinglePnt;
       std::vector<TH1 *> fvhPlabTofHitSingleTrk;
+               // Secondary tracks
+      std::vector<TH1 *> fvhPlabSecGenTrk;
+      std::vector<TH1 *> fvhPlabSecStsPnt;
+      std::vector<TH1 *> fvhPlabSecTofPnt;
+      std::vector<TH1 *> fvhPlabSecTofHit;
+      std::vector<TH1 *> fvhPlabSecTofHitSinglePnt;
+      std::vector<TH1 *> fvhPlabSecTofHitSingleTrk;
       
          // MC Tracks losses
+            // Primary tracks
       std::vector<TH2 *> fvhPtmRapGenTrkTofPnt;
       std::vector<TH2 *> fvhPtmRapGenTrkTofHit;
       std::vector<TH1 *> fvhPlabGenTrkTofPnt;
       std::vector<TH1 *> fvhPlabGenTrkTofhit;
+            // Secondary tracks
+      std::vector<TH2 *> fvhPtmRapSecGenTrkTofPnt;
+      std::vector<TH2 *> fvhPtmRapSecGenTrkTofHit;
+      std::vector<TH1 *> fvhPlabSecGenTrkTofPnt;
+      std::vector<TH1 *> fvhPlabSecGenTrkTofhit;
 
       ClassDef(CbmTofHitFinderQa, 1);
 };
