@@ -177,7 +177,18 @@ Bool_t CbmTofDigiBdfPar::getParams(FairParamList* l)
    for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
    {
       fdSigVel[iSmType].Set( fiNbRpc[iSmType] );
-      if ( ! l->fill( Form("SigVel%03d", iSmType), &(fdSigVel[iSmType]) ) ) return kFALSE;
+      if ( ! l->fill( Form("SigVel%03d", iSmType), &(fdSigVel[iSmType]) ) ) 
+      {
+         LOG(WARNING)<<"CbmTofDigiBdfPar::getParams => parameter "
+                     <<Form("SigVel%03d", iSmType) 
+                     <<" not found in the text file. "
+                     <<"This is normal for geometries < 14a but may indicate file corruption "
+                     <<" for newer geometries. Values are set to default 0.0 cm/ps."
+                     <<FairLogger::endl;
+         for( Int_t iRpc = 0; iRpc < fiNbRpc[iSmType]; iRpc++)
+            fdSigVel[iSmType].SetAt( 0.0, iRpc);    
+         //return kFALSE;
+      } // if ( ! l->fill( Form("SigVel%03d", iSmType), &(fdSigVel[iSmType]) ) ) 
    } // for( Int_t iSmType = 0; iSmType < fiNbSmTypes; iSmType ++)
 
    fiNbCh.resize(fiNbSmTypes);
