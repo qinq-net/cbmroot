@@ -72,6 +72,7 @@ public:
   Double_t OpeningAngle()         const { return fD1.Angle(fD2.Vect());                    }
   Double_t DeltaEta()             const { return TMath::Abs(fD1.Eta()-fD2.Eta());          }
   Double_t DeltaPhi()             const { return fD1.DeltaPhi(fD2);                        }
+  Double_t DaughtersP()           const { return fD1.P()*fD2.P();                          }
 
   // calculate cos(theta*) and phi* in HE and CS pictures
   void GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double_t &thetaCS, Double_t &phiCS) const;

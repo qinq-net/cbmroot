@@ -103,6 +103,7 @@ public:
   virtual Double_t DeviationDaughtersXY() const { return -999.;     }
   virtual Double_t DeltaEta()             const { return -999.;     }
   virtual Double_t DeltaPhi()             const { return -999.;     }
+  virtual Double_t DaughtersP()           const { return -999.;     }
 
   // calculate cos(theta*) and phi* in HE and CS pictures
   virtual void GetThetaPhiCM(Double_t &thetaHE, Double_t &phiHE, Double_t &thetaCS, Double_t &phiCS) const = 0;

@@ -32,6 +32,7 @@ const char* PairAnalysisSignalMC::fgkSignals[kNSignals][2]= {  //default signal 
   {"EtaDalitz",      "#eta_{Dalitz}"},
   {"Eta",            "#eta"},
   {"Pi0Dalitz",      "#pi^{0}_{Dalitz}"},
+  {"Pi0Gamma",       "#pi^{0}"},
   {"Pi0",            "#pi^{0}"},
   {"InclElePM",      "e^{+}e^{-} (incl.)"},
   {"DeltaElectron",  "#delta rays"},
@@ -55,12 +56,16 @@ PairAnalysisSignalMC::PairAnalysisSignalMC() :
   fMother2(0),
   fGrandMother1(0),
   fGrandMother2(0),
+  fGreatGrandMother1(0),
+  fGreatGrandMother2(0),
   fLeg1Exclude(kFALSE),      
   fLeg2Exclude(kFALSE),         
   fMother1Exclude(kFALSE),       
   fMother2Exclude(kFALSE),   
   fGrandMother1Exclude(kFALSE),
   fGrandMother2Exclude(kFALSE),
+  fGreatGrandMother1Exclude(kFALSE),
+  fGreatGrandMother2Exclude(kFALSE),
   fLeg1Source(kDontCare),
   fLeg2Source(kDontCare),
   fMother1Source(kDontCare),
@@ -73,6 +78,8 @@ PairAnalysisSignalMC::PairAnalysisSignalMC() :
   fCheckBothChargesMother2(kFALSE),
   fCheckBothChargesGrandMother1(kFALSE),
   fCheckBothChargesGrandMother2(kFALSE),
+  fCheckBothChargesGreatGrandMother1(kFALSE),
+  fCheckBothChargesGreatGrandMother2(kFALSE),
   fCheckGEANTProcess(kFALSE),
   fMothersRelation(kUndefined),
   fGEANTProcess(kPPrimary),
@@ -99,12 +106,16 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(const Char_t* name, const Char_t* tit
   fMother2(0),
   fGrandMother1(0),
   fGrandMother2(0),
+  fGreatGrandMother1(0),
+  fGreatGrandMother2(0),
   fLeg1Exclude(kFALSE),      
   fLeg2Exclude(kFALSE),         
   fMother1Exclude(kFALSE),       
   fMother2Exclude(kFALSE),   
   fGrandMother1Exclude(kFALSE),
   fGrandMother2Exclude(kFALSE),
+  fGreatGrandMother1Exclude(kFALSE),
+  fGreatGrandMother2Exclude(kFALSE),
   fLeg1Source(kDontCare),
   fLeg2Source(kDontCare),
   fMother1Source(kDontCare),
@@ -117,6 +128,8 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(const Char_t* name, const Char_t* tit
   fCheckBothChargesMother2(kFALSE),
   fCheckBothChargesGrandMother1(kFALSE),
   fCheckBothChargesGrandMother2(kFALSE),
+  fCheckBothChargesGreatGrandMother1(kFALSE),
+  fCheckBothChargesGreatGrandMother2(kFALSE),
   fCheckGEANTProcess(kFALSE),
   fMothersRelation(kUndefined),
   fGEANTProcess(kPPrimary),
@@ -142,12 +155,16 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
   fMother2(0),
   fGrandMother1(0),
   fGrandMother2(0),
+  fGreatGrandMother1(0),
+  fGreatGrandMother2(0),
   fLeg1Exclude(kFALSE),      
   fLeg2Exclude(kFALSE),         
   fMother1Exclude(kFALSE),       
   fMother2Exclude(kFALSE),   
   fGrandMother1Exclude(kFALSE),
   fGrandMother2Exclude(kFALSE),
+  fGreatGrandMother1Exclude(kFALSE),
+  fGreatGrandMother2Exclude(kFALSE),
   fLeg1Source(kDontCare),
   fLeg2Source(kDontCare),
   fMother1Source(kDontCare),
@@ -160,6 +177,8 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
   fCheckBothChargesMother2(kFALSE),
   fCheckBothChargesGrandMother1(kFALSE),
   fCheckBothChargesGrandMother2(kFALSE),
+  fCheckBothChargesGreatGrandMother1(kFALSE),
+  fCheckBothChargesGreatGrandMother2(kFALSE),
   fCheckGEANTProcess(kFALSE),
   fMothersRelation(kUndefined),
   fGEANTProcess(kPPrimary),
@@ -188,6 +207,8 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
     fMother1=22; fMother2=22; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
     fMother1Source=kSecondary; fMother2Source=kSecondary;
     fMothersRelation=kSame;
+    // fGrandMother1=111; fGrandMother2=111;
+    // fGrandMother1Exclude=kTRUE; fGrandMother1Exclude=111;
     SetGEANTProcess(kPPair);
     break;
   case kRho0:
@@ -226,7 +247,7 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
     fMother1=221; fMother2=221;
     fMothersRelation=kSame;
     fDalitz=kIsDalitz; fDalitzPdg=22;
-    SetGEANTProcess(kPPrimary); //pluto
+    //    SetGEANTProcess(kPPrimary); //pluto
     break;
   case kEta:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
@@ -240,6 +261,14 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
     fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
     fMother1=111; fMother2=111; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
     fMothersRelation=kSame;
+    //    SetGEANTProcess(kPUserDefined);
+    break;
+  case kPi0Gamma:
+    SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
+    fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
+    fMother1=22; fMother2=22; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
+    fMothersRelation=kSame;
+    fGrandMother1=111; fGrandMother2=111;
     //    SetGEANTProcess(kPUserDefined);
     break;
   case kPi0Dalitz:

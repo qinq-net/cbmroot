@@ -138,6 +138,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"LegDistanceXY",          "d^{legs}_{xy}",                                      "(cm)"},
   {"DeltaEta",               "#Delta #eta",                                        ""},
   {"DeltaPhi",               "#Delta #phi",                                        ""},
+  {"LegsP",                  "#sqrt{#it{p}^{leg1}#upoint#it{p}^{leg2}}",           "(GeV/#it{c})"},
   {"Merr",                   "m_{inv} error",                                      "(GeV/#it{c}^{2})"},
   {"DCA",                    "#it{dca}",                                           "(cm)"},
   {"PairType",               "PairType",                                           ""},

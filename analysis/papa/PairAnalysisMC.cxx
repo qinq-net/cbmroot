@@ -104,7 +104,7 @@ Bool_t PairAnalysisMC::ConnectMCEvent()
     return kFALSE;
   }
   else fHasMC=kTRUE;
-  printf("PairAnalysisMC::ConnectMCEvent: size of mc array: %04d \n",fMCArray->GetSize());
+  //  printf("PairAnalysisMC::ConnectMCEvent: size of mc array: %04d \n",fMCArray->GetSize());
   return kTRUE;
 }
 
@@ -656,11 +656,11 @@ Bool_t PairAnalysisMC::IsMCTruth(Int_t label, PairAnalysisSignalMC* signalMC, In
     if( !CheckDalitzDecision(mLabel, signalMC) ) return kFALSE;
   }
 
-  // check the grandmother
+  // check the GRANDMOTHER
   CbmMCTrack* mcGrandMother=0x0;
+  Int_t gmLabel = -1;
   if(signalMC->GetGrandMotherPDG(branch)   !=0 ||
      signalMC->GetGrandMotherSource(branch)!=PairAnalysisSignalMC::kDontCare) {
-    Int_t gmLabel = -1;
     if(mcMother) {
       gmLabel = GetMothersLabel(mLabel);
       mcGrandMother = GetMCTrackFromMCEvent(gmLabel);
@@ -672,6 +672,25 @@ Bool_t PairAnalysisMC::IsMCTruth(Int_t label, PairAnalysisSignalMC* signalMC, In
 		    signalMC->GetGrandMotherPDGexclude(branch),
 		    signalMC->GetCheckBothChargesGrandMothers(branch))) return kFALSE;
     if( !CheckParticleSource(gmLabel, signalMC->GetGrandMotherSource(branch))) return kFALSE;
+  }
+
+  // check the GREAT GRANDMOTHER
+  CbmMCTrack* mcGreatGrandMother=0x0;
+  Int_t ggmLabel = -1;
+    if(signalMC->GetGreatGrandMotherPDG(branch)   !=0/* ||
+     signalMC->GetGreatGrandMotherSource(branch)!=PairAnalysisSignalMC::kDontCare
+						   */) {
+    if(mcGrandMother) {
+      ggmLabel = GetMothersLabel(gmLabel);
+      mcGreatGrandMother = GetMCTrackFromMCEvent(ggmLabel);
+    }
+    if( !mcGreatGrandMother && !signalMC->GetGreatGrandMotherPDGexclude(branch)) return kFALSE;
+
+    if( !ComparePDG((mcGreatGrandMother ? mcGreatGrandMother->GetPdgCode() : 0),
+		    signalMC->GetGreatGrandMotherPDG(branch),
+		    signalMC->GetGreatGrandMotherPDGexclude(branch),
+		    signalMC->GetCheckBothChargesGreatGrandMothers(branch))) return kFALSE;
+    //    if( !CheckParticleSource(gmLabel, signalMC->GetGreatGrandMotherSource(branch))) return kFALSE;
   }
 
   return kTRUE;
@@ -714,6 +733,10 @@ Bool_t PairAnalysisMC::IsMCTruth(const PairAnalysisPair* pair, const PairAnalysi
   // grand-mothers
   CbmMCTrack* mcG1 = 0x0;
   CbmMCTrack* mcG2 = 0x0;
+
+  // great grand-mothers
+  CbmMCTrack* mcGG1 = 0x0;
+  CbmMCTrack* mcGG2 = 0x0;
   
   // make direct(1-1 and 2-2) and cross(1-2 and 2-1) comparisons for the whole branch
   Bool_t directTerm = kTRUE;
@@ -764,6 +787,27 @@ Bool_t PairAnalysisMC::IsMCTruth(const PairAnalysisPair* pair, const PairAnalysi
     directTerm = directTerm && (mcG2 || signalMC->GetGrandMotherPDGexclude(2))
                  && ComparePDG((mcG2 ? mcG2->GetPdgCode() : 0),signalMC->GetGrandMotherPDG(2),signalMC->GetGrandMotherPDGexclude(2),signalMC->GetCheckBothChargesGrandMothers(2))
                  && CheckParticleSource(labelG2, signalMC->GetGrandMotherSource(2));
+  }
+
+  // great grand-mothers
+  Int_t labelGG1 = -1;
+  if(signalMC->GetGreatGrandMotherPDG(1)!=0
+     /* || signalMC->GetGreatGrandMotherSource(1)!=PairAnalysisSignalMC::kDontCare*/) {
+    labelGG1 = GetMothersLabel(labelG1);
+    if(mcG1 && labelGG1>-1) mcGG1 = GetMCTrackFromMCEvent(labelGG1);
+    directTerm = directTerm && (mcGG1 || signalMC->GetGreatGrandMotherPDGexclude(1))
+      && ComparePDG((mcGG1 ? mcGG1->GetPdgCode() : 0),signalMC->GetGreatGrandMotherPDG(1),signalMC->GetGreatGrandMotherPDGexclude(1),signalMC->GetCheckBothChargesGreatGrandMothers(1)) ;
+    //                 && CheckParticleSource(labelGG1, signalMC->GetGreatGrandMotherSource(1));
+  }
+
+  Int_t labelGG2 = -1;
+  if(signalMC->GetGreatGrandMotherPDG(2)!=0
+     /* || signalMC->GetGreatGrandMotherSource(2)!=PairAnalysisSignalMC::kDontCare*/) {
+    labelGG2 = GetMothersLabel(labelG2);
+    if(mcG2 && labelGG2>-1) mcGG2 = GetMCTrackFromMCEvent(labelGG2);
+    directTerm = directTerm && (mcGG2 || signalMC->GetGreatGrandMotherPDGexclude(2))
+      && ComparePDG((mcGG2 ? mcGG2->GetPdgCode() : 0),signalMC->GetGreatGrandMotherPDG(2),signalMC->GetGreatGrandMotherPDGexclude(2),signalMC->GetCheckBothChargesGreatGrandMothers(2)) ;
+    //                 && CheckParticleSource(labelG2, signalMC->GetGreatGrandMotherSource(2));
   }
 
   // Cross term
@@ -821,6 +865,29 @@ Bool_t PairAnalysisMC::IsMCTruth(const PairAnalysisPair* pair, const PairAnalysi
     crossTerm = crossTerm && (mcG1 || signalMC->GetGrandMotherPDGexclude(2))
                 && ComparePDG((mcG1 ? mcG1->GetPdgCode() : 0),signalMC->GetGrandMotherPDG(2),signalMC->GetGrandMotherPDGexclude(2),signalMC->GetCheckBothChargesGrandMothers(2))
                 && CheckParticleSource(labelG1, signalMC->GetGrandMotherSource(2));
+  }
+
+  // great grand-mothers
+  if(signalMC->GetGreatGrandMotherPDG(1)!=0
+     /*|| signalMC->GetGreatGrandMotherSource(1)!=PairAnalysisSignalMC::kDontCare*/) {
+    if(!mcGG2 && mcG2) {
+      labelGG2 = GetMothersLabel(labelG2);
+      if(labelGG2>-1) mcGG2 = GetMCTrackFromMCEvent(labelGG2);
+    }
+    crossTerm = crossTerm && (mcGG2 || signalMC->GetGreatGrandMotherPDGexclude(1))
+      && ComparePDG((mcGG2 ? mcGG2->GetPdgCode() : 0),signalMC->GetGreatGrandMotherPDG(1),signalMC->GetGreatGrandMotherPDGexclude(1),signalMC->GetCheckBothChargesGreatGrandMothers(1)) ;
+    //                && CheckParticleSource(labelG2, signalMC->GetGreatGrandMotherSource(1));
+  }
+
+  if(signalMC->GetGreatGrandMotherPDG(2)!=0
+     /* || signalMC->GetGreatGrandMotherSource(2)!=PairAnalysisSignalMC::kDontCare*/) {
+    if(!mcGG1 && mcG1) {
+      labelGG1 = GetMothersLabel(labelG1);
+      if(labelGG1>-1) mcGG1 = GetMCTrackFromMCEvent(labelGG1);
+    }
+    crossTerm = crossTerm && (mcGG1 || signalMC->GetGreatGrandMotherPDGexclude(2))
+      && ComparePDG((mcGG1 ? mcGG1->GetPdgCode() : 0),signalMC->GetGreatGrandMotherPDG(2),signalMC->GetGreatGrandMotherPDGexclude(2),signalMC->GetCheckBothChargesGreatGrandMothers(2)) ;
+    //                && CheckParticleSource(labelG1, signalMC->GetGreatGrandMotherSource(2));
   }
 
   Bool_t motherRelation = kTRUE;

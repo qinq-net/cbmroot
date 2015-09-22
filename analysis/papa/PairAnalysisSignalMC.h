@@ -74,7 +74,8 @@ class PairAnalysisSignalMC : public TNamed {
   enum EDalitz {      kWhoCares=0, kIsDalitz, kIsNotDalitz};
   enum EDefinedSignal {kInclJpsi=0, kConversion, kRho0,
 		       kOmegaDalitz, kOmega, kPhi,
-		       kEtaDalitz, kEta, kPi0Dalitz, kPi0,
+		       kEtaDalitz, kEta,
+		       kPi0Dalitz, kPi0Gamma, kPi0,
 		       kInclElePM,
 		       kDeltaElectron,
 		       kPrimElectron, kPrimMuon, kPrimPion, kPrimKaon, kPrimProton,
@@ -86,12 +87,14 @@ class PairAnalysisSignalMC : public TNamed {
   PairAnalysisSignalMC(EDefinedSignal defaultSignal);
   virtual ~PairAnalysisSignalMC();
   
-  void SetLegPDGs(Int_t pdg1, Int_t pdg2, Bool_t exclude1=kFALSE, Bool_t exclude2=kFALSE)  
+  void SetLegPDGs(Int_t pdg1, Int_t pdg2, Bool_t exclude1=kFALSE, Bool_t exclude2=kFALSE)
     {fLeg1 = pdg1; fLeg2 = pdg2; fLeg1Exclude=exclude1; fLeg2Exclude=exclude2;}
-  void SetMotherPDGs(Int_t pdg1, Int_t pdg2, Bool_t exclude1=kFALSE, Bool_t exclude2=kFALSE)              
+  void SetMotherPDGs(Int_t pdg1, Int_t pdg2, Bool_t exclude1=kFALSE, Bool_t exclude2=kFALSE)
     {fMother1 = pdg1; fMother2 = pdg2; fMother1Exclude=exclude1; fMother2Exclude=exclude2;}
-  void SetGrandMotherPDGs(Int_t pdg1, Int_t pdg2, Bool_t exclude1=kFALSE, Bool_t exclude2=kFALSE)         
+  void SetGrandMotherPDGs(Int_t pdg1, Int_t pdg2, Bool_t exclude1=kFALSE, Bool_t exclude2=kFALSE)
     {fGrandMother1 = pdg1; fGrandMother2 = pdg2; fGrandMother1Exclude=exclude1; fGrandMother2Exclude=exclude2;}
+  void SetGreatGrandMotherPDGs(Int_t pdg1, Int_t pdg2, Bool_t exclude1=kFALSE, Bool_t exclude2=kFALSE)
+    {fGreatGrandMother1 = pdg1; fGreatGrandMother2 = pdg2; fGreatGrandMother1Exclude=exclude1; fGreatGrandMother2Exclude=exclude2;}
   void SetLegSources(ESource s1, ESource s2)                       {fLeg1Source = s1;                      fLeg2Source = s2;}
   void SetMotherSources(ESource s1, ESource s2)                    {fMother1Source = s1;                   fMother2Source = s2;}
   void SetGrandMotherSources(ESource s1, ESource s2)               {fGrandMother1Source = s1;              fGrandMother2Source = s2;}
@@ -107,15 +110,18 @@ class PairAnalysisSignalMC : public TNamed {
   Int_t GetLegPDG(Int_t branch)                        const {return (branch==1 ? fLeg1 : fLeg2);}
   Int_t GetMotherPDG(Int_t branch)                     const {return (branch==1 ? fMother1 : fMother2);}
   Int_t GetGrandMotherPDG(Int_t branch)                const {return (branch==1 ? fGrandMother1 : fGrandMother2);}
+  Int_t GetGreatGrandMotherPDG(Int_t branch)                const {return (branch==1 ? fGreatGrandMother1 : fGreatGrandMother2);}
   Bool_t GetLegPDGexclude(Int_t branch)                const {return (branch==1 ? fLeg1Exclude : fLeg2Exclude);}
   Bool_t GetMotherPDGexclude(Int_t branch)             const {return (branch==1 ? fMother1Exclude : fMother2Exclude);}
   Bool_t GetGrandMotherPDGexclude(Int_t branch)        const {return (branch==1 ? fGrandMother1Exclude : fGrandMother2Exclude);}
+  Bool_t GetGreatGrandMotherPDGexclude(Int_t branch)        const {return (branch==1 ? fGreatGrandMother1Exclude : fGreatGrandMother2Exclude);}
   ESource GetLegSource(Int_t branch)                   const {return (branch==1 ? fLeg1Source : fLeg2Source);}
   ESource GetMotherSource(Int_t branch)                const {return (branch==1 ? fMother1Source : fMother2Source);}
   ESource GetGrandMotherSource(Int_t branch)           const {return (branch==1 ? fGrandMother1Source : fGrandMother2Source);}
   Bool_t GetCheckBothChargesLegs(Int_t branch)         const {return (branch==1 ? fCheckBothChargesLeg1 : fCheckBothChargesLeg2);}
   Bool_t GetCheckBothChargesMothers(Int_t branch)      const {return (branch==1 ? fCheckBothChargesMother1 : fCheckBothChargesMother2);}
   Bool_t GetCheckBothChargesGrandMothers(Int_t branch) const {return (branch==1 ? fCheckBothChargesGrandMother1 : fCheckBothChargesGrandMother2);}
+  Bool_t GetCheckBothChargesGreatGrandMothers(Int_t branch) const {return (branch==1 ? fCheckBothChargesGreatGrandMother1 : fCheckBothChargesGreatGrandMother2);}
   EBranchRelation GetMothersRelation()                 const {return fMothersRelation;}
   TMCProcess GetGEANTProcess()                         const {return fGEANTProcess;}
   Bool_t GetCheckGEANTProcess()                        const {return fCheckGEANTProcess;}
@@ -126,7 +132,7 @@ class PairAnalysisSignalMC : public TNamed {
   void SetJpsiRadiative(EJpsiRadiativ rad) { fJpsiRadiative=rad;    }
   EJpsiRadiativ GetJpsiRadiative() const   { return fJpsiRadiative; }
 
-  void SetIsDalitz(EDalitz dal, Int_t pdg) { fDalitz=dal; fDalitzPdg=pdg;   }
+  void SetIsDalitz(EDalitz dal, Int_t pdg=0) { fDalitz=dal; fDalitzPdg=pdg;   }
   EDalitz GetDalitz() const   { return fDalitz; }
   Int_t   GetDalitzPdg()   const   { return fDalitzPdg; }
 
@@ -140,6 +146,8 @@ class PairAnalysisSignalMC : public TNamed {
   Int_t fMother2;                     // mother 2 PDG
   Int_t fGrandMother1;                // grandmother 1 PDG
   Int_t fGrandMother2;                // grandmother 2 PDG
+  Int_t fGreatGrandMother1;           // great grandmother 1 PDG
+  Int_t fGreatGrandMother2;           // great grandmother 2 PDG
 
   // Toggle on/off the use of the PDG codes as inclusion or exclusion
   // Example: if fLeg1=211 and fLeg1Exclude=kTRUE than all codes will be accepted for leg 1 with
@@ -150,6 +158,8 @@ class PairAnalysisSignalMC : public TNamed {
   Bool_t fMother2Exclude;             // mother 2 
   Bool_t fGrandMother1Exclude;        // grandmother 1 
   Bool_t fGrandMother2Exclude;        // grandmother 2 
+  Bool_t fGreatGrandMother1Exclude;   // great grandmother 1 
+  Bool_t fGreatGrandMother2Exclude;   // great grandmother 2 
     
   // Particle sources
   ESource fLeg1Source;                // leg 1 source
@@ -166,6 +176,8 @@ class PairAnalysisSignalMC : public TNamed {
   Bool_t fCheckBothChargesMother2;      //                mother 2
   Bool_t fCheckBothChargesGrandMother1; //              grand mother 1
   Bool_t fCheckBothChargesGrandMother2; //              grand mother 2
+  Bool_t fCheckBothChargesGreatGrandMother1; //         great grand mother 1
+  Bool_t fCheckBothChargesGreatGrandMother2; //         great grand mother 2
   Bool_t fCheckGEANTProcess;            //              GEANT process
 
   EBranchRelation fMothersRelation;   // mother 1&2 relation (same, different or whatever)

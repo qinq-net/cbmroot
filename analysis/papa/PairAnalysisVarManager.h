@@ -198,6 +198,7 @@ public:
     kLegDistXY,              // distance of the legs in XY
     kDeltaEta,         // Absolute value of Delta Eta for the legs
     kDeltaPhi,           // Absolute value of Delta Phi for the legs
+    kLegsP,                  // sqrt of p_leg1*p_leg2
     kMerr,                   // error of mass calculation
     kDCA,                    // distance of closest approach TODO: not implemented yet
     kPairType,               // type of the pair, like like sign ++ unlikesign ...
@@ -1033,6 +1034,7 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisPair(const PairAnalysisPa
   if(Req(kLegDistXY)) values[kLegDistXY]    = pair->DistanceDaughtersXY();
   if(Req(kDeltaEta))  values[kDeltaEta]     = pair->DeltaEta();
   if(Req(kDeltaPhi))  values[kDeltaPhi]     = pair->DeltaPhi();
+  if(Req(kLegsP))     values[kLegsP]        = TMath::Sqrt(pair->DaughtersP());
 
   // Armenteros-Podolanski quantities
   if(Req(kArmAlpha)) values[kArmAlpha]     = pair->GetArmAlpha();

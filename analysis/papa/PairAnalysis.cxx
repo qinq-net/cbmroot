@@ -230,7 +230,7 @@ void PairAnalysis::Init()
   if (fCutQA) {
     fQAmonitor = new PairAnalysisCutQA(Form("QAcuts_%s",GetName()),"QAcuts");
     fQAmonitor->AddTrackFilter(&fTrackFilter);
-    fQAmonitor->AddPrePairFilter(&fPairPreFilter);
+    //    fQAmonitor->AddPrePairFilter(&fPairPreFilter);
     fQAmonitor->AddTrackFilter2(&fPairPreFilterLegs);
     if(!fNoPairing) fQAmonitor->AddPairFilter(&fPairFilter);
     fQAmonitor->AddEventFilter(&fEventFilter);
@@ -1027,8 +1027,11 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
       for(Int_t isig=0; isig<fSignalsMC->GetEntriesFast(); isig++) {
 	PairAnalysisSignalMC *sig=(PairAnalysisSignalMC*)fSignalsMC->At(isig);
 	if( papaMC->IsMCTruth(particle,sig,1) || papaMC->IsMCTruth(particle,sig,2) ) {
-	  //   printf("signal weight for %s is %f \n",sig->GetName(),sig->GetWeight());
-	  if(sig->GetWeight() != 1.0) particle->SetWeight( sig->GetWeight() );
+	  //	  printf("signal weight for %s is %f \n",sig->GetName(),sig->GetWeight());
+	  if(sig->GetWeight() != 1.0) {
+	    particle->SetWeight( sig->GetWeight() );
+	    //	    printf("signal weight for track %p is %f \n",particle,particle->GetWeight());
+	  }
 	}
       }
     }

@@ -276,7 +276,8 @@ TString PairAnalysisHistos::UserHistogram(const char* histClass, TObject* hist)
       //      Printf("SWITCH TO MC: before: %d %s ---->",valType[i],PairAnalysisVarManager::GetValueName(valType[i]));
       valType[i] = PairAnalysisVarManager::GetValueTypeMC(valType[i]);
       // if theres no corresponding MCtruth variable, skip adding this histogram
-      if(valType[i] < PairAnalysisVarManager::kNMaxValues && valType[i]>0) return hist->GetName();
+      //      if(valType[i] < PairAnalysisVarManager::kNMaxValues && valType[i]>0) return hist->GetName();
+      if(valType[i] < PairAnalysisVarManager::kPairMax && valType[i]>0) return hist->GetName();
       // request filling of mc variable
       fUsedVars->SetBitNumber(valType[i],kTRUE);
       //      Printf("after: %d %s",valType[i],PairAnalysisVarManager::GetValueName(valType[i]));
@@ -427,7 +428,7 @@ void PairAnalysisHistos::FillClass(const char* histClass, const Double_t *values
 
   THashList *classTable=(THashList*)fHistoList.FindObject(histClass);
   if (!classTable){
-    Warning("FillClass","Cannot fill class '%s' its not defined.",histClass);
+    //    Warning("FillClass","Cannot fill class '%s' its not defined.",histClass);
     return;
   }
 
