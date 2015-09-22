@@ -12,7 +12,9 @@
 # usage:
 # svn co https://subversion.gsi.de/cbmsoft/cbmroot/trunk $CBMSRCDIR
 # cd $CBMSRCDIR
-# ./autoinstall_framework.sh
+# ./autoinstall_framework.sh dev 0 0 1
+# or
+# ./autoinstall_framework.sh 0 0 1
 # or
 # ./autoinstall_framework.sh 1 1 1
 #-------------------------------------
