@@ -28,9 +28,6 @@ void much_reco(
 	TStopwatch timer;
 	timer.Start();
 
-	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-	gInterpreter->ProcessLine("loadlibs()");
-
 	FairRunAna* run = new FairRunAna();
 	run->SetInputFile(mcFile);
 	run->SetOutputFile(globalRecoFile);
