@@ -32,11 +32,11 @@ void global_reco(Int_t nEvents = 10, // number of events
 
    // Digi files
    TList* parFileList = new TList();
-   TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
-   TObjString trdDigiFile = parDir + "/trd/trd_v14a_3e.digi.par"; // TRD digi file
+   TObjString stsDigiFile(parDir + "/sts/sts_v13d_std.digi.par"); // STS digi file
+   TObjString trdDigiFile(parDir + "/trd/trd_v14a_3e.digi.par"); // TRD digi file
    TString muchDigiFile = parDir + "/much/much_v13f.digi.root"; // MUCH digi file
    TString stsMatBudgetFile = parDir + "/sts/sts_matbudget_v13y.root";
-   TObjString tofDigiFile = parDir + "/tof/tof_v13b.digi.par";// TOF digi file
+   TObjString tofDigiFile(parDir + "/tof/tof_v13b.digi.par");// TOF digi file
 
    // Reconstruction parameters
    TString globalTrackingType = "nn"; // Global tracking type
@@ -56,10 +56,10 @@ void global_reco(Int_t nEvents = 10, // number of events
 		trdHitProducerType = TString(gSystem->Getenv("LIT_TRD_HITPRODUCER_TYPE"));
 		muchHitProducerType = TString(gSystem->Getenv("LIT_MUCH_HITPRODUCER_TYPE"));
 
-		stsDigiFile = TString(gSystem->Getenv("LIT_STS_DIGI"));
-		trdDigiFile = TString(gSystem->Getenv("LIT_TRD_DIGI"));
+		stsDigiFile = TObjString(gSystem->Getenv("LIT_STS_DIGI"));
+		trdDigiFile = TObjString(gSystem->Getenv("LIT_TRD_DIGI"));
 		muchDigiFile = TString(gSystem->Getenv("LIT_MUCH_DIGI"));
-		tofDigiFile = TString(gSystem->Getenv("LIT_TOF_DIGI"));
+		tofDigiFile = TObjString(gSystem->Getenv("LIT_TOF_DIGI"));
 		stsMatBudgetFile = TString(gSystem->Getenv("LIT_STS_MAT_BUDGET_FILE"));
 	}
 
@@ -70,7 +70,7 @@ void global_reco(Int_t nEvents = 10, // number of events
 	timer.Start();
 
 	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-	loadlibs();
+	gInterpreter->ProcessLine("loadlibs()");
 
 	FairRunAna *run = new FairRunAna();
 	if (opt == "all") {

@@ -37,6 +37,9 @@ function run_sim() {
        export LIT_PAR_FILE=${LIT_DIR}/param.delta.0000.root
        ${ROOTSYS}/bin/root -b -q -l "${VMCWORKDIR}/macro/littrack/global_sim.C(20)"
        export LIT_NOF_MVD_DELTA_EVENTS=10
+       export LIT_SETUP=mvd_delta
+   else
+       export LIT_SETUP=mvd_no_delta
    fi
   
    #     NMU+ NMU- NE- NE+ NPI+ NPI- NJPSIMU NJPSIE AU URQMD UNIGEN
@@ -45,6 +48,7 @@ function run_sim() {
 
    export LIT_MC_FILE=${LIT_DIR}/mc.0000.root
    export LIT_PAR_FILE=${LIT_DIR}/param.0000.root
+   
    ${ROOTSYS}/bin/root -b -q -l "${VMCWORKDIR}/macro/littrack/global_sim.C(${nevents})"
 }
 

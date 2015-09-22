@@ -23,11 +23,13 @@ if [ "${setup}" = "electron" ] ; then
    pars=(0    0    0   0   0    0    0       10      0  yes   yes   no)
    set_simulation_parameters ${pars}
    set_default_electron_geometry
+   export LIT_SETUP=electron
 elif [ "${setup}" = "muon" ] ; then
    #     NMU+ NMU- NE- NE+ NPI+ NPI- NJPSIMU NJPSIE AU URQMD UNIGEN PLUTO
    pars=(0    0    0   0   0    0    10       0      0  yes   yes   no)
    set_simulation_parameters ${pars}
    set_default_muon_geometry
+   export LIT_SETUP=muon
 fi
 
 export LIT_STS_HITPRODUCER_TYPE=new

@@ -104,6 +104,8 @@ void global_sim(Int_t nEvents = 10)
 		ecalGeom = TString(gSystem->Getenv("LIT_ECAL_GEOM"));
 		fieldMap = TString(gSystem->Getenv("LIT_FIELD_MAP"));
 		magnetGeom = TString(gSystem->Getenv("LIT_MAGNET_GEOM"));
+
+                setup = TString(gSystem->Getenv("LIT_SETUP"));
 	}
 	// -----   Magnetic field   -----------------------------------------------
 	Double_t fieldZ = 40.; // field center z position
@@ -113,7 +115,11 @@ void global_sim(Int_t nEvents = 10)
 	timer.Start();
 
 	gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
-	loadlibs();
+	gInterpreter->ProcessLine("loadlibs()");
+
+        // Function needed for CTest runtime dependency
+        TString depFile = Remove_CTest_Dependency_File("./", "global_sim" , setup);
+
 
 	FairRunSim* run = new FairRunSim();
 	run->SetName("TGeant3"); // Transport engine
@@ -218,8 +224,10 @@ void global_sim(Int_t nEvents = 10)
 	}
 
 	if (pluto == "yes") {
+#ifndef __CLING__  
 	   FairPlutoGenerator* plutoGen = new FairPlutoGenerator(plutoFile);
        primGen->AddGenerator(plutoGen);
+#endif
 	}
 
 	if (nofJPsiToMuons > 0) {
@@ -354,4 +362,7 @@ void global_sim(Int_t nEvents = 10)
 	cout << "Real time used: " << rtime << "s " << endl;
 	cout << "CPU time used : " << ctime << "s " << endl << endl << endl;
 	// ------------------------------------------------------------------------
+
+        // Function needed for CTest runtime dependency
+        Generate_CTest_Dependency_File(depFile);
 }

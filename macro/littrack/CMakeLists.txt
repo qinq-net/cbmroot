@@ -1,5 +1,10 @@
 GENERATE_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/littrack/commit_tests/run_test.sh)
 
+# Put the .rootrc file into the directory from which root is executed.
+# Otherwise the rootalias file is not loaded
+File(COPY ${CBMROOT_SOURCE_DIR}/macro/include/.rootrc DESTINATION ${CBMROOT_BINARY_DIR}/macro/littrack/commit_tests)
+
+
 # Define the different setups to be tested
 List(APPEND  setup  electron  muon)
 
@@ -20,6 +25,8 @@ ForEach(__setup IN  LISTS  setup)
   Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "420")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${_dep})
+  Set(_FileName_Dependency commit_tests/global_sim_${__setup}_ok)
+  Set_Tests_Properties(${testname} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
  
 EndForEach(__setup IN LISTS setup)
 
@@ -44,6 +51,8 @@ ForEach(__setup_mvd IN  LISTS  setup_mvd)
   Set_Tests_Properties(${testname_mvd} PROPERTIES TIMEOUT "420")
   Set_Tests_Properties(${testname_mvd} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname_mvd} PROPERTIES DEPENDS ${_dep})
+  Set(_FileName_Dependency commit_tests/global_sim_mvd_${__setup_mvd}_ok)
+  Set_Tests_Properties(${testname_mvd} PROPERTIES REQUIRED_FILES ${_FileName_Dependency})
  
 EndForEach(__setup_mvd IN LISTS setup_mvd)
 
