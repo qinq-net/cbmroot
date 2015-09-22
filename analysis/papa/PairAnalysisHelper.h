@@ -25,6 +25,7 @@
 ///class PairAnalysisEventNEW;
 class TFormula;
 class TH1;
+class TObjArray;
 
 namespace PairAnalysisHelper
 {
@@ -52,6 +53,9 @@ namespace PairAnalysisHelper
   // misc
   TString GetDetName(DetectorId det);
   Double_t GetContentMinimum(TH1 *h);
+  Double_t GetContentMaximum(TH1 *h, Bool_t inclErr=kTRUE);
+
+  TObject* FindObjectByTitle(TObjArray *arrhist, TString ref);
 }
 
 #endif

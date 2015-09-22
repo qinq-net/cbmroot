@@ -73,7 +73,7 @@ public:
   // outputs - hist array
   void SetHistogramArray(PairAnalysisHF * const histoarray) { fHistoArray=histoarray; }
   const TObjArray * GetHistogramArray() const { return fHistoArray?fHistoArray->GetHistArray():0x0; }
-  const TObjArray * GetQAHistArray() const { return fQAmonitor?fQAmonitor->GetQAHistArray():0x0; }
+  const THashList * GetQAHistList()     const { return fQAmonitor?fQAmonitor->GetQAHistList():0x0; }
   // outputs - histos
   void SetHistogramManager(PairAnalysisHistos * const histos) { fHistos=histos; }
   PairAnalysisHistos* GetHistoManager() const { return fHistos; }

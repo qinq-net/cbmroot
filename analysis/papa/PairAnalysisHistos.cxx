@@ -878,10 +878,11 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   // output array
   TObjArray *arr=0x0;
   if(optGoff) {
+    Info("DrawSame","graphics option off, collect an array");
     //    arr=(TObjArray*)gROOT->FindObject(Form("%s",histName.Data()));
     arr=(TObjArray*)gROOT->FindObject(GetName());
-    if(arr) arr->Clear();
-    arr = new TObjArray();
+    if(arr) { arr->ls(); arr->Clear(); }
+    else      arr = new TObjArray();
     //    arr->SetName(Form("%s",histName.Data()));
     arr->SetName(GetName());
     arr->SetOwner(kFALSE);
@@ -975,6 +976,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
       PairAnalysisStyler::Style(h,i);
       if(optString.Contains("scat")) h->SetMarkerStyle(kDot);
       if(optString.Contains("e"))    h->SetLineStyle(kSolid);
+      if(optString.Contains("text")) { h->SetLineColor(1); h->SetMarkerColor(1); }
 
       // set geant process labels
       // if(!histName.CompareTo("GeantId")) PairAnalysisHelper::SetGEANTBinLabels(h);
@@ -1085,7 +1087,8 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
       if(optGeant) PairAnalysisHelper::SetGEANTBinLabels(h);
 
       // change name
-      h->SetName(histClass.Data());
+      //      h->SetName(histClass.Data());
+      h->SetTitle(histClass.Data());
       if(optGoff) arr->Add(h);
 
       // draw prepared histogram

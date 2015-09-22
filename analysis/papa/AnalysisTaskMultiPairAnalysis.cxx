@@ -116,7 +116,7 @@ InitStatus AnalysisTaskMultiPairAnalysis::Init()
     papa->Init();
     if (papa->GetHistogramList())    fListHistos.Add(const_cast<THashList*>(papa->GetHistogramList()));
     if (papa->GetHistogramArray())   fListHistos.Add(const_cast<TObjArray*>(papa->GetHistogramArray()));
-    if (papa->GetQAHistArray())      fListHistos.Add(const_cast<TObjArray*>(papa->GetQAHistArray()));
+    if (papa->GetQAHistList())       fListHistos.Add(const_cast<THashList*>(papa->GetQAHistList()));
     //    if (papa->GetCFManagerPair())    fListCF.Add(const_cast<AliCFContainer*>(papa->GetCFManagerPair()->GetContainer()));
   }
 

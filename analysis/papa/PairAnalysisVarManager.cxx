@@ -203,6 +203,8 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"XvMC",                     "x_{vtx}^{MC}",                                            "(cm)"},
   {"YvMC",                     "y_{vtx}^{MC}",                                            "(cm)"},
   {"ZvMC",                     "z_{vtx}^{MC}",                                            "(cm)"},
+  {"PhivMC",                   "#phi_{vtx}^{MC}",                                         "(rad.)"},
+  {"ThetavMC",                 "#theta_{vtx}^{MC}"                                        "(rad.)"},
   {"OneOverPtMC",              "1/^{}#it{p}_{T}^{MC}",                                    "(GeV/#it{c})^{-1}"},
   {"PhiMC",                    "#phi^{MC}",                                               "(rad.)"},
   {"ThetaMC",                  "#theta^{MC}",                                             "(rad.)"},
@@ -223,6 +225,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"TRDHitsMC",                "N_{hit}^{TRD} (MC)",                                      ""},
   {"MVDHitsMC",                "N_{hit}^{MVD} (MC)",                                      ""},
   {"STSHitsMC",                "N_{hit}^{STS} (MC)",                                      ""},
+  {"TOFHitsMC",                "N_{hit}^{TOF} (MC)",                                      ""},
   {"MUCHHitsMC",               "N_{hit}^{MUCH} (MC)",                                      ""},
   {"RICHHitsMC",               "N_{hit}^{RICH} (MC)",                                     ""},
   {"TRDMCPoints",              "N_{diff.MCtrk}^{TRD}",                                      ""},
@@ -249,12 +252,14 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"TRDMatches",               "N_{trk.matches}^{TRD}",                              ""},
   {"VageMatches",              "N_{vage.matches}^{STS}",                             ""},
   {"TotalTRDHitsMC",           "N_{tot.hit}^{TRD} (MC)",                             ""},
+  {"ImpactParam",              "#it{b}",                                             "(fm)"},
 
 };
 
 PairAnalysisEvent* PairAnalysisVarManager::fgEvent           = 0x0;
 CbmKFVertex*    PairAnalysisVarManager::fgKFVertex         = 0x0;
 CbmStsKFTrackFitter* PairAnalysisVarManager::fgKFFitter    = 0x0;
+//CbmL1PFFitter*  PairAnalysisVarManager::fgL1Fitter    = 0x0;
 TBits*          PairAnalysisVarManager::fgFillMap          = 0x0;
 Int_t           PairAnalysisVarManager::fgCurrentRun = -1;
 Double_t        PairAnalysisVarManager::fgData[PairAnalysisVarManager::kNMaxValuesMC] = {0.};
@@ -302,7 +307,8 @@ PairAnalysisVarManager::~PairAnalysisVarManager()
 }
 
 //________________________________________________________________
-UInt_t PairAnalysisVarManager::GetValueType(const char* valname) {
+UInt_t PairAnalysisVarManager::GetValueType(const char* valname)
+{
   //
   // Get value type by value name
   //
@@ -315,7 +321,8 @@ UInt_t PairAnalysisVarManager::GetValueType(const char* valname) {
 }
 
 //________________________________________________________________
-UInt_t PairAnalysisVarManager::GetValueTypeMC(UInt_t var) {
+UInt_t PairAnalysisVarManager::GetValueTypeMC(UInt_t var)
+{
   //
   // Get MC value type by standard value name
   //
@@ -331,3 +338,26 @@ UInt_t PairAnalysisVarManager::GetValueTypeMC(UInt_t var) {
   }
   return GetValueType(valname);
 }
+
+/*
+Double_t PairAnalysisVarManager::GetChiToVertex(const CbmStsTrack *track, CbmVertex *vertex)
+{
+  //
+  // Get  vertex chi/ndf between ststrack and vertex
+  //
+
+  // KFFitter
+  return fgKFFitter->GetChiToVertex(track,vertex);
+
+  // L1PFFitter
+  vector<CbmStsTrack> stsTracks;
+  stsTracks.resize(1);
+  stsTracks[0] = *track;
+  vector<L1FieldRegion> vField;
+  vector<float> chiPrim;
+  fgL1Fitter->GetChiToVertex(stsTracks, vField, chiPrim, fgKFVertex, 3.e+6);
+  printf("L1fitter: %f\n", chiPrim[0]);
+  return chiPrim[0];
+
+}
+*/

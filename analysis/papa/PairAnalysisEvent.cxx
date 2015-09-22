@@ -19,6 +19,8 @@ Add Detailed description
 #include "FairTrackParam.h"
 
 #include "CbmDetectorList.h"
+#include "CbmMCEventHeader.h"
+
 #include "CbmVertex.h"
 #include "CbmGlobalTrack.h"
 #include "CbmStsTrack.h"
@@ -36,6 +38,7 @@ ClassImp(PairAnalysisEvent)
 
 PairAnalysisEvent::PairAnalysisEvent() :
   TNamed(),
+  fMCHeader(0x0),       //mc header
   fMCTracks(0x0),       //mc tracks
   fStsMatches(0x0),     //STS matches
   fMuchMatches(0x0),     //MUCH matches
@@ -77,6 +80,7 @@ PairAnalysisEvent::PairAnalysisEvent() :
 //______________________________________________
 PairAnalysisEvent::PairAnalysisEvent(const char* name, const char* title) :
   TNamed(name, title),
+  fMCHeader(0x0),       //mc header
   fMCTracks(0x0),       //mc tracks
   fStsMatches(0x0),     //STS matches
   fMuchMatches(0x0),     //MUCH matches
@@ -124,6 +128,7 @@ PairAnalysisEvent::~PairAnalysisEvent()
 
   fTracks->Clear("C");
   fGlobalTracks->Delete();   //global tracks
+  fMCHeader->Delete();       //mc tracks
   fMCTracks->Delete();       //mc tracks
 
   fTrdTracks->Delete();      //TRD tracks
@@ -170,6 +175,7 @@ void PairAnalysisEvent::SetInput(FairRootManager *man)
   fRichRings    = (TClonesArray*) man->GetObject("RichRing");
   fPrimVertex   = (CbmVertex*)    man->GetObject("PrimaryVertex");
   // MC matches and tracks
+  fMCHeader     = (CbmMCEventHeader*) man->GetObject("MCEventHeader.");
   fMCTracks     = (TClonesArray*) man->GetObject("MCTrack");
   fStsMatches   = (TClonesArray*) man->GetObject("StsTrackMatch");
   fMuchMatches  = (TClonesArray*) man->GetObject("MuchTrackMatch");
@@ -272,15 +278,16 @@ void PairAnalysisEvent::Init()
 			    i);
 
     // set MC label and matching bits
-    if(iMC>=0) {
+    //    if(iMC>=0) {
       PairAnalysisTrack *tr = static_cast<PairAnalysisTrack*>(fTracks->UncheckedAt(i));
+      if(iMC<0) iMC=-999; // STS tracks w/o MC matching
       tr->SetLabel(iMC);
       tr->SetBit(BIT(14+kTOF),  (iMC==itofMC) );
       tr->SetBit(BIT(14+kRICH), (iMC==irichMC) );
       tr->SetBit(BIT(14+kTRD),  (iMC==itrdMC)  );
       tr->SetBit(BIT(14+kSTS),  (iMC==istsMC)  );
       tr->SetBit(BIT(14+kMUCH), (iMC==imuchMC)  );
-    }
+      //    }
 
   }
 

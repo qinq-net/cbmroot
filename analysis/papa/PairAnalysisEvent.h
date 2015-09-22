@@ -18,6 +18,7 @@
 #include "CbmVertex.h"
 
 class FairRootManager;
+class CbmMCEventHeader;
 class PairAnalysisTrack;
 
 class PairAnalysisEvent : public TNamed {
@@ -32,6 +33,7 @@ public:
 
 
   // getters
+  CbmMCEventHeader *GetMCHeader()     const { return fMCHeader; }
   CbmVertex *GetPrimaryVertex()       const { return fPrimVertex; }
   Int_t      GetNumberOfTracks()      const { return (fGlobalTracks ? fGlobalTracks->GetEntriesFast() : -1); }
   Int_t      GetNumberOfMCTracks()    const { return (fMCTracks ? fMCTracks->GetEntriesFast() : -1); }
@@ -55,6 +57,7 @@ public:
 
 
 private:
+ CbmMCEventHeader *fMCHeader;       //mc header
  TClonesArray *fMCTracks;       //mc tracks
  TClonesArray *fStsMatches;     //STS matches
  TClonesArray *fMuchMatches;     //MUCH matches
@@ -96,7 +99,7 @@ private:
  PairAnalysisEvent(const PairAnalysisEvent& event);
  PairAnalysisEvent &operator=(const PairAnalysisEvent &c);
 
- ClassDef(PairAnalysisEvent,3)         // PairAnalysis Event
+ ClassDef(PairAnalysisEvent,4)         // PairAnalysis Event
 };
 
 

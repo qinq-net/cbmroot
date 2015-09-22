@@ -99,7 +99,9 @@ void PairAnalysisStyler::LoadStyle() {
     defaultSty->SetHistMinimumZero();
     //    defaultSty->SetEndErrorSize(2);
     defaultSty->SetErrorX(0.);
-    defaultSty->SetMarkerStyle(kOpenCircle); // Kind of dot used for points
+    defaultSty->SetLineColor(1);
+    defaultSty->SetMarkerColor(1);
+    defaultSty->SetMarkerStyle(kFullCircle); // Kind of dot used for points
     defaultSty->SetMarkerSize(1.5);
 
     
@@ -148,6 +150,7 @@ void PairAnalysisStyler::LoadStyle() {
     // defaultSty->SetTitleY(0.985); // Set the position of the title box
     defaultSty->SetTitleStyle(kFEmpty);
     // defaultSty->SetTitleBorderSize(2);
+    defaultSty->SetPaintTextFormat(".3f"); // format if you plot with TEXT option
 
     // for Paves and boxes
     //    defaultSty->SetFillColor(bgrdcolor); // this makes palettes unicolored
@@ -305,6 +308,17 @@ void PairAnalysisStyler::Style(TObject *obj, Int_t idx) {
 
 }
 
+void PairAnalysisStyler::SetForceLineStyle(Int_t line)
+{
+  //
+  // force a certain line style
+  //
+  for(Int_t i=0; i<kNMaxLine; i++) {
+    Line[i] = line;
+  }
+}
+
+
 void PairAnalysisStyler::SetStyle(Eidx idx, Int_t col, Int_t marker, Double_t size, Int_t line, Double_t width, Int_t fill)
 {
   //
@@ -366,7 +380,7 @@ void PairAnalysisStyler::SetLegendCoordinates(TLegend *leg)
     leg->SetY2(leg->GetY1()+nent*0.025);
   }
   if(fLegAlign==22 || fLegAlign==21) {  //right
-    leg->SetX2(1.-gPad->GetRightMargin()-gStyle->GetTickLength("Y"));
+    leg->SetX2(1.-gPad->GetRightMargin()-gStyle->GetTickLength("Y")*2.0); //x2.0 ticklength
     leg->SetX1(leg->GetX2()-maxwdth*1.0 - 0.035);
   }
   else if(fLegAlign==12 || fLegAlign==11) { //left

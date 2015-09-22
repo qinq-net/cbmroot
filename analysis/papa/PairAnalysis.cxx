@@ -230,7 +230,7 @@ void PairAnalysis::Init()
   if (fCutQA) {
     fQAmonitor = new PairAnalysisCutQA(Form("QAcuts_%s",GetName()),"QAcuts");
     fQAmonitor->AddTrackFilter(&fTrackFilter);
-    //    fQAmonitor->AddPrePairFilter(&fPairPreFilter);
+    fQAmonitor->AddPrePairFilter(&fPairPreFilter);
     fQAmonitor->AddTrackFilter2(&fPairPreFilterLegs);
     if(!fNoPairing) fQAmonitor->AddPairFilter(&fPairFilter);
     fQAmonitor->AddEventFilter(&fEventFilter);
@@ -455,8 +455,14 @@ void PairAnalysis::ProcessMC()
 
     // selection of particles
     UInt_t selectedMask=(1<<fTrackFilterMC.GetCuts()->GetEntries())-1;
+    CbmMCTrack *mctrk = papaMC->GetMCTrackFromMCEvent(ipart);
+
     //apply track cuts
-    UInt_t cutmask=fTrackFilterMC.IsSelected(papaMC->GetMCTrackFromMCEvent(ipart));
+    UInt_t cutmask=fTrackFilterMC.IsSelected(mctrk);
+    //fill cut QA
+    if(fCutQA) fQAmonitor->FillAll(mctrk);
+    if(fCutQA) fQAmonitor->Fill(cutmask,mctrk);
+    // rejection
     if (cutmask!=selectedMask) continue;
 
     // loop over signals
@@ -899,8 +905,8 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	    if(!isMCtruth) continue;
 	    sigName =  Form("Pair_%s",sigMC->GetName());
 	    //	  Printf("fill %s: %d ",sigName.Data(),pairClassMC.TestBitNumber(isig));
-	    if(TMath::Abs(sigMC->GetWeight()-1.)>1e-8) // weight is set, don't use track weights
-	      PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
+	    if(TMath::Abs(sigMC->GetWeight(values)-1.)>1e-8) // weight is set, don't use track weights
+	      PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight(values));
 	    if(pairClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
 	    if(pairClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
 	  }
@@ -921,8 +927,8 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	      if(!fillMC.TestBitNumber(isig)) continue;
 	      sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
 	      sigName = Form("Track.Legs_%s",sigMC->GetName());
-	      if(TMath::Abs(sigMC->GetWeight()-1.)>1e-8) // weight is set, don't use track weights
-		PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
+	      if(TMath::Abs(sigMC->GetWeight(values)-1.)>1e-8) // weight is set, don't use track weights
+		PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight(values));
 	      if(legClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
 	      if(legClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
 	    }
@@ -939,8 +945,8 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	      if(!fillMC.TestBitNumber(isig)) continue;
 	      sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
 	      sigName = Form("Track.Legs_%s",sigMC->GetName());
-	      if(TMath::Abs(sigMC->GetWeight()-1.)>1e-8) // weight is set, don't use track weights
-		PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
+	      if(TMath::Abs(sigMC->GetWeight(values)-1.)>1e-8) // weight is set, don't use track weights
+		PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight(values));
 	      if(legClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
 	      if(legClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
 	    }
@@ -1011,10 +1017,14 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
   // use track arrays 0 and 1
   //
 
+  // get event data
+  Double_t *values=PairAnalysisVarManager::GetData();
+
   Int_t ntracks=ev->GetNumberOfTracks();
 
   UInt_t selectedMask=(1<<fTrackFilter.GetCuts()->GetEntries())-1;
   for (Int_t itrack=0; itrack<ntracks; ++itrack){
+
     //get particle
     PairAnalysisTrack *particle=ev->GetTrack(itrack);
 
@@ -1027,11 +1037,9 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
       for(Int_t isig=0; isig<fSignalsMC->GetEntriesFast(); isig++) {
 	PairAnalysisSignalMC *sig=(PairAnalysisSignalMC*)fSignalsMC->At(isig);
 	if( papaMC->IsMCTruth(particle,sig,1) || papaMC->IsMCTruth(particle,sig,2) ) {
-	  //	  printf("signal weight for %s is %f \n",sig->GetName(),sig->GetWeight());
-	  if(sig->GetWeight() != 1.0) {
-	    particle->SetWeight( sig->GetWeight() );
-	    //	    printf("signal weight for track %p is %f \n",particle,particle->GetWeight());
-	  }
+	  //   printf("signal weight for %s is %f \n",sig->GetName(),sig->GetWeight());
+	  //	  if(sig->GetWeight(values) != 1.0) particle->SetWeight( sig->GetWeight(values) );
+	  if(sig->GetWeight(values) != 1.0) particle->SetWeight( sig->GetWeight(values) );
 	}
       }
     }
@@ -1044,7 +1052,6 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
 
     // if raw spectra before any cuts are requested then fill
     if(fHistos && fHistos->HasHistClass("Track.noCuts")) {
-      Double_t *values=PairAnalysisVarManager::GetData();
       PairAnalysisVarManager::SetFillMap(fUsedVars);
       PairAnalysisVarManager::Fill(particle, values);
       fHistos    ->FillClass("Track.noCuts", values);
@@ -1473,11 +1480,11 @@ void PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) {
   // fill the leg variables
   if (legClass || trkClass) {
     if(part1) PairAnalysisVarManager::Fill(part1,values);
-    PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
+    PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight(values));
     if(part1 && trkClass)          fHistos->FillClass(className3, values);
     if(part1 && part2 && legClass) fHistos->FillClass(className2, values);
     if(part2) PairAnalysisVarManager::Fill(part2,values);
-    PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
+    PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight(values));
     if(part2 && trkClass)          fHistos->FillClass(className3, values);
     if(part1 && part2 && legClass) fHistos->FillClass(className2, values);
   }
@@ -1485,7 +1492,7 @@ void PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) {
   //fill pair information
   if (pairClass && part1 && part2) {
     PairAnalysisVarManager::FillVarMCParticle(part1,part2,values);
-    PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight());
+    PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight(values));
     fHistos->FillClass(className, values);
   }
 

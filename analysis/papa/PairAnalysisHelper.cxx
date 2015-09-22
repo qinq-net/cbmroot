@@ -139,12 +139,12 @@ TArrayD *PairAnalysisHelper::MakeStatBinLimits(TH1* h, Double_t stat)
     err+=(h->GetBinError(i)*h->GetBinError(i));
     vBins->AddAt(to, vEle);
 
-    Printf("cont %f err %f(%f) sum of -> rel err %f%% (current: %f%%)",
-           h->GetBinContent(i), h->GetBinError(i), TMath::Sqrt(h->GetBinContent(i)),h->GetBinError(i)/h->GetBinContent(i)*100, TMath::Sqrt(err)/cont*100);
+    //    Printf("cont %f err %f(%f) sum of -> rel err %f%% (current: %f%%)",
+    //       h->GetBinContent(i), h->GetBinError(i), TMath::Sqrt(h->GetBinContent(i)),h->GetBinError(i)/h->GetBinContent(i)*100, TMath::Sqrt(err)/cont*100);
 
     // check for new bin                                                                                                                                                                                                                                            
     if(TMath::Sqrt(err)/cont <= stat) {
-      Printf("bin from %f to %f with err %f%%",from,to,TMath::Sqrt(err)/cont*100);
+      //Printf("bin from %f to %f with err %f%%",from,to,TMath::Sqrt(err)/cont*100);
       err=0.0;
       cont=0.0;
       vEle++;
@@ -156,7 +156,7 @@ TArrayD *PairAnalysisHelper::MakeStatBinLimits(TH1* h, Double_t stat)
 
   vBins->AddAt(h->GetXaxis()->GetXmax(), vBins->GetSize()-1);
 
-  for(Int_t i=0;i<vBins->GetSize();i++)  Printf("%d %f",i,vBins->At(i));
+  //  for(Int_t i=0;i<vBins->GetSize();i++)  Printf("%d %f",i,vBins->At(i));
   return vBins;
 }
 
@@ -344,3 +344,48 @@ Double_t PairAnalysisHelper::GetContentMinimum(TH1 *h) {
   return minimum;
 
 }
+
+Double_t PairAnalysisHelper::GetContentMaximum(TH1 *h, Bool_t inclErr)
+{
+  //
+  // get maximum bin content+error of histogram (having entries)
+  //
+  Int_t bin, binx, biny, binz;
+  Int_t xfirst  = h->GetXaxis()->GetFirst();
+  Int_t xlast   = h->GetXaxis()->GetLast();
+  Int_t yfirst  = h->GetYaxis()->GetFirst();
+  Int_t ylast   = h->GetYaxis()->GetLast();
+  Int_t zfirst  = h->GetZaxis()->GetFirst();
+  Int_t zlast   = h->GetZaxis()->GetLast();
+  Double_t maximum = -1.*FLT_MAX, value=0.;
+  for (binz=zfirst;binz<=zlast;binz++) {
+    for (biny=yfirst;biny<=ylast;biny++) {
+      for (binx=xfirst;binx<=xlast;binx++) {
+	bin = h->GetBin(binx,biny,binz);
+	value = h->GetBinContent(bin);
+	if(inclErr) value += h->GetBinError(bin);
+	if (value > maximum && 
+	    TMath::Abs(h->GetBinError(bin)-1.e-15) > 1.e-15) {
+	  maximum = value;
+	}
+      }
+    }
+  }
+  return maximum;
+}
+
+TObject* PairAnalysisHelper::FindObjectByTitle(TObjArray *arrhist, TString ref)
+{
+  //
+  // shortcut to find a certain pair type object in array
+  //
+  //  return ( arrhist->FindObject(Form("Pair.%s",PairAnalysis::PairClassName(type))) );
+  //  TString ref=Form("Pair.%s",PairAnalysis::PairClassName(type));
+  for(Int_t i=0; i<arrhist->GetEntriesFast(); i++) {
+    if( !ref.CompareTo(arrhist->UncheckedAt(i)->GetTitle()) ) {
+      return arrhist->UncheckedAt(i);
+    }
+  }
+  return 0x0;
+}
+

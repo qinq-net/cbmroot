@@ -28,24 +28,24 @@ namespace PairAnalysisStyler
   static Int_t    fFll[kNidx]={0,0,0,0}; //kFEmpty
 
   enum Estyle { kNMaxMarker=8, kNMaxLine=4, kNMaxColor=9 };
-  static const Int_t Marker[]= {kOpenCircle,
-				kOpenDiamond,
-				kOpenSquare,
-				kOpenCross,
-				kOpenStar,
+  static Int_t Marker[]= {kFullCircle,
+				kFullDiamond,
+				kFullSquare,
+				kFullCross,
+				kFullStar,
 				kMultiply,
 				kPlus,
 				kStar }; // kNMaxMarker
 
-  static const Int_t Line[]= {kSolid,
+  static Int_t Line[]= {kSolid,
 			      kDashed,
 			      kDotted,
 			      //			      9,
 			      kDashDotted }; // kNMaxLine
 
-  static const Int_t Color[]= {kGray+1,
+  static Int_t Color[]= {kRed-4,
 			       kBlue-4,
-			       kRed-4,
+			       kGray+1,
 			       kGreen+1,
 			       kAzure+1,
 			       kOrange+1,
@@ -60,6 +60,8 @@ namespace PairAnalysisStyler
 
   void LoadStyle();
   void Style(TObject *obj, Int_t idx=0);
+  void SetForceLineStyle(Int_t line=kSolid);
+  
 
   extern UInt_t fLegAlign;           // legend alignement (11,12,21,22)
   void SetLegendAlign(UInt_t align);

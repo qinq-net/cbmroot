@@ -35,6 +35,7 @@
 #include <FairTrackParam.h>
 #include <FairMCPoint.h>
 
+#include <CbmMCEventHeader.h>
 #include <CbmVertex.h>
 #include <CbmKFVertex.h>
 #include <CbmGlobalTrack.h>
@@ -47,8 +48,8 @@
 #include <CbmTrackMatchNew.h>
 
 
-/* #include "L1Field.h" */
-/* #include "CbmL1PFFitter.h" */
+//#include "L1Field.h"
+//#include "CbmL1PFFitter.h"
 #include <CbmStsKFTrackFitter.h>
 
 #include "PairAnalysisEvent.h"
@@ -268,6 +269,8 @@ public:
     kXvMC,                     // vertex position in x
     kYvMC,                     // vertex position in y
     kZvMC,                     // vertex position in z
+    kPhivMC,                   // vertex position in phi
+    kThetavMC,                 // vertex position in theta
     kOneOverPtMC,              // 1/pt
     kPhiMC,                    // phi angle
     kThetaMC,                  // theta angle
@@ -288,6 +291,7 @@ public:
     kTRDHitsMC=kParticleMaxMC, // number of TRD hits
     kMVDHitsMC,                // number of MVD hits
     kSTSHitsMC,                // number of STS hits
+    kTOFHitsMC,                // number of TOF hits
     kMUCHHitsMC,               // number of MUCH hits
     kRICHHitsMC,               // number of RICH hits
     kTRDMCTracks,              // number of TRD MC Points in reconstructed track
@@ -316,6 +320,7 @@ public:
     kTRDMatches,             // number of matched TRD tracks
     kVageMatches,            // number of MC tracks (STS) matched to multiple reconstr. track
     kTotalTRDHitsMC,         // size of trd MC point array
+    kImpactParam,            // impact parameter from MC header
     kNMaxValuesMC
 
   };
@@ -367,6 +372,7 @@ private:
   static PairAnalysisEvent *fgEvent;                      // current event pointer
   static CbmKFVertex        *fgKFVertex;                   // kf vertex
   static CbmStsKFTrackFitter*fgKFFitter;                   // kf fitter
+  //  static CbmL1PFFitter      *fgL1Fitter;                   // L1 fitter
   static TBits              *fgFillMap;                    // map for filling variables
   static Int_t               fgCurrentRun;                 // current run number
   static CbmRichElectronIdAnn *fgRichElIdAnn;              // NN electron pid for Rich
@@ -394,6 +400,9 @@ private:
   static void FillVarPixelHit(          const CbmPixelHit *hit,          Double_t * const values);
   static void FillVarMCPoint(           const FairMCPoint *hit,          Double_t * const values);
   static void FillSumVarMCPoint(        const FairMCPoint *hit,          Double_t * const values);
+  static void FillVarMCHeader(          const CbmMCEventHeader *header, Double_t * const values);
+
+  //  static Double_t GetChiToVertex(       const CbmStsTrack *track, CbmVertex *vertex);
 
   //  static void FillVarKFParticle(const AliKFParticle *pair,   Double_t * const values);
 
@@ -511,6 +520,33 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisEvent(const PairAnalysisE
 
   // Set vertex
   FillVarVertex(event->GetPrimaryVertex(),values);
+
+  // Set header information
+  FillVarMCHeader(event->GetMCHeader(),values);
+  
+
+}
+
+inline void PairAnalysisVarManager::FillVarMCHeader(const CbmMCEventHeader *header, Double_t * const values)
+{
+  //
+  // Fill MCheader information available into an array
+  //
+
+  // Protect
+  if (!header) return;
+
+  // Reset
+  // ResetArrayData(kNMaxValues, values);
+
+  // Set
+  //  values[k]  = header->GetPhi(); // event plane angle [rad]
+
+  // accessors via first FairMCEventHeader
+  values[kImpactParam]  = header->GetB(); // [fm]
+  //Double_t GetX()       /// vertex x [cm]
+  //Double_t GetY()       /// vertex y [cm]
+  //Double_t GetZ()       /// vertex z [cm]
 
 }
 
@@ -807,6 +843,9 @@ inline void PairAnalysisVarManager::FillVarStsTrack(const CbmStsTrack *track, Do
   values[kSTSPtout]       = mom.Pt();
   //  values[kSTSCharge]      = (track->GetParamFirst()->GetQp()>0. ? +1. : -1. );
 
+  // should become default
+  //  values[kSTSChi2NDFtoVtx] = GetChiToVertex(const_cast<CbmStsTrack*>(track), fgEvent->GetPrimaryVertex());
+
   // using CbmL1PFFitter
   /* vector<CbmStsTrack> stsTracks; */
   /* stsTracks.resize(1); */
@@ -816,8 +855,9 @@ inline void PairAnalysisVarManager::FillVarStsTrack(const CbmStsTrack *track, Do
   /* fgL1Fitter->GetChiToVertex(stsTracks, vField, chiPrim, fgKFVertex, 3.e+6); */
   /* values[kSTSChi2NDFtoVtx]  = chiPrim[0]; */
   /* printf("L1fitter: %f\n", values[kSTSChi2NDFtoVtx]); */
+  // using KFFitter
   values[kSTSChi2NDFtoVtx]  = fgKFFitter->GetChiToVertex(const_cast<CbmStsTrack*>(track),fgEvent->GetPrimaryVertex());
-  //  printf("KFfitter: %f\n", values[kSTSChi2NDFtoVtx]);
+  //printf("KFfitter: %f\n", values[kSTSChi2NDFtoVtx]);
 
   values[kSTSFirstHitPosZ]  = min;
 
@@ -940,6 +980,10 @@ inline void PairAnalysisVarManager::FillVarMCTrack(const CbmMCTrack *particle, D
   values[kXvMC]        = particle->GetStartX();
   values[kYvMC]        = particle->GetStartY();
   values[kZvMC]        = particle->GetStartZ();
+  TVector3 vtx;
+  particle->GetStartVertex(vtx);
+  values[kPhivMC]      = vtx.Phi();
+  values[kThetavMC]    = vtx.Theta();
   //TODO  values[kTMC]         = particle->GetStartT(); [ns]
 
   TLorentzVector mom;
@@ -959,6 +1003,7 @@ inline void PairAnalysisVarManager::FillVarMCTrack(const CbmMCTrack *particle, D
   values[kTRDHitsMC]   = particle->GetNPoints(kTRD);
   values[kMVDHitsMC]   = particle->GetNPoints(kMVD);
   values[kSTSHitsMC]   = particle->GetNPoints(kSTS);
+  values[kTOFHitsMC]   = particle->GetNPoints(kTOF);
   values[kMUCHHitsMC]  = particle->GetNPoints(kMUCH);
 
 }
