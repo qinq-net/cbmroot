@@ -114,7 +114,8 @@ CbmMuchHitFinderQa::CbmMuchHitFinderQa(const char* name, Int_t verbose)
     fPadMaxLx(0.),
     fPadMaxLy(0.),
     pointsFile(NULL),
-    padsFile(NULL)
+  padsFile(NULL)
+
 {
 }
 // -------------------------------------------------------------------------
@@ -830,7 +831,7 @@ Double_t LandauMPV(Double_t *lg_x, Double_t *par) {
   gaz_gain_mean/=scale;
   Double_t mass = par[0]; // mass in MeV
   Double_t x = TMath::Power(10,lg_x[0]);
-  return gaz_gain_mean*CbmMuchDigitizeGem::MPV_n_e(x,mass);
+  return gaz_gain_mean*MPV_n_e(x,mass);
 }
 // -------------------------------------------------------------------------
 
@@ -1281,5 +1282,27 @@ TVector2 CbmMuchHitFinderQa::GetMaxPadSize(Int_t iStation){
 }
 // -------------------------------------------------------------------------
 
+// -------------------------------------------------------------------------
+Double_t MPV_n_e(Double_t Tkin, Double_t mass) {
+  Double_t logT;
+  TF1 fPol6("fPol6","pol6",-5,10);
+  if (mass < 0.1) {
+    logT = log(Tkin * 0.511 / mass);
+    if (logT > 9.21034)    logT = 9.21034;
+    if (logT < min_logT_e) logT = min_logT_e;
+    return fPol6.EvalPar(&logT,mpv_e);
+  } else if (mass >= 0.1 && mass < 0.2) {
+    logT = log(Tkin * 105.658 / mass);
+    if (logT > 9.21034)    logT = 9.21034;
+    if (logT < min_logT_mu) logT = min_logT_mu;
+    return fPol6.EvalPar(&logT,mpv_mu);
+  } else {
+    logT = log(Tkin * 938.272 / mass);
+    if (logT > 9.21034)    logT = 9.21034;
+    if (logT < min_logT_p) logT = min_logT_p;
+    return fPol6.EvalPar(&logT,mpv_p);
+  }
+}
+// -------------------------------------------------------------------------
 
 ClassImp(CbmMuchHitFinderQa)

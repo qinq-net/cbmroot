@@ -18,6 +18,7 @@ class TObjArray;
 class TVector2;
 
 Double_t LandauMPV(Double_t *x, Double_t *par);
+Double_t MPV_n_e(Double_t Tkin, Double_t mass);
 
 class CbmMuchHitFinderQa : public FairTask {
 
@@ -144,6 +145,8 @@ private:
   Double_t fPadMaxLx;
   Double_t fPadMaxLy;
 
+  FILE * pointsFile;
+  FILE * padsFile;
 
   /** Defines whether the point with the given index is signal point. **/
   Bool_t IsSignalPoint(Int_t iPoint);
@@ -152,8 +155,6 @@ private:
   Int_t GetNSectors(Int_t iStation);
   TVector2 GetMinPadSize(Int_t iStation);
   TVector2 GetMaxPadSize(Int_t iStation);
-  FILE * pointsFile;
-  FILE * padsFile;
 
   CbmMuchHitFinderQa(const CbmMuchHitFinderQa&);
   CbmMuchHitFinderQa& operator=(const CbmMuchHitFinderQa&);
