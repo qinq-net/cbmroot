@@ -51,7 +51,7 @@ Else(CMAKE_SYSTEM_NAME MATCHES Darwin)
 EndIf(CMAKE_SYSTEM_NAME MATCHES Darwin)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/roc/lib/libRoc.so
-                   COMMAND LD_LIBRARY_PATH=${ROOT_LIBRARY_DIR}
+                   COMMAND LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}
                            ROOTSYS=${ROOTSYS} make roclib 
                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/roc
                    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/patch_okay
@@ -67,7 +67,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/roc/lib/libDabcRoc.so
                           ${CMAKE_CURRENT_BINARY_DIR}/roc/lib/libDabcMbs.so
                           ${CMAKE_CURRENT_BINARY_DIR}/roc/lib/libRocDict.rootmap
                           ${CMAKE_CURRENT_BINARY_DIR}/roc/lib/libRocDict.so
-                   COMMAND LD_LIBRARY_PATH=${ROOT_LIBRARY_DIR}
+                   COMMAND LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}
                            ROOTSYS=${ROOTSYS} make rocdict
                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/roc
                    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/roc/lib/libDabcBase.so

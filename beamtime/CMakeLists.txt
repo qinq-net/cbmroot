@@ -107,8 +107,9 @@ Set(DEPENDENCIES
     ${LIBRARY_OUTPUT_PATH}/libDabcBase.so 
     ${LIBRARY_OUTPUT_PATH}/libRoc.so 
 #    RocLight
-    Sts
-    CbmData CbmBase
+    CbmSts
+    CbmData 
+    CbmBase
 #    Base Trd
     Base 
 )
