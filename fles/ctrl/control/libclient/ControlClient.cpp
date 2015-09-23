@@ -372,7 +372,7 @@ int ControlClient::DoListParSeq(const uint32_t* pnodeids,
 //------------------------------------------+-----------------------------------
 //! FIXME_docs
 
-uint32_t ControlClient::ServerBom(uint32_t nodeid)
+uint32_t ControlClient::ServerBom(uint32_t /*nodeid*/)
 {
   uint32_t meth = kMethodGetBOM;
   fZsocket.send(&meth, sizeof(meth));
@@ -386,7 +386,7 @@ uint32_t ControlClient::ServerBom(uint32_t nodeid)
 //------------------------------------------+-----------------------------------
 //! FIXME_docs
 
-int ControlClient::SendDLM(uint32_t nodeid, uint32_t num)
+int ControlClient::SendDLM(uint32_t /*nodeid*/, uint32_t num)
 {
   vector<uint32_t> req;
   req.push_back(kMethodSendDLM);
@@ -403,7 +403,7 @@ int ControlClient::SendDLM(uint32_t nodeid, uint32_t num)
 
 //------------------------------------------+-----------------------------------
 //! FIXME_docs
-  int ControlClient::FlibRead(uint32_t nodeid, uint32_t addr, uint32_t& value)
+  int ControlClient::FlibRead(uint32_t /*nodeid*/, uint32_t addr, uint32_t& value)
   {
   vector<uint32_t> req;
   req.push_back(kMethodFlibRead);
@@ -421,7 +421,7 @@ int ControlClient::SendDLM(uint32_t nodeid, uint32_t num)
 
 //------------------------------------------+-----------------------------------
 //! FIXME_docs
-  int ControlClient::FlibWrite(uint32_t nodeid, uint32_t addr, uint32_t value)
+  int ControlClient::FlibWrite(uint32_t /*nodeid*/, uint32_t addr, uint32_t value)
   {
   vector<uint32_t> req;
   req.push_back(kMethodFlibWrite);

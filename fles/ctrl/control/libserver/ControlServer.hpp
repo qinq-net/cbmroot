@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "boost/thread/thread.hpp"
-#include "zmq.hpp"
+#ifndef __CINT__
+ #include "zmq.hpp"
+#endif
 
 #include "libutil/ReventFd.hpp"
 #include "ServSeqItem.hpp"
@@ -87,6 +89,10 @@ namespace CbmNet {
       CbmNet::ReventFd  fWakeEvent;
       boost::thread     fServerThread;          //!< driver thread
       uint32_t          fDbgFlags;
+      
+    private:
+      ControlServer(const ControlServer&);
+      ControlServer& operator=(const ControlServer&);
 };
   
 } // end namespace CbmNet

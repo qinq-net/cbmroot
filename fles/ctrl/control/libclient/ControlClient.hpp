@@ -11,7 +11,9 @@
 #include <stdint.h>
 #include <vector>
 
-#include "zmq.hpp"
+#ifndef __CINT__
+ #include "zmq.hpp"
+#endif
 
 #include "ListSeq.hpp"
 #include "ListPar.hpp"
@@ -92,12 +94,19 @@ namespace CbmNet {
 
  
     protected:
+#ifndef __CINT__
       int           HandleParSeqResponse(ListSeq* plists, size_t npar,
                                          zmq::message_t& resmsg);
-
+#endif
     protected:
+#ifndef __CINT__
       zmq::context_t  fZcontext;
       zmq::socket_t   fZsocket;
+#endif
+
+    private:
+      ControlClient(const ControlClient&);
+      ControlClient& operator=(const ControlClient&);
 };
   
 } // end namespace CbmNet

@@ -121,7 +121,7 @@ void ControlServer::ServerLoop()
   pollitems[0].socket = 0;
   pollitems[0].fd     = fWakeEvent.Fd();
   pollitems[0].events = ZMQ_POLLIN;
-  pollitems[1].socket = fZsocketClient;
+  pollitems[1].socket = static_cast <void*> (fZsocketClient);
   pollitems[1].fd     = 0;
   pollitems[1].events = ZMQ_POLLIN;  
 
@@ -478,7 +478,7 @@ uint32_t ControlServer::ProcessFlibWrite(const uint32_t* preq,
 int ControlServer::PollDriverRes(long timeout)
 {
   zmq_pollitem_t  pollitems[1];
-  pollitems[0].socket = fZsocketCntlDriverRes;
+  pollitems[0].socket = static_cast <void*> (fZsocketCntlDriverRes);
   pollitems[0].fd     = 0;
   pollitems[0].events = ZMQ_POLLIN;  
 
