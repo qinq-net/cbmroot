@@ -42,7 +42,7 @@ public:
 	void Finish();
 	void Exec();
 
-	void CombineElectrons();
+	void CombineElectrons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int> mctrackID, vector< vector<int> > reconstructedPhotons, Int_t index);
 	Double_t Invmass_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 	Double_t Pt_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 	Double_t Rap_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
@@ -51,6 +51,7 @@ public:
 	CbmLmvmKinematicParams CalculateKinematicParams_4particles(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 	
 	void CombinePhotons();
+	void CombinePhotons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int> mctrackID, vector< vector<int> > reconstructedPhotons, Int_t index);
 	Double_t OpeningAngleBetweenPhotons(vector<int> photon1, vector<int> photons2);
 
 	void CombineElectronsRefit();
@@ -71,7 +72,10 @@ private:
 	CbmKFVertex fKFVertex;
 
 	vector<TH1*> fHistoList_recofull;
-
+	vector<TH1*> fHistoList_recofull_1;
+	vector<TH1*> fHistoList_recofull_2;
+	vector<TH1*> fHistoList_recofull_3;
+	vector<TH1*> fHistoList_recofull_4;
 
 	TH1I * fhElectrons;
 
@@ -85,6 +89,32 @@ private:
 	vector<TVector3> fElectrons_momenta;
 	vector<float> fElectrons_momentaChi;
 	vector<int> fElectrons_mctrackID;
+	
+	
+	
+	vector<CbmGlobalTrack*>	fElectrons_track_1;
+	vector<TVector3>		fElectrons_momenta_1;
+	vector<float>			fElectrons_momentaChi_1;
+	vector<int>				fElectrons_mctrackID_1;
+	vector< vector<int> >	fVector_photons_pairs_1;
+	
+	vector<CbmGlobalTrack*>	fElectrons_track_2;
+	vector<TVector3>		fElectrons_momenta_2;
+	vector<float>			fElectrons_momentaChi_2;
+	vector<int>				fElectrons_mctrackID_2;
+	vector< vector<int> >	fVector_photons_pairs_2;
+	
+	vector<CbmGlobalTrack*>	fElectrons_track_3;
+	vector<TVector3>		fElectrons_momenta_3;
+	vector<float>			fElectrons_momentaChi_3;
+	vector<int>				fElectrons_mctrackID_3;
+	vector< vector<int> >	fVector_photons_pairs_3;
+	
+	vector<CbmGlobalTrack*>	fElectrons_track_4;
+	vector<TVector3>		fElectrons_momenta_4;
+	vector<float>			fElectrons_momentaChi_4;
+	vector<int>				fElectrons_mctrackID_4;
+	vector< vector<int> >	fVector_photons_pairs_4;
 
 
 	TH1D * fhElectrons_invmass;
@@ -150,6 +180,43 @@ private:
 	TH1D * fhPhotons_tX;
 	TH1D * fhPhotons_tY;
 	
+	// histograms for index = 1
+	TH1D * fhElectrons_nofPerEvent_1;
+	TH1D * fhPhotons_nofPerEvent_1;
+	TH1D * fhPhotons_invmass_1;
+	TH1D * fhPhotons_invmass_ptBin1_1;
+	TH1D * fhPhotons_invmass_ptBin2_1;
+	TH1D * fhPhotons_invmass_ptBin3_1;
+	TH1D * fhPhotons_invmass_ptBin4_1;
+	
+	// histograms for index = 2
+	TH1D * fhElectrons_nofPerEvent_2;
+	TH1D * fhPhotons_nofPerEvent_2;
+	TH1D * fhPhotons_invmass_2;
+	TH1D * fhPhotons_invmass_ptBin1_2;
+	TH1D * fhPhotons_invmass_ptBin2_2;
+	TH1D * fhPhotons_invmass_ptBin3_2;
+	TH1D * fhPhotons_invmass_ptBin4_2;
+	
+	// histograms for index = 3
+	TH1D * fhElectrons_nofPerEvent_3;
+	TH1D * fhPhotons_nofPerEvent_3;
+	TH1D * fhPhotons_invmass_3;
+	TH1D * fhPhotons_invmass_ptBin1_3;
+	TH1D * fhPhotons_invmass_ptBin2_3;
+	TH1D * fhPhotons_invmass_ptBin3_3;
+	TH1D * fhPhotons_invmass_ptBin4_3;
+	
+	// histograms for index = 4
+	TH1D * fhElectrons_nofPerEvent_4;
+	TH1D * fhPhotons_nofPerEvent_4;
+	TH1D * fhPhotons_invmass_4;
+	TH1D * fhPhotons_invmass_ptBin1_4;
+	TH1D * fhPhotons_invmass_ptBin2_4;
+	TH1D * fhPhotons_invmass_ptBin3_4;
+	TH1D * fhPhotons_invmass_ptBin4_4;
+	
+	
 
 	// timer
 	TStopwatch timer;
@@ -162,3 +229,4 @@ private:
 };
 
 #endif
+

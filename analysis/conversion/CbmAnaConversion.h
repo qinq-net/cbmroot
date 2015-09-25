@@ -99,7 +99,7 @@ public:
    void		AnalyseElectrons(CbmMCTrack* mctrack);
    void		FillMCTracklists(CbmMCTrack* mctrack, int i);
    void		FillRecoTracklist(CbmMCTrack* mtrack);
-   void		FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom, int i, Double_t chi, Int_t GlobalTrackId);
+   Bool_t		FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom, int i, Double_t chi, Int_t GlobalTrackId);
    void		InvariantMassTest();
    void		InvariantMassTest_4epem();
    void		InvariantMassTestReco();
@@ -227,7 +227,9 @@ private:
    
    vector<TVector3> fRecoMomentum;
    vector<TVector3> fRecoRefittedMomentum;
-   
+
+
+	TH1D * fhNofElectrons_4epem;   
    
    
    // timer

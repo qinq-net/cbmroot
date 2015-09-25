@@ -40,6 +40,7 @@ public:
 	void Exec();
 
 	void GetNofRichElectrons();
+	Double_t CalcInvMass(Int_t e1, Int_t e2, Int_t e3, Int_t e4);
 
 
 
@@ -63,9 +64,12 @@ private:
 	vector<int> fElectrons_mcid;
 	vector<int> fElectrons_richInd;
 	vector<int> fElectrons_pi0mcid;
+	vector<int> fElectrons_same;
 
 	TH1I *fElectrons_nofPerPi0;
 	TH1I *fElectrons_nofPerPi0_withRichInd;
+
+	TH1D *fhElectrons_invmass;
 
 
 	CbmAnaConversionTest(const CbmAnaConversionTest&);

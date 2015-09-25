@@ -1285,7 +1285,7 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						
 						fhEPEM_efficiencyCuts->Fill(0);		// no further cuts applied
 						// first ANN usage for electron identification
-						if( IsRichElectron1ann && IsRichElectron2ann && IsRichElectron3ann && IsRichElectron4ann ) {		// all 4 electrons correctly identified with the RICH
+						if( IsRichElectron1ann && IsRichElectron2ann && IsRichElectron3ann && IsRichElectron4ann ) {		// all 4 electrons correctly identified with the RICH via ANN
 							fhEPEM_efficiencyCuts->Fill(1);
 							if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
 								fhEPEM_efficiencyCuts->Fill(2);
@@ -1295,7 +1295,7 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 							}
 						}
 						// then standard method for electron identification
-						if( IsRichElectron1normal && IsRichElectron2normal && IsRichElectron3normal && IsRichElectron4normal ) {		// all 4 electrons correctly identified with the RICH
+						if( IsRichElectron1normal && IsRichElectron2normal && IsRichElectron3normal && IsRichElectron4normal ) {		// all 4 electrons correctly identified with the RICH via "normal way"
 							fhEPEM_efficiencyCuts->Fill(4);
 							if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
 								fhEPEM_efficiencyCuts->Fill(5);
@@ -1305,7 +1305,7 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 							}
 						}
 						// MC-true data for electron identification
-						if( IsRichElectron1MC && IsRichElectron2MC && IsRichElectron3MC && IsRichElectron4MC ) {		// all 4 electrons correctly identified with the RICH
+						if( IsRichElectron1MC && IsRichElectron2MC && IsRichElectron3MC && IsRichElectron4MC ) {		// all 4 electrons correctly identified with the RICH via MC-true data
 							fhEPEM_efficiencyCuts->Fill(7);
 							if( OpeningAngleCut1 && OpeningAngleCut2) {		// opening angle of e+e- pairs below x
 								fhEPEM_efficiencyCuts->Fill(8);

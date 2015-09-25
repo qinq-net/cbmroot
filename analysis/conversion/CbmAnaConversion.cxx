@@ -211,7 +211,7 @@ InitStatus CbmAnaConversion::Init()
 	
 	DoTomography = 1;
 	DoRichAnalysis = 1;
-	DoKFAnalysis = 1;
+	DoKFAnalysis = 0;
 	DoReconstruction = 1;
 	DoPhotons = 1;
 	DoRecoFull = 1;
@@ -339,6 +339,11 @@ void CbmAnaConversion::InitHistograms()
 	fHistoList_kfparticle.push_back(fhPi0_NDaughters);
 	fHistoList_kfparticle.push_back(fhPi0Ratio);
 	fHistoList_kfparticle.push_back(fhPi0_mass);
+
+
+
+	fhNofElectrons_4epem	= new TH1D("fhNofElectrons_4epem","fhNofElectrons_4epem;number of electrons per event;#", 101, -0.5, 100.5);
+	fHistoList.push_back(fhNofElectrons_4epem);
 
 }
 
@@ -515,6 +520,8 @@ void CbmAnaConversion::Exec(Option_t* option)
 	// START - Analyse reconstructed tracks
 	timer_rec.Start();
 
+	Int_t nofElectrons4epem = 0;
+
 	Int_t ngTracks = fGlobalTracks->GetEntriesFast();
 	for (Int_t i = 0; i < ngTracks; i++) {
 		CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(i);
@@ -533,6 +540,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 		int stsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
 		if (stsMcTrackId < 0) continue;
 		CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId);
+		if (mcTrack1 == NULL) continue;
 		
 		
 		if (richInd < 0) continue;
@@ -545,7 +553,6 @@ void CbmAnaConversion::Exec(Option_t* option)
 
 		if(stsMcTrackId != richMcTrackId) continue;
 		
-		if (mcTrack1 == NULL) continue;
 		int pdg = TMath::Abs(mcTrack1->GetPdgCode());
 		int motherId = mcTrack1->GetMotherId();
 		double momentum = mcTrack1->GetP();
@@ -600,8 +607,12 @@ void CbmAnaConversion::Exec(Option_t* option)
 		float result_chi = chiPrim[0];
        
 		// Fill tracklists containing momenta from mc-true, measured in sts, refitted at primary
-		FillRecoTracklistEPEM(mcTrack1, stsMomentumVec, refittedMomentum, stsMcTrackId, result_chi, i);
+		Bool_t isFilled = FillRecoTracklistEPEM(mcTrack1, stsMomentumVec, refittedMomentum, stsMcTrackId, result_chi, i);
+		if (isFilled) nofElectrons4epem++;
 	}
+
+	fhNofElectrons_4epem->Fill(nofElectrons4epem);
+
 	
 //	InvariantMassTestReco();
 
@@ -944,8 +955,9 @@ void CbmAnaConversion::FillRecoTracklist(CbmMCTrack* mctrack)
 
 
 
-void CbmAnaConversion::FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom, int i, Double_t chi, Int_t GlobalTrackId) 
+Bool_t CbmAnaConversion::FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom, int i, Double_t chi, Int_t GlobalTrackId) 
 {
+	Bool_t isFilled = false;
 	if (TMath::Abs( mctrack->GetPdgCode())  == 11) { 
 		int motherId = mctrack->GetMotherId();
 		if (motherId != -1) {
@@ -955,8 +967,10 @@ void CbmAnaConversion::FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMo
 			fRecoTracklistEPEM_gtid.push_back(GlobalTrackId);
 			fRecoMomentum.push_back(stsMomentum);
 			fRecoRefittedMomentum.push_back(refittedMom);
+			isFilled = true;
 		}
 	}
+	return isFilled;
 }
 
 
