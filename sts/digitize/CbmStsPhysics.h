@@ -87,6 +87,10 @@ class CbmStsPhysics : public TObject {
 		static CbmStsPhysics* Instance();
 
 
+		/** Energy for electron-hole pair creation in silicon [GeV] **/
+		static Double_t PairCreationEnergy() { return 3.57142e-9; }
+
+
   	/** Particle charge from PDG particle ID
 		 ** @param pid   PID (PDG code)
 		 ** @value particle charge [e]

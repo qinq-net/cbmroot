@@ -40,76 +40,53 @@ CbmStsClusterFinderSimple::~CbmStsClusterFinderSimple() {
 // -----   Cluster finding   -----------------------------------------------
 Int_t CbmStsClusterFinderSimple::FindClusters(CbmStsModule* module) {
 
-    // --- Counter
+    // --- Counter and indizes
     Int_t nClusters = 0;
-    Int_t index = -1;  // dummy
-
-   // --- Loop over module channels
+    Int_t index = -1;       // dummy
     Int_t clusterStart = -1;
+    Int_t clusterEnd   = -1;
 
-    if (!fGap){// if no gap in cluster allowed
-	for (Int_t channel = 0; channel < module->GetNofChannels(); channel++) {
-	    if ( module->GetDigi(channel, index) ) {   // channel is active
-		if ( clusterStart == -1 ) clusterStart = channel; // start new cluster
-	    } else {  // channel is inactive
-		if (clusterStart != -1)  {   // stop current cluster
-		    module->CreateCluster(clusterStart, channel-1, fClusters);
-		    nClusters++;
-		    clusterStart = -1;  // delete current cluster
-		}
-	    }
-	}// Loop over module channels
-    } else {//if 1-strip gap is allowed in cluster
-    Bool_t gap = 0;
-    //gap only at dead channel
-    set <Int_t> deadChannels = module->GetSetOfDeadChannels();
-	 for (Int_t channel = 0; channel < module->GetNofChannels(); channel++) {
-	    if ( module->GetDigi(channel, index) ) {   // channel is active
-		if ( clusterStart == -1 ) {
-		    clusterStart = channel; // start new cluster
-		}
-	    } else if (clusterStart != -1) {   // channel is inactive and cluster started
-		if (deadChannels.find(channel) != deadChannels.end() && !gap) { // there was no gap yet and current channel is dead
-		    gap = 1;
-		} else {   // stop current cluster
-		    if (module->GetDigi(channel-1, index)){ // previous channel is active
-			module->CreateCluster(clusterStart, channel-1, fClusters);
-			if (gap) fNofClustersWithGap ++;
-		    }
-		    else if (gap) {
-			module->CreateCluster(clusterStart, channel-2, fClusters);
-		    }
-		    nClusters++;
-		    clusterStart = -1;  // reload for next possible cluster
-		    gap = 0;
-		}
-	    }
-	}// Loop over module channels
-/*//gap anywhere
-    for (Int_t channel = 0; channel < module->GetNofChannels(); channel++) {
-	    if ( module->GetDigi(channel, index) ) {   // channel is active
-		if ( clusterStart == -1 ) {
-		    clusterStart = channel; // start new cluster
-		}
+    // --- First channel for back side
+    Int_t channelHalf = module->GetNofChannels() / 2;
 
-	    } else if (clusterStart != -1) {   // channel is inactive and cluster started
-		if (!gap) { // there was no gap yet
-		    gap = 1;
-		} else {   // stop current cluster
-		    if (module->GetDigi (channel-1, index)){ // previous channel is active
-			module->CreateCluster(clusterStart, channel-1, fClusters);
-			if (gap) fNofClustersWithGap ++;
-			}
-		    else module->CreateCluster(clusterStart, channel-2, fClusters);
-		    nClusters++;
-		    clusterStart = -1;  // reload for next possible cluster
-		    gap = 0;
-		}
-	    }
-	}// Loop over module channels
-	*/
-    }   
-    return nClusters;
+    map<Int_t, pair<CbmStsDigi*, Int_t> >* digiMap = module->GetDigiMap();
+    map<Int_t, pair<CbmStsDigi*, Int_t> >::iterator digiIt;
+
+    // --- Loop over digis in module
+    for (digiIt = digiMap->begin(); digiIt != digiMap->end(); digiIt++) {
+    	Int_t channel = digiIt->first;  // current channel
+
+    	// --- No cluster yet; start one with the first digi
+    	if ( clusterStart == -1 ) {
+    		clusterStart = channel;
+    		clusterEnd   = channel;
+    	}
+
+    	// --- Existing cluster: check whether adjacent
+    	else {          // current cluster is there
+
+    		// --- Neighbouring channel; add to cluster. Avoid clustering channels
+    		// --- on different sensor sides.
+    		if ( channel == clusterEnd + 1  &&  channel != channelHalf )
+    			clusterEnd = channel;
+
+    		// --- Not neighbouring; close old cluster and start new one
+    		else {
+     			module->CreateCluster(clusterStart, clusterEnd, fClusters);
+    			nClusters++;
+    			clusterStart = channel;
+    			clusterEnd   = channel;
+    		}  //? not neighbouring channel
+
+    	} //? current cluster exists
+
+    }  //# digis in module
+
+    // --- Create last cluster
+    module->CreateCluster(clusterStart, clusterEnd, fClusters);
+    nClusters++;
+
+   return nClusters;
 }
 // -------------------------------------------------------------------------
 

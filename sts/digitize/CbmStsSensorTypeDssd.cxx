@@ -27,11 +27,6 @@ using std::stringstream;
 
 
 
-// --- Energy for creation of an electron-hole pair in silicon [GeV]  ------
-const double kPairEnergy = 3.57142e-9;
-
-
-
 // -----   Constructor   ---------------------------------------------------
 CbmStsSensorTypeDssd::CbmStsSensorTypeDssd()
     : CbmStsSensorType(), 
@@ -156,6 +151,9 @@ Int_t CbmStsSensorTypeDssd::FindHits(vector<CbmStsCluster*>& clusters,
 			LOG(FATAL) << GetName() << ": Illegal side qualifier "
 			           << side << FairLogger::endl;
 	}  // Loop over clusters in module
+	LOG(DEBUG3) << GetName() << ": " << nClusters << " clusters (front "
+			        << frontClusters.size() << ", back " << backClusters.size()
+			        << ") " << FairLogger::endl;
 
 	// --- Loop over front and back side clusters
 	Double_t xClusterF = -1.;  // Front cluster position at r/o edge
@@ -748,7 +746,8 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 		                                     const CbmStsSensor* sensor) {
 
 	// Total charge created in the sensor: is calculated from the energy loss
-	Double_t chargeTotal = point->GetELoss() / kPairEnergy;  // in e
+	Double_t chargeTotal = point->GetELoss()
+			                 / CbmStsPhysics::PairCreationEnergy();  // in e
 
 
 	// For ideal energy loss, just have all charge in the mid-point of the
@@ -812,7 +811,7 @@ void CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
 		Double_t chargeInStep = chargePerStep;  // uniform energy loss
 		if ( CbmStsDigitize::GetElossModel() == 2 ) // energy loss fluctuations
 			chargeInStep = fPhysics->EnergyLoss(stepSize, mass, eKin, dedx)
-			               / kPairEnergy;
+			               / CbmStsPhysics::PairCreationEnergy();
 		chargeSum += chargeInStep;
 
 		// Propagate charge to strips
@@ -863,7 +862,7 @@ Int_t CbmStsSensorTypeDssd::ProduceCharge(CbmStsSensorPoint* point,
   }
 
   // Total produced charge
-  Double_t qtot = point->GetELoss() / kPairEnergy;
+  Double_t qtot = point->GetELoss() / CbmStsPhysics::PairCreationEnergy();
 
   // Stereo angle and strip pitch
   Double_t tanphi = fTanStereo[side];

@@ -412,6 +412,14 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
     Bool_t SelfTest();
 
 
+    /** Copy constructor (not implemented)  **/
+    CbmStsSensorTypeDssd(CbmStsSensorTypeDssd& rhs);
+
+
+    /** Assignment operator (not implemented)  **/
+    CbmStsSensorTypeDssd& operator = (const CbmStsSensorTypeDssd& rhs);
+
+
 
     ClassDef(CbmStsSensorTypeDssd,2);
 
