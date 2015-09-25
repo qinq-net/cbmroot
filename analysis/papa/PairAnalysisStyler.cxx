@@ -195,6 +195,8 @@ void PairAnalysisStyler::LoadStyle() {
     // beautiful colors blue to red
     Double_t red[NRGBs]   = { 0.00, 0.00, 0.87, 1.00, 0.51};
     Double_t green[NRGBs] = { 0.00, 0.81, 1.00, 0.20, 0.00};
+    // Double_t green[NRGBs] = { 0.20, 0.81, 1.00, 0.20, 0.00};
+    //Double_t blue[NRGBs]  = { 0.0, 0.00, 0.0, 0.00, 0.00};
     Double_t blue[NRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00};
     Double_t stops[NRGBs] = { 0.00, 0.34, 0.61, 0.84, 1.00};
     TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
@@ -390,5 +392,40 @@ void PairAnalysisStyler::SetLegendCoordinates(TLegend *leg)
 
   // fix margin such that lines allways have the same length 
   leg->SetMargin(leg->GetMargin() / (leg->GetX2()-leg->GetX1()));
+
+}
+
+void PairAnalysisStyler::SetPalette(Epalette colors, Bool_t reverse)
+{
+  //
+  // use own definition of color palettes for zaxis
+  //
+
+  const Int_t NRGBs = 5;
+  const Int_t NCont = 255;
+  Double_t stops[NRGBs] = { 0.00, 0.34, 0.61, 0.84, 1.00};
+
+  switch(colors) {
+  case kDefault: {
+    Double_t red[NRGBs]   = { 0.00, 0.00, 0.87, 1.00, 0.51};
+    Double_t green[NRGBs] = { 0.00, 0.81, 1.00, 0.20, 0.00};
+    Double_t blue[NRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00};
+    if(reverse)     TColor::CreateGradientColorTable(NRGBs, stops, blue, green, red, NCont);
+    else            TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
+    break;
+  }
+  case kGoodBad: {
+    Double_t red[NRGBs]   = { 0.00, 0.00, 0.87, 1.00, 0.36};
+    Double_t green[NRGBs] = { 0.20, 0.81, 1.00, 0.20, 0.00};
+    Double_t blue[NRGBs]  = { 0.00, 0.00, 0.00, 0.00, 0.00};
+    if(reverse)     TColor::CreateGradientColorTable(NRGBs, stops, green, red, blue, NCont);
+    else            TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
+    break;
+  }
+  }
+
+
+  gStyle->SetNumberContours(NCont);
+
 
 }

@@ -53,7 +53,7 @@ PairAnalysisCutQA::PairAnalysisCutQA() :
   fTypeKeys[kPair]   = "Pair";
   fTypeKeys[kPrePair]= "Pair0";
   fTypeKeys[kEvent]  = "Event";
-  fQAHistList.SetOwner();
+  fQAHistList.SetOwner(kFALSE);
 
 }
 
@@ -77,7 +77,7 @@ PairAnalysisCutQA::PairAnalysisCutQA(const char* name, const char* title) :
   fTypeKeys[kPair]   = "Pair";
   fTypeKeys[kPrePair]= "Pair0";
   fTypeKeys[kEvent]  = "Event";
-  fQAHistList.SetOwner();
+  fQAHistList.SetOwner(kFALSE);
 }
 
 //_____________________________________________________________________
@@ -86,7 +86,7 @@ PairAnalysisCutQA::~PairAnalysisCutQA()
   //
   //Default Destructor
   //
-  fQAHistList.Delete();
+  fQAHistList.Clear();
 }
 
 //_____________________________________________________________________
