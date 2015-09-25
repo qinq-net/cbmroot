@@ -253,10 +253,20 @@ Int_t CbmStsModule::ChargeToAdc(Double_t charge) {
 void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 		                             TClonesArray* clusterArray) {
 
-	// --- Create new cluster
-	Int_t nClusters = clusterArray->GetEntriesFast();
-	CbmStsCluster* cluster =
-			new ( (*clusterArray)[nClusters] ) CbmStsCluster();
+	CbmStsCluster* cluster = NULL;
+
+	// --- If output array is specified: Create a new cluster there
+	if ( clusterArray ) {
+		Int_t nClusters = clusterArray->GetEntriesFast();
+		cluster = new ( (*clusterArray)[nClusters] ) CbmStsCluster();
+	}
+
+	// --- If no output array is specified: Create a new cluster and add it
+	// --- to the module
+	else {
+		cluster = new CbmStsCluster();
+		AddCluster(cluster);
+	}
 
 	// --- Calculate total charge, cluster position and spread
 	Double_t sum1 = 0.;  // sum of charges
@@ -290,7 +300,7 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 
 	LOG(DEBUG2) << GetName() << ": Created new cluster from channel "
 			        << clusterStart << " to " << clusterEnd << ", charge "
-			        << sum1 << ", time " << tsum << "ns, channel mean "
+			        << sum1 << ", time " << tsum << " ns, channel mean "
 			        << sum2 << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
@@ -338,6 +348,13 @@ void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
 	CbmStsDigitize* digitiser = CbmStsSetup::Instance()->GetDigitizer();
 	if ( digitiser ) digitiser->CreateDigi(address, dTime, adc,
 			                                   signal->GetMatch());
+
+	// --- If no digitiser task is present (debug mode): create a digi and
+	// --- add it to the digi buffer.
+	else {
+		CbmStsDigi* digi = new CbmStsDigi(address, dTime, adc);
+		AddDigi(digi, 0);
+	}
 
 	return;
 }

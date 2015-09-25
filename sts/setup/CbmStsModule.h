@@ -144,6 +144,14 @@ class CbmStsModule : public CbmStsElement
      CbmStsDigi* GetDigi(Int_t channel, Int_t& index);
 
 
+     /** Pointer to the digi array (map)
+      *
+      */
+     map<Int_t, pair<CbmStsDigi*, Int_t> >* GetDigiMap() {
+    	 return &fDigis;
+     }
+
+
      /** Number of electronic channels **/
      Int_t GetNofChannels() const { return fNofChannels; };
 
