@@ -310,7 +310,6 @@ public:
     kRICHisMC,                 // status bit for matching btw. glbl. and local MC track
     kTOFisMC,                  // status bit for matching btw. glbl. and local MC track
     kRICHhasProj,              // weather rich ring has a prjection
-    kMediumPassedMC,           // weather medium was passed by track or not
     kTrackMaxMC,
 
     // Pair specific MC variables
@@ -323,6 +322,7 @@ public:
     kVageMatches,            // number of MC tracks (STS) matched to multiple reconstr. track
     kTotalTRDHitsMC,         // size of trd MC point array
     kImpactParam,            // impact parameter from MC header
+    kNPrimMC,                // primary particles from MC header
     kNMaxValuesMC
 
   };
@@ -551,7 +551,7 @@ inline void PairAnalysisVarManager::FillVarMCHeader(const CbmMCEventHeader *head
   //Double_t GetX()       /// vertex x [cm]
   //Double_t GetY()       /// vertex y [cm]
   //Double_t GetZ()       /// vertex z [cm]
-
+  values[kNPrimMC]      = header->GetNPrim();
 }
 
 inline void PairAnalysisVarManager::FillVarVertex(const CbmVertex *vertex, Double_t * const values)
@@ -1009,8 +1009,6 @@ inline void PairAnalysisVarManager::FillVarMCTrack(const CbmMCTrack *particle, D
   values[kSTSHitsMC]   = particle->GetNPoints(kSTS);
   values[kTOFHitsMC]   = particle->GetNPoints(kTOF);
   values[kMUCHHitsMC]  = particle->GetNPoints(kMUCH);
-  values[kMediumPassedMC]  = (Double_t) particle->HasMediumPassed();
-  //  printf(" track passed supprot structure %p %d \n",particle,particle->HasMediumPassed());
 }
 
 inline void PairAnalysisVarManager::FillVarPairAnalysisPair(const PairAnalysisPair *pair, Double_t * const values)

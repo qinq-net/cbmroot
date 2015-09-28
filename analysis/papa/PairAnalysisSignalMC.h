@@ -4,6 +4,7 @@
 #include <TNamed.h>
 #include <TMCProcess.h>
 #include <TSpline.h>
+//#include <TGraph.h>
 //#include <TF1.h>
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -104,7 +105,8 @@ class PairAnalysisSignalMC : public TNamed {
   void SetCheckBothChargesGrandMothers(Bool_t flag1, Bool_t flag2) {fCheckBothChargesGrandMother1 = flag1; fCheckBothChargesGrandMother2 = flag2;}
   void SetMothersRelation(EBranchRelation relation)                {fMothersRelation = relation;}
   void SetGEANTProcess(TMCProcess processID, Bool_t check=kTRUE)  {fGEANTProcess = processID; fCheckGEANTProcess=check;}
-  void SetWeight(TSpline3 *wghts, UInt_t var)                      { if(&fWeights) delete &fWeights; fWeights = *wghts; fType=var; }
+  //  void SetWeight(TSpline3 *wghts, UInt_t var)                      { if(&fWeights) delete &fWeights; fWeights = *wghts; fType=var; }
+  void SetWeight(TSpline3 *wghts, UInt_t var)                      { if(fWeights) delete fWeights; fWeights = wghts; fType=var; }
   void SetWeight(Double_t wght)                                    {fWeight=wght;}
   void SetFillPureMCStep(Bool_t fill=kTRUE)                        {fFillPureMCStep = fill;}
   void SetIsSingleParticle(Bool_t fill=kTRUE)                      {fIsSingleParticle = fill;}
@@ -129,7 +131,7 @@ class PairAnalysisSignalMC : public TNamed {
   Bool_t GetCheckGEANTProcess()                        const {return fCheckGEANTProcess;}
   Double_t GetWeight()                                 const {return fWeight;}
   //  Double_t GetWeight(Double_t *const values)           const {return (&fWeights ? fWeights.Eval(values[fType]) : fWeight); }
-  Double_t GetWeight(Double_t *const values)           const {return (fType>0 ? fWeights.Eval(values[fType]) : fWeight); }
+  Double_t GetWeight(Double_t *const values)           const {return (fType>0 ? fWeights->Eval(values[fType]) : fWeight); }
   Bool_t GetFillPureMCStep()                           const {return fFillPureMCStep;}
   Bool_t IsSingleParticle()                            const {return fIsSingleParticle; }
 
@@ -187,7 +189,8 @@ class PairAnalysisSignalMC : public TNamed {
   EBranchRelation fMothersRelation;   // mother 1&2 relation (same, different or whatever)
   TMCProcess fGEANTProcess;           // GEANT process ID (see roots TMCProcess)
   Double_t fWeight;                   // weighting factor
-  TSpline3   fWeights;                   //> weighting factors
+  //  TSpline3   fWeights;                   //> weighting factors
+  TSpline3   *fWeights;                   //> weighting factors
   UInt_t   fType;                   // lookup variable for weighting factors
   EJpsiRadiativ fJpsiRadiative;       // check for J/psi radiative decay
 
@@ -197,6 +200,9 @@ class PairAnalysisSignalMC : public TNamed {
 
   Bool_t fFillPureMCStep;             // check and fill the pure MC step
   Bool_t fIsSingleParticle;           // single particle MC signal such as e,pi,K,p
+
+  PairAnalysisSignalMC(const PairAnalysisSignalMC &c);
+  PairAnalysisSignalMC &operator=(const PairAnalysisSignalMC &c);
   
   ClassDef(PairAnalysisSignalMC,5);
 };
