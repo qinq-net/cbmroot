@@ -62,28 +62,12 @@ void create_digipar(TString geomFile="full.root", Int_t nEvents = 0)
   // ------------------------------------------------------------------------
 
 
-
-  // ----  Load libraries   -------------------------------------------------
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
-  gSystem->Load("libCbmBase");
-  gSystem->Load("libCbmData");
-  gSystem->Load("libField");
-  gSystem->Load("libGen");
-  gSystem->Load("libPassive");
-  gSystem->Load("libTof");
-
-  gLogger->SetLogScreenLevel("DEBUG2");
-  // ------------------------------------------------------------------------
-
   // -----   Reconstruction run   -------------------------------------------
   FairRunAna *run= new FairRunAna();
   run->SetInputFile(inFile);
   run->SetOutputFile(outFile);
   run->SetGeomFile(geoFile);
+  gLogger->SetLogScreenLevel("DEBUG2");
   // ------------------------------------------------------------------------
 
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
