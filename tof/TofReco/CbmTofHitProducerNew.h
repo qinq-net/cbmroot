@@ -17,7 +17,8 @@ class CbmTofCell;
 
 class TVector3;
 class TClonesArray;
-class TString;                               
+class TString;   
+class TH1;                            
 
 
 class CbmTofHitProducerNew : public FairTask {
@@ -46,6 +47,7 @@ class CbmTofHitProducerNew : public FairTask {
   void SetSigmaZ(Double_t sigma);
   void SetParFileName(const std::string& fnam) { fParFileName = fnam;}
   void SetInitFromAscii(Bool_t ascii) {fParInitFromAscii=ascii;}
+  void SetHistosFileName( TString inName ){ fsHistosFileName = inName;}
 
   Double_t GetSigmaT();
   Double_t GetSigmaEl();
@@ -110,6 +112,84 @@ private:
   CbmTofCell     *fCellInfo;
 
   Bool_t fParInitFromAscii;
+    
+   // Hit Quality for Hits coming from a single MC Point
+   TH1 * fhSinglePointHitDeltaX;
+   TH1 * fhSinglePointHitDeltaY;
+   TH1 * fhSinglePointHitDeltaZ;
+   TH1 * fhSinglePointHitDeltaR;
+   TH1 * fhSinglePointHitDeltaT;
+   TH1 * fhSinglePointHitPullX;
+   TH1 * fhSinglePointHitPullY;
+   TH1 * fhSinglePointHitPullZ;
+   TH1 * fhSinglePointHitPullR;
+   // Hit Quality for Hits coming from different MC Point on strip ends
+      // To MC Point on left side
+   TH1 * fhDiffPointHitLeftDeltaX;
+   TH1 * fhDiffPointHitLeftDeltaY;
+   TH1 * fhDiffPointHitLeftDeltaZ;
+   TH1 * fhDiffPointHitLeftDeltaR;
+   TH1 * fhDiffPointHitLeftDeltaT;
+   TH1 * fhDiffPointHitLeftPullX;
+   TH1 * fhDiffPointHitLeftPullY;
+   TH1 * fhDiffPointHitLeftPullZ;
+   TH1 * fhDiffPointHitLeftPullR;
+      // To MC Point on right side
+   TH1 * fhDiffPointHitRightDeltaX;
+   TH1 * fhDiffPointHitRightDeltaY;
+   TH1 * fhDiffPointHitRightDeltaZ;
+   TH1 * fhDiffPointHitRightDeltaR;
+   TH1 * fhDiffPointHitRightDeltaT;
+   TH1 * fhDiffPointHitRightPullX;
+   TH1 * fhDiffPointHitRightPullY;
+   TH1 * fhDiffPointHitRightPullZ;
+   TH1 * fhDiffPointHitRightPullR;
+   
+   // Hit Quality for Hits coming from multiple a single MC Track but multiple points
+   TH1 * fhSingleTrackHitLeftDeltaX;
+   TH1 * fhSingleTrackHitLeftDeltaY;
+   TH1 * fhSingleTrackHitLeftDeltaZ;
+   TH1 * fhSingleTrackHitLeftDeltaR;
+   TH1 * fhSingleTrackHitLeftDeltaT;
+   TH1 * fhSingleTrackHitLeftPullX;
+   TH1 * fhSingleTrackHitLeftPullY;
+   TH1 * fhSingleTrackHitLeftPullZ;
+   TH1 * fhSingleTrackHitLeftPullR;
+   TH1 * fhSingleTrackHitRightDeltaX;
+   TH1 * fhSingleTrackHitRightDeltaY;
+   TH1 * fhSingleTrackHitRightDeltaZ;
+   TH1 * fhSingleTrackHitRightDeltaR;
+   TH1 * fhSingleTrackHitRightDeltaT;
+   TH1 * fhSingleTrackHitRightPullX;
+   TH1 * fhSingleTrackHitRightPullY;
+   TH1 * fhSingleTrackHitRightPullZ;
+   TH1 * fhSingleTrackHitRightPullR;
+   // Hit Quality for Hits coming from different MC Track on strip ends
+      // To MC Point from Track on left side
+   TH1 * fhDiffTrackHitLeftDeltaX;
+   TH1 * fhDiffTrackHitLeftDeltaY;
+   TH1 * fhDiffTrackHitLeftDeltaZ;
+   TH1 * fhDiffTrackHitLeftDeltaR;
+   TH1 * fhDiffTrackHitLeftDeltaT;
+   TH1 * fhDiffTrackHitLeftPullX;
+   TH1 * fhDiffTrackHitLeftPullY;
+   TH1 * fhDiffTrackHitLeftPullZ;
+   TH1 * fhDiffTrackHitLeftPullR;
+      // To MC Point from Track on right side
+   TH1 * fhDiffTrackHitRightDeltaX;
+   TH1 * fhDiffTrackHitRightDeltaY;
+   TH1 * fhDiffTrackHitRightDeltaZ;
+   TH1 * fhDiffTrackHitRightDeltaR;
+   TH1 * fhDiffTrackHitRightDeltaT;
+   TH1 * fhDiffTrackHitRightPullX;
+   TH1 * fhDiffTrackHitRightPullY;
+   TH1 * fhDiffTrackHitRightPullZ;
+   TH1 * fhDiffTrackHitRightPullR;
+   
+   TString fsHistosFileName;
+   void CreateHistos();
+   void WriteHistos();
+   void DeleteHistos();
 
   CbmTofHitProducerNew(const CbmTofHitProducerNew&);
   CbmTofHitProducerNew& operator=(const CbmTofHitProducerNew&);

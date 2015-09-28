@@ -25,6 +25,7 @@
 #include "TVector3.h"
 #include "TSystem.h"
 #include "TClonesArray.h"
+#include "TH1.h"
 
 #include <iostream>
 
@@ -66,7 +67,71 @@ CbmTofHitProducerNew::CbmTofHitProducerNew()
     fGeoHandler(new CbmTofGeoHandler()),
     fDigiPar(NULL),
     fCellInfo(NULL),
-    fParInitFromAscii(kTRUE)
+    fParInitFromAscii(kTRUE),
+    fhSinglePointHitDeltaX(NULL),
+    fhSinglePointHitDeltaY(NULL),
+    fhSinglePointHitDeltaZ(NULL),
+    fhSinglePointHitDeltaR(NULL),
+    fhSinglePointHitDeltaT(NULL),
+    fhSinglePointHitPullX(NULL),
+    fhSinglePointHitPullY(NULL),
+    fhSinglePointHitPullZ(NULL),
+    fhSinglePointHitPullR(NULL),
+    fhDiffPointHitLeftDeltaX(NULL),
+    fhDiffPointHitLeftDeltaY(NULL),
+    fhDiffPointHitLeftDeltaZ(NULL),
+    fhDiffPointHitLeftDeltaR(NULL),
+    fhDiffPointHitLeftDeltaT(NULL),
+    fhDiffPointHitLeftPullX(NULL),
+    fhDiffPointHitLeftPullY(NULL),
+    fhDiffPointHitLeftPullZ(NULL),
+    fhDiffPointHitLeftPullR(NULL),
+    fhDiffPointHitRightDeltaX(NULL),
+    fhDiffPointHitRightDeltaY(NULL),
+    fhDiffPointHitRightDeltaZ(NULL),
+    fhDiffPointHitRightDeltaR(NULL),
+    fhDiffPointHitRightDeltaT(NULL),
+    fhDiffPointHitRightPullX(NULL),
+    fhDiffPointHitRightPullY(NULL),
+    fhDiffPointHitRightPullZ(NULL),
+    fhDiffPointHitRightPullR(NULL),
+    fhSingleTrackHitLeftDeltaX(NULL),
+    fhSingleTrackHitLeftDeltaY(NULL),
+    fhSingleTrackHitLeftDeltaZ(NULL),
+    fhSingleTrackHitLeftDeltaR(NULL),
+    fhSingleTrackHitLeftDeltaT(NULL),
+    fhSingleTrackHitLeftPullX(NULL),
+    fhSingleTrackHitLeftPullY(NULL),
+    fhSingleTrackHitLeftPullZ(NULL),
+    fhSingleTrackHitLeftPullR(NULL),
+    fhSingleTrackHitRightDeltaX(NULL),
+    fhSingleTrackHitRightDeltaY(NULL),
+    fhSingleTrackHitRightDeltaZ(NULL),
+    fhSingleTrackHitRightDeltaR(NULL),
+    fhSingleTrackHitRightDeltaT(NULL),
+    fhSingleTrackHitRightPullX(NULL),
+    fhSingleTrackHitRightPullY(NULL),
+    fhSingleTrackHitRightPullZ(NULL),
+    fhSingleTrackHitRightPullR(NULL),
+    fhDiffTrackHitLeftDeltaX(NULL),
+    fhDiffTrackHitLeftDeltaY(NULL),
+    fhDiffTrackHitLeftDeltaZ(NULL),
+    fhDiffTrackHitLeftDeltaR(NULL),
+    fhDiffTrackHitLeftDeltaT(NULL),
+    fhDiffTrackHitLeftPullX(NULL),
+    fhDiffTrackHitLeftPullY(NULL),
+    fhDiffTrackHitLeftPullZ(NULL),
+    fhDiffTrackHitLeftPullR(NULL),
+    fhDiffTrackHitRightDeltaX(NULL),
+    fhDiffTrackHitRightDeltaY(NULL),
+    fhDiffTrackHitRightDeltaZ(NULL),
+    fhDiffTrackHitRightDeltaR(NULL),
+    fhDiffTrackHitRightDeltaT(NULL),
+    fhDiffTrackHitRightPullX(NULL),
+    fhDiffTrackHitRightPullY(NULL),
+    fhDiffTrackHitRightPullZ(NULL),
+    fhDiffTrackHitRightPullR(NULL),
+    fsHistosFileName("HitProdNew_QA.hst.root")
 {
 }
 
@@ -106,7 +171,71 @@ CbmTofHitProducerNew::CbmTofHitProducerNew(const char *name, Int_t verbose)
    fGeoHandler(new CbmTofGeoHandler()),
    fDigiPar(NULL),
    fCellInfo(NULL),
-   fParInitFromAscii(kTRUE)
+   fParInitFromAscii(kTRUE),
+    fhSinglePointHitDeltaX(NULL),
+    fhSinglePointHitDeltaY(NULL),
+    fhSinglePointHitDeltaZ(NULL),
+    fhSinglePointHitDeltaR(NULL),
+    fhSinglePointHitDeltaT(NULL),
+    fhSinglePointHitPullX(NULL),
+    fhSinglePointHitPullY(NULL),
+    fhSinglePointHitPullZ(NULL),
+    fhSinglePointHitPullR(NULL),
+    fhDiffPointHitLeftDeltaX(NULL),
+    fhDiffPointHitLeftDeltaY(NULL),
+    fhDiffPointHitLeftDeltaZ(NULL),
+    fhDiffPointHitLeftDeltaR(NULL),
+    fhDiffPointHitLeftDeltaT(NULL),
+    fhDiffPointHitLeftPullX(NULL),
+    fhDiffPointHitLeftPullY(NULL),
+    fhDiffPointHitLeftPullZ(NULL),
+    fhDiffPointHitLeftPullR(NULL),
+    fhDiffPointHitRightDeltaX(NULL),
+    fhDiffPointHitRightDeltaY(NULL),
+    fhDiffPointHitRightDeltaZ(NULL),
+    fhDiffPointHitRightDeltaR(NULL),
+    fhDiffPointHitRightDeltaT(NULL),
+    fhDiffPointHitRightPullX(NULL),
+    fhDiffPointHitRightPullY(NULL),
+    fhDiffPointHitRightPullZ(NULL),
+    fhDiffPointHitRightPullR(NULL),
+    fhSingleTrackHitLeftDeltaX(NULL),
+    fhSingleTrackHitLeftDeltaY(NULL),
+    fhSingleTrackHitLeftDeltaZ(NULL),
+    fhSingleTrackHitLeftDeltaR(NULL),
+    fhSingleTrackHitLeftDeltaT(NULL),
+    fhSingleTrackHitLeftPullX(NULL),
+    fhSingleTrackHitLeftPullY(NULL),
+    fhSingleTrackHitLeftPullZ(NULL),
+    fhSingleTrackHitLeftPullR(NULL),
+    fhSingleTrackHitRightDeltaX(NULL),
+    fhSingleTrackHitRightDeltaY(NULL),
+    fhSingleTrackHitRightDeltaZ(NULL),
+    fhSingleTrackHitRightDeltaR(NULL),
+    fhSingleTrackHitRightDeltaT(NULL),
+    fhSingleTrackHitRightPullX(NULL),
+    fhSingleTrackHitRightPullY(NULL),
+    fhSingleTrackHitRightPullZ(NULL),
+    fhSingleTrackHitRightPullR(NULL),
+    fhDiffTrackHitLeftDeltaX(NULL),
+    fhDiffTrackHitLeftDeltaY(NULL),
+    fhDiffTrackHitLeftDeltaZ(NULL),
+    fhDiffTrackHitLeftDeltaR(NULL),
+    fhDiffTrackHitLeftDeltaT(NULL),
+    fhDiffTrackHitLeftPullX(NULL),
+    fhDiffTrackHitLeftPullY(NULL),
+    fhDiffTrackHitLeftPullZ(NULL),
+    fhDiffTrackHitLeftPullR(NULL),
+    fhDiffTrackHitRightDeltaX(NULL),
+    fhDiffTrackHitRightDeltaY(NULL),
+    fhDiffTrackHitRightDeltaZ(NULL),
+    fhDiffTrackHitRightDeltaR(NULL),
+    fhDiffTrackHitRightDeltaT(NULL),
+    fhDiffTrackHitRightPullX(NULL),
+    fhDiffTrackHitRightPullY(NULL),
+    fhDiffTrackHitRightPullZ(NULL),
+    fhDiffTrackHitRightPullR(NULL),
+    fsHistosFileName("HitProdNew_QA.hst.root")
 {
   cout << "CbmTofHitProducerNew instantiated with verbose = "<<fVerbose<<endl;
 }
@@ -161,6 +290,7 @@ InitStatus CbmTofHitProducerNew::ReInit()
 
 InitStatus CbmTofHitProducerNew::Init()
 {
+  CreateHistos();
 
   cout << "nh - version of CbmTofHitProducerNew initializing with file " << fParFileName << endl;
   FairRootManager *fManager = FairRootManager::Instance();
@@ -594,6 +724,130 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
 	   flag = 2; nFl2++;
        }
        
+      // Check hit quality
+      if(point_left[t][i][j][k]==point_right[t][i][j][k])
+      {
+         CbmTofPoint * ptqa = (CbmTofPoint*) fTofPoints->At(point_left[t][i][j][k]);
+         // Obtain Point position
+         TVector3 vPntPos;
+         ptqa->Position( vPntPos );
+         
+         Double_t dDeltaX = xHit - vPntPos.X();
+         Double_t dDeltaY = yHit - vPntPos.Y();
+         Double_t dDeltaZ = zHit - vPntPos.Z();
+         Double_t dDeltaR = TMath::Sqrt(   dDeltaX*dDeltaX 
+                                         + dDeltaY*dDeltaY 
+                                         + dDeltaZ*dDeltaZ ); // Not sure Z should be in?
+         Double_t rHitErr = TMath::Sqrt(   xHitErr*xHitErr 
+                                         + yHitErr*yHitErr 
+                                         + zHitErr*zHitErr ); // Not sure Z should be in?
+         fhSinglePointHitDeltaX->Fill(dDeltaX);
+         fhSinglePointHitDeltaY->Fill(dDeltaY);
+         fhSinglePointHitDeltaZ->Fill(dDeltaZ);
+         fhSinglePointHitDeltaR->Fill(dDeltaR);
+         fhSinglePointHitDeltaT->Fill( 1000.0*(tHit - ptqa->GetTime()) );
+         fhSinglePointHitPullX->Fill(dDeltaX/xHitErr);
+         fhSinglePointHitPullY->Fill(dDeltaY/yHitErr);
+         fhSinglePointHitPullZ->Fill(dDeltaZ/zHitErr);
+         fhSinglePointHitPullR->Fill(dDeltaR/rHitErr);
+      } // if(point_left[t][i][j][k]==point_right[t][i][j][k])
+         else
+         {
+            // Left Point   
+            CbmTofPoint * ptqaL = (CbmTofPoint*) fTofPoints->At(point_left[t][i][j][k]);
+            // Obtain Point position
+            TVector3 vPntPosL;
+            ptqaL->Position( vPntPosL );
+            
+            Double_t dDeltaXL = xHit - vPntPosL.X();
+            Double_t dDeltaYL = yHit - vPntPosL.Y();
+            Double_t dDeltaZL = zHit - vPntPosL.Z();
+            Double_t dDeltaRL = TMath::Sqrt(   dDeltaXL*dDeltaXL 
+                                             + dDeltaYL*dDeltaYL 
+                                             + dDeltaZL*dDeltaZL ); // Not sure Z should be in?
+            Double_t rHitErr = TMath::Sqrt(   xHitErr*xHitErr 
+                                            + yHitErr*yHitErr 
+                                            + zHitErr*zHitErr ); // Not sure Z should be in?
+            fhDiffPointHitLeftDeltaX->Fill(dDeltaXL);
+            fhDiffPointHitLeftDeltaY->Fill(dDeltaYL);
+            fhDiffPointHitLeftDeltaZ->Fill(dDeltaZL);
+            fhDiffPointHitLeftDeltaR->Fill(dDeltaRL);
+            fhDiffPointHitLeftDeltaT->Fill( 1000.0*(tHit - ptqaL->GetTime()) );
+            fhDiffPointHitLeftPullX->Fill(dDeltaXL/xHitErr);
+            fhDiffPointHitLeftPullY->Fill(dDeltaYL/yHitErr);
+            fhDiffPointHitLeftPullZ->Fill(dDeltaZL/zHitErr);
+            fhDiffPointHitLeftPullR->Fill(dDeltaRL/rHitErr);
+            
+            // Right Point
+            CbmTofPoint * ptqaR = (CbmTofPoint*) fTofPoints->At(point_right[t][i][j][k]);
+            // Obtain Point position
+            TVector3 vPntPosR;
+            ptqaR->Position( vPntPosR );
+            
+            Double_t dDeltaXR = xHit - vPntPosR.X();
+            Double_t dDeltaYR = yHit - vPntPosR.Y();
+            Double_t dDeltaZR = zHit - vPntPosR.Z();
+            Double_t dDeltaRR = TMath::Sqrt(  dDeltaXR*dDeltaXR 
+                                            + dDeltaYR*dDeltaYR 
+                                            + dDeltaZR*dDeltaZR ); // Not sure Z should be in?
+            fhDiffPointHitRightDeltaX->Fill(dDeltaXR);
+            fhDiffPointHitRightDeltaY->Fill(dDeltaYR);
+            fhDiffPointHitRightDeltaZ->Fill(dDeltaZR);
+            fhDiffPointHitRightDeltaR->Fill(dDeltaRR);
+            fhDiffPointHitRightDeltaT->Fill( 1000.0*(tHit - ptqaR->GetTime()) );
+            fhDiffPointHitRightPullX->Fill(dDeltaXR/xHitErr);
+            fhDiffPointHitRightPullY->Fill(dDeltaYR/yHitErr);
+            fhDiffPointHitRightPullZ->Fill(dDeltaZR/zHitErr);
+            fhDiffPointHitRightPullR->Fill(dDeltaRR/rHitErr);
+            
+            if(trackID_left[t][i][j][k]==trackID_right[t][i][j][k])
+            {
+               // Single Track but different points
+               fhSingleTrackHitLeftDeltaX->Fill(dDeltaXL);
+               fhSingleTrackHitLeftDeltaY->Fill(dDeltaYL);
+               fhSingleTrackHitLeftDeltaZ->Fill(dDeltaZL);
+               fhSingleTrackHitLeftDeltaR->Fill(dDeltaRL);
+               fhSingleTrackHitLeftDeltaT->Fill( 1000.0*(tHit - ptqaL->GetTime()) );
+               fhSingleTrackHitLeftPullX->Fill(dDeltaXL/xHitErr);
+               fhSingleTrackHitLeftPullY->Fill(dDeltaYL/yHitErr);
+               fhSingleTrackHitLeftPullZ->Fill(dDeltaZL/zHitErr);
+               fhSingleTrackHitLeftPullR->Fill(dDeltaRL/rHitErr);
+               
+               fhSingleTrackHitRightDeltaX->Fill(dDeltaXR);
+               fhSingleTrackHitRightDeltaY->Fill(dDeltaYR);
+               fhSingleTrackHitRightDeltaZ->Fill(dDeltaZR);
+               fhSingleTrackHitRightDeltaR->Fill(dDeltaRR);
+               fhSingleTrackHitRightDeltaT->Fill( 1000.0*(tHit - ptqaR->GetTime()) );
+               fhSingleTrackHitRightPullX->Fill(dDeltaXR/xHitErr);
+               fhSingleTrackHitRightPullY->Fill(dDeltaYR/yHitErr);
+               fhSingleTrackHitRightPullZ->Fill(dDeltaZR/zHitErr);
+               fhSingleTrackHitRightPullR->Fill(dDeltaRR/rHitErr);
+            } // if(trackID_left[t][i][j][k]==trackID_right[t][i][j][k])
+            else
+            {
+               // multiple tracks
+               fhDiffTrackHitLeftDeltaX->Fill(dDeltaXL);
+               fhDiffTrackHitLeftDeltaY->Fill(dDeltaYL);
+               fhDiffTrackHitLeftDeltaZ->Fill(dDeltaZL);
+               fhDiffTrackHitLeftDeltaR->Fill(dDeltaRL);
+               fhDiffTrackHitLeftDeltaT->Fill( 1000.0*(tHit - ptqaL->GetTime()) );
+               fhDiffTrackHitLeftPullX->Fill(dDeltaXL/xHitErr);
+               fhDiffTrackHitLeftPullY->Fill(dDeltaYL/yHitErr);
+               fhDiffTrackHitLeftPullZ->Fill(dDeltaZL/zHitErr);
+               fhDiffTrackHitLeftPullR->Fill(dDeltaRL/rHitErr);
+               
+               fhDiffTrackHitRightDeltaX->Fill(dDeltaXR);
+               fhDiffTrackHitRightDeltaY->Fill(dDeltaYR);
+               fhDiffTrackHitRightDeltaZ->Fill(dDeltaZR);
+               fhDiffTrackHitRightDeltaR->Fill(dDeltaRR);
+               fhDiffTrackHitRightDeltaT->Fill( 1000.0*(tHit - ptqaR->GetTime()) );
+               fhDiffTrackHitRightPullX->Fill(dDeltaXR/xHitErr);
+               fhDiffTrackHitRightPullY->Fill(dDeltaYR/yHitErr);
+               fhDiffTrackHitRightPullZ->Fill(dDeltaZR/zHitErr);
+               fhDiffTrackHitRightPullR->Fill(dDeltaRR/rHitErr);
+            } // else of if(trackID_left[t][i][j][k]==trackID_right[t][i][j][k])
+         } // else of if(point_left[t][i][j][k]==point_right[t][i][j][k])
+       
        TVector3 hitPos(xHit, yHit, zHit);
        TVector3 hitPosErr(xHitErr, yHitErr, zHitErr);
        Int_t iCh = Ch[t][i][j][k];
@@ -637,6 +891,8 @@ void CbmTofHitProducerNew::AddHit(Int_t detID, TVector3 &posHit, TVector3 &posHi
 
 void CbmTofHitProducerNew::Finish()
 {
+   WriteHistos();
+   DeleteHistos();
 }
 
 
@@ -714,7 +970,364 @@ Double_t CbmTofHitProducerNew::GetSigmaZ()
     return  fSigmaZ;
 }
 
+void CbmTofHitProducerNew::CreateHistos()
+{
+   // Range hit deviation from MC
+   Int_t    iNbBinsDeltaPos  =  600;
+   Double_t dDeltaPosRange   =   30; // cm
+   Int_t    iNbBinsDeltaTime = 1000;
+   Double_t dDeltaTimeRange  = 1000; // ps 
+   // Range pulls from MC
+   Int_t    iNbBinsPullPos  =  500;
+   Double_t dPullPosRange   =    5; 
+         
+   fhSinglePointHitDeltaX = new TH1D("HitProd_SinglePointHitDeltaX", 
+                              "Quality of the Tof Hits position on X axis, for hit coming from a single MC Point; X(Hit) - X(Point) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhSinglePointHitDeltaY = new TH1D("HitProd_SinglePointHitDeltaY", 
+                              "Quality of the Tof Hits position on Y axis, for hit coming from a single MC Point; Y(Hit) - Y(Point) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhSinglePointHitDeltaZ = new TH1D("HitProd_SinglePointHitDeltaZ", 
+                              "Quality of the Tof Hits position on Z axis, for hit coming from a single MC Point; Z(Hit) - Z(Point) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhSinglePointHitDeltaR = new TH1D("HitProd_SinglePointHitDeltaR", 
+                              "Quality of the Tof Hits position, for hit coming from a single MC Point; R(Hit -> Point) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhSinglePointHitDeltaT = new TH1D("HitProd_SinglePointHitDeltaT", 
+                              "Quality of the Tof Hits Time, for hit coming from a single MC Point; T(hit) - T(Point) [ps]; # [Hits]",
+                              iNbBinsDeltaTime, -dDeltaTimeRange, dDeltaTimeRange);
+   fhSinglePointHitPullX = new TH1D("HitProd_SinglePointHitPullX", 
+                              "Quality of the Tof Hits position error on X axis, for hit coming from a single MC Point; Pull X(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhSinglePointHitPullY = new TH1D("HitProd_SinglePointHitPullY", 
+                              "Quality of the Tof Hits position error on Y axis, for hit coming from a single MC Point; Pull Y(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhSinglePointHitPullZ = new TH1D("HitProd_SinglePointHitPullZ", 
+                              "Quality of the Tof Hits position error on Z axis, for hit coming from a single MC Point; Pull Z(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhSinglePointHitPullR = new TH1D("HitProd_SinglePointHitPullR", 
+                              "Quality of the Tof Hits position error, for hit coming from a single MC Point; Pull R(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+         
+   fhDiffPointHitLeftDeltaX = new TH1D("HitProd_DiffPointHitLeftDeltaX", 
+                              "Quality of the Tof Hits position on X axis, for hit from diff. MC Point, vs left point; X(Hit) - X(Point) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhDiffPointHitLeftDeltaY = new TH1D("HitProd_DiffPointHitLeftDeltaY", 
+                              "Quality of the Tof Hits position on Y axis, for hit from diff. MC Point, vs left point; Y(Hit) - Y(Point) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhDiffPointHitLeftDeltaZ = new TH1D("HitProd_DiffPointHitLeftDeltaZ", 
+                              "Quality of the Tof Hits position on Z axis, for hit from diff. MC Point, vs left point; Z(Hit) - Z(Point) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhDiffPointHitLeftDeltaR = new TH1D("HitProd_DiffPointHitLeftDeltaR", 
+                              "Quality of the Tof Hits position, for hit from diff. MC Point, vs left point; R(Hit -> Point) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhDiffPointHitLeftDeltaT = new TH1D("HitProd_DiffPointHitLeftDeltaT", 
+                              "Quality of the Tof Hits Time, for hit from diff. MC Point, vs left point; T(hit) - T(Point) [ps]; # [Hits]",
+                              iNbBinsDeltaTime, -dDeltaTimeRange, dDeltaTimeRange);
+   fhDiffPointHitLeftPullX = new TH1D("HitProd_DiffPointHitLeftPullX", 
+                              "Quality of the Tof Hits position error on X axis, for hit from diff. MC Point, vs left point; Pull X(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhDiffPointHitLeftPullY = new TH1D("HitProd_DiffPointHitLeftPullY", 
+                              "Quality of the Tof Hits position error on Y axis, for hit from diff. MC Point, vs left point; Pull Y(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhDiffPointHitLeftPullZ = new TH1D("HitProd_DiffPointHitLeftPullZ", 
+                              "Quality of the Tof Hits position error on Z axis, for hit from diff. MC Point, vs left point; Pull Z(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhDiffPointHitLeftPullR = new TH1D("HitProd_DiffPointHitLeftPullR", 
+                              "Quality of the Tof Hits position error, for hit from diff. MC Point, vs left point; Pull R(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+         
+   fhDiffPointHitRightDeltaX = new TH1D("HitProd_DiffPointHitRightDeltaX", 
+                              "Quality of the Tof Hits position on X axis, for hit from diff. MC Point, vs right point; X(Hit) - X(Point) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhDiffPointHitRightDeltaY = new TH1D("HitProd_DiffPointHitRightDeltaY", 
+                              "Quality of the Tof Hits position on Y axis, for hit from diff. MC Point, vs right point; Y(Hit) - Y(Point) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhDiffPointHitRightDeltaZ = new TH1D("HitProd_DiffPointHitRightDeltaZ", 
+                              "Quality of the Tof Hits position on Z axis, for hit from diff. MC Point, vs right point; Z(Hit) - Z(Point) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhDiffPointHitRightDeltaR = new TH1D("HitProd_DiffPointHitRightDeltaR", 
+                              "Quality of the Tof Hits position, for hit from diff. MC Point, vs right point; R(Hit -> Point) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhDiffPointHitRightDeltaT = new TH1D("HitProd_DiffPointHitRightDeltaT", 
+                              "Quality of the Tof Hits Time, for hit from diff. MC Point, vs right point; T(hit) - T(Point) [ps]; # [Hits]",
+                              iNbBinsDeltaTime, -dDeltaTimeRange, dDeltaTimeRange);
+   fhDiffPointHitRightPullX = new TH1D("HitProd_DiffPointHitRightPullX", 
+                              "Quality of the Tof Hits position error on X axis, for hit from diff. MC Point, vs right point; Pull X(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhDiffPointHitRightPullY = new TH1D("HitProd_DiffPointHitRightPullY", 
+                              "Quality of the Tof Hits position error on Y axis, for hit from diff. MC Point, vs right point; Pull Y(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhDiffPointHitRightPullZ = new TH1D("HitProd_DiffPointHitRightPullZ", 
+                              "Quality of the Tof Hits position error on Z axis, for hit from diff. MC Point, vs right point; Pull Z(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhDiffPointHitRightPullR = new TH1D("HitProd_DiffPointHitRightPullR", 
+                              "Quality of the Tof Hits position error, for hit from diff. MC Point, vs right point; Pull R(Hit -> Point) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+            
+            
+         
+   fhSingleTrackHitLeftDeltaX = new TH1D("HitProd_SingleTrackHitLeftDeltaX", 
+                              "Quality of the Tof Hits position on X axis, for hit coming from a single MC Track but multi Pnt; X(Hit) - X(Track) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhSingleTrackHitLeftDeltaY = new TH1D("HitProd_SingleTrackHitLeftDeltaY", 
+                              "Quality of the Tof Hits position on Y axis, for hit coming from a single MC Track but multi Pnt; Y(Hit) - Y(Track) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhSingleTrackHitLeftDeltaZ = new TH1D("HitProd_SingleTrackHitLeftDeltaZ", 
+                              "Quality of the Tof Hits position on Z axis, for hit coming from a single MC Track but multi Pnt; Z(Hit) - Z(Track) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhSingleTrackHitLeftDeltaR = new TH1D("HitProd_SingleTrackHitLeftDeltaR", 
+                              "Quality of the Tof Hits position, for hit coming from a single MC Track but multi Pnt; R(Hit -> Track) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhSingleTrackHitLeftDeltaT = new TH1D("HitProd_SingleTrackHitLeftDeltaT", 
+                              "Quality of the Tof Hits Time, for hit coming from a single MC Track but multi Pnt; T(hit) - T(Track) [ps]; # [Hits]",
+                              iNbBinsDeltaTime, -dDeltaTimeRange, dDeltaTimeRange);
+   fhSingleTrackHitLeftPullX = new TH1D("HitProd_SingleTrackHitLeftPullX", 
+                              "Quality of the Tof Hits position error on X axis, for hit coming from a single MC Track but multi Pnt; Pull X(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhSingleTrackHitLeftPullY = new TH1D("HitProd_SingleTrackHitLeftPullY", 
+                              "Quality of the Tof Hits position error on Y axis, for hit coming from a single MC Track but multi Pnt; Pull Y(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhSingleTrackHitLeftPullZ = new TH1D("HitProd_SingleTrackHitLeftPullZ", 
+                              "Quality of the Tof Hits position error on Z axis, for hit coming from a single MC Track but multi Pnt; Pull Z(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhSingleTrackHitLeftPullR = new TH1D("HitProd_SingleTrackHitLeftPullR", 
+                              "Quality of the Tof Hits position error, for hit coming from a single MC Track but multi Pnt; Pull R(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+                              
+   fhSingleTrackHitRightDeltaX = new TH1D("HitProd_SingleTrackHitRightDeltaX", 
+                              "Quality of the Tof Hits position on X axis, for hit coming from a single MC Track but multi Pnt; X(Hit) - X(Track) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhSingleTrackHitRightDeltaY = new TH1D("HitProd_SingleTrackHitRightDeltaY", 
+                              "Quality of the Tof Hits position on Y axis, for hit coming from a single MC Track but multi Pnt; Y(Hit) - Y(Track) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhSingleTrackHitRightDeltaZ = new TH1D("HitProd_SingleTrackHitRightDeltaZ", 
+                              "Quality of the Tof Hits position on Z axis, for hit coming from a single MC Track but multi Pnt; Z(Hit) - Z(Track) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhSingleTrackHitRightDeltaR = new TH1D("HitProd_SingleTrackHitRightDeltaR", 
+                              "Quality of the Tof Hits position, for hit coming from a single MC Track but multi Pnt; R(Hit -> Track) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhSingleTrackHitRightDeltaT = new TH1D("HitProd_SingleTrackHitRightDeltaT", 
+                              "Quality of the Tof Hits Time, for hit coming from a single MC Track but multi Pnt; T(hit) - T(Track) [ps]; # [Hits]",
+                              iNbBinsDeltaTime, -dDeltaTimeRange, dDeltaTimeRange);
+   fhSingleTrackHitRightPullX = new TH1D("HitProd_SingleTrackHitRightPullX", 
+                              "Quality of the Tof Hits position error on X axis, for hit coming from a single MC Track but multi Pnt; Pull X(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhSingleTrackHitRightPullY = new TH1D("HitProd_SingleTrackHitRightPullY", 
+                              "Quality of the Tof Hits position error on Y axis, for hit coming from a single MC Track but multi Pnt; Pull Y(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhSingleTrackHitRightPullZ = new TH1D("HitProd_SingleTrackHitRightPullZ", 
+                              "Quality of the Tof Hits position error on Z axis, for hit coming from a single MC Track but multi Pnt; Pull Z(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhSingleTrackHitRightPullR = new TH1D("HitProd_SingleTrackHitRightPullR", 
+                              "Quality of the Tof Hits position error, for hit coming from a single MC Track but multi Pnt; Pull R(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+         
+   fhDiffTrackHitLeftDeltaX = new TH1D("HitProd_DiffTrackHitLeftDeltaX", 
+                              "Quality of the Tof Hits position on X axis, for hit from diff. MC Track, vs left point; X(Hit) - X(Track) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhDiffTrackHitLeftDeltaY = new TH1D("HitProd_DiffTrackHitLeftDeltaY", 
+                              "Quality of the Tof Hits position on Y axis, for hit from diff. MC Track, vs left point; Y(Hit) - Y(Track) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhDiffTrackHitLeftDeltaZ = new TH1D("HitProd_DiffTrackHitLeftDeltaZ", 
+                              "Quality of the Tof Hits position on Z axis, for hit from diff. MC Track, vs left point; Z(Hit) - Z(Track) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhDiffTrackHitLeftDeltaR = new TH1D("HitProd_DiffTrackHitLeftDeltaR", 
+                              "Quality of the Tof Hits position, for hit from diff. MC Track, vs left point; R(Hit -> Track) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhDiffTrackHitLeftDeltaT = new TH1D("HitProd_DiffTrackHitLeftDeltaT", 
+                              "Quality of the Tof Hits Time, for hit from diff. MC Track, vs left point; T(hit) - T(Track) [ps]; # [Hits]",
+                              iNbBinsDeltaTime, -dDeltaTimeRange, dDeltaTimeRange);
+   fhDiffTrackHitLeftPullX = new TH1D("HitProd_DiffTrackHitLeftPullX", 
+                              "Quality of the Tof Hits position error on X axis, for hit from diff. MC Track, vs left point; Pull X(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhDiffTrackHitLeftPullY = new TH1D("HitProd_DiffTrackHitLeftPullY", 
+                              "Quality of the Tof Hits position error on Y axis, for hit from diff. MC Track, vs left point; Pull Y(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhDiffTrackHitLeftPullZ = new TH1D("HitProd_DiffTrackHitLeftPullZ", 
+                              "Quality of the Tof Hits position error on Z axis, for hit from diff. MC Track, vs left point; Pull Z(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhDiffTrackHitLeftPullR = new TH1D("HitProd_DiffTrackHitLeftPullR", 
+                              "Quality of the Tof Hits position error, for hit from diff. MC Track, vs left point; Pull R(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+         
+   fhDiffTrackHitRightDeltaX = new TH1D("HitProd_DiffTrackHitRightDeltaX", 
+                              "Quality of the Tof Hits position on X axis, for hit from diff. MC Track, vs right point; X(Hit) - X(Track) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhDiffTrackHitRightDeltaY = new TH1D("HitProd_DiffTrackHitRightDeltaY", 
+                              "Quality of the Tof Hits position on Y axis, for hit from diff. MC Track, vs right point; Y(Hit) - Y(Track) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhDiffTrackHitRightDeltaZ = new TH1D("HitProd_DiffTrackHitRightDeltaZ", 
+                              "Quality of the Tof Hits position on Z axis, for hit from diff. MC Track, vs right point; Z(Hit) - Z(Track) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhDiffTrackHitRightDeltaR = new TH1D("HitProd_DiffTrackHitRightDeltaR", 
+                              "Quality of the Tof Hits position, for hit from diff. MC Track, vs right point; R(Hit -> Track) [cm]; # [Hits]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange);
+   fhDiffTrackHitRightDeltaT = new TH1D("HitProd_DiffTrackHitRightDeltaT", 
+                              "Quality of the Tof Hits Time, for hit from diff. MC Track, vs right point; T(hit) - T(Track) [ps]; # [Hits]",
+                              iNbBinsDeltaTime, -dDeltaTimeRange, dDeltaTimeRange);
+   fhDiffTrackHitRightPullX = new TH1D("HitProd_DiffTrackHitRightPullX", 
+                              "Quality of the Tof Hits position error on X axis, for hit from diff. MC Track, vs right point; Pull X(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhDiffTrackHitRightPullY = new TH1D("HitProd_DiffTrackHitRightPullY", 
+                              "Quality of the Tof Hits position error on Y axis, for hit from diff. MC Track, vs right point; Pull Y(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhDiffTrackHitRightPullZ = new TH1D("HitProd_DiffTrackHitRightPullZ", 
+                              "Quality of the Tof Hits position error on Z axis, for hit from diff. MC Track, vs right point; Pull Z(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+   fhDiffTrackHitRightPullR = new TH1D("HitProd_DiffTrackHitRightPullR", 
+                              "Quality of the Tof Hits position error, for hit from diff. MC Track, vs right point; Pull R(Hit -> Track) []; # [Hits]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+}
+
+void CbmTofHitProducerNew::WriteHistos()
+{
+   if( "" != fsHistosFileName )
+   {
+      // Write histogramms to the file
+      TDirectory * oldir = gDirectory;
+      TFile *fHist = new TFile( fsHistosFileName,"RECREATE");
+      fHist->cd();
+      
+      fhSinglePointHitDeltaX->Write();
+      fhSinglePointHitDeltaY->Write();
+      fhSinglePointHitDeltaZ->Write();
+      fhSinglePointHitDeltaR->Write();
+      fhSinglePointHitDeltaT->Write();
+      fhSinglePointHitPullX->Write();
+      fhSinglePointHitPullY->Write();
+      fhSinglePointHitPullZ->Write();
+      fhSinglePointHitPullR->Write();
+      fhDiffPointHitLeftDeltaX->Write();
+      fhDiffPointHitLeftDeltaY->Write();
+      fhDiffPointHitLeftDeltaZ->Write();
+      fhDiffPointHitLeftDeltaR->Write();
+      fhDiffPointHitLeftDeltaT->Write();
+      fhDiffPointHitLeftPullX->Write();
+      fhDiffPointHitLeftPullY->Write();
+      fhDiffPointHitLeftPullZ->Write();
+      fhDiffPointHitLeftPullR->Write();
+      fhDiffPointHitRightDeltaX->Write();
+      fhDiffPointHitRightDeltaY->Write();
+      fhDiffPointHitRightDeltaZ->Write();
+      fhDiffPointHitRightDeltaR->Write();
+      fhDiffPointHitRightDeltaT->Write();
+      fhDiffPointHitRightPullX->Write();
+      fhDiffPointHitRightPullY->Write();
+      fhDiffPointHitRightPullZ->Write();
+      fhDiffPointHitRightPullR->Write();
+      
+      fhSingleTrackHitLeftDeltaX->Write();
+      fhSingleTrackHitLeftDeltaY->Write();
+      fhSingleTrackHitLeftDeltaZ->Write();
+      fhSingleTrackHitLeftDeltaR->Write();
+      fhSingleTrackHitLeftDeltaT->Write();
+      fhSingleTrackHitLeftPullX->Write();
+      fhSingleTrackHitLeftPullY->Write();
+      fhSingleTrackHitLeftPullZ->Write();
+      fhSingleTrackHitLeftPullR->Write();
+      fhSingleTrackHitRightDeltaX->Write();
+      fhSingleTrackHitRightDeltaY->Write();
+      fhSingleTrackHitRightDeltaZ->Write();
+      fhSingleTrackHitRightDeltaR->Write();
+      fhSingleTrackHitRightDeltaT->Write();
+      fhSingleTrackHitRightPullX->Write();
+      fhSingleTrackHitRightPullY->Write();
+      fhSingleTrackHitRightPullZ->Write();
+      fhSingleTrackHitRightPullR->Write();
+      fhDiffTrackHitLeftDeltaX->Write();
+      fhDiffTrackHitLeftDeltaY->Write();
+      fhDiffTrackHitLeftDeltaZ->Write();
+      fhDiffTrackHitLeftDeltaR->Write();
+      fhDiffTrackHitLeftDeltaT->Write();
+      fhDiffTrackHitLeftPullX->Write();
+      fhDiffTrackHitLeftPullY->Write();
+      fhDiffTrackHitLeftPullZ->Write();
+      fhDiffTrackHitLeftPullR->Write();
+      fhDiffTrackHitRightDeltaX->Write();
+      fhDiffTrackHitRightDeltaY->Write();
+      fhDiffTrackHitRightDeltaZ->Write();
+      fhDiffTrackHitRightDeltaR->Write();
+      fhDiffTrackHitRightDeltaT->Write();
+      fhDiffTrackHitRightPullX->Write();
+      fhDiffTrackHitRightPullY->Write();
+      fhDiffTrackHitRightPullZ->Write();
+      fhDiffTrackHitRightPullR->Write();
+      
+      
+      gDirectory->cd( oldir->GetPath() );
+
+      fHist->Close();
+   } // if( "" != fsHistosFileName )
+}
+
+void CbmTofHitProducerNew::DeleteHistos()
+{
+   delete fhSinglePointHitDeltaX;
+   delete fhSinglePointHitDeltaY;
+   delete fhSinglePointHitDeltaZ;
+   delete fhSinglePointHitDeltaR;
+   delete fhSinglePointHitDeltaT;
+   delete fhSinglePointHitPullX;
+   delete fhSinglePointHitPullY;
+   delete fhSinglePointHitPullZ;
+   delete fhSinglePointHitPullR;
+   delete fhDiffPointHitLeftDeltaX;
+   delete fhDiffPointHitLeftDeltaY;
+   delete fhDiffPointHitLeftDeltaZ;
+   delete fhDiffPointHitLeftDeltaR;
+   delete fhDiffPointHitLeftDeltaT;
+   delete fhDiffPointHitLeftPullX;
+   delete fhDiffPointHitLeftPullY;
+   delete fhDiffPointHitLeftPullZ;
+   delete fhDiffPointHitLeftPullR;
+   delete fhDiffPointHitRightDeltaX;
+   delete fhDiffPointHitRightDeltaY;
+   delete fhDiffPointHitRightDeltaZ;
+   delete fhDiffPointHitRightDeltaR;
+   delete fhDiffPointHitRightDeltaT;
+   delete fhDiffPointHitRightPullX;
+   delete fhDiffPointHitRightPullY;
+   delete fhDiffPointHitRightPullZ;
+   delete fhDiffPointHitRightPullR;
+   
+   delete fhSingleTrackHitLeftDeltaX;
+   delete fhSingleTrackHitLeftDeltaY;
+   delete fhSingleTrackHitLeftDeltaZ;
+   delete fhSingleTrackHitLeftDeltaR;
+   delete fhSingleTrackHitLeftDeltaT;
+   delete fhSingleTrackHitLeftPullX;
+   delete fhSingleTrackHitLeftPullY;
+   delete fhSingleTrackHitLeftPullZ;
+   delete fhSingleTrackHitLeftPullR;
+   delete fhSingleTrackHitRightDeltaX;
+   delete fhSingleTrackHitRightDeltaY;
+   delete fhSingleTrackHitRightDeltaZ;
+   delete fhSingleTrackHitRightDeltaR;
+   delete fhSingleTrackHitRightDeltaT;
+   delete fhSingleTrackHitRightPullX;
+   delete fhSingleTrackHitRightPullY;
+   delete fhSingleTrackHitRightPullZ;
+   delete fhSingleTrackHitRightPullR;
+   delete fhDiffTrackHitLeftDeltaX;
+   delete fhDiffTrackHitLeftDeltaY;
+   delete fhDiffTrackHitLeftDeltaZ;
+   delete fhDiffTrackHitLeftDeltaR;
+   delete fhDiffTrackHitLeftDeltaT;
+   delete fhDiffTrackHitLeftPullX;
+   delete fhDiffTrackHitLeftPullY;
+   delete fhDiffTrackHitLeftPullZ;
+   delete fhDiffTrackHitLeftPullR;
+   delete fhDiffTrackHitRightDeltaX;
+   delete fhDiffTrackHitRightDeltaY;
+   delete fhDiffTrackHitRightDeltaZ;
+   delete fhDiffTrackHitRightDeltaR;
+   delete fhDiffTrackHitRightDeltaT;
+   delete fhDiffTrackHitRightPullX;
+   delete fhDiffTrackHitRightPullY;
+   delete fhDiffTrackHitRightPullZ;
+   delete fhDiffTrackHitRightPullR;
+}
 
 ClassImp(CbmTofHitProducerNew)
-
 
