@@ -229,7 +229,7 @@ class CbmTofSimpClusterizer : public FairTask
 
       std::vector< TH1* > fhTrgdT;  //[nbTrg] 
 
-      std::vector< Double_t > fvCPSigPropSpeed;                                          //[nSMT]
+      std::vector< std::vector< Double_t > > fvCPSigPropSpeed;                           //[nSMT][nRpc]
       std::vector< std::vector< std::vector< std::vector< Double_t > > > > fvCPDelTof;   //[nSMT][nRpc][nbClDelTofBinX][nbTrg]
       std::vector< std::vector< std::vector< std::vector< Double_t > > > > fvCPTOff;     //[nSMT][nRpc][nCh][nbSide]
       std::vector< std::vector< std::vector< std::vector< Double_t > > > > fvCPTotGain;  //[nSMT][nRpc][nCh][nbSide]

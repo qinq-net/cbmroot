@@ -416,7 +416,15 @@ Bool_t   CbmTofSimpClusterizer::InitCalibParameter()
   Int_t iNbSmTypes = fDigiBdfPar->GetNbSmTypes();
 
   fvCPSigPropSpeed.resize( iNbSmTypes );
-  for (Int_t iT=0; iT<iNbSmTypes; iT++) fvCPSigPropSpeed[iT]=fDigiBdfPar->GetSignalSpeed();
+  for (Int_t iT=0; iT<iNbSmTypes; iT++)
+  { 
+      Int_t iNbRpc = fDigiBdfPar->GetNbRpc( iT );
+      fvCPSigPropSpeed[iT].resize(iNbRpc);
+      for (Int_t iRpc=0; iRpc<iNbRpc; iRpc++)
+         if( 0.0 < fDigiBdfPar->GetSigVel( iT, iRpc ) )
+            fvCPSigPropSpeed[iT][iRpc]      = 1000.0 * fDigiBdfPar->GetSigVel( iT, iRpc ); // convert in cm/ns
+            else fvCPSigPropSpeed[iT][iRpc] = fDigiBdfPar->GetSignalSpeed();
+  } // for (Int_t iT=0; iT<iNbSmTypes; iT++)
 
   fvCPTOff.resize( iNbSmTypes );
   fvCPTotGain.resize( iNbSmTypes );
@@ -512,7 +520,7 @@ Bool_t   CbmTofSimpClusterizer::InitCalibParameter()
               {
                 Double_t YMean=((TProfile *)htempPos_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(?)
                 Double_t TMean=((TProfile *)htempTOff_pfx)->GetBinContent(iCh+1);
-                Double_t dTYOff=YMean/fvCPSigPropSpeed[iSmType] ;
+                Double_t dTYOff=YMean/fvCPSigPropSpeed[iSmType][iRpc] ;
                 fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] += -dTYOff + TMean ;
                 fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean ;
  
@@ -705,6 +713,8 @@ Bool_t   CbmTofSimpClusterizer::LoadGeometry()
             } // for( Int_t iSm = 0; iSm < iNbSm; iSm++ )
          } // for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
       } // else of if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
+   LOG(DEBUG)<<"CbmTofSimpClusterizer::LoadGeometry: Done!"
+             << FairLogger::endl;
    return kTRUE;
 }
 Bool_t   CbmTofSimpClusterizer::DeleteGeometry()
@@ -1062,7 +1072,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                    <<pDigi->GetTot()
                    <<FairLogger::endl;
          if(    fDigiBdfPar->GetNbSmTypes() > pDigi->GetType()  // prevent crash due to misconfiguration 
-             &&        fDigiBdfPar->GetNbSm(  pDigi->GetType()) > pDigi->GetSm()
+             && fDigiBdfPar->GetNbSm(  pDigi->GetType()) > pDigi->GetSm()
              && fDigiBdfPar->GetNbRpc( pDigi->GetType()) > pDigi->GetRpc()
              && fDigiBdfPar->GetNbChan(pDigi->GetType(),0) >pDigi->GetChannel() 
                 ){
@@ -1377,22 +1387,30 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                               if( 1 == xDigiA->GetSide() )
                              
                                  // 0 is the top side, 1 is the bottom side
-                                 dPosY += fvCPSigPropSpeed[iSmType] *
+                                 dPosY += fvCPSigPropSpeed[iSmType][iRpc] *
                                         ( xDigiA->GetTime() - xDigiB->GetTime() )/2.0;
 
                               else
                               
                                  // 0 is the bottom side, 1 is the top side
-                                 dPosY += fvCPSigPropSpeed[iSmType] *
+                                 dPosY += fvCPSigPropSpeed[iSmType][iRpc] *
                                        ( xDigiB->GetTime() - xDigiA->GetTime() )/2.0;
 
-
+                              if( fChannelInfo->GetSizey()/2.0 < dPosY ||
+                                  -1*fChannelInfo->GetSizey()/2.0 > dPosY )
+                              {
+                                 // if outside of strip limits, the pair is bad => try to remove one end and check the next pair
+                                 // (if another possibility exist)   
+                                 fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                 fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
+                                 continue;
+                              } // Pair leads to hit oustide of strip limits
 
                               LOG(DEBUG1)
                                    <<"CbmTofSimpClusterizer::BuildClusters: NbChanInHit  "
                                    << Form(" %3d %3d %3d 0x%p %f Time %f PosY %f Svel %f ",
                                            iNbChanInHit,iCh,iLastChan,xDigiA,xDigiA->GetSide(),
-                                           dTime,dPosY,fvCPSigPropSpeed[iSmType])
+                                           dTime,dPosY,fvCPSigPropSpeed[iSmType][iRpc])
 
                                    << Form( ", Offs %f, %f ",fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
                                                              fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1])
@@ -1501,7 +1519,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     // Right way of doing it should take into account the weight distribution
                                     // and real system time resolution
                                     TVector3 hitPosErr( fChannelInfo->GetSizex()/TMath::Sqrt(12.0),   // Single strips approximation
-                                                        fDigiBdfPar->GetFeeTimeRes() * fvCPSigPropSpeed[iSmType], // Use the electronics resolution
+                                                        fDigiBdfPar->GetFeeTimeRes() * fvCPSigPropSpeed[iSmType][iRpc], // Use the electronics resolution
                                                         fDigiBdfPar->GetNbGaps( iSmType, iRpc)*
                                                         fDigiBdfPar->GetGapSize( iSmType, iRpc)/10.0 / // Change gap size in cm
                                                         TMath::Sqrt(12.0) ); // Use full RPC thickness as "Channel" Z size
@@ -1698,7 +1716,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                      // Right way of doing it should take into account the weight distribution
                      // and real system time resolution
                      TVector3 hitPosErr( fChannelInfo->GetSizex()/TMath::Sqrt(12.0),   // Single strips approximation
-                                         fDigiBdfPar->GetFeeTimeRes() * fvCPSigPropSpeed[iSmType], // Use the electronics resolution
+                                         fDigiBdfPar->GetFeeTimeRes() * fvCPSigPropSpeed[iSmType][iRpc], // Use the electronics resolution
                                          fDigiBdfPar->GetNbGaps( iSmType, iRpc)*
                                          fDigiBdfPar->GetGapSize( iSmType, iRpc)/10.0 / // Change gap size in cm
                                          TMath::Sqrt(12.0) ); // Use full RPC thickness as "Channel" Z size
