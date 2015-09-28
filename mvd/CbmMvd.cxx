@@ -339,7 +339,7 @@ Bool_t CbmMvd::CheckIfSensitive(std::string name)
   }
   else if(tsname.EndsWith("-P0"))    
       {
-	if(fVerboseLevel>1)
+       // if(fVerboseLevel>1)
       std::cout<<"*** Register "<<tsname<<" as active volume."<<endl;
       
       return kTRUE;

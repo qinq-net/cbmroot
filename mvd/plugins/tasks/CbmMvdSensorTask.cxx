@@ -18,6 +18,15 @@ CbmMvdSensorTask::CbmMvdSensorTask()
 {
 }
 // -------------------------------------------------------------------------
+// -----  constructor   -------------------------------------------
+CbmMvdSensorTask::CbmMvdSensorTask(const char* name)
+: CbmMvdSensorPlugin(name),
+  fInputBuffer(NULL),
+  fOutputBuffer(NULL),
+  fSensor(NULL)
+{
+}
+// -------------------------------------------------------------------------
 
 // -----   Destructor   ----------------------------------------------------
 CbmMvdSensorTask::~CbmMvdSensorTask() {

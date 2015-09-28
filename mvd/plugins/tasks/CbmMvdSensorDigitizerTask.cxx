@@ -153,7 +153,7 @@ CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask()
 // -----   Standard constructor   ------------------------------------------
 CbmMvdSensorDigitizerTask::CbmMvdSensorDigitizerTask(const char* name, Int_t iMode,
 				 Int_t iVerbose)
-  : CbmMvdSensorTask(),
+: CbmMvdSensorTask(),
     fcurrentFrameNumber(0),
     fEpiTh(0.0014),
     fSegmentLength(0.0001),

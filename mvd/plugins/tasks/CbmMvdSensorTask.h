@@ -27,7 +27,8 @@ class CbmMvdSensorTask : public CbmMvdSensorPlugin
  public:
 
   /** Default constructor **/
-  CbmMvdSensorTask();
+     CbmMvdSensorTask();
+     CbmMvdSensorTask(const char* name);
 
   /** Destructor **/
   virtual ~CbmMvdSensorTask();

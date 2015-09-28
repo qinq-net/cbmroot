@@ -6,9 +6,9 @@ Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/mvd 
 
 #needed by rootcling
-${CBMROOT_SOURCE_DIR}/mvd/old
+#${CBMROOT_SOURCE_DIR}/mvd/old
 #${CBMROOT_SOURCE_DIR}/mvd/qa
-#${CBMROOT_SOURCE_DIR}/mvd/tools
+#${CBMROOT_SOURCE_DIR}/mvd/tools 
 #${CBMROOT_SOURCE_DIR}/mvd/plugins
 ${CBMROOT_SOURCE_DIR}/mvd/plugins/tasks
 ${CBMROOT_SOURCE_DIR}/mvd/plugins/buffers
@@ -92,11 +92,11 @@ CbmMvdDetector.cxx
 CbmMvdSensor.cxx
 CbmMvdClusterfinder.cxx
  
-old/CbmMvdStation.cxx 
-old/CbmMvdFindHits.cxx
-old/CbmMvdDigitizeL.cxx 
-old/CbmMvdHitProducer.cxx 
-old/MyG4UniversalFluctuationForSi.cxx
+#old/CbmMvdStation.cxx
+#old/CbmMvdFindHits.cxx
+#old/CbmMvdDigitizeL.cxx 
+#old/CbmMvdHitProducer.cxx 
+#old/MyG4UniversalFluctuationForSi.cxx
 
 
 )

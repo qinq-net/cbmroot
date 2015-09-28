@@ -69,7 +69,7 @@ public:
   void SendInput(TClonesArray* input);
   void SendInputDigis(TClonesArray* digis);
   void SendInputCluster(TClonesArray* cluster);
-  void SendClonesArray(TClonesArray* addedStructures, Int_t dataLevel=0){;}
+ // void SendClonesArray(TClonesArray* addedStructures, Int_t dataLevel=0){;}
 
   TClonesArray* GetOuput(){ return 0;}
   TClonesArray* GetOutputHits();
@@ -77,7 +77,7 @@ public:
   TClonesArray* GetOutputDigiMatchs();
   TClonesArray* GetOutputCluster();
   TClonesArray* GetOutputArray(Int_t nPlugin);
-  TClonesArray* GetClonesArray(Int_t dataLevel){ return 0;}
+ // TClonesArray* GetClonesArray(Int_t dataLevel){ return 0;}
   Int_t GetSensorArraySize(){return(fSensorArray->GetEntriesFast());} 
   UInt_t GetPluginArraySize(){return fPluginCount-1;} 
   
@@ -97,13 +97,13 @@ public:
   
   void ExecChain(); //Processes the full execution chain
   void Exec(UInt_t nLevel); //Processes Element nLevel of the chain
-  void ExecTo(UInt_t nLevel){;}; // Processes Elements to a given Level of Plugins
+ // void ExecTo(UInt_t nLevel){;}; // Processes Elements to a given Level of Plugins
   void ExecFrom(UInt_t nLevel); //Preocesses Elements from a given level till the end
   
   /** Finish */
   
   void Finish();
-  void StoreDebugHistograms(TString fileName){;}
+ // void StoreDebugHistograms(TString fileName){;}
   
   /** Accessors */
   CbmMvdStationPar* GetParameterFile(){return fParameter;};  

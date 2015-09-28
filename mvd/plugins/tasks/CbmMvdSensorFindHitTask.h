@@ -104,9 +104,9 @@ public:
 
     /**Detector Spatial resolution.
     Correlated with number of adc bits*/
-    void SetHitPosErrX( Double_t errorX ) { errorX = fHitPosErrX; }
-    void SetHitPosErrY( Double_t errorY ) { errorY = fHitPosErrY; }
-    void SetHitPosErrZ( Double_t errorZ ) { errorZ = fHitPosErrZ; }
+    void SetHitPosErrX( Double_t errorX ) { fHitPosErrX = errorX; }
+    void SetHitPosErrY( Double_t errorY ) { fHitPosErrY = errorY; }
+    void SetHitPosErrZ( Double_t errorZ ) { fHitPosErrZ = errorZ; }
     void ShowDebugHistograms(){fShowDebugHistos=kTRUE;}
 
 

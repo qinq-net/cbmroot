@@ -30,7 +30,8 @@ class CbmMvdSensorPlugin : public TObject
  public:
 
   /** Default constructor **/
-  CbmMvdSensorPlugin();
+     CbmMvdSensorPlugin();
+     CbmMvdSensorPlugin(const char* name);
 
   /** Destructor **/
   virtual ~CbmMvdSensorPlugin();
@@ -59,7 +60,7 @@ class CbmMvdSensorPlugin : public TObject
   bool	  PluginReady(){return (bFlag);};
   void  SetPluginReady(bool flag) {bFlag = flag;}
   void  ShowDebugHistos(){fShowDebugHistos = kTRUE;}
-
+  const char* GetName(){return fName;}
   Bool_t IsInit(){return(initialized);}
   /** data members **/
   
@@ -70,6 +71,7 @@ protected:
     bool 	bFlag;
     Bool_t initialized;
     Bool_t fShowDebugHistos;
+    const char* fName;
 private:
   CbmMvdSensorPlugin& operator=(const CbmMvdSensorPlugin&);
   CbmMvdSensorPlugin(const CbmMvdSensorPlugin&);
