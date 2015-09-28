@@ -513,6 +513,8 @@ Bool_t CbmMuchDigitizeGem::AddDigi(CbmMuchPad* pad) {
   digi->SetTime(t1);
   gLogger->Debug1(MESSAGE_ORIGIN,"Pad: sector=%i channel=%i",pad->GetSectorIndex(),pad->GetChannelIndex());
   gLogger->Debug1(MESSAGE_ORIGIN,"New digi: sector=%i channel=%i",CbmMuchAddress::GetSectorIndex(digi->GetAddress()),CbmMuchAddress::GetChannelIndex(digi->GetAddress()));
+
+  match->Reset();
   
   if (fDaq){
     CbmMuchDigi* digLight = new CbmMuchDigi(digi,match);
