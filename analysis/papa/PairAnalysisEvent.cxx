@@ -44,6 +44,7 @@ PairAnalysisEvent::PairAnalysisEvent() :
   fMuchMatches(0x0),     //MUCH matches
   fTrdMatches(0x0),     //TRD matches
   fRichMatches(0x0),     //RICH matches
+  fMvdPoints(0x0),      //MVD points
   fStsPoints(0x0),      //STS points
   fMuchPoints(0x0),      //MUCH points
   fRichPoints(0x0),      //RICH points
@@ -54,6 +55,7 @@ PairAnalysisEvent::PairAnalysisEvent() :
   fStsTracks(0x0),      //STS tracks
   fMuchTracks(0x0),      //MUCH tracks
   fRichRings(0x0),      //RICH rings
+  fMvdHits(0x0),      //MVD hits
   fStsHits(0x0),      //STS hits
   fMuchHits(0x0),      //MUCH hits
   fMuchHitsStraw(0x0),   //MUCH hits
@@ -61,6 +63,7 @@ PairAnalysisEvent::PairAnalysisEvent() :
   fRichHits(0x0),      //RICH hits
   fTofHits(0x0),      //TOF hits
   fRichProjection(0x0),
+  fMvdHitMatches(0x0),      //MVD hits
   fStsHitMatches(0x0),      //STS hits
   fMuchHitMatches(0x0),      //MUCH hits
   fRichHitMatches(0x0),      //RICH hits
@@ -86,16 +89,18 @@ PairAnalysisEvent::PairAnalysisEvent(const char* name, const char* title) :
   fMuchMatches(0x0),     //MUCH matches
   fTrdMatches(0x0),     //TRD matches
   fRichMatches(0x0),     //RICH matches
+  fMvdPoints(0x0),      //MVD points
   fStsPoints(0x0),      //STS points
   fMuchPoints(0x0),      //MUCH points
   fRichPoints(0x0),      //RICH points
   fTrdPoints(0x0),      //TRD points
-  fTofPoints(0x0),     //TOF matches
+  fTofPoints(0x0),     //TOF points
   fGlobalTracks(0x0),   //global tracks
   fTrdTracks(0x0),      //TRD tracks
   fStsTracks(0x0),      //STS tracks
   fMuchTracks(0x0),      //MUCH tracks
   fRichRings(0x0),      //RICH rings
+  fMvdHits(0x0),      //MVD hits
   fStsHits(0x0),      //STS hits
   fMuchHits(0x0),      //MUCH hits
   fMuchHitsStraw(0x0),   //MUCH hits
@@ -103,6 +108,7 @@ PairAnalysisEvent::PairAnalysisEvent(const char* name, const char* title) :
   fRichHits(0x0),      //RICH hits
   fTofHits(0x0),      //TOF hits
   fRichProjection(0x0),
+  fMvdHitMatches(0x0),      //MVD hits
   fStsHitMatches(0x0),      //STS hits
   fMuchHitMatches(0x0),      //MUCH hits
   fRichHitMatches(0x0),      //RICH hits
@@ -141,12 +147,14 @@ PairAnalysisEvent::~PairAnalysisEvent()
   fTrdMatches->Delete();     //TRD matches
   fRichMatches->Delete();     //RICH matches
 
+  fMvdPoints->Delete();      //MVD hits
   fStsPoints->Delete();      //STS hits
   fMuchPoints->Delete();      //MUCH hits
   fRichPoints->Delete();      //RICH hits
   fTrdPoints->Delete();      //TRD hits
   fTofPoints->Delete();     //TOF matches
 
+  fMvdHits->Delete();      //MVD hits
   fStsHits->Delete();      //STS hits
   fMuchHits->Delete();      //MUCH hits
   fMuchHitsStraw->Delete();      //MUCH hits
@@ -155,6 +163,7 @@ PairAnalysisEvent::~PairAnalysisEvent()
   fTofHits->Delete();      //TOF hits
 
   fRichProjection->Delete();
+  fMvdHitMatches->Delete();      //MVD hits
   fStsHitMatches->Delete();      //STS hits
   fMuchHitMatches->Delete();      //MUCH hits
   fRichHitMatches->Delete();      //RICH hits
@@ -182,6 +191,7 @@ void PairAnalysisEvent::SetInput(FairRootManager *man)
   fTrdMatches   = (TClonesArray*) man->GetObject("TrdTrackMatch");
   fRichMatches  = (TClonesArray*) man->GetObject("RichRingMatch");
   // hits
+  fMvdHits      = (TClonesArray*) man->GetObject("MvdHit");
   fStsHits      = (TClonesArray*) man->GetObject("StsHit");
   fMuchHits     = (TClonesArray*) man->GetObject("MuchPixelHit");
   fMuchHitsStraw= (TClonesArray*) man->GetObject("MuchStrawHit");
@@ -189,12 +199,14 @@ void PairAnalysisEvent::SetInput(FairRootManager *man)
   fRichHits     = (TClonesArray*) man->GetObject("RichHit");
   fTofHits      = (TClonesArray*) man->GetObject("TofHit");
   // hit matches
+  fMvdHitMatches = (TClonesArray*) man->GetObject("MvdHitMatch");
   fStsHitMatches = (TClonesArray*) man->GetObject("StsHitMatch");
   fRichHitMatches = 0x0;//(TClonesArray*) man->GetObject("RichHitMatch");
   fMuchHitMatches = (TClonesArray*) man->GetObject("MuchHitMatch");
   fTrdHitMatches = (TClonesArray*) man->GetObject("TrdHitMatch");
   fTofHitMatches = 0x0;//(TClonesArray*) man->GetObject("TofHitMatch");
   // mc points
+  fMvdPoints    = (TClonesArray*) man->GetObject("MvdPoint");
   fStsPoints    = (TClonesArray*) man->GetObject("StsPoint");
   fRichPoints   = 0x0;//(TClonesArray*) man->GetObject("RichPoint");
   fMuchPoints   = (TClonesArray*) man->GetObject("MuchPoint");
@@ -244,10 +256,7 @@ void PairAnalysisEvent::Init()
     // track matches
     CbmTrackMatchNew *stsMatch = 0x0;
     if(stsTrack) stsMatch = static_cast<CbmTrackMatchNew*>( fStsMatches->At(ists) );
-    //TODO: investigate why there could be 0xffffffffffffffe0 for stsMatch->GetMatchedLink() for these the fMatchedIndex is -1 and the number of hits is zero
-    //if(stsMatch && stsMatch->GetMatchedIndex()==-1) Printf("matching index is -1: %d",stsMatch->GetNofHits());
     Int_t istsMC = (stsMatch && stsMatch->GetNofHits()>0 ? stsMatch->GetMatchedLink().GetIndex() : -1 );
-    //    Int_t istsMC = (stsMatch && stsMatch->GetMatchedIndex()>=0 ? stsMatch->GetMatchedLink().GetIndex() : -1 );
     CbmTrackMatchNew *muchMatch = 0x0;
     if(muchTrack) muchMatch = static_cast<CbmTrackMatchNew*>( fMuchMatches->At(imuch) );
     Int_t imuchMC = (muchMatch && muchMatch->GetNofHits()>0 ? muchMatch->GetMatchedLink().GetIndex() : -1 );
@@ -278,16 +287,15 @@ void PairAnalysisEvent::Init()
 			    i);
 
     // set MC label and matching bits
-    //    if(iMC>=0) {
-      PairAnalysisTrack *tr = static_cast<PairAnalysisTrack*>(fTracks->UncheckedAt(i));
-      if(iMC<0) iMC=-999; // STS tracks w/o MC matching
-      tr->SetLabel(iMC);
-      tr->SetBit(BIT(14+kTOF),  (iMC==itofMC) );
-      tr->SetBit(BIT(14+kRICH), (iMC==irichMC) );
-      tr->SetBit(BIT(14+kTRD),  (iMC==itrdMC)  );
-      tr->SetBit(BIT(14+kSTS),  (iMC==istsMC)  );
-      tr->SetBit(BIT(14+kMUCH), (iMC==imuchMC)  );
-      //    }
+    PairAnalysisTrack *tr = static_cast<PairAnalysisTrack*>(fTracks->UncheckedAt(i));
+    if(iMC<0) iMC=-999; // STS tracks w/o MC matching
+    tr->SetLabel(iMC);
+    //      tr->SetBit(BIT(14+kMVD),  (iMC==imvdMC)  );
+    tr->SetBit(BIT(14+kSTS),  (iMC==istsMC)  );
+    tr->SetBit(BIT(14+kRICH), (iMC==irichMC) );
+    tr->SetBit(BIT(14+kTRD),  (iMC==itrdMC)  );
+    tr->SetBit(BIT(14+kTOF),  (iMC==itofMC) );
+    tr->SetBit(BIT(14+kMUCH), (iMC==imuchMC)  );
 
   }
 
@@ -355,6 +363,7 @@ TClonesArray *PairAnalysisEvent::GetHits(DetectorId det) const {
   //
   //TODO: add much straw hits
   switch(det) {
+  case kMVD: return fMvdHits;
   case kSTS: return fStsHits;
   case kMUCH:return fMuchHits; //pixel
   case kTRD: return fTrdHits;
@@ -372,6 +381,7 @@ TClonesArray *PairAnalysisEvent::GetHitMatches(DetectorId det) const {
   //
   //TODO: add much straw hits
   switch(det) {
+  case kMVD: return fMvdHitMatches;
   case kSTS: return fStsHitMatches;
   case kMUCH:return fMuchHitMatches; //pixel
   case kTRD: return fTrdHitMatches;
@@ -388,6 +398,7 @@ TClonesArray *PairAnalysisEvent::GetPoints(DetectorId det) const {
   // get mc points array for certain detector
   //
   switch(det) {
+  case kMVD: return fMvdPoints;
   case kSTS: return fStsPoints;
   case kMUCH:return fMuchPoints;
   case kTRD: return fTrdPoints;

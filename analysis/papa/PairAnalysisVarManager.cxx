@@ -243,6 +243,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"RICHisMC",                 "MC status RICH",                                    ""},
   {"TOFisMC",                  "MC status TOF",                                    ""},
   {"RICHhasProj",              "projection status RICH",                                    ""},
+  {"MediumPassedMC",           "MC status medium oassed",                               ""},
 
 // Pair specific MC variables
 

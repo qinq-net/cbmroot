@@ -706,6 +706,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	  CbmTrack    *trkl = 0x0;
 	  CbmRichRing *ring = 0x0;
 	  switch(idet) {
+	  case kMVD:
 	  case kSTS:
 	  case kMUCH:
 	  case kTRD:  trkl = track->GetTrack(static_cast<DetectorId>(idet)); break;
@@ -720,13 +721,16 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	  CbmMatch    *mtch = 0x0;
 	  FairMCPoint *pnt  = 0x0;
 	  Int_t nhits = 1;
-	  if(trkl) nhits = trkl->GetNofHits();
-	  if(ring) nhits = ring->GetNofHits();
+	  if(trkl)       nhits = trkl->GetNofHits();
+	  if(idet==kMVD) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofMvdHits();
+	  if(ring)       nhits = ring->GetNofHits();
 	  // loop over all reconstructed hits
 	  for (Int_t ihit=0; ihit < nhits; ihit++) {
-	    if(trkl)          hit = dynamic_cast<CbmHit*>(hits->At( trkl->GetHitIndex(ihit) ) );
-	    else if(ring)     hit = dynamic_cast<CbmHit*>(hits->At( ring->GetHit(ihit) ) );
-	    else              hit = dynamic_cast<CbmHit*>( track->GetTofHit() );
+	    if(trkl && idet!=kMVD)      hit = dynamic_cast<CbmHit*>(hits->At( trkl->GetHitIndex(ihit) ) );
+	    else if(trkl &&idet==kMVD)  hit = dynamic_cast<CbmHit*>(hits->At( static_cast<CbmStsTrack*>(trkl)
+									      ->GetMvdHitIndex(ihit) ) );
+	    else if(ring)               hit = dynamic_cast<CbmHit*>(hits->At( ring->GetHit(ihit) ) );
+	    else                        hit = dynamic_cast<CbmHit*>( track->GetTofHit() );
 	    if(!hit) continue;
 
 	    // fill rec hit variables

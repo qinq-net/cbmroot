@@ -29,6 +29,7 @@
 #include <CbmRichHit.h>
 #include <CbmTrdHit.h>
 #include <CbmStsHit.h>
+#include <CbmMvdHit.h>
 #include <CbmMuchPixelHit.h>
 #include <CbmMuchStrawHit.h>
 
@@ -309,6 +310,7 @@ public:
     kRICHisMC,                 // status bit for matching btw. glbl. and local MC track
     kTOFisMC,                  // status bit for matching btw. glbl. and local MC track
     kRICHhasProj,              // weather rich ring has a prjection
+    kMediumPassedMC,           // weather medium was passed by track or not
     kTrackMaxMC,
 
     // Pair specific MC variables
@@ -391,6 +393,7 @@ private:
   static void FillVarRichRing(          const CbmRichRing *track,        Double_t * const values);
   static void FillVarMCTrack(           const CbmMCTrack *particle,      Double_t * const values);
   static void FillVarPairAnalysisPair(  const PairAnalysisPair *pair,    Double_t * const values);
+  static void FillVarMvdHit(            const CbmMvdHit *hit,            Double_t * const values);
   static void FillVarStsHit(            const CbmStsHit *hit,            Double_t * const values);
   static void FillVarMuchHit(           const CbmMuchPixelHit *hit,      Double_t * const values);
   static void FillVarMuchHit(           const CbmMuchStrawHit *hit,      Double_t * const values);
@@ -437,6 +440,7 @@ inline void PairAnalysisVarManager::Fill(const TObject* object, Double_t * const
   else if (object->IsA() == CbmRichRing::Class())     FillVarRichRing(       static_cast<const CbmRichRing*>(object),    values);
   else if (object->IsA() == CbmMCTrack::Class())      FillVarMCTrack(        static_cast<const CbmMCTrack*>(object),     values);
   else if (object->InheritsFrom(PairAnalysisPair::Class()))  FillVarPairAnalysisPair( static_cast<const PairAnalysisPair*>(object), values);
+  else if (object->IsA() == CbmMvdHit::Class())       FillVarMvdHit(         static_cast<const CbmMvdHit*>(object),      values);
   else if (object->IsA() == CbmStsHit::Class())       FillVarStsHit(         static_cast<const CbmStsHit*>(object),      values);
   else if (object->IsA() == CbmMuchPixelHit::Class()) FillVarMuchHit(        static_cast<const CbmMuchPixelHit*>(object),values);
   else if (object->IsA() == CbmMuchStrawHit::Class()) FillVarMuchHit(        static_cast<const CbmMuchStrawHit*>(object),values);
@@ -1005,7 +1009,8 @@ inline void PairAnalysisVarManager::FillVarMCTrack(const CbmMCTrack *particle, D
   values[kSTSHitsMC]   = particle->GetNPoints(kSTS);
   values[kTOFHitsMC]   = particle->GetNPoints(kTOF);
   values[kMUCHHitsMC]  = particle->GetNPoints(kMUCH);
-
+  values[kMediumPassedMC]  = (Double_t) particle->HasMediumPassed();
+  //  printf(" track passed supprot structure %p %d \n",particle,particle->HasMediumPassed());
 }
 
 inline void PairAnalysisVarManager::FillVarPairAnalysisPair(const PairAnalysisPair *pair, Double_t * const values)
@@ -1134,6 +1139,27 @@ inline void PairAnalysisVarManager::FillVarStsHit(const CbmStsHit *hit, Double_t
   FillVarPixelHit(hit, values);
 
   // Set
+  // ...
+
+}
+
+inline void PairAnalysisVarManager::FillVarMvdHit(const CbmMvdHit *hit, Double_t * const values)
+{
+  //
+  // Fill hit information for the mvd hit into array
+  //
+
+  // Protect
+  if(!hit) return;
+
+  // Reset array
+  ResetArrayData(  kHitMax,   values);
+
+  // accessors via CbmPixelHit & CbmHit
+  FillVarPixelHit(hit, values);
+
+  // Set
+  // TODO: add center of gravity?
   // ...
 
 }

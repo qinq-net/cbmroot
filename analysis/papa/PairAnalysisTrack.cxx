@@ -196,6 +196,7 @@ CbmTrackMatchNew* PairAnalysisTrack::GetTrackMatch(DetectorId det) const
   // get track match depending on detector id
   //
   switch(det) {
+  case kMVD:  return fStsTrackMatch; // there is no mvd track, hit are associtaed to sts track
   case kSTS:  return fStsTrackMatch;
   case kTRD:  return fTrdTrackMatch;
   case kMUCH: return fMuchTrackMatch;
@@ -212,6 +213,7 @@ CbmTrack* PairAnalysisTrack::GetTrack(DetectorId det) const
   // get track depending on detector id
   //
   switch(det) {
+  case kMVD:  return fStsTrack; // there is no mvd track, hit are associtaed to sts track
   case kSTS:  return fStsTrack;
   case kTRD:  return fTrdTrack;
   case kMUCH: return fMuchTrack;
