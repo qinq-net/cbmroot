@@ -7,13 +7,16 @@ rotmir=$3
 nEvs=$4
 transy=$5
 transz=$6
+Theta=$7
+DefaultDims=$8
+DefaultDimsLargePMT=$9
 
-GeoCase=2
+GeoCase=-2
 PtNotP=1
 MomMin=0
 MomMax=4
-Theta=35
-
+StartPhi=90
+EndPhi=180
 
 # specify input and output directories
 echo "rotx = $rotx, roty = $roty"
@@ -33,6 +36,11 @@ export PT_NOT_P=$PtNotP
 export MOM_MIN=$MomMin
 export MOM_MAX=$MomMax
 export THETA=$Theta
+export STARTPHI=$StartPhi
+export ENDPHI=$EndPhi
+
+export DEFAULDIMS=$DefaultDims
+export DEFAULDIMSLPMT=$DefaultDimsLargePMT
 
 # setup the run environment
 source ${cbmroot_config_path}
@@ -54,6 +62,7 @@ root -b -l -q "${macro_dir}/Run_Sim_GeoOpt_Batch.C()"
 root -b -l -q "${macro_dir}/Run_Reco_GeoOpt_Batch.C()"
 root -b -l -q "${macro_dir}/Run_Ana_GeoOpt_Batch.C()"
 
-cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log
+cp -v ${SGE_STDOUT_PATH} ${outdir}/log/"RX.${rotx}.RY.${roty}.TransY.${transy}.TransZ.${transz}.DeDi.${DefaultDims}.LPMT.${DefaultDimsLargePMT}.${JOB_ID}.${SGE_TASK_ID}.log"
+#cp -v ${SGE_STDOUT_PATH} ${outdir}/log/${JOB_ID}.${SGE_TASK_ID}.log
 
 export SCRIPT=no
