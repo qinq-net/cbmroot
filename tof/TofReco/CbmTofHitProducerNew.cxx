@@ -329,7 +329,7 @@ InitStatus CbmTofHitProducerNew::Init()
 
 // initialize accounting variables    
     ActSMtypMax=0;
-    for (Int_t i=0; i<=maxSMtyp; i++){
+    for (Int_t i=0; i<maxSMtyp; i++){
 	ActnSMMax[i]=0;
 	ActnModMax[i]=0;
 	ActnCellMax[i]=0;
