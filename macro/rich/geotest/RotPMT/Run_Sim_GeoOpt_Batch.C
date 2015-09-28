@@ -7,7 +7,8 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1,  float PMTrotX=5, float PMTrotY=5, 
   float StartTheta=2.5; float  EndTheta=25.;
   int PMTtransY=0, PMTtransZ=0;
   int DefaultDims=0;
-  int DefaultDims_LargePMT=;
+  int DefaultDims_LargePMT=0;
+   bool StoreTraj=0;
 
   float StartPhi=90., EndPhi=180.;
   TString script = TString(gSystem->Getenv("SCRIPT"));
@@ -162,8 +163,16 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1,  float PMTrotX=5, float PMTrotY=5, 
   
   
   fRun->SetGenerator(primGen);
+  if(StoreTraj){fRun->SetStoreTraj(kTRUE);}
   fRun->Init();
-    
+     if(StoreTraj){
+    FairTrajFilter* trajFilter = FairTrajFilter::Instance();
+    trajFilter->SetStepSizeCut(0.01); // 1 cm
+    trajFilter->SetVertexCut(-2000., -2000., -2000., 2000., 2000., 2000.);
+    trajFilter->SetMomentumCutP(0.); // p_lab > 0
+    trajFilter->SetEnergyCut(0., 10.); // 0 < Etot < 10 GeV
+    trajFilter->SetStorePrimaries(kTRUE);//kFALSE);//kTRUE);
+  }
   CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
   fieldPar->SetParameters(magField);
   fieldPar->setChanged();
@@ -291,7 +300,8 @@ TString GetRICH_GeoFile( char *RotMirText, TString PMTRotText, TString PMTTransT
   //GeoCase=2 ==> gdml-geo: RICH starts at 1800, Mirror tilt -1 or 10, 
   //                        mirror does cover full acceptance)
 
-  //return "/media/sf_Shared/2015_minus10deg.gdml";
+  //  return "/hera/cbm/users/tariq/cbmroot/geometry/rich/rich_v14a.root";
+// GeoOpt/2015_minus10deg_.gdml";
   // return "/data/cbmroot/macro/rich/geotest/RotPMT/CreateGeo/RichGeo_NominalDimensions_minus10deg_07122014.gdml";
   // return "rich/GeoOpt/rich_geo_RotMir_m10_RotPMT_Xpos5point0_Ypos5point0_TransPMT_Y_p0_Z_p0_New.root";
   //TString Dir="rich/GeoOpt/RotPMT/";
