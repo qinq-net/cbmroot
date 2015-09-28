@@ -227,6 +227,9 @@ class CbmTofDigitizerBDF : public FairTask
       std::vector< TH1* > fh1ClusterSizeProb;
       std::vector< TH1* > fh1ClusterTotProb;
 
+      // RPC variables from beamtime [nbSmType][NbRpc]
+      std::vector< std::vector< Double_t > > fvdSignalVelocityRpc;
+
       // Channel variables [nbSmType][NbSm*NbRpc][NbChannel*NbSides]
       std::vector< std::vector< std::vector< Double_t > > > fdChannelGain;   // <- Generated from parameter FeeGainSigma
 
@@ -252,8 +255,12 @@ class CbmTofDigitizerBDF : public FairTask
       std::vector< std::vector< std::vector< std::vector< Int_t > > > >
                fStorDigiMatch; //[nbType][nbSm*nbRpc][nbCh*NbSide][nDigis]
          // Temporary storing of the Track/Point/Digi info to make sure all gap/Tofpoint
-         // linked to same track in same channel give same result
+         // linked to same track in same channel give same result (single cluster per track/channel pair)
       std::vector< std::vector < ULong64_t > > fvlTrckChAddr;   // [nbMcTracks][nbChannelFiredByTrk]
+         // Temporary storing of the Track/Rpc info to make sure all clusters
+         // linked to same track in same detector give the same results for timing
+      std::vector< std::vector < ULong64_t > > fvlTrckRpcAddr;   // [nbMcTracks][nbRpcFiredByTrk]
+      std::vector< std::vector < Double_t > >  fvlTrckRpcTime;   // [nbMcTracks][nbRpcFiredByTrk]
 
       // Random generators
       TRandom3 * fRandStart;
