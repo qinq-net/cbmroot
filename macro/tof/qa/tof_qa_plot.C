@@ -573,6 +573,25 @@ Bool_t tof_qa_plot( TString sDigiHistFileName = "", TString sClustHistFileName =
                               iNbBinTheta, dThetaMin, dThetaMax,
                               iNbBinPhi,   dPhiMin,   dPhiMax); 
 
+
+   TH2 * fhHitRatioMapMultTrkMultPntXY  = new TH2D("TofQa_HitsRatioMapMultTrkMultPntXY",
+                              "Tof Hits generation: Fraction of hits from multi. Tracks among hits from multi. MC Pnt; X[cm]; Y[cm]; Eff. [\%]",
+                              nbinx,-xrange,xrange,nbiny,-yrange,yrange);
+   TH2 * fhHitRatioMapMultTrkMultPntXZ  = new TH2D("TofQa_HitsRatioMapMultTrkMultPntXZ",
+                              "Tof Hits generation: Fraction of hits from multi. Tracks among hits from multi. MC Pnt; X[cm]; Z[cm]; Eff. [\%]",
+                              nbinx,-xrange,xrange,nbinz,zmin,zmax);
+   TH2 * fhHitRatioMapMultTrkMultPntYZ  = new TH2D("TofQa_HitsRatioMapMultTrkMultPntYZ",
+                              "Tof Hits generation: Fraction of hits from multi. Tracks among hits from multi. MC Pnt; Y[cm]; Z[cm]; Eff. [\%]",
+                              nbiny,-yrange,yrange,nbinz,zmin,zmax);
+   TH2 * fhHitRatioMapMultTrkMultPntAng = new TH2D("TofQa_HitsRatioMapMultTrkMultPntAng",
+                              "Tof Hits generation: Fraction of hits from multi. Tracks among hits from multi. MC Pnt; #theta_{x}[Deg.]; #theta_{y}[Deg.]; Eff. [\%]",
+                              iNbBinThetaX, dThetaXMin, dThetaXMax,
+                              iNbBinThetaY, dThetaYMin, dThetaYMax);
+   TH2 * fhHitRatioMapMultTrkMultPntSph = new TH2D("TofQa_HitsRatioMapMultTrkMultPntSph",
+                              "Tof Hits generation: Fraction of hits from multi. Tracks among hits from multi. MC Pnt; #theta[rad.]; #phi[rad.]; Eff. [\%]",
+                              iNbBinTheta, dThetaMin, dThetaMax,
+                              iNbBinPhi,   dPhiMin,   dPhiMax);
+
       // Physics coord mapping, 1 per particle type
          // Phase space
    std::vector<TH2 *> fvhPtmRapStsPntAcc;
@@ -745,6 +764,12 @@ Bool_t tof_qa_plot( TString sDigiHistFileName = "", TString sClustHistFileName =
    fhHitEffMapMultTrkAng->Divide( fhHitMapMultTrkAng, fhPointMapAng);
    fhHitEffMapMultTrkSph->Divide( fhHitMapMultTrkSph, fhPointMapSph);
 
+   fhHitRatioMapMultTrkMultPntXY ->Divide( fhHitMapMultTrkXY,  fhHitMapMultPntXY);
+   fhHitRatioMapMultTrkMultPntXZ ->Divide( fhHitMapMultTrkXZ,  fhHitMapMultPntXZ);
+   fhHitRatioMapMultTrkMultPntYZ ->Divide( fhHitMapMultTrkYZ,  fhHitMapMultPntYZ);
+   fhHitRatioMapMultTrkMultPntAng->Divide( fhHitMapMultTrkAng, fhHitMapMultPntAng);
+   fhHitRatioMapMultTrkMultPntSph->Divide( fhHitMapMultTrkSph, fhHitMapMultPntSph);
+
       // Physics coord mapping, 1 per particle type  
    for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    {
@@ -841,6 +866,12 @@ Bool_t tof_qa_plot( TString sDigiHistFileName = "", TString sClustHistFileName =
    fhHitEffMapMultTrkAng->Scale( 100.0 );
    fhHitEffMapMultTrkSph->Scale( 100.0 );
 
+   fhHitRatioMapMultTrkMultPntXY ->Scale( 100.0 );
+   fhHitRatioMapMultTrkMultPntXZ ->Scale( 100.0 );
+   fhHitRatioMapMultTrkMultPntYZ ->Scale( 100.0 );
+   fhHitRatioMapMultTrkMultPntAng->Scale( 100.0 );
+   fhHitRatioMapMultTrkMultPntSph->Scale( 100.0 );
+
       // Physics coord mapping, 1 per particle type      
    for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    {
@@ -920,6 +951,12 @@ Bool_t tof_qa_plot( TString sDigiHistFileName = "", TString sClustHistFileName =
    fhHitEffMapMultTrkYZ ->Write();
    fhHitEffMapMultTrkAng->Write();
    fhHitEffMapMultTrkSph->Write();
+
+   fhHitRatioMapMultTrkMultPntXY ->Write();
+   fhHitRatioMapMultTrkMultPntXZ ->Write();
+   fhHitRatioMapMultTrkMultPntYZ ->Write();
+   fhHitRatioMapMultTrkMultPntAng->Write();
+   fhHitRatioMapMultTrkMultPntSph->Write();
 
       // Physics coord mapping, 1 per particle type      
    TDirectory *cdPhysMap = fOutHistFile->mkdir( "PhysMap" );
