@@ -16,7 +16,7 @@ void CreateGDMLfile_April2015_ModAug2015(float pmt_pos_y_addend = 0, float pmt_p
 
   float Delta_RICH_position_from_IP=-800.;//==Delta_RICH_length
   float Delta_sens_plane_pos=1220.;
-  float Delta_sens_plane_area=1.; 
+  float Delta_sens_plane_area=0.1; 
 
   if(DefaultDims==1){
     Delta_pmt_width=0.; Delta_pmt_height=0.;
