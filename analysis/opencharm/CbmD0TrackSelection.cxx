@@ -74,8 +74,8 @@ CbmD0TrackSelection::CbmD0TrackSelection(char* name, Int_t iVerbose, Double_t cu
     fNoHNotPassed=0;
     logfile = "./CutEff_D0TrackSelection.log";
   
-    bUseMCInfo = kTRUE;
-   
+    bUseMCInfo = kFALSE;
+    fPidMode = "MC"; // TOF, NONE, GLOBAL
 
 
 
@@ -99,6 +99,17 @@ CbmD0TrackSelection::~CbmD0TrackSelection() {
 }
 // -------------------------------------------------------------------------
 
+// -------------------------------------------------------------------------
+void CbmD0TrackSelection::SetPIDMode(TString pidMode) {
+
+    if(pidMode == "MC" || pidMode == "TOF" || pidMode == "NONE" || pidMode == "GLOBAL")
+      fPidMode = pidMode;
+    else
+	LOG(WARNING) << "not supported PID mode, PID modes are: MC, TOF, NONE, GLOBAL. PID mode set to NONE" << FairLogger::endl;
+
+}
+// -------------------------------------------------------------------------
+
 
 // -------------------------------------------------------------------------
 InitStatus CbmD0TrackSelection::Init() {
@@ -107,12 +118,17 @@ InitStatus CbmD0TrackSelection::Init() {
     
     
     fListD0TrackCandidate  = new TClonesArray("CbmD0TrackCandidate",100);
+    fListD0TrackCandidateP  = new TClonesArray("CbmD0TrackCandidate",100);
+    fListD0TrackCandidateN  = new TClonesArray("CbmD0TrackCandidate",100);
+
     fStsTrackArrayP        = new TClonesArray("CbmStsTrack",100);
     fStsTrackArrayN        = new TClonesArray("CbmStsTrack",100);
     fMCTrackArrayP         = new TClonesArray("CbmMCTrack",100);
     fMCTrackArrayN         = new TClonesArray("CbmMCTrack",100);
 
     ioman->Register("CbmD0TrackCandidate",  "Open Charm Tracks", fListD0TrackCandidate, kTRUE);
+    ioman->Register("CbmD0TrackCandidateP",  "Open Charm positiv Tracks", fListD0TrackCandidateP, kTRUE);
+    ioman->Register("CbmD0TrackCandidateN",  "Open Charm negativ Tracks", fListD0TrackCandidateN, kTRUE);
     ioman->Register("PositiveStsTracks", "Open Charm Sts Positiv", fStsTrackArrayP, kTRUE);
     ioman->Register("NegativeStsTracks", "Open Charm Sts Negativ", fStsTrackArrayN, kTRUE);
     ioman->Register("PositiveMCTracks",  "Open Charm Mc Positiv", fMCTrackArrayP,  kTRUE);
@@ -126,12 +142,7 @@ InitStatus CbmD0TrackSelection::Init() {
     fTrdTracks       = (TClonesArray*) ioman->GetObject("TrdTrack");
     fRichRings       = (TClonesArray*) ioman->GetObject("RichRing");
     fTofTracks       = (TClonesArray*) ioman->GetObject("TofTrack");
-    
-    
-    
-    
-    
-    
+
     if(! fStsTrackArray) {Fatal("CbmD0TrackSelection: StsTrackArray not found (!)"," That's bad. ");}
     if(! fMvdHitMatchArray) {Fatal("CbmD0TrackSelection: MVDHitMatchArray not found","Good bye");}
     fPrimVtx         = (CbmVertex*) ioman->GetObject("PrimaryVertex");
@@ -142,7 +153,7 @@ InitStatus CbmD0TrackSelection::Init() {
 
     // Init DebugHistos ==============================================
 
-    if(fShowDebugHistos=kTRUE)
+    if(fShowDebugHistos==kTRUE)
 	{
 		PVnTracks = new TH1F("PVnTracks","PVnTracks", 1000, 0., 1000);
 		PVZ = new TH1F("PVZ","PVZ", 1000, -0.005, 0.005);
@@ -250,9 +261,11 @@ InitStatus CbmD0TrackSelection::Init() {
 void CbmD0TrackSelection::Exec(Option_t* option){
 
 fEventNumber++;
-if(fEventNumber % 50 == 1) LOG(INFO) << "Event: " << fEventNumber << FairLogger::endl;
+LOG(INFO) << "||---------------  Event: " << fEventNumber << "  ---------------||" << FairLogger::endl;
 
-    fListD0TrackCandidate->Clear();
+fListD0TrackCandidate->Clear();
+fListD0TrackCandidateP->Clear();
+fListD0TrackCandidateN->Clear();
     fStsTrackArrayP->Clear();
     fStsTrackArrayN->Clear();
     fMCTrackArrayP->Clear();
@@ -278,7 +291,11 @@ Int_t nTracks = fStsTrackArray->GetEntriesFast();
 
     Int_t count=0;
     Int_t pidHypo=211;
+
     Int_t mcTrackIndex = -1;
+
+    	Int_t i_MCtracksP = -1;
+        Int_t i_MCtracksN = -1;
     // --- control histos ---
               /*
     if (fPrimVtx) 
@@ -292,29 +309,71 @@ Int_t nTracks = fStsTrackArray->GetEntriesFast();
     // --- Loop over reconstructed tracks ---
 for ( Int_t itr=0; itr<nTracks; itr++ )
 	{
-	
-	if (fVerbose>0)LOG(INFO) << "CbmD0TrackSelection: stsTrack: " << itr << FairLogger::endl;
 	stsTrack = (CbmStsTrack*) fStsTrackArray->At(itr);
 	if(! IsLong(stsTrack))
 		{
 		fNoHNotPassed++;
-		if (fVerbose>0) LOG(INFO) << "CbmD0TrackSelection: stsTrack is short" << FairLogger::endl;
-		continue;
+	        continue;
 		}
 	else 
 		fNoHPassed++;
-
+      // cout << endl << "Ping 1" << endl;
 	KminusReFit(stsTrack);
         const FairTrackParam* par1 = stsTrack->GetParamFirst();
 	Double_t       	      qp   = par1->GetQp();
 	
-	if (fVerbose>0) cout << "qp: " << qp << endl;
-	
+	if(fPidMode == "NONE")
+
+	{
 	if(qp < 0.0)
-	  pidHypo = 321;
+	  pidHypo = -321;
 	else
 	  pidHypo = 211;
-	
+	}
+
+	else if(fPidMode == "MC")
+	{
+             mcTrackMatch       = (CbmTrackMatchNew*) fStsTrackMatches->At(itr);
+             if(!mcTrackMatch)
+		{
+		LOG(FATAL) << "TrackMatch problem "<< fEventNumber << FairLogger::endl;
+		}
+             mcTrackIndex = mcTrackMatch->GetMatchedLink().GetIndex();
+
+	     if(mcTrackIndex>fListMCTracks->GetEntriesFast())
+		{
+		LOG(FATAL) << "McIndexProblem at index "<< mcTrackIndex << FairLogger::endl;
+		} 
+             if(mcTrackIndex<0)
+	        {
+		 continue;
+		}
+             mcTrack = (CbmMCTrack*) fListMCTracks->At(mcTrackIndex);
+	     pidHypo = mcTrack->GetPdgCode();
+           
+       		// --- Save only positive MCtracks ---
+	if (pidHypo == 211) {
+	    TClonesArray& MCTrackArrayP = *fMCTrackArrayP;
+	    i_MCtracksP = MCTrackArrayP.GetEntriesFast();
+	    new( MCTrackArrayP[i_MCtracksP] ) CbmMCTrack(*mcTrack);
+	}
+
+	// --- Save only negative MCtracks ---
+	if (pidHypo == -321) {
+	        i_MCtracksN = fMCTrackArrayN->GetEntriesFast();
+		new((*fMCTrackArrayN)[i_MCtracksN]) CbmMCTrack(*((CbmMCTrack*)mcTrack));
+	}
+    
+
+	}
+
+	else
+	    return;
+
+	//cout << endl << "Ping 2" << endl;
+
+        if(pidHypo != -321 && pidHypo != 211) continue;
+
 	FairTrackParam  e_track;
 	
 	if (fPrimVtx) 
@@ -345,7 +404,8 @@ for ( Int_t itr=0; itr<nTracks; itr++ )
 
 
 
-                             /*
+	//  cout << endl << "PIng 3 " << endl;
+	/*
 	if ((PVsigma != -1) && (fShowDebugHistos) && (p<100)) //wieso hier p<100 ?? wuerden die ersten zwei bedingungen nicht reichen?
 	{
 	    fPVSigmaHisto->Fill(PVsigma);
@@ -364,7 +424,8 @@ for ( Int_t itr=0; itr<nTracks; itr++ )
 	if ( p  < fCutP       ) continue;
 	if ( pt < fCutPt      ) continue;
 	if ( ip > fCutIP      ) continue;
-    /////////////////////////////////////////////////////   
+	/////////////////////////////////////////////////////
+
     if(bUseMCInfo)
     {
         LOG(INFO) << "found possible opencharm track candidate, use MC-Data to start QA" << FairLogger::endl;
@@ -387,56 +448,80 @@ for ( Int_t itr=0; itr<nTracks; itr++ )
 	        continue;
 		}
 	mcTrack = (CbmMCTrack*) fListMCTracks->At(mcTrackIndex);
+
+	if(fPidMode != "MC" )
+	{
 		// --- Save only positive MCtracks ---
 	if (qp>0) {
 	    TClonesArray& MCTrackArrayP = *fMCTrackArrayP;
-	    Int_t i_MCtracksP = MCTrackArrayP.GetEntriesFast();
+	    i_MCtracksP = MCTrackArrayP.GetEntriesFast();
 	    new( MCTrackArrayP[i_MCtracksP] ) CbmMCTrack(*mcTrack);
 	}
 
 	// --- Save only negative MCtracks ---
 	if (qp<0) {
-	    	Int_t i_MCtracksN = fMCTrackArrayN->GetEntriesFast();
+	        i_MCtracksN = fMCTrackArrayN->GetEntriesFast();
 		new((*fMCTrackArrayN)[i_MCtracksN]) CbmMCTrack(*((CbmMCTrack*)mcTrack));
 	}
-    
+	}
 	if (fShowDebugHistos && mcTrack)
 		{
             	Int_t goodMatch=0; Int_t badMatch=0;
 	    	CheckMvdMatch(stsTrack, mcTrackIndex, goodMatch,badMatch);
 	    	FillDebugHistos(stsTrack, mcTrack, badMatch, goodMatch);
 		}
+       if ( mcTrack != NULL)
+	{
+      
+	    if(abs( mcTrack->GetPdgCode() ) == 2212 )
+		continue;
+
+		}                        ;
+
     } 	
         Int_t nMvdHits = stsTrack->GetNofMvdHits();
-        Int_t nStsHits = stsTrack->GetNofHits() - nMvdHits;
+        Int_t nStsHits = stsTrack->GetNofStsHits();
 
-
-	// --- cut on protons-antiprotons ---
-	if ( mcTrack) 
-		{
-		if(TMath::Abs( mcTrack->GetPdgCode() ) == 2212 ) continue;
-		}
 
 	// --- Save D0TrackCandidate  ---
 	TClonesArray& clref = *fListD0TrackCandidate;
 	Int_t size = clref.GetEntriesFast();
 	new( clref[size] ) CbmD0TrackCandidate( &e_track, PVsigma, itr, mcTrackIndex, nMvdHits, nStsHits, pidHypo );
-        if (fVerbose>0) LOG(INFO) << "new Track Candidate nummber: " << size << " with pid " << pidHypo << " and qp " << e_track.GetQp() << FairLogger::endl;
+        LOG(INFO) << "new Track Candidate nummber: " << size << " with pid " << pidHypo << " and qp " << e_track.GetQp() << FairLogger::endl;
 
 	// --- Save only positive STStracks ---
 
+	Int_t i_tracksP = -1;
+         Int_t i_tracksN = -1;
 	if (qp>0) {
 	    TClonesArray& StsTrackArrayP = *fStsTrackArrayP;
-	    Int_t i_tracksP = StsTrackArrayP.GetEntriesFast();
+	    i_tracksP = StsTrackArrayP.GetEntriesFast();
 	    new( StsTrackArrayP[i_tracksP] ) CbmStsTrack(*stsTrack);
 	}
 
 	// --- Save only negative STStracks ---
 	if (qp<0) {
 	    TClonesArray& StsTrackArrayN = *fStsTrackArrayN;
-	    Int_t i_tracksN = StsTrackArrayN.GetEntriesFast();
+	    i_tracksN = StsTrackArrayN.GetEntriesFast();
 	    new( StsTrackArrayN[i_tracksN] ) CbmStsTrack(*stsTrack);
 	}
+	// --- Save D0TrackCandidateP  ---
+	if (qp>0)
+	{
+	TClonesArray& clrefP = *fListD0TrackCandidateP;
+	Int_t sizeP = clrefP.GetEntriesFast();
+	new( clrefP[sizeP] ) CbmD0TrackCandidate( &e_track, PVsigma, i_tracksP, i_MCtracksP, nMvdHits, nStsHits, pidHypo );
+       // LOG(INFO) << "new positive Track Candidate nummber: " << size << " with pid " << pidHypo << " and qp " << e_track.GetQp() << FairLogger::endl;
+	}
+	// --- Save D0TrackCandidateN  ---
+	if(qp < 0)
+	{
+	TClonesArray& clrefN = *fListD0TrackCandidateN;
+	Int_t sizeN = clrefN.GetEntriesFast();
+	new( clrefN[sizeN] ) CbmD0TrackCandidate( &e_track, PVsigma, i_tracksN, i_MCtracksN, nMvdHits, nStsHits, pidHypo );
+       // LOG(INFO) << "new negativ Track Candidate nummber: " << size << " with pid " << pidHypo << " and qp " << e_track.GetQp() << FairLogger::endl;
+	}
+
 
     }// for loop track1
 	/*
@@ -449,7 +534,8 @@ for ( Int_t itr=0; itr<nTracks; itr++ )
      ptHisto->Write();
      imrHisto->Write();
      QpHisto->Write();
-    */
+     */
+LOG(INFO) << "|| ------------------------  End of event  ------------------------|| " << FairLogger::endl;
 }
 
 // -----------------------------------------------------------------------------------------
@@ -820,13 +906,12 @@ void CbmD0TrackSelection::SetCuts(Double_t p, Double_t pt, Double_t PVsigma, Dou
 
 Bool_t CbmD0TrackSelection::IsLong(CbmStsTrack *track){
 
-  Int_t nMapsHits   = track->GetNofMvdHits();
-  Int_t nStripHits  = track->GetNofHits() - nMapsHits;
+  Int_t nStripHits  = track->GetNofStsHits();
 
   if ( nStripHits < fNHitsOfLongTracks ) 
-	return 0;
+	return kFALSE;
  
-  return 1;
+  return kTRUE;
 }
 
 // -------------------------------------------------------------------------------
@@ -834,7 +919,8 @@ Bool_t CbmD0TrackSelection::IsLong(CbmStsTrack *track){
 void CbmD0TrackSelection::Finish(){
 
 	//cout << endl << endl << " * * * * * \t strack - information \t * * * * * ";
-
+    if (fShowDebugHistos)
+    {
     fIPResMergedHits->Write();
     fIPResMergedHitsX->Write();
     fIPResMergedHitsY->Write();
@@ -912,9 +998,6 @@ void CbmD0TrackSelection::Finish(){
     fPVAllHitsBg->Write();
     */
 
-
-    if (fShowDebugHistos)
-    {
 	                      
 		TCanvas* c=new TCanvas();
 		c->Divide(3,3);

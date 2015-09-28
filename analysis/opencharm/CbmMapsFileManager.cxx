@@ -32,52 +32,61 @@ using std::setprecision;
 using std::ios_base;
 using std::vector;
    
-CbmMapsFileManager::CbmMapsFileManager (TString fileName,TString
-branchName) {
+CbmMapsFileManager::CbmMapsFileManager (TString fileName,TString branchName)
 
-fFrameworkFile=gFile;
-fFrameworkDirectory=gDirectory;
-
-
-
-fInputFile=(TFile*) gROOT->FindObject(fileName);
-
-
-
-if (fInputFile==0){fInputFile = new TFile(fileName);
-		   };
-
-
-if (!fInputFile) {
-	Fatal("CbmMapsFileManager: Error, could not open",fileName);
-	};
-
- 
-   
+    fInputFile(),
+    fCbm(),
+    fTree(),
+    fFolder(),
+    fListOfStsPoints(),
+    fFrameworkFile(),
+    fFrameworkDirectory(),
+    fCurrentParticle(),
+    fNumberOfCurrentEvent(),
+    fEventsInFile(),
+    fHitsInEvent()
+    fErrorCode()
+{
+  fFrameworkFile=gFile;
+  fFrameworkDirectory=gDirectory;
+  fInputFile=(TFile*) gROOT->FindObject(fileName);
+  if (fInputFile==NULL)
+      {
+      fInputFile = new TFile(fileName);
+      }
+  if (fInputFile == NULL)
+      {
+      Fatal("CbmMapsFileManager: Error, could not open",fileName);
+      }
   fCbm = (FairMCApplication*) fInputFile->Get("Cbm");
   fTree = (TTree*) fInputFile->Get("cbmsim"); 
   fFolder = (TFolder*) fInputFile->Get("cbmout");
   fListOfStsPoints = (TClonesArray*)fFolder->FindObjectAny(branchName);
   
-  if (!fListOfStsPoints){
-  	Fatal("CbmMapsFileManager: Error, could not open branch",branchName);
-	};	
-  
+  if (fListOfStsPoints == NULL)
+      {
+      Fatal("CbmMapsFileManager: Error, could not open branch",branchName);
+      }
   fTree->SetBranchAddress(fListOfStsPoints->GetName(),&fListOfStsPoints);
-
-
   fEventsInFile=(UInt_t) fTree->GetEntries();
-  if(fEventsInFile<1) {cout<< "Warning: No events in file" << fileName<< endl;}
-  else {
-    cout << fileName << " was opened successfully. " << endl << fEventsInFile;
-    cout << " events available." << endl;
-
-};
-
-if(fFrameworkFile) {gFile=fFrameworkFile;};
-if(fFrameworkDirectory){gDirectory=fFrameworkDirectory;};
-
-};     
+  if(fEventsInFile<1)
+      {
+      cout<< "Warning: No events in file" << fileName<< endl;
+      }
+  else
+      {
+       cout << fileName << " was opened successfully. " << endl << fEventsInFile;
+       cout << " events available." << endl;
+      }
+  if(fFrameworkFile)
+      {
+	  gFile=fFrameworkFile;
+      }
+  if(fFrameworkDirectory)
+     {
+          gDirectory=fFrameworkDirectory;
+     }
+}
 
 CbmMapsFileManager::CbmMapsFileManager (){};
  

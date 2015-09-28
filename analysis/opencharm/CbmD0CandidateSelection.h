@@ -29,6 +29,7 @@
 #include "TNtuple.h"
 #include "FairField.h"
 
+
 class TClonesArray;
 class CbmKFSecondaryVertexFinder;
 class CbmStsKFTrackFitter;
@@ -65,6 +66,7 @@ private:
     TClonesArray* fStsTrackMatches;
     TClonesArray* fPosStsTracks;
     TClonesArray* fNegStsTracks;
+    TClonesArray* fD0Candidates;
     CbmStsKFTrackFitter* fFit;
     CbmKFSecondaryVertexFinder* fSecVertexFinder;
     CbmVertex* fPrimVtx;

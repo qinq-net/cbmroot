@@ -26,6 +26,7 @@
 #include "CbmKFHit.h"
 #include "CbmKFTrack.h"
 #include "CbmKFVertex.h"
+#include "CbmKFParticleInterface.h"
 #include "CbmKFTrackInterface.h"
 #include "CbmStsKFSecondaryVertexFinder.h"
 #include "KFParticle.h"
@@ -126,12 +127,12 @@ InitStatus CbmD0CandidatesSE::Init() {
 
     //--- Arrays containing POSITIVE tracks ---
     fPosStsTrackArray = (TClonesArray*) ioman->GetObject("PositiveStsTracks");
-    fPosD0TrackArray  = (TClonesArray*) ioman->GetObject("PositiveD0TrackCandidates");
+    fPosD0TrackArray  = (TClonesArray*) ioman->GetObject("CbmD0TrackCandidateP");
     fPosMCTrackArray  = (TClonesArray*) ioman->GetObject("PositiveMCTracks");
 
     //--- Arrays containing NEGATIVE tracks ---
     //fNegStsTrackArray = (TClonesArray*) ioman->GetObject("NegativeStsTracks");
-    //fNegD0TrackArray  = (TClonesArray*) ioman->GetObject("NegativeD0TrackCandidates");
+    //fNegD0TrackArray  = (TClonesArray*) ioman->GetObject("CbmD0TrackCandidate");
     //fNegMCTrackArray  = (TClonesArray*) ioman->GetObject("NegativeMCTracks");
 
     fAllD0TrackArray = (TClonesArray*) ioman->GetObject("CbmD0TrackCandidate");
@@ -155,11 +156,13 @@ InitStatus CbmD0CandidatesSE::Init() {
 
     fMF = CbmKF::Instance()->GetMagneticField();
     fListMCTracks    = (TClonesArray*) ioman->GetObject("MCTrack");
-    cout << "Ping " << endl;
+    //cout << "Ping " << endl;
+
     if (!fPrimVtx) {Fatal("CbmD0Candidates: fPrimVtx not found", " That's bad." ) ;}
     if (!fListMCTracks) {Fatal("CbmD0Candidates: fListMCTracks not found", " That's bad." ) ;}
     if (!fMF) {Fatal("CbmD0Candidates: Magnetic field  not found", " That's bad." ) ;}
-    
+
+    kfpInterface = new CbmKFParticleInterface();
 
 
     // **********  Register output array
@@ -167,7 +170,7 @@ InitStatus CbmD0CandidatesSE::Init() {
     ioman->Register("CbmD0Candidate", "MVD", fPairs, kTRUE);
 
      // --- Fill the buffer ---
-    CbmMapsFileManager* file1 = new CbmMapsFileManager( fNegativeFileName, "NegativeD0TrackCandidates" );
+    CbmMapsFileManager* file1 = new CbmMapsFileManager( fNegativeFileName, "CbmD0TrackCandidateN" );
     FillBuffer( file1, fBufferD0TrackArraysN );
     delete file1;
 
@@ -211,30 +214,26 @@ void CbmD0CandidatesSE::Exec(Option_t* option){
     printf("\nCbmD0CandidatesSE: Event:%i\n", fEventNumber);
 
     //fInfoArray->Clear();
-
+   // cout << endl << "read number of Tracks" << endl;
+    Int_t nTracks = fAllD0TrackArray->GetEntriesFast();
     // Readout the number of entries
+   // cout << endl << "read number buffer entries " << endl;
     Int_t entriesInNegativeFile = fBufferD0TrackArraysN->GetEntries();
     //cout << "Number of Events In Negative File: " << entriesInNegativeFile << endl;
-
+   // cout << endl << "read number pos Tracks " << endl;
     Int_t nTracksP = fPosD0TrackArray->GetEntriesFast();
     //cout << "\tnTracksP  " << nTracksP << endl;
 
     CbmD0TrackCandidate * track1;
     CbmD0TrackCandidate * track2;
-    /*
+
     if (fVerbose>0) printf("CbmD0CandidatesSE: Entries:%i\n",nTracks);
 
     if(nTracks==0){
 	cout <<" -W- CbmD0CandidatesSE: No D0Tracks found, ignoring this event." << endl;
 	return;
     }
-    */
-    //CbmStsTrack* stsTrack1;
-    //CbmStsTrack* stsTrack2;
-    //CbmMCTrack*  mcTrack1;
-    //CbmMCTrack*  mcTrack2;
-    //TVector3 mom1;
-    //TVector3 mom2;
+
     TVector3 pos1;
     TVector3 pos2;
     TVector3 mom01;
@@ -253,9 +252,12 @@ void CbmD0CandidatesSE::Exec(Option_t* option){
     //CbmVertex vtxT;
     CbmKFVertex kf_vertex;
     CbmKFVertex kf_vertexT;
-    Double_t m, merr, ct, cterr, l, lerr, p, perr;
+    Double_t mass, merr, ct, cterr, l, lerr, p, perr;
     vector<CbmKFTrackInterface*> tt;
     CbmKFVertex PV( *fPrimVtx );
+    Double_t SvChiT = 0.;
+    Double_t SvZT = 0.;
+
 
 
     for( Int_t itrNegEvt=0; itrNegEvt<entriesInNegativeFile; itrNegEvt++ ){
@@ -263,34 +265,47 @@ void CbmD0CandidatesSE::Exec(Option_t* option){
 
 	if( !fSuperEventMode && !(fFrameWorkEvent == itrNegEvt) ) continue;
         //cout << "\r itrNegEvt " << itrNegEvt << flush;
-
+       // cout << endl << "get Array neg D0 Tracks" << endl;
 	fNegD0TrackArray  = (TClonesArray*) fBufferD0TrackArraysN->At(itrNegEvt);
+        //cout << endl << "get Array neg sts Tracks" << endl;
 	fNegStsTrackArray = (TClonesArray*) fBufferStsTrackArraysN->At(itrNegEvt);
+       // cout << endl << "get Array neg Mc Tracks" << endl;
 	fNegMCTrackArray  = (TClonesArray*) fBufferMCTrackArraysN->At(itrNegEvt);
-
+       // cout << endl << "got all Arrays, mc array size is " << fNegMCTrackArray->GetEntriesFast() << endl;
 
 	Int_t nTracksN = fNegD0TrackArray->GetEntriesFast();
 	//cout << "\r itrNegEvt " << itrNegEvt << " ... nTracksN " << nTracksN <<" "<< flush;
         //cout << "\tnTracksP  " << nTracksP << "\tnTracksN  " << nTracksN << endl;
 
 	//--- First loop: over negative tracks ---
-	for( Int_t itr1=0; itr1<nTracksN; itr1++){
-            //cout << "\r itr1 " << itr1 << " "<< flush;
-            //cout << " itr1 " << itr1 << " "<< endl;;
+	for( Int_t itr1=0; itr1<nTracksN; itr1++)
+	{
+           // cout << endl << " try to get negativ candidate" << endl;
 	    track1    = (CbmD0TrackCandidate*) fNegD0TrackArray->At(itr1);
+	   // cout << endl << "try to get corresponding sts Track" << endl;
 	    stsTrack1 = (CbmStsTrack*) fNegStsTrackArray->At( track1->GetTrackIndex() );
-	    mcTrack1  = (CbmMCTrack*) fNegMCTrackArray->At( track1->GetTrackIndexMC() );
+         
+	    if (track1->GetTrackIndexMC() != -1)
+           // cout << endl << "try to get corresponding match" << endl;
+	     mcTrack1  = (CbmMCTrack*) fNegMCTrackArray->At( track1->GetTrackIndexMC() );
+         
             Double_t Qp = track1->GetQp();
 
 	    //--- Second loop: over positive tracks ---
-	    for( Int_t itr2=0; itr2<nTracksP; itr2++ ){
-		//cout  << "\r itr2 " << itr2 << " "<< flush;
-		//cout  << " itr2 " << itr2 << " "<< endl;
-		track2    = (CbmD0TrackCandidate*) fPosD0TrackArray->At(itr2);
+	    for( Int_t itr2=0; itr2<nTracksP; itr2++ )
+	    {
+               // cout << endl << "try to get positiv candidate" << endl;
+	       track2    = (CbmD0TrackCandidate*) fPosD0TrackArray->At(itr2);
+                //cout << endl << "try to get corresponding sts track" << endl;
 		stsTrack2 = (CbmStsTrack*) fPosStsTrackArray->At( track2->GetTrackIndex() );
-		mcTrack2  = (CbmMCTrack*)   fPosMCTrackArray->At( track2->GetTrackIndexMC() );
+               
+		if (track2->GetTrackIndexMC() != -1)
+               // cout << endl << "try to get match" << endl;
+	         mcTrack2  = (CbmMCTrack*)   fPosMCTrackArray->At( track2->GetTrackIndexMC() );
+             
+		//---------------------------------------------
+               
 
-                //---------------------------------------------
 		track1->Momentum(mom01);
 		track2->Momentum(mom02);
 		track1->Position(pos1);
@@ -299,7 +314,7 @@ void CbmD0CandidatesSE::Exec(Option_t* option){
 		Double_t IPAngle = GetIPAngle( pos1, pos2 );
 		if( IPAngle > -0.8 ) continue;
 
-               /* Double_t IM      = GetIM( track1, track2 );
+                Double_t IM      = GetIM( track1, track2 );
 
 
 		//if( IM<1.7 || IM>3.5 ){continue;}
@@ -313,101 +328,55 @@ void CbmD0CandidatesSE::Exec(Option_t* option){
 
 		Double_t cosA = BoostMomentum( mom01, mom02, track1, track2 );
 		//if (cosA > -0.80) continue;
+	    
+                cout << endl << "try to make new particle " << endl;
+		KFParticle* particle1 = new KFParticle();
+		if (fVerbose>0)  cout <<endl<< "new Particle 1 with id "<< track1->GetPidHypo();
+		cout << endl << stsTrack1->GetNofHits() << "    " << stsTrack1->GetNofMvdHits() << endl;
+	        kfpInterface->SetKFParticleFromStsTrack(&*stsTrack1, particle1, track1->GetPidHypo());
+		cout << endl << "set new particle1 with mass: " << particle1->GetMass() << endl;
 
-		//cout << " KF " << flush;
-		//--- Get Vertex with geometrical fit only ---
-		//crossCheck=crossCheck+1;
-		CbmKFTrack t1(*stsTrack1);
-		CbmKFTrack t2(*stsTrack2);
-                tt.clear();
-		tt.push_back(&t1);
-		tt.push_back(&t2);
+	       // if(particle1->GetMass() == 0) continue;
 
-		KFParticle D0;
-		D0.Construct(tt, 0);
-                D0.TransportToDecayVertex();
-		D0.GetMass(m, merr);
-		//D0.GetDecayLength(l,lerr);
-		//D0.GetLifeTime(ct, cterr);
-                D0.GetMomentum(p, perr);
-		D0.GetKFVertex( kf_vertex );
-		kf_vertex.GetVertex(vtx);
-                Double_t SvZ    = vtx.GetZ();
-		Double_t SvChi   = vtx.GetChi2()/vtx.GetNDF();
+		KFParticle* particle2 = new KFParticle();	
+		if (fVerbose>0)  cout <<endl<< "new Particle 2  with id "<< track2->GetPidHypo();
+                 cout << endl << stsTrack2->GetNofHits() << "    " << stsTrack2->GetNofMvdHits() << endl;
+                kfpInterface->SetKFParticleFromStsTrack(&*stsTrack2, particle2, track2->GetPidHypo());
+		cout << endl << "set new particle2 with mass: " << particle2->GetMass() << endl;
 
-		//if (SvChi>4) continue;
+               // if(particle2->GetMass() == 0) continue;
 
-                
-		cout << "using GEO kf_vertex: vtx.GetZ()    = " << vtx.GetZ() << endl;
-		cout << "using GEO kf_vertex: vtx.GetChi2() = " << vtx.GetChi2() << endl;
-		cout << "using GEO kf_vertex: vtx.GetNDF()  = " << vtx.GetNDF()   << endl;
-		cout << "using GEO kf_vertex: ScChi         = " << SvChi << endl;
-                
+                cout << endl << "try to get D0" << endl;
+		KFParticle* D0_KF = new KFParticle(*particle1, *particle2);
+		cout << endl << "got new D0" << endl;
+	        D0_KF->Print();
 
-
-                //--- Get Vertex with topological constraint---
-		KFParticle D0t;
-		D0t.Construct(tt, &PV);
-		D0t.TransportToDecayVertex();
-		//D0t.GetMass(m, merr);
-		//D0t.GetDecayLength(l,lerr);
-		//D0t.GetLifeTime(ct, cterr);
-		D0t.GetMomentum(p, perr);
-		D0t.GetKFVertex( kf_vertexT );
-		kf_vertexT.GetVertex(vtxT);
-		Double_t SvZT    = vtxT.GetZ();
-		Double_t SvChiT  = vtxT.GetChi2()/vtxT.GetNDF();
-		vtxT.Position(v);
-		Double_t SvX     = v.X();
-		Double_t SvY     = v.Y();*/
-
-
-		//if (SvChiT>4) continue;
-		//cout << "using kf_vertex: vtx.GetZ() = " << vtx.GetZ() << endl;
-                /*
-		cout << "using TOPO kf_vertex: vtxT.GetZ()    = " << vtxT.GetZ() << endl;
-		cout << "using TOPO kf_vertex: vtxT.GetChi2() = " << vtxT.GetChi2() << endl;
-		cout << "using TOPO kf_vertex: vtxT.GetNDF()  = " << vtxT.GetNDF()   << endl;
-		cout << "using TOPO kf_vertex: ScChiT         = " << SvChiT << endl;
-                */
-
+	        if (fVerbose>0)  cout << endl << "Found new possible D0 with mass: " << D0_KF->GetMass();
+		
+		D0_KF->TransportToDecayVertex();
+ 
+		mass = D0_KF->GetMass();
+		l    = D0_KF->GetDecayLength();
+		lerr = D0_KF->GetErrDecayLength();
+		ct   = D0_KF->GetLifeTime();
+		cterr= D0_KF->GetErrLifeTime();
+		p    = D0_KF->GetMomentum();
 
 
 	        //---------------------------------------------
-		track1->Momentum(mom1);
+        	track1->Momentum(mom1);
 		track2->Momentum(mom2);
 	       
 
-		mcTrack1->GetStartVertex(vertex1);
-		mcTrack2->GetStartVertex(vertex2);
-
-
-		
-		
-
+		if(mcTrack1)mcTrack1->GetStartVertex(vertex1);
+		if(mcTrack2)mcTrack2->GetStartVertex(vertex2);
 
 
                 //------------------------------------------------------
 		// *********** Fill the TTree and apply cuts ***********
                 //------------------------------------------------------
-
-		//Double_t SvZ     = v.Z();
-
-		//--- cut on the secondary vertex ---
-		if ( SvZ < fcutSVZmin || SvZ > fcutSVZmax ) continue;
-
-		
-		Double_t PvZ     = fPrimVtx->GetZ();
-		Double_t Pair_Tx = GetPairTx( mom1, mom2 );
-		Double_t Pair_Ty = GetPairTy( mom1, mom2 );
-		Double_t IPD0    = GetPairImpactParameterR( Pair_Tx, Pair_Ty, SvX, SvY, SvZ, PvZ );
-
-		//--- cut on the impact parameter of the D0 ---
-		if( IPD0 > fcutIPD0max ) continue;
-
-               
-		Int_t    Pid1    = mcTrack1->GetPdgCode();
-		Int_t    Pid2    = mcTrack2->GetPdgCode();
+   		Int_t    Pid1    = track1->GetPidHypo();
+		Int_t    Pid2    = track2->GetPidHypo();
 		Double_t p1      = mom1.Mag();
 		Double_t p2      = mom2.Mag();
 		Double_t pt1     = sqrt(mom1.X()*mom1.X() + mom1.Y()*mom1.Y());
@@ -420,28 +389,37 @@ void CbmD0CandidatesSE::Exec(Option_t* option){
 		Double_t imx2    = track2->GetX();
 		Double_t imy1    = track1->GetY();
 		Double_t imy2    = track2->GetY();
-
+                Double_t SvChi   = D0_KF->GetChi2() / D0_KF->GetNDF();
+		Double_t SvZ     = D0_KF->GetZ();
 
 		Double_t cos12   = GetCos12( mom1, mom2 );
 		//Double_t SvZErr  = (mcTrack1->GetStartVertex()).Z()- v.Z();
+                Double_t SvX     = D0_KF->GetX();
+		Double_t SvY     = D0_KF->GetY();
 		Double_t SvXErr  = (vertex1.X() - v.X());
 		Double_t SvYErr  = (vertex1.Y() - v.Y());
 		Double_t SvZErr  = (vertex1.Z() - v.Z());
 	        Double_t ptD0    = GetPairPt( mom1, mom2 );
 		Double_t pzD0    = GetPairPz( mom1, mom2 );
 
-		Int_t nMvdHits1 = track1->GetNMvdHits();
-                Int_t nStsHits1 = track1->GetNStsHits();
+		Int_t nMvdHits1 = stsTrack1->GetNofMvdHits();
+                Int_t nStsHits1 = stsTrack1->GetNofHits();
 
-		Int_t nMvdHits2 = track2->GetNMvdHits();
-                Int_t nStsHits2 = track2->GetNStsHits();
+		Int_t nMvdHits2 = stsTrack2->GetNofMvdHits();
+                Int_t nStsHits2 = stsTrack2->GetNofHits();
 
+		Double_t PvZ     = fPrimVtx->GetZ();
+		Double_t Pair_Tx = GetPairTx( mom1, mom2 );
+		Double_t Pair_Ty = GetPairTy( mom1, mom2 );
+		Double_t IPD0    = GetPairImpactParameterR( Pair_Tx, Pair_Ty, SvX, SvY, SvZ, PvZ );
+                Double_t rapidity= D0_KF->GetRapidity();
+  		//--- cut on the impact parameter of the D0 ---
+		if( IPD0 > fcutIPD0max ) continue;
 
+        	//--- cut on the secondary vertex ---
+		if ( SvZ < fcutSVZmin || SvZ > fcutSVZmax ) continue;
 
-                //if (IM>1.5 && IM<2.5)cout << "\tnTracksP  " << nTracksP << "\tnTracksN  " << nTracksN << endl;
-
-
-		
+          
 
 		// ------------ Identify Signal on MC base --------------
                 // -------- Valid ONLY for Event by Event Analysis ------
@@ -467,11 +445,6 @@ void CbmD0CandidatesSE::Exec(Option_t* option){
 		    f_particleIsMCD0=kFALSE;
 		}
 
-
-		//CbmMvdPixelCharge* pixel = (CbmMvdPixelCharge*)fPixelCharge->At(i);
-		//if ( pixel->GetCharge()>fChargeThreshold )
-		//{
-
 		if (f_particleIsMCD0) { signal = 1; } else { signal = 0; };
 		Int_t nPairs = fPairs->GetEntriesFast();
 		new ((*fPairs)[nPairs])
@@ -480,13 +453,11 @@ void CbmD0CandidatesSE::Exec(Option_t* option){
 				   Pid2,  p2,  pt2,  PV2,  IP2,  imx2,  imy2, nMvdHits2, nStsHits2,
 				   SvChi,   SvZ,   IPD0,  IM,      cos12,  IPAngle,
 				   SvXErr, SvYErr, SvZErr,  ptD0,  pzD0,  SvChiT,  SvZT,   ptt,
-				   alpha,   PvZ,   cosA);
-		//}
-
-
-
-
-
+				   alpha,   PvZ,   cosA, rapidity);
+		particle1->Delete();
+		particle2->Delete();
+                D0_KF->Delete();
+	  
 	    }// second for loop: over positive tracks
 
 	}// first for loop: over negative tracks
@@ -659,8 +630,11 @@ Double_t  CbmD0CandidatesSE::GetIM( CbmD0TrackCandidate* tr1, CbmD0TrackCandidat
     tr2->Momentum(mom2);
     CbmStsTrack* stsTr1;
     CbmStsTrack* stsTr2;
+
     stsTr1 = (CbmStsTrack*) fNegStsTrackArray->At(tr1->GetTrackIndex());
+
     stsTr2 = (CbmStsTrack*) fPosStsTrackArray->At(tr2->GetTrackIndex());
+
     Double_t Energy1 = GetEnergy1(tr1);
     Double_t Energy2 = GetEnergy2(tr2);
 

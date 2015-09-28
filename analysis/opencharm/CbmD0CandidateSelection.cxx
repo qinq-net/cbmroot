@@ -8,6 +8,7 @@
 #include "CbmKFTrack.h"
 #include "CbmTrackMatch.h"
 #include "CbmD0CandidateSelection.h"
+#include "CbmD0Candidate.h"
 #include "CbmD0TrackCandidate.h"
 #include "CbmD0Tools.h"
 
@@ -76,9 +77,6 @@ CbmD0CandidateSelection::CbmD0CandidateSelection(char* name, Int_t iVerbose, Dou
     fcutSVZ  = cutSVZ;
     fUseKF   = kTRUE;
     bTestMode = kFALSE;
-    
-    fTrackPairNtuple = new TNtuple("trackPair","trackPair2",
-    "signal:Pid1:p1:pt1:PV1:IP1:imx1:imy1:Pid2:p2:pt2:PV2:IP2:imx2:imy2:SvChi:SvZ:IPD0:IM:cos12:IPAngle:SvZErr:ptD0:pzD0:SvChiT:SvZT:PvZ:ptt:alpha",100000000);
 
     // ---  Histos for control ---
     test = new TH1F("test", "test", 1000, 0, 3 );
@@ -87,17 +85,14 @@ CbmD0CandidateSelection::CbmD0CandidateSelection(char* name, Int_t iVerbose, Dou
 
 // -------------------------------------------------------------------------
 CbmD0CandidateSelection::~CbmD0CandidateSelection() {
-    fInfoArray->Clear("C");
-    delete fInfoArray;
-    delete fTrackPairNtuple;
+   
     delete test;
 }
 // -------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------------------
 void CbmD0CandidateSelection::Finish() {
-  fTrackPairNtuple->Write();
-  fTrackPairNtuple->Delete();
+ 
 }
 // -------------------------------------------------------------------------
 
@@ -107,6 +102,7 @@ InitStatus CbmD0CandidateSelection::Init() {
 
     FairRootManager* ioman = FairRootManager::Instance();
     if (!ioman) Fatal("Register", "No FairRootManager");
+    Register();
 
     fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
     fStsTrackArray   = (TClonesArray*) ioman->GetObject("StsTrack");
@@ -144,9 +140,8 @@ void CbmD0CandidateSelection::Exec(Option_t* option){
 
     fEventNumber++;
     Int_t D0counter;
-    Bool_t f_particleIsMCD0;
+    Bool_t f_particleIsMCD0 = kFALSE;
     Int_t nAcceptedD0 = 0;
-    float pairInfo[29];
     TVector3 vertex1; //cdritsa 17/04/09
     TVector3 vertex2; //cdritsa 17/04/09
 
@@ -155,7 +150,8 @@ void CbmD0CandidateSelection::Exec(Option_t* option){
     cout << "========================================================================================"<<endl;
     cout << endl << "CbmD0CandidateSelection:: Event: " << fEventNumber << endl;
 
-    fInfoArray->Clear();
+
+    fD0Candidates->Clear();
 
     Int_t nTracks    = fD0TrackArray->GetEntriesFast();
     cout << "nTracks: " << nTracks << endl;
@@ -186,29 +182,35 @@ void CbmD0CandidateSelection::Exec(Option_t* option){
     CbmVertex vtxT;
     CbmVertex kf_vertex;
     Double_t mass, merr, ct, cterr, l, lerr, p, perr;
-    vector<CbmKFTrackInterface*> tt;
+
     CbmKFVertex PV( *fPrimVtx );
     Int_t crossCheck=0;
     Int_t mcPid1 = -1;
     Int_t mcPid2 = -1;
+    Int_t signal = 0;
+    Double_t SvXErr = 0.;
+    Double_t SvYErr = 0.;
+    Double_t SvChiT = 0.;
+    Double_t SvZT = 0.;
+    Double_t cosA = 0.;
 
 
-	for( Int_t itr1=0; itr1<nTracks; itr1++ ){
+    for( Int_t itr1=0; itr1<nTracks; itr1++)
+       {
+       track1    = (CbmD0TrackCandidate*) fD0TrackArray->At(itr1);
+       if (track1->GetPidHypo() != -321)
+          continue;
+       track1->Momentum(mom1);
+       stsTrack1 = (CbmStsTrack*) fStsTrackArray->At( track1->GetTrackIndex() );
 
-	track1    = (CbmD0TrackCandidate*) fD0TrackArray->At(itr1);
-	track1->Momentum(mom1);
-        stsTrack1 = (CbmStsTrack*) fStsTrackArray->At( track1->GetTrackIndex() );
-        
-	for( Int_t itr2=itr1+1; itr2<nTracks; itr2++){
+    for( Int_t itr2=0; itr2<nTracks; itr2++)
+       {
+       track2    = (CbmD0TrackCandidate*) fD0TrackArray->At(itr2);
+       if (track2->GetPidHypo() != 211)
+           continue;
+       track2->Momentum(mom2);
+       stsTrack2 = (CbmStsTrack*) fStsTrackArray->At( track2->GetTrackIndex() );
 
-	    track2    = (CbmD0TrackCandidate*) fD0TrackArray->At(itr2);
-	    track2->Momentum(mom2);
-            stsTrack2 = (CbmStsTrack*) fStsTrackArray->At( track2->GetTrackIndex() );
-
-            // same charge cut...
-	    if( ( ( track1->GetQp() ) * ( track2->GetQp() ) ) > 0 ) continue;
-	    if( ( ( track1->GetQp() ) * ( track2->GetQp() ) ) == 0 ) continue;
-            
             if(bTestMode)
                {
 
@@ -239,57 +241,32 @@ void CbmD0CandidateSelection::Exec(Option_t* option){
 			cout << "********< MC-D0 detected >********" << endl;
 			cout << "----------------------------------" << endl;
 			D0counter++;
+                        signal = 1;
 	   	 }
 	   	 else{
-			f_particleIsMCD0=kFALSE;
+		     f_particleIsMCD0=kFALSE;
+
 	   	 }
 		}
 
 
-	    if ( (fUseKF && !bTestMode) || (bTestMode && f_particleIsMCD0 && fUseKF) ){
-//                cout << " KF " << endl;
-		
-		// --- using secondary vertex
+                if (fVerbose>0) cout <<endl<< "||--- KF ---||" << endl;;
+
 		crossCheck=crossCheck+1;
-/*		CbmKFTrack t1(*stsTrack1);
-		CbmKFTrack t2(*stsTrack2);
-                tt.clear();
-		tt.push_back(&t1);
-		tt.push_back(&t2);
 
-		fSecVertexFinder->SetTracks(tt);
-		fSecVertexFinder->Fit();
-		fSecVertexFinder->GetVertex(kf_vertex);
-
-		KFPVertex *kfpVertex = tools->CbmVertexToKFPVertex(kf_vertex);
-
-		KFParticle* D0 = new KFParticle(*kfpVertex);
-
-                D0->TransportToDecayVertex();
-
-		mass = D0->GetMass();
-		l = D0->GetDecayLength();
-		lerr = D0->GetErrDecayLength();
-		ct = D0->GetLifeTime();
-		cterr = D0->GetErrLifeTime();
-                p = D0->GetMomentum();
-		
-
-*/
 		// --- using KFPartical methode
-
 		KFParticle* particle1 = new KFParticle(); 
-//		cout << "new Particle with id "<< track1->GetPidHypo() << endl;
+		if (fVerbose>0)  cout << "new Particle with id "<< track1->GetPidHypo();
 		kfpInterface->SetKFParticleFromStsTrack(&*stsTrack1, particle1, track1->GetPidHypo());
 
 		
 		KFParticle* particle2 = new KFParticle();	
-//              cout << "new Particle 2  with id "<< track2->GetPidHypo() << endl;
+               if (fVerbose>0)  cout <<endl<< "new Particle 2  with id "<< track2->GetPidHypo();
         	kfpInterface->SetKFParticleFromStsTrack(&*stsTrack2, particle2, track2->GetPidHypo());
 
 
 		KFParticle* D0_KF = new KFParticle(*particle1, *particle2);
-//		cout << endl << "Found new possible D0 with mass: " << D0_KF->GetMass();
+	         if (fVerbose>0)  cout << endl << "Found new possible D0 with mass: " << D0_KF->GetMass();
 		 
 		mass = D0_KF->GetMass();
 		l    = D0_KF->GetDecayLength();
@@ -330,58 +307,20 @@ void CbmD0CandidateSelection::Exec(Option_t* option){
 		Double_t pzD0    = GetPairPz(track1, track2);
 		Double_t ptt     = GetAPptt(track1, track2);
 		Double_t alpha   = GetAPalpha(track1, track2);
-
-
-
-
+                Double_t rapidity= D0_KF->GetRapidity();
 		//--- Apply cuts ---
 		if( IPD0 > fcutIPD0 || SvZ < fcutSVZ ) continue;
 
 		nAcceptedD0 ++;
-		// ---- Fill the TNtuple ----
 
-		if (f_particleIsMCD0) {
-		    pairInfo[0] = 1;
-		} else {
-		    pairInfo[0] = 0;
-		}
-		
-		
-		pairInfo[1]  = (float)mcPid1;
-		pairInfo[2]  = (float)p1;
-		pairInfo[3]  = (float)pt1;
-		pairInfo[4]  = (float)PV1;
-		pairInfo[5]  = (float)IP1;
-		pairInfo[6]  = (float)imx1;         //IP1-> X coordinate
-		pairInfo[7]  = (float)imy1;         //IP1-> Y coordinate
 
-		pairInfo[8]  = (float)mcPid2;
-		pairInfo[9]  = (float)p2;
-		pairInfo[10] = (float)pt2;
-		pairInfo[11] = (float)PV2;
-		pairInfo[12] = (float)IP2;
-		pairInfo[13] = (float)imx2;        //IP2-> X coordinate
-		pairInfo[14] = (float)imy2;        //IP2-> Y coordinate
+		  new((*fD0Candidates)[fD0Candidates->GetEntriesFast()]) CbmD0Candidate(signal,
+											track1->GetPidHypo(), p1, pt1, PV1, IP1, imx1, imy1, stsTrack1->GetNofMvdHits(), stsTrack1->GetNofStsHits(),
+											track2->GetPidHypo(), p2, pt2, PV2, IP2, imx2, imy2, stsTrack2->GetNofMvdHits(), stsTrack2->GetNofStsHits(),
+											SvChi, SvZ, IPD0, mass, cos12, IPAngle,
+											SvXErr, SvYErr, SvZErr, ptD0, pzD0, SvChiT, SvZT, ptt,
+											alpha, PvZ, cosA, rapidity);
 
-		pairInfo[15] = (float)SvChi;
-		pairInfo[16] = (float)SvZ;
-		pairInfo[17] = (float)IPD0;
-		pairInfo[18] = (float)mass;
-		pairInfo[19] = (float)cos12;
-		pairInfo[20] = (float)IPAngle;
-		pairInfo[21] = (float)SvZErr;
-		pairInfo[22] = (float)ptD0;
-		pairInfo[23] = (float)pzD0;
-		pairInfo[24] = 0.;//(float)SvChiT;
-		pairInfo[25] = 0.;//(float)SvZT;
-		pairInfo[26] = (float)PvZ;
-		pairInfo[27] = (float)ptt;
-		pairInfo[28] = (float)alpha;
-             
-		fTrackPairNtuple->Fill(pairInfo);
-	    }   else{
-		continue;
-	    }
 
 	 
 
@@ -389,7 +328,7 @@ void CbmD0CandidateSelection::Exec(Option_t* option){
 
     }// first for loop
 
-    //fTrackPairNtuple->Draw("ptt:alpha");
+  
     cout << endl << "Number of combinations: " << crossCheck << " Number of candidates in acceptance: "<< nAcceptedD0 <<endl;
     cout << "========================================================================================"<<endl;
 }//Exec
@@ -401,11 +340,11 @@ void CbmD0CandidateSelection::Exec(Option_t* option){
  // -----   Private method Register   ---------------------------------------
 void CbmD0CandidateSelection::Register() {
   FairRootManager* ioman = FairRootManager::Instance();
-  if ( ! ioman) Fatal("Register",
+  if ( ! ioman) Fatal(" CbmD0CandidateSelection::Register",
 		      "No FairRootManager");
 
-  ioman->Register("TrackPairNtuple", "MVD", fTrackPairNtuple, kTRUE);
-
+  fD0Candidates = new TClonesArray("CbmD0Candidate",100);
+  ioman->Register("CbmD0Candidate", "OpenCharm", fD0Candidates, kTRUE);
 
 }
 // -------------------------------------------------------------------------  

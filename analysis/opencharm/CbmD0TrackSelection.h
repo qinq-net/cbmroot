@@ -31,8 +31,6 @@ class CbmStsTrack;
 class CbmVertex;
 class FairTrackParam;
 
-
-
 class CbmD0TrackSelection : public FairTask
 {
  public:
@@ -41,7 +39,7 @@ class CbmD0TrackSelection : public FairTask
   virtual ~CbmD0TrackSelection();
   virtual InitStatus Init();
   virtual void Exec(Option_t* option);
-  virtual void KminusReFit(CbmStsTrack* track);
+  void KminusReFit(CbmStsTrack* track);
   void CheckMvdMatch(CbmStsTrack* stsTrack,Int_t mcTrackIndex,Int_t&  goodMatch, Int_t&  badMatch);
   //Int_t CheckMvdMatch(CbmStsTrack* stsTrack,Int_t mcTrackIndex);
 
@@ -53,24 +51,22 @@ class CbmD0TrackSelection : public FairTask
   Double_t GetMom(FairTrackParam *etrack);
   Bool_t   IsLong(CbmStsTrack* track);
 
-
   //void SetParContainers() {; };
 
   void ShowDebugHistos (){fShowDebugHistos= kTRUE;}
   void SetHistoFileName( TString name ){ fHistoFileName = name;  };
   void SetNHitsOfLongTracks(Int_t N) {fNHitsOfLongTracks=N;};
   void ShowADI(void) {fadi = kTRUE;};
+  void SetPIDMode(TString pidMode);
   void SaveCutEff(void);
   void SetCutEffLogfile(TString filename)                {logfile = filename;};
   void FillDebugHistos(CbmStsTrack* stsTrack, CbmMCTrack* mcTrack, Int_t nrOfBadMatch, Int_t nrOfGoodMatch);
   void SetUseMcInfo(Bool_t useMC) { bUseMCInfo = useMC;};
-  
+  void SetCuts(Double_t p, Double_t pt, Double_t PVsigma, Double_t IP);
   /** Virtual method Finish **/
   virtual void Finish();
 
-
-  //private:
-public:
+  private:
   Int_t fNHitsOfLongTracks;
   Int_t fEventNumber;
   TClonesArray* fMcPoints;
@@ -88,7 +84,11 @@ public:
   TClonesArray* fListRCD0;
   TClonesArray* fListMCTracks;
   TClonesArray* fListD0TrackCandidate;
+  TClonesArray* fListD0TrackCandidateP;
+  TClonesArray* fListD0TrackCandidateN;
   TClonesArray* fMvdHitMatchArray;
+
+  TString fPidMode;
 
   CbmStsKFTrackFitter* fFit;
   CbmVertex* fPrimVtx;
@@ -97,6 +97,17 @@ public:
 
   Bool_t fShowDebugHistos;
   Bool_t bUseMCInfo;
+  Bool_t fadi;
+  TString logfile;
+	
+  TNtuple* fTrackAnalysisTuple;
+
+  Int_t fPVCutPassed;
+  Int_t fPVCutNotPassed;
+  Int_t fNoHPassed;
+  Int_t fNoHNotPassed;
+  
+  Double_t fCutPt, fCutP, fCutPV, fCutIP;
 
   TH1F* PVnTracks;
   TH1F* PVZ;
@@ -184,33 +195,8 @@ TH1F* fIPResWrong2HitsY;
   TH1F*  fPVCorrectHitsBg;
   TH2F*  fPVCorrectHitsBgP;
   TH1F*  fPVAllHitsBg;
-
-                        
-
-
-
-
-
- // TH2F* fPVCorrectHitsSigP;
- // TH2F* fPVCorrectHitsBgP;
-
-
-  TNtuple* fTrackAnalysisTuple;
-
-  Int_t fPVCutPassed;
-  Int_t fPVCutNotPassed;
-  Int_t fNoHPassed;
-  Int_t fNoHNotPassed;
-  
-  Double_t fCutPt, fCutP, fCutPV, fCutIP;
-  void SetCuts(Double_t p, Double_t pt, Double_t PVsigma, Double_t IP);
   
   ClassDef(CbmD0TrackSelection,1);
-  
-  private:
-      Bool_t fadi;
-      TString logfile;
-	
 };
 
 #endif

@@ -35,7 +35,7 @@ class CbmStsKFTrackFitter;
 class CbmStsTrack;
 class CbmVertex;
 class FairTrackParam;
-
+class CbmKFParticleInterface;
 
 
 class CbmD0CandidatesSE : public FairTask
@@ -90,7 +90,7 @@ private:
     CbmVertex* fPrimVtx;
     CbmVertex* fSecVtx;
     FairField* fMF;
-
+    CbmKFParticleInterface* kfpInterface;
     TString fHistoFileName;
     TString fNegativeFileName;
 
