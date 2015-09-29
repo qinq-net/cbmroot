@@ -8,6 +8,9 @@
  ** Defines unique detector identifier for all TOF modules.
  ** This class is the implementation for tof geometry version v14a 
  ** nh, 11.03.2014
+ ** PAL, 23.09.2015: make the class common to both v14 and v15 geometries
+ **                  Field 4 used as Side index (or fake Gap index in digitizer)
+ **                  Naming as in TDR: SM -> Module, Module -> Counter, Cell -> Strip 
  ** All classes which uses this scheme should have a data member
  ** of this class 
  ** @author F. Uhlig <f.uhlig@gsi.de>
@@ -16,11 +19,11 @@
 //                                  3         2         1          shift length
 /** Current definition:            10987654321098765432109876543210
  ** System ID (kTOF=6) on bits 0-3 00000000000000000000000000001111       15
- ** SuperModule ID on bits 4-11    00000000000000000000111111110000 <<4   255
- ** SuperModule Type on bits 12-15 00000000000000001111000000000000 <<12  15
- ** Module NR on bits 16-23        00000000011111110000000000000000 <<16  127
- ** Side NR on bits 20-23          00000000100000000000000000000000 <<23  1
- ** Cell NR on bits 24-31          11111111000000000000000000000000 <<24  255
+ ** Module ID on bits 4-11         00000000000000000000111111110000 <<4   255
+ ** Module Type on bits 12-15      00000000000000001111000000000000 <<12  15
+ ** Counter ID on bits 16-23       00000000011111110000000000000000 <<16  127
+ ** Side/Gap NR on bits 20-23      00000000100000000000000000000000 <<23  1
+ ** Strip ID on bits 24-31         11111111000000000000000000000000 <<24  255
  **/
 
 
@@ -49,13 +52,15 @@ class CbmTofDetectorId_v14a : public CbmTofDetectorId
   /** Get the global sytem ID **/
   Int_t GetSystemId(Int_t detectorId);
 
-  /** Get SMType number from detector ID **/
+  /** Get Module Type from detector ID **/
   Int_t GetSMType(const Int_t detectorId);
+  Int_t GetModuleType(const Int_t detectorId);
   
-   /** Get smodule number from detector ID **/
+   /** Get Module ID from detector ID **/
   Int_t GetSModule(const Int_t detectorId);
+  Int_t GetModuleId(const Int_t detectorId);
   
-  /** Get module number from detector ID **/
+  /** Get counter ID from detector ID **/
   Int_t GetCounter(const Int_t detectorId);
   
   /** Get sector number from detector ID **/
@@ -66,14 +71,13 @@ class CbmTofDetectorId_v14a : public CbmTofDetectorId
   
   /** Get cell number from detector ID **/
   Int_t GetCell(const Int_t detectorId);
-
-  /** Get cell number from detector ID **/
+  /** Get Strip ID from detector ID **/
   Int_t GetStrip(const Int_t detectorId);
   
   /** Get region number from detector ID **/
   Int_t GetRegion(const Int_t detectorId);
 
-  /** Get cell number from detector ID.
+  /** Get full cell number from detector ID.
    ** This is masking the the gap number
    ** if this is set.
    **/
