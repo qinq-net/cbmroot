@@ -5,6 +5,8 @@
  ** the base line.
  ** Create as an output an array of
  ** the digis belonging to the cluster.
+ **
+ ** 2015 Anna Senger <a.senger@gsi.de>
  **/
 
 #ifndef STSCOSYHITFINDER_H
@@ -48,33 +50,38 @@ class StsCosyHitFinder : public FairTask
   
   /** Executed task **/
   virtual void Exec(Option_t * option);
-  Int_t GetEntries () { return fChain->GetEntries();}
+  Int_t GetEntries () { return fChain->GetEntries();}  
   
-  void SetTriggeredMode(Bool_t mode) { fTriggeredMode = mode; }
-  void SetTriggeredStation(Int_t station) { fTriggeredStation = station ; }
+  void SetZ(Double_t z0, Double_t z1, Double_t z2) { fZ0 =  z0; fZ1 =  z1; fZ2 =  z2; }
   
+  void SetTimeLimit(Double_t time[3]) { for(int i=0; i<3; i++)fTimeLimit[i]=time[i]; }
+  void SetTimeShift(Double_t time[3]) { for(int i=0; i<3; i++)fTimeShift[i]=time[i]; }
+  
+  void SetSensorId(Int_t sensor) { fSensorId=sensor; } //13 for W13, 10 for W10, 18 for W18
+  
+  void SetCutFileName(TString name){fCutName = name;}  
+
   /** Finish task **/
   virtual void Finish();
  
  private:
 
-  TClonesArray*     hodoClusters;   /** Input array of CbmFiberHodoCluster **/
   TClonesArray*     stsClusters;    /** Input array of CbmStsCluster **/
-  TClonesArray*     fDigis;    /** Input array of CbmStsCluster **/
-  TClonesArray*     hDigis;    /** Input array of CbmStsCluster **/
 
   TClonesArray*     fHits;    /** Output array of CbmHits **/
   
   TChain *fChain;           
-  TH1F *deltat0;
-  TH1F *deltat1;
-  TH1F *deltat2;
-  TH1F *deltat3;
-  TH1F *deltat4;
-  TH1F *h_time_diff;
+  
+  Int_t    fSensorId;
+  Double_t fZ0, fZ1, fZ2;
+  Double_t fTimeLimit[3];
+  Double_t fTimeShift[3];
+  
+  TH1F* cluster_size[3][2];
+  
+  TString fCutName;
 
-  Bool_t fTriggeredMode; ///< Flag if data is taken in triggered mode
-  Int_t  fTriggeredStation;
+  Int_t fEvent;
 
   StsCosyHitFinder(const StsCosyHitFinder&);
   StsCosyHitFinder& operator=(const StsCosyHitFinder&);

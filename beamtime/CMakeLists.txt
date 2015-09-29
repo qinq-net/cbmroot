@@ -78,12 +78,19 @@ Set(SRCS
   param/CbmBeamTimeContFact.cxx
   param/CbmBeamTimeFirstPar.cxx
 
-  reco/CbmStsCosyBL.cxx
-  reco/StsCosyClusterFinder.cxx
-  reco/StsCosyHitFinder.cxx
-  reco/StsCosyTrack.cxx
   reco/CbmStsHodoCorrelations.cxx
   reco/CbmMuchRawHistos.cxx
+  
+  sts/reco/cosy/StsCosyBL.cxx
+  sts/reco/cosy/StsCosyClusterFinder.cxx
+  sts/reco/cosy/StsCosyHitFinder.cxx
+  sts/reco/cosy/StsCosyAnalysis.cxx
+  
+  sts/settings/StsAlignment.cxx
+  sts/settings/StsClusterSet.cxx
+  sts/settings/StsHitSet.cxx
+
+
 )
 
 # Add artificial dependency which delays the compilation of the defined file

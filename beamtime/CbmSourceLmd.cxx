@@ -69,7 +69,9 @@ CbmSourceLmd::CbmSourceLmd()
     fAuxDigis(new TClonesArray("CbmAuxDigi", 10)),
     fBaselineData(kFALSE),
     fBaselineRoc(),
-    fTriggeredMode(kFALSE)
+    fTriggeredMode(kFALSE),
+    fRocNumber1(6),
+    fRocNumber2(7)
 {
   // --- Initialise counters
   for (Int_t iType = 0; iType < 8; iType++) { fNofMessType[iType] = 0; }
@@ -118,7 +120,9 @@ CbmSourceLmd::CbmSourceLmd(const char* inFile)
     fAuxDigis(new TClonesArray("CbmAuxDigi", 10)),
     fBaselineData(kFALSE),
     fBaselineRoc(),
-    fTriggeredMode(kFALSE)
+    fTriggeredMode(kFALSE),
+    fRocNumber1(6),
+    fRocNumber2(7)
 {
   // --- Initialise counters
   for (Int_t iType = 0; iType < 8; iType++) { fNofMessType[iType] = 0; }
@@ -534,22 +538,22 @@ void CbmSourceLmd::ProcessSystemMessage()
 	  setprecision(9) << Double_t(hitTime) * 1.e-9 << " s" << FairLogger::endl;
       }
       if (fTriggeredMode) {
-        fBaselineRoc.insert(11);
-        fBaselineRoc.insert(12);
+        fBaselineRoc.insert(fRocNumber1);
+        fBaselineRoc.insert(fRocNumber2);
         LOG(INFO) << "Triggered mode" << FairLogger::endl;
-        LOG(INFO) << "ROC 11" << " now in baseline mode" << FairLogger::endl;
-        LOG(INFO) << "ROC 12" << " now in baseline mode" << FairLogger::endl;
+        LOG(INFO) << "ROC "  << fRocNumber1 << " now in baseline mode" << FairLogger::endl;
+        LOG(INFO) << "ROC "  << fRocNumber2 << " now in baseline mode" << FairLogger::endl;
       }
       fBaselineRoc.insert(rocId);
       LOG(INFO) << "ROC " << rocId << " now in baseline mode" << FairLogger::endl;
       break;
     case roc::SYSMSG_USER_CALIBR_OFF:
       if (fTriggeredMode) {
-        fBaselineRoc.erase(11);
-        fBaselineRoc.erase(12);
+        fBaselineRoc.erase(fRocNumber1);
+        fBaselineRoc.erase(fRocNumber2);
         LOG(INFO) << "Triggered mode" << FairLogger::endl;
-        LOG(INFO) << "ROC 11" << " now in normal mode" << FairLogger::endl;
-        LOG(INFO) << "ROC 12" << " now in normal mode" << FairLogger::endl;
+        LOG(INFO) << "ROC "  << fRocNumber1 << " now in normal mode" << FairLogger::endl;
+        LOG(INFO) << "ROC "  << fRocNumber2 << " now in normal mode" << FairLogger::endl;
       }
       fBaselineRoc.erase(rocId);
       LOG(INFO) << "ROC " << rocId << " now in normal mode" << FairLogger::endl;

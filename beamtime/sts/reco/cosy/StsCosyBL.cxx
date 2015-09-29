@@ -1,4 +1,4 @@
-#include "CbmStsCosyBL.h"
+#include "StsCosyBL.h"
 
 #include "FairRootManager.h"
 #include "FairRunAna.h"
@@ -22,18 +22,18 @@ using namespace std;
 
 
 // ---- Default constructor -------------------------------------------
-CbmStsCosyBL::CbmStsCosyBL()
-  :FairTask("CbmStsCosyBL",1),fDigis(NULL),fTriggeredMode(kFALSE),
-   fTriggeredStation(2)
+StsCosyBL::StsCosyBL()
+  :FairTask("StsCosyBL",1),fDigis(NULL),fTriggeredMode(kFALSE),
+   fTriggeredStation(1)
    { 
      fChain = new TChain("cbmsim");
      outFile=NULL;
-     fLogger->Debug(MESSAGE_ORIGIN,"Defaul Constructor of CbmStsCosyBL");
+     fLogger->Debug(MESSAGE_ORIGIN,"Defaul Constructor of StsCosyBL");
      cDigis = new TClonesArray("CbmStsDigi");
 }
    
 // ---- Destructor ----------------------------------------------------
-CbmStsCosyBL::~CbmStsCosyBL()
+StsCosyBL::~StsCosyBL()
 {
   if(fDigis){
     fDigis->Delete();
@@ -47,27 +47,27 @@ CbmStsCosyBL::~CbmStsCosyBL()
     delete hDigis;
     delete auxDigis;
   }
-  fLogger->Debug(MESSAGE_ORIGIN,"Destructor of CbmStsCosyBL");
+  fLogger->Debug(MESSAGE_ORIGIN,"Destructor of StsCosyBL");
 }
 
 // ----  Initialisation  ----------------------------------------------
-void CbmStsCosyBL::SetParContainers()
+void StsCosyBL::SetParContainers()
 {
-  fLogger->Debug(MESSAGE_ORIGIN,"SetParContainers of CbmStsCosyBL");
+  fLogger->Debug(MESSAGE_ORIGIN,"SetParContainers of StsCosyBL");
   // Load all necessary parameter containers from the runtime data base
   
   FairRunAna* ana = FairRunAna::Instance();
   FairRuntimeDb* rtdb=ana->GetRuntimeDb();
   /*
-  <CbmStsCosyBLDataMember> = (<ClassPointer>*)
+  <StsCosyBLDataMember> = (<ClassPointer>*)
     (rtdb->getContainer("<ContainerName>"));
   */
 }
 
 // ---- Init ----------------------------------------------------------
-InitStatus CbmStsCosyBL::Init()
+InitStatus StsCosyBL::Init()
 {
-  fLogger->Debug(MESSAGE_ORIGIN,"Initilization of CbmStsCosyBL");
+  fLogger->Debug(MESSAGE_ORIGIN,"Initilization of StsCosyBL");
   
   // Get a handle from the IO manager
   FairRootManager* ioman = FairRootManager::Instance();
@@ -82,7 +82,7 @@ InitStatus CbmStsCosyBL::Init()
 
   if ( ! fDigis ) 
     {
-      fLogger->Error(MESSAGE_ORIGIN,"No InputDataLevelName array!\n CbmStsCosyBL will be inactive");
+      fLogger->Error(MESSAGE_ORIGIN,"No InputDataLevelName array!\n StsCosyBL will be inactive");
       return kERROR;
     }
   
@@ -131,22 +131,37 @@ InitStatus CbmStsCosyBL::Init()
       for(int s=0; s<2; s++)
 	{
 	  Char_t inName[200];
-	  sprintf(inName,"base_line_vs_ch_STS%i_side%i",i,s);
-	  TString f1(inName);
-	  baseline_ch[i][s] = new TH2F(f1, f1, 256, 0,256, 2000, 1000, 3000);
+	  sprintf(inName,"base_line_vs_channel_STS%i_side%i",i,s);	  
+	  baseline_ch[i][s] = new TH2F(inName, inName, 300, 0,300, 2000, -10, 3000);
 
-	  sprintf(inName,"fiber_distr_system%i_side%i",i,s);
-	  TString f2(inName);
-	  hits_layer[i][s] = new TH1F(f2, f2, 256, 0,256);
+	  sprintf(inName,"raw_charge_vs_channel_STS%i_side%i_ifBL",i,s);
+	  raw_ch[i][s] = new TH2F(inName, inName, 300, 0,300, 2000, -10, 3000);
+
+	  sprintf(inName,"raw_charge_vs_channel_STS%i_side%i_all",i,s);
+	  raw_ch_woBL[i][s] = new TH2F(inName, inName, 300, 0,300, 2000, -10, 3000);
+
+	  sprintf(inName,"calibr_charge_vs_channel_STS%i_side%i",i,s);
+	  calibr_ch[i][s] = new TH2F(inName, inName, 300, 0,300, 2000, -10, 3000);
+	  
+	  sprintf(inName,"calibr_charge_vs_channel_STS%i_side%i_1D",i,s);
+	  calibr_ch1D[i][s] = new TH1F(inName, inName, 2000, -10, 3000);
 	}
     }
-  hodo_layer = new TH1F("layers", "layers", 100, 0,100);
-  hodo_hits = new TH1F("fibers", "fibers", 1000, 0,1000);
-  hodo_system = new TH1F("system", "system", 1000, 0,1000);
-
-  aux_digi = new TH1F("aux_digi", "aux_digi", 100, 0,100);
-  aux_time_diff = new TH1F("aux_time_diff", "aux_time_diff", 100, 0,100);
-  aux_time = new TH1F("aux_time", "aux_time_diff", 10000, 0,10000);
+    
+  for(int i =0; i<2;i++)
+    {
+      for(int s=0; s<2; s++)
+	{
+	  Char_t inName[200];
+	  sprintf(inName,"base_line_vs_channel_Hodo%i_side%i",i,s);
+	  hodo_baseline_ch[i][s] = new TH2F(inName, inName, kBaselineNBins, kBaselineMinAdc, kBaselineMaxAdc, 2000, -10, 3000);
+	  
+	  sprintf(inName,"calibr_charge_vs_channel_Hodo%i_side%i",i,s);
+	  hodo_calib_ch[i][s] = new TH2F(inName, inName, kBaselineNBins, kBaselineMinAdc, kBaselineMaxAdc, 2000, -10, 3000);
+	}
+    }
+  
+  fNofEvent = 0;
  
   cDigis = new TClonesArray("CbmStsDigi", 100);
   ioman->Register("StsCalibDigi", "Calibrated", cDigis, kTRUE);
@@ -157,44 +172,43 @@ InitStatus CbmStsCosyBL::Init()
 }
 
 // ---- ReInit  -------------------------------------------------------
-InitStatus CbmStsCosyBL::ReInit()
+InitStatus StsCosyBL::ReInit()
 {
-  fLogger->Debug(MESSAGE_ORIGIN,"Initilization of CbmStsCosyBL");
+  fLogger->Debug(MESSAGE_ORIGIN,"Initilization of StsCosyBL");
   return kSUCCESS;
 }
 
 // ---- Exec ----------------------------------------------------------
-void CbmStsCosyBL::Exec(Option_t* option)
+void StsCosyBL::Exec(Option_t* option)
 {
 
   cDigis->Clear();
   chDigis->Clear();
 
-  double hit_layer[2][2];
-  
-  for(int k=0;k<2;k++)
-    {  
-      for(int m=0;m<2;m++)
-	hit_layer[k][m]=0;
-    }
 
   int fNDigis =0;
   int hNDigis =0;
+  
+  
+  {
+    Int_t nofSTS = fDigis->GetEntries();
+    CbmStsDigi* StsDigi = NULL;
+    for (Int_t iDigi=0; iDigi < nofSTS; iDigi++ ) 
+    {
+      StsDigi = (CbmStsDigi*) fDigis->At(iDigi);
+      int station = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsStation);
+      int side = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsSide);
+      int ch = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsChannel);
+      raw_ch_woBL[station][side]->Fill(ch,StsDigi->GetCharge());
+    }    
+  }
+    
   if (0 < fBLDigis->GetEntries() && 0 < hBLDigis->GetEntries() ) 
     {
       BaseLine(fBLDigis, base_line_array);      
       HodoBaseLine(hBLDigis,hodo_BL_array);
-      for(int i =0; i<3; i++)
-	{
-	  for(int s=0;s<2;s++)
-	    {
-	      for(int ch=0; ch<256; ch++)
-		baseline_ch[i][s] ->Fill(ch, base_line_array.at(i).at(s).at(ch));
-	    }
-	}
     }
-  
-  else
+    else
     {
       if(calib==kTRUE && hodo_calib ==kTRUE)
 	{    
@@ -210,17 +224,16 @@ void CbmStsCosyBL::Exec(Option_t* option)
 	      Int_t system = CbmFiberHodoAddress::GetStationId(HodoDigi->GetAddress());
 	      Int_t layer = CbmFiberHodoAddress::GetSideId(HodoDigi->GetAddress());
 	      Int_t fiberNr = CbmFiberHodoAddress::GetStripId( HodoDigi->GetAddress());
-	      hodo_system->Fill(system);
-	      hodo_layer->Fill(layer);
-	      hodo_hits->Fill(fiberNr);
-	      hits_layer[system][layer]->Fill(fiberNr);
-
+	      
 	      double adc = -HodoDigi->GetCharge() + hodo_BL_array.at(system).at(layer).at(fiberNr);
+	      
+	      hodo_baseline_ch[system][layer] ->Fill(fiberNr, hodo_BL_array.at(system).at(layer).at(fiberNr));
+	      hodo_calib_ch[system][layer]->Fill(fiberNr,adc);
+	      
 	      if(adc>0)
 		{
 		  new ( (*chDigis)[hNDigis] )CbmFiberHodoDigi(HodoDigi->GetAddress(), adc,HodoDigi->GetTime());
 		  hNDigis++;
-		  hit_layer[system][layer]++;
 		}
 	      else return;
 	      
@@ -236,12 +249,23 @@ void CbmStsCosyBL::Exec(Option_t* option)
 	      int station = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsStation);
 	      int side = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsSide);
 	      int ch = CbmStsAddress::GetElementId(StsDigi->GetAddress(),kStsChannel);
+
+	      double adc = -StsDigi->GetCharge() + base_line_array.at(station).at(side).at(ch);
+				
+	      raw_ch[station][side]->Fill(ch,StsDigi->GetCharge());
+	      baseline_ch[station][side] ->Fill(ch, base_line_array.at(station).at(side).at(ch));
+
+	      //if(station==fTriggeredStation && (ch < 21 || ch > 27))continue; //cut strip area
 	      
-	      Double_t limit = 0;
-	      if(fTriggeredMode && station==fTriggeredStation)limit = -130;
+	      calibr_ch[station][side]->Fill(ch,(UShort_t)adc);
+	      calibr_ch1D[station][side]->Fill((UShort_t)adc);
 	      
-	      double adc = -StsDigi->GetCharge() + base_line_array.at(station).at(side).at(ch) - limit;
-	      if(adc>0)
+	      if(fTriggeredMode && station==fTriggeredStation)
+	      {
+		new ( (*cDigis)[fNDigis] ) CbmStsDigi(StsDigi->GetAddress(), StsDigi->GetTime(), adc);
+		fNDigis++;
+	      }
+	      else if(adc>0)
 		{
 		  new ( (*cDigis)[fNDigis] ) CbmStsDigi(StsDigi->GetAddress(), StsDigi->GetTime(), (UShort_t)adc);
 		  fNDigis++;
@@ -250,17 +274,14 @@ void CbmStsCosyBL::Exec(Option_t* option)
 	    }
 	  
 	}
-      
     }
-  
 
-  
     
-  fLogger->Debug(MESSAGE_ORIGIN,"Exec of CbmStsCosyBL");
+  fLogger->Debug(MESSAGE_ORIGIN,"Exec of StsCosyBL");
 //  Reset();
 }
 
- void CbmStsCosyBL::FinishEvent()
+ void StsCosyBL::FinishEvent()
  {
    //Reset();
    // cout << "---I ------------- FinishEvent" << endl;
@@ -270,9 +291,9 @@ void CbmStsCosyBL::Exec(Option_t* option)
 
 
 // ---- Finish --------------------------------------------------------
-void CbmStsCosyBL::Finish()
+void StsCosyBL::Finish()
 {
-  fLogger->Debug(MESSAGE_ORIGIN,"Finish of CbmStsCosyBL");
+  fLogger->Debug(MESSAGE_ORIGIN,"Finish of StsCosyBL");
 
   // Write standard file
   FairRun* ana = FairRunAna::Instance();
@@ -280,30 +301,41 @@ void CbmStsCosyBL::Finish()
     ana = FairRunOnline::Instance();
   }
   TFile* fout = ana->GetOutputFile();
-  hodo_layer->Write();
-  hodo_hits->Write();
-  hodo_system->Write();
-  aux_digi->Write();
-  aux_time_diff->Write();
-  aux_time->Write();
  
-
-
  for(int i =0; i<3;i++)
     {
       for(int s=0; s<2; s++)	
 	{
 	  baseline_ch[i][s]->Write();
-	  hits_layer[i][s]->Write();
+	  raw_ch_woBL[i][s]->Write();
+	  raw_ch[i][s]->Write();
+	  calibr_ch[i][s]->Write();
+	  calibr_ch1D[i][s]->Write();
 	}
     }
-
+  
+    for(int i =0; i<2;i++)
+    {
+      for(int s=0; s<2; s++)
+	{
+	  hodo_baseline_ch[i][s]->Write();
+	  hodo_calib_ch[i][s]->Write();
+	}
+    }
+  
   if (fout) fout->Write();
+  
+  LOG(INFO) << FairLogger::endl;
+  LOG(INFO) << "=====================================================" << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Finish" << FairLogger::endl;
+  LOG(INFO) << FairLogger::endl;
+  LOG(INFO) << "=====================================================" << FairLogger::endl;
+  LOG(INFO) << FairLogger::endl;
     
 }
 
 /*
-Int_t CbmStsCosyBL::AddFile( const char* name ){
+Int_t StsCosyBL::AddFile( const char* name ){
   if (name) {
     fChain->AddFile(name);
   }
@@ -311,7 +343,7 @@ Int_t CbmStsCosyBL::AddFile( const char* name ){
 }
 */
 
-void CbmStsCosyBL::BaseLine(TClonesArray* fBaselineDigis, vector< vector < vector < double> > > base_line)
+void StsCosyBL::BaseLine(TClonesArray* fBaselineDigis, vector< vector < vector < double> > > base_line)
 {
 
   //BLInit();
@@ -395,7 +427,7 @@ void CbmStsCosyBL::BaseLine(TClonesArray* fBaselineDigis, vector< vector < vecto
  
 }
 
-void CbmStsCosyBL::HodoBaseLine(TClonesArray* fBaselineDigis, vector< vector < vector < double> > > base_line)
+void StsCosyBL::HodoBaseLine(TClonesArray* fBaselineDigis, vector< vector < vector < double> > > base_line)
 {
 
   Int_t hStations = 2; // TODO: from where do I get the number of stations?
@@ -477,7 +509,7 @@ void CbmStsCosyBL::HodoBaseLine(TClonesArray* fBaselineDigis, vector< vector < v
   
 }
 
-Double_t CbmStsCosyBL::GetBlPos( TH1F * hist )
+Double_t StsCosyBL::GetBlPos( TH1F * hist )
 {
   Int_t medianBin = 1;
   
@@ -489,7 +521,7 @@ Double_t CbmStsCosyBL::GetBlPos( TH1F * hist )
   return hist->GetXaxis()->GetBinCenter( medianBin );
 }
 
-void  CbmStsCosyBL::Reset()
+void  StsCosyBL::Reset()
 {
   if (cDigis) {
     cDigis->Clear();
@@ -499,4 +531,4 @@ void  CbmStsCosyBL::Reset()
   }
 }
 
-ClassImp(CbmStsCosyBL)
+ClassImp(StsCosyBL)

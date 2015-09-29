@@ -5,6 +5,8 @@
  ** the base line.
  ** Create as an output an array of
  ** the digis belonging to the cluster.
+ **
+ ** 2015 Anna Senger <a.senger@gsi.de>
  **/
 
 #ifndef STSCOSYCLUSTERFINDER_H
@@ -56,6 +58,14 @@ class StsCosyClusterFinder : public FairTask
   
   void SetTriggeredMode(Bool_t mode) { fTriggeredMode = mode; }
   void SetTriggeredStation(Int_t station) { fTriggeredStation = station ; }
+  
+  void SetChargeLimitsStrip(Double_t min[3], Double_t max[3]) { for(int i=0; i<3; i++){fChargeMinStrip[i] = min[i]; fChargeMaxStrip[i] = max[i];} }
+  void SetChargeMinCluster(Double_t min[3]) { for(int i=0; i<3; i++)fChargeMinCluster[i]=min[i]; }
+  
+  void SetTimeLimit(Double_t time[3]) { for(int i=0; i<3; i++)fTimeLimit[i]=time[i]; }
+  void SetTimeShift(Double_t time[3]) { for(int i=0; i<3; i++)fTimeShift[i]=time[i]; }
+  
+  void SetCutFileName(TString name){fCutName = name;}  
 
 /** Finish task **/
   virtual void Finish();
@@ -66,22 +76,21 @@ class StsCosyClusterFinder : public FairTask
   TClonesArray*     fClusters;    /** candidates array of CbmStsCluster **/
   TClonesArray*     finalClusters;    /** Output array of CbmStsCluster **/
 
-  TH1F *n_digi_cluster[6];
-  TH1F *n_cluster_layer[6];
-  TH1F *cluster_pos[6];
-  TH1F *single_cluster_adc[6];
-  TH1F *cluster_adc[6];
-  TH2F *sts0_XY;
-  TH2F *sts1_XY;
-  TH2F *sts2_XY;
-  TH1F *time_diff[6];
-  TH1F *m_time_diff[6];
-  TH1F *time_diff_0;
-  TH1F *time_diff_1;
-  TH1F *time_diff_2;
-
   Bool_t fTriggeredMode; ///< Flag if data is taken in triggered mode
   Int_t  fTriggeredStation;
+  
+  Double_t fChargeMinStrip[3];
+  Double_t fChargeMaxStrip[3];
+  Double_t fChargeMinCluster[3];
+  
+  Double_t fTimeLimit[3];
+  Double_t fTimeShift[3];
+
+  TString fCutName;
+
+  TH1F* cluster_size[3][2];
+  
+  Int_t fEvent;
 
   std::map<Int_t, std::set<CbmStsDigi*, classcomp1> > fDigiMap;   /** digis per hodo layer **/ 
 

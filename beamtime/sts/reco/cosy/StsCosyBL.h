@@ -1,5 +1,5 @@
-#ifndef CBMSTSCOSYBL_H
-#define CBMSTSCOSYBL_H
+#ifndef STSCOSYBL_H
+#define STSCOSYBL_H
 
 #include "FairTask.h"
 #include "TH1F.h"
@@ -11,19 +11,19 @@
 using std::vector;
 class TClonesArray;
 
-class CbmStsCosyBL : public FairTask
+class StsCosyBL : public FairTask
 {
   public:
 
     /** Default constructor **/
-    CbmStsCosyBL();
+    StsCosyBL();
 
     /** Constructor with parameters (Optional)
-    //  CbmStsCosyBL(Int_t verbose);
+    //  StsCosyBL(Int_t verbose);
     **/
 
     /** Destructor **/
-    ~CbmStsCosyBL();
+    ~StsCosyBL();
 
 
     /** Initiliazation of task at the beginning of a run **/
@@ -49,7 +49,7 @@ class CbmStsCosyBL : public FairTask
     void BLClean();
     void BaseLine(TClonesArray* fBaselineDigis,     vector< vector < vector < double> > > base_line_array);
     void HodoBaseLine(TClonesArray* fBaselineDigis, vector< vector < vector < double> > > base_line);
-    
+
     void SetTriggeredMode(Bool_t mode) { fTriggeredMode = mode; }
     void SetTriggeredStation(Int_t station) { fTriggeredStation = station ; }
 
@@ -73,31 +73,22 @@ class CbmStsCosyBL : public FairTask
     static const Int_t kBaselineMaxAdc = 4096;
     static const Int_t kBaselineNBins = 4096;
 
-    TH1F *sts_station;
-    TH1F *sts_hits;
-    TH1F *hodo_hits;
-    TH1F *hodo_layer;
-    TH1F *hodo_system;
-    TH1F *chanels[3][2];
-    TH1F *hit_patern[3][2];
-    TH2F *xy_distr[3];
-    TH2F *strip_vs_adc[3][2];
-    TH1F *digi_distr[3];
-    TH1F *digi_side[3][2];
-    TH1F *digi_tdiff[3][2];
+
     TH2F *baseline_ch[3][2];
-    TH2F *hodo_baseline_ch[4];
-    TH1F *hits_layer[3][2]; 
-    TH1F *aux_digi;
-    TH1F *aux_time_diff;
-    TH1F *aux_time;
- 
+    TH2F *raw_ch[3][2];
+    TH2F *raw_ch_woBL[3][2];
+    TH2F *calibr_ch[3][2];
+    TH1F *calibr_ch1D[3][2];
+    
+    TH2F *hodo_baseline_ch[2][2];
+    TH2F *hodo_calib_ch[2][2];
 
     Bool_t calib;
     Bool_t hodo_calib;
 
     Bool_t fTriggeredMode; ///< Flag if data is taken in triggered mode
     Int_t  fTriggeredStation;
+    Int_t  fNofEvent;
 
     vector< vector < vector < double> > > base_line_array;
     vector< vector < vector < double> > > hodo_BL_array;
@@ -107,10 +98,10 @@ class CbmStsCosyBL : public FairTask
     /** Output array to  new data level**/
     //  TClonesArray* <OutputDataLevel>;
 
-    CbmStsCosyBL(const CbmStsCosyBL&);
-    CbmStsCosyBL operator=(const CbmStsCosyBL&);
+    StsCosyBL(const StsCosyBL&);
+    StsCosyBL operator=(const StsCosyBL&);
 
-    ClassDef(CbmStsCosyBL,1);
+    ClassDef(StsCosyBL,1);
 };
 
 #endif

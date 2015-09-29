@@ -36,15 +36,12 @@ class CbmSourceLmd : public FairSource
     virtual ~CbmSourceLmd();
 
     virtual Bool_t Init();
-
 #ifdef _NewFairSource
     Int_t ReadEvent(UInt_t);
 #else
     Int_t ReadEvent()
 #endif
-
     virtual void Close();
-
     virtual void Reset();
 
     void SetReadInTimeStep(ULong_t step) { fReadInTimeStep = step;  }
@@ -52,6 +49,7 @@ class CbmSourceLmd : public FairSource
 
     void SetEventTimeWindow(Double_t window) { fEventTimeWindow = window; }
     void SetTriggeredMode(Bool_t mode) { fTriggeredMode = mode; }
+    void SetTriggeredRocNumber(Int_t Nr1, Int_t Nr2) { fRocNumber1 = Nr1; fRocNumber2 = Nr2; }
 
     void AddFile(const char * fname) {       
       fInputFileList.Add(new TObjString(fname));
@@ -115,6 +113,8 @@ class CbmSourceLmd : public FairSource
     Bool_t fBaselineData;   ///< Flag if the data is for baseline calibration
     std::set<Int_t> fBaselineRoc; ///< List of RocIds which already signaled changin of readout status
     Bool_t fTriggeredMode; ///< Flag if data is taken in triggered mode
+
+    Int_t fRocNumber1, fRocNumber2; ///< Number of ROC for external trigger
 
     void ProcessSystemMessage();
     void ProcessEpochMarker();

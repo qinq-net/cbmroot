@@ -32,6 +32,7 @@ CbmDaqMapCosy2014::CbmDaqMapCosy2014()
   InitializeRocToStsStation();
   InitializeRocToHodoStation();
   InitializeStsMapping(); 
+  fRun = 1;
 }
 // ---------------------------------------------------------------------------
 
@@ -53,6 +54,7 @@ CbmDaqMapCosy2014::CbmDaqMapCosy2014(Int_t iRun)
   InitializeRocToStsStation();
   InitializeRocToHodoStation();
   InitializeStsMapping(); 
+  fRun = iRun;
 }
 // ---------------------------------------------------------------------------
 
@@ -151,7 +153,8 @@ Int_t CbmDaqMapCosy2014::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel)
   
 
   // station which was in until run53 
-
+if ( fRun < 54)
+  {
   if (rocId == 6) { //sts2 p-side
     if (nxId == 0) channel = 128 - ((nxChannel < 64) ? (nxChannel + 2 * ((nxChannel + 1) % 2) - 1) : nxChannel);
   }
@@ -159,15 +162,21 @@ Int_t CbmDaqMapCosy2014::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel)
   if (rocId == 7) { //sts2 n-side
     if (nxId == 0) channel = 128 - ((nxChannel < 64) ? (127 - nxChannel) : (- nxChannel + 126 + 2 * (nxChannel % 2)));
   }
+  }
+  else
+  {
 
   //station which is in since run54
   
   if (rocId == 6) { //sts2 p-side
+    if(TMath::Even(nxChannel))nxChannel+=1;else nxChannel-=1;
     if (nxId == 0) channel = nxChannel;
   }
   
   if (rocId == 7) { //sts2 n-side
+    if(TMath::Even(nxChannel))nxChannel+=1;else nxChannel-=1;
     if (nxId == 0) channel = nxChannel;
+  }
   }
   
   return channel;
@@ -324,12 +333,12 @@ void CbmDaqMapCosy2014::InitializeRocToStsStation()
 {
   fRocToStsStation[0] = -1;
   fRocToStsStation[1] = -1;
-  fRocToStsStation[2] = 1;
-  fRocToStsStation[3] = 1;
-  fRocToStsStation[4] = 0;
-  fRocToStsStation[5] = 0;
-  fRocToStsStation[6] = 2;
-  fRocToStsStation[7] = 2;
+  fRocToStsStation[2] = 0;
+  fRocToStsStation[3] = 0;
+  fRocToStsStation[4] = 2;
+  fRocToStsStation[5] = 2;
+  fRocToStsStation[6] = 1;
+  fRocToStsStation[7] = 1;
 }
 
 void CbmDaqMapCosy2014::InitializeRocToHodoStation() 
@@ -353,9 +362,8 @@ void CbmDaqMapCosy2014::InitializeStsMapping()
   
   // Fill Array for RocId 2
   // RocId 2 belongs to the first Roc of station 1
-  // so it must be the third in the array  
   // sts1 p-side
-  arrayIndex = 2;
+  arrayIndex = 0;
   for(Int_t nxChannel = 0; nxChannel < 128; ++nxChannel) {
     evenChannel = 256 - ((nxChannel < 64) ? (2 * nxChannel - 4 * (nxChannel % 2) + 3) : (2 * nxChannel + 1)); // even
     oddChannel =   256 - ((nxChannel < 64) ? (252 - 2 * nxChannel + 4 * (nxChannel % 2)) : (254 -2 * nxChannel)); // odd
@@ -366,9 +374,8 @@ void CbmDaqMapCosy2014::InitializeStsMapping()
 
   // Fill Array for RocId 3
   // RocId 3 belongs to the second Roc of station 1
-  // so it must be the third in the array  
   // sts1 n-side
-  arrayIndex = 3;
+  arrayIndex = 1;
   for(Int_t nxChannel = 0; nxChannel < 128; ++nxChannel) {
      evenChannel = 256 - ((nxChannel < 64) ? (253 - 2 * nxChannel + 4 * (nxChannel % 2)) : (255 - 2 * nxChannel)); // even
      oddChannel = 256 - ((nxChannel < 64) ? (2 * nxChannel + 2 - 4 * (nxChannel % 2)) : (2 * nxChannel)); // odd
@@ -378,9 +385,8 @@ void CbmDaqMapCosy2014::InitializeStsMapping()
 
   // Fill Array for RocId 4
   // RocId 4 belongs to the first Roc of station 0
-  // so it must be the first in the array  
   // sts0 p-side
-  arrayIndex = 0;
+  arrayIndex = 4;
   for(Int_t nxChannel = 0; nxChannel < 128; ++nxChannel) {
     evenChannel = ((nxChannel < 64) ? (2 * nxChannel - 4 * (nxChannel % 2) + 3) : (2 * nxChannel + 1)); // even
     oddChannel = ((nxChannel < 64) ? (252 - 2 * nxChannel + 4 * (nxChannel % 2)) : (254 -2 * nxChannel)); // odd
@@ -390,9 +396,8 @@ void CbmDaqMapCosy2014::InitializeStsMapping()
 
   // Fill Array for RocId 5
   // RocId 5 belongs to the second Roc of station 0
-  // so it must be the second in the array  
   // sts0 n-side
-  arrayIndex = 1;
+  arrayIndex = 5;
   for(Int_t nxChannel = 0; nxChannel < 128; ++nxChannel) {
     evenChannel = ((nxChannel < 64) ? (253 - 2 * nxChannel + 4 * (nxChannel % 2)) : (255 - 2 * nxChannel)); // even
     oddChannel = ((nxChannel < 64) ? (2 * nxChannel + 2 - 4 * (nxChannel % 2)) : (2 * nxChannel)); // odd
@@ -402,10 +407,9 @@ void CbmDaqMapCosy2014::InitializeStsMapping()
 
   if ( fRun < 54 ) {
     // Fill Array for RocId 6
-    // RocId 4 belongs to the first Roc of station 2
-    // so it must be the forth in the array  
-    // sts0 p-side
-    arrayIndex = 4;
+    // RocId 6 belongs to the first Roc of station 3
+    // sts3 p-side
+    arrayIndex = 2;
     for(Int_t nxChannel = 0; nxChannel < 128; ++nxChannel) {
       evenChannel = 128 - ((nxChannel < 64) ? (nxChannel + 2 * ((nxChannel + 1) % 2) - 1) : nxChannel);
       fStsStrip[arrayIndex][0][nxChannel] = evenChannel;
@@ -413,10 +417,9 @@ void CbmDaqMapCosy2014::InitializeStsMapping()
     }
 
     // Fill Array for RocId 7
-    // RocId 5 belongs to the second Roc of station 2
-    // so it must be the fifth in the array  
-    // sts0 n-side
-    arrayIndex = 5;
+    // RocId 7 belongs to the second Roc of station 3
+    // sts3 n-side
+    arrayIndex = 3;
     for(Int_t nxChannel = 0; nxChannel < 128; ++nxChannel) {
       evenChannel = 128 - ((nxChannel < 64) ? (127 - nxChannel) : (- nxChannel + 126 + 2 * (nxChannel % 2)));
       fStsStrip[arrayIndex][0][nxChannel] = evenChannel;
@@ -425,20 +428,18 @@ void CbmDaqMapCosy2014::InitializeStsMapping()
     
   } else { 
     // Fill Array for RocId 6
-    // RocId 4 belongs to the first Roc of station 2
-    // so it must be the forth in the array  
-    // sts0 p-side
-    arrayIndex = 4;
+    // RocId 6 belongs to the first Roc of station 3
+    // sts3 p-side
+    arrayIndex = 2;
     for(Int_t nxChannel = 0; nxChannel < 128; ++nxChannel) {
       fStsStrip[arrayIndex][0][nxChannel] = nxChannel;
       fStsStrip[arrayIndex][1][nxChannel] = -1;
     }
 
     // Fill Array for RocId 7
-    // RocId 5 belongs to the second Roc of station 2
-    // so it must be the fifth in the array  
-    // sts0 n-side
-    arrayIndex = 5;
+    // RocId 7 belongs to the second Roc of station 3
+    // sts3 n-side
+    arrayIndex = 3;
     for(Int_t nxChannel = 0; nxChannel < 128; ++nxChannel) {
       fStsStrip[arrayIndex][0][nxChannel] = nxChannel;
       fStsStrip[arrayIndex][1][nxChannel] = -1;

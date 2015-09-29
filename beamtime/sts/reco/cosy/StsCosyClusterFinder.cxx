@@ -11,6 +11,7 @@
 
 #include "TClonesArray.h"
 #include "TMath.h"
+#include "TF1.h"
 #include <iostream>
 
 using std::map;
@@ -24,8 +25,19 @@ StsCosyClusterFinder::StsCosyClusterFinder()
    fClusters(NULL),
    finalClusters(NULL),
    fTriggeredMode(kFALSE),
-   fTriggeredStation(2)
+   fTriggeredStation(1)
 {
+  for(int i=0; i<3; i++)
+  {
+    fTimeLimit[i]= 40.;
+    fTimeShift[i]= 0.;
+    
+    fChargeMinStrip[i]= 50.;
+    fChargeMaxStrip[i]= 500.;
+    
+    fChargeMinCluster[i]= 100.;
+    fCutName = "";
+  }
 }
 // --------------------------------------------------------------------
 
@@ -83,13 +95,46 @@ InitStatus StsCosyClusterFinder::Init()
     LOG(ERROR) << "Task will be inactive" << FairLogger::endl;
     return kERROR;
   }
-  
+    
   finalClusters = new TClonesArray("CbmStsCluster", 100);
   ioman->Register("StsCluster","STS",finalClusters,kTRUE);
 
   fClusters = new TClonesArray("CbmStsCluster", 100);
   ioman->Register("StsClusterCandidate","STS",fClusters,kTRUE);
+    
+  if(fCutName != ""){
+    
+  TFile *file = new TFile(fCutName);
+    
+    LOG(INFO) << "Use inpute file for time cuts " << fCutName << FairLogger::endl;
+   
+   TTree *sts0 = (TTree*)file->Get("STS0");
+   sts0->SetBranchAddress("TimeLimit",&fTimeLimit[0]);   
+   sts0->SetBranchAddress("TimeShift",&fTimeShift[0]);   
+   sts0->GetEntry(0);
+ 
+  TTree * sts1 = (TTree*)file->Get("STS1");
+   sts1->SetBranchAddress("TimeLimit",&fTimeLimit[1]);   
+   sts1->SetBranchAddress("TimeShift",&fTimeShift[1]);   
+   sts1->GetEntry(0);
+ 
+  TTree * sts2 = (TTree*)file->Get("STS2");
+   sts2->SetBranchAddress("TimeLimit",&fTimeLimit[2]);   
+   sts2->SetBranchAddress("TimeShift",&fTimeShift[2]);   
+   sts2->GetEntry(0);
+  }
   
+   for(int i =0; i<3;i++)for(int ii =0; ii<2;ii++)
+	  {
+	    Char_t inName[25]; 
+	    sprintf(inName,"cluster_size_STS%i_side%i",i,ii);
+	    cluster_size[i][ii] = new TH1F(inName, inName, 100, -0.5, 99.5);
+	  }
+ 
+  fEvent = 0;
+  
+  cout << "-I- StsCosyClusterFinder: Intialisation successfull " << kSUCCESS<< endl;
+ 
   return kSUCCESS;
   
 } 
@@ -98,13 +143,10 @@ InitStatus StsCosyClusterFinder::Init()
 // ---- Exec ----------------------------------------------------------
 void StsCosyClusterFinder::Exec(Option_t * option)
 {
- 
+  if(fEvent%100000 == 0)cout << "-I- StsCosyClusterFinder: ----- " << fEvent << endl;
+  
   fClusters->Clear();
   finalClusters->Clear();
-  
-  Double_t minCharge = 50;
-  Double_t maxCharge = 500;
-
   
   map<Int_t, set<CbmStsDigi*, classcomp1> >::iterator mapIt;
   for (mapIt=fDigiMap.begin(); mapIt!=fDigiMap.end(); mapIt++) 
@@ -116,9 +158,6 @@ void StsCosyClusterFinder::Exec(Option_t * option)
   set<Int_t> layerSet;
   
   CbmStsDigi* digi = NULL;
-  // sort all digis according the detector layer into different sets
-  // defining a order functor for the set should result in a set which
-  // is already ordered from small to big strip numbers 
   
   map<CbmStsDigi*, Int_t> fIndices;
   
@@ -126,15 +165,12 @@ void StsCosyClusterFinder::Exec(Option_t * option)
 
   for (Int_t iDigi=0; iDigi < nofDigis; iDigi++ ) 
     {
-      //      cout <<  "StsCosyClusterFinder::   Clear all output structures/containers" << endl;
       digi = (CbmStsDigi*) fDigis->At(iDigi);
       int station = CbmStsAddress::GetElementId(digi->GetAddress(),kStsStation);
       int side = CbmStsAddress::GetElementId(digi->GetAddress(),kStsSide);
       Int_t layer= 2*station+side;
-      
-      if(fTriggeredMode && station==fTriggeredStation)maxCharge=200;
 
-      if(digi->GetCharge() > minCharge && digi->GetCharge() < maxCharge)
+      if(digi->GetCharge() > fChargeMinStrip[station] && digi->GetCharge() < fChargeMaxStrip[station])
       {
 	layerSet.insert(layer);
 	fDigiMap[layer].insert(digi);
@@ -143,13 +179,6 @@ void StsCosyClusterFinder::Exec(Option_t * option)
     }
   
   set <CbmStsDigi*, classcomp1> digiSet;
-  
-  //  cout << " loop over all detector layers and for each detector layer loop over the " << endl;
-  // already sorted strips to do the cluster finding. A cluster is defined by
-  // neighboring strips which are above the threshold
-  // TODO: Decide if the condition of the ADC threshold should be done here or
-  //       in the unpacking
-  //       Check if the set is realy ordered with increasing strip number
 
   for (set<Int_t>::iterator i = layerSet.begin(); i != layerSet.end(); i++) 
     {
@@ -157,7 +186,6 @@ void StsCosyClusterFinder::Exec(Option_t * option)
       Bool_t newCluster = kTRUE;
       Int_t stripNr = -1;
       Int_t stripNrPrev = -1;
-      Int_t cluster_size =0;
       CbmStsCluster* cluster=NULL;
       Double_t time = -1;
       Double_t timePrev = -1;
@@ -185,6 +213,7 @@ void StsCosyClusterFinder::Exec(Option_t * option)
 	      stripNr = CbmStsAddress::GetElementId((*j)->GetAddress(),kStsChannel);
 	      
 	      int station = CbmStsAddress::GetElementId(digi->GetAddress(),kStsStation);
+	      int side = CbmStsAddress::GetElementId(digi->GetAddress(),kStsSide);
 	      
 	      Bool_t TrCl = kTRUE;
 	      
@@ -192,8 +221,7 @@ void StsCosyClusterFinder::Exec(Option_t * option)
 	      {
 		if(TMath::Abs(time - timePrev) > 1)TrCl=kFALSE;
 	      }
-
-	      if (1 == stripNr-stripNrPrev && TMath::Abs(time - timePrev)< 40 && TrCl) 
+	      if (1 == stripNr-stripNrPrev && TMath::Abs(time - timePrev- fTimeShift[station])< fTimeLimit[station] && TrCl) 
 		{
 		  stripNrPrev = stripNr;
 		  timePrev = time;
@@ -222,19 +250,27 @@ void StsCosyClusterFinder::Exec(Option_t * option)
 	{
 	  Double_t chanNr = 0;
 	  Double_t chanADC = 0.;
+	  Double_t adc = 100.;
 	  Double_t sumW = 0;
 	  Double_t sumWX = 0;
 	  Double_t error = 0;
 	  layer=0;
+	  Double_t chanNrMean = 0;
 	  const CbmStsCluster* cluster = static_cast<const CbmStsCluster*>(fClusters->At(iclus));
 	  Int_t nofStrips = cluster->GetNofDigis();
+	  
+	  //if(nofStrips > 1)continue; //produce only 1 strip cluster
+	  
 	  double time = -999.;
 	  double mean_time = 0.;
+	  
+	  int station;
+	  int side;
 	  for(int st=0; st<nofStrips; st++)
 	    {
 	      const CbmStsDigi* temp_digi = (CbmStsDigi*)fDigis->At(cluster->GetDigi(st));
-	      int station = CbmStsAddress::GetElementId(temp_digi->GetAddress(),kStsStation);
-	      int side = CbmStsAddress::GetElementId(temp_digi->GetAddress(),kStsSide);
+	      station = CbmStsAddress::GetElementId(temp_digi->GetAddress(),kStsStation);
+	      side = CbmStsAddress::GetElementId(temp_digi->GetAddress(),kStsSide);
 	      int ch = CbmStsAddress::GetElementId(temp_digi->GetAddress(),kStsChannel);
 	      layer = 2*station+side;
 	      chanNr += ch;
@@ -245,17 +281,12 @@ void StsCosyClusterFinder::Exec(Option_t * option)
 	      
 	      time = temp_digi->GetTime();
 	      mean_time+=temp_digi->GetTime();
+	      
+	      //if(chanADC > adc){adc=chanADC; mean_time=time;}
 	    }
-	  if(nofStrips>1)
-	    {
-	      for(int st=0; st<nofStrips; st++)
-		{
-		  const CbmStsDigi* temp_digi = (CbmStsDigi*)fDigis->At(cluster->GetDigi(st));
-		  int station = CbmStsAddress::GetElementId(temp_digi->GetAddress(),kStsStation);
-		  int side = CbmStsAddress::GetElementId(temp_digi->GetAddress(),kStsSide);
-		}
-	    }
-	  
+	    chanNrMean = chanNr/(Double_t)nofStrips;
+	    if(sumW < fChargeMinCluster[station]){continue;}
+
 	  Int_t size = finalClusters->GetEntriesFast();
 	  CbmStsCluster* new_cluster = new ((*finalClusters)[size]) CbmStsCluster();
 	  
@@ -268,29 +299,34 @@ void StsCosyClusterFinder::Exec(Option_t * option)
 		  new_cluster->SetAddress(temp_digi->GetAddress());
 		}
 	      new_cluster->AddDigi(digi_index);
+	 
 	    }
-/**
- ** PAL, 19/06/15: Deprecated in rev 7648, to remove once checked
-	  new_cluster->SetMean(sumWX / sumW);
-	  new_cluster->SetProperties(0.,0.,0.,mean_time/nofStrips);
-	  new_cluster->SetMeanError((1. / (sumW)) * TMath::Sqrt(error));
-**/ 
-	  // PAL, 19/06/15, TODO: check error calculation, maybe better estimator
-	  // For now use the channelMeanSq field to store the previously used error 
-	  // and keep existing behavior
-      new_cluster->SetProperties( 0., 
-                                  (sumWX / sumW), (1. / (sumW)) * TMath::Sqrt(error), 
-                                  mean_time/nofStrips);
+	  //new_cluster->SetCentre(sumWX / sumW);
+	  //new_cluster->SetProperties(sumW,chanNrMean,0.,mean_time/nofStrips);
+	  //new_cluster->SetProperties(0.,0.,0.,mean_time);
+	  //new_cluster->SetCentreError((1. / (sumW)) * TMath::Sqrt(error));
+	  
+	  new_cluster->SetProperties(sumW, chanNrMean, (1./(sumW))*TMath::Sqrt(error), mean_time/nofStrips);
+	  
+	 cluster_size[station][side]->Fill(new_cluster->GetNofDigis());
 	}
     }
   
-  
+  fEvent++;
 }
 // --------------------------------------------------------------------
 
   // ---- Finish --------------------------------------------------------
   void StsCosyClusterFinder::Finish()
   {
+        for(int i=0; i<3; i++)for(int j=0; j<2; j++)cluster_size[i][j]->Write();
+
+  LOG(INFO) << FairLogger::endl;
+  LOG(INFO) << "=====================================================" << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Finish" << FairLogger::endl;
+  LOG(INFO) << "=====================================================" << FairLogger::endl;
+  LOG(INFO) << FairLogger::endl;
+  
   }
 
 
