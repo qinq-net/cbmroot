@@ -120,6 +120,7 @@ class CbmStsSensorConditions : public TObject {
 			fBx = bX;
 			fBy = bY;
 			fBz = bZ;
+			SetHallMobilityParameters();
 		}
 
 

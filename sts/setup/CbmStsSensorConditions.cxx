@@ -33,7 +33,6 @@ CbmStsSensorConditions::CbmStsSensorConditions(Double_t vFd,
 {
 	if ( fCinterstrip + fCcoupling != 0. )
 		fCrossTalk = cInterstrip / (cInterstrip + cCoupling);
-	SetHallMobilityParameters();
 }
 // -------------------------------------------------------------------------
 
@@ -77,13 +76,13 @@ void CbmStsSensorConditions::SetHallMobilityParameters() {
     fHallMobilityParametersH[2] = vSat[1];
     fHallMobilityParametersH[3] = rHall[1];
 
-    //calculate mean shift
+    //calculate mean shift TODO use CbmStsPhysics in e-field calculation
     Double_t dZ = 0.03, E = (fVbias - fVfd) / dZ + 2 * fVfd / dZ;//dZ - sensor thickness, E - el field [V/cm]
     Int_t nSteps = 1000;
     Double_t deltaZ = dZ / nSteps; 
     Double_t dxMean[2];
     dxMean[0] = dxMean[1] = 0.;
-
+    
     for (Int_t j = 0; j <= nSteps; j++){
 	E -= 2 * fVfd / dZ * deltaZ / dZ;//V / cm
 	for (Int_t i = 0; i < 2; i++){

@@ -211,7 +211,7 @@ void CbmStsSensorTypeDssd::GetClusterPosition(Double_t centre,
 	//Double_t mobility = (side == 0 ? 0.1650 : 0.0310 );  // in m^2/(Vs)
 	//Double_t tanLorentz = mobility * sensor->GetConditions().GetBy();
 	//xCluster -= tanLorentz * fDz / 2.;
-	xCluster -= sensor->GetConditions().GetMeanLorentzShift(side);
+	if ( CbmStsDigitize::UseLorentzShift() ) xCluster -= sensor->GetConditions().GetMeanLorentzShift(side);
 
 	LOG(DEBUG4) << GetName() << ": Cluster centre " << centre
 			        << ", sensor index " << sensor->GetIndex() << ", side "
