@@ -243,7 +243,8 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
   LOG(DEBUG) << "Clusters in TClonesArray:                        " << fClusters->GetEntriesFast() << FairLogger::endl;
   // Find info about hitType, stopType and infoType in cbmroot/fles/spadic/message/constants/..
   /*
-    TString triggerTypes[4] = {"Global trigger",
+    TString triggerTypes[4] = {"infoMessage",
+    "Global trigger",
     "Self triggered",
     "Neighbor triggered",
     "Self and neighbor triggered"};
@@ -428,7 +429,11 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     fHM->H1(TString("StopType_Message_Length_" + syscore + spadic).Data())->Fill(nrSamples,stopType);
     fHM->H1(TString("InfoType_Message_Length_" + syscore + spadic).Data())->Fill(nrSamples,infoType);
     fHM->H1(TString("TriggerType_Message_Length_" + syscore + spadic).Data())->Fill(nrSamples,triggerType);
-    fHM->H2(TString("TriggerTypes_" + syscore + spadic).Data())->Fill(triggerType,chID);
+    if (triggerType == -1){
+      fHM->H2(TString("TriggerTypes_" + syscore + spadic).Data())->Fill(triggerType,chID,bufferOverflowCount);
+    } else {
+      fHM->H2(TString("TriggerTypes_" + syscore + spadic).Data())->Fill(triggerType,chID);
+    }
     fHM->H2(TString("StopTypes_" + syscore + spadic).Data())->Fill(stopType,chID);
     fHM->H2(TString("Trigger_Stop_Types_" + syscore + spadic).Data())->Fill(triggerType,stopType);
     fHM->H2(TString("Trigger_Info_Types_" + syscore + spadic).Data())->Fill(triggerType,infoType);
@@ -611,6 +616,11 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
  
 	histName = "DeltaTime_" + syscore + spadic;
 	fHM->H1(histName.Data())->Fill(time-lastSpadicTime[SysId][SpaId]);
+
+	histName = "TriggerRate_" + syscore + spadic;
+	if (time-lastSpadicTimeCh[SysId][SpaId][chID] > 0.0)
+	  if (triggerType == 1 || triggerType == 3)
+	  fHM->H1(histName.Data())->Fill(chID, 1.0/((time-lastSpadicTimeCh[SysId][SpaId][chID])*1.0E-09));//ns -> s -> Hz
 
 	histName = "DeltaTime_Left_Right_" + syscore + spadic;
 	if (chID < 31)
@@ -982,7 +992,8 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 				"10", "11", "12", "13", "14", "15", "16", "17", "18", "19", 
 				"20", "21", "22", "23", "24", "25", "26", "27", "28", "29", 
 				"30", "31"};
-    TString triggerTypes[4] = { "Global trigger",
+    TString triggerTypes[5] = { "infoMessage",
+				"Global trigger",
 				"Self triggered",
 				"Neighbor triggered",
 				"Self and neighbor triggered"};
@@ -1040,6 +1051,10 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 	TString title = histName + ";Channel;Counts";
 	fHM->Add(histName.Data(), new TH1I(histName, title, 32, -0.5, 31.5));
 
+	histName = "TriggerRate_" + syscoreName[syscore] + "_" + spadicName[spadic];
+	title = histName + ";ChannelID;trigger rate [Hz]";
+	fHM->Add(histName.Data(), new TProfile(histName, title,  32, -0.5, 31.5));
+
 	histName = "DeltaTime_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	title = histName + ";Delta t ;Counts";
 	fHM->Add(histName.Data(), new TH1I(histName, title, 5101, -100.5, 5000.5));
@@ -1074,7 +1089,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 
 	histName = "TriggerType_Message_Length_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	title = histName + ";Message Length (Time-Bins) ;";
-	fHM->Add(histName.Data(), new TH2I(histName, title, 33, -0.5, 32.5,4,-0.5,3.5));
+	fHM->Add(histName.Data(), new TH2I(histName, title, 33, -0.5, 32.5,5,-1.5,3.5));
 	for (Int_t tType=0; tType < 4; tType++)
 	  fHM->H1(histName.Data())->GetYaxis()->SetBinLabel(tType+1,triggerTypes[tType]);
 
@@ -1084,7 +1099,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     
 	histName = "TriggerTypes_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	title = histName + "; ;Channel";
-	fHM->Add(histName.Data(), new TH2I(histName, title, 4, -0.5, 3.5,32,-0.5,31.5));
+	fHM->Add(histName.Data(), new TH2I(histName, title, 5, -1.5, 3.5,32,-0.5,31.5));
 	for (Int_t tType=0; tType < 4; tType++)
 	  fHM->H1(histName.Data())->GetXaxis()->SetBinLabel(tType+1,triggerTypes[tType]);
    
@@ -1102,7 +1117,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 
 	histName = "Trigger_Stop_Types_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	title = histName + "; ;";
-	fHM->Add(histName.Data(), new TH2I(histName, title, 4, -0.5, 3.5, 6, -0.5, 5.5));
+	fHM->Add(histName.Data(), new TH2I(histName, title, 5, -1.5, 3.5, 6, -0.5, 5.5));
 	for (Int_t tType=0; tType < 4; tType++)
 	  fHM->H1(histName.Data())->GetXaxis()->SetBinLabel(tType+1,triggerTypes[tType]);
 	for (Int_t sType=0; sType < 6; sType++)
@@ -1110,7 +1125,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 
 	histName = "Trigger_Info_Types_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	title = histName + "; ;";
-	fHM->Add(histName.Data(), new TH2I(histName, title, 4, -0.5, 3.5, 8, -0.5, 7.5));
+	fHM->Add(histName.Data(), new TH2I(histName, title, 5, -1.5, 3.5, 8, -0.5, 7.5));
 	for (Int_t tType=0; tType < 4; tType++)
 	  fHM->H1(histName.Data())->GetXaxis()->SetBinLabel(tType+1,triggerTypes[tType]);
 	for (Int_t iType=0; iType < 8; iType++)
@@ -1148,7 +1163,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 
 	histName = "TriggerType_ClusterSize_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	title = histName + ";Cluster Size [Channel] ; ";
-	fHM->Add(histName.Data(), new TH2I(histName, title, 10, -0.5, 9.5, 4, -0.5, 3.5));
+	fHM->Add(histName.Data(), new TH2I(histName, title, 10, -0.5, 9.5, 5, -1.5, 3.5));
 	for (Int_t tType=0; tType < 4; tType++)
 	  fHM->H1(histName.Data())->GetYaxis()->SetBinLabel(tType+1,triggerTypes[tType]);
 
