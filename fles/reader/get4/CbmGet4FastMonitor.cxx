@@ -107,6 +107,8 @@ CbmGet4FastMonitor::CbmGet4FastMonitor()
   fhGet4EpochFlags(NULL),
   fhGet4EpochSyncDist(NULL),
   fhGet4EpochJumps(NULL),
+  fhGet4BadEpochRatio(NULL),
+  fhGet4BadEpRatioChip(NULL),
   fhGet4ChanDataCount(NULL),
   fhGet4ChanDllStatus(NULL),
   fhGet4ChanTotMap(NULL),
@@ -181,6 +183,10 @@ CbmGet4FastMonitor::CbmGet4FastMonitor()
   fhFullCtEpJumpFeeAChSort(),
   fhFullCtEpJumpFeeAChOrder(NULL),
   fvChanOrder(),
+  fhFullCtChOrderCh(),
+  fhFullCtEpQualityCh(),
+  fhFullCtEpQualityChZoom(),
+  fhEpQualityFirstChFeeA(),
   fbOldReadoutOk(kFALSE),
   fhGet4ChanTotCount(NULL),
   fvuLastOldTotEp(),
@@ -660,6 +666,13 @@ void CbmGet4FastMonitor::InitMonitorHistograms()
          "Distance between epochs when jump happens for each GET4; GET4 Chip # ; Epoch Jump of [Epoch]",
          fuNbGet4, -0.5, fuNbGet4 -0.5,
          401, -200.5, 200.5);
+   fhGet4BadEpochRatio = new TH1I("hGet4BadEpochRatio",
+         "Counts of bad (missing, repeated, ...) epoch messages and good ones, mean represents G/T ratio; Epoch Quality; Counts []",
+         2, -0.5, 1.5);
+   fhGet4BadEpRatioChip= new TH2I("hGet4BadEpRatioChip",
+         "Counts of bad (missing, repeated, ...) epoch messages and good ones, per chip; GET4 Chip # ; Epoch Quality; Counts []",
+         fuNbGet4, -0.5, fuNbGet4 -0.5,
+         2, -0.5, 1.5);
 
    fhGet4ChanDataCount = new TH1I("hGet4ChanDataCount",
          "Data Messages per GET4 channel; GET4 channel # ; Data Count",
@@ -1050,14 +1063,25 @@ void CbmGet4FastMonitor::InitMonitorHistograms()
             get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
 
       fhFullCtEpJumpFeeA.resize(kuNbChipFee);
+      fhEpQualityFirstChFeeA.resize(kuNbChipFee);
       for( UInt_t uChipFeeA = 0; uChipFeeA < kuNbChipFee; uChipFeeA++)
+      {
          fhFullCtEpJumpFeeA[uChipFeeA] = new TH2D( Form("hFullCtEpJumpFeeA_%03u", uChipFeeA),
                Form("Coarse time for time and tot of last hits when epoch jump, Range is %04u; Coarse Bin Time ; Full Coarse bin TOT; Counts []",
                      get4v1x::kuCoarseCounterSize),
                400 + 1 ,  get4v1x::kuCoarseCounterSize - 200 -0.5, get4v1x::kuCoarseCounterSize + 200 + 0.5,
                400 + 1 ,  get4v1x::kuCoarseCounterSize - 200 -0.5, get4v1x::kuCoarseCounterSize + 200 + 0.5 );
+         fhEpQualityFirstChFeeA[uChipFeeA] = new TH2D( Form("hEpQualityFirstChFeeA_%03u", uChipFeeA),
+               Form("Epoch quality as function of first channel in last pulse, chip %03u; First channel in last pulse ; Epoch quality; Counts []",
+                     uChipFeeA),
+               get4v1x::kuChanPerGet4,  -0.5, get4v1x::kuChanPerGet4 - 0.5,
+               2 , -0.5, 1.5 );
+      } // for( UInt_t uChipFeeA = 0; uChipFeeA < kuNbChipFee; uChipFeeA++)
       fhFullCtEpJumpFeeACh.resize(get4v1x::kuChanPerGet4);
       fhFullCtEpJumpFeeAChSort.resize(get4v1x::kuChanPerGet4);
+      fhFullCtChOrderCh.resize(get4v1x::kuChanPerGet4);
+      fhFullCtEpQualityCh.resize(get4v1x::kuChanPerGet4);
+      fhFullCtEpQualityChZoom.resize(get4v1x::kuChanPerGet4);
       for( UInt_t uChan = 0; uChan < get4v1x::kuChanPerGet4; uChan++)
       {
          fhFullCtEpJumpFeeACh[uChan] = new TH2D( Form("hFullCtEpJumpFeeACh_%03u", uChan),
@@ -1070,6 +1094,22 @@ void CbmGet4FastMonitor::InitMonitorHistograms()
                      get4v1x::kuCoarseCounterSize),
                400 + 1 ,  get4v1x::kuCoarseCounterSize - 200 -0.5, get4v1x::kuCoarseCounterSize + 200 + 0.5,
                400 + 1 ,  get4v1x::kuCoarseCounterSize - 200 -0.5, get4v1x::kuCoarseCounterSize + 200 + 0.5 );
+
+         fhFullCtChOrderCh[uChan] = new TH2D( Form("hFullCtChOrderCh_%03u", uChan),
+               Form("Channel position VS Coarse time for time of last hits when epoch jump, normal Range is %04u, chan %03u; Coarse Bin Time ; Channel order; Counts []",
+                     get4v1x::kuCoarseCounterSize, uChan),
+               400 + 1 ,  get4v1x::kuCoarseCounterSize - 200 -0.5, get4v1x::kuCoarseCounterSize + 200 + 0.5,
+               get4v1x::kuChanPerGet4 ,  -0.5, get4v1x::kuChanPerGet4 - 0.5 );
+         fhFullCtEpQualityCh[uChan] = new TH2D( Form("hFullCtEpQualityCh_%03u", uChan),
+               Form("Epoch quality VS Coarse time for time of last hits, normal Range is %04u, chan %03u; Coarse Bin Time ; Epoch Quality; Counts []",
+                     get4v1x::kuCoarseCounterSize, uChan),
+               (get4v1x::kuCoarseCounterSize + 24)/100 ,  -0.5, get4v1x::kuCoarseCounterSize + 24 - 0.5,
+               2, -0.5, 1.5 );
+         fhFullCtEpQualityChZoom[uChan] = new TH2D( Form("hFullCtEpQualityChZoom_%03u", uChan),
+               Form("Epoch quality VS Coarse time for time of last hits, normal Range is %04u, chan %03u; Coarse Bin Time ; Epoch Quality; Counts []",
+                     get4v1x::kuCoarseCounterSize, uChan),
+               200,  get4v1x::kuCoarseCounterSize - 200 -0.5, get4v1x::kuCoarseCounterSize - 0.5,
+               2, -0.5, 1.5 );
       }
       fvChanOrder.resize(kuNbChipFee);
       fhFullCtEpJumpFeeAChOrder = new TH2D( "hFullCtEpJumpFeeAChOrder",
@@ -1251,6 +1291,8 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
    fhGet4EpochFlags   ->Write();
    fhGet4EpochSyncDist->Write();
    fhGet4EpochJumps   ->Write();
+   fhGet4BadEpRatioChip->Write();
+   fhGet4BadEpochRatio->Write();
    fhGet4ChanDataCount->Write();
    fhGet4ChanDllStatus->Write();
    fhGet4ChanTotMap   ->Write();
@@ -1589,11 +1631,17 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
       fhFtPrevBigDtFeeB->Write();
 
       for( UInt_t uChipFeeA = 0; uChipFeeA < kuNbChipFee; uChipFeeA++)
+      {
          fhFullCtEpJumpFeeA[uChipFeeA]->Write();
+         fhEpQualityFirstChFeeA[uChipFeeA]->Write();
+      }
       for( UInt_t uChan = 0; uChan < get4v1x::kuChanPerGet4; uChan++)
       {
          fhFullCtEpJumpFeeACh[uChan]->Write();
          fhFullCtEpJumpFeeAChSort[uChan]->Write();
+         fhFullCtChOrderCh[uChan]->Write();
+         fhFullCtEpQualityCh[uChan]->Write();
+         fhFullCtEpQualityChZoom[uChan]->Write();
       }
       fhFullCtEpJumpFeeAChOrder->Write();
 
@@ -1786,6 +1834,8 @@ void CbmGet4FastMonitor::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
             << FairLogger::endl;
 
       fhGet4EpochJumps->Fill(uChipFullId, iEpJump);
+      fhGet4BadEpochRatio->Fill(0);
+      fhGet4BadEpRatioChip->Fill( uChipFullId, 0);
 
       if( kTRUE == fbPulserMode && kTRUE == fbOldReadoutOk && fuPulserFee == (uChipFullId/kuNbChipFee) )
       {
@@ -1798,17 +1848,57 @@ void CbmGet4FastMonitor::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
             fhFullCtEpJumpFeeACh[uChan]->Fill(
                   fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4CoarseTs(),
                   fvmLastOldTot[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4CoarseTs() );
+
+            fhFullCtEpQualityCh[uChan]->Fill(
+               fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4CoarseTs(), 0);
+            fhFullCtEpQualityChZoom[uChan]->Fill(
+               fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4CoarseTs(), 0);
+
+            if( get4v1x::kuChanPerGet4 == fvChanOrder[uChipFeeA].size() )
+            {
+               UInt_t uChOrder;
+               for( uChOrder = 0; uChOrder < get4v1x::kuChanPerGet4; uChOrder++ )
+                  if( uChan == fvChanOrder[uChipFeeA][uChOrder] )
+                     break;
+               fhFullCtChOrderCh[uChan]->Fill(
+                     fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4CoarseTs(), uChOrder);
+            } // if( get4v1x::kuChanPerGet4 == fvChanOrder[uChipFeeA].size() )
          } // for( UInt_t uChan = 0; uChan < get4v1x::kuChanPerGet4; uChan++ )
+
          if( get4v1x::kuChanPerGet4 == fvChanOrder[uChipFeeA].size() )
-         for( UInt_t uChOrder = 0; uChOrder < fvChanOrder[uChipFeeA].size(); uChOrder++ )
-         {
-            fhFullCtEpJumpFeeAChSort[uChOrder]->Fill(
-                  fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ fvChanOrder[uChipFeeA][uChOrder] ].getGet4CoarseTs(),
-                  fvmLastOldTot[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ fvChanOrder[uChipFeeA][uChOrder] ].getGet4CoarseTs() );
-            fhFullCtEpJumpFeeAChOrder->Fill( uChOrder, fvChanOrder[uChipFeeA][uChOrder]);
-         } // for( UInt_t uChOrder = 0; uChOrder < fvChanOrder[uChipFeeA].size(); uChOrder++ )
+            for( UInt_t uChOrder = 0; uChOrder < fvChanOrder[uChipFeeA].size(); uChOrder++ )
+            {
+               UInt_t uChanOrdered =  fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ fvChanOrder[uChipFeeA][uChOrder];
+               fhFullCtEpJumpFeeAChSort[uChOrder]->Fill(
+                     fvmLastHit[ uChanOrdered ].getGet4CoarseTs(),
+                     fvmLastOldTot[ uChanOrdered ].getGet4CoarseTs() );
+               fhFullCtEpJumpFeeAChOrder->Fill( uChOrder, fvChanOrder[uChipFeeA][uChOrder]);
+            } // for( UInt_t uChOrder = 0; uChOrder < fvChanOrder[uChipFeeA].size(); uChOrder++ )
+
+         if( 0 < fvChanOrder[uChipFeeA].size() )
+            fhEpQualityFirstChFeeA[uChipFeeA]->Fill( fvChanOrder[uChipFeeA][0], 0 );
       } // if( kTRUE == fbPulserMode && kTRUE == fbOldReadoutOk && fuPulserFee == (uChipFullId/kuNbChipFee) )
    } // if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
+      else
+      {
+         fhGet4BadEpochRatio->Fill( 1 );
+         fhGet4BadEpRatioChip->Fill( uChipFullId, 1);
+         if( kTRUE == fbPulserMode && kTRUE == fbOldReadoutOk && fuPulserFee == (uChipFullId/kuNbChipFee) )
+         {
+            UInt_t uChipFeeA = uChipFullId%kuNbChipFee;
+
+            for( UInt_t uChan = 0; uChan < get4v1x::kuChanPerGet4; uChan++ )
+            {
+               fhFullCtEpQualityCh[uChan]->Fill(
+                  fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4CoarseTs(), 1);
+               fhFullCtEpQualityChZoom[uChan]->Fill(
+                  fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4CoarseTs(), 1);
+            } // for( UInt_t uChan = 0; uChan < get4v1x::kuChanPerGet4; uChan++ )
+
+            if( 0 < fvChanOrder[uChipFeeA].size() )
+               fhEpQualityFirstChFeeA[uChipFeeA]->Fill( fvChanOrder[uChipFeeA][0], 1 );
+         } // if( kTRUE == fbPulserMode && kTRUE == fbOldReadoutOk && fuPulserFee == (uChipFullId/kuNbChipFee) )
+      } // else of  if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
 
    // Epoch counter overflow book keeping
    if( (get4v1x::kul24bGet4EpochCycleSz - 2) < fvuCurrEpoch2[uChipFullId] &&
@@ -2663,6 +2753,8 @@ void CbmGet4FastMonitor::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
                        << FairLogger::endl;
 
             fhGet4EpochJumps->Fill(uChipFullId, iEpJump);
+            fhGet4BadEpochRatio->Fill(0);
+            fhGet4BadEpRatioChip->Fill( uChipFullId, 0);
 
             if( kTRUE == fbPulserMode && fuPulserFee == (uChipFullId/kuNbChipFee) )
             {
@@ -2679,19 +2771,58 @@ void CbmGet4FastMonitor::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
                         fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4V10R32HitTs() +
                         fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4V10R32HitTot()/
                         static_cast<Int_t>(get4v1x::kdClockCycleSize/get4v1x::kdTotBinSize) );
+
+                  fhFullCtEpQualityCh[uChan]->Fill(
+                        fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4V10R32HitTs(), 0);
+                  fhFullCtEpQualityChZoom[uChan]->Fill(
+                        fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4V10R32HitTs(), 0);
+
+                  if( get4v1x::kuChanPerGet4 == fvChanOrder[uChipFeeA].size() )
+                  {
+                     UInt_t uChOrder;
+                     for( uChOrder = 0; uChOrder < get4v1x::kuChanPerGet4; uChOrder++ )
+                        if( uChan == fvChanOrder[uChipFeeA][uChOrder] )
+                           break;
+                     fhFullCtChOrderCh[uChan]->Fill(
+                           fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4V10R32HitTs(), uChOrder);
+                  } // if( get4v1x::kuChanPerGet4 == fvChanOrder[uChipFeeA].size() )
                } // for( UInt_t uChan = 0; uChan < get4v1x::kuChanPerGet4; uChan++ )
+
                if( get4v1x::kuChanPerGet4 == fvChanOrder[uChipFeeA].size() )
                   for( UInt_t uChOrder = 0; uChOrder < fvChanOrder[uChipFeeA].size(); uChOrder++ )
                   {
+                     UInt_t uChanOrdered = fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ fvChanOrder[uChipFeeA][uChOrder];
                      fhFullCtEpJumpFeeAChSort[uChOrder]->Fill(
-                           fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ fvChanOrder[uChipFeeA][uChOrder]].getGet4V10R32HitTs(),
-                           fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ fvChanOrder[uChipFeeA][uChOrder]].getGet4V10R32HitTs() +
-                           fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ fvChanOrder[uChipFeeA][uChOrder]].getGet4V10R32HitTot()/
-                           static_cast<Int_t>(get4v1x::kdClockCycleSize/get4v1x::kdTotBinSize) );
+                           fvmLastHit[ uChanOrdered ].getGet4V10R32HitTs(),
+                           fvmLastHit[ uChanOrdered].getGet4V10R32HitTs() +
+                           fvmLastHit[ uChanOrdered ].getGet4V10R32HitTot() / static_cast<Int_t>(get4v1x::kdClockCycleSize/get4v1x::kdTotBinSize) );
                      fhFullCtEpJumpFeeAChOrder->Fill( uChOrder, fvChanOrder[uChipFeeA][uChOrder]);
                   } // for( UInt_t uChOrder = 0; uChOrder < fvChanOrder[uChipFeeA].size(); uChOrder++ )
+
+               if( 0 < fvChanOrder[uChipFeeA].size() )
+                  fhEpQualityFirstChFeeA[uChipFeeA]->Fill( fvChanOrder[uChipFeeA][0], 0 );
             } // if( kTRUE == fbPulserMode && fuPulserFee == (uChipFullId/kuNbChipFee) )
          } // if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
+            else
+            {
+               fhGet4BadEpochRatio->Fill(1);
+               fhGet4BadEpRatioChip->Fill( uChipFullId, 1);
+               if( kTRUE == fbPulserMode && fuPulserFee == (uChipFullId/kuNbChipFee) )
+               {
+                  UInt_t uChipFeeA = uChipFullId%kuNbChipFee;
+
+                  for( UInt_t uChan = 0; uChan < get4v1x::kuChanPerGet4; uChan++ )
+                  {
+                     fhFullCtEpQualityCh[uChan]->Fill(
+                           fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4V10R32HitTs(), 1);
+                     fhFullCtEpQualityChZoom[uChan]->Fill(
+                           fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4V10R32HitTs(), 1);
+                  } // for( UInt_t uChan = 0; uChan < get4v1x::kuChanPerGet4; uChan++ )
+
+                  if( 0 < fvChanOrder[uChipFeeA].size() )
+                     fhEpQualityFirstChFeeA[uChipFeeA]->Fill( fvChanOrder[uChipFeeA][0], 1 );
+               } // if( kTRUE == fbPulserMode && fuPulserFee == (uChipFullId/kuNbChipFee) )
+            } // else of if( fvuCurrEpoch2[uChipFullId] +1 != mess.getGet4V10R32EpochNumber())
 
          // Epoch counter overflow book keeping
          if( (get4v1x::kulGet4EpochCycleSz - 2) < fvuCurrEpoch2[uChipFullId] &&

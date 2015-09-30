@@ -135,7 +135,9 @@ private:
   TH2 * fhMessTypePerGet4;
   TH2 * fhGet4EpochFlags;
   TH2 * fhGet4EpochSyncDist;
-  TH2 * fhGet4EpochJumps; // TODO
+  TH2 * fhGet4EpochJumps;
+  TH1 * fhGet4BadEpochRatio;
+  TH2 * fhGet4BadEpRatioChip;
   TH1 * fhGet4ChanDataCount;
   TH2 * fhGet4ChanDllStatus;
   TH2 * fhGet4ChanTotMap;
@@ -219,6 +221,10 @@ private:
   std::vector<TH2 *> fhFullCtEpJumpFeeAChSort;
   TH2 *              fhFullCtEpJumpFeeAChOrder;
   std::vector<std::vector<UInt_t>> fvChanOrder;
+  std::vector<TH2 *> fhFullCtChOrderCh;
+  std::vector<TH2 *> fhFullCtEpQualityCh;
+  std::vector<TH2 *> fhFullCtEpQualityChZoom;
+  std::vector<TH2 *> fhEpQualityFirstChFeeA;
      // Monitoring of 24b mode for debugging purpose
   Bool_t fbOldReadoutOk;
   TH1 * fhGet4ChanTotCount;
