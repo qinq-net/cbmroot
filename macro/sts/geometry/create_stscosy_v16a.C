@@ -790,8 +790,10 @@ void create_stscosy_v16a(const char* geoTag="v16a")
   // --- Some border around the stations
   stsX += stsBorder;  
   stsY += stsBorder; 
-  stsZ = ( statPos[1] - statPos[0] ) + stsBorder;
-  Double_t stsPosZ = 0.5 * ( statPos[1] + statPos[0] );
+//  stsZ = ( statPos[1] - statPos[0] ) + stsBorder;
+//  Double_t stsPosZ = 0.5 * ( statPos[1] + statPos[0] );
+  stsZ = ( statPos[4] - statPos[0] ) + stsBorder;
+  Double_t stsPosZ = 0.5 * ( statPos[4] + statPos[0] );
 
   // --- Create box  around the stations
   TGeoBBox* stsBox = new TGeoBBox("stsBox", stsX/2., stsY/2., stsZ/2.);
