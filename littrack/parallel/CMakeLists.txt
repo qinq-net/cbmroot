@@ -36,4 +36,5 @@ ENDIF (SSE_FOUND)
 add_library(Littrackparallel SHARED ${LITTRACKPARALLEL_SRCS})
 set_target_properties(Littrackparallel PROPERTIES ${FAIRROOT_LIBRARY_PROPERTIES})
 
-install(TARGETS Littrackparallel DESTINATION ${CMAKE_BINARY_DIR}/lib)
+#install(TARGETS Littrackparallel DESTINATION ${CMAKE_BINARY_DIR}/lib)
+install(TARGETS Littrackparallel DESTINATION lib)
