@@ -41,7 +41,7 @@ Int_t    fieldSymType=0;
 
 TString defaultInputFile="";
 
-void run_qa(Int_t nEvents = 1, const char* setup = "sis300_electron")
+void run_qa(Int_t nEvents = 1, const char* setup = "sis100_electron")
 {
 
   // ========================================================================
