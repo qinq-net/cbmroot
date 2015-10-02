@@ -248,8 +248,8 @@ void CbmStsPhysics::ReadDataTables() {
 	// Conversion MeV->GeV is done when reading from file.
 
 	TString dir = gSystem->Getenv("VMCWORKDIR");
-	TString eFileName = dir + "/sts/digitize/dEdx_Si_e.txt";
-	TString pFileName = dir + "/sts/digitize/dEdx_Si_p.txt";
+	TString eFileName = dir + "/parameters/sts/dEdx_Si_e.txt";
+	TString pFileName = dir + "/parameters/sts/dEdx_Si_p.txt";
 
 	ifstream inFile;
 	Double_t e, dedx;
