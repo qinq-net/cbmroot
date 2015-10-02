@@ -1,5 +1,5 @@
 *** ../run/run_sim.C	2015-10-02 09:28:20.056678715 +0200
---- mcbm_sim.C	2015-10-02 10:49:18.866829931 +0200
+--- mcbm_sim.C	2015-10-02 12:30:38.145209489 +0200
 ***************
 *** 50,56 ****
   
@@ -100,10 +100,11 @@
   
     if ( magnetGeom != "" ) {
 ***************
-*** 248,260 ****
+*** 247,260 ****
+    // ------------------------------------------------------------------------
   
     // -----   Create magnetic field   ----------------------------------------
-    CbmFieldMap* magField = NULL;
+!   CbmFieldMap* magField = NULL;
 !   if ( 2 == fieldSymType ) {
 !     magField = new CbmFieldMapSym2(fieldMap);
 !   }  else if ( 3 == fieldSymType ) {
@@ -114,10 +115,11 @@
     fRun->SetField(magField);
     // ------------------------------------------------------------------------
   
---- 248,261 ----
+--- 247,261 ----
+    // ------------------------------------------------------------------------
   
     // -----   Create magnetic field   ----------------------------------------
-    CbmFieldMap* magField = NULL;
+! //  CbmFieldMap* magField = NULL;
 ! //  if ( 2 == fieldSymType ) {
 ! //    magField = new CbmFieldMapSym2(fieldMap);
 ! //  }  else if ( 3 == fieldSymType ) {

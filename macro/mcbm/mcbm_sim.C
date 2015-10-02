@@ -247,7 +247,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // ------------------------------------------------------------------------
 
   // -----   Create magnetic field   ----------------------------------------
-  CbmFieldMap* magField = NULL;
+//  CbmFieldMap* magField = NULL;
 //  if ( 2 == fieldSymType ) {
 //    magField = new CbmFieldMapSym2(fieldMap);
 //  }  else if ( 3 == fieldSymType ) {
