@@ -170,7 +170,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** @param pitchF,pitchB     Strip pitch foint and back side [cm]
      ** @param stereoF,stereoB   Strip stereo angle front and back side [degrees]
      **/
-    void SetParameters(Double_t dx, Double_t dy, Double_t dz,
+    virtual void SetParameters(Double_t dx, Double_t dy, Double_t dz,
                        Int_t nStripsF, Int_t nStripsB,
                        Double_t stereoF, Double_t stereoB);
 
@@ -245,8 +245,8 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** Edge effects are neglected, i.e. diffusion into the inactive area is
      ** allowed.
      **/
-    void Diffusion(Double_t x, Double_t y, Double_t sigma, Int_t side,
-    		           Double_t& fracL, Double_t& fracC, Double_t& fracR);
+    virtual void Diffusion(Double_t x, Double_t y, Double_t sigma, Int_t side,
+    		                   Double_t& fracL, Double_t& fracC, Double_t& fracR);
 
 
     /** Get the cluster position at the top edge of the sensor.
@@ -270,7 +270,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** Note: This encodes the mapping of sensor strip to module
      ** channel, i.e. defines the physical meaning of the latter.
      **/
-    Int_t GetModuleChannel(Int_t strip, Int_t side, Int_t sensorId) const;
+    virtual Int_t GetModuleChannel(Int_t strip, Int_t side, Int_t sensorId) const;
 
 
     /** Get strip and side from module channel.
@@ -281,7 +281,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      **
      ** Note: This must be the inverse of GetModuleChannel.
      **/
-    void GetStrip(Int_t channel, Int_t sensorId, Int_t& strip, Int_t& side);
+    virtual void GetStrip(Int_t channel, Int_t sensorId, Int_t& strip, Int_t& side);
 
 
     /** Get strip number from point coordinates
@@ -290,7 +290,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** @param side  0 = front side, 1 = back side
      ** @return strip number on selected side
      **/
-    Int_t GetStripNumber(Double_t x, Double_t y, Int_t side) const;
+    virtual Int_t GetStripNumber(Double_t x, Double_t y, Int_t side) const;
 
 
     /** Intersection point of two strips / cluster centres
@@ -317,9 +317,9 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** @param sensor      Pointer to sensor object
      ** @return Number of intersection points inside active area
      **/
-    Int_t IntersectClusters(CbmStsCluster* clusterF,
-    		                    CbmStsCluster* clusterB,
-    		                    CbmStsSensor* sensor);
+    virtual Int_t IntersectClusters(CbmStsCluster* clusterF,
+    		                            CbmStsCluster* clusterB,
+    		                            CbmStsSensor* sensor);
 
 
     /** Check whether a point (x,y) is inside the active area.

@@ -29,6 +29,7 @@ set (SRCS_DIGITIZE
 digitize/CbmStsDigitize.cxx
 digitize/CbmStsPhysics.cxx
 digitize/CbmStsSensorTypeDssd.cxx
+digitize/CbmStsSensorTypeDssdOrtho.cxx
 digitize/CbmStsSensorTypeDssdIdeal.cxx;
 digitize/CbmStsSensorTypeDssdReal.cxx;
 digitize/CbmStsSignal.cxx;
