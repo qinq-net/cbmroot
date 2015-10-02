@@ -1,24 +1,43 @@
-*** ../run/run_sim.C	2015-07-29 16:19:10.337101179 +0200
---- mcbm_sim.C	2015-07-31 13:46:38.226878764 +0200
+*** ../run/run_sim.C	2015-10-02 09:28:20.056678715 +0200
+--- mcbm_sim.C	2015-10-02 10:49:18.866829931 +0200
 ***************
-*** 14,20 ****
-  //
-  // --------------------------------------------------------------------------
+*** 50,56 ****
+  
+  TString defaultInputFile="";
   
 ! void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   {
   
     // ========================================================================
---- 14,20 ----
-  //
-  // --------------------------------------------------------------------------
+--- 50,56 ----
+  
+  TString defaultInputFile="";
   
 ! void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   {
   
     // ========================================================================
 ***************
-*** 55,66 ****
+*** 74,81 ****
+  
+    TString inFile  = inDir + defaultInputFile;
+  
+!   // Function needed for CTest runtime dependency
+!   TString depFile = Remove_CTest_Dependency_File(outDir, "run_sim" , setup);
+  
+    // --- Logger settings ----------------------------------------------------
+    TString logLevel = "INFO";   // "DEBUG";
+--- 74,81 ----
+  
+    TString inFile  = inDir + defaultInputFile;
+  
+! //  // Function needed for CTest runtime dependency
+! //  TString depFile = Remove_CTest_Dependency_File(outDir, "run_sim" , setup);
+  
+    // --- Logger settings ----------------------------------------------------
+    TString logLevel = "INFO";   // "DEBUG";
+***************
+*** 94,105 ****
     // created by the placement of the target.
     //
     TString  targetElement   = "Gold";
@@ -31,7 +50,7 @@
     // ------------------------------------------------------------------------
   
   
---- 55,66 ----
+--- 94,105 ----
     // created by the placement of the target.
     //
     TString  targetElement   = "Gold";
@@ -40,50 +59,69 @@
     Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
     Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
     Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
-!   Double_t targetRotY      = 30.;    // target rotation angle around the y axis [deg]
+!   Double_t beamRotY      = -30.;   // beam rotation angle around the y axis [deg]                  
     // ------------------------------------------------------------------------
   
   
 ***************
-*** 168,174 ****
-    }
-    
-    if ( muchGeom != "" ) {
-!     FairDetector* much = new CbmMuch("MUCH", kTRUE);
-      much->SetGeometryFileName(muchGeom);
-      fRun->AddModule(much);
-    }
---- 168,174 ----
-    }
-    
-    if ( muchGeom != "" ) {
-!     FairDetector* much = new CbmMuchMcbm("MUCH", kTRUE);
-      much->SetGeometryFileName(muchGeom);
-      fRun->AddModule(much);
-    }
-***************
-*** 208,220 ****
+*** 113,120 ****
+    //
+    Bool_t smearVertexXY = kTRUE;
+    Bool_t smearVertexZ  = kTRUE;
+!   Double_t beamWidthX   = 1.;  // Gaussian sigma of the beam profile in x [cm]
+!   Double_t beamWidthY   = 1.;  // Gaussian sigma of the beam profile in y [cm]
     // ------------------------------------------------------------------------
+    
+  
+--- 113,120 ----
+    //
+    Bool_t smearVertexXY = kTRUE;
+    Bool_t smearVertexZ  = kTRUE;
+!   Double_t beamWidthX  = 0.5;  // Gaussian sigma of the beam profile in x [cm]
+!   Double_t beamWidthY  = 0.5;  // Gaussian sigma of the beam profile in y [cm]
+    // ------------------------------------------------------------------------
+    
+  
+***************
+*** 172,178 ****
+    		                              targetThickness,
+    		                              targetDiameter);
+    target->SetPosition(targetPosX, targetPosY, targetPosZ);
+!   target->SetRotation(targetRotY);
+    fRun->AddModule(target);
+  
+    if ( magnetGeom != "" ) {
+--- 172,178 ----
+    		                              targetThickness,
+    		                              targetDiameter);
+    target->SetPosition(targetPosX, targetPosY, targetPosZ);
+!   //  target->SetRotation(beamRotY);
+    fRun->AddModule(target);
+  
+    if ( magnetGeom != "" ) {
+***************
+*** 248,260 ****
   
     // -----   Create magnetic field   ----------------------------------------
+    CbmFieldMap* magField = NULL;
 !   if ( 2 == fieldSymType ) {
-!     CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+!     magField = new CbmFieldMapSym2(fieldMap);
 !   }  else if ( 3 == fieldSymType ) {
-!     CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
+!     magField = new CbmFieldMapSym3(fieldMap);
 !   } 
 !   magField->SetPosition(0., 0., fieldZ);
 !   magField->SetScale(fieldScale);
     fRun->SetField(magField);
     // ------------------------------------------------------------------------
   
---- 208,221 ----
-    // ------------------------------------------------------------------------
+--- 248,261 ----
   
     // -----   Create magnetic field   ----------------------------------------
+    CbmFieldMap* magField = NULL;
 ! //  if ( 2 == fieldSymType ) {
-! //    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+! //    magField = new CbmFieldMapSym2(fieldMap);
 ! //  }  else if ( 3 == fieldSymType ) {
-! //    CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
+! //    magField = new CbmFieldMapSym3(fieldMap);
 ! //  } 
 ! //  magField->SetPosition(0., 0., fieldZ);
 ! //  magField->SetScale(fieldScale);
@@ -92,53 +130,51 @@
     // ------------------------------------------------------------------------
   
 ***************
-*** 235,240 ****
---- 236,242 ----
+*** 275,280 ****
+--- 276,282 ----
     	tDz = target->GetThickness();
     }
     primGen->SetTarget(tZ, tDz);
-+   //  primGen->SetTargetRotAngle(0., targetRotY * TMath::Pi()/180.);
++   //  primGen->SetTargetRotAngle(0., beamRotY * TMath::Pi()/180.);
     primGen->SetBeam(0., 0., beamWidthX, beamWidthY);
     primGen->SmearGausVertexXY(smearVertexXY);
     primGen->SmearVertexZ(smearVertexZ);
 ***************
-*** 250,258 ****
---- 252,284 ----
+*** 290,298 ****
+--- 292,322 ----
     CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
     uniGen->SetEventPlane(0. , 360.);
     primGen->AddGenerator(uniGen);
-+ 
-+   primGen->SetBeamAngle(targetRotY * TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees
-+ 
++   primGen->SetBeamAngle(beamRotY * TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees                  
     fRun->SetGenerator(primGen);       
     // ------------------------------------------------------------------------
   
-+ //  // -----   Create Electron gun as alternative -----------------------------
-+ //  FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
-+ //  // Use the FairBoxGenerator which generates a soingle electron
-+ //  FairBoxGenerator *eminus = new FairBoxGenerator();
-+ //  eminus->SetPDGType(11);
-+ //  eminus->SetMultiplicity(1000);
-+ //  //  eminus->SetBoxXYZ(32.,-32.,32.,-32.,0.);  // shoot at corner of diagonal modules
-+ //  //  eminus->SetBoxXYZ(0., 0., 0., 0., 0.);  // shoot at corner of diagonal modules
-+ //  //  eminus->SetBoxXYZ(57.,-57., 0., 0.,0.);  // shoot at corner of diagonal modules
-+ //  //  eminus->SetBoxXYZ(-57.,-57., 57., 57.,0.);  // shoot at corner of diagonal modules
-+ //  eminus->SetBoxXYZ(-180.,-15.,-150.,15.,0.);  // shoot at corner of diagonal modules
-+ //  eminus->SetPRange(2.,2.);
-+ //  eminus->SetPhiRange(0.,360.);
-+ //  eminus->SetThetaRange(0.,0.);
-+ //  primGen->AddGenerator(eminus);
-+ //
-+ //  //  primGen->SetBeamAngle(30*TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees
-+ //
-+ //  fRun->SetGenerator(primGen);
-+ //  // ------------------------------------------------------------------------
++ //  // -----   Create Electron gun as alternative -----------------------------                   
++ //  FairPrimaryGenerator* primGen = new FairPrimaryGenerator();                                   
++ //  // Use the FairBoxGenerator which generates a soingle electron                                
++ //  FairBoxGenerator *eminus = new FairBoxGenerator();                                            
++ //  eminus->SetPDGType(11);                                                                       
++ //  eminus->SetMultiplicity(1000);                                                                
++ //  //  eminus->SetBoxXYZ(32.,-32.,32.,-32.,0.);  // shoot at corner of diagonal modules          
++ //  //  eminus->SetBoxXYZ(0., 0., 0., 0., 0.);  // shoot at corner of diagonal modules            
++ //  //  eminus->SetBoxXYZ(57.,-57., 0., 0.,0.);  // shoot at corner of diagonal modules           
++ //  //  eminus->SetBoxXYZ(-57.,-57., 57., 57.,0.);  // shoot at corner of diagonal modules        
++ //  eminus->SetBoxXYZ(-180.,-15.,-150.,15.,0.);  // shoot at corner of diagonal modules           
++ //  eminus->SetPRange(2.,2.);                                                                     
++ //  eminus->SetPhiRange(0.,360.);                                                                 
++ //  eminus->SetThetaRange(0.,0.);                                                                 
++ //  primGen->AddGenerator(eminus);                                                                
++ //                                                                                                
++ //  //  primGen->SetBeamAngle(30*TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees 
++ //                                                                                                
++ //  fRun->SetGenerator(primGen);                                                                  
++ //  // ------------------------------------------------------------------------                   
 + 
    
     // Trajectories Visualization (TGeoManager Only)
     // Switch this on if you want to visualize tracks in the
 ***************
-*** 265,282 ****
+*** 305,322 ****
     fRun->Init();
     // ------------------------------------------------------------------------
     
@@ -157,7 +193,7 @@
   
     // -----   Runtime database   ---------------------------------------------
     CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
---- 291,308 ----
+--- 329,346 ----
     fRun->Init();
     // ------------------------------------------------------------------------
     
@@ -176,3 +212,22 @@
   
     // -----   Runtime database   ---------------------------------------------
     CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
+***************
+*** 352,359 ****
+    cout << " Test passed" << endl;
+    cout << " All ok " << endl;
+  
+!   // Function needed for CTest runtime dependency
+!   Generate_CTest_Dependency_File(depFile);
+  
+  }
+  
+--- 376,383 ----
+    cout << " Test passed" << endl;
+    cout << " All ok " << endl;
+  
+! //  // Function needed for CTest runtime dependency
+! //  Generate_CTest_Dependency_File(depFile);
+  
+  }
+  

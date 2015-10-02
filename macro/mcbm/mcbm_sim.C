@@ -14,6 +14,42 @@
 //
 // --------------------------------------------------------------------------
 
+
+TString caveGeom="";
+TString pipeGeom="";
+TString magnetGeom="";
+TString mvdGeom="";
+TString stsGeom="";
+TString richGeom="";
+TString muchGeom="";
+TString shieldGeom="";
+TString trdGeom="";
+TString tofGeom="";
+TString ecalGeom="";
+TString platformGeom="";
+TString psdGeom="";
+Double_t psdZpos=0.;
+Double_t psdXpos=0.;
+
+TString mvdTag="";
+TString stsTag="";
+TString trdTag="";
+TString tofTag="";  
+
+TString stsDigi="";
+TString trdDigi="";
+TString tofDigi="";
+
+TString mvdMatBudget="";
+TString stsMatBudget="";
+
+TString  fieldMap="";
+Double_t fieldZ=0.;
+Double_t fieldScale=0.;
+Int_t    fieldSymType=0;
+
+TString defaultInputFile="";
+
 void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 {
 
@@ -22,6 +58,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 
   // ----- Paths and file names  --------------------------------------------
   TString inDir   = gSystem->Getenv("VMCWORKDIR");
+
 
   TString outDir  = "data/";
   TString outFile = outDir + setup + "_test.mc.root";
@@ -37,6 +74,8 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 
   TString inFile  = inDir + defaultInputFile;
 
+//  // Function needed for CTest runtime dependency
+//  TString depFile = Remove_CTest_Dependency_File(outDir, "run_sim" , setup);
 
   // --- Logger settings ----------------------------------------------------
   TString logLevel = "INFO";   // "DEBUG";
@@ -60,7 +99,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
   Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
   Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
-  Double_t beamRotY      = -30.;   // beam rotation angle around the y axis [deg]
+  Double_t beamRotY      = -30.;   // beam rotation angle around the y axis [deg]                  
   // ------------------------------------------------------------------------
 
 
@@ -74,8 +113,8 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   //
   Bool_t smearVertexXY = kTRUE;
   Bool_t smearVertexZ  = kTRUE;
-  Double_t beamWidthX   = 0.5;  // Gaussian sigma of the beam profile in x [cm]
-  Double_t beamWidthY   = 0.5;  // Gaussian sigma of the beam profile in y [cm]
+  Double_t beamWidthX  = 0.5;  // Gaussian sigma of the beam profile in x [cm]
+  Double_t beamWidthY  = 0.5;  // Gaussian sigma of the beam profile in y [cm]
   // ------------------------------------------------------------------------
   
 
@@ -168,7 +207,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   }
   
   if ( muchGeom != "" ) {
-    FairDetector* much = new CbmMuchMcbm("MUCH", kTRUE);
+    FairDetector* much = new CbmMuch("MUCH", kTRUE);
     much->SetGeometryFileName(muchGeom);
     fRun->AddModule(much);
   }
@@ -208,10 +247,11 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // ------------------------------------------------------------------------
 
   // -----   Create magnetic field   ----------------------------------------
+  CbmFieldMap* magField = NULL;
 //  if ( 2 == fieldSymType ) {
-//    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+//    magField = new CbmFieldMapSym2(fieldMap);
 //  }  else if ( 3 == fieldSymType ) {
-//    CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
+//    magField = new CbmFieldMapSym3(fieldMap);
 //  } 
 //  magField->SetPosition(0., 0., fieldZ);
 //  magField->SetScale(fieldScale);
@@ -252,32 +292,30 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
   uniGen->SetEventPlane(0. , 360.);
   primGen->AddGenerator(uniGen);
-
-  primGen->SetBeamAngle(beamRotY * TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees
-
+  primGen->SetBeamAngle(beamRotY * TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees                  
   fRun->SetGenerator(primGen);       
   // ------------------------------------------------------------------------
 
-//  // -----   Create Electron gun as alternative -----------------------------
-//  FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
-//  // Use the FairBoxGenerator which generates a soingle electron
-//  FairBoxGenerator *eminus = new FairBoxGenerator();
-//  eminus->SetPDGType(11);
-//  eminus->SetMultiplicity(1000);
-//  //  eminus->SetBoxXYZ(32.,-32.,32.,-32.,0.);  // shoot at corner of diagonal modules
-//  //  eminus->SetBoxXYZ(0., 0., 0., 0., 0.);  // shoot at corner of diagonal modules
-//  //  eminus->SetBoxXYZ(57.,-57., 0., 0.,0.);  // shoot at corner of diagonal modules
-//  //  eminus->SetBoxXYZ(-57.,-57., 57., 57.,0.);  // shoot at corner of diagonal modules
-//  eminus->SetBoxXYZ(-180.,-15.,-150.,15.,0.);  // shoot at corner of diagonal modules
-//  eminus->SetPRange(2.,2.);
-//  eminus->SetPhiRange(0.,360.);
-//  eminus->SetThetaRange(0.,0.);
-//  primGen->AddGenerator(eminus);
-//
-//  //  primGen->SetBeamAngle(30*TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees
-//
-//  fRun->SetGenerator(primGen);
-//  // ------------------------------------------------------------------------
+//  // -----   Create Electron gun as alternative -----------------------------                   
+//  FairPrimaryGenerator* primGen = new FairPrimaryGenerator();                                   
+//  // Use the FairBoxGenerator which generates a soingle electron                                
+//  FairBoxGenerator *eminus = new FairBoxGenerator();                                            
+//  eminus->SetPDGType(11);                                                                       
+//  eminus->SetMultiplicity(1000);                                                                
+//  //  eminus->SetBoxXYZ(32.,-32.,32.,-32.,0.);  // shoot at corner of diagonal modules          
+//  //  eminus->SetBoxXYZ(0., 0., 0., 0., 0.);  // shoot at corner of diagonal modules            
+//  //  eminus->SetBoxXYZ(57.,-57., 0., 0.,0.);  // shoot at corner of diagonal modules           
+//  //  eminus->SetBoxXYZ(-57.,-57., 57., 57.,0.);  // shoot at corner of diagonal modules        
+//  eminus->SetBoxXYZ(-180.,-15.,-150.,15.,0.);  // shoot at corner of diagonal modules           
+//  eminus->SetPRange(2.,2.);                                                                     
+//  eminus->SetPhiRange(0.,360.);                                                                 
+//  eminus->SetThetaRange(0.,0.);                                                                 
+//  primGen->AddGenerator(eminus);                                                                
+//                                                                                                
+//  //  primGen->SetBeamAngle(30*TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees 
+//                                                                                                
+//  fRun->SetGenerator(primGen);                                                                  
+//  // ------------------------------------------------------------------------                   
 
  
   // Trajectories Visualization (TGeoManager Only)
@@ -337,5 +375,9 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
+
+//  // Function needed for CTest runtime dependency
+//  Generate_CTest_Dependency_File(depFile);
+
 }
 
