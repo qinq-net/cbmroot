@@ -81,7 +81,8 @@ add_test(checkFieldSym ${CBMROOT_BINARY_DIR}/macro/run/checkFieldSym.sh)
 SET_TESTS_PROPERTIES(checkFieldSym PROPERTIES TIMEOUT "60")
 #SET_TESTS_PROPERTIES(run_sim PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
 
-Install(FILES run_sim.C run_digi.C run_reco.C run_qa.C check_overlaps.C run.C checkFields.C checkFieldMap.C checkFieldSym.C
+Install(FILES .rootrc run_sim.C run_digi.C run_reco.C run_qa.C check_overlaps.C 
+              run.C checkFields.C checkFieldMap.C checkFieldSym.C
         DESTINATION share/cbmroot/macro/run
        )
 INSTALL(CODE "FILE(MAKE_DIRECTORY \${CMAKE_INSTALL_PREFIX}/share/cbmroot/macro/run/data)")
