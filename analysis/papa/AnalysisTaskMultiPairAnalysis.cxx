@@ -8,6 +8,7 @@
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+#include "TSystem.h"
 #include <TStopwatch.h>
 #include <TChain.h>
 #include <TH1D.h>
@@ -41,7 +42,8 @@ AnalysisTaskMultiPairAnalysis::AnalysisTaskMultiPairAnalysis() :
   fEventFilter(0x0),
   fEventStat(0x0),
   fInputEvent(0x0),
-  fTimer()
+  fTimer(),
+  fProcInfo()
 {
   //
   // Constructor
@@ -62,7 +64,8 @@ AnalysisTaskMultiPairAnalysis::AnalysisTaskMultiPairAnalysis(const char *name) :
   fEventFilter(0x0),
   fEventStat(0x0),
   fInputEvent(0x0),
-  fTimer()
+  fTimer(),
+  fProcInfo()
 {
   //
   // Constructor
@@ -158,8 +161,9 @@ InitStatus AnalysisTaskMultiPairAnalysis::Init()
   fgRichElIdAnn->Init();
   PairAnalysisVarManager::SetRichPidResponse(fgRichElIdAnn);
 
-  // initialization time
-  printf("AnalysisTaskMultiPairAnalysis::Init:"" Real time %fs  , CPU time %fs \n",fTimer.RealTime(),fTimer.CpuTime());
+  // initialization time and memory
+  gSystem->GetProcInfo(&fProcInfo);
+  printf("AnalysisTaskMultiPairAnalysis::Init:"" Real time %fs, CPU time %fs, Memory %i MB(res.) %i MB(virt.) \n",fTimer.RealTime(),fTimer.CpuTime(),fProcInfo.fMemResident/1024,fProcInfo.fMemVirtual/1024);
   fTimer.Reset();
 
   return kSUCCESS;
@@ -183,8 +187,9 @@ void AnalysisTaskMultiPairAnalysis::Exec(Option_t *)
 
   Double_t evts = fEventStat->GetBinContent(bin);
   if(!(static_cast<Int_t>(evts)%10)) {
-    printf("AnalysisTaskMultiPairAnalysis::Exec: Process %.3e events, CPU time %.1fs, (%fs per event, eff %.3f) \n",
-	   evts, fTimer.CpuTime(), fTimer.CpuTime()/evts, fTimer.CpuTime()/fTimer.RealTime());
+    gSystem->GetProcInfo(&fProcInfo);
+    printf("AnalysisTaskMultiPairAnalysis::Exec: Process %.3e events, CPU time %.1fs, (%fs per event, eff %.3f), Memory %i MB(res.) %i MB(virt.) \n",
+	   evts, fTimer.CpuTime(), fTimer.CpuTime()/evts, fTimer.CpuTime()/fTimer.RealTime(), fProcInfo.fMemResident/1024, fProcInfo.fMemVirtual/1024);
     fTimer.Continue();
   }
   //    Info("Exec", Form("Process %.3e events",fEventStat->GetBinContent(fEventStat->FindBin(kAllEvents))));
