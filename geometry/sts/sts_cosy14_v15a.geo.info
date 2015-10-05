@@ -1,0 +1,49 @@
+STS geometry created with create_stsgeo_cosy14.C
+
+Global variables: 
+Sensor thickness = 0.03 cm
+Vertical gap in sensor chain = 0 cm
+Vertical overlap of sensors = 0.27 cm
+Gap in z between neighbour sensors = 0.02 cm
+Horizontal overlap of sensors = 0.3 cm
+Gap in z between neighbour ladders = 1 cm
+Cable thickness = 0.02 cm
+
+Beam pipe: R1 = 1.8 cm at z = 22 cm
+Beam pipe: R2 = 1.8 cm at z = 50 cm
+Beam pipe: R3 = 5.5 cm at z = 125 cm
+
+Sensors: 
+SensorBaby: size  1.6200 x  1.6200 x  0.0300, medium silicon
+SensorOut: size  6.2092 x  6.2000 x  0.0300, medium silicon
+
+Sectors: 
+Sector01: size  1.6200 x  1.6200 x  0.0300, assembly
+Contains: SensorBaby 
+Sector02: size  6.2092 x  6.2000 x  0.0300, assembly
+Contains: SensorOut 
+Module01: size  1.6200 x  1.6200 x  0.0300, medium air
+Contains: SensorBaby 
+Module02: size  6.2092 x  6.2000 x  0.0300, medium air
+Contains: SensorOut 
+HalfLadder01: size  1.6200 x  1.6200 x  0.0300, assembly
+Contains: Module01 
+HalfLadder02: size  6.2092 x  6.2000 x  0.0300, assembly
+Contains: Module02 
+Ladder01: size  1.6200 x  1.6200 x  0.0300, assembly
+Contains: HalfLadder01 
+Ladder02: size  6.2092 x  6.2000 x  0.0300, assembly
+Contains: HalfLadder02 
+Station01: size  1.6200 x  1.6200 x  0.0300, assembly
+Contains: Ladder01 
+Station02: size  6.2092 x  6.2000 x  0.0300, assembly
+Contains: Ladder02 
+Station03: size  1.6200 x  1.6200 x  0.0300, assembly
+Contains: Ladder01 
+Station 1:  dX = 1.6200, dY 1.6200, posZ = 25.3000
+Station 2:  dX = 6.2092, dY 6.2000, posZ = 99.3000
+Station 3:  dX = 6.2092, dY 6.2000, posZ = 140.7000
+sts_cosy14_v15a: size 16.2092 x 16.2000 x 125.4000, medium air
+Contains: Station01 Station02 Station03 
+TOP: size 16.2092 x 16.2000 x 125.4000, assembly
+Contains: sts_cosy14_v15a 
