@@ -91,7 +91,7 @@ Int_t CbmStsSensorTypeDssdOrtho::GetModuleChannel(Int_t strip, Int_t side,
 
 	// --- Prescription for connection
 	Int_t channel = strip;
-  if ( side ) strip += fNofStrips[0];
+  if ( side ) channel += fNofStrips[0];
 
   return channel;
 }
