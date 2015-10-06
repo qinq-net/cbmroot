@@ -111,6 +111,13 @@ class CbmStsSetup : public CbmStsElement
     Bool_t Init(TGeoManager* geo);
 
 
+    /** Initialise setup from a STS geometry file
+     ** @param fileName  Name of geometry file
+     ** @return kTRUE if successfully initialised; kFALSE else
+     **/
+    Bool_t Init(const char* fileName);
+
+
     /** Static instance of CbmStsSetup **/
     static CbmStsSetup* Instance();
 
@@ -133,7 +140,9 @@ class CbmStsSetup : public CbmStsElement
   private:
 
     static CbmStsSetup* fgInstance;    ///< Static instance of this class
-    CbmStsDigitize* fDigitizer;   ///< Pointer to digitizer task
+    CbmStsDigitize* fDigitizer;   ///< Pointer to digitiser task
+
+    Bool_t fIsInitialised;  ///< To protect against multiple initialisation.
 
     static const TString fgkLevelName[kStsNofLevels];  ///< Level names
 

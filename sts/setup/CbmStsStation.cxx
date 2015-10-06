@@ -121,6 +121,11 @@ Double_t CbmStsStation::GetSensorPitch(Int_t iSide) const {
 		LOG(FATAL) << GetName() << ": illegal side identifier!"
 				       << FairLogger::endl;
 	}
+	if ( ! fFirstSensor ) {
+		LOG(WARNING) << GetName() << ": No sensors connected to station!"
+				         << FairLogger::endl;
+		return 0.;
+	}
 	CbmStsSensorTypeDssd* type =
 			dynamic_cast<CbmStsSensorTypeDssd*>(fFirstSensor->GetType());
 	if ( ! type )
@@ -137,6 +142,11 @@ Double_t CbmStsStation::GetSensorStereoAngle(Int_t iSide) const {
 	if ( iSide < 0 || iSide > 1 ) {
 		LOG(FATAL) << GetName() << ": illegal side identifier!"
 				       << FairLogger::endl;
+	}
+	if ( ! fFirstSensor ) {
+		LOG(WARNING) << GetName() << ": No sensors connected to station!"
+				         << FairLogger::endl;
+		return 0.;
 	}
 	CbmStsSensorTypeDssd* type =
 			dynamic_cast<CbmStsSensorTypeDssd*>(fFirstSensor->GetType());

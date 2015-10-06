@@ -31,6 +31,8 @@ using std::stringstream;
 CbmStsSensorTypeDssdOrtho::CbmStsSensorTypeDssdOrtho()
     : CbmStsSensorTypeDssd()
 {
+	fStereo[0] =  0.;  // vertical strips on the front side
+	fStereo[1] = 90.;  // horizontal strips on the back side
 }
 // -------------------------------------------------------------------------
 
@@ -219,8 +221,8 @@ void CbmStsSensorTypeDssdOrtho::SetParameters(Double_t dx, Double_t dy,
   fDz           = dz;
   fNofStrips[0] = nStripsF;
   fNofStrips[1] = nStripsB;
-  fStereo[0]    = stereoF;
-  fStereo[1]    = stereoB;
+  // The arguments stereoF and stereoB are neglected, since this type
+  // has vertical strips on the front and horizontal strips on the back side.
 
   // --- Calculate parameters for front and back
   for (Int_t side = 0; side < 2; side++)

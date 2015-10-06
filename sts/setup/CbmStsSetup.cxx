@@ -10,16 +10,21 @@
 #include <iostream>
 
 // Includes from ROOT
+#include "TFile.h"
 #include "TGeoBBox.h"
 #include "TGeoManager.h"
+#include "TKey.h"
 
 // Includes from CbmRoot
 #include "CbmDetectorList.h"
 
 // Includes from STS
-#include "setup/CbmStsModule.h"
-#include "setup/CbmStsStation.h"
-#include "digitize/CbmStsSensorTypeDssd.h"
+#include "CbmStsAddress.h"
+#include "CbmStsMC.h"
+#include "CbmStsModule.h"
+#include "CbmStsSensorTypeDssd.h"
+#include "CbmStsSensorTypeDssdOrtho.h"
+#include "CbmStsStation.h"
 
 
 
@@ -44,7 +49,8 @@ const TString CbmStsSetup::fgkLevelName[] = { "sts",
 
 // -----   Constructor   ---------------------------------------------------
 CbmStsSetup::CbmStsSetup() : CbmStsElement("STS", "system", kStsSystem),
-			     fDigitizer(NULL), fModules(), fSensors(), fSensorTypes() {
+			     fDigitizer(NULL), fIsInitialised(kFALSE), fModules(),
+			     fSensors(), fSensorTypes() {
 	if ( gGeoManager) Init(gGeoManager);
 }
 // -------------------------------------------------------------------------
@@ -135,6 +141,15 @@ Int_t CbmStsSetup::DefineSensorTypes() {
 	sensor07->SetName("Sensor07");
 	fSensorTypes[6] = sensor07;
 
+	// Sensor08: DSSD Ortho (Baby), 1.62 cm x 1.62 cm
+	CbmStsSensorTypeDssdOrtho* sensor08 = new CbmStsSensorTypeDssdOrtho();
+	lx       = 1.28;    // active size in x
+	ly       = 1.28;      // active size in y
+	nStripsF = 256;       // number of strips front side (58 mum)
+	nStripsB = 256;       // number of strips back side  (58 mum)
+	sensor08->SetParameters(lx, ly, lz, nStripsF, nStripsB, 0., 0.);
+	sensor08->SetName("Baby");
+	fSensorTypes[7] = sensor08;
 
 	return fSensorTypes.size();
 }
@@ -177,11 +192,17 @@ CbmStsElement* CbmStsSetup::GetElement(UInt_t address, Int_t level) {
 // -----   Initialisation from TGeoManager   -------------------------------
 Bool_t CbmStsSetup::Init(TGeoManager* geo) {
 
+	if ( fIsInitialised ) {
+		LOG(FATAL) << GetName() << ": Setup is already initialised!"
+				       << FairLogger::endl;
+		return kFALSE;
+	}
+
   cout << endl;
   LOG(INFO) << "=========================================================="
-		    << FairLogger::endl;
-  LOG(INFO) << "Initialising STS Setup" << FairLogger::endl;
-
+		        << FairLogger::endl;
+  LOG(INFO) << "Initialising STS Setup from TGeoManager"
+  		      << FairLogger::endl;
 
   // --- Catch non-existence of GeoManager
   if ( ! geo ) {
@@ -276,7 +297,146 @@ Bool_t CbmStsSetup::Init(TGeoManager* geo) {
 		    << FairLogger::endl;
   cout << endl;
 
+  fIsInitialised = kTRUE;
   return kTRUE;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Initialisation from geometry file   -----------------------------
+Bool_t CbmStsSetup::Init(const char* fileName) {
+
+	if ( fIsInitialised ) {
+		LOG(FATAL) << GetName() << ": Setup is already initialised!"
+				       << FairLogger::endl;
+		return kFALSE;
+	}
+
+  cout << endl;
+  LOG(INFO) << "=========================================================="
+		        << FairLogger::endl;
+  LOG(INFO) << "Initialising STS Setup from file " << fileName
+  		      << FairLogger::endl;
+
+	TGeoManager* oldGeometry = gGeoManager;
+	TGeoManager* newGeometry = new TGeoManager();
+
+	// --- Open geometry file
+	TFile geoFile(fileName);
+	if ( ! geoFile.IsOpen() ) {
+		LOG(ERROR) << GetName() << ": Could not open geometry file "
+				       << fileName << ", setup is not initialised."
+				       << FairLogger::endl;
+		return kFALSE;
+	}
+
+	// --- Get top volume from file
+	TGeoVolume* topVolume = NULL;
+	TList* keyList = geoFile.GetListOfKeys();
+	TKey* key = NULL;
+	TIter keyIter(keyList);
+	while ( (key = (TKey*) keyIter() ) ) {
+		if ( strcmp( key->GetClassName(), "TGeoVolumeAssembly" ) == 0 ) {
+			TGeoVolume* volume = (TGeoVolume*) key->ReadObj();
+			if ( strcmp(volume->GetName(), "TOP") == 0 ) {
+				topVolume = volume;
+				break;
+			}  //? volume name is "TOP"
+		}    //? object class is TGeoVolumeAssembly
+	}
+	if ( ! topVolume) {
+		LOG(ERROR) << GetName() << ": No TOP volume in file!" << FairLogger::endl;
+		return kFALSE;
+	}
+  newGeometry->SetTopVolume(topVolume);
+
+  // --- Get cave (top node)
+  newGeometry->CdTop();
+  TGeoNode* cave = newGeometry->GetCurrentNode();
+
+  // --- Get top STS node
+  TGeoNode* sts = NULL;
+  for (Int_t iNode = 0; iNode < cave->GetNdaughters(); iNode++) {
+    TString name = cave->GetDaughter(iNode)->GetName();
+     if ( name.Contains("STS", TString::kIgnoreCase) ) {
+      sts = cave->GetDaughter(iNode);
+      newGeometry->CdDown(iNode);
+      LOG(INFO) << fName << ": STS top node is " << sts->GetName()
+                << FairLogger::endl;
+      break;
+    }
+  }
+  if ( ! sts ) {
+    LOG(ERROR) << fName << ": No top STS node found in geometry!"
+               << FairLogger::endl;
+    return kFALSE;
+  }
+
+  // --- Create physical node for sts
+  TString path = cave->GetName();
+  path = path + "/" + sts->GetName();
+  fNode = new TGeoPhysicalNode(path);
+
+  // --- Set system address
+  fAddress = kSTS;
+
+  // --- Recursively initialise daughter elements
+  InitDaughters();
+
+  // --- Build arrays of modules and sensors
+  for (Int_t iStat = 0; iStat < GetNofDaughters(); iStat++) {
+  	CbmStsElement* stat = GetDaughter(iStat);
+  	for (Int_t iLad = 0; iLad < stat->GetNofDaughters(); iLad++) {
+  		CbmStsElement* ladd = stat->GetDaughter(iLad);
+  		for (Int_t iHla = 0; iHla < ladd->GetNofDaughters(); iHla++) {
+  			CbmStsElement* hlad = ladd->GetDaughter(iHla);
+  			for (Int_t iMod = 0; iMod < hlad->GetNofDaughters(); iMod++) {
+  				CbmStsElement* modu = hlad->GetDaughter(iMod);
+  				fModules.push_back(dynamic_cast<CbmStsModule*>(modu));
+  				for (Int_t iSen = 0; iSen < modu->GetNofDaughters(); iSen++) {
+  					CbmStsSensor* sensor =
+  							dynamic_cast<CbmStsSensor*>(modu->GetDaughter(iSen));
+  					fSensors.push_back(sensor);
+  				}
+  			}
+  		}
+  	}
+  }
+
+  // --- Statistics
+  LOG(INFO) << fName << ": Elements in setup: " << FairLogger::endl;
+  for (Int_t iLevel = 1; iLevel <= kStsSensor; iLevel++) {
+	  TString name = fgkLevelName[iLevel];
+	  name += "s";
+	  LOG(INFO) << "     " << setw(12) << name << setw(5) << right
+	  		      << GetNofElements(iLevel) << FairLogger::endl;
+  }
+
+  // Set the sensor types
+  Int_t nSensors = SetSensorTypes();
+	LOG(INFO) << GetName() << ": Set types for " << nSensors
+			      << " sensors" << FairLogger::endl;
+
+  // --- Initialise stations parameters
+  for (Int_t iStat = 0; iStat < GetNofDaughters(); iStat++) {
+  	CbmStsStation* station =
+  			dynamic_cast<CbmStsStation*>(GetDaughter(iStat));
+  	station->Init();
+  }
+
+  // --- Consistency check
+  if ( GetNofSensors() != GetNofElements(kStsSensor) )
+  	LOG(FATAL) << GetName() << ": inconsistent number of sensors! "
+  			       << GetNofElements(kStsSensor) << " " << GetNofSensors()
+  			       << FairLogger::endl;
+
+  LOG(INFO) << "=========================================================="
+		    << FairLogger::endl;
+  cout << endl;
+
+  fIsInitialised = kTRUE;
+	return kTRUE;
 }
 // -------------------------------------------------------------------------
 
@@ -320,6 +480,7 @@ Int_t CbmStsSetup::SetSensorTypes() {
 		else if ( volX > 3.09 && volX < 3.11 && volY > 3.09 && volY < 3.11 ) iType = 4;
 		else if ( volX > 1.49 && volX < 1.51 && volY > 4.19 && volY < 4.21 ) iType = 5;
 		else if ( volX > 3.09 && volX < 3.11 && volY > 4.19 && volY < 4.21 ) iType = 6;
+		else if ( volX > 1.61 && volX < 1.63 && volY > 1.61 && volY < 1.63 ) iType = 7;
 
 		// Look for type in DB
 		map<Int_t, CbmStsSensorType*>::iterator it = fSensorTypes.find(iType);
