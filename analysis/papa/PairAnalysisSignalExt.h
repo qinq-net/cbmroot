@@ -31,6 +31,7 @@ public:
   void ProcessLS( TObjArray* const arrhist);  // like-sign method
   void ProcessEM( TObjArray* const arrhist);  // event mixing method
   void ProcessTR( TObjArray* const arrhist);  // track rotation method
+  void ProcessCocktail( TObjArray* const arrhist);  // cocktail method
 
   virtual void Draw(const Option_t* option = "");
 

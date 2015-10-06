@@ -131,6 +131,174 @@ void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
   fArrHists = arrhist;
   fArrHists->SetOwner(kFALSE);
 
+  // calculate optimal binning if configured
+  if(fRebinStat<1. && fBinLimits==0x0) {
+    fBinLimits = PairAnalysisHelper::MakeStatBinLimits( (TH1*)FindObject(arrhist,PairAnalysis::kSEPM) , fRebinStat);
+  }
+
+
+  // clean up spectra
+  if(fProcessed && 0) { //TODO: not needed??
+    if(fHistDataPP)     delete fHistDataPP;     fHistDataPP=0x0;
+    if(fHistDataPM)     delete fHistDataPM;     fHistDataPM=0x0;
+    if(fHistDataMM)     delete fHistDataMM;     fHistDataMM=0x0;
+
+    if(fHistDataME)     delete fHistDataME;     fHistDataME=0x0;
+    if(fHistRfactor)    delete fHistRfactor;    fHistRfactor=0x0;
+
+    if(fHistMixPP)      delete fHistMixPP;      fHistMixPP=0x0;
+    if(fHistMixPM)      delete fHistMixPM;      fHistMixPM=0x0;
+    if(fHistMixMM)      delete fHistMixMM;      fHistMixMM=0x0;
+    if(fHistMixMP)      delete fHistMixMP;      fHistMixMP=0x0;
+
+    if(fHistDataTR)     delete fHistDataTR;     fHistDataTR=0x0;
+
+    if(fHistSignal)     delete fHistSignal;     fHistSignal=0x0;
+    if(fHistBackground) delete fHistBackground; fHistBackground=0x0;
+    if(fHistSB)         delete fHistSB;         fHistSB=0x0;
+    if(fHistSign)       delete fHistSign;         fHistSign=0x0;
+  }
+
+  //// get histograms and rebin
+  // SE ++
+  fHistDataPP = (TH1*)FindObject(arrhist,PairAnalysis::kSEPP);
+  if(fHistDataPP) {
+    if(fBinLimits)     {
+      fHistDataPP = fHistDataPP->Rebin(fBinLimits->GetSize()-1,"histPP",fBinLimits->GetArray());   
+      fHistDataPP->Scale(1.,"width");
+    }
+    else               fHistDataPP->Clone("histPP");
+    if(fHistDataPP->GetDefaultSumw2()) fHistDataPP->Sumw2();
+    fHistDataPP->SetDirectory(0);
+    if(fRebin>1)       fHistDataPP->Rebin(fRebin);
+  }
+  // SE +-
+  fHistDataPM = (TH1*)FindObject(arrhist,PairAnalysis::kSEPM);
+  if(fHistDataPM) {
+    if(fBinLimits)     {
+      fHistDataPM = fHistDataPM->Rebin(fBinLimits->GetSize()-1,"histPM",fBinLimits->GetArray());
+      fHistDataPM->Scale(1.,"width");
+    }
+    else               fHistDataPM->Clone("histPM");
+    if(fHistDataPM->GetDefaultSumw2()) fHistDataPM->Sumw2();
+    fHistDataPM->SetDirectory(0);
+    if(fRebin>1)       fHistDataPM->Rebin(fRebin);
+    fHistDataPM->SetYTitle( (fBinLimits?"dN/dm":"Counts") );
+  }
+  // SE --
+  fHistDataMM = (TH1*)FindObject(arrhist,PairAnalysis::kSEMM);
+  if(fHistDataMM) {
+    if(fBinLimits)     {
+      fHistDataMM = fHistDataMM->Rebin(fBinLimits->GetSize()-1,"histMM",fBinLimits->GetArray());
+      fHistDataMM->Scale(1.,"width");
+    }
+    else               fHistDataMM->Clone("histMM");
+    if(fHistDataMM->GetDefaultSumw2()) fHistDataMM->Sumw2();
+    fHistDataMM->SetDirectory(0);
+    if(fRebin>1)       fHistDataMM->Rebin(fRebin);
+  }
+  // ME ++
+  fHistMixPP = (TH1*)FindObject(arrhist,PairAnalysis::kMEPP);
+  if(fHistMixPP) {
+    if(fBinLimits)     {
+      fHistMixPP = fHistMixPP->Rebin(fBinLimits->GetSize()-1,"mixPP",fBinLimits->GetArray());
+      fHistMixPP->Scale(1.,"width");
+    }
+    else               fHistMixPP->Clone("mixPP");
+    if(fHistMixPP->GetDefaultSumw2()) fHistMixPP->Sumw2();
+    fHistMixPP->SetDirectory(0);
+    if(fRebin>1)       fHistMixPP->Rebin(fRebin);
+  }
+  // ME +-
+  fHistMixPM = (TH1*)FindObject(arrhist,PairAnalysis::kMEPM);
+  if(fHistMixPM) {
+    if(fBinLimits)     {
+      fHistMixPM = fHistMixPM->Rebin(fBinLimits->GetSize()-1,"mixPM",fBinLimits->GetArray());
+      fHistMixPM->Scale(1.,"width");
+    }
+    else               fHistMixPM->Clone("mixPM");
+    if(fHistMixPM->GetDefaultSumw2()) fHistMixPM->Sumw2();
+    fHistMixPM->SetDirectory(0);
+    if(fRebin>1)       fHistMixPM->Rebin(fRebin);
+  }
+  // ME -+
+  fHistMixMP = (TH1*)FindObject(arrhist,PairAnalysis::kMEMP);
+  if(fHistMixMP) {
+    if(fBinLimits)     {
+      fHistMixMP = fHistMixMP->Rebin(fBinLimits->GetSize()-1,"mixMP",fBinLimits->GetArray());
+      fHistMixMP->Scale(1.,"width");
+    }
+    else               fHistMixMP->Clone("mixMP");
+    if(fHistMixMP->GetDefaultSumw2()) fHistMixMP->Sumw2();
+    fHistMixMP->SetDirectory(0);
+    if(fRebin>1)       fHistMixMP->Rebin(fRebin);
+  }
+  if(fHistMixPM && fHistMixMP) fHistMixPM->Add( fHistMixMP ); // merge ME +- and -+
+  // ME --
+  fHistMixMM = (TH1*)FindObject(arrhist,PairAnalysis::kMEMM);
+  if(fHistMixMM) {
+    if(fBinLimits)     {
+      fHistMixMM = fHistMixMM->Rebin(fBinLimits->GetSize()-1,"mixMM",fBinLimits->GetArray());
+      fHistMixMM->Scale(1.,"width");
+    }
+    else               fHistMixMM->Clone("mixMM");
+    if(fHistMixMM->GetDefaultSumw2()) fHistMixMM->Sumw2();
+    fHistMixMM->SetDirectory(0);
+    if(fRebin>1)       fHistMixMM->Rebin(fRebin);
+  }
+  // TR +-
+  fHistDataTR = (TH1*)FindObject(arrhist,PairAnalysis::kSEPMRot);
+  if(fHistDataTR) {
+    if(fBinLimits)     {
+      fHistDataTR = fHistDataTR->Rebin(fBinLimits->GetSize()-1,"histTR",fBinLimits->GetArray());
+      fHistDataTR->Scale(1.,"width");
+    }
+    else               fHistDataTR->Clone("histTR");
+    if(fHistDataTR->GetDefaultSumw2()) fHistDataTR->Sumw2();
+    fHistDataTR->SetDirectory(0);
+    if(fRebin>1)       fHistDataTR->Rebin(fRebin);
+  }
+
+  // init histograms for R-factor, subtracted signal, background
+  fHistSignal = new TH1D("HistSignal", "Substracted signal",
+			 fHistDataPM->GetXaxis()->GetNbins(),
+			 fHistDataPM->GetXaxis()->GetXbins()->GetArray());
+  fHistSignal->SetXTitle(fHistDataPM->GetXaxis()->GetTitle());
+  fHistSignal->SetYTitle(fHistDataPM->GetYaxis()->GetTitle());
+  if(fHistSignal->GetDefaultSumw2()) fHistSignal->Sumw2();
+  fHistSignal->SetDirectory(0);
+  fHistBackground = new TH1D("HistBackground", "Background contribution",
+			     fHistDataPM->GetXaxis()->GetNbins(),
+			     fHistDataPM->GetXaxis()->GetXbins()->GetArray());
+  if(fHistBackground->GetDefaultSumw2()) fHistBackground->Sumw2();
+  fHistBackground->SetDirectory(0);
+  fHistRfactor = new TH1D("HistRfactor", "Rfactor;;N^{mix}_{+-}/2#sqrt{N^{mix}_{++} N^{mix}_{--}}",
+                          fHistDataPM->GetXaxis()->GetNbins(),
+			  fHistDataPM->GetXaxis()->GetXbins()->GetArray());
+  if(fHistRfactor->GetDefaultSumw2()) fHistRfactor->Sumw2();
+  fHistRfactor->SetDirectory(0);
+
+  // cocktail
+  if(fArrCocktail && fArrCocktail->GetEntriesFast()) {
+    printf("rebin %d cocktail histograms\n",fArrCocktail->GetEntriesFast());
+    // loop over all ingredients
+    for(Int_t i=0; i<fArrCocktail->GetEntriesFast(); i++) {
+      TH1* htmp = static_cast<TH1*>(fArrCocktail->UncheckedAt(i));
+      if(fBinLimits)     {
+	htmp = htmp->Rebin(fBinLimits->GetSize()-1,htmp->GetTitle(),fBinLimits->GetArray());
+	if(htmp->GetDefaultSumw2()) htmp->Sumw2();
+	htmp->SetDirectory(0);
+	htmp->Scale(1.,"width");
+	fArrCocktail->AddAt(htmp,i);
+      }
+      //      else               htmp->Clone("histTR");
+      // if(fHistDataTR->GetDefaultSumw2()) fHistDataTR->Sumw2();
+      // fHistDataTR->SetDirectory(0);
+      if(fRebin>1)       htmp->Rebin(fRebin);
+    }
+  }
+
+  // process method
   switch ( fMethod ){
     case kLikeSign :
     case kLikeSignArithm :
@@ -147,9 +315,14 @@ void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
       ProcessTR(arrhist);
       break;
 
+  case kCocktail:
+    ProcessCocktail(arrhist);
+    break;
+
     default :
       Warning("Process","Subtraction method not supported. Please check SetMethod() function.");
   }
+
 
   // set S/B and Significance histos
   if(!fPeakIsTF1) fHistSB = (TH1*)fgPeakShape->Clone("histSB");
@@ -159,6 +332,8 @@ void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
     fHistSB->Eval((TF1*)fgPeakShape);
   }
   fHistSB->Divide(fHistBackground);
+  fHistSB->SetYTitle("S/B");
+
   //significance
   fHistSign = (TH1*)fHistSignal->Clone("histSB");
   fHistSign->Reset("CEIS");
@@ -172,6 +347,7 @@ void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
     if(s+b<1.e-6) continue;
     fHistSign->SetBinContent(i,s/TMath::Sqrt(s+b));
   }
+  fHistSign->SetYTitle("S/#sqrt{S+B}");
   //  fErrors(2) = ((s+b)>0 ? fValues(2)*TMath::Sqrt(be*be + TMath::Power(se*(s+2*b)/s, 2)) / 2 / (s+b) : 0);
 
 }
@@ -182,44 +358,9 @@ void PairAnalysisSignalExt::ProcessLS(TObjArray* const arrhist)
   //
   // signal subtraction
   //
-  if(fHistRfactor)    delete fHistRfactor;    fHistRfactor=0x0;
-  if(fHistDataPM)     delete fHistDataPM;     fHistDataPM=0x0;
-  if(fHistDataME)     delete fHistDataME;     fHistDataME=0x0;
-  if(fHistSignal)     delete fHistSignal;     fHistSignal=0x0;
-  if(fHistBackground) delete fHistBackground; fHistBackground=0x0;
 
-  fHistDataPP = (TH1*)FindObject(arrhist,PairAnalysis::kSEPP)->Clone("histPP");  // ++    SE
-  fHistDataPM = (TH1*)FindObject(arrhist,PairAnalysis::kSEPM)->Clone("histPM");  // +-    SE
-  fHistDataMM = (TH1*)FindObject(arrhist,PairAnalysis::kSEMM)->Clone("histMM");  // --    SE
-  fHistDataPP->Sumw2();
-  fHistDataPM->Sumw2();
-  fHistDataMM->Sumw2();
-  fHistDataPP->SetDirectory(0);
-  fHistDataPM->SetDirectory(0);
-  fHistDataMM->SetDirectory(0);
-
-  // rebin the histograms
-  if (fRebin>1) {
-    fHistDataPP->Rebin(fRebin);
-    fHistDataPM->Rebin(fRebin);
-    fHistDataMM->Rebin(fRebin);
-  }
-  // init histograms for R-factor, subtracted signal, background
-  fHistRfactor = new TH1D("HistRfactor", "Rfactor;;N^{mix}_{+-}/2#sqrt{N^{mix}_{++} N^{mix}_{--}}",
-                          fHistDataPM->GetXaxis()->GetNbins(),
-                          fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
-  fHistRfactor->Sumw2();
-  fHistRfactor->SetDirectory(0);
-  fHistSignal = new TH1D("HistSignal", "Like-Sign substracted signal",
-			 fHistDataPM->GetXaxis()->GetNbins(),
-			 fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
-  fHistSignal->Sumw2();
-  fHistSignal->SetDirectory(0);
-  fHistBackground = new TH1D("HistBackground", "Like-sign contribution",
-			     fHistDataPM->GetXaxis()->GetNbins(),
-			     fHistDataPM->GetXaxis()->GetXmin(), fHistDataPM->GetXaxis()->GetXmax());
-  fHistBackground->Sumw2();
-  fHistBackground->SetDirectory(0);
+  // protections
+  if(!fHistDataPP || !fHistDataMM) return;
 
   // fill background histogram
   for(Int_t ibin=1; ibin<=fHistDataPM->GetXaxis()->GetNbins(); ibin++) {
@@ -247,45 +388,17 @@ void PairAnalysisSignalExt::ProcessLS(TObjArray* const arrhist)
   //correct LS spectrum bin-by-bin with R factor obtained in mixed events
   if(fMixingCorr || fMethod==kLikeSignRcorr || fMethod==kLikeSignArithmRcorr) {
 
-    TH1* histMixPP = (TH1*)FindObject(arrhist,PairAnalysis::kMEPP)->Clone("mixPP");  // ++    ME
-    TH1* histMixMM = (TH1*)FindObject(arrhist,PairAnalysis::kMEMM)->Clone("mixMM");  // --    ME
-
-
-    TH1* histMixPM = 0x0;
-    if(FindObject(arrhist,PairAnalysis::kMEMP)) {
-      histMixPM = (TH1*)FindObject(arrhist,PairAnalysis::kMEMP)->Clone("mixMP");  // -+    ME
-      histMixPM->Sumw2();
-    }
-
-    // merge ME +- with -+ if needed
-    TH1 *htmp=(TH1*)FindObject(arrhist,PairAnalysis::kMEPM);
-    if (!histMixPM && htmp) histMixPM  = (TH1*)htmp->Clone("mixPM");                 // +-    ME
-    else if(htmp)           histMixPM->Add(htmp);
-    //    }
-
-    // protection
-    if (!histMixPM){
-      Error("ProcessME", "For R-factor correction the mixed event histograms are required. No +- histogram found");
-      delete histMixPP;
-      delete histMixMM;
-      return;
-    }
-
-    // rebin the histograms
-    if (fRebin>1) {
-      histMixPP->Rebin(fRebin);
-      histMixMM->Rebin(fRebin);
-      histMixPM->Rebin(fRebin);
-    }
+    // protections
+    if(!fHistMixPM || fHistMixPP || !fHistMixMM) return;
 
     // fill R-factor histogram
-    for(Int_t ibin=1; ibin<=histMixPM->GetXaxis()->GetNbins(); ibin++) {
-      Float_t pp  = histMixPP->GetBinContent(ibin);
-      Float_t ppe = histMixPP->GetBinError(ibin);
-      Float_t mm  = histMixMM->GetBinContent(ibin);
-      Float_t mme = histMixMM->GetBinError(ibin);
-      Float_t pm  = histMixPM->GetBinContent(ibin);
-      Float_t pme = histMixPM->GetBinError(ibin);
+    for(Int_t ibin=1; ibin<=fHistMixPM->GetXaxis()->GetNbins(); ibin++) {
+      Float_t pp  = fHistMixPP->GetBinContent(ibin);
+      Float_t ppe = fHistMixPP->GetBinError(ibin);
+      Float_t mm  = fHistMixMM->GetBinContent(ibin);
+      Float_t mme = fHistMixMM->GetBinError(ibin);
+      Float_t pm  = fHistMixPM->GetBinContent(ibin);
+      Float_t pme = fHistMixPM->GetBinError(ibin);
 
       Float_t background = 2*TMath::Sqrt(pp*mm);
       // do not use it since ME could be weighted err!=sqrt(entries)
@@ -308,12 +421,8 @@ void PairAnalysisSignalExt::ProcessLS(TObjArray* const arrhist)
       fHistRfactor->SetBinContent(ibin, rcon);
       fHistRfactor->SetBinError(ibin, rerr);
     }
+    // correction
     fHistBackground->Multiply(fHistRfactor);
-
-    // clean up
-    if (histMixPP) delete histMixPP;
-    if (histMixMM) delete histMixMM;
-    if (histMixPM) delete histMixPM;
   }
 
   //scale histograms to match integral between fScaleMin and fScaleMax
@@ -330,6 +439,16 @@ void PairAnalysisSignalExt::ProcessLS(TObjArray* const arrhist)
   //subtract background
   fHistSignal->Add( fHistDataPM);
   fHistSignal->Add( fHistBackground, -1);
+
+  //subtract cocktail (if added)
+  if(fArrCocktail) {
+    printf("cocktail was added \n");
+    // loop over all ingredients and remove contribution
+    for(Int_t i=0; i<fArrCocktail->GetEntriesFast(); i++) {
+      printf("remove %s from signal \n",fArrCocktail->UncheckedAt(i)->GetTitle());
+      fHistSignal->Add( static_cast<TH1*>(fArrCocktail->UncheckedAt(i)), -1);
+    }
+  }
 
   // background
   fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
@@ -351,42 +470,24 @@ void PairAnalysisSignalExt::ProcessEM(TObjArray* const arrhist)
   // event mixing of +- and -+
   //
 
-  if (!FindObject(arrhist,PairAnalysis::kSEPM) ||
-      !( FindObject(arrhist,PairAnalysis::kMEMP) || FindObject(arrhist,PairAnalysis::kMEPM) ) ) {
-    Error("ProcessEM","Either OS or mixed histogram missing");
+  if( !fHistMixPM ) {
+    Error("ProcessEM","Mixed event histogram missing");
     return;
   }
 
-  if(fHistRfactor)    delete fHistRfactor;    fHistRfactor=0x0;
-  if(fHistDataPM)     delete fHistDataPM;     fHistDataPM=0x0;
-  if(fHistDataME)     delete fHistDataME;     fHistDataME=0x0;
-  if(fHistSignal)     delete fHistSignal;     fHistSignal=0x0;
-  if(fHistBackground) delete fHistBackground; fHistBackground=0x0;
 
-  // init histograms, subtracted signal, background
-  fHistDataPM = (TH1*)FindObject(arrhist,PairAnalysis::kSEPM)->Clone("histPM");  // +-    SE
-  fHistDataPM->Sumw2();
-  fHistDataPM->SetDirectory(0x0);
-  // get ME distributions
-  if (FindObject(arrhist,PairAnalysis::kMEMP)){
-    fHistDataME   = (TH1*)FindObject(arrhist,PairAnalysis::kMEMP)->Clone("histMPME");  // -+    ME
-  }
-  if (FindObject(arrhist,PairAnalysis::kMEPM)){
-    TH1 *htmp=(TH1*)FindObject(arrhist,PairAnalysis::kMEPM);
-    if (!fHistDataME) fHistDataME   = (TH1*)htmp->Clone("histMPME");  // -+    ME
-    else MergeObjects(fHistDataME,htmp);
-  }
-  fHistDataME->SetDirectory(0x0); // added
+  // fill background histogram
+  for(Int_t ibin=1; ibin<=fHistDataPM->GetXaxis()->GetNbins(); ibin++) {
+    Float_t pm  = fHistMixPM->GetBinContent(ibin);
+    Float_t pme = fHistMixPM->GetBinError(ibin);
 
-  fHistBackground = (TH1*)fHistDataME->Clone("ME_Background");
-  fHistBackground->SetDirectory(0x0);
-  fHistBackground->Sumw2();
+    Float_t background  = pm;
+    Float_t ebackground = TMath::Sqrt(pme*pme);
+    //TODO:      Float_t ebackground = TMath::Power(pm, 3./4);
 
-  // rebin the histograms
-  if (fRebin>1) {
-    fHistDataPM->Rebin(fRebin);
-    fHistDataME->Rebin(fRebin);
-    fHistBackground->Rebin(fRebin);
+    // set contents
+    fHistBackground->SetBinContent(ibin, background);
+    fHistBackground->SetBinError(ibin, ebackground);
   }
 
   //scale histograms to match integral between fScaleMin and fScaleMax
@@ -399,8 +500,22 @@ void PairAnalysisSignalExt::ProcessEM(TObjArray* const arrhist)
     fScaleFactor=fScaleMin;
     fHistBackground->Scale(fScaleFactor);
   }
+
   //subtract background
-  fHistSignal = MergeObjects(fHistDataPM,fHistBackground,-1.);
+  fHistSignal->Add( fHistDataPM);
+  fHistSignal->Add( fHistBackground, -1);
+  //  fHistSignal = MergeObjects(fHistDataPM,fHistBackground,-1.);
+
+  //subtract cocktail (if added)
+  if(fArrCocktail) {
+    //    printf("cocktail was added \n");
+    // loop over all ingredients and remove contribution
+    for(Int_t i=0; i<fArrCocktail->GetEntriesFast(); i++) {
+      //      printf("remove %s from signal \n",fArrCocktail->UncheckedAt(i)->GetTitle());
+      fHistSignal->Add( static_cast<TH1*>(fArrCocktail->UncheckedAt(i)), -1);
+      //      printf("entries signal histogram %f \n",fHistSignal->GetEntries());
+    }
+  }
 
   // background
   fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
@@ -420,32 +535,84 @@ void PairAnalysisSignalExt::ProcessTR(TObjArray* const arrhist)
   // signal subtraction
   //
 
-  if (!FindObject(arrhist,PairAnalysis::kSEPM) || !FindObject(arrhist,PairAnalysis::kSEPMRot) ){
-    Error("ProcessTR","Either OS or rotation histogram missing");
+  if (!fHistDataTR) {
+    Error("ProcessTR","Track rotation histogram missing");
     return;
   }
 
-  if(fHistRfactor)    delete fHistRfactor;    fHistRfactor=0x0;
-  if(fHistDataPM)     delete fHistDataPM;     fHistDataPM=0x0;
-  if(fHistDataME)     delete fHistDataME;     fHistDataME=0x0;
-  if(fHistSignal)     delete fHistSignal;     fHistSignal=0x0;
-  if(fHistBackground) delete fHistBackground; fHistBackground=0x0;
+  // fill background histogram
+  for(Int_t ibin=1; ibin<=fHistDataPM->GetXaxis()->GetNbins(); ibin++) {
+    Float_t pm  = fHistDataTR->GetBinContent(ibin);
+    Float_t pme = fHistDataTR->GetBinError(ibin);
 
-  // init histograms for subtracted signal, background
-  fHistDataPM = (TH1*)FindObject(arrhist,PairAnalysis::kSEPM)->Clone("histPM");  // +-    SE
-  fHistDataPM->Sumw2();
-  fHistDataPM->SetDirectory(0x0);
-  fHistBackground = (TH1*)FindObject(arrhist,PairAnalysis::kSEPMRot)->Clone("histRotation");
-  fHistBackground->Sumw2();
-  fHistBackground->SetDirectory(0x0);
+    Float_t background  = pm;
+    Float_t ebackground = TMath::Sqrt(pme*pme);
+
+    // set contents
+    fHistBackground->SetBinContent(ibin, background);
+    fHistBackground->SetBinError(ibin, ebackground);
+  }
 
   // scale according to number of interations used in track rotation
   fHistBackground->Scale(1./fNiterTR);
 
-  // rebin the histograms
-  if (fRebin>1) {
-    fHistDataPM->Rebin(fRebin);
-    fHistBackground->Rebin(fRebin);
+  //scale histograms to match integral between fScaleMin and fScaleMax
+  // or if fScaleMax <  fScaleMin use fScaleMin as scale factor
+  if (fScaleMax>fScaleMin && fScaleMax2>fScaleMin2)
+    fScaleFactor = ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax,fScaleMin2,fScaleMax2);
+  else if (fScaleMax>fScaleMin)
+    fScaleFactor = ScaleHistograms(fHistDataPM,fHistBackground,fScaleMin,fScaleMax);
+  else if (fScaleMin>0.) {
+    fScaleFactor=fScaleMin;
+    fHistBackground->Scale(fScaleFactor);
+  }
+
+  //subtract background
+  fHistSignal->Add( fHistDataPM);
+  fHistSignal->Add( fHistBackground, -1);
+
+  //subtract cocktail (if added)
+  if(fArrCocktail) {
+    printf("cocktail was added \n");
+    // loop over all ingredients and remove contribution
+    for(Int_t i=0; i<fArrCocktail->GetEntriesFast(); i++) {
+      printf("remove %s from signal \n",fArrCocktail->UncheckedAt(i)->GetTitle());
+      fHistSignal->Add( static_cast<TH1*>(fArrCocktail->UncheckedAt(i)), -1);
+      printf("entries signal histogram %f \n",fHistSignal->GetEntries());
+    }
+  }
+
+  // background
+  fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
+                                                 fHistBackground->FindBin(fIntMax),
+                                                 fErrors(1));
+
+  // signal depending on peak description method
+  DescribePeakShape(fPeakMethod, kTRUE, fgHistSimPM);
+
+  fProcessed = kTRUE;
+
+}
+
+//______________________________________________
+void PairAnalysisSignalExt::ProcessCocktail(TObjArray* const arrhist)
+{
+  //
+  // signal subtraction
+  //
+
+  if (!fArrCocktail) {
+    Error("ProcessCocktail","Cocktail histograms missing");
+    return;
+  }
+
+  // fill background histogram
+  if(fArrCocktail) {
+    // loop over all ingredients and remove contribution
+    for(Int_t i=0; i<fArrCocktail->GetEntriesFast(); i++) {
+      printf("add %s to cocktail bgrd \n",fArrCocktail->UncheckedAt(i)->GetTitle());
+      fHistBackground->Add( static_cast<TH1*>(fArrCocktail->UncheckedAt(i)));
+    }
   }
 
   //scale histograms to match integral between fScaleMin and fScaleMax
@@ -459,15 +626,14 @@ void PairAnalysisSignalExt::ProcessTR(TObjArray* const arrhist)
     fHistBackground->Scale(fScaleFactor);
   }
 
-  // signal
-  fHistSignal=(TH1*)fHistDataPM->Clone("histSignal");
-  fHistSignal->Add(fHistBackground,-1.);
-  fHistSignal->SetDirectory(0x0);
+  //subtract background
+  fHistSignal->Add( fHistDataPM);
+  fHistSignal->Add( fHistBackground, -1);
 
   // background
   fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
-                                                 fHistBackground->FindBin(fIntMax),
-                                                 fErrors(1));
+						 fHistBackground->FindBin(fIntMax),
+                                                  fErrors(1));
 
   // signal depending on peak description method
   DescribePeakShape(fPeakMethod, kTRUE, fgHistSimPM);
@@ -498,6 +664,8 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   Bool_t optSB       =optString.Contains("sb");        optString.ReplaceAll("sb","");
   Bool_t optSgn      =optString.Contains("sgn");       optString.ReplaceAll("sgn","");
   Bool_t optOnlyRaw  =optString.Contains("onlyraw");   optString.ReplaceAll("onlyraw","");
+  Bool_t optOnlySig  =optString.Contains("onlysig");   optString.ReplaceAll("onlysig","");
+  Bool_t optOnlyMC   =optString.Contains("onlymc");    optString.ReplaceAll("onlymc","");
 
   // load style
   PairAnalysisStyler::LoadStyle();
@@ -545,38 +713,38 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 
   TString ytitle = fHistDataPM->GetYaxis()->GetTitle();
   // add bin width to y-axis title
-  if(TMath::Abs(fHistDataPM->GetBinWidth(1)-fHistDataPM->GetBinWidth(fHistDataPM->GetNbinsX()-2))<1.e-6) {
+  if( !(fHistDataPM->GetXaxis()->IsVariableBinSize()) ) {
     ytitle+=Form("/%.0f MeV/#it{c}^{2}",fHistDataPM->GetBinWidth(1)*1e3);
   }
   fHistDataPM->GetYaxis()->SetTitle(ytitle.Data());
+  fHistSignal->GetYaxis()->SetTitle(ytitle.Data());
 
   // styling
-  fHistDataPM->SetName("unlike-sign");
+  fHistDataPM->SetNameTitle("unlike-sign","unlike-sign");
   fHistDataPM->UseCurrentStyle();
-  fHistDataPM->SetTitle("");
   PairAnalysisStyler::Style(fHistDataPM,PairAnalysisStyler::kRaw);
+  if(fPlotMin!=fPlotMax) fHistDataPM->SetAxisRange(fPlotMin,fPlotMax, "X");
 
-  fHistBackground->SetName(fgkBackgroundMethodNames[fMethod]);
+  fHistBackground->SetNameTitle(fgkBackgroundMethodNames[fMethod],fgkBackgroundMethodNames[fMethod]);
   fHistBackground->UseCurrentStyle();
-  fHistBackground->SetTitle("");
   PairAnalysisStyler::Style(fHistBackground,PairAnalysisStyler::kBgrd);
 
-  fHistSignal->SetName("signal");
+  fHistSignal->SetNameTitle("signal","signal");
   fHistSignal->UseCurrentStyle();
-  fHistSignal->SetTitle("");
   PairAnalysisStyler::Style(fHistSignal,PairAnalysisStyler::kSig);
+  if(fPlotMin!=fPlotMax) fHistSignal->SetAxisRange(fPlotMin,fPlotMax, "X");
 
   if(optSB) {
-    fHistSB->SetName("signal");
+    fHistSB->SetNameTitle("signal","signal");
     fHistSB->UseCurrentStyle();
-    fHistSB->SetTitle("");
     PairAnalysisStyler::Style(fHistSB,PairAnalysisStyler::kSig);
+    if(fPlotMin!=fPlotMax) fHistSB->SetAxisRange(fPlotMin,fPlotMax, "X");
   }
   else if(optSgn) {
-    fHistSign->SetName("signal");
+    fHistSign->SetNameTitle("signal","signal");
     fHistSign->UseCurrentStyle();
-    fHistSign->SetTitle("");
     PairAnalysisStyler::Style(fHistSign,PairAnalysisStyler::kSig);
+    if(fPlotMin!=fPlotMax) fHistSign->SetAxisRange(fPlotMin,fPlotMax, "X");
   }
 
   // fHistRfactor->UseCurrentStyle();
@@ -591,18 +759,26 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   if(c)  c->cd(1);
   Info("Draw","Start plotting stuff with option -%s-",optString.Data());
   TString drawOpt=(optString.IsNull()?"EP":optString);
-  if(optSB && !optOnlyRaw)       { fHistSB->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
-  else if(optSgn && !optOnlyRaw) { fHistSign->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
-  else {
-    fHistDataPM->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
-    if(fMethod==kRotation || fMethod==kEventMixing)  drawOpt=(optString.IsNull()?"HIST":optString);
-    fHistBackground->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
-    drawOpt=(optString.IsNull()?"EP":optString);
-    if(!optOnlyRaw) {
+  if(!optOnlyMC) {
+    if(optSB && !optOnlyRaw)       { fHistSB->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
+    else if(optSgn && !optOnlyRaw) { fHistSign->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
+    else if(optOnlySig) { 
       drawOpt=(optString.IsNull()?"EP":optString);
       fHistSignal->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
       drawOpt=(optString.IsNull()?"L same":optString);
       if(dynamic_cast<TF1*>(fgPeakShape)) { static_cast<TF1*>(fgPeakShape)->DrawCopy(drawOpt); i++; }
+    }
+    else {
+      fHistDataPM->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
+      if(fMethod==kRotation || fMethod==kEventMixing || fMethod==kCocktail)  drawOpt=(optString.IsNull()?"HIST":optString);
+      fHistBackground->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
+      drawOpt=(optString.IsNull()?"EP":optString);
+      if(!optOnlyRaw) {
+	drawOpt=(optString.IsNull()?"EP":optString);
+	fHistSignal->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
+	drawOpt=(optString.IsNull()?"L same":optString);
+	if(dynamic_cast<TF1*>(fgPeakShape)) { static_cast<TF1*>(fgPeakShape)->DrawCopy(drawOpt); i++; }
+      }
     }
   }
 
@@ -613,11 +789,24 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
       TH1 *hmc;
       Int_t isty=0;
       while ( (hmc = dynamic_cast<TH1*>(nextObj())) ) {
-	TString key=hmc->GetName();
+	TString key=hmc->GetTitle(); //hmc->GetName();
+	TString tit=hmc->GetTitle();
 	if(key.CountChar('_')!=1) continue; // only reconstr. MC signals
+	// remove cocktail subtracted signals
+	if(optOnlySig && fArrCocktail && FindObjectByTitle(fArrCocktail,key)) continue;
 	PairAnalysisStyler::Style(hmc,isty++);
+	// check if rebinning is necessary
+	if(fHistSignal->GetNbinsX()!=hmc->GetNbinsX()) {
+	  if(fBinLimits)     {
+	    hmc = hmc->Rebin(fBinLimits->GetSize()-1,key.Data(),fBinLimits->GetArray());
+	    hmc->SetTitle(tit.Data());
+	    hmc->Scale(1.,"width");
+	  }
+	  if(fRebin>1)       hmc->Rebin(fRebin);
+	}
 	if(optSB) hmc->Divide(fHistSignal);
-	hmc->Draw("HISTsame");
+	if(fPlotMin!=fPlotMax) hmc->SetAxisRange(fPlotMin,fPlotMax, "X");
+	hmc->Draw(i>0?"HISTsame":"HIST");
 	i++;
       }
     }
@@ -626,35 +815,39 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   // axis maximum
   Double_t max=-1e10;
   Double_t min=+1e10;
-  TListIter nextObj(gPad->GetListOfPrimitives(),kIterForward);
-  //TListIter nextObj(gPad->GetListOfPrimitives(),kIterBackward);
+  //TListIter nextObj(gPad->GetListOfPrimitives(),kIterForward);
+  TListIter nextObj(gPad->GetListOfPrimitives(),kIterBackward);
   //  TObject *obj;
   while ((obj = nextObj())) {
     if(obj->InheritsFrom(TH1::Class())) {
       TH1 *hobj = static_cast<TH1*>(obj);
-      max=TMath::Max(max,hobj->GetMaximum());
+      max=TMath::Max(max,PairAnalysisHelper::GetContentMaximum(hobj)); //hobj->GetMaximum();
+      hobj->SetMaximum(max*1.1);
+      if( gPad->GetLogy() && PairAnalysisHelper::GetContentMinimum(hobj)<0.) continue;
       min=TMath::Min(min,PairAnalysisHelper::GetContentMinimum(hobj));//hobj->GetBinContent(hobj->GetMinimumBin()));
+      hobj->SetMinimum( min*(min<0.?1.1:0.9) ); //TODO: doesnt work, why?? Negative values?
+
+      //      Printf("after %s max%f \t min%f",hobj->GetTitle(),max,min);
       // automatically set log option
       if(gPad->GetLogy() && max/(min>0.?min:1.) > TMath::Power(10.,TGaxis::GetMaxDigits())) {
 	hobj->GetYaxis()->SetMoreLogLabels(kFALSE);
 	hobj->GetYaxis()->SetNoExponent(kFALSE);
       }
-      if(gPad->GetLogy()) break;
-      hobj->SetMaximum(max*1.1);
-      hobj->SetMinimum(min*1.1); //TODO: doesnt work, why?? Negative values?
+      //      if(gPad->GetLogy()) break;
     }
   }
 
   // add legend entries
+  TListIter nextObjFwd(gPad->GetListOfPrimitives(),kIterForward);
   if(optLeg && leg) {
-    nextObj.Reset();
+    nextObjFwd.Reset();
     Int_t ileg=0;
-    while ((obj = nextObj())) {
+    while ((obj = nextObjFwd())) {
       if(obj->InheritsFrom(TH1::Class())) {
        	TH1 *hleg = static_cast<TH1*>(obj);
 	if(nobj && ileg<nobj)  { ileg++; continue; }
 
-	TString histClass=hleg->GetName();
+	TString histClass=hleg->GetTitle(); //hleg->GetName();
 	histClass.ReplaceAll("Pair.", "");
 	histClass.ReplaceAll("Pair_", "");
 	// change default signal names to titles
@@ -677,7 +870,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 	legOpt.ReplaceAll("z","");
 	legOpt.ReplaceAll("e","");
 	//	Printf("hist %s legopt %s",histClass.Data(),legOpt.Data());
-	if(ileg==nobj) leg->AddEntry((TObject*)0x0,fArrHists->GetName(),"");
+	if(ileg==nobj && optTask) leg->AddEntry((TObject*)0x0,fArrHists->GetName(),"");
 	leg->AddEntry(hleg,histClass.Data(),legOpt.Data());
 	ileg++;
       }
@@ -686,10 +879,10 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 
   // legend
   if (leg) {
+    leg->SetMargin(0.075);
     leg->SetFillStyle(0);
-    leg->SetTextSize(0.02);
-    Int_t nleg = ((TList*)leg->GetListOfPrimitives())->GetSize();
-    leg->SetY1(leg->GetY2()-nleg*.025); //i*.05
+    leg->SetTextSize(0.02); // TODO: replaced by global legend textsize for root > v5-34-26
+    PairAnalysisStyler::SetLegendCoordinates(leg);
     leg->Draw();
   }
 

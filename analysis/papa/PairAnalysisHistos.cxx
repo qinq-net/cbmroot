@@ -982,7 +982,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
       // if(!histName.CompareTo("GeantId")) PairAnalysisHelper::SetGEANTBinLabels(h);
 
       // normlasation
-      h->Sumw2();
+      if(h->GetDefaultSumw2())      h->Sumw2();
       if(optRbn)                    h->Rebin();
       if(optNorm && !(h->GetSumOfWeights()==0)) h=h->DrawNormalized(i>0?(optString+"same").Data():optString.Data());
       if(optEvt)                    h->Scale(1./events);
@@ -1020,7 +1020,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	delete hMC; //delete the surplus object
 	if(!hdenom) { Error("DrawSame","Denominator object not found"); continue; }
 	// normalize and rebin only once
-	hdenom->Sumw2();
+	if(hdenom->GetDefaultSumw2())            hdenom->Sumw2();
 	if(optRbn && (optEff || !(i%10)) )       hdenom->Rebin();
 	if(optEvt && (optEff || !(i%10)) )       hdenom->Scale(1./events);
 	//	Printf("h %p %f hdenom %p %f",h,h->GetEntries(),hdenom,hdenom->GetEntries());
@@ -1051,9 +1051,9 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	  if(!htnom) continue;
 	}
 
-	if(hdenom) hdenom->Sumw2();
-	if(htden)  htden->Sumw2();
-	if(htnom)  htnom->Sumw2();
+	if(hdenom && hdenom->GetDefaultSumw2()) hdenom->Sumw2();
+	if(htden  && htden->GetDefaultSumw2())  htden->Sumw2();
+	if(htnom  && htnom->GetDefaultSumw2())  htnom->Sumw2();
 
 	// normalize and rebin only once
 	if(optRbn && !i) {

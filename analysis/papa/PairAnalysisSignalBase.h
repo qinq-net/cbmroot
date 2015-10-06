@@ -40,7 +40,8 @@ public:
     kLikeSignFit,
     kEventMixing,
     kEventMixingFit,
-    kRotation
+    kRotation,
+    kCocktail
   };
 
   enum ESignalExtractionMethod {
@@ -64,7 +65,10 @@ public:
   void SetParticleOfInterest(Int_t pdgcode)                { fPOIpdg=pdgcode; }
   void SetIntegralRange(Double_t min, Double_t max)        { fIntMin=min; fIntMax=max; }
   void SetFitRange(Double_t min, Double_t max)             { fFitMin=min; fFitMax=max; }
+  void SetPlotRange(Double_t min, Double_t max)            { fPlotMin=min; fPlotMax=max; }
   void SetRebin(Int_t factor)                              { fRebin=factor; }
+  void SetStatRebin(Double_t stat)                         { fRebinStat=stat; }
+  void SetRebin(TArrayD *limits)                           { fBinLimits=limits; }
   void SetExtractionMethod(ESignalExtractionMethod method, PairAnalysisFunction *sigF=0x0) { 
     fPeakMethod=method; fExtrFunc=sigF;}
   void SetMixingCorrection(Bool_t mixcorr=kTRUE)           { fMixingCorr=mixcorr; }
@@ -73,6 +77,7 @@ public:
   void SetNTrackRotations(Int_t iterations)                { fNiterTR =iterations; }
   void SetScaleBackgroundToRaw(Double_t intMin, Double_t intMax) { fScaleMin=intMin; fScaleMax=intMax; }
   void SetScaleBackgroundToRaw(Double_t intMin, Double_t intMax, Double_t intMin2, Double_t intMax2) { fScaleMin=intMin; fScaleMax=intMax; fScaleMin2=intMin2; fScaleMax2=intMax2; }
+  void SetCocktailContribution(TObjArray *arr)             { fArrCocktail=arr; }
 
   // Getter
   Int_t GetParticleOfInterest()      const { return fPOIpdg; }
@@ -81,6 +86,7 @@ public:
   Double_t GetFitMin()               const { return fFitMin; }
   Double_t GetFitMax()               const { return fFitMax; }
   Int_t GetRebin()                   const { return fRebin;  }
+  TArrayD *GetRebinLimits()          const { return fBinLimits; }
   ESignalExtractionMethod GetExtractionMethod() const      { return fPeakMethod; }
   EBackgroundMethod GetMethod()      const { return fMethod; }
   Double_t GetScaleMin()             const { return fScaleMin;   }
@@ -137,6 +143,7 @@ public:
 
 protected:
   TObjArray *fArrHists;              // array of input histograms
+  TObjArray *fArrCocktail;           // array of cocktail histograms
   TH1 *fHistSignal;                  // histogram of pure signal
   TH1 *fHistSB;                      // histogram of signal to bgrd
   TH1 *fHistSign;                    // histogram of significance
@@ -148,6 +155,12 @@ protected:
   TH1 *fHistRfactor;                 // histogram of R factors
   TH1 *fHistSignalMC;                // histogram of signal MC shape
 
+  TH1 *fHistMixPM;                  // histogram of selected +- pair candidates
+  TH1 *fHistMixPP;                  // histogram of selected ++ pair candidates
+  TH1 *fHistMixMM;                  // histogram of selected -- pair candidates
+  TH1 *fHistMixMP;                  // histogram of selected +- pair candidates
+  TH1 *fHistDataTR;                  // histogram of selected +- pair candidates
+
   TVectorD fValues;                  // values
   TVectorD fErrors;                  // value errors
 
@@ -155,8 +168,13 @@ protected:
   Double_t fIntMax;                  // signal extraction range max
   Double_t fFitMin;                  // fit range lowest inv. mass
   Double_t fFitMax;                  // fit range highest inv. mass
+  Double_t fPlotMin;                  // plot range lowest inv. mass
+  Double_t fPlotMax;                  // plot range highest inv. mass
 
   Int_t fRebin;                      // histogram rebin factor
+  Double_t fRebinStat;               // rebin until bins have max. stat. error
+  TArrayD *fBinLimits;               // bin limits from stat. rebinning
+
   EBackgroundMethod fMethod;         // method for background substraction
   Double_t fScaleMin;                // min for scaling of raw and background histogram
   Double_t fScaleMax;                // max for scaling of raw and background histogram
@@ -177,9 +195,10 @@ protected:
   void SetSignificanceAndSOB();      // calculate the significance and S/B
   void SetFWHM();                    // calculate the fwhm
   static const char* fgkValueNames[7]; //value names
-  static const char* fgkBackgroundMethodNames[10]; // background estimator names
+  static const char* fgkBackgroundMethodNames[11]; // background estimator names
   TPaveText* DrawStats(Double_t x1=0., Double_t y1=0., Double_t x2=0., Double_t y2=0.);
   TObject* FindObject(TObjArray *arrhist, PairAnalysis::EPairType type);
+  TObject* FindObjectByTitle(TObjArray *arrhist, TString ref);
 
   PairAnalysisFunction *fExtrFunc; // signal extraction function
 
@@ -194,7 +213,27 @@ inline TObject* PairAnalysisSignalBase::FindObject(TObjArray *arrhist, PairAnaly
   //
   // shortcut to find a certain pair type object in array
   //
-  return ( arrhist->FindObject(Form("Pair.%s",PairAnalysis::PairClassName(type))) );
+  //  return ( arrhist->FindObject(Form("Pair.%s",PairAnalysis::PairClassName(type))) );
+  TString ref=Form("Pair.%s",PairAnalysis::PairClassName(type));
+  for(Int_t i=0; i<arrhist->GetEntriesFast(); i++) {
+    if( !ref.CompareTo(arrhist->UncheckedAt(i)->GetTitle()) )
+      return arrhist->UncheckedAt(i);
+  }
+}
+
+inline TObject* PairAnalysisSignalBase::FindObjectByTitle(TObjArray *arrhist, TString ref)
+{
+  //
+  // shortcut to find a certain pair type object in array
+  //
+  //  return ( arrhist->FindObject(Form("Pair.%s",PairAnalysis::PairClassName(type))) );
+  //  TString ref=Form("Pair.%s",PairAnalysis::PairClassName(type));
+  for(Int_t i=0; i<arrhist->GetEntriesFast(); i++) {
+    if( !ref.CompareTo(arrhist->UncheckedAt(i)->GetTitle()) ) {
+      return arrhist->UncheckedAt(i);
+    }
+  }
+  return 0x0;
 }
 
 inline void PairAnalysisSignalBase::SetSignificanceAndSOB()

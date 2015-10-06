@@ -37,7 +37,7 @@ const char* PairAnalysisSignalBase::fgkValueNames[7] = {
   "Mass",
   "MassWidth",
   "ChiSqNDFmatch"};
-const char* PairAnalysisSignalBase::fgkBackgroundMethodNames[10] = {
+const char* PairAnalysisSignalBase::fgkBackgroundMethodNames[11] = {
   "FittedMC",
   "Fitted",
   "like-sign",
@@ -47,11 +47,13 @@ const char* PairAnalysisSignalBase::fgkBackgroundMethodNames[10] = {
   "fitted like-sign",
   "mixed event",
   "fitted mixed event",
-  "track rotation" };
+  "track rotation",
+  "cocktail" };
 
 PairAnalysisSignalBase::PairAnalysisSignalBase() :
   TNamed(),
   fArrHists(0x0),
+  fArrCocktail(0x0),
   fHistSignal(0),
   fHistSB(0),
   fHistSign(0),
@@ -62,13 +64,22 @@ PairAnalysisSignalBase::PairAnalysisSignalBase() :
   fHistDataME(0),
   fHistRfactor(0),
   fHistSignalMC(0),
+  fHistMixPM(0),
+  fHistMixPP(0),
+  fHistMixMM(0),
+  fHistMixMP(0),
+  fHistDataTR(0),
   fValues(7),
   fErrors(7),
   fIntMin(0),
   fIntMax(0),
   fFitMin(0),
   fFitMax(0),
+  fPlotMin(0),
+  fPlotMax(0),
   fRebin(1),
+  fRebinStat(1.),
+  fBinLimits(0x0),
   fMethod(kLikeSign),
   fScaleMin(0.),
   fScaleMax(0.),
@@ -92,6 +103,7 @@ PairAnalysisSignalBase::PairAnalysisSignalBase() :
 PairAnalysisSignalBase::PairAnalysisSignalBase(const char* name, const char* title) :
   TNamed(name, title),
   fArrHists(0x0),
+  fArrCocktail(0x0),
   fHistSignal(0),
   fHistSB(0),
   fHistSign(0),
@@ -102,13 +114,22 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const char* name, const char* tit
   fHistDataME(0),
   fHistRfactor(0),
   fHistSignalMC(0),
+  fHistMixPM(0),
+  fHistMixPP(0),
+  fHistMixMM(0),
+  fHistMixMP(0),
+  fHistDataTR(0),
   fValues(7),
   fErrors(7),
   fIntMin(0),
   fIntMax(0),
   fFitMin(0),
   fFitMax(0),
+  fPlotMin(0),
+  fPlotMax(0),
   fRebin(1),
+  fRebinStat(1.),
+  fBinLimits(0x0),
   fMethod(kLikeSign),
   fScaleMin(0.),
   fScaleMax(0.),
@@ -132,6 +153,7 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const char* name, const char* tit
 PairAnalysisSignalBase::PairAnalysisSignalBase(const PairAnalysisSignalBase &c) :
   TNamed(c.GetName(), c.GetTitle()),
   fArrHists(c.fArrHists),
+  fArrCocktail(c.fArrCocktail),
   fHistSignal(c.GetSignalHistogram()),
   fHistSB(c.GetSoverBHistogram()),
   fHistSign(c.GetSignificanceHistogram()),
@@ -142,13 +164,22 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const PairAnalysisSignalBase &c) 
   fHistDataME(0x0),
   fHistRfactor(c.GetRfactorHistogram()),
   fHistSignalMC(c.GetMCSignalShape()),
+  fHistMixPM(0x0),
+  fHistMixPP(0x0),
+  fHistMixMM(0x0),
+  fHistMixMP(0x0),
+  fHistDataTR(0x0),
   fValues(c.GetValues()),
   fErrors(c.GetErrors()),
   fIntMin(c.GetIntegralMin()),
   fIntMax(c.GetIntegralMax()),
   fFitMin(c.GetFitMin()),
   fFitMax(c.GetFitMax()),
+  fPlotMin(0.),
+  fPlotMax(0.),
   fRebin(c.GetRebin()),
+  fRebinStat(1.), //TODO
+  fBinLimits(0x0), //TODO
   fMethod(c.GetMethod()),
   fScaleMin(c.GetScaleMin()),
   fScaleMax(c.GetScaleMax()),
@@ -174,7 +205,9 @@ PairAnalysisSignalBase::~PairAnalysisSignalBase()
   //
   // Default Destructor
   //
+  // TODO: add new datamembers
   if (fArrHists)       delete fArrHists;
+  if (fArrCocktail)    delete fArrCocktail;
   if (fHistSignal)     delete fHistSignal;
   if (fHistSB)         delete fHistSB;
   if (fHistSign)       delete fHistSign;
@@ -186,6 +219,7 @@ PairAnalysisSignalBase::~PairAnalysisSignalBase()
   if (fHistRfactor)    delete fHistRfactor;
   if (fHistSignalMC)   delete fHistSignalMC;
   if (fExtrFunc)       delete fExtrFunc;
+  if (fBinLimits)      delete fBinLimits;
 }
 
 //______________________________________________
@@ -263,7 +297,7 @@ Double_t PairAnalysisSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackgrou
   Double_t intBack     = histBackground->Integral(histBackground->FindBin(intMin),histBackground->FindBin(intMax));
   fScaleFactor         = intBack>0?intRaw/intBack:1.;
   // scale
-  histBackground->Sumw2();
+  if(histBackground->GetDefaultSumw2()) histBackground->Sumw2();
   histBackground->Scale(fScaleFactor);
 
   return fScaleFactor;
@@ -294,7 +328,7 @@ Double_t PairAnalysisSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackgrou
 
   fScaleFactor = intBack>0?intRaw/intBack:1.;
   // scale
-  histBackground->Sumw2();
+  if(histBackground->GetDefaultSumw2()) histBackground->Sumw2();
   histBackground->Scale(fScaleFactor);
 
   return fScaleFactor;
@@ -330,7 +364,7 @@ TH1* PairAnalysisSignalBase::MergeObjects(TH1* obj1, TH1* obj2, Double_t val) {
       TH1D *histSign = new TH1D(key.Data(), "",
        				obj1->GetXaxis()->GetNbins(),
 				obj1->GetXaxis()->GetXmin(), obj1->GetXaxis()->GetXmax());
-      histSign->Sumw2();
+      if(histSign->GetDefaultSumw2()) histSign->Sumw2();
       histSign->SetDirectory(0);
 
       for(Int_t i=0; i<=obj1->GetNbinsX(); i++) {
@@ -375,6 +409,7 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
   Double_t data=0.;
   Double_t mc=0.;
   Double_t massPOI=TDatabasePDG::Instance()->GetParticle(fPOIpdg)->Mass();
+  Double_t sigPOI =TDatabasePDG::Instance()->GetParticle(fPOIpdg)->Width();
   Double_t nPOI     = fHistSignal->GetBinContent(fHistSignal->FindBin(massPOI));
   Double_t binWidth = fHistSignal->GetBinWidth(  fHistSignal->FindBin(massPOI));
   TF1 *fit=0x0;
@@ -424,11 +459,11 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
     fit->SetParNames("alpha","n","meanx","sigma","N");
     //  fit->SetParameters(-.2,5.,gMjpsi,.06,20);
     //  fit->SetParameters(1.,3.6,gMjpsi,.08,700);
-    fit->SetParameters(0.4, 4.0, massPOI, 0.025, 1.3*nPOI);
+    fit->SetParameters(0.4, 4.0, massPOI, sigPOI*2, 1.3*nPOI);
     fit->SetParLimits(0, 0.0,           1.           );
     fit->SetParLimits(1, 0.01,          10.          );
-    fit->SetParLimits(2, massPOI-0.02,  massPOI+0.02 );
-    fit->SetParLimits(3, 0.001,          0.2         );
+    fit->SetParLimits(2, massPOI-5*sigPOI,  massPOI+5*sigPOI );
+    fit->SetParLimits(3, sigPOI,        10*sigPOI         );
     fit->SetParLimits(4, 0.2*nPOI,      2.0*nPOI     );
     parMass=2;
     parSigma=3;
@@ -439,10 +474,10 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
     fit = new TF1("fitGaus",fExtrFunc,&PairAnalysisFunction::PeakFunGaus,fFitMin,fFitMax,3);
     //fit = new TF1("fitGaus","gaus",fFitMin,fFitMax);
     fit->SetParNames("N","meanx","sigma");
-    fit->SetParameters(1.3*nPOI, massPOI, 0.025);
+    fit->SetParameters(1.3*nPOI, massPOI, sigPOI*3);
     fit->SetParLimits(0, 0.2*nPOI,      2.0*nPOI     );
-    fit->SetParLimits(1, massPOI-0.02, massPOI+0.02);
-    fit->SetParLimits(2, 0.001,         1.           );
+    fit->SetParLimits(1, massPOI-3*sigPOI, massPOI+3*sigPOI);
+    fit->SetParLimits(2, sigPOI,         10*sigPOI           );
     parMass=1;
     parSigma=2;
     fitResult = fHistSignal->Fit(fit,"RNI0Q");
