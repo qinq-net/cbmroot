@@ -110,7 +110,8 @@ void CbmTimeSlice::InsertData(CbmDigi* data) {
   if ( dataMatch) {
   	for ( Int_t iLink = 0; iLink < dataMatch->GetNofLinks(); iLink++ ) {
   		Int_t event = dataMatch->GetLink(iLink).GetEntry();
-  		fMatch.AddLink(1., 0, event);
+  		Int_t file  = dataMatch->GetLink(iLink).GetFile();
+  		fMatch.AddLink(1., -1, event, file);
   	}
   }
 
