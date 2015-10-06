@@ -41,7 +41,7 @@ namespace hadaq {
     */
 
    struct HadTu {
-      protected:
+//      protected:
          UInt_t tuSize;
          UInt_t tuDecoding;
 
@@ -54,7 +54,7 @@ namespace hadaq {
             
          // Makes destructor virtual to get rid of warning when using as 
          // base struct
-         virtual ~HadTu() {}
+         ~HadTu() {}
 
          /** msb of decode word is always non zero...? */
          inline Bool_t IsSwapped() const  { return  tuDecoding > 0xffffff; }
@@ -97,7 +97,7 @@ namespace hadaq {
     * Intermediate hierarchy class as common base for event and subevent
     */
    struct HadTuId : public HadTu {
-      protected:
+//      protected:
          UInt_t tuId;
 
       public:
@@ -105,7 +105,7 @@ namespace hadaq {
          HadTuId() : tuId(0) {}
          // Makes destructor virtual to get rid of warning when using as 
          // base struct
-         virtual ~HadTuId() {}
+         ~HadTuId() {}
 
          inline UInt_t GetId() const { return Value(&tuId); }
          void SetId(UInt_t id) { SetValue(&tuId, id); }
@@ -211,7 +211,7 @@ namespace hadaq {
 
    struct RawEvent : public HadTuId  {
 
-      protected:
+//      protected:
          UInt_t evtSeqNr;
          UInt_t evtDate;
          UInt_t evtTime;
@@ -301,7 +301,7 @@ namespace hadaq {
 
    struct RawSubevent : public HadTuId  {
 
-      protected:
+//      protected:
 
          UInt_t subEvtTrigNr;
 

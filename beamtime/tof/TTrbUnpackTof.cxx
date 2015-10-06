@@ -111,6 +111,7 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
    LOG(DEBUG)<<"**** TTrbUnpackTof: Call DoUnpack()... "<<FairLogger::endl;
 
    Int_t  * pData   = data;
+   LOG(DEBUG)<<"First word in MBS subevent: "<<Form("0x%.8x",*data)<<FairLogger::endl;
 //   UInt_t  uNb4ByteWords = size/2 - 1;
 // Changed in git commit 0c0bd037c201d3496f9d5d7c133874382e885677 to fairroot LMD source
 // TODO: Make sure the same change is applied to FairMbsStreamSource !!!!
@@ -136,6 +137,25 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
 
    LOG(DEBUG)<<"Getting single HADAQ raw event in MBS subevent..."<<FairLogger::endl;
    hadaq::RawEvent* tCurrentEvent = fTrbIterator->nextEvent();
+
+   LOG(DEBUG2)<<"First   word in HADAQ event: "<<Form("0x%.8x",*((Int_t*)tCurrentEvent))<<FairLogger::endl;
+   LOG(DEBUG2)<<"Second  word in HADAQ event: "<<Form("0x%.8x",*((Int_t*)tCurrentEvent+1))<<FairLogger::endl;
+   LOG(DEBUG2)<<"Third   word in HADAQ event: "<<Form("0x%.8x",*((Int_t*)tCurrentEvent+2))<<FairLogger::endl;
+   LOG(DEBUG2)<<"Fourth  word in HADAQ event: "<<Form("0x%.8x",*((Int_t*)tCurrentEvent+3))<<FairLogger::endl;
+   LOG(DEBUG2)<<"Fifth   word in HADAQ event: "<<Form("0x%.8x",*((Int_t*)tCurrentEvent+4))<<FairLogger::endl;
+   LOG(DEBUG2)<<"Sixth   word in HADAQ event: "<<Form("0x%.8x",*((Int_t*)tCurrentEvent+5))<<FairLogger::endl;
+   LOG(DEBUG2)<<"Seventh word in HADAQ event: "<<Form("0x%.8x",*((Int_t*)tCurrentEvent+6))<<FairLogger::endl;
+   LOG(DEBUG2)<<"Eighth  word in HADAQ event: "<<Form("0x%.8x",*((Int_t*)tCurrentEvent+7))<<FairLogger::endl;
+
+   LOG(DEBUG2)<<"First   word in memory: "<<Form("0x%.8x",tCurrentEvent->tuSize)<<FairLogger::endl;
+   LOG(DEBUG2)<<"Second  word in memory: "<<Form("0x%.8x",tCurrentEvent->tuDecoding)<<FairLogger::endl;
+   LOG(DEBUG2)<<"Third   word in memory: "<<Form("0x%.8x",tCurrentEvent->tuId)<<FairLogger::endl;
+   LOG(DEBUG2)<<"Fourth  word in memory: "<<Form("0x%.8x",tCurrentEvent->evtSeqNr)<<FairLogger::endl;
+   LOG(DEBUG2)<<"Fifth   word in memory: "<<Form("0x%.8x",tCurrentEvent->evtDate)<<FairLogger::endl;
+   LOG(DEBUG2)<<"Sixth   word in memory: "<<Form("0x%.8x",tCurrentEvent->evtTime)<<FairLogger::endl;
+   LOG(DEBUG2)<<"Seventh word in memory: "<<Form("0x%.8x",tCurrentEvent->evtRunNr)<<FairLogger::endl;
+   LOG(DEBUG2)<<"Eighth  word in memory: "<<Form("0x%.8x",tCurrentEvent->evtPad)<<FairLogger::endl;
+
    if( 0 == tCurrentEvent )
    {
      LOG(ERROR)<<"Bad HADAQ raw event. Skip whole MBS subevent."<<FairLogger::endl;
