@@ -245,6 +245,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"RICHhasProj",              "projection status RICH",                                    ""},
 
 // Pair specific MC variables
+  {"OpeningAngleMC",           "#varphi^{MC}",                                     "(rad.)"},
 
 // Event specific MCvariables
   {"NTrkMC",                   "N_{trk}^{MC}",                                       ""},

@@ -313,7 +313,8 @@ public:
     kTrackMaxMC,
 
     // Pair specific MC variables
-    kPairMaxMC=kTrackMaxMC,
+    kOpeningAngleMC=kTrackMaxMC,// opening angle
+    kPairMaxMC,
 
     // Event specific MCvariables
     kNTrkMC=kPairMaxMC,      // number of MC tracks
@@ -913,11 +914,13 @@ inline void PairAnalysisVarManager::FillVarMCParticle(const CbmMCTrack *p1, cons
   Int_t mLabel1 = p1->GetMotherId();
   Int_t mLabel2 = p2->GetMotherId();
   if(mLabel1==mLabel2) mother = mc->GetMCTrackFromMCEvent(mLabel1);
+  
+  PairAnalysisPair *pair = new PairAnalysisPairLV();
+  pair->SetMCTracks(p1,p2);
+
   if(mother)
     FillVarMCTrack(mother,values);
   else {
-    PairAnalysisPair *pair = new PairAnalysisPairLV();
-    pair->SetMCTracks(p1,p2);
     values[kPxMC]        = pair->Px();
     values[kPyMC]        = pair->Py();
     values[kPzMC]        = pair->Pz();
@@ -940,10 +943,12 @@ inline void PairAnalysisVarManager::FillVarMCParticle(const CbmMCTrack *p1, cons
     values[kMMC]         = pair->M();
     values[kChargeMC]    = p1->GetCharge()*p2->GetCharge();
 
-    // delete the surplus pair
-    delete pair;
   }
+  values[kOpeningAngleMC]     = pair->OpeningAngle();
 
+  // delete the surplus pair
+  delete pair;
+  
 }
 
 inline void PairAnalysisVarManager::FillVarMCTrack(const CbmMCTrack *particle, Double_t * const values) {
