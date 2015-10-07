@@ -177,6 +177,10 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
         "fles/reader.*old-style cast"
         "L1/vectors/P4_F32vec4.h"
         "Dict.cxx"
+        
+        # -- warnings from structures for HADAQ memory casting
+        "struct hadaq::HadTu"
+        "struct hadaq::HadTuId"
   )
 
 # -----------------------------------------------------------
