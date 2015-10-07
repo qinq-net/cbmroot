@@ -58,6 +58,7 @@ PairAnalysisSignalBase::PairAnalysisSignalBase() :
   fHistSB(0),
   fHistSign(0),
   fHistBackground(0),
+  fHistCocktail(0),
   fHistDataPM(0),
   fHistDataPP(0),
   fHistDataMM(0),
@@ -88,6 +89,7 @@ PairAnalysisSignalBase::PairAnalysisSignalBase() :
   fNiterTR(1),
   fScaleFactor(1.),
   fMixingCorr(kFALSE),
+  fCocktailSubtr(kFALSE),
   fPeakMethod(kBinCounting),
   fProcessed(kFALSE),
   fPeakIsTF1(kFALSE),
@@ -108,6 +110,7 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const char* name, const char* tit
   fHistSB(0),
   fHistSign(0),
   fHistBackground(0),
+  fHistCocktail(0),
   fHistDataPM(0),
   fHistDataPP(0),
   fHistDataMM(0),
@@ -138,6 +141,7 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const char* name, const char* tit
   fNiterTR(1),
   fScaleFactor(1.),
   fMixingCorr(kFALSE),
+  fCocktailSubtr(kFALSE),
   fPeakMethod(kBinCounting),
   fProcessed(kFALSE),
   fPeakIsTF1(kFALSE),
@@ -158,6 +162,7 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const PairAnalysisSignalBase &c) 
   fHistSB(c.GetSoverBHistogram()),
   fHistSign(c.GetSignificanceHistogram()),
   fHistBackground(c.GetBackgroundHistogram()),
+  fHistCocktail(c.GetCocktailHistogram()),
   fHistDataPM(c.GetUnlikeSignHistogram()),
   fHistDataPP(0x0),
   fHistDataMM(0x0),
@@ -188,6 +193,7 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const PairAnalysisSignalBase &c) 
   fNiterTR(1),
   fScaleFactor(c.GetScaleFactor()),
   fMixingCorr(kFALSE),
+  fCocktailSubtr(kFALSE),
   fPeakMethod(c.GetExtractionMethod()),
   fProcessed(kFALSE),
   fPeakIsTF1(kFALSE),
@@ -212,6 +218,7 @@ PairAnalysisSignalBase::~PairAnalysisSignalBase()
   if (fHistSB)         delete fHistSB;
   if (fHistSign)       delete fHistSign;
   if (fHistBackground) delete fHistBackground;
+  if (fHistCocktail)   delete fHistCocktail;
   if (fHistDataPP)     delete fHistDataPP;
   if (fHistDataPM)     delete fHistDataPM;
   if (fHistDataMM)     delete fHistDataMM;

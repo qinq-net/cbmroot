@@ -19,13 +19,13 @@
 namespace PairAnalysisStyler
 {
   // predefined style for signal extraction
-  enum Eidx   { kRaw=100, kBgrd, kSig, kFit, kNidx };
-  static Int_t    fCol[kNidx]={kBlack,kBlue,kBlack,kRed};
-  static Int_t    fMrk[kNidx]={kFullCircle,kOpenCircle,kOpenCircle,kDot};
-  static Double_t fSze[kNidx]={1.,1.,1.,1.};
-  static Int_t    fLne[kNidx]={kSolid,kSolid,kSolid,kSolid};
-  static Double_t fWdt[kNidx]={2.,2.,2.,2.};
-  static Int_t    fFll[kNidx]={0,0,0,0}; //kFEmpty
+  enum Eidx   { kRaw=100, kBgrd, kSig, kFit, kCocktail, kNidx };
+  static Int_t    fCol[kNidx]={kBlack,kBlue,kBlack,kRed,kTeal-7};
+  static Int_t    fMrk[kNidx]={kFullCircle,kOpenCircle,kOpenCircle,kDot,kDot};
+  static Double_t fSze[kNidx]={1.,1.,1.,1.,1.};
+  static Int_t    fLne[kNidx]={kSolid,kSolid,kSolid,kSolid,kSolid};
+  static Double_t fWdt[kNidx]={2.,2.,2.,2.,2.};
+  static Int_t    fFll[kNidx]={0,0,0,0,0}; //kFEmpty
 
   enum Estyle { kNMaxMarker=8, kNMaxLine=4, kNMaxColor=9 };
   static Int_t Marker[]= {kFullCircle,

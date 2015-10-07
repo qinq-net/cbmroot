@@ -77,7 +77,7 @@ public:
   void SetNTrackRotations(Int_t iterations)                { fNiterTR =iterations; }
   void SetScaleBackgroundToRaw(Double_t intMin, Double_t intMax) { fScaleMin=intMin; fScaleMax=intMax; }
   void SetScaleBackgroundToRaw(Double_t intMin, Double_t intMax, Double_t intMin2, Double_t intMax2) { fScaleMin=intMin; fScaleMax=intMax; fScaleMin2=intMin2; fScaleMax2=intMax2; }
-  void SetCocktailContribution(TObjArray *arr)             { fArrCocktail=arr; }
+  void SetCocktailContribution(TObjArray *arr, Bool_t subtract=kTRUE)       { fArrCocktail=arr; fCocktailSubtr=subtract; }
 
   // Getter
   Int_t GetParticleOfInterest()      const { return fPOIpdg; }
@@ -119,6 +119,7 @@ public:
   TH1* GetSignificanceHistogram()    const { return fHistSign; }
   TH1* GetBackgroundHistogram()      const { return fHistBackground; }
   TH1* GetUnlikeSignHistogram()      const { return fHistDataPM; }
+  TH1* GetCocktailHistogram()        const { return fHistCocktail; }
   TH1* GetRfactorHistogram()         const { return fHistRfactor; }
   TObject* GetPeakShape()            const { return fgPeakShape; }
 
@@ -148,6 +149,7 @@ protected:
   TH1 *fHistSB;                      // histogram of signal to bgrd
   TH1 *fHistSign;                    // histogram of significance
   TH1 *fHistBackground;              // histogram of background (fitted=0, like-sign=1, event mixing=2)
+  TH1 *fHistCocktail;                // histogram of cocktail
   TH1 *fHistDataPM;                  // histogram of selected +- pair candidates
   TH1 *fHistDataPP;                  // histogram of selected ++ pair candidates
   TH1 *fHistDataMM;                  // histogram of selected -- pair candidates
@@ -183,6 +185,7 @@ protected:
   Int_t    fNiterTR;                 // track rotation scale factor according to number of rotations
   Double_t fScaleFactor;             // scale factor of raw to background histogram scaling
   Bool_t fMixingCorr;                // switch for bin by bin correction with R factor
+  Bool_t fCocktailSubtr;             // switch for cocktail subtraction
 
   ESignalExtractionMethod fPeakMethod; // method for peak description and signal extraction
   static TObject *fgPeakShape;       // histogram or function used to describe the extracted signal
@@ -205,7 +208,7 @@ protected:
   PairAnalysisSignalBase(const PairAnalysisSignalBase &c);
   PairAnalysisSignalBase &operator=(const PairAnalysisSignalBase &c);
 
-  ClassDef(PairAnalysisSignalBase,2) // base and abstract class for signal extraction
+  ClassDef(PairAnalysisSignalBase,3) // base and abstract class for signal extraction
 };
 
 inline TObject* PairAnalysisSignalBase::FindObject(TObjArray *arrhist, PairAnalysis::EPairType type)

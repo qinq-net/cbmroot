@@ -156,7 +156,8 @@ void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
     if(fHistSignal)     delete fHistSignal;     fHistSignal=0x0;
     if(fHistBackground) delete fHistBackground; fHistBackground=0x0;
     if(fHistSB)         delete fHistSB;         fHistSB=0x0;
-    if(fHistSign)       delete fHistSign;         fHistSign=0x0;
+    if(fHistSign)       delete fHistSign;       fHistSign=0x0;
+    if(fHistCocktail)   delete fHistCocktail;   fHistCocktail=0x0;
   }
 
   //// get histograms and rebin
@@ -281,6 +282,12 @@ void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
   // cocktail
   if(fArrCocktail && fArrCocktail->GetEntriesFast()) {
     printf("rebin %d cocktail histograms\n",fArrCocktail->GetEntriesFast());
+    fHistCocktail = new TH1D("HistCocktail", "Cocktail contribution",
+			     fHistDataPM->GetXaxis()->GetNbins(),
+			     fHistDataPM->GetXaxis()->GetXbins()->GetArray());
+    if(fHistCocktail->GetDefaultSumw2()) fHistCocktail->Sumw2();
+    fHistCocktail->SetDirectory(0);
+
     // loop over all ingredients
     for(Int_t i=0; i<fArrCocktail->GetEntriesFast(); i++) {
       TH1* htmp = static_cast<TH1*>(fArrCocktail->UncheckedAt(i));
@@ -295,6 +302,7 @@ void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
       // if(fHistDataTR->GetDefaultSumw2()) fHistDataTR->Sumw2();
       // fHistDataTR->SetDirectory(0);
       if(fRebin>1)       htmp->Rebin(fRebin);
+      fHistCocktail->Add(htmp,+1.);
     }
   }
 
@@ -316,6 +324,7 @@ void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
       break;
 
   case kCocktail:
+    fCocktailSubtr=kTRUE;
     ProcessCocktail(arrhist);
     break;
 
@@ -441,14 +450,7 @@ void PairAnalysisSignalExt::ProcessLS(TObjArray* const arrhist)
   fHistSignal->Add( fHistBackground, -1);
 
   //subtract cocktail (if added)
-  if(fArrCocktail) {
-    printf("cocktail was added \n");
-    // loop over all ingredients and remove contribution
-    for(Int_t i=0; i<fArrCocktail->GetEntriesFast(); i++) {
-      printf("remove %s from signal \n",fArrCocktail->UncheckedAt(i)->GetTitle());
-      fHistSignal->Add( static_cast<TH1*>(fArrCocktail->UncheckedAt(i)), -1);
-    }
-  }
+  if(fCocktailSubtr) fHistSignal->Add( fHistCocktail, -1);
 
   // background
   fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
@@ -507,15 +509,7 @@ void PairAnalysisSignalExt::ProcessEM(TObjArray* const arrhist)
   //  fHistSignal = MergeObjects(fHistDataPM,fHistBackground,-1.);
 
   //subtract cocktail (if added)
-  if(fArrCocktail) {
-    //    printf("cocktail was added \n");
-    // loop over all ingredients and remove contribution
-    for(Int_t i=0; i<fArrCocktail->GetEntriesFast(); i++) {
-      //      printf("remove %s from signal \n",fArrCocktail->UncheckedAt(i)->GetTitle());
-      fHistSignal->Add( static_cast<TH1*>(fArrCocktail->UncheckedAt(i)), -1);
-      //      printf("entries signal histogram %f \n",fHistSignal->GetEntries());
-    }
-  }
+  if(fCocktailSubtr) fHistSignal->Add( fHistCocktail, -1);
 
   // background
   fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
@@ -572,15 +566,7 @@ void PairAnalysisSignalExt::ProcessTR(TObjArray* const arrhist)
   fHistSignal->Add( fHistBackground, -1);
 
   //subtract cocktail (if added)
-  if(fArrCocktail) {
-    printf("cocktail was added \n");
-    // loop over all ingredients and remove contribution
-    for(Int_t i=0; i<fArrCocktail->GetEntriesFast(); i++) {
-      printf("remove %s from signal \n",fArrCocktail->UncheckedAt(i)->GetTitle());
-      fHistSignal->Add( static_cast<TH1*>(fArrCocktail->UncheckedAt(i)), -1);
-      printf("entries signal histogram %f \n",fHistSignal->GetEntries());
-    }
-  }
+  if(fCocktailSubtr) fHistSignal->Add( fHistCocktail, -1);
 
   // background
   fValues(1) = fHistBackground->IntegralAndError(fHistBackground->FindBin(fIntMin),
@@ -607,13 +593,7 @@ void PairAnalysisSignalExt::ProcessCocktail(TObjArray* const arrhist)
   }
 
   // fill background histogram
-  if(fArrCocktail) {
-    // loop over all ingredients and remove contribution
-    for(Int_t i=0; i<fArrCocktail->GetEntriesFast(); i++) {
-      printf("add %s to cocktail bgrd \n",fArrCocktail->UncheckedAt(i)->GetTitle());
-      fHistBackground->Add( static_cast<TH1*>(fArrCocktail->UncheckedAt(i)));
-    }
-  }
+  if(fArrCocktail) fHistBackground=fHistCocktail;
 
   //scale histograms to match integral between fScaleMin and fScaleMax
   // or if fScaleMax <  fScaleMin use fScaleMin as scale factor
@@ -666,6 +646,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   Bool_t optOnlyRaw  =optString.Contains("onlyraw");   optString.ReplaceAll("onlyraw","");
   Bool_t optOnlySig  =optString.Contains("onlysig");   optString.ReplaceAll("onlysig","");
   Bool_t optOnlyMC   =optString.Contains("onlymc");    optString.ReplaceAll("onlymc","");
+  Bool_t optCocktail =optString.Contains("cocktail");  optString.ReplaceAll("cocktail","");
 
   // load style
   PairAnalysisStyler::LoadStyle();
@@ -734,6 +715,13 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   PairAnalysisStyler::Style(fHistSignal,PairAnalysisStyler::kSig);
   if(fPlotMin!=fPlotMax) fHistSignal->SetAxisRange(fPlotMin,fPlotMax, "X");
 
+  if(fHistCocktail) {
+    fHistCocktail->SetNameTitle("cocktail","cocktail");
+    fHistCocktail->UseCurrentStyle();
+    PairAnalysisStyler::Style(fHistCocktail,PairAnalysisStyler::kCocktail);
+    if(fPlotMin!=fPlotMax) fHistCocktail->SetAxisRange(fPlotMin,fPlotMax, "X");
+  }
+
   if(optSB) {
     fHistSB->SetNameTitle("signal","signal");
     fHistSB->UseCurrentStyle();
@@ -759,7 +747,9 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   if(c)  c->cd(1);
   Info("Draw","Start plotting stuff with option -%s-",optString.Data());
   TString drawOpt=(optString.IsNull()?"EP":optString);
+  // draw spectra
   if(!optOnlyMC) {
+
     if(optSB && !optOnlyRaw)       { fHistSB->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
     else if(optSgn && !optOnlyRaw) { fHistSign->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
     else if(optOnlySig) { 
@@ -780,6 +770,12 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 	if(dynamic_cast<TF1*>(fgPeakShape)) { static_cast<TF1*>(fgPeakShape)->DrawCopy(drawOpt); i++; }
       }
     }
+    // add cocktail
+    if(optCocktail && fHistCocktail) {
+      drawOpt=(optString.IsNull()?"HIST":optString);
+      fHistCocktail->DrawCopy((drawOpt+"same").Data()); i++;
+    }
+
   }
 
   // draw MC signals
@@ -793,7 +789,8 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 	TString tit=hmc->GetTitle();
 	if(key.CountChar('_')!=1) continue; // only reconstr. MC signals
 	// remove cocktail subtracted signals
-	if(optOnlySig && fArrCocktail && FindObjectByTitle(fArrCocktail,key)) continue;
+	if     (optOnlySig &&  fCocktailSubtr && FindObjectByTitle(fArrCocktail,key)) continue;
+	else if(optOnlySig && !fCocktailSubtr && !FindObjectByTitle(fArrCocktail,key)) continue;
 	PairAnalysisStyler::Style(hmc,isty++);
 	// check if rebinning is necessary
 	if(fHistSignal->GetNbinsX()!=hmc->GetNbinsX()) {
