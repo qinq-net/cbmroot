@@ -214,13 +214,13 @@ void AnalysisTaskMultiPairAnalysis::Exec(Option_t *)
     if (h) {
       PairAnalysisVarManager::SetFillMap(h->GetUsedVars());
       // fill MCtruth information
-      //if (hasMC && PairAnalysisMC::Instance()->ConnectMCEvent() && h->GetHistogramList()->FindObject("MCEvent_noCuts")) {
+      //if (hasMC && PairAnalysisMC::Instance()->ConnectMCEvent() && h->GetHistogramList()->FindObject("MCEvent.noCuts")) {
       //	PairAnalysisVarManager::SetEvent(PairAnalysisMC::Instance()->GetMCEvent());
-      //       h->FillClass("MCEvent_noCuts",PairAnalysisVarManager::GetData());
+      //       h->FillClass("MCEvent.noCuts",PairAnalysisVarManager::GetData());
       //      }
       // fill reconstructed information
-      if (h->GetHistogramList()->FindObject("Event_noCuts")) {
-        h->FillClass("Event_noCuts",PairAnalysisVarManager::GetData());
+      if (h->GetHistogramList()->FindObject("Event.noCuts")) {
+        h->FillClass("Event.noCuts",PairAnalysisVarManager::GetData());
       }
     }
   }

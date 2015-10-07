@@ -25,6 +25,8 @@ ClassImp(PairAnalysisSignalMC)
 const char* PairAnalysisSignalMC::fgkSignals[kNSignals][2]= {  //default signal names+titles
   {"InclJpsi",       "J/#psi (incl.)"},
   {"RadJpsi",        "J/#psi (rad.)"},
+  {"NonRadJpsi",     "J/#psi"},
+  {"Psi2S",          "#psi(2S)"},
   {"Conversion",     "#gamma#rightarrow e^{+}e^{-}"},
   {"Rho0",           "#rho^{0}"},
   {"OmegaDalitz",    "#omega_{Dalitz}"},
@@ -217,6 +219,19 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
     fMother1=443; fMother2=443; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
     fMothersRelation=kSame;
     fDalitz=kIsDalitz; fDalitzPdg=22;
+    break;
+  case kNonRadJpsi:
+    SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
+    fLeg1=11;  fLeg2=-11; fCheckBothChargesLeg1=kTRUE; fCheckBothChargesLeg2=kTRUE;
+    fMother1=443; fMother2=443; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
+    fMothersRelation=kSame;
+    fDalitz=kIsNotDalitz; fDalitzPdg=22;
+    break;
+  case kPsi2S:
+    SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
+    fLeg1=11;  fLeg2=-11; fCheckBothChargesLeg1=kTRUE; fCheckBothChargesLeg2=kTRUE;
+    fMother1=100443; fMother2=100443; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
+    fMothersRelation=kSame;
     break;
   case kConversion:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
