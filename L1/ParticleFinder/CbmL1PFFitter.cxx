@@ -227,7 +227,7 @@ void CbmL1PFFitter::Fit(vector<CbmStsTrack> &Tracks, vector<int>& pidHypo)
     for(iVec=0; iVec<nTracks_SIMD; iVec++)
     {
       int nHitsTrackMvd = t[iVec]->GetNofMvdHits();
-      int nHitsTrackSts = t[iVec]->GetNofHits();
+      int nHitsTrackSts = t[iVec]->GetNofStsHits();
       int nHitsTrack = nHitsTrackMvd + nHitsTrackSts;
       for(i = 0; i < nHitsTrack; i++ )
       {
