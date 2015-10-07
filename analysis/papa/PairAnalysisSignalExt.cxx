@@ -790,7 +790,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 	if(key.CountChar('_')!=1) continue; // only reconstr. MC signals
 	// remove cocktail subtracted signals
 	if     (optOnlySig &&  fCocktailSubtr && FindObjectByTitle(fArrCocktail,key)) continue;
-	else if(optOnlySig && !fCocktailSubtr && !FindObjectByTitle(fArrCocktail,key)) continue;
+	else if(optOnlySig && !fCocktailSubtr && fArrCocktail && !FindObjectByTitle(fArrCocktail,key)) continue;
 	PairAnalysisStyler::Style(hmc,isty++);
 	// check if rebinning is necessary
 	if(fHistSignal->GetNbinsX()!=hmc->GetNbinsX()) {
