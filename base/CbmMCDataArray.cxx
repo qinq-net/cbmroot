@@ -98,6 +98,26 @@ TObject* CbmMCDataArray::Get(Int_t fileNumber, Int_t eventNumber, Int_t index)
   return arr[eventNumber]->At(index);
 }
 
+// --- Get a size of TClonesArray . Slow if TClonesArray not in cache
+Int_t CbmMCDataArray::Size(Int_t fileNumber, Int_t eventNumber)
+{
+  if (fLegacy==1) return fLegacyArray->GetEntriesFast();
+  if (fileNumber<0||fileNumber>=fSize) return -1111;
+  if (eventNumber<0||eventNumber>=fN[fileNumber]) return -1111;
+
+  // --- Cached arrays
+  map<Int_t, TClonesArray*> &arr=fArrays[fileNumber];
+
+  // --- If the array for this event is already in the cache, use it.
+  if (arr.find(eventNumber)!=arr.end()) return arr[eventNumber]->GetEntriesFast();
+
+  // --- If not, get the array from the chain (slow)
+  TChain* ch=fChains[fileNumber];
+  ch->GetEntry(eventNumber);
+
+  return fTArr[fileNumber]->GetEntriesFast();
+}
+
 
 // --- At end of one event: clear the cache to free the memory
 void CbmMCDataArray::FinishEvent()

@@ -70,6 +70,12 @@ class CbmMCDataArray
 		 **/
 		TObject* Get(Int_t fileNumber, Int_t eventNumber, Int_t index);
 
+		/** Get a size of TClonesArray . Slow if TClonesArray not in cache
+		 ** @param fileNumber	Input file number
+		 ** @param eventNumber  Event number
+		 ** @value              Size of corresponding TClonesArray
+		 **/
+		Int_t Size(Int_t fileNumber, Int_t eventNumber);
 
 	private:
 
