@@ -24,8 +24,8 @@ ClassImp(PairAnalysisSignalMC)
 
 const char* PairAnalysisSignalMC::fgkSignals[kNSignals][2]= {  //default signal names+titles
   {"InclJpsi",       "J/#psi (incl.)"},
-  {"RadJpsi",        "J/#psi (rad.)"},
   {"NonRadJpsi",     "J/#psi"},
+  {"RadJpsi",        "J/#psi (rad.)"},
   {"Psi2S",          "#psi(2S)"},
   {"Conversion",     "#gamma#rightarrow e^{+}e^{-}"},
   {"Rho0",           "#rho^{0}"},

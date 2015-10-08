@@ -74,7 +74,7 @@ class PairAnalysisSignalMC : public TNamed {
   enum ESource {kDontCare=0, kPrimary, kFinalState, kDirect, kSecondary, kNoCocktail, kSecondaryFromWeakDecay, kSecondaryFromMaterial};
   enum EJpsiRadiativ {kAll=0, kIsRadiative, kIsNotRadiative};
   enum EDalitz {      kWhoCares=0, kIsDalitz, kIsNotDalitz};
-  enum EDefinedSignal {kInclJpsi=0, kRadJpsi, kNonRadJpsi, kPsi2S,
+  enum EDefinedSignal {kInclJpsi=0, kNonRadJpsi, kRadJpsi, kPsi2S,
 		       kConversion,
 		       kRho0, kOmegaDalitz, kOmega, kPhi,
 		       kEtaDalitz, kEta,
