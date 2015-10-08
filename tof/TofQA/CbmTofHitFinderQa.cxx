@@ -54,6 +54,7 @@ const TString ksPartName[kiNbPart] =
    { "any other part.", 
      "e-", "e+",   "#pi+", "#pi-", "k+", "k-", 
      "p",  "anti-p", "d",    "t",    "he", "#alpha"};
+const Int_t   kiMinNbStsPntAcc = 3; // Number of STS Pnt for Trk to be reconstructable
 //___________________________________________________________________
 
 
@@ -1430,7 +1431,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             // PLab
             fvhPlabGenTrk[iPartIdx]->Fill( pMcTrk->GetP() );
             // Do the same for tracks within STS acceptance
-            if( 0 < pMcTrk->GetNPoints(kSTS) )
+            if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSTS) )
             {
                fvhPtmRapStsPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
                fvhPlabStsPnt[iPartIdx]->Fill( pMcTrk->GetP() );
@@ -1449,7 +1450,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                // PLab
                fvhPlabGenTrk[0]->Fill( pMcTrk->GetP() );
                // Do the same for tracks within STS acceptance
-               if( 0 < pMcTrk->GetNPoints(kSTS) )
+               if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSTS) )
                {
                   fvhPtmRapStsPnt[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
                   fvhPlabStsPnt[0]->Fill( pMcTrk->GetP() );
@@ -1471,7 +1472,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                   // PLab
                   fvhPlabSecGenTrk[iPartIdx]->Fill( pMcTrk->GetP() );
                   // Do the same for tracks within STS acceptance
-                  if( 0 < pMcTrk->GetNPoints(kSTS) )
+                  if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSTS) )
                   {
                      fvhPtmRapSecStsPnt[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
                      fvhPlabSecStsPnt[iPartIdx]->Fill( pMcTrk->GetP() );
@@ -1490,7 +1491,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                      // PLab
                      fvhPlabSecGenTrk[0]->Fill( pMcTrk->GetP() );
                      // Do the same for tracks within STS acceptance
-                     if( 0 < pMcTrk->GetNPoints(kSTS) )
+                     if( kiMinNbStsPntAcc <= pMcTrk->GetNPoints(kSTS) )
                      {
                         fvhPtmRapSecStsPnt[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
                         fvhPlabSecStsPnt[0]->Fill( pMcTrk->GetP() );
@@ -1698,7 +1699,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
       Double_t dErrX = pTofHit->GetDx();
       Double_t dErrY = pTofHit->GetDy();
       Double_t dErrZ = pTofHit->GetDz();
-      Double_t dErrR = TMath::Sqrt( dErrX*dErrX + dErrY*dErrY + dErrZ*dErrZ );
+//      Double_t dErrR = TMath::Sqrt( dErrX*dErrX + dErrY*dErrY + dErrZ*dErrZ );
+      Double_t dErrR = TMath::Sqrt( dErrX*dErrX + dErrY*dErrY );
 
       fhHitMapXY->Fill(   dX, dY );
       fhHitMapXZ->Fill(   dX, dZ );
@@ -1802,9 +1804,9 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                   
                   // Check if closest MC Point to Hit position
                   Double_t dPntDeltaR = TMath::Sqrt(
-                        (dX - vPntPos.X())*(dX - vPntPos.X()) 
-                      + (dY - vPntPos.Y())*(dY - vPntPos.Y()) 
-                      + (dZ - vPntPos.Z())*(dZ - vPntPos.Z()) );
+                        (dX - vPntPos.X())*(dX - vPntPos.X())
+                      + (dY - vPntPos.Y())*(dY - vPntPos.Y()) );
+//                      + (dZ - vPntPos.Z())*(dZ - vPntPos.Z()) );
                   if( dPntDeltaR < dClosestPntDr )
                   {
                      iClosestPntIdx  = iPtIdx;
@@ -1843,9 +1845,9 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                   
                   // Check if closest MC track to Hit position
                   Double_t dTrkDeltaR = TMath::Sqrt(
-                        (dX - vPntPos.X())*(dX - vPntPos.X()) 
-                      + (dY - vPntPos.Y())*(dY - vPntPos.Y()) 
-                      + (dZ - vPntPos.Z())*(dZ - vPntPos.Z()) );
+                        (dX - vPntPos.X())*(dX - vPntPos.X())
+                      + (dY - vPntPos.Y())*(dY - vPntPos.Y()) );
+//                      + (dZ - vPntPos.Z())*(dZ - vPntPos.Z()) );
                   if( dTrkDeltaR < dClosestTrkDr )
                   {
                      iClosestTrkIdx  = iPtIdx;
@@ -1941,9 +1943,9 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                   
                      // Check if closest MC Point to Hit position
                      Double_t dPntDeltaR = TMath::Sqrt(
-                           (dX - vPntPos.X())*(dX - vPntPos.X()) 
-                         + (dY - vPntPos.Y())*(dY - vPntPos.Y()) 
-                         + (dZ - vPntPos.Z())*(dZ - vPntPos.Z()) );
+                           (dX - vPntPos.X())*(dX - vPntPos.X())
+                         + (dY - vPntPos.Y())*(dY - vPntPos.Y()) );
+  //                       + (dZ - vPntPos.Z())*(dZ - vPntPos.Z()) );
                      if( dPntDeltaR < dClosestPntDr )
                      {
                         iClosestPntIdx  = iPtIdx;
@@ -1982,9 +1984,9 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                   
                      // Check if closest MC track to Hit position
                      Double_t dTrkDeltaR = TMath::Sqrt(
-                           (dX - vPntPos.X())*(dX - vPntPos.X()) 
-                         + (dY - vPntPos.Y())*(dY - vPntPos.Y()) 
-                         + (dZ - vPntPos.Z())*(dZ - vPntPos.Z()) );
+                           (dX - vPntPos.X())*(dX - vPntPos.X())
+                         + (dY - vPntPos.Y())*(dY - vPntPos.Y()) );
+//                         + (dZ - vPntPos.Z())*(dZ - vPntPos.Z()) );
                      if( dTrkDeltaR < dClosestTrkDr )
                      {
                         iClosestTrkIdx  = iPtIdx;
@@ -2025,9 +2027,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             Double_t dDeltaX = dX - vPntPos.X();
             Double_t dDeltaY = dY - vPntPos.Y();
             Double_t dDeltaZ = dZ - vPntPos.Z();
-            Double_t dDeltaR = TMath::Sqrt(   dDeltaX*dDeltaX 
-                                            + dDeltaY*dDeltaY 
-                                            + dDeltaZ*dDeltaZ ); // Not sure Z should be in?
+            Double_t dDeltaR = TMath::Sqrt(   dDeltaX*dDeltaX
+                                            + dDeltaY*dDeltaY );
          
             fhSinglePointHitDeltaX->Fill( dDeltaX );
             fhSinglePointHitDeltaY->Fill( dDeltaY );
@@ -2057,9 +2058,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                Double_t dDeltaMeanX = dX - dPntMeanPosX;
                Double_t dDeltaMeanY = dY - dPntMeanPosY;
                Double_t dDeltaMeanZ = dZ - dPntMeanPosZ;
-               Double_t dDeltaMeanR = TMath::Sqrt(   dDeltaMeanX*dDeltaMeanX 
-                                                   + dDeltaMeanY*dDeltaMeanY 
-                                                   + dDeltaMeanZ*dDeltaMeanZ ); // Not sure Z should be in?
+               Double_t dDeltaMeanR = TMath::Sqrt(   dDeltaMeanX*dDeltaMeanX
+                                                   + dDeltaMeanY*dDeltaMeanY );
 
                fhMultiPntHitMeanDeltaX->Fill( dDeltaMeanX, uNbPointsInHit );
                fhMultiPntHitMeanDeltaY->Fill( dDeltaMeanY, uNbPointsInHit );
@@ -2081,9 +2081,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                Double_t dDeltaCloX = dX - vPntPosClo.X();
                Double_t dDeltaCloY = dY - vPntPosClo.Y();
                Double_t dDeltaCloZ = dZ - vPntPosClo.Z();
-               Double_t dDeltaCloR = TMath::Sqrt(   dDeltaCloX*dDeltaCloX 
-                                                  + dDeltaCloY*dDeltaCloY 
-                                                  + dDeltaCloZ*dDeltaCloZ ); // Not sure Z should be in?
+               Double_t dDeltaCloR = TMath::Sqrt(   dDeltaCloX*dDeltaCloX
+                                                  + dDeltaCloY*dDeltaCloY );
             
                fhMultiPntHitClosestDeltaX->Fill( dDeltaCloX, uNbPointsInHit );
                fhMultiPntHitClosestDeltaY->Fill( dDeltaCloY, uNbPointsInHit );
@@ -2105,9 +2104,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                Double_t dDeltaFarX = dX - vPntPosFar.X();
                Double_t dDeltaFarY = dY - vPntPosFar.Y();
                Double_t dDeltaFarZ = dZ - vPntPosFar.Z();
-               Double_t dDeltaFarR = TMath::Sqrt(   dDeltaFarX*dDeltaFarX 
-                                                  + dDeltaFarY*dDeltaFarY 
-                                                  + dDeltaFarZ*dDeltaFarZ ); // Not sure Z should be in?
+               Double_t dDeltaFarR = TMath::Sqrt(   dDeltaFarX*dDeltaFarX
+                                                  + dDeltaFarY*dDeltaFarY );
             
                fhMultiPntHitFurthestDeltaX->Fill( dDeltaFarX, uNbPointsInHit );
                fhMultiPntHitFurthestDeltaY->Fill( dDeltaFarY, uNbPointsInHit );
@@ -2140,9 +2138,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             Double_t dDeltaX = dX - vPntPos.X();
             Double_t dDeltaY = dY - vPntPos.Y();
             Double_t dDeltaZ = dZ - vPntPos.Z();
-            Double_t dDeltaR = TMath::Sqrt(   dDeltaX*dDeltaX 
-                                            + dDeltaY*dDeltaY 
-                                            + dDeltaZ*dDeltaZ ); // Not sure Z should be in?
+            Double_t dDeltaR = TMath::Sqrt(   dDeltaX*dDeltaX
+                                            + dDeltaY*dDeltaY );
          
             fhSingleTrackHitDeltaX->Fill( dDeltaX );
             fhSingleTrackHitDeltaY->Fill( dDeltaY );
@@ -2185,9 +2182,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                Double_t dDeltaMeanX = dX - dTrkMeanPosX;
                Double_t dDeltaMeanY = dY - dTrkMeanPosY;
                Double_t dDeltaMeanZ = dZ - dTrkMeanPosZ;
-               Double_t dDeltaMeanR = TMath::Sqrt(   dDeltaMeanX*dDeltaMeanX 
-                                                   + dDeltaMeanY*dDeltaMeanY 
-                                                   + dDeltaMeanZ*dDeltaMeanZ ); // Not sure Z should be in?
+               Double_t dDeltaMeanR = TMath::Sqrt(   dDeltaMeanX*dDeltaMeanX
+                                                   + dDeltaMeanY*dDeltaMeanY );
                fhMultiTrkHitMeanDeltaX->Fill( dDeltaMeanX, uNbTracksInHit );
                fhMultiTrkHitMeanDeltaY->Fill( dDeltaMeanY, uNbTracksInHit );
                fhMultiTrkHitMeanDeltaZ->Fill( dDeltaMeanZ, uNbTracksInHit );
@@ -2207,9 +2203,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                Double_t dDeltaCloX = dX - vPntPosClo.X();
                Double_t dDeltaCloY = dY - vPntPosClo.Y();
                Double_t dDeltaCloZ = dZ - vPntPosClo.Z();
-               Double_t dDeltaCloR = TMath::Sqrt(   dDeltaCloX*dDeltaCloX 
-                                                  + dDeltaCloY*dDeltaCloY 
-                                                  + dDeltaCloZ*dDeltaCloZ ); // Not sure Z should be in?
+               Double_t dDeltaCloR = TMath::Sqrt(   dDeltaCloX*dDeltaCloX
+                                                  + dDeltaCloY*dDeltaCloY );
             
                fhMultiTrkHitClosestDeltaX->Fill( dDeltaCloX, uNbTracksInHit );
                fhMultiTrkHitClosestDeltaY->Fill( dDeltaCloY, uNbTracksInHit );
@@ -2230,9 +2225,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                Double_t dDeltaFarX = dX - vPntPosFar.X();
                Double_t dDeltaFarY = dY - vPntPosFar.Y();
                Double_t dDeltaFarZ = dZ - vPntPosFar.Z();
-               Double_t dDeltaFarR = TMath::Sqrt(   dDeltaFarX*dDeltaFarX 
-                                                  + dDeltaFarY*dDeltaFarY 
-                                                  + dDeltaFarZ*dDeltaFarZ ); // Not sure Z should be in?
+               Double_t dDeltaFarR = TMath::Sqrt(   dDeltaFarX*dDeltaFarX
+                                                  + dDeltaFarY*dDeltaFarY );
             
                fhMultiTrkHitFurthestDeltaX->Fill( dDeltaFarX, uNbTracksInHit );
                fhMultiTrkHitFurthestDeltaY->Fill( dDeltaFarY, uNbTracksInHit );

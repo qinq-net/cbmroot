@@ -68,10 +68,10 @@ private:
 
   //Temporary substitute of the parameter container. FIXME 
 
-  static const Int_t maxSMtyp=6   ;
-  static const Int_t maxnSM=255   ;
-  static const Int_t maxnMod=10   ;
-  static const Int_t maxnCell=255 ;
+  static const Int_t maxSMtyp=   8;
+  static const Int_t maxnSM=   255;
+  static const Int_t maxnMod=   64;
+  static const Int_t maxnCell= 255;
   
   Float_t X [maxSMtyp][maxnSM][maxnMod][maxnCell];  //X-Position in cm */
   Float_t Dx[maxSMtyp][maxnSM][maxnMod][maxnCell];  //Resolution in position in cm */
@@ -84,6 +84,11 @@ private:
   Int_t ActnSMMax[maxSMtyp];
   Int_t ActnModMax[maxSMtyp];
   Int_t ActnCellMax[maxSMtyp];
+
+  Int_t ActSMtypMin;
+  Int_t ActnSMMin[maxSMtyp];
+  Int_t ActnModMin[maxSMtyp];
+  Int_t ActnCellMin[maxSMtyp];
 
   //End of temporary data members
 

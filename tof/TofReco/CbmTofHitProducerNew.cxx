@@ -51,6 +51,10 @@ CbmTofHitProducerNew::CbmTofHitProducerNew()
     ActnSMMax(),
     ActnModMax(),
     ActnCellMax(),
+    ActSMtypMin(),
+    ActnSMMin(),
+    ActnModMin(),
+    ActnCellMin(),
     tl(),
     tr(),
     trackID_left(),
@@ -155,6 +159,10 @@ CbmTofHitProducerNew::CbmTofHitProducerNew(const char *name, Int_t verbose)
    ActnSMMax(),
    ActnModMax(),
    ActnCellMax(),
+    ActSMtypMin(),
+    ActnSMMin(),
+    ActnModMin(),
+    ActnCellMin(),
    tl(),
    tr(),
    trackID_left(),
@@ -329,10 +337,14 @@ InitStatus CbmTofHitProducerNew::Init()
 
 // initialize accounting variables    
     ActSMtypMax=0;
+    ActSMtypMin= 2*maxSMtyp;
     for (Int_t i=0; i<maxSMtyp; i++){
 	ActnSMMax[i]=0;
 	ActnModMax[i]=0;
 	ActnCellMax[i]=0;
+        ActnSMMin[i]= 2*maxnSM;
+        ActnModMin[i]= 2*maxnMod;
+        ActnCellMin[i]= 2*maxnCell;
     }
 
     if (fParInitFromAscii) {
@@ -486,6 +498,11 @@ void CbmTofHitProducerNew::InitParametersFromContainer()
     if(smodule>ActnSMMax[smtype]) ActnSMMax[smtype]=smodule;
     if(module>ActnModMax[smtype]) ActnModMax[smtype]=module;
     if(cell>ActnCellMax[smtype])  ActnCellMax[smtype]=cell;
+
+    if(smtype<ActSMtypMin)        ActSMtypMin=smtype;
+    if(smodule<ActnSMMin[smtype]) ActnSMMin[smtype]=smodule;
+    if(module<ActnModMin[smtype]) ActnModMin[smtype]=module;
+    if(cell<ActnCellMin[smtype])  ActnCellMin[smtype]=cell;
  
      X[smtype][smodule][module][cell] = x;
      Y[smtype][smodule][module][cell] = y;
@@ -494,6 +511,22 @@ void CbmTofHitProducerNew::InitParametersFromContainer()
      Dy[smtype][smodule][module][cell]= dy;
      Ch[smtype][smodule][module][cell]= icell;
    }
+
+    LOG(INFO) << "CbmTofHitProducerNew::InitParametersFromContainer => Number of SM types: "
+              << ActSMtypMax << " Min is " << ActSMtypMin << FairLogger::endl;
+    for (Int_t i=0; i<=ActSMtypMax; i++)
+    {
+       LOG(INFO) << "CbmTofHitProducerNew::InitParametersFromContainer => SM Type "
+                 << i <<" Max Nb SM " << ActnSMMax[i]
+                 << " Max Nb RPC " << ActnModMax[i]
+                 << " Max Nb Channels " << ActnCellMax[i]
+                 << FairLogger::endl;
+       LOG(INFO) << "CbmTofHitProducerNew::InitParametersFromContainer => SM Type "
+                 << i <<" Min Nb SM " << ActnSMMin[i]
+                 << " Min Nb RPC " << ActnModMin[i]
+                 << " Min Nb Channels " << ActnCellMin[i]
+                 << FairLogger::endl;
+    }
 }
 
 // ---- Exec ----------------------------------------------------------
@@ -569,10 +602,10 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
 
   //Initialization of cell times
 
-  for(Int_t t=0;t<=ActSMtypMax;t++){
-   for(Int_t i=0;i<ActnSMMax[t]+1;i++){
-    for(Int_t j=0;j<ActnModMax[t]+1;j++){
-     for(Int_t k=0;k<ActnCellMax[t];k++){
+  for(   Int_t t = ActSMtypMin;    t <= ActSMtypMax;    t++){
+   for(  Int_t i = ActnSMMin[t];   i <= ActnSMMax[t];   i++){
+    for( Int_t j = ActnModMin[t];  j <= ActnModMax[t];  j++){
+     for(Int_t k = ActnCellMin[t]; k <= ActnCellMax[t]; k++){
       tl[t][i][j][k]= 1e+5;
       tr[t][i][j][k]= 1e+5;
      }
@@ -612,10 +645,10 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
    //    fCellInfo =fDigiPar->GetCell(cellID);
 
     if( //0){
-          smtype<0.  || smtype>ActSMtypMax 
-       || smodule<0. || smodule>ActnSMMax[smtype]
-       || module<0.  || module>ActnModMax[smtype]
-       || cell<0.    || cell>ActnCellMax[smtype]
+          smtype  < ActSMtypMin         || smtype  > ActSMtypMax
+       || smodule < ActnSMMin[smtype]   || smodule > ActnSMMax[smtype] // May lead to seg fault
+       || module  < ActnModMin[smtype]  || module  > ActnModMax[smtype]   // May lead to seg fault
+       || cell    < ActnCellMin[smtype] || cell    > ActnCellMax[smtype]    // May lead to seg fault
        || Dx[smtype][smodule][module][cell]<0.
        )
     {
@@ -623,7 +656,7 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
      LOG(INFO)<<" SModule: "<<smodule<<" of "<<ActnSMMax[smtype]+1;
      LOG(INFO)<<" Module: "<<module<<" of "<<ActnModMax[smtype]+1;
      LOG(INFO)<<" Gap: "<<gap;
-     LOG(INFO)<<" Cell: "<<cell<<" of "<<ActnCellMax[smtype] <<FairLogger::endl;
+     LOG(INFO)<<" Cell: "<<cell<<" of "<<ActnCellMax[smtype]+1 <<FairLogger::endl;
      continue;
     }
     pt->Position(pos);
@@ -688,10 +721,11 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
 
   //  fVerbose=3;  // debugging 
 
-  for(Int_t t=0;t<=ActSMtypMax;t++){
-   for(Int_t i=0;i<ActnSMMax[t]+1;i++){
-    for(Int_t j=0;j<ActnModMax[t]+1;j++){
-     for(Int_t k=0;k<ActnCellMax[t];k++){
+  for(   Int_t t = ActSMtypMin;    t <= ActSMtypMax;    t++){
+   for(  Int_t i = ActnSMMin[t];   i <= ActnSMMax[t];   i++){
+    for( Int_t j = ActnModMin[t];  j <= ActnModMax[t];  j++){
+     for(Int_t k = ActnCellMin[t]; k <= ActnCellMax[t]; k++){
+
        //      cout <<"-D- HitProd: tijk "<<t<<" "<<i<<" "<<j<<" "<<k<<" "<<tl[t][i][j][k]<<" "<<tr[t][i][j][k]<<endl;
 //Increase the counter for the TofHit TClonesArray if the first time a hit is attached to this cell
     
@@ -735,12 +769,10 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
          Double_t dDeltaX = xHit - vPntPos.X();
          Double_t dDeltaY = yHit - vPntPos.Y();
          Double_t dDeltaZ = zHit - vPntPos.Z();
-         Double_t dDeltaR = TMath::Sqrt(   dDeltaX*dDeltaX 
-                                         + dDeltaY*dDeltaY 
-                                         + dDeltaZ*dDeltaZ ); // Not sure Z should be in?
-         Double_t rHitErr = TMath::Sqrt(   xHitErr*xHitErr 
-                                         + yHitErr*yHitErr 
-                                         + zHitErr*zHitErr ); // Not sure Z should be in?
+         Double_t dDeltaR = TMath::Sqrt(   dDeltaX*dDeltaX
+                                         + dDeltaY*dDeltaY );
+         Double_t rHitErr = TMath::Sqrt(   xHitErr*xHitErr
+                                         + yHitErr*yHitErr );
          fhSinglePointHitDeltaX->Fill(dDeltaX);
          fhSinglePointHitDeltaY->Fill(dDeltaY);
          fhSinglePointHitDeltaZ->Fill(dDeltaZ);
@@ -762,12 +794,10 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
             Double_t dDeltaXL = xHit - vPntPosL.X();
             Double_t dDeltaYL = yHit - vPntPosL.Y();
             Double_t dDeltaZL = zHit - vPntPosL.Z();
-            Double_t dDeltaRL = TMath::Sqrt(   dDeltaXL*dDeltaXL 
-                                             + dDeltaYL*dDeltaYL 
-                                             + dDeltaZL*dDeltaZL ); // Not sure Z should be in?
-            Double_t rHitErr = TMath::Sqrt(   xHitErr*xHitErr 
-                                            + yHitErr*yHitErr 
-                                            + zHitErr*zHitErr ); // Not sure Z should be in?
+            Double_t dDeltaRL = TMath::Sqrt(   dDeltaXL*dDeltaXL
+                                             + dDeltaYL*dDeltaYL );
+            Double_t rHitErr = TMath::Sqrt(   xHitErr*xHitErr
+                                            + yHitErr*yHitErr );
             fhDiffPointHitLeftDeltaX->Fill(dDeltaXL);
             fhDiffPointHitLeftDeltaY->Fill(dDeltaYL);
             fhDiffPointHitLeftDeltaZ->Fill(dDeltaZL);
@@ -787,9 +817,8 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
             Double_t dDeltaXR = xHit - vPntPosR.X();
             Double_t dDeltaYR = yHit - vPntPosR.Y();
             Double_t dDeltaZR = zHit - vPntPosR.Z();
-            Double_t dDeltaRR = TMath::Sqrt(  dDeltaXR*dDeltaXR 
-                                            + dDeltaYR*dDeltaYR 
-                                            + dDeltaZR*dDeltaZR ); // Not sure Z should be in?
+            Double_t dDeltaRR = TMath::Sqrt(  dDeltaXR*dDeltaXR
+                                            + dDeltaYR*dDeltaYR );
             fhDiffPointHitRightDeltaX->Fill(dDeltaXR);
             fhDiffPointHitRightDeltaY->Fill(dDeltaYR);
             fhDiffPointHitRightDeltaZ->Fill(dDeltaZR);
