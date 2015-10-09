@@ -122,6 +122,7 @@ KFModelParameters/ImpactParameterModel/ImpactParameterModel.cxx
 KFModelParameters/CbmModelsQA.cxx
 KFQA/CbmKFTrErrMCPoints.cxx
 KFQA/CbmKFTrackFitQA.cxx
+KFQA/CbmKFTrackQA.cxx
 KFQA/KFParticleMatch.cxx
 # KFParticlesFinder/CbmKFParticleDatabase.cxx
 KFParticle/KFParticleDatabase.cxx
@@ -202,6 +203,7 @@ KFModelParameters/ImpactParameterModel/ImpactParameterModel.h
 KFModelParameters/CbmModelsQA.h
 KFQA/CbmKFTrErrMCPoints.h
 KFQA/CbmKFTrackFitQA.h
+KFQA/CbmKFTrackQA.h
 KFQA/CbmKFPartEfficiencies.h
 KFQA/KFParticleMatch.h
 # KFParticlesFinder/CbmKFParticleDatabase.h

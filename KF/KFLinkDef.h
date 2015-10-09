@@ -56,6 +56,7 @@
 
 #pragma link C++ class  CbmKFTrErrMCPoints+;
 #pragma link C++ class  CbmKFTrackFitQA+;
+#pragma link C++ class  CbmKFTrackQA+;
 #pragma link C++ class  KFParticleMatch+;
 
 

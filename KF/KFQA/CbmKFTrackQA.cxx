@@ -14,6 +14,9 @@
 #include "KFTopoPerformance.h"
 #include "KFMCTrack.h"
 #include "KFParticleMatch.h"
+#include "CbmL1PFFitter.h"
+#include "L1Field.h"
+#include "CbmKFVertex.h"
 
 //ROOT headers
 #include "TClonesArray.h"
@@ -72,10 +75,34 @@ CbmKFTrackQA::CbmKFTrackQA(const char* name, Int_t iVerbose, TString outFileName
     {
       gDirectory->mkdir(subdirs[iDir].Data());
       gDirectory->cd(subdirs[iDir].Data());
-      for(int iH=0; iH<NStsHisto; iH++)
       {
-        hStsHisto[iDir][iH] = new TH1F(histoName[iH].Data(), histoName[iH].Data(), nBins[iH], xMin[iH], xMax[iH]);
-        hStsHisto[iDir][iH] ->GetXaxis()->SetTitle(axisName[iH].Data());
+        gDirectory->mkdir("TrackFitQA");
+        gDirectory->cd("TrackFitQA");
+        {
+          TString res = "res";
+          TString pull = "pull";
+          
+          TString parName[5] = {"X","Y","Tx","Ty","QP"};
+          int nBinsFit = 100;
+//          float xMaxFit[5] = {0.15,0.15,0.01,0.01,3.5};
+          float xMaxFit[5] = {0.05,0.045,0.01,0.01,0.05};
+  
+          for( int iH=0; iH<5; iH++ ){
+        	  hStsFitHisto[iDir][iH]   = new TH1F((res+parName[iH]).Data(),
+                                                    (res+parName[iH]).Data(), 
+													nBinsFit, -xMaxFit[iH],xMaxFit[iH]);
+        	  hStsFitHisto[iDir][iH+5] = new TH1F((pull+parName[iH]).Data(),
+                                                    (pull+parName[iH]).Data(), 
+													nBinsFit, -6,6);
+          }
+        }
+        gDirectory->cd("..");
+        
+        for(int iH=0; iH<NStsHisto; iH++)
+        {
+          hStsHisto[iDir][iH] = new TH1F(histoName[iH].Data(), histoName[iH].Data(), nBins[iH], xMin[iH], xMax[iH]);
+          hStsHisto[iDir][iH] ->GetXaxis()->SetTitle(axisName[iH].Data());
+        }
       }
       gDirectory->cd(".."); //STS
     }
@@ -173,14 +200,12 @@ InitStatus CbmKFTrackQA::Init()
   if(fMuchTrackMatchArray==0)
   {
     Error("CbmKFParticleFinderPID::Init","Much track match array not found!");
-    return kERROR;
   }
   //Much
   fMuchTrackArray = (TClonesArray*) ioman->GetObject(fMuchTrackBranchName);
   if (fMuchTrackArray == 0)
   {
     Error("CbmKFParticleFinderPID::Init", "Much track-array not found!");
-    return kERROR;
   }
     
   return kSUCCESS;
@@ -255,117 +280,173 @@ void CbmKFTrackQA::Exec(Option_t* opt)
     trackMatch[iTr] = mcTrackId;
   }
   
-  ///Radevych
-  Int_t nMuchTrackMatches=fMuchTrackMatchArray->GetEntriesFast();
-  vector<int> trackMuchMatch(nMuchTrackMatches, -1);
-
-  for(int iTr=0; iTr<nMuchTrackMatches; iTr++)
+  //Check fit quality of the STS tracks
+  vector<CbmStsTrack> vRTracks(fTrackArray->GetEntriesFast());
+  vector<int> pdg(fTrackArray->GetEntriesFast(), 211);
+  for(int iTr=0; iTr<fTrackArray->GetEntriesFast(); iTr++)
   {
-    CbmTrackMatchNew* muchTrackMatch = (CbmTrackMatchNew*) fMuchTrackMatchArray->At(iTr);
-//     std::cout << "muchTrackMatch -> GetNofLinks() == " << muchTrackMatch -> GetNofLinks() << std::endl;
-//     std::cin.get();
-    if(muchTrackMatch -> GetNofLinks() == 0) continue;
-    Float_t bestWeight = 0.f;
-    Float_t totalWeight = 0.f;
-    Int_t mcTrackId = -1;
-    for(int iLink=0; iLink<muchTrackMatch -> GetNofLinks(); iLink++)
-    {
-      totalWeight += muchTrackMatch->GetLink(iLink).GetWeight();
-      if( muchTrackMatch->GetLink(iLink).GetWeight() > bestWeight)
-      {
-        bestWeight = muchTrackMatch->GetLink(iLink).GetWeight();
-        mcTrackId = muchTrackMatch->GetLink(iLink).GetIndex();
-      }
-    }
-    if(bestWeight/totalWeight < 0.7) continue;
-    if(mcTrackId >= nMCTracks || mcTrackId < 0)
-    {
-      std::cout << "Much Matching is wrong!    MuchTackId = " << mcTrackId << " N mc tracks = " << nMCTracks << std::endl;
-      continue;
-    }
+    CbmStsTrack* stsTrack = ( (CbmStsTrack*) fTrackArray->At(iTr));
+    vRTracks[iTr] = *stsTrack;
     
-    //mcTracks[mcTrackId].SetReconstructed();//////?????????????????????????????????????????????????????????????????
-    trackMuchMatch[iTr] = mcTrackId;
+    if(trackMatch[iTr] > -1)
+      pdg[iTr] = mcTracks[trackMatch[iTr]].PDG();
   }
   
+  CbmKFVertex kfVertex;
   
-  ///Radevych
-  
-  if (NULL == fGlobalTrackArray) { Fatal("KF Particle Finder", "No GlobalTrack array!"); }
-  for (Int_t igt = 0; igt < fGlobalTrackArray->GetEntriesFast(); igt++)
+  CbmL1PFFitter fitter;
+  vector<float> vChiToPrimVtx;
+  vector<L1FieldRegion> vField;
+  fitter.Fit(vRTracks, pdg);
+  fitter.GetChiToVertex(vRTracks, vField, vChiToPrimVtx, kfVertex, 3000000);
+
+  for(unsigned int iTr=0; iTr<vRTracks.size(); iTr++)
   {
-    const CbmGlobalTrack* globalTrack = static_cast<const CbmGlobalTrack*>(fGlobalTrackArray->At(igt));
+    if(trackMatch[iTr] < 0) continue;
     
-    Int_t stsTrackIndex = globalTrack->GetStsTrackIndex();//for STS histos
-    CbmStsTrack* cbmStsTrack = (CbmStsTrack*) fTrackArray->At(stsTrackIndex);
-    int stsTrackMCIndex = trackMatch[stsTrackIndex];
-    Double_t* stsHistoData = new Double_t[NStsHisto];
-    stsHistoData[0] = cbmStsTrack->GetNofStsHits();//NHits
-    stsHistoData[1] = cbmStsTrack->GetChiSq()/cbmStsTrack->GetNDF();//Chi2/NDF
-    stsHistoData[2] = TMath::Prob(cbmStsTrack->GetChiSq(),cbmStsTrack->GetNDF());//prob
-    if(stsTrackMCIndex>-1)
+    const KFMCTrack& mcTrack = mcTracks[trackMatch[iTr]];
+    if(mcTrack.MotherId() > -1) continue;
+//    if ( vRTracks[iTr].GetNofHits() < 11 ) continue;
+    
+    const FairTrackParam* parameters = vRTracks[iTr].GetParamFirst();
+    
+    Double_t recoParam[5] = { parameters->GetX(), parameters->GetY(), parameters->GetTx(), parameters->GetTy(), parameters->GetQp() };
+    Double_t recoError[5] = { parameters->GetCovariance(0,0), parameters->GetCovariance(1,1), parameters->GetCovariance(2,2),
+                           parameters->GetCovariance(3,3), parameters->GetCovariance(4,4)  };
+    Double_t mcParam[5] = {mcTrack.X(), mcTrack.Y(), mcTrack.Px()/mcTrack.Pz(), mcTrack.Py()/mcTrack.Pz(), mcTrack.Par()[6] };
+    
+    for(int iParam=0; iParam<5; iParam++)
     {
-      for(int iDir=0; iDir<7; iDir++)
+      Double_t residual = recoParam[iParam] - mcParam[iParam];
+      if(iParam==4)
       {
-        for(int iH=0; iH<NStsHisto; iH++)
+    	Double_t pReco = fabs(1./recoParam[iParam]);
+    	Double_t pMC = fabs(1./mcParam[iParam]);
+        
+        hStsFitHisto[0][iParam]->Fill( (pReco - pMC)/pMC );
+      }
+      else
+    	  hStsFitHisto[0][iParam]->Fill(residual);
+      
+      if( recoError[iParam] >=0. )
+      {
+    	Double_t pull = residual / sqrt( recoError[iParam] );
+        hStsFitHisto[0][iParam+5]->Fill(pull);
+      } 
+    }
+  }
+  
+  //Check quality of global tracks
+  
+  vector<int> trackMuchMatch;
+  if(fMuchTrackMatchArray != NULL)
+  {
+    Int_t nMuchTrackMatches=fMuchTrackMatchArray->GetEntriesFast();
+    trackMuchMatch.resize(nMuchTrackMatches, -1);
+
+    for(int iTr=0; iTr<nMuchTrackMatches; iTr++)
+    {
+      CbmTrackMatchNew* muchTrackMatch = (CbmTrackMatchNew*) fMuchTrackMatchArray->At(iTr);
+      if(muchTrackMatch -> GetNofLinks() == 0) continue;
+      Float_t bestWeight = 0.f;
+      Float_t totalWeight = 0.f;
+      Int_t mcTrackId = -1;
+      for(int iLink=0; iLink<muchTrackMatch -> GetNofLinks(); iLink++)
+      {
+        totalWeight += muchTrackMatch->GetLink(iLink).GetWeight();
+        if( muchTrackMatch->GetLink(iLink).GetWeight() > bestWeight)
         {
-          if(iDir == 0)//tracks
-            hStsHisto[iDir][iH]->Fill(stsHistoData[iH]);
-          if(TMath::Abs(mcTracks[stsTrackMCIndex].PDG()) == 11 && iDir==1)//e
-            hStsHisto[iDir][iH]->Fill(stsHistoData[iH]);
-          if(TMath::Abs(mcTracks[stsTrackMCIndex].PDG()) == 13 && iDir==2)//mu
-            hStsHisto[iDir][iH]->Fill(stsHistoData[iH]);
-          if(TMath::Abs(mcTracks[stsTrackMCIndex].PDG()) == 211 && iDir==3)//pi
-            hStsHisto[iDir][iH]->Fill(stsHistoData[iH]);
-          if(TMath::Abs(mcTracks[stsTrackMCIndex].PDG()) == 321 && iDir==4)//K
-            hStsHisto[iDir][iH]->Fill(stsHistoData[iH]);
-          if(TMath::Abs(mcTracks[stsTrackMCIndex].PDG()) == 2212 && iDir==5)//p
-            hStsHisto[iDir][iH]->Fill(stsHistoData[iH]);
-          if(TMath::Abs(mcTracks[stsTrackMCIndex].PDG()) > 1000000000 && iDir==6)//fragments
-            hStsHisto[iDir][iH]->Fill(stsHistoData[iH]); 
+          bestWeight = muchTrackMatch->GetLink(iLink).GetWeight();
+          mcTrackId = muchTrackMatch->GetLink(iLink).GetIndex();
         }
       }
-      
-    }
-    else
-      for(int iH=0; iH<NStsHisto; iH++)//ghost
-        hStsHisto[7][iH]->Fill(stsHistoData[iH]);
-    delete [] stsHistoData;
-    
-    
-    Int_t muchIndex = globalTrack->GetMuchTrackIndex();//for MuCh histos
-    if(muchIndex>-1)
-    {
-      CbmMuchTrack* muchTrack = (CbmMuchTrack*)fMuchTrackArray->At(muchIndex);
-      
-      int muchTrackMCIndex = trackMuchMatch[muchIndex];
-      
-      Double_t* muchHistoData = new Double_t[NMuchHisto];
-      muchHistoData[0] = muchTrack->GetNofHits();//NHits
-      muchHistoData[1] = GetZtoNStation(muchTrack->GetParamFirst()->GetZ());//FirstStation
-      muchHistoData[2] = GetZtoNStation(muchTrack->GetParamLast()->GetZ());//LastStation
-      muchHistoData[3] = muchTrack->GetChiSq()/muchTrack->GetNDF();//Chi2/NDF
-      muchHistoData[4] = TMath::Prob(muchTrack->GetChiSq(),muchTrack->GetNDF());//prob
-//       std::cout << "stsTrackMCIndex = " << stsTrackMCIndex << std::endl;
-//       std::cout << "muchTrackMCIndex = " << muchTrackMCIndex << std::endl;
-//       std::cin.get();
-      if(stsTrackMCIndex<0 || stsTrackMCIndex!=muchTrackMCIndex) //ghost
-        for(int iH=0; iH<NMuchHisto; iH++)
-          hMuchHisto[2][iH]->Fill(muchHistoData[iH]);
-      else
+      if(bestWeight/totalWeight < 0.7) continue;
+      if(mcTrackId >= nMCTracks || mcTrackId < 0)
       {
-        if(TMath::Abs(mcTracks[stsTrackMCIndex].PDG()) == 13) //muon 
-          for(int iH=0; iH<NMuchHisto; iH++)
-            hMuchHisto[0][iH]->Fill(muchHistoData[iH]);
-        else //BG
-          for(int iH=0; iH<NMuchHisto; iH++)
-            hMuchHisto[1][iH]->Fill(muchHistoData[iH]);
+        std::cout << "Much Matching is wrong!    MuchTackId = " << mcTrackId << " N mc tracks = " << nMCTracks << std::endl;
+        continue;
       }
-      delete [] muchHistoData;
+      
+      trackMuchMatch[iTr] = mcTrackId;
     }
- 
   }
   
+  if (fGlobalTrackArray == NULL) 
+    Warning("KF Track QA", "No GlobalTrack array!"); 
+  else
+  {
+    for (Int_t igt = 0; igt < fGlobalTrackArray->GetEntriesFast(); igt++)
+    {
+      const CbmGlobalTrack* globalTrack = static_cast<const CbmGlobalTrack*>(fGlobalTrackArray->At(igt));
+      
+      Int_t stsTrackIndex = globalTrack->GetStsTrackIndex();//for STS histos
+      CbmStsTrack* cbmStsTrack = (CbmStsTrack*) fTrackArray->At(stsTrackIndex);
+      int stsTrackMCIndex = trackMatch[stsTrackIndex];
+      Double_t* stsHistoData = new Double_t[NStsHisto];
+      stsHistoData[0] = cbmStsTrack->GetNofHits();//NHits
+      stsHistoData[1] = cbmStsTrack->GetChiSq()/cbmStsTrack->GetNDF();//Chi2/NDF
+      stsHistoData[2] = TMath::Prob(cbmStsTrack->GetChiSq(),cbmStsTrack->GetNDF());//prob
+      if(stsTrackMCIndex>-1)
+      {
+        for(int iDir=0; iDir<7; iDir++)
+        {
+          for(int iH=0; iH<NStsHisto; iH++)
+          {
+            if(iDir == 0)//tracks
+              hStsHisto[iDir][iH]->Fill(stsHistoData[iH]);
+            if(TMath::Abs(mcTracks[stsTrackMCIndex].PDG()) == 11 && iDir==1)//e
+              hStsHisto[iDir][iH]->Fill(stsHistoData[iH]);
+            if(TMath::Abs(mcTracks[stsTrackMCIndex].PDG()) == 13 && iDir==2)//mu
+              hStsHisto[iDir][iH]->Fill(stsHistoData[iH]);
+            if(TMath::Abs(mcTracks[stsTrackMCIndex].PDG()) == 211 && iDir==3)//pi
+              hStsHisto[iDir][iH]->Fill(stsHistoData[iH]);
+            if(TMath::Abs(mcTracks[stsTrackMCIndex].PDG()) == 321 && iDir==4)//K
+              hStsHisto[iDir][iH]->Fill(stsHistoData[iH]);
+            if(TMath::Abs(mcTracks[stsTrackMCIndex].PDG()) == 2212 && iDir==5)//p
+              hStsHisto[iDir][iH]->Fill(stsHistoData[iH]);
+            if(TMath::Abs(mcTracks[stsTrackMCIndex].PDG()) > 1000000000 && iDir==6)//fragments
+              hStsHisto[iDir][iH]->Fill(stsHistoData[iH]); 
+          }
+        }
+        
+      }
+      else
+        for(int iH=0; iH<NStsHisto; iH++)//ghost
+          hStsHisto[7][iH]->Fill(stsHistoData[iH]);
+      delete [] stsHistoData;
+      
+      
+      Int_t muchIndex = globalTrack->GetMuchTrackIndex();//for MuCh histos
+      if(muchIndex>-1)
+      {
+        CbmMuchTrack* muchTrack = (CbmMuchTrack*)fMuchTrackArray->At(muchIndex);
+        
+        int muchTrackMCIndex = trackMuchMatch[muchIndex];
+        
+        Double_t* muchHistoData = new Double_t[NMuchHisto];
+        muchHistoData[0] = muchTrack->GetNofHits();//NHits
+        muchHistoData[1] = GetZtoNStation(muchTrack->GetParamFirst()->GetZ());//FirstStation
+        muchHistoData[2] = GetZtoNStation(muchTrack->GetParamLast()->GetZ());//LastStation
+        muchHistoData[3] = muchTrack->GetChiSq()/muchTrack->GetNDF();//Chi2/NDF
+        muchHistoData[4] = TMath::Prob(muchTrack->GetChiSq(),muchTrack->GetNDF());//prob
+
+        if(stsTrackMCIndex<0 || stsTrackMCIndex!=muchTrackMCIndex) //ghost
+          for(int iH=0; iH<NMuchHisto; iH++)
+            hMuchHisto[2][iH]->Fill(muchHistoData[iH]);
+        else
+        {
+          if(TMath::Abs(mcTracks[stsTrackMCIndex].PDG()) == 13) //muon 
+            for(int iH=0; iH<NMuchHisto; iH++)
+              hMuchHisto[0][iH]->Fill(muchHistoData[iH]);
+          else //BG
+            for(int iH=0; iH<NMuchHisto; iH++)
+              hMuchHisto[1][iH]->Fill(muchHistoData[iH]);
+        }
+        delete [] muchHistoData;
+      }
+  
+    }
+  }  
 }
 
 void CbmKFTrackQA::Finish()
@@ -424,6 +505,8 @@ Int_t CbmKFTrackQA::GetZtoNStation(Double_t getZ)
   if(TMath::Abs(getZ-500)<=2.0) return 16;
   if(TMath::Abs(getZ-510)<=2.0) return 17;
   if(TMath::Abs(getZ-520)<=2.0) return 18;
+
+  return -1;
 }
 
 ClassImp(CbmKFTrackQA);

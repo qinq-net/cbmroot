@@ -171,9 +171,10 @@ InitStatus CbmKF::Init()
         vMvdMaterial.push_back(tube);
         MvdStationIDMap.insert(pair<Int_t,Int_t>(tube.ID, ist ) );
 
-        if( fVerbose ) cout<<" Mvd material ( id, z, dz, r, R, RadL )= ( "
+        if( fVerbose ) cout<<" Mvd material ( id, z, dz, r, R, RadL, dz/RadL )= ( "
                            << tube.ID<<", " << tube.z<<", " << tube.dz
-                           <<", " << tube.r<<", " << tube.R<<", " << tube.RadLength<<" )"<<endl;
+                           <<", " << tube.r<<", " << tube.R<<", " << tube.RadLength<<", "
+						   <<tube.dz/tube.RadLength<<" )"<<endl;
       }
     }
   }
@@ -209,9 +210,10 @@ InitStatus CbmKF::Init()
 	vStsMaterial.push_back(tube);
 	StsStationIDMap.insert(pair<Int_t,Int_t>(tube.ID, ist ) );
 	
-	if( fVerbose ) cout<<" Sts material ( id, z, dz, r, R, RadL )= ( "
+	if( fVerbose ) cout<<" Sts material ( id, z, dz, r, R, RadL, dz/RadL )= ( "
 			   << tube.ID<<", " << tube.z<<", " << tube.dz
-			   <<", " << tube.r<<", " << tube.R<<", " << tube.RadLength<<" )"<<endl;	
+			   <<", " << tube.r<<", " << tube.R<<", " << tube.RadLength<<", "
+			   <<tube.dz/tube.RadLength<<" )"<<endl;
       }
   
   //=== Rich ===

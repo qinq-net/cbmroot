@@ -80,6 +80,7 @@ class CbmKFTrackQA : public FairTask {
     //STS
   static const int NStsHisto = 3;
   TH1F* hStsHisto[8][NStsHisto]; //All tracks, electrons, muons, pion, kaon, protons, fragments, ghost
+  TH1F* hStsFitHisto[8][10];
     //Much
   static const int NMuchHisto = 5;
   TH1F* hMuchHisto[3][NMuchHisto]; //Muons, Background, Ghost
