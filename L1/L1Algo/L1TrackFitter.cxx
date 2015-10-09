@@ -35,6 +35,108 @@ namespace NS_L1TrackFitter{
 }
 using namespace NS_L1TrackFitter;
 
+void InvertCholetsky3(fvec a[6])
+{
+  fvec d[3], uud, u[3][3];
+  for(int i=0; i<3; i++)
+  {
+    d[i]=0.f;
+    for(int j=0; j<3; j++)
+      u[i][j]=0.f;
+  }
+
+  for(int i=0; i<3; i++)
+  {
+    uud=0.f;
+    for(int j=0; j<i; j++)
+      uud += u[j][i]*u[j][i]*d[j];
+    uud = a[i*(i+3)/2] - uud;
+
+    fvec smallval = 1.e-7;
+    fvec initialised = fvec( uud<smallval );
+    uud = ((!initialised) & uud) + (smallval & initialised);
+
+    d[i] = uud/fabs(uud);
+    u[i][i] = sqrt(fabs(uud));
+
+    for(int j=i+1; j<3; j++)
+    {
+      uud = 0.f;
+      for(int k=0; k<i; k++)
+        uud += u[k][i]*u[k][j]*d[k];
+      uud = a[j*(j+1)/2+i]/*a[i][j]*/ - uud;
+      u[i][j] = d[i]/u[i][i]*uud;
+    }
+  }
+
+  fvec u1[3];
+
+  for(int i=0; i<3; i++)
+  {
+    u1[i] = u[i][i];
+    u[i][i] = 1.f/u[i][i];
+  }
+  for(int i=0; i<2; i++)
+  {
+    u[i][i+1] = - u[i][i+1]*u[i][i]*u[i+1][i+1];
+  }
+  for(int i=0; i<1; i++)
+  {
+    u[i][i+2] = u[i][i+1]*u1[i+1]*u[i+1][i+2]-u[i][i+2]*u[i][i]*u[i+2][i+2];
+  }
+
+  for(int i=0; i<3; i++)
+    a[i+3] = u[i][2]*u[2][2]*d[2];
+  for(int i=0; i<2; i++)
+    a[i+1] = u[i][1]*u[1][1]*d[1] + u[i][2]*u[1][2]*d[2];
+  a[0] = u[0][0]*u[0][0]*d[0] + u[0][1]*u[0][1]*d[1] + u[0][2]*u[0][2]*d[2] ;
+}
+
+void InvertCholetsky2(fvec a[6])
+{
+  fvec d[2], uud, u[2][2];
+  for(int i=0; i<2; i++)
+  {
+    d[i]=0.f;
+    for(int j=0; j<2; j++)
+      u[i][j]=0.f;
+  }
+
+  for(int i=0; i<2; i++)
+  {
+    uud=0.f;
+    uud += u[0][1]*u[0][1]*d[0];
+    uud = a[i*(i+3)/2] - uud;
+
+    fvec smallval = 1.e-7;
+    fvec initialised = fvec( uud<smallval );
+    uud = ((!initialised) & uud) + (smallval & initialised);
+
+    d[i] = uud/fabs(uud);
+    u[i][i] = sqrt(fabs(uud));
+
+    uud = 0.f;
+    for(int k=0; k<i; k++)
+      uud += u[k][i]*u[k][1]*d[k];
+    uud = a[i+1] - uud;
+    u[i][1] = d[i]/u[i][i]*uud;
+  }
+
+  for(int i=0; i<3; i++)
+  {
+    u[i][i] = 1.f/u[i][i];
+  }
+  u[0][1] = - u[0][1]*u[0][0]*u[1][1];
+
+//  for(int i=0; i<2; i++)
+//    a[i+3] = u[i][2]*u[2][2]*d[2];
+//  for(int i=0; i<2; i++)
+//    a[i+1] = u[i][1]*u[1][1]*d[1] + u[i][2]*u[1][2]*d[2];
+  a[1] = u[0][1]*u[1][1]*d[1];
+  a[2] = d[1]*u[1][1]*u[1][1];
+  a[0] = u[0][0]*u[0][0]*d[0] + u[0][1]*u[0][1]*d[1];
+}
+
   /// Fit reconstracted track like it fitted during the reconstruction.
 void L1Algo::KFTrackFitter_simple()  // TODO: Add pipe.
 {
@@ -339,6 +441,7 @@ void L1Algo::L1KFTrackFitter( bool extrapolateToTheEndOfSTS )
   L1Track *t[fvecLen];
 
   L1Station *sta = vStations;
+  L1Station staFirst, staLast;
   fvec x[MaxNStations], u[MaxNStations], v[MaxNStations], y[MaxNStations], z[MaxNStations];
   fvec x_first, y_first, x_last, y_last; 
   fvec Sy[MaxNStations], w[MaxNStations];
@@ -353,6 +456,7 @@ void L1Algo::L1KFTrackFitter( bool extrapolateToTheEndOfSTS )
   }
 
   unsigned short N_vTracks = vTracks.size();
+  const fvec mass2 = 0.1395679f*0.1395679f;
 
   for(unsigned short itrack = 0; itrack < N_vTracks; itrack+=fvecLen)
   {
@@ -394,25 +498,26 @@ void L1Algo::L1KFTrackFitter( bool extrapolateToTheEndOfSTS )
           z_start[iVec] = z[ista][iVec];
           x_first[iVec] = x[ista][iVec];
           y_first[iVec] = y[ista][iVec];
+          staFirst.XYInfo.C00[iVec] = sta[ista].XYInfo.C00[iVec];
+          staFirst.XYInfo.C10[iVec] = sta[ista].XYInfo.C10[iVec];
+          staFirst.XYInfo.C11[iVec] = sta[ista].XYInfo.C11[iVec];
         }
         else if(i == nHitsTrack-1) {
           z_end[iVec] = z[ista][iVec];
           x_last[iVec] = x[ista][iVec];
           y_last[iVec] = y[ista][iVec];
+          staLast.XYInfo.C00[iVec] = sta[ista].XYInfo.C00[iVec];
+          staLast.XYInfo.C10[iVec] = sta[ista].XYInfo.C10[iVec];
+          staLast.XYInfo.C11[iVec] = sta[ista].XYInfo.C11[iVec];
         }
       }
       
         // get field integrals
-#if 0
-      for(i = nHits - 1; i >= 0; i-- ){
-        L1Station &st = vStations[i];
-        Sy[i] = st.Sy;
-      }
-#else
       fscal prevZ = z_end[iVec];
       fscal cursy = 0., curSy = 0.;
       for(i = nHitsTrack - 1; i >= 0; i-- ){
         const int ista = iSta[i];
+        if(w[ista][0] == 0) continue;
         L1Station &st = vStations[ista];
         const fscal curZ = z[ista][iVec];
         fscal dZ = curZ - prevZ;
@@ -422,7 +527,6 @@ void L1Algo::L1KFTrackFitter( bool extrapolateToTheEndOfSTS )
         Sy[ista][iVec] = curSy;
         prevZ = curZ;
       }
-#endif // 0
     }
 
 //fit backward
@@ -430,12 +534,12 @@ void L1Algo::L1KFTrackFitter( bool extrapolateToTheEndOfSTS )
     GuessVec( T, x, y, z, Sy, w, nHits, &z_end);
 
     for( int iter = 0; iter < 2; iter++  ) { // 1.5 iterations
-      
+
       fvec qp0 = T.qp;
 
       i = nHits-1;
 
-      FilterFirst( T, x_last, y_last, sta[i] );
+      FilterFirst( T, x_last, y_last, staLast );
 
       // L1AddMaterial( T, sta[i].materialInfo, qp0 );
 
@@ -460,20 +564,25 @@ void L1Algo::L1KFTrackFitter( bool extrapolateToTheEndOfSTS )
           // cout << z_start << " " << z_end << " " << initialised << endl;
         fvec w1 = (w[i] & (initialised));
         fvec wIn = (ONE & (initialised));
-            
+
         L1Extrapolate( T, z[i], qp0, fld, &w1 );
-        if(i == NMvdStations - 1) L1AddPipeMaterial( T, qp0, wIn );
+        if(i == NMvdStations - 1)
+        {
+          L1AddPipeMaterial( T, qp0, wIn );
+          EnergyLossCorrection( T, mass2, PipeRadThick, qp0, fvec(1.f), wIn );
+        }
 #ifdef USE_RL_TABLE
         L1AddMaterial( T, fRadThick[i].GetRadThick(T.x, T.y), qp0, wIn );
+        EnergyLossCorrection( T, mass2, fRadThick[i].GetRadThick(T.x, T.y), qp0, fvec(1.f), wIn);
 #else
         L1AddMaterial( T, sta[i].materialInfo, qp0, wIn );
 #endif
         L1Filter( T, sta[i].frontInfo, u[i], w1 );
         L1Filter( T, sta[i].backInfo,  v[i], w1 );
 
-        fB2 = fB1; 
+        fB2 = fB1;
         fz2 = fz1;
-        fB1 = fB0; 
+        fB1 = fB0;
         fz1 = fz0;
       }
       // L1AddHalfMaterial( T, sta[i].materialInfo, qp0 );
@@ -511,7 +620,7 @@ void L1Algo::L1KFTrackFitter( bool extrapolateToTheEndOfSTS )
         // fit forward
 
       i = 0;
-      FilterFirst( T, x_first, y_first, sta[i] );
+      FilterFirst( T, x_first, y_first, staFirst );
       // L1AddMaterial( T, sta[i].materialInfo, qp0 );
       qp0 = T.qp;
 
@@ -536,20 +645,25 @@ void L1Algo::L1KFTrackFitter( bool extrapolateToTheEndOfSTS )
         fvec initialised = fvec(z[i] <= z_end) & fvec(z_start < z[i]);
         fvec w1  = (w[i] & (initialised));
         fvec wIn = (ONE  & (initialised));
-            
+
         L1Extrapolate( T, z[i], qp0, fld,&w1 );
-        if(i == NMvdStations) L1AddPipeMaterial( T, qp0, wIn );
+        if(i == NMvdStations - 1)
+        {
+          L1AddPipeMaterial( T, qp0, wIn );
+          EnergyLossCorrection( T, mass2, PipeRadThick, qp0, fvec(-1.f), wIn );
+        }
 #ifdef USE_RL_TABLE
         L1AddMaterial( T, fRadThick[i].GetRadThick(T.x, T.y), qp0, wIn );
+        EnergyLossCorrection( T, mass2, fRadThick[i].GetRadThick(T.x, T.y), qp0, fvec(-1.f), wIn );
 #else
         L1AddMaterial( T, sta[i].materialInfo, qp0, wIn );
 #endif
         L1Filter( T, sta[i].frontInfo, u[i], w1 );
         L1Filter( T, sta[i].backInfo,  v[i], w1 );
 
-        fB2 = fB1; 
+        fB2 = fB1;
         fz2 = fz1;
-        fB1 = fB0; 
+        fB1 = fB0;
         fz1 = fz0;
       }
       // L1AddHalfMaterial( T, sta[i].materialInfo, qp0 );
@@ -579,18 +693,23 @@ void L1Algo::L1KFTrackFitter( bool extrapolateToTheEndOfSTS )
 
             fvec initialised = fvec(z[i] > z_end);
             fvec wIn = (ONE  & (initialised));
-            
+
             L1Extrapolate( Tout, z[i], qp0, fld,&wIn );
-            if(i == NMvdStations) L1AddPipeMaterial( Tout, qp0, wIn );
+            if(i == NMvdStations - 1)
+            {
+              L1AddPipeMaterial( Tout, qp0, wIn );
+              EnergyLossCorrection( Tout, mass2, PipeRadThick, qp0, fvec(-1.f), wIn );
+            }
 #ifdef USE_RL_TABLE
             L1AddMaterial( Tout, fRadThick[i].GetRadThick(Tout.x, Tout.y), qp0, wIn );
+            EnergyLossCorrection( Tout, mass2, fRadThick[i].GetRadThick(Tout.x, Tout.y), qp0, fvec(-1.f), wIn );
 #else
             L1AddMaterial( Tout, sta[i].materialInfo, qp0, wIn );
 #endif
 
-            fB2 = fB1; 
+            fB2 = fB1;
             fz2 = fz1;
-            fB1 = fB0; 
+            fB1 = fB0;
             fz1 = fz0;
           }
             // extrapolate to 1m
@@ -601,7 +720,7 @@ void L1Algo::L1KFTrackFitter( bool extrapolateToTheEndOfSTS )
             fvec wIn = (ONE  & (initialised));
             L1Extrapolate( Tout, zFinal, qp0, fld, &wIn ); // extra with old field
           }
-          
+
         }
         for(iVec=0; iVec<nTracks_SIMD; iVec++)
         {
@@ -662,41 +781,43 @@ void L1Algo::GuessVec( L1TrackPar &t, fvec *xV, fvec *yV, fvec *zV, fvec *Sy, fv
     wS = w*S;
     A0+=w;
     A1+=wz;  A2+=wz*z;
-    A3+=w;  A4+=w*z; A5+=wS;
-    a0+=w*x; a1+=wz*x; a2+=w*x;
-    b0+=w*y; b1+=wz*y; b2+=w*y;
+    A3+=wS;  A4+=wS*z; A5+=wS*S;
+    a0+=w*x; a1+=wz*x; a2+=wS*x;
+    b0+=w*y; b1+=wz*y; b2+=wS*y;
   }
 
-  fvec A3A3 = A3*A3;
-  fvec A3A4 = A3*A4;
-  fvec A1A5 = A1*A5;
-  fvec A2A5 = A2*A5;
-  fvec A4A4 = A4*A4;
-
-  fvec det = rcp(-A2*A3A3 + A1*( A3A4+A3A4 - A1A5) + A0*(A2A5-A4A4));
-  fvec Ai0 = ( -A4A4 + A2A5 );
-  fvec Ai1 = (  A3A4 - A1A5 );
-  fvec Ai2 = ( -A3A3 + A0*A5 );
-  fvec Ai3 = ( -A2*A3 + A1*A4 );
-  fvec Ai4 = (  A1*A3 - A0*A4 );
-  fvec Ai5 = ( -A1*A1 + A0*A2 );
+  fvec ANew[6] = {A0, A1, A2, A3, A4, A5};
+  InvertCholetsky3(ANew);
 
   fvec L, L1;
-  t.x = (Ai0*a0 + Ai1*a1 + Ai3*a2)*det;
-  t.tx = (Ai1*a0 + Ai2*a1 + Ai4*a2)*det;
+  t.x = (ANew[0]*a0 + ANew[1]*a1 + ANew[3]*a2);
+  t.tx = (ANew[1]*a0 + ANew[2]*a1 + ANew[4]*a2);
   fvec txtx1 = 1.+t.tx*t.tx;
-  L    = (Ai3*a0 + Ai4*a1 + Ai5*a2)*det *rcp(txtx1);
+  L    = (ANew[3]*a0 + ANew[4]*a1 + ANew[5]*a2) /(txtx1);
+  if(fabs(A3[0]) < 1.e-6)
+  {
+	ANew[0] = A0;
+	ANew[1] = A1;
+	ANew[2] = A2;
+	InvertCholetsky2(ANew);
+	t.x = ANew[0]*a0 + ANew[1]*a1;
+	t.tx =ANew[1]*a0 + ANew[2]*a1;
+  }
+
   L1 = L*t.tx;
   A1 = A1 + A3*L1;
-  A2 = A2 + ( A4 + A4 + /*A5*/A3*L1 )*L1;
+  A2 = A2 + ( A4 + A4 + A5*L1 )*L1;
   b1+= b2 * L1;
-  det = rcp(-A1*A1+A0*A2);
+  ANew[0] = A0;
+  ANew[1] = A1;
+  ANew[2] = A2;
+  InvertCholetsky2(ANew);
 
-  t.y = (  A2*b0 - A1*b1 )*det;
-  t.ty = ( -A1*b0 + A0*b1 )*det;
+  t.y = (  ANew[0]*b0 + ANew[1]*b1 );
+  t.ty = ( ANew[1]*b0 + ANew[2]*b1 );
 
   fvec zeroS = !fvec(fabs(A5) < fvec(1.e-8f));
-  t.qp = -L*c_light_i*rsqrt(txtx1 + t.ty*t.ty)/A5;
+  t.qp = -L*c_light_i*rsqrt(txtx1 + t.ty*t.ty);
   t.qp = t.qp & zeroS;
   t.z = z0;
 }

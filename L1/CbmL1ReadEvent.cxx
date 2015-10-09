@@ -110,9 +110,9 @@ void CbmL1::ReadEvent()
 #ifdef MVDIDEALHITS
   if(listMvdPts){
     Int_t nMC  = listMvdPts->GetEntries();
-    isUsedMvdPoint.resize(nMC);
+//    isUsedMvdPoint.resize(nMC);
     for(int iMc=0; iMc<nMC; iMc++){
-      isUsedMvdPoint[iMc]=0;
+//      isUsedMvdPoint[iMc]=0;
       TmpHit th;
       CbmMvdPoint *point = L1_DYNAMIC_CAST<CbmMvdPoint*>( listMvdPts->At(iMc) );
       th.ExtIndex = -(1+iMc);
@@ -140,7 +140,7 @@ void CbmL1::ReadEvent()
       ReadMCPoint( &MC, iMc, 1 );
       MC.iStation = th.iStation;
       vMCPoints.push_back( MC );
-      isUsedMvdPoint[iMc] = 1;
+//      isUsedMvdPoint[iMc] = 1;
       th.iMC = vMCPoints.size() - 1;
       tmpHits.push_back(th);
       nMvdHits++;
@@ -274,6 +274,7 @@ void CbmL1::ReadEvent()
     	  L1Station *sta = algo->vStations + NMvdStations;
     	  for(Int_t iSt=0; iSt < NStsStations; iSt++)
     	    MC.iStation = (MC.z > sta[iSt].z[0] - 2.5) ? (NMvdStations + iSt) : MC.iStation;
+//if( MC.iStation >0 ) continue;
     	  vMCPoints.push_back(MC);
         }
       }
@@ -286,6 +287,7 @@ void CbmL1::ReadEvent()
         CbmStsHit *mh = L1_DYNAMIC_CAST<CbmStsHit*>( listStsHits->At(j) );
         th.ExtIndex = j;
         th.iStation = NMvdStations + CbmStsAddress::GetElementId(mh->GetAddress(), kStsStation);//mh->GetStationNr() - 1;
+//if( CbmStsAddress::GetElementId(mh->GetAddress(), kStsStation) > 0 ) continue;
         th.isStrip  = 0;
         th.iStripF = 0;//mh->GetFrontDigiId();
         th.iStripB = 0;//mh->GetBackDigiId();
@@ -376,6 +378,19 @@ void CbmL1::ReadEvent()
       }
       else
         iMC = sh->GetRefId(); // TODO1: don't need this with FairLinks
+//
+//      if(iMC>=0)
+//      {
+//    	  CbmStsPoint* point = L1_DYNAMIC_CAST<CbmStsPoint*>( listStsPts->At(iMC) );
+//    	  Double_t z_coord = 0.5 * (point->GetZOut() + point->GetZIn());
+//
+//    	  th.x = point->GetX(z_coord);
+//          th.y = point->GetY(z_coord);
+//          L1Station &st = algo->vStations[th.iStation];
+//
+//          th.u_front = th.x*st.frontInfo.cos_phi[0] + th.y*st.frontInfo.sin_phi[0];// + gRandom->Gaus(0,0.00167432);
+//          th.u_back  = th.x*st.backInfo.cos_phi[0] + th.y*st.backInfo.sin_phi[0];// + gRandom->Gaus(0,0.00167432);
+//      }
 
       th.iMC = iMC + nMvdPoints;
       tmpHits.push_back(th);
@@ -519,7 +534,7 @@ void CbmL1::ReadEvent()
     if (ist < NMvdStations){
 #ifdef MVDIDEALHITS
       CbmMvdPoint* point = L1_DYNAMIC_CAST<CbmMvdPoint*>(listMvdPts->At(- s.ExtIndex - 1));
-      z_tmp = 0.5 * ( point->GetZOut() + point->GetZIn() );
+      z_tmp = 0.5 * ( point->GetZOut() + point->GetZ() );
 #else
       CbmMvdHit *mh_m = L1_DYNAMIC_CAST<CbmMvdHit*>( listMvdHits->At(- s.ExtIndex - 1));
       z_tmp = mh_m->GetZ();

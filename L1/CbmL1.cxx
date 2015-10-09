@@ -489,8 +489,15 @@ InitStatus CbmL1::Init()
           algo->fRadThick[iSta].table[iB].resize(NBins);
           for( int iB2 = 0; iB2 < NBins; iB2++ ) {
             algo->fRadThick[iSta].table[iB][iB2] = 0.01 * hStaRadLen->GetBinContent(iB,iB2);
-            if(algo->fRadThick[iSta].table[iB][iB2] < algo->vStations[iSta].materialInfo.RadThick[0]){
-              algo->fRadThick[iSta].table[iB][iB2] = algo->vStations[iSta].materialInfo.RadThick[0];}
+            // Correction for holes in material map
+            if(algo->fRadThick[iSta].table[iB][iB2] < algo->vStations[iSta].materialInfo.RadThick[0])
+            	if(iB2 > 0 && iB2<NBins-1)
+            	algo->fRadThick[iSta].table[iB][iB2] = TMath::Min(0.01 * hStaRadLen->GetBinContent(iB,iB2-1),
+            			                                          0.01 * hStaRadLen->GetBinContent(iB,iB2+1));
+            // Correction for the incorrect harcoded value of RadThick of MVD stations
+            if(algo->fRadThick[iSta].table[iB][iB2] < 0.0015)
+            	algo->fRadThick[iSta].table[iB][iB2]  = 0.0015;
+//              algo->fRadThick[iSta].table[iB][iB2] = algo->vStations[iSta].materialInfo.RadThick[0];
           }
         }
       }
@@ -530,8 +537,8 @@ InitStatus CbmL1::Init()
         algo->fRadThick[iSta].table[iB].resize(NBins);
         for( int iB2 = 0; iB2 < NBins; iB2++ ) {
           algo->fRadThick[iSta].table[iB][iB2] = 0.01 * hStaRadLen->GetBinContent(iB,iB2);
-          if(algo->fRadThick[iSta].table[iB][iB2] < algo->vStations[iSta].materialInfo.RadThick[0]){
-            algo->fRadThick[iSta].table[iB][iB2] = algo->vStations[iSta].materialInfo.RadThick[0];}
+          if(algo->fRadThick[iSta].table[iB][iB2] < algo->vStations[iSta].materialInfo.RadThick[0])
+            algo->fRadThick[iSta].table[iB][iB2] = algo->vStations[iSta].materialInfo.RadThick[0];
         }
       }
     }
@@ -543,7 +550,7 @@ InitStatus CbmL1::Init()
     cout << "No STS material budget file is found. Homogenious budget will be used" << endl;
     for( int iSta = algo->NMvdStations; iSta < algo->NStations; iSta++ ) {
       cout << iSta << endl;
-      algo->fRadThick[iSta].SetBins(1, 100); // mvd should be in +-100 cm square
+      algo->fRadThick[iSta].SetBins(1, 100);
       algo->fRadThick[iSta].table.resize(1);
       algo->fRadThick[iSta].table[0].resize(1);
       algo->fRadThick[iSta].table[0][0] = algo->vStations[iSta].materialInfo.RadThick[0];
@@ -628,7 +635,7 @@ void CbmL1::Reconstruct()
 
   if( fVerbose>1 ) cout<<"L1 Track finder..."<<endl;
   algo->CATrackFinder();
-  //IdealTrackFinder();
+//  IdealTrackFinder();
   if( fVerbose>1 ) cout<<"L1 Track finder ok"<<endl;
   algo->L1KFTrackFitter( fExtrapolateToTheEndOfSTS );
 //  algo->KFTrackFitter_simple();
@@ -728,20 +735,26 @@ void CbmL1::IdealTrackFinder()
     if (!MC.IsReconstructable()) continue;
     if (!(MC.ID >= 0)) continue;
 
-    if (MC.StsHits.size() < 4) continue;
+//    if (MC.StsHits.size() < 4) continue;
     L1Track algoTr;
     algoTr.NHits = 0;
-    int lastStation = -1;
+    vector<int> hitIndices(algo->NStations, -1);
+
     for (unsigned int iH = 0; iH < MC.StsHits.size(); iH++){
       const int hitI = MC.StsHits[iH];
       const CbmL1StsHit& hit = vStsHits[hitI];
-      if ( vMCPoints[hit.mcPointIds[0]].iStation <= lastStation ) { // one hit per station
-        continue;
-      }
-      lastStation = vMCPoints[hit.mcPointIds[0]].iStation;
+      const int iStation = vMCPoints[hit.mcPointIds[0]].iStation;
+      hitIndices[iStation] = hitI;
+    }
+
+    for (int iH = 0; iH < algo->NStations; iH++){
+      const int hitI = hitIndices[iH];
+      if(hitI<0) continue;
+
       algo->vRecoHits.push_back(hitI);
       algoTr.NHits++;
     }
+
     algoTr.Momentum = MC.p;
     algoTr.TFirst[0] = MC.x;
     algoTr.TFirst[1] = MC.y;

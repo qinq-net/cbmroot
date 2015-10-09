@@ -69,77 +69,6 @@ void CbmL1PFFitter::FilterFirst( L1TrackPar &track,fvec &x, fvec &y, L1Station &
   track.chi2 = ZERO;
 }
 
-fvec CbmL1PFFitter::ApproximateBetheBloch( const fvec &bg2 )
-{
-  //
-  // This is the parameterization of the Bethe-Bloch formula inspired by Geant.
-  //
-  // bg2  - (beta*gamma)^2
-  // kp0 - density [g/cm^3]
-  // kp1 - density effect first junction point
-  // kp2 - density effect second junction point
-  // kp3 - mean excitation energy [GeV]
-  // kp4 - mean Z/A
-  //
-  // The default values for the kp* parameters are for silicon.
-  // The returned value is in [GeV/(g/cm^2)].
-  //
-
-  const fvec &kp0 = 2.33f;
-  const fvec &kp1 = 0.20f;
-  const fvec &kp2 = 3.00f;
-  const fvec &kp3 = 173e-9f;
-  const fvec &kp4 = 0.49848f;
-                                           
-  const float mK  = 0.307075e-3f; // [GeV*cm^2/g]
-  const float _2me  = 1.022e-3f;    // [GeV/c^2]
-  const fvec &rho = kp0;
-  const fvec &x0  = kp1 * 2.303f;
-  const fvec &x1  = kp2 * 2.303f;
-  const fvec &mI  = kp3;
-  const fvec &mZA = kp4;
-  const fvec &maxT = _2me * bg2;    // neglecting the electron mass
-
-  //*** Density effect
-  fvec d2( 0.f );
-  const fvec x = 0.5f * log( bg2 );
-  const fvec lhwI = log( 28.816f * 1e-9f * sqrt( rho * mZA ) / mI );
-  
-  fvec init = x > x1;
-  
-  d2 = fvec(init & (lhwI + x - 0.5f));
-  const fvec &r = ( x1 - x ) / ( x1 - x0 );
-  init = (x > x0) & (x1 > x);
-  d2 = fvec(init & (lhwI + x - 0.5f + ( 0.5f - lhwI - x0 ) * r * r * r)) + fvec( (!init) & d2);
-
-  return mK*mZA*( fvec( 1.f ) + bg2 ) / bg2*( 0.5f*log( maxT * maxT / ( mI*mI ) ) - bg2 / ( fvec( 1.f ) + bg2 ) - d2 );
-}
-
-void CbmL1PFFitter::EnergyLossCorrection(L1TrackPar& T, const fvec& mass2, const fvec& radThick, fvec& qp0, float direction)
-{
-  const fvec& p2 = 1.f/(T.qp*T.qp);
-  const fvec& E2 = mass2 + p2;
-  
-  const fvec& bethe = ApproximateBetheBloch( p2/mass2 );
-    
-  const fvec& dE = bethe * radThick * 2.33f * 9.34961f;
-  
-  const fvec& E2Corrected = (sqrt(E2) + direction*dE) * (sqrt(E2) + direction*dE);
-  const fvec& corr = sqrt( p2/( E2Corrected - mass2 ) );
-  
-  for(int iV=0; iV<fvecLen; iV++)
-    if( !(corr[iV] == corr[iV]) )
-      return;
-    
-  qp0   *= corr;
-  T.qp  *= corr;
-  T.C40 *= corr;
-  T.C41 *= corr;
-  T.C42 *= corr;
-  T.C43 *= corr;
-  T.C44 *= corr * corr;
-}
-
 void CbmL1PFFitter::Fit(vector<CbmStsTrack> &Tracks, vector<int>& pidHypo)
 {      
   L1FieldValue fB0, fB1, fB2 _fvecalignment;
@@ -161,6 +90,7 @@ void CbmL1PFFitter::Fit(vector<CbmStsTrack> &Tracks, vector<int>& pidHypo)
 
   int ista;
   L1Station *sta = CbmL1::Instance()->algo->vStations;
+  L1Station staFirst, staLast;
   fvec* x = new fvec[nHits];
   fvec* u = new fvec[nHits];
   fvec* v = new fvec[nHits];
@@ -271,18 +201,24 @@ void CbmL1PFFitter::Fit(vector<CbmStsTrack> &Tracks, vector<int>& pidHypo)
           z_start[iVec] = posz;
           x_first[iVec] = x[ista][iVec];
           y_first[iVec] = y[ista][iVec];
+          staFirst.XYInfo.C00[iVec] = sta[ista].XYInfo.C00[iVec];
+          staFirst.XYInfo.C10[iVec] = sta[ista].XYInfo.C10[iVec];
+          staFirst.XYInfo.C11[iVec] = sta[ista].XYInfo.C11[iVec];
         }
         if(i == nHitsTrack-1)
         {
           z_end[iVec] = posz;
           x_last[iVec] = x[ista][iVec];
           y_last[iVec] = y[ista][iVec];
+          staLast.XYInfo.C00[iVec] = sta[ista].XYInfo.C00[iVec];
+          staLast.XYInfo.C10[iVec] = sta[ista].XYInfo.C10[iVec];
+          staLast.XYInfo.C11[iVec] = sta[ista].XYInfo.C11[iVec];
         }
       }
     }
     // fit forward
     i = 0;
-    FilterFirst( T, x_first, y_first, sta[i] );
+    FilterFirst( T, x_first, y_first, staFirst );
     fvec qp0 = T.qp;
     fz1 = z[i];
     sta[i].fieldSlice.GetFieldValue( T.x, T.y, fB1 );
@@ -305,10 +241,14 @@ void CbmL1PFFitter::Fit(vector<CbmStsTrack> &Tracks, vector<int>& pidHypo)
       fvec wIn = (ONE  & (initialised));
           
       L1Extrapolate( T, z[i], qp0, fld,&w1 );
-      if(i == NMvdStations) L1AddPipeMaterial( T, qp0, wIn );
+      if(i == NMvdStations)
+      {
+        L1AddPipeMaterial( T, qp0, wIn );
+        EnergyLossCorrection( T, mass2, PipeRadThick, qp0, fvec(-1.f), wIn );
+      }
   #ifdef USE_RL_TABLE
       L1AddMaterial( T, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, wIn, mass2 );
-      EnergyLossCorrection( T, mass2, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, -1 );
+      EnergyLossCorrection( T, mass2, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, -1, wIn );
   #else
       L1AddMaterial( T, sta[i].materialInfo, qp0, wIn, mass2 );
   #endif
@@ -355,7 +295,7 @@ void CbmL1PFFitter::Fit(vector<CbmStsTrack> &Tracks, vector<int>& pidHypo)
 
     i= nHits-1;
 
-    FilterFirst( T, x_last, y_last, sta[i] );
+    FilterFirst( T, x_last, y_last, staLast );
 
     fz1 = z[i];
     sta[i].fieldSlice.GetFieldValue( T.x, T.y, fB1 );
@@ -379,10 +319,14 @@ void CbmL1PFFitter::Fit(vector<CbmStsTrack> &Tracks, vector<int>& pidHypo)
       fvec wIn = (ONE & (initialised));
 
       L1Extrapolate( T, z[i], qp0, fld, &w1 );
-      if(i == NMvdStations - 1) L1AddPipeMaterial( T, qp0, wIn );
+      if(i == NMvdStations - 1)
+      {
+         L1AddPipeMaterial( T, qp0, wIn );
+         EnergyLossCorrection( T, mass2, PipeRadThick, qp0, fvec(1.f), wIn );
+      }
   #ifdef USE_RL_TABLE
       L1AddMaterial( T, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, wIn, mass2 );
-      EnergyLossCorrection( T, mass2, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, 1 );
+      EnergyLossCorrection( T, mass2, CbmL1::Instance()->algo->fRadThick[i].GetRadThick(T.x, T.y), qp0, 1, wIn );
   #else
       L1AddMaterial( T, sta[i].materialInfo, qp0, wIn, mass2 );
   #endif
@@ -514,7 +458,7 @@ void CbmL1PFFitter::GetChiToVertex(vector<CbmStsTrack> &Tracks, vector<L1FieldRe
           posx = hit->GetX();
           posy = hit->GetY();
           posz = hit->GetZ();
-          ista = posz < 7.f ? 0 : 1;
+          ista = hit->GetStationNr();
         }
         else
         {
@@ -548,11 +492,20 @@ void CbmL1PFFitter::GetChiToVertex(vector<CbmStsTrack> &Tracks, vector<L1FieldRe
       w = fvec(w & initialized);
 
       L1Extrapolate( T, zSta[iSt], T.qp, fld, &w );
-      if(iSt == NMvdStations - 1) L1AddPipeMaterial( T, T.qp, w, mass2);
+      if(iSt == NMvdStations - 1)
+      {
+        L1AddPipeMaterial( T, T.qp, w, mass2);
+        EnergyLossCorrection( T, mass2, PipeRadThick, T.qp, fvec(1.f), w);
+      }
       L1AddMaterial( T, CbmL1::Instance()->algo->fRadThick[iSt].GetRadThick(T.x, T.y), T.qp, w, mass2);
+      EnergyLossCorrection( T, mass2, CbmL1::Instance()->algo->fRadThick[iSt].GetRadThick(T.x, T.y), T.qp, fvec(1.f), w);
     }
     fvec ONE=1;
-    if( NMvdStations <= 0 ) L1AddPipeMaterial( T, T.qp, ONE, mass2);
+    if( NMvdStations <= 0 )
+    {
+      L1AddPipeMaterial( T, T.qp, ONE, mass2);
+      EnergyLossCorrection( T, mass2, PipeRadThick, T.qp, fvec(1.f), ONE);
+    }
     L1Extrapolate( T, primVtx.GetRefZ(), T.qp, fld);
 
     Double_t Cv[3] = { primVtx.GetCovMatrix()[0], primVtx.GetCovMatrix()[1], primVtx.GetCovMatrix()[2] };
@@ -655,7 +608,7 @@ void CbmL1PFFitter::CalculateFieldRegion(vector<CbmStsTrack> &Tracks, vector<L1F
           posx = hit->GetX();
           posy = hit->GetY();
           posz = hit->GetZ();
-          ista = posz < 7.f ? 0 : 1;
+          ista = hit->GetStationNr();
         }
         else
         {

@@ -1060,25 +1060,29 @@ void CbmL1::TrackFitPerformance()
       L1TrackPar trPar(it->T,it->C);
       L1FieldRegion fld _fvecalignment;
       L1FieldValue B[3], targB _fvecalignment;
-      float z[3];
-      for (unsigned int ih = 0; ih < 3; ih++){
-        if(ih >= mc.Points.size()) continue;	//If nofMCPoints in track < 3
-        const int iMCP = mc.Points[ih];
+      float z[3] = {0.f, 0.f, 0.f};
+      int ih = 0;
+      for (unsigned int iMCPoint = 0; iMCPoint < mc.Points.size(); iMCPoint++){
+        const int iMCP = mc.Points[iMCPoint];
         CbmL1MCPoint &mcP = vMCPoints[iMCP];
         L1Station &st = algo->vStations[mcP.iStation];
         z[ih] = st.z[0];
+        if(ih>0 && (z[ih] - z[ih-1])<0.1) continue;
         st.fieldSlice.GetFieldValue( mcP.x, mcP.y, B[ih] );
+        ih++;
+        if(ih==3) break;
       }
+      if(ih < 3) continue;
       CbmL1MCPoint &mcP = vMCPoints[mc.Points[0]];
       targB = algo->vtxFieldValue;
       fld.Set( B[0], z[0], B[1], z[1], B[2], z[2] );
       L1Extrapolate(trPar, mcP.zIn, trPar.qp, fld);
 
-      h_fit[0]->Fill( (mcP.xIn-trPar.x[0]) *1.e4);
-      h_fit[1]->Fill( (mcP.yIn-trPar.y[0]) *1.e4);
-      h_fit[2]->Fill((mcP.pxIn/mcP.pzIn-trPar.tx[0])*1.e3);
-      h_fit[3]->Fill((mcP.pyIn/mcP.pzIn-trPar.ty[0])*1.e3);
-      h_fit[4]->Fill(trPar.qp[0]/mcP.q*mcP.p-1);
+      h_fit[0]->Fill( (trPar.x[0]-mcP.xIn) *1.e4);
+      h_fit[1]->Fill( (trPar.y[0]-mcP.yIn) *1.e4);
+      h_fit[2]->Fill((trPar.tx[0]-mcP.pxIn/mcP.pzIn)*1.e3);
+      h_fit[3]->Fill((trPar.ty[0]-mcP.pyIn/mcP.pzIn)*1.e3);
+      h_fit[4]->Fill(fabs(1./trPar.qp[0])/mcP.p-1);
 
       PRes2D->Fill( mcP.p, (1./fabs(trPar.qp[0]) - mcP.p)/mcP.p*100. );
 
@@ -1088,11 +1092,11 @@ void CbmL1::TrackFitPerformance()
       else
         PRes2DSec->Fill( mcP.p, (1./fabs(trPar.qp[0]) - mcP.p)/mcP.p*100. );
 
-      if( finite(trPar.C00[0]) && trPar.C00[0]>0 ) h_fit[5]->Fill( (mcP.xIn-trPar.x[0])/sqrt(trPar.C00[0]));
-      if( finite(trPar.C11[0]) && trPar.C11[0]>0 ) h_fit[6]->Fill( (mcP.yIn-trPar.y[0])/sqrt(trPar.C11[0]));
-      if( finite(trPar.C22[0]) && trPar.C22[0]>0 ) h_fit[7]->Fill( (mcP.pxIn/mcP.pzIn-trPar.tx[0])/sqrt(trPar.C22[0]));
-      if( finite(trPar.C33[0]) && trPar.C33[0]>0 ) h_fit[8]->Fill( (mcP.pyIn/mcP.pzIn-trPar.ty[0])/sqrt(trPar.C33[0]));
-      if( finite(trPar.C44[0]) && trPar.C44[0]>0 ) h_fit[9]->Fill( (mcP.q/mcP.p-trPar.qp[0])/sqrt(trPar.C44[0]));
+      if( finite(trPar.C00[0]) && trPar.C00[0]>0 ) h_fit[5]->Fill( (trPar.x[0]-mcP.xIn)/sqrt(trPar.C00[0]));
+      if( finite(trPar.C11[0]) && trPar.C11[0]>0 ) h_fit[6]->Fill( (trPar.y[0]-mcP.yIn)/sqrt(trPar.C11[0]));
+      if( finite(trPar.C22[0]) && trPar.C22[0]>0 ) h_fit[7]->Fill( (trPar.tx[0]-mcP.pxIn/mcP.pzIn)/sqrt(trPar.C22[0]));
+      if( finite(trPar.C33[0]) && trPar.C33[0]>0 ) h_fit[8]->Fill( (trPar.ty[0]-mcP.pyIn/mcP.pzIn)/sqrt(trPar.C33[0]));
+      if( finite(trPar.C44[0]) && trPar.C44[0]>0 ) h_fit[9]->Fill( (trPar.qp[0]-mcP.q/mcP.p)/sqrt(trPar.C44[0]));
       h_fit[10]->Fill(trPar.qp[0]);
       h_fit[11]->Fill(mcP.q/mcP.p);
 #else
@@ -1129,16 +1133,16 @@ void CbmL1::TrackFitPerformance()
       int iMC = vHitMCRef[it->StsHits.back()]; // TODO2: adapt to linking
       if (iMC < 0) continue;
       CbmL1MCPoint &mc = vMCPoints[iMC];
-      h_fitL[0]->Fill( (mc.x-it->TLast[0]) *1.e4);
-      h_fitL[1]->Fill( (mc.y-it->TLast[1]) *1.e4);
-      h_fitL[2]->Fill((mc.px/mc.pz-it->TLast[2])*1.e3);
-      h_fitL[3]->Fill((mc.py/mc.pz-it->TLast[3])*1.e3);
-      h_fitL[4]->Fill(it->T[4]/mc.q*mc.p-1);
-      if( finite(it->CLast[0]) && it->CLast[0]>0 ) h_fitL[5]->Fill( (mc.x-it->TLast[0])/sqrt(it->CLast[0]));
-      if( finite(it->CLast[2]) && it->CLast[2]>0 ) h_fitL[6]->Fill( (mc.y-it->TLast[1])/sqrt(it->CLast[2]));
-      if( finite(it->CLast[5]) && it->CLast[5]>0 ) h_fitL[7]->Fill( (mc.px/mc.pz-it->TLast[2])/sqrt(it->CLast[5]));
-      if( finite(it->CLast[9]) && it->CLast[9]>0 ) h_fitL[8]->Fill( (mc.py/mc.pz-it->TLast[3])/sqrt(it->CLast[9]));
-      if( finite(it->CLast[14]) && it->CLast[14]>0 ) h_fitL[9]->Fill( (mc.q/mc.p-it->TLast[4])/sqrt(it->CLast[14]));
+      h_fitL[0]->Fill( (it->TLast[0]-mc.x) *1.e4);
+      h_fitL[1]->Fill( (it->TLast[1]-mc.y) *1.e4);
+      h_fitL[2]->Fill((it->TLast[2]-mc.px/mc.pz)*1.e3);
+      h_fitL[3]->Fill((it->TLast[3]-mc.py/mc.pz)*1.e3);
+      h_fitL[4]->Fill(fabs(1./it->T[4])/mc.p-1);
+      if( finite(it->CLast[0]) && it->CLast[0]>0 ) h_fitL[5]->Fill( (it->TLast[0]-mc.x)/sqrt(it->CLast[0]));
+      if( finite(it->CLast[2]) && it->CLast[2]>0 ) h_fitL[6]->Fill( (it->TLast[1]-mc.y)/sqrt(it->CLast[2]));
+      if( finite(it->CLast[5]) && it->CLast[5]>0 ) h_fitL[7]->Fill( (it->TLast[2]-mc.px/mc.pz)/sqrt(it->CLast[5]));
+      if( finite(it->CLast[9]) && it->CLast[9]>0 ) h_fitL[8]->Fill( (it->TLast[3]-mc.py/mc.pz)/sqrt(it->CLast[9]));
+      if( finite(it->CLast[14]) && it->CLast[14]>0 ) h_fitL[9]->Fill( (it->TLast[4]-mc.q/mc.p)/sqrt(it->CLast[14]));
       h_fitL[10]->Fill(it->TLast[4]);
       h_fitL[11]->Fill(mc.q/mc.p);
     }
@@ -1187,21 +1191,20 @@ void CbmL1::TrackFitPerformance()
         // calculate pulls
         //h_fitSV[0]->Fill( (mc.x-trPar.x[0]) *1.e4);
         //h_fitSV[1]->Fill( (mc.y-trPar.y[0]) *1.e4);
-        h_fitSV[0]->Fill( (mc.x-trPar.x[0]) );
-        h_fitSV[1]->Fill( (mc.y-trPar.y[0]) );
-        h_fitSV[2]->Fill((mc.px/mc.pz-trPar.tx[0])*1.e3);
-        h_fitSV[3]->Fill((mc.py/mc.pz-trPar.ty[0])*1.e3);
-        h_fitSV[4]->Fill(trPar.qp[0]/mc.q*mc.p-1);
-        if( finite(trPar.C00[0]) && trPar.C00[0]>0 ) h_fitSV[5]->Fill( (mc.x-trPar.x[0])/sqrt(trPar.C00[0]));
-        if( finite(trPar.C11[0]) && trPar.C11[0]>0 ) h_fitSV[6]->Fill( (mc.y-trPar.y[0])/sqrt(trPar.C11[0]));
-        if( finite(trPar.C22[0]) && trPar.C22[0]>0 ) h_fitSV[7]->Fill( (mc.px/mc.pz-trPar.tx[0])/sqrt(trPar.C22[0]));
-        if( finite(trPar.C33[0]) && trPar.C33[0]>0 ) h_fitSV[8]->Fill( (mc.py/mc.pz-trPar.ty[0])/sqrt(trPar.C33[0]));
-        if( finite(trPar.C44[0]) && trPar.C44[0]>0 ) h_fitSV[9]->Fill( (mc.q/mc.p-trPar.qp[0])/sqrt(trPar.C44[0]));
+        h_fitSV[0]->Fill( (trPar.x[0]-mc.x) );
+        h_fitSV[1]->Fill( (trPar.y[0]-mc.y) );
+        h_fitSV[2]->Fill((trPar.tx[0]-mc.px/mc.pz)*1.e3);
+        h_fitSV[3]->Fill((trPar.ty[0]-mc.py/mc.pz)*1.e3);
+        h_fitSV[4]->Fill(fabs(1./trPar.qp[0])/mc.p-1);
+        if( finite(trPar.C00[0]) && trPar.C00[0]>0 ) h_fitSV[5]->Fill( (trPar.x[0]-mc.x)/sqrt(trPar.C00[0]));
+        if( finite(trPar.C11[0]) && trPar.C11[0]>0 ) h_fitSV[6]->Fill( (trPar.y[0]-mc.y)/sqrt(trPar.C11[0]));
+        if( finite(trPar.C22[0]) && trPar.C22[0]>0 ) h_fitSV[7]->Fill( (trPar.tx[0]-mc.px/mc.pz)/sqrt(trPar.C22[0]));
+        if( finite(trPar.C33[0]) && trPar.C33[0]>0 ) h_fitSV[8]->Fill( (trPar.ty[0]-mc.py/mc.pz)/sqrt(trPar.C33[0]));
+        if( finite(trPar.C44[0]) && trPar.C44[0]>0 ) h_fitSV[9]->Fill( (trPar.qp[0]-mc.q/mc.p)/sqrt(trPar.C44[0]));
         h_fitSV[10]->Fill(trPar.qp[0]);
         h_fitSV[11]->Fill(mc.q/mc.p);
       }
       else{ // primary
-        if (vHitStore[it->StsHits[0]].iStation != 0) continue; // only mvd tracks
 
 #define L1EXTRAPOLATE
 #ifdef L1EXTRAPOLATE
@@ -1209,49 +1212,63 @@ void CbmL1::TrackFitPerformance()
           L1FieldRegion fld _fvecalignment;
           L1FieldValue B[3], targB _fvecalignment;
           float z[3];
-          for (int ih = 0; ih < 3; ih++){
-            const int iMCP = mc.Points[ih];
-            CbmL1MCPoint &mcP = vMCPoints[iMCP];
-            L1Station &st = algo->vStations[mcP.iStation];
-            z[ih] = st.z[0];
-            st.fieldSlice.GetFieldValue( mcP.x, mcP.y, B[ih] );
-          };
 
           targB = algo->vtxFieldValue;
-          fld.Set( targB, 0., B[0], z[0], B[1], z[1] );
 
-//           L1Extrapolate(trPar, mc.z, trPar.qp, fld);
-//           L1Extrapolate0(trPar, mc.z, fld);
+          int ih = 1;
+          for(unsigned int iHit=0; iHit<it->StsHits.size(); iHit++)
+          {
+            const int iStation = vHitStore[it->StsHits[iHit]].iStation;
+            L1Station &st = algo->vStations[iStation];
+            z[ih] = st.z[0];
+            st.fieldSlice.GetFieldValue( vHitStore[it->StsHits[iHit]].x, vHitStore[it->StsHits[iHit]].y, B[ih] );
+            ih++;
+            if(ih==3) break;
+          }
+          if(ih < 3) continue;
+
             // add material
           const int fSta = vHitStore[it->StsHits[0]].iStation;
+
           const int dir = (mc.z - algo->vStations[fSta].z[0])/abs(mc.z - algo->vStations[fSta].z[0]);
 //         if (abs(mc.z - algo->vStations[fSta].z[0]) > 10.) continue; // can't extrapolate on large distance
+
           for (int iSta = fSta+dir; (iSta >= 0) && (iSta < NStation) && (dir*(mc.z - algo->vStations[iSta].z[0]) > 0); iSta += dir){
 
+            z[0] = algo->vStations[iSta].z[0];
+            float dz = z[1] - z[0];
+            algo->vStations[iSta].fieldSlice.GetFieldValue( trPar.x - trPar.tx*dz, trPar.y - trPar.ty*dz, B[0] );
+            fld.Set( B[0], z[0], B[1], z[1], B[2], z[2] );
+
+        	fvec mass2 = 0.1395679f*0.1395679f;
         	L1Extrapolate(trPar, algo->vStations[iSta].z[0], trPar.qp, fld);
-            L1AddMaterial( trPar, algo->vStations[iSta].materialInfo, trPar.qp );
-            if (iSta+dir == NMvdStations-1) L1AddPipeMaterial( trPar, trPar.qp );
+            L1AddMaterial( trPar, algo->fRadThick[iSta].GetRadThick(trPar.x, trPar.y), trPar.qp );
+            EnergyLossCorrection( trPar, mass2, algo->fRadThick[iSta].GetRadThick(trPar.x, trPar.y), trPar.qp, fvec(1.f) );
+            if (iSta+dir == NMvdStations-1)
+            {
+              L1AddPipeMaterial( trPar, trPar.qp );
+              EnergyLossCorrection( trPar, mass2, PipeRadThick, trPar.qp, fvec(1.f) );
+            }
+            B[2] = B[1];
+            z[2] = z[1];
+            B[1] = B[0];
+            z[1] = z[0];
           }
+
+          z[0] = 0;
+          B[0] = targB;
+          fld.Set( B[0], z[0], B[1], z[1], B[2], z[2] );
           L1Extrapolate(trPar, mc.z, trPar.qp, fld);
         }
         if (mc.z != trPar.z[0]) continue;
-  //       static int good = 0;
-  //       static int bad = 0;
-  //       if (mc.z != trPar.z[0]){
-  //         bad++;
-  //         continue;
-  //       }
-  //       else good++;
-  //       cout << "bad\\good" << bad << " " << good << endl;
+
 
         // calculate pulls
-        //h_fitPV[0]->Fill( (mc.x-trPar.x[0]) *1.e4);
-        //h_fitPV[1]->Fill( (mc.y-trPar.y[0]) *1.e4);
         h_fitPV[0]->Fill( (mc.x-trPar.x[0]) );
         h_fitPV[1]->Fill( (mc.y-trPar.y[0]) );
         h_fitPV[2]->Fill((mc.px/mc.pz-trPar.tx[0])*1.e3);
         h_fitPV[3]->Fill((mc.py/mc.pz-trPar.ty[0])*1.e3);
-        h_fitPV[4]->Fill(trPar.qp[0]/mc.q*mc.p-1);
+        h_fitPV[4]->Fill(fabs(1/trPar.qp[0])/mc.p-1);
         if( finite(trPar.C00[0]) && trPar.C00[0]>0 ) h_fitPV[5]->Fill( (mc.x-trPar.x[0])/sqrt(trPar.C00[0]));
         if( finite(trPar.C11[0]) && trPar.C11[0]>0 ) h_fitPV[6]->Fill( (mc.y-trPar.y[0])/sqrt(trPar.C11[0]));
         if( finite(trPar.C22[0]) && trPar.C22[0]>0 ) h_fitPV[7]->Fill( (mc.px/mc.pz-trPar.tx[0])/sqrt(trPar.C22[0]));
