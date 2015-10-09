@@ -425,11 +425,8 @@ void L1Algo::KFTrackFitter_simple()  // TODO: Add pipe.
 
 void L1Algo::L1KFTrackFitter( bool extrapolateToTheEndOfSTS )
 {
-//  cout << " Start L1 Track Fitter " << endl;
   int start_hit = 0; // for interation in vRecoHits[]
 
-//  static L1FieldValue fB0, fB1, fB2 _fvecalignment;
-//  static L1FieldRegion fld _fvecalignment;
   L1FieldValue fB0, fB1, fB2 _fvecalignment;
   L1FieldRegion fld _fvecalignment;
 
@@ -561,7 +558,6 @@ void L1Algo::L1KFTrackFitter( bool extrapolateToTheEndOfSTS )
         fld.Set( fB0, fz0, fB1, fz1, fB2, fz2 );
 
         fvec initialised = fvec(z[i] < z_end) & fvec(z_start <= z[i]);
-          // cout << z_start << " " << z_end << " " << initialised << endl;
         fvec w1 = (w[i] & (initialised));
         fvec wIn = (ONE & (initialised));
 
