@@ -91,8 +91,8 @@ PairAnalysisSignalBase::PairAnalysisSignalBase() :
   fMixingCorr(kFALSE),
   fCocktailSubtr(kFALSE),
   fPeakMethod(kBinCounting),
-  fProcessed(kFALSE),
   fPeakIsTF1(kFALSE),
+  fProcessed(kFALSE),
   fPOIpdg(443),
   fExtrFunc(0x0)
 {
@@ -143,8 +143,8 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const char* name, const char* tit
   fMixingCorr(kFALSE),
   fCocktailSubtr(kFALSE),
   fPeakMethod(kBinCounting),
-  fProcessed(kFALSE),
   fPeakIsTF1(kFALSE),
+  fProcessed(kFALSE),
   fPOIpdg(443),
   fExtrFunc(0x0)
 {
@@ -195,8 +195,8 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const PairAnalysisSignalBase &c) 
   fMixingCorr(kFALSE),
   fCocktailSubtr(kFALSE),
   fPeakMethod(c.GetExtractionMethod()),
-  fProcessed(kFALSE),
   fPeakIsTF1(kFALSE),
+  fProcessed(kFALSE),
   fPOIpdg(c.GetParticleOfInterest()),
   fExtrFunc(0x0) //TODO: needed
 {
@@ -416,7 +416,7 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
   Double_t data=0.;
   Double_t mc=0.;
   Double_t massPOI=TDatabasePDG::Instance()->GetParticle(fPOIpdg)->Mass();
-  Double_t sigPOI =TDatabasePDG::Instance()->GetParticle(fPOIpdg)->Width();
+  Double_t sigPOI =massPOI*0.02;
   Double_t nPOI     = fHistSignal->GetBinContent(fHistSignal->FindBin(massPOI));
   Double_t binWidth = fHistSignal->GetBinWidth(  fHistSignal->FindBin(massPOI));
   TF1 *fit=0x0;
@@ -456,21 +456,21 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
     if(!fgHistSimPM) fgHistSimPM=mcShape;
     if(fgHistSimPM->GetBinWidth(1)!=fHistSignal->GetBinWidth(1)) fgHistSimPM->Rebin(fRebin);
     //    fit = new TF1("fitMC",PairAnalysisSignalFunc::PeakFunMC,fFitMin,fFitMax,1);
-    fit = new TF1("fitMC",fExtrFunc,&PairAnalysisFunction::PeakFunMC,fFitMin,fFitMax,1);
+    fit = new TF1("MC",fExtrFunc,&PairAnalysisFunction::PeakFunMC,fFitMin,fFitMax,1);
     fit->SetParNames("N");
     fitResult = fHistSignal->Fit(fit,"RNI0Q");
     break;
 
   case kCrystalBall:
-    fit = new TF1("fitCB",fExtrFunc,&PairAnalysisFunction::PeakFunCB,fFitMin,fFitMax,5);
+    fit = new TF1("Crystal Ball",fExtrFunc,&PairAnalysisFunction::PeakFunCB,fFitMin,fFitMax,5);
     fit->SetParNames("alpha","n","meanx","sigma","N");
     //  fit->SetParameters(-.2,5.,gMjpsi,.06,20);
     //  fit->SetParameters(1.,3.6,gMjpsi,.08,700);
-    fit->SetParameters(0.4, 4.0, massPOI, sigPOI*2, 1.3*nPOI);
+    fit->SetParameters(0.4, 4.0, massPOI, sigPOI, 1.3*nPOI);
     fit->SetParLimits(0, 0.0,           1.           );
     fit->SetParLimits(1, 0.01,          10.          );
-    fit->SetParLimits(2, massPOI-5*sigPOI,  massPOI+5*sigPOI );
-    fit->SetParLimits(3, sigPOI,        10*sigPOI         );
+    fit->SetParLimits(2, massPOI-sigPOI,  massPOI+sigPOI );
+    fit->SetParLimits(3, sigPOI/5,        5*sigPOI         );
     fit->SetParLimits(4, 0.2*nPOI,      2.0*nPOI     );
     parMass=2;
     parSigma=3;
@@ -478,13 +478,13 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
     break;
 
   case kGaus:
-    fit = new TF1("fitGaus",fExtrFunc,&PairAnalysisFunction::PeakFunGaus,fFitMin,fFitMax,3);
+    fit = new TF1("Gaussisan",fExtrFunc,&PairAnalysisFunction::PeakFunGaus,fFitMin,fFitMax,3);
     //fit = new TF1("fitGaus","gaus",fFitMin,fFitMax);
     fit->SetParNames("N","meanx","sigma");
-    fit->SetParameters(1.3*nPOI, massPOI, sigPOI*3);
+    fit->SetParameters(1.3*nPOI, massPOI, sigPOI);
     fit->SetParLimits(0, 0.2*nPOI,      2.0*nPOI     );
-    fit->SetParLimits(1, massPOI-3*sigPOI, massPOI+3*sigPOI);
-    fit->SetParLimits(2, sigPOI,         10*sigPOI           );
+    fit->SetParLimits(1, massPOI-sigPOI, massPOI+sigPOI);
+    fit->SetParLimits(2, sigPOI/5,         5*sigPOI           );
     parMass=1;
     parSigma=2;
     fitResult = fHistSignal->Fit(fit,"RNI0Q");
@@ -522,6 +522,7 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
     case kMCFitted:
     case kCrystalBall:
     case kGaus:
+    case kUserFunc:
       fValues(0) = fit->Integral(fIntMin, fIntMax)/binWidth;
       fErrors(0) = fit->IntegralError(fIntMin, fIntMax)/binWidth;
       SetSignificanceAndSOB();
@@ -562,11 +563,13 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
     if(fgHistSimPM) fit->SetName(Form("mcShapeFunc-%s",fgHistSimPM->GetName()));
     if(replaceValErr) fgPeakShape=fit;
     //    delete fExtrFunc;
+    fPeakIsTF1=kTRUE;
     return fit;
   case kUserFunc:
     fit->SetName(Form("UserFunc"));
     if(replaceValErr) fgPeakShape=fit;
     fit->Print();
+    fPeakIsTF1=kTRUE;
     break;
   }
 
@@ -574,6 +577,7 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
   //  	 fHistSignal->GetBinLowEdge(fHistSignal->FindBin(fIntMin)),
   // 	 fHistSignal->GetBinLowEdge(fHistSignal->FindBin(fIntMax))+fHistSignal->GetBinWidth(fHistSignal->FindBin(fIntMax)));
   //delete fExtrFunc;
+  //  if(fgPeakShape->IsA()==TF1::Class()) fPeakIsTF1=kTRUE;
   if(replaceValErr && fgPeakShape->IsA()==TF1::Class()) fPeakIsTF1=kTRUE;
   return fgPeakShape;
 

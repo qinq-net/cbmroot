@@ -81,9 +81,10 @@
 #include <TGaxis.h>
 
 #include "PairAnalysisSignalExt.h"
+
 #include "PairAnalysis.h"
 #include "PairAnalysisSignalMC.h"
-
+#include "PairAnalysisHelper.h"
 #include "PairAnalysisStyler.h"
 
 ClassImp(PairAnalysisSignalExt)
@@ -312,20 +313,20 @@ void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
     case kLikeSignArithm :
     case kLikeSignRcorr:
     case kLikeSignArithmRcorr:
-      ProcessLS(arrhist);    // process like-sign subtraction method
+      ProcessLS();    // process like-sign subtraction method
       break;
 
     case kEventMixing :
-      ProcessEM(arrhist);    // process event mixing method
+      ProcessEM();    // process event mixing method
       break;
 
   case kRotation:
-      ProcessTR(arrhist);
+      ProcessTR();
       break;
 
   case kCocktail:
     fCocktailSubtr=kTRUE;
-    ProcessCocktail(arrhist);
+    ProcessCocktail();
     break;
 
     default :
@@ -362,7 +363,7 @@ void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
 }
 
 //______________________________________________
-void PairAnalysisSignalExt::ProcessLS(TObjArray* const arrhist)
+void PairAnalysisSignalExt::ProcessLS()
 {
   //
   // signal subtraction
@@ -466,7 +467,7 @@ void PairAnalysisSignalExt::ProcessLS(TObjArray* const arrhist)
 }
 
 //______________________________________________
-void PairAnalysisSignalExt::ProcessEM(TObjArray* const arrhist)
+void PairAnalysisSignalExt::ProcessEM()
 {
   //
   // event mixing of +- and -+
@@ -523,7 +524,7 @@ void PairAnalysisSignalExt::ProcessEM(TObjArray* const arrhist)
 }
 
 //______________________________________________
-void PairAnalysisSignalExt::ProcessTR(TObjArray* const arrhist)
+void PairAnalysisSignalExt::ProcessTR()
 {
   //
   // signal subtraction
@@ -581,7 +582,7 @@ void PairAnalysisSignalExt::ProcessTR(TObjArray* const arrhist)
 }
 
 //______________________________________________
-void PairAnalysisSignalExt::ProcessCocktail(TObjArray* const arrhist)
+void PairAnalysisSignalExt::ProcessCocktail()
 {
   //
   // signal subtraction
@@ -633,7 +634,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   optString.ToLower();
   optString.ReplaceAll(" ","");
   Bool_t optTask     =optString.Contains("same");      optString.ReplaceAll("same","");
-  Bool_t optNoMCtrue =optString.Contains("nomctrue");  optString.ReplaceAll("nomctrue","");
+  //  Bool_t optNoMCtrue =optString.Contains("nomctrue");  optString.ReplaceAll("nomctrue","");
   Bool_t optNoMC     =optString.Contains("nomc");      optString.ReplaceAll("nomc","");
   Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
   Bool_t optCan      =optString.Contains("can");       optString.ReplaceAll("can","");
@@ -753,21 +754,20 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
     if(optSB && !optOnlyRaw)       { fHistSB->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
     else if(optSgn && !optOnlyRaw) { fHistSign->Draw(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++; }
     else if(optOnlySig) { 
-      drawOpt=(optString.IsNull()?"EP":optString);
+      drawOpt=(optString.IsNull()?"EP0":optString);
       fHistSignal->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
       drawOpt=(optString.IsNull()?"L same":optString);
-      if(dynamic_cast<TF1*>(fgPeakShape)) { static_cast<TF1*>(fgPeakShape)->DrawCopy(drawOpt); i++; }
+      if(fPeakIsTF1) { static_cast<TF1*>(fgPeakShape)->DrawCopy(drawOpt); i++; }
     }
     else {
       fHistDataPM->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
       if(fMethod==kRotation || fMethod==kEventMixing || fMethod==kCocktail)  drawOpt=(optString.IsNull()?"HIST":optString);
       fHistBackground->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
-      drawOpt=(optString.IsNull()?"EP":optString);
       if(!optOnlyRaw) {
-	drawOpt=(optString.IsNull()?"EP":optString);
+	drawOpt=(optString.IsNull()?"EP0":optString);
 	fHistSignal->DrawCopy(i>0?(drawOpt+"same").Data():drawOpt.Data()); i++;
 	drawOpt=(optString.IsNull()?"L same":optString);
-	if(dynamic_cast<TF1*>(fgPeakShape)) { static_cast<TF1*>(fgPeakShape)->DrawCopy(drawOpt); i++; }
+	if(fPeakIsTF1) { static_cast<TF1*>(fgPeakShape)->DrawCopy(drawOpt); i++; }
       }
     }
     // add cocktail
@@ -840,11 +840,12 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
     nextObjFwd.Reset();
     Int_t ileg=0;
     while ((obj = nextObjFwd())) {
-      if(obj->InheritsFrom(TH1::Class())) {
-       	TH1 *hleg = static_cast<TH1*>(obj);
+      if(obj->InheritsFrom(TH1::Class()) || obj->InheritsFrom(TF1::Class())) {
+	//       	TH1 *hleg = static_cast<TH1*>(obj);
 	if(nobj && ileg<nobj)  { ileg++; continue; }
 
-	TString histClass=hleg->GetTitle(); //hleg->GetName();
+	TString histClass=obj->GetTitle(); //hleg->GetName();
+	if(histClass.IsNull()) histClass=obj->GetName();
 	histClass.ReplaceAll("Pair.", "");
 	histClass.ReplaceAll("Pair_", "");
 	// change default signal names to titles
@@ -857,7 +858,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 	// histClass.Remove(TString::kBoth,'_');
 
 	// modify legend option
-	TString legOpt = hleg->GetDrawOption();
+	TString legOpt = obj->GetDrawOption();
 	legOpt.ToLower();
 	legOpt+="l";
 	legOpt.ReplaceAll("hist","");
@@ -868,7 +869,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 	legOpt.ReplaceAll("e","");
 	//	Printf("hist %s legopt %s",histClass.Data(),legOpt.Data());
 	if(ileg==nobj && optTask) leg->AddEntry((TObject*)0x0,fArrHists->GetName(),"");
-	leg->AddEntry(hleg,histClass.Data(),legOpt.Data());
+	leg->AddEntry(obj,histClass.Data(),legOpt.Data());
 	ileg++;
       }
     }

@@ -28,10 +28,10 @@ public:
   virtual ~PairAnalysisSignalExt();
 
   virtual void Process(TObjArray* const arrhist);
-  void ProcessLS( TObjArray* const arrhist);  // like-sign method
-  void ProcessEM( TObjArray* const arrhist);  // event mixing method
-  void ProcessTR( TObjArray* const arrhist);  // track rotation method
-  void ProcessCocktail( TObjArray* const arrhist);  // cocktail method
+  void ProcessLS();        // like-sign method
+  void ProcessEM();        // event mixing method
+  void ProcessTR();        // track rotation method
+  void ProcessCocktail();  // cocktail method
 
   virtual void Draw(const Option_t* option = "");
 

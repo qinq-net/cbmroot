@@ -222,6 +222,7 @@ inline TObject* PairAnalysisSignalBase::FindObject(TObjArray *arrhist, PairAnaly
     if( !ref.CompareTo(arrhist->UncheckedAt(i)->GetTitle()) )
       return arrhist->UncheckedAt(i);
   }
+  return 0x0;
 }
 
 inline TObject* PairAnalysisSignalBase::FindObjectByTitle(TObjArray *arrhist, TString ref)

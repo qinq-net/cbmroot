@@ -31,7 +31,6 @@
 
 #include <CbmDetectorList.h>
 
-#include "PairAnalysisVarCuts.h"
 #include "PairAnalysisVarManager.h"
 #include "PairAnalysisHelper.h"
 
