@@ -11,7 +11,7 @@ Theta=$7
 DefaultDims=$8
 DefaultDimsLargePMT=$9
 
-GeoCase=-2
+GeoCase=2
 PtNotP=1
 MomMin=0
 MomMax=4
