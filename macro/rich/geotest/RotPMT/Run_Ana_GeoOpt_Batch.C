@@ -1,6 +1,5 @@
 void Run_Ana_GeoOpt_Batch(Int_t nEvents = 10,  float PMTrotX=5, float PMTrotY=5, int RotMir=1)
 {
-
   TTree::SetMaxTreeSize(90000000000);
   gRandom->SetSeed(10);
 
