@@ -122,10 +122,9 @@ void InvertCholetsky2(fvec a[6])
     u[i][1] = d[i]/u[i][i]*uud;
   }
 
-  for(int i=0; i<3; i++)
-  {
+  for(int i=0; i<2; i++)
     u[i][i] = 1.f/u[i][i];
-  }
+
   u[0][1] = - u[0][1]*u[0][0]*u[1][1];
 
 //  for(int i=0; i<2; i++)
