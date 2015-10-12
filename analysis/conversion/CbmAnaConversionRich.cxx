@@ -243,7 +243,7 @@ void CbmAnaConversionRich::InitHistos()
 
 
 
-	fhRichRings_start	= new TH1D("fhRichRings_start", "fhRichRings_start;z;#", 10000, 0, 1000);
+	fhRichRings_start	= new TH1D("fhRichRings_start", "fhRichRings_start;z;#", 1000, 0, 100);
 	fHistoList_richrings.push_back(fhRichRings_start);
 }
 

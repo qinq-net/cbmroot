@@ -214,7 +214,7 @@ void CbmAnaConversionTest::GetNofRichElectrons()
 						std::map<int,int>::iterator zwischen2 = zwischen--;
 						std::map<int,int>::iterator zwischen3 = zwischen2--;
 						Double_t invmass = CalcInvMass(it->second, zwischen->second, zwischen2->second, zwischen3->second);
-						fhElectrons_invmass->Fill(invmass);
+						if(invmass > 0) fhElectrons_invmass->Fill(invmass);
 						if(nofRich == 4) {
 						
 						
@@ -236,10 +236,13 @@ void CbmAnaConversionTest::GetNofRichElectrons()
 
 Double_t CbmAnaConversionTest::CalcInvMass(Int_t e1, Int_t e2, Int_t e3, Int_t e4)
 {
+	
 	CbmMCTrack* mcTrack_e1 = (CbmMCTrack*) fMcTracks->At(fElectrons_mcid[e1]);
 	CbmMCTrack* mcTrack_e2 = (CbmMCTrack*) fMcTracks->At(fElectrons_mcid[e2]);
 	CbmMCTrack* mcTrack_e3 = (CbmMCTrack*) fMcTracks->At(fElectrons_mcid[e3]);
 	CbmMCTrack* mcTrack_e4 = (CbmMCTrack*) fMcTracks->At(fElectrons_mcid[e4]);
+	
+	if(mcTrack_e1->GetPdgCode() + mcTrack_e2->GetPdgCode() + mcTrack_e3->GetPdgCode() + mcTrack_e4->GetPdgCode() ) return -1;
 
 	TLorentzVector lorentz1;
 	mcTrack_e1->Get4Momentum(lorentz1);

@@ -188,6 +188,7 @@ private:
 	TH1D * fhPhotons_invmass_ptBin2_1;
 	TH1D * fhPhotons_invmass_ptBin3_1;
 	TH1D * fhPhotons_invmass_ptBin4_1;
+	TH1D * fhElectrons_invmass_1;
 	
 	// histograms for index = 2
 	TH1D * fhElectrons_nofPerEvent_2;
@@ -197,6 +198,7 @@ private:
 	TH1D * fhPhotons_invmass_ptBin2_2;
 	TH1D * fhPhotons_invmass_ptBin3_2;
 	TH1D * fhPhotons_invmass_ptBin4_2;
+	TH1D * fhElectrons_invmass_2;
 	
 	// histograms for index = 3
 	TH1D * fhElectrons_nofPerEvent_3;
@@ -206,6 +208,7 @@ private:
 	TH1D * fhPhotons_invmass_ptBin2_3;
 	TH1D * fhPhotons_invmass_ptBin3_3;
 	TH1D * fhPhotons_invmass_ptBin4_3;
+	TH1D * fhElectrons_invmass_3;
 	
 	// histograms for index = 4
 	TH1D * fhElectrons_nofPerEvent_4;
@@ -215,6 +218,7 @@ private:
 	TH1D * fhPhotons_invmass_ptBin2_4;
 	TH1D * fhPhotons_invmass_ptBin3_4;
 	TH1D * fhPhotons_invmass_ptBin4_4;
+	TH1D * fhElectrons_invmass_4;
 	
 	
 

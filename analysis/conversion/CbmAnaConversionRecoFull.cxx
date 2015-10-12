@@ -47,6 +47,10 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
     fPrimVertex(NULL),
     fKFVertex(),
     fHistoList_recofull(),
+    fHistoList_recofull_1(),
+    fHistoList_recofull_2(),
+    fHistoList_recofull_3(),
+    fHistoList_recofull_4(),
     fhElectrons(NULL),
     electronidentifier(NULL),
     fhMomentumFits(NULL),
@@ -56,6 +60,26 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
     fElectrons_momenta(),
 	fElectrons_momentaChi(),
 	fElectrons_mctrackID(),
+	fElectrons_track_1(),
+	fElectrons_momenta_1(),
+	fElectrons_momentaChi_1(),
+	fElectrons_mctrackID_1(),
+	fVector_photons_pairs_1(),
+	fElectrons_track_2(),
+	fElectrons_momenta_2(),
+	fElectrons_momentaChi_2(),
+	fElectrons_mctrackID_2(),
+	fVector_photons_pairs_2(),
+	fElectrons_track_3(),
+	fElectrons_momenta_3(),
+	fElectrons_momentaChi_3(),
+	fElectrons_mctrackID_3(),
+	fVector_photons_pairs_3(),
+	fElectrons_track_4(),
+	fElectrons_momenta_4(),
+	fElectrons_momentaChi_4(),
+	fElectrons_mctrackID_4(),
+	fVector_photons_pairs_4(),
     fhElectrons_invmass(NULL),
     fhElectrons_invmass_cut(NULL),
     fhElectrons_nofPerEvent(NULL),
@@ -107,8 +131,40 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhPhotons_boostAngleTest(NULL),
 	fhPhotons_tX(NULL),
 	fhPhotons_tY(NULL),
-    timer(),
-    fTime(0.)
+	fhElectrons_nofPerEvent_1(NULL),
+	fhPhotons_nofPerEvent_1(NULL),
+	fhPhotons_invmass_1(NULL),
+	fhPhotons_invmass_ptBin1_1(NULL),
+	fhPhotons_invmass_ptBin2_1(NULL),
+	fhPhotons_invmass_ptBin3_1(NULL),
+	fhPhotons_invmass_ptBin4_1(NULL),
+	fhElectrons_invmass_1(NULL),
+	fhElectrons_nofPerEvent_2(NULL),
+	fhPhotons_nofPerEvent_2(NULL),
+	fhPhotons_invmass_2(NULL),
+	fhPhotons_invmass_ptBin1_2(NULL),
+	fhPhotons_invmass_ptBin2_2(NULL),
+	fhPhotons_invmass_ptBin3_2(NULL),
+	fhPhotons_invmass_ptBin4_2(NULL),
+	fhElectrons_invmass_2(NULL),
+	fhElectrons_nofPerEvent_3(NULL),
+	fhPhotons_nofPerEvent_3(NULL),
+	fhPhotons_invmass_3(NULL),
+	fhPhotons_invmass_ptBin1_3(NULL),
+	fhPhotons_invmass_ptBin2_3(NULL),
+	fhPhotons_invmass_ptBin3_3(NULL),
+	fhPhotons_invmass_ptBin4_3(NULL),
+	fhElectrons_invmass_3(NULL),
+	fhElectrons_nofPerEvent_4(NULL),
+	fhPhotons_nofPerEvent_4(NULL),
+	fhPhotons_invmass_4(NULL),
+	fhPhotons_invmass_ptBin1_4(NULL),
+	fhPhotons_invmass_ptBin2_4(NULL),
+	fhPhotons_invmass_ptBin3_4(NULL),
+	fhPhotons_invmass_ptBin4_4(NULL),
+	fhElectrons_invmass_4(NULL),
+	timer(),
+	fTime(0.)
 {
 }
 
@@ -321,6 +377,9 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fHistoList_recofull_1.push_back(fhPhotons_invmass_ptBin3_1);
 	fhPhotons_invmass_ptBin4_1 = new TH1D("fhPhotons_invmass_ptBin4_1", "fhPhotons_invmass_ptBin4_1; invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_recofull_1.push_back(fhPhotons_invmass_ptBin4_1);
+	
+	fhElectrons_invmass_1 = new TH1D("fhElectrons_invmass_1", "fhElectrons_invmass_1; invariant mass; #", 600, -0.0025, 2.9975);
+	fHistoList_recofull_1.push_back(fhElectrons_invmass_1);
 
 
 	// histograms for index = 2 (no refit, with chicut)
@@ -340,6 +399,9 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fHistoList_recofull_2.push_back(fhPhotons_invmass_ptBin3_2);
 	fhPhotons_invmass_ptBin4_2 = new TH1D("fhPhotons_invmass_ptBin4_2", "fhPhotons_invmass_ptBin4_2; invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_recofull_2.push_back(fhPhotons_invmass_ptBin4_2);
+	
+	fhElectrons_invmass_2 = new TH1D("fhElectrons_invmass_2", "fhElectrons_invmass_2; invariant mass; #", 600, -0.0025, 2.9975);
+	fHistoList_recofull_2.push_back(fhElectrons_invmass_2);
 
 
 	// histograms for index = 3 (with refit, no chicut)
@@ -359,6 +421,9 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fHistoList_recofull_3.push_back(fhPhotons_invmass_ptBin3_3);
 	fhPhotons_invmass_ptBin4_3 = new TH1D("fhPhotons_invmass_ptBin4_3", "fhPhotons_invmass_ptBin4_3; invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_recofull_3.push_back(fhPhotons_invmass_ptBin4_3);
+	
+	fhElectrons_invmass_3 = new TH1D("fhElectrons_invmass_3", "fhElectrons_invmass_3; invariant mass; #", 600, -0.0025, 2.9975);
+	fHistoList_recofull_3.push_back(fhElectrons_invmass_3);
 
 
 	// histograms for index = 4 (with refit, with chicut)
@@ -378,6 +443,9 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fHistoList_recofull_4.push_back(fhPhotons_invmass_ptBin3_4);
 	fhPhotons_invmass_ptBin4_4 = new TH1D("fhPhotons_invmass_ptBin4_4", "fhPhotons_invmass_ptBin4_4; invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_recofull_4.push_back(fhPhotons_invmass_ptBin4_4);
+	
+	fhElectrons_invmass_4 = new TH1D("fhElectrons_invmass_4", "fhElectrons_invmass_4; invariant mass; #", 600, -0.0025, 2.9975);
+	fHistoList_recofull_4.push_back(fhElectrons_invmass_4);
 
 }
 
@@ -541,7 +609,6 @@ void CbmAnaConversionRecoFull::Exec()
 		// #################################################################
 		// ##### up to here standard calculation of reconstructed data #####
 		// #################################################################
-		cout << "CbmAnaConversionRecoFull: globaltrack refitted!" << endl;
 
 
 		// indizes in the following
@@ -573,12 +640,9 @@ void CbmAnaConversionRecoFull::Exec()
 		}
 
 
-		cout << "test" << endl;
-
-
 
 		// Doing refit of momenta
-/*
+
 		CbmL1PFFitter fPFFitter_electron;
 		vector<CbmStsTrack> stsTracks_electron;
 		stsTracks_electron.resize(1);
@@ -598,8 +662,8 @@ void CbmAnaConversionRecoFull::Exec()
 		refittedMomentum = refittedMomentum_electron;
 		result_chi = result_chi_electron;
 
-		cout << "refitted momenta!" << endl;
-*/
+		//cout << "refitted momenta!" << endl;
+
 
 
 		Bool_t electron_rich = electronidentifier->IsRichElectron(iG, refittedMomentum.Mag());
@@ -689,6 +753,7 @@ void CbmAnaConversionRecoFull::Exec()
 	cout << "CbmAnaConversionRecoFull: combining for case 1!" << endl;
 	CombineElectrons(fElectrons_track_1, fElectrons_momenta_1, fElectrons_momentaChi_1, fElectrons_mctrackID_1, fVector_photons_pairs_1, 1);
 	CombinePhotons(fElectrons_track_1, fElectrons_momenta_1, fElectrons_momentaChi_1, fElectrons_mctrackID_1, fVector_photons_pairs_1, 1);
+	CombinePhotons();
 	
 	CombineElectrons(fElectrons_track_2, fElectrons_momenta_2, fElectrons_momentaChi_2, fElectrons_mctrackID_2, fVector_photons_pairs_2, 2);
 	CombinePhotons(fElectrons_track_2, fElectrons_momenta_2, fElectrons_momentaChi_2, fElectrons_mctrackID_2, fVector_photons_pairs_2, 2);
@@ -714,7 +779,7 @@ void CbmAnaConversionRecoFull::Exec()
 void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int> mctrackID, vector< vector<int> > reconstructedPhotons, Int_t index)
 {
 	Int_t nof = momenta.size();
-	cout << "CbmAnaConversionRecoFull: CombineElectrons, nof - " << nof << endl;
+	cout << "CbmAnaConversionRecoFull: " << index << ": CombineElectrons, nof - " << nof << endl;
 	Int_t nofPhotons = 0;
 	if(nof >= 2) {
 		for(int a=0; a<nof-1; a++) {
@@ -731,7 +796,8 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 				//Double_t openingAngleCut = 1;
 				
 				// opening angle cut depending on pt of e+e- pair
-				Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
+				//Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
+				Double_t openingAngleCut = 1.2;
 				
 				Double_t invMassCut = 0.03;
 				
@@ -750,6 +816,26 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 					pair.push_back(b);
 					reconstructedPhotons.push_back(pair);
 					fhElectrons_invmass_cut->Fill(params1.fMinv);
+					
+					if(index == 1) {
+						fhElectrons_invmass_1->Fill(params1.fMinv);
+						fVector_photons_pairs_1.push_back(pair);
+						fVector_photons_pairs.push_back(pair);
+					}
+					if(index == 2) {
+						fhElectrons_invmass_2->Fill(params1.fMinv);
+						fVector_photons_pairs_2.push_back(pair);
+					}
+					if(index == 3) {
+						fhElectrons_invmass_3->Fill(params1.fMinv);
+						fVector_photons_pairs_3.push_back(pair);
+					}
+					if(index == 4) {
+						fhElectrons_invmass_4->Fill(params1.fMinv);
+						fVector_photons_pairs_4.push_back(pair);
+					}
+					
+					
 					//fVector_photons_momenta.push_back(params1.momPair);
 					
 					//fhPhotons_tX->Fill(tXa);
@@ -799,6 +885,7 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 	if(index == 3) fhPhotons_nofPerEvent_3->Fill(nofPhotons);
 	if(index == 4) fhPhotons_nofPerEvent_4->Fill(nofPhotons);
 	//fhPhotons_nofPerEvent->Fill(nofPhotons);
+	cout << "CbmAnaConversionRecoFull: Crosscheck: nof reconstructed photons: " << nofPhotons << endl;
 }
 
 
@@ -1162,8 +1249,12 @@ void CbmAnaConversionRecoFull::CombinePhotons()
 void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int> mctrackID, vector< vector<int> > reconstructedPhotons, Int_t index)
 // index: kind of electron cut: 1 = no refit, no chicut; 2 = no refit, with chicut; 3 = with refit, no chicut; 4 = with refit, with chicut
 {
+	if(index == 1) reconstructedPhotons = fVector_photons_pairs_1;
+	if(index == 2) reconstructedPhotons = fVector_photons_pairs_2;
+	if(index == 3) reconstructedPhotons = fVector_photons_pairs_3;
+	if(index == 4) reconstructedPhotons = fVector_photons_pairs_4;
 	Int_t nof = reconstructedPhotons.size();
-	cout << "CbmAnaConversionRecoFull: CombinePhotons, nof - " << nof << endl;
+	cout << "CbmAnaConversionRecoFull: " << index << ": CombinePhotons, nof - " << nof << endl;
 	if(nof >= 2) {
 		for(int a=0; a<nof-1; a++) {
 			for(int b=a+1; b<nof; b++) {

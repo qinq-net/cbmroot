@@ -411,8 +411,8 @@ void CbmAnaConversionReco::InvariantMassMC_all()
 	timer.Start();
 
 
-	cout << "InvariantMassTestMC - Start..." << endl;
-	cout << "InvariantMassTestMC - Size of fTracklistMC_all:\t " << fMCTracklist_all.size() << endl;
+	cout << "CbmAnaConversionReco: InvariantMassTestMC - Start..." << endl;
+	cout << "CbmAnaConversionReco: InvariantMassTestMC - Size of fTracklistMC_all:\t " << fMCTracklist_all.size() << endl;
 	if(fMCTracklist_all.size() >= 4) {
 		for(int i=0; i<fMCTracklist_all.size(); i++) {
 			for(int j=i+1; j<fMCTracklist_all.size(); j++) {
@@ -557,7 +557,7 @@ void CbmAnaConversionReco::InvariantMassMC_all()
 			}
 		}
 	}
-	cout << "InvariantMassTestMC - End!" << endl;
+	cout << "CbmAnaConversionReco: InvariantMassTestMC - End!" << endl;
 
 	timer.Stop();
 	fTime += timer.RealTime();
@@ -682,9 +682,10 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 	timer.Start();
 
 
-	cout << "InvariantMassTest_4epem - Start..." << endl;
-	cout << "InvariantMassTest_4epem - " << fRecoTracklistEPEM.size() << "\t" << fRecoMomentum.size() << endl;
+	cout << "CbmAnaConversionReco: InvariantMassTest_4epem - Start..." << endl;
+	cout << "CbmAnaConversionReco: InvariantMassTest_4epem - " << fRecoTracklistEPEM.size() << "\t" << fRecoMomentum.size() << endl;
 	int fill = 0;
+	if(fRecoTracklistEPEM.size() < 4) return;
 	for(int i=0; i<fRecoTracklistEPEM.size(); i++) {
 		for(int j=i+1; j<fRecoTracklistEPEM.size(); j++) {
 			for(int k=j+1; k<fRecoTracklistEPEM.size(); k++) {
@@ -692,7 +693,7 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 					if(fRecoTracklistEPEM[i]->GetPdgCode() + fRecoTracklistEPEM[j]->GetPdgCode() + fRecoTracklistEPEM[k]->GetPdgCode() + fRecoTracklistEPEM[l]->GetPdgCode() != 0) continue;
 					
 					if(fRecoTracklistEPEM.size() != fRecoMomentum.size() || fRecoTracklistEPEM.size() != fRecoRefittedMomentum.size()) {
-						cout << "InvariantMassTest_4epem - not matching number of entries!" << endl;
+						cout << "CbmAnaConversionReco: InvariantMassTest_4epem - not matching number of entries!" << endl;
 						continue;
 					}
 					
@@ -1326,8 +1327,8 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 			}
 		}
 	}
-	cout << "InvariantMassTest_4epem - Filled events: " << fill << endl;
-	cout << "InvariantMassTest_4epem - End!" << endl;
+	cout << "CbmAnaConversionReco: InvariantMassTest_4epem - Filled events: " << fill << endl;
+	cout << "CbmAnaConversionReco: InvariantMassTest_4epem - End!" << endl;
 
 
 	timer.Stop();
