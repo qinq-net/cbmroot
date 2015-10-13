@@ -50,15 +50,19 @@ public:
 	CbmLmvmKinematicParams CalculateKinematicParamsReco(const TVector3 electron1, const TVector3 electron2);
 	CbmLmvmKinematicParams CalculateKinematicParams_4particles(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 	
-	void CombinePhotons();
 	void CombinePhotons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int> mctrackID, vector< vector<int> > reconstructedPhotons, Int_t index);
 	Double_t OpeningAngleBetweenPhotons(vector<int> photon1, vector<int> photons2);
+	Double_t OpeningAngleBetweenPhotons(vector<TVector3> momenta, vector<int> photon1, vector<int> photons2);
 
 	void CombineElectronsRefit();
 	void CombinePhotonsRefit();
 	Double_t OpeningAngleBetweenPhotonsRefit(vector<int> photon1, vector<int> photons2);
 
 	void CombinePhotonsDirection();
+
+	void CombineElectrons();
+	void CombinePhotons();
+	
 
 private:
 	TClonesArray* fRichPoints;
@@ -189,6 +193,7 @@ private:
 	TH1D * fhPhotons_invmass_ptBin3_1;
 	TH1D * fhPhotons_invmass_ptBin4_1;
 	TH1D * fhElectrons_invmass_1;
+	TH2D * fhPhotons_invmass_vs_pt_1;
 	
 	// histograms for index = 2
 	TH1D * fhElectrons_nofPerEvent_2;
@@ -199,6 +204,7 @@ private:
 	TH1D * fhPhotons_invmass_ptBin3_2;
 	TH1D * fhPhotons_invmass_ptBin4_2;
 	TH1D * fhElectrons_invmass_2;
+	TH2D * fhPhotons_invmass_vs_pt_2;
 	
 	// histograms for index = 3
 	TH1D * fhElectrons_nofPerEvent_3;
@@ -209,6 +215,7 @@ private:
 	TH1D * fhPhotons_invmass_ptBin3_3;
 	TH1D * fhPhotons_invmass_ptBin4_3;
 	TH1D * fhElectrons_invmass_3;
+	TH2D * fhPhotons_invmass_vs_pt_3;
 	
 	// histograms for index = 4
 	TH1D * fhElectrons_nofPerEvent_4;
@@ -219,6 +226,7 @@ private:
 	TH1D * fhPhotons_invmass_ptBin3_4;
 	TH1D * fhPhotons_invmass_ptBin4_4;
 	TH1D * fhElectrons_invmass_4;
+	TH2D * fhPhotons_invmass_vs_pt_4;
 	
 	
 

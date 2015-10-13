@@ -315,7 +315,7 @@ void CbmAnaConversionReco::InitHistos()
 	fhPi0_startvertex_vs_momentum = new TH2D("fhPi0_startvertex_vs_momentum","fhPi0_startvertex_vs_momentum;z[cm];momentum (MC-true)", 210, -5., 100., 1000, 0., 100.);
 	fHistoList_reco.push_back(fhPi0_startvertex_vs_momentum);
 
-	fhInvMassWithFullRecoCuts = new TH1D("fhInvMassWithFullRecoCuts","fhInvMassWithFullRecoCuts;mass [GeV/c^2];#", 400, 0., 2.);
+	fhInvMassWithFullRecoCuts = new TH1D("fhInvMassWithFullRecoCuts","fhInvMassWithFullRecoCuts;mass [GeV/c^2];#", 800, 0., 2.);
 	fHistoList_reco.push_back(fhInvMassWithFullRecoCuts);
 
 }

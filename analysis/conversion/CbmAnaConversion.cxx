@@ -142,6 +142,7 @@ CbmAnaConversion::CbmAnaConversion()
     fRecoTracklistEPEM_gtid(),
     fRecoMomentum(),
     fRecoRefittedMomentum(),
+    fhNofElectrons_4epem(NULL),
     timer_all(),
     fTime_all(0.),
     timer_exec(),
@@ -551,22 +552,13 @@ void CbmAnaConversion::Exec(Option_t* option)
 		CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
 		if (mcTrack2 == NULL) continue;
 
-		if(stsMcTrackId != richMcTrackId) continue;
+		//if(stsMcTrackId != richMcTrackId) continue;
 		
 		int pdg = TMath::Abs(mcTrack1->GetPdgCode());
 		int motherId = mcTrack1->GetMotherId();
 		double momentum = mcTrack1->GetP();
 		stsMatch->GetTrueOverAllHitsRatio();
 
-/*		if (richInd < 0) continue;
-		CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(richInd);
-		if (richMatch == NULL) continue;
-		int richMcTrackId = richMatch->GetMatchedLink().GetIndex();
-		if (richMcTrackId < 0) continue;
-		CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
-		if (mcTrack2 == NULL) continue;
-*/
-		//if(stsMcTrackId != richMcTrackId) continue;
 
        
 		if(DoTomography) {

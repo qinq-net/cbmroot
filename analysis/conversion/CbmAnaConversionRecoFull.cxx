@@ -139,6 +139,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhPhotons_invmass_ptBin3_1(NULL),
 	fhPhotons_invmass_ptBin4_1(NULL),
 	fhElectrons_invmass_1(NULL),
+	fhPhotons_invmass_vs_pt_1(NULL),
 	fhElectrons_nofPerEvent_2(NULL),
 	fhPhotons_nofPerEvent_2(NULL),
 	fhPhotons_invmass_2(NULL),
@@ -147,6 +148,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhPhotons_invmass_ptBin3_2(NULL),
 	fhPhotons_invmass_ptBin4_2(NULL),
 	fhElectrons_invmass_2(NULL),
+	fhPhotons_invmass_vs_pt_2(NULL),
 	fhElectrons_nofPerEvent_3(NULL),
 	fhPhotons_nofPerEvent_3(NULL),
 	fhPhotons_invmass_3(NULL),
@@ -155,6 +157,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhPhotons_invmass_ptBin3_3(NULL),
 	fhPhotons_invmass_ptBin4_3(NULL),
 	fhElectrons_invmass_3(NULL),
+	fhPhotons_invmass_vs_pt_3(NULL),
 	fhElectrons_nofPerEvent_4(NULL),
 	fhPhotons_nofPerEvent_4(NULL),
 	fhPhotons_invmass_4(NULL),
@@ -163,6 +166,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhPhotons_invmass_ptBin3_4(NULL),
 	fhPhotons_invmass_ptBin4_4(NULL),
 	fhElectrons_invmass_4(NULL),
+	fhPhotons_invmass_vs_pt_4(NULL),
 	timer(),
 	fTime(0.)
 {
@@ -380,6 +384,8 @@ void CbmAnaConversionRecoFull::InitHistos()
 	
 	fhElectrons_invmass_1 = new TH1D("fhElectrons_invmass_1", "fhElectrons_invmass_1; invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_recofull_1.push_back(fhElectrons_invmass_1);
+	fhPhotons_invmass_vs_pt_1 = new TH2D("fhPhotons_invmass_vs_pt_1", "fhPhotons_invmass_vs_pt_1; invmass; pt", 600, -0.0025, 2.9975, 100, 0., 10.);
+	fHistoList_recofull_1.push_back(fhPhotons_invmass_vs_pt_1);
 
 
 	// histograms for index = 2 (no refit, with chicut)
@@ -402,6 +408,8 @@ void CbmAnaConversionRecoFull::InitHistos()
 	
 	fhElectrons_invmass_2 = new TH1D("fhElectrons_invmass_2", "fhElectrons_invmass_2; invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_recofull_2.push_back(fhElectrons_invmass_2);
+	fhPhotons_invmass_vs_pt_2 = new TH2D("fhPhotons_invmass_vs_pt_2", "fhPhotons_invmass_vs_pt_2; invmass; pt", 600, -0.0025, 2.9975, 100, 0., 10.);
+	fHistoList_recofull_2.push_back(fhPhotons_invmass_vs_pt_2);
 
 
 	// histograms for index = 3 (with refit, no chicut)
@@ -424,6 +432,8 @@ void CbmAnaConversionRecoFull::InitHistos()
 	
 	fhElectrons_invmass_3 = new TH1D("fhElectrons_invmass_3", "fhElectrons_invmass_3; invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_recofull_3.push_back(fhElectrons_invmass_3);
+	fhPhotons_invmass_vs_pt_3 = new TH2D("fhPhotons_invmass_vs_pt_3", "fhPhotons_invmass_vs_pt_3; invmass; pt", 600, -0.0025, 2.9975, 100, 0., 10.);
+	fHistoList_recofull_3.push_back(fhPhotons_invmass_vs_pt_3);
 
 
 	// histograms for index = 4 (with refit, with chicut)
@@ -446,6 +456,8 @@ void CbmAnaConversionRecoFull::InitHistos()
 	
 	fhElectrons_invmass_4 = new TH1D("fhElectrons_invmass_4", "fhElectrons_invmass_4; invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_recofull_4.push_back(fhElectrons_invmass_4);
+	fhPhotons_invmass_vs_pt_4 = new TH2D("fhPhotons_invmass_vs_pt_4", "fhPhotons_invmass_vs_pt_4; invmass; pt", 600, -0.0025, 2.9975, 100, 0., 10.);
+	fHistoList_recofull_4.push_back(fhPhotons_invmass_vs_pt_4);
 
 }
 
@@ -621,7 +633,7 @@ void CbmAnaConversionRecoFull::Exec()
 
 		Bool_t electron_rich2 = electronidentifier->IsRichElectron(iG, refittedMomentum.Mag());
 		
-		if(electron_rich2) {
+		if(electron_rich2) {	// electron identification without refit of momentum
 			nofElectrons_1++;
 			fElectrons_track_1.push_back(gTrack);
 			fElectrons_momenta_1.push_back(refittedMomentum);
@@ -673,7 +685,7 @@ void CbmAnaConversionRecoFull::Exec()
 
 
 
-		if(electron_rich) {
+		if(electron_rich) {	// electron identification with refit of momentum
 			nofElectrons_3++;
 			fElectrons_track_3.push_back(gTrack);
 			fElectrons_momenta_3.push_back(refittedMomentum);
@@ -697,10 +709,6 @@ void CbmAnaConversionRecoFull::Exec()
 		}
 
 
-		fhElectrons_nofPerEvent_1->Fill(nofElectrons_1);
-		fhElectrons_nofPerEvent_2->Fill(nofElectrons_2);
-		fhElectrons_nofPerEvent_3->Fill(nofElectrons_3);
-		fhElectrons_nofPerEvent_4->Fill(nofElectrons_4);
 
 
 
@@ -746,14 +754,22 @@ void CbmAnaConversionRecoFull::Exec()
 		}
 */
 	}
-	cout << "CbmAnaConversionRecoFull: number of global tracks in STS and RICH " << nofGT_richsts << endl;
+
 
 	fhElectrons_nofPerEvent->Fill(nofElectrons);
+	fhElectrons_nofPerEvent_1->Fill(nofElectrons_1);
+	fhElectrons_nofPerEvent_2->Fill(nofElectrons_2);
+	fhElectrons_nofPerEvent_3->Fill(nofElectrons_3);
+	fhElectrons_nofPerEvent_4->Fill(nofElectrons_4);
+
+	cout << "CbmAnaConversionRecoFull: number of global tracks in STS and RICH " << nofGT_richsts << endl;
+
+	CombineElectrons();
+	CombinePhotons();
 
 	cout << "CbmAnaConversionRecoFull: combining for case 1!" << endl;
 	CombineElectrons(fElectrons_track_1, fElectrons_momenta_1, fElectrons_momentaChi_1, fElectrons_mctrackID_1, fVector_photons_pairs_1, 1);
 	CombinePhotons(fElectrons_track_1, fElectrons_momenta_1, fElectrons_momentaChi_1, fElectrons_mctrackID_1, fVector_photons_pairs_1, 1);
-	CombinePhotons();
 	
 	CombineElectrons(fElectrons_track_2, fElectrons_momenta_2, fElectrons_momentaChi_2, fElectrons_mctrackID_2, fVector_photons_pairs_2, 2);
 	CombinePhotons(fElectrons_track_2, fElectrons_momenta_2, fElectrons_momentaChi_2, fElectrons_mctrackID_2, fVector_photons_pairs_2, 2);
@@ -885,7 +901,7 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 	if(index == 3) fhPhotons_nofPerEvent_3->Fill(nofPhotons);
 	if(index == 4) fhPhotons_nofPerEvent_4->Fill(nofPhotons);
 	//fhPhotons_nofPerEvent->Fill(nofPhotons);
-	cout << "CbmAnaConversionRecoFull: Crosscheck: nof reconstructed photons: " << nofPhotons << endl;
+	cout << "CbmAnaConversionRecoFull: CombineElectrons: Crosscheck - nof reconstructed photons: " << nofPhotons << endl;
 }
 
 
@@ -962,6 +978,7 @@ Double_t CbmAnaConversionRecoFull::Rap_4particlesRECO(const TVector3 part1, cons
     Double_t pzPair = momPair.Pz();
     Double_t yPair = 0.5*TMath::Log((energyPair+pzPair)/(energyPair-pzPair));
 	
+	cout << "CbmAnaConversionRecoFull::Rap_4particlesRECO: yPair = " << yPair << endl;
 
 	return yPair;
 }
@@ -1037,214 +1054,6 @@ CbmLmvmKinematicParams CbmAnaConversionRecoFull::CalculateKinematicParams_4parti
 
 
 
-void CbmAnaConversionRecoFull::CombinePhotons()
-{
-	Int_t nof = fVector_photons_pairs.size();
-	cout << "CbmAnaConversionRecoFull: CombinePhotons, nof - " << nof << endl;
-	if(nof >= 2) {
-		for(int a=0; a<nof-1; a++) {
-			for(int b=a+1; b<nof; b++) {
-				Int_t electron11 = fVector_photons_pairs[a][0];
-				Int_t electron12 = fVector_photons_pairs[a][1];
-				Int_t electron21 = fVector_photons_pairs[b][0];
-				Int_t electron22 = fVector_photons_pairs[b][1];
-			
-				Double_t invmass = Invmass_4particlesRECO(fElectrons_momenta[electron11], fElectrons_momenta[electron12], fElectrons_momenta[electron21], fElectrons_momenta[electron22]);
-				fhPhotons_invmass->Fill(invmass);
-				
-				Double_t pt = Pt_4particlesRECO(fElectrons_momenta[electron11], fElectrons_momenta[electron12], fElectrons_momenta[electron21], fElectrons_momenta[electron22]);
-				Double_t rap = Rap_4particlesRECO(fElectrons_momenta[electron11], fElectrons_momenta[electron12], fElectrons_momenta[electron21], fElectrons_momenta[electron22]);
-				
-				Double_t opening_angle = OpeningAngleBetweenPhotons(fVector_photons_pairs[a], fVector_photons_pairs[b]);
-				fhPhotons_angleBetween->Fill(opening_angle);
-				
-				
-				CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(fElectrons_momenta[electron11], fElectrons_momenta[electron12], fElectrons_momenta[electron21], fElectrons_momenta[electron22]);
-				
-				
-				TVector3 momentumE1;
-				TVector3 momentumE2;
-				fElectrons_track[a]->GetParamLast()->Momentum(momentumE1);
-				fElectrons_track[b]->GetParamLast()->Momentum(momentumE2);
-					
-				Double_t energyE11 = TMath::Sqrt(fElectrons_momenta[electron11].Mag2() + M2E);
-				TLorentzVector lorVecE11(fElectrons_momenta[electron11], energyE11);
-				Double_t energyE12 = TMath::Sqrt(fElectrons_momenta[electron12].Mag2() + M2E);
-				TLorentzVector lorVecE12(fElectrons_momenta[electron12], energyE12);
-				Double_t energyE21 = TMath::Sqrt(fElectrons_momenta[electron21].Mag2() + M2E);
-				TLorentzVector lorVecE21(fElectrons_momenta[electron21], energyE21);
-				Double_t energyE22 = TMath::Sqrt(fElectrons_momenta[electron22].Mag2() + M2E);
-				TLorentzVector lorVecE22(fElectrons_momenta[electron22], energyE22);
-				TLorentzVector g1 = lorVecE11 + lorVecE12;
-				TLorentzVector g2 = lorVecE21 + lorVecE22;
-				TLorentzVector pi = lorVecE11 + lorVecE12 + lorVecE21 + lorVecE22;
-					
-				g1.Boost(-pi.BoostVector() );
-				g2.Boost(-pi.BoostVector() );
-					
-				Double_t boostAngle = g1.Angle(g2.Vect());
-				Double_t theta = 180.*boostAngle/TMath::Pi();
-				
-				fhPhotons_boostAngleTest->Fill(boostAngle);
-					
-				//if(opening_angle < 10) {
-				if(true) {
-					fhPhotons_boostAngle->Fill(theta);
-				
-					fhPhotons_invmass_cut->Fill(invmass);
-					fhPhotons_invmass_vs_pt->Fill(invmass, pt);
-					fhPhotons_rapidity_vs_pt->Fill(pt, rap);
-					fhPhotons_invmass_vs_openingAngle->Fill(invmass, opening_angle);
-					fhPhotons_openingAngle_vs_momentum->Fill(opening_angle, params1.fMomentumMag);
-					
-					fhMomentumFits_pi0reco->Fill(fElectrons_momentaChi[electron11]);
-					fhMomentumFits_pi0reco->Fill(fElectrons_momentaChi[electron12]);
-					fhMomentumFits_pi0reco->Fill(fElectrons_momentaChi[electron21]);
-					fhMomentumFits_pi0reco->Fill(fElectrons_momentaChi[electron22]);
-					
-					fhPhotons_invmass_vs_chi->Fill(invmass, fElectrons_momentaChi[electron11]);
-					fhPhotons_invmass_vs_chi->Fill(invmass, fElectrons_momentaChi[electron12]);
-					fhPhotons_invmass_vs_chi->Fill(invmass, fElectrons_momentaChi[electron21]);
-					fhPhotons_invmass_vs_chi->Fill(invmass, fElectrons_momentaChi[electron22]);
-					
-					if(pt <= 1) fhPhotons_invmass_cut_ptBin1->Fill(invmass);
-					if(pt > 1 && pt <= 2) fhPhotons_invmass_cut_ptBin2->Fill(invmass);
-					if(pt > 2 && pt <= 3) fhPhotons_invmass_cut_ptBin3->Fill(invmass);
-					if(pt > 3 && pt <= 4) fhPhotons_invmass_cut_ptBin4->Fill(invmass);
-					
-					Double_t chicut = 1.0;
-					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
-						fhPhotons_invmass_cut_chi1->Fill(invmass);
-					}
-					chicut = 3.0;
-					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
-						fhPhotons_invmass_cut_chi3->Fill(invmass);
-					}
-					chicut = 5.0;
-					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
-						fhPhotons_invmass_cut_chi5->Fill(invmass);
-					}
-					chicut = 10.0;
-					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
-						fhPhotons_invmass_cut_chi10->Fill(invmass);
-					}
-					chicut = 25.0;
-					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
-						fhPhotons_invmass_cut_chi25->Fill(invmass);
-					}
-					chicut = 40.0;
-					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
-						fhPhotons_invmass_cut_chi40->Fill(invmass);
-					}
-					chicut = 65.0;
-					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
-						fhPhotons_invmass_cut_chi65->Fill(invmass);
-					}
-					chicut = 80.0;
-					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
-						fhPhotons_invmass_cut_chi80->Fill(invmass);
-					}
-					
-					
-					
-					// CROSSCHECK WITH MC-TRUE DATA!
-					CbmMCTrack* mctrack11 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID[electron11]);
-					CbmMCTrack* mctrack12 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID[electron12]);
-					CbmMCTrack* mctrack21 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID[electron21]);
-					CbmMCTrack* mctrack22 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID[electron22]);
-					
-					Int_t motherId11 = mctrack11->GetMotherId();
-					Int_t motherId12 = mctrack12->GetMotherId();
-					Int_t motherId21 = mctrack21->GetMotherId();
-					Int_t motherId22 = mctrack22->GetMotherId();
-					
-					TVector3 startvertex11;
-					mctrack11->GetStartVertex(startvertex11);
-					TVector3 startvertex12;
-					mctrack12->GetStartVertex(startvertex12);
-					TVector3 startvertex21;
-					mctrack21->GetStartVertex(startvertex21);
-					TVector3 startvertex22;
-					mctrack22->GetStartVertex(startvertex22);
-					
-					fhPhotons_MC_startvertexZ->Fill(startvertex11.Z());
-					fhPhotons_MC_startvertexZ->Fill(startvertex12.Z());
-					fhPhotons_MC_startvertexZ->Fill(startvertex21.Z());
-					fhPhotons_MC_startvertexZ->Fill(startvertex22.Z());
-					
-					if(motherId11 == motherId12 && motherId21 == motherId22) {
-						fhPhotons_MC_invmass1->Fill(invmass);
-						if(motherId11 != -1 && motherId21 != -1) {
-							CbmMCTrack* mothermctrack11 = (CbmMCTrack*)fMcTracks->At(motherId11);
-							CbmMCTrack* mothermctrack21 = (CbmMCTrack*)fMcTracks->At(motherId21);
-							
-							Int_t grandmotherId11 = mothermctrack11->GetMotherId();
-							Int_t grandmotherId21 = mothermctrack21->GetMotherId();
-							
-							if(grandmotherId11 == grandmotherId21) {
-								fhPhotons_MC_invmass2->Fill(invmass);
-								if(grandmotherId11 == -1) continue;
-								CbmMCTrack* pi0mctrack11 = (CbmMCTrack*)fMcTracks->At(grandmotherId11);
-								if(pi0mctrack11->GetMotherId() == -1) {
-									fhPhotons_MC_motherIdCut->Fill(invmass);
-								}
-							}
-							if(grandmotherId11 != grandmotherId21) {
-								fhPhotons_MC_invmass3->Fill(invmass);
-							}
-						}
-					}
-					
-					if(motherId11 != motherId12 || motherId21 != motherId22) {
-						fhPhotons_MC_invmass4->Fill(invmass);
-					}
-					
-					
-					
-					if(motherId11 != -1 && motherId12 != -1 && motherId21 != -1 && motherId22 != -1) {
-						CbmMCTrack* mothermctrack11 = (CbmMCTrack*)fMcTracks->At(motherId11);
-						CbmMCTrack* mothermctrack12 = (CbmMCTrack*)fMcTracks->At(motherId12);
-						CbmMCTrack* mothermctrack21 = (CbmMCTrack*)fMcTracks->At(motherId21);
-						CbmMCTrack* mothermctrack22 = (CbmMCTrack*)fMcTracks->At(motherId22);
-					
-						fhPhotons_MC_motherpdg->Fill(mothermctrack11->GetPdgCode());
-						fhPhotons_MC_motherpdg->Fill(mothermctrack12->GetPdgCode());
-						fhPhotons_MC_motherpdg->Fill(mothermctrack21->GetPdgCode());
-						fhPhotons_MC_motherpdg->Fill(mothermctrack22->GetPdgCode());
-					}
-					
-					
-					
-					TLorentzVector lorVecE11c;
-					TLorentzVector lorVecE12c;
-					TLorentzVector lorVecE21c;
-					TLorentzVector lorVecE22c;
-					
-					mctrack11->Get4Momentum(lorVecE11c);
-					mctrack12->Get4Momentum(lorVecE12c);
-					mctrack21->Get4Momentum(lorVecE21c);
-					mctrack22->Get4Momentum(lorVecE22c);
-					
-					TLorentzVector g1c = lorVecE11c + lorVecE12c;
-					TLorentzVector g2c = lorVecE21c + lorVecE22c;
-					TLorentzVector pic = lorVecE11c + lorVecE12c + lorVecE21c + lorVecE22c;
-					
-					g1c.Boost(-pic.BoostVector() );
-					g2c.Boost(-pic.BoostVector() );
-					
-					Double_t boostAnglec = g1c.Angle(g2c.Vect());
-					Double_t thetac = 180.*boostAnglec/TMath::Pi();
-					fhPhotons_boostAngleMC->Fill(thetac);
-					
-					
-					
-				}
-			}
-		}
-	}
-}
-
-
 
 void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int> mctrackID, vector< vector<int> > reconstructedPhotons, Int_t index)
 // index: kind of electron cut: 1 = no refit, no chicut; 2 = no refit, with chicut; 3 = with refit, no chicut; 4 = with refit, with chicut
@@ -1258,6 +1067,7 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 	if(nof >= 2) {
 		for(int a=0; a<nof-1; a++) {
 			for(int b=a+1; b<nof; b++) {
+				cout << "CbmAnaConversionRecoFull: calculating invariant mass!" << endl;
 				Int_t electron11 = reconstructedPhotons[a][0];
 				Int_t electron12 = reconstructedPhotons[a][1];
 				Int_t electron21 = reconstructedPhotons[b][0];
@@ -1273,7 +1083,7 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 				Double_t pt = Pt_4particlesRECO(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
 				Double_t rap = Rap_4particlesRECO(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
 				
-				Double_t opening_angle = OpeningAngleBetweenPhotons(reconstructedPhotons[a], reconstructedPhotons[b]);
+				Double_t opening_angle = OpeningAngleBetweenPhotons(momenta, reconstructedPhotons[a], reconstructedPhotons[b]);
 				if(index == 1) fhPhotons_angleBetween->Fill(opening_angle);
 				
 				
@@ -1332,27 +1142,31 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 						if(pt > 1 && pt <= 2)	fhPhotons_invmass_ptBin2_1->Fill(invmass);
 						if(pt > 2 && pt <= 3)	fhPhotons_invmass_ptBin3_1->Fill(invmass);
 						if(pt > 3 && pt <= 4)	fhPhotons_invmass_ptBin4_1->Fill(invmass);
+						fhPhotons_invmass_vs_pt_1->Fill(invmass, pt);
 					}
 					if(index == 2) {
 						if(pt <= 1) 			fhPhotons_invmass_ptBin1_2->Fill(invmass);
 						if(pt > 1 && pt <= 2)	fhPhotons_invmass_ptBin2_2->Fill(invmass);
 						if(pt > 2 && pt <= 3)	fhPhotons_invmass_ptBin3_2->Fill(invmass);
 						if(pt > 3 && pt <= 4)	fhPhotons_invmass_ptBin4_2->Fill(invmass);
+						fhPhotons_invmass_vs_pt_2->Fill(invmass, pt);
 					}
 					if(index == 3) {
 						if(pt <= 1) 			fhPhotons_invmass_ptBin1_3->Fill(invmass);
 						if(pt > 1 && pt <= 2)	fhPhotons_invmass_ptBin2_3->Fill(invmass);
 						if(pt > 2 && pt <= 3)	fhPhotons_invmass_ptBin3_3->Fill(invmass);
 						if(pt > 3 && pt <= 4)	fhPhotons_invmass_ptBin4_3->Fill(invmass);
+						fhPhotons_invmass_vs_pt_3->Fill(invmass, pt);
 					}
 					if(index == 4) {
 						if(pt <= 1) 			fhPhotons_invmass_ptBin1_4->Fill(invmass);
 						if(pt > 1 && pt <= 2)	fhPhotons_invmass_ptBin2_4->Fill(invmass);
 						if(pt > 2 && pt <= 3)	fhPhotons_invmass_ptBin3_4->Fill(invmass);
 						if(pt > 3 && pt <= 4)	fhPhotons_invmass_ptBin4_4->Fill(invmass);
+						fhPhotons_invmass_vs_pt_4->Fill(invmass, pt);
 					}
 					
-					
+					/*
 					Double_t chicut = 1.0;
 					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
 						fhPhotons_invmass_cut_chi1->Fill(invmass);
@@ -1478,11 +1292,38 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 					fhPhotons_boostAngleMC->Fill(thetac);
 					
 					
-					
+					*/
 				}
 			}
 		}
 	}
+}
+
+
+
+
+
+Double_t CbmAnaConversionRecoFull::OpeningAngleBetweenPhotons(vector<TVector3> momenta, vector<int> photon1, vector<int> photon2)
+{
+	Double_t energy1 = TMath::Sqrt(momenta[photon1[0]].Mag2() + M2E);
+	TLorentzVector lorVec1(momenta[photon1[0]], energy1);
+	
+	Double_t energy2 = TMath::Sqrt(momenta[photon1[1]].Mag2() + M2E);
+	TLorentzVector lorVec2(momenta[photon1[1]], energy2);
+	
+	Double_t energy3 = TMath::Sqrt(momenta[photon2[0]].Mag2() + M2E);
+	TLorentzVector lorVec3(momenta[photon2[0]], energy3);
+	
+	Double_t energy4 = TMath::Sqrt(momenta[photon2[1]].Mag2() + M2E);
+	TLorentzVector lorVec4(momenta[photon2[1]], energy4);
+
+	TLorentzVector lorPhoton1 = lorVec1 + lorVec2;
+	TLorentzVector lorPhoton2 = lorVec3 + lorVec4;
+
+	Double_t angleBetweenPhotons = lorPhoton1.Angle(lorPhoton2.Vect());
+	Double_t theta = 180.*angleBetweenPhotons/TMath::Pi();
+
+	return theta;
 }
 
 
@@ -1704,4 +1545,305 @@ void CbmAnaConversionRecoFull::CombineElectrons()
 	}
 }
 */
+
+
+void CbmAnaConversionRecoFull::CombineElectrons()
+{
+	Int_t nof = fElectrons_momenta.size();
+	cout << "CbmAnaConversionRecoFull: CombineElectrons, nof - " << nof << endl;
+	Int_t nofPhotons = 0;
+	if(nof >= 2) {
+		for(int a=0; a<nof-1; a++) {
+			for(int b=a+1; b<nof; b++) {
+				Int_t check1 = (fElectrons_track[a]->GetParamLast()->GetQp() > 0);	// positive or negative charge (qp = charge over momentum ratio)
+				Int_t check2 = (fElectrons_track[b]->GetParamLast()->GetQp() > 0);
+				Int_t test = check1 + check2;
+				if(test != 1) continue;		// need one electron and one positron
+				//if(fElectrons_momentaChi[a] > 10 || fElectrons_momentaChi[b] > 10) continue;
+				
+				CbmLmvmKinematicParams params1 = CalculateKinematicParamsReco(fElectrons_momenta[a], fElectrons_momenta[b]);
+				
+				// standard fixed opening angle cut
+				//Double_t openingAngleCut = 1;
+				
+				// opening angle cut depending on pt of e+e- pair
+				//Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
+				Double_t openingAngleCut = 1.2;
+				
+				Double_t invMassCut = 0.03;
+				
+				Int_t IsPhoton_openingAngle1	= (params1.fAngle < openingAngleCut);
+				Int_t IsPhoton_invMass1			= (params1.fMinv < invMassCut);
+				
+				Double_t tXa = fElectrons_track[a]->GetParamLast()->GetTx();
+				Double_t tYa = fElectrons_track[a]->GetParamLast()->GetTy();
+				Double_t tXb = fElectrons_track[b]->GetParamLast()->GetTx();
+				Double_t tYb = fElectrons_track[b]->GetParamLast()->GetTy();
+				
+				if(IsPhoton_openingAngle1 && IsPhoton_invMass1) {
+					nofPhotons++;
+					vector<int> pair; // = {a, b};
+					pair.push_back(a);
+					pair.push_back(b);
+					fVector_photons_pairs.push_back(pair);
+					fhElectrons_invmass_cut->Fill(params1.fMinv);
+					//fVector_photons_momenta.push_back(params1.momPair);
+					
+					fhPhotons_tX->Fill(tXa);
+					fhPhotons_tX->Fill(tXb);
+					fhPhotons_tY->Fill(tYa);
+					fhPhotons_tY->Fill(tYb);
+					
+					TVector3 momentumE1f;
+					TVector3 momentumE2f;
+					fElectrons_track[a]->GetParamFirst()->Momentum(momentumE1f);
+					fElectrons_track[b]->GetParamFirst()->Momentum(momentumE2f);
+					TVector3 momentumE1l;
+					TVector3 momentumE2l;
+					fElectrons_track[a]->GetParamLast()->Momentum(momentumE1l);
+					fElectrons_track[b]->GetParamLast()->Momentum(momentumE2l);
+					
+					//Double_t energyE1 = TMath::Sqrt(momentumE1.Mag2() + M2E);
+					//TLorentzVector lorVecE1(momentumE1, energyE1);
+					//Double_t energyE2 = TMath::Sqrt(momentumE2.Mag2() + M2E);
+					//TLorentzVector lorVecE2(momentumE2, energyE2);
+					//TLorentzVector g = lorVecE1 + lorVecE2;
+					
+					//lorVecE1.Boost(g.BoostVector() );
+					//lorVecE2.Boost(g.BoostVector() );
+					
+					TVector3 normal1 = momentumE1f.Cross(momentumE1l);
+					TVector3 normal2 = momentumE2f.Cross(momentumE2l);
+					Double_t normalAngle = normal1.Angle(normal2);
+					Double_t theta = 180.*normalAngle/TMath::Pi();
+					
+					//Double_t boostAngle = lorVecE1.Angle(lorVecE2.Vect());
+					
+					//fhPhotons_boostAngle->Fill(normalAngle);
+
+					
+					
+					//if( TMath::Abs(tXa - tXb) < 0.5 || TMath::Abs(tYa - tYb) < 0.5 ) {
+					if( theta < 30 ) {
+						fVector_photons_pairs_direction.push_back(pair);
+					}
+				}
+			}
+		}
+	}
+	fhPhotons_nofPerEvent->Fill(nofPhotons);
+}
+
+
+
+
+
+
+void CbmAnaConversionRecoFull::CombinePhotons()
+{
+	Int_t nof = fVector_photons_pairs.size();
+	cout << "CbmAnaConversionRecoFull: CombinePhotons, nof - " << nof << endl;
+	if(nof >= 2) {
+		for(int a=0; a<nof-1; a++) {
+			for(int b=a+1; b<nof; b++) {
+				Int_t electron11 = fVector_photons_pairs[a][0];
+				Int_t electron12 = fVector_photons_pairs[a][1];
+				Int_t electron21 = fVector_photons_pairs[b][0];
+				Int_t electron22 = fVector_photons_pairs[b][1];
+			
+				Double_t invmass = Invmass_4particlesRECO(fElectrons_momenta[electron11], fElectrons_momenta[electron12], fElectrons_momenta[electron21], fElectrons_momenta[electron22]);
+				fhPhotons_invmass->Fill(invmass);
+				
+				Double_t pt = Pt_4particlesRECO(fElectrons_momenta[electron11], fElectrons_momenta[electron12], fElectrons_momenta[electron21], fElectrons_momenta[electron22]);
+				Double_t rap = Rap_4particlesRECO(fElectrons_momenta[electron11], fElectrons_momenta[electron12], fElectrons_momenta[electron21], fElectrons_momenta[electron22]);
+				
+				Double_t opening_angle = OpeningAngleBetweenPhotons(fVector_photons_pairs[a], fVector_photons_pairs[b]);
+				fhPhotons_angleBetween->Fill(opening_angle);
+				
+				
+				CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(fElectrons_momenta[electron11], fElectrons_momenta[electron12], fElectrons_momenta[electron21], fElectrons_momenta[electron22]);
+				
+				
+				TVector3 momentumE1;
+				TVector3 momentumE2;
+				fElectrons_track[a]->GetParamLast()->Momentum(momentumE1);
+				fElectrons_track[b]->GetParamLast()->Momentum(momentumE2);
+					
+				Double_t energyE11 = TMath::Sqrt(fElectrons_momenta[electron11].Mag2() + M2E);
+				TLorentzVector lorVecE11(fElectrons_momenta[electron11], energyE11);
+				Double_t energyE12 = TMath::Sqrt(fElectrons_momenta[electron12].Mag2() + M2E);
+				TLorentzVector lorVecE12(fElectrons_momenta[electron12], energyE12);
+				Double_t energyE21 = TMath::Sqrt(fElectrons_momenta[electron21].Mag2() + M2E);
+				TLorentzVector lorVecE21(fElectrons_momenta[electron21], energyE21);
+				Double_t energyE22 = TMath::Sqrt(fElectrons_momenta[electron22].Mag2() + M2E);
+				TLorentzVector lorVecE22(fElectrons_momenta[electron22], energyE22);
+				TLorentzVector g1 = lorVecE11 + lorVecE12;
+				TLorentzVector g2 = lorVecE21 + lorVecE22;
+				TLorentzVector pi = lorVecE11 + lorVecE12 + lorVecE21 + lorVecE22;
+					
+				g1.Boost(-pi.BoostVector() );
+				g2.Boost(-pi.BoostVector() );
+					
+				Double_t boostAngle = g1.Angle(g2.Vect());
+				Double_t theta = 180.*boostAngle/TMath::Pi();
+				
+				fhPhotons_boostAngleTest->Fill(boostAngle);
+					
+				//if(opening_angle < 10) {
+				if(true) {
+					fhPhotons_boostAngle->Fill(theta);
+				
+					fhPhotons_invmass_cut->Fill(invmass);
+					fhPhotons_invmass_vs_pt->Fill(invmass, pt);
+					fhPhotons_rapidity_vs_pt->Fill(pt, rap);
+					fhPhotons_invmass_vs_openingAngle->Fill(invmass, opening_angle);
+					fhPhotons_openingAngle_vs_momentum->Fill(opening_angle, params1.fMomentumMag);
+					
+					fhMomentumFits_pi0reco->Fill(fElectrons_momentaChi[electron11]);
+					fhMomentumFits_pi0reco->Fill(fElectrons_momentaChi[electron12]);
+					fhMomentumFits_pi0reco->Fill(fElectrons_momentaChi[electron21]);
+					fhMomentumFits_pi0reco->Fill(fElectrons_momentaChi[electron22]);
+					
+					fhPhotons_invmass_vs_chi->Fill(invmass, fElectrons_momentaChi[electron11]);
+					fhPhotons_invmass_vs_chi->Fill(invmass, fElectrons_momentaChi[electron12]);
+					fhPhotons_invmass_vs_chi->Fill(invmass, fElectrons_momentaChi[electron21]);
+					fhPhotons_invmass_vs_chi->Fill(invmass, fElectrons_momentaChi[electron22]);
+					
+					if(pt <= 1) fhPhotons_invmass_cut_ptBin1->Fill(invmass);
+					if(pt > 1 && pt <= 2) fhPhotons_invmass_cut_ptBin2->Fill(invmass);
+					if(pt > 2 && pt <= 3) fhPhotons_invmass_cut_ptBin3->Fill(invmass);
+					if(pt > 3 && pt <= 4) fhPhotons_invmass_cut_ptBin4->Fill(invmass);
+					
+					Double_t chicut = 1.0;
+					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
+						fhPhotons_invmass_cut_chi1->Fill(invmass);
+					}
+					chicut = 3.0;
+					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
+						fhPhotons_invmass_cut_chi3->Fill(invmass);
+					}
+					chicut = 5.0;
+					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
+						fhPhotons_invmass_cut_chi5->Fill(invmass);
+					}
+					chicut = 10.0;
+					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
+						fhPhotons_invmass_cut_chi10->Fill(invmass);
+					}
+					chicut = 25.0;
+					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
+						fhPhotons_invmass_cut_chi25->Fill(invmass);
+					}
+					chicut = 40.0;
+					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
+						fhPhotons_invmass_cut_chi40->Fill(invmass);
+					}
+					chicut = 65.0;
+					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
+						fhPhotons_invmass_cut_chi65->Fill(invmass);
+					}
+					chicut = 80.0;
+					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
+						fhPhotons_invmass_cut_chi80->Fill(invmass);
+					}
+					
+					
+					
+					// CROSSCHECK WITH MC-TRUE DATA!
+					CbmMCTrack* mctrack11 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID[electron11]);
+					CbmMCTrack* mctrack12 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID[electron12]);
+					CbmMCTrack* mctrack21 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID[electron21]);
+					CbmMCTrack* mctrack22 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID[electron22]);
+					
+					Int_t motherId11 = mctrack11->GetMotherId();
+					Int_t motherId12 = mctrack12->GetMotherId();
+					Int_t motherId21 = mctrack21->GetMotherId();
+					Int_t motherId22 = mctrack22->GetMotherId();
+					
+					TVector3 startvertex11;
+					mctrack11->GetStartVertex(startvertex11);
+					TVector3 startvertex12;
+					mctrack12->GetStartVertex(startvertex12);
+					TVector3 startvertex21;
+					mctrack21->GetStartVertex(startvertex21);
+					TVector3 startvertex22;
+					mctrack22->GetStartVertex(startvertex22);
+					
+					fhPhotons_MC_startvertexZ->Fill(startvertex11.Z());
+					fhPhotons_MC_startvertexZ->Fill(startvertex12.Z());
+					fhPhotons_MC_startvertexZ->Fill(startvertex21.Z());
+					fhPhotons_MC_startvertexZ->Fill(startvertex22.Z());
+					
+					if(motherId11 == motherId12 && motherId21 == motherId22) {
+						fhPhotons_MC_invmass1->Fill(invmass);
+						if(motherId11 != -1 && motherId21 != -1) {
+							CbmMCTrack* mothermctrack11 = (CbmMCTrack*)fMcTracks->At(motherId11);
+							CbmMCTrack* mothermctrack21 = (CbmMCTrack*)fMcTracks->At(motherId21);
+							
+							Int_t grandmotherId11 = mothermctrack11->GetMotherId();
+							Int_t grandmotherId21 = mothermctrack21->GetMotherId();
+							
+							if(grandmotherId11 == grandmotherId21) {
+								fhPhotons_MC_invmass2->Fill(invmass);
+								if(grandmotherId11 == -1) continue;
+								CbmMCTrack* pi0mctrack11 = (CbmMCTrack*)fMcTracks->At(grandmotherId11);
+								if(pi0mctrack11->GetMotherId() == -1) {
+									fhPhotons_MC_motherIdCut->Fill(invmass);
+								}
+							}
+							if(grandmotherId11 != grandmotherId21) {
+								fhPhotons_MC_invmass3->Fill(invmass);
+							}
+						}
+					}
+					
+					if(motherId11 != motherId12 || motherId21 != motherId22) {
+						fhPhotons_MC_invmass4->Fill(invmass);
+					}
+					
+					
+					
+					if(motherId11 != -1 && motherId12 != -1 && motherId21 != -1 && motherId22 != -1) {
+						CbmMCTrack* mothermctrack11 = (CbmMCTrack*)fMcTracks->At(motherId11);
+						CbmMCTrack* mothermctrack12 = (CbmMCTrack*)fMcTracks->At(motherId12);
+						CbmMCTrack* mothermctrack21 = (CbmMCTrack*)fMcTracks->At(motherId21);
+						CbmMCTrack* mothermctrack22 = (CbmMCTrack*)fMcTracks->At(motherId22);
+					
+						fhPhotons_MC_motherpdg->Fill(mothermctrack11->GetPdgCode());
+						fhPhotons_MC_motherpdg->Fill(mothermctrack12->GetPdgCode());
+						fhPhotons_MC_motherpdg->Fill(mothermctrack21->GetPdgCode());
+						fhPhotons_MC_motherpdg->Fill(mothermctrack22->GetPdgCode());
+					}
+					
+					
+					
+					TLorentzVector lorVecE11c;
+					TLorentzVector lorVecE12c;
+					TLorentzVector lorVecE21c;
+					TLorentzVector lorVecE22c;
+					
+					mctrack11->Get4Momentum(lorVecE11c);
+					mctrack12->Get4Momentum(lorVecE12c);
+					mctrack21->Get4Momentum(lorVecE21c);
+					mctrack22->Get4Momentum(lorVecE22c);
+					
+					TLorentzVector g1c = lorVecE11c + lorVecE12c;
+					TLorentzVector g2c = lorVecE21c + lorVecE22c;
+					TLorentzVector pic = lorVecE11c + lorVecE12c + lorVecE21c + lorVecE22c;
+					
+					g1c.Boost(-pic.BoostVector() );
+					g2c.Boost(-pic.BoostVector() );
+					
+					Double_t boostAnglec = g1c.Angle(g2c.Vect());
+					Double_t thetac = 180.*boostAnglec/TMath::Pi();
+					fhPhotons_boostAngleMC->Fill(thetac);
+					
+					
+					
+				}
+			}
+		}
+	}
+}
+
 
