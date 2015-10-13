@@ -548,6 +548,7 @@ void CbmTofHitProducerNew::InitParametersFromContainer()
 void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
 {
   fHitCollection->Clear();
+  fTofHitMatches->Clear();
   fNHits = -1;              //Must start in -1
 
   CbmTofPoint *pt;
