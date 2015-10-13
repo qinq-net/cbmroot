@@ -1330,7 +1330,7 @@ Double_t CbmAnaConversionRecoFull::OpeningAngleBetweenPhotons(vector<TVector3> m
 
 
 
-Double_t CbmAnaConversionRecoFull::OpeningAngleBetweenPhotons(vector<int> photon1, vector<int> photon2)
+Double_t CbmAnaConversionRecoFull::OpeningAngleBetweenPhotons2(vector<int> photon1, vector<int> photon2)
 {
 	Double_t energy1 = TMath::Sqrt(fElectrons_momenta[photon1[0]].Mag2() + M2E);
 	TLorentzVector lorVec1(fElectrons_momenta[photon1[0]], energy1);
@@ -1657,7 +1657,7 @@ void CbmAnaConversionRecoFull::CombinePhotons()
 				Double_t pt = Pt_4particlesRECO(fElectrons_momenta[electron11], fElectrons_momenta[electron12], fElectrons_momenta[electron21], fElectrons_momenta[electron22]);
 				Double_t rap = Rap_4particlesRECO(fElectrons_momenta[electron11], fElectrons_momenta[electron12], fElectrons_momenta[electron21], fElectrons_momenta[electron22]);
 				
-				Double_t opening_angle = OpeningAngleBetweenPhotons(fVector_photons_pairs[a], fVector_photons_pairs[b]);
+				Double_t opening_angle = OpeningAngleBetweenPhotons2(fVector_photons_pairs[a], fVector_photons_pairs[b]);
 				fhPhotons_angleBetween->Fill(opening_angle);
 				
 				

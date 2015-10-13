@@ -51,7 +51,7 @@ public:
 	CbmLmvmKinematicParams CalculateKinematicParams_4particles(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 	
 	void CombinePhotons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int> mctrackID, vector< vector<int> > reconstructedPhotons, Int_t index);
-	Double_t OpeningAngleBetweenPhotons(vector<int> photon1, vector<int> photons2);
+	Double_t OpeningAngleBetweenPhotons2(vector<int> photon1, vector<int> photons2);
 	Double_t OpeningAngleBetweenPhotons(vector<TVector3> momenta, vector<int> photon1, vector<int> photons2);
 
 	void CombineElectronsRefit();
