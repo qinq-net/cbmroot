@@ -82,6 +82,7 @@ void CreateGDMLfile_April2015_ModAug2015(float pmt_pos_y_addend = 0, float pmt_p
   char* InFileUpper="CreateGeo/2015_minus10deg_UpperPart.gdml";//[256];//not used
   //char* InFileLower="CreateGeo/2015_minus10deg_LowerPart.gdml";//[256];
   char* InFileLower="CreateGeo/2015_minus10deg_LowerPart_ModAug2015.gdml";//[256];
+  cout<<InFileLower<<endl;
   //char* InFileLower="CreateGeo/2015_minus10deg_LowerPart_ModAug2015_NoSense.gdml";//[256];
   int ShiftXmod10=(int(PMTrotX*10)) % 10;  
   float IntegerXValue=PMTrotX-(float (ShiftXmod10))/10.;
@@ -104,7 +105,7 @@ void CreateGDMLfile_April2015_ModAug2015(float pmt_pos_y_addend = 0, float pmt_p
   std::ifstream infile1 (InFileUpper);
   std::ifstream infile2 (InFileLower);
   char *Path1="/data/cbmroot";
-  Path1="/hera/cbm/users/tariq/cbmroot";
+  // Path1="/hera/cbm/users/tariq/cbmroot";
   TString ExtraText=".";//
   if(DefaultDims ==1){
     ExtraText="_DefaultRichDims.";
@@ -191,7 +192,7 @@ OutFile_GDML <<"</define>" << std::endl;
   // cout<<" ########## "<<InFile<<endl;
   // TString OutFile=FileName+".root";
   // cout<<" ########## "<<OutFile<<endl;
-
+  // return;
   TString OutFile_GDML_Str=GeoFileName_Str+"gdml";
   TString OutFile_ROOT=GeoFileName_Str+"root";
   cout<<OutFile_GDML_Str<<endl;
