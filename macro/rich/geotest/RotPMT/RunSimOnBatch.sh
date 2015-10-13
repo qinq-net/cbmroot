@@ -1,46 +1,131 @@
 #!/bin/sh
 #$ -wd /tmp 
+ nEvs=1
+ rotx=0
+ roty=0
+ transy=0
+ transz=0
 
-rotx=$1
-roty=$2
-rotmir=$3
-nEvs=$4
-transy=$5
-transz=$6
-Theta=$7
-DefaultDims=$8
-DefaultDimsLargePMT=$9
+ ThetaMin=25 #devide by 10 in cpp
+ ThetaMax=250 #devide by 10 in cpp
+ PhiMin=90
+ PhiMax=180
 
-GeoCase=2
-PtNotP=1
-MomMin=0
-MomMax=4
-StartPhi=90
-EndPhi=180
+ GeoCase=2
+ DimCase=2
+ EnlargedPMTWidth=2
+ EnlargedPMTHight=4
+ 
 
-# specify input and output directories
-echo "rotx = $rotx, roty = $roty"
+ PtNotP=0
+ MomMin=0 #devide by 10 in cpp
+ MomMax=40 #devide by 10 in cpp
+
+ rotmir=-10
+ extendedmir=0
+
+OldCode=0
+DefaultDims=0 #for old code					
+DefaultDimsLargePMT=0 #for old code
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+	-nev) shift; nEvs=$1 ;;
+	-rx) shift; rotx=$1 ;;
+	-ry) shift; roty=$1 ;;
+	-dy) shift; transy=$1 ;;
+	-dz) shift; transz=$1 ;;
+
+	-mint) shift; ThetaMin=$1 ;;
+	-maxt) shift; ThetaMax=$1 ;;
+	-minp) shift; PhiMin=$1 ;;
+	-maxp) shift; PhiMax=$1 ;;
+
+	-geo) shift; GeoCase=$1 ;;
+	-dim) shift; DimCase=$1 ;;
+	-pmtw) shift; EnlargedPMTWidth=$1 ;;
+	-pmth) shift; EnlargedPMTHight=$1 ;;
+
+	-ptp) shift; PtNotP=$1 ;;
+	-minm) shift; MomMin=$1 ;;
+	-maxm) shift; MomMax=$1 ;;
+
+	-mir) shift; rotmir=$1 ;;
+	-extm) shift; extendedmir=$1 ;;
+
+	-oldc) shift; OldCode=$1 ;;
+	-ddim) shift; DefaultDims=$1 ;;
+	-pmtd) shift; DefaultDimsLargePMT=$1 ;;
+	
+#	--)        shift ; break ;;
+#	*)         echo "unknown option: $1" ;
+    esac
+    shift
+done
+
+
+#echo "nev=$nev"
+#echo "rotx=$rotx"
+#echo "roty=$roty"
+#echo "transy=$transy"
+#echo "transz=$transz"
+
+#echo "ThetaMin=$ThetaMin"
+#echo "ThetaMax=$ThetaMax"
+#echo "PhiMin=$PhiMin"
+#echo "PhiMax=$PhiMax"
+
+#echo "GeoCase=$GeoCase"
+#echo "DimCase=$DimCase"
+#echo "EnlargedPMTWidth=$EnlargedPMTWidth"
+#echo "EnlargedPMTHight=$EnlargedPMTHight"
+#echo "PtNotP=$PtNotP"
+#echo "MomMin=$MomMin"
+#echo "MomMax=$MomMax"
+
+#echo "rotmir=$rotmir"
+#echo "extendedmir=$extendedmir"
+
+#echo "OldCode=$OldCode"
+#echo "DefaultDims=$DefaultDims"
+#echo "DefaultDimsLargePMT=$DefaultDimsLargePMT"
+
 outdir=/hera/cbm/users/tariq/GeoOptRootFiles/
 cbmroot_config_path=/hera/cbm/users/tariq/cbmroot/buildcbm/config.sh
 macro_dir=/hera/cbm/users/tariq/cbmroot/macro/rich/geotest/RotPMT
 # Needed to run macro via script
+
 export SCRIPT=yes
 export N_EVS=$nEvs
-export ROTMIR=$rotmir
 export PMT_ROTX=$rotx
 export PMT_ROTY=$roty
 export PMT_TRAY=$transy
 export PMT_TRAZ=$transz
+
+export THETAMIN=$ThetaMin
+export THETAMAX=$ThetaMax
+export PHIMIN=$PhiMin
+export PHIMAX=$PhiMax
+
 export GEO_CASE=$GeoCase
+export DIM_CASE=$DimCase
+export ENL_PMTWIDTH=$EnlargedPMTWidth
+export ENL_PMTHIGHT=$EnlargedPMTHight
+
 export PT_NOT_P=$PtNotP
 export MOM_MIN=$MomMin
 export MOM_MAX=$MomMax
-export THETA=$Theta
-export STARTPHI=$StartPhi
-export ENDPHI=$EndPhi
 
+export ROTMIR=$rotmir
+export EXTENDEDMIR=$extendedmir
+export OLDCODE=$OldCode
 export DEFAULDIMS=$DefaultDims
 export DEFAULDIMSLPMT=$DefaultDimsLargePMT
+
+#root -b -l -q "Run_Sim_GeoOpt_Batch.C()"
+#root -b -l -q "Run_Reco_GeoOpt_Batch.C()"
+#root -b -l -q "Run_Ana_GeoOpt_Batch.C()"
+#return
 
 # setup the run environment
 source ${cbmroot_config_path}
