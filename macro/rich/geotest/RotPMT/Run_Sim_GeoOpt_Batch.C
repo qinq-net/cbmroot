@@ -1,78 +1,119 @@
-void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1,  float PMTrotX=5, float PMTrotY=5, int RotMir=-10)
+void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1)
 {
 
-  int GeoCase=2;
-  int PtNotP=1;  float MomMin=0.; float MomMax=4.;
-  //int PtNotP=0;  float MomMin=3.95; float MomMax=4.;
-  float StartTheta=2.5; float  EndTheta=25.;
-  int PMTtransY=0, PMTtransZ=0;
+  float PMTrotX=20, PMTrotY=10;
+  int PMTtransY=180, PMTtransZ=80;
+  float ThetaMin=25., ThetaMax=250.;//devide by 10 later 
+  float PhiMin=90., PhiMax=180.;
+  int GeoCase=2, DimCase=2;
+  float EnlargedPMTWidth=2., EnlargedPMTHight=4.;
+ 
+
+  int PtNotP=1;
+  float MomMin=0., MomMax=40;//devide by 10 later 
+
+  float RotMir=-10;
+  int extendedmir=0;
+  int OldCode=0;
   int DefaultDims=0;
   int DefaultDims_LargePMT=0;
-   bool StoreTraj=0;
 
-  float StartPhi=90., EndPhi=180.;
+  bool StoreTraj=0;
+  
   TString script = TString(gSystem->Getenv("SCRIPT"));
+
   if (script == "yes"){
     cout<<" ----------------- running with script --------------------"<<endl;
     nEvents=TString(gSystem->Getenv("N_EVS")).Atof();
-    RotMir=TString(gSystem->Getenv("ROTMIR")).Atof();
     PMTrotX=TString(gSystem->Getenv("PMT_ROTX")).Atof();
     PMTrotY=TString(gSystem->Getenv("PMT_ROTY")).Atof();
     PMTtransY=TString(gSystem->Getenv("PMT_TRAY")).Atof();
     PMTtransZ=TString(gSystem->Getenv("PMT_TRAZ")).Atof();
-    
+
+    ThetaMin=TString(gSystem->Getenv("THETAMIN")).Atof();
+    ThetaMax=TString(gSystem->Getenv("THETAMAX")).Atof();
+    PhiMin=TString(gSystem->Getenv("PHIMIN")).Atof();
+    PhiMax=TString(gSystem->Getenv("PHIMAX")).Atof();
+
     GeoCase=TString(gSystem->Getenv("GEO_CASE")).Atof();
-    
+    DimCase=TString(gSystem->Getenv("DIM_CASE")).Atof();
+    EnlargedPMTWidth=TString(gSystem->Getenv("ENL_PMTWIDTH")).Atof();
+    EnlargedPMTHight=TString(gSystem->Getenv("ENL_PMTHIGHT")).Atof();
+
     PtNotP=TString(gSystem->Getenv("PT_NOT_P")).Atof();
     MomMin=TString(gSystem->Getenv("MOM_MIN")).Atof();
     MomMax=TString(gSystem->Getenv("MOM_MAX")).Atof();
-    EndTheta=TString(gSystem->Getenv("THETA")).Atof();
-    StartPhi=TString(gSystem->Getenv("STARTPHI")).Atof();
-    EndPhi=TString(gSystem->Getenv("ENDPHI")).Atof();
+    /////////
+
+    RotMir=TString(gSystem->Getenv("ROTMIR")).Atof();
+    extendedmir=TString(gSystem->Getenv("EXTENDEDMIR")).Atof();
+
+    OldCode=TString(gSystem->Getenv("OLDCODE")).Atof();
     DefaultDims=TString(gSystem->Getenv("DEFAULDIMS")).Atof();
     DefaultDims_LargePMT=TString(gSystem->Getenv("DEFAULDIMSLPMT")).Atof();
   }  
-  //cout<<RotMir<<", "<<PMTrotX<<", "<<PMTrotY<<", "<<GeoCase<<endl;
-  // float  EndTheta=35.;
-    
+
+  cout<<"PMTrotX="<< PMTrotX<<"  PMTrotY="<< PMTrotY<<"  PMTtransY="<<
+    PMTtransY<<"  PMTtransZ="<< PMTtransZ<<"  ThetaMin="<<
+    ThetaMin<<"  ThetaMax="<< ThetaMax<<"  PhiMin="<<
+    PhiMin<<"  PhiMax="<< PhiMax<<"  GeoCase="<<
+    GeoCase<<"  DimCase="<< DimCase<<"  EnlargedPMTWidth="<<
+    EnlargedPMTWidth<<"  EnlargedPMTHight="<< EnlargedPMTHight<<"  PtNotP="<<
+    PtNotP<<"  MomMin="<<
+    MomMin<<"  MomMax="<< MomMax<<"  rotmir="<<
+    RotMir<<"  extendedmir="<<
+    extendedmir<<"  DefaultDims="<<
+    DefaultDims<<"  DefaultDims_LargePMT="<<
+    DefaultDims_LargePMT<<"  ="<<endl;
+  //return;
+  // if(EnlargedPMTWidth == 0 && EnlargedPMTHight==0){DefaultDims=1; DefaultDims_LargePMT=0;}
+  
   TTree::SetMaxTreeSize(90000000000);
   //******************************
-  TString RotMirText=GetMirText(RotMir);
+  TString outDir=GetOutDir(GeoCase);
+  TString GeoText=GetGeoText(GeoCase);
+  TString RotMirText=GetMirText(RotMir, extendedmir);
+  cout<<"MirText = "<<RotMirText<<endl;
   TString PMTRotText=GetPMTRotText(PMTrotX, PMTrotY);
   TString PMTTransText=GetPMTTransText(PMTtransY, PMTtransZ);
-  TString pipeGeom=GetPipe_GeoFile( GeoCase);
-  pipeGeom="";
-  //******************************
-
-  cout<<"RotMirText = "<<RotMirText<<endl;
-  cout<<"PMTRotText = "<<PMTRotText<<endl;
-
-  TString outDir=GetOutDir(GeoCase);//="/data/GeoOpt/RotPMT/NewGeo/";
-  TString GeoText=GetGeoText(GeoCase);
   TString MomText=GetMomText(PtNotP,MomMin,MomMax);
-  TString PhiText=GetPhiText(StartPhi, EndPhi);
-  TString ThetaText=GetThetaText(EndTheta);
+  cout<<MomText<<endl;
+  
+  TString PhiText=GetPhiText(PhiMin, PhiMax);
+  TString ThetaText=GetThetaText(ThetaMin,ThetaMax);
+  cout<<ThetaText<<endl;
+  TString DimentionText=GetDimentionText(DimCase, EnlargedPMTWidth, EnlargedPMTHight);
+  cout<<DimentionText<<endl;
+  
   TString ExtraText=".";//
-  if(DefaultDims ==1){
-    ExtraText="_DefaultRichDims.";
-    if(DefaultDims_LargePMT ==1){ExtraText="_DefaultRichDims_LargePMT.";}
-  }
-
-  TString richGeom=GetRICH_GeoFile( RotMirText, PMTRotText, PMTTransText, GeoCase, ExtraText);
+  
+  
+  
+  
+  TString richGeom=GetRICH_GeoFile( RotMirText, PMTRotText, PMTTransText, GeoCase, DimentionText, ExtraText);
   cout<<"rich geo = "<<richGeom<<endl;
-
-  TString NamingText=GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+PMTTransText+"_"+MomText+"_"+ThetaText+ExtraText+"root";
-  //  TString NamingText=GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+PMTTransText+"_"+MomText+"_"+ThetaText+PhiText+ExtraText+"root";
+  TString pipeGeom=GetPipe_GeoFile(GeoCase);
+  pipeGeom="";
+  //  return;
+  TString NamingText=GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+PMTTransText+"_"+MomText+"_"+DimentionText+ExtraText+"root";
+  
   TString ParFile = outDir + "Parameters_"+NamingText;//
   TString SimFile = outDir + "Sim_"+NamingText;
   TString OutPutGeoFile = outDir + "OutPutGeo_"+NamingText;
-  gSystem->Exec( ("rm "+ParFile).Data() );
-  gSystem->Exec( ("rm "+SimFile).Data() );
-  gSystem->Exec( ("rm "+OutPutGeoFile).Data() );
+  // gSystem->Exec( ("rm "+ParFile).Data() );
+  // gSystem->Exec( ("rm "+SimFile).Data() );
+  // gSystem->Exec( ("rm "+OutPutGeoFile).Data() );
 
   cout<<"par: "<<ParFile<<endl;
   cout<<"sim: "<<SimFile<<endl;
   cout<<"++++++++++++++++++++++++++++++++++++++++++++"<<endl; 
+  //////////////////////////////////////////////
+  ///////////// Important change of variables
+  ThetaMin/=10.; ThetaMax/=10.; MomMin/=10.; MomMax/=10.;
+  cout<<"ThetaMin ="<<ThetaMin<<"  ThetaMax="<<ThetaMax<<"  MomMin="<<MomMin <<"  MomMax="<<MomMax<<endl;
+  //////////////////////////////////////////////
+  //////////////////////////////////////////////
+
   //return;
   TString caveGeom = "cave.geo";
   TString magnetGeom = "magnet/magnet_v12b.geo.root";
@@ -144,8 +185,8 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1,  float PMTrotX=5, float PMTrotY=5, 
   else{boxGen1->SetPRange(MomMin,MomMax); }
   // boxGen1->SetPRange(0.,10.);
   //boxGen1->SetPtRange(0.,4.);
-  boxGen1->SetPhiRange(StartPhi,EndPhi);//0.,360.);
-  boxGen1->SetThetaRange(StartTheta,EndTheta);//2.5,25.);
+  boxGen1->SetPhiRange(PhiMin,PhiMax);//0.,360.);
+  boxGen1->SetThetaRange(ThetaMin,ThetaMax);//2.5,25.);
   boxGen1->SetCosTheta();
   boxGen1->Init();
   primGen->AddGenerator(boxGen1);
@@ -155,8 +196,8 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1,  float PMTrotX=5, float PMTrotY=5, 
   else{boxGen2->SetPRange(MomMin,MomMax); }
   // boxGen2->SetPtRange(0.,4.);
   // boxGen2->SetPRange(0.,10.);
-  boxGen2->SetPhiRange(StartPhi,EndPhi);//0.,360.);
-  boxGen2->SetThetaRange(StartTheta,EndTheta);//2.5,25.);
+  boxGen2->SetPhiRange(PhiMin,PhiMax);//0.,360.);
+  boxGen2->SetThetaRange(ThetaMin,ThetaMax);//2.5,25.);
   boxGen2->SetCosTheta();
   boxGen2->Init();
   primGen->AddGenerator(boxGen2);
@@ -207,7 +248,6 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1,  float PMTrotX=5, float PMTrotY=5, 
     cout << "=================== Test failed =============="<< endl;
     cout << " We have in total "<<numOverlaps<<" overlaps."<<endl;
   }
-
   cout << "=================== Overlaps Tested ================" << endl;
   cout << "====================================================" << endl;
 
@@ -215,11 +255,23 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1,  float PMTrotX=5, float PMTrotY=5, 
 ////////////////////////////////////////////
 TString GetMomText(int PtNotP, float MomMin, float MomMax){
   TString Pstring="P"; if(PtNotP==1){Pstring="Pt";}
-  if( (MomMax-MomMin)<0.1){}
   char Ptxt[256];
-  
-  if( (MomMax-MomMin)<0.1){sprintf(Ptxt,"%sFixed%d",Pstring.Data(),MomMax);}
-  else{sprintf(Ptxt,"%s%dto%d",Pstring.Data(),MomMin,MomMax);}
+  // if(OldCode==1){
+  //   sprintf(Ptxt,"%s%dto%d",Pstring.Data(),MomMin/10.,MomMax/10.);
+  // }else{
+    
+    int MomMinMod10=int(MomMin) % 10;
+    int MomMaxMod10=int(MomMax) % 10;
+    float IntegerMomMin10=(MomMin-MomMinMod10)/10.;
+    float IntegerMomMax10=(MomMax-MomMaxMod10)/10.;
+    
+    cout<<IntegerMomMin10<<"."<<MomMinMod10<<",  "<<IntegerMomMax10<<"."<<MomMaxMod10<<endl;
+    //return "momtext";
+    
+    char MinMomTxt[256];char MaxMomTxt[256]; 
+    sprintf(Ptxt,"%s%dpoint%dTo%dpoint%d",Pstring.Data(),IntegerMomMin10,MomMinMod10,IntegerMomMax10,MomMaxMod10);
+    //cout<<Ptxt<<endl;
+    // }
   stringstream ss; 
   ss<<Ptxt;
   return ss.str();
@@ -243,21 +295,24 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  //return "/data/GeoOpt/";
+// return "/nas/Tariq/Test/";
+//   return "/data/GeoOpt/Test/";
+//   return "/data/GeoOpt/OptiPMTSize/";
 
-  return "/hera/cbm/users/tariq/GeoOptRootFiles/";
+  return "/hera/cbm/users/tariq/GeoOptRootFiles/OptimisedGeo/";
   // if(GeoCase<=0){return "/data/GeoOpt/RotPMT/OlderGeo/";}
   // if(GeoCase==1){return "/data/GeoOpt/RotPMT/OldGeo/";}
   // if(GeoCase==2){return "/data/GeoOpt/RotPMT/NewGeo/";}
 }
 ////////////////////////////////////////////
-TString GetMirText(int RotMir){
+TString GetMirText(int RotMir, bool extend){
   char RotMir_txt[256];
   if(RotMir<0){sprintf( RotMir_txt,"RotMir_m%d",RotMir*-1);}
   else{sprintf(RotMir_txt,"RotMir_p%d",RotMir);}
 
   stringstream ss; 
   ss<<RotMir_txt;
+  if(extend){ss<<"_Extended";}
   return ss.str();
 }
 ////////////////////////////////////////////////////////
@@ -287,9 +342,25 @@ TString  GetPMTTransText(int PMTTransY, int PMTTransZ){
   ss<<"TransPMT_"<<YTransText<<"_"<<ZTransText;
   return ss.str();
 }
+///////////////////////////////////////////////
+TString  GetDimentionText(int DimCase, int EnlargedPMTWidth, int EnlargedPMTHight){
+  if(DimCase ==0){return "";}
+  else if(DimCase ==1){return "DefaultRichDims";}
+  else if(DimCase ==2){return "DefaultRichDims_LargePMT";}
+  else if(DimCase ==3){
+    float PMTWidth=1000. +EnlargedPMTWidth,  PMTHight=600. +EnlargedPMTHight; 
+    char PMTDimsText[256];
+    sprintf( PMTDimsText,"PMTW%d_H%d",PMTWidth, PMTHight);
+
+    stringstream ss; 
+    ss<<PMTDimsText;
+    return ss.str();
+  }
+}
 
 ////////////////////////////////////////////////////////
-TString GetRICH_GeoFile( char *RotMirText, TString PMTRotText, TString PMTTransText, int GeoCase, TString ExtraText){
+TString GetRICH_GeoFile( char *RotMirText, TString PMTRotText, TString PMTTransText, int GeoCase, TString PMTDimsText,TString ExtraText){
+  // return "rich/minus10deg_ext_mirror.gdml";
   //GeoCase=-2 ==> old geometry with rich_v08a.geo (RICH starts at 1600, Mirror tilt -1)
   //GeoCase=-1 ==> old geometry with rich_v14a.gdml (RICH starts at 1800, Mirror tilt -1)
   if(GeoCase==-2){return "rich/rich_v08a.geo";}
@@ -314,22 +385,29 @@ TString GetRICH_GeoFile( char *RotMirText, TString PMTRotText, TString PMTTransT
   if(GeoCase==2){Dir2="/";}
   stringstream ss; 
   //ss<<Dir<<Dir2<<"rich_geo_"<<RotMirText<<"_"<<PMTRotText<<Endung;
-  ss<<Dir<<Dir2<<"rich_geo_"<<RotMirText<<"_"<<PMTRotText<<"_"<<PMTTransText<<ExtraText<<Endung;
-
+  ss<<Dir<<Dir2<<"rich_geo_"<<RotMirText<<"_"<<PMTRotText<<"_"<<PMTTransText<<"_"<<PMTDimsText<<ExtraText<<Endung;
+  //rich_geo_RotMir_m10_Extended_RotPMT_Xpos5point0_Ypos5point0_TransPMT_Y_p10_Z_p80_PMTW1004_H602.root
   return ss.str();
 }
 ////////////////////////////////////////////////////////
-TString GetThetaText( float theta=25.){
-  char THtxt[256];
-  sprintf(THtxt,"Theta_%d",theta);
+TString GetThetaText( float ThetaMin=25., float ThetaMax=250.){
+  TString Tstring="Theta"; 
+  int ThetaMinMod10=int(ThetaMin) % 10;
+  int ThetaMaxMod10=int(ThetaMax) % 10;
+  float IntegerThetaMin10=(ThetaMin-ThetaMinMod10)/10.;
+  float IntegerThetaMax10=(ThetaMax-ThetaMaxMod10)/10.;
+
+  char MinThetaTxt[256];char MaxThetaTxt[256];  char THtxt[256];
+  sprintf(THtxt,"%s%dpoint%dTo%dpoint%d",Tstring.Data(),IntegerThetaMin10,ThetaMinMod10,IntegerThetaMax10,ThetaMaxMod10);
+
   stringstream ss; 
   ss<<THtxt;
   return ss.str();
 }
 ////////////////////////////////////////////////////////
-TString GetPhiText(float StartPhi, float EndPhi){
+TString GetPhiText(float PhiMin, float PhiMax){
   char PHtxt[256];
-  sprintf(PHtxt,"Phi_%d_to_%d",StartPhi, EndPhi);
+  sprintf(PHtxt,"Phi_%d_to_%d",PhiMin, PhiMax);
   stringstream ss; 
   ss<<PHtxt;
   return ss.str();
