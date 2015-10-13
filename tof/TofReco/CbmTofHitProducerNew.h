@@ -17,8 +17,9 @@ class CbmTofCell;
 
 class TVector3;
 class TClonesArray;
-class TString;   
-class TH1;                            
+class TString;
+class TH1;
+class TH2;
 
 
 class CbmTofHitProducerNew : public FairTask {
@@ -65,6 +66,7 @@ private:
   TClonesArray *fTofPoints;     // TOF MC points
   TClonesArray *fMCTracks;      // MC tracks
   TClonesArray *fHitCollection; // TOFhits
+  TClonesArray* fTofHitMatches; // CbmMatch array for Hit -> MC
 
   //Temporary substitute of the parameter container. FIXME 
 
@@ -190,6 +192,12 @@ private:
    TH1 * fhDiffTrackHitRightPullY;
    TH1 * fhDiffTrackHitRightPullZ;
    TH1 * fhDiffTrackHitRightPullR;
+   
+      // DEBUG histograms for efficiency losses
+   TH2 * fhNbPrimTrkHits;
+   TH2 * fhNbAllTrkHits;
+   TH2 * fhNbPrimTrkTofHits;
+   TH2 * fhNbAllTrkTofHits;
    
    TString fsHistosFileName;
    void CreateHistos();

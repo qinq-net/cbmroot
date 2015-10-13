@@ -9,6 +9,7 @@
 #include "CbmTofHitProducerNew.h"
 
 #include "CbmMCTrack.h"       
+#include "CbmMatch.h"
 #include "CbmTofPoint.h"      // in cbmdata/tof
 #include "CbmTofHit.h"        // in cbmdata/tof
 #include "CbmTofGeoHandler.h" // in tof/TofTools
@@ -25,7 +26,7 @@
 #include "TVector3.h"
 #include "TSystem.h"
 #include "TClonesArray.h"
-#include "TH1.h"
+#include "TH2.h"
 
 #include <iostream>
 
@@ -41,6 +42,7 @@ CbmTofHitProducerNew::CbmTofHitProducerNew()
     fTofPoints(NULL),
     fMCTracks(NULL),
     fHitCollection(NULL),
+    fTofHitMatches(NULL),
     X(),
     Dx(),
     Y(),
@@ -135,6 +137,10 @@ CbmTofHitProducerNew::CbmTofHitProducerNew()
     fhDiffTrackHitRightPullY(NULL),
     fhDiffTrackHitRightPullZ(NULL),
     fhDiffTrackHitRightPullR(NULL),
+    fhNbPrimTrkHits(NULL),
+    fhNbAllTrkHits(NULL),
+    fhNbPrimTrkTofHits(NULL),
+    fhNbAllTrkTofHits(NULL),
     fsHistosFileName("HitProdNew_QA.hst.root")
 {
 }
@@ -149,6 +155,7 @@ CbmTofHitProducerNew::CbmTofHitProducerNew(const char *name, Int_t verbose)
    fTofPoints(NULL),
    fMCTracks(NULL),
    fHitCollection(NULL),
+   fTofHitMatches(NULL),
    X(),
    Dx(),
    Y(),
@@ -243,6 +250,10 @@ CbmTofHitProducerNew::CbmTofHitProducerNew(const char *name, Int_t verbose)
     fhDiffTrackHitRightPullY(NULL),
     fhDiffTrackHitRightPullZ(NULL),
     fhDiffTrackHitRightPullR(NULL),
+    fhNbPrimTrkHits(NULL),
+    fhNbAllTrkHits(NULL),
+    fhNbPrimTrkTofHits(NULL),
+    fhNbAllTrkTofHits(NULL),
     fsHistosFileName("HitProdNew_QA.hst.root")
 {
   cout << "CbmTofHitProducerNew instantiated with verbose = "<<fVerbose<<endl;
@@ -433,6 +444,9 @@ InitStatus CbmTofHitProducerNew::Init()
     
     fHitCollection = new TClonesArray("CbmTofHit");
     fManager->Register("TofHit","Tof",fHitCollection, kTRUE);
+
+    fTofHitMatches = new TClonesArray("CbmMatch", 100);
+    fManager->Register("TofHitMatch","TOF",fTofHitMatches, kTRUE);
      
     cout << "-I- CbmTofHitProducerNew: Initialization successful for " 
          << nCh <<" electronics channels"<< endl;
@@ -541,6 +555,7 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
   
   Int_t nTofPoint = fTofPoints->GetEntries();  
   Int_t nMCTracks = fMCTracks ->GetEntries();
+  Int_t nMCTracks_vert = 0;
   Int_t tof_tracks = 0, tof_tracks_vert = 0/*, tof_tracks_local = 0*/;
 
   cout << "-I- CbmTofHitProducerNew(Exec): " << nTofPoint
@@ -553,6 +568,7 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
     mc = (CbmMCTrack*) fMCTracks->At(p);
     if(mc->GetNPoints(kTOF)>0) tof_tracks++;
     if(mc->GetNPoints(kTOF)>0 && mc->GetMotherId()==-1) tof_tracks_vert++;
+    if(mc->GetMotherId()==-1) nMCTracks_vert++;
   }
   
   cout << "-I- CbmTofHitProducerNew : " << tof_tracks << " tracks in Tof " << endl;
@@ -890,7 +906,14 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
        }
        
        AddHit(pt->GetDetectorID(), hitPos, hitPosErr, ref, tHit, flag, iCh);
-
+       
+       CbmMatch* hitMatch = new CbmMatch();
+       
+       hitMatch->AddLink(CbmLink(0.5,point_left[t][i][j][k]));
+       hitMatch->AddLink(CbmLink(0.5,point_right[t][i][j][k]));
+       
+       new((*fTofHitMatches)[fNHits]) CbmMatch(*hitMatch);
+       delete hitMatch;
       }
      }
     }
@@ -899,6 +922,12 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
   cout << "-I- CbmTofHitProducerNew : " << fNHits+1
        << " hits in Tof created, "<< nFl1<< " single, "<< nFl2<< " multiple hits " << endl;
 
+
+   Int_t iNbTofHits = fHitCollection->GetEntries();
+   fhNbPrimTrkHits->Fill(    nMCTracks_vert,  iNbTofHits );
+   fhNbAllTrkHits->Fill(     nMCTracks,       iNbTofHits );
+   fhNbPrimTrkTofHits->Fill( tof_tracks_vert, iNbTofHits );
+   fhNbAllTrkTofHits->Fill(  tof_tracks,      iNbTofHits );
 }
 // ---- Add Hit to HitCollection --------------------------------------
 
@@ -1207,6 +1236,23 @@ void CbmTofHitProducerNew::CreateHistos()
    fhDiffTrackHitRightPullR = new TH1D("HitProd_DiffTrackHitRightPullR", 
                               "Quality of the Tof Hits position error, for hit from diff. MC Track, vs right point; Pull R(Hit -> Track) []; # [Hits]",
                               iNbBinsPullPos, -dPullPosRange, dPullPosRange);
+                              
+   fhNbPrimTrkHits          = new TH2D("HitProd_NbPrimTrkHits", 
+                              "Nb of hits VS nb of Primary MC tracks for each event; # Primary MC tracks []; # Hits []; Events []",
+                              100, -0.5, 99.5,
+                              100, -0.5, 99.5 );
+   fhNbAllTrkHits           = new TH2D("HitProd_NbAllTrkHits", 
+                              "Nb of hits VS nb of MC tracks for each event; # MC tracks []; # Hits []; Events []",
+                              100, -0.5, 99.5,
+                              100, -0.5, 99.5 );
+   fhNbPrimTrkTofHits       = new TH2D("HitProd_NbPrimTrkTofHits", 
+                              "Nb of hits VS nb of Primary MC tracks with TOF Points for each event; # Primary TOF MC tracks []; # Hits []; Events []",
+                              100, -0.5, 99.5,
+                              100, -0.5, 99.5 );
+   fhNbAllTrkTofHits        = new TH2D("HitProd_NbAllTrkTofHits", 
+                              "Nb of hits VS nb of MC tracks with TOF Points for each event; # TOF MC tracks []; # Hits []; Events []",
+                              100, -0.5, 99.5,
+                              100, -0.5, 99.5 );
 }
 
 void CbmTofHitProducerNew::WriteHistos()
@@ -1283,6 +1329,10 @@ void CbmTofHitProducerNew::WriteHistos()
       fhDiffTrackHitRightPullZ->Write();
       fhDiffTrackHitRightPullR->Write();
       
+      fhNbPrimTrkHits->Write();
+      fhNbAllTrkHits->Write();
+      fhNbPrimTrkTofHits->Write();
+      fhNbAllTrkTofHits->Write();
       
       gDirectory->cd( oldir->GetPath() );
 
@@ -1356,6 +1406,11 @@ void CbmTofHitProducerNew::DeleteHistos()
    delete fhDiffTrackHitRightPullY;
    delete fhDiffTrackHitRightPullZ;
    delete fhDiffTrackHitRightPullR;
+   
+   delete fhNbPrimTrkHits;
+   delete fhNbAllTrkHits;
+   delete fhNbPrimTrkTofHits;
+   delete fhNbAllTrkTofHits;
 }
 
 ClassImp(CbmTofHitProducerNew)
