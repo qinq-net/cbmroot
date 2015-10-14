@@ -65,8 +65,8 @@ PairAnalysisEvent::PairAnalysisEvent() :
   fRichProjection(0x0),
   fMvdHitMatches(0x0),      //MVD hits
   fStsHitMatches(0x0),      //STS hits
-  fMuchHitMatches(0x0),      //MUCH hits
   fRichHitMatches(0x0),      //RICH hits
+  fMuchHitMatches(0x0),      //MUCH hits
   fTrdHitMatches(0x0),      //TRD hits
   fTofHitMatches(0x0),      //TOF hits
   fPrimVertex(0x0),     //primary vertices
@@ -110,8 +110,8 @@ PairAnalysisEvent::PairAnalysisEvent(const char* name, const char* title) :
   fRichProjection(0x0),
   fMvdHitMatches(0x0),      //MVD hits
   fStsHitMatches(0x0),      //STS hits
-  fMuchHitMatches(0x0),      //MUCH hits
   fRichHitMatches(0x0),      //RICH hits
+  fMuchHitMatches(0x0),      //MUCH hits
   fTrdHitMatches(0x0),      //TRD hits
   fTofHitMatches(0x0),      //TOF hits
   fPrimVertex(0x0),     //primary vertices

@@ -105,7 +105,7 @@ void PairAnalysisMixingHandler::Fill(const PairAnalysisEvent *ev, PairAnalysis *
   PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kMixingBin,bin);
 
   if (bin<0){
-    Error("Fill",Form("Bin outside range: %s",dim.Data()));
+    Error("Fill","Bin outside range: %s",dim.Data());
     return;
   }
 
@@ -120,7 +120,7 @@ void PairAnalysisMixingHandler::Fill(const PairAnalysisEvent *ev, PairAnalysis *
   Int_t index1=0;
 
   if (!poolp){
-    Info("Fill",Form("New pool at %d (%s)",bin,dim.Data()));
+    Info("Fill","New pool at %d (%s)",bin,dim.Data());
     poolp=new(fArrPools[bin]) TClonesArray("PairAnalysisMixedEvent",fDepth);
     poolp->SetUniqueID(0);
   } else {
@@ -262,7 +262,7 @@ void PairAnalysisMixingHandler::Init(const PairAnalysis *papa)
   //
   Int_t size=GetNumberOfBins();
 
-  Info("Init",Form("Creating a pool array with size %d",size));
+  Info("Init","Creating a pool array with size %d",size);
   if(papa && papa->DoEventProcess()) fArrPools.Expand(size);
 
   TString values;

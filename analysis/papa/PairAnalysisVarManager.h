@@ -449,7 +449,7 @@ inline void PairAnalysisVarManager::Fill(const TObject* object, Double_t * const
   else if (object->IsA() == CbmRichHit::Class())      FillVarRichHit(        static_cast<const CbmRichHit*>(object),     values);
   else if (object->IsA() == CbmTofHit::Class())       FillVarTofHit(         static_cast<const CbmTofHit*>(object),      values);
   else if (object->InheritsFrom(FairMCPoint::Class()))     FillVarMCPoint(   static_cast<const FairMCPoint*>(object),    values);
-  else printf(Form("PairAnalysisVarManager::Fill: Type %s is not supported by PairAnalysisVarManager! \n", object->ClassName()));
+  else printf("PairAnalysisVarManager::Fill: Type %s is not supported by PairAnalysisVarManager! \n", object->ClassName());
 }
 
 
@@ -462,7 +462,7 @@ inline void PairAnalysisVarManager::FillSum(const TObject* object, Double_t * co
   //Protect
   if (!object) return;
   else if (object->InheritsFrom(FairMCPoint::Class()))     FillSumVarMCPoint(   static_cast<const FairMCPoint*>(object),    values);
-  else printf(Form("PairAnalysisVarManager::FillSum: Type %s is not supported by PairAnalysisVarManager! \n", object->ClassName()));
+  else printf("PairAnalysisVarManager::FillSum: Type %s is not supported by PairAnalysisVarManager! \n", object->ClassName());
 
 }
 

@@ -163,7 +163,7 @@ InitStatus AnalysisTaskMultiPairAnalysis::Init()
 
   // initialization time and memory
   gSystem->GetProcInfo(&fProcInfo);
-  printf("AnalysisTaskMultiPairAnalysis::Init:"" Real time %fs, CPU time %fs, Memory %i MB(res.) %i MB(virt.) \n",fTimer.RealTime(),fTimer.CpuTime(),fProcInfo.fMemResident/1024,fProcInfo.fMemVirtual/1024);
+  printf("AnalysisTaskMultiPairAnalysis::Init:"" Real time %fs, CPU time %fs, Memory %li MB(res.) %li MB(virt.) \n",fTimer.RealTime(),fTimer.CpuTime(),fProcInfo.fMemResident/1024,fProcInfo.fMemVirtual/1024);
   fTimer.Reset();
 
   return kSUCCESS;
@@ -188,7 +188,7 @@ void AnalysisTaskMultiPairAnalysis::Exec(Option_t *)
   Double_t evts = fEventStat->GetBinContent(bin);
   if(!(static_cast<Int_t>(evts)%10)) {
     gSystem->GetProcInfo(&fProcInfo);
-    printf("AnalysisTaskMultiPairAnalysis::Exec: Process %.3e events, CPU time %.1fs, (%fs per event, eff %.3f), Memory %i MB(res.) %i MB(virt.) \n",
+    printf("AnalysisTaskMultiPairAnalysis::Exec: Process %.3e events, CPU time %.1fs, (%fs per event, eff %.3f), Memory %li MB(res.) %li MB(virt.) \n",
 	   evts, fTimer.CpuTime(), fTimer.CpuTime()/evts, fTimer.CpuTime()/fTimer.RealTime(), fProcInfo.fMemResident/1024, fProcInfo.fMemVirtual/1024);
     fTimer.Continue();
   }

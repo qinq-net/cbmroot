@@ -1094,7 +1094,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	  if(htnom)  htnom->Scale(1./events);
 	}
 
-	Info("DrawSame"," Entries: h %e,  hDenom %e,  htden %e ",
+	Info("DrawSame"," Entries: h %p %e,  hDenom %p %e,  htden %p %e ",
 	     h,h->GetEntries(),hdenom,(hdenom?hdenom->GetEntries():0),
 	     htden,(htden?htden->GetEntries():0));
 	// Printf("h %p (bins%d) \t hdenom %p (bins%d) \t htdenom %p (bins%d) \t htnom %p (bins%d)",

@@ -75,9 +75,8 @@ CbmMCTrack* PairAnalysisMC::GetMCTrackFromMCEvent(Int_t label) const
   if (label<0) return NULL;
   if (!fMCArray){ Error("PairAnalysisMC::","No fMCArray"); return NULL;}
 
-  if (label>fMCArray->GetEntriesFast()) { 
-    Info("PairAnalysisMC::",Form("track %d out of array size %d",
-				   label,fMCArray->GetEntriesFast())); 
+  if (label>fMCArray->GetEntriesFast()) {
+    Info("PairAnalysisMC::","track %d out of array size %d",label,fMCArray->GetEntriesFast());
     return NULL;
   }
 
@@ -617,7 +616,7 @@ Bool_t PairAnalysisMC::IsMCTruth(Int_t label, PairAnalysisSignalMC* signalMC, In
 
   CbmMCTrack* part = GetMCTrackFromMCEvent(label);
   if (!part) {
-    Error("PairAnalysisMC::",Form("Could not find MC particle with label %d",label));
+    Error("PairAnalysisMC::","Could not find MC particle with label %d",label);
     return kFALSE;
   }
 
