@@ -57,19 +57,24 @@ void Run_Ana_GeoOpt_Batch(Int_t nEvents = 10)
   cout<<"MirText = "<<RotMirText<<endl;
   TString PMTRotText=GetPMTRotText(PMTrotX, PMTrotY);
   TString PMTTransText=GetPMTTransText(PMTtransY, PMTtransZ);
-  TString MomText=GetMomText(PtNotP,MomMin,MomMax);
-  cout<<MomText<<endl;
-  
-  TString PhiText=GetPhiText(PhiMin, PhiMax);
-  TString ThetaText=GetThetaText(ThetaMin,ThetaMax);
+ TString MomText=GetMomText(OldCode, PtNotP,MomMin,MomMax);
+  cout<<MomText<<endl;  
+  TString PhiText=GetPhiText(OldCode,PhiMin, PhiMax);
+  TString ThetaText=GetThetaText(OldCode,ThetaMin,ThetaMax);
   cout<<ThetaText<<endl;
   TString DimentionText=GetDimentionText(DimCase, EnlargedPMTWidth, EnlargedPMTHight);
   cout<<DimentionText<<endl;
   
-  TString ExtraText=".";//
-    
-  TString NamingText=GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+PMTTransText+"_"+MomText+"_"+DimentionText+ExtraText+"root";
+  TString ExtraText="";//
   
+  TString NamingText;
+  if(OldCode==1){
+    NamingText=GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+PMTTransText+"_"+MomText+"_"+ThetaText+DimentionText+ExtraText+"root";
+  }else{
+    NamingText=GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+PMTTransText+"_"+MomText+"_"+ThetaText+"_"+PhiText+DimentionText+ExtraText+"root";
+  }
+ 
+
   TString ParFile = outDir + "Parameters_"+NamingText;//
   TString SimFile = outDir + "Sim_"+NamingText;
   TString RecFile = outDir + "Rec_"+NamingText;//+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
@@ -122,12 +127,12 @@ void Run_Ana_GeoOpt_Batch(Int_t nEvents = 10)
 }
 
 ////////////////////////////////////////////
-TString GetMomText(int PtNotP, float MomMin, float MomMax){
+TString GetMomText(int OldCode=1, int PtNotP, float MomMin, float MomMax){
   TString Pstring="P"; if(PtNotP==1){Pstring="Pt";}
   char Ptxt[256];
-  // if(OldCode==1){
-  //   sprintf(Ptxt,"%s%dto%d",Pstring.Data(),MomMin/10.,MomMax/10.);
-  // }else{
+  if(OldCode==1){
+    sprintf(Ptxt,"%s%dto%d",Pstring.Data(),MomMin/10.,MomMax/10.);
+  }else{
     
     int MomMinMod10=int(MomMin) % 10;
     int MomMaxMod10=int(MomMax) % 10;
@@ -138,9 +143,9 @@ TString GetMomText(int PtNotP, float MomMin, float MomMax){
     //return "momtext";
     
     char MinMomTxt[256];char MaxMomTxt[256]; 
-    sprintf(Ptxt,"%s%dpoint%dTo%dpoint%d",Pstring.Data(),IntegerMomMin10,MomMinMod10,IntegerMomMax10,MomMaxMod10);
+    sprintf(Ptxt,"%s%dpoint%d_to_%dpoint%d",Pstring.Data(),IntegerMomMin10,MomMinMod10,IntegerMomMax10,MomMaxMod10);
     //cout<<Ptxt<<endl;
-    // }
+  }
   stringstream ss; 
   ss<<Ptxt;
   return ss.str();
@@ -164,9 +169,9 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-// return "/nas/Tariq/Test/";
+  //return "/nas/Tariq/Test/";
 //   return "/nas/Tariq/GeoOpt/";
-//   return "/data/GeoOpt/Test/";
+  // return "/data/GeoOpt/Test/";
 //   return "/data/GeoOpt/OptiPMTSize/";
   //return "/data/GeoOpt/";
   //return "/data/GeoOpt/RotPMT/";
@@ -216,13 +221,13 @@ TString  GetPMTTransText(int PMTTransY, int PMTTransZ){
 }
 ///////////////////////////////////////////////
 TString  GetDimentionText(int DimCase, int EnlargedPMTWidth, int EnlargedPMTHight){
-  if(DimCase ==0){return "";}
-  else if(DimCase ==1){return "DefaultRichDims";}
-  else if(DimCase ==2){return "DefaultRichDims_LargePMT";}
+  if(DimCase ==0){return ".";}
+  else if(DimCase ==1){return "_DefaultRichDims.";}
+  else if(DimCase ==2){return "_DefaultRichDims_LargePMT.";}
   else if(DimCase ==3){
     float PMTWidth=1000. +EnlargedPMTWidth,  PMTHight=600. +EnlargedPMTHight; 
     char PMTDimsText[256];
-    sprintf( PMTDimsText,"PMTW%d_H%d",PMTWidth, PMTHight);
+    sprintf( PMTDimsText,"_PMTW%d_H%d.",PMTWidth, PMTHight);
 
     stringstream ss; 
     ss<<PMTDimsText;
@@ -231,24 +236,29 @@ TString  GetDimentionText(int DimCase, int EnlargedPMTWidth, int EnlargedPMTHigh
 }
 
 ////////////////////////////////////////////////////////
-TString GetThetaText( float ThetaMin=25., float ThetaMax=250.){
+TString GetThetaText(int OldCode=1,  float ThetaMin=25., float ThetaMax=250.){
   TString Tstring="Theta"; 
-  int ThetaMinMod10=int(ThetaMin) % 10;
-  int ThetaMaxMod10=int(ThetaMax) % 10;
-  float IntegerThetaMin10=(ThetaMin-ThetaMinMod10)/10.;
-  float IntegerThetaMax10=(ThetaMax-ThetaMaxMod10)/10.;
-
-  char MinThetaTxt[256];char MaxThetaTxt[256];  char THtxt[256];
-  sprintf(THtxt,"%s%dpoint%dTo%dpoint%d",Tstring.Data(),IntegerThetaMin10,ThetaMinMod10,IntegerThetaMax10,ThetaMaxMod10);
-
+  char THtxt[256];
+  if(OldCode==1){
+    sprintf(THtxt,"%s_%d",Tstring.Data(),ThetaMax/10.);
+  }else{  
+    int ThetaMinMod10=int(ThetaMin) % 10;
+    int ThetaMaxMod10=int(ThetaMax) % 10;
+    float IntegerThetaMin10=(ThetaMin-ThetaMinMod10)/10.;
+    float IntegerThetaMax10=(ThetaMax-ThetaMaxMod10)/10.;
+    
+    char MinThetaTxt[256];char MaxThetaTxt[256]; 
+    sprintf(THtxt,"%s%dpoint%d_to_%dpoint%d",Tstring.Data(),IntegerThetaMin10,ThetaMinMod10,IntegerThetaMax10,ThetaMaxMod10);
+  }
   stringstream ss; 
   ss<<THtxt;
   return ss.str();
 }
 ////////////////////////////////////////////////////////
-TString GetPhiText(float PhiMin, float PhiMax){
+TString GetPhiText(int OldCode=1, float PhiMin, float PhiMax){
   char PHtxt[256];
-  sprintf(PHtxt,"Phi_%d_to_%d",PhiMin, PhiMax);
+  if(OldCode==1){return "";}
+  else{sprintf(PHtxt,"Phi_%d_to_%d",PhiMin, PhiMax);}
   stringstream ss; 
   ss<<PHtxt;
   return ss.str();
