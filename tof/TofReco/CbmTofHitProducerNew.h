@@ -4,12 +4,16 @@
 // -----           Modified by D. Gonzalez-Diaz 07/09/06               ------
 // -----           Modified by D. Gonzalez-Diaz 02/02/07               ------
 // -----           Modified by nh 23/10/12                             ------
+// -----           modified pal 28/09 to 15/10/2015                    ------
 // --------------------------------------------------------------------------
 
 #ifndef CBMTOFHITPRODUCERNEW_H
 #define CBMTOFHITPRODUCERNEW_H
 
 #include "FairTask.h"
+
+// C++ Classes and includes
+#include <vector>
 
 class CbmTofGeoHandler;
 class CbmTofDigiPar;
@@ -74,14 +78,21 @@ private:
   static const Int_t maxnSM=   255;
   static const Int_t maxnMod=   64;
   static const Int_t maxnCell= 255;
-  
-  Float_t X [maxSMtyp][maxnSM][maxnMod][maxnCell];  //X-Position in cm */
-  Float_t Dx[maxSMtyp][maxnSM][maxnMod][maxnCell];  //Resolution in position in cm */
-  Float_t Y [maxSMtyp][maxnSM][maxnMod][maxnCell];  //Y-Position in cm */
-  Float_t Dy[maxSMtyp][maxnSM][maxnMod][maxnCell];  //Resolution in position in cm */
-  Float_t Z [maxSMtyp][maxnSM][maxnMod][maxnCell];  //Z-Position in cm */
-  Int_t   Ch[maxSMtyp][maxnSM][maxnMod][maxnCell];  //Channel number */
-  
+/*
+  Float_t X [maxSMtyp][maxnSM][maxnMod][maxnCell];  //X-Position in cm
+  Float_t Dx[maxSMtyp][maxnSM][maxnMod][maxnCell];  //Resolution in position in cm
+  Float_t Y [maxSMtyp][maxnSM][maxnMod][maxnCell];  //Y-Position in cm
+  Float_t Dy[maxSMtyp][maxnSM][maxnMod][maxnCell];  //Resolution in position in cm
+  Float_t Z [maxSMtyp][maxnSM][maxnMod][maxnCell];  //Z-Position in cm
+  Int_t   Ch[maxSMtyp][maxnSM][maxnMod][maxnCell];  //Channel number
+*/
+  std::vector< std::vector< std::vector< std::vector< Float_t > > > > X ;  //X-Position in cm
+  std::vector< std::vector< std::vector< std::vector< Float_t > > > > Dx;  //Resolution in position in cm
+  std::vector< std::vector< std::vector< std::vector< Float_t > > > > Y ;  //Y-Position in cm
+  std::vector< std::vector< std::vector< std::vector< Float_t > > > > Dy;  //Resolution in position in cm
+  std::vector< std::vector< std::vector< std::vector< Float_t > > > > Z ;  //Z-Position in cm
+  std::vector< std::vector< std::vector< std::vector< Int_t   > > > > Ch;  //Channel number
+
   Int_t ActSMtypMax;
   Int_t ActnSMMax[maxSMtyp];
   Int_t ActnModMax[maxSMtyp];
@@ -95,13 +106,21 @@ private:
   //End of temporary data members
 
   //Members to store the hit during loop over all the points. FIXME
-
+/*
   Float_t tl[maxSMtyp][maxnSM][maxnMod][maxnCell];
   Float_t tr[maxSMtyp][maxnSM][maxnMod][maxnCell];
   Int_t trackID_left[maxSMtyp][maxnSM][maxnMod][maxnCell];
-  Int_t trackID_right[maxSMtyp][maxnSM][maxnMod][maxnCell]; 
+  Int_t trackID_right[maxSMtyp][maxnSM][maxnMod][maxnCell];
   Int_t point_left [maxSMtyp][maxnSM][maxnMod][maxnCell];
-  Int_t point_right[maxSMtyp][maxnSM][maxnMod][maxnCell]; 
+  Int_t point_right[maxSMtyp][maxnSM][maxnMod][maxnCell];
+*/
+  std::vector< std::vector< std::vector< std::vector< Float_t > > > > tl;
+  std::vector< std::vector< std::vector< std::vector< Float_t > > > > tr;
+  std::vector< std::vector< std::vector< std::vector< Int_t   > > > > trackID_left;
+  std::vector< std::vector< std::vector< std::vector< Int_t   > > > > trackID_right;
+  std::vector< std::vector< std::vector< std::vector< Int_t   > > > > point_left ;
+  std::vector< std::vector< std::vector< std::vector< Int_t   > > > > point_right;
+
 
   //End of storing data members
 

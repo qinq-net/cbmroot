@@ -1,14 +1,14 @@
 // --------------------------------------------------------------------------
-// -----                 Class CbmTofHitProducerNew                       ------
+// -----                 Class CbmTofHitProducerNew                    ------
 // -----           Created  by E. Cordier 14/09/05                     ------
 // -----           Modified by D. Gonzalez-Diaz 07/09/06               ------
 // -----           Modified by D. Gonzalez-Diaz 02/02/07               ------
-// -----           modified nh 24/10/2012
+// -----           modified nh 24/10/2012                              ------
 // --------------------------------------------------------------------------
 
 #include "CbmTofHitProducerNew.h"
 
-#include "CbmMCTrack.h"       
+#include "CbmMCTrack.h"
 #include "CbmMatch.h"
 #include "CbmTofPoint.h"      // in cbmdata/tof
 #include "CbmTofHit.h"        // in cbmdata/tof
@@ -330,7 +330,8 @@ InitStatus CbmTofHitProducerNew::Init()
      for(int i=0;i<nsm;i++){
       for(int j=0;j<nmodules;j++){
 	for(int k=0;k<ncells;k++){
- **/ 
+ **/
+/*
     for(int t=0;t<maxSMtyp;t++){
      for(int i=0;i<maxnSM;i++){
       for(int j=0;j<maxnMod;j++){
@@ -345,6 +346,7 @@ InitStatus CbmTofHitProducerNew::Init()
       }
      }
     }
+*/
 
 // initialize accounting variables    
     ActSMtypMax=0;
@@ -399,14 +401,14 @@ InitStatus CbmTofHitProducerNew::Init()
     if(smodule>ActnSMMax[ActSMtypMax]) ActnSMMax[ActSMtypMax]=smodule;
     if(module>ActnModMax[ActSMtypMax]) ActnModMax[ActSMtypMax]=module;
     if(cell>ActnCellMax[ActSMtypMax])  ActnCellMax[ActSMtypMax]=cell;
-    
+/*    
     X[smtype][smodule][module][cell]    = X_tmp/10.;
     Y[smtype][smodule][module][cell]    = Y_tmp/10.;
     Z[smtype][smodule][module][cell]    = Z_tmp/10.;
     Dx[smtype][smodule][module][cell]   = Dx_tmp/10.;
     Dy[smtype][smodule][module][cell]   = Dy_tmp/10.;
     Ch[smtype][smodule][module][cell]   = iCh++;
-    
+*/    
     //Read all the lines
      
     while(fscanf(par,"%5d %5d %5d %2d %f %f %f %f %f", 
@@ -417,12 +419,102 @@ InitStatus CbmTofHitProducerNew::Init()
       if(smodule>ActnSMMax[ActSMtypMax]) ActnSMMax[ActSMtypMax]=smodule;
       if(module>ActnModMax[ActSMtypMax]) ActnModMax[ActSMtypMax]=module;
       if(cell>ActnCellMax[ActSMtypMax])  ActnCellMax[ActSMtypMax]=cell;
-
+/*
       X[smtype][smodule][module][cell]     = X_tmp/10.;  // units are cm 
       Y[smtype][smodule][module][cell]     = Y_tmp/10.;
       Z[smtype][smodule][module][cell]     = Z_tmp/10.;
       Dx[smtype][smodule][module][cell]    = Dx_tmp/10.;
       Dy[smtype][smodule][module][cell]    = Dy_tmp/10.;      
+      Ch[smtype][smodule][module][cell]    = iCh++;
+*/
+    }
+
+   // Initialize the storage vectors
+   X.resize(ActSMtypMax + 1);
+   Y.resize(ActSMtypMax + 1);
+   Z.resize(ActSMtypMax + 1);
+   Dx.resize(ActSMtypMax + 1);
+   Dy.resize(ActSMtypMax + 1);
+   Ch.resize(ActSMtypMax + 1);
+   tl.resize(ActSMtypMax + 1);
+   tr.resize(ActSMtypMax + 1);
+   trackID_left.resize(ActSMtypMax + 1);
+   trackID_right.resize(ActSMtypMax + 1);
+   point_left.resize(ActSMtypMax + 1);
+   point_right.resize(ActSMtypMax + 1);
+   for( Int_t iType = 0; iType <= ActSMtypMax; iType++)
+   {
+      X[iType].resize(            ActnSMMax[iType] + 1);
+      Y[iType].resize(            ActnSMMax[iType] + 1);
+      Z[iType].resize(            ActnSMMax[iType] + 1);
+      Dx[iType].resize(           ActnSMMax[iType] + 1);
+      Dy[iType].resize(           ActnSMMax[iType] + 1);
+      Ch[iType].resize(           ActnSMMax[iType] + 1);
+      tl[iType].resize(           ActnSMMax[iType] + 1);
+      tr[iType].resize(           ActnSMMax[iType] + 1);
+      trackID_left[iType].resize( ActnSMMax[iType] + 1);
+      trackID_right[iType].resize(ActnSMMax[iType] + 1);
+      point_left[iType].resize(   ActnSMMax[iType] + 1);
+      point_right[iType].resize(  ActnSMMax[iType] + 1);
+      for( Int_t iSm = 0; iSm <= ActnSMMax[iType]; iSm++)
+      {
+         X[iType][iSm].resize(            ActnModMax[iType] + 1);
+         Y[iType][iSm].resize(            ActnModMax[iType] + 1);
+         Z[iType][iSm].resize(            ActnModMax[iType] + 1);
+         Dx[iType][iSm].resize(           ActnModMax[iType] + 1);
+         Dy[iType][iSm].resize(           ActnModMax[iType] + 1);
+         Ch[iType][iSm].resize(           ActnModMax[iType] + 1);
+         tl[iType][iSm].resize(           ActnModMax[iType] + 1);
+         tr[iType][iSm].resize(           ActnModMax[iType] + 1);
+         trackID_left[iType][iSm].resize( ActnModMax[iType] + 1);
+         trackID_right[iType][iSm].resize(ActnModMax[iType] + 1);
+         point_left[iType][iSm].resize(   ActnModMax[iType] + 1);
+         point_right[iType][iSm].resize(  ActnModMax[iType] + 1);
+         for( Int_t iMod = 0; iMod <= ActnModMax[iType];  iMod++)
+         {
+            X[iType][iSm][iMod].resize(            ActnCellMax[iType] + 1, -1);
+            Y[iType][iSm][iMod].resize(            ActnCellMax[iType] + 1, -1);
+            Z[iType][iSm][iMod].resize(            ActnCellMax[iType] + 1, -1);
+            Dx[iType][iSm][iMod].resize(           ActnCellMax[iType] + 1, -1);
+            Dy[iType][iSm][iMod].resize(           ActnCellMax[iType] + 1, -1);
+            Ch[iType][iSm][iMod].resize(           ActnCellMax[iType] + 1, -1);
+            tl[iType][iSm][iMod].resize(           ActnCellMax[iType] + 1, -1);
+            tr[iType][iSm][iMod].resize(           ActnCellMax[iType] + 1, -1);
+            trackID_left[iType][iSm][iMod].resize( ActnCellMax[iType] + 1, -1);
+            trackID_right[iType][iSm][iMod].resize(ActnCellMax[iType] + 1, -1);
+            point_left[iType][iSm][iMod].resize(   ActnCellMax[iType] + 1, -1);
+            point_right[iType][iSm][iMod].resize(  ActnCellMax[iType] + 1, -1);
+         } // for( Int_t iMod = 0; iMod <= ActnModMax[iType];  iMod++)
+      } // for( Int_t iMod = 0; iMod <= ActnSMMax[iType]; iMod++)
+   } // for( Int_t type = 0; type <= ActSMtypMax; type++)
+
+   // Read again all lines to fill the vectors
+    // Go back to beginning 
+    //Skip the header. In the future the header structure must be defined. FIXME
+    while (fscanf(par,"%c",&header)>=0){
+      if((int)(header-'0')==0) break;
+    }
+
+    //Read the first line
+    fscanf(par,"%d %d %d %d %f %f %f %f %f ",
+    &smodule, &module, &cell, &smtype, &X_tmp, &Y_tmp, &Z_tmp, &Dx_tmp, &Dy_tmp);
+
+    X[smtype][smodule][module][cell]    = X_tmp/10.;
+    Y[smtype][smodule][module][cell]    = Y_tmp/10.;
+    Z[smtype][smodule][module][cell]    = Z_tmp/10.;
+    Dx[smtype][smodule][module][cell]   = Dx_tmp/10.;
+    Dy[smtype][smodule][module][cell]   = Dy_tmp/10.;
+    Ch[smtype][smodule][module][cell]   = iCh++;
+
+    //Read all the lines
+    while(fscanf(par,"%5d %5d %5d %2d %f %f %f %f %f", 
+      &smodule, &module, &cell, &smtype, &X_tmp, &Y_tmp, &Z_tmp, &Dx_tmp, &Dy_tmp)>=0){
+
+      X[smtype][smodule][module][cell]     = X_tmp/10.;  // units are cm
+      Y[smtype][smodule][module][cell]     = Y_tmp/10.;
+      Z[smtype][smodule][module][cell]     = Z_tmp/10.;
+      Dx[smtype][smodule][module][cell]    = Dx_tmp/10.;
+      Dy[smtype][smodule][module][cell]    = Dy_tmp/10.;
       Ch[smtype][smodule][module][cell]    = iCh++;
     }
 
@@ -445,7 +537,7 @@ InitStatus CbmTofHitProducerNew::Init()
     fHitCollection = new TClonesArray("CbmTofHit");
     fManager->Register("TofHit","Tof",fHitCollection, kTRUE);
 
-    fTofHitMatches = new TClonesArray("CbmMatch", 100);
+    fTofHitMatches = new TClonesArray("CbmMatch");
     fManager->Register("TofHitMatch","TOF",fTofHitMatches, kTRUE);
      
     cout << "-I- CbmTofHitProducerNew: Initialization successful for " 
@@ -468,6 +560,7 @@ void CbmTofHitProducerNew::InitParametersFromContainer()
       for(int j=0;j<nmodules;j++){
 	for(int k=0;k<ncells;k++){
  **/
+/*
     for(int t=0;t<maxSMtyp;t++){
      for(int i=0;i<maxnSM;i++){
       for(int j=0;j<maxnMod;j++){
@@ -482,7 +575,7 @@ void CbmTofHitProducerNew::InitParametersFromContainer()
       }
      }
     }
-
+*/
    Int_t nrOfCells = fDigiPar->GetNrOfModules();
    LOG(INFO)<<"Parameter container contain "<<nrOfCells<<" cells."<<FairLogger::endl;
 
@@ -517,7 +610,92 @@ void CbmTofHitProducerNew::InitParametersFromContainer()
     if(smodule<ActnSMMin[smtype]) ActnSMMin[smtype]=smodule;
     if(module<ActnModMin[smtype]) ActnModMin[smtype]=module;
     if(cell<ActnCellMin[smtype])  ActnCellMin[smtype]=cell;
- 
+/* 
+     X[smtype][smodule][module][cell] = x;
+     Y[smtype][smodule][module][cell] = y;
+     Z[smtype][smodule][module][cell] = z;
+     Dx[smtype][smodule][module][cell]= dx;
+     Dy[smtype][smodule][module][cell]= dy;
+     Ch[smtype][smodule][module][cell]= icell;
+*/
+   }
+
+   // Initialize the storage vectors
+   X.resize(ActSMtypMax + 1);
+   Y.resize(ActSMtypMax + 1);
+   Z.resize(ActSMtypMax + 1);
+   Dx.resize(ActSMtypMax + 1);
+   Dy.resize(ActSMtypMax + 1);
+   Ch.resize(ActSMtypMax + 1);
+   tl.resize(ActSMtypMax + 1);
+   tr.resize(ActSMtypMax + 1);
+   trackID_left.resize(ActSMtypMax + 1);
+   trackID_right.resize(ActSMtypMax + 1);
+   point_left.resize(ActSMtypMax + 1);
+   point_right.resize(ActSMtypMax + 1);
+   for( Int_t iType = 0; iType <= ActSMtypMax; iType++)
+   {
+      X[iType].resize(            ActnSMMax[iType] + 1);
+      Y[iType].resize(            ActnSMMax[iType] + 1);
+      Z[iType].resize(            ActnSMMax[iType] + 1);
+      Dx[iType].resize(           ActnSMMax[iType] + 1);
+      Dy[iType].resize(           ActnSMMax[iType] + 1);
+      Ch[iType].resize(           ActnSMMax[iType] + 1);
+      tl[iType].resize(           ActnSMMax[iType] + 1);
+      tr[iType].resize(           ActnSMMax[iType] + 1);
+      trackID_left[iType].resize( ActnSMMax[iType] + 1);
+      trackID_right[iType].resize(ActnSMMax[iType] + 1);
+      point_left[iType].resize(   ActnSMMax[iType] + 1);
+      point_right[iType].resize(  ActnSMMax[iType] + 1);
+      for( Int_t iSm = 0; iSm <= ActnSMMax[iType]; iSm++)
+      {
+         X[iType][iSm].resize(            ActnModMax[iType] + 1);
+         Y[iType][iSm].resize(            ActnModMax[iType] + 1);
+         Z[iType][iSm].resize(            ActnModMax[iType] + 1);
+         Dx[iType][iSm].resize(           ActnModMax[iType] + 1);
+         Dy[iType][iSm].resize(           ActnModMax[iType] + 1);
+         Ch[iType][iSm].resize(           ActnModMax[iType] + 1);
+         tl[iType][iSm].resize(           ActnModMax[iType] + 1);
+         tr[iType][iSm].resize(           ActnModMax[iType] + 1);
+         trackID_left[iType][iSm].resize( ActnModMax[iType] + 1);
+         trackID_right[iType][iSm].resize(ActnModMax[iType] + 1);
+         point_left[iType][iSm].resize(   ActnModMax[iType] + 1);
+         point_right[iType][iSm].resize(  ActnModMax[iType] + 1);
+         for( Int_t iMod = 0; iMod <= ActnModMax[iType];  iMod++)
+         {
+            X[iType][iSm][iMod].resize(            ActnCellMax[iType] + 1, -1);
+            Y[iType][iSm][iMod].resize(            ActnCellMax[iType] + 1, -1);
+            Z[iType][iSm][iMod].resize(            ActnCellMax[iType] + 1, -1);
+            Dx[iType][iSm][iMod].resize(           ActnCellMax[iType] + 1, -1);
+            Dy[iType][iSm][iMod].resize(           ActnCellMax[iType] + 1, -1);
+            Ch[iType][iSm][iMod].resize(           ActnCellMax[iType] + 1, -1);
+            tl[iType][iSm][iMod].resize(           ActnCellMax[iType] + 1, -1);
+            tr[iType][iSm][iMod].resize(           ActnCellMax[iType] + 1, -1);
+            trackID_left[iType][iSm][iMod].resize( ActnCellMax[iType] + 1, -1);
+            trackID_right[iType][iSm][iMod].resize(ActnCellMax[iType] + 1, -1);
+            point_left[iType][iSm][iMod].resize(   ActnCellMax[iType] + 1, -1);
+            point_right[iType][iSm][iMod].resize(  ActnCellMax[iType] + 1, -1);
+         } // for( Int_t iMod = 0; iMod <= ActnModMax[iType];  iMod++)
+      } // for( Int_t iMod = 0; iMod <= ActnSMMax[iType]; iMod++)
+   } // for( Int_t type = 0; type <= ActSMtypMax; type++)
+
+   // Loop again to fill the vectors
+   for (Int_t icell = 0; icell < nrOfCells; ++icell) {
+
+     Int_t cellId = fDigiPar->GetCellId(icell); // cellId is assigned in CbmTofCreateDigiPar
+     fCellInfo =fDigiPar->GetCell(cellId);
+
+     Int_t smtype  = fGeoHandler->GetSMType(cellId);
+     Int_t smodule = fGeoHandler->GetSModule(cellId);
+     Int_t module  = fGeoHandler->GetCounter(cellId);
+     Int_t cell    = fGeoHandler->GetCell(cellId); 
+
+     Double_t x = fCellInfo->GetX();
+     Double_t y = fCellInfo->GetY();
+     Double_t z = fCellInfo->GetZ();
+     Double_t dx = fCellInfo->GetSizex();
+     Double_t dy = fCellInfo->GetSizey();
+
      X[smtype][smodule][module][cell] = x;
      Y[smtype][smodule][module][cell] = y;
      Z[smtype][smodule][module][cell] = z;
