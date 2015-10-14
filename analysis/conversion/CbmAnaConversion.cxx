@@ -267,7 +267,7 @@ void CbmAnaConversion::InitHistograms()
 	fhNofPi0_perEvent_cut	= new TH1D("fhNofPi0_perEvent_cut", "fhNofPi0_perEvent_cut (Z<10cm);Nof pi0;Entries", 800., -0.5, 799.5);
 	fhNofPi0_perEvent_cut2	= new TH1D("fhNofPi0_perEvent_cut2", "fhNofPi0_perEvent_cut2 (motherId = -1);Nof pi0;Entries", 800., -0.5, 799.5);
 	fhNofEta_perEvent		= new TH1D("fhNofEta_perEvent", "fhNofEta_perEvent;Nof eta;Entries", 100., -0.5, 99.5);
-	fhNofEta_perEvent_cut	= new TH1D("fhNofEta_perEvent_cut", "fhNofEta_perEvent_cut (Z<10cm);Nof eta;Entries", 100., -0.5, 99.5);
+	fhNofEta_perEvent_cut	= new TH1D("fhNofEta_perEvent_cut", "fhNofEta_perEvent_cut (Z<4cm);Nof eta;Entries", 100., -0.5, 99.5);
 	fhNofEta_perEvent_cut2	= new TH1D("fhNofEta_perEvent_cut2", "fhNofEta_perEvent_cut2 (motherId = -1);Nof eta;Entries", 100., -0.5, 99.5);
 	fhPi0_z					= new TH1D("fhPi0_z", "fhPi0_z;z [cm];Entries", 600., -0.5, 599.5);
 	fhPi0_z_cut				= new TH1D("fhPi0_z_cut", "fhPi0_z_cut;z [cm];Entries", 600., -0.5, 599.5);
@@ -346,6 +346,19 @@ void CbmAnaConversion::InitHistograms()
 	fhNofElectrons_4epem	= new TH1D("fhNofElectrons_4epem","fhNofElectrons_4epem;number of electrons per event;#", 101, -0.5, 100.5);
 	fHistoList.push_back(fhNofElectrons_4epem);
 
+	fhPi0_MC_occurence = new TH1D("fhPi0_MC_occurence", "fhPi0_MC_occurence;;#", 11, 0, 11);
+	fHistoList.push_back(fhPi0_MC_occurence);
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(1, "all pi0 from target");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(2, "all pi0 -> gg");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(3, "all g -> e+e-");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(4, "both conv before rich");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(5, "nothing");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(6, "daughters == 0");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(7, "daughters == 1");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(8, "daughters == 2");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(9, "daughters == 3");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(10, "daughters == 4");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(11, "daughters > 4");
 }
 
 
@@ -377,6 +390,8 @@ void CbmAnaConversion::Exec(Option_t* option)
 	fRecoTracklistEPEM_gtid.clear();
 	fRecoMomentum.clear();
 	fRecoRefittedMomentum.clear();
+
+	fTestTracklist.clear();
 
 	// several counters
 	int countPrimEl = 0;
@@ -440,29 +455,36 @@ void CbmAnaConversion::Exec(Option_t* option)
 		if (mctrack->GetMotherId() == -1) { countPrimPart++; }   
 		if (mctrack->GetMotherId() == -1 && TMath::Abs( mctrack->GetPdgCode()) == 11) { countPrimEl++; }   
 		if (mctrack->GetMotherId() != -1 && TMath::Abs( mctrack->GetPdgCode()) == 11) { countSecEl++; }   
-		if (TMath::Abs( mctrack->GetPdgCode()) == 11) { countAllEl++; }  
-		if (mctrack->GetPdgCode() == 111) {
+		if (TMath::Abs( mctrack->GetPdgCode()) == 11) { countAllEl++; }
+
+
+		if (mctrack->GetPdgCode() == 111) { // particle is pi0
 			countPi0MC++;
 			TVector3 v;
 			mctrack->GetStartVertex(v);
-			if(v.Z() <= 10) {
+			if(v.Z() <= 4) {
 				countPi0MC_cut++;
 			}
 			fhPi0_z->Fill(v.Z());
-			Double_t r2 = v.Z()*v.Z() * tan(25./180*TMath::Pi()) * tan(25./180*TMath::Pi());
-			if( (v.X()*v.X() + v.Y()*v.Y()) <= r2) {
-				fhPi0_z_cut->Fill(v.Z());
-			}
+			//Double_t r2 = v.Z()*v.Z() * tan(25./180*TMath::Pi()) * tan(25./180*TMath::Pi());
+			//if( (v.X()*v.X() + v.Y()*v.Y()) <= r2) {
+			//	fhPi0_z_cut->Fill(v.Z());
+			//}
+			
 			
 			int motherId = mctrack->GetMotherId();
 			if (motherId == -1) {
 				countPi0MC_fromPrimary++;
 				fhPi0_pt->Fill(mctrack->GetPt() );
 				fhPi0_pt_vs_rap->Fill(mctrack->GetPt(), mctrack->GetRapidity() );
+				fhPi0_z_cut->Fill(v.Z());
 			}
+			
+			AnalysePi0_MC(mctrack, i);
 		}
-		
-		if (mctrack->GetPdgCode() == 221) {
+
+
+		if (mctrack->GetPdgCode() == 221) { // particle is eta
 			countEtaMC++;
 			TVector3 v;
 			mctrack->GetStartVertex(v);
@@ -476,9 +498,10 @@ void CbmAnaConversion::Exec(Option_t* option)
 			}
 		}
 
-		if (TMath::Abs( mctrack->GetPdgCode())  == 11) { 
+		if (TMath::Abs( mctrack->GetPdgCode())  == 11) { // particle is electron
 			AnalyseElectrons(mctrack);
 		}
+
 	}
 
 	cout << "CbmAnaConversion::Exec - Number of pi0 in MC sample: " << countPi0MC << endl;
@@ -565,6 +588,7 @@ void CbmAnaConversion::Exec(Option_t* option)
 			fAnaTomography->TomographyReco(mcTrack1);
 		}
 		FillRecoTracklist(mcTrack1);
+		fTestTracklist.push_back(mcTrack1);
        
 		TVector3 stsMomentumVec;	// momenta as measured by STS
 		stsTrack->GetParamFirst()->Momentum(stsMomentumVec);
@@ -602,6 +626,8 @@ void CbmAnaConversion::Exec(Option_t* option)
 		Bool_t isFilled = FillRecoTracklistEPEM(mcTrack1, stsMomentumVec, refittedMomentum, stsMcTrackId, result_chi, i);
 		if (isFilled) nofElectrons4epem++;
 	}
+	
+	AnalysePi0_Reco();
 
 	fhNofElectrons_4epem->Fill(nofElectrons4epem);
 
@@ -1220,7 +1246,88 @@ void CbmAnaConversion::SetKF(CbmKFParticleFinder* kfparticle, CbmKFParticleFinde
 
 
 
+void CbmAnaConversion::AnalysePi0_MC(CbmMCTrack *mctrack, int trackid)
+{
+	if(mctrack->GetMotherId() == -1) {
+		fhPi0_MC_occurence->Fill(0);
+		
+		Int_t daughters = 0;
+		Int_t gammaDaughters = 0; 
+		Int_t electronDaughters = 0;
+		Int_t electronDaughtersBeforeRICH = 0;
+		vector<int> gammaDaughterIDs;
+		gammaDaughterIDs.clear();
+		vector<int> electronDaughterIDs;
+		electronDaughterIDs.clear();
+		
+		Int_t nofMcTracks = fMcTracks->GetEntriesFast();
+		for (int i = 0; i < nofMcTracks; i++) {
+			CbmMCTrack* mctrack_switch = (CbmMCTrack*)fMcTracks->At(i);
+			if (mctrack_switch == NULL) continue;
+			Int_t motherID = mctrack_switch->GetMotherId();  
+			Int_t pdg = mctrack_switch->GetPdgCode(); 
+			if(motherID == trackid && pdg == 22) {
+				gammaDaughters++;
+				gammaDaughterIDs.push_back(i);
+			}
+			if(motherID == trackid) {
+				daughters++;
+			}
+		}
+		
+		
+		if(daughters == 0) fhPi0_MC_occurence->Fill(5);
+		if(daughters == 1) fhPi0_MC_occurence->Fill(6);
+		if(daughters == 2) fhPi0_MC_occurence->Fill(7);
+		if(daughters == 3) fhPi0_MC_occurence->Fill(8);
+		if(daughters == 4) fhPi0_MC_occurence->Fill(9);
+		if(daughters > 4) fhPi0_MC_occurence->Fill(10);
+		
+		
+		if(gammaDaughters == 2) {
+			fhPi0_MC_occurence->Fill(1);
+			
+			for (int i = 0; i < nofMcTracks; i++) {
+				CbmMCTrack* mctrack_switch = (CbmMCTrack*)fMcTracks->At(i);
+				if (mctrack_switch == NULL) continue;
+				Int_t motherID = mctrack_switch->GetMotherId();  
+				Int_t pdg = mctrack_switch->GetPdgCode();
+				if(TMath::Abs(pdg) == 11 && (motherID == gammaDaughterIDs[0] || motherID == gammaDaughterIDs[1]) ) {
+					electronDaughters++;
+					electronDaughterIDs.push_back(i);
+					
+					TVector3 startvertex;
+					mctrack_switch->GetStartVertex(startvertex);
+					if(startvertex.Z() < 70) {
+						electronDaughtersBeforeRICH++;
+					}
+				}
+			}
+			
+			if(electronDaughters == 4) {
+				fhPi0_MC_occurence->Fill(2);
+			}
+			if(electronDaughtersBeforeRICH == 4) {
+				fhPi0_MC_occurence->Fill(3);
+			}
+		}
+	}
+}
 
+
+
+
+void CbmAnaConversion::AnalysePi0_Reco()
+{
+	Int_t electrons = 0;
+
+	Int_t nof = fTestTracklist.size();
+	for(int i=0; i<nof; i++) {
+		Int_t motherID = fTestTracklist[i]->GetMotherId();
+		Int_t pdg = fTestTracklist[i]->GetPdgCode();
+	
+	}
+}
 
 
 

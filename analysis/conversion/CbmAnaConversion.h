@@ -94,25 +94,26 @@ public:
    /**
     * \brief Inherited from FairTask.
     */
-   virtual void Finish();
+	virtual void Finish();
    
-   void		AnalyseElectrons(CbmMCTrack* mctrack);
-   void		FillMCTracklists(CbmMCTrack* mctrack, int i);
-   void		FillRecoTracklist(CbmMCTrack* mtrack);
-   Bool_t		FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom, int i, Double_t chi, Int_t GlobalTrackId);
-   void		InvariantMassTest();
-   void		InvariantMassTest_4epem();
-   void		InvariantMassTestReco();
-   int		GetTest();
-   int		GetNofEvents();
-   void		SetMode(int mode);
+	void	AnalyseElectrons(CbmMCTrack* mctrack);
+	void	FillMCTracklists(CbmMCTrack* mctrack, int i);
+	void	FillRecoTracklist(CbmMCTrack* mtrack);
+	Bool_t	FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 stsMomentum, TVector3 refittedMom, int i, Double_t chi, Int_t GlobalTrackId);
+	void	InvariantMassTest();
+	void	InvariantMassTest_4epem();
+	void	InvariantMassTestReco();
+	int		GetTest();
+	int		GetNofEvents();
+	void	SetMode(int mode);
    
-   void		ReconstructGamma();
+	void	ReconstructGamma();
    
    
-   void		SetKF(CbmKFParticleFinder* kfparticle, CbmKFParticleFinderQA* kfparticleQA);
+	void	SetKF(CbmKFParticleFinder* kfparticle, CbmKFParticleFinderQA* kfparticleQA);
 
-
+	void	AnalysePi0_MC(CbmMCTrack *mctrack, int i);
+	void	AnalysePi0_Reco();
 
 
 private:
@@ -225,11 +226,15 @@ private:
    vector<Double_t>		fRecoTracklistEPEM_chi; // chi of fitted momenta from fRecoTracklistEPEM
    vector<Int_t>		fRecoTracklistEPEM_gtid; // GlobalTrack ID from fRecoTracklistEPEM
    
+   vector<CbmMCTrack*>	fTestTracklist;
+   
    vector<TVector3> fRecoMomentum;
    vector<TVector3> fRecoRefittedMomentum;
 
 
-	TH1D * fhNofElectrons_4epem;   
+	TH1D * fhNofElectrons_4epem;
+	
+	TH1D * fhPi0_MC_occurence;
    
    
    // timer

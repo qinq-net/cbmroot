@@ -54,9 +54,9 @@ public:
 	Double_t OpeningAngleBetweenPhotons2(vector<int> photon1, vector<int> photons2);
 	Double_t OpeningAngleBetweenPhotons(vector<TVector3> momenta, vector<int> photon1, vector<int> photons2);
 
-	void CombineElectronsRefit();
-	void CombinePhotonsRefit();
-	Double_t OpeningAngleBetweenPhotonsRefit(vector<int> photon1, vector<int> photons2);
+	//void CombineElectronsRefit();
+	//void CombinePhotonsRefit();
+	//Double_t OpeningAngleBetweenPhotonsRefit(vector<int> photon1, vector<int> photons2);
 
 	void CombinePhotonsDirection();
 
@@ -80,6 +80,7 @@ private:
 	vector<TH1*> fHistoList_recofull_2;
 	vector<TH1*> fHistoList_recofull_3;
 	vector<TH1*> fHistoList_recofull_4;
+	vector<TH1*> fHistoList_recofull_new[5];
 
 	TH1I * fhElectrons;
 
@@ -119,6 +120,12 @@ private:
 	vector<float>			fElectrons_momentaChi_4;
 	vector<int>				fElectrons_mctrackID_4;
 	vector< vector<int> >	fVector_photons_pairs_4;
+	
+	vector<CbmGlobalTrack*>	fElectrons_track_new[5];
+	vector<TVector3>		fElectrons_momenta_new[5];
+	vector<float>			fElectrons_momentaChi_new[5];
+	vector<int>				fElectrons_mctrackID_new[5];
+	vector< vector<int> >	fVector_photons_pairs_new[5];
 
 
 	TH1D * fhElectrons_invmass;
@@ -227,8 +234,18 @@ private:
 	TH1D * fhPhotons_invmass_ptBin4_4;
 	TH1D * fhElectrons_invmass_4;
 	TH2D * fhPhotons_invmass_vs_pt_4;
-	
-	
+
+
+
+	TH1D * fhElectrons_nofPerEvent_new[5];
+	TH1D * fhPhotons_nofPerEvent_new[5];
+	TH1D * fhPhotons_invmass_new[5];
+	TH1D * fhPhotons_invmass_ptBin1_new[5];
+	TH1D * fhPhotons_invmass_ptBin2_new[5];
+	TH1D * fhPhotons_invmass_ptBin3_new[5];
+	TH1D * fhPhotons_invmass_ptBin4_new[5];
+	TH1D * fhElectrons_invmass_new[5];
+	TH2D * fhPhotons_invmass_vs_pt_new[5];
 
 	// timer
 	TStopwatch timer;
