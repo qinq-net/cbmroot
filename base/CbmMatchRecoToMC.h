@@ -74,6 +74,20 @@ private:
           const TClonesArray* hits,
           TClonesArray* hitMatches);
 
+    void MatchHitsTof(
+          const TClonesArray* DigiPntMatches,
+          const TClonesArray* digis,
+          const TClonesArray* HitDigiMatches,
+          const TClonesArray* hits,
+          TClonesArray* hitMatches);
+
+    void MatchHitsTofDigiExp(
+          const TClonesArray* DigiPntMatches,
+          const TClonesArray* digis,
+          const TClonesArray* HitDigiMatches,
+          const TClonesArray* hits,
+          TClonesArray* hitMatches);
+
     void MatchHitsToPoints(
           const TClonesArray* points,
           const TClonesArray* hits,
@@ -145,7 +159,15 @@ private:
     TClonesArray* fMvdCluster;       	// CbmMvdCluster array
     TClonesArray* fMvdClusterMatches;   // Output CbmMatch array
 
-
+    // TOF
+    TClonesArray* fTofPoints; // CbmTofPoint array
+    TClonesArray* fTofDigis; 	// CbmTofDigi or CbmTofDigiExp array
+    TClonesArray* fTofHits; 		// CbmTofHit array
+    Bool_t        fbDigiExpUsed; // Flag true if usage of CbmTofDigiExp detected
+    TClonesArray* fTofDigiMatchesPoints;	// CbmMatch array for Digi -> MC
+    TClonesArray* fTofDigiMatches;	// CbmMatch array for Hit -> Digi
+    TClonesArray* fTofHitMatches; 	// Output CbmMatch array for Hit -> MC
+    
 
     CbmMatchRecoToMC(const CbmMatchRecoToMC&);
     CbmMatchRecoToMC& operator=(const CbmMatchRecoToMC&);

@@ -18,6 +18,10 @@
 #include "FairLogger.h"
 #include "TClonesArray.h"
 
+#include "CbmTofDigi.h"       // in cbmdata/tof
+#include "CbmTofDigiExp.h"    // in cbmdata/tof
+#include "CbmTofHit.h"        // in cbmdata/tof
+
 #include "CbmMCDataArray.h"
 #include "CbmMCDataManager.h"
 
@@ -64,7 +68,14 @@ CbmMatchRecoToMC::CbmMatchRecoToMC() :
    fMvdDigiMatches(NULL),
    fMvdHitMatches(NULL),
    fMvdCluster(NULL),
-   fMvdClusterMatches(NULL)
+   fMvdClusterMatches(NULL),
+   fTofPoints(NULL),
+   fTofDigis(NULL),
+   fTofHits(NULL),
+   fbDigiExpUsed(kFALSE),
+   fTofDigiMatchesPoints(NULL),
+   fTofDigiMatches(NULL),
+   fTofHitMatches(NULL)
 {
 
 }
@@ -123,6 +134,11 @@ CbmMatchRecoToMC::~CbmMatchRecoToMC()
       fMvdHitMatches->Delete();
       delete fMvdHitMatches;
    }
+   
+   if (fTofHitMatches != NULL) {
+      fTofHitMatches->Delete();
+      delete fTofHitMatches;
+   }
 }
 
 void CbmMatchRecoToMC::SetIncludeMvdHitsInStsTrack(Bool_t includeMvdHitsInStsTrack)
@@ -152,6 +168,7 @@ void CbmMatchRecoToMC::Exec(
    if (fMuchTrackMatches != NULL) fMuchTrackMatches->Delete();
    if (fMvdHitMatches != NULL) fMvdHitMatches->Delete();
    if (fMvdClusterMatches != NULL) fMvdClusterMatches->Delete();
+   if (fTofHitMatches != NULL) fTofHitMatches->Delete();
 
    //MVD
    if (fMvdDigiMatches && fMvdHits && fMvdHitMatches && !fMvdCluster) {// MC->digi->hit
@@ -192,6 +209,11 @@ void CbmMatchRecoToMC::Exec(
    MatchTracks(fMuchPixelHitMatches, fMuchPoints, fMuchTracks, fMuchTrackMatches);
    MatchTracks(fMuchStrawHitMatches, fMuchPoints, fMuchTracks, fMuchTrackMatches);
 
+   // TOF: (Digi->MC)+(Hit->Digi)=>(Hit->MC)
+   if (kTRUE == fbDigiExpUsed)
+      MatchHitsTofDigiExp( fTofDigiMatchesPoints, fTofDigis, fTofDigiMatches, fTofHits, fTofHitMatches);
+      else MatchHitsTof( fTofDigiMatchesPoints, fTofDigis, fTofDigiMatches, fTofHits, fTofHitMatches);
+      
    static Int_t eventNo = 0;
    LOG(INFO) << "CbmMatchRecoToMC::Exec eventNo=" << eventNo++ << FairLogger::endl;
 }
@@ -301,6 +323,23 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
       fMvdHitMatches = new TClonesArray("CbmMatch", 100);
       ioman->Register("MvdHitMatch", "MVD", fMvdHitMatches, kTRUE);
    }
+   
+   // TOF
+   fTofPoints = (TClonesArray*) ioman->GetObject("TofPoint");
+   fTofDigis  = (TClonesArray*) ioman->GetObject("TofDigi");
+   if (NULL != fTofDigis) {
+      if ( TString("CbmTofDigiExp") == fTofDigis->GetClass()->GetName() )
+         fbDigiExpUsed = kTRUE;
+   }
+   fTofHits   = (TClonesArray*) ioman->GetObject("TofHit");
+   
+   fTofDigiMatchesPoints = (TClonesArray*) ioman->GetObject("TofDigiMatchPoints");
+   fTofDigiMatches       = (TClonesArray*) ioman->GetObject("TofDigiMatch");
+
+   if (NULL != fTofDigis && fTofHits != NULL) {
+      fTofHitMatches = new TClonesArray("CbmMatch", 100);
+      ioman->Register("TofHitMatch", "TOF", fTofHitMatches, kTRUE);
+   }   
 }
 
 
@@ -389,6 +428,93 @@ void CbmMatchRecoToMC::MatchHitsMvd(
     hitMatch->AddLinks(*digiMatch);
     hit->SetMatch(hitMatch);
   }
+}
+
+void CbmMatchRecoToMC::MatchHitsTof(
+      const TClonesArray* DigiPntMatches,
+      const TClonesArray* digis,
+      const TClonesArray* HitDigiMatches,
+      const TClonesArray* hits,
+      TClonesArray* hitMatches)
+{
+   if (!(DigiPntMatches && digis && HitDigiMatches && hitMatches)) return;
+
+   Int_t iNbTofDigis = digis->GetEntriesFast();
+   Int_t nofHits = hits->GetEntriesFast();
+   CbmTofDigi * pTofDigi;
+   CbmMatch   * pMatchDigiPnt;
+
+   for (Int_t iHit = 0; iHit < nofHits; iHit++) {
+      CbmTofHit* hit         = static_cast<CbmTofHit*>(hits->At(iHit));
+      CbmMatch* hitDigiMatch = static_cast<CbmMatch*>( HitDigiMatches->At(iHit) );
+      CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
+      
+      Int_t iNbDigisHit = hitDigiMatch->GetNofLinks();
+      for (Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++) {
+         CbmLink lDigi    = hitDigiMatch->GetLink(iDigi); 
+         Int_t   iDigiIdx = lDigi.GetIndex();
+         
+         if( iNbTofDigis <= iDigiIdx )
+         {
+            LOG(ERROR)<<"CbmTofHitFinderQa::FillHistos => Digi index from Hit #"
+                <<iHit
+                <<" is bigger than nb entries in Digis arrays => ignore it!!!"<<FairLogger::endl;
+            continue;
+         } // if( iNbTofDigis <= iDigiIdx )
+                  
+         pTofDigi      = (CbmTofDigi*) digis->At( iDigiIdx );
+         pMatchDigiPnt = (CbmMatch*) DigiPntMatches->At( iDigiIdx );
+
+         CbmLink lPoint    = pMatchDigiPnt->GetLink(0); 
+         Int_t   iPointIdx = lPoint.GetIndex();
+         
+         hitMatch->AddLink(CbmLink(pTofDigi->GetTot(), iPointIdx));
+      } // for (Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++)
+      hit->SetMatch(hitMatch);
+   } // for (Int_t iHit = 0; iHit < nofHits; iHit++)
+}
+void CbmMatchRecoToMC::MatchHitsTofDigiExp(
+      const TClonesArray* DigiPntMatches,
+      const TClonesArray* digis,
+      const TClonesArray* HitDigiMatches,
+      const TClonesArray* hits,
+      TClonesArray* hitMatches)
+{
+   if (!(DigiPntMatches && digis && HitDigiMatches && hitMatches)) return;
+
+   Int_t iNbTofDigis = digis->GetEntriesFast();
+   Int_t nofHits = hits->GetEntriesFast();
+   CbmTofDigiExp * pTofDigi;
+   CbmMatch   * pMatchDigiPnt;
+
+   for (Int_t iHit = 0; iHit < nofHits; iHit++) {
+      CbmTofHit* hit         = static_cast<CbmTofHit*>(hits->At(iHit));
+      CbmMatch* hitDigiMatch = static_cast<CbmMatch*>( HitDigiMatches->At(iHit) );
+      CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
+      
+      Int_t iNbDigisHit = hitDigiMatch->GetNofLinks();
+      for (Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++) {
+         CbmLink lDigi    = hitDigiMatch->GetLink(iDigi); 
+         Int_t   iDigiIdx = lDigi.GetIndex();
+         
+         if( iNbTofDigis <= iDigiIdx )
+         {
+            LOG(ERROR)<<"CbmTofHitFinderQa::FillHistos => Digi index from Hit #"
+                <<iHit
+                <<" is bigger than nb entries in Digis arrays => ignore it!!!"<<FairLogger::endl;
+            continue;
+         } // if( iNbTofDigis <= iDigiIdx )
+                  
+         pTofDigi      = (CbmTofDigiExp*) digis->At( iDigiIdx );
+         pMatchDigiPnt = (CbmMatch*) DigiPntMatches->At( iDigiIdx );
+
+         CbmLink lPoint    = pMatchDigiPnt->GetLink(0); 
+         Int_t   iPointIdx = lPoint.GetIndex();
+         
+         hitMatch->AddLink(CbmLink(pTofDigi->GetTot(), iPointIdx));
+      } // for (Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++)
+      hit->SetMatch(hitMatch);
+   } // for (Int_t iHit = 0; iHit < nofHits; iHit++)
 }
 
 void CbmMatchRecoToMC::MatchHitsToPoints(
