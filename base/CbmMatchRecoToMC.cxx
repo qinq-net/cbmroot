@@ -437,7 +437,7 @@ void CbmMatchRecoToMC::MatchHitsTof(
       const TClonesArray* hits,
       TClonesArray* hitMatches)
 {
-   if (!(DigiPntMatches && digis && HitDigiMatches && hitMatches)) return;
+   if (!(DigiPntMatches && digis && HitDigiMatches && hits && hitMatches)) return;
 
    Int_t iNbTofDigis = digis->GetEntriesFast();
    Int_t nofHits = hits->GetEntriesFast();
@@ -448,12 +448,12 @@ void CbmMatchRecoToMC::MatchHitsTof(
       CbmTofHit* hit         = static_cast<CbmTofHit*>(hits->At(iHit));
       CbmMatch* hitDigiMatch = static_cast<CbmMatch*>( HitDigiMatches->At(iHit) );
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
-      
+
       Int_t iNbDigisHit = hitDigiMatch->GetNofLinks();
       for (Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++) {
-         CbmLink lDigi    = hitDigiMatch->GetLink(iDigi); 
+         CbmLink lDigi    = hitDigiMatch->GetLink(iDigi);
          Int_t   iDigiIdx = lDigi.GetIndex();
-         
+
          if( iNbTofDigis <= iDigiIdx )
          {
             LOG(ERROR)<<"CbmTofHitFinderQa::FillHistos => Digi index from Hit #"
@@ -461,13 +461,13 @@ void CbmMatchRecoToMC::MatchHitsTof(
                 <<" is bigger than nb entries in Digis arrays => ignore it!!!"<<FairLogger::endl;
             continue;
          } // if( iNbTofDigis <= iDigiIdx )
-                  
+
          pTofDigi      = (CbmTofDigi*) digis->At( iDigiIdx );
          pMatchDigiPnt = (CbmMatch*) DigiPntMatches->At( iDigiIdx );
 
-         CbmLink lPoint    = pMatchDigiPnt->GetLink(0); 
+         CbmLink lPoint    = pMatchDigiPnt->GetLink(0);
          Int_t   iPointIdx = lPoint.GetIndex();
-         
+
          hitMatch->AddLink(CbmLink(pTofDigi->GetTot(), iPointIdx));
       } // for (Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++)
       hit->SetMatch(hitMatch);
@@ -480,7 +480,7 @@ void CbmMatchRecoToMC::MatchHitsTofDigiExp(
       const TClonesArray* hits,
       TClonesArray* hitMatches)
 {
-   if (!(DigiPntMatches && digis && HitDigiMatches && hitMatches)) return;
+   if (!(DigiPntMatches && digis && HitDigiMatches && hits && hitMatches)) return;
 
    Int_t iNbTofDigis = digis->GetEntriesFast();
    Int_t nofHits = hits->GetEntriesFast();
@@ -491,12 +491,12 @@ void CbmMatchRecoToMC::MatchHitsTofDigiExp(
       CbmTofHit* hit         = static_cast<CbmTofHit*>(hits->At(iHit));
       CbmMatch* hitDigiMatch = static_cast<CbmMatch*>( HitDigiMatches->At(iHit) );
       CbmMatch* hitMatch = new ((*hitMatches)[iHit]) CbmMatch();
-      
+
       Int_t iNbDigisHit = hitDigiMatch->GetNofLinks();
       for (Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++) {
-         CbmLink lDigi    = hitDigiMatch->GetLink(iDigi); 
+         CbmLink lDigi    = hitDigiMatch->GetLink(iDigi);
          Int_t   iDigiIdx = lDigi.GetIndex();
-         
+
          if( iNbTofDigis <= iDigiIdx )
          {
             LOG(ERROR)<<"CbmTofHitFinderQa::FillHistos => Digi index from Hit #"
@@ -504,13 +504,13 @@ void CbmMatchRecoToMC::MatchHitsTofDigiExp(
                 <<" is bigger than nb entries in Digis arrays => ignore it!!!"<<FairLogger::endl;
             continue;
          } // if( iNbTofDigis <= iDigiIdx )
-                  
+
          pTofDigi      = (CbmTofDigiExp*) digis->At( iDigiIdx );
          pMatchDigiPnt = (CbmMatch*) DigiPntMatches->At( iDigiIdx );
 
-         CbmLink lPoint    = pMatchDigiPnt->GetLink(0); 
+         CbmLink lPoint    = pMatchDigiPnt->GetLink(0);
          Int_t   iPointIdx = lPoint.GetIndex();
-         
+
          hitMatch->AddLink(CbmLink(pTofDigi->GetTot(), iPointIdx));
       } // for (Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++)
       hit->SetMatch(hitMatch);
