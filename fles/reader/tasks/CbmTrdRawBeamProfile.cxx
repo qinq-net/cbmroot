@@ -1025,7 +1025,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 	fHM->H1("ModuleId")->GetYaxis()->SetBinLabel(syscore*3+spadic+1,syscoreName[syscore]+"_"+spadicName[spadic]); 
       }
     }
-    for (Int_t maxAdcThreshold = -200; maxAdcThreshold < 200; maxAdcThreshold+=10){
+    for (Int_t maxAdcThreshold = -200; maxAdcThreshold <= 200; maxAdcThreshold+=10){
       histName.Form("maxAdcLarger%04i",maxAdcThreshold);
       fHM->Add(TString("MeanPulseShape_"+histName).Data(), new TH2I(TString("MeanPulseShape_"+histName).Data(),TString("MeanPulseShape_"+histName).Data(),32,-0.5,31.5,2*256,-256.5,255.5));
       //cout << "MeanPulseShape_" << histName << endl;
