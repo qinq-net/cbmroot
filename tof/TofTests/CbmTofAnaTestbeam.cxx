@@ -547,10 +547,17 @@ Bool_t   CbmTofAnaTestbeam::LoadGeometry()
 
      Int_t cellId = fDigiPar->GetCellId(icell); // cellId is assigned in CbmTofCreateDigiPar
      fChannelInfo = fDigiPar->GetCell(cellId);
+     /*
      Int_t smodule  = fGeoHandler->GetSMType(cellId);   // FIXME  - wrong inline functions!!!
      Int_t smtype   = fGeoHandler->GetSModule(cellId);  // FIXME
      Int_t module  = fGeoHandler->GetCounter(cellId);
-     LOG(DEBUG) << "  got cell " << smtype << ", " << smodule << ", " << module 
+     */
+     Int_t smtype   = CbmTofAddress::GetSmType( cellId );
+     Int_t smodule  = CbmTofAddress::GetSmId( cellId );
+     Int_t module   = CbmTofAddress::GetRpcId( cellId );
+
+     LOG(DEBUG) <<Form(" Id 0x%08x ",cellId) 
+		<< "  got cell " << smtype << ", " << smodule << ", " << module 
 		<< ", x-size "<< fChannelInfo->GetSizex() 
 		<< ", y-size "<< fChannelInfo->GetSizey()
 		<< FairLogger::endl;
@@ -1652,7 +1659,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
      fhCluMul04D4best->Fill(dMul0,dMul4);
 
-     // check for dependence in counter reference frame
+     // check for dependence in counter reference frame 
      /*TGeoNode *fNode=*/        // prepare global->local trafo
      gGeoManager->FindNode(fChannelInfo2->GetX(),fChannelInfo2->GetY(),fChannelInfo2->GetZ());
 
@@ -1661,6 +1668,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      hitpos2[2]=pHit2->GetZ();
 
 /*     TGeoNode* cNode=*/ gGeoManager->GetCurrentNode(); // -> Comment to remove warning because set but never used
+     // if(0) cNode->Print();
      gGeoManager->MasterToLocal(hitpos2, hitpos2_local);
 
      Double_t dTofD4  = fdTOffD4 + dDTD4Min;
