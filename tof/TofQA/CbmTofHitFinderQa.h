@@ -96,6 +96,8 @@ class CbmTofHitFinderQa : public FairTask {
       TClonesArray          * fTofDigiMatchPointsColl; // Indices of MC original points for each digi (CbmMatch)
       TClonesArray          * fTofHitsColl; // TOF hits
       TClonesArray          * fTofDigiMatchColl;  // Indices of TOF Digis for each hit (CbmMatch)
+      TClonesArray          * fTofHitMatchColl; // // Indices of MC original points for each hit with TOT weight (CbmMatch)
+      Bool_t                  fbHitProducerSource;
 
       // Histograms
          // Flag for Normalization histograms generation
@@ -199,6 +201,16 @@ class CbmTofHitFinderQa : public FairTask {
       TH2 * fhMultiPntHitMeanPullY;
       TH2 * fhMultiPntHitMeanPullZ;
       TH2 * fhMultiPntHitMeanPullR;
+            // To best Point position
+      TH2 * fhMultiPntHitBestDeltaX;
+      TH2 * fhMultiPntHitBestDeltaY;
+      TH2 * fhMultiPntHitBestDeltaZ;
+      TH2 * fhMultiPntHitBestDeltaR;
+      TH2 * fhMultiPntHitBestDeltaT;
+      TH2 * fhMultiPntHitBestPullX;
+      TH2 * fhMultiPntHitBestPullY;
+      TH2 * fhMultiPntHitBestPullZ;
+      TH2 * fhMultiPntHitBestPullR;
          // Hit Quality for Hits coming from a single MC Track
       TH1 * fhSingleTrackHitDeltaX;
       TH1 * fhSingleTrackHitDeltaY;
@@ -250,6 +262,16 @@ class CbmTofHitFinderQa : public FairTask {
       TH2 * fhMultiTrkHitMeanPullY;
       TH2 * fhMultiTrkHitMeanPullZ;
       TH2 * fhMultiTrkHitMeanPullR;
+            // To best Track position
+      TH2 * fhMultiTrkHitBestDeltaX;
+      TH2 * fhMultiTrkHitBestDeltaY;
+      TH2 * fhMultiTrkHitBestDeltaZ;
+      TH2 * fhMultiTrkHitBestDeltaR;
+      TH2 * fhMultiTrkHitBestDeltaT;
+      TH2 * fhMultiTrkHitBestPullX;
+      TH2 * fhMultiTrkHitBestPullY;
+      TH2 * fhMultiTrkHitBestPullZ;
+      TH2 * fhMultiTrkHitBestPullR;
       
          // Physics coord mapping, 1 per particle type
             // Phase space

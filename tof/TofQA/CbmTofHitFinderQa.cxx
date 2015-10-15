@@ -86,6 +86,8 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fTofDigiMatchPointsColl(NULL),
     fTofHitsColl(NULL),
     fTofDigiMatchColl(NULL),
+    fTofHitMatchColl(NULL),
+    fbHitProducerSource( kFALSE ),
     fbNormHistGenMode( kFALSE ),
     fsHistoInNormCartFilename(""),  
     fsHistoInNormAngFilename(""),
@@ -171,6 +173,15 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhMultiPntHitMeanPullY(NULL),
     fhMultiPntHitMeanPullZ(NULL),
     fhMultiPntHitMeanPullR(NULL),
+    fhMultiPntHitBestDeltaX(NULL),
+    fhMultiPntHitBestDeltaY(NULL),
+    fhMultiPntHitBestDeltaZ(NULL),
+    fhMultiPntHitBestDeltaR(NULL),
+    fhMultiPntHitBestDeltaT(NULL),
+    fhMultiPntHitBestPullX(NULL),
+    fhMultiPntHitBestPullY(NULL),
+    fhMultiPntHitBestPullZ(NULL),
+    fhMultiPntHitBestPullR(NULL),
     fhSingleTrackHitDeltaX(NULL),
     fhSingleTrackHitDeltaY(NULL),
     fhSingleTrackHitDeltaZ(NULL),
@@ -216,6 +227,15 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhMultiTrkHitMeanPullY(NULL),
     fhMultiTrkHitMeanPullZ(NULL),
     fhMultiTrkHitMeanPullR(NULL),
+    fhMultiTrkHitBestDeltaX(NULL),
+    fhMultiTrkHitBestDeltaY(NULL),
+    fhMultiTrkHitBestDeltaZ(NULL),
+    fhMultiTrkHitBestDeltaR(NULL),
+    fhMultiTrkHitBestDeltaT(NULL),
+    fhMultiTrkHitBestPullX(NULL),
+    fhMultiTrkHitBestPullY(NULL),
+    fhMultiTrkHitBestPullZ(NULL),
+    fhMultiTrkHitBestPullR(NULL),
     fvhPtmRapGenTrk(),
     fvhPtmRapStsPnt(),
     fvhPtmRapTofPnt(),
@@ -275,6 +295,8 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fTofDigiMatchPointsColl(NULL),
     fTofHitsColl(NULL),
     fTofDigiMatchColl(NULL),
+    fTofHitMatchColl(NULL),
+    fbHitProducerSource( kFALSE ),
     fbNormHistGenMode( kFALSE ),
     fsHistoInNormCartFilename(""),  
     fsHistoInNormAngFilename(""),
@@ -360,6 +382,15 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhMultiPntHitMeanPullY(NULL),
     fhMultiPntHitMeanPullZ(NULL),
     fhMultiPntHitMeanPullR(NULL),
+    fhMultiPntHitBestDeltaX(NULL),
+    fhMultiPntHitBestDeltaY(NULL),
+    fhMultiPntHitBestDeltaZ(NULL),
+    fhMultiPntHitBestDeltaR(NULL),
+    fhMultiPntHitBestDeltaT(NULL),
+    fhMultiPntHitBestPullX(NULL),
+    fhMultiPntHitBestPullY(NULL),
+    fhMultiPntHitBestPullZ(NULL),
+    fhMultiPntHitBestPullR(NULL),
     fhSingleTrackHitDeltaX(NULL),
     fhSingleTrackHitDeltaY(NULL),
     fhSingleTrackHitDeltaZ(NULL),
@@ -405,6 +436,15 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhMultiTrkHitMeanPullY(NULL),
     fhMultiTrkHitMeanPullZ(NULL),
     fhMultiTrkHitMeanPullR(NULL),
+    fhMultiTrkHitBestDeltaX(NULL),
+    fhMultiTrkHitBestDeltaY(NULL),
+    fhMultiTrkHitBestDeltaZ(NULL),
+    fhMultiTrkHitBestDeltaR(NULL),
+    fhMultiTrkHitBestDeltaT(NULL),
+    fhMultiTrkHitBestPullX(NULL),
+    fhMultiTrkHitBestPullY(NULL),
+    fhMultiTrkHitBestPullZ(NULL),
+    fhMultiTrkHitBestPullR(NULL),
     fvhPtmRapGenTrk(),
     fvhPtmRapStsPnt(),
     fvhPtmRapTofPnt(),
@@ -560,14 +600,16 @@ Bool_t   CbmTofHitFinderQa::RegisterInputs()
    fTofDigisColl   = (TClonesArray *) fManager->GetObject("TofDigi");
    if( NULL == fTofDigisColl)
    {
-      LOG(ERROR)<<"CbmTofHitFinderQa::RegisterInputs => Could not get the TofDigi TClonesArray!!!"<<FairLogger::endl;
-      return kFALSE;
+      LOG(WARNING)<<"CbmTofHitFinderQa::RegisterInputs => Could not get the TofDigi TClonesArray!!!"<<FairLogger::endl;
+      LOG(WARNING)<<"                                  => Assuming that the CbmTofHitProducerNew is used!!!"<<FairLogger::endl;
+ //     return kFALSE;
    } // if( NULL == fTofDigisColl)
    fTofDigiMatchPointsColl   = (TClonesArray *) fManager->GetObject("TofDigiMatchPoints");
    if( NULL == fTofDigiMatchPointsColl)
    {
-      LOG(ERROR)<<"CbmTofHitFinderQa::RegisterInputs => Could not get the TofDigiMatchPoints TClonesArray!!!"<<FairLogger::endl;
-      return kFALSE;
+      LOG(WARNING)<<"CbmTofHitFinderQa::RegisterInputs => Could not get the TofDigiMatchPoints TClonesArray!!!"<<FairLogger::endl;
+      LOG(WARNING)<<"                                  => Assuming that the CbmTofHitProducerNew is used!!!"<<FairLogger::endl;
+//      return kFALSE;
    } // if( NULL == fTofDigiMatchPointsColl)
 
    fTofHitsColl   = (TClonesArray *) fManager->GetObject("TofHit");
@@ -579,9 +621,29 @@ Bool_t   CbmTofHitFinderQa::RegisterInputs()
    fTofDigiMatchColl   = (TClonesArray *) fManager->GetObject("TofDigiMatch");
    if( NULL == fTofDigiMatchColl)
    {
-      LOG(ERROR)<<"CbmTofHitFinderQa::RegisterInputs => Could not get the TofDigiMatch TClonesArray!!!"<<FairLogger::endl;
-      return kFALSE;
+      LOG(WARNING)<<"CbmTofHitFinderQa::RegisterInputs => Could not get the TofDigiMatch TClonesArray!!!"<<FairLogger::endl;
+      LOG(WARNING)<<"                                  => Assuming that the CbmTofHitProducerNew is used!!!"<<FairLogger::endl;
+ //     return kFALSE;
    } // if( NULL == fTofDigiMatchColl)
+   
+   fTofHitMatchColl   = (TClonesArray *) fManager->GetObject("TofHitMatch");
+   if( NULL == fTofHitMatchColl)
+   {
+      LOG(ERROR)<<"CbmTofHitFinderQa::RegisterInputs => Could not get the TofHitMatch TClonesArray!!!"<<FairLogger::endl;
+      return kFALSE;
+   } // if( NULL == fTofDigiMatchPointsColl)
+   
+   if(NULL == fTofDigisColl && NULL == fTofDigiMatchPointsColl && NULL == fTofDigiMatchColl )
+      fbHitProducerSource = kTRUE;
+      
+   if( ( kFALSE == fbHitProducerSource ) &&
+          (NULL == fTofDigisColl || NULL == fTofDigiMatchPointsColl || NULL == fTofDigiMatchColl ) )
+   {
+      LOG(ERROR)<<"CbmTofHitFinderQa::RegisterInputs => fTofDigisColl or fTofDigiMatchPointsColl or fTofDigiMatchColl present while the other is missing"<<FairLogger::endl;
+      LOG(ERROR)<<"                                  => Cannot be the result of CbmTofHitProducerNew use!!!"<<FairLogger::endl;
+      return kFALSE;
+   } // if only one of fTofDigisColl and fTofDigiMatchColl is missing
+   
 
    return kTRUE;
 }
@@ -961,6 +1023,43 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                 "Quality of the Tof Hits position error relative to mean Point position, for hit coming from multiple MC Point; Pull R(Hit -> Point) []; # [Hits]; Multi [Pnt]",
                               iNbBinsPullPos, -dPullPosRange, dPullPosRange,
                               iNbBinsMulti, iMinMulti, iMaxMulti );
+      // To best Point (highest TOT contribution
+   fhMultiPntHitBestDeltaX  = new TH2D("TofTests_MultiPntHitBestDeltaX", 
+                "Quality of the Tof Hits position on X axis relative to best Point position, for hit coming from multiple MC Point; X(Hit) - X(Point) [cm]; # [Hits]; Multi [Pnt]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiPntHitBestDeltaY  = new TH2D("TofTests_MultiPntHitBestDeltaY", 
+                "Quality of the Tof Hits position on Y axis relative to best Point position, for hit coming from multiple MC Point; Y(Hit) - Y(Point) [cm]; # [Hits]; Multi [Pnt]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiPntHitBestDeltaZ  = new TH2D("TofTests_MultiPntHitBestDeltaZ", 
+                "Quality of the Tof Hits position on Z axis relative to best Point position, for hit coming from multiple MC Point; Z(Hit) - Z(Point) [cm]; # [Hits]; Multi [Pnt]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiPntHitBestDeltaR  = new TH2D("TofTests_MultiPntHitBestDeltaR", 
+                "Quality of the Tof Hits position relative to best Point position, for hit coming from multiple MC Point; R(Hit -> Point) [cm]; # [Hits]; Multi [Pnt]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiPntHitBestDeltaT = new TH2D("TofTests_MultiPntHitBestDeltaT", 
+                "Quality of the Tof Hits Time relative to best Point time, for hit coming from multiple MC Point; T(hit) - T(Point) [ps]; # [Hits]; Multi [Pnt]",
+                              iNbBinsDeltaTime, -dDeltaTimeRange, dDeltaTimeRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiPntHitBestPullX  = new TH2D("TofTests_MultiPntHitBestPullX", 
+                "Quality of the Tof Hits position error on X axis relative to best Point position, for hit coming from multiple MC Point; Pull X(Hit -> Point) []; # [Hits]; Multi [Pnt]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiPntHitBestPullY  = new TH2D("TofTests_MultiPntHitBestPullY", 
+                "Quality of the Tof Hits position error on Y axis relative to best Point position, for hit coming from multiple MC Point; Pull Y(Hit -> Point) []; # [Hits]; Multi [Pnt]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiPntHitBestPullZ  = new TH2D("TofTests_MultiPntHitBestPullZ", 
+                "Quality of the Tof Hits position error on Z axis relative to best Point position, for hit coming from multiple MC Point; Pull Z(Hit -> Point) []; # [Hits]; Multi [Pnt]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiPntHitBestPullR  = new TH2D("TofTests_MultiPntHitBestPullR", 
+                "Quality of the Tof Hits position error relative to best Point position, for hit coming from multiple MC Point; Pull R(Hit -> Point) []; # [Hits]; Multi [Pnt]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
 
    // Hit Quality for Hits coming from a single MC Track
    fhSingleTrackHitDeltaX = new TH1D("TofTests_SingleTrackHitDeltaX", 
@@ -1130,6 +1229,43 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                               iNbBinsMulti, iMinMulti, iMaxMulti );
    fhMultiTrkHitMeanPullR  = new TH2D("TofTests_MultiTrkHitMeanPullR", 
                 "Quality of the Tof Hits position error relative to mean Track position, for hit coming from multiple MC Track; Pull R(Hit -> Track) []; # [Hits]; Multi [Trk]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+      // To best Track (Highest TOT contribution)
+   fhMultiTrkHitBestDeltaX  = new TH2D("TofTests_MultiTrkHitBestDeltaX", 
+                "Quality of the Tof Hits position on X axis relative to best Track position, for hit coming from multiple MC Track; X(Hit) - X(Track) [cm]; # [Hits]; Multi [Trk]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiTrkHitBestDeltaY  = new TH2D("TofTests_MultiTrkHitBestDeltaY", 
+                "Quality of the Tof Hits position on Y axis relative to best Track position, for hit coming from multiple MC Track; Y(Hit) - Y(Track) [cm]; # [Hits]; Multi [Trk]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiTrkHitBestDeltaZ  = new TH2D("TofTests_MultiTrkHitBestDeltaZ", 
+                "Quality of the Tof Hits position on Z axis relative to best Track position, for hit coming from multiple MC Track; Z(Hit) - Z(Track) [cm]; # [Hits]; Multi [Trk]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiTrkHitBestDeltaR  = new TH2D("TofTests_MultiTrkHitBestDeltaR", 
+                "Quality of the Tof Hits position relative to best Track position, for hit coming from multiple MC Track; R(Hit -> Track) [cm]; # [Hits]; Multi [Trk]",
+                              iNbBinsDeltaPos, -dDeltaPosRange, dDeltaPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiTrkHitBestDeltaT = new TH2D("TofTests_MultiTrkHitBestDeltaT", 
+                "Quality of the Tof Hits Time relative to best Track time, for hit coming from multiple MC Track; T(hit) - T(Track) [ps]; # [Hits]; Multi [Trk]",
+                              iNbBinsDeltaTime, -dDeltaTimeRange, dDeltaTimeRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiTrkHitBestPullX  = new TH2D("TofTests_MultiTrkHitBestPullX", 
+                "Quality of the Tof Hits position error on X axis relative to best Track position, for hit coming from multiple MC Track; Pull X(Hit -> Track) []; # [Hits]; Multi [Trk]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiTrkHitBestPullY  = new TH2D("TofTests_MultiTrkHitBestPullY", 
+                "Quality of the Tof Hits position error on Y axis relative to best Track position, for hit coming from multiple MC Track; Pull Y(Hit -> Track) []; # [Hits]; Multi [Trk]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiTrkHitBestPullZ  = new TH2D("TofTests_MultiTrkHitBestPullZ", 
+                "Quality of the Tof Hits position error on Z axis relative to best Track position, for hit coming from multiple MC Track; Pull Z(Hit -> Track) []; # [Hits]; Multi [Trk]",
+                              iNbBinsPullPos, -dPullPosRange, dPullPosRange,
+                              iNbBinsMulti, iMinMulti, iMaxMulti );
+   fhMultiTrkHitBestPullR  = new TH2D("TofTests_MultiTrkHitBestPullR", 
+                "Quality of the Tof Hits position error relative to best Track position, for hit coming from multiple MC Track; Pull R(Hit -> Track) []; # [Hits]; Multi [Trk]",
                               iNbBinsPullPos, -dPullPosRange, dPullPosRange,
                               iNbBinsMulti, iMinMulti, iMaxMulti );
    
@@ -1355,23 +1491,26 @@ Bool_t CbmTofHitFinderQa::FillHistos()
    CbmMatch    * pMatchDigiPntB;
    CbmTofHit   * pTofHit;
    CbmMatch    * pMatchHitDigi;
+   CbmMatch    * pMatchHitPnt;
 
    Int_t iNbTracks, iNbTofPts, iNbTofDigis, 
          iNbTofDigisMatch, iNbTofHits, iNbTofHitsMatch;
 
    iNbTracks        = fMcTracksColl->GetEntriesFast();
    iNbTofPts        = fTofPointsColl->GetEntriesFast();
-   iNbTofDigis      = fTofDigisColl->GetEntriesFast();
-   iNbTofDigisMatch = fTofDigiMatchPointsColl->GetEntriesFast();
    iNbTofHits       = fTofHitsColl->GetEntriesFast();
-   iNbTofHitsMatch  = fTofDigiMatchColl->GetEntriesFast();
-
-   if( iNbTofDigis != iNbTofDigisMatch )
-      LOG(FATAL)<<"CbmTofHitFinderQa::FillHistos => Nb entries in TofDigiMatchPoints TClonesArray doe not match nb entries in TofDigi!!!"<<FairLogger::endl;
-   if( iNbTofHits != iNbTofHitsMatch )
-      LOG(FATAL)<<"CbmTofHitFinderQa::FillHistos => Nb entries in TofDigiMatch TClonesArray doe not match nb entries in TofHit!!! "
-                <<iNbTofHits<<" VS "<<iNbTofHitsMatch
-                <<" (Prev step: "<<iNbTofDigis<<" VS "<<iNbTofDigisMatch<<" )"<<FairLogger::endl;      
+   if( kFALSE == fbHitProducerSource )
+   {
+      iNbTofDigis      = fTofDigisColl->GetEntriesFast();
+      iNbTofDigisMatch = fTofDigiMatchPointsColl->GetEntriesFast();
+      iNbTofHitsMatch  = fTofDigiMatchColl->GetEntriesFast();
+      if( iNbTofDigis != iNbTofDigisMatch )
+         LOG(FATAL)<<"CbmTofHitFinderQa::FillHistos => Nb entries in TofDigiMatchPoints TClonesArray doe not match nb entries in TofDigi!!!"<<FairLogger::endl;
+      if( iNbTofHits != iNbTofHitsMatch )
+         LOG(FATAL)<<"CbmTofHitFinderQa::FillHistos => Nb entries in TofDigiMatch TClonesArray doe not match nb entries in TofHit!!! "
+                   <<iNbTofHits<<" VS "<<iNbTofHitsMatch
+                   <<" (Prev step: "<<iNbTofDigis<<" VS "<<iNbTofDigisMatch<<" )"<<FairLogger::endl;      
+   } // if( kFALSE == fbHitProducerSource )
    
    // Tracks Info
    Int_t iNbTofTracks     = 0;
@@ -1597,47 +1736,14 @@ Bool_t CbmTofHitFinderQa::FillHistos()
    } // for (Int_t iPntInd = 0; iPntInd < nTofPoint; iPntInd++ )
  
    // Loop over Digis and map them?
-   if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
+   if( kFALSE == fbHitProducerSource )
    {
-      CbmTofDigiExp *pTofDigi;
-      for( Int_t iDigInd = 0; iDigInd < iNbTofDigis; iDigInd++ )
+      if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
       {
-         pTofDigi = (CbmTofDigiExp*) fTofDigisColl->At( iDigInd );
-
-         Int_t iSmType = pTofDigi->GetType();
-         Int_t iSm     = pTofDigi->GetSm();
-         Int_t iRpc    = pTofDigi->GetRpc();
-         Int_t iCh     = pTofDigi->GetChannel();
-         // First Get X/Y position info
-         if(fGeoHandler->GetGeoVersion() < k14a) 
-            iCh = iCh + 1; //FIXME: Due to change in tofGeoHandler
-         CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
-         Int_t iChId =  fTofId->SetDetectorInfo( xDetInfo );
-         fChannelInfo = fDigiPar->GetCell( iChId );
-
-         Double_t dX = fChannelInfo->GetX();
-         Double_t dY = fChannelInfo->GetY();
-         Double_t dZ = fChannelInfo->GetZ();
-
-         fhDigiMapXY->Fill(   dX, dY );
-         fhDigiMapXZ->Fill(   dX, dZ );
-         fhDigiMapYZ->Fill(   dY, dZ );
-
-         Double_t dThetaX = TMath::ATan2( dX, dZ )*180.0/TMath::Pi();
-         Double_t dThetaY = TMath::ATan2( dY, dZ )*180.0/TMath::Pi();
-         fhDigiMapAng->Fill( dThetaX, dThetaY );
-
-         Double_t dTheta  = TMath::ATan2( TMath::Sqrt( dX*dX + dY*dY ), dZ );//*180.0/TMath::Pi();
-         Double_t dPhi    = TMath::ATan2( dY, dX );//*180.0/TMath::Pi();
-         fhDigiMapSph->Fill( dTheta, dPhi );
-      } // for( Int_t iDigInd = 0; iDigInd < iNbTofDigis; iDigInd++ )
-   } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
-      else
-      {
-         CbmTofDigi *pTofDigi;
+         CbmTofDigiExp *pTofDigi;
          for( Int_t iDigInd = 0; iDigInd < iNbTofDigis; iDigInd++ )
          {
-            pTofDigi = (CbmTofDigi*) fTofDigisColl->At( iDigInd );
+            pTofDigi = (CbmTofDigiExp*) fTofDigisColl->At( iDigInd );
 
             Int_t iSmType = pTofDigi->GetType();
             Int_t iSm     = pTofDigi->GetSm();
@@ -1646,8 +1752,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             // First Get X/Y position info
             if(fGeoHandler->GetGeoVersion() < k14a) 
                iCh = iCh + 1; //FIXME: Due to change in tofGeoHandler
-            CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh + 1);
-            Int_t iChId = fTofId->SetDetectorInfo( xDetInfo );
+            CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
+            Int_t iChId =  fTofId->SetDetectorInfo( xDetInfo );
             fChannelInfo = fDigiPar->GetCell( iChId );
 
             Double_t dX = fChannelInfo->GetX();
@@ -1666,13 +1772,51 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             Double_t dPhi    = TMath::ATan2( dY, dX );//*180.0/TMath::Pi();
             fhDigiMapSph->Fill( dTheta, dPhi );
          } // for( Int_t iDigInd = 0; iDigInd < iNbTofDigis; iDigInd++ )
-      } // else of if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
+      } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
+         else
+         {
+            CbmTofDigi *pTofDigi;
+            for( Int_t iDigInd = 0; iDigInd < iNbTofDigis; iDigInd++ )
+            {
+               pTofDigi = (CbmTofDigi*) fTofDigisColl->At( iDigInd );
+
+               Int_t iSmType = pTofDigi->GetType();
+               Int_t iSm     = pTofDigi->GetSm();
+               Int_t iRpc    = pTofDigi->GetRpc();
+               Int_t iCh     = pTofDigi->GetChannel();
+               // First Get X/Y position info
+               if(fGeoHandler->GetGeoVersion() < k14a) 
+                  iCh = iCh + 1; //FIXME: Due to change in tofGeoHandler
+               CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh + 1);
+               Int_t iChId = fTofId->SetDetectorInfo( xDetInfo );
+               fChannelInfo = fDigiPar->GetCell( iChId );
+
+               Double_t dX = fChannelInfo->GetX();
+               Double_t dY = fChannelInfo->GetY();
+               Double_t dZ = fChannelInfo->GetZ();
+
+               fhDigiMapXY->Fill(   dX, dY );
+               fhDigiMapXZ->Fill(   dX, dZ );
+               fhDigiMapYZ->Fill(   dY, dZ );
+
+               Double_t dThetaX = TMath::ATan2( dX, dZ )*180.0/TMath::Pi();
+               Double_t dThetaY = TMath::ATan2( dY, dZ )*180.0/TMath::Pi();
+               fhDigiMapAng->Fill( dThetaX, dThetaY );
+
+               Double_t dTheta  = TMath::ATan2( TMath::Sqrt( dX*dX + dY*dY ), dZ );//*180.0/TMath::Pi();
+               Double_t dPhi    = TMath::ATan2( dY, dX );//*180.0/TMath::Pi();
+               fhDigiMapSph->Fill( dTheta, dPhi );
+            } // for( Int_t iDigInd = 0; iDigInd < iNbTofDigis; iDigInd++ )
+         } // else of if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
+   } // if( kFALSE == fbHitProducerSource )
      
    // Loop Over Hits
    for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++ )
    {
       std::vector<Int_t> vTofPointsId;
-      std::vector<Int_t> vTofTracksId;
+      std::vector<Int_t>    vTofTracksId;
+      std::vector<Double_t> vTofTracksWeight;
+      std::vector<Int_t>    vTofTracksFirstPntId;
       Double_t dPntMeanPosX = 0;
       Double_t dPntMeanPosY = 0;
       Double_t dPntMeanPosZ = 0;
@@ -1691,7 +1835,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
       Double_t dFurthestTrkDr  = -1;
          
       pTofHit       = (CbmTofHit*) fTofHitsColl->At( iHitInd );
-      pMatchHitDigi = (CbmMatch*) fTofDigiMatchColl->At( iHitInd );
+      pMatchHitPnt = (CbmMatch*) fTofHitMatchColl->At( iHitInd );
+      Int_t iNbPntHit = pMatchHitPnt->GetNofLinks();
       
       Double_t dX = pTofHit->GetX();
       Double_t dY = pTofHit->GetY();
@@ -1716,155 +1861,20 @@ Bool_t CbmTofHitFinderQa::FillHistos()
       
       if( kFALSE == fbNormHistGenMode )
       {
-         Int_t iNbDigisHit = pMatchHitDigi->GetNofLinks();
-         if( 0 != iNbDigisHit%2 )
-            LOG(FATAL)<<"CbmTofHitFinderQa::FillHistos => Nb of digis matching Hit #"
-                      <<iHitInd<<" in event #"<<fEvents
-                      <<" is not a multiple of 2 => should not happen as both ends of strp required!!!"<<FairLogger::endl;
-            
-         // Loop over Digis inside Hit
-         if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
+         // Tests using the Digis as data
+         if( kFALSE == fbHitProducerSource )
          {
-            CbmTofDigiExp *pTofDigi;
-            for( Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++)
+            pMatchHitDigi = (CbmMatch*) fTofDigiMatchColl->At( iHitInd );
+            Int_t iNbDigisHit = pMatchHitDigi->GetNofLinks();
+            if( 0 != iNbDigisHit%2 )
+               LOG(FATAL)<<"CbmTofHitFinderQa::FillHistos => Nb of digis matching Hit #"
+                         <<iHitInd<<" in event #"<<fEvents
+                         <<" is not a multiple of 2 => should not happen as both ends of strp required!!!"<<FairLogger::endl;
+               
+            // Loop over Digis inside Hit
+            if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
             {
-               CbmLink lDigi    = pMatchHitDigi->GetLink(iDigi); 
-               Int_t   iDigiIdx = lDigi.GetIndex();
-               
-               if( iNbTofDigis <= iDigiIdx )
-               {
-                  LOG(ERROR)<<"CbmTofHitFinderQa::FillHistos => Digi index from Hit #"
-                      <<iHitInd<<" in event #"<<fEvents
-                      <<" is bigger than nb entries in Digis arrays => ignore it!!!"<<FairLogger::endl;
-                  continue;
-               } // if( iNbTofDigis <= iDigiIdx )
-               
-               pTofDigi      = (CbmTofDigiExp*) fTofDigisColl->At( iDigiIdx );
-               pMatchDigiPnt = (CbmMatch*) fTofDigiMatchPointsColl->At( iDigiIdx );
-
-               CbmLink lPt    = pMatchDigiPnt->GetLink(0); 
-               Int_t   iPtIdx = lPt.GetIndex();
-               Int_t   iTrkId = ((CbmTofPoint*) fTofPointsColl->At(iPtIdx))->GetTrackID();
-                  
-               Int_t iSmType = pTofDigi->GetType();
-               Int_t iSm     = pTofDigi->GetSm();
-               Int_t iRpc    = pTofDigi->GetRpc();
-               Int_t iCh     = pTofDigi->GetChannel();
-               Int_t iGlobalChan = iCh  + fvRpcChOffs[iSmType][iSm][iRpc];
-               
-               // MC Track losses
-               if( kFALSE == vbTrackHasHit[iTrkId] )
-                  vbTrackHasHit[iTrkId] = kTRUE;
-               
-               // Check Left-Right MC missmatch (digis match always stored by pairs)
-               if( 0 == iDigi%2 )
-               {
-                  // Get Info about the other end of the strip
-                  pMatchDigiPntB = (CbmMatch*) fTofDigiMatchPointsColl->At( iDigiIdx + 1 );
-
-                  CbmLink lPtB    = pMatchDigiPntB->GetLink(0); 
-                  Int_t   iPtIdxB = lPtB.GetIndex();
-                  
-                  // Check Left-Right missmatch for MC Point
-                  if( iPtIdx != iPtIdxB )
-                  {
-                     // Check Left-Right missmatch for MC Track
-                     if( iTrkId != ((CbmTofPoint*) fTofPointsColl->At(iPtIdxB))->GetTrackID() )
-                     {
-                        fhLeftRightDigiMatch->Fill(iGlobalChan, 2);
-                     } // if( iTrkId != ((CbmTofPoint*) fTofPointsColl->At(iPtIdxB))->GetTrackID() )
-                        else fhLeftRightDigiMatch->Fill(iGlobalChan, 1);
-                  } // if( iPtIdx != iPtIdxB )
-                     else fhLeftRightDigiMatch->Fill(iGlobalChan, 0);
-
-               } // if( 0 == iDigi%2 )
-               
-               // Count Nb different MC Points in Hit
-               Bool_t bPointFound = kFALSE;
-               for( UInt_t uPrevPtIdx = 0; uPrevPtIdx < vTofPointsId.size(); uPrevPtIdx++)
-                  if( iPtIdx == vTofPointsId[uPrevPtIdx] )
-                  {
-                     bPointFound = kTRUE;
-                     break;
-                  } // if( iPtIdx == vTofPointsId[uPrevPtIdx] )
-               if( kFALSE == bPointFound )
-               {
-                  vTofPointsId.push_back(iPtIdx);
-                  
-                  // Obtain Point position
-                  pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iPtIdx);
-                  TVector3 vPntPos;
-                  pTofPoint->Position( vPntPos );
-            
-                  // Compute mean MC Points position (X, Y, Z, T)
-                  dPntMeanPosX += vPntPos.X();
-                  dPntMeanPosY += vPntPos.Y();
-                  dPntMeanPosZ += vPntPos.Z();
-                  dPntMeanTime += pTofPoint->GetTime();
-                  
-                  // Check if closest MC Point to Hit position
-                  Double_t dPntDeltaR = TMath::Sqrt(
-                        (dX - vPntPos.X())*(dX - vPntPos.X())
-                      + (dY - vPntPos.Y())*(dY - vPntPos.Y()) );
-//                      + (dZ - vPntPos.Z())*(dZ - vPntPos.Z()) );
-                  if( dPntDeltaR < dClosestPntDr )
-                  {
-                     iClosestPntIdx  = iPtIdx;
-                     dClosestPntDr   = dPntDeltaR;
-                  } // if( dPntDeltaR < dClosestPntDr )
-                  // Check if furthest MC Point to Hit position
-                  if( dFurthestPntDr < dPntDeltaR )
-                  {
-                     iFurthestPntIdx  = iPtIdx;
-                     dFurthestPntDr   = dPntDeltaR;
-                  } // if( dFurthestPntDr < dPntDeltaR )
-               } // if( kFALSE == bPointFound )
-                  
-               // Count Nb different MC Tracks in Hit
-               Bool_t bTrackFound = kFALSE;
-               for( UInt_t uPrevTrkIdx = 0; uPrevTrkIdx < vTofTracksId.size(); uPrevTrkIdx++)
-                  if( iTrkId == vTofTracksId[uPrevTrkIdx] )
-                  {
-                     bTrackFound = kTRUE;
-                     break;
-                  } // if( iTrkId == vTofPointsId[uPrevTrkIdx] )
-               if( kFALSE == bTrackFound )
-               {
-                  vTofTracksId.push_back(iTrkId);
-                  
-                  // Obtain Point position (Consider 1st Pnt of each Trk is approximate coord)
-                  pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iPtIdx);
-                  TVector3 vPntPos;
-                  pTofPoint->Position( vPntPos );
-            
-                  // Compute mean MC Tracks position (X, Y, Z, T)
-                  dTrkMeanPosX += vPntPos.X();
-                  dTrkMeanPosY += vPntPos.Y();
-                  dTrkMeanPosZ += vPntPos.Z();
-                  dTrkMeanTime += pTofPoint->GetTime();
-                  
-                  // Check if closest MC track to Hit position
-                  Double_t dTrkDeltaR = TMath::Sqrt(
-                        (dX - vPntPos.X())*(dX - vPntPos.X())
-                      + (dY - vPntPos.Y())*(dY - vPntPos.Y()) );
-//                      + (dZ - vPntPos.Z())*(dZ - vPntPos.Z()) );
-                  if( dTrkDeltaR < dClosestTrkDr )
-                  {
-                     iClosestTrkIdx  = iPtIdx;
-                     dClosestTrkDr   = dTrkDeltaR;
-                  } // if( dTrkDeltaR < dClosestTrkDr )
-                  // Check if furthest MC track to Hit position
-                  if( dFurthestTrkDr < dTrkDeltaR )
-                  {
-                     iFurthestTrkIdx  = iPtIdx;
-                     dFurthestTrkDr   = dTrkDeltaR;
-                  } // if( dFurthestTrkDr < dTrkDeltaR )
-               } // if( kFALSE == bTrackFound )
-            } // for( Int_t iDigiIdx = 0; iDigiIdx < iNbDigisHit; iDigiIdx++)
-         } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
-            else
-            {
-               CbmTofDigi *pTofDigi;
+               CbmTofDigiExp *pTofDigi;
                for( Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++)
                {
                   CbmLink lDigi    = pMatchHitDigi->GetLink(iDigi); 
@@ -1878,7 +1888,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                      continue;
                   } // if( iNbTofDigis <= iDigiIdx )
                   
-                  pTofDigi      = (CbmTofDigi*) fTofDigisColl->At( iDigiIdx );
+                  pTofDigi      = (CbmTofDigiExp*) fTofDigisColl->At( iDigiIdx );
                   pMatchDigiPnt = (CbmMatch*) fTofDigiMatchPointsColl->At( iDigiIdx );
 
                   CbmLink lPt    = pMatchDigiPnt->GetLink(0); 
@@ -1890,7 +1900,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                   Int_t iRpc    = pTofDigi->GetRpc();
                   Int_t iCh     = pTofDigi->GetChannel();
                   Int_t iGlobalChan = iCh  + fvRpcChOffs[iSmType][iSm][iRpc];
-               
+                  
                   // MC Track losses
                   if( kFALSE == vbTrackHasHit[iTrkId] )
                      vbTrackHasHit[iTrkId] = kTRUE;
@@ -1917,91 +1927,170 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                         else fhLeftRightDigiMatch->Fill(iGlobalChan, 0);
 
                   } // if( 0 == iDigi%2 )
-                  
-                  // Count Nb different MC Points in Hit
-                  Bool_t bPointFound = kFALSE;
-                  for( UInt_t uPrevPtIdx = 0; uPrevPtIdx < vTofPointsId.size(); uPrevPtIdx++)
-                     if( iPtIdx == vTofPointsId[uPrevPtIdx] )
-                     {
-                        bPointFound = kTRUE;
-                        break;
-                     } // if( iPtIdx == vTofPointsId[uPrevPtIdx] )
-                  if( kFALSE == bPointFound )
-                  {
-                     vTofPointsId.push_back(iPtIdx);
-                     
-                     // Obtain Point position
-                     pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iPtIdx);
-                     TVector3 vPntPos;
-                     pTofPoint->Position( vPntPos );
-               
-                     // Compute mean MC Points position (X, Y, Z, T)
-                     dPntMeanPosX += vPntPos.X();
-                     dPntMeanPosY += vPntPos.Y();
-                     dPntMeanPosZ += vPntPos.Z();
-                     dPntMeanTime += pTofPoint->GetTime();
-                  
-                     // Check if closest MC Point to Hit position
-                     Double_t dPntDeltaR = TMath::Sqrt(
-                           (dX - vPntPos.X())*(dX - vPntPos.X())
-                         + (dY - vPntPos.Y())*(dY - vPntPos.Y()) );
-  //                       + (dZ - vPntPos.Z())*(dZ - vPntPos.Z()) );
-                     if( dPntDeltaR < dClosestPntDr )
-                     {
-                        iClosestPntIdx  = iPtIdx;
-                        dClosestPntDr   = dPntDeltaR;
-                     } // if( dPntDeltaR < dClosestPntDr )
-                     // Check if furthest MC Point to Hit position
-                     if( dFurthestPntDr < dPntDeltaR )
-                     {
-                        iFurthestPntIdx  = iPtIdx;
-                        dFurthestPntDr   = dPntDeltaR;
-                     } // if( dFurthestPntDr < dPntDeltaR )
-                  } // if( kFALSE == bPointFound )
-                     
-                  // Count Nb different MC Tracks in Hit
-                  Bool_t bTrackFound = kFALSE;
-                  for( UInt_t uPrevTrkIdx = 0; uPrevTrkIdx < vTofTracksId.size(); uPrevTrkIdx++)
-                     if( iTrkId == vTofTracksId[uPrevTrkIdx] )
-                     {
-                        bTrackFound = kTRUE;
-                        break;
-                     } // if( iTrkId == vTofPointsId[uPrevTrkIdx] )
-                  if( kFALSE == bTrackFound )
-                  {
-                     vTofTracksId.push_back(iTrkId);
-                     
-                     // Obtain Point position (Consider 1st Pnt of each Trk is approximate coord)
-                     pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iPtIdx);
-                     TVector3 vPntPos;
-                     pTofPoint->Position( vPntPos );
-               
-                     // Compute mean MC Tracks position (X, Y, Z, T)
-                     dTrkMeanPosX += vPntPos.X();
-                     dTrkMeanPosY += vPntPos.Y();
-                     dTrkMeanPosZ += vPntPos.Z();
-                     dTrkMeanTime += pTofPoint->GetTime();
-                  
-                     // Check if closest MC track to Hit position
-                     Double_t dTrkDeltaR = TMath::Sqrt(
-                           (dX - vPntPos.X())*(dX - vPntPos.X())
-                         + (dY - vPntPos.Y())*(dY - vPntPos.Y()) );
-//                         + (dZ - vPntPos.Z())*(dZ - vPntPos.Z()) );
-                     if( dTrkDeltaR < dClosestTrkDr )
-                     {
-                        iClosestTrkIdx  = iPtIdx;
-                        dClosestTrkDr   = dTrkDeltaR;
-                     } // if( dTrkDeltaR < dClosestTrkDr )
-                     // Check if furthest MC track to Hit position
-                     if( dFurthestTrkDr < dTrkDeltaR )
-                     {
-                        iFurthestTrkIdx  = iPtIdx;
-                        dFurthestTrkDr   = dTrkDeltaR;
-                     } // if( dFurthestTrkDr < dTrkDeltaR )
-                  } // if( kFALSE == bTrackFound )
                } // for( Int_t iDigiIdx = 0; iDigiIdx < iNbDigisHit; iDigiIdx++)
-            } // else of if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
+            } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
+               else
+               {
+                  CbmTofDigi *pTofDigi;
+                  for( Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++)
+                  {
+                     CbmLink lDigi    = pMatchHitDigi->GetLink(iDigi); 
+                     Int_t   iDigiIdx = lDigi.GetIndex();
+                     
+                     if( iNbTofDigis <= iDigiIdx )
+                     {
+                        LOG(ERROR)<<"CbmTofHitFinderQa::FillHistos => Digi index from Hit #"
+                            <<iHitInd<<" in event #"<<fEvents
+                            <<" is bigger than nb entries in Digis arrays => ignore it!!!"<<FairLogger::endl;
+                        continue;
+                     } // if( iNbTofDigis <= iDigiIdx )
+                     
+                     pTofDigi      = (CbmTofDigi*) fTofDigisColl->At( iDigiIdx );
+                     pMatchDigiPnt = (CbmMatch*) fTofDigiMatchPointsColl->At( iDigiIdx );
+
+                     CbmLink lPt    = pMatchDigiPnt->GetLink(0); 
+                     Int_t   iPtIdx = lPt.GetIndex();
+                     Int_t   iTrkId = ((CbmTofPoint*) fTofPointsColl->At(iPtIdx))->GetTrackID();
+                        
+                     Int_t iSmType = pTofDigi->GetType();
+                     Int_t iSm     = pTofDigi->GetSm();
+                     Int_t iRpc    = pTofDigi->GetRpc();
+                     Int_t iCh     = pTofDigi->GetChannel();
+                     Int_t iGlobalChan = iCh  + fvRpcChOffs[iSmType][iSm][iRpc];
+                  
+                     // MC Track losses
+                     if( kFALSE == vbTrackHasHit[iTrkId] )
+                        vbTrackHasHit[iTrkId] = kTRUE;
+                     
+                     // Check Left-Right MC missmatch (digis match always stored by pairs)
+                     if( 0 == iDigi%2 )
+                     {
+                        // Get Info about the other end of the strip
+                        pMatchDigiPntB = (CbmMatch*) fTofDigiMatchPointsColl->At( iDigiIdx + 1 );
+
+                        CbmLink lPtB    = pMatchDigiPntB->GetLink(0); 
+                        Int_t   iPtIdxB = lPtB.GetIndex();
+                        
+                        // Check Left-Right missmatch for MC Point
+                        if( iPtIdx != iPtIdxB )
+                        {
+                           // Check Left-Right missmatch for MC Track
+                           if( iTrkId != ((CbmTofPoint*) fTofPointsColl->At(iPtIdxB))->GetTrackID() )
+                           {
+                              fhLeftRightDigiMatch->Fill(iGlobalChan, 2);
+                           } // if( iTrkId != ((CbmTofPoint*) fTofPointsColl->At(iPtIdxB))->GetTrackID() )
+                              else fhLeftRightDigiMatch->Fill(iGlobalChan, 1);
+                        } // if( iPtIdx != iPtIdxB )
+                           else fhLeftRightDigiMatch->Fill(iGlobalChan, 0);
+
+                     } // if( 0 == iDigi%2 )
+                  } // for( Int_t iDigiIdx = 0; iDigiIdx < iNbDigisHit; iDigiIdx++)
+               } // else of if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
+         } // if( kFALSE == fbHitProducerSource )
+         
+         // Tests independent of the Digis
+         for( Int_t iPnt = 0; iPnt < iNbPntHit; iPnt++)
+         {
+            CbmLink lPnt    = pMatchHitPnt->GetLink(iPnt); 
+            Int_t   iPtIdx = lPnt.GetIndex();
             
+            if( iNbTofPts <= iPtIdx )
+            {
+               LOG(ERROR)<<"CbmTofHitFinderQa::FillHistos => Pnt index from Hit #"
+                   <<iHitInd<<" in event #"<<fEvents
+                   <<" is bigger than nb entries in TofPoints arrays => ignore it!!!"<<FairLogger::endl;
+               continue;
+            } // if( iNbTofDigis <= iDigiIdx )
+            
+            Int_t   iTrkId = ((CbmTofPoint*) fTofPointsColl->At(iPtIdx))->GetTrackID();
+            
+            // Count Nb different MC Points in Hit
+            Bool_t bPointFound = kFALSE;
+            for( UInt_t uPrevPtIdx = 0; uPrevPtIdx < vTofPointsId.size(); uPrevPtIdx++)
+               if( iPtIdx == vTofPointsId[uPrevPtIdx] )
+               {
+                  bPointFound = kTRUE;
+                  break;
+               } // if( iPtIdx == vTofPointsId[uPrevPtIdx] )
+            if( kFALSE == bPointFound )
+            {
+               vTofPointsId.push_back(iPtIdx);
+               
+               // Obtain Point position
+               pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iPtIdx);
+               TVector3 vPntPos;
+               pTofPoint->Position( vPntPos );
+         
+               // Compute mean MC Points position (X, Y, Z, T)
+               dPntMeanPosX += vPntPos.X();
+               dPntMeanPosY += vPntPos.Y();
+               dPntMeanPosZ += vPntPos.Z();
+               dPntMeanTime += pTofPoint->GetTime();
+               
+               // Check if closest MC Point to Hit position
+               Double_t dPntDeltaR = TMath::Sqrt(
+                     (dX - vPntPos.X())*(dX - vPntPos.X())
+                   + (dY - vPntPos.Y())*(dY - vPntPos.Y()) );
+//                   + (dZ - vPntPos.Z())*(dZ - vPntPos.Z()) );
+               if( dPntDeltaR < dClosestPntDr )
+               {
+                  iClosestPntIdx  = iPtIdx;
+                  dClosestPntDr   = dPntDeltaR;
+               } // if( dPntDeltaR < dClosestPntDr )
+               // Check if furthest MC Point to Hit position
+               if( dFurthestPntDr < dPntDeltaR )
+               {
+                  iFurthestPntIdx  = iPtIdx;
+                  dFurthestPntDr   = dPntDeltaR;
+               } // if( dFurthestPntDr < dPntDeltaR )
+            } // if( kFALSE == bPointFound )
+               
+            // Count Nb different MC Tracks in Hit
+            // Build a list of Track weigths
+            Bool_t bTrackFound = kFALSE;
+            for( UInt_t uPrevTrkIdx = 0; uPrevTrkIdx < vTofTracksId.size(); uPrevTrkIdx++)
+               if( iTrkId == vTofTracksId[uPrevTrkIdx] )
+               {
+                  bTrackFound = kTRUE;
+                  vTofTracksWeight[uPrevTrkIdx] += lPnt.GetWeight();
+                  break;
+               } // if( iTrkId == vTofPointsId[uPrevTrkIdx] )
+            if( kFALSE == bTrackFound )
+            {
+               vTofTracksId.push_back(iTrkId);
+               vTofTracksWeight.push_back(lPnt.GetWeight());
+               vTofTracksFirstPntId.push_back(iPtIdx);
+               
+               // Obtain Point position (Consider 1st Pnt of each Trk is approximate coord)
+               pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iPtIdx);
+               TVector3 vPntPos;
+               pTofPoint->Position( vPntPos );
+         
+               // Compute mean MC Tracks position (X, Y, Z, T)
+               dTrkMeanPosX += vPntPos.X();
+               dTrkMeanPosY += vPntPos.Y();
+               dTrkMeanPosZ += vPntPos.Z();
+               dTrkMeanTime += pTofPoint->GetTime();
+               
+               // Check if closest MC track to Hit position
+               Double_t dTrkDeltaR = TMath::Sqrt(
+                     (dX - vPntPos.X())*(dX - vPntPos.X())
+                   + (dY - vPntPos.Y())*(dY - vPntPos.Y()) );
+//                   + (dZ - vPntPos.Z())*(dZ - vPntPos.Z()) );
+               if( dTrkDeltaR < dClosestTrkDr )
+               {
+                  iClosestTrkIdx  = iPtIdx;
+                  dClosestTrkDr   = dTrkDeltaR;
+               } // if( dTrkDeltaR < dClosestTrkDr )
+               // Check if furthest MC track to Hit position
+               if( dFurthestTrkDr < dTrkDeltaR )
+               {
+                  iFurthestTrkIdx  = iPtIdx;
+                  dFurthestTrkDr   = dTrkDeltaR;
+               } // if( dFurthestTrkDr < dTrkDeltaR )
+            } // if( kFALSE == bTrackFound )
+         } // for( Int_t iPnt = 0; iPnt < iNbPntHit; iPnt++)
+         
          // Count Nb different MC Points in Hit
          UInt_t uNbPointsInHit = vTofPointsId.size();
          fhNbPointsInHit->Fill( uNbPointsInHit );
@@ -2116,6 +2205,35 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                fhMultiPntHitFurthestPullY->Fill( dDeltaFarY/dErrY, uNbPointsInHit );
                fhMultiPntHitFurthestPullZ->Fill( dDeltaFarZ/dErrZ, uNbPointsInHit ); // Offset(s) bec. hit assigned to middle of det.
                fhMultiPntHitFurthestPullR->Fill( dDeltaFarR/dErrR, uNbPointsInHit );
+               
+               // Check Quality to best Point match (highest sum of TOT)
+               // Do not fill it in Hit producer case as both strip ends receive a same weigth of 1/2       
+               if( kFALSE == fbHitProducerSource )
+               {
+                  CbmLink lPnt    = pMatchHitPnt->GetMatchedLink(); 
+                  Int_t   iPtIdx = lPnt.GetIndex();
+                  pTofPoint = (CbmTofPoint*) fTofPointsColl->At( iPtIdx );
+               
+                     // Obtain Point position
+                  TVector3 vPntPosBest;
+                  pTofPoint->Position( vPntPosBest );
+               
+                  Double_t dDeltaBestX = dX - vPntPosBest.X();
+                  Double_t dDeltaBestY = dY - vPntPosBest.Y();
+                  Double_t dDeltaBestZ = dZ - vPntPosBest.Z();
+                  Double_t dDeltaBestR = TMath::Sqrt(   dDeltaBestX*dDeltaBestX
+                                                      + dDeltaBestY*dDeltaBestY );
+               
+                  fhMultiPntHitBestDeltaX->Fill( dDeltaBestX, uNbPointsInHit );
+                  fhMultiPntHitBestDeltaY->Fill( dDeltaBestY, uNbPointsInHit );
+                  fhMultiPntHitBestDeltaZ->Fill( dDeltaBestZ, uNbPointsInHit );
+                  fhMultiPntHitBestDeltaR->Fill( dDeltaBestR, uNbPointsInHit );
+                  fhMultiPntHitBestDeltaT->Fill( 1000.0*(pTofHit->GetTime() - pTofPoint->GetTime()), uNbPointsInHit );
+                  fhMultiPntHitBestPullX->Fill( dDeltaBestX/dErrX, uNbPointsInHit );
+                  fhMultiPntHitBestPullY->Fill( dDeltaBestY/dErrY, uNbPointsInHit );
+                  fhMultiPntHitBestPullZ->Fill( dDeltaBestZ/dErrZ, uNbPointsInHit ); // Offset(s) bec. hit assigned to middle of det.
+                  fhMultiPntHitBestPullR->Fill( dDeltaBestR/dErrR, uNbPointsInHit );
+               } // if( kFALSE == fbHitProducerSource )
             } // else of if( 1 == vTofPointsId.size() )
             
          // Check Hit Quality for Hits coming from a single MC Track
@@ -2237,9 +2355,46 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                fhMultiTrkHitFurthestPullY->Fill( dDeltaFarY/dErrY, uNbTracksInHit );
                fhMultiTrkHitFurthestPullZ->Fill( dDeltaFarZ/dErrZ, uNbTracksInHit ); // Offset(s) bec. hit assigned to middle of det.
                fhMultiTrkHitFurthestPullR->Fill( dDeltaFarR/dErrR, uNbTracksInHit );
+               
+               // Check Quality to best Track match (highest sum of TOT)
+               // Do not fill it in Hit producer case as both strip ends receive a same weigth of 1/2                 
+               if( kFALSE == fbHitProducerSource )
+               {
+                  // Loop on tracks to find the one with the highest weight
+                  UInt_t   uBestTrackIdx = 0;
+                  Double_t dBestTrackWeight = -1.0;
+                  for( UInt_t uTrkIdx = 0; uTrkIdx < vTofTracksId.size(); uTrkIdx++)
+                     if( dBestTrackWeight < vTofTracksWeight[uTrkIdx] )
+                     {
+                        uBestTrackIdx    = uTrkIdx;
+                        dBestTrackWeight = vTofTracksWeight[uTrkIdx];
+                     } // if( dBestTrackWeight < vTofTracksWeight[uTrkIdx] )
+                     
+                     // Obtain Point position (Consider 1st Pnt of each Trk is approximate coord)
+                  pTofPoint = (CbmTofPoint*) fTofPointsColl->At( vTofTracksFirstPntId[uBestTrackIdx] );
+                  TVector3 vPntPosBest;
+                  pTofPoint->Position( vPntPosBest );
+               
+                  Double_t dDeltaBestX = dX - vPntPosBest.X();
+                  Double_t dDeltaBestY = dY - vPntPosBest.Y();
+                  Double_t dDeltaBestZ = dZ - vPntPosBest.Z();
+                  Double_t dDeltaBestR = TMath::Sqrt(   dDeltaBestX*dDeltaBestX
+                                                      + dDeltaBestY*dDeltaBestY );
+               
+                  fhMultiTrkHitBestDeltaX->Fill( dDeltaBestX, uNbTracksInHit );
+                  fhMultiTrkHitBestDeltaY->Fill( dDeltaBestY, uNbTracksInHit );
+                  fhMultiTrkHitBestDeltaZ->Fill( dDeltaBestZ, uNbTracksInHit );
+                  fhMultiTrkHitBestDeltaR->Fill( dDeltaBestR, uNbTracksInHit );
+                  fhMultiTrkHitBestDeltaT->Fill( 1000.0*(pTofHit->GetTime() - pTofPoint->GetTime()), uNbTracksInHit );
+                  fhMultiTrkHitBestPullX->Fill( dDeltaBestX/dErrX, uNbTracksInHit );
+                  fhMultiTrkHitBestPullY->Fill( dDeltaBestY/dErrY, uNbTracksInHit );
+                  fhMultiTrkHitBestPullZ->Fill( dDeltaBestZ/dErrZ, uNbTracksInHit ); // Offset(s) bec. hit assigned to middle of det.
+                  fhMultiTrkHitBestPullR->Fill( dDeltaBestR/dErrR, uNbTracksInHit );
+               } // if( kFALSE == fbHitProducerSource )
             } // if( 1 == vTofTracksId.size() )
          
          // Physics coord mapping, 1 per particle type
+/*
             // Do as in CbmHadronAna: Take the MC Point of the first Digi matched with the hit
          pMatchHitDigi = (CbmMatch*) fTofDigiMatchColl->At( iHitInd );
             // Get index of first digi 
@@ -2256,6 +2411,9 @@ Bool_t CbmTofHitFinderQa::FillHistos()
          pMatchDigiPnt = (CbmMatch*) fTofDigiMatchPointsColl->At( iDigiIdx );
             // Get index of tof point corresponding to the first digi
          CbmLink lPt    = pMatchDigiPnt->GetLink(0); 
+*/
+            // Get point with the best match (highest weight), in HitProd this returns the left Pnt
+         CbmLink lPt    = pMatchHitPnt->GetMatchedLink(); 
          Int_t   iPtIdx = lPt.GetIndex();
             // Get index of corresponding MC track
          Int_t   iTrkId = ((CbmTofPoint*) fTofPointsColl->At(iPtIdx))->GetTrackID();         
@@ -2801,6 +2959,16 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhMultiPntHitMeanPullY->Write();
       fhMultiPntHitMeanPullZ->Write();
       fhMultiPntHitMeanPullR->Write();
+            // To best Point position
+      fhMultiPntHitBestDeltaX->Write();
+      fhMultiPntHitBestDeltaY->Write();
+      fhMultiPntHitBestDeltaZ->Write();
+      fhMultiPntHitBestDeltaR->Write();
+      fhMultiPntHitBestDeltaT->Write();
+      fhMultiPntHitBestPullX->Write();
+      fhMultiPntHitBestPullY->Write();
+      fhMultiPntHitBestPullZ->Write();
+      fhMultiPntHitBestPullR->Write();
          // Hit Quality for Hits coming from a single MC Track
       fhSingleTrackHitDeltaX->Write();
       fhSingleTrackHitDeltaY->Write();
@@ -2852,6 +3020,16 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhMultiTrkHitMeanPullY->Write();
       fhMultiTrkHitMeanPullZ->Write();
       fhMultiTrkHitMeanPullR->Write();
+            // To best Track position
+      fhMultiTrkHitBestDeltaX->Write();
+      fhMultiTrkHitBestDeltaY->Write();
+      fhMultiTrkHitBestDeltaZ->Write();
+      fhMultiTrkHitBestDeltaR->Write();
+      fhMultiTrkHitBestDeltaT->Write();
+      fhMultiTrkHitBestPullX->Write();
+      fhMultiTrkHitBestPullY->Write();
+      fhMultiTrkHitBestPullZ->Write();
+      fhMultiTrkHitBestPullR->Write();
       
       TDirectory *cdPhysMap = fHist->mkdir( "PhysMap" );
       cdPhysMap->cd();    // make the "PhysMap" directory the current directory
@@ -3008,6 +3186,16 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhMultiPntHitMeanPullY;
    delete fhMultiPntHitMeanPullZ;
    delete fhMultiPntHitMeanPullR;
+         // To best Point position
+   delete fhMultiPntHitBestDeltaX;
+   delete fhMultiPntHitBestDeltaY;
+   delete fhMultiPntHitBestDeltaZ;
+   delete fhMultiPntHitBestDeltaR;
+   delete fhMultiPntHitBestDeltaT;
+   delete fhMultiPntHitBestPullX;
+   delete fhMultiPntHitBestPullY;
+   delete fhMultiPntHitBestPullZ;
+   delete fhMultiPntHitBestPullR;
       // Hit Quality for Hits coming from a single MC Track
    delete fhSingleTrackHitDeltaX;
    delete fhSingleTrackHitDeltaY;
@@ -3060,6 +3248,16 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhMultiTrkHitMeanPullY;
    delete fhMultiTrkHitMeanPullZ;
    delete fhMultiTrkHitMeanPullR;
+         // To best Track position
+   delete fhMultiTrkHitBestDeltaX;
+   delete fhMultiTrkHitBestDeltaY;
+   delete fhMultiTrkHitBestDeltaZ;
+   delete fhMultiTrkHitBestDeltaR;
+   delete fhMultiTrkHitBestDeltaT;
+   delete fhMultiTrkHitBestPullX;
+   delete fhMultiTrkHitBestPullY;
+   delete fhMultiTrkHitBestPullZ;
+   delete fhMultiTrkHitBestPullR;
    
       // Physics coord mapping, 1 per particle type
    for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
