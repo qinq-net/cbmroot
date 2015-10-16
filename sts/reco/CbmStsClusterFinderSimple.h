@@ -47,7 +47,10 @@ class CbmStsClusterFinderSimple : public TObject {
 		virtual ~CbmStsClusterFinderSimple();
 
 		/** Cluster finding engine **/
-		Int_t FindClusters(CbmStsModule* module);
+		Int_t FindClustersSimple(CbmStsModule* module);
+
+		/** Cluster finding engine **/
+		Int_t FindClustersTb(CbmStsModule* module);
 
 		/** Get nof clusters with gap**/
 		Int_t GetNofClustersWithGap(){return fNofClustersWithGap;}

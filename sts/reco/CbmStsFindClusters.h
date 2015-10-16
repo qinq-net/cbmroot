@@ -13,6 +13,7 @@
 #include "FairTask.h"
 #include "CbmStsDigi.h"
 #include "setup/CbmStsModule.h"
+#include "CbmTimeSlice.h"
 
 class TClonesArray;
 class CbmStsSetup;
@@ -71,6 +72,13 @@ class CbmStsFindClusters : public FairTask
      **/
     virtual InitStatus Init();
 
+    /** Set the DAQ flag to use time slices as an input **/
+    void UseDaq()					{ fDaq 			= kTRUE;
+    								  fUseFinderTb 	= kTRUE; }
+
+    /** Set the FinderTb flag to use time based cluster finder **/
+    void UseTbClusterFinder()		{ fUseFinderTb 	= kTRUE; }
+
 
     /** Set the gap-flag **/
     void SetGap(Bool_t gapFlag = 0) { fGap = gapFlag;}
@@ -83,6 +91,10 @@ class CbmStsFindClusters : public FairTask
     CbmStsClusterFinderSimple* fFinder;  ///< Cluster finder
     TStopwatch    fTimer;             ///< ROOT timer
     Bool_t        fGap;		      ///< flag to allow a one-strip gap in a cluster
+    CbmTimeSlice* fTimeSlice;               ///< Time slice object in the DAQ approach
+    vector<CbmStsDigi> fDigiData;          	///< Vector of digis for the time slices
+    Bool_t fDaq;							///< Using DAQ
+    Bool_t fUseFinderTb;						///< Using of time based cluster finder
 
     // --- Run counters
     Int_t     fNofEvents;       ///< Total number of events processed

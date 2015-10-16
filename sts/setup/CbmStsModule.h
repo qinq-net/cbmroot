@@ -227,6 +227,39 @@ class CbmStsModule : public CbmStsElement
 
      void Status() const;
 
+     /** Time-based cluster finding. **/
+
+     /** Add a digi to the multimap
+      ** @param digi Pointer to digi object
+      ** @param index Index of digi in input array
+      **/
+     void AddDigiTb(CbmStsDigi* digi, Int_t index);
+
+     /** Return number of digis **/
+     Int_t GetNofDigisTb() const { return fDigisTb.size(); }
+
+     /** Start clustering procedure for the current module **/
+     void StartClusteringTb();
+
+     /** Get information about next digi in multimap
+      ** @param channel Channel number
+      ** @param time Time
+      ** @param index Index of digi in input array
+      ** @param charge Digi charge
+      **/
+     Bool_t GetNextDigiTb(Int_t& channel, Double_t& time, Int_t& index, Int_t& charge);
+
+     /** Delete used digi from multimap **/
+     void DeactivateDigiTb();
+
+     /** Return channel dead time [ns] **/
+     Double_t GetDeadTimeTb() { return fDeadTime; }
+
+     /** Create cluster in the output array **/
+     void CreateClusterTb(vector<Int_t> digiIndexes, Double_t s1, Double_t s2,
+    		 	 	 Double_t s3, Double_t ts, Bool_t side, TClonesArray* clusterArray);
+     //---
+
 
   private:
 
@@ -257,6 +290,13 @@ class CbmStsModule : public CbmStsElement
     /** Vector of clusters. Used for hit finding. **/
     vector<CbmStsCluster*> fClusters;
 
+    /** Multimap from channel number to pair or (digi, digi index in TimeSlice).
+     ** Used for time-based cluster finding.
+     **/
+    multimap<Int_t, pair<CbmStsDigi*, Int_t>> fDigisTb;
+
+    /** Iterator for time-based clustering **/
+    multimap<Int_t, pair<CbmStsDigi*, Int_t>>::iterator fIt_DigiTb;
 
     /** Digitise an analog charge signal
      ** @param channel Channel number

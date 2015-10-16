@@ -16,6 +16,7 @@
 #include "setup/CbmStsSetup.h"
 
 
+
 // -----   Default constructor   -------------------------------------------
 CbmStsModule::CbmStsModule() : CbmStsElement(),
                                fNofChannels(2048),
@@ -29,7 +30,8 @@ CbmStsModule::CbmStsModule() : CbmStsElement(),
                                fDeadChannels(),
                                fAnalogBuffer(),
                                fDigis(),
-                               fClusters()
+                               fClusters(),
+							   fDigisTb()
 {
 }
 // -------------------------------------------------------------------------
@@ -51,7 +53,8 @@ CbmStsModule::CbmStsModule(const char* name, const char* title,
                            fAnalogBuffer(),
                            fDeadChannels(),
                            fDigis(),
-                           fClusters()
+                           fClusters(),
+						   fDigisTb()
 {
 }
 // -------------------------------------------------------------------------
@@ -71,7 +74,6 @@ CbmStsModule::~CbmStsModule() {
 			delete (*sigIt);
 		}
 	}
-
 }
 // -------------------------------------------------------------------------
 
@@ -519,6 +521,68 @@ void CbmStsModule::Status() const {
 	LOG(INFO) << GetName() << ": Signals " << fAnalogBuffer.size()
 			      << ", digis " << fDigis.size()
 			      << ", clusters " << fClusters.size() << FairLogger::endl;
+}
+// -------------------------------------------------------------------------
+
+// -----   Time-based cluster finding   ----------------------------
+// -----   Add a digi to the multimap     ----------------------------------
+void CbmStsModule::AddDigiTb(CbmStsDigi* digi, Int_t index) {
+	if ( CbmStsAddress::GetMotherAddress(digi->GetAddress(), kStsModule ) != fAddress ) {
+		LOG(ERROR) << GetName() << ": Module address is " << fAddress
+						<< ", trying to add a digi with module address "
+						<< CbmStsAddress::GetMotherAddress(digi->GetAddress(), kStsModule)
+						<< FairLogger::end;
+		return;
+	}
+	Int_t channel = CbmStsAddress::GetElementId(digi->GetAddress(), kStsChannel);
+	fDigisTb.insert(make_pair(channel, make_pair(digi, index)));
+	return;
+}
+
+// -----   Start clustering procedure for the current module   -------------
+void CbmStsModule::StartClusteringTb() {
+	fIt_DigiTb = fDigisTb.begin();
+	fDeadTime = 20.;
+}
+
+// -----   Get information about next digi in multimap   -------------------
+Bool_t CbmStsModule::GetNextDigiTb(Int_t& channel, Double_t& time, Int_t& index, Int_t& charge) {
+	if ( fIt_DigiTb == fDigisTb.end() ) return kFALSE;
+	channel = fIt_DigiTb->first;
+	index = fIt_DigiTb->second.second;
+//	charge = AdcToCharge(fIt_DigiTb->second.first->GetCharge());
+	charge = fIt_DigiTb->second.first->GetCharge();
+	time = fIt_DigiTb->second.first->GetTime();
+	fIt_DigiTb++;
+	return kTRUE;
+}
+
+// -----   Delete used digi from the multimap   --------------------------------
+void CbmStsModule::DeactivateDigiTb() {
+	fIt_DigiTb = fDigisTb.erase(--fIt_DigiTb);
+}
+
+// -----   Create cluster in the output array   ----------------------------
+void CbmStsModule::CreateClusterTb(vector<Int_t> digiIndexes, Double_t s1,
+		Double_t s2, Double_t s3, Double_t ts, Bool_t side, TClonesArray* clusterArray) {
+	CbmStsCluster* cluster = NULL;
+	// --- If output array is specified: Create a new cluster there
+	if ( clusterArray ) {
+		Int_t nClusters = clusterArray->GetEntriesFast();
+		cluster = new ( (*clusterArray)[nClusters] ) CbmStsCluster();
+	}
+	// --- If no output array is specified: Create a new cluster and add it
+	// --- to the module
+	else {
+		cluster = new CbmStsCluster();
+		AddCluster(cluster);
+	}
+	for ( Int_t iDigi = 0; iDigi < digiIndexes.size(); iDigi++ ) {
+		cluster->AddDigi(digiIndexes[iDigi]);
+	}
+	cluster->SetProperties(s1, s2, s3, ts);
+	cluster->SetAddress(fAddress);
+	fIt_DigiTb = fDigisTb.begin();
 }
 // -------------------------------------------------------------------------
 

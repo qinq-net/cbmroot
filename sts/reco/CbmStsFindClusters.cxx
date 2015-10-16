@@ -37,7 +37,11 @@ CbmStsFindClusters::CbmStsFindClusters()
     , fNofClustersTot(0.)
     , fTimeTot(0.)
     , fActiveModules()
-    , fGap(0)
+    , fGap(kFALSE)
+	, fDaq(kFALSE)
+	, fUseFinderTb(kFALSE)
+	, fTimeSlice(NULL)
+	, fDigiData()
 {
 }
 // -------------------------------------------------------------------------
@@ -71,7 +75,11 @@ void CbmStsFindClusters::Exec(Option_t* opt) {
 	// --- Find clusters in modules
 	set<CbmStsModule*>::iterator it;
 	for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
-		Int_t nClusters = fFinder->FindClusters(*it);
+		Int_t nClusters = 0;
+		if(fUseFinderTb)
+			nClusters = fFinder->FindClustersTb(*it);
+		else
+			nClusters = fFinder->FindClustersSimple(*it);
 		LOG(DEBUG1) << GetName() << ": Module " << (*it)->GetName()
     			      << ", digis: " << (*it)->GetNofDigis()
    		          << ", clusters " << nClusters << FairLogger::endl;
@@ -105,8 +113,8 @@ void CbmStsFindClusters::Finish() {
 	LOG(INFO) << "Clusters / event   : "
 			      << fNofClustersTot / Double_t(fNofEvents)
 			      << FairLogger::endl;
-	LOG(INFO) << "ClustersWithGap / e: " 
-			      << Double_t(fFinder -> GetNofClustersWithGap()) / Double_t (fNofEvents)
+	LOG(INFO) << "ClustersWithGap / e: "
+				<< Double_t(fFinder -> GetNofClustersWithGap()) / Double_t (fNofEvents)
 			      << FairLogger::endl;
 	LOG(INFO) << "Digis per cluster  : " << fNofDigisTot / fNofClustersTot
 			      << FairLogger::endl;
@@ -151,10 +159,18 @@ InitStatus CbmStsFindClusters::Init()
 
     // --- Get input array (StsDigis)
     fDigis = (TClonesArray*)ioman->GetObject("StsDigi");
-    if (NULL == fDigis) {
-    	LOG(ERROR) << GetName() << ": No StsDigi array!" << FairLogger::endl;
-    	return kERROR;
-    }
+    if (fDaq) {
+		fTimeSlice = (CbmTimeSlice*) ioman->GetObject("TimeSlice.");
+		if (NULL == fTimeSlice)
+			LOG(FATAL) << GetName() << ": NoTimeSlice data!" << FairLogger::endl;
+	}
+	else {
+		fDigis = (TClonesArray*) ioman->GetObject("StsDigi");
+		if (NULL == fDigis) {
+			LOG(ERROR) << GetName() << ": No StsDigi array!" << FairLogger::endl;
+			return kERROR;
+		}
+	}
 
     // --- Register output array
     fClusters = new TClonesArray("CbmStsCluster", 10000);
@@ -183,9 +199,19 @@ Int_t CbmStsFindClusters::SortDigis() {
 	// --- Counters
 	Int_t nDigis   = 0;
 
+	fDigiData.clear();
+	if ( fDaq ) fDigiData = fTimeSlice->GetStsData();
+
 	// --- Loop over digis in input array
-	for (Int_t iDigi = 0; iDigi < fDigis->GetEntriesFast(); iDigi++) {
-		CbmStsDigi* digi = static_cast<CbmStsDigi*> (fDigis->At(iDigi));
+	CbmStsDigi* digi = NULL;
+	Int_t nofDigis = 0;
+	if ( fDaq ) nofDigis = fDigiData.size();
+	else nofDigis = fDigis->GetEntriesFast();
+	for (Int_t iDigi = 0; iDigi < nofDigis; iDigi++) {
+		if ( fDaq )
+			digi = static_cast<CbmStsDigi*> (&fDigiData[iDigi]);
+		else
+			digi = static_cast<CbmStsDigi*> (fDigis->At(iDigi));
 		if ( ! digi ) {
 			LOG(FATAL) << GetName() << ": Invalid digi pointer!"
 					       << FairLogger::endl;
@@ -206,7 +232,10 @@ Int_t CbmStsFindClusters::SortDigis() {
 		fActiveModules.insert(module);
 
 		// --- Add the digi to the module
-		module->AddDigi(digi, iDigi);
+		if ( fDaq || fUseFinderTb )
+			module->AddDigiTb(digi, iDigi);
+		else
+			module->AddDigi(digi, iDigi);
 		nDigis++;
 
 	}  // Loop over digi array
