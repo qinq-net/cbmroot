@@ -817,8 +817,8 @@ inline void PairAnalysisVarManager::FillVarStsTrack(const CbmStsTrack *track, Do
   Double_t min = 9999.;
   TClonesArray *hits   = fgEvent->GetHits(kSTS);
   if(hits /*&& Req(kSTSFirstHitPosZ)*/ ) {
-    for (Int_t ihit=0; ihit < track->GetNofHits(); ihit++){
-      Int_t idx = track->GetHitIndex(ihit);
+    for (Int_t ihit=0; ihit < track->GetNofStsHits(); ihit++){
+      Int_t idx = track->GetStsHitIndex(ihit);
       CbmStsHit* hit = (CbmStsHit*) hits->At(idx);
       if(hit && min > hit->GetZ()) {
 	min = hit->GetZ();
@@ -832,7 +832,7 @@ inline void PairAnalysisVarManager::FillVarStsTrack(const CbmStsTrack *track, Do
   values[kImpactParZ]     = track->GetB();  //Impact parameter of track at target z, in units of its error
   //  printf(" mom %f   impactparz %f \n",values[kPout],values[kImpactParZ]);
   // accessors via CbmTrack
-  values[kSTSHits]        = track->GetNofHits();
+  values[kSTSHits]        = track->GetNofStsHits();
   values[kSTSChi2NDF]     = (track->GetNDF()>0. ? track->GetChiSq()/track->GetNDF() : -999.);
   // accessors via first FairTrackParam
   TVector3 mom;
