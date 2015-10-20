@@ -15,6 +15,7 @@
 #include "CbmTofPoint.h"
 #include "CbmMCTrack.h"
 #include "CbmKFVertex.h"
+#include "CbmKFParticleInterface.h"
 #include "TClonesArray.h"
 #include "TH2F.h"
 #include "TParticlePDG.h"
@@ -202,9 +203,13 @@ void CbmLitTofQa::ProcessGlobalTracks()
       const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->At(tofMCPointId));
       Int_t tofMCTrackId = tofPoint->GetTrackID();
 
+      
       FairTrackParam vtxTrack;
-      fKFFitter.FitToVertex(stsTrack, fPrimVertex, &vtxTrack);
-      Double_t chiSqPrimary = fKFFitter.GetChiToVertex(stsTrack, fPrimVertex);
+//       fKFFitter.FitToVertex(stsTrack, fPrimVertex, &vtxTrack);
+//       Double_t chiSqPrimary = fKFFitter.GetChiToVertex(stsTrack, fPrimVertex);
+      float chiSqPrimary = 0.f;
+      CbmKFParticleInterface::ExtrapolateTrackToPV(stsTrack, fPrimVertex, &vtxTrack, chiSqPrimary);
+      
       Bool_t chiSqPrimaryOk = chiSqPrimary < 3.;
       
 //      Double_t ctCorrection = -0.007; 
