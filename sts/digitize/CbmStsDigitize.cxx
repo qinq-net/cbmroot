@@ -647,11 +647,12 @@ void CbmStsDigitize::SetSensorConditions() {
 	for (Int_t iSensor = 0; iSensor < fSetup->GetNofSensors(); iSensor++) {
 		CbmStsSensor* sensor = fSetup->GetSensor(iSensor);
 		// -- Get field in sensor centre
-		Double_t field[3];
+		Double_t field[3] = { 0., 0., 0.};
 		Double_t local[3] = { 0., 0., 0.}; // sensor centre in local C.S.
 		Double_t global[3];               // sensor centre in global C.S.
 		sensor->GetNode()->GetMatrix()->LocalToMaster(local, global);
-		FairRunAna::Instance()->GetField()->Field(global, field);
+		if ( FairRunAna::Instance()->GetField() )
+		    FairRunAna::Instance()->GetField()->Field(global, field);
 		cond.SetField(field[0]/10., field[1]/10., field[2]/10.); // kG->T !
     // --- Set the condition container
 		sensor->SetConditions(cond);
