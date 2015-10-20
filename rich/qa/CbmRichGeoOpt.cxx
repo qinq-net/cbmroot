@@ -246,7 +246,7 @@ void CbmRichGeoOpt::Exec(Option_t* option)
       cout<<"r2=("<<r2.X()<<","<<r2.Y()<<","<<r2.Z()<<")"<<endl;
       cout<<"n=("<<n.X()<<","<<n.Y()<<","<<n.Z()<<")"<<endl;
     }
-    // HitsAndPointsWithRef();
+    //HitsAndPointsWithRef();
     HitsAndPoints();
     RingParameters();
     FillMcHist();
@@ -261,7 +261,7 @@ void CbmRichGeoOpt::HitsAndPoints(){
   //**** points
   //***************
   Int_t nofPoints = fRichPoints->GetEntriesFast();
-  if(nofPoints<=0 || nofPoints>2000){return;} 
+  if(nofPoints<0 || nofPoints>2000){return;} 
   H_NofPhotonsPerEv->Fill(nofPoints); 
   for(Int_t ip = 0; ip < nofPoints; ip++){
     TVector3 PosAtDetIn; TVector3 PosAtDetOut;
@@ -526,6 +526,7 @@ void CbmRichGeoOpt::RingParameters()
     H_RingCenter_Aaxis->Fill(CentX,CentY,aA);
     H_RingCenter_Baxis->Fill(CentX,CentY,bA); 
     //cout << "PMT size in x and y [cm]: " << fGP.fPmtWidthX << "  " << fGP.fPmtWidthY << endl;
+    if(theta<=25 && theta>=24.9){H_Mom_XY_Theta25->Fill(CentX,CentY,momentum);}
 
     H_RingCenter_boa->Fill(CentX,CentY,bA/aA);
     if(theta<=25){H_boa_RegularTheta->Fill(bA/aA); H_RingCenter_boa_RegularTheta->Fill(CentX,CentY,bA/aA);}
@@ -597,19 +598,19 @@ void CbmRichGeoOpt::InitHistograms()
   H_MomPrim_RegularTheta = new TH1D("H_MomPrim_RegularTheta", "H_MomPrim_RegularTheta;p [GeV]; Yield", 48, 0., 12.);
     H_acc_mom_el_RegularTheta = new TH1D("H_acc_mom_el_RegularTheta", "H_acc_mom_el_RegularTheta;p [GeV/c];Yield", 48, 0., 12.);
 
-  H_Hits_XY = new TH2D("H_Hits_XY", "H_Hits_XY;X [cm];Y [cm];Counter",121, -120., 0.,351, 0.,350.);
-  H_Hits_XY_LeftHalf = new TH2D("H_Hits_XY_LeftHalf", "H_Hits_XY_LeftHalf;X [cm];Y [cm];Counter",121, -120., 0.,351, 0.,350.);
-  H_Hits_XY_RightHalf = new TH2D("H_Hits_XY_RightHalf", "H_Hits_XY_RightHalf;X [cm];Y [cm];Counter",121, -120., 0.,351, 0.,350.);
-  H_Hits_XY_RightThird = new TH2D("H_Hits_XY_RightThird", "H_Hits_XY_RightThird;X [cm];Y [cm];Counter",121, -120., 0.,351, 0.,350.);
-  H_Hits_XY_Left2Thirds = new TH2D("H_Hits_XY_Left2Thirds", "H_Hits_XY_Left2Thirds;X [cm];Y [cm];Counter",121, -120., 0.,351, 0.,350.);
+  H_Hits_XY = new TH2D("H_Hits_XY", "H_Hits_XY;X [cm];Y [cm];Counter",151, -150., 0.,351, 0.,350.);
+  H_Hits_XY_LeftHalf = new TH2D("H_Hits_XY_LeftHalf", "H_Hits_XY_LeftHalf;X [cm];Y [cm];Counter",151, -150., 0.,351, 0.,350.);
+  H_Hits_XY_RightHalf = new TH2D("H_Hits_XY_RightHalf", "H_Hits_XY_RightHalf;X [cm];Y [cm];Counter",151, -150., 0.,351, 0.,350.);
+  H_Hits_XY_RightThird = new TH2D("H_Hits_XY_RightThird", "H_Hits_XY_RightThird;X [cm];Y [cm];Counter",151, -150., 0.,351, 0.,350.);
+  H_Hits_XY_Left2Thirds = new TH2D("H_Hits_XY_Left2Thirds", "H_Hits_XY_Left2Thirds;X [cm];Y [cm];Counter",151, -150., 0.,351, 0.,350.);
 
-  H_PointsIn_XY = new TH2D("H_PointsIn_XY", "H_PointsIn_XY;X [cm];Y [cm];Counter", 121, -120., 0.,251, 50.,250.);
-  H_PointsIn_XY_LeftHalf = new TH2D("H_PointsIn_XY_LeftHalf", "H_PointsIn_XY_LeftHalf;X [cm];Y [cm];Counter", 121, -120., 0.,251, 50.,250.);
-  H_PointsIn_XY_RightHalf = new TH2D("H_PointsIn_XY_RightHalf", "H_PointsIn_XY_RightHalf;X [cm];Y [cm];Counter", 121, -120., 0.,251, 50.,250.);
-  H_PointsIn_XY_RightThird = new TH2D("H_PointsIn_XY_RightThird", "H_PointsIn_XY_RightThird;X [cm];Y [cm];Counter", 121, -120., 0.,251, 50.,250.);
-  H_PointsIn_XY_Left2Thirds = new TH2D("H_PointsIn_XY_Left2Thirds", "H_PointsIn_XY_Left2Thirds;X [cm];Y [cm];Counter", 121, -120., 0.,251, 50.,250.);
+  H_PointsIn_XY = new TH2D("H_PointsIn_XY", "H_PointsIn_XY;X [cm];Y [cm];Counter", 151, -150., 0.,251, 50.,250.);
+  H_PointsIn_XY_LeftHalf = new TH2D("H_PointsIn_XY_LeftHalf", "H_PointsIn_XY_LeftHalf;X [cm];Y [cm];Counter", 151, -150., 0.,251, 50.,250.);
+  H_PointsIn_XY_RightHalf = new TH2D("H_PointsIn_XY_RightHalf", "H_PointsIn_XY_RightHalf;X [cm];Y [cm];Counter", 151, -150., 0.,251, 50.,250.);
+  H_PointsIn_XY_RightThird = new TH2D("H_PointsIn_XY_RightThird", "H_PointsIn_XY_RightThird;X [cm];Y [cm];Counter", 151, -150., 0.,251, 50.,250.);
+  H_PointsIn_XY_Left2Thirds = new TH2D("H_PointsIn_XY_Left2Thirds", "H_PointsIn_XY_Left2Thirds;X [cm];Y [cm];Counter", 151, -150., 0.,251, 50.,250.);
 
-  H_PointsOut_XY = new TH2D("H_PointsOut_XY", "H_PointsOut_XY;X [cm];Y [cm];Counter",121, -120., 0.,351, 0.,350.);
+  H_PointsOut_XY = new TH2D("H_PointsOut_XY", "H_PointsOut_XY;X [cm];Y [cm];Counter",151, -150., 0.,351, 0.,350.);
   //cout<<" init hist H_NofPhotonsPerEv"<<endl;
   H_NofPhotonsPerEv = new TH1D("H_NofPhotonsPerEv", "H_NofPhotonsPerEv;Number of photons per event;Yield", 500, 0., 1000.);
   H_NofPhotonsPerHit = new TH1D("H_NofPhotonsPerHit", "H_NofPhotonsPerHit;Number of photons per hit;Yield", 10, -0.5, 9.5);
@@ -628,12 +629,12 @@ void CbmRichGeoOpt::InitHistograms()
   H_Alpha_UpLeft_RightThird= new TH1D("H_Alpha_UpLeft_RightThird","H_Alpha_UpLeft_RightThird;#alpha_{photon-PMT} [deg];Yield",180,0.,180.);
  
   //cout<<" init hist H_Alpha_XYposAtDet"<<endl;
-  H_Alpha_XYposAtDet= new TH3D("H_Alpha_XYposAtDet","H_Alpha_XYposAtDet; X [cm]; Y [cm];#alpha_{photon-PMT} [deg];Yield",121, -120., 0.,  251, 50,250, 180,0.,180.);
-  H_Alpha_XYposAtDet_RegularTheta= new TH3D("H_Alpha_XYposAtDet_RegularTheta","H_Alpha_XYposAtDet_RegularTheta; X [cm]; Y [cm];#alpha_{photon-PMT} [deg];Yield",121, -120., 0.,  251, 50,250, 180,0.,180.);
-  H_Alpha_XYposAtDet_LeftHalf= new TH3D("H_Alpha_XYposAtDet_LeftHalf","H_Alpha_XYposAtDet_LeftHalf; X [cm]; Y [cm];#alpha_{photon-PMT} [deg];Yield",121, -120., 0.,  251, 50,250, 180,0.,180.);
-  H_Alpha_XYposAtDet_RightHalf= new TH3D("H_Alpha_XYposAtDet_RightHalf","H_Alpha_XYposAtDet_RightHalf; X [cm]; Y [cm];#alpha_{photon-PMT} [deg];Yield",121, -120., 0.,  251, 50,250, 180,0.,180.);
-  H_Alpha_XYposAtDet_Left2Thirds= new TH3D("H_Alpha_XYposAtDet_Left2Thirds","H_Alpha_XYposAtDet_Left2Thirds; X [cm]; Y [cm];#alpha_{photon-PMT} [deg];Yield",121, -120., 0.,  251, 50,250, 180,0.,180.);
-  H_Alpha_XYposAtDet_RightThird= new TH3D("H_Alpha_XYposAtDet_RightThird","H_Alpha_XYposAtDet_RightThird; X [cm]; Y [cm];#alpha_{photon-PMT} [deg];Yield",121, -120., 0.,  251, 50,250, 180,0.,180.);
+  H_Alpha_XYposAtDet= new TH3D("H_Alpha_XYposAtDet","H_Alpha_XYposAtDet; X [cm]; Y [cm];#alpha_{photon-PMT} [deg];Yield",151, -150., 0.,  251, 50,250, 180,0.,180.);
+  H_Alpha_XYposAtDet_RegularTheta= new TH3D("H_Alpha_XYposAtDet_RegularTheta","H_Alpha_XYposAtDet_RegularTheta; X [cm]; Y [cm];#alpha_{photon-PMT} [deg];Yield",151, -150., 0.,  251, 50,250, 180,0.,180.);
+  H_Alpha_XYposAtDet_LeftHalf= new TH3D("H_Alpha_XYposAtDet_LeftHalf","H_Alpha_XYposAtDet_LeftHalf; X [cm]; Y [cm];#alpha_{photon-PMT} [deg];Yield",151, -150., 0.,  251, 50,250, 180,0.,180.);
+  H_Alpha_XYposAtDet_RightHalf= new TH3D("H_Alpha_XYposAtDet_RightHalf","H_Alpha_XYposAtDet_RightHalf; X [cm]; Y [cm];#alpha_{photon-PMT} [deg];Yield",151, -150., 0.,  251, 50,250, 180,0.,180.);
+  H_Alpha_XYposAtDet_Left2Thirds= new TH3D("H_Alpha_XYposAtDet_Left2Thirds","H_Alpha_XYposAtDet_Left2Thirds; X [cm]; Y [cm];#alpha_{photon-PMT} [deg];Yield",151, -150., 0.,  251, 50,250, 180,0.,180.);
+  H_Alpha_XYposAtDet_RightThird= new TH3D("H_Alpha_XYposAtDet_RightThird","H_Alpha_XYposAtDet_RightThird; X [cm]; Y [cm];#alpha_{photon-PMT} [deg];Yield",151, -150., 0.,  251, 50,250, 180,0.,180.);
 
   //////////////////////////////////////
   H_dFocalPoint_Delta= new TH1D("H_dFocalPoint_Delta","H_dFocalPoint_Delta;#Delta_{f} [mm];Yield",80,-20.,20.);
@@ -644,7 +645,8 @@ void CbmRichGeoOpt::InitHistograms()
   //////////////////////////////////////
   // Detector acceptance efficiency vs. (pt,y) and p
   H_acc_mom_el = new TH1D("H_acc_mom_el", "H_acc_mom_el;p [GeV/c];Yield", 48, 0., 12.);
-  H_acc_pty_el = new TH2D("H_acc_pty_el", "H_acc_pty_el;Rapidity;P_{t} [GeV/c];Yield",25, 0., 4., 20, 0., 3.);
+  H_acc_pty_el = new TH2D("H_acc_pty_el", "H_acc_pty_el;Rapidity;P_{t} [GeV/c];Yield",25, 0., 4., 61, 0., 10.);
+  H_Mom_XY_Theta25 = new TH3D("H_Mom_XY_Theta25", "H_Mom_XY_Theta25",151, -150, 0,351, 0, 350, 121, 0., 12.);//25, 0., 4., 61, 0., 10.);
   //////////////////////////////////
 
   H_NofHitsAll = new TH1D("H_NofHitsAll", "H_NofHitsAll;Nof hits in ring;Yield", 50, 0., 50.);
@@ -663,33 +665,33 @@ void CbmRichGeoOpt::InitHistograms()
   H_boa_RightThird= new TH1D("H_boa_RightThird","H_boa_RightThird",51, 0.5,1.);
   
 
-  H_dR_aa= new TH1D("H_dR_aa","H_dR_aa",51,-5.0,5.0);  
-  H_dR= new TH1D("H_dR","H_dR",51,-5.0,5.0);  
-  H_dR_RegularTheta= new TH1D("H_dR_RegularTheta","H_dR_RegularTheta",51,-5.0,5.0);  
-  H_dR_LeftHalf= new TH1D("H_dR_LeftHalf","H_dR_LeftHalf",51,-5.0,5.0);  
-  H_dR_RightHalf= new TH1D("H_dR_RightHalf","H_dR_RightHalf",51,-5.0,5.0);  
-  H_dR_Left2Thirds= new TH1D("H_dR_Left2Thirds","H_dR_Left2Thirds",51,-5.0,5.0);  
-  H_dR_RightThird= new TH1D("H_dR_RightThird","H_dR_RightThird",51,-5.0,5.0);  
+  H_dR_aa= new TH1D("H_dR_aa","H_dR_aa",61, -3.,3.);  
+  H_dR= new TH1D("H_dR","H_dR",61, -3.,3.);  
+  H_dR_RegularTheta= new TH1D("H_dR_RegularTheta","H_dR_RegularTheta",61, -3.,3.);  
+  H_dR_LeftHalf= new TH1D("H_dR_LeftHalf","H_dR_LeftHalf",61, -3.,3.);  
+  H_dR_RightHalf= new TH1D("H_dR_RightHalf","H_dR_RightHalf",61, -3.,3.);  
+  H_dR_Left2Thirds= new TH1D("H_dR_Left2Thirds","H_dR_Left2Thirds",61, -3.,3.);  
+  H_dR_RightThird= new TH1D("H_dR_RightThird","H_dR_RightThird",61, -3.,3.);  
 
   //cout<<" init hist H_RingCenter"<<endl;
 
   H_RingCenter= new TH2D("H_RingCenter","H_RingCenter",201, -100., 0.,351, 0.,350.);
   
-  H_RingCenter_Aaxis= new TH3D("H_RingCenter_Aaxis","H_RingCenter_Aaxis",100, -100, 0,351, 0, 350, 80, 2.,10.);
-  H_RingCenter_Baxis= new TH3D("H_RingCenter_Baxis","H_RingCenter_Baxis",100, -100, 0,351, 0, 350, 80, 2.,10.);
-  H_RingCenter_boa= new TH3D("H_RingCenter_boa","H_RingCenter_boa",101, -100, 0,351, 0, 350, 51, 0.5,1.);
-  H_RingCenter_boa_RegularTheta= new TH3D("H_RingCenter_boa_RegularTheta","H_RingCenter_boa_RegularTheta",101, -100, 0,351, 0, 350, 51, 0.5,1.);
-  H_RingCenter_boa_LeftHalf= new TH3D("H_RingCenter_boa_LeftHalf","H_RingCenter_boa_LeftHalf",101, -100, 0,351, 0, 350, 51, 0.5,1.);
-  H_RingCenter_boa_RightHalf= new TH3D("H_RingCenter_boa_RightHalf","H_RingCenter_boa_RightHalf",101, -100, 0,351, 0, 350, 51, 0.5,1.);
-  H_RingCenter_boa_Left2Thirds= new TH3D("H_RingCenter_boa_Left2Thirds","H_RingCenter_boa_Left2Thirds",101, -100, 0,351, 0, 350, 51, 0.5,1.);
-  H_RingCenter_boa_RightThird= new TH3D("H_RingCenter_boa_RightThird","H_RingCenter_boa_RightThird",101, -100, 0,351, 0, 350, 51, 0.5,1.);
+  H_RingCenter_Aaxis= new TH3D("H_RingCenter_Aaxis","H_RingCenter_Aaxis",151, -150, 0,351, 0, 350, 80, 2.,10.);
+  H_RingCenter_Baxis= new TH3D("H_RingCenter_Baxis","H_RingCenter_Baxis",151, -150, 0,351, 0, 350, 80, 2.,10.);
+  H_RingCenter_boa= new TH3D("H_RingCenter_boa","H_RingCenter_boa",151, -150, 0,351, 0, 350, 51, 0.5,1.);
+  H_RingCenter_boa_RegularTheta= new TH3D("H_RingCenter_boa_RegularTheta","H_RingCenter_boa_RegularTheta",151, -150, 0,351, 0, 350, 51, 0.5,1.);
+  H_RingCenter_boa_LeftHalf= new TH3D("H_RingCenter_boa_LeftHalf","H_RingCenter_boa_LeftHalf",151, -150, 0,351, 0, 350, 51, 0.5,1.);
+  H_RingCenter_boa_RightHalf= new TH3D("H_RingCenter_boa_RightHalf","H_RingCenter_boa_RightHalf",151, -150, 0,351, 0, 350, 51, 0.5,1.);
+  H_RingCenter_boa_Left2Thirds= new TH3D("H_RingCenter_boa_Left2Thirds","H_RingCenter_boa_Left2Thirds",151, -150, 0,351, 0, 350, 51, 0.5,1.);
+  H_RingCenter_boa_RightThird= new TH3D("H_RingCenter_boa_RightThird","H_RingCenter_boa_RightThird",151, -150, 0,351, 0, 350, 51, 0.5,1.);
 
-  H_RingCenter_dR= new TH3D("H_RingCenter_dR","H_RingCenter_dR",101, -100, 0,351, 0, 350, 51, -0.5,0.5);
-  H_RingCenter_dR_RegularTheta= new TH3D("H_RingCenter_dR_RegularTheta","H_RingCenter_dR_RegularTheta",101, -100, 0,351, 0, 350, 51, -0.5,0.5);
-  H_RingCenter_dR_LeftHalf= new TH3D("H_RingCenter_dR_LeftHalf","H_RingCenter_dR_LeftHalf",101, -100, 0,351, 0, 350, 51, -0.5,0.5);
-  H_RingCenter_dR_RightHalf= new TH3D("H_RingCenter_dR_RightHalf","H_RingCenter_dR_RightHalf",101, -100, 0,351, 0, 350, 51, -0.5,0.5);
-  H_RingCenter_dR_Left2Thirds= new TH3D("H_RingCenter_dR_Left2Thirds","H_RingCenter_dR_Left2Thirds",101, -100, 0,351, 0, 350, 51, -0.5,0.5);
-  H_RingCenter_dR_RightThird= new TH3D("H_RingCenter_dR_RightThird","H_RingCenter_dR_RightThird",101, -100, 0,351, 0, 350, 51, -0.5,0.5);
+  H_RingCenter_dR= new TH3D("H_RingCenter_dR","H_RingCenter_dR",151, -150, 0,351, 0, 350, 61, -3.,3.);
+  H_RingCenter_dR_RegularTheta= new TH3D("H_RingCenter_dR_RegularTheta","H_RingCenter_dR_RegularTheta",151, -150, 0,351, 0, 350, 61, -3.,3.);
+  H_RingCenter_dR_LeftHalf= new TH3D("H_RingCenter_dR_LeftHalf","H_RingCenter_dR_LeftHalf",151, -150, 0,351, 0, 350, 61, -3.,3.);
+  H_RingCenter_dR_RightHalf= new TH3D("H_RingCenter_dR_RightHalf","H_RingCenter_dR_RightHalf",151, -150, 0,351, 0, 350, 61, -3.,3.);
+  H_RingCenter_dR_Left2Thirds= new TH3D("H_RingCenter_dR_Left2Thirds","H_RingCenter_dR_Left2Thirds",151, -150, 0,351, 0, 350, 61, -3.,3.);
+  H_RingCenter_dR_RightThird= new TH3D("H_RingCenter_dR_RightThird","H_RingCenter_dR_RightThird",151, -150, 0,351, 0, 350, 61, -3.,3.);
  
   
 }
@@ -702,6 +704,7 @@ void CbmRichGeoOpt::WriteHistograms(){
   H_MomPrim->Write(); 
   H_PtPrim->Write(); 
   H_MomPt->Write(); 
+  H_Mom_XY_Theta25->Write(); 
 
   H_MomPrim_RegularTheta->Write();  
   H_acc_mom_el_RegularTheta->Write(); 

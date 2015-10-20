@@ -213,6 +213,7 @@ private:
    TH1D* H_MomRing;
    TH1D* H_acc_mom_el;
    TH2D* H_acc_pty_el;
+   TH3D* H_Mom_XY_Theta25;
 
    TH1D* H_MomPrim_RegularTheta;
    TH1D* H_acc_mom_el_RegularTheta;
