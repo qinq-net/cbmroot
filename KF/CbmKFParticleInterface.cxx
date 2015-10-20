@@ -149,4 +149,22 @@ void CbmKFParticleInterface::SetKFParticleFromStsTrack(CbmStsTrack *track, KFPar
   particle->Chi2() = track->GetChiSq();
 }
 
+void CbmKFParticleInterface::ExtrapolateTrackToPV(const CbmStsTrack *track, CbmVertex* pv, FairTrackParam* paramAtPV, float& chiPrim)
+{
+  vector<CbmStsTrack> vRTracks(1);
+  vRTracks[0] = *track;
+  
+  CbmL1PFFitter fitter;
+  vector<float> vChiToPrimVtx;
+  CbmKFVertex kfVertex;
+  if(pv)
+    kfVertex = CbmKFVertex(*pv);
+    
+  vector<L1FieldRegion> vField;
+  fitter.GetChiToVertex(vRTracks, vField, vChiToPrimVtx, kfVertex, 1000000.f);
+  
+  chiPrim = vChiToPrimVtx[0];
+  *paramAtPV = *(vRTracks[0].GetParamFirst());
+}
+
 ClassImp(CbmKFParticleInterface);

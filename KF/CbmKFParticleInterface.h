@@ -8,6 +8,8 @@
 
 class CbmStsTrack;
 class KFParticle;
+class FairTrackParam;
+class CbmVertex;
 
 class CbmKFParticleInterface : public TObject {
  public:
@@ -17,6 +19,7 @@ class CbmKFParticleInterface : public TObject {
   ~CbmKFParticleInterface() {};
   
   static void SetKFParticleFromStsTrack(CbmStsTrack *track, KFParticle* particle, Int_t pdg = 211, Bool_t firstPoint = kTRUE);
+  static void ExtrapolateTrackToPV(const CbmStsTrack *track, CbmVertex* pv, FairTrackParam* paramAtPV, float& chiPrim);
   
  private:  
    
