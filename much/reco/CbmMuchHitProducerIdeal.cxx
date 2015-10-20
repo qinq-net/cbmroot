@@ -9,6 +9,7 @@
 #include "CbmMuchPoint.h"
 #include "CbmMuchPixelHit.h"
 #include "CbmMuchGeoScheme.h"
+#include "FairLogger.h"
 
 #include "TClonesArray.h"
 #include "TRandom.h"
