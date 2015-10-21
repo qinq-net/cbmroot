@@ -487,9 +487,9 @@ UInt_t PairAnalysisCutQA::GetObjIndex(TObject *obj)
   else if(obj->IsA()==PairAnalysisTrack::Class()   )  return kTrack;
   else if(obj->IsA()==PairAnalysisPairLV::Class()  )  return kPair;
   else if(obj->IsA()==PairAnalysisEvent::Class()   )  return kEvent;
-  else printf("ERROR: object type %s not yet supported, please let the author know\n", obj->IsA()->GetName());
+  // else
+  //   printf("ERROR: object type %s not yet supported, please let the author know\n", obj->IsA()->GetName());
   return -1;
-
 }
 
 
