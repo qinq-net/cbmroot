@@ -145,6 +145,8 @@ class PairAnalysisSignalMC : public TNamed {
 
   static const char* fgkSignals[kNSignals][2];  //default signal names+titles
 
+  void Print(Option_t * option = "") const;
+
  private:
   // PDG codes for legs, mothers and grand-mothers
   Int_t fLeg1;                        // leg 1 PDG

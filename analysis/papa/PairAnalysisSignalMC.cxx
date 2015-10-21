@@ -210,33 +210,33 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
   case kInclJpsi:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=11;  fLeg2=-11; fCheckBothChargesLeg1=kTRUE; fCheckBothChargesLeg2=kTRUE;
-    fMother1=443; fMother2=443; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
+    fMother1=443; fMother2=443;
     fMothersRelation=kSame;
     break;
   case kRadJpsi:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=11;  fLeg2=-11; fCheckBothChargesLeg1=kTRUE; fCheckBothChargesLeg2=kTRUE;
-    fMother1=443; fMother2=443; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
+    fMother1=443; fMother2=443;
     fMothersRelation=kSame;
     fDalitz=kIsDalitz; fDalitzPdg=22;
     break;
   case kNonRadJpsi:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=11;  fLeg2=-11; fCheckBothChargesLeg1=kTRUE; fCheckBothChargesLeg2=kTRUE;
-    fMother1=443; fMother2=443; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
+    fMother1=443; fMother2=443;
     fMothersRelation=kSame;
     fDalitz=kIsNotDalitz; fDalitzPdg=22;
     break;
   case kPsi2S:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=11;  fLeg2=-11; fCheckBothChargesLeg1=kTRUE; fCheckBothChargesLeg2=kTRUE;
-    fMother1=100443; fMother2=100443; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
+    fMother1=100443; fMother2=100443;
     fMothersRelation=kSame;
     break;
   case kConversion:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
-    fMother1=22; fMother2=22; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
+    fMother1=22; fMother2=22;
     fMother1Source=kSecondary; fMother2Source=kSecondary;
     fMothersRelation=kSame;
     // fGrandMother1=111; fGrandMother2=111;
@@ -246,14 +246,14 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
   case kRho0:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
-    fMother1=113; fMother2=113; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
+    fMother1=113; fMother2=113;
     fMothersRelation=kSame;
     SetGEANTProcess(kPPrimary); //pluto
     break;
   case kOmega:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
-    fMother1=223; fMother2=223; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
+    fMother1=223; fMother2=223;
     fMothersRelation=kSame;
     fDalitz=kIsNotDalitz; fDalitzPdg=111;
     SetGEANTProcess(kPPrimary); //pluto
@@ -269,7 +269,7 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
   case kPhi:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
-    fMother1=333; fMother2=333; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
+    fMother1=333; fMother2=333;
     fMothersRelation=kSame;
     SetGEANTProcess(kPPrimary); //pluto
     break;
@@ -284,21 +284,21 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
   case kEta:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
-    fMother1=221; fMother2=221; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
+    fMother1=221; fMother2=221;
     fMothersRelation=kSame;
     //    SetGEANTProcess(kPUserDefined);
     break;
   case kPi0:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
-    fMother1=111; fMother2=111; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
+    fMother1=111; fMother2=111;
     fMothersRelation=kSame;
     //    SetGEANTProcess(kPUserDefined);
     break;
   case kPi0Gamma:
     SetNameTitle(fgkSignals[defaultSignal][0],fgkSignals[defaultSignal][1]);
     fLeg1=11;    fLeg2=-11;   fCheckBothChargesLeg1=kTRUE;    fCheckBothChargesLeg2=kTRUE;
-    fMother1=22; fMother2=22; fCheckBothChargesMother1=kTRUE; fCheckBothChargesMother2=kTRUE;
+    fMother1=22; fMother2=22;
     fMothersRelation=kSame;
     fGrandMother1=111; fGrandMother2=111;
     //    SetGEANTProcess(kPUserDefined);
@@ -402,6 +402,34 @@ PairAnalysisSignalMC::PairAnalysisSignalMC(EDefinedSignal defaultSignal) :
 
 }
 
+void PairAnalysisSignalMC::Print(Option_t * option) const
+{
+  //
+  //
+  //
+  Printf("Signal: %s with title %s ", GetName(), GetTitle());
+  printf("\tPDGs leg1:  %s%s%d%s ",(fLeg1Exclude?"!":""),(fCheckBothChargesLeg1?"|":""),fLeg1,(fCheckBothChargesLeg1?"|":""));
+  if(fMother1!=0)
+    printf("<--- %s%s%d%s ",(fMother1Exclude?"!":""),(fCheckBothChargesMother1?"|":""),fMother1,(fCheckBothChargesMother1?"|":""));
+  if(fGrandMother1!=0)
+    printf("<--- %s%s%d%s ",(fGrandMother1Exclude?"!":""),(fCheckBothChargesGrandMother1?"|":""),fGrandMother1,(fCheckBothChargesGrandMother1?"|":""));
+  if(fGreatGrandMother1!=0)
+    printf("<--- %s%s%d%s",(fGreatGrandMother1Exclude?"!":""),(fCheckBothChargesGreatGrandMother1?"|":""),fGreatGrandMother1,(fCheckBothChargesGreatGrandMother1?"|":""));
+  printf("\n");
+  if(!fIsSingleParticle) {
+    //    Printf("\t                     \t %s",(fDalitz)
+    //    Printf("\t                     \t %s",(fMothersRelation)
+  printf("\tPDGs leg2:  %s%s%d%s ",(fLeg2Exclude?"!":""),(fCheckBothChargesLeg2?"|":""),fLeg2,(fCheckBothChargesLeg2?"|":""));
+  if(fMother2!=0)
+    printf("<--- %s%s%d%s ",(fMother2Exclude?"!":""),(fCheckBothChargesMother2?"|":""),fMother2,(fCheckBothChargesMother2?"|":""));
+  if(fGrandMother2!=0)
+    printf("<--- %s%s%d%s ",(fGrandMother2Exclude?"!":""),(fCheckBothChargesGrandMother2?"|":""),fGrandMother2,(fCheckBothChargesGrandMother2?"|":""));
+  if(fGreatGrandMother2!=0)
+    printf("<--- %s%s%d%s",(fGreatGrandMother2Exclude?"!":""),(fCheckBothChargesGreatGrandMother2?"|":""),fGreatGrandMother2,(fCheckBothChargesGreatGrandMother2?"|":""));
+  printf("\n");
+  }
+
+}
 
 
 //_________________________________________________________________________
