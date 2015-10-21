@@ -397,7 +397,7 @@ void PairAnalysis::ProcessMC()
   // there are mc tracks
   if(!papaMC->GetNMCTracks()) return;
 
-  // signals to be stupapad
+  // signals to be studied
   if(!fSignalsMC) return;
   Int_t nSignals = fSignalsMC->GetEntries();
   if(!nSignals) return;
@@ -409,7 +409,9 @@ void PairAnalysis::ProcessMC()
   Bool_t bFillHF   = kFALSE;
   Bool_t bFillHist = kFALSE;
   for(Int_t isig=0;isig<nSignals;isig++) {
-    TString sigName = fSignalsMC->UncheckedAt(isig)->GetName();
+    PairAnalysisSignalMC *sigMC = (PairAnalysisSignalMC*)fSignalsMC->UncheckedAt(isig);
+    if(!sigMC->GetFillPureMCStep()) continue;
+    TString sigName = sigMC->GetName();
     if(fHistos && !bFillHist) {
       bFillHist |= fHistos->HasHistClass(Form("Pair_%s_MCtruth",sigName.Data()));
       bFillHist |= fHistos->HasHistClass(Form("Track.Leg_%s_MCtruth",sigName.Data()));
@@ -1055,19 +1057,6 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
     // adapt mass hypothesis accordingly (they were initialized with PDG11)
     particle->SetMassHypo(fPdgLeg1,fPdgLeg2);
 
-    // store signal weights in the tracks - ATTENTION later signals should be more specific
-    if(fHasMC && fSignalsMC) {
-      PairAnalysisMC* papaMC = PairAnalysisMC::Instance();
-      for(Int_t isig=0; isig<fSignalsMC->GetEntriesFast(); isig++) {
-	PairAnalysisSignalMC *sig=(PairAnalysisSignalMC*)fSignalsMC->At(isig);
-	if( papaMC->IsMCTruth(particle,sig,1) || papaMC->IsMCTruth(particle,sig,2) ) {
-	  //   printf("signal weight for %s is %f \n",sig->GetName(),sig->GetWeight());
-	  //	  if(sig->GetWeight(values) != 1.0) particle->SetWeight( sig->GetWeight(values) );
-	  if(sig->GetWeight(values) != 1.0) particle->SetWeight( sig->GetWeight(values) );
-	}
-      }
-    }
-
     //apply track cuts
     UInt_t cutmask=fTrackFilter.IsSelected(particle);
     //fill cut QA
@@ -1083,6 +1072,19 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
 
     // rejection
     if (cutmask!=selectedMask) continue;
+
+    // store signal weights in the tracks - ATTENTION later signals should be more specific
+    if(fHasMC && fSignalsMC) {
+      PairAnalysisMC* papaMC = PairAnalysisMC::Instance();
+      for(Int_t isig=0; isig<fSignalsMC->GetEntriesFast(); isig++) {
+	PairAnalysisSignalMC *sig=(PairAnalysisSignalMC*)fSignalsMC->At(isig);
+	if( papaMC->IsMCTruth(particle,sig,1) || papaMC->IsMCTruth(particle,sig,2) ) {
+	  //   printf("signal weight for %s is %f \n",sig->GetName(),sig->GetWeight());
+	  //	  if(sig->GetWeight(values) != 1.0) particle->SetWeight( sig->GetWeight(values) );
+	  if(sig->GetWeight(values) != 1.0) particle->SetWeight( sig->GetWeight(values) );
+	}
+      }
+    }
 
     //fill selected particle into the corresponding track arrays
     Short_t charge=particle->Charge();
@@ -1258,8 +1260,7 @@ void PairAnalysis::FilterTrackArrays(TObjArray &arrTracks1, TObjArray &arrTracks
   UInt_t selectedMask=(1<<fPairPreFilterLegs.GetCuts()->GetEntries())-1;
   //loop over tracks from array 1
   for (Int_t itrack=0; itrack<arrTracks1.GetEntriesFast();++itrack){
-    //test cuts
-      
+
     //apply cuts
     UInt_t cutmask=fPairPreFilterLegs.IsSelected(arrTracks1.UncheckedAt(itrack));
     //fill cut QA
@@ -1274,10 +1275,10 @@ void PairAnalysis::FilterTrackArrays(TObjArray &arrTracks1, TObjArray &arrTracks
 
   //loop over tracks from array 2
   for (Int_t itrack=0; itrack<arrTracks2.GetEntriesFast();++itrack){
-    //test cuts
-      
+
     //apply cuts
     UInt_t cutmask=fPairPreFilterLegs.IsSelected(arrTracks2.UncheckedAt(itrack));
+
     //fill cut QA
     if(fCutQA) fQAmonitor->FillAll(arrTracks2.UncheckedAt(itrack),     1);
     if(fCutQA) fQAmonitor->Fill(cutmask,arrTracks2.UncheckedAt(itrack),1);
