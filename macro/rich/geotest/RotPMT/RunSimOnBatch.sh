@@ -1,28 +1,29 @@
 #!/bin/sh
 #$ -wd /tmp 
- nEvs=1
- rotx=0
- roty=0
- transy=0
- transz=0
+OnBatch=0
+nEvs=1
+rotx=0
+roty=0
+transy=0
+transz=0
 
- ThetaMin=25 #devide by 10 in cpp
- ThetaMax=250 #devide by 10 in cpp
- PhiMin=90
- PhiMax=180
+ThetaMin=250 #devide by 10 in cpp
+ThetaMax=2500 #devide by 10 in cpp
+PhiMin=90
+PhiMax=180
 
- GeoCase=2
- DimCase=2
- EnlargedPMTWidth=2
- EnlargedPMTHight=4
- 
+GeoCase=2
+DimCase=2
+EnlargedPMTWidth=2
+EnlargedPMTHight=4
 
- PtNotP=0
- MomMin=0 #devide by 10 in cpp
- MomMax=40 #devide by 10 in cpp
 
- rotmir=-10
- extendedmir=0
+PtNotP=0
+MomMin=0 #devide by 10 in cpp
+MomMax=40 #devide by 10 in cpp
+
+rotmir=-10
+extendedmir=0
 
 OldCode=0
 DefaultDims=0 #for old code					
@@ -30,12 +31,13 @@ DefaultDimsLargePMT=0 #for old code
 
 while [ $# -gt 0 ]; do
     case "$1" in
+	-batch) shift; OnBatch=$1 ;;
 	-nev) shift; nEvs=$1 ;;
 	-rx) shift; rotx=$1 ;;
 	-ry) shift; roty=$1 ;;
 	-dy) shift; transy=$1 ;;
 	-dz) shift; transz=$1 ;;
-
+	
 	-mint) shift; ThetaMin=$1 ;;
 	-maxt) shift; ThetaMax=$1 ;;
 	-minp) shift; PhiMin=$1 ;;
@@ -79,9 +81,9 @@ done
 #echo "DimCase=$DimCase"
 #echo "EnlargedPMTWidth=$EnlargedPMTWidth"
 #echo "EnlargedPMTHight=$EnlargedPMTHight"
-#echo "PtNotP=$PtNotP"
-#echo "MomMin=$MomMin"
-#echo "MomMax=$MomMax"
+echo "######################### PtNotP=$PtNotP"
+echo "MomMin=$MomMin"
+echo "MomMax=$MomMax"
 
 #echo "rotmir=$rotmir"
 #echo "extendedmir=$extendedmir"
@@ -122,10 +124,12 @@ export OLDCODE=$OldCode
 export DEFAULDIMS=$DefaultDims
 export DEFAULDIMSLPMT=$DefaultDimsLargePMT
 
-#root -b -l -q "Run_Sim_GeoOpt_Batch.C()"
-#root -b -l -q "Run_Reco_GeoOpt_Batch.C()"
-#root -b -l -q "Run_Ana_GeoOpt_Batch.C()"
-#return
+if [ $OnBatch == 0 ];then 
+    root -b -l -q "Run_Sim_GeoOpt_Batch.C()"
+    root -b -l -q "Run_Reco_GeoOpt_Batch.C()"
+    root -b -l -q "Run_Ana_GeoOpt_Batch.C()"
+    return
+fi
 
 # setup the run environment
 source ${cbmroot_config_path}
