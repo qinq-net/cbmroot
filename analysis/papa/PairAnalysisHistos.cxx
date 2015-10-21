@@ -875,6 +875,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   Bool_t optMeta     =optString.Contains("meta");      optString.ReplaceAll("meta","");
   Bool_t optRbn      =optString.Contains("rebin");     optString.ReplaceAll("rebin","");
   Bool_t optSclMax   =optString.Contains("sclmax");    optString.ReplaceAll("sclmax","");
+  Bool_t optNormY    =optString.Contains("normy");      optString.ReplaceAll("normy","");
   Bool_t optNorm     =optString.Contains("norm");      optString.ReplaceAll("norm","");
   Bool_t optEvt      =optString.Contains("events");    optString.ReplaceAll("events","");
   // options - information
@@ -923,14 +924,10 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   // add or get legend
   TLegend *leg=0;
   if ( (optLeg && optTask && !nobj) || (optLeg && !optTask) ) {
-    leg=new TLegend(
-		    gPad->GetLeftMargin()+gStyle->GetTickLength("Y"),
-		    .3,
-		    gPad->GetLeftMargin()+gStyle->GetTickLength("Y")+0.25,
-		    1.-gPad->GetTopMargin()-gStyle->GetTickLength("X"),
-		    // .75,.3,
-		    // 1.-gPad->GetTopMargin()-gStyle->GetTickLength("X"),
-		    // 1.-gPad->GetRightMargin()-gStyle->GetTickLength("Y"),
+    leg=new TLegend(0. + gPad->GetLeftMargin()  + gStyle->GetTickLength("Y"),
+		    0. + gPad->GetBottomMargin()+ gStyle->GetTickLength("X"),
+		    1. - gPad->GetRightMargin() + gStyle->GetTickLength("Y"),
+		    1. - gPad->GetTopMargin()   + gStyle->GetTickLength("X"),
 		    GetName(),"nbNDC");
     if(optTask) leg->SetHeader("");
   }
@@ -999,6 +996,18 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
       // normalisation
       h->Sumw2();
       if(optRbn)                    h->Rebin();
+      if(optNormY && h->GetDimension()==2 && !(h->GetSumOfWeights()==0)) {
+	TH2 *hsum = (TH2*) h->Clone("orig");
+	hsum->Reset("CE");
+	for(Int_t ix = 1; ix <= hsum->GetNbinsX(); ix++) {
+	  Double_t ysum = h->Integral(ix,ix);
+	  for(Int_t iy = 1; iy <= hsum->GetNbinsY(); iy++) {
+	    hsum->SetBinContent(ix,iy,ysum);
+	  }
+	}
+	h->Divide(hsum);
+	delete hsum;
+      }
       if(optNorm && !(h->GetSumOfWeights()==0)) h=h->DrawNormalized(i>0?(optString+"same").Data():optString.Data());
       if(optEvt)                    h->Scale(1./events);
       if(optSclMax)                 h->Scale(1./h->GetBinContent(h->GetMaximumBin()));
@@ -1017,6 +1026,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	break;
       case 2:
 	if(optEvt)    h->SetZTitle( (ztitle+"/N_{evt}").Data() );
+	//	if(optNormY)  h->SetYTitle( (ytitle.Append(" (normalized)")).Data() );
 	if(optNorm)   h->SetZTitle( (ztitle.Prepend("normalized ")).Data() );
 	if(optRatio)  h->SetZTitle( "ratio" );
 	if(optDiv)    h->SetZTitle( "ratio" );
@@ -1225,10 +1235,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 
   // legend
   if (leg) {
-    leg->SetMargin(0.075);
-    leg->SetFillStyle(0);
-    leg->SetTextSize(0.02); // TODO: replaced by global legend textsize for root > v5-34-26
-    PairAnalysisStyler::SetLegendCoordinates(leg);
+    PairAnalysisStyler::SetLegendAttributes(leg); // coordinates, margins, fillstyle, fontsize
     if(!nobj) leg->Draw(); // only draw the legend once
   }
 

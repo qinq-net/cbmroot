@@ -68,7 +68,7 @@ namespace PairAnalysisStyler
 
   extern UInt_t fLegAlign;           // legend alignement (11,12,21,22)
   void SetLegendAlign(UInt_t align);
-  void SetLegendCoordinates(TLegend *leg);
+  void SetLegendAttributes(TLegend *leg);
   
 }
 

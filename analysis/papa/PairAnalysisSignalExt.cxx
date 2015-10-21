@@ -877,10 +877,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 
   // legend
   if (leg) {
-    leg->SetMargin(0.075);
-    leg->SetFillStyle(0);
-    leg->SetTextSize(0.02); // TODO: replaced by global legend textsize for root > v5-34-26
-    PairAnalysisStyler::SetLegendCoordinates(leg);
+    PairAnalysisStyler::SetLegendAttributes(leg); // coordinates, margins, fillstyle, fontsize
     leg->Draw();
   }
 

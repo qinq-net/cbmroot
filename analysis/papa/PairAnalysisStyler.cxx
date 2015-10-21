@@ -205,8 +205,9 @@ void PairAnalysisStyler::LoadStyle() {
 
     // For the legends:
     defaultSty->SetLegendFillColor(bgrdcolor);
+    //defaultSty->SetLegendFillColor(kWhite);
     defaultSty->SetLegendFont(font);
-    //  defaultSty->SetLegendTextSize(0.025); //for root>v5-34-26
+    //    defaultSty->SetLegendTextSize(0.02); //for root>v6??
 
     //                                       Additions -- transparent style
     defaultSty->SetFillStyle(4000);
@@ -337,13 +338,17 @@ void PairAnalysisStyler::SetStyle(Eidx idx, Int_t col, Int_t marker, Double_t si
 
 UInt_t PairAnalysisStyler::fLegAlign=22; //top-right
 void PairAnalysisStyler::SetLegendAlign(UInt_t align) { fLegAlign=align; }
-void PairAnalysisStyler::SetLegendCoordinates(TLegend *leg)
+void PairAnalysisStyler::SetLegendAttributes(TLegend *leg)
 {
   //
   // set/update legend cooordinates according to alignement (stored in uniqueID)
   //
   // if(leg->GetUniqueID()==0) leg->SetUniqueID(fLegAlign);
   // UInt_t fLegAlign = leg->GetUniqueID();
+
+  Double_t symblwdth = 0.065; //ndc
+  Double_t txtsze    = 0.025; //gStyle->GetLegendTextSize());
+  Double_t entrysep  = 1.25;  //entry seperation
 
   // calculate get legend width
   Double_t maxwdth=0.0;
@@ -363,35 +368,42 @@ void PairAnalysisStyler::SetLegendCoordinates(TLegend *leg)
     lst.ReplaceAll("#eta","#");
     lst.ReplaceAll("#psi","#");
     lst.ReplaceAll("#alpha","#");
+    //    lst.ReplaceAll(" ","");
     TLatex entrytex( 0, 0, lst.Data());
-    entrytex.SetTextSize(0.025);
+    entrytex.SetTextSize(txtsze);
+    entrytex.SetTextFont(gStyle->GetLegendFont());
     //entrytex.SetTextFont(lent->GetTextFont());
     entrytex.SetNDC(kTRUE);
     Double_t wdth = entrytex.GetXsize();
     if(maxwdth<wdth) maxwdth=wdth;
+    //    Printf("wdth %f for '%s' \t max width: %f",wdth,lst.Data(),maxwdth);
   }
-  //    Printf("max width: %f",maxwdth);
 
   // set legend coordinates
   if(fLegAlign==12 || fLegAlign==22) { //top
     leg->SetY2(1.-gPad->GetTopMargin()-gStyle->GetTickLength("X"));
-    leg->SetY1(leg->GetY2()-nent*0.025); // 0.05
+    leg->SetY1(leg->GetY2()-nent*txtsze*entrysep);
   }
   else { // bottom
     leg->SetY1(0.+gPad->GetBottomMargin()+gStyle->GetTickLength("X"));
-    leg->SetY2(leg->GetY1()+nent*0.025);
+    leg->SetY2(leg->GetY1()+nent*txtsze*entrysep);
   }
   if(fLegAlign==22 || fLegAlign==21) {  //right
-    leg->SetX2(1.-gPad->GetRightMargin()-gStyle->GetTickLength("Y")*2.0); //x2.0 ticklength
-    leg->SetX1(leg->GetX2()-maxwdth*1.0 - 0.035);
+    leg->SetX2(1.-gPad->GetRightMargin()-gStyle->GetTickLength("Y")*1.0); //x2.0 ticklength
+    leg->SetX1(leg->GetX2()-maxwdth*1.0 - symblwdth);
   }
   else if(fLegAlign==12 || fLegAlign==11) { //left
     leg->SetX1(0.+gPad->GetLeftMargin()+gStyle->GetTickLength("Y"));
-    leg->SetX2(leg->GetX1()+maxwdth*1.0 + 0.035);
+    leg->SetX2(leg->GetX1()+maxwdth*1.0 + symblwdth);
   }
 
-  // fix margin such that lines allways have the same length 
-  leg->SetMargin(leg->GetMargin() / (leg->GetX2()-leg->GetX1()));
+  // fix margin such that lines allways have the same length
+  leg->SetMargin(symblwdth / (leg->GetX2()-leg->GetX1()));
+  leg->SetEntrySeparation(entrysep-1.);
+
+  // styling
+  leg->SetFillStyle(1001); // solid
+  leg->SetFillColorAlpha(gStyle->GetLegendFillColor(), 0.8);
 
 }
 
