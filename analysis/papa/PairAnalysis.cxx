@@ -409,7 +409,7 @@ void PairAnalysis::ProcessMC()
   Bool_t bFillHF   = kFALSE;
   Bool_t bFillHist = kFALSE;
   for(Int_t isig=0;isig<nSignals;isig++) {
-    TString sigName = fSignalsMC->At(isig)->GetName();
+    TString sigName = fSignalsMC->UncheckedAt(isig)->GetName();
     if(fHistos && !bFillHist) {
       bFillHist |= fHistos->HasHistClass(Form("Pair_%s_MCtruth",sigName.Data()));
       bFillHist |= fHistos->HasHistClass(Form("Track.Leg_%s_MCtruth",sigName.Data()));
@@ -471,10 +471,10 @@ void PairAnalysis::ProcessMC()
       // Proceed only if this signal is required in the pure MC step
       // NOTE: Some signals can be satisfied by many particles and this leads to high
       //       computation times (e.g. secondary electrons from the GEANT transport). Be aware of this!!
-      if(!((PairAnalysisSignalMC*)fSignalsMC->At(isig))->GetFillPureMCStep()) continue;
+      if(!((PairAnalysisSignalMC*)fSignalsMC->UncheckedAt(isig))->GetFillPureMCStep()) continue;
 
-      truth1 = papaMC->IsMCTruth(ipart, (PairAnalysisSignalMC*)fSignalsMC->At(isig), 1);
-      truth2 = papaMC->IsMCTruth(ipart, (PairAnalysisSignalMC*)fSignalsMC->At(isig), 2);
+      truth1 = papaMC->IsMCTruth(ipart, (PairAnalysisSignalMC*)fSignalsMC->UncheckedAt(isig), 1);
+      truth2 = papaMC->IsMCTruth(ipart, (PairAnalysisSignalMC*)fSignalsMC->UncheckedAt(isig), 2);
 
       // particles satisfying both branches are treated separately to avoid double counting during pairing
       if(truth1 && truth2) {
@@ -720,17 +720,34 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	  CbmHit      *hit  = 0x0;
 	  CbmMatch    *mtch = 0x0;
 	  FairMCPoint *pnt  = 0x0;
-	  Int_t nhits = 1;
-	  if(trkl)       nhits = trkl->GetNofHits();
-	  if(idet==kMVD) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofMvdHits();
-	  if(ring)       nhits = ring->GetNofHits();
+	  Int_t nhits = 0;
+	  switch(idet) {
+	  case kMVD:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofMvdHits(); break;
+	  case kSTS:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofStsHits(); break;
+	  case kMUCH:
+	  case kTRD:  if(trkl) nhits = trkl->GetNofHits();    break;
+	  case kTOF:  nhits = 1; /* can be 1 in maximum */    break;
+	  case kRICH: if(ring) nhits = ring->GetNofHits();    break;
+	  default:
+	    continue;
+	  }
 	  // loop over all reconstructed hits
 	  for (Int_t ihit=0; ihit < nhits; ihit++) {
-	    if(trkl && idet!=kMVD)      hit = dynamic_cast<CbmHit*>(hits->At( trkl->GetHitIndex(ihit) ) );
-	    else if(trkl &&idet==kMVD)  hit = dynamic_cast<CbmHit*>(hits->At( static_cast<CbmStsTrack*>(trkl)
-									      ->GetMvdHitIndex(ihit) ) );
-	    else if(ring)               hit = dynamic_cast<CbmHit*>(hits->At( ring->GetHit(ihit) ) );
-	    else                        hit = dynamic_cast<CbmHit*>( track->GetTofHit() );
+	    Int_t idx=-1;
+	    switch(idet) {
+	    case kMVD:  idx = static_cast<CbmStsTrack*>(trkl)->GetMvdHitIndex(ihit); break;
+	    case kSTS:  idx = static_cast<CbmStsTrack*>(trkl)->GetStsHitIndex(ihit); break;
+	    case kMUCH:
+	    case kTRD:  idx = trkl->GetHitIndex(ihit);                               break;
+	    case kTOF:  hit = track->GetTofHit();                                    break;
+	    case kRICH: idx = ring->GetHit(ihit);                                    break;
+	    default:
+	      continue;
+	    }
+	    // get hit
+	    if(idet!=kTOF && idx>-1)  {
+	      hit = dynamic_cast<CbmHit*>(hits->At(idx));
+	    }
 	    if(!hit) continue;
 
 	    // fill rec hit variables
@@ -853,6 +870,8 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	    } // link loop
 	    */
 
+	    // reset pointer (needed for tof)
+	    hit=0x0;
 	  } // rec hit loop
 	} // det loop
       } // track loop

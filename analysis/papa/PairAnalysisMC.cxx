@@ -80,7 +80,8 @@ CbmMCTrack* PairAnalysisMC::GetMCTrackFromMCEvent(Int_t label) const
     return NULL;
   }
 
-  CbmMCTrack *track = static_cast<CbmMCTrack*>( fMCArray->At(label) ); //  tracks from MC event
+  CbmMCTrack *track = static_cast<CbmMCTrack*>( fMCArray->UncheckedAt(label) ); //  tracks from MC event
+  //  CbmMCTrack *track = static_cast<CbmMCTrack*>( fMCArray->At(label) ); //  tracks from MC event
   return track;
 }
 

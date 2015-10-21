@@ -79,7 +79,8 @@ void PairAnalysisMetaData::Init()
   fMetaList.Add(pProduction);
 
   TParameter<Double_t> *pBeamEnergy = new TParameter<Double_t>("beamenergy", 4.107);
-  pBeamEnergy->SetBit(TParameter<Double_t>::kIsConst);
+  //  pBeamEnergy->SetBit(TParameter<Double_t>::kIsConst);
+  pBeamEnergy->SetBit(TParameter<Double_t>::kFirst);
   fMetaList.Add(pBeamEnergy);
 
   TParameter<Int_t> *pEvents = new TParameter<Int_t>("events", 0);

@@ -132,7 +132,7 @@ PairAnalysisEvent::~PairAnalysisEvent()
   //
   delete fPrimVertex;
 
-  fTracks->Clear("C");
+  //  fTracks->Clear("C");
   fGlobalTracks->Delete();   //global tracks
   fMCHeader->Delete();       //mc tracks
   fMCTracks->Delete();       //mc tracks

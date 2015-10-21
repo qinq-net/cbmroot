@@ -20,13 +20,14 @@
 #include <TVectorD.h>
 
 #include "CbmDetectorList.h"
+#include "CbmMCTrack.h"
 
 #include "PairAnalysisCutGroup.h"
 #include "AnalysisCuts.h"
 
 #include "PairAnalysisEvent.h"
 #include "PairAnalysisTrack.h"
-#include "PairAnalysisPair.h"
+#include "PairAnalysisPairLV.h"
 
 #include "PairAnalysisHelper.h"
 
@@ -482,11 +483,11 @@ UInt_t PairAnalysisCutQA::GetObjIndex(TObject *obj)
   // return the corresponding idex
   //
   //  printf("INFO: object type is a %s \n", obj->IsA()->GetName());
-  if(obj->InheritsFrom(PairAnalysisPair::Class())    )  return kPair;
-  if(obj->InheritsFrom(PairAnalysisTrack::Class())   )  return kTrack;
-  if(obj->InheritsFrom(PairAnalysisEvent::Class())   )  return kEvent;
-  if(obj->InheritsFrom("CbmMCTrack")                 )  return kTrackMC;
-  //  printf("FATAL: object type %s not yet supported, please let the author know\n", obj->IsA()->GetName());
+  if(obj->IsA()==CbmMCTrack::Class()               )  return kTrackMC;
+  else if(obj->IsA()==PairAnalysisTrack::Class()   )  return kTrack;
+  else if(obj->IsA()==PairAnalysisPairLV::Class()  )  return kPair;
+  else if(obj->IsA()==PairAnalysisEvent::Class()   )  return kEvent;
+  else printf("ERROR: object type %s not yet supported, please let the author know\n", obj->IsA()->GetName());
   return -1;
 
 }

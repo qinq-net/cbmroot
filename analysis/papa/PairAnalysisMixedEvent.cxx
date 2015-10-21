@@ -78,7 +78,7 @@ void PairAnalysisMixedEvent::SetTracks(const TObjArray &arrP, const TObjArray &a
   //
 
   //Clear out old entries before filling new ones
-  Clear();
+  Clear(); // check if this can be improved, by calling clear instead of removeat
   // we keep the tracks buffered to minimise new / delete operations
   fNTracksN=0;
   fNTracksP=0;
@@ -161,20 +161,20 @@ void PairAnalysisMixedEvent::Clear(Option_t *opt)
   //
   // clear arrays
   //
-  //   fArrTrackP.Clear(opt);
-  //   fArrTrackN.Clear(opt);
+  fArrTrackP.Clear(opt);
+  fArrTrackN.Clear(opt);
 
-  for (Int_t i=fArrTrackP.GetEntriesFast()-1; i>=0; --i){
-    delete fArrTrackP.RemoveAt(i);
-  }
+  // for (Int_t i=fArrTrackP.GetEntriesFast()-1; i>=0; --i){
+  //   delete fArrTrackP.RemoveAt(i);
+  // }
 
-  for (Int_t i=fArrTrackN.GetEntriesFast()-1; i>=0; --i){
-    delete fArrTrackN.RemoveAt(i);
-  }
+  // for (Int_t i=fArrTrackN.GetEntriesFast()-1; i>=0; --i){
+  //   delete fArrTrackN.RemoveAt(i);
+  // }
 
-  for (Int_t i=0; i<fArrVertex.GetEntriesFast(); ++i){
-    delete fArrVertex.RemoveAt(i);
-  }
+  // for (Int_t i=0; i<fArrVertex.GetEntriesFast(); ++i){
+  //   delete fArrVertex.RemoveAt(i);
+  // }
   fArrPairs.Clear(opt);
 }
 
