@@ -6,14 +6,15 @@ void Run_Reco_GeoOpt_Batch(Int_t nEvents = 1)
 
   float PMTrotX=20, PMTrotY=10;
   int PMTtransY=180, PMTtransZ=80;
-  float ThetaMin=25., ThetaMax=250.;//devide by 10 later 
+  float ThetaMin=250., ThetaMax=2500.;//devide by 100 later 
+
   float PhiMin=90., PhiMax=180.;
   int GeoCase=2, DimCase=2;
   float EnlargedPMTWidth=2., EnlargedPMTHight=4.;
   
   
   int PtNotP=1;
-  float MomMin=0., MomMax=40;//devide by 10 later 
+  float MomMin=0., MomMax=400;//devide by 100 later 
   
   float RotMir=-10;
   int extendedmir=0;
@@ -82,11 +83,11 @@ void Run_Reco_GeoOpt_Batch(Int_t nEvents = 1)
   TString SimFile = outDir + "Sim_"+NamingText;//+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
   TString RecFile = outDir + "Rec_"+NamingText;//+GeoText+"_"+RotMirText+"_"+PMTRotText+"_"+MomText+ExtraText+"root";
 
-    cout<<RecFile<<endl; 
-    // return; 
-    /////////////////////////////////////////////////
-    /////////////////////////////////////////////////
-    /////////////////////////////////////////////////
+  cout<<"RecFile: "<<RecFile<<endl; 
+  //return; 
+  /////////////////////////////////////////////////
+  /////////////////////////////////////////////////
+  /////////////////////////////////////////////////
   gDebug = 0;
   TStopwatch timer;
   timer.Start();
@@ -160,19 +161,29 @@ TString GetMomText(int OldCode=1, int PtNotP, float MomMin, float MomMax){
   TString Pstring="P"; if(PtNotP==1){Pstring="Pt";}
   char Ptxt[256];
   if(OldCode==1){
-    sprintf(Ptxt,"%s%dto%d",Pstring.Data(),MomMin/10.,MomMax/10.);
+    sprintf(Ptxt,"%s%dto%d",Pstring.Data(),MomMin/100.,MomMax/100.);
   }else{
     
-    int MomMinMod10=int(MomMin) % 10;
-    int MomMaxMod10=int(MomMax) % 10;
-    float IntegerMomMin10=(MomMin-MomMinMod10)/10.;
-    float IntegerMomMax10=(MomMax-MomMaxMod10)/10.;
+    int MomMinMod100=int(MomMin) % 100;
+    int MomMaxMod100=int(MomMax) % 100;
+    float IntegerMomMin100=(MomMin-MomMinMod100)/100.;
+    float IntegerMomMax100=(MomMax-MomMaxMod100)/100.;
     
+    int MomMinMod10=int(MomMinMod100) % 10;
+    int MomMaxMod10=int(MomMaxMod100) % 10;
+    float IntegerMomMin10=(MomMinMod100-MomMinMod10)/10.;
+    float IntegerMomMax10=(MomMaxMod100-MomMaxMod10)/10.;
+    cout<<"   #####################################  "<<endl;
+    cout<<"   #### Momentum  "<<endl;
+
+    cout<<IntegerMomMin100<<"."<<MomMinMod100<<",  "<<IntegerMomMax100<<"."<<MomMaxMod100<<endl;
     cout<<IntegerMomMin10<<"."<<MomMinMod10<<",  "<<IntegerMomMax10<<"."<<MomMaxMod10<<endl;
-    //return "momtext";
-    
+
+    cout<<IntegerMomMin100<<"."<<IntegerMomMin10<<",  "<<IntegerMomMax100<<"."<<IntegerMomMax10<<endl;
+    cout<<"   #####################################  "<<endl;
+        
     char MinMomTxt[256];char MaxMomTxt[256]; 
-    sprintf(Ptxt,"%s%dpoint%d_to_%dpoint%d",Pstring.Data(),IntegerMomMin10,MomMinMod10,IntegerMomMax10,MomMaxMod10);
+    sprintf(Ptxt,"%s%dpoint%d_to_%dpoint%d",Pstring.Data(),IntegerMomMin100,IntegerMomMin10,IntegerMomMax100,IntegerMomMax10);
     //cout<<Ptxt<<endl;
   }
   stringstream ss; 
@@ -198,10 +209,11 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  //return "/nas/Tariq/Test/";
+  return "/hera/cbm/users/tariq/MomScan/";
+  return "/nas/Tariq/Test/";
 //   return "/nas/Tariq/GeoOpt/";
-//   return "/data/GeoOpt/Test/";
-//   return "/data/GeoOpt/OptiPMTSize/";
+  return "/data/GeoOpt/Test2/";
+  return "/data/GeoOpt/OptimisedGeo/";
   //return "/data/GeoOpt/";
   return "/hera/cbm/users/tariq/GeoOptRootFiles/OptimisedGeo/";
   return "/hera/cbm/users/tariq/GeoOptRootFiles/";
@@ -264,19 +276,33 @@ TString  GetDimentionText(int DimCase, int EnlargedPMTWidth, int EnlargedPMTHigh
   }
 }
 ////////////////////////////////////////////////////////
-TString GetThetaText(int OldCode=1,  float ThetaMin=25., float ThetaMax=250.){
+TString GetThetaText(int OldCode=1,  float ThetaMin=250., float ThetaMax=2500.){
   TString Tstring="Theta"; 
   char THtxt[256];
   if(OldCode==1){
-    sprintf(THtxt,"%s_%d",Tstring.Data(),ThetaMax/10.);
+    sprintf(THtxt,"%s_%d",Tstring.Data(),ThetaMax/100.);
   }else{  
-    int ThetaMinMod10=int(ThetaMin) % 10;
-    int ThetaMaxMod10=int(ThetaMax) % 10;
-    float IntegerThetaMin10=(ThetaMin-ThetaMinMod10)/10.;
-    float IntegerThetaMax10=(ThetaMax-ThetaMaxMod10)/10.;
+    int ThetaMinMod100=int(ThetaMin) % 100;
+    int ThetaMaxMod100=int(ThetaMax) % 100;
+    float IntegerThetaMin100=(ThetaMin-ThetaMinMod100)/100.;
+    float IntegerThetaMax100=(ThetaMax-ThetaMaxMod100)/100.;
     
+
+    int ThetaMinMod10=int(ThetaMinMod100) % 10;
+    int ThetaMaxMod10=int(ThetaMaxMod100) % 10;
+    float IntegerThetaMin10=(ThetaMinMod100-ThetaMinMod10)/10.;
+    float IntegerThetaMax10=(ThetaMaxMod100-ThetaMaxMod10)/10.;
+    cout<<"   #####################################  "<<endl;
+    cout<<"   #### Theta  "<<endl;
+
+    cout<<IntegerThetaMin100<<"."<<ThetaMinMod100<<",  "<<IntegerThetaMax100<<"."<<ThetaMaxMod100<<endl;
+    cout<<IntegerThetaMin10<<"."<<ThetaMinMod10<<",  "<<IntegerThetaMax10<<"."<<ThetaMaxMod10<<endl;
+
+    cout<<IntegerThetaMin100<<"."<<IntegerThetaMin10<<",  "<<IntegerThetaMax100<<"."<<IntegerThetaMax10<<endl;
+    cout<<"   #####################################  "<<endl;
+
     char MinThetaTxt[256];char MaxThetaTxt[256]; 
-    sprintf(THtxt,"%s%dpoint%d_to_%dpoint%d",Tstring.Data(),IntegerThetaMin10,ThetaMinMod10,IntegerThetaMax10,ThetaMaxMod10);
+    sprintf(THtxt,"%s%dpoint%d_to_%dpoint%d",Tstring.Data(),IntegerThetaMin100,IntegerThetaMin10,IntegerThetaMax100,IntegerThetaMax10);
   }
   stringstream ss; 
   ss<<THtxt;
