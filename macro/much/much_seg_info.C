@@ -11,24 +11,6 @@ void much_seg_info(TString digiFile = ""){
     digiFile = inputdir + "/macro/much/data/much_digi.root";
   }
 
-  // ----  Load libraries   -------------------------------------------------
-  cout << endl << "=== much_seg_info.C : Loading libraries ..." << endl;
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
-  gSystem->Load("libCbmBase");
-  gSystem->Load("libCbmData");
-  gSystem->Load("libField");
-  gSystem->Load("libGen");
-  gSystem->Load("libPassive");
-  gSystem->Load("libSts");
-  gSystem->Load("libTrd");
-  gSystem->Load("libTof");
-  gSystem->Load("libMuch");
-  // -----------------------------------------------------------------------
-
   TFile* f = new TFile(digiFile.Data());
   f->ls();
   Int_t nPadsTotal = 0;

@@ -31,13 +31,6 @@ void much_seg_manual(const char* mcFile = "",
   TString outFile  = "data/dummy.root";
   TString parFile = "data/params.root";
 
-  // ----  Load libraries   -------------------------------------------------
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gROOT->LoadMacro("$VMCWORKDIR/macro/much/muchlibs.C");
-  muchlibs();
-  // ------------------------------------------------------------------------
-
   // -----   Analysis run   -------------------------------------------------
   FairRunAna *fRun= new FairRunAna();
   fRun->SetInputFile(mcFile);
