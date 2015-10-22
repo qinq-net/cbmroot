@@ -49,6 +49,7 @@
 #include <typeinfo>
 
 #include <TH1.h>
+#include <TH1F.h>
 #include <TH1D.h>
 #include <TH2.h>
 #include <TH3.h>
@@ -96,7 +97,8 @@ TNamed("PairAnalysisHistos","PairAnalysis Histogram Container"),
   fMetaData(0x0),
   fList(0x0),
   fUsedVars(new TBits(PairAnalysisVarManager::kNMaxValues)),
-  fReservedWords(new TString)
+  fReservedWords(new TString),
+  fPrecision(kFloat)
 {
   //
   // Default constructor
@@ -115,7 +117,8 @@ PairAnalysisHistos::PairAnalysisHistos(const char* name, const char* title) :
   fMetaData(0x0),
   fList(0x0),
   fUsedVars(new TBits(PairAnalysisVarManager::kNMaxValues)),
-  fReservedWords(new TString)
+  fReservedWords(new TString),
+  fPrecision(kFloat)
 {
   //
   // TNamed constructor
@@ -327,12 +330,24 @@ TH1 *PairAnalysisHistos::GetTHist(const char* histClass, const char *name, const
   isOk&=IsHistogramOk(histClass,name);
   isOk&=(binsX!=0x0);
   if (!isOk) return 0x0;
-  if(!binsY)      return (new TH1D(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray()) );
-  else if(!binsZ) return (new TH2D(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray(),
-				   binsY->GetNrows()-1,binsY->GetMatrixArray())            );
-  else            return (new TH3D(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray(),
-				   binsY->GetNrows()-1,binsY->GetMatrixArray(),
-				   binsZ->GetNrows()-1,binsZ->GetMatrixArray())            );
+  switch(fPrecision) {
+  case kFloat:
+    if(!binsY)      return (new TH1F(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray()) );
+    else if(!binsZ) return (new TH2F(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray(),
+				     binsY->GetNrows()-1,binsY->GetMatrixArray())            );
+    else            return (new TH3F(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray(),
+				     binsY->GetNrows()-1,binsY->GetMatrixArray(),
+				     binsZ->GetNrows()-1,binsZ->GetMatrixArray())            );
+    break;
+  case kDouble:
+    if(!binsY)      return (new TH1D(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray()) );
+    else if(!binsZ) return (new TH2D(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray(),
+				     binsY->GetNrows()-1,binsY->GetMatrixArray())            );
+    else            return (new TH3D(name,title,binsX->GetNrows()-1,binsX->GetMatrixArray(),
+				     binsY->GetNrows()-1,binsY->GetMatrixArray(),
+				     binsZ->GetNrows()-1,binsZ->GetMatrixArray())            );
+    break;
+  }
 }
 
 //_____________________________________________________________________________

@@ -57,8 +57,10 @@ public:
   virtual ~PairAnalysisHistos();
 
   enum {kNoAutoFill=1000000000, kNoProfile=999, kNoWeights=998, kNone=997};
+  enum Eprecision {kFloat=0,kDouble};
 
   // functions for object creation
+  void SetPrecision(Eprecision precision) { fPrecision=precision; }
   TBits *GetUsedVars()  const { return fUsedVars; }
   void SetReservedWords(const char* words);
   void AddClass(        const char* histClass);
@@ -217,11 +219,12 @@ private:
   void PrintStructure() const;
 
   Bool_t IsHistogramOk(const char* classTable, const char* name);
+  Eprecision fPrecision;            //! precision of histograms
 
   PairAnalysisHistos(const PairAnalysisHistos &hist);
   PairAnalysisHistos& operator = (const PairAnalysisHistos &hist);
 
-  ClassDef(PairAnalysisHistos,2)
+  ClassDef(PairAnalysisHistos,3)
 };
 
 template <typename valX, typename valY, typename valZ, typename valP, typename valW>
