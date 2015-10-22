@@ -287,9 +287,8 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 	 tofAnaTestbeam->SetDCh4Sel(7.);   // Width  of channel selection window
 	 break;
 
-     case 1:                             // upper part of setup: Buc2013 - BucRef
-     case 6:                             // lower part of setup: Buc2013 - BucRef
-     case 61:
+   case 1:                                 // upper part of setup: Buc2013 - BucRef
+   case 61:
 	 tofTestBeamClust->SetDutId(6);
 	 tofTestBeamClust->SetSelId(1);
 
@@ -297,7 +296,24 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
 	 tofAnaTestbeam->SetMrpcRef(1);    // Reference RPC     
 	 tofAnaTestbeam->SetPlaSelect(2);  // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
 	 tofAnaTestbeam->SetCh4Sel(38.5);  // Center of channel selection window
-	 tofAnaTestbeam->SetDCh4Sel(35.);   // Width  of channel selection window
+	 tofAnaTestbeam->SetDCh4Sel(40.);  // Width  of channel selection window
+	 tofAnaTestbeam->SetTShift(1000.);    // initialization
+	 tofAnaTestbeam->SetSel2TOff(0.);  // Shift Sel2 time peak to 0 
+
+	 break;
+
+     case 6:                             // lower part of setup: Buc2013 - BucRef
+     case 16:
+	 tofTestBeamClust->SetDutId(1);
+	 tofTestBeamClust->SetSelId(6);
+
+	 tofAnaTestbeam->SetDut(1);        // Device under test   
+	 tofAnaTestbeam->SetMrpcRef(6);    // Reference RPC     
+
+	 tofAnaTestbeam->SetPlaSelect(2);  // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
+	 tofAnaTestbeam->SetCh4Sel(38.5);  // Center of channel selection window
+	 tofAnaTestbeam->SetDCh4Sel(45.);  // Width  of channel selection window
+	 tofAnaTestbeam->SetSel2TOff(-230.);  // Shift Sel2 time peak to 0 
 	 break;
 
    case 7:                                 // upper part of setup: USTC - P5
@@ -466,6 +482,7 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
   gROOT->LoadMacro("pl_over_cluSel.C");
   gROOT->LoadMacro("pl_over_clu.C");
   gROOT->LoadMacro("pl_all_dTSel.C");
+  gROOT->LoadMacro("pl_over_MatD4sel.C");
 
   switch(iSet){
   case 0:
@@ -490,18 +507,39 @@ void ana_digi(Int_t nEvents = 100000, Int_t calMode=0, Int_t calSel=-1, Int_t ca
     gInterpreter->ProcessLine("pl_over_cluSel(0,7)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,9)");
     gInterpreter->ProcessLine("pl_all_dTSel()");
+    gInterpreter->ProcessLine("pl_over_MatD4sel()");
     break;
 
   case 1:
+  case 61:
+  case 81:
+  case 16:
+  case 86:
+  case 18:
+  case 68:
     gInterpreter->ProcessLine("pl_over_clu(1)");
     gInterpreter->ProcessLine("pl_over_clu(5)");
     gInterpreter->ProcessLine("pl_over_clu(6)");
     gInterpreter->ProcessLine("pl_over_clu(8)");
+    gInterpreter->ProcessLine("pl_over_clu(8,0,1)");
+    gInterpreter->ProcessLine("pl_over_clu(8,0,2)");
+    gInterpreter->ProcessLine("pl_over_clu(8,0,3)");
+    gInterpreter->ProcessLine("pl_over_clu(8,0,4)");
+    gInterpreter->ProcessLine("pl_over_clu(8,0,5)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,5)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,5,1)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,8)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,2)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,3)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,4)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,5)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,6)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,1)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,5)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,5,1)");
     gInterpreter->ProcessLine("pl_all_dTSel()");
+    gInterpreter->ProcessLine("pl_over_MatD4sel()");
     break;
 
   default:

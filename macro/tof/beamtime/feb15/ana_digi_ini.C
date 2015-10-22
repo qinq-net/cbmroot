@@ -86,10 +86,13 @@ void ana_digi_ini(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
    tofTestBeamClust->SetTotMean(2000.);          // Tot calibration target value in ps 
    tofTestBeamClust->SetMaxTimeDist(500.);       // default cluster range in ps 
    //tofTestBeamClust->SetMaxTimeDist(0.);       //Deb// default cluster range in ps 
+
    tofTestBeamClust->SetBeamRefType(iBRef);      // Beam Reference -> Diamond  
    tofTestBeamClust->SetBeamRefSm(0);
    tofTestBeamClust->SetBeamRefDet(0);
    tofTestBeamClust->SetBeamAddRefMul(-1);
+
+   if(iBRef==8) tofTestBeamClust->SetBeamRefDet(3); //pick center pad counter
 
    Int_t calSelRead = calSel;
    if (calSel<0) calSelRead=0;
@@ -281,37 +284,39 @@ void ana_digi_ini(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
 	 break;
 
      case 1:                             // upper part of setup: Buc2013 - BucRef
-     case 6:                             // lower part of setup: Buc2013 - BucRef
      case 61:
 	 tofTestBeamClust->SetDutId(6);
 	 tofTestBeamClust->SetSelId(1);
-	 tofTestBeamClust->SetBeamRefType(5);    // Test case 
-	 tofTestBeamClust->SetBeamRefSm(0);
-	 tofTestBeamClust->SetBeamRefDet(0);
-	 tofTestBeamClust->SetBeamAddRefMul(-1);
 
 	 tofAnaTestbeam->SetDut(6);        // Device under test   
 	 tofAnaTestbeam->SetMrpcRef(1);    // Reference RPC     
-	 tofAnaTestbeam->SetBeamRefSmType(5); // P2
-	 tofAnaTestbeam->SetBeamRefSmId(0);
+
 	 tofAnaTestbeam->SetPlaSelect(2);  // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
 	 tofAnaTestbeam->SetCh4Sel(38.5);  // Center of channel selection window
 	 tofAnaTestbeam->SetDCh4Sel(35.);  // Width  of channel selection window
+	 break;
+
+     case 6:                             // lower part of setup: Buc2013 - BucRef
+     case 16:
+	 tofTestBeamClust->SetDutId(1);
+	 tofTestBeamClust->SetSelId(6);
+
+	 tofAnaTestbeam->SetDut(1);        // Device under test   
+	 tofAnaTestbeam->SetMrpcRef(6);    // Reference RPC     
+
+	 tofAnaTestbeam->SetPlaSelect(2);  // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
+	 tofAnaTestbeam->SetCh4Sel(38.5);  // Center of channel selection window
+	 tofAnaTestbeam->SetDCh4Sel(45.);  // Width  of channel selection window
 	 break;
 
    case 7:                                 // upper part of setup: USTC - P5
    case 74:
 	 tofTestBeamClust->SetDutId(7);
 	 tofTestBeamClust->SetSelId(4);
-	 tofTestBeamClust->SetBeamRefType(5);    // Test case 
-	 tofTestBeamClust->SetBeamRefSm(0);
-	 tofTestBeamClust->SetBeamRefDet(0);
-	 tofTestBeamClust->SetBeamAddRefMul(-1);
 
-	 tofAnaTestbeam->SetDut(9);        // Device under test   
+	 tofAnaTestbeam->SetDut(7);        // Device under test   
 	 tofAnaTestbeam->SetMrpcRef(4);    // Reference RPC     
-	 tofAnaTestbeam->SetBeamRefSmType(5); //
-	 tofAnaTestbeam->SetBeamRefSmId(0);
+
 	 tofAnaTestbeam->SetPlaSelect(0);   // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
 	 tofAnaTestbeam->SetCh4Sel(12.5);   // Center of channel selection window
 	 tofAnaTestbeam->SetDCh4Sel(11.);   // Width  of channel selection window
@@ -321,15 +326,10 @@ void ana_digi_ini(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
    case 94:                                 // upper part of setup: THUstrip - P5
 	 tofTestBeamClust->SetDutId(9);
 	 tofTestBeamClust->SetSelId(4);
-	 tofTestBeamClust->SetBeamRefType(5);    // Test case 
-	 tofTestBeamClust->SetBeamRefSm(0);
-	 tofTestBeamClust->SetBeamRefDet(0);
-	 tofTestBeamClust->SetBeamAddRefMul(-1);
 
 	 tofAnaTestbeam->SetDut(9);        // Device under test   
 	 tofAnaTestbeam->SetMrpcRef(4);    // Reference RPC     
-	 tofAnaTestbeam->SetBeamRefSmType(5); // P2
-	 tofAnaTestbeam->SetBeamRefSmId(0);
+
 	 tofAnaTestbeam->SetPlaSelect(0);   // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
 	 tofAnaTestbeam->SetCh4Sel(12.5);   // Center of channel selection window
 	 tofAnaTestbeam->SetDCh4Sel(11.);   // Width  of channel selection window
@@ -338,15 +338,10 @@ void ana_digi_ini(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
    case 37:                                 // upper part of setup: P2 - USTC
 	 tofTestBeamClust->SetDutId(3);
 	 tofTestBeamClust->SetSelId(7);
-	 tofTestBeamClust->SetBeamRefType(5);    // Test case 
-	 tofTestBeamClust->SetBeamRefSm(0);
-	 tofTestBeamClust->SetBeamRefDet(0);
-	 tofTestBeamClust->SetBeamAddRefMul(-1);
 
 	 tofAnaTestbeam->SetDut(3);        // Device under test   
 	 tofAnaTestbeam->SetMrpcRef(7);    // Reference RPC     
-	 tofAnaTestbeam->SetBeamRefSmType(5); // P2
-	 tofAnaTestbeam->SetBeamRefSmId(0);
+
 	 tofAnaTestbeam->SetPlaSelect(0);  // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
 	 tofAnaTestbeam->SetCh4Sel(8.5);   // Center of channel selection window
 	 tofAnaTestbeam->SetDCh4Sel(7.);   // Width  of channel selection window
@@ -366,15 +361,10 @@ void ana_digi_ini(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
    case 39:                                 // upper part of setup: P2 - THUstrip
 	 tofTestBeamClust->SetDutId(3);
 	 tofTestBeamClust->SetSelId(9);
-	 tofTestBeamClust->SetBeamRefType(5);    // Test case 
-	 tofTestBeamClust->SetBeamRefSm(0);
-	 tofTestBeamClust->SetBeamRefDet(0);
-	 tofTestBeamClust->SetBeamAddRefMul(-1);
 
 	 tofAnaTestbeam->SetDut(3);        // Device under test   
 	 tofAnaTestbeam->SetMrpcRef(9);    // Reference RPC     
-	 tofAnaTestbeam->SetBeamRefSmType(5); // P2
-	 tofAnaTestbeam->SetBeamRefSmId(0);
+
 	 tofAnaTestbeam->SetPlaSelect(0);   // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
 	 tofAnaTestbeam->SetCh4Sel(12.5);   // Center of channel selection window
 	 tofAnaTestbeam->SetDCh4Sel(11.);   // Width  of channel selection window
@@ -383,15 +373,10 @@ void ana_digi_ini(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
    case 49:                                 // upper part of setup: P2 - THUstrip
 	 tofTestBeamClust->SetDutId(4);
 	 tofTestBeamClust->SetSelId(9);
-	 tofTestBeamClust->SetBeamRefType(5);    // Test case 
-	 tofTestBeamClust->SetBeamRefSm(0);
-	 tofTestBeamClust->SetBeamRefDet(0);
-	 tofTestBeamClust->SetBeamAddRefMul(-1);
 
 	 tofAnaTestbeam->SetDut(4);        // Device under test   
 	 tofAnaTestbeam->SetMrpcRef(9);    // Reference RPC     
-	 tofAnaTestbeam->SetBeamRefSmType(5); // P2
-	 tofAnaTestbeam->SetBeamRefSmId(0);
+
 	 tofAnaTestbeam->SetPlaSelect(0);   // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
 	 tofAnaTestbeam->SetCh4Sel(12.5);   // Center of channel selection window
 	 tofAnaTestbeam->SetDCh4Sel(11.);   // Width  of channel selection window
@@ -474,10 +459,26 @@ void ana_digi_ini(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
     break;
 
   case 1:
+  case 61:
+  case 81:
+  case 16:
+  case 86:
+  case 18:
+  case 68:
     gInterpreter->ProcessLine("pl_over_clu(1)");
     gInterpreter->ProcessLine("pl_over_clu(6)");
     gInterpreter->ProcessLine("pl_over_clu(8)");
+    gInterpreter->ProcessLine("pl_over_clu(8,0,1)");
+    gInterpreter->ProcessLine("pl_over_clu(8,0,2)");
+    gInterpreter->ProcessLine("pl_over_clu(8,0,3)");
+    gInterpreter->ProcessLine("pl_over_clu(8,0,4)");
+    gInterpreter->ProcessLine("pl_over_clu(8,0,5)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,8)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,2)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,3)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,4)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,5)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,6)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,1)");
     break;
