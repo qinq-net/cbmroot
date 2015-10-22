@@ -11,13 +11,13 @@ void create_much_magnet(){
   Char_t cmat = 'C';         // Absorber material - check much geometry for notations
   Bool_t remove_screens = 1; // Flag = 1 to remove yoke screens 
   
-  // -------------  Load the necessary FairRoot libraries   -------------------
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
-  // --------------------------------------------------------------------------
+//  // -------------  Load the necessary FairRoot libraries   -------------------
+//  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
+//  basiclibs();
+//  gSystem->Load("libGeoBase");
+//  gSystem->Load("libParBase");
+//  gSystem->Load("libBase");
+//  // --------------------------------------------------------------------------
 
   // -------   Load media from media file and create absober material ---------
   FairGeoLoader*    geoLoad = new FairGeoLoader("TGeo","FairGeoLoader");
