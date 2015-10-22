@@ -1,0 +1,76 @@
+*** magnet_v15a.gdml	2015-10-22 12:06:34.145975515 +0200
+--- magnet_v15b.gdml	2015-10-22 12:11:19.535390685 +0200
+***************
+*** 3,8 ****
+--- 3,9 ----
+  
+  <define>
+  <position name="central" x="0" y="0" z="0" unit="mm"/>
++ <position name="shiftinz" z="1140" unit="mm"/>
+  <rotation name="identity" x="0" y="0" z="0" unit="degree"/>
+  <variable name="DEGtoRAD" value="1.74532925199433E-02"/>
+  </define>
+***************
+*** 68,77 ****
+  <tube name="Coils_layer_2_PartBody" rmin="615.000000" rmax="985.000000" z="(216.000000)*2" startphi="0.000000" deltaphi="360.000000" lunit="mm" aunit="degree"/>
+  <tube name="Coils_layer_1_PartBody" rmin="600.000000" rmax="1000.000000" z="(250.000000)*2" startphi="0.000000" deltaphi="360.000000" lunit="mm" aunit="degree"/>
+  <box name="Magnet_container_29" x="(2900.000000)*2" y="(2166.700000)*2" z="(1190.000000)*2" lunit="mm"/>
+! <box name="Magnet_container_30" x="(1180.000000)*2" y="(700.000000)*2" z="(1190.000000)*2" lunit="mm"/>
+  <subtraction name="Magnet_container_PartBody">
+  <first ref="Magnet_container_29"/>
+! <second ref="Magnet_container_30"/>
+  <positionref ref="central"/>
+  <rotationref ref="identity"/>
+  </subtraction>
+--- 69,85 ----
+  <tube name="Coils_layer_2_PartBody" rmin="615.000000" rmax="985.000000" z="(216.000000)*2" startphi="0.000000" deltaphi="360.000000" lunit="mm" aunit="degree"/>
+  <tube name="Coils_layer_1_PartBody" rmin="600.000000" rmax="1000.000000" z="(250.000000)*2" startphi="0.000000" deltaphi="360.000000" lunit="mm" aunit="degree"/>
+  <box name="Magnet_container_29" x="(2900.000000)*2" y="(2166.700000)*2" z="(1190.000000)*2" lunit="mm"/>
+! <box name="Magnet_container_30" x="(1180.000000)*2" y="(700.000000)*2" z="(1190.100000)*2" lunit="mm"/>
+! <box name="Magnet_container_31" x="(1180.000000)*2" y="(1050.000000)*2" z="(50.100000)*2" lunit="mm"/>
+! <union name="Magnet_container_cutout">
+! <first ref="Magnet_container_30"/>
+! <second ref="Magnet_container_31"/>
+! <positionref ref="shiftinz"/>
+! <rotationref ref="identity"/>
+! </union>
+  <subtraction name="Magnet_container_PartBody">
+  <first ref="Magnet_container_29"/>
+! <second ref="Magnet_container_cutout"/>
+  <positionref ref="central"/>
+  <rotationref ref="identity"/>
+  </subtraction>
+***************
+*** 189,195 ****
+  <rotation name="Coils_layer_1_rot_Coils_layer_2_1" x="-0.000000" y="-0.000000" z="-0.000000" unit="degree"/>
+  </physvol>
+  </volume>
+! <volume name="magnet_v15a">
+  <materialref ref="air"/>
+  <solidref ref="Magnet_container_PartBody"/>
+  <physvol>
+--- 197,203 ----
+  <rotation name="Coils_layer_1_rot_Coils_layer_2_1" x="-0.000000" y="-0.000000" z="-0.000000" unit="degree"/>
+  </physvol>
+  </volume>
+! <volume name="magnet_v15b">
+  <materialref ref="air"/>
+  <solidref ref="Magnet_container_PartBody"/>
+  <physvol>
+***************
+*** 341,347 ****
+  </structure>
+  
+  <setup name="Default" version="1.0">
+! <world ref="magnet_v15a"/>
+  </setup>
+  
+  </gdml>
+--- 349,355 ----
+  </structure>
+  
+  <setup name="Default" version="1.0">
+! <world ref="magnet_v15b"/>
+  </setup>
+  
+  </gdml>

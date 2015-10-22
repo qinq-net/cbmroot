@@ -4,7 +4,7 @@ void Import_GDML_Export_ROOT()
 
 	TGDMLParse parser;
 	// Define your input GDML file HERE
-	TGeoVolume* gdmlTop = parser.GDMLReadFile ("magnet_v15a.gdml");
+	TGeoVolume* gdmlTop = parser.GDMLReadFile ("magnet_v15b.gdml");
 
 	TGeoVolume* rootTop = new TGeoVolumeAssembly("geometryFromGDML");
 	gGeoManager->SetTopVolume(rootTop);
@@ -17,7 +17,7 @@ void Import_GDML_Export_ROOT()
 
 	gGeoManager->CloseGeometry();
 	// Define you output ROOT file HERE
-	TFile* outfile = new TFile("magnet_v15a.geo.root", "RECREATE");
+	TFile* outfile = new TFile("magnet_v15b.geo.root", "RECREATE");
 	rootTop->Write();
 	outfile->Close();
 }

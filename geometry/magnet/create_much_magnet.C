@@ -1,7 +1,7 @@
 // This macro removes yoke screens and adds absorber inside the magnet
 void create_much_magnet(){
-  const char* infilename  = "magnet_v15a.geo.root";
-  const char* outfilename = "magnet_v15a_much.geo.root";
+  const char* infilename  = "magnet_v15b.geo.root";
+  const char* outfilename = "magnet_v15b_much.geo.root";
   // absorber parameters - check compatibility with much geometry
   Double_t atanmin = 0.1;    // Acceptance tangent min
   Double_t atanmax = 0.5;    // Acceptance tangent max
@@ -11,14 +11,6 @@ void create_much_magnet(){
   Char_t cmat = 'C';         // Absorber material - check much geometry for notations
   Bool_t remove_screens = 1; // Flag = 1 to remove yoke screens 
   
-//  // -------------  Load the necessary FairRoot libraries   -------------------
-//  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-//  basiclibs();
-//  gSystem->Load("libGeoBase");
-//  gSystem->Load("libParBase");
-//  gSystem->Load("libBase");
-//  // --------------------------------------------------------------------------
-
   // -------   Load media from media file and create absober material ---------
   FairGeoLoader*    geoLoad = new FairGeoLoader("TGeo","FairGeoLoader");
   FairGeoInterface* geoFace = geoLoad->getGeoInterface();
@@ -49,7 +41,7 @@ void create_much_magnet(){
   //geometryFromGDML->Draw("ogl");
   //return;
   
-  TGeoNode* magnet_node = geometryFromGDML->FindNode("magnet_v15a_1");
+  TGeoNode* magnet_node = geometryFromGDML->FindNode("magnet_v15b_1");
   TGeoVolume* magnet_volume = magnet_node->GetVolume();
   
   if (remove_screens) { // remove yoke screens
