@@ -12,10 +12,10 @@
 #include <iostream>
 using namespace std;
 
-void ekata_sim(TString inputSignal = "",
+void much_sim(TString inputSignal = "",
               TString inputBgr = "",
               TString outFile = "",
-              Int_t nEvents = 1)
+              Int_t nEvents = 2)
 {
   // ========================================================================
   //          Adjust this part according to your requirements
@@ -30,10 +30,13 @@ void ekata_sim(TString inputSignal = "",
 //  inputBgr = inputdir + "/input/urqmd.auau.25gev.centr.root";
   }
   if (outFile == "") {
-    outFile = "data/mc_parallelopiped.root";
+    outFile = "data/mc.root";
+    //    outFile = "data/mc_parallelopiped.root";
   }
-  TString parFile = "data/params_parallelopiped.root";
-  TString geoFile = "data/parallelopiped_geofile_full.root";
+  TString parFile = "data/params.root";
+  //  TString parFile = "data/params_parallelopiped.root";
+  TString geoFile = "data/much_geofile_full.root";
+  //  TString geoFile = "data/parallelopiped_geofile_full.root";
 
   // Function needed for CTest runtime dependency
   TString depFile = Remove_CTest_Dependency_File("data", "much_sim");

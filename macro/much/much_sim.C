@@ -22,15 +22,21 @@ void much_sim(TString inputSignal = "",
 
   TString inputdir = gSystem->Getenv("VMCWORKDIR");
   if (inputSignal == "") {
-    inputSignal = inputdir + "/macro/much/data/jpsi.root";
+   inputSignal = inputdir + "/macro/much/data/jpsi.root";
   }
   if (inputBgr == "") {
-    inputBgr = inputdir + "/input/urqmd.auau.25gev.centr.root";
+  inputBgr = inputdir + "/input/urqmd.auau.10gev.centr.root";
+//  inputBgr = inputdir + "/input/urqmd.auau.8gev.centr.01000.root";
+//  inputBgr = inputdir + "/input/urqmd.auau.25gev.centr.root";
   }
   if (outFile == "") {
     outFile = "data/mc.root";
+    //    outFile = "data/mc_parallelopiped.root";
   }
   TString parFile = "data/params.root";
+  //  TString parFile = "data/params_parallelopiped.root";
+  TString geoFile = "data/much_geofile_full.root";
+  //  TString geoFile = "data/parallelopiped_geofile_full.root";
 
   // Function needed for CTest runtime dependency
   TString depFile = Remove_CTest_Dependency_File("data", "much_sim");
@@ -50,21 +56,41 @@ void much_sim(TString inputSignal = "",
   // In case you want the additional W shielding around the pipe,
   // use shield_standard.geo or shield_compact.geo, respective to the
   // MUCH geometry. Otherwise, define an empty string.
-//  TString muchGeom   = "much/much_v11a.geo"; // default rectangular geometry
-  TString muchGeom   = "much/much_v12b.geo"; // default sector geometry
-  TString pipeGeom   = "pipe/pipe_much.geo";
-  TString shieldGeom = "shield_standard.geo";
 
+  TString muchGeom   = "much/much_v15b_STS100-B_125cm_no.geo";
+  TString pipeGeom   = "pipe/pipe_much_v15b_125cm_no.geo";
+  TString shieldGeom = "much/shield_v15b_SIS100B_149_3part_125cm.geo";
+  
   // -----   Other geometries   ---------------------------------------------
   TString caveGeom   = "cave.geo";
   CbmTarget* target = new CbmTarget("Gold", 0.025);
-  TString magnetGeom = "magnet/magnet_v12b.geo.root";
-  TString stsGeom    = "sts/sts_v13d.geo.root";
+  TString magnetGeom = "magnet/magnet_v15a_much2.geo.root";
+  TString stsGeom    = "sts/sts_v13y.geo.root";
+
+  // --- Define the target geometry -----------------------------------------
+  //                                                                         
+  // The target is not part of the setup, since one and the same setup can   
+  // and will be used with different targets.                                
+  // The target is constructed as a tube in z direction with the specified   
+  // diameter (in x and y) and thickness (in z). It will be placed at the    
+  // specified position as daughter volume of the volume present there. It is
+  // in the responsibility of the user that no overlaps or extrusions are    
+  // created by the placement of the target.                                 
+  //                                                                         
+  TString  targetElement   = "Gold";
+  Double_t targetThickness = 0.025;  // full thickness in cm                 
+  Double_t targetDiameter  = 2.5;    // diameter in cm                       
+  Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
+  Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
+  Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
+  Double_t targetRotY      = 0.;     // target rotation angle around the y axis [deg]
+  // ------------------------------------------------------------------------
+
 
   // -----   Magnetic field   -----------------------------------------------
-  TString  fieldMap   = "field_v12b";   // name of field map
-  Double_t fieldZ     = 50.;                 // field center z position
-  Double_t fieldScale =  1.;                 // field scaling factor
+  TString  fieldMap     = "field_v12b";   // name of field map
+  Double_t fieldZ       = 40.;                 // field center z position
+  Double_t fieldScale   =  1.;                 // field scaling factor
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -110,14 +136,13 @@ void much_sim(TString inputSignal = "",
     fRun->AddModule(pipe);
   }
 
-  if ( target ) fRun->AddModule(target);
-
-  if ( shieldGeom != "" ) {
-    FairModule* shield = new CbmShield("SHIELD");
-    shield->SetGeometryFileName(shieldGeom);
-    cout << "    --- " << shieldGeom << endl;
-    fRun->AddModule(shield);
-  }
+  // --- Target
+  CbmTarget* target = new CbmTarget(targetElement.Data(),
+				    targetThickness,
+				    targetDiameter);
+  target->SetPosition(targetPosX, targetPosY, targetPosZ);
+  target->SetRotation(targetRotY);
+  fRun->AddModule(target);
 
   if ( magnetGeom != "" ) {
     FairModule* magnet = new CbmMagnet("MAGNET");
@@ -133,11 +158,18 @@ void much_sim(TString inputSignal = "",
     fRun->AddModule(sts);
   }
 
-  if ( muchGeom != "" ) {
+ if ( muchGeom != "" ) {
     FairDetector* much = new CbmMuch("MUCH", kTRUE);
     much->SetGeometryFileName(muchGeom);
     cout << "    --- " << muchGeom << endl;
     fRun->AddModule(much);
+  }
+
+  if ( shieldGeom != "" ) {
+    FairModule* shield = new CbmShield("SHIELD");
+    shield->SetGeometryFileName(shieldGeom);
+    cout << "    --- " << shieldGeom << endl;
+    fRun->AddModule(shield);
   }
   // ------------------------------------------------------------------------
 
@@ -154,13 +186,13 @@ void much_sim(TString inputSignal = "",
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
 #ifndef __CLING__
   if ( inputSignal != "" ) {
-  	CbmPlutoGenerator *plutoGen= new CbmPlutoGenerator(inputSignal);
-  	primGen->AddGenerator(plutoGen);
+    CbmPlutoGenerator *plutoGen= new CbmPlutoGenerator(inputSignal);
+    primGen->AddGenerator(plutoGen);
   }
 #endif
   if ( inputBgr != "" ) {
-  	CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inputBgr);
-  	primGen->AddGenerator(uniGen);
+    CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inputBgr);
+    primGen->AddGenerator(uniGen);
   }
   fRun->SetGenerator(primGen);
   // ------------------------------------------------------------------------
@@ -197,7 +229,7 @@ void much_sim(TString inputSignal = "",
   cout << endl << "=== much_sim.C : Start run ..." << endl;
   fRun->Run(nEvents);
   // Write geometry
-  fRun->CreateGeometryFile("geometry.root");
+  fRun->CreateGeometryFile(geoFile);
   // ------------------------------------------------------------------------
 
 
@@ -211,7 +243,7 @@ void much_sim(TString inputSignal = "",
   cout << "=== much_sim.C : Real time used: " << rtime << "s " << endl;
   cout << "=== much_sim.C : CPU time used : " << ctime << "s " << endl;
   cout << endl << endl;
-    // ------------------------------------------------------------------------
+  // ------------------------------------------------------------------------
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
