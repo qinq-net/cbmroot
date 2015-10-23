@@ -401,41 +401,44 @@ InitStatus CbmL1::Init()
       for( int j=0; j<N; j++) A(i,j) = 0.;
       b0(i)=b1(i)=b2(i) = 0.;
     }
-    for( double x=-Xmax; x<=Xmax; x+=dx )
-      for( double y=-Ymax; y<=Ymax; y+=dy )
+    
+    if(CbmKF::Instance()->GetMagneticField())
     {
-      double r = sqrt(fabs(x*x/Xmax/Xmax+y/Ymax*y/Ymax));
-      if( r>1. ) continue;
-      Double_t w = 1./(r*r+1);
-      Double_t p[3] = { x, y, z};
-      Double_t B[3] = {0.,0.,0.};
-      CbmKF::Instance()->GetMagneticField()->GetFieldValue(p, B);
-      TVectorD m(N);
-      m(0)=1;
-      for( int i=1; i<=M; i++){
-        int k = (i-1)*(i)/2;
-        int l = i*(i+1)/2;
-        for( int j=0; j<i; j++ ) m(l+j) = x*m(k+j);
-        m(l+i) = y*m(k+i-1);
+      for( double x=-Xmax; x<=Xmax; x+=dx )
+        for( double y=-Ymax; y<=Ymax; y+=dy )
+      {
+        double r = sqrt(fabs(x*x/Xmax/Xmax+y/Ymax*y/Ymax));
+        if( r>1. ) continue;
+        Double_t w = 1./(r*r+1);
+        Double_t p[3] = { x, y, z};
+        Double_t B[3] = {0.,0.,0.};
+        CbmKF::Instance()->GetMagneticField()->GetFieldValue(p, B);
+        TVectorD m(N);
+        m(0)=1;
+        for( int i=1; i<=M; i++){
+          int k = (i-1)*(i)/2;
+          int l = i*(i+1)/2;
+          for( int j=0; j<i; j++ ) m(l+j) = x*m(k+j);
+          m(l+i) = y*m(k+i-1);
+        }
+        
+        TVectorD mt = m;
+        for( int i=0; i<N; i++){
+          for( int j=0; j<N;j++) A(i,j)+=w*m(i)*m(j);
+          b0(i)+=w*B[0]*m(i);
+          b1(i)+=w*B[1]*m(i);
+          b2(i)+=w*B[2]*m(i);
+        }
       }
-      
-      TVectorD mt = m;
-      for( int i=0; i<N; i++){
-        for( int j=0; j<N;j++) A(i,j)+=w*m(i)*m(j);
-        b0(i)+=w*B[0]*m(i);
-        b1(i)+=w*B[1]*m(i);
-        b2(i)+=w*B[2]*m(i);
+      double det;
+      A.Invert(&det);
+      TVectorD c0 = A*b0, c1 = A*b1, c2 = A*b2;
+      for(int i=0; i<N; i++){
+        C[0][i] = c0(i);
+        C[1][i] = c1(i);
+        C[2][i] = c2(i);
       }
     }
-    double det;
-    A.Invert(&det);
-    TVectorD c0 = A*b0, c1 = A*b1, c2 = A*b2;
-    for(int i=0; i<N; i++){
-      C[0][i] = c0(i);
-      C[1][i] = c1(i);
-      C[2][i] = c2(i);
-    }
-
     geo.push_back(N);
     for( int k=0; k<3; k++ ){
       for( int j=0; j<N; j++){
