@@ -230,11 +230,23 @@ PairAnalysisSignalBase::~PairAnalysisSignalBase()
 }
 
 //______________________________________________
-TPaveText* PairAnalysisSignalBase::DrawStats(Double_t x1/*=0.*/, Double_t y1/*=0.*/, Double_t x2/*=0.*/, Double_t y2/*=0.*/)
+TPaveText* PairAnalysisSignalBase::DrawStats(Double_t x1/*=0.*/, Double_t y1/*=0.*/,
+					     Double_t x2/*=0.*/, Double_t y2/*=0.*/,
+					     TString opt/*="pRnbsSmrc"*/)
 {
   //
   // Draw extracted values in a TPaveText
   // with the corners x1,y2,x2,y2
+  // use option string to select information displayed:
+  // p := Particle name using fPOIpdg
+  // R := integration Range
+  // n := Number of signal counts
+  // b := Background
+  // s := signal-to-bgrd
+  // S := Significance
+  // m := mass position
+  // r := mass resolution (sigma or fwhm)
+  // c := matching Chi2/ndf
   //
   if (TMath::Abs(x1)<1e-20&&TMath::Abs(x2)<1e-20){
     x1=.6;
@@ -242,22 +254,29 @@ TPaveText* PairAnalysisSignalBase::DrawStats(Double_t x1/*=0.*/, Double_t y1/*=0
     y1=.7;
     y2=.9;
   }
+  if(y1<0.5) y2=y1+0.025*opt.Length();
+  else       y1=y2-0.025*opt.Length();
+
+  // particle of interest
+  TParticlePDG *p1 = TDatabasePDG::Instance()->GetParticle(fPOIpdg);
 
   TPaveText *t=new TPaveText(x1,y1,x2,y2,"brNDC");
-  // t->SetFillColor(kWhite);
-  // t->SetBorderSize(1);
+  t->SetFillColor(0);
+  t->SetFillStyle(kFEmpty);
+  t->SetBorderSize(0);
   t->SetTextAlign(12);
-  t->AddText(Form("%.2f < %s < %.2f GeV/c^{2}", fIntMin, "m_{inv}", fIntMax));
-  t->AddText(Form("%s: %.4g #pm %.4g", fgkValueNames[0], fValues(0), fErrors(0)));
-  t->AddText(Form("%s: %.4g #pm %.4g", fgkValueNames[1],  fValues(1), fErrors(1)));
-  t->AddText(Form("%s: %.1f #pm %.1f", fgkValueNames[2],  fValues(2), fErrors(2)));
+  if(opt.Contains("p"))  t->AddText(Form("#bf{%s}", (p1?p1->GetName():"particle not found")));
+  if(opt.Contains("R"))  t->AddText(Form("%.2f < %s < %.2f GeV/c^{2}", fIntMin, "m_{inv}", fIntMax));
+  if(opt.Contains("n"))  t->AddText(Form("%s: %.4g #pm %.4g", fgkValueNames[0], fValues(0), fErrors(0)));
+  if(opt.Contains("b"))  t->AddText(Form("%s: %.4g #pm %.4g", fgkValueNames[1],  fValues(1), fErrors(1)));
   Int_t smallS2B=(fValues(3)<0.1?1:100);
-  t->AddText(Form("%s: %.2f #pm %.2f%s", fgkValueNames[3],  fValues(3)*100/smallS2B, fErrors(3)*100/smallS2B, smallS2B>1?"":"%"));
-  if(fValues(4)>0)
+  if(opt.Contains("s"))  t->AddText(Form("%s: %.2f #pm %.2f%s", fgkValueNames[3],  fValues(3)*100/smallS2B, fErrors(3)*100/smallS2B, smallS2B>1?"":"%"));
+  if(opt.Contains("S"))  t->AddText(Form("%s: %.1f #pm %.1f", fgkValueNames[2],  fValues(2), fErrors(2)));
+  if(opt.Contains("m")  && fValues(4)>0)
     t->AddText(Form("Mass: %.2f #pm %.2f GeV/c^{2}", fValues(4), fErrors(4)));
-  if(fValues(5)>0)
+  if(opt.Contains("r")  && fValues(5)>0)
     t->AddText(Form("Mass res.: %.1f #pm %.1f MeV/c^{2}", 1000*fValues(5), 1000*fErrors(5)));
-  if(fValues(6)>0)
+  if(opt.Contains("c")  && fValues(6)>0)
     t->AddText(Form("Match chi2/ndf.: %.1f", fValues(6)));
   t->Draw();
 
@@ -487,7 +506,8 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
     fit->SetParLimits(2, sigPOI/5,         5*sigPOI           );
     parMass=1;
     parSigma=2;
-    fitResult = fHistSignal->Fit(fit,"RNI0Q");
+    //    fit->Print("V");
+    fitResult = fHistSignal->Fit(fit,"RNI0");
     break;
 
   case kUserFunc:

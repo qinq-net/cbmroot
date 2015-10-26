@@ -143,6 +143,7 @@ public:
     kTRDPtout,               // last point TRD transverse momentum (GeV/c)
     // sts track information
     kMVDHits,                // number of MVD hits
+    kMVDFirstHitPosZ,        // position of the first hit in the MVD (cm)
     kImpactParZ,             // Impact parameter of track at target z, in units of its error  
     kSTSHits,                // number of STS hits
     kSTSChi2NDF,             // chi2/ndf STS
@@ -813,16 +814,27 @@ inline void PairAnalysisVarManager::FillVarStsTrack(const CbmStsTrack *track, Do
   // Protect
   if(!track) return;
 
-  // Calculate first hit position
-  Double_t min = 9999.;
+  // Calculate first hit position for sts and mvd
+  Double_t minSts = 9999.;
   TClonesArray *hits   = fgEvent->GetHits(kSTS);
   if(hits /*&& Req(kSTSFirstHitPosZ)*/ ) {
     for (Int_t ihit=0; ihit < track->GetNofStsHits(); ihit++){
       Int_t idx = track->GetStsHitIndex(ihit);
       CbmStsHit* hit = (CbmStsHit*) hits->At(idx);
-      if(hit && min > hit->GetZ()) {
-	min = hit->GetZ();
+      if(hit && minSts > hit->GetZ()) {
+	minSts = hit->GetZ();
 	//	Printf("hit %d idx %d position %.5f",ihit,idx,min);
+      }
+    }
+  }
+  Double_t minMvd = 9999.;
+  hits   = fgEvent->GetHits(kMVD);
+  if(hits) {
+    for (Int_t ihit=0; ihit < track->GetNofMvdHits(); ihit++){
+      Int_t idx = track->GetMvdHitIndex(ihit);
+      CbmMvdHit* hit = (CbmMvdHit*) hits->At(idx);
+      if(hit && minMvd > hit->GetZ()) {
+	minMvd = hit->GetZ();
       }
     }
   }
@@ -864,7 +876,9 @@ inline void PairAnalysisVarManager::FillVarStsTrack(const CbmStsTrack *track, Do
   values[kSTSChi2NDFtoVtx]  = fgKFFitter->GetChiToVertex(const_cast<CbmStsTrack*>(track),fgEvent->GetPrimaryVertex());
   //printf("KFfitter: %f\n", values[kSTSChi2NDFtoVtx]);
 
-  values[kSTSFirstHitPosZ]  = min;
+  values[kMVDFirstHitPosZ]= minMvd;
+  values[kSTSFirstHitPosZ]= minSts;
+
 
 }
 

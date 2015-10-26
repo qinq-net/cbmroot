@@ -126,6 +126,7 @@ public:
 
 
   TObject* DescribePeakShape(ESignalExtractionMethod method=kMCFitted, Bool_t replaceValErr=kFALSE,  TH1F *mcShape=0x0);
+  TPaveText* DrawStats(Double_t x1=0., Double_t y1=0., Double_t x2=0., Double_t y2=0., TString opt="pRnbsSmrc");
   Double_t ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax);
   Double_t ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax, Double_t intMin2, Double_t intMax2);
 
@@ -199,7 +200,6 @@ protected:
   void SetFWHM();                    // calculate the fwhm
   static const char* fgkValueNames[7]; //value names
   static const char* fgkBackgroundMethodNames[11]; // background estimator names
-  TPaveText* DrawStats(Double_t x1=0., Double_t y1=0., Double_t x2=0., Double_t y2=0.);
   TObject* FindObject(TObjArray *arrhist, PairAnalysis::EPairType type);
   TObject* FindObjectByTitle(TObjArray *arrhist, TString ref);
 

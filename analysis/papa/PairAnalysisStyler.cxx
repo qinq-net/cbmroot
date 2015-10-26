@@ -113,7 +113,7 @@ void PairAnalysisStyler::LoadStyle() {
     defaultSty->SetFuncWidth(1);
     
     //For the date:
-    defaultSty->SetOptDate(12); // bottom right only date
+    defaultSty->SetOptDate(22); // bottom right only date
     // defaultSty->SetDateX(Float_t x = 0.01);
     // defaultSty->SetDateY(Float_t y = 0.01);
     defaultSty->GetAttDate()->SetTextColor(kGray);
@@ -156,6 +156,7 @@ void PairAnalysisStyler::LoadStyle() {
     //    defaultSty->SetFillColor(bgrdcolor); // this makes palettes unicolored
     defaultSty->SetFillStyle(kFEmpty);
     defaultSty->SetLineColor(0);
+    defaultSty->SetLineWidth(0);
     defaultSty->SetLineStyle(1);
 
     // For the axis titles:
@@ -358,6 +359,8 @@ void PairAnalysisStyler::SetLegendAttributes(TLegend *leg)
     TLegendEntry *lent = static_cast<TLegendEntry*>(llist->At(il));
     TString lst(lent->GetLabel());
     lst.ReplaceAll("#it","");
+    lst.ReplaceAll("{","");
+    lst.ReplaceAll("}","");
     lst.ReplaceAll("^","");
     lst.ReplaceAll("_","");
     lst.ReplaceAll("#LT","#");
@@ -368,6 +371,8 @@ void PairAnalysisStyler::SetLegendAttributes(TLegend *leg)
     lst.ReplaceAll("#eta","#");
     lst.ReplaceAll("#psi","#");
     lst.ReplaceAll("#alpha","#");
+    lst.ReplaceAll("#gamma","#");
+    lst.ReplaceAll("#rightarrow","#");
     //    lst.ReplaceAll(" ","");
     TLatex entrytex( 0, 0, lst.Data());
     entrytex.SetTextSize(txtsze);
@@ -402,8 +407,10 @@ void PairAnalysisStyler::SetLegendAttributes(TLegend *leg)
   leg->SetEntrySeparation(entrysep-1.);
 
   // styling
-  leg->SetFillStyle(1001); // solid
-  leg->SetFillColorAlpha(gStyle->GetLegendFillColor(), 0.8);
+  // leg->SetFillStyle(1001); // solid
+  // leg->SetFillColorAlpha(gStyle->GetLegendFillColor(), 0.8);
+  leg->SetFillStyle(kFEmpty); // solid
+  //  leg->SetFillColorAlpha(gStyle->GetLegendFillColor(), 0.8);
 
 }
 

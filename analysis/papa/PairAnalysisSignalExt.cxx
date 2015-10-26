@@ -791,6 +791,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 	// remove cocktail subtracted signals
 	if     (optOnlySig &&  fCocktailSubtr && FindObjectByTitle(fArrCocktail,key)) continue;
 	else if(optOnlySig && !fCocktailSubtr && fArrCocktail && !FindObjectByTitle(fArrCocktail,key)) continue;
+	else if     (optCocktail && FindObjectByTitle(fArrCocktail,key)) continue;
 	PairAnalysisStyler::Style(hmc,isty++);
 	// check if rebinning is necessary
 	if(fHistSignal->GetNbinsX()!=hmc->GetNbinsX()) {
@@ -819,7 +820,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
     if(obj->InheritsFrom(TH1::Class())) {
       TH1 *hobj = static_cast<TH1*>(obj);
       max=TMath::Max(max,PairAnalysisHelper::GetContentMaximum(hobj)); //hobj->GetMaximum();
-      hobj->SetMaximum(max*1.1);
+      hobj->SetMaximum(max*(gPad->GetLogy()?5.:1.1));
       if( gPad->GetLogy() && PairAnalysisHelper::GetContentMinimum(hobj)<0.) continue;
       min=TMath::Min(min,PairAnalysisHelper::GetContentMinimum(hobj));//hobj->GetBinContent(hobj->GetMinimumBin()));
       hobj->SetMinimum( min*(min<0.?1.1:0.9) ); //TODO: doesnt work, why?? Negative values?

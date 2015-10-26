@@ -85,6 +85,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"TRDPtout",               "#it{p}_{T}^{TRDout}",                                "(GeV/#it{c})"},
   // sts track information
   {"MVDHits",                "N_{hit}^{MVD}",                                      ""},
+  {"MVDFirstHitPosZ",        "z_{first hit}^{MVD}",                                "(cm)"},
   {"ImpactParZ",             "#it{dca}_{z}/#Delta#it{dca}_{z}",                    "#sigma"},
   {"STSHits",                "N_{hit}^{STS}",                                      ""},
   {"STSChi2NDF",             "#chi^{2}/^{}N_{df}^{STS}",                           ""},
@@ -96,7 +97,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"STSYv",                  "y_{STS}",                                            "(cm)"},
   {"STSZv",                  "z_{STS}",                                            "(cm)"},
   {"STSChi2NDFtoVtx",        "#chi^{2}/^{}N_{df}^{STS#leftrightarrowvtx}",         "(#sigma)"},
-  {"STSFirstHitPosZ",        "z_{first hit}",                                      "(cm)"},
+  {"STSFirstHitPosZ",        "z_{first hit}^{STS}",                                "(cm)"},
   //RICH track specific information
   {"RICHPidANN",             "PID_{e}^{RICH} (ANN)",                               ""},
   {"RICHHitsOnRing",         "N_{hit on Ring}^{RICH}",                             ""},

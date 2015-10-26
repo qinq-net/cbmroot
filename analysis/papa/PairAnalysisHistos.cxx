@@ -777,7 +777,7 @@ void PairAnalysisHistos::ReadFromFile(const char* file, const char *task, const 
       fMetaData->SetMetaData(*dynamic_cast<TList*>(f.Get(key->GetName())),kFALSE);
     }
     // check for histos
-    if(!name.Contains("PairAnalysisHistos"))    continue;
+    if(!name.Contains(Form("PairAnalysisHistos_%s",task)))    continue;
     if(!strlen(task) && !name.Contains(task)) continue;
     TObject *o=f.Get(key->GetName());
     TList *list=dynamic_cast<TList*>(o);
