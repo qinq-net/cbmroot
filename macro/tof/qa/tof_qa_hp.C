@@ -179,7 +179,7 @@ void tof_qa_hp(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
   // ===                   End of TOF local reconstruction                 ===
   // =========================================================================
-
+*/
   // =========================================================================
   // ===                     TOF evaluation                                ===
   // =========================================================================
@@ -198,7 +198,7 @@ void tof_qa_hp(Int_t nEvents = 2, const char* setup = "sis100_electron")
       tofQa->SetWallPosZ(  900 );
       else tofQa->SetWallPosZ( 1000 ); // default position of the wall
   run->AddTask(tofQa);
-*/
+
   // ===                   End of TOF evaluation                           ===
   // =========================================================================
   // -----  Parameter database   --------------------------------------------

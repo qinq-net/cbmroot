@@ -50,13 +50,13 @@ Int_t    fieldSymType=0;
 TString defaultInputFile="";
 
 void tof_qa_sim(Int_t nEvents = 2, const char* setup = "sis100_electron", 
-                const char* geoOption = "")
+                const char* geoOption = "", Int_t iRandSeed = 0)
 {
 
    // ========================================================================
    //          Adjust this part according to your requirements
       // Random seed for random generator!
-   gRandom->SetSeed(0);
+   gRandom->SetSeed(iRandSeed);
 
    // ----- Paths and file names  --------------------------------------------
    TString inDir   = gSystem->Getenv("VMCWORKDIR");
@@ -78,6 +78,9 @@ void tof_qa_sim(Int_t nEvents = 2, const char* setup = "sis100_electron",
    CbmTarget* target = new CbmTarget("Gold", 0.025);
 
    if( geoOption=="noTRD" ) trdGeom  = "";
+
+   // Disable PSD for testing the effect of TRD on TOF
+   psdGeom = "";
 
    // If SCRIPT environment variable is set to "yes", i.e. macro is run via script
    TString script = TString(gSystem->Getenv("LIT_SCRIPT"));

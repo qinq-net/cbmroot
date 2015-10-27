@@ -146,6 +146,12 @@ void tof_qa_ana(Int_t nEvents = 2, const char* setup = "sis100_electron")
   gLogger->SetLogScreenLevel(logLevel.Data());
   // ------------------------------------------------------------------------
 
+  // ----- MC Data Manager   ------------------------------------------------
+  CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+  mcManager->AddFile(inFile);
+  run->AddTask(mcManager);
+  // ------------------------------------------------------------------------
+
   // =========================================================================
   // ===             Detector Response Simulation (Digitiser)              ===
   // ===                          (where available)                        ===
@@ -168,6 +174,14 @@ void tof_qa_ana(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // -------------------------------------------------------------------------
 
   // ===                   End of TOF local reconstruction                 ===
+  // ==========================================================================
+
+  // =========================================================================
+  // ===                    Matching to Monte-carlo                        ===
+  // =========================================================================
+  CbmMatchRecoToMC* matchTask = new CbmMatchRecoToMC();
+  run->AddTask(matchTask);
+  // ===                  End of matching to Monte-Carlo                   ===
   // =========================================================================
 
   // =========================================================================
