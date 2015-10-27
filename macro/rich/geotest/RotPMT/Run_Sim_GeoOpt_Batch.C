@@ -2,18 +2,18 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1)
 {
 
   float PMTrotX=20, PMTrotY=10;
-  int PMTtransY=180, PMTtransZ=80;
+  int PMTtransY=-40, PMTtransZ=80;
   float ThetaMin=250., ThetaMax=2500.;//devide by 100 later 
   float PhiMin=90., PhiMax=180.;
-  int GeoCase=2, DimCase=2;
-  float EnlargedPMTWidth=2., EnlargedPMTHight=4.;
+  int GeoCase=2, DimCase=3;
+  float EnlargedPMTWidth=60., EnlargedPMTHight=36.;
  
 
   int PtNotP=1;
   float MomMin=0., MomMax=400;//devide by 100 later 
 
   float RotMir=-10;
-  int extendedmir=0;
+  int extendedmir=1;
   int OldCode=0;
   int DefaultDims=0;
   int DefaultDims_LargePMT=0;
@@ -85,8 +85,10 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1)
   TString DimentionText=GetDimentionText(DimCase, EnlargedPMTWidth, EnlargedPMTHight);
   cout<<"DimentionText "<<DimentionText<<endl;
   
-  TString ExtraText="";//
-  
+  TString ExtraText=".";//
+  ExtraText="_Updated.";//
+  if(DimCase ==0){ExtraText="";}
+
   TString richGeom=GetRICH_GeoFile( RotMirText, PMTRotText, PMTTransText, GeoCase, DimentionText, ExtraText);
   cout<<"rich geo = "<<richGeom<<endl;
   TString pipeGeom=GetPipe_GeoFile(GeoCase);
@@ -307,7 +309,7 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-//  return "/nas/Tariq/Test/";
+  return "/nas/Tariq/OptimisedGeo/";
 //  return "/data/GeoOpt/Test2/";
 //   return "/data/GeoOpt/OptiPMTSize/";
   return "/hera/cbm/users/tariq/MomScan/";
@@ -357,12 +359,12 @@ TString  GetPMTTransText(int PMTTransY, int PMTTransZ){
 ///////////////////////////////////////////////
 TString  GetDimentionText(int DimCase, int EnlargedPMTWidth, int EnlargedPMTHight){
   if(DimCase ==0){return ".";}
-  else if(DimCase ==1){return "_DefaultRichDims.";}
-  else if(DimCase ==2){return "_DefaultRichDims_LargePMT.";}
+  else if(DimCase ==1){return "_DefaultRichDims";}
+  else if(DimCase ==2){return "_DefaultRichDims_LargePMT";}
   else if(DimCase ==3){
     float PMTWidth=1000. +EnlargedPMTWidth,  PMTHight=600. +EnlargedPMTHight; 
     char PMTDimsText[256];
-    sprintf( PMTDimsText,"_PMTW%d_H%d.",PMTWidth, PMTHight);
+    sprintf( PMTDimsText,"_PMTW%d_H%d",PMTWidth, PMTHight);
     
     stringstream ss; 
     ss<<PMTDimsText;
@@ -372,6 +374,7 @@ TString  GetDimentionText(int DimCase, int EnlargedPMTWidth, int EnlargedPMTHigh
 
 ////////////////////////////////////////////////////////
 TString GetRICH_GeoFile( char *RotMirText, TString PMTRotText, TString PMTTransText, int GeoCase, TString PMTDimsText,TString ExtraText){
+  return "rich/minus10deg_ext_mirror_update_Mod.gdml";
   // return "rich/minus10deg_ext_mirror.gdml";
   //GeoCase=-2 ==> old geometry with rich_v08a.geo (RICH starts at 1600, Mirror tilt -1)
   //GeoCase=-1 ==> old geometry with rich_v14a.gdml (RICH starts at 1800, Mirror tilt -1)

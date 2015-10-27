@@ -66,7 +66,9 @@ void Run_Ana_GeoOpt_Batch(Int_t nEvents = 10)
   TString DimentionText=GetDimentionText(DimCase, EnlargedPMTWidth, EnlargedPMTHight);
   cout<<DimentionText<<endl;
   
-  TString ExtraText="";//
+TString ExtraText=".";//
+  ExtraText="_Updated.";//
+  if(DimCase ==0){ExtraText="";}
   
   TString NamingText;
   if(OldCode==1){
@@ -182,7 +184,8 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  return "/hera/cbm/users/tariq/MomScan/";
+  return "/nas/Tariq/OptimisedGeo/";
+  // return "/hera/cbm/users/tariq/MomScan/";
   return "/nas/Tariq/Test/";
 //   return "/nas/Tariq/GeoOpt/";
   return "/data/GeoOpt/Test2/";
@@ -236,12 +239,12 @@ TString  GetPMTTransText(int PMTTransY, int PMTTransZ){
 ///////////////////////////////////////////////
 TString  GetDimentionText(int DimCase, int EnlargedPMTWidth, int EnlargedPMTHight){
   if(DimCase ==0){return ".";}
-  else if(DimCase ==1){return "_DefaultRichDims.";}
-  else if(DimCase ==2){return "_DefaultRichDims_LargePMT.";}
+  else if(DimCase ==1){return "_DefaultRichDims";}
+  else if(DimCase ==2){return "_DefaultRichDims_LargePMT";}
   else if(DimCase ==3){
     float PMTWidth=1000. +EnlargedPMTWidth,  PMTHight=600. +EnlargedPMTHight; 
     char PMTDimsText[256];
-    sprintf( PMTDimsText,"_PMTW%d_H%d.",PMTWidth, PMTHight);
+    sprintf( PMTDimsText,"_PMTW%d_H%d",PMTWidth, PMTHight);
 
     stringstream ss; 
     ss<<PMTDimsText;
