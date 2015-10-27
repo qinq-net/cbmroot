@@ -1,0 +1,1 @@
+1445950803210 outputMeasurementTerminalVoltage.u303 = Opaque: Float: 0.0692797601 V outputMeasurementCurrent.u303 = Opaque: Float: 0.0000000058 A
