@@ -13,12 +13,12 @@ OldCode=0
 #DimCase --> 0: enlarged rich (in x,y and z) and PMT, 1: Default RICH dim, 2: enlarged PMT and RICH in x and y, 3: optimised PMT dims (_PMTW1002_H604.)
 EnlargedPMTWidth=60; EnlargedPMTHight=36
 
-MinTheta=2490; MaxTheta=2500
+MinTheta=250; MaxTheta=2500
 #2500/100 = 25 (in cpp)
 MinPhi=90; MaxPhi=180
 
 
-PtNotP=0
+PtNotP=1
 MomMin=0; MomMax=400
 #400/100 =4 gev in cpp
 rotmir=-10;
@@ -48,7 +48,7 @@ if [ $DimCase == 2 ];then UpperTransY=23; UpperTransZ=13; DefaultDims=1; Default
 if [ $DimCase == 3 ];then UpperTransY=23; UpperTransZ=13; DefaultDims=1; DefaultDimsLargePMT=1; fi 
 
 
-for ((Mom=4; Mom<=20; Mom++)); do
+for ((Mom=4; Mom<=30; Mom++)); do
     MomMin=$(( 10 * ${Mom}))
     MomMax=$((MomMin + 1)) 
 #    MMax=$((Mom + 1)) 
