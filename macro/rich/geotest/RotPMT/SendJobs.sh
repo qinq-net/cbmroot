@@ -7,7 +7,7 @@ fi
 nEvs=25000
 RX=20; RY=10 ; TrY=0; TrZ=0
 ###########################################
-extendedmir=0; GeoCase=2; DimCase=0
+extendedmir=1; GeoCase=2; DimCase=3
 OldCode=0
 ###########################################
 #DimCase --> 0: enlarged rich (in x,y and z) and PMT, 1: Default RICH dim, 2: enlarged PMT and RICH in x and y, 3: optimised PMT dims (_PMTW1002_H604.)
@@ -23,6 +23,8 @@ MomMin=0; MomMax=400
 #400/100 =4 gev in cpp
 rotmir=-10;
 
+extratext=.
+echo " eeeeeeeeeeeeeeeeeeeeeeeet  $extratext  eeeeeeeeeeeeeeeeeeeeeeeeet"
 
 DefaultDims=0;DefaultDimsLargePMT=0 #for old code
 if [ $OldCode == 1 ];then extendedmir=0; fi
@@ -48,12 +50,11 @@ if [ $DimCase == 2 ];then UpperTransY=23; UpperTransZ=13; DefaultDims=1; Default
 if [ $DimCase == 3 ];then UpperTransY=23; UpperTransZ=13; DefaultDims=1; DefaultDimsLargePMT=1; fi 
 
 
-for ((Mom=4; Mom<=30; Mom++)); do
-    MomMin=$(( 10 * ${Mom}))
-    MomMax=$((MomMin + 1)) 
-#    MMax=$((Mom + 1)) 
-    #MomMax=$(( 10 * ${MMax}))
-    #$Mom++;
+#for ((Mom=4; Mom<=30; Mom++)); do
+#    MomMin=$(( 10 * ${Mom}))
+#    MomMax=$((MomMin + 1)) 
+
+
     echo "$MomMin    $MomMax"
     #continue
     for ((Rm=1; Rm<=1; Rm++)); do
@@ -84,15 +85,15 @@ for ((Mom=4; Mom<=30; Mom++)); do
 			    
  			    
 			    if [ $OnBatch == 1 ];then 
-				qsub -l mem=5G,ct=5:00:00 ./RunSimOnBatch.sh -batch $OnBatch -nev $nEvs -rx $RX -ry $RY -dy $TrY -dz $TrZ -mint $Mintheta -maxt $MaxTheta -minp $MinPhi -maxp $MaxPhi -geo $GeoCase -dim $DimCase -pmtw $EnlargedPMTWidth -pmth $EnlargedPMTHight -ptp $PtNotP -minm $MomMin -maxm $MomMax -mir $rotmir -extm $extendedmir -oldc $OldCode -ddim $DefaultDims -pmtd $DefaultDimsLargePMT
+				qsub -l mem=5G,ct=5:00:00 ./RunSimOnBatch.sh -extt $extratext -batch $OnBatch -nev $nEvs -rx $RX -ry $RY -dy $TrY -dz $TrZ -mint $MinTheta -maxt $MaxTheta -minp $MinPhi -maxp $MaxPhi -geo $GeoCase -dim $DimCase -pmtw $EnlargedPMTWidth -pmth $EnlargedPMTHight -ptp $PtNotP -minm $MomMin -maxm $MomMax -mir $rotmir -extm $extendedmir -oldc $OldCode -ddim $DefaultDims -pmtd $DefaultDimsLargePMT
 			    else
-				. ./RunSimOnBatch.sh -batch $OnBatch -nev $nEvs -rx $RX -ry $RY -dy $TrY -dz $TrZ -mint $MinTheta -maxt $MaxTheta -minp $MinPhi -maxp $MaxPhi -geo $GeoCase -dim $DimCase -pmtw $EnlargedPMTWidth -pmth $EnlargedPMTHight -ptp $PtNotP -minm $MomMin -maxm $MomMax -mir $rotmir -extm $extendedmir -oldc $OldCode -ddim $DefaultDims -pmtd $DefaultDimsLargePMT
+				. ./RunSimOnBatch.sh -extt $extratext -batch $OnBatch -nev $nEvs -rx $RX -ry $RY -dy $TrY -dz $TrZ -mint $MinTheta -maxt $MaxTheta -minp $MinPhi -maxp $MaxPhi -geo $GeoCase -dim $DimCase -pmtw $EnlargedPMTWidth -pmth $EnlargedPMTHight -ptp $PtNotP -minm $MomMin -maxm $MomMax -mir $rotmir -extm $extendedmir -oldc $OldCode -ddim $DefaultDims -pmtd $DefaultDimsLargePMT
 			    fi
 			done
 		    done
 		done
 	    done
-	done
+#	done
  #   done
 #done
 
