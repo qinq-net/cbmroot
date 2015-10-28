@@ -209,6 +209,8 @@ private:
    TH1D* H_MomPrim;
    TH1D* H_PtPrim;
    TH2D* H_MomPt;
+   TH2D* H_Mom_Theta_MC;
+   TH2D* H_Pt_Theta_MC;
    TH2D* H_Mom_Theta;
    TH2D* H_Pt_Theta;
 
