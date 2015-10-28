@@ -497,7 +497,7 @@ void CbmRichGeoOpt::RingParameters()
     TVector3 mom; mcTrack->GetMomentum(mom);  
     Double_t theta=mom.Theta()* 180 / TMath::Pi();
     H_MomRing->Fill(momentum);
-    H_Mom_Theta->Fill(momentum->GetP(), theta);
+    H_Mom_Theta->Fill(momentum, theta);
     H_Pt_Theta->Fill(pt, theta);
 
     // Double_t theta = mcTrack->Theta();
