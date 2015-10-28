@@ -20,6 +20,10 @@ void Run_Ana_GeoOpt_Batch(Int_t nEvents = 10)
   int DefaultDims=0;
   int DefaultDims_LargePMT=0;
 
+  TString ExtraText=".";//
+  ExtraText="_Updated.";//
+  if(DimCase ==0){ExtraText="";}
+  
   TString script = TString(gSystem->Getenv("SCRIPT"));
   if (script == "yes"){
     cout<<" ----------------- running with script --------------------"<<endl;
@@ -50,7 +54,8 @@ void Run_Ana_GeoOpt_Batch(Int_t nEvents = 10)
     OldCode=TString(gSystem->Getenv("OLDCODE")).Atof();
     DefaultDims=TString(gSystem->Getenv("DEFAULDIMS")).Atof();
     DefaultDims_LargePMT=TString(gSystem->Getenv("DEFAULDIMSLPMT")).Atof();
- }  
+     ExtraText=TString(gSystem->Getenv("EXTRATEXT"));
+  }  
  
   TString outDir=GetOutDir(GeoCase);
   TString GeoText=GetGeoText(GeoCase);
@@ -66,9 +71,6 @@ void Run_Ana_GeoOpt_Batch(Int_t nEvents = 10)
   TString DimentionText=GetDimentionText(DimCase, EnlargedPMTWidth, EnlargedPMTHight);
   cout<<DimentionText<<endl;
   
-TString ExtraText=".";//
-  ExtraText="_Updated.";//
-  if(DimCase ==0){ExtraText="";}
   
   TString NamingText;
   if(OldCode==1){
@@ -184,7 +186,6 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  return "/hera/cbm/users/tariq/MomScan/";
   return "/nas/Tariq/OptimisedGeo/";
   // return "/hera/cbm/users/tariq/MomScan/";
   return "/nas/Tariq/Test/";

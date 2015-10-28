@@ -22,7 +22,12 @@ void Run_Reco_GeoOpt_Batch(Int_t nEvents = 1)
   int DefaultDims=0;
   int DefaultDims_LargePMT=0;
   
+  TString ExtraText=".";//
+  ExtraText="_Updated.";//
+  if(DimCase ==0){ExtraText="";}
+
   TString script = TString(gSystem->Getenv("SCRIPT"));
+
   if (script == "yes"){
     cout<<" ----------------- running with script --------------------"<<endl;
     nEvents=TString(gSystem->Getenv("N_EVS")).Atof();
@@ -52,6 +57,7 @@ void Run_Reco_GeoOpt_Batch(Int_t nEvents = 1)
     OldCode=TString(gSystem->Getenv("OLDCODE")).Atof();
     DefaultDims=TString(gSystem->Getenv("DEFAULDIMS")).Atof();
     DefaultDims_LargePMT=TString(gSystem->Getenv("DEFAULDIMSLPMT")).Atof();
+    ExtraText=TString(gSystem->Getenv("EXTRATEXT"));
   }  
   //  if(EnlargedPMTWidth == 0 && EnlargedPMTHight==0){DefaultDims=1; DefaultDims_LargePMT=0;}
 
@@ -69,9 +75,7 @@ void Run_Reco_GeoOpt_Batch(Int_t nEvents = 1)
   TString DimentionText=GetDimentionText(DimCase, EnlargedPMTWidth, EnlargedPMTHight);
   cout<<DimentionText<<endl;
   
-  TString ExtraText=".";//
-  ExtraText="_Updated.";//
-  if(DimCase ==0){ExtraText="";}
+
 
   TString NamingText;
   if(OldCode==1){
@@ -211,11 +215,10 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  //return "/nas/Tariq/OptimisedGeo/";
+  return "/nas/Tariq/OptimisedGeo/";
   //return "/hera/cbm/users/tariq/MomScan/";
-  //return "/nas/Tariq/Test/";
+  return "/nas/Tariq/Test/";
 //   return "/nas/Tariq/GeoOpt/";
-  return "/hera/cbm/users/tariq/MomScan/";
   return "/data/GeoOpt/Test2/";
   return "/data/GeoOpt/OptimisedGeo/";
   //return "/data/GeoOpt/";
