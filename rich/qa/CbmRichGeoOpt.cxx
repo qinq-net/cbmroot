@@ -600,10 +600,10 @@ void CbmRichGeoOpt::InitHistograms()
   H_MomPrim = new TH1D("H_MomPrim", "H_MomPrim;p [GeV]; Yield", 49, 0., 12.);
   H_PtPrim = new TH1D("H_PtPrim", "H_PtPrim;p [GeV]; Yield", 81, 0., 4.);
   H_MomPt = new TH2D("H_MomPt", "H_MomPt;p [GeV];pt [GeV]; Yield", 101, 0., 10., 81, 0., 4.);
-  H_Mom_Theta_MC = new TH2D("H_Mom_Theta_MC", "H_Mom_Theta_MC;p [GeV];theta [deg]; Yield", 10, 0., 10., 5, 0, 25.);
+  H_Mom_Theta_MC = new TH2D("H_Mom_Theta_MC", "H_Mom_Theta_MC;p [GeV];theta [deg]; Yield", 40, 0., 10., 50, 0, 25.);
   H_Pt_Theta_MC = new TH2D("H_Pt_Theta_MC", "H_Pt_Theta_MC;pt [GeV];theta [deg]; Yield", 16, 0., 4., 50, 0, 25.);
 
-  H_Mom_Theta = new TH2D("H_Mom_Theta", "H_Mom_Theta;p [GeV];theta [deg]; Yield", 10, 0., 10., 5, 0, 25.);
+  H_Mom_Theta = new TH2D("H_Mom_Theta", "H_Mom_Theta;p [GeV];theta [deg]; Yield", 40, 0., 10., 50, 0, 25.);
   H_Pt_Theta = new TH2D("H_Pt_Theta", "H_Pt_Theta;pt [GeV];theta [deg]; Yield", 16, 0., 4., 50, 0, 25.);
 
   H_MomPrim_RegularTheta = new TH1D("H_MomPrim_RegularTheta", "H_MomPrim_RegularTheta;p [GeV]; Yield", 49, 0., 12.);
