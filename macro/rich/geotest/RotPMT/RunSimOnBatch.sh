@@ -28,9 +28,11 @@ extendedmir=0
 OldCode=0
 DefaultDims=0 #for old code					
 DefaultDimsLargePMT=0 #for old code
+extratext=.
 
 while [ $# -gt 0 ]; do
     case "$1" in
+	-extt) shift; extratext=$1 ;;
 	-batch) shift; OnBatch=$1 ;;
 	-nev) shift; nEvs=$1 ;;
 	-rx) shift; rotx=$1 ;;
@@ -96,7 +98,7 @@ outdir=/hera/cbm/users/tariq/GeoOptRootFiles/
 cbmroot_config_path=/hera/cbm/users/tariq/cbmroot/buildcbm/config.sh
 macro_dir=/hera/cbm/users/tariq/cbmroot/macro/rich/geotest/RotPMT
 # Needed to run macro via script
-
+export EXTRATEXT=$extratext
 export SCRIPT=yes
 export N_EVS=$nEvs
 export PMT_ROTX=$rotx
