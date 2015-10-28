@@ -20,6 +20,11 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1)
 
   bool StoreTraj=0;
   
+
+  TString ExtraText=".";//
+  //ExtraText="_Updated.";//
+  if(DimCase ==0){ExtraText="";}
+
   TString script = TString(gSystem->Getenv("SCRIPT"));
 
   if (script == "yes"){
@@ -51,6 +56,7 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1)
     OldCode=TString(gSystem->Getenv("OLDCODE")).Atof();
     DefaultDims=TString(gSystem->Getenv("DEFAULDIMS")).Atof();
     DefaultDims_LargePMT=TString(gSystem->Getenv("DEFAULDIMSLPMT")).Atof();
+    ExtraText=TString(gSystem->Getenv("EXTRATEXT"));
   }  
 
   cout<<"PMTrotX="<< PMTrotX<<"  PMTrotY="<< PMTrotY<<"  PMTtransY="<<
@@ -84,10 +90,6 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1)
   cout<<ThetaText<<endl;
   TString DimentionText=GetDimentionText(DimCase, EnlargedPMTWidth, EnlargedPMTHight);
   cout<<"DimentionText "<<DimentionText<<endl;
-  
-  TString ExtraText=".";//
-  ExtraText="_Updated.";//
-  if(DimCase ==0){ExtraText="";}
 
   TString richGeom=GetRICH_GeoFile( RotMirText, PMTRotText, PMTTransText, GeoCase, DimentionText, ExtraText);
   cout<<"rich geo = "<<richGeom<<endl;
@@ -309,7 +311,7 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  // return "/nas/Tariq/OptimisedGeo/";
+  return "/nas/Tariq/OptimisedGeo/";
 //  return "/data/GeoOpt/Test2/";
 //   return "/data/GeoOpt/OptiPMTSize/";
   return "/hera/cbm/users/tariq/MomScan/";
@@ -374,7 +376,7 @@ TString  GetDimentionText(int DimCase, int EnlargedPMTWidth, int EnlargedPMTHigh
 
 ////////////////////////////////////////////////////////
 TString GetRICH_GeoFile( char *RotMirText, TString PMTRotText, TString PMTTransText, int GeoCase, TString PMTDimsText,TString ExtraText){
-  return "rich/minus10deg_ext_mirror_update_Mod.gdml";
+  //return "rich/minus10deg_ext_mirror_update_Mod.gdml";
   // return "rich/minus10deg_ext_mirror.gdml";
   //GeoCase=-2 ==> old geometry with rich_v08a.geo (RICH starts at 1600, Mirror tilt -1)
   //GeoCase=-1 ==> old geometry with rich_v14a.gdml (RICH starts at 1800, Mirror tilt -1)
