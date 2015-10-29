@@ -401,9 +401,13 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
 
   TGeoVolume *mystation[8];
 
-  Int_t statPos[8] = {30., 40., 50., 60., 70., 80., 90., 100.};  // z positions of stations
+  Int_t statPos[8]  = { 30, 40, 50, 60, 70, 80, 90, 100 };  // z positions of stations
 
-  Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.9, 3.7, 3.7, 4.2, 4.2 };  // size of holes in stations
+  Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.9, 3.7, 3.7, 4.2, 4.2 };  // size of cutouts in stations
+
+  Int_t cone_size[8]      = { 0, 0, 0, 1, 1, 1, 1, 1 };  // size of cones: 0 = small, 1 = large
+
+  Double_t cone_offset[2] = { 0.305, 0.285 };
 
   Int_t allLadderTypes[8][16]= { {   0,   0,   0,   0,  10, 109,   9, 101,   1, 109,   9, 110,   0,   0,   0,   0 },    // station 1
                                  {   0,   0, 111,  10, 110,   9, 109,   2, 102,   9, 109,  10, 110,  11,   0,   0 },    // station 2
@@ -413,13 +417,58 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
                                  {   0,  19, 118,  17, 117,  16, 116,   6, 106,  16, 116,  17, 117,  18, 119,   0 },    // station 6
                                  {  21, 119,  18, 120,  20, 120,  20, 107,   7, 120,  20, 120,  20, 118,  19, 121 },    // station 7
                                  { 119,  17, 123,  22, 122,  22, 122,   8, 108,  22, 122,  22, 122,  23, 117,  19 } };  // station 8
-    
+
   Int_t carbon_elem[23]= { 10, 10, 16, 16, 20, 20, 22, 24,
 		  	   11, 10,  6, 16, 14, 12,  7, 20,
 		           18, 16, 13, 22,  7, 24, 21     };  // number of carbon elements in ladder types
 			 
-  Int_t cone_size[8]      = { 0, 0, 0, 1, 1, 1, 1, 1 };  // size of cones: 0 = small, 1 = large
-  Double_t cone_offset[2] = { 0.305, 0.285 };
+  Int_t allUnitTypes[16][16];
+
+//  unitTypes[0]  = {   0,   0,   0,   0,  10,   0,   9,   0,   1,   0,   9,   0,   0,   0,   0,   0 };  // unit 0D
+//  unitTypes[1]  = {   0,   0,   0,   0,   0, 109,   0, 101,   0, 109,   0, 110,   0,   0,   0,   0 };	 // unit 1U
+//  unitTypes[2]  = {   0,   0,   0,  10,   0,   9,   0,   2,   0,   9,   0,  10,   0,  11,   0,   0 };	 // unit 1D
+//  unitTypes[3]  = {   0,   0, 111,   0, 110,   0, 109,   0, 102,   0, 109,   0, 110,   0,   0,   0 };	 // unit 2U
+//  unitTypes[4]  = {   0,   0,  14,   0,  12,   0,  12,   0,   3,   0,  12,   0,  13,   0,   0,   0 };  // unit 2D
+//  unitTypes[5]  = {   0,   0,   0, 113,   0, 112,   0, 103,   0, 112,   0, 112,   0, 114,   0,   0 };	 // unit 3U
+//  unitTypes[6]  = {   0,  15,   0,  13,   0,  12,   0,   4,   0,  12,   0,  12,   0,  14,   0,   0 };	 // unit 3D
+//  unitTypes[7]  = {   0,   0, 114,   0, 112,   0, 112,   0, 104,   0, 112,   0, 113,   0, 115,   0 };	 // unit 4U
+//  unitTypes[8]  = {   0,   0,  18,   0,  17,   0,  16,   0,   5,   0,  16,   0,  17,   0,  19,   0 };  // unit 4D
+//  unitTypes[9]  = {   0, 119,   0, 117,   0, 116,   0, 105,   0, 116,   0, 117,   0, 118,   0,   0 };	 // unit 5U
+//  unitTypes[10] = {   0,  19,   0,  17,   0,  16,   0,   6,   0,  16,   0,  17,   0,  18,   0,   0 };	 // unit 5D
+//  unitTypes[11] = {   0,   0, 118,   0, 117,   0, 116,   0, 106,   0, 116,   0, 117,   0, 119,   0 };	 // unit 6U
+//  unitTypes[12] = {  21,   0,  18,   0,  20,   0,  20,   0,   7,   0,  20,   0,  20,   0,  19,   0 };  // unit 6D
+//  unitTypes[13] = {   0, 119,   0, 120,   0, 120,   0, 107,   0, 120,   0, 120,   0, 118,   0, 121 };	 // unit 7U
+//  unitTypes[14] = {   0,  17,   0,  22,   0,  22,   0,   8,   0,  22,   0,  22,   0,  23,   0,  19 };	 // unit 7D
+//  unitTypes[15] = { 119,   0, 123,   0, 122,   0, 122,   0, 108,   0, 122,   0, 122,   0, 117,   0 };	 // unit 8U
+
+
+  // generate unit
+  for (Int_t iUnit = 0; iUnit < 16; iUnit++)
+    for (Int_t iLadder = 0; iLadder < 16; iLadder++)
+    {
+      allUnitTypes[iUnit][iLadder] = 0;
+      if ((iUnit % 2 == 0) && (allLadderTypes[iUnit/2][iLadder] <  100))  // if carbon structure is oriented upstream
+        allUnitTypes[iUnit][iLadder] = allLadderTypes[iUnit/2][iLadder];
+      if ((iUnit % 2 == 1) && (allLadderTypes[iUnit/2][iLadder] >= 100))  // if carbon structure is oriented downstream
+        allUnitTypes[iUnit][iLadder] = allLadderTypes[iUnit/2][iLadder];
+    }
+
+
+  // dump unit
+  for (Int_t iUnit = 0; iUnit < 16; iUnit++)
+  {
+    cout << "DE unitTypes[" << iUnit << "] = { ";
+    for (Int_t iLadder = 0; iLadder < 16; iLadder++)
+    {
+      cout << allUnitTypes[iUnit][iLadder];
+      if (iLadder < 15)
+        cout << ", ";
+      else
+        cout << " };";
+    }
+    cout << endl;
+  }
+    
 
   // --- Stations 01 - 08
   for (Int_t iStation = 0; iStation < 8; iStation++)
