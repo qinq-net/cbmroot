@@ -403,7 +403,7 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
 
   Int_t statPos[8] = {30., 40., 50., 60., 70., 80., 90., 100.};  // z positions of stations
 
-  Double_t rHole[8] = { 2.0, 2.0, 2.9, 2.9, 3.7, 3.7, 4.2, 4.2 };  // size of holes in stations
+  Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.9, 3.7, 3.7, 4.2, 4.2 };  // size of holes in stations
 
   Int_t allLadderTypes[8][16]= { {   0,   0,   0,   0,  10, 109,   9, 101,   1, 109,   9, 110,   0,   0,   0,   0 },    // station 1
                                  {   0,   0, 111,  10, 110,   9, 109,   2, 102,   9, 109,  10, 110,  11,   0,   0 },    // station 2
@@ -1934,9 +1934,6 @@ TGeoVolume* ConstructLadder(Int_t LadderIndex,
  **            ladderTypes      array of ladder types
  **            rHole            radius of inner hole
  **/
-
-// TGeoVolume* ConstructStation(const char* name, 
-//                              Int_t iStation, 
 
  TGeoVolume* ConstructStation(Int_t iStation, 
                               Int_t nLadders,
