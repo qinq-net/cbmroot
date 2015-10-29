@@ -395,7 +395,7 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
   infoFile << endl << "Stations: ";
   Int_t iStation = 0;
   Int_t nLadders = 0;
-  Int_t ladderTypes[20];
+  Int_t ladderTypes[16];
   TGeoBBox*        statShape = NULL;
   TGeoTranslation* statTrans = NULL;
 
@@ -405,14 +405,14 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
 
   Double_t rHole[8] = { 2.0, 2.0, 2.9, 2.9, 3.7, 3.7, 4.2, 4.2 };  // size of holes in stations
 
-  Int_t allLadderTypes[8][16]= { {  0,  0,  0,  0, 10,  9,  9,  1,  1,  9,  9, 10,  0,  0,  0,  0 },    // station 1
-                                 {  0,  0, 11, 10, 10,  9,  9,  2,  2,  9,  9, 10, 10, 11,  0,  0 },    // station 2
-                                 {  0,  0, 14, 13, 12, 12, 12,  3,  3, 12, 12, 12, 13, 14,  0,  0 },    // station 3
-                                 {  0, 15, 14, 13, 12, 12, 12,  4,  4, 12, 12, 12, 13, 14, 15,  0 },    // station 4
-                                 {  0, 19, 18, 17, 17, 16, 16,  5,  5, 16, 16, 17, 17, 18, 19,  0 },    // station 5
-                                 {  0, 19, 18, 17, 17, 16, 16,  6,  6, 16, 16, 17, 17, 18, 19,  0 },    // station 6
-                                 { 21, 19, 18, 20, 20, 20, 20,  7,  7, 20, 20, 20, 20, 18, 19, 21 },    // station 7
-                                 { 19, 17, 23, 22, 22, 22, 22,  8,  8, 22, 22, 22, 22, 23, 17, 19 } };  // station 8
+  Int_t allLadderTypes[8][16]= { {   0,   0,   0,   0,  10, 109,   9, 101,   1, 109,   9, 110,   0,   0,   0,   0 },    // station 1
+                                 {   0,   0, 111,  10, 110,   9, 109,   2, 102,   9, 109,  10, 110,  11,   0,   0 },    // station 2
+                                 {   0,   0,  14, 113,  12, 112,  12, 103,   3, 112,  12, 112,  13, 114,   0,   0 },    // station 3
+                                 {   0,  15, 114,  13, 112,  12, 112,   4, 104,  12, 112,  12, 113,  14, 115,   0 },    // station 4
+                                 {   0, 119,  18, 117,  17, 116,  16, 105,   5, 116,  16, 117,  17, 118,  19,   0 },    // station 5
+                                 {   0,  19, 118,  17, 117,  16, 116,   6, 106,  16, 116,  17, 117,  18, 119,   0 },    // station 6
+                                 {  21, 119,  18, 120,  20, 120,  20, 107,   7, 120,  20, 120,  20, 118,  19, 121 },    // station 7
+                                 { 119,  17, 123,  22, 122,  22, 122,   8, 108,  22, 122,  22, 122,  23, 117,  19 } };  // station 8
     
   Int_t carbon_elem[23]= { 10, 10, 16, 16, 20, 20, 22, 24,
 		  	   11, 10,  6, 16, 14, 12,  7, 20,
@@ -1958,7 +1958,7 @@ TGeoVolume* ConstructLadder(Int_t LadderIndex,
   Double_t statZodd  = 0.;
   Double_t statZ     = 0.;  
   for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {
-    Int_t ladderType = ladderTypes[iLadder];
+    Int_t ladderType = ladderTypes[iLadder]%100;
     ladderName = Form("Ladder%02d", ladderType);
     ladder = gGeoManager->GetVolume(ladderName);
     if ( ! ladder ) Fatal("ConstructStation", 
@@ -2001,8 +2001,8 @@ TGeoVolume* ConstructLadder(Int_t LadderIndex,
   Double_t zPos = 0.;
 
   Double_t maxdz = 0.;
-  for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {
-    Int_t ladderType = ladderTypes[iLadder];
+  for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {  // find maximum dz in this station
+    Int_t ladderType = ladderTypes[iLadder]%100;
     ladderName = Form("Ladder%02d", ladderType);
     ladder = gGeoManager->GetVolume(ladderName);
     shape = (TGeoBBox*) ladder->GetShape();
@@ -2011,7 +2011,7 @@ TGeoVolume* ConstructLadder(Int_t LadderIndex,
   }
  
   for (Int_t iLadder = 0; iLadder < nLadders; iLadder++) {
-    Int_t ladderType = ladderTypes[iLadder];
+    Int_t ladderType = ladderTypes[iLadder]%100;
     ladderName = Form("Ladder%02d", ladderType);
     ladder = gGeoManager->GetVolume(ladderName);
     shape = (TGeoBBox*) ladder->GetShape();
@@ -2030,45 +2030,21 @@ TGeoVolume* ConstructLadder(Int_t LadderIndex,
     //    zPos = 0.5 * gkLadderGapZ + (shape->GetDZ()-subtractedVal/2.);  // non z-aligned ladders
     zPos = 0.5 * gkLadderGapZ + (2*maxdz-shape->GetDZ()-subtractedVal/2.);  // z-aligned ladders
     
-    cout << "DE ladder" << ladderTypes[iLadder]
+    cout << "DE ladder" << ladderTypes[iLadder]%100
 	 << "  dx: " << shape->GetDX() 
 	 << "  dy: " << shape->GetDY() 
 	 << "  dz: " << shape->GetDZ() 
 	 << "  max dz: " << maxdz << endl;
 
-    cout << "DE ladder" << ladderTypes[iLadder]
+    cout << "DE ladder" << ladderTypes[iLadder]%100
 	 << "  fra: " << gkFrameThickness/2.
 	 << "  sub: " << subtractedVal
 	 << "  zpo: " << zPos << endl << endl;
 
-    if (iStation % 2 == 0) // flip ladders for even stations to reproduce CAD layout
-    // even station 0,2,4,6
-    {
-      // --- Unrotated ladders --- downstream
-      if ( (nLadders/2 + iLadder) % 2 ) {
-	//        zPos = 0.5 * gkLadderGapZ + (shape->GetDZ()-subtractedVal/2.);
-        rot->RotateY(180.);
-      }
-      // --- Rotated ladders --- upstream
-      else {
-	//        zPos = -0.5 * gkLadderGapZ - (shape->GetDZ()-subtractedVal/2.);
-        zPos = -zPos;
-      }
-    }
+    if (ladderTypes[iLadder]/100 == 1) // flip some of the ladders to reproduce the CAD layout
+      rot->RotateY(180.);
     else
-    // odd station 1,3,5,7
-    {
-      // --- Unrotated ladders --- upstream
-      if ( (nLadders/2 + iLadder) % 2 ) {
-	//        zPos = -0.5 * gkLadderGapZ - (shape->GetDZ()-subtractedVal/2.);
-        zPos = -zPos;
-      }
-      // --- Rotated ladders --- downstream
-      else {
-	//        zPos = 0.5 * gkLadderGapZ + (shape->GetDZ()-subtractedVal/2.);
-        rot->RotateY(180.);
-      }
-    }
+      zPos = -zPos;
 
     TGeoCombiTrans* trans = new TGeoCombiTrans(xPos, yPos, zPos, rot);
     station->AddNode(ladder, iLadder+1, trans);
