@@ -390,7 +390,6 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
 
 
   // ----------------   Create stations   -------------------------------------
-  Int_t statPos[8] = {30., 40., 50., 60., 70., 80., 90., 100.};
   cout << endl << endl;
   cout << "===> Creating stations...." << endl;
   infoFile << endl << "Stations: ";
@@ -400,7 +399,11 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
   TGeoBBox*        statShape = NULL;
   TGeoTranslation* statTrans = NULL;
 
-  Double_t rHole[8] = { 2.0, 2.0, 2.9, 2.9, 3.7, 3.7, 4.2, 4.2 };  // size of holes in layers
+  TGeoVolume *mystation[8];
+
+  Int_t statPos[8] = {30., 40., 50., 60., 70., 80., 90., 100.};  // z positions of stations
+
+  Double_t rHole[8] = { 2.0, 2.0, 2.9, 2.9, 3.7, 3.7, 4.2, 4.2 };  // size of holes in stations
 
   Int_t allLadderTypes[8][16]= { {  0,  0,  0,  0, 10,  9,  9,  1,  1,  9,  9, 10,  0,  0,  0,  0 },    // station 1
                                  {  0,  0, 11, 10, 10,  9,  9,  2,  2,  9,  9, 10, 10, 11,  0,  0 },    // station 2
@@ -427,29 +430,27 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
      cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
      nLadders++;
     }
-  TGeoVolume* station01 = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
+  mystation[iStation] = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
   
   if (gkConstructCones) {
     // upstream
     TGeoRotation* coneRot11 = new TGeoRotation;
     coneRot11->RotateZ(90);
     coneRot11->RotateY(180);
-    //    TGeoCombiTrans* conePosRot11 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3-gkLadderGapZ/2., coneRot11);
     TGeoCombiTrans* conePosRot11 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.305-gkLadderGapZ/2., coneRot11);
-    station01->AddNode(coneSmallVolum, 1, conePosRot11);
+    mystation[iStation]->AddNode(coneSmallVolum, 1, conePosRot11);
 
     // downstream
     TGeoRotation* coneRot12 = new TGeoRotation;
     coneRot12->RotateZ(90);
-    //    TGeoCombiTrans* conePosRot12 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3+gkLadderGapZ/2., coneRot12);
     TGeoCombiTrans* conePosRot12 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.305+gkLadderGapZ/2., coneRot12);
-    station01->AddNode(coneSmallVolum, 2, conePosRot12);
+    mystation[iStation]->AddNode(coneSmallVolum, 2, conePosRot12);
 
-    station01->GetShape()->ComputeBBox();
+    mystation[iStation]->GetShape()->ComputeBBox();
   }
   
-  CheckVolume(station01);
-  CheckVolume(station01, infoFile);
+  CheckVolume(mystation[iStation]);
+  CheckVolume(mystation[iStation], infoFile);
   infoFile << "Position z = " << statPos[0] << endl;
   
 
@@ -465,29 +466,27 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
      cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
      nLadders++;
     }
-  TGeoVolume* station02 = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
+  mystation[iStation] = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
 
   if (gkConstructCones) {
     // upstream
     TGeoRotation* coneRot21 = new TGeoRotation;
     coneRot21->RotateZ(-90);
     coneRot21->RotateY(180);
-    //    TGeoCombiTrans* conePosRot21 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3-gkLadderGapZ/2., coneRot21);
     TGeoCombiTrans* conePosRot21 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.305-gkLadderGapZ/2., coneRot21);
-    station02->AddNode(coneSmallVolum, 1, conePosRot21);
+    mystation[iStation]->AddNode(coneSmallVolum, 1, conePosRot21);
 
     // downstream
     TGeoRotation* coneRot22 = new TGeoRotation;
     coneRot22->RotateZ(-90);
-    //    TGeoCombiTrans* conePosRot22 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3+gkLadderGapZ/2., coneRot22);
     TGeoCombiTrans* conePosRot22 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.305+gkLadderGapZ/2., coneRot22);
-    station02->AddNode(coneSmallVolum, 2, conePosRot22);
+    mystation[iStation]->AddNode(coneSmallVolum, 2, conePosRot22);
 
-    station02->GetShape()->ComputeBBox();
+    mystation[iStation]->GetShape()->ComputeBBox();
   }
   
-  CheckVolume(station02);
-  CheckVolume(station02, infoFile);
+  CheckVolume(mystation[iStation]);
+  CheckVolume(mystation[iStation], infoFile);
   infoFile << "Position z = " << statPos[1] << endl;
 
 
@@ -503,29 +502,27 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
      cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
      nLadders++;
     }
-  TGeoVolume* station03 = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
+  mystation[iStation] = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
 
   if (gkConstructCones) {
     // upstream
     TGeoRotation* coneRot31 = new TGeoRotation;
     coneRot31->RotateZ(90);
     coneRot31->RotateY(180);
-    //    TGeoCombiTrans* conePosRot31 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3-gkLadderGapZ/2., coneRot31);
-    TGeoCombiTrans* conePosRot31 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.285-gkLadderGapZ/2., coneRot31);
-    station03->AddNode(coneBigVolum, 1, conePosRot31);
+    TGeoCombiTrans* conePosRot31 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.305-gkLadderGapZ/2., coneRot31);
+    mystation[iStation]->AddNode(coneSmallVolum, 1, conePosRot31);
 
     // downstream
     TGeoRotation* coneRot32 = new TGeoRotation;
     coneRot32->RotateZ(90);
-    //    TGeoCombiTrans* conePosRot32 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3+gkLadderGapZ/2., coneRot32);
-    TGeoCombiTrans* conePosRot32 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.285+gkLadderGapZ/2., coneRot32);
-    station03->AddNode(coneBigVolum, 2, conePosRot32);
+    TGeoCombiTrans* conePosRot32 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.305+gkLadderGapZ/2., coneRot32);
+    mystation[iStation]->AddNode(coneSmallVolum, 2, conePosRot32);
 
-    station03->GetShape()->ComputeBBox();
+    mystation[iStation]->GetShape()->ComputeBBox();
   }
   
-  CheckVolume(station03);
-  CheckVolume(station03, infoFile);
+  CheckVolume(mystation[iStation]);
+  CheckVolume(mystation[iStation], infoFile);
   infoFile << "Position z = " << statPos[2] << endl;
 
 
@@ -541,29 +538,27 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
      cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
      nLadders++;
     }
-  TGeoVolume* station04 = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
+  mystation[iStation] = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
 
   if (gkConstructCones) {
     // upstream
     TGeoRotation* coneRot41 = new TGeoRotation;
     coneRot41->RotateZ(-90);
     coneRot41->RotateY(180);
-    //    TGeoCombiTrans* conePosRot41 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3-gkLadderGapZ/2., coneRot41);
     TGeoCombiTrans* conePosRot41 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.285-gkLadderGapZ/2., coneRot41);
-    station04->AddNode(coneBigVolum, 1, conePosRot41);
+    mystation[iStation]->AddNode(coneBigVolum, 1, conePosRot41);
 
     // downstream
     TGeoRotation* coneRot42 = new TGeoRotation;
     coneRot42->RotateZ(-90);
-    //    TGeoCombiTrans* conePosRot42 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3+gkLadderGapZ/2., coneRot42);
     TGeoCombiTrans* conePosRot42 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.285+gkLadderGapZ/2., coneRot42);
-    station04->AddNode(coneBigVolum, 2, conePosRot42);
+    mystation[iStation]->AddNode(coneBigVolum, 2, conePosRot42);
 
-    station04->GetShape()->ComputeBBox();
+    mystation[iStation]->GetShape()->ComputeBBox();
   }
   
-  CheckVolume(station04);
-  CheckVolume(station04, infoFile);
+  CheckVolume(mystation[iStation]);
+  CheckVolume(mystation[iStation], infoFile);
   infoFile << "Position z = " << statPos[3] << endl;
 
 
@@ -579,29 +574,27 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
      cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
      nLadders++;
     }
-  TGeoVolume* station05 = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
+  mystation[iStation] = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
 
   if (gkConstructCones) {
     // upstream
     TGeoRotation* coneRot51 = new TGeoRotation;
     coneRot51->RotateZ(90);
     coneRot51->RotateY(180);
-    //    TGeoCombiTrans* conePosRot51 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3-gkLadderGapZ/2., coneRot51);
     TGeoCombiTrans* conePosRot51 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.285-gkLadderGapZ/2., coneRot51);
-    station05->AddNode(coneBigVolum, 1, conePosRot51);
+    mystation[iStation]->AddNode(coneBigVolum, 1, conePosRot51);
 
     // downstream
     TGeoRotation* coneRot52 = new TGeoRotation;
     coneRot52->RotateZ(90);
-    //    TGeoCombiTrans* conePosRot52 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3+gkLadderGapZ/2., coneRot52);
     TGeoCombiTrans* conePosRot52 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.285+gkLadderGapZ/2., coneRot52);
-    station05->AddNode(coneBigVolum, 2, conePosRot52);
+    mystation[iStation]->AddNode(coneBigVolum, 2, conePosRot52);
 
-    station05->GetShape()->ComputeBBox();
+    mystation[iStation]->GetShape()->ComputeBBox();
   }
   
-  CheckVolume(station05);
-  CheckVolume(station05, infoFile);
+  CheckVolume(mystation[iStation]);
+  CheckVolume(mystation[iStation], infoFile);
   infoFile << "Position z = " << statPos[4] << endl;
 
 
@@ -617,29 +610,27 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
      cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
      nLadders++;
     }
-  TGeoVolume* station06 = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
+  mystation[iStation] = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
 
   if (gkConstructCones) {
     // upstream
     TGeoRotation* coneRot61 = new TGeoRotation;
     coneRot61->RotateZ(-90);
     coneRot61->RotateY(180);
-    //    TGeoCombiTrans* conePosRot61 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3-gkLadderGapZ/2., coneRot61);
     TGeoCombiTrans* conePosRot61 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.285-gkLadderGapZ/2., coneRot61);
-    station06->AddNode(coneBigVolum, 1, conePosRot61);
+    mystation[iStation]->AddNode(coneBigVolum, 1, conePosRot61);
 
     // downstream
     TGeoRotation* coneRot62 = new TGeoRotation;
     coneRot62->RotateZ(-90);
-    //    TGeoCombiTrans* conePosRot62 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3+gkLadderGapZ/2., coneRot62);
     TGeoCombiTrans* conePosRot62 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.285+gkLadderGapZ/2., coneRot62);
-    station06->AddNode(coneBigVolum, 2, conePosRot62);
+    mystation[iStation]->AddNode(coneBigVolum, 2, conePosRot62);
 
-    station06->GetShape()->ComputeBBox();
+    mystation[iStation]->GetShape()->ComputeBBox();
   }
   
-  CheckVolume(station06);
-  CheckVolume(station06, infoFile);
+  CheckVolume(mystation[iStation]);
+  CheckVolume(mystation[iStation], infoFile);
   infoFile << "Position z = " << statPos[5] << endl;
 
 
@@ -655,29 +646,27 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
      cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
      nLadders++;
     }
-  TGeoVolume* station07 = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
+  mystation[iStation] = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
 
   if (gkConstructCones) {
     // upstream
     TGeoRotation* coneRot71 = new TGeoRotation;
     coneRot71->RotateZ(90);
     coneRot71->RotateY(180);
-    //    TGeoCombiTrans* conePosRot71 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3-gkLadderGapZ/2., coneRot71);
     TGeoCombiTrans* conePosRot71 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.285-gkLadderGapZ/2., coneRot71);
-    station07->AddNode(coneBigVolum, 1, conePosRot71);
+    mystation[iStation]->AddNode(coneBigVolum, 1, conePosRot71);
 
     // downstream
     TGeoRotation* coneRot72 = new TGeoRotation;
     coneRot72->RotateZ(90);
-    //    TGeoCombiTrans* conePosRot72 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3+gkLadderGapZ/2., coneRot72);
     TGeoCombiTrans* conePosRot72 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.285+gkLadderGapZ/2., coneRot72);
-    station07->AddNode(coneBigVolum, 2, conePosRot72);
+    mystation[iStation]->AddNode(coneBigVolum, 2, conePosRot72);
 
-    station07->GetShape()->ComputeBBox();
+    mystation[iStation]->GetShape()->ComputeBBox();
   }
   
-  CheckVolume(station07);
-  CheckVolume(station07, infoFile);
+  CheckVolume(mystation[iStation]);
+  CheckVolume(mystation[iStation], infoFile);
   infoFile << "Position z = " << statPos[6] << endl;
 
 
@@ -693,29 +682,27 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
      cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
      nLadders++;
     }
-  TGeoVolume* station08 = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
+  mystation[iStation] = ConstructStation(iStation, nLadders, ladderTypes, rHole[iStation]);
 
   if (gkConstructCones) {
     // upstream
     TGeoRotation* coneRot81 = new TGeoRotation;
     coneRot81->RotateZ(-90);
     coneRot81->RotateY(180);
-    //    TGeoCombiTrans* conePosRot81 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.3-gkLadderGapZ/2., coneRot81);
     TGeoCombiTrans* conePosRot81 = new TGeoCombiTrans(name+"conePosRot2", 0., 0., -coneDz-0.285-gkLadderGapZ/2., coneRot81);
-    station08->AddNode(coneBigVolum, 1, conePosRot81);
+    mystation[iStation]->AddNode(coneBigVolum, 1, conePosRot81);
 
     // downstream
     TGeoRotation* coneRot82 = new TGeoRotation;
     coneRot82->RotateZ(-90);
-    //    TGeoCombiTrans* conePosRot82 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.3+gkLadderGapZ/2., coneRot82);
     TGeoCombiTrans* conePosRot82 = new TGeoCombiTrans(name+"conePosRot1", 0., 0., coneDz+0.285+gkLadderGapZ/2., coneRot82);
-    station08->AddNode(coneBigVolum, 2, conePosRot82);
+    mystation[iStation]->AddNode(coneBigVolum, 2, conePosRot82);
 
-    station08->GetShape()->ComputeBBox();
+    mystation[iStation]->GetShape()->ComputeBBox();
   }
   
-  CheckVolume(station08);
-  CheckVolume(station08, infoFile);
+  CheckVolume(mystation[iStation]);
+  CheckVolume(mystation[iStation], infoFile);
   infoFile << "Position z = " << statPos[7] << endl;
   // --------------------------------------------------------------------------
 
