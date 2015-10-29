@@ -19,6 +19,7 @@
 
 class FairRootManager;
 class CbmMCEventHeader;
+class CbmStsTrack;
 class PairAnalysisTrack;
 
 class PairAnalysisEvent : public TNamed {
@@ -54,7 +55,9 @@ public:
   PairAnalysisTrack *GetTrack(UInt_t pos);
 
   virtual void Clear(Option_t *opt="C");
+protected:
 
+  Int_t GetMvdMatchingIndex(CbmStsTrack *track) const;
 
 private:
  CbmMCEventHeader *fMCHeader;       //mc header

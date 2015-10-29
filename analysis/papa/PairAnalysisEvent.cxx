@@ -270,6 +270,8 @@ void PairAnalysisEvent::Init()
     if(tofHit && tofHit->GetRefId()>=0) tofPoint = static_cast<FairMCPoint*>( fTofPoints->At(tofHit->GetRefId()) );
     Int_t itofMC = (tofPoint ? tofPoint->GetTrackID() : -1 );
 
+    Int_t imvdMC = GetMvdMatchingIndex( stsTrack );
+
     // rich projection
     FairTrackParam *richProj = 0x0;
     if(fRichProjection) richProj = static_cast<FairTrackParam*>(fRichProjection->At(i));
@@ -290,13 +292,14 @@ void PairAnalysisEvent::Init()
     PairAnalysisTrack *tr = static_cast<PairAnalysisTrack*>(fTracks->UncheckedAt(i));
     if(iMC<0) iMC=-999; // STS tracks w/o MC matching
     tr->SetLabel(iMC);
-    //      tr->SetBit(BIT(14+kMVD),  (iMC==imvdMC)  );
+    // NOTE: sts track matching might include mvd points
+    tr->SetBit(BIT(14+kMVD),  (iMC==imvdMC)  ); 
     tr->SetBit(BIT(14+kSTS),  (iMC==istsMC)  );
     tr->SetBit(BIT(14+kRICH), (iMC==irichMC) );
     tr->SetBit(BIT(14+kTRD),  (iMC==itrdMC)  );
     tr->SetBit(BIT(14+kTOF),  (iMC==itofMC) );
     tr->SetBit(BIT(14+kMUCH), (iMC==imuchMC)  );
-
+    
   }
 
   // number of multiple matched tracks
@@ -422,4 +425,60 @@ void PairAnalysisEvent::Clear(Option_t *opt)
   // fMCTracks->Delete();       //mc tracks
   // fStsMatches->Delete();     //STS matches
 
+}
+
+//______________________________________________
+Int_t PairAnalysisEvent::GetMvdMatchingIndex(CbmStsTrack *track) const
+{
+  //
+  // calculate the standalone mvd mc matching
+  //
+  Int_t idx=-1;
+  if(!track) return idx;
+
+  CbmTrackMatchNew* trackMatch = new CbmTrackMatchNew();
+
+  Int_t nofMvdHits = track->GetNofMvdHits();
+  for (Int_t iHit = 0; iHit < nofMvdHits; iHit++) {
+    const CbmMatch* hitMatch = static_cast<CbmMatch*>(fMvdHitMatches->At(track->GetMvdHitIndex(iHit)));
+    Int_t nofLinks = hitMatch->GetNofLinks();
+    for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
+      const CbmLink& link = hitMatch->GetLink(iLink);
+      const FairMCPoint* point = static_cast<const FairMCPoint*>(fMvdPoints->At(link.GetIndex()));
+      if (NULL == point) continue;
+      trackMatch->AddLink(CbmLink(1., point->GetTrackID(), link.GetEntry(), link.GetFile()));
+    }
+  }
+  if ( ! trackMatch->GetNofLinks() ) { 
+    delete trackMatch; 
+    return idx;
+  }
+
+  // Calculate number of true and wrong hits
+  Int_t trueCounter = trackMatch->GetNofTrueHits();
+  Int_t wrongCounter = trackMatch->GetNofWrongHits();
+  for (Int_t iHit = 0; iHit < nofMvdHits; iHit++) {
+    const CbmMatch* hitMatch = static_cast<CbmMatch*>(fMvdHitMatches->At(track->GetMvdHitIndex(iHit)));
+    Int_t nofLinks = hitMatch->GetNofLinks();
+    Bool_t hasTrue = false;
+    for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
+      const FairMCPoint* point = static_cast<const FairMCPoint*>(fMvdPoints->At(hitMatch->GetLink(iLink).GetIndex()));
+      if (NULL == point) continue;
+      if (point->GetTrackID() == trackMatch->GetMatchedLink().GetIndex()) {
+	hasTrue = true;
+	break;
+      }
+    }
+    if (hasTrue) trueCounter++; else wrongCounter++;
+  }
+  trackMatch->SetNofTrueHits(trueCounter);
+  trackMatch->SetNofWrongHits(wrongCounter);
+
+  // return value
+  idx=trackMatch->GetMatchedLink().GetIndex();
+
+  //delete surplus stuff
+  delete trackMatch;
+
+  return idx;
 }
