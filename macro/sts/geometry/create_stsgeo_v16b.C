@@ -197,7 +197,7 @@ TGeoManager*   gGeoMan           = NULL;  // will be set later
 // ======                         Main function                           =====
 // ============================================================================
 
-void create_stsgeo_v15b(const char* geoTag="v15b")
+void create_stsgeo_v16b(const char* geoTag="v16b")
 {
 
   // -------   Geometry file name (output)   ----------------------------------
@@ -211,7 +211,7 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   infoFileName.ReplaceAll("root", "info");
   fstream infoFile;
   infoFile.open(infoFileName.Data(), fstream::out);
-  infoFile << "STS geometry created with create_stsgeo_v15b.C" << endl << endl;
+  infoFile << "STS geometry created with create_stsgeo_v16b.C" << endl << endl;
   infoFile << "Global variables: " << endl;
   infoFile << "Sensor thickness = " << gkSensorThickness << " cm" << endl;
   infoFile << "Vertical gap in sensor chain = " 
@@ -394,6 +394,7 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   cout << endl << endl;
   cout << "===> Creating stations...." << endl;
   infoFile << endl << "Stations: ";
+  Int_t iStation = 0;
   Int_t nLadders = 0;
   Int_t ladderTypes[20];
   Double_t statZ = 0.;
@@ -401,40 +402,35 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   TGeoBBox*        statShape = NULL;
   TGeoTranslation* statTrans = NULL;
 
-  int ladderTypes[8][16]= { {  0,  0,  0,  0, 10,  9,  9,  1,  1,  9,  9, 10,  0,  0,  0,  0 },    // station 1
-                            {  0,  0, 11, 10, 10,  9,  9,  2,  2,  9,  9, 10, 10, 11,  0,  0 },    // station 2
-                            {  0,  0, 14, 13, 12, 12, 12,  3,  3, 12, 12, 12, 13, 14,  0,  0 },    // station 3
-                            {  0, 15, 14, 13, 12, 12, 12,  4,  4, 12, 12, 12, 13, 14, 15,  0 },    // station 4
-                            {  0, 19, 18, 17, 17, 16, 16,  5,  5, 16, 16, 17, 17, 18, 19,  0 },    // station 5
-                            {  0, 19, 18, 17, 17, 16, 16,  6,  6, 16, 16, 17, 17, 18, 19,  0 },    // station 6
-                            { 21, 19, 18, 20, 20, 20, 20,  7,  7, 20, 20, 20, 20, 18, 19, 21 },    // station 7
-                            { 19, 17, 23, 22, 22, 22, 22,  8,  8, 22, 22, 22, 22, 23, 17, 19 } };  // station 8
+  int allLadderTypes[8][16]= { {  0,  0,  0,  0, 10,  9,  9,  1,  1,  9,  9, 10,  0,  0,  0,  0 },    // station 1
+                               {  0,  0, 11, 10, 10,  9,  9,  2,  2,  9,  9, 10, 10, 11,  0,  0 },    // station 2
+                               {  0,  0, 14, 13, 12, 12, 12,  3,  3, 12, 12, 12, 13, 14,  0,  0 },    // station 3
+                               {  0, 15, 14, 13, 12, 12, 12,  4,  4, 12, 12, 12, 13, 14, 15,  0 },    // station 4
+                               {  0, 19, 18, 17, 17, 16, 16,  5,  5, 16, 16, 17, 17, 18, 19,  0 },    // station 5
+                               {  0, 19, 18, 17, 17, 16, 16,  6,  6, 16, 16, 17, 17, 18, 19,  0 },    // station 6
+                               { 21, 19, 18, 20, 20, 20, 20,  7,  7, 20, 20, 20, 20, 18, 19, 21 },    // station 7
+                               { 19, 17, 23, 22, 22, 22, 22,  8,  8, 22, 22, 22, 22, 23, 17, 19 } };  // station 8
     
-  int carbon_elem[8][16]= { {  0,  0,  0,  0, 10,  9,  9,  1,  1,  9,  9, 10,  0,  0,  0,  0 },    // station 1
-                            {  0,  0, 11, 10, 10,  9,  9,  2,  2,  9,  9, 10, 10, 11,  0,  0 },    // station 2
-                            {  0,  0, 14, 13, 12, 12, 12,  3,  3, 12, 12, 12, 13, 14,  0,  0 },    // station 3
-                            {  0, 15, 14, 13, 12, 12, 12,  4,  4, 12, 12, 12, 13, 14, 15,  0 },    // station 4
-                            {  0, 19, 18, 17, 17, 16, 16,  5,  5, 16, 16, 17, 17, 18, 19,  0 },    // station 5
-                            {  0, 19, 18, 17, 17, 16, 16,  6,  6, 16, 16, 17, 17, 18, 19,  0 },    // station 6
-                            { 21, 19, 18, 20, 20, 20, 20,  7,  7, 20, 20, 20, 20, 18, 19, 21 },    // station 7
-                            { 19, 17, 23, 22, 22, 22, 22,  8,  8, 22, 22, 22, 22, 23, 17, 19 } };  // station 8
-
-
+  int carbon_elem[23]= { 10, 10, 16, 16, 20, 20, 22, 24,
+			 11, 10,  6, 16, 14, 12,  7, 20,
+			 18, 16, 13, 22,  7, 24, 21 };  // number of carbon elements in ladder types
+			 
   // --- Station 01: 8 ladders, type 3 2 2 1 1 2 2 3
   cout << endl;
   statZ = 30.;
   rHole = 2.0;
-  nLadders = 8;
-  ladderTypes[0] = 10;  // 13;  // 3;
-  ladderTypes[1] =  9;  // 12;  // 2;
-  ladderTypes[2] =  9;  // 12;  // 2;
-  ladderTypes[3] =  1;  // 11;  // 21;   // 1;
-  ladderTypes[4] =  1;  // 11;  // 21;   // 1;
-  ladderTypes[5] =  9;  // 12;  // 2;
-  ladderTypes[6] =  9;  // 12;  // 2;
-  ladderTypes[7] = 10;  // 13;  // 3;
-  TGeoVolume* station01 = ConstructStation(0, nLadders, ladderTypes, rHole);
 
+  iStation = 0;
+  nLadders = 0;
+  for  (Int_t i = 0; i < 16; i++)
+    if (allLadderTypes[iStation][i] != 0)
+    {
+     ladderTypes[nLadders] = allLadderTypes[iStation][i];
+     cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
+     nLadders++;
+    }
+  TGeoVolume* station01 = ConstructStation(iStation, nLadders, ladderTypes, rHole);
+  
   if (gkConstructCones) {
     // upstream
     TGeoRotation* coneRot11 = new TGeoRotation;
@@ -463,20 +459,17 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   cout << endl;
   statZ = 40.;
   rHole = 2.0;
-  nLadders = 12;
-  ladderTypes[0]  = 11;  // 22;  // 4;
-  ladderTypes[1]  = 10;  // 13;  // 3;
-  ladderTypes[2]  = 10;  // 13;  // 3;
-  ladderTypes[3]  =  9;  // 12;  // 2;
-  ladderTypes[4]  =  9;  // 12;  // 2;
-  ladderTypes[5]  =  2;  // 21;  // 1;
-  ladderTypes[6]  =  2;  // 21;  // 1;
-  ladderTypes[7]  =  9;  // 12;  // 2;
-  ladderTypes[8]  =  9;  // 12;  // 2;
-  ladderTypes[9]  = 10;  // 13;  // 3;
-  ladderTypes[10] = 10;  // 13;  // 3;
-  ladderTypes[11] = 11;  // 22;  // 4;
-  TGeoVolume* station02 = ConstructStation(1, nLadders, ladderTypes, rHole);
+
+  iStation = 1;
+  nLadders = 0;
+  for  (Int_t i = 0; i < 16; i++)
+    if (allLadderTypes[iStation][i] != 0)
+    {
+     ladderTypes[nLadders] = allLadderTypes[iStation][i];
+     cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
+     nLadders++;
+    }
+  TGeoVolume* station02 = ConstructStation(iStation, nLadders, ladderTypes, rHole);
 
   if (gkConstructCones) {
     // upstream
@@ -506,20 +499,17 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   cout << endl;
   statZ = 50.;
   rHole = 2.9;
-  nLadders = 12;
-  ladderTypes[0]  = 14;  // 34;  // 8;
-  ladderTypes[1]  = 13;  // 33;  // 7;
-  ladderTypes[2]  = 12;  // 32;  // 6;
-  ladderTypes[3]  = 12;  // 32;  // 6;
-  ladderTypes[4]  = 12;  // 32;  // 6;
-  ladderTypes[5]  =  3;  // 31;  // 22;   // 5;
-  ladderTypes[6]  =  3;  // 31;  // 22;   // 5;
-  ladderTypes[7]  = 12;  // 32;  // 6;
-  ladderTypes[8]  = 12;  // 32;  // 6;
-  ladderTypes[9]  = 12;  // 32;  // 6;
-  ladderTypes[10] = 13;  // 33;  // 7;
-  ladderTypes[11] = 14;  // 34;  // 8;
-  TGeoVolume* station03 = ConstructStation(2, nLadders, ladderTypes, rHole);
+
+  iStation = 2;
+  nLadders = 0;
+  for  (Int_t i = 0; i < 16; i++)
+    if (allLadderTypes[iStation][i] != 0)
+    {
+     ladderTypes[nLadders] = allLadderTypes[iStation][i];
+     cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
+     nLadders++;
+    }
+  TGeoVolume* station03 = ConstructStation(iStation, nLadders, ladderTypes, rHole);
 
   if (gkConstructCones) {
     // upstream
@@ -549,22 +539,17 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   cout << endl;
   statZ = 60.;
   rHole = 2.9;
-  nLadders = 14;
-  ladderTypes[0]  = 15;  // 42;  // 9;
-  ladderTypes[1]  = 14;  // 34;  // 8;
-  ladderTypes[2]  = 13;  // 33;  // 7;
-  ladderTypes[3]  = 12;  // 32;  // 6;
-  ladderTypes[4]  = 12;  // 32;  // 6;
-  ladderTypes[5]  = 12;  // 32;  // 6;
-  ladderTypes[6]  =  4;  // 41;  // 5;
-  ladderTypes[7]  =  4;  // 41;  // 5;
-  ladderTypes[8]  = 12;  // 32;  // 6;
-  ladderTypes[9]  = 12;  // 32;  // 6;
-  ladderTypes[10] = 12;  // 32;  // 6;
-  ladderTypes[11] = 13;  // 33;  // 7;
-  ladderTypes[12] = 14;  // 34;  // 8;
-  ladderTypes[13] = 15;  // 42;  // 9;
-  TGeoVolume* station04 = ConstructStation(3, nLadders, ladderTypes, rHole);
+
+  iStation = 3;
+  nLadders = 0;
+  for  (Int_t i = 0; i < 16; i++)
+    if (allLadderTypes[iStation][i] != 0)
+    {
+     ladderTypes[nLadders] = allLadderTypes[iStation][i];
+     cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
+     nLadders++;
+    }
+  TGeoVolume* station04 = ConstructStation(iStation, nLadders, ladderTypes, rHole);
 
   if (gkConstructCones) {
     // upstream
@@ -594,22 +579,17 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   cout << endl;
   statZ = 70.;
   rHole = 3.7;
-  nLadders = 14;
-  ladderTypes[0]  = 19;  //  55;  // 14;
-  ladderTypes[1]  = 18;  //  54;  // 13;
-  ladderTypes[2]  = 17;  //  53;  // 12;
-  ladderTypes[3]  = 17;  //  53;  // 12;
-  ladderTypes[4]  = 16;  //  52;  // 11;
-  ladderTypes[5]  = 16;  //  52;  // 11;
-  ladderTypes[6]  =  5;  //  51;  // 23;   // 10;
-  ladderTypes[7]  =  5;  //  51;  // 23;   // 10;
-  ladderTypes[8]  = 16;  //  52;  // 11;
-  ladderTypes[9]  = 16;  //  52;  // 11;
-  ladderTypes[10] = 17;  //  53;  // 12;
-  ladderTypes[11] = 17;  //  53;  // 12;
-  ladderTypes[12] = 18;  //  54;  // 13;
-  ladderTypes[13] = 19;  //  55;  // 14;
-  TGeoVolume* station05 = ConstructStation(4, nLadders, ladderTypes, rHole);
+
+  iStation = 4;
+  nLadders = 0;
+  for  (Int_t i = 0; i < 16; i++)
+    if (allLadderTypes[iStation][i] != 0)
+    {
+     ladderTypes[nLadders] = allLadderTypes[iStation][i];
+     cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
+     nLadders++;
+    }
+  TGeoVolume* station05 = ConstructStation(iStation, nLadders, ladderTypes, rHole);
 
   if (gkConstructCones) {
     // upstream
@@ -639,22 +619,17 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   cout << endl;
   statZ = 80.;
   rHole = 3.7;
-  nLadders = 14;
-  ladderTypes[0]  = 19;  // 55;  // 14;
-  ladderTypes[1]  = 18;  // 54;  // 13;
-  ladderTypes[2]  = 17;  // 53;  // 12;
-  ladderTypes[3]  = 17;  // 53;  // 12;
-  ladderTypes[4]  = 16;  // 52;  // 11;
-  ladderTypes[5]  = 16;  // 52;  // 11;
-  ladderTypes[6]  =  6;  // 61;  // 10;
-  ladderTypes[7]  =  6;  // 61;  // 10;
-  ladderTypes[8]  = 16;  // 52;  // 11;
-  ladderTypes[9]  = 16;  // 52;  // 11;
-  ladderTypes[10] = 17;  // 53;  // 12;
-  ladderTypes[11] = 17;  // 53;  // 12;
-  ladderTypes[12] = 18;  // 54;  // 13;
-  ladderTypes[13] = 19;  // 55;  // 14;
-  TGeoVolume* station06 = ConstructStation(5, nLadders, ladderTypes, rHole);
+
+  iStation = 5;
+  nLadders = 0;
+  for  (Int_t i = 0; i < 16; i++)
+    if (allLadderTypes[iStation][i] != 0)
+    {
+     ladderTypes[nLadders] = allLadderTypes[iStation][i];
+     cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
+     nLadders++;
+    }
+  TGeoVolume* station06 = ConstructStation(iStation, nLadders, ladderTypes, rHole);
 
   if (gkConstructCones) {
     // upstream
@@ -684,24 +659,17 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   cout << endl;
   statZ = 90.;
   rHole = 4.2;
-  nLadders = 16;
-  ladderTypes[0]  = 21;  // 73;  // 17;
-  ladderTypes[1]  = 19;  // 55;  // 14;
-  ladderTypes[2]  = 18;  // 54;  // 13;
-  ladderTypes[3]  = 20;  // 72;  // 16;
-  ladderTypes[4]  = 20;  // 72;  // 16;
-  ladderTypes[5]  = 20;  // 72;  // 16;
-  ladderTypes[6]  = 20;  // 72;  // 16;
-  ladderTypes[7]  =  7;  // 71;  // 15;
-  ladderTypes[8]  =  7;  // 71;  // 15;
-  ladderTypes[9]  = 20;  // 72;  // 16;
-  ladderTypes[10] = 20;  // 72;  // 16;
-  ladderTypes[11] = 20;  // 72;  // 16;
-  ladderTypes[12] = 20;  // 72;  // 16;
-  ladderTypes[13] = 18;  // 54;  // 13;
-  ladderTypes[14] = 19;  // 55;  // 14;
-  ladderTypes[15] = 21;  // 73;  // 17;
-  TGeoVolume* station07 = ConstructStation(6, nLadders, ladderTypes, rHole);
+
+  iStation = 6;
+  nLadders = 0;
+  for  (Int_t i = 0; i < 16; i++)
+    if (allLadderTypes[iStation][i] != 0)
+    {
+     ladderTypes[nLadders] = allLadderTypes[iStation][i];
+     cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
+     nLadders++;
+    }
+  TGeoVolume* station07 = ConstructStation(iStation, nLadders, ladderTypes, rHole);
 
   if (gkConstructCones) {
     // upstream
@@ -731,24 +699,17 @@ void create_stsgeo_v15b(const char* geoTag="v15b")
   cout << endl;
   statZ = 100.;
   rHole = 4.2;
-  nLadders = 16;
-  ladderTypes[0]  = 19;  // 55;  // 14;
-  ladderTypes[1]  = 17;  // 53;  // 12;
-  ladderTypes[2]  = 23;  // 83;  // 20;
-  ladderTypes[3]  = 22;  // 82;  // 19;
-  ladderTypes[4]  = 22;  // 82;  // 19;
-  ladderTypes[5]  = 22;  // 82;  // 19;
-  ladderTypes[6]  = 22;  // 82;  // 19;
-  ladderTypes[7]  =  8;  // 81;  // 18;
-  ladderTypes[8]  =  8;  // 81;  // 18;
-  ladderTypes[9]  = 22;  // 82;  // 19;
-  ladderTypes[10] = 22;  // 82;  // 19;
-  ladderTypes[11] = 22;  // 82;  // 19;
-  ladderTypes[12] = 22;  // 82;  // 19;
-  ladderTypes[13] = 23;  // 83;  // 20;
-  ladderTypes[14] = 17;  // 53;  // 12;
-  ladderTypes[15] = 19;  // 55;  // 14;
-  TGeoVolume* station08 = ConstructStation(7, nLadders, ladderTypes, rHole);
+
+  iStation = 7;
+  nLadders = 0;
+  for  (Int_t i = 0; i < 16; i++)
+    if (allLadderTypes[iStation][i] != 0)
+    {
+     ladderTypes[nLadders] = allLadderTypes[iStation][i];
+     cout << "DE ladderTypes[" << nLadders << "] = " << allLadderTypes[iStation][i] << ";" << endl;
+     nLadders++;
+    }
+  TGeoVolume* station08 = ConstructStation(iStation, nLadders, ladderTypes, rHole);
 
   if (gkConstructCones) {
     // upstream
