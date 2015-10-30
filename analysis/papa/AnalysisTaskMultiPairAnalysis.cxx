@@ -109,7 +109,7 @@ InitStatus AnalysisTaskMultiPairAnalysis::Init()
 
   // fill metadata object
   fMetaData.Init();
-  fMetaData.FillMeta("beamenergy",fBeamEnergy);
+  fMetaData.FillMeta("beamenergy",fBeamEnergy); // TODO: internal access to FairBaseParSet::GetBeamMom()
 
   if (!fListHistos.IsEmpty()/*||!fListCF.IsEmpty()*/) return kERROR; //already initialised
 

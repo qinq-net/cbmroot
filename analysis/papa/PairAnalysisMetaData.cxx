@@ -78,6 +78,7 @@ void PairAnalysisMetaData::Init()
   //  pProduction->SetTitle(gProduction->Getenv("USER"));
   fMetaList.Add(pProduction);
 
+  // TODO: replace by FairBaseParSet::GetBeamMom()
   TParameter<Double_t> *pBeamEnergy = new TParameter<Double_t>("beamenergy", 4.107);
   //  pBeamEnergy->SetBit(TParameter<Double_t>::kIsConst);
   pBeamEnergy->SetBit(TParameter<Double_t>::kFirst);
@@ -212,7 +213,10 @@ void PairAnalysisMetaData::DrawSame(const Option_t* opt) {
   if(!tmp.IsNull()) line+=", " + tmp;
   // beamenergy
   TParameter<Double_t> *parD = dynamic_cast<TParameter<Double_t> *>(fMetaList.FindObject("beamenergy"));
-  if(parD)          tmp=Form("#it{E}_{beam} = %.2f #it{A}GeV",parD->GetVal());
+  if(parD)          {
+    if(tmp.Contains("p")) tmp=Form("#it{E}_{beam} = %.2f GeV",parD->GetVal());
+    else                  tmp=Form("#it{E}_{beam} = %.2f #it{A}GeV",parD->GetVal());
+  }
   //  if(parD)          tmp=Form("#sqrt{#it{s}_{NN}} = %.2f GeV",parD->GetVal());
   if(!tmp.IsNull()) line+=" " + tmp;
 
