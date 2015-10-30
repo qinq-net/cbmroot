@@ -65,7 +65,7 @@ void readHV(TString inFile="exampleHV.txt")
 	hVoltage->Fill(voltage);
       } else if (line.BeginsWith("Loop")) {
 	cout << line << endl;
-      } else {
+      } else if (line.BeginsWith("2015")){
 	sTime = line;
 	year  = TString(line( 0,4)).Atoi(); 
 	month = TString(line( 5,2)).Atoi();
@@ -87,6 +87,8 @@ void readHV(TString inFile="exampleHV.txt")
 	lastMin = min;
 	lastSec = sec;
 	lastMsec = msec;
+      } else {
+	cout << "/" << line << "/ : Unknown content! To be ignored" << endl;
       }
       if (debug)
 	cout << lineLength << ":   " << line << endl;
@@ -115,9 +117,9 @@ void readHV(TString inFile="exampleHV.txt")
       nLines++;
     }
     cout << "found " << nLines << " lines in file " << inFile << endl;
-    c->cd(1);
+    c->cd(1)->SetLogy(1);
     hCurrent->DrawCopy();
-    c->cd(2);
+    c->cd(2)->SetLogy(1);
     hVoltage->DrawCopy();
     c->cd(3);
     hDeltaT->DrawCopy();
