@@ -53,6 +53,7 @@ class CbmTofHitProducerNew : public FairTask {
   void SetParFileName(const std::string& fnam) { fParFileName = fnam;}
   void SetInitFromAscii(Bool_t ascii) {fParInitFromAscii=ascii;}
   void SetHistosFileName( TString inName ){ fsHistosFileName = inName;}
+  void SetOnePntPerTrkRpc( Bool_t inFlag = kTRUE ){ fbUseOnePntPerTrkRpc = inFlag;}
 
   Double_t GetSigmaT();
   Double_t GetSigmaEl();
@@ -121,6 +122,11 @@ private:
   std::vector< std::vector< std::vector< std::vector< Int_t   > > > > point_left ;
   std::vector< std::vector< std::vector< std::vector< Int_t   > > > > point_right;
 
+      // Temporary storing of the Track/Rpc info to make sure all clusters
+      // linked to same track in same detector give the same results for timing
+   Bool_t fbUseOnePntPerTrkRpc;
+   std::vector< std::vector < ULong64_t > > fvlTrckRpcAddr;   // [nbMcTracks][nbRpcFiredByTrk]
+   std::vector< std::vector < Double_t > >  fvdTrckRpcTime;   // [nbMcTracks][nbRpcFiredByTrk]
 
   //End of storing data members
 

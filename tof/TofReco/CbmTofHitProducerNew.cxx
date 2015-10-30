@@ -63,6 +63,9 @@ CbmTofHitProducerNew::CbmTofHitProducerNew()
     trackID_right(),
     point_left(),
     point_right(),
+    fbUseOnePntPerTrkRpc(kFALSE),
+    fvlTrckRpcAddr(),
+    fvdTrckRpcTime(),
     fSigmaT(0.),
     fSigmaEl(0.),
     fSigmaXY(0.),
@@ -176,6 +179,9 @@ CbmTofHitProducerNew::CbmTofHitProducerNew(const char *name, Int_t verbose)
    trackID_right(),
    point_left(),
    point_right(),
+    fbUseOnePntPerTrkRpc(kFALSE),
+    fvlTrckRpcAddr(),
+    fvdTrckRpcTime(),
    fSigmaT(0.),
    fSigmaEl(0.),
    fSigmaXY(0.),
@@ -741,6 +747,13 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
        << " points in Tof for this event with " << nMCTracks
        << " MC tracks "<< endl;
 
+   // Prepare the temporary storing of the Track/Point/Digi info
+   if( kTRUE == fbUseOnePntPerTrkRpc )
+   {
+      fvlTrckRpcAddr.resize( nMCTracks );
+      fvdTrckRpcTime.resize( nMCTracks );
+   } // if( kTRUE == fbUseOnePntPerTrkRpc )
+
   //Some numbers on TOF distributions
 
   for(Int_t p=0;p<nMCTracks;p++) {
@@ -748,6 +761,12 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
     if(mc->GetNPoints(kTOF)>0) tof_tracks++;
     if(mc->GetNPoints(kTOF)>0 && mc->GetMotherId()==-1) tof_tracks_vert++;
     if(mc->GetMotherId()==-1) nMCTracks_vert++;
+    
+      if( kTRUE == fbUseOnePntPerTrkRpc )
+      {
+         fvlTrckRpcAddr[p].clear();
+         fvdTrckRpcTime[p].clear();
+      } // if( kTRUE == fbUseOnePntPerTrkRpc )
   }
   
   cout << "-I- CbmTofHitProducerNew : " << tof_tracks << " tracks in Tof " << endl;
@@ -871,6 +890,36 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
            + gRandom->Gaus(0,sigma_el);
     tr_new = pt->GetTime() + T_smearing + Y_local/vprop
            + gRandom->Gaus(0,sigma_el);
+           
+   // Check if there was already a Point from the same track created in this RPC
+   if( kTRUE == fbUseOnePntPerTrkRpc )
+   {
+      ULong64_t uRpcAddr = ( smtype*1000 + smodule )*1000
+                           + module;
+      Bool_t bFoundIt = kFALSE;
+      UInt_t uTrkRpcPair = 0;
+      for( uTrkRpcPair = 0; uTrkRpcPair < fvlTrckRpcAddr[trackID].size(); uTrkRpcPair ++)
+         if( uRpcAddr == fvlTrckRpcAddr[trackID][uTrkRpcPair])
+         {
+            bFoundIt = kTRUE;
+            break;
+         }
+      // If it is the case, we should reuse the timing already assigned to this (track, RPC) pair
+      if( kTRUE == bFoundIt)
+      {
+         tl_new = fvdTrckRpcTime[trackID][uTrkRpcPair] 
+                  - Y_local/vprop
+                  + gRandom->Gaus(0,sigma_el);
+         tr_new = fvdTrckRpcTime[trackID][uTrkRpcPair] 
+                  + Y_local/vprop
+                  + gRandom->Gaus(0,sigma_el);
+      } // Already a point in this RPC for this Track
+         else
+         {
+            fvlTrckRpcAddr[trackID].push_back(uRpcAddr);
+            fvdTrckRpcTime[trackID].push_back(pt->GetTime() + T_smearing);              
+         } // No Point yet in this RPC for this Track
+   } // if( kTRUE == fbUseOnePntPerTrkRpc )
 
     if(fVerbose >1 || TMath::Abs(X_local)>1.5) {
       cout << "-W- TofHitProNew " << j <<". Poi," 
@@ -1107,6 +1156,18 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
    fhNbAllTrkHits->Fill(     nMCTracks,       iNbTofHits );
    fhNbPrimTrkTofHits->Fill( tof_tracks_vert, iNbTofHits );
    fhNbAllTrkTofHits->Fill(  tof_tracks,      iNbTofHits );
+   
+   // Clear the Track to channel temporary storage
+   if( kTRUE == fbUseOnePntPerTrkRpc )
+   {
+      for(Int_t iTrkInd = 0; iTrkInd < nMCTracks; iTrkInd++)
+      {
+         fvlTrckRpcAddr[iTrkInd].clear();
+         fvdTrckRpcTime[iTrkInd].clear();
+      } // for(Int_t iTrkInd = 0; iTrkInd < nMCTracks; iTrkInd++)
+      fvlTrckRpcAddr.clear();
+      fvdTrckRpcTime.clear();
+   } // if( kTRUE == fbUseOnePntPerTrkRpc )
 }
 // ---- Add Hit to HitCollection --------------------------------------
 

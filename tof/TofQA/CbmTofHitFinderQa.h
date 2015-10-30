@@ -83,7 +83,7 @@ class CbmTofHitFinderQa : public FairTask {
       std::vector< Int_t >                               fvTypeSmOffs; // Offset in SM index for first SM of each SM type
       Int_t iNbRpcTot;
       std::vector< std::vector< Int_t > >                fvSmRpcOffs;  // Offset in RPC index for first RPC of each SM
-      Int_t iNbChTot;
+      Int_t fiNbChTot;
       std::vector< std::vector< std::vector< Int_t > > > fvRpcChOffs;  // Offset in channel index for first channel of each RPC
     
       // Parameters
@@ -318,6 +318,17 @@ class CbmTofHitFinderQa : public FairTask {
       std::vector<TH1 *> fvhPlabSecGenTrkTofPnt;
       std::vector<TH1 *> fvhPlabSecGenTrkTofhit;
 
+         // Integrated TofHit Efficiency
+      std::vector<ULong64_t> fvulIdxTracksWithPnt;
+      std::vector<ULong64_t> fvulIdxTracksWithHit;
+      TH1* fhIntegratedHitPntEff;
+      std::vector<ULong64_t> fvulIdxPrimTracksWithPnt;
+      std::vector<ULong64_t> fvulIdxPrimTracksWithHit;
+      TH1* fhIntegratedHitPntEffPrim;
+      std::vector<ULong64_t> fvulIdxSecTracksWithPnt;
+      std::vector<ULong64_t> fvulIdxSecTracksWithHit;
+      TH1* fhIntegratedHitPntEffSec;
+      
       ClassDef(CbmTofHitFinderQa, 1);
 };
 

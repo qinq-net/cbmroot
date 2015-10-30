@@ -389,6 +389,7 @@ CbmHadronAnalysis::CbmHadronAnalysis()
     fa_LenDismom_glo_h(NULL),       
     fa_LenDismom_glo_a(NULL), 
     fa_LenMcLenGlomom_glo(NULL),
+    fa_LenMcDismom_glo(NULL),
     fhwdist(NULL),
     fhwmindelmass(NULL),
     fhwminlen(NULL),
@@ -743,6 +744,7 @@ CbmHadronAnalysis::CbmHadronAnalysis(const char* name, Int_t verbose)
     fa_LenDismom_glo_h(NULL),       
     fa_LenDismom_glo_a(NULL), 
     fa_LenMcLenGlomom_glo(NULL),
+    fa_LenMcDismom_glo(NULL),
     fhwdist(NULL),
     fhwmindelmass(NULL),
     fhwminlen(NULL),
@@ -1086,6 +1088,8 @@ void CbmHadronAnalysis::CreateHistogramms()
   fa_LenDismom_glo_a = new TH2F("LenDismom_glo_a","GlobalTrack(a); momentum; len-dis;",100,0.,10.,100.,-LenDisMax,LenDisMax);
   
   fa_LenMcLenGlomom_glo = new TH2F("LenMcLenGlomom_glo","GlobalTrack(all); momentum [GeV]; len glo - len MC pnt[cm];",
+                          100,0.,10.,400.,-LenDisMax,LenDisMax);
+  fa_LenMcDismom_glo = new TH2F("LenMcDismom_glo","GlobalTrack(all); momentum [GeV]; len MC pnt - dis [cm];",
                           100,0.,10.,400.,-LenDisMax,LenDisMax);
 
   Int_t   WYBIN=100;
@@ -3005,7 +3009,10 @@ void CbmHadronAnalysis::Exec(Option_t* option)
        fa_LenDismom_glo->Fill(mom,len-TofHit->GetR());
        
        if( NULL != TofPoint )
+       {
          fa_LenMcLenGlomom_glo->Fill(mom,len-TofPoint->GetLength());
+         fa_LenMcDismom_glo->Fill(mom,TofPoint->GetLength()-TofHit->GetR());
+       }
 
        fhTofTrkDxsel->Fill(TofTrack->GetTrackDx());
        fhTofTrkDysel->Fill(TofTrack->GetTrackDy());
