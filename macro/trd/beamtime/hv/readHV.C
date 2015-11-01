@@ -39,28 +39,9 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
       line = cline;
       lineLength = (Int_t)line.Length();
       line.ReplaceAll("= Opaque: Float: ",""); 
-      if (line.EndsWith("A")){
-	line.ReplaceAll("WIENER-CRATE-MIB::outputMeasurementCurrent.u","");
-	line.ReplaceAll(" A","");
-	if (debug)
-	  cout << "A: ";
-	lineLength = (Int_t)line.Length();
-	sCurrent = line(4,lineLength-4);
-	current = sCurrent.Atof();
-	hCurrent->Fill(current);
-      } else if (line.EndsWith("V")){
-	line.ReplaceAll("WIENER-CRATE-MIB::outputMeasurementTerminalVoltage.u","");
-	line.ReplaceAll(" V","");
-	if (debug)
-	  cout << "V: ";
-	lineLength = (Int_t)line.Length();
-	sVoltage = line(4,lineLength-4);
-	//sCurrent = "";
-	voltage = sVoltage.Atof();
-	hVoltage->Fill(voltage);
-      } else if (line.BeginsWith("Loop")) {
-	cout << endl << line << endl;
-      } else if (line.BeginsWith("2015")){
+
+
+      if (line.BeginsWith("2015")){
 	sTime = line;
 	year  = TString(line( 0,4)).Atoi(); 
 	month = TString(line( 5,2)).Atoi();
@@ -90,55 +71,78 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	lastMin = min;
 	lastSec = sec;
 	lastMsec = msec;
+      } else if (line.EndsWith("A")){
+	line.ReplaceAll("WIENER-CRATE-MIB::outputMeasurementCurrent.u","");
+	line.ReplaceAll(" A","");
+	if (debug)
+	  cout << "A: ";
+	lineLength = (Int_t)line.Length();
+	sCurrent = line(4,lineLength-4);
+	current = sCurrent.Atof();
+	hCurrent->Fill(current);
+	sChID = line(0,3);
+	chID = sChID.Atoi();
+	if (mCurrent.find(chID) == mCurrent.end()){
+	  name.Form("hCurrent%03i",chID);
+	  mCurrent[chID] = new TH1I(name,name,100001,-1,1);
+	  mCurrent[chID]->SetXTitle("I (A)");
+	  name.Form("hDeltaT_Current%03i",chID);
+	  mTrendingI[chID] = new TGraph();
+	  mTrendingI[chID]->SetTitle(name);
+	  mTrendingI[chID]->GetXaxis()->SetTitle("#Deltat (ms)");
+	  mTrendingI[chID]->GetYaxis()->SetTitle("I (A)");
+	}
+	mCurrent[chID]->Fill(current);
+	mTrendingI[chID]->SetPoint(mTrendingI[chID]->GetN(),deltaTime,current);
+      } else if (line.EndsWith("V")){
+	line.ReplaceAll("WIENER-CRATE-MIB::outputMeasurementTerminalVoltage.u","");
+	line.ReplaceAll(" V","");
+	if (debug)
+	  cout << "V: ";
+	lineLength = (Int_t)line.Length();
+	sVoltage = line(4,lineLength-4);
+	//sCurrent = "";
+	voltage = sVoltage.Atof();
+	hVoltage->Fill(voltage);
+	sChID = line(0,3);
+	chID = sChID.Atoi();     
+	if (mVoltage.find(chID) == mVoltage.end()){
+	  name.Form("hVoltage%03i",chID);
+	  mVoltage[chID] = new TH1I(name,name,200001,-1,2000);
+	  mVoltage[chID]->SetXTitle("U (V)");
+	  name.Form("hDeltaT_Voltage%03i",chID);
+	  mTrendingU[chID] = new TGraph();
+	  mTrendingU[chID]->SetTitle(name);
+	  mTrendingU[chID]->GetXaxis()->SetTitle("#Deltat (ms)");
+	  mTrendingU[chID]->GetYaxis()->SetTitle("U (V)");
+	}
+	mVoltage[chID]->Fill(voltage);
+	mTrendingU[chID]->SetPoint(mTrendingU[chID]->GetN(),deltaTime,voltage);
+      } else if (line.BeginsWith("Loop")) {
+	cout << endl << line << endl;
       } else {
 	cout << endl << "/" << line << "/ : Unknown content! To be ignored" << endl;
       }
       if (debug)
 	cout << lineLength << ":   " << line << endl;
-
-      sChID = line(0,3);
-      chID = sChID.Atoi();
+ 
       hChID->Fill(chID);
-
-      if (mVoltage.find(chID) == mVoltage.end()){
-	name.Form("hVoltage%03i",chID);
-	mVoltage[chID] = new TH1I(name,name,200001,-1,2000);
-	mVoltage[chID]->SetXTitle("U (V)");
-	name.Form("hDeltaT_Voltage%03i",chID);
-	mTrendingU[chID] = new TGraph();
-	mTrendingU[chID]->SetTitle(name);
-	mTrendingU[chID]->GetXaxis()->SetTitle("#Deltat (ms)");
-	mTrendingU[chID]->GetYaxis()->SetTitle("U (V)");
-      }
-      mVoltage[chID]->Fill(voltage);
-      if (mCurrent.find(chID) == mCurrent.end()){
-	name.Form("hCurrent%03i",chID);
-	mCurrent[chID] = new TH1I(name,name,100001,-1,1);
-	mCurrent[chID]->SetXTitle("I (A)");
-	name.Form("hDeltaT_Current%03i",chID);
-	mTrendingI[chID] = new TGraph();
-	mTrendingI[chID]->SetTitle(name);
-	mTrendingI[chID]->GetXaxis()->SetTitle("#Deltat (ms)");
-	mTrendingI[chID]->GetYaxis()->SetTitle("I (A)");
-      }
-	mCurrent[chID]->Fill(current);
-	mTrendingI[chID]->SetPoint(mTrendingI[chID]->GetN(),deltaTime,current);
-	mTrendingU[chID]->SetPoint(mTrendingU[chID]->GetN(),deltaTime,voltage);
-	if (debug){
+  
+      if (debug){
 	cout << "T=" << sTime  << endl;
 	cout << "C=" << chID << endl;
 	cout << "V=" << voltage << endl;
 	cout << "A=" << current << endl;
       }
-	nLines++;
-      }
-	cout << endl << "Done" << endl << "Found " << nLines << " lines in file " << inFile << endl;
+      nLines++;
+    }
+    cout << endl << "Done" << endl << "Found " << nLines << " lines in file " << inFile << endl;
 
-	fileStat = true;
-      }
-	in.close();
-	return fileStat;
-      }
+    fileStat = true;
+  }
+  in.close();
+  return fileStat;
+}
 
 void readHV(TString inFile="exampleHV.txt")
 {
@@ -206,7 +210,7 @@ void readHV(TString inFile="exampleHV.txt")
   }
   c->Update();
   colorCounter = 1;
-  c->cd(5)->SetLogy(1);
+  c->cd(5)->SetLogy(0);
   TMultiGraph *multiI = new TMultiGraph();
   for (std::map<Int_t, TGraph*>::iterator it=mTrendingI.begin(); it!=mTrendingI.end();it++){
     colorCounter++;
