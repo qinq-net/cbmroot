@@ -7,11 +7,17 @@
 #include "TFile.h"
 #include "TDatime.h"
 #include "TStyle.h"
-Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t, TH1I*>&mCurrent, TH1I* hTime, TH1I* hChID, TH1I* hDeltaT, TH1I* hCurrent, TH1I* hVoltage, Bool_t debug){
+#include "TGraph.h"
+#include "TMultiGraph.h"
+
+Int_t firstDay(0), firstHour(0), firstMin(0), firstSec(0), firstMsec(0);
+
+
+Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t, TH1I*>&mCurrent, std::map<Int_t, TGraph*>&mTrendingI, std::map<Int_t, TGraph*>&mTrendingU, TH1I* hTime, TH1I* hChID, TH1I* hDeltaT, TH1I* hCurrent, TH1I* hVoltage, Bool_t debug){
   Bool_t fileStat;
   ifstream in;
   in.open(inFile);
-  Int_t year(-1), month(-1), day(-1), hour(-1), min(-1), sec(-1), msec(-1), chID(-1), deltaT(0), lineLength(0);
+  Int_t year(-1), month(-1), day(-1), hour(-1), min(-1), sec(-1), msec(-1), chID(-1), deltaT(0), lineLength(0), deltaTime(0);
   Int_t lastDay(-1), lastHour(-1), lastMin(-1), lastSec(-1), lastMsec(-1);
   Float_t voltage(0.0), current(0.0);
    
@@ -38,6 +44,7 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	line.ReplaceAll(" A","");
 	if (debug)
 	  cout << "A: ";
+	lineLength = (Int_t)line.Length();
 	sCurrent = line(4,lineLength-4);
 	current = sCurrent.Atof();
 	hCurrent->Fill(current);
@@ -46,8 +53,9 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	line.ReplaceAll(" V","");
 	if (debug)
 	  cout << "V: ";
+	lineLength = (Int_t)line.Length();
 	sVoltage = line(4,lineLength-4);
-	sCurrent = "";
+	//sCurrent = "";
 	voltage = sVoltage.Atof();
 	hVoltage->Fill(voltage);
       } else if (line.BeginsWith("Loop")) {
@@ -61,8 +69,16 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	min   = TString(line(14,2)).Atoi();
 	sec   = TString(line(17,2)).Atoi();
 	msec  = TString(line(20,3)).Atoi();
+	if (firstDay==0){
+	  firstDay = day;
+	  firstHour = hour;
+	  firstMin = min;
+	  firstSec = sec;
+	  firstMsec = msec;
+	}
 	if (debug)
 	  printf("T: %s\n   %i-%02i-%02i:%02i:%02i:%02i:%03i\n\n",sTime.Data(),year,month,day,hour,min,sec,msec);
+	deltaTime = (msec - firstMsec) + ((sec - firstSec) + ((min - firstMin) + ((hour - firstHour) + (day - firstDay)*24)*60)*60)*1000;
 	if (lastDay > 0){
 	  deltaT = (msec - lastMsec) + ((sec - lastSec) + ((min - lastMin) + ((hour - lastHour) + (day - lastDay)*24)*60)*60)*1000;
 	  hDeltaT->Fill(deltaT);
@@ -87,29 +103,42 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
       if (mVoltage.find(chID) == mVoltage.end()){
 	name.Form("hVoltage%03i",chID);
 	mVoltage[chID] = new TH1I(name,name,200001,-1,2000);
+	mVoltage[chID]->SetXTitle("U (V)");
+	name.Form("hDeltaT_Voltage%03i",chID);
+	mTrendingU[chID] = new TGraph();
+	mTrendingU[chID]->SetTitle(name);
+	mTrendingU[chID]->GetXaxis()->SetTitle("#Deltat (ms)");
+	mTrendingU[chID]->GetYaxis()->SetTitle("U (V)");
       }
       mVoltage[chID]->Fill(voltage);
       if (mCurrent.find(chID) == mCurrent.end()){
 	name.Form("hCurrent%03i",chID);
 	mCurrent[chID] = new TH1I(name,name,100001,-1,1);
+	mCurrent[chID]->SetXTitle("I (A)");
+	name.Form("hDeltaT_Current%03i",chID);
+	mTrendingI[chID] = new TGraph();
+	mTrendingI[chID]->SetTitle(name);
+	mTrendingI[chID]->GetXaxis()->SetTitle("#Deltat (ms)");
+	mTrendingI[chID]->GetYaxis()->SetTitle("I (A)");
       }
-      mCurrent[chID]->Fill(current);
-    
-      if (debug){
+	mCurrent[chID]->Fill(current);
+	mTrendingI[chID]->SetPoint(mTrendingI[chID]->GetN(),deltaTime,current);
+	mTrendingU[chID]->SetPoint(mTrendingU[chID]->GetN(),deltaTime,voltage);
+	if (debug){
 	cout << "T=" << sTime  << endl;
 	cout << "C=" << chID << endl;
 	cout << "V=" << voltage << endl;
 	cout << "A=" << current << endl;
       }
-      nLines++;
-    }
-    cout << endl << "Done" << endl << "Found " << nLines << " lines in file " << inFile << endl;
+	nLines++;
+      }
+	cout << endl << "Done" << endl << "Found " << nLines << " lines in file " << inFile << endl;
 
-    fileStat = true;
-  }
-  in.close();
-  return fileStat;
-}
+	fileStat = true;
+      }
+	in.close();
+	return fileStat;
+      }
 
 void readHV(TString inFile="exampleHV.txt")
 {
@@ -119,33 +148,23 @@ void readHV(TString inFile="exampleHV.txt")
   TString outFile = inFile;
   outFile.ReplaceAll(".txt",".root");
   TFile *out = new TFile(outFile,"RECREATE");
-  TCanvas *c = new TCanvas("view","view",2*800,2*600);
-  c->Divide(2,2);
+
   TH1I* hTime = new TH1I("hTime","hTime",60000,0,60000);
   TH1I* hChID = new TH1I("hChID","hChID",811,-0.5,810.5);
   hChID->SetXTitle("channel ID");
   TH1I* hDeltaT = new TH1I("hDeltaT","hDeltaT",1001,-0.5,1000.5);
-  hDeltaT->SetXTitle("#Delta t (ms)");
+  hDeltaT->SetXTitle("#Deltat (ms)");
   TH1I* hCurrent = new TH1I("hCurrent","hCurrent",100001,-1,1);
   hCurrent->SetXTitle("I (A)");
   TH1I* hVoltage = new TH1I("hVoltage","hVoltage",200001,-1,2000);
   hVoltage->SetXTitle("U (V)");
   std::map<Int_t, TH1I*> mVoltage;
   std::map<Int_t, TH1I*> mCurrent;
+  std::map<Int_t, TGraph*> mTrendingI;
+  std::map<Int_t, TGraph*> mTrendingU;
   while (nextFile) {
-    readFile(inFile, mVoltage, mCurrent, hTime, hChID, hDeltaT, hCurrent, hVoltage, debug);
-    c->cd(1)->SetLogy(1);
-    hCurrent->DrawCopy();
-    c->cd(2)->SetLogy(1);
-    hVoltage->DrawCopy();
-    c->cd(3);
-    hDeltaT->DrawCopy();
-    //hTime->GetXaxis()->SetLabelSize(0.01);
-    //hTime->GetXaxis()->SetTimeDisplay(1);
-    //hTime->GetXaxis()->SetTimeFormat("%H/%m/%s");
-    //hTime->DrawCopy();
-    c->cd(4);
-    hChID->DrawCopy();
+	readFile(inFile, mVoltage, mCurrent, mTrendingI, mTrendingU, hTime, hChID, hDeltaT, hCurrent, hVoltage, debug);
+   
     cout << "Read new file?: (1,0)   ";
     cin >> nextFile;
     if (nextFile){
@@ -153,6 +172,20 @@ void readHV(TString inFile="exampleHV.txt")
       cin >> inFile;
     }
   }
+  TCanvas *c = new TCanvas("view","view",3*800,2*600);
+  c->Divide(3,2);
+  c->cd(1)->SetLogy(1);
+  hCurrent->DrawCopy();
+  c->cd(2)->SetLogy(1);
+  hVoltage->DrawCopy();
+  c->cd(3);
+  hDeltaT->DrawCopy();
+  //hTime->GetXaxis()->SetLabelSize(0.01);
+  //hTime->GetXaxis()->SetTimeDisplay(1);
+  //hTime->GetXaxis()->SetTimeFormat("%H/%m/%s");
+  //hTime->DrawCopy();
+  c->cd(4);
+  hChID->DrawCopy();
   out->cd();
   Int_t colorCounter = 1;
   c->cd(1);
@@ -162,6 +195,7 @@ void readHV(TString inFile="exampleHV.txt")
     it->second->DrawCopy("same");
     it->second->Write("",TObject::kOverwrite);
   }
+  c->Update();
   colorCounter = 1;
   c->cd(2);
   for (std::map<Int_t, TH1I*>::iterator it=mVoltage.begin(); it!=mVoltage.end();it++){
@@ -170,6 +204,34 @@ void readHV(TString inFile="exampleHV.txt")
     it->second->DrawCopy("same");
     it->second->Write("",TObject::kOverwrite);
   }
+  c->Update();
+  colorCounter = 1;
+  c->cd(5)->SetLogy(1);
+  TMultiGraph *multiI = new TMultiGraph();
+  for (std::map<Int_t, TGraph*>::iterator it=mTrendingI.begin(); it!=mTrendingI.end();it++){
+    colorCounter++;
+    it->second->SetLineColor(colorCounter);
+    multiI->Add(it->second);
+    it->second->Write("",TObject::kOverwrite);
+  }
+  multiI->Draw("AC");
+  multiI->GetXaxis()->SetTitle("#Deltat (ms)");
+  multiI->GetYaxis()->SetTitle("I (A)");
+
+  c->Update();
+  colorCounter = 1;
+  c->cd(6)->SetLogy(0);
+  TMultiGraph *multiU = new TMultiGraph();
+  for (std::map<Int_t, TGraph*>::iterator it=mTrendingU.begin(); it!=mTrendingU.end();it++){
+    colorCounter++;
+    it->second->SetLineColor(colorCounter);
+    multiU->Add(it->second);
+    it->second->Write("",TObject::kOverwrite);
+  }
+  multiU->Draw("AC");
+  multiU->GetXaxis()->SetTitle("#Deltat (ms)");
+  multiU->GetYaxis()->SetTitle("U (V)");
+  c->Update();  
   c->Write("",TObject::kOverwrite);
   c->SaveAs(outFile.ReplaceAll(".root",".png"));
 }
