@@ -1526,7 +1526,7 @@ void AddCarbonLadder(Int_t LadderIndex,
                      Double_t ladderY,
                      Double_t ladderZ) {
 
-  Int_t carbon_elem[23]= { 10, 10, 16, 16, 20, 20, 22, 24,
+  Int_t carbon_elem[23]= { 11, 11, 16, 16, 20, 20, 22, 24,
 		  	   11, 10,  6, 16, 14, 12,  7, 20,
 		           18, 16, 13, 22,  7, 24, 21     };  // number of carbon elements in ladder types
 
@@ -1560,12 +1560,14 @@ void AddCarbonLadder(Int_t LadderIndex,
   Int_t inum = YnumOfFrameBoxes; // 6; // 9;
   for (i=1; i<=inum; i++)
   {
-    j=-(inum-1)/2.+(i-1); 
+    j=-(inum-1)/2.+(i-1);
+ // -(10-1)/2. +0 +10-1 -> -4.5 .. +4.5 -> -0.5, +0.5 (= 2)
+ // -(11-1)/2. +0 +11-1 -> -5.0 .. +5.0 -> -1, 0, 1   (= 3)
 	//        cout << "DE: i " << i << " j " << j << endl;
 
     if (LadderIndex <= 3)  // central ladders in stations 1 to 3
     {
-      if ((j>=-1) && (j<=1))   // keep the inner 2 elements free for the cone
+      if ((j>=-1) && (j<=1))   // keep the inner 2 (even) or 3 (odd) elements free for the cone
         continue;
     }
     else if (LadderIndex <= 8)  // central ladders in stations 4 to 8
