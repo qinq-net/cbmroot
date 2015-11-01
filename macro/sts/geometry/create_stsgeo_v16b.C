@@ -335,8 +335,10 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
     if (iSensor == 4)
       sensor->SetLineColor(kBlue);
     if (iSensor == 5)
-      sensor->SetLineColor(kYellow);
+      sensor->SetLineColor(kBlue-9);
     if (iSensor == 6)
+      sensor->SetLineColor(kYellow);
+    if (iSensor == 7)
       sensor->SetLineColor(kYellow);
 
     CheckVolume(sensor);
@@ -779,23 +781,30 @@ Int_t CreateSensors() {
   new TGeoVolume("Sensor04", shape_sensor04, silicon);
   nSensors++;
 
-  // ---  Sensor type 05: Additional "in hole" sensor (3.1 cm x 4.2 cm)
-  xSize = 3.1;
-  ySize = 4.2;
+  // ---  Sensor type 05: Big sensor (6.2 cm x 12.2 cm)
+  xSize = 6.2092;
+  ySize = 12.2;
   TGeoBBox* shape_sensor05 = new TGeoBBox("sensor05", 
 					  xSize/2., ySize/2., zSize/2.);
   new TGeoVolume("Sensor05", shape_sensor05, silicon);
   nSensors++;
-  
-  // ---  Sensor type 06: Mini Medium sensor (1.5 cm x 4.2 cm)
-  xSize = 1.5;
+
+  // ---  Sensor type 06: Additional "in hole" sensor (3.1 cm x 4.2 cm)
+  xSize = 3.1;
   ySize = 4.2;
   TGeoBBox* shape_sensor06 = new TGeoBBox("sensor06", 
 					  xSize/2., ySize/2., zSize/2.);
   new TGeoVolume("Sensor06", shape_sensor06, silicon);
   nSensors++;
   
-
+  // ---  Sensor type 07: Mini Medium sensor (1.5 cm x 4.2 cm)
+  xSize = 1.5;
+  ySize = 4.2;
+  TGeoBBox* shape_sensor07 = new TGeoBBox("sensor07", 
+					  xSize/2., ySize/2., zSize/2.);
+  new TGeoVolume("Sensor07", shape_sensor07, silicon);
+  nSensors++;
+  
   return nSensors;
 }
 /** ======================================================================= **/
@@ -823,6 +832,7 @@ Int_t CreateSectors() {
   TGeoVolume* sensor04 = gGeoMan->GetVolume("Sensor04");
   TGeoVolume* sensor05 = gGeoMan->GetVolume("Sensor05");
   TGeoVolume* sensor06 = gGeoMan->GetVolume("Sensor06");
+  TGeoVolume* sensor07 = gGeoMan->GetVolume("Sensor07");
   TGeoBBox*   box4     = (TGeoBBox*) sensor04->GetShape();
 
   // --- Sector type 1: single sensor of type 1
@@ -849,27 +859,33 @@ Int_t CreateSectors() {
   sector04->GetShape()->ComputeBBox();
   nSectors++;
 
-  // --- Sector type 5: two sensors of type 4
+//  // --- Sector type 5: two sensors of type 4
+//  TGeoVolumeAssembly* sector05 = new TGeoVolumeAssembly("Sector05");
+//  Double_t shift5 = 0.5 * gkChainGapY + box4->GetDY();
+//  TGeoTranslation* transD5 = 
+//    new TGeoTranslation("td", 0., -1. * shift5, 0.);
+//  TGeoTranslation* transU5 = 
+//    new TGeoTranslation("tu", 0., shift5, 0.);
+//  sector05->AddNode(sensor04, 1, transD5);
+//  sector05->AddNode(sensor04, 2, transU5);
+//  sector05->GetShape()->ComputeBBox();
+//  nSectors++;
+
+  // --- Sector type 5: single sensor of type 5
   TGeoVolumeAssembly* sector05 = new TGeoVolumeAssembly("Sector05");
-  Double_t shift5 = 0.5 * gkChainGapY + box4->GetDY();
-  TGeoTranslation* transD5 = 
-    new TGeoTranslation("td", 0., -1. * shift5, 0.);
-  TGeoTranslation* transU5 = 
-    new TGeoTranslation("tu", 0., shift5, 0.);
-  sector05->AddNode(sensor04, 1, transD5);
-  sector05->AddNode(sensor04, 2, transU5);
+  sector05->AddNode(sensor05, 1);
   sector05->GetShape()->ComputeBBox();
   nSectors++;
 
-  // --- Sector type 6: single sensor of type 5
+  // --- Sector type 6: single sensor of type 6
   TGeoVolumeAssembly* sector06 = new TGeoVolumeAssembly("Sector06");
-  sector06->AddNode(sensor05, 1);
+  sector06->AddNode(sensor06, 1);
   sector06->GetShape()->ComputeBBox();
   nSectors++;
 
-  // --- Sector type 7: single sensor of type 6
+  // --- Sector type 7: single sensor of type 7
   TGeoVolumeAssembly* sector07 = new TGeoVolumeAssembly("Sector07");
-  sector07->AddNode(sensor06, 1);
+  sector07->AddNode(sensor07, 1);
   sector07->GetShape()->ComputeBBox();
   nSectors++;
 
