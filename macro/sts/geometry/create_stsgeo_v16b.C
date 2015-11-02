@@ -921,8 +921,6 @@ Int_t CreateLadders() {
   TGeoVolume* s0vol = NULL;
   TGeoVolume* halfLadderU = NULL;
   TGeoVolume* halfLadderD = NULL;
-  Double_t shiftZ  = 0.;
-  Double_t gapY    = 0.;
 
   // --- Ladders 01-23
   Int_t allSectorTypes[23][6] = { { 1, 2, 3, 4, 4, -1 },    // ladder 01 - last column defines alignment of small sensors
@@ -949,14 +947,50 @@ Int_t CreateLadders() {
                                   { 3, 4, 5, 5, 5,  0 },    // ladder 22 - last column defines alignment of small sensors
                                   { 3, 4, 4, 5, 5,  0 } };  // ladder 23 - last column defines alignment of small sensors
 
-  //==========================================
+  Double_t gapXYZ[23][3]      = { { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 01
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 02
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 03
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 04
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 05
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 06
+			          { 0.00,              8.80, 0.00 },     // ladder 07 - gapY = 2 * 4.40
+			          { 0.00,              9.14, 0.00 },     // ladder 08 - gapY = 2 * 4.57
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 09
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 10
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 11
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 12
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 13
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 14
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 15
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 16
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 17
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 18
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 19
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 20
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 21
+			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 22
+			          { 0.00, -gkSectorOverlapY, 0.00 } };   // ladder 23
 
-//  for (Int_t iLadder = 0; iLadder < 1; iLadder++)
+// ========================================================================
+
+  // calculate Z shift for ladders with and without gaps in the center
+  s0name = Form("Sector%02d", allSectorTypes[0][0]);
+  s0vol  = gGeoMan->GetVolume(s0name);
+  shape  = (TGeoBBox*) s0vol->GetShape();
+
   for (Int_t iLadder = 0; iLadder < 23; iLadder++)
   {
+//    if (iLadder <= 7)
     if ((iLadder+1 == 7) || (iLadder+1 == 8))  // not for ladders with gap
-      continue;
-    
+      gapXYZ[iLadder][2] = 0;
+    else
+      gapXYZ[iLadder][2] = 2. * shape->GetDZ() + gkSectorGapZ;
+  }
+  
+// ========================================================================
+
+  for (Int_t iLadder = 0; iLadder < 23; iLadder++)
+  {
     cout << endl;
     nSectors = 0;
     for (Int_t i=0; i < 5; i++)
@@ -981,66 +1015,9 @@ Int_t CreateLadders() {
     hlname = Form("HalfLadder%02dd", iLadder+1);
     halfLadderD = ConstructHalfLadder(hlname, nSectors, sectorTypes, align);  // mirrored
   
-    s0name = Form("Sector%02d", sectorTypes[0]);
-    s0vol  = gGeoMan->GetVolume(s0name);
-    shape  = (TGeoBBox*) s0vol->GetShape();
-    shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
-    ConstructLadder(iLadder+1, halfLadderU, halfLadderD, shiftZ);
+    ConstructLadder(iLadder+1, halfLadderU, halfLadderD, gapXYZ[iLadder][1], gapXYZ[iLadder][2]);
     nLadders++;
   }  
-
-  //==========================================
-
-//01  // --- Ladder 01 x-mirror of 02: 10 sectors, type 4 4 3 2 1 1 2 3 4 4
-//01  nSectors       = 5;
-//01  sectorTypes[0] = 1;
-//01  sectorTypes[1] = 2;
-//01  sectorTypes[2] = 3;
-//01  sectorTypes[3] = 4;
-//01  sectorTypes[4] = 4;
-//01  s0name = Form("Sector%02d", sectorTypes[0]);
-//01  s0vol  = gGeoMan->GetVolume(s0name);
-//01  shape  = (TGeoBBox*) s0vol->GetShape();
-//01  shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
-//01  halfLadderU = ConstructHalfLadder("HalfLadder01u", nSectors, sectorTypes, 'r');  // mirrored
-//01  halfLadderD = ConstructHalfLadder("HalfLadder01d", nSectors, sectorTypes, 'l');  // mirrored
-//01  ConstructLadder(1, halfLadderU, halfLadderD, shiftZ);
-//01  nLadders++;
-
-
-  // --- Ladder 07: 10 sectors, type 5 5 4 3 3 gap 3 3 4 5 5, with gap
-  nSectors       = 5;
-  sectorTypes[0] = 3;
-  sectorTypes[1] = 3;
-  sectorTypes[2] = 4;
-  sectorTypes[3] = 5;
-  sectorTypes[4] = 5;
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-//  ladderY = 2. * shape->GetDY();
-  halfLadderU = ConstructHalfLadder("HalfLadder07u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder07d", nSectors, sectorTypes, 'r');
-  shape =(TGeoBBox*) halfLadderU->GetShape();
-  gapY = 4.4;
-  ConstructLadderWithGap(7, halfLadderU, halfLadderD, 2*gapY);
-  nLadders++;
-
-
-  // --- Ladder 08: 8 sectors, type 5 5 5 4 gap 4 5 5 5, with gap
-  nSectors       = 4;
-  sectorTypes[0] = 4;
-  sectorTypes[1] = 5;
-  sectorTypes[2] = 5;
-  sectorTypes[3] = 5;
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-//  ladderY = 2. * shape->GetDY();
-  halfLadderU = ConstructHalfLadder("HalfLadder08u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder08d", nSectors, sectorTypes, 'r');
-  shape =(TGeoBBox*) halfLadderU->GetShape();
-  gapY = 4.57;
-  ConstructLadderWithGap(8, halfLadderU, halfLadderD, 2*gapY);
-  nLadders++;
 
   return nLadders;
 }
@@ -1290,7 +1267,7 @@ void AddCarbonLadder(Int_t LadderIndex,
 
   Int_t carbon_elem[23]= { 11, 11, 16, 16, 20, 20, 22, 24,
 		  	   11, 10,  6, 16, 14, 12,  7, 20,
-		           18, 16, 13, 22,  7, 24, 21     };  // number of carbon elements in ladder types
+		           18, 16, 13, 22,  7, 24, 21      };  // number of carbon elements in ladder types
 
   // --- Some variables
   TString name = Form("Ladder%02d", LadderIndex);
@@ -1349,78 +1326,6 @@ void AddCarbonLadder(Int_t LadderIndex,
 /** ======================================================================= **/
 
 
-
-
-/** ===========================================================================
- ** Construct a ladder out of two half ladders
- ** 
- ** The second half ladder will be rotated by 180 degrees 
- ** in the x-y plane. The two half ladders will be put on top of each
- ** other with a vertical overlap and displaced in z bz shiftZ.
- **
- ** Arguments: 
- **            name             volume name
- **            halfLadderU      pointer to upper half ladder
- **            halfLadderD      pointer to lower half ladder
- **            shiftZ           relative displacement along the z axis
- **/
-
-TGeoVolume* ConstructLadder(Int_t LadderIndex,
-			    TGeoVolume* halfLadderU,
-			    TGeoVolume* halfLadderD,
-			    Double_t shiftZ) {
-
-  // --- Some variables
-  TGeoBBox* shape = NULL;
-
-  // --- Dimensions of half ladders
-  shape = (TGeoBBox*) halfLadderU->GetShape();
-  Double_t xu = 2. * shape->GetDX();
-  Double_t yu = 2. * shape->GetDY();
-  Double_t zu = 2. * shape->GetDZ();
-
-  shape = (TGeoBBox*) halfLadderD->GetShape();
-  Double_t xd = 2. * shape->GetDX();
-  Double_t yd = 2. * shape->GetDY();
-  Double_t zd = 2. * shape->GetDZ();
-
-  // --- Create ladder volume assembly
-  TString name = Form("Ladder%02d", LadderIndex);
-  TGeoVolumeAssembly* ladder = new TGeoVolumeAssembly(name);
-  Double_t ladderX = TMath::Max(xu, xd);
-  Double_t ladderY = yu + yd - gkSectorOverlapY;
-  Double_t ladderZ = TMath::Max(zu, zd + shiftZ);
-
-  // --- Place half ladders
-  Double_t xPosU = 0.;                      // centred in x
-  Double_t yPosU = 0.5 * ( ladderY - yu );  // top aligned
-  Double_t zPosU = 0.5 * ( ladderZ - zu );  // front aligned
-  TGeoTranslation* tu = new TGeoTranslation("tu", xPosU, yPosU, zPosU);
-  ladder->AddNode(halfLadderU, 1, tu);
-
-  Double_t xPosD = 0.;                      // centred in x
-  Double_t yPosD = 0.5 * ( yd - ladderY );  // bottom aligned
-  Double_t zPosD = 0.5 * ( zd - ladderZ );  // back aligned
-  TGeoRotation* rd = new TGeoRotation();
-  rd->RotateZ(180.);
-  TGeoCombiTrans* cd = new TGeoCombiTrans(xPosD, yPosD, zPosD, rd);
-  ladder->AddNode(halfLadderD, 2, cd);
-  ladder->GetShape()->ComputeBBox();
-
-  // ----------------   Create and place frame boxes   ------------------------
-
-  if (gkConstructFrames)
-      AddCarbonLadder(LadderIndex, ladder, xu, ladderY, ladderZ);
-  
-  // --------------------------------------------------------------------------
-
-  return ladder;
-}
-/** ======================================================================= **/
-
-
-
-
 /** ===========================================================================
  ** Construct a ladder out of two half ladders with vertical gap
  ** 
@@ -1433,17 +1338,17 @@ TGeoVolume* ConstructLadder(Int_t LadderIndex,
  **            halfLadderU      pointer to upper half ladder
  **            halfLadderD      pointer to lower half ladder
  **            gapY             vertical gap
+ **            shiftZ           relative displacement along the z axis
  **/
 
- TGeoVolume* ConstructLadderWithGap(Int_t LadderIndex,
-				    TGeoVolume* halfLadderU,
-				    TGeoVolume* halfLadderD,
-				    Double_t gapY) {
+ TGeoVolume* ConstructLadder(Int_t LadderIndex,
+			     TGeoVolume* halfLadderU,
+			     TGeoVolume* halfLadderD,
+			     Double_t gapY,
+                             Double_t shiftZ) {
 
   // --- Some variables
   TGeoBBox* shape = NULL;
-  Int_t i;
-  Double_t j;
 
   // --- Dimensions of half ladders
   shape = (TGeoBBox*) halfLadderU->GetShape();
@@ -1461,7 +1366,7 @@ TGeoVolume* ConstructLadder(Int_t LadderIndex,
   TGeoVolumeAssembly* ladder = new TGeoVolumeAssembly(name);
   Double_t ladderX = TMath::Max(xu, xd);
   Double_t ladderY = yu + yd + gapY;
-  Double_t ladderZ = TMath::Max(zu, zd);
+  Double_t ladderZ = TMath::Max(zu, zd + shiftZ);
 
   // --- Place half ladders
   Double_t xPosU = 0.;                      // centred in x
