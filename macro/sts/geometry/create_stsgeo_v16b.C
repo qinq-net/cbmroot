@@ -923,7 +923,33 @@ Int_t CreateLadders() {
   Double_t ladderY = 0.;
   Double_t gapY    = 0.;
 
+  // --- Ladders 01-23
+  Int_t allSectorTypes[23][5] = { { 1, 2, 3, 4, 4 },    // ladder 01
+                                  { 1, 2, 3, 4, 4 },    // ladder 02
+                                  { 6, 3, 3, 4, 5 },    // ladder 03
+                                  { 6, 3, 3, 4, 5 },    // ladder 04
+                                  { 7, 3, 4, 5, 5 },    // ladder 05
+                                  { 7, 3, 4, 5, 5 },    // ladder 06
+                                  { 3, 3, 4, 5, 5 },    // ladder 07
+                                  { 4, 5, 5, 5, 0 },    // ladder 08
+                                  { 2, 2, 3, 4, 4 },    // ladder 09
+                                  { 2, 2, 3, 3, 4 },    // ladder 10
+                                  { 3, 3, 0, 0, 0 },    // ladder 11
+                                  { 3, 3, 3, 4, 5 },    // ladder 12
+                                  { 3, 3, 4, 5, 0 },    // ladder 13
+                                  { 3, 4, 5, 0, 0 },    // ladder 14
+                                  { 4, 4, 0, 0, 0 },    // ladder 15
+                                  { 3, 3, 4, 5, 5 },    // ladder 16
+                                  { 3, 4, 5, 5, 0 },    // ladder 17
+                                  { 4, 5, 5, 0, 0 },    // ladder 18
+                                  { 5, 5, 0, 0, 0 },    // ladder 19
+                                  { 2, 3, 5, 5, 5 },    // ladder 20
+                                  { 5, 0, 0, 0, 0 },    // ladder 21
+                                  { 3, 4, 5, 5, 5 },    // ladder 22
+                                  { 3, 4, 4, 5, 5 } };  // ladder 23
 
+  //==========================================
+  
   // --- Ladder 01 x-mirror of 02: 10 sectors, type 4 4 3 2 1 1 2 3 4 4
   nSectors       = 5;
   sectorTypes[0] = 1;
