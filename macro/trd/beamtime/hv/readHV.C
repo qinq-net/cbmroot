@@ -41,7 +41,7 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
       line.ReplaceAll("= Opaque: Float: ",""); 
 
 
-      if (line.BeginsWith("2015")){
+      if (line.BeginsWith("201")){
 	sTime = line;
 	year  = TString(line( 0,4)).Atoi(); 
 	month = TString(line( 5,2)).Atoi();
@@ -90,6 +90,7 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	hCurrent->Fill(current);
 	sChID = line(0,3);
 	chID = sChID.Atoi();
+	hChID->Fill(chID);
 	lineStyle = (Int_t)(chID/100)+1;
 	lineColor = chID - 100*(lineStyle-1);
 	if (mCurrent.find(chID) == mCurrent.end()){
@@ -119,7 +120,8 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	voltage = sVoltage.Atof();
 	hVoltage->Fill(voltage);
 	sChID = line(0,3);
-	chID = sChID.Atoi();   
+	chID = sChID.Atoi();  
+	hChID->Fill(chID);
 	lineStyle = (Int_t)(chID/100)+1;
 	lineColor = chID - 100*(lineStyle-1);  
 	if (mVoltage.find(chID) == mVoltage.end()){
@@ -145,8 +147,6 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
       }
       if (debug)
 	cout << lineLength << ":   " << line << endl;
- 
-      hChID->Fill(chID);
   
       if (debug){
 	cout << "T=" << sTime  << endl;
@@ -171,6 +171,7 @@ void readHV(TString inFile="exampleHV.txt")
   Bool_t debug(false), nextFile(true);
   TString outFile = inFile;
   outFile.ReplaceAll(".txt",".root");
+  outFile.ReplaceAll(".log",".root");
   TFile *out = new TFile(outFile,"RECREATE");
 
   TH1I* hTime = new TH1I("hTime","hTime",60000,0,60000);
