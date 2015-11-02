@@ -286,15 +286,12 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
   // --------------------------------------------------------------------------
 
 
-
   // --------------   Create geometry and top volume  -------------------------
   gGeoMan = (TGeoManager*)gROOT->FindObject("FAIRGeom");
   gGeoMan->SetName("STSgeom");
   TGeoVolume* top = new TGeoVolumeAssembly("TOP");
   gGeoMan->SetTopVolume(top);
   // --------------------------------------------------------------------------
-
-
 
 
   // --------------   Create media   ------------------------------------------
@@ -313,8 +310,6 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
   */
   // --------------------------------------------------------------------------
 
-  
-
 
   // ---------------   Create sensors   ---------------------------------------
   cout << endl << endl;
@@ -327,15 +322,15 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
 
     // add color to sensors
     if (iSensor == 1)
-      sensor->SetLineColor(kYellow);
-    if (iSensor == 2)
       sensor->SetLineColor(kRed);
-    if (iSensor == 3)
+    if (iSensor == 2)
       sensor->SetLineColor(kGreen);
-    if (iSensor == 4)
+    if (iSensor == 3)
       sensor->SetLineColor(kBlue);
+    if (iSensor == 4)
+      sensor->SetLineColor(kAzure);
     if (iSensor == 5)
-      sensor->SetLineColor(kBlue+2); // kAzure+10);
+      sensor->SetLineColor(kYellow);
     if (iSensor == 6)
       sensor->SetLineColor(kYellow);
     if (iSensor == 7)
@@ -345,8 +340,6 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
     CheckVolume(sensor, infoFile);
   }
   // --------------------------------------------------------------------------
-
-
 
 
   // ----------------   Create sectors   --------------------------------------
@@ -362,8 +355,6 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
     CheckVolume(sector, infoFile);
   }
   // --------------------------------------------------------------------------
-
-
 
 
   // ----------------   Create ladders   --------------------------------------
@@ -382,7 +373,7 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
   // --------------------------------------------------------------------------
 
 
-  // ----------------   Create cone   -----------------------------------------
+  // ----------------   Create cones   ----------------------------------------
   Double_t coneDz = 1.64;
   TGeoVolume* coneSmallVolum = ConstructSmallCone(coneDz);
   if (!coneSmallVolum) Fatal("ConstructSmallCone", "Volume Cone not found");
@@ -519,8 +510,6 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
   // --------------------------------------------------------------------------
 
 
-
-
   // ---------------   Create STS volume   ------------------------------------
   cout << endl << endl;
   cout << "===> Creating STS...." << endl;
@@ -615,8 +604,6 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
   cout << endl;
   CheckVolume(sts);
   // --------------------------------------------------------------------------
-
-
 
 
   // ---------------   Finish   -----------------------------------------------
@@ -746,49 +733,53 @@ Int_t CreateSensors() {
   TGeoMedium* silicon = gGeoMan->GetMedium("silicon");
 
 
-  // --- Sensor Type 01: Half small sensor (4 cm x 2.5 cm)
-  xSize = 4.0;
-  ySize = 2.5;
+  // --- Sensor type 01: Small sensor (6.2 cm x 2.2 cm)
+  xSize = 6.2092;
+  ySize = 2.2;
   TGeoBBox* shape_sensor01 = new TGeoBBox("sensor01", 
 					  xSize/2., ySize/2., zSize/2.);
   new TGeoVolume("Sensor01", shape_sensor01, silicon);
   nSensors++;
 
 
-  // --- Sensor type 02: Small sensor (6.2 cm x 2.2 cm)
+  // --- Sensor type 02: Medium sensor (6.2 cm x 4.2 cm)
   xSize = 6.2092;
-  ySize = 2.2;
+  ySize = 4.2;
   TGeoBBox* shape_sensor02 = new TGeoBBox("sensor02", 
 					  xSize/2., ySize/2., zSize/2.);
   new TGeoVolume("Sensor02", shape_sensor02, silicon);
   nSensors++;
 
 
-  // --- Sensor type 03: Medium sensor (6.2 cm x 4.2 cm)
+  // ---  Sensor type 03: Big sensor (6.2 cm x 6.2 cm)
   xSize = 6.2092;
-  ySize = 4.2;
+  ySize = 6.2;
   TGeoBBox* shape_sensor03 = new TGeoBBox("sensor03", 
 					  xSize/2., ySize/2., zSize/2.);
   new TGeoVolume("Sensor03", shape_sensor03, silicon);
   nSensors++;
 
 
-  // ---  Sensor type 04: Big sensor (6.2 cm x 6.2 cm)
+  // ---  Sensor type 04: Big sensor (6.2 cm x 12.4 cm)
   xSize = 6.2092;
-  ySize = 6.2;
+  ySize = 12.4;
   TGeoBBox* shape_sensor04 = new TGeoBBox("sensor04", 
 					  xSize/2., ySize/2., zSize/2.);
   new TGeoVolume("Sensor04", shape_sensor04, silicon);
   nSensors++;
 
-  // ---  Sensor type 05: Big sensor (6.2 cm x 12.4 cm)
-  xSize = 6.2092;
-  ySize = 12.4;
+  
+  // below are extra small sensors, those are not available in the CAD model
+  
+  // --- Sensor Type 05: Half small sensor (4 cm x 2.5 cm)
+  xSize = 4.0;
+  ySize = 2.5;
   TGeoBBox* shape_sensor05 = new TGeoBBox("sensor05", 
 					  xSize/2., ySize/2., zSize/2.);
   new TGeoVolume("Sensor05", shape_sensor05, silicon);
   nSensors++;
 
+  
   // ---  Sensor type 06: Additional "in hole" sensor (3.1 cm x 4.2 cm)
   xSize = 3.1;
   ySize = 4.2;
@@ -796,6 +787,7 @@ Int_t CreateSensors() {
 					  xSize/2., ySize/2., zSize/2.);
   new TGeoVolume("Sensor06", shape_sensor06, silicon);
   nSensors++;
+
   
   // ---  Sensor type 07: Mini Medium sensor (1.5 cm x 4.2 cm)
   xSize = 1.5;
@@ -804,6 +796,7 @@ Int_t CreateSensors() {
 					  xSize/2., ySize/2., zSize/2.);
   new TGeoVolume("Sensor07", shape_sensor07, silicon);
   nSensors++;
+
   
   return nSensors;
 }
@@ -833,7 +826,7 @@ Int_t CreateSectors() {
   TGeoVolume* sensor05 = gGeoMan->GetVolume("Sensor05");
   TGeoVolume* sensor06 = gGeoMan->GetVolume("Sensor06");
   TGeoVolume* sensor07 = gGeoMan->GetVolume("Sensor07");
-  TGeoBBox*   box4     = (TGeoBBox*) sensor04->GetShape();
+  //  TGeoBBox*   box4     = (TGeoBBox*) sensor04->GetShape();
 
   // --- Sector type 1: single sensor of type 1
   TGeoVolumeAssembly* sector01 = new TGeoVolumeAssembly("Sector01");
@@ -859,18 +852,6 @@ Int_t CreateSectors() {
   sector04->GetShape()->ComputeBBox();
   nSectors++;
 
-//  // --- Sector type 5: two sensors of type 4
-//  TGeoVolumeAssembly* sector05 = new TGeoVolumeAssembly("Sector05");
-//  Double_t shift5 = 0.5 * gkChainGapY + box4->GetDY();
-//  TGeoTranslation* transD5 = 
-//    new TGeoTranslation("td", 0., -1. * shift5, 0.);
-//  TGeoTranslation* transU5 = 
-//    new TGeoTranslation("tu", 0., shift5, 0.);
-//  sector05->AddNode(sensor04, 1, transD5);
-//  sector05->AddNode(sensor04, 2, transU5);
-//  sector05->GetShape()->ComputeBBox();
-//  nSectors++;
-
   // --- Sector type 5: single sensor of type 5
   TGeoVolumeAssembly* sector05 = new TGeoVolumeAssembly("Sector05");
   sector05->AddNode(sensor05, 1);
@@ -888,6 +869,18 @@ Int_t CreateSectors() {
   sector07->AddNode(sensor07, 1);
   sector07->GetShape()->ComputeBBox();
   nSectors++;
+
+//  // --- Sector type 5: two sensors of type 4
+//  TGeoVolumeAssembly* sector05 = new TGeoVolumeAssembly("Sector05");
+//  Double_t shift5 = 0.5 * gkChainGapY + box4->GetDY();
+//  TGeoTranslation* transD5 = 
+//    new TGeoTranslation("td", 0., -1. * shift5, 0.);
+//  TGeoTranslation* transU5 = 
+//    new TGeoTranslation("tu", 0., shift5, 0.);
+//  sector05->AddNode(sensor04, 1, transD5);
+//  sector05->AddNode(sensor04, 2, transU5);
+//  sector05->GetShape()->ComputeBBox();
+//  nSectors++;
 
   return nSectors;
 }
@@ -923,53 +916,53 @@ Int_t CreateLadders() {
   TGeoVolume* halfLadderD = NULL;
 
   // --- Ladders 01-23
-  Int_t allSectorTypes[23][6] = { { 1, 2, 3, 4, 4, -1 },    // ladder 01 - last column defines alignment of small sensors
-                                  { 1, 2, 3, 4, 4,  0 },    // ladder 02 - last column defines alignment of small sensors
-                                  { 6, 3, 3, 4, 5, -1 },    // ladder 03 - last column defines alignment of small sensors
-                                  { 6, 3, 3, 4, 5,  0 },    // ladder 04 - last column defines alignment of small sensors
-                                  { 7, 3, 4, 5, 5, -1 },    // ladder 05 - last column defines alignment of small sensors
-                                  { 7, 3, 4, 5, 5,  0 },    // ladder 06 - last column defines alignment of small sensors
-                                  { 3, 3, 4, 5, 5,  0 },    // ladder 07 - last column defines alignment of small sensors
-                                  { 4, 5, 5, 5, 0,  0 },    // ladder 08 - last column defines alignment of small sensors
-                                  { 2, 2, 3, 4, 4,  0 },    // ladder 09 - last column defines alignment of small sensors
-                                  { 2, 2, 3, 3, 4,  0 },    // ladder 10 - last column defines alignment of small sensors
-                                  { 3, 3, 0, 0, 0,  0 },    // ladder 11 - last column defines alignment of small sensors
-                                  { 3, 3, 3, 4, 5,  0 },    // ladder 12 - last column defines alignment of small sensors
-                                  { 3, 3, 4, 5, 0,  0 },    // ladder 13 - last column defines alignment of small sensors
-                                  { 3, 4, 5, 0, 0,  0 },    // ladder 14 - last column defines alignment of small sensors
-                                  { 4, 4, 0, 0, 0,  0 },    // ladder 15 - last column defines alignment of small sensors
-                                  { 3, 3, 4, 5, 5,  0 },    // ladder 16 - last column defines alignment of small sensors
-                                  { 3, 4, 5, 5, 0,  0 },    // ladder 17 - last column defines alignment of small sensors
-                                  { 4, 5, 5, 0, 0,  0 },    // ladder 18 - last column defines alignment of small sensors
-                                  { 5, 5, 0, 0, 0,  0 },    // ladder 19 - last column defines alignment of small sensors
-                                  { 2, 3, 5, 5, 5,  0 },    // ladder 20 - last column defines alignment of small sensors
-                                  { 5, 0, 0, 0, 0,  0 },    // ladder 21 - last column defines alignment of small sensors
-                                  { 3, 4, 5, 5, 5,  0 },    // ladder 22 - last column defines alignment of small sensors
-                                  { 3, 4, 4, 5, 5,  0 } };  // ladder 23 - last column defines alignment of small sensors
+  Int_t allSectorTypes[23][6] = { { 5, 1, 2, 3, 3, -1 },    // ladder 01 - last column defines alignment of small sensors
+                                  { 5, 1, 2, 3, 3,  0 },    // ladder 02 - last column defines alignment of small sensors
+                                  { 6, 2, 2, 3, 4, -1 },    // ladder 03 - last column defines alignment of small sensors
+                                  { 6, 2, 2, 3, 4,  0 },    // ladder 04 - last column defines alignment of small sensors
+                                  { 7, 2, 3, 4, 4, -1 },    // ladder 05 - last column defines alignment of small sensors
+                                  { 7, 2, 3, 4, 4,  0 },    // ladder 06 - last column defines alignment of small sensors
+                                  { 2, 2, 3, 4, 4,  0 },    // ladder 07 - last column defines alignment of small sensors
+                                  { 3, 4, 4, 4, 0,  0 },    // ladder 08 - last column defines alignment of small sensors
+                                  { 1, 1, 2, 3, 3,  0 },    // ladder 09 - last column defines alignment of small sensors
+                                  { 1, 1, 2, 2, 3,  0 },    // ladder 10 - last column defines alignment of small sensors
+                                  { 2, 2, 0, 0, 0,  0 },    // ladder 11 - last column defines alignment of small sensors
+                                  { 2, 2, 2, 3, 4,  0 },    // ladder 12 - last column defines alignment of small sensors
+                                  { 2, 2, 3, 4, 0,  0 },    // ladder 13 - last column defines alignment of small sensors
+                                  { 2, 3, 4, 0, 0,  0 },    // ladder 14 - last column defines alignment of small sensors
+                                  { 3, 3, 0, 0, 0,  0 },    // ladder 15 - last column defines alignment of small sensors
+                                  { 2, 2, 3, 4, 4,  0 },    // ladder 16 - last column defines alignment of small sensors
+                                  { 2, 3, 4, 4, 0,  0 },    // ladder 17 - last column defines alignment of small sensors
+                                  { 3, 4, 4, 0, 0,  0 },    // ladder 18 - last column defines alignment of small sensors
+                                  { 4, 4, 0, 0, 0,  0 },    // ladder 19 - last column defines alignment of small sensors
+                                  { 1, 2, 4, 4, 4,  0 },    // ladder 20 - last column defines alignment of small sensors
+                                  { 4, 0, 0, 0, 0,  0 },    // ladder 21 - last column defines alignment of small sensors
+                                  { 2, 3, 4, 4, 4,  0 },    // ladder 22 - last column defines alignment of small sensors
+                                  { 2, 3, 3, 4, 4,  0 } };  // ladder 23 - last column defines alignment of small sensors
 
-  Double_t gapXYZ[23][3]      = { { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 01
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 02
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 03
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 04
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 05
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 06
-			          { 0.00,              8.80, 0.00 },     // ladder 07 - gapY = 2 * 4.40
-			          { 0.00,              9.14, 0.00 },     // ladder 08 - gapY = 2 * 4.57
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 09
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 10
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 11
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 12
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 13
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 14
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 15
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 16
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 17
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 18
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 19
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 20
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 21
-			          { 0.00, -gkSectorOverlapY, 0.00 },     // ladder 22
-			          { 0.00, -gkSectorOverlapY, 0.00 } };   // ladder 23
+  Double_t gapXYZ[23][3]      = { { 0., -gkSectorOverlapY, 0. },     // ladder 01
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 02
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 03
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 04
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 05
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 06
+			          { 0.,              8.80, 0. },     // ladder 07 - gapY = 2 * 4.40
+			          { 0.,              9.14, 0. },     // ladder 08 - gapY = 2 * 4.57
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 09
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 10
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 11
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 12
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 13
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 14
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 15
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 16
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 17
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 18
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 19
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 20
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 21
+			          { 0., -gkSectorOverlapY, 0. },     // ladder 22
+			          { 0., -gkSectorOverlapY, 0. } };   // ladder 23
 
 // ========================================================================
 
@@ -984,7 +977,7 @@ Int_t CreateLadders() {
     if ((iLadder+1 == 7) || (iLadder+1 == 8))  // not for ladders with gap
       gapXYZ[iLadder][2] = 0;
     else
-      gapXYZ[iLadder][2] = 2. * shape->GetDZ() + gkSectorGapZ;
+      gapXYZ[iLadder][2] = 2. * shape->GetDZ() + gkSectorGapZ;  // set displacement in z for overlapping half ladders
   }
   
 // ========================================================================
