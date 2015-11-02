@@ -57,11 +57,14 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	  firstSec = sec;
 	  firstMsec = msec;
 	}
-	if (lastDay <= day && lastHour <= hour && lastMin <= min && lastSec <= sec && lastMsec <= msec){
-	}else{
-	  cout << "ERROR: wrong time order in file"<< endl;
-	  return false;
-	}
+	/*
+	if (lastDay != -1)
+	  if (lastDay <= day && lastHour <= hour && lastMin <= min && lastSec <= sec && lastMsec <= msec){
+	  }else{
+	    cout << "ERROR: wrong time order in file"<< endl;
+	    return false;
+	  }
+	*/
 	if (debug)
 	  printf("T: %s\n   %i-%02i-%02i:%02i:%02i:%02i:%03i\n\n",sTime.Data(),year,month,day,hour,min,sec,msec);
 	deltaTime = (msec - firstMsec) + ((sec - firstSec) + ((min - firstMin) + ((hour - firstHour) + (day - firstDay)*24)*60)*60)*1000;
