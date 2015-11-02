@@ -335,7 +335,7 @@ void create_stsgeo_v16b(const char* geoTag="v16b")
     if (iSensor == 4)
       sensor->SetLineColor(kBlue);
     if (iSensor == 5)
-      sensor->SetLineColor(kBlue-9);
+      sensor->SetLineColor(kBlue+2); // kAzure+10);
     if (iSensor == 6)
       sensor->SetLineColor(kYellow);
     if (iSensor == 7)
@@ -781,9 +781,9 @@ Int_t CreateSensors() {
   new TGeoVolume("Sensor04", shape_sensor04, silicon);
   nSensors++;
 
-  // ---  Sensor type 05: Big sensor (6.2 cm x 12.2 cm)
+  // ---  Sensor type 05: Big sensor (6.2 cm x 12.4 cm)
   xSize = 6.2092;
-  ySize = 12.2;
+  ySize = 12.4;
   TGeoBBox* shape_sensor05 = new TGeoBBox("sensor05", 
 					  xSize/2., ySize/2., zSize/2.);
   new TGeoVolume("Sensor05", shape_sensor05, silicon);
