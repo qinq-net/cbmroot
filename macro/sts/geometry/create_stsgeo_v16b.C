@@ -916,140 +916,96 @@ Int_t CreateLadders() {
   Int_t sectorTypes[10];
   TGeoBBox*   shape = NULL;
   TString     s0name;
+  TString     hlname;
+  char        align;
   TGeoVolume* s0vol = NULL;
   TGeoVolume* halfLadderU = NULL;
   TGeoVolume* halfLadderD = NULL;
   Double_t shiftZ  = 0.;
-  Double_t ladderY = 0.;
   Double_t gapY    = 0.;
 
   // --- Ladders 01-23
-  Int_t allSectorTypes[23][5] = { { 1, 2, 3, 4, 4 },    // ladder 01
-                                  { 1, 2, 3, 4, 4 },    // ladder 02
-                                  { 6, 3, 3, 4, 5 },    // ladder 03
-                                  { 6, 3, 3, 4, 5 },    // ladder 04
-                                  { 7, 3, 4, 5, 5 },    // ladder 05
-                                  { 7, 3, 4, 5, 5 },    // ladder 06
-                                  { 3, 3, 4, 5, 5 },    // ladder 07
-                                  { 4, 5, 5, 5, 0 },    // ladder 08
-                                  { 2, 2, 3, 4, 4 },    // ladder 09
-                                  { 2, 2, 3, 3, 4 },    // ladder 10
-                                  { 3, 3, 0, 0, 0 },    // ladder 11
-                                  { 3, 3, 3, 4, 5 },    // ladder 12
-                                  { 3, 3, 4, 5, 0 },    // ladder 13
-                                  { 3, 4, 5, 0, 0 },    // ladder 14
-                                  { 4, 4, 0, 0, 0 },    // ladder 15
-                                  { 3, 3, 4, 5, 5 },    // ladder 16
-                                  { 3, 4, 5, 5, 0 },    // ladder 17
-                                  { 4, 5, 5, 0, 0 },    // ladder 18
-                                  { 5, 5, 0, 0, 0 },    // ladder 19
-                                  { 2, 3, 5, 5, 5 },    // ladder 20
-                                  { 5, 0, 0, 0, 0 },    // ladder 21
-                                  { 3, 4, 5, 5, 5 },    // ladder 22
-                                  { 3, 4, 4, 5, 5 } };  // ladder 23
+  Int_t allSectorTypes[23][6] = { { 1, 2, 3, 4, 4, -1 },    // ladder 01 - last column defines alignment of small sensors
+                                  { 1, 2, 3, 4, 4,  0 },    // ladder 02 - last column defines alignment of small sensors
+                                  { 6, 3, 3, 4, 5, -1 },    // ladder 03 - last column defines alignment of small sensors
+                                  { 6, 3, 3, 4, 5,  0 },    // ladder 04 - last column defines alignment of small sensors
+                                  { 7, 3, 4, 5, 5, -1 },    // ladder 05 - last column defines alignment of small sensors
+                                  { 7, 3, 4, 5, 5,  0 },    // ladder 06 - last column defines alignment of small sensors
+                                  { 3, 3, 4, 5, 5,  0 },    // ladder 07 - last column defines alignment of small sensors
+                                  { 4, 5, 5, 5, 0,  0 },    // ladder 08 - last column defines alignment of small sensors
+                                  { 2, 2, 3, 4, 4,  0 },    // ladder 09 - last column defines alignment of small sensors
+                                  { 2, 2, 3, 3, 4,  0 },    // ladder 10 - last column defines alignment of small sensors
+                                  { 3, 3, 0, 0, 0,  0 },    // ladder 11 - last column defines alignment of small sensors
+                                  { 3, 3, 3, 4, 5,  0 },    // ladder 12 - last column defines alignment of small sensors
+                                  { 3, 3, 4, 5, 0,  0 },    // ladder 13 - last column defines alignment of small sensors
+                                  { 3, 4, 5, 0, 0,  0 },    // ladder 14 - last column defines alignment of small sensors
+                                  { 4, 4, 0, 0, 0,  0 },    // ladder 15 - last column defines alignment of small sensors
+                                  { 3, 3, 4, 5, 5,  0 },    // ladder 16 - last column defines alignment of small sensors
+                                  { 3, 4, 5, 5, 0,  0 },    // ladder 17 - last column defines alignment of small sensors
+                                  { 4, 5, 5, 0, 0,  0 },    // ladder 18 - last column defines alignment of small sensors
+                                  { 5, 5, 0, 0, 0,  0 },    // ladder 19 - last column defines alignment of small sensors
+                                  { 2, 3, 5, 5, 5,  0 },    // ladder 20 - last column defines alignment of small sensors
+                                  { 5, 0, 0, 0, 0,  0 },    // ladder 21 - last column defines alignment of small sensors
+                                  { 3, 4, 5, 5, 5,  0 },    // ladder 22 - last column defines alignment of small sensors
+                                  { 3, 4, 4, 5, 5,  0 } };  // ladder 23 - last column defines alignment of small sensors
 
   //==========================================
+
+//  for (Int_t iLadder = 0; iLadder < 1; iLadder++)
+  for (Int_t iLadder = 0; iLadder < 23; iLadder++)
+  {
+    if ((iLadder+1 == 7) || (iLadder+1 == 8))  // not for ladders with gap
+      continue;
+    
+    cout << endl;
+    nSectors = 0;
+    for (Int_t i=0; i < 5; i++)
+  	if (allSectorTypes[iLadder][i] != 0)
+  	  {
+  	    sectorTypes[nSectors] = allSectorTypes[iLadder][i];
+  	    cout << "DE sectorTypes[" << nSectors << "] = " << allSectorTypes[iLadder][i] << ";" << endl;
+  	    nSectors++;
+  	  }
+
+    if (allSectorTypes[iLadder][5] == 0)
+      align = 'l';
+    else
+      align = 'r';
+    hlname = Form("HalfLadder%02du", iLadder+1);
+    halfLadderU = ConstructHalfLadder(hlname, nSectors, sectorTypes, align);  // mirrored
   
-  // --- Ladder 01 x-mirror of 02: 10 sectors, type 4 4 3 2 1 1 2 3 4 4
-  nSectors       = 5;
-  sectorTypes[0] = 1;
-  sectorTypes[1] = 2;
-  sectorTypes[2] = 3;
-  sectorTypes[3] = 4;
-  sectorTypes[4] = 4;
-  s0name = Form("Sector%02d", sectorTypes[0]);
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
-  halfLadderU = ConstructHalfLadder("HalfLadder01u", nSectors, sectorTypes, 'r');  // mirrored
-  halfLadderD = ConstructHalfLadder("HalfLadder01d", nSectors, sectorTypes, 'l');  // mirrored
-  ConstructLadder(1, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
-
-
-  // --- Ladder 02: 10 sectors, type 4 4 3 2 1 1 2 3 4 4
-  nSectors       = 5;
-  sectorTypes[0] = 1;
-  sectorTypes[1] = 2;
-  sectorTypes[2] = 3;
-  sectorTypes[3] = 4;
-  sectorTypes[4] = 4;
-  s0name = Form("Sector%02d", sectorTypes[0]);
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
-  halfLadderU = ConstructHalfLadder("HalfLadder02u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder02d", nSectors, sectorTypes, 'r');
-  ConstructLadder(2, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
-
+    if (allSectorTypes[iLadder][5] == 0)
+      align = 'r';
+    else
+      align = 'l';
+    hlname = Form("HalfLadder%02dd", iLadder+1);
+    halfLadderD = ConstructHalfLadder(hlname, nSectors, sectorTypes, align);  // mirrored
   
-  // --- Ladder 03 x-mirror of 04: 10 sectors, type 5 4 3 3 6 6 3 3 4 5
-  nSectors       = 5;
-  sectorTypes[0] = 6;
-  sectorTypes[1] = 3;
-  sectorTypes[2] = 3;
-  sectorTypes[3] = 4;
-  sectorTypes[4] = 5;
-  s0name = Form("Sector%02d", sectorTypes[0]);
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
-  halfLadderU = ConstructHalfLadder("HalfLadder03u", nSectors, sectorTypes, 'r');  // mirrored
-  halfLadderD = ConstructHalfLadder("HalfLadder03d", nSectors, sectorTypes, 'l');  // mirrored
-  ConstructLadder(03, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
+    s0name = Form("Sector%02d", sectorTypes[0]);
+    s0vol  = gGeoMan->GetVolume(s0name);
+    shape  = (TGeoBBox*) s0vol->GetShape();
+    shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
+    ConstructLadder(iLadder+1, halfLadderU, halfLadderD, shiftZ);
+    nLadders++;
+  }  
 
+  //==========================================
 
-  // --- Ladder 04: 10 sectors, type 5 4 3 3 6 6 3 3 4 5
-  nSectors       = 5;
-  sectorTypes[0] = 6;
-  sectorTypes[1] = 3;
-  sectorTypes[2] = 3;
-  sectorTypes[3] = 4;
-  sectorTypes[4] = 5;
-  s0name = Form("Sector%02d", sectorTypes[0]);
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
-  halfLadderU = ConstructHalfLadder("HalfLadder04u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder04d", nSectors, sectorTypes, 'r');
-  ConstructLadder(4, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
-
-
-  // --- Ladder 05 x-mirror of 06: 10 sectors, type 5 5 4 3 7 7 3 4 5 5
-  nSectors       = 5;
-  sectorTypes[0] = 7;
-  sectorTypes[1] = 3;
-  sectorTypes[2] = 4;
-  sectorTypes[3] = 5;
-  sectorTypes[4] = 5;
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  ladderY = 2. * shape->GetDY();
-  halfLadderU = ConstructHalfLadder("HalfLadder05u", nSectors, sectorTypes, 'r');  // mirrored
-  halfLadderD = ConstructHalfLadder("HalfLadder05d", nSectors, sectorTypes, 'l');  // mirrored
-  shape = (TGeoBBox*) halfLadderU->GetShape();
-  ConstructLadder(5, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
-
-
-  // --- Ladder 06: 10 sectors, type 5 5 4 3 7 7 3 4 5 5 
-  nSectors       = 5;
-  sectorTypes[0] = 7;
-  sectorTypes[1] = 3;
-  sectorTypes[2] = 4;
-  sectorTypes[3] = 5;
-  sectorTypes[4] = 5;
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  ladderY = 2. * shape->GetDY();
-  halfLadderU = ConstructHalfLadder("HalfLadder06u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder06d", nSectors, sectorTypes, 'r');
-  shape = (TGeoBBox*) halfLadderU->GetShape();
-  ConstructLadder(6, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
+//01  // --- Ladder 01 x-mirror of 02: 10 sectors, type 4 4 3 2 1 1 2 3 4 4
+//01  nSectors       = 5;
+//01  sectorTypes[0] = 1;
+//01  sectorTypes[1] = 2;
+//01  sectorTypes[2] = 3;
+//01  sectorTypes[3] = 4;
+//01  sectorTypes[4] = 4;
+//01  s0name = Form("Sector%02d", sectorTypes[0]);
+//01  s0vol  = gGeoMan->GetVolume(s0name);
+//01  shape  = (TGeoBBox*) s0vol->GetShape();
+//01  shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
+//01  halfLadderU = ConstructHalfLadder("HalfLadder01u", nSectors, sectorTypes, 'r');  // mirrored
+//01  halfLadderD = ConstructHalfLadder("HalfLadder01d", nSectors, sectorTypes, 'l');  // mirrored
+//01  ConstructLadder(1, halfLadderU, halfLadderD, shiftZ);
+//01  nLadders++;
 
 
   // --- Ladder 07: 10 sectors, type 5 5 4 3 3 gap 3 3 4 5 5, with gap
@@ -1061,7 +1017,7 @@ Int_t CreateLadders() {
   sectorTypes[4] = 5;
   s0vol  = gGeoMan->GetVolume(s0name);
   shape  = (TGeoBBox*) s0vol->GetShape();
-  ladderY = 2. * shape->GetDY();
+//  ladderY = 2. * shape->GetDY();
   halfLadderU = ConstructHalfLadder("HalfLadder07u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder07d", nSectors, sectorTypes, 'r');
   shape =(TGeoBBox*) halfLadderU->GetShape();
@@ -1078,248 +1034,12 @@ Int_t CreateLadders() {
   sectorTypes[3] = 5;
   s0vol  = gGeoMan->GetVolume(s0name);
   shape  = (TGeoBBox*) s0vol->GetShape();
-  ladderY = 2. * shape->GetDY();
+//  ladderY = 2. * shape->GetDY();
   halfLadderU = ConstructHalfLadder("HalfLadder08u", nSectors, sectorTypes, 'l');
   halfLadderD = ConstructHalfLadder("HalfLadder08d", nSectors, sectorTypes, 'r');
   shape =(TGeoBBox*) halfLadderU->GetShape();
   gapY = 4.57;
   ConstructLadderWithGap(8, halfLadderU, halfLadderD, 2*gapY);
-  nLadders++;
-
-
-  // --- Ladder 09: 10 sectors, type 4 4 3 2 2 2 2 3 4 4 
-  nSectors       = 5;
-  sectorTypes[0] = 2;
-  sectorTypes[1] = 2;
-  sectorTypes[2] = 3;
-  sectorTypes[3] = 4;
-  sectorTypes[4] = 4;
-  s0name = Form("Sector%02d", sectorTypes[0]);
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
-  halfLadderU = ConstructHalfLadder("HalfLadder09u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder09d", nSectors, sectorTypes, 'r');
-  ConstructLadder(9, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
-
-
-  // --- Ladder 10: 10 sectors, type 4 3 3 2 2 2 2 3 3 4
-  nSectors       = 5;
-  sectorTypes[0] = 2;
-  sectorTypes[1] = 2;
-  sectorTypes[2] = 3;
-  sectorTypes[3] = 3;
-  sectorTypes[4] = 4;
-  s0name = Form("Sector%02d", sectorTypes[0]);
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
-  halfLadderU = ConstructHalfLadder("HalfLadder10u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder10d", nSectors, sectorTypes, 'r');
-  ConstructLadder(10, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
-
-
-  // --- Ladder 11: 4 sectors, type 3 3 3 3
-  nSectors       = 2;
-  sectorTypes[0] = 3;
-  sectorTypes[1] = 3;
-  s0name = Form("Sector%02d", sectorTypes[0]);
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
-  halfLadderU = ConstructHalfLadder("HalfLadder11u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder11d", nSectors, sectorTypes, 'r');
-  ConstructLadder(11, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
-
-
-  // --- Ladder 12: 10 sectors, type 5 4 3 3 3 3 3 3 4 5
-  nSectors       = 5;
-  sectorTypes[0] = 3;
-  sectorTypes[1] = 3;
-  sectorTypes[2] = 3;
-  sectorTypes[3] = 4;
-  sectorTypes[4] = 5;
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  ladderY = 2. * shape->GetDY();
-  halfLadderU = ConstructHalfLadder("HalfLadder12u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder12d", nSectors, sectorTypes, 'r');
-  shape = (TGeoBBox*) halfLadderU->GetShape();
-  ConstructLadder(12, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
-
-
-  // --- Ladder 13: 8 sectors, type 5 4 3 3 3 3 4 5
-  nSectors       = 4;
-  sectorTypes[0] = 3;
-  sectorTypes[1] = 3;
-  sectorTypes[2] = 4;
-  sectorTypes[3] = 5;
-  s0name = Form("Sector%02d", sectorTypes[0]);
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  shiftZ = 2. * shape->GetDZ() + gkSectorGapZ;
-  halfLadderU = ConstructHalfLadder("HalfLadder13u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder13d", nSectors, sectorTypes, 'r');
-  ConstructLadder(13, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
-
-
-  // --- Ladder 14: 6 sensors, type 5 4 3 3 4 5
-  nSectors       = 3;
-  sectorTypes[0] = 3;
-  sectorTypes[1] = 4;
-  sectorTypes[2] = 5;
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  ladderY = 2. * shape->GetDY();
-  halfLadderU = ConstructHalfLadder("HalfLadder14u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder14d", nSectors, sectorTypes, 'r');
-  shape = (TGeoBBox*) halfLadderU->GetShape();
-  ConstructLadder(14, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
-
-
-  // --- Ladder 15: 4 sectors, type 4 4 4 4
-  nSectors       = 2;
-  sectorTypes[0] = 4;
-  sectorTypes[1] = 4;
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  ladderY = 2. * shape->GetDY();
-  halfLadderU = ConstructHalfLadder("HalfLadder15u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder15d", nSectors, sectorTypes, 'r');
-  shape = (TGeoBBox*) halfLadderU->GetShape();
-  ConstructLadder(15, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
-
-
-  // --- Ladder 16: 10 sectors, type 5 5 4 3 3 3 3 4 5 5
-  nSectors       = 5;
-  sectorTypes[0] = 3;
-  sectorTypes[1] = 3;
-  sectorTypes[2] = 4;
-  sectorTypes[3] = 5;
-  sectorTypes[4] = 5;
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  ladderY = 2. * shape->GetDY();
-  halfLadderU = ConstructHalfLadder("HalfLadder16u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder16d", nSectors, sectorTypes, 'r');
-  shape = (TGeoBBox*) halfLadderU->GetShape();
-  ConstructLadder(16, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
-
-
-  // --- Ladder 17: 8 sectors, type 5 5 4 3 3 4 5 5
-  nSectors       = 4;
-  sectorTypes[0] = 3;
-  sectorTypes[1] = 4;
-  sectorTypes[2] = 5;
-  sectorTypes[3] = 5;
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  ladderY = 2. * shape->GetDY();
-  halfLadderU = ConstructHalfLadder("HalfLadder17u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder17d", nSectors, sectorTypes, 'r');
-  shape = (TGeoBBox*) halfLadderU->GetShape();
-  ConstructLadder(17, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
- 
-
-  // --- Ladder 18: 6 sectors, type 5 5 4 4 5 5
-  nSectors       = 3;
-  sectorTypes[0] = 4;
-  sectorTypes[1] = 5;
-  sectorTypes[2] = 5;
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  ladderY = 2. * shape->GetDY();
-  halfLadderU = ConstructHalfLadder("HalfLadder18u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder18d", nSectors, sectorTypes, 'r');
-  shape = (TGeoBBox*) halfLadderU->GetShape();
-  ConstructLadder(18, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
-
-
-  // --- Ladder 19: 4 sectors, type 5 5 5 5
-  nSectors       = 2;
-  sectorTypes[0] = 5;
-  sectorTypes[1] = 5;
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  ladderY = 2. * shape->GetDY();
-  halfLadderU = ConstructHalfLadder("HalfLadder19u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder19d", nSectors, sectorTypes, 'r');
-  shape = (TGeoBBox*) halfLadderU->GetShape();
-  ConstructLadder(19, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
-
-
-  // --- Ladder 20: 10 sectors, type 5 5 5 3 2 2 3 5 5 5
-  nSectors       = 5;
-  sectorTypes[0] = 2;
-  sectorTypes[1] = 3;
-  sectorTypes[2] = 5;
-  sectorTypes[3] = 5;
-  sectorTypes[4] = 5;
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  ladderY = 2. * shape->GetDY();
-  halfLadderU = ConstructHalfLadder("HalfLadder20u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder20d", nSectors, sectorTypes, 'r');
-  shape = (TGeoBBox*) halfLadderU->GetShape();
-  ConstructLadder(20, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
- 
-
-  // --- Ladder 21: 2 sectors, type 5 5
-  nSectors       = 1;
-  sectorTypes[0] = 5;
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  ladderY = 2. * shape->GetDY();
-  halfLadderU = ConstructHalfLadder("HalfLadder21u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder21d", nSectors, sectorTypes, 'r');
-  shape = (TGeoBBox*) halfLadderU->GetShape();
-  ConstructLadder(21, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
-
-
-  // --- Ladder 22: 10 sectors, type 5 5 5 4 3 3 4 5 5 5 
-  nSectors       = 5;
-  sectorTypes[0] = 3;
-  sectorTypes[1] = 4;
-  sectorTypes[2] = 5;
-  sectorTypes[3] = 5;
-  sectorTypes[4] = 5;
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  ladderY = 2. * shape->GetDY();
-  halfLadderU = ConstructHalfLadder("HalfLadder22u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder22d", nSectors, sectorTypes, 'r');
-  shape = (TGeoBBox*) halfLadderU->GetShape();
-  ConstructLadder(22, halfLadderU, halfLadderD, shiftZ);
-  nLadders++;
-  
-
-  // --- Ladder 23: 10 sectors, type 5 5 4 4 3 3 4 4 5 5 
-  nSectors       = 5;
-  sectorTypes[0] = 3;
-  sectorTypes[1] = 4;
-  sectorTypes[2] = 4;
-  sectorTypes[3] = 5;
-  sectorTypes[4] = 5;
-  s0vol  = gGeoMan->GetVolume(s0name);
-  shape  = (TGeoBBox*) s0vol->GetShape();
-  ladderY = 2. * shape->GetDY();
-  halfLadderU = ConstructHalfLadder("HalfLadder23u", nSectors, sectorTypes, 'l');
-  halfLadderD = ConstructHalfLadder("HalfLadder23d", nSectors, sectorTypes, 'r');
-  shape = (TGeoBBox*) halfLadderU->GetShape();
-  ConstructLadder(23, halfLadderU, halfLadderD, shiftZ);
   nLadders++;
 
   return nLadders;
