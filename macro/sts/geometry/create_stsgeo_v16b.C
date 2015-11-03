@@ -7,6 +7,12 @@
  ** @date 09.05.2014
  ** @author Tomas Balog <T.Balog@gsi.de>
  **
+ ** v16c: like v16b, but senors of ladders beampipe next to beampipe
+ **       shifted closer to the pipe, like in the CAD model
+ ** v16b: like v16a, but yellow sensors removed
+ ** v16a: derived from v15b, but with sensor types renamed:
+ ** 2 -> 1, 3 -> 2, 4 -> 3, 5 -> 4, 1 -> 5
+ **
  ** v15b: introduce modified carbon ladders from v13z
  ** v15a: with flipped ladder orientation for stations 0,2,4,6 to match CAD design
  **
@@ -940,6 +946,17 @@ Int_t CreateLadders() {
                                   { 2, 3, 4, 4, 4,  0 },    // ladder 22 - last column defines alignment of small sensors
                                   { 2, 3, 3, 4, 4,  0 } };  // ladder 23 - last column defines alignment of small sensors
 
+//  Issue #405
+//  Counting from the most upstream ladder, the gaps between sensors are as follows:
+//    01 (most upstream): 41.3mm
+//    02: 41.3mm
+//    03: 42.0mm
+//    04: 48.6mm
+//    05: 60.8mm
+//    06: 67.0mm
+//    07: 79.2mm
+//    08 (most downstream): 88.0mm
+  
   Double_t gapXYZ[23][3]      = { { 0., -gkSectorOverlapY, 0. },     // ladder 01
 			          { 0., -gkSectorOverlapY, 0. },     // ladder 02
 			          { 0., -gkSectorOverlapY, 0. },     // ladder 03
