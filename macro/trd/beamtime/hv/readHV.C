@@ -165,7 +165,7 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
   return fileStat;
 }
 
-void readHV(TString inFile="exampleHV.txt")
+void readHV(TString inFile="hv.log"/*exampleHV.txt"*/)
 {
   TDatime da(2015,10,30,12,00,00);
   gStyle->SetTimeOffset(da.Convert());
@@ -233,7 +233,7 @@ void readHV(TString inFile="exampleHV.txt")
     multiI->Add(it->second);
     it->second->Write("",TObject::kOverwrite);
   }
-  multiI->Draw("AC");
+  multiI->Draw("AL");
   multiI->GetXaxis()->SetTitle("#Deltat_{rel.} (ms)");
   multiI->GetYaxis()->SetTitle("I (A)");
   multiI->SetTitle("multiI");
@@ -245,14 +245,14 @@ void readHV(TString inFile="exampleHV.txt")
     multiU->Add(it->second);
     it->second->Write("",TObject::kOverwrite);
   }
-  multiU->Draw("AC");
+  multiU->Draw("AL");
   multiU->GetXaxis()->SetTitle("#Deltat_{rel.} (ms)");
   multiU->GetYaxis()->SetTitle("U (V)");
   multiU->SetTitle("multiU");
   multiU->Write("multiU",TObject::kOverwrite);
   c->Update();
   c->cd(6)->SetLogy(0);
-  gTrendingT->Draw("AC");
+  gTrendingT->Draw("AL");
   gTrendingT->GetXaxis()->SetTitle("#Deltat_{rel.} (ms)");
   gTrendingT->GetYaxis()->SetTitle("#Deltat_{abs.} (ms)");
   gTrendingT->Write("",TObject::kOverwrite);
