@@ -30,10 +30,10 @@
 
 #pragma link C++ class CbmTofHitFinderQa+;
 
-#ifndef BUILD_BEAMTIME
+//#ifndef BUILD_BEAMTIME
  #pragma link C++ class CbmTofTestBeamClusterizer+;
  #pragma link C++ class CbmTofAnaTestbeam+;
-#endif // NOT BUILD_BEAMTIME
+//#endif // NOT BUILD_BEAMTIME
 
 #endif
 

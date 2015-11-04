@@ -4,10 +4,15 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class mbs::LmdFile
+#pragma link C++ class mbs::LmdInput
+
 #pragma link C++ class roc::Message;
 #pragma link C++ class roc::BoardConnector;
 #pragma link C++ class roc::Board;
 #pragma link C++ class roc::Iterator;
+#pragma link C++ class roc::FileInput;
+#pragma link C++ class roc::Factory;
 
 #pragma link C++ enum  roc::MessageFormat;
 #pragma link C++ enum  roc::MessageTypes;

@@ -39,12 +39,12 @@ ${Boost_LIBRARY_DIRS}
  
 link_directories( ${LINK_DIRECTORIES})
 
-If(BUILD_BEAMTIME)
-  Set(TOF_BEAM_SOURCES 
-  )
-  Set(TOF_BEAM_DEPEND
-  )
-Else(BUILD_BEAMTIME)
+#If(BUILD_BEAMTIME)
+#  Set(TOF_BEAM_SOURCES 
+#  )
+#  Set(TOF_BEAM_DEPEND
+#  )
+#Else(BUILD_BEAMTIME)
   Set(TOF_BEAM_SOURCES 
     TofReco/CbmTofTestBeamClusterizer.cxx 
     TofTests/CbmTofAnaTestbeam.cxx 
@@ -52,7 +52,7 @@ Else(BUILD_BEAMTIME)
   Set(TOF_BEAM_DEPEND
     CbmTofUnpack
   )
-EndIf(BUILD_BEAMTIME)
+#EndIf(BUILD_BEAMTIME)
 
 set(SRCS
 TofMC/CbmGeoTof.cxx 

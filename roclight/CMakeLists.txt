@@ -4,12 +4,15 @@
 
 Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/roclight
+  ${CBMROOT_SOURCE_DIR}/roclight/mbs
+  ${CBMROOT_SOURCE_DIR}/roclight/src_mbs
   ${CBMROOT_SOURCE_DIR}/roclight/roc
   ${CBMROOT_SOURCE_DIR}/roclight/src_roc
   ${CBMROOT_SOURCE_DIR}/roclight/feet
 )
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
+  ${BASE_INCLUDE_DIRECTORIES} 
   ${Boost_INCLUDE_DIR} 
 )
 
@@ -17,17 +20,28 @@ Include_Directories(${INCLUDE_DIRECTORIES})
 Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
  
 Set(SRCS
+  src_mbs/MbsTypeDefs.cxx
+  src_mbs/LmdFile.cxx
+  src_mbs/LmdInput.cxx
   src_roc/Message.cxx
   src_roc/Board.cxx
   src_roc/Iterator.cxx
   src_roc/OperList.cxx
+  src_roc/FileInput.cxx
+  src_roc/Factory.cxx
 )
 
 Set(HEADERS 
+  mbs/LmdTypeDefs.h
+  mbs/MbsTypeDefs.h
+  mbs/LmdFile.h
+  mbs/LmdInput.h
   roc/Message.h
   roc/Board.h
   roc/Iterator.h
   roc/OperList.h
+  roc/FileInput.h
+  roc/Factory.h
 )
 
 Set(LIBRARY_NAME CbmRocLight)

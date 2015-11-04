@@ -2,16 +2,16 @@
 # the array .
 # The extension is already found.  Any number of sources could be listed here.
 
-If(BUILD_BEAMTIME)
-  set(ROC_DIRECTORIES
-#    ${CBMROOT_SOURCE_DIR}/MbsAPI
-    ${CBMROOT_BINARY_DIR}/roc/roc/roclib
-)
-else(BUILD_BEAMTIME)
+#If(BUILD_BEAMTIME)
+#  set(ROC_DIRECTORIES
+##    ${CBMROOT_SOURCE_DIR}/MbsAPI
+#    ${CBMROOT_BINARY_DIR}/roc/roc/roclib
+#)
+#else(BUILD_BEAMTIME)
   set(ROC_DIRECTORIES
     ${CBMROOT_SOURCE_DIR}/roclight
   )
-EndIf(BUILD_BEAMTIME)
+#EndIf(BUILD_BEAMTIME)
 
 set(INCLUDE_DIRECTORIES
 #  ${CBMROOT_SOURCE_DIR}/MbsAPI
@@ -175,22 +175,22 @@ Set(HEADERS
 )
 
 
-If(BUILD_BEAMTIME)
-  Set_Source_Files_Properties(PROPERTIES tdc/get4/TTofGet4Unpacker.cxx PROPERTIES
-                              OBJECT_DEPENDS ${LIBRARY_OUTPUT_PATH}/libRoc.so
-  )
-  set(ROC_DEPENDENCIES
-#      FairTools MbsAPI 
-      ${LIBRARY_OUTPUT_PATH}/libDabcRoc.so
-      ${LIBRARY_OUTPUT_PATH}/libDabcMbs.so
-      ${LIBRARY_OUTPUT_PATH}/libDabcBase.so
-      ${LIBRARY_OUTPUT_PATH}/libRoc.so
-  )
-else(BUILD_BEAMTIME)
+#If(BUILD_BEAMTIME)
+#  Set_Source_Files_Properties(PROPERTIES tdc/get4/TTofGet4Unpacker.cxx PROPERTIES
+#                              OBJECT_DEPENDS ${LIBRARY_OUTPUT_PATH}/libRoc.so
+#  )
+#  set(ROC_DEPENDENCIES
+##      FairTools MbsAPI 
+#      ${LIBRARY_OUTPUT_PATH}/libDabcRoc.so
+#      ${LIBRARY_OUTPUT_PATH}/libDabcMbs.so
+#      ${LIBRARY_OUTPUT_PATH}/libDabcBase.so
+#      ${LIBRARY_OUTPUT_PATH}/libRoc.so
+#  )
+#else(BUILD_BEAMTIME)
   set(ROC_DEPENDENCIES
       CbmRocLight
   )
-EndIf(BUILD_BEAMTIME)
+#EndIf(BUILD_BEAMTIME)
 
 
 Set(LINKDEF CbmTofUnpackLinkDef.h)

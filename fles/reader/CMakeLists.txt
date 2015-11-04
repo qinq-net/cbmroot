@@ -46,14 +46,14 @@ Link_Directories(
   ${LINK_DIRECTORIES}
 )
 
-If(BUILD_BEAMTIME)
-  add_definitions(-DBUILD_BEAMTIME)
-  Set(DEFINITION -DBUILD_BEAMTIME)
-  Set(FLES_TOF_BEAM_SOURCES 
-  )
-  Set(FLES_TOF_BEAM_DEPEND
-  )
-Else(BUILD_BEAMTIME)
+#If(BUILD_BEAMTIME)
+#  add_definitions(-DBUILD_BEAMTIME)
+#  Set(DEFINITION -DBUILD_BEAMTIME)
+#  Set(FLES_TOF_BEAM_SOURCES 
+#  )
+#  Set(FLES_TOF_BEAM_DEPEND
+#  )
+#Else(BUILD_BEAMTIME)
   Set(FLES_TOF_BEAM_SOURCES 
     get4/CbmGet4EventDumper.cxx
 #    get4/CbmGet4EventMonitor.cxx
@@ -61,7 +61,7 @@ Else(BUILD_BEAMTIME)
   Set(FLES_TOF_BEAM_DEPEND
     CbmTofUnpack
   )
-EndIf(BUILD_BEAMTIME)
+#EndIf(BUILD_BEAMTIME)
 
 Set(SRCS
   CbmFlibFileSource.cxx   
