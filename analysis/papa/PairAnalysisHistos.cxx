@@ -1640,10 +1640,9 @@ void PairAnalysisHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
     if(yform){hist->GetYaxis()->SetTitle(PairAnalysisHelper::GetFormulaTitle(yform).Data()); }
     if(zform){hist->GetZaxis()->SetTitle(PairAnalysisHelper::GetFormulaTitle(zform).Data()); }
     // profile axis
-    if(bprf) {
-      TAxis *ax    = hist->GetYaxis();
+    if(bprf && dim<3) {
+      TAxis *ax    = 0x0;
       switch( dim ) {
-	//      case 3: ax = hist->GetZaxis(); break; //TODO title
       case 2: ax = hist->GetZaxis(); break;
       case 1: ax = hist->GetYaxis(); break;
       }
