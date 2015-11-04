@@ -185,7 +185,7 @@ void PairAnalysisHistos::UserHistogram(const char* histClass, Int_t ndim, TObjAr
     hist->SetUniqueID(valTypeW); // store weighting variable
 
     // store which variables are used
-    for(Int_t i=0; i<20; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    for(Int_t i=0; i<ndim; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
     fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
     Bool_t isReserved=fReservedWords->Contains(histClass);
@@ -238,7 +238,7 @@ void PairAnalysisHistos::AddSparse(const char* histClass, Int_t ndim, TObjArray 
     hist->SetUniqueID(valTypeW); // store weighting variable
 
     // store which variables are used
-    for(Int_t i=0; i<20; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    for(Int_t i=0; i<ndim; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
     fUsedVars->SetBitNumber(valTypeW,kTRUE);
 
     Bool_t isReserved=fReservedWords->Contains(histClass);
@@ -1083,14 +1083,18 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	    hdenom         = (TH1*) clDenom->FindObject( histdenomMC.Data() );
 	  }
 
-	  THashList *clTaskDen = (THashList*)listDenom->FindObject( histClassDenom.Data() );
-	  //	  htden=(TH1*)clTaskDen->FindObject(hdenom->GetName());
-	  htden=(TH1*)clTaskDen->FindObject( histdenomMC.Data() );
-	  Info("DrawSame","calculate eff/ratio using task-denom: '%s' class-denom: '%s' hist-denom: '%s'",
-	       listDenom->GetName(), histClassDenom.Data(), histdenomMC.Data());
+	  if(listDenom) {
+	    THashList *clTaskDen = (THashList*)listDenom->FindObject( histClassDenom.Data() );
+	    if(clTaskDen) {
+	      //	  htden=(TH1*)clTaskDen->FindObject(hdenom->GetName());
+	      htden=(TH1*)clTaskDen->FindObject( histdenomMC.Data() );
+	      Info("DrawSame","calculate eff/ratio using task-denom: '%s' class-denom: '%s' hist-denom: '%s'",
+		   listDenom->GetName(), histClassDenom.Data(), histdenomMC.Data());
+	      // keep only one of them, otherwise you might divide the same objects twice
+	      if(htden) hdenom=0x0;
+	    }
+	  }
 
-	  // keep only one of them, otherwise you might divide the same objects twice
-	  if(htden) hdenom=0x0;
 	}
 
 
@@ -1270,7 +1274,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
       //Printf("max%f \t min%f",max,min);
       if(!optEff) h1->SetMaximum(max*1.1);
       else        h1->SetMaximum(1.1);
-      h1->SetMinimum( min*(min<0.?1.1:0.9) ); //TODO: doesnt work, why?? Negative values?
+      if(!optEff) h1->SetMinimum( min*(min<0.?1.1:0.9) ); //TODO: doesnt work, why?? Negative values?
       // automatically set log option
       if(gPad->GetLogy() && max/(min>0.?min:1.) > TMath::Power(10.,TGaxis::GetMaxDigits())) {
 	h1->GetYaxis()->SetMoreLogLabels(kFALSE);
@@ -1673,27 +1677,29 @@ void PairAnalysisHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
     }
 
     // create an unique name
+    TFormula *pform = dynamic_cast<TFormula*>(hist->GetListOfFunctions()->FindObject("pFormula"));
     if(bname)
       switch(dim) {
       case 3:
 	currentName+=Form("%s_",hist->GetXaxis()->GetName());
 	currentName+=Form("%s_",hist->GetYaxis()->GetName());
 	currentName+=Form("%s", hist->GetZaxis()->GetName());
-	if(bprf)   currentName+=Form("-%s%s",PairAnalysisVarManager::GetValueName(varp),(bStdOpt ? "avg" : "rms"));
+	if(bprf && !pform) currentName+=Form("-%s%s",PairAnalysisVarManager::GetValueName(varp),(bStdOpt ? "avg" : "rms"));
+	else if (bprf)     currentName+=Form("-%s%s",PairAnalysisHelper::GetFormulaName(pform).Data(),(bStdOpt ? "avg" : "rms"));
 	if(weight&&!bprf) currentName+=Form("-wght%s",PairAnalysisVarManager::GetValueName(varp));
 	break;
       case 2:
 	currentName+=Form("%s_",hist->GetXaxis()->GetName());
 	currentName+=Form("%s", hist->GetYaxis()->GetName());
 	if(bprf)   currentName+=Form("-%s%s",hist->GetZaxis()->GetName(),(bStdOpt ? "avg" : "rms"));
-	if(weight && !wform) currentName+=Form("-wght%s",PairAnalysisVarManager::GetValueName(varp));
-	if(weight &&  wform) currentName+=Form("-wght%s",PairAnalysisHelper::GetFormulaName(wform).Data());
+	if(weight && !wform)      currentName+=Form("-wght%s",PairAnalysisVarManager::GetValueName(varp));
+	else if(weight &&  wform) currentName+=Form("-wght%s",PairAnalysisHelper::GetFormulaName(wform).Data());
 	break;
       case 1:
 	currentName+=Form("%s",hist->GetXaxis()->GetName());
 	if(bprf)   currentName+=Form("-%s%s",hist->GetYaxis()->GetName(),(bStdOpt ? "avg" : "rms"));
-	if(weight && !wform) currentName+=Form("-wght%s",PairAnalysisVarManager::GetValueName(varp));
-	if(weight &&  wform) currentName+=Form("-wght%s",PairAnalysisHelper::GetFormulaName(wform).Data());
+	if(weight && !wform)      currentName+=Form("-wght%s",PairAnalysisVarManager::GetValueName(varp));
+	else if(weight &&  wform) currentName+=Form("-wght%s",PairAnalysisHelper::GetFormulaName(wform).Data());
 	break;
       }
     // to differentiate btw. leg and pair histos
