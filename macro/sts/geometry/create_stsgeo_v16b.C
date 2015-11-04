@@ -922,12 +922,12 @@ Int_t CreateLadders() {
   TGeoVolume* halfLadderD = NULL;
 
   // --- Ladders 01-23
-  Int_t allSectorTypes[23][6] = { { 5, 1, 2, 3, 3, -1 },    // ladder 01 - last column defines alignment of small sensors
-                                  { 5, 1, 2, 3, 3,  0 },    // ladder 02 - last column defines alignment of small sensors
-                                  { 6, 2, 2, 3, 4, -1 },    // ladder 03 - last column defines alignment of small sensors
-                                  { 6, 2, 2, 3, 4,  0 },    // ladder 04 - last column defines alignment of small sensors
-                                  { 7, 2, 3, 4, 4, -1 },    // ladder 05 - last column defines alignment of small sensors
-                                  { 7, 2, 3, 4, 4,  0 },    // ladder 06 - last column defines alignment of small sensors
+  Int_t allSectorTypes[23][6] = { { 1, 2, 3, 3, 0, -1 },    // ladder 01 - 5 - last column defines alignment of small sensors
+                                  { 1, 2, 3, 3, 0,  0 },    // ladder 02 - 5 - last column defines alignment of small sensors
+                                  { 2, 2, 3, 4, 0, -1 },    // ladder 03 - 6 - last column defines alignment of small sensors
+                                  { 2, 2, 3, 4, 0,  0 },    // ladder 04 - 6 - last column defines alignment of small sensors
+                                  { 2, 3, 4, 4, 0, -1 },    // ladder 05 - 7 - last column defines alignment of small sensors
+                                  { 2, 3, 4, 4, 0,  0 },    // ladder 06 - 7 - last column defines alignment of small sensors
                                   { 2, 2, 3, 4, 4,  0 },    // ladder 07 - last column defines alignment of small sensors
                                   { 3, 4, 4, 4, 0,  0 },    // ladder 08 - last column defines alignment of small sensors
                                   { 1, 1, 2, 3, 3,  0 },    // ladder 09 - last column defines alignment of small sensors
@@ -957,14 +957,14 @@ Int_t CreateLadders() {
 //    07: 79.2mm
 //    08 (most downstream): 88.0mm
   
-  Double_t gapXYZ[23][3]      = { { 0., -gkSectorOverlapY, 0. },     // ladder 01
-			          { 0., -gkSectorOverlapY, 0. },     // ladder 02
-			          { 0., -gkSectorOverlapY, 0. },     // ladder 03
-			          { 0., -gkSectorOverlapY, 0. },     // ladder 04
-			          { 0., -gkSectorOverlapY, 0. },     // ladder 05
-			          { 0., -gkSectorOverlapY, 0. },     // ladder 06
-			          { 0.,              8.80, 0. },     // ladder 07 - gapY = 2 * 4.40
-			          { 0.,              9.14, 0. },     // ladder 08 - gapY = 2 * 4.57
+  Double_t gapXYZ[23][3]      = { { 0., 2* 2.5 - 3* gkSectorOverlapY, 0. },     // ladder 01
+			          { 0., 2* 2.5 - 3* gkSectorOverlapY, 0. },     // ladder 02
+			          { 0., 2* 4.2 - 3* gkSectorOverlapY, 0. },     // ladder 03
+			          { 0., 2* 4.2 - 3* gkSectorOverlapY, 0. },     // ladder 04
+			          { 0., 2* 4.2 - 3* gkSectorOverlapY, 0. },     // ladder 05
+			          { 0., 2* 4.2 - 3* gkSectorOverlapY, 0. },     // ladder 06
+			          { 0.,                         8.80, 0. },     // ladder 07 - gapY = 2 * 4.40
+			          { 0.,                         9.14, 0. },     // ladder 08 - gapY = 2 * 4.57
 			          { 0., -gkSectorOverlapY, 0. },     // ladder 09
 			          { 0., -gkSectorOverlapY, 0. },     // ladder 10
 			          { 0., -gkSectorOverlapY, 0. },     // ladder 11
