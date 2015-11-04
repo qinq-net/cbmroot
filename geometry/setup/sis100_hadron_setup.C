@@ -12,6 +12,7 @@
 // 2013-11-05 - DE - switch to trd_v13p geometry
 // 2013-10-11 - DE - add empty string defining the platform
 // 2013-10-07 - DE - pipe_v13c.geo fixes overlap with TOF, fills RICH section
+// 2013-11-04 - VF - make STS v15b the new default
 //
 
 /*
@@ -61,7 +62,7 @@ void sis100_hadron_setup()
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "v15a";
-  stsTag       = "v13y";
+  stsTag       = "v15b";
   trdTag       = "v15a_1h";
   tofTag       = "v13-5a";
 

@@ -10,6 +10,7 @@
 // 2013-11-05 - DE - switch to trd_v13p geometry
 // 2013-10-11 - DE - add empty string defining the platform
 // 2013-10-07 - DE - pipe_v13e.geo fixes overlap with TOF, also avoids TRD
+// 2013-11-04 - VF - make STS v15b the new default
 //
 
 /*
@@ -59,7 +60,7 @@ void sis100_muon_setup()
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "";
-  stsTag       = "v13d";
+  stsTag       = "v15b";
   trdTag       = "v15a_1m";
   tofTag       = "v13-5c";
 

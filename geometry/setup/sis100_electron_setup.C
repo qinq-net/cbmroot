@@ -18,6 +18,7 @@
 // 2013-10-11 - DE - add empty string defining the platform
 // 2013-10-07 - DE - pipe_v13d.geo fixes overlap with TOF
 // 2013-10-07 - DE - rich_v13a is not at nominal position 1800mm, but at 1600mm
+// 2013-11-04 - VF - make STS v15b the new default
 //
 
 /*
@@ -67,7 +68,7 @@ void sis100_electron_setup()
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "v15a";
-  stsTag       = "v13y";
+  stsTag       = "v15b";
   trdTag       = "v15a_1e";
   tofTag       = "v13-5b";
 
