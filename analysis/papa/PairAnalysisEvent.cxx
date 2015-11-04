@@ -449,33 +449,9 @@ Int_t PairAnalysisEvent::GetMvdMatchingIndex(CbmStsTrack *track) const
       trackMatch->AddLink(CbmLink(1., point->GetTrackID(), link.GetEntry(), link.GetFile()));
     }
   }
-  if ( ! trackMatch->GetNofLinks() ) { 
-    delete trackMatch; 
-    return idx;
+  if ( trackMatch->GetNofLinks() ) { 
+    idx=trackMatch->GetMatchedLink().GetIndex();
   }
-
-  // Calculate number of true and wrong hits
-  Int_t trueCounter = trackMatch->GetNofTrueHits();
-  Int_t wrongCounter = trackMatch->GetNofWrongHits();
-  for (Int_t iHit = 0; iHit < nofMvdHits; iHit++) {
-    const CbmMatch* hitMatch = static_cast<CbmMatch*>(fMvdHitMatches->At(track->GetMvdHitIndex(iHit)));
-    Int_t nofLinks = hitMatch->GetNofLinks();
-    Bool_t hasTrue = false;
-    for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
-      const FairMCPoint* point = static_cast<const FairMCPoint*>(fMvdPoints->At(hitMatch->GetLink(iLink).GetIndex()));
-      if (NULL == point) continue;
-      if (point->GetTrackID() == trackMatch->GetMatchedLink().GetIndex()) {
-	hasTrue = true;
-	break;
-      }
-    }
-    if (hasTrue) trueCounter++; else wrongCounter++;
-  }
-  trackMatch->SetNofTrueHits(trueCounter);
-  trackMatch->SetNofWrongHits(wrongCounter);
-
-  // return value
-  idx=trackMatch->GetMatchedLink().GetIndex();
 
   //delete surplus stuff
   delete trackMatch;
