@@ -288,22 +288,24 @@ TString PairAnalysisHistos::UserHistogram(const char* histClass, TObject* hist)
     StoreVariables(hist, valType);
     hist->SetUniqueID(valType[19]); // store weighting variable
     // check for formulas
-    TIter next(((TH1*)hist)->GetListOfFunctions());
-    TFormula *f=0;
-    while ( (f=dynamic_cast<TFormula*>(next()) ) ) {
-      for(Int_t i=0; i<f->GetNpar(); i++) {
-	Int_t parMC=PairAnalysisVarManager::GetValueTypeMC(f->GetParameter(i));
-	// if theres none corresponding MCtruth variable, skip adding this histogram
-	if(parMC < PairAnalysisVarManager::kNMaxValues) return hist->GetName();
-	f->SetParameter(   i, parMC );
-	f->SetParName(     i, PairAnalysisVarManager::GetValueName(parMC)   );
-	fUsedVars->SetBitNumber(parMC,kTRUE);
+    if(hist->InheritsFrom(TH1::Class())) {
+      TIter next(((TH1*)hist)->GetListOfFunctions());
+      TFormula *f=0;
+      while ( (f=dynamic_cast<TFormula*>(next()) ) ) {
+	for(Int_t i=0; i<f->GetNpar(); i++) {
+	  Int_t parMC=PairAnalysisVarManager::GetValueTypeMC(f->GetParameter(i));
+	  // if theres none corresponding MCtruth variable, skip adding this histogram
+	  if(parMC < PairAnalysisVarManager::kNMaxValues) return hist->GetName();
+	  f->SetParameter(   i, parMC );
+	  f->SetParName(     i, PairAnalysisVarManager::GetValueName(parMC)   );
+	  fUsedVars->SetBitNumber(parMC,kTRUE);
+	}
       }
+      // change histogram key according to mctruth information
+      //    Printf("SWITCH TO MC NAME: before: %s ---->",hist->GetName());
+      AdaptNameTitle((TH1*)hist, histClass);
+      //    Printf("after:  %s",hist->GetName());
     }
-    // change histogram key according to mctruth information
-    //    Printf("SWITCH TO MC NAME: before: %s ---->",hist->GetName());
-    AdaptNameTitle((TH1*)hist, histClass);
-    //    Printf("after:  %s",hist->GetName());
   }
   else {
     StoreVariables(hist, valType);
