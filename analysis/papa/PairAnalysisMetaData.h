@@ -53,7 +53,7 @@ public:
 
 
   //  virtual void Print(const Option_t* option = "") const;
-  void DrawSame(const Option_t *opt="leg can");
+  void DrawSame(TString opt="msb");
   //  virtual void Draw(const Option_t* option = "");
 
 private:

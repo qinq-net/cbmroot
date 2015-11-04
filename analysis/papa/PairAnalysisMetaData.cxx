@@ -18,6 +18,7 @@
 #include <TNamed.h>
 #include <TPaveText.h>
 
+#include "URun.h"
 #include "PairAnalysisMetaData.h"
 
 ClassImp(PairAnalysisMetaData)
@@ -183,9 +184,16 @@ void PairAnalysisMetaData::GetMeta(const char *name, Double_t *val) {
   if(par) *val=par->GetVal();
 }
 
-void PairAnalysisMetaData::DrawSame(const Option_t* opt) {
+void PairAnalysisMetaData::DrawSame(TString opt/*="msb"*/)
+{
   //
   // draw meta data into current pad
+  // use option string to select information displayed:
+  // m := mc -> 'Simulation'
+  // s := system e.g. 'Au+Au', 'p+Au'
+  // b := lab beam energy Ebeam
+  // S := sqrt s_NN
+  // n := number of events (after event selection)
   //
   if(fMetaList.GetEntries()<1) return;
 
@@ -202,23 +210,43 @@ void PairAnalysisMetaData::DrawSame(const Option_t* opt) {
 
   // simulation (only if true)
   TParameter<Bool_t> *parB = dynamic_cast<TParameter<Bool_t> *>(fMetaList.FindObject("mc"));
-  if(parB && parB->GetVal()) {
+  if(opt.Contains("m") && parB && parB->GetVal()) {
       tmp=Form(" Simulation");
       line+=tmp;
   }
 
   // system
   TNamed *par = dynamic_cast<TNamed *>(fMetaList.FindObject("system"));
-  if(par)           tmp=par->GetTitle();
+  if(opt.Contains("s") && par)  tmp=par->GetTitle();
   if(!tmp.IsNull()) line+=", " + tmp;
+
   // beamenergy
   TParameter<Double_t> *parD = dynamic_cast<TParameter<Double_t> *>(fMetaList.FindObject("beamenergy"));
-  if(parD)          {
+  if(opt.Contains("b") && parD) {
     if(tmp.Contains("p")) tmp=Form("#it{E}_{beam} = %.2f GeV",parD->GetVal());
     else                  tmp=Form("#it{E}_{beam} = %.2f #it{A}GeV",parD->GetVal());
+    if(!tmp.IsNull()) line+=" " + tmp;
   }
-  //  if(parD)          tmp=Form("#sqrt{#it{s}_{NN}} = %.2f GeV",parD->GetVal());
-  if(!tmp.IsNull()) line+=" " + tmp;
+  else if(opt.Contains("S") && parD) {
+    TString sys(par->GetTitle());
+    sys.ReplaceAll("+","");     sys.ReplaceAll("-","");
+    Int_t aProj=0; Int_t zProj=0;
+    Int_t aTarg=0; Int_t zTarg=0;
+    if(sys.EqualTo("pAu"))       { aProj=1;   zProj=1;  aTarg=197; zTarg=79; }
+    else if(sys.EqualTo("AuAu")) { aProj=197; zProj=79; aTarg=197; zTarg=79; }
+    // Get the cm energy, according to URun::GetNNSqrtS
+    URun run("","",aProj,zProj,parD->GetVal(),aTarg,zTarg,0.,0.,0.,0,0.,0.,0.,0);
+    tmp=Form("#sqrt{#it{s}_{NN}} = %.2f GeV",run.GetNNSqrtS());
+    if(!tmp.IsNull()) line+=" " + tmp;
+  }
+
+  // events
+  TParameter<Int_t> *parI = dynamic_cast<TParameter<Int_t> *>(fMetaList.FindObject("events"));
+  if(opt.Contains("n") && parD) {
+    //    tmp=Form("#it{N}_{evt} = %.1f#times10^{6}",parI->GetVal()/1.e+6);
+    tmp=Form("#it{N}_{evt} = %.1fM",parI->GetVal()/1.e+6);
+    if(!tmp.IsNull()) line+=", " + tmp;
+  }
 
   pt->AddText(line.Data());
 

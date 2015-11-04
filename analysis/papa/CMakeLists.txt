@@ -3,6 +3,7 @@ Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/analysis
 ${CBMROOT_SOURCE_DIR}/analysis/papa
 
+${CBMROOT_SOURCE_DIR}/generators
 
 ${CBMROOT_SOURCE_DIR}/base 
 ${CBMROOT_SOURCE_DIR}/base/draw
@@ -43,7 +44,7 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
 
 If(NOT ${ROOT_HAS_VC})
   set(SYSTEM_INCLUDE_DIRECTORIES
-      ${SYSTEM_INCLUDE_DIRECTORIES}      
+      ${SYSTEM_INCLUDE_DIRECTORIES}
       ${VC_INCLUDE_DIRS}
   )
 EndIf()
@@ -55,7 +56,9 @@ ${ROOT_LIBRARY_DIR}
 ${FAIRROOT_LIBRARY_DIR}
 ${Boost_LIBRARY_DIRS}
 )
- 
+
+#Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow -Weffc++ -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-ignored-qualifiers -Wno-overloaded-virtual")
+
 link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
@@ -112,7 +115,7 @@ ELSE (SSE_FOUND)
   "-O3")
 ENDIF (SSE_FOUND)
 
-If(${MAC_OS_VERSION} MATCHES 10.6)
+If(${MAC_OS_VERSION} LESS 10.9)
   ADD_DEFINITIONS(-DDO_TPCCATRACKER_EFF_PERFORMANCE -DNonhomogeneousField -DCBM -DUSE_TIMERS -DOLD_MAC)
   Set(DEFINITIONS OLD_MAC)
 Else()
@@ -122,7 +125,7 @@ EndIf()
 Set(LINKDEF CbmPapaLinkDef.h)
 Set(LIBRARY_NAME CbmPapa)
 Set(DEPENDENCIES
-    KF CbmSts CbmBase CbmData Base Vc.a)
+    KF CbmSts CbmBase CbmData CbmGenerators Base Vc.a)
 
 GENERATE_LIBRARY()
 
