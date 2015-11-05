@@ -56,7 +56,7 @@ class CbmSourceLmdNew : public FairSource
 #ifdef _NewFairSource 
     Int_t ReadEvent(UInt_t);              
 #else
-    Int_t ReadEvent()                   
+    Int_t ReadEvent();
 #endif
 
     virtual void Close();
