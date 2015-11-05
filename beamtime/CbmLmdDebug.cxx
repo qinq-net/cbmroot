@@ -233,3 +233,5 @@ void CbmLmdDebug::SetLastMessage() {
 	fLastMsgTime  = fCurrentMessage->getMsgFullTime(fCurrentEpoch[fLastMsgRocId]);
 }
 // -------------------------------------------------------------------------
+
+ClassImp(CbmLmdDebug)

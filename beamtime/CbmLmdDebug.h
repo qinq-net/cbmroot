@@ -79,6 +79,8 @@ class CbmLmdDebug: public TObject {
     // Store message info
     void SetLastMessage();
 
+    ClassDef(CbmLmdDebug,1);
+
 };
 
 #endif /* CBMLMDDEBUG_H */
