@@ -61,7 +61,7 @@ CbmStsSetup::CbmStsSetup() : CbmStsElement("STS", "system", kStsSystem),
 Int_t CbmStsSetup::DefineSensorTypes() {
 
 	// Common parameters for all sensor types
-  Double_t lz      = 0.03; // active thickness [cm]
+        Double_t lz      = 0.03; // active thickness [cm]
 	Double_t stereoF = 0.;   // stereo angle front side [degrees]
 	Double_t stereoB = 7.5;  // stereo angle back side [degrees]
 
@@ -73,10 +73,10 @@ Int_t CbmStsSetup::DefineSensorTypes() {
 
 	// Sensor01: DSSD, 4 cm x 2.2 cm
 	CbmStsSensorTypeDssd* sensor01 = new CbmStsSensorTypeDssd();
-	lx       = 3.7584;   // active size in x
-	ly       = 1.96;     // active size in y
-	nStripsF = 648;      // number of strips front side (58 mum)
-	nStripsB = 648;      // number of strips back side  (58 mum)
+	lx       = 3.7584;    // active size in x
+	ly       = 1.96;      // active size in y
+	nStripsF = 648;       // number of strips front side (58 mum)
+	nStripsB = 648;       // number of strips back side  (58 mum)
 	sensor01->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
 	sensor01->SetName("Sensor01");
 	fSensorTypes[0] = sensor01;
@@ -103,8 +103,8 @@ Int_t CbmStsSetup::DefineSensorTypes() {
 
 	// Sensor04: DSSD, 6.2 cm x 6.2 cm
 	CbmStsSensorTypeDssd* sensor04 = new CbmStsSensorTypeDssd();
-	lx       = 5.9392;   // active size in x
-	ly       = 5.96;     // active size in y
+	lx       = 5.9392;    // active size in x
+	ly       = 5.96;      // active size in y
 	nStripsF = 1024;      // number of strips front side (58 mum)
 	nStripsB = 1024;      // number of strips back side  (58 mum)
 	sensor04->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
@@ -143,13 +143,23 @@ Int_t CbmStsSetup::DefineSensorTypes() {
 
 	// Sensor08: DSSD Ortho (Baby), 1.62 cm x 1.62 cm
 	CbmStsSensorTypeDssdOrtho* sensor08 = new CbmStsSensorTypeDssdOrtho();
-	lx       = 1.28;    // active size in x
+	lx       = 1.28;      // active size in x
 	ly       = 1.28;      // active size in y
 	nStripsF = 256;       // number of strips front side (58 mum)
 	nStripsB = 256;       // number of strips back side  (58 mum)
 	sensor08->SetParameters(lx, ly, lz, nStripsF, nStripsB, 0., 0.);
 	sensor08->SetName("Baby");
 	fSensorTypes[7] = sensor08;
+
+	// Sensor09: DSSD, 6.2 cm x 12.4 cm
+	CbmStsSensorTypeDssd* sensor09 = new CbmStsSensorTypeDssd();
+	lx       = 5.9392;    // active size in x
+	ly       = 12.16;     // active size in y
+	nStripsF = 1024;      // number of strips front side (58 mum)
+	nStripsB = 1024;      // number of strips back side  (58 mum)
+	sensor09->SetParameters(lx, ly, lz, nStripsF, nStripsB, stereoF, stereoB);
+	sensor09->SetName("Sensor09");
+	fSensorTypes[8] = sensor09;
 
 	return fSensorTypes.size();
 }
@@ -473,14 +483,15 @@ Int_t CbmStsSetup::SetSensorTypes() {
 
 		// Assign type
 		Int_t iType = -1;
-		if ( volX > 3.99 && volX < 4.01 ) iType = 0;
-		else if ( volX > 6.19 && volX < 6.21 && volY > 2.19 && volY < 2.21 ) iType = 1;
-		else if ( volX > 6.19 && volX < 6.21 && volY > 4.19 && volY < 4.21 ) iType = 2;
-		else if ( volX > 6.19 && volX < 6.21 && volY > 6.19 && volY < 6.21 ) iType = 3;
-		else if ( volX > 3.09 && volX < 3.11 && volY > 3.09 && volY < 3.11 ) iType = 4;
-		else if ( volX > 1.49 && volX < 1.51 && volY > 4.19 && volY < 4.21 ) iType = 5;
-		else if ( volX > 3.09 && volX < 3.11 && volY > 4.19 && volY < 4.21 ) iType = 6;
-		else if ( volX > 1.61 && volX < 1.63 && volY > 1.61 && volY < 1.63 ) iType = 7;
+		if      ( volX > 3.99 && volX < 4.01 )                                 iType = 0;
+		else if ( volX > 6.19 && volX < 6.21 && volY >  2.19 && volY <  2.21 ) iType = 1;
+		else if ( volX > 6.19 && volX < 6.21 && volY >  4.19 && volY <  4.21 ) iType = 2;
+		else if ( volX > 6.19 && volX < 6.21 && volY >  6.19 && volY <  6.21 ) iType = 3;
+		else if ( volX > 3.09 && volX < 3.11 && volY >  3.09 && volY <  3.11 ) iType = 4;
+		else if ( volX > 1.49 && volX < 1.51 && volY >  4.19 && volY <  4.21 ) iType = 5;
+		else if ( volX > 3.09 && volX < 3.11 && volY >  4.19 && volY <  4.21 ) iType = 6;
+		else if ( volX > 1.61 && volX < 1.63 && volY >  1.61 && volY <  1.63 ) iType = 7;
+		else if ( volX > 6.19 && volX < 6.21 && volY > 12.39 && volY < 12.41 ) iType = 8;
 
 		// Look for type in DB
 		map<Int_t, CbmStsSensorType*>::iterator it = fSensorTypes.find(iType);
