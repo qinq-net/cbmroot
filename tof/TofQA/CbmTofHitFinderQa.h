@@ -329,6 +329,28 @@ class CbmTofHitFinderQa : public FairTask {
       std::vector<ULong64_t> fvulIdxSecTracksWithHit;
       TH1* fhIntegratedHitPntEffSec;
       
+         // Integrated TofHit Efficiency: Tracks firing channel but not going to Digi/Hit
+      std::vector<ULong64_t> fvulIdxHiddenTracksWithHit;
+      TH1* fhIntegratedHiddenHitPntLoss;
+      std::vector<ULong64_t> fvulIdxHiddenPrimTracksWithHit;
+      TH1* fhIntegratedHiddenHitPntLossPrim;
+      std::vector<ULong64_t> fvulIdxHiddenSecTracksWithHit;
+      TH1* fhIntegratedHiddenHitPntLossSec;
+      
+         // Efficiency dependence on nb crossed gaps
+         /*
+      static const UInt_t kuMaxCrossedGaps = 10;
+      std::vector<ULong64_t> fvulIdxTracksWithPntGaps[kuMaxCrossedGaps];
+      std::vector<ULong64_t> fvulIdxTracksWithHitGaps[kuMaxCrossedGaps];
+      TH2* fhIntegratedHitPntEffGaps;
+      std::vector<ULong64_t> fvulIdxPrimTracksWithPntGaps[kuMaxCrossedGaps];
+      std::vector<ULong64_t> fvulIdxPrimTracksWithHitGaps[kuMaxCrossedGaps];
+      TH2* fhIntegratedHitPntEffPrimGaps;
+      std::vector<ULong64_t> fvulIdxSecTracksWithPntGaps[kuMaxCrossedGaps];
+      std::vector<ULong64_t> fvulIdxSecTracksWithHitGaps[kuMaxCrossedGaps];
+      TH2* fhIntegratedHitPntEffSecGaps;
+      */
+      
       ClassDef(CbmTofHitFinderQa, 1);
 };
 

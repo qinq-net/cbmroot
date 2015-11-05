@@ -276,7 +276,13 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhIntegratedHitPntEffPrim(NULL),
     fvulIdxSecTracksWithPnt(),
     fvulIdxSecTracksWithHit(),
-    fhIntegratedHitPntEffSec(NULL)
+    fhIntegratedHitPntEffSec(NULL),
+    fvulIdxHiddenTracksWithHit(),
+    fhIntegratedHiddenHitPntLoss(NULL),
+    fvulIdxHiddenPrimTracksWithHit(),
+    fhIntegratedHiddenHitPntLossPrim(NULL),
+    fvulIdxHiddenSecTracksWithHit(),
+    fhIntegratedHiddenHitPntLossSec(NULL)
 {
   cout << "CbmTofHitFinderQa: Task started " << endl;
 }
@@ -494,7 +500,13 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhIntegratedHitPntEffPrim(NULL),
     fvulIdxSecTracksWithPnt(),
     fvulIdxSecTracksWithHit(),
-    fhIntegratedHitPntEffSec(NULL)
+    fhIntegratedHitPntEffSec(NULL),
+    fvulIdxHiddenTracksWithHit(),
+    fhIntegratedHiddenHitPntLoss(NULL),
+    fvulIdxHiddenPrimTracksWithHit(),
+    fhIntegratedHiddenHitPntLossPrim(NULL),
+    fvulIdxHiddenSecTracksWithHit(),
+    fhIntegratedHiddenHitPntLossSec(NULL)
 {
 }
 // ------------------------------------------------------------------
@@ -1507,6 +1519,16 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                                      "Efficiency of TOF hit generation, secondary tracks; Eff = Nb_{Trk w/ Hit}/Nb_{Trk w/ Pnt} [\%]; # [Events]",
                                      202, -0.5, 100.5);
    
+   fhIntegratedHiddenHitPntLoss = new TH1D( "TofTests_IntegratedHiddenHitPntLoss",
+                                     "Losses of TOF hit generation due to multiplicity, all tracks; Loss = Nb_{Trk w/ Hidden Hit}/Nb_{Trk w/ Pnt} [\%]; # [Events]",
+                                     202, -0.5, 100.5);
+   fhIntegratedHiddenHitPntLossPrim = new TH1D( "TofTests_IntegratedHiddenHitPntLossPrim",
+                                     "Efficiency of TOF hit generation due to multiplicity, primary tracks; Loss = Nb_{Trk w/ Hidden Hit}/Nb_{Trk w/ Pnt} [\%]; # [Events]",
+                                     202, -0.5, 100.5);
+   fhIntegratedHiddenHitPntLossSec = new TH1D( "TofTests_IntegratedHiddenHitPntLossSec",
+                                     "Efficiency of TOF hit generation due to multiplicity, secondary tracks; Loss = Nb_{Trk w/ Hidden Hit}/Nb_{Trk w/ Pnt} [\%]; # [Events]",
+                                     202, -0.5, 100.5);
+   
    gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
 
    return kTRUE;
@@ -1549,6 +1571,9 @@ Bool_t CbmTofHitFinderQa::FillHistos()
    fvulIdxPrimTracksWithHit.clear();
    fvulIdxSecTracksWithPnt.clear();
    fvulIdxSecTracksWithHit.clear();
+   fvulIdxHiddenTracksWithHit.clear();
+   fvulIdxHiddenPrimTracksWithHit.clear();
+   fvulIdxHiddenSecTracksWithHit.clear();
     
    // Tracks Info
    Int_t iNbTofTracks     = 0;
@@ -1936,7 +1961,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                   pTofDigi      = (CbmTofDigiExp*) fTofDigisColl->At( iDigiIdx );
                   pMatchDigiPnt = (CbmMatch*) fTofDigiMatchPointsColl->At( iDigiIdx );
 
-                  CbmLink lPt    = pMatchDigiPnt->GetLink(0); 
+                  CbmLink lPt    = pMatchDigiPnt->GetMatchedLink(); 
                   Int_t   iPtIdx = lPt.GetIndex();
                   Int_t   iTrkId = ((CbmTofPoint*) fTofPointsColl->At(iPtIdx))->GetTrackID();
                      
@@ -1956,7 +1981,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                      // Get Info about the other end of the strip
                      pMatchDigiPntB = (CbmMatch*) fTofDigiMatchPointsColl->At( iDigiIdx + 1 );
 
-                     CbmLink lPtB    = pMatchDigiPntB->GetLink(0); 
+                     CbmLink lPtB    = pMatchDigiPntB->GetMatchedLink(); 
                      Int_t   iPtIdxB = lPtB.GetIndex();
                      
                      // Check Left-Right missmatch for MC Point
@@ -1993,7 +2018,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                      pTofDigi      = (CbmTofDigi*) fTofDigisColl->At( iDigiIdx );
                      pMatchDigiPnt = (CbmMatch*) fTofDigiMatchPointsColl->At( iDigiIdx );
 
-                     CbmLink lPt    = pMatchDigiPnt->GetLink(0); 
+                     CbmLink lPt    = pMatchDigiPnt->GetMatchedLink(); 
                      Int_t   iPtIdx = lPt.GetIndex();
                      Int_t   iTrkId = ((CbmTofPoint*) fTofPointsColl->At(iPtIdx))->GetTrackID();
                         
@@ -2013,7 +2038,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                         // Get Info about the other end of the strip
                         pMatchDigiPntB = (CbmMatch*) fTofDigiMatchPointsColl->At( iDigiIdx + 1 );
 
-                        CbmLink lPtB    = pMatchDigiPntB->GetLink(0); 
+                        CbmLink lPtB    = pMatchDigiPntB->GetMatchedLink(); 
                         Int_t   iPtIdxB = lPtB.GetIndex();
                         
                         // Check Left-Right missmatch for MC Point
@@ -2172,6 +2197,37 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                   if( fvulIdxSecTracksWithHit.size() == uHitTrk )
                      fvulIdxSecTracksWithHit.push_back( vTofTracksId[uTrkInHit] );
                } // else of if( -1 == pMcTrk->GetMotherId() )
+               
+            if( 0 == vTofTracksWeight[uTrkInHit] )
+            {
+               // Tracks generating only signal hidden under signal from other tracks!
+               
+               for( uHitTrk = 0; uHitTrk < fvulIdxHiddenTracksWithHit.size(); uHitTrk++ )
+                  if( static_cast<ULong64_t>(vTofTracksId[uTrkInHit]) == fvulIdxHiddenTracksWithHit[uHitTrk] )
+                     break;
+               if( fvulIdxHiddenTracksWithHit.size() == uHitTrk )
+                  fvulIdxHiddenTracksWithHit.push_back( vTofTracksId[uTrkInHit] );
+
+               // Get a pointer to the corresponding MC Track
+               pMcTrk = (CbmMCTrack*) fMcTracksColl->At( vTofTracksId[uTrkInHit] );
+
+               if( -1 == pMcTrk->GetMotherId() )
+               {
+                  for( uHitTrk = 0; uHitTrk < fvulIdxHiddenPrimTracksWithHit.size(); uHitTrk++ )
+                     if( static_cast<ULong64_t>(vTofTracksId[uTrkInHit]) == fvulIdxHiddenPrimTracksWithHit[uHitTrk] )
+                        break;
+                  if( fvulIdxHiddenPrimTracksWithHit.size() == uHitTrk )
+                     fvulIdxHiddenPrimTracksWithHit.push_back( vTofTracksId[uTrkInHit] );
+               } // if( -1 == pMcTrk->GetMotherId() )
+                  else
+                  {
+                     for( uHitTrk = 0; uHitTrk < fvulIdxHiddenSecTracksWithHit.size(); uHitTrk++ )
+                        if( static_cast<ULong64_t>(vTofTracksId[uTrkInHit]) == fvulIdxHiddenSecTracksWithHit[uHitTrk] )
+                           break;
+                     if( fvulIdxHiddenSecTracksWithHit.size() == uHitTrk )
+                        fvulIdxHiddenSecTracksWithHit.push_back( vTofTracksId[uTrkInHit] );
+                  } // else of if( -1 == pMcTrk->GetMotherId() )
+            }
          } // for( UInt_t uTrkInHit = 0; uTrkInHit < vTofTracksId.size(); uTrkInHit ++)
 
          // Check Hit Quality for Hits coming from a single MC Point
@@ -2486,7 +2542,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             // Get pointer on match of first digi
          pMatchDigiPnt = (CbmMatch*) fTofDigiMatchPointsColl->At( iDigiIdx );
             // Get index of tof point corresponding to the first digi
-         CbmLink lPt    = pMatchDigiPnt->GetLink(0); 
+         CbmLink lPt    = pMatchDigiPnt->GetMatchedLink(); 
 */
             // Get point with the best match (highest weight), in HitProd this returns the left Pnt
          CbmLink lPt    = pMatchHitPnt->GetMatchedLink(); 
@@ -2647,6 +2703,19 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                                       *(static_cast<Double_t>( fvulIdxSecTracksWithHit.size() ))
                                       /(static_cast<Double_t>( fvulIdxSecTracksWithPnt.size() )) );
    
+   if( 0 < fvulIdxTracksWithPnt.size() )
+      fhIntegratedHiddenHitPntLoss->Fill(     100.0
+                                      *(static_cast<Double_t>( fvulIdxHiddenTracksWithHit.size() ))
+                                      /(static_cast<Double_t>( fvulIdxTracksWithPnt.size() )) );
+   if( 0 < fvulIdxPrimTracksWithPnt.size() )
+      fhIntegratedHiddenHitPntLossPrim->Fill( 100.0
+                                      *(static_cast<Double_t>( fvulIdxHiddenPrimTracksWithHit.size() ))
+                                      /(static_cast<Double_t>( fvulIdxPrimTracksWithPnt.size() )) );
+   if( 0 < fvulIdxSecTracksWithPnt.size() )
+      fhIntegratedHiddenHitPntLossSec->Fill(  100.0
+                                      *(static_cast<Double_t>( fvulIdxHiddenSecTracksWithHit.size() ))
+                                      /(static_cast<Double_t>( fvulIdxSecTracksWithPnt.size() )) );
+      
    return kTRUE;
 }
 // ------------------------------------------------------------------
@@ -3176,6 +3245,9 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhIntegratedHitPntEff->Write();
       fhIntegratedHitPntEffPrim->Write();
       fhIntegratedHitPntEffSec->Write();
+      fhIntegratedHiddenHitPntLoss->Write();
+      fhIntegratedHiddenHitPntLossPrim->Write();
+      fhIntegratedHiddenHitPntLossSec->Write();
    } // if( kFALSE == fbNormHistGenMode )
 
    gDirectory->cd( oldir->GetPath() );
@@ -3441,6 +3513,10 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhIntegratedHitPntEff;
    delete fhIntegratedHitPntEffPrim;
    delete fhIntegratedHitPntEffSec;
+   
+   delete fhIntegratedHiddenHitPntLoss;
+   delete fhIntegratedHiddenHitPntLossPrim;
+   delete fhIntegratedHiddenHitPntLossSec;
    
    return kTRUE;
 }

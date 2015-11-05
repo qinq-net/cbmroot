@@ -462,13 +462,21 @@ void CbmMatchRecoToMC::MatchHitsTof(
             continue;
          } // if( iNbTofDigis <= iDigiIdx )
 
-         pTofDigi      = (CbmTofDigi*) digis->At( iDigiIdx );
-         pMatchDigiPnt = (CbmMatch*) DigiPntMatches->At( iDigiIdx );
+         pTofDigi      = static_cast<CbmTofDigi*> (digis->At( iDigiIdx ));
+         pMatchDigiPnt = static_cast<CbmMatch*>   (DigiPntMatches->At( iDigiIdx ));
 
-         CbmLink lPoint    = pMatchDigiPnt->GetLink(0);
-         Int_t   iPointIdx = lPoint.GetIndex();
+         Int_t iNbPointsDigi = pMatchDigiPnt->GetNofLinks();
+         CbmLink lTruePoint    = pMatchDigiPnt->GetMatchedLink(); // Point generating the Digi
+         Int_t   iTruePointIdx = lTruePoint.GetIndex();
+         for( Int_t iPoint = 0; iPoint < iNbPointsDigi; iPoint ++)
+         {
+            CbmLink lPoint    = pMatchDigiPnt->GetLink(iPoint);
+            Int_t   iPointIdx = lPoint.GetIndex();
 
-         hitMatch->AddLink(CbmLink(pTofDigi->GetTot(), iPointIdx));
+            if( iPointIdx == iTruePointIdx )
+               hitMatch->AddLink(CbmLink(pTofDigi->GetTot(), iPointIdx)); // Point generating the Digi
+               else hitMatch->AddLink(CbmLink(0, iPointIdx)); // Point whose Digi was hidden by True one
+         } // for( Int_t iPoint = 0; iPoint < iNbPointsDigi; iPoint ++)
       } // for (Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++)
       hit->SetMatch(hitMatch);
    } // for (Int_t iHit = 0; iHit < nofHits; iHit++)
@@ -505,13 +513,21 @@ void CbmMatchRecoToMC::MatchHitsTofDigiExp(
             continue;
          } // if( iNbTofDigis <= iDigiIdx )
 
-         pTofDigi      = (CbmTofDigiExp*) digis->At( iDigiIdx );
-         pMatchDigiPnt = (CbmMatch*) DigiPntMatches->At( iDigiIdx );
+         pTofDigi      = static_cast<CbmTofDigiExp*> (digis->At( iDigiIdx ));
+         pMatchDigiPnt = static_cast<CbmMatch*>      (DigiPntMatches->At( iDigiIdx ));
 
-         CbmLink lPoint    = pMatchDigiPnt->GetLink(0);
-         Int_t   iPointIdx = lPoint.GetIndex();
+         Int_t iNbPointsDigi = pMatchDigiPnt->GetNofLinks();
+         CbmLink lTruePoint    = pMatchDigiPnt->GetMatchedLink(); // Point generating the Digi
+         Int_t   iTruePointIdx = lTruePoint.GetIndex();
+         for( Int_t iPoint = 0; iPoint < iNbPointsDigi; iPoint ++)
+         {
+            CbmLink lPoint    = pMatchDigiPnt->GetLink(iPoint);
+            Int_t   iPointIdx = lPoint.GetIndex();
 
-         hitMatch->AddLink(CbmLink(pTofDigi->GetTot(), iPointIdx));
+            if( iPointIdx == iTruePointIdx )
+               hitMatch->AddLink(CbmLink(pTofDigi->GetTot(), iPointIdx)); // Point generating the Digi
+               else hitMatch->AddLink(CbmLink(0, iPointIdx)); // Point whose Digi was hidden by True one
+         } // for( Int_t iPoint = 0; iPoint < iNbPointsDigi; iPoint ++)
       } // for (Int_t iDigi = 0; iDigi < iNbDigisHit; iDigi++)
       hit->SetMatch(hitMatch);
    } // for (Int_t iHit = 0; iHit < nofHits; iHit++)

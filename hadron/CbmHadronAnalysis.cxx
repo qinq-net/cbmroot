@@ -2014,7 +2014,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
        CbmLink L0 = digiMatch->GetLink(0); 
        Int_t iDigInd0=L0.GetIndex(); 
        CbmMatch* poiMatch=(CbmMatch *)fTofDigiMatchPointsColl->At(iDigInd0);
-       CbmLink LP = poiMatch->GetLink(0); 
+       CbmLink LP = poiMatch->GetMatchedLink(); 
        lp=LP.GetIndex();
        /*
        for (Int_t iLink=0; iLink<digiMatch->GetNofLinks(); iLink+=2){  // loop over digis
@@ -2935,7 +2935,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
          CbmLink L = digiMatch->GetLink(iLink); 
          Int_t iDigInd=L.GetIndex(); 
          CbmMatch* poiMatch=(CbmMatch *)fTofDigiMatchPointsColl->At(iDigInd);
-         CbmLink LP = poiMatch->GetLink(0); 
+         CbmLink LP = poiMatch->GetMatchedLink(); 
          lp=LP.GetIndex();
 	 if(lp!=iPoiArr[iPoiMul]){
 	   //	   cout << Form("<D> HadronAnalysis: gt %d, Hit %d, Link %d, poi %d, lpoi %d, PoiMul %d",

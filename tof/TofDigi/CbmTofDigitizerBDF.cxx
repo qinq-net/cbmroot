@@ -813,7 +813,7 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
       {
          pDigi = (CbmTofDigiExp*) fTofDigisColl->At( iDigInd );
          CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchPointsColl->At(iDigInd);	
-	 CbmLink L0 = digiMatch->GetLink(0); 
+	 CbmLink L0 = digiMatch->GetMatchedLink(); 
 	 CbmTofPoint* point = (CbmTofPoint*)fTofPointsColl->At( L0.GetIndex()); 
 
          if( pDigi->GetTot() < 0 )
@@ -834,7 +834,7 @@ Bool_t   CbmTofDigitizerBDF::FillHistos()
          {
             pDigi = (CbmTofDigi*) fTofDigisColl->At( iDigInd );
 	    CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchPointsColl->At(iDigInd);	
-	    CbmLink L0 = digiMatch->GetLink(0); 
+	    CbmLink L0 = digiMatch->GetMatchedLink();
 	    CbmTofPoint* point = (CbmTofPoint*)fTofPointsColl->At( L0.GetIndex()); 
 	 //			CbmTofPoint* point = (CbmTofPoint*)fTofPointsColl->At(pDigi->GetMatch()->GetMatchedLink().GetIndex()); 
             if( pDigi->GetTot() < 0 )
@@ -1007,7 +1007,14 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                         Double_t dMinTime = 1e18;
 //                        Int_t    ivDigiInd[iNbDigis]; // Never used?
 //                        Double_t dvDigiTime[iNbDigis]; // Never used?
+                        CbmMatch* digiMatch = new CbmMatch();
+                        
                         for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++)
+                        {
+                           // Store Link with weight 0 to have a trace of MC tracks firing the channel 
+                           // but whose Digi is not propagated to next stage
+                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi] ));
+                        
                           if( fStorDigiExp[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime()
                                                                                           < dMinTime )
                           {
@@ -1034,7 +1041,8 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                                           fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi] 
                                                 ))->GetTrackID() );
                               }  // if( kFALSE ==  bTrackFound )
-                          }
+                          } // if fastest digi on this side of the channel
+                        } // for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++)
                         // TOF QA: monitor number of tracks leading to digi before merging them
                         fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
 
@@ -1045,12 +1053,10 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                               iChosenDigi, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].size(),
                               iSmType,iSm,iRpc,iCh,iSide,fiNbDigis)<<FairLogger::endl;
 
-
-                        CbmMatch* digiMatch = new CbmMatch();
                         digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] ));
 
                         new((*fTofDigiMatchPointsColl)[fiNbDigis]) CbmMatch(*digiMatch);
-                        CbmLink LP = digiMatch->GetLink(0); 
+                        CbmLink LP = digiMatch->GetMatchedLink(); 
                         Int_t lp=LP.GetIndex();
                         delete digiMatch;
 
@@ -1115,13 +1121,19 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
 
                         Int_t iChosenDigi = -1;
                         Double_t dMinTime = 1e18;
+                        CbmMatch* digiMatch = new CbmMatch();
                         for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++)
+                        {
+                           // Store Link with weight 0 to have a trace of MC tracks firing the channel 
+                           // but whose Digi is not propagated to next stage
+                           digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi] ));
+                           
                            if( fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime()
                                                                                           < dMinTime )
                            {
                               iChosenDigi = iDigi;
                               dMinTime = fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi]->GetTime();
-                              
+                        
                               // TOF QA: monitor number of tracks leading to digi before merging them
                               Bool_t bTrackFound = kFALSE;
                               for( UInt_t uTrkId = 0; uTrkId < vPrevTrackIdList.size(); uTrkId++ )
@@ -1142,25 +1154,42 @@ Bool_t   CbmTofDigitizerBDF::MergeSameChanDigis()
                                           fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi] 
                                                 ))->GetTrackID() );
                               }  // if( kFALSE ==  bTrackFound )
-                           }
-                           // TOF QA: monitor number of tracks leading to digi before merging them
-                           fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
+                           } // if fastest digi on this side of the channel
+                        } // for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++)
+                        
+                        // TOF QA: monitor number of tracks leading to digi before merging them
+                        fhNbTracksEvtElCh->Fill( fvRpcChOffs[iSmType][iSm][iRpc] + iNbSides*iCh + iSide , iNbTracks );
 
-			LOG(DEBUG)<<Form(" New Tof Digi ")<<FairLogger::endl;
+                        LOG(DEBUG)<<Form(" New Tof Digi ")<<FairLogger::endl;
 
                         new((*fTofDigisColl)[fiNbDigis]) CbmTofDigi(
                               *fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] );
 
-			CbmMatch* digiMatch = new CbmMatch();
-			digiMatch->AddLink(CbmLink(0.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] ));
-			new((*fTofDigiMatchPointsColl)[fiNbDigis]) CbmMatch(*digiMatch);
-			delete digiMatch;
+                        digiMatch->AddLink(CbmLink(1.,fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] ));
+                        
+                        new((*fTofDigiMatchPointsColl)[fiNbDigis]) CbmMatch(*digiMatch);
+                        CbmLink LP = digiMatch->GetMatchedLink(); 
+                        Int_t lp=LP.GetIndex();
+                        delete digiMatch;
+                        
+                        LOG(DEBUG)<<"CbmTofDigitizerBDF:: TofDigiMatchColl entry "
+                             <<fTofDigiMatchPointsColl->GetEntries()-1
+                             <<", Poi: "<<fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi]
+                             <<", lp: "<<lp
+                             <<", MCt: "<<((CbmTofPoint*) fTofPointsColl->At(lp))->GetTrackID()
+                             <<FairLogger::endl;
+                        
+                        if(lp != fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi] )
+                          LOG(ERROR)<<Form("CbmTofDigitizerBDF::MergeSameChanDigis inconsistent links: %d <-> %d for (%d,%d,%d,%d,%d)",
+                               lp, fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iChosenDigi],
+                               iSmType,iSm,iRpc,iCh,iSide)<<FairLogger::endl;
+                        
                         fiNbDigis++;
 
                         for( Int_t iDigi = 0; iDigi < iNbDigis; iDigi++){
                            delete fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi];
-			   //                           delete fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi];
-			}
+//                           delete fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide][iDigi];
+                        }
                         fStorDigi[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].clear();
                         fStorDigiMatch[iSmType][iSm*iNbRpc + iRpc][iNbSides*iCh+iSide].clear();
                      } // if( 0 < iNbDigis )

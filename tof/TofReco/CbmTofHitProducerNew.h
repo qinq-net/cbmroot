@@ -25,6 +25,7 @@ class TString;
 class TH1;
 class TH2;
 
+class CbmMatch;
 
 class CbmTofHitProducerNew : public FairTask {
 
@@ -121,6 +122,7 @@ private:
   std::vector< std::vector< std::vector< std::vector< Int_t   > > > > trackID_right;
   std::vector< std::vector< std::vector< std::vector< Int_t   > > > > point_left ;
   std::vector< std::vector< std::vector< std::vector< Int_t   > > > > point_right;
+  std::vector< std::vector< std::vector< std::vector< CbmMatch * > > > > match_fired ;
 
       // Temporary storing of the Track/Rpc info to make sure all clusters
       // linked to same track in same detector give the same results for timing

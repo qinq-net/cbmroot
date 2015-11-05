@@ -63,6 +63,7 @@ CbmTofHitProducerNew::CbmTofHitProducerNew()
     trackID_right(),
     point_left(),
     point_right(),
+    match_fired(),
     fbUseOnePntPerTrkRpc(kFALSE),
     fvlTrckRpcAddr(),
     fvdTrckRpcTime(),
@@ -179,6 +180,7 @@ CbmTofHitProducerNew::CbmTofHitProducerNew(const char *name, Int_t verbose)
    trackID_right(),
    point_left(),
    point_right(),
+    match_fired(),
     fbUseOnePntPerTrkRpc(kFALSE),
     fvlTrckRpcAddr(),
     fvdTrckRpcTime(),
@@ -448,6 +450,7 @@ InitStatus CbmTofHitProducerNew::Init()
    trackID_right.resize(ActSMtypMax + 1);
    point_left.resize(ActSMtypMax + 1);
    point_right.resize(ActSMtypMax + 1);
+   match_fired.resize(ActSMtypMax + 1);
    for( Int_t iType = 0; iType <= ActSMtypMax; iType++)
    {
       X[iType].resize(            ActnSMMax[iType] + 1);
@@ -462,6 +465,7 @@ InitStatus CbmTofHitProducerNew::Init()
       trackID_right[iType].resize(ActnSMMax[iType] + 1);
       point_left[iType].resize(   ActnSMMax[iType] + 1);
       point_right[iType].resize(  ActnSMMax[iType] + 1);
+      match_fired[iType].resize(  ActnSMMax[iType] + 1);
       for( Int_t iSm = 0; iSm <= ActnSMMax[iType]; iSm++)
       {
          X[iType][iSm].resize(            ActnModMax[iType] + 1);
@@ -476,6 +480,7 @@ InitStatus CbmTofHitProducerNew::Init()
          trackID_right[iType][iSm].resize(ActnModMax[iType] + 1);
          point_left[iType][iSm].resize(   ActnModMax[iType] + 1);
          point_right[iType][iSm].resize(  ActnModMax[iType] + 1);
+         match_fired[iType][iSm].resize(   ActnModMax[iType] + 1);
          for( Int_t iMod = 0; iMod <= ActnModMax[iType];  iMod++)
          {
             X[iType][iSm][iMod].resize(            ActnCellMax[iType] + 1, -1);
@@ -490,6 +495,11 @@ InitStatus CbmTofHitProducerNew::Init()
             trackID_right[iType][iSm][iMod].resize(ActnCellMax[iType] + 1, -1);
             point_left[iType][iSm][iMod].resize(   ActnCellMax[iType] + 1, -1);
             point_right[iType][iSm][iMod].resize(  ActnCellMax[iType] + 1, -1);
+            match_fired[iType][iSm][iMod].resize(   ActnCellMax[iType] + 1, NULL);
+            
+            for(Int_t iCell = ActnCellMin[iType]; iCell <= ActnCellMax[iType]; iCell++)
+               match_fired[iType][iSm][iMod][iCell]  = new CbmMatch();
+               
          } // for( Int_t iMod = 0; iMod <= ActnModMax[iType];  iMod++)
       } // for( Int_t iMod = 0; iMod <= ActnSMMax[iType]; iMod++)
    } // for( Int_t type = 0; type <= ActSMtypMax; type++)
@@ -639,6 +649,7 @@ void CbmTofHitProducerNew::InitParametersFromContainer()
    trackID_right.resize(ActSMtypMax + 1);
    point_left.resize(ActSMtypMax + 1);
    point_right.resize(ActSMtypMax + 1);
+   match_fired.resize(ActSMtypMax + 1);
    for( Int_t iType = 0; iType <= ActSMtypMax; iType++)
    {
       X[iType].resize(            ActnSMMax[iType] + 1);
@@ -653,6 +664,7 @@ void CbmTofHitProducerNew::InitParametersFromContainer()
       trackID_right[iType].resize(ActnSMMax[iType] + 1);
       point_left[iType].resize(   ActnSMMax[iType] + 1);
       point_right[iType].resize(  ActnSMMax[iType] + 1);
+      match_fired[iType].resize(   ActnSMMax[iType] + 1);
       for( Int_t iSm = 0; iSm <= ActnSMMax[iType]; iSm++)
       {
          X[iType][iSm].resize(            ActnModMax[iType] + 1);
@@ -667,6 +679,7 @@ void CbmTofHitProducerNew::InitParametersFromContainer()
          trackID_right[iType][iSm].resize(ActnModMax[iType] + 1);
          point_left[iType][iSm].resize(   ActnModMax[iType] + 1);
          point_right[iType][iSm].resize(  ActnModMax[iType] + 1);
+         match_fired[iType][iSm].resize(   ActnModMax[iType] + 1);
          for( Int_t iMod = 0; iMod <= ActnModMax[iType];  iMod++)
          {
             X[iType][iSm][iMod].resize(            ActnCellMax[iType] + 1, -1);
@@ -681,6 +694,11 @@ void CbmTofHitProducerNew::InitParametersFromContainer()
             trackID_right[iType][iSm][iMod].resize(ActnCellMax[iType] + 1, -1);
             point_left[iType][iSm][iMod].resize(   ActnCellMax[iType] + 1, -1);
             point_right[iType][iSm][iMod].resize(  ActnCellMax[iType] + 1, -1);
+            match_fired[iType][iSm][iMod].resize(   ActnCellMax[iType] + 1, NULL);
+            
+            for(Int_t iCell = ActnCellMin[iType]; iCell <= ActnCellMax[iType]; iCell++)
+               match_fired[iType][iSm][iMod][iCell]  = new CbmMatch();
+               
          } // for( Int_t iMod = 0; iMod <= ActnModMax[iType];  iMod++)
       } // for( Int_t iMod = 0; iMod <= ActnSMMax[iType]; iMod++)
    } // for( Int_t type = 0; type <= ActSMtypMax; type++)
@@ -822,6 +840,7 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
      for(Int_t k = ActnCellMin[t]; k <= ActnCellMax[t]; k++){
       tl[t][i][j][k]= 1e+5;
       tr[t][i][j][k]= 1e+5;
+      match_fired[t][i][j][k] ->ClearLinks();
      }
     }
    }
@@ -955,6 +974,9 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
       point_right[smtype][smodule][module][cell]    = j;
     }
     //X and Y depend on the orientation of the cell. FIXME
+    
+    // Keep track of all Points firing the cells, even the slow ones
+      match_fired[smtype][smodule][module][cell] ->AddLink(CbmLink(0.,j));
   } // end of loop on TOF points 
 
 // Extract TOF Hits
@@ -1137,6 +1159,9 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
        
        CbmMatch* hitMatch = new CbmMatch();
        
+       // Add the links with weight 0 for all point firing the channel
+       hitMatch->AddLinks( *(match_fired[t][i][j][k]) ); 
+       // Add the links for the fastest signals
        hitMatch->AddLink(CbmLink(0.5,point_left[t][i][j][k]));
        hitMatch->AddLink(CbmLink(0.5,point_right[t][i][j][k]));
        
