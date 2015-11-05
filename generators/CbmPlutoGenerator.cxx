@@ -30,7 +30,8 @@ CbmPlutoGenerator::CbmPlutoGenerator()
    fFileName(NULL),
    fInputFile(NULL),
    fInputTree(NULL),
-   fParticles(NULL)
+   fParticles(NULL),
+   fPDGmanual(0)
 {
   // Get Pluto database
 /*  fdata = makeStaticData();
@@ -53,7 +54,8 @@ CbmPlutoGenerator::CbmPlutoGenerator(const Char_t* fileName)
    fFileName(fileName),
    fInputFile(new TFile(fileName)),
    fInputTree(NULL),
-   fParticles(new TClonesArray("PParticle",100))
+   fParticles(new TClonesArray("PParticle",100)),
+   fPDGmanual(0)
 {
   // Get Pluto database
 /*
@@ -124,6 +126,17 @@ Bool_t CbmPlutoGenerator::ReadEvent(FairPrimaryGenerator* primGen)
       continue;
     }
     Printf(" %d Particle (geant%d) PDG %d -> %s", iPart,part->ID(),*pdgType, dataBase->GetParticle(*pdgType)->GetName());
+
+    // set PDG by hand for pluto dilepton pairs and other not defined codes in pluto
+    Int_t dielectron=99009911;
+    Int_t dimuon    =99009913;
+    if(part->ID()==51)      pdgType=&dielectron;
+    else if(part->ID()==50) pdgType=&dimuon;
+    else if(fPDGmanual && *pdgType==0) {
+      pdgType=&fPDGmanual;
+      Printf(" \t PDG changed to %d",*pdgType);
+      //      Printf(" \t PDG changed to %d -> %s",*pdgType,dataBase->GetParticle(*pdgType)->GetName());
+    }
 
     // get the mother
     Int_t parIdx = part->GetParentIndex();

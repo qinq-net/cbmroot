@@ -51,7 +51,7 @@ class CbmPlutoGenerator : public FairGenerator
      ** @param primGen  pointer to the FairPrimaryGenerator
      **/
     virtual Bool_t ReadEvent(FairPrimaryGenerator* primGen);
-
+    void SetManualPDG(Int_t pdg)    { fPDGmanual=pdg; }
 
 
   private:
@@ -63,6 +63,7 @@ class CbmPlutoGenerator : public FairGenerator
     TFile* fInputFile;        //! Pointer to input file
     TTree* fInputTree;        //! Pointer to input tree
     TClonesArray* fParticles;  //! Particle array from PLUTO
+    Int_t fPDGmanual;        //! forced pdg value for undefined pluto codes
 
     /** Private method CloseInput. Just for convenience. Closes the
      ** input file properly. Called from destructor and from ReadEvent. **/
@@ -71,7 +72,7 @@ class CbmPlutoGenerator : public FairGenerator
     CbmPlutoGenerator(const CbmPlutoGenerator&);
     CbmPlutoGenerator& operator=(const CbmPlutoGenerator&);
 
-    ClassDef(CbmPlutoGenerator,2);
+    ClassDef(CbmPlutoGenerator,3);
 
 };
 
