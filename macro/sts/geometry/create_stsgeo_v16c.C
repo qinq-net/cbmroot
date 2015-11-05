@@ -402,8 +402,9 @@ void create_stsgeo_v16c(const char* geoTag="v16c")
 
   Int_t statPos[8]  = { 30, 40, 50, 60, 70, 80, 90, 100 };  // z positions of stations
 
-  Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.9, 3.7, 3.7, 4.2, 4.2 };  // size of cutouts in stations
-
+//Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.9 , 3.7 , 3.7 , 4.2 , 4.2 };  // size of cutouts in stations
+  Double_t rHole[8] = { 2.0, 2.0, 2.0, 2.43, 3.04, 3.35, 3.96, 4.2 };  // size of cutouts in stations, derived from gapXYZ[x][1]/2
+  
   Int_t cone_size[8]      = { 0, 0, 0, 1, 1, 1, 1, 1 };  // size of cones: 0 = small, 1 = large
 
   Double_t cone_offset[2] = { 0.305, 0.285 };
