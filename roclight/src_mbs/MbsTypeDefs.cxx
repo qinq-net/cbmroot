@@ -11,11 +11,19 @@
  * which is part of the distribution.                       *
  ************************************************************/
 
+#ifdef __APPLE__
+// Mac OS X / Darwin features
+#include <libkern/OSByteOrder.h>
+#define bswap_16(x) OSSwapInt16(x)
+#define bswap_32(x) OSSwapInt32(x)
+#define bswap_64(x) OSSwapInt64(x)
+#else
+#include <byteswap.h>
+#endif
+
 #include "MbsTypeDefs.h"
 
 #include <string.h>
-#include <byteswap.h>
-
 
 const char* mbs::typeLmdInput         = "mbs::LmdInput";
 const char* mbs::typeLmdOutput        = "mbs::LmdOutput";

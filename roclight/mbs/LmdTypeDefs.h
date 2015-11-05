@@ -15,7 +15,13 @@
 #define MBS_LmdTypeDefs
 
 #include <stdint.h>
-#include <endian.h>
+
+#ifdef __APPLE__
+//on MacOS endian.h is in a differnt directory
+#include <machine/endian.h>
+#else                  
+#include <endian.h>        
+#endif
 
 namespace mbs {
 
