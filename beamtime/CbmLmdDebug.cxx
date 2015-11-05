@@ -28,9 +28,9 @@ CbmLmdDebug::CbmLmdDebug(const char* fileName) :
 	fLastMsgRocId(-1),
 	fLastMsgNxyId(-1),
 	fLastMsgTime(0),
-	fMaxTimeDisorder(0),
 	fTimeStart(0),
-	fTimeStop(0)
+	fTimeStop(0),
+	fMaxTimeDisorder(0)
 {
 	for (Int_t iType = 0; iType < 8; iType++) fNofMsgType[iType] = 0;
 	Init();

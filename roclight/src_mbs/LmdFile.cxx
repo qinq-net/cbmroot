@@ -24,11 +24,11 @@ extern "C" {
 }
 
 
-mbs::LmdFile::LmdFile()
+mbs::LmdFile::LmdFile():
+   fMode(mNone),
+   fControl(fLmdAllocateControl()),
+   fLastError(LMD__SUCCESS)
 {
-   fMode = mNone;
-   fControl = fLmdAllocateControl();
-   fLastError = LMD__SUCCESS;
 }
 
 mbs::LmdFile::~LmdFile()

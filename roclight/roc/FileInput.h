@@ -44,6 +44,10 @@ namespace roc {
          virtual bool getNextBuffer(void* &buf, unsigned& len, double tmout = 1.);
 
          virtual MessageFormat getMsgFormat() const;
+         
+      private:
+         FileInput(const FileInput&);
+         FileInput& operator=(const FileInput&);
    };
 }
 

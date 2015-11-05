@@ -42,6 +42,9 @@ class CbmROCUnpackHodo : public CbmROCUnpack
 
   void CreateHistograms();
 
+  CbmROCUnpackHodo(const CbmROCUnpackHodo&);
+  CbmROCUnpackHodo& operator=(const CbmROCUnpackHodo&);
+  
   ClassDef(CbmROCUnpackHodo, 1)
 };
 

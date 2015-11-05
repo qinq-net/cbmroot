@@ -72,6 +72,10 @@ namespace mbs {
 
          /** Read next event from file - same as ReadElement. */
          mbs::EventHeader* ReadEvent();
+         
+      private:
+         LmdFile(const LmdFile&);
+         LmdFile& operator=(const LmdFile&);
    };
 
 } // end of namespace

@@ -33,7 +33,7 @@ Bool_t CbmROCUnpackEpoch::Init()
   return kTRUE;
 }
 
-Bool_t CbmROCUnpackEpoch::DoUnpack(roc::Message* Message, ULong_t hitTime)
+Bool_t CbmROCUnpackEpoch::DoUnpack(roc::Message* Message, ULong_t /*hitTime*/)
 {
 
   Int_t rocId          = Message->getRocNumber();

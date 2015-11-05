@@ -106,8 +106,6 @@ bool mbs::LmdInput::Init()
       TString suffix = ""; // PAL => In principle not suffix in our case as we use only local files
       
       // wildcarding used in name
-      Int_t nf = 0;
-
       Int_t slashpos = basename.Last('/');
       TString directory;
       if (slashpos>=0) {
@@ -138,7 +136,6 @@ bool mbs::LmdInput::Init()
          TObjString *obj;
          while ((obj = (TObjString*)next())) {
             file = obj->GetName();
- //           nf += AddFile(TString::Format("%s/%s%s",directory.Data(),file,suffix.Data()),nentries);
             fInputFileList.Add(new TObjString( TString::Format("%s/%s%s",directory.Data(),file,suffix.Data()) )); 
          }
          l.Delete();

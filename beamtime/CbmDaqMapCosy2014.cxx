@@ -96,7 +96,7 @@ Int_t CbmDaqMapCosy2014::GetStsStation(Int_t rocId)
 
 
 // -----   Get MUCH station number  ------------------------------------------
-Int_t CbmDaqMapCosy2014::GetMuchStation(Int_t rocId) 
+Int_t CbmDaqMapCosy2014::GetMuchStation(Int_t /*rocId*/) 
 {
   // No MUCH in the STS setup 
   Int_t station = -1;
@@ -185,7 +185,7 @@ if ( fRun < 54)
 
 
 // -----   Get STS channel number   ------------------------------------------
-Int_t CbmDaqMapCosy2014::GetFiberHodoChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
+Int_t CbmDaqMapCosy2014::GetFiberHodoChannel(Int_t /*rocId*/, Int_t /*nxId*/, Int_t /*nxChannel*/) {
 	Int_t channel = -1;
 	return channel;
 }

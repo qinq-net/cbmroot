@@ -147,7 +147,7 @@ Int_t CbmDaqMapCosy2013::GetStsChannel(Int_t rocId, Int_t nxId, Int_t nxChannel)
 
 
 // -----   Get STS channel number   ------------------------------------------
-Int_t CbmDaqMapCosy2013::GetFiberHodoChannel(Int_t rocId, Int_t nxId, Int_t nxChannel) {
+Int_t CbmDaqMapCosy2013::GetFiberHodoChannel(Int_t /*rocId*/, Int_t /*nxId*/, Int_t /*nxChannel*/) {
 	Int_t channel = -1;
 	return channel;
 }

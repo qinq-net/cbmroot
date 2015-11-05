@@ -25,7 +25,7 @@ class CbmROCUnpackSystemMessage : public CbmROCUnpack
     
   virtual Bool_t Init();
   virtual Bool_t DoUnpack(roc::Message* Message, ULong_t hitTime);
-  virtual void FillOutput(CbmDigi* digi) {;}
+  virtual void FillOutput(CbmDigi* /*digi*/) {;}
   virtual void Reset();
   virtual void Finish() {;}
   
@@ -34,6 +34,9 @@ class CbmROCUnpackSystemMessage : public CbmROCUnpack
   CbmTbDaqBuffer* fBuffer;
   CbmSourceLmdNew* fSource;
 
+  CbmROCUnpackSystemMessage(const CbmROCUnpackSystemMessage&);
+  CbmROCUnpackSystemMessage& operator=(const CbmROCUnpackSystemMessage&);
+  
   ClassDef(CbmROCUnpackSystemMessage, 1)
 };
 

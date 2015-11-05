@@ -23,7 +23,7 @@ class CbmROCUnpackEpoch : public CbmROCUnpack
     
   virtual Bool_t Init();
   virtual Bool_t DoUnpack(roc::Message* Message, ULong_t hitTime);
-  virtual void FillOutput(CbmDigi* digi) {;}
+  virtual void FillOutput(CbmDigi* /*digi*/) {;}
   virtual void Reset();
   virtual void Finish() {;}
 
@@ -32,6 +32,9 @@ class CbmROCUnpackEpoch : public CbmROCUnpack
   CbmSourceLmdNew* fSource;
   Int_t fNofEpochs;
 
+  CbmROCUnpackEpoch(const CbmROCUnpackEpoch&);
+  CbmROCUnpackEpoch& operator=(const CbmROCUnpackEpoch&);
+  
   ClassDef(CbmROCUnpackEpoch, 1)
 };
 

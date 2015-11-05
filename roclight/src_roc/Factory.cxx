@@ -33,7 +33,7 @@
 
 roc::Factory rocfactory("roc");
 
-roc::Factory::Factory(const char* name) :
+roc::Factory::Factory(const char* /*name*/) :
 //   dabc::Factory(name), *** PAL edit: Run offline with LMD file and without DABC *** 
    roc::BoardConnector(),
 //   fDevs(), *** PAL edit: Run offline with LMD file and without DABC *** 
@@ -96,7 +96,7 @@ dabc::Device* roc::Factory::CreateDevice(const char* classname, const char* devn
 }
    ***************** */
 
-roc::Board* roc::Factory::DoConnect(const char* name, roc::ClientRole role)
+roc::Board* roc::Factory::DoConnect(const char* name, roc::ClientRole /*role*/)
 {
 /* *** PAL edit: Run offline with LMD file and without DABC *** 
    dabc::SetDebugLevel(0);

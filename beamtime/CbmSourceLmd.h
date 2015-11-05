@@ -32,7 +32,7 @@ class CbmSourceLmd : public FairSource
   public:
     CbmSourceLmd();
     CbmSourceLmd(const char *);
-    CbmSourceLmd(const CbmSourceLmd& source);
+//    CbmSourceLmd(const CbmSourceLmd& source);
     virtual ~CbmSourceLmd();
 
     virtual Bool_t Init();
@@ -136,6 +136,9 @@ class CbmSourceLmd : public FairSource
     CbmDigi* GetNextData();
 
     void FillBaselineDataContainer();
+    
+    CbmSourceLmd(const CbmSourceLmd& source);
+    CbmSourceLmd& operator=(const CbmSourceLmd&);
 
     ClassDef(CbmSourceLmd, 0)
 };

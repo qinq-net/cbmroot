@@ -27,6 +27,10 @@ class CbmTbEventBuilder : public TObject
  protected:
    // --- Event status
    CbmTbEvent* fCurrentEvent;    ///< Pointer to current event
+         
+   private:
+      CbmTbEventBuilder(const CbmTbEventBuilder&);
+      CbmTbEventBuilder& operator=(const CbmTbEventBuilder&);
         
    ClassDef(CbmTbEventBuilder, 0)
 };

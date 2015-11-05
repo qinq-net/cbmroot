@@ -34,6 +34,9 @@ class CbmROCUnpackAux : public CbmROCUnpack
   CbmSourceLmdNew* fSource;
   CbmTbDaqBuffer* fBuffer;
   TClonesArray* fAuxDigis;          ///< Output array of CbmAuxDigi
+  
+  CbmROCUnpackAux(const CbmROCUnpackAux&);
+  CbmROCUnpackAux& operator=(const CbmROCUnpackAux&);
 
   ClassDef(CbmROCUnpackAux, 1)
 };

@@ -102,7 +102,7 @@ InitStatus CbmStsHodoCorrelations::ReInit()
 }
 
 // ---- Exec ----------------------------------------------------------
-void CbmStsHodoCorrelations::Exec(Option_t* option)
+void CbmStsHodoCorrelations::Exec(Option_t* /*option*/)
 {
 
   UInt_t nofStsDigis = fStsDigi->GetEntriesFast();
@@ -131,10 +131,10 @@ void CbmStsHodoCorrelations::Exec(Option_t* option)
     if ( 2 == station && 1 == side ) St2S1++; 
   }
 
-  Double_t x1;
-  Double_t x2;
-  Double_t y1;
-  Double_t y2;
+  Double_t x1 = 0;
+  Double_t x2 = 0;
+  Double_t y1 = 0;
+  Double_t y2 = 0;
   Double_t pos;
 
   Double_t charge_x1 = 0.;

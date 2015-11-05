@@ -21,7 +21,7 @@ Bool_t CbmROCUnpackDummy::Init()
   return kTRUE;
 }
 
-Bool_t CbmROCUnpackDummy::DoUnpack(roc::Message* Message, ULong_t hitTime)
+Bool_t CbmROCUnpackDummy::DoUnpack(roc::Message* /*Message*/, ULong_t /*hitTime*/)
 {
   return kTRUE;
 }

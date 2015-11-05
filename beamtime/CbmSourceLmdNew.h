@@ -36,7 +36,7 @@ class CbmSourceLmdNew : public FairSource
   public:
     CbmSourceLmdNew();
     CbmSourceLmdNew(const char *);
-    CbmSourceLmdNew(const CbmSourceLmdNew& source);
+//    CbmSourceLmdNew(const CbmSourceLmdNew& source);
     virtual ~CbmSourceLmdNew();
 
     /** Get time offset for AUX
@@ -210,6 +210,9 @@ class CbmSourceLmdNew : public FairSource
      ** @return ????
      **/
     Bool_t OpenInputFileAndGetFirstMessage();
+    
+    CbmSourceLmdNew(const CbmSourceLmdNew& source);
+    CbmSourceLmdNew& operator=(const CbmSourceLmdNew&);
 
     ClassDef(CbmSourceLmdNew, 0)
 };

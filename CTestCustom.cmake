@@ -181,6 +181,9 @@ set(CTEST_CUSTOM_WARNING_EXCEPTION
         # -- warnings from structures for HADAQ memory casting
         "struct hadaq::HadTu"
         "struct hadaq::HadTuId"
+        
+        # -- warnings from structures for MBS/LMD memory casting
+        "sstruct mbs::Header"
   )
 
 # -----------------------------------------------------------

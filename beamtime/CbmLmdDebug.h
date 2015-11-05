@@ -79,6 +79,9 @@ class CbmLmdDebug: public TObject {
     // Store message info
     void SetLastMessage();
 
+    CbmLmdDebug(const CbmLmdDebug&);
+    CbmLmdDebug& operator=(const CbmLmdDebug&);
+         
     ClassDef(CbmLmdDebug,1);
 
 };

@@ -80,12 +80,12 @@ InitStatus CbmMuchRawHistos::ReInit()
 }
 
 // ---- Exec ----------------------------------------------------------
-void CbmMuchRawHistos::Exec(Option_t* option)
+void CbmMuchRawHistos::Exec(Option_t* /*option*/)
 {
 
 
 	CbmMuchBeamTimeDigi* digi = NULL;
-	Int_t adc = -1;
+/*	Int_t adc = -1;*/
 
 	Int_t nDigis = fDigis->GetEntriesFast();
 	for (Int_t iDigi = 0; iDigi < nDigis; iDigi++) {

@@ -125,12 +125,13 @@ CbmSourceLmdNew::CbmSourceLmdNew(const char* inFile)
     }
 }
 
-
+/*
+ * PAL: Comment copy constructor as does not seem to be used in any macro
 CbmSourceLmdNew::CbmSourceLmdNew(const CbmSourceLmdNew& source)
   : FairSource(source)
 {
 }
-
+*/
 
 CbmSourceLmdNew::~CbmSourceLmdNew()
 {

@@ -67,7 +67,7 @@ InitStatus CbmHodoRawHistos::Init()
 // ---- ReInit  -------------------------------------------------------
 void CbmHodoRawHistos::CreateHistograms()
 {
-  TString hodo[2] = { "FrontHodo", "RearHodo"}; 
+/*  TString hodo[2] = { "FrontHodo", "RearHodo"}; */
   fHM->Add("ADC_FrontHodo_X", 
 	   new TH2F("ADC_FrontHodo_X", 
 		    "ADC_FrontHodo_X;channel;ADC value", 64, 0, 63, 4096, 0, 4095));   
@@ -90,7 +90,7 @@ InitStatus CbmHodoRawHistos::ReInit()
 }
 
 // ---- Exec ----------------------------------------------------------
-void CbmHodoRawHistos::Exec(Option_t* option)
+void CbmHodoRawHistos::Exec(Option_t* /*option*/)
 {
 
   CbmFiberHodoDigi* digi = NULL;

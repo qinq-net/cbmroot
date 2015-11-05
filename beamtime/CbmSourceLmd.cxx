@@ -132,12 +132,13 @@ CbmSourceLmd::CbmSourceLmd(const char* inFile)
     }
 }
 
-
+/*
+ * PAL: Comment copy constructor as does not seem to be used in any macro
 CbmSourceLmd::CbmSourceLmd(const CbmSourceLmd& source)
   : FairSource(source)
 {
 }
-
+*/
 
 CbmSourceLmd::~CbmSourceLmd()
 {
@@ -706,7 +707,7 @@ void CbmSourceLmd::ProcessStsMessage()
 
   // --- Get detector element from DaqMap
   Int_t station = fDaqMap->GetStsStation(rocId);
-  Int_t sector  = 0;
+/*  Int_t sector  = 0;*/
   Int_t side    = fDaqMap->GetStsSensorSide(rocId);
   Int_t channel = fDaqMap->GetStsChannel(rocId, nxyterId, nxChannel);
 

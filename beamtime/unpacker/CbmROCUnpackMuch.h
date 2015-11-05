@@ -38,6 +38,9 @@ class CbmROCUnpackMuch : public CbmROCUnpack
   TClonesArray* fMuchDigis;         ///< Output array of CbmMuchDigi
   TClonesArray* fMuchBaselineDigis; ///< Output array for baseline calib.
 
+  CbmROCUnpackMuch(const CbmROCUnpackMuch&);
+  CbmROCUnpackMuch& operator=(const CbmROCUnpackMuch&);
+
   ClassDef(CbmROCUnpackMuch, 1)
 };
 

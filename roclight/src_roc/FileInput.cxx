@@ -48,7 +48,7 @@ roc::FileInput::~FileInput()
    if (fInput) { delete fInput; fInput = 0; }
 }
 
-bool roc::FileInput::getNextBuffer(void* &buf, unsigned& len, double tmout)
+bool roc::FileInput::getNextBuffer(void* &buf, unsigned& len, double /*tmout*/)
 {
    if (fInput==0) return false;
 

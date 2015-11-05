@@ -26,6 +26,7 @@ CbmFiberHodoClusterFinder::CbmFiberHodoClusterFinder()
    fDigis(NULL),
    fClusters(NULL),
    finalClusters(NULL),
+   fDigiMap(),
    fInputLevelName("HodoCalibDigi"),
    hodo1_pos(NULL),
    hodo2_pos(NULL),
@@ -73,7 +74,7 @@ void CbmFiberHodoClusterFinder::SetParContainers()
 
   // Get Base Container
   FairRunAna* ana = FairRunAna::Instance();
-  FairRuntimeDb* rtdb=ana->GetRuntimeDb();
+  /*FairRuntimeDb* rtdb =*/ ana->GetRuntimeDb();
   
 }
 // --------------------------------------------------------------------
@@ -82,7 +83,7 @@ void CbmFiberHodoClusterFinder::SetParContainers()
 InitStatus CbmFiberHodoClusterFinder::ReInit(){
   
   FairRunAna* ana = FairRunAna::Instance();
-  FairRuntimeDb* rtdb=ana->GetRuntimeDb();
+  /*FairRuntimeDb* rtdb =*/ ana->GetRuntimeDb();
   
   return kSUCCESS;
 }
@@ -133,7 +134,7 @@ InitStatus CbmFiberHodoClusterFinder::Init()
 // --------------------------------------------------------------------
 
 // ---- Exec ----------------------------------------------------------
-void CbmFiberHodoClusterFinder::Exec(Option_t * option)
+void CbmFiberHodoClusterFinder::Exec(Option_t * /*option*/)
 {
 
   fClusters->Clear();
@@ -184,7 +185,7 @@ void CbmFiberHodoClusterFinder::Exec(Option_t * option)
       Bool_t   newCluster = kTRUE;
       Int_t    fiberNr = -1;
       Int_t    fiberNrPrev = -1;
-      Int_t    cluster_size =0;
+/*      Int_t    cluster_size =0;*/
       Double_t time = -1;
       Double_t timePrev = -1;
       for (set<CbmFiberHodoDigi*, classcomp>::iterator j = digiSet.begin(); j != digiSet.end(); j++) 
@@ -228,10 +229,10 @@ void CbmFiberHodoClusterFinder::Exec(Option_t * option)
       for (Int_t iclus = 0; iclus < nofClusterCandidates; iclus++)
 	{
 	  const CbmFiberHodoCluster* cluster = static_cast<const CbmFiberHodoCluster*>(fClusters->At(iclus));
-	  Int_t nofFiber = cluster->GetNofDigis();
+/*	  Int_t nofFiber = cluster->GetNofDigis();*/
 	  const CbmFiberHodoDigi* hodoDigi = (CbmFiberHodoDigi*)fDigis->At(cluster->GetDigi(0));
 	  int layer= CbmFiberHodoAddress::GetLayerAddress(hodoDigi->GetAddress());
-	  int fiber = CbmFiberHodoAddress::GetStripId(hodoDigi->GetAddress());
+/*	  int fiber = CbmFiberHodoAddress::GetStripId(hodoDigi->GetAddress());*/
 	  if(layer>2)
 	    {
 	      if(layer==16)
@@ -275,10 +276,10 @@ void CbmFiberHodoClusterFinder::Exec(Option_t * option)
     }
   
 
-  Double_t x1;
-  Double_t x2;
-  Double_t y1;
-  Double_t y2;
+  Double_t x1 = 0;
+  Double_t x2 = 0;
+  Double_t y1 = 0;
+  Double_t y2 = 0;
   Double_t pos;
 
   Double_t charge_x1 = 0.;
@@ -290,7 +291,7 @@ void CbmFiberHodoClusterFinder::Exec(Option_t * option)
   Int_t layerID;
   CbmFiberHodoCluster* hodoClust = NULL;
 
-  for ( UInt_t iClust=0; iClust < finalClusters->GetEntriesFast(); ++iClust) {
+  for ( UInt_t iClust=0; iClust < static_cast<UInt_t>(finalClusters->GetEntriesFast()); ++iClust) {
     hodoClust = static_cast<CbmFiberHodoCluster*>(finalClusters->At(iClust));
     address = hodoClust->GetAddress();        
     layerID = CbmFiberHodoAddress::GetLayerAddress(address);

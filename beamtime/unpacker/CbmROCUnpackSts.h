@@ -37,6 +37,9 @@ class CbmROCUnpackSts : public CbmROCUnpack
   TClonesArray* fStsDigis;          ///< Output array of CbmStsDigi
   TClonesArray* fStsBaselineDigis;  ///< Output array for baseline calib.
 
+  CbmROCUnpackSts(const CbmROCUnpackSts&);
+  CbmROCUnpackSts& operator=(const CbmROCUnpackSts&);
+  
   ClassDef(CbmROCUnpackSts, 1)
 };
 
