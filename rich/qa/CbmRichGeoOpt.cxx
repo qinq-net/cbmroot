@@ -79,6 +79,8 @@ CbmRichGeoOpt::CbmRichGeoOpt()
   H_Pt_Theta_MC(NULL),
   H_Mom_Theta_Rec(NULL),
   H_Pt_Theta_Rec(NULL),
+  H_Mom_Theta_Acc(NULL),
+  H_Pt_Theta_Acc(NULL),
   H_Hits_XY(NULL),
   H_Hits_XY_LeftHalf(NULL),
   H_Hits_XY_RightHalf(NULL),
@@ -509,6 +511,8 @@ void CbmRichGeoOpt::RingParameters()
  
     H_NofRings->Fill(nofRings);
     if (ring->GetNofHits() >= fMinNofHits){
+      H_Mom_Theta_Acc->Fill(momentum, theta);
+      H_Pt_Theta_Acc->Fill(pt, theta);
       H_acc_mom_el->Fill(momentum);
       if(theta<=25){H_acc_mom_el_RegularTheta->Fill(momentum);}
       
@@ -609,6 +613,8 @@ void CbmRichGeoOpt::InitHistograms()
 
   H_Mom_Theta_Rec = new TH2D("H_Mom_Theta_Rec", "H_Mom_Theta_Rec;p [GeV];theta [deg]; Yield", 40, 0., 10., 50, 0, 25.);
   H_Pt_Theta_Rec = new TH2D("H_Pt_Theta_Rec", "H_Pt_Theta_Rec;pt [GeV];theta [deg]; Yield", 16, 0., 4., 50, 0, 25.);
+  H_Mom_Theta_Acc = new TH2D("H_Mom_Theta_Acc", "H_Mom_Theta_Acc;p [GeV];theta [deg]; Yield", 40, 0., 10., 50, 0, 25.);
+  H_Pt_Theta_Acc = new TH2D("H_Pt_Theta_Acc", "H_Pt_Theta_Acc;pt [GeV];theta [deg]; Yield", 16, 0., 4., 50, 0, 25.);
 
   H_MomPrim_RegularTheta = new TH1D("H_MomPrim_RegularTheta", "H_MomPrim_RegularTheta;p [GeV]; Yield", 49, 0., 12.);
     H_acc_mom_el_RegularTheta = new TH1D("H_acc_mom_el_RegularTheta", "H_acc_mom_el_RegularTheta;p [GeV/c];Yield", 49, 0., 12.);
@@ -726,6 +732,8 @@ void CbmRichGeoOpt::WriteHistograms(){
   H_Pt_Theta_MC->Write();
   H_Mom_Theta_Rec->Write();
   H_Pt_Theta_Rec->Write();
+  H_Mom_Theta_Acc->Write();
+  H_Pt_Theta_Acc->Write();
 
   H_Mom_XY_Theta25->Write(); 
 
