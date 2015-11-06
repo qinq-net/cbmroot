@@ -3,16 +3,13 @@
 # The extension is already found.  Any number of sources could be listed here.
 
 Set(INCLUDE_DIRECTORIES
-  ${BASE_INCLUDE_DIRECTORIES} 
   ${CBMROOT_SOURCE_DIR}/base
   ${CBMROOT_SOURCE_DIR}/data
-#  ${CBMROOT_SOURCE_DIR}/trd/param
   ${CBMROOT_SOURCE_DIR}/data/sts
   ${CBMROOT_SOURCE_DIR}/data/much
   ${CBMROOT_SOURCE_DIR}/data/beamtime
   ${CBMROOT_SOURCE_DIR}/data/beamtime/fhodo
   ${CBMROOT_SOURCE_DIR}/sts/setup
-#  ${CBMROOT_BINARY_DIR}/roc/roc/roclib
   ${CBMROOT_SOURCE_DIR}/roclight
   ${CBMROOT_SOURCE_DIR}/beamtime
   ${CBMROOT_SOURCE_DIR}/beamtime/fhodo
@@ -25,6 +22,7 @@ Set(INCLUDE_DIRECTORIES
 
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
+  ${BASE_INCLUDE_DIRECTORIES} 
   ${Boost_INCLUDE_DIR}
   ${GEANT4_INCLUDE_DIR}
 )
