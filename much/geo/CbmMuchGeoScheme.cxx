@@ -325,7 +325,7 @@ Int_t CbmMuchGeoScheme::GetLayerSideNr(Int_t detId) {
 // -------------------------------------------------------------------------
 void CbmMuchGeoScheme::ReadGeoFile(const char* geoName) {
   // Read geometry parameters from file
-  fstream geo(geoName, fstream::in);
+  std::fstream geo(geoName, std::fstream::in);
   Char_t b[200]; // read buffer
   Int_t i;
   // Skip header
