@@ -3,13 +3,13 @@
  * user specified conditions.
  *
  * @author M.Ryzhinskiy m.ryzhinskiy@gsi.de
- * @param mcFile      Input transport file name
- * @param inDigiFile  Input file name containing initial segmentation parameters
- * @param outDigiFile Output file name containing segmentation parameters
+ * @param mcFile       Input transport file name
+ * @param inDigiFile   Input file name containing initial segmentation parameters
+ * @param outDigiFile  Output file name containing segmentation parameters
  */
 void much_seg_sector(const char* mcFile = "",
-                       const char* inDigiFile = "",
-                       const char* outDigiFile = "")
+                     const char* inDigiFile = "",
+                     const char* outDigiFile = "")
 {
   // ========================================================================
   //          Adjust this part according to your requirements
@@ -28,19 +28,28 @@ void much_seg_sector(const char* mcFile = "",
   Int_t iVerbose = 0;
 
   // Dummy ROOT file (needed as an output)
-  TString outFile  = "data/dummy.root";
+  TString outFile = "data/dummy.root";
   TString parFile = "data/params.root";
 
+  // Function needed for CTest runtime dependency
+  TString depFile = Remove_CTest_Dependency_File("data", "much_seg");
+
+  // ------------------------------------------------------------------------
+
+  // -----   Analysis run   -------------------------------------------------
   FairRunAna *fRun= new FairRunAna();
   fRun->SetInputFile(mcFile);
   fRun->SetOutputFile(outFile);
+  // ------------------------------------------------------------------------
 
+  // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
   FairParRootFileIo*  parIo1 = new FairParRootFileIo();
   parIo1->open(parFile);
   rtdb->setFirstInput(parIo1);
   rtdb->setOutput(parIo1);
   rtdb->saveOutput();
+  // ------------------------------------------------------------------------
 
   // -----  Segmentation task  ----------------------------------------------
   CbmMuchSegmentSector* seg = new CbmMuchSegmentSector(inDigiFile, outDigiFile);
@@ -53,4 +62,8 @@ void much_seg_sector(const char* mcFile = "",
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
+
+  // Function needed for CTest runtime dependency
+  Generate_CTest_Dependency_File(depFile);
+
 }
