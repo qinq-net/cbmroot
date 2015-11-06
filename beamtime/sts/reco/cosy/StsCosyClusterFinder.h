@@ -88,7 +88,7 @@ class StsCosyClusterFinder : public FairTask
 
   TString fCutName;
 
-  TH1F* cluster_size[3][2];
+  TH1F* cluster_size[3][2]; //!
   
   Int_t fEvent;
 

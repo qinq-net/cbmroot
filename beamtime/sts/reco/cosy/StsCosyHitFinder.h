@@ -77,7 +77,7 @@ class StsCosyHitFinder : public FairTask
   Double_t fTimeLimit[3];
   Double_t fTimeShift[3];
   
-  TH1F* cluster_size[3][2];
+  TH1F* cluster_size[3][2]; //!
   
   TString fCutName;
 

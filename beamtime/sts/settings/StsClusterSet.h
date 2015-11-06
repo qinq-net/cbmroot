@@ -60,7 +60,7 @@ class StsClusterSet : public FairTask
   TClonesArray*     fDigis;       /** Input array of CbmStsDigi **/
 
   TH1F *time_diff_strips[3];
-  TH1F* cluster_adc[3][2];
+  TH1F* cluster_adc[3][2]; //!
   
   
   Double_t fChargeMinStrip[3];

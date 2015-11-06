@@ -74,14 +74,14 @@ class StsCosyBL : public FairTask
     static const Int_t kBaselineNBins = 4096;
 
 
-    TH2F *baseline_ch[3][2];
-    TH2F *raw_ch[3][2];
-    TH2F *raw_ch_woBL[3][2];
-    TH2F *calibr_ch[3][2];
-    TH1F *calibr_ch1D[3][2];
+    TH2F *baseline_ch[3][2];       //!
+    TH2F *raw_ch[3][2];            //!
+    TH2F *raw_ch_woBL[3][2];       //!
+    TH2F *calibr_ch[3][2];         //!
+    TH1F *calibr_ch1D[3][2];       //!
     
-    TH2F *hodo_baseline_ch[2][2];
-    TH2F *hodo_calib_ch[2][2];
+    TH2F *hodo_baseline_ch[2][2];  //!
+    TH2F *hodo_calib_ch[2][2];     //!
 
     Bool_t calib;
     Bool_t hodo_calib;
