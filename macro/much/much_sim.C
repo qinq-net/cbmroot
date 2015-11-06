@@ -63,7 +63,7 @@ void much_sim(TString inputSignal = "",
   
   // -----   Other geometries   ---------------------------------------------
   TString caveGeom   = "cave.geo";
-  CbmTarget* target = new CbmTarget("Gold", 0.025);
+//  CbmTarget* target = new CbmTarget("Gold", 0.025);
   TString magnetGeom = "magnet/magnet_v15b_much.geo.root";
   TString stsGeom    = "sts/sts_v13y.geo.root";
 
