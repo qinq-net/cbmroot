@@ -22,9 +22,13 @@ using namespace std;
 // ---- Default constructor -------------------------------------------
 StsHitSet::StsHitSet()
   :FairTask("StsHitSet",1),
-   stsClusters(NULL)
+   stsClusters(NULL),
+   fChain(new TChain("cbmsim")),
+   sts_time_diff(),
+   cluster_time_diff(),
+   fEvent(0)
 {
-  fChain = new TChain("cbmsim");
+//  fChain = new TChain("cbmsim");
   //  outFile=NULL;
 }
 // --------------------------------------------------------------------
@@ -45,18 +49,20 @@ void StsHitSet::SetParContainers()
 {
 
   // Get Base Container
+/*
   FairRunAna* ana = FairRunAna::Instance();
   FairRuntimeDb* rtdb=ana->GetRuntimeDb();
-  
+*/  
 }
 // --------------------------------------------------------------------
 
 // ---- ReInit  -------------------------------------------------------
 InitStatus StsHitSet::ReInit(){
   
+/*
   FairRunAna* ana = FairRunAna::Instance();
   FairRuntimeDb* rtdb=ana->GetRuntimeDb();
-  
+*/  
   return kSUCCESS;
 }
 // --------------------------------------------------------------------
@@ -102,7 +108,7 @@ for (Int_t i=0;i<3;i++)
 // --------------------------------------------------------------------
 
 // ---- Exec ----------------------------------------------------------
-void StsHitSet::Exec(Option_t * option)
+void StsHitSet::Exec(Option_t *)
 {
  
   if(fEvent%100000 == 0)cout << "----- " << fEvent << endl;
@@ -113,7 +119,7 @@ void StsHitSet::Exec(Option_t * option)
     
   for (Int_t i = 0; i < nofSTSClusters; i++)
    {
-      int layer =-1;
+//      int layer =-1;
       const CbmStsCluster* cluster = static_cast<const CbmStsCluster*>(stsClusters->At(i));
       int station = CbmStsAddress::GetElementId(cluster->GetAddress(),kStsStation);
       int side = CbmStsAddress::GetElementId(cluster->GetAddress(),kStsSide);
@@ -139,24 +145,24 @@ void StsHitSet::Exec(Option_t * option)
       else if(station==2)sts_2.push_back(Cluster_time);
     }
    }
-  for(int i=0; i<sts_0.size(); i++)
+  for(UInt_t i=0; i<sts_0.size(); i++)
   {
     Double_t time0 = sts_0[i];
-    for(int j=0; j<sts_1.size(); j++)
+    for(UInt_t j=0; j<sts_1.size(); j++)
     {
       Double_t time1 = sts_1[j];
       sts_time_diff[0]->Fill(time0-time1);
     }
-    for(int j=0; j<sts_2.size(); j++)
+    for(UInt_t j=0; j<sts_2.size(); j++)
     {
       Double_t time1 = sts_2[j];
       sts_time_diff[1]->Fill(time0-time1);
     }
   }
-  for(int i=0; i<sts_2.size(); i++)
+  for(UInt_t i=0; i<sts_2.size(); i++)
   {
     Double_t time0 = sts_2[i];
-    for(int j=0; j<sts_1.size(); j++)
+    for(UInt_t j=0; j<sts_1.size(); j++)
     {
       Double_t time1 = sts_1[j];
       sts_time_diff[2]->Fill(time0-time1);

@@ -23,16 +23,57 @@ using std::endl;
 
 
 
+
+
+
 StsCosyAnalysis::StsCosyAnalysis() :
   FairTask("StsCosyAnalysis",1),
   fHits(NULL),
+  fChain(new TChain("cbmsim")),
+  fMapPts(),
+  XY_events(), 
+  proj_events(),
+  X_STS1(),
+  Y_STS1(), 
+  X_proj(), 
+  Y_proj(),
+  resX(),
+  resY(),
+  X_ResX(),
+  Y_ResY(),
+  chi2X(NULL),
+  chi2Y(NULL),
+  chi2XY(NULL),
+  XY(),
+  XY_eff(NULL),
+  XY_woSTS1(),
+  XY_STS1projection(NULL),
+  XY_STS1projection_select(NULL),
+  XX_STS_0_1(NULL),
+  XX_STS_0_2(NULL),
+  XX_STS_0_2woSTS1(NULL),
+  XX_STS_2_1(NULL),
+  YY_STS_0_1(NULL),
+  YY_STS_0_2(NULL),
+  YY_STS_0_2woSTS1(NULL),
+  YY_STS_2_1(NULL),
+  NofTracks(NULL),
   fChi2X(1e9),
   fChi2Y(1e9),
+  fX(), 
+  fY(),
+  fXbin(300.), 
+  fYbin(400.),
+  fAlignName(""),
+  fCutName(""),
   fNofDet(5),
+  fTimeLimit(),
+  fTimeShift(),
   fTrackSelectType(0),
-  fEventSelectType(0) 
+  fEventSelectType(0),
+  fEvent(0)
 { 
-  fChain = new TChain("cbmsim");
+//  fChain = new TChain("cbmsim");
   fTimeLimit[0] = 16;
   fTimeLimit[1] = 16;
   fTimeLimit[2] = 16;
@@ -40,10 +81,10 @@ StsCosyAnalysis::StsCosyAnalysis() :
   fTimeShift[0] = 0;
   fTimeShift[1] = -16;
   fTimeShift[2] = -16;  
-  fXbin = 300; // 300 µm
-  fYbin = 400; // 400 µm
+//  fXbin = 300; // 300 µm
+//  fYbin = 400; // 400 µm
     
-  fCutName = "";
+//  fCutName = "";
 }
 
 StsCosyAnalysis::~StsCosyAnalysis() 
@@ -171,7 +212,7 @@ InitStatus StsCosyAnalysis::Init() {
 }
 
 // -----   Public method Exec   --------------------------------------------
-void StsCosyAnalysis::Exec(Option_t* opt) {
+void StsCosyAnalysis::Exec(Option_t*) {
     
   Reset(); 
   CbmStsHit* hit = NULL;
@@ -216,15 +257,15 @@ Bool_t StsCosyAnalysis::FindTracks(){
   double ex[Npoints];
   double z[Npoints];
   double ez[Npoints];
-  double z2[Npoints];
-  double ez2[Npoints];
+//  double z2[Npoints];
+//  double ez2[Npoints];
   double y[Npoints];
   double ey[Npoints];
   
   Double_t Xnew;
   Double_t Ynew;
   
-  for(Int_t i=0; i< v_sts0.size() ; i++) 
+  for(UInt_t i=0; i< v_sts0.size() ; i++) 
     {
       pt0 = (CbmStsHit*) v_sts0[i];
       pt0->Position(sts0_pos); 
@@ -232,7 +273,7 @@ Bool_t StsCosyAnalysis::FindTracks(){
       y[0]= sts0_pos.Y()-fY[0];
       XY_woSTS1[0]->Fill(x[0],y[0]);
     }
-  for(Int_t i=0; i< v_sts2.size() ; i++) 
+  for(UInt_t i=0; i< v_sts2.size() ; i++) 
     {
       pt0 = (CbmStsHit*) v_sts2[i];
       pt0->Position(sts2_pos); 
@@ -242,7 +283,7 @@ Bool_t StsCosyAnalysis::FindTracks(){
     }
 	      
   if((fEventSelectType == 1 && (v_sts0.size()==1 && v_sts2.size()==1)) || fEventSelectType == 0)// = 1 - selection of the 1-hit events    
-  for(Int_t i=0; i< v_sts0.size() ; i++) 
+  for(UInt_t i=0; i< v_sts0.size() ; i++) 
     {
       
 Int_t tracks = 0;
@@ -266,7 +307,7 @@ Bool_t trigger = kFALSE;
       ey[0]= pt0->GetDy();
       ez[0]= 0.5;
       
-	  for(Int_t k=0; k< v_sts2.size() ; k++) 
+	  for(UInt_t k=0; k< v_sts2.size() ; k++) 
 	    {
 	      pt2 = (CbmStsHit*) v_sts2[k];
 	      
@@ -325,7 +366,7 @@ double xx[2], yy[2], zz[2], dxx[2], dyy[2], dzz[2];
 	      	      
       if(fEventSelectType == 1 && v_sts1.size()!=1) continue;   // selection of 1-hit events
 	
-      for(Int_t j=0; j< v_sts1.size() ; j++) 
+      for(UInt_t j=0; j< v_sts1.size() ; j++) 
 	{
 	  pt1 = (CbmStsHit*) v_sts1[j];
 	  if(TMath::Abs(pt0->GetTime()-pt1->GetTime() - fTimeShift[0])>fTimeLimit[0])continue;
@@ -351,7 +392,7 @@ double xx[2], yy[2], zz[2], dxx[2], dyy[2], dzz[2];
 	      double xNdof = fitt->GetNDF();
 	      double p0 = fitt->GetParameter(0);
 	      double p1 = fitt->GetParameter(1);
-	      double Prob = fitt->GetProb();
+//	      double Prob = fitt->GetProb();
 	      
 	      gr1 = new TGraphErrors(Npoints,z,y,ez,ey);
 
@@ -360,7 +401,7 @@ double xx[2], yy[2], zz[2], dxx[2], dyy[2], dzz[2];
 	      
 	      double yChi2 = fitt1->GetChisquare();
 	      double yNdof = fitt1->GetNDF();
-	      double yProb = fitt1->GetProb();
+//	      double yProb = fitt1->GetProb();
 	      double p2 = fitt1->GetParameter(0);
 	      double p3 = fitt1->GetParameter(1);
 	      
@@ -514,26 +555,28 @@ void StsCosyAnalysis::Finish(){
   vector <Int_t> select_events;
   vector <Double_t> X_select, Y_select;
   
-  for(Int_t i=0; i< proj_events.size(); i++)for(Int_t j=0; j< XY_events.size(); j++)
-  {
-    if(TMath::Abs(X_STS1[j]-X_proj[i]) > fXbin*1e-4 || TMath::Abs(Y_STS1[j]-Y_proj[i]) > fYbin*1e-4)continue;
-    select_events.push_back(proj_events[i]);
-    X_select.push_back(X_proj[i]);
-    Y_select.push_back(Y_proj[i]);
-    XY_STS1projection_select->Fill(X_proj[i],Y_proj[i]);
+  for(UInt_t i=0; i< proj_events.size(); i++) {
+    for(UInt_t j=0; j< XY_events.size(); j++) {
+      if(TMath::Abs(X_STS1[j]-X_proj[i]) > fXbin*1e-4 || TMath::Abs(Y_STS1[j]-Y_proj[i]) > fYbin*1e-4) continue;
+      select_events.push_back(proj_events[i]);
+      X_select.push_back(X_proj[i]);
+      Y_select.push_back(Y_proj[i]);
+      XY_STS1projection_select->Fill(X_proj[i],Y_proj[i]);
+    }
   }
-  for(Int_t j=0; j< XY_events.size(); j++)XY_eff->Fill(X_STS1[j],Y_STS1[j]);
+  for(UInt_t j=0; j< XY_events.size(); j++) XY_eff->Fill(X_STS1[j],Y_STS1[j]);
   
   XY_eff->Write();
   XY_STS1projection->Write();
   XY_STS1projection_select->Write();
   
-  for(Int_t i=0; i< select_events.size(); i++)for(Int_t j=0; j< XY_events.size(); j++)
-  {
-    if(select_events[i] != XY_events[i])continue;
-    NofProjections++;
-  }  
-  
+  for(UInt_t i=0; i< select_events.size(); i++) {
+    for(UInt_t j=0; j< XY_events.size(); j++) {
+      if(select_events[i] != XY_events[i]) continue;
+      NofProjections++;
+    }  
+  }
+
   Double_t NofP = select_events.size() + (XY_events.size()-NofProjections);
   
   LOG(INFO) << FairLogger::endl;

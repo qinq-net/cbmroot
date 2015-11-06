@@ -24,11 +24,20 @@ using namespace std;
 // ---- Default constructor -------------------------------------------
 StsCosyHitFinder::StsCosyHitFinder()
   :FairTask("StsCosyHitFinder",1),
-   fHits(NULL),
    stsClusters(NULL),
-   fSensorId(13)
+   fHits(NULL),
+   fChain(new TChain("cbmsim")),
+   fSensorId(13),
+   fZ0(25.3),
+   fZ1(99.3),
+   fZ2(140.7),
+   fTimeLimit(),
+   fTimeShift(),
+   cluster_size(),
+   fCutName(""),
+   fEvent(0)
 {
-  fChain = new TChain("cbmsim");
+//  fChain = new TChain("cbmsim");
   
   //--------------- Cosy 2013
   //fZ0 = 25.4;    // STS1
@@ -36,9 +45,9 @@ StsCosyHitFinder::StsCosyHitFinder()
   //fZ2 = 123.4;   // STS0 
 
   //--------------- Cosy 2014
-  fZ0 = 25.3;    // STS1
-  fZ1 = 99.3;    // STS3
-  fZ2 = 140.7;   // STS0 
+//  fZ0 = 25.3;    // STS1
+//  fZ1 = 99.3;    // STS3
+//  fZ2 = 140.7;   // STS0 
   
   //--------------- Cosy 2014  
    fTimeLimit[0] = 16.;
@@ -73,17 +82,20 @@ void StsCosyHitFinder::SetParContainers()
 {
 
   // Get Base Container
+/*
   FairRunAna* ana = FairRunAna::Instance();
   FairRuntimeDb* rtdb=ana->GetRuntimeDb();
-  
+*/  
 }
 // --------------------------------------------------------------------
 
 // ---- ReInit  -------------------------------------------------------
 InitStatus StsCosyHitFinder::ReInit(){
   
+/*
   FairRunAna* ana = FairRunAna::Instance();
   FairRuntimeDb* rtdb=ana->GetRuntimeDb();
+*/
   
   return kSUCCESS;
 }
@@ -133,7 +145,7 @@ InitStatus StsCosyHitFinder::Init()
 // --------------------------------------------------------------------
 
 // ---- Exec ----------------------------------------------------------
-void StsCosyHitFinder::Exec(Option_t * option)
+void StsCosyHitFinder::Exec(Option_t *)
 {
   fHits->Clear();  
 //  if(fEvent%100000 == 0)cout << "-I- StsCosyHitFinder: ----- " << fEvent << endl; 
@@ -145,21 +157,21 @@ void StsCosyHitFinder::Exec(Option_t * option)
   
   vector<int>  sts_0p, sts_0n, sts_1p, sts_1n, sts_2p, sts_2n; 
   
-  double x=-100;
-  double y=-100;
+//  double x=-100;
+//  double y=-100;
   int clust[6]={0,0,0,0,0,0}; 
   
   for (Int_t iclus = 0; iclus < nofSTSClusters; iclus++)
     {
       int layer =-1;
       const CbmStsCluster* cluster = static_cast<const CbmStsCluster*>(stsClusters->At(iclus));
-      Int_t nofStrips = cluster->GetNofDigis();
+//      Int_t nofStrips = cluster->GetNofDigis();
       
-      double adc=-100;
+//      double adc=-100;
       
       int station = CbmStsAddress::GetElementId(cluster->GetAddress(),kStsStation);
       int side = CbmStsAddress::GetElementId(cluster->GetAddress(),kStsSide);
-      int ch = CbmStsAddress::GetElementId(cluster->GetAddress(),kStsChannel);
+//      int ch = CbmStsAddress::GetElementId(cluster->GetAddress(),kStsChannel);
 
       layer = 2*station+side;
 
@@ -179,14 +191,14 @@ void StsCosyHitFinder::Exec(Option_t * option)
 	sts_2p.push_back(iclus);
     }
   
-  for(int i=0; i< sts_0n.size(); i++)
+  for(UInt_t i=0; i< sts_0n.size(); i++)
     {
       Int_t frontClusterId = sts_0n[i];
       const CbmStsCluster* frontCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_0n[i]));
       //Double_t frontChannel = frontCluster->GetMean();
       Double_t frontChannel = frontCluster->GetCentre();
       Double_t front_time = frontCluster->GetTime();            
-      for(int k=0; k< sts_0p.size(); k++)
+      for(UInt_t k=0; k< sts_0p.size(); k++)
 	{
 	  Int_t backClusterId = sts_0p[k];
 	  const CbmStsCluster* backCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_0p[k]));
@@ -227,14 +239,14 @@ void StsCosyHitFinder::Exec(Option_t * option)
 	}
     }
   
-  for(int i=0; i< sts_1n.size(); i++)
+  for(UInt_t i=0; i< sts_1n.size(); i++)
     {
       Int_t frontClusterId = sts_1n[i];
       const CbmStsCluster* frontCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_1n[i]));
       //Double_t frontChannel = frontCluster->GetMean();
       Double_t frontChannel = frontCluster->GetCentre();
       Double_t front_time = frontCluster->GetTime();
-      for(int k=0; k< sts_1p.size(); k++)
+      for(UInt_t k=0; k< sts_1p.size(); k++)
 	{
 	  Int_t backClusterId = sts_1p[k];
 	  const CbmStsCluster* backCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_1p[k]));
@@ -277,14 +289,14 @@ void StsCosyHitFinder::Exec(Option_t * option)
 	}
     }
 
-  for(int i=0; i< sts_2n.size(); i++)
+  for(UInt_t i=0; i< sts_2n.size(); i++)
     {
       Int_t frontClusterId = sts_2n[i];
       const CbmStsCluster* frontCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_2n[i]));
       //Double_t frontChannel = frontCluster->GetMean();
       Double_t frontChannel = frontCluster->GetCentre();
       Double_t front_time = frontCluster->GetTime();
-      for(int k=0; k< sts_2p.size(); k++)
+      for(UInt_t k=0; k< sts_2p.size(); k++)
 	{
 	  Int_t backClusterId = sts_2p[k];
 	  const CbmStsCluster* backCluster = static_cast<const CbmStsCluster*>(stsClusters->At(sts_2p[k]));

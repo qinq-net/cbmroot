@@ -19,16 +19,24 @@
 using std::cout;
 using std::endl;
 
-
-
 StsAlignment::StsAlignment() :
   FairTask("StsAlignment",1),
   fHits(NULL),
+  fChain(new TChain("cbmsim")),
+  fMapPts(),
+  fTimeLimits(),
+  fTimeShifts(),
+  resX(),
+  resY(),  
   fChi2X(1e6),
   fChi2Y(1e6),
-  fNofDet(3)
+  fZ(),
+  fdZ(),
+  fCutName(""),
+  fNofDet(3),
+  fEvent(0)
 { 
-  fChain = new TChain("cbmsim");
+//  fChain = new TChain("cbmsim");
   fTimeLimits[0] = 16;
   fTimeLimits[1] = 16;
   fTimeLimits[2] = 16;
@@ -37,9 +45,11 @@ StsAlignment::StsAlignment() :
   fTimeShifts[1] = -16;
   fTimeShifts[2] = -16;
   
+/*
   fEvent = 0;
   
   fCutName = "";
+*/
 }
 
 StsAlignment::~StsAlignment() 
@@ -110,7 +120,7 @@ InitStatus StsAlignment::Init() {
 }
 
 // -----   Public method Exec   --------------------------------------------
-void StsAlignment::Exec(Option_t* opt) {
+void StsAlignment::Exec(Option_t*) {
     
   Reset(); 
   
@@ -169,7 +179,7 @@ Bool_t StsAlignment::FindTracks(){
   double ey[Npoints];
 
 
-    for(Int_t i=0; i< v_sts0.size() ; i++) // STS1 @ Cosy2014
+    for(UInt_t i=0; i< v_sts0.size() ; i++) // STS1 @ Cosy2014
     {
       pt0 = (CbmStsHit*) v_sts0[i];
       pt0->Position(sts0_pos);       
@@ -182,7 +192,7 @@ Bool_t StsAlignment::FindTracks(){
       fZ[0] = z[0];
       fdZ[0] = ez[0];
 	  
-	for(Int_t j=0; j< v_sts1.size() ; j++) // STS3 @ Cosy2014
+	for(UInt_t j=0; j< v_sts1.size() ; j++) // STS3 @ Cosy2014
 	{
 	  pt1 = (CbmStsHit*) v_sts1[j];
 	  if(TMath::Abs(pt0->GetTime()-pt1->GetTime() - fTimeShifts[0])>fTimeLimits[0])continue;
@@ -197,7 +207,7 @@ Bool_t StsAlignment::FindTracks(){
 	  fZ[1] = z[1];
 	  fdZ[1] = ez[1];
 
-	    for(Int_t k=0; k< v_sts2.size() ; k++) // STS0 @ Cosy2014
+	    for(UInt_t k=0; k< v_sts2.size() ; k++) // STS0 @ Cosy2014
 	    {
 	      pt2 = (CbmStsHit*) v_sts2[k];
 	      if(TMath::Abs(pt0->GetTime()-pt2->GetTime()- fTimeShifts[1])>fTimeLimits[1])continue;

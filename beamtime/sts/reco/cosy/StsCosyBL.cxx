@@ -23,19 +23,45 @@ using namespace std;
 
 // ---- Default constructor -------------------------------------------
 StsCosyBL::StsCosyBL()
-  :FairTask("StsCosyBL",1),fDigis(NULL),fTriggeredMode(kFALSE),
-   fTriggeredStation(1)
-   { 
-     fChain = new TChain("cbmsim");
-     outFile=NULL;
+  :FairTask("StsCosyBL",1),
+   auxDigis(NULL),
+   fDigis(NULL),
+   fBLDigis(NULL),
+   hBLDigis(NULL),
+   hDigis(NULL),
+   cDigis(new TClonesArray("CbmStsDigi")),
+   chDigis(NULL),
+   fChain(new TChain("cbmsim")),
+   outFile(NULL),
+   baseline_ch(),
+   raw_ch(),
+   raw_ch_woBL(),
+   calibr_ch(),
+   calibr_ch1D(),
+   hodo_baseline_ch(),
+   hodo_calib_ch(),
+   calib(kFALSE),
+   hodo_calib(kFALSE),
+   fTriggeredMode(kFALSE),
+   fTriggeredStation(1),
+   fNofEvent(0),
+   base_line_array(),
+   hodo_BL_array()
+{ 
+     //fChain = new TChain("cbmsim");
+     //outFile=NULL;
      fLogger->Debug(MESSAGE_ORIGIN,"Defaul Constructor of StsCosyBL");
-     cDigis = new TClonesArray("CbmStsDigi");
+     //cDigis = new TClonesArray("CbmStsDigi");
 }
    
 // ---- Destructor ----------------------------------------------------
 StsCosyBL::~StsCosyBL()
 {
+  delete cDigis;
+  delete fChain;
   if(fDigis){
+// Don't delete anything which wasn't created with new in the constructor
+/*
     fDigis->Delete();
     fBLDigis->Delete();
     hBLDigis->Delete();
@@ -46,6 +72,7 @@ StsCosyBL::~StsCosyBL()
     delete hBLDigis;
     delete hDigis;
     delete auxDigis;
+*/
   }
   fLogger->Debug(MESSAGE_ORIGIN,"Destructor of StsCosyBL");
 }
@@ -56,8 +83,8 @@ void StsCosyBL::SetParContainers()
   fLogger->Debug(MESSAGE_ORIGIN,"SetParContainers of StsCosyBL");
   // Load all necessary parameter containers from the runtime data base
   
-  FairRunAna* ana = FairRunAna::Instance();
-  FairRuntimeDb* rtdb=ana->GetRuntimeDb();
+//  FairRunAna* ana = FairRunAna::Instance();
+//  FairRuntimeDb* rtdb=ana->GetRuntimeDb();
   /*
   <StsCosyBLDataMember> = (<ClassPointer>*)
     (rtdb->getContainer("<ContainerName>"));
@@ -94,13 +121,13 @@ InitStatus StsCosyBL::Init()
   Int_t NStrips = 1024; // TODO: from where do I get the number of strips per station side?
   
   base_line_array.resize(NStations );
-  for( Int_t iStation = 0; iStation <  base_line_array.size(); iStation++ ) 
+  for( UInt_t iStation = 0; iStation <  base_line_array.size(); iStation++ ) 
     {
       base_line_array.at( iStation ).resize( NSides );
-      for( Int_t iSide = 0; iSide <  base_line_array.at( iStation ).size(); iSide++ ) 
+      for( UInt_t iSide = 0; iSide <  base_line_array.at( iStation ).size(); iSide++ ) 
 	{
 	  base_line_array.at( iStation ).at( iSide ).resize( NStrips );
-	  for( Int_t iStrip = 0; iStrip <  base_line_array.at( iStation ).at( iSide ).size(); iStrip++ ) 
+	  for( UInt_t iStrip = 0; iStrip <  base_line_array.at( iStation ).at( iSide ).size(); iStrip++ ) 
 	    {
 	      base_line_array.at( iStation ).at( iSide ).at(iStrip)=0;
 	    }
@@ -112,13 +139,13 @@ InitStatus StsCosyBL::Init()
   Int_t hStrips = 64; // TODO: from where do I get the number of strips per station side?
   
   hodo_BL_array.resize(hStations );
-  for( Int_t iStation = 0; iStation <  hodo_BL_array.size(); iStation++ ) 
+  for( UInt_t iStation = 0; iStation <  hodo_BL_array.size(); iStation++ ) 
     {
       hodo_BL_array.at( iStation ).resize(hSides );
-      for( Int_t iSide = 0; iSide <  hodo_BL_array.at( iStation ).size(); iSide++ ) 
+      for( UInt_t iSide = 0; iSide <  hodo_BL_array.at( iStation ).size(); iSide++ ) 
 	{
 	  hodo_BL_array.at( iStation ).at( iSide ).resize( hStrips );
-	  for( Int_t iStrip = 0; iStrip <  hodo_BL_array.at( iStation ).at( iSide ).size(); iStrip++ ) 
+	  for( UInt_t iStrip = 0; iStrip <  hodo_BL_array.at( iStation ).at( iSide ).size(); iStrip++ ) 
 	    {
 	      hodo_BL_array.at( iStation ).at( iSide ).at(iStrip)=0;
 	    }
@@ -179,7 +206,7 @@ InitStatus StsCosyBL::ReInit()
 }
 
 // ---- Exec ----------------------------------------------------------
-void StsCosyBL::Exec(Option_t* option)
+void StsCosyBL::Exec(Option_t*)
 {
 
   cDigis->Clear();
@@ -239,8 +266,8 @@ void StsCosyBL::Exec(Option_t* option)
 	      
 	    }
 	  
-	  int sts[3]={0,0,0};
-	  int side_sts[3][2]={0,0,0,0,0,0};
+//	  int sts[3]={0,0,0};
+//	  int side_sts[3][2]={0,0,0,0,0,0};
 	  
 	  for (Int_t iDigi=0; iDigi < nofSTS; iDigi++ ) 
 	    {
@@ -343,7 +370,7 @@ Int_t StsCosyBL::AddFile( const char* name ){
 }
 */
 
-void StsCosyBL::BaseLine(TClonesArray* fBaselineDigis, vector< vector < vector < double> > > base_line)
+void StsCosyBL::BaseLine(TClonesArray* fBaselineDigis, vector< vector < vector < double> > >)
 {
 
   //BLInit();
@@ -354,13 +381,13 @@ void StsCosyBL::BaseLine(TClonesArray* fBaselineDigis, vector< vector < vector <
   vector< vector < vector < TH1F * > > > fBaselines;
   fBaselines.resize( kNStations );
   
-  for( Int_t iStation = 0; iStation <  fBaselines.size(); iStation++ ) 
+  for( UInt_t iStation = 0; iStation <  fBaselines.size(); iStation++ ) 
     {
       fBaselines.at( iStation ).resize( kNSides );
-      for( Int_t iSide = 0; iSide < fBaselines.at( iStation ).size(); iSide++ ) 
+      for( UInt_t iSide = 0; iSide < fBaselines.at( iStation ).size(); iSide++ ) 
 	{
 	  fBaselines.at( iStation ).at( iSide ).resize( kNStrips );
-	  for( Int_t iStrip = 0; iStrip < fBaselines.at( iStation ).at( iSide ).size(); iStrip++ ) 
+	  for( UInt_t iStrip = 0; iStrip < fBaselines.at( iStation ).at( iSide ).size(); iStrip++ ) 
 	    {
 	      const char * nametitle = Form( "blhist_sta%d_side%d_str%d", iStation, iSide, iStrip );
 	      fBaselines.at( iStation ).at( iSide ).at( iStrip ) = new TH1F( nametitle, nametitle, kBaselineNBins, kBaselineMinAdc, kBaselineMaxAdc );
@@ -378,11 +405,11 @@ void StsCosyBL::BaseLine(TClonesArray* fBaselineDigis, vector< vector < vector <
        * (i.e. data from several different iterations of baseline calibration should not be mixed up)
        * Therefore the baseline histograms should be zeroed before filling them with the data of the
        * next calibration iteration */
-      for( Int_t iStation = 0; iStation <  fBaselines.size(); iStation++ ) 
+      for( UInt_t iStation = 0; iStation <  fBaselines.size(); iStation++ ) 
 	{
-	  for( Int_t iSide = 0; iSide < fBaselines.at( iStation ).size(); iSide++ ) 
+	  for( UInt_t iSide = 0; iSide < fBaselines.at( iStation ).size(); iSide++ ) 
 	    {
-	      for( Int_t iStrip = 0; iStrip < fBaselines.at( iStation ).at( iSide ).size(); iStrip++ ) 
+	      for( UInt_t iStrip = 0; iStrip < fBaselines.at( iStation ).at( iSide ).size(); iStrip++ ) 
 		{
 		  fBaselines.at( iStation ).at( iSide ).at( iStrip )->Reset();
 		}
@@ -400,11 +427,11 @@ void StsCosyBL::BaseLine(TClonesArray* fBaselineDigis, vector< vector < vector <
 
 	}
       
-      for( Int_t iStation = 0; iStation <  fBaselines.size(); iStation++ ) 
+      for( UInt_t iStation = 0; iStation <  fBaselines.size(); iStation++ ) 
 	{
-	  for( Int_t iSide = 0; iSide < fBaselines.at( iStation ).size(); iSide++ ) 
+	  for( UInt_t iSide = 0; iSide < fBaselines.at( iStation ).size(); iSide++ ) 
 	    {
-	      for( Int_t iStrip = 0; iStrip < fBaselines.at( iStation ).at( iSide ).size(); iStrip++ ) 
+	      for( UInt_t iStrip = 0; iStrip < fBaselines.at( iStation ).at( iSide ).size(); iStrip++ ) 
 		{
 		  TH1F * blHist = fBaselines.at( iStation ).at( iSide ).at( iStrip );
 		  if( blHist->GetEntries() ) 
@@ -427,7 +454,7 @@ void StsCosyBL::BaseLine(TClonesArray* fBaselineDigis, vector< vector < vector <
  
 }
 
-void StsCosyBL::HodoBaseLine(TClonesArray* fBaselineDigis, vector< vector < vector < double> > > base_line)
+void StsCosyBL::HodoBaseLine(TClonesArray* fBaselineDigis, vector< vector < vector < double> > >)
 {
 
   Int_t hStations = 2; // TODO: from where do I get the number of stations?
@@ -436,13 +463,13 @@ void StsCosyBL::HodoBaseLine(TClonesArray* fBaselineDigis, vector< vector < vect
   vector< vector < vector < TH1F * > > > fBaselines;
   
   fBaselines.resize(hStations );
-  for( Int_t iStation = 0; iStation <  fBaselines.size(); iStation++ ) 
+  for( UInt_t iStation = 0; iStation <  fBaselines.size(); iStation++ ) 
     {
       fBaselines.at( iStation ).resize(hSides );
-      for( Int_t iSide = 0; iSide <  fBaselines.at( iStation ).size(); iSide++ ) 
+      for( UInt_t iSide = 0; iSide <  fBaselines.at( iStation ).size(); iSide++ ) 
 	{
 	  fBaselines.at( iStation ).at( iSide ).resize( hStrips );
-	  for( Int_t iStrip = 0; iStrip <  fBaselines.at( iStation ).at( iSide ).size(); iStrip++ ) 
+	  for( UInt_t iStrip = 0; iStrip <  fBaselines.at( iStation ).at( iSide ).size(); iStrip++ ) 
 	    {
 	      const char * nametitle = Form( "blhist_sta%d_side%d_str%d", iStation, iSide, iStrip );
 	      fBaselines.at( iStation ).at( iSide ).at(iStrip)=new TH1F( nametitle, nametitle, kBaselineNBins, kBaselineMinAdc, kBaselineMaxAdc );
@@ -460,11 +487,11 @@ void StsCosyBL::HodoBaseLine(TClonesArray* fBaselineDigis, vector< vector < vect
        * (i.e. data from several different iterations of baseline calibration should not be mixed up)
        * Therefore the baseline histograms should be zeroed before filling them with the data of the
        * next calibration iteration */
-      for( Int_t iStation = 0; iStation <  fBaselines.size(); iStation++ ) 
+      for( UInt_t iStation = 0; iStation <  fBaselines.size(); iStation++ ) 
 	{
-	  for( Int_t iSide = 0; iSide < fBaselines.at(iStation).size(); iSide++ ) 
+	  for( UInt_t iSide = 0; iSide < fBaselines.at(iStation).size(); iSide++ ) 
 	    {
-	      for( Int_t iStrip = 0; iStrip < fBaselines.at(iStation).at( iSide ).size(); iStrip++ ) 
+	      for( UInt_t iStrip = 0; iStrip < fBaselines.at(iStation).at( iSide ).size(); iStrip++ ) 
 		{
 		  fBaselines.at(iStation).at( iSide ).at( iStrip )->Reset();
 		}
@@ -482,11 +509,11 @@ void StsCosyBL::HodoBaseLine(TClonesArray* fBaselineDigis, vector< vector < vect
 	  fBaselines.at(station).at( side ).at( strip )->Fill( adc );
 	  
 	}
-      for( Int_t iStation = 0; iStation <  fBaselines.size(); iStation++ ) 
+      for( UInt_t iStation = 0; iStation <  fBaselines.size(); iStation++ ) 
 	{
-	  for( Int_t iSide = 0; iSide < fBaselines.at(iStation).size(); iSide++ ) 
+	  for( UInt_t iSide = 0; iSide < fBaselines.at(iStation).size(); iSide++ ) 
 	    {
-	      for( Int_t iStrip = 0; iStrip < fBaselines.at(iStation).at( iSide ).size(); iStrip++ ) 
+	      for( UInt_t iStrip = 0; iStrip < fBaselines.at(iStation).at( iSide ).size(); iStrip++ ) 
 		{
 		  TH1F * blHist = fBaselines.at(iStation).at( iSide ).at( iStrip );
 		  if( blHist->GetEntries() ) 

@@ -68,9 +68,10 @@ class StsClusterSet : public FairTask
 
   std::map<Int_t, std::set<CbmStsDigi*, classcomp2> > fDigiMap;   /** digis per hodo layer **/ 
 
+  Int_t fEvent;
+
   StsClusterSet(const StsClusterSet&);
   StsClusterSet& operator=(const StsClusterSet&);
-  Int_t fEvent;
 
   ClassDef(StsClusterSet,1);
   

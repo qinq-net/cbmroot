@@ -19,7 +19,13 @@ using namespace std;
 // ---- Default constructor -------------------------------------------
 StsClusterSet::StsClusterSet()
   :FairTask("StsClusterSet",1),
-   fDigis(NULL)
+   fDigis(NULL),
+   time_diff_strips(),
+   cluster_adc(),
+   fChargeMinStrip(),
+   fChargeMaxStrip(),
+   fDigiMap(),
+   fEvent(0)
 {  
   for(int i=0; i<3; i++)
   {
@@ -45,17 +51,20 @@ void StsClusterSet::SetParContainers()
 {
 
   // Get Base Container
+/*
   FairRunAna* ana = FairRunAna::Instance();
   FairRuntimeDb* rtdb=ana->GetRuntimeDb();
-  
+*/  
 }
 // --------------------------------------------------------------------
 
 // ---- ReInit  -------------------------------------------------------
 InitStatus StsClusterSet::ReInit(){
   
+/*
   FairRunAna* ana = FairRunAna::Instance();
   FairRuntimeDb* rtdb=ana->GetRuntimeDb();
+*/
   
   return kSUCCESS;
 }
@@ -96,7 +105,7 @@ InitStatus StsClusterSet::Init()
 // --------------------------------------------------------------------
 
 // ---- Exec ----------------------------------------------------------
-void StsClusterSet::Exec(Option_t * option)
+void StsClusterSet::Exec(Option_t *)
 {
   
   if(fEvent%100000 == 0)cout << "----- " << fEvent << endl;
@@ -111,7 +120,7 @@ void StsClusterSet::Exec(Option_t * option)
   set<Int_t> layerSet;
   
   CbmStsDigi* digi = NULL;
-  CbmStsDigi* digi2 = NULL;
+//  CbmStsDigi* digi2 = NULL;
   
   map<CbmStsDigi*, Int_t> fIndices;
   
@@ -141,7 +150,7 @@ void StsClusterSet::Exec(Option_t * option)
       Bool_t Cluster = kFALSE;
       Int_t stripNr = -1;
       Int_t stripNrPrev = -1;
-      Int_t cluster_size =0;
+//      Int_t cluster_size =0;
       Double_t time = -1;
       Double_t timePrev = -1;
       Double_t sumW = 0;
