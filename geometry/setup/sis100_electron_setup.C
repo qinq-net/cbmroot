@@ -68,7 +68,7 @@ void sis100_electron_setup()
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "v15a";
-  stsTag       = "v15b";
+  stsTag       = "v15a";
   trdTag       = "v15a_1e";
   tofTag       = "v13-5b";
 

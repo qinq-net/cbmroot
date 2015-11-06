@@ -60,7 +60,7 @@ void sis300_muon_setup()
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "";
-  stsTag       = "v15b";
+  stsTag       = "v15a";
   trdTag       = "v15a_3m";
   tofTag       = "v13-5e";
 

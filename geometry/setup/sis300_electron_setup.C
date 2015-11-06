@@ -30,7 +30,7 @@ void sis300_electron_setup()
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "v15a";
-  stsTag       = "v15b";
+  stsTag       = "v15a";
   trdTag       = "v15a_3e";
   tofTag       = "v13-5d";
 
