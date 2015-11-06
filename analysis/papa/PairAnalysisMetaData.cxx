@@ -198,7 +198,7 @@ void PairAnalysisMetaData::DrawSame(TString opt/*="msb"*/)
   if(fMetaList.GetEntries()<1) return;
 
   TPaveText *pt = new TPaveText(gPad->GetLeftMargin()+0.05,
-				1.-gPad->GetTopMargin(),
+				1.-gPad->GetTopMargin()+0.01,
 				1.-gPad->GetRightMargin()-0.05,
 				0.99,"NDCNB");
   pt->SetName("meta");
@@ -251,8 +251,8 @@ void PairAnalysisMetaData::DrawSame(TString opt/*="msb"*/)
   pt->AddText(line.Data());
 
 
-  pt->SetLineColorAlpha(0, 1.0);
-  pt->SetFillColorAlpha(0, 1.0);
+  pt->SetLineColorAlpha(0, 0.0);
+  pt->SetFillColorAlpha(0, 0.0);
   pt->SetFillStyle(kFEmpty);
   //  pt->Print();
   pt->Draw();

@@ -412,6 +412,9 @@ void PairAnalysisStyler::SetLegendAttributes(TLegend *leg)
   leg->SetFillStyle(kFEmpty); // solid
   //  leg->SetFillColorAlpha(gStyle->GetLegendFillColor(), 0.8);
 
+  // printf("leg coordinates: x1 %f x2 %f \t",leg->GetX1(),leg->GetX2());
+  // printf(" y1 %f y2 %f \n",leg->GetY1(),leg->GetY2());
+
 }
 
 void PairAnalysisStyler::SetPalette(Epalette colors, Bool_t reverse)

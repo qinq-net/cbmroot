@@ -983,7 +983,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	(optOnlyMC && ndel<1)                      ) continue;
 
     // histclass selection
-    if( optSel && (!histClass.Contains(select))^optExclSel ) continue;
+    if( optSel && (!histClass.Contains(select,TString::kIgnoreCase))^optExclSel ) continue;
     //    if( optSel && (!histClass.Contains(histClassDenom))^optExclSel ) continue;
     
     // find the histogram in the class table
@@ -1272,7 +1272,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
       max=TMath::Max(max,h1->GetMaximum());
       min=TMath::Min(min,PairAnalysisHelper::GetContentMinimum(h1));//hobj->GetBinContent(hobj->GetMinimumBin()));
       //Printf("max%f \t min%f",max,min);
-      if(!optEff) h1->SetMaximum(max*1.1);
+      if(!optEff) h1->SetMaximum(max*(gPad->GetLogy()?5.:1.1));
       else        h1->SetMaximum(1.1);
       if(!optEff) h1->SetMinimum( min*(min<0.?1.1:0.9) ); //TODO: doesnt work, why?? Negative values?
       // automatically set log option
