@@ -55,7 +55,7 @@ void much_seg_auto(const char* mcFile = "",
   CbmMuchSegmentAuto* seg = new CbmMuchSegmentAuto(digiFile);
 
   // Number of stations
-  seg->SetNStations(6);
+  seg->SetNStations(4);  // fix for much_v15b_STS100-B_125cm_no.geo
 
   // Set minimum allowed resolution for each station
   Double_t sigmaXmin[] = {0.08, 0.08, 0.08, 0.08, 0.08, 0.08};
