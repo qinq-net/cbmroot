@@ -42,7 +42,7 @@ using std::list;
 
 
 /** Loop procedure **/
-void CbmEcalAnalysisDS::Exec(Option_t* option)
+void CbmEcalAnalysisDS::Exec(Option_t*)
 {
   list<CbmEcalPoint*>::const_iterator p;
   fEvent++;

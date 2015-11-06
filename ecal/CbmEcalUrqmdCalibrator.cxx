@@ -38,7 +38,7 @@ using std::endl;
 using std::list;
 
 /** Loop procedure **/
-void CbmEcalUrqmdCalibrator::Exec(Option_t* option)
+void CbmEcalUrqmdCalibrator::Exec(Option_t*)
 {
   list<CbmEcalPoint*>::const_iterator p;
   fEvent++;
@@ -189,7 +189,7 @@ void CbmEcalUrqmdCalibrator::ProcessHit(CbmEcalPoint* point)
   Float_t calo_x;
   Float_t calo_y;
 
-  static Float_t sPSDeltaZ=fInf->GetPSLead()+fInf->GetPSScin()/2.0;
+//  static Float_t sPSDeltaZ=fInf->GetPSLead()+fInf->GetPSScin()/2.0;
   static Float_t sDeltaZ=fInf->GetPSLead()+fInf->GetPSScin()+fInf->GetPSGap();
 
   point->Momentum(mom);

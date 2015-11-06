@@ -102,7 +102,7 @@ inline Double_t CbmEcalCalibrationV2::GetEnergy(Double_t Ecls, Double_t tantheta
 }
 
 /** Get calorimeter respose to photon of given energy **/
-inline Double_t CbmEcalCalibrationV2::GetE2(Double_t e, Double_t tantheta, Int_t celltype) const
+inline Double_t CbmEcalCalibrationV2::GetE2(Double_t, Double_t, Int_t) const
 {
 //  Double_t a=fP0a[celltype]+fP1a[celltype]*tantheta;
 //  Double_t b=fP0b[celltype]+fP1b[celltype]*tantheta;
@@ -111,7 +111,7 @@ inline Double_t CbmEcalCalibrationV2::GetE2(Double_t e, Double_t tantheta, Int_t
 }
 
 /** Rough estimation of energy **/
-inline Double_t CbmEcalCalibrationV2::GetERough(Double_t e) const
+inline Double_t CbmEcalCalibrationV2::GetERough(Double_t) const
 {
   return -1111;
 }

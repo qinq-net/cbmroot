@@ -146,7 +146,7 @@ Double_t FCNEcalClusterCorr::DoEval(const Double_t* par) const
 
 /***************************************************************************/
 
-void CbmEcalRecoCorr::Exec(Option_t* option)
+void CbmEcalRecoCorr::Exec(Option_t*)
 {
   Int_t i;
   Int_t n=fClusters->GetEntriesFast();
@@ -214,7 +214,7 @@ void CbmEcalRecoCorr::WriteClusterInfo(CbmEcalCluster* clstr)
 //  Double_t emeas;
 //  Double_t clenergy;
   Double_t cellerr=-1111;
-  static Double_t module=fInf->GetModuleSize();
+//  static Double_t module=fInf->GetModuleSize();
 
   fECluster=fCal->GetEnergy(clstr->Energy(), fStr->GetHitCell(clstr->PeakNum(0)));
 //  clenergy=fECluster;
@@ -825,10 +825,10 @@ CbmEcalRecoCorr::CbmEcalRecoCorr(const char *name, const Int_t iVerbose, const c
     fPreE(0.),
     fRegion(0)
 {
-  Int_t i;
-  Int_t j;
-  Int_t types;
-  Int_t consts;
+//  Int_t i;
+//  Int_t j;
+//  Int_t types;
+//  Int_t consts;
   TString nm;
 
   CbmEcalParam* par=new CbmEcalParam("RecoSlowParam", configname);

@@ -11,7 +11,7 @@
 using namespace std;
 
 /** Loop procedure **/
-void CbmEcalAnalysisSimple::Exec(Option_t* option)
+void CbmEcalAnalysisSimple::Exec(Option_t*)
 {
   fEv++;
 

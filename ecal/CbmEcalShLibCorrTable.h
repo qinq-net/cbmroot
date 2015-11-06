@@ -23,7 +23,7 @@ public:
   virtual Float_t Correlation(Float_t x1, Float_t y1, Float_t x2, Float_t y2, Float_t phi, Float_t theta, Float_t e, Int_t celltype=0);
   virtual Float_t Correlation2(Float_t x1, Float_t y1, Float_t x2, Float_t y2, Float_t phi, Float_t theta, Float_t e, Int_t celltype=0);
   virtual InitStatus Init();
-  void Exec(Option_t* exec) {};
+  void Exec(Option_t*) {};
   void Finish() {};
   virtual ~CbmEcalShLibCorrTable();
 private:

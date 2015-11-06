@@ -22,7 +22,7 @@ using std::endl;
 using std::list;
 
 /** Loop procedure **/
-void CbmEcalAnalysisPi0::Exec(Option_t* option)
+void CbmEcalAnalysisPi0::Exec(Option_t*)
 {
   Int_t i;
   Int_t n=fMC->GetEntriesFast();

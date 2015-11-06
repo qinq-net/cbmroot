@@ -82,7 +82,7 @@ InitStatus CbmEcalReconstructionFastMC::Init()
 
 
 // -----   Execution of Task   ---------------------------------------------
-void CbmEcalReconstructionFastMC::Exec(Option_t* option)
+void CbmEcalReconstructionFastMC::Exec(Option_t*)
 {
 
   fEvent++;

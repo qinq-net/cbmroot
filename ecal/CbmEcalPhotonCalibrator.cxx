@@ -194,7 +194,7 @@ InitStatus CbmEcalPhotonCalibrator::Init()
   return kSUCCESS;
 }
 
-void CbmEcalPhotonCalibrator::Exec(Option_t* option)
+void CbmEcalPhotonCalibrator::Exec(Option_t*)
 {
   CbmEcalPointLite* pt=NULL;
   CbmEcalPoint* p=NULL;
@@ -207,7 +207,7 @@ void CbmEcalPhotonCalibrator::Exec(Option_t* option)
   Bool_t isPS;
   UInt_t points=0;
   Float_t EcalE=0;
-  Float_t EcalPSE=0;
+//  Float_t EcalPSE=0;
   Float_t EcalFullE=0;
   CbmEcalInf* inf=CbmEcalInf::GetInstance(NULL);
   Float_t dz=inf->GetPSLead()+inf->GetPSScin()+inf->GetPSGap();
@@ -216,7 +216,7 @@ void CbmEcalPhotonCalibrator::Exec(Option_t* option)
 //  Float_t z;
 
   Float_t energy;
-  Float_t psenergy;
+  Float_t psenergy=0.;
 
   list<CbmEcalCell*> cells;
   list<CbmEcalCell*>::const_iterator pc;

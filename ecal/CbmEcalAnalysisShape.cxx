@@ -35,7 +35,7 @@ Int_t CbmEcalAnalysisShape::GetNum(Double_t x, Double_t y) const
   return ix+iy*fXSize;
 }
 /** Loop procedure **/
-void CbmEcalAnalysisShape::Exec(Option_t* option)
+void CbmEcalAnalysisShape::Exec(Option_t*)
 {
   fEv++;
 //  cout << fEv << endl;

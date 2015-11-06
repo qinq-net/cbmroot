@@ -14,7 +14,7 @@
 using namespace std;
 
 /** Loop procedure **/
-void CbmEcalTimeDigitizer::Exec(Option_t* option)
+void CbmEcalTimeDigitizer::Exec(Option_t*)
 {
   if (fVerbose>0)
     Info("Exec", "Event %d.", ++fEvent);

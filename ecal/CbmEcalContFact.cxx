@@ -55,7 +55,7 @@ FairParSet* CbmEcalContFact::createContainer(FairContainer* c) {
   return p;
 }
 
-void  CbmEcalContFact::activateParIo(FairParIo* io) {
+void  CbmEcalContFact::activateParIo(FairParIo*) {
   // activates the input/output class for the parameters
   // needed by the Ecal
 return;

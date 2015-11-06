@@ -169,7 +169,7 @@ void CbmEcalShowerCalibrator::ClearLocal()
 }
 
 /** Loop procedure **/
-void CbmEcalShowerCalibrator::Exec(Option_t* option)
+void CbmEcalShowerCalibrator::Exec(Option_t*)
 {
   /** Just because now it is assured we are in
    ** output file **/
@@ -203,8 +203,8 @@ void CbmEcalShowerCalibrator::Exec(Option_t* option)
   static Int_t begin=3*fLocalXSize+3*fLocalYSize*(6*fLocalXSize+1);
   static Int_t iidx=2*size;
   static Int_t iidy=2*size;
-  static Int_t idx=3*size-1;
-  static Int_t idy=3*size-1;
+//  static Int_t idx=3*size-1;
+//  static Int_t idy=3*size-1;
   
   if (fVerbose>10)
     cout << "Constructing output matrices... " << flush;

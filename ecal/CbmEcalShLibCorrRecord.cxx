@@ -43,7 +43,7 @@ CbmEcalShLibCorrRecord::CbmEcalShLibCorrRecord(const char* filename, Int_t verb)
   TFile* f=new TFile(filename);
   TTree* info;
   TTree* data;
-  Float_t t;
+//  Float_t t;
   Int_t i;
   Int_t j;
   Float_t* dta;
@@ -342,7 +342,7 @@ Float_t CbmEcalShLibCorrRecord::Correlation(Float_t* corr)
   return v1+dx*(v2-v1)+dy*(v3-v1+dx*(v4-v3-v2+v1));
 }
 
-void CbmEcalShLibCorrRecord::DrawTest(Float_t phi, Float_t theta, Float_t e)
+void CbmEcalShLibCorrRecord::DrawTest(Float_t, Float_t, Float_t)
 {
   ;
 }

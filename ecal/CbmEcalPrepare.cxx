@@ -52,7 +52,7 @@ InitStatus CbmEcalPrepare::Init()
 }
 
 /** --- Executed task --------------------------------------------------------- **/ 
-void CbmEcalPrepare::Exec(Option_t* option)
+void CbmEcalPrepare::Exec(Option_t*)
 {
   CbmEcalCell* cell;
   list<CbmEcalCell*> cells;

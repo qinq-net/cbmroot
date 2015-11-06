@@ -17,7 +17,7 @@ using std::endl;
 using std::list;
 
 /** Loop procedure **/
-void CbmEcalAnalysisMaterial::Exec(Option_t* option)
+void CbmEcalAnalysisMaterial::Exec(Option_t*)
 {
   fEvent++;
   if (fVerbose>0)

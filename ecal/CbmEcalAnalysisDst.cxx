@@ -19,7 +19,7 @@ using std::endl;
 using std::list;
 
 /** Loop procedure **/
-void CbmEcalAnalysisDst::Exec(Option_t* option)
+void CbmEcalAnalysisDst::Exec(Option_t*)
 {
   Double_t z;
   Double_t r;

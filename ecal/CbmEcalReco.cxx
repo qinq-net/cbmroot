@@ -49,7 +49,7 @@ Double_t FCNEcalCluster::DoEval(const Double_t* par) const
 //    Fatal("()", "Size of input vector is wrong (%d, should be %d)!", par.size(), fN*3);
 
   CbmEcalCell* cell;
-  static Double_t module=fInf->GetModuleSize();
+//  static Double_t module=fInf->GetModuleSize();
   Int_t type;
   Double_t de;
   Double_t x;
@@ -140,7 +140,7 @@ Double_t FCNEcalCluster::DoEval(const Double_t* par) const
 
 /***************************************************************************/
 
-void CbmEcalReco::Exec(Option_t* option)
+void CbmEcalReco::Exec(Option_t*)
 {
   Int_t i;
   Int_t n=fClusters->GetEntriesFast();
@@ -207,7 +207,7 @@ void CbmEcalReco::WriteClusterInfo(CbmEcalCluster* clstr)
   Double_t emeas;
  // Double_t clenergy;
   Double_t cellerr;
-  static Double_t module=fInf->GetModuleSize();
+//  static Double_t module=fInf->GetModuleSize();
 
   fECluster=fCal->GetEnergy(clstr->Energy(), fStr->GetHitCell(clstr->PeakNum(0)));
  // clenergy=fECluster;
@@ -428,7 +428,7 @@ void CbmEcalReco::TimeReco(CbmEcalRecParticle* p, CbmEcalCluster* cluster)
   Double_t time=0;
   Double_t te=0;
 
-  static Double_t module=fInf->GetModuleSize();
+//  static Double_t module=fInf->GetModuleSize();
   Double_t theta;
   Int_t k;
   CbmEcalCell* cell;
@@ -483,7 +483,7 @@ Double_t CbmEcalReco::CalculateChi2(CbmEcalCluster* cluster)
   if (!fShLib) return -1111;
   
   CbmEcalCell* cell;
-  static Double_t module=fInf->GetModuleSize();
+//  static Double_t module=fInf->GetModuleSize();
   Int_t type;
   Double_t de;
   Double_t x;

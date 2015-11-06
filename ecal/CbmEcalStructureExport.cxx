@@ -58,7 +58,7 @@ InitStatus CbmEcalStructureExport::Init()
 }
 
 /** Exec for task **/
-void CbmEcalStructureExport::Exec(Option_t* opt)
+void CbmEcalStructureExport::Exec(Option_t*)
 {
   if (fStructureOut==NULL)
   {

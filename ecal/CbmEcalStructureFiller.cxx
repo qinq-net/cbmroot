@@ -195,7 +195,7 @@ void CbmEcalStructureFiller::LoopForUnSummableHits()
 }
 
 // -----   Execution of Task   ---------------------------------------------
-void CbmEcalStructureFiller::Exec(Option_t* option)
+void CbmEcalStructureFiller::Exec(Option_t*)
 {
   fEvent++;
   if (fVerbose>0)

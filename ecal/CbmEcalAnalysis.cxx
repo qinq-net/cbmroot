@@ -205,7 +205,7 @@ InitStatus CbmEcalAnalysis::Init()
 }
 
 //------------------------------------------------------------------------------
-void CbmEcalAnalysis::Exec(Option_t* option)
+void CbmEcalAnalysis::Exec(Option_t*)
 {
   // make ECAL analysis
 

@@ -63,7 +63,7 @@ void CbmEcalMaximumLocator::Finish()
   fMaximums->Clear();
 }
 
-void CbmEcalMaximumLocator::Exec(const Option_t* opt)
+void CbmEcalMaximumLocator::Exec(const Option_t*)
 {
   list<CbmEcalCell*> all;
   list<CbmEcalCell*> cells;

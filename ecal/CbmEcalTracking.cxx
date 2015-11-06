@@ -66,7 +66,7 @@ InitStatus CbmEcalTracking::Init()
 }
 
 /** Exec for task **/
-void CbmEcalTracking::Exec(Option_t* opt)
+void CbmEcalTracking::Exec(Option_t*)
 {
   Int_t tn;
   

@@ -228,13 +228,13 @@ CbmEcalInf::CbmEcalInf(const char* filename)
 
   std::ifstream file(filename);
   Int_t linenum;
-  Double_t val;
+//  Double_t val;
   string buffer;
   string message;
   string variable;
   string value;
   TObjString* str=NULL;
-  char** err=NULL;
+//  char** err=NULL;
   char winend[2]={13, 0};
   int ssize=-1;
 
@@ -364,7 +364,7 @@ void CbmEcalInf::CheckVariables()
   TObjArray* parEcalStr=par->GetEcalStr();
   if (parEcalStr)
   {
-    TObjString* key;
+//    TObjString* key;
     for(Int_t i=0;i<parEcalStr->GetEntriesFast();i++)
     {
       TObjString* first=(TObjString*)parEcalStr->At(i);
@@ -372,8 +372,8 @@ void CbmEcalInf::CheckVariables()
       if (second&&first->String()!=second->String())
       {
 	Info("CheckVariables", "String %d in calorimeter structure differs in .geo file and in parameter file.", i);
-	Info("CheckVariables", "%s=%s in parameter file", key->String().Data(), first->String().Data());
-	Info("CheckVariables", "%s=%s in .geo file", key->String().Data(), second->String().Data());
+//	Info("CheckVariables", "%s=%s in parameter file", key->String().Data(), first->String().Data());
+//	Info("CheckVariables", "%s=%s in .geo file", key->String().Data(), second->String().Data());
       }
     }
   }

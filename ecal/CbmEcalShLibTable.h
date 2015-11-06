@@ -21,7 +21,7 @@ public:
   // Cell is a size os cell in cm.
   virtual Float_t GetResponse(Float_t x, Float_t y, Float_t phi, Float_t theta, Float_t e, Int_t celltype=0);
   virtual InitStatus Init();
-  void Exec(Option_t* exec) {};
+  void Exec(Option_t*) {};
   void Finish() {};
   virtual ~CbmEcalShLibTable();
 private:

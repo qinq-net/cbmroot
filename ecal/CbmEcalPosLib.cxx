@@ -49,7 +49,7 @@ CbmEcalPosLib::CbmEcalPosLib(const char* nm, Int_t verb, const char* fname)
 {
 }
 
-void CbmEcalPosLib::Exec(const Option_t* option)
+void CbmEcalPosLib::Exec(const Option_t*)
 {
   ;
 }

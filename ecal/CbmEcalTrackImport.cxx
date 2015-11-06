@@ -65,7 +65,7 @@ InitStatus CbmEcalTrackImport::Init()
 }
 
 /** Exec for task **/
-void CbmEcalTrackImport::Exec(Option_t* opt)
+void CbmEcalTrackImport::Exec(Option_t*)
 {
   fTracks->Delete();
 

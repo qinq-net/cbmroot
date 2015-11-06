@@ -410,12 +410,12 @@ Bool_t  CbmEcalDetailed::ProcessHits(FairVolume* vol)
 
   if (fELoss>0)
   {
-    Int_t i;
-    TParticle* p=gMC->GetStack()->GetCurrentTrack();
+//    Int_t i;
+//    TParticle* p=gMC->GetStack()->GetCurrentTrack();
     Double_t x, y, z;
     Double_t px;
     Double_t py;
-    Double_t dx;
+//    Double_t dx;
     Int_t mx;
     Int_t my;
     Int_t cell;
@@ -549,7 +549,7 @@ CbmEcalPointLite* CbmEcalDetailed::FindHit(Int_t VolId, Int_t TrackId)
   return NULL;
 }
 //-----------------------------------------------------------------------------
-Bool_t CbmEcalDetailed::FillLitePoint(Int_t volnum)
+Bool_t CbmEcalDetailed::FillLitePoint(Int_t)
 {
   /** Fill MC points inside the ECAL for non-zero deposited energy **/
 
@@ -693,17 +693,17 @@ void CbmEcalDetailed::Register()
 // -----   Public method ConstructGeometry   -------------------------------
 void CbmEcalDetailed::ConstructGeometry()
 {
-  FairGeoLoader*geoLoad = FairGeoLoader::Instance();
-  FairGeoInterface *geoFace = geoLoad->getGeoInterface();
-  FairGeoMedia *Media =  geoFace->getMedia();
-  FairGeoBuilder *geobuild=geoLoad->getGeoBuilder();
+//  FairGeoLoader*geoLoad = FairGeoLoader::Instance();
+//  FairGeoInterface *geoFace = geoLoad->getGeoInterface();
+//  FairGeoMedia *Media =  geoFace->getMedia();
+//  FairGeoBuilder *geobuild=geoLoad->getGeoBuilder();
 
   TGeoVolume *volume;
   TGeoCompositeShape* top;
   TGeoBBox* bbox;
   TGeoTube* tube;
-  FairGeoMedium *CbmMedium;
-  TGeoPgon *spl;
+//  FairGeoMedium *CbmMedium;
+//  TGeoPgon *spl;
 
   Float_t *buf = 0;
   Int_t i;
@@ -1044,8 +1044,8 @@ void CbmEcalDetailed::ConstructTile(Int_t type, Int_t material)
   Double_t thickness=-1111;
   TGeoVolume* hole;
   TGeoVolume* fiber;
-  TGeoTranslation** tr;
-  TGeoTranslation* tm;
+//  TGeoTranslation** tr;
+//  TGeoTranslation* tm;
   Int_t nh=fNH[type];
   Int_t i;
   Int_t j=0;
@@ -1190,24 +1190,24 @@ void CbmEcalDetailed::ConstructTileSimple(Int_t type, Int_t material)
     default: Error("ConstructTileSimple", "Can't construct a tile of type %d.", material);
   }
   Double_t thickness=-1111;
-  TGeoVolume* hole;
-  TGeoVolume* fiber;
-  TGeoTranslation** tr;
-  TGeoTranslation* tm;
-  Int_t nh=fNH[type];
-  Int_t i;
-  Int_t j;
+//  TGeoVolume* hole;
+//  TGeoVolume* fiber;
+//  TGeoTranslation** tr;
+//  TGeoTranslation* tm;
+//  Int_t nh=fNH[type];
+//  Int_t i;
+//  Int_t j;
   TString nm;
   TString nm1;
   TString nm2;
   TString medium;
-  Double_t x;
-  Double_t y;
+//  Double_t x;
+//  Double_t y;
   TGeoBBox* tile;
   TGeoVolume* tilev;
-  TGeoBBox* edging;
-  TGeoVolume* edgingv;
-  Double_t* buf=NULL;
+//  TGeoBBox* edging;
+//  TGeoVolume* edgingv;
+//  Double_t* buf=NULL;
 
   switch (material)
   {

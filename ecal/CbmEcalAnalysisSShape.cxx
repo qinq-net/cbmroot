@@ -23,7 +23,7 @@ using namespace std;
 #define PAR3 12.0
 #define PARI 7
 /** Loop procedure **/
-void CbmEcalAnalysisSShape::Exec(Option_t* option)
+void CbmEcalAnalysisSShape::Exec(Option_t*)
 {
   fEv++;
   cout << "Event " << fEv << endl;
@@ -176,13 +176,13 @@ Double_t CbmEcalAnalysisSShape::SolveEllipse(CbmEcalCell* cell, Double_t cx, Dou
   Double_t sgm=TMath::Sin(gm);
   Double_t cgm=TMath::Cos(gm);
   Double_t x;
-  Double_t y;
+//  Double_t y;
   Double_t p=sgm*sgm/cRx+cgm*cgm/cRy;
   Double_t q=cgm*sgm*(1.0/cRx-1.0/cRy);
   Double_t r=cgm*cgm/cRx+sgm*sgm/cRy;
   Double_t d;
   Double_t ex;
-  Double_t ey;
+//  Double_t ey;
   Double_t y1;
   Double_t y2;
   Double_t inte=0;

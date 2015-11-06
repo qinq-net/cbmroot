@@ -20,7 +20,7 @@
 using namespace std;
 
 /** Exec a task **/
-void CbmEcalClusterFinderV2::Exec(Option_t* option)
+void CbmEcalClusterFinderV2::Exec(Option_t*)
 {
   fEv++;
 
@@ -103,11 +103,11 @@ void CbmEcalClusterFinderV2::FormPreCluster(CbmEcalMaximum* max)
   CbmEcalCell* cell=max->Cell();
   Int_t reg=GetRegion(cell);
   if (fCalibration==1) reg=fCurAlgo;
-  Int_t i;
+//  Int_t i;
   Int_t j;
   Double_t mine=cell->GetTotalEnergy();
   Double_t maxe=-1111;
-  Double_t e;
+//  Double_t e;
   list<CbmEcalCell*> cells;
   list<CbmEcalCell*> cs;
   list<CbmEcalCell*>::const_iterator p;
@@ -157,9 +157,9 @@ void CbmEcalClusterFinderV2::FormPreClusterNew(CbmEcalMaximum* maximum)
 {
   CbmEcalCell* cell=maximum->Cell();
   Int_t i;
-  Double_t e2m;
+//  Double_t e2m;
   Double_t e2=0;
-  Int_t imax;
+//  Int_t imax;
   list<CbmEcalCell*>::const_iterator p;
   list<CbmEcalCell*> cells;
   Double_t x;
@@ -178,9 +178,9 @@ void CbmEcalClusterFinderV2::FormPreClusterNew(CbmEcalMaximum* maximum)
   CbmEcalCell* cls[cCl2Size];
   Double_t rc[cCl2Size];
   Int_t j;
-  Double_t phi;
-  Double_t tp;
-  Double_t tq;
+//  Double_t phi;
+//  Double_t tp;
+//  Double_t tq;
   Double_t e;
 
   max=cell->GetTotalEnergy();
@@ -254,13 +254,13 @@ Double_t CbmEcalClusterFinderV2::SolveEllipse(CbmEcalCell* cell, Double_t cx, Do
   Double_t sgm=TMath::Sin(gm);
   Double_t cgm=TMath::Cos(gm);
   Double_t x;
-  Double_t y;
+//  Double_t y;
   Double_t p=sgm*sgm/cRx+cgm*cgm/cRy;
   Double_t q=cgm*sgm*(1.0/cRx-1.0/cRy);
   Double_t r=cgm*cgm/cRx+sgm*sgm/cRy;
   Double_t d;
   Double_t ex;
-  Double_t ey;
+//  Double_t ey;
   Double_t y1;
   Double_t y2;
   Double_t inte=0;

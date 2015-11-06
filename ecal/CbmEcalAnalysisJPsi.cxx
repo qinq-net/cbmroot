@@ -20,7 +20,7 @@
 using namespace std;
 
 /** Loop procedure **/
-void CbmEcalAnalysisJPsi::Exec(Option_t* option)
+void CbmEcalAnalysisJPsi::Exec(Option_t*)
 {
   fEv++;
 
@@ -31,7 +31,7 @@ void CbmEcalAnalysisJPsi::Exec(Option_t* option)
   CbmStsTrack* tr;
   CbmTrackMatch* trm;
   FairTrackParam trb;
-  FairTrackParam* trp;
+//  FairTrackParam* trp;
   TVector3 p;
   CbmMCTrack* mctr;
   CbmMCTrack* mmctr;

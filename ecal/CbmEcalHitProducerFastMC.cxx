@@ -113,7 +113,7 @@ InitStatus CbmEcalHitProducerFastMC::Init()
 
 
 // -----   Execution of Task   ---------------------------------------------
-void CbmEcalHitProducerFastMC::Exec(Option_t* option)
+void CbmEcalHitProducerFastMC::Exec(Option_t*)
 {
   // Convert EcalPoints for photons into hits:
   // energy is smeared according to energy resolution,
@@ -195,7 +195,7 @@ Double_t CbmEcalHitProducerFastMC::Eresolution(Double_t E)
 // -------------------------------------------------------------------------
 
 // -----   Energy deposited in ECAL by hadrons  ----------------------------
-Double_t CbmEcalHitProducerFastMC::HadronResponse(Double_t E)
+Double_t CbmEcalHitProducerFastMC::HadronResponse(Double_t)
 {
   // energy resolution vs energy
   Double_t energy = 0.2;

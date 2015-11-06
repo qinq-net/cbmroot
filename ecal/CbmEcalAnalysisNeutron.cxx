@@ -20,7 +20,7 @@ using std::endl;
 using std::list;
 
 /** Loop procedure **/
-void CbmEcalAnalysisNeutron::Exec(Option_t* option)
+void CbmEcalAnalysisNeutron::Exec(Option_t*)
 {
   Int_t i;
   Int_t n=fReco->GetEntriesFast();

@@ -65,7 +65,7 @@ InitStatus CbmEcalTrackExport::Init()
 }
 
 /** Exec for task **/
-void CbmEcalTrackExport::Exec(Option_t* opt)
+void CbmEcalTrackExport::Exec(Option_t*)
 {
   if (fTracksOut==NULL)
   {

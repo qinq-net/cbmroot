@@ -35,7 +35,7 @@ Double_t CbmEcalAnalysisBSh::GetPL(Double_t e, Double_t theta)
 // Formula 2: ([0]/sqrt(x))+[1]
   Double_t F2P0=-0.000885986793426617;
   Double_t F2P1=0.00161447557665425;
-  Double_t F2P2=0; 
+//  Double_t F2P2=0; 
   Double_t p2=F2P0/TMath::Sqrt(e)+F2P1;
   Double_t res=p0+theta*p1+theta*theta*p2;
 
@@ -67,7 +67,7 @@ Double_t CbmEcalAnalysisBSh::GetPH(Double_t e, Double_t theta)
 // Formula 3: ([0]/sqrt(x))+[1]
   Double_t F3P0=0.369616901912454;
   Double_t F3P1=0.43088175058375;
-  Double_t F3P2=0;
+//  Double_t F3P2=0;
   Double_t p0=F3P0/sqrt(e)+F3P1;
 // Formula 4: pol2
   Double_t F4P0=-0.120449496069499;
@@ -108,7 +108,7 @@ void  CbmEcalAnalysisBSh::FormPreCluster(CbmEcalCell* cell)
 {
   Int_t reg=GetRegion(cell);
   if (fCalibration==1) reg=fCurAlgo;
-  Int_t i;
+//  Int_t i;
   Int_t j;
   Int_t max=-1111;
   Double_t mine;
@@ -179,9 +179,9 @@ void  CbmEcalAnalysisBSh::FormPreClusterNew(CbmEcalCell* cell)
   CbmEcalCell* cls[cCl2Size];
   Double_t rc[cCl2Size];
   Int_t j;
-  Double_t phi;
-  Double_t tp;
-  Double_t tq;
+//  Double_t phi;
+//  Double_t tp;
+//  Double_t tq;
   Double_t e;
 
   max=cell->GetTotalEnergy();
@@ -267,13 +267,13 @@ Double_t  CbmEcalAnalysisBSh::SolveEllipse(CbmEcalCell* cell, Double_t cx, Doubl
   Double_t sgm=TMath::Sin(gm);
   Double_t cgm=TMath::Cos(gm);
   Double_t x;
-  Double_t y;
+//  Double_t y;
   Double_t p=sgm*sgm/cRx+cgm*cgm/cRy;
   Double_t q=cgm*sgm*(1.0/cRx-1.0/cRy);
   Double_t r=cgm*cgm/cRx+sgm*sgm/cRy;
   Double_t d;
   Double_t ex;
-  Double_t ey;
+//  Double_t ey;
   Double_t y1;
   Double_t y2;
   Double_t inte=0;
@@ -320,7 +320,7 @@ Int_t CbmEcalAnalysisBSh::GetRegion(CbmEcalCell* cls)
   return i;
 }
 /** Loop procedure **/
-void CbmEcalAnalysisBSh::Exec(Option_t* option)
+void CbmEcalAnalysisBSh::Exec(Option_t*)
 {
   InitTree();
 
@@ -328,10 +328,10 @@ void CbmEcalAnalysisBSh::Exec(Option_t* option)
   Int_t j;
   Int_t n;
   Int_t imax=-1111;
-  Int_t dx;
-  Int_t dy;
-  Int_t ix;
-  Int_t iy;
+//  Int_t dx;
+//  Int_t dy;
+//  Int_t ix;
+//  Int_t iy;
   Int_t pn;
   Int_t tri;
   Double_t xtr;
@@ -350,11 +350,11 @@ void CbmEcalAnalysisBSh::Exec(Option_t* option)
   list<CbmEcalCell*>::const_iterator p;
   list<CbmEcalCell*>::const_iterator p2;
   Double_t e;
-  Double_t max=-1111;
+//  Double_t max=-1111;
  // Double_t efull;
   Double_t e2m;
   Double_t e2;
-  Double_t e3;
+//  Double_t e3;
   Double_t x[10000];
   Double_t y[10000];
   Double_t eii[10000];
@@ -365,8 +365,8 @@ void CbmEcalAnalysisBSh::Exec(Option_t* option)
   Int_t reg;
   CbmEcalCell* clls[10000];
   CbmEcalPoint* pt;
-  CbmEcalCell* cl;
-  CbmEcalCell* cll;
+//  CbmEcalCell* cl;
+//  CbmEcalCell* cll;
   CbmMCTrack* tr;
   
   fStr->GetCells(cells);

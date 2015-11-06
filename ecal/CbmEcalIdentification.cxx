@@ -35,7 +35,7 @@
 using namespace std;
 
 /** Loop procedure **/
-void CbmEcalIdentification::Exec(Option_t* option)
+void CbmEcalIdentification::Exec(Option_t*)
 {
   fEvent++;
   if (fTreeOut) InitTree();
@@ -79,7 +79,7 @@ void CbmEcalIdentification::Exec(Option_t* option)
 void CbmEcalIdentification::Identify(FairTrackParam* tr)
 {
   CbmEcalCell* cell=NULL;
-  CbmEcalCell* cell2;
+//  CbmEcalCell* cell2;
   list<CbmEcalCell*> cells;
   list<CbmEcalCell*>::const_iterator p;
   list<CbmEcalCell*> ocells;
@@ -88,17 +88,17 @@ void CbmEcalIdentification::Identify(FairTrackParam* tr)
   Double_t tracke;
   Float_t x;
   Float_t y;
-  Float_t dst;
-  Float_t t;
-  CbmEcalInf* fInf=fStr->GetEcalInf();
+//  Float_t dst;
+//  Float_t t;
+//  CbmEcalInf* fInf=fStr->GetEcalInf();
   TVector3 trackmom;
   TVector3 tv3;
-  Double_t te;
-  Double_t me;
-  Double_t me1;
+//  Double_t te;
+//  Double_t me;
+//  Double_t me1;
   Double_t sigma;
   Int_t i;
-  Int_t mc;
+//  Int_t mc;
   Int_t nm=fMaximums->GetEntriesFast();
   CbmEcalMaximum* mx;
   CbmEcalMaximum* mxx=NULL;
@@ -200,7 +200,7 @@ Double_t CbmEcalIdentification::Correlation(CbmEcalCell* c1, CbmEcalCell* c2, Do
 }
 
 /** Calculate chi2 of the cluster**/
-void CbmEcalIdentification::CalculateChi2(CbmEcalMaximum* mx)
+void CbmEcalIdentification::CalculateChi2(CbmEcalMaximum*)
 {
   // fX, fY --- corrdinates
   // fTheta, fPhi --- angles
@@ -244,7 +244,7 @@ void CbmEcalIdentification::CalculateChi2(CbmEcalMaximum* mx)
 }
 
 /** Simple maximum location algorithm. Copy/paste from CbmEcalIdentification **/
-CbmEcalMaximum* CbmEcalIdentification::FindMaximum(FairTrackParam* tr)
+CbmEcalMaximum* CbmEcalIdentification::FindMaximum(FairTrackParam*)
 {
   CbmEcalCell* cell=fStr->GetCell(fX, fY);
   if (cell==NULL) return NULL;
@@ -347,7 +347,7 @@ void CbmEcalIdentification::WriteTreeLight()
 
     CbmEcalPoint* pt=NULL;
     CbmMCTrack* tr;
-    CbmMCTrack* mtr;
+//    CbmMCTrack* mtr;
     Int_t n=fMCPoints->GetEntriesFast();
     Int_t i=0;
     Int_t j;
@@ -448,7 +448,7 @@ void CbmEcalIdentification::WriteTree()
 
     CbmEcalPoint* pt=NULL;
     CbmMCTrack* tr;
-    CbmMCTrack* mtr;
+//    CbmMCTrack* mtr;
     Int_t n=fMCPoints->GetEntriesFast();
     Int_t i=0;
     Int_t j;
@@ -1097,7 +1097,7 @@ void CbmEcalIdentification::ConstructCluster(CbmEcalMaximum* max)
   list<CbmEcalCell*>::const_iterator p;
   CbmEcalCell* cell;
   CbmEcalCell* cll;
-  Double_t e=1e9;
+//  Double_t e=1e9;
   Int_t ix;
   Int_t iy;
   Double_t tx;
@@ -1179,13 +1179,13 @@ Double_t CbmEcalIdentification::SolveEllipse(CbmEcalCell* cell, Double_t cx, Dou
   Double_t sgm=TMath::Sin(gm);
   Double_t cgm=TMath::Cos(gm);
   Double_t x;
-  Double_t y;
+//  Double_t y;
   Double_t p=sgm*sgm/cRx+cgm*cgm/cRy;
   Double_t q=cgm*sgm*(1.0/cRx-1.0/cRy);
   Double_t r=cgm*cgm/cRx+sgm*sgm/cRy;
   Double_t d;
   Double_t ex;
-  Double_t ey;
+//  Double_t ey;
   Double_t y1;
   Double_t y2;
   Double_t inte=0;

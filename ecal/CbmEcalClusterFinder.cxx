@@ -20,7 +20,7 @@
 using namespace std;
 
 /** Exec a task **/
-void CbmEcalClusterFinder::Exec(Option_t* option)
+void CbmEcalClusterFinder::Exec(Option_t*)
 {
   fEv++;
 

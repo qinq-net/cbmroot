@@ -91,7 +91,7 @@ InitStatus CbmEcalSCurveLib::Init()
   return kSUCCESS;
 }
 
-void CbmEcalSCurveLib::Exec(Option_t* exec)
+void CbmEcalSCurveLib::Exec(Option_t*)
 {
   ;
 }

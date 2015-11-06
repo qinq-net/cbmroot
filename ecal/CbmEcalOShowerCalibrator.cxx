@@ -152,7 +152,7 @@ void CbmEcalOShowerCalibrator::ClearLocal()
 }
 
 /** Loop procedure **/
-void CbmEcalOShowerCalibrator::Exec(Option_t* option)
+void CbmEcalOShowerCalibrator::Exec(Option_t*)
 {
   /** Just because now it is assured we are in
    ** output file **/

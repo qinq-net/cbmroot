@@ -42,7 +42,7 @@ CbmEcalDrawer2::CbmEcalDrawer2()
   SetNamePrefix();
 }
 	
-CbmEcalDrawer2::CbmEcalDrawer2(const char* name, const char* title)
+CbmEcalDrawer2::CbmEcalDrawer2(const char* name, const char*)
   : FairTask(name, 0),
     fStr(NULL),
     fC(NULL),
@@ -132,7 +132,7 @@ InitStatus CbmEcalDrawer2::Init()
   return kSUCCESS;
 }
 
-void CbmEcalDrawer2::Exec(Option_t* opt)
+void CbmEcalDrawer2::Exec(Option_t*)
 {
   const Int_t cNCells=8;
   fEvent++;
@@ -449,13 +449,13 @@ Double_t CbmEcalDrawer2::SolveEllipse(CbmEcalCell* cell, Double_t cx, Double_t c
   Double_t sgm=TMath::Sin(gm);
   Double_t cgm=TMath::Cos(gm);
   Double_t x;
-  Double_t y;
+//  Double_t y;
   Double_t p=sgm*sgm/cRx+cgm*cgm/cRy;
   Double_t q=cgm*sgm*(1.0/cRx-1.0/cRy);
   Double_t r=cgm*cgm/cRx+sgm*sgm/cRy;
   Double_t d;
   Double_t ex;
-  Double_t ey;
+//  Double_t ey;
   Double_t y1;
   Double_t y2;
   Double_t inte=0;

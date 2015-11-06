@@ -59,7 +59,7 @@ Double_t FCNEcalCluster2::DoEval(const Double_t* par) const
 
   CbmEcalCell* cell;
   CbmEcalMaximum* max=fCluster->Maximum(0);
-  static Double_t module=fInf->GetModuleSize();
+//  static Double_t module=fInf->GetModuleSize();
   Int_t type;
   Double_t de;
   Double_t x;
@@ -154,7 +154,7 @@ Double_t FCNEcalCluster2::DoEval(const Double_t* par) const
 
 /***************************************************************************/
 
-void CbmEcalReco2::Exec(Option_t* option)
+void CbmEcalReco2::Exec(Option_t*)
 {
   Int_t i;
   Int_t n=fClusters->GetEntriesFast();
@@ -223,7 +223,7 @@ void CbmEcalReco2::WriteClusterInfo(CbmEcalCluster* clstr)
   Double_t emeas;
  // Double_t clenergy;
   Double_t cellerr;
-  static Double_t module=fInf->GetModuleSize();
+//  static Double_t module=fInf->GetModuleSize();
 
   fECluster=fCal->GetEnergy(clstr->Energy(), max->TanTheta(), max->Region());
  // clenergy=fECluster;
@@ -443,7 +443,7 @@ void CbmEcalReco2::TimeReco(CbmEcalRecParticle* p, CbmEcalCluster* cluster)
   Double_t time=0;
   Double_t te=0;
 
-  static Double_t module=fInf->GetModuleSize();
+//  static Double_t module=fInf->GetModuleSize();
   Double_t theta;
   Int_t k;
   CbmEcalCell* cell;
@@ -499,7 +499,7 @@ Double_t CbmEcalReco2::CalculateChi2(CbmEcalCluster* cluster)
  
   CbmEcalMaximum* max=cluster->Maximum(0);
   CbmEcalCell* cell;
-  static Double_t module=fInf->GetModuleSize();
+//  static Double_t module=fInf->GetModuleSize();
   Int_t type;
   Double_t de;
   Double_t x;
@@ -625,7 +625,7 @@ void CbmEcalReco2::Reco(CbmEcalMaximum* max, CbmEcalCluster* clstr)
   Int_t type;
   list<CbmEcalCell*> cells;
   list<CbmEcalCell*>::const_iterator p;
-  Int_t cnum;
+//  Int_t cnum;
 
   cells.clear();
 

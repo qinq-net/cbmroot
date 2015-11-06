@@ -20,10 +20,10 @@ using std::endl;
 using std::list;
 
 /** Loop procedure **/
-void CbmEcalAnalysisUniformity::Exec(Option_t* option)
+void CbmEcalAnalysisUniformity::Exec(Option_t*)
 {
   CbmEcalPoint* pt=(CbmEcalPoint*)fPoints->At(0);
-  CbmEcalCell* c;
+//  CbmEcalCell* c;
   list<CbmEcalCell*>::const_iterator p;
   list<CbmEcalCell*> cl;
   if (pt==NULL) return;

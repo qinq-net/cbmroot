@@ -20,7 +20,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::list;
-void CbmEcalAnalysisCluster::BuildCluster3(CbmEcalCell* cell, Int_t clusters, Double_t x, Double_t y)
+void CbmEcalAnalysisCluster::BuildCluster3(CbmEcalCell* cell, Int_t, Double_t x, Double_t y)
 {
   const Double_t cTpSigma=TMath::Sqrt(48.0*1.6/2.0);
   const Double_t cTqSigma=TMath::Sqrt(12.0/2.0);
@@ -105,7 +105,7 @@ void CbmEcalAnalysisCluster::BuildCluster3(CbmEcalCell* cell, Int_t clusters, Do
 }
 
 
-void CbmEcalAnalysisCluster::BuildCluster2(CbmEcalCell* cell, Int_t clusters, Double_t x, Double_t y)
+void CbmEcalAnalysisCluster::BuildCluster2(CbmEcalCell* cell, Int_t, Double_t x, Double_t y)
 {
   Int_t cCl2Size=fC2ParI;
   Int_t ix;
@@ -176,13 +176,13 @@ Double_t CbmEcalAnalysisCluster::SolveEllipse(CbmEcalCell* cell, Double_t cx, Do
   Double_t sgm=TMath::Sin(gm);
   Double_t cgm=TMath::Cos(gm);
   Double_t x;
-  Double_t y;
+//  Double_t y;
   Double_t p=sgm*sgm/cRx+cgm*cgm/cRy;
   Double_t q=cgm*sgm*(1.0/cRx-1.0/cRy);
   Double_t r=cgm*cgm/cRx+sgm*sgm/cRy;
   Double_t d;
   Double_t ex;
-  Double_t ey;
+//  Double_t ey;
   Double_t y1;
   Double_t y2;
   Double_t inte=0;
@@ -212,15 +212,15 @@ Double_t CbmEcalAnalysisCluster::SolveEllipse(CbmEcalCell* cell, Double_t cx, Do
 }
 
 /** Build a cluster information **/
-void CbmEcalAnalysisCluster::BuildCluster(CbmEcalCell* cell, Int_t cls, Double_t x, Double_t y)
+void CbmEcalAnalysisCluster::BuildCluster(CbmEcalCell* cell, Int_t, Double_t x, Double_t y)
 {
-  static CbmEcalInf* inf=fStr->GetEcalInf();
+//  static CbmEcalInf* inf=fStr->GetEcalInf();
   CbmEcalCell* cll;
   Int_t ix;
   Int_t iy;
   Double_t tx;
   Double_t ty;
-  Double_t t;
+//  Double_t t;
   Int_t i;
   Int_t j;
   TVector2 ox(x, y);
@@ -318,7 +318,7 @@ void CbmEcalAnalysisCluster::BuildCluster(CbmEcalCell* cell, Int_t cls, Double_t
 }
 
 /** Loop procedure **/
-void CbmEcalAnalysisCluster::Exec(Option_t* option)
+void CbmEcalAnalysisCluster::Exec(Option_t*)
 {
   fEvent++;
   if (fVerbose>0)
@@ -327,7 +327,7 @@ void CbmEcalAnalysisCluster::Exec(Option_t* option)
 
   static CbmEcalInf* inf=fStr->GetEcalInf();
   Int_t i;
-  Int_t n;
+//  Int_t n;
   Int_t imax=-1111;
   Int_t dx;
   Int_t dy;
@@ -338,7 +338,7 @@ void CbmEcalAnalysisCluster::Exec(Option_t* option)
   Double_t e;
   Double_t x;
   Double_t y;
-  Double_t r;
+//  Double_t r;
   Double_t max=-1111;
   Double_t efull;
   Double_t e2m;

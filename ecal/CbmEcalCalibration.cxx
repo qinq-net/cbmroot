@@ -90,7 +90,7 @@ void CbmEcalCalibration::Finish()
   ;
 }
 
-void CbmEcalCalibration::Exec(const Option_t* option)
+void CbmEcalCalibration::Exec(const Option_t*)
 {
   ;
 }

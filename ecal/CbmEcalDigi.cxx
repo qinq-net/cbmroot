@@ -55,7 +55,7 @@ InitStatus CbmEcalDigi::Init()
 }
 
 /** --- Executed task --------------------------------------------------------- **/ 
-void CbmEcalDigi::Exec(Option_t* option)
+void CbmEcalDigi::Exec(Option_t*)
 {
   CbmEcalCell* cell;
   list<CbmEcalCell*> cells;

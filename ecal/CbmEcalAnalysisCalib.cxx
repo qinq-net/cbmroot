@@ -17,7 +17,7 @@
 using namespace std;
 
 /** Loop procedure **/
-void CbmEcalAnalysisCalib::Exec(Option_t* option)
+void CbmEcalAnalysisCalib::Exec(Option_t*)
 {
   Int_t n=fTracks->GetEntries();
   Int_t i;

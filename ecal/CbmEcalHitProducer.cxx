@@ -267,7 +267,7 @@ void CbmEcalHitProducer::CellToHits(CbmEcalCell* cell)
   Float_t energy;
   Float_t psenergy=0;
   Int_t ebins;
-  Int_t psbins;
+//  Int_t psbins;
   if (fProduceSummableHits==kFALSE)
   {
     if (fNoise>0)
@@ -300,7 +300,7 @@ void CbmEcalHitProducer::CellToHits(CbmEcalCell* cell)
   }
 }
 // -----   Execution of Task   ---------------------------------------------
-void CbmEcalHitProducer::Exec(Option_t* option)
+void CbmEcalHitProducer::Exec(Option_t*)
 {
 
   vector<CbmEcalModule*>::const_iterator p;

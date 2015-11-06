@@ -134,7 +134,7 @@ InitStatus CbmEcalMatching::Init()
 }
 
 /** Exec for task **/
-void CbmEcalMatching::Exec(Option_t* opt)
+void CbmEcalMatching::Exec(Option_t*)
 {
   fEv++;
   if (fVerbose>0)
@@ -168,7 +168,7 @@ void CbmEcalMatching::FormEpred(CbmEcalRecParticle* p)
   CbmEcalCluster* cluster=(CbmEcalCluster*)fClusters->At(p->ClusterNum());
   Int_t k=0;
   Int_t type;
-  static Double_t module=fStr->GetEcalInf()->GetModuleSize();
+//  static Double_t module=fStr->GetEcalInf()->GetModuleSize();
 //  Double_t cellsize;
   CbmEcalCell* cell;
   Double_t x;
@@ -475,10 +475,10 @@ void  CbmEcalMatching::MatchP2(CbmEcalRecParticle* p)
 /** Third realization of matching **/
 void  CbmEcalMatching::MatchP3(CbmEcalRecParticle* p)
 {
-  CbmMCTrack* tr;
+//  CbmMCTrack* tr;
   pair<Int_t, Double_t> max; max.first=-1111; max.second=0;
   map<Int_t, Double_t>::const_iterator i;
-  Int_t n;
+//  Int_t n;
 
   for(i=fP.begin(); i!=fP.end();++i)
   {

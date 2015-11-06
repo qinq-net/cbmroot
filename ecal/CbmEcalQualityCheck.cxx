@@ -36,7 +36,7 @@ public:
   Float_t fB;
 };
 
-void CbmEcalQualityCheck::Exec(Option_t* option)
+void CbmEcalQualityCheck::Exec(Option_t*)
 {
   Int_t i;
   Int_t j;

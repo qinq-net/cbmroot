@@ -14,7 +14,7 @@
 using namespace std;
 
 /** Loop procedure **/
-void CbmEcalAnalysisEres::Exec(Option_t* option)
+void CbmEcalAnalysisEres::Exec(Option_t*)
 {
   fEv++;
   if (fTree==NULL) InitTree();

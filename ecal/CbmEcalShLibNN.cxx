@@ -40,7 +40,7 @@ void CbmEcalShLibNN::AddRecord(const char* name, const char* fname, Int_t cellty
   Float_t x;
   Float_t y;
   Float_t theta;
-  Float_t e;
+//  Float_t e;
   Float_t phi;
   Float_t resp;
   TMultiLayerPerceptron* net;
