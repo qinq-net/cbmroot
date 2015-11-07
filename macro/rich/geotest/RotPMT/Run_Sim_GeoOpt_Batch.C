@@ -194,9 +194,7 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1)
   boxGen1->SetPhiRange(PhiMin,PhiMax);//0.,360.);
   boxGen1->SetThetaRange(ThetaMin,ThetaMax);//2.5,25.);
   boxGen1->SetCosTheta();
-  boxGen1->Init();
-  primGen->AddGenerator(boxGen1);
-  
+
   FairBoxGenerator* boxGen2 = new FairBoxGenerator(-11, 1);
   if(PtNotP==1){boxGen2->SetPtRange(MomMin,MomMax); }
   else{boxGen2->SetPRange(MomMin,MomMax); }
@@ -205,9 +203,23 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1)
   boxGen2->SetPhiRange(PhiMin,PhiMax);//0.,360.);
   boxGen2->SetThetaRange(ThetaMin,ThetaMax);//2.5,25.);
   boxGen2->SetCosTheta();
-  boxGen2->Init();
+
+  if(GetExtraText() == "_MirrUpdated_Electrons."){
+    cout<<"gggggggggggggggggggggg electrons "<<endl;    
+boxGen1->Init();//el
+    primGen->AddGenerator(boxGen1);
+  }
+  else if(GetExtraText() == "_MirrUpdated_Positrons."){
+      cout<<"gggggggggggggggggggggg positrons "<<endl;    
+boxGen2->Init();//pos
   primGen->AddGenerator(boxGen2);
-  
+  }else{
+    cout<<"gggggggggggggggggggggg electrons and positrons"<<endl;    
+    boxGen1->Init();//el
+    primGen->AddGenerator(boxGen1);
+    boxGen2->Init();//pos
+    primGen->AddGenerator(boxGen2);
+  }
   
   fRun->SetGenerator(primGen);
   if(StoreTraj){fRun->SetStoreTraj(kTRUE);}
