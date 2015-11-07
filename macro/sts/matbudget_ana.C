@@ -145,7 +145,7 @@ Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10000000)
   }
 
   // Plot file
-  TString plotFile = "sts_matbudget_" + stsVersion + ".png";
+  TString plotFile = "sts_" + stsVersion + "_matbudget.png";
   can1->SaveAs(plotFile);
 
   // Close files
