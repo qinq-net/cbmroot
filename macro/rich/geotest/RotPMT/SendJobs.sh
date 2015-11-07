@@ -4,7 +4,7 @@ if [ $OnBatch == 1 ];then
     cbmroot_config_path=/hera/cbm/users/tariq/cbmroot/buildcbm/config.sh
     source ${cbmroot_config_path}
 fi
-nEvs=25000
+nEvs=300000
 RX=20; RY=10 ; TrY=0; TrZ=0
 ###########################################
 extendedmir=1; GeoCase=2; DimCase=3
@@ -23,7 +23,7 @@ MomMin=0; MomMax=400
 #400/100 =4 gev in cpp
 rotmir=-10;
 
-extratext=.
+extratext=_MirrUpdated.
 echo " eeeeeeeeeeeeeeeeeeeeeeeet  $extratext  eeeeeeeeeeeeeeeeeeeeeeeeet"
 
 DefaultDims=0;DefaultDimsLargePMT=0 #for old code
@@ -62,7 +62,7 @@ if [ $DimCase == 3 ];then UpperTransY=23; UpperTransZ=13; DefaultDims=1; Default
 	if [ $Rm == 1 ];then rotmir=-10; fi
 	
 	for ((Th=0; Th<=0; Th++)); do
-	    if [ $Th == 0 ];then MaxTheta=2500; fi
+	    if [ $Th == 0 ];then MaxTheta=1000; fi
 	    if [ $Th == 1 ];then MaxTheta=3500; fi
 	    
 	 #   for ((RX=0; RX<=$UpperRotX; RX++)); do
