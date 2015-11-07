@@ -4,7 +4,7 @@ if [ $OnBatch == 1 ];then
     cbmroot_config_path=/hera/cbm/users/tariq/cbmroot/buildcbm/config.sh
     source ${cbmroot_config_path}
 fi
-nEvs=300000
+nEvs=250000
 RX=20; RY=10 ; TrY=0; TrZ=0
 ###########################################
 extendedmir=1; GeoCase=2; DimCase=3
@@ -50,13 +50,15 @@ if [ $DimCase == 2 ];then UpperTransY=23; UpperTransZ=13; DefaultDims=1; Default
 if [ $DimCase == 3 ];then UpperTransY=23; UpperTransZ=13; DefaultDims=1; DefaultDimsLargePMT=1; fi 
 
 
-#for ((Mom=4; Mom<=30; Mom++)); do
-#    MomMin=$(( 10 * ${Mom}))
-#    MomMax=$((MomMin + 1)) 
+for ((extt=0; extt<=2; extt++)); do
+	if [ $extt == 0 ];then extratext=_MirrUpdated.; fi
+	if [ $extt == 1 ];then extratext=_MirrUpdated_Electrons.; fi
+	if [ $extt == 2 ];then extratext=_MirrUpdated_Positrons.; fi
 
+for ((phi=0; phi<=1; phi++)); do
+	if [ $phi == 0 ];then MinPhi=90; MaxPhi=180; fi
+	if [ $phi == 1 ];then MinPhi=0; MaxPhi=360; fi
 
-    echo "$MomMin    $MomMax"
-    #continue
     for ((Rm=1; Rm<=1; Rm++)); do
 	if [ $Rm == 0 ];then rotmir=1; fi
 	if [ $Rm == 1 ];then rotmir=-10; fi
@@ -94,7 +96,7 @@ if [ $DimCase == 3 ];then UpperTransY=23; UpperTransZ=13; DefaultDims=1; Default
 		done
 	    done
 #	done
- #   done
-#done
+    done
+done
 
 
