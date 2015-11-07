@@ -204,12 +204,12 @@ void Run_Sim_GeoOpt_Batch(Int_t nEvents = 1)
   boxGen2->SetThetaRange(ThetaMin,ThetaMax);//2.5,25.);
   boxGen2->SetCosTheta();
 
-  if(GetExtraText() == "_MirrUpdated_Electrons."){
+  if(GExtraText == "_MirrUpdated_Electrons."){
     cout<<"gggggggggggggggggggggg electrons "<<endl;    
 boxGen1->Init();//el
     primGen->AddGenerator(boxGen1);
   }
-  else if(GetExtraText() == "_MirrUpdated_Positrons."){
+  else if(ExtraText == "_MirrUpdated_Positrons."){
       cout<<"gggggggggggggggggggggg positrons "<<endl;    
 boxGen2->Init();//pos
   primGen->AddGenerator(boxGen2);
