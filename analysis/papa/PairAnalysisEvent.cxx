@@ -22,6 +22,7 @@ Add Detailed description
 #include "CbmMCEventHeader.h"
 
 #include "CbmVertex.h"
+#include "CbmKFVertex.h"
 #include "CbmGlobalTrack.h"
 #include "CbmStsTrack.h"
 #include "CbmMuchTrack.h"
@@ -226,6 +227,9 @@ void PairAnalysisEvent::Init()
   fTracks->Clear("C");
   if(!fGlobalTracks) return;
 
+  // get primary kf vertex
+  CbmKFVertex *vtx = new CbmKFVertex(*fPrimVertex);
+
   TArrayS matches;
   if(fMCTracks) matches.Set(fMCTracks->GetEntriesFast());
 
@@ -283,7 +287,8 @@ void PairAnalysisEvent::Init()
     // increment position in matching array
     if(mcTrack && fMCTracks) matches[istsMC]++;
     // build papa track
-    fTracks->AddAtAndExpand(new PairAnalysisTrack(gtrk, stsTrack,muchTrack,trdTrack,richRing,tofHit,
+    fTracks->AddAtAndExpand(new PairAnalysisTrack(vtx,
+						  gtrk, stsTrack,muchTrack,trdTrack,richRing,tofHit,
 						  mcTrack, stsMatch,muchMatch,trdMatch,richMatch,
 						  richProj),
 			    i);
@@ -301,6 +306,9 @@ void PairAnalysisEvent::Init()
     tr->SetBit(BIT(14+kMUCH), (iMC==imuchMC)  );
     
   }
+
+  // clean up
+  delete vtx;
 
   // number of multiple matched tracks
   for(Int_t i=0; i<matches.GetSize(); i++)

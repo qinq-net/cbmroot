@@ -51,7 +51,7 @@
 
 //#include "L1Field.h"
 //#include "CbmL1PFFitter.h"
-#include <CbmStsKFTrackFitter.h>
+//#include <CbmStsKFTrackFitter.h>
 
 #include "PairAnalysisEvent.h"
 #include "PairAnalysisPair.h"
@@ -114,6 +114,7 @@ public:
     kE,                      // energy
     kM,                      // mass
     kCharge,                 // charge
+    kChi2NDFtoVtx,           // chi2/ndf impact parameter STS(+MVD) track to primary vertex in (sigmas)
     kImpactParXY,            // Impact parameter in XY plane
     //kImpactParZ,             // Impact parameter in Z
     kInclAngle,              // inclination angle
@@ -154,7 +155,7 @@ public:
     kSTSXv,                  // STS point: x-coordinate
     kSTSYv,                  // STS point: y-coordinate
     kSTSZv,                  // STS point: z-coordinate
-    kSTSChi2NDFtoVtx,        // chi2/ndf impact parameter STS track to primary vertex in (sigmas)
+    kSTSChi2NDFtoVtx,           // chi2/ndf impact parameter STS(+MVD) track to primary vertex in (sigmas) TODO:OBOSOLETE!
     kSTSFirstHitPosZ,        // position of the first hit in the STS (cm)
     // rich ring information
     kRICHPidANN,             // PID value Artificial Neural Network (ANN-method)
@@ -375,7 +376,7 @@ private:
   //static const char* fgkParticleNamesMC[kNMaxValuesMC]; // MC variable names
   static PairAnalysisEvent *fgEvent;                      // current event pointer
   static CbmKFVertex        *fgKFVertex;                   // kf vertex
-  static CbmStsKFTrackFitter*fgKFFitter;                   // kf fitter
+  //  static CbmStsKFTrackFitter*fgKFFitter;                   // kf fitter
   //  static CbmL1PFFitter      *fgL1Fitter;                   // L1 fitter
   static TBits              *fgFillMap;                    // map for filling variables
   static Int_t               fgCurrentRun;                 // current run number
@@ -682,7 +683,7 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   // Reset
   ResetArrayData(  kParticleMax,   values);
 
-  // Set DATA default (currently Sts track parmams first)
+  // Set DATA default (refitted sts track to primary vertex)
   values[kPx]        = track->Px();
   values[kPy]        = track->Py();
   values[kPz]        = track->Pz();
@@ -704,6 +705,7 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   values[kM]         = track->M();
   values[kCharge]    = track->Charge();
   //  values[kPdgCode]   = track->PdgCode();
+  values[kChi2NDFtoVtx]  = track->ChiToVertex();
 
   // special
   values[kTrackLength] = track->GetGlobalTrack()->GetLength(); // cm
@@ -873,8 +875,9 @@ inline void PairAnalysisVarManager::FillVarStsTrack(const CbmStsTrack *track, Do
   /* values[kSTSChi2NDFtoVtx]  = chiPrim[0]; */
   /* printf("L1fitter: %f\n", values[kSTSChi2NDFtoVtx]); */
   // using KFFitter
-  values[kSTSChi2NDFtoVtx]  = fgKFFitter->GetChiToVertex(const_cast<CbmStsTrack*>(track),fgEvent->GetPrimaryVertex());
+  //  values[kChi2NDFtoVtx]  = fgKFFitter->GetChiToVertex(const_cast<CbmStsTrack*>(track),fgEvent->GetPrimaryVertex());
   //printf("KFfitter: %f\n", values[kSTSChi2NDFtoVtx]);
+  //  values[kChi2NDFtoVtx]  = track->GetChiToVertex();
 
   values[kMVDFirstHitPosZ]= minMvd;
   values[kSTSFirstHitPosZ]= minSts;
@@ -1408,10 +1411,10 @@ inline void PairAnalysisVarManager::InitFormulas() {
 }
 
 inline void PairAnalysisVarManager::InitFitter() {
-  if(!fgKFFitter) {
-    fgKFFitter = new CbmStsKFTrackFitter();
-    fgKFFitter->Init();
-  }
+  /* if(!fgKFFitter) { */
+  /*   fgKFFitter = new CbmStsKFTrackFitter(); */
+  /*   fgKFFitter->Init(); */
+  /* } */
   //  if(!fgL1Fitter) fgL1Fitter = new CbmL1PFFitter();
 }
 

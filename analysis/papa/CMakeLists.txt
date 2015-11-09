@@ -28,9 +28,9 @@ ${CBMROOT_SOURCE_DIR}/KF/Interface
 ${CBMROOT_SOURCE_DIR}/KF/KFQA
 ${CBMROOT_SOURCE_DIR}/KF/KFParticle
 
-#${CBMROOT_SOURCE_DIR}/L1
-#${CBMROOT_SOURCE_DIR}/L1/ParticleFinder
-#${CBMROOT_SOURCE_DIR}/L1/L1Algo
+${CBMROOT_SOURCE_DIR}/L1
+${CBMROOT_SOURCE_DIR}/L1/ParticleFinder
+${CBMROOT_SOURCE_DIR}/L1/L1Algo
 ##${CBMROOT_SOURCE_DIR}/L1/vectors
 
 )
@@ -127,7 +127,7 @@ EndIf()
 Set(LINKDEF CbmPapaLinkDef.h)
 Set(LIBRARY_NAME CbmPapa)
 Set(DEPENDENCIES
-    KF CbmSts CbmBase CbmData CbmGenerators Base Vc.a)
+    L1 KF CbmSts CbmBase CbmData CbmGenerators Base Vc.a)
 
 GENERATE_LIBRARY()
 

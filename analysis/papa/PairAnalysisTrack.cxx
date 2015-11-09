@@ -5,6 +5,7 @@
 //
 
 //#include <TObjArray.h>
+#include <vector>
 
 #include <TDatabasePDG.h>
 #include <TLorentzVector.h>
@@ -12,6 +13,7 @@
 #include "FairTrackParam.h"
 #include "CbmDetectorList.h"
 
+#include "CbmKFVertex.h"
 #include "CbmTrack.h"
 #include "CbmGlobalTrack.h"
 #include "CbmStsTrack.h"
@@ -21,6 +23,9 @@
 #include "CbmTofHit.h"
 #include "CbmMCTrack.h"
 #include "CbmTrackMatchNew.h"
+
+#include "L1Field.h"
+#include "CbmL1PFFitter.h"
 
 #include "PairAnalysisTrack.h"
 
@@ -42,6 +47,7 @@ PairAnalysisTrack::PairAnalysisTrack() :
   fRichProj(0x0),
   fMomentum(),
   fPosition(),
+  fChi2Vtx(),
   fCharge(0),
   fPdgCode(0),
   fLabel(-1),
@@ -57,6 +63,7 @@ PairAnalysisTrack::PairAnalysisTrack() :
 //______________________________________________
 PairAnalysisTrack::PairAnalysisTrack(const char* name, const char* title) :
   TNamed(name, title),
+  fPrimVertex(0x0),
   fGlblTrack(0x0),
   fStsTrack(0x0),
   fMuchTrack(0x0),
@@ -72,6 +79,7 @@ PairAnalysisTrack::PairAnalysisTrack(const char* name, const char* title) :
   fMomentum(),
   fPosition(),
   fCharge(0),
+  fChi2Vtx(0.),
   fPdgCode(0),
   fLabel(-1),
   fWeight(1.),
@@ -84,7 +92,8 @@ PairAnalysisTrack::PairAnalysisTrack(const char* name, const char* title) :
 }
 
 //______________________________________________
-PairAnalysisTrack::PairAnalysisTrack(CbmGlobalTrack *gtrk,
+PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
+				     CbmGlobalTrack *gtrk,
 				     CbmStsTrack *ststrk,
 				     CbmMuchTrack *muchtrk,
 				     CbmTrdTrack *trdtrk,
@@ -98,6 +107,7 @@ PairAnalysisTrack::PairAnalysisTrack(CbmGlobalTrack *gtrk,
 				     FairTrackParam *richproj
 				     ) :
   TNamed(),
+  fPrimVertex(vtx),
   fGlblTrack(gtrk),
   fStsTrack(ststrk),
   fMuchTrack(muchtrk),
@@ -112,6 +122,7 @@ PairAnalysisTrack::PairAnalysisTrack(CbmGlobalTrack *gtrk,
   fRichProj(richproj),
   fMomentum(),
   fPosition(),
+  fChi2Vtx(0.),
   fCharge(0),
   fPdgCode(0),
   fLabel(-1),
@@ -121,23 +132,37 @@ PairAnalysisTrack::PairAnalysisTrack(CbmGlobalTrack *gtrk,
   //
   // Constructor
   //
-  //TODO: check which track components should go into it, do fitting?
-  TVector3 mom;
-  ststrk->GetParamFirst()->Momentum(mom);
-  fMomentum.SetVect(mom);
   Double_t m2=TMath::Power(TDatabasePDG::Instance()->GetParticle(11)->Mass(), 2);
+
+  // using CbmL1PFFitter
+  vector<CbmStsTrack> stsTracks;
+  stsTracks.resize(1);
+  stsTracks[0] = *ststrk;
+  vector<L1FieldRegion> vField;
+  vector<float> chiPrim;
+  CbmL1PFFitter fPFFitter;
+  fPFFitter.GetChiToVertex(stsTracks, vField, chiPrim, *fPrimVertex, 3e6);
+  fChi2Vtx = chiPrim[0];
+
+  const FairTrackParam* vtxTrack = stsTracks[0].GetParamFirst();
+
+  TVector3 mom;
+  vtxTrack->Momentum(mom);
+  fMomentum.SetVect(mom);
   fMomentum.SetE( TMath::Sqrt(mom.Mag2()+m2) );
+
   TVector3 pos;
-  ststrk->GetParamFirst()->Position(pos);
+  vtxTrack->Position(pos);
   fPosition.SetVect(pos);
 
-  fCharge  = (ststrk->GetParamFirst()->GetQp()>0. ? +1. : -1. );
-  if(mctrk) fPdgCode = mctrk->GetPdgCode(); 
+  fCharge  = (vtxTrack->GetQp()>0. ? +1. : -1. );
+  if(mctrk) fPdgCode = mctrk->GetPdgCode();
 }
 
 //______________________________________________
 PairAnalysisTrack::PairAnalysisTrack(const PairAnalysisTrack& track) :
   TNamed(track.GetName(), track.GetTitle()),
+  fPrimVertex(0),
   fGlblTrack(0),
   fStsTrack(0),
   fMuchTrack(0),
@@ -152,6 +177,7 @@ PairAnalysisTrack::PairAnalysisTrack(const PairAnalysisTrack& track) :
   fRichProj(0),
   fMomentum(track.fMomentum),
   fPosition(track.fPosition),
+  fChi2Vtx(track.ChiToVertex()),
   fCharge(track.Charge()),
   fPdgCode(track.PdgCode()),
   fLabel(track.GetLabel()),

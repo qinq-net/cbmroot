@@ -57,6 +57,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"E",                      "E",                                                  "(GeV)"},
   {"M",                      "m_{inv}",                                            "(GeV/#it{c^{2}})"},
   {"Charge",                 "q",                                                  "(e)"},
+  {"Chi2NDFtoVtx",           "#chi^{2}/^{}N_{df}^{track#leftrightarrowvtx}",      "(#sigma)"},
   {"ImpactParXY",            "#it{dca}_{xy}",                                      "(cm)"},
   //  {"ImpactParZ",             "#it{dca}_{z}",                                       "(cm)"},
   {"InclAngle",              "#alpha_{incl}",                                      "(rad.)"},
@@ -261,7 +262,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
 
 PairAnalysisEvent* PairAnalysisVarManager::fgEvent           = 0x0;
 CbmKFVertex*    PairAnalysisVarManager::fgKFVertex         = 0x0;
-CbmStsKFTrackFitter* PairAnalysisVarManager::fgKFFitter    = 0x0;
+//CbmStsKFTrackFitter* PairAnalysisVarManager::fgKFFitter    = 0x0;
 //CbmL1PFFitter*  PairAnalysisVarManager::fgL1Fitter    = 0x0;
 TBits*          PairAnalysisVarManager::fgFillMap          = 0x0;
 Int_t           PairAnalysisVarManager::fgCurrentRun = -1;

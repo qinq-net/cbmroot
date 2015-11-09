@@ -27,6 +27,7 @@ class CbmRichRing;
 class CbmTofHit;
 class CbmMCTrack;
 class CbmTrackMatchNew;
+class CbmKFVertex;
 
 //class TObjArray;
 //class TProcessID;
@@ -37,8 +38,9 @@ public:
 
   PairAnalysisTrack();
   PairAnalysisTrack(const char* name, const char* title);
-  PairAnalysisTrack(CbmGlobalTrack *gtrk, CbmStsTrack *ststrk, CbmMuchTrack *muchtrk, CbmTrdTrack *trdtrk, CbmRichRing *richring, CbmTofHit *tofhit,
-		  CbmMCTrack *mctrk,
+  PairAnalysisTrack(CbmKFVertex *vtx,
+		    CbmGlobalTrack *gtrk, CbmStsTrack *ststrk, CbmMuchTrack *muchtrk, CbmTrdTrack *trdtrk, CbmRichRing *richring, CbmTofHit *tofhit,
+		    CbmMCTrack *mctrk,
 		    CbmTrackMatchNew *stsmatch, CbmTrackMatchNew *muchmatch, CbmTrackMatchNew *trdMatch, CbmTrackMatchNew *richMatch,
 		    FairTrackParam *richproj);
 
@@ -86,12 +88,14 @@ public:
   //  Double_t Eta()        const { return fMomentum.Eta(); }
   Double_t Y()          const { return fMomentum.Rapidity(); }
   
+  Double_t ChiToVertex()const { return fChi2Vtx;  }
   Short_t Charge()      const { return fCharge;  }
   Int_t PdgCode()       const { return fPdgCode; }
   Int_t   GetLabel()    const { return fLabel;   }
   Double_t GetWeight()  const { return fWeight;  }
 
 private:
+  CbmKFVertex      *fPrimVertex;      // primary vertex
   CbmGlobalTrack   *fGlblTrack;       // global track
   CbmStsTrack      *fStsTrack;        // sts track
   CbmMuchTrack     *fMuchTrack;       // much track
@@ -109,6 +113,7 @@ private:
 
   TLorentzVector fMomentum;           // momentum vector
   TLorentzVector fPosition;           // position vector
+  Double_t       fChi2Vtx;            // chi2 to vertex in sigma
   Short_t        fCharge;             // charge
   Int_t          fPdgCode;            // pdg code
   Int_t          fLabel;              // MC label
@@ -116,7 +121,7 @@ private:
   Int_t          fMultiMatch;         // MC label for n-times matched tracks
 
   PairAnalysisTrack &operator=(const PairAnalysisTrack &c);
-  ClassDef(PairAnalysisTrack,3)         // PairAnalysis Track
+  ClassDef(PairAnalysisTrack,4)         // PairAnalysis Track
 };
 
 
