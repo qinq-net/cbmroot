@@ -269,11 +269,11 @@ void monHV(TString configFile="filename.config")
   TString outFile = inFile;
   outFile.ReplaceAll(".txt",".png");
   outFile.ReplaceAll(".log",".png");
-  c1->SaveAs(outFile.ReplaceAll(".png","-1.png"));
-  c2->SaveAs(outFile.ReplaceAll("-1.png","-2.png"));
-  c3->SaveAs(outFile.ReplaceAll("-2.png","-3.png"));
-  c4->SaveAs(outFile.ReplaceAll("-3.png","-4.png"));
-  c5->SaveAs(outFile.ReplaceAll("-4.png","-5.png"));
-  c6->SaveAs(outFile.ReplaceAll("-5.png","-6.png"));
-  c7->SaveAs(outFile.ReplaceAll("-6.png","-7.png"));
+  c1->SaveAs(outFile.ReplaceAll(".png","-CurrentDist.png"));
+  c2->SaveAs(outFile.ReplaceAll("-CurrentDist.png","-VoltageDist.png"));
+  c3->SaveAs(outFile.ReplaceAll("-VoltageDist.png","-DeltaTDist.png"));
+  c4->SaveAs(outFile.ReplaceAll("-DeltaTDist.png","-DeltaTTrend.png"));
+  c5->SaveAs(outFile.ReplaceAll("-DeltaTTrend.png","-chIDDist.png"));
+  c6->SaveAs(outFile.ReplaceAll("-chIDDist.png","-CurrentTrend.png"));
+  c7->SaveAs(outFile.ReplaceAll("-CurrentTrend.png","-VoltageTrend.png"));
   }
