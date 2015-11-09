@@ -24,6 +24,7 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
   TString line("");
   TString sTime(""), sChID(""), sVoltage(""), sCurrent(""), name("");
   char cline[500];
+
   if (!in){
     cout << inFile << " not found!" << endl;
     fileStat = false;
@@ -39,7 +40,6 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
       line = cline;
       lineLength = (Int_t)line.Length();
       line.ReplaceAll("= Opaque: Float: ",""); 
-
 
       if (line.BeginsWith("201")){
 	sTime = line;
@@ -103,7 +103,7 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	  name.Form("hDeltaT_Current%03i",chID);
 	  mTrendingI[chID] = new TGraph();
 	  mTrendingI[chID]->SetTitle(name);
-	  mTrendingI[chID]->GetXaxis()->SetTitle("#Time (ms)");
+	  mTrendingI[chID]->GetXaxis()->SetTitle("Time (ms)");
 	  mTrendingI[chID]->GetYaxis()->SetTitle("I (A)");
 	  mTrendingI[chID]->SetLineStyle(lineStyle);
 	  mTrendingI[chID]->SetLineColor(lineColor);
@@ -134,7 +134,7 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	  name.Form("hDeltaT_Voltage%03i",chID);
 	  mTrendingU[chID] = new TGraph();
 	  mTrendingU[chID]->SetTitle(name);
-	  mTrendingU[chID]->GetXaxis()->SetTitle("#Time (ms)");
+	  mTrendingU[chID]->GetXaxis()->SetTitle("Time (ms)");
 	  mTrendingU[chID]->GetYaxis()->SetTitle("U (V)");
 	  mTrendingU[chID]->SetLineStyle(lineStyle);
 	  mTrendingU[chID]->SetLineColor(lineColor);
@@ -165,15 +165,34 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
   return fileStat;
 }
 
-void monHV(TString inFile="exampleHV.txt")
+
+void monHV(TString configFile="filename.config")
 {
   TDatime da(2015,10,30,12,00,00);
   gStyle->SetTimeOffset(da.Convert());
-  Bool_t debug(false), nextFile(true);
-  TString outFile = inFile;
-  outFile.ReplaceAll(".txt",".root");
-  outFile.ReplaceAll(".log",".root");
-  TFile *out = new TFile(outFile,"RECREATE");
+  Bool_t debug(false), diffFile(false), nextFile(true);
+  TString inFile("hv.log");
+  TString configline("");
+
+  char cname[200];
+  ifstream config;
+  config.open(configFile);
+
+  if (!config){
+    cout << configFile << " not found, assuming " << inFile << endl;
+  } else {
+    cout << configFile << " found." << endl;
+    config.getline(cname,200);
+    configline = cname;
+    inFile = configline;
+  }
+
+  cout << "File " << inFile << " will be read. Deviating wishes? (1 for yes, 0 for no): ";
+  cin >> diffFile;
+  if (diffFile){
+    cout << "File name?:   ";
+    cin >> inFile;
+  }
 
   TH1I* hTime = new TH1I("hTime","hTime",60000,0,60000);
   TH1I* hChID = new TH1I("hChID","hChID",991,-0.5,990.5);
@@ -190,65 +209,71 @@ void monHV(TString inFile="exampleHV.txt")
   std::map<Int_t, TH1I*> mCurrent;
   std::map<Int_t, TGraph*> mTrendingI;
   std::map<Int_t, TGraph*> mTrendingU;
+
   while (nextFile) {
     readFile(inFile, mVoltage, mCurrent, mTrendingI, mTrendingU, hTime, hChID, hDeltaT, gTime, hCurrent, hVoltage, debug);
    
-    cout << "Read new file?: (1,0)   ";
+    cout << "Read further file? (1 for yes, 0 for no): ";
     cin >> nextFile;
     if (nextFile){
       cout << "File name?:   ";
       cin >> inFile;
     }
   }
-  TCanvas *c = new TCanvas("view","view",4*800,2*600);
-  c->Divide(4,2);
-  c->cd(1)->SetLogy(1);
+  TCanvas *c1 = new TCanvas("c1","CurrentDist",800,600);
+  c1->SetLogy(1);
   hCurrent->DrawCopy();
-  c->cd(2)->SetLogy(1);
-  hVoltage->DrawCopy();
-  c->cd(3);
-  hDeltaT->DrawCopy();
-  c->cd(5);
-  hChID->DrawCopy();
-  out->cd();
-  c->cd(1);
   for (std::map<Int_t, TH1I*>::iterator it=mCurrent.begin(); it!=mCurrent.end();it++){
     it->second->DrawCopy("same");
-    it->second->Write("",TObject::kOverwrite);
   }
-  c->Update();
-  c->cd(2);
+  c1->Update();
+  TCanvas *c2 = new TCanvas("c2","VoltageDist",800,600);
+  c2->SetLogy(1);
+  hVoltage->DrawCopy();
   for (std::map<Int_t, TH1I*>::iterator it=mVoltage.begin(); it!=mVoltage.end();it++){
     it->second->DrawCopy("same");
-    it->second->Write("",TObject::kOverwrite);
   }
-  c->Update();
-  c->cd(6)->SetLogy(0);
-  TMultiGraph *multiI = new TMultiGraph();
-  for (std::map<Int_t, TGraph*>::iterator it=mTrendingI.begin(); it!=mTrendingI.end();it++){
-    multiI->Add(it->second);
-    it->second->Write("",TObject::kOverwrite);
-  }
-  multiI->Draw("AC");
-  multiI->GetXaxis()->SetTitle("Time (ms)");
-  multiI->GetYaxis()->SetTitle("I (A)");
-
-  c->Update();
-  c->cd(7)->SetLogy(0);
-  TMultiGraph *multiU = new TMultiGraph();
-  for (std::map<Int_t, TGraph*>::iterator it=mTrendingU.begin(); it!=mTrendingU.end();it++){
-    multiU->Add(it->second);
-    it->second->Write("",TObject::kOverwrite);
-  }
-  multiU->Draw("AC");
-  multiU->GetXaxis()->SetTitle("Time (ms)");
-  multiU->GetYaxis()->SetTitle("U (V)");
-  c->Update();  
-  c->cd(4);
+  c2->Update();
+  TCanvas *c3 = new TCanvas("c3","DeltaTDist",800,600);
+  hDeltaT->DrawCopy();
+  TCanvas *c4 = new TCanvas("c4","DeltaTTrend",800,600);
   gTime->GetXaxis()->SetTitle("Time (ms)");
   gTime->GetYaxis()->SetTitle("#Deltat (ms)");
   gTime->Draw();
-  c->Update();
-  c->Write("",TObject::kOverwrite);
-  c->SaveAs(outFile.ReplaceAll(".root",".png"));
-}
+  c4->Update();
+  TCanvas *c5 = new TCanvas("c5","chIDDist",800,600);
+  hChID->DrawCopy();
+  TCanvas *c6 = new TCanvas("c6","CurrentTrend",800,600);
+  c6->SetLogy(0);
+  TMultiGraph *multiI = new TMultiGraph();
+  for (std::map<Int_t, TGraph*>::iterator it=mTrendingI.begin(); it!=mTrendingI.end();it++){
+    multiI->Add(it->second);
+  }
+  multiI->Draw("AL");
+  multiI->GetYaxis()->SetRangeUser(0.,5E-7);
+  multiI->GetXaxis()->SetTitle("Time (ms)");
+  multiI->GetYaxis()->SetTitle("I (A)");
+  //  c6->Update(); // why doesnt this update the titles and range properly?
+  multiI->Draw("AL");
+  TCanvas *c7 = new TCanvas("c7","VoltageTrend",800,600);
+  c7->SetLogy(0);
+  TMultiGraph *multiU = new TMultiGraph();
+  for (std::map<Int_t, TGraph*>::iterator it=mTrendingU.begin(); it!=mTrendingU.end();it++){
+    multiU->Add(it->second);
+  }
+  multiU->Draw("AL");
+  multiU->GetXaxis()->SetTitle("Time (ms)");
+  multiU->GetYaxis()->SetTitle("U (V)");
+  c7->Update();
+
+  TString outFile = inFile;
+  outFile.ReplaceAll(".txt",".png");
+  outFile.ReplaceAll(".log",".png");
+  c1->SaveAs(outFile.ReplaceAll(".png","-1.png"));
+  c2->SaveAs(outFile.ReplaceAll("-1.png","-2.png"));
+  c3->SaveAs(outFile.ReplaceAll("-2.png","-3.png"));
+  c4->SaveAs(outFile.ReplaceAll("-3.png","-4.png"));
+  c5->SaveAs(outFile.ReplaceAll("-4.png","-5.png"));
+  c6->SaveAs(outFile.ReplaceAll("-5.png","-6.png"));
+  c7->SaveAs(outFile.ReplaceAll("-6.png","-7.png"));
+  }
