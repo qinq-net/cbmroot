@@ -5,6 +5,7 @@
 
 // Changelog
 //
+// 2015-11-09 - PAL- Modify to easily prepare tof_v14_0a to tof_v14_0e on model of 13_5a to 13_5e
 // 2014-06-30 - NH - prepare tof_v14_0  geometry - SIS 300 hadron  : TOF_Z_Front =  880 cm //Bucharest 
 // 2014-06-27 - NH - prepare tof_v13_6b geometry - SIS 300 hadron  : TOF_Z_Front =  880 cm //external input
 // 2013-10-16 - DE - prepare tof_v13_5a geometry - SIS 100 hadron  : TOF_Z_Front =  450 cm
@@ -42,8 +43,11 @@
 #include <sstream>
 
 // Name of geometry version and output file
-const TString geoVersion = "tof_v14-0a";     //6 m
-//const TString geoVersion = "tof_v14-0b";   //10 m
+//const TString geoVersion = "tof_v14-0a";     //4.5 m
+//const TString geoVersion = "tof_v14-0b";     //6 m
+//const TString geoVersion = "tof_v14-0c";     //6.5 m
+//const TString geoVersion = "tof_v14-0d";     //8.8 m
+const TString geoVersion = "tof_v14-0e";     //10 m
 //const TString geoVersion = "tof_v13-6b";   //10 m
 //const TString geoVersion = "tof_v13-5b";
 //const TString geoVersion = "tof_v13-5c";
@@ -54,7 +58,18 @@ const TString FileNameGeo  = geoVersion + "_geo.root";
 const TString FileNameInfo = geoVersion + ".geo.info";
 
 // TOF_Z_Front corresponds to front cover of outer super module towers
-const Float_t TOF_Z_Front =  450;  // SIS 100 hadron
+const Float_t TOF_Z_Front =  (     "tof_v14-0a" == geoVersion  ?  450 : // SIS 100 hadron
+                              (    "tof_v14-0b" == geoVersion  ?  600 : // SIS 100 electron
+                               (   "tof_v14-0c" == geoVersion  ?  650 : // SIS 100 muon
+                                (  "tof_v14-0d" == geoVersion  ?  880 : // SIS 300 electron
+                                 ( "tof_v14-0e" == geoVersion  ? 1020 : // SIS 300 muon
+                                   600 // Set default to SIS 100 electron 
+                                 )
+                                )
+                               )
+                              )
+                             );
+//const Float_t TOF_Z_Front =  450;  // SIS 100 hadron
 //const Float_t TOF_Z_Front =  600;  // SIS 100 electron
 //const Float_t TOF_Z_Front =  650;  // SIS 100 muon
 //const Float_t TOF_Z_Front =  880;  // SIS 300 electron
@@ -247,11 +262,13 @@ const Float_t Wall_Z_PositionShift      = -998.;  // outer wall placed at 1000
 // for 6m 
 const Float_t InnerWall_Z_PositionShift = 0.;    // -600.;  // inner wall placed at 600
 const Float_t Wall_Z_PositionShift      = -425.; // -998.;  // outer wall placed at 1000
+
 /*
 // for 10 m
 const Float_t InnerWall_Z_PositionShift = 400.;    // -600.;  // inner wall placed at 600
 const Float_t Wall_Z_PositionShift      = -25.; // -998.;  // outer wall placed at 1000
 */
+
 const Float_t Wall_Z_Position = TOF_Z_Front + 0.5 * Module_Size_Z[0] + 3.5 * Module_Size_Z[1] + 4.5 * Module_Size_Z[2];
 //const Float_t Wall_Z_Position = TOF_Z_Front + 98.5;  // corresponds to center of front module in the inner tower
 //const Float_t Wall_Z_Position = 1050;  // corresponds to center of front module in the inner tower
@@ -365,11 +382,16 @@ void read_module_positions();
 
 void Create_TOF_Geometry_v14_0() {
   // Load the necessary FairRoot libraries 
-  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-  basiclibs();
-  gSystem->Load("libGeoBase");
-  gSystem->Load("libParBase");
-  gSystem->Load("libBase");
+//  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
+//  basiclibs();
+//  gSystem->Load("libGeoBase");
+//  gSystem->Load("libParBase");
+//  gSystem->Load("libBase");
+
+   // Printout what we are generating
+   std::cout << "Generating geometry "<< geoVersion 
+             << " at " << TOF_Z_Front << " cm from target."
+             << std::endl;
 
   // read input Data
   read_module_positions();
@@ -451,6 +473,10 @@ void Create_TOF_Geometry_v14_0() {
   //gModules[5]->Draw("");
   //  top->Raytrace();
 
+   // Printout what we are generating
+   std::cout << "Done generating geometry "<< geoVersion 
+             << " at " << TOF_Z_Front << " cm from target."
+             << std::endl;
 }
 
 void read_module_positions()
