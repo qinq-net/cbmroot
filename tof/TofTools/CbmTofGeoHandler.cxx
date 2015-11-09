@@ -76,33 +76,34 @@ Int_t CbmTofGeoHandler::CheckGeometryVersion()
       // With this naming scheme the geometry version is completely qualified
       LOG(INFO)<< "Found TOF geometry " <<TString(node->GetName())<< FairLogger::endl;
       if (TString(node->GetName()).EqualTo("tof1_0")) { 
-    	LOG(INFO)<< "Found TOF geometry v07a" << FairLogger::endl;
+        LOG(INFO)<< "Found TOF geometry v07a" << FairLogger::endl;
         fTofId = new CbmTofDetectorId_v07a();
         fGeoVersion = k07a;
         return fGeoVersion;
       } else if (TString(node->GetName()).EqualTo("tof_v12b_0")) {
-    	LOG(INFO)<< "Found TOF geometry v12b." << FairLogger::endl;
-	fTofId = new CbmTofDetectorId_v12b();
-	fGeoVersion = k12b;
+        LOG(INFO)<< "Found TOF geometry v12b." << FairLogger::endl;
+        fTofId = new CbmTofDetectorId_v12b();
+        fGeoVersion = k12b;
         return fGeoVersion;
       } else if (TString(node->GetName()).Contains("v13")){
-               //TString(node->GetName()).EqualTo("tof_v13-3a_0")) {
-    	LOG(INFO)<< "Found TOF geometry "<<TString(node->GetName())
+        //TString(node->GetName()).EqualTo("tof_v13-3a_0")) {
+        LOG(INFO)<< "Found TOF geometry "<<TString(node->GetName())
                  <<", treat as Id 12b   "<< FairLogger::endl;
         fTofId = new CbmTofDetectorId_v12b();
-	fGeoVersion = k12b;
+        fGeoVersion = k12b;
         return fGeoVersion;
-      } else if (TString(node->GetName()).Contains("v14")){
-    	LOG(INFO)<< "CbmTofGeoHandler::CheckGeometryVersion: Found TOF geometry "<<TString(node->GetName())
+      } else if ( (TString(node->GetName()).Contains("v14")) || 
+                  (TString(node->GetName()).Contains("v16a")) ){
+        LOG(INFO)<< "CbmTofGeoHandler::CheckGeometryVersion: Found TOF geometry "<<TString(node->GetName())
                  <<", treat as Id 14a   "<< FairLogger::endl;
-	//	if(NULL!=fTofId) fTofId->Delete();
-      	fTofId = new CbmTofDetectorId_v14a();
-	fGeoVersion = k14a;
+        //	if(NULL!=fTofId) fTofId->Delete();
+        fTofId = new CbmTofDetectorId_v14a();
+        fGeoVersion = k14a;
         return fGeoVersion;
       } else {
-    	LOG(FATAL)<< "Found an unknown TOF geometry." << FairLogger::endl;
-    	fGeoVersion = -1;
-    	return fGeoVersion;
+        LOG(FATAL)<< "Found an unknown TOF geometry." << FairLogger::endl;
+        fGeoVersion = -1;
+        return fGeoVersion;
       }
     }
   }

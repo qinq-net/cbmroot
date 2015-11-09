@@ -1,0 +1,16 @@
+#
+##   tof_v16a_1m information file
+#
+
+# created 20151109
+
+# TOF setup
+SIS 100 muon
+
+# envelope
+ 650.00 cm   start of TOF (z)
+ 750.00 cm   end   of TOF (z)
+
+# central tower position
+ 735.00 cm   center of staggered, front RPC cell at x=0
+

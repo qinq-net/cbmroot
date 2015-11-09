@@ -12,17 +12,9 @@
 // --------------------------------------------------------------------------
 
 
-void create_digipar(TString geomFile="full.root", Int_t nEvents = 0)
+void create_digipar(TString fileName="tof_v16a_1e", Int_t nEvents = 0)
 {
 
-  //Extract Filename without extension and path 
-  //TODO: Do this in a better way.
-  TString fileName = geomFile;
-  fileName.ReplaceAll(".root","");
-  if (fileName.Contains("/")){
-    fileName=fileName("/.*$"); //extract substring with filename
-    fileName.ReplaceAll("/","");
-  }
   cout<<"fileName: "<<fileName<<endl;
 
 
@@ -33,7 +25,7 @@ void create_digipar(TString geomFile="full.root", Int_t nEvents = 0)
   Int_t iVerbose = 0;
 
   // Input file (MC events)
-  TString inFile = "auaumbias.mc.root";
+  TString inFile = "auaumbias." + fileName + ".mc.root";
 
   // Geometry File
   TString geoFile = "geofile_" + fileName + ".root";

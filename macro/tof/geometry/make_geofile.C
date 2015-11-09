@@ -8,7 +8,7 @@
 //
 // --------------------------------------------------------------------------
 
-void make_geofile(TString stofGeom = "tof_v13c" )
+void make_geofile(TString stofGeom = "tof_v16a_1e" )
 {
    Int_t nEvents = 1;
   // ========================================================================
@@ -18,8 +18,8 @@ void make_geofile(TString stofGeom = "tof_v13c" )
   TString inDir   = gSystem->Getenv("VMCWORKDIR");
   TString inFile  = inDir + "/input/urqmd.ftn14";
   TString outDir  = ".";
-  TString outFile = outDir + "/auaumbias.mc.root";
-  TString parFile = outDir + "/auaumbias.params.root";
+  TString outFile = outDir + "/auaumbias." + stofGeom + ".mc.root";
+  TString parFile = outDir + "/auaumbias." + stofGeom + ".params.root";
   
   // -----  Geometries  -----------------------------------------------------
   TString caveGeom   = "cave.geo";
