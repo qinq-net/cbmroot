@@ -1,6 +1,7 @@
 # Put the .rootrc file into the directory from which root is executed.
 # Otherwise the rootalias file is not loaded
 File(COPY ${CBMROOT_SOURCE_DIR}/macro/include/.rootrc DESTINATION ${CBMROOT_BINARY_DIR}/macro/much)
+File(COPY ${CBMROOT_SOURCE_DIR}/macro/much/data/much_digi_sector.seg DESTINATION ${CBMROOT_BINARY_DIR}/macro/much/data)
 
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/much/much_sim.C)
 add_test(much_sim ${CBMROOT_BINARY_DIR}/macro/much/much_sim.sh)
