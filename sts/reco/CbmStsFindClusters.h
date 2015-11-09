@@ -41,8 +41,16 @@ class CbmStsFindClusters : public FairTask
 {
 
 	public:
-    /** Constructor **/
-    CbmStsFindClusters();
+    /** Constructor 
+     ** @param finderModel  Cluster finder model.
+     **			    0 = ideal: using MC information
+     **			    1 = simple: only neighboring strips
+     **			    2 = with gap: take into account dead channels
+     ** @param algorithm  Cluster finder algorithm.
+     **			    0 = center-of-gravity
+     **			    1 = advanced(for 2-strip and bigger clusters)
+     **/
+    CbmStsFindClusters(Int_t finderModel = 1, Int_t algorithm = 1);
 
 
     /** Destructor  **/
@@ -80,17 +88,16 @@ class CbmStsFindClusters : public FairTask
     void UseTbClusterFinder()		{ fUseFinderTb 	= kTRUE; }
 
 
-    /** Set the gap-flag **/
-    void SetGap(Bool_t gapFlag = 0) { fGap = gapFlag;}
-
-	private:
+    	private:
 
     TClonesArray* fDigis;             ///< Input array of CbmStsDigi
     TClonesArray* fClusters;          ///< Output array of CbmStsCluster
     CbmStsSetup*  fSetup;             ///< Instance of STS setup
     CbmStsClusterFinderSimple* fFinder;  ///< Cluster finder
     TStopwatch    fTimer;             ///< ROOT timer
-    Bool_t        fGap;		      ///< flag to allow a one-strip gap in a cluster
+    Int_t         fFinderModel;       ///< Cluster finder model
+    Int_t         fAlgorithm;         ///< Cluster finder algorithm
+    
     CbmTimeSlice* fTimeSlice;               ///< Time slice object in the DAQ approach
     vector<CbmStsDigi> fDigiData;          	///< Vector of digis for the time slices
     Bool_t fDaq;							///< Using DAQ

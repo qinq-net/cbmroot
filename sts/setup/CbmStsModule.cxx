@@ -11,10 +11,10 @@
 #include "CbmStsCluster.h"
 #include "CbmStsDigi.h"
 #include "digitize/CbmStsDigitize.h"
+#include "digitize/CbmStsSensorTypeDssd.h"
 #include "setup/CbmStsModule.h"
 #include "setup/CbmStsSensorType.h"
 #include "setup/CbmStsSetup.h"
-
 
 
 // -----   Default constructor   -------------------------------------------
@@ -74,6 +74,7 @@ CbmStsModule::~CbmStsModule() {
 			delete (*sigIt);
 		}
 	}
+
 }
 // -------------------------------------------------------------------------
 
@@ -250,12 +251,11 @@ Int_t CbmStsModule::ChargeToAdc(Double_t charge) {
 // -------------------------------------------------------------------------
 
 
-
 // -----   Create a cluster in the output TClonesArray   -------------------
 void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
-		                             TClonesArray* clusterArray) {
+		                             TClonesArray* clusterArray, Int_t algorithm) {
 
-	CbmStsCluster* cluster = NULL;
+        CbmStsCluster* cluster = NULL;
 
 	// --- If output array is specified: Create a new cluster there
 	if ( clusterArray ) {
@@ -266,17 +266,31 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 	// --- If no output array is specified: Create a new cluster and add it
 	// --- to the module
 	else {
-		cluster = new CbmStsCluster();
-		AddCluster(cluster);
+	    cluster = new CbmStsCluster();
+	    AddCluster(cluster);
 	}
+
+	//get pitch assuming that pitch is the same for all sensors in a module and for both sides of a sensor
+	Double_t pitch = dynamic_cast<CbmStsSensorTypeDssd*>(dynamic_cast<CbmStsSensor*>(GetDaughter(0)) -> GetType()) -> GetPitch(0);
 
 	// --- Calculate total charge, cluster position and spread
 	Double_t sum1 = 0.;  // sum of charges
-	Double_t sum2 = 0.;  // sum of channel * charge
+	Double_t sum2 = 0.;  // position in channel number
 	Double_t sum3 = 0.;  // sum of channel^2 * charge
 	Double_t tsum = 0.;  // sum of digi times
+	
+	Double_t errorMethod = 0.;
+	Double_t errorMeas = 0.;
+	Double_t errorNoise2 = fNoise*fNoise;
+	Double_t errorDiscr2 = fDynRange * fDynRange / 12. / fNofAdcChannels / fNofAdcChannels;  
+	Double_t errorQ = sqrt(errorNoise2 + errorDiscr2);
+
+	Double_t error = 0.;
 	Int_t index = -1;
-	for (Int_t channel = clusterStart; channel <= clusterEnd; channel++) {
+
+	//--- Center-of-gravity algorithm
+	if (algorithm == 0) {
+	    for (Int_t channel = clusterStart; channel <= clusterEnd; channel++) {
 		CbmStsDigi* digi = GetDigi(channel, index);
 		if ( ! digi ) continue;
 		cluster->AddDigi(index);
@@ -285,29 +299,114 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 		sum2 += charge * Double_t(channel);
 		sum3 += charge * Double_t(channel) * Double_t(channel);
 		tsum += digi->GetTime();
-	}
-	if ( sum1 > 0. ) {
+	    }
+
+	    if ( sum1 > 0. ) {
 		sum2 /= sum1;
-		sum3 /= sum1;
+		for (Int_t channel = clusterStart; channel <= clusterEnd; channel++) {
+		    CbmStsDigi* digi = GetDigi(channel, index);
+		    if ( ! digi ) continue;
+		    errorMeas += (channel - sum2) * (channel - sum2);
+		}
+		errorMeas *= pitch / sum1 * errorQ;
+	    }
+
 	}
-	else {
-		sum2 = -1.;
-		sum3 = -1.;
-	}
+
+	// --- advanced algorithm
+	 else if (algorithm == 1){
+	    //1-strip cluster
+	    if (clusterStart == clusterEnd){
+		CbmStsDigi* digi = GetDigi(clusterStart, index);
+		if ( digi ){
+		    cluster->AddDigi(index);
+		     Double_t charge = AdcToCharge(digi->GetCharge());
+		    sum1 = charge;
+		    sum2 = Double_t (clusterStart);
+		    sum3 = charge * Double_t(clusterStart) * Double_t(clusterStart);
+		    tsum += digi->GetTime();
+
+		    if (sum1 > 0.) {
+			errorMethod = pitch / sqrt(24.);
+			errorMeas = 0.;
+		    } 
+		}
+	    }//end of 1-strip clusters
+
+	    //2- strip cluster 
+	    if ((clusterEnd - clusterStart) == 1){
+		Double_t chargeFirst = 0.;
+		Double_t chargeLast = 0.;
+		for (Int_t channel = clusterStart; channel <= clusterEnd; channel++) {
+		    CbmStsDigi* digi = GetDigi(channel, index);
+		    if ( ! digi ) continue;
+		    cluster->AddDigi(index);
+		    Double_t charge = AdcToCharge(digi->GetCharge());
+		    sum1 += charge;
+		    sum3 += charge * Double_t(channel) * Double_t(channel);
+		    tsum += digi->GetTime();
+		    if (channel == clusterStart) chargeFirst = charge;
+		    if (channel == clusterEnd) chargeLast = charge;
+		}
+		if ( sum1 > 0. ) {
+		    sum2 = clusterEnd - 0.5 + (chargeLast - chargeFirst) / TMath::Max(chargeLast, chargeFirst) / 3.;
+		    errorMethod =  pitch / sqrt(72.) * TMath::Abs(chargeLast - chargeFirst) / TMath::Max(chargeLast, chargeFirst);
+		    errorMeas = pitch / 3. / TMath::Max(chargeLast, chargeFirst) / TMath::Max(chargeLast, chargeFirst) * sqrt (chargeLast*chargeLast + chargeFirst*chargeFirst) * errorQ;
+		} 
+	    }// end of 2-strip clusters
+
+	    //3,4....-strip cluster
+	    if (1 < (clusterEnd - clusterStart)){
+		Double_t chargeFirst = 0.;
+		Double_t chargeLast = 0.;
+		Double_t chargeMiddle = 0.;
+		for (Int_t channel = clusterStart; channel <= clusterEnd; channel++) {
+		    CbmStsDigi* digi = GetDigi(channel, index);
+		    if ( ! digi ) continue;
+		    cluster->AddDigi(index);
+		    Double_t charge = AdcToCharge(digi->GetCharge());
+		    sum1 += charge;
+		    sum3 += charge * Double_t(channel) * Double_t(channel);
+		    if (channel == clusterStart) chargeFirst = charge;
+		    if (channel == clusterEnd) chargeLast = charge;
+		    if (channel > clusterStart && channel < clusterEnd) {
+			chargeMiddle += charge;
+		    }
+		    tsum += digi->GetTime();
+		}
+		chargeMiddle /= (clusterEnd - clusterStart - 1);
+		sum2 = 0.5 * (clusterStart + clusterEnd + (chargeLast - chargeFirst) / chargeMiddle);
+		errorMethod = 0.;
+		errorMeas = pitch / 2. * errorQ / chargeMiddle * sqrt (2. + (chargeLast - chargeFirst) * (chargeLast - chargeFirst) / chargeMiddle / chargeMiddle);
+
+	    }// end of 3-strip and bigger clusters
+	 }// end of advanced
+
+	 if (sum1 > 0) {
+	     sum3 /= sum1;
+	     error = sqrt(errorMethod*errorMethod + errorMeas*errorMeas);
+	 }
+	 else {
+	     sum3 = -1.;
+	     sum2 = -1.;
+	     error = -1.;
+	 }
+
 	// --- Cluster time is average of all digi time
 	if ( cluster->GetNofDigis() ) tsum /= cluster->GetNofDigis();
 	else tsum = 0.;
 	cluster->SetProperties(sum1, sum2, sum3, tsum);
+	cluster->SetPositionError(error);
 	cluster->SetAddress(fAddress);
 
 	LOG(DEBUG2) << GetName() << ": Created new cluster from channel "
-			        << clusterStart << " to " << clusterEnd << ", charge "
-			        << sum1 << ", time " << tsum << " ns, channel mean "
-			        << sum2 << FairLogger::endl;
+	    << clusterStart << " to " << clusterEnd << ", charge "
+	    << sum1 << ", time " << tsum << "ns, channel mean "
+	    << sum2 << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
-
+	
 
 // -----   Digitise an analog charge signal   ------------------------------
 void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
@@ -331,7 +430,6 @@ void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
 	if ( charge > fDynRange ) adc = fNofAdcChannels - 1;
 	else adc = UShort_t( (charge - fThreshold) / fDynRange
 				     * Double_t(fNofAdcChannels) );
-
 	// --- Digitise time
 	// Note that the time is truncated at 0 to avoid negative times. This
 	// will show up in event-by-event simulations, since the digi times
@@ -350,14 +448,13 @@ void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
 	CbmStsDigitize* digitiser = CbmStsSetup::Instance()->GetDigitizer();
 	if ( digitiser ) digitiser->CreateDigi(address, dTime, adc,
 			                                   signal->GetMatch());
-
+	
 	// --- If no digitiser task is present (debug mode): create a digi and
 	// --- add it to the digi buffer.
 	else {
 		CbmStsDigi* digi = new CbmStsDigi(address, dTime, adc);
 		AddDigi(digi, 0);
 	}
-
 	return;
 }
 // -------------------------------------------------------------------------
@@ -585,6 +682,7 @@ void CbmStsModule::CreateClusterTb(vector<Int_t> digiIndexes, Double_t s1,
 	fIt_DigiTb = fDigisTb.begin();
 }
 // -------------------------------------------------------------------------
+
 
 
 ClassImp(CbmStsModule)

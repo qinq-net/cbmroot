@@ -21,10 +21,12 @@
 #include "CbmStsModule.h"
 
 // -----   Constructor   ---------------------------------------------------
-CbmStsClusterFinderSimple::CbmStsClusterFinderSimple() : TObject(),
+CbmStsClusterFinderSimple::CbmStsClusterFinderSimple(Int_t finderModel, Int_t algorithm) : TObject(),
     fClusters(NULL)
-  , fGap (0)
   , fNofClustersWithGap (0)
+  , fNofSplittedClusters (0)
+  , fFinderModel(finderModel)			    
+  , fAlgorithm(algorithm)			    
 {
 }
 // -------------------------------------------------------------------------
@@ -37,7 +39,7 @@ CbmStsClusterFinderSimple::~CbmStsClusterFinderSimple() {
 // -------------------------------------------------------------------------
 
 
-// -----   Cluster finding Simple  -----------------------------------------
+// -----   Cluster finding   -----------------------------------------------
 Int_t CbmStsClusterFinderSimple::FindClustersSimple(CbmStsModule* module) {
 
     // --- Counter and indizes
@@ -52,38 +54,144 @@ Int_t CbmStsClusterFinderSimple::FindClustersSimple(CbmStsModule* module) {
     map<Int_t, pair<CbmStsDigi*, Int_t> >* digiMap = module->GetDigiMap();
     map<Int_t, pair<CbmStsDigi*, Int_t> >::iterator digiIt;
 
-    // --- Loop over digis in module
-    for (digiIt = digiMap->begin(); digiIt != digiMap->end(); digiIt++) {
-    	Int_t channel = digiIt->first;  // current channel
+    Bool_t gap = 0;
+    Int_t mcIndex = -1;
 
-    	// --- No cluster yet; start one with the first digi
-    	if ( clusterStart == -1 ) {
-    		clusterStart = channel;
-    		clusterEnd   = channel;
-    	}
+    switch( fFinderModel ){
 
-    	// --- Existing cluster: check whether adjacent
-    	else {          // current cluster is there
+	// --- Ideal model: collect neighboring strips which correspond to one particle
+	// TODO implement gaps in clusters: in case of non-ideal digitization
+	case 0:
 
-    		// --- Neighbouring channel; add to cluster. Avoid clustering channels
-    		// --- on different sensor sides.
-    		if ( channel == clusterEnd + 1  &&  channel != channelHalf )
-    			clusterEnd = channel;
+	    // --- Loop over digis in module
+	    for (digiIt = digiMap->begin(); digiIt != digiMap->end(); digiIt++) {
+		Int_t channel = digiIt->first;  // current channel
+		CbmMatch * digiMatch = get<0>(digiIt->second) -> GetMatch();
 
-    		// --- Not neighbouring; close old cluster and start new one
-    		else {
-     			module->CreateCluster(clusterStart, clusterEnd, fClusters);
-    			nClusters++;
-    			clusterStart = channel;
-    			clusterEnd   = channel;
-    		}  //? not neighbouring channel
+		// --- Avoid overlaped particles in a digi
+		if (digiMatch -> GetNofLinks() != 1) { 
+		    LOG(DEBUG4) << "IdealClusterFinder: two particles produce one digi - ignore the digi" << FairLogger::endl;
+		    continue;
+		} 
+		// --- No cluster yet; start one with the first digi
+		if ( clusterStart == -1 ) {
+		    mcIndex = digiMatch -> GetLink(0).GetIndex();
+		    clusterStart = channel;
+		    clusterEnd   = channel;
+		}
 
-    	} //? current cluster exists
+		// --- Existing cluster: check whether adjacent
+		else {          // current cluster is there
 
-    }  //# digis in module
+		    // --- Neighbouring channel; add to cluster. Avoid clustering channels
+		    // --- on different sensor sides.
+		    if ( channel == clusterEnd + 1  &&  channel != channelHalf){
+			if (digiMatch -> GetLink(0).GetIndex() == mcIndex) clusterEnd = channel;
+			// --- Digi from other particle: close old cluster and start new one
+			else { 			
+			    mcIndex = digiMatch -> GetLink(0).GetIndex();
+			    module->CreateCluster(clusterStart, clusterEnd, fClusters, fAlgorithm);
+			    nClusters++;
+			    fNofSplittedClusters++;
+			    clusterStart = channel;
+			    clusterEnd   = channel;
+			}
+		}
+		// --- Not neighbouring; close old cluster and start new one
+		else {
+		    mcIndex = digiMatch -> GetLink(0).GetIndex();
+		    module->CreateCluster(clusterStart, clusterEnd, fClusters, fAlgorithm);
+		    nClusters++;
+		    clusterStart = channel;
+		    clusterEnd   = channel;
+		}  //? not neighbouring channel
+
+		} //? current cluster exists
+
+	    }  //# digis in module
+	    break;
+
+	// --- Simple model: combine only neighboring strips
+	case 1:
+
+	    // --- Loop over digis in module
+	    for (digiIt = digiMap->begin(); digiIt != digiMap->end(); digiIt++) {
+		Int_t channel = digiIt->first;  // current channel
+
+		// --- No cluster yet; start one with the first digi
+		if ( clusterStart == -1 ) {
+		    clusterStart = channel;
+		    clusterEnd   = channel;
+		}
+
+		// --- Existing cluster: check whether adjacent
+		else {          // current cluster is there
+
+		    // --- Neighbouring channel; add to cluster. Avoid clustering channels
+		    // --- on different sensor sides.
+		    if ( channel == clusterEnd + 1  &&  channel != channelHalf )
+			clusterEnd = channel;
+
+		    // --- Not neighbouring; close old cluster and start new one
+		    else {
+			module->CreateCluster(clusterStart, clusterEnd, fClusters, fAlgorithm);
+			nClusters++;
+			clusterStart = channel;
+			clusterEnd   = channel;
+		    }  //? not neighbouring channel
+
+		} //? current cluster exists
+
+	    }  //# digis in module
+	    break;
+
+	// --- Simple model with gap: allow 1-strip gap in cluster if gap-strip is dead
+	case 2:
+
+	    set <Int_t> deadChannels = module->GetSetOfDeadChannels();
+	    // --- Loop over digis in module
+	    for (digiIt = digiMap->begin(); digiIt != digiMap->end(); digiIt++) {
+		Int_t channel = digiIt->first;  // current channel
+
+		// --- No cluster yet; start one with the first digi
+		if ( clusterStart == -1 ) {
+		    clusterStart = channel;
+		    clusterEnd   = channel;
+		}
+
+		// --- Existing cluster: check whether adjacent
+		else {          // current cluster is there
+
+		    // --- Neighbouring channel; add to cluster. Avoid clustering channels
+		    // --- on different sensor sides.
+		    if ( channel == clusterEnd + 1  &&  channel != channelHalf )
+			clusterEnd = channel;
+
+		    // --- Not neighbouring; close old cluster and start new one
+		    else if ( channel == (clusterEnd + 2) && deadChannels.find(channel - 1) != deadChannels.end() && !gap ){
+			clusterEnd = channel;
+			gap = 1;
+		    }
+		    // --- Not neighbouring; close old cluster and start new one
+		    else {
+			module->CreateCluster(clusterStart, clusterEnd, fClusters, fAlgorithm);
+			if (gap) fNofClustersWithGap ++;
+			nClusters++;
+			clusterStart = channel;
+			clusterEnd   = channel;
+			gap = 0;
+		    }  //? not neighbouring channel
+
+		} //? current cluster exists
+
+	    }  //# digis in module
+	break;
+    }
+
 
     // --- Create last cluster
-    module->CreateCluster(clusterStart, clusterEnd, fClusters);
+    module->CreateCluster(clusterStart, clusterEnd, fClusters, fAlgorithm);
+    if (gap) fNofClustersWithGap ++;
     nClusters++;
 
    return nClusters;

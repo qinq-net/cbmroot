@@ -25,7 +25,7 @@ using namespace std;
 
 
 // -----   Constructor   ---------------------------------------------------
-CbmStsFindClusters::CbmStsFindClusters()
+CbmStsFindClusters::CbmStsFindClusters(Int_t finderModel, Int_t algorithm)
     : FairTask("StsFindClusters", 1)
     , fDigis(NULL)
     , fClusters(NULL)
@@ -37,12 +37,14 @@ CbmStsFindClusters::CbmStsFindClusters()
     , fNofClustersTot(0.)
     , fTimeTot(0.)
     , fActiveModules()
-    , fGap(kFALSE)
-	, fDaq(kFALSE)
-	, fUseFinderTb(kFALSE)
-	, fTimeSlice(NULL)
-	, fDigiData()
+    , fFinderModel(finderModel)
+    , fAlgorithm(algorithm)
+    , fDaq(kFALSE)
+    , fUseFinderTb(kFALSE)
+    , fTimeSlice(NULL)
+      , fDigiData()
 {
+   // LOG(INFO) << "ClusterFinderModel = " << fFinderModel << ", algorithm = " << fAlgorithm << endl;
 }
 // -------------------------------------------------------------------------
 
@@ -113,8 +115,11 @@ void CbmStsFindClusters::Finish() {
 	LOG(INFO) << "Clusters / event   : "
 			      << fNofClustersTot / Double_t(fNofEvents)
 			      << FairLogger::endl;
-	LOG(INFO) << "ClustersWithGap / e: "
-				<< Double_t(fFinder -> GetNofClustersWithGap()) / Double_t (fNofEvents)
+	if (fFinderModel == 2) LOG(INFO) << "ClustersWithGap / e: " 
+			      << Double_t(fFinder -> GetNofClustersWithGap()) / Double_t (fNofEvents)
+			      << FairLogger::endl;
+	if (fFinderModel == 0) LOG(INFO) << "SplittedClusters/ e: " 
+			      << Double_t(fFinder -> GetNofSplittedClusters()) / Double_t (fNofEvents)
 			      << FairLogger::endl;
 	LOG(INFO) << "Digis per cluster  : " << fNofDigisTot / fNofClustersTot
 			      << FairLogger::endl;
@@ -180,9 +185,8 @@ InitStatus CbmStsFindClusters::Init()
     fSetup = CbmStsSetup::Instance();
 
     // --- Create cluster finder
-    fFinder = new CbmStsClusterFinderSimple();
+    fFinder = new CbmStsClusterFinderSimple(fFinderModel, fAlgorithm);
     fFinder->SetOutputArray(fClusters);
-    fFinder->SetGapFlag(fGap);
 
     LOG(INFO) << GetName() << ": Initialisation successful"
     		      << FairLogger::endl;

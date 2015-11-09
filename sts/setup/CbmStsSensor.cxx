@@ -78,9 +78,8 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
 	// --- If a TGeoNode is attached, transform into global coordinate system
 	Double_t local[3] = { xLocal, yLocal, 0.};
 	Double_t global[3];
-	// TODO: Set proper errors and covariances. For the time being, pitch/sqrt(12)
-	// is used as an approximation.
-	Double_t error[3] = { 0.0017, 0.0017, 0.0017 };
+
+	Double_t error[3] = { clusterF->GetPositionError()*clusterF->GetPositionError(), clusterB->GetPositionError()*clusterB->GetPositionError(), 0. };
 	if ( fNode ) fNode->GetMatrix()->LocalToMaster(local, global);
 	else {
 		global[0] = local[0];
