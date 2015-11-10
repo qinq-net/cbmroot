@@ -47,7 +47,7 @@ class CbmTbEvent : public FairEventHeader
   Int_t    GetNofBeam()      const { return fTimeBc.size(); }
   Double_t GetTimeBc()       const { 
     return (fTimeBc.empty() ? 0. : fTimeBc[0]); }
-  Double_t GetTimeBc(Int_t iBc) const { 
+  Double_t GetTimeBc(UInt_t iBc) const { 
     return (fTimeBc.size() > iBc ? fTimeBc[iBc] : 0.); }
   Int_t    GetEventType()    const { return fEventType; }
 
