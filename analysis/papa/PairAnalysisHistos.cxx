@@ -1294,13 +1294,15 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 
   // force legend to be drawn always on top, remove multiple versions of it
   // they show up when one uses the 'task' draw option
-  if(leg) leg->DrawClone();
-  nextObj.Reset();
-  Int_t ileg = 0;
-  while ((obj = nextObj())) {
-    if(obj->InheritsFrom(TLegend::Class())) {
-      if(ileg>0) delete obj;
-      ileg++;
+  if(!optTask) {
+    if(leg) leg->DrawClone();
+    nextObj.Reset();
+    Int_t ileg = 0;
+    while ((obj = nextObj())) {
+      if(obj->InheritsFrom(TLegend::Class())) {
+	if(ileg>0) delete obj;
+	ileg++;
+      }
     }
   }
 
