@@ -176,7 +176,7 @@ InitStatus CbmMuchDigitizeGem::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmMuchDigitizeGem::Exec(Option_t* opt) {
+void CbmMuchDigitizeGem::Exec(Option_t*) {
   // get current event to revert back at the end of exec
   Int_t currentEvent = FairRootManager::Instance()->GetInTree()->GetBranch("MCTrack")->GetReadEntry();
   fTimer.Start();
@@ -218,11 +218,11 @@ void CbmMuchDigitizeGem::Exec(Option_t* opt) {
 
   // Add remaining digis
   vector<CbmMuchModule*> modules = fGeoScheme->GetModules();
-  for (Int_t im=0;im<modules.size();im++){
+  for (UInt_t im=0;im<modules.size();im++){
     if (modules[im]->GetDetectorType()!=1 && modules[im]->GetDetectorType()!=3) continue;
     CbmMuchModuleGem* module = (CbmMuchModuleGem*) modules[im];
     vector<CbmMuchPad*> pads = module->GetPads();
-    for (Int_t ip=0;ip<pads.size();ip++) AddDigi(pads[ip]);
+    for (UInt_t ip=0;ip<pads.size();ip++) AddDigi(pads[ip]);
   }
 
   fTimer.Stop();
@@ -417,7 +417,7 @@ Double_t CbmMuchDigitizeGem::MPV_n_e(Double_t Tkin, Double_t mass) {
 // -------------------------------------------------------------------------
 Double_t CbmMuchDigitizeGem::GetNPrimaryElectronsPerCm(const CbmMuchPoint* point){
   Int_t trackId = point->GetTrackID();
-  Int_t eventId = point->GetEventID();
+//  Int_t eventId = point->GetEventID();
   if (trackId < 0) return -1;
 
 

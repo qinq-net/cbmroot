@@ -183,7 +183,6 @@ class CbmMuchGeoScheme: public TObject {
     void ReadGeoFile(const char* geoName);
     void Print();
     void CreateMuchCave();
-Int_t fNstations;
 
   private:
     CbmMuchGeoScheme();

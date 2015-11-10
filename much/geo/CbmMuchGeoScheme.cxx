@@ -601,7 +601,7 @@ void CbmMuchGeoScheme::CreateMuchCave() {
   // Calculate cone thickness
   Double_t muchDz = (muchZ2 - fMuchZ1) / 2.;
   // Calculate cone position
-  Double_t fMuchZ0 = fMuchZ1 + muchDz;
+//  Double_t fMuchZ0 = fMuchZ1 + muchDz;
   fMuchCave = new TGeoCone(muchDz, muchRmin1, muchRmax1, muchRmin2, muchRmax2);
 }
 // -------------------------------------------------------------------------

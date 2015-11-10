@@ -264,7 +264,7 @@ void CbmMuchSegmentManual::SegmentLayerSide(CbmMuchLayerSide* layerSide){
 void CbmMuchSegmentManual::SegmentModule(CbmMuchModuleGemRectangular* module, Bool_t useModuleDesign){
   Int_t detectorId = module->GetDetectorId();
   Int_t iStation = CbmMuchAddress::GetStationIndex(detectorId);
-  CbmMuchStation* station = (CbmMuchStation*)fStations->At(iStation);
+//  CbmMuchStation* station = (CbmMuchStation*)fStations->At(iStation);
   Int_t iRegion = -1;
   Double_t secMaxLx = GetSectorMaxSize(module, "Width", iRegion);
   Double_t secMaxLy = GetSectorMaxSize(module, "Length", iRegion);
@@ -284,7 +284,7 @@ void CbmMuchSegmentManual::SegmentModule(CbmMuchModuleGemRectangular* module, Bo
   Int_t nX = modX < 0 ? -1 : 1;
   Int_t nY = modY < 0 ? -1 : 1;
 
-  Double_t secX, secY, secLx, secLy;
+  Double_t secX, secY;//, secLx, secLy;
   TVector3 secSize, secPosition;
   Int_t iSector;
   for(Int_t iCol=0; iCol<nCols; ++iCol){
@@ -482,7 +482,7 @@ Bool_t CbmMuchSegmentManual::ShouldSegment(CbmMuchSectorRectangular* sector, con
   Double_t secLy = sector->GetSize()[1];
   Double_t secArea = secLx*secLy;
   Double_t secL = direction == "X" ? secLx : secLy;
-  Bool_t isIncomplete = IsIncompleteSector(sector);
+//  Bool_t isIncomplete = IsIncompleteSector(sector);
 
   Int_t iStation = CbmMuchAddress::GetStationIndex(sector->GetAddress());
 
@@ -668,13 +668,14 @@ void CbmMuchSegmentManual::DrawSegmentation(){
 
   FILE* outfile;
   outfile = fopen(txtfile, "w");
+/*
   Int_t colors[] = {kGreen, kMagenta, kCyan, kRed, kBlue, kYellow, kTeal,
                     kPink, kAzure, kOrange, kViolet, kSpring,
                     kGreen+2, kMagenta+2, kCyan+2, kRed+2, kBlue+2, kYellow+2, kTeal+2,
                     kPink+2, kAzure+2, kOrange+2, kViolet+2, kSpring+2,
                     kGreen+4, kMagenta+4, kCyan+4, kRed+4, kBlue+4, kYellow+4, kTeal+4,
                     kPink+4, kAzure+4, kOrange+4, kViolet+4, kSpring+4};
-
+*/
   for (Int_t iStation=0;iStation<fStations->GetEntriesFast();++iStation){
     fprintf(outfile, "===========================================================================\n");
     fprintf(outfile, "Station %i\n", iStation+1);
@@ -697,7 +698,7 @@ void CbmMuchSegmentManual::DrawSegmentation(){
           // Reject incomplete sectors by size
           Double_t secLx = sector->GetSize()[0];
           Double_t secLy = sector->GetSize()[1];
-          Bool_t isIncomplete = IsIncompleteSector(sector);
+//          Bool_t isIncomplete = IsIncompleteSector(sector);
 // TODO
 //          if(isIncomplete){
 //            iSide ? sector->SetFillColor(TColor::GetColorDark(kGray+1)) : sector->SetFillColor(kGray + 1);

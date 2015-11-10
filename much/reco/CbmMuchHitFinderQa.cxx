@@ -286,7 +286,7 @@ InitStatus CbmMuchHitFinderQa::Init()
     if(mod->GetDetectorType() == 1 || mod->GetDetectorType()==3) {
       CbmMuchModuleGem* module = (CbmMuchModuleGem*) mod;
       vector<CbmMuchPad*> pads = module->GetPads();
-      for (Int_t ip=0; ip<pads.size(); ip++) {
+      for (UInt_t ip=0; ip<pads.size(); ip++) {
         CbmMuchPad* pad = pads[ip];
         Int_t stationId = CbmMuchAddress::GetStationIndex(pad->GetAddress());
         Double_t x0 = pad->GetX();
@@ -388,7 +388,7 @@ void CbmMuchHitFinderQa::SetParContainers() {
 
 
 // -------------------------------------------------------------------------x
-void CbmMuchHitFinderQa::Exec(Option_t * option){
+void CbmMuchHitFinderQa::Exec(Option_t *){
   fEvent++;
   gLogger->Info(MESSAGE_ORIGIN,"Event:%i",fEvent);
   fprintf(pointsFile,"Event %i\n",fEvent);
@@ -967,7 +967,7 @@ void CbmMuchHitFinderQa::DigitizerQa(){
 
 // -------------------------------------------------------------------------
 void CbmMuchHitFinderQa::OccupancyQa(){
-  Bool_t verbose = (fVerbose>2);
+//  Bool_t verbose = (fVerbose>2);
   // Filling occupancy plots
   for (Int_t i=0;i<fDigis->GetEntriesFast();i++){
     CbmMuchDigi* digi = (CbmMuchDigi*) fDigis->At(i);
@@ -989,7 +989,7 @@ void CbmMuchHitFinderQa::OccupancyQa(){
 
 // -------------------------------------------------------------------------
 void CbmMuchHitFinderQa::StatisticsQa(){
-  Bool_t verbose = (fVerbose>2);
+//  Bool_t verbose = (fVerbose>2);
   Int_t nClusters = fClusters->GetEntriesFast();
   TArrayI hitsInCluster;
   TArrayI pointsInCluster;
@@ -1109,8 +1109,8 @@ void CbmMuchHitFinderQa::PullsQa(){
     if (verbose) printf(" point_unique=%i",point_unique);
     if (!point_unique) {if (verbose) printf("\n"); continue;}
     //printf(" %f %f %f %f %f %f\n",xmin,xmax,ymin,ymax,dxmin,dymin);
-    Int_t nPadsX=Int_t((xmax-xmin)/dxmin);
-    Int_t nPadsY=Int_t((ymax-ymin)/dymin);
+//    Int_t nPadsX=Int_t((xmax-xmin)/dxmin);
+//    Int_t nPadsY=Int_t((ymax-ymin)/dymin);
     //printf("nPadsX=%i nPadsY=%i\n",nPadsX,nPadsY);
 
     if (verbose) printf(" pointId=%i",pointId);
@@ -1118,15 +1118,15 @@ void CbmMuchHitFinderQa::PullsQa(){
 
     Double_t xMC  = 0.5*(point->GetXIn()+point->GetXOut());
     Double_t yMC  = 0.5*(point->GetYIn()+point->GetYOut());
-    Double_t tMC  = point->GetTime();
+//    Double_t tMC  = point->GetTime();
     
     Double_t xRC  = hit->GetX();
     Double_t yRC  = hit->GetY();
     Double_t dx   = hit->GetDx();
     Double_t dy   = hit->GetDy();
     
-    Double_t tRC  = hit->GetTime();
-    Double_t dt   = hit->GetDTime();
+//    Double_t tRC  = hit->GetTime();
+//    Double_t dt   = hit->GetDTime();
     
     
     if (dx<1.e-10) { printf("Anomalously small dx\n"); continue;}
@@ -1166,7 +1166,7 @@ void CbmMuchHitFinderQa::PullsQa(){
 // -------------------------------------------------------------------------
 void CbmMuchHitFinderQa::ClusterDeconvQa(){
   Int_t nPoints = fPoints->GetEntriesFast();
-  Int_t nMatches = fDigiMatches->GetEntriesFast();
+//  Int_t nMatches = fDigiMatches->GetEntriesFast();
   Int_t nClusters = fClusters->GetEntriesFast();
   vector<Int_t> pIndices;
   vector<Int_t>::iterator it;
@@ -1218,7 +1218,7 @@ Bool_t CbmMuchHitFinderQa::IsSignalPoint(Int_t iPoint){
 Int_t CbmMuchHitFinderQa::GetNChannels(Int_t iStation){
   Int_t nChannels = 0;
   vector<CbmMuchModule*> modules = fGeoScheme->GetModules(iStation);
-  for(Int_t im = 0; im<modules.size(); im++){
+  for(UInt_t im = 0; im<modules.size(); im++){
     CbmMuchModule* mod = modules[im];
     if(mod->GetDetectorType() != 1 && mod->GetDetectorType() != 3) continue;
     CbmMuchModuleGem* module = (CbmMuchModuleGem*) mod;
@@ -1232,7 +1232,7 @@ Int_t CbmMuchHitFinderQa::GetNChannels(Int_t iStation){
 Int_t CbmMuchHitFinderQa::GetNSectors(Int_t iStation){
   Int_t nSectors = 0;
   vector<CbmMuchModule*> modules = fGeoScheme->GetModules(iStation);
-  for(Int_t im = 0; im<modules.size(); im++){
+  for(UInt_t im = 0; im<modules.size(); im++){
     CbmMuchModule* mod = modules[im];
     if(mod->GetDetectorType() != 1 && mod->GetDetectorType() != 3) continue;
     CbmMuchModuleGem* module = (CbmMuchModuleGem*) mod;
@@ -1247,12 +1247,12 @@ TVector2 CbmMuchHitFinderQa::GetMinPadSize(Int_t iStation){
   Double_t padMinLx = std::numeric_limits<Double_t>::max();
   Double_t padMinLy = std::numeric_limits<Double_t>::max();
   vector<CbmMuchModule*> modules = fGeoScheme->GetModules(iStation);
-  for(Int_t im = 0; im<modules.size(); im++){
+  for(UInt_t im = 0; im<modules.size(); im++){
     CbmMuchModule* mod = modules[im];
     if(mod->GetDetectorType() != 1) continue;
     CbmMuchModuleGem* module = (CbmMuchModuleGem*) mod;
     vector<CbmMuchPad*> pads = module->GetPads();
-    for (Int_t ip=0; ip<pads.size(); ip++) {
+    for (UInt_t ip=0; ip<pads.size(); ip++) {
       CbmMuchPad* pad = pads[ip];
       if(pad->GetDx() < padMinLx) padMinLx = pad->GetDx();
       if(pad->GetDy() < padMinLy) padMinLy = pad->GetDy();
@@ -1267,12 +1267,12 @@ TVector2 CbmMuchHitFinderQa::GetMaxPadSize(Int_t iStation){
   Double_t padMaxLx = std::numeric_limits<Double_t>::min();
   Double_t padMaxLy = std::numeric_limits<Double_t>::min();
   vector<CbmMuchModule*> modules = fGeoScheme->GetModules(iStation);
-  for(Int_t im = 0; im<modules.size(); im++){
+  for(UInt_t im = 0; im<modules.size(); im++){
     CbmMuchModule* mod = modules[im];
     if(mod->GetDetectorType() != 1) continue;
     CbmMuchModuleGem* module = (CbmMuchModuleGem*) mod;
     vector<CbmMuchPad*> pads = module->GetPads();
-    for (Int_t ip=0; ip<pads.size(); ip++) {
+    for (UInt_t ip=0; ip<pads.size(); ip++) {
       CbmMuchPad* pad = pads[ip];
       if(pad->GetDx() > padMaxLx) padMaxLx = pad->GetDx();
       if(pad->GetDy() > padMaxLy) padMaxLy = pad->GetDy();

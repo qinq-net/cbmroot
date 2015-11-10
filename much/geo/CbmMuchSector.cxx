@@ -27,7 +27,7 @@ CbmMuchSector::CbmMuchSector(UInt_t modAddress, UInt_t index, Int_t nChannels)
 
 CbmMuchPad* CbmMuchSector::GetPadByChannelIndex(Int_t iChannel) const { 
 //  gLogger->Debug(MESSAGE_ORIGIN,"iChannel=%i fPads.size()=%i fNChannels=%i",iChannel,fPads.size(),fNChannels);
-  if (iChannel>=fPads.size() || iChannel<0) {
+  if (iChannel>=static_cast<Int_t>(fPads.size()) || iChannel<0) {
     gLogger->Error(MESSAGE_ORIGIN,"iChannel=%i fPads.size()=%i",iChannel,fPads.size());
     gLogger->Error(MESSAGE_ORIGIN,"  station index=%i",CbmMuchAddress::GetStationIndex(fAddress));
     gLogger->Error(MESSAGE_ORIGIN,"  layer index=%i",CbmMuchAddress::GetLayerIndex(fAddress));

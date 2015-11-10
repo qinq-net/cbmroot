@@ -84,9 +84,9 @@ CbmMuchPad* CbmMuchModuleGem::GetPad(Int_t address) {
 
 
 // -------------------------------------------------------------------------
-void CbmMuchModuleGem::DrawModule(Color_t color) {
-  for (Int_t s=0;s<fSectors.size();s++){
-    CbmMuchSector* sector = (CbmMuchSector*) fSectors[s];
+void CbmMuchModuleGem::DrawModule(Color_t) {
+  for (UInt_t s=0;s<fSectors.size();s++){
+//    CbmMuchSector* sector = (CbmMuchSector*) fSectors[s];
 // TODO
 //    sector->SetFillColor(color);
 //    sector->Draw("f");
@@ -98,7 +98,7 @@ void CbmMuchModuleGem::DrawModule(Color_t color) {
 
 // -------------------------------------------------------------------------
 void CbmMuchModuleGem::DrawPads() {
-  for (Int_t s=0;s<fSectors.size();s++){
+  for (UInt_t s=0;s<fSectors.size();s++){
     CbmMuchSector* sector = (CbmMuchSector*) fSectors[s];
     sector->DrawPads();
   }

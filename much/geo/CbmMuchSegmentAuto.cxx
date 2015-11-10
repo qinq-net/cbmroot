@@ -136,7 +136,7 @@ InitStatus CbmMuchSegmentAuto::Init(){
   fHistHitDensity = new TH1D*[fNStations];
 
   for (Int_t i=0;i<fNStations;i++) {
-    CbmMuchStation* station = (CbmMuchStation*) fStations->At(i);
+//    CbmMuchStation* station = (CbmMuchStation*) fStations->At(i);
     fHistHitDensity[i] = new TH1D(Form("hStation%i",i+1),Form("Station %i",i+1), 110, 0, 220);
     fHistHitDensity[i]->GetXaxis()->SetTitle("r, cm");
     fHistHitDensity[i]->GetYaxis()->SetTitle("hits/(event#timescm^{2})");
@@ -149,7 +149,7 @@ InitStatus CbmMuchSegmentAuto::Init(){
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-void CbmMuchSegmentAuto::Exec(Option_t * option){
+void CbmMuchSegmentAuto::Exec(Option_t *){
   fEvents++;
   printf("Event: %i\n",fEvents);
 
@@ -530,8 +530,8 @@ void CbmMuchSegmentAuto::DrawSegmentation(){
   FILE* outfile;
   outfile = fopen(txtfile.c_str(), "w");
 
-  Int_t colors[] = {kGreen, kBlue, kViolet, kRed, kYellow, kOrange, kMagenta, kCyan,  kSpring, kPink, kAzure, kTeal,
-      kGreen+10, kBlue+10, kViolet+10, kRed+10, kYellow+10, kOrange+10, kMagenta+10, kCyan+10,  kSpring+10, kPink+10, kAzure+10, kTeal+10};
+//  Int_t colors[] = {kGreen, kBlue, kViolet, kRed, kYellow, kOrange, kMagenta, kCyan,  kSpring, kPink, kAzure, kTeal,
+//      kGreen+10, kBlue+10, kViolet+10, kRed+10, kYellow+10, kOrange+10, kMagenta+10, kCyan+10,  kSpring+10, kPink+10, kAzure+10, kTeal+10};
 
   Double_t secMinLx = std::numeric_limits<Double_t>::max();
   Double_t secMinLy = std::numeric_limits<Double_t>::max();
@@ -574,8 +574,8 @@ void CbmMuchSegmentAuto::DrawSegmentation(){
         for (Int_t iSector=0;iSector<module->GetNSectors();++iSector){
           CbmMuchSectorRectangular* sector = (CbmMuchSectorRectangular*) module->GetSector(iSector);
 
-          Int_t i = Int_t((sector->GetSize()[0]+1e-3)/secMinLx) - 1;
-          Int_t j = Int_t((sector->GetSize()[1]+1e-3)/secMinLy) - 1;
+//          Int_t i = Int_t((sector->GetSize()[0]+1e-3)/secMinLx) - 1;
+//          Int_t j = Int_t((sector->GetSize()[1]+1e-3)/secMinLy) - 1;
 // TODO
 //          sector->SetFillColor(iSide ? TColor::GetColorDark(colors[i+j]) : colors[i+j]);
 //          sector->Draw("f");

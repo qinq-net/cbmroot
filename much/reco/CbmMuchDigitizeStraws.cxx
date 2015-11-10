@@ -40,7 +40,7 @@ CbmMuchDigitizeStraws::~CbmMuchDigitizeStraws()
 }
 
 // -------------------------------------------------------------------------
-void CbmMuchDigitizeStraws::Exec(Option_t* opt)
+void CbmMuchDigitizeStraws::Exec(Option_t*)
 {
 
     if (fDimens == 2)

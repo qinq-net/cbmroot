@@ -55,7 +55,7 @@ InitStatus CbmMuchHitProducerIdeal::Init()
    return kSUCCESS;
 }
 
-void CbmMuchHitProducerIdeal::Exec(Option_t * option)
+void CbmMuchHitProducerIdeal::Exec(Option_t *)
 {
    static Int_t eventNo = 0;
    fMuchPixelHits->Clear();

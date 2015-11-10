@@ -103,7 +103,7 @@ InitStatus CbmMuchFindHitsStraws::Init()
 }
 
 // -------------------------------------------------------------------------
-void CbmMuchFindHitsStraws::Exec(Option_t* opt)
+void CbmMuchFindHitsStraws::Exec(Option_t*)
 {
 
   if (fHits) fHits->Delete();
@@ -184,7 +184,7 @@ void CbmMuchFindHitsStraws::Exec(Option_t* opt)
             itube--;
         Double_t xwire = (itube + 0.5) * fDiams[station3]; // wire position
         //cout << itube << " " << layer << " " << side << " " << xloc << " " << xwire-fDiams[station3]/2.*side << endl;
-        Double_t times[3] = { 0 };
+//        Double_t times[3] = { 0 };
 
         /* No segmentation outside beam hole region
         if (TMath::Abs(plocX) < radIn[station3]) {

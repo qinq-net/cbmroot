@@ -66,7 +66,7 @@ FairParSet* CbmMuchContFact::createContainer(FairContainer* c) {
 
 }
 
-void  CbmMuchContFact::activateParIo(FairParIo* io) {
+void  CbmMuchContFact::activateParIo(FairParIo*) {
   // activates the input/output class for the parameters
   // needed by the MuCh
 //   if (strcmp(io->IsA()->GetName(),"FairParRootFileIo")==0) {

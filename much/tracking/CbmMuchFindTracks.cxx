@@ -27,7 +27,7 @@ CbmMuchFindTracks::CbmMuchFindTracks()
 // -----   Standard constructor   ------------------------------------------
 CbmMuchFindTracks::CbmMuchFindTracks(
 		const char* name,
-		const char* title,
+		const char*,
 		CbmMuchTrackFinder* finder)
   : FairTask(name),
     fFinder(finder),
@@ -81,7 +81,7 @@ void CbmMuchFindTracks::SetParContainers()
 
 // -----   Public method Exec   --------------------------------------------
 void CbmMuchFindTracks::Exec(
-		Option_t* opt)
+		Option_t*)
 {
   fTrackArray->Delete();
 

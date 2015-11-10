@@ -73,7 +73,7 @@ InitStatus CbmMuchMatchTracks::Init()
 }
 
 void CbmMuchMatchTracks::Exec(
-		Option_t* opt)
+		Option_t*)
 {
         if (fIsEpoch) fPoints = fMcEpoch->GetPoints(kMUCH);
 

@@ -178,11 +178,11 @@ void CbmMuchStrawHitFinderQa::SetParContainers() {
 
 
 // -------------------------------------------------------------------------
-void CbmMuchStrawHitFinderQa::Exec(Option_t * option)
+void CbmMuchStrawHitFinderQa::Exec(Option_t *)
 {
   Double_t diam[6] = {0.42, 0.42, 0.42, 0.42, 0.42, 0.42}; // tube diameters
 
-  Bool_t verbose = (fVerbose>1);
+//  Bool_t verbose = (fVerbose>1);
   fEvent++;
   printf("CbmMuchStrawHitFinderQa::Exec()");
   printf("  Event:%i\n",fEvent);
@@ -366,8 +366,8 @@ void CbmMuchStrawHitFinderQa::CheckMirrors()
       tmp[i1] = 0x0;
       if (n2 == 2) break;
     }
-    if (n2 != 2 || hits[0]->GetFlag()%2 == 0 && hits[1]->GetFlag()%2 == 0 || 
-	hits[0]->GetFlag()%2 > 0 && hits[1]->GetFlag()%2 > 0) {
+    if ( (n2 != 2) || (hits[0]->GetFlag()%2 == 0 && hits[1]->GetFlag()%2 == 0) || 
+	(hits[0]->GetFlag()%2 > 0 && hits[1]->GetFlag()%2 > 0) ) {
       cout << " *** CheckMirrors: Strange " << n2 << " " <<  hits[0]->GetFlag()%2 << " " <<  hits[1]->GetFlag()%2 << " " << id << " " << hits[0]->GetTube() << endl;
       exit(0);
     }

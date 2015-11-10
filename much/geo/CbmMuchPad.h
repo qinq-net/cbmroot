@@ -39,7 +39,7 @@ public:
   vector<CbmMuchPad*> GetNeighbours() const { return fNeighbours; }
   void SetNeighbours(vector<CbmMuchPad*> neighbours) { fNeighbours = neighbours; }
   void SetDigiIndex(Int_t iDigi)             { fDigiIndex = iDigi; }
-  virtual void SetFired(Int_t iDigi, Int_t ADCcharge, Int_t nADCChannels=256){}
+  virtual void SetFired(Int_t, Int_t, Int_t = 256){}
 
   Int_t GetSectorIndex()  { return CbmMuchAddress::GetElementId(fAddress,kMuchSector);  }
   Int_t GetChannelIndex() { return CbmMuchAddress::GetElementId(fAddress,kMuchChannel); }

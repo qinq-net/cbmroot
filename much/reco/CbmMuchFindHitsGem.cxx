@@ -66,7 +66,7 @@ InitStatus CbmMuchFindHitsGem::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmMuchFindHitsGem::Exec(Option_t* opt) {
+void CbmMuchFindHitsGem::Exec(Option_t*) {
   TStopwatch timer;
   timer.Start();
   fEvent++;
@@ -132,7 +132,7 @@ void CbmMuchFindHitsGem::FindClusters() {
   Int_t nClusters = 0;
   
   if (fAlgorithm==0){
-    for (Int_t iDigi = 0; iDigi < fDigiData.size(); iDigi++) {
+    for (UInt_t iDigi = 0; iDigi < fDigiData.size(); iDigi++) {
       fDigiIndices.clear();
       fDigiIndices.push_back(iDigi);
       const CbmDigi* digi = static_cast<const CbmDigi*>(fDigis->At(iDigi));
@@ -152,7 +152,7 @@ void CbmMuchFindHitsGem::FindClusters() {
   for (UInt_t m=0;m<modules.size();m++) modules[m]->ClearDigis();
 
   // Fill array of digis in the modules. Digis are automatically sorted in time
-  for (Int_t iDigi = 0; iDigi < fDigiData.size(); iDigi++) {
+  for (UInt_t iDigi = 0; iDigi < fDigiData.size(); iDigi++) {
     CbmMuchDigi* digi =&(fDigiData[iDigi]);
     Double_t time = digi->GetTime();
     UInt_t address = digi->GetAddress();
@@ -175,7 +175,7 @@ void CbmMuchFindHitsGem::FindClusters() {
       tlast = t;
     }
     slices.push_back(it);
-    for (Int_t s=1;s<slices.size();s++){
+    for (UInt_t s=1;s<slices.size();s++){
       fFiredPads.clear();
       for (it=slices[s-1];it!=slices[s];it++){
         Int_t iDigi = it->second;
@@ -185,7 +185,7 @@ void CbmMuchFindHitsGem::FindClusters() {
         fFiredPads.push_back(pad);
       }
       // Loop over fired pads in a time slice
-      for (Int_t p=0;p<fFiredPads.size();p++){
+      for (UInt_t p=0;p<fFiredPads.size();p++){
         fDigiIndices.clear();
         CreateCluster(fFiredPads[p]);
         if (fDigiIndices.size()==0) continue;
@@ -221,7 +221,7 @@ void CbmMuchFindHitsGem::ExecClusteringSimple(CbmMuchCluster* cluster,Int_t iClu
   CbmMuchDigi* digi = &(fDigiData[cluster->GetDigi(0)]);
   CbmMuchModule* m = fGeoScheme->GetModuleByDetId(digi->GetAddress());
   CbmMuchModuleGem* module = (CbmMuchModuleGem*) m;
-  Int_t iStation = CbmMuchAddress::GetStationIndex(digi->GetAddress());
+//  Int_t iStation = CbmMuchAddress::GetStationIndex(digi->GetAddress());
 
   Int_t maxCharge = 0;
   for (Int_t iDigi = 0; iDigi < cluster->GetNofDigis(); iDigi++) {
@@ -243,7 +243,7 @@ void CbmMuchFindHitsGem::ExecClusteringSimple(CbmMuchCluster* cluster,Int_t iClu
     pad->SetDigiIndex(digiIndex);
     fFiredPads.push_back(pad);
   }
-  for (Int_t p=0;p<fFiredPads.size();p++){
+  for (UInt_t p=0;p<fFiredPads.size();p++){
     fDigiIndices.clear();
     CreateCluster(fFiredPads[p]);
     if (fDigiIndices.size()==0) continue;
@@ -283,7 +283,7 @@ void CbmMuchFindHitsGem::ExecClusteringPeaks(CbmMuchCluster* cluster,Int_t iClus
     CbmMuchPad* pad = fClusterPads[i];
     vector<CbmMuchPad*> neighbours = pad->GetNeighbours();
     vector<Int_t> selected_neighbours;
-    for (Int_t ip=0;ip<neighbours.size();ip++){
+    for (UInt_t ip=0;ip<neighbours.size();ip++){
       CbmMuchPad* p = neighbours[ip];
       vector<CbmMuchPad*>:: iterator it = find(fClusterPads.begin(),fClusterPads.end(),p);
       if (it==fClusterPads.end()) continue;
@@ -293,7 +293,7 @@ void CbmMuchFindHitsGem::ExecClusteringPeaks(CbmMuchCluster* cluster,Int_t iClus
   }
 
   // Flag local maxima
-  for (Int_t i=0; i<nDigis;i++) {
+  for (UInt_t i=0; i<nDigis;i++) {
     Int_t c = fClusterCharges[i];
     for (Int_t n=0;n<fNeighbours[i].size();n++) {
       Int_t in = fNeighbours[i][n];
@@ -304,7 +304,7 @@ void CbmMuchFindHitsGem::ExecClusteringPeaks(CbmMuchCluster* cluster,Int_t iClus
 
   // Fire pads corresponding to local maxima
   fFiredPads.clear();
-  for (Int_t i=0; i<nDigis;i++) {
+  for (UInt_t i=0; i<nDigis;i++) {
     if (fLocalMax[i]==0) continue;
     CbmMuchPad* pad = fClusterPads[i];
     pad->SetDigiIndex(cluster->GetDigi(i));

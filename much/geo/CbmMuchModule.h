@@ -49,7 +49,7 @@ public:
   TClonesArray* GetClusters() const { return fClusters;   }
 
   virtual Bool_t InitModule() {return kTRUE;}
-  virtual void DrawModule(Color_t color) {}
+  virtual void DrawModule(Color_t) {}
 
   void SetPoints(TClonesArray* points)     { fPoints   = points;   }
   void SetHits  (TClonesArray* hits)       { fHits     = hits;     }

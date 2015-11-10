@@ -196,7 +196,7 @@ void CbmMuchModuleGemRectangular::InitNeighbourPads() {
     Double_t mindx = sector->GetPadDx();
     Double_t mindy = sector->GetPadDy();
     vector<CbmMuchSectorRectangular*> neighbourSectors = sector->GetNeighbours();
-    for (Int_t iSec=0;iSec<neighbourSectors.size();iSec++) {
+    for (UInt_t iSec=0;iSec<neighbourSectors.size();iSec++) {
       CbmMuchSectorRectangular* sec = neighbourSectors[iSec];
       Double_t dx = sec->GetPadDx();
       Double_t dy = sec->GetPadDy();

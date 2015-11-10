@@ -289,7 +289,7 @@ void CbmMuch::ConstructGeometry() {
   TGeoMedium* noryl        = CreateMedium("MUCHnoryl");
   TGeoMedium* polyethylene = CreateMedium("MUCHpolyethylene");
 
-  Double_t* buf;
+  Double_t* buf = NULL;
 
   CbmMuchGeoScheme* fGeoScheme = CbmMuchGeoScheme::Instance();
   fGeoScheme->Init(stations);

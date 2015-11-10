@@ -54,7 +54,7 @@ void CbmMuchLayerSide::AddModule(CbmMuchModule* module) {
 }
 // -------------------------------------------------------------------------
 
-void CbmMuchLayerSide::DrawModules(Color_t color, Bool_t modulesVisible, Bool_t sectorsVisible){
+void CbmMuchLayerSide::DrawModules(Color_t color, Bool_t modulesVisible, Bool_t){
   for (Int_t m=0;m<GetNModules();m++){
     CbmMuchModule* module = GetModule(m);
     if (modulesVisible) {

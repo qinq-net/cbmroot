@@ -31,7 +31,7 @@ public:
 
 
     virtual Bool_t InitModule(){ return kTRUE;}
-    virtual void DrawModule(Color_t color){}
+    virtual void DrawModule(Color_t){}
 
 
 

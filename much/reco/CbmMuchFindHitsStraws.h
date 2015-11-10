@@ -70,7 +70,7 @@ public:
     {
         fMirror = mirror;
     }
-    void SetBinary(Int_t binary)
+    void SetBinary(Int_t)
     {
         //fBinary = binary;
         fBinary = 1; // always uses binary mode (for vector finder) 

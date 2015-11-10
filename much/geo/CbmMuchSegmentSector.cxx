@@ -158,7 +158,7 @@ Int_t CbmMuchSegmentSector::SegmentLayerSide(CbmMuchLayerSide* layerSide){
 // -------------------------------------------------------------------------
 
 // -----   Private method SegmentSector  -----------------------------------
-Int_t CbmMuchSegmentSector::SegmentModule(CbmMuchModuleGemRadial* module, Bool_t useModuleDesign){
+Int_t CbmMuchSegmentSector::SegmentModule(CbmMuchModuleGemRadial* module, Bool_t){
   Int_t detectorId = module->GetDetectorId();
   Int_t iStation = CbmMuchAddress::GetStationIndex(detectorId);
   Int_t iModule  = CbmMuchAddress::GetModuleIndex(detectorId);
@@ -277,12 +277,14 @@ void CbmMuchSegmentSector::DrawSegmentation(){
 
   FILE* outfile;
   outfile = fopen(txtfile, "w");
+/*
   Int_t colors[] = {kGreen, kMagenta, kCyan, kRed, kBlue, kYellow, kTeal,
                     kPink, kAzure, kOrange, kViolet, kSpring,
                     kGreen+2, kMagenta+2, kCyan+2, kRed+2, kBlue+2, kYellow+2, kTeal+2,
                     kPink+2, kAzure+2, kOrange+2, kViolet+2, kSpring+2,
                     kGreen+4, kMagenta+4, kCyan+4, kRed+4, kBlue+4, kYellow+4, kTeal+4,
                     kPink+4, kAzure+4, kOrange+4, kViolet+4, kSpring+4};
+*/
   for (Int_t iStation=0;iStation<fStations->GetEntriesFast();++iStation){
     fprintf(outfile, "===========================================================================\n");
     fprintf(outfile, "Station %i\n", iStation+1);
