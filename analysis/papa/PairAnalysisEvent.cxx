@@ -442,14 +442,15 @@ Int_t PairAnalysisEvent::GetMvdMatchingIndex(CbmStsTrack *track) const
   // calculate the standalone mvd mc matching
   //
   Int_t idx=-1;
-  if(!track) return idx;
+  if(!track || !fMvdHitMatches) return idx;
 
   CbmTrackMatchNew* trackMatch = new CbmTrackMatchNew();
 
   Int_t nofMvdHits = track->GetNofMvdHits();
   for (Int_t iHit = 0; iHit < nofMvdHits; iHit++) {
     const CbmMatch* hitMatch = static_cast<CbmMatch*>(fMvdHitMatches->At(track->GetMvdHitIndex(iHit)));
-    Int_t nofLinks = hitMatch->GetNofLinks();
+    if(!hitMatch) continue;
+    Int_t nofLinks = (&(hitMatch->GetLinks()) ? hitMatch->GetNofLinks() : 0);
     for (Int_t iLink = 0; iLink < nofLinks; iLink++) {
       const CbmLink& link = hitMatch->GetLink(iLink);
       const FairMCPoint* point = static_cast<const FairMCPoint*>(fMvdPoints->At(link.GetIndex()));
@@ -457,7 +458,7 @@ Int_t PairAnalysisEvent::GetMvdMatchingIndex(CbmStsTrack *track) const
       trackMatch->AddLink(CbmLink(1., point->GetTrackID(), link.GetEntry(), link.GetFile()));
     }
   }
-  if ( trackMatch->GetNofLinks() ) { 
+  if ( &(trackMatch->GetLinks()) && trackMatch->GetNofLinks() ) { 
     idx=trackMatch->GetMatchedLink().GetIndex();
   }
 
