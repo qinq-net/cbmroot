@@ -280,7 +280,7 @@ InitStatus CbmHadronSpectra::Init()
 
 
 // ------------------------------------------------------------------
-void CbmHadronSpectra::Exec(Option_t* option)
+void CbmHadronSpectra::Exec(Option_t*)
 {
     // Task execution
 

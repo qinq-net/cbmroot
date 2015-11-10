@@ -153,7 +153,7 @@ InitStatus CbmFitM2::Init()
 
 
 // ------------------------------------------------------------------
-void CbmFitM2::Exec(Option_t *option)
+void CbmFitM2::Exec(Option_t *)
 {
     // Task execution
 }
@@ -237,9 +237,9 @@ void CbmFitM2::CreatePDF()
 	Double_t step = (fMaxM2-fMinM2)/(Double_t)fNbinsM2;
 	Double_t n0_ka = f_m2_ka->Integral(a, b);
 	Double_t eff_ka = 0;
-	Double_t pur_pi = 0;
+//	Double_t pur_pi = 0;
 	Double_t pur_ka = 0;
-	Double_t pur_prot = 0;
+//	Double_t pur_prot = 0;
 	Bool_t exit = kFALSE;
 	while(b > a) {
 	    Double_t f_all_b = f_m2_pi->Eval(b)+f_m2_ka->Eval(b)+f_m2_prot->Eval(b);
@@ -302,7 +302,7 @@ void CbmFitM2::CreatePDF()
 	c1->Modified();
 	c1->Update();
 	cout << ((j+0.5)*fBinSizeMom-10) << endl;
-        Int_t t = system("sleep 3");
+        system("sleep 3");
 
 
 	// Fill the look-up tables
@@ -311,7 +311,7 @@ void CbmFitM2::CreatePDF()
 	    Double_t pdf_ka = f_m2_ka->Eval((k+0.5)*fBinSizeM2 + fMinM2);
 	    Double_t pdf_prot = f_m2_prot->Eval((k+0.5)*fBinSizeM2 + fMinM2);
 
-	    Double_t pdf_hadron = pdf_pi + pdf_ka + pdf_prot;
+//	    Double_t pdf_hadron = pdf_pi + pdf_ka + pdf_prot;
 
 	    fh_pdf_pi->SetBinContent(j+1, k+1, pdf_pi);
 	    fh_pdf_ka->SetBinContent(j+1, k+1, pdf_ka);

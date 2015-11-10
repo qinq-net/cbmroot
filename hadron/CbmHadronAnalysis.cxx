@@ -1317,7 +1317,7 @@ InitStatus CbmHadronAnalysis::Init()
 
 
 // ------------------------------------------------------------------
-void CbmHadronAnalysis::Exec(Option_t* option)
+void CbmHadronAnalysis::Exec(Option_t*)
 {
     // Task execution
 
@@ -1329,7 +1329,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
     CbmTofPoint *TofPoint;
     CbmTofHit   *TofHit;
     CbmTofTrack *TofTrack;
-    CbmTofTrack *TofTrackh;
+//    CbmTofTrack *TofTrackh;
     CbmTofTrack *BestTofTrack;
     CbmGlobalTrack *GlobTrack;
 
@@ -1382,7 +1382,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
     Int_t NTHMUL[nGlobTracks];                       // number of candidate TofTracks 
     Int_t IndTHMUL[nGlobTracks][MAXNHT];             // ordered array of candidate number of TofTrack indices  
     Float_t Weight_THMUL[nGlobTracks][MAXNHT];       // weights for ordered array of candidate number of TofTrack indices  
-    Int_t IndTofTracks[nGlobTracks][MAXNHT][MAXNHT]; // array of TofTrack Indices that selected TofHit is assigned to
+//    Int_t IndTofTracks[nGlobTracks][MAXNHT][MAXNHT]; // array of TofTrack Indices that selected TofHit is assigned to
     Int_t NTofHitTMul[nTofHits];                     // number of GlobalTracks assigned to a specific TofHit
     Int_t IndTofTrack_TofHit[nTofHits][MAXNHT];      // index of TofTracks assigned to specific TofHit
 
@@ -2987,7 +2987,7 @@ void CbmHadronAnalysis::Exec(Option_t* option)
 
        if (bet > 0.99999) {bet=0.99999;} 
        Float_t tofmass =mom/bet*sqrt(1.-bet*bet)*TMath::Sign(1.,tpar->GetQp());
-       Double_t chi2=0.;//(Double_t)(GlobTrack->GetChi2())/(GlobTrack->GetNDF());
+//       Double_t chi2=0.;//(Double_t)(GlobTrack->GetChi2())/(GlobTrack->GetNDF());
        //cout << "GlobTrack-Chi2 "<<GlobTrack->GetChi2()<<", "<<GlobTrack->GetNDF()<<", "<<chi2<<endl;
 
        if (k!=smc){

@@ -47,7 +47,7 @@ public:
     virtual ~CbmMixedEventsProducer();
 
     virtual InitStatus Init();
-    virtual void Exec(Option_t *option = "") {}
+    virtual void Exec(Option_t *) {}
 
     void CreateMixer();
     void Generate(Int_t nev);

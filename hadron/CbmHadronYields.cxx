@@ -152,7 +152,7 @@ InitStatus CbmHadronYields::Init()
 
 
 // ------------------------------------------------------------------
-void CbmHadronYields::Exec(Option_t* option)
+void CbmHadronYields::Exec(Option_t*)
 {
     // Task execution
 

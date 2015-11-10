@@ -227,7 +227,7 @@ InitStatus CbmFillM2::Init()
 
 
 // ------------------------------------------------------------------
-void CbmFillM2::Exec(Option_t *option)
+void CbmFillM2::Exec(Option_t *)
 {
     // Task execution. Fill the m2 vs. momentum histogramm
 
