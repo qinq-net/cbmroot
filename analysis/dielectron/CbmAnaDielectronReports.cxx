@@ -23,7 +23,7 @@ CbmAnaDielectronReports::~CbmAnaDielectronReports()
 }
 
 void CbmAnaDielectronReports::CreateStudyReport(
-      const string& title,
+      const string&,
       const vector<string>& fileNames,
       const vector<string>& studyNames,
       const string& outputDir)

@@ -589,7 +589,7 @@ InitStatus eventPlane::Init()
 
 
 // -----   Public method Exec   --------------------------------------------
-void eventPlane::Exec(Option_t* opt)
+void eventPlane::Exec(Option_t*)
 {
     if ( ! fHeader ) Fatal("Exec", "No event header");
     if ( ! flistPSDhit ) Fatal("Exec", "No PsdHit array");
@@ -660,8 +660,8 @@ void eventPlane::BinningFlattening()
     }
     double b_tmp[fNbinFlat];
     for (int i = 0; i<fNbinFlat; i++) b_tmp[i] = 0.;
-    int bin[fNbinFlat];
-    for (int i = 0; i<fNbinFlat; i++) bin[i] = 0;
+//    int bin[fNbinFlat];
+//    for (int i = 0; i<fNbinFlat; i++) bin[i] = 0;
 
     TString detinfo = "";
     TString sPSDsub1 = "centralmod_hole";
@@ -722,8 +722,8 @@ void eventPlane::BinCalc(TTree *&tree, TString &detinfo, TString &sPreSel_tmp, d
     double step = 0.;
     double entry = 0.;
     int j=0;
-    int bin[fNbinFlat];
-    for (int i = 0; i<fNbinFlat; i++) bin[i] = 0;
+//    int bin[fNbinFlat];
+//    for (int i = 0; i<fNbinFlat; i++) bin[i] = 0;
 
     //TCanvas* can = new TCanvas(detinfo,detinfo,200,10,500,500);
     tree->Draw(detinfo +">>"+detinfo, sPreSel_tmp, "goff");
@@ -844,7 +844,7 @@ void eventPlane::FitFunctionCalc(TTree *&tree, TString &detinfo_tmp, TString &Q_
 {
     //cout <<"variables = " << sPreSel_tmp << ", " << detinfo_tmp << ", " << Q_tmp <<  endl;
 
-    TH1F* h;
+//    TH1F* h;
     int NbinX = 0;
     TH2F* h2;
     TH1D *h2_projX;
@@ -1367,7 +1367,7 @@ void eventPlane::PSDinit_flat_Qcorr()
     if (!tree) cout << "-E- eventPlane::PSDinit_flat_Qcorr: pb with the correction TTree -----" << endl;
 
     TString cut;
-    Int_t k, l;
+    Int_t k; //, l;
     TString cut_PSD;
     TString cut_PSD1;
     TString cut_PSD2;
@@ -1525,7 +1525,8 @@ void eventPlane::PSDinit_flat_Barr()
     if (!tree) cout << "-E- eventPlane::PSDinit_flat_Barr: pb with the correction TTree -----" << endl;
 
     TString cut, coeff;
-    Int_t k, l, m;
+//    Int_t k, l, m;
+    Int_t k, m;
     TString cut_PSD;
     TString cut_PSD1;
     TString cut_PSD2;
@@ -1673,8 +1674,9 @@ void eventPlane::STSMCtransverseMomMeth()
     // Declaration variables
     TRandom* rand = new TRandom();
     Int_t x;                      // random procedure
-    Double_t w;
-    Int_t pdgCode, trackID, type, motherID;
+//    Double_t w;
+//    Int_t pdgCode, trackID, type, motherID;
+    Int_t type;
     Double_t p, px, py, pz, pt, phi, charge, mass, energy, y;
     CbmMCTrack* track;
 
@@ -1762,7 +1764,7 @@ void eventPlane::STSMCtransverseMomMeth()
 	if (charge == 0.) continue; // safety condition
 
 	// ======= secondaries?
-	motherID = track->GetMotherId();
+//	motherID = track->GetMotherId();
 	//if ( motherID > -1 ) continue;  // no secondary tracks
 
 	y -= fy_cm;
@@ -1960,9 +1962,11 @@ void eventPlane::STSRECOtransverseMomMeth()
     // Declaration variables
     TRandom* rand = new TRandom();
     Int_t x;                      // random procedure
-    Double_t w;
-    Int_t pdgCode, trackID, type, motherID;
-    Double_t p, px, py, pz, pt, phi, charge, mass, energy, y;
+//    Double_t w;
+//    Int_t pdgCode, trackID, type, motherID;
+    Int_t trackID, type;
+//    Double_t p, px, py, pz, pt, phi, charge, mass, energy, y;
+    Double_t p, px, py, pz, pt, phi, mass, energy, y;
     Double_t IPx, IPy, IP;
     Double_t chi2;
     Int_t NDF;
@@ -2290,7 +2294,8 @@ void eventPlane::STSinit_flat_Qcorr()
     if (!tree) cout << "-E- eventPlane::STSinit_flat_Qcorr: pb with the correction TTree -----" << endl;
 
     TString cut;
-    Int_t k, l;
+//    Int_t k, l;
+    Int_t k;
 
     TString detinfo = "StsEvent.fmult";
 
@@ -2402,7 +2407,8 @@ void eventPlane::STSinit_flat_Barr()
     if (!tree) cout << "-E- eventPlane::STSinit_flat_Barr: pb with the correction TTree -----" << endl;
 
     TString cut, coeff;
-    Int_t k, l, m;
+//    Int_t k, l, m;
+    Int_t k, m;
 
     TString detinfo = "StsEvent.fmult";
 

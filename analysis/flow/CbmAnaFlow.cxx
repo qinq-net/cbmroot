@@ -871,7 +871,7 @@ InitStatus CbmAnaFlow::Init()
       return kERROR;
   }
 
-  if ( fmode == 6 && fdirname == "" )                                         // merging 2D histos
+  if ( fmode == 6 && strcmp(fdirname,"") == 0)                                         // merging 2D histos
   {
       LOG(FATAL) << "-E- CbmAnaFlow::Init: no directory for Merging 2D histos !" << FairLogger::endl;
       return kERROR;
@@ -933,7 +933,7 @@ InitStatus CbmAnaFlow::Init()
 
 // -----   Public method Exec   --------------------------------------------
 
-void CbmAnaFlow::Exec(Option_t* opt)
+void CbmAnaFlow::Exec(Option_t*)
 {
     //========== Sequence for simulations:   ( '+' means sequential processing)
     //========== 1) mode = 0 or 1 or 2 (from gen. or reco. or KF events to generic -TTree- data format)
@@ -941,7 +941,7 @@ void CbmAnaFlow::Exec(Option_t* opt)
     //========== 2) mode = 3 (simple drawing from TTree) or 4 (2D histo. creation for efficiency corr. + drawing) or 5+6+7 (see below)
 
     // === STS based centrality
-    int mult;
+    int mult = -111;
     if (fmode == 0 || fmode == 1 || fmode == 2) mult = centrality_STSmult();
     hmult->Fill(mult);
 
@@ -1110,7 +1110,7 @@ bool CbmAnaFlow::CreateTreeGen(int mult)
     Double_t phi;
     fmotherID = -1;
     TParticlePDG* partPDG;
-    FairRootManager* ioman = FairRootManager::Instance();   
+//    FairRootManager* ioman = FairRootManager::Instance();   
 
     cout << "MC B = " << fB_MC << endl;
     cout << "MC RP = " << RP << ", (must be in radian and in [-pi, pi])" << endl;
@@ -1185,12 +1185,12 @@ bool CbmAnaFlow::CreateTreeReco(int mult)
     //Double_t RP = fMcEvent->GetRP(); // alternatively from McEventData
     RP = Range(RP);                    // en radian!! from SHIELD: [0, 2pi]
     
-    Double_t EP_PSD, EP_PSD1, EP_PSD2, EP_PSD3;
-    Double_t EP_STS_harmo1, EP_STS_harmo2;
-    EP_PSD = fPsdEvent->GetEP();
-    EP_PSD1 = fPsdEvent->GetEP_sub1();
-    EP_PSD2 = fPsdEvent->GetEP_sub2();
-    EP_PSD3 = fPsdEvent->GetEP_sub3();
+    Double_t EP_STS_harmo1 = 0.;
+    Double_t EP_STS_harmo2 = 0.;
+    Double_t EP_PSD = fPsdEvent->GetEP();
+    Double_t EP_PSD1 = fPsdEvent->GetEP_sub1();
+    Double_t EP_PSD2 = fPsdEvent->GetEP_sub2();
+    Double_t EP_PSD3 = fPsdEvent->GetEP_sub3();
     fStsEvent->GetEP(EP_STS_harmo1, EP_STS_harmo2);   // TO DO: change STS EP getter with pointer/reference in cbmdata/sts/CbmStsEventData?
       
     fB_MC = B;
@@ -1388,12 +1388,12 @@ bool CbmAnaFlow::CreateTreeKFPart(int mult)
     //     RP = Range(RP);
     //     cout << "----- MC RP angle: " << RP << ", (must be in radian and in [-pi, pi])" << " ------" << endl;
 
-    Double_t EP_PSD, EP_PSD1, EP_PSD2, EP_PSD3;
-    Double_t EP_STS_harmo1, EP_STS_harmo2;
-    EP_PSD = fPsdEvent->GetEP();
-    EP_PSD1 = fPsdEvent->GetEP_sub1();
-    EP_PSD2 = fPsdEvent->GetEP_sub2();
-    EP_PSD3 = fPsdEvent->GetEP_sub3();
+    Double_t EP_STS_harmo1 = 0.;
+    Double_t EP_STS_harmo2 = 0.;
+    Double_t EP_PSD = fPsdEvent->GetEP();
+    Double_t EP_PSD1 = fPsdEvent->GetEP_sub1();
+    Double_t EP_PSD2 = fPsdEvent->GetEP_sub2();
+    Double_t EP_PSD3 = fPsdEvent->GetEP_sub3();
     fStsEvent->GetEP(EP_STS_harmo1, EP_STS_harmo2);
 
     Int_t nRecoParts = fRecParticles->GetEntriesFast();
@@ -1581,7 +1581,7 @@ bool CbmAnaFlow::SortTree()
   Double_t binWidth_X = hX->GetBinWidth(binX1);
   Double_t binCenter_X;
   Int_t nentries_2;
-  Int_t *index_2;
+  Int_t *index_2 = NULL;
   TString smin_y_bin, smax_y_bin, Ybin;
 
   for (Int_t iy=binX1; iy<=binX2; iy++)
@@ -1680,11 +1680,12 @@ bool CbmAnaFlow::Draw_diffvn_simple()
   cout << "======= pt dependence of v"  << fsel_factor << " of " << fsel_pdg << " particles" << endl;
 
   Int_t Nbin;
-  Double_t min, max, step;
+//  Double_t min, max, step;
+  Double_t min, step;
 
   Nbin = fsel_PTNbin;
   min = fsel_PTmin;
-  max = fsel_PTmax;
+//  max = fsel_PTmax;
   step = (fsel_PTmax - fsel_PTmin)/fsel_PTNbin;
 
   Float_t meanFlow0[Nbin], emeanFlow0[Nbin];
@@ -1734,7 +1735,7 @@ bool CbmAnaFlow::Draw_diffvn_simple()
 
   Nbin = fsel_YNbin;
   min = fsel_Ymin;
-  max = fsel_Ymax;
+//  max = fsel_Ymax;
   step = (fsel_Ymax - fsel_Ymin)/fsel_YNbin;
 
   Float_t meanFlow1[Nbin], emeanFlow1[Nbin];
@@ -1899,7 +1900,7 @@ bool CbmAnaFlow::Create2Dhisto_Y_vs_pt()
   Int_t bin = 0;
   Int_t Nbin = 2;
   Float_t meanFlow[Nbin], emeanFlow[Nbin];
-  Float_t meanX[Nbin], emeanX[Nbin];
+//  Float_t meanX[Nbin], emeanX[Nbin];
 
   Double_t corrFactor[2];
   corrFactor[0] = 1.;
@@ -2080,7 +2081,8 @@ bool CbmAnaFlow::Draw_diffvn_Effcorr()
     TString ALLcut;
 
     Int_t Nbin;
-    Double_t min, max, step;
+//    Double_t min, max, step;
+    Double_t min, step;
     Double_t y_tmp, pt_tmp;
 
     Double_t vn_tmp, vn_err_tmp;
@@ -2104,7 +2106,7 @@ bool CbmAnaFlow::Draw_diffvn_Effcorr()
 
     Nbin = fsel_PTNbin;
     min = fsel_PTmin;
-    max = fsel_PTmax;
+//    max = fsel_PTmax;
     step = (fsel_PTmax - fsel_PTmin)/fsel_PTNbin;
 
     Float_t meanX0[Nbin], emeanX0[Nbin];
@@ -2194,7 +2196,7 @@ bool CbmAnaFlow::Draw_diffvn_Effcorr()
 
     Nbin = fsel_YNbin;
     min = fsel_Ymin;
-    max = fsel_Ymax;
+//    max = fsel_Ymax;
     step = (fsel_Ymax - fsel_Ymin)/fsel_YNbin;
 
     Float_t meanX1[Nbin], emeanX1[Nbin];
@@ -2790,7 +2792,8 @@ bool CbmAnaFlow::Draw_diffvn_Effcorr_1TreeLoop()
     hvn_vs_y_pt = (TH2F*) f->Get("vn_2D");
 
     Int_t Nbin;
-    Double_t min, max, step;
+//    Double_t min, max, step;
+    Double_t min, step;
     Double_t y_tmp_bin, pt_tmp_bin;
 
     Double_t vn_tmp, vn_err_tmp;
@@ -2817,7 +2820,7 @@ bool CbmAnaFlow::Draw_diffvn_Effcorr_1TreeLoop()
 
     Nbin = fsel_PTNbin;
     min = fsel_PTmin;
-    max = fsel_PTmax;
+//    max = fsel_PTmax;
     step = (fsel_PTmax - fsel_PTmin)/fsel_PTNbin;
 
     Float_t meanX0[Nbin], emeanX0[Nbin];
@@ -2935,7 +2938,7 @@ bool CbmAnaFlow::Draw_diffvn_Effcorr_1TreeLoop()
 
     Nbin = fsel_YNbin;
     min = fsel_Ymin;
-    max = fsel_Ymax;
+//    max = fsel_Ymax;
     step = (fsel_Ymax - fsel_Ymin)/fsel_YNbin;
 
     Float_t meanX1[Nbin], emeanX1[Nbin];
@@ -3574,7 +3577,8 @@ void CbmAnaFlow::CalcCorrectionFactors(Double_t* corrFactor)
 	  
 	  // error
 	  Double_t A, sA, B, sB, F, sF;
-	  Double_t C, sC, F2, sF2, F3, sF3;
+//	  Double_t C, sC, F2, sF2, F3, sF3;
+	  Double_t C, sC, F2, sF2, sF3;
 
 	  A = h1->GetMean();
 	  sA = h1->GetMeanError();
@@ -3649,6 +3653,8 @@ void CbmAnaFlow::Write()
 	hvn_vs_y_pt->Write();
 	hN_vs_y_pt->Write();
 	if (fmode == 4) hEff_vs_y_pt->Write();
+        outfile->Close();
+        delete outfile;
     }
 
     if (fmode == 7)
@@ -3657,5 +3663,7 @@ void CbmAnaFlow::Write()
 	TFile *outfile = new TFile(fileName_out,"RECREATE");
 
 	hEff_vs_y_pt->Write();
+        outfile->Close();
+        delete outfile;
     }
 }

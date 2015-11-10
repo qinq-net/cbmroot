@@ -610,8 +610,7 @@ InitStatus CbmAnaDielectronTask::Init()
    return kSUCCESS;
 }
 
-void CbmAnaDielectronTask::Exec(
-      Option_t *option)
+void CbmAnaDielectronTask::Exec(Option_t*)
 {
     fh_event_number->Fill(0.5);
 
@@ -797,14 +796,14 @@ void CbmAnaDielectronTask::PairMcAndAcceptance()
 	Int_t nMcTracks = fMCTracks->GetEntries();
 	for (Int_t iP = 0; iP < nMcTracks; iP++) {
 		CbmMCTrack* mctrackP = (CbmMCTrack*) fMCTracks->At(iP);
-		Int_t motherIdP = mctrackP->GetMotherId();
+//		Int_t motherIdP = mctrackP->GetMotherId();
 		Int_t pdgP = mctrackP->GetPdgCode();
 		if ( pdgP != 11 ) continue;
 		Bool_t isAccP = IsMcTrackAccepted(iP);
 		for (Int_t iM = 0; iM < nMcTracks; iM++) {
 			if (iP == iM) continue;
 			CbmMCTrack* mctrackM = (CbmMCTrack*) fMCTracks->At(iM);
-			Int_t motherIdM = mctrackM->GetMotherId();
+//			Int_t motherIdM = mctrackM->GetMotherId();
 			Int_t pdgM = mctrackM->GetPdgCode();
 			if ( pdgM != -11 ) continue;
 			Bool_t isAccM = IsMcTrackAccepted(iM);
@@ -844,7 +843,7 @@ void CbmAnaDielectronTask::FillElPiMomHist()
    Int_t nMcTracks = fMCTracks->GetEntries();
    for (Int_t i = 0; i < nMcTracks; i++) {
        CbmMCTrack* mctrack = (CbmMCTrack*) fMCTracks->At(i);
-       Int_t motherId = mctrack->GetMotherId();
+//       Int_t motherId = mctrack->GetMotherId();
        Int_t pdg = TMath::Abs(mctrack->GetPdgCode());
        double momentum = mctrack->GetP();
        double rapidity = mctrack->GetRapidity();
@@ -896,7 +895,7 @@ void CbmAnaDielectronTask::FillElPiMomHist()
        CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMCTracks->At(stsMcTrackId);
        if (mcTrack1 == NULL) continue;
        int pdg = TMath::Abs(mcTrack1->GetPdgCode());
-       int motherId = mcTrack1->GetMotherId();
+//       int motherId = mcTrack1->GetMotherId();
        double momentum = mcTrack1->GetP();
 
        TVector3 vertex;
@@ -1118,7 +1117,7 @@ void CbmAnaDielectronTask::AssignMcToCandidates()
       fCandidates[i].fIsMcEtaElectron = CbmLmvmUtils::IsMcEtaElectron(mcTrack1, fMCTracks);
 
       // TRD
-      CbmTrdTrack* trdTrack = NULL;
+//      CbmTrdTrack* trdTrack = NULL;
       if (fUseTrd == true) {
          int trdInd = fCandidates[i].fTrdInd;
          CbmTrackMatchNew* trdMatch = (CbmTrackMatchNew*) fTrdTrackMatches->At(trdInd);
@@ -1393,7 +1392,7 @@ void CbmAnaDielectronTask::SignalAndBgReco()
             Bool_t isRtCut = (fCandidates[iP].fIsRtCutElectron && fCandidates[iM].fIsRtCutElectron);
             Bool_t isTtCut = (fCandidates[iP].fIsTtCutElectron && fCandidates[iM].fIsTtCutElectron);
             Bool_t isPtCut = (fCandidates[iP].fMomentum.Perp() > fCuts.fPtCut && fCandidates[iM].fMomentum.Perp() > fCuts.fPtCut);
-            Bool_t isAngleCut = (pRec.fAngle > fCuts.fAngleCut);
+//            Bool_t isAngleCut = (pRec.fAngle > fCuts.fAngleCut);
             Bool_t isMvd1Cut = (fCandidates[iP].fIsMvd1CutElectron && fCandidates[iM].fIsMvd1CutElectron);
             Bool_t isMvd2Cut = (fCandidates[iP].fIsMvd2CutElectron && fCandidates[iM].fIsMvd2CutElectron);
             if (!fUseMvd) isMvd1Cut = true;
@@ -1480,7 +1479,7 @@ void CbmAnaDielectronTask::CheckTopologyCut(
          //find min opening angle
          Double_t minAng = 360.;
          Int_t minInd = -1;
-         for (Int_t i = 0; i < angles.size(); i++){
+         for (UInt_t i = 0; i < angles.size(); i++){
             if (minAng > angles[i]){
                minAng = angles[i];
                minInd = i;
@@ -1547,7 +1546,7 @@ void CbmAnaDielectronTask::CalculateNofTopologyPairs(
 
       if (isAdded[iP]) continue;
 
-      for (Int_t iM = 0; iM < fSTCandidates.size(); iM++){
+      for (UInt_t iM = 0; iM < fSTCandidates.size(); iM++){
          if (fSTCandidates[iM].fMcMotherId == fCandidates[iP].fMcMotherId){
             h_nof_pairs->Fill(4.5);
             isAdded[iP] = true;
@@ -1556,7 +1555,7 @@ void CbmAnaDielectronTask::CalculateNofTopologyPairs(
       }
       if (isAdded[iP]) continue;
 
-      for (Int_t iM = 0; iM < fRTCandidates.size(); iM++){
+      for (UInt_t iM = 0; iM < fRTCandidates.size(); iM++){
          if (fRTCandidates[iM].fMcMotherId == fCandidates[iP].fMcMotherId){
             h_nof_pairs->Fill(5.5);
             isAdded[iP] = true;
@@ -1565,7 +1564,7 @@ void CbmAnaDielectronTask::CalculateNofTopologyPairs(
       }
       if (isAdded[iP]) continue;
 
-      for (Int_t iM = 0; iM < fTTCandidates.size(); iM++){
+      for (UInt_t iM = 0; iM < fTTCandidates.size(); iM++){
          if (fTTCandidates[iM].fMcMotherId == fCandidates[iP].fMcMotherId){
             h_nof_pairs->Fill(6.5);
             isAdded[iP] = true;
@@ -1574,7 +1573,7 @@ void CbmAnaDielectronTask::CalculateNofTopologyPairs(
       }
       if (isAdded[iP]) continue;
 
-      for (Int_t iM = 0; iM < fCandidates.size(); iM++){
+      for (UInt_t iM = 0; iM < fCandidates.size(); iM++){
          if (iM != iP && fCandidates[iM].fMcMotherId == fCandidates[iP].fMcMotherId && fCandidates[iM].fChi2Prim < fCuts.fChiPrimCut && fCandidates[iM].fIsElectron) {
             h_nof_pairs->Fill(7.5);
             isAdded[iP] = true;
@@ -1631,8 +1630,8 @@ void CbmAnaDielectronTask::IsElectron(
    if (fPionMisidLevel < 0.){
       Bool_t richEl = IsRichElectron(ring, momentum, cand);
       Bool_t trdEl = (trdTrack != NULL)?IsTrdElectron(trdTrack, cand):true;
-      Double_t annRich = cand->fRichAnn;
-      Double_t annTrd = cand->fTrdAnn;
+//      Double_t annRich = cand->fRichAnn;
+//      Double_t annTrd = cand->fTrdAnn;
       Bool_t tofEl = IsTofElectron(gTrack, momentum, cand);
       Bool_t momCut = (fCuts.fMomentumCut > 0.)?(momentum < fCuts.fMomentumCut):true;
 
@@ -1864,7 +1863,7 @@ void CbmAnaDielectronTask::CheckClosestMvdHit(
    vector<float> candY;
    vector<int> candInd;
 
-   CbmKF *KF = CbmKF::Instance();
+//   CbmKF *KF = CbmKF::Instance();
 
    Int_t nMvdHit = fMvdHits->GetEntriesFast();
    for(Int_t iHit = 0; iHit < nMvdHit; iHit++) {
@@ -1898,10 +1897,10 @@ void CbmAnaDielectronTask::CheckClosestMvdHit(
       }
    }// iCand
 
-   for(Int_t iT = 0; iT < candInd.size(); iT++) {
+   for(UInt_t iT = 0; iT < candInd.size(); iT++) {
       Float_t mind = 9999999.;
       Int_t minMvdInd = -1;
-      for(Int_t iH = 0; iH < mvdX.size(); iH++) {
+      for(UInt_t iH = 0; iH < mvdX.size(); iH++) {
          Float_t dx = mvdX[iH] - candX[iT];
          Float_t dy = mvdY[iH] - candY[iT];
          Float_t d2 = dx*dx + dy*dy;
@@ -2030,7 +2029,7 @@ void CbmAnaDielectronTask::MvdCutMcDistance()
 void CbmAnaDielectronTask::Finish()
 {
    // Write histograms to a file
-   for (Int_t i = 0; i < fHistoList.size(); i++){
+   for (UInt_t i = 0; i < fHistoList.size(); i++){
      fHistoList[i]->Write();
    }
 }

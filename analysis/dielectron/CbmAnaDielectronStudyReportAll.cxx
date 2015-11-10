@@ -46,7 +46,7 @@ void CbmAnaDielectronStudyReportAll::DrawBgMinv()
 	TCanvas* c = CreateCanvas("lmvm_study_report_bg_minv_ptcut", "lmvm_study_report_bg_minv_ptcut", 600, 600);
 	vector<TH1*> histos1(nofStudies);
 	vector<string> legendNames;
-	for (UInt_t iStudy = 0; iStudy < nofStudies; iStudy++) {
+	for (Int_t iStudy = 0; iStudy < nofStudies; iStudy++) {
 	    histos1[iStudy] = HM()[iStudy]->H1("fh_bg_minv_ptcut");
 	    histos1[iStudy]->Rebin(20);;
 	    histos1[iStudy]->Scale(1./20.);
@@ -62,7 +62,7 @@ void CbmAnaDielectronStudyReportAll::DrawSBgMinv()
 	TCanvas* c = CreateCanvas("lmvm_study_report_sbg_vs_minv_ptcut", "lmvm_study_report_sbg_vs_minv_ptcut", 600, 600);
 	vector<TH1*> histos1(nofStudies);
 	vector<string> legendNames;
-	for (UInt_t iStudy = 0; iStudy < nofStudies; iStudy++) {
+	for (Int_t iStudy = 0; iStudy < nofStudies; iStudy++) {
 	    histos1[iStudy] = HM()[iStudy]->H1("fh_sbg_vs_minv_ptcut");
 	   // histos1[iStudy]->Rebin(4);;
 	   // histos1[iStudy]->Scale(1./4.);

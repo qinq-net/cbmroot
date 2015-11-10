@@ -120,7 +120,7 @@ TH2D* CbmAnaLmvmDrawStudy::H2(
 
 void CbmAnaLmvmDrawStudy::SaveCanvasToImage()
 {
-   for (int i = 0; i < fCanvas.size(); i++){
+   for (unsigned int i = 0; i < fCanvas.size(); i++){
       Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir);
    }
 }
@@ -140,7 +140,7 @@ void CbmAnaLmvmDrawStudy::DrawMinv()
    hPtCut.resize(fMeanFiles.size());
    hTtCut.resize(fMeanFiles.size());
    int nRebin = 20;
-   for (int i = 0; i < fMeanFiles.size(); i++){
+   for (unsigned int i = 0; i < fMeanFiles.size(); i++){
       TFile* f = new TFile(fMeanFiles[i].c_str(), "READ");
 
       hPtCut[i] = (TH1D*)f->Get("fh_bg_minv_ptcut")->Clone();
@@ -279,7 +279,7 @@ void CbmAnaLmvmDrawStudy::DrawBgSourcePairsStep(
    for (int i = 0; i < fNofStudies; i++){
       habsPx[i]->SetMinimum(0.);
       habsPx[i]->SetLineWidth(3.);
-      for (Int_t y = 1; y <= CbmLmvmHist::fBgPairSourceLatex.size(); y++){
+      for (UInt_t y = 1; y <= CbmLmvmHist::fBgPairSourceLatex.size(); y++){
          habsPx[i]->GetXaxis()->SetBinLabel(y, CbmLmvmHist::fBgPairSourceLatex[y-1].c_str());
       }
    }

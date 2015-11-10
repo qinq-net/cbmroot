@@ -505,30 +505,30 @@ void CbmAnaConversionPhotons::Finish()
 	gDirectory->mkdir("energy");
 	
 	gDirectory->cd("angle");
-	for (Int_t i = 0; i < fHistoList_EFG_angle.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_EFG_angle.size(); i++){
 		fHistoList_EFG_angle[i]->Write();
 	}
 	gDirectory->cd("..");
 	
 	gDirectory->cd("invariant mass");
-	for (Int_t i = 0; i < fHistoList_EFG_invmass.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_EFG_invmass.size(); i++){
 		fHistoList_EFG_invmass[i]->Write();
 	}
 	gDirectory->cd("..");
 	
 	gDirectory->cd("energy");
-	for (Int_t i = 0; i < fHistoList_EFG_energy.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_EFG_energy.size(); i++){
 		fHistoList_EFG_energy[i]->Write();
 	}
 	gDirectory->cd("..");
 	
 	
-	for (Int_t i = 0; i < fHistoList_EFG.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_EFG.size(); i++){
 		fHistoList_EFG[i]->Write();
 	}
 	gDirectory->cd("..");
 	
-	for (Int_t i = 0; i < fHistoList_photons.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_photons.size(); i++){
 		fHistoList_photons[i]->Write();
 	}
 	gDirectory->cd("..");
@@ -805,7 +805,7 @@ void CbmAnaConversionPhotons::FillRecoTracklist_allElectrons(CbmMCTrack* mctrack
 void CbmAnaConversionPhotons::CombineElectrons()
 {
 	TH1I* zwischenhisto = new TH1I("zwischenhisto", "zwischenhisto", 1000000, 0, 1000000);
-	for(int i=0; i<fMCTracklist.size(); i++) {
+	for(unsigned int i=0; i<fMCTracklist.size(); i++) {
 		zwischenhisto->Fill(fMCTracklist[i]->GetMotherId());
 	}
 	fPhotons_test->Fill(zwischenhisto->GetMaximum());
@@ -819,7 +819,7 @@ void CbmAnaConversionPhotons::CombineElectrons()
 
 	int photoncounter = 0;
 	std::multimap<int,int> electronMap;
-	for(int i=0; i<fMCTracklist.size(); i++) {
+	for(unsigned int i=0; i<fMCTracklist.size(); i++) {
 		electronMap.insert ( std::pair<int,int>(fMCTracklist[i]->GetMotherId(), i) );
 	}
 	

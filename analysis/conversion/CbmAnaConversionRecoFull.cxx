@@ -510,7 +510,7 @@ void CbmAnaConversionRecoFull::Finish()
 	
 	gDirectory->mkdir("NoRefit-NoChicut");		// index 1
 	gDirectory->cd("NoRefit-NoChicut");
-	for (Int_t i = 0; i < fHistoList_recofull_1.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_recofull_1.size(); i++){
 		//fHistoList_recofull_1[i]->Write();
 		fHistoList_recofull_new[1][i]->Write();
 	}
@@ -518,7 +518,7 @@ void CbmAnaConversionRecoFull::Finish()
 	
 	gDirectory->mkdir("NoRefit-WithChicut");	// index 2
 	gDirectory->cd("NoRefit-WithChicut");
-	for (Int_t i = 0; i < fHistoList_recofull_2.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_recofull_2.size(); i++){
 		//fHistoList_recofull_2[i]->Write();
 		fHistoList_recofull_new[2][i]->Write();
 	}
@@ -526,7 +526,7 @@ void CbmAnaConversionRecoFull::Finish()
 	
 	gDirectory->mkdir("WithRefit-NoChicut");	// index 3
 	gDirectory->cd("WithRefit-NoChicut");
-	for (Int_t i = 0; i < fHistoList_recofull_3.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_recofull_3.size(); i++){
 		//fHistoList_recofull_3[i]->Write();
 		fHistoList_recofull_new[3][i]->Write();
 	}
@@ -534,13 +534,13 @@ void CbmAnaConversionRecoFull::Finish()
 	
 	gDirectory->mkdir("WithRefit-WithChicut");	// index 4
 	gDirectory->cd("WithRefit-WithChicut");
-	for (Int_t i = 0; i < fHistoList_recofull_4.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_recofull_4.size(); i++){
 		//fHistoList_recofull_4[i]->Write();
 		fHistoList_recofull_new[4][i]->Write();
 	}
 	gDirectory->cd("..");
 
-	for (Int_t i = 0; i < fHistoList_recofull.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_recofull.size(); i++){
 		fHistoList_recofull[i]->Write();
 	}
 	gDirectory->cd("..");
@@ -648,7 +648,7 @@ void CbmAnaConversionRecoFull::Exec()
 		//if(stsMcTrackId != richMcTrackId) continue;
 		nofGT_richsts++;
 
-		int pdg = TMath::Abs(mcTrack1->GetPdgCode());
+//		int pdg = TMath::Abs(mcTrack1->GetPdgCode());
 
 
 		// calculate refitted momenta at primary vertex
@@ -665,10 +665,10 @@ void CbmAnaConversionRecoFull::Exec()
 		const FairTrackParam* vtxTrack = stsTracks[0].GetParamFirst();
 		vtxTrack->Momentum(refittedMomentum);
 
-		Double_t result_chi2ndf = stsTracks[0].GetChiSq() / stsTracks[0].GetNDF();
+//		Double_t result_chi2ndf = stsTracks[0].GetChiSq() / stsTracks[0].GetNDF();
 		float result_chi = chiPrim[0];
 		fhMomentumFits->Fill(result_chi);
-		Int_t pidHypo = gTrack->GetPidHypo();
+//		Int_t pidHypo = gTrack->GetPidHypo();
 		
 		// #################################################################
 		// ##### up to here standard calculation of reconstructed data #####
@@ -849,7 +849,7 @@ void CbmAnaConversionRecoFull::Exec()
 
 
 //void CbmAnaConversionRecoFull::CombineElectrons(	vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int> mctrackID)
-void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int> mctrackID, vector< vector<int> > reconstructedPhotons, Int_t index)
+void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float>, vector<int>, vector< vector<int> > reconstructedPhotons, Int_t index)
 {
 	Int_t nof = momenta.size();
 	cout << "CbmAnaConversionRecoFull: " << index << ": CombineElectrons, nof - " << nof << endl;
@@ -876,10 +876,12 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 				Int_t IsPhoton_openingAngle1	= (params1.fAngle < openingAngleCut);
 				Int_t IsPhoton_invMass1			= (params1.fMinv < invMassCut);
 				
+/*
 				Double_t tXa = gtrack[a]->GetParamLast()->GetTx();
 				Double_t tYa = gtrack[a]->GetParamLast()->GetTy();
 				Double_t tXb = gtrack[b]->GetParamLast()->GetTx();
 				Double_t tYb = gtrack[b]->GetParamLast()->GetTy();
+*/
 				
 				if(IsPhoton_openingAngle1 && IsPhoton_invMass1) {
 					nofPhotons++;
@@ -1099,8 +1101,8 @@ CbmLmvmKinematicParams CbmAnaConversionRecoFull::CalculateKinematicParams_4parti
     Double_t ptPair = momPair.Perp();
     Double_t pzPair = momPair.Pz();
     Double_t yPair = 0.5*TMath::Log((energyPair+pzPair)/(energyPair-pzPair));
-    Double_t anglePair = 0;
-    Double_t theta = 180.*anglePair/TMath::Pi();
+//    Double_t anglePair = 0;
+//    Double_t theta = 180.*anglePair/TMath::Pi();
     Double_t minv = sum.Mag();
 
     params.fMomentumMag = momPair.Mag();
@@ -1115,7 +1117,7 @@ CbmLmvmKinematicParams CbmAnaConversionRecoFull::CalculateKinematicParams_4parti
 
 
 
-void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int> mctrackID, vector< vector<int> > reconstructedPhotons, Int_t index)
+void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int>, vector< vector<int> > reconstructedPhotons, Int_t index)
 // index: kind of electron cut: 1 = no refit, no chicut; 2 = no refit, with chicut; 3 = with refit, no chicut; 4 = with refit, with chicut
 {
 	if(index == 1) reconstructedPhotons = fVector_photons_pairs_1;

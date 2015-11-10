@@ -1020,7 +1020,7 @@ void CbmAnaDielectronTaskDraw::DrawBgSource2D(
    hperc->GetXaxis()->SetRange(kReco + 1, rangeMax);
    DrawH2(hperc, kLinear, kLinear, kLinear, "text COLZ");
 
-   for (Int_t y = 1; y <= yLabels.size(); y++){
+   for (UInt_t y = 1; y <= yLabels.size(); y++){
      hperc->GetYaxis()->SetBinLabel(y, yLabels[y-1].c_str());
      habs->GetYaxis()->SetBinLabel(y, yLabels[y-1].c_str());
    }
@@ -1249,7 +1249,7 @@ void CbmAnaDielectronTaskDraw::DrawMvdAndStsHist()
 
 void CbmAnaDielectronTaskDraw::SaveCanvasToImage()
 {
-   for (int i = 0; i < fCanvas.size(); i++){
+   for (unsigned int i = 0; i < fCanvas.size(); i++){
       Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir + "/png/", "png");
       Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir + "/eps/", "eps");
    }

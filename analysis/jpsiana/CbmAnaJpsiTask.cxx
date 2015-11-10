@@ -23,8 +23,6 @@
 #include "CbmAnaJpsiKinematicParams.h"
 #include "CbmAnaJpsiCuts.h"
 
-
-
 using namespace std;
 
 CbmAnaJpsiTask::CbmAnaJpsiTask()
@@ -47,19 +45,22 @@ CbmAnaJpsiTask::CbmAnaJpsiTask()
 	  fTofHits(NULL),
 	  fGlobalTracks(NULL),
 	  fJpsiCandidates(NULL),
+          fNofHitsInRingMap(),
 	  fPrimVertex(NULL),
 	  fKFVertex(),
 	  fCandidates(),
-	  fElIdAnn(NULL),
-	  fHM(NULL),
 	  fCuts(),
-	  fWeight(0.),
+	  fElIdAnn(NULL),
+	  fWeight(1.14048e-6),
+	  fHM(NULL),
 	  fUseTrd(kTRUE),
-	  fUseTof(kTRUE)
+	  fUseTof(kFALSE)
 {
+/*
     fUseTrd=true;
     fUseTof=false;
 	fWeight=1.14048e-6;
+*/
 }
 
 CbmAnaJpsiTask::~CbmAnaJpsiTask()
@@ -317,7 +318,7 @@ void CbmAnaJpsiTask::InitHist()
 
 
 void CbmAnaJpsiTask::Exec(
-      Option_t* option)
+      Option_t*)
 {
 	fJpsiCandidates->Clear();
 
@@ -483,7 +484,7 @@ void CbmAnaJpsiTask::AssignMcToCandidates()
       fCandidates[i].fRichMcTrackId = richMatch->GetMatchedLink().GetIndex();
 
       // TRD
-      CbmTrdTrack* trdTrack = NULL;
+//      CbmTrdTrack* trdTrack = NULL;
       if (fUseTrd==true){
       int trdInd = fCandidates[i].fTrdInd;
       CbmTrackMatchNew* trdMatch = (CbmTrackMatchNew*) fTrdTrackMatches->At(trdInd);
@@ -736,8 +737,8 @@ void CbmAnaJpsiTask::TrackSource(
 		Int_t pdg)
 {
 	int binNum = (double) step + 0.5;
-	Double_t mom = cand->fMomentum.Mag();
-	Double_t pt = cand->fMomentum.Perp();
+//	Double_t mom = cand->fMomentum.Mag();
+//	Double_t pt = cand->fMomentum.Perp();
 
 
     if (cand->fIsMcSignalElectron) {
@@ -893,8 +894,8 @@ void CbmAnaJpsiTask::IsElectron(
 {
 	Bool_t richEl = IsRichElectron(ring, momentum, cand);
 	Bool_t trdEl = (trdTrack != NULL)?IsTrdElectron(trdTrack, cand):true;
-	Double_t annRich = cand->fRichAnn;
-	Double_t annTrd = cand->fTrdAnn;
+//	Double_t annRich = cand->fRichAnn;
+//	Double_t annTrd = cand->fTrdAnn;
 	Bool_t tofEl = IsTofElectron(gTrack, momentum, cand);
 	//Bool_t momCut = (fCuts.fMomentumCut > 0.)?(momentum < fCuts.fMomentumCut):true;
 
@@ -1049,7 +1050,7 @@ void CbmAnaJpsiTask::RichPmtXY() {
 
 void CbmAnaJpsiTask::CopyCandidatesToOutputArray()
 {
-	for (Int_t i = 0; i < fCandidates.size(); i++) {
+	for (UInt_t i = 0; i < fCandidates.size(); i++) {
 		new ((*fJpsiCandidates)[i]) CbmAnaJpsiCandidate(fCandidates[i]);
 	}
 }

@@ -117,7 +117,7 @@ void CbmAnaJpsiSuperEvent::ReadCandidates()
 	fPlusCandidates.clear();
 	cout << "-I- ReadCandidates" << endl;
 	cout << "-I- fFileNames.size:" << fFileNames.size() << endl;
-	for (Int_t iFile = 0; iFile < fFileNames.size(); iFile++) {
+	for (UInt_t iFile = 0; iFile < fFileNames.size(); iFile++) {
 		cout << "-I- Reading file No " << iFile <<  " path:" << fFileNames[iFile] << endl;
 		TFile *f = new TFile(fFileNames[iFile].c_str(), "R");
 		TTree* t = (TTree*)f->Get("cbmsim");

@@ -140,9 +140,11 @@ CbmAnaConversion::CbmAnaConversion()
     fRecoTracklistEPEM_id(),
     fRecoTracklistEPEM_chi(),
     fRecoTracklistEPEM_gtid(),
+    fTestTracklist(),
     fRecoMomentum(),
     fRecoRefittedMomentum(),
     fhNofElectrons_4epem(NULL),
+    fhPi0_MC_occurence(NULL),
     timer_all(),
     fTime_all(0.),
     timer_exec(),
@@ -363,7 +365,7 @@ void CbmAnaConversion::InitHistograms()
 
 
 
-void CbmAnaConversion::Exec(Option_t* option)
+void CbmAnaConversion::Exec(Option_t*)
 {
 	timer_exec.Start();
 	timer_all.Start();
@@ -397,8 +399,8 @@ void CbmAnaConversion::Exec(Option_t* option)
 	int countPrimEl = 0;
 	int countSecEl = 0;
 	int countAllEl  = 0;
-	int countGammaEl = 0;
-	int countMothers = 0;
+//	int countGammaEl = 0;
+//	int countMothers = 0;
 	int countPrimPart = 0;   
 	int countPi0MC = 0; 
 	int countPi0MC_cut = 0;
@@ -552,8 +554,8 @@ void CbmAnaConversion::Exec(Option_t* option)
 		if(NULL == gTrack) continue;
 		int stsInd = gTrack->GetStsTrackIndex();
 		int richInd = gTrack->GetRichRingIndex();
-		int trdInd = gTrack->GetTrdTrackIndex();
-		int tofInd = gTrack->GetTofHitIndex();
+//		int trdInd = gTrack->GetTrdTrackIndex();
+//		int tofInd = gTrack->GetTofHitIndex();
 
 		if (stsInd < 0) continue;
 		CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(stsInd);
@@ -577,9 +579,9 @@ void CbmAnaConversion::Exec(Option_t* option)
 
 		//if(stsMcTrackId != richMcTrackId) continue;
 		
-		int pdg = TMath::Abs(mcTrack1->GetPdgCode());
-		int motherId = mcTrack1->GetMotherId();
-		double momentum = mcTrack1->GetP();
+//		int pdg = TMath::Abs(mcTrack1->GetPdgCode());
+//		int motherId = mcTrack1->GetMotherId();
+//		double momentum = mcTrack1->GetP();
 		stsMatch->GetTrueOverAllHitsRatio();
 
 
@@ -672,7 +674,7 @@ void CbmAnaConversion::Finish()
 
 	gDirectory->mkdir("KFParticle");
 	gDirectory->cd("KFParticle");
-	for (Int_t i = 0; i < fHistoList_kfparticle.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_kfparticle.size(); i++){
 		fHistoList_kfparticle[i]->Write();
 	}
 	gDirectory->cd("..");
@@ -686,7 +688,7 @@ void CbmAnaConversion::Finish()
 	if(DoPhotons)			{ fAnaPhotons->Finish(); }
 	if(DoTest)				{ fAnaTest->Finish(); }
 
-	for (Int_t i = 0; i < fHistoList.size(); i++){
+	for (UInt_t i = 0; i < fHistoList.size(); i++){
 		fHistoList[i]->Write();
 	}
 	gDirectory->cd("..");
@@ -904,7 +906,7 @@ Double_t CbmAnaConversion::Invmass_4particles(const CbmMCTrack* mctrack1, const 
 
 
 
-void CbmAnaConversion::FillMCTracklists(CbmMCTrack* mctrack, int i)
+void CbmAnaConversion::FillMCTracklists(CbmMCTrack* mctrack, int)
 // fill all relevant tracklists containing MC tracks
 {
 	Bool_t electrons = true;
@@ -996,9 +998,9 @@ Bool_t CbmAnaConversion::FillRecoTracklistEPEM(CbmMCTrack* mctrack, TVector3 sts
 
 void CbmAnaConversion::CalculateInvMass_MC_2particles()
 {
-	for(int i=0; i<fMCTracklist_all.size(); i++) {
-		for(int j=i+1; j<fMCTracklist_all.size(); j++) {
-			Double_t invmass = Invmass_2particles(fMCTracklist_all[i],fMCTracklist_all[j]);
+	for(unsigned int i=0; i<fMCTracklist_all.size(); i++) {
+		for(unsigned int j=i+1; j<fMCTracklist_all.size(); j++) {
+//			Double_t invmass = Invmass_2particles(fMCTracklist_all[i],fMCTracklist_all[j]);
 			
 			int motherId_i = fMCTracklist_all[i]->GetMotherId();
 			int motherId_j = fMCTracklist_all[j]->GetMotherId();
@@ -1007,9 +1009,9 @@ void CbmAnaConversion::CalculateInvMass_MC_2particles()
 			int mcMotherPdg_i  = -1;
 			if (NULL != mother_i) mcMotherPdg_i = mother_i->GetPdgCode();
 		
-			CbmMCTrack* mother_j = (CbmMCTrack*) fMcTracks->At(motherId_j);
-			int mcMotherPdg_j  = -1;
-			if (NULL != mother_j) mcMotherPdg_j = mother_j->GetPdgCode();
+//			CbmMCTrack* mother_j = (CbmMCTrack*) fMcTracks->At(motherId_j);
+//			int mcMotherPdg_j  = -1;
+//			if (NULL != mother_j) mcMotherPdg_j = mother_j->GetPdgCode();
 			
 			if(motherId_i == motherId_j && ( (fMCTracklist_all[i]->GetPdgCode() == 11 && fMCTracklist_all[j]->GetPdgCode() == -11) || (fMCTracklist_all[i]->GetPdgCode() == -11 && fMCTracklist_all[j]->GetPdgCode() == 11))) {
 			//	fhInvariantMass_MC_all->Fill(invmass);
@@ -1032,8 +1034,8 @@ void CbmAnaConversion::CalculateInvMass_MC_2particles()
 void CbmAnaConversion::InvariantMassTest() 
 // calculation of invariant mass via pi0-> gamma gamma, ONLY FROM MC DATA!
 {
-	for(int i=0; i<fMCTracklist.size(); i++) {
-		for(int j=i+1; j<fMCTracklist.size(); j++) {
+	for(unsigned int i=0; i<fMCTracklist.size(); i++) {
+		for(unsigned int j=i+1; j<fMCTracklist.size(); j++) {
 			
 			//if(fMCTracklist[i]->GetPx() != fMCTracklist[j]->GetPx() && fMCTracklist[i]->GetPy() != fMCTracklist[j]->GetPy()) {
 			Double_t invmass = Invmass_2gammas(fMCTracklist[i],fMCTracklist[j]);
@@ -1078,10 +1080,10 @@ void CbmAnaConversion::InvariantMassTestReco()
 //	cout << "InvariantMassTestReco - Start..." << endl;
 //	cout << "InvariantMassTestReco - Size of fRecoTracklist:\t " << fRecoTracklist.size() << endl;
 	if(fRecoTracklist.size() >= 4) {
-		for(int i=0; i<fRecoTracklist.size(); i++) {
-			for(int j=i+1; j<fRecoTracklist.size(); j++) {
-				for(int k=j+1; k<fRecoTracklist.size(); k++) {
-					for(int l=k+1; l<fRecoTracklist.size(); l++) {
+		for(unsigned int i=0; i<fRecoTracklist.size(); i++) {
+			for(unsigned int j=i+1; j<fRecoTracklist.size(); j++) {
+				for(unsigned int k=j+1; k<fRecoTracklist.size(); k++) {
+					for(unsigned int l=k+1; l<fRecoTracklist.size(); l++) {
 					
 						if(fRecoTracklist[i]->GetPdgCode() + fRecoTracklist[j]->GetPdgCode() + fRecoTracklist[k]->GetPdgCode() + fRecoTracklist[l]->GetPdgCode() != 0) continue;
 					
@@ -1097,20 +1099,21 @@ void CbmAnaConversion::InvariantMassTestReco()
 						int mcMotherPdg1  = -1;
 						int mcMotherPdg2  = -1;
 						int mcMotherPdg3  = -1;
+/*
 						int mcMotherPdg4  = -1;
 						int mcGrandmotherPdg1  = -1;
 						int mcGrandmotherPdg2  = -1;
 						int mcGrandmotherPdg3  = -1;
 						int mcGrandmotherPdg4  = -1;
-						
+*/						
 						
 						if (motherId1 != -1) {
 							CbmMCTrack* mother1 = (CbmMCTrack*) fMcTracks->At(motherId1);
 							if (NULL != mother1) mcMotherPdg1 = mother1->GetPdgCode();
 							grandmotherId1 = mother1->GetMotherId();
 							if(grandmotherId1 != -1) {
-								CbmMCTrack* grandmother1 = (CbmMCTrack*) fMcTracks->At(grandmotherId1);
-								if (NULL != grandmother1) mcGrandmotherPdg1 = grandmother1->GetPdgCode();
+//								CbmMCTrack* grandmother1 = (CbmMCTrack*) fMcTracks->At(grandmotherId1);
+//								if (NULL != grandmother1) mcGrandmotherPdg1 = grandmother1->GetPdgCode();
 							}
 						}
 						if (motherId2 != -1) {
@@ -1118,8 +1121,8 @@ void CbmAnaConversion::InvariantMassTestReco()
 							if (NULL != mother2) mcMotherPdg2 = mother2->GetPdgCode();
 							grandmotherId2 = mother2->GetMotherId();
 							if(grandmotherId2 != -1) {
-								CbmMCTrack* grandmother2 = (CbmMCTrack*) fMcTracks->At(grandmotherId2);
-								if (NULL != grandmother2) mcGrandmotherPdg2 = grandmother2->GetPdgCode();
+//								CbmMCTrack* grandmother2 = (CbmMCTrack*) fMcTracks->At(grandmotherId2);
+//								if (NULL != grandmother2) mcGrandmotherPdg2 = grandmother2->GetPdgCode();
 							}
 						}
 						if (motherId3 != -1) {
@@ -1127,17 +1130,17 @@ void CbmAnaConversion::InvariantMassTestReco()
 							if (NULL != mother3) mcMotherPdg3 = mother3->GetPdgCode();
 							grandmotherId3 = mother3->GetMotherId();
 							if(grandmotherId3 != -1) {
-								CbmMCTrack* grandmother3 = (CbmMCTrack*) fMcTracks->At(grandmotherId3);
-								if (NULL != grandmother3) mcGrandmotherPdg3 = grandmother3->GetPdgCode();
+//								CbmMCTrack* grandmother3 = (CbmMCTrack*) fMcTracks->At(grandmotherId3);
+//								if (NULL != grandmother3) mcGrandmotherPdg3 = grandmother3->GetPdgCode();
 							}
 						}
 						if (motherId4 != -1) {
 							CbmMCTrack* mother4 = (CbmMCTrack*) fMcTracks->At(motherId4);
-							if (NULL != mother4) mcMotherPdg4 = mother4->GetPdgCode();
+//							if (NULL != mother4) mcMotherPdg4 = mother4->GetPdgCode();
 							grandmotherId4 = mother4->GetMotherId();
 							if(grandmotherId4 != -1) {
-								CbmMCTrack* grandmother4 = (CbmMCTrack*) fMcTracks->At(grandmotherId4);
-								if (NULL != grandmother4) mcGrandmotherPdg4 = grandmother4->GetPdgCode();
+//								CbmMCTrack* grandmother4 = (CbmMCTrack*) fMcTracks->At(grandmotherId4);
+//								if (NULL != grandmother4) mcGrandmotherPdg4 = grandmother4->GetPdgCode();
 							}
 						}
 					
@@ -1212,8 +1215,8 @@ void CbmAnaConversion::SetMode(int mode = 0)
 void CbmAnaConversion::ReconstructGamma()
 {
 	if(fMCTracklist_all.size() >= 2) {
-		for(int i=0; i<fMCTracklist_all.size(); i++) {
-			for(int j=i+1; j<fMCTracklist_all.size(); j++) {
+		for(unsigned int i=0; i<fMCTracklist_all.size(); i++) {
+			for(unsigned int j=i+1; j<fMCTracklist_all.size(); j++) {
 				if(fMCTracklist_all[i]->GetPdgCode() + fMCTracklist_all[j]->GetPdgCode() != 0) continue;
 				
 				int motherId1 = fMCTracklist_all[i]->GetMotherId();
@@ -1319,12 +1322,12 @@ void CbmAnaConversion::AnalysePi0_MC(CbmMCTrack *mctrack, int trackid)
 
 void CbmAnaConversion::AnalysePi0_Reco()
 {
-	Int_t electrons = 0;
+//	Int_t electrons = 0;
 
 	Int_t nof = fTestTracklist.size();
 	for(int i=0; i<nof; i++) {
-		Int_t motherID = fTestTracklist[i]->GetMotherId();
-		Int_t pdg = fTestTracklist[i]->GetPdgCode();
+//		Int_t motherID = fTestTracklist[i]->GetMotherId();
+//		Int_t pdg = fTestTracklist[i]->GetPdgCode();
 	
 	}
 }

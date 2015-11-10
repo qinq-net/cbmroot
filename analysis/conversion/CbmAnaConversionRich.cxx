@@ -258,7 +258,7 @@ void CbmAnaConversionRich::Finish()
 	//gDirectory->cd("analysis-conversion");
 	gDirectory->mkdir("RichRings");
 	gDirectory->cd("RichRings");
-	for (Int_t i = 0; i < fHistoList_richrings.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_richrings.size(); i++){
 		fHistoList_richrings[i]->Write();
 	}
 	gDirectory->cd("..");
@@ -288,7 +288,7 @@ void CbmAnaConversionRich::AnalyseRICHdata()
 
 	// analyse RICH rings
 	if(fRichRings != NULL) {
-		Bool_t testbool = true;
+//		Bool_t testbool = true;
 		Int_t nofElectrons = 0;
 		Int_t sourcePI0 = 0;
 		vector<int> pi0ids;
@@ -434,7 +434,7 @@ void CbmAnaConversionRich::AnalyseRICHdata()
 		fRichRings_sourcePI0->Fill(sourcePI0);
 
 		TH1I* zwischenhisto = new TH1I("zwischenhisto", "zwischenhisto", 1000000, 0, 1000000);
-		for(int i=0; i<pi0ids.size(); i++) {
+		for(unsigned int i=0; i<pi0ids.size(); i++) {
 			zwischenhisto->Fill(pi0ids[i]);
 		}
 		fRichRings_test->Fill(zwischenhisto->GetMaximum());
@@ -446,7 +446,7 @@ void CbmAnaConversionRich::AnalyseRICHdata()
 			cout << "CbmAnaConversionRich: \t";
 			
 			std::sort(pi0ids.begin(), pi0ids.end());
-			for(int i=0; i<pi0ids.size(); i++) {
+			for(unsigned int i=0; i<pi0ids.size(); i++) {
 				cout << pi0ids[i] << "\t";
 			}
 			
@@ -458,7 +458,7 @@ void CbmAnaConversionRich::AnalyseRICHdata()
 		
 		int photoncounter = 0;
 		std::multimap<int,int> electronMap;
-		for(int i=0; i<pi0ids.size(); i++) {
+		for(unsigned int i=0; i<pi0ids.size(); i++) {
 			electronMap.insert ( std::pair<int,int>(pi0ids[i], i) );
 		}
 	
@@ -622,7 +622,7 @@ void CbmAnaConversionRich::CheckMC()
 		CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(iG);
 		if(NULL == gTrack) continue;
 		int stsInd = gTrack->GetStsTrackIndex();
-		int richInd = gTrack->GetRichRingIndex();
+//		int richInd = gTrack->GetRichRingIndex();
 	//	if (richInd < 0) continue; // no RICH segment -> no ring
 		if (stsInd < 0) continue;
 
@@ -699,19 +699,19 @@ void CbmAnaConversionRich::CheckMC()
 
 	cout << "CbmAnaConversionRich: vector ids contains " << ids.size() << " entries." << endl;
 	cout << "CbmAnaConversionRich: ids entries: ";
-	for(int i=0; i<ids.size(); i++) {
+	for(unsigned int i=0; i<ids.size(); i++) {
 		cout << ids[i] << " / ";
 	}
 	cout << endl;	
 	cout << "CbmAnaConversionRich: electronids entries: ";
-	for(int i=0; i<electronids.size(); i++) {
+	for(unsigned int i=0; i<electronids.size(); i++) {
 		cout << electronids[i] << " / ";
 	}
 	cout << endl;
 
 	int photoncounter = 0;
 	std::multimap<int,int> electronMap;
-	for(int i=0; i<ids.size(); i++) {
+	for(unsigned int i=0; i<ids.size(); i++) {
 		electronMap.insert ( std::pair<int,int>(ids[i], i) );
 	}
 	

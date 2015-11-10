@@ -63,15 +63,15 @@ public:
 		Double_t sp  = sqrt(spx*spx + spy*spy + spz*spz);
 
 		if( sp == 0.0) return;
-		Double_t pn, pp, pln, plp;
+		Double_t pn, /*pp,*/ pln, plp;
 		if(cand1->fCharge < 0.) {
 			pn = cand1->fMomentum.Mag();
-			pp = cand2->fMomentum.Mag();
+			//pp = cand2->fMomentum.Mag();
 			pln  = (cand1->fMomentum.X()*spx + cand1->fMomentum.Y()*spy + cand1->fMomentum.Z()*spz)/sp;
 			plp  = (cand2->fMomentum.X()*spx + cand2->fMomentum.Y()*spy + cand2->fMomentum.Z()*spz)/sp;
 		}else{
 			pn = cand2->fMomentum.Mag();
-			pp = cand1->fMomentum.Mag();
+			//pp = cand1->fMomentum.Mag();
 			pln  = (cand2->fMomentum.X()*spx + cand2->fMomentum.Y()*spy + cand2->fMomentum.Z()*spz)/sp;
 			plp  = (cand1->fMomentum.X()*spx + cand1->fMomentum.Y()*spy + cand1->fMomentum.Z()*spz)/sp;
 		}

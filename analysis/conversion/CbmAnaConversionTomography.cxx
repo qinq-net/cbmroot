@@ -171,7 +171,7 @@ void CbmAnaConversionTomography::Finish()
 	//gDirectory->cd("analysis-conversion");
 	gDirectory->mkdir("Tomography");
 	gDirectory->cd("Tomography");
-	for (Int_t i = 0; i < fHistoList_tomography.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_tomography.size(); i++){
 		fHistoList_tomography[i]->Write();
 	}
 	gDirectory->cd("..");
@@ -201,9 +201,9 @@ void CbmAnaConversionTomography::Exec()
 		if (TMath::Abs( mctrack->GetPdgCode())  == 11) {
 			int motherId = mctrack->GetMotherId();
 			if (motherId == -1) continue;
-			CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
-			int mcMotherPdg  = -1;
-			if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
+//			CbmMCTrack* mother = (CbmMCTrack*) fMcTracks->At(motherId);
+//			int mcMotherPdg  = -1;
+//			if (NULL != mother) mcMotherPdg = mother->GetPdgCode();
 			
 			electronIDs.push_back(i);
 			electronMotherIDs.push_back(motherId);
@@ -211,13 +211,13 @@ void CbmAnaConversionTomography::Exec()
 	}
 	
 	
-	int photoncounter = 0;
+//	int photoncounter = 0;
 	std::multimap<int,int> electronMap;
-	for(int i=0; i<electronIDs.size(); i++) {
+	for(unsigned int i=0; i<electronIDs.size(); i++) {
 		electronMap.insert ( std::pair<int,int>(electronMotherIDs[i], electronIDs[i]) );
 	}
 	
-	int check = 0;
+//	int check = 0;
 	for(std::map<int,int>::iterator it=electronMap.begin(); it!=electronMap.end(); ++it) {
 		if(it == electronMap.begin()) {
 			TomographyMC(it->second);

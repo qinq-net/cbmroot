@@ -159,7 +159,7 @@ void CbmHaddBase::MergeRootfile(
 	TH1::AddDirectory(kFALSE);
 
 	// loop over all keys in this directory
-	TChain *globChain = 0;
+//	TChain *globChain = 0;
 	TIter nextkey( current_sourcedir->GetListOfKeys() );
 	TKey *key, *oldkey=0;
 	while ( (key = (TKey*)nextkey())) {

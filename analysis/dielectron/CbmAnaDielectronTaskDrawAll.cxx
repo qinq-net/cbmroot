@@ -486,7 +486,7 @@ void CbmAnaDielectronTaskDrawAll::SBgRangeAll()
 
 void CbmAnaDielectronTaskDrawAll::DrawSBgSignals()
 {
-   Double_t y[CbmLmvmHist::fNofAnaSteps];
+//   Double_t y[CbmLmvmHist::fNofAnaSteps];
    TCanvas* cFit = CreateCanvas("lmvm_signal_fit", "lmvm_signal_fit", 600, 600);
    TCanvas* cDashboard = CreateCanvas("lmvm_dashboard", "lmvm_dashboard", 1000, 800);
    int iDash = 2;
@@ -568,7 +568,7 @@ void CbmAnaDielectronTaskDrawAll::DrawSBgSignals()
 
 void CbmAnaDielectronTaskDrawAll::SaveCanvasToImage()
 {
-   for (int i = 0; i < fCanvas.size(); i++){
+   for (unsigned int i = 0; i < fCanvas.size(); i++){
 	   Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir + "/png/", "png");
 	   Cbm::SaveCanvasAsImage(fCanvas[i], fOutputDir + "/eps/", "eps");
    }
