@@ -286,7 +286,7 @@ private:
 
       int maxCnt = 0;
       int cnt = 1;
-      for (Int_t i = 0; i < a.size() - 1; i++) {
+      for (UInt_t i = 0; i < a.size() - 1; i++) {
          if (a[i] == (a[i + 1] - 1)) {
             cnt++;
          } else {
@@ -304,7 +304,7 @@ private:
       stringstream ss;
       ss << detName << " np=" << GetNofPoints(detId) << " npds=" << GetNofPointsInDifferentStations(detId)
     		  << " ncp=" << GetNofConsecutivePoints(detId) << " points=(";
-      for (Int_t i = 0; i < GetNofPoints(detId); i++) {
+      for (UInt_t i = 0; i < GetNofPoints(detId); i++) {
          ss << ":" << GetPoint(detId, i).GetRefId() << ":" << GetPoint(detId, i).GetStationId() << ",";
          //ss << GetPoint(detId, i);
       }

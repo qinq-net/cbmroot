@@ -304,7 +304,7 @@ InitStatus CbmDileptonAssignMCid::Init(){
     return kSUCCESS;
 }
 
-void  CbmDileptonAssignMCid::Exec(Option_t* option){
+void  CbmDileptonAssignMCid::Exec(Option_t*){
 
     fTimer.Start();
 
