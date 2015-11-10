@@ -91,7 +91,7 @@ Double_t CbmMCTimeSim::CreateEventTime() {
 
 
 // -----   Exec   ------------------------------------------------------------
-void CbmMCTimeSim::Exec(Option_t* opt) {
+void CbmMCTimeSim::Exec(Option_t*) {
 
 	// Start time and point counter
 	fTimer.Start();

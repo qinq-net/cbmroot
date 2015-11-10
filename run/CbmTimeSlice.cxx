@@ -55,7 +55,7 @@ CbmTimeSlice::~CbmTimeSlice() {
 
 
 // -----   Get data object   ------------------------------------------------
-CbmDigi* CbmTimeSlice::GetData(DetectorId iDet, Int_t index) {
+CbmDigi* CbmTimeSlice::GetData(DetectorId iDet, UInt_t index) {
 
   CbmDigi* digi = NULL;
 

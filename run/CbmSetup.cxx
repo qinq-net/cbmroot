@@ -248,7 +248,7 @@ void CbmSetup::Init(FairRunSim* run) {
 
 
 // -----   Print setup   ---------------------------------------------------
-void CbmSetup::Print(Option_t* opt) {
+void CbmSetup::Print(Option_t*) {
   map<Int_t, TString>::iterator it;
   LOG(INFO) << "CBM setup: " << FairLogger::endl;
   for ( it = fGeoTags.begin(); it != fGeoTags.end(); it++ ) {

@@ -46,7 +46,7 @@ class CbmTimeSlice : public TNamed
      ** @param index  index of data object in array
      ** @return pointer to data object
      **/
-    CbmDigi* GetData(DetectorId iDet, Int_t index);
+    CbmDigi* GetData(DetectorId iDet, UInt_t index);
 
 
     /** Get size of raw data container for given detector

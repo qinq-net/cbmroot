@@ -100,9 +100,9 @@ void CbmMCStreamer::ActivateTasks(Bool_t activate) {
 
 
 // -----   Execution   -------------------------------------------------------
-void CbmMCStreamer::Exec(Option_t* opt) {
+void CbmMCStreamer::Exec(Option_t*) {
 
-  Int_t nPoints = 0;
+//  Int_t nPoints = 0;
   cout.precision(8);
 
 

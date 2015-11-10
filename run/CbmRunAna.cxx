@@ -62,13 +62,13 @@ void CbmRunAna::ExecRun(Int_t iStart, Int_t iStop) {
 
 
   // Event loop
-  UInt_t tmpId = 0;
+//  UInt_t tmpId = 0;
   for (Int_t iEvent=iStart; iEvent<iStop; iEvent++) {
 
     // If input file is present: read one event
     if ( fRootManager->GetInFile() ) {
       fRootManager->ReadEvent(iEvent);
-      tmpId = fEvtHeader->GetRunId();
+//      tmpId = fEvtHeader->GetRunId();
 
       // Re-initialisation if necessary
       if ( fEvtHeader->GetRunId() != fRunId ) {

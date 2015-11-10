@@ -31,7 +31,7 @@ CbmBuildEventsSimple::CbmBuildEventsSimple(const char* name, Int_t iVerbose)
 {
 }
 
-void CbmBuildEventsSimple::Exec(Option_t* opt)
+void CbmBuildEventsSimple::Exec(Option_t*)
 {
   Int_t i=0;
   Int_t n=0;

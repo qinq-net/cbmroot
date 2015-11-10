@@ -61,7 +61,7 @@ InitStatus CbmDaqQa::Init() {
   return kSUCCESS;
 }
 
-void CbmDaqQa::Exec(Option_t* opt) {
+void CbmDaqQa::Exec(Option_t*) {
   printf("Slice ... start time: %f\n",fTimeSlice->GetStartTime());
   printf("   number of STS points = %i\n",fTimeSlice->GetDataSize(kSTS));
   printf("   number of MUCH points = %i\n",fTimeSlice->GetDataSize(kMUCH));

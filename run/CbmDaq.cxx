@@ -71,7 +71,7 @@ void CbmDaq::CloseTimeSlice() {
 
 
 // =====   Task execution   ==================================================
-void CbmDaq::Exec(Option_t* opt) {
+void CbmDaq::Exec(Option_t*) {
 
 	// Start timer and digi counter
 	fTimer.Start();
