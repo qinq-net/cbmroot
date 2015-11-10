@@ -23,6 +23,7 @@
 #include "base/CbmLitPtrTypes.h"
 #include "base/CbmLitDetectorSetup.h"
 #include "data/CbmLitHit.h"
+#include "CbmVertex.h"
 
 #include "TStopwatch.h"
 
@@ -136,6 +137,8 @@ private:
    TClonesArray* fTrdTracks; // output CbmTrdTrack array
    TClonesArray* fTofTracks; // output CbmTofTrack array
    TClonesArray* fGlobalTracks; //output CbmGlobalTrack array
+
+   CbmVertex* fPrimVertex; // Pointer to the primary vertex
 
    // LIT data arrays
    TrackPtrVector fLitStsTracks; // STS tracks

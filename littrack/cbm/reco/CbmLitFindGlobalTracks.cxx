@@ -47,6 +47,7 @@ CbmLitFindGlobalTracks::CbmLitFindGlobalTracks():
    fTofHits(NULL),
    fTofTracks(NULL),
    fGlobalTracks(NULL),
+   fPrimVertex(NULL),
 
    fLitStsTracks(),
    fLitHits(),
@@ -183,6 +184,8 @@ void CbmLitFindGlobalTracks::ReadAndCreateDataBranches()
       fTofTracks = new TClonesArray("CbmTofTrack", 100);
       ioman->Register("TofTrack", "Tof", fTofTracks, kTRUE);
    }
+
+   fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
 }
 
 void CbmLitFindGlobalTracks::InitTrackReconstruction()
@@ -269,9 +272,15 @@ void CbmLitFindGlobalTracks::CalculateLength()
       if (globalTrack == NULL) { continue; }
 
       std::vector<Double_t> X, Y, Z;
-      X.push_back(0.);
-      Y.push_back(0.);
-      Z.push_back(0.);
+      if (fPrimVertex == NULL) {
+    	  X.push_back(0.);
+    	  Y.push_back(0.);
+    	  Z.push_back(0.);
+      } else {
+    	  X.push_back(fPrimVertex->GetX());
+    	  Y.push_back(fPrimVertex->GetY());
+    	  Z.push_back(fPrimVertex->GetZ());
+      }
 
       // get track segments indices
       Int_t stsId = globalTrack->GetStsTrackIndex();
