@@ -155,7 +155,7 @@ InitStatus CbmFindGlobalTracksQa::Init()
 
 
 // ------------------------------------------------------------------
-void CbmFindGlobalTracksQa::Exec(Option_t* option)
+void CbmFindGlobalTracksQa::Exec(Option_t*)
 {
     // Task execution
     if(NULL==fArrayMCTrack || NULL==fArrayGlbTrack ||

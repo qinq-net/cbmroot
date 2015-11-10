@@ -85,7 +85,7 @@ InitStatus CbmFitGlobalTracks::Init()
 
 
 // ------------------------------------------------------------------
-void CbmFitGlobalTracks::Exec(Option_t* option)
+void CbmFitGlobalTracks::Exec(Option_t*)
 {
     // Task execution. Call DoFit of the fitter for each global track
     if(NULL != fArrayGlbTrack) {

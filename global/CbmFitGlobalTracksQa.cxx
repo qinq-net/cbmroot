@@ -168,7 +168,7 @@ InitStatus CbmFitGlobalTracksQa::Init()
 
 
 // -----------------------------------------------------------------------
-void CbmFitGlobalTracksQa::Exec(Option_t* option)
+void CbmFitGlobalTracksQa::Exec(Option_t*)
 {
     // Task execution
     if(NULL==fArrayStsPoint || NULL==fArrayTrdPoint || NULL==fArrayStsHit ||

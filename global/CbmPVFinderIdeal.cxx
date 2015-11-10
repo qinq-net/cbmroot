@@ -59,7 +59,7 @@ void CbmPVFinderIdeal::Init() {
 
 
 // -----   Public method FindPrimaryVertex   -------------------------------
-Int_t CbmPVFinderIdeal::FindPrimaryVertex(TClonesArray* tracks,
+Int_t CbmPVFinderIdeal::FindPrimaryVertex(TClonesArray*,
 					  CbmVertex* vertex) {
 
   if ( ! fMCTracks ) return 1;

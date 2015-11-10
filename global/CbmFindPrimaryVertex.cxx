@@ -42,9 +42,9 @@ CbmFindPrimaryVertex::CbmFindPrimaryVertex(CbmPrimaryVertexFinder* pvFinder)
 
 // -----  Constructor with name and title  ---------------------------------
 CbmFindPrimaryVertex::CbmFindPrimaryVertex(const char* name, 
-					   const char* title, 
+					   const char*, 
 					   CbmPrimaryVertexFinder* finder) 
-  : FairTask(),
+  : FairTask(name),
     fFinder(finder),
     fTracks(NULL),
     fPrimVert(NULL)
@@ -102,7 +102,7 @@ InitStatus CbmFindPrimaryVertex::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmFindPrimaryVertex::Exec(Option_t* opt) {
+void CbmFindPrimaryVertex::Exec(Option_t*) {
 
   // Reset primary vertex
   fPrimVert->Reset();

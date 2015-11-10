@@ -19,7 +19,7 @@ using std::endl;
 using std::list;
 
 /** Loop procedure **/
-void CbmEcalTrackingMuch::Exec(Option_t* option)
+void CbmEcalTrackingMuch::Exec(Option_t*)
 {
   Int_t n=fStsTracks->GetEntriesFast();
   Int_t i=0;

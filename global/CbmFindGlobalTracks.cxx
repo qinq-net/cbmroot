@@ -69,7 +69,7 @@ CbmFindGlobalTracks::CbmFindGlobalTracks(CbmTrackMerger* trackMerger,
 
 // -----   Constructor with name and title   -------------------------------
 CbmFindGlobalTracks::CbmFindGlobalTracks(const char* name, 
-					 const char* title,
+					 const char*,
 					 CbmTrackMerger* trackMerger,
 					 CbmRichMerger* richMerger,
                                          CbmTofMerger* tofMerger,
@@ -188,16 +188,16 @@ InitStatus CbmFindGlobalTracks::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmFindGlobalTracks::Exec(Option_t* opt) {
+void CbmFindGlobalTracks::Exec(Option_t*) {
   fGlobalTracks->Clear();
   Int_t nSts  = 0;
   Int_t nTrd  = 0;
   Int_t nRich = 0;
-  Int_t nTof  = 0;
+//  Int_t nTof  = 0;
   if ( fStsTracks ) nSts  = fStsTracks->GetEntriesFast();
   if ( fTrdTracks ) nTrd  = fTrdTracks->GetEntriesFast();
   if ( fRichRings ) nRich = fRichRings->GetEntriesFast();
-  if ( fTofHits   ) nTof  = fTofHits->GetEntriesFast();
+//  if ( fTofHits   ) nTof  = fTofHits->GetEntriesFast();
   Int_t nMergedTracks = 0;
   if ( fTrackMerger) nMergedTracks = fTrackMerger->DoMerge(fStsTracks, 
 							   fTrdTracks, 
