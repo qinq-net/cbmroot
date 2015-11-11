@@ -33,7 +33,8 @@ void plot_pad_size_in_layer(TString digiPar="trd.v13/trd_v13g.digi.par", Int_t n
   gStyle->SetOptTitle(kFALSE);
 
   Bool_t read = false;
-  TH2I *fLayerDummy = new TH2I("LayerDummy","",1200,-600,600,1000,-500,500);
+  TH2I *fLayerDummy = new TH2I("LayerDummy","",800,-400,400,600,-300,300);        // for station 1 alone
+  //  TH2I *fLayerDummy = new TH2I("LayerDummy","",1200,-600,600,1000,-500,500);  // for stations 1-3
   fLayerDummy->SetXTitle("x-coordinate [cm]");
   fLayerDummy->SetYTitle("y-coordinate [cm]");
   fLayerDummy->GetXaxis()->SetLabelSize(0.02);
