@@ -503,6 +503,8 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fvhPtmRapSecGenTrkTofHit(),
     fvhPlabSecGenTrkTofPnt(),
     fvhPlabSecGenTrkTofhit(),
+    fvhMcTrkLenSingTrk(),
+    fvhMcTrkLenMultiTrk(),
     fvulIdxTracksWithPnt(),
     fvulIdxTracksWithHit(),
     fhIntegratedHitPntEff(NULL),
@@ -2822,8 +2824,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
    for( UInt_t uNbGaps = 0; uNbGaps < fuMaxCrossedGaps; uNbGaps++)
    {
       sHead += Form("%4u ", uNbGaps);
-      sPnt  += Form("%4u ", fvulIdxPrimTracksWithPntGaps[uNbGaps].size() );
-      sHit  += Form("%4u ", fvulIdxPrimTracksWithHitGaps[uNbGaps].size() );
+      sPnt  += Form("%4lu ", fvulIdxPrimTracksWithPntGaps[uNbGaps].size() );
+      sHit  += Form("%4lu ", fvulIdxPrimTracksWithHitGaps[uNbGaps].size() );
 
       if( 0 < fvulIdxTracksWithPntGaps[uNbGaps].size() )
          fhIntegratedHitPntEffGaps->Fill(     100.0
