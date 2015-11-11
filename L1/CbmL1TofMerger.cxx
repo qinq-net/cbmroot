@@ -43,10 +43,10 @@ CbmL1TofMerger::CbmL1TofMerger():fArrayTrdTrack(0)
 
 
 // ------------------------------------------------------------------
-CbmL1TofMerger::CbmL1TofMerger(Int_t verbose=1):fArrayTrdTrack(0)
+CbmL1TofMerger::CbmL1TofMerger(Int_t):fArrayTrdTrack(0)
 {
     // Standard constructor
-    fVerbose = verbose;
+    fVerbose = 1;
 }
 // ------------------------------------------------------------------
 
