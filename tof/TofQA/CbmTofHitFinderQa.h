@@ -306,17 +306,23 @@ class CbmTofHitFinderQa : public FairTask {
       std::vector<TH1 *> fvhPlabSecTofHitSinglePnt;
       std::vector<TH1 *> fvhPlabSecTofHitSingleTrk;
       
-         // MC Tracks losses
-            // Primary tracks
+            // MC Tracks losses
+               // Primary tracks
       std::vector<TH2 *> fvhPtmRapGenTrkTofPnt;
       std::vector<TH2 *> fvhPtmRapGenTrkTofHit;
       std::vector<TH1 *> fvhPlabGenTrkTofPnt;
       std::vector<TH1 *> fvhPlabGenTrkTofhit;
-            // Secondary tracks
+               // Secondary tracks
       std::vector<TH2 *> fvhPtmRapSecGenTrkTofPnt;
       std::vector<TH2 *> fvhPtmRapSecGenTrkTofHit;
       std::vector<TH1 *> fvhPlabSecGenTrkTofPnt;
       std::vector<TH1 *> fvhPlabSecGenTrkTofhit;
+
+         // Track length, 1 per particle type
+            // Single track hits
+      std::vector<TH2 *> fvhMcTrkLenSingTrk;
+            // Multiple track hits
+      std::vector<TH2 *> fvhMcTrkLenMultiTrk;
 
          // Integrated TofHit Efficiency
       std::vector<ULong64_t> fvulIdxTracksWithPnt;
@@ -338,18 +344,16 @@ class CbmTofHitFinderQa : public FairTask {
       TH1* fhIntegratedHiddenHitPntLossSec;
       
          // Efficiency dependence on nb crossed gaps
-         /*
-      static const UInt_t kuMaxCrossedGaps = 10;
-      std::vector<ULong64_t> fvulIdxTracksWithPntGaps[kuMaxCrossedGaps];
-      std::vector<ULong64_t> fvulIdxTracksWithHitGaps[kuMaxCrossedGaps];
+      UInt_t fuMaxCrossedGaps = 20;
+      std::vector< std::vector<ULong64_t> > fvulIdxTracksWithPntGaps;
+      std::vector< std::vector<ULong64_t> > fvulIdxTracksWithHitGaps;
       TH2* fhIntegratedHitPntEffGaps;
-      std::vector<ULong64_t> fvulIdxPrimTracksWithPntGaps[kuMaxCrossedGaps];
-      std::vector<ULong64_t> fvulIdxPrimTracksWithHitGaps[kuMaxCrossedGaps];
+      std::vector< std::vector<ULong64_t> > fvulIdxPrimTracksWithPntGaps;
+      std::vector< std::vector<ULong64_t> > fvulIdxPrimTracksWithHitGaps;
       TH2* fhIntegratedHitPntEffPrimGaps;
-      std::vector<ULong64_t> fvulIdxSecTracksWithPntGaps[kuMaxCrossedGaps];
-      std::vector<ULong64_t> fvulIdxSecTracksWithHitGaps[kuMaxCrossedGaps];
+      std::vector< std::vector<ULong64_t> > fvulIdxSecTracksWithPntGaps;
+      std::vector< std::vector<ULong64_t> > fvulIdxSecTracksWithHitGaps;
       TH2* fhIntegratedHitPntEffSecGaps;
-      */
       
       ClassDef(CbmTofHitFinderQa, 1);
 };

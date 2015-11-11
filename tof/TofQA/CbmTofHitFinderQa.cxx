@@ -268,6 +268,8 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fvhPtmRapSecGenTrkTofHit(),
     fvhPlabSecGenTrkTofPnt(),
     fvhPlabSecGenTrkTofhit(),
+    fvhMcTrkLenSingTrk(),
+    fvhMcTrkLenMultiTrk(),
     fvulIdxTracksWithPnt(),
     fvulIdxTracksWithHit(),
     fhIntegratedHitPntEff(NULL),
@@ -282,7 +284,16 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fvulIdxHiddenPrimTracksWithHit(),
     fhIntegratedHiddenHitPntLossPrim(NULL),
     fvulIdxHiddenSecTracksWithHit(),
-    fhIntegratedHiddenHitPntLossSec(NULL)
+    fhIntegratedHiddenHitPntLossSec(NULL),
+    fvulIdxTracksWithPntGaps(),
+    fvulIdxTracksWithHitGaps(),
+    fhIntegratedHitPntEffGaps(NULL),
+    fvulIdxPrimTracksWithPntGaps(),
+    fvulIdxPrimTracksWithHitGaps(),
+    fhIntegratedHitPntEffPrimGaps(NULL),
+    fvulIdxSecTracksWithPntGaps(),
+    fvulIdxSecTracksWithHitGaps(),
+    fhIntegratedHitPntEffSecGaps(NULL)
 {
   cout << "CbmTofHitFinderQa: Task started " << endl;
 }
@@ -506,7 +517,16 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fvulIdxHiddenPrimTracksWithHit(),
     fhIntegratedHiddenHitPntLossPrim(NULL),
     fvulIdxHiddenSecTracksWithHit(),
-    fhIntegratedHiddenHitPntLossSec(NULL)
+    fhIntegratedHiddenHitPntLossSec(NULL),
+    fvulIdxTracksWithPntGaps(),
+    fvulIdxTracksWithHitGaps(),
+    fhIntegratedHitPntEffGaps(NULL),
+    fvulIdxPrimTracksWithPntGaps(),
+    fvulIdxPrimTracksWithHitGaps(),
+    fhIntegratedHitPntEffPrimGaps(NULL),
+    fvulIdxSecTracksWithPntGaps(),
+    fvulIdxSecTracksWithHitGaps(),
+    fhIntegratedHitPntEffSecGaps(NULL)
 {
 }
 // ------------------------------------------------------------------
@@ -1509,6 +1529,7 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                               iNbBinsPlab, dMinPlab, dMaxPlab);
    } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    
+         // Integrated TofHit Efficiency
    fhIntegratedHitPntEff = new TH1D( "TofTests_IntegratedHitPntEff",
                                      "Efficiency of TOF hit generation, all tracks; Eff = Nb_{Trk w/ Hit}/Nb_{Trk w/ Pnt} [\%]; # [Events]",
                                      202, -0.5, 100.5);
@@ -1519,6 +1540,8 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                                      "Efficiency of TOF hit generation, secondary tracks; Eff = Nb_{Trk w/ Hit}/Nb_{Trk w/ Pnt} [\%]; # [Events]",
                                      202, -0.5, 100.5);
    
+      
+         // Integrated TofHit Efficiency: Tracks firing channel but not going to Digi/Hit
    fhIntegratedHiddenHitPntLoss = new TH1D( "TofTests_IntegratedHiddenHitPntLoss",
                                      "Losses of TOF hit generation due to multiplicity, all tracks; Loss = Nb_{Trk w/ Hidden Hit}/Nb_{Trk w/ Pnt} [\%]; # [Events]",
                                      202, -0.5, 100.5);
@@ -1528,6 +1551,26 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
    fhIntegratedHiddenHitPntLossSec = new TH1D( "TofTests_IntegratedHiddenHitPntLossSec",
                                      "Efficiency of TOF hit generation due to multiplicity, secondary tracks; Loss = Nb_{Trk w/ Hidden Hit}/Nb_{Trk w/ Pnt} [\%]; # [Events]",
                                      202, -0.5, 100.5);
+   
+         // Efficiency dependence on nb crossed gaps
+   fvulIdxTracksWithPntGaps.resize( fuMaxCrossedGaps );
+   fvulIdxTracksWithHitGaps.resize( fuMaxCrossedGaps );
+   fvulIdxPrimTracksWithPntGaps.resize( fuMaxCrossedGaps );
+   fvulIdxPrimTracksWithHitGaps.resize( fuMaxCrossedGaps );
+   fvulIdxSecTracksWithPntGaps.resize( fuMaxCrossedGaps );
+   fvulIdxSecTracksWithHitGaps.resize( fuMaxCrossedGaps );
+   fhIntegratedHitPntEffGaps = new TH2D( "TofTests_IntegratedHitPntEffGaps",
+                                     "Efficiency of TOF hit generation VS gaps crossed, all tracks; Eff = Nb_{Trk w/ Hit}/Nb_{Trk w/ Pnt} [\%]; Nb TofPoint (gaps) []; # [Events]",
+                                     202, -0.5, 100.5,
+                                     fuMaxCrossedGaps, 0.5, fuMaxCrossedGaps + 0.5);
+   fhIntegratedHitPntEffPrimGaps = new TH2D( "TofTests_IntegratedHitPntEffPrimGaps",
+                                     "Efficiency of TOF hit generation VS gaps crossed, primary tracks; Eff = Nb_{Trk w/ Hit}/Nb_{Trk w/ Pnt} [\%]; Nb TofPoint (gaps) []; # [Events]",
+                                     202, -0.5, 100.5,
+                                     fuMaxCrossedGaps, 0.5, fuMaxCrossedGaps + 0.5);
+   fhIntegratedHitPntEffSecGaps = new TH2D( "TofTests_IntegratedHitPntEffSecGaps",
+                                     "Efficiency of TOF hit generation VS gaps crossed, secondary tracks; Eff = Nb_{Trk w/ Hit}/Nb_{Trk w/ Pnt} [\%]; Nb TofPoint (gaps) []; # [Events]",
+                                     202, -0.5, 100.5,
+                                     fuMaxCrossedGaps, 0.5, fuMaxCrossedGaps + 0.5);
    
    gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
 
@@ -1574,6 +1617,15 @@ Bool_t CbmTofHitFinderQa::FillHistos()
    fvulIdxHiddenTracksWithHit.clear();
    fvulIdxHiddenPrimTracksWithHit.clear();
    fvulIdxHiddenSecTracksWithHit.clear();
+   for( UInt_t uNbGaps = 0; uNbGaps < fuMaxCrossedGaps; uNbGaps++)
+   {
+      fvulIdxTracksWithPntGaps[uNbGaps].clear();
+      fvulIdxTracksWithHitGaps[uNbGaps].clear();
+      fvulIdxPrimTracksWithPntGaps[uNbGaps].clear();
+      fvulIdxPrimTracksWithHitGaps[uNbGaps].clear();
+      fvulIdxSecTracksWithPntGaps[uNbGaps].clear();
+      fvulIdxSecTracksWithHitGaps[uNbGaps].clear();
+   } // for( UInt_t uNbGaps = 0; uNbGaps < fuMaxCrossedGaps; uNbGaps++)
     
    // Tracks Info
    Int_t iNbTofTracks     = 0;
@@ -1589,12 +1641,24 @@ Bool_t CbmTofHitFinderQa::FillHistos()
          // Keep track of MC tracks with at least one TOF Point
          fvulIdxTracksWithPnt.push_back(iTrkInd);
          
+         UInt_t uNbTofPnt = pMcTrk->GetNPoints(kTOF) -1;
+         if( uNbTofPnt < fuMaxCrossedGaps )
+            fvulIdxTracksWithPntGaps[uNbTofPnt].push_back(iTrkInd);
+         
          if( -1 == pMcTrk->GetMotherId() )
          {
             iNbTofTracksPrim++;
             fvulIdxPrimTracksWithPnt.push_back(iTrkInd);
+            if( uNbTofPnt < fuMaxCrossedGaps )
+               fvulIdxPrimTracksWithPntGaps[uNbTofPnt].push_back(iTrkInd);
          } // if( -1 == pMcTrk->GetMotherId() )
-            else fvulIdxSecTracksWithPnt.push_back(iTrkInd);
+            else
+            {
+               fvulIdxSecTracksWithPnt.push_back(iTrkInd);
+               
+               if( uNbTofPnt < fuMaxCrossedGaps )
+                  fvulIdxSecTracksWithPntGaps[uNbTofPnt].push_back(iTrkInd);
+            } // else of if( -1 == pMcTrk->GetMotherId() )
       } // if( 0 < pMcTrk->GetNPoints(kTOF) )
          
       // tracks mapping: Only when creating normalization histos
@@ -2198,6 +2262,35 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                      fvulIdxSecTracksWithHit.push_back( vTofTracksId[uTrkInHit] );
                } // else of if( -1 == pMcTrk->GetMotherId() )
                
+            // Check as function of Nb gaps crossed
+            UInt_t uNbTofPnt = pMcTrk->GetNPoints(kTOF) -1;
+            if( uNbTofPnt < fuMaxCrossedGaps )
+            {
+               for( uHitTrk = 0; uHitTrk < fvulIdxTracksWithHitGaps[uNbTofPnt].size(); uHitTrk++ )
+                  if( static_cast<ULong64_t>(vTofTracksId[uTrkInHit]) 
+                      ==  fvulIdxTracksWithHitGaps[uNbTofPnt][uHitTrk] )
+                     break;
+               if( fvulIdxTracksWithHitGaps[uNbTofPnt].size() == uHitTrk )
+                  fvulIdxTracksWithHitGaps[uNbTofPnt].push_back( vTofTracksId[uTrkInHit] );
+
+               if( -1 == pMcTrk->GetMotherId() )
+               {
+                  for( uHitTrk = 0; uHitTrk < fvulIdxPrimTracksWithHitGaps[uNbTofPnt].size(); uHitTrk++ )
+                     if( static_cast<ULong64_t>(vTofTracksId[uTrkInHit]) == fvulIdxPrimTracksWithHitGaps[uNbTofPnt][uHitTrk] )
+                        break;
+                  if( fvulIdxPrimTracksWithHitGaps[uNbTofPnt].size() == uHitTrk )
+                     fvulIdxPrimTracksWithHitGaps[uNbTofPnt].push_back( vTofTracksId[uTrkInHit] );
+               } // if( -1 == pMcTrk->GetMotherId() )
+                  else
+                  {
+                     for( uHitTrk = 0; uHitTrk < fvulIdxSecTracksWithHitGaps[uNbTofPnt].size(); uHitTrk++ )
+                        if( static_cast<ULong64_t>(vTofTracksId[uTrkInHit]) == fvulIdxSecTracksWithHitGaps[uNbTofPnt][uHitTrk] )
+                           break;
+                     if( fvulIdxSecTracksWithHitGaps[uNbTofPnt].size() == uHitTrk )
+                        fvulIdxSecTracksWithHitGaps[uNbTofPnt].push_back( vTofTracksId[uTrkInHit] );
+                  } // else of if( -1 == pMcTrk->GetMotherId() )
+            } // if( static_cast<UInt_t>(pMcTrk->GetNPoints(kTOF)) < fuMaxCrossedGaps + 1 )
+               
             if( 0 == vTofTracksWeight[uTrkInHit] )
             {
                // Tracks generating only signal hidden under signal from other tracks!
@@ -2227,7 +2320,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                      if( fvulIdxHiddenSecTracksWithHit.size() == uHitTrk )
                         fvulIdxHiddenSecTracksWithHit.push_back( vTofTracksId[uTrkInHit] );
                   } // else of if( -1 == pMcTrk->GetMotherId() )
-            }
+            } // if( 0 == vTofTracksWeight[uTrkInHit] )
          } // for( UInt_t uTrkInHit = 0; uTrkInHit < vTofTracksId.size(); uTrkInHit ++)
 
          // Check Hit Quality for Hits coming from a single MC Point
@@ -2689,7 +2782,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
       } // if( kTRUE == vbTrackHasHit[iTrkId] )
    } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
    vbTrackHasHit.clear();
-   
+
+         // Integrated TofHit Efficiency
    if( 0 < fvulIdxTracksWithPnt.size() )
       fhIntegratedHitPntEff->Fill(     100.0
                                       *(static_cast<Double_t>( fvulIdxTracksWithHit.size() ))
@@ -2702,7 +2796,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
       fhIntegratedHitPntEffSec->Fill(  100.0
                                       *(static_cast<Double_t>( fvulIdxSecTracksWithHit.size() ))
                                       /(static_cast<Double_t>( fvulIdxSecTracksWithPnt.size() )) );
-   
+
+         // Integrated TofHit Efficiency: Tracks firing channel but not going to Digi/Hit
    if( 0 < fvulIdxTracksWithPnt.size() )
       fhIntegratedHiddenHitPntLoss->Fill(     100.0
                                       *(static_cast<Double_t>( fvulIdxHiddenTracksWithHit.size() ))
@@ -2715,7 +2810,41 @@ Bool_t CbmTofHitFinderQa::FillHistos()
       fhIntegratedHiddenHitPntLossSec->Fill(  100.0
                                       *(static_cast<Double_t>( fvulIdxHiddenSecTracksWithHit.size() ))
                                       /(static_cast<Double_t>( fvulIdxSecTracksWithPnt.size() )) );
-      
+
+   LOG(DEBUG2)<<"CbmTofHitFinderQa::FillHistos => nb prim trk w/ pnt: "
+            << fvulIdxPrimTracksWithPnt.size() << " nb prim trk w/ hit:  "
+            << fvulIdxPrimTracksWithHit.size() << " "
+            << FairLogger::endl;
+         // Efficiency dependence on nb crossed gaps
+   TString sHead = "CbmTofHitFinderQa::FillHistos =>                N pnt:       ";
+   TString sPnt  = "CbmTofHitFinderQa::FillHistos => nb prim trk w/ N pnt:       ";
+   TString sHit  = "CbmTofHitFinderQa::FillHistos => nb prim trk w/ N pnt & hit: ";
+   for( UInt_t uNbGaps = 0; uNbGaps < fuMaxCrossedGaps; uNbGaps++)
+   {
+      sHead += Form("%4u ", uNbGaps);
+      sPnt  += Form("%4u ", fvulIdxPrimTracksWithPntGaps[uNbGaps].size() );
+      sHit  += Form("%4u ", fvulIdxPrimTracksWithHitGaps[uNbGaps].size() );
+
+      if( 0 < fvulIdxTracksWithPntGaps[uNbGaps].size() )
+         fhIntegratedHitPntEffGaps->Fill(     100.0
+                                         *(static_cast<Double_t>( fvulIdxTracksWithHitGaps[uNbGaps].size() ))
+                                         /(static_cast<Double_t>( fvulIdxTracksWithPntGaps[uNbGaps].size() )),
+                                         uNbGaps+1 );
+      if( 0 < fvulIdxPrimTracksWithPntGaps[uNbGaps].size() )
+         fhIntegratedHitPntEffPrimGaps->Fill( 100.0
+                                         *(static_cast<Double_t>( fvulIdxPrimTracksWithHitGaps[uNbGaps].size() ))
+                                         /(static_cast<Double_t>( fvulIdxPrimTracksWithPntGaps[uNbGaps].size() )),
+                                         uNbGaps+1 );
+      if( 0 < fvulIdxSecTracksWithPntGaps[uNbGaps].size() )
+         fhIntegratedHitPntEffSecGaps->Fill(  100.0
+                                         *(static_cast<Double_t>( fvulIdxSecTracksWithHitGaps[uNbGaps].size() ))
+                                         /(static_cast<Double_t>( fvulIdxSecTracksWithPntGaps[uNbGaps].size() )),
+                                         uNbGaps+1 );
+   } // for( UInt_t uNbGaps = 0; uNbGaps < fuMaxCrossedGaps; uNbGaps++)
+   LOG(DEBUG2)<< sHead << FairLogger::endl;
+   LOG(DEBUG2)<< sPnt  << FairLogger::endl;
+   LOG(DEBUG2)<< sHit  << FairLogger::endl;
+
    return kTRUE;
 }
 // ------------------------------------------------------------------
@@ -3248,6 +3377,9 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhIntegratedHiddenHitPntLoss->Write();
       fhIntegratedHiddenHitPntLossPrim->Write();
       fhIntegratedHiddenHitPntLossSec->Write();
+      fhIntegratedHitPntEffGaps->Write();
+      fhIntegratedHitPntEffPrimGaps->Write();
+      fhIntegratedHitPntEffSecGaps->Write();
    } // if( kFALSE == fbNormHistGenMode )
 
    gDirectory->cd( oldir->GetPath() );
@@ -3517,6 +3649,10 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhIntegratedHiddenHitPntLoss;
    delete fhIntegratedHiddenHitPntLossPrim;
    delete fhIntegratedHiddenHitPntLossSec;
+   
+   delete fhIntegratedHitPntEffGaps;
+   delete fhIntegratedHitPntEffPrimGaps;
+   delete fhIntegratedHitPntEffSecGaps;
    
    return kTRUE;
 }

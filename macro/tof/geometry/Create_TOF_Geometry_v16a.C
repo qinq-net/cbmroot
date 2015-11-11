@@ -68,9 +68,9 @@ const Float_t TOF_Z_Front =  (     "tof_v16a_1h" == geoVersion  ?  450 : // SIS 
                               )
                              );
 // Shift of the TOF inner wall relative to default position [cm];
-const Float_t InnerWall_Z_PositionShift = TOF_Z_Front -  600; // in cm, Inner wall Offset 0 for wall at 6m
+const Float_t InnerWall_Z_PositionShift = TOF_Z_Front -  475; // in cm, Inner wall Offset 0 for wall at 6m
 // Shift of the TOF outer wall relative to default position [cm];
-const Float_t Wall_Z_PositionShift      = TOF_Z_Front - 1025; // in cm, Outer wall Offset -5cm for wall at 10m
+const Float_t Wall_Z_PositionShift      = InnerWall_Z_PositionShift - 405; // in cm, Outer wall Offset -5cm for wall at 10m
 // for 0 m
 /*
 const Float_t  = -600.;  // inner wall placed at 600
