@@ -48,7 +48,7 @@ const TString ksPartTag[kiNbPart] =
      "p",  "pbar", "d",   "t",   "he",  "a" };
 const Int_t   kiPartPdgCode[kiNbPart] = 
    {   0,
-      21,   -21,    211,   -211,  321,  -321, 
+      11,   -11,    211,   -211,  321,  -321, 
     2212, -2212, 1000010020, 1000010030, 1000020030, 1000020040 };
 const TString ksPartName[kiNbPart] = 
    { "any other part.", 
@@ -263,13 +263,11 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fvhPtmRapGenTrkTofPnt(),
     fvhPtmRapGenTrkTofHit(),
     fvhPlabGenTrkTofPnt(),
-    fvhPlabGenTrkTofhit(),
+    fvhPlabGenTrkTofHit(),
     fvhPtmRapSecGenTrkTofPnt(),
     fvhPtmRapSecGenTrkTofHit(),
     fvhPlabSecGenTrkTofPnt(),
-    fvhPlabSecGenTrkTofhit(),
-    fvhMcTrkLenSingTrk(),
-    fvhMcTrkLenMultiTrk(),
+    fvhPlabSecGenTrkTofHit(),
     fvulIdxTracksWithPnt(),
     fvulIdxTracksWithHit(),
     fhIntegratedHitPntEff(NULL),
@@ -293,7 +291,11 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhIntegratedHitPntEffPrimGaps(NULL),
     fvulIdxSecTracksWithPntGaps(),
     fvulIdxSecTracksWithHitGaps(),
-    fhIntegratedHitPntEffSecGaps(NULL)
+    fhIntegratedHitPntEffSecGaps(NULL),
+    fhMcTrkStartPrimSingTrk(NULL),
+    fhMcTrkStartSecSingTrk(NULL),
+    fhMcTrkStartPrimMultiTrk(NULL),
+    fhMcTrkStartSecMultiTrk(NULL)
 {
   cout << "CbmTofHitFinderQa: Task started " << endl;
 }
@@ -498,13 +500,11 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fvhPtmRapGenTrkTofPnt(),
     fvhPtmRapGenTrkTofHit(),
     fvhPlabGenTrkTofPnt(),
-    fvhPlabGenTrkTofhit(),
+    fvhPlabGenTrkTofHit(),
     fvhPtmRapSecGenTrkTofPnt(),
     fvhPtmRapSecGenTrkTofHit(),
     fvhPlabSecGenTrkTofPnt(),
-    fvhPlabSecGenTrkTofhit(),
-    fvhMcTrkLenSingTrk(),
-    fvhMcTrkLenMultiTrk(),
+    fvhPlabSecGenTrkTofHit(),
     fvulIdxTracksWithPnt(),
     fvulIdxTracksWithHit(),
     fhIntegratedHitPntEff(NULL),
@@ -528,7 +528,11 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhIntegratedHitPntEffPrimGaps(NULL),
     fvulIdxSecTracksWithPntGaps(),
     fvulIdxSecTracksWithHitGaps(),
-    fhIntegratedHitPntEffSecGaps(NULL)
+    fhIntegratedHitPntEffSecGaps(NULL),
+    fhMcTrkStartPrimSingTrk(NULL),
+    fhMcTrkStartSecSingTrk(NULL),
+    fhMcTrkStartPrimMultiTrk(NULL),
+    fhMcTrkStartSecMultiTrk(NULL)
 {
 }
 // ------------------------------------------------------------------
@@ -1364,11 +1368,11 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
    fvhPtmRapGenTrkTofPnt.resize(kiNbPart);
    fvhPtmRapGenTrkTofHit.resize(kiNbPart);
    fvhPlabGenTrkTofPnt.resize(kiNbPart);
-   fvhPlabGenTrkTofhit.resize(kiNbPart);
+   fvhPlabGenTrkTofHit.resize(kiNbPart);
    fvhPtmRapSecGenTrkTofPnt.resize(kiNbPart);
    fvhPtmRapSecGenTrkTofHit.resize(kiNbPart);
    fvhPlabSecGenTrkTofPnt.resize(kiNbPart);
-   fvhPlabSecGenTrkTofhit.resize(kiNbPart);
+   fvhPlabSecGenTrkTofHit.resize(kiNbPart);
    for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    {
          // Phase space
@@ -1445,7 +1449,7 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                               Form("P_{lab} distribution for MC tracks with TOF Point(s), %s, primary tracks; P_{lab} [GeV/c]; # []", 
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
-      fvhPlabGenTrkTofhit[iPartIdx] = new TH1D( Form("TofTests_PlabGenTrkTofHit_%s", ksPartTag[iPartIdx].Data() ),
+      fvhPlabGenTrkTofHit[iPartIdx] = new TH1D( Form("TofTests_PlabGenTrkTofHit_%s", ksPartTag[iPartIdx].Data() ),
                               Form("P_{lab} distribution from MC Track with TOF Hit(s), %s, primary tracks; P_{lab} [GeV/c]; # []", 
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
@@ -1525,7 +1529,7 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                               Form("P_{lab} distribution for MC tracks with TOF Point(s), %s, secondary tracks; P_{lab} [GeV/c]; # []", 
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
-      fvhPlabSecGenTrkTofhit[iPartIdx] = new TH1D( Form("TofTests_PlabSecGenTrkTofHit_%s", ksPartTag[iPartIdx].Data() ),
+      fvhPlabSecGenTrkTofHit[iPartIdx] = new TH1D( Form("TofTests_PlabSecGenTrkTofHit_%s", ksPartTag[iPartIdx].Data() ),
                               Form("P_{lab} distribution from MC Track with TOF Hit(s), %s, secondary tracks; P_{lab} [GeV/c]; # []", 
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
@@ -1573,6 +1577,31 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                                      "Efficiency of TOF hit generation VS gaps crossed, secondary tracks; Eff = Nb_{Trk w/ Hit}/Nb_{Trk w/ Pnt} [\%]; Nb TofPoint (gaps) []; # [Events]",
                                      202, -0.5, 100.5,
                                      fuMaxCrossedGaps, 0.5, fuMaxCrossedGaps + 0.5);
+   
+   Float_t fMaxCbmLen = 1500;
+   fhMcTrkStartPrimSingTrk = new TH2D( "TofTests_McTrkStartPrimSingTrk",
+                                     "Origin in Z of the MC primary tracks in hits with a single track; MC trk Start Z [cm]; ; # [Events]",
+                                     fMaxCbmLen + 1, -1, fMaxCbmLen,
+                                     kiNbPart, -0.5, kiNbPart - 0.5);
+   fhMcTrkStartSecSingTrk = new TH2D( "TofTests_McTrkStartSecSingTrk",
+                                     "Origin in Z of the MC secondary tracks in hits with a single track; MC trk Start Z [cm]; ; # [Events]",
+                                     fMaxCbmLen + 1, -1, fMaxCbmLen,
+                                     kiNbPart, -0.5, kiNbPart - 0.5);
+   fhMcTrkStartPrimMultiTrk = new TH2D( "TofTests_McTrkStartPrimMultiTrk",
+                                     "Origin in Z of the MC primary tracks in hits with multiple tracks; MC trk Start Z [cm]; ; # [Events]",
+                                     fMaxCbmLen + 1, -1, fMaxCbmLen,
+                                     kiNbPart, -0.5, kiNbPart - 0.5);
+   fhMcTrkStartSecMultiTrk = new TH2D( "TofTests_McTrkStartSecMultiTrk",
+                                     "Origin in Z of the MC secondary tracks in hits with multiple tracks; MC trk Start Z [cm]; ; # [Events]",
+                                     fMaxCbmLen + 1, -1, fMaxCbmLen,
+                                     kiNbPart, -0.5, kiNbPart - 0.5);
+   for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
+   {
+      fhMcTrkStartPrimSingTrk ->GetYaxis()->SetBinLabel( 1 + iPartIdx, ksPartTag[iPartIdx] );
+      fhMcTrkStartSecSingTrk  ->GetYaxis()->SetBinLabel( 1 + iPartIdx, ksPartTag[iPartIdx] );
+      fhMcTrkStartPrimMultiTrk->GetYaxis()->SetBinLabel( 1 + iPartIdx, ksPartTag[iPartIdx] );
+      fhMcTrkStartSecMultiTrk ->GetYaxis()->SetBinLabel( 1 + iPartIdx, ksPartTag[iPartIdx] );
+   } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    
    gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
 
@@ -1696,6 +1725,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             iPartIdx = iPart;
             break;
          } // if( kiPartPdgCode[iPart] == iPdgCode )
+      if( -1 == iPartIdx )
+         iPartIdx = 0;
       if( -1 == pMcTrk->GetMotherId() )
       {
          // primary track
@@ -1832,6 +1863,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             iPartIdx = iPart;
             break;
          } // if( kiPartPdgCode[iPart] == iPdgCode )
+      if( -1 == iPartIdx )
+         iPartIdx = 0;
          
       if( -1 == pMcTrk->GetMotherId() )
       {
@@ -2037,10 +2070,6 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                   Int_t iCh     = pTofDigi->GetChannel();
                   Int_t iGlobalChan = iCh  + fvRpcChOffs[iSmType][iSm][iRpc];
                   
-                  // MC Track losses
-                  if( kFALSE == vbTrackHasHit[iTrkId] )
-                     vbTrackHasHit[iTrkId] = kTRUE;
-                  
                   // Check Left-Right MC missmatch (digis match always stored by pairs)
                   if( 0 == iDigi%2 )
                   {
@@ -2093,10 +2122,6 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                      Int_t iRpc    = pTofDigi->GetRpc();
                      Int_t iCh     = pTofDigi->GetChannel();
                      Int_t iGlobalChan = iCh  + fvRpcChOffs[iSmType][iSm][iRpc];
-                  
-                     // MC Track losses
-                     if( kFALSE == vbTrackHasHit[iTrkId] )
-                        vbTrackHasHit[iTrkId] = kTRUE;
                      
                      // Check Left-Right MC missmatch (digis match always stored by pairs)
                      if( 0 == iDigi%2 )
@@ -2140,6 +2165,10 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             
             Int_t   iTrkId = ((CbmTofPoint*) fTofPointsColl->At(iPtIdx))->GetTrackID();
             
+            // MC Track losses
+            if( kFALSE == vbTrackHasHit[iTrkId] )
+               vbTrackHasHit[iTrkId] = kTRUE;
+                     
             // Count Nb different MC Points in Hit
             Bool_t bPointFound = kFALSE;
             for( UInt_t uPrevPtIdx = 0; uPrevPtIdx < vTofPointsId.size(); uPrevPtIdx++)
@@ -2508,6 +2537,23 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                fhSingTrkMultiPntHitPullZ->Fill( dDeltaZ/dErrZ ); // Offset(s) bec. hit assigned to middle of det.
                fhSingTrkMultiPntHitPullR->Fill( dDeltaR/dErrR );
             } // if( 1 < uNbPointsInHit )
+            
+            // Get the MC track and fill its length up to the TOF point in the proper histo
+            pMcTrk = (CbmMCTrack*) fMcTracksColl->At( pTofPoint->GetTrackID() );
+            
+            Int_t iPdgCode = pMcTrk->GetPdgCode();
+            Int_t iPartIdx = -1;
+            for( Int_t iPart = 0; iPart < kiNbPart; iPart ++)
+               if( kiPartPdgCode[iPart] == iPdgCode )
+               {
+                  iPartIdx = iPart;
+                  break;
+               } // if( kiPartPdgCode[iPart] == iPdgCode )
+            if( -1 == iPartIdx )
+               iPartIdx = 0;
+            if( -1 == pMcTrk->GetMotherId() )
+               fhMcTrkStartPrimSingTrk->Fill( pMcTrk->GetStartZ(), iPartIdx);
+               else fhMcTrkStartSecSingTrk->Fill( pMcTrk->GetStartZ(), iPartIdx);
          } // if( 1 == vTofTracksId.size() )
          // For Hits with multiple MC Tracks
             else
@@ -2618,7 +2664,28 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                   fhMultiTrkHitBestPullZ->Fill( dDeltaBestZ/dErrZ, uNbTracksInHit ); // Offset(s) bec. hit assigned to middle of det.
                   fhMultiTrkHitBestPullR->Fill( dDeltaBestR/dErrR, uNbTracksInHit );
                } // if( kFALSE == fbHitProducerSource )
-            } // if( 1 == vTofTracksId.size() )
+               
+               // Get each  MC track and fill its length up to the 1at TOF point in the proper histo
+               for( UInt_t uTrkIdx = 0; uTrkIdx < vTofTracksId.size(); uTrkIdx++)
+               {
+                  pTofPoint = (CbmTofPoint*) fTofPointsColl->At( vTofTracksFirstPntId[uTrkIdx] );
+                  pMcTrk = (CbmMCTrack*) fMcTracksColl->At( pTofPoint->GetTrackID() );
+                  
+                  Int_t iPdgCode = pMcTrk->GetPdgCode();
+                  Int_t iPartIdx = -1;
+                  for( Int_t iPart = 0; iPart < kiNbPart; iPart ++)
+                     if( kiPartPdgCode[iPart] == iPdgCode )
+                     {
+                        iPartIdx = iPart;
+                        break;
+                     } // if( kiPartPdgCode[iPart] == iPdgCode )
+                  if( -1 == iPartIdx )
+                     iPartIdx = 0;
+                  if( -1 == pMcTrk->GetMotherId() )
+                     fhMcTrkStartPrimMultiTrk->Fill( pMcTrk->GetStartZ(), iPartIdx);
+                     else fhMcTrkStartSecMultiTrk->Fill( pMcTrk->GetStartZ(), iPartIdx);
+               } // for( UInt_t uTrkIdx = 0; uTrkIdx < vTofTracksId.size(); uTrkIdx++)
+            } // else of if( 1 == vTofTracksId.size() )
          
          // Physics coord mapping, 1 per particle type
 /*
@@ -2655,6 +2722,8 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                iPartIdx = iPart;
                break;
             } // if( kiPartPdgCode[iPart] == iPdgCode )
+         if( -1 == iPartIdx )
+            iPartIdx = 0;
          if( -1 == pMcTrk->GetMotherId() )
          {
             // primary track
@@ -2753,33 +2822,19 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                iPartIdx = iPart;
                break;
             } // if( kiPartPdgCode[iPart] == iPdgCode )
+         if( -1 == iPartIdx )
+            iPartIdx = 0;
          if( -1 == pMcTrk->GetMotherId() )
          {
             // primary track
-            if( -1 < iPartIdx )
-            {
-               fvhPtmRapGenTrkTofHit[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
-               fvhPlabGenTrkTofhit[iPartIdx]->Fill( pMcTrk->GetP() );
-            } // if( -1 < iPartIdx )
-               else 
-               {
-                  fvhPtmRapGenTrkTofHit[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
-                  fvhPlabGenTrkTofhit[0]->Fill( pMcTrk->GetP() );
-               } // else of if( -1 < iPartIdx )
+            fvhPtmRapGenTrkTofHit[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+            fvhPlabGenTrkTofHit[iPartIdx]->Fill( pMcTrk->GetP() );
          } // if( -1 == pMcTrk->GetMotherId() )
             else
             {
                // secondary track
-               if( -1 < iPartIdx )
-               {
-                  fvhPtmRapSecGenTrkTofHit[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
-                  fvhPlabSecGenTrkTofhit[iPartIdx]->Fill( pMcTrk->GetP() );
-               } // if( -1 < iPartIdx )
-                  else 
-                  {
-                     fvhPtmRapSecGenTrkTofHit[0]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
-                     fvhPlabSecGenTrkTofhit[0]->Fill( pMcTrk->GetP() );
-                  } // else of if( -1 < iPartIdx )
+               fvhPtmRapSecGenTrkTofHit[iPartIdx]->Fill( pMcTrk->GetRapidity(), pMcTrk->GetPt()/pMcTrk->GetMass());
+               fvhPlabSecGenTrkTofHit[iPartIdx]->Fill( pMcTrk->GetP() );
             } // else of if( -1 == pMcTrk->GetMotherId() )
       } // if( kTRUE == vbTrackHasHit[iTrkId] )
    } // for(Int_t iTrkInd = 0; iTrkInd < nMcTracks; iTrkInd++)
@@ -3343,7 +3398,7 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
          fvhPtmRapGenTrkTofPnt[iPartIdx]->Write();
          fvhPtmRapGenTrkTofHit[iPartIdx]->Write();
          fvhPlabGenTrkTofPnt[iPartIdx]->Write();
-         fvhPlabGenTrkTofhit[iPartIdx]->Write();
+         fvhPlabGenTrkTofHit[iPartIdx]->Write();
       } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
       
       TDirectory *cdPhysMapSec = fHist->mkdir( "PhysMapSec" );
@@ -3369,7 +3424,7 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
          fvhPtmRapSecGenTrkTofPnt[iPartIdx]->Write();
          fvhPtmRapSecGenTrkTofHit[iPartIdx]->Write();
          fvhPlabSecGenTrkTofPnt[iPartIdx]->Write();
-         fvhPlabSecGenTrkTofhit[iPartIdx]->Write();
+         fvhPlabSecGenTrkTofHit[iPartIdx]->Write();
       } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
       
       fHist->cd();
@@ -3382,6 +3437,11 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhIntegratedHitPntEffGaps->Write();
       fhIntegratedHitPntEffPrimGaps->Write();
       fhIntegratedHitPntEffSecGaps->Write();
+      
+      fhMcTrkStartPrimSingTrk->Write();
+      fhMcTrkStartSecSingTrk->Write();
+      fhMcTrkStartPrimMultiTrk->Write();
+      fhMcTrkStartSecMultiTrk->Write();
    } // if( kFALSE == fbNormHistGenMode )
 
    gDirectory->cd( oldir->GetPath() );
@@ -3580,7 +3640,7 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
       delete fvhPtmRapGenTrkTofPnt[iPartIdx];
       delete fvhPtmRapGenTrkTofHit[iPartIdx];    
       delete fvhPlabGenTrkTofPnt[iPartIdx];
-      delete fvhPlabGenTrkTofhit[iPartIdx]; 
+      delete fvhPlabGenTrkTofHit[iPartIdx]; 
       
       // Secondary tracks
          // Phase space
@@ -3601,7 +3661,7 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
       delete fvhPtmRapSecGenTrkTofPnt[iPartIdx];
       delete fvhPtmRapSecGenTrkTofHit[iPartIdx];    
       delete fvhPlabSecGenTrkTofPnt[iPartIdx];
-      delete fvhPlabSecGenTrkTofhit[iPartIdx]; 
+      delete fvhPlabSecGenTrkTofHit[iPartIdx]; 
    } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
          // Phase space
    fvhPtmRapGenTrk.clear();
@@ -3621,7 +3681,7 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    fvhPtmRapGenTrkTofPnt.clear();
    fvhPtmRapGenTrkTofHit.clear();
    fvhPlabGenTrkTofPnt.clear();
-   fvhPlabGenTrkTofhit.clear();
+   fvhPlabGenTrkTofHit.clear();
    
    // Secondary tracks
          // Phase space
@@ -3642,7 +3702,7 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    fvhPtmRapSecGenTrkTofPnt.clear();
    fvhPtmRapSecGenTrkTofHit.clear();
    fvhPlabSecGenTrkTofPnt.clear();
-   fvhPlabSecGenTrkTofhit.clear();
+   fvhPlabSecGenTrkTofHit.clear();
    
    delete fhIntegratedHitPntEff;
    delete fhIntegratedHitPntEffPrim;
@@ -3655,6 +3715,11 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhIntegratedHitPntEffGaps;
    delete fhIntegratedHitPntEffPrimGaps;
    delete fhIntegratedHitPntEffSecGaps;
+   
+   delete fhMcTrkStartPrimSingTrk;
+   delete fhMcTrkStartSecSingTrk;
+   delete fhMcTrkStartPrimMultiTrk;
+   delete fhMcTrkStartSecMultiTrk;
    
    return kTRUE;
 }

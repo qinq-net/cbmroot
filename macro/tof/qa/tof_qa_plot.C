@@ -15,6 +15,10 @@ const TString ksPartName[kiNbPart] =
      "p",  "anti-p", "d",    "t",    "he", "#alpha"};
 //___________________________________________________________________
 
+const Int_t kiRebinFactX = 2;
+const Int_t kiRebinFactY = 2;
+const Int_t kiRebinFactZ = 2;
+
 // C++ Classes and includes
 #include <vector>
 
@@ -412,29 +416,75 @@ Bool_t tof_qa_plot( TString sDigiHistFileName = "", TString sClustHistFileName =
    fQaHistFile->Close();
 
    std::cout << "Files closing OK!" << std::endl;
+   
+//******* close the input files
+   if( 1 < kiRebinFactX && 1 < kiRebinFactY )
+   {
+      fhPointMapXY      ->Rebin2D( kiRebinFactX, kiRebinFactY);
+      fhPointMapXZ      ->Rebin2D( kiRebinFactX, kiRebinFactZ);
+      fhPointMapYZ      ->Rebin2D( kiRebinFactY, kiRebinFactZ);
+      fhPointMapAng     ->Rebin2D( kiRebinFactX, kiRebinFactY);
+      fhPointMapSph     ->Rebin2D( kiRebinFactX, kiRebinFactY);
+      fhDigiMapXY       ->Rebin2D( kiRebinFactX, kiRebinFactY);
+      fhDigiMapXZ       ->Rebin2D( kiRebinFactX, kiRebinFactZ);
+      fhDigiMapYZ       ->Rebin2D( kiRebinFactY, kiRebinFactZ);
+      fhDigiMapAng      ->Rebin2D( kiRebinFactX, kiRebinFactY);
+      fhDigiMapSph      ->Rebin2D( kiRebinFactX, kiRebinFactY);
+      fhHitMapXY        ->Rebin2D( kiRebinFactX, kiRebinFactY);
+      fhHitMapXZ        ->Rebin2D( kiRebinFactX, kiRebinFactZ);
+      fhHitMapYZ        ->Rebin2D( kiRebinFactY, kiRebinFactZ);
+      fhHitMapAng       ->Rebin2D( kiRebinFactX, kiRebinFactY);
+      fhHitMapSph       ->Rebin2D( kiRebinFactX, kiRebinFactY);    
+      // Mapping of position for hits coming from a single MC Point
+      fhHitMapSingPntXY ->Rebin2D( kiRebinFactX, kiRebinFactY);
+      fhHitMapSingPntXZ ->Rebin2D( kiRebinFactX, kiRebinFactZ);
+      fhHitMapSingPntYZ ->Rebin2D( kiRebinFactY, kiRebinFactZ);
+      fhHitMapSingPntAng->Rebin2D( kiRebinFactX, kiRebinFactY);
+      fhHitMapSingPntSph->Rebin2D( kiRebinFactX, kiRebinFactY);
+      // Mapping of position for hits coming from multiple MC Points
+      fhHitMapMultPntXY ->Rebin2D( kiRebinFactX, kiRebinFactY);
+      fhHitMapMultPntXZ ->Rebin2D( kiRebinFactX, kiRebinFactZ);
+      fhHitMapMultPntYZ ->Rebin2D( kiRebinFactY, kiRebinFactZ);
+      fhHitMapMultPntAng->Rebin2D( kiRebinFactX, kiRebinFactY);
+      fhHitMapMultPntSph->Rebin2D( kiRebinFactX, kiRebinFactY);
+      // Mapping of position for hits coming from a single MC Track
+      fhHitMapSingTrkXY ->Rebin2D( kiRebinFactX, kiRebinFactY);
+      fhHitMapSingTrkXZ ->Rebin2D( kiRebinFactX, kiRebinFactZ);
+      fhHitMapSingTrkYZ ->Rebin2D( kiRebinFactY, kiRebinFactZ);
+      fhHitMapSingTrkAng->Rebin2D( kiRebinFactX, kiRebinFactY);
+      fhHitMapSingTrkSph->Rebin2D( kiRebinFactX, kiRebinFactY);
+      // Mapping of position for hits coming from multiple MC Tracks
+      fhHitMapMultTrkXY ->Rebin2D( kiRebinFactX, kiRebinFactY);
+      fhHitMapMultTrkXZ ->Rebin2D( kiRebinFactX, kiRebinFactZ);
+      fhHitMapMultTrkYZ ->Rebin2D( kiRebinFactY, kiRebinFactZ);
+      fhHitMapMultTrkAng->Rebin2D( kiRebinFactX, kiRebinFactY);
+      fhHitMapMultTrkSph->Rebin2D( kiRebinFactX, kiRebinFactY);
+      
+      std::cout << "2D maps rebinning OK!" << std::endl;
+   } // if( 1 < kiRebinFactX && 1 < kiRebinFactY )
 //******* Creates the output histograms
    // Histograms bining, for now HardCode
    // TODO: recover from input histograms
       // xy - hit densities and rates
-   Int_t nbinx=1500;
-   Int_t nbiny=1000;
-   Int_t nbinz=1500;
+   Int_t nbinx=1500 / kiRebinFactX;
+   Int_t nbiny=1000 / kiRebinFactY;
+   Int_t nbinz=1500 / kiRebinFactZ;
    Double_t xrange=750.;
    Double_t yrange=500.;
    Double_t zmin  = fdWallPosZ -  50.;
    Double_t zmax  = fdWallPosZ + 100.;
       // angular densities for overlap check
-   Int_t iNbBinThetaX  = 1200;
+   Int_t iNbBinThetaX  = 1200 / kiRebinFactX;
    Double_t dThetaXMin = -  60.0;
    Double_t dThetaXMax =    60.0;
-   Int_t iNbBinThetaY  = 800;
+   Int_t iNbBinThetaY  = 800 / kiRebinFactY;
    Double_t dThetaYMin = -  40.0;
    Double_t dThetaYMax =    40.0;
       // spherical densities for overlap check
-   Int_t iNbBinTheta   = 180;
+   Int_t iNbBinTheta   = 180 / kiRebinFactX;
    Double_t dThetaMin  =   0;
    Double_t dThetaMax  =  TMath::Pi()*90/180;
-   Int_t iNbBinPhi     = 180;
+   Int_t iNbBinPhi     = 180 / kiRebinFactY;
    Double_t dPhiMin    = - TMath::Pi();
    Double_t dPhiMax    =   TMath::Pi();
    

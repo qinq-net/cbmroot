@@ -311,18 +311,12 @@ class CbmTofHitFinderQa : public FairTask {
       std::vector<TH2 *> fvhPtmRapGenTrkTofPnt;
       std::vector<TH2 *> fvhPtmRapGenTrkTofHit;
       std::vector<TH1 *> fvhPlabGenTrkTofPnt;
-      std::vector<TH1 *> fvhPlabGenTrkTofhit;
+      std::vector<TH1 *> fvhPlabGenTrkTofHit;
                // Secondary tracks
       std::vector<TH2 *> fvhPtmRapSecGenTrkTofPnt;
       std::vector<TH2 *> fvhPtmRapSecGenTrkTofHit;
       std::vector<TH1 *> fvhPlabSecGenTrkTofPnt;
-      std::vector<TH1 *> fvhPlabSecGenTrkTofhit;
-
-         // Track length, 1 per particle type
-            // Single track hits
-      std::vector<TH2 *> fvhMcTrkLenSingTrk;
-            // Multiple track hits
-      std::vector<TH2 *> fvhMcTrkLenMultiTrk;
+      std::vector<TH1 *> fvhPlabSecGenTrkTofHit;
 
          // Integrated TofHit Efficiency
       std::vector<ULong64_t> fvulIdxTracksWithPnt;
@@ -354,6 +348,14 @@ class CbmTofHitFinderQa : public FairTask {
       std::vector< std::vector<ULong64_t> > fvulIdxSecTracksWithPntGaps;
       std::vector< std::vector<ULong64_t> > fvulIdxSecTracksWithHitGaps;
       TH2* fhIntegratedHitPntEffSecGaps;
+
+         // Track length, 1 per particle type
+            // Single track hits
+      TH2 * fhMcTrkStartPrimSingTrk;
+      TH2 * fhMcTrkStartSecSingTrk;
+            // Multiple track hits
+      TH2 * fhMcTrkStartPrimMultiTrk;
+      TH2 * fhMcTrkStartSecMultiTrk;
       
       ClassDef(CbmTofHitFinderQa, 1);
 };

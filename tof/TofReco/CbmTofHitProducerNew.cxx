@@ -264,7 +264,7 @@ CbmTofHitProducerNew::CbmTofHitProducerNew(const char *name, Int_t verbose)
     fhNbAllTrkTofHits(NULL),
     fsHistosFileName("HitProdNew_QA.hst.root")
 {
-  cout << "CbmTofHitProducerNew instantiated with verbose = "<<fVerbose<<endl;
+  LOG(INFO)<< "CbmTofHitProducerNew instantiated with verbose = "<<FairLogger::endl;
 }
 
 
@@ -319,7 +319,8 @@ InitStatus CbmTofHitProducerNew::Init()
 {
   CreateHistos();
 
-  cout << "nh - version of CbmTofHitProducerNew initializing with file " << fParFileName << endl;
+  LOG(INFO) << "nh - version of CbmTofHitProducerNew initializing with file " 
+            << fParFileName << FairLogger::endl;
   FairRootManager *fManager = FairRootManager::Instance();
 
     fTofPoints  = (TClonesArray *) fManager->GetObject("TofPoint");
@@ -384,8 +385,8 @@ InitStatus CbmTofHitProducerNew::Init()
       }else{
 	tofGeoFile += fParFileName;
       }
-      cout << "<I> CbmTofHitProducerNew::Read parameters from "<< fParFileName 
-           << "," <<tofGeoFile << endl;
+      LOG(INFO) << "<I> CbmTofHitProducerNew::Read parameters from "<< fParFileName 
+           << "," <<tofGeoFile << FairLogger::endl;
       par=fopen(tofGeoFile,"r");
    
       if(par==NULL) {
@@ -396,7 +397,7 @@ InitStatus CbmTofHitProducerNew::Init()
 
     //Skip the header. In the future the header structure must be defined. FIXME
     while (fscanf(par,"%c",&header)>=0){
-//      cout << "ReadH "<< header << endl;
+//      LOG(INFO) << "ReadH "<< header << FairLogger::endl;
       if((int)(header-'0')==0) break;
     }
 
@@ -404,7 +405,8 @@ InitStatus CbmTofHitProducerNew::Init()
 //    fscanf(par,"%5d %5d %5d %2d %5.1f %5.1f %5.1f %2.1f %2.1f ", 
     fscanf(par,"%d %d %d %d %f %f %f %f %f ", 
     &smodule, &module, &cell, &smtype, &X_tmp, &Y_tmp, &Z_tmp, &Dx_tmp, &Dy_tmp);
-//    cout << "Read " << smodule << " mod " << module << " cell "<< cell << " SMtyp " <<  smtype << " X,Y " << X_tmp <<","<< Y_tmp <<endl;
+//    LOG(INFO) << "Read " << smodule << " mod " << module << " cell "<< cell 
+//              << " SMtyp " <<  smtype << " X,Y " << X_tmp <<","<< Y_tmp <<FairLogger::endl;
     if(smtype>ActSMtypMax)             ActSMtypMax=smtype;
     if(smodule>ActnSMMax[ActSMtypMax]) ActnSMMax[ActSMtypMax]=smodule;
     if(module>ActnModMax[ActSMtypMax]) ActnModMax[ActSMtypMax]=module;
@@ -421,7 +423,8 @@ InitStatus CbmTofHitProducerNew::Init()
      
     while(fscanf(par,"%5d %5d %5d %2d %f %f %f %f %f", 
       &smodule, &module, &cell, &smtype, &X_tmp, &Y_tmp, &Z_tmp, &Dx_tmp, &Dy_tmp)>=0){ 
-//      cout << "Read " << smodule << " mod " << module << " cell "<< cell << " SMtyp " <<  smtype << " X,Y " << X_tmp <<","<< Y_tmp <<endl;
+//      LOG(INFO) << "Read " << smodule << " mod " << module << " cell "<< cell 
+//                << " SMtyp " <<  smtype << " X,Y " << X_tmp <<","<< Y_tmp <<FairLogger::endl;
   
       if(smtype>ActSMtypMax)             ActSMtypMax=smtype;
       if(smodule>ActnSMMax[ActSMtypMax]) ActnSMMax[ActSMtypMax]=smodule;
@@ -535,18 +538,18 @@ InitStatus CbmTofHitProducerNew::Init()
     }
 
     fclose(par);
-    cout << "Filled position array with ActSMtypMax " << ActSMtypMax 
-         << " and " << iCh << " active Channels "<< endl;
+    LOG(INFO) << "Filled position array with ActSMtypMax " << ActSMtypMax 
+         << " and " << iCh << " active Channels "<< FairLogger::endl;
    } else {
-     cout <<" InitParametersFromContainer "<<endl;
+     LOG(INFO) <<" InitParametersFromContainer "<<FairLogger::endl;
      InitParametersFromContainer();
    }
 
-    cout << "-I- CbmTofHitProducerNew: found following setup: "<<endl; 
+    LOG(INFO) << "CbmTofHitProducerNew: found following setup: "<<FairLogger::endl; 
     Int_t nCh=0;
     for (Int_t i=0; i<=ActSMtypMax; i++){
-	cout << " SMtype " << i <<" nsmod " << ActnSMMax[i]+1 
-             << " nmod "<< ActnModMax[i]+1  << " ncell " << ActnCellMax[i] << endl;
+	LOG(INFO) << " SMtype " << i <<" nsmod " << ActnSMMax[i]+1 
+             << " nmod "<< ActnModMax[i]+1  << " ncell " << ActnCellMax[i] << FairLogger::endl;
 	nCh += (ActnSMMax[i]+1) * (ActnModMax[i]+1) * ActnCellMax[i] * 2;
     }
     
@@ -556,8 +559,8 @@ InitStatus CbmTofHitProducerNew::Init()
     fTofHitMatches = new TClonesArray("CbmMatch");
     fManager->Register("TofHitMatch","TOF",fTofHitMatches, kTRUE);
      
-    cout << "-I- CbmTofHitProducerNew: Initialization successful for " 
-         << nCh <<" electronics channels"<< endl;
+    LOG(INFO) << "CbmTofHitProducerNew: Initialization successful for " 
+         << nCh <<" electronics channels"<< FairLogger::endl;
 
     return kSUCCESS;
 }
@@ -612,10 +615,10 @@ void CbmTofHitProducerNew::InitParametersFromContainer()
      Double_t dy = fCellInfo->GetSizey();
 
      if(icell < 0){
-       cout << "-I- InitPar "<<icell<<" Id: "<<cellId
+       LOG(INFO) << "InitPar "<<icell<<" Id: "<<cellId
 	    << " "<< cell << " tmcs: "<< smtype <<" "<<smodule<<" "<<module<<" "<<cell   
             << " x="<<Form("%6.2f",x)<<" y="<<Form("%6.2f",y)<<" z="<<Form("%6.2f",z)
-            <<" dx="<<dx<<" dy="<<dy<<endl;
+            <<" dx="<<dx<<" dy="<<dy<<FairLogger::endl;
      }
     if(smtype>ActSMtypMax)        ActSMtypMax=smtype;
     if(smodule>ActnSMMax[smtype]) ActnSMMax[smtype]=smodule;
@@ -761,9 +764,9 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
   Int_t nMCTracks_vert = 0;
   Int_t tof_tracks = 0, tof_tracks_vert = 0/*, tof_tracks_local = 0*/;
 
-  cout << "-I- CbmTofHitProducerNew(Exec): " << nTofPoint
+  LOG(DEBUG) << "CbmTofHitProducerNew(Exec): " << nTofPoint
        << " points in Tof for this event with " << nMCTracks
-       << " MC tracks "<< endl;
+       << " MC tracks "<< FairLogger::endl;
 
    // Prepare the temporary storing of the Track/Point/Digi info
    if( kTRUE == fbUseOnePntPerTrkRpc )
@@ -787,10 +790,10 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
       } // if( kTRUE == fbUseOnePntPerTrkRpc )
   }
   
-  cout << "-I- CbmTofHitProducerNew : " << tof_tracks << " tracks in Tof " << endl;
-  cout << "-I- CbmTofHitProducerNew : " << tof_tracks_vert << " tracks in Tof from vertex" << endl;
-//  cout << "-I- CbmTofHitProducerNew : " << tof_tracks-tof_tracks_local
-//       << " tracks in Tof able to produce a hit" << endl;
+  LOG(DEBUG) << "CbmTofHitProducerNew : " << tof_tracks << " tracks in Tof " << FairLogger::endl;
+  LOG(DEBUG) << "CbmTofHitProducerNew : " << tof_tracks_vert << " tracks in Tof from vertex" << FairLogger::endl;
+//  LOG(DEBUG) << "CbmTofHitProducerNew : " << tof_tracks-tof_tracks_local
+//       << " tracks in Tof able to produce a hit" << FairLogger::endl;
 
   TVector3 pos;
 
@@ -815,8 +818,8 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
   else fSigmaEl=sigma_el;                // take default
 
   //Here check for the validity of the parameters
-  if(fSigmaY>1) cout<<"UNREALISTIC TOF POSITION RESOLUTION!! (HitProducer may crash)"<<endl;
-  if((fSigmaT<0.01 && fSigmaT>0)||fSigmaT>0.2) cout<<"UNREALISTIC TOF RESOLUTION!! (HitProducer may crash)"<<endl;
+  if(fSigmaY>1) LOG(WARNING)<<"UNREALISTIC TOF POSITION RESOLUTION!! (HitProducer may crash)"<<FairLogger::endl;
+  if((fSigmaT<0.01 && fSigmaT>0)||fSigmaT>0.2) LOG(WARNING)<<"UNREALISTIC TOF RESOLUTION!! (HitProducer may crash)"<<FairLogger::endl;
 
   //Parameterizations. Now they depend on the geometry/algorithm. FIXME
 
@@ -855,7 +858,7 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
     // Get a pointer to the TOF point      
     pt = (CbmTofPoint*) fTofPoints->At(j);
     if(pt == NULL) {
-      cout<<"Be careful: hole in the CbmTofPoint TClonesArray!"<<endl;
+      LOG(INFO)<<"Be careful: hole in the CbmTofPoint TClonesArray!"<<FairLogger::endl;
       continue;
     }
     //Reject particles produced in the last 4 cm. Better job must be done here. For example:
@@ -896,7 +899,7 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
 
     if(fVerbose >2) {
       pt->Print(""); //FIXME
-      cout << endl;
+      LOG(DEBUG) << FairLogger::endl;
     }
 
 //    T_smearing      = gRandom->Gaus(t_o, sigma_t_gap);
@@ -941,7 +944,7 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
    } // if( kTRUE == fbUseOnePntPerTrkRpc )
 
     if(fVerbose >1 || TMath::Abs(X_local)>1.5) {
-      cout << "-W- TofHitProNew " << j <<". Poi," 
+      LOG(WARNING) << "-W- TofHitProNew " << j <<". Poi," 
          << " TID:" << trackID 
 	 << " detID: " << detID
 	 << " cellID: " << cellID
@@ -953,7 +956,7 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
 	   << " posX " << Form("%6.2f",pos.X())<<","<< Form("%6.2f",X[smtype][smodule][module][cell])
 	   << " posY " << Form("%6.2f",pos.Y())<<","<< Form("%6.2f",Y[smtype][smodule][module][cell])
 	   << " tl " << Form("%6.2f",tl_new)   << " tr " << Form("%6.2f",tr_new)
-         << endl; 
+         << FairLogger::endl; 
 
       if(TMath::Abs(X_local)>1.5) {
         continue; //prevent crashes 
@@ -992,7 +995,7 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
     for( Int_t j = ActnModMin[t];  j <= ActnModMax[t];  j++){
      for(Int_t k = ActnCellMin[t]; k <= ActnCellMax[t]; k++){
 
-       //      cout <<"-D- HitProd: tijk "<<t<<" "<<i<<" "<<j<<" "<<k<<" "<<tl[t][i][j][k]<<" "<<tr[t][i][j][k]<<endl;
+       //      LOG(DEBUG) <<"-D- HitProd: tijk "<<t<<" "<<i<<" "<<j<<" "<<k<<" "<<tl[t][i][j][k]<<" "<<tr[t][i][j][k]<<FairLogger::endl;
 //Increase the counter for the TofHit TClonesArray if the first time a hit is attached to this cell
     
       if( tl[t][i][j][k]<1e+5 
@@ -1016,8 +1019,8 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
            // Check consistency
            if(fVerbose >2) {
            pt->Position(pos);
-           cout << " pos check for point "<<ref<<" x:  "<< xHit << " " << pos.X() 
-                << " y: " << yHit << " " << pos.Y() << endl;   
+           LOG(DEBUG) << " pos check for point "<<ref<<" x:  "<< xHit << " " << pos.X() 
+                << " y: " << yHit << " " << pos.Y() << FairLogger::endl;   
 	   }
        }
        else {
@@ -1148,11 +1151,11 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
        Int_t iCh = Ch[t][i][j][k];
        if(fVerbose >1) {
 	 //       if(1) {
-	 cout << ii++ << " Add hit smt " << t << " sm " << i << " mod " << j << " str " << k
+	 LOG(DEBUG) << ii++ << " Add hit smt " << t << " sm " << i << " mod " << j << " str " << k
 	 <<" Ch " << iCh
          <<" tl " << tl[t][i][j][k] << " tr " << tr[t][i][j][k] 
 	 <<" xh " << xHit << " yh " << yHit << " fl "<< flag << " refPoi " << ref 
-	 <<" TID "<<  trackID_left[t][i][j][k] <<","<<trackID_right[t][i][j][k]<< endl;
+	 <<" TID "<<  trackID_left[t][i][j][k] <<","<<trackID_right[t][i][j][k]<< FairLogger::endl;
        }
        
        AddHit(pt->GetDetectorID(), hitPos, hitPosErr, ref, tHit, flag, iCh);
@@ -1172,8 +1175,8 @@ void CbmTofHitProducerNew::Exec(Option_t * /*option*/)
     }
    }
   }  
-  cout << "-I- CbmTofHitProducerNew : " << fNHits+1
-       << " hits in Tof created, "<< nFl1<< " single, "<< nFl2<< " multiple hits " << endl;
+  LOG(DEBUG) << "CbmTofHitProducerNew : " << fNHits+1
+       << " hits in Tof created, "<< nFl1<< " single, "<< nFl2<< " multiple hits " << FairLogger::endl;
 
 
    Int_t iNbTofHits = fHitCollection->GetEntries();
@@ -1205,7 +1208,7 @@ void CbmTofHitProducerNew::AddHit(Int_t detID, TVector3 &posHit, TVector3 &posHi
   if(fVerbose > 1) {
     CbmTofHit* tofHit = (CbmTofHit*) fHitCollection->At(fNHits);
     tofHit->Print();
-    cout << endl;
+    LOG(DEBUG) << FairLogger::endl;
   }
 }
 
