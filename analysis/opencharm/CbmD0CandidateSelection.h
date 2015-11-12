@@ -38,7 +38,8 @@ class CbmVertex;
 class FairTrackParam;
 class CbmD0Tools;
 class CbmKFParticleInterface;
-
+class KFParticle;
+class KFPVertex;
 
 
 class CbmD0CandidateSelection : public FairTask
@@ -46,9 +47,9 @@ class CbmD0CandidateSelection : public FairTask
  public:
   CbmD0CandidateSelection();
   CbmD0CandidateSelection(char* name, Int_t iVerbose, Double_t cutIPD, Double_t cutSVZ);
-  virtual ~CbmD0CandidateSelection();
-  virtual InitStatus Init();
-  virtual void Exec(Option_t* option);
+  ~CbmD0CandidateSelection();
+  InitStatus Init();
+  void Exec(Option_t* option);
   
   void SetHistoFileName( TString name ){ fHistoFileName = name;  };
   Double_t SetKFParticle(Bool_t useKFparticle) { fUseKF = useKFparticle;};
@@ -57,29 +58,30 @@ class CbmD0CandidateSelection : public FairTask
 
 private:
     Int_t fEventNumber;
-    TClonesArray* fListRCD0;
+    TClonesArray* fKaonParticleArray;
+    TClonesArray* fPionParticleArray;
+    TClonesArray* fD0Candidates;
+    TClonesArray* fListMCTracksPos;
+    TClonesArray* fListMCTracksNeg;
     TClonesArray* fListMCTracks;
     TClonesArray* fListD0TrackCandidate;
-    TClonesArray* fStsTrackArray;
     TClonesArray* fD0TrackArray;
     TClonesArray* fInfoArray;
     TClonesArray* fStsTrackMatches;
     TClonesArray* fPosStsTracks;
     TClonesArray* fNegStsTracks;
-    TClonesArray* fD0Candidates;
-    CbmStsKFTrackFitter* fFit;
-    CbmKFSecondaryVertexFinder* fSecVertexFinder;
     CbmVertex* fPrimVtx;
-    CbmVertex* fSecVtx;
+    float fvtx[3];
     CbmD0Tools* tools;
     CbmKFParticleInterface* kfpInterface;
     FairField* fMF;
     Bool_t bTestMode;
+    Bool_t f_particleIsMCD0;
 
     TString fHistoFileName;
 
-
-    Double_t GetPairImpactParameterR( Double_t Pair_Tx, Double_t Pair_Ty, Double_t SvX, Double_t SvY, Double_t SvZ, Double_t PvZ );
+    void CheckIfParticleIsD0(Int_t iNeg, Int_t iPos);
+    Double_t GetPairImpactParameterR(KFParticle* particle );
     Double_t GetPairPt(CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2);
     Double_t GetPairPz(CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2);
     Double_t GetPairTx(CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2);
@@ -95,9 +97,6 @@ private:
     Double_t GetAPalpha(CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2 );
     Double_t GetAPptt(CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2 );
     TNtuple* fTrackPairNtuple;
-
-    TH1F* test;
-
 
     Double_t fcutIPD0, fcutSVZ;
     Bool_t fUseKF;

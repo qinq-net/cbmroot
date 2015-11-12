@@ -181,6 +181,11 @@ InitStatus CbmD0CandidatesSE::Init() {
     CbmMapsFileManager* file3 = new CbmMapsFileManager( fNegativeFileName, "NegativeMCTracks" );
     FillBuffer( file3, fBufferMCTrackArraysN );
     delete file3;
+
+     CbmMapsFileManager* file4 = new CbmMapsFileManager( fNegativeFileName, "KFParticles" );
+    FillBuffer( file4, fKFParticleBuffer );
+    delete file4;
+
     cout << "-I- CbmD0Candidates: Buffers filled " << endl;
 
     return kSUCCESS;
@@ -246,6 +251,8 @@ void CbmD0CandidatesSE::Exec(Option_t* option){
     CbmStsTrack* stsTrack2;
     CbmMCTrack*  mcTrack1;
     CbmMCTrack*  mcTrack2;
+    KFParticle* particle1;
+    KFParticle* particle2;
     TVector3 mom1;
     TVector3 mom2;
     //CbmVertex vtx;
@@ -272,6 +279,7 @@ void CbmD0CandidatesSE::Exec(Option_t* option){
        // cout << endl << "get Array neg Mc Tracks" << endl;
 	fNegMCTrackArray  = (TClonesArray*) fBufferMCTrackArraysN->At(itrNegEvt);
        // cout << endl << "got all Arrays, mc array size is " << fNegMCTrackArray->GetEntriesFast() << endl;
+	fKFParticles = (TClonesArray*) fKFParticleBuffer->At(itrNegEvt);
 
 	Int_t nTracksN = fNegD0TrackArray->GetEntriesFast();
 	//cout << "\r itrNegEvt " << itrNegEvt << " ... nTracksN " << nTracksN <<" "<< flush;
@@ -329,7 +337,7 @@ void CbmD0CandidatesSE::Exec(Option_t* option){
 		Double_t cosA = BoostMomentum( mom01, mom02, track1, track2 );
 		//if (cosA > -0.80) continue;
 	    
-                cout << endl << "try to make new particle " << endl;
+               /* cout << endl << "try to make new particle " << endl;
 		KFParticle* particle1 = new KFParticle();
 		if (fVerbose>0)  cout <<endl<< "new Particle 1 with id "<< track1->GetPidHypo();
 		cout << endl << stsTrack1->GetNofHits() << "    " << stsTrack1->GetNofMvdHits() << endl;
@@ -345,7 +353,7 @@ void CbmD0CandidatesSE::Exec(Option_t* option){
 		cout << endl << "set new particle2 with mass: " << particle2->GetMass() << endl;
 
                // if(particle2->GetMass() == 0) continue;
-
+                                                           */
                 cout << endl << "try to get D0" << endl;
 		KFParticle* D0_KF = new KFParticle(*particle1, *particle2);
 		cout << endl << "got new D0" << endl;

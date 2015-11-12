@@ -76,6 +76,7 @@ private:
     TClonesArray* fD0TrackArray;
     TClonesArray* fPosD0TrackArray;
     TClonesArray* fNegD0TrackArray;
+    TClonesArray* fKFParticles;
 
     TClonesArray* fInfoArray;
     TClonesArray* fStsTrackMatches;
@@ -84,6 +85,7 @@ private:
     TObjArray* fBufferStsTrackArraysN;
     TObjArray* fBufferMCTrackArraysN;
     TObjArray* fBufferD0TrackArraysN;
+    TObjArray* fKFParticleBuffer;
 
     CbmStsKFTrackFitter* fFit;
     CbmStsKFSecondaryVertexFinder* fSVF;

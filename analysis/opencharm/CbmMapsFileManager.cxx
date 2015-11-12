@@ -33,7 +33,7 @@ using std::ios_base;
 using std::vector;
    
 CbmMapsFileManager::CbmMapsFileManager (TString fileName,TString branchName)
-
+    :
     fInputFile(),
     fCbm(),
     fTree(),
@@ -44,7 +44,7 @@ CbmMapsFileManager::CbmMapsFileManager (TString fileName,TString branchName)
     fCurrentParticle(),
     fNumberOfCurrentEvent(),
     fEventsInFile(),
-    fHitsInEvent()
+    fHitsInEvent(),
     fErrorCode()
 {
   fFrameworkFile=gFile;
