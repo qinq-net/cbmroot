@@ -68,7 +68,7 @@ void run_digi(Int_t nEvents = 2, const char* setup = "sis100_electron")
   Double_t timeSliceSize = 1000.;
   
   // Specify log level (INFO, DEBUG, DEBUG1, ...)
-  TString logLevel = "INFO";
+  TString logLevel = "DEBUG";
 
   //  Digitisation files.
   // Add TObjectString containing the different file names to
@@ -133,7 +133,16 @@ void run_digi(Int_t nEvents = 2, const char* setup = "sis100_electron")
   Double_t deadTime       =     100.;  // infinite dead time (integrate entire event)
   Int_t digiModel         =       1;   // Model: 1 = uniform charge distribution along track
   Double_t noise          =    1000.;  // Noise [e]
+	
+  // The following settings correspond to a validated implementation. 
+  // Changing them is on your own risk.
+  Int_t  eLossModel       = 1;         // Energy loss model: uniform 
+  Bool_t useLorentzShift  = kFALSE;    // Deactivate Lorentz shift
+  Bool_t useDiffusion     = kFALSE;    // Deactivate diffusion
+  Bool_t useCrossTalk     = kFALSE;    // Deactivate cross talk
+	
   CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
+  stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
   stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
   run->AddTask(stsDigi);
  

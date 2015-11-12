@@ -35,28 +35,34 @@ class CbmRunAna : public FairRunAna
   void MarkFill(Bool_t mark = kTRUE) { fMarkFill = mark; }
 
 
-  /**   Set asynchroneous output mode  **/
+  /**   Set asynchronous output mode  **/
   void SetAsync(Bool_t async = kTRUE) { fAsync = async; }
 
 
   /**   Run all events in input file  **/
-  void Run() { ExecRun(0, fRootManager->GetInChain()->GetEntries()); }
+  void Run() { ExecRun(0, fRootManager->GetInChain()->GetEntries() - 1); }
 
 
   /**   Run n events 
    **@param nEvents   Number of events to be processed  **/
-  void Run(Int_t nEvents) { ExecRun(0, nEvents); }
+  void Run(Int_t nEvents) { ExecRun(0, nEvents - 1); }
 
 
   /**   Run from event iStart to event iStop
    **@param iStart   Number of first event
    **@param iStop    Number of last event
    **/
-  void Run(Int_t iStart, Int_t iStop) { ExecRun(iStart-1, iStop); }
+  void Run(Int_t iStart, Int_t iStop) { ExecRun(iStart, iStop); }
 
 
 
  private:
+
+  Bool_t fAsync;       /** Flag for asynchronous output mode **/
+  Bool_t fMarkFill;    /** Flag for filling output tree at end of event **/
+  FairRunInfo fRunInfo;
+  // TODO: fRunInfo shadows FairRunAna::fRunInfo, because that obe is declared private.
+
 
   /**   Run execution
    **@param iStart  Number of first event
@@ -65,13 +71,16 @@ class CbmRunAna : public FairRunAna
   void ExecRun(Int_t iStart, Int_t iStop);
 
 
-  Bool_t fAsync;       /** Flag for asynchroneous output mode **/
-  Bool_t fMarkFill;    /** Flag for filling output tree at end of event
-			** Only relevant in asynchroneous mode **/
+  /** Fill output tree
+   **
+   ** FairRootManager::Fill() will be called in asynchronous mode only
+   ** when fMarkFill was set to kTRUE. In normal mode, it will be called
+   ** anyway.
+   **/
+  void Fill();
 
 
-
-  ClassDef(CbmRunAna,1);
+  ClassDef(CbmRunAna,2);
 
 };
 
