@@ -773,9 +773,9 @@ void CbmAnaConversion::Exec(Option_t*)
 		//if(stsMcTrackId != richMcTrackId) continue;
 		
 
-		int pdg = TMath::Abs(mcTrack1->GetPdgCode());
-		int motherId = mcTrack1->GetMotherId();
-		double momentum = mcTrack1->GetP();
+		//int pdg = TMath::Abs(mcTrack1->GetPdgCode());
+		//int motherId = mcTrack1->GetMotherId();
+		//double momentum = mcTrack1->GetP();
 		stsMatch->GetTrueOverAllHitsRatio();
 
 

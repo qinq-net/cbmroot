@@ -55,6 +55,7 @@ CbmAnaConversionKF::CbmAnaConversionKF()
    fGhostIds(),
    fHistoList_kfparticle(),
    particlevector(),
+   particleMatch(),
    electronIDs(),
    gammaIDs(),
    fhInvMassPi0WithFullReco(NULL),
@@ -63,6 +64,7 @@ CbmAnaConversionKF::CbmAnaConversionKF()
    fhKF_particlevector(NULL),
    fhKF_trackvector(NULL),
    fhKF_NofPi0(NULL),
+   fhKF_NofPi0_signal(NULL),
    fhKF_NofPi0_trackvector(NULL),
    fKF_photon_pairs(),
    fhKF_invmass_fullReco(NULL),
@@ -158,7 +160,7 @@ void CbmAnaConversionKF::Finish()
 	//gDirectory->cd("analysis-conversion");
 	gDirectory->mkdir("KF");
 	gDirectory->cd("KF");
-	for (Int_t i = 0; i < fHistoList_kfparticle.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_kfparticle.size(); i++){
 		fHistoList_kfparticle[i]->Write();
 	}
 	gDirectory->cd("..");
@@ -392,7 +394,7 @@ void CbmAnaConversionKF::test() {
 
 	vector< vector<int> > ids;
 	const vector<KFParticle>& particles = fKFparticle->GetTopoReconstructor()->GetParticles();
-	for(int iPart=0; iPart<fSignalIds.size(); iPart++)
+	for(unsigned int iPart=0; iPart<fSignalIds.size(); iPart++)
 	{
 		if(particles[fSignalIds[iPart]].GetPDG() != 111) continue;
 		//some cuts on pi0 if needed
@@ -414,7 +416,7 @@ void CbmAnaConversionKF::test() {
 
 	if(ids.size() > 0) {
 		cout << "NEW TEST: (sts ids) ";
-		for(int i=0; i<ids.size(); i++) {
+		for(unsigned int i=0; i<ids.size(); i++) {
 			for(int j=0; j<4; j++) {
 				cout << " " << ids[i][j];
 			}
@@ -425,7 +427,7 @@ void CbmAnaConversionKF::test() {
 
 	cout << "MC-pdgs: ";
 	CbmMCTrack* mcTracks[4];
-	for(int i=0; i<ids.size(); i++) {
+	for(unsigned int i=0; i<ids.size(); i++) {
 		for(int j=0; j<4; j++) {
 			CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(ids[i][j]);
 			if (stsTrack == NULL) return;

@@ -108,7 +108,7 @@ void CbmAnaConversionTest::Finish()
 	//gDirectory->cd("analysis-conversion");
 	gDirectory->mkdir("Test");
 	gDirectory->cd("Test");
-	for (Int_t i = 0; i < fHistoList_test.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_test.size(); i++){
 		fHistoList_test[i]->Write();
 	}
 	gDirectory->cd("..");
@@ -191,7 +191,7 @@ void CbmAnaConversionTest::GetNofRichElectrons()
 {
 
 		std::multimap<int,int> electronMap;
-		for(int i=0; i<fElectrons_pi0mcid.size(); i++) {
+		for(unsigned int i=0; i<fElectrons_pi0mcid.size(); i++) {
 			electronMap.insert ( std::pair<int,int>(fElectrons_pi0mcid[i], i) );
 		}
 

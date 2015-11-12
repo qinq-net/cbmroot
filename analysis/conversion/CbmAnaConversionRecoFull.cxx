@@ -507,13 +507,13 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fhPhotons_invmass_vs_pt_new[i] = new TH2D(Form("fhPhotons_invmass_vs_pt_new_%i",i), Form("fhPhotons_invmass_vs_pt_new_%i; invmass; pt",i), 600, -0.0025, 2.9975, 100, 0., 10.);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_vs_pt_new[i]);
 
-		fhPhotons_invmass_MCcut1_new[5] = new TH1D(Form("fhPhotons_invmass_MCcut1_new_%i",i), Form("fhPhotons_invmass_MCcut1_new_%i (MC-true cut: at least gamma correct reconstructed); invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhPhotons_invmass_MCcut1_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut1_new_%i",i), Form("fhPhotons_invmass_MCcut1_new_%i (MC-true cut: at least gamma correct reconstructed); invariant mass; #",i), 600, -0.0025, 2.9975);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut1_new[i]);
-		fhPhotons_invmass_MCcut2_new[5] = new TH1D(Form("fhPhotons_invmass_MCcut2_new_%i",i), Form("fhPhotons_invmass_MCcut2_new_%i (MC-true cut: gamma from same mother); invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhPhotons_invmass_MCcut2_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut2_new_%i",i), Form("fhPhotons_invmass_MCcut2_new_%i (MC-true cut: gamma from same mother); invariant mass; #",i), 600, -0.0025, 2.9975);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut2_new[i]);
-		fhPhotons_invmass_MCcut3_new[5] = new TH1D(Form("fhPhotons_invmass_MCcut3_new_%i",i), Form("fhPhotons_invmass_MCcut3_new_%i (MC-true cut: gamma from different mother); invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhPhotons_invmass_MCcut3_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut3_new_%i",i), Form("fhPhotons_invmass_MCcut3_new_%i (MC-true cut: gamma from different mother); invariant mass; #",i), 600, -0.0025, 2.9975);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut3_new[i]);
-		fhPhotons_invmass_MCcut4_new[5] = new TH1D(Form("fhPhotons_invmass_MCcut4_new_%i",i), Form("fhPhotons_invmass_MCcut4_new_%i (MC-true cut: wrong combination of electrons); invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhPhotons_invmass_MCcut4_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut4_new_%i",i), Form("fhPhotons_invmass_MCcut4_new_%i (MC-true cut: wrong combination of electrons); invariant mass; #",i), 600, -0.0025, 2.9975);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut4_new[i]);
 	}
 
@@ -527,8 +527,8 @@ void CbmAnaConversionRecoFull::Finish()
 	
 	gDirectory->mkdir("NoRefit-NoChicut");		// index 1
 	gDirectory->cd("NoRefit-NoChicut");
-	//for (Int_t i = 0; i < fHistoList_recofull_new[1].size(); i++){
-	for (UInt_t i = 0; i < fHistoList_recofull_1.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_recofull_new[1].size(); i++){
+	//for (UInt_t i = 0; i < fHistoList_recofull_1.size(); i++){
 		//fHistoList_recofull_1[i]->Write();
 		fHistoList_recofull_new[1][i]->Write();
 	}
@@ -536,8 +536,8 @@ void CbmAnaConversionRecoFull::Finish()
 	
 	gDirectory->mkdir("NoRefit-WithChicut");	// index 2
 	gDirectory->cd("NoRefit-WithChicut");
-	//for (Int_t i = 0; i < fHistoList_recofull_new[2].size(); i++){
-	for (UInt_t i = 0; i < fHistoList_recofull_2.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_recofull_new[2].size(); i++){
+	//for (UInt_t i = 0; i < fHistoList_recofull_2.size(); i++){
 		//fHistoList_recofull_2[i]->Write();
 		fHistoList_recofull_new[2][i]->Write();
 	}
@@ -545,8 +545,8 @@ void CbmAnaConversionRecoFull::Finish()
 	
 	gDirectory->mkdir("WithRefit-NoChicut");	// index 3
 	gDirectory->cd("WithRefit-NoChicut");
-	//for (Int_t i = 0; i < fHistoList_recofull_new[3].size(); i++){
-	for (UInt_t i = 0; i < fHistoList_recofull_3.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_recofull_new[3].size(); i++){
+	//for (UInt_t i = 0; i < fHistoList_recofull_3.size(); i++){
 		//fHistoList_recofull_3[i]->Write();
 		fHistoList_recofull_new[3][i]->Write();
 	}
@@ -554,8 +554,8 @@ void CbmAnaConversionRecoFull::Finish()
 	
 	gDirectory->mkdir("WithRefit-WithChicut");	// index 4
 	gDirectory->cd("WithRefit-WithChicut");
-	//for (Int_t i = 0; i < fHistoList_recofull_new[4].size(); i++){
-	for (UInt_t i = 0; i < fHistoList_recofull_4.size(); i++){
+	for (UInt_t i = 0; i < fHistoList_recofull_new[4].size(); i++){
+	//for (UInt_t i = 0; i < fHistoList_recofull_4.size(); i++){
 		//fHistoList_recofull_4[i]->Write();
 		fHistoList_recofull_new[4][i]->Write();
 	}
