@@ -41,7 +41,7 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fElectrons_same(),
 	fElectrons_nofPerPi0(NULL),
 	fElectrons_nofPerPi0_withRichInd(NULL),
-	fhElectrons_invmass(NULL)
+	fhElectronsTest_invmass(NULL)
 {
 }
 
@@ -92,8 +92,8 @@ void CbmAnaConversionTest::InitHistos()
 	fElectrons_nofPerPi0_withRichInd = new TH1I("fElectrons_nofPerPi0_withRichInd", "fElectrons_nofPerPi0_withRichInd; nof; #", 7, -0.5, 6.5);
 	fHistoList_test.push_back(fElectrons_nofPerPi0_withRichInd);
 
-	fhElectrons_invmass = new TH1D("fhElectrons_invmass", "fhElectrons_invmass; invariant mass; #", 600, -0.0025, 2.9975);
-	fHistoList_test.push_back(fhElectrons_invmass);
+	fhElectronsTest_invmass = new TH1D("fhElectronsTest_invmass", "fhElectronsTest_invmass; invariant mass; #", 600, -0.0025, 2.9975);
+	fHistoList_test.push_back(fhElectronsTest_invmass);
 
 }
 
@@ -214,7 +214,7 @@ void CbmAnaConversionTest::GetNofRichElectrons()
 						std::map<int,int>::iterator zwischen2 = zwischen--;
 						std::map<int,int>::iterator zwischen3 = zwischen2--;
 						Double_t invmass = CalcInvMass(it->second, zwischen->second, zwischen2->second, zwischen3->second);
-						if(invmass > 0) fhElectrons_invmass->Fill(invmass);
+						if(invmass > 0) fhElectronsTest_invmass->Fill(invmass);
 						if(nofRich == 4) {
 						
 						

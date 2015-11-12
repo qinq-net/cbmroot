@@ -246,6 +246,10 @@ private:
 	TH1D * fhPhotons_invmass_ptBin4_new[5];
 	TH1D * fhElectrons_invmass_new[5];
 	TH2D * fhPhotons_invmass_vs_pt_new[5];
+	TH1D * fhPhotons_invmass_MCcut1_new[5];
+	TH1D * fhPhotons_invmass_MCcut2_new[5];
+	TH1D * fhPhotons_invmass_MCcut3_new[5];
+	TH1D * fhPhotons_invmass_MCcut4_new[5];
 
 	// timer
 	TStopwatch timer;

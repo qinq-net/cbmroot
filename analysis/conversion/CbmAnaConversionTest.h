@@ -69,7 +69,7 @@ private:
 	TH1I *fElectrons_nofPerPi0;
 	TH1I *fElectrons_nofPerPi0_withRichInd;
 
-	TH1D *fhElectrons_invmass;
+	TH1D *fhElectronsTest_invmass;
 
 
 	CbmAnaConversionTest(const CbmAnaConversionTest&);

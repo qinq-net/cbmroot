@@ -87,6 +87,7 @@ public:
 	Double_t	Invmass_2gammas(const CbmMCTrack* gamma1, const CbmMCTrack* gamma2);
 	Double_t	Invmass_2particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2);
 	Double_t	Invmass_4particles(const CbmMCTrack* mctrack1, const CbmMCTrack* mctrack2, const CbmMCTrack* mctrack3, const CbmMCTrack* mctrack4);
+	Double_t	Invmass_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
 
 
 	void	CalculateInvMass_MC_2particles();
@@ -112,8 +113,11 @@ public:
    
 	void	SetKF(CbmKFParticleFinder* kfparticle, CbmKFParticleFinderQA* kfparticleQA);
 
-	void	AnalysePi0_MC(CbmMCTrack *mctrack, int i);
+	Bool_t	AnalysePi0_MC(CbmMCTrack *mctrack, int i);
 	void	AnalysePi0_Reco();
+	Bool_t	AnalysePi0_Reco_calc(int e1, int e2, int e3, int e4);
+	void	AnalysePi0_Reco_noRichInd();
+	Bool_t	AnalysePi0_Reco_noRichInd_calc(int e1, int e2, int e3, int e4);
 
 
 private:
@@ -130,8 +134,9 @@ private:
    TH1D * fhNofElAll;
    TH1D * fhElectronSources;
    TH1D * fhNofPi0_perEvent;		// number of pi0 per event
-   TH1D * fhNofPi0_perEvent_cut;	// number of pi0 with cut on z-axis (z <= 10cm, i.e. generated before 10cm)
+   TH1D * fhNofPi0_perEvent_cut;	// number of pi0 with cut on z-axis (z <= 4cm, i.e. generated before 4cm)
    TH1D * fhNofPi0_perEvent_cut2;	// number of pi0 with cut motherId = -1
+   TH1D * fhNofPi0_perEvent_cut3;	// number of pi0 with conversion of gammas happening before RICH
    TH1D * fhNofEta_perEvent;		// number of pi0 per event
    TH1D * fhNofEta_perEvent_cut;	// number of pi0 with cut on z-axis (z <= 10cm, i.e. generated before 10cm)
    TH1D * fhNofEta_perEvent_cut2;	// number of pi0 with cut motherId = -1
@@ -227,6 +232,15 @@ private:
    vector<Int_t>		fRecoTracklistEPEM_gtid; // GlobalTrack ID from fRecoTracklistEPEM
    
    vector<CbmMCTrack*>	fTestTracklist;
+   vector<TVector3>		fTestTracklist_momentum;
+   vector<float>		fTestTracklist_chi;
+   vector<int>			fTestTracklist_richInd;
+   
+   vector<CbmMCTrack*>	fTestTracklist_noRichInd;
+   vector<int>			fTestTracklist_noRichInd_MCindex;
+   vector<TVector3>		fTestTracklist_noRichInd_momentum;
+   vector<float>		fTestTracklist_noRichInd_chi;
+   vector<int>			fTestTracklist_noRichInd_richInd;
    
    vector<TVector3> fRecoMomentum;
    vector<TVector3> fRecoRefittedMomentum;
@@ -235,6 +249,24 @@ private:
 	TH1D * fhNofElectrons_4epem;
 	
 	TH1D * fhPi0_MC_occurence;
+	TH1D * fhPi0_MC_occurence2;
+	TH1D * fhPi0_Reco_occurence;
+	TH1D * fhPi0_Reco_occurence2;
+	TH1D * fhPi0_Reco_angles;
+	TH1D * fhPi0_Reco_chi;
+	TH1D * fhPi0_Reco_ndf;
+	TH2D * fhPi0_Reco_ndf_vs_chi;
+	TH2D * fhPi0_Reco_ndf_vs_startvertex;
+	TH2D * fhPi0_Reco_startvertex_vs_chi;
+	TH2D * fhPi0_Reco_startvertex_vs_nofhits;
+	TH1D * fhPi0_noRichInd_diffPhi;
+	TH1D * fhPi0_noRichInd_diffTheta;
+	TH2D * fhPi0_Reco_invmass_cases;
+	TH2D * fhPi0_Reco_noRichInd_invmass_cases;
+	TH1D * fhPi0_Reco_invmass;
+	TH1D * fhPi0_Reco_invmass_mc;
+	TH1D * fhPi0_Reco_noRichInd_invmass;
+	TH1D * fhPi0_Reco_noRichInd_invmass_mc;
    
    
    // timer

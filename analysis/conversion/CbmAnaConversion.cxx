@@ -41,6 +41,7 @@
 #include <boost/assign/list_of.hpp>
 #include "TRandom3.h"
 #include "TH1D.h"
+#include "TH2D.h"
 #include "TH1.h"
 #include "TH3.h"
 #include "TCanvas.h"
@@ -78,6 +79,7 @@ CbmAnaConversion::CbmAnaConversion()
     fhNofPi0_perEvent(NULL),
     fhNofPi0_perEvent_cut(NULL),
     fhNofPi0_perEvent_cut2(NULL),
+    fhNofPi0_perEvent_cut3(NULL),
     fhNofEta_perEvent(NULL),
     fhNofEta_perEvent_cut(NULL),
     fhNofEta_perEvent_cut2(NULL),
@@ -141,10 +143,36 @@ CbmAnaConversion::CbmAnaConversion()
     fRecoTracklistEPEM_chi(),
     fRecoTracklistEPEM_gtid(),
     fTestTracklist(),
+    fTestTracklist_momentum(),
+    fTestTracklist_chi(),
+    fTestTracklist_richInd(),
+    fTestTracklist_noRichInd(),
+    fTestTracklist_noRichInd_MCindex(),
+    fTestTracklist_noRichInd_momentum(),
+    fTestTracklist_noRichInd_chi(),
+    fTestTracklist_noRichInd_richInd(),
     fRecoMomentum(),
     fRecoRefittedMomentum(),
     fhNofElectrons_4epem(NULL),
     fhPi0_MC_occurence(NULL),
+    fhPi0_MC_occurence2(NULL),
+	fhPi0_Reco_occurence(NULL),
+	fhPi0_Reco_occurence2(NULL),
+	fhPi0_Reco_angles(NULL),
+	fhPi0_Reco_chi(NULL),
+	fhPi0_Reco_ndf(NULL),
+	fhPi0_Reco_ndf_vs_chi(NULL),
+	fhPi0_Reco_ndf_vs_startvertex(NULL),
+	fhPi0_Reco_startvertex_vs_chi(NULL),
+	fhPi0_Reco_startvertex_vs_nofhits(NULL),
+	fhPi0_noRichInd_diffPhi(NULL),
+	fhPi0_noRichInd_diffTheta(NULL),
+	fhPi0_Reco_invmass_cases(NULL),
+	fhPi0_Reco_noRichInd_invmass_cases(NULL),
+	fhPi0_Reco_invmass(NULL),
+	fhPi0_Reco_invmass_mc(NULL),
+	fhPi0_Reco_noRichInd_invmass(NULL),
+	fhPi0_Reco_noRichInd_invmass_mc(NULL),
     timer_all(),
     fTime_all(0.),
     timer_exec(),
@@ -268,6 +296,7 @@ void CbmAnaConversion::InitHistograms()
 	fhNofPi0_perEvent		= new TH1D("fhNofPi0_perEvent", "fhNofPi0_perEvent;Nof pi0;Entries", 1000., -0.5, 999.5);
 	fhNofPi0_perEvent_cut	= new TH1D("fhNofPi0_perEvent_cut", "fhNofPi0_perEvent_cut (Z<10cm);Nof pi0;Entries", 800., -0.5, 799.5);
 	fhNofPi0_perEvent_cut2	= new TH1D("fhNofPi0_perEvent_cut2", "fhNofPi0_perEvent_cut2 (motherId = -1);Nof pi0;Entries", 800., -0.5, 799.5);
+	fhNofPi0_perEvent_cut3	= new TH1D("fhNofPi0_perEvent_cut3", "fhNofPi0_perEvent_cut3 (conversion before 70cm);Nof pi0;Entries", 100., -0.5, 99.5);
 	fhNofEta_perEvent		= new TH1D("fhNofEta_perEvent", "fhNofEta_perEvent;Nof eta;Entries", 100., -0.5, 99.5);
 	fhNofEta_perEvent_cut	= new TH1D("fhNofEta_perEvent_cut", "fhNofEta_perEvent_cut (Z<4cm);Nof eta;Entries", 100., -0.5, 99.5);
 	fhNofEta_perEvent_cut2	= new TH1D("fhNofEta_perEvent_cut2", "fhNofEta_perEvent_cut2 (motherId = -1);Nof eta;Entries", 100., -0.5, 99.5);
@@ -281,6 +310,7 @@ void CbmAnaConversion::InitHistograms()
 	fHistoList.push_back(fhNofPi0_perEvent);
 	fHistoList.push_back(fhNofPi0_perEvent_cut);
 	fHistoList.push_back(fhNofPi0_perEvent_cut2);
+	fHistoList.push_back(fhNofPi0_perEvent_cut3);
 	fHistoList.push_back(fhNofEta_perEvent);
 	fHistoList.push_back(fhNofEta_perEvent_cut);
 	fHistoList.push_back(fhNofEta_perEvent_cut2);
@@ -348,19 +378,115 @@ void CbmAnaConversion::InitHistograms()
 	fhNofElectrons_4epem	= new TH1D("fhNofElectrons_4epem","fhNofElectrons_4epem;number of electrons per event;#", 101, -0.5, 100.5);
 	fHistoList.push_back(fhNofElectrons_4epem);
 
-	fhPi0_MC_occurence = new TH1D("fhPi0_MC_occurence", "fhPi0_MC_occurence;;#", 11, 0, 11);
+	fhPi0_MC_occurence = new TH1D("fhPi0_MC_occurence", "fhPi0_MC_occurence;;#", 20, 0, 20);
 	fHistoList.push_back(fhPi0_MC_occurence);
-	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(1, "all pi0 from target");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(1, "== -1: all pi0 from target");
 	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(2, "all pi0 -> gg");
 	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(3, "all g -> e+e-");
-	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(4, "both conv before rich");
-	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(5, "nothing");
-	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(6, "daughters == 0");
-	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(7, "daughters == 1");
-	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(8, "daughters == 2");
-	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(9, "daughters == 3");
-	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(10, "daughters == 4");
-	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(11, "daughters > 4");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(4, "both conv before 70cm");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(5, "both conv in target");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(6, "...");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(7, "!=1: all pi0 from target");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(8, "all pi0 -> gg");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(9, "all g -> e+e-");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(10, "both conv before 70cm");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(11, "both conv in target");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(12, "...");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(13, "daughters == 0");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(14, "daughters == 1");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(15, "daughters == 2");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(16, "daughters == 3");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(17, "daughters == 4");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(18, "daughters > 4");
+
+	fhPi0_MC_occurence2 = new TH1D("fhPi0_MC_occurence2", "fhPi0_MC_occurence2;;#", 20, 0, 20);
+	fHistoList.push_back(fhPi0_MC_occurence2);
+	fhPi0_MC_occurence2->GetXaxis()->SetBinLabel(1, "!= -1: all pi0 from target");
+	fhPi0_MC_occurence2->GetXaxis()->SetBinLabel(2, "all pi0 -> gg");
+	fhPi0_MC_occurence2->GetXaxis()->SetBinLabel(3, "all g -> e+e-");
+	fhPi0_MC_occurence2->GetXaxis()->SetBinLabel(4, "both conv before 70cm");
+	fhPi0_MC_occurence2->GetXaxis()->SetBinLabel(5, "both conv in target");
+	fhPi0_MC_occurence2->GetXaxis()->SetBinLabel(6, "...");
+
+	fhPi0_Reco_occurence = new TH1D("fhPi0_Reco_occurence", "fhPi0_Reco_occurence;;#", 16, 0, 16);
+	fHistoList.push_back(fhPi0_Reco_occurence);
+	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(1, "4 e from pi0 (not same)");
+	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(2, "test");
+	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(3, "x 1 e from same pi0");
+	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(4, "x 2 e from same pi0");
+	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(5, "x 3 e from same pi0");
+	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(6, "x 4 e from same pi0");
+	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(7, "x >4 e from same pi0");
+	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(8, "...");
+	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(9, "==4, within cuts");
+	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(10, "==4, chi-check");
+	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(11, "==4, chi+cuts");
+	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(12, "richInd: ==1");
+	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(13, "richInd: ==2");
+	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(14, "richInd: ==3");
+	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(15, "richInd: ==4");
+	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(16, "richInd: >4");
+
+	fhPi0_Reco_occurence2 = new TH1D("fhPi0_Reco_occurence2", "fhPi0_Reco_occurence2;;#", 15, 0, 15);
+	fHistoList.push_back(fhPi0_Reco_occurence2);
+	fhPi0_Reco_occurence2->GetXaxis()->SetBinLabel(1, "4 e from pi0 (not same)");
+	fhPi0_Reco_occurence2->GetXaxis()->SetBinLabel(2, "test");
+	fhPi0_Reco_occurence2->GetXaxis()->SetBinLabel(3, "x 1 e from same pi0");
+	fhPi0_Reco_occurence2->GetXaxis()->SetBinLabel(4, "x 2 e from same pi0");
+	fhPi0_Reco_occurence2->GetXaxis()->SetBinLabel(5, "x 3 e from same pi0");
+	fhPi0_Reco_occurence2->GetXaxis()->SetBinLabel(6, "x 4 e from same pi0");
+	fhPi0_Reco_occurence2->GetXaxis()->SetBinLabel(7, "x >4 e from same pi0");
+	fhPi0_Reco_occurence2->GetXaxis()->SetBinLabel(8, "...");
+	fhPi0_Reco_occurence2->GetXaxis()->SetBinLabel(9, "==4, within cuts");
+	fhPi0_Reco_occurence2->GetXaxis()->SetBinLabel(10, "==4, chi-check");
+	fhPi0_Reco_occurence2->GetXaxis()->SetBinLabel(11, "==4, chi+cuts");
+
+
+	fhPi0_Reco_angles = new TH1D("fhPi0_Reco_angles", "fhPi0_Reco_angles;angle;#", 500, 0, 50);
+	fHistoList.push_back(fhPi0_Reco_angles);
+	fhPi0_Reco_chi = new TH1D("fhPi0_Reco_chi", "fhPi0_Reco_chi;chi;#", 500, 0, 500);
+	fHistoList.push_back(fhPi0_Reco_chi);
+	fhPi0_Reco_ndf = new TH1D("fhPi0_Reco_ndf", "fhPi0_Reco_ndf;ndf;#", 500, 0, 50);
+	fHistoList.push_back(fhPi0_Reco_ndf);
+	fhPi0_Reco_ndf_vs_chi = new TH2D("fhPi0_Reco_ndf_vs_chi", "fhPi0_Reco_ndf_vs_chi;ndf;chi", 51, -0.5, 50.5, 500, 0, 50);
+	fHistoList.push_back(fhPi0_Reco_ndf_vs_chi);
+	fhPi0_Reco_ndf_vs_startvertex = new TH2D("fhPi0_Reco_ndf_vs_startvertex", "fhPi0_Reco_ndf_vs_startvertex;ndf;startvertex", 51, -0.5, 50.5, 101, -0.5, 100.5);
+	fHistoList.push_back(fhPi0_Reco_ndf_vs_startvertex);
+	fhPi0_Reco_startvertex_vs_chi = new TH2D("fhPi0_Reco_startvertex_vs_chi", "fhPi0_Reco_startvertex_vs_chi;startvertex;chi", 101, -0.5, 100.5, 100, 0, 100);
+	fHistoList.push_back(fhPi0_Reco_startvertex_vs_chi);
+	fhPi0_Reco_startvertex_vs_nofhits = new TH2D("fhPi0_Reco_startvertex_vs_nofhits", "fhPi0_Reco_startvertex_vs_nofhits;startvertex;nofhits", 101, -0.5, 100.5, 21, -0.5, 20.5);
+	fHistoList.push_back(fhPi0_Reco_startvertex_vs_nofhits);
+	fhPi0_noRichInd_diffPhi = new TH1D("fhPi0_noRichInd_diffPhi", "fhPi0_noRichInd_diffPhi;phi difference;#", 150, 0, 150);
+	fHistoList.push_back(fhPi0_noRichInd_diffPhi);
+	fhPi0_noRichInd_diffTheta = new TH1D("fhPi0_noRichInd_diffTheta", "fhPi0_noRichInd_diffTheta;theta difference;#", 150, 0, 150);
+	fHistoList.push_back(fhPi0_noRichInd_diffTheta);
+	
+	fhPi0_Reco_invmass_cases = new TH2D("fhPi0_Reco_invmass_cases", "fhPi0_Reco_invmass_cases;cases;invmass [GeV]", 6, 0, 6, 300, 0, 3);
+	fHistoList.push_back(fhPi0_Reco_invmass_cases);
+	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(1, "..");
+	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(2, "no cuts");
+	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(3, "only chi");
+	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(4, "only cuts");
+	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(5, "both");
+	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(6, "mc-true");
+	fhPi0_Reco_noRichInd_invmass_cases = new TH2D("fhPi0_Reco_noRichInd_invmass_cases", "fhPi0_Reco_noRichInd_invmass_cases;cases;invmass [GeV]", 6, 0, 6, 300, 0, 3);
+	fHistoList.push_back(fhPi0_Reco_noRichInd_invmass_cases);
+	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(1, "..");
+	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(2, "no cuts");
+	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(3, "only chi");
+	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(4, "only cuts");
+	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(5, "both");
+	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(6, "mc-true");
+	
+	fhPi0_Reco_invmass = new TH1D("fhPi0_Reco_invmass", "fhPi0_Reco_invmass;invmass [GeV];#", 300, 0, 3);
+	fHistoList.push_back(fhPi0_Reco_invmass);
+	fhPi0_Reco_invmass_mc = new TH1D("fhPi0_Reco_invmass_mc", "fhPi0_Reco_invmass_mc;invmass_mc [GeV];#", 300, 0, 3);
+	fHistoList.push_back(fhPi0_Reco_invmass_mc);
+	fhPi0_Reco_noRichInd_invmass = new TH1D("fhPi0_Reco_noRichInd_invmass", "fhPi0_Reco_noRichInd_invmass;invmass_noRichInd [GeV];#", 300, 0, 3);
+	fHistoList.push_back(fhPi0_Reco_noRichInd_invmass);
+	fhPi0_Reco_noRichInd_invmass_mc = new TH1D("fhPi0_Reco_noRichInd_invmass_mc", "fhPi0_Reco_noRichInd_invmass_mc;invmass_noRichInd_mc [GeV];#", 300, 0, 3);
+	fHistoList.push_back(fhPi0_Reco_noRichInd_invmass_mc);
+	
 }
 
 
@@ -394,6 +520,15 @@ void CbmAnaConversion::Exec(Option_t*)
 	fRecoRefittedMomentum.clear();
 
 	fTestTracklist.clear();
+	fTestTracklist_momentum.clear();
+	fTestTracklist_chi.clear();
+	fTestTracklist_richInd.clear();
+   
+	fTestTracklist_noRichInd.clear();
+	fTestTracklist_noRichInd_MCindex.clear();
+	fTestTracklist_noRichInd_momentum.clear();
+	fTestTracklist_noRichInd_chi.clear();
+	fTestTracklist_noRichInd_richInd.clear();
 
 	// several counters
 	int countPrimEl = 0;
@@ -405,6 +540,7 @@ void CbmAnaConversion::Exec(Option_t*)
 	int countPi0MC = 0; 
 	int countPi0MC_cut = 0;
 	int countPi0MC_fromPrimary = 0;
+	int countPi0MC_reconstructible = 0;
 	int countEtaMC = 0;
 	int countEtaMC_cut = 0;
 	int countEtaMC_fromPrimary = 0;
@@ -482,7 +618,8 @@ void CbmAnaConversion::Exec(Option_t*)
 				fhPi0_z_cut->Fill(v.Z());
 			}
 			
-			AnalysePi0_MC(mctrack, i);
+			Bool_t reconstructible = AnalysePi0_MC(mctrack, i);
+			if(reconstructible) countPi0MC_reconstructible++;
 		}
 
 
@@ -505,12 +642,14 @@ void CbmAnaConversion::Exec(Option_t*)
 		}
 
 	}
+	
 
 	cout << "CbmAnaConversion::Exec - Number of pi0 in MC sample: " << countPi0MC << endl;
 	cout << "CbmAnaConversion::Exec - Number of pi0 from primary: " << countPi0MC_fromPrimary << endl;
 	fhNofPi0_perEvent->Fill(countPi0MC);
 	fhNofPi0_perEvent_cut->Fill(countPi0MC_cut);
 	fhNofPi0_perEvent_cut2->Fill(countPi0MC_fromPrimary);
+	fhNofPi0_perEvent_cut3->Fill(countPi0MC_reconstructible);
 	fhNofEta_perEvent->Fill(countEtaMC);
 	fhNofEta_perEvent_cut->Fill(countEtaMC_cut);
 	fhNofEta_perEvent_cut2->Fill(countEtaMC_fromPrimary);
@@ -567,7 +706,61 @@ void CbmAnaConversion::Exec(Option_t*)
 		if (stsMcTrackId < 0) continue;
 		CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId);
 		if (mcTrack1 == NULL) continue;
-		
+
+
+
+		// calculate refitted momenta at primary vertex
+		TVector3 refittedMomentum;
+		CbmL1PFFitter fPFFitter;
+		vector<CbmStsTrack> stsTracks;
+		stsTracks.resize(1);
+		stsTracks[0] = *stsTrack;
+		vector<L1FieldRegion> vField;
+		vector<float> chiPrim;
+		fPFFitter.GetChiToVertex(stsTracks, vField, chiPrim, fKFVertex, 3e6);
+		//cand.chi2sts = stsTracks[0].GetChiSq() / stsTracks[0].GetNDF();
+		//cand.chi2Prim = chiPrim[0];
+		const FairTrackParam* vtxTrack = stsTracks[0].GetParamFirst();
+		vtxTrack->Momentum(refittedMomentum);
+		float result_chi = chiPrim[0];
+
+
+
+		// Doing refit of momenta with electron assumption
+		CbmL1PFFitter fPFFitter_electron;
+		vector<CbmStsTrack> stsTracks_electron;
+		stsTracks_electron.resize(1);
+		stsTracks_electron[0] = *stsTrack;
+		vector<L1FieldRegion> vField_electron;
+		vector<float> chiPrim_electron;
+		vector<int> pidHypo_electron;
+		pidHypo_electron.push_back(11);
+		fPFFitter_electron.Fit(stsTracks_electron, pidHypo_electron); 
+		fPFFitter_electron.GetChiToVertex(stsTracks_electron, vField_electron, chiPrim_electron, fKFVertex, 3e6);
+
+		TVector3 refittedMomentum_electron;
+		const FairTrackParam* vtxTrack_electron = stsTracks_electron[0].GetParamFirst();
+		vtxTrack_electron->Momentum(refittedMomentum_electron);
+		float result_chi_electron = chiPrim_electron[0];
+		float result_ndf_electron = stsTracks_electron[0].GetNDF();
+		Double_t startvertexZ = vtxTrack_electron->GetZ();
+		fhPi0_Reco_ndf->Fill(result_ndf_electron);
+		fhPi0_Reco_chi->Fill(result_chi_electron);
+		fhPi0_Reco_ndf_vs_chi->Fill(result_ndf_electron, result_chi_electron);
+		fhPi0_Reco_ndf_vs_startvertex->Fill(result_ndf_electron, startvertexZ);
+		fhPi0_Reco_startvertex_vs_chi->Fill(startvertexZ, result_chi_electron);
+
+		Double_t nofhits_sts = stsTrack->GetNofHits();
+		fhPi0_Reco_startvertex_vs_nofhits->Fill(startvertexZ, nofhits_sts);
+
+
+		fTestTracklist_noRichInd.push_back(mcTrack1);
+		fTestTracklist_noRichInd_MCindex.push_back(stsMcTrackId);
+		fTestTracklist_noRichInd_momentum.push_back(refittedMomentum_electron);
+		fTestTracklist_noRichInd_chi.push_back(result_chi_electron);
+		fTestTracklist_noRichInd_richInd.push_back(richInd);
+
+
 		
 		if (richInd < 0) continue;
 		CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(richInd);
@@ -579,9 +772,10 @@ void CbmAnaConversion::Exec(Option_t*)
 
 		//if(stsMcTrackId != richMcTrackId) continue;
 		
-//		int pdg = TMath::Abs(mcTrack1->GetPdgCode());
-//		int motherId = mcTrack1->GetMotherId();
-//		double momentum = mcTrack1->GetP();
+
+		int pdg = TMath::Abs(mcTrack1->GetPdgCode());
+		int motherId = mcTrack1->GetMotherId();
+		double momentum = mcTrack1->GetP();
 		stsMatch->GetTrueOverAllHitsRatio();
 
 
@@ -590,7 +784,7 @@ void CbmAnaConversion::Exec(Option_t*)
 			fAnaTomography->TomographyReco(mcTrack1);
 		}
 		FillRecoTracklist(mcTrack1);
-		fTestTracklist.push_back(mcTrack1);
+		
        
 		TVector3 stsMomentumVec;	// momenta as measured by STS
 		stsTrack->GetParamFirst()->Momentum(stsMomentumVec);
@@ -608,28 +802,24 @@ void CbmAnaConversion::Exec(Option_t*)
 		bothtogether.SetZ(stsMomentumVec.Z());
        
 
-		// calculate refitted momenta at primary vertex
-		TVector3 refittedMomentum;
-		CbmL1PFFitter fPFFitter;
-		vector<CbmStsTrack> stsTracks;
-		stsTracks.resize(1);
-		stsTracks[0] = *stsTrack;
-		vector<L1FieldRegion> vField;
-		vector<float> chiPrim;
-		fPFFitter.GetChiToVertex(stsTracks, vField, chiPrim, fKFVertex, 3e6);
-		//cand.chi2sts = stsTracks[0].GetChiSq() / stsTracks[0].GetNDF();
-		//cand.chi2Prim = chiPrim[0];
-		const FairTrackParam* vtxTrack = stsTracks[0].GetParamFirst();
-		vtxTrack->Momentum(refittedMomentum);
-		
-		float result_chi = chiPrim[0];
        
+
 		// Fill tracklists containing momenta from mc-true, measured in sts, refitted at primary
 		Bool_t isFilled = FillRecoTracklistEPEM(mcTrack1, stsMomentumVec, refittedMomentum, stsMcTrackId, result_chi, i);
 		if (isFilled) nofElectrons4epem++;
+
+
+		fTestTracklist.push_back(mcTrack1);
+		fTestTracklist_momentum.push_back(refittedMomentum_electron);
+		fTestTracklist_chi.push_back(result_chi_electron);
+		fTestTracklist_richInd.push_back(richInd);
+
+
 	}
 	
 	AnalysePi0_Reco();
+	AnalysePi0_Reco_noRichInd();
+
 
 	fhNofElectrons_4epem->Fill(nofElectrons4epem);
 
@@ -714,6 +904,8 @@ void CbmAnaConversion::Finish()
 	cout << "Complete time: " << fTime_all << endl;
 	cout << "Exec time: " << fTime_exec << endl;
 	cout << "MC time: " << fTime_mc << "\t RECO time: " << fTime_rec << endl;
+	cout << "############### ############## ###############" << endl;
+	cout << "Number of events in fhNofPi0_perEvent histogram: " << fhNofPi0_perEvent->GetEntries() << endl;
 	cout << "############### ############## ###############" << endl;
 // =========================================================================================================================
 // ============================================== END - FINISH function ====================================================
@@ -892,6 +1084,28 @@ Double_t CbmAnaConversion::Invmass_4particles(const CbmMCTrack* mctrack1, const 
     TLorentzVector sum;
     sum = lorVec1 + lorVec2 + lorVec3 + lorVec4;
     cout << "mc: \t" << sum.Px() << " / " << sum.Py() << " / " << sum.Pz() << " / " << sum.E() << "\t => mag = " << sum.Mag() << endl;
+	return sum.Mag();
+}
+
+
+Double_t CbmAnaConversion::Invmass_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4)
+// calculation of invariant mass from four electrons/positrons
+{
+    Double_t energy1 = TMath::Sqrt(part1.Mag2() + M2E);
+    TLorentzVector lorVec1(part1, energy1);
+
+    Double_t energy2 = TMath::Sqrt(part2.Mag2() + M2E);
+    TLorentzVector lorVec2(part2, energy2);
+
+    Double_t energy3 = TMath::Sqrt(part3.Mag2() + M2E);
+    TLorentzVector lorVec3(part3, energy3);
+
+    Double_t energy4 = TMath::Sqrt(part4.Mag2() + M2E);
+    TLorentzVector lorVec4(part4, energy4);
+    
+    TLorentzVector sum;
+    sum = lorVec1 + lorVec2 + lorVec3 + lorVec4;    
+
 	return sum.Mag();
 }
 
@@ -1249,8 +1463,9 @@ void CbmAnaConversion::SetKF(CbmKFParticleFinder* kfparticle, CbmKFParticleFinde
 
 
 
-void CbmAnaConversion::AnalysePi0_MC(CbmMCTrack *mctrack, int trackid)
+Bool_t CbmAnaConversion::AnalysePi0_MC(CbmMCTrack *mctrack, int trackid)
 {
+	Bool_t reconstructible = false;
 	if(mctrack->GetMotherId() == -1) {
 		fhPi0_MC_occurence->Fill(0);
 		
@@ -1258,6 +1473,7 @@ void CbmAnaConversion::AnalysePi0_MC(CbmMCTrack *mctrack, int trackid)
 		Int_t gammaDaughters = 0; 
 		Int_t electronDaughters = 0;
 		Int_t electronDaughtersBeforeRICH = 0;
+		Int_t electronDaughtersInTarget = 0;
 		vector<int> gammaDaughterIDs;
 		gammaDaughterIDs.clear();
 		vector<int> electronDaughterIDs;
@@ -1279,12 +1495,12 @@ void CbmAnaConversion::AnalysePi0_MC(CbmMCTrack *mctrack, int trackid)
 		}
 		
 		
-		if(daughters == 0) fhPi0_MC_occurence->Fill(5);
-		if(daughters == 1) fhPi0_MC_occurence->Fill(6);
-		if(daughters == 2) fhPi0_MC_occurence->Fill(7);
-		if(daughters == 3) fhPi0_MC_occurence->Fill(8);
-		if(daughters == 4) fhPi0_MC_occurence->Fill(9);
-		if(daughters > 4) fhPi0_MC_occurence->Fill(10);
+		if(daughters == 0) fhPi0_MC_occurence->Fill(12);
+		if(daughters == 1) fhPi0_MC_occurence->Fill(13);
+		if(daughters == 2) fhPi0_MC_occurence->Fill(14);
+		if(daughters == 3) fhPi0_MC_occurence->Fill(15);
+		if(daughters == 4) fhPi0_MC_occurence->Fill(16);
+		if(daughters > 4) fhPi0_MC_occurence->Fill(17);
 		
 		
 		if(gammaDaughters == 2) {
@@ -1301,8 +1517,11 @@ void CbmAnaConversion::AnalysePi0_MC(CbmMCTrack *mctrack, int trackid)
 					
 					TVector3 startvertex;
 					mctrack_switch->GetStartVertex(startvertex);
-					if(startvertex.Z() < 70) {
+					if(startvertex.Z() <= 70) {
 						electronDaughtersBeforeRICH++;
+					}
+					if(startvertex.Z() <= 4) {
+						electronDaughtersInTarget++;
 					}
 				}
 			}
@@ -1312,9 +1531,75 @@ void CbmAnaConversion::AnalysePi0_MC(CbmMCTrack *mctrack, int trackid)
 			}
 			if(electronDaughtersBeforeRICH == 4) {
 				fhPi0_MC_occurence->Fill(3);
+				reconstructible = true;
+			}
+			if(electronDaughtersInTarget == 4) {
+				fhPi0_MC_occurence->Fill(4);
 			}
 		}
 	}
+	else {
+		fhPi0_MC_occurence2->Fill(0);
+		Int_t daughters = 0;
+		Int_t gammaDaughters = 0; 
+		Int_t electronDaughters = 0;
+		Int_t electronDaughtersBeforeRICH = 0;
+		Int_t electronDaughtersInTarget = 0;
+		vector<int> gammaDaughterIDs;
+		gammaDaughterIDs.clear();
+		vector<int> electronDaughterIDs;
+		electronDaughterIDs.clear();
+		
+		Int_t nofMcTracks = fMcTracks->GetEntriesFast();
+		for (int i = 0; i < nofMcTracks; i++) {
+			CbmMCTrack* mctrack_switch = (CbmMCTrack*)fMcTracks->At(i);
+			if (mctrack_switch == NULL) continue;
+			Int_t motherID = mctrack_switch->GetMotherId();  
+			Int_t pdg = mctrack_switch->GetPdgCode(); 
+			if(motherID == trackid && pdg == 22) {
+				gammaDaughters++;
+				gammaDaughterIDs.push_back(i);
+			}
+			if(motherID == trackid) {
+				daughters++;
+			}
+		}
+		
+		if(gammaDaughters == 2) {
+			fhPi0_MC_occurence2->Fill(1);
+			for (int i = 0; i < nofMcTracks; i++) {
+				CbmMCTrack* mctrack_switch = (CbmMCTrack*)fMcTracks->At(i);
+				if (mctrack_switch == NULL) continue;
+				Int_t motherID = mctrack_switch->GetMotherId();  
+				Int_t pdg = mctrack_switch->GetPdgCode();
+				if(TMath::Abs(pdg) == 11 && (motherID == gammaDaughterIDs[0] || motherID == gammaDaughterIDs[1]) ) {
+					electronDaughters++;
+					electronDaughterIDs.push_back(i);
+					
+					TVector3 startvertex;
+					mctrack_switch->GetStartVertex(startvertex);
+					if(startvertex.Z() <= 70) {
+						electronDaughtersBeforeRICH++;
+					}
+					if(startvertex.Z() <= 4) {
+						electronDaughtersInTarget++;
+					}
+				}
+			}
+			if(electronDaughters == 4) {
+				fhPi0_MC_occurence2->Fill(2);
+			}
+			if(electronDaughtersBeforeRICH == 4) {
+				fhPi0_MC_occurence2->Fill(3);
+			}
+			if(electronDaughtersInTarget == 4) {
+				fhPi0_MC_occurence2->Fill(4);
+			}
+		}
+	
+	}
+
+	return reconstructible;
 }
 
 
@@ -1322,15 +1607,448 @@ void CbmAnaConversion::AnalysePi0_MC(CbmMCTrack *mctrack, int trackid)
 
 void CbmAnaConversion::AnalysePi0_Reco()
 {
-//	Int_t electrons = 0;
+	Int_t electrons = 0;
+	std::multimap<int,int> electronPi0ID_map;	// contains all IDs of pi0, from which an electron has been detected
+	std::multimap<int,int> electronPi0ID_map_richInd;
 
 	Int_t nof = fTestTracklist.size();
 	for(int i=0; i<nof; i++) {
-//		Int_t motherID = fTestTracklist[i]->GetMotherId();
-//		Int_t pdg = fTestTracklist[i]->GetPdgCode();
+		Int_t motherID = fTestTracklist[i]->GetMotherId();
+		Int_t pdg = fTestTracklist[i]->GetPdgCode();
+		
+		if(TMath::Abs(pdg) == 11 && motherID != -1) {
+			CbmMCTrack* mctrack_mother = (CbmMCTrack*)fMcTracks->At(motherID);
+			if (mctrack_mother == NULL) continue;
+			Int_t grandmotherID = mctrack_mother->GetMotherId();
+			Int_t motherPdg = mctrack_mother->GetPdgCode();
+			
+			if(motherPdg == 22 && grandmotherID !=-1) {
+				CbmMCTrack* mctrack_grandmother = (CbmMCTrack*)fMcTracks->At(grandmotherID);
+				if (mctrack_grandmother == NULL) continue;
+				Int_t grandmotherPdg = mctrack_grandmother->GetPdgCode();
+				
+				if(grandmotherPdg == 111) {
+					electrons++;
+					electronPi0ID_map.insert ( std::pair<int,int>(grandmotherID, i) );
+					if(fTestTracklist_richInd[i] >= 0) {
+						electronPi0ID_map_richInd.insert ( std::pair<int,int>(grandmotherID, i) );
+					}
+				}
+			}
+		}
+	}
+	
+	if(electrons >= 4) { // at least 4 electrons from pi0 (NOT from the same one) have been detected
+		fhPi0_Reco_occurence->Fill(0);
+	}
+
+
+
+	int samePi0counter = 0;
+	int check = 0;
+	for(std::map<int,int>::iterator it=electronPi0ID_map.begin(); it!=electronPi0ID_map.end(); ++it) {
+		if(it == electronPi0ID_map.begin()) check = 1;
+		if(it != electronPi0ID_map.begin()) {
+			std::map<int,int>::iterator zwischen = it;
+			zwischen--;
+			int id = it->first;
+			int id_old = zwischen->first;
+			if(id == id_old) {
+				check++;
+				if(check > 3) {
+					fhPi0_Reco_occurence->Fill(1);
+					samePi0counter++;
+				}
+			}
+			else {
+				if(check == 1) fhPi0_Reco_occurence->Fill(2);
+				if(check == 2) fhPi0_Reco_occurence->Fill(3);
+				if(check == 3) fhPi0_Reco_occurence->Fill(4);
+				if(check == 4) fhPi0_Reco_occurence->Fill(5);
+				if(check > 4) fhPi0_Reco_occurence->Fill(6);
+				
+				if(check == 4) {
+					std::map<int,int>::iterator alt3 = zwischen;
+					alt3--;
+					std::map<int,int>::iterator alt4 = alt3;
+					alt4--;
+					std::map<int,int>::iterator alt5 = alt4;
+					alt5--;
+					cout << "CbmAnaConversion: AnalysePi0_Reco: " << alt5->first << "/" << zwischen->first << "/" << alt3->first << "/" << alt4->first << endl;
+					cout << "CbmAnaConversion: AnalysePi0_Reco: " << alt5->second << "/" << zwischen->second << "/" << alt3->second << "/" << alt4->second << endl;
+					Bool_t IsWithinCuts = AnalysePi0_Reco_calc(alt5->second, zwischen->second, alt3->second, alt4->second);
+					
+					Double_t chi_e1 = fTestTracklist_chi[alt5->second];
+					Double_t chi_e2 = fTestTracklist_chi[zwischen->second];
+					Double_t chi_e3 = fTestTracklist_chi[alt3->second];
+					Double_t chi_e4 = fTestTracklist_chi[alt4->second];
+
+
+					Double_t invmass = Invmass_4particlesRECO(fTestTracklist_momentum[alt5->second], fTestTracklist_momentum[zwischen->second], fTestTracklist_momentum[alt3->second], fTestTracklist_momentum[alt4->second]);
+					fhPi0_Reco_invmass->Fill(invmass);
+					fhPi0_Reco_invmass_cases->Fill(1, invmass);
+					Double_t invmass_mc = Invmass_4particles(fTestTracklist[alt5->second], fTestTracklist[zwischen->second], fTestTracklist[alt3->second], fTestTracklist[alt4->second]);
+					fhPi0_Reco_invmass_mc->Fill(invmass_mc);
+					fhPi0_Reco_invmass_cases->Fill(5, invmass_mc);
+
+
+					if(chi_e1 <= 3 && chi_e2 <= 3 && chi_e3 <= 3 && chi_e4 <= 3) {
+						fhPi0_Reco_occurence->Fill(9);
+						fhPi0_Reco_invmass_cases->Fill(2, invmass);
+						if(IsWithinCuts) {
+							fhPi0_Reco_occurence->Fill(10);
+							fhPi0_Reco_invmass_cases->Fill(4, invmass);
+						}
+					}
+					if(IsWithinCuts) fhPi0_Reco_invmass_cases->Fill(3, invmass);
+	
+					fhPi0_Reco_chi->Fill(chi_e1);
+					fhPi0_Reco_chi->Fill(chi_e2);
+					fhPi0_Reco_chi->Fill(chi_e3);
+					fhPi0_Reco_chi->Fill(chi_e4);
+					
+				}
+				
+				check=1;
+			}
+		}
+	}
+
+	if(samePi0counter >= 4) {
+		//fhPi0_MC_occurence->Fill(13);
+	
+	}
+
+
+
+	int samePi0counter2 = 0;
+	int check2 = 0;
+	cout << "CbmAnaConversion: RecoPi0: electronmapsize: " << electronPi0ID_map_richInd.size() << endl;
+	for(std::map<int,int>::iterator it=electronPi0ID_map_richInd.begin(); it!=electronPi0ID_map_richInd.end(); ++it) {
+		if(it == electronPi0ID_map_richInd.begin()) check = 1;
+		if(it != electronPi0ID_map_richInd.begin()) {
+			std::map<int,int>::iterator zwischen = it;
+			zwischen--;
+			int id = it->first;
+			int id_old = zwischen->first;
+			if(id == id_old) {
+				check2++;
+				if(check2 > 3) {
+					//fhPi0_Reco_occurence->Fill(1);
+					samePi0counter2++;
+				}
+			}
+			else {
+				if(check2 == 1) fhPi0_Reco_occurence->Fill(11);
+				if(check2 == 2) fhPi0_Reco_occurence->Fill(12);
+				if(check2 == 3) fhPi0_Reco_occurence->Fill(13);
+				if(check2 == 4) fhPi0_Reco_occurence->Fill(14);
+				if(check2 > 4) fhPi0_Reco_occurence->Fill(15);
+				/*
+				if(check == 4) {
+					std::map<int,int>::iterator alt3 = zwischen;
+					alt3--;
+					std::map<int,int>::iterator alt4 = alt3;
+					alt4--;
+					std::map<int,int>::iterator alt5 = alt4;
+					alt5--;
+					cout << "CbmAnaConversion: AnalysePi0_Reco: " << alt5->first << "/" << zwischen->first << "/" << alt3->first << "/" << alt4->first << endl;
+					cout << "CbmAnaConversion: AnalysePi0_Reco: " << alt5->second << "/" << zwischen->second << "/" << alt3->second << "/" << alt4->second << endl;
+					AnalysePi0_Reco_calc(alt5->second, zwischen->second, alt3->second, alt4->second);
+				
+				}
+				*/
+				check2=1;
+			}
+		}
+	}
+
+}
+
+
+
+Bool_t CbmAnaConversion::AnalysePi0_Reco_calc(int e1, int e2, int e3, int e4)
+{
+	CbmMCTrack* mctrack_e1 = fTestTracklist[e1];
+	CbmMCTrack* mctrack_e2 = fTestTracklist[e2];
+	CbmMCTrack* mctrack_e3 = fTestTracklist[e3];
+	CbmMCTrack* mctrack_e4 = fTestTracklist[e4];
+
+	Int_t motherID_e1 = mctrack_e1->GetMotherId();
+	Int_t motherID_e2 = mctrack_e2->GetMotherId();
+	Int_t motherID_e3 = mctrack_e3->GetMotherId();
+	Int_t motherID_e4 = mctrack_e4->GetMotherId();
+
+
+	Double_t energy1 = TMath::Sqrt(fTestTracklist_momentum[e1].Mag2() + M2E);
+	TLorentzVector lorVec1(fTestTracklist_momentum[e1], energy1);
+
+	Double_t energy2 = TMath::Sqrt(fTestTracklist_momentum[e2].Mag2() + M2E);
+	TLorentzVector lorVec2(fTestTracklist_momentum[e2], energy2);
+
+	Double_t energy3 = TMath::Sqrt(fTestTracklist_momentum[e3].Mag2() + M2E);
+	TLorentzVector lorVec3(fTestTracklist_momentum[e3], energy3);
+
+	Double_t energy4 = TMath::Sqrt(fTestTracklist_momentum[e4].Mag2() + M2E);
+	TLorentzVector lorVec4(fTestTracklist_momentum[e4], energy4);
+
+
+	Bool_t IsWithinCuts = false;
+	Double_t OpeningAngleCut = 1.5;
+
+	if(motherID_e1 == motherID_e2 && motherID_e3 == motherID_e4) {
+		Double_t anglePair1 = lorVec1.Angle(lorVec2.Vect());
+		Double_t theta1 = 180.*anglePair1/TMath::Pi();
+		
+		Double_t anglePair2 = lorVec3.Angle(lorVec4.Vect());
+		Double_t theta2 = 180.*anglePair2/TMath::Pi();
+
+		if(theta1 <= OpeningAngleCut && theta2 <= OpeningAngleCut) IsWithinCuts = true;
+		fhPi0_Reco_angles->Fill(theta1);
+		fhPi0_Reco_angles->Fill(theta2);
+		cout << "CbmAnaConversion: AnalysePi0_Reco_calc: " << theta1 << "/" << theta2 << endl; 
+	}
+
+	if(motherID_e1 == motherID_e3 && motherID_e2 == motherID_e4) {
+		Double_t anglePair1 = lorVec1.Angle(lorVec3.Vect());
+		Double_t theta1 = 180.*anglePair1/TMath::Pi();
+		
+		Double_t anglePair2 = lorVec2.Angle(lorVec4.Vect());
+		Double_t theta2 = 180.*anglePair2/TMath::Pi();
+
+		if(theta1 <= OpeningAngleCut && theta2 <= OpeningAngleCut) IsWithinCuts = true;
+		fhPi0_Reco_angles->Fill(theta1);
+		fhPi0_Reco_angles->Fill(theta2);
+		cout << "CbmAnaConversion: AnalysePi0_Reco_calc: " << theta1 << "/" << theta2 << endl;
+	}
+
+	if(motherID_e1 == motherID_e4 && motherID_e2 == motherID_e3) {
+		Double_t anglePair1 = lorVec1.Angle(lorVec4.Vect());
+		Double_t theta1 = 180.*anglePair1/TMath::Pi();
+		
+		Double_t anglePair2 = lorVec2.Angle(lorVec3.Vect());
+		Double_t theta2 = 180.*anglePair2/TMath::Pi();
+
+		if(theta1 <= OpeningAngleCut && theta2 <= OpeningAngleCut) IsWithinCuts = true;
+		fhPi0_Reco_angles->Fill(theta1);
+		fhPi0_Reco_angles->Fill(theta2);
+		cout << "CbmAnaConversion: AnalysePi0_Reco_calc: " << theta1 << "/" << theta2 << endl;
+	}
+
+	if(IsWithinCuts == true) {
+		fhPi0_Reco_occurence->Fill(8);
+	}
+
+	return IsWithinCuts;
+}
+
+
+
+
+
+void CbmAnaConversion::AnalysePi0_Reco_noRichInd()
+{
+	Int_t electrons = 0;
+	std::multimap<int,int> electronPi0ID_map;	// contains all IDs of pi0, from which an electron has been detected
+
+	Int_t nof = fTestTracklist_noRichInd.size();
+	for(int i=0; i<nof; i++) {
+		Int_t motherID = fTestTracklist_noRichInd[i]->GetMotherId();
+		Int_t pdg = fTestTracklist_noRichInd[i]->GetPdgCode();
+		
+		if(TMath::Abs(pdg) == 11 && motherID != -1) {
+			CbmMCTrack* mctrack_mother = (CbmMCTrack*)fMcTracks->At(motherID);
+			if (mctrack_mother == NULL) continue;
+			Int_t grandmotherID = mctrack_mother->GetMotherId();
+			Int_t motherPdg = mctrack_mother->GetPdgCode();
+			
+			if(motherPdg == 22 && grandmotherID !=-1) {
+				CbmMCTrack* mctrack_grandmother = (CbmMCTrack*)fMcTracks->At(grandmotherID);
+				if (mctrack_grandmother == NULL) continue;
+				Int_t grandmotherPdg = mctrack_grandmother->GetPdgCode();
+				
+				if(grandmotherPdg == 111) {
+					electrons++;
+					electronPi0ID_map.insert ( std::pair<int,int>(grandmotherID, i) );
+				}
+			}
+		}
+	}
+	
+	if(electrons >= 4) { // at least 4 electrons from pi0 (NOT from the same one) have been detected
+		fhPi0_Reco_occurence2->Fill(0);
+	}
+
+
+
+	int samePi0counter = 0;
+	int check = 0;
+	for(std::map<int,int>::iterator it=electronPi0ID_map.begin(); it!=electronPi0ID_map.end(); ++it) {
+		if(it == electronPi0ID_map.begin()) check = 1;
+		if(it != electronPi0ID_map.begin()) {
+			std::map<int,int>::iterator zwischen = it;
+			zwischen--;
+			int id = it->first;
+			int id_old = zwischen->first;
+			if(id == id_old) {
+				check++;
+				if(check > 3) {
+					//fhPi0_Reco_occurence->Fill(1);
+					samePi0counter++;
+				}
+			}
+			else {
+				if(check == 1) fhPi0_Reco_occurence2->Fill(2);
+				if(check == 2) fhPi0_Reco_occurence2->Fill(3);
+				if(check == 3) fhPi0_Reco_occurence2->Fill(4);
+				if(check == 4) fhPi0_Reco_occurence2->Fill(5);
+				if(check > 4) fhPi0_Reco_occurence2->Fill(6);
+				
+				if(check == 4) {
+					std::map<int,int>::iterator alt3 = zwischen;
+					alt3--;
+					std::map<int,int>::iterator alt4 = alt3;
+					alt4--;
+					std::map<int,int>::iterator alt5 = alt4;
+					alt5--;
+					cout << "CbmAnaConversion: AnalysePi0_Reco_noRichInd: " << alt5->first << "/" << zwischen->first << "/" << alt3->first << "/" << alt4->first << endl;
+					cout << "CbmAnaConversion: AnalysePi0_Reco_noRichInd: " << alt5->second << "/" << zwischen->second << "/" << alt3->second << "/" << alt4->second << endl;
+					Bool_t IsWithinCuts = AnalysePi0_Reco_noRichInd_calc(alt5->second, zwischen->second, alt3->second, alt4->second);
+					
+					Double_t chi_e1 = fTestTracklist_noRichInd_chi[alt5->second];
+					Double_t chi_e2 = fTestTracklist_noRichInd_chi[zwischen->second];
+					Double_t chi_e3 = fTestTracklist_noRichInd_chi[alt3->second];
+					Double_t chi_e4 = fTestTracklist_noRichInd_chi[alt4->second];
+
+
+					Double_t invmass = Invmass_4particlesRECO(fTestTracklist_noRichInd_momentum[alt5->second], fTestTracklist_noRichInd_momentum[zwischen->second], fTestTracklist_noRichInd_momentum[alt3->second], fTestTracklist_noRichInd_momentum[alt4->second]);
+					fhPi0_Reco_noRichInd_invmass->Fill(invmass);
+					fhPi0_Reco_noRichInd_invmass_cases->Fill(1, invmass);
+					Double_t invmass_mc = Invmass_4particles(fTestTracklist_noRichInd[alt5->second], fTestTracklist_noRichInd[zwischen->second], fTestTracklist_noRichInd[alt3->second], fTestTracklist_noRichInd[alt4->second]);
+					fhPi0_Reco_noRichInd_invmass_mc->Fill(invmass_mc);
+					fhPi0_Reco_noRichInd_invmass_cases->Fill(5, invmass_mc);
+
+
+					if(chi_e1 <= 3 && chi_e2 <= 3 && chi_e3 <= 3 && chi_e4 <= 3) {
+						fhPi0_Reco_occurence2->Fill(9);
+						fhPi0_Reco_noRichInd_invmass_cases->Fill(2, invmass);
+						if(IsWithinCuts) {
+							fhPi0_Reco_occurence2->Fill(10);
+							fhPi0_Reco_noRichInd_invmass_cases->Fill(4, invmass);
+						}
+					}
+
+					if(IsWithinCuts) fhPi0_Reco_noRichInd_invmass_cases->Fill(3, invmass);
+
+				}
+				
+				if(check > 4) {
+					std::map<int,int>::iterator temp = zwischen;
+					cout << "CbmAnaConversion: AnalysePi0_Reco_noRichInd, check>4: ";
+					for(int i=0; i<check; i++) {
+						TVector3 momentum_mc;
+						fTestTracklist_noRichInd[temp->second]->GetMomentum(momentum_mc);
+						Double_t theta_mc = 180.0 * momentum_mc.Theta() / TMath::Pi();
+						Double_t phi_mc = 180.0 * momentum_mc.Phi() / TMath::Pi();
+						TVector3 momentum_reco = fTestTracklist_noRichInd_momentum[temp->second];
+						Double_t theta_reco = 180.0 * momentum_reco.Theta() / TMath::Pi();
+						Double_t phi_reco = 180.0 * momentum_reco.Phi() / TMath::Pi();
+						cout << "(" << temp->first << "/" << temp->second << "/" << fTestTracklist_noRichInd_MCindex[temp->second] << "/" << momentum_reco.Mag() << "/" << theta_mc << "-" << phi_mc << "/" << theta_reco << "-" << phi_reco << ") \t";
+						temp--;
+						fhPi0_noRichInd_diffPhi->Fill(TMath::Abs(phi_mc - phi_reco));
+						fhPi0_noRichInd_diffTheta->Fill(TMath::Abs(theta_mc - theta_reco));
+					}
+					cout << endl;
+				}
+				
+				check=1;
+			}
+		}
+	}
+
+	if(samePi0counter >= 4) {
+		//fhPi0_MC_occurence->Fill(13);
 	
 	}
 }
+
+
+
+
+
+Bool_t CbmAnaConversion::AnalysePi0_Reco_noRichInd_calc(int e1, int e2, int e3, int e4)
+{
+	CbmMCTrack* mctrack_e1 = fTestTracklist_noRichInd[e1];
+	CbmMCTrack* mctrack_e2 = fTestTracklist_noRichInd[e2];
+	CbmMCTrack* mctrack_e3 = fTestTracklist_noRichInd[e3];
+	CbmMCTrack* mctrack_e4 = fTestTracklist_noRichInd[e4];
+
+	Int_t motherID_e1 = mctrack_e1->GetMotherId();
+	Int_t motherID_e2 = mctrack_e2->GetMotherId();
+	Int_t motherID_e3 = mctrack_e3->GetMotherId();
+	Int_t motherID_e4 = mctrack_e4->GetMotherId();
+
+
+	Double_t energy1 = TMath::Sqrt(fTestTracklist_noRichInd_momentum[e1].Mag2() + M2E);
+	TLorentzVector lorVec1(fTestTracklist_noRichInd_momentum[e1], energy1);
+
+	Double_t energy2 = TMath::Sqrt(fTestTracklist_noRichInd_momentum[e2].Mag2() + M2E);
+	TLorentzVector lorVec2(fTestTracklist_noRichInd_momentum[e2], energy2);
+
+	Double_t energy3 = TMath::Sqrt(fTestTracklist_noRichInd_momentum[e3].Mag2() + M2E);
+	TLorentzVector lorVec3(fTestTracklist_noRichInd_momentum[e3], energy3);
+
+	Double_t energy4 = TMath::Sqrt(fTestTracklist_noRichInd_momentum[e4].Mag2() + M2E);
+	TLorentzVector lorVec4(fTestTracklist_noRichInd_momentum[e4], energy4);
+
+
+	Bool_t IsWithinCuts = false;
+	Double_t OpeningAngleCut = 1.5;
+
+	if(motherID_e1 == motherID_e2 && motherID_e3 == motherID_e4) {
+		Double_t anglePair1 = lorVec1.Angle(lorVec2.Vect());
+		Double_t theta1 = 180.*anglePair1/TMath::Pi();
+		
+		Double_t anglePair2 = lorVec3.Angle(lorVec4.Vect());
+		Double_t theta2 = 180.*anglePair2/TMath::Pi();
+
+		if(theta1 <= OpeningAngleCut && theta2 <= OpeningAngleCut) IsWithinCuts = true;
+		cout << "CbmAnaConversion: AnalysePi0_Reco_noRichInd_calc: " << theta1 << "/" << theta2 << endl; 
+	}
+
+	if(motherID_e1 == motherID_e3 && motherID_e2 == motherID_e4) {
+		Double_t anglePair1 = lorVec1.Angle(lorVec3.Vect());
+		Double_t theta1 = 180.*anglePair1/TMath::Pi();
+		
+		Double_t anglePair2 = lorVec2.Angle(lorVec4.Vect());
+		Double_t theta2 = 180.*anglePair2/TMath::Pi();
+
+		if(theta1 <= OpeningAngleCut && theta2 <= OpeningAngleCut) IsWithinCuts = true;
+		cout << "CbmAnaConversion: AnalysePi0_Reco_noRichInd_calc: " << theta1 << "/" << theta2 << endl;
+	}
+
+	if(motherID_e1 == motherID_e4 && motherID_e2 == motherID_e3) {
+		Double_t anglePair1 = lorVec1.Angle(lorVec4.Vect());
+		Double_t theta1 = 180.*anglePair1/TMath::Pi();
+		
+		Double_t anglePair2 = lorVec2.Angle(lorVec3.Vect());
+		Double_t theta2 = 180.*anglePair2/TMath::Pi();
+
+		if(theta1 <= OpeningAngleCut && theta2 <= OpeningAngleCut) IsWithinCuts = true;
+		cout << "CbmAnaConversion: AnalysePi0_Reco_noRichInd_calc: " << theta1 << "/" << theta2 << endl;
+	}
+
+	if(IsWithinCuts == true) {
+		fhPi0_Reco_occurence2->Fill(8);
+	}
+
+	return IsWithinCuts;
+
+}
+
+
+
+
 
 
 

@@ -240,7 +240,7 @@ void CbmAnaConversionPhotons::InitHistos()
 	fPhotonsRest_ptMC = new TH1D("fPhotonsRest_ptMC", "fPhotonsRest_ptMC; pt; #", 500, -0.5, 4.5);
 	fHistoList_photons.push_back(fPhotonsRest_ptMC);
 
-	fPhotonsRest_ptMC_pi0 = new TH1D("fPhotonsRest_ptMC_pi0", "fPhotonsRest_ptMC_pi0; pt; #", 500, -0.5, 4.5);
+	fPhotonsRest_ptMC_pi0 = new TH1D("fDirectPhotonsRest_ptMC_pi0", "fDirectPhotonsRest_ptMC_pi0; pt; #", 500, -0.5, 4.5);
 	fHistoList_photons.push_back(fPhotonsRest_ptMC_pi0);
 	fPhotonsRest_ptMC_n = new TH1D("fPhotonsRest_ptMC_n", "fPhotonsRest_ptMC_n; pt; #", 500, -0.5, 4.5);
 	fHistoList_photons.push_back(fPhotonsRest_ptMC_n);

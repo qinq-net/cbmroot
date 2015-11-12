@@ -182,6 +182,10 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhPhotons_invmass_ptBin4_new(),
 	fhElectrons_invmass_new(),
 	fhPhotons_invmass_vs_pt_new(),
+	fhPhotons_invmass_MCcut1_new(),
+	fhPhotons_invmass_MCcut2_new(),
+	fhPhotons_invmass_MCcut3_new(),
+	fhPhotons_invmass_MCcut4_new(),
 	timer(),
 	fTime(0.)
 {
@@ -238,6 +242,10 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fHistoList_recofull_2.clear();
 	fHistoList_recofull_3.clear();
 	fHistoList_recofull_4.clear();
+
+	for(int i=1; i<=4; i++) {
+		fHistoList_recofull_new[i].clear();
+	}
 
 	fhElectrons = new TH1I("fhElectrons", "fhElectrons;; #", 8, 0., 8.);
 	fHistoList_recofull.push_back(fhElectrons);
@@ -498,6 +506,15 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fHistoList_recofull_new[i].push_back(fhElectrons_invmass_new[i]);
 		fhPhotons_invmass_vs_pt_new[i] = new TH2D(Form("fhPhotons_invmass_vs_pt_new_%i",i), Form("fhPhotons_invmass_vs_pt_new_%i; invmass; pt",i), 600, -0.0025, 2.9975, 100, 0., 10.);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_vs_pt_new[i]);
+
+		fhPhotons_invmass_MCcut1_new[5] = new TH1D(Form("fhPhotons_invmass_MCcut1_new_%i",i), Form("fhPhotons_invmass_MCcut1_new_%i (MC-true cut: at least gamma correct reconstructed); invariant mass; #",i), 600, -0.0025, 2.9975);
+		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut1_new[i]);
+		fhPhotons_invmass_MCcut2_new[5] = new TH1D(Form("fhPhotons_invmass_MCcut2_new_%i",i), Form("fhPhotons_invmass_MCcut2_new_%i (MC-true cut: gamma from same mother); invariant mass; #",i), 600, -0.0025, 2.9975);
+		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut2_new[i]);
+		fhPhotons_invmass_MCcut3_new[5] = new TH1D(Form("fhPhotons_invmass_MCcut3_new_%i",i), Form("fhPhotons_invmass_MCcut3_new_%i (MC-true cut: gamma from different mother); invariant mass; #",i), 600, -0.0025, 2.9975);
+		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut3_new[i]);
+		fhPhotons_invmass_MCcut4_new[5] = new TH1D(Form("fhPhotons_invmass_MCcut4_new_%i",i), Form("fhPhotons_invmass_MCcut4_new_%i (MC-true cut: wrong combination of electrons); invariant mass; #",i), 600, -0.0025, 2.9975);
+		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut4_new[i]);
 	}
 
 }
@@ -510,6 +527,7 @@ void CbmAnaConversionRecoFull::Finish()
 	
 	gDirectory->mkdir("NoRefit-NoChicut");		// index 1
 	gDirectory->cd("NoRefit-NoChicut");
+	//for (Int_t i = 0; i < fHistoList_recofull_new[1].size(); i++){
 	for (UInt_t i = 0; i < fHistoList_recofull_1.size(); i++){
 		//fHistoList_recofull_1[i]->Write();
 		fHistoList_recofull_new[1][i]->Write();
@@ -518,6 +536,7 @@ void CbmAnaConversionRecoFull::Finish()
 	
 	gDirectory->mkdir("NoRefit-WithChicut");	// index 2
 	gDirectory->cd("NoRefit-WithChicut");
+	//for (Int_t i = 0; i < fHistoList_recofull_new[2].size(); i++){
 	for (UInt_t i = 0; i < fHistoList_recofull_2.size(); i++){
 		//fHistoList_recofull_2[i]->Write();
 		fHistoList_recofull_new[2][i]->Write();
@@ -526,6 +545,7 @@ void CbmAnaConversionRecoFull::Finish()
 	
 	gDirectory->mkdir("WithRefit-NoChicut");	// index 3
 	gDirectory->cd("WithRefit-NoChicut");
+	//for (Int_t i = 0; i < fHistoList_recofull_new[3].size(); i++){
 	for (UInt_t i = 0; i < fHistoList_recofull_3.size(); i++){
 		//fHistoList_recofull_3[i]->Write();
 		fHistoList_recofull_new[3][i]->Write();
@@ -534,6 +554,7 @@ void CbmAnaConversionRecoFull::Finish()
 	
 	gDirectory->mkdir("WithRefit-WithChicut");	// index 4
 	gDirectory->cd("WithRefit-WithChicut");
+	//for (Int_t i = 0; i < fHistoList_recofull_new[4].size(); i++){
 	for (UInt_t i = 0; i < fHistoList_recofull_4.size(); i++){
 		//fHistoList_recofull_4[i]->Write();
 		fHistoList_recofull_new[4][i]->Write();
@@ -1183,7 +1204,7 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 					
 				//if(opening_angle < 10) {
 				if(true) {
-					if(index == 1) {
+					if(false) {
 					fhPhotons_boostAngle->Fill(theta);
 				
 					fhPhotons_invmass_cut->Fill(invmass);
@@ -1271,7 +1292,7 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 					if(fElectrons_momentaChi[electron11] < chicut && fElectrons_momentaChi[electron12] < chicut && fElectrons_momentaChi[electron21] < chicut && fElectrons_momentaChi[electron22] < chicut) {
 						fhPhotons_invmass_cut_chi80->Fill(invmass);
 					}
-					
+					*/
 					
 					
 					// CROSSCHECK WITH MC-TRUE DATA!
@@ -1294,13 +1315,13 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 					TVector3 startvertex22;
 					mctrack22->GetStartVertex(startvertex22);
 					
-					fhPhotons_MC_startvertexZ->Fill(startvertex11.Z());
-					fhPhotons_MC_startvertexZ->Fill(startvertex12.Z());
-					fhPhotons_MC_startvertexZ->Fill(startvertex21.Z());
-					fhPhotons_MC_startvertexZ->Fill(startvertex22.Z());
+					//fhPhotons_MC_startvertexZ->Fill(startvertex11.Z());
+					//fhPhotons_MC_startvertexZ->Fill(startvertex12.Z());
+					//fhPhotons_MC_startvertexZ->Fill(startvertex21.Z());
+					//fhPhotons_MC_startvertexZ->Fill(startvertex22.Z());
 					
 					if(motherId11 == motherId12 && motherId21 == motherId22) {
-						fhPhotons_MC_invmass1->Fill(invmass);
+						fhPhotons_invmass_MCcut1_new[index]->Fill(invmass);
 						if(motherId11 != -1 && motherId21 != -1) {
 							CbmMCTrack* mothermctrack11 = (CbmMCTrack*)fMcTracks->At(motherId11);
 							CbmMCTrack* mothermctrack21 = (CbmMCTrack*)fMcTracks->At(motherId21);
@@ -1309,25 +1330,25 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 							Int_t grandmotherId21 = mothermctrack21->GetMotherId();
 							
 							if(grandmotherId11 == grandmotherId21) {
-								fhPhotons_MC_invmass2->Fill(invmass);
+								fhPhotons_invmass_MCcut2_new[index]->Fill(invmass);
 								if(grandmotherId11 == -1) continue;
 								CbmMCTrack* pi0mctrack11 = (CbmMCTrack*)fMcTracks->At(grandmotherId11);
 								if(pi0mctrack11->GetMotherId() == -1) {
-									fhPhotons_MC_motherIdCut->Fill(invmass);
+									//fhPhotons_MC_motherIdCut->Fill(invmass);
 								}
 							}
 							if(grandmotherId11 != grandmotherId21) {
-								fhPhotons_MC_invmass3->Fill(invmass);
+								fhPhotons_invmass_MCcut3_new[index]->Fill(invmass);
 							}
 						}
 					}
 					
 					if(motherId11 != motherId12 || motherId21 != motherId22) {
-						fhPhotons_MC_invmass4->Fill(invmass);
+						fhPhotons_invmass_MCcut4_new[index]->Fill(invmass);
 					}
 					
 					
-					
+					/*
 					if(motherId11 != -1 && motherId12 != -1 && motherId21 != -1 && motherId22 != -1) {
 						CbmMCTrack* mothermctrack11 = (CbmMCTrack*)fMcTracks->At(motherId11);
 						CbmMCTrack* mothermctrack12 = (CbmMCTrack*)fMcTracks->At(motherId12);
