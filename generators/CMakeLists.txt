@@ -38,7 +38,6 @@ CbmHsdLvmGenerator.cxx
 CbmHsdGenerator.cxx
 CbmShieldGenerator.cxx
 CbmUnigenGenerator.cxx
-CbmUrqmdGenerator.cxx
 URun.cxx
 UEvent.cxx
 UParticle.cxx

@@ -15,7 +15,7 @@ using namespace std;
 #include "TRandom.h"
 
 #include "FairRootManager.h"
-#include "CbmMCEventHeader.h"
+#include "FairMCEventHeader.h"
 #include "CbmMCTrack.h"
 #include "CbmStsTrack.h"
 #include "CbmStsHit.h"
@@ -1205,7 +1205,7 @@ InitStatus CbmHadronAnalysis::Init()
 	    << "ROOT manager is not instantiated." << endl;
         return kFATAL;
     }
-    fMCEventHeader = (CbmMCEventHeader*) rootMgr->GetObject("MCEventHeader.");
+    fMCEventHeader = (FairMCEventHeader*) rootMgr->GetObject("MCEventHeader.");
     if(NULL == fMCEventHeader) {
 	cout << "-W- CbmHadronAnalysis::Init : "
 	    << "no MC Header Info" << endl;
@@ -1374,7 +1374,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
 	   << ", TofTrk " << nTofTracks
 	   << ", GlbTrk " << nGlobTracks
 	   << endl;
-      cout << "-D- b = "<<fMCEventHeader->GetB()<< ", phi = " << fMCEventHeader->GetPhi() << endl; 
+      cout << "-D- b = "<<fMCEventHeader->GetB()<< ", phi = " << fMCEventHeader->GetRotZ() << endl;
     }
     // some local arrays 
 
@@ -1411,7 +1411,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
 	}
 
         Float_t Phip = RADDEG*atan2(MCTrack->GetPy(),MCTrack->GetPx());
-        Float_t dphi = Phip - RADDEG*fMCEventHeader->GetPhi();
+        Float_t dphi = Phip - RADDEG*fMCEventHeader->GetRotZ();
 	if(dphi<-180.) {dphi +=360.;};
 	if(dphi> 180.) {dphi -=360.;};
 	dphi = dphi/RADDEG;
@@ -1640,7 +1640,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
        while(phirp<-180.) {phirp+=360.;}
        while(phirp>180.)  {phirp-=360.;}
       } // RP flattening end 
-      delrp=phirp - RADDEG*fMCEventHeader->GetPhi();
+      delrp=phirp - RADDEG*fMCEventHeader->GetRotZ();
       while(delrp<-180.) {delrp+=360.;}
       while(delrp> 180.) {delrp-=360.;}
 
@@ -1648,8 +1648,8 @@ void CbmHadronAnalysis::Exec(Option_t*)
       fa_delrp_b_gen->Fill(fMCEventHeader->GetB(),delrp);
       fa_cdelrp_b_gen->Fill(fMCEventHeader->GetB(),TMath::Cos(delrp/RADDEG));
       fa_phirp_b_gen->Fill(fMCEventHeader->GetB(),phirp);
-      fa_phgrp_b_gen->Fill(fMCEventHeader->GetB(),RADDEG*fMCEventHeader->GetPhi());
-      fa_phphrp_gen->Fill(phirp,RADDEG*fMCEventHeader->GetPhi());
+      fa_phgrp_b_gen->Fill(fMCEventHeader->GetB(),RADDEG*fMCEventHeader->GetRotZ());
+      fa_phphrp_gen->Fill(phirp,RADDEG*fMCEventHeader->GetRotZ());
     } // Np1 && Np2 end 
 
 // TofPoint level 
@@ -1691,7 +1691,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
         fa_tm_poiprim->Fill(p_MC,tofmass);
 
         Float_t Phip = RADDEG*atan2(MCTrack->GetPy(),MCTrack->GetPx());
-        Float_t dphi = Phip - RADDEG*fMCEventHeader->GetPhi();
+        Float_t dphi = Phip - RADDEG*fMCEventHeader->GetRotZ();
 	if(dphi<-180.) {dphi +=360.;};
 	if(dphi> 180.) {dphi -=360.;};
 	dphi = dphi/RADDEG;
@@ -1902,7 +1902,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
        while(phirp<-180.) {phirp+=360.;}
        while(phirp>180.)  {phirp-=360.;}
     } // RP flattening end 
-    delrp=phirp - RADDEG*fMCEventHeader->GetPhi();
+    delrp=phirp - RADDEG*fMCEventHeader->GetRotZ();
     while(delrp<-180.) {delrp+=360.;}
     while(delrp> 180.) {delrp-=360.;}
     fa_phirp_poi->Fill(phirp);          // 1D histo
@@ -2105,7 +2105,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
         fa_tof_hitprim->Fill(t_hit);
 
         Float_t Phip = RADDEG*atan2(MCTrack->GetPy(),MCTrack->GetPx());
-        Float_t dphi = Phip - RADDEG*fMCEventHeader->GetPhi();
+        Float_t dphi = Phip - RADDEG*fMCEventHeader->GetRotZ();
 	if(dphi<-180.) {dphi +=360.;};
 	if(dphi> 180.) {dphi -=360.;};
 	dphi = dphi/RADDEG;
@@ -2342,7 +2342,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
        while(phirp<-180.) {phirp+=360.;}
        while(phirp>180.)  {phirp-=360.;}
     } // RP flattening end 
-    delrp=phirp - RADDEG*fMCEventHeader->GetPhi();
+    delrp=phirp - RADDEG*fMCEventHeader->GetRotZ();
     while(delrp<-180.) {delrp+=360.;}
     while(delrp> 180.) {delrp-=360.;}
     fa_phirp_hit->Fill(phirp);          // 1D histo
@@ -3032,7 +3032,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
 	  fa_m2mom_gloprimvtxb->Fill(mom*TMath::Sign(1.,tpar->GetQp()),m2);
 	}
         Float_t Phip = RADDEG*atan2(MCTrack->GetPy(),MCTrack->GetPx());
-        Float_t dphi = Phip - RADDEG*fMCEventHeader->GetPhi();
+        Float_t dphi = Phip - RADDEG*fMCEventHeader->GetRotZ();
 	if(dphi<-180.) {dphi +=360.;};
 	if(dphi> 180.) {dphi -=360.;};
 	dphi = dphi/RADDEG;
@@ -3315,7 +3315,7 @@ void CbmHadronAnalysis::Exec(Option_t*)
        while(phirp<-180.) {phirp+=360.;}
        while(phirp>180.)  {phirp-=360.;}
       } // RP flattening end 
-      delrp=phirp - RADDEG*fMCEventHeader->GetPhi();
+      delrp=phirp - RADDEG*fMCEventHeader->GetRotZ();
       while(delrp<-180.) {delrp+=360.;}
       while(delrp> 180.) {delrp-=360.;}
       fa_phirp_glo->Fill(phirp);          // 1D histo

@@ -19,7 +19,7 @@ Add Detailed description
 #include "FairTrackParam.h"
 
 #include "CbmDetectorList.h"
-#include "CbmMCEventHeader.h"
+#include "FairMCEventHeader.h"
 
 #include "CbmVertex.h"
 #include "CbmKFVertex.h"
@@ -185,7 +185,7 @@ void PairAnalysisEvent::SetInput(FairRootManager *man)
   fRichRings    = (TClonesArray*) man->GetObject("RichRing");
   fPrimVertex   = (CbmVertex*)    man->GetObject("PrimaryVertex");
   // MC matches and tracks
-  fMCHeader     = (CbmMCEventHeader*) man->GetObject("MCEventHeader.");
+  fMCHeader     = (FairMCEventHeader*) man->GetObject("MCEventHeader.");
   fMCTracks     = (TClonesArray*) man->GetObject("MCTrack");
   fStsMatches   = (TClonesArray*) man->GetObject("StsTrackMatch");
   fMuchMatches  = (TClonesArray*) man->GetObject("MuchTrackMatch");

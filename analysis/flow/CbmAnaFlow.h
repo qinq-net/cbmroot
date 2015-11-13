@@ -39,7 +39,7 @@
 #include "TGraphErrors.h"
 #include <iostream>
 
-class CbmMCEventHeader;
+class FairMCEventHeader;
 class CbmKFParticlesFinder;
 class TClonesArray;
 class CbmVertex;
@@ -240,7 +240,7 @@ class CbmAnaFlow : public FairTask
       TString fileName_ascii_out_pt;    // final output file name (ascii) to store flow values vs pt
 
       // model output
-      CbmMCEventHeader *fHeader;        // data container for MC info
+      FairMCEventHeader *fHeader;        // data container for MC info
       TTree* fTree_gen;
       UEvent *fEvent_gen;
       Double_t fBetaCM;                 // CM velocity

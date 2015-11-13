@@ -11,7 +11,7 @@
 
 #include "CbmDetectorList.h"
 #include "CbmMCBuffer.h"
-#include "CbmMCEventHeader.h"
+#include "FairMCEventHeader.h"
 #include "CbmMCTimeSim.h"
 
 
@@ -211,9 +211,9 @@ InitStatus CbmMCTimeSim::Init() {
 		                        << FairLogger::endl;
 
   // Get event header
-  fEvent = (CbmMCEventHeader*) ioman->GetObject("MCEventHeader.");
+  fEvent = dynamic_cast<FairMCEventHeader*>(ioman->GetObject("MCEventHeader."));
 
- // Get MCPoint arrays
+  // Get MCPoint arrays
   fPointArrays[kMVD]  = (TClonesArray*) ioman->GetObject("MvdPoint");
   fPointArrays[kSTS]  = (TClonesArray*) ioman->GetObject("StsPoint");
   fPointArrays[kRICH] = (TClonesArray*) ioman->GetObject("RichPoint");

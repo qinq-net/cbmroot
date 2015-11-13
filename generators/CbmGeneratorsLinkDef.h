@@ -10,7 +10,6 @@
 #pragma link C++ class CbmHsdGenerator+;
 #pragma link C++ class CbmShieldGenerator+;
 #pragma link C++ class CbmUnigenGenerator+;
-#pragma link C++ class CbmUrqmdGenerator+;
 #pragma link C++ class URun+;
 #pragma link C++ class UEvent+;
 #pragma link C++ class UParticle+;

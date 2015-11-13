@@ -6,8 +6,8 @@
 #define _CBMTOFTESTS_H_
 
 #include "FairTask.h"
-#include "CbmMCEventHeader.h"
 
+class FairMCEventHeader;
 class CbmTofGeoHandler;
 class CbmTofCell;
 // Geometry
@@ -59,7 +59,7 @@ class CbmTofTests : public FairTask {
       Int_t         fEvents;            // Number of processed events
 
       // Geometry infos
-      CbmMCEventHeader *fMCEventHeader;
+      FairMCEventHeader *fMCEventHeader;
       CbmTofGeoHandler * fGeoHandler;
       CbmTofDetectorId * fTofId;
       CbmTofCell       * fChannelInfo;

@@ -36,7 +36,7 @@
 #include <FairTrackParam.h>
 #include <FairMCPoint.h>
 
-#include <CbmMCEventHeader.h>
+#include <FairMCEventHeader.h>
 #include <CbmVertex.h>
 #include <CbmKFVertex.h>
 #include <CbmGlobalTrack.h>
@@ -406,7 +406,7 @@ private:
   static void FillVarPixelHit(          const CbmPixelHit *hit,          Double_t * const values);
   static void FillVarMCPoint(           const FairMCPoint *hit,          Double_t * const values);
   static void FillSumVarMCPoint(        const FairMCPoint *hit,          Double_t * const values);
-  static void FillVarMCHeader(          const CbmMCEventHeader *header, Double_t * const values);
+  static void FillVarMCHeader(          const FairMCEventHeader *header, Double_t * const values);
 
   //  static Double_t GetChiToVertex(       const CbmStsTrack *track, CbmVertex *vertex);
 
@@ -534,7 +534,7 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisEvent(const PairAnalysisE
 
 }
 
-inline void PairAnalysisVarManager::FillVarMCHeader(const CbmMCEventHeader *header, Double_t * const values)
+inline void PairAnalysisVarManager::FillVarMCHeader(const FairMCEventHeader *header, Double_t * const values)
 {
   //
   // Fill MCheader information available into an array

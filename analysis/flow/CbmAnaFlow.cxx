@@ -30,7 +30,7 @@
 #include "FairRootManager.h"
 #include "FairRunAna.h"
 
-#include "CbmMCEventHeader.h"
+#include "FairMCEventHeader.h"
 #include "CbmMCTrack.h"
 #include "CbmVertex.h"
 #include "CbmTrackMatch.h"
@@ -724,7 +724,7 @@ InitStatus CbmAnaFlow::Init()
 
   if (fmode == 1) 
   {
-      fHeader = (CbmMCEventHeader*) ioman->GetObject("MCEventHeader.");
+      fHeader = (FairMCEventHeader*) ioman->GetObject("MCEventHeader.");
       
       if ( !fHeader ) 
       {
@@ -786,7 +786,7 @@ InitStatus CbmAnaFlow::Init()
 
   if (fmode == 2)
   {
-      fHeader = (CbmMCEventHeader*) ioman->GetObject("MCEventHeader.");
+      fHeader = (FairMCEventHeader*) ioman->GetObject("MCEventHeader.");
       
       if ( !fHeader ) 
       {
@@ -1181,7 +1181,7 @@ bool CbmAnaFlow::CreateTreeReco(int mult)
 
     Int_t evtID = fHeader->GetEventID();
     Double_t B = fHeader->GetB();
-    Double_t RP = fHeader->GetPhi();   // RP = Reaction plane: MC info
+    Double_t RP = fHeader->GetRotZ();   // RP = Reaction plane: MC info
     //Double_t RP = fMcEvent->GetRP(); // alternatively from McEventData
     RP = Range(RP);                    // en radian!! from SHIELD: [0, 2pi]
     
@@ -1367,7 +1367,7 @@ bool CbmAnaFlow::CreateTreeKFPart(int mult)
 
     Int_t evtID = fHeader->GetEventID();
     Double_t B = fHeader->GetB();
-    Double_t RP = fHeader->GetPhi(); // RP = Reaction plane: MC info
+    Double_t RP = fHeader->GetRotZ(); // RP = Reaction plane: MC info
     RP = Range(RP);                  // en radian!! from SHIELD: [0, 2pi]
 
     fB_MC = B;

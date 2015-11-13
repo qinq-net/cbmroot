@@ -14,7 +14,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "FairRootManager.h"
-#include "CbmMCEventHeader.h"
+#include "FairMCEventHeader.h"
 #include "TClonesArray.h"
 #include "TCanvas.h"
 #include "TF1.h"
@@ -399,7 +399,7 @@ InitStatus eventPlane::Init()
     return kFATAL;
   }
 
-  fHeader = (CbmMCEventHeader*) ioman->GetObject("MCEventHeader.");
+  fHeader = (FairMCEventHeader*) ioman->GetObject("MCEventHeader.");
   if ( ! fHeader ) {
       LOG(FATAL) << "-E- eventPlane::Init: No event header!" << FairLogger::endl;
     return kERROR;
@@ -1069,7 +1069,7 @@ void eventPlane::PSDtransverseMomMeth()
 {
     Int_t evtID = fHeader->GetEventID();
     Double_t B = fHeader->GetB();
-    Double_t RP = fHeader->GetPhi(); // RP = Reaction plane: MC info (in radian)
+    Double_t RP = fHeader->GetRotZ(); // RP = Reaction plane: MC info (in radian)
     if ( RP > fPi ) RP -= 2 * fPi;   // !! from SHIELD: [0, 2pi]
 
     cout << "----- event number: " << evtID << " ------" << endl;
@@ -1716,7 +1716,7 @@ void eventPlane::STSMCtransverseMomMeth()
     
     Int_t evtID = fHeader->GetEventID();
     Double_t B = fHeader->GetB();
-    Double_t RP = fHeader->GetPhi();     // RP = Reaction plane: MC info (in radian)
+    Double_t RP = fHeader->GetRotZ();     // RP = Reaction plane: MC info (in radian)
     if ( RP > fPi ) RP -= 2 * fPi;       // !!from SHIELD: [0, 2pi]
 
     //cout << "----- event number: " << evtID << " ------" << endl;
@@ -2011,7 +2011,7 @@ void eventPlane::STSRECOtransverseMomMeth()
     
     Int_t evtID = fHeader->GetEventID();
     Double_t B = fHeader->GetB();
-    Double_t RP = fHeader->GetPhi(); // RP = Reaction plane: MC info (in radian)
+    Double_t RP = fHeader->GetRotZ(); // RP = Reaction plane: MC info (in radian)
     if ( RP > fPi ) RP -= 2 * fPi;   // !! from SHIELD: [0, 2pi]
 
     //cout << "----- event number: " << evtID << " ------" << endl;

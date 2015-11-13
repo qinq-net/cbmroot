@@ -6,7 +6,7 @@
 
 #include "CbmUnigenGenerator.h"
 
-#include "CbmMCEventHeader.h"
+#include "FairMCEventHeader.h"
 
 #include "FairPrimaryGenerator.h"
 #include "FairLogger.h"
@@ -148,11 +148,11 @@ Bool_t CbmUnigenGenerator::ReadEvent(FairPrimaryGenerator* primGen)
   if ( fEventPlaneSet ) { phi = gRandom->Uniform(fPhiMin, fPhiMax); }
 
   // Set event id and impact parameter in MCEvent if not yet done
-  CbmMCEventHeader* event = dynamic_cast<CbmMCEventHeader*>(primGen->GetEvent());
+  FairMCEventHeader* event = primGen->GetEvent();
   if ( event && (! event->IsSet()) ) {
     event->SetEventID(fEvent->GetEventNr());
     event->SetB(fEvent->GetB());
-    event->SetPhi(phi);
+    event->SetRotZ(phi);
     event->SetNPrim(fEvent->GetNpa());
     event->MarkSet(kTRUE);
   }

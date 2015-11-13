@@ -28,7 +28,7 @@
 #include "CbmStsKFTrackFitter.h"
 
 class TClonesArray;
-class CbmMCEventHeader;
+class FairMCEventHeader;
 
 class eventPlane : public FairTask
 {
@@ -116,7 +116,7 @@ class eventPlane : public FairTask
     private:
 
         Double_t fPi;
-        CbmMCEventHeader *fHeader;
+        FairMCEventHeader *fHeader;
 	CbmMCEventData *fMCEventData;            // data container for MC info
 	TString fileName_PsdModCoord;            // ascii file with PSD module (x, y) coordinates in LAB
         TString fileName_Qcorr, fileName_Barr;   // file with (uncorrected) event planes for Q-recentering and Barrette methods

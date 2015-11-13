@@ -205,17 +205,13 @@ void run_tof_disim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   fRun->SetField(magField);
   // ------------------------------------------------------------------------
 
-  // Use the experiment specific MC Event header instead of the default one
-  // This one stores additional information about the reaction plane
-  CbmMCEventHeader* mcHeader = new CbmMCEventHeader();
-  fRun->SetMCEventHeader(mcHeader);
 
   // -----   Create PrimaryGenerator   --------------------------------------
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
   // Use the CbmUnigenGenrator which calculates a reaction plane and
   // rotate all particles accordingly
   CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
-  uniGen->SetEventPlane(0. , 360.);
+  primGen->SetEventPlane(0. , 360.);
   primGen->AddGenerator(uniGen);
   fRun->SetGenerator(primGen);       
   // ------------------------------------------------------------------------

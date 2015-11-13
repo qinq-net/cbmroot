@@ -43,7 +43,6 @@ CbmTrackMatch.cxx
 CbmCluster.cxx
 
 CbmMCEpoch.cxx
-CbmMCEventHeader.cxx
 CbmMCTrack.cxx
 CbmMCEventData.cxx
 

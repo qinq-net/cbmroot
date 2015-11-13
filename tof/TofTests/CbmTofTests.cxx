@@ -18,7 +18,7 @@
 #include "CbmTofAddress.h"    // in cbmdata/tof
 
 // CBMroot classes and includes
-#include "CbmMCEventHeader.h"
+#include "FairMCEventHeader.h"
 #include "CbmMCTrack.h"
 /*
 #include "CbmStsTrack.h"

@@ -27,6 +27,7 @@
 #include "FairRuntimeDb.h"
 #include "FairRootManager.h"
 #include "FairLogger.h"
+#include "FairMCEventHeader.h"
 
 // ROOT Classes and includes
 #include "Riostream.h"

@@ -18,7 +18,7 @@
 #include "CbmVertex.h"
 
 class FairRootManager;
-class CbmMCEventHeader;
+class FairMCEventHeader;
 class CbmStsTrack;
 class PairAnalysisTrack;
 
@@ -34,7 +34,7 @@ public:
 
 
   // getters
-  CbmMCEventHeader *GetMCHeader()     const { return fMCHeader; }
+  FairMCEventHeader *GetMCHeader()     const { return fMCHeader; }
   CbmVertex *GetPrimaryVertex()       const { return fPrimVertex; }
   Int_t      GetNumberOfTracks()      const { return (fGlobalTracks ? fGlobalTracks->GetEntriesFast() : -1); }
   Int_t      GetNumberOfMCTracks()    const { return (fMCTracks ? fMCTracks->GetEntriesFast() : -1); }
@@ -60,7 +60,7 @@ protected:
   Int_t GetMvdMatchingIndex(CbmStsTrack *track) const;
 
 private:
- CbmMCEventHeader *fMCHeader;       //mc header
+ FairMCEventHeader *fMCHeader;       //mc header
  TClonesArray *fMCTracks;       //mc tracks
  TClonesArray *fStsMatches;     //STS matches
  TClonesArray *fMuchMatches;     //MUCH matches

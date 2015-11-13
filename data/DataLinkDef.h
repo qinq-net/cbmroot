@@ -19,7 +19,6 @@
 #pragma link C++ class CbmLink+;
 
 #pragma link C++ class CbmMCEpoch+;
-#pragma link C++ class CbmMCEventHeader+;
 #pragma link C++ class CbmMCTrack+;
 #pragma link C++ class CbmMCEventData+;
 

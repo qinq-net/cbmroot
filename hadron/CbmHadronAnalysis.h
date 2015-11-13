@@ -6,9 +6,9 @@
 #define _CBMHADRONANALYSIS_H_
 
 #include "FairTask.h"
-#include "CbmMCEventHeader.h"
 #include "CbmStsKFTrackFitter.h"
 
+class FairMCEventHeader;
 class CbmTofGeoHandler;
 class CbmTofCell;
 class CbmMatch;
@@ -40,7 +40,7 @@ private:
     TString       fFlowFileName;      // name of the file name with Fourier corrections
     TFile*        fflowFile;          // pointer to RP corrections 
 
-    CbmMCEventHeader *fMCEventHeader;
+    FairMCEventHeader *fMCEventHeader;
     CbmTofGeoHandler *fGeoHandler;
     CbmTofCell       *fCellInfo;
 

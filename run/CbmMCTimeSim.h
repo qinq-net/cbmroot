@@ -18,9 +18,9 @@
 #include "FairTask.h"
 
 #include "CbmDetectorList.h"
-#include "CbmMCEventHeader.h"
 
 class CbmMCBuffer;
+class FairMCEventHeader;
 
 
 class TClonesArray;
@@ -122,7 +122,7 @@ class CbmMCTimeSim : public FairTask
 
 
   // --- Input
-  CbmMCEventHeader*     fEvent;        ///< Input of CbmMCEventHeader
+  FairMCEventHeader*     fEvent;       ///< Input of FairMCEventHeader
   vector<TClonesArray*> fPointArrays;  ///< Input MCPoint arrays
 
 
