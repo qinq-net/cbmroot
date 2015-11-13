@@ -6,7 +6,41 @@
 // P.Sitzmann  04/09/2014
 //
 // --------------------------------------------------------------------------
-void mvd_CbmUniGen_sim_cluster(const char* input = "auau.25gev", const char* system = "centr", Int_t nEvents = 100)
+
+TString caveGeom="";
+TString pipeGeom="";
+TString magnetGeom="";
+TString mvdGeom="";
+TString stsGeom="";
+TString richGeom="";
+TString muchGeom="";
+TString shieldGeom="";
+TString trdGeom="";
+TString tofGeom="";
+TString ecalGeom="";
+TString platformGeom="";
+TString psdGeom="";
+Double_t psdZpos=0.;
+Double_t psdXpos=0.;
+
+TString mvdTag="";
+TString stsTag="";
+TString trdTag="";
+TString tofTag="";  
+
+TString stsDigi="";
+TString trdDigi="";
+TString tofDigi="";
+
+TString mvdMatBudget="";
+TString stsMatBudget="";
+
+TString  fieldMap="";
+Double_t fieldZ=0.;
+Double_t fieldScale=0.;
+Int_t    fieldSymType=0;
+
+void mvd_CbmUniGen_sim_cluster(const char* input = "auau.25gev", const char* system = "centr", Int_t nEvents = 1, const char* setup = "sis100_electron")
 {
   // ========================================================================
   //          Adjust this part according to your requirements
@@ -20,7 +54,11 @@ void mvd_CbmUniGen_sim_cluster(const char* input = "auau.25gev", const char* sys
   inFile = inFile + ".root";
 
   // Output file
-  TString outFile = "data/mvd.mc.unigen." + input + "." + system + ".root";
+  TString outFile = "data/mvd.mc.unigen.";
+  outFile += input;
+  outFile += ".";
+  outFile += system;
+  outFile += ".root";
 
   // Parameter file name
   TString parFile = "data/paramsunigen.";
@@ -63,6 +101,28 @@ void mvd_CbmUniGen_sim_cluster(const char* input = "auau.25gev", const char* sys
   timer.Start();
   // ------------------------------------------------------------------------
 
+
+  TString inDir = gSystem->Getenv("VMCWORKDIR");
+
+  TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
+  TString setupFunct = setup;
+  setupFunct += "_setup()";
+  
+  gROOT->LoadMacro(setupFile);
+  gInterpreter->ProcessLine(setupFunct);
+
+  gRandom->SetSeed(0);
+
+  // In general, the following parts need not be touched
+  // ========================================================================
+
+  // ----    Debug option   -------------------------------------------------
+  gDebug = 0;
+  // ------------------------------------------------------------------------
+
+  gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
+  basiclibs();
+  
  
   // -----   Create simulation run   ----------------------------------------
   FairRunSim* fRun = new FairRunSim();

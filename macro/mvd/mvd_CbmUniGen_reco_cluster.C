@@ -9,9 +9,43 @@
 // P. Sitzmann Juli 2014
 // --------------------------------------------------------------------------
 
+TString caveGeom="";
+TString pipeGeom="";
+TString magnetGeom="";
+TString mvdGeom="";
+TString stsGeom="";
+TString richGeom="";
+TString muchGeom="";
+TString shieldGeom="";
+TString trdGeom="";
+TString tofGeom="";
+TString ecalGeom="";
+TString platformGeom="";
+TString psdGeom="";
+Double_t psdZpos=0.;
+Double_t psdXpos=0.;
 
-void mvd_CbmUniGen_reco_cluster(TString input = "auau.25gev", TString system = "centr", Int_t  nEvents = 100,
-              Int_t  iVerbose = 0, const char* setup = "sis300_electron", bool PileUp = true, bool littrack = false)
+TString mvdTag="";
+TString stsTag="";
+TString trdTag="";
+TString tofTag="";  
+
+TString stsDigi="";
+TString trdDigi="";
+TString tofDigi="";
+
+TString mvdMatBudget="";
+TString stsMatBudget="";
+
+TString  fieldMap="";
+Double_t fieldZ=0.;
+Double_t fieldScale=0.;
+Int_t    fieldSymType=0;
+
+TString defaultInputFile="";
+
+void mvd_CbmUniGen_reco_cluster(TString input = "auau.25gev", TString system = "centr", Int_t  nEvents = 1,
+              Int_t  iVerbose = 0, const char* setup = "sis100_electron", bool PileUp = false, bool littrack = false)
 {
 
   // ========================================================================
@@ -19,12 +53,25 @@ void mvd_CbmUniGen_reco_cluster(TString input = "auau.25gev", TString system = "
 
    
   // Input file (MC events)
-  TString inFile = "data/mvd.mc.unigen." + input + "." + system + ".root";
-  TString deltaFile = "data/mvd.mc.delta.root";
-  TString bgFile = "data/mvd.mc.unigen." + input + "." + system + ".root";
+    TString inFile = "data/mvd.mc.unigen.";
+    inFile += input;
+    inFile += ".";
+    inFile += system;
+    inFile += ".root";
+
+    TString deltaFile = "data/mvd.mc.delta.root";
+
+    TString bgFile = "data/mvd.mc.unigen.";
+    bgFile += input;
+    bgFile += ".";
+    bgFile += system;
+    bgFile += ".root";  
 
   // Output file
-  TString outSystem = "data/mvd.reco.unigen." + input + "." + system;
+    TString outSystem = "data/mvd.reco.unigen.";
+    outSystem += input;
+    outSystem += ".";
+    outSystem += system;
 if(!PileUp)
 {
 if(littrack)
@@ -62,10 +109,6 @@ else
 
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
-
-  TObjString stsDigiFile = paramDir + stsDigi;
-  parFileList->Add(&stsDigiFile);
-  cout << "macro/run/run_reco.C using: " << stsDigi << endl;
 
  
 TString globalTrackingType = "nn";
@@ -122,23 +165,32 @@ if(PileUp)
   //mvdHitfinder->ShowDebugHistos();
   run->AddTask(mvdHitfinder);
   // ----------------------------------------------------------------------
-
   // -----   STS digitizer   -------------------------------------------------
-  // --- The following settings correspond to the settings for the old
-  // --- digitizer in run_reco.C
+  // -----   The parameters of the STS digitizer are set such as to match
+  // -----   those in the old digitizer. Change them only if you know what you
+  // -----   are doing.
   Double_t dynRange       =   40960.;  // Dynamic range [e]
   Double_t threshold      =    4000.;  // Digitisation threshold [e]
   Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
   Double_t timeResolution =       5.;  // time resolution [ns]
   Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
   Double_t noise          =       0.;  // ENC [e]
-  Int_t digiModel         = 1;  // Model: 1 = uniform charge distribution along track
+  Int_t digiModel         =       1;   // User sensor type DSSD
+	
+  // The following settings correspond to a validated implementation. 
+  // Changing them is on your own risk.
+  Int_t  eLossModel       = 1;         // Energy loss model: uniform 
+  Bool_t useLorentzShift  = kFALSE;    // Deactivate Lorentz shift
+  Bool_t useDiffusion     = kFALSE;    // Deactivate diffusion
+  Bool_t useCrossTalk     = kFALSE;    // Deactivate cross talk
 
   CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
+  stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
   stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution,
-  		                   deadTime, noise);
+  		                 deadTime, noise);
   run->AddTask(stsDigi);
   // -------------------------------------------------------------------------
+
 
   // -----   STS Cluster Finder   --------------------------------------------
   FairTask* stsClusterFinder = new CbmStsFindClusters();
@@ -150,11 +202,14 @@ if(PileUp)
   FairTask* stsFindHits = new CbmStsFindHits();
   run->AddTask(stsFindHits);
   // -------------------------------------------------------------------------
-
   // -----   STS track finding   --------------------------------------------
   CbmKF* kalman = new CbmKF();
   run->AddTask(kalman);
   CbmL1* l1 = new CbmL1();
+  TString mvdMatBudgetFileName = paramDir + mvdMatBudget;
+  TString stsMatBudgetFileName = paramDir + stsMatBudget;
+  l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
+  l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
   run->AddTask(l1);
 
   Bool_t useMvdInL1Tracking = !littrack;
@@ -162,26 +217,32 @@ if(PileUp)
   FairTask* stsFindTracks = new CbmStsFindTracks(iVerbose, stsTrackFinder, useMvdInL1Tracking);
   run->AddTask(stsFindTracks);
   // ------------------------------------------------------------------------
+  
  if(littrack)
 {
   CbmLitFindMvdTracks* mvdFinder = new CbmLitFindMvdTracks();
   run->AddTask(mvdFinder);
+}
+  // =========================================================================
+  // ===                        Global tracking                            ===
+  // =========================================================================
 
-  // ------ Global track reconstruction -------------------------------------
   CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
-  //CbmLitFindGlobalTracksParallel* finder = new CbmLitFindGlobalTracksParallel();
   // Tracking method to be used
   // "branch" - branching tracking
   // "nn" - nearest neighbor tracking
-  // "nn_parallel" - nearest neighbor parallel tracking
-  finder->SetName("FindGlobalTracks");
-  finder->SetTrackingType(std::string(globalTrackingType));
+  // "weight" - weighting tracking
+  finder->SetTrackingType("branch");
+
   // Hit-to-track merger method to be used
   // "nearest_hit" - assigns nearest hit to the track
-  // "all_hits" - assigns all hits in the searching area to track
   finder->SetMergerType("nearest_hit");
+
   run->AddTask(finder);
-}
+
+  // ===                      End of global tracking                       ===
+  // =========================================================================
+
   //------   Match Monte Carlo Data to Reco Data    -------------------------
   CbmMatchRecoToMC* matcher = new CbmMatchRecoToMC();
   run->AddTask(matcher);

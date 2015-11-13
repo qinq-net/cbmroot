@@ -19,10 +19,10 @@ void mvd_sim()
   Int_t   nEvents = 10;
 
   // Output file name
-  TString outFile = "data/mvd.mc.nini.17gev.minbias.10000.root";
+  TString outFile = "data/mvd.mc.test.root";
 
   // Parameter file name
-  TString parFile = "data/params.nini.17gev.minbias.10000.root";
+  TString parFile = "data/params.test.root";
 
   // Cave geometry
   TString caveGeom = "cave.geo";
@@ -39,7 +39,7 @@ void mvd_sim()
 
   // MVD geometry
 
-  TString mvdGeom = "mvd/mvd_v15a.geo.root";
+  TString mvdGeom = "mvd/MVD_v15a_vacuum.root";
 
  // StS geometry
   TString stsGeom = "sts/sts_v13d.geo.root";
