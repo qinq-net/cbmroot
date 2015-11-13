@@ -135,11 +135,11 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
   
   // -----   Create simulation run   ----------------------------------------
-  FairRunSim* fRun = new FairRunSim();
-  fRun->SetName("TGeant3");              // Transport engine
-  fRun->SetOutputFile(outFile);          // Output file
-  fRun->SetGenerateRunInfo(kTRUE);       // Create FairRunInfo file
-  FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
+  FairRunSim* run = new FairRunSim();
+  run->SetName("TGeant3");              // Transport engine
+  run->SetOutputFile(outFile);          // Output file
+  run->SetGenerateRunInfo(kTRUE);       // Create FairRunInfo file
+  FairRuntimeDb* rtdb = run->GetRuntimeDb();
   // ------------------------------------------------------------------------
 
 
@@ -150,7 +150,7 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
 
   // -----   Create media   -------------------------------------------------
-  fRun->SetMaterials("media.geo");       // Materials
+  run->SetMaterials("media.geo");       // Materials
   // ------------------------------------------------------------------------
 
 
@@ -158,13 +158,13 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   if ( caveGeom != "" ) {
     FairModule* cave = new CbmCave("CAVE");
     cave->SetGeometryFileName(caveGeom);
-    fRun->AddModule(cave);
+    run->AddModule(cave);
   }
 
   if ( pipeGeom != "" ) {
     FairModule* pipe = new CbmPipe("PIPE");
     pipe->SetGeometryFileName(pipeGeom);
-    fRun->AddModule(pipe);
+    run->AddModule(pipe);
   }
   
   // --- Target
@@ -173,37 +173,37 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   		                              targetDiameter);
   target->SetPosition(targetPosX, targetPosY, targetPosZ);
   target->SetRotation(targetRotY);
-  fRun->AddModule(target);
+  run->AddModule(target);
 
   if ( magnetGeom != "" ) {
     FairModule* magnet = new CbmMagnet("MAGNET");
     magnet->SetGeometryFileName(magnetGeom);
-    fRun->AddModule(magnet);
+    run->AddModule(magnet);
   }
   
   if ( platformGeom != "" ) {
     FairModule* platform = new CbmPlatform("PLATFORM");
     platform->SetGeometryFileName(platformGeom);
-    fRun->AddModule(platform);
+    run->AddModule(platform);
   }
 
   if ( mvdGeom != "" ) {
     FairDetector* mvd = new CbmMvd("MVD", kTRUE);
     mvd->SetGeometryFileName(mvdGeom);
     mvd->SetMotherVolume("pipevac1");
-    fRun->AddModule(mvd);
+    run->AddModule(mvd);
   }
 
   if ( stsGeom != "" ) {
     FairDetector* sts = new CbmStsMC(kTRUE);
     sts->SetGeometryFileName(stsGeom);
-    fRun->AddModule(sts);
+    run->AddModule(sts);
   }
 
   if ( richGeom != "" ) {
     FairDetector* rich = new CbmRich("RICH", kTRUE);
     rich->SetGeometryFileName(richGeom);
-    fRun->AddModule(rich);
+    run->AddModule(rich);
   }
   
   if ( muchGeom != "" ) {
@@ -215,19 +215,19 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   if ( shieldGeom != "" ) {
   	FairModule* shield = new CbmShield("SHIELD");
   	shield->SetGeometryFileName(shieldGeom);
-  	fRun->AddModule(shield);
+  	run->AddModule(shield);
   }
 
   if ( trdGeom != "" ) {
     FairDetector* trd = new CbmTrd("TRD",kTRUE );
     trd->SetGeometryFileName(trdGeom);
-    fRun->AddModule(trd);
+    run->AddModule(trd);
   }
 
   if ( tofGeom != "" ) {
     FairDetector* tof = new CbmTof("TOF", kTRUE);
     tof->SetGeometryFileName(tofGeom);
-    fRun->AddModule(tof);
+    run->AddModule(tof);
   }
   
   if ( ecalGeom != "" ) {
@@ -241,7 +241,7 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
  	psd->SetZposition(psdZpos); // in cm
  	psd->SetXshift(psdXpos);  // in cm    
  	psd->SetGeoFile(psdGeom);  
-	fRun->AddModule(psd);
+	run->AddModule(psd);
   }
   
   // ------------------------------------------------------------------------
@@ -255,16 +255,14 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   } 
   magField->SetPosition(0., 0., fieldZ);
   magField->SetScale(fieldScale);
-  fRun->SetField(magField);
+  run->SetField(magField);
   // ------------------------------------------------------------------------
 
-  // Use the experiment specific MC Event header instead of the default one
-  // This one stores additional information about the reaction plane
-  CbmMCEventHeader* mcHeader = new CbmMCEventHeader();
-  fRun->SetMCEventHeader(mcHeader);
 
   // -----   Create PrimaryGenerator   --------------------------------------
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
+  // --- Uniform distribution of event plane angle
+  primGen->SetEventPlane(0., 2. * TMath::Pi());
   // --- Get target parameters
   Double_t tX = 0.;
   Double_t tY = 0.;
@@ -285,24 +283,21 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // in the FairPrimaryGenerator class.
   // ------------------------------------------------------------------------
 
-  // Use the CbmUnigenGenrator which calculates a reaction plane and
-  // rotate all particles accordingly
+  // Use the CbmUnigenGenrator for the input
   CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
-  uniGen->SetEventPlane(0. , 360.);
   primGen->AddGenerator(uniGen);
-  fRun->SetGenerator(primGen);       
+  run->SetGenerator(primGen);
   // ------------------------------------------------------------------------
 
  
-  // Trajectories Visualization (TGeoManager Only)
-  // Switch this on if you want to visualize tracks in the
-  // eventdisplay.
+  // Visualisation of trajectories (TGeoManager Only)
+  // Switch this on if you want to visualise tracks in the event display.
   // This is normally switch off, because of the huge files created
   // when it is switched on. 
-  fRun->SetStoreTraj(kTRUE);
+  run->SetStoreTraj(kFALSE);
 
   // -----   Run initialisation   -------------------------------------------
-  fRun->Init();
+  run->Init();
   // ------------------------------------------------------------------------
   
   // Set cuts for storing the trajectories.
@@ -311,18 +306,20 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // that the file size of the output file depends on these cuts
 
    FairTrajFilter* trajFilter = FairTrajFilter::Instance();
-   trajFilter->SetStepSizeCut(0.01); // 1 cm
-   trajFilter->SetVertexCut(-2000., -2000., 4., 2000., 2000., 100.);
-   trajFilter->SetMomentumCutP(10e-3); // p_lab > 10 MeV
-   trajFilter->SetEnergyCut(0., 1.02); // 0 < Etot < 1.04 GeV
-   trajFilter->SetStorePrimaries(kTRUE);
-   trajFilter->SetStoreSecondaries(kTRUE);
+   if ( trajFilter ) {
+  	 trajFilter->SetStepSizeCut(0.01); // 1 cm
+  	 trajFilter->SetVertexCut(-2000., -2000., 4., 2000., 2000., 100.);
+  	 trajFilter->SetMomentumCutP(10e-3); // p_lab > 10 MeV
+  	 trajFilter->SetEnergyCut(0., 1.02); // 0 < Etot < 1.04 GeV
+  	 trajFilter->SetStorePrimaries(kTRUE);
+  	 trajFilter->SetStoreSecondaries(kTRUE);
+   }
 
   // -----   Runtime database   ---------------------------------------------
   CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
   fieldPar->SetParameters(magField);
   fieldPar->setChanged();
-  fieldPar->setInputVersion(fRun->GetRunId(),1);
+  fieldPar->setInputVersion(run->GetRunId(),1);
   Bool_t kParameterMerged = kTRUE;
   FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
   parOut->open(parFile.Data());
@@ -333,24 +330,24 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
  
   // -----   Start run   ----------------------------------------------------
-  fRun->Run(nEvents);
+  run->Run(nEvents);
   // ------------------------------------------------------------------------
-  fRun->CreateGeometryFile(geoFile);
+  run->CreateGeometryFile(geoFile);
 
   // -----   Finish   -------------------------------------------------------
   timer.Stop();
   Double_t rtime = timer.RealTime();
   Double_t ctime = timer.CpuTime();
-  cout << endl << endl;
-  cout << "Macro finished succesfully." << endl;
-  cout << "Output file is "    << outFile << endl;
-  cout << "Parameter file is " << parFile << endl;
-  cout << "Real time " << rtime << " s, CPU time " << ctime 
-       << "s" << endl << endl;
+  std::cout << std::endl << std::endl;
+  std::cout << "Macro finished successfully." << std::endl;
+  std::cout << "Output file is "    << outFile << std::endl;
+  std::cout << "Parameter file is " << parFile << std::endl;
+  std::cout << "Real time " << rtime << " s, CPU time " << ctime
+       << "s" << std::endl << std::endl;
   // ------------------------------------------------------------------------
 
-  cout << " Test passed" << endl;
-  cout << " All ok " << endl;
+  std::cout << " Test passed" << std::endl;
+  std::cout << " All ok " << std::endl;
 
   // Function needed for CTest runtime dependency
   Generate_CTest_Dependency_File(depFile);
