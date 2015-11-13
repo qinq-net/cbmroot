@@ -468,7 +468,7 @@ Int_t CbmStsModule::FindHits(TClonesArray* hitArray) {
 	Int_t nHits = 0;
 	for (Int_t iSensor = 0; iSensor < GetNofDaughters(); iSensor++) {
 		CbmStsSensor* sensor = dynamic_cast<CbmStsSensor*>(GetDaughter(iSensor));
-		nHits += sensor->FindHits(fClusters, hitArray);
+		nHits += sensor->FindHits(fClusters, hitArray, fDeadTime);
 	}
 
 	LOG(DEBUG2) << GetName() << ": Clusters " << fClusters.size()
@@ -639,7 +639,6 @@ void CbmStsModule::AddDigiTb(CbmStsDigi* digi, Int_t index) {
 // -----   Start clustering procedure for the current module   -------------
 void CbmStsModule::StartClusteringTb() {
 	fIt_DigiTb = fDigisTb.begin();
-	fDeadTime = 20.;
 }
 
 // -----   Get information about next digi in multimap   -------------------

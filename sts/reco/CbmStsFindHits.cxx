@@ -34,6 +34,7 @@ CbmStsFindHits::CbmStsFindHits()
     , fNofHitsTot(0.)
     , fTimeTot(0.)
     , fActiveModules()
+	, fDTime(0.)
 {
 }
 // -------------------------------------------------------------------------
@@ -72,6 +73,7 @@ void CbmStsFindHits::Exec(Option_t* opt) {
 					       << FairLogger::endl;
 			continue;
 		}
+		if ( fDTime ) module->SetDeadTime(fDTime);
 		Int_t nModuleHits = module->FindHits(fHits);
 		LOG(DEBUG1) << GetName() << ": Module " << module->GetName()
     			      << ", clusters: " << module->GetNofClusters()

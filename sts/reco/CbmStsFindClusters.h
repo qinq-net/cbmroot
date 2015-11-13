@@ -85,7 +85,8 @@ class CbmStsFindClusters : public FairTask
     								  fUseFinderTb 	= kTRUE; }
 
     /** Set the FinderTb flag to use time based cluster finder **/
-    void UseTbClusterFinder()		{ fUseFinderTb 	= kTRUE; }
+    void UseTbClusterFinder(Double_t dTime)		{	fDeadTime = dTime;
+    												fUseFinderTb 	= kTRUE; }
 
 
     	private:
@@ -102,6 +103,7 @@ class CbmStsFindClusters : public FairTask
     vector<CbmStsDigi> fDigiData;          	///< Vector of digis for the time slices
     Bool_t fDaq;							///< Using DAQ
     Bool_t fUseFinderTb;						///< Using of time based cluster finder
+    Double_t fDeadTime;							///< Dead time for time-based cluster finder
 
     // --- Run counters
     Int_t     fNofEvents;       ///< Total number of events processed

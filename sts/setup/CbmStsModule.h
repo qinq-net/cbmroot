@@ -258,6 +258,9 @@ class CbmStsModule : public CbmStsElement
      /** Create cluster in the output array **/
      void CreateClusterTb(vector<Int_t> digiIndexes, Double_t s1, Double_t s2,
     		 	 	 Double_t s3, Double_t ts, Bool_t side, TClonesArray* clusterArray);
+
+     /** Set dead time for time-based hit finding **/
+     void SetDeadTime(Double_t dTime) { fDeadTime = dTime; }
      //---
 
 

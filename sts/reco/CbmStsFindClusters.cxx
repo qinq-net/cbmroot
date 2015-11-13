@@ -42,7 +42,8 @@ CbmStsFindClusters::CbmStsFindClusters(Int_t finderModel, Int_t algorithm)
     , fDaq(kFALSE)
     , fUseFinderTb(kFALSE)
     , fTimeSlice(NULL)
-      , fDigiData()
+    , fDigiData()
+	, fDeadTime(0.)
 {
    // LOG(INFO) << "ClusterFinderModel = " << fFinderModel << ", algorithm = " << fAlgorithm << endl;
 }
@@ -78,8 +79,10 @@ void CbmStsFindClusters::Exec(Option_t* opt) {
 	set<CbmStsModule*>::iterator it;
 	for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
 		Int_t nClusters = 0;
-		if(fUseFinderTb)
+		if(fUseFinderTb) {
+			(*it)->SetDeadTime(fDeadTime);
 			nClusters = fFinder->FindClustersTb(*it);
+		}
 		else
 			nClusters = fFinder->FindClustersSimple(*it);
 		LOG(DEBUG1) << GetName() << ": Module " << (*it)->GetName()

@@ -114,9 +114,9 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
 
 // -----   Find hits in sensor   -------------------------------------------
 Int_t CbmStsSensor::FindHits(vector<CbmStsCluster*>& clusters,
-		                         TClonesArray* hitArray) {
+		                         TClonesArray* hitArray, Double_t dTime) {
 	fHits = hitArray;
-	Int_t nHits = fType->FindHits(clusters, this);
+	Int_t nHits = fType->FindHits(clusters, this, dTime);
 	LOG(DEBUG2) << GetName() << ": Clusters " << clusters.size()
 			        << ", hits " << nHits << FairLogger::endl;
 	return nHits;

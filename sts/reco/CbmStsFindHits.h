@@ -67,6 +67,9 @@ class CbmStsFindHits : public FairTask
      **/
     virtual InitStatus Init();
 
+    /** Set dead time for time-based hit finding **/
+    virtual void SetDTime(Double_t dTime) { fDTime = dTime; }
+
 
 	private:
 
@@ -74,6 +77,7 @@ class CbmStsFindHits : public FairTask
     TClonesArray* fHits;                 ///< Output array of CbmStsHits
     CbmStsSetup*  fSetup;             ///< Instance of STS setup
     TStopwatch    fTimer;             ///< ROOT timer
+    Double_t fDTime;					///< Dead time for time-based hit finding
 
     // --- Run counters
     Int_t    fNofEvents;       ///< Total number of events processed

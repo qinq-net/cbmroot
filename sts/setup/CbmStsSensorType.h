@@ -48,7 +48,7 @@ class CbmStsSensorType : public TNamed
      ** implemented for each concrete sensor type.
      **/
     virtual Int_t FindHits(std::vector<CbmStsCluster*>& clusters,
-    		                   CbmStsSensor* sensor) = 0;
+    		                   CbmStsSensor* sensor, Double_t dTime) = 0;
 
 
     /** Type identifier **/

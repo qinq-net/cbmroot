@@ -71,7 +71,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      ** Abstract from CbmStsSensorType
      **/
     virtual Int_t FindHits(std::vector<CbmStsCluster*>&,
-    		                   CbmStsSensor* sensor);
+    		                   CbmStsSensor* sensor, Double_t dTime);
 
 
     /** Get parameters

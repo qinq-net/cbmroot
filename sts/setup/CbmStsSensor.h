@@ -83,7 +83,7 @@ class CbmStsSensor : public CbmStsElement
      ** @return Number of created hits
      **/
     Int_t FindHits(vector<CbmStsCluster*>& clusters,
-    		           TClonesArray* hitArray);
+    		           TClonesArray* hitArray, Double_t dTime);
 
 
     /** Sensor conditions

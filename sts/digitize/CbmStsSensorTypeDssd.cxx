@@ -121,7 +121,7 @@ void CbmStsSensorTypeDssd::Diffusion(Double_t x, Double_t y,
 
 // -----   Find hits   -----------------------------------------------------
 Int_t CbmStsSensorTypeDssd::FindHits(vector<CbmStsCluster*>& clusters,
-		                                 CbmStsSensor* sensor) {
+		                                 CbmStsSensor* sensor, Double_t dTime) {
 
 	Int_t nHits = 0;
 	Int_t nClusters = clusters.size();
@@ -139,6 +139,7 @@ Int_t CbmStsSensorTypeDssd::FindHits(vector<CbmStsCluster*>& clusters,
 	for (Int_t iCluster = 0; iCluster < nClusters; iCluster++) {
 		CbmStsCluster* cluster = clusters[iCluster];
 		side = GetSide( cluster->GetCentre() );
+
 		if ( side == 0) {
 			frontClusters.push_back(iCluster);
 			nClustersF++;
@@ -162,6 +163,10 @@ Int_t CbmStsSensorTypeDssd::FindHits(vector<CbmStsCluster*>& clusters,
 		CbmStsCluster* clusterF = clusters[frontClusters[iClusterF]];
 		for (Int_t iClusterB = 0; iClusterB < nClustersB;	iClusterB++) {
 			CbmStsCluster* clusterB = clusters[backClusters[iClusterB]];
+
+			// --- For time-based hit finding ---
+			if ( dTime > 0. && fabs(clusterF->GetTime() - clusterB->GetTime()) > dTime ) continue;
+			// ----------------------
 
 			// --- Calculate intersection points
 			Int_t nOfHits = IntersectClusters(clusterF, clusterB, sensor);
