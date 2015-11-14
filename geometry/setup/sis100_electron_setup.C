@@ -70,7 +70,7 @@ void sis100_electron_setup()
   mvdTag       = "v15a";
   stsTag       = "v15a";
   trdTag       = "v15a_1e";
-  tofTag       = "v13-5b";
+  tofTag       = "v16a_1e";
 
   // -----  DigiFiles  ------------------------------------------------------
   stsDigi      = "sts/sts_" + stsTag + "_std.digi.par";

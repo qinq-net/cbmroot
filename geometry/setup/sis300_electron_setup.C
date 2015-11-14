@@ -32,7 +32,7 @@ void sis300_electron_setup()
   mvdTag       = "v15a";
   stsTag       = "v15a";
   trdTag       = "v15a_3e";
-  tofTag       = "v13-5d";
+  tofTag       = "v16a_3e";
 
   // -----  DigiFiles  ------------------------------------------------------
   stsDigi      = "sts/sts_";

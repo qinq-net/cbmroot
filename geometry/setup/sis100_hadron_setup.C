@@ -64,7 +64,7 @@ void sis100_hadron_setup()
   mvdTag       = "v15a";
   stsTag       = "v15a";
   trdTag       = "v15a_1h";
-  tofTag       = "v13-5a";
+  tofTag       = "v16a_1h";
 
   // -----  DigiFiles  ------------------------------------------------------
   stsDigi      = "sts/sts_" + stsTag + "_std.digi.par";
