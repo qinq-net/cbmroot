@@ -21,13 +21,14 @@ const TString ksPartName[kiNbPart] =
 const Int_t   kiMinNbStsPntAcc = 3; // Number of STS Pnt for Trk to be reconstructable
 //___________________________________________________________________
 
-Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.centr._qa.hst.all.root",
-                    TString sFilenameB = "data/tofqa.cbm100_pbar_auau.25gev.centr._qa.hst.all.root",
-                    TString sFilenameC = "data/tofqa.sis300_electron_auau.25gev.centr.noTRD_qa.hst.all.root",
-                    TString sFilenameD = "data/tofqa.cbm100_pbar_auau.25gev.centr.noTRD_qa.hst.all.root",
-                    TString sTagFilesA = "v13-5d",       TString sTagFilesB = "v15b",
-                    TString sTagFilesC = "v13-5d_noTrd", TString sTagFilesD = "v15b_noTrd",
-                    TString sOutFileTag = "_25gev" 
+Bool_t valGeomComp( Bool_t bSavePlots = kFALSE,
+                    TString sFilenameA = "data/tofqaHP_sis100_electron_auau_10gev_centr__qa_hst_all.root",
+                    TString sFilenameB = "data/tofqaHP_new_sis100_electron_auau_10gev_centr__qa_hst_all.root",
+                    TString sFilenameC = "data/tofqaHP_sis100_electron_auau_10gev_centr_noTRD_qa_hst_all.root",
+                    TString sFilenameD = "data/tofqaHP_new_sis100_electron_auau_10gev_centr_noTRD_qa_hst_all.root",
+                    TString sTagFilesA = "v13-5a",       TString sTagFilesB = "v16a_1h",
+                    TString sTagFilesC = "v13-5a_noTrd", TString sTagFilesD = "v16a_1h_noTrd",
+                    TString sOutFileTag = "_10gev" 
                     )
 {
    
@@ -82,17 +83,25 @@ Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.
    TH1 * hPlabStsPnt[kuNbFiles][kiNbPart];
    TH1 * hPlabGenTrkTofPnt[kuNbFiles][kiNbPart];
    TH1 * hPlabGenTrkTofHit[kuNbFiles][kiNbPart];
+   TH1 * hPlabStsTrkTofPnt[kuNbFiles][kiNbPart];
+   TH1 * hPlabStsTrkTofHit[kuNbFiles][kiNbPart];
    TH1 * hPlabTofPntEff[kuNbFiles][kiNbPart];
    TH1 * hPlabTofHitEff[kuNbFiles][kiNbPart];
    TH1 * hPlabTofHitGenEff[kuNbFiles][kiNbPart];
+   TH1 * hPlabTofPntEffSts[kuNbFiles][kiNbPart];
+   TH1 * hPlabTofHitEffSts[kuNbFiles][kiNbPart];
    
    TH1 * hPlabSecGenTrk[kuNbFiles][kiNbPart];
    TH1 * hPlabSecStsPnt[kuNbFiles][kiNbPart];
    TH1 * hPlabSecGenTrkTofPnt[kuNbFiles][kiNbPart];
    TH1 * hPlabSecGenTrkTofHit[kuNbFiles][kiNbPart];
+   TH1 * hPlabSecStsTrkTofPnt[kuNbFiles][kiNbPart];
+   TH1 * hPlabSecStsTrkTofHit[kuNbFiles][kiNbPart];
    TH1 * hPlabSecTofPntEff[kuNbFiles][kiNbPart];
    TH1 * hPlabSecTofHitEff[kuNbFiles][kiNbPart];
    TH1 * hPlabSecTofHitGenEff[kuNbFiles][kiNbPart];
+   TH1 * hPlabSecTofPntEffSts[kuNbFiles][kiNbPart];
+   TH1 * hPlabSecTofHitEffSts[kuNbFiles][kiNbPart];
       // Physics coord mapping, 1 per particle type
          // PLab
    Int_t    iNbBinsPlab = 100;
@@ -214,6 +223,20 @@ Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.
             hPlabGenTrkTofHit[uFile][iPartIdx] = (TH1*)(tempOneDimHist->Clone( 
                   Form("%s_PlabGenTrkTofHit_%s", sTagFiles[uFile].Data(), ksPartTag[iPartIdx].Data()) ) );
             else return kFALSE;
+            
+         tempOneDimHist = (TH1*) (filePnt[uFile]->FindObjectAny( 
+               Form("TofTests_PlabStsTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ) ) );
+         if( NULL != tempOneDimHist )
+            hPlabStsTrkTofPnt[uFile][iPartIdx] = (TH1*)(tempOneDimHist->Clone( 
+                  Form("%s_PlabStsTrkTofPnt_%s", sTagFiles[uFile].Data(), ksPartTag[iPartIdx].Data()) ) );
+            else return kFALSE;
+   
+         tempOneDimHist = (TH1*) (filePnt[uFile]->FindObjectAny( 
+               Form("TofTests_PlabStsTrkTofHit_%s", ksPartTag[iPartIdx].Data() ) ) );
+         if( NULL != tempOneDimHist )
+            hPlabStsTrkTofHit[uFile][iPartIdx] = (TH1*)(tempOneDimHist->Clone( 
+                  Form("%s_PlabStsTrkTofHit_%s", sTagFiles[uFile].Data(), ksPartTag[iPartIdx].Data()) ) );
+            else return kFALSE;
    
          tempOneDimHist = (TH1*) (filePnt[uFile]->FindObjectAny( 
                Form("TofTests_PlabSecGenTrk_%s", ksPartTag[iPartIdx].Data() ) ) );
@@ -241,6 +264,20 @@ Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.
          if( NULL != tempOneDimHist )
             hPlabSecGenTrkTofHit[uFile][iPartIdx] = (TH1*)(tempOneDimHist->Clone( 
                   Form("%s_PlabSecGenTrkTofHit_%s", sTagFiles[uFile].Data(), ksPartTag[iPartIdx].Data()) ) );
+            else return kFALSE;  
+         
+         tempOneDimHist = (TH1*) (filePnt[uFile]->FindObjectAny( 
+               Form("TofTests_PlabSecStsTrkTofPnt_%s", ksPartTag[iPartIdx].Data() ) ) );
+         if( NULL != tempOneDimHist )
+            hPlabSecStsTrkTofPnt[uFile][iPartIdx] = (TH1*)(tempOneDimHist->Clone( 
+                  Form("%s_PlabSecStsTrkTofPnt_%s", sTagFiles[uFile].Data(), ksPartTag[iPartIdx].Data()) ) );
+            else return kFALSE;
+   
+         tempOneDimHist = (TH1*) (filePnt[uFile]->FindObjectAny( 
+               Form("TofTests_PlabSecStsTrkTofHit_%s", ksPartTag[iPartIdx].Data() ) ) );
+         if( NULL != tempOneDimHist )
+            hPlabSecStsTrkTofHit[uFile][iPartIdx] = (TH1*)(tempOneDimHist->Clone( 
+                  Form("%s_PlabSecStsTrkTofHit_%s", sTagFiles[uFile].Data(), ksPartTag[iPartIdx].Data()) ) );
             else return kFALSE;
             
          hPlabTofPntEff[uFile][iPartIdx] = new TH1D( Form("%s_PlabTofPntEff_%s", sTagFiles[uFile].Data(), ksPartTag[iPartIdx].Data() ),
@@ -255,6 +292,14 @@ Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.
                               Form("P_{lab} efficiency for MC Primary Track with TOF hits VS same with TOF points, %s; P_{lab} [GeV/c]; Eff. (TOF Hit/TOF Pnt) [\%]", 
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
+         hPlabTofPntEffSts[uFile][iPartIdx] = new TH1D( Form("%s_PlabTofPntEffSts_%s", sTagFiles[uFile].Data(), ksPartTag[iPartIdx].Data() ),
+                              Form("P_{lab} efficiency VS Trk w/ 4+ STS Pnt for MC Primary Track with TOF points, %s; P_{lab} [GeV/c]; Eff. (TOF/STS Pnt) [\%]", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsPlab, dMinPlab, dMaxPlab);
+         hPlabTofHitEffSts[uFile][iPartIdx] = new TH1D( Form("%s_PlabTofHitEffSts_%s", sTagFiles[uFile].Data(), ksPartTag[iPartIdx].Data() ),
+                              Form("P_{lab} efficiency VS Trk w/ 4+ STS Pnt for MC Primary Track with TOF hits, %s; P_{lab} [GeV/c]; Eff. (TOF Hit/STS Pnt) [\%]", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsPlab, dMinPlab, dMaxPlab);
          hPlabSecTofPntEff[uFile][iPartIdx] = new TH1D( Form("%s_PlabSecTofPntEff_%s", sTagFiles[uFile].Data(), ksPartTag[iPartIdx].Data() ),
                               Form("P_{lab} efficiency VS Generator for MC Secondary Track with TOF points, %s; P_{lab} [GeV/c]; Eff. (TOF/GEN) [\%]", 
                                    ksPartName[iPartIdx].Data()  ),
@@ -267,6 +312,14 @@ Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.
                               Form("P_{lab} efficiency for MC Secondary Track with TOF hits VS same with TOF points, %s; P_{lab} [GeV/c]; Eff. (TOF Hit/TOF Pnt) [\%]", 
                                    ksPartName[iPartIdx].Data()  ),
                               iNbBinsPlab, dMinPlab, dMaxPlab);
+         hPlabSecTofPntEffSts[uFile][iPartIdx] = new TH1D( Form("%s_PlabSecTofPntEffSts_%s", sTagFiles[uFile].Data(), ksPartTag[iPartIdx].Data() ),
+                              Form("P_{lab} efficiency VS Trk w/ 4+ STS Pnt for MC Secondary Track with TOF points, %s; P_{lab} [GeV/c]; Eff. (TOF/STS Pnt) [\%]", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsPlab, dMinPlab, dMaxPlab);
+         hPlabSecTofHitEffSts[uFile][iPartIdx] = new TH1D( Form("%s_PlabSecTofHitEffSts_%s", sTagFiles[uFile].Data(), ksPartTag[iPartIdx].Data() ),
+                              Form("P_{lab} efficiency VS Trk w/ 4+ STS Pnt for MC Secondary Track with TOF hits, %s; P_{lab} [GeV/c]; Eff. (TOF Hit/STS Pnt) [\%]", 
+                                   ksPartName[iPartIdx].Data()  ),
+                              iNbBinsPlab, dMinPlab, dMaxPlab);
                               
          hPlabTofPntEff[uFile][iPartIdx]      ->Divide( hPlabGenTrkTofPnt[uFile][iPartIdx],
                                                         hPlabGenTrk[uFile][iPartIdx],
@@ -277,6 +330,12 @@ Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.
          hPlabTofHitGenEff[uFile][iPartIdx]   ->Divide( hPlabGenTrkTofHit[uFile][iPartIdx],
                                                         hPlabGenTrkTofPnt[uFile][iPartIdx],
                                                         100.0 );
+         hPlabTofPntEffSts[uFile][iPartIdx]   ->Divide( hPlabStsTrkTofPnt[uFile][iPartIdx],
+                                                        hPlabStsPnt[uFile][iPartIdx],
+                                                        100.0 );
+         hPlabTofHitEffSts[uFile][iPartIdx]   ->Divide( hPlabStsTrkTofHit[uFile][iPartIdx],
+                                                        hPlabStsPnt[uFile][iPartIdx],
+                                                        100.0 );
          hPlabSecTofPntEff[uFile][iPartIdx]   ->Divide( hPlabSecGenTrkTofPnt[uFile][iPartIdx],
                                                         hPlabSecGenTrk[uFile][iPartIdx],
                                                         100.0 );
@@ -285,6 +344,12 @@ Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.
                                                         100.0 );
          hPlabSecTofHitGenEff[uFile][iPartIdx]->Divide( hPlabSecGenTrkTofHit[uFile][iPartIdx],
                                                         hPlabSecGenTrkTofPnt[uFile][iPartIdx],
+                                                        100.0 );
+         hPlabSecTofPntEffSts[uFile][iPartIdx]->Divide( hPlabSecStsTrkTofPnt[uFile][iPartIdx],
+                                                        hPlabSecStsPnt[uFile][iPartIdx],
+                                                        100.0 );
+         hPlabSecTofHitEffSts[uFile][iPartIdx]->Divide( hPlabSecStsTrkTofHit[uFile][iPartIdx],
+                                                        hPlabSecStsPnt[uFile][iPartIdx],
                                                         100.0 );
       } // Loop on particle species
        
@@ -375,8 +440,11 @@ Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.
    gPad->SetLogy();
    histosStackAllEff->Draw("nostack");
    
-//   canvAll->SaveAs( Form( "HProdDigi_All_%s.png", sOutFileTag.Data() ) );
-//   canvAll->SaveAs( Form( "HProdDigi_All_%s.pdf", sOutFileTag.Data() ) );
+   if( kTRUE == bSavePlots )
+   {
+      canvAll->SaveAs( Form( "plots/tofGeoComp_ResidualsAll_%s.png", sOutFileTag.Data() ) );
+      canvAll->SaveAs( Form( "plots/tofGeoComp_ResidualsAll_%s.pdf", sOutFileTag.Data() ) );
+   } // if( kTRUE == bSavePlots )
 
    TCanvas *canvEffPntPrim = new TCanvas( "canvEffPntPrim", 
          "Efficiency up to TOF Points, for different species, geometries comparison",
@@ -394,7 +462,19 @@ Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.
          "Efficiency up to TOF Hits generation, for different species, geometries comparison",
          1920, 986 );
    canvEffHitGenPrim->cd();
-   canvEffHitGenPrim->Divide(3,3);         
+   canvEffHitGenPrim->Divide(3,3);
+
+   TCanvas *canvEffPntPrimSts = new TCanvas( "canvEffPntPrimSts", 
+         "Efficiency from STS point to TOF Points, for different species, geometries comparison",
+         1920, 986 );
+   canvEffPntPrimSts->cd();
+   canvEffPntPrimSts->Divide(3,3);
+   
+   TCanvas *canvEffHitPrimSts = new TCanvas( "canvEffHitPrimSts", 
+         "Efficiency from STS point to TOF Hits, for different species, geometries comparison",
+         1920, 986 );
+   canvEffHitPrimSts->cd();
+   canvEffHitPrimSts->Divide(3,3);
 
    TCanvas *canvEffPntSec = new TCanvas( "canvEffPntSec", 
          "Efficiency up to TOF Points, for different species, geometries comparison",
@@ -413,13 +493,30 @@ Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.
          1920, 986 );
    canvEffHitGenSec->cd();
    canvEffHitGenSec->Divide(3,3);
+
+   TCanvas *canvEffPntSecSts = new TCanvas( "canvEffPntSecSts", 
+         "Efficiency from STS point to TOF Points, for different species, geometries comparison",
+         1920, 986 );
+   canvEffPntSecSts->cd();
+   canvEffPntSecSts->Divide(3,3);
+   
+   TCanvas *canvEffHitSecSts = new TCanvas( "canvEffHitSecSts", 
+         "Efficiency from STS point to TOF Hits, for different species, geometries comparison",
+         1920, 986 );
+   canvEffHitSecSts->cd();
+   canvEffHitSecSts->Divide(3,3);
    
    THStack * histosStackEffPntPrim[kiNbPart];
    THStack * histosStackEffHitPrim[kiNbPart];
    THStack * histosStackEffHitGenPrim[kiNbPart];
+   THStack * histosStackEffPntPrimSts[kiNbPart];
+   THStack * histosStackEffHitPrimSts[kiNbPart];
+   
    THStack * histosStackEffPntSec[kiNbPart];
    THStack * histosStackEffHitSec[kiNbPart];
    THStack * histosStackEffHitGenSec[kiNbPart];
+   THStack * histosStackEffPntSecSts[kiNbPart];
+   THStack * histosStackEffHitSecSts[kiNbPart];
    
    for(UInt_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    {
@@ -432,6 +529,13 @@ Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.
       histosStackEffHitGenPrim[iPartIdx] = new THStack( Form("histosStackEffHitGenPrim_%s", ksPartTag[iPartIdx].Data() ),
           Form("P_{lab} efficiency for MC Primary Track with TOF hits VS same with TOF points, %s; P_{lab} [GeV/c]; Eff. (TOF Hit/TOF Pnt) [\%]", 
                                    ksPartName[iPartIdx].Data()  ) );
+      histosStackEffPntPrimSts[iPartIdx] = new THStack( Form("histosStackEffPntPrimSts_%s", ksPartTag[iPartIdx].Data() ),
+          Form("P_{lab} efficiency VS Trk w/ 4+ STS Pnt for MC Primary Track with TOF points, %s; P_{lab} [GeV/c]; Eff. (TOF/STS Pnt) [\%]", 
+                                   ksPartName[iPartIdx].Data()  ) );
+      histosStackEffHitPrimSts[iPartIdx] = new THStack( Form("histosStackEffHitPrimSts_%s", ksPartTag[iPartIdx].Data() ),
+          Form("P_{lab} efficiency VS Trk w/ 4+ STS Pnt for MC Primary Track with TOF hits, %s; P_{lab} [GeV/c]; Eff. (TOF Hit/STS Pnt) [\%]",
+                                   ksPartName[iPartIdx].Data()  ) );
+                                   
       histosStackEffPntSec[iPartIdx] = new THStack( Form("histosStackEffPntSec_%s", ksPartTag[iPartIdx].Data() ),
           Form("P_{lab} efficiency VS Generator for MC Secondary Track with TOF points, %s; P_{lab} [GeV/c]; Eff. (TOF/GEN) [\%]", 
                                    ksPartName[iPartIdx].Data()  ) );
@@ -440,6 +544,12 @@ Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.
                                    ksPartName[iPartIdx].Data()  ) );
       histosStackEffHitGenSec[iPartIdx] = new THStack( Form("histosStackEffHitGenSec_%s", ksPartTag[iPartIdx].Data() ),
           Form("P_{lab} efficiency for MC Secondary Track with TOF hits VS same with TOF points, %s; P_{lab} [GeV/c]; Eff. (TOF Hit/TOF Pnt) [\%]", 
+                                   ksPartName[iPartIdx].Data()  ) );
+      histosStackEffPntSecSts[iPartIdx] = new THStack( Form("histosStackEffPntSecSts_%s", ksPartTag[iPartIdx].Data() ),
+          Form("P_{lab} efficiency VS Trk w/ 4+ STS Pnt for MC Secondary Track with TOF points, %s; P_{lab} [GeV/c]; Eff. (TOF/STS Pnt) [\%]", 
+                                   ksPartName[iPartIdx].Data()  ) );
+      histosStackEffHitSecSts[iPartIdx] = new THStack( Form("histosStackEffHitSecSts_%s", ksPartTag[iPartIdx].Data() ),
+          Form("P_{lab} efficiency VS Trk w/ 4+ STS Pnt for MC Secondary Track with TOF hits, %s; P_{lab} [GeV/c]; Eff. (TOF Hit/STS Pnt) [\%]",
                                    ksPartName[iPartIdx].Data()  ) );
                                    
       for( UInt_t uFile = 0; uFile < kuNbFiles; uFile++)
@@ -456,6 +566,14 @@ Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.
          hPlabTofHitGenEff[uFile][iPartIdx]->SetLineWidth( kiLineWidth );
          histosStackEffHitGenPrim[iPartIdx]->Add( hPlabTofHitGenEff[uFile][iPartIdx] );
          
+         hPlabTofPntEffSts[uFile][iPartIdx]->SetLineColor( kcFileColor[uFile] );
+         hPlabTofPntEffSts[uFile][iPartIdx]->SetLineWidth( kiLineWidth );
+         histosStackEffPntPrimSts[iPartIdx]->Add( hPlabTofPntEffSts[uFile][iPartIdx] );
+         
+         hPlabTofHitEffSts[uFile][iPartIdx]->SetLineColor( kcFileColor[uFile] );
+         hPlabTofHitEffSts[uFile][iPartIdx]->SetLineWidth( kiLineWidth );
+         histosStackEffHitPrimSts[iPartIdx]->Add( hPlabTofHitEffSts[uFile][iPartIdx] );
+         
          hPlabSecTofPntEff[uFile][iPartIdx]->SetLineColor( kcFileColor[uFile] );
          hPlabSecTofPntEff[uFile][iPartIdx]->SetLineWidth( kiLineWidth );
          histosStackEffPntSec[iPartIdx]->Add( hPlabSecTofPntEff[uFile][iPartIdx] );
@@ -467,6 +585,14 @@ Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.
          hPlabSecTofHitGenEff[uFile][iPartIdx]->SetLineColor( kcFileColor[uFile] );
          hPlabSecTofHitGenEff[uFile][iPartIdx]->SetLineWidth( kiLineWidth );
          histosStackEffHitGenSec[iPartIdx]->Add( hPlabSecTofHitGenEff[uFile][iPartIdx] );
+         
+         hPlabSecTofPntEffSts[uFile][iPartIdx]->SetLineColor( kcFileColor[uFile] );
+         hPlabSecTofPntEffSts[uFile][iPartIdx]->SetLineWidth( kiLineWidth );
+         histosStackEffPntSecSts[iPartIdx]->Add( hPlabSecTofPntEffSts[uFile][iPartIdx] );
+         
+         hPlabSecTofHitEffSts[uFile][iPartIdx]->SetLineColor( kcFileColor[uFile] );
+         hPlabSecTofHitEffSts[uFile][iPartIdx]->SetLineWidth( kiLineWidth );
+         histosStackEffHitSecSts[iPartIdx]->Add( hPlabSecTofHitEffSts[uFile][iPartIdx] );
       } // for( UInt_t uFile = 0; uFile < kuNbFiles; uFile++)
       
       canvEffPntPrim->cd(1 + iPartIdx);
@@ -484,6 +610,16 @@ Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.
       gPad->SetGridy();
       histosStackEffHitGenPrim[iPartIdx]->Draw("nostack");
       
+      canvEffPntPrimSts->cd(1 + iPartIdx);
+      gPad->SetGridx();
+      gPad->SetGridy();
+      histosStackEffPntPrimSts[iPartIdx]->Draw("nostack");
+      
+      canvEffHitPrimSts->cd(1 + iPartIdx);
+      gPad->SetGridx();
+      gPad->SetGridy();
+      histosStackEffHitPrimSts[iPartIdx]->Draw("nostack");
+      
       canvEffPntSec->cd(1 + iPartIdx);
       gPad->SetGridx();
       gPad->SetGridy();
@@ -498,8 +634,43 @@ Bool_t valGeomComp( TString sFilenameA = "data/tofqa.sis300_electron_auau.25gev.
       gPad->SetGridx();
       gPad->SetGridy();
       histosStackEffHitGenSec[iPartIdx]->Draw("nostack");
+      
+      canvEffPntSecSts->cd(1 + iPartIdx);
+      gPad->SetGridx();
+      gPad->SetGridy();
+      histosStackEffPntSecSts[iPartIdx]->Draw("nostack");
+      
+      canvEffHitSecSts->cd(1 + iPartIdx);
+      gPad->SetGridx();
+      gPad->SetGridy();
+      histosStackEffHitSecSts[iPartIdx]->Draw("nostack");
    } // for(UInt_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    
+   if( kTRUE == bSavePlots )
+   {
+      canvEffPntPrim   ->SaveAs( Form( "plots/tofGeoComp_EffPntPrim_%s.png", sOutFileTag.Data() ) );
+      canvEffHitPrim   ->SaveAs( Form( "plots/tofGeoComp_EffHitPrim_%s.png", sOutFileTag.Data() ) );
+      canvEffHitGenPrim->SaveAs( Form( "plots/tofGeoComp_EffHitGenPrim_%s.png", sOutFileTag.Data() ) );
+      canvEffPntPrimSts->SaveAs( Form( "plots/tofGeoComp_EffPntPrimSts_%s.png", sOutFileTag.Data() ) );
+      canvEffHitPrimSts->SaveAs( Form( "plots/tofGeoComp_EffHitPrimSts_%s.png", sOutFileTag.Data() ) );
+      canvEffPntSec    ->SaveAs( Form( "plots/tofGeoComp_EffPntSec_%s.png", sOutFileTag.Data() ) );
+      canvEffHitSec    ->SaveAs( Form( "plots/tofGeoComp_EffHitSec_%s.png", sOutFileTag.Data() ) );
+      canvEffHitGenSec ->SaveAs( Form( "plots/tofGeoComp_EffHitGenSec_%s.png", sOutFileTag.Data() ) );
+      canvEffPntSecSts ->SaveAs( Form( "plots/tofGeoComp_EffPntSecSts_%s.png", sOutFileTag.Data() ) );
+      canvEffHitSecSts ->SaveAs( Form( "plots/tofGeoComp_EffHitSecSts_%s.png", sOutFileTag.Data() ) );
+      
+      canvEffPntPrim   ->SaveAs( Form( "plots/tofGeoComp_EffPntPrim_%s.pdf", sOutFileTag.Data() ) );
+      canvEffHitPrim   ->SaveAs( Form( "plots/tofGeoComp_EffHitPrim_%s.pdf", sOutFileTag.Data() ) );
+      canvEffHitGenPrim->SaveAs( Form( "plots/tofGeoComp_EffHitGenPrim_%s.pdf", sOutFileTag.Data() ) );
+      canvEffPntPrimSts->SaveAs( Form( "plots/tofGeoComp_EffPntPrimSts_%s.pdf", sOutFileTag.Data() ) );
+      canvEffHitPrimSts->SaveAs( Form( "plots/tofGeoComp_EffHitPrimSts_%s.pdf", sOutFileTag.Data() ) );
+      canvEffPntSec    ->SaveAs( Form( "plots/tofGeoComp_EffPntSec_%s.pdf", sOutFileTag.Data() ) );
+      canvEffHitSec    ->SaveAs( Form( "plots/tofGeoComp_EffHitSec_%s.pdf", sOutFileTag.Data() ) );
+      canvEffHitGenSec ->SaveAs( Form( "plots/tofGeoComp_EffHitGenSec_%s.pdf", sOutFileTag.Data() ) );
+      canvEffPntSecSts ->SaveAs( Form( "plots/tofGeoComp_EffPntSecSts_%s.pdf", sOutFileTag.Data() ) );
+      canvEffHitSecSts ->SaveAs( Form( "plots/tofGeoComp_EffHitSecSts_%s.pdf", sOutFileTag.Data() ) );
+   } // if( kTRUE == bSavePlots )
+
    return kTRUE;
 }
                        

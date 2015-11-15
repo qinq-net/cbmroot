@@ -312,11 +312,15 @@ class CbmTofHitFinderQa : public FairTask {
       std::vector<TH2 *> fvhPtmRapGenTrkTofHit;
       std::vector<TH1 *> fvhPlabGenTrkTofPnt;
       std::vector<TH1 *> fvhPlabGenTrkTofHit;
+      std::vector<TH1 *> fvhPlabStsTrkTofPnt;
+      std::vector<TH1 *> fvhPlabStsTrkTofHit;
                // Secondary tracks
       std::vector<TH2 *> fvhPtmRapSecGenTrkTofPnt;
       std::vector<TH2 *> fvhPtmRapSecGenTrkTofHit;
       std::vector<TH1 *> fvhPlabSecGenTrkTofPnt;
       std::vector<TH1 *> fvhPlabSecGenTrkTofHit;
+      std::vector<TH1 *> fvhPlabSecStsTrkTofPnt;
+      std::vector<TH1 *> fvhPlabSecStsTrkTofHit;
 
          // Integrated TofHit Efficiency
       std::vector<ULong64_t> fvulIdxTracksWithPnt;
