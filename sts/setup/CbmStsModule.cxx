@@ -31,7 +31,8 @@ CbmStsModule::CbmStsModule() : CbmStsElement(),
                                fAnalogBuffer(),
                                fDigis(),
                                fClusters(),
-							   fDigisTb()
+                               fDigisTb(),
+                               fIt_DigiTb()
 {
 }
 // -------------------------------------------------------------------------
@@ -54,7 +55,8 @@ CbmStsModule::CbmStsModule(const char* name, const char* title,
                            fDeadChannels(),
                            fDigis(),
                            fClusters(),
-						   fDigisTb()
+                           fDigisTb(),
+                           fIt_DigiTb()
 {
 }
 // -------------------------------------------------------------------------
