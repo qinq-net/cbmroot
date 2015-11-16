@@ -64,7 +64,7 @@ for ((phi=0; phi<=1; phi++)); do
 	if [ $Rm == 1 ];then rotmir=-10; fi
 	
 	for ((Th=0; Th<=0; Th++)); do
-	    if [ $Th == 0 ];then MaxTheta=1000; fi
+	    if [ $Th == 0 ];then MaxTheta=2500; fi
 	    if [ $Th == 1 ];then MaxTheta=3500; fi
 	    
 	 #   for ((RX=0; RX<=$UpperRotX; RX++)); do
