@@ -33,9 +33,11 @@ link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
 CbmDirectPhotonGenerator.cxx
+CbmDYMuonGenerator.cxx
 CbmEcalGenerator.cxx
 CbmHsdLvmGenerator.cxx
 CbmHsdGenerator.cxx
+CbmSemiMuonGenerator.cxx
 CbmShieldGenerator.cxx
 CbmUnigenGenerator.cxx
 URun.cxx
