@@ -293,8 +293,8 @@ void create_stsgeo_v16d(const char* geoTag="v16d")
 
 
   // --------------   Create geometry and top volume  -------------------------
-  const char* infilename  = "deplate.geo.root";
-  const char* outfilename = "dfplate.geo.root";
+  const char* infilename  = "cframe.geo.root";
+  const char* outfilename = "sts.geo.root";
   // -------   Load media from media file and create absober material ---------           
 //  FairGeoLoader*    geoLoad = new FairGeoLoader("TGeo","FairGeoLoader");
 //  FairGeoInterface* geoFace = geoLoad->getGeoInterface();
