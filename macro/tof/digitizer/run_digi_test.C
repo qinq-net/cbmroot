@@ -89,7 +89,7 @@ void run_digi_test(Int_t nEvents = 2, const char* setup = "sis100_electron")
   TObjString tofDigiFile(paramDir + tofDigi);
   parFileList->Add(&tofDigiFile);
 
-  TObjString tofDigiBdfFile(paramDir + "tof/tof.digibdf.par");
+  TObjString tofDigiBdfFile(paramDir + "/tof/tof_" + tofTag + ".digibdf.par");
   parFileList->Add(&tofDigiBdfFile);
 
   // Function needed for CTest runtime dependency

@@ -41,6 +41,7 @@ class CbmTofTests : public FairTask {
        virtual void SetParContainers();
 
        Bool_t   RegisterInputs();
+       Bool_t   InitParameters();
 
    private:
       Bool_t   CreateHistos();

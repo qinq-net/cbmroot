@@ -12,6 +12,7 @@
 #include "CbmTofHit.h"        // in cbmdata/tof
 #include "CbmTofGeoHandler.h" // in tof/TofTools
 #include "CbmTofDetectorId_v12b.h" // in cbmdata/tof
+#include "CbmTofDetectorId_v14a.h" // in cbmdata/tof
 #include "CbmTofCell.h"       // in tof/TofData
 #include "CbmTofDigiPar.h"    // in tof/TofParam
 #include "CbmTofDigiBdfPar.h" // in tof/TofParam
@@ -198,6 +199,8 @@ CbmTofTests::CbmTofTests(const char* name, Int_t verbose)
 CbmTofTests::~CbmTofTests()
 {
     // Destructor
+   if( fGeoHandler )
+      delete fGeoHandler;
 }
 // ------------------------------------------------------------------
 /************************************************************************************/
@@ -207,7 +210,8 @@ InitStatus CbmTofTests::Init()
    if( kFALSE == RegisterInputs() )
       return kFATAL;
 
-   fTofId = new CbmTofDetectorId_v12b();
+   if( kFALSE == InitParameters() )
+      return kFATAL;
 
    if( kFALSE == LoadGeometry() )
       return kFATAL;
@@ -216,6 +220,33 @@ InitStatus CbmTofTests::Init()
       return kFATAL;
 
    return kSUCCESS;
+}
+
+Bool_t   CbmTofTests::InitParameters()
+{
+   // Initialize the TOF GeoHandler
+   Bool_t isSimulation=kFALSE;
+   Int_t iGeoVersion = fGeoHandler->Init(isSimulation);
+   if( k12b > iGeoVersion )
+   {
+      LOG(ERROR)<<"CbmTofDigitizerBDF::InitParameters => Only compatible with geometries after v12b !!!"
+                <<FairLogger::endl;
+      return kFALSE;
+   }
+
+   LOG(INFO)<<"CbmTofDigitizerBDF::InitParameters: GeoVersion "<<iGeoVersion<<FairLogger::endl;
+
+   switch(iGeoVersion){
+      case k12b:
+         fTofId = new CbmTofDetectorId_v12b();
+         break;
+      case k14a:
+         fTofId = new CbmTofDetectorId_v14a();
+         break;
+      default:
+         LOG(ERROR)<<"CbmTofDigitizerBDF::InitParameters: Invalid Detector ID "<<iGeoVersion<<FairLogger::endl;
+   }
+   return kTRUE;
 }
 
 void CbmTofTests::SetParContainers()
@@ -680,7 +711,9 @@ Bool_t CbmTofTests::FillHistos()
          Int_t iRpc    = pDigi->GetRpc();
          Int_t iCh     = pDigi->GetChannel();
          // First Get X/Y position info
-         CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh + 1);
+         if(fGeoHandler->GetGeoVersion() < k14a) 
+            iCh = iCh+1; //FIXME: Reason found in TofMC and TofGeoHandler
+         CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
          Int_t iChId =  fTofId->SetDetectorInfo( xDetInfo );
          fChannelInfo = fDigiPar->GetCell( iChId );
 
@@ -727,7 +760,9 @@ Bool_t CbmTofTests::FillHistos()
             Int_t iRpc    = pDigi->GetRpc();
             Int_t iCh     = pDigi->GetChannel();
             // First Get X/Y position info
-            CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh + 1);
+            if(fGeoHandler->GetGeoVersion() < k14a) 
+               iCh = iCh+1; //FIXME: Reason found in TofMC and TofGeoHandler
+            CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSm, iRpc, 0, iCh);
             Int_t iChId = fTofId->SetDetectorInfo( xDetInfo );
             fChannelInfo = fDigiPar->GetCell( iChId );
 
@@ -834,7 +869,7 @@ Bool_t CbmTofTests::FillHistos()
    } // for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
    if( 0 <  iNbTofHits )
       fhTofMixing->Fill(iNbMixedHits/iNbTofHits);
-
+      
    return kTRUE;
 }
 // ------------------------------------------------------------------
