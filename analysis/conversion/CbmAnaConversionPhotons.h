@@ -138,8 +138,8 @@ private:
 	TH2D * fhEFG_angleVSenergy_eta;
 
 	// opening angle vs pt from MC-true data
-	//TH2D * fhEFG_angleVSpt_all;
-	//TH2D * fhEFG_angleVSpt_combBack;
+	TH2D * fhEFG_angleVSpt_all;
+	TH2D * fhEFG_angleVSpt_combBack;
 	TH2D * fhEFG_angleVSpt_allSameG;
 	TH2D * fhEFG_angleVSpt_direct;
 	TH2D * fhEFG_angleVSpt_pi0;
@@ -228,8 +228,8 @@ private:
 	TH1D * fhEFG_invmass_eta_reco_cut;
 
 	// opening angle vs pt from reconstructed data
-	//TH2D * fhEFG_angleVSpt_all_reco;
-	//TH2D * fhEFG_angleVSpt_combBack_reco;
+	TH2D * fhEFG_angleVSpt_all_reco;
+	TH2D * fhEFG_angleVSpt_combBack_reco;
 	TH2D * fhEFG_angleVSpt_allSameG_reco;
 	TH2D * fhEFG_angleVSpt_direct_reco;
 	TH2D * fhEFG_angleVSpt_pi0_reco;

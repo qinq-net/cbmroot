@@ -235,12 +235,17 @@ private:
    vector<TVector3>		fTestTracklist_momentum;
    vector<float>		fTestTracklist_chi;
    vector<int>			fTestTracklist_richInd;
+   vector<int>			fTestTracklist_ndf;
+   vector<int>			fTestTracklist_nofhits;
    
    vector<CbmMCTrack*>	fTestTracklist_noRichInd;
    vector<int>			fTestTracklist_noRichInd_MCindex;
    vector<TVector3>		fTestTracklist_noRichInd_momentum;
    vector<float>		fTestTracklist_noRichInd_chi;
    vector<int>			fTestTracklist_noRichInd_richInd;
+   vector<int>			fTestTracklist_noRichInd_gTrackId;
+   vector<int>			fTestTracklist_noRichInd_ndf;
+   vector<int>			fTestTracklist_noRichInd_nofhits;
    
    vector<TVector3> fRecoMomentum;
    vector<TVector3> fRecoRefittedMomentum;
@@ -267,6 +272,10 @@ private:
 	TH1D * fhPi0_Reco_invmass_mc;
 	TH1D * fhPi0_Reco_noRichInd_invmass;
 	TH1D * fhPi0_Reco_noRichInd_invmass_mc;
+	TH2D * fhPi0_Reco_noRichInd_ndf_vs_nofhits;
+	TH2D * fhPi0_Reco_noRichInd_ndf_vs_nofhits_withChi;
+	TH2D * fhPi0_Reco_ndf_vs_nofhits;
+	TH2D * fhPi0_Reco_ndf_vs_nofhits_withChi;
    
    
    // timer
