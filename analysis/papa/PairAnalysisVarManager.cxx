@@ -71,7 +71,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"Pout",                   "#it{p}^{out}",                                       "(GeV/#it{c})"},
   {"Ptout",                  "#it{p}_{T}^{out}",                                   "(GeV/#it{c})"},
   // trd track information
-  {"TRDSignal",              "TRD d#it{E}/d#it{x} + TR",                           "(keV#upointcm^{2}/g})"},
+  {"TRDSignal",              "TRD d#it{E}/d#it{x} + TR",                           "(keV#upointcm^{2}/g)"},
   {"TRDPidWkn",              "PID_{e}^{TRD} (Wkn)",                                ""},
   {"TRDPidANN",              "PID_{e}^{TRD} (ANN)",                                ""},
   {"TRDPidLikeEL",           "P(PID_{e}^{TRD})",                                   ""},
