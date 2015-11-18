@@ -316,7 +316,7 @@ TString PairAnalysisHelper::GetDetName(DetectorId det) {
 }
 
 //_____________________________________________________________________________
-Double_t PairAnalysisHelper::GetContentMinimum(TH1 *h) {
+Double_t PairAnalysisHelper::GetContentMinimum(TH1 *h, Bool_t inclErr) {
   //
   // get minimum bin content of histogram (having entries)
   //
@@ -327,12 +327,13 @@ Double_t PairAnalysisHelper::GetContentMinimum(TH1 *h) {
   Int_t ylast   = h->GetYaxis()->GetLast();
   Int_t zfirst  = h->GetZaxis()->GetFirst();
   Int_t zlast   = h->GetZaxis()->GetLast();
-  Double_t minimum = FLT_MAX, value=0.;
+  Double_t minimum = FLT_MAX, value=0., error=0.;
   for (binz=zfirst;binz<=zlast;binz++) {
     for (biny=yfirst;biny<=ylast;biny++) {
       for (binx=xfirst;binx<=xlast;binx++) {
 	bin = h->GetBin(binx,biny,binz);
 	value = h->GetBinContent(bin);
+	if(inclErr) value -= h->GetBinError(bin);
 	if (value < minimum && 
 	    TMath::Abs(h->GetBinError(bin)-1.e-15) > 1.e-15) {
 	  minimum = value;

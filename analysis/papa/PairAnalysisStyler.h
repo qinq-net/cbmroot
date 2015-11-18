@@ -69,6 +69,8 @@ namespace PairAnalysisStyler
   extern UInt_t fLegAlign;           // legend alignement (11,12,21,22)
   void SetLegendAlign(UInt_t align);
   void SetLegendAttributes(TLegend *leg);
+
+  TH1* GetFirstHistogram();
   
 }
 

@@ -52,7 +52,7 @@ namespace PairAnalysisHelper
 
   // misc
   TString GetDetName(DetectorId det);
-  Double_t GetContentMinimum(TH1 *h);
+  Double_t GetContentMinimum(TH1 *h, Bool_t inclErr=kTRUE);
   Double_t GetContentMaximum(TH1 *h, Bool_t inclErr=kTRUE);
 
   TObject* FindObjectByTitle(TObjArray *arrhist, TString ref);

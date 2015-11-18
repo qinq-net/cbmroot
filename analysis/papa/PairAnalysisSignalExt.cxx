@@ -684,9 +684,9 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   }
 
   // logaritmic style
-  if(optString.Contains("logx")) gPad->SetLogx();
-  if(optString.Contains("logy")) gPad->SetLogy();
-  if(optString.Contains("logz")) gPad->SetLogz();
+  gPad->SetLogx(optString.Contains("logx"));
+  gPad->SetLogy(optString.Contains("logy"));
+  gPad->SetLogz(optString.Contains("logz"));
   optString.ReplaceAll("logx","");
   optString.ReplaceAll("logy","");
   optString.ReplaceAll("logz","");
@@ -810,7 +810,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
     }
   }
 
-  // axis maximum
+  // axis minimum and maximum
   Double_t max=-1e10;
   Double_t min=+1e10;
   //TListIter nextObj(gPad->GetListOfPrimitives(),kIterForward);
@@ -819,15 +819,20 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
   while ((obj = nextObj())) {
     if(obj->InheritsFrom(TH1::Class())) {
       TH1 *hobj = static_cast<TH1*>(obj);
-      max=TMath::Max(max,PairAnalysisHelper::GetContentMaximum(hobj)); //hobj->GetMaximum();
-      hobj->SetMaximum(max*(gPad->GetLogy()?5.:1.1));
-      if( gPad->GetLogy() && PairAnalysisHelper::GetContentMinimum(hobj)<0.) continue;
-      min=TMath::Min(min,PairAnalysisHelper::GetContentMinimum(hobj));//hobj->GetBinContent(hobj->GetMinimumBin()));
-      hobj->SetMinimum( min*(min<0.?1.1:0.9) ); //TODO: doesnt work, why?? Negative values?
+      max = TMath::Max(max,PairAnalysisHelper::GetContentMaximum(hobj)); //hobj->GetMaximum();
+      Double_t tmpmax = max*(gPad->GetLogy()?5.:1.1);
+      hobj->SetMaximum(tmpmax);
 
-      //      Printf("after %s max%f \t min%f",hobj->GetTitle(),max,min);
+      Double_t objmin=PairAnalysisHelper::GetContentMinimum(hobj);
+      if( gPad->GetLogy() && objmin<0.) objmin=0.5;
+      min=TMath::Min(min,objmin);
+      Double_t tmpmin = min*(min<0.?1.1:0.9);
+      hobj->SetMinimum(tmpmin);
+
+      // Printf("after %s max%f \t min%f \t for logy %.3e >? %.3e",
+      // hobj->GetTitle(),tmpmax,tmpmin, tmpmax/(tmpmin>0.?tmpmin:1.),TMath::Power(10.,TGaxis::GetMaxDigits()));
       // automatically set log option
-      if(gPad->GetLogy() && max/(min>0.?min:1.) > TMath::Power(10.,TGaxis::GetMaxDigits())) {
+      if(gPad->GetLogy() && tmpmax/(tmpmin>0.?tmpmin:1.) > TMath::Power(10.,TGaxis::GetMaxDigits())) {
 	hobj->GetYaxis()->SetMoreLogLabels(kFALSE);
 	hobj->GetYaxis()->SetNoExponent(kFALSE);
       }

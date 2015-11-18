@@ -212,7 +212,7 @@ void PairAnalysis::Init()
     fHistoArray->Init();
   }
 
-  /*
+  // for internal train wagons
   if(!fEventProcess) {
     PairAnalysisPairLegCuts *trk2leg = new PairAnalysisPairLegCuts("trk2leg","trk2leg");
     // move all track cuts (if any) into pair leg cuts
@@ -224,7 +224,6 @@ void PairAnalysis::Init()
     // add pair leg cuts to pair filter
     fPairFilter.AddCuts(trk2leg);
   }
-  */
 
   // initialize simple cut qa
   if (fCutQA) {
@@ -257,16 +256,13 @@ void PairAnalysis::Process(TObjArray *arr)
   // set pair arrays
   fPairCandidates = arr;
 
-  // TODO: think of the following filling
-  //fill debug tree if a manager is attached
-  //  if (fDebugTree) FillDebugTree();
-  //in case there is a histogram manager, fill the QA histograms
-  //  if (fHistos && fSignalsMC) FillMCHistograms(ev1);
+  // fill pair and pair leg histograms
+  if(fHistos) FillHistograms(0x0, kTRUE);
 
-  // apply cuts and fill output
-  if (fHistos) FillHistogramsFromPairArray();
+  // apply cuts and fill output TODO: OBSOLETE!
+  //  if (fHistos) FillHistogramsFromPairArray();
 
-  // never clear arrays !!!!
+  /// NOTE: never clear arrays !!!!
 
 }
 
@@ -282,16 +278,6 @@ Bool_t PairAnalysis::Process(PairAnalysisEvent *ev1)
     Fatal("PairAnalysis::Process","At least first event/vertex must be set!");
     return kFALSE;
   }
-
-  // modify event numbers in MC so that we can identify new events
-  // in PairAnalysisV0Cuts (not neeeded for collision data)
-  /*
-  if(GetHasMC()) {
-    ev1->SetBunchCrossNumber(1);
-    ev1->SetOrbitNumber(1);
-    ev1->SetPeriodNumber(1);
-  }
-  */
 
   // set event
   PairAnalysisVarManager::SetFillMap(fUsedVars);
@@ -476,6 +462,7 @@ void PairAnalysis::ProcessMC()
       if(!((PairAnalysisSignalMC*)fSignalsMC->UncheckedAt(isig))->GetFillPureMCStep()) continue;
 
       truth1 = papaMC->IsMCTruth(ipart, (PairAnalysisSignalMC*)fSignalsMC->UncheckedAt(isig), 1);
+      // TODO: save time by asking for single particle mc signals
       truth2 = papaMC->IsMCTruth(ipart, (PairAnalysisSignalMC*)fSignalsMC->UncheckedAt(isig), 2);
 
       // particles satisfying both branches are treated separately to avoid double counting during pairing
@@ -912,12 +899,22 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	!pairClassMC.CountBits() && !pairClassMChf.CountBits()) continue;
 
     // loop over all pairs
+    UInt_t selectedMask=(1<<fPairFilter.GetCuts()->GetEntries())-1; // for internal train wagons only
     Int_t npairs=PairArray(i)->GetEntriesFast();
     for (Int_t ipair=0; ipair<npairs; ++ipair){
       PairAnalysisPair *pair=static_cast<PairAnalysisPair*>(PairArray(i)->UncheckedAt(ipair));
 
       //fill pair information
       if (pairClass || pairClass2 || pairClassMC.CountBits() || pairClassMChf.CountBits()){
+
+	// in case of internal train wagon do the cut selections
+	if(!fEventProcess) {
+	  UInt_t cutMask=fPairFilter.IsSelected(pair);
+	  // apply cuts
+	  if (cutMask!=selectedMask) continue;
+	}
+
+	// fill histograms
         PairAnalysisVarManager::Fill(pair, values);
         if(pairClass)  fHistos    ->FillClass(className, values);
         if(pairClass2) fHistoArray->FillClass(className, values);
@@ -1545,7 +1542,7 @@ void PairAnalysis::FillHistogramsFromPairArray(Bool_t pairInfoOnly/*=kFALSE*/)
 
   //Fill Pair information, separately for all pair candidate arrays and the legs
   TObjArray arrLegs(100);
-  for (Int_t i=0; i<7; ++i){ // ROT pairs??
+  for (Int_t i=0; i<(kPairTypes-1); ++i){
     Int_t npairs=PairArray(i)->GetEntriesFast();
     if(npairs<1) continue;
 

@@ -94,6 +94,7 @@ public:
     kTOFPidDeltaBetaPI,      // delta of TOF beta to expected beta for pions
     kTOFPidDeltaBetaKA,      // delta of TOF beta to expected beta for kaons
     kTOFPidDeltaBetaPR,      // delta of TOF beta to expected beta for protons
+    kMassSq,                 // TOF mass squared
     kHitMax,
 // Particle specific variables
     kPx = kHitMax,           // px
@@ -1293,6 +1294,7 @@ inline void PairAnalysisVarManager::FillVarTofHit(const CbmTofHit *hit, Double_t
   values[kTOFPidDeltaBetaKA] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMKA]*values[kMKA]+values[kP]*values[kP]) );
   values[kTOFPidDeltaBetaPR] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMPR]*values[kMPR]+values[kP]*values[kP]) );
 
+  values[kMassSq]    = values[kP]*values[kP] * TMath::Power(1./values[kBeta],2);
 
   //  Printf("track length: %f beta: %f",values[kTrackLength],values[kBeta]);
   //  Double_t mass2 = TMath::Power(momentum, 2.) * (TMath::Power(time/ trackLength, 2) - 1);

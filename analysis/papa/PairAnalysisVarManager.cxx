@@ -38,6 +38,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"TOFPidDeltaBetaPI",      "#beta^{TOF}-#beta^{TOF}_{#pi}",                      ""},
   {"TOFPidDeltaBetaKA",      "#beta^{TOF}-#beta^{TOF}_{K}",                        ""},
   {"TOFPidDeltaBetaPR",      "#beta^{TOF}-#beta^{TOF}_{p}",                        ""},
+  {"MassSq",                 "m^{2} (TOF)",                                        ""},
 // Particle specific variables
   {"Px",                     "#it{p}_{x}",                                         "(GeV/#it{c})"},
   {"Py",                     "#it{p}_{y}",                                         "(GeV/#it{c})"},

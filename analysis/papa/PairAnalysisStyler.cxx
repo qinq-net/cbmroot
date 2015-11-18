@@ -6,12 +6,14 @@
 //   Julian Book <Julian.Book@cern.ch>
 
 #include <TROOT.h>
+#include <TError.h>
 #include <TStyle.h>
 #include <TGaxis.h>
 #include <TAttMarker.h>
 #include <TAttLine.h>
 #include <TAttFill.h>
 #include <TColor.h>
+#include <TCollection.h>
 #include <TH1.h>
 #include <TPad.h>
 #include <TLegend.h>
@@ -94,7 +96,7 @@ void PairAnalysisStyler::LoadStyle() {
     // defaultSty->SetHistFillStyle(0);
     defaultSty->SetHistLineColor(1);
     defaultSty->SetHistLineStyle(0);
-    defaultSty->SetHistLineWidth(2);
+    defaultSty->SetHistLineWidth(3);
     // defaultSty->SetLegoInnerR(Float_t rad = 0.5);
     defaultSty->SetHistMinimumZero();
     //    defaultSty->SetEndErrorSize(2);
@@ -449,5 +451,24 @@ void PairAnalysisStyler::SetPalette(Epalette colors, Bool_t reverse)
 
   gStyle->SetNumberContours(NCont);
 
+
+}
+
+TH1 * PairAnalysisStyler::GetFirstHistogram()
+{
+  //
+  // get the first histogram drawn on the pad
+  // this can be modified in the usual way
+  //
+  if(!gPad) { Error("GetFirstHistogram","No pad found, return NULL pointer!!"); return 0x0; }
+
+  TIter nextObj(gPad->GetListOfPrimitives());
+  TObject *obj;
+  while ((obj = nextObj())) {
+    if(obj->InheritsFrom(TH1::Class())) {
+      return (static_cast<TH1*>(obj));
+    }
+  }
+  return 0x0;
 
 }

@@ -1269,7 +1269,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
     if(obj->InheritsFrom(TH1::Class())) {
       TH1* h1 = static_cast<TH1*>(obj);
       //      Printf("max%f \t min%f",h1->GetMaximum(),PairAnalysisHelper::GetContentMinimum(h1));
-      max=TMath::Max(max,h1->GetMaximum());
+      max=TMath::Max(max,PairAnalysisHelper::GetContentMaximum(h1));
       min=TMath::Min(min,PairAnalysisHelper::GetContentMinimum(h1));//hobj->GetBinContent(hobj->GetMinimumBin()));
       //Printf("max%f \t min%f",max,min);
       if(!optEff) h1->SetMaximum(max*(gPad->GetLogy()?5.:1.1));
