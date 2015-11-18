@@ -190,7 +190,7 @@
 #pragma link C++ class PairAnalysisSignalBase+;
 #pragma link C++ class PairAnalysisSignalExt+;
 #pragma link C++ class PairAnalysisSignalFit+;
-#pragma link C++ class PairAnalysisSpectrum+;
-#pragma link C++ class Extraction+;
+//#pragma link C++ class PairAnalysisSpectrum+;
+//#pragma link C++ class Extraction+;
 
 #endif
