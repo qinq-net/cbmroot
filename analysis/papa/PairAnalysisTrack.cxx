@@ -33,6 +33,7 @@ ClassImp(PairAnalysisTrack)
 
 PairAnalysisTrack::PairAnalysisTrack() :
   TNamed(),
+  fPrimVertex(0x0),
   fGlblTrack(0x0),
   fStsTrack(0x0),
   fMuchTrack(0x0),
