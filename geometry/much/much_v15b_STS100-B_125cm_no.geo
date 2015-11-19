@@ -28,7 +28,6 @@ Number of stations          :       4
 # Absorber specification
 Absorber Zin position [cm]  :       0      55      105    155
 Absorber thickness [cm]     :      25      20      20      30
-Absorber safety radius[cm]  :      30      30      30      30
 Absorber material           :       C       I       I       I
 
 # Station specification
