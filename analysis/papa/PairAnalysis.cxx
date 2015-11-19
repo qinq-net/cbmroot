@@ -86,7 +86,7 @@ PairAnalysis::PairAnalysis() :
   fEventFilter("EventFilter"),
   fTrackFilter("TrackFilter"),
   fPairPreFilter("PairPreFilter"),
-  fPairPreFilterLegs("PairPreFilterLegs"),
+  fFinalTrackFilter("FinalTrackFilter"),
   fPairFilter("PairFilter"),
   fEventPlanePreFilter("EventPlanePreFilter"),
   fEventPlanePOIPreFilter("EventPlanePOIPreFilter"),
@@ -130,7 +130,7 @@ PairAnalysis::PairAnalysis(const char* name, const char* title) :
   fEventFilter("EventFilter"),
   fTrackFilter("TrackFilter"),
   fPairPreFilter("PairPreFilter"),
-  fPairPreFilterLegs("PairPreFilterLegs"),
+  fFinalTrackFilter("FinalTrackFilter"),
   fPairFilter("PairFilter"),
   fEventPlanePreFilter("EventPlanePreFilter"),
   fEventPlanePOIPreFilter("EventPlanePOIPreFilter"),
@@ -221,6 +221,11 @@ void PairAnalysis::Init()
       trk2leg->GetLeg1Filter().AddCuts((AnalysisCuts*)thisCut->Clone());
       trk2leg->GetLeg2Filter().AddCuts((AnalysisCuts*)thisCut->Clone());
     }
+    TIter listIterator2(fFinalTrackFilter.GetCuts());
+    while (AnalysisCuts *thisCut = (AnalysisCuts*) listIterator2()) {
+      trk2leg->GetLeg1Filter().AddCuts((AnalysisCuts*)thisCut->Clone());
+      trk2leg->GetLeg2Filter().AddCuts((AnalysisCuts*)thisCut->Clone());
+    }
     // add pair leg cuts to pair filter
     fPairFilter.AddCuts(trk2leg);
   }
@@ -231,7 +236,7 @@ void PairAnalysis::Init()
     fQAmonitor->AddTrackFilterMC(&fTrackFilterMC);
     fQAmonitor->AddTrackFilter(&fTrackFilter);
     fQAmonitor->AddPrePairFilter(&fPairPreFilter);
-    fQAmonitor->AddTrackFilter2(&fPairPreFilterLegs);
+    fQAmonitor->AddTrackFilter2(&fFinalTrackFilter);
     if(!fNoPairing) fQAmonitor->AddPairFilter(&fPairFilter);
     fQAmonitor->AddEventFilter(&fEventFilter);
     fQAmonitor->Init();
@@ -456,10 +461,11 @@ void PairAnalysis::ProcessMC()
 
     // loop over signals
     for(Int_t isig=0; isig<nSignals; ++isig) {
+      PairAnalysisSignalMC *sigMC = (PairAnalysisSignalMC*)fSignalsMC->UncheckedAt(isig);
       // Proceed only if this signal is required in the pure MC step
       // NOTE: Some signals can be satisfied by many particles and this leads to high
       //       computation times (e.g. secondary electrons from the GEANT transport). Be aware of this!!
-      if(!((PairAnalysisSignalMC*)fSignalsMC->UncheckedAt(isig))->GetFillPureMCStep()) continue;
+      if(!sigMC->GetFillPureMCStep()) continue;
 
       truth1 = papaMC->IsMCTruth(ipart, (PairAnalysisSignalMC*)fSignalsMC->UncheckedAt(isig), 1);
       // TODO: save time by asking for single particle mc signals
@@ -907,6 +913,9 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
       //fill pair information
       if (pairClass || pairClass2 || pairClassMC.CountBits() || pairClassMChf.CountBits()){
 
+	// if(i==3)
+	//   printf("train: %d \t pair type: %s \t p:%p d1:%p d2:%p \n",!fEventProcess,fgkPairClassNames[i],pair,
+	// 	 pair->GetFirstDaughter()->GetGlobalTrack(),pair->GetSecondDaughter()->GetGlobalTrack());
 	// in case of internal train wagon do the cut selections
 	if(!fEventProcess) {
 	  UInt_t cutMask=fPairFilter.IsSelected(pair);
@@ -1206,12 +1215,12 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
   
   /*
   //apply leg cuts after the pre filter
-  if ( fPairPreFilterLegs.GetCuts()->GetEntries()>0 ) {
-    selectedMask=(1<<fPairPreFilterLegs.GetCuts()->GetEntries())-1;
+  if ( fFinalTrackFilter.GetCuts()->GetEntries()>0 ) {
+    selectedMask=(1<<fFinalTrackFilter.GetCuts()->GetEntries())-1;
     //loop over tracks from array 1
     for (Int_t itrack=0; itrack<arrTracks1.GetEntriesFast();++itrack){
       //test cuts
-      UInt_t cutMask=fPairPreFilterLegs.IsSelected(arrTracks1.UncheckedAt(itrack));
+      UInt_t cutMask=fFinalTrackFilter.IsSelected(arrTracks1.UncheckedAt(itrack));
       
       //apply cut
       if (cutMask!=selectedMask) arrTracks1.AddAt(0x0,itrack);
@@ -1226,7 +1235,7 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
       //loop over tracks from array 2
       for (Int_t itrack=0; itrack<arrTracks2.GetEntriesFast();++itrack){
       //test cuts
-        UInt_t cutMask=fPairPreFilterLegs.IsSelected(arrTracks2.UncheckedAt(itrack));
+        UInt_t cutMask=fFinalTrackFilter.IsSelected(arrTracks2.UncheckedAt(itrack));
       //apply cut
         if (cutMask!=selectedMask) arrTracks2.AddAt(0x0,itrack);
       }
@@ -1252,14 +1261,14 @@ void PairAnalysis::FilterTrackArrays(TObjArray &arrTracks1, TObjArray &arrTracks
   //
 
   //apply leg cuts after the pre filter
-  if ( fPairPreFilterLegs.GetCuts()->GetEntries()<1 ) return;
+  if ( fFinalTrackFilter.GetCuts()->GetEntries()<1 ) return;
 
-  UInt_t selectedMask=(1<<fPairPreFilterLegs.GetCuts()->GetEntries())-1;
+  UInt_t selectedMask=(1<<fFinalTrackFilter.GetCuts()->GetEntries())-1;
   //loop over tracks from array 1
   for (Int_t itrack=0; itrack<arrTracks1.GetEntriesFast();++itrack){
 
     //apply cuts
-    UInt_t cutmask=fPairPreFilterLegs.IsSelected(arrTracks1.UncheckedAt(itrack));
+    UInt_t cutmask=fFinalTrackFilter.IsSelected(arrTracks1.UncheckedAt(itrack));
     //fill cut QA
     if(fCutQA) fQAmonitor->FillAll(arrTracks1.UncheckedAt(itrack),     1);
     if(fCutQA) fQAmonitor->Fill(cutmask,arrTracks1.UncheckedAt(itrack),1);
@@ -1274,7 +1283,7 @@ void PairAnalysis::FilterTrackArrays(TObjArray &arrTracks1, TObjArray &arrTracks
   for (Int_t itrack=0; itrack<arrTracks2.GetEntriesFast();++itrack){
 
     //apply cuts
-    UInt_t cutmask=fPairPreFilterLegs.IsSelected(arrTracks2.UncheckedAt(itrack));
+    UInt_t cutmask=fFinalTrackFilter.IsSelected(arrTracks2.UncheckedAt(itrack));
 
     //fill cut QA
     if(fCutQA) fQAmonitor->FillAll(arrTracks2.UncheckedAt(itrack),     1);
@@ -1343,6 +1352,9 @@ void PairAnalysis::FillPairArrays(Int_t arr1, Int_t arr2)
       //apply cut
       if (cutMask!=selectedMask) continue;
 
+      // if(pairIndex==3)
+      // 	printf("fill pair array \t train: %d \t pair type: %s \t p:%p d1:%p d2:%p \n",!fEventProcess,fgkPairClassNames[pairIndex],candidate,
+      // 	       candidate->GetFirstDaughter()->GetGlobalTrack(),candidate->GetSecondDaughter()->GetGlobalTrack());
       //histogram array for the pair
       ////TODO: still needed?  if (fHistoArray) fHistoArray->Fill(pairIndex,candidate);
 
@@ -1483,7 +1495,7 @@ void PairAnalysis::FillMCHistograms(Int_t label1, Int_t label2, Int_t nSignal) {
   if(!part1 && !part2) return;
   if(part1&&part2) {
     // fill only unlike sign (and only SE)
-    if(part1->GetCharge()*part2->GetCharge()>=0) return;
+    if(part1->GetCharge()*part2->GetCharge()>0) return;
   }
 
   Int_t mLabel1 = papaMC->GetMothersLabel(label1);

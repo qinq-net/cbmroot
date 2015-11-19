@@ -625,11 +625,13 @@ Bool_t PairAnalysisMC::IsMCTruth(Int_t label, PairAnalysisSignalMC* signalMC, In
   if(signalMC->GetCheckGEANTProcess() && !CheckGEANTProcess(label,signalMC->GetGEANTProcess()))
     return kFALSE;
 
+
   // check the LEG
   if( !ComparePDG(part->GetPdgCode(),
 		  signalMC->GetLegPDG(branch),
 		  signalMC->GetLegPDGexclude(branch),
 		  signalMC->GetCheckBothChargesLegs(branch)) ) return kFALSE;
+
 
   // Check the source (primary, secondary, embedded) for the particle
   if(!CheckParticleSource(label, signalMC->GetLegSource(branch))) return kFALSE;

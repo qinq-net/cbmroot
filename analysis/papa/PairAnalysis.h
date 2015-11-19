@@ -50,7 +50,7 @@ public:
   AnalysisFilter& GetTrackFilter()       { return fTrackFilter;       }
   AnalysisFilter& GetPairFilter()        { return fPairFilter;        }
   AnalysisFilter& GetPairPreFilter()     { return fPairPreFilter;     }
-  AnalysisFilter& GetPairPreFilterLegs() { return fPairPreFilterLegs; }
+  AnalysisFilter& GetFinalTrackFilter()  { return fFinalTrackFilter;  }
   AnalysisFilter& GetEventPlanePreFilter(){ return fEventPlanePreFilter; }
   AnalysisFilter& GetEventPlanePOIPreFilter(){ return fEventPlanePOIPreFilter; }
 
@@ -64,7 +64,7 @@ public:
   Bool_t DoProcessLS() { return fProcessLS; }
   void SetUseKF(Bool_t useKF=kTRUE) { fUseKF=useKF; }
   const TObjArray* GetTrackArray(Int_t i) const {return (i>=0&&i<4)?&fTracks[i]:0;}
-  const TObjArray* GetPairArray(Int_t i)  const {return (i>=0&&i<8)?
+  const TObjArray* GetPairArray(Int_t i)  const {return (i>=0&&i<kPairTypes)?
       static_cast<TObjArray*>(fPairCandidates->UncheckedAt(i)):0;}
 
   TObjArray** GetPairArraysPointer() { return &fPairCandidates; }
@@ -134,7 +134,7 @@ private:
   AnalysisFilter fEventFilter;    // Event cuts
   AnalysisFilter fTrackFilter;    // leg cuts
   AnalysisFilter fPairPreFilter;  // pair prefilter cuts
-  AnalysisFilter fPairPreFilterLegs; // Leg filter after the pair prefilter cuts
+  AnalysisFilter fFinalTrackFilter; // Leg filter after the pair prefilter cuts
   AnalysisFilter fPairFilter;     // pair cuts
   AnalysisFilter fEventPlanePreFilter;  // event plane prefilter cuts  
   AnalysisFilter fEventPlanePOIPreFilter;  // PoI cuts in the event plane prefilter  

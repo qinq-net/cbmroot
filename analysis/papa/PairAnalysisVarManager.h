@@ -282,6 +282,7 @@ public:
     kYMC,                      // rapidity
     kYlabMC,                   // rapidity lab
     kEMC,                      // energy
+    kEMotherMC,                // energy of the mother
     kMMC,                      // mass
     kChargeMC,                 // charge
     kPdgCode,                  // PDG code
@@ -991,6 +992,7 @@ inline void PairAnalysisVarManager::FillVarMCTrack(const CbmMCTrack *particle, D
 
   values[kPdgCode]            = particle->GetPdgCode();
   values[kPdgCodeMother]      = (mother ? mother->GetPdgCode() : -99999. );
+  values[kEMotherMC]          = (mother ? mother->GetEnergy()  : -99999. );
   CbmMCTrack* granni = 0x0;
   if(mother) granni = mc->GetMCTrackMother(mother);
   Int_t gLabel1 = (mother ? mother->GetMotherId() : -5);
@@ -1294,7 +1296,7 @@ inline void PairAnalysisVarManager::FillVarTofHit(const CbmTofHit *hit, Double_t
   values[kTOFPidDeltaBetaKA] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMKA]*values[kMKA]+values[kP]*values[kP]) );
   values[kTOFPidDeltaBetaPR] = values[kBeta] - ( values[kP]/TMath::Sqrt(values[kMPR]*values[kMPR]+values[kP]*values[kP]) );
 
-  values[kMassSq]    = values[kP]*values[kP] * TMath::Power(1./values[kBeta],2);
+  values[kMassSq]    = values[kP]*values[kP] * (TMath::Power(1./values[kBeta],2) -1);
 
   //  Printf("track length: %f beta: %f",values[kTrackLength],values[kBeta]);
   //  Double_t mass2 = TMath::Power(momentum, 2.) * (TMath::Power(time/ trackLength, 2) - 1);

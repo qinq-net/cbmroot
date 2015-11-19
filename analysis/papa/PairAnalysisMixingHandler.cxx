@@ -220,7 +220,7 @@ void PairAnalysisMixingHandler::DoMixing(TClonesArray &pool, PairAnalysis *papa)
     }
     */
 
-    //mixixsng of ev1- ev2 (pair type4). This is common for all mixing types
+    //mixing of ev1- ev2 (pair type4). This is common for all mixing types
     while ( (o=ev1N()) ) papa->fTracks[1].Add(o);
     while ( (o=ev2P()) ) papa->fTracks[2].Add(o);
     papa->FillPairArrays(1,2);
