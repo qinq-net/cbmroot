@@ -18,7 +18,8 @@ void much_seg_sector(const char* mcFile = "",
     mcFile = "data/mc.root";
   }
   if (inDigiFile == "") {
-    inDigiFile = "data/much_digi_sector.seg";
+    inDigiFile = "data/much_digi_sector_4station.seg";
+    //    inDigiFile = "data/much_digi_sector.seg";
   }
   if (outDigiFile == "") {
     outDigiFile = "data/much_digi_sector.root";
