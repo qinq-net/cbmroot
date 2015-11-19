@@ -57,13 +57,9 @@ void much_sim(TString inputSignal = "",
   // use shield_standard.geo or shield_compact.geo, respective to the
   // MUCH geometry. Otherwise, define an empty string.
 
-//new  TString muchGeom   = "much/much_v15b_STS100-B_125cm_no.geo";
-//new  TString pipeGeom   = "pipe/pipe_much_v15b_125cm_no.geo";
-//new  TString shieldGeom = "much/shield_v15b_SIS100B_149_3part_125cm.geo";
-
-  TString muchGeom   = "much/much_v12b.geo"; // default sector geometry
-  TString pipeGeom   = "pipe/pipe_much.geo";
-  TString shieldGeom = "much/shield_standard.geo";
+  TString muchGeom   = "much/much_v15b_STS100-B_125cm_no.geo";
+  TString pipeGeom   = "pipe/pipe_much_v15b_125cm_no.geo";
+  TString shieldGeom = "much/shield_v15b_SIS100B_149_3part_125cm.geo";
   
   // -----   Other geometries   ---------------------------------------------
   TString caveGeom   = "cave.geo";
