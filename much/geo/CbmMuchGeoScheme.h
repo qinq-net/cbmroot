@@ -68,8 +68,17 @@ class CbmMuchGeoScheme: public TObject {
     TObjArray* GetAbsorbers() const {return fAbsorbers;}
     TGeoCone*  GetMuchCave() const {return fMuchCave;}
     Double_t   GetMuchCaveZ0() const {return fMuchZ1+fMuchCave->GetDz();}
-    Double_t   GetAbsorberZ0(Int_t i) const {return fMuchZ1+fAbsorberZ1[i]+((TGeoCone*) fAbsorbers->At(i))->GetDz();}
+  //  Double_t   GetAbsorberZ0(Int_t i) const {return fMuchZ1+fAbsorberZ1[i]+((TGeoCone*) fAbsorbers->At(i))->GetDz();}
     Char_t     GetAbsorberMat(Int_t i) const {return fAbsorberMat[i];}
+    Double_t GetAbsorberZ0(Int_t i)
+    { 
+  if(i==0)
+    return fMuchZ1+fAbsorberZ1[i]+((TGeoBBox*) fAbsorbers->At(i))->GetDZ();
+  //return fMuchZ1+fAbsorberZ1[i]+((TGeoCone*)fAbsorbers->At(i))->GetDz();
+  
+  else
+    return fMuchZ1+fAbsorberZ1[i]+((TGeoBBox*) fAbsorbers->At(i))->GetDZ();  
+  }
 
     Double_t GetActiveLx() const {return fActiveLx;}
     Double_t GetActiveLy() const {return fActiveLy;}

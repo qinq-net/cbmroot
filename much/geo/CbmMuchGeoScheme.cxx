@@ -15,6 +15,13 @@
 #include "TFile.h"
 #include "TMath.h"
 #include "TGeoCone.h"
+//Added for biconical and parallelopiped
+#include "TGeoCone.h"
+#include "TGeoBBox.h"
+#include "TGeoTube.h"
+#include "TGeoCompositeShape.h"
+
+
 #include <fstream>
 #include <cassert>
 #include <stdexcept>
@@ -551,15 +558,34 @@ void CbmMuchGeoScheme::CreateMuchCave() {
 
   // Determine Z2;
   Double_t muchZ2=fMuchZ1;
+  Double_t z2;
   for (Int_t i = 0; i <fAbsorbers->GetEntries(); i++) {
-    TGeoCone* absorber = (TGeoCone*) fAbsorbers->At(i);
-    Double_t z2 = fMuchZ1+fAbsorberZ1[i]+2*absorber->GetDz();
-    if (z2 > muchZ2) muchZ2 = z2;
-  }
+   // TGeoCone* absorber = (TGeoCone*) fAbsorbers->At(i);
+   // Double_t z2 = fMuchZ1+fAbsorberZ1[i]+2*absorber->GetDz();
+    //if (z2 > muchZ2) muchZ2 = z2;
+  if(i==0)
+	{
+	  // TGeoCone* absorber = (TGeoCone*) fAbsorbers->At(i);
+	  //z2 = fMuchZ1+fAbsorberZ1[i]+2*absorber->GetDz();
+	   TGeoCompositeShape* absorber = (TGeoCompositeShape*) fAbsorbers->At(i);
+	   z2 = fMuchZ1+fAbsorberZ1[i]+2*absorber->GetDZ();
+	  // printf("  cave z2  %f", z2);
+	}
+      else
+      	{
+	  TGeoBBox* absorber = (TGeoBBox*) fAbsorbers->At(i);
+    	  z2 = fMuchZ1+fAbsorberZ1[i]+2*absorber->GetDZ();
+	}
+      
+      
+      if (z2 > muchZ2) muchZ2 = z2;
+    }
+
+
 
   for (Int_t i = 0; i <fStations->GetEntries(); i++) {
     CbmMuchStation* station = (CbmMuchStation*) fStations->At(i);
-    Double_t z2=station->GetZ()+station->GetTubeDz();
+    z2=station->GetZ()+station->GetTubeDz();
     if (z2>muchZ2) muchZ2=z2;
   }
   Double_t muchRmin1 = fMuchZ1 * fAcceptanceTanMin - 0.001;
@@ -577,7 +603,12 @@ void CbmMuchGeoScheme::CreateMuchCave() {
 
 // -------------------------------------------------------------------------
 void CbmMuchGeoScheme::CreateAbsorbers() {
+
   for (Int_t i = 0; i < fNabs; i++) {
+ TString pipename =  Form("beampipe_%d",i);
+    TString conename =  Form("cone_%d",i);
+    TString BoxName   = Form("Box_%d",i);
+    TString supportShapeName = Form("Support_%d",i);
     Double_t dz = fAbsorberLz[i] / 2.;
     Double_t globalZ1 = fAbsorberZ1[i] + fMuchZ1;
     Double_t globalZ2 = fAbsorberZ1[i] + 2 * dz + fMuchZ1;
@@ -585,7 +616,27 @@ void CbmMuchGeoScheme::CreateAbsorbers() {
     Double_t rmax1 = globalZ1 * fAcceptanceTanMax + 30;
     Double_t rmin2 = globalZ2 * fAcceptanceTanMin;
     Double_t rmax2 = globalZ2 * fAcceptanceTanMax + 30;
-    fAbsorbers->Add(new TGeoCone(dz, rmin1, rmax1, rmin2, rmax2));
+//    fAbsorbers->Add(new TGeoCone(dz, rmin1, rmax1, rmin2, rmax2));
+
+   if(i==0)
+   {
+     TGeoCone * ab1 =new TGeoCone(conename,dz, 0.0, rmax1, 0.0, rmax2);
+     //  TGeoBBox * box = new TGeoBBox(BoxName,rmax2,rmax2,dz);
+     TGeoCone * tube = new TGeoCone(pipename,dz+0.001,0.0,rmin1,0.0,rmin2);   
+      TString expression = conename +"-"+pipename;
+     //TString expression = BoxName+"-"+pipename;
+     TGeoCompositeShape* shSupport = new TGeoCompositeShape(supportShapeName,expression);
+     fAbsorbers->Add(shSupport);
+   }
+    else
+    {
+      TGeoBBox * box = new TGeoBBox(BoxName,rmax2,rmax2,dz);
+      TGeoCone * tube = new TGeoCone(pipename,dz+0.001,0.,rmin1,0.,rmin2);   
+      TString expression = BoxName +"-"+pipename;
+      TGeoCompositeShape* shSupport = new TGeoCompositeShape(supportShapeName,expression);
+      fAbsorbers->Add(shSupport);
+    }
+ 
   }
 }
 // -------------------------------------------------------------------------
