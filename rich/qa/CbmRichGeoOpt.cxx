@@ -832,6 +832,7 @@ CbmRichPoint* CbmRichGeoOpt::GetPMTPoint(int TrackIdOfSensPlane)
       if(trackId == TrackIdOfSensPlane){//cout<<"In Function: got corresponding trackid:"<<trackId<<endl;
 	return point;}
   }
+  return NULL;
 }
 //////////////////////////////////////////////////////////////
 void CbmRichGeoOpt::FillPointsAtPMT()
@@ -930,20 +931,20 @@ void CbmRichGeoOpt::GetPMTRotAngels()
 //////////////////////////////////////////////////////
 bool  CbmRichGeoOpt::CheckPointLiesOnSphere(TVector3 Point)
 {
-  
+  return true;
 
 }
 
 //////////////////////////////////////////////////////
 bool  CbmRichGeoOpt::CheckLineIntersectsPlane(TVector3 Point)
 {
-
+	return true;
 
 }
 //////////////////////////////////////////////////////
 bool  CbmRichGeoOpt::CheckLineIntersectsSphere(TVector3 Point)
 {
-
+	return true;
 
 }
 //////////////////////////////////////////////////////

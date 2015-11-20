@@ -104,6 +104,7 @@ public:
       } else {
          return ch-1;
       }
+      return 0;
    }
 
 	Bool_t IsReferenceTimeTdc(UInt_t tdcId)

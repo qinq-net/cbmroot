@@ -214,6 +214,8 @@ InitStatus CbmMvdClusterAna::Init()
 	
 	for(Int_t i=0;i<6;i++)	{fMcperDigi[i] = 0;}
 	for(Int_t i=0;i<11;i++)	{fMcperHit[i] = 0;}
+
+	return kSUCCESS;
 }
 // -------------------------------------------------------------------------
 

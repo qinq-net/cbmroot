@@ -598,6 +598,7 @@ else if (nPlugin == fHitPlugin)
 else
 	{ 
 	LOG(FATAL) << "undefined plugin called" << FairLogger::endl;
+	return -1;
 	}
 
 }    

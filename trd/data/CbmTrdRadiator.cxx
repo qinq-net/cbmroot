@@ -745,6 +745,7 @@ Bool_t CbmTrdRadiator::LatticeHit(const CbmTrdPoint* point){
     LOG(ERROR) << "CbmTrdRadiator::LatticeHit: CbmTrdPoint == NULL!" << FairLogger::endl;
     return false;
   }
+  return kTRUE;
 }
 //----------------------------------------------------------------------------
 // ---- Spectra Production ---------------------------------------------------
