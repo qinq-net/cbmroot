@@ -22,7 +22,16 @@ CbmDYMuonGenerator::CbmDYMuonGenerator()
    iEvent(0),
    fFileName(NULL),
    fInputFile(NULL),
-   fInputTree(NULL)
+   fInputTree(NULL),
+
+   b_Run(NULL),
+   b_Event(NULL),
+   b_mass(NULL),
+   b_trackNo(NULL),
+   b_Px(NULL),
+   b_Py(NULL),
+   b_Pz(NULL),
+   b_En(NULL)
   
 {
   /*
@@ -41,7 +50,16 @@ CbmDYMuonGenerator::CbmDYMuonGenerator(const Char_t* fileName)
    iEvent(0),
    fFileName(fileName),
    fInputFile(new TFile(fileName)),
-   fInputTree(NULL)
+   fInputTree(NULL),
+
+   b_Run(NULL),
+   b_Event(NULL),
+   b_mass(NULL),
+   b_trackNo(NULL),
+   b_Px(NULL),
+   b_Py(NULL),
+   b_Pz(NULL),
+   b_En(NULL)
    
 {
   
