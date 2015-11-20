@@ -141,6 +141,10 @@ void PairAnalysisCutQA::Init()
 					fNCuts[itype],binsX->GetMatrixArray(),
 					binsDet->GetNrows()-1,binsDet->GetMatrixArray() );
     }
+    else {
+      fPdgCutQA=0x0;
+      fEffCutQA=0x0;
+    }
 
     // delete surplus vector
     delete binsX;
@@ -151,7 +155,7 @@ void PairAnalysisCutQA::Init()
       fCutQA->GetXaxis()->SetBinLabel(i+1,fCutNames[i][itype]);
       if(fPdgCutQA) fPdgCutQA->GetXaxis()->SetBinLabel(i+1,fCutNames[i][itype]);
       if(fEffCutQA) fEffCutQA->GetXaxis()->SetBinLabel(i+1,fCutNames[i][itype]);
-      //      printf(" %s \n",fCutNames[i][itype]);
+      //      printf(" itype:%s %d -> cut:%s \n",fTypeKeys[itype],itype,fCutNames[i][itype]);
     }
 
     // pdg label

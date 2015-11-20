@@ -17,11 +17,11 @@ ClassImp(PairAnalysisVarManager)
 const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNMaxValuesMC][3] = {
   {"None",                   "",                                                   ""},
 // Constant information
-  {"MEL",                    "m_{e}",                                              "(GeV/#it{c^{2}})"},
-  {"MMU",                    "m_{#mu}",                                            "(GeV/#it{c^{2}})"},
-  {"MPI",                    "m_{#pi}",                                            "(GeV/#it{c^{2}})"},
-  {"MKA",                    "m_{K}",                                              "(GeV/#it{c^{2}})"},
-  {"MPR",                    "m_{p}",                                              "(GeV/#it{c^{2}})"},
+  {"MEL",                    "m_{e}",                                              "(GeV/#it{c}^{2})"},
+  {"MMU",                    "m_{#mu}",                                            "(GeV/#it{c}^{2})"},
+  {"MPI",                    "m_{#pi}",                                            "(GeV/#it{c}^{2})"},
+  {"MKA",                    "m_{K}",                                              "(GeV/#it{c}^{2})"},
+  {"MPR",                    "m_{p}",                                              "(GeV/#it{c}^{2})"},
 // Hit specific variables
   {"PosX",                   "x_{hit}",                                            "(cm)"},
   {"PosY",                   "y_{hit}",                                            "(cm)"},
@@ -38,7 +38,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"TOFPidDeltaBetaPI",      "#beta^{TOF}-#beta^{TOF}_{#pi}",                      ""},
   {"TOFPidDeltaBetaKA",      "#beta^{TOF}-#beta^{TOF}_{K}",                        ""},
   {"TOFPidDeltaBetaPR",      "#beta^{TOF}-#beta^{TOF}_{p}",                        ""},
-  {"MassSq",                 "TOF m^{2}",                                          "(GeV/#it{c^{2}})^{2}"},
+  {"MassSq",                 "TOF m^{2}",                                          "(GeV/#it{c}^{2})^{2}"},
 // Particle specific variables
   {"Px",                     "#it{p}_{x}",                                         "(GeV/#it{c})"},
   {"Py",                     "#it{p}_{y}",                                         "(GeV/#it{c})"},
@@ -56,7 +56,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"Y",                      "#it{y}",                                             ""},
   {"Ylab",                   "#it{y}_{lab}",                                       ""},
   {"E",                      "E",                                                  "(GeV)"},
-  {"M",                      "m_{inv}",                                            "(GeV/#it{c^{2}})"},
+  {"M",                      "m_{inv}",                                            "(GeV/#it{c}^{2})"},
   {"Charge",                 "q",                                                  "(e)"},
   {"Chi2NDFtoVtx",           "#chi^{2}/^{}N_{df}^{track#leftrightarrowvtx}",      "(#sigma)"},
   {"ImpactParXY",            "#it{dca}_{xy}",                                      "(cm)"},
@@ -71,7 +71,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"Pout",                   "#it{p}^{out}",                                       "(GeV/#it{c})"},
   {"Ptout",                  "#it{p}_{T}^{out}",                                   "(GeV/#it{c})"},
   // trd track information
-  {"TRDSignal",              "TRD d#it{E}/d#it{x} + TR",                           "(keV#upointcm^{2}/g)"},
+  {"TRDSignal",              "TRD d#it{E}/d#it{x}",                           "(keV#upointcm^{2}/g)"},
   {"TRDPidWkn",              "PID_{e}^{TRD} (Wkn)",                                ""},
   {"TRDPidANN",              "PID_{e}^{TRD} (ANN)",                                ""},
   {"TRDPidLikeEL",           "P(PID_{e}^{TRD})",                                   ""},
@@ -216,7 +216,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"YlabMC",                   "#it{y}_{lab}^{MC}",                                       ""},
   {"EMC",                      "E^{MC}",                                                  "(GeV)"},
   {"EMotherMC",                "E^{MC}_{mother}",                                         "(GeV)"},
-  {"MMC",                      "m_{inv}^{MC}",                                            "(GeV/#it{c^{2}})"},
+  {"MMC",                      "m_{inv}^{MC}",                                            "(GeV/#it{c}^{2})"},
   {"ChargeMC",                 "q^{MC}",                                                  "(e)"},
   {"PdgCode",                  "PDG code",                                           ""},
   {"PdgCodeMother",            "mothers PDG code",                                   ""},

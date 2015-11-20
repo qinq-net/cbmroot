@@ -483,6 +483,9 @@ inline void PairAnalysisVarManager::ResetArrayData(Int_t to, Double_t * const va
     values[kTRDPidANN]  = -999.;
     values[kRICHPidANN] = -999.;
   }
+  if(to>=kHitMax && to>kConstMax) {
+    values[kMassSq]     = -999.;
+  }
 }
 
 

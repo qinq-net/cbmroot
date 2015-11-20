@@ -1181,7 +1181,7 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
 	UInt_t cutMask=fPairPreFilter.IsSelected(candidate);
 
 	//apply cut
-	if (cutMask!=selectedMask) continue;
+	if (cutMask==selectedMask) continue;
 
 	// fill histos
 	if (fHistos) FillHistogramsPair(candidate,kTRUE); // kTRUE: fromPrefilter
