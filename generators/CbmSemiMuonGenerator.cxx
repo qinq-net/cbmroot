@@ -31,7 +31,12 @@ CbmSemiMuonGenerator::CbmSemiMuonGenerator()
    b_Px(NULL),
    b_Py(NULL),
    b_Pz(NULL),
-   b_En(NULL)
+   b_En(NULL),
+   
+   Run(0),
+   Event(0),
+   trackNo(0)
+
 {
 }
   
@@ -53,8 +58,11 @@ CbmSemiMuonGenerator::CbmSemiMuonGenerator(const Char_t* fileName)
    b_Px(NULL),
    b_Py(NULL),
    b_Pz(NULL),
-   b_En(NULL)
+   b_En(NULL),
    
+   Run(0),
+   Event(0),
+   trackNo(0)
 {
  
   fInputTree = (TTree*) fInputFile->Get("Tree");

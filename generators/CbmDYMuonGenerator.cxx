@@ -31,7 +31,12 @@ CbmDYMuonGenerator::CbmDYMuonGenerator()
    b_Px(NULL),
    b_Py(NULL),
    b_Pz(NULL),
-   b_En(NULL)
+   b_En(NULL),
+
+   Run(0),
+   Event(0),
+   trackNo(0),
+   MDY(0)
   
 {
   /*
@@ -59,7 +64,12 @@ CbmDYMuonGenerator::CbmDYMuonGenerator(const Char_t* fileName)
    b_Px(NULL),
    b_Py(NULL),
    b_Pz(NULL),
-   b_En(NULL)
+   b_En(NULL),
+
+   Run(0),
+   Event(0),
+   trackNo(0),
+   MDY(0)
    
 {
   
