@@ -36,7 +36,10 @@ CbmStsPhysics::CbmStsPhysics()
 	  fUrbanF1(0.),
 	  fUrbanF2(0.),
 	  fUrbanEmax(0.),
-	  fUrbanR(0.)
+	  fUrbanR(0.),
+          fStoppingElectron(),
+          fStoppingProton()
+
 {
 	// --- Read the energy loss data tables
 	LOG(INFO) << "Instantiating STS Physics... " << FairLogger::endl;
