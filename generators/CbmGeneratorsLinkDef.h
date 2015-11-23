@@ -5,11 +5,9 @@
 #pragma link off all functions;
 
 #pragma link C++ class CbmDirectPhotonGenerator+;
-#pragma link C++ class CbmDYMuonGenerator;
 #pragma link C++ class CbmEcalGenerator+;
 #pragma link C++ class CbmHsdLvmGenerator+;
 #pragma link C++ class CbmHsdGenerator+;
-#pragma link C++ class CbmSemiMuonGenerator;
 #pragma link C++ class CbmShieldGenerator+;
 #pragma link C++ class CbmUnigenGenerator+;
 #pragma link C++ class URun+;
@@ -20,6 +18,8 @@
 #ifdef HAS_PLUTO
 #pragma link C++ class CbmPlutoGenerator+;
 #pragma link C++ class CbmPlutoReactionGenerator+;
+#pragma link C++ class CbmDYMuonGenerator;
+#pragma link C++ class CbmSemiMuonGenerator;
 #endif
 
 #endif

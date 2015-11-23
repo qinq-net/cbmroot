@@ -33,11 +33,9 @@ link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
 CbmDirectPhotonGenerator.cxx
-CbmDYMuonGenerator.cxx
 CbmEcalGenerator.cxx
 CbmHsdLvmGenerator.cxx
 CbmHsdGenerator.cxx
-CbmSemiMuonGenerator.cxx
 CbmShieldGenerator.cxx
 CbmUnigenGenerator.cxx
 URun.cxx
@@ -51,6 +49,8 @@ If(PLUTO_FOUND)
     ${SRCS}
     CbmPlutoGenerator.cxx
     CbmPlutoReactionGenerator.cxx
+    CbmDYMuonGenerator.cxx
+    CbmSemiMuonGenerator.cxx
   )
   Set(DEPENDENCIES
     CbmData Base Pluto
