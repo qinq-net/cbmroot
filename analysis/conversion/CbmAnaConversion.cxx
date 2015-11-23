@@ -182,6 +182,14 @@ CbmAnaConversion::CbmAnaConversion()
 	fhPi0_Reco_noRichInd_ndf_vs_nofhits_withChi(NULL),
 	fhPi0_Reco_ndf_vs_nofhits(NULL),
 	fhPi0_Reco_ndf_vs_nofhits_withChi(NULL),
+	fhPi0_Reco_noRichInd_chi_vs_momentum(NULL),
+	fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0(NULL),
+	fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target(NULL),
+	fhPi0_Reco_noRichInd_chi_vs_momentum_eRest(NULL),
+	fhPi0_Reco_noRichInd_chi_vs_pt(NULL),
+	fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0(NULL),
+	fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target(NULL),
+	fhPi0_Reco_noRichInd_chi_vs_pt_eRest(NULL),
     timer_all(),
     fTime_all(0.),
     timer_exec(),
@@ -312,7 +320,7 @@ void CbmAnaConversion::InitHistograms()
 	fhPi0_z					= new TH1D("fhPi0_z", "fhPi0_z;z [cm];Entries", 600., -0.5, 599.5);
 	fhPi0_z_cut				= new TH1D("fhPi0_z_cut", "fhPi0_z_cut;z [cm];Entries", 600., -0.5, 599.5);
 	fhPi0_pt				= new TH1D("fhPi0_pt", "fhPi0_pt;pt [GeV];Entries", 200., 0., 10.);
-	fhPi0_pt_vs_rap			= new TH2D("fhPi0_pt_vs_rap", "fhPi0_pt_vs_rap;pt [GeV]; rap [GeV]", 240, -2., 10., 210, 0., 7.);
+	fhPi0_pt_vs_rap			= new TH2D("fhPi0_pt_vs_rap", "fhPi0_pt_vs_rap;pt [GeV]; rap [GeV]", 240, -2., 10., 270, -2., 7.);
 	fhEta_pt				= new TH1D("fhEta_pt", "fhEta_pt;pt [GeV];Entries", 200., 0., 10.);
 	fhElectronSources		= new TH1D("fhElectronSources", "fhElectronSources;Source;Entries", 6., 0., 6.);
 	fhElectronsFromPi0_z	= new TH1D("fhElectronsFromPi0_z", "fhElectronsFromPi0_z (= pos. of gamma conversion);z [cm];Entries", 600., -0.5, 599.5);
@@ -483,7 +491,7 @@ void CbmAnaConversion::InitHistograms()
 	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(4, "only cuts");
 	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(5, "both");
 	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(6, "mc-true");
-	fhPi0_Reco_noRichInd_invmass_cases = new TH2D("fhPi0_Reco_noRichInd_invmass_cases", "fhPi0_Reco_noRichInd_invmass_cases;cases;invmass [GeV]", 10, 0, 10, 300, 0, 3);
+	fhPi0_Reco_noRichInd_invmass_cases = new TH2D("fhPi0_Reco_noRichInd_invmass_cases", "fhPi0_Reco_noRichInd_invmass_cases;cases;invmass [GeV]", 11, 0, 11, 300, 0, 3);
 	fHistoList.push_back(fhPi0_Reco_noRichInd_invmass_cases);
 	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(1, "..");
 	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(2, "no cuts");
@@ -495,6 +503,7 @@ void CbmAnaConversion::InitHistograms()
 	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(8, "richInd-chi");
 	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(9, "richInd-cuts");
 	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(10, "richInd-both");
+	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(11, "richInd-mctrue");
 	
 	fhPi0_Reco_invmass = new TH1D("fhPi0_Reco_invmass", "fhPi0_Reco_invmass;invmass [GeV];#", 300, 0, 3);
 	fHistoList.push_back(fhPi0_Reco_invmass);
@@ -513,7 +522,25 @@ void CbmAnaConversion::InitHistograms()
 	fHistoList.push_back(fhPi0_Reco_noRichInd_ndf_vs_nofhits_withChi);
 	fhPi0_Reco_ndf_vs_nofhits_withChi = new TH2D("fhPi0_Reco_ndf_vs_nofhits_withChi", "fhPi0_Reco_ndf_vs_nofhits_withChi;ndf;nofhits", 31, -0.5, 30.5, 21, -0.5, 20.5);
 	fHistoList.push_back(fhPi0_Reco_ndf_vs_nofhits_withChi);
+
+	fhPi0_Reco_noRichInd_chi_vs_momentum = new TH2D("fhPi0_Reco_noRichInd_chi_vs_momentum", "fhPi0_Reco_noRichInd_chi_vs_momentum;momentum [GeV];chi", 200, 0., 10., 1000, 0., 100.);
+	fHistoList.push_back(fhPi0_Reco_noRichInd_chi_vs_momentum);
+	fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0 = new TH2D("fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0", "fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0;momentum [GeV];chi", 200, 0., 10., 1000, 0., 100.);
+	fHistoList.push_back(fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0);
+	fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target = new TH2D("fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target", "fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target;momentum [GeV];chi", 200, 0., 10., 1000, 0., 100.);
+	fHistoList.push_back(fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target);
+	fhPi0_Reco_noRichInd_chi_vs_momentum_eRest = new TH2D("fhPi0_Reco_noRichInd_chi_vs_momentum_eRest", "fhPi0_Reco_noRichInd_chi_vs_momentum_eRest;momentum [GeV];chi", 200, 0., 10., 1000, 0., 100.);
+	fHistoList.push_back(fhPi0_Reco_noRichInd_chi_vs_momentum_eRest);
 	
+	fhPi0_Reco_noRichInd_chi_vs_pt = new TH2D("fhPi0_Reco_noRichInd_chi_vs_pt", "fhPi0_Reco_noRichInd_chi_vs_pt;pt [GeV];chi", 200, 0., 10., 1000, 0., 100.);
+	fHistoList.push_back(fhPi0_Reco_noRichInd_chi_vs_pt);
+	fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0 = new TH2D("fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0", "fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0;pt [GeV];chi", 200, 0., 10., 1000, 0., 100.);
+	fHistoList.push_back(fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0);
+	fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target = new TH2D("fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target", "fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target;pt [GeV];chi", 200, 0., 10., 1000, 0., 100.);
+	fHistoList.push_back(fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target);
+	fhPi0_Reco_noRichInd_chi_vs_pt_eRest = new TH2D("fhPi0_Reco_noRichInd_chi_vs_pt_eRest", "fhPi0_Reco_noRichInd_chi_vs_pt_eRest;pt [GeV];chi", 200, 0., 10., 1000, 0., 100.);
+	fHistoList.push_back(fhPi0_Reco_noRichInd_chi_vs_pt_eRest);
+
 }
 
 
@@ -787,6 +814,8 @@ void CbmAnaConversion::Exec(Option_t*)
 		Double_t nofhits_sts = stsTrack->GetNofHits();
 		fhPi0_Reco_startvertex_vs_nofhits->Fill(startvertexZ, nofhits_sts);
 
+		fhPi0_Reco_noRichInd_chi_vs_momentum->Fill(refittedMomentum_electron.Mag(), result_chi_electron);
+		fhPi0_Reco_noRichInd_chi_vs_pt->Fill(refittedMomentum_electron.Perp(), result_chi_electron);
 
 		fTestTracklist_noRichInd.push_back(mcTrack1);
 		fTestTracklist_noRichInd_MCindex.push_back(stsMcTrackId);
@@ -1930,8 +1959,30 @@ void CbmAnaConversion::AnalysePi0_Reco_noRichInd()
 					if(!(fTestTracklist_noRichInd_richInd[i] < 0)) {
 						electronPi0ID_map_richInd.insert ( std::pair<int,int>(grandmotherID, i) );
 					}
+					fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0->Fill(fTestTracklist_noRichInd_momentum[i].Perp(), fTestTracklist_noRichInd_chi[i]);
+					fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0->Fill(fTestTracklist_noRichInd_momentum[i].Mag(), fTestTracklist_noRichInd_chi[i]);
+					
+					TVector3 startvertex;
+					fTestTracklist_noRichInd[i]->GetStartVertex(startvertex);
+					if(startvertex.Z() < 3) {
+						fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target->Fill(fTestTracklist_noRichInd_momentum[i].Perp(), fTestTracklist_noRichInd_chi[i]);
+						fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target->Fill(fTestTracklist_noRichInd_momentum[i].Mag(), fTestTracklist_noRichInd_chi[i]);
+					}
+				}
+				else {				
+					fhPi0_Reco_noRichInd_chi_vs_pt_eRest->Fill(fTestTracklist_noRichInd_momentum[i].Perp(), fTestTracklist_noRichInd_chi[i]);
+					fhPi0_Reco_noRichInd_chi_vs_momentum_eRest->Fill(fTestTracklist_noRichInd_momentum[i].Mag(), fTestTracklist_noRichInd_chi[i]);
 				}
 			}
+			else {
+				fhPi0_Reco_noRichInd_chi_vs_pt_eRest->Fill(fTestTracklist_noRichInd_momentum[i].Perp(), fTestTracklist_noRichInd_chi[i]);
+				fhPi0_Reco_noRichInd_chi_vs_momentum_eRest->Fill(fTestTracklist_noRichInd_momentum[i].Mag(), fTestTracklist_noRichInd_chi[i]);
+			}
+		}
+		else {
+			if(TMath::Abs(pdg) != 11) continue;
+			fhPi0_Reco_noRichInd_chi_vs_pt_eRest->Fill(fTestTracklist_noRichInd_momentum[i].Perp(), fTestTracklist_noRichInd_chi[i]);
+			fhPi0_Reco_noRichInd_chi_vs_momentum_eRest->Fill(fTestTracklist_noRichInd_momentum[i].Mag(), fTestTracklist_noRichInd_chi[i]);
 		}
 	}
 	
@@ -2029,6 +2080,7 @@ void CbmAnaConversion::AnalysePi0_Reco_noRichInd()
 
 					if(richInd_e1 >= 0 && richInd_e2 >= 0 && richInd_e3 >= 0 && richInd_e4 >= 0) {
 						fhPi0_Reco_noRichInd_invmass_cases->Fill(6, invmass);
+						fhPi0_Reco_noRichInd_invmass_cases->Fill(10, invmass_mc);
 						if(IsWithinCuts) {
 							fhPi0_Reco_noRichInd_invmass_cases->Fill(8, invmass);
 						}
@@ -2068,6 +2120,8 @@ void CbmAnaConversion::AnalysePi0_Reco_noRichInd()
 				if(check_withRichInd == 4) fhPi0_Reco_occurence2->Fill(14);
 				if(check_withRichInd > 4) fhPi0_Reco_occurence2->Fill(15);
 				
+				
+				// reset of check-parameters for next loop
 				check=1; 
 				if(fTestTracklist_noRichInd_richInd[it->second] >= 0) {
 					check_withRichInd = 1;

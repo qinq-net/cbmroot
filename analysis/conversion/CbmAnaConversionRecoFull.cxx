@@ -706,6 +706,16 @@ void CbmAnaConversionRecoFull::Exec()
 
 		Bool_t electron_rich2 = electronidentifier->IsRichElectron(iG, refittedMomentum.Mag());
 		
+		
+		Double_t chiCut = 0;
+		if(refittedMomentum.Perp() < 0.4) {
+			chiCut = 31. - 70.*refittedMomentum.Perp();
+		}
+		if(refittedMomentum.Perp() >= 0.4) {
+			chiCut = 3;
+		}
+		
+		
 		if(electron_rich2) {	// electron identification without refit of momentum
 			nofElectrons_1++;
 			fElectrons_track_1.push_back(gTrack);
@@ -728,7 +738,7 @@ void CbmAnaConversionRecoFull::Exec()
 			//fElectrons_mctrackID_1.push_back(richMcTrackId);
 			fElectrons_mctrackID.push_back(stsMcTrackId);
 			
-			if(result_chi <= 3) {
+			if(result_chi <= chiCut) {
 				nofElectrons_2++;
 				fElectrons_track_2.push_back(gTrack);
 				fElectrons_momenta_2.push_back(refittedMomentum);
@@ -792,7 +802,7 @@ void CbmAnaConversionRecoFull::Exec()
 			//fElectrons_mctrackID_1.push_back(richMcTrackId);
 			fElectrons_mctrackID_new[3].push_back(stsMcTrackId);
 			
-			if(result_chi <= 3) {
+			if(result_chi <= chiCut) {
 				nofElectrons_4++;
 				fElectrons_track_4.push_back(gTrack);
 				fElectrons_momenta_4.push_back(refittedMomentum);

@@ -337,8 +337,8 @@ void CbmAnaConversionPhotons::InitHistos()
 	fHistoList_EFG_angle.push_back(fhEFG_angleVSenergy_eta);
 
 	// opening angle vs pt (MC)
-	fhEFG_angleVSpt_all			= new TH2D("fhEFG_angleVSpt_all", "fhEFG_angleVSpt_all;opening angle [deg];pt [GeV/c]", 2000, 0., 100., 500, 0., 5.);
-	fhEFG_angleVSpt_combBack	= new TH2D("fhEFG_angleVSpt_combBack", "fhEFG_angleVSpt_combBack;opening angle [deg];pt [GeV/c]", 2000, 0., 100., 500, 0., 5.);
+	fhEFG_angleVSpt_all			= new TH2D("fhEFG_angleVSpt_all", "fhEFG_angleVSpt_all;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
+	fhEFG_angleVSpt_combBack	= new TH2D("fhEFG_angleVSpt_combBack", "fhEFG_angleVSpt_combBack;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
 	fhEFG_angleVSpt_allSameG	= new TH2D("fhEFG_angleVSpt_allSameG", "fhEFG_angleVSpt_allSameG;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
 	fhEFG_angleVSpt_direct		= new TH2D("fhEFG_angleVSpt_direct", "fhEFG_angleVSpt_direct;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
 	fhEFG_angleVSpt_pi0			= new TH2D("fhEFG_angleVSpt_pi0", "fhEFG_angleVSpt_pi0;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
@@ -439,14 +439,14 @@ void CbmAnaConversionPhotons::InitHistos()
 	
 
 	// opening angle vs pt (reco)
-	fhEFG_angleVSpt_all			= new TH2D("fhEFG_angleVSpt_all", "fhEFG_angleVSpt_all;opening angle [deg];pt [GeV/c]", 2000, 0., 100., 500, 0., 5.);
-	fhEFG_angleVSpt_combBack	= new TH2D("fhEFG_angleVSpt_combBack", "fhEFG_angleVSpt_combBack;opening angle [deg];pt [GeV/c]", 2000, 0., 100., 500, 0., 5.);
+	fhEFG_angleVSpt_all_reco		= new TH2D("fhEFG_angleVSpt_all_reco", "fhEFG_angleVSpt_all_reco;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
+	fhEFG_angleVSpt_combBack_reco	= new TH2D("fhEFG_angleVSpt_combBack_reco", "fhEFG_angleVSpt_combBack_reco;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
 	fhEFG_angleVSpt_allSameG_reco	= new TH2D("fhEFG_angleVSpt_allSameG_reco", "fhEFG_angleVSpt_allSameG_reco;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
 	fhEFG_angleVSpt_direct_reco		= new TH2D("fhEFG_angleVSpt_direct_reco", "fhEFG_angleVSpt_direct_reco;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
 	fhEFG_angleVSpt_pi0_reco		= new TH2D("fhEFG_angleVSpt_pi0_reco", "fhEFG_angleVSpt_pi0_reco;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
 	fhEFG_angleVSpt_eta_reco		= new TH2D("fhEFG_angleVSpt_eta_reco", "fhEFG_angleVSpt_eta_reco;pt [GeV/c];opening angle [deg]", 500, 0., 5., 400, 0., 20.);
-	fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_all);
-	fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_combBack);
+	fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_all_reco);
+	fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_combBack_reco);
 	fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_allSameG_reco);
 	fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_direct_reco);
 	fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_pi0_reco);
@@ -455,18 +455,18 @@ void CbmAnaConversionPhotons::InitHistos()
 
 
 	// invariant mass vs pt (reco)
-	//fhEFG_angleVSpt_all			= new TH2D("fhEFG_angleVSpt_all", "fhEFG_angleVSpt_all;opening angle [deg];pt [GeV/c]", 2000, 0., 100., 500, 0., 5.);
-	//fhEFG_angleVSpt_combBack	= new TH2D("fhEFG_angleVSpt_combBack", "fhEFG_angleVSpt_combBack;opening angle [deg];pt [GeV/c]", 2000, 0., 100., 500, 0., 5.);
+	//fhEFG_invmassVSpt_all			= new TH2D("fhEFG_invmassVSpt_all", "fhEFG_invmassVSpt_all;opening angle [deg];pt [GeV/c]", 2000, 0., 100., 500, 0., 5.);
+	//fhEFG_invmassVSpt_combBack	= new TH2D("fhEFG_invmassVSpt_combBack", "fhEFG_invmassVSpt_combBack;opening angle [deg];pt [GeV/c]", 2000, 0., 100., 500, 0., 5.);
 	fhEFG_invmassVSpt_allSameG_reco	= new TH2D("fhEFG_invmassVSpt_allSameG_reco", "fhEFG_invmassVSpt_allSameG_reco;pt [GeV/c];invmass [GeV]", 500, 0., 5., 5000, 0., 5.);
 	fhEFG_invmassVSpt_direct_reco	= new TH2D("fhEFG_invmassVSpt_direct_reco", "fhEFG_invmassVSpt_direct_reco;pt [GeV/c];invmass [GeV]", 500, 0., 5., 5000, 0., 5.);
 	fhEFG_invmassVSpt_pi0_reco		= new TH2D("fhEFG_invmassVSpt_pi0_reco", "fhEFG_invmassVSpt_pi0_reco;pt [GeV/c];invmass [GeV]", 500, 0., 5., 5000, 0., 5.);
 	fhEFG_invmassVSpt_eta_reco		= new TH2D("fhEFG_invmassVSpt_eta_reco", "fhEFG_invmassVSpt_eta_reco;pt [GeV/c];invmass [GeV]", 500, 0., 5., 5000, 0., 5.);
-	//fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_all);
-	//fHistoList_EFG_angle.push_back(fhEFG_angleVSpt_combBack);
-	fHistoList_EFG_angle.push_back(fhEFG_invmassVSpt_allSameG_reco);
-	fHistoList_EFG_angle.push_back(fhEFG_invmassVSpt_direct_reco);
-	fHistoList_EFG_angle.push_back(fhEFG_invmassVSpt_pi0_reco);
-	fHistoList_EFG_angle.push_back(fhEFG_invmassVSpt_eta_reco);
+	//fHistoList_EFG_invmass.push_back(fhEFG_invmassVSpt_all);
+	//fHistoList_EFG_invmass.push_back(fhEFG_invmassVSpt_combBack);
+	fHistoList_EFG_invmass.push_back(fhEFG_invmassVSpt_allSameG_reco);
+	fHistoList_EFG_invmass.push_back(fhEFG_invmassVSpt_direct_reco);
+	fHistoList_EFG_invmass.push_back(fhEFG_invmassVSpt_pi0_reco);
+	fHistoList_EFG_invmass.push_back(fhEFG_invmassVSpt_eta_reco);
 
 
 
