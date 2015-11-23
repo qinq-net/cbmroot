@@ -144,27 +144,27 @@ void CbmRichRingFinderHoughImpl::DefineLocalAreaAndHits(float x0, float y0,
 	fDataPart2.clear();
 	fDataPart2.reserve( (*indmax-*indmin) / fNofParts);
 
-	register int indmin1=*indmin;
-	register int indmax1=*indmax;
-	register float maxDistance08 = 0.8f*fMaxDistance;
+	int indmin1=*indmin;
+	int indmax1=*indmax;
+	float maxDistance08 = 0.8f*fMaxDistance;
 
 	if (fNofParts == 2){
 		for (int i = indmin1; i <= indmax1; i+=2) {
 			if (fData[i].fIsUsed == true) continue;
-			register float ry = y0 - fData[i].fHit.fY;
+			float ry = y0 - fData[i].fHit.fY;
 			if (fabs(ry) > maxDistance08) continue;
-			register float rx = x0 - fData[i].fHit.fX;
-			register float d = rx	* rx +ry * ry;
+			float rx = x0 - fData[i].fHit.fX;
+			float d = rx	* rx +ry * ry;
 			if (d > fMaxDistanceSq) continue;
 //			fHitInd[0].push_back(i);
 			fDataPart1.push_back(fData[i]);
 		}
 		for (int i = indmin1+1; i <= indmax1; i+=2) {
 			if (fData[i].fIsUsed == true) continue;
-			register float ry = y0 - fData[i].fHit.fY;
+			float ry = y0 - fData[i].fHit.fY;
 			if (fabs(ry) > maxDistance08) continue;
-			register float rx = x0 - fData[i].fHit.fX;
-			register float d = rx	* rx +ry * ry;
+			float rx = x0 - fData[i].fHit.fX;
+			float d = rx	* rx +ry * ry;
 			if (d > fMaxDistanceSq) continue;
 //			fHitInd[1].push_back(i);
 			fDataPart2.push_back(fData[i]);
@@ -182,13 +182,13 @@ void CbmRichRingFinderHoughImpl::DefineLocalAreaAndHits(float x0, float y0,
 //		}
 	}
 
-	for (register unsigned short j = 0; j < fNofBinsXY; j++){
+	for (unsigned short j = 0; j < fNofBinsXY; j++){
 		fHist[j] = 0;
 	}
 
 	//InitHist();
 
-	for (register unsigned short k = 0; k < fNofBinsR; k++) {
+	for (unsigned short k = 0; k < fNofBinsR; k++) {
 		fHistR[k] = 0;
 	}
 }
@@ -205,11 +205,11 @@ void CbmRichRingFinderHoughImpl::HoughTransform(unsigned short int indmin, unsig
 void CbmRichRingFinderHoughImpl::HoughTransformGroup(unsigned short int indmin,
 		unsigned short int indmax, int iPart)
 {
-	register unsigned short nofHits;// = fHitInd[iPart].size();
-    register float xcs, ycs; // xcs = xc - fCurMinX
-    register float dx = 1.0f/fDx, dy = 1.0f/fDy, dr = 1.0f/fDr;
+	unsigned short nofHits;// = fHitInd[iPart].size();
+    float xcs, ycs; // xcs = xc - fCurMinX
+    float dx = 1.0f/fDx, dy = 1.0f/fDy, dr = 1.0f/fDr;
 
-    register vector<CbmRichHoughHit> data;
+    vector<CbmRichHoughHit> data;
     if (iPart == 0){
     	data = fDataPart1;
     	nofHits = fDataPart1.size();
@@ -220,55 +220,55 @@ void CbmRichRingFinderHoughImpl::HoughTransformGroup(unsigned short int indmin,
 	typedef vector<CbmRichHoughHit>::iterator iH;
 
 	for (iH iHit1 = data.begin(); iHit1 != data.end(); iHit1++) {
-		register float iH1X = iHit1->fHit.fX;
-		register float iH1Y = iHit1->fHit.fY;
+		float iH1X = iHit1->fHit.fX;
+		float iH1Y = iHit1->fHit.fY;
 
 		  for (iH iHit2 = iHit1 + 1; iHit2 != data.end(); iHit2++) {
-			register float iH2X = iHit2->fHit.fX;
-			register float iH2Y = iHit2->fHit.fY;
+			float iH2X = iHit2->fHit.fX;
+			float iH2Y = iHit2->fHit.fY;
 
-			register float rx0 = iH1X - iH2X;//rx12
-			register float ry0 = iH1Y- iH2Y;//ry12
-			register float r12 = rx0 * rx0 + ry0 * ry0;
+			float rx0 = iH1X - iH2X;//rx12
+			float ry0 = iH1Y- iH2Y;//ry12
+			float r12 = rx0 * rx0 + ry0 * ry0;
 			if (r12 < fMinDistanceSq || r12 > fMaxDistanceSq)	continue;
 
-			register float t10 = iHit1->fX2plusY2 - iHit2->fX2plusY2;
+			float t10 = iHit1->fX2plusY2 - iHit2->fX2plusY2;
 			for (iH iHit3 = iHit2 + 1; iHit3 != data.end(); iHit3++) {
-				register float iH3X = iHit3->fHit.fX;
-				register float iH3Y = iHit3->fHit.fY;
+				float iH3X = iHit3->fHit.fX;
+				float iH3Y = iHit3->fHit.fY;
 
-				register float rx1 = iH1X - iH3X;//rx13
-				register float ry1 = iH1Y - iH3Y;//ry13
-				register float r13 = rx1 * rx1 + ry1 * ry1;
+				float rx1 = iH1X - iH3X;//rx13
+				float ry1 = iH1Y - iH3Y;//ry13
+				float r13 = rx1 * rx1 + ry1 * ry1;
 				if (r13 < fMinDistanceSq || r13 > fMaxDistanceSq)continue;
 
-				register float rx2 = iH2X - iH3X;//rx23
-				register float ry2 = iH2Y - iH3Y;//ry23
-				register float r23 = rx2 * rx2 + ry2 * ry2;
+				float rx2 = iH2X - iH3X;//rx23
+				float ry2 = iH2Y - iH3Y;//ry23
+				float r23 = rx2 * rx2 + ry2 * ry2;
 				if (r23	< fMinDistanceSq || r23 > fMaxDistanceSq)continue;
 
-				register float det = rx2*ry0 - rx0*ry2;
+				float det = rx2*ry0 - rx0*ry2;
 			    if (det == 0.0f) continue;
-			    register float t19 = 0.5f / det;
-			    register float t5 = iHit2->fX2plusY2 - iHit3->fX2plusY2;
+			    float t19 = 0.5f / det;
+			    float t5 = iHit2->fX2plusY2 - iHit3->fX2plusY2;
 
-			    register float xc = (t5 * ry0 - t10 * ry2) * t19;
+			    float xc = (t5 * ry0 - t10 * ry2) * t19;
 				xcs = xc - fCurMinX;
-				register int intX = int( xcs *dx);
+				int intX = int( xcs *dx);
 				if (intX < 0 || intX >= fNofBinsX ) continue;
 
-				register float yc = (t10 * rx2 - t5 * rx0) * t19;
+				float yc = (t10 * rx2 - t5 * rx0) * t19;
 				ycs = yc - fCurMinY;
-				register int intY = int( ycs *dy);
+				int intY = int( ycs *dy);
 				if (intY < 0 || intY >= fNofBinsY ) continue;
 
 				 //radius calculation
-				register float t6 = iH1X - xc;
-				register float t7 = iH1Y - yc;
+				float t6 = iH1X - xc;
+				float t7 = iH1Y - yc;
 				//if (t6 > fMaxRadius || t7 > fMaxRadius) continue;
-				register float r = sqrt(t6 * t6 + t7 * t7);
+				float r = sqrt(t6 * t6 + t7 * t7);
 				//if (r < fMinRadius) continue;
-				register int intR = int(r *dr);
+				int intR = int(r *dr);
 				if (intR < 0 || intR >= fNofBinsR) continue;
 
 				fHist[intX * fNofBinsX + intY]++;
@@ -283,7 +283,7 @@ void CbmRichRingFinderHoughImpl::FindPeak(int indmin, int indmax)
 {
 //Find MAX bin R and compare it with CUT
     int maxBinR = -1, maxR = -1;
-    register unsigned int size = fHistR.size();
+    unsigned int size = fHistR.size();
     for (unsigned int k = 0; k < size; k++){
         if (fHistR[k] > maxBinR){
             maxBinR = fHistR[k];
@@ -306,8 +306,8 @@ void CbmRichRingFinderHoughImpl::FindPeak(int indmin, int indmax)
 	CbmRichRingLight* ring1 = new CbmRichRingLight();
 
 //Find Preliminary Xc, Yc, R
-    register float xc, yc, r;
-    register float rx, ry, dr;
+    float xc, yc, r;
+    float rx, ry, dr;
 	xc = (maxXY/fNofBinsX + 0.5f)* fDx + fCurMinX;
 	yc = (maxXY%fNofBinsX + 0.5f)* fDy + fCurMinY;
 	r = (maxR + 0.5f)* fDr;
@@ -464,7 +464,7 @@ void CbmRichRingFinderHoughImpl::ReAssingSharedHits(int ringInd1, int ringInd2)
 int CbmRichRingFinderHoughImpl::GetHitIndex(unsigned short hitInd)
 {
 	unsigned int size = fData.size();
-	for (register unsigned int i = 0; i < size; i++){
+	for (unsigned int i = 0; i < size; i++){
 		if (fData[i].fId == hitInd) return i;
 	}
 

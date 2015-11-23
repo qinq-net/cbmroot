@@ -51,15 +51,15 @@ inline int CbmRichRingSelectImplLight::GetNofHitsOnRingCircle(CbmRichRingLight* 
 
 inline float CbmRichRingSelectImplLight::GetAngle(CbmRichRingLight* ring)
 {
-    register int nHits = ring->GetNofHits();
+    int nHits = ring->GetNofHits();
 	if (nHits > kMAX_NOF_HITS) return 0.2f;
 	if (nHits < 4) return 999.f;
 
-	register float Pi = 3.14159265;
-	register float TwoPi = 2.*3.14159265;
-    register float xRing = ring->GetCenterX();
-    register float yRing = ring->GetCenterY();
-    register float xHit, yHit;
+	float Pi = 3.14159265;
+	float TwoPi = 2.*3.14159265;
+    float xRing = ring->GetCenterX();
+    float yRing = ring->GetCenterY();
+    float xHit, yHit;
 
     for(int iH = 0; iH < nHits; iH++){
 		CbmRichHitLight hit = ring->GetHit(iH);

@@ -20,20 +20,20 @@ void CbmRichRingFinderHoughSimd::HoughTransformGroup(
 		unsigned short int indmax,
 		Int_t iPart)
 {
-//	register Float_t r12, r13, r23;
-//    register Float_t rx0, rx1, rx2, ry0, ry1,ry2; //rx[3], ry[3];//, x[3], y[3];
-    //register Float_t xc, yc, r;
-    //register Float_t xcs, ycs; // xcs = xc - fCurMinX
-    register Int_t* intX, *intY, *intR;
-    register Int_t* indXY;
+//	Float_t r12, r13, r23;
+//    Float_t rx0, rx1, rx2, ry0, ry1,ry2; //rx[3], ry[3];//, x[3], y[3];
+    //Float_t xc, yc, r;
+    //Float_t xcs, ycs; // xcs = xc - fCurMinX
+    Int_t* intX, *intY, *intR;
+    Int_t* indXY;
 
-    register unsigned short int iH11, iH12, iH13, iH14, iH2, iH3;
-    register Int_t nofHitsNorm = fHitInd[0].size() + 1;
-    register Int_t iPmulNofHits;
+    unsigned short int iH11, iH12, iH13, iH14, iH2, iH3;
+    Int_t nofHitsNorm = fHitInd[0].size() + 1;
+    Int_t iPmulNofHits;
 
-    //register Float_t t5, t10, t19, det, t6, t7;
-    register Float_t dx = 1.0f/fDx, dy = 1.0f/fDy, dr = 1.0f/fDr;
-    //register Float_t iH1X, iH1Y, iH2X, iH2Y, iH3X, iH3Y;
+    //Float_t t5, t10, t19, det, t6, t7;
+    Float_t dx = 1.0f/fDx, dy = 1.0f/fDy, dr = 1.0f/fDr;
+    //Float_t iH1X, iH1Y, iH2X, iH2Y, iH3X, iH3Y;
 
     fvec xcs, ycs;
     fvec fCurMinXV = fvec(fCurMinX), fCurMinYV = fvec(fCurMinY);
