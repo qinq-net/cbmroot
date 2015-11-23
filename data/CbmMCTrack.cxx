@@ -6,6 +6,8 @@
 
 #include "FairLogger.h"
 
+#include <sstream>
+
 #include "TMCProcess.h"
 #include "TParticle.h"
 #ifndef ROOT_TParticlePDG
@@ -15,6 +17,7 @@
  #include "TDatabasePDG.h"
 #endif
 
+using std::stringstream;
 
 
 // -----   Default constructor   -------------------------------------------
@@ -112,26 +115,6 @@ CbmMCTrack::~CbmMCTrack() { }
 
 
 
-// -----   Public method Print   -------------------------------------------
-void CbmMCTrack::Print(Int_t trackId) const {
-  LOG(DEBUG) << "Track " << trackId << ", mother : " << fMotherId 
-	     << ", GeantProcess " << TMCProcessName[fProcessId] 
-	     << ", Type " << fPdgCode << ", momentum (" << fPx << ", " 
-	     << fPy << ", " << fPz << ") GeV" << FairLogger::endl;
-  LOG(DEBUG) << "       Ref " << GetNPoints(kREF) 
-	     << ", MVD " << GetNPoints(kMVD) 
-	     << ", STS " << GetNPoints(kSTS) 
-	     << ", RICH " << GetNPoints(kRICH)
-	     << ", MUCH " << GetNPoints(kMUCH) 
-	     << ", TRD " << GetNPoints(kTRD)
-	     << ", TOF " << GetNPoints(kTOF) 
-	     << ", ECAL " << GetNPoints(kECAL) 
-	     << ", PSD " << GetNPoints(kPSD) << FairLogger::endl;
-}
-// -------------------------------------------------------------------------
-
-
-
 // -----   Public method GetMass   -----------------------------------------
 Double_t CbmMCTrack::GetMass() const {
   if ( TDatabasePDG::Instance() ) {
@@ -142,6 +125,8 @@ Double_t CbmMCTrack::GetMass() const {
   return 0.;
 }
 // -------------------------------------------------------------------------
+
+
 
 // -----   Public method GetCharge   ---------------------------------------
 Double_t CbmMCTrack::GetCharge() const {
@@ -161,7 +146,6 @@ Double_t CbmMCTrack::GetRapidity() const {
   return y;
 }
 // -------------------------------------------------------------------------
-
 
 
 
@@ -251,13 +235,26 @@ void CbmMCTrack::SetNPoints(Int_t iDet, Int_t nPoints) {
 
 
 
-
-
-
-
-
-
-
+// -----   String output   -------------------------------------------------
+string CbmMCTrack::ToString() const
+{
+   stringstream ss;
+   ss << "MCTrack: mother  " << fMotherId
+   	  << ", GeantProcess " << TMCProcessName[fProcessId]
+      << ", Type " << fPdgCode << ", momentum (" << fPx << ", "
+      << fPy << ", " << fPz << ") GeV" << std::endl;
+   ss << "       Ref " << GetNPoints(kREF)
+	  	<< ", MVD " << GetNPoints(kMVD)
+	    << ", STS " << GetNPoints(kSTS)
+	    << ", RICH " << GetNPoints(kRICH)
+	    << ", MUCH " << GetNPoints(kMUCH)
+	    << ", TRD " << GetNPoints(kTRD)
+	    << ", TOF " << GetNPoints(kTOF)
+	    << ", ECAL " << GetNPoints(kECAL)
+	    << ", PSD " << GetNPoints(kPSD) << std::endl;
+   return ss.str();
+}
+// -------------------------------------------------------------------------
 
 
 ClassImp(CbmMCTrack)

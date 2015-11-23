@@ -344,7 +344,9 @@ void CbmStack::Print(Int_t /*iVerbose*/) const
             << fNTracks << FairLogger::endl;
   if ( FairLogger::GetLogger()->IsLogNeeded(DEBUG1) ) {
   	for (Int_t iTrack=0; iTrack<fNTracks; iTrack++) {
-    ((CbmMCTrack*) fTracks->At(iTrack))->Print(iTrack);
+  		LOG(DEBUG1) << "MCTrack " << iTrack
+  				        << ((CbmMCTrack*) fTracks->At(iTrack))->ToString()
+  				        << FairLogger::endl;
   	}
   }
 }

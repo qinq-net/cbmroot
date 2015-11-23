@@ -26,7 +26,11 @@
 #include "TVector3.h"
 #include "TLorentzVector.h"
 
+#include <string>
+
 class TParticle;
+
+using std::string;
 
 class CbmMCTrack : public TObject
 {
@@ -53,10 +57,6 @@ class CbmMCTrack : public TObject
 
   /**  Destructor  **/
   virtual ~CbmMCTrack();
-
-
-  /**  Output to screen  **/
-  void Print(Int_t iTrack=0) const;
 
   Int_t AccMVD() const {return GetNPoints(kMVD);}
   Int_t AccSTS() const {return GetNPoints(kSTS);}
@@ -92,6 +92,9 @@ class CbmMCTrack : public TObject
   void SetMotherId(Int_t id) { fMotherId = id; }
   void SetNPoints(Int_t iDet, Int_t np);
 
+
+  /** String output **/
+  string ToString() const;
 
 
 private:
