@@ -16,11 +16,14 @@
 #ifndef CBMSTSPOINT_H
 #define CBMSTSPOINT_H
 
-
+#include <string>
 #include "FairMCPoint.h"
 #include "FairLogger.h"
 
 class TVector3;
+
+using std::string;
+
 
 class CbmStsPoint : public FairMCPoint 
 {
@@ -102,8 +105,10 @@ class CbmStsPoint : public FairMCPoint
 	  FairMCPoint::SetTrackID(id);
   };
 
-  /** Output to screen **/
-  void Info(FairLogLevel level) const;
+
+  /** String output **/
+  string ToString() const;
+
 
 
 

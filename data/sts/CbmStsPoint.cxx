@@ -8,11 +8,12 @@
 #include "CbmDetectorList.h"
 
 #include <iostream>
+#include <sstream>
 
 using std::cout;
 using std::endl;
 using std::flush;
-
+using std::stringstream;
 
 // -----   Default constructor   -------------------------------------------
 CbmStsPoint::CbmStsPoint() 
@@ -79,25 +80,6 @@ CbmStsPoint::CbmStsPoint(const CbmStsPoint& point, Int_t eventId,
 
 
 
-
-// -----   Public method Print   -------------------------------------------
-void CbmStsPoint::Info(FairLogLevel level) const {
-  LOG(level) << "StsPoint: track ID " << fTrackID << ", detector ID "
-             << fDetectorID << FairLogger::endl;
-  LOG(level) << "          IN  Position (" << fX << ", " << fY
-             << ", " << fZ << ") cm" << FairLogger::endl;
-  LOG(level) << "          OUT Position (" << fX_out << ", " << fY_out
-             << ", " << fZ_out << ") cm" << FairLogger::endl;
-  LOG(level) << "    Momentum (" << fPx << ", " << fPy << ", " << fPz
-             << ") GeV" << endl;
-  LOG(level) << "    Time " << fTime << " ns,  Length " << fLength
-             << " cm,  Energy loss " << fELoss*1.0e06 << " keV"
-             << FairLogger::endl;
-}
-// -------------------------------------------------------------------------
-
-
-
 // -----   Point x coordinate from linear extrapolation   ------------------
 Double_t CbmStsPoint::GetX(Double_t z) const {
   //  cout << fZ << " " << z << " " << fZ_out << endl;
@@ -125,6 +107,26 @@ Bool_t CbmStsPoint::IsUsable() const {
   Double_t dz = fZ_out - fZ;
   if ( TMath::Abs(dz) < 1.e-4 ) return kFALSE;
   return kTRUE;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   String output   -------------------------------------------------
+string CbmStsPoint::ToString() const
+{
+   stringstream ss;
+   ss << "StsPoint: track ID " << fTrackID << ", detector ID "
+      << fDetectorID << endl;
+   ss << "          IN  Position (" << fX << ", " << fY
+      << ", " << fZ << ") cm" << endl;
+   ss << "          OUT Position (" << fX_out << ", " << fY_out
+      << ", " << fZ_out << ") cm" << endl;
+   ss << "    Momentum (" << fPx << ", " << fPy << ", " << fPz
+      << ") GeV" << endl;
+   ss << "    Time " << fTime << " ns,  Length " << fLength
+       << " cm,  Energy loss " << fELoss*1.0e06 << " keV" << endl;
+   return ss.str();
 }
 // -------------------------------------------------------------------------
 
