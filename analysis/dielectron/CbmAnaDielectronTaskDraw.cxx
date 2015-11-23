@@ -894,7 +894,7 @@ void CbmAnaDielectronTaskDraw::DrawElPiMomHis()
          ("Rec only STS (" + Cbm::NumberToString(H1("fh_pi_mom_rec_only_sts")->GetEntries()/fNofEvents, 2) +" per event)")
          ("Rec STS-RICH-TRD (" + Cbm::NumberToString(H1("fh_pi_mom_rec_sts_rich_trd")->GetEntries()/fNofEvents, 2) +" per event)")
          ("Rec STS-RICH-TRD-TOF (" + Cbm::NumberToString(H1("fh_pi_mom_rec_sts_rich_trd_tof")->GetEntries()/fNofEvents, 2) +" per event)"),
-         kLinear, kLog, 0.1, 0.3, 0.99, 0.99);
+         kLinear, kLog, true, 0.1, 0.3, 0.99, 0.99);
 
    //primary pions vertex < 0.1 cm
    double binWElPrim = H1("fh_piprim_mom_mc")->GetBinWidth(1);
@@ -914,7 +914,7 @@ void CbmAnaDielectronTaskDraw::DrawElPiMomHis()
          ("Rec only STS (" + Cbm::NumberToString(H1("fh_piprim_mom_rec_only_sts")->GetEntries()/fNofEvents, 2) +" per event)")
          ("Rec STS-RICH-TRD (" + Cbm::NumberToString(H1("fh_piprim_mom_rec_sts_rich_trd")->GetEntries()/fNofEvents, 2) +" per event)")
          ("Rec STS-RICH-TRD-TOF (" + Cbm::NumberToString(H1("fh_piprim_mom_rec_sts_rich_trd_tof")->GetEntries()/fNofEvents, 2) +" per event)"),
-         kLinear, kLog, 0.1, 0.3, 0.99, 0.99);
+         kLinear, kLog, true, 0.1, 0.3, 0.99, 0.99);
 
    TCanvas *cPiNotAcc = CreateCanvas("lmvm_pi_mom_notacc", "lmvm_pi_mom_notacc", 800, 800);
    TH1D* h1 = ((TH1D*)H1("fh_pi_mom_mc")->Clone());
