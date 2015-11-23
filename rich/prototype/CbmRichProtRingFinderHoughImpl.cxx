@@ -498,7 +498,7 @@ void CbmRichProtRingFinderHoughImpl::CalculateRingParameters(
       float *yc,
       float *r)
 {
-    register float t1, t2, t3, t4, t5, t6, t8, t9,
+    float t1, t2, t3, t4, t5, t6, t8, t9,
         t10, t11, t14, t16, t19, t21, t41;
 
     t1 = x[1] * x[1];
