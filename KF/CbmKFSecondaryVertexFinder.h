@@ -34,7 +34,7 @@ class CbmKFSecondaryVertexFinder:public TObject {
   CbmKFSecondaryVertexFinder(): vTracks(), NDF(0), Chi2(0), MassConstraint(0), VParent(0), VGuess(0) { Clear(); };
   ~CbmKFSecondaryVertexFinder(){};
 
-  void Clear();
+  virtual void Clear(Option_t* opt = "");
   void ClearTracks();
   void AddTrack( CbmKFTrackInterface* Track );
   void SetTracks( std::vector<CbmKFTrackInterface*> &vTracks );

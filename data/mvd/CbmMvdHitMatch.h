@@ -57,7 +57,7 @@ class CbmMvdHitMatch: public CbmMatch
   
 
   /** Reset data members **/
-  void Clear() { ; }
+  virtual void Clear(Option_t* opt) { ; }
 
  private:
 

@@ -24,7 +24,7 @@ class CbmKFPrimaryVertexFinder:public TObject {
   CbmKFPrimaryVertexFinder():Tracks() { Clear(); };
   ~CbmKFPrimaryVertexFinder(){};
 
-  void Clear();
+  virtual void Clear(Option_t* opt = "");
   void AddTrack( CbmKFTrackInterface* Track );
   void SetTracks( std::vector<CbmKFTrackInterface*> &vTracks );
   void Fit(CbmKFVertexInterface &vtx );

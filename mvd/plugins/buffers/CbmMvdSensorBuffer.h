@@ -66,7 +66,7 @@ class CbmMvdSensorBuffer : public CbmMvdSensorPlugin
    * Important: Clears also the output buffer delivered by GetCurrentEvent()
    * Make sure you don't need it.
    **/ 
-  virtual void          Clear           ();                                
+  virtual void          Clear           (Option_t* opt = "");
   
   /**Clears the objects related to a time periode from the buffer.
   * Use ClearTimeSlice(0,t) to clear all objects earlier than t

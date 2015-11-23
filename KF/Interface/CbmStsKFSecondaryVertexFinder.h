@@ -30,7 +30,7 @@ class CbmStsKFSecondaryVertexFinder:public TObject {
   CbmStsKFSecondaryVertexFinder(): vStsTracks(), vKFTracks(), VParent(), VGuess(), Finder() { Clear(); };
   ~CbmStsKFSecondaryVertexFinder(){};
 
-  void Clear();
+  virtual void Clear(Option_t* opt = "");
   void AddTrack( CbmStsTrack *Track );
   void SetApproximation( CbmVertex *Guess=0 );
   void SetMassConstraint( Double_t MotherMass=-1 );

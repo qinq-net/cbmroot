@@ -26,7 +26,7 @@ CbmMvdSensorBuffer::~CbmMvdSensorBuffer() {
 }
 // -------------------------------------------------------------------------
 
-void CbmMvdSensorBuffer::Clear () {
+void CbmMvdSensorBuffer::Clear (Option_t* opt) {
   if (fBuffer)		{fBuffer->Clear();}
   if (fCurrentEvent)	{fCurrentEvent->Clear();}
 }
