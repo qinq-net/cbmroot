@@ -382,7 +382,7 @@ void CbmRichProtHitProducer::Exec(
                Int_t ilambda=(Int_t)((lambda-lambda_min)/lambda_step);
                Double_t rand = gRandom->Rndm();
                fDetection = 0;
-               if (fDetType == 5 || fDetType == 10 || fDetType == 11 || fDetType == 14 || fDetType == 16 || fDetType == 18 && lambda < 300.) {// smear Hit position for lambda < 300 nm (WLS film!)
+               if ((fDetType == 5 || fDetType == 10 || fDetType == 11 || fDetType == 14 || fDetType == 16 || fDetType == 18) && lambda < 300.) {// smear Hit position for lambda < 300 nm (WLS film!)
                   FindRichHitPositionMAPMT(sigma_wls,detPoint.X(),detPoint.Y(),xHit,yHit,pmtID);
                }
                if (efficiency[ilambda] * fCollectionEfficiency > rand ) fDetection = 1;
