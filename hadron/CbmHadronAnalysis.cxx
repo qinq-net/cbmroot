@@ -3373,7 +3373,7 @@ void CbmHadronAnalysis::WriteHistogramms()
   TIter next(gDirectory->GetList());
   TH1 *h;
   TObject* obj;
-  while(obj= (TObject*)next()){
+  while( (obj= (TObject*)next()) ){
       if(obj->InheritsFrom(TH1::Class())){
          h = (TH1*)obj;
          cout << "Write histo " << h->GetTitle() << endl;

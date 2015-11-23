@@ -181,7 +181,7 @@ Double_t CbmRichRing::GetYF2() const
 	}
 }
 
-void CbmRichRing::Print(){
+void CbmRichRing::Print(Option_t* opt) const {
 	cout << " Ring parameters: " <<
 			" Aaxis = " << GetAaxis() <<
 			", Baxis = " << GetBaxis() <<

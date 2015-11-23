@@ -27,7 +27,7 @@ class CbmMvdSensorDataSheet : public TNamed
 
   /** Default constructor **/
   CbmMvdSensorDataSheet();
-  virtual void Print(Option_t* opt);
+  virtual void Print(Option_t* opt = "") const;
   
    /** Destructor **/
   ~CbmMvdSensorDataSheet();

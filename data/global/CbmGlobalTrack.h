@@ -63,7 +63,7 @@ class CbmGlobalTrack : public TObject
 
 
   /** Output to screen **/
-  void Print() const;
+  virtual void Print(Option_t* opt = "") const;
 
 
  private:

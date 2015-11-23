@@ -55,7 +55,7 @@ class CbmVertex : public TNamed
 
 
   /** Ouput to screen **/
-  void Print();
+  virtual void Print(Option_t* opt = "") const ;
 
 
   /** Accessors **/

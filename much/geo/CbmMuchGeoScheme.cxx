@@ -301,6 +301,7 @@ vector<CbmMuchLayerSide*> CbmMuchGeoScheme::GetLayerSides(Int_t iStation) const 
   {
     Fatal("GetLayerSides","No input array of stations.");
   }
+  return vector<CbmMuchLayerSide*>();
 }
 
 //Int_t CbmMuchGeoScheme::GetLayerSideNr(Int_t detId){
@@ -882,6 +883,8 @@ vector<CbmMuchModule*> CbmMuchGeoScheme::GetModules(Int_t iStation) const {
   {
     Fatal("GetModules","No input array of stations.");
   }
+  return vector<CbmMuchModule*>();
+
 }
 // -------------------------------------------------------------------------
 

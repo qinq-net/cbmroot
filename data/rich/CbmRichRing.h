@@ -42,7 +42,7 @@ public:
 	/** to obtain the rich hit at a particular index */
 	UShort_t GetHit(Int_t i) const {return fHitCollection[i];}
 	/** to print ring parameters **/
-	void Print();
+	virtual void Print(Option_t* opt="") const;
 
 
 /** Modifiers**/
