@@ -104,6 +104,10 @@ private:
 	vector<CbmGlobalTrack*>	fVector_electronRICH_gt;
 	vector<TVector3>		fVector_electronRICH_momenta;
 	vector< vector<int> >	fVector_electronRICH_reconstructedPhotons;
+	
+	// arrays for electrons,identified in RICH, only containing entries not combined to a photon
+	vector<CbmGlobalTrack*>	fVector_electronRICH_gt_erased;
+	vector<TVector3>		fVector_electronRICH_momenta_erased;
 
 
 	CbmAnaConversionTest(const CbmAnaConversionTest&);

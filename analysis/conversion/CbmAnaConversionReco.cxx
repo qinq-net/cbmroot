@@ -71,6 +71,8 @@ CbmAnaConversionReco::CbmAnaConversionReco()
 	fhEPEM_openingAngle_gee_refitted(NULL),
 	fhEPEM_openingAngle_gee_mc_dalitz(NULL),
 	fhEPEM_openingAngle_gee_refitted_dalitz(NULL),
+	fhEPEM_openingAngle_vs_pt_gg_mc(NULL),
+	fhEPEM_openingAngle_vs_pt_gg_reco(NULL),
 	fhEPEM_openingAngle_betweenGammas_mc(NULL),
 	fhEPEM_openingAngle_betweenGammas_reco(NULL),
 	fhPi0_pt_vs_rap_gg(NULL),
@@ -207,6 +209,11 @@ void CbmAnaConversionReco::InitHistos()
 	fhEPEM_openingAngle_gee_refitted_dalitz		= new TH1D("fhEPEM_openingAngle_gee_refitted_dalitz","fhEPEM_openingAngle_gee_refitted_dalitz (between e+e- from pi0);angle [deg];#", 1010, -0.1, 100.9);
 	fHistoList_gee.push_back(fhEPEM_openingAngle_gee_mc_dalitz);
 	fHistoList_gee.push_back(fhEPEM_openingAngle_gee_refitted_dalitz);
+	
+	fhEPEM_openingAngle_vs_pt_gg_mc		= new TH2D("fhEPEM_openingAngle_vs_pt_gg_mc", "fhEPEM_openingAngle_vs_pt_gg_mc;pt [GeV]; opening angle [deg]", 220, -1., 10., 100, 0., 10.);
+	fHistoList_gg.push_back(fhEPEM_openingAngle_vs_pt_gg_mc);
+	fhEPEM_openingAngle_vs_pt_gg_reco		= new TH2D("fhEPEM_openingAngle_vs_pt_gg_reco", "fhEPEM_openingAngle_vs_pt_gg_reco;pt [GeV]; opening angle [deg]", 220, -1., 10., 100, 0., 10.);
+	fHistoList_gg.push_back(fhEPEM_openingAngle_vs_pt_gg_reco);
 	
 	fhEPEM_openingAngle_betweenGammas_mc	= new TH1D("fhEPEM_openingAngle_betweenGammas_mc","fhEPEM_openingAngle_betweenGammas_mc;angle [deg];#", 1010, -0.1, 100.9);
 	fhEPEM_openingAngle_betweenGammas_reco	= new TH1D("fhEPEM_openingAngle_betweenGammas_reco","fhEPEM_openingAngle_betweenGammas_reco;angle [deg];#", 1010, -0.1, 100.9);
@@ -1219,6 +1226,9 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						fhPi0_pt_gg->Fill(params1.fPt);
 						fhPi0_pt_all->Fill(params1.fPt);
 						
+						
+						fhEPEM_openingAngle_vs_pt_gg_reco->Fill(params1.fPt, opening_angle1_refitted);
+						fhEPEM_openingAngle_vs_pt_gg_reco->Fill(params1.fPt, opening_angle2_refitted);
 						
 						fhEPEM_rap_vs_chi->Fill(params1.fRapidity, fRecoTracklistEPEM_chi[i]);
 						fhEPEM_rap_vs_chi->Fill(params1.fRapidity, fRecoTracklistEPEM_chi[j]);

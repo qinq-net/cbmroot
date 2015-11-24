@@ -900,7 +900,8 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 				//Double_t openingAngleCut = 1;
 				
 				// opening angle cut depending on pt of e+e- pair
-				Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
+				//Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
+				Double_t openingAngleCut = 1.8 - 0.6 * params1.fPt;
 				
 				Double_t invMassCut = 0.03;
 				
@@ -1670,7 +1671,8 @@ void CbmAnaConversionRecoFull::CombineElectrons()
 				//Double_t openingAngleCut = 1;
 				
 				// opening angle cut depending on pt of e+e- pair
-				Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
+				Double_t openingAngleCut = 1.8 - 0.6 * params1.fPt;
+				//Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
 				//Double_t openingAngleCut = 1.2;
 				
 				Double_t invMassCut = 0.03;

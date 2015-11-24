@@ -60,7 +60,9 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fVector_reconstructedPhotons_FromSTSandRICH(),
 	fVector_electronRICH_gt(),
 	fVector_electronRICH_momenta(),
-	fVector_electronRICH_reconstructedPhotons()
+	fVector_electronRICH_reconstructedPhotons(),
+	fVector_electronRICH_gt_erased(),
+	fVector_electronRICH_momenta_erased()
 {
 }
 
@@ -316,6 +318,8 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 	
 	fVector_electronRICH_momenta.clear();
 	fVector_electronRICH_gt.clear();
+	fVector_electronRICH_momenta_erased.clear();
+	fVector_electronRICH_gt_erased.clear();
 	fVector_electronRICH_reconstructedPhotons.clear();
 
 	Int_t nofRICHelectrons = 0;
@@ -410,6 +414,9 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 		if(electron_rich) {
 			fVector_electronRICH_momenta.push_back(refittedMomentum_electron);
 			fVector_electronRICH_gt.push_back(gTrack);
+			//
+			fVector_electronRICH_momenta_erased.push_back(refittedMomentum_electron);
+			fVector_electronRICH_gt_erased.push_back(gTrack);
 			nofRICHelectrons++;
 		}
 
@@ -417,8 +424,8 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 
 	fhTest_RICHelectronsPerEvent->Fill(nofRICHelectrons);
 
-	CombineElectrons_FromSTSandRICH();
 	CombineElectrons_FromRICH();
+	CombineElectrons_FromSTSandRICH();
 	CombinePhotons();
 
 }
@@ -428,25 +435,26 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 void CbmAnaConversionTest::CombineElectrons_FromSTSandRICH()
 {
 	Int_t nof_sts = fVector_momenta.size();
-	Int_t nof_rich = fVector_electronRICH_momenta.size();
+	Int_t nof_rich = fVector_electronRICH_momenta_erased.size();
 	cout << "CbmAnaConversionTest: CombineElectrons_FromSTSandRICH, nof sts/rich - " << nof_sts << " / " << nof_rich << endl;
 	Int_t nofPhotons = 0;
 	if(nof_sts + nof_rich >= 2) {
 		for(int a=0; a<nof_sts; a++) {
 			for(int b=0; b<nof_rich; b++) {
 				Int_t check1 = (fVector_gt[a]->GetParamLast()->GetQp() > 0);	// positive or negative charge (qp = charge over momentum ratio)
-				Int_t check2 = (fVector_electronRICH_gt[b]->GetParamLast()->GetQp() > 0);
+				Int_t check2 = (fVector_electronRICH_gt_erased[b]->GetParamLast()->GetQp() > 0);
 				Int_t test = check1 + check2;
 				if(test != 1) continue;		// need one electron and one positron
 				//if(fElectrons_momentaChi[a] > 10 || fElectrons_momentaChi[b] > 10) continue;
 				
-				CbmLmvmKinematicParams params1 = CalculateKinematicParamsReco(fVector_momenta[a], fVector_electronRICH_momenta[b]);
+				CbmLmvmKinematicParams params1 = CalculateKinematicParamsReco(fVector_momenta[a], fVector_electronRICH_momenta_erased[b]);
 				
 				// standard fixed opening angle cut
 				//Double_t openingAngleCut = 1;
 				
 				// opening angle cut depending on pt of e+e- pair
-				Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
+				Double_t openingAngleCut = 1.8 - 0.6 * params1.fPt;
+				//Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
 				
 				Double_t invMassCut = 0.03;
 				
@@ -486,7 +494,7 @@ void CbmAnaConversionTest::CombinePhotons()
 				Int_t electron21 = fVector_electronRICH_reconstructedPhotons[b][0];
 				Int_t electron22 = fVector_electronRICH_reconstructedPhotons[b][1];
 			
-				Double_t invmass = Invmass_4particlesRECO(fVector_momenta[electron11], fVector_momenta[electron12], fVector_electronRICH_momenta[electron21], fVector_electronRICH_momenta[electron22]);
+				Double_t invmass = Invmass_4particlesRECO(fVector_momenta[electron11], fVector_electronRICH_momenta_erased[electron12], fVector_electronRICH_momenta[electron21], fVector_electronRICH_momenta[electron22]);
 				
 				fhTest_invmass->Fill(invmass);
 				
@@ -531,7 +539,8 @@ void CbmAnaConversionTest::CombineElectrons_FromRICH()
 				//Double_t openingAngleCut = 1;
 				
 				// opening angle cut depending on pt of e+e- pair
-				Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
+				Double_t openingAngleCut = 1.8 - 0.6 * params1.fPt;
+				//Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
 				
 				Double_t invMassCut = 0.03;
 				
@@ -546,6 +555,9 @@ void CbmAnaConversionTest::CombineElectrons_FromRICH()
 					pair.push_back(b);
 					fVector_electronRICH_reconstructedPhotons.push_back(pair);
 					//fhElectrons_invmass_cut->Fill(params1.fMinv);
+					
+					fVector_electronRICH_momenta_erased.erase(fVector_electronRICH_momenta_erased.begin() + a);
+					fVector_electronRICH_momenta_erased.erase(fVector_electronRICH_momenta_erased.begin() + b);
 					
 				}
 			}
