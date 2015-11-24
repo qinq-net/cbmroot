@@ -1,7 +1,7 @@
 #$ -wd /tmp 
 #$ -j y
 # Number of subtasks to start
-#$ -t 1-2000
+#$ -t 1-250
 
 #XXXXX=$(printf "%05d" "1")
 #XXXX=$(printf "%04d" "1")
@@ -17,7 +17,7 @@ macro_dir=/hera/cbm/users/slebedev/trunk/cbmroot/macro/analysis/dielectron/
 export SCRIPT=yes
 
 # Number of events to run
-nevents=500
+nevents=1000
 
 #create needed directories
 mkdir -p ${outdir}/log
@@ -97,7 +97,7 @@ mkdir -p $workdir
 cd $workdir
 
 # run the root simulation
-#root -b -l -q "${macro_dir}/run_sim.C(${nevents})"
+root -b -l -q "${macro_dir}/run_sim.C(${nevents})"
 root -b -l -q "${macro_dir}/run_reco.C(${nevents})"
 root -b -l -q "${macro_dir}/run_litqa.C(${nevents})"
 root -b -l -q "${macro_dir}/run_analysis.C(${nevents})"

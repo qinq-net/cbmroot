@@ -1,14 +1,16 @@
 
 setupMacroTemp=geosetup_v1509_25gev.C
 setupDirNameTemp=geosetup_v1509_25gev
-qsub -l mem=2G,ct=20:00:00 -v setupMacro=${setupMacroTemp} -v setupDirName=${setupDirNameTemp} -v coll_energy=25gev -v pluto_particle=rho0 ./sim.sge
-qsub -l mem=2G,ct=20:00:00 -v setupMacro=${setupMacroTemp} -v setupDirName=${setupDirNameTemp} -v coll_energy=25gev -v pluto_particle=omegaepem ./sim.sge
-qsub -l mem=2G,ct=20:00:00 -v setupMacro=${setupMacroTemp} -v setupDirName=${setupDirNameTemp} -v coll_energy=25gev -v pluto_particle=omegadalitz ./sim.sge
-qsub -l mem=2G,ct=20:00:00 -v setupMacro=${setupMacroTemp} -v setupDirName=${setupDirNameTemp} -v coll_energy=25gev -v pluto_particle=phi ./sim.sge
+collEnergyTemp=25gev
+qsub -l mem=2G,ct=20:00:00 -v setupMacro=${setupMacroTemp} -v setupDirName=${setupDirNameTemp} -v coll_energy=${collEnergyTemp} -v pluto_particle=rho0 ./sim.sge
+qsub -l mem=2G,ct=20:00:00 -v setupMacro=${setupMacroTemp} -v setupDirName=${setupDirNameTemp} -v coll_energy=${collEnergyTemp} -v pluto_particle=omegaepem ./sim.sge
+qsub -l mem=2G,ct=20:00:00 -v setupMacro=${setupMacroTemp} -v setupDirName=${setupDirNameTemp} -v coll_energy=${collEnergyTemp} -v pluto_particle=omegadalitz ./sim.sge
+qsub -l mem=2G,ct=20:00:00 -v setupMacro=${setupMacroTemp} -v setupDirName=${setupDirNameTemp} -v coll_energy=${collEnergyTemp} -v pluto_particle=phi ./sim.sge
 
 setupMacroTemp=geosetup_v1509_8gev.C
 setupDirNameTemp=geosetup_v1509_8gev
-qsub -l mem=2G,ct=20:00:00 -v setupMacro=${setupMacroTemp} -v setupDirName=${setupDirNameTemp} -v coll_energy=8gev -v pluto_particle=rho0 ./sim.sge
-qsub -l mem=2G,ct=20:00:00 -v setupMacro=${setupMacroTemp} -v setupDirName=${setupDirNameTemp} -v coll_energy=8gev -v pluto_particle=omegaepem ./sim.sge
-qsub -l mem=2G,ct=20:00:00 -v setupMacro=${setupMacroTemp} -v setupDirName=${setupDirNameTemp} -v coll_energy=8gev -v pluto_particle=omegadalitz ./sim.sge
-qsub -l mem=2G,ct=20:00:00 -v setupMacro=${setupMacroTemp} -v setupDirName=${setupDirNameTemp} -v coll_energy=8gev -v pluto_particle=phi ./sim.sge
+collEnergyTemp=8gev
+qsub -l mem=2G,ct=20:00:00 -v setupMacro=${setupMacroTemp} -v setupDirName=${setupDirNameTemp} -v coll_energy=${collEnergyTemp} -v pluto_particle=rho0 ./sim.sge
+qsub -l mem=2G,ct=20:00:00 -v setupMacro=${setupMacroTemp} -v setupDirName=${setupDirNameTemp} -v coll_energy=${collEnergyTemp} -v pluto_particle=omegaepem ./sim.sge
+qsub -l mem=2G,ct=20:00:00 -v setupMacro=${setupMacroTemp} -v setupDirName=${setupDirNameTemp} -v coll_energy=${collEnergyTemp} -v pluto_particle=omegadalitz ./sim.sge
+qsub -l mem=2G,ct=20:00:00 -v setupMacro=${setupMacroTemp} -v setupDirName=${setupDirNameTemp} -v coll_energy=${collEnergyTemp} -v pluto_particle=phi ./sim.sge

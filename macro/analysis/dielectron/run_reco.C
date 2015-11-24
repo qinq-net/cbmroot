@@ -94,16 +94,25 @@ void run_reco(Int_t nEvents = 100)
 	// =========================================================================
 	// ===                      STS local reconstruction                     ===
 	// =========================================================================
-	Double_t dynRange = 40960.;  // Dynamic range [e]
-	Double_t threshold = 4000.;  // Digitisation threshold [e]
-	Int_t nAdc = 4096;   // Number of ADC channels (12 bit)
-	Double_t timeResolution = 5.;  // time resolution [ns]
-	Double_t deadTime = 9999999.;  // infinite dead time (integrate entire event)
-	Double_t noise = 0.;  // ENC [e]
-	Int_t digiModel = 1;   // Model: 1 = uniform charge distribution along track
+	Double_t dynRange       =   40960.;  // Dynamic range [e]
+	Double_t threshold      =    4000.;  // Digitisation threshold [e]
+	Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
+	Double_t timeResolution =       5.;  // time resolution [ns]
+	Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
+	Double_t noise          =       0.;  // ENC [e]
+	Int_t digiModel         =       1;   // User sensor type DSSD
+
+	// The following settings correspond to a validated implementation.
+	// Changing them is on your own risk.
+	Int_t  eLossModel       = 1;         // Energy loss model: uniform
+	Bool_t useLorentzShift  = kFALSE;    // Deactivate Lorentz shift
+	Bool_t useDiffusion     = kFALSE;    // Deactivate diffusion
+	Bool_t useCrossTalk     = kFALSE;    // Deactivate cross talk
 
 	CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
-	stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
+	stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
+	stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution,
+						 deadTime, noise);
 	run->AddTask(stsDigi);
 
 	FairTask* stsClusterFinder = new CbmStsFindClusters();
