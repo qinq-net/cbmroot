@@ -60,7 +60,7 @@ class CbmMvdSensorPlugin : public TObject
   bool	  PluginReady(){return (bFlag);};
   void  SetPluginReady(bool flag) {bFlag = flag;}
   void  ShowDebugHistos(){fShowDebugHistos = kTRUE;}
-  const char* GetName(){return fName;}
+  virtual const char* GetName() const {return fName;}
   Bool_t IsInit(){return(initialized);}
   /** data members **/
   

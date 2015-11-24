@@ -38,7 +38,7 @@ public:
     ~CbmMvdDigi();
 
     /** Accessors **/
-    Double_t  GetCharge()   { return fCharge;     };
+    virtual Double_t  GetCharge() const  { return fCharge;     };
     Int_t    GetPixelX();
     Int_t    GetPixelY();
     Double_t GetPixelSizeX() { return  fPixelSizeX; };
