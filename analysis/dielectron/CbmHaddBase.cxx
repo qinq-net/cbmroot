@@ -98,7 +98,7 @@ TFile* CbmHaddBase::CreateAndMergeTempTargetFile(
 	stringstream ss;
 	ss  << targetFileNum << ".root";
 	TFile* targetFile = TFile::Open( string(dir + addString + ".temp.taget.file." + ss.str()).c_str(), "RECREATE" );
-	MergeRootfile( targetFile, fileList );
+	if (fileList->GetEntries() > 0) MergeRootfile( targetFile, fileList );
 	return targetFile;
 }
 
