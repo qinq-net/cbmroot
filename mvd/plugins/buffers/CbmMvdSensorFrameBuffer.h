@@ -56,7 +56,7 @@ class CbmMvdSensorFrameBuffer : public CbmMvdSensorBuffer
   /** Data Processing **/
  
   virtual void 		ExecChain();
-  virtual void 		Init		(CbmMvdSensor* mySensor);
+  virtual void 		InitBuffer     	(CbmMvdSensor* mySensor);
   virtual void 		BuildTimeSlice	(Double_t tStart, Double_t tStop){
 			cout<<"Do not use " << GetName() << "::BuildTimeSlice()"<< endl;};
   

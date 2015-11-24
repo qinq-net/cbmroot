@@ -942,7 +942,7 @@ void CbmMvdSensorDigitizerTask::SetParContainers() {
 
 			      
 // -----    Virtual private method Init   ----------------------------------
-void CbmMvdSensorDigitizerTask::Init(CbmMvdSensor* mySensor) {
+void CbmMvdSensorDigitizerTask::InitTask(CbmMvdSensor* mySensor) {
   
   //Read information on the sensor von data base
   fSensor = mySensor;
@@ -1002,7 +1002,7 @@ void CbmMvdSensorDigitizerTask::ReInit(CbmMvdSensor* sensor) {
 
   delete fOutputBuffer;
   
-  Init(sensor);
+  InitTask(sensor);
     
 }
 // -------------------------------------------------------------------------

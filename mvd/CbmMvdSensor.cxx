@@ -245,14 +245,14 @@ ReadSensorGeometry(fVolName, fNodeName);
 		
                 framebuffer = (CbmMvdSensorFrameBuffer*)fPluginArray->At(i);
 		if(! framebuffer->IsInit())
-               		framebuffer->Init(this);
+               		framebuffer->InitBuffer(this);
                }
                 if ( pluginFirst->ClassName() == trackingname)
 	       {
 		
                 trackingbuffer = (CbmMvdSensorTrackingBuffer*)fPluginArray->At(i);
 		if(! trackingbuffer->IsInit())
-               		 trackingbuffer->Init(this);
+               		 trackingbuffer->InitBuffer(this);
                }
               
 	  }
@@ -267,7 +267,7 @@ ReadSensorGeometry(fVolName, fNodeName);
 	  {
 	  digitask = (CbmMvdSensorDigitizerTask*)fPluginArray->At(i);
 	  if(! digitask->IsInit())
-        	  digitask->Init(this);
+        	  digitask->InitTask(this);
           fDigiPlugin = i;
 	  } 
 	 
@@ -275,21 +275,21 @@ ReadSensorGeometry(fVolName, fNodeName);
 	       {
 		findertask = (CbmMvdSensorFindHitTask*)fPluginArray->At(i);
 		if(! findertask->IsInit())
-               		 findertask->Init(this); 
+               		 findertask->InitTask(this);
 		 fHitPlugin = i;
 	       }
       else if (pluginFirst->ClassName() == clustername)
 	       {
 		clustertask = (CbmMvdSensorClusterfinderTask*)fPluginArray->At(i);
 		if(! clustertask->IsInit())
-               		 clustertask->Init(this); 
+               		 clustertask->InitTask(this);
 		 fClusterPlugin = i;
 	       }
         else if (pluginFirst->ClassName() == hitname)
 	       {
 		hitfindertask = (CbmMvdSensorHitfinderTask*)fPluginArray->At(i);
 		if(! hitfindertask->IsInit())
-               		 hitfindertask->Init(this); 
+               		 hitfindertask->InitTask(this);
 		 fHitPlugin = i;
 	       }
      }

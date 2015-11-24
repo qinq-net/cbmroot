@@ -38,7 +38,7 @@ class CbmMvdSensorTask : public CbmMvdSensorPlugin
   virtual void          CallBufferForInputData(){;}; //See comment in ExecChain() in .cxx
   virtual TClonesArray* GetOutputArray(){return fOutputBuffer;};
   
-  virtual void		Init(CbmMvdSensor* mySensor){fSensor=mySensor;};
+  virtual void		InitTask(CbmMvdSensor* mySensor){fSensor=mySensor;};
   virtual void 		Exec(){;};
   virtual void 		Finish(){;};
   virtual void          ExecChain(){;};

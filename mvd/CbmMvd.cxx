@@ -309,7 +309,7 @@ CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
 mvdHandler->Init(kTRUE);
 mvdHandler->Fill();
 fStationMap = mvdHandler->GetMap();
-cout << endl << "filled mvd StationMap with: " << fStationMap.size() << " new Sensors" << endl;
+LOG(INFO) << "filled mvd StationMap with: " << fStationMap.size() << " new Sensors" << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
@@ -340,7 +340,7 @@ Bool_t CbmMvd::CheckIfSensitive(std::string name)
   else if(tsname.EndsWith("-P0"))    
       {
        // if(fVerboseLevel>1)
-      std::cout<<"*** Register "<<tsname<<" as active volume."<<endl;
+	  LOG(DEBUG) << "*** Register "<<tsname<<" as active volume."<<FairLogger::endl;
       
       return kTRUE;
       }

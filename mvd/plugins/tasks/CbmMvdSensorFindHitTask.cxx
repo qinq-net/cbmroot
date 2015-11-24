@@ -203,7 +203,7 @@ CbmMvdSensorFindHitTask::~CbmMvdSensorFindHitTask() {
 // -------------------------------------------------------------------------
 
 // -----    Virtual private method Init   ----------------------------------
-void CbmMvdSensorFindHitTask::Init(CbmMvdSensor* mysensor) {
+void CbmMvdSensorFindHitTask::InitTask(CbmMvdSensor* mysensor) {
 
 
   fSensor = mysensor;

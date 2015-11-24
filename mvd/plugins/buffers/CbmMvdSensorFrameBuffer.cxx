@@ -34,7 +34,7 @@ CbmMvdSensorFrameBuffer::~CbmMvdSensorFrameBuffer() {
 }
 // -------------------------------------------------------------------------
 
-void CbmMvdSensorFrameBuffer::Init (CbmMvdSensor* mySensor) {
+void CbmMvdSensorFrameBuffer::InitBuffer (CbmMvdSensor* mySensor) {
   
   bOverflow		= false;
   bFlag 		= false;

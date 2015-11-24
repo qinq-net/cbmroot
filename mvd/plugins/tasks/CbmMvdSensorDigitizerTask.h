@@ -58,7 +58,7 @@ class CbmMvdSensorDigitizerTask : public CbmMvdSensorTask
   virtual ~CbmMvdSensorDigitizerTask();
   
     /** Intialisation **/
-  virtual void Init(CbmMvdSensor* mySensor);
+  virtual void InitTask(CbmMvdSensor* mySensor);
   
   /** fill buffer **/
   void SetInputArray (TClonesArray* inputStream);

@@ -194,7 +194,7 @@ CbmMvdSensorHitfinderTask::~CbmMvdSensorHitfinderTask() {
 // -------------------------------------------------------------------------
 
 // -----    Virtual private method Init   ----------------------------------
-void CbmMvdSensorHitfinderTask::Init(CbmMvdSensor* mysensor) {
+void CbmMvdSensorHitfinderTask::InitTask(CbmMvdSensor* mysensor) {
 
 
   fSensor = mysensor;

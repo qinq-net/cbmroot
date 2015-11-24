@@ -69,7 +69,7 @@ public:
     void Exec();
     
     /** Intialisation **/
-    void Init(CbmMvdSensor* mySensor);
+    void InitTask(CbmMvdSensor* mySensor);
 
     void SetInputDigi(CbmMvdDigi* digi)
 	{ new((*fInputBuffer)[fInputBuffer->GetEntriesFast()]) CbmMvdDigi(*((CbmMvdDigi*)digi)); 

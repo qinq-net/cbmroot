@@ -130,7 +130,7 @@ CbmMvdSensorClusterfinderTask::CbmMvdSensorClusterfinderTask(const char* name, I
 
 
 // -----    Virtual private method Init   ----------------------------------
-void CbmMvdSensorClusterfinderTask::Init(CbmMvdSensor* mysensor) {
+void CbmMvdSensorClusterfinderTask::InitTask(CbmMvdSensor* mysensor) {
 
 
   fSensor = mysensor;

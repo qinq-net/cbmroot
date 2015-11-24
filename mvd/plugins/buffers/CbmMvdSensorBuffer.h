@@ -53,7 +53,7 @@ class CbmMvdSensorBuffer : public CbmMvdSensorPlugin
   /** Data Processing **/
   //=======================================================
   virtual void ExecChain(){;}
-  virtual void 		Init		(CbmMvdSensor* mySensor)	 {fSensor=mySensor;};
+  virtual void 		InitBuffer     	(CbmMvdSensor* mySensor)	 {fSensor=mySensor;};
   virtual void 		BuildTimeSlice	(Double_t tStart, Double_t tStop){;};
   virtual void 		Finish		()				 {;};
   

@@ -25,7 +25,7 @@ CbmMvdSensorTrackingBuffer::~CbmMvdSensorTrackingBuffer() {
 // -------------------------------------------------------------------------
 
 // -----   Init         ----------------------------------------------------
-void CbmMvdSensorTrackingBuffer::Init(CbmMvdSensor* mySensor) {
+void CbmMvdSensorTrackingBuffer::InitBuffer(CbmMvdSensor* mySensor) {
   
   fBuffer = new TClonesArray("CbmMvdHit", 1000);
   fCurrentEvent = new TClonesArray("CbmMvdHit", 1000);
