@@ -65,7 +65,7 @@ public:
     inline void SetGhost   (Bool_t ghost)        {  fGhost = ghost;        }
     inline void SetTDH     (Bool_t tdh)          {  fTDH = tdh;            }
 
-    ClassDef(CbmHadron, 1);
+    ClassDef(CbmHadron, 1)
 
 };
 

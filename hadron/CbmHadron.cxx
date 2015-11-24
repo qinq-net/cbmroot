@@ -58,5 +58,5 @@ CbmHadron::~CbmHadron()
 // ------------------------------------------------------------------
 
 
-ClassImp(CbmHadron);
+ClassImp(CbmHadron)
 

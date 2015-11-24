@@ -40,8 +40,8 @@ private:
     Int_t         fNbinsMom;         // Number of bins in momentum
     Double_t      fMinMom;           // Min momentum
     Double_t      fMaxMom;           // Max momentum
-    Int_t         fNbinsMomCharge;   // Number of bins in mom*charge
     Double_t      fBinSizeMom;       // Binsize in momentum
+    Int_t         fNbinsMomCharge;   // Number of bins in mom*charge
 
     void CreateHistogramms();
     CbmFillM2(const CbmFillM2&);
@@ -76,7 +76,7 @@ public:
     inline void SetCoutBunch(Int_t coutBunch)              {  fCoutBunch = coutBunch;           }
     inline void SetLevel    (Int_t level)                  {  fLevel = level;                   }
 
-    ClassDef(CbmFillM2,1);
+    ClassDef(CbmFillM2,1)
 };
 
 #endif

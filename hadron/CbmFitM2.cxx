@@ -62,12 +62,12 @@ CbmFitM2::CbmFitM2()
     fNbinsM2(900),
     fMinM2(-1.5),
     fMaxM2(3.0),
-    fBinSizeM2( (fMaxM2 - fMinM2) / (Double_t)fNbinsM2 ),
+    fBinSizeM2( (fMaxM2 - fMinM2) / static_cast<Double_t>(fNbinsM2) ),
     fNbinsMom(100),
-    fNbinsMomCharge( TMath::Nint( 2*(fNbinsMom+fMinMom/fBinSizeMom)) ),
     fMinMom(0.),
     fMaxMom(10.),
-    fBinSizeMom((fMaxMom - fMinMom) / (Double_t)fNbinsMom )
+    fBinSizeMom((fMaxMom - fMinMom) / static_cast<Double_t>(fNbinsMom) ),
+    fNbinsMomCharge( TMath::Nint( 2*(fNbinsMom+fMinMom/fBinSizeMom)) )
 {
     CreateHistogramms();
     cout << "Nbins momentum*charge  :  " << fNbinsMomCharge << endl;
@@ -104,12 +104,12 @@ CbmFitM2::CbmFitM2(const char *name, Int_t verbose)
     fNbinsM2(900),
     fMinM2(-1.5),
     fMaxM2(3.0),
-    fBinSizeM2( (fMaxM2 - fMinM2) / (Double_t)fNbinsM2 ),
+    fBinSizeM2( (fMaxM2 - fMinM2) / static_cast<Double_t>(fNbinsM2) ),
     fNbinsMom(100),
-    fNbinsMomCharge( TMath::Nint( 2*(fNbinsMom+fMinMom/fBinSizeMom)) ),
     fMinMom(0.),
     fMaxMom(10.),
-    fBinSizeMom((fMaxMom - fMinMom) / (Double_t)fNbinsMom )
+    fBinSizeMom((fMaxMom - fMinMom) / static_cast<Double_t>(fNbinsMom) ),
+    fNbinsMomCharge( TMath::Nint( 2*(fNbinsMom+fMinMom/fBinSizeMom)) )
 {
     CreateHistogramms();
     cout << "Nbins momentum*charge  :  " << fNbinsMomCharge << endl;
@@ -139,7 +139,7 @@ InitStatus CbmFitM2::Init()
         return kERROR;
     }
 
-    fh_m2mom = (TH2F*) rootMgr->GetInFile()->Get("h_m2mom_hadron");
+    fh_m2mom = static_cast<TH2F*>(rootMgr->GetInFile()->Get("h_m2mom_hadron"));
     if(NULL == fh_m2mom) {
 	cout << "-E- CbmFitM2::Init : "
 	    << "No m2 vs. mom. histogram!" << endl;
@@ -234,7 +234,7 @@ void CbmFitM2::CreatePDF()
 	Double_t b0 = TMath::Min(M2PROT - sm2, M2KA + 2*sm2);
 	Double_t a = a0;
 	Double_t b = b0;
-	Double_t step = (fMaxM2-fMinM2)/(Double_t)fNbinsM2;
+	Double_t step = (fMaxM2-fMinM2)/static_cast<Double_t>(fNbinsM2);
 	Double_t n0_ka = f_m2_ka->Integral(a, b);
 	Double_t eff_ka = 0;
 //	Double_t pur_pi = 0;
@@ -456,13 +456,6 @@ void CbmFitM2::WriteHistogramms()
 }
 // ------------------------------------------------------------------
 
-
-
-ClassImp(CbmFitM2);
-
-
-
-
 Double_t fun_m2(Double_t *x, Double_t *par)
 {
     return (par[2]*OOSTP/par[0]*exp(-0.5*pow((x[0]-par[1])/par[0],2)));
@@ -476,5 +469,6 @@ Double_t fun_m2_all(Double_t *x, Double_t *par)
 	    par[6]*OOSTP/par[0]*exp(-0.5*pow((x[0]-par[3])/par[0],2)));
 }
 
+ClassImp(CbmFitM2)
 
 

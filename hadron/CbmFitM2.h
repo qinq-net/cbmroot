@@ -46,10 +46,10 @@ private:
     Double_t      fMaxM2;            // Max m2
     Double_t      fBinSizeM2;        // Binsize in m2
     Int_t         fNbinsMom;         // Number of bins in momentum
-    Int_t         fNbinsMomCharge;   // Number of bins in mom*charge
     Double_t      fMinMom;           // Min momentum
     Double_t      fMaxMom;           // Max momentum
     Double_t      fBinSizeMom;       // Binsize in momentum
+    Int_t         fNbinsMomCharge;   // Number of bins in mom*charge
 
     void CreateHistogramms();
 
@@ -78,7 +78,7 @@ public:
     inline void SetPurity(Double_t purity)    {  fPurity = purity;       }
     inline void SetLevel(Int_t level)         {  fLevel = level;         }
 
-    ClassDef(CbmFitM2,1);
+    ClassDef(CbmFitM2,1)
 };
 
 #endif

@@ -52,12 +52,12 @@ CbmFillM2::CbmFillM2()
     fNbinsM2(90),
     fMinM2(-1.5),
     fMaxM2(3.0),
-    fBinSizeM2((fMaxM2 - fMinM2) / (Double_t)fNbinsM2),
+    fBinSizeM2((fMaxM2 - fMinM2) / static_cast<Double_t>(fNbinsM2)),
     fNbinsMom(9),
     fMinMom(1.),
     fMaxMom(10.),
-    fNbinsMomCharge(TMath::Nint( 2*(fNbinsMom+fMinMom/fBinSizeMom) )),
-    fBinSizeMom((fMaxMom - fMinMom) / (Double_t)fNbinsMom)
+    fBinSizeMom((fMaxMom - fMinMom) / static_cast<Double_t>(fNbinsMom)),
+    fNbinsMomCharge(TMath::Nint( 2*(fNbinsMom+fMinMom/fBinSizeMom) ))
 {
     CreateHistogramms();
     cout << "Nbins momentum*charge  :  " << fNbinsMomCharge << endl;
@@ -89,13 +89,12 @@ CbmFillM2::CbmFillM2(const char *name, Int_t verbose,
     fNbinsM2(nbinsM2),
     fMinM2(minM2),
     fMaxM2(maxM2),
-    fBinSizeM2((fMaxM2 - fMinM2) / (Double_t)fNbinsM2),
+    fBinSizeM2((fMaxM2 - fMinM2) / static_cast<Double_t>(fNbinsM2)),
     fNbinsMom(nbinsMom),
     fMinMom(minMom),
     fMaxMom(maxMom),
-    fNbinsMomCharge(TMath::Nint( 2*(fNbinsMom+fMinMom/fBinSizeMom) )),
-    fBinSizeMom((fMaxMom - fMinMom) / (Double_t)fNbinsMom)
-
+    fBinSizeMom((fMaxMom - fMinMom) / static_cast<Double_t>(fNbinsMom)),
+    fNbinsMomCharge(TMath::Nint( 2*(fNbinsMom+fMinMom/fBinSizeMom) ))
 {
     CreateHistogramms();
     cout << "Nbins momentum*charge  :  " << fNbinsMomCharge << endl;
@@ -127,19 +126,19 @@ InitStatus CbmFillM2::Init()
     }
 
     if(1 == fLevel) {
-	fArrayMCTrack = (TClonesArray*) rootMgr->GetObject("MCTrack");
+	fArrayMCTrack = static_cast<TClonesArray*>(rootMgr->GetObject("MCTrack"));
 	if(NULL == fArrayMCTrack) {
 	    cout << "-W- CbmFillM2::Init : "
 		<< "no MC track array!" << endl;
 	}
-	fArrayTofPoint = (TClonesArray*) rootMgr->GetObject("TofPoint");
+	fArrayTofPoint = static_cast<TClonesArray*>(rootMgr->GetObject("TofPoint"));
 	if(NULL == fArrayTofPoint) {
 	    cout << "-W- CbmFillM2::Init : "
 		<< "no TOF point array!" << endl;
 	}
     }
     else {
-	fArrayHadron = (TClonesArray*) rootMgr->GetObject("Hadron");
+	fArrayHadron = static_cast<TClonesArray*>(rootMgr->GetObject("Hadron"));
 	if(NULL == fArrayHadron) {
 	    cout << "-W- CbmFillM2::Init : "
 		<< "no Hadron array!" << endl;
@@ -165,7 +164,7 @@ InitStatus CbmFillM2::Init()
 
 	// Get the pointer to container of base parameters
 	FairBaseParSet* baseParSet =
-	    (FairBaseParSet*) rtdb->getContainer("FairBaseParSet");
+	    static_cast<FairBaseParSet*>(rtdb->getContainer("FairBaseParSet"));
 	if(NULL == baseParSet) {
 	    cout << "-E- CbmFillM2::Init :"
 		<<" no container of base parameters!" << endl;
@@ -181,7 +180,7 @@ InitStatus CbmFillM2::Init()
 	}
 
 	// Find TRD detector
-	FairDetector* trd = (FairDetector*) detList->FindObject("TRD");
+	FairDetector* trd = static_cast<FairDetector*>(detList->FindObject("TRD"));
 	if(NULL == trd) {
 	    cout << "-E- CbmFillM2::Init :"
 		<< " no TRD detector!" << endl;
@@ -249,7 +248,7 @@ void CbmFillM2::Exec(Option_t *)
 	    for(Int_t iTofPoint = 0;
 		iTofPoint < fArrayTofPoint->GetEntriesFast();
 		iTofPoint++) {
-		tofPoint = (CbmTofPoint*) fArrayTofPoint->At(iTofPoint);
+		tofPoint = static_cast<CbmTofPoint*>(fArrayTofPoint->At(iTofPoint));
 		if(NULL == tofPoint) continue;
 
 		// Get pointer to the corresponding MC track
@@ -257,7 +256,7 @@ void CbmFillM2::Exec(Option_t *)
 		if(mcTrackIndex < 0) continue;
 		if(mcTrackIndex == temp) continue;
                 temp = mcTrackIndex;
-		mcTrack = (CbmMCTrack*) fArrayMCTrack->At(mcTrackIndex);
+		mcTrack = static_cast<CbmMCTrack*>(fArrayMCTrack->At(mcTrackIndex));
 		if(NULL == mcTrack) continue;
 
 		// Skip secondaries
@@ -296,7 +295,7 @@ void CbmFillM2::Exec(Option_t *)
 		iHadron < fArrayHadron->GetEntriesFast();
 		iHadron++) {
 		// Get pointer to the global track
-		hadron = (CbmHadron*) fArrayHadron->At(iHadron);
+		hadron = static_cast<CbmHadron*>(fArrayHadron->At(iHadron));
 		if(NULL == hadron) continue;
 
 		// Calculate squared mass and fill histogramms
@@ -413,6 +412,6 @@ void CbmFillM2::Reset()
 
 
 
-ClassImp(CbmFillM2);
+ClassImp(CbmFillM2)
 
 
