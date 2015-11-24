@@ -1,12 +1,40 @@
-void PairSelection(Int_t index = 0)
+
+TString caveGeom="";
+TString pipeGeom="";
+TString magnetGeom="";
+TString mvdGeom="";
+TString stsGeom="";
+TString richGeom="";
+TString muchGeom="";
+TString shieldGeom="";
+TString trdGeom="";
+TString tofGeom="";
+TString ecalGeom="";
+TString platformGeom="";
+TString psdGeom="";
+Double_t psdZpos=0.;
+Double_t psdXpos=0.;
+
+TString mvdTag="";
+TString stsTag="";
+TString trdTag="";
+TString tofTag="";  
+
+TString stsDigi="";
+TString trdDigi="";
+TString tofDigi="";
+
+TString mvdMatBudget="";
+TString stsMatBudget="";
+
+TString  fieldMap="";
+Double_t fieldZ=0.;
+Double_t fieldScale=0.;
+Int_t    fieldSymType=0;
+
+
+void PairSelection(Int_t nEvents = 100, Int_t ProcID = 1, bool PileUp = false, Int_t PidTyp = 0)
 {
-  // -------------------------------------------------------------------------
-    // Convert index to the string
-    char strIndex[4];
-    sprintf(strIndex, "%4d", index);
-    for(Int_t i = 0; i < 4; i++) {
-	if(' ' == strIndex[i]) strIndex[i] = '0';
-    }
   // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
@@ -14,42 +42,75 @@ void PairSelection(Int_t index = 0)
     timer.Start();
 
     gDebug=0;
-
-    gROOT->LoadMacro("$VMCWORKDIR/gconfig/basiclibs.C");
-    basiclibs();
 // -------------------------------------------------------------------------
-    // Input files
- TString input = "auau.25gev"; 
- TString system = "centr"; 
- TString signal = "d0";
- Int_t  nEvents = 1000;
- Int_t  iVerbose = 0; 
- const char* setup = "sis300_electron"; 
- bool PileUp = false;
- bool littrack = false;
- Bool_t useMC = kTRUE;
-   
-  // Input file (MC events)
-  TString mcFile = "data/opencharm.mc.unigen." + input + "." + system +"." + signal + ".root";
+
+// Input Parameter
+TString input = "nini";
+TString inputGEV = "15gev";
+TString system = "centr";
+TString signal = "d0"; // "dminus" "dplus" "d0_4B"
+Int_t  iVerbose = 0; 
+TString setup = "sis100_electron";
+
+bool littrack = false;
+Bool_t useMC = kFALSE;
+
+switch (PidTyp)
+{
+case 0:
+    TString pidMode = "NONE";
+    break;
+case 1:
+    TString pidMode = "MC";
+    break;
+case 2:
+    TSTring pidMode = "TOF";
+    break;
+default:
+    TString pidMode = "NONE";
+
+}
+// Input file (MC events)
+ TString mcFile = Form("/hera/cbm/users/psitzmann/data/mc/opencharm.mc.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+
+
+
+  // Parameter file
+  TString parFile = Form("/hera/cbm/users/psitzmann/data/params/paramsunigen.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+
+    // Reco file
+    TString rcSystem = Form("/hera/cbm/users/psitzmann/data/reco/opencharm.reco.urqmd.%s.%s.%i.%i.%s.%s", input.Data(), inputGEV.Data(), nEvents, ProcID,  signal.Data(), setup.Data());
+    if(!PileUp)
+      {
+      if(littrack)
+         TString rcFile = rcSystem + ".littrack.root";
+      else 
+         TString rcFile = rcSystem + ".l1.root";
+      }
+      else if(littrack)
+         TString rcFile = rcSystem + ".PileUp.littrack.root";
+      else 
+         TString rcFile = rcSystem + ".PileUp.l1.root";
+
   // Output file
-  TString rcSystem = "data/opencharm.reco.unigen." + input + "." + system + "." + signal;
- 
+  TString outSystem = Form("/hera/cbm/users/psitzmann/data/ana/opencharm.pairs.urqmd.%s.%s.%i.%i.%s.%s.pidMode_%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), pidMode.Data());
+  if(useMC) outSystem += ".mcMode";
   if(!PileUp)
     {
     if(littrack)
-       TString rcFile = rcSystem + ".littrack.root";
+       TString outFile = outSystem + ".littrack.root";
     else 
-       TString rcFile = rcSystem + ".l1.root";
+       TString outFile = outSystem + ".l1.root";
     }
     else if(littrack)
-       TString rcFile = rcSystem + ".PileUp.littrack.root";
+       TString outFile = outSystem + ".PileUp.littrack.root";
     else 
-       TString rcFile = rcSystem + ".PileUp.l1.root";
-  
+       TString outFile = outSystem + ".PileUp.l1.root";
     
-      // Output file
-  TString trackSystem = "data/opencharm.tracks.unigen." + input + "." + system +"."+ signal;
- if(!PileUp)
+
+    // Track file
+  TString trackSystem = Form("/hera/cbm/users/psitzmann/data/ana/opencharm.tracks.urqmd.%s.%s.%i.%i.%s.%s.pidMode_%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), pidMode.Data());
+  if(!PileUp)
     {
     if(littrack)
        TString trackFile = trackSystem + ".littrack.root";
@@ -60,26 +121,12 @@ void PairSelection(Int_t index = 0)
        TString trackFile = trackSystem + ".PileUp.littrack.root";
     else 
        TString trackFile = trackSystem + ".PileUp.l1.root";
-    
-    
- TString outFile = "data/opencharm.pairs.unigen." + input + "." + system +"." + signal;
-if(useMC) outFile = outFile + ".mcMode";
-          outFile = outFile + ".root";
-   
+
     cout << endl
 	<< "  mcFile  :   " << mcFile  << endl
 	<< "  rcFile  :   " << rcFile  << endl
         << "  outFile    :   " << outFile << endl;
-	
-	
-  // Parameter file
-  TString parFile = "data/paramsunigen.";
-  parFile = parFile + input;
-  parFile = parFile + ".";
-  parFile = parFile + system;
-  parFile = parFile + ".";
-  parFile = parFile + signal;
-  parFile = parFile + ".root";
+
 // -------------------------------------------------------------------------	
 //  Digitisation files.
   // Add TObjectString containing the different file names to
@@ -117,19 +164,11 @@ if(useMC) outFile = outFile + ".mcMode";
     fRun->AddTask(KF);
 
     CbmL1* l1 = new CbmL1();
-    fRun->AddTask(l1);  
+    fRun->AddTask(l1);                                                 // name     verbose  ipD0   SvZ
     
     CbmD0CandidateSelection* D0selection  = new CbmD0CandidateSelection("d0selection", 1, 0.08,  0.01 );
     D0selection->SetTestMode(useMC);
 
-    //CbmD0Candidates* D0cand  = new CbmD0Candidates("d0cand", 1, 10.0,  -1.0 );//open cuts
-    //CbmD0CandidatesSE* D0cand  = new CbmD0CandidatesSE("d0candSE", 1,kFALSE, 10.0,  -1.0, 500);//open cuts
-
-    //char* name, Int_t iVerbose, Bool_t SuperEventMode,  cutIPD0max,  cutSVZmin,  cutSVZmax
-    //CbmD0CandidatesSE* D0cand  = new CbmD0CandidatesSE("d0cand", 1, kFALSE,  0.1, -0.02, 1 );
-    //D0cand->SetNegativeFileName(NegativeD0File);
-    //D0cand->SetKFParticle(kTRUE);
-    
     fRun->AddTask(D0selection);
     
   // -----  Parameter database   --------------------------------------------

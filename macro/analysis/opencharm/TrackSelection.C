@@ -1,45 +1,78 @@
-//void TrackSelection(Int_t index) {
-void TrackSelection() 
+
+TString caveGeom="";
+TString pipeGeom="";
+TString magnetGeom="";
+TString mvdGeom="";
+TString stsGeom="";
+TString richGeom="";
+TString muchGeom="";
+TString shieldGeom="";
+TString trdGeom="";
+TString tofGeom="";
+TString ecalGeom="";
+TString platformGeom="";
+TString psdGeom="";
+Double_t psdZpos=0.;
+Double_t psdXpos=0.;
+
+TString mvdTag="";
+TString stsTag="";
+TString trdTag="";
+TString tofTag="";  
+
+TString stsDigi="";
+TString trdDigi="";
+TString tofDigi="";
+
+TString mvdMatBudget="";
+TString stsMatBudget="";
+
+TString  fieldMap="";
+Double_t fieldZ=0.;
+Double_t fieldScale=0.;
+Int_t    fieldSymType=0;
+
+TString defaultInputFile="";
+
+
+
+void TrackSelection(Int_t nEvents = 100, Int_t ProcID = 1, bool PileUp = false,Int_t PidTyp = 0 )
 {
-    Int_t index;
-    
-    TString input = "auau.25gev";
-    TString system = "centr"; 
-    TString signal = "d0";
-    Int_t  nEvents = 1000;
-    Int_t  iVerbose = 0;
-    const char* setup = "sis300_electron"; 
-    bool PileUp = false; 
-    bool littrack = false;
-    
-    // Convert index to the string
-    char strIndex[4];
-    sprintf(strIndex, "%4d", index);
-    for(Int_t i = 0; i < 4; i++) {
-	if(' ' == strIndex[i]) strIndex[i] = '0';
-    }
+// Input Parameter
+TString input = "nini";
+TString inputGEV = "15gev";
+TString system = "centr";
+TString signal = "d0"; // "dminus" "dplus" "d0_4B"
+Int_t  iVerbose = 0; 
+TString setup = "sis100_electron";
+ 
+bool littrack = false;
 
+switch (PidTyp)
+{
+case 0:
+    TString pidMode = "NONE";
+    break;
+case 1:
+    TString pidMode = "MC";
+    break;
+case 2:
+    TSTring pidMode = "TOF";
+    break;
+default:
+    TString pidMode = "NONE";
 
-    TStopwatch timer;
-    timer.Start();
+}
 
-    gDebug=0;
-
-    // ------------------------------------------------------------
-    // Monte Carlo file
- TString mcFile = "data/opencharm.mc.unigen." + input + "." + system +"." + signal + ".root";
+ // ------------------------------------------------------------
+ // Monte Carlo file
+ TString mcFile = Form("/hera/cbm/users/psitzmann/data/mc/opencharm.mc.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
 
   // Parameter file
-  TString parFile = "data/paramsunigen.";
-  parFile = parFile + input;
-  parFile = parFile + ".";
-  parFile = parFile + system;
-  parFile = parFile + ".";
-  parFile = parFile + signal;
-  parFile = parFile + ".root";
+TString parFile = Form("/hera/cbm/users/psitzmann/data/params/paramsunigen.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
 
     // Reco file
-    TString rcSystem = "data/opencharm.reco.unigen." + input + "." + system + "." + signal;
+    TString rcSystem = Form("/hera/cbm/users/psitzmann/data/reco/opencharm.reco.urqmd.%s.%s.%i.%i.%s.%s", input.Data(), inputGEV.Data(), nEvents, ProcID,  signal.Data(), setup.Data());
     if(!PileUp)
       {
       if(littrack)
@@ -53,7 +86,7 @@ void TrackSelection()
          TString rcFile = rcSystem + ".PileUp.l1.root";
 
   // Output file
-  TString outSystem = "data/opencharm.tracks.unigen." + input + "." + system + "." + signal;
+  TString outSystem = Form("/hera/cbm/users/psitzmann/data/ana/opencharm.tracks.urqmd.%s.%s.%i.%i.%s.%s.pidMode_%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), pidMode.Data());
   if(!PileUp)
     {
     if(littrack)
@@ -84,46 +117,37 @@ void TrackSelection()
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
 
-  TObjString stsDigiFile = paramDir + stsDigi;
-  parFileList->Add(&stsDigiFile);
-  cout << "macro/run/run_reco.C using: " << stsDigi << endl;
-
   // ========================================================================
+  TStopwatch timer;
+  timer.Start();
+  gDebug=0;
+
   FairRunAna *fRun = new FairRunAna();
   fRun->SetInputFile(mcFile);
   fRun->AddFriend(rcFile);
   fRun->SetOutputFile(outFile);
   // ========================================================================
 
-  // ----- MC Data Manager   ------------------------------------------------
-  //CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
-  //mcManager->AddFile(inFile);
-  //run->AddTask(mcManager);
-  // ------------------------------------------------------------------------
-
   CbmKF* KF = new CbmKF();                              // name, Verbose,  cutP,  cutPt, cutPV, cutIP )
   fRun->AddTask(KF);
-   
-  CbmD0TrackSelection* dSelect = new CbmD0TrackSelection("Selection", 1,  0.0,   0.0,    4.5,  10000.000);
-  //dSelect->SetNHitsOfLongTracks(2); //suppress short tracks
-  //dSelect->ShowDebugHistos();
+    CbmL1* l1 = new CbmL1();
+  TString mvdMatBudgetFileName = paramDir + mvdMatBudget;
+  TString stsMatBudgetFileName = paramDir + stsMatBudget;
+  l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
+  l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
+  fRun->AddTask(l1);
+
+  CbmD0TrackSelection* dSelect = new CbmD0TrackSelection("Selection", 1,  0.0,   0.0,    6.5,  10000.000);
+  dSelect->SetNHitsOfLongTracks(4); //suppress short tracks
+  dSelect->SetPIDMode(pidMode);
+  dSelect->SetUseMcInfo(kFALSE);
   fRun->AddTask(dSelect);
-
-  //OPEN CUTS
-  //CbmD0TrackSelection* dSelect = new CbmD0TrackSelection("Selection", 1,  0.0,   0.0,    0.0,  10000.000);
-  //dSelect->SetNHitsOfLongTracks(5); //suppress short tracks
-
-  //CbmD0TrackSelection* dSelect = new CbmD0TrackSelection("Selection", 1,  0.0,   0.0,    -10.0, 0.0 );
-  //dSelect->ShowDebugHistos();
 
   // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
-  FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
   parIo1->open(parFile.Data());
-  parIo2->open(parFileList, "in"); 
   rtdb->setFirstInput(parIo1);
-  rtdb->setSecondInput(parIo2);
   rtdb->setOutput(parIo1);
   rtdb->saveOutput();
   // ------------------------------------------------------------------------
@@ -137,6 +161,5 @@ void TrackSelection()
   Double_t ctime = timer.CpuTime();
   printf("\nRealTime=%f seconds, CpuTime=%f seconds\n",rtime,ctime);
   cout << "output file is: " << outFile << endl;
-  //gFile->Close();
-  //exit(0);
+
 }

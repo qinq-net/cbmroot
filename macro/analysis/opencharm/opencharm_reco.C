@@ -9,36 +9,65 @@
 // P. Sitzmann Juli 2014
 // --------------------------------------------------------------------------
 
+TString caveGeom="";
+TString pipeGeom="";
+TString magnetGeom="";
+TString mvdGeom="";
+TString stsGeom="";
+TString richGeom="";
+TString muchGeom="";
+TString shieldGeom="";
+TString trdGeom="";
+TString tofGeom="";
+TString ecalGeom="";
+TString platformGeom="";
+TString psdGeom="";
+Double_t psdZpos=0.;
+Double_t psdXpos=0.;
 
-void opencharm_reco()
+TString mvdTag="";
+TString stsTag="";
+TString trdTag="";
+TString tofTag="";  
+
+TString stsDigi="";
+TString trdDigi="";
+TString tofDigi="";
+
+TString mvdMatBudget="";
+TString stsMatBudget="";
+
+TString  fieldMap="";
+Double_t fieldZ=0.;
+Double_t fieldScale=0.;
+Int_t    fieldSymType=0;
+
+TString defaultInputFile="";
+
+void opencharm_reco(Int_t nEvents = 100, Int_t ProcID = 1, bool PileUp = false)
 {
 
   // ========================================================================
   //          Adjust this part according to your requirements
 
 // Input Parameter
-TString input = "auau.25gev"; 
-TString system = "centr"; 
+    TString input = "nini";
+    TString inputGEV = "15gev";
+TString system = "centr";
 TString signal = "d0"; // "dminus" "dplus" "d0_4B"
-Int_t nEvents = 10;
 Int_t  iVerbose = 0; 
-const char* setup = "sis300_electron"; 
-bool PileUp = false; 
+TString setup = "sis100_electron";
 bool littrack = false;
 
 
   // Input file (MC events)
-  TString inFile = "data/opencharm.mc.unigen." + input + "." + system + "." + signal + ".root";
-  TString deltaFile = "data/mvd.mc.delta.root";
-  TString bgFile = "data/opencharm.mc.unigen." + input + "." + system + ".root";
+  TString inFile = Form("/hera/cbm/users/psitzmann/data/mc/opencharm.mc.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+  TString deltaFile = Form("/hera/cbm/users/psitzmann/data/mc/delta/opencharm.mc.delta.ni.%i.root", ProcID);
+  TString bgFile = Form("/hera/cbm/users/psitzmann/data/mc/opencharm.mc.urqmd.bg.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
 
   // Output file
-  TString outSystem = "data/opencharm.reco.unigen.";
-          outSystem = outSystem + input;
-	  outSystem = outSystem + ".";
-          outSystem = outSystem + system;
-  	  outSystem = outSystem + ".";
-	  outSystem = outSystem + signal;
+  TString outSystem = Form("/hera/cbm/users/psitzmann/data/reco/opencharm.reco.urqmd.%s.%s.%i.%i.%s.%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+
 if(!PileUp)
 {
 if(littrack)
@@ -53,13 +82,7 @@ else
 
 
   // Parameter file
-  TString parFile = "data/paramsunigen.";
-  parFile = parFile + input;
-  parFile = parFile + ".";
-  parFile = parFile + system;
-  parFile = parFile + ".";
-  parFile = parFile + signal;
-  parFile = parFile + ".root";
+TString parFile = Form("/hera/cbm/users/psitzmann/data/params/paramsunigen.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
 
   //  Digitisation files.
   // Add TObjectString containing the different file names to
@@ -78,10 +101,6 @@ else
 
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
-
-  TObjString stsDigiFile = paramDir + stsDigi;
-  parFileList->Add(&stsDigiFile);
-  cout << "macro/run/run_reco.C using: " << stsDigi << endl;
 
   TObjString trdDigiFile = paramDir + trdDigi;
   parFileList->Add(&trdDigiFile);
@@ -147,22 +166,33 @@ if(PileUp)
   run->AddTask(mvdHitfinder);
   // ----------------------------------------------------------------------
 
+
   // -----   STS digitizer   -------------------------------------------------
-  // --- The following settings correspond to the settings for the old
-  // --- digitizer in run_reco.C
+  // -----   The parameters of the STS digitizer are set such as to match
+  // -----   those in the old digitizer. Change them only if you know what you
+  // -----   are doing.
   Double_t dynRange       =   40960.;  // Dynamic range [e]
   Double_t threshold      =    4000.;  // Digitisation threshold [e]
   Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
   Double_t timeResolution =       5.;  // time resolution [ns]
   Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
   Double_t noise          =       0.;  // ENC [e]
-  Int_t digiModel         = 1;  // Model: 1 = uniform charge distribution along track
+  Int_t digiModel         =       1;   // User sensor type DSSD
+	
+  // The following settings correspond to a validated implementation. 
+  // Changing them is on your own risk.
+  Int_t  eLossModel       = 1;         // Energy loss model: uniform 
+  Bool_t useLorentzShift  = kFALSE;    // Deactivate Lorentz shift
+  Bool_t useDiffusion     = kFALSE;    // Deactivate diffusion
+  Bool_t useCrossTalk     = kFALSE;    // Deactivate cross talk
 
   CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
+  stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
   stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution,
-  		                   deadTime, noise);
+  		                 deadTime, noise);
   run->AddTask(stsDigi);
   // -------------------------------------------------------------------------
+
 
   // -----   STS Cluster Finder   --------------------------------------------
   FairTask* stsClusterFinder = new CbmStsFindClusters();
@@ -179,6 +209,10 @@ if(PileUp)
   CbmKF* kalman = new CbmKF();
   run->AddTask(kalman);
   CbmL1* l1 = new CbmL1();
+  TString mvdMatBudgetFileName = paramDir + mvdMatBudget;
+  TString stsMatBudgetFileName = paramDir + stsMatBudget;
+  l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
+  l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
   run->AddTask(l1);
 
   Bool_t useMvdInL1Tracking = !littrack;
@@ -193,7 +227,7 @@ if(PileUp)
   run->AddTask(mvdFinder);
 }
 
- // =========================================================================
+// =========================================================================
   // ===                     TRD local reconstruction                      ===
   // =========================================================================
 
@@ -204,8 +238,8 @@ if(PileUp)
   //"G30" : ALICE fibers 30 layers
 
   Bool_t triangularPads = false;// Bucharest triangular pad-plane layout
-  //Double_t triggerThreshold = 0.5e-6;//SIS100
-  Double_t triggerThreshold = 1.0e-6;//SIS300
+  Double_t triggerThreshold = 0.5e-6;//SIS100
+  //Double_t triggerThreshold = 1.0e-6;//SIS300
   Double_t trdNoiseSigma_keV = 0.1; //default best matching to test beam PRF
 
   CbmTrdDigitizerPRF* trdDigiPrf = new CbmTrdDigitizerPRF(radiator);
@@ -264,17 +298,13 @@ if(PileUp)
 
   run->AddTask(finder);
 
-  // -----   Primary vertex finding   ---------------------------------------
-  CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
-  CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
-  run->AddTask(findVertex);
-  // ------------------------------------------------------------------------
-
   // ===                      End of global tracking                       ===
   // =========================================================================
   
+
   //------   Match Monte Carlo Data to Reco Data    -------------------------
   CbmMatchRecoToMC* matcher = new CbmMatchRecoToMC();
+  matcher->SetIncludeMvdHitsInStsTrack(kTRUE);
   run->AddTask(matcher);
   // ------------------------------------------------------------------------
 
@@ -333,7 +363,7 @@ if(PileUp)
   // -----   Run initialisation   -------------------------------------------
   run->Init();
   // ------------------------------------------------------------------------
-
+  cout << endl << "Starting Run" << endl;
   // -----   Timer   --------------------------------------------------------
   TStopwatch timer;
   timer.Start();

@@ -5,82 +5,86 @@
 // P.Sitzmann 08/06/2015
 //
 // --------------------------------------------------------------------------
-void opencharm_sim()
+
+TString caveGeom="";
+TString pipeGeom="";
+TString magnetGeom="";
+TString mvdGeom="";
+TString stsGeom="";
+TString richGeom="";
+TString muchGeom="";
+TString shieldGeom="";
+TString trdGeom="";
+TString tofGeom="";
+TString ecalGeom="";
+TString platformGeom="";
+TString psdGeom="";
+Double_t psdZpos=0.;
+Double_t psdXpos=0.;
+
+TString mvdTag="";
+TString stsTag="";
+TString trdTag="";
+TString tofTag="";  
+
+TString stsDigi="";
+TString trdDigi="";
+TString tofDigi="";
+
+TString mvdMatBudget="";
+TString stsMatBudget="";
+
+TString  fieldMap="";
+Double_t fieldZ=0.;
+Double_t fieldScale=0.;
+Int_t    fieldSymType=0;
+
+
+
+void opencharm_sim(Int_t nEvents = 100,Int_t ProcID=1, bool backgroundProduction = false)
 {
   // ========================================================================
   //          Adjust this part according to your requirements
  
 // Input Parameter
-TString input = "auau.25gev"; 
-TString system = "centr"; 
+    TString input = "nini";
+    TString inputGEV = "15gev";
+TString system = "centr";
 TString signal = "d0"; // "dminus" "dplus" "d0_4B"
-Int_t nEvents = 10;
-bool backgroundProduction = false;  
-// ------------------------------------------------------------------------
+TString setup = "sis100_electron";
 
  // Input file
-  TString inDir   = gSystem->Getenv("VMCWORKDIR");
-  TString inFile = inDir + "/input/urqmd.";
-  inFile = inFile + input;
-  inFile = inFile + ".";
-  inFile = inFile + system;
-  inFile = inFile + ".05000.root";
+  
+  TString inFile = Form("/hera/cbm/prod/gen/urqmd/%s/%s/%s/urqmd.%s.%s.%s.%05i.root", input.Data(), inputGEV.Data(), system.Data(), input.Data(), inputGEV.Data(), system.Data(), ProcID);
   // ------------------------------------------------------------------------
 
+  if(!backgroundProduction)
+  {
   // Output file
-  TString outFile = "data/opencharm.mc.unigen."; 
-	  outFile = outFile + input; 
-          outFile = outFile + ".";
-          outFile = outFile + system;
-if(!backgroundProduction) outFile = outFile + "." + signal;
-          outFile = outFile + ".root";
+  TString outFile = Form("/hera/cbm/users/psitzmann/data/mc/opencharm.mc.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
   // ------------------------------------------------------------------------
+  }
+  else
+  {
+    // Output file
+  TString outFile = Form("/hera/cbm/users/psitzmann/data/mc/opencharm.mc.urqmd.bg.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+  // ------------------------------------------------------------------------
+  }
 
   // Parameter file name
-  TString parFile = "data/paramsunigen.";
-  parFile = parFile + input;
-  parFile = parFile + ".";
-  parFile = parFile + system;
-if(!backgroundProduction) parFile = parFile + "." + signal;
-  parFile = parFile + ".root";
+  TString parFile = Form("/hera/cbm/users/psitzmann/data/params/paramsunigen.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
   // ------------------------------------------------------------------------
 
-  // Cave geometry
-  TString caveGeom = "cave.geo";
-  // ------------------------------------------------------------------------
+  TString inDir = gSystem->Getenv("VMCWORKDIR");                                       
 
-  // Beam pipe geometry
-  TString pipeGeom = "pipe/pipe_v14l.root";
-  // ------------------------------------------------------------------------
-
-  // Magnet geometry and field map
-  TString magnetGeom  = "magnet/magnet_v12b.geo.root";
-  TString fieldMap    = "field_v12b";   // name of field map
-  Int_t fieldZ        = 40.;             // field centre z position
-  Int_t fieldScale    =  1.;             // field scaling factor
-  Int_t fieldSymType  = 3;
-  // ------------------------------------------------------------------------
-
-  // MVD geometry
-  TString mvdGeom = "mvd/mvd_v15a.geo.root";
-  // ------------------------------------------------------------------------
-
- // StS geometry
-  TString stsGeom = "sts/sts_v13d.geo.root";
-  // ------------------------------------------------------------------------
-
-  // Tof geometry
-  TString tofGeom = "tof/tof_v13-5d.geo.root";
-  // ------------------------------------------------------------------------
+  TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
+  TString setupFunct = setup;
+  setupFunct += "_setup()";
   
-  // RICH geometry
-  TString richGeom = "rich/rich_v14a_3e.root";
-  // ------------------------------------------------------------------------
+  gROOT->LoadMacro(setupFile);
+  gInterpreter->ProcessLine(setupFunct);
 
-  // TRD geometry
-  TString trdGeom  = "trd/trd_v15a_3e.geo.root";
-  // ------------------------------------------------------------------------
-
+  gRandom->SetSeed(0);
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -159,14 +163,19 @@ if(!backgroundProduction) parFile = parFile + "." + signal;
 
 
   // -----   Create magnetic field   ---------------------------------------
+  CbmFieldMap* magField = NULL;
   if ( 2 == fieldSymType ) {
-    CbmFieldMap* magField = new CbmFieldMapSym2(fieldMap);
+      magField = new CbmFieldMapSym2(fieldMap);
   }  else if ( 3 == fieldSymType ) {
-    CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
-  } 
+   magField = new CbmFieldMapSym3(fieldMap);
+  }
+  else
+    magField = new CbmFieldMapSym1(fieldMap);
+
   magField->SetPosition(0., 0., fieldZ);
   magField->SetScale(fieldScale);
   fRun->SetField(magField);
+  cout << endl << "set mag field" << endl;
   // ------------------------------------------------------------------------
 
 
@@ -180,7 +189,7 @@ if(!backgroundProduction) parFile = parFile + "." + signal;
   // ----   Create SignalGenerator     --------------------------------------
 //*********** Example 3: Inline style Pluto input (fireball "J/Psi")
     //This example was provided by A. Kotynia **/
-    Float_t Eb   = 25; 	    // to jest AGeV - ile GeV na nukleon
+    Float_t Eb   = 15; 	    // to jest AGeV - ile GeV na nukleon
     Float_t T1    = 0.120;   // temperature in GeV // powinno byc 150
     Float_t T2    = 0.;      // temperature in GeV
     Float_t blast = 0.;      // radial expansion velocity
