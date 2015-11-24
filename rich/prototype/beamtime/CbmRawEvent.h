@@ -52,6 +52,10 @@ public:
 					);
 	}
 
+	void PrintTime()
+	{
+		printf("date and time: %s  %s\n", Date2charP(), Time2charP());
+	}
 
 	size_t HdrLen(void)
 	{

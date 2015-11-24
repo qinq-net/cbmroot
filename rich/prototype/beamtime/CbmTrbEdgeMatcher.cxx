@@ -1,6 +1,5 @@
 #include "CbmTrbEdgeMatcher.h"
 
-
 //TODO check which headers are really needed
 #include <cstdlib>
 
@@ -15,16 +14,17 @@
 #include "CbmTrbRawMessage.h"
 #include "CbmTrbCalibrator.h"
 
+// Uncoment if you want to have excessive printout (do not execute on many events, may produce Gb's of output)
+//#define DEBUGPRINT
+
 CbmTrbEdgeMatcher::CbmTrbEdgeMatcher() 
   : FairTask(),
     fTrbRawHits(NULL), 
     fRichTrbDigi(new TClonesArray("CbmRichTrbDigi", 10)),
-    BUFSIZE(16),
-    tdcIdToStoredEdges(),
-    circularCounters(),
     fDrawHist(kFALSE),
     fhTtimeMinusLtime(),
-    fhTtimeMinusLtimeCH()
+    fhTtimeMinusLtimeCH(),
+    fMultiCounter(0)
 {
 }
 
@@ -39,11 +39,6 @@ InitStatus CbmTrbEdgeMatcher::Init()
    if (NULL == fTrbRawHits) { Fatal("CbmTrbEdgeMatcher","No CbmTrbRawMessage array!"); }
 
    manager->Register("CbmRichTrbDigi", "RICH TRB leading-trailing edge pairs", fRichTrbDigi, kTRUE);
-
-   std::map<UInt_t, UInt_t*>::iterator tdcIdToStoredEdgesI;
-   for (tdcIdToStoredEdgesI = tdcIdToStoredEdges.begin(); tdcIdToStoredEdgesI != tdcIdToStoredEdges.end(); ++tdcIdToStoredEdgesI) {
-      if (tdcIdToStoredEdgesI->second) delete [] tdcIdToStoredEdgesI->second;
-   }
 
    if (fDrawHist)
    {
@@ -65,6 +60,8 @@ InitStatus CbmTrbEdgeMatcher::Init()
       }
    }
 
+   fhMultiDist = new TH1D("123", "234", 20*(POSITIVEPAIRWINDOW+NEGATIVEPAIRWINDOW), -NEGATIVEPAIRWINDOW, POSITIVEPAIRWINDOW);
+
    return kSUCCESS;
 }
 
@@ -80,49 +77,62 @@ void CbmTrbEdgeMatcher::Exec(Option_t* option)
       UInt_t fine = curTrbRawHit->GetTDCfine();
       UInt_t coarse = curTrbRawHit->GetTDCcoarse();
       UInt_t epoch = curTrbRawHit->GetEpochMarker();
+      Double_t corr = curTrbRawHit->GetCorr();
 
       if (param->IsSyncChannel(channel)) {                   // SYNCH MESSAGE PROCESSING
 
          //TODO implement
 
-         Double_t timestamp = GetFullTime(tdcId, channel, epoch, coarse, fine);
+         Double_t timestamp = GetFullTime(tdcId, channel, epoch, coarse, fine) /*+ corr*/;
 
          // This is channel zero, we suppose that here only leading edge is coming, so write an 'only-leading-edge' RichTrbDigi.
          // Set channel to 0xffffffff if the edge is unavailable
 
+         // Create leading-edge-only sync digi
          new( (*fRichTrbDigi)[fRichTrbDigi->GetEntriesFast()] )
             CbmRichTrbDigi(tdcId, kTRUE, kFALSE, channel, 0xffffffff, timestamp, 0.0);
 
       } else if (param->IsLeadingEdgeChannel(channel)) {     // LEADING EDGE PROCESSING
 
-         // MONKEY CODE. 'edge' bit is not filled. 'reserved' bits are set to 0.
-         UInt_t tdcData = 0x80000000;
-         tdcData += (channel << 22);
-         tdcData += (fine << 12);
-         tdcData += coarse;
+#ifdef DEBUGPRINT
+         Double_t timestamp = GetFullTime(tdcId, channel, epoch, coarse, fine) /*+ corr*/;
+         printf ("Processing leading edge. tdc 0x00%x  ch %d  %f\n", tdcId, channel, timestamp);
+#endif
 
-         //possLeadEdges->AddPossibleLeadingEdge(tdcId, channel, epoch, tdcData);
-         this->AddPossibleLeadingEdge(tdcId, channel, epoch, tdcData);
+         if (tdcId == 0x0110 || tdcId == 0x0111) {
+            this->CreateLeadingEdgeOnlyDigi(*curTrbRawHit);
+         }
+
+         this->AddPossibleLeadingEdge(*curTrbRawHit);
 
       } else {                                              // TRAILING EDGE PROCESSING
 
          // LEADING-TRAILING edges matching
 
-         UInt_t searchedLchannel = param->GetCorrespondingLeadingEdgeChannel(channel);
-         UInt_t foundLepoch;
-         UInt_t leadWord;
-         //Bool_t edgeFound = possLeadEdges->FindLeadingEdge(tdcId, searchedLchannel, epoch, coarse, &foundLepoch, &leadWord);
-         Bool_t edgeFound = this->FindLeadingEdge(tdcId, searchedLchannel, epoch, coarse, &foundLepoch, &leadWord);
+         Double_t timestamp = GetFullTime(tdcId, channel, epoch, coarse, fine) /*+ corr*/;
+#ifdef DEBUGPRINT
+         printf ("Processing trailing edge. tdc 0x00%x  ch %d  %f\n", tdcId, channel, timestamp);
+#endif
 
-         if (edgeFound)  // corresponding leading edge found
+         if (tdcId == 0x0110 || tdcId == 0x0111) {
+            // Create trailing-edge-only digi
+            new( (*fRichTrbDigi)[fRichTrbDigi->GetEntriesFast()] )
+               CbmRichTrbDigi(tdcId, kFALSE, kTRUE, 0xffffffff, channel, 0.0, timestamp);
+         }
+
+         UInt_t searchedLchannel = param->GetCorrespondingLeadingEdgeChannel(channel, tdcId);
+         std::pair<UInt_t, CbmTrbRawMessage> foundLedge = this->FindLeadingEdge(tdcId, searchedLchannel, *curTrbRawHit);
+
+         if (foundLedge.first != 0xffffffff)  // corresponding leading edge found
          {
-            UInt_t lchannel = (leadWord >> 22) & 0x7f;
-            UInt_t lfine = (leadWord >> 12) & 0x3ff;
-            UInt_t ledge = (leadWord >> 11) & 0x1;
-            UInt_t lcoarse = (leadWord) & 0x7ff;
 
-            Double_t tfullTime = GetFullTime(tdcId, channel, epoch, coarse, fine);
-            Double_t lfullTime = GetFullTime(tdcId, lchannel, foundLepoch, lcoarse, lfine);
+            UInt_t lchannel = foundLedge.second.GetChannelID();
+            UInt_t lfine = foundLedge.second.GetTDCfine();
+            UInt_t lcoarse = foundLedge.second.GetTDCcoarse();
+            Double_t lcorr = foundLedge.second.GetCorr();
+
+            Double_t tfullTime = GetFullTime(tdcId, channel, epoch, coarse, fine) /*+ corr*/;
+            Double_t lfullTime = GetFullTime(tdcId, lchannel, foundLedge.first, lcoarse, lfine) /*+ lcorr*/;
 
             if (fDrawHist) {
                fhTtimeMinusLtime[param->TDCidToInteger(tdcId)]->Fill(tfullTime - lfullTime);
@@ -130,18 +140,22 @@ void CbmTrbEdgeMatcher::Exec(Option_t* option)
             }
 
             if (tfullTime - lfullTime < 0.) {
-               // negative time-over-threshold
+               // negative time-over-threshold in the found pair
             }
 
+            // Create both-edges digi
             new( (*fRichTrbDigi)[fRichTrbDigi->GetEntriesFast()] )
                CbmRichTrbDigi(tdcId, kTRUE, kTRUE, lchannel, channel, lfullTime, tfullTime);
 
+#ifdef DEBUGPRINT
+            printf("PAIR\t\tToT=%f\n", tfullTime - lfullTime);
+            printf("   --- LEAD  - tdc %x ch %d epoch %08x coarse %08x fine %08x\n", tdcId, lchannel, foundLedge.first, lcoarse, lfine);
+            printf("   --- TRAIL - tdc %x ch %d epoch %08x coarse %08x fine %08x\n", tdcId, channel, epoch, coarse, fine);
+#endif
+
          } else {  // corresponding leading edge not found
 
-            Double_t timestamp = GetFullTime(tdcId, channel, epoch, coarse, fine);
-
-            new( (*fRichTrbDigi)[fRichTrbDigi->GetEntriesFast()] )
-               CbmRichTrbDigi(tdcId, kFALSE, kTRUE, 0xffffffff, channel, 0.0, timestamp);
+            fTrBuf.push_back(curTrbRawHit);
 
          }
 
@@ -149,6 +163,71 @@ void CbmTrbEdgeMatcher::Exec(Option_t* option)
 
    } // for loop over the input raw hits
 
+   for (auto iter : fTrBuf) {
+      
+      UInt_t tdcId = iter->GetSourceAddress();
+      UInt_t channel = iter->GetChannelID();
+      UInt_t fine = iter->GetTDCfine();
+      UInt_t coarse = iter->GetTDCcoarse();
+      UInt_t epoch = iter->GetEpochMarker();
+      //Double_t corr = iter->GetCorr();
+
+	  Double_t fullT = GetFullTime(tdcId, channel, epoch, coarse, fine) /*+ corr*/;
+	  
+      //printf ("POSTPROCESSING EVENT: tdc 0x00%x  ch %d time=%f\n", tdcId, channel, fullT);
+	  
+      // Try to find the leading edge again - now in he buffer, which was formed during the first run
+      UInt_t searchedLchannel = param->GetCorrespondingLeadingEdgeChannel(channel, tdcId);
+      std::pair<UInt_t, CbmTrbRawMessage> foundLedge = this->FindLeadingEdge(tdcId, searchedLchannel, *iter);
+      
+      if (foundLedge.first != 0xffffffff)  // corresponding leading edge found
+      {
+         //printf("FOUND!!!\n");
+         
+         UInt_t lchannel = foundLedge.second.GetChannelID();
+         UInt_t lfine = foundLedge.second.GetTDCfine();
+         UInt_t lcoarse = foundLedge.second.GetTDCcoarse();
+         Double_t lcorr = foundLedge.second.GetCorr();
+
+         Double_t tfullTime = GetFullTime(tdcId, channel, epoch, coarse, fine) /*+ corr*/;
+         Double_t lfullTime = GetFullTime(tdcId, lchannel, foundLedge.first, lcoarse, lfine) /*+ lcorr*/;
+
+         if (fDrawHist) {
+            fhTtimeMinusLtime[param->TDCidToInteger(tdcId)]->Fill(tfullTime - lfullTime);
+            if (tdcId == DEBUGTDCID) fhTtimeMinusLtimeCH[(channel/2)-1]->Fill(tfullTime - lfullTime);
+         }
+
+         // Create both-edges digi
+         new( (*fRichTrbDigi)[fRichTrbDigi->GetEntriesFast()] )
+            CbmRichTrbDigi(tdcId, kTRUE, kTRUE, lchannel, channel, lfullTime, tfullTime);
+
+#ifdef DEBUGPRINT
+         printf("PAIR\t\tToT=%f\n", tfullTime - lfullTime);
+         printf("   --- LEAD  - tdc %x ch %d epoch %08x coarse %08x fine %08x\n", tdcId, lchannel, foundLedge.first, lcoarse, lfine);
+         printf("   --- TRAIL - tdc %x ch %d epoch %08x coarse %08x fine %08x\n", tdcId, channel, epoch, coarse, fine);
+#endif
+
+         
+      } else {
+         //printf("EDGE NOT FOUND!!! %x\tch %d\n", tdcId, channel);
+
+         Double_t timestamp = GetFullTime(tdcId, channel, epoch, coarse, fine); //+ corr
+
+         // Create trailing-edge-only digi
+         new( (*fRichTrbDigi)[fRichTrbDigi->GetEntriesFast()] )
+            CbmRichTrbDigi(tdcId, kFALSE, kTRUE, 0xffffffff, channel, 0.0, timestamp);
+
+#ifdef DEBUGPRINT
+         printf("TRAILING ONLY\n");
+         printf("   --- TRAIL - tdc %x ch %d epoch %08x coarse %08x fine %08x\n", tdcId, channel, epoch, coarse, fine);
+#endif
+
+      }
+
+   }
+   
+   fTrBuf.clear();
+   
 }
 
 void CbmTrbEdgeMatcher::FinishEvent()
@@ -158,198 +237,272 @@ void CbmTrbEdgeMatcher::FinishEvent()
 
 void CbmTrbEdgeMatcher::FinishTask()
 {
+   LOG(INFO) << fMultiCounter << " cases with multiple leading edges within time window." << FairLogger::endl;
+
+	UInt_t v_numOfStoredEdges=0;
+
+	for (UInt_t tdcId=0x0010; tdcId<=0x0013; tdcId++) {
+	
+		std::map< UInt_t, std::vector< std::pair< UInt_t, CbmTrbRawMessage > >* >::iterator tdcIdToStoredEdgesI;
+		tdcIdToStoredEdgesI = tdcIdToStoredEdges.find(tdcId);
+
+		if (tdcIdToStoredEdgesI != tdcIdToStoredEdges.end()) {
+			std::vector< std::pair< UInt_t, CbmTrbRawMessage > >* PerTDCbuffer;
+			PerTDCbuffer = tdcIdToStoredEdgesI->second;
+			for (unsigned int v_channel=0; v_channel<=32; v_channel++) {
+				v_numOfStoredEdges += PerTDCbuffer[v_channel].size();
+			}
+		}
+	
+	}
+	LOG(INFO) << "Leftovers in the pair-matching buffers: " << v_numOfStoredEdges << FairLogger::endl;
+
+   //fhMultiDist->Draw();
+
    this->DrawDebugHistos();
 }
 
-void CbmTrbEdgeMatcher::AddPossibleLeadingEdge(UInt_t tdcId, UInt_t lChannel, UInt_t lEpoch, UInt_t lDataWord)
+void CbmTrbEdgeMatcher::AddPossibleLeadingEdge(CbmTrbRawMessage rawMessage)
 {
-   std::map<UInt_t, UInt_t*>::iterator tdcIdToStoredEdgesI;
+   UInt_t tdcId = rawMessage.GetSourceAddress();
+   UInt_t lChannel = rawMessage.GetChannelID();
+   UInt_t lEpoch = rawMessage.GetEpochMarker();
 
+   // Find the buffer for the given channel.
+   // If no yet - create it.
+   std::map< UInt_t, std::vector< std::pair< UInt_t, CbmTrbRawMessage > >* >::iterator tdcIdToStoredEdgesI;
    tdcIdToStoredEdgesI = tdcIdToStoredEdges.find(tdcId);
-
-   if (tdcIdToStoredEdgesI != tdcIdToStoredEdges.end())
+   if (tdcIdToStoredEdgesI == tdcIdToStoredEdges.end())
    {
-      tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + circularCounters[tdcId]*2 + 0] = lEpoch;
-      tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + circularCounters[tdcId]*2 + 1] = lDataWord;
-      circularCounters[tdcId] += 1;
-      if (circularCounters[tdcId] == BUFSIZE) circularCounters[tdcId] = 0;     
+      tdcIdToStoredEdges.insert( std::pair< UInt_t, std::vector< std::pair< UInt_t, CbmTrbRawMessage > >* >(tdcId, new std::vector< std::pair< UInt_t, CbmTrbRawMessage > >[33]) );
+      tdcIdToStoredEdgesI = tdcIdToStoredEdges.find(tdcId);
    }
-   else
-   {
-      tdcIdToStoredEdges[tdcId] = new UInt_t[33*BUFSIZE*2];
 
-      for (UInt_t i=0; i<33*BUFSIZE*2; i++) {  // initialize with 0xffffffff
-         tdcIdToStoredEdges[tdcId][i] = 0xffffffff;
-      }
+   // Select the sub-buffer corresponding to the channel and add an entry there.
+   std::vector< std::pair< UInt_t, CbmTrbRawMessage > >* PerTDCbuffer;
+   PerTDCbuffer = tdcIdToStoredEdgesI->second;
+   PerTDCbuffer[lChannel].push_back(std::pair<UInt_t, CbmTrbRawMessage>(lEpoch, rawMessage));
 
-      circularCounters[tdcId] = 0;
-      tdcIdToStoredEdges[tdcId][lChannel*BUFSIZE*2 + circularCounters[tdcId]*2 + 0] = lEpoch;
-      tdcIdToStoredEdges[tdcId][lChannel*BUFSIZE*2 + circularCounters[tdcId]*2 + 1] = lDataWord;
-      circularCounters[tdcId] += 1;
-   }
+#ifdef DEBUGPRINT
+   printf ("Adding leading edge tdc %x ch %d\n", tdcId, lChannel);
+#endif
 }
 
-// return timeWord, epoch should coincide, the found instance is cleared
-Bool_t CbmTrbEdgeMatcher::FindLeadingEdge(UInt_t tdcId, UInt_t lChannel, UInt_t tEpoch, UInt_t tCoarse, UInt_t* lEpoch, UInt_t* lWord)
+// return found leading edge which corresponds to the given falling edge, the found instance is cleared
+std::pair<UInt_t, CbmTrbRawMessage> CbmTrbEdgeMatcher::FindLeadingEdge(UInt_t tdcId, UInt_t lChannel, CbmTrbRawMessage tRawMessage)
 {
-   std::map<UInt_t, UInt_t*>::iterator tdcIdToStoredEdgesI;
+   std::pair<UInt_t, CbmTrbRawMessage> foundResult;
+
+   UInt_t tChannel = tRawMessage.GetChannelID();
+   UInt_t tFine = tRawMessage.GetTDCfine();
+   UInt_t tCoarse = tRawMessage.GetTDCcoarse();
+   UInt_t tEpoch = tRawMessage.GetEpochMarker();
+   Double_t tCorr = tRawMessage.GetCorr();
+
+   Double_t tFullTime = GetFullTime(tdcId, tChannel, tEpoch, tCoarse, tFine) /*+ tCorr*/;
+
+   std::map< UInt_t, std::vector< std::pair< UInt_t, CbmTrbRawMessage > >* >::iterator tdcIdToStoredEdgesI;
    tdcIdToStoredEdgesI = tdcIdToStoredEdges.find(tdcId);
 
-   if (tdcIdToStoredEdgesI != tdcIdToStoredEdges.end())
-   {
+   // no entries for the given tdc is found - no need to create a 'leading-edge-only' digi. (The trailing-edge-only digi is created outside of this method.)
+   if (tdcIdToStoredEdgesI == tdcIdToStoredEdges.end()) {
+      foundResult.first = 0xffffffff; /*foundResult.second = 0xffffffff;*/
+      return foundResult;
+   } else {
+
       UInt_t foundEpoch = 0xffffffff;
-      UInt_t foundWord = 0xffffffff;
-      UInt_t numOfStoredEdges=0; // number of edges stored for the given channel
-      UInt_t foundWordIndex=0;
+      CbmTrbRawMessage foundWord;
 
-      for (UInt_t i=0; i<BUFSIZE; i++) {  // count how many edges are saved for this channel
-         if (tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 1] != 0xffffffff) {
-            foundEpoch = tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 0];  // store epoch
-            foundWord =  tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 1];  // store data word
-            numOfStoredEdges++;     // count
-            foundWordIndex = i;     // store
-         }
+      std::vector< std::pair< UInt_t, CbmTrbRawMessage > >* PerTDCbuffer;
+      PerTDCbuffer = tdcIdToStoredEdgesI->second;
+
+      UInt_t numOfStoredEdges = PerTDCbuffer[lChannel].size();
+
+      if (numOfStoredEdges == 0) // nothing found for the given channel - no need to create a 'leading-edge-only' digi. (The trailing-edge-only digi is created outside of this method.)
+      {
+#ifdef DEBUGPRINT
+         printf("         numOfStoredEdges == 0\n");
+#endif
+         foundResult.first = 0xffffffff; /*foundResult.second = 0xffffffff;*/
+         return foundResult;
       }
+      else if (numOfStoredEdges == 1) // only one edge is stored for the given channel. If ToT allowed - return pair, otherwise postpone until the end of the event
+      {
 
-      if (numOfStoredEdges == 0) { // nothing found for the given channel - no need to create a 'leading-edge-only' digi
-         *lEpoch = 0xffffffff;
-         *lWord = 0xffffffff;
-         return kFALSE;
-      } else if (numOfStoredEdges == 1) { // only one edge is stored for the given channel - clean the entry and return found data
-         tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + foundWordIndex*2 + 0] = 0xffffffff;  // clean epoch
-         tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + foundWordIndex*2 + 1] = 0xffffffff;  // clean data word
+#ifdef DEBUGPRINT
+         printf("         numOfStoredEdges == 1\n");
+#endif
 
-         // if the time-over-threshold is more than 1 epoch (10 microseconds) then do not use this leading edge, but still delete it!
-         if ((signed int)tEpoch - (signed int)foundEpoch > 1) {
-            //printf("\nonly one edge is stored for the given channel (huge     TtimeOvTh) %08x - %08x = %d\n", tEpoch, foundEpoch, tEpoch - foundEpoch);
+         std::pair< UInt_t, CbmTrbRawMessage > foundPair;
 
-            // Create a digi with leading edge only
-            this->CreateLeadingEdgeOnlyDigi(tdcId, foundEpoch, foundWord);
-            *lEpoch = 0xffffffff;
-            *lWord = 0xffffffff;
-            return kFALSE;
-         } else if ((signed int)tEpoch - (signed int)foundEpoch < 0) {
-            //printf("\nonly one edge is stored for the given channel (negative TtimeOvTh) %08x - %08x = %d\n", tEpoch, foundEpoch, tEpoch - foundEpoch);
+         foundPair = PerTDCbuffer[lChannel].back();
 
-            // Create a digi with leading edge only
-            this->CreateLeadingEdgeOnlyDigi(tdcId, foundEpoch, foundWord);
-            *lEpoch = 0xffffffff;
-            *lWord = 0xffffffff;
-            return kFALSE;
+/*
+         //FIXME hardcoded case for the LED - create a pair no matter what TOT is.
+         if (tdcId == 0x0110 && lChannel == 7) { return foundPair; }
+         //FIXME hardcoded case for the Laser - create a pair no matter what TOT is.
+         if (tdcId == 0x0110 && lChannel == 15) { return foundPair; }
+*/
+
+         //if (tdcId == 0x0110 || tdcId == 0x0111 || tdcId == 0x0113) { return foundPair; }
+
+         foundEpoch = foundPair.first;
+         foundWord =  foundPair.second;
+
+         UInt_t foundLcoarse = foundWord.GetTDCcoarse();
+         UInt_t foundLfine = foundWord.GetTDCfine();
+         Double_t foundCorr = foundWord.GetCorr();
+         Double_t lFullTime = GetFullTime(tdcId, lChannel, foundEpoch, foundLcoarse, foundLfine) /*+ foundCorr*/;
+
+         if ((tFullTime - lFullTime) < -NEGATIVEPAIRWINDOW || (tFullTime - lFullTime) > POSITIVEPAIRWINDOW) {
+#ifdef DEBUGPRINT
+            printf("only one edge is stored for the given channel. Restricted ToT. tdc 0x00%x  ch %d l=%f t=%f (TOT=%f)\n", tdcId, lChannel, lFullTime, tFullTime, (tFullTime - lFullTime));
+#endif
+            //// Create a digi with leading edge only (a digi with trailing edge only is created outside of this method).
+            //this->CreateLeadingEdgeOnlyDigi(foundWord);
+            foundResult.first = 0xffffffff; /*foundResult.second = 0xffffffff;*/
+            return foundResult;
          } else {
-            *lEpoch = foundEpoch;  // return epoch
-            *lWord = foundWord;      // return data word
-            return kTRUE;
+            PerTDCbuffer[lChannel].pop_back();
+            return foundPair;
          }
 
-      } else { // more than one word found - find the nearest leading to the trailing
-         UInt_t lCoarse;
-         UInt_t numSameEpoch=0;
+      }
+      else // more than one word found
+      {
+         std::vector< std::pair< UInt_t, CbmTrbRawMessage > >::iterator PerTDCbufferI;
+         std::vector< std::pair< UInt_t, CbmTrbRawMessage > >::iterator foundWordIndex;
 
-         for (UInt_t i=0; i<BUFSIZE; i++) {  // count how many edges within the same epoch are saved for this channel
-            if (tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 1] != 0xffffffff &&
-                  tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 0] == tEpoch) {
-               foundEpoch = tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 0];  // store epoch
-               foundWord =  tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 1];  // store data word
-               numSameEpoch++;
-               foundWordIndex = i;     // store
+/*
+         // Flush all the leading edges which were earlier than fallingEdge-NEGATIVEPAIRWINDOW
+         for (PerTDCbufferI = PerTDCbuffer[lChannel].begin(); PerTDCbufferI != PerTDCbuffer[lChannel].end(); ) {
+               foundEpoch = PerTDCbufferI->first;
+               foundWord =  PerTDCbufferI->second;
+               UInt_t foundLcoarse = foundWord.GetTDCcoarse();
+               UInt_t foundLfine = foundWord.GetTDCfine();
+               Double_t foundLcorr = foundWord.GetCorr();
+               Double_t lFullTime = GetFullTime(tdcId, lChannel, foundEpoch, foundLcoarse, foundLfine); //+ foundLcorr;
+
+               if (lFullTime < tFullTime - POSITIVEPAIRWINDOW) {
+#ifdef DEBUGPRINT
+                  printf ("Creating leading-edge-only digi lFullTime=%f < tFullTime=%f\n", lFullTime, tFullTime);
+#endif
+                  this->CreateLeadingEdgeOnlyDigi(foundWord);
+                  PerTDCbufferI = PerTDCbuffer[lChannel].erase(PerTDCbufferI);
+               } else {
+                  ++PerTDCbufferI;
+               }
+         }
+*/
+		 
+         UInt_t numWithinWindow = 0;
+         Double_t storedTOT = 0.;
+
+         // Count how many leading edges in the buffer are in the allowed time window
+         for (PerTDCbufferI = PerTDCbuffer[lChannel].begin(); PerTDCbufferI != PerTDCbuffer[lChannel].end(); ++PerTDCbufferI) {
+            foundEpoch = PerTDCbufferI->first;
+            foundWord =  PerTDCbufferI->second;
+            UInt_t foundLcoarse = foundWord.GetTDCcoarse();
+            UInt_t foundLfine = foundWord.GetTDCfine();
+            Double_t foundLcorr = foundWord.GetCorr();
+            Double_t lFullTime = GetFullTime(tdcId, lChannel, foundEpoch, foundLcoarse, foundLfine) /*+ foundLcorr*/;
+
+            if ((tFullTime - lFullTime) >= -NEGATIVEPAIRWINDOW && (tFullTime - lFullTime) <= POSITIVEPAIRWINDOW) {
+               numWithinWindow++;                  // count
+               foundWordIndex = PerTDCbufferI;     // store
+               storedTOT = tFullTime - lFullTime;  // store
             }
+
          }
 
-         if (numSameEpoch==1) { // only one edge within the same epoch is stored - clean the entry and return found data
-            tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + foundWordIndex*2 + 0] = 0xffffffff;  // clean epoch
-            tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + foundWordIndex*2 + 1] = 0xffffffff;  // clean data word
-            *lEpoch = foundEpoch;  // return epoch
-            *lWord = foundWord;      // return data word
-            return kTRUE;
-         } else {  // zero or more than one edge within the same epoch found
+#ifdef DEBUGPRINT
+         printf("         numWithinWindow == %d\n", numWithinWindow);
+#endif
 
+         // If there are no leading edges within allowed time window - ("clear" everything before the current trailing edge)
+         // Current trailing edge and all leading edges before this trailing edge will be sent to output as separate edges.
+         if (numWithinWindow == 0) {
+            foundResult.first = 0xffffffff; /*foundResult.second = 0xffffffff;*/
+            return foundResult;
 
-            UInt_t coarseDiff = 0;
-            Bool_t atLeastOneFound = kFALSE;
-            for (UInt_t i=0; i<BUFSIZE; i++) {
+         // Only one leading edge within the allowed time window is found and a) TOT>0 - Perfect case, build a pair. b) TOT<0 - allowed, build a pair
+         } else if (numWithinWindow == 1) {
 
-               UInt_t epoch1 = tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 0];
-               UInt_t tword1 = tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 1];
-               if (tword1 != 0xffffffff && epoch1 == tEpoch) { // found edge within the same epoch
+               foundEpoch = foundWordIndex->first;
+               foundWord = foundWordIndex->second;
+               if (storedTOT >= 0.) {
+               #ifdef DEBUGPRINT
+                  printf ("One edge in the window. Allowed positive TOT\n");
+               #endif
+               } else {
+               #ifdef DEBUGPRINT
+                  printf ("One edge in the window. Allowed negative TOT\n");
+               #endif
+               }
+               PerTDCbuffer[lChannel].erase(foundWordIndex);
+               // Return epoch and data word (a pair is created outside of this method).
+               foundResult.first = foundEpoch; foundResult.second = foundWord;
+               return foundResult;
+         } else {
 
-                  if (!atLeastOneFound) {
-                     atLeastOneFound = kTRUE;
-                     coarseDiff = abs((signed int)(tword1 & 0x7ff) - (signed int)tCoarse);  // fist conicidence - store it
+//TODO implement
+
+//#ifdef DEBUGPRINT
+               printf ("Multiple edges in the window.\t\tTDC %x\t\tTrailing edge channel=%d\n", tdcId, tChannel);
+//#endif
+               fMultiCounter++;
+
+/*
+               for (UInt_t i=0; i<BUFSIZE; i++) {
+                  if (tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 1] != 0xffffffff) {
                      foundEpoch = tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 0];  // store epoch
                      foundWord =  tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 1];  // store data word
-                     foundWordIndex = i;     // store
 
-                  } else {
-                     if (coarseDiff > abs((signed int)(tword1 & 0x7ff) - (signed int)tCoarse)) { // further coincidences - find minimum
-                        coarseDiff = abs((signed int)(tword1 & 0x7ff) - (signed int)tCoarse);  // less than the prev - store this as minimum
-                        foundEpoch = tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 0];  // store epoch
-                        foundWord =  tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + i*2 + 1];  // store data word
-                        foundWordIndex = i;     // store
-                     }
+					UInt_t foundLcoarse = foundWord.GetTDCcoarse();
+					UInt_t foundLfine = foundWord.GetTDCfine();
+					Double_t foundLcorr = foundWord.GetCorr();
+					Double_t lFullTime = GetFullTime(tdcId, lChannel, foundEpoch, foundLcoarse, foundLfine) + foundLcorr;
+
+                     fhMultiDist->Fill(tFullTime - lFullTime);
+
                   }
-
                }
-            }
-
-            tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + foundWordIndex*2 + 0] = 0xffffffff;  // clean epoch
-            tdcIdToStoredEdgesI->second[lChannel*BUFSIZE*2 + foundWordIndex*2 + 1] = 0xffffffff;  // clean data word
-
-            if ((signed int)tEpoch - (signed int)foundEpoch > 1) {
-               //printf("\n============== zero or more than one edge within the same epoch (huge     TtimeOvTh) %08x - %08x = %d\n", tEpoch, foundEpoch, tEpoch - foundEpoch);
-               // Create a digi with leading edge only
-               this->CreateLeadingEdgeOnlyDigi(tdcId, foundEpoch, foundWord);
-               *lEpoch = 0xffffffff;
-               *lWord = 0xffffffff;
-               return kFALSE;
-            } else if ((signed int)tEpoch - (signed int)foundEpoch < 0) {
-               //printf("\n============== zero or more than one edge within the same epoch (negative TtimeOvTh) %08x - %08x = %d\n", tEpoch, foundEpoch, tEpoch - foundEpoch);
-               // Create a digi with leading edge only
-               this->CreateLeadingEdgeOnlyDigi(tdcId, foundEpoch, foundWord);
-               *lEpoch = 0xffffffff;
-               *lWord = 0xffffffff;
-               return kFALSE;
-            } else {
-               *lEpoch = foundEpoch;  // return epoch
-               *lWord = foundWord;      // return data word
-               return kTRUE;
-            }
-
+*/
+               foundResult.first = 0xffffffff; //foundResult.second = 0xffffffff;
+               return foundResult;
          }
 
       }
+
    }
-   else // no entries for the given tdc is found - no need to create a 'leading-edge-only' digi
-   {
-      *lEpoch = 0xffffffff;
-      *lWord = 0xffffffff;
-      return kFALSE;
-   }
+
 }
 
-void CbmTrbEdgeMatcher::CreateLeadingEdgeOnlyDigi(UInt_t tdcId, UInt_t lepoch, UInt_t lword)
+void CbmTrbEdgeMatcher::CreateLeadingEdgeOnlyDigi(CbmTrbRawMessage rawMessage)
 {
    // Create a digi with leading edge only
-   UInt_t lchannel = (lword >> 22) & 0x7f;
-   UInt_t lfine = (lword >> 12) & 0x3ff;
-   UInt_t lcoarse = (lword) & 0x7ff;
-   Double_t timestamp = GetFullTime(tdcId, lchannel, lepoch, lcoarse, lfine);
+
+   UInt_t tdcId = rawMessage.GetSourceAddress();
+   UInt_t lchannel = rawMessage.GetChannelID();
+   UInt_t lepoch = rawMessage.GetEpochMarker();
+   UInt_t lcoarse = rawMessage.GetTDCcoarse();
+   UInt_t lfine = rawMessage.GetTDCfine();
+   Double_t lcorr = rawMessage.GetCorr();
+
+   Double_t timestamp = GetFullTime(tdcId, lchannel, lepoch, lcoarse, lfine) /*+ lcorr*/;
+
    new( (*fRichTrbDigi)[fRichTrbDigi->GetEntriesFast()] )
       CbmRichTrbDigi(tdcId, kTRUE, kFALSE, lchannel, 0xffffffff, timestamp, 0.0);
+
+#ifdef DEBUGPRINT
+   printf("LEADING ONLY\n");
+   printf("   --- LEAD - tdc %x ch %d epoch %08x coarse %08x fine %08x corr %f\n", tdcId, lchannel, lepoch, lcoarse, lfine, lcorr);
+#endif
 }
 
 Double_t CbmTrbEdgeMatcher::GetFullTime(UInt_t tdcId, UInt_t channel, UInt_t epoch, UInt_t coarse, UInt_t fine)
 {
-	Double_t coarseUnit = 5.;
-	Double_t epochUnit = coarseUnit * 0x800;
-	
-   UInt_t trb_index = (tdcId >> 4) & 0x00FF - 1;
-   UInt_t tdc_index = (tdcId & 0x000F);
-	
-	Double_t time = epoch * epochUnit + coarse * coarseUnit -
-	               CbmTrbCalibrator::Instance()->GetFineTimeCalibrated(trb_index, tdc_index, channel, fine);
-
-   return time;
+   return CbmTrbCalibrator::Instance()->GetFullTime(tdcId, channel, epoch, coarse, fine);
 }
 
 void CbmTrbEdgeMatcher::DrawDebugHistos()
@@ -400,7 +553,6 @@ void CbmTrbEdgeMatcher::DrawDebugHistos()
    c3 = new TCanvas(canvasName, canvasTitle, 800, 800); 
    gPad->SetLogy(1);
    fhTtimeMinusLtime[param->TDCidToInteger(DEBUGTDCID)]->Draw();
-
 
    for (UInt_t i=0; i<16; i++) {
       canvasName.Form("fhTtimeMinusLtime - TDC %04x CH%d - CH%d", DEBUGTDCID, i*2+2, i*2+1);

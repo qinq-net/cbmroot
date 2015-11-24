@@ -21,6 +21,16 @@ public:
   CbmRichHit();
 
   /**
+   * \brief Constructor with input hit coordinates.
+   */
+  CbmRichHit(Double_t x, Double_t y);
+
+  /**
+   * \brief Constructor with input hit coordinates, timestamp and ToT.
+   */
+  CbmRichHit(Double_t x, Double_t y, Double_t ts, Double_t tot);
+
+  /**
    * \brief Destructor.
    **/
   virtual ~CbmRichHit();
@@ -39,11 +49,15 @@ public:
   virtual void SetPmtId (Int_t det) { fPmtId = det; }
   virtual void SetNPhotons (Int_t n) { fNPhotons = n; }
   virtual void SetAmplitude(Double_t amp) { fAmplitude = amp; }
+  void SetTimestamp(Double_t ts) { fTimestamp = ts; }
+  void SetToT(Double_t tot) { fToT = tot; }
 
   /** Accessors **/
   virtual Int_t GetPmtId() const { return fPmtId; }
   virtual Int_t GetNPhotons() const { return fNPhotons; }
   virtual Double_t GetAmplitude() const { return fAmplitude; }
+  Double_t GetTimestamp() const { return fTimestamp; }
+  Double_t GetToT() const { return fToT; }
 
 private:
 
@@ -51,7 +65,10 @@ private:
   Int_t fNPhotons; // number of photons in this hit
   Double32_t fAmplitude; // hit amplitude
 
-  ClassDef(CbmRichHit, 1)
+  Double_t fTimestamp; // hit timestamp
+  Double_t fToT;       // hit time-over-threshold
+
+  ClassDef(CbmRichHit, 2)
 };
 
 #endif // CBMRICHHIT_H_

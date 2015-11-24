@@ -161,7 +161,7 @@ private:
      */
     void DecodeEpicsData(
     		UInt_t* data,
-			UInt_t size);
+    		UInt_t size);
 
     /*
      * Create CbmTrbOutputHits from Raw hits

@@ -27,19 +27,22 @@
 #pragma link C++ class CbmRichGeoOpt+;
 #pragma link C++ class CbmRichRingFitterQa+;
 
-
-
+//prototype
 #pragma link C++ class CbmRichProt+;
 #pragma link C++ class CbmRichProtHitProducer+;
 #pragma link C++ class CbmRichProtPrepareExtrapolation+;
 #pragma link C++ class CbmRichProtProjectionProducer+;
 #pragma link C++ class CbmRichPrototypeQa+;
 
-
+//prototype analysis (beamtime and lab)
 #pragma link C++ class CbmRichTrbUnpack+;
 #pragma link C++ class CbmRichTrbUnpack2+;
 #pragma link C++ class CbmTrbEdgeMatcher+;
 #pragma link C++ class CbmTrbCalibrator+;
+#pragma link C++ class CbmRichTrbEventBuilder+;
+#pragma link C++ class CbmRichProtoAnalysis+;
+#pragma link C++ class CbmRichEventDebug+;
+#pragma link C++ class CbmRichRingHitsAnalyser+;
 
 #pragma link C++ class CbmRichTrbRecoQa+;
 #pragma link C++ class CbmRichTrbPulserQa+;

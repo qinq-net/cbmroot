@@ -112,6 +112,10 @@ prototype/beamtime/CbmRichTrbUnpack.cxx
 prototype/beamtime/CbmRichTrbUnpack2.cxx
 prototype/beamtime/CbmTrbEdgeMatcher.cxx
 prototype/beamtime/CbmTrbCalibrator.cxx
+prototype/beamtime/CbmRichTrbEventBuilder.cxx
+prototype/beamtime/CbmRichProtoAnalysis.cxx
+prototype/beamtime/CbmRichEventDebug.cxx
+prototype/beamtime/CbmRichRingHitsAnalyser.cxx
 prototype/beamtime/CbmRichTrbRecoQa.cxx
 prototype/beamtime/CbmRichTrbPulserQa.cxx
 prototype/beamtime/CbmRichHitInfo.cxx
@@ -154,6 +158,10 @@ prototype/beamtime/CbmRichTrbUnpack.h
 prototype/beamtime/CbmRichTrbUnpack2.h
 prototype/beamtime/CbmTrbEdgeMatcher.h
 prototype/beamtime/CbmTrbCalibrator.h
+prototype/beamtime/CbmRichTrbEventBuilder.h
+prototype/beamtime/CbmRichProtoAnalysis.h
+prototype/beamtime/CbmRichEventDebug.h
+prototype/beamtime/CbmRichRingHitsAnalyser.h
 prototype/beamtime/CbmRichTrbRecoQa.h
 prototype/beamtime/CbmRichTrbPulserQa.h
 prototype/beamtime/CbmRichHitInfo.h

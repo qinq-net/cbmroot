@@ -28,6 +28,8 @@ public:
    Double_t GetLeadingEdgeTimeStamp() { return fLeadingEdgeTimestamp; }
    Double_t GetTrailingEdgeTimeStamp() { return fTrailingEdgeTimestamp; }
 
+   Double_t GetTOT() { return fTrailingEdgeTimestamp-fLeadingEdgeTimestamp; }
+
 protected:
 
    UInt_t fTDCid;

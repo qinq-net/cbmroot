@@ -247,7 +247,7 @@ void CbmRichTrbUnpack::DecodeTdcData(
 			UInt_t coarseTime = (tdcData) & 0x7ff; // 1bits
 
 			// Give the calibrator the read fine time so that it was taken into account
-			if ((trbId != 0x7005)) CbmTrbCalibrator::Instance()->AddFineTime(trbId, tdcId, chNum, fineTime);
+			if ((trbId != 0x7005)) CbmTrbCalibrator::Instance()->AddFineTime(/*trbId, */tdcId, chNum, fineTime);
 
 			LOG(DEBUG) << "TIMEDATA chNum:" << chNum << ", fineTime:" << fineTime << ", edge:" << edge << ", coarseTime:" << coarseTime
 								<< ", fullTime:" << fixed << GetFullTime(tdcId, chNum, curEpochCounter, coarseTime, fineTime) << FairLogger::endl;
@@ -454,9 +454,9 @@ Double_t CbmRichTrbUnpack::GetFullTime(UShort_t TDC, UShort_t CH, UInt_t epoch, 
 {
 	Double_t coarseUnit = 5.;
 	Double_t epochUnit = coarseUnit * 0x800;
-    UInt_t trb_index = (TDC >> 4) & 0x00FF - 1;
-    UInt_t tdc_index = (TDC & 0x000F);
-	Double_t time = epoch * epochUnit + coarseTime * coarseUnit - CbmTrbCalibrator::Instance()->GetFineTimeCalibrated(trb_index, tdc_index, CH, fineTime);
+	UInt_t trb_index = (TDC >> 4) & 0x00FF - 1;
+	UInt_t tdc_index = (TDC & 0x000F);
+	Double_t time = epoch * epochUnit + coarseTime * coarseUnit - CbmTrbCalibrator::Instance()->GetFineTimeCalibrated(TDC, CH, fineTime);
 
 	if (CH != 0){
 		if (fSynchOffsetTimeMap[TDC] > 150) {

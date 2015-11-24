@@ -2,10 +2,13 @@
 #define CBMTRBEDGEMATCHER_H
 
 #include <map>
+#include <vector>
 
 #include "FairTask.h"
 
-// The TDC channels of which are draw for debug
+#include "CbmTrbRawMessage.h"
+
+// The TDC channels of which are drawn for debug
 #define DEBUGTDCID 0x0081
 
 class TH1D;
@@ -27,18 +30,16 @@ public: // methods
 
 private: // methods
 
-   // Add the leadgin edge into the buffer
-   void AddPossibleLeadingEdge(UInt_t tdcId, UInt_t lChannel, UInt_t lEpoch, UInt_t lDataWord);
+   // Add the leading edge into the buffer
+   void AddPossibleLeadingEdge(CbmTrbRawMessage rawMessage);
 
-   // Return true if the corresponding leading edge has been found in the buffer
-   Bool_t FindLeadingEdge(UInt_t tdcId, UInt_t lChannel,
-                                 UInt_t tEpoch, UInt_t tCoarse,
-                                 UInt_t* lEpoch, UInt_t* lWord);
+   // Return: pair, first - epoch, second - data word (with channel, coarse and fine)
+   std::pair<UInt_t, CbmTrbRawMessage> FindLeadingEdge(UInt_t tdcId, UInt_t lChannel, CbmTrbRawMessage tRawMessage);
 
    // Create an output digi with only leading edge
-   void CreateLeadingEdgeOnlyDigi(UInt_t tdcId, UInt_t lepoch, UInt_t lword);
+   void CreateLeadingEdgeOnlyDigi(CbmTrbRawMessage rawMessage);
 
-   //TODO move this method somewhere else? z.b. Calibrator?
+   // Interface to the Calibrator::GetFullTime
    Double_t GetFullTime(UInt_t tdcId, UInt_t channel, UInt_t epoch, UInt_t coarse, UInt_t fine);
 
    void DrawDebugHistos();
@@ -49,14 +50,20 @@ private: // data members
    TClonesArray* fTrbRawHits;
 
    // Output pairs (if possible) of leading and trailing edges
-   TClonesArray* fRichTrbDigi;
+   TClonesArray* fRichTrbDigi;	// class CbmRichTrbDigi
 
-   // The size of the buffer for the leading edges
-   UInt_t BUFSIZE;
+   std::map< UInt_t, std::vector< std::pair< UInt_t, CbmTrbRawMessage > >* > tdcIdToStoredEdges;
 
-   // 33 channels for each tdc * BUFSIZE edges stored for each channel * 2 (e+tw)
-   std::map<UInt_t, UInt_t*> tdcIdToStoredEdges;
-   std::map<UInt_t, UInt_t> circularCounters;
+   // For statistics - maximum number of consequent leading edges found in the run
+   //UInt_t fMaxBufFill;
+   
+   
+   // Buffer for trailing edges
+   std::vector<CbmTrbRawMessage*> fTrBuf;
+   
+
+   // For statistics - number of cases when there were several leading edges within time window
+   UInt_t fMultiCounter;
 
    // --- Debug histograms
 
@@ -68,6 +75,8 @@ private: // data members
 
    // For all the channels of a single certain TDC with id DEBUGTDCID
    TH1D* fhTtimeMinusLtimeCH[16];
+
+   TH1D* fhMultiDist;
 
    CbmTrbEdgeMatcher(const CbmTrbEdgeMatcher&);
    CbmTrbEdgeMatcher operator=(const CbmTrbEdgeMatcher&);

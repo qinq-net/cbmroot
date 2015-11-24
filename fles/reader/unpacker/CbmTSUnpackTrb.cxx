@@ -194,13 +194,13 @@ void CbmTSUnpackTrb::DecodeTdcDataNew(UInt_t* data, UInt_t length, UInt_t tdcId)
 		<< FairLogger::endl;
 
       new( (*fTrbRaw)[fTrbRaw->GetEntriesFast()] )
-	CbmTrbRawMessage(fLink, tdcId, chNum, epochMarker, coarseTime, fineTime, edge);
+	CbmTrbRawMessage(fLink, tdcId, chNum, epochMarker, coarseTime, fineTime, edge, 0.);  //FIXME 0 correction temporary
 
 
       if( 110 == tdcId ) {
 	pair<Double_t, CbmTrbRawMessage*> 
-	  value_pair (fullTime, static_cast<CbmTrbRawMessage*>(fTrbRaw->At(fTrbRaw->GetEntriesFast())));
-	  fTimeBuffer.insert(value_pair);
+	  value (fullTime, static_cast<CbmTrbRawMessage*>(fTrbRaw->At(fTrbRaw->GetEntriesFast())));
+	  fTimeBuffer.insert(value);
 
 
 
@@ -241,7 +241,7 @@ void CbmTSUnpackTrb::DecodeTdcDataNew(UInt_t* data, UInt_t length, UInt_t tdcId)
 
 void CbmTSUnpackTrb::DecodeTdcData(UInt_t* data, UInt_t size, UInt_t trbId, UInt_t tdcId)
 {
-  Bool_t isPmtTrb = CbmRichTrbParam::Instance()->IsPmtTrb(trbId);
+  Bool_t isPmtTdc = CbmRichTrbParam::Instance()->IsPmtTdc(tdcId);
   UInt_t curEpochCounter = 0;
   UInt_t prevChNum[5] = {0, 0, 0, 0, 0};
   UInt_t prevEpochCounter[5] = {0, 0, 0, 0, 0};
@@ -261,10 +261,10 @@ void CbmTSUnpackTrb::DecodeTdcData(UInt_t* data, UInt_t size, UInt_t trbId, UInt
       UInt_t coarseTime = (tdcData) & 0x7ff; // 1bits
       
       // Give the calibrator the read fine time so that it was taken into account
-      if ((trbId != 0x7005)) CbmTrbCalibrator::Instance()->AddFineTime(trbId, tdcId, chNum, fineTime);
+      if ((trbId != 0x7005)) CbmTrbCalibrator::Instance()->AddFineTime(tdcId, chNum, fineTime);
       
       if (chNum == 0 ) {
-	Double_t time = GetFullTime(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime);
+	Double_t time = GetFullTime(tdcId, chNum, curEpochCounter, coarseTime, fineTime);
 	//cout << "CHANNEL0: " << fixed << fSynchRefTime << " " << time << "  "<<fSynchRefTime - time << " " <<hex << "     TRB " << trbId << "    TDC " << tdcId << dec << endl;
 	if (fSynchRefTime == -1. ) {//&& (isPmtTrb || tdcId == 0x0110)
 	  fSynchRefTime = time;
@@ -290,10 +290,10 @@ void CbmTSUnpackTrb::DecodeTdcData(UInt_t* data, UInt_t size, UInt_t trbId, UInt
 	    */
 	    //	    fRawEventTimeHits.push_back(rawHitRef);
 	  }
-	} else if ( isPmtTrb ) {
+	} else if ( isPmtTdc ) {
 	  if (chNum == prevChNum[prevCounter]) {
 	    LOG(DEBUG) << " DOUBLE HIT DETECTED TIMEDATA chNum:" << chNum << ", fineTime:" << fineTime << ", edge:" << edge << ", coarseTime:" << coarseTime
-		       << ", fullTime:" << fixed << GetFullTime(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime) << FairLogger::endl;
+		       << ", fullTime:" << fixed << GetFullTime(tdcId, chNum, curEpochCounter, coarseTime, fineTime) << FairLogger::endl;
 	    //fNofDoubleHits++;
 	    continue;
 	  }
@@ -331,7 +331,7 @@ void CbmTSUnpackTrb::DecodeTdcData(UInt_t* data, UInt_t size, UInt_t trbId, UInt
 	} //isPmtTrb
       }// if chNum!=0
       LOG(DEBUG) << "TIMEDATA chNum:" << chNum << ", fineTime:" << fineTime << ", edge:" << edge << ", coarseTime:" << coarseTime
-		 << ", fullTime:" << fixed << GetFullTime(trbId, tdcId, chNum, curEpochCounter, coarseTime, fineTime) << FairLogger::endl;
+		 << ", fullTime:" << fixed << GetFullTime(tdcId, chNum, curEpochCounter, coarseTime, fineTime) << FairLogger::endl;
       if (fineTime == 0x3ff) LOG(DEBUG) << "-ERROR- Dummy fine time registered: " << fineTime << FairLogger::endl;
     }//if TIME DATA
     
@@ -368,21 +368,18 @@ Double_t CbmTSUnpackTrb::GetFullCoarseTime(UInt_t epoch, UShort_t coarseTime)
 }
 
 
-Double_t CbmTSUnpackTrb::GetFullTime(UShort_t TRB, UShort_t TDC, UShort_t CH, UInt_t epoch, UShort_t coarseTime, UShort_t fineTime)
+Double_t CbmTSUnpackTrb::GetFullTime(UShort_t TDCid, UShort_t CH, UInt_t epoch, UShort_t coarseTime, UShort_t fineTime)
 {
   Double_t coarseUnit = 5.;
   Double_t epochUnit = coarseUnit * 0x800;
   
-  uint32_t trb_index = (TRB >> 4) & 0x00FF - 1;
-  uint32_t tdc_index = (TDC & 0x000F);
-  
   Double_t time = epoch * epochUnit + coarseTime * coarseUnit -
-    CbmTrbCalibrator::Instance()->GetFineTimeCalibrated(trb_index, tdc_index, CH, fineTime);
+  CbmTrbCalibrator::Instance()->GetFineTimeCalibrated(TDCid, CH, fineTime);
   if (CH != 0){
-    if (fSynchOffsetTimeMap[TDC] > 150) {
-      LOG(ERROR) << "CbmRichTrbUnpack::GetFullTime Synch Offset > 150 ns for TDC" << TDC << FairLogger::endl;
+    if (fSynchOffsetTimeMap[TDCid] > 150) {
+      LOG(ERROR) << "CbmRichTrbUnpack::GetFullTime Synch Offset > 150 ns for TDC" << TDCid << FairLogger::endl;
     } else {
-      time = time + fSynchOffsetTimeMap[TDC];
+      time = time + fSynchOffsetTimeMap[TDCid];
     }
   }
   return time;
