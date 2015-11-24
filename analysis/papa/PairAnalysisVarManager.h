@@ -117,7 +117,7 @@ public:
     kCharge,                 // charge
     kChi2NDFtoVtx,           // chi2/ndf impact parameter STS(+MVD) track to primary vertex in (sigmas)
     kImpactParXY,            // Impact parameter in XY plane
-    //kImpactParZ,             // Impact parameter in Z
+    kImpactParZ,             // Impact parameter in Z
     kInclAngle,              // inclination angle
     kParticleMax,
 // Track specific variables
@@ -146,7 +146,7 @@ public:
     // sts track information
     kMVDHits,                // number of MVD hits
     kMVDFirstHitPosZ,        // position of the first hit in the MVD (cm)
-    kImpactParZ,             // Impact parameter of track at target z, in units of its error  
+    //    kImpactParZ,             // Impact parameter of track at target z, in units of its error  
     kSTSHits,                // number of STS hits
     kSTSChi2NDF,             // chi2/ndf STS
     kSTSPin,                 // first point STS momentum (GeV/c)
@@ -233,6 +233,7 @@ public:
     kPhiMaxPt,               // phi angle of the track with maximum pt
     kMaxPt,                  // track with maximum pt
 
+    kRndmRej,                // random rejection probability by the pair pre filter
     kNTrk,                   // number of tracks (or tracklets) TODO: ambiguous
     kTracks,                 // track after all cuts
     kNVtxContrib,            /// number of primary vertex contibutors
@@ -710,7 +711,10 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   values[kM]         = track->M();
   values[kCharge]    = track->Charge();
   //  values[kPdgCode]   = track->PdgCode();
-  values[kChi2NDFtoVtx]  = track->ChiToVertex();
+  values[kChi2NDFtoVtx] = track->ChiToVertex();
+  values[kImpactParXY]  = TMath::Sqrt( TMath::Power(TMath::Abs(values[kXv]-values[kXvPrim]),2) + 
+				       TMath::Power(TMath::Abs(values[kYv]-values[kYvPrim]),2) );
+  values[kImpactParZ]   = TMath::Abs(values[kZv]-values[kZvPrim]);
 
   // special
   values[kTrackLength] = track->GetGlobalTrack()->GetLength(); // cm
@@ -848,7 +852,7 @@ inline void PairAnalysisVarManager::FillVarStsTrack(const CbmStsTrack *track, Do
 
   // Set
   values[kMVDHits]        = track->GetNofMvdHits();
-  values[kImpactParZ]     = track->GetB();  //Impact parameter of track at target z, in units of its error
+  //  values[kImpactParZ]     = track->GetB();  //Impact parameter of track at target z, in units of its error
   //  printf(" mom %f   impactparz %f \n",values[kPout],values[kImpactParZ]);
   // accessors via CbmTrack
   values[kSTSHits]        = track->GetNofStsHits();

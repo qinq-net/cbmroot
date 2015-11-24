@@ -27,6 +27,10 @@ The names are available via the function PairClassName(Int_t i)
 //                                                                       //
 ///////////////////////////////////////////////////////////////////////////
 
+#include <TDatabasePDG.h>
+#include <TLorentzVector.h>
+#include <TRandom3.h>
+
 #include <TString.h>
 #include <TList.h>
 #include <TMath.h>
@@ -1109,6 +1113,33 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
   // remove all tracks from the Single track arrays that pass the cuts in this filter
   //
 
+  //// for random rejection, set as an event variable
+  //// add one pos. & neg. test particle to the arrays
+  //// this needs to be removed at the end!
+  //// 
+  PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kRndmRej, 0.);
+  /// first test particle
+  Double_t mass = TDatabasePDG::Instance()->GetParticle(fPdgLeg1)->Mass();
+  Double_t pt   = gRandom->Exp(3.); // return t from exp(-t/3.)
+  if(pt<0.075) pt = 0.075;
+  Double_t eta  = -TMath::Log(TMath::Tan( (gRandom->Uniform(2.5,25.)/180.*TMath::Pi()) /2));
+  Double_t phi  = gRandom->Uniform(TMath::TwoPi());
+  PairAnalysisTrack *t1 = new PairAnalysisTrack();
+  t1->SetPdgCode(fPdgLeg1);
+  t1->GetMomentum()->SetPtEtaPhiM(pt, eta, phi, mass);
+  fTracks[0].Add(t1); // positive tracks
+  /// second test particle
+  mass=TDatabasePDG::Instance()->GetParticle(fPdgLeg2)->Mass();
+  pt   = gRandom->Exp(3.); // return t from exp(-t/3.)
+  if(pt<0.075) pt = 0.075;
+  eta  = -TMath::Log(TMath::Tan( (gRandom->Uniform(2.5,25.)/180.*TMath::Pi()) /2));
+  phi  = gRandom->Uniform(TMath::TwoPi());
+  PairAnalysisTrack *t2 = new PairAnalysisTrack();
+  t2->SetPdgCode(fPdgLeg2);
+  t2->GetMomentum()->SetPtEtaPhiM(pt, eta, phi, mass);
+  fTracks[1].Add(t2); // negative tracks
+  /////
+
   Int_t ntrack1=arrTracks1.GetEntriesFast();
   Int_t ntrack2=arrTracks2.GetEntriesFast();
 
@@ -1117,6 +1148,10 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
   for (Int_t itrack1=0; itrack1<ntrack1; ++itrack1) bTracks1[itrack1]=kFALSE;
   Bool_t *bTracks2 = new Bool_t[ntrack2];
   for (Int_t itrack2=0; itrack2<ntrack2; ++itrack2) bTracks2[itrack2]=kFALSE;
+
+  //// random rejection: mark test particles for removal
+  bTracks1[ntrack1-1]=kTRUE;
+  bTracks2[ntrack2-1]=kTRUE;
 
   // candiate
   PairAnalysisPair *candidate;
@@ -1180,8 +1215,15 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
 	//pre filter pair cuts
 	UInt_t cutMask=fPairPreFilter.IsSelected(candidate);
 
-	//apply cut
+	// apply cut
 	if (cutMask==selectedMask) continue;
+
+	// check for test particles
+	if( track1==t1 || track1==t2 || track2==t1 || track2==t2 ) {
+	  // set variable to randomrejection probability to 1
+	  PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kRndmRej, 1.);
+	  continue;
+	}
 
 	// fill histos
 	if (fHistos) FillHistogramsPair(candidate,kTRUE); // kTRUE: fromPrefilter

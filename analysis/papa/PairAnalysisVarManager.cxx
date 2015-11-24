@@ -60,7 +60,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"Charge",                 "q",                                                  "(e)"},
   {"Chi2NDFtoVtx",           "#chi^{2}/^{}N_{df}^{track#leftrightarrowvtx}",      "(#sigma)"},
   {"ImpactParXY",            "#it{dca}_{xy}",                                      "(cm)"},
-  //  {"ImpactParZ",             "#it{dca}_{z}",                                       "(cm)"},
+  {"ImpactParZ",             "#it{dca}_{z}",                                       "(cm)"},
   {"InclAngle",              "#alpha_{incl}",                                      "(rad.)"},
 // Track specific variables
   // global track
@@ -88,7 +88,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   // sts track information
   {"MVDHits",                "N_{hit}^{MVD}",                                      ""},
   {"MVDFirstHitPosZ",        "z_{first hit}^{MVD}",                                "(cm)"},
-  {"ImpactParZ",             "#it{dca}_{z}/#Delta#it{dca}_{z}",                    "#sigma"},
+  //  {"ImpactParZ",             "#it{dca}_{z}/#Delta#it{dca}_{z}",                    "#sigma"},
   {"STSHits",                "N_{hit}^{STS}",                                      ""},
   {"STSChi2NDF",             "#chi^{2}/^{}N_{df}^{STS}",                           ""},
   {"STSPin",                 "#it{p}^{STSin}",                                     "(GeV/#it{c})"},
@@ -169,6 +169,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"ZRes",                   "#Delta z_{prim.vtx}",                                "(cm)"},
   {"PhiMaxPt",               "#phi(#it{p}_{T}^{lead})",                            "(rad.)"},
   {"MaxPt",                  "#it{p}_{T}^{lead}",                                  "(GeV/#it{c})"},
+  {"RndmRej",                "P(rejection)",                                       ""},
   {"NTrk",                   "N_{trk}",                                            ""},
   {"Tracks",                 "tracks/per event",                                   ""},
   {"NVtxContrib",            "N_{vtx. contrib.}",                                  ""},

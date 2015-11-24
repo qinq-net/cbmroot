@@ -54,9 +54,10 @@ public:
   void SetMassHypo(Int_t pdg1, Int_t pdg2);
 
   // track getters
+  TLorentzVector *GetMomentum()            { return  &fMomentum; }
   CbmGlobalTrack *GetGlobalTrack()  const { return fGlblTrack; }
   CbmStsTrack    *GetStsTrack()     const { return fStsTrack;  }
-  CbmMuchTrack   *GetMuchTrack()    const { return fMuchTrack;  }
+  CbmMuchTrack   *GetMuchTrack()    const { return fMuchTrack; }
   CbmTrdTrack    *GetTrdTrack()     const { return fTrdTrack;  }
   CbmRichRing    *GetRichRing()     const { return fRichRing;  }
   CbmTofHit      *GetTofHit()       const { return fTofHit;    }
