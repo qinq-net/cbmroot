@@ -135,7 +135,7 @@ private:
   Int_t fNPoints;
 
 
-  ClassDef(CbmMCTrack,3);
+  ClassDef(CbmMCTrack,3)
 
 };
 

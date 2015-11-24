@@ -80,7 +80,7 @@ class CbmDetectorList : public TObject
 
 
 
-  ClassDef(CbmDetectorList, 1);
+  ClassDef(CbmDetectorList, 1)
 
 };
 

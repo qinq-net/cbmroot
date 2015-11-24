@@ -88,6 +88,7 @@ EndIf()
 #Check the compiler and set the compile and link flags
 Check_Compiler()
 #Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wshadow -Weffc++ -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-ignored-qualifiers -Wno-overloaded-virtual")
+Set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -Wno-padded -Wno-global-constructors")
 
 Set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
 Set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
