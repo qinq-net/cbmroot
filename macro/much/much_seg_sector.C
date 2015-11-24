@@ -54,7 +54,7 @@ void much_seg_sector(const char* mcFile = "",
 
   // -----  Segmentation task  ----------------------------------------------
   CbmMuchSegmentSector* seg = new CbmMuchSegmentSector(inDigiFile, outDigiFile);
-  seg->DebugSwitchOn();
+  //  seg->DebugSwitchOn();
   fRun->AddTask(seg);
   // ------------------------------------------------------------------------
 

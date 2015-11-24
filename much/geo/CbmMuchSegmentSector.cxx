@@ -123,8 +123,8 @@ void CbmMuchSegmentSector::SegmentMuch(){
       CbmMuchLayer* layer = station->GetLayer(iLayer);
       if(!layer) Fatal("SegmentMuch", "Incomplete layers array.");
       // Segment layer sides
-      printf("Sectors=%i\n",SegmentLayerSide(layer->GetSideF()));
-      printf("Sectors=%i\n",SegmentLayerSide(layer->GetSideB()));
+      printf("Layer=%d SideF Sectors=%i\n", iLayer, SegmentLayerSide(layer->GetSideF()));
+      printf("Layer=%d SideB Sectors=%i\n", iLayer, SegmentLayerSide(layer->GetSideB()));
     }
     printf("Station %i segmented\n",iStation+1);
   }
@@ -183,7 +183,8 @@ Int_t CbmMuchSegmentSector::SegmentModule(CbmMuchModuleGemRadial* module, Bool_t
  
   Double_t r1 = rMin;
   Double_t r2 = rMin;
-  printf("Debug: %i %i %i %i\n",iStation,iLayer,iSide,iModule);
+  if(fDebug)
+    printf("Debug: %i %i %i %i\n",iStation,iLayer,iSide,iModule);
   Int_t iSector=0;
   for (Int_t i=0;i<fNRegions[iStation];i++){
     Double_t angle = fAngles[iStation][i]*TMath::DegToRad();
@@ -197,7 +198,8 @@ Int_t CbmMuchSegmentSector::SegmentModule(CbmMuchModuleGemRadial* module, Bool_t
       iSector++;
     }
   }
-  printf("  Sectors = %i\n",iSector);
+  if(fDebug)
+    printf("  Sectors = %i\n",iSector);
   return iSector;
 }
 // -------------------------------------------------------------------------
@@ -325,8 +327,11 @@ void CbmMuchSegmentSector::DrawSegmentation(){
       arc->Draw();
     }
 
-    c1->Print(Form("%s/station%i.eps",gSystem->DirName(fDigiFileName), iStation+1));
-    c1->Print(Form("%s/station%i.png",gSystem->DirName(fDigiFileName), iStation+1));
+    if(fDebug){
+      c1->Print(Form("%s/station%i.eps",gSystem->DirName(fDigiFileName), iStation+1));
+      c1->Print(Form("%s/station%i.png",gSystem->DirName(fDigiFileName), iStation+1));
+    }
+
   }//stations
   fclose(outfile);
 }
