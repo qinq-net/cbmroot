@@ -66,7 +66,7 @@ void init_geo_setup()
   stsMatBudget = "sts/sts_matbudget_" + stsTag + ".root";
 
   //TRD and TOF hit producer types
-  trdHitProducerType = "smearing"; // smearing, digi, clustering
+  trdHitProducerType = "clustering"; // smearing, digi, clustering
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";

@@ -1,4 +1,4 @@
-void run_reco(Int_t nEvents = 3)
+void run_reco(Int_t nEvents = 100)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -7,17 +7,17 @@ void run_reco(Int_t nEvents = 3)
 
 	//gRandom->SetSeed(10);
 
-   TString parFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.param.root";
-   TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.mc.root";
-   TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.reco.root";
+  // TString parFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.param.root";
+ //  TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.mc.root";
+ //  TString recoFile = "/Users/slebedev/Development/cbm/data/simulations/lmvm/test.reco.root";
 
- /*      TString dir = "/hera/cbm/users/slebedev/mc/dielectron/feb15/3.5gev/stsv13d/richv14a_1e/notrd/tofv13/1.0field/nomvd/rho0/";
-	TString mcFile = dir + "/mc.auau.3.5gev.centr.00134.root";
-	TString parFile = dir + "/params.auau.3.5gev.centr.00134.root";
-	TString recoFile = dir + "/reco.auau.3.5gev.centr.00134.root";*/
+	TString dir = "/hera/cbm/users/slebedev/data/lmvm/sep15/25gev/geosetup_v1509_25gev/rho0/";
+	TString mcFile = dir + "/mc.auau.25gev.centr.00134.root";
+	TString parFile = dir + "/params.auau.25gev.centr.00134.root";
+	TString recoFile = dir + "/reco.auau.25gev.centr.00134.root";
 	//  TString analysisFile = dir + "/test.analysis.test.auau.25gev.centr.00001.root";
 
-    TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/analysis/dielectron/geosetup/geo_setup_lmvm.C";
+    TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/analysis/dielectron/geosetup/geosetup_v1509_25gev.C";
 
 	TString delta = "no"; // if "yes" Delta electrons will be embedded
 	TString deltaFile = "";
@@ -64,6 +64,7 @@ void run_reco(Int_t nEvents = 3)
 
 	// -----   Reconstruction run   -------------------------------------------
 	FairRunAna *run= new FairRunAna();
+        run->SetGenerateRunInfo(kTRUE);
 	if (mcFile != "") run->SetInputFile(mcFile);
 	if (recoFile != "") run->SetOutputFile(recoFile);
 
@@ -133,7 +134,7 @@ void run_reco(Int_t nEvents = 3)
 		if (trdHitProducerType == "smearing") {
 			CbmTrdHitProducerSmearing* trdHitProd = new CbmTrdHitProducerSmearing(radiator);
 			trdHitProd->SetUseDigiPar(false);
-			run->AddTask(trdHitProd);
+		        run->AddTask(trdHitProd);
 		} else if (trdHitProducerType == "digi") {
 			CbmTrdDigitizer* trdDigitizer = new CbmTrdDigitizer(radiator);
 			run->AddTask(trdDigitizer);
@@ -157,11 +158,11 @@ void run_reco(Int_t nEvents = 3)
 			trdCluster->SetNeighbourRowTrigger(false);
 			trdCluster->SetPrimaryClusterRowMerger(true);
 			trdCluster->SetTriangularPads(triangularPads);
-			run->AddTask(trdCluster);
+		        run->AddTask(trdCluster);
 
 			CbmTrdHitProducerCluster* trdHit = new CbmTrdHitProducerCluster();
 			trdHit->SetTriangularPads(triangularPads);
-			run->AddTask(trdHit);
+		        run->AddTask(trdHit);
 		}
 	}// isTRD
 
@@ -171,7 +172,7 @@ void run_reco(Int_t nEvents = 3)
 	if (IsTof(parFile)) {
 		CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("CbmTofHitProducer", 1);
 		tofHitProd->SetInitFromAscii(kFALSE);
-		run->AddTask(tofHitProd);
+	        run->AddTask(tofHitProd);
 	} //isTof
 
 	// =========================================================================
@@ -181,18 +182,18 @@ void run_reco(Int_t nEvents = 3)
 	CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
 	finder->SetTrackingType("branch");
 	finder->SetMergerType("nearest_hit");
-	run->AddTask(finder);
+        run->AddTask(finder);
 
 	// -----   Primary vertex finding   ---------------------------------------
 	CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
 	CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
-	run->AddTask(findVertex);
+        run->AddTask(findVertex);
 	// ------------------------------------------------------------------------
 
 	if (IsTrd(parFile)) {
 		CbmTrdSetTracksPidANN* trdSetTracksPidAnnTask = new CbmTrdSetTracksPidANN("CbmTrdSetTracksPidANN","CbmTrdSetTracksPidANN");
 		trdSetTracksPidAnnTask->SetTRDGeometryType("h++");
-		run->AddTask(trdSetTracksPidAnnTask);
+	        run->AddTask(trdSetTracksPidAnnTask);
 	}//isTrd
 
     // =========================================================================
@@ -204,20 +205,19 @@ void run_reco(Int_t nEvents = 3)
 		richHitProd->SetNofNoiseHits(220);
 		richHitProd->SetCollectionEfficiency(1.0);
 		richHitProd->SetSigmaMirror(0.06);
-		run->AddTask(richHitProd);
+	        run->AddTask(richHitProd);
 
 		CbmRichReconstruction* richReco = new CbmRichReconstruction();
-		//richReco->SetFinderName("ideal");
-		run->AddTask(richReco);
+	        run->AddTask(richReco);
 
 		// ------------------- RICH Ring matching  ---------------------------------
 		CbmRichMatchRings* matchRings = new CbmRichMatchRings();
-		run->AddTask(matchRings);
+	        run->AddTask(matchRings);
 
 	}//isRich
 
 	CbmMatchRecoToMC* match = new CbmMatchRecoToMC();
-	run->AddTask(match);
+        run->AddTask(match);
 
 	// -----  Parameter database   --------------------------------------------
 	FairRuntimeDb* rtdb = run->GetRuntimeDb();

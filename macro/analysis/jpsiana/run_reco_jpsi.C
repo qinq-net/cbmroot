@@ -1,4 +1,4 @@
-void run_reco_jpsi(Int_t nEvents = 20)
+void run_reco_jpsi(Int_t nEvents = 50)
 {
    TTree::SetMaxTreeSize(90000000000);
 
@@ -14,9 +14,9 @@ void run_reco_jpsi(Int_t nEvents = 20)
 	//TString parFile = "/hera/cbm/users/adrian/data/param.0001.root";
 	//TString recoFile ="/hera/cbm/users/adrian/data/reco.0001.root";
 
-	TString parFile = "/hera/cbm/users/slebedev/data/jpsi/jun15_25gev/jpsi_urqmd/params.auau.25gev.centr.00697.root";
-	TString recoFile = "/hera/cbm/users/slebedev/data/jpsi/jun15_25gev/jpsi_urqmd/reco.auau.25gev.centr.00697.root";
-	TString mcFile = "/hera/cbm/users/slebedev/data/jpsi/jun15_25gev/jpsi_urqmd/mc.auau.25gev.centr.00697.root";
+	TString parFile = "/hera/cbm/users/slebedev/data/jpsi/jun15_25gev/urqmd_jpsi/params.auau.25gev.centr.00697.root";
+	TString recoFile = "/hera/cbm/users/slebedev/data/jpsi/jun15_25gev/urqmd_jpsi/temp.reco.auau.25gev.centr.00697.root";
+	TString mcFile = "/hera/cbm/users/slebedev/data/jpsi/jun15_25gev/urqmd_jpsi/mc.auau.25gev.centr.00697.root";
 
 	TString trdHitProducerType = "smearing";
 	TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file

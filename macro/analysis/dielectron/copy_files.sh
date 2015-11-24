@@ -29,7 +29,7 @@ copy_all_mesons_ana_litqa() {
 	copy_all_mesons ${mainDirFrom}/${subPath} ${mainDirTo}/${subPath} ${fileNameLitqa}
 }
 
-copy_all_mesons_ana_litqa /25gev/geo_setup_lmvm/ .trdclustering.auau.25gev.centr.all.root
+copy_all_mesons_ana_litqa /8gev/geosetup_v1509_8gev/ .auau.8gev.centr.all.root
 
 
 

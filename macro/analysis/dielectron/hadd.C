@@ -9,7 +9,7 @@ void hadd() {
     string fileArray = ".auau.8gev.centr.";
     int nofFiles = 250;
     int fileSizeLimit = 50000;
-    int nofEvents = 100;
+    int nofEvents = 500;
 
     TString script = TString(gSystem->Getenv("SCRIPT"));
     if (script == "yes") {
