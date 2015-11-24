@@ -209,7 +209,7 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   if ( muchGeom != "" ) {
     FairDetector* much = new CbmMuch("MUCH", kTRUE);
     much->SetGeometryFileName(muchGeom);
-    fRun->AddModule(much);
+    run->AddModule(much);
   }
   
   if ( shieldGeom != "" ) {
@@ -232,7 +232,7 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   
   if ( ecalGeom != "" ) {
     FairDetector* ecal = new CbmEcal("ECAL", kTRUE, ecalGeom.Data()); 
-    fRun->AddModule(ecal);
+    run->AddModule(ecal);
   }
   
   if ( psdGeom != "" ) {
