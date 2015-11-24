@@ -50,10 +50,26 @@ InitStatus CbmTrdOnlineDisplay::Init()
   Float_t lsize=0.07;
   gStyle->SetPalette(1);
   gStyle->SetLabelSize(lsize);
+
+  fSpadicTime = new TCanvas("fSpadicTime","fSpadicTime",0,0,1600,1200);
+  fSpadicTime->Divide(4,3);
+  fSpadicTime->cd(1);
+  h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("DeltaClusterTime2015CernSPS")));  
+  if (h1!=NULL) {
+    h1->Draw("");
+  }
+  fSpadicTime->cd(2);
+  h2=static_cast<TH2*>(gROOT->FindObjectAny(TString("DeltaClusterTimeCorrelation2015CernSPS")));  
+  if (h2!=NULL) {
+    h2->Draw("colz");
+  }
   for (Int_t sys = 0; sys < 2; sys++){
+
+
+
     for (Int_t spa = 0; spa < 2; spa++){
-      fSpadic1[spa][sys] = new TCanvas(TString("fSysCore" + std::to_string(sys) + "Spadic" + std::to_string(spa)), TString("fSysCore" + std::to_string(sys) + "Spadic" + std::to_string(spa)), 0, 0, 1600, 1200);
-      fSpadic1[spa][sys]->Divide(4,3);
+      fSpadic1[spa][sys] = new TCanvas(TString("fSysCore" + std::to_string(sys) + "Spadic" + std::to_string(spa)), TString("fSysCore" + std::to_string(sys) + "Spadic" + std::to_string(spa)), 0, 0, 2000, 1200);
+      fSpadic1[spa][sys]->Divide(5,3);
 
       // Should be set for each pad of the Canvas
       gPad->SetFillColor(0);
@@ -87,13 +103,13 @@ InitStatus CbmTrdOnlineDisplay::Init()
       if (h1!=NULL) {
 	h1->Draw("");
       }
-     h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("OverFlowCounter_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
-     h1->SetLineColor(2);
+      h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("OverFlowCounter_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
+      h1->SetLineColor(2);
       if (h1!=NULL) {
 	h1->Draw("same");
       }
-     h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("ErrorCounter_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
-     h1->SetLineColor(3);
+      h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("ErrorCounter_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
+      h1->SetLineColor(3);
       if (h1!=NULL) {
 	h1->Draw("same");
       }
@@ -124,12 +140,12 @@ InitStatus CbmTrdOnlineDisplay::Init()
       if (h1!=NULL) {
 	h1->Draw("");
       }
-     fSpadic1[spa][sys]->cd(11)->SetLogy(0);
+      fSpadic1[spa][sys]->cd(11)->SetLogy(0);
       h1=static_cast<TH2*>(gROOT->FindObjectAny(TString("Message_Length_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
       if (h1!=NULL) {
 	h1->Draw("colz");
       }
-     fSpadic1[spa][sys]->cd(12)->SetLogy(0);
+      fSpadic1[spa][sys]->cd(12)->SetLogy(0);
       h1=static_cast<TH2*>(gROOT->FindObjectAny(TString("TriggerType_ClusterSize_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
       if (h1!=NULL) {
 	h1->Draw("colz");
@@ -220,6 +236,9 @@ void CbmTrdOnlineDisplay::Exec(Option_t*)
   // ---- Finish --------------------------------------------------------
 void CbmTrdOnlineDisplay::Finish()
 {
+fSpadicTime->Update();
+ fSpadicTime->SaveAs(TString("pics/fSpadicTime.png"));
+fSpadicTime->Write("",TObject::kOverwrite);
   for (Int_t sys = 0; sys < 2; sys++){
     for (Int_t spa = 0; spa < 2; spa++){
       fSpadic1[spa][sys]->Update();

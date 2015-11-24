@@ -46,6 +46,7 @@ class CbmTrdRawBeamProfile : public FairTask
     virtual Int_t GetColumnID(CbmSpadicRawMessage* raw);
     virtual Int_t GetChannelOnPadPlane(Int_t SpadicChannel);
     virtual Bool_t FragmentedPulseTest(CbmSpadicRawMessage* raw);
+    virtual Int_t GetMaximumAdc(CbmSpadicRawMessage* raw);
 
   private:
 
@@ -82,6 +83,8 @@ class CbmTrdRawBeamProfile : public FairTask
     void CreateHistograms();
 
     void Clusterizer();
+
+    void TimeClustering2015CernSPS();
 
     CbmTrdRawBeamProfile(const CbmTrdRawBeamProfile&);
     CbmTrdRawBeamProfile operator=(const CbmTrdRawBeamProfile&);

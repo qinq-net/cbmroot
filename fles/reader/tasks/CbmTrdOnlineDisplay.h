@@ -40,6 +40,7 @@ class CbmTrdOnlineDisplay : public FairTask
 
     TCanvas* fSpadic1[3][3]; //!
     TCanvas* fSpadic1a[3][3]; //!
+    TCanvas* fSpadicTime;
 
     Int_t fUpdateInterval;
     Int_t fEventCounter;
