@@ -7,21 +7,24 @@
  * @param inDigiFile   Input file name containing initial segmentation parameters
  * @param outDigiFile  Output file name containing segmentation parameters
  */
-void much_seg_sector(const char* mcFile = "",
-                     const char* inDigiFile = "",
-                     const char* outDigiFile = "")
+void much_seg_sector(char* mcFile = "",
+                     char* inDigiFile = "",
+                     char* outDigiFile = "")
 {
   // ========================================================================
   //          Adjust this part according to your requirements
 
-  if (mcFile == "") {
+  //  if (mcFile == "") {
+  if (strcmp (mcFile,"") == 0) {
     mcFile = "data/mc.root";
   }
-  if (inDigiFile == "") {
+  //  if (inDigiFile == "") {
+  if (strcmp (inDigiFile,"") == 0) {
     inDigiFile = "data/much_digi_sector_4station.seg";
     //    inDigiFile = "data/much_digi_sector.seg";
   }
-  if (outDigiFile == "") {
+  //  if (outDigiFile == "") {
+  if (strcmp (outDigiFile,"") == 0) {
     outDigiFile = "data/much_digi_sector.root";
   }
 
