@@ -494,7 +494,10 @@ void CbmAnaConversionTest::CombinePhotons()
 				Int_t electron21 = fVector_electronRICH_reconstructedPhotons[b][0];
 				Int_t electron22 = fVector_electronRICH_reconstructedPhotons[b][1];
 			
-				if(electron12 == electron21 || electron12 == electron22) continue;
+				if(electron12 == electron21 || electron12 == electron22)  {
+					cout << "CbmAnaConversionTest: Test_DoubleIndex." << endl;
+					continue;
+				}
 			
 				Double_t invmass = Invmass_4particlesRECO(fVector_momenta[electron11], fVector_electronRICH_momenta_erased[electron12], fVector_electronRICH_momenta[electron21], fVector_electronRICH_momenta[electron22]);
 				
@@ -558,8 +561,8 @@ void CbmAnaConversionTest::CombineElectrons_FromRICH()
 					fVector_electronRICH_reconstructedPhotons.push_back(pair);
 					//fhElectrons_invmass_cut->Fill(params1.fMinv);
 					
-					fVector_electronRICH_momenta_erased.erase(fVector_electronRICH_momenta_erased.begin() + a - 1);
-					fVector_electronRICH_momenta_erased.erase(fVector_electronRICH_momenta_erased.begin() + b - 1);
+					//fVector_electronRICH_momenta_erased.erase(fVector_electronRICH_momenta_erased.begin() + a - 1);
+					//fVector_electronRICH_momenta_erased.erase(fVector_electronRICH_momenta_erased.begin() + b - 1);
 					
 				}
 			}
