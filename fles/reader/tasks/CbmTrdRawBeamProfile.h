@@ -74,6 +74,7 @@ class CbmTrdRawBeamProfile : public FairTask
     Int_t fFragmentedCounter;
 
     std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > > fTimeBuffer;// <ASIC ID "Syscore%d_Spadic%d"<Time, <CombiId, SpadicMessage> > >
+    std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > > fTimeBufferAll;// <ASIC ID "Syscore%d_Spadic%d"<Time, <CombiId, SpadicMessage> > >
     //std::map<Int_t, 
      std::map<Int_t, std::map<Int_t, std::map<Int_t, std::map<Int_t, CbmTrbRawMessage*> > > > fTrbBuffer;// sourceA < epoch < chId < Coarse, TrbMessage > > > > >
     //std::map<Int_t, CbmTrbRawMessage*> fTrbBuffer;

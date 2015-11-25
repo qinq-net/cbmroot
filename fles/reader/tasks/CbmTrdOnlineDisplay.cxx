@@ -53,13 +53,23 @@ InitStatus CbmTrdOnlineDisplay::Init()
 
   fSpadicTime = new TCanvas("fSpadicTime","fSpadicTime",0,0,1600,1200);
   fSpadicTime->Divide(4,3);
-  fSpadicTime->cd(1);
+  fSpadicTime->cd(1)->SetLogy(1);
   h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("DeltaClusterTime2015CernSPS")));  
   if (h1!=NULL) {
     h1->Draw("");
   }
   fSpadicTime->cd(2);
   h2=static_cast<TH2*>(gROOT->FindObjectAny(TString("DeltaClusterTimeCorrelation2015CernSPS")));  
+  if (h2!=NULL) {
+    h2->Draw("colz");
+  }
+  fSpadicTime->cd(3);
+  h2=static_cast<TH2*>(gROOT->FindObjectAny(TString("DeltaClusterTimeCorrelationFullCluster2015CernSPS")));  
+  if (h2!=NULL) {
+    h2->Draw("colz");
+  }
+  fSpadicTime->cd(4);
+  h2=static_cast<TH2*>(gROOT->FindObjectAny(TString("DeltaClusterTimeCorrelationAllEvents2015CernSPS")));  
   if (h2!=NULL) {
     h2->Draw("colz");
   }
