@@ -6,6 +6,9 @@
 
 #include <iomanip>
 
+#include "FairEventHeader.h"
+#include "FairRunAna.h"
+
 #include "CbmMCBuffer.h"
 #include "CbmDaq.h"
 #include "CbmDaqBuffer.h"
@@ -28,7 +31,8 @@ CbmDaq::CbmDaq(Double_t timeSliceSize) : FairTask("Daq"),
                    fTimeSliceFirst(-1.),
                    fTimeSliceLast(-1.),
                    fTimeSlice(NULL),
-                   fBuffer(NULL) {
+                   fBuffer(NULL),
+                   fEventList () {
 }
 // ===========================================================================
 
@@ -115,6 +119,12 @@ void CbmDaq::Exec(Option_t*) {
   		      << fTimer.RealTime() << " s, " << nDigis << " digis transported"
             << FairLogger::endl;
 
+  // --- Store event start time in event list
+  Int_t file  = FairRunAna::Instance()->GetEventHeader()->GetInputFileId();
+  Int_t event = FairRunAna::Instance()->GetEventHeader()->GetMCEntryNumber();
+  Double_t eventTime = FairRunAna::Instance()->GetEventHeader()->GetEventTime();
+  fEventList.Insert(event, file, eventTime);
+
   // --- Increase exec counter
   fNofSteps++;
 
@@ -200,6 +210,8 @@ void CbmDaq::Finish() {
 	LOG(INFO) << "Empty slices: " << setw(10) << right << fNofTimeSlicesEmpty
 			      << FairLogger::endl;
 	LOG(INFO) << "=====================================" << FairLogger::endl;
+
+	fEventList.Print();
 
 }
 // ===========================================================================

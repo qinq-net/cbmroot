@@ -9,6 +9,7 @@
 
 #include "TStopwatch.h"
 #include "FairTask.h"
+#include "CbmMCEventList.h"
 
 
 class CbmDaqBuffer;
@@ -76,6 +77,9 @@ class CbmDaq : public FairTask
     /** Pointer to CbmDaqBuffer instance  **/
     CbmDaqBuffer* fBuffer;
     
+    /** MC event list (all events) **/
+    CbmMCEventList fEventList;   //!
+
 
     /** Close the current time slice
      ** The current slice is filled to the tree. It is then reset

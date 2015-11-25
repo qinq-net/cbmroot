@@ -11,7 +11,9 @@
 
 #include "CbmDetectorList.h"
 #include "CbmMCBuffer.h"
+#include "FairEventHeader.h"
 #include "FairMCEventHeader.h"
+#include "FairRunAna.h"
 #include "CbmMCTimeSim.h"
 
 
@@ -114,6 +116,7 @@ void CbmMCTimeSim::Exec(Option_t*) {
   fEventTime = CreateEventTime();
   if ( ! fNofEvents ) fTimeEventFirst = fEventTime;
   fTimeEventLast = fEventTime;
+  FairRunAna::Instance()->GetEventHeader()->SetEventTime(fEventTime);
 
   // Log output
   cout << endl;
