@@ -222,6 +222,7 @@ private:
    vector<TH1*> fHistoList_reco_mom;	// list of all histograms of reconstruction data (used momenta)
    vector<TH1*> fHistoList_kfparticle;	// list of all histograms containing results from KFParticle package
    vector<TH1*> fHistoList_richrings;	// list of all histograms related to rich rings
+   vector<TH1*> fHistoList_furtherAnalyses;	// list of all histograms from further analyses (occurence, etc.)
    
    vector<CbmMCTrack*>	fMCTracklist;
    vector<CbmMCTrack*>	fMCTracklist_all;

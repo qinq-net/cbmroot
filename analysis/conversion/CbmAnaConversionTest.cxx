@@ -394,7 +394,7 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 		
 		if(result_chi_electron > chiCut) continue;
 
-		if(stsHits > 8) {
+		if(stsHits > 10) {
 			fVector_momenta.push_back(refittedMomentum_electron);
 			fVector_chi.push_back(result_chi_electron);
 			fVector_gtIndex.push_back(i);
@@ -453,8 +453,8 @@ void CbmAnaConversionTest::CombineElectrons_FromSTSandRICH()
 				//Double_t openingAngleCut = 1;
 				
 				// opening angle cut depending on pt of e+e- pair
-				Double_t openingAngleCut = 1.8 - 0.6 * params1.fPt;
-				//Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
+				//Double_t openingAngleCut = 1.8 - 0.6 * params1.fPt;
+				Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
 				
 				Double_t invMassCut = 0.03;
 				
@@ -493,6 +493,8 @@ void CbmAnaConversionTest::CombinePhotons()
 				Int_t electron12 = fVector_reconstructedPhotons_FromSTSandRICH[a][1];
 				Int_t electron21 = fVector_electronRICH_reconstructedPhotons[b][0];
 				Int_t electron22 = fVector_electronRICH_reconstructedPhotons[b][1];
+			
+				if(electron12 == electron21 || electron12 == electron22) continue;
 			
 				Double_t invmass = Invmass_4particlesRECO(fVector_momenta[electron11], fVector_electronRICH_momenta_erased[electron12], fVector_electronRICH_momenta[electron21], fVector_electronRICH_momenta[electron22]);
 				
@@ -539,8 +541,8 @@ void CbmAnaConversionTest::CombineElectrons_FromRICH()
 				//Double_t openingAngleCut = 1;
 				
 				// opening angle cut depending on pt of e+e- pair
-				Double_t openingAngleCut = 1.8 - 0.6 * params1.fPt;
-				//Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
+				//Double_t openingAngleCut = 1.8 - 0.6 * params1.fPt;
+				Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
 				
 				Double_t invMassCut = 0.03;
 				
@@ -556,8 +558,8 @@ void CbmAnaConversionTest::CombineElectrons_FromRICH()
 					fVector_electronRICH_reconstructedPhotons.push_back(pair);
 					//fhElectrons_invmass_cut->Fill(params1.fMinv);
 					
-					fVector_electronRICH_momenta_erased.erase(fVector_electronRICH_momenta_erased.begin() + a);
-					fVector_electronRICH_momenta_erased.erase(fVector_electronRICH_momenta_erased.begin() + b);
+					fVector_electronRICH_momenta_erased.erase(fVector_electronRICH_momenta_erased.begin() + a - 1);
+					fVector_electronRICH_momenta_erased.erase(fVector_electronRICH_momenta_erased.begin() + b - 1);
 					
 				}
 			}

@@ -305,6 +305,7 @@ void CbmAnaConversion::InitHistograms()
 {
 	fHistoList.clear();
 	fHistoList_kfparticle.clear();
+	fHistoList_furtherAnalyses.clear();
 	
 	
 	fhNofElPrim				= new TH1D("fhNofElPrim", "fhNofElPrim;Nof prim El;Entries", 10., -0.5, 9.5);
@@ -396,7 +397,7 @@ void CbmAnaConversion::InitHistograms()
 	fHistoList.push_back(fhNofElectrons_4epem);
 
 	fhPi0_MC_occurence = new TH1D("fhPi0_MC_occurence", "fhPi0_MC_occurence;;#", 20, 0, 20);
-	fHistoList.push_back(fhPi0_MC_occurence);
+	fHistoList_furtherAnalyses.push_back(fhPi0_MC_occurence);
 	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(1, "== -1: all pi0 from target");
 	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(2, "all pi0 -> gg");
 	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(3, "all g -> e+e-");
@@ -417,7 +418,7 @@ void CbmAnaConversion::InitHistograms()
 	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(18, "daughters > 4");
 
 	fhPi0_MC_occurence2 = new TH1D("fhPi0_MC_occurence2", "fhPi0_MC_occurence2;;#", 20, 0, 20);
-	fHistoList.push_back(fhPi0_MC_occurence2);
+	fHistoList_furtherAnalyses.push_back(fhPi0_MC_occurence2);
 	fhPi0_MC_occurence2->GetXaxis()->SetBinLabel(1, "!= -1: all pi0 from target");
 	fhPi0_MC_occurence2->GetXaxis()->SetBinLabel(2, "all pi0 -> gg");
 	fhPi0_MC_occurence2->GetXaxis()->SetBinLabel(3, "all g -> e+e-");
@@ -426,7 +427,7 @@ void CbmAnaConversion::InitHistograms()
 	fhPi0_MC_occurence2->GetXaxis()->SetBinLabel(6, "...");
 
 	fhPi0_Reco_occurence = new TH1D("fhPi0_Reco_occurence", "fhPi0_Reco_occurence;;#", 16, 0, 16);
-	fHistoList.push_back(fhPi0_Reco_occurence);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_occurence);
 	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(1, "4 e from pi0 (not same)");
 	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(2, "test");
 	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(3, "x 1 e from same pi0");
@@ -445,7 +446,7 @@ void CbmAnaConversion::InitHistograms()
 	fhPi0_Reco_occurence->GetXaxis()->SetBinLabel(16, "richInd: >4");
 
 	fhPi0_Reco_occurence2 = new TH1D("fhPi0_Reco_occurence2", "fhPi0_Reco_occurence2;;#", 16, 0, 16);
-	fHistoList.push_back(fhPi0_Reco_occurence2);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_occurence2);
 	fhPi0_Reco_occurence2->GetXaxis()->SetBinLabel(1, "4 e from pi0 (not same)");
 	fhPi0_Reco_occurence2->GetXaxis()->SetBinLabel(2, "test");
 	fhPi0_Reco_occurence2->GetXaxis()->SetBinLabel(3, "x 1 e from same pi0");
@@ -465,26 +466,26 @@ void CbmAnaConversion::InitHistograms()
 
 
 	fhPi0_Reco_angles = new TH1D("fhPi0_Reco_angles", "fhPi0_Reco_angles;angle;#", 500, 0, 50);
-	fHistoList.push_back(fhPi0_Reco_angles);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_angles);
 	fhPi0_Reco_chi = new TH1D("fhPi0_Reco_chi", "fhPi0_Reco_chi;chi;#", 500, 0, 500);
-	fHistoList.push_back(fhPi0_Reco_chi);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_chi);
 	fhPi0_Reco_ndf = new TH1D("fhPi0_Reco_ndf", "fhPi0_Reco_ndf;ndf;#", 500, 0, 50);
-	fHistoList.push_back(fhPi0_Reco_ndf);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_ndf);
 	fhPi0_Reco_ndf_vs_chi = new TH2D("fhPi0_Reco_ndf_vs_chi", "fhPi0_Reco_ndf_vs_chi;ndf;chi", 51, -0.5, 50.5, 500, 0, 50);
-	fHistoList.push_back(fhPi0_Reco_ndf_vs_chi);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_ndf_vs_chi);
 	fhPi0_Reco_ndf_vs_startvertex = new TH2D("fhPi0_Reco_ndf_vs_startvertex", "fhPi0_Reco_ndf_vs_startvertex;ndf;startvertex", 51, -0.5, 50.5, 101, -0.5, 100.5);
-	fHistoList.push_back(fhPi0_Reco_ndf_vs_startvertex);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_ndf_vs_startvertex);
 	fhPi0_Reco_startvertex_vs_chi = new TH2D("fhPi0_Reco_startvertex_vs_chi", "fhPi0_Reco_startvertex_vs_chi;startvertex;chi", 101, -0.5, 100.5, 100, 0, 100);
-	fHistoList.push_back(fhPi0_Reco_startvertex_vs_chi);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_startvertex_vs_chi);
 	fhPi0_Reco_startvertex_vs_nofhits = new TH2D("fhPi0_Reco_startvertex_vs_nofhits", "fhPi0_Reco_startvertex_vs_nofhits;startvertex;nofhits", 101, -0.5, 100.5, 21, -0.5, 20.5);
-	fHistoList.push_back(fhPi0_Reco_startvertex_vs_nofhits);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_startvertex_vs_nofhits);
 	fhPi0_noRichInd_diffPhi = new TH1D("fhPi0_noRichInd_diffPhi", "fhPi0_noRichInd_diffPhi;phi difference;#", 150, 0, 150);
-	fHistoList.push_back(fhPi0_noRichInd_diffPhi);
+	fHistoList_furtherAnalyses.push_back(fhPi0_noRichInd_diffPhi);
 	fhPi0_noRichInd_diffTheta = new TH1D("fhPi0_noRichInd_diffTheta", "fhPi0_noRichInd_diffTheta;theta difference;#", 150, 0, 150);
-	fHistoList.push_back(fhPi0_noRichInd_diffTheta);
+	fHistoList_furtherAnalyses.push_back(fhPi0_noRichInd_diffTheta);
 	
 	fhPi0_Reco_invmass_cases = new TH2D("fhPi0_Reco_invmass_cases", "fhPi0_Reco_invmass_cases;cases;invmass [GeV]", 6, 0, 6, 300, 0, 3);
-	fHistoList.push_back(fhPi0_Reco_invmass_cases);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_invmass_cases);
 	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(1, "..");
 	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(2, "no cuts");
 	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(3, "only chi");
@@ -492,7 +493,7 @@ void CbmAnaConversion::InitHistograms()
 	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(5, "both");
 	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(6, "mc-true");
 	fhPi0_Reco_noRichInd_invmass_cases = new TH2D("fhPi0_Reco_noRichInd_invmass_cases", "fhPi0_Reco_noRichInd_invmass_cases;cases;invmass [GeV]", 11, 0, 11, 300, 0, 3);
-	fHistoList.push_back(fhPi0_Reco_noRichInd_invmass_cases);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_invmass_cases);
 	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(1, "..");
 	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(2, "no cuts");
 	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(3, "only chi");
@@ -506,40 +507,40 @@ void CbmAnaConversion::InitHistograms()
 	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(11, "richInd-mctrue");
 	
 	fhPi0_Reco_invmass = new TH1D("fhPi0_Reco_invmass", "fhPi0_Reco_invmass;invmass [GeV];#", 300, 0, 3);
-	fHistoList.push_back(fhPi0_Reco_invmass);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_invmass);
 	fhPi0_Reco_invmass_mc = new TH1D("fhPi0_Reco_invmass_mc", "fhPi0_Reco_invmass_mc;invmass_mc [GeV];#", 300, 0, 3);
-	fHistoList.push_back(fhPi0_Reco_invmass_mc);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_invmass_mc);
 	fhPi0_Reco_noRichInd_invmass = new TH1D("fhPi0_Reco_noRichInd_invmass", "fhPi0_Reco_noRichInd_invmass;invmass_noRichInd [GeV];#", 300, 0, 3);
-	fHistoList.push_back(fhPi0_Reco_noRichInd_invmass);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_invmass);
 	fhPi0_Reco_noRichInd_invmass_mc = new TH1D("fhPi0_Reco_noRichInd_invmass_mc", "fhPi0_Reco_noRichInd_invmass_mc;invmass_noRichInd_mc [GeV];#", 300, 0, 3);
-	fHistoList.push_back(fhPi0_Reco_noRichInd_invmass_mc);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_invmass_mc);
 	
 	fhPi0_Reco_noRichInd_ndf_vs_nofhits = new TH2D("fhPi0_Reco_noRichInd_ndf_vs_nofhits", "fhPi0_Reco_noRichInd_ndf_vs_nofhits;ndf;nofhits", 31, -0.5, 30.5, 21, -0.5, 20.5);
-	fHistoList.push_back(fhPi0_Reco_noRichInd_ndf_vs_nofhits);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_ndf_vs_nofhits);
 	fhPi0_Reco_ndf_vs_nofhits = new TH2D("fhPi0_Reco_ndf_vs_nofhits", "fhPi0_Reco_ndf_vs_nofhits;ndf;nofhits", 31, -0.5, 30.5, 21, -0.5, 20.5);
-	fHistoList.push_back(fhPi0_Reco_ndf_vs_nofhits);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_ndf_vs_nofhits);
 	fhPi0_Reco_noRichInd_ndf_vs_nofhits_withChi = new TH2D("fhPi0_Reco_noRichInd_ndf_vs_nofhits_withChi", "fhPi0_Reco_noRichInd_ndf_vs_nofhits_withChi;ndf;nofhits", 31, -0.5, 30.5, 21, -0.5, 20.5);
-	fHistoList.push_back(fhPi0_Reco_noRichInd_ndf_vs_nofhits_withChi);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_ndf_vs_nofhits_withChi);
 	fhPi0_Reco_ndf_vs_nofhits_withChi = new TH2D("fhPi0_Reco_ndf_vs_nofhits_withChi", "fhPi0_Reco_ndf_vs_nofhits_withChi;ndf;nofhits", 31, -0.5, 30.5, 21, -0.5, 20.5);
-	fHistoList.push_back(fhPi0_Reco_ndf_vs_nofhits_withChi);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_ndf_vs_nofhits_withChi);
 
 	fhPi0_Reco_noRichInd_chi_vs_momentum = new TH2D("fhPi0_Reco_noRichInd_chi_vs_momentum", "fhPi0_Reco_noRichInd_chi_vs_momentum;momentum [GeV];chi", 200, 0., 10., 1000, 0., 100.);
-	fHistoList.push_back(fhPi0_Reco_noRichInd_chi_vs_momentum);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_chi_vs_momentum);
 	fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0 = new TH2D("fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0", "fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0;momentum [GeV];chi", 200, 0., 10., 1000, 0., 100.);
-	fHistoList.push_back(fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0);
 	fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target = new TH2D("fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target", "fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target;momentum [GeV];chi", 200, 0., 10., 1000, 0., 100.);
-	fHistoList.push_back(fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target);
 	fhPi0_Reco_noRichInd_chi_vs_momentum_eRest = new TH2D("fhPi0_Reco_noRichInd_chi_vs_momentum_eRest", "fhPi0_Reco_noRichInd_chi_vs_momentum_eRest;momentum [GeV];chi", 200, 0., 10., 1000, 0., 100.);
-	fHistoList.push_back(fhPi0_Reco_noRichInd_chi_vs_momentum_eRest);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_chi_vs_momentum_eRest);
 	
 	fhPi0_Reco_noRichInd_chi_vs_pt = new TH2D("fhPi0_Reco_noRichInd_chi_vs_pt", "fhPi0_Reco_noRichInd_chi_vs_pt;pt [GeV];chi", 200, 0., 10., 1000, 0., 100.);
-	fHistoList.push_back(fhPi0_Reco_noRichInd_chi_vs_pt);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_chi_vs_pt);
 	fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0 = new TH2D("fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0", "fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0;pt [GeV];chi", 200, 0., 10., 1000, 0., 100.);
-	fHistoList.push_back(fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0);
 	fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target = new TH2D("fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target", "fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target;pt [GeV];chi", 200, 0., 10., 1000, 0., 100.);
-	fHistoList.push_back(fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target);
 	fhPi0_Reco_noRichInd_chi_vs_pt_eRest = new TH2D("fhPi0_Reco_noRichInd_chi_vs_pt_eRest", "fhPi0_Reco_noRichInd_chi_vs_pt_eRest;pt [GeV];chi", 200, 0., 10., 1000, 0., 100.);
-	fHistoList.push_back(fhPi0_Reco_noRichInd_chi_vs_pt_eRest);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_chi_vs_pt_eRest);
 
 }
 
@@ -686,7 +687,7 @@ void CbmAnaConversion::Exec(Option_t*)
 			countEtaMC++;
 			TVector3 v;
 			mctrack->GetStartVertex(v);
-			if(v.Z() <= 10) {
+			if(v.Z() <= 4) {
 				countEtaMC_cut++;
 			}
 			int motherId = mctrack->GetMotherId();
@@ -945,6 +946,14 @@ void CbmAnaConversion::Finish()
 	if(DoRecoFull)			{ fAnaRecoFull->Finish(); }
 	if(DoPhotons)			{ fAnaPhotons->Finish(); }
 	if(DoTest)				{ fAnaTest->Finish(); }
+
+
+	gDirectory->mkdir("further analyses");
+	gDirectory->cd("further analyses");
+	for (UInt_t i = 0; i < fHistoList_furtherAnalyses.size(); i++){
+		fHistoList_furtherAnalyses[i]->Write();
+	}
+	gDirectory->cd("..");
 
 	for (UInt_t i = 0; i < fHistoList.size(); i++){
 		fHistoList[i]->Write();

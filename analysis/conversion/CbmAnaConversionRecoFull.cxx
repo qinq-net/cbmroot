@@ -29,6 +29,7 @@
 #include "CbmL1PFFitter.h"
 #include "L1Field.h"
 #include "../../littrack/cbm/elid/CbmLitGlobalElectronId.h"
+#include "CbmAnaConversionKinematicParams.h"
 
 
 #define M2E 2.6112004954086e-7
@@ -515,6 +516,9 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut3_new[i]);
 		fhPhotons_invmass_MCcut4_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut4_new_%i",i), Form("fhPhotons_invmass_MCcut4_new_%i (MC-true cut: wrong combination of electrons); invariant mass; #",i), 600, -0.0025, 2.9975);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut4_new[i]);
+		
+		fhPhotons_pt_vs_rap_new[i] = new TH2D(Form("fhPhotons_pt_vs_rap_new_%i",i), Form("fhPhotons_pt_vs_rap_new_%i; pt; rapidity",i), 240, -2., 10., 270, -2., 7.);
+		fHistoList_recofull_new[i].push_back(fhPhotons_pt_vs_rap_new[i]);
 	}
 
 }
@@ -855,7 +859,7 @@ void CbmAnaConversionRecoFull::Exec()
 		CombineElectrons(fElectrons_track_new[i], fElectrons_momenta_new[i], fElectrons_momentaChi_new[i], fElectrons_mctrackID_new[i], fVector_photons_pairs_new[i], i);
 		CombinePhotons(fElectrons_track_new[i], fElectrons_momenta_new[i], fElectrons_momentaChi_new[i], fElectrons_mctrackID_new[i], fVector_photons_pairs_new[i], i);
 	}
-	
+	/*
 	CombineElectrons(fElectrons_track_1, fElectrons_momenta_1, fElectrons_momentaChi_1, fElectrons_mctrackID_1, fVector_photons_pairs_1, 1);
 	CombinePhotons(fElectrons_track_1, fElectrons_momenta_1, fElectrons_momentaChi_1, fElectrons_mctrackID_1, fVector_photons_pairs_1, 1);
 	
@@ -867,7 +871,7 @@ void CbmAnaConversionRecoFull::Exec()
 	
 	CombineElectrons(fElectrons_track_4, fElectrons_momenta_4, fElectrons_momentaChi_4, fElectrons_mctrackID_4, fVector_photons_pairs_4, 4);
 	CombinePhotons(fElectrons_track_4, fElectrons_momenta_4, fElectrons_momentaChi_4, fElectrons_mctrackID_4, fVector_photons_pairs_4, 4);
-
+*/
 	//CombineElectronsRefit();
 	//CombinePhotonsRefit();
 
@@ -1164,11 +1168,18 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 	if(nof >= 2) {
 		for(int a=0; a<nof-1; a++) {
 			for(int b=a+1; b<nof; b++) {
-				cout << "CbmAnaConversionRecoFull: calculating invariant mass!" << endl;
+				cout << "####" << endl;
+				cout << "CbmAnaConversionRecoFull: calculating invariant mass! (" << a << "/" << b << ")" << endl;
 				Int_t electron11 = reconstructedPhotons[a][0];
 				Int_t electron12 = reconstructedPhotons[a][1];
 				Int_t electron21 = reconstructedPhotons[b][0];
 				Int_t electron22 = reconstructedPhotons[b][1];
+				cout << "CbmAnaConversionRecoFull: calculating invariant mass! (" << electron11 << "/" << electron12 << "/" << electron21 << "/" << electron22 << ")" << endl;
+				
+				if(electron11 == electron12 || electron11 == electron21 || electron11 == electron22 || electron12 == electron21 || electron12 == electron22 || electron21 == electron22) {
+					cout << "CbmAnaConversionRecoFull: RecoFull_DoubleIndex!" << endl;
+					continue;
+				}
 			
 				Double_t invmass = Invmass_4particlesRECO(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
 				
@@ -1181,12 +1192,19 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 				Double_t pt = Pt_4particlesRECO(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
 				Double_t rap = Rap_4particlesRECO(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
 				
+				fhPhotons_pt_vs_rap_new[index]->Fill(pt, rap);
+				
 				Double_t opening_angle = OpeningAngleBetweenPhotons(momenta, reconstructedPhotons[a], reconstructedPhotons[b]);
 				if(index == 1) fhPhotons_angleBetween->Fill(opening_angle);
 				
 				
 				CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
 				
+				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
+				
+				
+				
+				cout << "CbmAnaConversionRecoFull: debug: (" << invmass << "/" << paramsTest.fMinv << ") - (" << pt << "/" << paramsTest.fPt << ") - (" << rap << "/" << paramsTest.fRapidity << ")" << endl;
 				
 				TVector3 momentumE1;
 				TVector3 momentumE2;

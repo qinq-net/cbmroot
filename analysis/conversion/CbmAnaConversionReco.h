@@ -98,6 +98,7 @@ private:
 	TH1D * fhInvariantMass_MC_pi0_gepem;
 	TH1D * fhInvariantMass_MC_pi0_gg;
 	TH1D * fhInvariantMass_MC_eta;
+	TH1D * fhInvariantMass_MC_etaPrime;
    
 	TH1D * fhInvariantMassReco_pi0;
 

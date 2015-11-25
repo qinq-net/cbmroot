@@ -160,18 +160,20 @@ void CbmAnaConversionReco::InitHistos()
 	fHistoList_all.clear();
 
 
-	fhInvariantMass_MC_all			= new TH1D("fhInvariantMass_MC_all", "fhInvariantMass_MC_all;mass [GeV/c^2];#", 2000, 0., 2.);
-	fhInvariantMass_MC_pi0			= new TH1D("fhInvariantMass_MC_pi0", "fhInvariantMass_MC_pi0;mass [GeV/c^2];#", 2000, 0., 2.);
-	fhInvariantMass_MC_pi0_epem		= new TH1D("fhInvariantMass_MC_pi0_epem", "fhInvariantMass_MC_pi0_epem;mass [GeV/c^2];#", 2000, 0., 2.);
-	fhInvariantMass_MC_pi0_gepem	= new TH1D("fhInvariantMass_MC_pi0_gepem", "fhInvariantMass_MC_pi0_gepem;mass [GeV/c^2];#", 2000, 0., 2.);
-	fhInvariantMass_MC_pi0_gg		= new TH1D("fhInvariantMass_MC_pi0_gg", "fhInvariantMass_MC_pi0_gg;mass [GeV/c^2];#", 2000, 0., 2.);
-	fhInvariantMass_MC_eta			= new TH1D("fhInvariantMass_MC_eta", "fhInvariantMass_MC_eta;mass [GeV/c^2];#", 2000, 0., 2.);
+	fhInvariantMass_MC_all			= new TH1D("fhInvariantMass_MC_all", "fhInvariantMass_MC_all;mass [GeV/c^2];#", 2001, -0.0005, 2.0005);
+	fhInvariantMass_MC_pi0			= new TH1D("fhInvariantMass_MC_pi0", "fhInvariantMass_MC_pi0;mass [GeV/c^2];#", 2001, -0.0005, 2.0005);
+	fhInvariantMass_MC_pi0_epem		= new TH1D("fhInvariantMass_MC_pi0_epem", "fhInvariantMass_MC_pi0_epem;mass [GeV/c^2];#", 2001, -0.0005, 2.0005);
+	fhInvariantMass_MC_pi0_gepem	= new TH1D("fhInvariantMass_MC_pi0_gepem", "fhInvariantMass_MC_pi0_gepem;mass [GeV/c^2];#", 2001, -0.0005, 2.0005);
+	fhInvariantMass_MC_pi0_gg		= new TH1D("fhInvariantMass_MC_pi0_gg", "fhInvariantMass_MC_pi0_gg;mass [GeV/c^2];#", 2001, -0.0005, 2.0005);
+	fhInvariantMass_MC_eta			= new TH1D("fhInvariantMass_MC_eta", "fhInvariantMass_MC_eta;mass [GeV/c^2];#", 2001, -0.0005, 2.0005);
+	fhInvariantMass_MC_etaPrime		= new TH1D("fhInvariantMass_MC_etaPrime", "fhInvariantMass_MC_etaPrime;mass [GeV/c^2];#", 2001, -0.0005, 2.0005);
 	fHistoList_MC.push_back(fhInvariantMass_MC_all);
 	fHistoList_MC.push_back(fhInvariantMass_MC_pi0);
 	fHistoList_MC.push_back(fhInvariantMass_MC_pi0_epem);
 	fHistoList_MC.push_back(fhInvariantMass_MC_pi0_gepem);
 	fHistoList_MC.push_back(fhInvariantMass_MC_pi0_gg);
 	fHistoList_MC.push_back(fhInvariantMass_MC_eta);
+	fHistoList_MC.push_back(fhInvariantMass_MC_etaPrime);
 	
 	
 	fhMCtest	= new TH1D("fhMCtest", "fhMCtest;mass [GeV/c^2];#", 2000, 0., 2.);
@@ -421,12 +423,14 @@ void CbmAnaConversionReco::InvariantMassMC_all()
 	cout << "CbmAnaConversionReco: InvariantMassTestMC - Start..." << endl;
 	cout << "CbmAnaConversionReco: InvariantMassTestMC - Size of fTracklistMC_all:\t " << fMCTracklist_all.size() << endl;
 	if(fMCTracklist_all.size() >= 4) {
-		for(unsigned int i=0; i<fMCTracklist_all.size(); i++) {
-			for(unsigned int j=i+1; j<fMCTracklist_all.size(); j++) {
-				for(unsigned int k=j+1; k<fMCTracklist_all.size(); k++) {
+		for(unsigned int i=0; i<fMCTracklist_all.size()-3; i++) {
+			for(unsigned int j=i+1; j<fMCTracklist_all.size()-2; j++) {
+				for(unsigned int k=j+1; k<fMCTracklist_all.size()-1; k++) {
 					for(unsigned int l=k+1; l<fMCTracklist_all.size(); l++) {
 					
 						if(fMCTracklist_all[i]->GetPdgCode() + fMCTracklist_all[j]->GetPdgCode() + fMCTracklist_all[k]->GetPdgCode() + fMCTracklist_all[l]->GetPdgCode() != 0) continue;
+						
+						if(i== j || i==k || i==l || j==k || j==l || k==l) continue; 
 					
 						int motherId1 = fMCTracklist_all[i]->GetMotherId();
 						int motherId2 = fMCTracklist_all[j]->GetMotherId();
@@ -534,6 +538,9 @@ void CbmAnaConversionReco::InvariantMassMC_all()
 							}
 							if(mcGrandmotherPdg1 == 221) {
 								fhInvariantMass_MC_eta->Fill(invmass);
+							}
+							if(mcGrandmotherPdg1 == 331) { // eta prime (958)
+								fhInvariantMass_MC_etaPrime->Fill(invmass);
 							}
 						}
 						
