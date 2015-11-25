@@ -525,7 +525,8 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisEvent(const PairAnalysisE
   values[kVageMatches]  = event->GetNumberOfVageMatches();
   values[kTotalTRDHits] = event->GetNumberOfHits(kTRD);
   const Double_t proMass = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
-  values[kYbeam]        = TMath::ATanH( TMath::Sqrt(1-1/TMath::Power(values[kEbeam] / proMass,2)) );
+  Double_t beta          = TMath::Sqrt(values[kEbeam]*values[kEbeam] - proMass*proMass) / (values[kEbeam]+proMass);
+  values[kYbeam]        = TMath::ATanH( beta );
   //  Printf("beam rapidity new: %f",values[kYbeam]);
   values[kNTrkMC]         = event->GetNumberOfMCTracks();
   values[kTotalTRDHitsMC] = event->GetNumberOfPoints(kTRD);
