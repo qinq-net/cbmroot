@@ -199,8 +199,8 @@ void CbmTSUnpackTrb::DecodeTdcDataNew(UInt_t* data, UInt_t length, UInt_t tdcId)
 
       if( 110 == tdcId ) {
 	pair<Double_t, CbmTrbRawMessage*> 
-	  value (fullTime, static_cast<CbmTrbRawMessage*>(fTrbRaw->At(fTrbRaw->GetEntriesFast())));
-	  fTimeBuffer.insert(value);
+	  value_pair (fullTime, static_cast<CbmTrbRawMessage*>(fTrbRaw->At(fTrbRaw->GetEntriesFast())));
+	  fTimeBuffer.insert(value_pair);
 
 
 
