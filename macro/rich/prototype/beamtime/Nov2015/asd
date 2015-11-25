@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cd ~/cbmroot/build_trunk/
+cd ~/SOFT/cbmroot_build/
 make -j4
 cd -

@@ -48,7 +48,7 @@ void run_analysis_laser(Bool_t generateCalib = kTRUE,
                                                              // does not actually import data - only defines
                                                              // the file that will be used if you specify mode etn_IMPORT
                                                              // Also note the (un)commented line in the end of the macro with export func
-   fgCalibrator->SetCorrInputFilename("/store/cbm_rich_data_2014/Corrections_WLS_off_no29channels.txt");
+   //fgCalibrator->SetCorrInputFilename("/store/cbm_rich_data_2014/Corrections_WLS_off_no29channels.txt");
                                                              // Corrections are imported only in IMPORT mode
 
    if (generateCalib) {
