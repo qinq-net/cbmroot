@@ -115,9 +115,9 @@ void CbmRichTrbUnpack2::Close()
 		}
 	}
 	*/
-	
+
 	LOG(INFO) << "[CbmRichTrbUnpack2] left in the event building buffer: " << fMessageBuffer.size() << FairLogger::endl;
-	
+
 	LOG(INFO) << "[CbmRichTrbUnpack2] Total " << fTimestampsUnpacked-fTimestampsNotUnpacked-fSyncTimestampsUnpacked-fSkippedTimestamps
 				<< " timestamps unpacked not incl. " << fSyncTimestampsUnpacked
 				<< " sync messages and not incl. " << fSkippedTimestamps
@@ -249,13 +249,13 @@ Int_t CbmRichTrbUnpack2::ReadEvent()
 	std::multimap<Double_t, CbmTrbRawMessage*>::iterator iter;
 	std::multimap<Double_t, CbmTrbRawMessage*>::iterator curFirst;
 	Double_t winLeft, winRight;
-	
+
 	// Standard mode
 	if (!inGarbCollMode)
 	{
 
 		UInt_t eventInd = 0;
-		
+
 		// Fill the buffer
 		do {
 			// Per-se read the "DAQ-event"
@@ -268,7 +268,7 @@ Int_t CbmRichTrbUnpack2::ReadEvent()
 				curFirst = fMessageBuffer.begin();
 				winLeft = this->GetFullTime(*curFirst->second);
 				winRight = winLeft + EVENTTIMEWINDOW;
-				
+
 				// Loop over the rest of the edges
 				for (iter = fMessageBuffer.begin(); iter != fMessageBuffer.end(); ++iter) {
 
@@ -289,9 +289,9 @@ Int_t CbmRichTrbUnpack2::ReadEvent()
 				}
 			}
 		} while (goOn != 1 && eventInd < EVENTBUFMIN-1);
-		
+
 		//printf ("eventInd=%d\n", eventInd);
-		
+
 		// There are no more edges in the source - go to the third mode - cleanup
 		if (goOn == 1) {
 			inGarbCollMode = kTRUE;
@@ -312,7 +312,7 @@ Int_t CbmRichTrbUnpack2::ReadEvent()
 				}
 
 			}
-			
+
 			// Switch to garbage collection mode
 			if (eventInd > EVENTBUFLIMIT || goOn == 1) {
 				inGarbCollMode = kTRUE;
@@ -343,7 +343,7 @@ Int_t CbmRichTrbUnpack2::ReadEvent()
 
 			}
 		}
-		
+
 		// Very end comes here
 		this->PushEvent(fMessageBuffer.begin(), fMessageBuffer.end());
 		return 1;
@@ -382,7 +382,7 @@ void CbmRichTrbUnpack2::PushEvent(std::multimap<Double_t, CbmTrbRawMessage*>::it
 
 			fMessageBuffer.erase(iter++);
 		}
-		
+
 		fNumPushed++;
 		//LOG(INFO) << "Pushed " << fNumPushed << " events" << FairLogger::endl;
 	} else {
@@ -395,7 +395,7 @@ void CbmRichTrbUnpack2::PushEvent(std::multimap<Double_t, CbmTrbRawMessage*>::it
 			fMessageBuffer.erase(iter++);
 		}
 	}
-	
+
 /*
 	LOG(INFO) << "[CbmRichTrbUnpack2] Total " << fTimestampsUnpacked-fTimestampsNotUnpacked << " timestamps unpacked (not incl. "
 			<< fTimestampsNotUnpacked << " with fine time counter error)." << FairLogger::endl;
@@ -441,8 +441,8 @@ void CbmRichTrbUnpack2::ProcessSubEvent(CbmRawSubEvent* subEvent) {
 		}
 
 		//FIXME temporarily skip messages from beam detector (tdc=0x0111)
-		if (subSubEventId != 0x7005 && subSubEventId != 0x0112/* && subSubEventId != 0x0111 && subSubEventId != 0x0110*/) {	// For beamtime data
-//		if (subSubEventId == 0x0010 || subSubEventId == 0x0011 || subSubEventId == 0x0012 || subSubEventId == 0x0013) {		// For Wuppertal Lab data
+//		if (subSubEventId != 0x7005 && subSubEventId != 0x0112/* && subSubEventId != 0x0111 && subSubEventId != 0x0110*/) {	// For beamtime data
+		if (subSubEventId == 0x0010 || subSubEventId == 0x0011 || subSubEventId == 0x0012 || subSubEventId == 0x0013) {		// For Wuppertal Lab data
 			ProcessSubSubEvent(dataArray, tdcNofWords, subSubEventId);
 		} else {
 			ProcessSkip(dataArray, tdcNofWords, subSubEventId);
@@ -487,7 +487,7 @@ void CbmRichTrbUnpack2::ProcessSubSubEvent(UInt_t* data, UInt_t size, UInt_t sub
 			printf("0x%08x - TIMESTAMP", tdcData);
 //}
 #endif
-			
+
 			// Fix 0x3ff fine time counter value occurence - skip such a timestamp
 			if (fine == 0x3ff) {
 #ifdef DEBUGPRINT
@@ -534,17 +534,17 @@ void CbmRichTrbUnpack2::ProcessSubSubEvent(UInt_t* data, UInt_t size, UInt_t sub
 				fSyncTimestampsUnpacked++;
 
 			} else if (param->IsLeadingEdgeChannel(channel)) { // LEADING EDGE PROCESSING
-				CbmTrbCalibrator::Instance()->AddFineTime(tdcId, channel, fine);
 #ifdef DEBUGPRINT
 				printf("   --- LEAD  - tdc 0x%04x ch %d edge %d epoch %08x coarse %08x fine %08x = %f\tcorrection=%f\n",
 					tdcId, channel, edge, epoch, coarse, fine, fullTime/*+fCorr*/, fCorr);
 #endif
-			} else {                                 // TRAILING EDGE PROCESSING
 				CbmTrbCalibrator::Instance()->AddFineTime(tdcId, channel, fine);
+			} else {                                 // TRAILING EDGE PROCESSING
 #ifdef DEBUGPRINT
 				printf("   --- TRAIL - tdc 0x%04x ch %d edge %d epoch %08x coarse %08x fine %08x = %f\tcorrection=%f\n",
 					tdcId, channel, edge, epoch, coarse, fine, fullTime/*+fCorr*/, fCorr);
 #endif
+				CbmTrbCalibrator::Instance()->AddFineTime(tdcId, channel, fine);
 			}
 /*
 			// Important to keep it here - after fCorr computation
@@ -553,7 +553,7 @@ void CbmRichTrbUnpack2::ProcessSubSubEvent(UInt_t* data, UInt_t size, UInt_t sub
 */
 			//TODO development workaround
 			//FIXME - here we skip sync messages so that they don't appear in event building
-			if (!param->IsSyncChannel(channel))
+//			if (!param->IsSyncChannel(channel))
 			{
 				fMessageBuffer.insert( std::pair<Double_t, CbmTrbRawMessage*> (fullTime, new CbmTrbRawMessage(0, tdcId, channel, epoch, coarse, fine, edge, fCorr)));
 				//fMessageBuffer.insert( new CbmTrbRawMessage(0, tdcId, channel, epoch, coarse, fine, edge, fCorr) );
