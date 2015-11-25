@@ -73,10 +73,27 @@ InitStatus CbmTrdOnlineDisplay::Init()
   if (h2!=NULL) {
     h2->Draw("colz");
   }
-  for (Int_t sys = 0; sys < 2; sys++){
-
-
-
+  h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("DeltaTime_Cluster_SysCore0_Spadic0")));
+  fSpadicTime->cd(5)->SetLogy(1);
+  if (h1!=NULL) {
+    h1->Draw("");
+  }
+  h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("DeltaTime_Cluster_SysCore0_Spadic1")));
+  h1->SetLineColor(2);
+  if (h1!=NULL) {
+    h1->Draw("same");
+  }
+  h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("DeltaTime_Cluster_SysCore1_Spadic1")));
+  h1->SetLineColor(3);
+  if (h1!=NULL) {
+    h1->Draw("same");
+  }
+  h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("DeltaTime_Cluster_SysCore1_Spadic1")));
+  h1->SetLineColor(4);
+  if (h1!=NULL) {
+    h1->Draw("same");
+  }
+ for (Int_t sys = 0; sys < 2; sys++){
     for (Int_t spa = 0; spa < 2; spa++){
       fSpadic1[spa][sys] = new TCanvas(TString("fSysCore" + std::to_string(sys) + "Spadic" + std::to_string(spa)), TString("fSysCore" + std::to_string(sys) + "Spadic" + std::to_string(spa)), 0, 0, 2000, 1200);
       fSpadic1[spa][sys]->Divide(5,3);
