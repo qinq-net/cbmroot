@@ -55,6 +55,7 @@ CbmAnaConversionReco::CbmAnaConversionReco()
     fhInvariantMass_MC_pi0_gepem(NULL),
     fhInvariantMass_MC_pi0_gg(NULL),
     fhInvariantMass_MC_eta(NULL),
+    fhInvariantMass_MC_etaPrime(NULL),
     fhInvariantMassReco_pi0(NULL),
     fhMCtest(NULL),
     fhEPEM_invmass_gg_mc(NULL),

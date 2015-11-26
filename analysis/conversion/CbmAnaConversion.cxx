@@ -135,6 +135,7 @@ CbmAnaConversion::CbmAnaConversion()
     fHistoList_reco_mom(),
     fHistoList_kfparticle(),
     fHistoList_richrings(),
+    fHistoList_furtherAnalyses(),
     fMCTracklist(),
     fMCTracklist_all(),
     fRecoTracklist(),
