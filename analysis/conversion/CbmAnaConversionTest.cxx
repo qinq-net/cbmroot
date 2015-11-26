@@ -17,6 +17,8 @@
 #include "CbmL1PFFitter.h"
 #include "L1Field.h"
 #include "../../littrack/cbm/elid/CbmLitGlobalElectronId.h"
+#include "CbmAnaConversionKinematicParams.h"
+#include "CbmAnaConversionCutSettings.h"
 
 #include <algorithm>
 #include <map>
@@ -59,10 +61,9 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fVector_gtIndex(),
 	fVector_reconstructedPhotons_FromSTSandRICH(),
 	fVector_electronRICH_gt(),
+	fVector_electronRICH_gtIndex(),
 	fVector_electronRICH_momenta(),
-	fVector_electronRICH_reconstructedPhotons(),
-	fVector_electronRICH_gt_erased(),
-	fVector_electronRICH_momenta_erased()
+	fVector_electronRICH_reconstructedPhotons()
 {
 }
 
@@ -318,8 +319,7 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 	
 	fVector_electronRICH_momenta.clear();
 	fVector_electronRICH_gt.clear();
-	fVector_electronRICH_momenta_erased.clear();
-	fVector_electronRICH_gt_erased.clear();
+	fVector_electronRICH_gtIndex.clear();
 	fVector_electronRICH_reconstructedPhotons.clear();
 
 	Int_t nofRICHelectrons = 0;
@@ -385,16 +385,18 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 		
 		
 		Double_t chiCut = 0;
-		if(refittedMomentum_electron.Perp() < 0.4) {
-			chiCut = 31. - 70.*refittedMomentum_electron.Perp();
-		}
-		if(refittedMomentum_electron.Perp() >= 0.4) {
-			chiCut = 3;
-		}
+		//if(refittedMomentum_electron.Perp() < 0.4) {
+		//	chiCut = 31. - 70.*refittedMomentum_electron.Perp();
+		//}
+		//if(refittedMomentum_electron.Perp() >= 0.4) {
+		//	chiCut = 3;
+		//}
+		
+		chiCut = CbmAnaConversionCutSettings::CalcChiCut(refittedMomentum_electron.Perp() );
 		
 		if(result_chi_electron > chiCut) continue;
 
-		if(stsHits > 10) {
+		if(stsHits > 9) {
 			fVector_momenta.push_back(refittedMomentum_electron);
 			fVector_chi.push_back(result_chi_electron);
 			fVector_gtIndex.push_back(i);
@@ -414,9 +416,7 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 		if(electron_rich) {
 			fVector_electronRICH_momenta.push_back(refittedMomentum_electron);
 			fVector_electronRICH_gt.push_back(gTrack);
-			//
-			fVector_electronRICH_momenta_erased.push_back(refittedMomentum_electron);
-			fVector_electronRICH_gt_erased.push_back(gTrack);
+			fVector_electronRICH_gtIndex.push_back(i);
 			nofRICHelectrons++;
 		}
 
@@ -435,31 +435,28 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 void CbmAnaConversionTest::CombineElectrons_FromSTSandRICH()
 {
 	Int_t nof_sts = fVector_momenta.size();
-	Int_t nof_rich = fVector_electronRICH_momenta_erased.size();
+	Int_t nof_rich = fVector_electronRICH_momenta.size();
 	cout << "CbmAnaConversionTest: CombineElectrons_FromSTSandRICH, nof sts/rich - " << nof_sts << " / " << nof_rich << endl;
 	Int_t nofPhotons = 0;
 	if(nof_sts + nof_rich >= 2) {
 		for(int a=0; a<nof_sts; a++) {
 			for(int b=0; b<nof_rich; b++) {
 				Int_t check1 = (fVector_gt[a]->GetParamLast()->GetQp() > 0);	// positive or negative charge (qp = charge over momentum ratio)
-				Int_t check2 = (fVector_electronRICH_gt_erased[b]->GetParamLast()->GetQp() > 0);
+				Int_t check2 = (fVector_electronRICH_gt[b]->GetParamLast()->GetQp() > 0);
 				Int_t test = check1 + check2;
 				if(test != 1) continue;		// need one electron and one positron
-				//if(fElectrons_momentaChi[a] > 10 || fElectrons_momentaChi[b] > 10) continue;
 				
-				CbmLmvmKinematicParams params1 = CalculateKinematicParamsReco(fVector_momenta[a], fVector_electronRICH_momenta_erased[b]);
-				
-				// standard fixed opening angle cut
-				//Double_t openingAngleCut = 1;
+				//CbmLmvmKinematicParams params1 = CalculateKinematicParamsReco(fVector_momenta[a], fVector_electronRICH_momenta[b]);
+				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(fVector_momenta[a], fVector_electronRICH_momenta[b]);
 				
 				// opening angle cut depending on pt of e+e- pair
 				//Double_t openingAngleCut = 1.8 - 0.6 * params1.fPt;
-				Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
+				Double_t openingAngleCut = 1.5 - 0.5 * paramsTest.fPt;
 				
 				Double_t invMassCut = 0.03;
 				
-				Int_t IsPhoton_openingAngle1	= (params1.fAngle < openingAngleCut);
-				Int_t IsPhoton_invMass1			= (params1.fMinv < invMassCut);
+				Int_t IsPhoton_openingAngle1	= (paramsTest.fAngle < openingAngleCut);
+				Int_t IsPhoton_invMass1			= (paramsTest.fMinv < invMassCut);
 				
 				
 				if(IsPhoton_openingAngle1 && IsPhoton_invMass1) {
@@ -469,53 +466,12 @@ void CbmAnaConversionTest::CombineElectrons_FromSTSandRICH()
 					pair.push_back(b);
 					fVector_reconstructedPhotons_FromSTSandRICH.push_back(pair);
 					//fhElectrons_invmass_cut->Fill(params1.fMinv);
-					
 				}
 			}
 		}
 	}
 	fhTest_PhotonsPerEvent_STSandRICH->Fill(nofPhotons);
-	cout << "CbmAnaConversionTest: CombineElectrons: Crosscheck - nof reconstructed photons: " << nofPhotons << endl;
-}
-
-
-
-void CbmAnaConversionTest::CombinePhotons()
-{
-	Int_t nof_STSandRICH	= fVector_reconstructedPhotons_FromSTSandRICH.size();
-	Int_t nof_RICH			= fVector_electronRICH_reconstructedPhotons.size();
-	cout << "CbmAnaConversionTest: CombinePhotons, nof - " << nof_STSandRICH << endl;
-	Int_t nofPi0 = 0;
-	if(nof_STSandRICH + nof_RICH >= 2) {
-		for(int a=0; a<nof_STSandRICH; a++) {
-			for(int b=0; b<nof_RICH; b++) {
-				Int_t electron11 = fVector_reconstructedPhotons_FromSTSandRICH[a][0];
-				Int_t electron12 = fVector_reconstructedPhotons_FromSTSandRICH[a][1];
-				Int_t electron21 = fVector_electronRICH_reconstructedPhotons[b][0];
-				Int_t electron22 = fVector_electronRICH_reconstructedPhotons[b][1];
-			
-				if(electron12 == electron21 || electron12 == electron22)  {
-					cout << "CbmAnaConversionTest: Test_DoubleIndex." << endl;
-					continue;
-				}
-			
-				Double_t invmass = Invmass_4particlesRECO(fVector_momenta[electron11], fVector_electronRICH_momenta_erased[electron12], fVector_electronRICH_momenta[electron21], fVector_electronRICH_momenta[electron22]);
-				
-				fhTest_invmass->Fill(invmass);
-				
-				//Double_t pt = Pt_4particlesRECO(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
-				//Double_t rap = Rap_4particlesRECO(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
-				
-				//Double_t opening_angle = OpeningAngleBetweenPhotons(momenta, reconstructedPhotons[a], reconstructedPhotons[b]);
-				
-				
-				//CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
-				
-				nofPi0++;
-			}
-		}
-	}
-	fhTest_ReconstructedPi0PerEvent->Fill(nofPi0);
+	cout << "CbmAnaConversionTest: CombineElectronsFromSTSandRICH: Crosscheck - nof reconstructed photons: " << nofPhotons << endl;
 }
 
 
@@ -536,21 +492,18 @@ void CbmAnaConversionTest::CombineElectrons_FromRICH()
 				Int_t check2 = (fVector_electronRICH_gt[b]->GetParamLast()->GetQp() > 0);
 				Int_t test = check1 + check2;
 				if(test != 1) continue;		// need one electron and one positron
-				//if(fElectrons_momentaChi[a] > 10 || fElectrons_momentaChi[b] > 10) continue;
 				
-				CbmLmvmKinematicParams params1 = CalculateKinematicParamsReco(fVector_electronRICH_momenta[a], fVector_electronRICH_momenta[b]);
-				
-				// standard fixed opening angle cut
-				//Double_t openingAngleCut = 1;
+				//CbmLmvmKinematicParams params1 = CalculateKinematicParamsReco(fVector_electronRICH_momenta[a], fVector_electronRICH_momenta[b]);
+				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(fVector_electronRICH_momenta[a], fVector_electronRICH_momenta[b]);
 				
 				// opening angle cut depending on pt of e+e- pair
 				//Double_t openingAngleCut = 1.8 - 0.6 * params1.fPt;
-				Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
+				Double_t openingAngleCut = 1.5 - 0.5 * paramsTest.fPt;
 				
 				Double_t invMassCut = 0.03;
 				
-				Int_t IsPhoton_openingAngle1	= (params1.fAngle < openingAngleCut);
-				Int_t IsPhoton_invMass1			= (params1.fMinv < invMassCut);
+				Int_t IsPhoton_openingAngle1	= (paramsTest.fAngle < openingAngleCut);
+				Int_t IsPhoton_invMass1			= (paramsTest.fMinv < invMassCut);
 				
 				
 				if(IsPhoton_openingAngle1 && IsPhoton_invMass1) {
@@ -560,20 +513,66 @@ void CbmAnaConversionTest::CombineElectrons_FromRICH()
 					pair.push_back(b);
 					fVector_electronRICH_reconstructedPhotons.push_back(pair);
 					//fhElectrons_invmass_cut->Fill(params1.fMinv);
-					
-					//fVector_electronRICH_momenta_erased.erase(fVector_electronRICH_momenta_erased.begin() + a - 1);
-					//fVector_electronRICH_momenta_erased.erase(fVector_electronRICH_momenta_erased.begin() + b - 1);
-					
 				}
 			}
 		}
 	}
 	fhTest_PhotonsPerEvent_RICHonly->Fill(nofPhotons);
-	cout << "CbmAnaConversionTest: CombineElectrons: Crosscheck - nof reconstructed photons: " << nofPhotons << endl;
+	cout << "CbmAnaConversionTest: CombineElectronsFromRICH: Crosscheck - nof reconstructed photons: " << nofPhotons << endl;
 }
 
 
 
+
+
+
+void CbmAnaConversionTest::CombinePhotons()
+{
+	Int_t nof_STSandRICH	= fVector_reconstructedPhotons_FromSTSandRICH.size();
+	Int_t nof_RICH			= fVector_electronRICH_reconstructedPhotons.size();
+	cout << "CbmAnaConversionTest: CombinePhotons, nof - " << nof_STSandRICH << "/" << nof_RICH << endl;
+	Int_t nofPi0 = 0;
+	if(nof_STSandRICH + nof_RICH >= 2) {
+		for(int a=0; a<nof_STSandRICH; a++) {
+			for(int b=0; b<nof_RICH; b++) {
+				Int_t electron11 = fVector_reconstructedPhotons_FromSTSandRICH[a][0];	// track with STS signal only
+				Int_t electron12 = fVector_reconstructedPhotons_FromSTSandRICH[a][1];	// track with STS + RICH signal
+				Int_t electron21 = fVector_electronRICH_reconstructedPhotons[b][0];		// track with STS + RICH signal
+				Int_t electron22 = fVector_electronRICH_reconstructedPhotons[b][1];		// track with STS + RICH signal
+			
+				Int_t gtIndex11 = fVector_gtIndex[electron11];
+				Int_t gtIndex12 = fVector_electronRICH_gtIndex[electron12];
+				Int_t gtIndex21 = fVector_electronRICH_gtIndex[electron21];
+				Int_t gtIndex22 = fVector_electronRICH_gtIndex[electron22];
+			
+				if(gtIndex11 == gtIndex12 || gtIndex11 == gtIndex21 || gtIndex11 == gtIndex22 || gtIndex12 == gtIndex21 || gtIndex12 == gtIndex22 || gtIndex21 == gtIndex22) {
+				//if(electron12 == electron21 || electron12 == electron22)  {
+					cout << "CbmAnaConversionTest: Test_DoubleIndex." << endl;
+					continue;
+				}
+			
+				//Double_t invmass = Invmass_4particlesRECO(fVector_momenta[electron11], fVector_electronRICH_momenta[electron12], fVector_electronRICH_momenta[electron21], fVector_electronRICH_momenta[electron22]);
+				
+				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(fVector_momenta[electron11], fVector_electronRICH_momenta[electron12], fVector_electronRICH_momenta[electron21], fVector_electronRICH_momenta[electron22]);
+				
+				Double_t invmass = paramsTest.fMinv;
+				
+				fhTest_invmass->Fill(invmass);
+				
+				//Double_t pt = Pt_4particlesRECO(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
+				//Double_t rap = Rap_4particlesRECO(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
+				
+				//Double_t opening_angle = OpeningAngleBetweenPhotons(momenta, reconstructedPhotons[a], reconstructedPhotons[b]);
+				
+				
+				//CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
+				
+				nofPi0++;
+			}
+		}
+	}
+	fhTest_ReconstructedPi0PerEvent->Fill(nofPi0);
+}
 
 
 

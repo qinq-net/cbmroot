@@ -93,7 +93,7 @@ private:
 	TH1D * fhTest_invmass;
 
 
-	// arrays for STS only analysis
+	// arrays for STS only analysis (i.e. signal only in STS is required, not necessarily in RICH)
 	vector<CbmGlobalTrack*>	fVector_gt;
 	vector<TVector3>		fVector_momenta;
 	vector<double>			fVector_chi;
@@ -102,12 +102,10 @@ private:
 
 	// arrays for electrons, that have been identified in RICH as electrons
 	vector<CbmGlobalTrack*>	fVector_electronRICH_gt;
+	vector<int>				fVector_electronRICH_gtIndex;
 	vector<TVector3>		fVector_electronRICH_momenta;
 	vector< vector<int> >	fVector_electronRICH_reconstructedPhotons;
 	
-	// arrays for electrons,identified in RICH, only containing entries not combined to a photon
-	vector<CbmGlobalTrack*>	fVector_electronRICH_gt_erased;
-	vector<TVector3>		fVector_electronRICH_momenta_erased;
 
 
 	CbmAnaConversionTest(const CbmAnaConversionTest&);

@@ -900,6 +900,8 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 				
 				CbmLmvmKinematicParams params1 = CalculateKinematicParamsReco(momenta[a], momenta[b]);
 				
+				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(momenta[a], momenta[b]);
+				
 				// standard fixed opening angle cut
 				//Double_t openingAngleCut = 1;
 				
