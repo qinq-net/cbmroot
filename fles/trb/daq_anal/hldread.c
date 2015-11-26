@@ -38,14 +38,14 @@ static void showProcessedEvts(unsigned long processedEvts)
 		level = LOG_NOTICE;
 		notice = ", \ano new events arrived";
 	}
-	syslog(level, "%5u events processed %-30s\r", processedEvts, notice);
+	syslog(level, "%5lu events processed %-30s\r", processedEvts, notice);
 }
 
 static void atexit0(void)
 {
 	if (!excludeAnal)
 		stopAnalysis();
-	syslog(LOG_INFO, "%5u events processed %-30s", processedEvts, "");
+	syslog(LOG_INFO, "%5lu events processed %-30s", processedEvts, "");
 }
 
 
