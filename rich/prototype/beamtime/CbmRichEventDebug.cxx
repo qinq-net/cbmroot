@@ -13,7 +13,8 @@ CbmRichEventDebug::CbmRichEventDebug()
 	  fRichHits(NULL),
 	  fRichHitInfos(NULL),
 	  fHM(NULL),
-	  fSingleEventFilled(kFALSE)
+	  fSingleEventFilled(kFALSE),
+	  fOutHistoFile("")
 {
 
 }

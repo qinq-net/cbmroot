@@ -28,6 +28,7 @@ CbmRichProtoAnalysis::CbmRichProtoAnalysis()
 	fRichHitInfos(NULL),
 	fRunTitle(""),
 	fOutputDir(""),
+        fOutHistoFile(""),
 	fHM(NULL),
 	numOfPairs(0),
 	numOfSingleEdges(0),

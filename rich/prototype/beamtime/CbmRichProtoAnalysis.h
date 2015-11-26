@@ -12,7 +12,7 @@ class CbmRichProtoAnalysis : public FairTask
 {
 public:
 
-	CbmRichProtoAnalysis();
+   CbmRichProtoAnalysis();
    virtual ~CbmRichProtoAnalysis();
 
    virtual InitStatus Init();
@@ -23,6 +23,10 @@ public:
    void SetRunTitle(TString title) { fRunTitle = title; }
    void SetOutputDir(TString dir) {fOutputDir = dir;}
    void SetOutHistoFile(TString filename) {fOutHistoFile = filename;}
+
+   //TODO implement or get rid
+   CbmRichProtoAnalysis(const CbmRichProtoAnalysis&);
+   CbmRichProtoAnalysis operator=(const CbmRichProtoAnalysis&);
 
 private:
 

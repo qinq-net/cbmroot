@@ -49,6 +49,10 @@ public:
 	void SetOutHistoFile(TString filename) {fOutHistoFile = filename;}
 	void SetWlsState(TString state) { fWlsState = state; }
 
+	//TODO implement or get rid
+	CbmRichRingHitsAnalyser(const CbmRichRingHitsAnalyser&);
+	CbmRichRingHitsAnalyser operator=(const CbmRichRingHitsAnalyser&);
+
 private:
 	TClonesArray* fRichHits;			// input
 	TClonesArray* fRichRings;	        // input

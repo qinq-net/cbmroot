@@ -27,6 +27,12 @@ CbmRichRingHitsAnalyser::CbmRichRingHitsAnalyser()
 	  fRichHits(NULL),
 	  fRichRings(NULL),
 	  fRichHitInfos(NULL),
+	  fWlsState(""),
+	  fInputFileBasename(""),
+	  fRingCutsFile(""),
+	  fOutHistoFile(""),
+	  fConditionsMap(),
+	  fRingCondition(),
 	  fApplyRingCcut(kFALSE),
 	  fApplyRingRcut(kFALSE),
 	  fHM(NULL)

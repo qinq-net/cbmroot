@@ -21,6 +21,10 @@ public:
 
    void SetOutHistoFile(TString filename) {fOutHistoFile = filename;}
 
+   //TODO implement or get rid
+   CbmRichEventDebug(const CbmRichEventDebug&);
+   CbmRichEventDebug operator=(const CbmRichEventDebug&);
+
 private:
 
    TClonesArray* fRichHits;        // input
