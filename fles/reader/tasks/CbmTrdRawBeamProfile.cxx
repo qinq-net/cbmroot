@@ -736,12 +736,12 @@ void CbmTrdRawBeamProfile::TimeClustering2015CernSPS()
     cout << "no TimeBufferAll map found" << endl;
     return;
   }  
-  std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator FFMIt = fTimeBufferAll.find(TString("SysCore0_Spadic0"));
+  std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator FFMIt = fTimeBufferAll.find(TString("SysCore1_Spadic0"));
   if (FFMIt == fTimeBufferAll.end()){
     cout << "FFMIt == fTime" << endl;
     return;
   }
-  std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator MSIt  = fTimeBufferAll.find(TString("SysCore0_Spadic1"));
+  std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator MSIt  = fTimeBufferAll.find(TString("SysCore1_Spadic1"));
   if (MSIt == fTimeBufferAll.end()){
     cout << "MSIt == fTimeBufferAll.end()" << endl;
     return;
