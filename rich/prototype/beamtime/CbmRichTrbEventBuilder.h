@@ -12,7 +12,7 @@ class CbmRichTrbEventBuilder : public FairTask
 {
 public:
 
-	CbmRichTrbEventBuilder();
+   CbmRichTrbEventBuilder();
    virtual ~CbmRichTrbEventBuilder();
 
    virtual InitStatus Init();
@@ -26,6 +26,10 @@ public:
    void SetDrawHist(Bool_t value) { fDrawHist = value; }
    void SetWlsState(TString state) { fWlsState = state; }
    //void FitGaussAndDrawResults(TH1* h);
+
+   //TODO implement or get rid
+   CbmRichTrbEventBuilder(const CbmRichTrbEventBuilder&);
+   CbmRichTrbEventBuilder operator=(const CbmRichTrbEventBuilder&);
 
 private:
 
