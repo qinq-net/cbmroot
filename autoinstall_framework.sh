@@ -20,7 +20,7 @@
 #-------------------------------------
 
 # put your desired variants here:
-export FSOFTDEV=jul15p2
+export FSOFTDEV=jul15p3
 export FROOTDEV=v-15.07a
 
 export FSOFTPRO=jul15p2  # mar15p2
