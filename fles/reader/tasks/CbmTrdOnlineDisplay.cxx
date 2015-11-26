@@ -23,6 +23,7 @@ CbmTrdOnlineDisplay::CbmTrdOnlineDisplay()
   :FairTask("CbmTrdOnlineDisplay"),
    fSpadic1(),
    fSpadic1a(),
+   fSpadicTime(),
    fUpdateInterval(10),
    fEventCounter(0)
 {
