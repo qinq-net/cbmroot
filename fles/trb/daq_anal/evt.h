@@ -65,12 +65,12 @@ static int Evt_dataError(const void *my)
 
 void Evt_setId(void *my, uint32_t id);
 
-static int Evt_setDataError(void *my)
+static void Evt_setDataError(void *my)
 {
 	Evt_setId(my, Evt_id(my) | 0x80000000UL);
 }
 
-static int Evt_clrDataError(void *my)
+static void Evt_clrDataError(void *my)
 {
 	Evt_setId(my, Evt_id(my) & ~0x80000000UL);
 }

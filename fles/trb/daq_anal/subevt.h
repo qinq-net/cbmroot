@@ -102,12 +102,12 @@ static void SubEvt_setId(void *my, uint32_t id)
 	SubEvt_setHdrValue(my, SubEvtIdx_id, id);
 }
 
-static int SubEvt_setDataError(void *my)
+static void SubEvt_setDataError(void *my)
 {
 	SubEvt_setId(my, SubEvt_id(my) | 0x80000000UL);
 }
 
-static int SubEvt_clrDataError(void *my)
+static void SubEvt_clrDataError(void *my)
 {
 	SubEvt_setId(my, SubEvt_id(my) & ~0x80000000UL);
 }
