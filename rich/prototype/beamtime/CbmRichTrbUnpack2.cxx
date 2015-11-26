@@ -23,6 +23,7 @@
 
 CbmRichTrbUnpack2::CbmRichTrbUnpack2() :
       FairSource(),
+      fOutHistoFile(),
       fHldFiles(),
       fNofRawEvents(0),
       fMaxNofRawEvents(2000000000),
@@ -41,9 +42,12 @@ CbmRichTrbUnpack2::CbmRichTrbUnpack2() :
       fMainSyncTime(0.),
       fCorr(0.),
       fMainSyncDefined(kFALSE),
+      fMessageBuffer(),
+      fEventStack(),
 
       inGarbCollMode(kFALSE),
       inFinalCleanup(kFALSE),
+      fCurNeventsInBuf(),
 
       fTrbRawHits(new TClonesArray("CbmTrbRawMessage", 10))
 {
@@ -51,6 +55,7 @@ CbmRichTrbUnpack2::CbmRichTrbUnpack2() :
 
 CbmRichTrbUnpack2::CbmRichTrbUnpack2(TString hldFileName) :
       FairSource(),
+      fOutHistoFile(),
       fHldFiles(),
       fNofRawEvents(0),
       fMaxNofRawEvents(2000000000),
@@ -69,9 +74,12 @@ CbmRichTrbUnpack2::CbmRichTrbUnpack2(TString hldFileName) :
       fMainSyncTime(0.),
       fCorr(0.),
       fMainSyncDefined(kFALSE),
+      fMessageBuffer(),
+      fEventStack(),
 
       inGarbCollMode(kFALSE),
       inFinalCleanup(kFALSE),
+      fCurNeventsInBuf(),
 
       fTrbRawHits(new TClonesArray("CbmTrbRawMessage", 10))
 {

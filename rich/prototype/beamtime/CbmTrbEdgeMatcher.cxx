@@ -21,10 +21,13 @@ CbmTrbEdgeMatcher::CbmTrbEdgeMatcher()
   : FairTask(),
     fTrbRawHits(NULL), 
     fRichTrbDigi(new TClonesArray("CbmRichTrbDigi", 10)),
+    tdcIdToStoredEdges(),
+    fTrBuf(),
+    fMultiCounter(0),
     fDrawHist(kFALSE),
     fhTtimeMinusLtime(),
     fhTtimeMinusLtimeCH(),
-    fMultiCounter(0)
+    fhMultiDist()
 {
 }
 
