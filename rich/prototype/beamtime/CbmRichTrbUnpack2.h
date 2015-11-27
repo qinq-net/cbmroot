@@ -19,6 +19,7 @@ class CbmTrbIterator;
 
 struct eventDesc
 {
+        eventDesc(): begin(), end(), firstTimestamp(-111.), ready(kFALSE) {}	
 	std::multimap<Double_t, CbmTrbRawMessage*>::iterator begin;
 	std::multimap<Double_t, CbmTrbRawMessage*>::iterator end;
 	Double_t firstTimestamp;
