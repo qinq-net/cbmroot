@@ -20,11 +20,15 @@
 #-------------------------------------
 
 # put your desired variants here:
-export FSOFTDEV=jul15p3
+export FSOFTDEV=jul15p3  # nov15p1
 export FROOTDEV=v-15.11
 
-export FSOFTPRO=jul15p2  # mar15p2
-export FROOTPRO=v-15.07a # v-15.03a
+export FSOFTPRO=jul15p3
+export FROOTPRO=v-15.07a 
+
+# former verions
+# fairsoft: mar15p2
+# fairroot: v-15.03a
 
 export NUMOFCPU=`cat /proc/cpuinfo | grep processor | wc -l`
 export CBMSRCDIR=`pwd`
