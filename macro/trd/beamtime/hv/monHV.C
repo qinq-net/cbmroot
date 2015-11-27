@@ -12,14 +12,16 @@
 
 Int_t firstDay(0), firstHour(0), firstMin(0), firstSec(0), firstMsec(0);
 
+//martin: if set true no questions form user required
+Bool_t kohnmode=kFALSE;
 
-Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t, TH1I*>&mCurrent, std::map<Int_t, TGraph*>&mTrendingI, std::map<Int_t, TGraph*>&mTrendingU, TH1I* hTime, TH1I* hChID, TH1I* hDeltaT, TGraph* gTime, TH1I* hCurrent, TH1I* hVoltage, Bool_t debug){
+Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t, TH1I*>&mCurrent, std::map<Int_t, TGraph*>&mTrendingI, std::map<Int_t, TGraph*>&mTrendingU, TH1I* hTime, TH1I* hChID, TH1I* hDeltaT, TGraph* gTime, TGraph* gCurrentSum1, TH1I* hCurrent, TH1I* hVoltage, Bool_t debug){
   Bool_t fileStat;
   ifstream in;
   in.open(inFile);
   Int_t year(-1), month(-1), day(-1), hour(-1), min(-1), sec(-1), msec(-1), chID(-1), deltaT(0), lineLength(0), fileTime(0);
   Int_t lastDay(-1), lastHour(-1), lastMin(-1), lastSec(-1), lastMsec(-1);
-  Float_t voltage(0.0), current(0.0);
+  Float_t voltage(0.0), current(0.0), currentSum1(0.0);
   Int_t lineColor(1), lineStyle(1);
   TString line("");
   TString sTime(""), sChID(""), sVoltage(""), sCurrent(""), name("");
@@ -42,6 +44,8 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
       line.ReplaceAll("= Opaque: Float: ",""); 
 
       if (line.BeginsWith("201")){
+	//gCurrentSum1->SetPoint((gCurrentSum1->GetN()),fileTime,currentSum1); // write summed current to plot and
+	//currentSum1 = 0.; // reset currentSum in a new time bin
 	sTime = line;
 	year  = TString(line( 0,4)).Atoi(); 
 	month = TString(line( 5,2)).Atoi();
@@ -58,11 +62,11 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	  firstMsec = msec;
 	}
 	/*
-	if (lastDay != -1)
+	  if (lastDay != -1)
 	  if (lastDay <= day && lastHour <= hour && lastMin <= min && lastSec <= sec && lastMsec <= msec){
 	  }else{
-	    cout << "ERROR: wrong time order in file"<< endl;
-	    return false;
+	  cout << "ERROR: wrong time order in file"<< endl;
+	  return false;
 	  }
 	*/
 	if (debug)
@@ -86,24 +90,37 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	if (debug)
 	  cout << "A: ";
 	lineLength = (Int_t)line.Length();
-	sCurrent = line(4,lineLength-4);
-	current = sCurrent.Atof();
-	hCurrent->Fill(current);
 	sChID = line(0,3);
 	chID = sChID.Atoi();
+	// continue for lv channels
+	if (chID ==312){
+	  gCurrentSum1->SetPoint((gCurrentSum1->GetN()),fileTime,currentSum1); // write summed current to plot and
+	  currentSum1 = 0.; // reset currentSum in a new time bin
+	}
+	if (chID < 200) continue;
+	// continue for empty hv channels
+	if (chID <= 215 && !(chID < 201)) continue;
+	if (chID <= 315 && !(chID < 313)) continue;
+	if (chID <= 407 && !(chID < 401)) continue;
+	if (chID <= 515 && !(chID < 501)) continue;
 	hChID->Fill(chID);
+	sCurrent = line(4,lineLength-4);
+	current = sCurrent.Atof();
+	// add to currentSum1 if from frankfurt chamber
+	if(chID >=300 && chID < 313) currentSum1 += current;
+	hCurrent->Fill(current);
 	lineStyle = (Int_t)(chID/100)+1;
-	lineColor = chID - 100*(lineStyle-1);
+	lineColor = (chID%100)+3;
+	if(lineColor >= 5) lineColor++;
 	if (mCurrent.find(chID) == mCurrent.end()){
 	  name.Form("hCurrent%03i",chID);
 	  mCurrent[chID] = new TH1I(name,name,100001,-1,1);
 	  mCurrent[chID]->SetXTitle("I (A)");
-	  mCurrent[chID]->SetLineStyle(lineStyle);
-	  mCurrent[chID]->SetLineColor(lineColor);
+	  //	  mCurrent[chID]->SetLineStyle(lineStyle);
+	  //	  mCurrent[chID]->SetLineColor(lineColor);
 	  name.Form("hDeltaT_Current%03i",chID);
 	  mTrendingI[chID] = new TGraph();
 	  mTrendingI[chID]->SetTitle(name);
-	  mTrendingI[chID]->GetXaxis()->SetTitle("Time (ms)");
 	  mTrendingI[chID]->GetYaxis()->SetTitle("I (A)");
 	  mTrendingI[chID]->SetLineStyle(lineStyle);
 	  mTrendingI[chID]->SetLineColor(lineColor);
@@ -118,23 +135,30 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	lineLength = (Int_t)line.Length();
 	sVoltage = line(4,lineLength-4);
 	//sCurrent = "";
-	voltage = sVoltage.Atof();
-	hVoltage->Fill(voltage);
 	sChID = line(0,3);
 	chID = sChID.Atoi();  
+	// continue for lv channels
+	if (chID < 200) continue;
+	// continue for empty hv channels
+	if (chID <= 215 && !(chID < 201)) continue;
+	if (chID <= 315 && !(chID < 313)) continue;
+	if (chID <= 407 && !(chID < 401)) continue;
+	if (chID <= 515 && !(chID < 501)) continue;
 	hChID->Fill(chID);
+	voltage = sVoltage.Atof();
+	hVoltage->Fill(voltage);
 	lineStyle = (Int_t)(chID/100)+1;
-	lineColor = chID - 100*(lineStyle-1);  
+	lineColor = (chID%100)+1;
+	if(lineColor >= 5) lineColor++;
 	if (mVoltage.find(chID) == mVoltage.end()){
 	  name.Form("hVoltage%03i",chID);
 	  mVoltage[chID] = new TH1I(name,name,200001,-1,2000);
 	  mVoltage[chID]->SetXTitle("U (V)");
-	  mVoltage[chID]->SetLineStyle(lineStyle);
-	  mVoltage[chID]->SetLineColor(lineColor);
+	  //	  mVoltage[chID]->SetLineStyle(lineStyle);
+	  //	  mVoltage[chID]->SetLineColor(lineColor);
 	  name.Form("hDeltaT_Voltage%03i",chID);
 	  mTrendingU[chID] = new TGraph();
 	  mTrendingU[chID]->SetTitle(name);
-	  mTrendingU[chID]->GetXaxis()->SetTitle("Time (ms)");
 	  mTrendingU[chID]->GetYaxis()->SetTitle("U (V)");
 	  mTrendingU[chID]->SetLineStyle(lineStyle);
 	  mTrendingU[chID]->SetLineColor(lineColor);
@@ -166,12 +190,12 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 }
 
 
-void monHV(TString configFile="filename.config")
+void monHV(TString configFile="/data2/cern_nov2015/hv/filename.config")
 {
   TDatime da(2015,10,30,12,00,00);
   gStyle->SetTimeOffset(da.Convert());
   Bool_t debug(false), diffFile(false), nextFile(true);
-  TString inFile("hv.log");
+  TString inFile("exampleHV.txt");
   TString configline("");
 
   char cname[200];
@@ -186,12 +210,13 @@ void monHV(TString configFile="filename.config")
     configline = cname;
     inFile = configline;
   }
-
+  if (!kohnmode) {
   cout << "File " << inFile << " will be read. Deviating wishes? (1 for yes, 0 for no): ";
   cin >> diffFile;
-  if (diffFile){
+   if (diffFile){
     cout << "File name?:   ";
     cin >> inFile;
+   }
   }
 
   TH1I* hTime = new TH1I("hTime","hTime",60000,0,60000);
@@ -201,25 +226,30 @@ void monHV(TString configFile="filename.config")
   hDeltaT->SetXTitle("#Deltat (ms)");
   TGraph* gTime = new TGraph();
   gTime->SetTitle("ReadoutTimes");
-  TH1I* hCurrent = new TH1I("hCurrent","hCurrent",100001,-1,1);
+  TH1I* hCurrent = new TH1I("hCurrent","hCurrent",100001,-1E-7,8E-6);
   hCurrent->SetXTitle("I (A)");
   TH1I* hVoltage = new TH1I("hVoltage","hVoltage",200001,-1,2000);
   hVoltage->SetXTitle("U (V)");
+  TGraph* gCurrentSum1 = new TGraph();
   std::map<Int_t, TH1I*> mVoltage;
   std::map<Int_t, TH1I*> mCurrent;
   std::map<Int_t, TGraph*> mTrendingI;
   std::map<Int_t, TGraph*> mTrendingU;
 
-  while (nextFile) {
-    readFile(inFile, mVoltage, mCurrent, mTrendingI, mTrendingU, hTime, hChID, hDeltaT, gTime, hCurrent, hVoltage, debug);
+  if(kohnmode){
+    readFile(inFile, mVoltage, mCurrent, mTrendingI, mTrendingU, hTime, hChID, hDeltaT, gTime, gCurrentSum1, hCurrent, hVoltage, debug);}
+    else{
+    while (nextFile) {
+      readFile(inFile, mVoltage, mCurrent, mTrendingI, mTrendingU, hTime, hChID, hDeltaT, gTime, gCurrentSum1, hCurrent, hVoltage, debug);
    
-    cout << "Read further file? (1 for yes, 0 for no): ";
-    cin >> nextFile;
+      cout << "Read further file? (1 for yes, 0 for no): ";
+      cin >> nextFile;
     if (nextFile){
       cout << "File name?:   ";
       cin >> inFile;
     }
-  }
+    }}
+    //}
   TCanvas *c1 = new TCanvas("c1","CurrentDist",800,600);
   c1->SetLogy(1);
   hCurrent->DrawCopy();
@@ -246,15 +276,29 @@ void monHV(TString configFile="filename.config")
   TCanvas *c6 = new TCanvas("c6","CurrentTrend",800,600);
   c6->SetLogy(0);
   TMultiGraph *multiI = new TMultiGraph();
+  gCurrentSum1->SetLineColor(kRed);
+  multiI->Add(gCurrentSum1);
   for (std::map<Int_t, TGraph*>::iterator it=mTrendingI.begin(); it!=mTrendingI.end();it++){
-    multiI->Add(it->second);
+    //    if (it->first == 304 || it->first == 405)
+    //    switch (it->first)
+    //      {
+    //      case 304: case 404: case 405:
+	//      cout << it->first << "blub" << endl;
+    //    if(it->second > 100E-9)    {
+      multiI->Add(it->second);
+      //  }
+      //      break;
+      //    default:
+      //    continue;
+      //      }
   }
   multiI->Draw("AL");
   multiI->GetYaxis()->SetRangeUser(0.,5E-7);
   multiI->GetXaxis()->SetTitle("Time (ms)");
   multiI->GetYaxis()->SetTitle("I (A)");
   //  c6->Update(); // why doesnt this update the titles and range properly?
-  multiI->Draw("AL");
+  //multiI->Draw("AL");
+  c6->BuildLegend();
   TCanvas *c7 = new TCanvas("c7","VoltageTrend",800,600);
   c7->SetLogy(0);
   TMultiGraph *multiU = new TMultiGraph();
@@ -265,15 +309,16 @@ void monHV(TString configFile="filename.config")
   multiU->GetXaxis()->SetTitle("Time (ms)");
   multiU->GetYaxis()->SetTitle("U (V)");
   c7->Update();
+  c7->BuildLegend();
 
   TString outFile = inFile;
   outFile.ReplaceAll(".txt",".png");
   outFile.ReplaceAll(".log",".png");
-  c1->SaveAs(outFile.ReplaceAll(".png","-CurrentDist.png"));
-  c2->SaveAs(outFile.ReplaceAll("-CurrentDist.png","-VoltageDist.png"));
-  c3->SaveAs(outFile.ReplaceAll("-VoltageDist.png","-DeltaTDist.png"));
-  c4->SaveAs(outFile.ReplaceAll("-DeltaTDist.png","-DeltaTTrend.png"));
-  c5->SaveAs(outFile.ReplaceAll("-DeltaTTrend.png","-chIDDist.png"));
-  c6->SaveAs(outFile.ReplaceAll("-chIDDist.png","-CurrentTrend.png"));
-  c7->SaveAs(outFile.ReplaceAll("-CurrentTrend.png","-VoltageTrend.png"));
+  //  c1->SaveAs(outFile.ReplaceAll(".png","-CurrentDist.png"));
+  //  c2->SaveAs(outFile.ReplaceAll("-CurrentDist.png","-VoltageDist.png"));
+  //  c3->SaveAs(outFile.ReplaceAll("-VoltageDist.png","-DeltaTDist.png"));
+  //  c4->SaveAs(outFile.ReplaceAll("-DeltaTDist.png","-DeltaTTrend.png"));
+  //  c5->SaveAs(outFile.ReplaceAll("-DeltaTTrend.png","-chIDDist.png"));
+  //  c6->SaveAs(outFile.ReplaceAll("-chIDDist.png","-CurrentTrend.png"));
+  //  c7->SaveAs(outFile.ReplaceAll("-CurrentTrend.png","-VoltageTrend.png"));
   }
