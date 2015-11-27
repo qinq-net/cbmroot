@@ -20,9 +20,11 @@
 #-------------------------------------
 
 # put your desired variants here:
+#export FSOFTDEV=jul15p2  # nov15p1
 export FSOFTDEV=jul15p3  # nov15p1
 export FROOTDEV=v-15.11
 
+#export FSOFTPRO=jul15p2
 export FSOFTPRO=jul15p3
 export FROOTPRO=v-15.07a 
 
@@ -135,8 +137,8 @@ if [ $SETUP_FAIRROOT -ge 1 ]; then
   cd $CBMSRCDIR
 
   cd ..
-  git clone https://github.com/FairRootGroup/FairRoot.git fairroot_src_$FROOTVER
-  cd fairroot_src_$FROOTVER
+  git clone https://github.com/FairRootGroup/FairRoot.git fairroot_src_$FROOTVER-fairsoft_$FSOFTVER
+  cd fairroot_src_$FROOTVER-fairsoft_$FSOFTVER
   git tag -l
   git checkout -b $FROOTVER $FROOTVER
   mkdir build
