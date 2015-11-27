@@ -19,7 +19,7 @@
 
 class PairAnalysisPairLegCuts : public AnalysisCuts {
 public:
-  enum CutType { kBothLegs=0, kAnyLeg, kMixLegs };
+  enum CutType { kBothLegs=0, kAnyLeg, kMixLegs, kOneLeg };
 
   PairAnalysisPairLegCuts();
   PairAnalysisPairLegCuts(const char* name, const char* title);

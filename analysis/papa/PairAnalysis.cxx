@@ -1161,7 +1161,6 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
   candidate->SetKFUsage(fUseKF);
 
   UInt_t selectedMask=(1<<fPairPreFilter.GetCuts()->GetEntries())-1;
-  //  UInt_t selectedMaskPair=(1<<fPairFilter.GetCuts()->GetEntries())-1;
 
   Int_t nRejPasses = 1; //for fPreFilterUnlikeOnly and no set flag 
   if (fPreFilterAllSigns) nRejPasses = 3;
@@ -1216,7 +1215,7 @@ void PairAnalysis::PairPreFilter(Int_t arr1, Int_t arr2, TObjArray &arrTracks1, 
 	UInt_t cutMask=fPairPreFilter.IsSelected(candidate);
 
 	// apply cut
-	if (cutMask==selectedMask) continue;
+	if (cutMask!=selectedMask) continue;
 
 	// check for test particles
 	if( track1==t1 || track1==t2 || track2==t1 || track2==t2 ) {

@@ -718,7 +718,8 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   values[kImpactParZ]   = TMath::Abs(values[kZv]-values[kZvPrim]);
 
   // special
-  values[kTrackLength] = track->GetGlobalTrack()->GetLength(); // cm
+  ///  printf("track length %f \n",values[kTrackLength]);
+  //  values[kTrackLength] = track->GetGlobalTrack()->GetLength(); // cm
   values[kInclAngle] = TMath::ASin(track->Pt()/track->P());
   Fill(track->GetTofHit(),      values);
   values[kTOFHits]   = (track->GetTofHit() ? 1. : 0.);

@@ -17,7 +17,7 @@ where mycut has to inherit from AnalysisCuts
 
 #include <TList.h>
 
-#include "PairAnalysisPair.h"
+#include "PairAnalysisPairLV.h"
 #include "PairAnalysisTrack.h"
 
 #include "PairAnalysisPairLegCuts.h"
@@ -74,19 +74,26 @@ Bool_t PairAnalysisPairLegCuts::IsSelected(TObject* track)
     SetSelected(isLeg1selected);
     return isLeg1selected;
   }
+
   Bool_t isLeg2selected=(fFilterLeg2.IsSelected(leg2)==selectedMaskLeg2);
-  
-  Bool_t isLeg1selectedMirror=(fFilterLeg1.IsSelected(leg2)==selectedMaskLeg1);
-  Bool_t isLeg2selectedMirror=(fFilterLeg2.IsSelected(leg1)==selectedMaskLeg2);
-  
   Bool_t isSelected=isLeg1selected&&isLeg2selected;
-  if (fCutType==kAnyLeg)
+  if (fCutType==kAnyLeg) {
     isSelected=isLeg1selected||isLeg2selected;
-  
-  if (fCutType==kMixLegs)
+    SetSelected(isSelected);
+    return isSelected;
+  }
+  if (fCutType==kOneLeg) {
+    isSelected=(isLeg1selected!=isLeg2selected);
+    SetSelected(isSelected);
+    return isSelected;
+  }
+
+  if (fCutType==kMixLegs) {
+    Bool_t isLeg1selectedMirror=(fFilterLeg1.IsSelected(leg2)==selectedMaskLeg1);
+    Bool_t isLeg2selectedMirror=(fFilterLeg2.IsSelected(leg1)==selectedMaskLeg2);
     isSelected=(isLeg1selected&&isLeg2selected)||(isLeg1selectedMirror&&isLeg2selectedMirror);
-  
-  SetSelected(isSelected);
+    SetSelected(isSelected);
+  }
   return isSelected;
 }
 
