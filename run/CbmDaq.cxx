@@ -4,6 +4,7 @@
  **/
 
 
+#include <cassert>
 #include <iomanip>
 
 #include "FairEventHeader.h"
@@ -32,7 +33,9 @@ CbmDaq::CbmDaq(Double_t timeSliceSize) : FairTask("Daq"),
                    fTimeSliceLast(-1.),
                    fTimeSlice(NULL),
                    fBuffer(NULL),
-                   fEventList () {
+                   fEventList(),
+                   fEventsCurrent(NULL),
+                   fEventRange(){
 }
 // ===========================================================================
 
@@ -49,26 +52,59 @@ CbmDaq::~CbmDaq() {
 void CbmDaq::CloseTimeSlice() {
 
   // --- Time slice status
-	if ( fTimeSlice->IsEmpty() ) {
-	  LOG(DEBUG) << GetName() << ": closing " << fTimeSlice->ToString()
-	  		       << FairLogger::endl;
-	  fNofTimeSlicesEmpty++;
-	} //? empty time slice
-	else
-		LOG(INFO) << GetName() << ": closing " << fTimeSlice->ToString()
-  		       << FairLogger::endl;
+  if ( fTimeSlice->IsEmpty() ) {
+    LOG(DEBUG) << GetName() << ": closing " << fTimeSlice->ToString()
+                  << FairLogger::endl;
+    fNofTimeSlicesEmpty++;
+  } //? empty time slice
+  else
+  LOG(INFO) << GetName() << ": closing " << fTimeSlice->ToString()
+               << FairLogger::endl;
 
   // --- Fill current time slice into tree (if required)
-  if ( fStoreEmptySlices || ( ! fTimeSlice->IsEmpty()) )
-  	FairRootManager::Instance()->Fill();
+  if ( fStoreEmptySlices || (!fTimeSlice->IsEmpty()) ) {
+    Int_t nMCEvents = CopyEventList();
+    LOG(DEBUG) << GetName() << ": " << nMCEvents << " MC events for time slice"
+        << FairLogger::endl;
+    FairRootManager::Instance()->Fill();
+  }
   fTimeSliceLast = fTimeSlice->GetEndTime();
   fNofTimeSlices++;
-  if ( gLogger->IsLogNeeded(DEBUG) ) fTimeSlice->SelfTest();
+  if ( gLogger->IsLogNeeded(DEBUG) ) {
+    fTimeSlice->SelfTest();
+    PrintCurrentEventRange();
+  }
+
 
   // --- Reset time slice with new time interval
   fCurrentStartTime += fDuration;
   fTimeSlice->Reset(fCurrentStartTime, fDuration);
+  fEventRange.clear();
+  fEventsCurrent->Clear();
 
+}
+// ===========================================================================
+
+
+
+// =====   Copy event list to output branch   ================================
+Int_t CbmDaq::CopyEventList() {
+
+  Int_t nMCEvents = 0;
+
+  map<Int_t, pair<Int_t, Int_t>>::iterator fileIt;
+  for (fileIt = fEventRange.begin(); fileIt != fEventRange.end(); fileIt++) {
+    Int_t file = fileIt->first;
+    Int_t firstEvent = fileIt->second.first;
+    Int_t lastEvent  = fileIt->second.second;
+    for (Int_t event = firstEvent; event <= lastEvent; event++) {
+      Double_t time = fEventList.GetEventTime(event, file);
+      fEventsCurrent->Insert(event, file, time);
+      nMCEvents++;
+    }  //# events
+  } //# files
+
+  return nMCEvents;
 }
 // ===========================================================================
 
@@ -136,34 +172,36 @@ void CbmDaq::Exec(Option_t*) {
 // =====   Fill current time slice with data from buffers   ==================
 Int_t CbmDaq::FillTimeSlice() {
 
-	// --- Digi counter
-	Int_t nDigis = 0;
+  // --- Digi counter
+  Int_t nDigis = 0;
 
   // --- Loop over all detector systems
   for (Int_t iDet = kREF; iDet < kNOFDETS; iDet++) {
 
     // --- Loop over digis from DaqBuffer and fill them into current time slice
     CbmDigi* digi = fBuffer->GetNextData(iDet, fTimeSlice->GetEndTime());
-    while ( digi ) {
+    while (digi) {
 
-    	LOG(DEBUG2) << fName << ": Inserting digi with detector ID "
-                  << digi->GetAddress() << " at time " << digi->GetTime()
-                  << " into timeslice [" << fixed << setprecision(3)
-                  << fTimeSlice->GetStartTime() << ", "
-                  << fTimeSlice->GetEndTime() << ") ns"
-                  << FairLogger::endl;
+      LOG(DEBUG2) << fName << ": Inserting digi with detector ID "
+		     << digi->GetAddress() << " at time " << digi->GetTime()
+		     << " into time slice [" << fixed << setprecision(3)
+		     << fTimeSlice->GetStartTime() << ", "
+		     << fTimeSlice->GetEndTime() << ") ns" << FairLogger::endl;
       fTimeSlice->InsertData(digi);
       nDigis++;
-      if ( ! fNofDigis ) fTimeDigiFirst = digi->GetTime();
+      if (!fNofDigis) fTimeDigiFirst = digi->GetTime();
       fTimeDigiLast = TMath::Max(fTimeDigiLast, digi->GetTime());
-      delete digi;
+      RegisterEvent(digi);
+
+      // --- Store event and input number
+       delete digi;
       digi = fBuffer->GetNextData(iDet, fTimeSlice->GetEndTime());
     }  //? Valid digi from buffer
 
   }  // Detector loop
 
   LOG(DEBUG) << GetName() << ": filled " << nDigis << " digis into "
-  		       << fTimeSlice->ToString() << FairLogger::endl;
+		<< fTimeSlice->ToString() << FairLogger::endl;
   fNofDigis += nDigis;
 
   return nDigis;
@@ -233,11 +271,17 @@ InitStatus CbmDaq::Init() {
   fCurrentStartTime = 0.;
   fTimeSliceFirst = fCurrentStartTime;
 
-  // Register output array TimeSlice
+  // Register output branch TimeSlice
   fTimeSlice = new CbmTimeSlice(fCurrentStartTime, fDuration);
   fTimeSliceFirst = fTimeSlice->GetStartTime();
   FairRootManager::Instance()->Register("TimeSlice.",
       "DAQ", fTimeSlice, kTRUE);
+
+  // Register output branch EventList
+  fEventsCurrent = new CbmMCEventList();
+  FairRootManager::Instance()->Register("MCEventList.", "Event list",
+      fEventsCurrent, kTRUE);
+
 
   // Get Daq Buffer
   fBuffer = CbmDaqBuffer::Instance();
@@ -252,6 +296,62 @@ InitStatus CbmDaq::Init() {
 }
 // ===========================================================================
 
+
+
+// =====   Print current event range   =======================================
+void CbmDaq::PrintCurrentEventRange() const {
+
+  LOG(INFO) << GetName() << ": current MC event range: ";
+  if ( fEventRange.empty() ) {
+    LOG(INFO) << "empty" << FairLogger::endl;
+    return;
+  }
+  map<Int_t, pair<Int_t, Int_t>>::const_iterator it = fEventRange.begin();
+  while ( it != fEventRange.end() ) {
+    Int_t file = it->first;
+    Int_t firstEvent = it->second.first;
+    Int_t lastEvent = it->second.second;
+    LOG(INFO) << "\n          Input file " << file << ", first event "
+        << firstEvent << ", last event " << lastEvent;
+    it++;
+  }  //# inputs
+  LOG(INFO) << FairLogger::endl;
+
+}
+// ===========================================================================
+
+
+
+// =====   Register MC event   ===============================================
+void CbmDaq::RegisterEvent(CbmDigi* digi) {
+
+  assert(digi);
+  CbmMatch* match = digi->GetMatch();
+  assert(match);
+  for (Int_t iLink = 0; iLink < match->GetNofLinks(); iLink++) {
+
+    Int_t file = match->GetLink(iLink).GetFile();
+    Int_t event = match->GetLink(iLink).GetEntry();
+    if (fEventRange.find(file) == fEventRange.end()) {
+      fEventRange[file] = pair<Int_t, Int_t>(event, event);
+    } //? First entry for this input
+    else {
+      Int_t firstEvent = fEventRange[file].first;
+      Int_t lastEvent  = fEventRange[file].second;
+      if ( event < firstEvent ) {
+        firstEvent = event;
+        fEventRange[file] = pair<Int_t, Int_t>(firstEvent, lastEvent);
+      }
+      if ( event > lastEvent ) {
+        lastEvent = event;
+        fEventRange[file] = pair<Int_t, Int_t>(firstEvent, lastEvent);
+      }
+    } //? Compare with existing input
+
+  } //# links
+
+}
+// ===========================================================================
 
 ClassImp(CbmDaq)
 

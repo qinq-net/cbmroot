@@ -9,7 +9,7 @@
 #include <map>
 #include <utility>
 
-#include <TObject.h>
+#include <TNamed.h>
 
 using std::map;
 using std::pair;
@@ -23,7 +23,7 @@ using std::pair;
  ** @author Volker Friese <v.friese@gsi.de>
  ** @date 24.11.2015
  **/
-class CbmMCEventList: public TObject
+class CbmMCEventList: public TNamed
 {
 
   public:
@@ -37,6 +37,7 @@ class CbmMCEventList: public TObject
     /** Delete all event entries **/
     virtual void Clear(Option_t* opt = "") {
       fEvents.clear();
+      fNofEvents = 0;
     }
 
     /** Event start time
@@ -50,17 +51,22 @@ class CbmMCEventList: public TObject
       return fEvents[file][event];
     }
 
+    Int_t GetNofEvents() const { return fNofEvents; }
+
+
     /** Insert an event with its start time into the event list
      ** @param event  MC event number
      ** @param file   MC input file number
      ** @param time   MC event start time [ns]
      */
     void Insert(Int_t event, Int_t file, Double_t time) {
+      if ( GetEventTime(event, file) < 0. ) fNofEvents++;
       fEvents[file][event] = time;
     }
 
     /** Screen info **/
     virtual void Print(Option_t* opt = "") const;
+
 
   private:
 
@@ -68,6 +74,8 @@ class CbmMCEventList: public TObject
      ** Input file number -> ( event number -> event time )
      **/
     map<Int_t, map<Int_t, Double_t>> fEvents;
+
+    Int_t fNofEvents;  /// Number of events in list
 
   ClassDef(CbmMCEventList, 1)
     ;

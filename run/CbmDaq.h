@@ -78,7 +78,11 @@ class CbmDaq : public FairTask
     CbmDaqBuffer* fBuffer;
     
     /** MC event list (all events) **/
-    CbmMCEventList fEventList;   //!
+    CbmMCEventList fEventList;      //!  MC event list (all)
+    CbmMCEventList* fEventsCurrent; //! MC events for current time slice
+
+    /** First and last event in current time slice for each input **/
+    map<Int_t, pair<Int_t, Int_t>> fEventRange; //!
 
 
     /** Close the current time slice
@@ -88,10 +92,34 @@ class CbmDaq : public FairTask
     void CloseTimeSlice();
 
 
+    /** Copy the MC events contributing to the current time slice
+     ** to the output array.
+     **
+     ** @value  Number of MC events for this time slice
+     **/
+    Int_t CopyEventList();
+
+
     /** Fill data from the buffer into the current time slice
      ** @return Number if digis filled into the timeslice
      **/
     Int_t FillTimeSlice();
+
+
+    /** Screen log of the range of MC events contributing to the
+     ** current time slice
+     **/
+    void PrintCurrentEventRange() const;
+
+
+    /** Register input and entry number of a MC event contributing data
+     ** to the current time slice.
+     **
+     ** CbmDaq stores the first and last event for each input such that
+     ** it can be copied from the event list after the time slice is
+     ** closed and filled to the tree.
+     **/
+    void RegisterEvent(CbmDigi* digi);
 
 
     /** At end of run: Process the remaining data in the CbmDaqBuffer  **/
