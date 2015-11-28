@@ -59,11 +59,11 @@ const Float_t Wall_Z_ReferenceSmPos = 200; // target distance of setup
 const Int_t NumberOfDifferentCounterTypes = 10;
 const Float_t Glass_X[NumberOfDifferentCounterTypes] = {32.,  52., 15.04, 18.,  2.,   0.2,  30.0, 28.8, 17.4, 25.};
 const Float_t Glass_Y[NumberOfDifferentCounterTypes] = {26.9, 53.,  4.,    4.6, 10.,   0.2, 9.6,   9.6, 2.0, 26.7};
-const Float_t Glass_Z[NumberOfDifferentCounterTypes] = {0.1,   0.1, 0.1,   0.1, 0.01, 0.01, 0.05,  0.05, 0.07, 0.1};
+const Float_t Glass_Z[NumberOfDifferentCounterTypes] = {0.1,   0.1, 0.1,   0.1, 0.01, 0.1, 0.05,  0.05, 0.07, 0.1};
 
 const Float_t GasGap_X[NumberOfDifferentCounterTypes] = {32., 52., 15.04, 18.,   2.,  0.2,  30., 28.8,  17.4, 25.};
 const Float_t GasGap_Y[NumberOfDifferentCounterTypes] = {26.9,53.,  4.,    4.6,  10.,  0.2, 9.6,  9.6,   2.0, 26.7};
-const Float_t GasGap_Z[NumberOfDifferentCounterTypes] = {0.022,0.022,0.022,0.014,2.,  0.01, 0.014,0.014, 0.025, 0.025};
+const Float_t GasGap_Z[NumberOfDifferentCounterTypes] = {0.022,0.022,0.022,0.014,2.,  0.1, 0.014,0.014, 0.025, 0.025};
 
 const Int_t NumberOfGaps[NumberOfDifferentCounterTypes] = {8,8,6,10,1,1,10,8,10,10};
 const Int_t NumberOfReadoutStrips[NumberOfDifferentCounterTypes] = {32,56,16,72,1,16,40,28,8,24};
@@ -86,7 +86,7 @@ const Int_t NofModuleTypes = 10;
 // 7 Buc 2012
 // 8 THU Pad
 // 9 Star 2-counter module 
-const Float_t Module_Size_X[NofModuleTypes] = {120.,35., 5., 50., 30., 5., 50., 60., 29., 100.};
+const Float_t Module_Size_X[NofModuleTypes] = {120.,35., 5., 50., 30., 8., 50., 60., 29., 100.};
 const Float_t Module_Size_Y[NofModuleTypes] = { 74.,18.,20., 49., 16., 5., 30., 40., 33.,  49.};
 const Float_t Module_Over_Y[NofModuleTypes] = { 11.,11., 0.,  4.,  0., 0.,  0.,  0.,  0.,   0.};
 const Float_t Module_Size_Z[NofModuleTypes] = { 10.,10., 5., 10., 10., 1., 15., 20., 10.,  11.};
@@ -155,24 +155,16 @@ const Float_t HDbig_NTypes = 1;
 const Float_t HDbig_Types[HDbig_NTypes]  = {0.};
 const Float_t HDbig_Number[HDbig_NTypes] = {1.}; //debugging, V14c
 
-const Float_t HDsmall_Z_Position=268.5;
-const Float_t HDsmall_First_Y_Position=50.9;  // HD - P2
+const Float_t HDsmall_Z_Position=449.5;
+const Float_t HDsmall_First_Y_Position=67.9;  // HD - P2
 const Float_t HDsmall_X_Offset=0.;
 const Float_t HDsmall_rotate_Z=90.;
 const Float_t HDsmall_NTypes = 1;
 const Float_t HDsmall_Types[HDsmall_NTypes]  = {3.};
 const Float_t HDsmall_Number[HDsmall_NTypes] = {1.}; //debugging, V14b
 
-const Float_t BucRef_Z_Position=341.2;
-const Float_t BucRef_First_Y_Position=0.;
-const Float_t BucRef_X_Offset=-22.;
-const Float_t BucRef_rotate_Z=180.;
-const Float_t BucRef_NTypes = 1;
-const Float_t BucRef_Types[BucRef_NTypes]  = {1.};
-const Float_t BucRef_Number[BucRef_NTypes] = {1.}; //debugging, V14b
-
-const Float_t HDRef_Z_Position=367.5;
-const Float_t HDRef_First_Y_Position=67.0;
+const Float_t HDRef_Z_Position=361.;
+const Float_t HDRef_First_Y_Position=50.0;
 const Float_t HDRef_X_Offset=0.2;
 const Float_t HDRef_rotate_Z=180.;
 const Float_t HDRef_NTypes = 1;
@@ -180,28 +172,37 @@ const Float_t HDRef_Types[HDRef_NTypes]  = {4.}; // this is the SmType!
 const Float_t HDRef_Number[HDRef_NTypes] = {1.}; // evtl. double for split signals 
 
 const Float_t Dia_Z_Position=0.;
+const Float_t Dia_DeltaZ_Position=-4.;
 const Float_t Dia_First_Y_Position=0.;
-const Float_t Dia_X_Offset=0.;
+const Float_t Dia_X_Offset=2.;
 const Float_t Dia_rotate_Z=0.;
 const Float_t Dia_NTypes = 3;
 const Float_t Dia_Types[Dia_NTypes]  = {5.,5.,5.};
 const Float_t Dia_Number[Dia_NTypes] = {1.,1.,1.};
 
-const Float_t Buc2012_Z_Position=320.;
-const Float_t Buc2012_First_Y_Position=0.;
+const Float_t BucRef_Z_Position=441.2;
+const Float_t BucRef_First_Y_Position=-20.;
+const Float_t BucRef_X_Offset=-22.;
+const Float_t BucRef_rotate_Z=180.;
+const Float_t BucRef_NTypes = 1;
+const Float_t BucRef_Types[BucRef_NTypes]  = {1.};
+const Float_t BucRef_Number[BucRef_NTypes] = {1.}; //debugging, V14b
+
+const Float_t Buc2012_Z_Position=420.;
+const Float_t Buc2012_First_Y_Position=-20.;
 const Float_t Buc2012_X_Offset=0.; 
 const Float_t Buc2012_rotate_Z=0.;
 const Float_t Buc2012_NTypes = 1;
 const Float_t Buc2012_Types[Buc2012_NTypes]  = {7.};
-const Float_t Buc2012_Number[Buc2012_NTypes] = {4.};
+const Float_t Buc2012_Number[Buc2012_NTypes] = {1.};
 
-const Float_t Buc2015_Z_Position=280.;
-const Float_t Buc2015_First_Y_Position=0.;
+const Float_t Buc2015_Z_Position=380.;
+const Float_t Buc2015_First_Y_Position=-15.;
 const Float_t Buc2015_X_Offset=0.; 
 const Float_t Buc2015_rotate_Z=0.;
 const Float_t Buc2015_NTypes = 1;
 const Float_t Buc2015_Types[Buc2015_NTypes]  = {6.};
-const Float_t Buc2015_Number[Buc2015_NTypes] = {2.};
+const Float_t Buc2015_Number[Buc2015_NTypes] = {1.};
 
 const Float_t USTC_Z_Position=332.4.4;
 const Float_t USTC_First_Y_Position=61.0;
@@ -221,8 +222,8 @@ const Float_t THU_Number[THU_NTypes] = {1.};
 
 const Float_t Star2_First_Y_Position=57.0;  // 
 const Float_t Star2_Delta_Y_Position=5.0;   // 
-const Float_t Star2_First_Z_Position=300.;
-const Float_t Star2_Delta_Z_Position=20.;
+const Float_t Star2_First_Z_Position=380.;
+const Float_t Star2_Delta_Z_Position=24.;
 const Float_t Star2_X_Offset=0.;
 const Float_t Star2_rotate_Z=0.;
 const Float_t Star2_NTypes = 1;
@@ -345,17 +346,13 @@ void Create_TOF_Geometry_v15c() {
 
   //  gPole = create_tof_pole();
 
-  ////  position_HDbig(1);
+  position_Dia(3);
   position_HDsmall(1);
-  //  position_pla_modules(4);
   position_HDRef(1);
-  position_Dia(2);
-  //position_USTC(1);
+  position_Star2(1);
   position_BucRef(1);
   position_Buc2015(1);
   position_Buc2012(1);
-  position_THU(1);
-  position_Star2(1);
   
   gGeoMan->CloseGeometry();
   gGeoMan->CheckOverlaps(0.001);
@@ -755,6 +752,9 @@ TGeoVolume* create_new_tof_module(Int_t modType)
     }
     xpos=startxpos + j*dxpos;
     ypos=startypos + j*dypos;
+    if(6 == modType) {  //Buc2015a/b
+      if(j==1) cType++; //second guy is b
+    }
     if(7 == modType) {  //Buc2012
       Int_t zsh[4]={0,2,1,3};
       xpos = startxpos+Float_t((Int_t)j/2)*dxpos;
@@ -1225,11 +1225,12 @@ void position_Dia(Int_t modNType)
  Float_t yPos=Dia_First_Y_Position;
  Int_t ii=0; 
  Float_t xPos  = Dia_X_Offset;
- Float_t zPos  = Dia_Z_Position;
 
  Int_t modNum = 0;
  for (Int_t j=0; j<modNType; j++){
   Int_t modType= Dia_Types[j];
+  Float_t zPos  = Dia_Z_Position + j*Dia_DeltaZ_Position;
+
   for(Int_t i=0; i<Dia_Number[j]; i++) { 
     ii++; 
     module_trans 
