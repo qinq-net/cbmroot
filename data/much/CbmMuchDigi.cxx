@@ -88,7 +88,7 @@ CbmMuchDigi& CbmMuchDigi::operator=(const CbmMuchDigi& rhs)
     CbmDigi::operator=(rhs);
     fData = rhs.fData;
     if (NULL != rhs.fMatch) {
-      std::auto_ptr<CbmMuchDigiMatch> tmp(new CbmMuchDigiMatch(*rhs.fMatch));
+      std::unique_ptr<CbmMuchDigiMatch> tmp(new CbmMuchDigiMatch(*rhs.fMatch));
       delete fMatch;
       fMatch = tmp.release();
     } else {

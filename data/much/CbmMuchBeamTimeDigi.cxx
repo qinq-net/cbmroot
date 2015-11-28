@@ -111,7 +111,7 @@ CbmMuchBeamTimeDigi& CbmMuchBeamTimeDigi::operator=(const CbmMuchBeamTimeDigi& r
     fData = rhs.fData;
     fTime = rhs.fTime;
     if (NULL != rhs.fMatch) {
-      std::auto_ptr<CbmMuchDigiMatch> tmp(new CbmMuchDigiMatch(*rhs.fMatch));
+      std::unique_ptr<CbmMuchDigiMatch> tmp(new CbmMuchDigiMatch(*rhs.fMatch));
       delete fMatch;
       fMatch = tmp.release();
     } else {

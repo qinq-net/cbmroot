@@ -94,7 +94,7 @@ CbmMuchDigiTb& CbmMuchDigiTb::operator=(const CbmMuchDigiTb& rhs)
     fData = rhs.fData;
     fTime = rhs.fTime;
     if (NULL != rhs.fMatch) {
-      std::auto_ptr<CbmMuchDigiMatch> tmp(new CbmMuchDigiMatch(*rhs.fMatch));
+      std::unique_ptr<CbmMuchDigiMatch> tmp(new CbmMuchDigiMatch(*rhs.fMatch));
       delete fMatch;
       fMatch = tmp.release();
     } else {
