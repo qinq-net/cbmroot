@@ -341,6 +341,8 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 	fVector_electronRICH_gt.clear();
 	fVector_electronRICH_gtIndex.clear();
 	fVector_electronRICH_reconstructedPhotons.clear();
+	
+	fVector_reconstructedPhotons_STSonly.clear();
 
 	Int_t nofRICHelectrons = 0;
 
@@ -380,7 +382,7 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 		//cand.chi2Prim = chiPrim[0];
 		const FairTrackParam* vtxTrack = stsTracks[0].GetParamFirst();
 		vtxTrack->Momentum(refittedMomentum);
-		float result_chi = chiPrim[0];
+		//float result_chi = chiPrim[0];
 
 
 
@@ -400,7 +402,7 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 		const FairTrackParam* vtxTrack_electron = stsTracks_electron[0].GetParamFirst();
 		vtxTrack_electron->Momentum(refittedMomentum_electron);
 		float result_chi_electron = chiPrim_electron[0];
-		float result_ndf_electron = stsTracks_electron[0].GetNDF();
+		//float result_ndf_electron = stsTracks_electron[0].GetNDF();
 		Double_t stsHits = stsTrack->GetNofHits();
 		
 		
@@ -725,10 +727,10 @@ void CbmAnaConversionTest::CombinePhotons_STSonly()
 				Int_t gtIndex21 = fVector_gtIndex[electron21];
 				Int_t gtIndex22 = fVector_gtIndex[electron22];
 			
-				Int_t richIndex11 = fVector_richIndex[electron11];
-				Int_t richIndex12 = fVector_richIndex[electron12];
-				Int_t richIndex21 = fVector_richIndex[electron21];
-				Int_t richIndex22 = fVector_richIndex[electron22];
+				//Int_t richIndex11 = fVector_richIndex[electron11];
+				//Int_t richIndex12 = fVector_richIndex[electron12];
+				//Int_t richIndex21 = fVector_richIndex[electron21];
+				//Int_t richIndex22 = fVector_richIndex[electron22];
 			
 				if(gtIndex11 == gtIndex12 || gtIndex11 == gtIndex21 || gtIndex11 == gtIndex22 || gtIndex12 == gtIndex21 || gtIndex12 == gtIndex22 || gtIndex21 == gtIndex22) {
 				//if(electron12 == electron21 || electron12 == electron22)  {
@@ -737,12 +739,12 @@ void CbmAnaConversionTest::CombinePhotons_STSonly()
 				}
 			
 				
-				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(fVector_momenta[electron11], fVector_electronRICH_momenta[electron12], fVector_electronRICH_momenta[electron21], fVector_electronRICH_momenta[electron22]);
+				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(fVector_momenta[electron11], fVector_momenta[electron12], fVector_momenta[electron21], fVector_momenta[electron22]);
 				
 				Double_t invmass = paramsTest.fMinv;
 				
 				
-				Int_t nofRICHindices = (richIndex11 >= 0) + (richIndex12 >= 0) + (richIndex21 >= 0) + (richIndex22 >= 0);
+				Int_t nofRICHindices = (HasRichInd(gtIndex11)) + (HasRichInd(gtIndex12)) + (HasRichInd(gtIndex21)) + (HasRichInd(gtIndex22));
 				
 				if(nofRICHindices == 0) {
 					fhTest_invmass_RICHindex0->Fill(invmass);
@@ -764,7 +766,36 @@ void CbmAnaConversionTest::CombinePhotons_STSonly()
 			}
 		}
 	}
+}
 
 
+
+Bool_t CbmAnaConversionTest::HasRichInd(Int_t gtIndex)
+{
+	CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(gtIndex);
+	if(NULL == gTrack) return false;
+	int stsInd = gTrack->GetStsTrackIndex();
+	int richInd = gTrack->GetRichRingIndex();
+
+	if (stsInd < 0) return false;
+	CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(stsInd);
+	if (stsTrack == NULL) return false;
+	CbmTrackMatchNew* stsMatch  = (CbmTrackMatchNew*) fStsTrackMatches->At(stsInd);
+	if (stsMatch == NULL) return false;
+	if(stsMatch->GetNofLinks() <= 0) return false;
+	int stsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
+	if (stsMcTrackId < 0) return false;
+	CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId);
+	if (mcTrack1 == NULL) return false;
+
+	if (richInd < 0) return false;
+	CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(richInd);
+	if (richMatch == NULL) return false;
+	int richMcTrackId = richMatch->GetMatchedLink().GetIndex();
+	if (richMcTrackId < 0) return false;
+	CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
+	if (mcTrack2 == NULL) return false;
+
+	return true;
 }
 

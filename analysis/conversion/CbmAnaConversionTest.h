@@ -55,6 +55,8 @@ public:
 	
 	void CombineElectrons_STSonly();
 	void CombinePhotons_STSonly();
+	
+	Bool_t HasRichInd(Int_t gtIndex);
 
 
 
