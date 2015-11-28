@@ -152,8 +152,8 @@ void CbmHistManager::ShrinkEmptyBinsH1(
 {
    TH1* hist = H1(histName);
    Int_t nofBins = hist->GetNbinsX();
-   Int_t minShrinkBin = std::numeric_limits<Double_t>::max();
-   Int_t maxShrinkBin = std::numeric_limits<Double_t>::min();
+   Int_t minShrinkBin = std::numeric_limits<Int_t>::max();
+   Int_t maxShrinkBin = std::numeric_limits<Int_t>::min();
    Bool_t isSet = false;
    for (Int_t iBin = 1; iBin <= nofBins; iBin++) {
       Double_t content = hist->GetBinContent(iBin);
@@ -185,10 +185,10 @@ void CbmHistManager::ShrinkEmptyBinsH2(
    TH1* hist = H2(histName);
    Int_t nofBinsX = hist->GetNbinsX();
    Int_t nofBinsY = hist->GetNbinsY();
-   Int_t minShrinkBinX = std::numeric_limits<Double_t>::max();
-   Int_t maxShrinkBinX = std::numeric_limits<Double_t>::min();
-   Int_t minShrinkBinY = std::numeric_limits<Double_t>::max();
-   Int_t maxShrinkBinY = std::numeric_limits<Double_t>::min();
+   Int_t minShrinkBinX = std::numeric_limits<Int_t>::max();
+   Int_t maxShrinkBinX = std::numeric_limits<Int_t>::min();
+   Int_t minShrinkBinY = std::numeric_limits<Int_t>::max();
+   Int_t maxShrinkBinY = std::numeric_limits<Int_t>::min();
    Bool_t isSet = false;
    for (Int_t iBinX = 1; iBinX <= nofBinsX; iBinX++) {
       for (Int_t iBinY = 1; iBinY <= nofBinsY; iBinY++) {
