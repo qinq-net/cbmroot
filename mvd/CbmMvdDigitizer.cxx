@@ -180,7 +180,7 @@ InitStatus CbmMvdDigitizer::Init() {
 	  cout <<"-E- "<< GetName() << ": The size of your BG-File is insufficient to perform the requested pileup" << endl;
 	  cout <<"    You need at least events > 2* fNPileup." << endl;
 	  cout <<"    Detected: fPileUp = " << fNPileup << ", events in file " << fPileupManager->GetNEvents() << endl; 
-	  Fatal("","");  
+	  Fatal(GetName(), "The size of your BG-File is insufficient");  
 	  return kERROR;}
     }
 
@@ -197,7 +197,7 @@ InitStatus CbmMvdDigitizer::Init() {
 	  cout <<"-E- "<< GetName() << ": The size of your Delta-File is insufficient to perform the requested pileup" << endl;
 	  cout <<"    You need at least events > 2* fNDeltaElect." << endl;
 	  cout <<"    Detected: fNDeltaElect = " << fNDeltaElect << ", events in file " << fDeltaManager->GetNEvents() << endl; 
-	  Fatal("","");
+	  Fatal(GetName(), "The size of your Delta-File is insufficient");  
 	  return kERROR;}
 	}
     CbmMvdSensorDigitizerTask* digiTask = new CbmMvdSensorDigitizerTask();
