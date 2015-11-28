@@ -353,6 +353,8 @@ void Create_TOF_Geometry_v15c() {
   position_BucRef(1);
   position_Buc2015(1);
   position_Buc2012(1);
+  position_BucRef(1);
+  position_THU(1);
   
   gGeoMan->CloseGeometry();
   gGeoMan->CheckOverlaps(0.001);
