@@ -99,9 +99,12 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	}
 	if (chID < 200) continue;
 	// continue for empty hv channels
-	if (chID <= 215 && !(chID < 201)) continue;
-	if (chID <= 315 && !(chID < 313)) continue;
-	if (chID <= 407 && !(chID < 401)) continue;
+	//	if (chID <= 215 && !(chID < 201)) continue;
+	if (chID <= 215 && !(chID < 200)) continue;
+	//	if (chID <= 315 && !(chID < 313)) continue;
+	if (chID <= 315 && !(chID < 300)) continue;
+	//	if (chID <= 407 && !(chID < 401)) continue;
+	if (chID <= 407 && !(chID < 400)) continue;
 	if (chID <= 515 && !(chID < 501)) continue;
 	hChID->Fill(chID);
 	sCurrent = line(4,lineLength-4);
@@ -144,7 +147,7 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	if (chID <= 315 && !(chID < 313)) continue;
 	if (chID <= 407 && !(chID < 401)) continue;
 	if (chID <= 515 && !(chID < 501)) continue;
-	hChID->Fill(chID);
+	//	hChID->Fill(chID);
 	voltage = sVoltage.Atof();
 	hVoltage->Fill(voltage);
 	lineStyle = (Int_t)(chID/100)+1;
