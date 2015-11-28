@@ -52,6 +52,9 @@ public:
 	void CombineElectrons_FromRICH();
 	CbmLmvmKinematicParams CalculateKinematicParamsReco(const TVector3 electron1, const TVector3 electron2);
 	Double_t Invmass_4particlesRECO(const TVector3 part1, const TVector3 part2, const TVector3 part3, const TVector3 part4);
+	
+	void CombineElectrons_STSonly();
+	void CombinePhotons_STSonly();
 
 
 
@@ -92,12 +95,20 @@ private:
 	TH1I * fhTest_ReconstructedPi0PerEvent;
 	TH1D * fhTest_invmass;
 
+	// arrays for CombinePhotons_STSonly()
+	TH1D * fhTest_invmass_RICHindex0;
+	TH1D * fhTest_invmass_RICHindex1;
+	TH1D * fhTest_invmass_RICHindex2;
+	TH1D * fhTest_invmass_RICHindex3;
+	TH1D * fhTest_invmass_RICHindex4;
+
 
 	// arrays for STS only analysis (i.e. signal only in STS is required, not necessarily in RICH)
 	vector<CbmGlobalTrack*>	fVector_gt;
 	vector<TVector3>		fVector_momenta;
 	vector<double>			fVector_chi;
 	vector<int>				fVector_gtIndex;
+	vector<int>				fVector_richIndex;
 	vector< vector<int> >	fVector_reconstructedPhotons_FromSTSandRICH;
 
 	// arrays for electrons, that have been identified in RICH as electrons
@@ -105,6 +116,9 @@ private:
 	vector<int>				fVector_electronRICH_gtIndex;
 	vector<TVector3>		fVector_electronRICH_momenta;
 	vector< vector<int> >	fVector_electronRICH_reconstructedPhotons;
+	
+	// additional arrays, for CombineElectrons_STSonly() and CombinePhotons_STSonly()
+	vector< vector<int> >	fVector_reconstructedPhotons_STSonly;
 	
 
 
