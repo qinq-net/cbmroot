@@ -110,9 +110,8 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	// add to currentSum1 if from frankfurt chamber
 	if(chID >=300 && chID < 313) currentSum1 += current;
 	hCurrent->Fill(current);
-	if(chID >=300 && chID < 313) {hCurrentMap->Fill(chID,1,(1E6*current));
-	  //	  Printf("%i -- %f",chID,1E6*current);
-	}
+	if(chID >=300 && chID < 313) hCurrentMap->Fill(chID,1,(1E6*current)); // IKF channels
+	if(chID >=500 && chID < 501) hCurrentMap->Fill((chID-200),2,(1E6*current)); // IKP Ms channel
 
 	lineStyle = (Int_t)(chID/100)+1;
 	lineColor = (chID%100)+3;
@@ -322,6 +321,7 @@ void monHV(TString configFile="/data2/cern_nov2015/hv/filename.config")
   //  c8->SetLogz(1);
   hCurrentMap->DrawCopy("COLZ");
   hCurrentMap->GetXaxis()->SetTitle("chID");
+  hCurrentMap->GetYaxis()->SetTitle("chamber");
   hCurrentMap->GetZaxis()->SetTitle("I (#muA)");
   //  c8->Update(); // why does update not update the axis titles? following new drawing neccessary!
   hCurrentMap->DrawCopy("COLZ");
