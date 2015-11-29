@@ -3,6 +3,7 @@
 #include <map>
 #include "TH1.h"
 #include "TH2.h"
+#include "TProfile2D.h"
 #include "TCanvas.h"
 #include "TFile.h"
 #include "TDatime.h"
@@ -15,13 +16,13 @@ Int_t firstDay(0), firstHour(0), firstMin(0), firstSec(0), firstMsec(0);
 //martin: if set true no questions form user required
 Bool_t kohnmode=kFALSE;
 
-Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t, TH1I*>&mCurrent, std::map<Int_t, TGraph*>&mTrendingI, std::map<Int_t, TGraph*>&mTrendingU, TH1I* hTime, TH1I* hChID, TH1I* hDeltaT, TGraph* gTime, TGraph* gCurrentSum1, TH1I* hCurrent, TH1I* hVoltage, Bool_t debug){
+Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t, TH1I*>&mCurrent, std::map<Int_t, TGraph*>&mTrendingI, std::map<Int_t, TGraph*>&mTrendingU, TH1I* hTime, TH1I* hChID, TH1I* hDeltaT, TGraph* gTime, TGraph* gCurrentSum1, TH1I* hCurrent, TProfile2D* hCurrentMap, TH1I* hVoltage, Bool_t debug){
   Bool_t fileStat;
   ifstream in;
   in.open(inFile);
   Int_t year(-1), month(-1), day(-1), hour(-1), min(-1), sec(-1), msec(-1), chID(-1), deltaT(0), lineLength(0), fileTime(0);
   Int_t lastDay(-1), lastHour(-1), lastMin(-1), lastSec(-1), lastMsec(-1);
-  Float_t voltage(0.0), current(0.0), currentSum1(0.0);
+  Double_t voltage(0.0), current(0.0), currentSum1(0.0);
   Int_t lineColor(1), lineStyle(1);
   TString line("");
   TString sTime(""), sChID(""), sVoltage(""), sCurrent(""), name("");
@@ -99,12 +100,9 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	}
 	if (chID < 200) continue;
 	// continue for empty hv channels
-	//	if (chID <= 215 && !(chID < 201)) continue;
-	if (chID <= 215 && !(chID < 200)) continue;
-	//	if (chID <= 315 && !(chID < 313)) continue;
-	if (chID <= 315 && !(chID < 300)) continue;
-	//	if (chID <= 407 && !(chID < 401)) continue;
-	if (chID <= 407 && !(chID < 400)) continue;
+	if (chID <= 215 && !(chID < 201)) continue;
+	if (chID <= 315 && !(chID < 313)) continue;
+	if (chID <= 407 && !(chID < 401)) continue;
 	if (chID <= 515 && !(chID < 501)) continue;
 	hChID->Fill(chID);
 	sCurrent = line(4,lineLength-4);
@@ -112,6 +110,10 @@ Bool_t readFile(TString inFile, std::map<Int_t, TH1I*>&mVoltage, std::map<Int_t,
 	// add to currentSum1 if from frankfurt chamber
 	if(chID >=300 && chID < 313) currentSum1 += current;
 	hCurrent->Fill(current);
+	if(chID >=300 && chID < 313) {hCurrentMap->Fill(chID,1,(1E6*current));
+	  //	  Printf("%i -- %f",chID,1E6*current);
+	}
+
 	lineStyle = (Int_t)(chID/100)+1;
 	lineColor = (chID%100)+3;
 	if(lineColor >= 5) lineColor++;
@@ -231,6 +233,8 @@ void monHV(TString configFile="/data2/cern_nov2015/hv/filename.config")
   gTime->SetTitle("ReadoutTimes");
   TH1I* hCurrent = new TH1I("hCurrent","hCurrent",100001,-1E-7,8E-6);
   hCurrent->SetXTitle("I (A)");
+  // prepare x limits for channel numbers to be filled, z is the current in nanoampere
+  TProfile2D* hCurrentMap = new TProfile2D("hCurrentMap","hCurrentMap",13,299.5,312.5,2,0.5,2.5,0.,4.);
   TH1I* hVoltage = new TH1I("hVoltage","hVoltage",200001,-1,2000);
   hVoltage->SetXTitle("U (V)");
   TGraph* gCurrentSum1 = new TGraph();
@@ -240,10 +244,11 @@ void monHV(TString configFile="/data2/cern_nov2015/hv/filename.config")
   std::map<Int_t, TGraph*> mTrendingU;
 
   if(kohnmode){
-    readFile(inFile, mVoltage, mCurrent, mTrendingI, mTrendingU, hTime, hChID, hDeltaT, gTime, gCurrentSum1, hCurrent, hVoltage, debug);}
+    readFile(inFile, mVoltage, mCurrent, mTrendingI, mTrendingU, hTime, hChID, hDeltaT, gTime, gCurrentSum1, hCurrent, hCurrentMap, hVoltage, debug);
+  }
     else{
     while (nextFile) {
-      readFile(inFile, mVoltage, mCurrent, mTrendingI, mTrendingU, hTime, hChID, hDeltaT, gTime, gCurrentSum1, hCurrent, hVoltage, debug);
+      readFile(inFile, mVoltage, mCurrent, mTrendingI, mTrendingU, hTime, hChID, hDeltaT, gTime, gCurrentSum1, hCurrent, hCurrentMap, hVoltage, debug);
    
       cout << "Read further file? (1 for yes, 0 for no): ";
       cin >> nextFile;
@@ -313,6 +318,13 @@ void monHV(TString configFile="/data2/cern_nov2015/hv/filename.config")
   multiU->GetYaxis()->SetTitle("U (V)");
   c7->Update();
   c7->BuildLegend();
+  TCanvas *c8 = new TCanvas("c8","CurrentMap",800,600);
+  //  c8->SetLogz(1);
+  hCurrentMap->DrawCopy("COLZ");
+  hCurrentMap->GetXaxis()->SetTitle("chID");
+  hCurrentMap->GetZaxis()->SetTitle("I (#muA)");
+  //  c8->Update(); // why does update not update the axis titles? following new drawing neccessary!
+  hCurrentMap->DrawCopy("COLZ");
 
   TString outFile = inFile;
   outFile.ReplaceAll(".txt",".png");
