@@ -285,7 +285,7 @@ const char* PairAnalysisHelper::GetPDGlabel(Int_t pdg)
   // specials
   name.ReplaceAll("/psi","/#psi");
   //  Printf(" %d = %s",pdg,name.Data());
-  return (name);
+  return name.Data();
 }
 
 //_____________________________________________________________________________
