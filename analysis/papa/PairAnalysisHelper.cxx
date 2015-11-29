@@ -253,7 +253,8 @@ void PairAnalysisHelper::SetPDGBinLabels( TH1 *hist) {
 }
 
 //_____________________________________________________________________________
-const char* PairAnalysisHelper::GetPDGlabel(Int_t pdg) {
+const char* PairAnalysisHelper::GetPDGlabel(Int_t pdg)
+{
   //
   // return the label in latex format corresponding to pdg code
   //
@@ -284,7 +285,7 @@ const char* PairAnalysisHelper::GetPDGlabel(Int_t pdg) {
   // specials
   name.ReplaceAll("/psi","/#psi");
   //  Printf(" %d = %s",pdg,name.Data());
-  return name.Data();
+  return (name);
 }
 
 //_____________________________________________________________________________
@@ -306,13 +307,14 @@ void PairAnalysisHelper::SetGEANTBinLabels( TH1 *hist) {
 
 
 //_____________________________________________________________________________
-TString PairAnalysisHelper::GetDetName(DetectorId det) {
+TString PairAnalysisHelper::GetDetName(DetectorId det)
+{
   //
   // get detector name
   //
   TString name="";
   CbmDetectorList::GetSystemNameCaps(det, name);
-  return name;
+  return (name);
 }
 
 //_____________________________________________________________________________

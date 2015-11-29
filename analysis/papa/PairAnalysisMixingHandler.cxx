@@ -279,7 +279,7 @@ void PairAnalysisMixingHandler::Init(const PairAnalysis *papa)
     fPID=TProcessID::AddProcessID();
   }
 
-  Info("Init",values.Data());
+  Info("Init",values);
 }
 
 //______________________________________________
