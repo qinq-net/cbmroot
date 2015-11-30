@@ -109,8 +109,8 @@ if [ $SETUP_FAIRSOFT -ge 1 ]; then
   echo "Setting up Fairsoft ..."
 
   cd ..
-  git clone https://github.com/FairRootGroup/FairSoft fairsoft_${FSOFTVER}_root{$ROOTVER}
-  cd fairsoft_${FSOFTVER}_root{$ROOTVER}
+  git clone https://github.com/FairRootGroup/FairSoft fairsoft_${FSOFTVER}_root${ROOTVER}
+  cd fairsoft_${FSOFTVER}_root${ROOTVER}
   git tag -l
   git checkout -b $FSOFTVER $FSOFTVER
 
@@ -140,19 +140,19 @@ if [ $SETUP_FAIRROOT -ge 1 ]; then
   # set SIMPATH
   cd ..
   echo "SIMPATH	before: $SIMPATH"
-  cd fairsoft_${FSOFTVER}_root{$ROOTVER}/installation/
+  cd fairsoft_${FSOFTVER}_root${ROOTVER}/installation/
   export SIMPATH=`pwd`
   echo "SIMPATH	now   : $SIMPATH"
   cd $CBMSRCDIR
 
   cd ..
-  git clone https://github.com/FairRootGroup/FairRoot.git fairroot_src_$FROOTVER-fairsoft_${FSOFTVER}_root{$ROOTVER}
-  cd fairroot_src_$FROOTVER-fairsoft_${FSOFTVER}_root{$ROOTVER}
+  git clone https://github.com/FairRootGroup/FairRoot.git fairroot_src_$FROOTVER-fairsoft_${FSOFTVER}_root${ROOTVER}
+  cd fairroot_src_$FROOTVER-fairsoft_${FSOFTVER}_root${ROOTVER}
   git tag -l
   git checkout -b $FROOTVER $FROOTVER
   mkdir build
   cd build
-  cmake .. -DCMAKE_INSTALL_PREFIX=../../fairroot_$FROOTVER-fairsoft_${FSOFTVER}_root{$ROOTVER}
+  cmake .. -DCMAKE_INSTALL_PREFIX=../../fairroot_$FROOTVER-fairsoft_${FSOFTVER}_root${ROOTVER}
   nice make install -j$NUMOFCPU
   
   cd $CBMSRCDIR
@@ -170,14 +170,14 @@ if [ $SETUP_CBMROOT -ge 1 ]; then
   # set SIMPATH
   cd ..
   echo "SIMPATH	before: $SIMPATH"
-  cd fairsoft_${FSOFTVER}_root{$ROOTVER}/installation/
+  cd fairsoft_${FSOFTVER}_root${ROOTVER}/installation/
   export SIMPATH=`pwd`
   echo "SIMPATH	now   : $SIMPATH"
   cd $CBMSRCDIR
 
   # set FAIRROOTPATH
   cd ..
-  cd fairroot_$FROOTVER-fairsoft_${FSOFTVER}_root{$ROOTVER}
+  cd fairroot_$FROOTVER-fairsoft_${FSOFTVER}_root${ROOTVER}
   export FAIRROOTPATH=`pwd`
   echo "FAIRROOTPATH: $FAIRROOTPATH"
   cd $CBMSRCDIR
