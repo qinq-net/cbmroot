@@ -39,20 +39,26 @@ Double_t fieldZ=0.;
 Double_t fieldScale=0.;
 Int_t    fieldSymType=0;
 
+TString defaultInputFile="";
 
+
+// Input Parameter
+TString input;
+TString inputGEV;
+TString system;
+TString signal;
+Int_t  iVerbose;
+TString setup;
+bool littrack;
+Bool_t useMC;
 
 void opencharm_sim(Int_t nEvents = 100,Int_t ProcID=1, bool backgroundProduction = false)
 {
   // ========================================================================
   //          Adjust this part according to your requirements
+gROOT->LoadMacro("CharmSetup.C");
+gInterpreter->ProcessLine("CharmSetup()");
  
-// Input Parameter
-    TString input = "nini";
-    TString inputGEV = "15gev";
-TString system = "centr";
-TString signal = "d0"; // "dminus" "dplus" "d0_4B"
-TString setup = "sis100_electron";
-
  // Input file
   
   TString inFile = Form("/hera/cbm/prod/gen/urqmd/%s/%s/%s/urqmd.%s.%s.%s.%05i.root", input.Data(), inputGEV.Data(), system.Data(), input.Data(), inputGEV.Data(), system.Data(), ProcID);
@@ -189,7 +195,7 @@ TString setup = "sis100_electron";
   // ----   Create SignalGenerator     --------------------------------------
 //*********** Example 3: Inline style Pluto input (fireball "J/Psi")
     //This example was provided by A. Kotynia **/
-    Float_t Eb   = 15; 	    // to jest AGeV - ile GeV na nukleon
+    Float_t Eb   = 30; 	    // to jest AGeV - ile GeV na nukleon
     Float_t T1    = 0.120;   // temperature in GeV // powinno byc 150
     Float_t T2    = 0.;      // temperature in GeV
     Float_t blast = 0.;      // radial expansion velocity
@@ -337,7 +343,6 @@ if(!backgroundProduction) primGen->AddGenerator(plutoGen);
   fRun->Init();
   // ------------------------------------------------------------------------
 
-  
   // -----   Runtime database   ---------------------------------------------
   CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
   fieldPar->SetParameters(magField);

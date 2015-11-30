@@ -34,35 +34,37 @@ Int_t    fieldSymType=0;
 
 TString defaultInputFile="";
 
-
+// Input Parameter
+TString input;
+TString inputGEV;
+TString system;
+TString signal;
+Int_t  iVerbose;
+TString setup;
+bool littrack;
+Bool_t useMC;
 
 void TrackSelection(Int_t nEvents = 100, Int_t ProcID = 1, bool PileUp = false,Int_t PidTyp = 0 )
 {
-// Input Parameter
-TString input = "nini";
-TString inputGEV = "15gev";
-TString system = "centr";
-TString signal = "d0"; // "dminus" "dplus" "d0_4B"
-Int_t  iVerbose = 0; 
-TString setup = "sis100_electron";
- 
-bool littrack = false;
+
+gROOT->LoadMacro("CharmSetup.C");
+gInterpreter->ProcessLine("CharmSetup()");
 
 switch (PidTyp)
-{
-case 0:
-    TString pidMode = "NONE";
-    break;
-case 1:
-    TString pidMode = "MC";
-    break;
-case 2:
-    TSTring pidMode = "TOF";
-    break;
-default:
-    TString pidMode = "NONE";
+      {
+      case 0:
+           TString pidMode = "NONE";
+           break;
+      case 1:
+           TString pidMode = "MC";
+           break;
+      case 2:
+           TSTring pidMode = "TOF";
+           break;
+      default:
+           TString pidMode = "NONE";
 
-}
+     }
 
  // ------------------------------------------------------------
  // Monte Carlo file
@@ -128,7 +130,7 @@ TString parFile = Form("/hera/cbm/users/psitzmann/data/params/paramsunigen.urqmd
   fRun->SetOutputFile(outFile);
   // ========================================================================
 
-  CbmKF* KF = new CbmKF();                              // name, Verbose,  cutP,  cutPt, cutPV, cutIP )
+  CbmKF* KF = new CbmKF();                          
   fRun->AddTask(KF);
     CbmL1* l1 = new CbmL1();
   TString mvdMatBudgetFileName = paramDir + mvdMatBudget;
@@ -136,11 +138,13 @@ TString parFile = Form("/hera/cbm/users/psitzmann/data/params/paramsunigen.urqmd
   l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
   l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
   fRun->AddTask(l1);
-
+  // ========================================================================
+                                    
+                                                         // name, Verbose,  cutP,  cutPt, cutPV, cutIP )
   CbmD0TrackSelection* dSelect = new CbmD0TrackSelection("Selection", 1,  0.0,   0.0,    6.5,  10000.000);
-  dSelect->SetNHitsOfLongTracks(4); //suppress short tracks
-  dSelect->SetPIDMode(pidMode);
-  dSelect->SetUseMcInfo(kFALSE);
+  dSelect->SetNHitsOfLongTracks(4); // suppress short tracks
+  dSelect->SetPIDMode(pidMode);     // set PID mode
+  dSelect->SetUseMcInfo(kFALSE);    // set usage of MC information for D0
   fRun->AddTask(dSelect);
 
   // -----  Parameter database   --------------------------------------------

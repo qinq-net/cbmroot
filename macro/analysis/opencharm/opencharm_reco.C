@@ -44,20 +44,24 @@ Int_t    fieldSymType=0;
 
 TString defaultInputFile="";
 
+// Input Parameter
+TString input;
+TString inputGEV;
+TString system;
+TString signal;
+Int_t  iVerbose;
+TString setup;
+bool littrack;
+Bool_t useMC;
+
 void opencharm_reco(Int_t nEvents = 100, Int_t ProcID = 1, bool PileUp = false)
 {
 
   // ========================================================================
   //          Adjust this part according to your requirements
 
-// Input Parameter
-    TString input = "nini";
-    TString inputGEV = "15gev";
-TString system = "centr";
-TString signal = "d0"; // "dminus" "dplus" "d0_4B"
-Int_t  iVerbose = 0; 
-TString setup = "sis100_electron";
-bool littrack = false;
+gROOT->LoadMacro("CharmSetup.C");
+gInterpreter->ProcessLine("CharmSetup()");
 
 
   // Input file (MC events)
@@ -307,7 +311,7 @@ if(PileUp)
   matcher->SetIncludeMvdHitsInStsTrack(kTRUE);
   run->AddTask(matcher);
   // ------------------------------------------------------------------------
-
+/*
   // ----------- TRD track Pid Ann ----------------------
   CbmTrdSetTracksPidANN* trdSetTracksPidAnnTask = new CbmTrdSetTracksPidANN(
   		"Ann", "Ann");
@@ -340,7 +344,7 @@ if(PileUp)
     }
   // ===                 End of RICH local reconstruction                  ===
   // =========================================================================
-
+*/
   // -----   Primary vertex finding   --------------------------------------
   CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
   CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);

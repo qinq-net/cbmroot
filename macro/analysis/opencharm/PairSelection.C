@@ -33,27 +33,23 @@ Double_t fieldScale=0.;
 Int_t    fieldSymType=0;
 
 
+TString input;
+TString inputGEV;
+TString system;
+TString signal; // "dminus" "dplus" "d0_4B"
+Int_t  iVerbose;
+TString setup;
+
+bool littrack;
+Bool_t useMC;
+
+
 void PairSelection(Int_t nEvents = 100, Int_t ProcID = 1, bool PileUp = false, Int_t PidTyp = 0)
 {
-  // -------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------
-    TStopwatch timer;
-    timer.Start();
-
-    gDebug=0;
 // -------------------------------------------------------------------------
 
-// Input Parameter
-TString input = "nini";
-TString inputGEV = "15gev";
-TString system = "centr";
-TString signal = "d0"; // "dminus" "dplus" "d0_4B"
-Int_t  iVerbose = 0; 
-TString setup = "sis100_electron";
-
-bool littrack = false;
-Bool_t useMC = kFALSE;
+gROOT->LoadMacro("CharmSetup.C");
+gInterpreter->ProcessLine("CharmSetup()");
 
 switch (PidTyp)
 {
@@ -70,6 +66,7 @@ default:
     TString pidMode = "NONE";
 
 }
+
 // Input file (MC events)
  TString mcFile = Form("/hera/cbm/users/psitzmann/data/mc/opencharm.mc.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
 
@@ -149,7 +146,14 @@ default:
   TObjString stsDigiFile = paramDir + stsDigi;
   parFileList->Add(&stsDigiFile);
   cout << "macro/run/run_reco.C using: " << stsDigi << endl;
+  // -------------------------------------------------------------------------
+
 // -------------------------------------------------------------------------
+    TStopwatch timer;
+    timer.Start();
+
+    gDebug=0;
+    // -------------------------------------------------------------------------
 
 // ------------------------------------------------------------------------
 
@@ -166,7 +170,7 @@ default:
     CbmL1* l1 = new CbmL1();
     fRun->AddTask(l1);                                                 // name     verbose  ipD0   SvZ
     
-    CbmD0CandidateSelection* D0selection  = new CbmD0CandidateSelection("d0selection", 1, 0.08,  0.01 );
+    CbmD0CandidateSelection* D0selection  = new CbmD0CandidateSelection("d0selection", 1, 0.04,  0.01 );
     D0selection->SetTestMode(useMC);
 
     fRun->AddTask(D0selection);
