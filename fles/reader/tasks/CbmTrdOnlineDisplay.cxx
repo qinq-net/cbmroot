@@ -19,13 +19,14 @@
 #include "TMethodCall.h"
 
 // ---- Default constructor -------------------------------------------
-CbmTrdOnlineDisplay::CbmTrdOnlineDisplay()
+CbmTrdOnlineDisplay::CbmTrdOnlineDisplay(TString inFile="")
   :FairTask("CbmTrdOnlineDisplay"),
    fSpadic1(),
    fSpadic1a(),
    fSpadicTime(),
    fUpdateInterval(10),
-   fEventCounter(0)
+   fEventCounter(0),
+   finFile(inFile)
 {
 }
 
@@ -47,6 +48,7 @@ InitStatus CbmTrdOnlineDisplay::Init()
 
   TH1* h1 = NULL;
   TH1* h2 = NULL;
+  TGraph* g1 = NULL;
   gROOT->cd();
   Float_t lsize=0.07;
   gStyle->SetPalette(1);
@@ -55,6 +57,7 @@ InitStatus CbmTrdOnlineDisplay::Init()
   fSpadicTime = new TCanvas("fSpadicTime","fSpadicTime",0,0,1600,1200);
   fSpadicTime->Divide(4,3);
   fSpadicTime->cd(1)->SetLogy(1);
+  fSpadicTime->cd(1)->SetLogx(1);
   h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("DeltaClusterTime2015CernSPS")));  
   if (h1!=NULL) {
     h1->Draw("");
@@ -126,7 +129,12 @@ InitStatus CbmTrdOnlineDisplay::Init()
 	h2->Draw("COLZ");
       }
       fSpadic1[spa][sys]->cd(5)->SetLogy(1);
-  
+      /*
+      g1=static_cast<TGraph*>(gROOT->FindObjectAny(TString("TriggerCounterGraph_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
+      if (g1!=NULL) {
+	g1->Draw("AL");
+      }
+      */
       h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("TriggerCounter_SysCore" + std::to_string(sys) + "_Spadic" + std::to_string(spa))));
       if (h1!=NULL) {
 	h1->Draw("");
@@ -141,7 +149,7 @@ InitStatus CbmTrdOnlineDisplay::Init()
       if (h1!=NULL) {
 	h1->Draw("same");
       }
-
+      
       fSpadic1[spa][sys]->cd(6)->SetLogy(1);
       h1=static_cast<TH1*>(gROOT->FindObjectAny(TString("TriggerSum")));
       if (h1!=NULL) {
@@ -265,12 +273,14 @@ void CbmTrdOnlineDisplay::Exec(Option_t*)
 void CbmTrdOnlineDisplay::Finish()
 {
 fSpadicTime->Update();
- fSpadicTime->SaveAs(TString("pics/fSpadicTime.png"));
+ finFile.ReplaceAll("data/","");
+finFile.ReplaceAll(".tsa","_");
+ fSpadicTime->SaveAs(TString("pics/" + finFile + "fSpadicTime.png"));
 fSpadicTime->Write("",TObject::kOverwrite);
   for (Int_t sys = 0; sys < 2; sys++){
     for (Int_t spa = 0; spa < 2; spa++){
       fSpadic1[spa][sys]->Update();
-      fSpadic1[spa][sys]->SaveAs(TString("pics/") + TString(fSpadic1[spa][sys]->GetTitle())+TString(".png"));
+      fSpadic1[spa][sys]->SaveAs(TString("pics/") + finFile + TString(fSpadic1[spa][sys]->GetTitle())+TString(".png"));
       fSpadic1[spa][sys]->Write("",TObject::kOverwrite);
       for(Int_t iCh=0; iCh<32; iCh++){
 	fSpadic1a[spa][sys]->cd(iCh+1);
@@ -280,7 +290,7 @@ fSpadicTime->Write("",TObject::kOverwrite);
       fSpadic1a[spa][sys]->ResizeOpaque(0);
       //fSpadic1a[spa][sys]->Resize();
       fSpadic1a[spa][sys]->Update();
-      fSpadic1a[spa][sys]->SaveAs(TString("pics/") + TString(fSpadic1a[spa][sys]->GetTitle())+TString(".png"));
+      fSpadic1a[spa][sys]->SaveAs(TString("pics/") + finFile + TString(fSpadic1a[spa][sys]->GetTitle())+TString(".png"));
       fSpadic1a[spa][sys]->Write("",TObject::kOverwrite);
     }
   }

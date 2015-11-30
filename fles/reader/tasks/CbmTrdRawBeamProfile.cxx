@@ -14,13 +14,14 @@
 
 #include "TH1.h"
 #include "TH2.h"
+#include "TGraph.h"
 #include "TCanvas.h"
-
 #include "TString.h"
 #include "TStyle.h"
 
 #include <cmath>
 #include <map>
+//#include <multimap>
 #include <vector>
 // ---- Default constructor -------------------------------------------
 CbmTrdRawBeamProfile::CbmTrdRawBeamProfile()
@@ -33,6 +34,15 @@ CbmTrdRawBeamProfile::CbmTrdRawBeamProfile()
     fiDigi(0),
     fiCluster(0),
     fHM(new CbmHistManager()),
+    fmaxTimeGlobal(0),
+    fmaxTimeGroup({{0}}),
+    fmaxFullTimeGlobal(0),
+    fmaxFullTimeGroup({{0}}),
+    flastDlmTriggerTime({{{0}}}),
+    fEpoch(-1),
+    flastEpoch(-1),
+    fSuperEpoch(-1),
+    flastSuperEpoch(-1),
     fSpadicMessageCounter(0),
     fNxyterMessageCounter(0),
     fTrbMessageCounter(0),
@@ -44,8 +54,11 @@ CbmTrdRawBeamProfile::CbmTrdRawBeamProfile()
     fLostHitCounter(0),
     fDoubleCounter(0),
     fFragmentedCounter(0),
+    fSys0Spa0Buffer(),
+    fSys0Spa1Buffer(),
     fTimeBuffer(),
-    fTimeBufferAll(),
+    fFullTimeBuffer(),
+    fFullTimeBufferAll(),
     fTrbBuffer()
 {
   LOG(DEBUG) << "Default Constructor of CbmTrdRawBeamProfile" << FairLogger::endl;
@@ -58,41 +71,57 @@ CbmTrdRawBeamProfile::~CbmTrdRawBeamProfile()
   delete fDigis;
   fClusters->Delete();
   delete fClusters;
-  for (std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = fTimeBuffer.begin() ; SpaSysIt != fTimeBuffer.end(); SpaSysIt++){
-    for (std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > ::iterator timeIt = SpaSysIt->second.begin() ; timeIt != SpaSysIt->second.end(); timeIt++){
-      for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiIt = timeIt->second.begin(); combiIt != timeIt->second.end(); combiIt++){
-	if(combiIt->second != NULL)
-	  delete combiIt->second;
+  
+  for (std::map<TString, std::map<Int_t,  std::map<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = fTimeBuffer.begin(); SpaSysIt != fTimeBuffer.end(); SpaSysIt++){
+    for (std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> >::iterator TimeIt = SpaSysIt->second.begin(); TimeIt != SpaSysIt->second.end(); TimeIt++){
+      for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator CombiIt = TimeIt->second.begin(); CombiIt != TimeIt->second.end(); CombiIt++){
+	if(CombiIt->second != NULL)
+	  delete CombiIt->second;
       }
-      timeIt->second.clear();   
-    }
-    SpaSysIt->second.clear();
-  }  
-  for (std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = fTimeBufferAll.begin() ; SpaSysIt != fTimeBufferAll.end(); SpaSysIt++){
-    for (std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > ::iterator timeIt = SpaSysIt->second.begin() ; timeIt != SpaSysIt->second.end(); timeIt++){
-      for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiIt = timeIt->second.begin(); combiIt != timeIt->second.end(); combiIt++){
-	if(combiIt->second != NULL)
-	  delete combiIt->second;
-      }
-      timeIt->second.clear();   
+      TimeIt->second.clear();
     }
     SpaSysIt->second.clear();
   }
-  for (std::map<Int_t, std::map<Int_t, std::map<Int_t, std::map<Int_t, CbmTrbRawMessage*> > > >::iterator SourceAIt = fTrbBuffer.begin() ; SourceAIt != fTrbBuffer.end(); SourceAIt++){
-    for (std::map<Int_t, std::map<Int_t, std::map<Int_t, CbmTrbRawMessage*> > >::iterator epochIt = SourceAIt->second.begin() ; epochIt != SourceAIt->second.end(); epochIt++){
-      for (std::map<Int_t, std::map<Int_t, CbmTrbRawMessage*> > ::iterator chIdIt = epochIt->second.begin() ; chIdIt != epochIt->second.end(); chIdIt++){
-	for (std::map<Int_t, CbmTrbRawMessage*> ::iterator timeIt = chIdIt->second.begin(); timeIt != chIdIt->second.end(); timeIt++){
-	  if(timeIt->second != NULL)
-	    delete timeIt->second;
+  fTimeBuffer.clear();
+ 
+    for (std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = fFullTimeBuffer.begin() ; SpaSysIt != fFullTimeBuffer.end(); SpaSysIt++){
+      for (std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > ::iterator timeIt = SpaSysIt->second.begin() ; timeIt != SpaSysIt->second.end(); timeIt++){
+	for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiIt = timeIt->second.begin(); combiIt != timeIt->second.end(); combiIt++){
+	  if(combiIt->second != NULL)
+	    delete combiIt->second;
 	}
-	chIdIt->second.clear();   
+	timeIt->second.clear();   
       }
-      epochIt->second.clear();
+      SpaSysIt->second.clear();
+    }  
+    fFullTimeBuffer.clear();
+    for (std::map<TString, std::map<ULong_t, std::multimap<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = fFullTimeBufferAll.begin() ; SpaSysIt != fFullTimeBufferAll.end(); SpaSysIt++){
+      for (std::map<ULong_t, std::multimap<Int_t, CbmSpadicRawMessage*> > ::iterator timeIt = SpaSysIt->second.begin() ; timeIt != SpaSysIt->second.end(); timeIt++){
+	for (std::multimap<Int_t, CbmSpadicRawMessage*> ::iterator combiIt = timeIt->second.begin(); combiIt != timeIt->second.end(); combiIt++){
+	  if(combiIt->second != NULL)
+	    delete combiIt->second;
+	}
+	timeIt->second.clear();   
+      }
+      SpaSysIt->second.clear();
     }
-    SourceAIt->second.clear();
-  }
-  //fTrbBuffer has to be cleaned here!!!!!
-  LOG(DEBUG) << "Destructor of CbmTrdRawBeamProfile" << FairLogger::endl;
+    fFullTimeBufferAll.clear();
+    for (std::map<Int_t, std::map<Int_t, std::map<Int_t, std::map<Int_t, CbmTrbRawMessage*> > > >::iterator SourceAIt = fTrbBuffer.begin() ; SourceAIt != fTrbBuffer.end(); SourceAIt++){
+      for (std::map<Int_t, std::map<Int_t, std::map<Int_t, CbmTrbRawMessage*> > >::iterator epochIt = SourceAIt->second.begin() ; epochIt != SourceAIt->second.end(); epochIt++){
+	for (std::map<Int_t, std::map<Int_t, CbmTrbRawMessage*> > ::iterator chIdIt = epochIt->second.begin() ; chIdIt != epochIt->second.end(); chIdIt++){
+	  for (std::map<Int_t, CbmTrbRawMessage*> ::iterator timeIt = chIdIt->second.begin(); timeIt != chIdIt->second.end(); timeIt++){
+	    if(timeIt->second != NULL)
+	      delete timeIt->second;
+	  }
+	  chIdIt->second.clear();   
+	}
+	epochIt->second.clear();
+      }
+      SourceAIt->second.clear();
+    }
+    fTrbBuffer.clear();
+    //fTrbBuffer has to be cleaned here!!!!!
+    LOG(DEBUG) << "Destructor of CbmTrdRawBeamProfile" << FairLogger::endl;
 }
 
   // ----  Initialisation  ----------------------------------------------
@@ -126,12 +155,12 @@ CbmTrdRawBeamProfile::~CbmTrdRawBeamProfile()
     fNxyterRaw = static_cast<TClonesArray*>(ioman->GetObject("NxyterRawMessage"));
     if ( ! fNxyterRaw ) {
       LOG(ERROR) << "No InputDataLevelName CbmNxyterRawMessage array!\n Nxyter data within CbmTrdRawBeamProfile will be inactive" << FairLogger::endl;
-      return kERROR;
+      //return kERROR;
     }
     fTrbRaw = static_cast<TClonesArray*>(ioman->GetObject("TrbRawMessage"));
     if ( ! fTrbRaw ) {
       LOG(ERROR) << "No InputDataLevelName CbmTrbRawMessage array!\n TRB data within CbmTrdRawBeamProfile will be inactive" << FairLogger::endl;
-      return kERROR;
+      //return kERROR;
     }
 
 
@@ -160,6 +189,7 @@ CbmTrdRawBeamProfile::~CbmTrdRawBeamProfile()
   // ---- Exec ----------------------------------------------------------
 void CbmTrdRawBeamProfile::Exec(Option_t*)
 {
+  TString errorMessage, infoMessage, debugMessage;
   const Int_t maxNrColumns = 16;
   /*
     This function is reinitialized for each new TimeSliceContainer
@@ -194,7 +224,8 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     Int_t tdcFine = raw->GetTDCfine();
     Int_t tdcCoarse = raw->GetTDCcoarse();
     Int_t edge = raw->GetEdge();
-    ULong_t time = raw->GetFullTime();
+    ULong_t fullTime = raw->GetFullTime();
+
     //LOG(INFO) << "TrbMessage: " << fTrbMessageCounter << " EqId:" << eqID << " sourceA:" << sourceA << " ChID:" << chID << " Epoch:" << epoch << " tdcFine:" << tdcFine << " tdcCoarse:" << tdcCoarse << " edge:" << edge << FairLogger::endl;
     
     std::map<Int_t, CbmTrbRawMessage*>::iterator timeBufferIt = fTrbBuffer[sourceA][epoch][chID].find(tdcCoarse);
@@ -215,7 +246,6 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 	  // ERROR
 	  LOG(ERROR) << "======================Coarse:" << tdcCoarse <<  " LastCoarse:"<< lastTdcCoarse[sourceA-272][chID] << FairLogger::endl;
 	} else {
-
 	}
       } else {
 	//next epoch
@@ -236,7 +266,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     //printf("EI%i SA%i ->",eqID,sourceA);
     Int_t chID = raw->GetChannelID();
     Int_t AdcValue = raw->GetADCvalue();
-    ULong_t time = raw->GetFullTime();
+    ULong_t fullTime = raw->GetFullTime();
     LOG(INFO) << "NxyterMessage: EqId:" << eqID << " sourceA:" << sourceA << " ChID:" << chID << FairLogger::endl;
   }
 
@@ -253,27 +283,27 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
   LOG(DEBUG) << "Digis in TClonesArray:                           " << fDigis->GetEntriesFast() << FairLogger::endl;
   LOG(DEBUG) << "Clusters in TClonesArray:                        " << fClusters->GetEntriesFast() << FairLogger::endl;
   // Find info about hitType, stopType and infoType in cbmroot/fles/spadic/message/constants/..
-  /*
-    TString triggerTypes[4] = {"infoMessage",
-    "Global trigger",
-    "Self triggered",
-    "Neighbor triggered",
-    "Self and neighbor triggered"};
-    TString stopTypes[6] = {"Normal end of message", 
-    "Channel buffer full", 
-    "Ordering FIFO full", 
-    "Multi hit", 
-    "Multi hit and channel buffer full", 
-    "Multi hit and ordering FIFO full"};
-    TString infoTypes[8] = {"Channel disabled during message building", 
-    "Next grant timeout", 
-    "Next request timeout", 
-    "New grant but channel empty", 
-    "Corruption in message builder", 
-    "Empty word", 
-    "Epoch out of sync", 
-    "infoType out of array"};
-  */
+  
+  TString triggerTypes[5] = {"infoMessage",
+			     "Global trigger",
+			     "Self triggered",
+			     "Neighbor triggered",
+			     "Self and neighbor triggered"};
+  TString stopTypes[6] = {"Normal end of message", 
+			  "Channel buffer full", 
+			  "Ordering FIFO full", 
+			  "Multi hit", 
+			  "Multi hit and channel buffer full", 
+			  "Multi hit and ordering FIFO full"};
+  TString infoTypes[8] = {"Channel disabled during message building", 
+			  "Next grant timeout", 
+			  "Next request timeout", 
+			  "New grant but channel empty", 
+			  "Corruption in message builder", 
+			  "Empty word", 
+			  "Epoch out of sync", 
+			  "infoType out of array"};
+  
   //if (entriesInMessage > 1) entriesInMessage = 1; // for fast data visualization
   ULong_t lastSpadicTime[3][6] = {{0}}; //[sys][spa]
   ULong_t lastSpadicTimeCh[3][6][32] = {{{0}}}; //[sys][spa][ch]
@@ -284,7 +314,16 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
   Bool_t isHit(false), isInfo(false);
   for (Int_t i=0; i < entriesInMessage; ++i) {
     fSpadicMessageCounter++;
-    CbmSpadicRawMessage* raw = /*static_cast<*/(CbmSpadicRawMessage*)/*>*/(fRawSpadic->At(i));
+    CbmSpadicRawMessage* raw = (CbmSpadicRawMessage*)(fRawSpadic->At(i));
+    /*
+      if ((raw->GetSuperEpoch() != fSuperEpoch)){// || (raw->GetEpochMarker() != fEpoch)){
+      Clusterizer();
+      TimeClustering2015CernSPS();
+      }
+    */
+    fEpoch = raw->GetEpochMarker();
+    fSuperEpoch = raw->GetSuperEpoch();
+    if (fEpoch == 0 || fSuperEpoch == 0) continue;
     Int_t eqID = raw->GetEquipmentID();
     Int_t sourceA = raw->GetSourceAddress();
     //printf("EI%i SA%i ->",eqID,sourceA);
@@ -313,13 +352,13 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 
     if (stopType != 0 && stopType != 3)
       if (infoType > 6) {
-	LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter <<  " eqId " << eqID << " sourceA " << sourceA <<  " InfoType " << infoType << " out of range. Set to 7. StopType:" << stopType << " TriggerType:" << triggerType << FairLogger::endl;
+	errorMessage.Form("SuperEpoch %5i Epoche %5i Container:%5i Message:%5i eqID:%i sourceA:%i chID:%02i StopType: %i TriggerType: %i InfoType%i out of range",fSuperEpoch,fEpoch,fContainerCounter,fSpadicMessageCounter,eqID,sourceA,chID,stopType,triggerType,infoType);
+	LOG(ERROR) << errorMessage << FairLogger::endl;
 	infoType = 7;
       }
     Int_t groupId=raw->GetGroupId();
-    ULong_t time = raw->GetFullTime();
- 
-   
+    ULong_t fullTime = raw->GetFullTime();
+    Int_t time = raw->GetTime();
     TString syscore="";
     switch (eqID) {
     case kMuenster:  // Muenster
@@ -389,38 +428,111 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     columnId = GetColumnID(raw);
     rowId = GetRowID(raw);
     combiId = rowId * (maxNrColumns + 1) + columnId;
+    if (isHit){
+      infoMessage.Form("SuperEpoch %5i Epoche %5i FullTime %12lu eqID:%i sourceA:%i chID:%02i StopType: %i TriggerType: %i InfoType: %i",
+		       fSuperEpoch,fEpoch,fullTime,eqID,sourceA,chID,stopType,triggerType,infoType);
+      LOG(DEBUG) << infoMessage << FairLogger::endl;
+      if (flastEpoch == fEpoch && flastSuperEpoch == fSuperEpoch){
+	infoMessage.Form("SuperEpoch %5i Epoche %5i FullTime %12lu eqID:%i sourceA:%i chID:%02i StopType: %i TriggerType: %i InfoType: %i still in same (Super)Epoch",
+			 fSuperEpoch,fEpoch,fullTime,eqID,sourceA,chID,stopType,triggerType,infoType);
+	LOG(DEBUG) << infoMessage << FairLogger::endl;
+	if (fullTime > fmaxFullTimeGlobal){
+	  infoMessage.Form("SuperEpoch %5i Epoche %5i FullTime %12lu eqID:%i sourceA:%i chID:%02i StopType: %i TriggerType: %i InfoType: %i maxFullTimeGlobal: %12lu",
+			   fSuperEpoch,fEpoch,fullTime,eqID,sourceA,chID,stopType,triggerType,infoType,fmaxFullTimeGlobal);
+	  LOG(DEBUG) << infoMessage << FairLogger::endl;
+	  fmaxFullTimeGlobal = fullTime;
+	}
+	if (fullTime < fmaxFullTimeGlobal) {
+	  infoMessage.Form("SuperEpoch %5i Epoche %5i FullTime %12lu eqID:%i sourceA:%i chID:%02i StopType: %i TriggerType: %i InfoType: %i maxFullTimeGlobal: %12lu time jump #Delta t: %9i",
+			   fSuperEpoch,fEpoch,fullTime,eqID,sourceA,chID,stopType,triggerType,infoType,fmaxFullTimeGlobal,Int_t(fullTime-fmaxFullTimeGlobal));
+	  LOG(DEBUG) << infoMessage << FairLogger::endl;
+	  //wrongTimeOrder[SysId][SpaId]++;
+	  //continue;
+	}
+	if (fullTime > fmaxFullTimeGroup[SysId][SpaId]){
+	  infoMessage.Form("SuperEpoch %5i Epoche %5i Time %9i FullTime %12lu eqID:%i sourceA:%i chID:%02i StopType: %i TriggerType: %i InfoType: %i maxFullTimeGroup: %12lu",
+			   fSuperEpoch,fEpoch,raw->GetTime(),fullTime,eqID,sourceA,chID,stopType,triggerType,infoType,fmaxFullTimeGroup[SysId][SpaId]);
+	  LOG(DEBUG) << infoMessage << FairLogger::endl;
+	  fmaxFullTimeGroup[SysId][SpaId] = fullTime;
+	}
+	if (fullTime < fmaxFullTimeGroup[SysId][SpaId]) {
+	  infoMessage.Form("SuperEpoch %5i Epoche %5i Time %9i FullTime %12lu eqID:%i sourceA:%i chID:%02i StopType: %i TriggerType: %i InfoType: %i maxFullTimeGroup: %12lu time jump #Delta t: %9i",
+			   fSuperEpoch,fEpoch,raw->GetTime(),fullTime,eqID,sourceA,chID,stopType,triggerType,infoType,fmaxFullTimeGroup[SysId][SpaId],Int_t(fullTime-fmaxFullTimeGroup[SysId][SpaId]));
+	  //LOG(ERROR) << infoMessage << FairLogger::endl;
+	  //wrongTimeOrder[SysId][SpaId]++;
+	  //continue;
+	}
+	if (time > fmaxTimeGlobal){
+	  infoMessage.Form("SuperEpoch %5i Epoche %5i Time %9i eqID:%i sourceA:%i chID:%02i StopType: %i TriggerType: %i InfoType: %i maxTimeGlobal: %9i",
+			   fSuperEpoch,fEpoch,time,eqID,sourceA,chID,stopType,triggerType,infoType,fmaxTimeGlobal);
+	  LOG(DEBUG) << infoMessage << FairLogger::endl;
+	  fmaxTimeGlobal = time;
+	}	
+      } else {
+	infoMessage.Form("SuperEpoch %5i Epoche %5i FullTime %12lu eqID:%i sourceA:%i chID:%02i StopType: %i TriggerType: %i InfoType: %i new (Super)Epoch",
+			 fSuperEpoch,fEpoch,fullTime,eqID,sourceA,chID,stopType,triggerType,infoType);
+	LOG(DEBUG) << infoMessage << FairLogger::endl;
+	//fmaxFullTimeGlobal = fullTime;
+	if (fEpoch != flastEpoch || fSuperEpoch > flastSuperEpoch) {
+	  fmaxTimeGlobal = time;
+	  for (Int_t iSys = 0; iSys < 3; iSys++)
+	    for (Int_t iSpa = 0; iSpa < 6; iSpa++)
+	      fmaxTimeGroup[iSys][iSpa] = 0;
+	  fmaxTimeGroup[SysId][SpaId] = time;
+	}
+	if (time < fmaxTimeGlobal) {
+	  infoMessage.Form("SuperEpoch %5i Epoche %5i Time %9i eqID:%i sourceA:%i chID:%02i StopType: %i TriggerType: %i InfoType: %i maxTimeGlobal: %9i time jump #Delta t: %9i",
+			   fSuperEpoch,fEpoch,time,eqID,sourceA,chID,stopType,triggerType,infoType,fmaxTimeGlobal,Int_t(time-fmaxTimeGlobal));
+	  LOG(INFO) << infoMessage << FairLogger::endl;
+	  //wrongTimeOrder[SysId][SpaId]++;
+	  //continue;
+	}
+	if (time > fmaxTimeGroup[SysId][SpaId]){
+	  infoMessage.Form("SuperEpoch %5i Epoche %5i Time %9i eqID:%i sourceA:%i chID:%02i StopType: %i TriggerType: %i InfoType: %i maxTimeGroup: %9i",
+			   fSuperEpoch,fEpoch,time,eqID,sourceA,chID,stopType,triggerType,infoType,fmaxTimeGroup[SysId][SpaId]);
+	  LOG(DEBUG) << infoMessage << FairLogger::endl;
+	  fmaxTimeGroup[SysId][SpaId] = time;
+	}
+	if (time < fmaxTimeGroup[SysId][SpaId]) {
+	  infoMessage.Form("SuperEpoch %5i Epoche %5i Time %9i eqID:%i sourceA:%i chID:%02i StopType: %i TriggerType: %i InfoType: %i maxTimeGroup: %9i time jump #Delta t: %9i",
+			   fSuperEpoch,fEpoch,time,eqID,sourceA,chID,stopType,triggerType,infoType,fmaxTimeGroup[SysId][SpaId],Int_t(time-fmaxTimeGroup[SysId][SpaId]));
+	  LOG(ERROR) << infoMessage << FairLogger::endl;
+	  wrongTimeOrder[SysId][SpaId]++;
+	  continue;
+	}
+      }
+
+
+    }
+    if (triggerType == 0){
+      flastDlmTriggerTime[SysId][SpaId][raw->GetChannelID()] = fullTime;
+      infoMessage.Form("SuperEpoch %5i Epoche %5i FullTime %12lu eqID:%i sourceA:%i StopType: %i TriggerType: %i InfoType: %i new (Super)Epoch",
+		       fSuperEpoch,fEpoch,fullTime,eqID,sourceA,stopType,triggerType,infoType);
+      LOG(INFO) << infoMessage << FairLogger::endl;
+      for (Int_t iSys = 0; iSys < 1; iSys++){
+	for (Int_t iSpa = 0; iSpa < 2; iSpa++){
+	  infoMessage.Form("SysID%02i SpaID%02i",iSys,iSpa);
+	  LOG(INFO) << infoMessage << FairLogger::endl;
+	  //for (Int_t iCh = 0; iCh < 15; iCh++){
+	  infoMessage.Form("%12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu ",
+			   flastDlmTriggerTime[iSys][iSpa][ 0],flastDlmTriggerTime[iSys][iSpa][ 1],flastDlmTriggerTime[iSys][iSpa][ 2],flastDlmTriggerTime[iSys][iSpa][ 3],
+			   flastDlmTriggerTime[iSys][iSpa][ 4],flastDlmTriggerTime[iSys][iSpa][ 5],flastDlmTriggerTime[iSys][iSpa][ 6],flastDlmTriggerTime[iSys][iSpa][ 7],
+			   flastDlmTriggerTime[iSys][iSpa][ 8],flastDlmTriggerTime[iSys][iSpa][ 9],flastDlmTriggerTime[iSys][iSpa][10],flastDlmTriggerTime[iSys][iSpa][11],
+			   flastDlmTriggerTime[iSys][iSpa][12],flastDlmTriggerTime[iSys][iSpa][13],flastDlmTriggerTime[iSys][iSpa][14],flastDlmTriggerTime[iSys][iSpa][15]
+			   );
+	  LOG(INFO) << infoMessage << FairLogger::endl;
+	  // }
+	}
+      }
+      cout << "----------------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+    }
 
     //if (stopType == 0 && triggerType > 0){
-    if (isHit){
-      std::map<Int_t, CbmSpadicRawMessage*>::iterator timeBufferAllIt = fTimeBufferAll[TString(syscore+spadic)][time].find(combiId);
-      if (timeBufferAllIt == fTimeBufferAll[TString(syscore+spadic)][time].end()){
-	fTimeBufferAll[TString(syscore+spadic)][time][combiId]= new CbmSpadicRawMessage((Int_t)raw->GetEquipmentID(), (Int_t)raw->GetSourceAddress(), raw->GetChannelID(),
-											raw->GetEpochMarker(), raw->GetTime(), raw->GetSuperEpoch(), raw->GetTriggerType(),
-											raw->GetInfoType(), raw->GetStopType(), raw->GetGroupId(), raw->GetBufferOverflowCount(), raw->GetNrSamples(), raw->GetSamples());
-      } else {
-	LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter << " SysId " << SysId << " SpaId " << SpaId << " at time " << time << " with combiId " << combiId << " already in buffer all" << FairLogger::endl;
-	LOG(ERROR) << "                        " << TString(syscore+spadic) << " at time " << time << " with combiId " << combiId << " row " << rowId << " column " << columnId << FairLogger::end;
-      }
-      std::map<Int_t, CbmSpadicRawMessage*>::iterator timeBufferIt = fTimeBuffer[TString(syscore+spadic)][time].find(combiId);
-      if (timeBufferIt == fTimeBuffer[TString(syscore+spadic)][time].end()){
-	//printf("%p  time %12lu %12lu %s CI%i EI%i SA%i TT%i\n",std::addressof(raw),time,raw->GetFullTime(),(syscore+spadic).Data(),combiId,Int_t(raw->GetEquipmentID()),Int_t(raw->GetSourceAddress()),raw->GetTriggerType());
-	if (raw->GetStopType() == 0 )//|| raw->GetStopType() == 3 )
-	  fTimeBuffer[TString(syscore+spadic)][time][combiId]= new CbmSpadicRawMessage((Int_t)raw->GetEquipmentID(), (Int_t)raw->GetSourceAddress(), raw->GetChannelID(),
-										       raw->GetEpochMarker(), raw->GetTime(), raw->GetSuperEpoch(), raw->GetTriggerType(),
-										       raw->GetInfoType(), raw->GetStopType(), raw->GetGroupId(), raw->GetBufferOverflowCount(), raw->GetNrSamples(), raw->GetSamples());
-      } else {
-	//fTimeBuffer[TString(syscore+spadic)][time][-1]=raw;
-	LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter << " SysId " << SysId << " SpaId " << SpaId << " at time " << time << " with combiId " << combiId << " already in buffer" << FairLogger::endl;
-	LOG(ERROR) << "                        " << TString(syscore+spadic) << " at time " << time << " with combiId " << combiId << " row " << rowId << " column " << columnId << FairLogger::endl;
-	fDoubleCounter++;
-      }
-      //}
-    }
-    if (time > lastSpadicTime[SysId][SpaId]){
+    if (fullTime > lastSpadicTime[SysId][SpaId]){
       // ok, next hit
     
       clusterSize[SysId][SpaId] = 1;
-    } else if (time == lastSpadicTime[SysId][SpaId]) { // Clusterizer
+    } else if (fullTime == lastSpadicTime[SysId][SpaId]) { // Clusterizer
       // possible FNR trigger
       if (stopType == 0){ // normal ending
 	//clusterSize = 1;
@@ -439,9 +551,94 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
       } else {// multihit or currupted
       }
     } else {
-      wrongTimeOrder[SysId][SpaId]++;
-      LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter << " SPADIC " << SysId << SpaId << " event time " << time << " < last time " << lastSpadicTime[SysId][SpaId] << " entry " << i << " of " << entriesInMessage << FairLogger::endl;
+      if (isHit){
+	//TimeClustering2015CernSPS();
+	wrongTimeOrder[SysId][SpaId]++;
+	continue;
+	errorMessage.Form("SuperEpoch %5i Epoch %5i Container:%5i Message:%5i FullTime:%15lu eqID:%i sourceA:%i (Sys%iSpa%i) ChId:%2i CombiID:%2i StopType: %i TriggerType: %i InfoType:%i message time %15lu < last message time %15lu",fSuperEpoch,fEpoch,fContainerCounter,fSpadicMessageCounter,fullTime,eqID,sourceA,SysId,SpaId,chID,combiId,stopType,triggerType,infoType,fullTime, lastSpadicTime[SysId][SpaId]);
+	LOG(ERROR) << errorMessage << FairLogger::endl;
+      }
     }
+    if (isHit){
+      if (flastEpoch > fEpoch && flastSuperEpoch > fSuperEpoch){
+	  errorMessage.Form("SuperEpoch %5i Epoch %5i | lastSuperEpoch %5i lastEpoch %5i",fSuperEpoch,fEpoch,flastSuperEpoch,flastEpoch);
+	  LOG(ERROR) << errorMessage << FairLogger::endl;
+      }
+  
+      if (flastSuperEpoch == fSuperEpoch && flastEpoch == fEpoch){
+	
+	std::map<Int_t, CbmSpadicRawMessage*>::iterator timeBufferIt = fTimeBuffer[TString(syscore+spadic)][time].find(combiId);
+	if (timeBufferIt == fTimeBuffer[TString(syscore+spadic)][time].end()){
+	  fTimeBuffer[TString(syscore+spadic)][time][combiId]= new CbmSpadicRawMessage((Int_t)raw->GetEquipmentID(), (Int_t)raw->GetSourceAddress(), raw->GetChannelID(),
+											       raw->GetEpochMarker(), raw->GetTime(), raw->GetSuperEpoch(), raw->GetTriggerType(),
+											       raw->GetInfoType(), raw->GetStopType(), raw->GetGroupId(), raw->GetBufferOverflowCount(), 
+											       raw->GetNrSamples(), raw->GetSamples());  
+	} else { 
+	  debugMessage.Form("SuperEpoch %5i Epoch %5i Container:%5i Message:%5i FullTime:%15lu eqID:%i sourceA:%i (Sys%iSpa%i) ChId:%2i CombiID:%2i StopType: %i TriggerType: %i   allready in buffer",
+			    fSuperEpoch,fEpoch,fContainerCounter,fSpadicMessageCounter,fullTime,eqID,sourceA,SysId,SpaId,chID,combiId,stopType,triggerType);
+	  LOG(DEBUG) << debugMessage << FairLogger::endl;
+	}            
+      } else {
+	TimeClustering2015CernSPS();
+      }
+
+      std::map<Int_t, CbmSpadicRawMessage*>::iterator fullTimeBufferIt = fFullTimeBuffer[TString(syscore+spadic)][fullTime].find(combiId);
+      if (fullTimeBufferIt == fFullTimeBuffer[TString(syscore+spadic)][fullTime].end()){
+
+	//if (raw->GetStopType() == 0 )//|| raw->GetStopType() == 3 )
+	fFullTimeBuffer[TString(syscore+spadic)][fullTime][combiId]= new CbmSpadicRawMessage((Int_t)raw->GetEquipmentID(), (Int_t)raw->GetSourceAddress(), raw->GetChannelID(),
+											     raw->GetEpochMarker(), raw->GetTime(), raw->GetSuperEpoch(), raw->GetTriggerType(),
+											     raw->GetInfoType(), raw->GetStopType(), raw->GetGroupId(), raw->GetBufferOverflowCount(), raw->GetNrSamples(), raw->GetSamples());
+      } else {
+	//fFullTimeBuffer[TString(syscore+spadic)][fullTime][-1]=raw;  
+	debugMessage.Form("SuperEpoch %5i Epoch %5i Container:%5i Message:%5i FullTime:%15lu eqID:%i sourceA:%i (Sys%iSpa%i) ChId:%2i CombiID:%2i StopType: %i TriggerType: %i   allready in fullTime buffer",fSuperEpoch,fEpoch,fContainerCounter,fSpadicMessageCounter,fullTime,eqID,sourceA,SysId,SpaId,chID,combiId,stopType,triggerType);
+	LOG(DEBUG) << debugMessage << FairLogger::endl;
+
+	fDoubleCounter++;
+      }
+      //}
+    } else {
+      if (raw->GetBufferOverflowCount() > 0){
+	infoMessage.Form("SuperEpoch %5i Epoch %5i Container:%5i Message:%5i FullTime:%15lu eqID:%i sourceA:%i (Sys%iSpa%i) ChId:%2i CombiID:%2i InfoType: %i  Lost %3i messages",fSuperEpoch,fEpoch,fContainerCounter,fSpadicMessageCounter,fullTime,eqID,sourceA,SysId,SpaId,chID,combiId,infoType,raw->GetBufferOverflowCount());
+	LOG(INFO) << infoMessage <<FairLogger::endl;
+      } else {
+	infoMessage.Form("SuperEpoch %5i Epoch %5i Container:%5i Message:%5i FullTime:%15lu eqID:%i sourceA:%i (Sys%iSpa%i) ChId:%2i CombiID:%2i InfoType: %i",fSuperEpoch,fEpoch,fContainerCounter,fSpadicMessageCounter,fullTime,eqID,sourceA,SysId,SpaId,chID,combiId,infoType);
+	//LOG(INFO) << infoMessage << FairLogger::endl;
+      }
+    }
+    /*
+      if (fullTime > lastSpadicTime[SysId][SpaId]){
+      // ok, next hit
+    
+      clusterSize[SysId][SpaId] = 1;
+      } else if (fullTime == lastSpadicTime[SysId][SpaId]) { // Clusterizer
+      // possible FNR trigger
+      if (stopType == 0){ // normal ending
+      //clusterSize = 1;
+      if (triggerType == 0) { // gobal dlm trigger
+
+      } else if (triggerType == 1) { //Self triggered
+      // central pad candidate
+      clusterSize[SysId][SpaId]+=1;
+      } else if (triggerType == 2) { //Neighbor triggered
+      // outer pad candidate
+      clusterSize[SysId][SpaId]+=1;
+      } else { //Self and neighbor triggered
+      // central pad candidate
+      clusterSize[SysId][SpaId]+=1;
+      }
+      } else {// multihit or currupted
+      }
+      } else {
+      if (isHit){
+      //TimeClustering2015CernSPS();
+      wrongTimeOrder[SysId][SpaId]++;
+      //break;
+      errorMessage.Form("SuperEpoch %5i Epoch %5i Container:%5i Message:%5i FullTime:%15lu eqID:%i sourceA:%i (Sys%iSpa%i) ChId:%2i CombiID:%2i StopType: %i TriggerType: %i InfoType:%i message time %15lu < last message time %15lu",fSuperEpoch,fEpoch,fContainerCounter,fSpadicMessageCounter,fullTime,eqID,sourceA,SysId,SpaId,chID,combiId,stopType,triggerType,infoType,fullTime, lastSpadicTime[SysId][SpaId]);
+      LOG(ERROR) << errorMessage << FairLogger::endl;
+      }
+      }
+    */
     TString channelId;
     channelId.Form("_Ch%02d", chID);
 
@@ -635,35 +832,36 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 	}
  
 	histName = "DeltaTime_" + syscore + spadic;
-	fHM->H1(histName.Data())->Fill(time-lastSpadicTime[SysId][SpaId]);
+	fHM->H1(histName.Data())->Fill(fullTime-lastSpadicTime[SysId][SpaId]);
 
 	histName = "TriggerRate_" + syscore + spadic;
-	if (time-lastSpadicTimeCh[SysId][SpaId][chID] > 0.0)
+	if (fullTime-lastSpadicTimeCh[SysId][SpaId][chID] > 0.0)
 	  if (triggerType == 1 || triggerType == 3)
-	    fHM->H1(histName.Data())->Fill(chID, 1.0/((time-lastSpadicTimeCh[SysId][SpaId][chID])*1.0E-09));//ns -> s -> Hz
+	    fHM->H1(histName.Data())->Fill(chID, 1.0/((fullTime-lastSpadicTimeCh[SysId][SpaId][chID])*1.0E-09));//ns -> s -> Hz
 
 	histName = "DeltaTime_Left_Right_" + syscore + spadic;
 	if (chID < 31)
-	  fHM->H1(histName.Data())->Fill(time-lastSpadicTimeCh[SysId][SpaId][chID+1]);
+	  fHM->H1(histName.Data())->Fill(fullTime-lastSpadicTimeCh[SysId][SpaId][chID+1]);
 	if (chID > 0)
-	  fHM->H1(histName.Data())->Fill(time-lastSpadicTimeCh[SysId][SpaId][chID-1]);
+	  fHM->H1(histName.Data())->Fill(fullTime-lastSpadicTimeCh[SysId][SpaId][chID-1]);
 
 	histName = "DeltaTime_Left_Right_Trigger_" + syscore + spadic;
 	if (triggerType == 1 || triggerType == 3){
 	  if (chID < 31)
 	    if (lastTriggerType[chID+1] == 2 || lastTriggerType[chID+1] == 3)
-	      fHM->H1(histName.Data())->Fill(time-lastSpadicTimeCh[SysId][SpaId][chID+1]);
+	      fHM->H1(histName.Data())->Fill(fullTime-lastSpadicTimeCh[SysId][SpaId][chID+1]);
 	  if (chID > 0)
 	    if (lastTriggerType[chID-1] == 2 || lastTriggerType[chID-1] == 3)
-	      fHM->H1(histName.Data())->Fill(time-lastSpadicTimeCh[SysId][SpaId][chID-1]);
+	      fHM->H1(histName.Data())->Fill(fullTime-lastSpadicTimeCh[SysId][SpaId][chID-1]);
 	}
       }
     }
 
-    lastSpadicTime[SysId][SpaId] = time;
-    lastSpadicTimeCh[SysId][SpaId][chID] = time;
+    lastSpadicTime[SysId][SpaId] = fullTime;
+    lastSpadicTimeCh[SysId][SpaId][chID] = fullTime;
     lastTriggerType[chID] = triggerType;
-
+    flastEpoch = fEpoch;
+    flastSuperEpoch = fSuperEpoch;
     entries++;
   } //entriesInMessage
 
@@ -676,8 +874,12 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 	fHM->H1((TString("ErrorCounter") + histName).Data())->SetBinContent(timeSlice,fHM->H1((TString("ErrorCounter") + histName).Data())->GetBinContent(timeSlice+1));
       }
       fHM->H1((TString("TriggerCounter") + histName).Data())->SetBinContent(fHM->H1((TString("TriggerCounter") + histName).Data())->GetNbinsX(),sumTrigger[sy][2*sp] + sumTrigger[sy][2*sp+1]);// set only the spa sys combi to new value
+      fHM->G1((TString("TriggerCounterGraph") + histName).Data())->SetPoint(fHM->G1((TString("TriggerCounterGraph") + histName).Data())->GetN(),fHM->G1((TString("TriggerCounterGraph") + histName).Data())->GetN(),sumTrigger[sy][2*sp] + sumTrigger[sy][2*sp+1]);
+
       fHM->H1((TString("OverFlowCounter") + histName).Data())->SetBinContent(fHM->H1((TString("OverFlowCounter") + histName).Data())->GetNbinsX(),sumOverflow[sy][2*sp] + sumOverflow[sy][2*sp+1]);
+      fHM->G1((TString("OverFlowCounterGraph") + histName).Data())->SetPoint(fHM->G1((TString("OverFlowCounterGraph") + histName).Data())->GetN(),fHM->G1((TString("OverFlowCounterGraph") + histName).Data())->GetN(),sumOverflow[sy][2*sp] + sumOverflow[sy][2*sp+1]);
       fHM->H1((TString("ErrorCounter") + histName).Data())->SetBinContent(fHM->H1((TString("ErrorCounter") + histName).Data())->GetNbinsX(),sumError[sy][2*sp] + sumError[sy][2*sp+1]);
+      fHM->G1((TString("ErrorCounterGraph") + histName).Data())->SetPoint(fHM->G1((TString("ErrorCounterGraph") + histName).Data())->GetN(),fHM->G1((TString("ErrorCounterGraph") + histName).Data())->GetN(),sumError[sy][2*sp] + sumError[sy][2*sp+1]);
       fHM->H1("TriggerSum")->Fill(TString("SysCore" + std::to_string(sy) + "_Spadic" + std::to_string(sp)),sumTrigger[sy][2*sp] + sumTrigger[sy][2*sp+1]);
     }
   }
@@ -721,43 +923,104 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     return maxAdcValue;
   }
 
+void CbmTrdRawBeamProfile::CleanUpBuffers()
+{
+    
+  for (std::map<TString, std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = fTimeBuffer.begin(); SpaSysIt != fTimeBuffer.end(); SpaSysIt++){
+    for (std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> >::iterator TimeIt = SpaSysIt->second.begin(); TimeIt != SpaSysIt->second.end(); TimeIt++){
+      for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator CombiIt = TimeIt->second.begin(); CombiIt != TimeIt->second.end(); CombiIt++){
+	if(CombiIt->second != NULL)
+	  delete CombiIt->second;
+      }
+      TimeIt->second.clear();
+    }
+    SpaSysIt->second.clear();
+  }
+  fTimeBuffer.clear();
+  /*
+    for (std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = fFullTimeBuffer.begin() ; SpaSysIt != fFullTimeBuffer.end(); SpaSysIt++){
+    for (std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > ::iterator timeIt = SpaSysIt->second.begin() ; timeIt != SpaSysIt->second.end(); timeIt++){
+    for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiIt = timeIt->second.begin(); combiIt != timeIt->second.end(); combiIt++){
+    if(combiIt->second != NULL)
+    delete combiIt->second;
+    }
+    timeIt->second.clear();   
+    }
+    SpaSysIt->second.clear();
+    }  
+    fFullTimeBuffer.clear();
+    for (std::map<TString, std::map<ULong_t, std::multimap<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = fFullTimeBufferAll.begin() ; SpaSysIt != fFullTimeBufferAll.end(); SpaSysIt++){
+    for (std::map<ULong_t, std::multimap<Int_t, CbmSpadicRawMessage*> > ::iterator timeIt = SpaSysIt->second.begin() ; timeIt != SpaSysIt->second.end(); timeIt++){
+    for (std::multimap<Int_t, CbmSpadicRawMessage*> ::iterator combiIt = timeIt->second.begin(); combiIt != timeIt->second.end(); combiIt++){
+    if(combiIt->second != NULL)
+    delete combiIt->second;
+    }
+    timeIt->second.clear();   
+    }
+    SpaSysIt->second.clear();
+    }
+    fFullTimeBufferAll.clear();
+    for (std::map<Int_t, std::map<Int_t, std::map<Int_t, std::map<Int_t, CbmTrbRawMessage*> > > >::iterator SourceAIt = fTrbBuffer.begin() ; SourceAIt != fTrbBuffer.end(); SourceAIt++){
+    for (std::map<Int_t, std::map<Int_t, std::map<Int_t, CbmTrbRawMessage*> > >::iterator epochIt = SourceAIt->second.begin() ; epochIt != SourceAIt->second.end(); epochIt++){
+    for (std::map<Int_t, std::map<Int_t, CbmTrbRawMessage*> > ::iterator chIdIt = epochIt->second.begin() ; chIdIt != epochIt->second.end(); chIdIt++){
+    for (std::map<Int_t, CbmTrbRawMessage*> ::iterator timeIt = chIdIt->second.begin(); timeIt != chIdIt->second.end(); timeIt++){
+    if(timeIt->second != NULL)
+    delete timeIt->second;
+    }
+    chIdIt->second.clear();   
+    }
+    epochIt->second.clear();
+    }
+    SourceAIt->second.clear();
+    }
+    fTrbBuffer.clear();
+  */
+}
+
 void CbmTrdRawBeamProfile::TimeClustering2015CernSPS()
 {
-  printf("Start TimeClustering for 2015 CERN SPS Data\n  FFM Chamber on link0\n  MS Chamber on link1 \n!!!!HARD CODED!!!!\n");
+  TString errorMessage, infoMessage, debugMessage;
+  debugMessage.Form("CbmTrdRawBeamProfile::TimeClustering2015CernSPS:  SuperEpoch: %9i  Epoch: %9i",fSuperEpoch, fEpoch);
+  LOG(DEBUG) << debugMessage << FairLogger::endl;
+  const Int_t deltaTimeThreshold = 100000;
+  //printf("Start TimeClustering for 2015 CERN SPS Data\n  FFM Chamber on link0\n  MS Chamber on link1 \n!!!!HARD CODED!!!!\n");
   //CbmSpadicRawMessage* raw = NULL;
   //Int_t  layerId(0), moduleId(0), sectorId(0), rowId(0), columnId(0), clusterSize(0);
   Int_t maxCombiIdFFM(-1), maxCombiIdMS(-1);
-  ULong_t lastFFMTime(0), thisFFMTime(0);
-  ULong_t lastMSTime(0), thisMSTime(0);
+  Int_t lastFFMTime(0), thisFFMTime(0);
+  Int_t lastMSTime(0), thisMSTime(0);
   // Bool_t inside_Cluster(false);
-  if (fTimeBufferAll.begin() != fTimeBufferAll.end())
-    cout << (fTimeBufferAll.begin())->first<< endl;
-  else {
-    cout << "no TimeBufferAll map found" << endl;
+  if (fTimeBuffer.begin() != fTimeBuffer.end()){
+    //cout << (fTimeBuffer.begin())->first<< endl;
+  } else {
+    errorMessage.Form("No TimeBuffer map found");
+    LOG(ERROR) << errorMessage << FairLogger::endl;
     return;
   }  
-  std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator FFMIt = fTimeBufferAll.find(TString("SysCore1_Spadic0"));
-  if (FFMIt == fTimeBufferAll.end()){
-    cout << "FFMIt == fTime" << endl;
+  std::map<TString, std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator FFMIt = fTimeBuffer.find(TString("SysCore0_Spadic0"));
+  if (FFMIt == fTimeBuffer.end()){
+    infoMessage.Form("No map found for SysCore0_Spadic0 at SuperEpoch %9i Epoch %9i",fSuperEpoch,fEpoch);
+    LOG(INFO) << infoMessage << FairLogger::endl;
+    CleanUpBuffers();
     return;
   }
-  std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator MSIt  = fTimeBufferAll.find(TString("SysCore1_Spadic1"));
-  if (MSIt == fTimeBufferAll.end()){
-    cout << "MSIt == fTimeBufferAll.end()" << endl;
+  std::map<TString, std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator MSIt  = fTimeBuffer.find(TString("SysCore0_Spadic1"));
+  if (MSIt == fTimeBuffer.end()){
+    infoMessage.Form("No map found for SysCore0_Spadic1 at SuperEpoch %9i Epoch %9i",fSuperEpoch,fEpoch);
+    LOG(INFO) << infoMessage << FairLogger::endl;
+    CleanUpBuffers();
     return;
   }
-  std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > ::iterator secondTimeIt = (MSIt->second).begin();
-  for (std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > ::iterator firstTimeIt = (FFMIt->second).begin() ; firstTimeIt != (FFMIt->second).end(); firstTimeIt++){
-    /*
-      for ( std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > ::iterator secondTimeAllIt = (MSIt->second).begin() ; secondTimeAllIt != (MSIt->second).end(); secondTimeAllIt++){
-      for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiMSIt = (secondTimeAllIt->second).begin(); combiMSIt != (secondTimeAllIt->second).end(); combiMSIt++){
-      for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiFFMIt = (firstTimeIt->second).begin(); combiFFMIt != (firstTimeIt->second).end(); combiFFMIt++){
-      fHM->H2("DeltaClusterTimeCorrelationAllEvents2015CernSPS")->Fill(combiFFMIt->first,combiMSIt->first);
-      }
-      }
-      }
-    */
+  std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> >::iterator secondTimeIt = (MSIt->second).begin();
+  for (std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> >::iterator firstTimeIt = (FFMIt->second).begin() ; firstTimeIt != (FFMIt->second).end(); firstTimeIt++){
     Int_t maxChargeFFM(-300), lastChargeFFM(-301),  maxChargeMS(-300), lastChargeMS(-301);
+    //secondEpochIt = (MSIt->second).find(firstEpochIt->first);
+    //if (secondEpochIt == (MSIt->second).end()) continue;
+    //std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> >::iterator secondTimeIt = (secondEpochIt->second).begin();
+    //for (std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> >::iterator firstTimeIt = (firstEpochIt->second).begin(); firstTimeIt != (firstEpochIt->second).end(); firstTimeIt++){
+    thisFFMTime = (Int_t)firstTimeIt->first;
+    debugMessage.Form("SysCore0_Spadic0 at SuperEpoch %9i Epoch %9i Time %12i",fSuperEpoch,fEpoch,thisFFMTime);
+    LOG(INFO) << debugMessage << FairLogger::endl;
     for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiFFMIt = (firstTimeIt->second).begin(); combiFFMIt != (firstTimeIt->second).end(); combiFFMIt++){
       //raw = combiIt->second;
       maxChargeFFM = GetMaximumAdc(combiFFMIt->second);
@@ -766,49 +1029,47 @@ void CbmTrdRawBeamProfile::TimeClustering2015CernSPS()
 	maxCombiIdFFM = combiFFMIt->first;
       }
     } 
-    
-    thisFFMTime = (ULong_t)firstTimeIt->first;
+    //for ( std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> >::iterator secondTimeIt = (secondEpochIt->second).begin(); secondTimeIt != (secondEpochIt->second).end(); secondTimeIt++){
+     
     //cout << "thisFFMTime: " << thisFFMTime << endl;
     
     if (thisFFMTime > lastFFMTime){
       //cout << "    nextFFMTime found" << endl;
       for (secondTimeIt ; secondTimeIt != (MSIt->second).end(); secondTimeIt++){
-	thisMSTime = (ULong_t)secondTimeIt->first;
+	thisMSTime = (Int_t)secondTimeIt->first;
+
 	//cout << "        thisMSTime: " << thisMSTime;
+	Int_t deltaTime = Int_t(thisMSTime - thisFFMTime);
+
 	if (thisMSTime < thisFFMTime){
 	  // before message seen in first detector
-	  //cout << "                future " << Int_t(thisMSTime - thisFFMTime) << endl;
-	  /*
-	  // To Be taken out 
-	  fHM->H1("DeltaClusterTime2015CernSPS")->Fill(Int_t(thisMSTime - thisFFMTime));
-	  for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiMSIt = (secondTimeIt->second).begin(); combiMSIt != (secondTimeIt->second).end(); combiMSIt++){
-	  //raw = combiIt->second;
-	  maxChargeMS = GetMaximumAdc(combiMSIt->second);
-	  if (maxChargeMS > lastChargeMS){
-	  lastChargeMS = maxChargeMS;
-	  maxCombiIdMS = combiMSIt->first;
-	  }
-	  } 
-	  lastMSTime = thisMSTime;
-	  // To Be taken out 
-	  */
+	  debugMessage.Form("SysCore0_Spadic0 at SuperEpoch %9i Epoch %9i Time %12i #DeltaTime %12i past",fSuperEpoch,fEpoch,thisFFMTime,deltaTime);
+	  LOG(INFO) << debugMessage << FairLogger::endl;
 	  for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiMSIt = (secondTimeIt->second).begin(); combiMSIt != (secondTimeIt->second).end(); combiMSIt++){
 	    for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiFFMIt = (firstTimeIt->second).begin(); combiFFMIt != (firstTimeIt->second).end(); combiFFMIt++){
-	      fHM->H2("DeltaClusterTimeCorrelationAllEvents2015CernSPS")->Fill(combiFFMIt->first,combiMSIt->first);
+	      //Int_t equalFFMMessages = (firstTimeIt->second).count(combiFFMIt->first);
+	      //Int_t equalMSMessages = (secondTimeIt->second).count(combiMSIt->first);
+	      if (deltaTime < deltaTimeThreshold)
+		//for (Int_t iEqualFFM = 0; iEqualFFM < equalFFMMessages; iEqualFFM++)
+		// for (Int_t iEqualMS = 0; iEqualMS < equalMSMessages; iEqualMS++)
+		fHM->H2("DeltaClusterTimeCorrelationAllEvents2015CernSPS")->Fill(combiFFMIt->first,combiMSIt->first);
 	    }
 	  }
 	    
 	} 
 	else if (thisMSTime == thisFFMTime) {
 	  //same time in both detectors
+	  debugMessage.Form("SysCore0_Spadic0 at SuperEpoch %9i Epoch %9i Time %12i #DeltaTime %12i now",fSuperEpoch,fEpoch,thisFFMTime,deltaTime);
+	  LOG(INFO) << debugMessage << FairLogger::endl;
 	  //cout << "                now " << Int_t(thisMSTime - thisFFMTime) <<endl;
-	  fHM->H1("DeltaClusterTime2015CernSPS")->Fill(Int_t(thisMSTime - thisFFMTime));
+	  fHM->H1("DeltaClusterTime2015CernSPS")->Fill(deltaTime);
 	  for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiMSIt = (secondTimeIt->second).begin(); combiMSIt != (secondTimeIt->second).end(); combiMSIt++){
 	    //raw = combiIt->second;
-	    for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiFFMIt = (firstTimeIt->second).begin(); combiFFMIt != (firstTimeIt->second).end(); combiFFMIt++){
-	      fHM->H2("DeltaClusterTimeCorrelationFullCluster2015CernSPS")->Fill(combiFFMIt->first,combiMSIt->first);
-	      fHM->H2("DeltaClusterTimeCorrelationAllEvents2015CernSPS")->Fill(combiFFMIt->first,combiMSIt->first);
-	    }
+	    if (deltaTime < deltaTimeThreshold)
+	      for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiFFMIt = (firstTimeIt->second).begin(); combiFFMIt != (firstTimeIt->second).end(); combiFFMIt++){
+		fHM->H2("DeltaClusterTimeCorrelationFullCluster2015CernSPS")->Fill(combiFFMIt->first,combiMSIt->first);
+		fHM->H2("DeltaClusterTimeCorrelationAllEvents2015CernSPS")->Fill(combiFFMIt->first,combiMSIt->first);
+	      }
 	    maxChargeMS = GetMaximumAdc(combiMSIt->second);
 	    if (maxChargeMS > lastChargeMS){
 	      lastChargeMS = maxChargeMS;
@@ -821,39 +1082,45 @@ void CbmTrdRawBeamProfile::TimeClustering2015CernSPS()
 	} else {
 	  //we are looking for first message after FFM message time
 	  //cout << "                past " << Int_t(thisMSTime - thisFFMTime) <<endl;
+
+	  debugMessage.Form("SysCore0_Spadic0 at SuperEpoch %9i Epoch %9i Time %12i #DeltaTime %12i future",fSuperEpoch,fEpoch,thisFFMTime,deltaTime);
+	  LOG(INFO) << debugMessage << FairLogger::endl;
 	  fHM->H1("DeltaClusterTime2015CernSPS")->Fill(Int_t(thisMSTime - thisFFMTime));//Fill only for the first message of a new cluster
 	  //cout << "---find max channel---" << endl;
-	  for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiMSIt = (secondTimeIt->second).begin(); combiMSIt != (secondTimeIt->second).end(); combiMSIt++){
-	    //raw = combiIt->second;
-	    for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiFFMIt = (firstTimeIt->second).begin(); combiFFMIt != (firstTimeIt->second).end(); combiFFMIt++){
-	      fHM->H2("DeltaClusterTimeCorrelationFullCluster2015CernSPS")->Fill(combiFFMIt->first,combiMSIt->first);
-	      fHM->H2("DeltaClusterTimeCorrelationAllEvents2015CernSPS")->Fill(combiFFMIt->first,combiMSIt->first);
-	    }
-	    maxChargeMS = GetMaximumAdc(combiMSIt->second);
-	    if (maxChargeMS > lastChargeMS){
-	      lastChargeMS = maxChargeMS;
-	      maxCombiIdMS = combiMSIt->first;
-	    }
-	  } 
+	  if (deltaTime < deltaTimeThreshold)
+	    for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiMSIt = (secondTimeIt->second).begin(); combiMSIt != (secondTimeIt->second).end(); combiMSIt++){
+	      //raw = combiIt->second;
+	      for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiFFMIt = (firstTimeIt->second).begin(); combiFFMIt != (firstTimeIt->second).end(); combiFFMIt++){
+		fHM->H2("DeltaClusterTimeCorrelationFullCluster2015CernSPS")->Fill(combiFFMIt->first,combiMSIt->first);
+		fHM->H2("DeltaClusterTimeCorrelationAllEvents2015CernSPS")->Fill(combiFFMIt->first,combiMSIt->first);
+	      }
+	      maxChargeMS = GetMaximumAdc(combiMSIt->second);
+	      if (maxChargeMS > lastChargeMS){
+		lastChargeMS = maxChargeMS;
+		maxCombiIdMS = combiMSIt->first;
+	      }
+	    } 
 	  // cout << "---done---" << endl;
-	  fHM->H2("DeltaClusterTimeCorrelation2015CernSPS")->Fill(maxCombiIdFFM,maxCombiIdMS);
-	  lastMSTime = thisMSTime;
+	  if (deltaTime < deltaTimeThreshold)
+	    fHM->H2("DeltaClusterTimeCorrelation2015CernSPS")->Fill(maxCombiIdFFM,maxCombiIdMS);
+	 
 	  break; // break for new cluster	  
+	      
+	    
 	}
-	//cout << "---leave MS part---" << endl;
-	lastFFMTime = thisFFMTime;
+	lastMSTime = thisMSTime;
       }
-      //cout << "" << endl;
     }
-
-    //cout << "---next FFM message---" << endl;
+    lastFFMTime = thisFFMTime;
   }
 
-  //cout << "---leave FFM loop---" << endl;
+  CleanUpBuffers();
+  
 }
 
   void CbmTrdRawBeamProfile::Clusterizer()
   {
+    LOG(INFO) << "CbmTrdRawBeamProfile::Clusterizer              :  SuperEpoch: " << fSuperEpoch << "  Epoch: " << fEpoch << FairLogger::endl;
     /*
       TCanvas* b = new TCanvas("rawpulseshape","rawpulseshape",800,600);
       TH1F* rawpulse = new TH1F("rawpulse","rawpulse",32,-0.5,31.5);
@@ -863,26 +1130,26 @@ void CbmTrdRawBeamProfile::TimeClustering2015CernSPS()
     CbmSpadicRawMessage* raw = NULL;
     Int_t  layerId(0), moduleId(0), sectorId(0), rowId(0), columnId(0), clusterSize(0);
     ULong_t lastClusterTime = 0;
-    ULong_t time = 0;
+    ULong_t fullTime = 0;
     TString SysSpaID = "";
     std::vector<Int_t> digiIndices;
-    for (std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = fTimeBuffer.begin() ; SpaSysIt != fTimeBuffer.end(); SpaSysIt++){
+    for (std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > >::iterator SpaSysIt = fFullTimeBuffer.begin() ; SpaSysIt != fFullTimeBuffer.end(); SpaSysIt++){
       SysSpaID = SpaSysIt->first;
       //printf("%s\n",SysSpaID.Data());
       for (std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > ::iterator timeIt = (SpaSysIt->second).begin() ; timeIt != (SpaSysIt->second).end(); timeIt++){
 	LOG(DEBUG) <<  "ClusterSize:" << Int_t((timeIt->second).size()) << FairLogger::endl;
 	clusterSize = Int_t((timeIt->second).size());
-	time = timeIt->first;
-	//printf("      %lu\n",time);
+	fullTime = timeIt->first;
+	//printf("      %lu\n",fullTime);
 	fHM->H1(TString("ClusterSize_" + SysSpaID).Data())->Fill(clusterSize);
 
 	//Delta time between time clusters
-	fHM->H1(TString("DeltaTime_Cluster_" + SysSpaID).Data())->Fill(time - lastClusterTime);
-	lastClusterTime = time;
+	fHM->H1(TString("DeltaTime_Cluster_" + SysSpaID).Data())->Fill(fullTime - lastClusterTime);
+	lastClusterTime = fullTime;
 
 	Int_t lastCombiID = -1;
 	//digiIndices.clear();
-	//printf("\nTime: %lu\n",time);
+	//printf("\nTime: %lu\n",fullTime);
 	for (std::map<Int_t, CbmSpadicRawMessage*> ::iterator combiIt = (timeIt->second).begin(); combiIt != (timeIt->second).end(); combiIt++){
 	  mapDigiCounter++;
 	  //rawpulse->SetLineColor(Int_t(digiIndices.size())+1);
@@ -896,7 +1163,7 @@ void CbmTrdRawBeamProfile::TimeClustering2015CernSPS()
 	  fHM->H2(TString("ClusterSize_Message_Length_" + SysSpaID).Data())->Fill(clusterSize,Int_t(raw->GetNrSamples()));
 	  layerId = GetLayerID(raw);
 	  moduleId = GetModuleID(raw);
-	  //printf("%p  time %12lu %12lu %s CI%2i layer %i EI%i SA%i TT%i\n",std::addressof(raw),time,raw->GetFullTime(),(SysSpaID).Data(),combiIt->first,layerId,Int_t(raw->GetEquipmentID()),Int_t(raw->GetSourceAddress()),raw->GetTriggerType());
+	  //printf("%p  fullTime %12lu %12lu %s CI%2i layer %i EI%i SA%i TT%i\n",std::addressof(raw),fullTime,raw->GetFullTime(),(SysSpaID).Data(),combiIt->first,layerId,Int_t(raw->GetEquipmentID()),Int_t(raw->GetSourceAddress()),raw->GetTriggerType());
 	  fHM->H2(TString("LayerId").Data())->Fill(layerId,SysSpaID,1);
 	  fHM->H2(TString("ModuleId").Data())->Fill(moduleId,SysSpaID,1);
 
@@ -983,6 +1250,7 @@ void CbmTrdRawBeamProfile::TimeClustering2015CernSPS()
       }
       //SpaSysIt->second.clear();
     }
+ 
     printf("[INFO   ] CbmTrdRawBeamProfile::Clusterizer Digis:           %i\n",mapDigiCounter);
   }
 
@@ -1116,7 +1384,11 @@ void CbmTrdRawBeamProfile::TimeClustering2015CernSPS()
       return channelMapping[SpadicChannel];
     }
   }
-
+Int_t CbmTrdRawBeamProfile::GetCombiID(CbmSpadicRawMessage* raw)
+{
+  const Int_t maxNrColumns = 16;
+  return (GetRowID(raw) * (maxNrColumns + 1) + GetColumnID(raw));
+}
   // ---- Finish --------------------------------------------------------
   void CbmTrdRawBeamProfile::Finish()
   {
@@ -1356,15 +1628,28 @@ void CbmTrdRawBeamProfile::TimeClustering2015CernSPS()
 	for (Int_t iType=0; iType < 8; iType++)
 	  fHM->H1(histName.Data())->GetYaxis()->SetBinLabel(iType+1,infoTypes[iType]);
 
+	histName = "TriggerCounterGraph_" + syscoreName[syscore] + "_" + spadicName[spadic];
+	title = histName + ";TimeSlice;Trigger / TimeSlice";
+	fHM->Add(histName.Data(), new TGraph());
+	fHM->G1(histName.Data())->SetTitle(histName.Data());
 
 	histName = "TriggerCounter_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	title = histName + ";TimeSlice;Trigger / TimeSlice";
 	fHM->Add(histName.Data(), new TH1I(histName, title, 1000, 0, 1000));
 
+	histName = "OverFlowCounterGraph_" + syscoreName[syscore] + "_" + spadicName[spadic];
+	title = histName + ";TimeSlice;Trigger / TimeSlice";
+	fHM->Add(histName.Data(), new TGraph());
+	fHM->G1(histName.Data())->SetTitle(histName.Data());
+
 	histName = "OverFlowCounter_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	title = histName + ";TimeSlice;OverFlow / TimeSlice";
 	fHM->Add(histName.Data(), new TH1I(histName, title, 1000, 0, 1000));
 
+	histName = "ErrorCounterGraph_" + syscoreName[syscore] + "_" + spadicName[spadic];
+	title = histName + ";TimeSlice;Trigger / TimeSlice";
+	fHM->Add(histName.Data(), new TGraph());
+	fHM->G1(histName.Data())->SetTitle(histName.Data());
 
 	histName = "ErrorCounter_" + syscoreName[syscore] + "_" + spadicName[spadic];
 	title = histName + ";TimeSlice;Error / TimeSlice";

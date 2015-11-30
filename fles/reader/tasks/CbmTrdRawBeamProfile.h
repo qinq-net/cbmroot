@@ -44,6 +44,7 @@ class CbmTrdRawBeamProfile : public FairTask
     virtual Int_t GetSectorID(CbmSpadicRawMessage* raw);
     virtual Int_t GetRowID(CbmSpadicRawMessage* raw);
     virtual Int_t GetColumnID(CbmSpadicRawMessage* raw);
+    virtual Int_t GetCombiID(CbmSpadicRawMessage* raw);
     virtual Int_t GetChannelOnPadPlane(Int_t SpadicChannel);
     virtual Bool_t FragmentedPulseTest(CbmSpadicRawMessage* raw);
     virtual Int_t GetMaximumAdc(CbmSpadicRawMessage* raw);
@@ -60,7 +61,15 @@ class CbmTrdRawBeamProfile : public FairTask
     Int_t fiDigi;
     Int_t fiCluster;
     CbmHistManager* fHM;
-
+    Int_t fmaxTimeGlobal;
+    Int_t fmaxTimeGroup[3][6];
+    ULong_t fmaxFullTimeGlobal;
+    ULong_t fmaxFullTimeGroup[3][6];
+    ULong_t flastDlmTriggerTime[3][6][15];
+    Int_t fEpoch;
+    Int_t flastEpoch;
+    Int_t fSuperEpoch;
+    Int_t flastSuperEpoch;
     Int_t fSpadicMessageCounter;
     Int_t fNxyterMessageCounter;
     Int_t fTrbMessageCounter;
@@ -72,14 +81,18 @@ class CbmTrdRawBeamProfile : public FairTask
     Int_t fLostHitCounter;
     Int_t fDoubleCounter;
     Int_t fFragmentedCounter;
-
-    std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > > fTimeBuffer;// <ASIC ID "Syscore%d_Spadic%d"<Time, <CombiId, SpadicMessage> > >
-    std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > > fTimeBufferAll;// <ASIC ID "Syscore%d_Spadic%d"<Time, <CombiId, SpadicMessage> > >
+    std::map<Int_t, std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> > > fSys0Spa0Buffer;//<SuperEpoch <Epoch <Time, SpadicMessage> > > > 
+    std::map<Int_t, std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> > > fSys0Spa1Buffer;//<SuperEpoch <Epoch <Time, SpadicMessage> > > > 
+    std::map<TString, std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> > > fTimeBuffer;//<ASIC ID "Syscore%d_Spadic%d"  <Time, <CombiId, SpadicMessage> > > > 
+    std::map<TString, std::map<ULong_t, std::map<Int_t, CbmSpadicRawMessage*> > > fFullTimeBuffer;// <ASIC ID "Syscore%d_Spadic%d"<Time, <CombiId, SpadicMessage> > >
+    std::map<TString, std::map<ULong_t, std::multimap<Int_t, CbmSpadicRawMessage*> > > fFullTimeBufferAll;// <ASIC ID "Syscore%d_Spadic%d"<Time, <CombiId, SpadicMessage> > >
     //std::map<Int_t, 
      std::map<Int_t, std::map<Int_t, std::map<Int_t, std::map<Int_t, CbmTrbRawMessage*> > > > fTrbBuffer;// sourceA < epoch < chId < Coarse, TrbMessage > > > > >
     //std::map<Int_t, CbmTrbRawMessage*> fTrbBuffer;
     /** Output array to  new data level**/
     //  TClonesArray* <OutputDataLevel>;
+
+     void CleanUpBuffers();
 
     void CreateHistograms();
 
