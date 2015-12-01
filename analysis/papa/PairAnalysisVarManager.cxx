@@ -215,6 +215,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"EtaMC",                    "#eta^{MC}",                                               ""},
   {"YMC",                      "#it{y}^{MC}",                                             ""},
   {"YlabMC",                   "#it{y}_{lab}^{MC}",                                       ""},
+  {"BetaGammaMC",              "#beta#gamma^{MC}",                                       ""},
   {"EMC",                      "E^{MC}",                                                  "(GeV)"},
   {"EMotherMC",                "E^{MC}_{mother}",                                         "(GeV)"},
   {"MMC",                      "m_{inv}^{MC}",                                            "(GeV/#it{c}^{2})"},

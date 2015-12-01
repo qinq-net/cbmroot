@@ -282,6 +282,7 @@ public:
     kEtaMC,                    // pseudo-rapidity
     kYMC,                      // rapidity
     kYlabMC,                   // rapidity lab
+    kBetaGammaMC,              // beta gamma
     kEMC,                      // energy
     kEMotherMC,                // energy of the mother
     kMMC,                      // mass
@@ -1032,6 +1033,10 @@ inline void PairAnalysisVarManager::FillVarMCTrack(const CbmMCTrack *particle, D
   //  values[kEtaMC]       = mom.Eta();
   values[kYMC]         = particle->GetRapidity() - values[kYbeam];;
   values[kYlabMC]      = particle->GetRapidity();
+  Double_t pom  = particle->GetP()/particle->GetMass();
+  Double_t beta  = pom / TMath::Sqrt(pom*pom+1.);
+    //  Double_t gamma = 1./ TMath::Sqrt(1.-pom*pom);
+  values[kBetaGammaMC] = 1./ TMath::Sqrt(1.-beta*beta);
   values[kEMC]         = particle->GetEnergy();
   values[kMMC]         = mom.M();//particle->GetMass();
   values[kChargeMC]    = particle->GetCharge();
