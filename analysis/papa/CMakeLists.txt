@@ -100,7 +100,7 @@ PairAnalysisFunction.cxx
 PairAnalysisSignalBase.cxx
 PairAnalysisSignalExt.cxx
 PairAnalysisSignalFit.cxx
-PairAnalysisSpectrumN.cxx
+#PairAnalysisSpectrumN.cxx
 )
 
 
