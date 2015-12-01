@@ -12,7 +12,7 @@ class CbmTrdOnlineDisplay : public FairTask
   public:
 
     /** Default constructor **/
-    CbmTrdOnlineDisplay(TString inFile);
+    CbmTrdOnlineDisplay(TString inFile="");
 
     /** Destructor **/
     ~CbmTrdOnlineDisplay();

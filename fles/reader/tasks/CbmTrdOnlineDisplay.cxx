@@ -19,7 +19,7 @@
 #include "TMethodCall.h"
 
 // ---- Default constructor -------------------------------------------
-CbmTrdOnlineDisplay::CbmTrdOnlineDisplay(TString inFile="")
+CbmTrdOnlineDisplay::CbmTrdOnlineDisplay(TString inFile)
   :FairTask("CbmTrdOnlineDisplay"),
    fSpadic1(),
    fSpadic1a(),
