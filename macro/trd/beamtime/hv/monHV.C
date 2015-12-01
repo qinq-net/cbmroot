@@ -318,7 +318,7 @@ void monHV(TString configFile="/data2/cern_nov2015/hv/filename.config")
   c7->Update();
   c7->BuildLegend();
   TCanvas *c8 = new TCanvas("c8","CurrentMap",800,600);
-  //  c8->SetLogz(1);
+  c8->SetLogz(1);
   hCurrentMap->DrawCopy("COLZ");
   hCurrentMap->GetXaxis()->SetTitle("chID");
   hCurrentMap->GetYaxis()->SetTitle("chamber");
