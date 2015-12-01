@@ -792,7 +792,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 	if     (optOnlySig &&  fCocktailSubtr && FindObjectByTitle(fArrCocktail,key)) continue;
 	else if(optOnlySig && !fCocktailSubtr && fArrCocktail && !FindObjectByTitle(fArrCocktail,key)) continue;
 	else if     (optCocktail && FindObjectByTitle(fArrCocktail,key)) continue;
-	PairAnalysisStyler::Style(hmc,isty++);
+	//	PairAnalysisStyler::Style(hmc,isty++);
 	// check if rebinning is necessary
 	if(fHistSignal->GetNbinsX()!=hmc->GetNbinsX()) {
 	  if(fBinLimits)     {
@@ -823,7 +823,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
       Double_t tmpmax = max*(gPad->GetLogy()?5.:1.1);
       hobj->SetMaximum(tmpmax);
 
-      Double_t objmin=PairAnalysisHelper::GetContentMinimum(hobj);
+      Double_t objmin=PairAnalysisHelper::GetContentMinimum(hobj,kTRUE);
       if( gPad->GetLogy() && objmin<0.) objmin=0.5;
       min=TMath::Min(min,objmin);
       Double_t tmpmin = min*(min<0.?1.1:0.9);
@@ -832,7 +832,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
       // Printf("after %s max%f \t min%f \t for logy %.3e >? %.3e",
       // hobj->GetTitle(),tmpmax,tmpmin, tmpmax/(tmpmin>0.?tmpmin:1.),TMath::Power(10.,TGaxis::GetMaxDigits()));
       // automatically set log option
-      if(gPad->GetLogy() && tmpmax/(tmpmin>0.?tmpmin:1.) > TMath::Power(10.,TGaxis::GetMaxDigits())) {
+      if(gPad->GetLogy() && (tmpmax/(tmpmin>0.?tmpmin:1.) > TMath::Power(10.,TGaxis::GetMaxDigits()) || tmpmin<TMath::Power(10.,-TGaxis::GetMaxDigits()))) {
 	hobj->GetYaxis()->SetMoreLogLabels(kFALSE);
 	hobj->GetYaxis()->SetNoExponent(kFALSE);
       }

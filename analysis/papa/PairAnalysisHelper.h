@@ -44,6 +44,7 @@ namespace PairAnalysisHelper
   Double_t EvalFormula(    TFormula *form, const Double_t *values);
   TString  GetFormulaTitle(TFormula *form);
   TString  GetFormulaName( TFormula *form);
+  TFormula *GetFormula(const char *name, const char* formula);
 
   // pdg labels
   void SetPDGBinLabels( TH1 *hist);
@@ -54,6 +55,7 @@ namespace PairAnalysisHelper
   TString GetDetName(DetectorId det);
   Double_t GetContentMinimum(TH1 *h, Bool_t inclErr=kTRUE);
   Double_t GetContentMaximum(TH1 *h, Bool_t inclErr=kTRUE);
+  Double_t GetQuantile(TH1* h1, Double_t p=0.5);
 
   TObject* FindObjectByTitle(TObjArray *arrhist, TString ref);
 }

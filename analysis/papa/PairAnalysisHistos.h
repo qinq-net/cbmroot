@@ -18,11 +18,11 @@
 #ifdef __APPLE__
 #ifdef OLD_MAC
 #include <stdint.h>
-#else
-#include <_types/_uint8_t.h>
-#include <_types/_uint16_t.h>
-#include <_types/_uint32_t.h>
-#include <_types/_uint64_t.h>
+//#else
+//#include <_types/_uint8_t.h>
+//#include <_types/_uint16_t.h>
+//#include <_types/_uint32_t.h>
+//#include <_types/_uint64_t.h>
 #endif  
 #else
 #include <stdint.h>

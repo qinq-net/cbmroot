@@ -176,6 +176,7 @@ void PairAnalysisStyler::LoadStyle() {
     defaultSty->SetLabelFont(font, "XYZ");
     defaultSty->SetLabelOffset(0.007, "XYZ");
     defaultSty->SetLabelSize(0.04, "XYZ"); //  defaultSty->SetLabelSize(0.06, "XYZ");
+    defaultSty->SetLabelSize(0.03, "Z"); //  defaultSty->SetLabelSize(0.06, "XYZ");
 
     // For the axis:
     defaultSty->SetHistMinimumZero();
@@ -275,11 +276,11 @@ void PairAnalysisStyler::Style(TObject *obj, Int_t idx) {
       dynamic_cast<TAttMarker*>(obj)->SetMarkerStyle(Marker[idx%kNMaxMarker]);
       dynamic_cast<TAttMarker*>(obj)->SetMarkerColor(Color[idx%kNMaxColor]);
       if(idx>=kNMaxColor && idx<kNMaxColor*2) {
-	id=idx%kNMaxColor;
+	idx=idx%kNMaxColor;
 	dynamic_cast<TAttMarker*>(obj)->SetMarkerColor(TColor::GetColorDark(Color[idx]));
       }
       else if(idx>=kNMaxColor*2) {
-	id=idx%(2*kNMaxColor);
+	idx=idx%(2*kNMaxColor);
 	dynamic_cast<TAttMarker*>(obj)->SetMarkerColor(TColor::GetColorBright(Color[idx]));
       }
     }
@@ -297,12 +298,12 @@ void PairAnalysisStyler::Style(TObject *obj, Int_t idx) {
       dynamic_cast<TAttLine*>(obj)->SetLineStyle(Line[idx%kNMaxLine]);
       dynamic_cast<TAttLine*>(obj)->SetLineColor(Color[idx%kNMaxColor]);
       if(idx>=kNMaxColor && idx<kNMaxColor*2) {
-	id=idx%kNMaxColor;
-	dynamic_cast<TAttLine*>(obj)->SetLineColor(TColor::GetColorDark(Color[id]));
+	idx=idx%kNMaxColor;
+	dynamic_cast<TAttLine*>(obj)->SetLineColor(TColor::GetColorDark(Color[idx]));
       }
       else if(idx>=kNMaxColor*2) {
-	id=idx%(2*kNMaxColor);
-	dynamic_cast<TAttLine*>(obj)->SetLineColor(TColor::GetColorBright(Color[id]));
+	idx=idx%(2*kNMaxColor);
+	dynamic_cast<TAttLine*>(obj)->SetLineColor(TColor::GetColorBright(Color[idx]));
       }
     }
   }
@@ -341,7 +342,7 @@ void PairAnalysisStyler::SetStyle(Eidx idx, Int_t col, Int_t marker, Double_t si
 
 UInt_t PairAnalysisStyler::fLegAlign=22; //top-right
 void PairAnalysisStyler::SetLegendAlign(UInt_t align) { fLegAlign=align; }
-void PairAnalysisStyler::SetLegendAttributes(TLegend *leg)
+void PairAnalysisStyler::SetLegendAttributes(TLegend *leg, Bool_t fill)
 {
   //
   // set/update legend cooordinates according to alignement (stored in uniqueID)
@@ -349,18 +350,25 @@ void PairAnalysisStyler::SetLegendAttributes(TLegend *leg)
   // if(leg->GetUniqueID()==0) leg->SetUniqueID(fLegAlign);
   // UInt_t fLegAlign = leg->GetUniqueID();
 
+   // printf("CURRENT leg coordinates: x1 %f x2 %f \t",leg->GetX1(),leg->GetX2());
+   // printf(" y1 %f y2 %f \n",leg->GetY1(),leg->GetY2());
+
+  Double_t maxhgth   = 0.0;
   Double_t symblwdth = 0.065; //ndc
-  Double_t txtsze    = 0.025; //gStyle->GetLegendTextSize());
-  Double_t entrysep  = 1.25;  //entry seperation
+  Double_t txtsze    = 0.04; //0.025; //gStyle->GetLegendTextSize());
+  Double_t charwdth  = 0.01;//0.01; // own defintion
+  Double_t entrysep  = 1.25;//1.25;  //entry seperation
 
   // calculate get legend width
   Double_t maxwdth=0.0;
   TList *llist = leg->GetListOfPrimitives();
   Int_t nent = llist->GetEntries();
+
+  if(nent>5) txtsze=0.025;
   for(Int_t il=0; il<nent; il++) {
     TLegendEntry *lent = static_cast<TLegendEntry*>(llist->At(il));
     TString lst(lent->GetLabel());
-    lst.ReplaceAll("#it","");
+    /*    lst.ReplaceAll("#it","");
     lst.ReplaceAll("{","");
     lst.ReplaceAll("}","");
     lst.ReplaceAll("^","");
@@ -372,28 +380,38 @@ void PairAnalysisStyler::SetLegendAttributes(TLegend *leg)
     lst.ReplaceAll("#omega","#");
     lst.ReplaceAll("#eta","#");
     lst.ReplaceAll("#psi","#");
+    lst.ReplaceAll("#pi","#");
     lst.ReplaceAll("#alpha","#");
     lst.ReplaceAll("#gamma","#");
     lst.ReplaceAll("#rightarrow","#");
+    */
     //    lst.ReplaceAll(" ","");
-    TLatex entrytex( 0, 0, lst.Data());
+    TLatex entrytex( 0., 0., lst.Data());
+    entrytex.SetNDC(kTRUE);
     entrytex.SetTextSize(txtsze);
     entrytex.SetTextFont(gStyle->GetLegendFont());
     //entrytex.SetTextFont(lent->GetTextFont());
-    entrytex.SetNDC(kTRUE);
     Double_t wdth = entrytex.GetXsize();
+    Double_t hgth = entrytex.GetYsize();
+    //wdth = lst.Length()*charwdth;
     if(maxwdth<wdth) maxwdth=wdth;
-    //    Printf("wdth %f for '%s' \t max width: %f",wdth,lst.Data(),maxwdth);
+    // Printf("wdth %f and height %f for '%s' \t max width: %f by textsize %f for  nchars %d --> own wdth %f \n",
+    // 	   wdth,entrytex.GetYsize(),entrytex.GetTitle(),maxwdth, entrytex.GetTextSize(),lst.Length(),lst.Length()*charwdth);
+    maxhgth+=hgth;
   }
+
+  maxhgth = nent*txtsze*entrysep;
+  //  Bool_t addhdr = !(((TString)leg->GetHeader()).IsNull());
+  //  maxhgth = (maxhgth/nent)*entrysep*(nent+1); // add legend header height
 
   // set legend coordinates
   if(fLegAlign==12 || fLegAlign==22) { //top
     leg->SetY2(1.-gPad->GetTopMargin()-gStyle->GetTickLength("X"));
-    leg->SetY1(leg->GetY2()-nent*txtsze*entrysep);
+    leg->SetY1(leg->GetY2()-maxhgth);
   }
   else { // bottom
     leg->SetY1(0.+gPad->GetBottomMargin()+gStyle->GetTickLength("X"));
-    leg->SetY2(leg->GetY1()+nent*txtsze*entrysep);
+    leg->SetY2(leg->GetY1()+maxhgth);
   }
   if(fLegAlign==22 || fLegAlign==21) {  //right
     leg->SetX2(1.-gPad->GetRightMargin()-gStyle->GetTickLength("Y")*1.0); //x2.0 ticklength
@@ -409,13 +427,13 @@ void PairAnalysisStyler::SetLegendAttributes(TLegend *leg)
   leg->SetEntrySeparation(entrysep-1.);
 
   // styling
-  // leg->SetFillStyle(1001); // solid
+  if(fill) leg->SetFillStyle(1001); // solid
+  else     leg->SetFillStyle(kFEmpty); // empty
   // leg->SetFillColorAlpha(gStyle->GetLegendFillColor(), 0.8);
-  leg->SetFillStyle(kFEmpty); // solid
   //  leg->SetFillColorAlpha(gStyle->GetLegendFillColor(), 0.8);
 
-  // printf("leg coordinates: x1 %f x2 %f \t",leg->GetX1(),leg->GetX2());
-  // printf(" y1 %f y2 %f \n",leg->GetY1(),leg->GetY2());
+   // printf("FINAL leg coordinates: x1 %f x2 %f \t",leg->GetX1(),leg->GetX2());
+   // printf(" y1 %f y2 %f \n",leg->GetY1(),leg->GetY2());
 
 }
 

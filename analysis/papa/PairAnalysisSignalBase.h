@@ -80,6 +80,7 @@ public:
   void SetCocktailContribution(TObjArray *arr, Bool_t subtract=kTRUE)       { fArrCocktail=arr; fCocktailSubtr=subtract; }
 
   // Getter
+  Bool_t IsCocktailSubtracted()      const { return fCocktailSubtr; }
   Int_t GetParticleOfInterest()      const { return fPOIpdg; }
   Double_t GetIntegralMin()          const { return fIntMin; }
   Double_t GetIntegralMax()          const { return fIntMax; }
@@ -230,6 +231,7 @@ inline TObject* PairAnalysisSignalBase::FindObjectByTitle(TObjArray *arrhist, TS
   //
   // shortcut to find a certain pair type object in array
   //
+  if(!arrhist) return 0x0;
   //  return ( arrhist->FindObject(Form("Pair.%s",PairAnalysis::PairClassName(type))) );
   //  TString ref=Form("Pair.%s",PairAnalysis::PairClassName(type));
   for(Int_t i=0; i<arrhist->GetEntriesFast(); i++) {

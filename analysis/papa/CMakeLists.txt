@@ -78,6 +78,7 @@ PairAnalysisHelper.cxx
 PairAnalysisMetaData.cxx
 PairAnalysisStyler.cxx
 PairAnalysisVarManager.cxx
+PairAnalysisSpecialCuts.cxx
 
 AnalysisTaskMultiPairAnalysis.cxx
 PairAnalysis.cxx
@@ -99,7 +100,7 @@ PairAnalysisFunction.cxx
 PairAnalysisSignalBase.cxx
 PairAnalysisSignalExt.cxx
 PairAnalysisSignalFit.cxx
-#PairAnalysisSpectrum.cxx
+PairAnalysisSpectrumN.cxx
 )
 
 

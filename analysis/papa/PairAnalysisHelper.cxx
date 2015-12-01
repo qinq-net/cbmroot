@@ -240,6 +240,24 @@ TString PairAnalysisHelper::GetFormulaName(TFormula *form)
 }
 
 //_____________________________________________________________________________
+TFormula *PairAnalysisHelper::GetFormula(const char *name, const char* formula)
+{
+  //
+  // build a TFormula object
+  //
+  TFormula *form = new TFormula(name,formula);
+  // compile function
+  if(form->Compile()) return 0x0;
+  //set parameter/variable identifier
+  for(Int_t i=0; i<form->GetNpar(); i++) {
+    form->SetParName(  i, PairAnalysisVarManager::GetValueName(form->GetParameter(i)) );
+    //    fUsedVars->SetBitNumber((Int_t)form->GetParameter(i),kTRUE);
+  }
+  return form;
+
+}
+
+//_____________________________________________________________________________
 void PairAnalysisHelper::SetPDGBinLabels( TH1 *hist) {
   //
   // build formula key with parameter names
@@ -335,14 +353,18 @@ Double_t PairAnalysisHelper::GetContentMinimum(TH1 *h, Bool_t inclErr) {
       for (binx=xfirst;binx<=xlast;binx++) {
 	bin = h->GetBin(binx,biny,binz);
 	value = h->GetBinContent(bin);
+	error = h->GetBinError(bin);
+	//	Printf(" \t hist%s bin%d value%f error%f \n",h->GetTitle(),bin,value,error);
+	if(gPad->GetLogy() && (value-error)<= 0.) continue;
+	if(error>value*0.9) continue;
 	if(inclErr) value -= h->GetBinError(bin);
-	if (value < minimum && 
-	    TMath::Abs(h->GetBinError(bin)-1.e-15) > 1.e-15) {
+	if (value < minimum && TMath::Abs(h->GetBinError(bin)-1.e-15) > 1.e-15) {
 	  minimum = value;
 	}
       }
     }
   }
+  //  Printf(" RETURN VALUE: hist%s %f \n",h->GetTitle(),minimum);
   return minimum;
 
 }
@@ -359,15 +381,15 @@ Double_t PairAnalysisHelper::GetContentMaximum(TH1 *h, Bool_t inclErr)
   Int_t ylast   = h->GetYaxis()->GetLast();
   Int_t zfirst  = h->GetZaxis()->GetFirst();
   Int_t zlast   = h->GetZaxis()->GetLast();
-  Double_t maximum = -1.*FLT_MAX, value=0.;
+  Double_t maximum = -1.*FLT_MAX, value=0., error=0.;
   for (binz=zfirst;binz<=zlast;binz++) {
     for (biny=yfirst;biny<=ylast;biny++) {
       for (binx=xfirst;binx<=xlast;binx++) {
 	bin = h->GetBin(binx,biny,binz);
 	value = h->GetBinContent(bin);
+	error = h->GetBinError(bin);
 	if(inclErr) value += h->GetBinError(bin);
-	if (value > maximum && 
-	    TMath::Abs(h->GetBinError(bin)-1.e-15) > 1.e-15) {
+	if (value > maximum && TMath::Abs(error-1.e-15) > 1.e-15) {
 	  maximum = value;
 	}
       }
@@ -375,6 +397,43 @@ Double_t PairAnalysisHelper::GetContentMaximum(TH1 *h, Bool_t inclErr)
   }
   return maximum;
 }
+
+Double_t PairAnalysisHelper::GetQuantile(TH1* h1, Double_t p/*=0.5*/) {
+  //
+  // calculates the quantile of the bin contents, p=0.5 -> Median
+  // useful functionallity for plotting 2D distibutions with some extreme outliers
+  //
+  if(p<0.0 || p>1.) return -1.;
+  Int_t nbinsX = h1->GetNbinsX();
+  Int_t nbinsY = h1->GetNbinsY();
+  Int_t nbinsZ = h1->GetNbinsZ();
+  Int_t nbins = (nbinsX*(nbinsY?nbinsY:1)*(nbinsZ?nbinsZ:1));
+  Int_t xbin=-1;
+  Int_t ybin=-1;
+  Int_t zbin=-1;
+  Double_t val[nbins];
+  Int_t idx[nbins];
+  Int_t nfilled = 0;
+  for(Int_t i=1; i<=nbins; i++) {
+    h1->GetBinXYZ(i,xbin,ybin,zbin);
+    if(xbin<h1->GetXaxis()->GetFirst() || xbin>h1->GetXaxis()->GetLast()) continue;
+    if(ybin<h1->GetYaxis()->GetFirst() || ybin>h1->GetYaxis()->GetLast()) continue;
+    Double_t con = h1->GetBinContent(i);
+    Double_t err = h1->GetBinError(i);
+    if(err!=0.0) {
+      //      printf("bin%d %.f+-%.f \n",i,con,err);
+      val[nfilled]=con+(h1->GetDimension()<2 ? err : 0.0); // w or w/o err?
+      nfilled++;
+    }
+  }
+  if(nfilled==0) return -1.;
+  TMath::Sort(nfilled,val,idx,kFALSE); // kFALSE=increasing numbers
+  Int_t pos = (Int_t) ((Double_t)nfilled*p);
+  //for(int i=0; i<nfilled; i++) cout << i << " " << idx[i] << " " << val[idx[i]] << endl;
+  //printf("nfilled %d quantile %f pos %d: %f \n",nfilled,p,pos,val[idx[pos]]);
+  return val[idx[pos]];
+}
+
 
 TObject* PairAnalysisHelper::FindObjectByTitle(TObjArray *arrhist, TString ref)
 {

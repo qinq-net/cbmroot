@@ -13,29 +13,36 @@
 
 #include <TStyle.h>
 #include <TAttMarker.h>
+#include <TColor.h>
 #include <Rtypes.h>
 #include <TLegend.h>
+#include <TH1.h>
 
 namespace PairAnalysisStyler
 {
   // predefined style for signal extraction
   enum Eidx   { kRaw=100, kBgrd, kSig, kFit, kCocktail, kNidx };
-  static Int_t    fCol[kNidx]={kBlack,kBlue,kBlack,kTeal-7,kTeal-7};
+  static Int_t    fCol[kNidx]={kBlack,kTeal-8,kBlack,kTeal-7,kTeal-7};
   static Int_t    fMrk[kNidx]={kFullCircle,kOpenCircle,kOpenCircle,kDot,kDot};
   static Double_t fSze[kNidx]={1.,1.,1.,1.,1.};
   static Int_t    fLne[kNidx]={kSolid,kSolid,kSolid,kSolid,kSolid};
   static Double_t fWdt[kNidx]={2.,2.,2.,2.,2.};
   static Int_t    fFll[kNidx]={0,0,0,0,0}; //kFEmpty
 
-  enum Estyle { kNMaxMarker=8, kNMaxLine=4, kNMaxColor=9 };
+  enum Estyle { kNMaxMarker=13, kNMaxLine=4, kNMaxColor=17 };
   static Int_t Marker[]= {kFullCircle,
-				kFullDiamond,
-				kFullSquare,
-				kFullCross,
-				kFullStar,
-				kMultiply,
-				kPlus,
-				kStar }; // kNMaxMarker
+			  kFullDiamond,
+			  kFullSquare,
+			  kFullCross,
+			  kFullStar,
+			  kMultiply,
+			  kPlus,
+			  kStar,
+			  kOpenCircle,
+			  kOpenDiamond,
+			  kOpenSquare,
+			  kOpenCross,
+			  kOpenStar}; // kNMaxMarker
 
   static Int_t Line[]= {kSolid,
 			      kDashed,
@@ -43,15 +50,24 @@ namespace PairAnalysisStyler
 			      //			      9,
 			      kDashDotted }; // kNMaxLine
 
-  static Int_t Color[]= {kRed-4,
-			       kBlue-4,
-			       kGray+1,
-			       kGreen+1,
-			       kAzure+1,
-			       kOrange+1,
-			       kSpring+4,
-			       kViolet+1,
-			       kCyan+2 }; // kNMaxColor
+  static Int_t Color[]= {kRed-4
+			 ,kBlue-4
+			 ,kBlack
+			 ,kGray+1
+			 ,kGreen+1
+			 ,kAzure+1
+			 ,kOrange+2
+			 ,kSpring+4
+			 ,kViolet+1
+			 ,kOrange
+			 ,kRed+2
+			 ,kCyan+1
+			 ,kGreen+3
+			 ,kBlue+1
+			 ,kMagenta+1
+			 ,kOrange-6
+			 ,kCyan-2
+  }; // kNMaxColor
 
   extern TStyle *fUserDielStyle;   // user defined style
   extern void SetStyle(TStyle *userStyle);
@@ -68,7 +84,7 @@ namespace PairAnalysisStyler
 
   extern UInt_t fLegAlign;           // legend alignement (11,12,21,22)
   void SetLegendAlign(UInt_t align);
-  void SetLegendAttributes(TLegend *leg);
+  void SetLegendAttributes(TLegend *leg, Bool_t fill=kFALSE);
 
   TH1* GetFirstHistogram();
   

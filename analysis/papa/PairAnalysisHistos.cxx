@@ -276,7 +276,8 @@ TString PairAnalysisHistos::UserHistogram(const char* histClass, TObject* hist)
   TString hclass=histClass;
   if(hclass.Contains("MCtruth")) {
     for(Int_t i=0;i<2;i++) {
-      //      Printf("SWITCH TO MC: before: %d %s ---->",valType[i],PairAnalysisVarManager::GetValueName(valType[i]));
+      Printf("SWITCH TO MC: before: %d %s ---->",valType[i],PairAnalysisVarManager::GetValueName(valType[i]));
+      // TODO: protect for changes of variable enum --> use axisttitle instead
       valType[i] = PairAnalysisVarManager::GetValueTypeMC(valType[i]);
       // if theres no corresponding MCtruth variable, skip adding this histogram
       //      if(valType[i] < PairAnalysisVarManager::kNMaxValues && valType[i]>0) return hist->GetName();
@@ -866,6 +867,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   // if option contains 'goff' graphics off
   // if option contains 'eps' save as eps file
   // if option contains 'png' save as png file
+  // if option contains 'det' save as png file
 
   TString optString(opt);
   optString.ToLower();
@@ -889,6 +891,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   // options - representation
   Bool_t optCan      =optString.Contains("can");       optString.ReplaceAll("can","");
   Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
+  Bool_t optDet      =optString.Contains("det");       optString.ReplaceAll("det","");
   Bool_t optMeta     =optString.Contains("meta");      optString.ReplaceAll("meta","");
   Bool_t optRbn      =optString.Contains("rebin");     optString.ReplaceAll("rebin","");
   Bool_t optSclMax   =optString.Contains("sclmax");    optString.ReplaceAll("sclmax","");
@@ -902,6 +905,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   Bool_t optRmsY     =optString.Contains("rmsy");      optString.ReplaceAll("rmsy","");
   Bool_t optGeant    =optString.Contains("geant");     optString.ReplaceAll("geant","");
 
+  Int_t rbn = 4;
   // selction string
   TString select("");
   if(optSel) select=histClassDenom;
@@ -938,9 +942,10 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
     if(obj->InheritsFrom(TH1::Class()) && obj!=prim->At(io+1)) nobj++;
   }
 
-  // add or get legend
+  // add or get legend //TODO: change to (optLeg && !nobj) ????
   TLegend *leg=0;
-  if ( (optLeg && optTask && !nobj) || (optLeg && !optTask) ) {
+  if( (optLeg && !nobj) ) {
+    //  if ( (optLeg && optTask && !nobj) || (optLeg && !optTask && !optDet) ) { 
     leg=new TLegend(0. + gPad->GetLeftMargin()  + gStyle->GetTickLength("Y"),
 		    0. + gPad->GetBottomMargin()+ gStyle->GetTickLength("X"),
 		    1. - gPad->GetRightMargin() + gStyle->GetTickLength("Y"),
@@ -950,7 +955,14 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   }
   else if(optLeg && nobj) {
     leg=(TLegend*)prim->FindObject("TPave");
+    // leg->SetX1(0. + gPad->GetLeftMargin()  + gStyle->GetTickLength("Y"));
+    // leg->SetY1(0. + gPad->GetBottomMargin()+ gStyle->GetTickLength("X"));
+    // leg->SetX2(1. - gPad->GetRightMargin() + gStyle->GetTickLength("Y"));
+    // leg->SetY2(1. - gPad->GetTopMargin()   + gStyle->GetTickLength("X"));
+    // leg->SetOption("nbNDC");
   }
+  
+  Info("DrawSame","Basics: nobj: %d \t leg: %p",nobj,leg);
 
   // logaritmic style
   if(optString.Contains("logx")) gPad->SetLogx();
@@ -964,7 +976,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   Int_t events = 1;
   if(fMetaData && optEvt)  fMetaData->GetMeta("events",&events);
 
-  Int_t i=(nobj ? 10 : 0); // TOD0: obsolete?
+  Int_t i=nobj;//(nobj ? 10 : 0); // TOD0: obsolete?
   if(optTask && nobj) i=nobj;
   TIter next(&fHistoList);
   THashList *classTable=0;
@@ -1000,9 +1012,11 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
       if (i==0) hFirst=h;
 
       // style
-      h->UseCurrentStyle();
       h->SetTitle("");
-      PairAnalysisStyler::Style(h,i);
+      if(h->GetLineColor()==kBlack) {
+	h->UseCurrentStyle();
+	PairAnalysisStyler::Style(h,i); // avoid color updates
+      }
       if(optString.Contains("scat")) h->SetMarkerStyle(kDot);
       if(optString.Contains("e"))    h->SetLineStyle(kSolid);
       if(optString.Contains("text")) { h->SetLineColor(1); h->SetMarkerColor(1); }
@@ -1012,7 +1026,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 
       // normalisation
       h->Sumw2();
-      if(optRbn)                    h->Rebin();
+      if(optRbn)                    h->Rebin(rbn);
       if(optNormY && h->GetDimension()==2 && !(h->GetSumOfWeights()==0)) {
 	TH2 *hsum = (TH2*) h->Clone("orig");
 	hsum->Reset("CE");
@@ -1025,13 +1039,19 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	h->Divide(hsum);
 	delete hsum;
       }
+
+      // set title
+      TString ytitle = h->GetYaxis()->GetTitle();
+      TString ztitle = h->GetZaxis()->GetTitle();
+      if(ytitle.Contains("{evt}")) optEvt=kFALSE;
+
       if(optNorm && !(h->GetSumOfWeights()==0)) h=h->DrawNormalized(i>0?(optString+"same").Data():optString.Data());
       if(optEvt)                    h->Scale(1./events);
       if(optSclMax)                 h->Scale(1./h->GetBinContent(h->GetMaximumBin()));
 
       // set title
-      TString ytitle = h->GetYaxis()->GetTitle();
-      TString ztitle = h->GetZaxis()->GetTitle();
+      // TString ytitle = h->GetYaxis()->GetTitle();
+      // TString ztitle = h->GetZaxis()->GetTitle();
       switch(h->GetDimension()) {
       case 1:
 	if(optEvt)    h->SetYTitle( (ytitle+"/N_{evt}").Data() );
@@ -1063,7 +1083,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	if(!hdenom) { Error("DrawSame","Denominator object not found"); continue; }
 	// normalize and rebin only once
 	hdenom->Sumw2();
-	if(optRbn && (optEff || !(i%10)) )       hdenom->Rebin();
+	if(optRbn && (optEff || !(i%10)) )       hdenom->Rebin(rbn);
 	if(optEvt && (optEff || !(i%10)) )       hdenom->Scale(1./events);
 	//	Printf("h %p %f hdenom %p %f",h,h->GetEntries(),hdenom,hdenom->GetEntries());
 	if(!hdenom || !h->Divide(hdenom))  { Warning("DrawSame(eff/ratio)","Division failed!!!!"); continue; }
@@ -1115,9 +1135,9 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	if(optRbn && !i) {
 	  // TODO: check for consistency if opttask, than htden is rebinned multiple times!
 	  //	  Printf(" rebin spectra");
-	  if(hdenom) hdenom->Rebin();
-	  if(htden)  htden->Rebin();
-	  if(htnom)  htnom->Rebin();
+	  if(hdenom) hdenom->Rebin(rbn);
+	  if(htden)  htden->Rebin(rbn);
+	  if(htnom)  htnom->Rebin(rbn);
 	}
 	if(optEvt && !i ) {
 	  if(hdenom) hdenom->Scale(1./events);
@@ -1181,9 +1201,13 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	}
 	// change default signal names to titles
 	for(Int_t isig=0; isig<PairAnalysisSignalMC::kNSignals; isig++) {
-	  histClass.ReplaceAll(PairAnalysisSignalMC::fgkSignals[isig][0],PairAnalysisSignalMC::fgkSignals[isig][1]);
-	  ratioName.ReplaceAll(PairAnalysisSignalMC::fgkSignals[isig][0],PairAnalysisSignalMC::fgkSignals[isig][1]);
-	  divName.ReplaceAll(PairAnalysisSignalMC::fgkSignals[isig][0],PairAnalysisSignalMC::fgkSignals[isig][1]);
+	  TString src  = PairAnalysisSignalMC::fgkSignals[isig][0];
+	  TString rpl  = PairAnalysisSignalMC::fgkSignals[isig][1];
+	  // avoid mc signal in header AND leg-entry
+	  if(leg && (rpl.EqualTo(leg->GetHeader()) || src.EqualTo(leg->GetHeader()))) rpl="";
+	  histClass.ReplaceAll(src,rpl);
+	  ratioName.ReplaceAll(src,rpl);
+	  divName.ReplaceAll(src,rpl);
 	}
 	// change MCtruth to MC
 	for(Int_t isig=0; isig<PairAnalysisSignalMC::kNSignals; isig++) {
@@ -1227,12 +1251,18 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	TString legOpt = optString+"L";
 	legOpt.ReplaceAll("hist","");
 	legOpt.ReplaceAll("scat","");
-	//	legOpt.ReplaceAll("col","");
+	if(legOpt.Contains("col")) legOpt="";
 	legOpt.ReplaceAll("z","");
 	legOpt.ReplaceAll("e","");
 	if (optTask)                histClass.Prepend(Form("%s ",GetName()));
 	if (optDiv && !optOneOver)  histClass.ReplaceAll(GetName(),Form("%s/%s",GetName(),divName.Data()));
 	if (optDiv &&  optOneOver)  histClass.Prepend(Form("%s/",divName.Data()));
+	if (optDet) {
+	  for (Int_t idet=kREF; idet<kNOFDETS; ++idet){
+	    if(histName.Contains(PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet))))
+	      histClass=PairAnalysisHelper::GetDetName(static_cast<DetectorId>(idet));
+	  }
+	}
 	//	else if(nobj)     histClass="";
 	if(optMeanX) histClass+=Form(" #LTx#GT=%.1e",h->GetMean());
 	if(optRmsX)  histClass+=Form(" RMS(x)=%.1e",h->GetRMS());
@@ -1240,7 +1270,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	if(optRmsY)  histClass+=Form(" RMS(y)=%.2e",h->GetRMS(2));
 	histClass.ReplaceAll("e+00","");
 	// no entry for colored plots
-	if (leg && !legOpt.Contains("col")) leg->AddEntry(h,histClass.Data(),legOpt.Data());
+	if (leg /*&& !legOpt.Contains("col")*/) leg->AddEntry(h,histClass.Data(),legOpt.Data());
 
 	//      if (leg) leg->AddEntry(h,classTable->GetName(),(optString+"L").Data());
 	++i;
@@ -1268,15 +1298,32 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   while ((obj = nextObj())) {
     if(obj->InheritsFrom(TH1::Class())) {
       TH1* h1 = static_cast<TH1*>(obj);
+
+      max = TMath::Max(max,PairAnalysisHelper::GetContentMaximum(h1)); //h1->GetMaximum();
+      Double_t tmpmax = max*(gPad->GetLogy()?5.:1.1);
+      if(optEff) tmpmax=1.1;
+      h1->SetMaximum(tmpmax);
+
+      Double_t objmin=PairAnalysisHelper::GetContentMinimum(h1);
+      if( gPad->GetLogy() && objmin<0.) objmin=0.5;
+      min=TMath::Min(min,objmin);
+      Double_t tmpmin = min*(min<0.?1.1:0.9);
+      //      if(optEff) tmpmin=0.;
+      h1->SetMinimum(tmpmin);
+
+      // Printf("after %s max%f \t min%f \t for logy %.3e >? %.3e",
+      // 	     h1->GetTitle(),tmpmax,tmpmin, tmpmax/(tmpmin>0.?tmpmin:1.),TMath::Power(10.,TGaxis::GetMaxDigits()));
+
       //      Printf("max%f \t min%f",h1->GetMaximum(),PairAnalysisHelper::GetContentMinimum(h1));
-      max=TMath::Max(max,PairAnalysisHelper::GetContentMaximum(h1));
-      min=TMath::Min(min,PairAnalysisHelper::GetContentMinimum(h1));//hobj->GetBinContent(hobj->GetMinimumBin()));
-      //Printf("max%f \t min%f",max,min);
-      if(!optEff) h1->SetMaximum(max*(gPad->GetLogy()?5.:1.1));
-      else        h1->SetMaximum(1.1);
-      if(!optEff) h1->SetMinimum( min*(min<0.?1.1:0.9) ); //TODO: doesnt work, why?? Negative values?
+      // max=TMath::Max(max,PairAnalysisHelper::GetContentMaximum(h1));
+      // min=TMath::Min(min,PairAnalysisHelper::GetContentMinimum(h1));//hobj->GetBinContent(hobj->GetMinimumBin()));
+      // Printf("max%f \t min%f",max,min);
+      // if(!optEff) h1->SetMaximum(max*(gPad->GetLogy()?5.:1.1));
+      // else        h1->SetMaximum(1.1);
+      // if(!optEff) h1->SetMinimum( min*(min<0.?1.1:0.9) ); //TODO: doesnt work, why?? Negative values?
       // automatically set log option
-      if(gPad->GetLogy() && max/(min>0.?min:1.) > TMath::Power(10.,TGaxis::GetMaxDigits())) {
+      if(gPad->GetLogy() && (tmpmax/(tmpmin>0.?tmpmin:1.) > TMath::Power(10.,TGaxis::GetMaxDigits()) || tmpmin<TMath::Power(10.,-TGaxis::GetMaxDigits()))) {
+	//      if(gPad->GetLogy() && tmpmax/(tmpmin>0.?tmpmin:1.) > TMath::Power(10.,TGaxis::GetMaxDigits())) {
 	h1->GetYaxis()->SetMoreLogLabels(kFALSE);
 	h1->GetYaxis()->SetNoExponent(kFALSE);
       }
@@ -1294,7 +1341,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 
   // force legend to be drawn always on top, remove multiple versions of it
   // they show up when one uses the 'task' draw option
-  if(!optTask) {
+  if(!optTask && 0) {
     if(leg) leg->DrawClone();
     nextObj.Reset();
     Int_t ileg = 0;
