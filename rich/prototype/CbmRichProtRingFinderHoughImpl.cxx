@@ -132,7 +132,7 @@ void CbmRichProtRingFinderHoughImpl::SetParameters()
 	fUsedHitsAllCut = 0.4;
 
 	fRmsCoeffEl = 2.5;
-	fMaxCutEl = 1.0;
+	fMaxCutEl = 1.5;
 	fRmsCoeffCOP = 3.;
 	fMaxCutCOP = 1.0;
 
@@ -146,18 +146,18 @@ void CbmRichProtRingFinderHoughImpl::SetParameters()
 void CbmRichProtRingFinderHoughImpl::HoughTransformReconstruction()
 {
    int indmin, indmax;
-  // unsigned int size = fData.size();
-  // for (unsigned int iHit = 0; iHit < size; iHit++){
-   //   if (fData[iHit].fIsUsed == true) continue;
-   if (fData.size() == 0) return;
-      int iHit = 0;
-      fCurMinX = fData[iHit].fHit.fX - fMaxDistance;
-      fCurMinY = fData[iHit].fHit.fY - fMaxDistance;
+   unsigned int size = fData.size();
+   for (unsigned int iHit = 0; iHit < size; iHit++){
+	   if (fData[iHit].fIsUsed == true) continue;
+	   if (fData.size() == 0) return;
+		  //int iHit = 0;
+		  fCurMinX = fData[iHit].fHit.fX - fMaxDistance;
+		  fCurMinY = fData[iHit].fHit.fY - fMaxDistance;
 
-      DefineLocalAreaAndHits(fData[iHit].fHit.fX, fData[iHit].fHit.fY , &indmin, &indmax);
-      HoughTransform(indmin, indmax);
-      FindPeak(indmin, indmax);
-  // }
+		  DefineLocalAreaAndHits(fData[iHit].fHit.fX, fData[iHit].fHit.fY , &indmin, &indmax);
+		  HoughTransform(indmin, indmax);
+		  FindPeak(indmin, indmax);
+   }
 }
 
 void CbmRichProtRingFinderHoughImpl::DefineLocalAreaAndHits(
@@ -359,7 +359,7 @@ void CbmRichProtRingFinderHoughImpl::FindPeak(
 
 		dr = fabs(sqrt(rx * rx + ry * ry) - r);
 		if (dr > drCOPCut) continue;
-		//fData[j+indmin].fIsUsed = true;
+		fData[j+indmin].fIsUsed = true;
 		ring2->AddHit(fData[j].fHit, fData[j].fId);
 	}
 
@@ -370,13 +370,13 @@ void CbmRichProtRingFinderHoughImpl::FindPeak(
 
 	fFitCOP->DoFit(ring2);
 
-/*	fANNSelect->DoSelect(ring2);
-	float select = ring2->GetSelectionNN();
-
-	// Remove found hits only for good quality rings
-	if (select > fAnnCut) {
-		RemoveHitsAroundRing(indmin, indmax, ring2);
-	}*/
+//	fANNSelect->DoSelect(ring2);
+//	float select = ring2->GetSelectionNN();
+//
+//	// Remove found hits only for good quality rings
+//	if (select > fAnnCut) {
+	//	RemoveHitsAroundRing(indmin, indmax, ring2);
+	//}
 
 	//if (select > -0.7) {
 		fFoundRings.push_back(ring2);
