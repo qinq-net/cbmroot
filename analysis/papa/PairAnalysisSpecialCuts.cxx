@@ -39,9 +39,9 @@ PairAnalysisSpecialCuts::PairAnalysisSpecialCuts() :
   //
   for (Int_t i=0; i<PairAnalysisSpecialCuts::kNMaxCuts; ++i){
     fActiveCuts[i]=0;
+    fCutExclude[i]=kFALSE;
     fCutMin[i]=0x0;
     fCutMax[i]=0x0;
-    fCutExclude[i]=kFALSE;
     fVarFormula[i]=0x0;
   }
   PairAnalysisVarManager::InitFormulas();
@@ -62,9 +62,9 @@ PairAnalysisSpecialCuts::PairAnalysisSpecialCuts(const char* name, const char* t
   //
   for (Int_t i=0; i<PairAnalysisSpecialCuts::kNMaxCuts; ++i){
     fActiveCuts[i]=0;
+    fCutExclude[i]=kFALSE;
     fCutMin[i]=0x0;
     fCutMax[i]=0x0;
-    fCutExclude[i]=kFALSE;
     fVarFormula[i]=0x0;
   }
   PairAnalysisVarManager::InitFormulas();
@@ -155,7 +155,7 @@ Bool_t PairAnalysisSpecialCuts::IsSelected(TObject* track)
 	}
 
       }
-    else if ( (fCutMax[iCut] && fCutMax[iCut]->IsA() == TFormula::Class()) ||
+    else if ( (fCutMin[iCut] && fCutMin[iCut]->IsA() == TFormula::Class()) ||
 	      (fCutMax[iCut] && fCutMax[iCut]->IsA() == TFormula::Class()) ) {
       /// use formulas for the cut //
       TFormula *formN = static_cast<TFormula*>(fCutMin[iCut]);
@@ -165,7 +165,7 @@ Bool_t PairAnalysisSpecialCuts::IsSelected(TObject* track)
       if(formM)  cutMax   = PairAnalysisHelper::EvalFormula(formM,values);
 
     }
-    else if ( (fCutMax[iCut] && fCutMax[iCut]->IsA() == TSpline3::Class()) ||
+    else if ( (fCutMin[iCut] && fCutMin[iCut]->IsA() == TSpline3::Class()) ||
 	      (fCutMax[iCut] && fCutMax[iCut]->IsA() == TSpline3::Class()) ) {
       /// use spline/graph for the cut //
       TSpline3 *splineN = static_cast<TSpline3*>(fCutMin[iCut]);

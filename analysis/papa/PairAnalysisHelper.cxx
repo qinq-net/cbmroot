@@ -245,6 +245,8 @@ TFormula *PairAnalysisHelper::GetFormula(const char *name, const char* formula)
   //
   // build a TFormula object
   //
+  TString check(formula);
+  if(check.IsNull()) return 0x0;
   TFormula *form = new TFormula(name,formula);
   // compile function
   if(form->Compile()) return 0x0;

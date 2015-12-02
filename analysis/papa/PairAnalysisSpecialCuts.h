@@ -78,8 +78,8 @@ public:
 
   CutType  fCutType;                          // type of the cut: any, all
 
-  Bool_t fCutExclude[PairAnalysisSpecialCuts::kNMaxCuts];         // inverse cut logic?
-  TObject *fCutMin[PairAnalysisSpecialCuts::kNMaxCuts];          // use object as upper cut
+  Bool_t fCutExclude[PairAnalysisSpecialCuts::kNMaxCuts];        // inverse cut logic?
+  TObject *fCutMin[PairAnalysisSpecialCuts::kNMaxCuts];          // use object as lower cut
   TObject *fCutMax[PairAnalysisSpecialCuts::kNMaxCuts];          // use object as upper cut
   TFormula *fVarFormula[PairAnalysisSpecialCuts::kNMaxCuts];     // use a formula for the variable
 
