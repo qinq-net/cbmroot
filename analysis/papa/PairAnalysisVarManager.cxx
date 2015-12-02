@@ -71,7 +71,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"Pout",                   "#it{p}^{out}",                                       "(GeV/#it{c})"},
   {"Ptout",                  "#it{p}_{T}^{out}",                                   "(GeV/#it{c})"},
   // trd track information
-  {"TRDSignal",              "TRD d#it{E}/d#it{x}",                           "(keV#upointcm^{2}/g)"},
+  {"TRDSignal",              "TRD d#it{E}/d#it{x} + TR",                           "(keV#upointcm^{2}/g)"},
   {"TRDPidWkn",              "PID_{e}^{TRD} (Wkn)",                                ""},
   {"TRDPidANN",              "PID_{e}^{TRD} (ANN)",                                ""},
   {"TRDPidLikeEL",           "P(PID_{e}^{TRD})",                                   ""},
@@ -85,6 +85,9 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"TRDPtin",                "#it{p}_{T}^{TRDin}",                                 "(GeV/#it{c})"},
   {"TRDPout",                "#it{p}^{TRDout}",                                    "(GeV/#it{c})"},
   {"TRDPtout",               "#it{p}_{T}^{TRDout}",                                "(GeV/#it{c})"},
+  {"TRDPhiCorr",             "#phi_{corr}^{TRD}",                                  ""},
+  {"TRDThetaCorr",           "#theta_{corr}^{TRD}",                                ""},
+  //  {"TRDTrackLength",         "#it{l}_{track}^{TRD}",                               "(cm)"},
   // sts track information
   {"MVDHits",                "N_{hit}^{MVD}",                                      ""},
   {"MVDFirstHitPosZ",        "z_{first hit}^{MVD}",                                "(cm)"},

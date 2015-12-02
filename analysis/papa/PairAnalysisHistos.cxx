@@ -276,7 +276,7 @@ TString PairAnalysisHistos::UserHistogram(const char* histClass, TObject* hist)
   TString hclass=histClass;
   if(hclass.Contains("MCtruth")) {
     for(Int_t i=0;i<2;i++) {
-      Printf("SWITCH TO MC: before: %d %s ---->",valType[i],PairAnalysisVarManager::GetValueName(valType[i]));
+      //      Printf("SWITCH TO MC: before: %d %s ---->",valType[i],PairAnalysisVarManager::GetValueName(valType[i]));
       // TODO: protect for changes of variable enum --> use axisttitle instead
       valType[i] = PairAnalysisVarManager::GetValueTypeMC(valType[i]);
       // if theres no corresponding MCtruth variable, skip adding this histogram

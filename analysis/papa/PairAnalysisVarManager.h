@@ -143,6 +143,9 @@ public:
     kTRDPtin,                // first point TRD transverse momentum (GeV/c)
     kTRDPout,                // last point TRD momentum (GeV/c)
     kTRDPtout,               // last point TRD transverse momentum (GeV/c)
+    kTRDThetaCorr,           // correction factor for theta track angle
+    kTRDPhiCorr,             // correction factor for phi track angle
+    //    kTRDTrackLength,         // track length in cm of the trd tracklet
     // sts track information
     kMVDHits,                // number of MVD hits
     kMVDFirstHitPosZ,        // position of the first hit in the MVD (cm)
@@ -791,11 +794,11 @@ inline void PairAnalysisVarManager::FillVarTrdTrack(const CbmTrdTrack *track, Do
       }
     }
     //   printf("track %p \t eloss %.3e \n",track,eloss);
-    const_cast<CbmTrdTrack*>(track)->SetELoss(eloss);
+    const_cast<CbmTrdTrack*>(track)->SetELoss(eloss); // NOTE: this is the sum
   }
 
   // Set
-  values[kTRDSignal]      = track->GetELoss()     * 1.e+6; //GeV->keV
+  values[kTRDSignal]      = track->GetELoss() * 1.e+6; //GeV->keV, NOTE: see corrections below (angles,#hits)
   values[kTRDPidWkn]      = track->GetPidWkn(); // PID value Wkn method
   values[kTRDPidANN]      = track->GetPidANN(); // PID value ANN method
   // PID value Likelihood method
@@ -812,10 +815,22 @@ inline void PairAnalysisVarManager::FillVarTrdTrack(const CbmTrdTrack *track, Do
   track->GetParamFirst()->Momentum(mom);
   values[kTRDPin]         = mom.Mag();
   values[kTRDPtin]        = mom.Pt();
+  // correction factors
+  values[kTRDThetaCorr]   = 1. / mom.CosTheta();
+  values[kTRDPhiCorr]     = 1. / TMath::Cos(mom.Phi());
+  // apply correction and normalisation
+  values[kTRDSignal]      /= (values[kTRDHits] * values[kTRDThetaCorr] * values[kTRDPhiCorr]);
+
   track->GetParamLast()->Momentum(mom);
   values[kTRDPout]        = mom.Mag();
   values[kTRDPtout]       = mom.Pt();
   //  values[kTRDCharge]      = (track->GetParamFirst()->GetQp()>0. ? +1. : -1. );
+  /* TVector3 pos1; */
+  /* track->GetParamFirst()->Position(pos1); */
+  /* TVector3 pos2; */
+  /* track->GetParamLast()->Position(pos2); */
+  //  values[kTRDTrackLength] =  (pos2!=pos1 ? (pos2-=pos1).Mag() : 1.);
+
  
 }
 
@@ -1280,9 +1295,10 @@ inline void PairAnalysisVarManager::FillVarTrdHit(const CbmTrdHit *hit, Double_t
   FillVarPixelHit(hit, values);
 
   // Set
-  values[kEloss]     = hit->GetELoss()     * 1.e+6; //GeV->keV, dEdx + TR
-  values[kElossdEdx] = hit->GetELossdEdX() * 1.e+6; //GeV->keV, dEdx
-  values[kElossTR]   = hit->GetELossTR()   * 1.e+6; //GeV->keV, TR, not filled because of CbmDigi
+  /// NOTE: use correction from first TRD track param
+  values[kEloss]     = hit->GetELoss()     * 1.e+6 / (values[kTRDThetaCorr] * values[kTRDPhiCorr]); //GeV->keV, dEdx + TR
+  values[kElossdEdx] = hit->GetELossdEdX() * 1.e+6 / (values[kTRDThetaCorr] * values[kTRDPhiCorr]); //GeV->keV, dEdx
+  values[kElossTR]   = hit->GetELossTR()   * 1.e+6 / (values[kTRDThetaCorr] * values[kTRDPhiCorr]); //GeV->keV, TR
   //  Printf("eloss trd: %.3e (%.3e TR, %.3e dEdx)",hit->GetELoss(),hit->GetELossTR(),hit->GetELossdEdX());
 }
 
