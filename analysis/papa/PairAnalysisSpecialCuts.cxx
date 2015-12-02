@@ -165,16 +165,42 @@ Bool_t PairAnalysisSpecialCuts::IsSelected(TObject* track)
       if(formM)  cutMax   = PairAnalysisHelper::EvalFormula(formM,values);
 
     }
+    else if ( (fCutMin[iCut] && fCutMin[iCut]->IsA() == TGraph::Class()) ||
+	      (fCutMax[iCut] && fCutMax[iCut]->IsA() == TGraph::Class()) ) {
+      /// TODO: think about poper implementation, how to store the x-variable in the spline
+      /// use graph for the cut // 
+      /// NOTE: a linear interpolation is used, spline creation at each eval is too cpu expensive
+      TGraph *graphN  = static_cast<TGraph*>(fCutMin[iCut]);
+      TGraph *graphM  = static_cast<TGraph*>(fCutMax[iCut]);
+
+      // get x-value from formula
+      TFormula *formX=0;
+      Double_t xval =0.;
+      if(graphN) {
+	formX = static_cast<TFormula*>(graphN->GetListOfFunctions()->At(0));
+	if(formX)  xval = PairAnalysisHelper::EvalFormula(formX,values);
+      }
+      if(!formX && graphM) {
+	formX = static_cast<TFormula*>(graphM->GetListOfFunctions()->At(0));
+	if(formX)  xval = PairAnalysisHelper::EvalFormula(formX,values);
+      }
+      if(graphN)  cutMin   = graphN->Eval(xval);
+      if(graphM)  cutMax   = graphM->Eval(xval);
+    }
     else if ( (fCutMin[iCut] && fCutMin[iCut]->IsA() == TSpline3::Class()) ||
 	      (fCutMax[iCut] && fCutMax[iCut]->IsA() == TSpline3::Class()) ) {
-      /// use spline/graph for the cut //
+      /// TODO: think about poper implementation, how to store the x-variable in the spline
+      /// use spline for the cut //
       TSpline3 *splineN = static_cast<TSpline3*>(fCutMin[iCut]);
-      if(splineN)  cutMin   = splineN->Eval(compValue);
-
+      //      if(splineN)  cutMin   = splineN->Eval(xval);
       TSpline3 *splineM = static_cast<TSpline3*>(fCutMax[iCut]);
-      if(splineM)  cutMax   = splineM->Eval(compValue);
+      //      if(splineM)  cutMax   = splineM->Eval(xval);
     }
-
+    else {
+      Error("IsSelected:","Cut object not supported (this message should never appear)");
+      return kTRUE;
+    }
+      
 
     // apply cut
     if ( ((compValue<cutMin) || (compValue>cutMax))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
@@ -225,14 +251,16 @@ void PairAnalysisSpecialCuts::AddCut(PairAnalysisVarManager::ValueTypes type, TG
   //
   // Set cut range and activate it
   //
-  if(graphMin) {
-    TSpline3 *splineMin = new TSpline3("splineMin",graphMin); //spline w/o begin and end point conditions
-    fCutMin[fNActiveCuts]=splineMin;
-  }
-  if(graphMax) {
-    TSpline3 *splineMax = new TSpline3("splineMax",graphMax); //spline w/o begin and end point conditions
-    fCutMax[fNActiveCuts]=splineMax;
-  }
+  // if(graphMin) {
+  //   TSpline3 *splineMin = new TSpline3("splineMin",graphMin); //spline w/o begin and end point conditions
+  //   fCutMin[fNActiveCuts]=splineMin;
+  // }
+  // if(graphMax) {
+  //   TSpline3 *splineMax = new TSpline3("splineMax",graphMax); //spline w/o begin and end point conditions
+  //   fCutMax[fNActiveCuts]=splineMax;
+  // }
+  fCutMin[fNActiveCuts]=graphMin;
+  fCutMax[fNActiveCuts]=graphMax;
   fCutExclude[fNActiveCuts]=excludeRange;
   SETBIT(fActiveCutsMask,fNActiveCuts);
   fActiveCuts[fNActiveCuts]=(UShort_t)type;
@@ -246,14 +274,16 @@ void PairAnalysisSpecialCuts::AddCut(const char *formula, TGraph *const graphMin
   //
   // Set cut range and activate it
   //
-  if(graphMin) {
-    TSpline3 *splineMin = new TSpline3("splineMin",graphMin); //spline w/o begin and end point conditions
-    fCutMin[fNActiveCuts]=splineMin;
-  }
-  if(graphMax) {
-    TSpline3 *splineMax = new TSpline3("splineMax",graphMax); //spline w/o begin and end point conditions
-    fCutMax[fNActiveCuts]=splineMax;
-  }
+  // if(graphMin) {
+  //   TSpline3 *splineMin = new TSpline3("splineMin",graphMin); //spline w/o begin and end point conditions
+  //   fCutMin[fNActiveCuts]=splineMin;
+  // }
+  // if(graphMax) {
+  //   TSpline3 *splineMax = new TSpline3("splineMax",graphMax); //spline w/o begin and end point conditions
+  //   fCutMax[fNActiveCuts]=splineMax;
+  // }
+  fCutMin[fNActiveCuts]=graphMin;
+  fCutMax[fNActiveCuts]=graphMax;
   fCutExclude[fNActiveCuts]=excludeRange;
   SETBIT(fActiveCutsMask,fNActiveCuts);
   fActiveCuts[fNActiveCuts]=(UShort_t)PairAnalysisVarManager::kNMaxValuesMC;
