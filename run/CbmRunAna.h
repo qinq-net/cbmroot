@@ -39,7 +39,8 @@ class CbmRunAna : public FairRunAna
   void SetAsync(Bool_t async = kTRUE) { fAsync = async; }
 
 
-  /**   Run all events in input file  **/
+#ifdef OLDFAIRROOTVERSION
+   /**   Run all events in input file  **/
   void Run() { ExecRun(0, fRootManager->GetInChain()->GetEntries() - 1); }
 
 
@@ -53,7 +54,7 @@ class CbmRunAna : public FairRunAna
    **@param iStop    Number of last event
    **/
   void Run(Int_t iStart, Int_t iStop) { ExecRun(iStart, iStop); }
-
+#endif
 
 
  private:
@@ -64,12 +65,13 @@ class CbmRunAna : public FairRunAna
   // TODO: fRunInfo shadows FairRunAna::fRunInfo, because that obe is declared private.
 
 
+#ifdef OLDFAIRROOTVERSION
   /**   Run execution
    **@param iStart  Number of first event
    **@param iStop   Number of last event
    **/
   void ExecRun(Int_t iStart, Int_t iStop);
-
+#endif
 
   /** Fill output tree
    **

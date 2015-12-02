@@ -39,7 +39,7 @@ CbmRunAna::~CbmRunAna() {
 
 
 
-
+#ifdef OLDFAIRROOTVERSION
 // -----   Run execution   ---------------------------------------------------
 void CbmRunAna::ExecRun(Int_t iStart, Int_t iStop) {
 
@@ -139,13 +139,18 @@ void CbmRunAna::ExecRun(Int_t iStart, Int_t iStop) {
 
 }
 // ---------------------------------------------------------------------------
+#endif
 
 
 
 // -----   Fill output tree   ------------------------------------------------
 void CbmRunAna::Fill() {
 
+#ifdef OLDFAIRROOTVERSION
 	if ( fAsync && ! fMarkFill ) return;
+#else
+        if ( fAsync ) return;
+#endif
 	fRootManager->Fill();
 
 }
