@@ -347,6 +347,7 @@ Else()
   EndIf()
 EndIf()
 
+add_subdirectory(tutorials)
 
 Option(BUILD_UNITTESTS "Build all unit tests and add them as new tests" OFF)
 If(BUILD_UNITTESTS)
