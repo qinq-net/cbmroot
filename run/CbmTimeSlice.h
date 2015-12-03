@@ -14,6 +14,11 @@
 #include "CbmMuchDigi.h"
 #include "CbmDigi.h"
 
+#ifndef __CINT__ // for BOOST serialization
+// boost
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/vector.hpp>
+#endif 
 using namespace std;
 
 
@@ -125,6 +130,17 @@ class CbmTimeSlice : public TNamed
     vector<CbmMuchDigi> GetMuchData() {return fMuchData; } 
     vector<CbmStsDigi>  GetStsData()  {return fStsData; }
     
+
+    template <class Archive>
+    void serialize(Archive& ar, const unsigned int version)
+    {
+        ar& fStsData;
+        ar& fMuchData;
+        ar& fStartTime;
+        ar& fDuration;
+        ar& fIsEmpty;
+    }
+    
   private:
 
     Double_t fStartTime;           ///< start time [ns]
@@ -134,7 +150,11 @@ class CbmTimeSlice : public TNamed
     vector<CbmMuchDigi> fMuchData; ///< raw data container for MUCH
     CbmMatch fMatch;               ///< link time slice to events
 
+    
 
+    #ifndef __CINT__ // for BOOST serialization
+    friend class boost::serialization::access;
+    #endif // for BOOST serialization
 
     ClassDef(CbmTimeSlice,2)
 };

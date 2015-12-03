@@ -43,7 +43,7 @@ CbmStsFindClusters::CbmStsFindClusters(Int_t finderModel, Int_t algorithm)
     , fUseFinderTb(kFALSE)
     , fTimeSlice(NULL)
     , fDigiData()
-	, fDeadTime(0.)
+    , fDeadTime(0.)
 {
    // LOG(INFO) << "ClusterFinderModel = " << fFinderModel << ", algorithm = " << fAlgorithm << endl;
 }
@@ -262,5 +262,87 @@ Int_t CbmStsFindClusters::SortDigis() {
 	return nDigis;
 }
 // -------------------------------------------------------------------------
+
+
+
+
+
+// -----   MQ specific   ------------------------------------------------
+
+// -----   MQ init   ------------------------------------------------
+bool CbmStsFindClusters::InitMQ(const std::string& geo_file)
+{
+    // --- Register output array
+    fClusters = new TClonesArray("CbmStsCluster", 10000);
+
+    // --- Get STS setup
+    fSetup = CbmStsSetup::Instance();
+    fSetup->Init(geo_file.c_str());
+
+    // --- Create cluster finder
+    fFinder = new CbmStsClusterFinderSimple(fFinderModel, fAlgorithm);
+    fFinder->SetOutputArray(fClusters);
+    return true;
+}
+
+// -----   MQ set input   ------------------------------------------------
+InitStatus CbmStsFindClusters::SetTimeSlice(CbmTimeSlice* ts)
+{
+    if(ts)
+        fTimeSlice = ts;
+    else
+        return kERROR;
+
+    return kSUCCESS;
+}
+
+// -----   MQ exec   ------------------------------------------------
+void CbmStsFindClusters::ExecMQ() {
+
+    // Start timer and counter
+    fTimer.Start();
+    Int_t nOfClusters = 0;
+
+    // --- Clear output array
+    fClusters->Delete();
+
+    // --- Sort digis into modules
+    Int_t nOfDigis = SortDigis();
+
+    // --- Find clusters in modules
+    set<CbmStsModule*>::iterator it;
+    for (it = fActiveModules.begin(); it != fActiveModules.end(); it++) {
+        Int_t nClusters = 0;
+        if(fUseFinderTb)
+            nClusters = fFinder->FindClustersTb(*it);
+        else
+            nClusters = fFinder->FindClustersSimple(*it);
+        LOG(DEBUG1) << GetName() << ": Module " << (*it)->GetName()
+                      << ", digis: " << (*it)->GetNofDigis()
+                  << ", clusters " << nClusters << FairLogger::endl;
+        nOfClusters += nClusters;
+    }
+
+  // --- Counters
+  fTimer.Stop();
+  fNofEvents++;
+  fNofDigisTot    += nOfDigis;
+  fNofClustersTot += nOfClusters;
+  fTimeTot        += fTimer.RealTime();
+
+  LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
+              << right << ", time " << fixed << setprecision(6)
+              << fTimer.RealTime() << " s, digis: " << nOfDigis
+              << ", clusters: " << nOfClusters << FairLogger::endl;
+}
+
+
+
+
+
+
+
+
+
 
 ClassImp(CbmStsFindClusters)

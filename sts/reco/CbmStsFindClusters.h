@@ -9,6 +9,7 @@
 
 #include <map>
 #include <set>
+#include <string>
 #include "TStopwatch.h"
 #include "FairTask.h"
 #include "CbmStsDigi.h"
@@ -79,14 +80,18 @@ class CbmStsFindClusters : public FairTask
      ** Inherited from FairTask.
      **/
     virtual InitStatus Init();
+    void ExecMQ();
+    bool InitMQ(const std::string& geo_file);
+    InitStatus SetTimeSlice(CbmTimeSlice* ts);
+    TClonesArray* GetClusters() {return fClusters;}
 
     /** Set the DAQ flag to use time slices as an input **/
     void UseDaq()					{ fDaq 			= kTRUE;
     								  fUseFinderTb 	= kTRUE; }
 
     /** Set the FinderTb flag to use time based cluster finder **/
-    void UseTbClusterFinder(Double_t dTime)		{	fDeadTime = dTime;
-    												fUseFinderTb 	= kTRUE; }
+    void UseTbClusterFinder(Double_t dTime = 20.)  { fDeadTime = dTime;
+                                                     fUseFinderTb    = kTRUE; }
 
 
     	private:
@@ -99,11 +104,11 @@ class CbmStsFindClusters : public FairTask
     Int_t         fFinderModel;       ///< Cluster finder model
     Int_t         fAlgorithm;         ///< Cluster finder algorithm
     
-    CbmTimeSlice* fTimeSlice;               ///< Time slice object in the DAQ approach
-    vector<CbmStsDigi> fDigiData;          	///< Vector of digis for the time slices
-    Bool_t fDaq;							///< Using DAQ
-    Bool_t fUseFinderTb;						///< Using of time based cluster finder
-    Double_t fDeadTime;							///< Dead time for time-based cluster finder
+    CbmTimeSlice* fTimeSlice;         ///< Time slice object in the DAQ approach
+    vector<CbmStsDigi> fDigiData;     ///< Vector of digis for the time slices
+    Bool_t fDaq;                      ///< Using DAQ
+    Bool_t fUseFinderTb;              ///< Using of time based cluster finder
+    Double_t fDeadTime;               ///< Dead time for time-based cluster finder
 
     // --- Run counters
     Int_t     fNofEvents;       ///< Total number of events processed

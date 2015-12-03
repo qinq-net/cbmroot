@@ -12,6 +12,10 @@
 
 #include "CbmDetectorList.h"
 
+#ifndef __CINT__
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/base_object.hpp>
+#endif //__CINT__
 
 /** @class CbmStsDigi
  ** @brief Data class for a single-channel message in the STS
@@ -36,7 +40,7 @@ class CbmStsDigi : public CbmDigi
    ** @param  charge   Charge [ADC units]
    **/
   CbmStsDigi(UInt_t address, ULong64_t time, UShort_t charge)
-  	: CbmDigi(), fAddress(address), fTime(time), fCharge(charge) { }
+      : CbmDigi(), fAddress(address), fTime(time), fCharge(charge) { }
 
 
   /** Destructor **/
@@ -66,8 +70,19 @@ class CbmStsDigi : public CbmDigi
    **/
   virtual Double_t GetTime() const { return Double_t(fTime); }
 
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version)
+  {
+    ar& fAddress;
+    ar& fTime;
+    ar& fCharge;
+  }
 
  private:
+
+#ifndef __CINT__ // for BOOST serialization
+  friend class boost::serialization::access;
+#endif // for BOOST serialization
 
   UInt_t    fAddress;     ///< Unique detector address
   ULong64_t fTime;        ///< Time [ns]

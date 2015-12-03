@@ -19,6 +19,11 @@
 #include "CbmMuchDigiMatch.h"
 #include "CbmMuchAddress.h"
 
+#ifndef __CINT__
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/base_object.hpp>
+#endif //__CINT__
+
 class CbmMuchDigi : public CbmDigi{
  public:
   CbmMuchDigi();
@@ -49,7 +54,19 @@ class CbmMuchDigi : public CbmDigi{
   Int_t GetADCCharge()  const { return GetAdc(); }
   Int_t GetDTime() const { return 0; }
  
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version)
+  {
+      ar& fData;
+  }
+
+
  private:
+
+#ifndef __CINT__ // for BOOST serialization
+  friend class boost::serialization::access;
+#endif 
+
   Long64_t fData;
   CbmMuchDigiMatch* fMatch;  ///< matches to MC points (to be replaced with Fair links)
   
