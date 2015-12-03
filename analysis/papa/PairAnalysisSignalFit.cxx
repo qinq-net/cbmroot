@@ -112,8 +112,8 @@ ClassImp(PairAnalysisSignalFit)
 
 
 PairAnalysisSignalFit::PairAnalysisSignalFit() :
-  PairAnalysisSignalExt(),
-  PairAnalysisFunction()
+  PairAnalysisSignalExt()
+//  ,PairAnalysisFunction()
 {
   //
   // Default Constructor
@@ -123,8 +123,8 @@ PairAnalysisSignalFit::PairAnalysisSignalFit() :
 
 //______________________________________________
 PairAnalysisSignalFit::PairAnalysisSignalFit(const char* name, const char* title) :
-  PairAnalysisSignalExt(name, title),
-  PairAnalysisFunction()
+  PairAnalysisSignalExt(name, title)//,
+  //  PairAnalysisFunction()
 {
   //
   // Named Constructor
@@ -170,7 +170,7 @@ void PairAnalysisSignalFit::Process(TObjArray * const arrhist)
     break;
 
   default :
-    PairAnalysisSignalExt::Error("Process","Background substraction method not known!");
+    Error("Process","Background substraction method not known!");
   }
 }
 
@@ -350,7 +350,7 @@ void PairAnalysisSignalFit::ProcessFitEM(TObjArray * const arrhist) {
   // Substract background with the event mixing technique
   //
   arrhist->GetEntries();   // just to avoid the unused parameter warning
-  PairAnalysisSignalExt::Error("ProcessFitEM","Event mixing for background substraction method not yet implemented!");
+  Error("ProcessFitEM","Event mixing for background substraction method not yet implemented!");
 }
 
 //______________________________________________

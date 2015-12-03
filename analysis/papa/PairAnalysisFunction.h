@@ -30,7 +30,7 @@ class PairAnalysisFunction : public TNamed {
   //  virtual void Fit(Option_t *opt);
 
   // Setter
-  void SetFitRange(Double_t min, Double_t max)   { fMin=min; fMax=max;  }
+  void SetFitRange(Double_t min, Double_t max)   { fFitMin=min; fFitMax=max;  }
   void SetUseIntegral(Bool_t flag=kTRUE)         { fUseIntegral = flag; }
   void SetFitOption(const char* opt) {
     fFitOpt=opt;    fFitOpt.ToLower();
@@ -70,8 +70,8 @@ protected:
   TF1 *fFuncBackground;            // Function for the background description
   TF1 *fFuncSigBack;               // Combined function signal plus background
 
-  Double_t fMin;                  // fit range lowest inv. mass
-  Double_t fMax;                  // fit range highest inv. mass
+  Double_t fFitMin;                  // fit range lowest inv. mass
+  Double_t fFitMax;                  // fit range highest inv. mass
 
   Int_t fParMass;                  // the index of the parameter corresponding to the resonance mass
   Int_t fParMassWidth;             // the index of the parameter corresponding to the resonance mass width

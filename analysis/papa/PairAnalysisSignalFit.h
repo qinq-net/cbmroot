@@ -17,7 +17,7 @@
 #include "PairAnalysisSignalExt.h"
 #include "PairAnalysisFunction.h"
 
-class PairAnalysisSignalFit : public PairAnalysisSignalExt , PairAnalysisFunction  {
+class PairAnalysisSignalFit : public PairAnalysisSignalExt  {
 public:
   PairAnalysisSignalFit();
   PairAnalysisSignalFit(const char*name, const char* title);

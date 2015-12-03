@@ -307,6 +307,21 @@ void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
     }
   }
 
+  /// rebin all other individualy
+  /*
+  for(Int_t i=0; i<arrhist->GetEntriesFast(); i++) {
+    TH1* htmp = static_cast<TH1*>(arrhist->UncheckedAt(i));
+    if( htmp->GetNbinsX()!=fHistSignal->GetNbinsX() ) {
+      TArrayD *limits = PairAnalysisHelper::MakeStatBinLimits( htmp , fRebinStat);
+      htmp = htmp->Rebin(limits->GetSize()-1,htmp->GetTitle(),limits->GetArray());
+      if(htmp->GetDefaultSumw2()) htmp->Sumw2();
+      htmp->SetDirectory(0);
+      htmp->Scale(1.,"width");
+      arrhist->AddAt(htmp,i);
+    }
+  }
+  */
+
   // process method
   switch ( fMethod ){
     case kLikeSign :
@@ -794,7 +809,7 @@ void PairAnalysisSignalExt::Draw(const Option_t* option)
 	else if     (optCocktail && FindObjectByTitle(fArrCocktail,key)) continue;
 	//	PairAnalysisStyler::Style(hmc,isty++);
 	// check if rebinning is necessary
-	if(fHistSignal->GetNbinsX()!=hmc->GetNbinsX()) {
+	if(1 && fHistSignal->GetNbinsX()!=hmc->GetNbinsX()) {
 	  if(fBinLimits)     {
 	    hmc = hmc->Rebin(fBinLimits->GetSize()-1,key.Data(),fBinLimits->GetArray());
 	    hmc->SetTitle(tit.Data());

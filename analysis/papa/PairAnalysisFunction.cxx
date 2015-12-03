@@ -59,8 +59,8 @@ PairAnalysisFunction::PairAnalysisFunction() :
   fFuncSignal(0x0),
   fFuncBackground(0x0),
   fFuncSigBack(0x0),
-  fMin(0),
-  fMax(0),
+  fFitMin(0),
+  fFitMax(0),
   fParMass(1),
   fParMassWidth(2),
   fFitOpt("SMNQE"),
@@ -82,8 +82,8 @@ PairAnalysisFunction::PairAnalysisFunction(const char* name, const char* title) 
   fFuncSignal(0x0),
   fFuncBackground(0x0),
   fFuncSigBack(0x0),
-  fMin(0),
-  fMax(0),
+  fFitMin(0),
+  fFitMax(0),
   fParMass(1),
   fParMassWidth(2),
   fFitOpt("SMNQE"),
@@ -258,7 +258,7 @@ void PairAnalysisFunction::CombineFunc(TF1 * const peak, TF1 * const bgnd) {
   fNparPeak     = fFuncSignal->GetNpar();
   fNparBgnd     = (bgnd?fFuncBackground->GetNpar():0);
 
-  fFuncSigBack = new TF1("BgndPeak",this,&PairAnalysisFunction::PeakBgndFun, fMin,fMax, fNparPeak+fNparBgnd);
+  fFuncSigBack = new TF1("BgndPeak",this,&PairAnalysisFunction::PeakBgndFun, fFitMin,fFitMax, fNparPeak+fNparBgnd);
   return;
 }
 
@@ -276,6 +276,6 @@ Double_t PairAnalysisFunction::PeakBgndFun(const Double_t *x, const Double_t *pa
   //
   // Print the statistics
   //
-//  printf("Fit int.  :  %.5g - %.5g \n",fMin,fMax);
+//  printf("Fit int.  :  %.5g - %.5g \n",fFitMin,fFitMax);
 //  printf("Fit chi/%d:  %.5g \n",fDof,fChi2Dof);
 //}

@@ -25,7 +25,7 @@
 class TObjArray;
 class TPaveText;
 
-class PairAnalysisSignalBase : public TNamed {
+class PairAnalysisSignalBase : public PairAnalysisFunction {
 
   //  friend class PairAnalysisSpectrum; //extraction as friend class
 
@@ -64,7 +64,7 @@ public:
   void SetMCSignalShape(TH1F* hist)                        { fgHistSimPM=hist; fHistSignalMC=hist; }
   void SetParticleOfInterest(Int_t pdgcode)                { fPOIpdg=pdgcode; }
   void SetIntegralRange(Double_t min, Double_t max)        { fIntMin=min; fIntMax=max; }
-  void SetFitRange(Double_t min, Double_t max)             { fFitMin=min; fFitMax=max; }
+  //  void SetFitRange(Double_t min, Double_t max)             { fFitMin=min; fFitMax=max; }
   void SetPlotRange(Double_t min, Double_t max)            { fPlotMin=min; fPlotMax=max; }
   void SetRebin(Int_t factor)                              { fRebin=factor; }
   void SetStatRebin(Double_t stat)                         { fRebinStat=stat; }
@@ -170,8 +170,8 @@ protected:
 
   Double_t fIntMin;                  // signal extraction range min
   Double_t fIntMax;                  // signal extraction range max
-  Double_t fFitMin;                  // fit range lowest inv. mass
-  Double_t fFitMax;                  // fit range highest inv. mass
+  /* Double_t fFitMin;                  // fit range lowest inv. mass */
+  /* Double_t fFitMax;                  // fit range highest inv. mass */
   Double_t fPlotMin;                  // plot range lowest inv. mass
   Double_t fPlotMax;                  // plot range highest inv. mass
 

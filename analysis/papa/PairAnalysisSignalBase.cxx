@@ -51,7 +51,7 @@ const char* PairAnalysisSignalBase::fgkBackgroundMethodNames[11] = {
   "cocktail" };
 
 PairAnalysisSignalBase::PairAnalysisSignalBase() :
-  TNamed(),
+  PairAnalysisFunction(),
   fArrHists(0x0),
   fArrCocktail(0x0),
   fHistSignal(0),
@@ -74,8 +74,8 @@ PairAnalysisSignalBase::PairAnalysisSignalBase() :
   fErrors(7),
   fIntMin(0),
   fIntMax(0),
-  fFitMin(0),
-  fFitMax(0),
+  // fFitMin(0),
+  // fFitMax(0),
   fPlotMin(0),
   fPlotMax(0),
   fRebin(1),
@@ -103,7 +103,7 @@ PairAnalysisSignalBase::PairAnalysisSignalBase() :
 
 //______________________________________________
 PairAnalysisSignalBase::PairAnalysisSignalBase(const char* name, const char* title) :
-  TNamed(name, title),
+  PairAnalysisFunction(name, title),
   fArrHists(0x0),
   fArrCocktail(0x0),
   fHistSignal(0),
@@ -126,8 +126,8 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const char* name, const char* tit
   fErrors(7),
   fIntMin(0),
   fIntMax(0),
-  fFitMin(0),
-  fFitMax(0),
+  // fFitMin(0),
+  // fFitMax(0),
   fPlotMin(0),
   fPlotMax(0),
   fRebin(1),
@@ -155,7 +155,7 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const char* name, const char* tit
 
 //______________________________________________
 PairAnalysisSignalBase::PairAnalysisSignalBase(const PairAnalysisSignalBase &c) :
-  TNamed(c.GetName(), c.GetTitle()),
+  PairAnalysisFunction(c.GetName(), c.GetTitle()),
   fArrHists(c.fArrHists),
   fArrCocktail(c.fArrCocktail),
   fHistSignal(c.GetSignalHistogram()),
@@ -178,8 +178,8 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const PairAnalysisSignalBase &c) 
   fErrors(c.GetErrors()),
   fIntMin(c.GetIntegralMin()),
   fIntMax(c.GetIntegralMax()),
-  fFitMin(c.GetFitMin()),
-  fFitMax(c.GetFitMax()),
+  // fFitMin(c.GetFitMin()),
+  // fFitMax(c.GetFitMax()),
   fPlotMin(0.),
   fPlotMax(0.),
   fRebin(c.GetRebin()),
