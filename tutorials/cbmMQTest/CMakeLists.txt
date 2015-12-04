@@ -133,7 +133,6 @@ ForEach(_file RANGE 0 ${_length})
         Net
         Tree
         RIO 
-        Cint 
         Core
         FairMQ
         ${FAIRMQ_DEPENDENCIES}
@@ -174,7 +173,6 @@ Set(DEPENDENCIES
     Net
     Tree
     RIO 
-    Cint 
     Core
     FairMQ
     ${FAIRMQ_DEPENDENCIES}
