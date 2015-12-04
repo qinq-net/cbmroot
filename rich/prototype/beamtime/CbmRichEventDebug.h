@@ -21,9 +21,6 @@ public:
 
    void SetOutHistoFile(TString filename) {fOutHistoFile = filename;}
 
-   //TODO implement or get rid
-   CbmRichEventDebug(const CbmRichEventDebug&);
-   CbmRichEventDebug operator=(const CbmRichEventDebug&);
 
 private:
 
@@ -35,6 +32,10 @@ private:
    TString fOutHistoFile;
 
    CbmHistManager* fHM;
+
+   //TODO implement or get rid
+   CbmRichEventDebug(const CbmRichEventDebug&);
+   CbmRichEventDebug operator=(const CbmRichEventDebug&);
 
    ClassDef(CbmRichEventDebug, 1);
 };

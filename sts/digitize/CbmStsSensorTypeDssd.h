@@ -411,6 +411,7 @@ class CbmStsSensorTypeDssd : public CbmStsSensorType
      **/
     Bool_t SelfTest();
 
+ private:
 
     /** Copy constructor (not implemented)  **/
     CbmStsSensorTypeDssd(CbmStsSensorTypeDssd& rhs);

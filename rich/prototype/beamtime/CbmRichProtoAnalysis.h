@@ -24,9 +24,6 @@ public:
    void SetOutputDir(TString dir) {fOutputDir = dir;}
    void SetOutHistoFile(TString filename) {fOutHistoFile = filename;}
 
-   //TODO implement or get rid
-   CbmRichProtoAnalysis(const CbmRichProtoAnalysis&);
-   CbmRichProtoAnalysis operator=(const CbmRichProtoAnalysis&);
 
 private:
 
@@ -44,6 +41,9 @@ private:
    TString fOutputDir; // output directory to store figures
    TString fOutHistoFile;
 
+   //TODO implement or get rid
+   CbmRichProtoAnalysis(const CbmRichProtoAnalysis&);
+   CbmRichProtoAnalysis operator=(const CbmRichProtoAnalysis&);
 
    ClassDef(CbmRichProtoAnalysis, 1);
 };

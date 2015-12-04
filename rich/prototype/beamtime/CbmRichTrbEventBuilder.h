@@ -27,10 +27,6 @@ public:
    void SetWlsState(TString state) { fWlsState = state; }
    //void FitGaussAndDrawResults(TH1* h);
 
-   //TODO implement or get rid
-   CbmRichTrbEventBuilder(const CbmRichTrbEventBuilder&);
-   CbmRichTrbEventBuilder operator=(const CbmRichTrbEventBuilder&);
-
 private:
 
    TClonesArray* fRichTrbDigi;  // input
@@ -56,6 +52,10 @@ private:
    // For WU analysis
    Double_t lastTriggerTimestamp;
    Double_t lastRefTime;
+
+   //TODO implement or get rid
+   CbmRichTrbEventBuilder(const CbmRichTrbEventBuilder&);
+   CbmRichTrbEventBuilder operator=(const CbmRichTrbEventBuilder&);
 
    ClassDef(CbmRichTrbEventBuilder, 1);
 };
