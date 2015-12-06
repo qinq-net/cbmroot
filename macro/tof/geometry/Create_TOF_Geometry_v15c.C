@@ -66,7 +66,7 @@ const Float_t GasGap_Y[NumberOfDifferentCounterTypes] = {26.9,53.,  4.,    4.6, 
 const Float_t GasGap_Z[NumberOfDifferentCounterTypes] = {0.022,0.022,0.022,0.014,2.,  0.1, 0.014,0.014, 0.025, 0.025};
 
 const Int_t NumberOfGaps[NumberOfDifferentCounterTypes] = {8,8,6,10,1,1,10,8,10,10};
-const Int_t NumberOfReadoutStrips[NumberOfDifferentCounterTypes] = {32,56,16,72,1,16,40,28,8,24};
+const Int_t NumberOfReadoutStrips[NumberOfDifferentCounterTypes] = {32,56,16,72,1,16,40,40,8,24};
 
 const Float_t SingleStackStartPosition_Z[NumberOfDifferentCounterTypes] = {-0.6,-0.6,-0.6,-0.6,-1.,-0.1,-0.6,-0.6,-1.,-0.6};
 
@@ -156,22 +156,22 @@ const Float_t HDbig_Types[HDbig_NTypes]  = {0.};
 const Float_t HDbig_Number[HDbig_NTypes] = {1.}; //debugging, V14c
 
 const Float_t HDsmall_Z_Position=449.5;
-const Float_t HDsmall_First_Y_Position=67.9;  // HD - P2
+const Float_t HDsmall_First_Y_Position=57.9;  // HD - P2
 const Float_t HDsmall_X_Offset=0.;
-const Float_t HDsmall_rotate_Z=90.;
+const Float_t HDsmall_rotate_Z=-90.;
 const Float_t HDsmall_NTypes = 1;
 const Float_t HDsmall_Types[HDsmall_NTypes]  = {3.};
 const Float_t HDsmall_Number[HDsmall_NTypes] = {1.}; //debugging, V14b
 
 const Float_t HDRef_Z_Position=361.;
-const Float_t HDRef_First_Y_Position=50.0;
+const Float_t HDRef_First_Y_Position=48.0;
 const Float_t HDRef_X_Offset=0.2;
 const Float_t HDRef_rotate_Z=180.;
 const Float_t HDRef_NTypes = 1;
 const Float_t HDRef_Types[HDRef_NTypes]  = {4.}; // this is the SmType!
 const Float_t HDRef_Number[HDRef_NTypes] = {1.}; // evtl. double for split signals 
 
-const Float_t Dia_Z_Position=0.;
+const Float_t Dia_Z_Position=0.1;
 const Float_t Dia_DeltaZ_Position=-4.;
 const Float_t Dia_First_Y_Position=0.;
 const Float_t Dia_X_Offset=2.;
@@ -182,7 +182,7 @@ const Float_t Dia_Number[Dia_NTypes] = {1.,1.,1.};
 
 const Float_t BucRef_Z_Position=441.2;
 const Float_t BucRef_First_Y_Position=-20.;
-const Float_t BucRef_X_Offset=-22.;
+const Float_t BucRef_X_Offset=-0.;
 const Float_t BucRef_rotate_Z=180.;
 const Float_t BucRef_NTypes = 1;
 const Float_t BucRef_Types[BucRef_NTypes]  = {1.};
@@ -196,7 +196,7 @@ const Float_t Buc2012_NTypes = 1;
 const Float_t Buc2012_Types[Buc2012_NTypes]  = {7.};
 const Float_t Buc2012_Number[Buc2012_NTypes] = {1.};
 
-const Float_t Buc2015_Z_Position=380.;
+const Float_t Buc2015_Z_Position=400.;
 const Float_t Buc2015_First_Y_Position=-15.;
 const Float_t Buc2015_X_Offset=0.; 
 const Float_t Buc2015_rotate_Z=0.;
@@ -212,15 +212,15 @@ const Float_t USTC_NTypes = 1;
 const Float_t USTC_Types[USTC_NTypes]  = {7.};
 const Float_t USTC_Number[USTC_NTypes] = {1.};
 
-const Float_t THU_Z_Position=300.;
-const Float_t THU_First_Y_Position=2.0;
-const Float_t THU_X_Offset=-19.;
+const Float_t THU_Z_Position=380.;
+const Float_t THU_First_Y_Position=-15.0;
+const Float_t THU_X_Offset=0.;
 const Float_t THU_rotate_Z=90.;
 const Float_t THU_NTypes = 1;
 const Float_t THU_Types[THU_NTypes]  = {8.};
 const Float_t THU_Number[THU_NTypes] = {1.};
 
-const Float_t Star2_First_Y_Position=57.0;  // 
+const Float_t Star2_First_Y_Position=47.0;  // 
 const Float_t Star2_Delta_Y_Position=5.0;   // 
 const Float_t Star2_First_Z_Position=380.;
 const Float_t Star2_Delta_Z_Position=24.;
@@ -346,7 +346,7 @@ void Create_TOF_Geometry_v15c() {
 
   //  gPole = create_tof_pole();
 
-  position_Dia(3);
+  position_Dia(1);
   position_HDsmall(1);
   position_HDRef(1);
   position_Star2(1);
@@ -755,7 +755,7 @@ TGeoVolume* create_new_tof_module(Int_t modType)
     xpos=startxpos + j*dxpos;
     ypos=startypos + j*dypos;
     if(6 == modType) {  //Buc2015a/b
-      if(j==1) cType++; //second guy is b
+      if(j==1) cType=7; //second guy is b
     }
     if(7 == modType) {  //Buc2012
       Int_t zsh[4]={0,2,1,3};
