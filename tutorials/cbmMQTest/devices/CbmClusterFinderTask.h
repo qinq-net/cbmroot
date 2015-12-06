@@ -38,6 +38,9 @@ class CbmClusterFinderTask : public BaseProcessorTaskPolicy<CbmClusterFinderTask
         fClusterFinder = new cluster_finder();
     }
 
+    CbmClusterFinderTask(const CbmClusterFinderTask&);
+    CbmClusterFinderTask& operator=(const CbmClusterFinderTask&);
+
     virtual ~CbmClusterFinderTask()
     {
         if(fClusterFinder)
