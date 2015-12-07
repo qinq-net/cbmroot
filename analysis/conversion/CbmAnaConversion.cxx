@@ -405,7 +405,7 @@ void CbmAnaConversion::InitHistograms()
 	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(4, "both conv before 70cm");
 	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(5, "both conv in target");
 	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(6, "...");
-	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(7, "!=1: all pi0 from target");
+	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(7, "!= -1: all pi0 not from target");
 	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(8, "all pi0 -> gg");
 	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(9, "all g -> e+e-");
 	fhPi0_MC_occurence->GetXaxis()->SetBinLabel(10, "both conv before 70cm");
@@ -420,7 +420,7 @@ void CbmAnaConversion::InitHistograms()
 
 	fhPi0_MC_occurence2 = new TH1D("fhPi0_MC_occurence2", "fhPi0_MC_occurence2;;#", 20, 0, 20);
 	fHistoList_furtherAnalyses.push_back(fhPi0_MC_occurence2);
-	fhPi0_MC_occurence2->GetXaxis()->SetBinLabel(1, "!= -1: all pi0 from target");
+	fhPi0_MC_occurence2->GetXaxis()->SetBinLabel(1, "!= -1: all pi0 not from target");
 	fhPi0_MC_occurence2->GetXaxis()->SetBinLabel(2, "all pi0 -> gg");
 	fhPi0_MC_occurence2->GetXaxis()->SetBinLabel(3, "all g -> e+e-");
 	fhPi0_MC_occurence2->GetXaxis()->SetBinLabel(4, "both conv before 70cm");

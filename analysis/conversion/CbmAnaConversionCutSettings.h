@@ -22,7 +22,8 @@ public:
 	static Double_t CalcOpeningAngleCut(Double_t pt)
 	{
 		Double_t cut = 0;
-		cut = 1.5 - 0.5 * pt;
+		//cut = 1.5 - 0.5 * pt;
+		cut = 1.8 - 0.6 * pt;
 		
 		return cut;
 	}

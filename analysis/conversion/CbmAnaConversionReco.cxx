@@ -431,7 +431,7 @@ void CbmAnaConversionReco::InvariantMassMC_all()
 					
 						if(fMCTracklist_all[i]->GetPdgCode() + fMCTracklist_all[j]->GetPdgCode() + fMCTracklist_all[k]->GetPdgCode() + fMCTracklist_all[l]->GetPdgCode() != 0) continue;
 						
-						if(i== j || i==k || i==l || j==k || j==l || k==l) continue; 
+						if(i==j || i==k || i==l || j==k || j==l || k==l) continue; 
 					
 						int motherId1 = fMCTracklist_all[i]->GetMotherId();
 						int motherId2 = fMCTracklist_all[j]->GetMotherId();

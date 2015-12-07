@@ -60,6 +60,7 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fhTest_invmass_RICHindex2(NULL),
 	fhTest_invmass_RICHindex3(NULL),
 	fhTest_invmass_RICHindex4(NULL),
+	fVector_AllMomenta(),
 	fVector_gt(),
 	fVector_momenta(),
 	fVector_chi(),
@@ -330,6 +331,8 @@ Double_t CbmAnaConversionTest::CalcInvMass(Int_t e1, Int_t e2, Int_t e3, Int_t e
 
 void CbmAnaConversionTest::DoSTSonlyAnalysis()
 {
+	fVector_AllMomenta.clear();
+
 	fVector_gt.clear();
 	fVector_momenta.clear();
 	fVector_chi.clear();
@@ -406,6 +409,8 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 		Double_t stsHits = stsTrack->GetNofHits();
 		
 		
+		fVector_AllMomenta.push_back(refittedMomentum_electron);
+		
 		Double_t chiCut = 0;
 		//if(refittedMomentum_electron.Perp() < 0.4) {
 		//	chiCut = 31. - 70.*refittedMomentum_electron.Perp();
@@ -418,13 +423,14 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 		
 		if(result_chi_electron > chiCut) continue;
 
-		if(stsHits > 9) {
+		//if(stsHits < 10) continue;
+		//if(stsHits > 9) {
 			fVector_momenta.push_back(refittedMomentum_electron);
 			fVector_chi.push_back(result_chi_electron);
 			fVector_gtIndex.push_back(i);
 			fVector_gt.push_back(gTrack);
 			fVector_richIndex.push_back(richInd);
-		}
+		//}
 
 
 		if (richInd < 0) continue;
@@ -594,6 +600,7 @@ void CbmAnaConversionTest::CombinePhotons()
 				
 				//CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
 				
+				cout << "CbmAnaConversionTest: CombinePhotons, photon combined! " << invmass << "/" << gtIndex11 << "/" << gtIndex12 << "/" << gtIndex21 << "/" << gtIndex22 << endl;
 				nofPi0++;
 			}
 		}
@@ -714,10 +721,17 @@ void CbmAnaConversionTest::CombinePhotons_STSonly()
 	Int_t nof		= fVector_reconstructedPhotons_STSonly.size();
 	cout << "CbmAnaConversionTest: CombinePhotons_STSonly, nof - " << nof << endl;
 	Int_t nofPi0 = 0;
+	Int_t nofPi0_0 = 0;
+	Int_t nofPi0_1 = 0;
+	Int_t nofPi0_2 = 0;
+	Int_t nofPi0_3 = 0;
+	Int_t nofPi0_4 = 0;
+
+
 	if(nof >= 2) {
-		for(int a=0; a<nof; a++) {
-			for(int b=0; b<nof; b++) {
-				Int_t electron11 = fVector_reconstructedPhotons_STSonly[a][0];	// track with STS signal only
+		for(int a=0; a<nof-1; a++) {
+			for(int b=a+1; b<nof; b++) {
+				Int_t electron11 = fVector_reconstructedPhotons_STSonly[a][0];	// track with STS signal
 				Int_t electron12 = fVector_reconstructedPhotons_STSonly[a][1];	// track with STS signal
 				Int_t electron21 = fVector_reconstructedPhotons_STSonly[b][0];	// track with STS signal
 				Int_t electron22 = fVector_reconstructedPhotons_STSonly[b][1];	// track with STS signal
@@ -734,7 +748,7 @@ void CbmAnaConversionTest::CombinePhotons_STSonly()
 			
 				if(gtIndex11 == gtIndex12 || gtIndex11 == gtIndex21 || gtIndex11 == gtIndex22 || gtIndex12 == gtIndex21 || gtIndex12 == gtIndex22 || gtIndex21 == gtIndex22) {
 				//if(electron12 == electron21 || electron12 == electron22)  {
-					cout << "CbmAnaConversionTest - CombinePhotons_STSonly: Test_DoubleIndex." << endl;
+					//cout << "CbmAnaConversionTest - CombinePhotons_STSonly: Test_DoubleIndex." << endl;
 					continue;
 				}
 			
@@ -748,24 +762,31 @@ void CbmAnaConversionTest::CombinePhotons_STSonly()
 				
 				if(nofRICHindices == 0) {
 					fhTest_invmass_RICHindex0->Fill(invmass);
+					nofPi0_0++;
 				}
 				if(nofRICHindices == 1) {
 					fhTest_invmass_RICHindex1->Fill(invmass);
+					nofPi0_1++;
 				}
 				if(nofRICHindices == 2) {
 					fhTest_invmass_RICHindex2->Fill(invmass);
+					nofPi0_2++;
 				}
 				if(nofRICHindices == 3) {
 					fhTest_invmass_RICHindex3->Fill(invmass);
+					nofPi0_3++;
+					cout << "CbmAnaConversionTest: CombinePhotons_STSonly, photon combined! " << invmass << "/" << gtIndex11 << "/" << gtIndex12 << "/" << gtIndex21 << "/" << gtIndex22 << endl;
 				}
 				if(nofRICHindices == 4) {
 					fhTest_invmass_RICHindex4->Fill(invmass);
+					nofPi0_4++;
 				}
 				
 				nofPi0++;
 			}
 		}
 	}
+	cout << "CbmAnaConversionTest: CombinePhotons_STSonly, nofPi0 - " << nofPi0 << "/" << nofPi0_0 << "/" << nofPi0_1 << "/" << nofPi0_2 << "/" << nofPi0_3 << "/" << nofPi0_4 << endl;
 }
 
 
@@ -796,6 +817,45 @@ Bool_t CbmAnaConversionTest::HasRichInd(Int_t gtIndex)
 	CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
 	if (mcTrack2 == NULL) return false;
 
-	return true;
+/*
+		// calculate refitted momenta at primary vertex
+		TVector3 refittedMomentum;
+		CbmL1PFFitter fPFFitter;
+		vector<CbmStsTrack> stsTracks;
+		stsTracks.resize(1);
+		stsTracks[0] = *stsTrack;
+		vector<L1FieldRegion> vField;
+		vector<float> chiPrim;
+		fPFFitter.GetChiToVertex(stsTracks, vField, chiPrim, fKFVertex, 3e6);
+		//cand.chi2sts = stsTracks[0].GetChiSq() / stsTracks[0].GetNDF();
+		//cand.chi2Prim = chiPrim[0];
+		const FairTrackParam* vtxTrack = stsTracks[0].GetParamFirst();
+		vtxTrack->Momentum(refittedMomentum);
+		//float result_chi = chiPrim[0];
+
+
+
+		// Doing refit of momenta with electron assumption
+		CbmL1PFFitter fPFFitter_electron;
+		vector<CbmStsTrack> stsTracks_electron;
+		stsTracks_electron.resize(1);
+		stsTracks_electron[0] = *stsTrack;
+		vector<L1FieldRegion> vField_electron;
+		vector<float> chiPrim_electron;
+		vector<int> pidHypo_electron;
+		pidHypo_electron.push_back(11);
+		fPFFitter_electron.Fit(stsTracks_electron, pidHypo_electron); 
+		fPFFitter_electron.GetChiToVertex(stsTracks_electron, vField_electron, chiPrim_electron, fKFVertex, 3e6);
+
+		TVector3 refittedMomentum_electron;
+		const FairTrackParam* vtxTrack_electron = stsTracks_electron[0].GetParamFirst();
+		vtxTrack_electron->Momentum(refittedMomentum_electron);
+*/
+
+
+	Bool_t electron_rich = electronidentifier->IsRichElectron(gtIndex, fVector_AllMomenta[gtIndex].Mag() );
+	return electron_rich;
+	
+	//return true;
 }
 

@@ -490,6 +490,8 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fHistoList_recofull_new[i].push_back(fhElectrons_nofPerEvent_new[i]);
 		fhPhotons_nofPerEvent_new[i] = new TH1D(Form("fhPhotons_nofPerEvent_new_%i",i), Form("fhPhotons_nofPerEvent_new_%i; nof photons per event; #",i), 101, -0.5, 100.5);
 		fHistoList_recofull_new[i].push_back(fhPhotons_nofPerEvent_new[i]);
+		fhPi0_nofPerEvent_new[i] = new TH1D(Form("fhPi0_nofPerEvent_new_%i",i), Form("fhPi0_nofPerEvent_new_%i; nof photons per event; #",i), 101, -0.5, 100.5);
+		fHistoList_recofull_new[i].push_back(fhPi0_nofPerEvent_new[i]);
 
 		fhPhotons_invmass_new[i] = new TH1D(Form("fhPhotons_invmass_new_%i",i), Form("fhPhotons_invmass_new_%i; invariant mass; #",i), 600, -0.0025, 2.9975);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_new[i]);
@@ -502,6 +504,10 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin3_new[i]);
 		fhPhotons_invmass_ptBin4_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin4_new_%i",i), Form("fhPhotons_invmass_ptBin4_new_%i; invariant mass; #",i), 600, -0.0025, 2.9975);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin4_new[i]);
+		fhPhotons_invmass_ptBin5_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin5_new_%i",i), Form("fhPhotons_invmass_ptBin5_new_%i; invariant mass; #",i), 600, -0.0025, 2.9975);
+		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin5_new[i]);
+		fhPhotons_invmass_ptBin6_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin6_new_%i",i), Form("fhPhotons_invmass_ptBin6_new_%i; invariant mass; #",i), 600, -0.0025, 2.9975);
+		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin6_new[i]);
 	
 		fhElectrons_invmass_new[i] = new TH1D(Form("fhElectrons_invmass_new_%i",i), Form("fhElectrons_invmass_new_%i; invariant mass; #",i), 600, -0.0025, 2.9975);
 		fHistoList_recofull_new[i].push_back(fhElectrons_invmass_new[i]);
@@ -519,6 +525,11 @@ void CbmAnaConversionRecoFull::InitHistos()
 		
 		fhPhotons_pt_vs_rap_new[i] = new TH2D(Form("fhPhotons_pt_vs_rap_new_%i",i), Form("fhPhotons_pt_vs_rap_new_%i; pt; rapidity",i), 240, -2., 10., 270, -2., 7.);
 		fHistoList_recofull_new[i].push_back(fhPhotons_pt_vs_rap_new[i]);
+	
+		fhElectrons_openingAngle_sameSign_new[i] = new TH1D(Form("fhElectrons_openingAngle_sameSign_new_%i",i), Form("fhElectrons_openingAngle_sameSign_new_%i; opening angle; #",i), 101, -0.5, 100.5);
+		fHistoList_recofull_new[i].push_back(fhElectrons_openingAngle_sameSign_new[i]);
+	
+		
 	}
 
 }
@@ -1165,6 +1176,8 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 	
 	reconstructedPhotons = fVector_photons_pairs_new[index];
 	
+	Int_t nofPi0 = 0;
+	
 	Int_t nof = reconstructedPhotons.size();
 	cout << "CbmAnaConversionRecoFull: " << index << ": CombinePhotons, nof - " << nof << endl;
 	if(nof >= 2) {
@@ -1181,6 +1194,24 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 				if(electron11 == electron12 || electron11 == electron21 || electron11 == electron22 || electron12 == electron21 || electron12 == electron22 || electron21 == electron22) {
 					cout << "CbmAnaConversionRecoFull: RecoFull_DoubleIndex!" << endl;
 					continue;
+				}
+				nofPi0++;
+				
+				Int_t charge11 = (gtrack[electron11]->GetParamLast()->GetQp() > 0);
+				Int_t charge12 = (gtrack[electron12]->GetParamLast()->GetQp() > 0);
+				Int_t charge21 = (gtrack[electron21]->GetParamLast()->GetQp() > 0);
+				Int_t charge22 = (gtrack[electron22]->GetParamLast()->GetQp() > 0);
+				if( (charge11 + charge21 == 2) || (charge11 + charge21 == 0) ) {
+					CbmAnaConversionKinematicParams paramsTest1 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(momenta[electron11], momenta[electron21] );
+					CbmAnaConversionKinematicParams paramsTest2 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(momenta[electron12], momenta[electron22] );
+					fhElectrons_openingAngle_sameSign_new[index]->Fill(paramsTest1.fAngle);
+					fhElectrons_openingAngle_sameSign_new[index]->Fill(paramsTest2.fAngle);
+				}
+				if( (charge11 + charge22 == 2) || (charge11 + charge22 == 0) ) {
+					CbmAnaConversionKinematicParams paramsTest1 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(momenta[electron11], momenta[electron22] );
+					CbmAnaConversionKinematicParams paramsTest2 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(momenta[electron12], momenta[electron21] );
+					fhElectrons_openingAngle_sameSign_new[index]->Fill(paramsTest1.fAngle);
+					fhElectrons_openingAngle_sameSign_new[index]->Fill(paramsTest2.fAngle);
 				}
 			
 				Double_t invmass = Invmass_4particlesRECO(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
@@ -1284,10 +1315,12 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 						fhPhotons_invmass_vs_pt_4->Fill(invmass, pt);
 					}
 					
-					if(pt <= 1) 			fhPhotons_invmass_ptBin1_new[index]->Fill(invmass);
-					if(pt > 1 && pt <= 2)	fhPhotons_invmass_ptBin2_new[index]->Fill(invmass);
-					if(pt > 2 && pt <= 3)	fhPhotons_invmass_ptBin3_new[index]->Fill(invmass);
-					if(pt > 3 && pt <= 4)	fhPhotons_invmass_ptBin4_new[index]->Fill(invmass);
+					if(pt <= 0.5) 			fhPhotons_invmass_ptBin1_new[index]->Fill(invmass);
+					if(pt > 0.5 && pt <= 1)	fhPhotons_invmass_ptBin2_new[index]->Fill(invmass);
+					if(pt > 1 && pt <= 1.5)	fhPhotons_invmass_ptBin3_new[index]->Fill(invmass);
+					if(pt > 1.5 && pt <= 2)	fhPhotons_invmass_ptBin4_new[index]->Fill(invmass);
+					if(pt > 2 && pt <= 2.5)	fhPhotons_invmass_ptBin5_new[index]->Fill(invmass);
+					if(pt > 2.5 && pt <= 3)	fhPhotons_invmass_ptBin6_new[index]->Fill(invmass);
 					fhPhotons_invmass_vs_pt_new[index]->Fill(invmass, pt);
 					
 					/*
@@ -1421,6 +1454,7 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 			}
 		}
 	}
+	fhPi0_nofPerEvent_new[index]->Fill(nofPi0);
 }
 
 

@@ -105,6 +105,10 @@ private:
 	TH1D * fhTest_invmass_RICHindex4;
 
 
+	// array with all refitted momenta
+	vector<TVector3>	fVector_AllMomenta;
+
+
 	// arrays for STS only analysis (i.e. signal only in STS is required, not necessarily in RICH)
 	vector<CbmGlobalTrack*>	fVector_gt;
 	vector<TVector3>		fVector_momenta;

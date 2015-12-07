@@ -239,11 +239,14 @@ private:
 
 	TH1D * fhElectrons_nofPerEvent_new[5];
 	TH1D * fhPhotons_nofPerEvent_new[5];
+	TH1D * fhPi0_nofPerEvent_new[5];
 	TH1D * fhPhotons_invmass_new[5];
 	TH1D * fhPhotons_invmass_ptBin1_new[5];
 	TH1D * fhPhotons_invmass_ptBin2_new[5];
 	TH1D * fhPhotons_invmass_ptBin3_new[5];
 	TH1D * fhPhotons_invmass_ptBin4_new[5];
+	TH1D * fhPhotons_invmass_ptBin5_new[5];
+	TH1D * fhPhotons_invmass_ptBin6_new[5];
 	TH1D * fhElectrons_invmass_new[5];
 	TH2D * fhPhotons_invmass_vs_pt_new[5];
 	TH1D * fhPhotons_invmass_MCcut1_new[5];
@@ -251,6 +254,7 @@ private:
 	TH1D * fhPhotons_invmass_MCcut3_new[5];
 	TH1D * fhPhotons_invmass_MCcut4_new[5];
 	TH2D * fhPhotons_pt_vs_rap_new[5];
+	TH1D * fhElectrons_openingAngle_sameSign_new[5];
 
 	// timer
 	TStopwatch timer;
