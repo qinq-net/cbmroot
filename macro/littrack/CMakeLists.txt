@@ -4,6 +4,18 @@ GENERATE_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/littrack/commit_tests/run_test.
 # Otherwise the rootalias file is not loaded
 File(COPY ${CBMROOT_SOURCE_DIR}/macro/include/.rootrc DESTINATION ${CBMROOT_BINARY_DIR}/macro/littrack/commit_tests)
 
+Set(MaxTestTime 420)
+Execute_Process(COMMAND ${SIMPATH}/bin/fairsoft-config --root-version
+                OUTPUT_VARIABLE _root_version
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+               )
+
+# Longer test time when using ROOT6
+If(_root_version EQUAL 6)
+  Math(EXPR TestTime "${MaxTestTime}*120/100")
+Else()
+  Set(TestTime ${MaxTestTime})
+EndIf()
 
 # Define the different setups to be tested
 List(APPEND  setup  electron  muon)
@@ -15,14 +27,14 @@ ForEach(__setup IN  LISTS  setup)
   Set(testname littrack_global_sim_${__setup})
 
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/littrack/commit_tests/run_test.sh ${__setup} sim)
-  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "420")
+  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "${TestTime}")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   
   Set(_dep ${testname})
   Set(testname littrack_global_reco_${__setup})
   
   Add_Test(${testname} ${CBMROOT_BINARY_DIR}/macro/littrack/commit_tests/run_test.sh ${__setup} reco)
-  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "420")
+  Set_Tests_Properties(${testname} PROPERTIES TIMEOUT "${TestTime}")
   Set_Tests_Properties(${testname} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname} PROPERTIES DEPENDS ${_dep})
   Set(_FileName_Dependency commit_tests/global_sim_${__setup}_ok)
@@ -41,14 +53,14 @@ ForEach(__setup_mvd IN  LISTS  setup_mvd)
   Set(testname_mvd littrack_mvd_sim_${__setup_mvd})
 
   Add_Test(${testname_mvd} ${CBMROOT_BINARY_DIR}/macro/littrack/commit_tests/run_test_mvd.sh ${__setup_mvd} sim)
-  Set_Tests_Properties(${testname_mvd} PROPERTIES TIMEOUT "420")
+  Set_Tests_Properties(${testname_mvd} PROPERTIES TIMEOUT "${TestTime}")
   Set_Tests_Properties(${testname_mvd} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   
   Set(_dep ${testname_mvd})
   Set(testname_mvd littrack_mvd_reco_${__setup_mvd})
   
   Add_Test(${testname_mvd} ${CBMROOT_BINARY_DIR}/macro/littrack/commit_tests/run_test_mvd.sh ${__setup_mvd} reco)
-  Set_Tests_Properties(${testname_mvd} PROPERTIES TIMEOUT "420")
+  Set_Tests_Properties(${testname_mvd} PROPERTIES TIMEOUT "${TestTime}")
   Set_Tests_Properties(${testname_mvd} PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")
   Set_Tests_Properties(${testname_mvd} PROPERTIES DEPENDS ${_dep})
   Set(_FileName_Dependency commit_tests/global_sim_mvd_${__setup_mvd}_ok)
