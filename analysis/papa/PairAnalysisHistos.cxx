@@ -1625,6 +1625,7 @@ void PairAnalysisHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
   arr->SetOwner();
   hclass=((TObjString*)arr->At(0))->GetString();
   delete arr;
+  hclass.ToLower();
 
   Bool_t bname  = (currentName.IsNull());
   Bool_t btitle = (currentTitle.IsNull());
@@ -1698,6 +1699,7 @@ void PairAnalysisHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
       tit=ax->GetTitle();
       tit.Prepend( (bStdOpt ? "#LT" : "RMS(") );
       tit.Append ( (bStdOpt ? "#GT" : ")")    );
+      // TODO: activate -->      tit.Append ( Form("_{%ss}",hclass.Data()));
       tit.Append ( calcrange.Data()           );
       ax->SetTitle(tit.Data());
     }
@@ -1752,7 +1754,7 @@ void PairAnalysisHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
       }
     // to differentiate btw. leg and pair histos
     //    if(!strcmp(histClass,"Pair")) currentName.Prepend("p");
-    if(hclass.Contains("Pair")) currentName.Prepend("p");
+    if(hclass.Contains("pair")) currentName.Prepend("p");
     hist->SetName(currentName.Data());
   }
 }

@@ -819,7 +819,7 @@ inline void PairAnalysisVarManager::FillVarTrdTrack(const CbmTrdTrack *track, Do
   values[kTRDThetaCorr]   = 1. / mom.CosTheta();
   values[kTRDPhiCorr]     = 1. / TMath::Cos(mom.Phi());
   // apply correction and normalisation
-  values[kTRDSignal]      /= (values[kTRDHits] * values[kTRDThetaCorr] * values[kTRDPhiCorr]);
+  values[kTRDSignal]      /= values[kTRDHits];// * values[kTRDThetaCorr] * values[kTRDPhiCorr]);
 
   track->GetParamLast()->Momentum(mom);
   values[kTRDPout]        = mom.Mag();
@@ -1296,9 +1296,9 @@ inline void PairAnalysisVarManager::FillVarTrdHit(const CbmTrdHit *hit, Double_t
 
   // Set
   /// NOTE: use correction from first TRD track param
-  values[kEloss]     = hit->GetELoss()     * 1.e+6 / (values[kTRDThetaCorr] * values[kTRDPhiCorr]); //GeV->keV, dEdx + TR
-  values[kElossdEdx] = hit->GetELossdEdX() * 1.e+6 / (values[kTRDThetaCorr] * values[kTRDPhiCorr]); //GeV->keV, dEdx
-  values[kElossTR]   = hit->GetELossTR()   * 1.e+6 / (values[kTRDThetaCorr] * values[kTRDPhiCorr]); //GeV->keV, TR
+  values[kEloss]     = hit->GetELoss()     * 1.e+6; //GeV->keV, dEdx + TR
+  values[kElossdEdx] = hit->GetELossdEdX() * 1.e+6; //GeV->keV, dEdx
+  values[kElossTR]   = hit->GetELossTR()   * 1.e+6; //GeV->keV, TR
   //  Printf("eloss trd: %.3e (%.3e TR, %.3e dEdx)",hit->GetELoss(),hit->GetELossTR(),hit->GetELossdEdX());
 }
 
