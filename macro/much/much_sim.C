@@ -65,7 +65,8 @@ void much_sim(TString inputSignal = "",
   TString caveGeom   = "cave.geo";
 //  CbmTarget* target = new CbmTarget("Gold", 0.025);
   TString magnetGeom = "magnet/magnet_v15b_much.geo.root";
-  TString stsGeom    = "sts/sts_v13y.geo.root";
+  TString mvdGeom    = ""; // "mvd/mvd_v15a.geo.root";
+  TString stsGeom    = "sts/sts_v15a.geo.root";
 
   // --- Define the target geometry -----------------------------------------
   //                                                                         
@@ -149,6 +150,13 @@ void much_sim(TString inputSignal = "",
     magnet->SetGeometryFileName(magnetGeom);
     cout << "    --- " << magnetGeom << endl;
     fRun->AddModule(magnet);
+  }
+
+  if ( mvdGeom != "" ) {
+    FairDetector* mvd = new CbmMvd("MVD", kTRUE);
+    mvd->SetGeometryFileName(mvdGeom);
+    mvd->SetMotherVolume("pipevac1");
+    fRun->AddModule(mvd);
   }
 
   if ( stsGeom != "" ) {
