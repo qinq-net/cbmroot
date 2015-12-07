@@ -3,6 +3,7 @@
 ##   semi-automated script installing FairSoft, FairRoot and CbmRoot
 #
 
+# 01.12.2015 - add selection of root version
 # 17.07.2015 - introduce option to compile dev settings 
 # 02.06.2015 - introduce parameters for individual package selection
 # 13.03.2015 - initial version
@@ -24,11 +25,9 @@
 export ROOTVER=5
 
 # put your desired variants here:
-#export FSOFTDEV=jul15p2  # nov15p1
-export FSOFTDEV=jul15p3  # nov15p1
+export FSOFTDEV=nov15p1
 export FROOTDEV=v-15.11
 
-#export FSOFTPRO=jul15p2
 export FSOFTPRO=jul15p3
 export FROOTPRO=v-15.07a 
 
