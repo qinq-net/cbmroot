@@ -48,7 +48,7 @@ namespace PairAnalysisHelper
 
   // pdg labels
   void SetPDGBinLabels( TH1 *hist);
-  const char* GetPDGlabel(Int_t pdg);
+  TString GetPDGlabel(Int_t pdg);
   void SetGEANTBinLabels( TH1 *hist);
 
   // misc

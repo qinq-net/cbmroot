@@ -273,7 +273,7 @@ void PairAnalysisHelper::SetPDGBinLabels( TH1 *hist) {
 }
 
 //_____________________________________________________________________________
-const char* PairAnalysisHelper::GetPDGlabel(Int_t pdg)
+TString PairAnalysisHelper::GetPDGlabel(Int_t pdg)
 {
   //
   // return the label in latex format corresponding to pdg code
@@ -305,7 +305,7 @@ const char* PairAnalysisHelper::GetPDGlabel(Int_t pdg)
   // specials
   name.ReplaceAll("/psi","/#psi");
   //  Printf(" %d = %s",pdg,name.Data());
-  return name.Data();
+  return name;
 }
 
 //_____________________________________________________________________________
