@@ -40,6 +40,7 @@ public:
 	void Exec();
 
 	void AnalyseElectronsReco();
+	void AnalyseElectronsRecoWithRICH();
 
 
 
@@ -63,6 +64,12 @@ private:
 	vector<Double_t>		fRecoTracklist_chi;
 	vector<CbmMCTrack*>		fRecoTracklist_mctrack;
 
+	vector<Int_t>			fRecoTracklist_withRICH_gtIndex;
+	vector<Int_t>			fRecoTracklist_withRICH_mcIndex;
+	vector<TVector3>		fRecoTracklist_withRICH_momentum;
+	vector<Double_t>		fRecoTracklist_withRICH_chi;
+	vector<CbmMCTrack*>		fRecoTracklist_withRICH_mctrack;
+
 
 
 
@@ -79,6 +86,9 @@ private:
 	// histogram for comparison of different opening angle cuts and their influence on signal and background amounts
 	TH1I * fh2Electrons_angle_CUTcomparison;
 	TH1I * fh2Electrons_angle_CUTcomparison_chi;
+	
+	TH1I * fh2Electrons_angle_CUTcomparison_withRICH;
+	TH1I * fh2Electrons_angle_CUTcomparison_withRICH_chi;
 
 
 	// distribution of invariant masses from reconstructed momenta

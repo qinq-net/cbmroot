@@ -73,7 +73,6 @@ public:
 		if(pt >= 0.4) {
 			cut = 3;
 		}
-		
 		return cut;
 	}
 
@@ -82,6 +81,19 @@ public:
 	{
 		Double_t cut = 0;
 		cut = 3;
+		return cut;
+	}
+
+
+	static Double_t CalcChiCutAlt2(Double_t pt)
+	{
+		Double_t cut = 0;
+		if(pt < 0.4) {
+			cut = 15. - 30.*pt;
+		}
+		if(pt >= 0.4) {
+			cut = 3;
+		}
 		return cut;
 	}
 
