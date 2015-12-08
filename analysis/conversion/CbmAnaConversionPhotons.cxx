@@ -26,6 +26,8 @@
 #include "TCanvas.h"
 
 
+#include "CbmAnaConversionCutSettings.h"
+
 
 using namespace std;
 
@@ -132,6 +134,10 @@ CbmAnaConversionPhotons::CbmAnaConversionPhotons()
 	fhEFG_angle_direct_reco(NULL),
 	fhEFG_angle_pi0_reco(NULL),
 	fhEFG_angle_eta_reco(NULL),
+	fhEFG_angle_all_reco_cuts(NULL),
+	fhEFG_angle_combBack_reco_cuts(NULL),
+	fhEFG_angle_allSameG_reco_cuts(NULL),
+	fhEFG_angle_reco_CUTcomparison(NULL),
 	fhEFG_angleBelow1GeV_all_reco(NULL),
 	fhEFG_angleBelow1GeV_combBack_reco(NULL),
 	fhEFG_angleBelow1GeV_allSameG_reco(NULL),
@@ -156,6 +162,8 @@ CbmAnaConversionPhotons::CbmAnaConversionPhotons()
 	fhEFG_angleVSpt_direct_reco(NULL),
 	fhEFG_angleVSpt_pi0_reco(NULL),
 	fhEFG_angleVSpt_eta_reco(NULL),
+	fhEFG_invmassVSpt_all_reco(NULL),
+	fhEFG_invmassVSpt_combBack_reco(NULL),
 	fhEFG_invmassVSpt_allSameG_reco(NULL),
 	fhEFG_invmassVSpt_direct_reco(NULL),
 	fhEFG_invmassVSpt_pi0_reco(NULL),
@@ -383,18 +391,44 @@ void CbmAnaConversionPhotons::InitHistos()
 
 
 	// opening angles for all photon-energies (RECO)
-	fhEFG_angle_all_reco		= new TH1D("fhEFG_angle_all_reco", "fhEFG_angle_all_reco; opening angle [deg]; #", 2000, 0., 200.);
-	fhEFG_angle_combBack_reco	= new TH1D("fhEFG_angle_combBack_reco", "fhEFG_angle_combBack_reco; opening angle [deg]; #", 2000, 0., 200.);
-	fhEFG_angle_allSameG_reco	= new TH1D("fhEFG_angle_allSameG_reco", "fhEFG_angle_allSameG_reco; opening angle [deg]; #", 1000, 0., 100.);
-	fhEFG_angle_direct_reco		= new TH1D("fhEFG_angle_direct_reco", "fhEFG_angle_direct_reco; opening angle [deg]; #", 1000, 0., 100.);
-	fhEFG_angle_pi0_reco		= new TH1D("fhEFG_angle_pi0_reco", "fhEFG_angle_pi0_reco; opening angle [deg]; #", 1000, 0., 100.);
-	fhEFG_angle_eta_reco		= new TH1D("fhEFG_angle_eta_reco", "fhEFG_angle_eta_reco; opening angle [deg]; #", 1000, 0., 100.);
+	fhEFG_angle_all_reco		= new TH1D("fhEFG_angle_all_reco", "fhEFG_angle_all_reco; opening angle [deg]; #", 2001, -0.05, 200.05);
+	fhEFG_angle_combBack_reco	= new TH1D("fhEFG_angle_combBack_reco", "fhEFG_angle_combBack_reco; opening angle [deg]; #", 2001, -0.05, 200.05);
+	fhEFG_angle_allSameG_reco	= new TH1D("fhEFG_angle_allSameG_reco", "fhEFG_angle_allSameG_reco; opening angle [deg]; #", 1001, -0.05, 100.05);
+	fhEFG_angle_direct_reco		= new TH1D("fhEFG_angle_direct_reco", "fhEFG_angle_direct_reco; opening angle [deg]; #", 1001, -0.05, 100.05);
+	fhEFG_angle_pi0_reco		= new TH1D("fhEFG_angle_pi0_reco", "fhEFG_angle_pi0_reco; opening angle [deg]; #", 1001, -0.05, 100.05);
+	fhEFG_angle_eta_reco		= new TH1D("fhEFG_angle_eta_reco", "fhEFG_angle_eta_reco; opening angle [deg]; #", 1001, -0.05, 100.05);
 	fHistoList_EFG_angle.push_back(fhEFG_angle_all_reco);
 	fHistoList_EFG_angle.push_back(fhEFG_angle_combBack_reco);
 	fHistoList_EFG_angle.push_back(fhEFG_angle_allSameG_reco);
 	fHistoList_EFG_angle.push_back(fhEFG_angle_direct_reco);
 	fHistoList_EFG_angle.push_back(fhEFG_angle_pi0_reco);
 	fHistoList_EFG_angle.push_back(fhEFG_angle_eta_reco);
+	
+	
+	// histogram for comparison of different opening angle cuts and their influence on signal and background amounts
+	fhEFG_angle_reco_CUTcomparison	= new TH1I("fhEFG_angle_reco_CUTcomparison", "fhEFG_angle_reco_CUTcomparison; ; #", 10, 0., 10.);
+	fHistoList_EFG_angle.push_back(fhEFG_angle_reco_CUTcomparison);
+	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(1, "true, no cut");
+	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(2, "false, no cut");
+	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(3, "true, cut1");
+	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(4, "false, cut1");
+	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(5, "true, cut2");
+	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(6, "false, cut2");
+	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(7, "true, cut3");
+	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(8, "false, cut3");
+	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(9, "true, cut4");
+	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(10, "false, cut4");
+	
+	
+		// opening angles for all photon-energies (RECO) with application of opening angle cuts
+	fhEFG_angle_all_reco_cuts		= new TH1D("fhEFG_angle_all_reco_cuts", "fhEFG_angle_all_reco_cuts; opening angle [deg]; #", 101, -0.05, 10.05);
+	fhEFG_angle_combBack_reco_cuts	= new TH1D("fhEFG_angle_combBack_reco_cuts", "fhEFG_angle_combBack_reco_cuts; opening angle [deg]; #", 101, -0.05, 10.05);
+	fhEFG_angle_allSameG_reco_cuts	= new TH1D("fhEFG_angle_allSameG_reco_cuts", "fhEFG_angle_allSameG_reco_cuts; opening angle [deg]; #", 101, -0.05, 10.05);
+	fHistoList_EFG_angle.push_back(fhEFG_angle_all_reco_cuts);
+	fHistoList_EFG_angle.push_back(fhEFG_angle_combBack_reco_cuts);
+	fHistoList_EFG_angle.push_back(fhEFG_angle_allSameG_reco_cuts);
+	
+	
 	
 	// opening angles for photon-energies below 1 GeV (RECO)
 	fhEFG_angleBelow1GeV_all_reco		= new TH1D("fhEFG_angleBelow1GeV_all_reco", "fhEFG_angleBelow1GeV_all_reco; opening angle [deg]; #", 2000, 0., 100.);
@@ -455,14 +489,14 @@ void CbmAnaConversionPhotons::InitHistos()
 
 
 	// invariant mass vs pt (reco)
-	//fhEFG_invmassVSpt_all			= new TH2D("fhEFG_invmassVSpt_all", "fhEFG_invmassVSpt_all;opening angle [deg];pt [GeV/c]", 2000, 0., 100., 500, 0., 5.);
-	//fhEFG_invmassVSpt_combBack	= new TH2D("fhEFG_invmassVSpt_combBack", "fhEFG_invmassVSpt_combBack;opening angle [deg];pt [GeV/c]", 2000, 0., 100., 500, 0., 5.);
+	fhEFG_invmassVSpt_all_reco		= new TH2D("fhEFG_invmassVSpt_all_reco", "fhEFG_invmassVSpt_all_reco;pt [GeV/c];invmass [GeV]", 500, 0., 5., 5000, 0., 5.);
+	fhEFG_invmassVSpt_combBack_reco	= new TH2D("fhEFG_invmassVSpt_combBack_reco", "fhEFG_invmassVSpt_combBack_reco;pt [GeV/c];invmass [GeV]", 500, 0., 5., 5000, 0., 5.);
 	fhEFG_invmassVSpt_allSameG_reco	= new TH2D("fhEFG_invmassVSpt_allSameG_reco", "fhEFG_invmassVSpt_allSameG_reco;pt [GeV/c];invmass [GeV]", 500, 0., 5., 5000, 0., 5.);
 	fhEFG_invmassVSpt_direct_reco	= new TH2D("fhEFG_invmassVSpt_direct_reco", "fhEFG_invmassVSpt_direct_reco;pt [GeV/c];invmass [GeV]", 500, 0., 5., 5000, 0., 5.);
 	fhEFG_invmassVSpt_pi0_reco		= new TH2D("fhEFG_invmassVSpt_pi0_reco", "fhEFG_invmassVSpt_pi0_reco;pt [GeV/c];invmass [GeV]", 500, 0., 5., 5000, 0., 5.);
 	fhEFG_invmassVSpt_eta_reco		= new TH2D("fhEFG_invmassVSpt_eta_reco", "fhEFG_invmassVSpt_eta_reco;pt [GeV/c];invmass [GeV]", 500, 0., 5., 5000, 0., 5.);
-	//fHistoList_EFG_invmass.push_back(fhEFG_invmassVSpt_all);
-	//fHistoList_EFG_invmass.push_back(fhEFG_invmassVSpt_combBack);
+	fHistoList_EFG_invmass.push_back(fhEFG_invmassVSpt_all_reco);
+	fHistoList_EFG_invmass.push_back(fhEFG_invmassVSpt_combBack_reco);
 	fHistoList_EFG_invmass.push_back(fhEFG_invmassVSpt_allSameG_reco);
 	fHistoList_EFG_invmass.push_back(fhEFG_invmassVSpt_direct_reco);
 	fHistoList_EFG_invmass.push_back(fhEFG_invmassVSpt_pi0_reco);
@@ -646,6 +680,25 @@ void CbmAnaConversionPhotons::Exec()
 		//cand.chi2Prim = chiPrim[0];
 		const FairTrackParam* vtxTrack = stsTracks[0].GetParamFirst();
 		vtxTrack->Momentum(refittedMomentum);
+
+
+
+		// Doing refit of momenta with electron assumption
+		CbmL1PFFitter fPFFitter_electron;
+		vector<CbmStsTrack> stsTracks_electron;
+		stsTracks_electron.resize(1);
+		stsTracks_electron[0] = *stsTrack;
+		vector<L1FieldRegion> vField_electron;
+		vector<float> chiPrim_electron;
+		vector<int> pidHypo_electron;
+		pidHypo_electron.push_back(11);
+		fPFFitter_electron.Fit(stsTracks_electron, pidHypo_electron); 
+		fPFFitter_electron.GetChiToVertex(stsTracks_electron, vField_electron, chiPrim_electron, fKFVertex, 3e6);
+
+		TVector3 refittedMomentum_electron;
+		const FairTrackParam* vtxTrack_electron = stsTracks_electron[0].GetParamFirst();
+		vtxTrack_electron->Momentum(refittedMomentum_electron);
+		refittedMomentum = refittedMomentum_electron;
 
 
 
@@ -1071,11 +1124,17 @@ void CbmAnaConversionPhotons::AnalyseElectronsFromGammaReco()
 			
 			
 			CbmLmvmKinematicParams paramSet = CalculateKinematicParamsReco( fRecoTracklist_allElectronsFromGammaMom[i], fRecoTracklist_allElectronsFromGammaMom[j] );
+			Double_t OpeningAngleCut = CbmAnaConversionCutSettings::CalcOpeningAngleCut(paramSet.fPt);
+			
 			
 			fhEFG_angle_all_reco->Fill(paramSet.fAngle);		// fill all combinations of e+e-, even if they dont come from the same origin
 			fhEFG_angleVSpt_all_reco->Fill(paramSet.fPt, paramSet.fAngle);
+			fhEFG_invmassVSpt_all_reco->Fill(paramSet.fPt, paramSet.fMinv);
 			fhEFG_invmass_all_reco->Fill(paramSet.fMinv);
-			if(paramSet.fAngle < 1) fhEFG_invmass_all_reco_cut->Fill(paramSet.fMinv);
+			if(paramSet.fAngle < OpeningAngleCut) {
+				fhEFG_invmass_all_reco_cut->Fill(paramSet.fMinv);
+				fhEFG_angle_all_reco_cuts->Fill(paramSet.fAngle);
+			}
 			
 			int motherID_i = fRecoTracklist_allElectronsFromGamma[i]->GetMotherId();
 			int motherID_j = fRecoTracklist_allElectronsFromGamma[j]->GetMotherId();
@@ -1083,15 +1142,38 @@ void CbmAnaConversionPhotons::AnalyseElectronsFromGammaReco()
 			if(motherID_i != motherID_j) {
 				fhEFG_angle_combBack_reco->Fill(paramSet.fAngle);
 				fhEFG_angleVSpt_combBack_reco->Fill(paramSet.fPt, paramSet.fAngle);
+				fhEFG_invmassVSpt_combBack_reco->Fill(paramSet.fPt, paramSet.fMinv);
 				fhEFG_invmass_combBack_reco->Fill(paramSet.fMinv);
-				if(paramSet.fAngle < 1) fhEFG_invmass_combBack_reco_cut->Fill(paramSet.fMinv);
+				if(paramSet.fAngle < OpeningAngleCut) {
+					fhEFG_invmass_combBack_reco_cut->Fill(paramSet.fMinv);
+					fhEFG_angle_combBack_reco_cuts->Fill(paramSet.fAngle);
+				}
+				
+				// study of different opening angle cuts
+				fhEFG_angle_reco_CUTcomparison->Fill(1);	// no cuts applied
+				if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(paramSet.fPt) ) fhEFG_angle_reco_CUTcomparison->Fill(3);
+				if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt1(paramSet.fPt) ) fhEFG_angle_reco_CUTcomparison->Fill(5);
+				if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt2(paramSet.fPt) ) fhEFG_angle_reco_CUTcomparison->Fill(7);
+				if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt3(paramSet.fPt) ) fhEFG_angle_reco_CUTcomparison->Fill(9);
 				continue;
 			}
 			
 			fhEFG_angle_allSameG_reco->Fill(paramSet.fAngle);		// all combinations of e+e- with the same origin
 			fhEFG_invmass_allSameG_reco->Fill(paramSet.fMinv);
 			fhEFG_angleVSpt_allSameG_reco->Fill(paramSet.fPt, paramSet.fAngle);
-			if(paramSet.fAngle < 1) fhEFG_invmass_allSameG_reco_cut->Fill(paramSet.fMinv);
+			fhEFG_invmassVSpt_allSameG_reco->Fill(paramSet.fPt, paramSet.fMinv);
+			if(paramSet.fAngle < OpeningAngleCut) {
+				fhEFG_invmass_allSameG_reco_cut->Fill(paramSet.fMinv);
+				fhEFG_angle_allSameG_reco_cuts->Fill(paramSet.fAngle);
+			}
+			
+			
+			// study of different opening angle cuts
+			fhEFG_angle_reco_CUTcomparison->Fill(0);	// no cuts applied
+			if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(paramSet.fPt) ) fhEFG_angle_reco_CUTcomparison->Fill(2);
+			if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt1(paramSet.fPt) ) fhEFG_angle_reco_CUTcomparison->Fill(4);
+			if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt2(paramSet.fPt) ) fhEFG_angle_reco_CUTcomparison->Fill(6);
+			if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt3(paramSet.fPt) ) fhEFG_angle_reco_CUTcomparison->Fill(8);
 			
 			
 			CbmMCTrack* mothermctrack_i = (CbmMCTrack*)fMcTracks->At(motherID_i);
@@ -1106,6 +1188,7 @@ void CbmAnaConversionPhotons::AnalyseElectronsFromGammaReco()
 				fhEFG_angle_direct_reco->Fill(paramSet.fAngle);
 				fhEFG_invmass_direct_reco->Fill(paramSet.fMinv);
 				fhEFG_angleVSpt_direct_reco->Fill(paramSet.fPt, paramSet.fAngle);
+				fhEFG_invmassVSpt_direct_reco->Fill(paramSet.fPt, paramSet.fMinv);
 				if(paramSet.fAngle < 1) fhEFG_invmass_direct_reco_cut->Fill(paramSet.fMinv);
 			}
 			else {		// combinations of e+e- from the same gamma, with gamma estimating from another particle (pi0/eta/...)
@@ -1116,12 +1199,14 @@ void CbmAnaConversionPhotons::AnalyseElectronsFromGammaReco()
 					fhEFG_angle_pi0_reco->Fill(paramSet.fAngle);
 					fhEFG_invmass_pi0_reco->Fill(paramSet.fMinv);
 					fhEFG_angleVSpt_pi0_reco->Fill(paramSet.fPt, paramSet.fAngle);
+					fhEFG_invmassVSpt_pi0_reco->Fill(paramSet.fPt, paramSet.fMinv);
 					if(paramSet.fAngle < 1) fhEFG_invmass_pi0_reco_cut->Fill(paramSet.fMinv);
 				}
 				if(grandmotherpdg_i == 221) {
 					fhEFG_angle_eta_reco->Fill(paramSet.fAngle);
 					fhEFG_invmass_eta_reco->Fill(paramSet.fMinv);
 					fhEFG_angleVSpt_eta_reco->Fill(paramSet.fPt, paramSet.fAngle);
+					fhEFG_invmassVSpt_eta_reco->Fill(paramSet.fPt, paramSet.fMinv);
 					if(paramSet.fAngle < 1) fhEFG_invmass_eta_reco_cut->Fill(paramSet.fMinv);
 				}
 			}

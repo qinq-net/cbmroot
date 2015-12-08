@@ -56,6 +56,7 @@
 //#pragma link C++ class CbmAnaConversionKF+;
 #pragma link C++ class CbmAnaConversionReco+;
 #pragma link C++ class CbmAnaConversionPhotons+;
+#pragma link C++ class CbmAnaConversionPhotons2+;
 #pragma link C++ class CbmAnaConversionRecoFull+;
 
 #pragma link C++ class eventPlane+;
@@ -65,6 +66,7 @@
 //#pragma link C++ class CbmTrdPhotonAnalysis+;
 
 #endif
+
 
 
 

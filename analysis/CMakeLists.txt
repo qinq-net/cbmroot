@@ -131,6 +131,7 @@ conversion/CbmAnaConversionRich.cxx
 #conversion/CbmAnaConversionKF.cxx
 conversion/CbmAnaConversionReco.cxx
 conversion/CbmAnaConversionPhotons.cxx
+conversion/CbmAnaConversionPhotons2.cxx
 conversion/CbmAnaConversionRecoFull.cxx
 
 #photon/CbmTrdPhotonAnalysis.cxx
@@ -164,6 +165,7 @@ Set(DEPENDENCIES
 Set(DEFINITIONS -DDO_TPCCATRACKER_EFF_PERFORMANCE -DNonhomogeneousField -DCBM -DUSE_TIMERS)
 
 GENERATE_LIBRARY()
+
 
 
 

@@ -203,6 +203,14 @@ private:
 	TH1D * fhEFG_angle_pi0_reco;
 	TH1D * fhEFG_angle_eta_reco;
 
+	// distribution of opening angles from reconstructed momenta, with application of opening angle cuts
+	TH1D * fhEFG_angle_all_reco_cuts;
+	TH1D * fhEFG_angle_combBack_reco_cuts;
+	TH1D * fhEFG_angle_allSameG_reco_cuts;
+	
+	// histogram for comparison of different opening angle cuts and their influence on signal and background amounts
+	TH1I * fhEFG_angle_reco_CUTcomparison;
+
 	// distribution of opening angles for photon-energies below 1GeV from reconstructed momenta
 	TH1D * fhEFG_angleBelow1GeV_all_reco;
 	TH1D * fhEFG_angleBelow1GeV_combBack_reco;
@@ -236,8 +244,8 @@ private:
 	TH2D * fhEFG_angleVSpt_eta_reco;
 
 	// invariant mass vs pt from reconstructed data
-	//TH2D * fhEFG_angleVSpt_all_reco;
-	//TH2D * fhEFG_angleVSpt_combBack_reco;
+	TH2D * fhEFG_invmassVSpt_all_reco;
+	TH2D * fhEFG_invmassVSpt_combBack_reco;
 	TH2D * fhEFG_invmassVSpt_allSameG_reco;
 	TH2D * fhEFG_invmassVSpt_direct_reco;
 	TH2D * fhEFG_invmassVSpt_pi0_reco;

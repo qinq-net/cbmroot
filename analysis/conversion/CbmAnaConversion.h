@@ -24,6 +24,7 @@
 #include "CbmAnaConversionKF.h"
 #include "CbmAnaConversionReco.h"
 #include "CbmAnaConversionPhotons.h"
+#include "CbmAnaConversionPhotons2.h"
 #include "CbmAnaConversionRecoFull.h"
 #include "CbmAnaConversionTest.h"
 
@@ -126,6 +127,7 @@ private:
 	Int_t DoKFAnalysis;
 	Int_t DoReconstruction;
 	Int_t DoPhotons;
+	Int_t DoPhotons2;
 	Int_t DoRecoFull;
 	Int_t DoTest;
    
@@ -304,6 +306,7 @@ private:
    CbmAnaConversionKF			*fAnaKF;
    CbmAnaConversionReco			*fAnaReco;
    CbmAnaConversionPhotons		*fAnaPhotons;
+   CbmAnaConversionPhotons2		*fAnaPhotons2;
    CbmAnaConversionRecoFull		*fAnaRecoFull;
    CbmAnaConversionTest			*fAnaTest;
    

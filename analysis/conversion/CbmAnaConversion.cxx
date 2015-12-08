@@ -54,6 +54,7 @@
 #include "CbmAnaConversionKF.h"
 #include "CbmAnaConversionReco.h"
 #include "CbmAnaConversionPhotons.h"
+#include "CbmAnaConversionPhotons2.h"
 #include "CbmAnaConversionRecoFull.h"
 #include "CbmAnaConversionTest.h"
 
@@ -70,6 +71,7 @@ CbmAnaConversion::CbmAnaConversion()
     DoKFAnalysis(0),
     DoReconstruction(0),
     DoPhotons(0),
+    DoPhotons2(0),
     DoRecoFull(0),
     DoTest(0),
     fhNofElPrim(NULL),
@@ -204,6 +206,7 @@ CbmAnaConversion::CbmAnaConversion()
     fAnaKF(NULL),
     fAnaReco(NULL),
     fAnaPhotons(NULL),
+    fAnaPhotons2(NULL),
     fAnaRecoFull(NULL), 
     fAnaTest(NULL)  
 {
@@ -263,6 +266,7 @@ InitStatus CbmAnaConversion::Init()
 	DoKFAnalysis = 0;
 	DoReconstruction = 1;
 	DoPhotons = 1;
+	DoPhotons2 = 1;
 	DoRecoFull = 1;
 	DoTest = 1;
 	
@@ -286,6 +290,10 @@ InitStatus CbmAnaConversion::Init()
 	if(DoPhotons) {
 		fAnaPhotons = new CbmAnaConversionPhotons();
 		fAnaPhotons->Init();
+	}
+	if(DoPhotons2) {
+		fAnaPhotons2 = new CbmAnaConversionPhotons2();
+		fAnaPhotons2->Init();
 	}
 	if(DoRecoFull) {
 		fAnaRecoFull = new CbmAnaConversionRecoFull();
@@ -626,6 +634,10 @@ void CbmAnaConversion::Exec(Option_t*)
 		fAnaPhotons->Exec();
 	}
 
+	if(DoPhotons2) {
+		fAnaPhotons2->Exec();
+	}
+
 	if(DoRecoFull) {
 		fAnaRecoFull->Exec();
 	}
@@ -946,6 +958,7 @@ void CbmAnaConversion::Finish()
 	if(DoReconstruction)	{ fAnaReco->Finish(); }
 	if(DoRecoFull)			{ fAnaRecoFull->Finish(); }
 	if(DoPhotons)			{ fAnaPhotons->Finish(); }
+	if(DoPhotons2)			{ fAnaPhotons2->Finish(); }
 	if(DoTest)				{ fAnaTest->Finish(); }
 
 

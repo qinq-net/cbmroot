@@ -898,6 +898,7 @@ void CbmAnaConversionRecoFull::Exec()
 void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float>, vector<int>, vector< vector<int> > reconstructedPhotons, Int_t index)
 {
 	Int_t nof = momenta.size();
+	fhElectrons_nofPerEvent_new[index]->Fill(nof);
 	cout << "CbmAnaConversionRecoFull: " << index << ": CombineElectrons, nof - " << nof << endl;
 	Int_t nofPhotons = 0;
 	if(nof >= 2) {
