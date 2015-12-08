@@ -78,6 +78,7 @@ private:
 	
 	// histogram for comparison of different opening angle cuts and their influence on signal and background amounts
 	TH1I * fh2Electrons_angle_CUTcomparison;
+	TH1I * fh2Electrons_angle_CUTcomparison_chi;
 
 
 	// distribution of invariant masses from reconstructed momenta

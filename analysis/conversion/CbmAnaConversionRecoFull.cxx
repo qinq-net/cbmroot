@@ -486,11 +486,11 @@ void CbmAnaConversionRecoFull::InitHistos()
 
 
 	for(int i=1; i<=4; i++) {
-		fhElectrons_nofPerEvent_new[i] = new TH1D(Form("fhElectrons_nofPerEvent_new_%i",i), Form("fhElectrons_nofPerEvent_new_%i; nof electrons per event; #",i), 101, -0.5, 100.5);
+		fhElectrons_nofPerEvent_new[i] = new TH1D(Form("fhElectrons_nofPerEvent_new_%i",i), Form("fhElectrons_nofPerEvent_new_%i; nof electrons per event; #",i), 31, -0.5, 30.5);
 		fHistoList_recofull_new[i].push_back(fhElectrons_nofPerEvent_new[i]);
-		fhPhotons_nofPerEvent_new[i] = new TH1D(Form("fhPhotons_nofPerEvent_new_%i",i), Form("fhPhotons_nofPerEvent_new_%i; nof photons per event; #",i), 101, -0.5, 100.5);
+		fhPhotons_nofPerEvent_new[i] = new TH1D(Form("fhPhotons_nofPerEvent_new_%i",i), Form("fhPhotons_nofPerEvent_new_%i; nof photons per event; #",i), 31, -0.5, 30.5);
 		fHistoList_recofull_new[i].push_back(fhPhotons_nofPerEvent_new[i]);
-		fhPi0_nofPerEvent_new[i] = new TH1D(Form("fhPi0_nofPerEvent_new_%i",i), Form("fhPi0_nofPerEvent_new_%i; nof photons per event; #",i), 101, -0.5, 100.5);
+		fhPi0_nofPerEvent_new[i] = new TH1D(Form("fhPi0_nofPerEvent_new_%i",i), Form("fhPi0_nofPerEvent_new_%i; nof pi0 per event; #",i), 31, -0.5, 30.5);
 		fHistoList_recofull_new[i].push_back(fhPi0_nofPerEvent_new[i]);
 
 		fhPhotons_invmass_new[i] = new TH1D(Form("fhPhotons_invmass_new_%i",i), Form("fhPhotons_invmass_new_%i; invariant mass; #",i), 600, -0.0025, 2.9975);

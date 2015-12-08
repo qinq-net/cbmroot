@@ -47,7 +47,15 @@ public:
 	static Double_t CalcOpeningAngleCutAlt3(Double_t pt)
 	{
 		Double_t cut = 0;
-		if(pt <= 1) cut = 2.0 - 1.0 * pt;
+		cut = 1.5;
+		return cut;
+	}
+
+
+	static Double_t CalcOpeningAngleCutAlt4(Double_t pt)
+	{
+		Double_t cut = 0;
+		if(pt <= 1) cut = 1.5 - 0.5 * pt;
 		if(pt > 1) cut = 1.0;
 		return cut;
 	}
@@ -66,6 +74,14 @@ public:
 			cut = 3;
 		}
 		
+		return cut;
+	}
+
+
+	static Double_t CalcChiCutAlt1(Double_t pt)
+	{
+		Double_t cut = 0;
+		cut = 3;
 		return cut;
 	}
 

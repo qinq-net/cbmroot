@@ -406,7 +406,7 @@ void CbmAnaConversionPhotons::InitHistos()
 	
 	
 	// histogram for comparison of different opening angle cuts and their influence on signal and background amounts
-	fhEFG_angle_reco_CUTcomparison	= new TH1I("fhEFG_angle_reco_CUTcomparison", "fhEFG_angle_reco_CUTcomparison; ; #", 10, 0., 10.);
+	fhEFG_angle_reco_CUTcomparison	= new TH1I("fhEFG_angle_reco_CUTcomparison", "fhEFG_angle_reco_CUTcomparison; ; #", 12, 0., 12.);
 	fHistoList_EFG_angle.push_back(fhEFG_angle_reco_CUTcomparison);
 	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(1, "true, no cut");
 	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(2, "false, no cut");
@@ -418,6 +418,8 @@ void CbmAnaConversionPhotons::InitHistos()
 	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(8, "false, cut3");
 	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(9, "true, cut4");
 	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(10, "false, cut4");
+	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(11, "true, cut5");
+	fhEFG_angle_reco_CUTcomparison->GetXaxis()->SetBinLabel(12, "false, cut5");
 	
 	
 		// opening angles for all photon-energies (RECO) with application of opening angle cuts
@@ -1155,6 +1157,7 @@ void CbmAnaConversionPhotons::AnalyseElectronsFromGammaReco()
 				if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt1(paramSet.fPt) ) fhEFG_angle_reco_CUTcomparison->Fill(5);
 				if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt2(paramSet.fPt) ) fhEFG_angle_reco_CUTcomparison->Fill(7);
 				if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt3(paramSet.fPt) ) fhEFG_angle_reco_CUTcomparison->Fill(9);
+				if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt4(paramSet.fPt) ) fhEFG_angle_reco_CUTcomparison->Fill(11);
 				continue;
 			}
 			
@@ -1174,6 +1177,7 @@ void CbmAnaConversionPhotons::AnalyseElectronsFromGammaReco()
 			if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt1(paramSet.fPt) ) fhEFG_angle_reco_CUTcomparison->Fill(4);
 			if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt2(paramSet.fPt) ) fhEFG_angle_reco_CUTcomparison->Fill(6);
 			if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt3(paramSet.fPt) ) fhEFG_angle_reco_CUTcomparison->Fill(8);
+			if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt4(paramSet.fPt) ) fhEFG_angle_reco_CUTcomparison->Fill(10);
 			
 			
 			CbmMCTrack* mothermctrack_i = (CbmMCTrack*)fMcTracks->At(motherID_i);

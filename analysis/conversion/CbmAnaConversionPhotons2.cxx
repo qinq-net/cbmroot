@@ -60,6 +60,7 @@ CbmAnaConversionPhotons2::CbmAnaConversionPhotons2()
 	fh2Electrons_angle_combBack_cuts(NULL),
 	fh2Electrons_angle_allSameG_cuts(NULL),
 	fh2Electrons_angle_CUTcomparison(NULL),
+	fh2Electrons_angle_CUTcomparison_chi(NULL),
 	fh2Electrons_invmass_all(NULL),
 	fh2Electrons_invmass_combBack(NULL),
 	fh2Electrons_invmass_allSameG(NULL),
@@ -132,7 +133,7 @@ void CbmAnaConversionPhotons2::InitHistos()
 	
 	
 	// histogram for comparison of different opening angle cuts and their influence on signal and background amounts
-	fh2Electrons_angle_CUTcomparison	= new TH1I("fh2Electrons_angle_CUTcomparison", "fh2Electrons_angle_CUTcomparison; ; #", 10, 0., 10.);
+	fh2Electrons_angle_CUTcomparison	= new TH1I("fh2Electrons_angle_CUTcomparison", "fh2Electrons_angle_CUTcomparison; ; #", 12, 0., 12.);
 	fHistoList_photons.push_back(fh2Electrons_angle_CUTcomparison);
 	fh2Electrons_angle_CUTcomparison->GetXaxis()->SetBinLabel(1, "true, no cut");
 	fh2Electrons_angle_CUTcomparison->GetXaxis()->SetBinLabel(2, "false, no cut");
@@ -144,6 +145,19 @@ void CbmAnaConversionPhotons2::InitHistos()
 	fh2Electrons_angle_CUTcomparison->GetXaxis()->SetBinLabel(8, "false, cut3");
 	fh2Electrons_angle_CUTcomparison->GetXaxis()->SetBinLabel(9, "true, cut4");
 	fh2Electrons_angle_CUTcomparison->GetXaxis()->SetBinLabel(10, "false, cut4");
+	fh2Electrons_angle_CUTcomparison->GetXaxis()->SetBinLabel(11, "true, cut5");
+	fh2Electrons_angle_CUTcomparison->GetXaxis()->SetBinLabel(12, "false, cut5");
+
+
+	fh2Electrons_angle_CUTcomparison_chi	= new TH1I("fh2Electrons_angle_CUTcomparison_chi", "fh2Electrons_angle_CUTcomparison_chi; ; #", 6, 0., 6.);
+	fHistoList_photons.push_back(fh2Electrons_angle_CUTcomparison_chi);
+	fh2Electrons_angle_CUTcomparison_chi->GetXaxis()->SetBinLabel(1, "true, no cut");
+	fh2Electrons_angle_CUTcomparison_chi->GetXaxis()->SetBinLabel(2, "false, no cut");
+	fh2Electrons_angle_CUTcomparison_chi->GetXaxis()->SetBinLabel(3, "true, cut1");
+	fh2Electrons_angle_CUTcomparison_chi->GetXaxis()->SetBinLabel(4, "false, cut1");
+	fh2Electrons_angle_CUTcomparison_chi->GetXaxis()->SetBinLabel(5, "true, cut2");
+	fh2Electrons_angle_CUTcomparison_chi->GetXaxis()->SetBinLabel(6, "false, cut2");
+
 	
 	
 		// opening angles for all photon-energies (RECO) with application of opening angle cuts
@@ -244,6 +258,7 @@ void CbmAnaConversionPhotons2::Exec()
 
 		CbmTrackMatchNew* stsMatch  = (CbmTrackMatchNew*)fStsTrackMatches->At(stsInd);
 		if (stsMatch == NULL) continue;
+		if(stsMatch->GetNofLinks() <= 0) continue;
 		int stsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
 		if (stsMcTrackId < 0) continue;
 		CbmMCTrack* mcTrack1 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId);
@@ -360,6 +375,19 @@ void CbmAnaConversionPhotons2::AnalyseElectronsReco()
 				if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt1(paramSet.fPt) ) fh2Electrons_angle_CUTcomparison->Fill(5);
 				if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt2(paramSet.fPt) ) fh2Electrons_angle_CUTcomparison->Fill(7);
 				if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt3(paramSet.fPt) ) fh2Electrons_angle_CUTcomparison->Fill(9);
+				if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt4(paramSet.fPt) ) fh2Electrons_angle_CUTcomparison->Fill(11);
+				
+				
+				fh2Electrons_angle_CUTcomparison_chi->Fill(1);	// no cuts applied
+				Double_t pt_e1 = fRecoTracklist_momentum[i].Perp();
+				Double_t pt_e2 = fRecoTracklist_momentum[j].Perp();
+				if(fRecoTracklist_chi[i] < CbmAnaConversionCutSettings::CalcChiCut(pt_e1) && fRecoTracklist_chi[j] < CbmAnaConversionCutSettings::CalcChiCut(pt_e2) ) {
+					fh2Electrons_angle_CUTcomparison_chi->Fill(3);
+				}
+				if(fRecoTracklist_chi[i] < CbmAnaConversionCutSettings::CalcChiCutAlt1(pt_e1) && fRecoTracklist_chi[j] < CbmAnaConversionCutSettings::CalcChiCutAlt1(pt_e2) ) {
+					fh2Electrons_angle_CUTcomparison_chi->Fill(5);
+				}
+				
 				continue;
 			}
 			
@@ -383,8 +411,18 @@ void CbmAnaConversionPhotons2::AnalyseElectronsReco()
 			if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt1(paramSet.fPt) ) fh2Electrons_angle_CUTcomparison->Fill(4);
 			if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt2(paramSet.fPt) ) fh2Electrons_angle_CUTcomparison->Fill(6);
 			if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt3(paramSet.fPt) ) fh2Electrons_angle_CUTcomparison->Fill(8);
+			if(paramSet.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCutAlt4(paramSet.fPt) ) fh2Electrons_angle_CUTcomparison->Fill(10);
 			
 			
+			fh2Electrons_angle_CUTcomparison_chi->Fill(0);	// no cuts applied
+			Double_t pt_e1 = fRecoTracklist_momentum[i].Perp();
+			Double_t pt_e2 = fRecoTracklist_momentum[j].Perp();
+			if(fRecoTracklist_chi[i] < CbmAnaConversionCutSettings::CalcChiCut(pt_e1) && fRecoTracklist_chi[j] < CbmAnaConversionCutSettings::CalcChiCut(pt_e2) ) {
+				fh2Electrons_angle_CUTcomparison_chi->Fill(2);
+			}
+			if(fRecoTracklist_chi[i] < CbmAnaConversionCutSettings::CalcChiCutAlt1(pt_e1) && fRecoTracklist_chi[j] < CbmAnaConversionCutSettings::CalcChiCutAlt1(pt_e2) ) {
+				fh2Electrons_angle_CUTcomparison_chi->Fill(4);
+			}
 		}
 	}
 }
