@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-//         Class PairAnalysisSpecialCuts
+//         Class PairAnalysisObjectCuts
 //         Provide cuts for using objects
 // Authors:                                                              //
 //   Julian Book   <Julian.Book@cern.ch>                                 //
@@ -18,26 +18,24 @@
 #include <THnBase.h>
 #include <TSpline.h>
 
-#include "PairAnalysisSpecialCuts.h"
-#include "PairAnalysisMC.h"
+#include "PairAnalysisObjectCuts.h"
 #include "PairAnalysisHelper.h"
 
-ClassImp(PairAnalysisSpecialCuts)
+ClassImp(PairAnalysisObjectCuts)
 
 
-PairAnalysisSpecialCuts::PairAnalysisSpecialCuts() :
+PairAnalysisObjectCuts::PairAnalysisObjectCuts() :
   AnalysisCuts(),
   fUsedVars(new TBits(PairAnalysisVarManager::kNMaxValuesMC)),
   fNActiveCuts(0),
   fActiveCutsMask(0),
   fSelectedCutsMask(0),
-  fCutOnMCtruth(kFALSE),
   fCutType(kAll)
 {
   //
   // Default costructor
   //
-  for (Int_t i=0; i<PairAnalysisSpecialCuts::kNMaxCuts; ++i){
+  for (Int_t i=0; i<PairAnalysisObjectCuts::kNMaxCuts; ++i){
     fActiveCuts[i]=0;
     fCutExclude[i]=kFALSE;
     fCutMin[i]=0x0;
@@ -48,19 +46,18 @@ PairAnalysisSpecialCuts::PairAnalysisSpecialCuts() :
 }
 
 //________________________________________________________________________
-PairAnalysisSpecialCuts::PairAnalysisSpecialCuts(const char* name, const char* title) :
+PairAnalysisObjectCuts::PairAnalysisObjectCuts(const char* name, const char* title) :
   AnalysisCuts(name,title),
   fUsedVars(new TBits(PairAnalysisVarManager::kNMaxValuesMC)),
   fNActiveCuts(0),
   fActiveCutsMask(0),
   fSelectedCutsMask(0),
-  fCutOnMCtruth(kFALSE),
   fCutType(kAll)
 {
   //
   // Named contructor
   //
-  for (Int_t i=0; i<PairAnalysisSpecialCuts::kNMaxCuts; ++i){
+  for (Int_t i=0; i<PairAnalysisObjectCuts::kNMaxCuts; ++i){
     fActiveCuts[i]=0;
     fCutExclude[i]=kFALSE;
     fCutMin[i]=0x0;
@@ -71,13 +68,13 @@ PairAnalysisSpecialCuts::PairAnalysisSpecialCuts(const char* name, const char* t
 }
 
 //________________________________________________________________________
-PairAnalysisSpecialCuts::~PairAnalysisSpecialCuts()
+PairAnalysisObjectCuts::~PairAnalysisObjectCuts()
 {
   //
   // Destructor
   //
   if (fUsedVars) delete fUsedVars;
-  for (Int_t i=0; i<PairAnalysisSpecialCuts::kNMaxCuts; ++i){
+  for (Int_t i=0; i<PairAnalysisObjectCuts::kNMaxCuts; ++i){
     fActiveCuts[i]=0;
     if(fCutMin[i]) delete fCutMin[i];
     if(fCutMax[i]) delete fCutMax[i];
@@ -86,7 +83,7 @@ PairAnalysisSpecialCuts::~PairAnalysisSpecialCuts()
 }
 
 //________________________________________________________________________
-Bool_t PairAnalysisSpecialCuts::IsSelected(TObject* track)
+Bool_t PairAnalysisObjectCuts::IsSelected(Double_t * const values)
 {
   //
   // Make cut decision
@@ -95,20 +92,6 @@ Bool_t PairAnalysisSpecialCuts::IsSelected(TObject* track)
   //reset
   fSelectedCutsMask=0;
   SetSelected(kFALSE);
-
-  if (!track) return kFALSE;
-
-  //If MC cut, get MC truth
-  if (fCutOnMCtruth){
-    PairAnalysisTrack *part=static_cast<PairAnalysisTrack*>(track);
-    track=PairAnalysisMC::Instance()->GetMCTrackFromMCEvent(part->GetLabel());
-    if (!track) return kFALSE;
-  }
-  
-  //Fill values
-  Double_t values[PairAnalysisVarManager::kNMaxValuesMC];
-  PairAnalysisVarManager::SetFillMap(fUsedVars);
-  PairAnalysisVarManager::Fill(track,values);
 
   for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
     Int_t cut=fActiveCuts[iCut];
@@ -167,9 +150,9 @@ Bool_t PairAnalysisSpecialCuts::IsSelected(TObject* track)
     }
     else if ( (fCutMin[iCut] && fCutMin[iCut]->IsA() == TGraph::Class()) ||
 	      (fCutMax[iCut] && fCutMax[iCut]->IsA() == TGraph::Class()) ) {
-      /// TODO: think about poper implementation, how to store the x-variable in the spline
-      /// use graph for the cut // 
-      /// NOTE: a linear interpolation is used, spline creation at each eval is too cpu expensive
+      /// use graph for the cut //
+      /// NOTE: binary search or a linear interpolation is used,
+      ///       spline creation at each eval is too cpu expensive
       TGraph *graphN  = static_cast<TGraph*>(fCutMin[iCut]);
       TGraph *graphM  = static_cast<TGraph*>(fCutMax[iCut]);
 
@@ -184,8 +167,16 @@ Bool_t PairAnalysisSpecialCuts::IsSelected(TObject* track)
 	formX = static_cast<TFormula*>(graphM->GetListOfFunctions()->At(0));
 	if(formX)  xval = PairAnalysisHelper::EvalFormula(formX,values);
       }
-      if(graphN)  cutMin   = graphN->Eval(xval);
-      if(graphM)  cutMax   = graphM->Eval(xval);
+
+      /// use a linear interpolation
+      // if(graphN)  cutMin   = graphN->Eval(xval);
+      // if(graphM)  cutMax   = graphM->Eval(xval);
+
+      /// binary search
+      Int_t idx=TMath::BinarySearch(graphN->GetN(),graphN->GetX(),xval);
+      Double_t cutMin = graphN->GetY()[idx];
+      Double_t cutMax = graphM->GetY()[idx];
+
     }
     else if ( (fCutMin[iCut] && fCutMin[iCut]->IsA() == TSpline3::Class()) ||
 	      (fCutMax[iCut] && fCutMax[iCut]->IsA() == TSpline3::Class()) ) {
@@ -200,7 +191,6 @@ Bool_t PairAnalysisSpecialCuts::IsSelected(TObject* track)
       Error("IsSelected:","Cut object not supported (this message should never appear)");
       return kTRUE;
     }
-      
 
     // apply cut
     if ( ((compValue<cutMin) || (compValue>cutMax))^fCutExclude[iCut] ) CLRBIT(fSelectedCutsMask,iCut);
@@ -216,7 +206,28 @@ Bool_t PairAnalysisSpecialCuts::IsSelected(TObject* track)
 }
 
 //________________________________________________________________________
-void PairAnalysisSpecialCuts::AddCut(PairAnalysisVarManager::ValueTypes type, const char *formulaMin, const char *formulaMax, Bool_t excludeRange)
+Bool_t PairAnalysisObjectCuts::IsSelected(TObject* track)
+{
+  //
+  // Make cut decision
+  //
+
+  //reset
+  fSelectedCutsMask=0;
+  SetSelected(kFALSE);
+  if (!track) return kFALSE;
+
+  //Fill values
+  Double_t values[PairAnalysisVarManager::kNMaxValuesMC];
+  PairAnalysisVarManager::SetFillMap(fUsedVars);
+  PairAnalysisVarManager::Fill(track,values);
+
+  return (IsSelected(values));
+
+}
+
+//________________________________________________________________________
+void PairAnalysisObjectCuts::AddCut(PairAnalysisVarManager::ValueTypes type, const char *formulaMin, const char *formulaMax, Bool_t excludeRange)
 {
   //
   // Set cut range and activate it
@@ -231,7 +242,7 @@ void PairAnalysisSpecialCuts::AddCut(PairAnalysisVarManager::ValueTypes type, co
 }
 
 //________________________________________________________________________
-void PairAnalysisSpecialCuts::AddCut(const char *formula, const char *formulaMin, const char *formulaMax, Bool_t excludeRange)
+void PairAnalysisObjectCuts::AddCut(const char *formula, const char *formulaMin, const char *formulaMax, Bool_t excludeRange)
 {
   //
   // Set cut range and activate it
@@ -246,7 +257,7 @@ void PairAnalysisSpecialCuts::AddCut(const char *formula, const char *formulaMin
 }
 
 //________________________________________________________________________
-void PairAnalysisSpecialCuts::AddCut(PairAnalysisVarManager::ValueTypes type, TGraph *const graphMin, TGraph *const graphMax, Bool_t excludeRange)
+void PairAnalysisObjectCuts::AddCut(PairAnalysisVarManager::ValueTypes type, TGraph *const graphMin, TGraph *const graphMax, Bool_t excludeRange)
 {
   //
   // Set cut range and activate it
@@ -269,7 +280,7 @@ void PairAnalysisSpecialCuts::AddCut(PairAnalysisVarManager::ValueTypes type, TG
 }
 
 //________________________________________________________________________
-void PairAnalysisSpecialCuts::AddCut(const char *formula, TGraph *const graphMin, TGraph *const graphMax, Bool_t excludeRange)
+void PairAnalysisObjectCuts::AddCut(const char *formula, TGraph *const graphMin, TGraph *const graphMax, Bool_t excludeRange)
 {
   //
   // Set cut range and activate it
@@ -292,7 +303,7 @@ void PairAnalysisSpecialCuts::AddCut(const char *formula, TGraph *const graphMin
 }
 
 //________________________________________________________________________
-void PairAnalysisSpecialCuts::AddCut(PairAnalysisVarManager::ValueTypes type, THnBase *const histMin, THnBase *const histMax, Bool_t excludeRange)
+void PairAnalysisObjectCuts::AddCut(PairAnalysisVarManager::ValueTypes type, THnBase *const histMin, THnBase *const histMax, Bool_t excludeRange)
 {
   //
   // Set cut range and activate it
@@ -307,7 +318,7 @@ void PairAnalysisSpecialCuts::AddCut(PairAnalysisVarManager::ValueTypes type, TH
 }
 
 //________________________________________________________________________
-void PairAnalysisSpecialCuts::AddCut(const char *formula, THnBase *const histMin, THnBase *const histMax, Bool_t excludeRange)
+void PairAnalysisObjectCuts::AddCut(const char *formula, THnBase *const histMin, THnBase *const histMax, Bool_t excludeRange)
 {
   //
   // Set cut range and activate it
@@ -322,7 +333,7 @@ void PairAnalysisSpecialCuts::AddCut(const char *formula, THnBase *const histMin
 }
 
 //________________________________________________________________________
-void PairAnalysisSpecialCuts::Print(const Option_t* /*option*/) const
+void PairAnalysisObjectCuts::Print(const Option_t* /*option*/) const
 {
   //
   // Print cuts and the range
@@ -334,41 +345,63 @@ void PairAnalysisSpecialCuts::Print(const Option_t* /*option*/) const
     printf("Any Cut has to be fulfilled\n");
   }
 
-  printf("special cut class - TODO: implement print functionality\n");
-
-  /*
+  /// loop over all cuts
   for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
+
+    // variable
     Int_t cut=(Int_t)fActiveCuts[iCut];
-    Bool_t inverse=fCutExclude[iCut];
-    Bool_t bitcut=fBitCut[iCut];
-    Bool_t hncut=(fUpperCut[iCut]&&fUpperCut[iCut]->IsA()==THnBase::Class());
-    Bool_t fcut=(fUpperCut[iCut]&&fUpperCut[iCut]->IsA()==TFormula::Class());
+    TString tit = PairAnalysisVarManager::GetValueName((Int_t)cut);
 
-    if(hncut) {
-      TString dep="";
-      THnBase *hn = static_cast<THnBase*>(fUpperCut[iCut]);
-      for(Int_t idim=0; idim<hn->GetNdimensions(); idim++)
-	dep+=Form("%s%s",(idim?",":""),hn->GetAxis(idim)->GetName());
-
-      if (!inverse){
-	printf("Cut %02d: %f < %s < obj(%s)\n", iCut,
-	       fCutMin[iCut], PairAnalysisVarManager::GetValueName((Int_t)cut), dep.Data());
-      } else {
-	printf("Cut %02d: !(%f < %s < obj(%s))\n", iCut,
-	       fCutMin[iCut], PairAnalysisVarManager::GetValueName((Int_t)cut), dep.Data());
-      }
-    }
-    else if(fcut) {
-      // variable defined by a formula
-      TFormula *form = static_cast<TFormula*>(fUpperCut[iCut]);
-      TString tit(form->GetExpFormula());
+    Bool_t fvar=fVarFormula[iCut];
+    if(fvar) {
+      TFormula *form = static_cast<TFormula*>(fVarFormula[iCut]);
+      tit = form->GetExpFormula();
       // replace parameter variables with names labels
       for(Int_t j=0;j<form->GetNpar();j++) tit.ReplaceAll(Form("[%d]",j),form->GetParName(j));
-      if (!inverse) printf("Cut %02d: %f < %s < %f\n", iCut, fCutMin[iCut], tit.Data(), fCutMax[iCut]);
-      else          printf("Cut %02d: !(%f < %s < %f)\n", iCut, fCutMin[iCut], tit.Data(), fCutMax[iCut]);
     }
-    else
-      printf("cut class not found\n");
+
+    // cut logic
+    Bool_t inverse=fCutExclude[iCut];
+
+    // cut limits
+    Bool_t bCutGraph  = (fCutMin[iCut] && fCutMin[iCut]->IsA() == TGraph::Class());
+    Bool_t bCutForm   = (fCutMin[iCut] && fCutMin[iCut]->IsA() == TFormula::Class());
+    Bool_t bCutHn     = (fCutMin[iCut] && fCutMin[iCut]->IsA() == THnBase::Class());
+    Bool_t bCutSpline = (fCutMin[iCut] && fCutMin[iCut]->IsA() == TSpline::Class());
+
+    TString dep="";
+    // HnBase
+    if(bCutHn) {
+      THnBase *obj = static_cast<THnBase*>(fCutMin[iCut]);
+      for(Int_t idim=0; idim<obj->GetNdimensions(); idim++)
+	dep+=Form("%s%s",(idim?",":""),obj->GetAxis(idim)->GetName());
+      dep.Prepend("histogram(");
+      dep.Append(")");
+    }
+    // Graph
+    if(bCutGraph) {
+      TGraph *obj = static_cast<TGraph*>(fCutMin[iCut]);
+      TFormula *form = static_cast<TFormula*>(obj->GetListOfFunctions()->At(0));
+      dep = form->GetExpFormula();
+      // replace parameter variables with names labels
+      for(Int_t j=0;j<form->GetNpar();j++) dep.ReplaceAll(Form("[%d]",j),form->GetParName(j));
+      dep.Prepend("graph(");
+      dep.Append(")");
+    }
+    // formula
+    if(bCutForm) {
+      TFormula *obj = static_cast<TFormula*>(fCutMin[iCut]);
+      dep = obj->GetExpFormula();
+      // replace parameter variables with names labels
+      for(Int_t j=0;j<obj->GetNpar();j++) dep.ReplaceAll(Form("[%d]",j),obj->GetParName(j));
+      dep.Prepend("formula(");
+      dep.Append(")");
+    }
+
+    // stdout
+    if (!inverse) printf("Cut %02d: %s < %s < %f\n",    iCut, dep.Data(), tit.Data(), dep.Data());
+    else          printf("Cut %02d: !(%s < %s < %f)\n", iCut, dep.Data(), tit.Data(), dep.Data());
+
   } //loop over cuts
-  */
+
 }

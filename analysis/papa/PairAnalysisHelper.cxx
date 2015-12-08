@@ -114,6 +114,62 @@ TVectorD* PairAnalysisHelper::MakeArbitraryBinning(const char* bins)
 }
 
 //_____________________________________________________________________________
+TVectorD* PairAnalysisHelper::MakeGausBinning(Int_t nbinsX, Double_t mean, Double_t sigma)
+{
+  //
+  // Make gaussian binning
+  // the user has to delete the array afterwards!!!
+  //
+
+  TVectorD *binLim=new TVectorD(nbinsX+1);
+
+  TF1 g("g","gaus",mean-5*sigma,mean+5*sigma);
+  g.SetParameters(1,mean,sigma);
+  Double_t sum=g.Integral(mean-5*sigma,mean+5*sigma);
+  //printf("full integral gaussian: %f \n",sum);
+
+  TF1 g2("g2","gaus(0)/[3]",mean-5*sigma,mean+5*sigma);
+  g2.SetParameters(1,mean,sigma,sum); /// normalize with sum
+
+  Double_t *params=g2.GetParameters();
+
+  Double_t epsilon=sigma/10000;  // step size
+  Double_t xt=mean-5*sigma;      // bin limit
+  Double_t pint=0.0;             // previous integral 
+
+  Int_t bin=0;                   // current entry
+  Double_t lim=epsilon;          // requested integral values (start,..., end values)
+
+  // calculate intergral until you found all limits
+  while( (xt+=epsilon)<=mean+5*sigma) {
+
+    // current integral
+    Double_t cint = g2.Integral(mean-5*sigma,xt,params,epsilon);
+    //    printf(" integral to %f:  %f , search limit: %f \n",xt,cint,lim);
+
+    /// condition for bin limit
+    if(cint>=lim && pint<lim) {
+      //      printf(" %d bin found for %f with requested integral %f, actual integral is %f \n",bin,xt,lim,cint);
+      /// set value to vector
+      (*binLim)[bin]=xt;
+
+      /// next bin and limit
+      bin++;
+      lim=bin*(1./nbinsX);
+      /// fix end integral value
+      if(bin==nbinsX) lim=1.-epsilon;
+    }
+
+    /// store prevoius integral value
+    pint=cint;
+  }
+
+  //  binLim->Print();
+  return binLim;
+
+}
+
+//_____________________________________________________________________________
 TArrayD *PairAnalysisHelper::MakeStatBinLimits(TH1* h, Double_t stat)
 {
   //

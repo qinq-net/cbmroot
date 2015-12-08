@@ -1,9 +1,9 @@
-#ifndef PAIRANALYSISSPECIALCUTS_H
-#define PAIRANALYSISSPECIALCUTS_H
+#ifndef PAIRANALYSISOBJECTCUTS_H
+#define PAIRANALYSISOBJECTCUTS_H
 
 //#############################################################
 //#                                                           #
-//#         Class PairAnalysisSpecialCuts                     #
+//#         Class PairAnalysisObjectCuts                     #
 //#         Provide cuts for using objects                    #
 //#                                                           #
 //#  Authors:                                                 #
@@ -19,15 +19,15 @@
 
 class TGraph;
 class THnBase;
-class PairAnalysisSpecialCuts : public AnalysisCuts {
+class PairAnalysisObjectCuts : public AnalysisCuts {
 public:
   // Whether all cut criteria have to be fulfilled of just any
   enum CutType { kAll=0, kAny };
   enum { kNMaxCuts=10 };
 
-  PairAnalysisSpecialCuts();
-  PairAnalysisSpecialCuts(const char* name, const char* title);
-  virtual ~PairAnalysisSpecialCuts();
+  PairAnalysisObjectCuts();
+  PairAnalysisObjectCuts(const char* name, const char* title);
+  virtual ~PairAnalysisObjectCuts();
   //TODO: make copy constructor and assignment operator public
   void AddCut(PairAnalysisVarManager::ValueTypes type, const char *formulaMin, const char *formulaMax, Bool_t excludeRange=kFALSE);
   void AddCut(const char *formula,                     const char *formulaMin, const char *formulaMax, Bool_t excludeRange=kFALSE);
@@ -39,11 +39,9 @@ public:
   void AddCut(const char *formula,                     THnBase *const histMin, THnBase * const histMax, Bool_t excludeRange=kFALSE);
 
   // setters
-  void    SetCutOnMCtruth(Bool_t mc=kTRUE) { fCutOnMCtruth=mc; }
   void    SetCutType(CutType type)         { fCutType=type;    }
 
   // getters
-  Bool_t  GetCutOnMCtruth() const { return fCutOnMCtruth; }
   CutType GetCutType()      const { return fCutType;      }
 
   Int_t GetNCuts() { return fNActiveCuts; }
@@ -51,6 +49,7 @@ public:
   //
   //Analysis cuts interface
   //
+  virtual Bool_t IsSelected(Double_t * const values);
   virtual Bool_t IsSelected(TObject* track);
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
 
@@ -68,25 +67,22 @@ public:
  private:
 
   TBits     *fUsedVars;            // list of used variables
-  UShort_t  fActiveCuts[PairAnalysisSpecialCuts::kNMaxCuts];       // list of activated cuts
+  UShort_t  fActiveCuts[PairAnalysisObjectCuts::kNMaxCuts];       // list of activated cuts
   UShort_t  fNActiveCuts;                      // number of acive cuts
   UInt_t    fActiveCutsMask;                   // mask of active cuts
 
   UInt_t   fSelectedCutsMask;                 // Maks of selected cuts, is available after calling IsSelected
-
-  Bool_t   fCutOnMCtruth;                     // whether to cut on the MC truth of the particle
-
   CutType  fCutType;                          // type of the cut: any, all
 
-  Bool_t fCutExclude[PairAnalysisSpecialCuts::kNMaxCuts];        // inverse cut logic?
-  TObject *fCutMin[PairAnalysisSpecialCuts::kNMaxCuts];          // use object as lower cut
-  TObject *fCutMax[PairAnalysisSpecialCuts::kNMaxCuts];          // use object as upper cut
-  TFormula *fVarFormula[PairAnalysisSpecialCuts::kNMaxCuts];     // use a formula for the variable
+  Bool_t fCutExclude[PairAnalysisObjectCuts::kNMaxCuts];        // inverse cut logic?
+  TObject *fCutMin[PairAnalysisObjectCuts::kNMaxCuts];          // use object as lower cut
+  TObject *fCutMax[PairAnalysisObjectCuts::kNMaxCuts];          // use object as upper cut
+  TFormula *fVarFormula[PairAnalysisObjectCuts::kNMaxCuts];     // use a formula for the variable
 
-  PairAnalysisSpecialCuts(const PairAnalysisSpecialCuts &c);
-  PairAnalysisSpecialCuts &operator=(const PairAnalysisSpecialCuts &c);
+  PairAnalysisObjectCuts(const PairAnalysisObjectCuts &c);
+  PairAnalysisObjectCuts &operator=(const PairAnalysisObjectCuts &c);
 
-  ClassDef(PairAnalysisSpecialCuts,1)         //Cut class providing cuts to all infomation available for the AliVParticle interface
+  ClassDef(PairAnalysisObjectCuts,1)         //Cut class providing cuts to all infomation available for the AliVParticle interface
 };
 
 

@@ -156,9 +156,9 @@ InitStatus AnalysisTaskMultiPairAnalysis::Init()
   // Connect the MC event
   PairAnalysisMC::Instance()->ConnectMCEvent();
 
-  // init the RICH ANN-Pid repsonse
+  // init the RICH ANN-Pid repsonse //TODO: crashing without RICH geometry
   fgRichElIdAnn = new CbmRichElectronIdAnn();
-  fgRichElIdAnn->Init();
+  if(fgRichElIdAnn)fgRichElIdAnn->Init();
   PairAnalysisVarManager::SetRichPidResponse(fgRichElIdAnn);
 
   // initialization time and memory

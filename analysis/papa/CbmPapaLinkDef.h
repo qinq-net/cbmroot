@@ -6,7 +6,6 @@
 
 #pragma link C++ class AnalysisCuts+;
 #pragma link C++ class AnalysisFilter+;
-#pragma link C++ class PairAnalysisCutGroup+;
 
 #pragma link C++ class PairAnalysisTrack+;
 #pragma link C++ class PairAnalysisEvent+;
@@ -17,12 +16,16 @@
 
 #pragma link C++ class PairAnalysisCutQA+;
 #pragma link C++ class PairAnalysisPairLegCuts+;
+#pragma link C++ class PairAnalysisVarCuts+;
+#pragma link C++ class PairAnalysisObjectCuts+;
+#pragma link C++ class PairAnalysisCutGroup+;
+#pragma link C++ class PairAnalysisCutCombi+;
 
 
 #pragma link C++ class PairAnalysisHelper+;
 #pragma link C++ class PairAnalysisStyler+;
-#pragma link C++ class PairAnalysisVarCuts+;
-#pragma link C++ class PairAnalysisSpecialCuts+;
+
+
 #pragma link C++ class PairAnalysisVarManager+;
 
 #pragma link C++ class PairAnalysisMetaData+;
@@ -180,7 +183,7 @@
 #pragma link C++ class AnalysisTaskMultiPairAnalysis+;
 
 //#pragma link C++ class PairAnalysisDebugTree+;
-#pragma link C++ class PairAnalysisVarCutsCombi+;
+//#pragma link C++ class PairAnalysisVarCutsCombi+;
 #pragma link C++ class PairAnalysisSignalMC+;
 
 #pragma link C++ class PairAnalysisTrackRotator+;

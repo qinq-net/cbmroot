@@ -18,6 +18,7 @@
 class TList;
 class PairAnalysisVarManager;
 class PairAnalysisVarCuts;
+class PairAnalysisSpecialCuts;
 
 class PairAnalysisVarCutsCombi : public AnalysisCuts {
 public:
@@ -29,6 +30,7 @@ public:
 
   virtual ~PairAnalysisVarCutsCombi();
 
+  /// TODO: add cut base object array also for selection, in order to allow for special cuts
   void AddCut(PairAnalysisVarManager::ValueTypes type,
 	      Double_t min, Double_t max, Bool_t exclude,
 	      PairAnalysisVarManager::ValueTypes typeR,
@@ -52,11 +54,13 @@ public:
   // main/final function
   void AddCut(const char *formula,
 	      Double_t min, Double_t max, Bool_t exclude=kFALSE,
-	      PairAnalysisVarCuts *varcuts=0x0 );
+	      AnalysisCuts *varcuts=0x0 );
 
   void AddCut(PairAnalysisVarManager::ValueTypes type,
 	      Double_t min, Double_t max, Bool_t exclude=kFALSE,
-	      PairAnalysisVarCuts *varcuts=0x0 );
+	      AnalysisCuts *varcuts=0x0 );
+
+
 
   // setters
   void    SetCutType(CutType type)         { fCutType=type;    }
@@ -68,7 +72,8 @@ public:
 
   //
   //Analysis cuts interface
-  //const
+  //
+  virtual Bool_t IsSelected(Double_t * const values);
   virtual Bool_t IsSelected(TObject* track);
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
 
@@ -96,7 +101,7 @@ private:
   Bool_t    fCutExclude[kNmaxCuts];  // use as exclusion band
   TFormula *fFormulaCut[kNmaxCuts];  // formula cuts
 
-  PairAnalysisVarCuts *fVarCuts[kNmaxCuts];     // varcuts
+  AnalysisCuts *fVarCuts[kNmaxCuts];     // varcuts
 
   PairAnalysisVarCutsCombi(const PairAnalysisVarCutsCombi &c);
   PairAnalysisVarCutsCombi &operator=(const PairAnalysisVarCutsCombi &c);

@@ -94,6 +94,8 @@ void PairAnalysisStyler::LoadStyle() {
     // For the histo:
     defaultSty->SetHistFillColor(bgrdcolor);    //transparent
     // defaultSty->SetHistFillStyle(0);
+    defaultSty->SetHatchesSpacing(2.);   // spacing between hatches, def.=1.
+    defaultSty->SetHatchesLineWidth(2); // hatches line width.
     defaultSty->SetHistLineColor(1);
     defaultSty->SetHistLineStyle(0);
     defaultSty->SetHistLineWidth(3);

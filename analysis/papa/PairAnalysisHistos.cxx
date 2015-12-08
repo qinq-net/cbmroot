@@ -807,6 +807,9 @@ void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString his
   //  fHistoList.Print();
   fHistoList.SetOwner(kFALSE);
 
+  TString legendname = GetName();
+  printf("DrawTaskSame: legendname %s\n",legendname.Data());
+
   THashList *listDenom = dynamic_cast<THashList*>(fList->FindObject(taskDenom.Data()));
   if(listDenom) opt+="div";
 
@@ -816,14 +819,17 @@ void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString his
 
     TString lname=listCfg->GetName();
 
-    // exclude QAcuts
+    /// exclude QAcuts
     if( lname.Contains("QAcuts_") ) continue;
 
-    // skip same cfg if ratio
+    /// skip same cfg if ratio
     if(!optEff && listDenom && lname.EqualTo(taskDenom)) continue;
     //if(listDenom && lname.EqualTo(taskDenom)) continue;
 
-    Info("DrawClassSame"," Task name %s ",lname.Data());
+    /// keep only legend name!=task name
+    if(lname.EqualTo(legendname)) legendname="";
+
+    Info("DrawTaskSame"," Task name %s ",lname.Data());
 
     // update histogram list
     ResetHistogramList();
@@ -834,11 +840,32 @@ void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString his
       fHistoList.AddAt(o,idx++);
     }
 
-    // adapt name for legends
+    // adapt name for legend
     SetName(listCfg->GetName());
     //fHistoList.Print();
     DrawSame(histName,(opt+"task").Data(),histClassDenom, listDenom);
 
+  }
+
+  // set legend name
+  if(optString.Contains("leg")) {
+    printf("DrawTaskSame: SET legendname %s\n",legendname.Data());
+    legendname.ReplaceAll(".","");
+    TList *prim = gPad->GetListOfPrimitives();
+    TLegend *leg=(TLegend*)prim->FindObject("TPave");
+    // remove legend header from legend entry
+    TList *llist = leg->GetListOfPrimitives();
+    Int_t nent = llist->GetEntries();
+    for(Int_t il=0; il<nent; il++) {
+      TLegendEntry *lent = static_cast<TLegendEntry*>(llist->At(il));
+      TString lst(lent->GetLabel());
+      lst.ReplaceAll(legendname.Data(),"");
+      lent->SetLabel(lst.Data());
+    }
+
+    leg->SetHeader(legendname.Data());
+    PairAnalysisStyler::SetLegendAttributes(leg); // coordinates, margins, fillstyle, fontsize
+    leg->Draw();
   }
 
 }
@@ -890,6 +917,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   Bool_t optExclSel  =histClassDenom.Contains("!");    histClassDenom.ReplaceAll("!","");
   // options - representation
   Bool_t optCan      =optString.Contains("can");       optString.ReplaceAll("can","");
+  Bool_t optLegFull  =optString.Contains("legf");      optString.ReplaceAll("legf","");
   Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
   Bool_t optDet      =optString.Contains("det");       optString.ReplaceAll("det","");
   Bool_t optMeta     =optString.Contains("meta");      optString.ReplaceAll("meta","");
@@ -905,7 +933,10 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   Bool_t optRmsY     =optString.Contains("rmsy");      optString.ReplaceAll("rmsy","");
   Bool_t optGeant    =optString.Contains("geant");     optString.ReplaceAll("geant","");
 
-  Int_t rbn = 4;
+  // option dependencies
+  if(optLegFull) optLeg=kTRUE;
+
+  Int_t rbn = 2;
   // selction string
   TString select("");
   if(optSel) select=histClassDenom;
@@ -1013,7 +1044,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 
       // style
       h->SetTitle("");
-      if(h->GetLineColor()==kBlack) {
+      if(h->GetLineColor()==kBlack && !optString.Contains("col")) {
 	h->UseCurrentStyle();
 	PairAnalysisStyler::Style(h,i); // avoid color updates
       }
@@ -1286,7 +1317,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 
   // legend
   if (leg) {
-    PairAnalysisStyler::SetLegendAttributes(leg); // coordinates, margins, fillstyle, fontsize
+    PairAnalysisStyler::SetLegendAttributes(leg,optLegFull); // coordinates, margins, fillstyle, fontsize
     if(!nobj) leg->Draw(); // only draw the legend once
   }
 

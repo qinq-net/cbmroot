@@ -135,9 +135,9 @@ void PairAnalysisVarCutsCombi::AddCut(const char *formula,
 
 //______________________________________________
 void PairAnalysisVarCutsCombi::AddCut(const char *formula,
-			   Double_t min, Double_t max, Bool_t exclude,
-			   const char *formulaR,
-			   Double_t rmin, Double_t rmax, Bool_t excludeRange)
+				      Double_t min, Double_t max, Bool_t exclude,
+				      const char *formulaR,
+				      Double_t rmin, Double_t rmax, Bool_t excludeRange)
 {
   //
   // add VarCutsCombi cuts
@@ -153,8 +153,8 @@ void PairAnalysisVarCutsCombi::AddCut(const char *formula,
 
 //______________________________________________
 void PairAnalysisVarCutsCombi::AddCut(PairAnalysisVarManager::ValueTypes type,
-			   Double_t min, Double_t max, Bool_t exclude,
-			   PairAnalysisVarCuts *varcuts )
+				      Double_t min, Double_t max, Bool_t exclude,
+				      AnalysisCuts *varcuts )
 {
   //
   // add VarCutsCombi cuts - main function
@@ -176,7 +176,7 @@ void PairAnalysisVarCutsCombi::AddCut(PairAnalysisVarManager::ValueTypes type,
 //______________________________________________
 void PairAnalysisVarCutsCombi::AddCut(const char *formula,
 			   Double_t min, Double_t max, Bool_t exclude,
-			   PairAnalysisVarCuts *varcuts )
+			   AnalysisCuts *varcuts )
 {
   //
   // add VarCutsCombi cuts - main function
@@ -209,7 +209,7 @@ void PairAnalysisVarCutsCombi::AddCut(const char *formula,
 Bool_t PairAnalysisVarCutsCombi::IsSelected(TObject* track)
 {
   //
-  // perform VarCutsCombi cuts
+  // make cut decision
   //
 
   //reset
@@ -223,14 +223,30 @@ Bool_t PairAnalysisVarCutsCombi::IsSelected(TObject* track)
   PairAnalysisVarManager::SetFillMap(fUsedVars);
   PairAnalysisVarManager::Fill(track,values);
 
+  /// selection
+  return (IsSelected(values));
+
+}
+
+//________________________________________________________________________
+Bool_t PairAnalysisVarCutsCombi::IsSelected(Double_t * const values)
+{
+  //
+  // Make cut decision
+  //
+
+  //reset
+  fSelectedCutsMask=0;
+  SetSelected(kFALSE);
+
   // loop overe all cuts
   for (Int_t iCut=0; iCut<fNActiveCuts; ++iCut){
     Int_t cut=fActiveCuts[iCut];
     SETBIT(fSelectedCutsMask,iCut);
 
-    // check the range(s) where pid cuts should be applied if any set
+    // check the range(s) where cuts should be applied if any are set
     if ( fVarCuts[iCut] ) {
-      if ( !fVarCuts[iCut]->IsSelected(track) ) continue;
+      if ( !fVarCuts[iCut]->IsSelected(values) ) continue;
     }
 
     // standard var cuts

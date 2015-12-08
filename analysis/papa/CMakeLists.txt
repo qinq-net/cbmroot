@@ -65,20 +65,23 @@ set(SRCS
 
 AnalysisCuts.cxx
 AnalysisFilter.cxx
-PairAnalysisCutGroup.cxx
 PairAnalysisTrack.cxx
 PairAnalysisEvent.cxx
 PairAnalysisPair.cxx
 #PairAnalysisPairKF.cxx
 PairAnalysisPairLV.cxx
-PairAnalysisCutQA.cxx
-PairAnalysisPairLegCuts.cxx
-PairAnalysisVarCuts.cxx
 PairAnalysisHelper.cxx
-PairAnalysisMetaData.cxx
 PairAnalysisStyler.cxx
+
+PairAnalysisCutQA.cxx
+PairAnalysisVarCuts.cxx
+PairAnalysisObjectCuts.cxx
+PairAnalysisPairLegCuts.cxx
+PairAnalysisCutCombi.cxx
+PairAnalysisCutGroup.cxx
+
 PairAnalysisVarManager.cxx
-PairAnalysisSpecialCuts.cxx
+PairAnalysisMetaData.cxx
 
 AnalysisTaskMultiPairAnalysis.cxx
 PairAnalysis.cxx
@@ -89,7 +92,7 @@ PairAnalysisHF.cxx
 PairAnalysisHistos.cxx
 PairAnalysisMC.cxx
 
-PairAnalysisVarCutsCombi.cxx
+#PairAnalysisVarCutsCombi.cxx
 PairAnalysisSignalMC.cxx
 #PairAnalysisSpectrum.cxx
 PairAnalysisTrackRotator.cxx

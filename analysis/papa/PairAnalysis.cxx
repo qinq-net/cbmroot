@@ -777,7 +777,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 
 		// hit defintion
 		if(!pnt) trueHit=kFALSE;
-		else {
+		else if(mc){
 		  Int_t lbl  = pnt->GetTrackID();
 		  Int_t lblM = mc->GetMothersLabel(lbl);
 		  Int_t lblG = mc->GetMothersLabel(lblM);

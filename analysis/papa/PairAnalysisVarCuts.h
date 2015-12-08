@@ -20,7 +20,6 @@
 #include "AnalysisCuts.h"
 #include "PairAnalysisVarManager.h"
 
-class THnBase;
 class PairAnalysisVarCuts : public AnalysisCuts {
 public:
   // Whether all cut criteria have to be fulfilled of just any
@@ -30,18 +29,16 @@ public:
   PairAnalysisVarCuts(const char* name, const char* title);
   virtual ~PairAnalysisVarCuts();
   //TODO: make copy constructor and assignment operator public
+
   void AddCut(PairAnalysisVarManager::ValueTypes type, Double_t min, Double_t max, Bool_t excludeRange=kFALSE);
   void AddCut(const char *formula, Double_t min, Double_t max, Bool_t excludeRange=kFALSE);
   void AddCut(PairAnalysisVarManager::ValueTypes type, Double_t value, Bool_t excludeRange=kFALSE);
   void AddBitCut(PairAnalysisVarManager::ValueTypes type, UInt_t bit, Bool_t excludeRange=kFALSE);
-  void AddCut(PairAnalysisVarManager::ValueTypes type, Double_t min, THnBase * const max,  Bool_t excludeRange=kFALSE);
 
   // setters
-  void    SetCutOnMCtruth(Bool_t mc=kTRUE) { fCutOnMCtruth=mc; }
   void    SetCutType(CutType type)         { fCutType=type;    }
 
   // getters
-  Bool_t  GetCutOnMCtruth() const { return fCutOnMCtruth; }
   CutType GetCutType()      const { return fCutType;      }
 
   Int_t GetNCuts() { return fNActiveCuts; }
@@ -49,6 +46,7 @@ public:
   //
   //Analysis cuts interface
   //
+  virtual Bool_t IsSelected(Double_t * const values);
   virtual Bool_t IsSelected(TObject* track);
   virtual Bool_t IsSelected(TList*   /* list */ ) {return kFALSE;}
 
@@ -71,16 +69,13 @@ public:
   UInt_t    fActiveCutsMask;                   // mask of active cuts
 
   UInt_t   fSelectedCutsMask;                 // Maks of selected cuts, is available after calling IsSelected
-
-  Bool_t   fCutOnMCtruth;                     // whether to cut on the MC truth of the particle
-
   CutType  fCutType;                          // type of the cut: any, all
 
   Double_t fCutMin[PairAnalysisVarManager::kNMaxValuesMC];           // minimum values for the cuts
   Double_t fCutMax[PairAnalysisVarManager::kNMaxValuesMC];           // maximum values for the cuts
   Bool_t fCutExclude[PairAnalysisVarManager::kNMaxValuesMC];         // inverse cut logic?
   Bool_t fBitCut[PairAnalysisVarManager::kNMaxValuesMC];             // bit cut
-  TObject    *fUpperCut[PairAnalysisVarManager::kNMaxValuesMC];          // use object as upper cut
+  TObject *fCutVar[PairAnalysisVarManager::kNMaxValuesMC];          // used formula for variable
 
   PairAnalysisVarCuts(const PairAnalysisVarCuts &c);
   PairAnalysisVarCuts &operator=(const PairAnalysisVarCuts &c);

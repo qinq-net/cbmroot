@@ -13,6 +13,8 @@
 #include "AnalysisCuts.h"
 
 
+#include "PairAnalysisVarManager.h"
+
 ClassImp(AnalysisFilter)
 
 
@@ -69,8 +71,15 @@ UInt_t AnalysisFilter::IsSelected(TObject* obj)
     AnalysisCuts *cuts;
     Int_t iCutB = 1;
 	
+
+    //Fill values - fill only once the variables
+    // TODO: check carefully the cas of pairlegcuts
+    // Double_t values[PairAnalysisVarManager::kNMaxValuesMC];
+    // PairAnalysisVarManager::Fill(obj,values);
+
     while((cuts = (AnalysisCuts*)next())) {
-	Bool_t acc = cuts->IsSelected(obj);
+      //Bool_t acc = cuts->IsSelected(values);
+      Bool_t acc = cuts->IsSelected(obj); /// original
 	if ((filterMask = cuts->GetFilterMask()) > 0) {
 	    acc = (acc && (filterMask == result));
 	}
