@@ -142,6 +142,9 @@ private:
   TH2 * fhGet4ChanDllStatus;
   TH2 * fhGet4ChanTotMap;
   TH2 * fhGet4ChanErrors;
+  TProfile * fhGet4ChanTotOwErrorsProp;
+  TProfile * fhGet4ChanTotOrErrorsProp;
+  TProfile * fhGet4ChanTotEdErrorsProp;
   TH2 * fhGet4ChanSlowContM;
   TH2 * fhGet4ChanEdgesCounts;
   TH2 * fhGet4ChanDeadtime;
@@ -203,6 +206,7 @@ private:
   TH2 * fhPulserHitDistMs;
   TH2 * fhPulserFeeDnl;
   TH2 * fhPulserFeeInl;
+  std::vector<TH2 *> fhPulserFeeDistCT;
   //--------------------------------------------------------------//
   std::vector< UInt_t >           fvuPrevHitEp; //! Epoch of previous hit message (one per GET4 chip & channel)
   std::vector< get4v1x::Message > fvmPrevHit;   //! Previous hit message (one per GET4 chip & channel)
@@ -233,6 +237,7 @@ private:
      //
   TH2 * fhPulserFeeTotDnl;
   TH2 * fhPulserFeeTotInl;
+  std::vector<TH2 *> fhPulserFeeTotDistCT;
   //--------------------------------------------------------------//
   std::vector< UInt_t >           fvuPrevOldTotEp; //! Epoch of previous TOT message (one per GET4 chip & channel)
   std::vector< get4v1x::Message > fvmPrevOldTot;   //! Previous TOT message (one per GET4 chip & channel)

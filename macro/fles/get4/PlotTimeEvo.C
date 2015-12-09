@@ -333,4 +333,16 @@
    cInlDnl->cd( 4);
    hPulserFeeTotInl->Draw("colz");
 */
+
+   TCanvas *cErrorProp = new TCanvas("cErrorProp", "Error over hit proportions");
+   cErrorProp->Divide(2, 2);
+
+   cErrorProp->cd( 1);
+   hGet4ChanTotOwErrorsProp->Draw("colz");
+
+   cErrorProp->cd( 2);
+   hGet4ChanTotOrErrorsProp->Draw("colz");
+
+   cErrorProp->cd( 3);
+   hGet4ChanTotEdErrorsProp->Draw("colz");
 }

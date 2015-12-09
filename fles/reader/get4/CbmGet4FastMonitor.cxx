@@ -113,6 +113,9 @@ CbmGet4FastMonitor::CbmGet4FastMonitor()
   fhGet4ChanDllStatus(NULL),
   fhGet4ChanTotMap(NULL),
   fhGet4ChanErrors(NULL),
+  fhGet4ChanTotOwErrorsProp(NULL),
+  fhGet4ChanTotOrErrorsProp(NULL),
+  fhGet4ChanTotEdErrorsProp(NULL),
   fhGet4ChanSlowContM(NULL),
   fhGet4ChanEdgesCounts(NULL),
   fhGet4ChanDeadtime(NULL),
@@ -168,6 +171,7 @@ CbmGet4FastMonitor::CbmGet4FastMonitor()
   fhPulserHitDistMs(NULL),
   fhPulserFeeDnl(NULL),
   fhPulserFeeInl(NULL),
+  fhPulserFeeDistCT(),
   fvuPrevHitEp(),
   fvmPrevHit(),
   fhFtSmallDtFeeA(NULL),
@@ -193,6 +197,7 @@ CbmGet4FastMonitor::CbmGet4FastMonitor()
   fvmLastOldTot(),
   fhPulserFeeTotDnl(NULL),
   fhPulserFeeTotInl(NULL),
+  fhPulserFeeTotDistCT(),
   fvuPrevOldTotEp(),
   fvmPrevOldTot(),
   fhFtTotSmallDtFeeA(NULL),
@@ -711,6 +716,16 @@ void CbmGet4FastMonitor::InitMonitorHistograms()
    fhGet4ChanErrors->GetYaxis()->SetBinLabel(17, "0x7f: Unknown         ");
    fhGet4ChanErrors->GetYaxis()->SetBinLabel(18, "Corrupt error or unsupported yet");
 
+   fhGet4ChanTotOwErrorsProp    = new TProfile("hGet4ChanTotOwErrorsProp",
+         "Percentage of Overwrite Error messages per GET4 channel; GET4 channel # ; Overwrite prop. [\%]",
+         fuNbGet4*get4v1x::kuChanPerGet4*2, -0.5, fuNbGet4*get4v1x::kuChanPerGet4 -0.5);
+   fhGet4ChanTotOrErrorsProp    = new TProfile("hGet4ChanTotOrErrorsProp",
+         "Percentage of ToT out of range Error messages per GET4 channel; GET4 channel # ; Overwrite prop. [\%]",
+         fuNbGet4*get4v1x::kuChanPerGet4*2, -0.5, fuNbGet4*get4v1x::kuChanPerGet4 -0.5);
+   fhGet4ChanTotEdErrorsProp    = new TProfile("hGet4ChanTotEdErrorsProp",
+         "Percentage of Event Discarded Error messages per GET4 channel; GET4 channel # ; Overwrite prop. [\%]",
+         fuNbGet4*get4v1x::kuChanPerGet4*2, -0.5, fuNbGet4*get4v1x::kuChanPerGet4 -0.5);
+
    fhGet4ChanSlowContM = new TH2I("hGet4ChanSlowContM",
          "Slow control messages per GET4 channel; GET4 channel # ; Type",
          fuNbGet4*get4v1x::kuChanPerGet4*2, -0.5, fuNbGet4*get4v1x::kuChanPerGet4 -0.5,
@@ -1026,6 +1041,13 @@ void CbmGet4FastMonitor::InitMonitorHistograms()
             kuNbChanFee, -0.5, kuNbChanFee - 0.5,
             get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
 
+      fhPulserFeeDistCT.resize( kuNbChipFee );
+      for( UInt_t uChip = 0; uChip < kuNbChipFee; uChip ++)
+         fhPulserFeeDistCT[uChip] = new TH2D( Form("fhPulserFeeDistCT_chip%03u", uChip),
+               Form("Coarse counter distribution for all channels in chip %03u in chosen FEE board; CT Bin; Chan # ; Counts []", uChip),
+               get4v1x::kuCoarseCounterSize,  -0.5, get4v1x::kuCoarseCounterSize - 0.5,
+               get4v1x::kuChanPerGet4, -0.5, get4v1x::kuChanPerGet4 - 0.5 );
+
       fhFtSmallDtFeeA = new TH2D( "hFtSmallDtFeeA",
             "FT of both channels when normal time difference in FEE A; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
             get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5,
@@ -1108,7 +1130,8 @@ void CbmGet4FastMonitor::InitMonitorHistograms()
          fhFullCtEpQualityChZoom[uChan] = new TH2D( Form("hFullCtEpQualityChZoom_%03u", uChan),
                Form("Epoch quality VS Coarse time for time of last hits, normal Range is %04u, chan %03u; Coarse Bin Time ; Epoch Quality; Counts []",
                      get4v1x::kuCoarseCounterSize, uChan),
-               200,  get4v1x::kuCoarseCounterSize - 200 -0.5, get4v1x::kuCoarseCounterSize - 0.5,
+//               200,  get4v1x::kuCoarseCounterSize - 200 -0.5, get4v1x::kuCoarseCounterSize - 0.5,
+               get4v1x::kuCoarseCounterSize,  -0.5, get4v1x::kuCoarseCounterSize - 0.5,
                2, -0.5, 1.5 );
       }
       fvChanOrder.resize(kuNbChipFee);
@@ -1133,6 +1156,13 @@ void CbmGet4FastMonitor::InitMonitorHistograms()
             "INL for all TOT channels in chosen FEE board; Chan # ; FT Bin; INL [bin]",
             kuNbChanFee, -0.5, kuNbChanFee - 0.5,
             get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+
+      fhPulserFeeTotDistCT.resize( kuNbChipFee );
+      for( UInt_t uChip = 0; uChip < kuNbChipFee; uChip ++)
+         fhPulserFeeTotDistCT[uChip] = new TH2D( Form("fhPulserFeeTotDistCT_chip%03u", uChip),
+               Form("Coarse counter distribution for all channels in chip %03u in chosen FEE board; CT Bin; Chan # ; Counts []", uChip),
+               get4v1x::kuCoarseCounterSize,  -0.5, get4v1x::kuCoarseCounterSize - 0.5,
+               get4v1x::kuChanPerGet4, -0.5, get4v1x::kuChanPerGet4 - 0.5 );
 
       fhFtTotSmallDtFeeA = new TH2D( "hFtTotSmallDtFeeA",
             "FT of Tot for both channels when normal time difference in FEE A; FT Bin Chan 1 ; FT Bin Chan 2; Counts []",
@@ -1297,6 +1327,9 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
    fhGet4ChanDllStatus->Write();
    fhGet4ChanTotMap   ->Write();
    fhGet4ChanErrors   ->Write();
+   fhGet4ChanTotOwErrorsProp->Write();
+   fhGet4ChanTotOrErrorsProp->Write();
+   fhGet4ChanTotEdErrorsProp->Write();
    fhGet4ChanSlowContM->Write();
    fhGet4ChanEdgesCounts->Write();
    fhGet4ChanDeadtime->Write();
@@ -1396,6 +1429,13 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
             fitFunc[uHistoFeeIdx] = new TF1( Form("f_%03d_%03d",uChanFeeA,uChanFeeB), "gaus",
                   fhTimeResFee[uHistoFeeIdx]->GetMean() - 5*fhTimeResFee[uHistoFeeIdx]->GetRMS() ,
                   fhTimeResFee[uHistoFeeIdx]->GetMean() + 5*fhTimeResFee[uHistoFeeIdx]->GetRMS());
+            // Fix the Mean fit value around the Histogram Mean
+            fitFunc[uHistoFeeIdx]->SetParameter( 0, fhTimeResFee[uHistoFeeIdx]->Integral());
+            fitFunc[uHistoFeeIdx]->FixParameter( 1, fhTimeResFee[uHistoFeeIdx]->GetMean() );
+            fitFunc[uHistoFeeIdx]->SetParameter( 2, fhTimeResFee[uHistoFeeIdx]->GetRMS() );
+//            fitFunc[uHistoFeeIdx]->SetParLimits(1,
+//                  fhTimeResFee[uHistoFeeIdx]->GetMean() - 3,
+//                  fhTimeResFee[uHistoFeeIdx]->GetMean() + 3 );
 
             // Using integral instead of bin center seems to lead to unrealistic values => no "I"
 //            fhTimeResFee[uHistoFeeIdx]->Fit( Form("f_%03d_%03d",uChanFeeA,uChanFeeB), "IQRM0");
@@ -1436,10 +1476,18 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
                fitFuncB[uHistoFeeIdxB] = new TF1( Form("fB_%03d_%03d",uChanFeeA,uChanFeeB), "gaus",
                      fhTimeResFeeB[uHistoFeeIdxB]->GetMean() - 5*fhTimeResFeeB[uHistoFeeIdxB]->GetRMS() ,
                      fhTimeResFeeB[uHistoFeeIdxB]->GetMean() + 5*fhTimeResFeeB[uHistoFeeIdxB]->GetRMS());
+               // Fix the Mean fit value around the Histogram Mean
+               fitFuncB[uHistoFeeIdxB]->SetParameter( 0, fhTimeResFeeB[uHistoFeeIdxB]->Integral() );
+               fitFuncB[uHistoFeeIdxB]->FixParameter( 1, fhTimeResFeeB[uHistoFeeIdxB]->GetMean() );
+               fitFuncB[uHistoFeeIdxB]->SetParameter( 2, fhTimeResFeeB[uHistoFeeIdxB]->GetRMS() );
+//               fitFuncB[uHistoFeeIdxB]->SetParLimits(1,
+//                     fhTimeResFeeB[uHistoFeeIdxB]->GetMean() - 3,
+//                     fhTimeResFeeB[uHistoFeeIdxB]->GetMean() + 3 );
+
 
                // Using integral instead of bin center seems to lead to unrealistic values => no "I"
    //            fhTimeResFee[uHistoFeeIdx]->Fit( Form("f_%03d_%03d",uChanFeeA,uChanFeeB), "IQRM0");
-               fhTimeResFeeB[uHistoFeeIdxB]->Fit( Form("fB_%03d_%03d",uChanFeeA,uChanFeeB), "QRM0");
+               fhTimeResFeeB[uHistoFeeIdxB]->Fit( Form("fB_%03d_%03d",uChanFeeA,uChanFeeB), "QRM0B");
 
                dResB = fitFuncB[uHistoFeeIdxB]->GetParameter(2);
 
@@ -1470,10 +1518,17 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
                fitFuncAB[uChanFeeA*kuNbChanFee + uChanFeeB] = new TF1( Form("fAB_%03d_%03d",uChanFeeA,uChanFeeB), "gaus",
                      fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetMean() - 5*fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetRMS() ,
                      fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetMean() + 5*fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetRMS());
+               // Fix the Mean fit value around the Histogram Mean
+               fitFuncAB[uChanFeeA*kuNbChanFee + uChanFeeB]->SetParameter( 0, fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->Integral() );
+               fitFuncAB[uChanFeeA*kuNbChanFee + uChanFeeB]->FixParameter( 1, fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetMean() );
+               fitFuncAB[uChanFeeA*kuNbChanFee + uChanFeeB]->SetParameter( 2, fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetRMS() );
+//               fitFuncAB[uChanFeeA*kuNbChanFee + uChanFeeB]->SetParLimits(1,
+//                     fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetMean() - 3,
+//                     fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetMean() + 3 );
 
                // Using integral instead of bin center seems to lead to unrealistic values => no "I"
    //            fhTimeResFee[uHistoFeeIdx]->Fit( Form("f_%03d_%03d",uChanFeeA,uChanFeeB), "IQRM0");
-               fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->Fit( Form("fAB_%03d_%03d",uChanFeeA,uChanFeeB), "QRM0");
+               fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->Fit( Form("fAB_%03d_%03d",uChanFeeA,uChanFeeB), "QRM0B");
 
                dResAB = fitFuncAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetParameter(2);
 
@@ -1527,10 +1582,17 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
          fitFuncPairs[uChanA] = new TF1( Form("fPair_%03d_%03d",uChanA, uChanA+1), "gaus",
                fhTimeResPairs[uChanA]->GetMean() - 5*fhTimeResPairs[uChanA]->GetRMS() ,
                fhTimeResPairs[uChanA]->GetMean() + 5*fhTimeResPairs[uChanA]->GetRMS());
+         // Fix the Mean fit value around the Histogram Mean
+         fitFuncPairs[uChanA]->SetParameter( 0, fhTimeResPairs[uChanA]->Integral());
+         fitFuncPairs[uChanA]->FixParameter( 1, fhTimeResPairs[uChanA]->GetMean() );
+         fitFuncPairs[uChanA]->SetParameter( 2, fhTimeResPairs[uChanA]->GetRMS() );
+//         fitFuncPairs[uChanA]->SetParLimits(1,
+//               fhTimeResPairs[uChanA]->GetMean() - 3,
+//               fhTimeResPairs[uChanA]->GetMean() + 3 );
 
          // Using integral instead of bin center seems to lead to unrealistic values => no "I"
 //         fhTimeResPairs[uChanA]->Fit( Form("fPair_%03d_%03d",uChanA,uChanA+1), "IQRM0");
-         fhTimeResPairs[uChanA]->Fit( Form("fPair_%03d_%03d",uChanA,uChanA+1), "QRM0");
+         fhTimeResPairs[uChanA]->Fit( Form("fPair_%03d_%03d",uChanA,uChanA+1), "QRM0B");
          dSigPair = fitFuncPairs[uChanA]->GetParameter(2);
          dResPair = dSigPair/TMath::Sqrt2();
 
@@ -1562,10 +1624,17 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
             fitFuncCombi[uHistoCombiIdx] = new TF1( Form("fCombi_%03d_%03d",uChanA, uChanB), "gaus",
                   fhTimeResCombi[uHistoCombiIdx]->GetMean() - 5*fhTimeResCombi[uHistoCombiIdx]->GetRMS() ,
                   fhTimeResCombi[uHistoCombiIdx]->GetMean() + 5*fhTimeResCombi[uHistoCombiIdx]->GetRMS());
+            // Fix the Mean fit value around the Histogram Mean
+            fitFuncCombi[uHistoCombiIdx]->SetParameter( 0, fhTimeResCombi[uHistoCombiIdx]->Integral());
+            fitFuncCombi[uHistoCombiIdx]->FixParameter( 1, fhTimeResCombi[uHistoCombiIdx]->GetMean() );
+            fitFuncCombi[uHistoCombiIdx]->SetParameter( 2, fhTimeResCombi[uHistoCombiIdx]->GetRMS() );
+//            fitFuncCombi[uHistoCombiIdx]->SetParLimits(1,
+//                  fhTimeResCombi[uHistoCombiIdx]->GetMean() - 3,
+//                  fhTimeResCombi[uHistoCombiIdx]->GetMean() + 3 );
 
             // Using integral instead of bin center seems to lead to unrealistic values => no "I"
 //            fhTimeResCombi[uHistoCombiIdx]->Fit( Form("fCombi_%03d_%03d",uChanA,uChanB), "IQRM0");
-            fhTimeResCombi[uHistoCombiIdx]->Fit( Form("fCombi_%03d_%03d",uChanA,uChanB), "QRM0");
+            fhTimeResCombi[uHistoCombiIdx]->Fit( Form("fCombi_%03d_%03d",uChanA,uChanB), "QRM0B");
             dSigCombi = fitFuncCombi[uHistoCombiIdx]->GetParameter(2);
             dResCombi = dSigCombi/TMath::Sqrt2();
 
@@ -1617,6 +1686,8 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
          } // for( UInt_t uBin = 1; uBin <= get4v1x::kuFineTime+1; uBin ++)
       } // for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
       fhPulserFeeInl->Write();
+      for( UInt_t uChip = 0; uChip < kuNbChipFee; uChip ++)
+         fhPulserFeeDistCT[uChip]->Write();
 
       fhFtSmallDtFeeA->Write();
       fhFtSmallDtFeeB->Write();
@@ -1671,6 +1742,8 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
             } // for( UInt_t uBin = 1; uBin <= get4v1x::kuFineTime+1; uBin ++)
          } // for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
          fhPulserFeeTotInl->Write();
+         for( UInt_t uChip = 0; uChip < kuNbChipFee; uChip ++)
+            fhPulserFeeTotDistCT[uChip]->Write();
 
          fhFtTotSmallDtFeeA->Write();
          fhFtTotSmallDtFeeB->Write();
@@ -1841,6 +1914,7 @@ void CbmGet4FastMonitor::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
       {
          UInt_t uChipFeeA = uChipFullId%kuNbChipFee;
          for( UInt_t uChan = 0; uChan < get4v1x::kuChanPerGet4; uChan++ )
+            if( 0ull != fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getData() )
          {
             fhFullCtEpJumpFeeA[uChipFeeA]->Fill(
                fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4CoarseTs(),
@@ -1888,6 +1962,7 @@ void CbmGet4FastMonitor::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
             UInt_t uChipFeeA = uChipFullId%kuNbChipFee;
 
             for( UInt_t uChan = 0; uChan < get4v1x::kuChanPerGet4; uChan++ )
+               if( 0ull != fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getData() )
             {
                fhFullCtEpQualityCh[uChan]->Fill(
                   fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4CoarseTs(), 1);
@@ -2354,8 +2429,13 @@ void CbmGet4FastMonitor::MonitorMessage_get4(   get4v1x::Message mess, uint16_t 
          // Save the hit info in order to fill later the pulser histos
          // First fill time interval histos
          if( fuPulserFee == (uFullChId/kuNbChanFee) )
+         {
             // Fill the DNL histos
             fhPulserFeeTotDnl->Fill( uFullChId%kuNbChanFee, uTimeStamp & get4v1x::kuFineTime );
+
+            // Fill the CT histo
+            fhPulserFeeTotDistCT[ uChipFullId%kuNbChipFee ]->Fill( mess.getGet4CoarseTs(), mess.getGet4ChNum());
+         } // if( fuPulserFee == (uFullChId/kuNbChanFee) )
       } // if( 1 == mess.getGet4Edge() )
       else
          {
@@ -2397,6 +2477,9 @@ void CbmGet4FastMonitor::MonitorMessage_get4(   get4v1x::Message mess, uint16_t 
 
                // Fill the DNL histos
                fhPulserFeeDnl->Fill( uFullChId%kuNbChanFee, uTimeStamp & get4v1x::kuFineTime );
+
+               // Fill the CT histo
+               fhPulserFeeDistCT[ uChipFullId%kuNbChipFee ]->Fill( mess.getGet4CoarseTs(), mess.getGet4ChNum());
             } // if( fuPulserFee == (uFullChId/kuNbChanFee) )
          } // else of if( 1 == mess.getGet4Edge() )
    } // if( kTRUE == fbPulserMode && kTRUE == fbOldReadoutOk )
@@ -2760,6 +2843,7 @@ void CbmGet4FastMonitor::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
             {
                UInt_t uChipFeeA = uChipFullId%kuNbChipFee;
                for( UInt_t uChan = 0; uChan < get4v1x::kuChanPerGet4; uChan++ )
+                  if( 0ull != fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getData() )
                {
                   fhFullCtEpJumpFeeA[uChipFeeA]->Fill(
                         fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4V10R32HitTs(),
@@ -2812,6 +2896,7 @@ void CbmGet4FastMonitor::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
                   UInt_t uChipFeeA = uChipFullId%kuNbChipFee;
 
                   for( UInt_t uChan = 0; uChan < get4v1x::kuChanPerGet4; uChan++ )
+                     if( 0ull != fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getData() )
                   {
                      fhFullCtEpQualityCh[uChan]->Fill(
                            fvmLastHit[ fuPulserFee * kuNbChanFee+ uChipFeeA*get4v1x::kuChanPerGet4+ uChan].getGet4V10R32HitTs(), 1);
@@ -3122,12 +3207,15 @@ void CbmGet4FastMonitor::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
                break;
             case get4v1x::GET4_V1X_ERR_TOT_OVERWRT:
                fhGet4ChanErrors->Fill( dFullChId, 13);
+               fhGet4ChanTotOwErrorsProp->Fill( dFullChId, 100.0);
                break;
             case get4v1x::GET4_V1X_ERR_TOT_RANGE:
                fhGet4ChanErrors->Fill( dFullChId, 14);
+               fhGet4ChanTotOrErrorsProp->Fill( dFullChId, 100.0);
                break;
             case get4v1x::GET4_V1X_ERR_EVT_DISCARD:
                fhGet4ChanErrors->Fill( dFullChId, 15);
+               fhGet4ChanTotEdErrorsProp->Fill( dFullChId, 100.0);
                break;
             case get4v1x::GET4_V1X_ERR_UNKNOWN:
                fhGet4ChanErrors->Fill( dFullChId, 16);
@@ -3210,6 +3298,9 @@ void CbmGet4FastMonitor::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
 
                // Fill the DNL histos
                fhPulserFeeDnl->Fill( uFullChId%kuNbChanFee, mess.getGet4V10R32HitFt() );
+
+               // Fill the CT histo
+               fhPulserFeeDistCT[ uChipFullId%kuNbChipFee ]->Fill( mess.getGet4V10R32HitTs(), mess.getGet4V10R32HitChan());
             } // if( fuPulserFee == (uFullChId/kuNbChanFee) )
          } // if( kTRUE == fbPulserMode )
 
@@ -3295,6 +3386,10 @@ void CbmGet4FastMonitor::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
          // for the channel readout order in case of epoch jump
          if( kTRUE == fbPulserMode && fuPulserFee == (uChipFullId/kuNbChipFee))
             fvChanOrder[uChipFullId%kuNbChipFee].push_back( mess.getGet4V10R32HitChan() );
+
+         fhGet4ChanTotOwErrorsProp->Fill( uFullChId, 0.0);
+         fhGet4ChanTotOrErrorsProp->Fill( uFullChId, 0.0);
+         fhGet4ChanTotEdErrorsProp->Fill( uFullChId, 0.0);
 
          break;
       } // case get4v1x::GET4_32B_DATA
