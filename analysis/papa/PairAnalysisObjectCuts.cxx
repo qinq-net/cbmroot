@@ -174,8 +174,8 @@ Bool_t PairAnalysisObjectCuts::IsSelected(Double_t * const values)
 
       /// binary search
       Int_t idx=TMath::BinarySearch(graphN->GetN(),graphN->GetX(),xval);
-      Double_t cutMin = graphN->GetY()[idx];
-      Double_t cutMax = graphM->GetY()[idx];
+      cutMin = graphN->GetY()[idx];
+      cutMax = graphM->GetY()[idx];
 
     }
     else if ( (fCutMin[iCut] && fCutMin[iCut]->IsA() == TSpline3::Class()) ||
