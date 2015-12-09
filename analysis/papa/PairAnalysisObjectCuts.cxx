@@ -399,8 +399,8 @@ void PairAnalysisObjectCuts::Print(const Option_t* /*option*/) const
     }
 
     // stdout
-    if (!inverse) printf("Cut %02d: %s < %s < %f\n",    iCut, dep.Data(), tit.Data(), dep.Data());
-    else          printf("Cut %02d: !(%s < %s < %f)\n", iCut, dep.Data(), tit.Data(), dep.Data());
+    if (!inverse) printf("Cut %02d: %s < %s < %s\n",    iCut, dep.Data(), tit.Data(), dep.Data());
+    else          printf("Cut %02d: !(%s < %s < %s)\n", iCut, dep.Data(), tit.Data(), dep.Data());
 
   } //loop over cuts
 
