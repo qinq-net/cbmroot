@@ -83,6 +83,7 @@ public:
     kPosY,                   // Y position [cm]
     kPosZ,                   // Z position [cm]
     kLinksMC,                // number of matched MC links
+    kTRDLayer,               // plane/layer id
     kEloss,                  // TRD energy loss dEdx+TR
     kElossdEdx,              // TRD energy loss dEdx only
     kElossTR,                // TRD energy loss TR only
@@ -141,6 +142,8 @@ public:
     kTRDChi2NDF,             // chi2/ndf TRD
     kTRDPin,                 // first point TRD momentum (GeV/c)
     kTRDPtin,                // first point TRD transverse momentum (GeV/c)
+    kTRDPhiin,               // first point TRD azimuthal angle (rad)
+    kTRDThetain,             // first point TRD polar angle (rad)
     kTRDPout,                // last point TRD momentum (GeV/c)
     kTRDPtout,               // last point TRD transverse momentum (GeV/c)
     kTRDThetaCorr,           // correction factor for theta track angle
@@ -815,6 +818,8 @@ inline void PairAnalysisVarManager::FillVarTrdTrack(const CbmTrdTrack *track, Do
   track->GetParamFirst()->Momentum(mom);
   values[kTRDPin]         = mom.Mag();
   values[kTRDPtin]        = mom.Pt();
+  values[kTRDThetain]     = mom.Theta();
+  values[kTRDPhiin]       = mom.Phi();
   // correction factors
   values[kTRDThetaCorr]   = 1. / mom.CosTheta();
   values[kTRDPhiCorr]     = 1. / TMath::Cos(mom.Phi());
@@ -1295,6 +1300,7 @@ inline void PairAnalysisVarManager::FillVarTrdHit(const CbmTrdHit *hit, Double_t
   FillVarPixelHit(hit, values);
 
   // Set
+  values[kTRDLayer]  = hit->GetPlaneId(); //layer id
   /// NOTE: use correction from first TRD track param
   values[kEloss]     = hit->GetELoss()     * 1.e+6; //GeV->keV, dEdx + TR
   values[kElossdEdx] = hit->GetELossdEdX() * 1.e+6; //GeV->keV, dEdx
