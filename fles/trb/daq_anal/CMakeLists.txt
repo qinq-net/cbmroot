@@ -19,6 +19,8 @@ showevt.c
 subevt.c
 )
 
+Set_Source_Files_Properties(subevt.c COMPILE_FLAGS -Wno-implicit-function-declaration)
+
 Set(EXE_NAME daq_anal)
 #If(UNIX AND NOT APPLE)
 #  Set(DEPENDENCIES fles_ipc boost_thread boost_system boost_serialization boost_program_options ${CMAKE_THREAD_LIBS_INIT} rt)
