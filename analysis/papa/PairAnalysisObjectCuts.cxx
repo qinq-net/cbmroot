@@ -175,6 +175,7 @@ Bool_t PairAnalysisObjectCuts::IsSelected(Double_t * const values)
       /// binary search
       Int_t idx=TMath::BinarySearch(graphN->GetN(),graphN->GetX(),xval);
       cutMin = graphN->GetY()[idx];
+      idx=TMath::BinarySearch(graphM->GetN(),graphM->GetX(),xval);
       cutMax = graphM->GetY()[idx];
 
     }
