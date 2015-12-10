@@ -131,7 +131,7 @@ TVectorD* PairAnalysisHelper::MakeGausBinning(Int_t nbinsX, Double_t mean, Doubl
   TF1 g2("g2","gaus(0)/[3]",mean-5*sigma,mean+5*sigma);
   g2.SetParameters(1,mean,sigma,sum); /// normalize with sum
 
-  Double_t *params=g2.GetParameters();
+  //  Double_t *params=g2.GetParameters();
 
   Double_t epsilon=sigma/10000;  // step size
   Double_t xt=mean-5*sigma;      // bin limit
@@ -144,7 +144,8 @@ TVectorD* PairAnalysisHelper::MakeGausBinning(Int_t nbinsX, Double_t mean, Doubl
   while( (xt+=epsilon)<=mean+5*sigma) {
 
     // current integral
-    Double_t cint = g2.Integral(mean-5*sigma,xt,params,epsilon);
+    //    Double_t cint = g2.Integral(mean-5*sigma,xt,params,epsilon); //fast, but NOT root 6 (Integral(min,max,epsilon)) compatible
+    Double_t cint = g2.Integral(mean-5*sigma,xt);//,params,epsilon);   //slow
     //    printf(" integral to %f:  %f , search limit: %f \n",xt,cint,lim);
 
     /// condition for bin limit
