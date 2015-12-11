@@ -2,6 +2,7 @@
 //   comments
 //
 
+// 2015-12-11 - DE - use STS v15c as new defaut
 // 2015-07-20 - FU - magnet v15a is v12b with correct keeping volume material
 // 2015-07-20 - FU - add material budget files
 // 2015-03-13 - DE - use STS v13y with correct ladder orientation as new default
@@ -30,7 +31,7 @@ void sis300_electron_setup()
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "v15a";
-  stsTag       = "v15a";
+  stsTag       = "v15c";
   trdTag       = "v15a_3e";
   tofTag       = "v16a_3e";
 

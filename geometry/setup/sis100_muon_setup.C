@@ -2,6 +2,7 @@
 //   comments
 //
 
+// 2015-12-11 - DE - use STS v15c as new defaut
 // 2015-12-11 - DE - reproduce MUCH v15b setup from macro/much/much_sim.C
 // 2015-07-20 - FU - magnet v15a is v12b with correct keeping volume material
 // 2015-07-20 - FU - add material budget files
@@ -61,7 +62,7 @@ void sis100_muon_setup()
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "";
-  stsTag       = "v15a";
+  stsTag       = "v15c";
   trdTag       = "v15a_1m";
   tofTag       = "v13-5c";
 

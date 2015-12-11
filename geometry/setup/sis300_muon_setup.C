@@ -2,6 +2,7 @@
 //   comments
 //
 
+// 2015-12-11 - DE - use STS v15c as new defaut
 // 2015-07-20 - FU - magnet v15a is v12b with correct keeping volume material
 // 2015-07-20 - FU - add material budget files
 // 2015-01-19 - DE - use TRD v15a as new default
@@ -60,7 +61,7 @@ void sis300_muon_setup()
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "";
-  stsTag       = "v15a";
+  stsTag       = "v15c";
   trdTag       = "v15a_3m";
   tofTag       = "v13-5e";
 
