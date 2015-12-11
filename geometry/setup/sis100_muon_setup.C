@@ -86,7 +86,7 @@ void sis100_muon_setup()
   shieldGeom   = "much/shield_v15b_SIS100B_149_3part_125cm.geo";
   platformGeom = ""; // "passive/platform_v13a.geo";
   trdGeom      = ""; // "trd/trd_" + trdTag + ".geo.root";
-  tofGeom      = ""; // "tof/tof_" + tofTag + ".geo.root";
+  tofGeom      = "tof/tof_" + tofTag + ".geo.root";
   ecalGeom     = "";
   psdGeom      = ""; // "psd_geo_xy.txt";
   psdZpos = 800.;
