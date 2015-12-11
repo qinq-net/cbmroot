@@ -100,6 +100,11 @@ Set(NO_DICT_SRCS
  unpacker/TimesliceReader.cpp
 )
 
+If(_UINT8_T_EXIST)
+  Add_Definitions(-DHAVE_UINT8_T_HEADER_FILE)
+  Set(DEFINITIONS HAVE_UINT8_T_HEADER_FILE)
+EndIf()
+
 If(NOT OldFairSource)
   Add_Definitions(-D_NewFairSource)
   Set(DEFINITIONS ${DEFINITIONS} _NewFairSource)
