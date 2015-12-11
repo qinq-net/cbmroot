@@ -47,7 +47,7 @@ GetTriggerNumber()      Not available (TCBMBeamtimeProc method)
 GetEventNumber()        Not available (TCBMBeamtimeProc method)
 */
 
-#ifdef __APPLE__
+#ifdef HAVE_UINT8_T_HEADER_FILE
 #include <_types/_uint8_t.h>
 #include <_types/_uint16_t.h>
 #include <_types/_uint32_t.h>

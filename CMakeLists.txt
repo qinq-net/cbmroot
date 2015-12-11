@@ -244,6 +244,11 @@ Generate_Version_Info()
 #  Message(WARNING "The general Beamtime library (CBMROOT/beamtime) will not be compiled!")
 #EndIf(BUILD_BEAMTIME)
 
+If(CMAKE_SYSTEM_NAME MATCHES Darwin)
+  Include(CheckIncludeFile)
+  Check_Include_File("_types/_uint8_t.h" _UINT8_T_EXIST)
+EndIf()
+
 Execute_Process(COMMAND ${ROOT_CONFIG_EXECUTABLE} --has-vc
                 OUTPUT_VARIABLE ROOT_HAS_VC
                )

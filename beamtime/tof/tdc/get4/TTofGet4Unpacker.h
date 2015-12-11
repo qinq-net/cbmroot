@@ -38,7 +38,8 @@ class TDirectory;
 
    // C++
 #include <vector>
-#ifdef __APPLE__
+
+#ifdef HAVE_UINT8_T_HEADER_FILE
 #include <_types/_uint8_t.h>
 #include <_types/_uint16_t.h>
 #include <_types/_uint32_t.h>

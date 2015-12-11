@@ -99,9 +99,14 @@ Set_Source_Files_Properties(PROPERTIES CbmRocSource.cxx PROPERTIES
                             OBJECT_DEPENDS ${LIBRARY_OUTPUT_PATH}/libRoc.so
 )
 
+If(_UINT8_T_EXIST)
+#  Add_Definitions(-DHAVE_UINT8_T_HEADER_FILE)
+  Set(DEFINITIONS HAVE_UINT8_T_HEADER_FILE)
+EndIf()
+
 If(NOT OldFairSource)
   Add_Definitions(-D_NewFairSource)
-  Set(DEFINITIONS _NewFairSource)
+  Set(DEFINITIONS ${DEFINITIONS} _NewFairSource)
 EndIf()
 
 Set(LINKDEF  CbmBeamtimeLinkDef.h)

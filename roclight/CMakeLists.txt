@@ -44,6 +44,11 @@ Set(HEADERS
   roc/Factory.h
 )
 
+
+If(_UINT8_T_EXIST)
+  Add_Definitions(-DHAVE_UINT8_T_HEADER_FILE)
+EndIf()
+
 Set(LIBRARY_NAME CbmRocLight)
 
 GENERATE_LIBRARY()

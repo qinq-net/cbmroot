@@ -174,6 +174,11 @@ Set(HEADERS
   display/CbmTofOnlineDisplay.h
 )
 
+If(_UINT8_T_EXIST)
+  Add_Definitions(-DHAVE_UINT8_T_HEADER_FILE)
+  Set(DEFINITIONS HAVE_UINT8_T_HEADER_FILE)
+EndIf()
+
 
 #If(BUILD_BEAMTIME)
 #  Set_Source_Files_Properties(PROPERTIES tdc/get4/TTofGet4Unpacker.cxx PROPERTIES
