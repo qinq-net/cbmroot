@@ -21,7 +21,7 @@
 #include <_types/_uint32_t.h>
 #include <_types/_uint64_t.h>
 #else
-#include <stdint>
+#include <stdint.h>
 #endif  
 
 #include <Rtypes.h>
