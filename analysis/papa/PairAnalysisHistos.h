@@ -15,18 +15,14 @@
 
 #include <iostream>
 
-#ifdef __APPLE__
-#ifdef OLD_MAC
-#include <stdint.h>
-//#else
-//#include <_types/_uint8_t.h>
-//#include <_types/_uint16_t.h>
-//#include <_types/_uint32_t.h>
-//#include <_types/_uint64_t.h>
-#endif  
+#ifdef HAVE_UINT8_T_HEADER_FILE
+#include <_types/_uint8_t.h>
+#include <_types/_uint16_t.h>
+#include <_types/_uint32_t.h>
+#include <_types/_uint64_t.h>
 #else
-#include <stdint.h>
-#endif
+#include <stdint>
+#endif  
 
 #include <Rtypes.h>
 
