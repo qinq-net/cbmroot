@@ -2,6 +2,7 @@
 //   comments
 //
 
+// 2015-12-11 - DE - reproduce MUCH v15b setup from macro/much/much_sim.C
 // 2015-07-20 - FU - magnet v15a is v12b with correct keeping volume material
 // 2015-07-20 - FU - add material budget files
 // 2015-01-19 - DE - use TRD v15a as new default
@@ -75,18 +76,18 @@ void sis100_muon_setup()
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "cave.geo";
-  pipeGeom     = "pipe/pipe_v13c.geo.root";
-  magnetGeom   = "magnet/magnet_v15a.geo.root";
+  pipeGeom     = "pipe/pipe_much_v15b_125cm_no.geo";
+  magnetGeom   = "magnet/magnet_v15b_much.geo.root";
   mvdGeom      = "";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
   richGeom     = "";
-  muchGeom     = "much/much_v13d.geo";
-  shieldGeom   = "much/shield_v13d.geo";
+  muchGeom     = "much/much_v15b_STS100-B_125cm_no.geo";
+  shieldGeom   = "much/shield_v15b_SIS100B_149_3part_125cm.geo";
   platformGeom = ""; // "passive/platform_v13a.geo";
   trdGeom      = ""; // "trd/trd_" + trdTag + ".geo.root";
-  tofGeom      = "tof/tof_" + tofTag + ".geo.root";
+  tofGeom      = ""; // "tof/tof_" + tofTag + ".geo.root";
   ecalGeom     = "";
-  psdGeom      = "psd_geo_xy.txt";
+  psdGeom      = ""; // "psd_geo_xy.txt";
   psdZpos = 800.;
   psdXpos = 11.;
 
