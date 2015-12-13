@@ -66,7 +66,7 @@ void sis300_muon_setup()
   tofTag       = "v13-5e";
 
   // -----  DigiFiles  ------------------------------------------------------
-  stsDigi      = "sts/sts_" + stsTag + "_std.digi.par";
+  stsDigi      = ""; // "sts/sts_" + stsTag + "_std.digi.par";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
 

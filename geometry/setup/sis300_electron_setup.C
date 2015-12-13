@@ -36,8 +36,7 @@ void sis300_electron_setup()
   tofTag       = "v16a_3e";
 
   // -----  DigiFiles  ------------------------------------------------------
-  stsDigi      = "sts/sts_";
-  stsDigi      = stsDigi + stsTag + "_std.digi.par";
+  stsDigi      = ""; // "sts/sts_" + stsTag + "_std.digi.par";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
 
