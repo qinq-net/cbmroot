@@ -46,9 +46,9 @@
 #include <sstream>
 
 // Name of geometry version and output file
-const TString geoVersion = "tof_v16a_1h";     // SIS 100 hadron, 4.5 m
+//const TString geoVersion = "tof_v16a_1h";     // SIS 100 hadron, 4.5 m
 //const TString geoVersion = "tof_v16a_1e";     // SIS 100 electron, 6 m
-//const TString geoVersion = "tof_v16a_1m";     // SIS 100 muon, 6.5 m
+const TString geoVersion = "tof_v16a_1m";     // SIS 100 muon, 6.8 m
 //const TString geoVersion = "tof_v16a_3e";     // SIS 300 electron, 8.8 m
 //const TString geoVersion = "tof_v16a_3m";     // SIS 300 muon, 10 m
 const TString FileNameSim  = geoVersion + ".geo.root";
@@ -58,7 +58,7 @@ const TString FileNameInfo = geoVersion + ".geo.info";
 // TOF_Z_Front corresponds to front cover of outer super module towers
 const Float_t TOF_Z_Front =  (     "tof_v16a_1h" == geoVersion  ?  450 : // SIS 100 hadron
                               (    "tof_v16a_1e" == geoVersion  ?  600 : // SIS 100 electron
-                               (   "tof_v16a_1m" == geoVersion  ?  650 : // SIS 100 muon
+                               (   "tof_v16a_1m" == geoVersion  ?  680 : // SIS 100 muon
                                 (  "tof_v16a_3e" == geoVersion  ?  880 : // SIS 300 electron
                                  ( "tof_v16a_3m" == geoVersion  ? 1020 : // SIS 300 muon
                                    600 // Set default to SIS 100 electron 
@@ -461,7 +461,7 @@ void Create_TOF_Geometry_v16a() {
   position_tof_bars(0);
   
   gGeoMan->CloseGeometry();
-  gGeoMan->CheckOverlaps(0.001);
+  gGeoMan->CheckOverlaps(0.00001);
   gGeoMan->PrintOverlaps();
   gGeoMan->Test();
 

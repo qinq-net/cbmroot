@@ -115,8 +115,9 @@ void make_geofile(TString stofGeom = "tof_v16a_1e" )
 
   // Use the experiment specific MC Event header instead of the default one
   // This one stores additional information about the reaction plane
-  CbmMCEventHeader* mcHeader = new CbmMCEventHeader();
-  fRun->SetMCEventHeader(mcHeader);
+   // => OBSOLETE, therefore removed
+//  CbmMCEventHeader* mcHeader = new CbmMCEventHeader();
+//  fRun->SetMCEventHeader(mcHeader);
 
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
 
@@ -128,8 +129,8 @@ void make_geofile(TString stofGeom = "tof_v16a_1e" )
   // Use the CbmUrqmdGenrator which calculates a reaction plane and
   // rotate all particles accordingly
   if (1){
-  CbmUrqmdGenerator*  urqmdGen = new CbmUrqmdGenerator(inFile);
-  urqmdGen->SetEventPlane(-TMath::Pi(), TMath::Pi());
+  FairUrqmdGenerator*  urqmdGen = new FairUrqmdGenerator(inFile);
+  primGen->SetEventPlane(-TMath::Pi(), TMath::Pi());
   //(CbmUrqmdGenerator *)urqmdGen->SetVertex(0.,0.,20.);   // test shifted vertex
   //urqmdGen->SetEventPlane(-180., 180.);
   primGen->AddGenerator(urqmdGen);
