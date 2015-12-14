@@ -19,42 +19,6 @@
 // 2013-10-07 - DE - rich_v13a is not at nominal position 1800mm, but at 1600mm
 //
 
-/*
-static TString caveGeom;
-static TString pipeGeom;
-static TString magnetGeom;
-static TString mvdGeom;
-static TString stsGeom;
-static TString richGeom;
-static TString muchGeom;
-static TString shieldGeom;
-static TString trdGeom;
-static TString tofGeom;
-static TString ecalGeom;
-static TString platformGeom;
-static TString psdGeom;
-static Double_t psdZpos;
-static Double_t psdXpos;
-
-static TString mvdTag;
-static TString stsTag;
-static TString trdTag;
-static TString tofTag;
-
-static TString stsDigi;
-static TString trdDigi;
-static TString tofDigi;
-
-static TString stsMatBudget;
-static TString mvdMatBudget;
-
-static TString  fieldMap;
-static Double_t fieldZ;
-static Double_t fieldScale;
-static Int_t    fieldSymType;
-
-static TString defaultInputFile;
-*/
 
 void dev_sis100_electron_setup()
 {

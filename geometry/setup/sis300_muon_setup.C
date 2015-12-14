@@ -14,42 +14,6 @@
 // 2013-11-04 - VF - make STS v15b the new default
 //
 
-/*
-static TString caveGeom;
-static TString pipeGeom;
-static TString magnetGeom;
-static TString mvdGeom;
-static TString stsGeom;
-static TString richGeom;
-static TString muchGeom;
-static TString shieldGeom;
-static TString trdGeom;
-static TString tofGeom;
-static TString ecalGeom;
-static TString platformGeom;
-static TString psdGeom;
-static Double_t psdZpos;
-static Double_t psdXpos;
-
-static TString mvdTag;
-static TString stsTag;
-static TString trdTag;
-static TString tofTag;
-
-static TString stsDigi;
-static TString trdDigi;
-static TString tofDigi;
-
-static TString mvdMatBudget;
-static TString stsMatBudget;
-
-static TString  fieldMap;
-static Double_t fieldZ;
-static Double_t fieldScale;
-static Int_t    fieldSymType;
-
-static TString defaultInputFile;
-*/
 
 void sis300_muon_setup()
 {
