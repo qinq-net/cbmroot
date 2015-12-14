@@ -8,7 +8,7 @@
 #include "CbmTrdHit.h"
 #include "CbmTrdDigi.h"
 #include "CbmTrdPoint.h"
-#include "CbmGeoTrdPar.h"
+//#include "CbmGeoTrdPar.h"
 #include "CbmMatch.h"
 
 #include "FairRootManager.h"
