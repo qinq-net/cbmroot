@@ -20,6 +20,7 @@
 #include "reco/CbmStsClusterFinderSimple.h"
 #include "setup/CbmStsModule.h"
 #include "setup/CbmStsSetup.h"
+#include "digitize/CbmStsPhysics.h"
 
 using namespace std;
 
@@ -187,6 +188,9 @@ InitStatus CbmStsFindClusters::Init()
     // --- Get STS setup
     fSetup = CbmStsSetup::Instance();
 
+    // --- Instantiate StsPhysics
+    CbmStsPhysics::Instance();
+
     // --- Create cluster finder
     fFinder = new CbmStsClusterFinderSimple(fFinderModel, fAlgorithm);
     fFinder->SetOutputArray(fClusters);
@@ -278,6 +282,9 @@ bool CbmStsFindClusters::InitMQ(const std::string& geo_file)
     // --- Get STS setup
     fSetup = CbmStsSetup::Instance();
     fSetup->Init(geo_file.c_str());
+
+    // --- Instantiate StsPhysics
+    CbmStsPhysics::Instance();
 
     // --- Create cluster finder
     fFinder = new CbmStsClusterFinderSimple(fFinderModel, fAlgorithm);

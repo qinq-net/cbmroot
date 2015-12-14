@@ -6,11 +6,13 @@
 #include "TClonesArray.h"
 #include "TRandom.h"
 #include "FairLogger.h"
+#include "FairRunAna.h"
 #include "CbmMatch.h"
 #include "CbmStsAddress.h"
 #include "CbmStsCluster.h"
 #include "CbmStsDigi.h"
 #include "digitize/CbmStsDigitize.h"
+#include "digitize/CbmStsPhysics.h"
 #include "digitize/CbmStsSensorTypeDssd.h"
 #include "setup/CbmStsModule.h"
 #include "setup/CbmStsSensorType.h"
@@ -32,8 +34,10 @@ CbmStsModule::CbmStsModule() : CbmStsElement(),
                                fDigis(),
                                fClusters(),
                                fDigisTb(),
-                               fIt_DigiTb()
+                               fIt_DigiTb(),
+			       fPhysics(NULL)
 {
+	fPhysics = CbmStsPhysics::Instance();
 }
 // -------------------------------------------------------------------------
 
@@ -56,8 +60,10 @@ CbmStsModule::CbmStsModule(const char* name, const char* title,
                            fDigis(),
                            fClusters(),
                            fDigisTb(),
-                           fIt_DigiTb()
+                           fIt_DigiTb(),
+			   fPhysics(NULL)
 {
+	fPhysics = CbmStsPhysics::Instance();
 }
 // -------------------------------------------------------------------------
 
@@ -272,8 +278,6 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 	    AddCluster(cluster);
 	}
 
-	//get pitch assuming that pitch is the same for all sensors in a module and for both sides of a sensor
-	Double_t pitch = dynamic_cast<CbmStsSensorTypeDssd*>(dynamic_cast<CbmStsSensor*>(GetDaughter(0)) -> GetType()) -> GetPitch(0);
 
 	// --- Calculate total charge, cluster position and spread
 	Double_t sum1 = 0.;  // sum of charges
@@ -285,7 +289,6 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 	Double_t errorMeas = 0.;
 	Double_t errorNoise2 = fNoise*fNoise;
 	Double_t errorDiscr2 = fDynRange * fDynRange / 12. / fNofAdcChannels / fNofAdcChannels;  
-	Double_t errorQ = sqrt(errorNoise2 + errorDiscr2);
 
 	Double_t error = 0.;
 	Int_t index = -1;
@@ -310,7 +313,9 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 		    if ( ! digi ) continue;
 		    errorMeas += (channel - sum2) * (channel - sum2);
 		}
-		errorMeas *= pitch / sum1 * errorQ;
+		errorMeas /= sum1;
+		errorMeas *= sqrt(errorNoise2 + errorDiscr2); 
+		errorMethod = 1. / sqrt(24.);
 	    }
 
 	}
@@ -329,7 +334,7 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 		    tsum += digi->GetTime();
 
 		    if (sum1 > 0.) {
-			errorMethod = pitch / sqrt(24.);
+			errorMethod = 1. / sqrt(24.);
 			errorMeas = 0.;
 		    } 
 		}
@@ -339,21 +344,25 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 	    if ((clusterEnd - clusterStart) == 1){
 		Double_t chargeFirst = 0.;
 		Double_t chargeLast = 0.;
+		Double_t dq12, dq22;
 		for (Int_t channel = clusterStart; channel <= clusterEnd; channel++) {
 		    CbmStsDigi* digi = GetDigi(channel, index);
 		    if ( ! digi ) continue;
 		    cluster->AddDigi(index);
 		    Double_t charge = AdcToCharge(digi->GetCharge());
-		    sum1 += charge;
-		    sum3 += charge * Double_t(channel) * Double_t(channel);
 		    tsum += digi->GetTime();
 		    if (channel == clusterStart) chargeFirst = charge;
 		    if (channel == clusterEnd) chargeLast = charge;
 		}
+		dq12 = errorNoise2 + errorDiscr2 + fPhysics -> LandauWidth(chargeFirst) * fPhysics -> LandauWidth(chargeFirst);
+		dq22 = errorNoise2 + errorDiscr2 + fPhysics -> LandauWidth(chargeLast) * fPhysics -> LandauWidth(chargeLast);
+
+		sum1 = chargeFirst + chargeLast;
+		sum3 = chargeFirst * Double_t(clusterStart) * Double_t(clusterStart) + chargeLast * Double_t(clusterEnd) * Double_t(clusterEnd);
 		if ( sum1 > 0. ) {
 		    sum2 = clusterEnd - 0.5 + (chargeLast - chargeFirst) / TMath::Max(chargeLast, chargeFirst) / 3.;
-		    errorMethod =  pitch / sqrt(72.) * TMath::Abs(chargeLast - chargeFirst) / TMath::Max(chargeLast, chargeFirst);
-		    errorMeas = pitch / 3. / TMath::Max(chargeLast, chargeFirst) / TMath::Max(chargeLast, chargeFirst) * sqrt (chargeLast*chargeLast + chargeFirst*chargeFirst) * errorQ;
+		    errorMethod =  1. / sqrt(72.) * TMath::Abs(chargeLast - chargeFirst) / TMath::Max(chargeLast, chargeFirst);
+		    errorMeas = 1. / 3. / TMath::Max(chargeFirst, chargeLast) / TMath::Max(chargeFirst, chargeLast) * sqrt(chargeFirst*chargeFirst * dq22 + chargeLast*chargeLast * dq12);
 		} 
 	    }// end of 2-strip clusters
 
@@ -362,24 +371,36 @@ void CbmStsModule::CreateCluster(Int_t clusterStart, Int_t clusterEnd,
 		Double_t chargeFirst = 0.;
 		Double_t chargeLast = 0.;
 		Double_t chargeMiddle = 0.;
+		Double_t dq2, dq12, dqN2;
+		Double_t dqMiddle2 = 0.;
 		for (Int_t channel = clusterStart; channel <= clusterEnd; channel++) {
 		    CbmStsDigi* digi = GetDigi(channel, index);
 		    if ( ! digi ) continue;
 		    cluster->AddDigi(index);
 		    Double_t charge = AdcToCharge(digi->GetCharge());
+		    dq2 = errorNoise2 + errorDiscr2 + fPhysics -> LandauWidth(charge) * fPhysics -> LandauWidth(charge);
 		    sum1 += charge;
 		    sum3 += charge * Double_t(channel) * Double_t(channel);
-		    if (channel == clusterStart) chargeFirst = charge;
-		    if (channel == clusterEnd) chargeLast = charge;
+		    if (channel == clusterStart) {
+			chargeFirst = charge;
+			dq12 = dq2;
+		    }
+		    if (channel == clusterEnd) {
+			chargeLast = charge;
+			dqN2 = dq2;
+		    }
 		    if (channel > clusterStart && channel < clusterEnd) {
 			chargeMiddle += charge;
+			dqMiddle2 += dq2;
 		    }
+
 		    tsum += digi->GetTime();
 		}
+		dqMiddle2 /= (clusterEnd - clusterStart - 1);
 		chargeMiddle /= (clusterEnd - clusterStart - 1);
 		sum2 = 0.5 * (clusterStart + clusterEnd + (chargeLast - chargeFirst) / chargeMiddle);
 		errorMethod = 0.;
-		errorMeas = pitch / 2. * errorQ / chargeMiddle * sqrt (2. + (chargeLast - chargeFirst) * (chargeLast - chargeFirst) / chargeMiddle / chargeMiddle);
+		errorMeas = 1. / 2. / chargeMiddle * sqrt(dq12 + dqN2 + (chargeLast - chargeFirst) * (chargeLast - chargeFirst) * dqMiddle2 / chargeMiddle / chargeMiddle);
 
 	    }// end of 3-strip and bigger clusters
 	 }// end of advanced

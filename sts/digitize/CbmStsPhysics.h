@@ -87,6 +87,14 @@ class CbmStsPhysics : public TObject {
 		static CbmStsPhysics* Instance();
 
 
+		/** Half width at half max of Landau distribution
+		 ** in ultrarelativistic case
+		 ** @param mostProbableCharge [e]
+		 ** @value half width [e]
+		 **/
+		Double_t LandauWidth(Double_t mostProbableCharge);
+
+
 		/** Energy for electron-hole pair creation in silicon [GeV] **/
 		static Double_t PairCreationEnergy() { return 3.57142e-9; }
 
@@ -174,6 +182,8 @@ class CbmStsPhysics : public TObject {
 		map<Double_t, Double_t> fStoppingElectron;  ///< E [GeV] -> <-dE/dx> [GeV*g/cm^2]
 		map<Double_t, Double_t> fStoppingProton  ;  ///< E [GeV] -> <-dE/dx> [GeV*g/cm^2]
 
+		// --- Data tables for width of Landau distribution 
+		map<Double_t, Double_t> fLandauWidth; ///< q [e] -> width [e]
 
 		/** Interpolate a stopping power value from the data table
 		 ** @param eEquiv  Equivalent kinetic energy [GeV]
@@ -185,9 +195,11 @@ class CbmStsPhysics : public TObject {
 		 **/
 		Double_t InterpolateDataTable(Double_t eKin, map<Double_t, Double_t>& table);
 
+		/** Read data tables from files Stopping Power **/
+		void ReadDataTablesStoppingPower();
 
-		/** Read data tables from files **/
-		void ReadDataTables();
+		/** Read data tables from files Landau Width **/
+		void ReadDataTablesLandauWidth();
 
 
 		/** Calculate the parameters for the Urban model

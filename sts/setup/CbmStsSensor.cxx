@@ -26,6 +26,7 @@
 #include "setup/CbmStsSensorConditions.h"
 #include "setup/CbmStsSensorPoint.h"
 #include "setup/CbmStsSetup.h"
+#include "digitize/CbmStsSensorTypeDssd.h"
 
 
 
@@ -79,7 +80,10 @@ void CbmStsSensor::CreateHit(Double_t xLocal, Double_t yLocal,
 	Double_t local[3] = { xLocal, yLocal, 0.};
 	Double_t global[3];
 
-	Double_t error[3] = { clusterF->GetPositionError()*clusterF->GetPositionError(), clusterB->GetPositionError()*clusterB->GetPositionError(), 0. };
+	//Get pitch assuming that both sides and all sensors in a module have same pitch 
+	Double_t pitch = dynamic_cast<CbmStsSensorTypeDssd*>(this -> GetType()) -> GetPitch(0);
+	Double_t error[3] = {clusterF -> GetPositionError() * clusterF -> GetPositionError() * pitch * pitch , clusterB -> GetPositionError() * clusterB -> GetPositionError() * pitch * pitch, 0. };
+
 	if ( fNode ) fNode->GetMatrix()->LocalToMaster(local, global);
 	else {
 		global[0] = local[0];

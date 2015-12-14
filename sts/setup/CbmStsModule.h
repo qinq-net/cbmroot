@@ -18,6 +18,7 @@
 #include "setup/CbmStsSensor.h"
 
 class TClonesArray;
+class CbmStsPhysics;
 
 using std::map;
 
@@ -275,6 +276,7 @@ class CbmStsModule : public CbmStsElement
     Double_t fNoise;             ///< Equivalent noise charge (sigma) [e]
     Bool_t   fIsSet;             ///< Flag whether parameters are set
     set <Int_t> fDeadChannels;    ///< List of inactive channels
+    CbmStsPhysics* fPhysics;  //!  Pointer to CbmStsPhysics instance
 
     /** Buffer for analog signals, key is channel number.
      ** Because signals do not, in general, arrive time-sorted,

@@ -38,12 +38,14 @@ CbmStsPhysics::CbmStsPhysics()
 	  fUrbanEmax(0.),
 	  fUrbanR(0.),
           fStoppingElectron(),
-          fStoppingProton()
+          fStoppingProton(),
+          fLandauWidth()
 
 {
 	// --- Read the energy loss data tables
 	LOG(INFO) << "Instantiating STS Physics... " << FairLogger::endl;
-	ReadDataTables();
+	ReadDataTablesStoppingPower();
+	ReadDataTablesLandauWidth();
 
 	// --- Initialise the constants for the Urban model
 	SetUrbanParameters(fgkSiCharge);
@@ -170,17 +172,17 @@ CbmStsPhysics* CbmStsPhysics::Instance() {
 
 
 
-// -----   Interpolate a value from the stopping power data table   --------
+// -----   Interpolate a value from a data table   --------
 Double_t CbmStsPhysics::InterpolateDataTable(Double_t eEquiv,
 		                                     map<Double_t, Double_t>& table) {
 
 	std::map<Double_t, Double_t>::iterator it = table.lower_bound(eEquiv);
 
-	// Energy smaller than or equal to first table entry:
+	// Input value smaller than or equal to first table entry:
 	// return first value
 	if ( it == table.begin() ) return it->second;
 
-	// Energy larger than last table entry: return last value
+	// Input value larger than last table entry: return last value
 	if ( it == table.end() ) return (--it)->second;
 
 	// Else: interpolate from table values
@@ -191,6 +193,16 @@ Double_t CbmStsPhysics::InterpolateDataTable(Double_t eEquiv,
 	Double_t v1 = it->second;
 	return ( v1 + ( eEquiv - e1 ) * ( v2 - v1 ) / ( e2 - e1 ) );
 
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Landau Width   ------------------------------------------------
+Double_t CbmStsPhysics::LandauWidth(Double_t mostProbableCharge) {
+
+	// --- Get interpolated value from the data table
+	return InterpolateDataTable(mostProbableCharge, fLandauWidth);
 }
 // -------------------------------------------------------------------------
 
@@ -241,7 +253,42 @@ Double_t CbmStsPhysics::ParticleMass(Int_t pid) {
 
 
 // -----   Read data tables for stopping power   ---------------------------
-void CbmStsPhysics::ReadDataTables() {
+void CbmStsPhysics::ReadDataTablesLandauWidth() {
+
+	// The table with errors for Landau distribution: 
+	// MP charge (e) --> half width of charge distribution (e)
+    
+	TString dir = gSystem->Getenv("VMCWORKDIR");
+	TString errFileName = dir + "/parameters/sts/LandauWidthTable.txt";
+
+	ifstream inFile;
+	Double_t q, err;
+
+	// --- Read electron stopping power
+	inFile.open(errFileName);
+	if ( inFile.is_open() ) {
+		while (true) {
+			inFile >> q;
+			inFile >> err;
+			if ( inFile.eof() ) break;
+			fLandauWidth[q] = err;
+		}
+		inFile.close();
+		LOG(INFO) << "StsPhysics: " << setw(5) << right
+				      << fLandauWidth.size() << " values read from "
+				      << errFileName << FairLogger::endl;
+	}
+	else
+		LOG(FATAL) << "StsPhysics: Could not read from " << errFileName
+		           << FairLogger::endl;
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Read data tables for stopping power   ---------------------------
+void CbmStsPhysics::ReadDataTablesStoppingPower() {
 
 	// The data tables are obtained from the NIST ESTAR and PSTAR databases:
 	// http://www.nist.gov/pml/data/star/index.cfm
