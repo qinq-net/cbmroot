@@ -122,7 +122,20 @@ OffLineInterface/CbmL1StsTrackFinder.h
 )
 
 If(APPLE)
-  ADD_DEFINITIONS(-Wall -Wabi -Wsign-promo  -Wno-pmf-conversions -Wctor-dtor-privacy -Wreorder -Wno-deprecated -Wstrict-null-sentinel -Wno-non-template-friend -Wno-parentheses ) #   -Weffc++ -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast : wait for other parts of cbmroot\root. 
+  ADD_DEFINITIONS(-Wall -Wabi -Wsign-promo -Wctor-dtor-privacy -Wreorder -Wno-deprecated -Wno-parentheses ) #   -Weffc++ -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast : wait for other parts of cbmroot\root. 
+  #---Check for compiler flags
+  CHECK_CXX_COMPILER_FLAG("-Wno-pmf-conversions" HAS_PMF)
+  If(HAS_PMF)
+    ADD_DEFINITIONS(-Wno-pmf-conversions)
+  EndIf()
+  CHECK_CXX_COMPILER_FLAG("-Wstrict-null-sentinel" HAS_SENTINEL)
+  If(HAS_SENTINEL)
+    ADD_DEFINITIONS(-Wstrict-null-sentinel)
+  EndIf()
+  CHECK_CXX_COMPILER_FLAG("-Wno-non-template-friend" HAS_TEMPLATE_FRIEND)
+  If(HAS_TEMPLATE_FRIEND)
+    ADD_DEFINITIONS(-Wno-non-template-friend)
+  EndIf()
 Else()
   ADD_DEFINITIONS(-Wall -Wabi -fabi-version=0 -Wsign-promo  -Wno-pmf-conversions -Wctor-dtor-privacy -Wreorder -Wno-deprecated -Wstrict-null-sentinel -Wno-non-template-friend -Wno-parentheses ) #   -Weffc++ -Wnon-virtual-dtor -Woverloaded-virtual -Wold-style-cast : wait for other parts of cbmroot\root. 
 EndIf()
