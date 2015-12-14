@@ -10,7 +10,8 @@ using std::fabs;
 
 ClassImp(CbmKFMaterial);
 
-TString CbmKFMaterial::Info() const{
+TString CbmKFMaterial::KFInfo() const
+{
   char tmp[255];
   sprintf( tmp, " ( id, z, dz, RadL )= ( %i, %f, %f, %f )",
 	   ID, ZReference, ZThickness, RadLength );
@@ -66,7 +67,8 @@ RR(R_*R_)
   F = 1;
 }
 
-TString CbmKFTube::Info() const{
+TString CbmKFTube::KFInfo() const
+{
   char tmp[255];
   sprintf(tmp, " tube ( id, x,y,z, dz, r, R, RadL )= ( %i, %f, %f, %f, %f, %f, %f, %f )",
 	  ID, x, y, z, dz, r, R, RadLength );
@@ -95,7 +97,8 @@ Bool_t CbmKFBox::IsOutside( Double_t X, Double_t Y ){
   return ( TMath::Abs(X-x)>dx05 || TMath::Abs(Y-y)>dy05 ) ;
 }
 
-TString CbmKFBox::Info() const{
+TString CbmKFBox::KFInfo() const
+{
   char tmp[255];
   sprintf(tmp, " box ( id, x,y,z, dx, dy, dz, RadL )= ( %i, %f, %f, %f, %f, %f, %f, %f )",
 	  ID, x, y, z, dx05*2, dy05*2, dz, RadLength );

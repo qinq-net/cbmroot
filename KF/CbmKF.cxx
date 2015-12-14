@@ -300,7 +300,7 @@ InitStatus CbmKF::Init()
       vRichMaterial.push_back(kapton2);
       
       if( fVerbose ) for(vector<CbmKFTube>::iterator i=vRichMaterial.begin(); i!=vRichMaterial.end(); i++){
-	cout<<" Rich material "<<i->Info()<<endl;
+	cout<<" Rich material "<<i->KFInfo()<<endl;
       }
     }        
   }
@@ -322,7 +322,7 @@ InitStatus CbmKF::Init()
 	TString name = node->getName();
 	CbmKFMaterial * kfmat = ReadPassive( node );
 	if( !kfmat ) continue;
-	if( fVerbose>1 ) cout<<" Trd material "<<name<<" : "<<kfmat->Info()<<endl;
+	if( fVerbose>1 ) cout<<" Trd material "<<name<<" : "<<kfmat->KFInfo()<<endl;
       }
 
     if( fVerbose ) cout<<"KALMAN FILTER : === READ TRD DETECTORS ==="<<endl;
@@ -347,7 +347,7 @@ InitStatus CbmKF::Init()
 
 	Int_t jsta = ( TMath::Abs( wall.ZReference - zold ) <10. ) ?ista :ista+1;
 
-	if( fVerbose ) cout<<" Trd detector "<<name<<": "<<wall.Info()<<", station "<<jsta<<endl;
+	if( fVerbose ) cout<<" Trd detector "<<name<<": "<<wall.KFInfo()<<", station "<<jsta<<endl;
 
 	if( jsta==ista ) continue; // same station	
 	zold = wall.ZReference;
@@ -376,7 +376,7 @@ InitStatus CbmKF::Init()
       TString name = node->getName();
       CbmKFMaterial * kfmat = ReadPassive( node );
       if( !kfmat ) continue;
-      if( fVerbose>=1 ) cout<<" Stt material "<<name<<" : "<<kfmat->Info()<<endl;
+      if( fVerbose>=1 ) cout<<" Stt material "<<name<<" : "<<kfmat->KFInfo()<<endl;
     }
 
 
@@ -415,7 +415,7 @@ InitStatus CbmKF::Init()
 	//Int_t jsta = ( TMath::Abs( wall.ZReference - zold ) <10. ) ?ista :ista+1;
 	//Int_t jsta = ( TMath::Abs( wall.ZReference - zold ) <1. ) ?ista :ista+1;
 
-	if( fVerbose ) cout<<" Stt detector "<<name<<": "<<wall.Info()<<", station "<<ista<<endl;
+	if( fVerbose ) cout<<" Stt detector "<<name<<": "<<wall.KFInfo()<<", station "<<ista<<endl;
       
 	//if( jsta==ista ) continue; // same station	
 // 	zold = wall.ZReference;
@@ -446,7 +446,7 @@ InitStatus CbmKF::Init()
 	CbmKFTube tube;
 	if( ReadTube( tube, node) ) continue;
 
-	if( fVerbose ) cout<<" Much material "<<tube.Info()<<endl;
+	if( fVerbose ) cout<<" Much material "<<tube.KFInfo()<<endl;
 	
 	vMuchMaterial.push_back(tube);
       }
@@ -466,7 +466,7 @@ InitStatus CbmKF::Init()
 	MuchStation2MCIDMap.insert(pair<Int_t,Int_t>(ndet,tube.ID));
 	ndet++;
 
-	if( fVerbose ) cout<<" Much detector "<<tube.Info()<<endl;
+	if( fVerbose ) cout<<" Much detector "<<tube.KFInfo()<<endl;
 
       }
   }
@@ -488,7 +488,7 @@ InitStatus CbmKF::Init()
 	TString name = node->getName();
 	CbmKFMaterial * kfmat = ReadPassive( node );
 	if( !kfmat ) continue;
-	if( fVerbose>1 ) cout<<" Tof material "<<name<<" : "<<kfmat->Info()<<endl;
+	if( fVerbose>1 ) cout<<" Tof material "<<name<<" : "<<kfmat->KFInfo()<<endl;
       }
 
     if( fVerbose ) cout<<"KALMAN FILTER : === READ TOF DETECTORS ==="<<endl;
@@ -501,7 +501,7 @@ InitStatus CbmKF::Init()
 	TString name = node->getName();
 	CbmKFMaterial * kfmat = ReadPassive( node );
 	if( !kfmat ) continue;
-	if( fVerbose>1 ) cout<<" Tof material "<<name<<" : "<<kfmat->Info()<<endl;
+	if( fVerbose>1 ) cout<<" Tof material "<<name<<" : "<<kfmat->KFInfo()<<endl;
       }
   }
 
@@ -576,7 +576,7 @@ InitStatus CbmKF::Init()
       CbmKFTube tube;
       if( !ReadTube( tube, node) ){
 	vTargets.push_back( tube );
-	if( fVerbose ) cout<<" Target material "<<tube.Info()<<endl;
+	if( fVerbose ) cout<<" Target material "<<tube.KFInfo()<<endl;
       }
     }
   }

@@ -49,7 +49,7 @@ class CbmKFMaterial :public TObject
     return Pass( ZReference,  ZThickness, track, downstream, QP0);
   }
 
-  virtual TString Info() const;
+  virtual TString KFInfo() const;
 
   static Bool_t comparePDown( const CbmKFMaterial *a, const CbmKFMaterial *b ){
     return a->ZReference < b->ZReference;
@@ -80,7 +80,7 @@ class CbmKFTube: public CbmKFMaterial{
   CbmKFTube(Int_t ID, Double_t x, Double_t y, Double_t z, Double_t dz, Double_t r, Double_t R, Double_t radL);
   ~CbmKFTube(){}
 
-  TString Info() const;
+  TString KFInfo() const;
 
   Double_t x,y,z, dz;
   Double_t r, R, rr, RR;
@@ -100,7 +100,7 @@ class CbmKFBox: public CbmKFMaterial{
   CbmKFBox(Int_t ID, Double_t x, Double_t y, Double_t z, Double_t dx, Double_t dy, Double_t dz, Double_t radL);  
   ~CbmKFBox(){}
 
-  TString Info() const;
+  TString KFInfo() const;
 
   Double_t x,y,z, dx05,dy05,dz;
 
