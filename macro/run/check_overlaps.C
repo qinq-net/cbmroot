@@ -22,7 +22,8 @@ void check_overlaps(const char* setup = "sis100_electron")
   TFile* f = new TFile(geoFile);
 
   gGeoManager = (TGeoManager*) f->Get("FAIRGeom"); 
-  gGeoManager->CheckOverlaps(0.001);
+  //  gGeoManager->CheckOverlaps(0.001);
+  gGeoManager->CheckOverlaps(0.00001);
 
   TObjArray *overlapArray = gGeoManager->GetListOfOverlaps();
   Int_t numOverlaps = overlapArray->GetEntries();
