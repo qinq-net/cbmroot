@@ -76,10 +76,11 @@ void run_qa(Int_t nEvents = 1, const char* setup = "sis100_electron")
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
 
-  // STS digitisation file
-  TObjString stsDigiFile(paramDir + stsDigi);
-  parFileList->Add(&stsDigiFile);
-  cout << "macro/run/run_qa.C using: " << stsDigi << endl;
+  // --- STS digipar file is there only for L1. It is no longer required
+  // --- for STS digitisation and should be eventually removed.
+  //TObjString stsDigiFile(paramDir + stsDigi);
+  //parFileList->Add(&stsDigiFile);
+  //cout << "macro/run/run_qa.C using: " << stsDigi << endl;
 
 //  TObjString trdDigiFile(paramDir + trdDigi);
 //  parFileList->Add(&trdDigiFile);
