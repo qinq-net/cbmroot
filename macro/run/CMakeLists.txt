@@ -13,7 +13,7 @@ File(COPY ${CBMROOT_SOURCE_DIR}/macro/include/.rootrc DESTINATION ${CBMROOT_BINA
 Set(NumEvents 2)
 
 # Define the different setups to be tested
-List(APPEND cbm_setup sis100_hadron sis100_electron sis100_muon_lmvm_setup sis100_muon_jpsi_setup sis300_electron)
+List(APPEND cbm_setup sis100_hadron sis100_electron sis100_muon_lmvm sis100_muon_jpsi sis300_electron)
 
 ForEach(setup IN LISTS cbm_setup)
 
