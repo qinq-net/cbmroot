@@ -51,7 +51,7 @@ class CbmKFTrackFitQA :public FairTask
   void FillHitHistos();
   void FillHistoAtParticleVertex(CbmMCTrack *track_mc, CbmKFTrack *track_kf);
   void FillHistoAtFirstPoint(CbmKFTrErrMCPoints *mc_points, CbmMCTrack *track_mc, CbmKFTrack *track_kf);
-  void Write();
+  void KFWrite();
   void FindBackTracks(CbmKFTrErrMCPoints *mc_points, CbmMCTrack *track_mc, CbmKFTrack *track_kf, int iEvent);
   void FindBackTracks();
   void Save();

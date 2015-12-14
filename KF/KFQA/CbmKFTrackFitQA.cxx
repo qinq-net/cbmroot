@@ -267,7 +267,7 @@ void CbmKFTrackFitQA::Exec(Option_t * option)
 }
 void CbmKFTrackFitQA::Finish()
 {
-  Write();
+  KFWrite();
 }
 
 void CbmKFTrackFitQA::FillHistoAtParticleVertex(CbmMCTrack *track_mc, CbmKFTrack *track_kf)
@@ -420,7 +420,7 @@ void CbmKFTrackFitQA::FillHistoAtFirstPoint(CbmKFTrErrMCPoints *mc_points, CbmMC
   }
 }
 
-void CbmKFTrackFitQA::Write()
+void CbmKFTrackFitQA::KFWrite()
 {
   //This function writes obtained histograms to the root file
   TDirectory *curr = gDirectory;
