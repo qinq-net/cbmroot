@@ -2,6 +2,7 @@
 //   comments
 //
 
+// 2015-12-14 - DE - use TRD v15c starting at z = 490 cm for muon_jpsi setup
 // 2015-12-14 - DE - rename long SIS100 MUCH version to muon_JPSI setup
 // 2015-12-14 - DE - use TOF v16a
 // 2015-12-11 - DE - use STS v15c as new defaut
@@ -29,7 +30,7 @@ void sis100_muon_jpsi_setup()
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "";
   stsTag       = "v15c";
-  trdTag       = "v15a_1m";
+  trdTag       = "v15c_1m";
   tofTag       = "v16a_1m";
 
   // -----  DigiFiles  ------------------------------------------------------
@@ -52,8 +53,7 @@ void sis100_muon_jpsi_setup()
 //  muchGeom     = "much/much_v15c_SIS100-C_allgem.geo";
   shieldGeom   = "much/shield_v15c_SIS100C_149_3part_125cm.geo";
   platformGeom = ""; // "passive/platform_v13a.geo";
-//  trdGeom      = "trd/trd_" + trdTag + ".geo.root";
-  trdGeom      = ""; // "trd/trd_" + trdTag + ".geo.root";
+  trdGeom      = "trd/trd_" + trdTag + ".geo.root";
   tofGeom      = "tof/tof_" + tofTag + ".geo.root";
   ecalGeom     = "";
   psdGeom      = ""; // "psd_geo_xy.txt";
