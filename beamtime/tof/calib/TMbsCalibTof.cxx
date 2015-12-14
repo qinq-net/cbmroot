@@ -43,10 +43,13 @@ TMbsCalibTof::TMbsCalibTof() :
    fScalerCalibrator(NULL),
    fTriglogBoardCollection(NULL),
    fbSaveCalibScalers(kFALSE),
+   fdScalersEvoRangeUser(-1), 
+   fdScalersEvoBinSzUser(-1),
    fbSaveCalibTdcs(kFALSE),
    fsTdcCalibOutFoldername("./"),
    fsTdcCalibFilename(""),
-   fbTdcCalibGsiSep14Fix(kFALSE)
+   fbTdcCalibGsiSep14Fix(kFALSE),
+   fbTdcRefMoniMode(kFALSE)
 {
 }
 
@@ -58,10 +61,13 @@ TMbsCalibTof::TMbsCalibTof(const char* name, Int_t /*mode*/, Int_t verbose) :
    fScalerCalibrator(NULL),
    fTriglogBoardCollection(NULL),
    fbSaveCalibScalers(kFALSE),
+   fdScalersEvoRangeUser(-1), 
+   fdScalersEvoBinSzUser(-1),
    fbSaveCalibTdcs(kFALSE),
    fsTdcCalibOutFoldername("./"),
    fsTdcCalibFilename(""),
-   fbTdcCalibGsiSep14Fix(kFALSE)
+   fbTdcCalibGsiSep14Fix(kFALSE),
+   fbTdcRefMoniMode(kFALSE)
 {
 }
       
@@ -147,6 +153,7 @@ Bool_t TMbsCalibTof::InitCalibrators()
       fScalerCalibrator = new TMbsCalibScalTof( fMbsUnpackPar, fMbsCalibPar );
       fScalerCalibrator->RegisterInput();
       fScalerCalibrator->SetSaveScalers( fbSaveCalibScalers );
+      fScalerCalibrator->SetHistoUserAxis( fdScalersEvoRangeUser, fdScalersEvoBinSzUser );
       fScalerCalibrator->RegisterOutput();
       fScalerCalibrator->CreateHistogramms();
       if( kFALSE == fScalerCalibrator->InitScalersCalib() )
@@ -162,6 +169,7 @@ Bool_t TMbsCalibTof::InitCalibrators()
       fTdcCalibrator->SetCalibFilename(fsTdcCalibFilename);
       fTdcCalibrator->SetCalibOutFolder(fsTdcCalibOutFoldername);
       fTdcCalibrator->SetSep14Fix(fbTdcCalibGsiSep14Fix);
+      fTdcCalibrator->EnaTdcRefMoniMode(fbTdcRefMoniMode);
       fTdcCalibrator->RegisterOutput();
       fTdcCalibrator->CreateHistogramms();
       if( kFALSE == fTdcCalibrator->InitiTdcCalib() )
@@ -302,6 +310,7 @@ Bool_t TMbsCalibTof::RegisterOutput()
    if( 0 < fMbsUnpackPar->GetNbActiveScalersB() )
    {
       fScalerCalibrator->SetSaveScalers( fbSaveCalibScalers );
+      fScalerCalibrator->SetHistoUserAxis( fdScalersEvoRangeUser, fdScalersEvoBinSzUser );
       fScalerCalibrator->RegisterOutput();
    } // if( 0 < fMbsUnpackPar->GetNbActiveScalersB() )
       

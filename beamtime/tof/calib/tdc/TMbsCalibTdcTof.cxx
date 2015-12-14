@@ -41,6 +41,7 @@ TMbsCalibTdcTof::TMbsCalibTdcTof() :
    fMbsCalibPar(NULL),
    fbGsiSep14Fix(kFALSE),
    fiOffsetGsiSep14Fix(-1),
+   fbTdcRefMoniMode(kFALSE),
    fCaenBoardCollection(NULL),
    fVftxBoardCollection(NULL),
    fTrb3BoardCollection(NULL),
@@ -74,6 +75,7 @@ TMbsCalibTdcTof::TMbsCalibTdcTof(TMbsUnpackTofPar * parIn, TMbsCalibTofPar *parC
    fMbsCalibPar(parCalIn),
    fbGsiSep14Fix(kFALSE),
    fiOffsetGsiSep14Fix(-1),
+   fbTdcRefMoniMode(kFALSE),
    fCaenBoardCollection(NULL),
    fVftxBoardCollection(NULL),
    fTrb3BoardCollection(NULL),
@@ -161,9 +163,19 @@ Bool_t TMbsCalibTdcTof::CalibTdc()
             TdcOffsetCalc( uType, uTdc);
          } // if( kTRUE == fMbsCalibPar->GetTdcOffEnaFlag(uType, uTdc) )
 
+         // If TDC Ref channel monitoring mode, calibrate and 
+         // fill histos only for reference channel
+         if( kTRUE == fbTdcRefMoniMode )
+            continue;
+
          Calibration( uType, uTdc);
       }
-         
+      
+      // If TDC Ref channel monitoring mode, calibrate and 
+      // fill histos only for reference channel
+      if( kTRUE == fbTdcRefMoniMode )
+         continue;
+   
       // TOT mode 1 and 4 are already done.
       // TOT mode 2 time orders and builds TOT for each TDC inside the Calibration function
       if( 3 == fMbsCalibPar->GetTotMode( uType ) )
@@ -547,6 +559,15 @@ Bool_t TMbsCalibTdcTof::FillHistograms()
    LOG(DEBUG)<<"TMbsCalibTdcTof::FillHistograms => "<<fCalibDataCollection->GetEntriesFast()
             <<" data unpacked & calibrated successfully in this event!"<<FairLogger::endl;
             
+   if( kTRUE == fbTdcRefMoniMode )
+   {
+      // If TDC Ref channel monitoring mode, calibrate and 
+      // fill histos only for reference channel
+      if( kFALSE == FillReferenceHistograms() )
+         return kFALSE;
+         else return kTRUE;
+   } // if( kTRUE == fbTdcRefMoniMode )
+
    UInt_t uNbChan[ toftdc::NbTdcTypes];
    uNbChan[ toftdc::undef ]     = 0;
    uNbChan[ toftdc::caenV1290 ] = caentdc::kuNbChan;
@@ -3382,7 +3403,12 @@ Bool_t TMbsCalibTdcTof::CreateReferenceHistogramms()
       if( toftdc::caenV1290 == uType || 
            toftdc::vftx == uType || 
            toftdc::get4 == uType )
+{
+            LOG(INFO)<<"TMbsCalibTdcTof::CreateReferenceHistogramms => Type "<<uType
+                  <<" not allowed "
+                  <<FairLogger::endl;  
             continue;
+}
 
       if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
       {    
@@ -3424,6 +3450,10 @@ Bool_t TMbsCalibTdcTof::CreateReferenceHistogramms()
                break;
          } // switch( uType )
 */
+         LOG(INFO)<<"TMbsCalibTdcTof::CreateReferenceHistogramms => Create Histo for Type "<<uType
+                  <<" Nb active boards: " << fMbsUnpackPar->GetNbActiveBoards( uType )
+                  <<" Name pattern: " << toftdc::ksTdcHistName[ uType ].Data()
+                  <<FairLogger::endl; 
          
          // Reference histograms initialization
          Int_t iNbBoards = fMbsUnpackPar->GetNbActiveBoards( uType );
@@ -3447,7 +3477,7 @@ Bool_t TMbsCalibTdcTof::CreateReferenceHistogramms()
                               Form("Comparison of the reference channels of %s TDC #%03d to all other TDC of same type; TDC#n []; Ref(TDC#n) -Ref(TDC #%03d)",
                                  toftdc::ksTdcHistName[ uType ].Data(), iTdc, iTdc),
                               iNbBoards -1 -iTdc, iTdc +1 -0.5, iNbBoards -0.5,
-                              40000, -40000, 40000 );
+                              80000, -800000, 800000 );
             if( -1 < fMbsCalibPar->GetChanResTest() )
                fhTdcResolutionTest[uType][iTdc] =  new TH2I( 
                               Form("tof_%s_ResoTest_b%03d", toftdc::ksTdcHistName[ uType ].Data(), iTdc),
@@ -3455,6 +3485,11 @@ Bool_t TMbsCalibTdcTof::CreateReferenceHistogramms()
                                  fMbsCalibPar->GetChanResTest(), toftdc::ksTdcHistName[ uType ].Data(), iTdc, iTdc),
                               iNbBoards -1 -iTdc, iTdc +1 -0.5, iNbBoards -0.5,
                               10000, -50000, 50000 );
+         LOG(DEBUG2)<<"TMbsCalibTdcTof::CreateReferenceHistogramms => Create Histo "
+                  <<Form("tof_%s_RefChComp_b%03d", toftdc::ksTdcHistName[ uType ].Data(), iTdc)
+                  <<" at " << fhTdcReferenceComp[uType][iTdc]
+                  <<" found at "<< (TH2 *)(gROOT->FindObjectAny(Form("tof_trb_RefChComp_b%03d", iTdc)))
+                  <<FairLogger::endl; 
          } // for( Int_t iTdc = 0; iTdc < fMbsUnpackPar->GetNbActiveBoards( uType ) - 1; iTdc ++)
 
          fhTdcOffsetFirstEvent[uType] =  new TProfile(
@@ -3473,6 +3508,9 @@ Bool_t TMbsCalibTdcTof::CreateReferenceHistogramms()
                               2000, -400000, 400000 );
             } // for( Int_t iTdc = 0; iTdc < iNbBoards; iTdc ++)
       } // if( 0 < fMbsUnpackPar->GetNbActiveBoards( uType ) )
+      else LOG(INFO)<<"TMbsCalibTdcTof::CreateReferenceHistogramms => Type "<<uType
+                  <<" no active boards: " << fMbsUnpackPar->GetNbActiveBoards( uType )
+                  <<FairLogger::endl;  
    } // for( UInt_t uType = toftdc::caenV1290; uType < toftdc::NbTdcTypes; uType++ )
    return kTRUE;
 }

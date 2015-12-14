@@ -44,7 +44,11 @@ TTofTriglogScalUnpacker::TTofTriglogScalUnpacker():
    fdCurrMbsTime(),
    fuLastRefClk(),
    fhRefClkRate(),
-   fhRefClkRateEvo()
+   fhRefClkRateEvo(),
+   fTriglogBoardCollection(NULL),
+   fdEvoRangeUser(-1),
+   fdEvoBinSzUser(-1),
+   fhScalersCountsEvo()
 {
 }
 TTofTriglogScalUnpacker::TTofTriglogScalUnpacker( TMbsUnpackTofPar * parIn ):
@@ -64,7 +68,11 @@ TTofTriglogScalUnpacker::TTofTriglogScalUnpacker( TMbsUnpackTofPar * parIn ):
    fdCurrMbsTime(),
    fuLastRefClk(),
    fhRefClkRate(),
-   fhRefClkRateEvo()
+   fhRefClkRateEvo(),
+   fTriglogBoardCollection(NULL),
+   fdEvoRangeUser(-1),
+   fdEvoBinSzUser(-1),
+   fhScalersCountsEvo()
 {
    // Some triglog board can be used as scaler board instead of trigger source
    if( 0 < fuNbTriglogScal )
@@ -85,9 +93,13 @@ TTofTriglogScalUnpacker::TTofTriglogScalUnpacker( TMbsUnpackTofPar * parIn ):
             // TRIGLOG is always considered as first scaler board!
             fuTrigOff = 0;
             if( kTRUE == fParUnpack->WithActiveTriglog() )
+            {
                fuTrigOff = 1;
+               fTriglogBoardCollection = (TClonesArray*) rootMgr->GetObject("TofTriglog");
+            } // if( kTRUE == fParUnpack->WithActiveTriglog() )
             // There may be some simple scaler boards
             fuTrigOff += parIn->GetNbActiveBoards( tofMbs::scaler2014 );
+            fuTrigOff += parIn->GetNbActiveBoards( tofMbs::orgen );
 
             LOG(DEBUG)<<"TTofTriglogScalUnpacker::TTofTriglogScalUnpacker : Initialize objects for "
                   << fuNbTriglogScal << " Triglog boards used as scaler "<<FairLogger::endl;
@@ -338,9 +350,21 @@ void TTofTriglogScalUnpacker::CreateHistos()
       TDirectory * oldir = gDirectory; // <= To prevent histos from being sucked in by the param file of the TRootManager!
       gROOT->cd(); // <= To prevent histos from being sucked in by the param file of the TRootManager !
 
+      Double_t dEvoRange = triglog::kdEvoRange;
+      Double_t dEvoBinNb = triglog::kdEvoRange / triglog::kdEvoBin;
+      if( 0 < fdEvoRangeUser && 0 < fdEvoBinSzUser && fdEvoBinSzUser < fdEvoRangeUser )
+      {
+         dEvoRange = fdEvoRangeUser;
+         dEvoBinNb = static_cast<Int_t>(fdEvoRangeUser) / static_cast<Int_t>(fdEvoBinSzUser);
+         LOG(INFO)<<"TTofTriglogScalUnpacker::CreateHistos => Set the scaler evolution plot with user range: "
+                  << dEvoRange << " s/range " << fdEvoBinSzUser << " s/bin " << dEvoBinNb << " bins "<<FairLogger::endl;
+      } // if( 0 < fdEvoRangeUser && 0 < fdEvoBinSzUser && fdEvoBinSzUser < fdEvoRangeUser )
+
+
       fhRefClkRate.resize(fuNbTriglogScal);
       fhRefClkRateEvo.resize(fuNbTriglogScal);
       fhScalers.resize(fuNbTriglogScal);
+      fhScalersCountsEvo.resize(fuNbTriglogScal);
       for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
       {
          fhRefClkRate[uScalIndex]    = new TH1I( Form("tof_%s_%02u_refclk", tofscaler::ksTdcHistName[ tofscaler::triglogscal ].Data(),
@@ -352,11 +376,22 @@ void TTofTriglogScalUnpacker::CreateHistos()
                               "Reference clock counts per second; Time [s]; Counts []", 3600, 0.0, 3600 );
 
          fhScalers[uScalIndex].resize(triglog::kuNbScalers);
+         fhScalersCountsEvo[uScalIndex].resize(triglog::kuNbScalers);
          for( UInt_t uScaler = 0; uScaler <triglog::kuNbScalers; uScaler++)
+         {
             fhScalers[uScalIndex][uScaler] = new TH1I( Form("tof_%s_%02u_scalers%02u", tofscaler::ksTdcHistName[ tofscaler::triglogscal ].Data(),
                                                                                        uScalIndex, uScaler ),
                                            Form("Counts per scaler channel in scaler %02u; Channel []; Total counts []", uScaler),
                                            triglog::kuNbChan, 0, triglog::kuNbChan);
+            fhScalersCountsEvo[uScalIndex][uScaler].resize(triglog::kuNbChan);
+            for( UInt_t uCh = 0; uCh < triglog::kuNbChan; uCh++)
+               fhScalersCountsEvo[uScalIndex][uScaler][uCh] = new TH1I( Form("tof_%s_%02u_scalers_evo_%02u_%02u",
+                                                                               tofscaler::ksTdcHistName[ tofscaler::triglogscal ].Data(), 
+                                                                               uScalIndex, uScaler, uCh ),
+                                           Form("Channel %02d in scaler %02d counts evolution; Time [s]; Counts []", uCh, uScaler), 
+                                           static_cast<Int_t>(dEvoBinNb), 0.0, dEvoRange );
+
+         } // for( UInt_t uScaler = 0; uScaler <triglog::kuNbScalers; uScaler++)
       } // for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
 
       gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
@@ -384,9 +419,21 @@ void TTofTriglogScalUnpacker::FillHistos()
       LOG(DEBUG3)<<(fScalerBoardCollection->GetEntries())<<FairLogger::endl;
 
       // BROKEN: Will not work as data filling in different instance
+/*
       if( 0 == fdFirstMbsTime[uScalIndex] )
          // MBS time is time in s since LINUX epoch (circa 1970) => never 0 except on first event!
          fdFirstMbsTime[uScalIndex] = fdCurrMbsTime[uScalIndex];
+*/
+      // Fix attempt
+      if( kTRUE == fParUnpack->WithActiveTriglog() )
+      {
+         TTofTriglogBoard * fTriglogBoard = (TTofTriglogBoard*) fTriglogBoardCollection->At(0); // Always only 1 TRIGLOG board!
+
+         fdCurrMbsTime[uScalIndex] = fTriglogBoard->GetMbsTimeSec();
+         if( 0 == fdFirstMbsTime[uScalIndex] )
+            // MBS time is time in s since LINUX epoch (circa 1970) => never 0 except on first event!
+            fdFirstMbsTime[uScalIndex] = fdCurrMbsTime[uScalIndex];
+      }
 
       if( ( 0 == fdPrevMbsTime[uScalIndex] ) || ( fdPrevMbsTime[uScalIndex] + 0.05 < fdCurrMbsTime[uScalIndex] ) )
       {
@@ -405,9 +452,12 @@ void TTofTriglogScalUnpacker::FillHistos()
 
       for( UInt_t uScaler = 0; uScaler <triglog::kuNbScalers; uScaler++)
          for( UInt_t uCh = 0; uCh < triglog::kuNbChan; uCh++)
+         {
             fhScalers[uScalIndex][uScaler]->SetBinContent( 1 + uCh, fScalerBoard->GetScalerValue( uCh, uScaler)
                                                       - fuFirstScaler[uScalIndex][uScaler][uCh] );
-
+            fhScalersCountsEvo[uScalIndex][uScaler][uCh]->SetBinContent( fdCurrMbsTime[uScalIndex] - fdFirstMbsTime[uScalIndex],
+                                                        fScalerBoard->GetScalerValue( uCh, uScaler) );
+         } // for( UInt_t uCh = 0; uCh < triglog::kuNbChan; uCh++)
    } // for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)
 }
 void TTofTriglogScalUnpacker::WriteHistos( TDirectory* inDir)
@@ -423,7 +473,11 @@ void TTofTriglogScalUnpacker::WriteHistos( TDirectory* inDir)
       fhRefClkRate[uScalIndex]->Write();
       fhRefClkRateEvo[uScalIndex]->Write();
       for( UInt_t uScaler = 0; uScaler <triglog::kuNbScalers; uScaler++)
+      {
          fhScalers[uScalIndex][uScaler]->Write();
+         for( UInt_t uCh = 0; uCh < triglog::kuNbChan; uCh++)
+            fhScalersCountsEvo[uScalIndex][uScaler][uCh]->Write();
+      } // for( UInt_t uScaler = 0; uScaler <triglog::kuNbScalers; uScaler++)
 
       gDirectory->cd( oldir->GetPath() );
    } // for( UInt_t uScalIndex = 0; uScalIndex < fuNbTriglogScal; uScalIndex++)

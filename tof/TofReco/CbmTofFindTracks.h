@@ -20,6 +20,7 @@
 #include "FairTask.h"
 //#include "CbmTofTypes.h"
 #include <vector>
+#include <map>
 
 class CbmTofTrackFinder;
 class CbmTofTrackFitter;
@@ -27,8 +28,12 @@ class TClonesArray;
 class TH1;
 class TH2;
 class TH3;
+// Geometry
+class CbmTofGeoHandler;
+class CbmTofDetectorId;
 class CbmTofDigiPar;
 class CbmTofDigiBdfPar;
+class CbmTofAddress;
 
 class CbmTofFindTracks : public FairTask
 {
@@ -54,9 +59,11 @@ class CbmTofFindTracks : public FairTask
   
   inline static CbmTofFindTracks *Instance(){ return fInstance; }
   
-
   /** Initialisation at beginning of each event **/
   virtual InitStatus Init();
+
+  // Initialize other parameters not included in parameter classes.
+  Bool_t   InitParameters();
 
   /** Task execution **/
   virtual void Exec(Option_t* opt);
@@ -85,25 +92,23 @@ class CbmTofFindTracks : public FairTask
 
   inline void SetMinNofHits (Int_t i)         { fMinNofHits = i;};
   inline void SetNStations (Int_t i)          { fNTofStations = i;};
-  inline void SetStations  (Int_t ival) { 
-    fStationType.resize(fNTofStations);
-    for (Int_t i=0; i<10; i++)  fTypeStation[i]=-1; // initialize
-    for (Int_t i=0; i<fNTofStations; i++){
-     Int_t iSm = ival%10;
-     Int_t iSt = fNTofStations-1-i;
-     fStationType[iSt] = iSm;
-     fTypeStation[iSm] = iSt;       
-     ival = (ival-iSm)/10;
-    }
-  };
 
   inline Int_t GetMinNofHits() const   { return fMinNofHits;}
   inline Int_t GetNStations() const    { return fNTofStations;}
+
+  void SetStations (Int_t ival);
+  void SetStation  (Int_t iVal, Int_t iModType, Int_t iModId, Int_t iRpcId);
+  void PrintSetup();
+  inline Int_t GetAddrOfStation(Int_t iVal) {return fMapStationRpcId[iVal]; } 
+  Int_t GetStationOfAddr(Int_t iAddr);
+
   inline Int_t GetStationType(Int_t i) { return fStationType[i]; }
   inline Int_t GetTypeStation(Int_t i) { return fTypeStation[i]; }
   inline Int_t GetCorMode   () const   { return fiCorMode;}
+  inline Int_t GetBeamCounter() const  { return fiBeamCounter;}
 
-  inline void SetCorMode   (Int_t ival){ fiCorMode = ival;}
+  inline void SetCorMode       (Int_t ival){ fiCorMode     = ival;}
+  inline void SetBeamCounter   (Int_t ival){ fiBeamCounter = ival;}
   inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
   inline void SetTtTarg(Double_t val){ fTtTarg=val; }
 
@@ -117,8 +122,11 @@ class CbmTofFindTracks : public FairTask
 
   Int_t fMinNofHits;             // minimal number of Tof Hits for filling histos 
   Int_t fNofTracks;              // Number of tracks created
-  Int_t fNTofStations;           // Number of Tof Stations 
+  Int_t fNTofStations;           // Number of Tof Stations
+
   std::vector<Int_t> fStationType; // Station SM type 
+  std::map <Int_t, Int_t> fMapStationRpcId; 
+  std::map <Int_t, Int_t> fMapRpcIdParInd; 
 
   CbmTofFindTracks(const CbmTofFindTracks&);
   CbmTofFindTracks& operator=(const CbmTofFindTracks&);
@@ -160,7 +168,7 @@ class CbmTofFindTracks : public FairTask
   TH2* fhVTX_XY0;
   TH2* fhVTX_DT0_Norm;
 
-  Int_t fTypeStation[10];  // FIXME fixed array size
+  Int_t fTypeStation[10];        // FIXME fixed array size
   TString  fOutHstFileName;      // name of the histogram output file name with Calibration Parameters
 
   Bool_t   LoadCalParameter();
@@ -173,6 +181,7 @@ class CbmTofFindTracks : public FairTask
   TH1*          fhTOff_Smt_Off;          // Time calibration histo
   TH2*          fhDeltaTt_Smt;           // Time calibration histo
   Int_t         fiCorMode;
+  Int_t         fiBeamCounter;
   Double_t      fTtTarg;                // expected average slope in ps/cm 
   Double_t      fVTXNorm;               // Number of Hits contributing to Vertex determination 
   Double_t      fVTX_T;                 // measured event wise t0 
@@ -182,6 +191,8 @@ class CbmTofFindTracks : public FairTask
 
   // ToF geometry variables
 
+  CbmTofGeoHandler      * fGeoHandler;
+  CbmTofDetectorId      * fTofId;
   CbmTofDigiPar         * fDigiPar;
   CbmTofDigiBdfPar      * fDigiBdfPar;
 

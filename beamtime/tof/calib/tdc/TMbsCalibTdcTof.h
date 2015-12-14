@@ -47,6 +47,9 @@ class TMbsCalibTdcTof : public TObject
       // Fix for big trigger time deviation in GSI Sep14 data
       void  SetSep14Fix( Bool_t inGsiSep14Fix = kTRUE) { fbGsiSep14Fix = inGsiSep14Fix; };
    
+      // Calibration mode where only the reference channels are processed (Calib and histo filling)
+      void  EnaTdcRefMoniMode( Bool_t inTdcRefMoni = kTRUE) { fbTdcRefMoniMode = inTdcRefMoni; };
+
       // Histograms
       Bool_t CreateHistogramms();
       Bool_t FillHistograms();
@@ -65,6 +68,9 @@ class TMbsCalibTdcTof : public TObject
       // Fix for big trigger time deviation in GSI Sep14 data
       Bool_t fbGsiSep14Fix;
       Int_t  fiOffsetGsiSep14Fix; // common offset for all crazy boards
+
+      // Calibration mode where only the reference channels are processed (Calib and histo filling)
+      Bool_t fbTdcRefMoniMode;
       
       // Histograms
       

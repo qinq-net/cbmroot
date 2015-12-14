@@ -35,6 +35,9 @@ class TTofTriglogScalUnpacker : public TObject
       void WriteHistos( TDirectory* inDir);
       void DeleteHistos();
 
+      void   SetHistoUserAxis( Double_t dRangeIn, Double_t dBinSzIn )
+             { fdEvoRangeUser = dRangeIn; fdEvoBinSzUser = dBinSzIn; };
+
    private:
       // no default Copy constructor and = OP as class not meant to be copied
       TTofTriglogScalUnpacker(const TTofTriglogScalUnpacker&);
@@ -65,6 +68,10 @@ class TTofTriglogScalUnpacker : public TObject
       std::vector< TH1*     > fhRefClkRate;
       std::vector< TH1*     > fhRefClkRateEvo;
 
+      TClonesArray * fTriglogBoardCollection;
+      Double_t fdEvoRangeUser;
+      Double_t fdEvoBinSzUser;
+      std::vector< std::vector< std::vector< TH1* > > > fhScalersCountsEvo; // [NbBoards][NbScalers][NbChan]
 
    ClassDef(TTofTriglogScalUnpacker, 1)
 };

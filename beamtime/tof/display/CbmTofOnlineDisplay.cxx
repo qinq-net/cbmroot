@@ -7,6 +7,11 @@
 #include "TStyle.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TProfile.h"
+#include "TF1.h"
+#include "THStack.h"
+#include "TLegend.h"
+#include "TProfile.h"
 #include "TString.h"
 #include "TROOT.h"
 #include "TPaveStats.h"
@@ -14,8 +19,9 @@
 // ---- Default constructor -------------------------------------------
 CbmTofOnlineDisplay::CbmTofOnlineDisplay()
   :FairTask("CbmTofOnlineDisplay"),
+   fbMonitorTdcOcc(kTRUE),
    fTdcChannelOccupancy(NULL),
-   fNumberOfTDC(24),
+   fNumberOfTDC(30),
    fNumberOfSEB(8),
    fUpdateInterval(100),
    fEventCounter(0),
@@ -32,11 +38,29 @@ CbmTofOnlineDisplay::CbmTofOnlineDisplay()
    fbMonitorRes(kFALSE),
    fOverviewRes(NULL),
    fhResolutionSummary(NULL),
+   fhResolutionRmsSummary(NULL),
    fbMonitorDigiStatus(kFALSE),
    fDigiSizeMonitor(NULL),
-   fDigiStatusMonitor(NULL)
+   fDigiStatusMonitor(NULL),
+   fbMonitorRates(kFALSE),
+   fCanvRatesMonitor(NULL),
+   fStackMbsTrloA(NULL),
+   fStackMbsTrloB(NULL),
+   fStackFreeTrloA(NULL),
+   fStackFreeTrloB(NULL),
+   fStackFreeTrloOutA(NULL),
+   fStackFreeTrloOutB(NULL),
+   fLegStackMbsTrloA(NULL),
+   fLegStackMbsTrloB(NULL),
+   fLegStackFreeTrloA(NULL),
+   fLegStackFreeTrloB(NULL),
+   fLegStackFreeTrloOutA(NULL),
+   fLegStackFreeTrloOutB(NULL),
+   fbRatesSlidingScale(kFALSE)
 {
   fLogger->Debug(MESSAGE_ORIGIN,"Default Constructor of CbmTofOnlineDisplay");
+  for( Int_t iCh = 0; iCh < 16; iCh++)
+   fsFreeTrloNames[iCh] = Form("Ch %02d", iCh);
 }
 
 // ---- Destructor ----------------------------------------------------
@@ -51,30 +75,58 @@ void CbmTofOnlineDisplay::SetParContainers()
   fLogger->Debug(MESSAGE_ORIGIN,"SetParContainers of CbmTofOnlineDisplay");
 }
 
+void CbmTofOnlineDisplay::SetFreeTrloNames( 
+         TString sChA, TString sChB, TString sChC, TString sChD, 
+         TString sChE, TString sChF, TString sChG, TString sChH, 
+         TString sChI, TString sChJ, TString sChK, TString sChL, 
+         TString sChM, TString sChN, TString sChO, TString sChP )
+{
+   fsFreeTrloNames[ 0] = sChA;
+   fsFreeTrloNames[ 1] = sChB;
+   fsFreeTrloNames[ 2] = sChC;
+   fsFreeTrloNames[ 3] = sChD;
+   fsFreeTrloNames[ 4] = sChE;
+   fsFreeTrloNames[ 5] = sChF;
+   fsFreeTrloNames[ 6] = sChG;
+   fsFreeTrloNames[ 7] = sChH;
+   fsFreeTrloNames[ 8] = sChI;
+   fsFreeTrloNames[ 9] = sChJ;
+   fsFreeTrloNames[10] = sChK;
+   fsFreeTrloNames[11] = sChL;
+   fsFreeTrloNames[12] = sChM;
+   fsFreeTrloNames[13] = sChN;
+   fsFreeTrloNames[14] = sChO;
+   fsFreeTrloNames[15] = sChP;
+}
+
 // ---- Init ----------------------------------------------------------
 InitStatus CbmTofOnlineDisplay::Init()
 {
   fLogger->Debug(MESSAGE_ORIGIN,"Initilization of CbmTofOnlineDisplay");
 
-  fTdcChannelOccupancy = new TCanvas("tCanvasOccupancy","TRB TDC channel occupancy",8,6,900,600);
-  fTdcChannelOccupancy->Divide(5,4);
-  Float_t lsize=0.07;
-
   TH1 *h1;
   TH2 *h2;
-  for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++){
-    fTdcChannelOccupancy->cd(iCh+1);
-    gROOT->cd();
-    TString hname=Form("tof_trb_ch_occ_%03d",iCh);
-    h1=(TH1 *)gROOT->FindObjectAny(hname);
-    if (h1!=NULL) {
-      h1->Draw("");
-      gPad->SetFillColor(0);
-      gStyle->SetPalette(1);
-      gStyle->SetLabelSize(lsize);
-      gPad->SetLogy();
-    } else {
-      LOG(INFO)<<"Histogram "<<hname<<" not existing. "<<FairLogger::endl;
+  Float_t lsize=0.07;
+
+  if( fbMonitorTdcOcc )
+  {
+    fTdcChannelOccupancy = new TCanvas("tCanvasOccupancy","TRB TDC channel occupancy",8,6,900,600);
+    fTdcChannelOccupancy->Divide(8,5);
+
+    for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++){
+      fTdcChannelOccupancy->cd(iCh+1);
+      gROOT->cd();
+      TString hname=Form("tof_trb_ch_occ_%03d",iCh);
+      h1=(TH1 *)gROOT->FindObjectAny(hname);
+      if (h1!=NULL) {
+        h1->Draw("");
+        gPad->SetFillColor(0);
+        gStyle->SetPalette(1);
+        gStyle->SetLabelSize(lsize);
+        gPad->SetLogy();
+      } else {
+        LOG(INFO)<<"Histogram "<<hname<<" not existing. "<<FairLogger::endl;
+      }
     }
   }
   
@@ -224,7 +276,7 @@ InitStatus CbmTofOnlineDisplay::Init()
     }
   }
 
-  fbMonitorDigiStatus=kTRUE;
+//  fbMonitorDigiStatus=kTRUE;
   if( fbMonitorDigiStatus )
   {
 	fDigiStatusMonitor = new TCanvas("tCanvasDigiSize","Digi status",1000,500,700,700);
@@ -242,11 +294,11 @@ InitStatus CbmTofOnlineDisplay::Init()
 	      TString hname=Form("cl_SmT%01d_sm%03d_rpc%03d_DigiCor",iType[iCh],iSm,iRpc);
 	      h2=(TH2 *)gROOT->FindObjectAny(hname);
 	      if (h2!=NULL) {
-		h2->Draw("colz");
-		//gPad->SetLogz();
+            h2->Draw("colz");
+            //gPad->SetLogz();
 	      } else {
-		LOG(INFO)<<"Histogram "<<hname<<" not existing. "<<FairLogger::endl;
-		fbMonitorDigiStatus=kFALSE;
+            LOG(INFO)<<"Histogram "<<hname<<" not existing. "<<FairLogger::endl;
+            fbMonitorDigiStatus=kFALSE;
 	      }
 	    }
 	  }
@@ -255,13 +307,138 @@ InitStatus CbmTofOnlineDisplay::Init()
 
   if( kTRUE == fbMonitorRes )
   {
-     fOverviewRes        = new TCanvas("OverviewRes","Overview TDc Resolution",48,56,1000,700);
-     fhResolutionSummary = new TH2D("fhResolutionSummary", "TDC Resolution summary; TDC #1 []; TDC #2 [] ",
+     fOverviewRes        = new TCanvas("OverviewRes","Overview TDC Resolution (RMS and Fit)",48,56,1000,700);
+     fOverviewRes->Divide(2);
+     fhResolutionSummary = new TH2D("fhResolutionSummary", "TDC Resolution summary (Fit); TDC #1 []; TDC #2 [] ",
                                       fNumberOfTDC - 1, 0, fNumberOfTDC - 1,
                                       fNumberOfTDC - 1, 1, fNumberOfTDC );
      fhResolutionSummary->SetStats(kFALSE);
+
+     fhResolutionRmsSummary = new TH2D("fhResolutionRmsSummary", "TDC Resolution summary (RMS); TDC #1 []; TDC #2 [] ",
+                                      fNumberOfTDC - 1, 0, fNumberOfTDC - 1,
+                                      fNumberOfTDC - 1, 1, fNumberOfTDC );
+     fhResolutionRmsSummary->SetStats(kFALSE);
   } // if( kTRUE == fbMonitorRes )
 
+  if( kTRUE == fbMonitorRates )
+  {
+     fCanvRatesMonitor        = new TCanvas("OverviewRates","Overview TrigLog scaler rates (MBS and free)",48,56,1000,700);
+     fCanvRatesMonitor->Divide(3, 2);
+     fStackMbsTrloA     = new THStack("fStackMbsTrloA", 
+                                           "Evolution of MBS scalers 1- 8 rates; Time since start [s]; Rate [Hz] ");
+     fStackMbsTrloB     = new THStack("fStackMbsTrloB", 
+                                           "Evolution of MBS scalers 9-16 rates; Time since start [s]; Rate [Hz] ");
+     fStackFreeTrloA    = new THStack("fStackFreeTrloA", 
+                                           "Evolution of Free scalers 1- 8 rates; Time since start [s]; Rate [Hz] ");
+     fStackFreeTrloB    = new THStack("fStackFreeTrloB", 
+                                           "Evolution of Free scalers 9-16 rates; Time since start [s]; Rate [Hz] ");
+     fStackFreeTrloOutA = new THStack("fStackFreeTrloOutA", 
+                                           "Evolution of Free output scalers 1- 8 counts; Time since start [s]; Counts [] ");
+     fStackFreeTrloOutB = new THStack("fStackFreeTrloOutB", 
+                                           "Evolution of Free output scalers 9-16 counts; Time since start [s]; Counts [] ");
+     fLegStackMbsTrloA     = new TLegend(0.80,0.5,0.99,0.9);
+     fLegStackMbsTrloB     = new TLegend(0.80,0.5,0.99,0.9);
+     fLegStackFreeTrloA    = new TLegend(0.80,0.5,0.99,0.9);
+     fLegStackFreeTrloB    = new TLegend(0.80,0.5,0.99,0.9);
+     fLegStackFreeTrloOutA = new TLegend(0.80,0.5,0.99,0.9);
+     fLegStackFreeTrloOutB = new TLegend(0.80,0.5,0.99,0.9);
+
+     TProfile * pTemp = NULL;
+     Int_t      iColorsArr[8] = { kRed,       kBlue,  kGreen+3,  kOrange+1, 
+                                  kMagenta+1, kBlack, kViolet-6, kCyan+2};
+     gROOT->cd();
+     for( Int_t iCh = 0; iCh < 16; iCh++)
+     {
+	     TString hname;
+        if( iCh < 8 )
+        {
+           hname=Form("tof_cal_triglog_00_scal_evo_00_%02d",iCh);
+           pTemp=(TProfile *)gROOT->FindObjectAny(hname);
+           if( NULL != pTemp) 
+           {
+               pTemp->SetLineColor( iColorsArr[iCh] );
+               fStackMbsTrloA->Add(pTemp);
+               fLegStackMbsTrloA->AddEntry(pTemp,Form("Ch %02d", iCh),"l");
+           } // if( NULL != pTemp) 
+
+           hname=Form("tof_cal_trigscal_07_scal_evo_00_%02d",iCh);
+           pTemp=(TProfile *)gROOT->FindObjectAny(hname);
+           if( NULL != pTemp) 
+           {
+               pTemp->SetLineColor( iColorsArr[iCh] );
+               fStackFreeTrloA->Add(pTemp);
+//               fLegStackFreeTrloA->AddEntry(pTemp,Form("Ch %02d", iCh),"l");
+               fLegStackFreeTrloA->AddEntry(pTemp,fsFreeTrloNames[iCh],"l");
+           } // if( NULL != pTemp)
+
+           hname=Form("tof_trigscal_00_scalers_evo_01_%02d",iCh);
+           h1=(TH1 *)gROOT->FindObjectAny(hname);
+           if( NULL != h1) 
+           {
+               h1->SetLineColor( iColorsArr[iCh] );
+               fStackFreeTrloOutA->Add(h1);
+               fLegStackFreeTrloOutA->AddEntry(h1,Form("LmuO %01d", iCh),"l");
+//               fLegStackFreeTrloOutA->AddEntry(pTemp,fsFreeTrloNames[iCh],"l");
+           } // if( NULL != pTemp)
+        } // if( iCh < 8 )
+        else
+        {
+           hname=Form("tof_cal_triglog_00_scal_evo_00_%02d",iCh);
+           pTemp=(TProfile *)gROOT->FindObjectAny(hname);
+           if( NULL != pTemp) 
+           {
+               pTemp->SetLineColor( iColorsArr[iCh - 8] );
+               fStackMbsTrloB->Add(pTemp);
+               fLegStackMbsTrloB->AddEntry(pTemp,Form("Ch %02d", iCh),"l");
+           } // if( NULL != pTemp) 
+
+           hname=Form("tof_cal_trigscal_07_scal_evo_00_%02d",iCh);
+           pTemp=(TProfile *)gROOT->FindObjectAny(hname);
+           if( NULL != pTemp) 
+           {
+               pTemp->SetLineColor( iColorsArr[iCh - 8] );
+               fStackFreeTrloB->Add(pTemp);
+//               fLegStackFreeTrloB->AddEntry(pTemp,Form("Ch %02d", iCh),"l");
+               fLegStackFreeTrloB->AddEntry(pTemp,fsFreeTrloNames[iCh],"l");
+           } // if( NULL != pTemp)
+
+           hname=Form("tof_trigscal_00_scalers_evo_01_%02d",iCh);
+           h1=(TH1 *)gROOT->FindObjectAny(hname);
+           if( NULL != h1) 
+           {
+               h1->SetLineColor( iColorsArr[iCh - 8] );
+               fStackFreeTrloOutB->Add(h1);
+               fLegStackFreeTrloOutB->AddEntry(h1,Form("LmuO %02d", iCh),"l");
+//               fLegStackFreeTrloOutB->AddEntry(pTemp,fsFreeTrloNames[iCh],"l");
+           } // if( NULL != pTemp)
+
+        } // else of if( iCh < 8 )
+     } // for( Int_t iCh = 0; iCh < 16; iCh++)
+
+     fCanvRatesMonitor->cd(1);
+     fStackMbsTrloA->Draw("nostack");
+     fLegStackMbsTrloA->Draw();
+
+     fCanvRatesMonitor->cd(2);
+     fStackFreeTrloA->Draw("nostack");
+     fLegStackFreeTrloA->Draw();
+
+     fCanvRatesMonitor->cd(3);
+     fStackFreeTrloOutA->Draw("nostack");
+     fLegStackFreeTrloOutB->Draw();
+
+     fCanvRatesMonitor->cd(4);
+     fStackMbsTrloB->Draw("nostack");
+     fLegStackMbsTrloB->Draw();
+
+     fCanvRatesMonitor->cd(5);
+     fStackFreeTrloB->Draw("nostack");
+     fLegStackFreeTrloB->Draw();
+
+     fCanvRatesMonitor->cd(6);
+     fStackFreeTrloOutB->Draw("nostack");
+     fLegStackFreeTrloOutB->Draw();
+  } // if( kTRUE == fbMonitorRes )
 
 
   return kSUCCESS;
@@ -283,13 +460,17 @@ void CbmTofOnlineDisplay::Exec(Option_t* /*option*/)
 
   if ( 0 == fEventCounter%fUpdateInterval ) {
      LOG(DEBUG)<<"Update Canvas for Event "<< fEventCounter << FairLogger::endl;
-     for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++){
-       fTdcChannelOccupancy->cd(iCh+1);
-       gPad->Modified();
-       gPad->Update();
+
+     if( fbMonitorTdcOcc )
+     {
+        for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++){
+          fTdcChannelOccupancy->cd(iCh+1);
+          gPad->Modified();
+          gPad->Update();
+        }
+        fTdcChannelOccupancy->Modified();
+        fTdcChannelOccupancy->Update();
      }
-     fTdcChannelOccupancy->Modified();
-     fTdcChannelOccupancy->Update();
 
      if( fbMonitorCts )
      {
@@ -364,8 +545,12 @@ void CbmTofOnlineDisplay::Exec(Option_t* /*option*/)
      if( kTRUE == fbMonitorRes )
      {
         fhResolutionSummary->Reset();
+        fhResolutionRmsSummary->Reset();
 
         TH2 *h2;
+//        TProfile *pTemp;
+        TH1 *hTemp;
+        TF1 *fitFunc;
         for(Int_t iTdc1 = 0; iTdc1 < fNumberOfTDC - 1; iTdc1++)
         {
            // First get the reference comp histogram
@@ -373,19 +558,42 @@ void CbmTofOnlineDisplay::Exec(Option_t* /*option*/)
            h2=(TH2 *)gROOT->FindObjectAny(hname);
            if (h2!=NULL)
            {
-              // Fit a gaussian for each pair
-              TObjArray aSlices;
-              h2->FitSlicesY( 0, 0, -1, 0, "QNR", &aSlices);
+              if( 0 < h2->GetEntries() )
+              {
+                 for(Int_t iTdc2 = iTdc1 + 1; iTdc2 < fNumberOfTDC; iTdc2++)
+                 {
+                     hTemp = h2->ProjectionY("hTemp", iTdc2 - iTdc1, iTdc2 - iTdc1 ); // s to get RMS instead of standard error
 
-              // Read the obtained sigma and fill it in the 2D summary histogram
-              for(Int_t iTdc2 = iTdc1 + 1; iTdc2 < fNumberOfTDC; iTdc2++)
-                 fhResolutionSummary->Fill(iTdc1, iTdc2, ((TH2*)aSlices[2])->GetBinContent( iTdc2 - iTdc1 ) );
-            } // if (h2!=NULL)
-            else LOG(INFO)<<"Histogram "<<hname<<" not existing. "<<FairLogger::endl;
+                     if( 0 < hTemp->GetEntries() && 0 < hTemp->Integral() )
+                     {
+                        // Fill the RMS plot
+                        fhResolutionRmsSummary->Fill(iTdc1, iTdc2, hTemp->GetRMS() );
+
+                        // Fit and fill the Sigma plot
+                        Int_t iBinPeak = hTemp->GetMaximumBin();
+                        fitFunc = new TF1( Form("fitFunc_%03d_%03d",iTdc1, iTdc2), "gaus",
+                                       hTemp->GetBinCenter(iBinPeak) - 1000 ,
+                                       hTemp->GetBinCenter(iBinPeak) + 1000);
+                        hTemp->Fit( Form("fitFunc_%03d_%03d",iTdc1, iTdc2), "QRM0");
+                        fhResolutionSummary->Fill(iTdc1, iTdc2, fitFunc->GetParameter(2) );
+
+                        delete hTemp;
+                        if( NULL != gROOT->FindObjectAny( Form("fitFunc_%03d_%03d",iTdc1, iTdc2) ) )
+                           delete gROOT->FindObjectAny( Form("fitFunc_%03d_%03d",iTdc1, iTdc2) ) ;
+                     } // if( 0 < hTemp->GetEntries() )
+                 } // for(Int_t iTdc2 = iTdc1 + 1; iTdc2 < fNumberOfTDC; iTdc2++)
+               } // if( 0 < h2->GetEntries() )
+           } // if (h2!=NULL)
+               else LOG(INFO)<<"Histogram "<<hname<<" not existing. "<<FairLogger::endl;
         } // for(Int_t iCh=0; iCh<fNumberOfTDC; iCh++)
-        fOverviewRes->cd();
+        fOverviewRes->cd(1);
+        fhResolutionRmsSummary->Draw("colz");
+        ( fhResolutionRmsSummary->GetZaxis() )->SetRangeUser(10.0, 50.0);
+
+        fOverviewRes->cd(2);
         fhResolutionSummary->Draw("colz");
-        ( fhResolutionSummary->GetZaxis() )->SetRangeUser(0.0, 100.0);
+        ( fhResolutionSummary->GetZaxis() )->SetRangeUser(10.0, 50.0);
+
         fOverviewRes->Modified();
         fOverviewRes->Update();
      } // if( kTRUE == fbMonitorRes )
@@ -398,6 +606,75 @@ void CbmTofOnlineDisplay::Exec(Option_t* /*option*/)
          gPad->Update();
        }
      }
+     if( kTRUE == fbMonitorRates )
+     {
+        if( kTRUE == fbRatesSlidingScale )
+        {
+           TProfile *pTemp = (TProfile *)gROOT->FindObjectAny("tof_cal_triglog_00_scal_evo_00_15");
+           Double_t dTimeEnd = pTemp->GetBinCenter( pTemp->FindLastBinAbove( 0.0 ) );
+           if( 100.0 < dTimeEnd )
+           {
+              (fStackMbsTrloA->GetXaxis() )->SetRangeUser( dTimeEnd - 100.0, dTimeEnd + 10 );
+              (fStackMbsTrloB->GetXaxis() )->SetRangeUser( dTimeEnd - 100.0, dTimeEnd + 10 );
+              (fStackFreeTrloA->GetXaxis() )->SetRangeUser( dTimeEnd - 100.0, dTimeEnd + 10 );
+              (fStackFreeTrloB->GetXaxis() )->SetRangeUser( dTimeEnd - 100.0, dTimeEnd + 10 );
+              (fStackFreeTrloOutA->GetXaxis() )->SetRangeUser( dTimeEnd - 100.0, dTimeEnd + 10 );
+              (fStackFreeTrloOutB->GetXaxis() )->SetRangeUser( dTimeEnd - 100.0, dTimeEnd + 10 );
+           } // if( 100.0 < dTimeEnd )
+              else
+              {
+                 (fStackMbsTrloA->GetXaxis() )->SetRangeUser( 0.0, dTimeEnd + 10 );
+                 (fStackMbsTrloB->GetXaxis() )->SetRangeUser( 0.0, dTimeEnd + 10 );
+                 (fStackFreeTrloA->GetXaxis() )->SetRangeUser( 0.0, dTimeEnd + 10 );
+                 (fStackFreeTrloB->GetXaxis() )->SetRangeUser( 0.0, dTimeEnd + 10 );
+                 (fStackFreeTrloOutA->GetXaxis() )->SetRangeUser( 0.0, dTimeEnd + 10 );
+                 (fStackFreeTrloOutB->GetXaxis() )->SetRangeUser( 0.0, dTimeEnd + 10 );
+              } // else of if( 100.0 < dTimeEnd )
+        } // if( kTRUE == fbRatesSlidingScale )
+
+        fCanvRatesMonitor->cd(1);
+        gPad->SetLogy();
+        gPad->SetGridx();
+        gPad->SetGridy();
+        gPad->Modified();
+        gPad->Update();
+
+        fCanvRatesMonitor->cd(2);
+        gPad->SetLogy();
+        gPad->SetGridx();
+        gPad->SetGridy();
+        gPad->Modified();
+        gPad->Update();
+
+        fCanvRatesMonitor->cd(3);
+        gPad->SetLogy();
+        gPad->SetGridx();
+        gPad->SetGridy();
+        gPad->Modified();
+        gPad->Update();
+
+        fCanvRatesMonitor->cd(4);
+        gPad->SetLogy();
+        gPad->SetGridx();
+        gPad->SetGridy();
+        gPad->Modified();
+        gPad->Update();
+
+        fCanvRatesMonitor->cd(5);
+        gPad->SetLogy();
+        gPad->SetGridx();
+        gPad->SetGridy();
+        gPad->Modified();
+        gPad->Update();
+
+        fCanvRatesMonitor->cd(6);
+//        gPad->SetLogy();
+        gPad->SetGridx();
+        gPad->SetGridy();
+        gPad->Modified();
+        gPad->Update();
+
+     } // if( kTRUE == fbMonitorRes )
   } 
 }
 
@@ -405,7 +682,10 @@ void CbmTofOnlineDisplay::Exec(Option_t* /*option*/)
 void CbmTofOnlineDisplay::Finish()
 {
   LOG(INFO)<<"Finish of CbmTofOnlineDisplay"<<FairLogger::endl;
-  fTdcChannelOccupancy->Update();
+
+  if( fbMonitorTdcOcc )
+   fTdcChannelOccupancy->Update();
+
   if( fbMonitorCts )
   {
     fCtsTriggerMonitor->Update();

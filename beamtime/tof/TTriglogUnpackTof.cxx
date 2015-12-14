@@ -118,25 +118,25 @@ Bool_t TTriglogUnpackTof::DoUnpack(Int_t* data, Int_t size)
    UInt_t  uNbWords = size;
 
    
-   LOG(DEBUG)<<"TTriglogUnpackTof::ProcessSubevent => Found TRIGLOG subevent! LEN"
+   LOG(DEBUG)<<"TTriglogUnpackTof::DoUnpack => Found TRIGLOG subevent! LEN"
             <<uNbWords<<FairLogger::endl;
             
    if( 3 < fiVerbosity )
    {
       TString sPrintEvent = "";
-      LOG(INFO)<<"----------------------------------------------------------------"<<FairLogger::endl;
-      LOG(INFO)<<"Size: "<<uNbWords<<FairLogger::endl;
+      LOG(DEBUG)<<"----------------------------------------------------------------"<<FairLogger::endl;
+      LOG(DEBUG)<<"Size: "<<uNbWords<<FairLogger::endl;
       for( UInt_t uWdInd = 0; uWdInd < uNbWords; uWdInd++ )
       {
          if( 0 < uWdInd && 0 == uWdInd%8 )
          {
-            LOG(INFO)<<sPrintEvent<<FairLogger::endl;
+            LOG(DEBUG)<<sPrintEvent<<FairLogger::endl;
             sPrintEvent = "";
          } // if( 0 < uWdInd && 0 == uWdInd%8 )
          sPrintEvent += Form("%08x ", pData[uWdInd]);
       } // for( UInt_t uWdInd = 0; uWdInd < uNbWords; uWdInd++ )
-      LOG(INFO)<<sPrintEvent<<FairLogger::endl;
-      LOG(INFO)<<"----------------------------------------------------------------"<<FairLogger::endl;
+      LOG(DEBUG)<<sPrintEvent<<FairLogger::endl;
+      LOG(DEBUG)<<"----------------------------------------------------------------"<<FairLogger::endl;
    } // if( 3 < fiVerbosity )
 
    

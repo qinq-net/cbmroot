@@ -82,6 +82,7 @@ class TTofTrbTdcUnpacker : public TObject
       // channel coarse time distribution
       std::vector< std::vector<TH1*> > fTrbTdcChannelCoarseTime;
 
+      UInt_t fuEventIndex;
       
    ClassDef(TTofTrbTdcUnpacker, 1)
 };

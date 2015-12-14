@@ -48,7 +48,8 @@ TTofTrbTdcUnpacker::TTofTrbTdcUnpacker( TMbsUnpackTofPar * parIn ):
    fTrbTdcChannelFineTimeOvershoot(),
    fTrbTdcChannelUnprocessedHits(),
    fTrbTdcChannelFineTime(),
-   fTrbTdcChannelCoarseTime()
+   fTrbTdcChannelCoarseTime(),
+   fuEventIndex(0)
 {
    LOG(INFO)<<"**** TTofTrbTdcUnpacker: Call TTofTrbTdcUnpacker()..."<<FairLogger::endl;
 
@@ -170,7 +171,7 @@ Int_t TTofTrbTdcUnpacker::ProcessData( hadaq::RawSubevent* tSubevent, UInt_t uSt
           }
           else
           {
-            LOG(ERROR)<<Form("Third data word from TDC 0x%.4x is a TDC TIME word from channel 0 but with an unreasonable fine time of 0x%.3x. Skip this TDC subsubevent!",uTdcAddress,tTrbTdcMessage.getTimeTmFine())<<FairLogger::endl;
+            LOG(INFO)<<Form("Event %7d: Third data word from TDC 0x%.4x is a TDC TIME word from channel 0 but with an unreasonable fine time of 0x%.3x. Skip this TDC subsubevent!",fuEventIndex, uTdcAddress,tTrbTdcMessage.getTimeTmFine())<<FairLogger::endl;
             return trbtdc::process_ThirdBadRefTime;
           }
         }
@@ -360,6 +361,9 @@ Int_t TTofTrbTdcUnpacker::ProcessData( hadaq::RawSubevent* tSubevent, UInt_t uSt
 
    tTrbTdcBoard->SetCalibData(fbCalibTrigger);
    tTrbTdcBoard->SetValid();
+
+   if( 0 == iTdcBoardIndex )
+      fuEventIndex++;
 
    LOG(DEBUG)<<Form("TRB-TDC subsubevent from FPGA 0x%.4x fully unpacked. Success!",uTdcAddress)<<FairLogger::endl;
    return trbtdc::process_Success;

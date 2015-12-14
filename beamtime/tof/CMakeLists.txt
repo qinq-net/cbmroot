@@ -32,6 +32,7 @@ set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/beamtime/tof/scalers/triglog
   ${CBMROOT_SOURCE_DIR}/beamtime/tof/scalers/scalormu
   ${CBMROOT_SOURCE_DIR}/beamtime/tof/scalers/scal2014
+  ${CBMROOT_SOURCE_DIR}/beamtime/tof/scalers/orgen
   ${CBMROOT_SOURCE_DIR}/beamtime/tof/unpMoni
   ${CBMROOT_SOURCE_DIR}/beamtime/tof/calib
   ${CBMROOT_SOURCE_DIR}/beamtime/tof/calib/tdc
@@ -72,6 +73,7 @@ set(SRCS
   hadaq/HadaqDefines.cxx
   hadaq/HadaqTrbIterator.cxx
   hadaq/HadaqTdcMessage.cxx
+  hadaq/CbmHldSource.cxx
   TTrbUnpackTof.cxx
   TMbsUnpackTofPar.cxx
   TMbsUnpackTofContFact.cxx
@@ -81,6 +83,7 @@ set(SRCS
   scalers/triglog/TTofTriglogScalUnpacker.cxx
   scalers/scalormu/TTofScomUnpacker.cxx
   scalers/scal2014/TTofScal2014Unpacker.cxx
+  scalers/orgen/TTofOrGenUnpacker.cxx
   tdc/TTofTdcData.cxx
   tdc/TTofTdcBoard.cxx
   tdc/vftx/TTofVftxData.cxx
@@ -123,6 +126,7 @@ Set(HEADERS
   hadaq/HadaqTimeStamp.h
   hadaq/HadaqTdcMessage.h
   hadaq/HadaqTdcIterator.h
+  hadaq/CbmHldSource.h
   TTrbUnpackTof.h
   TMbsUnpackTofPar.h
   TMbsUnpackTofContFact.h
@@ -136,6 +140,7 @@ Set(HEADERS
   scalers/scalormu/TofScomDef.h  
   scalers/scalormu/TTofScomUnpacker.h   
   scalers/scal2014/TTofScal2014Unpacker.h
+  scalers/orgen/TTofOrGenUnpacker.h   
   tdc/TofTdcDef.h
   tdc/TTofTdcData.h
   tdc/TTofTdcBoard.h

@@ -42,7 +42,10 @@ class TMbsUnpTofMonitor : public FairTask
       virtual InitStatus ReInit();
       virtual void Exec(Option_t* option);
       virtual void Finish();
-      
+
+      void SetScalHistoUserAxis( Double_t dRangeIn, Double_t dBinSzIn )
+             { fdScalersEvoRangeUser = dRangeIn; fdScalersEvoBinSzUser = dBinSzIn; };
+
    private:
       // no default Copy constructor and = OP as class not meant to be copied
       TMbsUnpTofMonitor(const TMbsUnpTofMonitor&);
@@ -85,7 +88,10 @@ class TMbsUnpTofMonitor : public FairTask
       TTimeStamp fFirstCheck;
       TTimeStamp fLastCheck;
       TTimeStamp fCheck;
-      
+
+      Double_t fdScalersEvoRangeUser;
+      Double_t fdScalersEvoBinSzUser;
+
    ClassDef(TMbsUnpTofMonitor, 1)
 };
 

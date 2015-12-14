@@ -71,6 +71,7 @@ class CbmTofAnaTestbeam : public FairTask {
 
       inline Int_t GetCorMode   () const              { return fiCorMode;}
       inline Int_t GetDut       () const              { return fiDut;}
+      inline Int_t GetDutRpc    () const              { return fiDutRpc;}
       inline Int_t GetMrpcRef   () const              { return fiMrpcRef;}
       inline Int_t GetMrpcSel2  () const              { return fiMrpcSel2;}
       inline Int_t GetMrpcSel3  () const              { return fiMrpcSel3;}
@@ -105,8 +106,14 @@ class CbmTofAnaTestbeam : public FairTask {
 
       inline void SetCorMode   (Int_t ival)             { fiCorMode = ival;}
       inline void SetDut       (Int_t ival)             { fiDut = ival;}
-      inline void SetMrpcRef   (Int_t ival)             { fiMrpcRef  = ival;}
-      inline void SetMrpcSel2  (Int_t ival)             { fiMrpcSel2 = ival;}
+      inline void SetDutSm     (Int_t ival)             { fiDutSm = ival;}
+      inline void SetDutRpc    (Int_t ival)             { fiDutRpc     = ival;}
+      inline void SetMrpcRef   (Int_t ival)             { fiMrpcRef    = ival;}
+      inline void SetMrpcRefSm (Int_t ival)             { fiMrpcRefSm  = ival;}
+      inline void SetMrpcRefRpc(Int_t ival)             { fiMrpcRefRpc = ival;}
+      inline void SetMrpcSel2  (Int_t ival)             { fiMrpcSel2   = ival;}
+      inline void SetMrpcSel2Sm  (Int_t ival)           { fiMrpcSel2Sm = ival;}
+      inline void SetMrpcSel2Rpc  (Int_t ival)          { fiMrpcSel2Rpc= ival;}
       inline void SetMrpcSel3  (Int_t ival)             { fiMrpcSel3 = ival;}
       inline void SetPlaSelect (Int_t ival)             { fiPlaSelect = ival;}
       inline void SetBeamRefSmType (Int_t ival)         { fiBeamRefSmType = ival;}
@@ -365,8 +372,14 @@ class CbmTofAnaTestbeam : public FairTask {
 
       Int_t        fiCorMode; // Correction histogram generation mode
       Int_t            fiDut; // Device under test
+      Int_t          fiDutSm; // requested (super)module of Device under test
+      Int_t         fiDutRpc; // requested Rpc of Device under test
       Int_t        fiMrpcRef; // Reference Mrpc
+      Int_t      fiMrpcRefSm; // Reference Mrpc Sm
+      Int_t     fiMrpcRefRpc; // Reference Mrpc Rpc
       Int_t       fiMrpcSel2; // Coincident Mrpc 2
+      Int_t     fiMrpcSel2Sm; // Coincident Mrpc 2 module
+      Int_t    fiMrpcSel2Rpc; // Coincident Mrpc 2 Rpc
       Int_t       fiMrpcSel3; // Coincident Mrpc 3
       Int_t      fiPlaSelect; // Select plastics: 0 - P2, 2 - Buc2013
       Int_t  fiBeamRefSmType; // Beam reference counter 

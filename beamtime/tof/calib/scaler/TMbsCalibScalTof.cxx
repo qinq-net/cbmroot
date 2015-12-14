@@ -14,6 +14,7 @@
 #include "TofScomDef.h"
 #include "TofScal2014Def.h"
 #include "TofTriglogDef.h"
+#include "TofOrGenDef.h"
 #include "TTofScalerBoard.h"
 #include "TTofTriglogBoard.h"
 #include "TTofCalibScaler.h"
@@ -40,6 +41,8 @@ TMbsCalibScalTof::TMbsCalibScalTof() :
    fhRefMbsTimeComp(),
    fhScalersRate(),
    fhScalersRateEvo(),
+   fdEvoRangeUser(-1),
+   fdEvoBinSzUser(-1),
    fScalerBoardCollection(NULL),
    fTriglogBoardCollection(NULL),
    fbSaveCalibScalers(kFALSE),
@@ -80,6 +83,8 @@ TMbsCalibScalTof::TMbsCalibScalTof(TMbsUnpackTofPar * parIn, TMbsCalibTofPar *pa
    fhRefMbsTimeComp(),
    fhScalersRate(),
    fhScalersRateEvo(),
+   fdEvoRangeUser(-1),
+   fdEvoBinSzUser(-1),
    fScalerBoardCollection(NULL),
    fTriglogBoardCollection(NULL),
    fbSaveCalibScalers(kFALSE),
@@ -296,6 +301,13 @@ Bool_t TMbsCalibScalTof::CreateHistogramms()
             dEvoRange   = scaler2014::kdEvoRange;
             dEvoBinNb   = scaler2014::kdEvoRange / scaler2014::kdEvoBin;
             break;
+         case tofscaler::orgen :
+            dRefClkFreq = orgen::kdRefClkFreq;
+            uNbScalers  = orgen::kuNbScalers;
+            uNbChan     = orgen::kuNbChan;
+            dEvoRange   = orgen::kdEvoRange;
+            dEvoBinNb   = orgen::kdEvoRange / orgen::kdEvoBin;
+            break;
          case tofscaler::undef :
          default:
             dRefClkFreq = -1.0;
@@ -308,6 +320,12 @@ Bool_t TMbsCalibScalTof::CreateHistogramms()
             break;
       } // switch( xScalerBoard->GetScalerType() )
       
+      if( 0 < fdEvoRangeUser && 0 < fdEvoBinSzUser && fdEvoBinSzUser < fdEvoRangeUser )
+      {
+         dEvoRange = fdEvoRangeUser;
+         dEvoBinNb = static_cast<Int_t>(fdEvoRangeUser) / static_cast<Int_t>(fdEvoBinSzUser);
+      } // if( 0 < fdEvoRangeUser && 0 < fdEvoBinSzUser && fdEvoBinSzUser < fdEvoRangeUser )
+
       // Resize vectors with a "Scalers" dimension
       fhScalersRate[uScalBdIndx].resize( uNbScalers );
       fhScalersRateEvo[uScalBdIndx].resize( uNbScalers );
@@ -331,7 +349,7 @@ Bool_t TMbsCalibScalTof::CreateHistogramms()
                   new TProfile( Form("tof_cal_%s_%02d_scal_evo_%02d_%02d",
                                 tofscaler::ksTdcHistName[ uType ].Data(), uScalBdIndx, uScaler, uCh ),
                              Form("Channel %02d in scaler %02d Mean rate per second; Time [s]; Rate [1/s]", uCh, uScaler), 
-                             dEvoBinNb, 0.0, dEvoRange );
+                             static_cast<Int_t>(dEvoBinNb), 0.0, dEvoRange );
          } // for( UInt_t uCh = 0; uCh < triglog::kuNbChan; uCh++) 
       } // for( UInt_t uScaler = 0; uScaler <triglog::kuNbScalers; uScaler++)
       
@@ -428,6 +446,11 @@ Bool_t TMbsCalibScalTof::FillHistograms()
 //            dRefClkFreq = scaler2014::kdRefClkFreq; // -> Comment to remove warning because set but never used
             uNbScalers  = scaler2014::kuNbScalers;
             uNbChan     = scaler2014::kuNbChan;
+            break;
+         case tofscaler::orgen :
+//            dRefClkFreq = orgen::kdRefClkFreq; // -> Comment to remove warning because set but never used
+            uNbScalers  = orgen::kuNbScalers;
+            uNbChan     = orgen::kuNbChan;
             break;
          case tofscaler::undef :
          default:
@@ -536,6 +559,10 @@ Bool_t TMbsCalibScalTof::WriteHistogramms( TDirectory* inDir)
             uNbScalers  = scaler2014::kuNbScalers;
             uNbChan     = scaler2014::kuNbChan;
             break;
+         case tofscaler::orgen :
+            uNbScalers  = orgen::kuNbScalers;
+            uNbChan     = orgen::kuNbChan;
+            break;
          case tofscaler::undef :
          default:
             // Here we go to next board for all undefined/invalid types
@@ -598,6 +625,9 @@ Bool_t TMbsCalibScalTof::DeleteHistograms()
             break;
          case tofscaler::scaler2014 :
             uNbScalers  = scaler2014::kuNbScalers;
+            break;
+         case tofscaler::orgen :
+            uNbScalers  = orgen::kuNbScalers;
             break;
          case tofscaler::undef :
          default:
@@ -679,6 +709,11 @@ Bool_t TMbsCalibScalTof::InitCalibration()
 //            dRefClkFreq = scaler2014::kdRefClkFreq; // -> Comment to remove warning because set but never used
             uNbScalers  = scaler2014::kuNbScalers;
             uNbChan     = scaler2014::kuNbChan;
+            break;
+         case tofscaler::orgen :
+//            dRefClkFreq = orgen::kdRefClkFreq; // -> Comment to remove warning because set but never used
+            uNbScalers  = orgen::kuNbScalers;
+            uNbChan     = orgen::kuNbChan;
             break;
          case tofscaler::undef :
          default:
@@ -769,6 +804,11 @@ Bool_t TMbsCalibScalTof::Calibration( UInt_t uBoard)
          dRefClkFreq = scaler2014::kdRefClkFreq;
          uNbScalers  = scaler2014::kuNbScalers;
          uNbChan     = scaler2014::kuNbChan;
+         break;
+      case tofscaler::orgen :
+         dRefClkFreq = orgen::kdRefClkFreq;
+         uNbScalers  = orgen::kuNbScalers;
+         uNbChan     = orgen::kuNbChan;
          break;
       case tofscaler::undef :
       default:

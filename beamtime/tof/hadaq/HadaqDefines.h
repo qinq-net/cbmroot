@@ -23,9 +23,25 @@ namespace hadaq {
 
    enum EvtId {
       EvtId_data     = 0x00000001,
-      EvtId_DABC     = 0x00003001,      // hades DAQVERSION=3 (evtbuild.c uses DAQVERSION=2)
+      EvtId_DABC     = 0x00002001,      // hades DAQVERSION=2 (same as evtbuild.c uses DAQVERSION=2)
       EvtId_runStart = 0x00010002,
-      EvtId_runStop  = 0x00010003
+      EvtId_runStop  = 0x00010003,
+      EvtId_DABC_TrbNet_Type_0 =  0x00002000,
+      EvtId_DABC_TrbNet_Type_1 =  0x00002001,
+      EvtId_DABC_TrbNet_Type_2 =  0x00002002,
+      EvtId_DABC_TrbNet_Type_3 =  0x00002003,
+      EvtId_DABC_TrbNet_Type_4 =  0x00002004,
+      EvtId_DABC_TrbNet_Type_5 =  0x00002005,
+      EvtId_DABC_TrbNet_Type_6 =  0x00002006,
+      EvtId_DABC_TrbNet_Type_7 =  0x00002007,
+      EvtId_DABC_TrbNet_Type_8 =  0x00002008,
+      EvtId_DABC_TrbNet_Type_9 =  0x00002009,
+      EvtId_DABC_TrbNet_Type_A =  0x0000200A,
+      EvtId_DABC_TrbNet_Type_B =  0x0000200B,
+      EvtId_DABC_TrbNet_Type_C =  0x0000200C,
+      EvtId_DABC_TrbNet_Type_D =  0x0000200D,
+      EvtId_DABC_TrbNet_Type_E =  0x0000200E,
+      EvtId_DABC_TrbNet_Type_F =  0x0000200F
    };
 
    enum EvtDecoding {
@@ -33,6 +49,9 @@ namespace hadaq {
       EvtDecoding_64bitAligned = (0x03 << 16) | 0x0001
    };
 
+   enum {
+      HADTU_PAYLOAD_MAX = 65535
+   };
 
    /*
     * HADES transport unit header

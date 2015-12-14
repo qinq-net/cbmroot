@@ -38,6 +38,8 @@ class TMbsCalibScalTof : public TObject
       Bool_t RegisterInput();
       Bool_t RegisterOutput();
       void   SetSaveScalers( Bool_t bSaveScal=kTRUE );
+      void   SetHistoUserAxis( Double_t dRangeIn, Double_t dBinSzIn )
+             { fdEvoRangeUser = dRangeIn; fdEvoBinSzUser = dBinSzIn; };
       
       Bool_t InitScalersCalib();
       Bool_t CalibScalers();
@@ -72,6 +74,10 @@ class TMbsCalibScalTof : public TObject
       std::vector< std::vector< std::vector< TH1* > > > fhScalersRate;    // [NbBoards][NbScalers][NbChan]
 //      std::vector< std::vector< std::vector< TH1* > > > fhScalersRateEvo; // [NbBoards][NbScalers][NbChan]
       std::vector< std::vector< std::vector< TProfile* > > > fhScalersRateEvo; // [NbBoards][NbScalers][NbChan]
+
+      // Histograms tuning
+      Double_t fdEvoRangeUser;
+      Double_t fdEvoBinSzUser;
       
       // Input 
       

@@ -6,6 +6,8 @@
 class TClonesArray;
 class TCanvas;
 class TH2;
+class THStack;
+class TLegend;
 
 class CbmTofOnlineDisplay : public FairTask
 {
@@ -43,12 +45,21 @@ class CbmTofOnlineDisplay : public FairTask
 
     void SetResMonitorEna( Bool_t bInEna = kTRUE ){ fbMonitorRes = bInEna; };
 
+    void MonitorTdcOccupancy( Bool_t bMonitor = kTRUE){ fbMonitorTdcOcc = bMonitor; };
     void MonitorCts( Bool_t bMonitor = kTRUE){ fbMonitorCts = bMonitor; };
     void MonitorSebStatus( Bool_t bMonitor = kTRUE){ fbMonitorSebStatus = bMonitor; };
     void MonitorTdcStatus( Bool_t bMonitor = kTRUE){ fbMonitorTdcStatus = bMonitor; };
     void MonitorFSMockup( Bool_t bMonitor = kTRUE){ fbMonitorFSMockup = bMonitor; };
+    void MonitorDigiStatus( Bool_t bMonitor = kTRUE){ fbMonitorDigiStatus = bMonitor; };
 
     void SetNumberOfSEB(Int_t val) { fNumberOfSEB = val; }
+
+    void SetRateMonitorEna( Bool_t bInEna = kTRUE ){ fbMonitorRates = bInEna; };
+    void SetFreeTrloNames( TString sChA, TString sChB, TString sChC, TString sChD, 
+                           TString sChE, TString sChF, TString sChG, TString sChH, 
+                           TString sChI, TString sChJ, TString sChK, TString sChL, 
+                           TString sChM, TString sChN, TString sChO, TString sChP );
+    void RatesSlidingScaleEna( Bool_t bInEna = kTRUE ){ fbRatesSlidingScale = bInEna; };
 
   private:
 
@@ -58,6 +69,7 @@ class CbmTofOnlineDisplay : public FairTask
     /** Output array to  new data level**/
     //  TClonesArray* <OutputDataLevel>;
 
+    Bool_t   fbMonitorTdcOcc;
     TCanvas* fTdcChannelOccupancy; //!
 
     Int_t fNumberOfTDC;
@@ -82,11 +94,30 @@ class CbmTofOnlineDisplay : public FairTask
     // Monitoring of the TDC resolution stability using reference channel
     Bool_t   fbMonitorRes;
     TCanvas* fOverviewRes; //!
-    TH2*     fhResolutionSummary;
+    TH2*     fhResolutionSummary; //!
+    TH2*     fhResolutionRmsSummary; //!
 
     Bool_t   fbMonitorDigiStatus;
     TCanvas* fDigiSizeMonitor; //!
     TCanvas* fDigiStatusMonitor; //!
+
+    // Monitoring of the rates from Triglog and/or scalers
+    Bool_t   fbMonitorRates;
+    TString  fsFreeTrloNames[16];
+    TCanvas* fCanvRatesMonitor; //!
+    THStack* fStackMbsTrloA; //!
+    THStack* fStackMbsTrloB; //!
+    THStack* fStackFreeTrloA; //!
+    THStack* fStackFreeTrloB; //!
+    THStack* fStackFreeTrloOutA; //!
+    THStack* fStackFreeTrloOutB; //!
+    TLegend* fLegStackMbsTrloA; //!
+    TLegend* fLegStackMbsTrloB; //!
+    TLegend* fLegStackFreeTrloA; //!
+    TLegend* fLegStackFreeTrloB; //!
+    TLegend* fLegStackFreeTrloOutA; //!
+    TLegend* fLegStackFreeTrloOutB; //!
+    Bool_t   fbRatesSlidingScale; //!
 
     CbmTofOnlineDisplay(const CbmTofOnlineDisplay&);
     CbmTofOnlineDisplay operator=(const CbmTofOnlineDisplay&);

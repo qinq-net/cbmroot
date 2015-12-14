@@ -38,16 +38,16 @@ public:
    Int_t DoFind(	TClonesArray* fTofHits,
 			TClonesArray* fTofTracks);
 
-   void TrklSeed(       Int_t         iHit
-			 );
-   Int_t HitUsed(       Int_t         iHit
-			 );  
+   void TrklSeed(       Int_t         iHit	 );
+   Int_t HitUsed(       Int_t         iHit	 ); 
+ 
 /*			  
    void RemoveMultipleAssignedHits(        
 			 TClonesArray* fTofHits,
 			 Int_t         iDet
 			 );
 */
+
    void UpdateTrackList( Int_t         iTrk );
 
    inline void SetFitter    (CbmTofTrackFitter* Fitter )   { fFitter     = Fitter;}
@@ -66,6 +66,9 @@ public:
    inline Double_t GetSIGY () { return fSIGY; }
 
    void Line3Dfit(CbmTofTracklet*  pTrk);
+   Bool_t  Active(CbmTofTracklet*  pTrk);
+
+   void PrintStatus(char* cComm);
 
    //Copy constructor
    CbmTofTrackFinderNN(const CbmTofTrackFinderNN &finder);
@@ -75,7 +78,7 @@ public:
  private:
 
    TClonesArray* fHits;
-   TClonesArray* fTracks;
+   TClonesArray* fOutTracks;
    Int_t fiNtrks; // Number of Tracks
    CbmTofTrackFitter* fFitter;      // Pointer to TrackFitter concrete class
    CbmTofFindTracks*  fFindTracks;  // Pointer to Task 
@@ -91,7 +94,10 @@ public:
    Double_t fPosYMaxScal;
    LKFMinuit fMinuit;
 
-   std::vector<std::map <CbmTofTracklet *, Int_t> > fvTrkMap;  // Tracklets to which hit is assigned
+   //intermediate storage variables
+   std::vector<CbmTofTracklet *>  fTracks;        // Tracklets to which hit is assigned
+   //std::vector<std::map <CbmTofTracklet *, Int_t> > fvTrkMap;  // Tracklets to which hit is assigned
+   std::vector< std::vector<CbmTofTracklet *> > fvTrkVec;        // Tracklets to which hit is assigned
 
    ClassDef(CbmTofTrackFinderNN,1);
 

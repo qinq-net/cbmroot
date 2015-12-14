@@ -716,6 +716,9 @@ void TMbsUnpackTofPar::FillBoardsNbPerType()
          case tofMbs::scaler2014:
             fuNbScalerB++;
             break;
+         case tofMbs::orgen:
+            fuNbScalerB++;
+            break;
          case tofMbs::triglogscal:
             fuNbScalerB++;
             break;
@@ -765,6 +768,9 @@ void TMbsUnpackTofPar::FillBoardsNbPerType()
          case tofMbs::scaler2014:
             fuNbScalerB++;
             break;
+         case tofMbs::orgen:
+            fuNbScalerB++;
+            break;
          case tofMbs::triglogscal:
             fuNbScalerB++;
             break;
@@ -807,6 +813,9 @@ void TMbsUnpackTofPar::FillActiveBoardsNbPerType()
             case tofMbs::scaler2014:
                fuNbScalerActiveB++;
                break;
+            case tofMbs::orgen:
+               fuNbScalerActiveB++;
+               break;
             case tofMbs::triglogscal:
                fuNbScalerActiveB++;
                break;
@@ -839,6 +848,9 @@ void TMbsUnpackTofPar::FillActiveBoardsNbPerType()
                fuNbScalerActiveB++;
                break;
             case tofMbs::scaler2014:
+               fuNbScalerActiveB++;
+               break;
+            case tofMbs::orgen:
                fuNbScalerActiveB++;
                break;
             case tofMbs::triglogscal:

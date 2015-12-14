@@ -12,6 +12,7 @@
 #pragma link C++ class hadaq::LocalStampConverter+;
 #pragma link C++ class hadaq::TdcIterator+;
 #pragma link C++ struct hadaq::TdcMessage+;
+#pragma link C++ class CbmHldSource+;
 
 #pragma link C++ class TMbsUnpackTofPar+;
 #pragma link C++ class TMbsUnpackTofContFact+;
@@ -27,6 +28,7 @@
 #pragma link C++ class TTofScomUnpacker+;
 #pragma link C++ class TTofScal2014Unpacker+;
 #pragma link C++ class TTofTrbTdcUnpacker+;
+#pragma link C++ class TTofOrGenUnpacker+;
 
 #pragma link C++ class TTofTdcData+;
 #pragma link C++ class std::vector<TTofTdcData>+;

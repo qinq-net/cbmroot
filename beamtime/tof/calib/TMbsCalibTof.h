@@ -41,12 +41,18 @@ class TMbsCalibTof : public FairTask {
       virtual void Finish();
       
       void SetSaveScalers( Bool_t bSaveScal=kTRUE ) {fbSaveCalibScalers = bSaveScal; };
+      void SetScalHistoUserAxis( Double_t dRangeIn, Double_t dBinSzIn )
+             { fdScalersEvoRangeUser = dRangeIn; fdScalersEvoBinSzUser = dBinSzIn; };
+
       void SetSaveTdcs( Bool_t bSaveTdcs=kTRUE ) {fbSaveCalibTdcs = bSaveTdcs; };
       void SetTdcCalibFilename( TString sFilenameIn="" ) {fsTdcCalibFilename = sFilenameIn; };
       void SetTdcCalibOutFoldername( TString sFoldernameIn="" ) {fsTdcCalibOutFoldername = sFoldernameIn; };
 
       // Fix for big trigger time deviation in GSI Sep14 data
       void  SetTdcCalibSep14Fix( Bool_t inGsiSep14Fix = kTRUE) { fbTdcCalibGsiSep14Fix = inGsiSep14Fix; };
+
+      // Calibration mode where only the reference channels are processed (Calib and histo filling)
+      void  EnaTdcRefMoniMode( Bool_t inTdcRefMoni = kTRUE) { fbTdcRefMoniMode = inTdcRefMoni; };
 
    private:
       TMbsCalibTof(const TMbsCalibTof&);
@@ -83,12 +89,18 @@ class TMbsCalibTof : public FairTask {
       TClonesArray * fTriglogBoardCollection;
 
       Bool_t fbSaveCalibScalers;
+      Double_t fdScalersEvoRangeUser;
+      Double_t fdScalersEvoBinSzUser;
+
       Bool_t fbSaveCalibTdcs;
       TString fsTdcCalibOutFoldername;
       TString fsTdcCalibFilename;
 
       // Fix for big trigger time deviation in GSI Sep14 data
       Bool_t fbTdcCalibGsiSep14Fix;
+
+      // Calibration mode where only the reference channels are processed (Calib and histo filling)
+      Bool_t fbTdcRefMoniMode;
 
       ClassDef(TMbsCalibTof, 1);
 };

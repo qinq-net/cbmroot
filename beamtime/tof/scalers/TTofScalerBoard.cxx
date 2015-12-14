@@ -10,6 +10,7 @@
 #include "TofTriglogDef.h"
 #include "TofScomDef.h"
 #include "TofScal2014Def.h"
+#include "TofOrGenDef.h"
 
 // FAIR headers
 #include "FairLogger.h"
@@ -69,6 +70,13 @@ TTofScalerBoard::TTofScalerBoard( UInt_t uType ) :
       case tofscaler::scaler2014 :
          fuScalerNumber  = scaler2014::kuNbScalers;
          fuChannelNumber = scaler2014::kuNbChan;
+         fvuDataCollection.resize( fuScalerNumber );
+         for( UInt_t uScaler = 0; uScaler < fuScalerNumber; uScaler ++)
+            fvuDataCollection[uScaler].resize( fuChannelNumber );
+         break;
+      case tofscaler::orgen :
+         fuScalerNumber  = orgen::kuNbScalers;
+         fuChannelNumber = orgen::kuNbChan;
          fvuDataCollection.resize( fuScalerNumber );
          for( UInt_t uScaler = 0; uScaler < fuScalerNumber; uScaler ++)
             fvuDataCollection[uScaler].resize( fuChannelNumber );
@@ -149,6 +157,13 @@ void TTofScalerBoard::SetType( UInt_t uType )
          fuScalerNumber  = scaler2014::kuNbScalers;
          fuChannelNumber = scaler2014::kuNbChan;
          fvuDataCollection.resize( fuScalerNumber );
+         for( UInt_t uScaler = 0; uScaler < fuScalerNumber; uScaler ++)
+            fvuDataCollection[uScaler].resize( fuChannelNumber );
+         break;
+      case tofscaler::orgen :
+         fuScalerNumber  = orgen::kuNbScalers;
+         fuChannelNumber = orgen::kuNbChan;
+         fvuDataCollection.resize( fuScalerNumber ); 
          for( UInt_t uScaler = 0; uScaler < fuScalerNumber; uScaler ++)
             fvuDataCollection[uScaler].resize( fuChannelNumber );
          break;

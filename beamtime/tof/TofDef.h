@@ -27,6 +27,7 @@ namespace tofMbs
       scalormubig= 12,  // VULOM Scaler Or Multiplicity board  32 channel version ? not used for now
       scaler2014 = 13,  // VULOM Scaler Or/And board used in the GSI April 2014 TOF beamtime
       triglogscal= 14,  // VULOM TRIGLOG board used as additional scaler board
+      orgen      = 15,  // VULOM Or Generation board (nov 2015) with more scalers than scaler2014
       caenv965   = 20,  // CAEN v965A and CAEN v965N VME QDC boards
       lecroy1182 = 21,  // LECROY 1182 VME QDC/ADC board 
       vulqfwread = 22,  // VULOM QFW board (Charge to Frequency Converter Readout)
@@ -56,6 +57,7 @@ namespace tofMbs
    const TString ksTriglogHistName = "triglog";
    const TString ksScomHistName    = "scom";
    const TString ksScalHistName    = "scal";
+   const TString ksOrGenHistName   = "orgen";
    const TString ksV965HistName    = "v965";
    const TString ks1182HistName    = "1182";
    const TString ksQfwHistName     = "qfw";

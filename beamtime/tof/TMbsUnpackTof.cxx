@@ -12,6 +12,7 @@
 #include "TMbsUnpackTofPar.h"
 
 // ToF specific headers
+#include "TTofOrGenUnpacker.h"
 #include "TTofScal2014Unpacker.h"
 #include "TTofScomUnpacker.h"
 #include "TTofTriglogScalUnpacker.h"
@@ -42,6 +43,7 @@ TMbsUnpackTof::TMbsUnpackTof() :
    fiLastEventNumber(0),
    fLastCheck(),
    fCheck(),
+   fOrGenUnp(NULL),
    fScal2014Unp(NULL),
    fScomUnp(NULL),
    fVftxUnp(NULL),
@@ -62,6 +64,7 @@ TMbsUnpackTof::TMbsUnpackTof( Int_t verbose ) :
    fiLastEventNumber(0),
    fLastCheck(),
    fCheck(),
+   fOrGenUnp(NULL),
    fScal2014Unp(NULL),
    fScomUnp(NULL),
    fVftxUnp(NULL),
@@ -83,6 +86,7 @@ TMbsUnpackTof::TMbsUnpackTof( Int_t type, Int_t subType, Short_t procId, Int_t v
    fiLastEventNumber(0),
    fLastCheck(),
    fCheck(),
+   fOrGenUnp(NULL),
    fScal2014Unp(NULL),
    fScomUnp(NULL),
    fVftxUnp(NULL),
@@ -98,6 +102,8 @@ TMbsUnpackTof::~TMbsUnpackTof()
 {      
    LOG(INFO)<<"**** TMbsUnpackTof: Delete instance "<<FairLogger::endl;
 
+   if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::orgen ) )
+      delete fOrGenUnp;
    if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::scaler2014 ) )
       delete fScal2014Unp;
    if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::scalormu ) )
@@ -134,26 +140,28 @@ Bool_t TMbsUnpackTof::DoUnpack(Int_t* data, Int_t size)
    Int_t  * pData   = data;
 //   UInt_t  uNbWords = size/2 - 1; // <= Somehow FAIRROOT transfers the size in words from the subevt header and not the size in longwords reads by the f_evt_get_subevent function
 // Changed in git commit 0c0bd037c201d3496f9d5d7c133874382e885677 to fairroot LMD source
-// TODO: Make sure the same change is applied to FairMbsStreamSource !!!!
+// TODO: Make sure the same change is applied to FairMbsStreamSource !!!! => For now patch in autoinstall procedure
    UInt_t  uNbWords = size;
 
+   LOG(DEBUG)<<"TMbsUnpackTof::DoUnpack => Found DATA subevent! LEN"
+            <<uNbWords<<FairLogger::endl;
    
    if( 3 < fiVerbosity )
    {
       TString sPrintEvent = "";
-      LOG(INFO)<<"----------------------------------------------------------------"<<FairLogger::endl;
-      LOG(INFO)<<"Size: "<<uNbWords<<FairLogger::endl;
+      LOG(DEBUG)<<"----------------------------------------------------------------"<<FairLogger::endl;
+      LOG(DEBUG)<<"Size: "<<uNbWords<<FairLogger::endl;
       for( UInt_t uWdInd = 0; uWdInd < uNbWords; uWdInd++ )
       {
          if( 0 < uWdInd && 0 == uWdInd%8 )
          {
-            LOG(INFO)<<sPrintEvent<<FairLogger::endl;
+            LOG(DEBUG)<<sPrintEvent<<FairLogger::endl;
             sPrintEvent = "";
          } // if( 0 < uWdInd && 0 == uWdInd%8 )
          sPrintEvent += Form("%08x ", pData[uWdInd]);
       } // for( UInt_t uWdInd = 0; uWdInd < uNbWords; uWdInd++ )
-      LOG(INFO)<<sPrintEvent<<FairLogger::endl;
-      LOG(INFO)<<"----------------------------------------------------------------"<<FairLogger::endl;
+      LOG(DEBUG)<<sPrintEvent<<FairLogger::endl;
+      LOG(DEBUG)<<"----------------------------------------------------------------"<<FairLogger::endl;
    } // if( 3 < fiVerbosity )
 
    Int_t* iTagPos[ fMbsUnpackPar->GetBoardsNumber() ];
@@ -274,6 +282,10 @@ Bool_t TMbsUnpackTof::DoUnpack(Int_t* data, Int_t size)
                   fTrloScalUnp->ProcessTriglogScal( fMbsUnpackPar->GetGlobalToActiveInd( uBoard ),
                                          (UInt_t*) iTagPos[uBoard], iTagLen[uBoard]);  // Triglog used as scalers
                   break;
+               case tofMbs::orgen:
+                  fOrGenUnp->ProcessOrGen( fMbsUnpackPar->GetGlobalToActiveInd( uBoard ),
+                                         (UInt_t*) iTagPos[uBoard], iTagLen[uBoard]);  // OrGen 2015
+                  break;
                case tofMbs::undef:
                default:
                   LOG(WARNING)<<"TMbsUnpackTof::ProcessSubevent => Unknown board type "
@@ -342,6 +354,8 @@ Bool_t TMbsUnpackTof::CreateHistogramms()
       fScomUnp->CreateHistos();
    if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::triglogscal ) )
       fTrloScalUnp->CreateHistos();
+   if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::orgen ) )
+      fOrGenUnp->CreateHistos();
    if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::vftx ) )
       fVftxUnp->CreateHistos();
    
@@ -357,6 +371,8 @@ Bool_t TMbsUnpackTof::FillHistograms()
       fScomUnp->FillHistos();
    if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::triglogscal ) )
       fTrloScalUnp->FillHistos();
+   if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::orgen ) )
+      fOrGenUnp->FillHistos();
    if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::vftx ) )
       fVftxUnp->FillHistos();
    
@@ -377,6 +393,8 @@ void TMbsUnpackTof::WriteHistogramms()
       fScomUnp->WriteHistos( fHist );
    if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::triglogscal ) )
       fTrloScalUnp->WriteHistos( fHist );
+   if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::orgen ) )
+      fOrGenUnp->WriteHistos( fHist );
    if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::vftx ) )
       fVftxUnp->WriteHistos( fHist );
       
@@ -391,6 +409,8 @@ void TMbsUnpackTof::DeleteHistograms()
       fScomUnp->DeleteHistos();
    if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::triglogscal ) )
       fTrloScalUnp->DeleteHistos();
+   if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::orgen ) )
+      fOrGenUnp->DeleteHistos();
    if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::vftx ) )
       fVftxUnp->DeleteHistos();
 }
@@ -409,6 +429,8 @@ Bool_t TMbsUnpackTof::CreateUnpackers()
       fScomUnp     = new TTofScomUnpacker( fMbsUnpackPar );
    if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::triglogscal ) )
       fTrloScalUnp = new TTofTriglogScalUnpacker( fMbsUnpackPar );
+   if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::orgen ) )
+      fOrGenUnp = new TTofOrGenUnpacker( fMbsUnpackPar );
 /*
    if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::caenV1290 ) )
       fV1290Unp = new TTofV1290Unpacker( fMbsUnpackPar );
@@ -434,7 +456,7 @@ Bool_t TMbsUnpackTof::RegisterOutput()
    // with ConstructedAt access in TTofVftxUnpacker
    FairRootManager *fManager = FairRootManager::Instance();
       // Scalers
-         // TRIGLOG + Scalormu + Scaler2014
+         // TRIGLOG + Scalormu + Scaler2014 + OrGen
    if( 0 < fMbsUnpackPar->GetNbActiveScalersB() && 1 != fMbsUnpackPar->GetNbActiveBoards( tofMbs::triglog ) ) 
    {
       fScalerBoardCollection = new TClonesArray( "TTofScalerBoard", 

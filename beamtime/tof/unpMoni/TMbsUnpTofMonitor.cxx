@@ -45,7 +45,9 @@ TMbsUnpTofMonitor::TMbsUnpTofMonitor() :
    fiLastEventNumber(0),
    fFirstCheck(),
    fLastCheck(),
-   fCheck()
+   fCheck(),
+   fdScalersEvoRangeUser(-1),
+   fdScalersEvoBinSzUser(-1)
 {
 }
 
@@ -67,7 +69,9 @@ TMbsUnpTofMonitor::TMbsUnpTofMonitor(const char* name, Int_t verbose) :
    fiLastEventNumber(0),
    fFirstCheck(),
    fLastCheck(),
-   fCheck()
+   fCheck(),
+   fdScalersEvoRangeUser(-1),
+   fdScalersEvoBinSzUser(-1)
 {
 }
       
@@ -265,7 +269,10 @@ Bool_t TMbsUnpTofMonitor::CreateUnpackers()
    if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::scaler2014 ) )
       fScal2014Unp = new TTofScal2014Unpacker( fMbsUnpackPar );
    if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::triglogscal ) )
+   {
       fTrloScalUnp = new TTofTriglogScalUnpacker( fMbsUnpackPar );
+      fTrloScalUnp->SetHistoUserAxis( fdScalersEvoRangeUser, fdScalersEvoBinSzUser );
+   } // if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::triglogscal ) )
 /*
    if( 0 < fMbsUnpackPar->GetNbActiveBoards( tofMbs::caenV1290 ) )
       fV1290Unp = new TTofV1290Unpacker( fMbsUnpackPar );

@@ -35,6 +35,43 @@ CbmTofTracklet::CbmTofTracklet() :
 {
 }
 
+CbmTofTracklet::CbmTofTracklet( const CbmTofTracklet &t) :
+   TObject(),
+   fGlbTrack(-1),
+   fTrackLength(0.),
+   fPidHypo(-1),
+   fDistance(0.),
+   fTime(0.),
+   fTt(0.),
+   fT0(0.),
+   fChiSq(0.),
+   fNDF(0),
+   fTrackPar(),
+   fParamFirst(),
+   fParamLast(),
+   fTofHit(0,-1),
+   fTofDet(),
+   fMatChi(),
+   fpHit()
+{
+  fGlbTrack=t.fGlbTrack;
+  fTrackLength=t.fTrackLength;
+  fPidHypo=t.fPidHypo;
+  fDistance=t.fDistance;
+  fTime=t.fTime;
+  fTt=t.fTt;
+  fT0=t.fT0;
+  fChiSq=t.fChiSq;
+  fNDF=t.fNDF;
+  fTrackPar=t.fTrackPar;
+  fParamFirst=t.fParamFirst;
+  fParamLast=t.fParamLast;
+  fTofHit=t.fTofHit;
+  fTofDet=t.fTofDet;
+  fMatChi=t.fMatChi;
+  fpHit=t.fpHit;
+}
+
 CbmTofTracklet::~CbmTofTracklet() {
 }
 
@@ -121,16 +158,19 @@ Double_t CbmTofTracklet::GetZ0y(){
 Double_t CbmTofTracklet::UpdateT0(){ //returns estimated time at R==0
   Double_t dT0=0.;
   Double_t nValidHits=0.;
+  Int_t    iHit0=-1;
   if(fTofHit.size()>2) UpdateTt();  // update Tt first
   for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
     //cout << fpHit[iHit]->ToString()<<endl;
-    if( fTofDet[iHit]>0) {  // exlude fake hits
-      dT0 += fpHit[iHit]->GetTime() - fTt*fpHit[iHit]->GetR();
+    if( fTofDet[iHit]>0) {                        // exlude faked hits
+      dT0 += fpHit[iHit].GetTime() - fTt*fpHit[iHit].GetR();
       nValidHits++;
-    }
+    } else iHit0=iHit;
   }
   dT0 /= nValidHits;
   fT0=dT0;
+  if (iHit0>-1) fpHit[iHit0].SetTime(dT0);
+
   //cout << Form("   -D- CbmTofTracklet::GetT0: Trkl size %d,  validHits %3.0f, Tt = %6.2f dT0 = %6.2f",fTofHit.size(),nValidHits,fTt,dT0)<<endl;  
   return fT0;
 }
@@ -142,7 +182,7 @@ Double_t CbmTofTracklet::UpdateTt(){
       if( fTofDet[iHL]>0 )                         // exclude faked hits 
       for (UInt_t iHH=iHL+1; iHH<fpHit.size(); iHH++){
       if( fTofDet[iHH]>0) {                        // exclude faked hits 	      
-	dTt+=(fpHit[iHH]->GetTime()-fpHit[iHL]->GetTime())/(fpHit[iHH]->GetR()-fpHit[iHL]->GetR());
+	dTt+=(fpHit[iHH].GetTime()-fpHit[iHL].GetTime())/(fpHit[iHH].GetR()-fpHit[iHL].GetR());
 	iNt++;
       }
     }
@@ -159,10 +199,26 @@ Double_t CbmTofTracklet::UpdateTt(){
 Double_t CbmTofTracklet::GetTdif(Int_t iSmType, CbmTofHit* pHit){
   Double_t dTref=0.;
   Double_t Nref=0;
+  Double_t dTt=0.;
+  Int_t iNt=0;
+  for (Int_t iHL=0; iHL<fpHit.size()-1; iHL++){
+     if (iSmType == fTofDet[iHL] || 0 == fTofDet[iHL]) continue;           // exclude faked hits 
+     for (Int_t iHH=iHL+1; iHH<fpHit.size(); iHH++){
+       if (iSmType == fTofDet[iHH] || 0 == fTofDet[iHH]) continue;           // exclude faked hits 
+	dTt+=(fpHit[iHH].GetTime()-fpHit[iHL].GetTime())/(fpHit[iHH].GetR()-fpHit[iHL].GetR());
+	iNt++;
+     }
+  }
+  
+  if (iNt==0) {
+    cout << "-E- CbmTofTracklet::GetTdif: No valid hit pair "<<endl;
+    return 1.E20; 
+  }
+  dTt/=(Double_t)iNt;
 
   for (UInt_t iHit=0; iHit<fTofHit.size(); iHit++){
     if (iSmType == fTofDet[iHit] || 0 == fTofDet[iHit]) continue;  
-    dTref += fpHit[iHit]->GetTime() - fTt*(fpHit[iHit]->GetR()-pHit->GetR());
+    dTref += fpHit[iHit].GetTime() - dTt*(fpHit[iHit].GetR()-pHit->GetR());
     Nref++;
   }
   if(Nref == 0) {
@@ -177,19 +233,19 @@ Double_t CbmTofTracklet::GetTdif(Int_t iSmType, CbmTofHit* pHit){
 }
 
 const Double_t* CbmTofTracklet::GetPoint(Int_t n) {  // interface to event display: CbmTracks
-  fP[0]=fpHit[n]->GetX();
-  fP[1]=fpHit[n]->GetY();
-  fP[2]=fpHit[n]->GetZ();
-  fP[3]=fpHit[n]->GetTime();
+  fP[0]=fpHit[n].GetX();
+  fP[1]=fpHit[n].GetY();
+  fP[2]=fpHit[n].GetZ();
+  fP[3]=fpHit[n].GetTime();
   //  cout <<Form("CbmTofTracklet::GetPoint %d, %6.2f, %6.2f, %6.2f, %6.2f ",n,fP[0],fP[1],fP[2],fP[3]) << endl;
   return fP;
 }
 
 const Double_t* CbmTofTracklet::GetFitPoint(Int_t n) {  // interface to event display: CbmTracks
-  fP[0]=GetFitX(fpHit[n]->GetZ());
-  fP[1]=GetFitY(fpHit[n]->GetZ());
-  fP[2]=fpHit[n]->GetZ();
-  fP[3]=fpHit[n]->GetTime();
+  fP[0]=GetFitX(fpHit[n].GetZ());
+  fP[1]=GetFitY(fpHit[n].GetZ());
+  fP[2]=fpHit[n].GetZ();
+  fP[3]=fpHit[n].GetTime();
   /*
   cout <<Form("CbmTofTracklet::GetFitPoint %d, %6.2f - %6.2f, %6.2f - %6.2f, %6.2f, %6.2f ",
 	      n,fP[0],fpHit[n]->GetX(),fP[1],fpHit[n]->GetY(),fP[2],fP[3]) << endl;
@@ -207,6 +263,16 @@ Double_t CbmTofTracklet::GetFitY(Double_t dZ){
 
 Double_t CbmTofTracklet::GetFitT(Double_t dR){
   return GetT0() + fTt*dR;
+}
+
+void CbmTofTracklet::Clear(Option_t* option){
+
+  //  cout << "-D- Clear TofTracklet with option "<<*option<<endl; 
+  fTofHit.clear();
+  fTofDet.clear();
+  fMatChi.clear();
+  fpHit.clear();
+
 }
 
 ClassImp(CbmTofTracklet)

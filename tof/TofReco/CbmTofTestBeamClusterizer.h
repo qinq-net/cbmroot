@@ -87,7 +87,11 @@ class CbmTofTestBeamClusterizer : public FairTask
       inline void SetCalCluMulMax (Int_t ival)          { fiCluMulMax  = ival;}
       inline void SetTRefId     (Int_t Id)              { fTRefMode    = Id;}
       inline void SetDutId      (Int_t Id)              { fDutId       = Id;}
+      inline void SetDutSm      (Int_t Id)              { fDutSm       = Id;}
+      inline void SetDutRpc     (Int_t Id)              { fDutRpc      = Id;}
       inline void SetSelId      (Int_t Id)              { fSelId       = Id;}
+      inline void SetSelSm      (Int_t Id)              { fSelSm       = Id;}
+      inline void SetSelRpc     (Int_t Id)              { fSelRpc      = Id;}
       inline void SetBeamRefType   (Int_t Id)           { fiBeamRefType      = Id;}
       inline void SetBeamRefSm     (Int_t Id)           { fiBeamRefSm        = Id;}
       inline void SetBeamRefDet    (Int_t Id)           { fiBeamRefDet       = Id;}
@@ -101,6 +105,8 @@ class CbmTofTestBeamClusterizer : public FairTask
       inline void SetTotPreRange(Double_t val)          { fTotPreRange = val;}
       inline void SetMaxTimeDist(Double_t val)          { fMaxTimeDist = val;}
       inline void SetSel2Id     (Int_t ival)            { fSel2Id = ival;}
+      inline void SetSel2Sm     (Int_t ival)            { fSel2Sm = ival;}
+      inline void SetSel2Rpc    (Int_t ival)            { fSel2Rpc = ival;}
 
       inline void SetOutHstFileName(TString OutHstFileName) { fOutHstFileName = OutHstFileName; }
       inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
@@ -283,12 +289,21 @@ class CbmTofTestBeamClusterizer : public FairTask
       Int_t    fTRefMode;
       Int_t    fTRefHits;
       Int_t    fDutId;
+      Int_t    fDutSm;
+      Int_t    fDutRpc;
+      Int_t    fDutAddr;
       Int_t    fSelId;
+      Int_t    fSelSm;
+      Int_t    fSelRpc;
+      Int_t    fSelAddr;
       Int_t    fiBeamRefType;
       Int_t    fiBeamRefSm;
       Int_t    fiBeamRefDet;
       Int_t    fiBeamAddRefMul;
       Int_t    fSel2Id;
+      Int_t    fSel2Sm;
+      Int_t    fSel2Rpc;
+      Int_t    fSel2Addr;
 
       Double_t fPosYMaxScal;
       Double_t fTRefDifMax;

@@ -77,7 +77,8 @@ class CbmTofTracklet : public TObject {
 	  return -1;}
 
 	Int_t        GetTofHitIndex(Int_t ind)   const { return fTofHit[ind]; }
-	CbmTofHit*   GetTofHitPointer(Int_t ind) const { return fpHit[ind]; }
+	CbmTofHit*   GetTofHitPointer(Int_t ind) { return &fpHit[ind]; }
+	Int_t        GetTofDetIndex(Int_t ind)   const { return fTofDet[ind]; }
 
 	const vector<Int_t>&  GetTofHitInd() const { return fTofHit; }
 
@@ -140,7 +141,7 @@ class CbmTofTracklet : public TObject {
 	  fTofDet.resize(1);
 	  fTofDet[0]=iDet;
 	  fpHit.resize(1);
-	  fpHit[0]=pHit;
+	  fpHit[0]=*pHit;
 	  fMatChi.resize(1);
 	}
 
@@ -150,7 +151,7 @@ class CbmTofTracklet : public TObject {
 	  fTofDet.resize(1);
 	  fTofDet[0]=iDet;
 	  fpHit.resize(1);
-	  fpHit[0]=pHit;
+	  fpHit[0]=*pHit;
 	  fMatChi.resize(1);
 	  fMatChi[0]=chi2;
 	}
@@ -164,7 +165,7 @@ class CbmTofTracklet : public TObject {
 	  fTofDet.resize(fTofHit.size());
           fTofDet[fTofHit.size()-1] = iDet; 	  
 	  fpHit.resize(fTofHit.size());
-	  fpHit[fTofHit.size()-1]=pHit;
+	  fpHit[fTofHit.size()-1]=*pHit;
 	  fMatChi.resize(fTofHit.size());
 	}
 
@@ -174,7 +175,7 @@ class CbmTofTracklet : public TObject {
 	  fTofDet.resize(fTofHit.size());
           fTofDet[fTofHit.size()-1] = iDet; 
 	  fpHit.resize(fTofHit.size());
-	  fpHit[fTofHit.size()-1]=pHit;
+	  fpHit[fTofHit.size()-1]=*pHit;
 	  fMatChi.resize(fTofHit.size());
           fMatChi[fTofHit.size()-1] = chi2; 
 	}
@@ -183,7 +184,7 @@ class CbmTofTracklet : public TObject {
 	  for (Int_t iHit=0; iHit<(Int_t)fTofHit.size(); iHit++){
 	    if (iDet == fTofDet[iHit]) {
 	      fTofHit[iHit]=tofHitIndex;
-	      fpHit[iHit]=pHit;
+	      fpHit[iHit]=*pHit;
 	      fMatChi[iHit]=chi2;
 	      break;
 	    }
@@ -215,7 +216,10 @@ class CbmTofTracklet : public TObject {
 	void SetParamLast(const CbmTofTrackletParam* par);
 //	void LoadParamLast(); 
 
- protected:
+	void Clear(Option_t* option = "");
+	CbmTofTracklet(const CbmTofTracklet &);           /**   Copy Constructor   **/
+
+ private:
 
         Int_t             fGlbTrack;     //!  Index of global track
 	Double_t          fTrackLength;  //! Track length from primary vertex to TOF [cm]
@@ -226,19 +230,18 @@ class CbmTofTracklet : public TObject {
 	Double_t          fT0;           //! Time at origin
 	Double_t          fChiSq;        //! Chi2 of fit 
 	Int_t             fNDF;          //! # of degrees of freedom  
-	CbmTofTrackletParam fTrackPar;   //  Track parameters at z of TofHit
-	FairTrackParam fParamFirst;      //  Track parameters at first and last fitted hit
-	FairTrackParam fParamLast;       //
+	CbmTofTrackletParam fTrackPar;   //!  Track parameters at z of TofHit
+	FairTrackParam fParamFirst;      //!  Track parameters at first and last fitted hit
+	FairTrackParam fParamLast;       //!
 	vector<Int_t>     fTofHit;       //! Index of TofHit
 	vector<Int_t>     fTofDet;       //! DetLayer of TofHit
 	vector<Double_t>  fMatChi;       //! Matching Chi2 of TofHit
-	vector<CbmTofHit *> fpHit;       //! pointer to TofHit 
+	vector<CbmTofHit> fpHit;         //! vector of TofHit objects 
 	Double_t fP[4];                  //! transient (transfer) space point to Eve
 
-	CbmTofTracklet(const CbmTofTracklet &);           /**   Copy Constructor   **/
 	CbmTofTracklet& operator=(const CbmTofTracklet &);/**   Assignment operator   **/
 
-	ClassDef(CbmTofTracklet, 1);
+	ClassDef(CbmTofTracklet, 2);
 };
 
 #endif /* CBMTOFTRACKLET_H */

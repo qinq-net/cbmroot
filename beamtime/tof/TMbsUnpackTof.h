@@ -17,6 +17,7 @@
 class TMbsUnpackTofPar;
 
 // Unpackers
+class TTofOrGenUnpacker;
 class TTofScal2014Unpacker;
 class TTofScomUnpacker;
 class TTofVftxUnpacker;
@@ -74,6 +75,7 @@ class TMbsUnpackTof : public FairUnpack {
       TDatime fCheck;
       
       // Unpackers
+      TTofOrGenUnpacker       * fOrGenUnp;
       TTofScal2014Unpacker    * fScal2014Unp;
       TTofScomUnpacker        * fScomUnp;
       TTofVftxUnpacker        * fVftxUnp;
