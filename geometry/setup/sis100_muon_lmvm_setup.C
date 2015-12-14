@@ -2,6 +2,7 @@
 //   comments
 //
 
+// 2015-12-14 - DE - rename short SIS100 MUCH version to muon_LMVM setup
 // 2015-12-14 - DE - use TOF v16a
 // 2015-12-11 - DE - use STS v15c as new defaut
 // 2015-12-11 - DE - reproduce MUCH v15b setup from macro/much/much_sim.C
@@ -17,7 +18,7 @@
 //
 
 
-void sis100_muon_setup()
+void sis100_muon_lmvm_setup()
 {
   // -----   Magnetic field   -----------------------------------------------
   fieldMap     = "field_v12b";   // name of field map
