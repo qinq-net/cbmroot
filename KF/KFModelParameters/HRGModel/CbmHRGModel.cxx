@@ -75,7 +75,7 @@ namespace HRGModelNamespace {
 	#include "NumericalIntegration.h"
 
 	const Double_t kProtonMass = 0.938271998;
-	const Double_t GeVtoifm = 5.06423;
+//	const Double_t GeVtoifm = 5.06423;
 	
 	Double_t AcceptanceFunction::getAcceptance(const Double_t & y, const Double_t & pt) const {
 		double ret = sfunc.Eval(y, pt);

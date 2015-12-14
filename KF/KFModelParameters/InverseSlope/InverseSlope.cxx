@@ -10,7 +10,8 @@ namespace InverseSlopeNamespace {
 InverseSlope::InverseSlope(double mass, int PDGID, bool UseAcc, double ymin, double ymax, double ycm, double width):
 		xlag32(), wlag32(), xleg32(), wleg32(),
 		fMass(mass), fPDGID(PDGID), fUseAcceptance(UseAcc), fYmin(ymin), fYmax(ymax), fYcm(ycm), fWidth(width),
-		fNorm(1.), fAcceptance(), fReconstructionEfficiency(), fTamt(), fNormT(), fNormT4pi()
+		fAcceptance(), fReconstructionEfficiency(), fTamt(), fNormT(), fNormT4pi()
+//		fNorm(1.), fAcceptance(), fReconstructionEfficiency(), fTamt(), fNormT(), fNormT4pi()
 		
 {
 	InverseSlopeNamespace::GetCoefsIntegrateLegendre32(0., 3., xlag32, wlag32);

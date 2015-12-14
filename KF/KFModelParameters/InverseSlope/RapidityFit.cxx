@@ -26,7 +26,8 @@ namespace RapidityFitNamespace {
 	public:
 
 	  DoubleGaussFCN(const std::vector<double> &y_, const std::vector<double> &dndy_, const std::vector<double> &err_):
-	  fPositions(y_), fMeasurements(dndy_), fErrors(err_), iter(0)
+	  fPositions(y_), fMeasurements(dndy_), fErrors(err_)
+//	  fPositions(y_), fMeasurements(dndy_), fErrors(err_), iter(0)
 	  { 
 	  }
 
@@ -47,7 +48,7 @@ namespace RapidityFitNamespace {
 	  std::vector<double> fPositions;
 	  std::vector<double> fMeasurements;
 	  std::vector<double> fErrors;
-	  int iter;
+//	  int iter;
 	};
 }
 

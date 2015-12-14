@@ -17,7 +17,7 @@ class InverseSlope
 	int fPDGID;
 	bool fUseAcceptance;
 	double fYmin, fYmax, fYcm, fWidth;
-	double fNorm;
+//	double fNorm;
 	Acceptance::AcceptanceFunction fAcceptance;//fAcceptanceSTS, fAcceptanceSTSTOF;
 	Acceptance::ReconstructionEfficiencyFunction fReconstructionEfficiency;
 	TSpline3 fTamt;

@@ -18,7 +18,7 @@ class BlastWave
 	int fPDGID;
 	bool fUseAcceptance;
 	double fYmin, fYmax, fYcm, fEtaMax;
-	double fNorm;
+//	double fNorm;
 	Acceptance::AcceptanceFunction fAcceptance;//fAcceptanceSTS, fAcceptanceSTSTOF;
 	Acceptance::ReconstructionEfficiencyFunction fReconstructionEfficiency;
 	TSpline3 fTamt;

@@ -10,7 +10,8 @@ namespace BlastWaveLongitudinalNamespace {
 BlastWaveLongitudinal::BlastWaveLongitudinal(double mass, int PDGID, bool UseAcc, double ymin, double ymax, double ycm, double T):
 		xlag32(), wlag32(), xleg32(), wleg32(), xlegeta(), wlegeta(),
 		fMass(mass), fPDGID(PDGID), fUseAcceptance(UseAcc), fYmin(ymin), fYmax(ymax), fYcm(ycm), fT(T),
-		fNorm(1.), fY2Min(), fY2Max(), fEtaMin(), fEtaMax(), fAcceptance(), fReconstructionEfficiency(), fetaay2(), fNormeta(), fNormeta4pi()
+		fY2Min(), fY2Max(), fEtaMin(), fEtaMax(), fAcceptance(), fReconstructionEfficiency(), fetaay2(), fNormeta(), fNormeta4pi()
+//		fNorm(1.), fY2Min(), fY2Max(), fEtaMin(), fEtaMax(), fAcceptance(), fReconstructionEfficiency(), fetaay2(), fNormeta(), fNormeta4pi()
 {
 	BlastWaveLongitudinalNamespace::GetCoefsIntegrateLegendre32(0., 3., xlag32, wlag32);
 	BlastWaveLongitudinalNamespace::GetCoefsIntegrateLegendre32(fYmin, fYmax, xleg32, wleg32);

@@ -18,7 +18,7 @@ class BlastWaveLongitudinal
 	int fPDGID;
 	bool fUseAcceptance;
 	double fYmin, fYmax, fYcm, fT;
-	double fNorm;
+//	double fNorm;
 	double fY2Min, fY2Max;
 	double fEtaMin, fEtaMax;
 	Acceptance::AcceptanceFunction fAcceptance;//fAcceptanceSTS, fAcceptanceSTSTOF;
