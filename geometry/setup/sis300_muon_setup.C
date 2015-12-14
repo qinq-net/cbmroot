@@ -2,6 +2,7 @@
 //   comments
 //
 
+// 2015-12-14 - DE - use TOF v16a
 // 2015-12-11 - DE - use STS v15c as new defaut
 // 2015-07-20 - FU - magnet v15a is v12b with correct keeping volume material
 // 2015-07-20 - FU - add material budget files
@@ -27,7 +28,7 @@ void sis300_muon_setup()
   mvdTag       = "";
   stsTag       = "v15c";
   trdTag       = "v15a_3m";
-  tofTag       = "v13-5e";
+  tofTag       = "v16a_3m";
 
   // -----  DigiFiles  ------------------------------------------------------
   stsDigi      = ""; // "sts/sts_" + stsTag + "_std.digi.par";
