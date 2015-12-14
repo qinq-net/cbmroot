@@ -55,7 +55,8 @@ private:
 	CbmVertex *fPrimVertex;
 	CbmKFVertex fKFVertex;
 
-	vector<TH1*> fHistoList_photons;	// list of all histograms related to rich rings
+	vector<TH1*> fHistoList_photons;			// list of all histograms related to rich rings
+	vector<TH1*> fHistoList_photons_withRICH;	// list of all histograms related to rich rings
 
 
 	vector<Int_t>			fRecoTracklist_gtIndex;
@@ -111,6 +112,30 @@ private:
 	TH2D * fh2Electrons_invmassVSpt_combBack;
 	TH2D * fh2Electrons_invmassVSpt_allSameG;
 
+
+
+	// distribution of opening angles from reconstructed momenta, with RICH
+	TH1D * fh2Electrons_angle_withRICH_all;
+	TH1D * fh2Electrons_angle_withRICH_combBack;
+	TH1D * fh2Electrons_angle_withRICH_allSameG;
+
+
+	// opening angle vs pt from reconstructed data, with RICH
+	TH2D * fh2Electrons_angleVSpt_withRICH_all;
+	TH2D * fh2Electrons_angleVSpt_withRICH_combBack;
+	TH2D * fh2Electrons_angleVSpt_withRICH_allSameG;
+
+
+	// distribution of opening angles from reconstructed momenta, with RICH
+	TH1D * fh2Electrons_invmass_withRICH_all;
+	TH1D * fh2Electrons_invmass_withRICH_combBack;
+	TH1D * fh2Electrons_invmass_withRICH_allSameG;
+
+
+	// opening angle vs pt from reconstructed data, with RICH
+	TH2D * fh2Electrons_invmassVSpt_withRICH_all;
+	TH2D * fh2Electrons_invmassVSpt_withRICH_combBack;
+	TH2D * fh2Electrons_invmassVSpt_withRICH_allSameG;
 
 	// timer
 	TStopwatch timer;
