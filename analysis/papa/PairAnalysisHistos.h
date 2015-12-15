@@ -31,6 +31,7 @@
 #include <THashList.h>
 #include <TVectorD.h> //Dfwd
 #include <THnBase.h>
+#include <THnSparse.h>
 #include <TBits.h>
 #include <TFormula.h>
 #include <TH1.h> //new
@@ -44,6 +45,46 @@ class TH1;
 class TString;
 class TList;
 // class TVectorT<double>;
+
+/////// temporary class to hold functions in thnbase (not implemented therein)
+class PairAnalysisHn : public THnSparseD {
+ public:
+  TList           *GetListOfFunctions() const { return fFunctions; }
+  inline PairAnalysisHn() : 
+    THnSparseD(),
+    fFunctions(new TList) {  }
+  inline PairAnalysisHn(const char* name, const char* title,
+			Int_t dim, const Int_t* nbins, const Double_t* xmin = 0, const Double_t* xmax = 0,
+			Int_t chunksize = 1024 * 16) :
+    THnSparseD(name,title,dim,nbins,xmin,xmax,chunksize),
+    fFunctions(new TList) {  }
+
+  inline ~PairAnalysisHn() {
+    if (fFunctions) {
+      fFunctions->SetBit(kInvalidObject);
+      TObject* obj = 0;
+      while ((obj  = fFunctions->First())) {
+	while(fFunctions->Remove(obj)) { }
+	if (!obj->TestBit(kNotDeleted)) {
+	  break;
+	}
+	delete obj;
+	obj = 0;
+      }
+      delete fFunctions;
+      fFunctions = 0;
+    }
+  }
+ protected:
+  TList        *fFunctions;       //->Pointer to list of functions (fits and user)
+
+ private:
+  PairAnalysisHn(const PairAnalysisHn &hist);
+  PairAnalysisHn& operator = (const PairAnalysisHn &hist);
+  ClassDef(PairAnalysisHn,1)
+};
+ClassImp(PairAnalysisHn)
+//// end temporary solution
 
 class PairAnalysisHistos : public TNamed {
 public:
@@ -61,14 +102,16 @@ public:
   void SetReservedWords(const char* words);
   void AddClass(        const char* histClass);
   TString UserHistogram(   const char* histClass, TObject* hist);
-  static void AdaptNameTitle(TH1 *hist, const char* histClass);
+  static void AdaptNameTitle(TH1 *hist,     const char* histClass);
+  static void AdaptNameTitle(THnBase *hist, const char* histClass);
   static void StoreVariables(TObject *obj, UInt_t valType[20]);
   static void StoreVariables(TH1 *obj,     UInt_t valType[20]);
   static void StoreVariables(THnBase *obj, UInt_t valType[20]);
 
   void UserHistogram(const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars, UInt_t valTypeW=kNoWeights);
   void AddSparse(   const char* histClass, Int_t ndim, TObjArray *limits, UInt_t *vars, UInt_t valTypeW=kNoWeights);
-
+  void AddSparse(   const char* histClass, Int_t ndim, TObjArray *limits, TFormula **vars, UInt_t valTypeW=kNoWeights);
+  
   // templates
   template <typename valX, typename valY, typename valZ, typename valP, typename valW>
     TString UserObject(const char* histClass, const char *name, const char* title,

@@ -35,6 +35,7 @@
 #pragma link C++ class PairAnalysis+;
 
 #pragma link C++ class PairAnalysisHistos+;
+#pragma link C++ class PairAnalysisHn+;
 ///////1D
 //w/o weights
 #pragma link C++ function PairAnalysisHistos::AddHistogram(char*, TVectorD*, UInt_t);

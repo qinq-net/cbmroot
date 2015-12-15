@@ -251,6 +251,74 @@ void PairAnalysisHistos::AddSparse(const char* histClass, Int_t ndim, TObjArray 
 }
 
 //_____________________________________________________________________________
+void PairAnalysisHistos::AddSparse(const char* histClass, Int_t ndim, TObjArray *limits, TFormula **vars, UInt_t valTypeW)
+{
+  //
+  // THnSparse creation with non-linear binning
+  //
+
+  Bool_t isOk=kTRUE;
+  isOk&=(ndim==limits->GetEntriesFast());
+  if(!isOk) return;
+
+  // set automatic histo name
+  TString name;
+  for(Int_t iv=0; iv < ndim; iv++)
+    name+=Form("%s_",(PairAnalysisHelper::GetFormulaName(vars[iv])).Data());
+  name.Resize(name.Length()-1);
+  name.ReplaceAll("f(","");
+  name.ReplaceAll(")","");
+  name.Prepend("f(");
+  name.Append(")");
+
+  isOk&=IsHistogramOk(histClass,name);
+
+  //  THnSparseD *hist;
+  PairAnalysisHn *hist;
+  Int_t bins[ndim];
+  if (isOk) {
+    // get number of bins
+    for(Int_t idim=0 ;idim<ndim; idim++) {
+      TVectorD *vec = (TVectorD*) limits->At(idim);
+      bins[idim]=vec->GetNrows()-1;
+    }
+
+    //    hist=new THnSparseD(name.Data(),"", ndim, bins, 0x0, 0x0);
+    hist=new PairAnalysisHn(name.Data(),"", ndim, bins, 0x0, 0x0);
+
+    // set binning
+    for(Int_t idim=0 ;idim<ndim; idim++) {
+      TVectorD *vec = (TVectorD*) limits->At(idim);
+      hist->SetBinEdges(idim,vec->GetMatrixArray());
+    }
+
+    // add formulas to list of functions
+    for(Int_t idim=0 ;idim<ndim; idim++) {
+      vars[idim]->SetName(Form("axis%dFormula",idim));
+      hist->GetListOfFunctions()->Add( vars[idim] );
+    }
+
+    // store variales in axes
+    //    StoreVariables(hist, vars);
+    hist->SetUniqueID(valTypeW); // store weighting variable
+
+    // adapt the name and title of the histogram in case they are empty
+    AdaptNameTitle(hist, histClass);
+
+    // store which variables are used
+    //for(Int_t i=0; i<ndim; i++)   fUsedVars->SetBitNumber(vars[i],kTRUE);
+    fUsedVars->SetBitNumber(valTypeW,kTRUE);
+
+    Bool_t isReserved=fReservedWords->Contains(histClass);
+    if (isReserved)
+      UserHistogramReservedWords(histClass, hist);
+    else
+      UserHistogram(histClass, hist);
+
+  }
+}
+
+//_____________________________________________________________________________
 TString PairAnalysisHistos::UserHistogram(const char* histClass, TObject* hist)
 {
   //
@@ -1454,6 +1522,13 @@ void PairAnalysisHistos::StoreVariables(THnBase *obj, UInt_t valType[20])
   // store variables in the axis
   //
 
+  obj->Sumw2();
+
+  // check for formulas and skip the rest if needed
+  TList *list = obj->GetListOfFunctions();
+  if(obj->IsA()==PairAnalysisHn::Class()) list = (static_cast<PairAnalysisHn*>(obj))->GetListOfFunctions();
+  if(list && list->Last()) return;
+
   Int_t dim = obj->GetNdimensions();
 
   for(Int_t it=0; it<dim; it++) {
@@ -1461,7 +1536,6 @@ void PairAnalysisHistos::StoreVariables(THnBase *obj, UInt_t valType[20])
     obj->GetAxis(it)->SetName(Form("%s", PairAnalysisVarManager::GetValueName(valType[it])));
     obj->GetAxis(it)->SetTitle(Form("%s %s", PairAnalysisVarManager::GetValueLabel(valType[it]), PairAnalysisVarManager::GetValueUnit(valType[it])));
   }
-  obj->Sumw2();
   return;
 }
 
@@ -1598,19 +1672,37 @@ void PairAnalysisHistos::FillValues(THnBase *obj, const Double_t *values)
   // fill values for THn inherted classes
   //
 
+  // skip if manual filling
+  UInt_t value4    =obj->GetUniqueID();  // weighting variable if any
+  if (value4==(UInt_t)PairAnalysisHistos::kNoAutoFill) return;
+
+  // check for formulas and skip the rest if needed
+  TList *list = obj->GetListOfFunctions();
+  if(obj->IsA()==PairAnalysisHn::Class()) list = (static_cast<PairAnalysisHn*>(obj))->GetListOfFunctions();
+  Bool_t useFormulas = (list && list->Last());
+
+  //  do weighting
+  Bool_t weight    =(value4!=kNoWeights);
+
+  // fill array
   const Int_t dim   = obj->GetNdimensions();
-
-  UInt_t valueTypes=obj->GetUniqueID();
-  if (valueTypes==(UInt_t)PairAnalysisHistos::kNoAutoFill) return;
-  Bool_t weight = (valueTypes!=kNoWeights);
-
-  UInt_t value4=obj->GetUniqueID();            // weight variable
-
   Double_t fill[dim];
-  for(Int_t it=0; it<dim; it++)   fill[it] = values[obj->GetAxis(it)->GetUniqueID()];
-  if(!weight) obj->Fill(fill);
-  else obj->Fill(fill, values[value4]);
 
+  // loop over all axes
+  for(Int_t it=0; it<dim; it++) {
+    if(useFormulas) {
+      TString formName=Form("axis%dFormula",it);
+      TFormula *form = dynamic_cast<TFormula*>(list->FindObject(formName));
+      fill[it] = PairAnalysisHelper::EvalFormula(form, values);
+    }
+    else {
+      fill[it] = values[obj->GetAxis(it)->GetUniqueID()];
+    }
+  }
+
+  // fill object
+  if(!weight) obj->Fill(fill);
+  else        obj->Fill(fill, values[value4]);
 
   return;
 }
@@ -1624,7 +1716,6 @@ void PairAnalysisHistos::FillVarArray(TObject *obj, UInt_t *valType)
 
 
   if (!obj) return;
-  //  Printf(" fillvararray %s",obj->GetName());
 
   if (obj->InheritsFrom(TH1::Class())) {
     valType[0]=((TH1*)obj)->GetXaxis()->GetUniqueID();
@@ -1788,6 +1879,52 @@ void PairAnalysisHistos::AdaptNameTitle(TH1 *hist, const char* histClass) {
     if(hclass.Contains("pair")) currentName.Prepend("p");
     hist->SetName(currentName.Data());
   }
+}
+
+
+//_____________________________________________________________________________
+void PairAnalysisHistos::AdaptNameTitle(THnBase *hist, const char* histClass) {
+
+  //
+  // adapt name and title of the histogram
+  //
+
+  Int_t dim = hist->GetNdimensions();
+  TString currentName  = "";//hist->GetName();
+  TString currentTitle = "";//hist->GetTitle();
+  TString hclass       = histClass;
+  //get reserved class
+  TObjArray *arr=hclass.Tokenize("_.");
+  arr->SetOwner();
+  hclass=((TObjString*)arr->At(0))->GetString();
+  delete arr;
+  hclass.ToLower();
+
+  Bool_t bname  = (currentName.IsNull());
+  Bool_t btitle = (currentTitle.IsNull());
+
+  TList *list = (static_cast<PairAnalysisHn*>(hist))->GetListOfFunctions();
+
+  // store titles in the axis
+  if(btitle) {
+    TString tit = "";
+    // adapt according to formula
+    for(Int_t it=0; it<dim; it++) {
+      TString formName=Form("axis%dFormula",it);
+      TFormula *form = dynamic_cast<TFormula*>(list->FindObject(formName));
+      hist->GetAxis(it)->SetName(PairAnalysisHelper::GetFormulaName(form).Data());
+      // adapt according to formula
+      hist->GetAxis(it)->SetTitle(PairAnalysisHelper::GetFormulaTitle(form).Data());
+    }
+  }
+
+  // create an unique name
+  if(bname) {
+    currentName=hist->GetName();
+    if(hclass.Contains("pair")) currentName.Prepend("p");
+    hist->SetName(currentName.Data());
+  }
+
 }
 
 //_____________________________________________________________________________
