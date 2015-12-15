@@ -39,12 +39,14 @@ CbmRichGeoOpt::CbmRichGeoOpt()
     fRichRings(NULL), 
     fRichRingMatches(NULL),
     fEventNum(0),
-    PointsFilled(0),
+    PMTPointsFilled(0),
+    SensPointsFilled(0),
     fMinNofHits(7),
     nPhotonsNotOnPlane(0),
     nPhotonsNotOnSphere(0),
     nTotalPhorons(0),
-    PlanePoints(),
+    PMTPlanePoints(),
+    SensPlanePoints(),
     PMTPlaneCenter(),
     ReadPMTPlaneCenter(),
     ReadPMTPlaneCenterOrig(),
@@ -52,19 +54,16 @@ CbmRichGeoOpt::CbmRichGeoOpt()
 // ReadMirrorCenter(),
     RotX(0.),
     RotY(0.),
-    r1(),
-    r2(),
-    n(),
+    PMT_r1(),
+    PMT_r2(),
+    PMT_norm(),
+    Sens_r1(),
+    Sens_r2(),
+    Sens_norm(),
     PMTPlaneThirdX(0.),
     PMTPlaneCenterX(0.),
     PMTPlaneCenterY(0.),
     MirrPosition(),
-// MirrPosX(0.),
-// MirrPosY(0.),
-// MirrPosZ(0.),
-  
-// PMTPlaneCenterXatThird(0.),
-// PMTPlaneCenterYatThird(0.),
     H_Diff_LineRefPMT_MomAtPMT(NULL),
     H_Theta_TwoVectors(NULL),
     H_DistancePMTtoMirrCenter(NULL),
@@ -156,7 +155,7 @@ CbmRichGeoOpt::CbmRichGeoOpt()
 {
   /*
     fEventNum = 0;
-    PointsFilled = 0;
+    PMTPointsFilled = 0;
     fMinNofHits = 7;
     nPhotonsNotOnPlane = 0;
     nPhotonsNotOnSphere = 0;
@@ -198,62 +197,69 @@ InitStatus CbmRichGeoOpt::Init()
 
    /////////////// need three points on the PMT plane to determine its equation
    //cout<<" initializing points values -1000"<<endl;
-   PlanePoints.resize(3);
-   for(int p=0;p<PlanePoints.size();p++){
-     PlanePoints[p].SetX(-1000.);PlanePoints[p].SetY(-1000.);PlanePoints[p].SetZ(-1000.);
+   PMTPlanePoints.resize(3);
+   SensPlanePoints.resize(3);
+   for(int p=0;p<PMTPlanePoints.size();p++){
+     PMTPlanePoints[p].SetX(-1000.);PMTPlanePoints[p].SetY(-1000.);PMTPlanePoints[p].SetZ(-1000.);
+     SensPlanePoints[p].SetX(-1000.);SensPlanePoints[p].SetY(-1000.);SensPlanePoints[p].SetZ(-1000.);
    }
    PMTPlaneCenterX =-1.*fGP.fPmtWidthX/2.; 
    PMTPlaneCenterY =-1.*fGP.fPmtWidthY/2.;
    PMTPlaneThirdX =-1.*fGP.fPmtWidthX/3.; 
    cout<<"fGP.fPmtWidthX = "<< fGP.fPmtWidthX<<",  PMTPlaneCenterX = "<< PMTPlaneCenterX<<",  PMTPlaneThirdX = "<< PMTPlaneThirdX<<endl;
-    //cout << "PMT size in x and y [cm]: " << fGP.fPmtWidthX << "  " << fGP.fPmtWidthY << endl;
-
-   //MirrPosition.SetXYZ(0.,80.5,350.); 
-   //MirrPosX=0.;  MirrPosY=80.5;  MirrPosZ=350.;
-   //cout<<" initializing histos"<<endl;
+ 
    InitHistograms();
-   //cout<<" initialized"<<endl;
-
    return kSUCCESS;
 }
 
 void CbmRichGeoOpt::Exec(Option_t* option)
 {
   fEventNum++;
-  //cout << "#################### CbmRichGeoOpt, event No. " <<  fEventNum << endl;
+  // cout << "#################### CbmRichGeoOpt, event No. " <<  fEventNum << endl;
   
-  if(PointsFilled==0){
-    for(int p=1;p<PlanePoints.size();p++){
-      if( PlanePoints[p].X() == PlanePoints[p-1].X() ){FillPointsAtPMT();PointsFilled=0;}else{PointsFilled=1;}
+  if(PMTPointsFilled==0){
+    for(int p=1;p<PMTPlanePoints.size();p++){
+      if( PMTPlanePoints[p].X() == PMTPlanePoints[p-1].X() ){
+	cout<<"PMTPlanePoints["<<p<<"].X == PMTPlanePoints["<<p-1<<"].X =="<<PMTPlanePoints[p-1].X()<<endl;
+	cout<<"Calling FillPointsAtPMT()"<<endl;
+	FillPointsAtPMT();PMTPointsFilled=0;
+      }else{
+	PMTPointsFilled=1;
+      }
     }
   }
-  
+  if(SensPointsFilled==0){
+    for(int p=1;p<SensPlanePoints.size();p++){
+      if( SensPlanePoints[p].X() == SensPlanePoints[p-1].X() ){FillPointsAtPMTSensPlane();SensPointsFilled=0;}else{SensPointsFilled=1;}
+    }
+  }
+ 
   //cout << "#################### CbmRichGeoOpt, event No. " <<  fEventNum << endl;
   //Fill the coordinates of the three points on the PMT plane 
   
   PMTPlaneCenter.SetX(fGP.fPmtX); PMTPlaneCenter.SetY(fGP.fPmtY); PMTPlaneCenter.SetZ(fGP.fPmtZ);
-  if(PointsFilled==1 && fEventNum<10){
-    for(int p=0;p<PlanePoints.size();p++){
-      cout<<"Point "<<p<< ": ("<<PlanePoints[p].X()<<" , "<< PlanePoints[p].Y()<<" , "<< PlanePoints[p].Z()<<")"<<endl;
-    }
-  }
-  
   /////////////////////////////////////////
-  if(PointsFilled==1){
-    //GetPMTRotAngels();
-    //GetPlaneCenter(fGP.fMirrorTheta*180./TMath::Pi(), RotX*180./TMath::Pi(), RotY*180./TMath::Pi());
-    
+  // if(PMTPointsFilled==1 && SensPointsFilled==1 ){cout<<" Both are filled."<<endl;}
+  // else if(PMTPointsFilled==1 && SensPointsFilled==0){cout<<" PMTPointsFilled==1 && SensPointsFilled==0."<<endl;}
+  // else if(PMTPointsFilled==0 && SensPointsFilled==1){cout<<" PMTPointsFilled==0 && SensPointsFilled==1."<<endl;}
+  // else{cout<<" PMTPointsFilled==0 && SensPointsFilled==0."<<endl;}
+
+  if(PMTPointsFilled==1){
     if(fEventNum<10){
-      r1=PlanePoints[1]-PlanePoints[0]; 
-      r2=PlanePoints[2]-PlanePoints[0]; 
-      n=r1.Cross(r2);
+      for(int p=0;p<PMTPlanePoints.size();p++){
+	cout<<"Point "<<p<< ": ("<<PMTPlanePoints[p].X()<<" , "<< PMTPlanePoints[p].Y()<<" , "<< PMTPlanePoints[p].Z()<<")"<<endl;
+      }
+      
+      PMT_r1=PMTPlanePoints[1]-PMTPlanePoints[0]; 
+      PMT_r2=PMTPlanePoints[2]-PMTPlanePoints[0]; 
+      PMT_norm=PMT_r1.Cross(PMT_r2);
       MirrorCenter.SetX(fGP.fMirrorX);MirrorCenter.SetY(fGP.fMirrorY);MirrorCenter.SetZ(fGP.fMirrorZ);
       cout<<"MirrorCenter=("<<MirrorCenter.X()<<","<<MirrorCenter.Y()<<","<<MirrorCenter.Z()<<")"<<endl;
-      cout<<"r1=("<<r1.X()<<","<<r1.Y()<<","<<r1.Z()<<")"<<endl;
-      cout<<"r2=("<<r2.X()<<","<<r2.Y()<<","<<r2.Z()<<")"<<endl;
-      cout<<"n=("<<n.X()<<","<<n.Y()<<","<<n.Z()<<")"<<endl;
+      cout<<"PMT_r1=("<<PMT_r1.X()<<","<<PMT_r1.Y()<<","<<PMT_r1.Z()<<")"<<endl;
+      cout<<"PMT_r2=("<<PMT_r2.X()<<","<<PMT_r2.Y()<<","<<PMT_r2.Z()<<")"<<endl;
+      cout<<"PMT_norm=("<<PMT_norm.X()<<","<<PMT_norm.Y()<<","<<PMT_norm.Z()<<")"<<endl;
     }
-    //HitsAndPointsWithRef();
+    // //HitsAndPointsWithRef();
     HitsAndPoints();
     RingParameters();
     FillMcHist();
@@ -276,7 +282,7 @@ void CbmRichGeoOpt::HitsAndPoints(){
     if(NULL == point) continue;
     //int trackId = point->GetTrackID(); if(trackId<0) continue;
     PosAtDetIn.SetX(point->GetX()); PosAtDetIn.SetY(point->GetY()); PosAtDetIn.SetZ(point->GetZ());
-    bool Checked=CheckPointLiesOnPlane(PosAtDetIn,PlanePoints[0],n);
+    bool Checked=CheckPointLiesOnPlane(PosAtDetIn,PMTPlanePoints[0],PMT_norm);
     if(!Checked) continue;
     H_PointsIn_XY->Fill(PosAtDetIn.X(),PosAtDetIn.Y());
     if(PosAtDetIn.X() <= PMTPlaneCenterX){H_PointsIn_XY_LeftHalf->Fill(PosAtDetIn.X(),PosAtDetIn.Y()); }
@@ -303,7 +309,7 @@ void CbmRichGeoOpt::HitsAndPoints(){
     int motherId = motherTrack->GetMotherId();
     TVector3 ElMom; Double_t ElTheta;
     if (pdg == 11 && motherId == -1){motherTrack->GetMomentum(ElMom);   ElTheta=ElMom.Theta()* 180 / TMath::Pi();}
-    double Alpha2=MomAtPMT.Angle(n);//*TMath::RadToDeg();
+    double Alpha2=MomAtPMT.Angle(PMT_norm);//*TMath::RadToDeg();
     double Alpha2InDeg=Alpha2*TMath::RadToDeg();
     if(Alpha2InDeg>90.){Alpha2InDeg=180.-Alpha2InDeg;}
      H_Alpha->Fill(Alpha2InDeg);
@@ -362,22 +368,23 @@ void CbmRichGeoOpt::HitsAndPointsWithRef(){
   Int_t nofRefPoints = fRefPoints->GetEntriesFast();
   Int_t nofPoints = fRichPoints->GetEntriesFast();
   if(nofPoints==0 || nofRefPoints==0){return;} if(nofPoints>2000){return;} 
-  //cout<<"nofPoints:  "<<  nofPoints<<endl;
-  //loop over points and get momentum of photons --> calculate angle (to be done later)
-  if(nofPoints<=30){H_NofPhotonsSmallerThan30->Fill(nofPoints); }
-  H_NofPhotonsPerEv->Fill(nofPoints); 
   
   for (int i = 0; i < nofRefPoints; i++) {
-    TVector3 PosAtRefl; TVector3 PosAtDetIn; TVector3 PosAtDetOut;
+    TVector3 PosAtRefl; TVector3 PosAtDetIn; 
     CbmRichPoint* RefPoint = (CbmRichPoint*)fRefPoints->At(i);
     TVector3 MomAtRef; MomAtRef.SetX(RefPoint->GetPx()); MomAtRef.SetY(RefPoint->GetPy()); MomAtRef.SetZ(RefPoint->GetPz()); //RefPoint->GetMomentum(MomAtRef);
+    
     if (RefPoint == NULL) continue;
     int RefPointTrackId = RefPoint->GetTrackID(); if(RefPointTrackId<0) {continue;}
+    CbmMCTrack* RefPointTrack = static_cast<CbmMCTrack*>(fMcTracks->At(RefPointTrackId));
+    int pdg0 = RefPointTrack->GetPdgCode(); if(TMath::Abs(pdg0) == 11) {continue;}
     RefPoint->Position(PosAtRefl);
     int Zpos=int(10.*PosAtRefl.Z());//3037 0r 3038  -->take 3038 which is the entrance point 
     //of the REFLECTED photon into the sensitive plane   
-    //cout<<PosAtRefl.Z()<<"    "<<Zpos<<endl;
-    if(Zpos==3037){continue;}
+    cout<<PosAtRefl.Z()<<"    "<<Zpos<<endl;
+    //if(Zpos==3037){continue;}
+    TVector3 momRef; RefPointTrack->GetMomentum(momRef);  
+
     CbmRichPoint* point = GetPMTPoint(RefPointTrackId);//
     PosAtDetIn.SetX(point->GetX()); PosAtDetIn.SetY(point->GetY()); PosAtDetIn.SetZ(point->GetZ());
     TVector3 MomAtPMT; MomAtPMT.SetX(point->GetPx()); MomAtPMT.SetY(point->GetPy()); MomAtPMT.SetZ(point->GetPz());
@@ -402,7 +409,7 @@ void CbmRichGeoOpt::HitsAndPointsWithRef(){
     }
     
     ////////////////////////////////////////////////////
-    bool Checked=CheckPointLiesOnPlane(PosAtDetIn,PlanePoints[0],n);
+    bool Checked=CheckPointLiesOnPlane(PosAtDetIn,PMTPlanePoints[0],PMT_norm);
     if(!Checked) continue;//cout<<" point not on plane: ("<<point->GetX()<<","<<point->GetY()<<","<<point->GetZ()<<")"<<endl; continue;
 
     TVector3 LineSensToPMT=PosAtDetIn-PosAtRefl;
@@ -411,12 +418,12 @@ void CbmRichGeoOpt::HitsAndPointsWithRef(){
 
     H_Theta_TwoVectors->Fill(LineSensToPMT.Angle(MomAtPMT));
     /////////// calculate alpha relative to the "tilted" PMT plane !!
-    double Alpha=LineSensToPMT.Angle(n);//*TMath::RadToDeg();
+    double Alpha=LineSensToPMT.Angle(PMT_norm);//*TMath::RadToDeg();
     double AlphaInDeg=Alpha*TMath::RadToDeg();
     if(AlphaInDeg>90.){AlphaInDeg=180.-AlphaInDeg;}
     /////////// calculate alpha throuh the momentum vector !!
-    //double Alpha2=PointMom.Angle(n);//*TMath::RadToDeg();
-    double Alpha2=MomAtPMT.Angle(n);//*TMath::RadToDeg();
+    //double Alpha2=PointMom.Angle(PMT_norm);//*TMath::RadToDeg();
+    double Alpha2=MomAtPMT.Angle(PMT_norm);//*TMath::RadToDeg();
     double Alpha2InDeg=Alpha2*TMath::RadToDeg();
     if(Alpha2InDeg>90.){Alpha2InDeg=180.-Alpha2InDeg;}
     //cout<<PointMom.X()<<"  "<<MomAtPMT.X()<<"   "<<MomAtRef.X()<<"   "<<Alpha<<"   "<<Alpha2<<endl;
@@ -839,29 +846,57 @@ CbmRichPoint* CbmRichGeoOpt::GetPMTPoint(int TrackIdOfSensPlane)
 void CbmRichGeoOpt::FillPointsAtPMT()
 {
   
-  for(int p=0;p<PlanePoints.size();p++){
-    if(PlanePoints[p].X() != -1000.){
+  for(int p=0;p<PMTPlanePoints.size();p++){
+    if(PMTPlanePoints[p].X() != -1000.){
       if(p==0){continue;}
       else{
 	int PointFilled=1;
 	for(int p2=p-1;p2>-1;p2--){
-	  if(TMath::Abs( PlanePoints[p2].X() - PlanePoints[p].X() ) < 1.0){PointFilled=0;}
+	  if(TMath::Abs( PMTPlanePoints[p2].X() - PMTPlanePoints[p].X() ) < 1.0){PointFilled=0;}
 	}
 	if(PointFilled==1){continue;}
       }
     }
-    
-    //fEventNum++;
     Int_t nofPoints = fRichPoints->GetEntriesFast();
-    
+    //  cout<<"We have "<<nofPoints<<" points registered on PMT plane"<<endl;
     for(Int_t ip = 0; ip < nofPoints-10; ip+=10){
       CbmRichPoint* point = (CbmRichPoint*) fRichPoints->At(ip);
       if(NULL == point) continue;
       int trackId = point->GetTrackID(); if(trackId<0) continue;
       if(point->GetX()>=0 || point->GetY()<=0){continue;}
+      cout<<"FillPointsAtPMT: Fillinf point #"<<p<<" --> "<<  point->GetX()<<", "<<point->GetY()<<", "<<point->GetZ()<<endl;
+      PMTPlanePoints[p].SetX(point->GetX());PMTPlanePoints[p].SetY(point->GetY());PMTPlanePoints[p].SetZ(point->GetZ());
+      if(PMTPlanePoints[p].X() !=-1000.){break;}
+    }
+  }
 
-      PlanePoints[p].SetX(point->GetX());PlanePoints[p].SetY(point->GetY());PlanePoints[p].SetZ(point->GetZ());
-      if(PlanePoints[p].X() !=-1000.){break;}
+}
+//////////////////////////////////////////////////////////////
+void CbmRichGeoOpt::FillPointsAtPMTSensPlane()
+{
+  
+  for(int p=0;p<SensPlanePoints.size();p++){
+    if(SensPlanePoints[p].X() != -1000.){
+      if(p==0){continue;}
+      else{
+	int PointFilled=1;
+	for(int p2=p-1;p2>-1;p2--){
+	  if(TMath::Abs( SensPlanePoints[p2].X() - SensPlanePoints[p].X() ) < 1.0){PointFilled=0;}
+	}
+	if(PointFilled==1){continue;}
+      }
+    }
+    
+    Int_t nofRefPoints = fRefPoints->GetEntriesFast();
+    // cout<<"We have "<<nofRefPoints<<" points registered on sens plane"<<endl;
+    for(Int_t ip = 0; ip < nofRefPoints-10; ip+=10){
+      CbmRichPoint* RefPoint = (CbmRichPoint*)fRefPoints->At(ip);
+     if (RefPoint == NULL) continue;
+     int RefPointTrackId = RefPoint->GetTrackID(); if(RefPointTrackId<0) {continue;}
+     if(RefPoint->GetX()>=0 || RefPoint->GetY()<=0){continue;}
+     
+     SensPlanePoints[p].SetX(RefPoint->GetX());SensPlanePoints[p].SetY(RefPoint->GetY());SensPlanePoints[p].SetZ(RefPoint->GetZ());
+     if(SensPlanePoints[p].X() !=-1000.){break;}
     }
   }
 }

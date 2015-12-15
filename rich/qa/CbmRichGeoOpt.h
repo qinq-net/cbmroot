@@ -85,7 +85,7 @@ private:
    TClonesArray* fRichRingMatches; 
 
    Int_t fEventNum;
-   Int_t PointsFilled;
+   Int_t PMTPointsFilled;
    Int_t fMinNofHits; // Min number of hits in ring for detector acceptance calculation.
 
    Int_t nPhotonsNotOnPlane;
@@ -97,7 +97,7 @@ private:
    //double RotAngleY;
    
    //Parameters to be read from a parameters file
-   vector<TVector3> PlanePoints;
+   vector<TVector3> PMTPlanePoints;
    TVector3 PMTPlaneCenter; 
    TVector3 ReadPMTPlaneCenter;
    TVector3 ReadPMTPlaneCenterOrig;
@@ -105,13 +105,20 @@ private:
    //TVector3 ReadMirrorCenter;
    double RotX; 
    double RotY;
-   TVector3 r1; 
-   TVector3 r2; 
-   TVector3 n;
+   TVector3 PMT_r1; 
+   TVector3 PMT_r2; 
+   TVector3 PMT_norm;
    double PMTPlaneCenterX; double PMTPlaneCenterY; double PMTPlaneThirdX; 
    TVector3 MirrPosition;   //double MirrPosX; double MirrPosY; double MirrPosZ;
+   
+   Int_t SensPointsFilled;
+   vector<TVector3> SensPlanePoints;
+   TVector3 Sens_r1; 
+   TVector3 Sens_r2; 
+   TVector3 Sens_norm;
+   
    //double PMTPlaneXatThird; double PMTPlaneYatThird;
-
+   
    /**
     * \brief get MC Histos (P & Pt).
     */
@@ -150,6 +157,11 @@ private:
     * \brief get point coordinates.
     */
    void FillPointsAtPMT();
+   
+   /**
+    * \brief get senspoint coordinates.
+    */
+   void FillPointsAtPMTSensPlane();
    
    /**
     * \brief calculate distance between mirror center and pmt-point.
