@@ -215,7 +215,7 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  return "/nas/Tariq/OptimisedGeo/";
+  return "/nas/Tariq/GeoOpt/";
   //return "/hera/cbm/users/tariq/MomScan/";
   return "/nas/Tariq/Test/";
 //   return "/nas/Tariq/GeoOpt/";

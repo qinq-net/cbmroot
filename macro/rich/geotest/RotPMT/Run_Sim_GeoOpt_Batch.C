@@ -323,7 +323,7 @@ TString GetGeoText(int GeoCase){
 }
 ////////////////////////////////////////////
 TString GetOutDir(int GeoCase){
-  return "/nas/Tariq/OptimisedGeo/";
+  return "/nas/Tariq/GeoOpt/";
 //  return "/data/GeoOpt/Test2/";
 //   return "/data/GeoOpt/OptiPMTSize/";
   return "/hera/cbm/users/tariq/MomScan/";
@@ -388,7 +388,7 @@ TString  GetDimentionText(int DimCase, int EnlargedPMTWidth, int EnlargedPMTHigh
 
 ////////////////////////////////////////////////////////
 TString GetRICH_GeoFile( char *RotMirText, TString PMTRotText, TString PMTTransText, int GeoCase, TString PMTDimsText,TString ExtraText){
-  return "rich/minus10deg_ext_mirror_update_Mod.gdml";
+  //return "rich/rich_v14a.root";
   // return "rich/minus10deg_ext_mirror.gdml";
   //GeoCase=-2 ==> old geometry with rich_v08a.geo (RICH starts at 1600, Mirror tilt -1)
   //GeoCase=-1 ==> old geometry with rich_v14a.gdml (RICH starts at 1800, Mirror tilt -1)
