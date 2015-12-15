@@ -42,8 +42,10 @@ public:
       trbId==0x80d5 || trbId==0x80e5 || trbId==0x80f5 || trbId==0x8105 || trbId == 0x8115);
    }
 
+// tdcId is UInt_t and always larger 0, so remove first part of statement
    Bool_t IsPmtTdc(UInt_t tdcId) const {
-      return ( ((tdcId & 0x000f) >= 0) && ((tdcId & 0x000f) <= 3) && ((tdcId >> 8) == 0) ) ||
+//      return ( ((tdcId & 0x000f) >= 0) && ((tdcId & 0x000f) <= 3) && ((tdcId >> 8) == 0) ) ||
+      return ( ((tdcId & 0x000f) <= 3) && ((tdcId >> 8) == 0) ) ||
       (tdcId == 0x0100 || tdcId == 0x0101 || tdcId == 0x0102 || tdcId == 0x0103);
    }
 
