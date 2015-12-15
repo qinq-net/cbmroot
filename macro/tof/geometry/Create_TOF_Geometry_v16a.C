@@ -147,7 +147,7 @@ Float_t zPosModm[NMTm][NMm] = {{608.32,608.32,0.,0.},       //z - coordinates of
 // inverted M1/M2 positions
 
 Float_t zPosModm[NMTm][NMm] = {{632.22,632.22,0.,0.},        //z - coordinates of center of M1 modules
-			       {608.32,608.32,0.,0.},        //z - coordinates of center of M2 modules
+			       {608.22,608.22,0.,0.},        //z - coordinates of center of M2 modules
 			       {656.12,656.12,656.12,656.12}};//z - coordinates of center of M3 modules
 
 Float_t FlipModm[NMTm][NMm] = {{0.,180.,0.,0.},           //M1 rotation angle with respect to normal of surface
