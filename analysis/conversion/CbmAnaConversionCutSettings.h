@@ -97,6 +97,14 @@ public:
 		return cut;
 	}
 
+
+	static Double_t CalcChiCutAlt3(Double_t pt)
+	{
+		Double_t cut = 0;
+		cut = 4;
+		return cut;
+	}
+
 };
 
 #endif

@@ -20,6 +20,7 @@
 #include "CbmMCTrack.h"
 #include "CbmVertex.h"
 #include "CbmKFVertex.h"
+#include "../../littrack/cbm/elid/CbmLitGlobalElectronId.h"
 
 
 
@@ -42,6 +43,7 @@ public:
 	void AnalyseElectronsReco();
 	void AnalyseElectronsRecoWithRICH();
 
+	void EstimateFullRecoResults();
 
 
 private:
@@ -57,7 +59,10 @@ private:
 
 	vector<TH1*> fHistoList_photons;			// list of all histograms related to rich rings
 	vector<TH1*> fHistoList_photons_withRICH;	// list of all histograms related to rich rings
+	vector<TH1*> fHistoList_photons_withRICH_withChi;	// list of all histograms related to rich rings
+	vector<TH1*> fHistoList_photons_withRICH_fromTarget;	// list of all histograms related to rich rings
 
+	CbmLitGlobalElectronId* electronidentifier;
 
 	vector<Int_t>			fRecoTracklist_gtIndex;
 	vector<Int_t>			fRecoTracklist_mcIndex;
@@ -137,6 +142,41 @@ private:
 	TH2D * fh2Electrons_invmassVSpt_withRICH_combBack;
 	TH2D * fh2Electrons_invmassVSpt_withRICH_allSameG;
 
+
+	// opening angle vs pt from reconstructed data, with RICH and with CHI-cut
+	TH1D * fh2Electrons_angle_withRICH_withChi_all;
+	TH1D * fh2Electrons_angle_withRICH_withChi_combBack;
+	TH1D * fh2Electrons_angle_withRICH_withChi_allSameG;
+	TH2D * fh2Electrons_angleVSpt_withRICH_withChi_all;
+	TH2D * fh2Electrons_angleVSpt_withRICH_withChi_combBack;
+	TH2D * fh2Electrons_angleVSpt_withRICH_withChi_allSameG;
+	TH1D * fh2Electrons_invmass_withRICH_withChi_all;
+	TH1D * fh2Electrons_invmass_withRICH_withChi_combBack;
+	TH1D * fh2Electrons_invmass_withRICH_withChi_allSameG;
+	TH2D * fh2Electrons_invmassVSpt_withRICH_withChi_all;
+	TH2D * fh2Electrons_invmassVSpt_withRICH_withChi_combBack;
+	TH2D * fh2Electrons_invmassVSpt_withRICH_withChi_allSameG;
+
+
+	// opening angle vs pt from reconstructed data, with RICH, from TARGET (z>1cm)
+	TH1D * fh2Electrons_angle_withRICH_fromTarget_all;
+	TH1D * fh2Electrons_angle_withRICH_fromTarget_combBack;
+	TH1D * fh2Electrons_angle_withRICH_fromTarget_allSameG;
+	TH2D * fh2Electrons_angleVSpt_withRICH_fromTarget_all;
+	TH2D * fh2Electrons_angleVSpt_withRICH_fromTarget_combBack;
+	TH2D * fh2Electrons_angleVSpt_withRICH_fromTarget_allSameG;
+	TH1D * fh2Electrons_invmass_withRICH_fromTarget_all;
+	TH1D * fh2Electrons_invmass_withRICH_fromTarget_combBack;
+	TH1D * fh2Electrons_invmass_withRICH_fromTarget_allSameG;
+	TH2D * fh2Electrons_invmassVSpt_withRICH_fromTarget_all;
+	TH2D * fh2Electrons_invmassVSpt_withRICH_fromTarget_combBack;
+	TH2D * fh2Electrons_invmassVSpt_withRICH_fromTarget_allSameG;
+
+
+	// crosscheck for full reco, or estimation of signal and background
+	vector< vector<int> > fVector_combinations;
+	TH1I * fh2Electrons_fullrecoCheck;
+
 	// timer
 	TStopwatch timer;
 	Double_t fTime;
@@ -148,3 +188,4 @@ private:
 };
 
 #endif
+

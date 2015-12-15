@@ -867,6 +867,7 @@ void CbmAnaConversionRecoFull::Exec()
 	cout << "CbmAnaConversionRecoFull: combining for each case!" << endl;
 	
 	for(int i=1; i<=4; i++) {
+		cout << "CbmAnaConversionRecoFull: case " << i << endl;
 		CombineElectrons(fElectrons_track_new[i], fElectrons_momenta_new[i], fElectrons_momentaChi_new[i], fElectrons_mctrackID_new[i], fVector_photons_pairs_new[i], i);
 		CombinePhotons(fElectrons_track_new[i], fElectrons_momenta_new[i], fElectrons_momentaChi_new[i], fElectrons_mctrackID_new[i], fVector_photons_pairs_new[i], i);
 	}
@@ -1240,10 +1241,10 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 				
 				cout << "CbmAnaConversionRecoFull: debug: (" << invmass << "/" << paramsTest.fMinv << ") - (" << pt << "/" << paramsTest.fPt << ") - (" << rap << "/" << paramsTest.fRapidity << ")" << endl;
 				
-				TVector3 momentumE1;
-				TVector3 momentumE2;
-				gtrack[a]->GetParamLast()->Momentum(momentumE1);
-				gtrack[b]->GetParamLast()->Momentum(momentumE2);
+				//TVector3 momentumE1;
+				//TVector3 momentumE2;
+				//gtrack[a]->GetParamLast()->Momentum(momentumE1);
+				//gtrack[b]->GetParamLast()->Momentum(momentumE2);
 					
 				Double_t energyE11 = TMath::Sqrt(momenta[electron11].Mag2() + M2E);
 				TLorentzVector lorVecE11(momenta[electron11], energyE11);
@@ -1826,10 +1827,10 @@ void CbmAnaConversionRecoFull::CombinePhotons()
 				CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(fElectrons_momenta[electron11], fElectrons_momenta[electron12], fElectrons_momenta[electron21], fElectrons_momenta[electron22]);
 				
 				
-				TVector3 momentumE1;
-				TVector3 momentumE2;
-				fElectrons_track[a]->GetParamLast()->Momentum(momentumE1);
-				fElectrons_track[b]->GetParamLast()->Momentum(momentumE2);
+				//TVector3 momentumE1;
+				//TVector3 momentumE2;
+				//fElectrons_track[a]->GetParamLast()->Momentum(momentumE1);
+				//fElectrons_track[b]->GetParamLast()->Momentum(momentumE2);
 					
 				Double_t energyE11 = TMath::Sqrt(fElectrons_momenta[electron11].Mag2() + M2E);
 				TLorentzVector lorVecE11(fElectrons_momenta[electron11], energyE11);
