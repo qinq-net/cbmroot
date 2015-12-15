@@ -46,9 +46,9 @@
 #include <sstream>
 
 // Name of geometry version and output file
-//const TString geoVersion = "tof_v16a_1h";     // SIS 100 hadron, 4.5 m
+const TString geoVersion = "tof_v16a_1h";     // SIS 100 hadron, 4.5 m
 //const TString geoVersion = "tof_v16a_1e";     // SIS 100 electron, 6 m
-const TString geoVersion = "tof_v16a_1m";     // SIS 100 muon, 6.8 m
+//const TString geoVersion = "tof_v16a_1m";     // SIS 100 muon, 6.8 m
 //const TString geoVersion = "tof_v16a_3e";     // SIS 300 electron, 8.8 m
 //const TString geoVersion = "tof_v16a_3m";     // SIS 300 muon, 10 m
 const TString FileNameSim  = geoVersion + ".geo.root";
