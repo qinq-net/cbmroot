@@ -514,11 +514,11 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 	  infoMessage.Form("SysID%02i SpaID%02i",iSys,iSpa);
 	  LOG(INFO) << infoMessage << FairLogger::endl;
 	  //for (Int_t iCh = 0; iCh < 15; iCh++){
-	  infoMessage.Form("%12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu ",
+	  infoMessage.Form("%12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu | %12lu ",
 			   flastDlmTriggerTime[iSys][iSpa][ 0],flastDlmTriggerTime[iSys][iSpa][ 1],flastDlmTriggerTime[iSys][iSpa][ 2],flastDlmTriggerTime[iSys][iSpa][ 3],
 			   flastDlmTriggerTime[iSys][iSpa][ 4],flastDlmTriggerTime[iSys][iSpa][ 5],flastDlmTriggerTime[iSys][iSpa][ 6],flastDlmTriggerTime[iSys][iSpa][ 7],
 			   flastDlmTriggerTime[iSys][iSpa][ 8],flastDlmTriggerTime[iSys][iSpa][ 9],flastDlmTriggerTime[iSys][iSpa][10],flastDlmTriggerTime[iSys][iSpa][11],
-			   flastDlmTriggerTime[iSys][iSpa][12],flastDlmTriggerTime[iSys][iSpa][13],flastDlmTriggerTime[iSys][iSpa][14],flastDlmTriggerTime[iSys][iSpa][15]
+			   flastDlmTriggerTime[iSys][iSpa][12],flastDlmTriggerTime[iSys][iSpa][13],flastDlmTriggerTime[iSys][iSpa][14]
 			   );
 	  LOG(INFO) << infoMessage << FairLogger::endl;
 	  // }
@@ -1011,7 +1011,7 @@ void CbmTrdRawBeamProfile::TimeClustering2015CernSPS()
     CleanUpBuffers();
     return;
   }
-  std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> >::iterator secondTimeIt = (MSIt->second).begin();
+//  std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> >::iterator secondTimeIt = (MSIt->second).begin();
   for (std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> >::iterator firstTimeIt = (FFMIt->second).begin() ; firstTimeIt != (FFMIt->second).end(); firstTimeIt++){
     Int_t maxChargeFFM(-300), lastChargeFFM(-301),  maxChargeMS(-300), lastChargeMS(-301);
     //secondEpochIt = (MSIt->second).find(firstEpochIt->first);
@@ -1035,7 +1035,8 @@ void CbmTrdRawBeamProfile::TimeClustering2015CernSPS()
     
     if (thisFFMTime > lastFFMTime){
       //cout << "    nextFFMTime found" << endl;
-      for (secondTimeIt ; secondTimeIt != (MSIt->second).end(); secondTimeIt++){
+//      for (secondTimeIt ; secondTimeIt != (MSIt->second).end(); secondTimeIt++){
+      for (std::map<Int_t, std::map<Int_t, CbmSpadicRawMessage*> >::iterator secondTimeIt = (MSIt->second).begin(); secondTimeIt != (MSIt->second).end(); secondTimeIt++){
 	thisMSTime = (Int_t)secondTimeIt->first;
 
 	//cout << "        thisMSTime: " << thisMSTime;
