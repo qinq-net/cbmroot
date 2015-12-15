@@ -20,6 +20,7 @@ class CbmTofDigiBdfPar;
 class TMbsMappingTofPar;
 
 #include "FairTask.h"
+#include "CbmTofAddress.h"    // in cbmdata/tof
 
 class TClonesArray;
 class TH1;
@@ -105,19 +106,45 @@ class CbmTofAnaTestbeam : public FairTask {
       inline void SetChi2Lim   (Double_t val)           { fdChi2Lim = val;}
 
       inline void SetCorMode   (Int_t ival)             { fiCorMode = ival;}
-      inline void SetDut       (Int_t ival)             { fiDut = ival;}
-      inline void SetDutSm     (Int_t ival)             { fiDutSm = ival;}
-      inline void SetDutRpc    (Int_t ival)             { fiDutRpc     = ival;}
-      inline void SetMrpcRef   (Int_t ival)             { fiMrpcRef    = ival;}
-      inline void SetMrpcRefSm (Int_t ival)             { fiMrpcRefSm  = ival;}
-      inline void SetMrpcRefRpc(Int_t ival)             { fiMrpcRefRpc = ival;}
-      inline void SetMrpcSel2  (Int_t ival)             { fiMrpcSel2   = ival;}
-      inline void SetMrpcSel2Sm  (Int_t ival)           { fiMrpcSel2Sm = ival;}
-      inline void SetMrpcSel2Rpc  (Int_t ival)          { fiMrpcSel2Rpc= ival;}
-      inline void SetMrpcSel3  (Int_t ival)             { fiMrpcSel3 = ival;}
+      inline void SetDutAddr   (Int_t ival)             { fiDutAddr = ival;}
+      inline void SetMrpcRefAddr   (Int_t ival)         { fiMrpcRefAddr  = ival;}
+      inline void SetMrpcSel2Addr  (Int_t ival)         { fiMrpcSel2Addr = ival;}
+      inline void SetMrpcSel3Addr  (Int_t ival)         { fiMrpcSel3Addr = ival;}
+      inline void SetBeamRefAddr   (Int_t ival)         { fiBeamRefAddr  = ival;}
+
+      inline void SetDut       (Int_t ival)             { fiDut = ival;
+	fiDutAddr=CbmTofAddress::GetUniqueAddress(fiDutSm,fiDutRpc,0,0,fiDut);}
+      inline void SetDutSm     (Int_t ival)             { fiDutSm = ival;
+	fiDutAddr=CbmTofAddress::GetUniqueAddress(fiDutSm,fiDutRpc,0,0,fiDut);}
+      inline void SetDutRpc    (Int_t ival)             { fiDutRpc     = ival;
+	fiDutAddr=CbmTofAddress::GetUniqueAddress(fiDutSm,fiDutRpc,0,0,fiDut);}
+
+      inline void SetMrpcRef   (Int_t ival)             { fiMrpcRef    = ival;
+	fiMrpcRefAddr=CbmTofAddress::GetUniqueAddress(fiMrpcRefSm,fiMrpcRefRpc,0,0,fiMrpcRef);}
+      inline void SetMrpcRefSm (Int_t ival)             { fiMrpcRefSm  = ival;
+	fiMrpcRefAddr=CbmTofAddress::GetUniqueAddress(fiMrpcRefSm,fiMrpcRefRpc,0,0,fiMrpcRef);}
+      inline void SetMrpcRefRpc(Int_t ival)             { fiMrpcRefRpc = ival;
+	fiMrpcRefAddr=CbmTofAddress::GetUniqueAddress(fiMrpcRefSm,fiMrpcRefRpc,0,0,fiMrpcRef);}
+
+      inline void SetMrpcSel2  (Int_t ival)             { fiMrpcSel2   = ival;
+	fiMrpcSel2Addr=CbmTofAddress::GetUniqueAddress(fiMrpcSel2Sm,fiMrpcSel2Rpc,0,0,fiMrpcSel2);}
+      inline void SetMrpcSel2Sm  (Int_t ival)           { fiMrpcSel2Sm = ival;
+	fiMrpcSel2Addr=CbmTofAddress::GetUniqueAddress(fiMrpcSel2Sm,fiMrpcSel2Rpc,0,0,fiMrpcSel2);}
+      inline void SetMrpcSel2Rpc  (Int_t ival)          { fiMrpcSel2Rpc= ival;
+	fiMrpcSel2Addr=CbmTofAddress::GetUniqueAddress(fiMrpcSel2Sm,fiMrpcSel2Rpc,0,0,fiMrpcSel2);}
+
+      inline void SetMrpcSel3  (Int_t ival)             { fiMrpcSel3 = ival;
+	fiMrpcSel3Addr=CbmTofAddress::GetUniqueAddress(fiMrpcSel3Sm,fiMrpcSel3Rpc,0,0,fiMrpcSel3);}
+      inline void SetMrpcSel3Sm  (Int_t ival)           { fiMrpcSel3Sm = ival;
+	fiMrpcSel3Addr=CbmTofAddress::GetUniqueAddress(fiMrpcSel3Sm,fiMrpcSel3Rpc,0,0,fiMrpcSel3);}
+      inline void SetMrpcSel3Rpc  (Int_t ival)          { fiMrpcSel3Rpc= ival;
+	fiMrpcSel3Addr=CbmTofAddress::GetUniqueAddress(fiMrpcSel3Sm,fiMrpcSel3Rpc,0,0,fiMrpcSel3);}
+
       inline void SetPlaSelect (Int_t ival)             { fiPlaSelect = ival;}
-      inline void SetBeamRefSmType (Int_t ival)         { fiBeamRefSmType = ival;}
-      inline void SetBeamRefSmId    (Int_t ival)        { fiBeamRefSmId   = ival;}
+      inline void SetBeamRefSmType (Int_t ival)         { fiBeamRefSmType = ival;
+	fiBeamRefAddr=CbmTofAddress::GetUniqueAddress(fiBeamRefSmId,0,0,0,fiBeamRefSmType);}
+      inline void SetBeamRefSmId    (Int_t ival)        { fiBeamRefSmId   = ival;
+	fiBeamRefAddr=CbmTofAddress::GetUniqueAddress(fiBeamRefSmId,0,0,0,fiBeamRefSmType);}
 
       inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
 
@@ -371,18 +398,25 @@ class CbmTofAnaTestbeam : public FairTask {
       Double_t        fdChi2Lim;          // Chi2 Limit to accept selector coincidence
 
       Int_t        fiCorMode; // Correction histogram generation mode
-      Int_t            fiDut; // Device under test
+      Int_t        fiDutAddr; // Device under test Address
+      Int_t    fiMrpcRefAddr; // Reference Mrpc Address
+      Int_t   fiMrpcSel2Addr; // Coincident Mrpc 2 Addr
+      Int_t   fiMrpcSel3Addr; // Coincident Mrpc 3 Addr 
+      Int_t    fiBeamRefAddr; // Beam reference counter 
+      Int_t            fiDut; // Device under test type
       Int_t          fiDutSm; // requested (super)module of Device under test
       Int_t         fiDutRpc; // requested Rpc of Device under test
-      Int_t        fiMrpcRef; // Reference Mrpc
+      Int_t        fiMrpcRef; // Reference Mrpc Type
       Int_t      fiMrpcRefSm; // Reference Mrpc Sm
       Int_t     fiMrpcRefRpc; // Reference Mrpc Rpc
-      Int_t       fiMrpcSel2; // Coincident Mrpc 2
+      Int_t       fiMrpcSel2; // Coincident Mrpc 2 type
       Int_t     fiMrpcSel2Sm; // Coincident Mrpc 2 module
       Int_t    fiMrpcSel2Rpc; // Coincident Mrpc 2 Rpc
-      Int_t       fiMrpcSel3; // Coincident Mrpc 3
+      Int_t       fiMrpcSel3; // Coincident Mrpc 3 Type
+      Int_t     fiMrpcSel3Sm; // Coincident Mrpc 3 module
+      Int_t    fiMrpcSel3Rpc; // Coincident Mrpc 3 Rpc 
       Int_t      fiPlaSelect; // Select plastics: 0 - P2, 2 - Buc2013
-      Int_t  fiBeamRefSmType; // Beam reference counter 
+      Int_t  fiBeamRefSmType; // Beam reference counter type 
       Int_t    fiBeamRefSmId; // Beam reference counter 
       Int_t         fiDutNch; // Number of cells in Device under test
 

@@ -267,7 +267,7 @@ InitStatus CbmTofFindTracks::Init()
     //fill RpcId - map
     Int_t iRpc=0;
     for (Int_t iCell=0; iCell < fDigiPar->GetNrOfModules(); iCell++){
-      Int_t iCellId = fDigiPar->GetCellId( iCell);
+      Int_t iCellId = fDigiPar->GetCellId(iCell);
       Int_t iCh = fTofId->GetCell(iCellId);
       if(0 == iCh) {
 	LOG(INFO)<<Form("CbmTofFindTracks::Init found Rpc %d at Addr 0x%08x, ModType %d, ModId %d, RpcId %d ",
@@ -413,7 +413,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
      }
      break;
    case 1 : 
-     {
+    {
      TProfile *htmp=fhPullT_Smt->ProfileX();
      TH1D *htmp1D=htmp->ProjectionX();
      TProfile *hTOff=fhTOff_Smt->ProfileX();
@@ -453,7 +453,7 @@ Bool_t CbmTofFindTracks::WriteHistos()
 	 //          dVal -= hTOff1D->GetBinContent(ix+1);
 	 TH1D *hTOff1DY=fhTOff_Smt->ProjectionY(Form("_py%d",ix),ix+1,ix+1,"");
 	 Double_t dFMean=0.;
-	 if(hTOff1DY->GetEntries()>0){
+	 if(hTOff1DY->GetEntries()>100){
 	   Double_t dMean=hTOff1DY->GetMean();
 	   Double_t dLim =2.*hTOff1DY->GetRMS();
 	   TFitResultPtr fRes=hTOff1DY->Fit("gaus","S","",dMean-dLim,dMean+dLim);
@@ -625,17 +625,17 @@ void CbmTofFindTracks::CreateHistograms(){
   Double_t DTMAX=1000.;
   Double_t nSmt=fMapRpcIdParInd.size();
   fhPullT_Smt = new TH2F( Form("hPullT_Smt"),
-			   Form("Tracklet PullT vs RpcInd ; RpcInd ; #DeltaT (ps)"),
-			   nSmt, 0, nSmt, 100, -DTMAX, DTMAX);
+			  Form("Tracklet PullT vs RpcInd ; RpcInd ; #DeltaT (ps)"),
+			  nSmt, 0, nSmt, 100, -DTMAX, DTMAX);
   Double_t DT0MAX=25000.;
   fhTOff_Smt = new TH2F( Form("hTOff_Smt"),
-			   Form("Tracklet TOff; RpcInd ; TOff (ps)"),
-			   nSmt, 0, nSmt, 500, -DT0MAX, DT0MAX);
+			 Form("Tracklet TOff; RpcInd ; TOff (ps)"),
+			 nSmt, 0, nSmt, 500, -DT0MAX, DT0MAX);
 
   Double_t DTTMAX=20.;
   fhDeltaTt_Smt = new TH2F( Form("hDeltaTt_Smt"),
-			   Form("Tracklet DeltaTt; RpcInd ; #DeltaTt (ps/cm)"),
-			   nSmt, 0, nSmt, 100, -DTTMAX, DTTMAX);
+			    Form("Tracklet DeltaTt; RpcInd ; #DeltaTt (ps/cm)"),
+			    nSmt, 0, nSmt, 100, -DTTMAX, DTTMAX);
 
   vhPullX.resize( fNTofStations );
   vhPullY.resize( fNTofStations );

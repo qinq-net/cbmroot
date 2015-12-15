@@ -30,6 +30,7 @@ class TTofCalibData;
 
 // FAIR classes and includes
 #include "FairTask.h"
+#include "CbmTofAddress.h"    // in cbmdata/tof
 
 // ROOT Classes and includes
 class TClonesArray;
@@ -82,7 +83,20 @@ class CbmTofTestBeamClusterizer : public FairTask
 
       inline void SetCalMode    (Int_t iMode)           { fCalMode     = iMode;}
       inline void SetCalSel     (Int_t iSel)            { fCalSel      = iSel;}
-      inline void SetCalSmType  (Int_t iCalSmType)      { fCalSmType   = iCalSmType;}
+      inline void SetCalSmType  (Int_t iCalSmType)      
+      { fCalSmAddr   = CbmTofAddress::GetUniqueAddress(0,0,0,0,iCalSmType);}
+      inline void SetCalSmAddr  (Int_t iCalSmAddr)      { fCalSmAddr   = iCalSmAddr;}
+      inline void SetCalRpc  (Int_t iCalRpc)      
+      { if(iCalRpc != 0) {
+	  Int_t iSign = iCalRpc/TMath::Abs(iCalRpc);
+	  iCalRpc*=iSign;  // always a positive number 
+	  Int_t iRpc = iCalRpc%10;
+	  iCalRpc=(iCalRpc - iRpc)/10;
+	  Int_t iSm = iCalRpc%10;
+	  iCalRpc=(iCalRpc - iSm)/10;
+	  fCalSmAddr   = iSign*CbmTofAddress::GetUniqueAddress(iSm,iRpc,0,0,iCalRpc);}
+	else { fCalSmAddr=0; }
+      }
       inline void SetCaldXdYMax (Double_t dCaldXdYMax)  { fdCaldXdYMax = dCaldXdYMax;}
       inline void SetCalCluMulMax (Int_t ival)          { fiCluMulMax  = ival;}
       inline void SetTRefId     (Int_t Id)              { fTRefMode    = Id;}
@@ -92,7 +106,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       inline void SetSelId      (Int_t Id)              { fSelId       = Id;}
       inline void SetSelSm      (Int_t Id)              { fSelSm       = Id;}
       inline void SetSelRpc     (Int_t Id)              { fSelRpc      = Id;}
-      inline void SetBeamRefType   (Int_t Id)           { fiBeamRefType      = Id;}
+      inline void SetBeamRefId  (Int_t Id)              { fiBeamRefType      = Id;}
       inline void SetBeamRefSm     (Int_t Id)           { fiBeamRefSm        = Id;}
       inline void SetBeamRefDet    (Int_t Id)           { fiBeamRefDet       = Id;}
       inline void SetBeamAddRefMul (Int_t ival)         { fiBeamAddRefMul  = ival;}
@@ -283,7 +297,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       Double_t fdTRefMax;
       Int_t    fCalMode;
       Int_t    fCalSel;
-      Int_t    fCalSmType;
+      Int_t    fCalSmAddr;
       Double_t fdCaldXdYMax;
       Int_t    fiCluMulMax;
       Int_t    fTRefMode;

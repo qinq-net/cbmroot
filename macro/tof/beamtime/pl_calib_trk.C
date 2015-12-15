@@ -14,6 +14,9 @@ gStyle->SetOptStat(kTRUE);
  TH1 *h;
  TH1 *h1;
  TH2 *h2;
+
+ Double_t dTOff=10000000.;
+
  // if (h!=NULL) h->Delete();
 
 can->cd(1);
@@ -37,6 +40,8 @@ can->cd(2);
   h2->Draw("colz");
   gPad->SetLogz();
   h2->ProfileX()->Draw("same");
+  TH1D *hTOff=h2->ProjectionY();
+  dTOff=hTOff->GetMean();
  }else 
    {
      cout << hname << " not found" << endl;
@@ -66,5 +71,11 @@ can->cd(4);
    {
      cout << hname << " not found" << endl;
    }
+ dTOff = TMath::Abs(dTOff);
+ cout << " dTOff = "<<dTOff<<endl;
+
+ gROOT->ProcessLine(Form(".! echo %f  > TCalib.res", dTOff)); 
+
+ can->SaveAs("pl_calib_trk.pdf");
 
 }

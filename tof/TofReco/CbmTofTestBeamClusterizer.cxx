@@ -145,7 +145,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer():
    fdTRefMax(0.),
    fCalMode(0),
    fCalSel(0),
-   fCalSmType(0),
+   fCalSmAddr(0),
    fdCaldXdYMax(0.),
    fiCluMulMax(0),
    fTRefMode(0),
@@ -277,7 +277,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer(const char *name, Int_t ver
    fdTRefMax(0.),
    fCalMode(0),
    fCalSel(0),
-   fCalSmType(0),
+   fCalSmAddr(0),
    fdCaldXdYMax(0.),
    fiCluMulMax(0),
    fTRefMode(0),
@@ -1370,6 +1370,7 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
 
    return kTRUE;
 }
+
 Bool_t   CbmTofTestBeamClusterizer::FillHistos()
 {
  fhClustBuildTime->Fill( fStop.GetSec() - fStart.GetSec()
@@ -1403,6 +1404,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
 
    // do reference first 
    dTRef = dDoubleMax;
+   fTRefHits=0;
    Int_t iBeamRefMul=0;
    Int_t iBeamAddRefMul=0;
    for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
@@ -1414,6 +1416,20 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
       if( fiBeamRefType == CbmTofAddress::GetSmType( iDetId )){
        if(fiBeamRefSm   == CbmTofAddress::GetSmId( iDetId ))
        {
+	 // Check Tot
+         CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(pHit->GetRefId());
+         Double_t TotSum=0.;
+         for (Int_t iLink=0; iLink<digiMatch->GetNofLinks(); iLink+=2){  // loop over digis
+           CbmLink L0 = digiMatch->GetLink(iLink);   //vDigish.at(ivDigInd);
+           Int_t iDigInd0=L0.GetIndex(); 
+           if (iDigInd0 < fTofDigisColl->GetEntries()){
+            CbmTofDigiExp *pDig0 = (CbmTofDigiExp*) (fTofDigisColl->At(iDigInd0));
+            TotSum += pDig0->GetTot();
+           }
+         }
+	 TotSum /= (0.5 * digiMatch->GetNofLinks());
+	 if( TotSum > fhRpcCluTot[0]->GetYaxis()->GetXmax()) continue; 
+
           fTRefHits=1;
 	  if(pHit->GetTime() < dTRef)  
           {
@@ -1425,6 +1441,9 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
        }
       }
    }
+   if (iBeamRefMul == 0) return kFALSE;  // don't fill histos without reference time
+   if (iBeamAddRefMul<fiBeamAddRefMul) return kFALSE;  // ask for confirmation by other beam counters
+
    //dTRef/=iBeamRefMul;
    for (Int_t iSel=0; iSel<iNSel; iSel++){
        BSel[iSel]=kFALSE;
@@ -1445,9 +1464,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
 		    <<", BRefMul "<<iBeamRefMul<<" TRef: "<<dTRef
 		    <<", BeamAddRefMul "<<iBeamAddRefMul<<", "<<fiBeamAddRefMul
 		    <<FairLogger::endl;
-         if(   iDutMul>0
-            && iBeamRefMul>0                                               // request beam reference counter  
-            && iBeamAddRefMul>fiBeamAddRefMul) {                           // ask for confirmation by other beam counters 
+         if(   iDutMul>0  ) {                           
              LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos(): Found selector 0"<<FairLogger::endl;
              dTTrig[iSel]=dDoubleMax;
              for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
@@ -1476,9 +1493,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
           LOG(DEBUG)<<"CbmTofTestBeamClusterizer::FillHistos(): selector 1: RefMul "
 		    <<fviClusterMul[fSelId][fSelSm][fSelRpc]<<", "<<iRefMul
 		    <<", BRefMul "<<iBeamRefMul<<FairLogger::endl;
-         if(   iRefMul>0 
-            && iBeamRefMul>0                                               // request beam reference counter 
-            && iBeamAddRefMul>fiBeamAddRefMul) {                           // ask for confirmation by other beam counters 
+         if(   iRefMul>0  ) {                        
              LOG(DEBUG1)<<"CbmTofTestBeamClusterizer::FillHistos(): Found selector 1"<<FairLogger::endl;
              dTTrig[iSel]=dDoubleMax;
              for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
@@ -1535,7 +1550,39 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
         } // BSel condition end 
       } // iSel lopp end 
     } // Sel2Id condition end
+/*
+    // find the best dTRef
+    fTRefHits=0;
+    dTRef=0.;     // invalidate old value 
+    Double_t dRefChi2=dDoubleMax;
+    for( Int_t iHitInd = 0; iHitInd < iNbTofHits; iHitInd++)
+    {
+      pHit = (CbmTofHit*) fTofHitsColl->At( iHitInd );
+      if (NULL==pHit) continue;
+      Int_t iDetId = (pHit->GetAddress() & DetMask);
 
+      if( fiBeamRefType == CbmTofAddress::GetSmType( iDetId )){
+       if(fiBeamRefSm   == CbmTofAddress::GetSmId( iDetId ))
+       {
+	 Double_t dDT2=0.;
+	 Double_t dNT=0.;
+	 for (Int_t iSel=0; iSel<iNSel; iSel++){
+	   if(BSel[iSel]){
+	     dDT2 += TMath::Power(pHit->GetTime()-dTTrig[iSel],2);
+	     dNT++;
+	   }
+	 }
+	 if( dNT > 0)
+	 if( dDT2/dNT < dRefChi2 )  
+         {
+	    fTRefHits=1;
+	    dTRef = pHit->GetTime();
+	    dRefChi2 = dDT2/dNT;
+         }
+       }
+      }
+    }
+*/
     for (Int_t iSel=0; iSel<iNSel; iSel++){
       if(BSel[iSel]){
         if (dTRef!=0. && fTRefHits>0) fhSeldT[iSel]->Fill(dTTrig[iSel]-dTRef);    
@@ -1931,6 +1978,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
      }
 
      Int_t iUniqueId = fMbsMappingPar->GetMappedDetUId( iDetIndx );
+     Int_t iSmAddr   = iUniqueId & DetMask; 
      Int_t iSmType   = CbmTofAddress::GetSmType( iUniqueId );
      Int_t iSm       = CbmTofAddress::GetSmId( iUniqueId );
      Int_t iRpc      = CbmTofAddress::GetRpcId( iUniqueId );
@@ -1946,7 +1994,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
                  <<FairLogger::endl;
        // continue;
      }
-     //     if(-1<fCalSmType && fcalType != iSmType) continue;
+     //     if(-1<fCalSmAddr && fcalType != iSmAddr) continue;
 
      TProfile *htempPos_pfx  = NULL;  
      TProfile *htempTOff_pfx = NULL;
@@ -2053,7 +2101,8 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         Int_t iNbRpc = fDigiBdfPar->GetNbRpc( iSmType);
         Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
         LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: restore Offsets and Gains and save Walk for "
-                 <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc 
+                 <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc
+		 <<" and calSmAddr = "<<Form(" 0x%08x ",TMath::Abs(fCalSmAddr)) 
                  <<FairLogger::endl;
         htempPos_pfx->Reset();    //reset to restore means of original histos
         htempTOff_pfx->Reset();
@@ -2103,8 +2152,12 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
          }
         }
 
-        if(   (fCalSmType < 0 && TMath::Abs(fCalSmType) != iSmType)
-           || fCalSmType == iSmType)  // select detectors for determination of walk correction
+        if(   (fCalSmAddr < 0 && TMath::Abs(fCalSmAddr) != iSmAddr)
+           || fCalSmAddr == iSmAddr)  // select detectors for determination of walk correction
+	{
+        LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: restore Offsets and Gains and update Walk for "
+                 <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc 
+                 <<FairLogger::endl;
         for( Int_t iCh=0; iCh<fMbsMappingPar->GetSmTypeNbCh(iSmType); iCh++){
           TH2 *h2tmp0;
           TH2 *h2tmp1;
@@ -2185,7 +2238,8 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
           htmp1->Write();
           h1tmp1->Write();
          }
-        }else{  // preserve whatever is there for fCalSmType !
+	}
+        }else{  // preserve whatever is there for fCalSmAddr !
          for( Int_t iCh = 0; iCh < fMbsMappingPar->GetSmTypeNbCh(iSmType); iCh++ ) // restore old values 
          {
           TProfile *htmp0 = fhRpcCluWalk[iDetIndx][iCh][0]->ProfileX("_pfx",1,nbClWalkBinY);
@@ -2216,7 +2270,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
      {    
         Int_t iNbRpc = fDigiBdfPar->GetNbRpc( iSmType);
         Int_t iNbCh = fDigiBdfPar->GetNbChan( iSmType, iRpc );
-        if((fCalSmType < 0) || (fCalSmType != iSmType)){   // select detectors for updating offsets
+        if((fCalSmAddr < 0) || (fCalSmAddr != iSmAddr)){   // select detectors for updating offsets
          LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos: (case 2) update Offsets and keep Gains, Walk and DELTOF for "
                   <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc 
                   <<FairLogger::endl;
@@ -2328,7 +2382,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
      {     
         Int_t iNbRpc = fDigiBdfPar->GetNbRpc(  iSmType);
         Int_t iNbCh  = fDigiBdfPar->GetNbChan( iSmType, iRpc );
-        if((fCalSmType < 0) || (fCalSmType != iSmType) ){     // select detectors for updating offsets
+        if((fCalSmAddr < 0) || (fCalSmAddr != iSmAddr) ){     // select detectors for updating offsets
          LOG(INFO)<<"CbmTofTestBeamClusterizer::WriteHistos (calMode==3): update Offsets and Gains, keep Walk and DelTof for "
                   <<"Smtype"<<iSmType<<", Sm "<<iSm<<", Rpc "<<iRpc<<" with " <<  iNbCh << " channels "
                    <<" using selector "<<fCalSel
@@ -2554,7 +2608,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
         }
 
         // generate/update DelTof corrections 
-        if((fCalSmType < 0 && fCalSmType != iSmType) || (fCalSmType == iSmType))  // select detectors for determination of DelTof correction
+        if((fCalSmAddr < 0 && fCalSmAddr != iSmAddr) || (fCalSmAddr == iSmAddr))  // select detectors for determination of DelTof correction
         {
           // if( fiBeamRefType == iSmType ) continue;  // no DelTof correction for Diamonds
 
@@ -2700,7 +2754,6 @@ Bool_t   CbmTofTestBeamClusterizer::BuildClusters()
   LOG(DEBUG)<<"CbmTofTestBeamClusterizer::BuildClusters from "
             <<fTofDigisColl->GetEntries()<<" digis in event "<<fiNevtBuild<<FairLogger::endl;
 
-   dTRef=0.;     // reset reference time offset 
    fTRefHits=0.;
 
    Int_t iNbTofDigi  = fTofDigisColl->GetEntries();

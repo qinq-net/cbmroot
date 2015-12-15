@@ -255,6 +255,11 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fdTShift(0.),
     fdChi2Lim(0.),
     fiCorMode(0),
+    fiDutAddr(0),
+    fiMrpcRefAddr(0),
+    fiMrpcSel2Addr(0),
+    fiMrpcSel3Addr(0),
+    fiBeamRefAddr(0),
     fiDut(0),
     fiDutSm(0),
     fiDutRpc(0),
@@ -265,6 +270,8 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fiMrpcSel2Sm(0),
     fiMrpcSel2Rpc(0),
     fiMrpcSel3(0),
+    fiMrpcSel3Sm(0),
+    fiMrpcSel3Rpc(0),
     fiPlaSelect(0),
     fiBeamRefSmType(0),
     fiBeamRefSmId(0),
@@ -476,6 +483,11 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fdTShift(0.),
     fdChi2Lim(0.),
     fiCorMode(0),
+    fiDutAddr(0),
+    fiMrpcRefAddr(0),
+    fiMrpcSel2Addr(0),
+    fiMrpcSel3Addr(0),
+    fiBeamRefAddr(0),
     fiDut(0),
     fiDutSm(0),
     fiDutRpc(0),
@@ -486,6 +498,8 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fiMrpcSel2Sm(0),
     fiMrpcSel2Rpc(0),
     fiMrpcSel3(0),
+    fiMrpcSel3Sm(0),
+    fiMrpcSel3Rpc(0),
     fiPlaSelect(0),
     fiBeamRefSmType(0),
     fiBeamRefSmId(0),
@@ -802,10 +816,11 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
    fhXYPos.resize( iNbDet  );
    for(Int_t iDet=0; iDet<iNbDet; iDet++){
      fhXYPos[iDet] =  new TH2F( Form("hXY_SmT%d",iDet),
-				Form("XY Position correlation of SmT %d; X[cm]; Y [cm]",iDet),
+				Form("XY Position correlation of Det# %d; X[cm]; Y [cm]",iDet),
 			       100, -YDMAX, YDMAX, 100, -YDMAX, YDMAX);       
    }
 
+   /*
     fhXX2 =  new TH2F( 
           Form("hXX2"),
           Form("Plastic position correlation; XPla0; XPla1"),
@@ -826,6 +841,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhYY02[iDet] =  new TH2F( Form("hYY02_%d",iDet),Form("Y Position correlation; Y0; Y2"),
 			       100, -YDMAX, YDMAX, 100, -YDMAX, YDMAX); 
    }
+   */
 
      fhXX04 =  new TH2F( Form("hXX04"),Form("X Position correlation; X0 [cm]; X4 [cm]"),
 			       200, -YDMAX, YDMAX, 200, -YDMAX, YDMAX);      
@@ -1290,6 +1306,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
    fhBRefMul->Fill(dMulD);
    LOG(DEBUG)<<Form("CbmTofAnaTestbeam::FillHistos: Diamond mul %f, time: %6.2e",dMulD,dTDia)
+	     <<Form(", inspect Dut 0x%08x, Ref 0x%08x, Sel2  0x%08x, Sel3  0x%08x ",fiDutAddr,
+		    fiMrpcRefAddr,fiMrpcSel2Addr,fiMrpcSel3Addr)
 	     <<FairLogger::endl;
 
    // process counter hits, fill Chi2List, check selectors 
@@ -1301,11 +1319,11 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
       Int_t iDetId = (pHit->GetAddress() & DetMask);
       Int_t iChId = pHit->GetAddress();
       fChannelInfo = fDigiPar->GetCell( iChId );
-      Int_t iSmType=CbmTofAddress::GetSmType( iDetId );
-
-      LOG(DEBUG)<<Form("CbmTofAnaTestbeam::FillHistos: process %d.(%d) Tof hit 0x%08x, x = %6.1f, y = %6.1f, z=%6.1f, t=%10.1f",
-		      iHitInd, iNbTofHits, iChId, 
-		      pHit->GetX(), pHit->GetY(), pHit->GetZ(), pHit->GetTime())
+      Int_t iSmType = CbmTofAddress::GetSmType( iDetId );
+      Int_t iDetInd = fMbsMappingPar->GetMappedDetInd( pHit->GetAddress()); 
+      LOG(DEBUG)<<Form("CbmTofAnaTestbeam::FillHistos: process %d.(%d) Tof hit 0x%08x, Ind %d, x = %6.1f, y = %6.1f, z=%6.1f, t=%10.1f",
+		       iHitInd, iNbTofHits, iChId, iDetInd,
+		       pHit->GetX(), pHit->GetY(), pHit->GetZ(), pHit->GetTime())
 	    <<FairLogger::endl;
       
       if(NULL == fChannelInfo){
@@ -1315,16 +1333,15 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	continue;
       }
 
-      if(static_cast<UInt_t>(iSmType)<fhXYPos.size())
-      fhXYPos[iSmType]->Fill(pHit->GetX(),pHit->GetY());
+      if(static_cast<UInt_t>(iDetInd)<fhXYPos.size())
+      fhXYPos[iDetInd]->Fill(pHit->GetX(),pHit->GetY());
 
-      if(fiDut == iSmType) {
-	if(fiDutRpc >-1) {
-	  Int_t iSm  = CbmTofAddress::GetSmId( iDetId );
-	  if(iSm != fiDutSm) continue; // skip module
-	  Int_t iRpc = CbmTofAddress::GetRpcId( iDetId );
-	  if(iRpc != fiDutRpc) continue; // skip Rpc 
-        } 
+      LOG(DEBUG2)  <<"CbmTofAnaTestbeam::FillHistos: process iDetId  "
+		   <<Form(" 0x%08x ",iDetId)
+		   <<Form(", Muls %4.0f, %4.0f, %4.0f",dMulD, dMul0, dMul4)
+		   <<FairLogger::endl;
+
+      if(fiDutAddr == iDetId) {
 	dMul0++;
 	Double_t xPos1=Zref/pHit->GetZ()*pHit->GetX();
 	Double_t yPos1=Zref/pHit->GetZ()*pHit->GetY();
@@ -1340,9 +1357,12 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   Int_t iChId2  = pHit2->GetAddress();
            fChannelInfo2 = fDigiPar->GetCell( iChId2 );
 
-	   if (   fiMrpcRef    == CbmTofAddress::GetSmType( iDetId2 )
+	   if (   fiMrpcRefAddr  == iDetId2
+	     /* 
+	            fiMrpcRef  == CbmTofAddress::GetSmType( iDetId2 )
 	       && fiMrpcRefSm  == CbmTofAddress::GetSmId( iDetId2 )
 	       && fiMrpcRefRpc == CbmTofAddress::GetRpcId( iDetId2 )
+	     */
                ){  // MrpcRef
              Double_t xPos2=Zref/pHit2->GetZ()*pHit2->GetX();
 	     Double_t yPos2=Zref/pHit2->GetZ()*pHit2->GetY();
@@ -1421,16 +1441,18 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	  } //iHit2 != iHit condition end
 	} // iHit2 loop end 
       } // fiDut condition end 
-
+      /*
       if(fiMrpcRef == iSmType) {
 	Int_t iSm  = CbmTofAddress::GetSmId( iDetId );
 	if(iSm != fiMrpcRefSm) continue; // skip module
 	Int_t iRpc = CbmTofAddress::GetRpcId( iDetId );
 	if(iRpc != fiMrpcRefRpc) continue; // skip Rpc 
+      */
+      if(fiMrpcRefAddr == iDetId) {
 	dMul4++;
       }
 
-      if(fiBeamRefSmType == iSmType) {
+      if(fiBeamRefAddr == iDetId) {
 	if( pHit != pDia ) continue;
 	if( fdDTDia>0. )
 	{
@@ -1472,9 +1494,9 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	   LOG(DEBUG2)<<Form("CbmTofAnaTestbeam:FillHisto: TDia %f, THit %f",dTDia,pHit2->GetTime())
 		      <<FairLogger::endl;
 
-	   if(  fiMrpcRef    == CbmTofAddress::GetSmType( iDetId2 )
-	     && fiMrpcRefSm  == CbmTofAddress::GetSmId( iDetId2 )
-	     && fiMrpcRefRpc == CbmTofAddress::GetRpcId( iDetId2 )
+	   if(  fiMrpcRefAddr  == iDetId2  //CbmTofAddress::GetSmType( iDetId2 )
+	     //&& fiMrpcRefSm  == CbmTofAddress::GetSmId( iDetId2 )
+	     //&& fiMrpcRefRpc == CbmTofAddress::GetRpcId( iDetId2 )
 	       ){   // Reference RPC hit
 	     dDTD4=pHit2->GetTime()-dTDia + fdTShift;
 	     fhDTD4->Fill(dDTD4);
@@ -1527,7 +1549,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 				    <<FairLogger::endl;
 			 continue;
 		       }
-		       if( fiMrpcSel2 == CbmTofAddress::GetSmType( iDetId3 )){   // Sel2 RPC hit
+		       if( fiMrpcSel2Addr == iDetId3 ) { //CbmTofAddress::GetSmType( iDetId3 )){   // Sel2 RPC hit
 			 if(TMath::Abs(CbmTofAddress::GetChannelId( iChId3 ) - fdChS2Sel) < fdDChS2Sel) {
 			   /*TGeoNode *fNode3= */       // prepare global->local trafo
 			     gGeoManager->FindNode(fChannelInfo3->GetX(),fChannelInfo3->GetY(),fChannelInfo3->GetZ());
@@ -1582,6 +1604,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    fhNMatch04->Fill(iNbMatchedHits);
    LOG(DEBUG)<<Form(" Matches: %d with first chi2s = %12.1f, %12.1f, %12.1f, %12.1f",iNbMatchedHits,
 		    Chi2List[0],Chi2List[1],Chi2List[2],Chi2List[3])
+	     <<Form(", Muls %4.0f, %4.0f, %4.0f",dMulD, dMul0, dMul4)
  	     <<FairLogger::endl;
    // selector 0 distributions 
    if(BSel[0]){
