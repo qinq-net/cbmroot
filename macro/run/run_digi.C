@@ -70,14 +70,6 @@ void run_digi(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // Specify log level (INFO, DEBUG, DEBUG1, ...)
   TString logLevel = "DEBUG";
 
-  //  Digitisation files.
-  // Add TObjectString containing the different file names to
-  // a TList which is passed as input to the FairParAsciiFileIo.
-  // The FairParAsciiFileIo will take care to create on the fly 
-  // a concatenated input parameter file which is then used during
-  // the reconstruction.
-  TList *parFileList = new TList();
-
   TString inDir = gSystem->Getenv("VMCWORKDIR");
   TString paramDir = inDir + "/parameters/";
 
@@ -87,14 +79,6 @@ void run_digi(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
-
-  // --- STS digipar file is there only for L1. It is no longer required
-  // --- for STS digitisation and should be eventually removed.
-  //TObjString stsDigiFile(paramDir + stsDigi);
-  //parFileList->Add(&stsDigiFile);
-  //cout << "macro/run/run_digi.C using: " << stsDigi << endl;
-
-  
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -160,11 +144,8 @@ void run_digi(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
-  FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
   parIo1->open(parFile.Data());
-  parIo2->open(parFileList, "in");
   rtdb->setFirstInput(parIo1);
-  rtdb->setSecondInput(parIo2);
   rtdb->setOutput(parIo1);
   rtdb->saveOutput();
   // ------------------------------------------------------------------------

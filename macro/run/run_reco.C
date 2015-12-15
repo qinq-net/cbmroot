@@ -70,6 +70,9 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   TString parFile = outDir + setup + "_params.root";        // Parameter file
   TString outFile = outDir + setup + "_test.eds.root";      // Output file
 
+  // Function needed for CTest runtime dependency
+  TString depFile = Remove_CTest_Dependency_File(outDir, "run_reco" , setup);
+
   //  Digitisation files.
   // Add TObjectString containing the different file names to
   // a TList which is passed as input to the FairParAsciiFileIo.
@@ -101,10 +104,6 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   TObjString tofDigiFile(paramDir + tofDigi);
   parFileList->Add(&tofDigiFile);
   cout << "macro/run/run_reco.C using: " << tofDigi << endl;
-
-
-  // Function needed for CTest runtime dependency
-  TString depFile = Remove_CTest_Dependency_File(outDir, "run_reco" , setup);
 
   // In general, the following parts need not be touched
   // ========================================================================

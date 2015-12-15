@@ -64,8 +64,6 @@ void run_qa(Int_t nEvents = 1, const char* setup = "sis100_electron")
   // Output file
   TString outFile = outDir + setup + "_test.qa.root";   // Output file
   
-  TList *parFileList = new TList();
-
   TString inDir = gSystem->Getenv("VMCWORKDIR");
   TString paramDir = inDir + "/parameters/";
 
@@ -75,20 +73,6 @@ void run_qa(Int_t nEvents = 1, const char* setup = "sis100_electron")
 
   gROOT->LoadMacro(setupFile);
   gInterpreter->ProcessLine(setupFunct);
-
-  // --- STS digipar file is there only for L1. It is no longer required
-  // --- for STS digitisation and should be eventually removed.
-  //TObjString stsDigiFile(paramDir + stsDigi);
-  //parFileList->Add(&stsDigiFile);
-  //cout << "macro/run/run_qa.C using: " << stsDigi << endl;
-
-//  TObjString trdDigiFile(paramDir + trdDigi);
-//  parFileList->Add(&trdDigiFile);
-//  cout << "macro/run/macro_qa.C using: " << trdDigi << endl;
-//
-//  TObjString tofDigiFile(paramDir + tofDigi);
-//  parFileList->Add(&tofDigiFile);
-//  cout << "macro/run/macro_qa.C using: " << tofDigi << endl;
 
   // In general, the following parts need not be touched
   // ========================================================================
@@ -111,11 +95,8 @@ void run_qa(Int_t nEvents = 1, const char* setup = "sis100_electron")
   // -----  Parameter database   --------------------------------------------
   FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
   FairParRootFileIo* parIo1 = new FairParRootFileIo();
-  FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
   parIo1->open(parFile.Data());
-  parIo2->open(parFileList, "in");
   rtdb->setFirstInput(parIo1);
-  rtdb->setSecondInput(parIo2);
   rtdb->setOutput(parIo1);
   rtdb->saveOutput();
   // ------------------------------------------------------------------------
