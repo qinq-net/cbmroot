@@ -193,6 +193,12 @@ CbmAnaConversion::CbmAnaConversion()
 	fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0(NULL),
 	fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target(NULL),
 	fhPi0_Reco_noRichInd_chi_vs_pt_eRest(NULL),
+	fhPi0_Reco_chi_vs_momentum(NULL),
+	fhPi0_Reco_chi_vs_momentum_eFromPi0(NULL),
+	fhPi0_Reco_chi_vs_momentum_eFromPi0_Target(NULL),
+	fhPi0_Reco_chi_vs_pt(NULL),
+	fhPi0_Reco_chi_vs_pt_eFromPi0(NULL),
+	fhPi0_Reco_chi_vs_pt_eFromPi0_Target(NULL),
     timer_all(),
     fTime_all(0.),
     timer_exec(),
@@ -533,23 +539,43 @@ void CbmAnaConversion::InitHistograms()
 	fhPi0_Reco_ndf_vs_nofhits_withChi = new TH2D("fhPi0_Reco_ndf_vs_nofhits_withChi", "fhPi0_Reco_ndf_vs_nofhits_withChi;ndf;nofhits", 31, -0.5, 30.5, 21, -0.5, 20.5);
 	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_ndf_vs_nofhits_withChi);
 
-	fhPi0_Reco_noRichInd_chi_vs_momentum = new TH2D("fhPi0_Reco_noRichInd_chi_vs_momentum", "fhPi0_Reco_noRichInd_chi_vs_momentum;momentum [GeV];chi", 200, 0., 10., 1000, 0., 100.);
+
+	// ################################################
+
+	fhPi0_Reco_noRichInd_chi_vs_momentum = new TH2D("fhPi0_Reco_noRichInd_chi_vs_momentum", "fhPi0_Reco_noRichInd_chi_vs_momentum;momentum [GeV];#chi^{2} of momentum fit", 200, 0., 10., 1000, 0., 100.);
 	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_chi_vs_momentum);
-	fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0 = new TH2D("fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0", "fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0;momentum [GeV];chi", 200, 0., 10., 1000, 0., 100.);
+	fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0 = new TH2D("fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0", "fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0;momentum [GeV];#chi^{2} of momentum fit", 200, 0., 10., 1000, 0., 100.);
 	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0);
-	fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target = new TH2D("fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target", "fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target;momentum [GeV];chi", 200, 0., 10., 1000, 0., 100.);
+	fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target = new TH2D("fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target", "fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target;momentum [GeV];#chi^{2} of momentum fit", 200, 0., 10., 1000, 0., 100.);
 	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target);
-	fhPi0_Reco_noRichInd_chi_vs_momentum_eRest = new TH2D("fhPi0_Reco_noRichInd_chi_vs_momentum_eRest", "fhPi0_Reco_noRichInd_chi_vs_momentum_eRest;momentum [GeV];chi", 200, 0., 10., 1000, 0., 100.);
+	fhPi0_Reco_noRichInd_chi_vs_momentum_eRest = new TH2D("fhPi0_Reco_noRichInd_chi_vs_momentum_eRest", "fhPi0_Reco_noRichInd_chi_vs_momentum_eRest;momentum [GeV];#chi^{2} of momentum fit", 200, 0., 10., 1000, 0., 100.);
 	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_chi_vs_momentum_eRest);
 	
-	fhPi0_Reco_noRichInd_chi_vs_pt = new TH2D("fhPi0_Reco_noRichInd_chi_vs_pt", "fhPi0_Reco_noRichInd_chi_vs_pt;pt [GeV];chi", 200, 0., 10., 1000, 0., 100.);
+	fhPi0_Reco_noRichInd_chi_vs_pt = new TH2D("fhPi0_Reco_noRichInd_chi_vs_pt", "fhPi0_Reco_noRichInd_chi_vs_pt;pt [GeV];#chi^{2} of momentum fit", 200, 0., 10., 1000, 0., 100.);
 	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_chi_vs_pt);
-	fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0 = new TH2D("fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0", "fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0;pt [GeV];chi", 200, 0., 10., 1000, 0., 100.);
+	fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0 = new TH2D("fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0", "fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0;pt [GeV];#chi^{2} of momentum fit", 200, 0., 10., 1000, 0., 100.);
 	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0);
-	fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target = new TH2D("fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target", "fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target;pt [GeV];chi", 200, 0., 10., 1000, 0., 100.);
+	fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target = new TH2D("fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target", "fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target;pt [GeV];#chi^{2} of momentum fit", 200, 0., 10., 1000, 0., 100.);
 	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target);
-	fhPi0_Reco_noRichInd_chi_vs_pt_eRest = new TH2D("fhPi0_Reco_noRichInd_chi_vs_pt_eRest", "fhPi0_Reco_noRichInd_chi_vs_pt_eRest;pt [GeV];chi", 200, 0., 10., 1000, 0., 100.);
+	fhPi0_Reco_noRichInd_chi_vs_pt_eRest = new TH2D("fhPi0_Reco_noRichInd_chi_vs_pt_eRest", "fhPi0_Reco_noRichInd_chi_vs_pt_eRest;pt [GeV];#chi^{2} of momentum fit", 200, 0., 10., 1000, 0., 100.);
 	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_chi_vs_pt_eRest);
+
+
+	// ################################################
+
+	fhPi0_Reco_chi_vs_momentum = new TH2D("fhPi0_Reco_chi_vs_momentum", "fhPi0_Reco_chi_vs_momentum;momentum [GeV];#chi^{2} of momentum fit", 200, 0., 10., 1000, 0., 100.);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_chi_vs_momentum);
+	fhPi0_Reco_chi_vs_momentum_eFromPi0 = new TH2D("fhPi0_Reco_chi_vs_momentum_eFromPi0", "fhPi0_Reco_chi_vs_momentum_eFromPi0;momentum [GeV];#chi^{2} of momentum fit", 200, 0., 10., 1000, 0., 100.);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_chi_vs_momentum_eFromPi0);
+	fhPi0_Reco_chi_vs_momentum_eFromPi0_Target = new TH2D("fhPi0_Reco_chi_vs_momentum_eFromPi0_Target", "fhPi0_Reco_chi_vs_momentum_eFromPi0_Target;momentum [GeV];#chi^{2} of momentum fit", 200, 0., 10., 1000, 0., 100.);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_chi_vs_momentum_eFromPi0_Target);
+	
+	fhPi0_Reco_chi_vs_pt = new TH2D("fhPi0_Reco_chi_vs_pt", "fhPi0_Reco_chi_vs_pt;pt [GeV];#chi^{2} of momentum fit", 200, 0., 10., 1000, 0., 100.);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_chi_vs_pt);
+	fhPi0_Reco_chi_vs_pt_eFromPi0 = new TH2D("fhPi0_Reco_chi_vs_pt_eFromPi0", "fhPi0_Reco_chi_vs_pt_eFromPi0;pt [GeV];#chi^{2} of momentum fit", 200, 0., 10., 1000, 0., 100.);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_chi_vs_pt_eFromPi0);
+	fhPi0_Reco_chi_vs_pt_eFromPi0_Target = new TH2D("fhPi0_Reco_chi_vs_pt_eFromPi0_Target", "fhPi0_Reco_chi_vs_pt_eFromPi0_Target;pt [GeV];#chi^{2} of momentum fit", 200, 0., 10., 1000, 0., 100.);
+	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_chi_vs_pt_eFromPi0_Target);
 
 }
 
@@ -896,6 +922,8 @@ void CbmAnaConversion::Exec(Option_t*)
 		fTestTracklist_ndf.push_back(result_ndf_electron);
 		fTestTracklist_nofhits.push_back(nofhits_sts);
 
+		fhPi0_Reco_chi_vs_pt->Fill(refittedMomentum_electron.Perp(), result_chi_electron);
+		fhPi0_Reco_chi_vs_momentum->Fill(refittedMomentum_electron.Mag(), result_chi_electron);
 
 	}
 	
@@ -1723,6 +1751,15 @@ void CbmAnaConversion::AnalysePi0_Reco()
 					electronPi0ID_map.insert ( std::pair<int,int>(grandmotherID, i) );
 					if(!(fTestTracklist_richInd[i] < 0)) {
 						electronPi0ID_map_richInd.insert ( std::pair<int,int>(grandmotherID, i) );
+					}
+					fhPi0_Reco_chi_vs_pt_eFromPi0->Fill(fTestTracklist_momentum[i].Perp(), fTestTracklist_chi[i]);
+					fhPi0_Reco_chi_vs_momentum_eFromPi0->Fill(fTestTracklist_momentum[i].Mag(), fTestTracklist_chi[i]);
+					
+					TVector3 startvertex;
+					fTestTracklist_noRichInd[i]->GetStartVertex(startvertex);
+					if(startvertex.Z() < 3) {
+						fhPi0_Reco_chi_vs_pt_eFromPi0_Target->Fill(fTestTracklist_momentum[i].Perp(), fTestTracklist_chi[i]);
+						fhPi0_Reco_chi_vs_momentum_eFromPi0_Target->Fill(fTestTracklist_momentum[i].Mag(), fTestTracklist_chi[i]);
 					}
 				}
 			}

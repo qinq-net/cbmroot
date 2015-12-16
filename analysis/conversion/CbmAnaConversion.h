@@ -287,6 +287,14 @@ private:
 	TH2D * fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0;
 	TH2D * fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target;
 	TH2D * fhPi0_Reco_noRichInd_chi_vs_pt_eRest;
+	
+	
+	TH2D * fhPi0_Reco_chi_vs_momentum;
+	TH2D * fhPi0_Reco_chi_vs_momentum_eFromPi0;
+	TH2D * fhPi0_Reco_chi_vs_momentum_eFromPi0_Target;
+	TH2D * fhPi0_Reco_chi_vs_pt;
+	TH2D * fhPi0_Reco_chi_vs_pt_eFromPi0;
+	TH2D * fhPi0_Reco_chi_vs_pt_eFromPi0_Target;
    
    
    // timer

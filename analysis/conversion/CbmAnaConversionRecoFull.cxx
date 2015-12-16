@@ -1362,10 +1362,10 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 					
 					
 					// CROSSCHECK WITH MC-TRUE DATA!
-					CbmMCTrack* mctrack11 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID[electron11]);
-					CbmMCTrack* mctrack12 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID[electron12]);
-					CbmMCTrack* mctrack21 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID[electron21]);
-					CbmMCTrack* mctrack22 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID[electron22]);
+					CbmMCTrack* mctrack11 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID_new[index][electron11]);
+					CbmMCTrack* mctrack12 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID_new[index][electron12]);
+					CbmMCTrack* mctrack21 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID_new[index][electron21]);
+					CbmMCTrack* mctrack22 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID_new[index][electron22]);
 					
 					Int_t motherId11 = mctrack11->GetMotherId();
 					Int_t motherId12 = mctrack12->GetMotherId();
