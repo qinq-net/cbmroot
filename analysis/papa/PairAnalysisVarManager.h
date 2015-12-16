@@ -493,6 +493,7 @@ inline void PairAnalysisVarManager::ResetArrayData(Int_t to, Double_t * const va
   }
   if(to>=kHitMax && to>kConstMax) {
     values[kMassSq]     = -999.;
+    values[kBeta]       = -999.;
   }
 }
 
@@ -510,6 +511,12 @@ inline void PairAnalysisVarManager::ResetArrayDataMC(Int_t to, Double_t * const 
   values[kPdgCodeGrandMother] = -99999.;
   //  */
   //valuesMC[kNumberOfDaughters]  = -999.;
+  if(to>=kHitMaxMC && to>kNMaxValues) {
+    values[kPosXMC]     = -999.;
+    values[kPosYMC]     = -999.;
+    values[kPosZMC]     = -999.;
+    values[kElossMC]    = -999.;
+  }
 }
 
 inline void PairAnalysisVarManager::FillVarPairAnalysisEvent(const PairAnalysisEvent *event, Double_t * const values)
@@ -518,12 +525,12 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisEvent(const PairAnalysisE
   // Fill event information available into an array
   //
 
-  // Protect
-  if(!event) return;
-
   // Reset array
   ResetArrayData(  kNMaxValues,   values);
   ResetArrayDataMC(kNMaxValuesMC, values);
+
+  // Protect
+  if(!event) return;
 
   // Set
   values[kNTrk]         = event->GetNumberOfTracks();
@@ -600,12 +607,12 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   // Fill track information for the all track and its sub tracks
   //
 
-  // Protect
-  if(!track) return;
-
   // Reset
   ResetArrayData(  kTrackMax,   values);
   ResetArrayDataMC(kTrackMaxMC, values);
+
+  // Protect
+  if(!track) return;
 
   // Set track specific variables
   Fill(track->GetGlobalTrack(), values);
@@ -948,15 +955,15 @@ inline void PairAnalysisVarManager::FillVarMCParticle(const CbmMCTrack *p1, cons
   // fill 2 track information starting from MC legs
   //
 
+  // Reset
+  ResetArrayDataMC(kPairMaxMC, values);
+
   // Protect
   if(!p1 || !p2) return;
 
   // Get the MC interface if available
   PairAnalysisMC *mc = PairAnalysisMC::Instance();
   if (!mc->HasMC()) return;
-
-  // Reset
-  ResetArrayDataMC(kPairMaxMC, values);
 
   // Set
   CbmMCTrack* mother=0x0;
@@ -1005,15 +1012,15 @@ inline void PairAnalysisVarManager::FillVarMCTrack(const CbmMCTrack *particle, D
   // fill particle information from MC leg
   //
 
+  // Reset
+  ResetArrayDataMC(kTrackMaxMC, values);
+
   // Protect
   if(!particle) return;
 
   // Get the MC interface if available
   PairAnalysisMC *mc = PairAnalysisMC::Instance();
   if (!mc->HasMC()) return;
-
-  // Reset
-  ResetArrayDataMC(kTrackMaxMC, values);
 
   // Set
   CbmMCTrack* mother=0x0;
@@ -1076,11 +1083,11 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisPair(const PairAnalysisPa
   // Fill pair information available for histogramming into an array
   //
 
-  // Protect
-  if(!pair) return;
-
   // Reset
   ResetArrayData(kPairMax, values);
+
+  // Protect
+  if(!pair) return;
 
   // Set
   values[kPairType]  = pair->GetType();
@@ -1186,11 +1193,11 @@ inline void PairAnalysisVarManager::FillVarStsHit(const CbmStsHit *hit, Double_t
   // Fill hit information for the sts hit into array
   //
 
-  // Protect
-  if(!hit) return;
-
   // Reset array
   ResetArrayData(  kHitMax,   values);
+
+  // Protect
+  if(!hit) return;
 
   // accessors via CbmPixelHit & CbmHit
   FillVarPixelHit(hit, values);
@@ -1206,11 +1213,11 @@ inline void PairAnalysisVarManager::FillVarMvdHit(const CbmMvdHit *hit, Double_t
   // Fill hit information for the mvd hit into array
   //
 
-  // Protect
-  if(!hit) return;
-
   // Reset array
   ResetArrayData(  kHitMax,   values);
+
+  // Protect
+  if(!hit) return;
 
   // accessors via CbmPixelHit & CbmHit
   FillVarPixelHit(hit, values);
@@ -1227,11 +1234,11 @@ inline void PairAnalysisVarManager::FillVarMuchHit(const CbmMuchPixelHit *hit, D
   // Fill hit information for the much hit into array
   //
 
-  // Protect
-  if(!hit) return;
-
   // Reset array
   ResetArrayData(  kHitMax,   values);
+
+  // Protect
+  if(!hit) return;
 
   // accessors via CbmPixelHit & CbmHit
   FillVarPixelHit(hit, values);
@@ -1247,11 +1254,11 @@ inline void PairAnalysisVarManager::FillVarMuchHit(const CbmMuchStrawHit *hit, D
   // Fill hit information for the much hit into array
   //
 
-  // Protect
-  if(!hit) return;
-
   // Reset array
   ResetArrayData(  kHitMax,   values);
+
+  // Protect
+  if(!hit) return;
 
   // accessors via CbmHit
   values[kPosZ]     = hit->GetZ();
@@ -1268,11 +1275,11 @@ inline void PairAnalysisVarManager::FillVarRichHit(const CbmRichHit *hit, Double
   // Fill hit information for the rich hit into array
   //
 
-  // Protect
-  if(!hit) return;
-
   // Reset array
   ResetArrayData(  kHitMax,   values);
+
+  // Protect
+  if(!hit) return;
 
   // accessors via CbmPixelHit & CbmHit
   FillVarPixelHit(hit, values);
@@ -1290,11 +1297,11 @@ inline void PairAnalysisVarManager::FillVarTrdHit(const CbmTrdHit *hit, Double_t
   // Fill hit information for the trd hit into array
   //
 
-  // Protect
-  if(!hit) return;
-
   // Reset array
   ResetArrayData(  kHitMax,   values);
+
+  // Protect
+  if(!hit) return;
 
   // accessors via CbmPixelHit & CbmHit
   FillVarPixelHit(hit, values);
@@ -1314,11 +1321,11 @@ inline void PairAnalysisVarManager::FillVarTofHit(const CbmTofHit *hit, Double_t
   // Fill hit information for the tof hit into array
   //
 
-  // Protect
-  if(!hit) return;
-
   // Reset array
   ResetArrayData(  kHitMax,   values);
+
+  // Protect
+  if(!hit) return;
 
   // accessors via CbmPixelHit & CbmHit
   FillVarPixelHit(hit, values);
@@ -1344,12 +1351,11 @@ inline void PairAnalysisVarManager::FillVarMCPoint(const FairMCPoint *hit, Doubl
   // Fill MC hit information
   //
 
-  // Protect
-  if(!hit) return;
-
-  //  Printf("hitMC: %s ",hit->ClassName());
   // Reset array
   ResetArrayDataMC(  kHitMaxMC,   values);
+
+  // Protect
+  if(!hit) return;
 
   // Set
   values[kPosXMC]     = hit->GetX();
@@ -1365,10 +1371,10 @@ inline void PairAnalysisVarManager::FillSumVarMCPoint(const FairMCPoint *hit, Do
   // Sum upMC hit information
   //
 
+  // DO NOT reset array
+
   // Protect
   if(!hit) return;
-
-  // DO NOT reset array
 
   // Set
   values[kPosXMC]     += hit->GetX();
