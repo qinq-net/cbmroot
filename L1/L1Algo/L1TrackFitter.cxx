@@ -195,7 +195,6 @@ void L1Algo::KFTrackFitter_simple()  // TODO: Add pipe.
 
         fvec dzi = 1./(z1-z0);
 
-        const fvec vINF = .1;
         T.x  = x0;
         T.y  = y0;
         if( iter==0 ){
@@ -330,7 +329,6 @@ void L1Algo::KFTrackFitter_simple()  // TODO: Add pipe.
 
   //fvec qp0 = first_trip->GetQpOrig(MaxInvMom);
 
-        const fvec vINF = .1;
         T.chi2 = 0.;
         T.NDF = 2.;
         T.x  = x0;
