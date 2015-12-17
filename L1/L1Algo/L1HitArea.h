@@ -5,7 +5,6 @@
 
 #include "CbmL1Def.h"
 
-struct L1Grid;
 class L1Row;
 class L1SliceData;
 
@@ -67,7 +66,7 @@ inline L1HitArea::L1HitArea( const L1Grid & grid, float y, float z, float dy, fl
   // cout << fIh << " " << hitLst << endl;
   // if ( fIh >= hitLst ) fIz = fBZmax + 1; // finish area in one step
 
-  // cout // << fBZmax << " " << fBDY << " " << fIndYmin << " " << fIz << " " << fHitYlst << " " << fIh << endl; // dbg 
+  // cout // << fBZmax << " " << fBDY << " " << fIndYmin << " " << fIz << " " << fHitYlst << " " << fIh << endl; // dbg
   //  << "HitArea created:\n"
   //  << y << " " << z << endl
   //   << "bYmin:    " << bYmin << "\n"
