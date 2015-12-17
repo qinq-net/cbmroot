@@ -61,6 +61,15 @@ public:
 	}
 
 
+	static Double_t CalcOpeningAngleCutAlt5(Double_t pt)
+	{
+		Double_t cut = 0;
+		if(pt <= 1) cut = 1.0 + 1.0 * pt;
+		if(pt > 1) cut = 2.0;
+		return cut;
+	}
+
+
 	/*
 	 * Calculate cut for chi for reconstructed momenta
 	 */

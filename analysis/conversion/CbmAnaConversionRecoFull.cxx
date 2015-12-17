@@ -530,6 +530,8 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fHistoList_recofull_new[i].push_back(fhElectrons_openingAngle_sameSign_new[i]);
 	
 		
+		fhMixedEventsTest_invmass[i] = new TH1D(Form("fhMixedEventsTest_invmass_%i",i), Form("fhMixedEventsTest_invmass_%i; invariant mass; #",i), 600, -0.0025, 2.9975);
+		fHistoList_recofull_new[i].push_back(fhMixedEventsTest_invmass[i]);
 	}
 
 }
@@ -636,6 +638,10 @@ void CbmAnaConversionRecoFull::Exec()
 		fElectrons_momentaChi_new[i].clear();
 		fElectrons_mctrackID_new[i].clear();
 		fVector_photons_pairs_new[i].clear();
+		
+		if(fMixedEventsElectrons[i].size() > 10) {
+			fMixedEventsElectrons[i].erase(fMixedEventsElectrons[i].begin() );
+		}
 	}
 
 
@@ -652,6 +658,9 @@ void CbmAnaConversionRecoFull::Exec()
 	Int_t nofElectrons_2 = 0;
 	Int_t nofElectrons_3 = 0;
 	Int_t nofElectrons_4 = 0;
+
+
+	Int_t FilledMixedEventElectron = 0;
 
 	// everything related to reconstructed data
 	Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
@@ -745,6 +754,10 @@ void CbmAnaConversionRecoFull::Exec()
 			//fElectrons_mctrackID_1.push_back(richMcTrackId);
 			fElectrons_mctrackID_new[1].push_back(stsMcTrackId);
 			
+			if(FilledMixedEventElectron < 5) {
+				fMixedEventsElectrons[1].push_back(refittedMomentum);
+				FilledMixedEventElectron++;
+			}
 			
 			// using the old method
 			fElectrons_track.push_back(gTrack);
@@ -766,6 +779,11 @@ void CbmAnaConversionRecoFull::Exec()
 				fElectrons_momentaChi_new[2].push_back(result_chi);
 				//fElectrons_mctrackID_1.push_back(richMcTrackId);
 				fElectrons_mctrackID_new[2].push_back(stsMcTrackId);
+			
+				if(FilledMixedEventElectron < 5) {
+					fMixedEventsElectrons[2].push_back(refittedMomentum);
+					FilledMixedEventElectron++;
+				}
 			}
 		}
 
@@ -817,6 +835,11 @@ void CbmAnaConversionRecoFull::Exec()
 			//fElectrons_mctrackID_1.push_back(richMcTrackId);
 			fElectrons_mctrackID_new[3].push_back(stsMcTrackId);
 			
+			if(FilledMixedEventElectron < 5) {
+				fMixedEventsElectrons[3].push_back(refittedMomentum);
+				FilledMixedEventElectron++;
+			}
+			
 			if(result_chi <= chiCut) {
 				nofElectrons_4++;
 				fElectrons_track_4.push_back(gTrack);
@@ -830,6 +853,11 @@ void CbmAnaConversionRecoFull::Exec()
 				fElectrons_momentaChi_new[4].push_back(result_chi);
 				//fElectrons_mctrackID_1.push_back(richMcTrackId);
 				fElectrons_mctrackID_new[4].push_back(stsMcTrackId);
+			
+				if(FilledMixedEventElectron < 5) {
+					fMixedEventsElectrons[4].push_back(refittedMomentum);
+					FilledMixedEventElectron++;
+				}
 			}
 			
 			fhMomentumFits_electronRich->Fill(result_chi);
@@ -888,6 +916,9 @@ void CbmAnaConversionRecoFull::Exec()
 	//CombinePhotonsRefit();
 
 	//CombinePhotonsDirection();
+
+
+	MixedEventTest();
 
 	timer.Stop();
 	fTime += timer.RealTime();
@@ -2006,6 +2037,26 @@ void CbmAnaConversionRecoFull::CombinePhotons()
 				}
 			}
 		}
+	}
+}
+
+
+
+
+void CbmAnaConversionRecoFull::MixedEventTest()
+{
+	for(int i=1; i<5; i++) {
+		if(fMixedEventsElectrons[i].size() >= 4) {
+			TVector3 e1 = fMixedEventsElectrons[i][ fMixedEventsElectrons[i].size()-1 ];
+			TVector3 e2 = fMixedEventsElectrons[i][ fMixedEventsElectrons[i].size()-2 ];
+			TVector3 e3 = fMixedEventsElectrons[i][ fMixedEventsElectrons[i].size()-3 ];
+			TVector3 e4 = fMixedEventsElectrons[i][ fMixedEventsElectrons[i].size()-4 ];
+		
+			CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e1, e2, e3, e4);
+			fhMixedEventsTest_invmass[i]->Fill(params.fMinv);
+		}
+
+
 	}
 }
 

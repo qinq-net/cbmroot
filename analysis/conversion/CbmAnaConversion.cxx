@@ -1756,8 +1756,8 @@ void CbmAnaConversion::AnalysePi0_Reco()
 					fhPi0_Reco_chi_vs_momentum_eFromPi0->Fill(fTestTracklist_momentum[i].Mag(), fTestTracklist_chi[i]);
 					
 					TVector3 startvertex;
-					fTestTracklist_noRichInd[i]->GetStartVertex(startvertex);
-					if(startvertex.Z() < 3) {
+					fTestTracklist[i]->GetStartVertex(startvertex);
+					if(startvertex.Z() < 1) {
 						fhPi0_Reco_chi_vs_pt_eFromPi0_Target->Fill(fTestTracklist_momentum[i].Perp(), fTestTracklist_chi[i]);
 						fhPi0_Reco_chi_vs_momentum_eFromPi0_Target->Fill(fTestTracklist_momentum[i].Mag(), fTestTracklist_chi[i]);
 					}
@@ -2024,7 +2024,7 @@ void CbmAnaConversion::AnalysePi0_Reco_noRichInd()
 					
 					TVector3 startvertex;
 					fTestTracklist_noRichInd[i]->GetStartVertex(startvertex);
-					if(startvertex.Z() < 3) {
+					if(startvertex.Z() < 1) {
 						fhPi0_Reco_noRichInd_chi_vs_pt_eFromPi0_Target->Fill(fTestTracklist_noRichInd_momentum[i].Perp(), fTestTracklist_noRichInd_chi[i]);
 						fhPi0_Reco_noRichInd_chi_vs_momentum_eFromPi0_Target->Fill(fTestTracklist_noRichInd_momentum[i].Mag(), fTestTracklist_noRichInd_chi[i]);
 					}

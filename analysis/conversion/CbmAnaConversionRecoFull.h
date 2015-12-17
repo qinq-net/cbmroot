@@ -63,6 +63,7 @@ public:
 	void CombineElectrons();
 	void CombinePhotons();
 	
+	void MixedEventTest();
 
 private:
 	TClonesArray* fRichPoints;
@@ -255,6 +256,12 @@ private:
 	TH1D * fhPhotons_invmass_MCcut4_new[5];
 	TH2D * fhPhotons_pt_vs_rap_new[5];
 	TH1D * fhElectrons_openingAngle_sameSign_new[5];
+
+
+
+	// test with mixed event method for estimation of invariant mass background
+	vector<TVector3>	fMixedEventsElectrons[5];
+	TH1D *				fhMixedEventsTest_invmass[5];
 
 	// timer
 	TStopwatch timer;
