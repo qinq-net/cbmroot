@@ -1,6 +1,7 @@
 # add subdirectories
 add_subdirectory (papa)
 add_subdirectory (much)
+#add_subdirectory (hyperon)
 
 Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/analysis
@@ -73,19 +74,6 @@ ${Boost_LIBRARY_DIRS}
 link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
-#hyperon/CbmAnaHypYPtGenerator.cxx 
-#hyperon/CbmAnaHypTools.cxx
-##hyperon/CbmAnaHypSecFinder.cxx 
-#hyperon/CbmAnaHypSecFinderQa.cxx
-#hyperon/CbmAnaHypPair.cxx 
-#hyperon/CbmAnaHypLambdaCandidate.cxx
-#hyperon/CbmAnaHypTrack.cxx 
-#hyperon/CbmAnaHypRecEff.cxx
-#hyperon/CbmAnaHypRecLambda.cxx 
-#hyperon/CbmAnaHypSelectLambda.cxx
-#hyperon/CbmAnaHypRecCascade.cxx
-#hyperon/CbmAnaHypMix.cxx
-
 #CbmD0Analysis.cxx
 #V0/CbmV0Analysis.cxx
 
