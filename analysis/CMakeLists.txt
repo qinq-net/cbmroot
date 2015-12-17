@@ -1,6 +1,7 @@
 # add subdirectories
 add_subdirectory (papa)
 add_subdirectory (much)
+add_subdirectory (flow)
 #add_subdirectory (hyperon)
 
 Set(INCLUDE_DIRECTORIES
@@ -113,10 +114,6 @@ conversion/CbmAnaConversionPhotons2.cxx
 conversion/CbmAnaConversionRecoFull.cxx
 
 #photon/CbmTrdPhotonAnalysis.cxx
-
-flow/eventPlane.cxx
-flow/CbmAnaFlow.cxx
-
 )
 
 
