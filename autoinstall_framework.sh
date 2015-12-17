@@ -3,6 +3,7 @@
 ##   semi-automated script installing FairSoft, FairRoot and CbmRoot
 #
 
+# 17.12.2015 - split fairsoft directory into src and install
 # 01.12.2015 - add selection of root version
 # 17.07.2015 - introduce option to compile dev settings 
 # 02.06.2015 - introduce parameters for individual package selection
@@ -108,8 +109,8 @@ if [ $SETUP_FAIRSOFT -ge 1 ]; then
   echo "Setting up Fairsoft ..."
 
   cd ..
-  git clone https://github.com/FairRootGroup/FairSoft fairsoft_${FSOFTVER}_root${ROOTVER}
-  cd fairsoft_${FSOFTVER}_root${ROOTVER}
+  git clone https://github.com/FairRootGroup/FairSoft fairsoft_src_${FSOFTVER}_root${ROOTVER}
+  cd fairsoft_src_${FSOFTVER}_root${ROOTVER}
   git tag -l
   git checkout -b $FSOFTVER $FSOFTVER
 
@@ -117,12 +118,15 @@ if [ $SETUP_FAIRSOFT -ge 1 ]; then
   #./configure.sh automatic.conf
 
   if [ $ROOTVER -eq 6 ]; then
-    sed s/build_root6=no/build_root6=yes/ automatic.conf > automatic_root.conf
+    sed s/build_root6=no/build_root6=yes/ automatic.conf > automatic1_root.conf
   else 
-    cp automatic.conf automatic_root.conf
+    cp automatic.conf automatic1_root.conf
   fi
-  sed s/compiler=/compiler=gcc/ automatic_root.conf > automatic_gcc.conf
-  ./configure.sh automatic_gcc.conf
+  FSOFTINSTALLPATH=`pwd | sed s/fairsoft_src_/fairsoft_/`
+  sed /SIMPATH_INSTALL/d automatic1_root.conf > automatic2_path.conf
+  echo "  SIMPATH_INSTALL=$FSOFTINSTALLPATH/installation" >> automatic2_path.conf
+  sed s/compiler=/compiler=gcc/ automatic2_path.conf > automatic3_gcc.conf
+  ./configure.sh automatic3_gcc.conf
   
   cd $CBMSRCDIR
   echo done installing FairSoft
