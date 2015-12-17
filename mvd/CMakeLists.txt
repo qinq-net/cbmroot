@@ -106,7 +106,7 @@ CbmMvdClusterfinder.cxx
 set(LINKDEF CbmMvdLinkDef.h)
 Set(LIBRARY_NAME CbmMvd)
 Set(DEPENDENCIES
-    CbmBase CbmData Base G4clhep
+    CbmBase CbmData Base
    # CbmBase CbmData Base G4clhep KF Littrack
 )
 
