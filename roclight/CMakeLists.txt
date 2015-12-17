@@ -18,7 +18,16 @@ Set(SYSTEM_INCLUDE_DIRECTORIES
 
 Include_Directories(${INCLUDE_DIRECTORIES})
 Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
- 
+
+Set(LINK_DIRECTORIES
+  ${ROOT_LIBRARY_DIR}
+  ${FAIRROOT_LIBRARY_DIR}
+)
+
+Link_Directories(
+  ${LINK_DIRECTORIES}
+)
+
 Set(SRCS
   src_mbs/MbsTypeDefs.cxx
   src_mbs/LmdFile.cxx
@@ -44,6 +53,9 @@ Set(HEADERS
   roc/Factory.h
 )
 
+Set(DEPENDENCIES
+    Base
+)
 
 If(_UINT8_T_EXIST)
   Add_Definitions(-DHAVE_UINT8_T_HEADER_FILE)
