@@ -1,6 +1,6 @@
 # add subdirectories
 add_subdirectory (papa)
-
+add_subdirectory (much)
 
 Set(INCLUDE_DIRECTORIES
 ${CBMROOT_SOURCE_DIR}/analysis
@@ -91,16 +91,6 @@ set(SRCS
 
 #msh/CbmMSHConverter.cxx
 #msh/CbmMSHAnalysis.cxx
-
-#much/CbmAnaMuch.cxx
-#much/CbmAnaMuchJpsiPolarization.cxx
-#much/CbmPolarizedGenerator.cxx
-#much/CbmAnaMuonCandidate.cxx 
-#much/CbmAnaDimuonCandidate.cxx
-#much/CbmAnaDimuonAnalysis.cxx
-#much/CbmAnaDimuonHisto.cxx
-#much/CbmAnaAngularAcceptance.cxx
-#much/CbmAnaMuchBgd.cxx
 
 #timing/CbmAnaTimingAnalysis.cxx 
 #timing/CbmAnaEpochTest.cxx

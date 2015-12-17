@@ -14,7 +14,7 @@
 #include "CbmMuchStrawHit.h"
 #include "CbmAnaMuonCandidate.h"
 #include "CbmGlobalTrack.h"
-#include "CbmBaseHit.h"
+#include "CbmHit.h"
 #include "CbmMuchGeoScheme.h"
 #include "CbmMuchPixelHit.h"
 #include "CbmAnaDimuonCandidate.h"
@@ -218,9 +218,9 @@ void CbmAnaDimuonAnalysis::Exec(Option_t* opt){
     for (Int_t i=0;i<muchTrack->GetNofHits();i++){
       Int_t hitIndex = muchTrack->GetHitIndex(i);
       Int_t hitType = muchTrack->GetHitType(i);
-      CbmBaseHit* hit;
-      if      (hitType==kMUCHPIXELHIT) hit = (CbmBaseHit*) fMuchPixelHits->At(hitIndex);
-      else if (hitType==kMUCHSTRAWHIT) hit = (CbmBaseHit*) fMuchStrawHits->At(hitIndex);
+      CbmHit* hit;
+      if      (hitType==kMUCHPIXELHIT) hit = (CbmHit*) fMuchPixelHits->At(hitIndex);
+      else if (hitType==kMUCHSTRAWHIT) hit = (CbmHit*) fMuchStrawHits->At(hitIndex);
       else Fatal("Exec","%i - wrong hit type, must be %i for pixel and %i for straw",hitType,kMUCHPIXELHIT,kMUCHSTRAWHIT);
       Int_t stationIndex = fGeoScheme->GetStationIndex(hit->GetAddress());
       if (stationIndex==fTriggerStationIndex) nTriggerHits++;
@@ -297,9 +297,9 @@ Int_t CbmAnaDimuonAnalysis::GetMCTrackId(Int_t iMuchTrack){
   for (Int_t i=0;i<muchTrack->GetNofHits();i++){
     Int_t hitIndex = muchTrack->GetHitIndex(i);
     Int_t hitType = muchTrack->GetHitType(i);
-    CbmBaseHit* hit;
-    if      (hitType==kMUCHPIXELHIT) hit = (CbmBaseHit*) fMuchPixelHits->At(hitIndex);
-    else if (hitType==kMUCHSTRAWHIT) hit = (CbmBaseHit*) fMuchStrawHits->At(hitIndex);
+    CbmHit* hit;
+    if      (hitType==kMUCHPIXELHIT) hit = (CbmHit*) fMuchPixelHits->At(hitIndex);
+    else if (hitType==kMUCHSTRAWHIT) hit = (CbmHit*) fMuchStrawHits->At(hitIndex);
     else Fatal("Exec","%i - wrong hit type, must be 6 for pixel and 7 for straw",hitType);
     Int_t stationIndex = fGeoScheme->GetStationIndex(hit->GetAddress());
     if (stationIndex!=fTriggerStationIndex) continue;
