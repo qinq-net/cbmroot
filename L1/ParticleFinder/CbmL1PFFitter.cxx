@@ -500,7 +500,6 @@ void CbmL1PFFitter::GetChiToVertex(vector<CbmStsTrack> &Tracks, vector<L1FieldRe
       L1AddMaterial( T, CbmL1::Instance()->algo->fRadThick[iSt].GetRadThick(T.x, T.y), T.qp, w, mass2);
       EnergyLossCorrection( T, mass2, CbmL1::Instance()->algo->fRadThick[iSt].GetRadThick(T.x, T.y), T.qp, fvec(1.f), w);
     }
-    fvec ONE=1;
     if( NMvdStations <= 0 )
     {
       L1AddPipeMaterial( T, T.qp, ONE, mass2);
