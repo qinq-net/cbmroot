@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////
-//                Dielectron SignalBase                                  //
+//                Dielectron SignalExt                                  //
 //                                                                       //
 //                                                                       //
 /*
-Base class for signal extraction from a histogram or an array of histograms
+Ext class for signal extraction from a histogram or an array of histograms
 The histogram is assumed to be an inv. mass spectrum,
 the array of histograms is assumed to be an array with inv. mass histograms
 resulting from single and mixed events, as defined in PairAnalysis.cxx
@@ -41,13 +41,13 @@ resulting from single and mixed events, as defined in PairAnalysis.cxx
 #include "PairAnalysisStyler.h"
 
 #include "PairAnalysisFunction.h"
-#include "PairAnalysisSignalBase.h"
+#include "PairAnalysisSignalExt.h"
 
-ClassImp(PairAnalysisSignalBase)
+ClassImp(PairAnalysisSignalExt)
 
-TH1F* PairAnalysisSignalBase::fgHistSimPM=0x0;
-TObject* PairAnalysisSignalBase::fgPeakShape=0x0;
-const char* PairAnalysisSignalBase::fgkValueNames[7] = {
+TH1F* PairAnalysisSignalExt::fgHistSimPM=0x0;
+TObject* PairAnalysisSignalExt::fgPeakShape=0x0;
+const char* PairAnalysisSignalExt::fgkValueNames[7] = {
   "S",
   "B",
   "S/#sqrt{S+B}",
@@ -55,7 +55,7 @@ const char* PairAnalysisSignalBase::fgkValueNames[7] = {
   "Mass",
   "MassWidth",
   "ChiSqNDFmatch"};
-const char* PairAnalysisSignalBase::fgkBackgroundMethodNames[11] = {
+const char* PairAnalysisSignalExt::fgkBackgroundMethodNames[11] = {
   "FittedMC",
   "Fitted",
   "like-sign",
@@ -68,7 +68,7 @@ const char* PairAnalysisSignalBase::fgkBackgroundMethodNames[11] = {
   "track rotation",
   "cocktail" };
 
-PairAnalysisSignalBase::PairAnalysisSignalBase() :
+PairAnalysisSignalExt::PairAnalysisSignalExt() :
   PairAnalysisFunction(),
   //TNamed(),
   fArrHists(0x0),
@@ -121,7 +121,7 @@ PairAnalysisSignalBase::PairAnalysisSignalBase() :
 }
 
 //______________________________________________
-PairAnalysisSignalBase::PairAnalysisSignalBase(const char* name, const char* title) :
+PairAnalysisSignalExt::PairAnalysisSignalExt(const char* name, const char* title) :
   PairAnalysisFunction(name, title),
   //  TNamed(name, title),
   fArrHists(0x0),
@@ -174,7 +174,7 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const char* name, const char* tit
 }
 
 //______________________________________________
-PairAnalysisSignalBase::PairAnalysisSignalBase(const PairAnalysisSignalBase &c) :
+PairAnalysisSignalExt::PairAnalysisSignalExt(const PairAnalysisSignalExt &c) :
   PairAnalysisFunction(c.GetName(), c.GetTitle()),
   fArrHists(c.fArrHists),
   fArrCocktail(c.fArrCocktail),
@@ -226,7 +226,7 @@ PairAnalysisSignalBase::PairAnalysisSignalBase(const PairAnalysisSignalBase &c) 
 }
 
 //______________________________________________
-PairAnalysisSignalBase::~PairAnalysisSignalBase()
+PairAnalysisSignalExt::~PairAnalysisSignalExt()
 {
   //
   // Default Destructor
@@ -250,7 +250,7 @@ PairAnalysisSignalBase::~PairAnalysisSignalBase()
 }
 
 //______________________________________________
-TPaveText* PairAnalysisSignalBase::DrawStats(Double_t x1/*=0.*/, Double_t y1/*=0.*/,
+TPaveText* PairAnalysisSignalExt::DrawStats(Double_t x1/*=0.*/, Double_t y1/*=0.*/,
 					     Double_t x2/*=0.*/, Double_t y2/*=0.*/,
 					     TString opt/*="pRnbsSmrc"*/)
 {
@@ -304,7 +304,7 @@ TPaveText* PairAnalysisSignalBase::DrawStats(Double_t x1/*=0.*/, Double_t y1/*=0
 }
 
 //______________________________________________
-void PairAnalysisSignalBase::Print(Option_t */*option*/) const
+void PairAnalysisSignalExt::Print(Option_t */*option*/) const
 {
   //
   // Print the statistics
@@ -324,7 +324,7 @@ void PairAnalysisSignalBase::Print(Option_t */*option*/) const
 }
 
 //______________________________________________
-Double_t PairAnalysisSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax)
+Double_t PairAnalysisSignalExt::ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax)
 {
   //
   // scale histBackground to match the integral of histRaw in the interval intMin, intMax
@@ -350,7 +350,7 @@ Double_t PairAnalysisSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackgrou
 }
 
 //______________________________________________
-Double_t PairAnalysisSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax, Double_t intMin2, Double_t intMax2)
+Double_t PairAnalysisSignalExt::ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax, Double_t intMin2, Double_t intMax2)
 {
   //
   // scale histBackground to match the integral of histRaw in the interval intMin, intMax and intMin2, intMax2
@@ -381,7 +381,7 @@ Double_t PairAnalysisSignalBase::ScaleHistograms(TH1* histRaw, TH1* histBackgrou
 }
 
 //______________________________________________
-TH1* PairAnalysisSignalBase::MergeObjects(TH1* obj1, TH1* obj2, Double_t val) {
+TH1* PairAnalysisSignalExt::MergeObjects(TH1* obj1, TH1* obj2, Double_t val) {
   //
   // function to merge all TH1 inherited objects
   // (needed because TProfile::Add with negative 'val' does not what is needed)
@@ -446,7 +446,7 @@ TH1* PairAnalysisSignalBase::MergeObjects(TH1* obj1, TH1* obj2, Double_t val) {
 }
 
 //______________________________________________
-TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod method, Bool_t replaceValErr,  TH1F *mcShape) {
+TObject* PairAnalysisSignalExt::DescribePeakShape(ESignalExtractionMethod method, Bool_t replaceValErr,  TH1F *mcShape) {
   //
   // Describe the extracted peak by the selected method and overwrite signal etc if needed
   //
@@ -624,7 +624,7 @@ TObject* PairAnalysisSignalBase::DescribePeakShape(ESignalExtractionMethod metho
 }
 
 //______________________________________________
-void PairAnalysisSignalBase::Process(TObjArray* const arrhist)
+void PairAnalysisSignalExt::Process(TObjArray* const arrhist)
 {
   //
   // signal subtraction. support like-sign subtraction and event mixing method
@@ -878,7 +878,7 @@ void PairAnalysisSignalBase::Process(TObjArray* const arrhist)
 }
 
 //______________________________________________
-void PairAnalysisSignalBase::ProcessLS()
+void PairAnalysisSignalExt::ProcessLS()
 {
   //
   // signal subtraction
@@ -982,7 +982,7 @@ void PairAnalysisSignalBase::ProcessLS()
 }
 
 //______________________________________________
-void PairAnalysisSignalBase::ProcessEM()
+void PairAnalysisSignalExt::ProcessEM()
 {
   //
   // event mixing of +- and -+
@@ -1039,7 +1039,7 @@ void PairAnalysisSignalBase::ProcessEM()
 }
 
 //______________________________________________
-void PairAnalysisSignalBase::ProcessTR()
+void PairAnalysisSignalExt::ProcessTR()
 {
   //
   // signal subtraction
@@ -1097,7 +1097,7 @@ void PairAnalysisSignalBase::ProcessTR()
 }
 
 //______________________________________________
-void PairAnalysisSignalBase::ProcessCocktail()
+void PairAnalysisSignalExt::ProcessCocktail()
 {
   //
   // signal subtraction
@@ -1139,7 +1139,7 @@ void PairAnalysisSignalBase::ProcessCocktail()
 }
 
 //______________________________________________
-void PairAnalysisSignalBase::Draw(const Option_t* option)
+void PairAnalysisSignalExt::Draw(const Option_t* option)
 {
   //
   // Draw the fitted function

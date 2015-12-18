@@ -192,8 +192,7 @@
 #pragma link C++ class PairAnalysisMixingHandler+;
 
 #pragma link C++ class PairAnalysisFunction+;
-#pragma link C++ class PairAnalysisSignalBase+;
-//#pragma link C++ class PairAnalysisSignalExt+;
+#pragma link C++ class PairAnalysisSignalExt+;
 //#pragma link C++ class PairAnalysisSignalFit+;
 //#pragma link C++ class PairAnalysisSpectrumN+;
 //#pragma link C++ class Extraction+;

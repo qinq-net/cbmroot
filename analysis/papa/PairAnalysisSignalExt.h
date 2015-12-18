@@ -1,12 +1,9 @@
-#ifndef PAIRANALYSISSIGNALBASE_H
-#define PAIRANALYSISSIGNALBASE_H
-
-/* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+#ifndef PAIRANALYSISSIGNALEXT_H
+#define PAIRANALYSISSIGNALEXT_H
 
 //#############################################################
 //#                                                           # 
-//#         Class PairAnalysisSignalBase                       #
+//#         Class PairAnalysisSignalExt                       #
 //#  Authors:                                                 #
 //#   Julian    Book,     Uni Ffm / Julian.Book@cern.ch       #
 //#                                                           #
@@ -25,9 +22,7 @@
 class TObjArray;
 class TPaveText;
 
-class PairAnalysisSignalBase : public PairAnalysisFunction {
-
-  //  friend class PairAnalysisSpectrum; //extraction as friend class
+class PairAnalysisSignalExt : public PairAnalysisFunction {
 
 public:
   enum EBackgroundMethod {
@@ -54,10 +49,10 @@ public:
     kUserFunc
   };
 
-  PairAnalysisSignalBase();
-  PairAnalysisSignalBase(const char*name, const char* title);
+  PairAnalysisSignalExt();
+  PairAnalysisSignalExt(const char*name, const char* title);
   
-  ~PairAnalysisSignalBase();
+  ~PairAnalysisSignalExt();
 
   // Setter
   // signal
@@ -214,13 +209,13 @@ protected:
 
   PairAnalysisFunction *fExtrFunc; // signal extraction function
 
-  PairAnalysisSignalBase(const PairAnalysisSignalBase &c);
-  PairAnalysisSignalBase &operator=(const PairAnalysisSignalBase &c);
+  PairAnalysisSignalExt(const PairAnalysisSignalExt &c);
+  PairAnalysisSignalExt &operator=(const PairAnalysisSignalExt &c);
 
-  ClassDef(PairAnalysisSignalBase,3) // base and abstract class for signal extraction
+  ClassDef(PairAnalysisSignalExt,3) // Ext and abstract class for signal extraction
 };
 
-inline TObject* PairAnalysisSignalBase::FindObject(TObjArray *arrhist, PairAnalysis::EPairType type)
+inline TObject* PairAnalysisSignalExt::FindObject(TObjArray *arrhist, PairAnalysis::EPairType type)
 {
   //
   // shortcut to find a certain pair type object in array
@@ -234,7 +229,7 @@ inline TObject* PairAnalysisSignalBase::FindObject(TObjArray *arrhist, PairAnaly
   return 0x0;
 }
 
-inline TObject* PairAnalysisSignalBase::FindObjectByTitle(TObjArray *arrhist, TString ref)
+inline TObject* PairAnalysisSignalExt::FindObjectByTitle(TObjArray *arrhist, TString ref)
 {
   //
   // shortcut to find a certain pair type object in array
@@ -250,7 +245,7 @@ inline TObject* PairAnalysisSignalBase::FindObjectByTitle(TObjArray *arrhist, TS
   return 0x0;
 }
 
-inline void PairAnalysisSignalBase::SetSignificanceAndSOB()
+inline void PairAnalysisSignalExt::SetSignificanceAndSOB()
 {
   //
   // Calculate S/B and significance
@@ -268,7 +263,7 @@ inline void PairAnalysisSignalBase::SetSignificanceAndSOB()
   fErrors(2) = ((s+b)>0 ? fValues(2)*TMath::Sqrt(be*be + TMath::Power(se*(s+2*b)/s, 2)) / 2 / (s+b) : 0);
 }
 
-inline void PairAnalysisSignalBase::SetFWHM()
+inline void PairAnalysisSignalExt::SetFWHM()
 {
   // calculate the fwhm
   if(!fgPeakShape) return;
