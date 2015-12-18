@@ -24,6 +24,7 @@
 
 #include <FairRootManager.h>
 #include <CbmRichElectronIdAnn.h>
+#include <CbmCluster.h>
 #include <CbmPixelHit.h>
 #include <CbmTofHit.h>
 #include <CbmRichHit.h>
@@ -84,6 +85,7 @@ public:
     kPosZ,                   // Z position [cm]
     kLinksMC,                // number of matched MC links
     kTRDLayer,               // plane/layer id
+    kTRDPads,                // number of pads contributing to cluster/hit
     kEloss,                  // TRD energy loss dEdx+TR
     kElossdEdx,              // TRD energy loss dEdx only
     kElossTR,                // TRD energy loss TR only
@@ -1320,6 +1322,14 @@ inline void PairAnalysisVarManager::FillVarTrdHit(const CbmTrdHit *hit, Double_t
 
   // accessors via CbmPixelHit & CbmHit
   FillVarPixelHit(hit, values);
+
+  // accessors via CbmCluster
+  Int_t clusterId        = hit->GetRefId();
+  TClonesArray *cluster  = fgEvent->GetCluster(kTRD);
+  if(cluster) {
+    CbmCluster *cls = static_cast<CbmCluster*>( cluster->At(hit->GetRefId()) );
+    if(cls) values[kTRDPads]  = cls->GetNofDigis();
+  }
 
   // Set
   values[kTRDLayer]  = hit->GetPlaneId(); //layer id

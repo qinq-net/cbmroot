@@ -47,9 +47,7 @@ public:
   TClonesArray *GetHitMatches(DetectorId det) const;
   TClonesArray *GetPoints(    DetectorId det) const;
 
-  TClonesArray *GetTrdHits()          const { return fTrdHits; }
-  TClonesArray *GetTrdHitMatches()    const { return fTrdHitMatches; }
-  TClonesArray *GetTrdPoints()        const { return fTrdPoints; }
+  TClonesArray *GetCluster(   DetectorId det) const;
 
   TObjArray    *GetTracks()           const { return fTracks; }
   PairAnalysisTrack *GetTrack(UInt_t pos);
@@ -97,6 +95,8 @@ private:
  TClonesArray *fTrdHitMatches;    // hit matches
  TClonesArray *fTofHitMatches;    // hit matches
 
+ TClonesArray *fTrdCluster;        //TRD cluster
+
  CbmVertex    *fPrimVertex;     //primary vertex
  TObjArray    *fTracks;         //papa tracks
 
@@ -105,7 +105,7 @@ private:
  PairAnalysisEvent(const PairAnalysisEvent& event);
  PairAnalysisEvent &operator=(const PairAnalysisEvent &c);
 
- ClassDef(PairAnalysisEvent,5)         // PairAnalysis Event
+ ClassDef(PairAnalysisEvent,6)         // PairAnalysis Event
 };
 
 

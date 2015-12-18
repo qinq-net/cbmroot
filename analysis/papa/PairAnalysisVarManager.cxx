@@ -28,6 +28,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"PosZ",                   "z_{hit}",                                            "(cm)"},
   {"LinksMC",                "N_{links}^{MC}",                                     ""},
   {"TRDLayer",               "layer^{TRD}",                                        ""},
+  {"TRDPads",                "N_{pads}^{TRD}",                                     ""},
   {"Eloss",                  "d#it{E}/d#it{x} + TR",                           "(keV#upointcm^{2}/g)"},
   {"ElossdEdx",              "d#it{E}/d#it{x}",                                "(keV#upointcm^{2}/g)"},
   {"ElossTR",                "TR",                                             "(keV#upointcm^{2}/g)"},

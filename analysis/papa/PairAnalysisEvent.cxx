@@ -70,6 +70,7 @@ PairAnalysisEvent::PairAnalysisEvent() :
   fMuchHitMatches(0x0),      //MUCH hits
   fTrdHitMatches(0x0),      //TRD hits
   fTofHitMatches(0x0),      //TOF hits
+  fTrdCluster(0x0),      //TRD cluster
   fPrimVertex(0x0),     //primary vertices
   fTracks(new TObjArray(1)), // array of papa tracks
   fMultiMatch(0)
@@ -115,6 +116,7 @@ PairAnalysisEvent::PairAnalysisEvent(const char* name, const char* title) :
   fMuchHitMatches(0x0),      //MUCH hits
   fTrdHitMatches(0x0),      //TRD hits
   fTofHitMatches(0x0),      //TOF hits
+  fTrdCluster(0x0),      //TRD cluster
   fPrimVertex(0x0),     //primary vertices
   fTracks(new TObjArray(1)), // array of papa tracks
   fMultiMatch(0)
@@ -162,6 +164,8 @@ PairAnalysisEvent::~PairAnalysisEvent()
   fTrdHits->Delete();      //TRD hits
   fRichHits->Delete();      //RICH hits
   fTofHits->Delete();      //TOF hits
+
+  fTrdCluster->Delete();      //TRD cluster
 
   fRichProjection->Delete();
   fMvdHitMatches->Delete();      //MVD hits
@@ -213,6 +217,8 @@ void PairAnalysisEvent::SetInput(FairRootManager *man)
   fMuchPoints   = (TClonesArray*) man->GetObject("MuchPoint");
   fTrdPoints    = (TClonesArray*) man->GetObject("TrdPoint");
   fTofPoints    = (TClonesArray*) man->GetObject("TofPoint");
+  // cluster
+  fTrdHits      = (TClonesArray*) man->GetObject("TrdCluster");
 
   fRichProjection = (TClonesArray*) man->GetObject("RichProjection");
   //  if(fMCTracks)   printf("PairAnalysisEvent::SetInput: size of mc array: %04d \n",fMCTracks->GetSize());
@@ -415,6 +421,23 @@ TClonesArray *PairAnalysisEvent::GetPoints(DetectorId det) const {
   case kTRD: return fTrdPoints;
   case kRICH:return fRichPoints;
   case kTOF: return fTofPoints;
+  default:   return 0x0;
+  }
+
+}
+
+//______________________________________________
+TClonesArray *PairAnalysisEvent::GetCluster(DetectorId det) const {
+  //
+  // get cluster array for certain detector
+  //
+  switch(det) {
+  // case kMVD: return fMvdCluster;
+  // case kSTS: return fStsCluster;
+  // case kMUCH:return fMuchCluster; //pixel
+  case kTRD: return fTrdCluster;
+  // case kRICH:return fRichCluster;
+  // case kTOF: return fTofCluster;
   default:   return 0x0;
   }
 

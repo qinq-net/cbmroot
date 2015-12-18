@@ -835,40 +835,6 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	      }
 	    }
 
-
-	    // only TRD for the moment
-	    /*
-	    if(idet!=kTRD) continue;
-	    // true or false hit
-	    CbmTrackMatchNew *tmatch = track->GetTrackMatch(static_cast<DetectorId>(idet)); //mc
-	    if(!tmatch) continue;
-	    //	  Printf("Track match found");
-	    Bool_t thitClass  =  fHistos->HasHistClass(className3+"_true");
-	    Bool_t thitClass2 = (fHistoArray && fHistoArray->HasHistClass(className3+"_true"));
-	    if(!thitClass && !thitClass2) continue;
-	    const CbmMatch* hmatch = static_cast<CbmMatch*>(ev->GetTrdHitMatches()->At(trkl->GetHitIndex(ihit)));
-	    //	    Printf("trd direct hit match %p ",hit->GetMatch());
-	    //CbmMatch    *hmatch = hit->GetMatch(); // this somehow doesnot work
-	    if(!hmatch) continue;
-	    //Printf("Hit match found");
-	    for (Int_t iLink = 0; iLink < hmatch->GetNofLinks(); iLink++) {
-	      const FairMCPoint* point = static_cast<const FairMCPoint*>(ev->GetPoints(static_cast<DetectorId>(idet))->At(hmatch->GetLink(iLink).GetIndex())); //mc
-	      if(!point) continue;
-	      // fill mc truth information
-	      PairAnalysisVarManager::Fill(point, values);
-	      //	    Printf("                mc point  found");
-	      // true hit or fake
-	      if (point->GetTrackID() == tmatch->GetMatchedLink().GetIndex()) {
-		if(thitClass)	    fHistos    ->FillClass(className3+"_true", values);
-		if(thitClass2)	    fHistoArray->FillClass(className3+"_true", values);
-	      }
-	      else {
-		if(thitClass)	    fHistos    ->FillClass(className3+"_fake", values);
-		if(thitClass2)	    fHistoArray->FillClass(className3+"_fake", values);
-	      }
-	    } // link loop
-	    */
-
 	    // reset pointer (needed for tof)
 	    hit=0x0;
 	  } // rec hit loop
