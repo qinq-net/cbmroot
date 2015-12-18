@@ -309,6 +309,12 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // ===                        Global tracking                            ===
   // =========================================================================
 
+  // -----   Primary vertex finding   ---------------------------------------
+  CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
+  CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
+  run->AddTask(findVertex);
+
+  // ------------------------------------------------------------------------
   CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
   // Tracking method to be used
   // "branch" - branching tracking
@@ -322,11 +328,6 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
   run->AddTask(finder);
 
-  // -----   Primary vertex finding   ---------------------------------------
-  CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
-  CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
-  run->AddTask(findVertex);
-  // ------------------------------------------------------------------------
 
   // ===                      End of global tracking                       ===
   // =========================================================================
