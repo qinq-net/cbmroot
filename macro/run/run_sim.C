@@ -37,6 +37,7 @@ TString trdTag="";
 TString tofTag="";  
 
 TString stsDigi="";
+TString muchDigi="";
 TString trdDigi="";
 TString tofDigi="";
 
