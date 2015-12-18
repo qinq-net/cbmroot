@@ -69,6 +69,7 @@ void sis100_hadron_setup()
 
   // -----  DigiFiles  ------------------------------------------------------
   stsDigi      = ""; // "sts/sts_" + stsTag + "_std.digi.par";
+  muchDigi     = "";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
 

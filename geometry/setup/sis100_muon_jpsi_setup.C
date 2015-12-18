@@ -35,6 +35,7 @@ void sis100_muon_jpsi_setup()
 
   // -----  DigiFiles  ------------------------------------------------------
   stsDigi      = ""; // "sts/sts_" + stsTag + "_std.digi.par";
+  muchDigi     = "much/much_v15c_digi_sector.root";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
 
@@ -50,7 +51,7 @@ void sis100_muon_jpsi_setup()
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
   richGeom     = "";
   muchGeom     = "much/much_v15c_SIS100-C_gemtrd.geo";
-//  muchGeom     = "much/much_v15c_SIS100-C_allgem.geo";
+//  muchGeom     = "much/much_v15d_SIS100-C_allgem.geo";
   shieldGeom   = "much/shield_v15c_SIS100C_149_3part_125cm.geo";
   platformGeom = ""; // "passive/platform_v13a.geo";
   trdGeom      = "trd/trd_" + trdTag + ".geo.root";
