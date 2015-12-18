@@ -35,7 +35,7 @@ void sis100_muon_lmvm_setup()
 
   // -----  DigiFiles  ------------------------------------------------------
   stsDigi      = ""; // "sts/sts_" + stsTag + "_std.digi.par";
-  muchDigi     = "much/much_v15b_digi_sector.root";x
+  muchDigi     = "much/much_v15b_digi_sector.root";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
 
