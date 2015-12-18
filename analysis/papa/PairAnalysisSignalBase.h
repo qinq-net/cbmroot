@@ -57,7 +57,7 @@ public:
   PairAnalysisSignalBase();
   PairAnalysisSignalBase(const char*name, const char* title);
   
-  virtual ~PairAnalysisSignalBase();
+  ~PairAnalysisSignalBase();
 
   // Setter
   // signal
@@ -84,8 +84,8 @@ public:
   Int_t GetParticleOfInterest()      const { return fPOIpdg; }
   Double_t GetIntegralMin()          const { return fIntMin; }
   Double_t GetIntegralMax()          const { return fIntMax; }
-  Double_t GetFitMin()               const { return fFitMin; }
-  Double_t GetFitMax()               const { return fFitMax; }
+  /* Double_t GetFitMin()               const { return fFitMin; } */
+  /* Double_t GetFitMax()               const { return fFitMax; } */
   Int_t GetRebin()                   const { return fRebin;  }
   TArrayD *GetRebinLimits()          const { return fBinLimits; }
   ESignalExtractionMethod GetExtractionMethod() const      { return fPeakMethod; }
@@ -132,7 +132,7 @@ public:
   Double_t ScaleHistograms(TH1* histRaw, TH1* histBackground, Double_t intMin, Double_t intMax, Double_t intMin2, Double_t intMax2);
 
   static TH1* MergeObjects(TH1* obj1, TH1* obj2, Double_t val=+1.);
-  virtual void Print(Option_t *option="") const;
+  void Print(Option_t *option="") const;
 
   /**
   This function needs to be implemented by the signal extraction classes.
@@ -142,7 +142,15 @@ public:
   The TObjArray should contain the Inv. Mass spectra of the 8 possible combinations
   for single and mixed events defined in PairAnalysis.cxx
   */
-  virtual void Process(TObjArray * const /*arrhist*/) = 0;
+  //virtual void Process(TObjArray * const /*arrhist*/) = 0;
+  void Process(TObjArray* const arrhist);
+  void ProcessLS();        // like-sign method
+  void ProcessEM();        // event mixing method
+  void ProcessTR();        // track rotation method
+  void ProcessCocktail();  // cocktail method
+
+  void Draw(const Option_t* option = "");
+
 
 protected:
   TObjArray *fArrHists;              // array of input histograms

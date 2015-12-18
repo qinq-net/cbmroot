@@ -370,6 +370,7 @@ void PairAnalysisStyler::SetLegendAttributes(TLegend *leg, Bool_t fill)
   for(Int_t il=0; il<nent; il++) {
     TLegendEntry *lent = static_cast<TLegendEntry*>(llist->At(il));
     TString lst(lent->GetLabel());
+    //    lent->SetTextSize(20);
     /*    lst.ReplaceAll("#it","");
     lst.ReplaceAll("{","");
     lst.ReplaceAll("}","");

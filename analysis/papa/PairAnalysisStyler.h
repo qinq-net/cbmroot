@@ -53,13 +53,13 @@ namespace PairAnalysisStyler
   static Int_t Color[]= {kRed-4
 			 ,kBlue-4
 			 ,kBlack
-			 ,kGray+1
 			 ,kGreen+1
 			 ,kAzure+1
 			 ,kOrange+2
 			 ,kSpring+4
 			 ,kViolet+1
 			 ,kOrange
+			 ,kGray+1
 			 ,kRed+2
 			 ,kCyan+1
 			 ,kGreen+3

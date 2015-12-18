@@ -55,6 +55,8 @@ class PairAnalysisFunction : public TNamed {
 
   Int_t GetDof()                const { return fDof;               }
   Double_t GetChi2Dof()         const { return fChi2Dof;           }
+  Double_t GetFitMin()          const { return fFitMin;            }
+    Double_t GetFitMax()        const { return fFitMax;            }
   
   //virtual void Draw(const Option_t* option = "");
   //  virtual void Print(Option_t *option="") const;

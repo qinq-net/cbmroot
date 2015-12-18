@@ -167,9 +167,17 @@ public:
     // rich ring information
     kRICHPidANN,             // PID value Artificial Neural Network (ANN-method)
     kRICHHitsOnRing,         // number of RICH hits on the ring
-    kRICHHits,               // number of RICH hits
-    kRICHChi2NDF,            // chi2/ndf RICH
-    kRICHRadius,             // RICH ring radius
+    kRICHHits,               // number of RICH hits (ANN input)
+    kRICHChi2NDF,            // chi2/ndf ring fit (ANN input)
+    kRICHRadius,             // ring radius
+    kRICHAxisA,              // major semi-axis (ANN input)
+    kRICHAxisB,              // minor semi-axis (ANN input)
+    kRICHCenterX,            // ring center in x
+    kRICHCenterY,            // ring center in y
+    kRICHAngle,              // ring rotation angle of ellipse (ANN input)
+    kRICHDistance,           // distance between ring center and track (ANN input)
+    kRICHRadialPos,          // radial psoition = sqrt(x**2+abs(y-110)**2), (ANN input)
+    kRICHRadialAngle,        // radial angle (0||1||2)*pi +- atan( abs((+-100-y)/-x) ), (ANN input)
     // tof track information
     kTOFHits,                // number of TOF hits
     // much track information
@@ -780,7 +788,14 @@ inline void PairAnalysisVarManager::FillVarRichRing(const CbmRichRing *track, Do
   values[kRICHHits]        = track->GetNofHits();
   values[kRICHChi2NDF]     = (track->GetNDF()>0. ? track->GetChi2()/track->GetNDF() : -999.);
   values[kRICHRadius]      = track->GetRadius();
-
+  values[kRICHAxisA]       = track->GetAaxis();
+  values[kRICHAxisB]       = track->GetBaxis();
+  values[kRICHCenterX]     = track->GetCenterX();
+  values[kRICHCenterY]     = track->GetCenterY();
+  values[kRICHAngle]       = track->GetAngle();
+  values[kRICHDistance]    = track->GetDistance();
+  values[kRICHRadialPos]   = track->GetRadialPosition();
+  values[kRICHRadialAngle] = track->GetRadialAngle();
 }
 
 inline void PairAnalysisVarManager::FillVarTrdTrack(const CbmTrdTrack *track, Double_t * const values)

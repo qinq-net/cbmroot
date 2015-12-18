@@ -106,12 +106,20 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"STSZv",                  "z_{STS}",                                            "(cm)"},
   {"STSChi2NDFtoVtx",        "#chi^{2}/^{}N_{df}^{STS#leftrightarrowvtx}",         "(#sigma)"},
   {"STSFirstHitPosZ",        "z_{first hit}^{STS}",                                "(cm)"},
-  //RICH track specific information
+  //RICH ring specific information
   {"RICHPidANN",             "PID_{e}^{RICH} (ANN)",                               ""},
   {"RICHHitsOnRing",         "N_{hit on Ring}^{RICH}",                             ""},
   {"RICHHits",               "N_{hit}^{RICH}",                                     ""},
   {"RICHChi2NDF",            "#chi^{2}/^{}N_{df}^{RICH}",                          ""},
   {"RICHRadius",             "r_{}^{RICH}",                                        "(cm)"},
+  {"RICHAxisA",              "a_{}^{RICH}",                                        "(cm)"},
+  {"RICHAxisB",              "b_{}^{RICH}",                                        "(cm)"},
+  {"RICHCenterX",            "x_{}^{RICH}",                                        "(cm)"},
+  {"RICHCenterY",            "y_{}^{RICH}",                                        "(cm)"},
+  {"RICHAngle",              "#phi_{rot.}^{RICH}",                                    "(?)"},
+  {"RICHDistance",           "d_{ring#leftrightarrowtrack}^{RICH}",                "(cm)"},
+  {"RICHRadialPos",          "pos_{rad.}^{RICH}",                                  "(cm)"},
+  {"RICHRadialAngle",        "#phi_{rad.}^{RICH}",                                 "(rad.)"},
   //TOF track specific information
   {"TOFHits",                "N_{hit}^{TOF}",                                      ""},
   // MUCH track information

@@ -943,9 +943,9 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 {
   //
   // Draw all histograms with the same name into one canvas
-  // if option contains 'leg' a legend will be created with the class name as caption
+  // if option contains 'leg(f)' a ('filled') legend will be created with the class name as caption
   // if option contains 'can' a new canvas is created
-  // if option contains 'rebin' the objects are rebinned by 2
+  // if option contains 'rebinx' the objects are rebinned by x (for x<10)
   // if option contains 'norm' the objects are normalized to 1
   // if option contains 'events' use meta data to normalize
   // if option contains 'logx,y,z' the axis are plotted in log
@@ -989,7 +989,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
   Bool_t optDet      =optString.Contains("det");       optString.ReplaceAll("det","");
   Bool_t optMeta     =optString.Contains("meta");      optString.ReplaceAll("meta","");
-  Bool_t optRbn      =optString.Contains("rebin");     optString.ReplaceAll("rebin","");
+  Bool_t optRbn      =optString.Contains("rebin");
   Bool_t optSclMax   =optString.Contains("sclmax");    optString.ReplaceAll("sclmax","");
   Bool_t optNormY    =optString.Contains("normy");      optString.ReplaceAll("normy","");
   Bool_t optNorm     =optString.Contains("norm");      optString.ReplaceAll("norm","");
@@ -1001,10 +1001,20 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   Bool_t optRmsY     =optString.Contains("rmsy");      optString.ReplaceAll("rmsy","");
   Bool_t optGeant    =optString.Contains("geant");     optString.ReplaceAll("geant","");
 
+  // set rebinning
+  Int_t rbn = 2;
+  if(optRbn) {
+    TString rebin(optString(optString.Index("rebin",5,0,TString::kExact)+5));
+    if(rebin.IsDigit())  {
+      rbn = rebin.Atoi();
+      optString.ReplaceAll(rebin,"");
+    }
+    optString.ReplaceAll("rebin","");
+  }
+
   // option dependencies
   if(optLegFull) optLeg=kTRUE;
 
-  Int_t rbn = 2;
   // selction string
   TString select("");
   if(optSel) select=histClassDenom;

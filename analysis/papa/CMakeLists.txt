@@ -101,8 +101,8 @@ PairAnalysisMixingHandler.cxx
 
 PairAnalysisFunction.cxx
 PairAnalysisSignalBase.cxx
-PairAnalysisSignalExt.cxx
-PairAnalysisSignalFit.cxx
+#PairAnalysisSignalExt.cxx
+#PairAnalysisSignalFit.cxx
 #PairAnalysisSpectrumN.cxx
 )
 
