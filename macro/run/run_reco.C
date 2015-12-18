@@ -303,6 +303,23 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // =========================================================================
 
 
+  if (muchGeom.Length() != 0)  // if RICH is defined
+  {
+   TString muchDigiFile(paramDir + muchDigi);
+   cout << "MuchDigiFile: " << muchDigiFile << endl; 
+
+   // ----- MUCH hits----------   ----------------------------------------------
+   CbmMuchDigitizeGem* muchDigitize = new CbmMuchDigitizeGem(muchDigiFile.Data());
+   run->AddTask(muchDigitize);
+   CbmMuchDigitizeStraws* strawDigitize = new CbmMuchDigitizeStraws(muchDigiFile.Data());
+   run->AddTask(strawDigitize);
+
+   CbmMuchFindHitsGem* muchFindHits = new CbmMuchFindHitsGem(muchDigiFile.Data());
+   run->AddTask(muchFindHits);
+   CbmMuchFindHitsStraws* strawFindHits = new CbmMuchFindHitsStraws(muchDigiFile.Data());
+   run->AddTask(strawFindHits);
+   // --------------------------------------------------------------------------
+  }
 
 
   // =========================================================================
@@ -331,7 +348,6 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
 
   // ===                      End of global tracking                       ===
   // =========================================================================
-
 
 
   // ----------- TRD track Pid Wkn ----------------------
