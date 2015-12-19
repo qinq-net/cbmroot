@@ -57,6 +57,9 @@ void trd_sim(Int_t nEvents = 1, Int_t CbmSetup = 4)
   TString outFile = outDir + "/test.mc.root";
   TString parFile = outDir + "/params.root";
   
+   // Function needed for CTest runtime dependency
+   TString depFile = Remove_CTest_Dependency_File(outDir, "trd_sim");
+  
   CbmTarget* target = new CbmTarget("Gold", 0.025);
 
   TString setup;
@@ -101,9 +104,6 @@ void trd_sim(Int_t nEvents = 1, Int_t CbmSetup = 4)
   else
     platformGeom = "passive/platform_v13b.geo";
 
-   // Function needed for CTest runtime dependency
-   TString depFile = Remove_CTest_Dependency_File(outDir, "trd_sim");
-  
   // In general, the following parts need not be touched
   // ========================================================================
 
