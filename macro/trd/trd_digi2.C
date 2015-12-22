@@ -133,6 +133,10 @@ void trd_digi2(Int_t nEvents = 1, const char* setup = "sis300_electron")
   FairRunAna *run = new FairRunAna();
   run->SetInputFile(inFile);
   run->SetOutputFile(outFile);
+  Bool_t hasFairMonitor = Has_Fair_Monitor();
+  if (hasFairMonitor) {
+    FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
+  }
   // ------------------------------------------------------------------------
 
   // =========================================================================
@@ -202,7 +206,24 @@ void trd_digi2(Int_t nEvents = 1, const char* setup = "sis300_electron")
   cout << endl;
   // ------------------------------------------------------------------------
 
-//  delete run;
+  if (hasFairMonitor) {
+    // Extract the maximal used memory an add is as Dart measurement
+    // This line is filtered by CTest and the value send to CDash
+    FairSystemInfo sysInfo;
+    Float_t maxMemory=sysInfo.GetMaxMemory();
+    cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
+    cout << maxMemory;
+    cout << "</DartMeasurement>" << endl;
+
+    Float_t cpuUsage=ctime/rtime;
+    cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
+    cout << cpuUsage;
+    cout << "</DartMeasurement>" << endl;
+
+    FairMonitor* tempMon = FairMonitor::GetMonitor();
+    tempMon->Print();
+  }
+  //  delete run;
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;

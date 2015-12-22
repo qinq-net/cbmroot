@@ -32,6 +32,23 @@ TString Remove_CTest_Dependency_File(TString outDir, TString macroName, const ch
   return depFile;
 }
 
+Bool_t Has_Fair_Monitor()
+{
+  // Extract major and minor version from version string
+  TString version=gSystem->GetFromPipe("$FAIRROOTPATH/bin/fairroot-config --version");
+  Size_t start = version.First("-") + 1;
+  TString major( version(start,2) );
+  TString minor( version(start+3,2) );
+
+  // FairMonitor is part of FairSoft since v-15.11
+  if (major.Atoi() >= 15) {
+    if (minor.Atoi() >= 11) {
+      return kTRUE;
+    } 
+  }
+  return kFALSE;
+}
+
 /**
  * \file determine setup.C
  * \brief Macro determines detector presence in CBM setup.

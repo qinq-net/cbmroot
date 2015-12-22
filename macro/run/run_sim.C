@@ -78,6 +78,8 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // Function needed for CTest runtime dependency
   TString depFile = Remove_CTest_Dependency_File(outDir, "run_sim" , setup);
 
+  Bool_t hasFairMonitor = Has_Fair_Monitor();
+
   // --- Logger settings ----------------------------------------------------
   TString logLevel = "INFO";   // "DEBUG";
   TString logVerbosity = "LOW";
@@ -346,6 +348,21 @@ void run_sim(Int_t nEvents = 2, const char* setup = "sis100_electron")
   std::cout << "Real time " << rtime << " s, CPU time " << ctime
        << "s" << std::endl << std::endl;
   // ------------------------------------------------------------------------
+
+  if (hasFairMonitor) {
+    // Extract the maximal used memory an add is as Dart measurement
+    // This line is filtered by CTest and the value send to CDash
+    FairSystemInfo sysInfo;
+    Float_t maxMemory=sysInfo.GetMaxMemory();
+    cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
+    cout << maxMemory;
+    cout << "</DartMeasurement>" << endl;
+
+    Float_t cpuUsage=ctime/rtime;
+    cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
+    cout << cpuUsage;
+    cout << "</DartMeasurement>" << endl;
+  }
 
   std::cout << " Test passed" << std::endl;
   std::cout << " All ok " << std::endl;

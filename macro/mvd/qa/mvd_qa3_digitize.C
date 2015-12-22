@@ -58,6 +58,10 @@ void mvd_qa3_digitize()
     FairRunAna *fRun= new FairRunAna();
     fRun->SetInputFile(inFile);
     fRun->SetOutputFile(outFile);
+    Bool_t hasFairMonitor = Has_Fair_Monitor();
+    if (hasFairMonitor) {
+      FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
+    }
     // ------------------------------------------------------------------------
 
 
@@ -128,7 +132,6 @@ void mvd_qa3_digitize()
 
     // -----   Finish   ----------------------------------------------------------
     timer.Stop();
-
     Double_t rtime = timer.RealTime();
     Double_t ctime = timer.CpuTime();
     cout << endl << endl;
@@ -138,6 +141,23 @@ void mvd_qa3_digitize()
     cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
     cout << endl;
     // ---------------------------------------------------------------------------
+  if (hasFairMonitor) {
+    // Extract the maximal used memory an add is as Dart measurement
+    // This line is filtered by CTest and the value send to CDash
+    FairSystemInfo sysInfo;
+    Float_t maxMemory=sysInfo.GetMaxMemory();
+    cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
+    cout << maxMemory;
+    cout << "</DartMeasurement>" << endl;
+
+    Float_t cpuUsage=ctime/rtime;
+    cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
+    cout << cpuUsage;
+    cout << "</DartMeasurement>" << endl;
+
+    FairMonitor* tempMon = FairMonitor::GetMonitor();
+    tempMon->Print();
+  }
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;

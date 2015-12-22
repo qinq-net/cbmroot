@@ -125,9 +125,14 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   run->SetInputFile(inFile);
   run->SetOutputFile(outFile);
   run->SetGenerateRunInfo(kTRUE);
+  Bool_t hasFairMonitor = Has_Fair_Monitor();
+  if (hasFairMonitor) {
+    FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
+  }
+
   // ------------------------------------------------------------------------
 
-  // ----- MC Data Manager   ------------------------------------------------
+  // ----- Mc Data Manager   ------------------------------------------------
   CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
   mcManager->AddFile(inFile);
   run->AddTask(mcManager);
@@ -455,7 +460,23 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   cout << endl;
   // ------------------------------------------------------------------------
 
-  //  delete run;
+  if (hasFairMonitor) {
+    // Extract the maximal used memory an add is as Dart measurement
+    // This line is filtered by CTest and the value send to CDash
+    FairSystemInfo sysInfo;
+    Float_t maxMemory=sysInfo.GetMaxMemory();
+    cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
+    cout << maxMemory;
+    cout << "</DartMeasurement>" << endl;
+
+    Float_t cpuUsage=ctime/rtime;
+    cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
+    cout << cpuUsage;
+    cout << "</DartMeasurement>" << endl;
+
+    FairMonitor* tempMon = FairMonitor::GetMonitor();
+    tempMon->Print();
+  }
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;

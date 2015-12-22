@@ -1,4 +1,9 @@
 GENERATE_ROOT_TEST_SCRIPT(${CBMROOT_SOURCE_DIR}/macro/mvd/qa/mvd_qa1_transUrqmd.C)
+
+# Put the .rootrc file into the directory from which root is executed.
+# Otherwise the rootalias file is not loaded
+File(COPY ${CBMROOT_SOURCE_DIR}/macro/include/.rootrc DESTINATION ${CBMROOT_BINARY_DIR}/macro/mvd/qa)
+
 add_test(mvd_qa1_transUrqmd ${CBMROOT_BINARY_DIR}/macro/mvd/qa/mvd_qa1_transUrqmd.sh)
 SET_TESTS_PROPERTIES(mvd_qa1_transUrqmd PROPERTIES TIMEOUT "300")
 SET_TESTS_PROPERTIES(mvd_qa1_transUrqmd PROPERTIES PASS_REGULAR_EXPRESSION "Test Passed;All ok")

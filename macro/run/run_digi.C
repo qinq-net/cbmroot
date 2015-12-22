@@ -93,6 +93,10 @@ void run_digi(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // -----   Timer   --------------------------------------------------------
   TStopwatch timer;
   timer.Start();
+  Bool_t hasFairMonitor = Has_Fair_Monitor();
+  if (hasFairMonitor) {
+    FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
+  }
   // ------------------------------------------------------------------------
 
   // -----   Reconstruction run   -------------------------------------------
@@ -171,6 +175,23 @@ void run_digi(Int_t nEvents = 2, const char* setup = "sis100_electron")
   cout << endl;
   // ------------------------------------------------------------------------
 
+  if (hasFairMonitor) {
+    // Extract the maximal used memory an add is as Dart measurement
+    // This line is filtered by CTest and the value send to CDash
+    FairSystemInfo sysInfo;
+    Float_t maxMemory=sysInfo.GetMaxMemory();
+    cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
+    cout << maxMemory;
+    cout << "</DartMeasurement>" << endl;
+
+    Float_t cpuUsage=ctime/rtime;
+    cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
+    cout << cpuUsage;
+    cout << "</DartMeasurement>" << endl;
+
+    FairMonitor* tempMon = FairMonitor::GetMonitor();
+    tempMon->Print();
+  }
   //  delete run;
 
   cout << " Test passed" << endl;

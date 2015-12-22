@@ -70,6 +70,10 @@ void global_reco(Int_t nEvents = 10, // number of events
   timer.Start();
 
   FairRunAna *run = new FairRunAna();
+  Bool_t hasFairMonitor = Has_Fair_Monitor();
+  if (hasFairMonitor) {
+    FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
+  }
   if (opt == "all") {
     run->SetInputFile(mcFile);
     run->SetOutputFile(globalRecoFile);	
@@ -330,13 +334,34 @@ void global_reco(Int_t nEvents = 10, // number of events
   
   // -----   Finish   -------------------------------------------------------
   timer.Stop();
+  Double_t rtime = timer.RealTime();
+  Double_t ctime = timer.CpuTime();
   cout << endl << endl;
   cout << "Macro finished successfully." << endl;
   cout << "Test passed"<< endl;
   cout << " All ok " << endl;
   cout << "Output file is " << globalRecoFile << endl;
   cout << "Parameter file is " << parFile << endl;
-  cout << "Real time " << timer.RealTime() << " s, CPU time "	<< timer.CpuTime() << " s" << endl;
+  cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
   cout << endl;
+
+  if (hasFairMonitor) {
+    // Extract the maximal used memory an add is as Dart measurement
+    // This line is filtered by CTest and the value send to CDash
+    FairSystemInfo sysInfo;
+    Float_t maxMemory=sysInfo.GetMaxMemory();
+    cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
+    cout << maxMemory;
+    cout << "</DartMeasurement>" << endl;
+
+    Float_t cpuUsage=ctime/rtime;
+    cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
+    cout << cpuUsage;
+    cout << "</DartMeasurement>" << endl;
+
+    FairMonitor* tempMon = FairMonitor::GetMonitor();
+    tempMon->Print();
+  }
+
   // ------------------------------------------------------------------------
 }
