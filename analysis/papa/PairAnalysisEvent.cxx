@@ -218,7 +218,7 @@ void PairAnalysisEvent::SetInput(FairRootManager *man)
   fTrdPoints    = (TClonesArray*) man->GetObject("TrdPoint");
   fTofPoints    = (TClonesArray*) man->GetObject("TofPoint");
   // cluster
-  fTrdHits      = (TClonesArray*) man->GetObject("TrdCluster");
+  fTrdCluster   = (TClonesArray*) man->GetObject("TrdCluster");
 
   fRichProjection = (TClonesArray*) man->GetObject("RichProjection");
   //  if(fMCTracks)   printf("PairAnalysisEvent::SetInput: size of mc array: %04d \n",fMCTracks->GetSize());

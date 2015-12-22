@@ -1326,7 +1326,7 @@ inline void PairAnalysisVarManager::FillVarTrdHit(const CbmTrdHit *hit, Double_t
   // accessors via CbmCluster
   Int_t clusterId        = hit->GetRefId();
   TClonesArray *cluster  = fgEvent->GetCluster(kTRD);
-  if(cluster) {
+  if(cluster->GetEntriesFast()>0) {
     CbmCluster *cls = static_cast<CbmCluster*>( cluster->At(hit->GetRefId()) );
     if(cls) values[kTRDPads]  = cls->GetNofDigis();
   }
