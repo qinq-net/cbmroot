@@ -240,12 +240,19 @@ class CbmStsDigitize : public FairTask
   Int_t          fNofDigis;     ///< Number of created digis in Exec
 
   // --- Run counters
-  Int_t          fNofSteps;       ///< Total number of steps processed
+  Int_t          fNofEvents;      ///< Total number of events processed
   Double_t       fNofPointsTot;   ///< Total number of points processed
   Double_t       fNofSignalsFTot; ///< Number of signals on front side
   Double_t       fNofSignalsBTot; ///< Number of signals on back side
   Double_t       fNofDigisTot;    ///< Total number of digis created
   Double_t       fTimeTot;        ///< Total execution time
+
+
+  /** Status of the analog buffers **/
+  string BufferStatus() const;
+
+  /** Status of the analog buffers **/
+  string BufferStatus2() const;
 
   /** End-of-run action **/
   virtual void Finish();
@@ -255,19 +262,22 @@ class CbmStsDigitize : public FairTask
   virtual InitStatus Init();
 
 
+  /** Process the analog buffers of all modules
+   ** @param readoutTime  Time of readout [ns]
+   **/
+  void ProcessAnalogBuffers(Double_t readoutTime);
+
+
   /** Process StsPoints from MCEvent **/
   void ProcessMCEvent();
-
-
-  /** Process StsPoints from MCBuffer **/
-  void ProcessMCBuffer();
 
 
   /** Process one MCPoint
    ** @param point  Pointer to CbmStsPoint to be processed
    ** @param link   Link to MCPoint
    **/
-  void ProcessPoint(const CbmStsPoint* point, CbmLink* link = NULL);
+  void ProcessPoint(const CbmStsPoint* point, Double_t eventTime = 0.,
+  		              CbmLink* link = NULL);
 
 
   /** Reset step-wise counters **/

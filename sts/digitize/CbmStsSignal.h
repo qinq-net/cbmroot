@@ -83,9 +83,20 @@ class CbmStsSignal : public TObject {
 		 ** @param Reference to CbmSignal object to compare to
 		 ** @return true if signal time is less than time of comparison signal
 		 **/
-		bool operator <(const CbmStsSignal& otherSignal) const {
-			return fTime < otherSignal.GetTime();
+		bool operator < (const CbmStsSignal& otherSignal) const {
+			return ( fTime < otherSignal.GetTime() );
 		}
+
+
+		/** Comparator for pointer objects
+		 ** Needed to store objects by pointer in sorted containers
+		 ** Sorting criterion is the signal time.
+		 **/
+		struct Before {
+				bool operator () (CbmStsSignal* signal1, CbmStsSignal* signal2) {
+					return ( signal1->GetTime() < signal2->GetTime() );
+				}
+		};
 
 	private:
 

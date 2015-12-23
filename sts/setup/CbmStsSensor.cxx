@@ -138,7 +138,8 @@ CbmStsModule* CbmStsSensor::GetModule() const {
 
 
 // -----   Process a CbmStsPoint  ------------------------------------------
-Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point, CbmLink* link) {
+Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point,
+		                             Double_t eventTime, CbmLink* link) {
 
 	// Check whether type is assigned
 	if ( ! fType ) {
@@ -191,11 +192,14 @@ Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point, CbmLink* link) {
   if ( FairRunAna::Instance() -> GetField())
   	FairRunAna::Instance()->GetField()->Field(global, bField);
 
+  // --- Absolute time of StsPoint
+  Double_t pTime = eventTime + point->GetTime();
+
   // --- Create SensorPoint
   // Note: there is a conversion from kG to T in the field values.
   CbmStsSensorPoint* sPoint = new CbmStsSensorPoint(x1, y1, z1, x2, y2, z2, p,
                                                     point->GetEnergyLoss(),
-                                                    point->GetTime(),
+                                                    pTime,
                                                     bField[0] / 10.,
                                                     bField[1] / 10.,
                                                     bField[2] / 10.,

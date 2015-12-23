@@ -10,7 +10,6 @@
 #include "FairEventHeader.h"
 #include "FairRunAna.h"
 
-#include "CbmMCBuffer.h"
 #include "CbmDaq.h"
 #include "CbmDaqBuffer.h"
 #include "CbmTimeSlice.h"
@@ -117,6 +116,12 @@ void CbmDaq::Exec(Option_t*) {
 	fTimer.Start();
 	Int_t nDigis = 0;
 
+	// Get system time (start time of current event)
+	Double_t systemTime = FairRootManager::Instance()->GetEventTime();
+	LOG(DEBUG) << GetName() << ": System time is " << systemTime
+			       << " ns " << FairLogger::endl;
+
+
   // --- DaqBuffer and time slice info
 	LOG(DEBUG) << GetName() << ": " << fBuffer->ToString()
 			       << FairLogger::endl;
@@ -129,16 +134,15 @@ void CbmDaq::Exec(Option_t*) {
     nDigis += FillTimeSlice();
 
     // --> Exit if current time slice cannot yet be closed
-    if ( CbmMCBuffer::Instance()->GetTime() <
-         fTimeSlice->GetEndTime() + 2. * fDuration ) {
+    if ( systemTime < fTimeSlice->GetEndTime() + 2. * fDuration ) {
     	LOG(DEBUG) << GetName() << ": System time " << fixed
-    			       << setprecision(3) <<CbmMCBuffer::Instance()->GetTime()
+    			       << setprecision(3) << systemTime
     			       << " ns; waiting for data." << FairLogger::endl;
     	break;
     }
 
   	LOG(DEBUG) << GetName() << ": System time " << fixed
-  			       << setprecision(3) << CbmMCBuffer::Instance()->GetTime()
+  			       << setprecision(3) << systemTime
   			       << " ns" << FairLogger::endl;
     CloseTimeSlice();
 
@@ -150,10 +154,10 @@ void CbmDaq::Exec(Option_t*) {
 
   // --- Event log
   fTimer.Stop();
-  LOG(INFO) << "+ " << setw(20) << GetName() << ": step  " << setw(6)
-  		      << right << fNofSteps << ", time " << fixed << setprecision(6)
-  		      << fTimer.RealTime() << " s, " << nDigis << " digis transported"
-            << FairLogger::endl;
+  LOG(INFO) << "+ " << setw(20) << GetName() << ": event  " << setw(6)
+  		      << right << fNofSteps << ", real time " << fixed
+  		      << setprecision(6) << fTimer.RealTime() << " s, " << nDigis
+  		      << " digis transported" << FairLogger::endl;
 
   // --- Store event start time in event list
   Int_t file  = FairRunAna::Instance()->GetEventHeader()->GetInputFileId();
@@ -235,7 +239,7 @@ void CbmDaq::Finish() {
 	std::cout << std::endl;
 	LOG(INFO) << "=====================================" << FairLogger::endl;
 	LOG(INFO) << GetName() << ": Run summary" << FairLogger::endl;
-	LOG(INFO) << "Steps:        " << setw(10) << right << fNofSteps
+	LOG(INFO) << "Events:       " << setw(10) << right << fNofSteps
 						<< FairLogger::endl;
 	LOG(INFO) << "Digis:        " << setw(10) << right << fNofDigis
 			      << " from " << setw(10) << right << fixed << setprecision(1)
@@ -249,6 +253,7 @@ void CbmDaq::Finish() {
 			      << FairLogger::endl;
 	LOG(INFO) << "=====================================" << FairLogger::endl;
 
+	std::cout << std::endl;
 	fEventList.Print();
 
 }

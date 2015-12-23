@@ -73,7 +73,7 @@ CbmStsModule::CbmStsModule(const char* name, const char* title,
 CbmStsModule::~CbmStsModule() {
 
 	// --- Clean analog buffer
-	map<Int_t, multiset<CbmStsSignal*> >::iterator chanIt;
+	map<Int_t, multiset<CbmStsSignal*, CbmStsSignal::Before> >::iterator chanIt;
 	multiset<CbmStsSignal*>::iterator sigIt;
 	for (chanIt = fAnalogBuffer.begin(); chanIt != fAnalogBuffer.end();
 			 chanIt++) {
@@ -150,7 +150,11 @@ void CbmStsModule::AddSignal(Int_t channel, Double_t time,
 			        << time << " s" << FairLogger::endl;
 	
 	// --- Discard charge if the channel is dead
-	if ( fDeadChannels.count(channel) ) return;
+	if ( fDeadChannels.count(channel) ) {
+		LOG(DEBUG) << GetName() << ": discarding signal in dead channel "
+				       << channel << FairLogger::endl;
+		return;
+	}
 
 	// --- If the channel is not yet active: create a new set and insert
 	// --- new signal into it.
@@ -167,7 +171,7 @@ void CbmStsModule::AddSignal(Int_t channel, Double_t time,
 	// --- Loop over all signals in the channels and compare their time.
 	//TODO: Loop over all signals is not needed, since they are time-ordered.
 	Bool_t isMerged = kFALSE;
-	multiset<CbmStsSignal*>::iterator it;
+	sigset::iterator it;
 	for (it = fAnalogBuffer[channel].begin();
 			 it != fAnalogBuffer[channel].end(); it++) {
 
@@ -216,8 +220,8 @@ void CbmStsModule::BufferStatus(Int_t& nofSignals,
 		                            Double_t& timeFirst,
 		                            Double_t& timeLast) {
 
-	map<Int_t, multiset<CbmStsSignal*> >::iterator chanIt;
-	multiset<CbmStsSignal*>::iterator sigIt;
+	map<Int_t, sigset>::iterator chanIt;
+	sigset::iterator sigIt;
 
 	Int_t nSignals   = 0;
 	Double_t tFirst  = -1.;
@@ -236,6 +240,7 @@ void CbmStsModule::BufferStatus(Int_t& nofSignals,
 			nSignals++;
 			tFirst = tFirst < 0. ? tSignal : TMath::Min(tFirst, tSignal);
 			tLast  = TMath::Max(tLast, tSignal);
+
 		} // signals in channel
 
 	} // channels in module
@@ -453,13 +458,13 @@ void CbmStsModule::Digitize(Int_t channel, CbmStsSignal* signal) {
 	if ( charge > fDynRange ) adc = fNofAdcChannels - 1;
 	else adc = UShort_t( (charge - fThreshold) / fDynRange
 				     * Double_t(fNofAdcChannels) );
+
 	// --- Digitise time
 	// Note that the time is truncated at 0 to avoid negative times. This
 	// will show up in event-by-event simulations, since the digi times
 	// in this case are mostly below 1 ns.
-	ULong64_t dTime
-		= ULong64_t( TMath::Max(0., gRandom->Gaus(signal->GetTime(),
-				                                      fTimeResolution)) );
+	Double_t  deltaT = gRandom->Gaus(0., fTimeResolution);
+	ULong64_t dTime  = ULong64_t(std::round(signal->GetTime() + deltaT));
 
 	// --- Send the message to the digitiser task
 	LOG(DEBUG4) << GetName() << ": charge " << signal->GetCharge()
@@ -529,7 +534,7 @@ CbmStsDigi* CbmStsModule::GetDigi(Int_t channel, Int_t& index) {
 void CbmStsModule::InitAnalogBuffer() {
 
 	 for (Int_t channel = 0; channel < fNofChannels; channel++) {
-		 multiset<CbmStsSignal*> mset;
+		 multiset<CbmStsSignal*, CbmStsSignal::Before> mset;
 		 fAnalogBuffer[channel] = mset;
 	 } // channel loop
 
@@ -555,13 +560,13 @@ Int_t CbmStsModule::ProcessAnalogBuffer(Double_t readoutTime) {
 	Double_t timeLimit = readoutTime - 5. * fTimeResolution - fDeadTime;
 
 	// --- Iterate over active channels
-	map<Int_t, multiset<CbmStsSignal*> >::iterator chanIt;
+	map<Int_t, sigset>::iterator chanIt;
 	for (chanIt = fAnalogBuffer.begin();
 			 chanIt != fAnalogBuffer.end(); chanIt++) {
 
 		// --- Digitise all signals up to the specified time limit
-		set<CbmStsSignal*>::iterator sigIt = (chanIt->second).begin();
-		set<CbmStsSignal*>::iterator oldIt = sigIt;
+		sigset::iterator sigIt = (chanIt->second).begin();
+		sigset::iterator oldIt = sigIt;
 		while ( sigIt != (chanIt->second).end() ) {
 
 			// --- Exit loop if signal time is larger than time limit

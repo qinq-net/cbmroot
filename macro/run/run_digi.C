@@ -62,14 +62,11 @@ void run_digi(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // Specify interaction rate in 1/s
   Double_t eventRate = 1.e6;
   
-  // Specify beam profile ( 1 = constant, 2 = Poissonian beam (default) )
-  Int_t beamProfile = 2;
-  
   // Specify duration of time slices in output [ns]
   Double_t timeSliceSize = 1000.;
   
   // Specify log level (INFO, DEBUG, DEBUG1, ...)
-  TString logLevel = "DEBUG";
+  TString logLevel = "INFO";
 
   TString inDir = gSystem->Getenv("VMCWORKDIR");
   TString paramDir = inDir + "/parameters/";
@@ -104,18 +101,15 @@ void run_digi(Int_t nEvents = 2, const char* setup = "sis100_electron")
   run->SetAsync();                         // asynchroneous mode
   run->SetInputFile(inFile);
   run->SetOutputFile(outFile);
+  run->SetEventMeanTime(1.e9 / eventRate);
+  FairRootManager::Instance()->SetUseFairLinks(kTRUE);
   // ------------------------------------------------------------------------
 
 
   // ---- Set the log level 	
   gLogger->SetLogScreenLevel(logLevel.Data());
 
-  
-  // ---- MC Time simulation
-  FairTask* timeSim = new CbmMCTimeSim(eventRate, beamProfile);
-  run->AddTask(timeSim);
- 
- 
+
   // ----- STS digitiser
   Double_t dynRange       =   40960.;  // Dynamic range [e]
   Double_t threshold      =    4000.;  // Digitisation threshold [e]

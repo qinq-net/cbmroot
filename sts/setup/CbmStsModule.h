@@ -285,7 +285,8 @@ class CbmStsModule : public CbmStsElement
      ** Sorting in the multiset is with the less operator of CbmStsSignal,
      ** which compares the time of the signals.
      **/
-    map<Int_t, multiset<CbmStsSignal*> > fAnalogBuffer;
+    typedef multiset<CbmStsSignal*, CbmStsSignal::Before> sigset;
+    map<Int_t, sigset> fAnalogBuffer;
 
     /** Map from channel number to pair of (digi, digiIndex).
      ** Used for cluster finding.
