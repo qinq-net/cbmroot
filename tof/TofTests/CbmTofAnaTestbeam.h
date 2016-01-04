@@ -220,6 +220,8 @@ class CbmTofAnaTestbeam : public FairTask {
       TH1 *fhNMatch04;
       TH2 *fhXX04;
       TH2 *fhYY04;
+      TH2 *fhXY04;
+      TH2 *fhYX04;
       TH2 *fhTT04;
 
       TH1 *fhChi04;

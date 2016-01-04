@@ -1420,7 +1420,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
       Int_t iDetId = (pHit->GetAddress() & DetMask);
 
       if( fiBeamRefType == CbmTofAddress::GetSmType( iDetId )){
-       if(fiBeamRefSm   == CbmTofAddress::GetSmId( iDetId ))
+       if(fiBeamRefSm < 0 || fiBeamRefSm   == CbmTofAddress::GetSmId( iDetId ))
        {
 	 // Check Tot
          CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(pHit->GetRefId());

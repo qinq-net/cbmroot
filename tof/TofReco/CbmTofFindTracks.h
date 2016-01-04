@@ -111,6 +111,7 @@ class CbmTofFindTracks : public FairTask
   inline void SetBeamCounter   (Int_t ival){ fiBeamCounter = ival;}
   inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
   inline void SetTtTarg(Double_t val){ fTtTarg=val; }
+  inline void SetT0MAX(Double_t val){ fT0MAX=val; }
 
  private:
 
@@ -180,6 +181,7 @@ class CbmTofFindTracks : public FairTask
   TH2*          fhTOff_Smt;              // Time calibration histo
   TH1*          fhTOff_Smt_Off;          // Time calibration histo
   TH2*          fhDeltaTt_Smt;           // Time calibration histo
+  TH2*          fhTOff_HMul2;              // Time calibration histo
   Int_t         fiCorMode;
   Int_t         fiBeamCounter;
   Double_t      fTtTarg;                // expected average slope in ps/cm 
@@ -188,7 +190,8 @@ class CbmTofFindTracks : public FairTask
   Double_t      fVTX_X;                 // measured event wise vertex x  
   Double_t      fVTX_Y;                 // measured event wise vertex y
   Double_t      fVTX_Z;                 // measured event wise vertex z
-
+  Double_t      fT0MAX;                 // range of calibration histogram 
+  Int_t         fiEvent;                // Number of processed events
   // ToF geometry variables
 
   CbmTofGeoHandler      * fGeoHandler;

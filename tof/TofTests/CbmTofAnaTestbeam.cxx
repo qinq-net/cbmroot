@@ -93,6 +93,8 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fhNMatch04(NULL),
     fhXX04(NULL),
     fhYY04(NULL),
+    fhXY04(NULL),
+    fhYX04(NULL),
     fhTT04(NULL),
     fhChi04(NULL),
     fhChiSel24(NULL),
@@ -321,6 +323,8 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhNMatch04(NULL),
     fhXX04(NULL),
     fhYY04(NULL),
+    fhXY04(NULL),
+    fhYX04(NULL),
     fhTT04(NULL),
     fhChi04(NULL),
     fhChiSel24(NULL),
@@ -847,6 +851,10 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			       200, -YDMAX, YDMAX, 200, -YDMAX, YDMAX);      
      fhYY04 =  new TH2F( Form("hYY04"),Form("Y Position correlation; Y0 [cm]; Y4 [cm]"),
 			       200, -YDMAX, YDMAX, 200, -YDMAX, YDMAX); 
+     fhXY04 =  new TH2F( Form("hXY04"),Form("X Position correlation; X0 [cm]; Y4 [cm]"),
+			       200, -YDMAX, YDMAX, 200, -YDMAX, YDMAX);      
+     fhYX04 =  new TH2F( Form("hYX04"),Form("Y Position correlation; Y0 [cm]; X4 [cm]"),
+			       200, -YDMAX, YDMAX, 200, -YDMAX, YDMAX); 
      fhTT04 =  new TH2F( Form("hTT04"),Form("Time  correlation; T0 [ps]; T4 [ps]"),
 			       100, -TDMAX, TDMAX, 100, -TDMAX, TDMAX); 
      fhDXDY04 = new TH2F( Form("hDXDY04"),Form("position correlation; #Delta x [cm]; #DeltaY [cm]"),
@@ -856,9 +864,9 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhDYDT04 = new TH2F( Form("hDYDT04"),Form("Time - position correlation; #Delta y [cm]; #DeltaT [ps]"),
 			       100, -DYMAX, DYMAX, 100, -DTMAX, DTMAX); 
      fhChi04 =  new TH1F( Form("hChi04"),Form("Matching Chi2; #chi; Nhits"),
-			  100, 0., 10.); 
+			  100, 0., fdChi2Lim); 
      fhChiSel24 =  new TH1F( Form("hChiSel24"),Form("Matching Chi2S24; #chi; Nhits"),
-			  100, 0., 50.); 
+			  100, 0., fdChi2Lim); 
      fhDXSel24 =  new TH1F( Form("hDXSel24"),Form("Matching Sel24; #Delta x [cm]; Nhits"),
 			  100, -10., 10.); 
      fhDYSel24 =  new TH1F( Form("hDYSel24"),Form("Matching Sel24; #Delta y [cm]; Nhits"),
@@ -890,7 +898,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			       100, -50., 50., 100, -DTMAX, DTMAX); 
 
      fhChi04best  =  new TH1F( Form("hChi04best"),Form("matching chi2; #chi; Nhits"),
-			  100, 0., 100.);      
+			  100, 0., fdChi2Lim);      
      fhDigiMul0best =  new TH1F( Form("hDigiMul0best"),Form("Number of digis in cluster; N_{digi}; "),
 			  20, 0., 20.); 
      fhDigiMul4best =  new TH1F( Form("hDigiMul4best"),Form("Number of digis in cluster; N_{digi}; "),
@@ -928,7 +936,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			       100, -50., 50., 100, -DTMAX, DTMAX); 
 
      fhChi04D4best  =  new TH1F( Form("hChi04D4best"),Form("matching chi2; #chi; Nhits"),
-			  100, 0., 10.);
+			  100, 0., fdChi2Lim); 
      fhTofD4best  =  new TH1F( Form("hTofD4best"),Form("tof D4; t [ps]; Counts"),
 			  100, 0., 50000.); 
      fhVelD4best  =  new TH1F( Form("hVelD4best"),Form("vel D4; v [cm/ns]; Counts"),
@@ -1025,7 +1033,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 				     100, 0., 10000., 100, -DTMAX, DTMAX); 
 
      fhChi04D4sbest  =  new TH1F( Form("hChi04D4sbest"),Form("matching chi2; #chi; Nhits"),
-			  100, 0., 10.);
+			  100, 0., fdChi2Lim);
      fhTofD4sbest  =  new TH1F( Form("hTofD4sbest"),Form("tof D4; t [ps]; Counts"),
 			  100, 0., 50000.); 
      fhVelD4sbest  =  new TH1F( Form("hVelD4sbest"),Form("vel D4; v [cm/ns]; Counts"),
@@ -1390,10 +1398,13 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	       <<Form("CbmTofAnaTestbeam::FillHistos: match %d (%f):  %2d.-%2d. Tof hit 0x%08x of SmT %1d, 0x%08x with 0x%08x",
 		 iNbMatchedHits, Chi2Match, iHitInd, iHitInd2, iDetId2, CbmTofAddress::GetSmType( iDetId2 ), iChId2, iChId)
 	       <<FairLogger::endl;
-
+	     /*
 	     fhXX04->Fill(xPos1,xPos2);
 	     fhYY04->Fill(yPos1,yPos2);
+	     fhXY04->Fill(xPos1,yPos2);
+	     fhYX04->Fill(yPos1,xPos2);
 	     fhTT04->Fill(tof1,tof2);
+	     */
 	     fhDXDY04->Fill(xPos1-xPos2,yPos1-yPos2);
 	     fhDXDT04->Fill(xPos1-xPos2,tof1-tof2);
 	     fhDYDT04->Fill(yPos1-yPos2,tof1-tof2);
@@ -1687,6 +1698,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        }
      }
 
+     if ( Chi2List[iM0] > fdChi2Lim) return 0;
+
      Int_t iDetId1 = (pHit1->GetAddress() & DetMask);
      Int_t iChId1 = pHit1->GetAddress();
      fChannelInfo1 = fDigiPar->GetCell( iChId1 );
@@ -1702,6 +1715,12 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      Double_t xPos2=Zref/pHit2->GetZ()*pHit2->GetX();
      Double_t yPos2=Zref/pHit2->GetZ()*pHit2->GetY();
      Double_t tof2=pHit2->GetTime();
+
+     fhXX04->Fill(xPos1,xPos2);
+     fhYY04->Fill(yPos1,yPos2);
+     fhXY04->Fill(xPos1,yPos2);
+     fhYX04->Fill(yPos1,xPos2);
+     fhTT04->Fill(tof1,tof2);
 
      Double_t dDist=TMath::Sqrt(
 				TMath::Power(pHit1->GetX()-pHit2->GetX(),2)
@@ -2311,6 +2330,8 @@ Bool_t CbmTofAnaTestbeam::WriteHistos()
    }
    fhXX04->Write();
    fhYY04->Write();
+   fhXY04->Write();
+   fhYX04->Write();
    }
    gDirectory->cd( oldir->GetPath() );
 
