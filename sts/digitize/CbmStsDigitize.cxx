@@ -252,7 +252,7 @@ void CbmStsDigitize::Exec(Option_t* opt) {
 	// --- (dead time and time resolution). In event mode, the readout time
 	// --- is set to -1., meaning to digitise everything in the readout buffers.
 	Double_t eventTime
-		= FairRunAna::Instance()->GetEventHeader()->GetEventTime();
+		= FairRun::Instance()->GetEventHeader()->GetEventTime();
 	Double_t readoutTime = fMode == 0 ? eventTime : -1.;
 	LOG(DEBUG) << GetName() << ": Readout time is " << readoutTime << " ns"
 			       << FairLogger::endl;
@@ -349,7 +349,7 @@ InitStatus CbmStsDigitize::Init() {
 	LOG(INFO) << FairLogger::endl;
 
 	// If the task CbmDaq is found, run in stream mode.
-	FairTask* daq     = FairRunAna::Instance()->GetTask("Daq");
+	FairTask* daq     = FairRun::Instance()->GetTask("Daq");
 	if ( daq ) {
   	LOG(INFO) << GetName() << ": Using stream mode."
   			      << FairLogger::endl;
@@ -479,7 +479,7 @@ void CbmStsDigitize::ProcessAnalogBuffers(Double_t readoutTime) {
 void CbmStsDigitize::ProcessMCEvent() {
 
 	// --- MC Event info (input file, entry number, start time)
-	FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
+	FairEventHeader* event = FairRun::Instance()->GetEventHeader();
 	assert ( event );
 	Int_t fileId       = event->GetInputFileId();
 	Int_t eventNr      = event->GetMCEntryNumber();
@@ -685,8 +685,8 @@ void CbmStsDigitize::SetSensorConditions() {
 		Double_t local[3] = { 0., 0., 0.}; // sensor centre in local C.S.
 		Double_t global[3];               // sensor centre in global C.S.
 		sensor->GetNode()->GetMatrix()->LocalToMaster(local, global);
-		if ( FairRunAna::Instance()->GetField() )
-		    FairRunAna::Instance()->GetField()->Field(global, field);
+		if ( FairRun::Instance()->GetField() )
+		    FairRun::Instance()->GetField()->Field(global, field);
 		cond.SetField(field[0]/10., field[1]/10., field[2]/10.); // kG->T !
     // --- Set the condition container
 		sensor->SetConditions(cond);

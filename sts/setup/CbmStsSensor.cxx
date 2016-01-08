@@ -189,8 +189,8 @@ Int_t CbmStsSensor::ProcessPoint(const CbmStsPoint* point,
   global[1] = 0.5 * ( point->GetYIn() + point->GetYOut() );
   global[2] = 0.5 * ( point->GetZIn() + point->GetZOut() );
   Double_t bField[3] = { 0., 0., 0.};
-  if ( FairRunAna::Instance() -> GetField())
-  	FairRunAna::Instance()->GetField()->Field(global, bField);
+  if ( FairRun::Instance() -> GetField())
+  	FairRun::Instance()->GetField()->Field(global, bField);
 
   // --- Absolute time of StsPoint
   Double_t pTime = eventTime + point->GetTime();
