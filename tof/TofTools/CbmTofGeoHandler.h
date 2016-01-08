@@ -77,6 +77,8 @@ class CbmTofGeoHandler : public TObject {
 
   Int_t CheckGeometryVersion(); 
 
+  CbmTofDetectorId * GetDetIdPointer() { return fTofId; }
+
  private:
 
   CbmTofDetectorId* fTofId;      //!

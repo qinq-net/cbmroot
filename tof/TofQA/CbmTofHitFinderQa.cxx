@@ -89,6 +89,9 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fTofDigiMatchColl(NULL),
     fTofHitMatchColl(NULL),
     fbHitProducerSource( kFALSE ),
+    fRealTofPointsColl(NULL),
+    fRealTofMatchColl(NULL),
+    fbRealPointAvail( kFALSE ),
     fbNormHistGenMode( kFALSE ),
     fsHistoInNormCartFilename(""),  
     fsHistoInNormAngFilename(""),
@@ -300,7 +303,8 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhMcTrkStartPrimSingTrk(NULL),
     fhMcTrkStartSecSingTrk(NULL),
     fhMcTrkStartPrimMultiTrk(NULL),
-    fhMcTrkStartSecMultiTrk(NULL)
+    fhMcTrkStartSecMultiTrk(NULL),
+    fhPointMatchWeight(NULL)
 {
   cout << "CbmTofHitFinderQa: Task started " << endl;
 }
@@ -330,6 +334,9 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fTofDigiMatchColl(NULL),
     fTofHitMatchColl(NULL),
     fbHitProducerSource( kFALSE ),
+    fRealTofPointsColl(NULL),
+    fRealTofMatchColl(NULL),
+    fbRealPointAvail( kFALSE ),
     fbNormHistGenMode( kFALSE ),
     fsHistoInNormCartFilename(""),  
     fsHistoInNormAngFilename(""),
@@ -541,7 +548,8 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhMcTrkStartPrimSingTrk(NULL),
     fhMcTrkStartSecSingTrk(NULL),
     fhMcTrkStartPrimMultiTrk(NULL),
-    fhMcTrkStartSecMultiTrk(NULL)
+    fhMcTrkStartSecMultiTrk(NULL),
+    fhPointMatchWeight(NULL)
 {
 }
 // ------------------------------------------------------------------
@@ -562,17 +570,17 @@ InitStatus CbmTofHitFinderQa::Init()
    // Initialize the TOF GeoHandler
    Bool_t isSimulation=kFALSE;
    Int_t iGeoVersion = fGeoHandler->Init(isSimulation);
-   LOG(INFO)<<"CbmTofSimpClusterizer::InitParameters with GeoVersion "<<iGeoVersion<<FairLogger::endl;
+   LOG(INFO)<<"CbmTofHitFinderQa::Init with GeoVersion "<<iGeoVersion<<FairLogger::endl;
 
    if( k12b > iGeoVersion )
    {
-      LOG(ERROR)<<"CbmTofSimpClusterizer::InitParameters => Only compatible with geometries after v12b !!!"
+      LOG(ERROR)<<"CbmTofHitFinderQa::Init => Only compatible with geometries after v12b !!!"
                 <<FairLogger::endl;
       return kFATAL;
    } // if( k12b > iGeoVersion )
    
    if(NULL != fTofId) 
-     LOG(INFO)<<"CbmTofSimpClusterizer::InitParameters with GeoVersion "<<fGeoHandler->GetGeoVersion()<<FairLogger::endl;
+     LOG(INFO)<<"CbmTofHitFinderQa::Init with GeoVersion "<<fGeoHandler->GetGeoVersion()<<FairLogger::endl;
    else
    {
       switch(iGeoVersion)
@@ -584,7 +592,7 @@ InitStatus CbmTofHitFinderQa::Init()
             fTofId = new CbmTofDetectorId_v14a();
             break;
          default:
-            LOG(ERROR)<<"CbmTofSimpClusterizer::InitParameters => Invalid geometry!!!"<<iGeoVersion
+            LOG(ERROR)<<"CbmTofHitFinderQa::Init => Invalid geometry!!!"<<iGeoVersion
                       <<FairLogger::endl;
          return kFATAL;
       } // switch(iGeoVersion)
@@ -709,6 +717,13 @@ Bool_t   CbmTofHitFinderQa::RegisterInputs()
       return kFALSE;
    } // if only one of fTofDigisColl and fTofDigiMatchColl is missing
    
+   fRealTofPointsColl  = (TClonesArray *) fManager->GetObject("RealisticTofPoint");
+   fRealTofMatchColl   = (TClonesArray *) fManager->GetObject("TofRealPntMatch");
+   if( NULL != fRealTofPointsColl && NULL != fRealTofMatchColl )
+   {
+      fbRealPointAvail = kTRUE;
+      LOG(INFO)<<"CbmTofHitFinderQa::RegisterInputs => Both fRealTofPointsColl & fRealTofMatchColl there, realistic mean TOF MC point used for QA"<<FairLogger::endl;
+   } // if( NULL != fRealTofPointsColl && NULL != fRealTofMatchColl )
 
    return kTRUE;
 }
@@ -1633,6 +1648,10 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
       fhMcTrkStartSecMultiTrk ->GetYaxis()->SetBinLabel( 1 + iPartIdx, ksPartTag[iPartIdx] );
    } // for( Int_t iPartIdx = 0; iPartIdx < kiNbPart; iPartIdx++)
    
+   fhPointMatchWeight  = new TH1I( "TofTests_PointMatchWeight",
+                                     "Weigth of TofPoints contributing to Hits; w [Prop. or ps]; #",
+                                     1000, -0.05, 100 - 0.05);
+   
    gDirectory->cd( oldir->GetPath() ); // <= To prevent histos from being sucked in by the param file of the TRootManager!
 
    return kTRUE;
@@ -1978,7 +1997,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
       Double_t dFurthestTrkDr  = -1;
          
       pTofHit       = (CbmTofHit*) fTofHitsColl->At( iHitInd );
-      pMatchHitPnt = (CbmMatch*) fTofHitMatchColl->At( iHitInd );
+      pMatchHitPnt  = (CbmMatch*) fTofHitMatchColl->At( iHitInd );
       Int_t iNbPntHit = pMatchHitPnt->GetNofLinks();
       
       Double_t dX = pTofHit->GetX();
@@ -2137,7 +2156,20 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                continue;
             } // if( iNbTofDigis <= iDigiIdx )
             
-            Int_t   iTrkId = ((CbmTofPoint*) fTofPointsColl->At(iPtIdx))->GetTrackID();
+            fhPointMatchWeight->Fill(lPnt.GetWeight());
+            
+            pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iPtIdx);
+            if( kTRUE == fbRealPointAvail )
+            {
+               // Always only one mean MC Point Index per MC TofPoint
+               // Weight always 1.0 so just read the index
+               Int_t iRealPntIdx = 
+                  ( ( (CbmMatch*) fRealTofMatchColl->At(iPtIdx) )->GetLink(0) ).GetIndex(); 
+               pTofPoint = (CbmTofPoint*) fRealTofPointsColl->At(iRealPntIdx);
+               iPtIdx = iRealPntIdx;
+            } // if( kTRUE == fbRealPointAvail )
+            
+            Int_t   iTrkId = pTofPoint->GetTrackID();
             
             // MC Track losses
             if( kFALSE == vbTrackHasHit[iTrkId] )
@@ -2156,7 +2188,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                vTofPointsId.push_back(iPtIdx);
                
                // Obtain Point position
-               pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iPtIdx);
+//               pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iPtIdx);
                TVector3 vPntPos;
                pTofPoint->Position( vPntPos );
          
@@ -2201,7 +2233,7 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                vTofTracksFirstPntId.push_back(iPtIdx);
                
                // Obtain Point position (Consider 1st Pnt of each Trk is approximate coord)
-               pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iPtIdx);
+//               pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iPtIdx);
                TVector3 vPntPos;
                pTofPoint->Position( vPntPos );
          
@@ -2337,8 +2369,11 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             fhHitMapSingPntAng->Fill( dThetaX, dThetaY );
             fhHitMapSingPntSph->Fill( dTheta, dPhi );
          
-            pTofPoint = (CbmTofPoint*) fTofPointsColl->At(vTofPointsId[0]);
-            
+//            pTofPoint = (CbmTofPoint*) fTofPointsColl->At(vTofPointsId[0]);
+            if( kTRUE == fbRealPointAvail )
+               pTofPoint = (CbmTofPoint*) fRealTofPointsColl->At(vTofPointsId[0]);
+               else pTofPoint = (CbmTofPoint*) fTofPointsColl->At(vTofPointsId[0]);
+               
             // Obtain Point position
             TVector3 vPntPos;
             pTofPoint->Position( vPntPos );
@@ -2391,7 +2426,10 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                fhMultiPntHitMeanPullR->Fill( dDeltaMeanR/dErrR, uNbPointsInHit );
                
                // Check Hit Quality relative to closest MC Point
-               pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iClosestPntIdx);
+//               pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iClosestPntIdx);
+               if( kTRUE == fbRealPointAvail )
+                  pTofPoint = (CbmTofPoint*) fRealTofPointsColl->At(iClosestPntIdx);
+                  else pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iClosestPntIdx);
                
                   // Obtain Point position
                TVector3 vPntPosClo;
@@ -2414,7 +2452,10 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                fhMultiPntHitClosestPullR->Fill( dDeltaCloR/dErrR, uNbPointsInHit );
             
                // Check Hit Quality relative to furthest MC Point
-               pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iFurthestPntIdx);
+//               pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iFurthestPntIdx);
+               if( kTRUE == fbRealPointAvail )
+                  pTofPoint = (CbmTofPoint*) fRealTofPointsColl->At(iFurthestPntIdx);
+                  else pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iFurthestPntIdx);
                
                   // Obtain Point position
                TVector3 vPntPosFar;
@@ -2443,6 +2484,15 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                   CbmLink lPnt    = pMatchHitPnt->GetMatchedLink(); 
                   Int_t   iPtIdx = lPnt.GetIndex();
                   pTofPoint = (CbmTofPoint*) fTofPointsColl->At( iPtIdx );
+                  if( kTRUE == fbRealPointAvail )
+                  {
+                     // Always only one mean MC Point Index per MC TofPoint
+                     // Weight always 1.0 so just read the index
+                     Int_t iRealPntIdx = 
+                        ( ( (CbmMatch*) fRealTofMatchColl->At(iPtIdx) )->GetLink(0) ).GetIndex(); 
+                     pTofPoint = (CbmTofPoint*) fRealTofPointsColl->At(iRealPntIdx);
+                     iPtIdx = iRealPntIdx;
+                  } // if( kTRUE == fbRealPointAvail )
                
                      // Obtain Point position
                   TVector3 vPntPosBest;
@@ -2477,7 +2527,10 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             
             // => If all points come from the same track, any of them should give
             //    the approximate position and time of the track at the detector level
-            pTofPoint = (CbmTofPoint*) fTofPointsColl->At(vTofPointsId[0]);
+//            pTofPoint = (CbmTofPoint*) fTofPointsColl->At(vTofPointsId[0]);
+            if( kTRUE == fbRealPointAvail )
+               pTofPoint = (CbmTofPoint*) fRealTofPointsColl->At(vTofPointsId[0]);
+               else pTofPoint = (CbmTofPoint*) fTofPointsColl->At(vTofPointsId[0]);
             
             // Obtain Point position
             TVector3 vPntPos;
@@ -2561,7 +2614,11 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                
                // Check Hit Quality relative to closest MC Tracks
                   // Obtain Point position (Consider 1st Pnt of each Trk is approximate coord)
-               pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iClosestTrkIdx);
+//               pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iClosestTrkIdx);
+               if( kTRUE == fbRealPointAvail )
+                  pTofPoint = (CbmTofPoint*) fRealTofPointsColl->At(iClosestTrkIdx);
+                  else pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iClosestTrkIdx);
+               
                TVector3 vPntPosClo;
                pTofPoint->Position( vPntPosClo );
             
@@ -2583,7 +2640,11 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             
                // Check Hit Quality relative to furthest MC Tracks
                   // Obtain Point position (Consider 1st Pnt of each Trk is approximate coord)
-               pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iFurthestTrkIdx);
+//               pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iFurthestTrkIdx);
+               if( kTRUE == fbRealPointAvail )
+                  pTofPoint = (CbmTofPoint*) fRealTofPointsColl->At(iFurthestTrkIdx);
+                  else pTofPoint = (CbmTofPoint*) fTofPointsColl->At(iFurthestTrkIdx);
+               
                TVector3 vPntPosFar;
                pTofPoint->Position( vPntPosFar );
             
@@ -2618,7 +2679,11 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                      } // if( dBestTrackWeight < vTofTracksWeight[uTrkIdx] )
                      
                      // Obtain Point position (Consider 1st Pnt of each Trk is approximate coord)
-                  pTofPoint = (CbmTofPoint*) fTofPointsColl->At( vTofTracksFirstPntId[uBestTrackIdx] );
+//                  pTofPoint = (CbmTofPoint*) fTofPointsColl->At( vTofTracksFirstPntId[uBestTrackIdx] );
+                  if( kTRUE == fbRealPointAvail )
+                     pTofPoint = (CbmTofPoint*) fRealTofPointsColl->At( vTofTracksFirstPntId[uBestTrackIdx] );
+                     else pTofPoint = (CbmTofPoint*) fTofPointsColl->At( vTofTracksFirstPntId[uBestTrackIdx] );
+                  
                   TVector3 vPntPosBest;
                   pTofPoint->Position( vPntPosBest );
                
@@ -2642,7 +2707,11 @@ Bool_t CbmTofHitFinderQa::FillHistos()
                // Get each  MC track and fill its length up to the 1at TOF point in the proper histo
                for( UInt_t uTrkIdx = 0; uTrkIdx < vTofTracksId.size(); uTrkIdx++)
                {
-                  pTofPoint = (CbmTofPoint*) fTofPointsColl->At( vTofTracksFirstPntId[uTrkIdx] );
+//                  pTofPoint = (CbmTofPoint*) fTofPointsColl->At( vTofTracksFirstPntId[uTrkIdx] );
+                  if( kTRUE == fbRealPointAvail )
+                     pTofPoint = (CbmTofPoint*) fRealTofPointsColl->At( vTofTracksFirstPntId[uTrkIdx] );
+                     else pTofPoint = (CbmTofPoint*) fTofPointsColl->At( vTofTracksFirstPntId[uTrkIdx] );
+                     
                   pMcTrk = (CbmMCTrack*) fMcTracksColl->At( pTofPoint->GetTrackID() );
                   
                   Int_t iPdgCode = pMcTrk->GetPdgCode();
@@ -2684,7 +2753,17 @@ Bool_t CbmTofHitFinderQa::FillHistos()
          CbmLink lPt    = pMatchHitPnt->GetMatchedLink(); 
          Int_t   iPtIdx = lPt.GetIndex();
             // Get index of corresponding MC track
-         Int_t   iTrkId = ((CbmTofPoint*) fTofPointsColl->At(iPtIdx))->GetTrackID();         
+         Int_t   iTrkId = ((CbmTofPoint*) fTofPointsColl->At(iPtIdx))->GetTrackID();      
+         if( kTRUE == fbRealPointAvail )
+         {
+            // Always only one mean MC Point Index per MC TofPoint
+            // Weight always 1.0 so just read the index
+            Int_t iRealPntIdx = 
+               ( ( (CbmMatch*) fRealTofMatchColl->At(iPtIdx) )->GetLink(0) ).GetIndex(); 
+            iTrkId = ((CbmTofPoint*) fRealTofPointsColl->At(iRealPntIdx) )->GetTrackID();
+            iPtIdx = iRealPntIdx;
+         } // if( kTRUE == fbRealPointAvail )
+            
             // Get a pointer to the corresponding MC Track
          pMcTrk = (CbmMCTrack*) fMcTracksColl->At( iTrkId );
                
@@ -3388,6 +3467,9 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
       fhMcTrkStartSecMultiTrk->Write();
    } // if( kFALSE == fbNormHistGenMode )
 
+   fHist->cd(); // make the file root the current directory
+   fhPointMatchWeight->Write();
+
    gDirectory->cd( oldir->GetPath() );
 
    fHist->Close();
@@ -3672,6 +3754,8 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhMcTrkStartSecSingTrk;
    delete fhMcTrkStartPrimMultiTrk;
    delete fhMcTrkStartSecMultiTrk;
+   
+   delete fhPointMatchWeight;
    
    return kTRUE;
 }

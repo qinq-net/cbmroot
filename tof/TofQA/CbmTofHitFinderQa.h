@@ -98,7 +98,10 @@ class CbmTofHitFinderQa : public FairTask {
       TClonesArray          * fTofDigiMatchColl;  // Indices of TOF Digis for each hit (CbmMatch)
       TClonesArray          * fTofHitMatchColl; // // Indices of MC original points for each hit with TOT weight (CbmMatch)
       Bool_t                  fbHitProducerSource;
-
+      TClonesArray          * fRealTofPointsColl; // Realistics TOF MC points
+      TClonesArray          * fRealTofMatchColl;  // Index of Realistics TOF MC points for each MC Point (CbmMatch)
+      Bool_t                  fbRealPointAvail;
+      
       // Histograms
          // Flag for Normalization histograms generation
       Bool_t  fbNormHistGenMode;
@@ -360,6 +363,9 @@ class CbmTofHitFinderQa : public FairTask {
             // Multiple track hits
       TH2 * fhMcTrkStartPrimMultiTrk;
       TH2 * fhMcTrkStartSecMultiTrk;
+      
+         // TOF Debug checks
+      TH1 * fhPointMatchWeight;
       
       ClassDef(CbmTofHitFinderQa, 1);
 };

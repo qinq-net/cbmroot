@@ -57,6 +57,7 @@ link_directories( ${LINK_DIRECTORIES})
 set(SRCS
 TofMC/CbmGeoTof.cxx 
 TofMC/CbmTof.cxx 
+TofMC/CbmTofMergeMcPoints.cxx 
 
 TofParam/CbmGeoTofPar.cxx 
 TofParam/CbmTofContFact.cxx 
