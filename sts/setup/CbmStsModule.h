@@ -299,10 +299,10 @@ class CbmStsModule : public CbmStsElement
     /** Multimap from channel number to pair or (digi, digi index in TimeSlice).
      ** Used for time-based cluster finding.
      **/
-    multimap<Int_t, pair<CbmStsDigi*, Int_t>> fDigisTb;
+    multimap<Int_t, pair<CbmStsDigi*, Int_t> > fDigisTb;
 
     /** Iterator for time-based clustering **/
-    multimap<Int_t, pair<CbmStsDigi*, Int_t>>::iterator fIt_DigiTb;
+    multimap<Int_t, pair<CbmStsDigi*, Int_t> >::iterator fIt_DigiTb;
 
     /** Digitise an analog charge signal
      ** @param channel Channel number
