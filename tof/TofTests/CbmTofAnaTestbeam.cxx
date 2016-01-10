@@ -21,6 +21,7 @@
 
 #include "CbmTofTestBeamClusterizer.h"
 
+#include "TTrbHeader.h"
 #include "TMbsMappingTofPar.h"
 
 // CBMroot classes and includes
@@ -81,12 +82,16 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fTofHitsColl(NULL),
     fTofDigiMatchColl(NULL),
     fTofTrackColl(NULL),
+    fTrbHeader(NULL),
     fdDXMean(0.),
     fdDYMean(0.),
     fdDTMean(0.),
     fdDXWidth(0.),
     fdDYWidth(0.),
     fdDTWidth(0.),
+    fhTriggerPattern(NULL),
+    fhTriggerType(NULL),
+    fhTimeInSpill(NULL),
     fhDT2(NULL),
     fhXX2(NULL),
     fhYY2(NULL),
@@ -278,6 +283,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fiBeamRefSmType(0),
     fiBeamRefSmId(0),
     fiDutNch(0),
+    fiReqTrg(0),
     fSIGLIM(3.),
     fSIGT(100.),
     fSIGX(1.),
@@ -311,12 +317,16 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fTofHitsColl(NULL),
     fTofDigiMatchColl(NULL),
     fTofTrackColl(NULL),
+    fTrbHeader(NULL),
     fdDXMean(0.),
     fdDYMean(0.),
     fdDTMean(0.),
     fdDXWidth(0.),
     fdDYWidth(0.),
     fdDTWidth(0.),
+    fhTriggerPattern(NULL),
+    fhTriggerType(NULL),
+    fhTimeInSpill(NULL),
     fhDT2(NULL),
     fhXX2(NULL),
     fhYY2(NULL),
@@ -508,6 +518,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fiBeamRefSmType(0),
     fiBeamRefSmId(0),
     fiDutNch(0),
+    fiReqTrg(0),
     fSIGLIM(3.),
     fSIGT(100.),
     fSIGX(1.),
@@ -679,10 +690,15 @@ Bool_t   CbmTofAnaTestbeam::RegisterInputs()
    fTofTrackColl   = (TClonesArray *) fManager->GetObject("TofTracks");
    if( NULL == fTofTrackColl)
    {
-      LOG(ERROR)<<"CbmTofAnaTestbeam::RegisterInputs => Could not get the TofTracklet TClonesArray!!!"<<FairLogger::endl;
+      LOG(INFO)<<"CbmTofAnaTestbeam::RegisterInputs => Could not get the TofTracklet TClonesArray!!!"<<FairLogger::endl;
      //      return kFALSE;
    } // if( NULL == fTofHitsColl)
 
+   fTrbHeader = (TTrbHeader *)  fManager->GetObject("TofTrbHeader");
+   if( NULL == fTrbHeader)
+   {
+      LOG(INFO)<<"CbmTofAnaTestbeam::RegisterInputs => Could not get the TofTrbHeader Object"<<FairLogger::endl;
+   }
    return kTRUE;
 }
 /************************************************************************************/
@@ -810,6 +826,10 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
    gROOT->cd(); // <= To prevent histos from being sucked in by the param file of the TRootManager !
 
    // define histos here
+
+   fhTriggerPattern = new TH1I("tof_trb_trigger_pattern", "CTS trigger pattern", 16, 0, 16);
+   fhTriggerType = new TH1I("tof_trb_trigger_types", "CTS trigger types", 16, 0, 16);
+   fhTimeInSpill = new TH1I("tof_trb_time_in_spill", "Time in Spill", 1000, 0, 5.E12);
 
    fhBRefMul =  new TH1F( Form("hBRefMul"),Form("Multiplicity in Beam Reference counter ; Mul ()"),
 			  50, 0., 50.); 
@@ -1204,8 +1224,6 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 {
    // Constants, TODO => put as parameter !!!
 
-/*  Int_t kTOF=6;*/
-
    // Declare variables outside the loop
    CbmTofHit   *pHit;
    CbmTofHit   *pHit1;
@@ -1219,6 +1237,20 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    CbmTofCell  *fChannelInfo2;
    CbmTofCell  *fChannelInfo3;
    CbmTofCell  *fChannelInfo4;
+
+   // Trb System 
+   if (NULL != fTrbHeader) { 
+     if(fiReqTrg>0) if(!fTrbHeader->TriggerFired( fiReqTrg )) return kFALSE;
+     UInt_t uTriggerPattern=fTrbHeader->GetTriggerPattern();
+     for(UInt_t uChannel = 0; uChannel < 16; uChannel++)
+     {
+       if( uTriggerPattern & (0x1 << uChannel) )
+       {
+         fhTriggerPattern->Fill( uChannel );
+       }
+     }
+     fhTriggerType->Fill(fTrbHeader->GetTriggerType());
+   }
 
 /*   Int_t iNbTofDigis;*/
    Int_t iNbTofHits, iNbTofTracks;
@@ -1341,8 +1373,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 	continue;
       }
 
-      if(static_cast<UInt_t>(iDetInd)<fhXYPos.size())
-      fhXYPos[iDetInd]->Fill(pHit->GetX(),pHit->GetY());
+      if(static_cast<UInt_t>(iDetInd)<fhXYPos.size()) fhXYPos[iDetInd]->Fill(pHit->GetX(),pHit->GetY());
 
       LOG(DEBUG2)  <<"CbmTofAnaTestbeam::FillHistos: process iDetId  "
 		   <<Form(" 0x%08x ",iDetId)

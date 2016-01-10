@@ -1454,6 +1454,18 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
       // Get TofPoint Position
       pPoint->Position( vPntPos );
       fChannelInfo = fDigiPar->GetCell(iChanId);
+      TGeoNode *fNode=        // prepare global->local trafo
+         gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
+	 LOG(DEBUG)<<Form(" TofDigitizerBDF:: (%3d,%3d,%3d,%3d) - node at (%6.1f,%6.1f,%6.1f) : 0x%p Pos(%6.1f,%6.1f,%6.1f)",
+			  iSmType,iSM,iRpc,iChannel,
+			  fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode, 
+			  vPntPos.X(), vPntPos.Y(), vPntPos.Z())
+		   <<FairLogger::endl;
+      gGeoManager->GetCurrentNode();
+      gGeoManager->GetCurrentMatrix();
+      Double_t poipos[3]={vPntPos.X(),vPntPos.Y(),vPntPos.Z()};
+      Double_t poipos_local[3];
+      gGeoManager->MasterToLocal(poipos, poipos_local);
 
       if( 1 == iChType)
       {
@@ -1484,12 +1496,12 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
 
             if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
             {
-               // Horizontal strips
-               if( vPntPos.Y() - fChannelInfo->GetY() < fChannelInfo->GetSizey()/2.0 )
+              // Horizontal strips
+	      if( poipos_local[1] < fChannelInfo->GetSizey()/2.0 ) //FIXME, needs posiion in rotated counter frame 
                   iNbStripsSideB --; // less strips on top
-               else iNbStripsSideA --; // less strips on bottom
+              else iNbStripsSideA --; // less strips on bottom
             } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
-            else if( vPntPos.X() - fChannelInfo->GetX() < fChannelInfo->GetSizex()/2.0 )
+            else if( poipos_local[0] < fChannelInfo->GetSizex()/2.0 ) //FIXME
                iNbStripsSideB --; // less strips on right
             else iNbStripsSideA --; // less strips on left
          } // if even cluster size
@@ -1536,17 +1548,17 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
          // Assume the width (sigma) of the gaussian is 0.5*dClusterSize/3
          // => 99% of the charge is in "dClusterSize"
          TF1 * f1ChargeGauss = new TF1( "f1ChargeDist", "[0]*TMath::Gaus(x,[1],[2])",
-                                          vPntPos.Y() - 2*iClusterSize,
-                                          vPntPos.Y() + 2*iClusterSize);
+                                          poipos_local[1] - 2*iClusterSize,
+                                          poipos_local[1] + 2*iClusterSize);
 //         TofChargeDistributions * fptr = new TofChargeDistributions();
 //         TF1 * f1ChargeGauss = new TF1( "f1ChargeDist", fptr,
 //                                          &TofChargeDistributions::Gauss1D,
-//                                          vPntPos.Y() - 2*iClusterSize,
-//                                          vPntPos.Y() + 2*iClusterSize,
+//                                          poipos_local[1] - 2*iClusterSize,
+//                                          poipos_local[1] + 2*iClusterSize,
 //                                          3
 //                                          );
          f1ChargeGauss->SetParameters( dClustCharge/( TMath::Sqrt( 2.0*TMath::Pi()*iClusterSize/6.0 )),
-                                       vPntPos.Y(), 0.5*iClusterSize/3.0);
+                                       poipos_local[1], 0.5*iClusterSize/3.0);
 
          double *x=new double[kiNbIntPts];
          double *w=new double[kiNbIntPts];
@@ -1559,7 +1571,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
             if( 0 <= iStripInd && iStripInd < iNbCh )
             {
                Int_t iCh1 = iStripInd;
-	            if(fGeoHandler->GetGeoVersion() < k14a) 
+	       if(fGeoHandler->GetGeoVersion() < k14a) 
                   iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
                CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSM, iRpc, 0, iCh1);
                Int_t iSideChId = fTofId->SetDetectorInfo( xDetInfo );
@@ -1576,9 +1588,9 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
                   Double_t dTimeA = dCentralTime;
                   dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                           + TMath::Abs( vPntPos.X() - ( fChannelInfo->GetX() + fChannelInfo->GetSizex()/2.0 ) )
+                           + TMath::Abs( poipos_local[0] - ( + fChannelInfo->GetSizex()/2.0 ) )
 #else
-                           + ( vPntPos.X() - fChannelInfo->GetX() )
+                           + ( poipos_local[0] )
 #endif
                              /fvdSignalVelocityRpc[iSmType][iRpc];
                   // Switch between Digi and DigiExp
@@ -1591,7 +1603,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
                      fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( tofDigi );
 		     fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( iPntInd );
 
-		     LOG(INFO)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
+		     LOG(INFO)<<Form("Digimatch (%d,%d,%d,%d): size %zu, valA %d, MCt %d",
 				iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
                   } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -1610,9 +1622,9 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
                   Double_t dTimeB = dCentralTime;
                   dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                           + TMath::Abs( vPntPos.X() - ( fChannelInfo->GetX() - fChannelInfo->GetSizex()/2.0 ) )
+                           + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
-                           - ( vPntPos.X() - fChannelInfo->GetX() )
+                           - ( poipos_local[0] )
 #endif
                              /fvdSignalVelocityRpc[iSmType][iRpc];
                   // Switch between Digi and DigiExp
@@ -1624,7 +1636,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
 		     //					 tofDigi->GetMatch()->AddLink(1., iPntInd);
                      fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChannel].push_back( tofDigi );
 		     fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, valB %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;                  } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
                   else {
@@ -1648,18 +1660,18 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
          // Assume the width (sigma) of the gaussian is 0.5*dClusterSize/3
          // => 99% of the charge is in "dClusterSize"
          TF1 * f1ChargeGauss = new TF1( "f1ChargeDist", "[0]*TMath::Gaus(x,[1],[2])",
-                                          vPntPos.X() - 2*iClusterSize,
-                                          vPntPos.X() + 2*iClusterSize);
+                                          poipos_local[0] - 2*iClusterSize,
+                                          poipos_local[0] + 2*iClusterSize);
 
 //         TofChargeDistributions * fptr = new TofChargeDistributions();
 //         TF1 * f1ChargeGauss = new TF1( "f1ChargeDist", fptr,
 //                                          &TofChargeDistributions::Gauss1D,
-//                                          vPntPos.Y() - 2*iClusterSize,
-//                                          vPntPos.Y() + 2*iClusterSize,
+//                                          poipos_local[1] - 2*iClusterSize,
+//                                          poipos_local[1] + 2*iClusterSize,
 //                                          3
 //                                          );
          f1ChargeGauss->SetParameters( dClustCharge/( TMath::Sqrt( 2.0*TMath::Pi() )*iClusterSize/6.0 ),
-                                       vPntPos.X(), 0.5*iClusterSize/3.0);
+                                       poipos_local[0], 0.5*iClusterSize/3.0);
 
          double *x=new double[kiNbIntPts];
          double *w=new double[kiNbIntPts];
@@ -1672,7 +1684,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
             if( 0 <= iStripInd && iStripInd < iNbCh )
             {
                Int_t iCh1 = iStripInd;
-	            if(fGeoHandler->GetGeoVersion() < k14a) 
+	       if(fGeoHandler->GetGeoVersion() < k14a) 
                   iCh1= iCh1+1; //FIXME: Reason found in TofMC and TofGeoHandler
                CbmTofDetectorInfo xDetInfo(kTOF, iSmType, iSM, iRpc, 0, iCh1);
                Int_t iSideChId = fTofId->SetDetectorInfo( xDetInfo );
@@ -1689,9 +1701,9 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
                   Double_t dTimeA = dCentralTime;
                   dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                           + TMath::Abs( vPntPos.Y() - ( fChannelInfo->GetY() + fChannelInfo->GetSizey()/2.0 ) )
+                           + TMath::Abs( poipos_local[1] - ( + fChannelInfo->GetSizey()/2.0 ) )
 #else
-                           + ( vPntPos.Y() - fChannelInfo->GetY() )
+                           + ( poipos_local[1] )
 #endif
                              /fvdSignalVelocityRpc[iSmType][iRpc];
                   // Switch between Digi and DigiExp
@@ -1703,7 +1715,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
 		     //					 tofDigi->GetMatch()->AddLink(1., iPntInd);
                      fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iStripInd+1].push_back( tofDigi );
 		     fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iStripInd+1].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, valC %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
                   } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -1722,9 +1734,9 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
                   Double_t dTimeB = dCentralTime;
                   dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                           + TMath::Abs( vPntPos.Y() - ( fChannelInfo->GetY() - fChannelInfo->GetSizey()/2.0 ) )
+                           + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
 #else
-                           - ( vPntPos.Y() - fChannelInfo->GetY() )
+                           - ( poipos_local[1] )
 #endif
                              /fvdSignalVelocityRpc[iSmType][iRpc];
                   // Switch between Digi and DigiExp
@@ -1736,7 +1748,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeDirectClusterSize()
 		     //					 tofDigi->GetMatch()->AddLink(1., iPntInd);
                      fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iStripInd].push_back( tofDigi );
 		     fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iStripInd].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, valE %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
                   } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -1943,6 +1955,27 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       // Get TofPoint Position
       pPoint->Position( vPntPos );
       fChannelInfo = fDigiPar->GetCell(iChanId);
+      // Master -> Local
+      TGeoNode *fNode=        // prepare global->local trafo
+         gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
+	 LOG(DEBUG)<<Form(" TofDigitizerBDF:: (%3d,%3d,%3d,%3d) - node at (%6.1f,%6.1f,%6.1f) : %p Pos(%6.1f,%6.1f,%6.1f)",
+			  iSmType,iSM,iRpc,iChannel,
+			  fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode, 
+			  vPntPos.X(), vPntPos.Y(), vPntPos.Z())
+		   <<FairLogger::endl;
+      gGeoManager->GetCurrentNode();
+      gGeoManager->GetCurrentMatrix();
+
+      Double_t refpos[3]={fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ()};
+      Double_t refpos_local[3];
+      gGeoManager->MasterToLocal(refpos, refpos_local);
+      Double_t poipos[3]={vPntPos.X(),vPntPos.Y(),vPntPos.Z()};
+      Double_t poipos_local[3];
+      gGeoManager->MasterToLocal(poipos, poipos_local);
+      LOG(DEBUG)<<Form(" TofDigitizerBDF:: DetId 0x%08x, ChanId 0x%08x, local pos  (%5.1f,%5.1f,%5.1f) refpos  (%5.1f,%5.1f,%5.1f) ",
+		       iDetId, iChanId, poipos_local[0],poipos_local[1],poipos_local[2],refpos_local[0],refpos_local[1],refpos_local[2])
+		<<FairLogger::endl;
+      for(Int_t i=0; i<3; i++) poipos_local[i] -= refpos_local[i];  // correct for transformation failure, FIXME!
 
       // Generate a Cluster radius in [cm]
       dClusterSize = GenerateClusterRadius( iSmType, iRpc );
@@ -1965,10 +1998,10 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 
       // Calculate the fraction of the charge in central channel
       Double_t dChargeCentral = dClustCharge * ComputeClusterAreaOnChannel(
-                                    iChanId, dClusterSize, vPntPos.X(), vPntPos.Y());
+                                    iChanId, dClusterSize, poipos_local[0], poipos_local[1]);
       LOG(DEBUG2)<<"CbmTofDigitizerBDF::DigitizeFlatDisc: ChargeCentral "<<dChargeCentral
 		 <<", "<<dClustCharge
-		 <<", "<<iChanId<<", "<<dClusterSize<<", "<<vPntPos.X()<<", "<<vPntPos.Y()<<", "<<vPntPos.Z()
+		 <<Form(", 0x%08x",iChanId)<<", "<<dClusterSize<<", "<<poipos_local[0]<<", "<<poipos_local[1]<<", "<<poipos_local[2]
 		 <<FairLogger::endl;
 
       dChargeCentral /= dClustArea;
@@ -1976,7 +2009,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
       {
          LOG(ERROR)<<"CbmTofDigitizerBDF::DigitizeFlatDisc => Central Charge "
                    <<dChargeCentral<<" "<<dClustCharge<<" "<<dClustCharge-dChargeCentral
-                   <<" "<<(ComputeClusterAreaOnChannel(iChanId, dClusterSize, vPntPos.X(), vPntPos.Y()))<<" "<<dClustArea
+                   <<" "<<(ComputeClusterAreaOnChannel(iChanId, dClusterSize, poipos_local[0], poipos_local[1]))<<" "<<dClustArea
                    <<FairLogger::endl;
          LOG(ERROR)<<"CbmTofDigitizerBDF::DigitizeFlatDisc => Check Point "<<iPntInd
                      <<" Sm type "<<iSmType<<" SM "<<iSM<<" Rpc "<<iRpc<<" Channel "<<iChannel
@@ -2038,55 +2071,39 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
             // Horizontal channel: A = Right and B = Left of the channel
             dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                     + TMath::Abs( vPntPos.X() - ( fChannelInfo->GetX() + fChannelInfo->GetSizex()/2.0 ) )
+                     + TMath::Abs( poipos_local[0] - ( + fChannelInfo->GetSizex()/2.0 ) )
 #else
-                     + ( vPntPos.X() - fChannelInfo->GetX() )
+                     + ( poipos_local[0] )
 #endif
                        /fvdSignalVelocityRpc[iSmType][iRpc];
             dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                     + TMath::Abs( vPntPos.X() - ( fChannelInfo->GetX() - fChannelInfo->GetSizex()/2.0 ) )
+                     + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
-                     - ( vPntPos.X() - fChannelInfo->GetX() )
+                     - ( poipos_local[0] )
 #endif
                        /fvdSignalVelocityRpc[iSmType][iRpc];
          } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
             else
             {
-
-	      TGeoNode *fNode=        // prepare global->local trafo
-			gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
-	      LOG(DEBUG)<<Form(" TofDigitizerBDF:: (%3d,%3d,%3d,%3d) - node at (%6.1f,%6.1f,%6.1f) : 0x%p Pos(%6.1f,%6.1f,%6.1f)",
-			      iSmType,iSM,iRpc,iChannel,
-			       fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode, 
-			       vPntPos.X(), vPntPos.Y(), vPntPos.Z())
-			<<FairLogger::endl;
-	      /*TGeoNode*	cNode=*/ gGeoManager->GetCurrentNode();
-	      /*TGeoHMatrix* cMatrix =*/ gGeoManager->GetCurrentMatrix();
-	      Double_t hitpos[3]={fChannelInfo->GetX(),vPntPos.Y(),fChannelInfo->GetZ()};
-	      Double_t hitpos_local[3];
-	      gGeoManager->MasterToLocal(hitpos, hitpos_local);
                // Vertical channel: A = Top and B = Bottom of the channel
                dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                        + TMath::Abs( vPntPos.Y() - ( fChannelInfo->GetY() + fChannelInfo->GetSizey()/2.0 ) )
+                        + TMath::Abs( poipos_local[1]- ( + fChannelInfo->GetSizey()/2.0 ) )
 #else
-		 //                        + ( vPntPos.Y() - fChannelInfo->GetY() )
-                        + hitpos_local[1]
+		 //                        + ( poipos_local[1] - fChannelInfo->GetY() )
+                        + poipos_local[1]
 #endif
                           /fvdSignalVelocityRpc[iSmType][iRpc];
                dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                        + TMath::Abs( vPntPos.Y() - ( fChannelInfo->GetY() - fChannelInfo->GetSizey()/2.0 ) )
+                        + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
 #else
-		 //                        - ( vPntPos.Y() - fChannelInfo->GetY() )
-                        - hitpos_local[1]
+		 //                        - ( poipos_local[1] - fChannelInfo->GetY() )
+                        - poipos_local[1]
 #endif
                           /fvdSignalVelocityRpc[iSmType][iRpc];
             } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
-	 LOG(DEBUG)<<Form(" TofDigitizerBDF:: chrg %7.1f, gain %7.1f, thr %7.1f ",dChargeCentral,
-			  fdChannelGain[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1],fDigiBdfPar->GetFeeThreshold())
-		   <<FairLogger::endl;
          // Switch between Digi and DigiExp
          if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
          {
@@ -2100,11 +2117,12 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 	       //	       tofDigi->GetMatch()->AddLink(1., iPntInd);
                fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( tofDigi );
 	       fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
-				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
-			      <<FairLogger::endl;
+	       LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, MCp %d, MCt %d, TA %6.2f, TotA %6.1f",
+				iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID,dTimeA,
+				dChargeCentral*fdChannelGain[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1]/2.0)
+			 <<FairLogger::endl;
 
-            } // charge ok
+            } // charge ok, TimeA
             if( fDigiBdfPar->GetFeeThreshold() <=
                   dChargeCentral*fdChannelGain[iSmType][iSM*iNbRpc + iRpc][2*iChannel]/2.0 )
             {
@@ -2114,7 +2132,11 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 	       //			   tofDigi->GetMatch()->AddLink(1., iPntInd);
                fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChannel].push_back( tofDigi );
 	       fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel].push_back( iPntInd );
-            } // charge ok
+	       LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, MCp %d, MCt %d, TB %6.2f, TotB %6.1f",
+				iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID,dTimeB,
+				dChargeCentral*fdChannelGain[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1]/2.0)
+			 <<FairLogger::endl;
+            } // charge ok, TimeB
          } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
          else {
             if( fDigiBdfPar->GetFeeThreshold() <=
@@ -2173,22 +2195,22 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                // First row
                if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                   // Vertical => base = right edge
-                  dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.Y() - fChannelInfo->GetY() , 2)
-                         + TMath::Power( vPntPos.X() - ( fChannelInfo->GetX() + fChannelInfo->GetSizex()/2.0 ), 2) );
+                  dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[1] , 2)
+                         + TMath::Power( poipos_local[0] - ( + fChannelInfo->GetSizex()/2.0 ), 2) );
                   else  // Horizontal => base = bottom edge
-                     dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.X() - fChannelInfo->GetX() , 2)
-                         + TMath::Power( vPntPos.Y() - ( fChannelInfo->GetY() - fChannelInfo->GetSizey()/2.0 ), 2) );
+                     dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
+                         + TMath::Power( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ), 2) );
             } // if( iChannel < iNbCh/2.0 )
                else
                {
                   // Second row
                   if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                      // Vertical => base = left edge
-                     dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.Y() - fChannelInfo->GetY() , 2)
-                            + TMath::Power( vPntPos.X() - ( fChannelInfo->GetX() - fChannelInfo->GetSizex()/2.0 ), 2) );
+                     dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[1] , 2)
+                            + TMath::Power( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ), 2) );
                      else  // Horizontal => base = upper edge
-                        dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.X() - fChannelInfo->GetX() , 2)
-                            + TMath::Power( vPntPos.Y() - ( fChannelInfo->GetY() + fChannelInfo->GetSizey()/2.0 ), 2) );
+                        dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
+                            + TMath::Power( poipos_local[1] - ( + fChannelInfo->GetSizey()/2.0 ), 2) );
                } // else of if( iChannel < iNbCh/2.0 )
 
             dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iRpc];
@@ -2205,7 +2227,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 		  //				  tofDigi->GetMatch()->AddLink(1., iPntInd);
                   fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][iChannel].push_back( tofDigi );
 		  fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iChannel].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): MCpi %zu, valE %d, MCti %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
 
@@ -2241,18 +2263,16 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
             // Horizontal channels: First go down, then up
             while( 0 <= iMinChanInd )
             {
-               dClusterDist = TMath::Abs( vPntPos.Y()
-                               - ( fChannelInfo->GetY()
-                                   + fChannelInfo->GetSizey()*( iMinChanInd- iChannel + 0.5 ) ) );
+               dClusterDist = TMath::Abs( poipos_local[1]
+                               - ( + fChannelInfo->GetSizey()*( iMinChanInd- iChannel + 0.5 ) ) );
                if( dClusterDist < dClusterSize )
                   iMinChanInd --;
                   else break;
             }
             while( iMaxChanInd < iNbCh )
             {
-               dClusterDist = TMath::Abs( vPntPos.Y()
-                               - ( fChannelInfo->GetY()
-                                   + fChannelInfo->GetSizey()*( iMaxChanInd- iChannel - 0.5 ) ) );
+               dClusterDist = TMath::Abs( poipos_local[1]
+                               - ( + fChannelInfo->GetSizey()*( iMaxChanInd- iChannel - 0.5 ) ) );
                if( dClusterDist < dClusterSize )
                   iMaxChanInd ++;
                   else break;
@@ -2263,18 +2283,16 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                // Vertical channels: First go to the left, then to the right
                while( 0 <= iMinChanInd )
                {
-                  dClusterDist = TMath::Abs( vPntPos.X()
-                                  - ( fChannelInfo->GetX()
-                                      + fChannelInfo->GetSizex()*( iMinChanInd- iChannel + 0.5 ) ) );
+                  dClusterDist = TMath::Abs( poipos_local[0]
+                                  - ( + fChannelInfo->GetSizex()*( iMinChanInd- iChannel + 0.5 ) ) );
                   if( dClusterDist < dClusterSize )
                      iMinChanInd --;
                      else break;
                }
                while( iMaxChanInd < iNbCh )
                {
-                  dClusterDist = TMath::Abs( vPntPos.X()
-                                  - ( fChannelInfo->GetX()
-                                      + fChannelInfo->GetSizex()*( iMaxChanInd- iChannel - 0.5 ) ) );
+                  dClusterDist = TMath::Abs( poipos_local[0]
+                                  - ( + fChannelInfo->GetSizex()*( iMaxChanInd- iChannel - 0.5 ) ) );
                   if( dClusterDist < dClusterSize )
                      iMaxChanInd ++;
                      else break;
@@ -2307,7 +2325,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 
             // Calculate the fraction of the charge in this channel
             Double_t dChargeSideCh = dClustCharge * ComputeClusterAreaOnChannel(
-                                              iSideChId, dClusterSize, vPntPos.X(), vPntPos.Y());
+                                              iSideChId, dClusterSize, poipos_local[0], poipos_local[1]);
             dChargeSideCh /= dClustArea;
             if( dClustCharge  + 0.0000001 < dChargeSideCh )
             {
@@ -2321,57 +2339,53 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
             // Strips = readout on both side
             Double_t dTimeA = dCentralTime;
             Double_t dTimeB = dCentralTime;
+
+	    LOG(DEBUG)<<Form(" TofDigitizerBDF:: chrg %7.1f, times %5.1f,%5.1f, pos  %5.1f,%5.1f,%5.1f ",dChargeCentral,
+			     dTimeA,dTimeB,poipos_local[0],poipos_local[1],poipos_local[2])
+		      <<FairLogger::endl;
+
             if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
             {
                // Horizontal channel: A = Right and B = Left of the channel
                dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                        + TMath::Abs( vPntPos.X() - ( fChannelInfo->GetX() + fChannelInfo->GetSizex()/2.0 ) )
+                        + TMath::Abs( poipos_local[0] - ( + fChannelInfo->GetSizex()/2.0 ) )
 #else
-                        + ( vPntPos.X() - fChannelInfo->GetX() )
+                        + ( poipos_local[0] )
 #endif
                           /fvdSignalVelocityRpc[iSmType][iRpc];
                dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                        + TMath::Abs( vPntPos.X() - ( fChannelInfo->GetX() - fChannelInfo->GetSizex()/2.0 ) )
+                        + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
-                        - ( vPntPos.X() - fChannelInfo->GetX() )
+                        - ( poipos_local[0] )
 #endif
                           /fvdSignalVelocityRpc[iSmType][iRpc];
             } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                else
                {
-		 TGeoNode *fNode=        // prepare global->local trafo
-			gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
-		 LOG(DEBUG)<<Form(" TofDigitizerBDF:: (%3.d,%3d,%3d,%3d)-node at (%6.1f,%6.1f,%6.1f) : 0x%p",
-			      iSmType,iSM,iRpc,iChanInd,
-			      fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode)
-			<<FairLogger::endl;
-		 /*TGeoNode*	cNode=*/ gGeoManager->GetCurrentNode();
-		 /*TGeoHMatrix* cMatrix =*/ gGeoManager->GetCurrentMatrix();
-		 Double_t hitpos[3]={fChannelInfo->GetX(),vPntPos.Y(),fChannelInfo->GetZ()};
-		 Double_t hitpos_local[3];
-		 gGeoManager->MasterToLocal(hitpos, hitpos_local);
 
                   // Vertical channel: A = Top and B = Bottom of the channel
                   dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                           + TMath::Abs( vPntPos.Y() - ( fChannelInfo->GetY() + fChannelInfo->GetSizey()/2.0 ) )
+                           + TMath::Abs( poipos_local[1] - ( + fChannelInfo->GetSizey()/2.0 ) )
 #else
-		    //                           + ( vPntPos.Y() - fChannelInfo->GetY() )
-		           + hitpos_local[1]
+		    //                           + ( poipos_local[1] - fChannelInfo->GetY() )
+		           + poipos_local[1]
 #endif
                              /fvdSignalVelocityRpc[iSmType][iRpc];
                   dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                           + TMath::Abs( vPntPos.Y() - ( fChannelInfo->GetY() - fChannelInfo->GetSizey()/2.0 ) )
+                           + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
 #else
-		    //                           - ( vPntPos.Y() - fChannelInfo->GetY() )
-		           - hitpos_local[1]
+		    //                           - ( poipos_local[1] - fChannelInfo->GetY() )
+		           - poipos_local[1]
 #endif
                              /fvdSignalVelocityRpc[iSmType][iRpc];
                } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
-
+	    LOG(DEBUG)<<Form(" TofDigitizerBDF:: chrg %7.1f, gain %7.1f, thr %7.1f times %5.1f,%5.1f ",dChargeCentral,
+			     fdChannelGain[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1],fDigiBdfPar->GetFeeThreshold(),dTimeA,dTimeB)
+		      <<FairLogger::endl;
             // Fee Threshold on charge
             if( fDigiBdfPar->GetFeeThreshold() <=
                   dChargeSideCh*fdChannelGain[iSmType][iSM*iNbRpc + iRpc][2*iChanInd+1]/2.0 )
@@ -2385,9 +2399,9 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 		  //				  tofDigi->GetMatch()->AddLink(1., iPntInd);
                   fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChanInd+1].push_back( tofDigi );
 		  fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChanInd+1].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
-				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
-			      <<FairLogger::endl;
+		  LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, MCpA %d, MCtt %d",
+				     iSmType,iSM,iRpc,iChanInd,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChanInd+1].size(),iPntInd,iTrackID)
+			    <<FairLogger::endl;
 
                } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
                else {
@@ -2411,9 +2425,9 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 		  //				  tofDigi->GetMatch()->AddLink(1., iPntInd);
                   fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChanInd].push_back( tofDigi );
 		  fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChanInd].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
-				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
-			      <<FairLogger::endl;
+		  LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, MCpB %d, MCtB %d",
+				     iSmType,iSM,iRpc,iChanInd,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChanInd+1].size(),iPntInd,iTrackID)
+			    <<FairLogger::endl;
 
                } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
                else {
@@ -2468,8 +2482,8 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                        iRow*iNbCh/2.0 < iMinChanInd )
                {
                   iMinChanInd --;
-                  dClusterDist = TMath::Abs( vPntPos.Y()
-                                  - ( fChannelInfo->GetY()
+                  dClusterDist = TMath::Abs( poipos_local[1]
+                                  - (
                                       + fChannelInfo->GetSizey()*( iMinChanInd - iChannel + ( 1-2*iRow )/2 ) ) );
                } // while upper/lower edge inside cluster and index not out of rpc
                dClusterDist = 0;
@@ -2477,15 +2491,15 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                        iMaxChanInd < (1 + iRow)*iNbCh/2.0 - 1 )
                {
                   iMaxChanInd ++;
-                  dClusterDist = TMath::Abs( vPntPos.Y()
-                                  - ( fChannelInfo->GetY()
+                  dClusterDist = TMath::Abs( poipos_local[1]
+                                  - (
                                       + fChannelInfo->GetSizey()*( iMaxChanInd - iChannel - ( 1-2*iRow )/2 ) ) );
                } // while lower/upper edge inside cluster and index not out of rpc
 
                // Test if Pad in diff row but same column as central pad has cluster overlap
                // if Yes => Loop from min+1 to max-1 equivalents in the opposite row
-               dClusterDist = TMath::Abs( vPntPos.X()
-                                 - ( fChannelInfo->GetX()
+               dClusterDist = TMath::Abs( poipos_local[0]
+                                 - ( 
                                      + fChannelInfo->GetSizex()*( 2*iRow - 1 )/2 ) );
                if( dClusterDist < dClusterSize )
                   bCheckOtherRow = kTRUE;
@@ -2497,8 +2511,8 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                         iRow*iNbCh/2.0 < iMinChanInd )
                   {
                      iMinChanInd --;
-                     dClusterDist = TMath::Abs( vPntPos.X()
-                                     - ( fChannelInfo->GetX()
+                     dClusterDist = TMath::Abs( poipos_local[0]
+                                     - ( 
                                          + fChannelInfo->GetSizex()*( iMinChanInd - iChannel + ( 1-2*iRow )/2 ) ) );
                   } // while right/left edge inside cluster and index not out of rpc
                   dClusterDist = 0;
@@ -2506,15 +2520,15 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                           iMaxChanInd < (1 + iRow)*iNbCh/2.0 - 1 )
                   {
                      iMaxChanInd ++;
-                     dClusterDist = TMath::Abs( vPntPos.X()
-                                     - ( fChannelInfo->GetX()
+                     dClusterDist = TMath::Abs( poipos_local[0]
+                                     - ( 
                                          + fChannelInfo->GetSizex()*( iMaxChanInd - iChannel - ( 1-2*iRow )/2 ) ) );
                   } // while left/right edge inside cluster and index not out of rpc
 
                   // Test if Pad in diff row but same column as central pad has cluster overlap
                   // if Yes => Loop from min+1 to max-1 equivalents in the opposite row
-                  dClusterDist = TMath::Abs( vPntPos.Y()
-                                    - ( fChannelInfo->GetY()
+                  dClusterDist = TMath::Abs( poipos_local[1]
+                                    - ( 
                                         + fChannelInfo->GetSizey()*( 1 - 2*iRow )/2 ) );
                   if( dClusterDist < dClusterSize )
                      bCheckOtherRow = kTRUE;
@@ -2540,7 +2554,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 
                // Calculate the fraction of the charge in this channel
                Double_t dChargeSideCh = dClustCharge * ComputeClusterAreaOnChannel(
-                                                 iSideChId, dClusterSize, vPntPos.X(), vPntPos.Y());
+                                                 iSideChId, dClusterSize, poipos_local[0], poipos_local[1]);
                dChargeSideCh /= dClustArea;
 
                // Fee Threshold on charge
@@ -2553,11 +2567,11 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                // First calculate the propagation time to the center of the pad base
                if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                   // Vertical => base = right/left edge
-                  dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.Y() - fChannelInfo->GetY() , 2)
-                         + TMath::Power( vPntPos.X() - ( fChannelInfo->GetX() + (1-2*iRow)*fChannelInfo->GetSizex()/2.0 ), 2) );
+                  dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[1] , 2)
+                         + TMath::Power( poipos_local[0] - ( + (1-2*iRow)*fChannelInfo->GetSizex()/2.0 ), 2) );
                   else  // Horizontal => base = bottom/upper edge
-                     dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.X() - fChannelInfo->GetX() , 2)
-                         + TMath::Power( vPntPos.Y() - ( fChannelInfo->GetY() - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
+                     dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
+                         + TMath::Power( poipos_local[1] - ( - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
 
                dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iRpc];
 
@@ -2570,7 +2584,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 		  //				  tofDigi->GetMatch()->AddLink(1., iPntInd);
                   fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][iChanInd].push_back( tofDigi );
 		  fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iChanInd].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, MCpP %d, MCtP %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
                } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -2603,7 +2617,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 
                   // Calculate the fraction of the charge in this channel
                   Double_t dChargeSideCh = dClustCharge * ComputeClusterAreaOnChannel(
-                                                    iSideChId, dClusterSize, vPntPos.X(), vPntPos.Y());
+                                                    iSideChId, dClusterSize, poipos_local[0], poipos_local[1]);
 
                   // Fee Threshold on charge
                   if( dChargeSideCh*fdChannelGain[iSmType][iSM*iNbRpc + iRpc][iChanInd]
@@ -2615,11 +2629,11 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
                   // First calculate the propagation time to the center of the pad base
                   if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                      // Vertical => base = right/left edge
-                     dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.Y() - fChannelInfo->GetY() , 2)
-                            + TMath::Power( vPntPos.X() - ( fChannelInfo->GetX() + (1-2*iRow)*fChannelInfo->GetSizex()/2.0 ), 2) );
+                     dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[1] , 2)
+                            + TMath::Power( poipos_local[0] - ( + (1-2*iRow)*fChannelInfo->GetSizex()/2.0 ), 2) );
                      else  // Horizontal => base = bottom/upper edge
-                        dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.X() - fChannelInfo->GetX() , 2)
-                            + TMath::Power( vPntPos.Y() - ( fChannelInfo->GetY() - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
+                        dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
+                            + TMath::Power( poipos_local[1] - ( - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
 		  
                   dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iRpc];
 
@@ -2632,7 +2646,7 @@ Bool_t   CbmTofDigitizerBDF::DigitizeFlatDisc()
 		     //					 tofDigi->GetMatch()->AddLink(1., iPntInd);
                      fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][iChanInd].push_back( tofDigi );
 		     fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iChanInd].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, MCpX %d, MCtX %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
 
@@ -2824,6 +2838,18 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
       // Get TofPoint Position
       pPoint->Position( vPntPos );
       fChannelInfo = fDigiPar->GetCell(iChanId);
+      TGeoNode *fNode=        // prepare global->local trafo
+         gGeoManager->FindNode(fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ());
+	 LOG(DEBUG)<<Form(" TofDigitizerBDF:: (%3d,%3d,%3d,%3d) - node at (%6.1f,%6.1f,%6.1f) : 0x%p Pos(%6.1f,%6.1f,%6.1f)",
+			  iSmType,iSM,iRpc,iChannel,
+			  fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode, 
+			  vPntPos.X(), vPntPos.Y(), vPntPos.Z())
+		   <<FairLogger::endl;
+      gGeoManager->GetCurrentNode();
+      gGeoManager->GetCurrentMatrix();
+      Double_t poipos[3]={vPntPos.X(),vPntPos.Y(),vPntPos.Z()};
+      Double_t poipos_local[3];
+      gGeoManager->MasterToLocal(poipos, poipos_local);
 
       // Generate a Cluster radius in [cm]
       dClusterSize = GenerateClusterRadius( iSmType, iRpc );
@@ -2843,8 +2869,8 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                                    -5.0*dClusterSize, 5.0*dClusterSize,
                                    -5.0*dClusterSize, 5.0*dClusterSize);
       f2ChargeDist->SetParameters( dClustCharge/( TMath::Sqrt( 2.0*TMath::Pi() )*dClusterSize/3.0),
-                                     vPntPos.X(), dClusterSize/3.0,
-                                     vPntPos.Y(), dClusterSize/3.0);
+                                     poipos_local[0], dClusterSize/3.0,
+                                     poipos_local[1], dClusterSize/3.0);
 
       // Calculate the fraction of the charge in central channel
       Double_t dChargeCentral = f2ChargeDist->Integral( fChannelInfo->GetX() - fChannelInfo->GetSizex()/2.0,
@@ -2903,16 +2929,16 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
             // Horizontal channel: A = Right and B = Left of the channel
             dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                     + TMath::Abs( vPntPos.X() - ( fChannelInfo->GetX() + fChannelInfo->GetSizex()/2.0 ) )
+                     + TMath::Abs( poipos_local[0] - ( + fChannelInfo->GetSizex()/2.0 ) )
 #else
-                     + ( vPntPos.X() - fChannelInfo->GetX() )
+                     + ( poipos_local[0] )
 #endif
                        /fvdSignalVelocityRpc[iSmType][iRpc];
             dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                     + TMath::Abs( vPntPos.X() - ( fChannelInfo->GetX() - fChannelInfo->GetSizex()/2.0 ) )
+                     + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
-                     - ( vPntPos.X() - fChannelInfo->GetX() )
+                     - ( poipos_local[0] )
 #endif
                        /fvdSignalVelocityRpc[iSmType][iRpc];
          } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
@@ -2921,16 +2947,16 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                // Vertical channel: A = Top and B = Bottom of the channel
                dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                        + TMath::Abs( vPntPos.Y() - ( fChannelInfo->GetY() + fChannelInfo->GetSizey()/2.0 ) )
+                        + TMath::Abs( poipos_local[1] - ( + fChannelInfo->GetSizey()/2.0 ) )
 #else
-                        + ( vPntPos.Y() - fChannelInfo->GetY() )
+                        + ( poipos_local[1] )
 #endif
                           /fvdSignalVelocityRpc[iSmType][iRpc];
                dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                        + TMath::Abs( vPntPos.Y() - ( fChannelInfo->GetY() - fChannelInfo->GetSizey()/2.0 ) )
+                        + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
 #else
-                        - ( vPntPos.Y() - fChannelInfo->GetY() )
+                        - ( poipos_local[1] )
 #endif
                           /fvdSignalVelocityRpc[iSmType][iRpc];
             } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
@@ -2944,7 +2970,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 	    //			tofDigi->GetMatch()->AddLink(1., iPntInd);
             fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( tofDigi );
             fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val1 %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
 
@@ -2954,7 +2980,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 	    //			tofDigi->GetMatch()->AddLink(1., iPntInd);
             fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iChannel].push_back( tofDigi );
             fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val2 %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iChannel].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
          } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -3004,22 +3030,22 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                // First row
                if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                   // Vertical => base = right edge
-                  dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.Y() - fChannelInfo->GetY() , 2)
-                         + TMath::Power( vPntPos.X() - ( fChannelInfo->GetX() + fChannelInfo->GetSizex()/2.0 ), 2) );
+                  dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[1] , 2)
+                         + TMath::Power( poipos_local[0] - ( fChannelInfo->GetSizex()/2.0 ), 2) );
                   else  // Horizontal => base = bottom edge
-                     dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.X() - fChannelInfo->GetX() , 2)
-                         + TMath::Power( vPntPos.Y() - ( fChannelInfo->GetY() - fChannelInfo->GetSizey()/2.0 ), 2) );
+                     dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
+                         + TMath::Power( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ), 2) );
             } // if( iChannel < iNbCh/2.0 )
                else
                {
                   // Second row
                   if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                      // Vertical => base = left edge
-                     dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.Y() - fChannelInfo->GetY() , 2)
-                            + TMath::Power( vPntPos.X() - ( fChannelInfo->GetX() - fChannelInfo->GetSizex()/2.0 ), 2) );
+                     dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[1] , 2)
+                            + TMath::Power( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ), 2) );
                      else  // Horizontal => base = upper edge
-                        dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.X() - fChannelInfo->GetX() , 2)
-                            + TMath::Power( vPntPos.Y() - ( fChannelInfo->GetY() + fChannelInfo->GetSizey()/2.0 ), 2) );
+                        dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
+                            + TMath::Power( poipos_local[1] - ( + fChannelInfo->GetSizey()/2.0 ), 2) );
                } // else of if( iChannel < iNbCh/2.0 )
 
             dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iRpc];
@@ -3034,7 +3060,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 	       //			   tofDigi->GetMatch()->AddLink(1., iPntInd);
                fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][iChannel].push_back( tofDigi );
 	       fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iChannel].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val3 %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iChannel].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
             } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -3087,16 +3113,16 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                   // Horizontal channel: A = Right and B = Left of the channel
                   dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                           + TMath::Abs( vPntPos.X() - ( fChannelInfo->GetX() + fChannelInfo->GetSizex()/2.0 ) )
+                           + TMath::Abs( poipos_local[0] - ( + fChannelInfo->GetSizex()/2.0 ) )
 #else
-                           + ( vPntPos.X() - fChannelInfo->GetX() )
+                           + ( poipos_local[0] )
 #endif
                              /fvdSignalVelocityRpc[iSmType][iRpc];
                   dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                           + TMath::Abs( vPntPos.X() - ( fChannelInfo->GetX() - fChannelInfo->GetSizex()/2.0 ) )
+                           + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
-                           - ( vPntPos.X() - fChannelInfo->GetX() )
+                           - ( poipos_local[0] )
 #endif
                              /fvdSignalVelocityRpc[iSmType][iRpc];
                } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
@@ -3105,16 +3131,16 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                      // Vertical channel: A = Top and B = Bottom of the channel
                      dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                              + TMath::Abs( vPntPos.Y() - ( fChannelInfo->GetY() + fChannelInfo->GetSizey()/2.0 ) )
+                              + TMath::Abs( poipos_local[1] - ( + fChannelInfo->GetSizey()/2.0 ) )
 #else
-                              + ( vPntPos.Y() - fChannelInfo->GetY() )
+                              + ( poipos_local[1] )
 #endif
                                 /fvdSignalVelocityRpc[iSmType][iRpc];
                      dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                              + TMath::Abs( vPntPos.Y() - ( fChannelInfo->GetY() - fChannelInfo->GetSizey()/2.0 ) )
+                              + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
 #else
-                              - ( vPntPos.Y() - fChannelInfo->GetY() )
+                              - ( poipos_local[1] )
 #endif
                                 /fvdSignalVelocityRpc[iSmType][iRpc];
                   } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
@@ -3134,7 +3160,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 		  //				  tofDigi->GetMatch()->AddLink(1., iPntInd);
                   fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd].push_back( tofDigi );
 		  fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val4 %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
 
@@ -3211,16 +3237,16 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                   // Horizontal channel: A = Right and B = Left of the channel
                   dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                           + TMath::Abs( vPntPos.X() - ( fChannelInfo->GetX() + fChannelInfo->GetSizex()/2.0 ) )
+                           + TMath::Abs( poipos_local[0] - ( + fChannelInfo->GetSizex()/2.0 ) )
 #else
-                           + ( vPntPos.X() - fChannelInfo->GetX() )
+                           + ( poipos_local[0] )
 #endif
                              /fvdSignalVelocityRpc[iSmType][iRpc];
                   dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                           + TMath::Abs( vPntPos.X() - ( fChannelInfo->GetX() - fChannelInfo->GetSizex()/2.0 ) )
+                           + TMath::Abs( poipos_local[0] - ( - fChannelInfo->GetSizex()/2.0 ) )
 #else
-                           - ( vPntPos.X() - fChannelInfo->GetX() )
+                           - ( poipos_local[0] )
 #endif
                              /fvdSignalVelocityRpc[iSmType][iRpc];
                } // if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
@@ -3229,16 +3255,16 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                      // Vertical channel: A = Top and B = Bottom of the channel
                      dTimeA +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                              + TMath::Abs( vPntPos.Y() - ( fChannelInfo->GetY() + fChannelInfo->GetSizey()/2.0 ) )
+                              + TMath::Abs( poipos_local[1] - ( + fChannelInfo->GetSizey()/2.0 ) )
 #else
-                              + ( vPntPos.Y() - fChannelInfo->GetY() )
+                              + ( poipos_local[1] )
 #endif
                                 /fvdSignalVelocityRpc[iSmType][iRpc];
                      dTimeB +=  fRandRes->Gaus( 0.0, fdTimeResElec)
 #ifdef FULL_PROPAGATION_TIME
-                              + TMath::Abs( vPntPos.Y() - ( fChannelInfo->GetY() - fChannelInfo->GetSizey()/2.0 ) )
+                              + TMath::Abs( poipos_local[1] - ( - fChannelInfo->GetSizey()/2.0 ) )
 #else
-                              - ( vPntPos.Y() - fChannelInfo->GetY() )
+                              - ( poipos_local[1] )
 #endif
                                 /fvdSignalVelocityRpc[iSmType][iRpc];
                   } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
@@ -3252,7 +3278,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 		  //				   tofDigi->GetMatch()->AddLink(1., iPntInd);
                   fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd+1].push_back( tofDigi );
 		  fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd+1].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val5 %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd+1].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
 
@@ -3262,7 +3288,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 		  //				   tofDigi->GetMatch()->AddLink(1., iPntInd);
                   fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd].push_back( tofDigi );
 		  fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val6 %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
                } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -3367,11 +3393,11 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                   // First calculate the propagation time to the center of the pad base
                   if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                      // Vertical => base = right/left edge
-                     dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.Y() - fChannelInfo->GetY() , 2)
-                            + TMath::Power( vPntPos.X() - ( fChannelInfo->GetX() + (1-2*iRow)*fChannelInfo->GetSizex()/2.0 ), 2) );
+                     dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[1] , 2)
+                            + TMath::Power( poipos_local[0] - ( (1-2*iRow)*fChannelInfo->GetSizex()/2.0 ), 2) );
                      else  // Horizontal => base = bottom/upper edge
-                        dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.X() - fChannelInfo->GetX() , 2)
-                            + TMath::Power( vPntPos.Y() - ( fChannelInfo->GetY() - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
+                        dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
+                            + TMath::Power( poipos_local[1] - ( - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
 
                   dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iRpc];
 
@@ -3384,7 +3410,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 		     //					  tofDigi->GetMatch()->AddLink(1., iPntInd);
                      fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][iSideChInd].push_back( tofDigi );
 		     fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iSideChInd].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val7 %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][2*iSideChInd].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
 
@@ -3450,11 +3476,11 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                   // First calculate the propagation time to the center of the pad base
                   if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                      // Vertical => base = right/left edge
-                     dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.Y() - fChannelInfo->GetY() , 2)
-                            + TMath::Power( vPntPos.X() - ( fChannelInfo->GetX() + (1-2*iRow)*fChannelInfo->GetSizex()/2.0 ), 2) );
+                     dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[1] , 2)
+                            + TMath::Power( poipos_local[0] - ( + (1-2*iRow)*fChannelInfo->GetSizex()/2.0 ), 2) );
                      else  // Horizontal => base = bottom/upper edge
-                        dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.X() - fChannelInfo->GetX() , 2)
-                            + TMath::Power( vPntPos.Y() - ( fChannelInfo->GetY() - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
+                        dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
+                            + TMath::Power( poipos_local[1] - ( - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
 
                   dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iRpc];
 
@@ -3467,7 +3493,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 		     //					  tofDigi->GetMatch()->AddLink(1., iPntInd);
                      fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][iSideChInd].push_back( tofDigi );
 		     fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iSideChInd].push_back( iPntInd );
-		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
+		     LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val8 %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iSideChInd].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
                   } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -3547,11 +3573,11 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
                      // First calculate the propagation time to the center of the pad base
                      if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                         // Vertical => base = right/left edge
-                        dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.Y() - fChannelInfo->GetY() , 2)
-                               + TMath::Power( vPntPos.X() - ( fChannelInfo->GetX() + (1-2*iRow)*fChannelInfo->GetSizex()/2.0 ), 2) );
+                        dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[1] , 2)
+                               + TMath::Power( poipos_local[0] - ( + (1-2*iRow)*fChannelInfo->GetSizex()/2.0 ), 2) );
                         else  // Horizontal => base = bottom/upper edge
-                           dClustToReadout = TMath::Sqrt(  TMath::Power( vPntPos.X() - fChannelInfo->GetX() , 2)
-                               + TMath::Power( vPntPos.Y() - ( fChannelInfo->GetY() - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
+                           dClustToReadout = TMath::Sqrt(  TMath::Power( poipos_local[0] , 2)
+                               + TMath::Power( poipos_local[1] - ( - (1-2*iRow)*fChannelInfo->GetSizey()/2.0 ), 2) );
 
                      dPadTime += fRandRes->Gaus( 0.0, fdTimeResElec) + dClustToReadout/fvdSignalVelocityRpc[iSmType][iRpc];
 
@@ -3564,7 +3590,7 @@ Bool_t CbmTofDigitizerBDF::DigitizeGaussCharge()
 			//						 tofDigi->GetMatch()->AddLink(1., iPntInd);
                         fStorDigiExp[iSmType][iSM*iNbRpc + iRpc][iChanInd].push_back( tofDigi );
 			fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iChanInd].push_back( iPntInd );
-			LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val %d, MCt %d",
+			LOG(DEBUG)<<Form("Digimatch (%d,%d,%d,%d): size %zu, val9 %d, MCt %d",
 				     iSmType,iSM,iRpc,iChannel,fStorDigiMatch[iSmType][iSM*iNbRpc + iRpc][iChanInd].size(),iPntInd,iTrackID)
 			      <<FairLogger::endl;
                      } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
@@ -3611,8 +3637,8 @@ Double_t CbmTofDigitizerBDF::ComputeClusterAreaOnChannel(
    Double_t dCornersR[4]; // Distance from cluster center to the corners
 
    fChannelInfo            = fDigiPar->GetCell(iChanId);
-   Double_t dChanCentPosX  = fChannelInfo->GetX();
-   Double_t dChanCentPosY  = fChannelInfo->GetY();
+   Double_t dChanCentPosX  = 0.; //fChannelInfo->GetX();
+   Double_t dChanCentPosY  = 0.; //fChannelInfo->GetY();
    Double_t dEdgeCentDistX = fChannelInfo->GetSizex()/2.0;
    Double_t dEdgeCentDistY = fChannelInfo->GetSizey()/2.0;
 

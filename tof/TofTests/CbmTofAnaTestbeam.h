@@ -26,6 +26,8 @@ class TClonesArray;
 class TH1;
 class TH2;
 class TString;
+class TTrbHeader;
+
 #include "TTimeStamp.h"
 
 class CbmTofAnaTestbeam : public FairTask {
@@ -146,6 +148,8 @@ class CbmTofAnaTestbeam : public FairTask {
       inline void SetBeamRefSmId    (Int_t ival)        { fiBeamRefSmId   = ival;
 	fiBeamRefAddr=CbmTofAddress::GetUniqueAddress(fiBeamRefSmId,0,0,0,fiBeamRefSmType);}
 
+      inline void SetReqTrg (Int_t ival)                { fiReqTrg = ival;}
+
       inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
 
       inline void SetSIGLIM ( Double_t val ) { fSIGLIM = val; }
@@ -205,6 +209,8 @@ class CbmTofAnaTestbeam : public FairTask {
       TClonesArray          * fTofDigiMatchColl;  // TOF DigiMatches
       TClonesArray          * fTofTrackColl;      // TOF Tracks
 
+      TTrbHeader* fTrbHeader;
+
       Double_t fdDXMean;
       Double_t fdDYMean;
       Double_t fdDTMean;
@@ -214,6 +220,9 @@ class CbmTofAnaTestbeam : public FairTask {
 
       // Histograms
 
+      TH1 *fhTriggerPattern;
+      TH1 *fhTriggerType;
+      TH1 *fhTimeInSpill;
       TH1 *fhDT2;
       TH2 *fhXX2;
       TH2 *fhYY2;
@@ -421,6 +430,7 @@ class CbmTofAnaTestbeam : public FairTask {
       Int_t  fiBeamRefSmType; // Beam reference counter type 
       Int_t    fiBeamRefSmId; // Beam reference counter 
       Int_t         fiDutNch; // Number of cells in Device under test
+      Int_t         fiReqTrg; // Requested Trigger Pattern 
 
       Double_t fSIGLIM;
       Double_t fSIGT;

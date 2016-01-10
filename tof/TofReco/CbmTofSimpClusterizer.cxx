@@ -1068,8 +1068,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                    <<pDigi->GetSm()<<" "
                    <<pDigi->GetRpc()<<" "
                    <<pDigi->GetChannel()<<" "
-                   <<pDigi->GetTime()<<" "
-                   <<pDigi->GetTot()
+		    <<Form("T %6.2f, Tot %6.1f ",pDigi->GetTime(),pDigi->GetTot())
                    <<FairLogger::endl;
          if(    fDigiBdfPar->GetNbSmTypes() > pDigi->GetType()  // prevent crash due to misconfiguration 
              && fDigiBdfPar->GetNbSm(  pDigi->GetType()) > pDigi->GetSm()
@@ -1361,7 +1360,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
 
                               // The "Strip" time is the mean time between each end
-                              dTime =0.5 * ( xDigiA->GetTime()        + xDigiB->GetTime() ) ;                             
+                              dTime =0.5 * ( xDigiA->GetTime() + xDigiB->GetTime() ) ;                             
 
                               // Weight is the total charge => sum of both ends ToT
                               dTotS = xDigiA->GetTot() + xDigiB->GetTot();
@@ -1381,6 +1380,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 				fTrafoCell=fChannelInfo;
 				iTrafoCell=iCh;
 			      }
+
 			      //fNode->Print();
                               LOG(DEBUG1)<<Form(" Node at (%6.1f,%6.1f,%6.1f) : %p, info %p, %p",
 						fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),fNode,fChannelInfo,fTrafoCell)
@@ -1417,12 +1417,11 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                               } // Pair leads to hit oustide of strip limits
 
                               LOG(DEBUG1)
-                                   <<"CbmTofSimpClusterizer::BuildClusters: NbChanInHit  "
-                                   << Form(" %3d %3d %3d 0x%p %f Time %f PosY %f Svel %f ",
+                                   <<"CbmTofSimpClusterizer::BuildClusters: NbChanInHit"
+                                   << Form(" %3d %3d %3d %p %2.0f Time %6.1f PosY %5.1f Svel %5.1f",
                                            iNbChanInHit,iCh,iLastChan,xDigiA,xDigiA->GetSide(),
                                            dTime,dPosY,fvCPSigPropSpeed[iSmType][iRpc])
-
-                                   << Form( ", Offs %f, %f ",fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
+                                   << Form( ", Offs %5.1f, %5.1f",fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0],
                                                              fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1])
                                    <<FairLogger::endl;
 
@@ -1504,25 +1503,36 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     dWeightedPosX /= dWeightsSum;
                                     dWeightedPosY /= dWeightsSum;
                                     dWeightedPosZ /= dWeightsSum;
-                                    //  TVector3 hitPosLocal(dWeightedPosX, dWeightedPosY, dWeightedPosZ);
-                                    //TVector3 hitPos;
-                                    Double_t hitpos_local[3];
-                                    hitpos_local[0] = dWeightedPosX;
-                                    hitpos_local[1] = dWeightedPosY;
-                                    hitpos_local[2] = dWeightedPosZ;
 
+                                    Double_t hitpos_local[3];
                                     Double_t hitpos[3];
-                                    TGeoNode*        cNode= gGeoManager->GetCurrentNode();
+
+				    TGeoNode *tNode=        // prepare local->global trafo
+				      gGeoManager->FindNode(fTrafoCell->GetX(),fTrafoCell->GetY(),fTrafoCell->GetZ());
+				    TGeoNode *cNode = 
+				      gGeoManager->GetCurrentNode();
 				    //cNode->Print();
-/*                                    TGeoHMatrix* cMatrix = */gGeoManager->GetCurrentMatrix();
-                                    //cMatrix->Print();
+				    //TGeoHMatrix* cMatrix = 
+				    gGeoManager->GetCurrentMatrix();
+				    //cMatrix->Print();		     
+				    hitpos[0]=fTrafoCell->GetX();
+				    hitpos[1]=fTrafoCell->GetY();
+				    hitpos[2]=fTrafoCell->GetZ();
+				    gGeoManager->MasterToLocal(hitpos, hitpos_local);
+				    LOG(DEBUG1)<<Form(" Node0 at (%6.1f,%6.1f,%6.1f) :  (%6.1f,%6.1f,%6.1f)",
+						      fChannelInfo->GetX(),fChannelInfo->GetY(),fChannelInfo->GetZ(),hitpos_local[0], hitpos_local[1], hitpos_local[2])
+					       <<FairLogger::endl;
+
+				    hitpos_local[0] += dWeightedPosX;
+				    hitpos_local[1] += dWeightedPosY;
+				    hitpos_local[2] += dWeightedPosZ;
 
                                     gGeoManager->LocalToMaster(hitpos_local, hitpos);
                                     LOG(DEBUG1)<<
-                                    Form(" LocalToMaster for node %p, info %p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)", 
+                                    Form(" LTM for node %p, info %p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f)", 
                                          cNode, fChannelInfo, hitpos_local[0], hitpos_local[1], hitpos_local[2], 
                                          hitpos[0], hitpos[1], hitpos[2])
-                                             <<FairLogger::endl;
+					       <<FairLogger::endl;
 
                                     TVector3 hitPos(hitpos[0],hitpos[1],hitpos[2]);
 
@@ -1599,14 +1609,14 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                     // Save pointer on CbmTofPoint
                                     //                                    vPtsRef.push_back( (CbmTofPoint*)(xDigiA->GetLinks()) );
                                     // Save next digi address
-                                    LOG(DEBUG2)<<" Next fStor Digi "<<iSmType<<", SR "<<iSm*iNbRpc+iRpc<<", Ch"<<iCh
+                                    LOG(DEBUG4)<<" Next fStor Digi "<<iSmType<<", SR "<<iSm*iNbRpc+iRpc<<", Ch"<<iCh
                                                <<", Dig0 "<<(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][0])
                                                <<", Dig1 "<<(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][1])
                                                <<FairLogger::endl;
 
                                     vDigiIndRef.push_back( (Int_t )(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][0]));
                                     vDigiIndRef.push_back( (Int_t )(fStorDigiInd[iSmType][iSm*iNbRpc+iRpc][iCh][1]));
-                                    LOG(DEBUG2)<<" Erase fStor entries(b) "<<iSmType<<", SR "<<iSm*iNbRpc+iRpc<<", Ch"<<iCh
+                                    LOG(DEBUG3)<<" Erase fStor entries(b) "<<iSmType<<", SR "<<iSm*iNbRpc+iRpc<<", Ch"<<iCh
                                                <<FairLogger::endl;
                                     fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
                                     fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].erase(fStorDigiExp[iSmType][iSm*iNbRpc+iRpc][iCh].begin());
@@ -1710,16 +1720,18 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                      dWeightedPosX /= dWeightsSum;
                      dWeightedPosY /= dWeightsSum;
                      dWeightedPosZ /= dWeightsSum;
-                     //TVector3 hitPos(dWeightedPosX, dWeightedPosY, dWeightedPosZ);
 
                      Double_t hitpos_local[3];
                      Double_t hitpos[3];
-                     //TGeoNode*        cNode= gGeoManager->GetCurrentNode();
-		     //cNode->Print();
-		     //TGeoHMatrix* cMatrix =gGeoManager->GetCurrentMatrix();
-                     //cMatrix->Print();
+
                      TGeoNode *tNode=        // prepare local->global trafo
-                       gGeoManager->FindNode(fTrafoCell->GetX(),fTrafoCell->GetY(),fTrafoCell->GetZ());
+                     gGeoManager->FindNode(fTrafoCell->GetX(),fTrafoCell->GetY(),fTrafoCell->GetZ());
+		     //TGeoNode *cNode = 
+                     gGeoManager->GetCurrentNode();
+		     //cNode->Print();
+		     //TGeoHMatrix* cMatrix = 
+		     gGeoManager->GetCurrentMatrix();
+                     //cMatrix->Print();		     
 		     hitpos[0]=fTrafoCell->GetX();
 		     hitpos[1]=fTrafoCell->GetY();
 		     hitpos[2]=fTrafoCell->GetZ();
@@ -1734,10 +1746,10 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
 
                      gGeoManager->LocalToMaster(hitpos_local, hitpos);
                      LOG(DEBUG1)<<
-                     Form(" LocalToMaster for V-node %p, info %p, %p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f) [(%6.1f,%6.1f,%6.1f)]", 
+                     Form(" LTM for V-node %p, info %p, tra %p: (%6.1f,%6.1f,%6.1f) ->(%6.1f,%6.1f,%6.1f) [(%6.1f,%6.1f,%6.1f)]", 
 			  tNode, fChannelInfo, fTrafoCell, hitpos_local[0], hitpos_local[1], hitpos_local[2], 
-			  hitpos[0], hitpos[1], hitpos[2],fTrafoCell->GetX(),fTrafoCell->GetY(),fTrafoCell->GetZ())
-                             <<FairLogger::endl;
+			  hitpos[0], hitpos[1], hitpos[2], fTrafoCell->GetX(),fTrafoCell->GetY(),fTrafoCell->GetZ())
+				<<FairLogger::endl;
 
                      TVector3 hitPos(hitpos[0],hitpos[1],hitpos[2]);
                      // TestBeam errors, not properly done at all for now
@@ -1747,7 +1759,7 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                                          fDigiBdfPar->GetFeeTimeRes() * fvCPSigPropSpeed[iSmType][iRpc], // Use the electronics resolution
                                          fDigiBdfPar->GetNbGaps( iSmType, iRpc)*
                                          fDigiBdfPar->GetGapSize( iSmType, iRpc)/10.0 / // Change gap size in cm
-                                         TMath::Sqrt(12.0) ); // Use full RPC thickness as "Channel" Z size
+                                         TMath::Sqrt(12.0) );                           // Use full RPC thickness as "Channel" Z size
 //                     cout<<"a "<<vPtsRef.size()<<endl;
 //                     cout<<"b "<<vPtsRef[0]<<endl;
 //                     cout<<"c "<<vPtsRef[0]->GetDetectorID()<<endl;
@@ -1808,9 +1820,9 @@ Bool_t   CbmTofSimpClusterizer::BuildClusters()
                      vDigiIndRef.clear();
                   } // else of if( 1 == fDigiBdfPar->GetChanOrient( iSmType, iRpc ) )
                } // if( 0 < iNbChanInHit)
-               LOG(DEBUG2)<<" Fini-A "<<Form(" %3d %3d %3d ",iSmType, iSm, iRpc)<<FairLogger::endl;
+               LOG(DEBUG4)<<" Fini-A "<<Form(" %3d %3d %3d ",iSmType, iSm, iRpc)<<FairLogger::endl;
             } // for each sm/rpc pair
-               LOG(DEBUG2)<<" Fini-B "<<Form(" %3d ",iSmType)<<FairLogger::endl;
+               LOG(DEBUG3)<<" Fini-B "<<Form(" %3d ",iSmType)<<FairLogger::endl;
       } // for( Int_t iSmType = 0; iSmType < iNbSmTypes; iSmType++ )
    } // if( kTRUE == fDigiBdfPar->UseExpandedDigi() )
    else
