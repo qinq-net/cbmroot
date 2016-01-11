@@ -15,6 +15,7 @@
 #include "TMbsUnpackTofPar.h"
 #include "TofDef.h"
 #include "TofTrbTdcDef.h"
+#include "TTrbHeader.h"
 
 // Iterator
 #include "HadaqTrbIterator.h"
@@ -54,6 +55,7 @@ TTrbUnpackTof::TTrbUnpackTof( Short_t type, Short_t subType, Short_t procId, Sho
    fTrbTriggerPattern(NULL),
    fTrbTriggerType(NULL),
    fTrbEventNumberJump(NULL),
+   fTrbHeader(NULL),
    fTrbSubeventSize(),
    fTrbSubeventStatus(),
    fTrbTdcWords(),
@@ -568,6 +570,10 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
 
          fTrbTriggerType->Fill(uTriggerType);
 
+	 fTrbHeader->SetTriggerPattern(uTriggerPattern);
+	 fTrbHeader->SetTriggerType(uTriggerType);
+	 fTrbHeader->SetTimeInSpill((UInt_t)1);  // FIXME, TBD
+
          UInt_t uNbInputCh = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 16) & 0xf;
          UInt_t uNbTrigCh = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 20) & 0x1f;
          Bool_t bIncludeLastIdle = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 25) & 0x1;
@@ -791,6 +797,9 @@ Bool_t TTrbUnpackTof::RegisterOutput()
    manager->Register( "TofTrbTdc","TofUnpack", fTrbTdcBoardCollection, 
                       fMbsUnpackPar->WriteDataInCbmOut() || fbSaveRawTdcBoards );
 
+   fTrbHeader = new TTrbHeader();
+   manager->Register( "TofTrbHeader","TofUnpack", fTrbHeader, kTRUE );
+
    return kTRUE;
 }
 void TTrbUnpackTof::SetSaveRawData( Bool_t bSaveRaw )
@@ -898,7 +907,7 @@ void TTrbUnpackTof::DataErrorHandling(UInt_t uSubeventId, UInt_t uErrorPattern)
   // TrbNet network error and status bits
   if (tofTrb::status_network_0 & uErrorPattern)
   {
-    LOG(DEBUG)<<"TrbNet network status: node replied to network request"<<FairLogger::endl;
+    LOG(DEBUG)<<Form("TrbNet network status: node replied to network request (%d) ",tofTrb::status_network_0)<<FairLogger::endl;
     fTrbSubeventStatus[ fMbsUnpackPar->GetTrbSebIndex( uSubeventId ) ]->Fill(TMath::Log2(tofTrb::status_network_0));
   }
   if (tofTrb::status_network_1 & uErrorPattern)

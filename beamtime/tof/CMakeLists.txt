@@ -75,6 +75,7 @@ set(SRCS
   hadaq/HadaqTdcMessage.cxx
   hadaq/CbmHldSource.cxx
   TTrbUnpackTof.cxx
+  TTrbHeader.cxx
   TMbsUnpackTofPar.cxx
   TMbsUnpackTofContFact.cxx
   scalers/TTofScalerBoard.cxx
@@ -128,6 +129,7 @@ Set(HEADERS
   hadaq/HadaqTdcIterator.h
   hadaq/CbmHldSource.h
   TTrbUnpackTof.h
+  TTrbHeader.h
   TMbsUnpackTofPar.h
   TMbsUnpackTofContFact.h
   scalers/TofScalerDef.h

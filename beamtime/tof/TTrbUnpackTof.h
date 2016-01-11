@@ -18,6 +18,7 @@
 
 // General FairRoot unpacker of GSI/MBS events
 #include "FairUnpack.h"
+#include "TTrbHeader.h"
 
 // Parameters
 class TMbsUnpackTofPar;
@@ -101,6 +102,7 @@ class TTrbUnpackTof : public FairUnpack
       TH1* fTrbTriggerPattern;
       TH1* fTrbTriggerType;
       TH1* fTrbEventNumberJump;
+      TTrbHeader* fTrbHeader;
       std::vector<TH1*> fTrbSubeventSize;
       std::vector<TH1*> fTrbSubeventStatus;
       std::vector<TH1*> fTrbTdcWords;

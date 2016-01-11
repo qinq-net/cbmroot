@@ -20,6 +20,7 @@
 #pragma link C++ class TTriglogUnpackTof+;
 #pragma link C++ class TGet4UnpackTof+;
 #pragma link C++ class TTrbUnpackTof+;
+#pragma link C++ class TTrbHeader+;
 
 #pragma link C++ class TTofTriglogBoard+;
 #pragma link C++ class TTofScalerBoard+;
