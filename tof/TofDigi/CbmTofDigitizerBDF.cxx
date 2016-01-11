@@ -4137,8 +4137,8 @@ Double_t CbmTofDigitizerBDF::CircleIntersectPosX( Int_t iChanId, Double_t dClust
                                                      Bool_t bUpperSide )
 {
    fChannelInfo            = fDigiPar->GetCell(iChanId);
-   Double_t dChanCentPosX  = fChannelInfo->GetX();
-   Double_t dChanCentPosY  = fChannelInfo->GetY();
+   Double_t dChanCentPosX  = 0.; //fChannelInfo->GetX();
+   Double_t dChanCentPosY  = 0.; //fChannelInfo->GetY();
    Double_t dEdgeCentDistX = fChannelInfo->GetSizex()/2.0;
    Double_t dEdgeCentDistY = fChannelInfo->GetSizey()/2.0;
 
@@ -4205,8 +4205,8 @@ Double_t CbmTofDigitizerBDF::CircleIntersectPosY( Int_t iChanId, Double_t dClust
                                                      Bool_t bRightSide )
 {
    fChannelInfo            = fDigiPar->GetCell(iChanId);
-   Double_t dChanCentPosX  = fChannelInfo->GetX();
-   Double_t dChanCentPosY  = fChannelInfo->GetY();
+   Double_t dChanCentPosX  = 0.; //fChannelInfo->GetX();
+   Double_t dChanCentPosY  = 0.; //fChannelInfo->GetY();
    Double_t dEdgeCentDistX = fChannelInfo->GetSizex()/2.0;
    Double_t dEdgeCentDistY = fChannelInfo->GetSizey()/2.0;
 
