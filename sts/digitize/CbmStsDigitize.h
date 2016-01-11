@@ -113,6 +113,8 @@ class CbmStsDigitize : public FairTask
   virtual InitStatus ReInit();
 
 
+
+
   /** Set percentage of dead channels in the modules **/
   void SetDeadChannelFraction(Double_t fraction = 0.);
 
@@ -141,7 +143,6 @@ class CbmStsDigitize : public FairTask
    }
 
 
-
   /** Set physics processes
    ** @param eLossModel       0 = ideal, 1 = uniform, 2 = fluctuations
    ** @param useLorentzShift  If kTRUE, activate Lorentz shift
@@ -154,6 +155,18 @@ class CbmStsDigitize : public FairTask
   		              Bool_t useLorentzShift = kTRUE,
   		              Bool_t useDiffusion = kTRUE,
   		              Bool_t useCrossTalk = kTRUE);
+
+
+  /** (De-)Activate processing of secondary tracks
+   ** @param flag  kTRUE if secondaries shall be processed (default)
+   **
+   ** This flag enables the user to suppress the digitisation of
+   ** StsPoints from secondary tracks for debug purposes. By default,
+   ** points from all tracks are processed.
+   **/
+  void SetProcessSecondaries(Bool_t flag = kTRUE) {
+  	fProcessSecondaries = flag;
+  }
 
 
  /** Set the operating parameters in the sensors **/
@@ -199,6 +212,7 @@ class CbmStsDigitize : public FairTask
 
   Int_t fMode;       ///< Run mode. 0 = stream, 1 = event
   Int_t fDigiModel;  ///< Detector response model. 0 = ideal, 1 = simple, 2 = real
+  Bool_t fProcessSecondaries;  ///< If kFALSE, only primaries will be digitised
   static Bool_t fIsInitialised;   ///< kTRUE if Init() was called
 
   // --- Digitisation parameters
@@ -222,6 +236,7 @@ class CbmStsDigitize : public FairTask
 
   CbmStsSetup*   fSetup;        ///< STS setup interface
   TClonesArray*  fPoints;       ///< Input array of CbmStsPoint
+  TClonesArray*  fTracks;       ///< Input array of CbmMCTrack
   TClonesArray*  fDigis;        ///< Output array of CbmStsDigi
   TClonesArray*  fMatches;      ///< Output array of CbmMatch
   TStopwatch     fTimer;        ///< ROOT timer

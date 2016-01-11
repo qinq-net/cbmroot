@@ -30,6 +30,7 @@
 
 // Includes from CbmRoot
 #include "CbmDaqBuffer.h"
+#include "CbmMCTrack.h"
 #include "CbmStsDigi.h"
 #include "CbmStsPoint.h"
 
@@ -60,6 +61,7 @@ CbmStsDigitize::CbmStsDigitize(Int_t digiModel)
   : FairTask("StsDigitize"),
     fMode(0),
     fDigiModel(digiModel),
+    fProcessSecondaries(kTRUE),
     fDynRange(0.),
     fThreshold(0.),
     fNofAdcChannels(0),
@@ -70,6 +72,7 @@ CbmStsDigitize::CbmStsDigitize(Int_t digiModel)
     fStripPitch(-1.),
     fSetup(NULL),
     fPoints(NULL),
+    fTracks(NULL),
     fDigis(NULL),
     fMatches(NULL),
     fTimer(),
@@ -371,6 +374,11 @@ InitStatus CbmStsDigitize::Init() {
   fPoints = (TClonesArray*) ioman->GetObject("StsPoint");
   assert ( fPoints );
 
+  // --- Get input array (CbmMCTrack)
+  fTracks = (TClonesArray*) ioman->GetObject("MCTrack");
+  assert ( fTracks );
+
+
   // --- In event mode: register output arrays
   if ( fMode == 1 ) {
 
@@ -495,6 +503,16 @@ void CbmStsDigitize::ProcessMCEvent() {
   for (Int_t iPoint=0; iPoint<fPoints->GetEntriesFast(); iPoint++) {
   	const CbmStsPoint* point = (const CbmStsPoint*) fPoints->At(iPoint);
   	CbmLink* link = new CbmLink(1., iPoint, eventNr, fileId);
+
+  	// --- Discard secondaries if the respective flag is set
+  	if ( ! fProcessSecondaries ) {
+  		Int_t iTrack = point->GetTrackID();
+  		CbmMCTrack* track = (CbmMCTrack*) fTracks->At(iTrack);
+  		assert ( track );
+  		if ( track->GetMotherId() >= 0 ) continue;
+  	}
+
+  	LOG(DEBUG) << "Processing point" << FairLogger::endl;
   	ProcessPoint(point, eventTime, link);
   	fNofPoints++;
   	delete link;
