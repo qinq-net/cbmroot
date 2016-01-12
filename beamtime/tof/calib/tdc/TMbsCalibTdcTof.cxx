@@ -556,6 +556,11 @@ Bool_t TMbsCalibTdcTof::CreateHistogramms()
 Bool_t TMbsCalibTdcTof::FillHistograms()
 {
    TTofCalibData * fCalibData;
+   
+   // Use only events with no corrupt data
+   if( kFALSE == CheckAllTdcValid() )
+      return kFALSE;
+   
    LOG(DEBUG)<<"TMbsCalibTdcTof::FillHistograms => "<<fCalibDataCollection->GetEntriesFast()
             <<" data unpacked & calibrated successfully in this event!"<<FairLogger::endl;
             
