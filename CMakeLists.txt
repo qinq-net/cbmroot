@@ -47,6 +47,7 @@ ENDIF(FAIRROOTPATH)
 
 if(FAIRROOTPATH)
   find_package(FairRoot)
+  SET(MY_ROOT_INCLUDE_PATH ${FAIRROOT_INCLUDE_DIR})
 endif(FAIRROOTPATH)
 
 include(CheckCXX11Features)
