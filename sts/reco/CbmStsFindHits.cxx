@@ -52,7 +52,7 @@ void CbmStsFindHits::Exec(Option_t* opt) {
 
 	// --- Event number
 	Int_t iEvent =
-			FairRunAna::Instance()->GetEventHeader()->GetMCEntryNumber();
+			FairRun::Instance()->GetEventHeader()->GetMCEntryNumber();
 
 	// Start timer and counter
 	fTimer.Start();
@@ -89,7 +89,7 @@ void CbmStsFindHits::Exec(Option_t* opt) {
   fTimeTot        += fTimer.RealTime();
 
   LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
-  		      << right << iEvent << ", time " << fixed << setprecision(6)
+  		      << right << iEvent << ", real time " << fixed << setprecision(6)
   		      << fTimer.RealTime() << " s, clusters: " << nClusters
   		      << ", hits: " << nHits << FairLogger::endl;
 }

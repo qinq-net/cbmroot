@@ -1,7 +1,7 @@
 // --------------------------------------------------------------------------
 //
-// Macro for STS-only simulation (transport and digitization) for
-// single-track events.
+// Macro for STS-only simulation, digitisation and reconstruction
+// of single-track events
 //
 // Setup: STS only
 // Field: v12b
@@ -24,7 +24,7 @@ void sts_sim_single(Int_t nEvents = 10,
 {
 
   // =====   Logger settings   ==============================================
-  TString logLevel   = "DEBUG2";
+  TString logLevel   = "INFO";
   TString logVerbose = "LOW";
   // ========================================================================
 
@@ -64,10 +64,17 @@ void sts_sim_single(Int_t nEvents = 10,
   
   
 
-  // =====   Digitizer   ====================================================
+  // =====   STS Digitizer   ================================================
   Int_t digiModel         =       1;   // User sensor type DSSD
   CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
-  // -------------------------------------------------------------------------
+  stsDigi->SetProcessSecondaries(kFALSE);
+  // ========================================================================
+
+
+  // =====   STS Cluster and Hit Finder   ===================================
+  FairTask* stsFindClusters = new CbmStsFindClusters(1,0);
+  FairTask* stsFindHits     = new CbmStsFindHits();
+  // ========================================================================
 
 
 
@@ -90,6 +97,8 @@ void sts_sim_single(Int_t nEvents = 10,
   run->SetField(magField);              // Magnetic field
   run->SetGenerator(primGen);           // Input generator
   run->AddTask(stsDigi);
+  run->AddTask(stsFindClusters);
+  run->AddTask(stsFindHits);
   run->Init();
   // ========================================================================
 

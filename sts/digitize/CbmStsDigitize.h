@@ -55,7 +55,7 @@ class CbmStsDigitize : public FairTask
    ** @param adc       Digitised charge [ADC channels]
    ** @param match    MC Match object
    **/
-  void CreateDigi(UInt_t address, ULong64_t time, UShort_t adc,
+  void CreateDigi(UInt_t address, Long64_t time, UShort_t adc,
   		            const CbmMatch& match);
 
 
@@ -111,8 +111,6 @@ class CbmStsDigitize : public FairTask
 
   /** Re-initialisation **/
   virtual InitStatus ReInit();
-
-
 
 
   /** Set percentage of dead channels in the modules **/
@@ -271,6 +269,19 @@ class CbmStsDigitize : public FairTask
 
   /** End-of-run action **/
   virtual void Finish();
+
+
+  /** Get event information
+   ** @param[out]  eventNumber  Number of MC event
+   ** @param[out]  inputNumber  Number of input
+   ** @param[out]  eventTime    Start time of event [ns]
+   **
+   ** In case of being run with FairRunAna, this information
+   ** is taken from FairEventHeader. If the task is run with
+   ** FairRunSim, the FairEventHeader is not filled, so the
+   ** respective information is taken from FairMCEventHeader.
+   **/
+  void GetEventInfo(Int_t& inputNr, Int_t& eventNr, Double_t& eventTime);
 
 
   /** Initialisation **/

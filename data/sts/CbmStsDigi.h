@@ -85,11 +85,11 @@ class CbmStsDigi : public CbmDigi
 #endif // for BOOST serialization
 
   UInt_t    fAddress;     ///< Unique detector address
-  ULong64_t fTime;        ///< Time [ns]
+  Long64_t  fTime;        ///< Time [ns]
   UShort_t  fCharge;      ///< Charge [ADC units]
 
 
-  ClassDef(CbmStsDigi,4);
+  ClassDef(CbmStsDigi,5);
 
 };
 

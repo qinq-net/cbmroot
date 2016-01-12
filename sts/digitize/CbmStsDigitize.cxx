@@ -25,8 +25,10 @@
 #include "FairField.h"
 #include "FairLink.h"
 #include "FairLogger.h"
+#include "FairMCEventHeader.h"
 #include "FairMCPoint.h"
 #include "FairRunAna.h"
+#include "FairRunSim.h"
 
 // Includes from CbmRoot
 #include "CbmDaqBuffer.h"
@@ -62,11 +64,11 @@ CbmStsDigitize::CbmStsDigitize(Int_t digiModel)
     fMode(0),
     fDigiModel(digiModel),
     fProcessSecondaries(kTRUE),
-    fDynRange(0.),
-    fThreshold(0.),
-    fNofAdcChannels(0),
-    fTimeResolution(0.),
-    fDeadTime(0.),
+    fDynRange(40960.),
+    fThreshold(4000.),
+    fNofAdcChannels(4096),
+    fTimeResolution(5.),
+    fDeadTime(9999999.),
     fNoise(0.),
     fDeadChannelFraction(0.),
     fStripPitch(-1.),
@@ -175,7 +177,7 @@ string CbmStsDigitize::BufferStatus2() const {
 
 // -----   Create a digi object   ------------------------------------------
 void CbmStsDigitize::CreateDigi(UInt_t address,
-		              							ULong64_t time,
+		              							Long64_t time,
 		              							UShort_t adc,
 		              							const CbmMatch& match) {
 
@@ -270,7 +272,7 @@ void CbmStsDigitize::Exec(Option_t* opt) {
   }
 
   // --- Event log
-  LOG(INFO) << "+ " << setw(20) << GetName() << ": event  " << setw(6)
+  LOG(INFO) << "+ " << setw(20) << GetName() << ": Event " << setw(6)
   		      << right << fNofEvents << ", real time " << fixed
   		      << setprecision(6) << fTimer.RealTime() << " s, points: "
   		      << fNofPoints << ", signals: " << fNofSignalsF << " / "
@@ -334,6 +336,38 @@ void CbmStsDigitize::Finish() {
 	LOG(INFO) << "Real time per event : " << fTimeTot / Double_t(fNofEvents)
 			      << " s" << FairLogger::endl;
 	LOG(INFO) << "=====================================" << FairLogger::endl;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Get event information   -----------------------------------------
+void CbmStsDigitize::GetEventInfo(Int_t& inputNr, Int_t& eventNr,
+		                              Double_t& eventTime) {
+
+
+	// --- In a FairRunAna, take the information from FairEventHeader
+	if ( FairRunAna::Instance() ) {
+		FairEventHeader* event = FairRunAna::Instance()->GetEventHeader();
+		assert ( event );
+	  inputNr   = event->GetInputFileId();
+	  eventNr   = event->GetMCEntryNumber();
+	  eventTime = event->GetEventTime();
+	}
+
+	// --- In a FairRunSim, the input number and event time are always zero;
+	// --- only the event number is retrieved.
+	else {
+		if ( ! FairRunSim::Instance() )
+			LOG(FATAL) << GetName() << ": neither SIM nor ANA run."
+					       << FairLogger::endl;
+		FairMCEventHeader* event = FairRunSim::Instance()->GetMCEventHeader();
+		assert ( event );
+		inputNr   = 0;
+		eventNr   = event->GetEventID();
+		eventTime = 0.;
+	}
+
 }
 // -------------------------------------------------------------------------
 
@@ -487,13 +521,12 @@ void CbmStsDigitize::ProcessAnalogBuffers(Double_t readoutTime) {
 void CbmStsDigitize::ProcessMCEvent() {
 
 	// --- MC Event info (input file, entry number, start time)
-	FairEventHeader* event = FairRun::Instance()->GetEventHeader();
-	assert ( event );
-	Int_t fileId       = event->GetInputFileId();
-	Int_t eventNr      = event->GetMCEntryNumber();
-	Double_t eventTime = event->GetEventTime();
+	Int_t    inputNr   = 0;
+	Int_t    eventNr   = 0;
+	Double_t eventTime = 0.;
+	GetEventInfo(inputNr, eventNr, eventTime);
 	LOG(DEBUG) << GetName() << ": Processing event " << eventNr
-			       << " from input " << fileId << " at t = " << eventTime
+			       << " from input " << inputNr << " at t = " << eventTime
 			       << " ns with " << fPoints->GetEntriesFast() << " StsPoints "
 			       << FairLogger::endl;
 
@@ -502,7 +535,7 @@ void CbmStsDigitize::ProcessMCEvent() {
 	assert ( fPoints );
   for (Int_t iPoint=0; iPoint<fPoints->GetEntriesFast(); iPoint++) {
   	const CbmStsPoint* point = (const CbmStsPoint*) fPoints->At(iPoint);
-  	CbmLink* link = new CbmLink(1., iPoint, eventNr, fileId);
+  	CbmLink* link = new CbmLink(1., iPoint, eventNr, inputNr);
 
   	// --- Discard secondaries if the respective flag is set
   	if ( ! fProcessSecondaries ) {
@@ -512,7 +545,6 @@ void CbmStsDigitize::ProcessMCEvent() {
   		if ( track->GetMotherId() >= 0 ) continue;
   	}
 
-  	LOG(DEBUG) << "Processing point" << FairLogger::endl;
   	ProcessPoint(point, eventTime, link);
   	fNofPoints++;
   	delete link;
