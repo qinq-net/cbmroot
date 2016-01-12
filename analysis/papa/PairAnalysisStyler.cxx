@@ -98,7 +98,7 @@ void PairAnalysisStyler::LoadStyle() {
     defaultSty->SetHatchesLineWidth(2); // hatches line width.
     defaultSty->SetHistLineColor(1);
     defaultSty->SetHistLineStyle(0);
-    defaultSty->SetHistLineWidth(3);
+    defaultSty->SetHistLineWidth(2);
     // defaultSty->SetLegoInnerR(Float_t rad = 0.5);
     defaultSty->SetHistMinimumZero();
     //    defaultSty->SetEndErrorSize(2);
@@ -290,6 +290,7 @@ void PairAnalysisStyler::Style(TObject *obj, Int_t idx) {
 
   // line attributes
   if (obj->InheritsFrom(TAttLine::Class())) {
+    //    printf("index %d for %s \n",idx,obj->GetName());
     if(idx>=100) { // predefined styles
       dynamic_cast<TAttLine*>(obj)->SetLineWidth(fWdt[idx-100]);
       dynamic_cast<TAttLine*>(obj)->SetLineStyle(fLne[idx-100]);
@@ -360,6 +361,7 @@ void PairAnalysisStyler::SetLegendAttributes(TLegend *leg, Bool_t fill)
   Double_t txtsze    = 0.04; //0.025; //gStyle->GetLegendTextSize());
   Double_t charwdth  = 0.01;//0.01; // own defintion
   Double_t entrysep  = 1.25;//1.25;  //entry seperation
+  leg->SetTextSize(txtsze); // this should switch off the autosize
 
   // calculate get legend width
   Double_t maxwdth=0.0;

@@ -97,7 +97,7 @@ TNamed("PairAnalysisHistos","PairAnalysis Histogram Container"),
   fMetaData(0x0),
   fList(0x0),
   fUsedVars(new TBits(PairAnalysisVarManager::kNMaxValues)),
-  fReservedWords(new TString),
+  fReservedWords(new TString("Hit;Track;Pair")),
   fPrecision(kFloat)
 {
   //
@@ -117,7 +117,7 @@ PairAnalysisHistos::PairAnalysisHistos(const char* name, const char* title) :
   fMetaData(0x0),
   fList(0x0),
   fUsedVars(new TBits(PairAnalysisVarManager::kNMaxValues)),
-  fReservedWords(new TString),
+  fReservedWords(new TString("Hit;Track;Pair")),
   fPrecision(kFloat)
 {
   //
@@ -946,6 +946,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   // if option contains 'leg(f)' a ('filled') legend will be created with the class name as caption
   // if option contains 'can' a new canvas is created
   // if option contains 'rebinx' the objects are rebinned by x (for x<10)
+  // if option contains 'rebinstat' the objects are rebinned to have < 10% stat uncertainty per bin
   // if option contains 'norm' the objects are normalized to 1
   // if option contains 'events' use meta data to normalize
   // if option contains 'logx,y,z' the axis are plotted in log
@@ -989,6 +990,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   Bool_t optLeg      =optString.Contains("leg");       optString.ReplaceAll("leg","");
   Bool_t optDet      =optString.Contains("det");       optString.ReplaceAll("det","");
   Bool_t optMeta     =optString.Contains("meta");      optString.ReplaceAll("meta","");
+  Bool_t optRbnStat  =optString.Contains("rebinstat"); optString.ReplaceAll("rebinstat","");
   Bool_t optRbn      =optString.Contains("rebin");
   Bool_t optSclMax   =optString.Contains("sclmax");    optString.ReplaceAll("sclmax","");
   Bool_t optNormY    =optString.Contains("normy");      optString.ReplaceAll("normy","");
@@ -1147,6 +1149,12 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	}
 	h->Divide(hsum);
 	delete hsum;
+      }
+      if(optRbnStat) {
+	TArrayD* limits = PairAnalysisHelper::MakeStatBinLimits(h,0.8);
+	h=h->Rebin(limits->GetSize()-1,h->GetName(),limits->GetArray());
+	h->Scale(1.,"width");
+	delete limits;
       }
 
       // set title

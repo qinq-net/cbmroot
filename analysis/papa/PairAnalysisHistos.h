@@ -47,16 +47,16 @@ class TList;
 // class TVectorT<double>;
 
 /////// temporary class to hold functions in thnbase (not implemented therein)
-class PairAnalysisHn : public THnSparseD {
+class PairAnalysisHn : public THnSparseF {
  public:
   TList           *GetListOfFunctions() const { return fFunctions; }
   inline PairAnalysisHn() : 
-    THnSparseD(),
+    THnSparseF(),
     fFunctions(new TList) {  }
   inline PairAnalysisHn(const char* name, const char* title,
 			Int_t dim, const Int_t* nbins, const Double_t* xmin = 0, const Double_t* xmax = 0,
 			Int_t chunksize = 1024 * 16) :
-    THnSparseD(name,title,dim,nbins,xmin,xmax,chunksize),
+    THnSparseF(name,title,dim,nbins,xmin,xmax,chunksize),
     fFunctions(new TList) {  }
 
   inline ~PairAnalysisHn() {
@@ -81,7 +81,7 @@ class PairAnalysisHn : public THnSparseD {
  private:
   PairAnalysisHn(const PairAnalysisHn &hist);
   PairAnalysisHn& operator = (const PairAnalysisHn &hist);
-  ClassDef(PairAnalysisHn,1)
+  ClassDef(PairAnalysisHn,2)
 };
 ClassImp(PairAnalysisHn)
 //// end temporary solution
