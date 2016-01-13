@@ -60,7 +60,7 @@
       hRocEpochLossCntEvo_000->Draw("same");
    } // if( 0 < hRocEpochLossCntEvo_000->GetEntries() )
    legA->Draw();
-
+/*
    cUnpTimeEvo->cd( 2);
    TH1 *frameB = gPad->DrawFrame(dStartTime, dMinY, dStopTime, dMaxY);
    frameB->SetTitle("ROC #1");
@@ -104,7 +104,7 @@
       hRocEpochLossCntEvo_001->Draw("same");
    } // if( 0 < hRocEpochLossCntEvo_001->GetEntries() )
    legB->Draw();
-
+*/
    cUnpTimeEvo->cd( 3);
    gPad->SetLogy();
    (hMsSizeEvo->GetXaxis())->SetRangeUser(dStartTime, dStopTime);
@@ -295,7 +295,7 @@
    hRocDataLossCntEvo_000->SetLineColor( kBlue );
    hRocDataLossCntEvo_000->Draw("same");
 */
-
+/*
    c24bEpochFlags->cd( 3);
    THStack* stackRoc001 = new THStack();
    stackRoc001->Add(hRocEpochMissmCntEvo_001 );
@@ -308,7 +308,7 @@
    leg24bRoc001->AddEntry(hRocEpochLossCntEvo_001,  hRocEpochLossCntEvo_001->GetTitle(), "L");
    leg24bRoc001->AddEntry(hRocDataLossCntEvo_001,   hRocDataLossCntEvo_001->GetTitle(), "L");
    leg24bRoc001->Draw();
-
+*/
 /*
    hRocEpochMissmCntEvo_001->SetLineColor( kBlack );
    hRocEpochMissmCntEvo_001->Draw("");
@@ -317,21 +317,27 @@
    hRocDataLossCntEvo_001->SetLineColor( kBlue );
    hRocDataLossCntEvo_001->Draw("same");
 */
-/*
+
    TCanvas *cInlDnl= new TCanvas("cInlDnl", "INL DNL for FEE A");
    cInlDnl->Divide(2, 2);
 
    cInlDnl->cd( 1);
+//   hPulserFeeDnl->GetXaxis()->SetRangeUser(-0.5, 3.5);
    hPulserFeeDnl->Draw("colz");
 
    cInlDnl->cd( 2);
+//   hPulserFeeInl->GetXaxis()->SetRangeUser(-0.5, 3.5);
    hPulserFeeInl->Draw("colz");
-
+/*
    cInlDnl->cd( 3);
-   hPulserFeeTotDnl->Draw("colz");
+//   hPulserFeeTotDnl->GetXaxis()->SetRangeUser(-0.5, 3.5);
+   if( 0 < hPulserFeeTotDnl->GetEntries() )
+      hPulserFeeTotDnl->Draw("colz");
 
    cInlDnl->cd( 4);
-   hPulserFeeTotInl->Draw("colz");
+//   hPulserFeeTotInl->GetXaxis()->SetRangeUser(-0.5, 3.5);
+   if( 0 < hPulserFeeTotInl->GetEntries() )
+      hPulserFeeTotInl->Draw("colz");
 */
 
    TCanvas *cErrorProp = new TCanvas("cErrorProp", "Error over hit proportions");
