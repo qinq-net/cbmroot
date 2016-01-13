@@ -39,7 +39,7 @@ Bool_t PlotFtEdgesRatio( UInt_t uChannel = 0 )
 
    // Ratios of the total counts of rising/falling edges per chanl
    TH1* hEdgesDiffAll = projRisingEdgeAll->Clone( "hEdgesRatio_all_diff" );
-   hEdgesDiffAll->SetTitle( "Ratio of Falling over Rising edges totals for each channel" );
+   hEdgesDiffAll->SetTitle( "Difference of Falling minus Rising edges totals for each channel" );
    (hEdgesDiffAll->GetYaxis())->SetTitle( "Diff F/R []");
 
    hEdgesDiffAll->Reset();
@@ -47,7 +47,7 @@ Bool_t PlotFtEdgesRatio( UInt_t uChannel = 0 )
 
    // Ratio of the counts of rising/falling edges for each FT bin of the selected channel
    TH1* hEdgesDiff = projRisingEdge->Clone( Form("hEdgesRatio_ch%02u_diff", uChannel) );
-   hEdgesDiff->SetTitle( Form("Ratio of Falling over Rising edges per FT bin for channel %02u", uChannel) );
+   hEdgesDiff->SetTitle( Form("Difference of Falling minus Rising edges per FT bin for channel %02u", uChannel) );
    (hEdgesDiff->GetYaxis())->SetTitle( "Diff F/R []");
 
    hEdgesDiff->Reset();
@@ -64,15 +64,21 @@ Bool_t PlotFtEdgesRatio( UInt_t uChannel = 0 )
 
    cFtEdgesRatio->cd(3);
    hEdgesDiffAll->Draw("htext");
-//   projFallingEdge->Draw("htext");
 
    cFtEdgesRatio->cd(4);
-   hEdgesDiff->Draw();
-//   projRisingEdge->Draw("htext");
+//   hEdgesDiff->Draw();
+   THStack * stackFt = new THStack();
+   hEdgesDiff->SetLineColor(kViolet);
+   projRisingEdge->SetLineColor( kBlack);
+   projFallingEdge->SetLineColor( kRed);
+   stackFt->Add(hEdgesDiff);
+   stackFt->Add(projFallingEdge);
+   stackFt->Add(projRisingEdge);
+   stackFt->Draw("nostack,h");
 
-/*
-   TH2* hInputRisCt = hFtDistribFeeRis;
-   TH2* hInputFalCt = hFtDistribFeeFal;
+   /* counts per CT bin Rising/Falling comparison */
+   TH2* hInputRisCt = hPulserFeeRisCtWideBins;
+   TH2* hInputFalCt = hPulserFeeFalCtWideBins;
 
    TH1* projRisingEdgeAllCt  = hInputRisCt->ProjectionX( "projRisingEdgeAllCt" );
 
@@ -91,46 +97,52 @@ Bool_t PlotFtEdgesRatio( UInt_t uChannel = 0 )
    hEdgesRatioAllCt->Divide( projFallingEdgeAllCt, projRisingEdgeAllCt, 100.0);
 
    // Ratio of the counts of rising/falling edges for each FT bin of the selected channel
-   TH1* hEdgesRatio = projRisingEdge->Clone( Form("hEdgesRatio_ch%02u", uChannel) );
-   hEdgesRatio->SetTitle( Form("Ratio of Falling over Rising edges per FT bin for channel %02u", uChannel) );
-   (hEdgesRatio->GetYaxis())->SetTitle( "Ratio F/R [\%]");
+   TH1* hEdgesRatioCt = projRisingEdgeCt->Clone( Form("hEdgesRatioCt_ch%02u", uChannel) );
+   hEdgesRatioCt->SetTitle( Form("Ratio of Falling over Rising edges per FT bin for channel %02u", uChannel) );
+   (hEdgesRatioCt->GetYaxis())->SetTitle( "Ratio F/R [\%]");
 
-   hEdgesRatio->Reset();
-   hEdgesRatio->Divide( projFallingEdge, projRisingEdge, 100.0);
+   hEdgesRatioCt->Reset();
+   hEdgesRatioCt->Divide( projFallingEdgeCt, projRisingEdgeCt, 100.0);
 
    // Ratios of the total counts of rising/falling edges per chanl
-   TH1* hEdgesDiffAll = projRisingEdgeAll->Clone( "hEdgesRatio_all_diff" );
-   hEdgesDiffAll->SetTitle( "Ratio of Falling over Rising edges totals for each channel" );
-   (hEdgesDiffAll->GetYaxis())->SetTitle( "Diff F/R []");
+   TH1* hEdgesDiffAllCt = projRisingEdgeAllCt->Clone( "hEdgesRatio_allCt_diff" );
+   hEdgesDiffAllCt->SetTitle( "Difference of Falling minus Rising edges totals for each channel" );
+   (hEdgesDiffAllCt->GetYaxis())->SetTitle( "Diff F/R []");
 
-   hEdgesDiffAll->Reset();
-   hEdgesDiffAll->Add( projFallingEdgeAll, projRisingEdgeAll, -1.0);
+   hEdgesDiffAllCt->Reset();
+   hEdgesDiffAllCt->Add( projFallingEdgeAllCt, projRisingEdgeAllCt, -1.0);
 
    // Ratio of the counts of rising/falling edges for each FT bin of the selected channel
-   TH1* hEdgesDiff = projRisingEdge->Clone( Form("hEdgesRatio_ch%02u_diff", uChannel) );
-   hEdgesDiff->SetTitle( Form("Ratio of Falling over Rising edges per FT bin for channel %02u", uChannel) );
-   (hEdgesDiff->GetYaxis())->SetTitle( "Diff F/R []");
+   TH1* hEdgesDiffCt = projRisingEdgeCt->Clone( Form("hEdgesRatioCt_ch%02u_diff", uChannel) );
+   hEdgesDiffCt->SetTitle( Form("Difference of Falling minus Rising edges per FT bin for channel %02u", uChannel) );
+   (hEdgesDiffCt->GetYaxis())->SetTitle( "Diff F/R []");
 
-   hEdgesDiff->Reset();
-   hEdgesDiff->Add( projFallingEdge, projRisingEdge, -1.0);
+   hEdgesDiffCt->Reset();
+   hEdgesDiffCt->Add( projFallingEdgeCt, projRisingEdgeCt, -1.0);
 
-   TCanvas *cFtEdgesRatio= new TCanvas("cFtEdgesRatio", "Ratio of Falling over Rising edges per FT bin");
-   cFtEdgesRatio->Divide(2, 2);
+   TCanvas *cFtEdgesRatioCt= new TCanvas("cFtEdgesRatioCt", "Ratio of Falling over Rising edges per Ct bin");
+   cFtEdgesRatioCt->Divide(2, 2);
 
-   cFtEdgesRatio->cd(1);
-   hEdgesRatioAll->Draw("htext");
+   cFtEdgesRatioCt->cd(1);
+   hEdgesRatioAllCt->Draw("htext");
 
-   cFtEdgesRatio->cd(2);
-   hEdgesRatio->Draw();
+   cFtEdgesRatioCt->cd(2);
+   hEdgesRatioCt->Draw();
 
-   cFtEdgesRatio->cd(3);
-   hEdgesDiffAll->Draw("htext");
-//   projFallingEdge->Draw("htext");
+   cFtEdgesRatioCt->cd(3);
+   hEdgesDiffAllCt->Draw("htext");
 
-   cFtEdgesRatio->cd(4);
-   hEdgesDiff->Draw();
-//   projRisingEdge->Draw("htext");
-*/
+   cFtEdgesRatioCt->cd(4);
+  // hEdgesDiffCt->Draw();
+   THStack * stackCt = new THStack();
+   hEdgesDiffCt->SetLineColor(kViolet);
+   projRisingEdgeCt->SetLineColor( kBlack);
+   projFallingEdgeCt->SetLineColor( kRed);
+   stackCt->Add(hEdgesDiffCt);
+   stackCt->Add(projFallingEdgeCt);
+   stackCt->Add(projRisingEdgeCt);
+   stackCt->Draw("nostack,h");
+
 
    return kTRUE;
 }
