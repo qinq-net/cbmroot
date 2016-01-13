@@ -197,6 +197,8 @@ CbmGet4FastMonitor::CbmGet4FastMonitor()
   fvmLastOldTot(),
   fhPulserFeeTotDnl(NULL),
   fhPulserFeeTotInl(NULL),
+  fhPulserFeeRisCtWideBins(NULL),
+  fhPulserFeeFalCtWideBins(NULL),
   fhPulserFeeTotDistCT(),
   fvuPrevOldTotEp(),
   fvmPrevOldTot(),
@@ -219,6 +221,7 @@ CbmGet4FastMonitor::CbmGet4FastMonitor()
   fvbChanSecondHit(),
   fvbChanThirdHit(),
   fvdChanFirstHitTot(),
+  fbHistoWriteDone(kFALSE),
   fbEnaCalibOutput(kFALSE),
   fsCalibOutFoldername(""),
   fsCalibFilename(""),
@@ -584,7 +587,12 @@ void CbmGet4FastMonitor::Reset()
 
 void CbmGet4FastMonitor::Finish()
 {
-   WriteMonitorHistograms();
+   if( kFALSE == fbHistoWriteDone )
+   {
+      WriteMonitorHistograms();
+      fbHistoWriteDone = kTRUE;
+   } // if( kFALSE == fbHistoWriteDone )
+      else LOG(ERROR)<<"CbmGet4FastMonitor::Finish => WriteMonitorHistograms already called once in this run, therefore ignore it"<<FairLogger::endl;
    if( kTRUE == fbEnaCalibOutput )
       WriteCalibrationFile();
    DeleteMonitorHistograms();
@@ -1157,6 +1165,15 @@ void CbmGet4FastMonitor::InitMonitorHistograms()
             kuNbChanFee, -0.5, kuNbChanFee - 0.5,
             get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
 
+      fhPulserFeeRisCtWideBins = new TH2D( "hPulserFeeRisCtWideBins",
+            "CT for all Rising edge channels in chosen FEE board; Chan # ; CT Bin; counts []",
+            kuNbChanFee, -0.5, kuNbChanFee - 0.5,
+            get4v1x::kuCoarseCounterSize/10 + 1,  -5, get4v1x::kuCoarseCounterSize + 5);
+      fhPulserFeeFalCtWideBins = new TH2D( "hPulserFeeFalCtWideBins",
+            "CT for all Falling edge channels in chosen FEE board; Chan # ; CT Bin; counts []",
+            kuNbChanFee, -0.5, kuNbChanFee - 0.5,
+            get4v1x::kuCoarseCounterSize/10 + 1,  -5, get4v1x::kuCoarseCounterSize + 5);
+
       fhPulserFeeTotDistCT.resize( kuNbChipFee );
       for( UInt_t uChip = 0; uChip < kuNbChipFee; uChip ++)
          fhPulserFeeTotDistCT[uChip] = new TH2D( Form("fhPulserFeeTotDistCT_chip%03u", uChip),
@@ -1426,13 +1443,17 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
                continue;
             } //  if( 0 == fhTimeResFee[uHistoFeeIdx]->Integral() )
 
+            Double_t dFitLimit = fhTimeResFee[uHistoFeeIdx]->GetRMS();
+            if( dFitLimit < get4v1x::kdBinSize )
+               dFitLimit = get4v1x::kdBinSize;
+
             fitFunc[uHistoFeeIdx] = new TF1( Form("f_%03d_%03d",uChanFeeA,uChanFeeB), "gaus",
-                  fhTimeResFee[uHistoFeeIdx]->GetMean() - 5*fhTimeResFee[uHistoFeeIdx]->GetRMS() ,
-                  fhTimeResFee[uHistoFeeIdx]->GetMean() + 5*fhTimeResFee[uHistoFeeIdx]->GetRMS());
+                  fhTimeResFee[uHistoFeeIdx]->GetMean() - 5*dFitLimit ,
+                  fhTimeResFee[uHistoFeeIdx]->GetMean() + 5*dFitLimit);
             // Fix the Mean fit value around the Histogram Mean
             fitFunc[uHistoFeeIdx]->SetParameter( 0, fhTimeResFee[uHistoFeeIdx]->Integral());
             fitFunc[uHistoFeeIdx]->FixParameter( 1, fhTimeResFee[uHistoFeeIdx]->GetMean() );
-            fitFunc[uHistoFeeIdx]->SetParameter( 2, fhTimeResFee[uHistoFeeIdx]->GetRMS() );
+            fitFunc[uHistoFeeIdx]->SetParameter( 2, 2*dFitLimit );
 //            fitFunc[uHistoFeeIdx]->SetParLimits(1,
 //                  fhTimeResFee[uHistoFeeIdx]->GetMean() - 3,
 //                  fhTimeResFee[uHistoFeeIdx]->GetMean() + 3 );
@@ -1473,13 +1494,17 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
                   continue;
                } //  if( 0 == fhTimeResFeeB[uHistoFeeIdx]->Integral() )
 
+               Double_t dFitLimit = fhTimeResFeeB[uHistoFeeIdxB]->GetRMS();
+               if( dFitLimit < get4v1x::kdBinSize )
+                  dFitLimit = get4v1x::kdBinSize;
+
                fitFuncB[uHistoFeeIdxB] = new TF1( Form("fB_%03d_%03d",uChanFeeA,uChanFeeB), "gaus",
-                     fhTimeResFeeB[uHistoFeeIdxB]->GetMean() - 5*fhTimeResFeeB[uHistoFeeIdxB]->GetRMS() ,
-                     fhTimeResFeeB[uHistoFeeIdxB]->GetMean() + 5*fhTimeResFeeB[uHistoFeeIdxB]->GetRMS());
+                     fhTimeResFeeB[uHistoFeeIdxB]->GetMean() - 5*dFitLimit ,
+                     fhTimeResFeeB[uHistoFeeIdxB]->GetMean() + 5*dFitLimit);
                // Fix the Mean fit value around the Histogram Mean
                fitFuncB[uHistoFeeIdxB]->SetParameter( 0, fhTimeResFeeB[uHistoFeeIdxB]->Integral() );
                fitFuncB[uHistoFeeIdxB]->FixParameter( 1, fhTimeResFeeB[uHistoFeeIdxB]->GetMean() );
-               fitFuncB[uHistoFeeIdxB]->SetParameter( 2, fhTimeResFeeB[uHistoFeeIdxB]->GetRMS() );
+               fitFuncB[uHistoFeeIdxB]->SetParameter( 2, 2*dFitLimit );
 //               fitFuncB[uHistoFeeIdxB]->SetParLimits(1,
 //                     fhTimeResFeeB[uHistoFeeIdxB]->GetMean() - 3,
 //                     fhTimeResFeeB[uHistoFeeIdxB]->GetMean() + 3 );
@@ -1515,13 +1540,17 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
                   continue;
                } //  if( 0 == fhTimeResFeeAB[uHistoFeeIdx]->Integral() )
 
+               Double_t dFitLimit = fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetRMS();
+               if( dFitLimit < get4v1x::kdBinSize )
+                  dFitLimit = get4v1x::kdBinSize;
+
                fitFuncAB[uChanFeeA*kuNbChanFee + uChanFeeB] = new TF1( Form("fAB_%03d_%03d",uChanFeeA,uChanFeeB), "gaus",
-                     fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetMean() - 5*fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetRMS() ,
-                     fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetMean() + 5*fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetRMS());
+                     fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetMean() - 5*dFitLimit ,
+                     fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetMean() + 5*dFitLimit );
                // Fix the Mean fit value around the Histogram Mean
                fitFuncAB[uChanFeeA*kuNbChanFee + uChanFeeB]->SetParameter( 0, fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->Integral() );
                fitFuncAB[uChanFeeA*kuNbChanFee + uChanFeeB]->FixParameter( 1, fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetMean() );
-               fitFuncAB[uChanFeeA*kuNbChanFee + uChanFeeB]->SetParameter( 2, fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetRMS() );
+               fitFuncAB[uChanFeeA*kuNbChanFee + uChanFeeB]->SetParameter( 2, 2*dFitLimit );
 //               fitFuncAB[uChanFeeA*kuNbChanFee + uChanFeeB]->SetParLimits(1,
 //                     fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetMean() - 3,
 //                     fhTimeResFeeAB[uChanFeeA*kuNbChanFee + uChanFeeB]->GetMean() + 3 );
@@ -1579,13 +1608,17 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
             continue;
          } //  if( 0 == fhTimeResFee[uHistoFeeIdx]->Integral() )
 
+         Double_t dFitLimit = fhTimeResPairs[uChanA]->GetRMS();
+         if( dFitLimit < get4v1x::kdBinSize )
+            dFitLimit = get4v1x::kdBinSize;
+
          fitFuncPairs[uChanA] = new TF1( Form("fPair_%03d_%03d",uChanA, uChanA+1), "gaus",
-               fhTimeResPairs[uChanA]->GetMean() - 5*fhTimeResPairs[uChanA]->GetRMS() ,
-               fhTimeResPairs[uChanA]->GetMean() + 5*fhTimeResPairs[uChanA]->GetRMS());
+               fhTimeResPairs[uChanA]->GetMean() - 5*dFitLimit ,
+               fhTimeResPairs[uChanA]->GetMean() + 5*dFitLimit);
          // Fix the Mean fit value around the Histogram Mean
          fitFuncPairs[uChanA]->SetParameter( 0, fhTimeResPairs[uChanA]->Integral());
          fitFuncPairs[uChanA]->FixParameter( 1, fhTimeResPairs[uChanA]->GetMean() );
-         fitFuncPairs[uChanA]->SetParameter( 2, fhTimeResPairs[uChanA]->GetRMS() );
+         fitFuncPairs[uChanA]->SetParameter( 2, 2*dFitLimit );
 //         fitFuncPairs[uChanA]->SetParLimits(1,
 //               fhTimeResPairs[uChanA]->GetMean() - 3,
 //               fhTimeResPairs[uChanA]->GetMean() + 3 );
@@ -1621,13 +1654,17 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
                continue;
             } //  if( 0 == fhTimeResFee[uHistoFeeIdx]->Integral() )
 
+            dFitLimit = fhTimeResCombi[uHistoCombiIdx]->GetRMS();
+            if( dFitLimit < get4v1x::kdBinSize )
+               dFitLimit = get4v1x::kdBinSize;
+
             fitFuncCombi[uHistoCombiIdx] = new TF1( Form("fCombi_%03d_%03d",uChanA, uChanB), "gaus",
-                  fhTimeResCombi[uHistoCombiIdx]->GetMean() - 5*fhTimeResCombi[uHistoCombiIdx]->GetRMS() ,
-                  fhTimeResCombi[uHistoCombiIdx]->GetMean() + 5*fhTimeResCombi[uHistoCombiIdx]->GetRMS());
+                  fhTimeResCombi[uHistoCombiIdx]->GetMean() - 5*dFitLimit ,
+                  fhTimeResCombi[uHistoCombiIdx]->GetMean() + 5*dFitLimit);
             // Fix the Mean fit value around the Histogram Mean
             fitFuncCombi[uHistoCombiIdx]->SetParameter( 0, fhTimeResCombi[uHistoCombiIdx]->Integral());
             fitFuncCombi[uHistoCombiIdx]->FixParameter( 1, fhTimeResCombi[uHistoCombiIdx]->GetMean() );
-            fitFuncCombi[uHistoCombiIdx]->SetParameter( 2, fhTimeResCombi[uHistoCombiIdx]->GetRMS() );
+            fitFuncCombi[uHistoCombiIdx]->SetParameter( 2, 2*dFitLimit );
 //            fitFuncCombi[uHistoCombiIdx]->SetParLimits(1,
 //                  fhTimeResCombi[uHistoCombiIdx]->GetMean() - 3,
 //                  fhTimeResCombi[uHistoCombiIdx]->GetMean() + 3 );
@@ -1663,6 +1700,11 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
       fhPulserHitDistNs->Write();
       fhPulserHitDistUs->Write();
       fhPulserHitDistMs->Write();
+
+      // Write the raw count per FT bin histograms to file
+      TH2 * hFtDistribFeeRis = (TH2*)(fhPulserFeeDnl->Clone("hFtDistribFeeRis"));
+      hFtDistribFeeRis->Write();
+      delete hFtDistribFeeRis;
 
       // Compute the DNL from the bins occupancy
       for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
@@ -1719,6 +1761,16 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
       if( kTRUE == fbOldReadoutOk )
       {
          fhGet4ChanTotCount->Write();
+
+         // Write the raw count per FT bin histograms to file
+         TH2 * hFtDistribFeeFal = (TH2*)(fhPulserFeeTotDnl->Clone("hFtDistribFeeFal"));
+         hFtDistribFeeFal->Write();
+         delete hFtDistribFeeFal;
+
+         // Write the raw count per CT bin histograms to file
+         fhPulserFeeRisCtWideBins->Write();
+         fhPulserFeeFalCtWideBins->Write();
+
 
          // Compute the DNL from the bins occupancy
          for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
@@ -2434,6 +2486,7 @@ void CbmGet4FastMonitor::MonitorMessage_get4(   get4v1x::Message mess, uint16_t 
             fhPulserFeeTotDnl->Fill( uFullChId%kuNbChanFee, uTimeStamp & get4v1x::kuFineTime );
 
             // Fill the CT histo
+            fhPulserFeeFalCtWideBins->Fill( uFullChId%kuNbChanFee, mess.getGet4CoarseTs() );
             fhPulserFeeTotDistCT[ uChipFullId%kuNbChipFee ]->Fill( mess.getGet4CoarseTs(), mess.getGet4ChNum());
          } // if( fuPulserFee == (uFullChId/kuNbChanFee) )
       } // if( 1 == mess.getGet4Edge() )
@@ -2479,6 +2532,7 @@ void CbmGet4FastMonitor::MonitorMessage_get4(   get4v1x::Message mess, uint16_t 
                fhPulserFeeDnl->Fill( uFullChId%kuNbChanFee, uTimeStamp & get4v1x::kuFineTime );
 
                // Fill the CT histo
+               fhPulserFeeRisCtWideBins->Fill( uFullChId%kuNbChanFee, mess.getGet4CoarseTs() );
                fhPulserFeeDistCT[ uChipFullId%kuNbChipFee ]->Fill( mess.getGet4CoarseTs(), mess.getGet4ChNum());
             } // if( fuPulserFee == (uFullChId/kuNbChanFee) )
          } // else of if( 1 == mess.getGet4Edge() )

@@ -237,6 +237,8 @@ private:
      //
   TH2 * fhPulserFeeTotDnl;
   TH2 * fhPulserFeeTotInl;
+  TH2 * fhPulserFeeRisCtWideBins;
+  TH2 * fhPulserFeeFalCtWideBins;
   std::vector<TH2 *> fhPulserFeeTotDistCT;
   //--------------------------------------------------------------//
   std::vector< UInt_t >           fvuPrevOldTotEp; //! Epoch of previous TOT message (one per GET4 chip & channel)
@@ -277,6 +279,7 @@ private:
   void FillMonitorHistograms();
   void WriteMonitorHistograms();
   void DeleteMonitorHistograms();
+  Bool_t fbHistoWriteDone;
 
   // Finetime calibration members and method
   Bool_t  fbEnaCalibOutput;
