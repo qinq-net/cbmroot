@@ -858,4 +858,3 @@ Bool_t CbmAnaConversionTest::HasRichInd(Int_t gtIndex)
 	
 	//return true;
 }
-

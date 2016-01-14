@@ -822,4 +822,3 @@ Double_t CbmAnaConversionKF::OpeningAngleBetweenPhotons(KFParticle part1, KFPart
 
 	return theta;
 }
-

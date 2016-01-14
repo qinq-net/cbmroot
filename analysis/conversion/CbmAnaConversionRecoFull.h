@@ -64,6 +64,9 @@ public:
 	void CombinePhotons();
 	
 	void MixedEventTest();
+	void MixedEventTest2();
+	void MixedEventTest3();
+	void MixedEventTest4();
 
 private:
 	TClonesArray* fRichPoints;
@@ -260,8 +263,33 @@ private:
 
 
 	// test with mixed event method for estimation of invariant mass background
-	vector<TVector3>	fMixedEventsElectrons[5];
-	TH1D *				fhMixedEventsTest_invmass[5];
+		// test1
+	vector<TVector3>		fMixedEventsElectrons[5];
+	vector<CbmGlobalTrack*>	fMixedEventsElectrons_gtrack[5];
+	TH1D *					fhMixedEventsTest_invmass[5];
+	
+		// test2
+	vector<TVector3>		fMixedEventsElectrons_list1;
+	vector<TVector3>		fMixedEventsElectrons_list2;
+	vector<TVector3>		fMixedEventsElectrons_list3;
+	vector<TVector3>		fMixedEventsElectrons_list4;
+	vector<CbmGlobalTrack*>	fMixedEventsElectrons_list1_gtrack;
+	vector<CbmGlobalTrack*>	fMixedEventsElectrons_list2_gtrack;
+	vector<CbmGlobalTrack*>	fMixedEventsElectrons_list3_gtrack;
+	vector<CbmGlobalTrack*>	fMixedEventsElectrons_list4_gtrack;
+	TH1D *					fhMixedEventsTest2_invmass;
+	
+		// test3
+	vector<TVector3>		fMixedTest3_momenta;
+	vector<CbmGlobalTrack*>	fMixedTest3_gtrack;
+	vector<int>				fMixedTest3_eventno;
+	Int_t					globalEventNo;
+	TH1D *					fhMixedEventsTest3_invmass;
+	
+		// test4
+	vector< vector<TVector3> >	fMixedTest4_photons;
+	vector<int>					fMixedTest4_eventno;
+	TH1D *						fhMixedEventsTest4_invmass;
 
 	// timer
 	TStopwatch timer;
@@ -274,4 +302,3 @@ private:
 };
 
 #endif
-

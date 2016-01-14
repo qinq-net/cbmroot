@@ -95,6 +95,7 @@ private:
 	
 	TH1I * fh2Electrons_angle_CUTcomparison_withRICH;
 	TH1I * fh2Electrons_angle_CUTcomparison_withRICH_chi;
+	TH1I * fh2Electrons_angle_CUTcomparison_withRICH_withChi;
 
 
 	// distribution of invariant masses from reconstructed momenta

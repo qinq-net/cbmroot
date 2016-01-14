@@ -30,6 +30,7 @@
 #include "L1Field.h"
 #include "../../littrack/cbm/elid/CbmLitGlobalElectronId.h"
 #include "CbmAnaConversionKinematicParams.h"
+#include "CbmAnaConversionCutSettings.h"
 
 
 #define M2E 2.6112004954086e-7
@@ -232,6 +233,7 @@ void CbmAnaConversionRecoFull::Init()
 	electronidentifier = new CbmLitGlobalElectronId();
 	electronidentifier->Init();
 
+	globalEventNo = 0;
 }
 
 
@@ -534,11 +536,19 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fHistoList_recofull_new[i].push_back(fhMixedEventsTest_invmass[i]);
 	}
 
+	fhMixedEventsTest2_invmass = new TH1D(Form("fhMixedEventsTest2_invmass_%i",4), Form("fhMixedEventsTest2_invmass_%i; invariant mass; #",4), 600, -0.0025, 2.9975);
+	fHistoList_recofull_new[4].push_back(fhMixedEventsTest2_invmass);
+	fhMixedEventsTest3_invmass = new TH1D(Form("fhMixedEventsTest3_invmass_%i",4), Form("fhMixedEventsTest3_invmass_%i; invariant mass; #",4), 600, -0.0025, 2.9975);
+	fHistoList_recofull_new[4].push_back(fhMixedEventsTest3_invmass);
+	fhMixedEventsTest4_invmass = new TH1D(Form("fhMixedEventsTest4_invmass_%i",4), Form("fhMixedEventsTest4_invmass_%i; invariant mass; #",4), 600, -0.0025, 2.9975);
+	fHistoList_recofull_new[4].push_back(fhMixedEventsTest4_invmass);
 }
 
 
 void CbmAnaConversionRecoFull::Finish()
 {
+
+
 	gDirectory->mkdir("RecoFull");
 	gDirectory->cd("RecoFull");
 	
@@ -593,6 +603,7 @@ void CbmAnaConversionRecoFull::Exec()
 {
 	timer.Start();
 
+	globalEventNo++;
 
 	if (fPrimVertex != NULL){
 		fKFVertex = CbmKFVertex(*fPrimVertex);
@@ -639,11 +650,25 @@ void CbmAnaConversionRecoFull::Exec()
 		fElectrons_mctrackID_new[i].clear();
 		fVector_photons_pairs_new[i].clear();
 		
-		if(fMixedEventsElectrons[i].size() > 10) {
+		while(fMixedEventsElectrons[i].size() > 20) {
 			fMixedEventsElectrons[i].erase(fMixedEventsElectrons[i].begin() );
+			fMixedEventsElectrons_gtrack[i].erase(fMixedEventsElectrons_gtrack[i].begin() );
 		}
 	}
 
+
+	// execution each 20/100 events (i.e. accumulation of data over 20/100 events)
+	if(globalEventNo%20 == 0) {
+		MixedEventTest3();
+		fMixedTest3_momenta.clear();
+		fMixedTest3_gtrack.clear();
+		fMixedTest3_eventno.clear();
+	}
+	if(globalEventNo%200 == 0) {
+		MixedEventTest4();
+		fMixedTest4_photons.clear();
+		fMixedTest4_eventno.clear();
+	}
 
 	
 	fElectrons_track_refit.clear();
@@ -756,6 +781,7 @@ void CbmAnaConversionRecoFull::Exec()
 			
 			if(FilledMixedEventElectron < 5) {
 				fMixedEventsElectrons[1].push_back(refittedMomentum);
+				fMixedEventsElectrons_gtrack[1].push_back(gTrack);
 				FilledMixedEventElectron++;
 			}
 			
@@ -782,6 +808,7 @@ void CbmAnaConversionRecoFull::Exec()
 			
 				if(FilledMixedEventElectron < 5) {
 					fMixedEventsElectrons[2].push_back(refittedMomentum);
+					fMixedEventsElectrons_gtrack[2].push_back(gTrack);
 					FilledMixedEventElectron++;
 				}
 			}
@@ -837,9 +864,9 @@ void CbmAnaConversionRecoFull::Exec()
 			
 			if(FilledMixedEventElectron < 5) {
 				fMixedEventsElectrons[3].push_back(refittedMomentum);
+				fMixedEventsElectrons_gtrack[3].push_back(gTrack);
 				FilledMixedEventElectron++;
 			}
-			
 			if(result_chi <= chiCut) {
 				nofElectrons_4++;
 				fElectrons_track_4.push_back(gTrack);
@@ -854,10 +881,16 @@ void CbmAnaConversionRecoFull::Exec()
 				//fElectrons_mctrackID_1.push_back(richMcTrackId);
 				fElectrons_mctrackID_new[4].push_back(stsMcTrackId);
 			
-				if(FilledMixedEventElectron < 5) {
+				// for event mixing technique
+				if(FilledMixedEventElectron < 5) {	// test1
 					fMixedEventsElectrons[4].push_back(refittedMomentum);
+					fMixedEventsElectrons_gtrack[4].push_back(gTrack);
 					FilledMixedEventElectron++;
 				}
+					// test3
+				fMixedTest3_momenta.push_back(refittedMomentum);
+				fMixedTest3_gtrack.push_back(gTrack);
+				fMixedTest3_eventno.push_back(globalEventNo);
 			}
 			
 			fhMomentumFits_electronRich->Fill(result_chi);
@@ -879,6 +912,18 @@ void CbmAnaConversionRecoFull::Exec()
 		if(electron_rich && electron_trd && electron_tof) fhElectrons->Fill(6);
 		if( (electron_rich && electron_trd) || (electron_rich && electron_tof) || (electron_trd && electron_tof) ) fhElectrons->Fill(7);
 	}
+
+
+	// for mixed events technique, test2
+	fMixedEventsElectrons_list1 = fMixedEventsElectrons_list2;
+	fMixedEventsElectrons_list2 = fMixedEventsElectrons_list3;
+	fMixedEventsElectrons_list3 = fMixedEventsElectrons_list4;
+	fMixedEventsElectrons_list4 = fElectrons_momenta_new[4];
+	fMixedEventsElectrons_list1_gtrack = fMixedEventsElectrons_list2_gtrack;
+	fMixedEventsElectrons_list2_gtrack = fMixedEventsElectrons_list3_gtrack;
+	fMixedEventsElectrons_list3_gtrack = fMixedEventsElectrons_list4_gtrack;
+	fMixedEventsElectrons_list4_gtrack = fElectrons_track_new[4];
+
 
 
 	fhElectrons_nofPerEvent->Fill(nofElectrons);
@@ -919,6 +964,7 @@ void CbmAnaConversionRecoFull::Exec()
 
 
 	MixedEventTest();
+	MixedEventTest2();
 
 	timer.Stop();
 	fTime += timer.RealTime();
@@ -1034,6 +1080,15 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 					//if( TMath::Abs(tXa - tXb) < 0.5 || TMath::Abs(tYa - tYb) < 0.5 ) {
 					if( theta < 30 ) {
 						fVector_photons_pairs_direction.push_back(pair);
+					}
+					
+					
+					// mixed event test, test4
+					if(index == 4) {
+						vector<TVector3> pairmomenta;
+						pairmomenta.push_back(momenta[a]);
+						pairmomenta.push_back(momenta[b]);
+						fMixedTest4_photons.push_back(pairmomenta);
 					}
 				}
 			}
@@ -2046,18 +2101,200 @@ void CbmAnaConversionRecoFull::CombinePhotons()
 void CbmAnaConversionRecoFull::MixedEventTest()
 {
 	for(int i=1; i<5; i++) {
-		if(fMixedEventsElectrons[i].size() >= 4) {
-			TVector3 e1 = fMixedEventsElectrons[i][ fMixedEventsElectrons[i].size()-1 ];
-			TVector3 e2 = fMixedEventsElectrons[i][ fMixedEventsElectrons[i].size()-2 ];
-			TVector3 e3 = fMixedEventsElectrons[i][ fMixedEventsElectrons[i].size()-3 ];
-			TVector3 e4 = fMixedEventsElectrons[i][ fMixedEventsElectrons[i].size()-4 ];
-		
-			CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e1, e2, e3, e4);
-			fhMixedEventsTest_invmass[i]->Fill(params.fMinv);
+		if(fMixedEventsElectrons[i].size() < 4) continue;
+		for(UInt_t a = 0; a < fMixedEventsElectrons[i].size()-3; a++) {
+			for(UInt_t b = a+1; b < fMixedEventsElectrons[i].size()-2; b++) {
+				for(UInt_t c = b+1; c < fMixedEventsElectrons[i].size()-1; c++) {
+					for(UInt_t d = c+1; d < fMixedEventsElectrons[i].size(); d++) {
+						Int_t check1 = (fMixedEventsElectrons_gtrack[i][a]->GetParamLast()->GetQp() > 0);
+						Int_t check2 = (fMixedEventsElectrons_gtrack[i][b]->GetParamLast()->GetQp() > 0);
+						Int_t check3 = (fMixedEventsElectrons_gtrack[i][c]->GetParamLast()->GetQp() > 0);
+						Int_t check4 = (fMixedEventsElectrons_gtrack[i][d]->GetParamLast()->GetQp() > 0);
+						
+						if(check1 + check2 + check3 + check4 != 2) continue;
+					
+						TVector3 e1 = fMixedEventsElectrons[i][ a ];
+						TVector3 e2 = fMixedEventsElectrons[i][ b ];
+						TVector3 e3 = fMixedEventsElectrons[i][ c ];
+						TVector3 e4 = fMixedEventsElectrons[i][ d ];
+						
+						
+						CbmAnaConversionKinematicParams params12 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e1, e2);
+						CbmAnaConversionKinematicParams params13 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e1, e3);
+						CbmAnaConversionKinematicParams params14 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e1, e4);
+						CbmAnaConversionKinematicParams params23 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e2, e3);
+						CbmAnaConversionKinematicParams params24 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e2, e4);
+						CbmAnaConversionKinematicParams params34 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e3, e4);
+						
+						
+						Int_t angleCheck12 = (params12.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params12.fPt) && check1+check2 == 1 );
+						Int_t angleCheck13 = (params13.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params13.fPt) && check1+check3 == 1 );
+						Int_t angleCheck14 = (params14.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params14.fPt) && check1+check4 == 1 );
+						Int_t angleCheck23 = (params23.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params23.fPt) && check2+check3 == 1 );
+						Int_t angleCheck24 = (params24.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params24.fPt) && check2+check4 == 1 );
+						Int_t angleCheck34 = (params34.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params34.fPt) && check3+check4 == 1 );
+						
+						if(angleCheck12 && angleCheck34) {
+							CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e1, e2, e3, e4);
+							fhMixedEventsTest_invmass[i]->Fill(params.fMinv);
+							cout << "CbmAnaConversionRecoFull: MixedEventTest(), event filled!, part" << i << endl;
+						}
+						if(angleCheck13 && angleCheck24) {
+							CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e1, e2, e3, e4);
+							fhMixedEventsTest_invmass[i]->Fill(params.fMinv);
+							cout << "CbmAnaConversionRecoFull: MixedEventTest(), event filled!, part" << i << endl;
+						}
+						if(angleCheck14 && angleCheck23) {
+							CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e1, e2, e3, e4);
+							fhMixedEventsTest_invmass[i]->Fill(params.fMinv);
+							cout << "CbmAnaConversionRecoFull: MixedEventTest(), event filled!, part" << i << endl;
+						}
+					}
+				}
+			}
 		}
-
-
 	}
 }
 
 
+
+
+void CbmAnaConversionRecoFull::MixedEventTest2()
+{
+	if(fMixedEventsElectrons_list1.size() == 0 || fMixedEventsElectrons_list2.size() == 0 || fMixedEventsElectrons_list3.size() == 0 || fMixedEventsElectrons_list4.size() == 0) return;
+	for(UInt_t a = 0; a < fMixedEventsElectrons_list1.size(); a++) {
+		for(UInt_t b = 0; b < fMixedEventsElectrons_list2.size(); b++) {
+			for(UInt_t c = 0; c < fMixedEventsElectrons_list3.size(); c++) {
+				for(UInt_t d = 0; d < fMixedEventsElectrons_list4.size(); d++) {
+						Int_t check1 = (fMixedEventsElectrons_list1_gtrack[a]->GetParamLast()->GetQp() > 0);
+						Int_t check2 = (fMixedEventsElectrons_list2_gtrack[b]->GetParamLast()->GetQp() > 0);
+						Int_t check3 = (fMixedEventsElectrons_list3_gtrack[c]->GetParamLast()->GetQp() > 0);
+						Int_t check4 = (fMixedEventsElectrons_list4_gtrack[d]->GetParamLast()->GetQp() > 0);
+						
+						if(check1 + check2 + check3 + check4 != 2) continue;
+					
+						TVector3 e1 = fMixedEventsElectrons_list1[a];
+						TVector3 e2 = fMixedEventsElectrons_list2[b];
+						TVector3 e3 = fMixedEventsElectrons_list3[c];
+						TVector3 e4 = fMixedEventsElectrons_list4[d];
+						
+						
+						CbmAnaConversionKinematicParams params12 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e1, e2);
+						CbmAnaConversionKinematicParams params13 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e1, e3);
+						CbmAnaConversionKinematicParams params14 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e1, e4);
+						CbmAnaConversionKinematicParams params23 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e2, e3);
+						CbmAnaConversionKinematicParams params24 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e2, e4);
+						CbmAnaConversionKinematicParams params34 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e3, e4);
+						
+						
+						Int_t angleCheck12 = (params12.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params12.fPt) && check1+check2 == 1 );
+						Int_t angleCheck13 = (params13.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params13.fPt) && check1+check3 == 1 );
+						Int_t angleCheck14 = (params14.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params14.fPt) && check1+check4 == 1 );
+						Int_t angleCheck23 = (params23.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params23.fPt) && check2+check3 == 1 );
+						Int_t angleCheck24 = (params24.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params24.fPt) && check2+check4 == 1 );
+						Int_t angleCheck34 = (params34.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params34.fPt) && check3+check4 == 1 );
+						
+						if(angleCheck12 && angleCheck34) {
+							CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e1, e2, e3, e4);
+							fhMixedEventsTest2_invmass->Fill(params.fMinv);
+							cout << "CbmAnaConversionRecoFull: MixedEventTest(), event filled!, part" << endl;
+						}
+						if(angleCheck13 && angleCheck24) {
+							CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e1, e2, e3, e4);
+							fhMixedEventsTest2_invmass->Fill(params.fMinv);
+							cout << "CbmAnaConversionRecoFull: MixedEventTest(), event filled!, part" << endl;
+						}
+						if(angleCheck14 && angleCheck23) {
+							CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e1, e2, e3, e4);
+							fhMixedEventsTest2_invmass->Fill(params.fMinv);
+							cout << "CbmAnaConversionRecoFull: MixedEventTest(), event filled!, part" << endl;
+						}
+				
+				}
+			}
+		}
+	}
+}
+
+
+
+
+void CbmAnaConversionRecoFull::MixedEventTest3()
+{
+	Int_t nof = fMixedTest3_momenta.size();
+	cout << "CbmAnaConversionRecoFull: MixedEventTest3 - nof entries " << nof << endl;
+	for(Int_t a = 0; a < nof-3; a++) {
+		for(Int_t b = a+1; b < nof-1; b++) {
+			for(Int_t c = b+1; c < nof-1; c++) {
+				for(Int_t d = c+1; d < nof; d++) {
+						if(fMixedTest3_eventno[a] == fMixedTest3_eventno[b] || fMixedTest3_eventno[a] == fMixedTest3_eventno[c] || fMixedTest3_eventno[a] == fMixedTest3_eventno[d] || fMixedTest3_eventno[b] == fMixedTest3_eventno[c] || fMixedTest3_eventno[b] == fMixedTest3_eventno[d] || fMixedTest3_eventno[c] == fMixedTest3_eventno[d] ) continue;
+						Int_t check1 = (fMixedTest3_gtrack[a]->GetParamLast()->GetQp() > 0);
+						Int_t check2 = (fMixedTest3_gtrack[b]->GetParamLast()->GetQp() > 0);
+						Int_t check3 = (fMixedTest3_gtrack[c]->GetParamLast()->GetQp() > 0);
+						Int_t check4 = (fMixedTest3_gtrack[d]->GetParamLast()->GetQp() > 0);
+						
+						if(check1 + check2 + check3 + check4 != 2) continue;
+					
+						TVector3 e1 = fMixedTest3_momenta[a];
+						TVector3 e2 = fMixedTest3_momenta[b];
+						TVector3 e3 = fMixedTest3_momenta[c];
+						TVector3 e4 = fMixedTest3_momenta[d];
+						
+						
+						CbmAnaConversionKinematicParams params12 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e1, e2);
+						CbmAnaConversionKinematicParams params13 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e1, e3);
+						CbmAnaConversionKinematicParams params14 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e1, e4);
+						CbmAnaConversionKinematicParams params23 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e2, e3);
+						CbmAnaConversionKinematicParams params24 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e2, e4);
+						CbmAnaConversionKinematicParams params34 = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(e3, e4);
+						
+						
+						Int_t angleCheck12 = (params12.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params12.fPt) && check1+check2 == 1 );
+						Int_t angleCheck13 = (params13.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params13.fPt) && check1+check3 == 1 );
+						Int_t angleCheck14 = (params14.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params14.fPt) && check1+check4 == 1 );
+						Int_t angleCheck23 = (params23.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params23.fPt) && check2+check3 == 1 );
+						Int_t angleCheck24 = (params24.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params24.fPt) && check2+check4 == 1 );
+						Int_t angleCheck34 = (params34.fAngle < CbmAnaConversionCutSettings::CalcOpeningAngleCut(params34.fPt) && check3+check4 == 1 );
+						
+						if(angleCheck12 && angleCheck34) {
+							CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e1, e2, e3, e4);
+							fhMixedEventsTest3_invmass->Fill(params.fMinv);
+							cout << "CbmAnaConversionRecoFull: MixedEventTest3(), event filled!, part" << endl;
+						}
+						if(angleCheck13 && angleCheck24) {
+							CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e1, e2, e3, e4);
+							fhMixedEventsTest3_invmass->Fill(params.fMinv);
+							cout << "CbmAnaConversionRecoFull: MixedEventTest3(), event filled!, part" << endl;
+						}
+						if(angleCheck14 && angleCheck23) {
+							CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e1, e2, e3, e4);
+							fhMixedEventsTest3_invmass->Fill(params.fMinv);
+							cout << "CbmAnaConversionRecoFull: MixedEventTest3(), event filled!, part" << endl;
+						}
+				
+				}
+			}
+		}
+	}
+}
+
+
+
+void CbmAnaConversionRecoFull::MixedEventTest4()
+{
+	Int_t nof = fMixedTest4_photons.size();
+	cout << "CbmAnaConversionRecoFull: MixedEventTest4 - nof entries " << nof << endl;
+	for(Int_t a = 0; a < nof-1; a++) {
+		for(Int_t b = a+1; b < nof; b++) {
+			TVector3 e11 = fMixedTest4_photons[a][0];
+			TVector3 e12 = fMixedTest4_photons[a][1];
+			TVector3 e21 = fMixedTest4_photons[b][0];
+			TVector3 e22 = fMixedTest4_photons[b][1];
+			
+			
+			CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e11, e12, e21, e22);
+			fhMixedEventsTest4_invmass->Fill(params.fMinv);
+			cout << "CbmAnaConversionRecoFull: MixedEventTest4(), event filled!, part" << endl;
+		}
+	}
+}
