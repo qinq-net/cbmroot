@@ -69,7 +69,6 @@ CbmRichAlignment::~CbmRichAlignment()
 {
 }
 
-
 InitStatus CbmRichAlignment::Init()
 {
     FairRootManager* manager = FairRootManager::Instance();
@@ -179,7 +178,7 @@ Bool_t CbmRichAlignment::IsRingMcElectron(Int_t ringIndex)
     Int_t motherId = mcTrack->GetMotherId();
     Int_t pdg = TMath::Abs(mcTrack->GetPdgCode());
     if (pdg == 11 && motherId == -1) {
-	return true;
+    	return true;
     }
     return false;
 }
