@@ -1,0 +1,1941 @@
+
+Processing run_reco.C...
+Error in <TUnixSystem::DynamicPathName>: libFairDB[.so | .dll | .dylib | .sl | .dl | .a] does not exist in /data/Cbm_Root/CbmRoot/build/lib:/data/Cbm_Root/External_Packages/Fairsoft_jul15p2_Install/lib:/data/Cbm_Root/FairRoot/FairRoot_v-15.07-Fairsoft_jul15p2_Install/lib:/data/Cbm_Root/External_Packages/Fairsoft_jul15p2_Install/lib/root:.:/data/Cbm_Root/External_Packages/Fairsoft_jul15p2_Install/lib/root::/data/Cbm_Root/External_Packages/Fairsoft_jul15p2_Install/lib/root/cint/cint/stl
+[INFO   ] FairRootManager::OpenOutFile("Sim_Outputs/PMTMapping/Rec_RichGeo_jordan_-2Y_216.root")
+In CheckDetectorPresence for detector trd
+Info in <TGeoManager::CloseGeometry>: Geometry loaded from file...
+Info in <TGeoManager::SetTopVolume>: Top volume is cave. Master volume is cave
+Info in <TGeoNavigator::BuildCache>: --- Maximum geometry depth set to 100
+Info in <TGeoManager::Voxelize>: Voxelizing...
+Info in <TGeoManager::CountLevels>: max level = 8, max placements = 32
+Info in <TGeoManager::CloseGeometry>: 21230 nodes/ 446 volume UID's in FAIR geometry
+Info in <TGeoManager::CloseGeometry>: ----------------modeler ready----------------
+After getting the geomanager trd
+Node: PIPE_v14y_0
+Node: magnet_v15a_0
+Node: sts_v15b_0
+Node: rich1_0
+In CheckDetectorPresence for detector rich
+After getting the geomanager rich
+Node: PIPE_v14y_0
+Node: magnet_v15a_0
+Node: sts_v15b_0
+Node: rich1_0
+[INFO   ] The input consists out of the following trees and files: 
+[INFO   ]  - cbmsim
+[INFO   ]     - Sim_Outputs/PMTMapping/Sim_RichGeo_jordan_-2Y_216.root
+[INFO   ] Parameter and input file are available, Assure that basic info is there for the run!
+[INFO   ] The number of entries in the tree is 10
+[INFO   ] FairRootManager::ReadEvent(0): The tree has 10 entries
+[INFO   ]  Branch: EventHeader. not found in Tree.
+[INFO   ]  Branch: EventHeader. not found in Tree.
+[INFO   ] No event Header was found!!!
+[INFO   ]  Branch: EventHeader. not found in Tree.
+[INFO   ]  Branch: EventHeader. not found in Tree.
+
+************************************************************* 
+     initialisation for run id 1448376433
+************************************************************* 
+-I- FairRunTimeDB::InitContainer() FairGeoParSet
+Warning in <TGeoManager::Init>: Deleting previous geometry: FAIRGeom/FAIR geometry
+Info in <TGeoManager::CloseGeometry>: Geometry loaded from file...
+Info in <TGeoManager::SetTopVolume>: Top volume is cave. Master volume is cave
+Info in <TGeoManager::Voxelize>: Voxelizing...
+Info in <TGeoManager::CountLevels>: max level = 8, max placements = 32
+Info in <TGeoManager::CloseGeometry>: 21230 nodes/ 446 volume UID's in FAIR geometry
+Info in <TGeoManager::CloseGeometry>: ----------------modeler ready----------------
+Container FairGeoParSet initialized from ROOT file.
+-I- FairRunTimeDB::InitContainer() FairBaseParSet
+Container FairBaseParSet initialized from ROOT file.
+ -I container name CbmGeoMuchPar
+ -I container name CbmGeoTofPar
+Error in <FairRuntimeDb::getContainer(Text_t*)>: Container CbmGeoSttPar not created!
+[INFO   ] create CbmFieldPar container CbmFieldPar
+Error in <FairRuntimeDb::getContainer(Text_t*)>: Container CbmGeoStsPar not created!
+Error in <FairRuntimeDb::getContainer(Text_t*)>: Container CbmGeoStsPar not created!
+Error in <FairRuntimeDb::getContainer(Text_t*)>: Container CbmStsDigiPar not created!
+
+************************************************************* 
+     initialisation for run id 1448376433
+************************************************************* 
+-I- FairRunTimeDB::InitContainer() FairGeoParSet
+-I- FairRunTimeDB::InitContainer() FairBaseParSet
+-I- FairRunTimeDB::InitContainer() CbmGeoPassivePar
+Container CbmGeoPassivePar initialized from ROOT file.
+-I- FairRunTimeDB::InitContainer() CbmMvdGeoPar
+[ERROR  ] init() CbmMvdGeoPar  not initialized 
+-I- FairRunTimeDB::InitContainer() CbmGeoTrdPar
+[ERROR  ] init() CbmGeoTrdPar  not initialized 
+-I- FairRunTimeDB::InitContainer() CbmGeoRichPar
+[ERROR  ] init() CbmGeoRichPar  not initialized 
+-I- FairRunTimeDB::InitContainer() CbmGeoMuchPar
+[ERROR  ] init() CbmGeoMuchPar  not initialized 
+-I- FairRunTimeDB::InitContainer() CbmGeoTofPar
+[ERROR  ] init() CbmGeoTofPar  not initialized 
+-I- FairRunTimeDB::InitContainer() CbmFieldPar
+Container CbmFieldPar initialized from ROOT file.
+Error in <FairRuntimeDb::initContainers()>: Error occured during initialization
+New field at 0x391dbd0, type 2
+[INFO   ] CbmFieldMap: Reading field map from ROOT file /data/Cbm_Root/CbmRoot/trunk/input/field_v12a.root
+
+[INFO   ] ==========================================================
+[INFO   ] StsDigitize: Initialisation
+[INFO   ] 
+
+[INFO   ] ==========================================================
+[INFO   ] Initialising STS Setup
+[INFO   ] STS: Reading geometry from TGeoManager FAIRGeom
+[INFO   ] STS: STS top node is sts_v15b_0
+[INFO   ] STS: Elements in setup: 
+[INFO   ]      stations        8
+[INFO   ]      ladders       106
+[INFO   ]      halfladders   212
+[INFO   ]      modules       900
+[INFO   ]      sensors      1220
+[INFO   ] STS: 7 sensor types in database
+[INFO   ] STS: Set types for 1220 sensors
+[INFO   ] ==========================================================
+
+[INFO   ] StsDigitize: Detector response model SIMPLE
+[INFO   ] StsDigitize: Sensor operation conditions :
+[INFO   ] 	 Depletion voltage               70 V
+[INFO   ] 	 Bias voltage                   140 V
+[INFO   ] 	 Temperature                    268
+[INFO   ] 	 Coupling capacitance          17.5 pF
+[INFO   ] 	 Inter-strip capacitance          1 pF
+[INFO   ] StsDigitize: Set conditions for 1220 sensors 
+[INFO   ] StsDigitize: Digitisation parameters :
+[INFO   ] 	 Dynamic range        40960 e
+[INFO   ] 	 Threshold             4000 e
+[INFO   ] 	 ADC channels          4096
+[INFO   ] 	 Time resolution          5 ns
+[INFO   ] 	 Dead time            1e+07 ns
+[INFO   ] 	 ENC                      0 e
+[INFO   ] 	 Dead channel fraction          0 %
+[INFO   ] StsDigitize: Set parameters for 900 modules 
+[INFO   ] Instantiating STS Physics... 
+[INFO   ] StsPhysics:    87 values read from /data/Cbm_Root/CbmRoot/trunk/sts/digitize/dEdx_Si_e.txt
+[INFO   ] StsPhysics:   138 values read from /data/Cbm_Root/CbmRoot/trunk/sts/digitize/dEdx_Si_p.txt
+[INFO   ] StsDigitize: Using event mode.
+[INFO   ] StsDigitize: Initialisation successful
+[INFO   ] ==========================================================
+
+[INFO   ] StsFindClusters: Initialisation successful
+[INFO   ] StsFindHits: Initialisation successful
+KALMAN FILTER : === INIT MAGNETIC FIELD ===
+Magnetic field done
+[INFO   ]  Branch: MvdPoint not found in Tree.
+[INFO   ]  Branch: MvdPoint not found in Tree.
+KALMAN FILTER : === READ STS MATERIAL ===
+ Sts material ( id, z, dz, r, R, RadL )= ( 1000, 30, 0.03, 0, 23.7868, 9.34953 )
+ Sts material ( id, z, dz, r, R, RadL )= ( 1001, 40, 0.03, 0, 35.6052, 9.34953 )
+ Sts material ( id, z, dz, r, R, RadL )= ( 1002, 50, 0.03, 0, 35.6052, 9.34953 )
+ Sts material ( id, z, dz, r, R, RadL )= ( 1003, 60, 0.03, 0, 41.5144, 9.34953 )
+ Sts material ( id, z, dz, r, R, RadL )= ( 1004, 70, 0.03, 0, 41.5144, 9.34953 )
+ Sts material ( id, z, dz, r, R, RadL )= ( 1005, 80, 0.03, 0, 41.5144, 9.34953 )
+ Sts material ( id, z, dz, r, R, RadL )= ( 1006, 90, 0.03, 0, 47.4236, 9.34953 )
+ Sts material ( id, z, dz, r, R, RadL )= ( 1007, 100, 0.03, 0, 48, 9.34953 )
+KALMAN FILTER : === READ RICH MATERIAL ===
+KALMAN FILTER : === READ TRD PASSIVE MATERIAL ===
+printout skipped for Verbose mode 1
+KALMAN FILTER : === READ TRD DETECTORS ===
+KALMAN FILTER : === READ MUCH PASSIVE MATERIAL ===
+KALMAN FILTER : === READ MUCH DETECTORS ===
+KALMAN FILTER : === READ TOF PASSIVE MATERIAL ===
+printout skipped for Verbose mode 1
+KALMAN FILTER : === READ TOF DETECTORS ===
+KALMAN FILTER : === READ BEAM PIPE MATERIAL ===
+KALMAN FILTER : === READ TARGET MATERIAL ===
+[INFO   ]  Branch: MvdHit not found in Tree.
+[INFO   ]  Branch: MvdHit not found in Tree.
+L1Algo Input Magnetic field:0 0 -8.34485 0
+L1Algo Input Magnetic field:2.5 0 -8.57669 -2.46004e-17
+L1Algo Input Magnetic field:5 0 -8.80321 -1.53177e-17
+L1Algo Input 8 Stations:
+    30 0.03 9.34953, 21 field coeff.
+       0 0.00167432 0.1309 0.00167432
+    40 0.03 9.34953, 21 field coeff.
+       3.14159 0.00167432 3.27249 0.00167432
+    50 0.03 9.34953, 21 field coeff.
+       0 0.00167432 0.1309 0.00167432
+    60 0.03 9.34953, 21 field coeff.
+       0 0.00167432 0.1309 0.00167432
+    70 0.03 9.34953, 21 field coeff.
+       3.14159 0.00167432 3.27249 0.00167432
+    80 0.03 9.34953, 21 field coeff.
+       0 0.00167432 0.1309 0.00167432
+    90 0.03 9.34953, 21 field coeff.
+       0 0.00167432 0.1309 0.00167432
+    100 0.03 9.34953, 21 field coeff.
+       3.14159 0.00167432 3.27249 0.00167432
+L1Algo initialized
+No MVD material budget file is found. Homogenious budget will be used
+STS Material budget file is /data/Cbm_Root/CbmRoot/trunk/parameters/sts/sts_matbudget_v13d.root.
+
+---------------------------------------------
+-I- Initialising STSFindTracks ....
+[INFO   ]  Branch: MvdHit not found in Tree.
+[INFO   ]  Branch: MvdHit not found in Tree.
+-W- STSFindTracks::Init: No MVD hits available!
+     Running track finding without MVD hits
+-I- Track finder engine STS Track Finder L1 selected
+-I- STSFindTracks intialised 
+---------------------------------------------
+-I- CBM detector setup information: 
+   Electron setup detected 
+   Detectors found in setup: STS RICH 
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51  135.197  207.021
+Tilted PMT position in (x,y,z) [cm]: 32.7629  151.273  199.449
+PMT size in x and y [cm]: 50  30
+PMT was tilted around x by 4.48937 degrees
+PMT was tilted around y by -5 degrees
+Refractive index for lowest photon energies: 1.00045, (n-1)*10000: 4.46242
+Mirror center (x,y,z): 0 98.1556 49.6359
+Mirror radius: 300
+Mirror tilting angle: -1.5578 degrees
+
+CbmRichReconstruction::Init
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51  135.197  207.021
+Tilted PMT position in (x,y,z) [cm]: 32.7629  151.273  199.449
+PMT size in x and y [cm]: 50  30
+PMT was tilted around x by 4.48937 degrees
+PMT was tilted around y by -5 degrees
+Refractive index for lowest photon energies: 1.00045, (n-1)*10000: 4.46242
+Mirror center (x,y,z): 0 98.1556 49.6359
+Mirror radius: 300
+Mirror tilting angle: -1.5578 degrees
+
+   use tracks in imaginary plane for projection to photodetector plane
+-I- CbmRichRingSelectNeuralNet: get NeuralNet weight parameters from: /data/Cbm_Root/CbmRoot/trunk/parameters/rich/rich_select_ann_weights.txt
+[INFO   ]  Branch: TrdTrack not found in Tree.
+[INFO   ]  Branch: TrdTrack not found in Tree.
+InitBranch: MCTrack 0x1356e080
+InitBranch: StsPoint 0x1356e170
+[INFO   ]  Branch: TrdPoint not found in Tree.
+[INFO   ]  Branch: TrdPoint not found in Tree.
+[INFO   ]  Branch: TrdDigi not found in Tree.
+[INFO   ]  Branch: TrdDigi not found in Tree.
+[INFO   ]  Branch: TrdCluster not found in Tree.
+[INFO   ]  Branch: TrdCluster not found in Tree.
+[INFO   ]  Branch: TrdHit not found in Tree.
+[INFO   ]  Branch: TrdHit not found in Tree.
+[INFO   ]  Branch: TrdTrack not found in Tree.
+[INFO   ]  Branch: TrdTrack not found in Tree.
+[INFO   ]  Branch: TrdDigiMatch not found in Tree.
+[INFO   ]  Branch: TrdDigiMatch not found in Tree.
+[INFO   ]  Branch: MuchPoint not found in Tree.
+[INFO   ]  Branch: MuchPoint not found in Tree.
+[INFO   ]  Branch: MuchDigi not found in Tree.
+[INFO   ]  Branch: MuchDigi not found in Tree.
+[INFO   ]  Branch: MuchStrawDigi not found in Tree.
+[INFO   ]  Branch: MuchStrawDigi not found in Tree.
+[INFO   ]  Branch: MuchCluster not found in Tree.
+[INFO   ]  Branch: MuchCluster not found in Tree.
+[INFO   ]  Branch: MuchPixelHit not found in Tree.
+[INFO   ]  Branch: MuchPixelHit not found in Tree.
+[INFO   ]  Branch: MuchStrawHit not found in Tree.
+[INFO   ]  Branch: MuchStrawHit not found in Tree.
+[INFO   ]  Branch: MuchTrack not found in Tree.
+[INFO   ]  Branch: MuchTrack not found in Tree.
+[INFO   ]  Branch: MuchDigiMatch not found in Tree.
+[INFO   ]  Branch: MuchDigiMatch not found in Tree.
+[INFO   ]  Branch: MuchStrawDigiMatch not found in Tree.
+[INFO   ]  Branch: MuchStrawDigiMatch not found in Tree.
+[INFO   ]  Branch: MvdPoint not found in Tree.
+[INFO   ]  Branch: MvdPoint not found in Tree.
+[INFO   ]  Branch: MvdHit not found in Tree.
+[INFO   ]  Branch: MvdHit not found in Tree.
+[INFO   ]  Branch: MvdCluster not found in Tree.
+[INFO   ]  Branch: MvdCluster not found in Tree.
+[INFO   ]  Branch: MvdDigiMatch not found in Tree.
+[INFO   ]  Branch: MvdDigiMatch not found in Tree.
+Starting run
+[INFO   ] The number of entries in the tree is 10
+[INFO   ] FairRootManager::ReadEvent(0): The tree has 10 entries
+[INFO   ] + StsDigitize         : step       0, time 0.041805 s, points: 18, signals: 18 / 19, digis: 33
+[INFO   ] + StsFindClusters     : Event      0, time 0.000272 s, digis: 33, clusters: 23
+[INFO   ] + StsFindHits         : Event      0, time 0.000081 s, clusters: 23, hits: 18
+-I- CbmLitFindGlobalTracks: Number of STS tracks: 2
+-I- CbmLitFindGlobalTracks: Number of hits: 0
+CbmLitFindGlobalTracks::Exec event: 0
+
+-------------------------------------------------------
+-I-             Primary Vertex Finder               -I-
+Vertex coord. (0.082947,-0.355906,-1.660630) cm, chi2/ndf = 2.457448, 2 tracks used
+-------------------------------------------------------
+-I- CbmRichHitProducer, event no 1
+SetPhotoDetPar routine called for PMT type 4
+Nof hits: 40
+Fraction of double hits: 0.550000
+Nof crosstalk hits: 0.000000
+CbmRichProjectionProducer: event 1
+CbmRichRingFinderHough. Number of found rings 1
+
+//--------------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function - Defining the entries ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------//
+CbmRichPMTMapping : Event #1
+Nb of rings in evt = 1, nb of mirror points = 4, nb of hits in evt = 40, nb of Monte-Carlo points = 535 and nb of Monte-Carlo tracks = 537
+
+//----------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function ---------------------------------------------------//
+//------------------------------ Mapping for mirror - PMT relations ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------//
+
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51.000000  135.196678  207.021121
+Tilted PMT position in (x,y,z) [cm]: 32.762850  151.272550  199.449486
+PMT size in x and y [cm]: 50.000000  30.000000
+PMT was tilted around x by 4.489373 degrees
+PMT was tilted around y by -5.000000 degrees
+Refractive index for lowest photon energies: 1.000446, (n-1)*10000: 4.462420
+Mirror center (x,y,z): 0.000000 98.155617 49.635877
+Mirror radius: 300.000000
+Mirror tilting angle: -1.557800 degrees
+
+//------------------------------ CbmRichPMTMapping: Projection Producer ------------------------------//
+
+Calculated normal vector to PMT plane = {0.087156, 0.077977, -0.993138} and constante d = 199.503186
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-12.012083, 56.243828, 270.354767} and momentum = {-1.741507, 8.690993, 41.781784}
+Mirror Point coordinates = {-15.248048, 72.396652, 348.009888} and momentum = {-1.740474, 8.690693, 41.781609}
+
+Computed normal to mirror tile coordinates = {-0.043458, 0.203484, 0.978113}
+Calculated unity Mirror-Sphere vector = {0.050875, 0.051022, -0.997401}
+Ref Pt Coo using computed normal & mirror pt = {-11.584302, 56.243164, 270.373912}
+Ref Pt Coo using MS vector & sphere pt = {-10.670243, 96.385854, 272.476684}
+
+Extrapolated track point on PMT plane using MS vector = {-6.848645, 116.412282, 209.420803}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = -0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.525771, 42.758068, 205.562616}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = -2.057808
+
+Ring center coordinates = {-6.729383, 132.477493, 210.692645}
+
+Difference in X = 0.119262
+Difference in Y = 16.065211
+Difference in Z = 1.271842
+Distance between fitted ring center and extrapolated track hit = 16.115918
+
+End of loop on global tracks;
+		-------------------- End of loop N°1 on the mirror points. --------------------
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-12.123766, 56.210979, 270.354767} and momentum = {-1.881311, 9.271547, 44.601627}
+Mirror Point coordinates = {-15.398857, 72.351990, 347.999878} and momentum = {-1.881779, 9.272999, 44.601006}
+
+Computed normal to mirror tile coordinates = {-0.043863, 0.203366, 0.978120}
+Calculated unity Mirror-Sphere vector = {0.051378, 0.051171, -0.997367}
+Ref Pt Coo using computed normal & mirror pt = {-11.710969, 56.209643, 270.373556}
+Ref Pt Coo using MS vector & sphere pt = {-10.784001, 96.351165, 272.483228}
+
+Extrapolated track point on PMT plane using MS vector = {-6.929712, 116.395080, 209.412339}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = 0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.630876, 42.727688, 205.540686}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = -2.047558
+
+Ring center coordinates = {-6.729383, 132.477493, 210.692645}
+
+Difference in X = 0.200329
+Difference in Y = 16.082413
+Difference in Z = 1.280307
+Distance between fitted ring center and extrapolated track hit = 16.134538
+
+End of loop on global tracks;
+		-------------------- End of loop N°2 on the mirror points. --------------------
+
+Mirror track ID <= 1 !!!
+End of loop N°3 on the mirror points.
+
+Mirror track ID <= 1 !!!
+End of loop N°4 on the mirror points.
+
+[INFO   ] CbmMatchRecoToMC::Exec eventNo=0
+FinishEvent
+[INFO   ] The number of entries in the tree is 10
+[INFO   ] FairRootManager::ReadEvent(1): The tree has 10 entries
+[INFO   ] + StsDigitize         : step       1, time 0.042093 s, points: 18, signals: 21 / 19, digis: 36
+[INFO   ] + StsFindClusters     : Event      1, time 0.000196 s, digis: 36, clusters: 26
+[INFO   ] + StsFindHits         : Event      1, time 0.000037 s, clusters: 26, hits: 23
+-I- CbmLitFindGlobalTracks: Number of STS tracks: 2
+-I- CbmLitFindGlobalTracks: Number of hits: 0
+CbmLitFindGlobalTracks::Exec event: 1
+
+-------------------------------------------------------
+-I-             Primary Vertex Finder               -I-
+Vertex coord. (-0.011364,0.089566,0.412996) cm, chi2/ndf = 1.291162, 2 tracks used
+-------------------------------------------------------
+-I- CbmRichHitProducer, event no 2
+SetPhotoDetPar routine called for PMT type 4
+Nof hits: 28
+Fraction of double hits: 0.571429
+Nof crosstalk hits: 0.000000
+CbmRichProjectionProducer: event 2
+CbmRichRingFinderHough. Number of found rings 1
+
+//--------------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function - Defining the entries ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------//
+CbmRichPMTMapping : Event #2
+Nb of rings in evt = 1, nb of mirror points = 3, nb of hits in evt = 28, nb of Monte-Carlo points = 481 and nb of Monte-Carlo tracks = 483
+
+//----------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function ---------------------------------------------------//
+//------------------------------ Mapping for mirror - PMT relations ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------//
+
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51.000000  135.196678  207.021121
+Tilted PMT position in (x,y,z) [cm]: 32.762850  151.272550  199.449486
+PMT size in x and y [cm]: 50.000000  30.000000
+PMT was tilted around x by 4.489373 degrees
+PMT was tilted around y by -5.000000 degrees
+Refractive index for lowest photon energies: 1.000446, (n-1)*10000: 4.462420
+Mirror center (x,y,z): 0.000000 98.155617 49.635877
+Mirror radius: 300.000000
+Mirror tilting angle: -1.557800 degrees
+
+//------------------------------ CbmRichPMTMapping: Projection Producer ------------------------------//
+
+Calculated normal vector to PMT plane = {0.087155, 0.077976, -0.993138} and constante d = 199.503435
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-12.058803, 56.262768, 270.354767} and momentum = {-1.805850, 8.966866, 43.085903}
+Mirror Point coordinates = {-15.312757, 72.423256, 348.007965} and momentum = {-1.804919, 8.966270, 43.085766}
+
+Computed normal to mirror tile coordinates = {-0.043626, 0.203548, 0.978092}
+Calculated unity Mirror-Sphere vector = {0.051091, 0.050933, -0.997394}
+Ref Pt Coo using computed normal & mirror pt = {-11.640275, 56.267067, 270.372540}
+Ref Pt Coo using MS vector & sphere pt = {-10.719757, 96.406513, 272.473360}
+
+Extrapolated track point on PMT plane using MS vector = {-6.885623, 116.427206, 209.418739}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = 0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.574568, 42.780237, 205.564200}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = -2.061769
+
+Ring center coordinates = {-6.615845, 132.432404, 210.699049}
+
+Difference in X = 0.269778
+Difference in Y = 16.005198
+Difference in Z = 1.280311
+Distance between fitted ring center and extrapolated track hit = 16.058590
+
+End of loop on global tracks;
+		-------------------- End of loop N°1 on the mirror points. --------------------
+
+Mirror track ID <= 1 !!!
+End of loop N°2 on the mirror points.
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-12.102626, 56.215660, 270.354767} and momentum = {-1.835501, 9.068335, 43.615971}
+Mirror Point coordinates = {-15.370029, 72.359474, 348.001740} and momentum = {-1.835220, 9.068471, 43.615685}
+
+Computed normal to mirror tile coordinates = {-0.043786, 0.203383, 0.978120}
+Calculated unity Mirror-Sphere vector = {0.051282, 0.051146, -0.997374}
+Ref Pt Coo using computed normal & mirror pt = {-11.686415, 56.216404, 270.373244}
+Ref Pt Coo using MS vector & sphere pt = {-10.762063, 96.357812, 272.482223}
+
+Extrapolated track point on PMT plane using MS vector = {-6.913840, 116.399395, 209.414079}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = 0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.610141, 42.734943, 205.543842}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = -2.048183
+
+Ring center coordinates = {-6.615845, 132.432404, 210.699049}
+
+Difference in X = 0.297995
+Difference in Y = 16.033009
+Difference in Z = 1.284971
+Distance between fitted ring center and extrapolated track hit = 16.087179
+
+End of loop on global tracks;
+		-------------------- End of loop N°3 on the mirror points. --------------------
+
+[INFO   ] CbmMatchRecoToMC::Exec eventNo=1
+FinishEvent
+[INFO   ] + StsDigitize         : step       2, time 0.041336 s, points: 18, signals: 21 / 21, digis: 33
+[INFO   ] + StsFindClusters     : Event      2, time 0.000224 s, digis: 33, clusters: 26
+[INFO   ] + StsFindHits         : Event      2, time 0.000036 s, clusters: 26, hits: 23
+-I- CbmLitFindGlobalTracks: Number of STS tracks: 2
+-I- CbmLitFindGlobalTracks: Number of hits: 0
+CbmLitFindGlobalTracks::Exec event: 2
+
+-------------------------------------------------------
+-I-             Primary Vertex Finder               -I-
+Vertex coord. (-2.107020,8.657145,41.637706) cm, chi2/ndf = 0.812464, 2 tracks used
+-------------------------------------------------------
+-I- CbmRichHitProducer, event no 3
+SetPhotoDetPar routine called for PMT type 4
+Nof hits: 39
+Fraction of double hits: 0.641026
+Nof crosstalk hits: 0.000000
+CbmRichProjectionProducer: event 3
+CbmRichRingFinderHough. Number of found rings 1
+
+//--------------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function - Defining the entries ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------//
+CbmRichPMTMapping : Event #3
+Nb of rings in evt = 1, nb of mirror points = 2, nb of hits in evt = 39, nb of Monte-Carlo points = 517 and nb of Monte-Carlo tracks = 519
+
+//----------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function ---------------------------------------------------//
+//------------------------------ Mapping for mirror - PMT relations ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------//
+
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51.000000  135.196678  207.021121
+Tilted PMT position in (x,y,z) [cm]: 32.762850  151.272550  199.449486
+PMT size in x and y [cm]: 50.000000  30.000000
+PMT was tilted around x by 4.489373 degrees
+PMT was tilted around y by -5.000000 degrees
+Refractive index for lowest photon energies: 1.000446, (n-1)*10000: 4.462420
+Mirror center (x,y,z): 0.000000 98.155617 49.635877
+Mirror radius: 300.000000
+Mirror tilting angle: -1.557800 degrees
+
+//------------------------------ CbmRichPMTMapping: Projection Producer ------------------------------//
+
+Calculated normal vector to PMT plane = {-0.019718, 0.873221, -0.486925} and constante d = 1.159365
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-12.152852, 56.242329, 270.354767} and momentum = {-1.942749, 9.539040, 45.864689}
+Mirror Point coordinates = {-15.441949, 72.390930, 347.999664} and momentum = {-1.943501, 9.539203, 45.864319}
+
+Computed normal to mirror tile coordinates = {-0.043967, 0.203474, 0.978093}
+Calculated unity Mirror-Sphere vector = {0.051522, 0.051041, -0.997367}
+Ref Pt Coo using computed normal & mirror pt = {-11.751386, 56.238280, 270.373656}
+Ref Pt Coo using MS vector & sphere pt = {-10.818749, 96.378013, 272.477671}
+
+Extrapolated track point on PMT plane using MS vector = {-7.036647, 116.001132, 210.695373}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = 0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.732246, 43.024277, 206.870125}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = -61.828907
+
+Ring center coordinates = {-5.508188, 132.336914, 239.929082}
+
+Difference in X = 1.528459
+Difference in Y = 16.335782
+Difference in Z = 29.233710
+Distance between fitted ring center and extrapolated track hit = 33.523182
+
+End of loop on global tracks;
+		-------------------- End of loop N°1 on the mirror points. --------------------
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-10.818094, 56.176926, 270.354797} and momentum = {-0.767720, 4.566063, 21.990864}
+Mirror Point coordinates = {-13.531567, 72.317513, 348.088379} and momentum = {-0.768100, 4.566503, 21.990417}
+
+Computed normal to mirror tile coordinates = {-0.039148, 0.203288, 0.978336}
+Calculated unity Mirror-Sphere vector = {0.045148, 0.051286, -0.997663}
+Ref Pt Coo using computed normal & mirror pt = {-10.025511, 56.160915, 270.389839}
+Ref Pt Coo using MS vector & sphere pt = {-9.306094, 96.340457, 272.487885}
+
+Extrapolated track point on PMT plane using MS vector = {-5.849046, 115.994700, 210.635745}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = 0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-7.157050, 42.942481, 206.821194}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = -61.907567
+
+Ring center coordinates = {-5.508188, 132.336914, 239.929082}
+
+Difference in X = 0.340858
+Difference in Y = 16.342214
+Difference in Z = 29.293337
+Distance between fitted ring center and extrapolated track hit = 33.545250
+
+End of loop on global tracks;
+		-------------------- End of loop N°2 on the mirror points. --------------------
+
+[INFO   ] CbmMatchRecoToMC::Exec eventNo=2
+FinishEvent
+[INFO   ] + StsDigitize         : step       3, time 0.042560 s, points: 18, signals: 18 / 21, digis: 26
+[INFO   ] + StsFindClusters     : Event      3, time 0.000171 s, digis: 26, clusters: 16
+[INFO   ] + StsFindHits         : Event      3, time 0.000031 s, clusters: 16, hits: 8
+-I- CbmLitFindGlobalTracks: Number of STS tracks: 1
+-I- CbmLitFindGlobalTracks: Number of hits: 0
+CbmLitFindGlobalTracks::Exec event: 3
+
+-------------------------------------------------------
+-I-             Primary Vertex Finder               -I-
+Vertex coord. (0.004767,-0.000466,0.000344) cm, chi2/ndf = 0.494913, 1 tracks used
+-------------------------------------------------------
+-I- CbmRichHitProducer, event no 4
+SetPhotoDetPar routine called for PMT type 4
+Nof hits: 35
+Fraction of double hits: 0.657143
+Nof crosstalk hits: 0.000000
+CbmRichProjectionProducer: event 4
+CbmRichRingFinderHough. Number of found rings 1
+
+//--------------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function - Defining the entries ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------//
+CbmRichPMTMapping : Event #4
+Nb of rings in evt = 1, nb of mirror points = 2, nb of hits in evt = 35, nb of Monte-Carlo points = 543 and nb of Monte-Carlo tracks = 545
+
+//----------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function ---------------------------------------------------//
+//------------------------------ Mapping for mirror - PMT relations ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------//
+
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51.000000  135.196678  207.021121
+Tilted PMT position in (x,y,z) [cm]: 32.762850  151.272550  199.449486
+PMT size in x and y [cm]: 50.000000  30.000000
+PMT was tilted around x by 4.489373 degrees
+PMT was tilted around y by -5.000000 degrees
+Refractive index for lowest photon energies: 1.000446, (n-1)*10000: 4.462420
+Mirror center (x,y,z): 0.000000 98.155617 49.635877
+Mirror radius: 300.000000
+Mirror tilting angle: -1.557800 degrees
+
+//------------------------------ CbmRichPMTMapping: Projection Producer ------------------------------//
+
+Calculated normal vector to PMT plane = {0.087158, 0.077978, -0.993138} and constante d = 199.502999
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-12.190060, 56.255497, 270.354767} and momentum = {-1.968124, 9.621850, 46.254784}
+Mirror Point coordinates = {-15.493235, 72.406136, 347.997803} and momentum = {-1.967608, 9.620728, 46.254654}
+
+Computed normal to mirror tile coordinates = {-0.044101, 0.203519, 0.978077}
+Calculated unity Mirror-Sphere vector = {0.051693, 0.050991, -0.997360}
+Ref Pt Coo using computed normal & mirror pt = {-11.795562, 56.248795, 270.373949}
+Ref Pt Coo using MS vector & sphere pt = {-10.857870, 96.387430, 272.475581}
+
+Extrapolated track point on PMT plane using MS vector = {-6.986987, 116.413640, 209.408761}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = 0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.707722, 42.756183, 205.552107}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = -2.063476
+
+Ring center coordinates = {-6.833389, 132.439560, 210.680551}
+
+Difference in X = 0.153598
+Difference in Y = 16.025920
+Difference in Z = 1.271790
+Distance between fitted ring center and extrapolated track hit = 16.077038
+
+End of loop on global tracks;
+		-------------------- End of loop N°1 on the mirror points. --------------------
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-12.145495, 56.216415, 270.354767} and momentum = {-1.911648, 9.389568, 45.166870}
+Mirror Point coordinates = {-15.430799, 72.357574, 347.998535} and momentum = {-1.909978, 9.389332, 45.166649}
+
+Computed normal to mirror tile coordinates = {-0.043941, 0.203385, 0.978112}
+Calculated unity Mirror-Sphere vector = {0.051485, 0.051153, -0.997363}
+Ref Pt Coo using computed normal & mirror pt = {-11.740772, 56.212842, 270.373692}
+Ref Pt Coo using MS vector & sphere pt = {-10.809845, 96.353983, 272.482284}
+
+Extrapolated track point on PMT plane using MS vector = {-6.950391, 116.395951, 209.410584}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = 0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.658835, 42.728648, 205.540881}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = -2.050213
+
+Ring center coordinates = {-6.833389, 132.439560, 210.680551}
+
+Difference in X = 0.117002
+Difference in Y = 16.043609
+Difference in Z = 1.269967
+Distance between fitted ring center and extrapolated track hit = 16.094219
+
+End of loop on global tracks;
+		-------------------- End of loop N°2 on the mirror points. --------------------
+
+[INFO   ] CbmMatchRecoToMC::Exec eventNo=3
+FinishEvent
+[INFO   ] + StsDigitize         : step       4, time 0.044051 s, points: 18, signals: 20 / 22, digis: 38
+[INFO   ] + StsFindClusters     : Event      4, time 0.000179 s, digis: 38, clusters: 21
+[INFO   ] + StsFindHits         : Event      4, time 0.000035 s, clusters: 21, hits: 15
+-I- CbmLitFindGlobalTracks: Number of STS tracks: 1
+-I- CbmLitFindGlobalTracks: Number of hits: 0
+CbmLitFindGlobalTracks::Exec event: 4
+
+-------------------------------------------------------
+-I-             Primary Vertex Finder               -I-
+Vertex coord. (-0.001875,-0.003617,0.000655) cm, chi2/ndf = 3.643930, 1 tracks used
+-------------------------------------------------------
+-I- CbmRichHitProducer, event no 5
+SetPhotoDetPar routine called for PMT type 4
+Nof hits: 34
+Fraction of double hits: 0.411765
+Nof crosstalk hits: 0.000000
+CbmRichProjectionProducer: event 5
+CbmRichRingFinderHough. Number of found rings 1
+
+//--------------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function - Defining the entries ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------//
+CbmRichPMTMapping : Event #5
+Nb of rings in evt = 1, nb of mirror points = 2, nb of hits in evt = 34, nb of Monte-Carlo points = 471 and nb of Monte-Carlo tracks = 473
+
+//----------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function ---------------------------------------------------//
+//------------------------------ Mapping for mirror - PMT relations ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------//
+
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51.000000  135.196678  207.021121
+Tilted PMT position in (x,y,z) [cm]: 32.762850  151.272550  199.449486
+PMT size in x and y [cm]: 50.000000  30.000000
+PMT was tilted around x by 4.489373 degrees
+PMT was tilted around y by -5.000000 degrees
+Refractive index for lowest photon energies: 1.000446, (n-1)*10000: 4.462420
+Mirror center (x,y,z): 0.000000 98.155617 49.635877
+Mirror radius: 300.000000
+Mirror tilting angle: -1.557800 degrees
+
+//------------------------------ CbmRichPMTMapping: Projection Producer ------------------------------//
+
+Calculated normal vector to PMT plane = {-0.087156, -0.077977, 0.993138} and constante d = -199.503220
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-12.176084, 56.226986, 270.354767} and momentum = {-1.940601, 9.500834, 45.690407}
+Mirror Point coordinates = {-15.473531, 72.371178, 347.997009} and momentum = {-1.940628, 9.500070, 45.685329}
+
+Computed normal to mirror tile coordinates = {-0.044051, 0.203420, 0.978100}
+Calculated unity Mirror-Sphere vector = {0.051627, 0.051107, -0.997358}
+Ref Pt Coo using computed normal & mirror pt = {-11.778199, 56.223963, 270.373315}
+Ref Pt Coo using MS vector & sphere pt = {-10.842849, 96.363625, 272.480487}
+
+Extrapolated track point on PMT plane using MS vector = {-6.975292, 116.402181, 209.408886}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = 0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.691849, 42.737766, 205.541799}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = 2.053179
+
+Ring center coordinates = {-6.678517, 132.430618, 210.693414}
+
+Difference in X = 0.296775
+Difference in Y = 16.028438
+Difference in Z = 1.284528
+Distance between fitted ring center and extrapolated track hit = 16.082565
+
+End of loop on global tracks;
+		-------------------- End of loop N°1 on the mirror points. --------------------
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-12.190017, 56.224941, 270.354767} and momentum = {-1.969221, 9.605122, 46.200035}
+Mirror Point coordinates = {-15.498883, 72.366394, 347.995453} and momentum = {-1.949644, 9.512000, 45.753571}
+
+Computed normal to mirror tile coordinates = {-0.044101, 0.203413, 0.978099}
+Calculated unity Mirror-Sphere vector = {0.051712, 0.051123, -0.997353}
+Ref Pt Coo using computed normal & mirror pt = {-11.807114, 56.218283, 270.373416}
+Ref Pt Coo using MS vector & sphere pt = {-10.866756, 96.358430, 272.480575}
+
+Extrapolated track point on PMT plane using MS vector = {-6.997760, 116.397841, 209.406574}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = 0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.723554, 42.730531, 205.539405}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = 2.054129
+
+Ring center coordinates = {-6.678517, 132.430618, 210.693414}
+
+Difference in X = 0.319242
+Difference in Y = 16.032777
+Difference in Z = 1.286840
+Distance between fitted ring center and extrapolated track hit = 16.087505
+
+End of loop on global tracks;
+		-------------------- End of loop N°2 on the mirror points. --------------------
+
+[INFO   ] CbmMatchRecoToMC::Exec eventNo=4
+FinishEvent
+[INFO   ] + StsDigitize         : step       5, time 0.044368 s, points: 18, signals: 18 / 18, digis: 34
+[INFO   ] + StsFindClusters     : Event      5, time 0.000169 s, digis: 34, clusters: 25
+[INFO   ] + StsFindHits         : Event      5, time 0.000036 s, clusters: 25, hits: 21
+-I- CbmLitFindGlobalTracks: Number of STS tracks: 2
+-I- CbmLitFindGlobalTracks: Number of hits: 0
+CbmLitFindGlobalTracks::Exec event: 5
+
+-------------------------------------------------------
+-I-             Primary Vertex Finder               -I-
+Vertex coord. (0.103719,-0.364392,-1.884694) cm, chi2/ndf = 2.167600, 2 tracks used
+-------------------------------------------------------
+-I- CbmRichHitProducer, event no 6
+SetPhotoDetPar routine called for PMT type 4
+Nof hits: 35
+Fraction of double hits: 0.628571
+Nof crosstalk hits: 0.000000
+CbmRichProjectionProducer: event 6
+CbmRichRingFinderHough. Number of found rings 1
+
+//--------------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function - Defining the entries ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------//
+CbmRichPMTMapping : Event #6
+Nb of rings in evt = 1, nb of mirror points = 3, nb of hits in evt = 35, nb of Monte-Carlo points = 498 and nb of Monte-Carlo tracks = 500
+
+//----------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function ---------------------------------------------------//
+//------------------------------ Mapping for mirror - PMT relations ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------//
+
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51.000000  135.196678  207.021121
+Tilted PMT position in (x,y,z) [cm]: 32.762850  151.272550  199.449486
+PMT size in x and y [cm]: 50.000000  30.000000
+PMT was tilted around x by 4.489373 degrees
+PMT was tilted around y by -5.000000 degrees
+Refractive index for lowest photon energies: 1.000446, (n-1)*10000: 4.462420
+Mirror center (x,y,z): 0.000000 98.155617 49.635877
+Mirror radius: 300.000000
+Mirror tilting angle: -1.557800 degrees
+
+//------------------------------ CbmRichPMTMapping: Projection Producer ------------------------------//
+
+Calculated normal vector to PMT plane = {0.053605, 0.874217, -0.482568} and constante d = -4.100129
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-12.130977, 56.222878, 270.354767} and momentum = {-1.859033, 9.141589, 43.975327}
+Mirror Point coordinates = {-15.412736, 72.363968, 347.999786} and momentum = {-1.858256, 9.142799, 43.974792}
+
+Computed normal to mirror tile coordinates = {-0.043888, 0.203407, 0.978110}
+Calculated unity Mirror-Sphere vector = {0.051425, 0.051131, -0.997367}
+Ref Pt Coo using computed normal & mirror pt = {-11.727425, 56.215101, 270.374492}
+Ref Pt Coo using MS vector & sphere pt = {-10.797333, 96.357190, 272.481066}
+
+Extrapolated track point on PMT plane using MS vector = {-6.640792, 117.965010, 204.470404}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = -0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.408508, 41.671752, 200.466690}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = -64.859528
+
+Ring center coordinates = {-6.772648, 132.332230, 230.483308}
+
+Difference in X = 0.131856
+Difference in Y = 14.367220
+Difference in Z = 26.012904
+Distance between fitted ring center and extrapolated track hit = 29.717092
+
+End of loop on global tracks;
+		-------------------- End of loop N°1 on the mirror points. --------------------
+
+Mirror track ID <= 1 !!!
+End of loop N°2 on the mirror points.
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-12.192615, 56.201492, 270.354767} and momentum = {-1.966046, 9.602584, 46.212345}
+Mirror Point coordinates = {-15.495250, 72.333145, 347.993958} and momentum = {-1.964414, 9.599416, 46.200588}
+
+Computed normal to mirror tile coordinates = {-0.044112, 0.203331, 0.978116}
+Calculated unity Mirror-Sphere vector = {0.051700, 0.051234, -0.997348}
+Ref Pt Coo using computed normal & mirror pt = {-11.795969, 56.189675, 270.375112}
+Ref Pt Coo using MS vector & sphere pt = {-10.859119, 96.332054, 272.485413}
+
+Extrapolated track point on PMT plane using MS vector = {-6.681795, 117.955952, 204.449440}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = 0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.462781, 41.643815, 200.437679}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = -64.872860
+
+Ring center coordinates = {-6.772648, 132.332230, 230.483308}
+
+Difference in X = 0.090853
+Difference in Y = 14.376277
+Difference in Z = 26.033868
+Distance between fitted ring center and extrapolated track hit = 29.739668
+
+End of loop on global tracks;
+		-------------------- End of loop N°3 on the mirror points. --------------------
+
+[INFO   ] CbmMatchRecoToMC::Exec eventNo=5
+FinishEvent
+[INFO   ] + StsDigitize         : step       6, time 0.044561 s, points: 18, signals: 22 / 20, digis: 32
+[INFO   ] + StsFindClusters     : Event      6, time 0.000221 s, digis: 32, clusters: 22
+[INFO   ] + StsFindHits         : Event      6, time 0.000153 s, clusters: 22, hits: 17
+-I- CbmLitFindGlobalTracks: Number of STS tracks: 1
+-I- CbmLitFindGlobalTracks: Number of hits: 0
+CbmLitFindGlobalTracks::Exec event: 6
+
+-------------------------------------------------------
+-I-             Primary Vertex Finder               -I-
+Vertex coord. (0.000080,0.001675,-0.000344) cm, chi2/ndf = 0.475549, 1 tracks used
+-------------------------------------------------------
+-I- CbmRichHitProducer, event no 7
+SetPhotoDetPar routine called for PMT type 4
+Nof hits: 46
+Fraction of double hits: 0.326087
+Nof crosstalk hits: 0.000000
+CbmRichProjectionProducer: event 7
+CbmRichRingFinderHough. Number of found rings 2
+
+//--------------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function - Defining the entries ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------//
+CbmRichPMTMapping : Event #7
+Nb of rings in evt = 2, nb of mirror points = 2, nb of hits in evt = 46, nb of Monte-Carlo points = 439 and nb of Monte-Carlo tracks = 441
+
+//----------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function ---------------------------------------------------//
+//------------------------------ Mapping for mirror - PMT relations ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------//
+
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51.000000  135.196678  207.021121
+Tilted PMT position in (x,y,z) [cm]: 32.762850  151.272550  199.449486
+PMT size in x and y [cm]: 50.000000  30.000000
+PMT was tilted around x by 4.489373 degrees
+PMT was tilted around y by -5.000000 degrees
+Refractive index for lowest photon energies: 1.000446, (n-1)*10000: 4.462420
+Mirror center (x,y,z): 0.000000 98.155617 49.635877
+Mirror radius: 300.000000
+Mirror tilting angle: -1.557800 degrees
+
+//------------------------------ CbmRichPMTMapping: Projection Producer ------------------------------//
+
+Calculated normal vector to PMT plane = {0.087155, 0.077978, -0.993138} and constante d = 199.503082
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-12.184652, 56.231483, 270.354767} and momentum = {-1.901099, 9.299047, 44.724632}
+Mirror Point coordinates = {-15.485025, 72.374611, 347.996613} and momentum = {-1.901366, 9.299131, 44.724297}
+
+Computed normal to mirror tile coordinates = {-0.044082, 0.203436, 0.978095}
+Calculated unity Mirror-Sphere vector = {0.051666, 0.051096, -0.997356}
+Ref Pt Coo using computed normal & mirror pt = {-11.787774, 56.224096, 270.374190}
+Ref Pt Coo using MS vector & sphere pt = {-10.851380, 96.364235, 272.479883}
+
+Extrapolated track point on PMT plane using MS vector = {-6.981354, 116.400395, 209.408231}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = 0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.699826, 42.735169, 205.543862}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = -2.056197
+
+Ring center coordinates = {-6.725333, 132.381088, 210.685453}
+
+Difference in X = 0.256021
+Difference in Y = 15.980693
+Difference in Z = 1.277222
+Distance between fitted ring center and extrapolated track hit = 16.033696
+
+End of loop on global tracks;
+		-------------------- End of loop N°1 on the mirror points. --------------------
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-8.471791, 56.199703, 270.354797} and momentum = {-0.148526, 1.603781, 7.720710}
+Mirror Point coordinates = {-9.968483, 72.375427, 348.231201} and momentum = {-0.148856, 1.603416, 7.720448}
+
+Computed normal to mirror tile coordinates = {-0.030666, 0.203427, 0.978610}
+Calculated unity Mirror-Sphere vector = {0.033260, 0.051093, -0.998140}
+Ref Pt Coo using computed normal & mirror pt = {-6.586465, 56.187038, 270.416508}
+Ref Pt Coo using MS vector & sphere pt = {-6.346167, 96.414873, 272.484173}
+
+Extrapolated track point on PMT plane using MS vector = {-3.344807, 116.333350, 209.722100}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = 0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-3.784211, 42.773747, 205.941221}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = -2.019400
+
+Ring center coordinates = {-6.725333, 132.381088, 210.685453}
+
+Difference in X = 3.380526
+Difference in Y = 16.047739
+Difference in Z = 0.963353
+Distance between fitted ring center and extrapolated track hit = 16.428205
+
+End of loop on global tracks;
+		-------------------- End of loop N°2 on the mirror points. --------------------
+
+[INFO   ] CbmMatchRecoToMC::Exec eventNo=6
+FinishEvent
+[INFO   ] + StsDigitize         : step       7, time 0.049115 s, points: 18, signals: 21 / 20, digis: 26
+[INFO   ] + StsFindClusters     : Event      7, time 0.000179 s, digis: 26, clusters: 20
+[INFO   ] + StsFindHits         : Event      7, time 0.000042 s, clusters: 20, hits: 14
+-I- CbmLitFindGlobalTracks: Number of STS tracks: 1
+-I- CbmLitFindGlobalTracks: Number of hits: 0
+CbmLitFindGlobalTracks::Exec event: 7
+
+-------------------------------------------------------
+-I-             Primary Vertex Finder               -I-
+Vertex coord. (-0.001339,0.012737,-0.002718) cm, chi2/ndf = 0.710469, 1 tracks used
+-------------------------------------------------------
+-I- CbmRichHitProducer, event no 8
+SetPhotoDetPar routine called for PMT type 4
+Nof hits: 32
+Fraction of double hits: 0.468750
+Nof crosstalk hits: 0.000000
+CbmRichProjectionProducer: event 8
+CbmRichRingFinderHough. Number of found rings 1
+
+//--------------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function - Defining the entries ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------//
+CbmRichPMTMapping : Event #8
+Nb of rings in evt = 1, nb of mirror points = 3, nb of hits in evt = 32, nb of Monte-Carlo points = 455 and nb of Monte-Carlo tracks = 457
+
+//----------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function ---------------------------------------------------//
+//------------------------------ Mapping for mirror - PMT relations ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------//
+
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51.000000  135.196678  207.021121
+Tilted PMT position in (x,y,z) [cm]: 32.762850  151.272550  199.449486
+PMT size in x and y [cm]: 50.000000  30.000000
+PMT was tilted around x by 4.489373 degrees
+PMT was tilted around y by -5.000000 degrees
+Refractive index for lowest photon energies: 1.000446, (n-1)*10000: 4.462420
+Mirror center (x,y,z): 0.000000 98.155617 49.635877
+Mirror radius: 300.000000
+Mirror tilting angle: -1.557800 degrees
+
+//------------------------------ CbmRichPMTMapping: Projection Producer ------------------------------//
+
+Calculated normal vector to PMT plane = {0.087155, 0.077976, -0.993138} and constante d = 199.503422
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-10.174871, 56.216736, 270.354797} and momentum = {-0.321016, 2.266114, 10.897231}
+Mirror Point coordinates = {-12.463557, 72.392799, 348.138611} and momentum = {-0.319452, 2.265709, 10.896970}
+
+Computed normal to mirror tile coordinates = {-0.036822, 0.203444, 0.978394}
+Calculated unity Mirror-Sphere vector = {0.041585, 0.051035, -0.997831}
+Ref Pt Coo using computed normal & mirror pt = {-8.899119, 56.230024, 270.400048}
+Ref Pt Coo using MS vector & sphere pt = {-8.357802, 96.416501, 272.486583}
+
+Extrapolated track point on PMT plane using MS vector = {-4.944104, 116.390826, 209.586275}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = 0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-5.935494, 42.791605, 205.764906}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = -2.030201
+
+Ring center coordinates = {-6.650912, 132.304947, 210.685977}
+
+Difference in X = 1.706809
+Difference in Y = 15.914121
+Difference in Z = 1.099701
+Distance between fitted ring center and extrapolated track hit = 16.043123
+
+End of loop on global tracks;
+		-------------------- End of loop N°1 on the mirror points. --------------------
+
+Mirror track ID <= 1 !!!
+End of loop N°2 on the mirror points.
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-12.192367, 56.190311, 270.354767} and momentum = {-1.973251, 9.628413, 46.338711}
+Mirror Point coordinates = {-15.498319, 72.322029, 347.993225} and momentum = {-1.973329, 9.627826, 46.338570}
+
+Computed normal to mirror tile coordinates = {-0.044111, 0.203292, 0.978124}
+Calculated unity Mirror-Sphere vector = {0.051710, 0.051271, -0.997345}
+Ref Pt Coo using computed normal & mirror pt = {-11.802488, 56.185004, 270.373452}
+Ref Pt Coo using MS vector & sphere pt = {-10.864069, 96.326563, 272.486948}
+
+Extrapolated track point on PMT plane using MS vector = {-6.992416, 116.380985, 209.405748}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = 0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.714832, 42.703438, 205.526547}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = -2.042587
+
+Ring center coordinates = {-6.650912, 132.304947, 210.685977}
+
+Difference in X = 0.341504
+Difference in Y = 15.923961
+Difference in Z = 1.280229
+Distance between fitted ring center and extrapolated track hit = 15.978991
+
+End of loop on global tracks;
+		-------------------- End of loop N°3 on the mirror points. --------------------
+
+[INFO   ] CbmMatchRecoToMC::Exec eventNo=7
+FinishEvent
+[INFO   ] + StsDigitize         : step       8, time 0.044205 s, points: 18, signals: 21 / 19, digis: 29
+[INFO   ] + StsFindClusters     : Event      8, time 0.000164 s, digis: 29, clusters: 16
+[INFO   ] + StsFindHits         : Event      8, time 0.000032 s, clusters: 16, hits: 8
+-I- CbmLitFindGlobalTracks: Number of STS tracks: 1
+-I- CbmLitFindGlobalTracks: Number of hits: 0
+CbmLitFindGlobalTracks::Exec event: 8
+
+-------------------------------------------------------
+-I-             Primary Vertex Finder               -I-
+Vertex coord. (0.005168,0.022087,-0.004327) cm, chi2/ndf = 0.185763, 1 tracks used
+-------------------------------------------------------
+-I- CbmRichHitProducer, event no 9
+SetPhotoDetPar routine called for PMT type 4
+Nof hits: 37
+Fraction of double hits: 0.810811
+Nof crosstalk hits: 0.000000
+CbmRichProjectionProducer: event 9
+CbmRichRingFinderHough. Number of found rings 1
+
+//--------------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function - Defining the entries ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------//
+CbmRichPMTMapping : Event #9
+Nb of rings in evt = 1, nb of mirror points = 2, nb of hits in evt = 37, nb of Monte-Carlo points = 552 and nb of Monte-Carlo tracks = 554
+
+//----------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function ---------------------------------------------------//
+//------------------------------ Mapping for mirror - PMT relations ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------//
+
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51.000000  135.196678  207.021121
+Tilted PMT position in (x,y,z) [cm]: 32.762850  151.272550  199.449486
+PMT size in x and y [cm]: 50.000000  30.000000
+PMT was tilted around x by 4.489373 degrees
+PMT was tilted around y by -5.000000 degrees
+Refractive index for lowest photon energies: 1.000446, (n-1)*10000: 4.462420
+Mirror center (x,y,z): 0.000000 98.155617 49.635877
+Mirror radius: 300.000000
+Mirror tilting angle: -1.557800 degrees
+
+//------------------------------ CbmRichPMTMapping: Projection Producer ------------------------------//
+
+Calculated normal vector to PMT plane = {-0.087156, -0.077978, 0.993138} and constante d = -199.503072
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-12.143313, 56.216999, 270.354767} and momentum = {-1.910095, 9.376786, 45.106190}
+Mirror Point coordinates = {-15.431014, 72.358063, 347.998535} and momentum = {-1.910297, 9.377871, 45.105675}
+
+Computed normal to mirror tile coordinates = {-0.043933, 0.203387, 0.978112}
+Calculated unity Mirror-Sphere vector = {0.051485, 0.051151, -0.997363}
+Ref Pt Coo using computed normal & mirror pt = {-11.744629, 56.212866, 270.373534}
+Ref Pt Coo using MS vector & sphere pt = {-10.812329, 96.354143, 272.481957}
+
+Extrapolated track point on PMT plane using MS vector = {-6.954783, 116.395774, 209.410179}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = 0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.665744, 42.728328, 205.540791}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = 2.050720
+
+Ring center coordinates = {-6.782453, 132.438019, 210.684887}
+
+Difference in X = 0.172331
+Difference in Y = 16.042245
+Difference in Z = 1.274708
+Distance between fitted ring center and extrapolated track hit = 16.093732
+
+End of loop on global tracks;
+		-------------------- End of loop N°1 on the mirror points. --------------------
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-12.196446, 56.244579, 270.354767} and momentum = {-1.967413, 9.611477, 46.209190}
+Mirror Point coordinates = {-15.502068, 72.393875, 347.996704} and momentum = {-1.967451, 9.610765, 46.208939}
+
+Computed normal to mirror tile coordinates = {-0.044124, 0.203481, 0.978084}
+Calculated unity Mirror-Sphere vector = {0.051723, 0.051031, -0.997357}
+Ref Pt Coo using computed normal & mirror pt = {-11.803233, 56.241742, 270.373096}
+Ref Pt Coo using MS vector & sphere pt = {-10.864803, 96.379931, 272.477420}
+
+Extrapolated track point on PMT plane using MS vector = {-6.992033, 116.411673, 209.408159}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = -0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.714185, 42.752431, 205.546427}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = 2.058659
+
+Ring center coordinates = {-6.782453, 132.438019, 210.684887}
+
+Difference in X = 0.209581
+Difference in Y = 16.026346
+Difference in Z = 1.276728
+Distance between fitted ring center and extrapolated track hit = 16.078487
+
+End of loop on global tracks;
+		-------------------- End of loop N°2 on the mirror points. --------------------
+
+[INFO   ] CbmMatchRecoToMC::Exec eventNo=8
+FinishEvent
+[INFO   ] + StsDigitize         : step       9, time 0.044681 s, points: 21, signals: 32 / 31, digis: 50
+[INFO   ] + StsFindClusters     : Event      9, time 0.000222 s, digis: 50, clusters: 28
+[INFO   ] + StsFindHits         : Event      9, time 0.000039 s, clusters: 28, hits: 20
+-I- CbmLitFindGlobalTracks: Number of STS tracks: 1
+-I- CbmLitFindGlobalTracks: Number of hits: 0
+CbmLitFindGlobalTracks::Exec event: 9
+
+-------------------------------------------------------
+-I-             Primary Vertex Finder               -I-
+Vertex coord. (0.000012,0.023754,-0.004941) cm, chi2/ndf = 1.718948, 1 tracks used
+-------------------------------------------------------
+-I- CbmRichHitProducer, event no 10
+SetPhotoDetPar routine called for PMT type 4
+Nof hits: 44
+Fraction of double hits: 0.659091
+Nof crosstalk hits: 0.000000
+CbmRichProjectionProducer: event 10
+CbmRichRingFinderHough. Number of found rings 1
+
+//--------------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function - Defining the entries ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------------------//
+CbmRichPMTMapping : Event #10
+Nb of rings in evt = 1, nb of mirror points = 2, nb of hits in evt = 44, nb of Monte-Carlo points = 521 and nb of Monte-Carlo tracks = 524
+
+//----------------------------------------------------------------------------------------------------------//
+//---------------------------------------- EXEC Function ---------------------------------------------------//
+//------------------------------ Mapping for mirror - PMT relations ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------//
+
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51.000000  135.196678  207.021121
+Tilted PMT position in (x,y,z) [cm]: 32.762850  151.272550  199.449486
+PMT size in x and y [cm]: 50.000000  30.000000
+PMT was tilted around x by 4.489373 degrees
+PMT was tilted around y by -5.000000 degrees
+Refractive index for lowest photon energies: 1.000446, (n-1)*10000: 4.462420
+Mirror center (x,y,z): 0.000000 98.155617 49.635877
+Mirror radius: 300.000000
+Mirror tilting angle: -1.557800 degrees
+
+//------------------------------ CbmRichPMTMapping: Projection Producer ------------------------------//
+
+Calculated normal vector to PMT plane = {-0.087155, -0.077977, 0.993138} and constante d = -199.503180
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-11.665937, 56.215111, 270.354797} and momentum = {-1.206851, 6.350762, 30.557827}
+Mirror Point coordinates = {-14.733350, 72.359444, 348.033783} and momentum = {-1.206764, 6.351521, 30.557407}
+
+Computed normal to mirror tile coordinates = {-0.042209, 0.203395, 0.978186}
+Calculated unity Mirror-Sphere vector = {0.049158, 0.051146, -0.997481}
+Ref Pt Coo using computed normal & mirror pt = {-11.098135, 56.205564, 270.381283}
+Ref Pt Coo using MS vector & sphere pt = {-10.249312, 96.360714, 272.483100}
+
+Extrapolated track point on PMT plane using MS vector = {-6.508128, 116.385788, 209.448600}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = 0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.065152, 42.727834, 205.593167}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = 2.050373
+
+Ring center coordinates = {-6.494220, 132.293243, 210.698812}
+
+Difference in X = 0.013907
+Difference in Y = 15.907456
+Difference in Z = 1.250211
+Distance between fitted ring center and extrapolated track hit = 15.956515
+
+End of loop on global tracks;
+		-------------------- End of loop N°1 on the mirror points. --------------------
+
+Mirror path: RICH_mirror_2_16 and top node path: cave_1
+Mirror matrix parameters: 
+matrix c1115 - tr=1  rot=1  refl=0  scl=0
+  0.999391    0.000000   -0.034899    Tx =  -0.562739
+  0.000000    1.000000    0.000000    Ty =  -0.000000
+  0.034899    0.000000    0.999391    Tz = -10.466799
+==> Dumping object at: 0x00000000038b6c50, name=RICH_mirror_2_PartBody, class=TGeoSphere
+
+fNz                           80                  number of z planes for drawing
+fNseg                         80                  number of segments for drawing
+fRmin                         300                 inner radius
+fRmax                         300.6               outer radius
+fTheta1                       90.038              lower theta limit
+fTheta2                       98.156              higher theta limit
+fPhi1                         355.93              lower phi limit
+fPhi2                         364.07              higher phi limit
+fDX                           2.19161             X half-length
+fDY                           21.3351             Y half-length
+fDZ                           21.2234             Z half-length
+fOrigin[3]                    298.408             box origin
+fShapeId                      256                 shape id
+fShapeBits                    5134                shape bits
+fName                         RICH_mirror_2_PartBoobject identifier
+fTitle                                            object title
+fUniqueID                     602                 object unique identifier
+fBits                         0x03000000          bit field status word
+
+Old sphere coordinates = {-0.562739, 98.155617, 39.169079} and sphere inner radius = 300.000000
+New sphere coordinates = {0.000000, 87.688818, 49.073138} and sphere inner radius = 300.000000
+Reflective Plane Point coordinates = {-12.182201, 56.191906, 270.354767} and momentum = {-1.948192, 9.527852, 45.856796}
+Mirror Point coordinates = {-15.479561, 72.322792, 347.994232} and momentum = {-1.946081, 9.526034, 45.856968}
+
+Computed normal to mirror tile coordinates = {-0.044074, 0.203298, 0.978124}
+Calculated unity Mirror-Sphere vector = {0.051647, 0.051269, -0.997349}
+Ref Pt Coo using computed normal & mirror pt = {-11.780933, 56.183825, 270.374528}
+Ref Pt Coo using MS vector & sphere pt = {-10.846256, 96.326175, 272.487049}
+
+Extrapolated track point on PMT plane using MS vector = {-6.975514, 116.379013, 209.407052}
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with MS vector method):
+Check calculation = -0.000000
+
+Extrapolated track point on PMT plane using computed normal = {-8.691036, 42.701055, 205.529694}
+
+Check whether extrapolated track point on PMT plane verifies its equation (extrapolation with computed normal method):
+Check calculation = 2.043973
+
+Ring center coordinates = {-6.494220, 132.293243, 210.698812}
+
+Difference in X = 0.481293
+Difference in Y = 15.914230
+Difference in Z = 1.291760
+Distance between fitted ring center and extrapolated track hit = 15.973823
+
+End of loop on global tracks;
+		-------------------- End of loop N°2 on the mirror points. --------------------
+
+[INFO   ] CbmMatchRecoToMC::Exec eventNo=9
+FinishEvent
+
+[INFO   ] =====================================
+[INFO   ] StsDigitize: Run summary
+[INFO   ] Steps processed  : 10
+[INFO   ] StsPoint / step  : 18.3
+[INFO   ] Signals / step   : 21.2 / 21.0
+[INFO   ] StsDigi / step   : 33.7
+[INFO   ] Digis per point  : 1.841530
+[INFO   ] Digis per signal : 0.798578
+[INFO   ] Time per step    : 0.043878 s
+[INFO   ] =====================================
+
+[INFO   ] =====================================
+[INFO   ] StsFindClusters: Run summary
+[INFO   ] Events processed   : 10
+[INFO   ] Digis / event      : 33.700000
+[INFO   ] Clusters / event   : 22.300000
+[INFO   ] ClustersWithGap / e: 0.000000
+[INFO   ] Digis per cluster  : 1.511211
+[INFO   ] Time per event     : 0.000200 s 
+[INFO   ] =====================================
+
+[INFO   ] =====================================
+[INFO   ] StsFindHits: Run summary
+[INFO   ] Events processed  : 10
+[INFO   ] Clusters / event  : 22.300000
+[INFO   ] Hits / event      : 16.700000
+[INFO   ] Hits per cluster  : 0.748879
+[INFO   ] Time per event    : 0.000052 
+[INFO   ] =====================================
+
+============================================================
+=====   STSFindTracks: Run summary 
+===== 
+===== Good events   : 10    
+===== Failed events : 0     
+===== Average time  :   0.0002 s
+===== 
+===== Found tracks per event  : 1
+============================================================
+Stopwatch: 
+tracking: counts=1, real=0/0 s, cpu=0/0
+fitter: real=1, real=0/0 s, cpu=0/0
+
+Mirror counter = 0
+
+
+Macro finished successfully.
+Output file is Sim_Outputs/PMTMapping/Rec_RichGeo_jordan_-2Y_216.root
+Parameter file is Sim_Outputs/PMTMapping/Parameters_RichGeo_jordan_-2Y_216.root
+Real time 3 s, CPU time 3 s
+
+ Test passed
+ All ok 

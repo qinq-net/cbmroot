@@ -1,0 +1,263 @@
+void run_sim(Int_t nEvents = 10)
+{
+    TTree::SetMaxTreeSize(90000000000);
+    Int_t iVerbose = 0;
+
+    TString script = TString(gSystem->Getenv("SCRIPT"));
+    TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
+
+    //gRandom->SetSeed(10);
+
+    TString inFile = "/data/Cbm_Root/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
+    //TString parFile = "/data/Cbm_Root/misalignment_correction/run_sim/Misalignment_OneMirr/Study_OneMirr/X_axis/2deg/Parameters_RichGeo_jordan.root";
+    //TString geoFile = "/data/Cbm_Root/misalignment_correction/run_sim/Misalignment_OneMirr/Study_OneMirr/X_axis/2deg/OutPutGeo_RichGeo_jordan.root";
+    //TString outFile = "/data/Cbm_Root/misalignment_correction/run_sim/Misalignment_OneMirr/Study_OneMirr/X_axis/2deg/Sim_RichGeo_jordan.root";
+
+    // -------------------- TEST HISTO CUT -------------------- //
+    //TString parFile = "/data/Cbm_Root/misalignment_correction/run_sim/PMT_Mapping/Multi_el_per_event/multi_el_per_evt_phi[80-175]_theta[3-24pt5]/Parameters_RichGeo_jordan.root";
+    //TString geoFile = "/data/Cbm_Root/misalignment_correction/run_sim/PMT_Mapping/Multi_el_per_event/multi_el_per_evt_phi[80-175]_theta[3-24pt5]/OutPutGeo_RichGeo_jordan.root";
+    //TString outFile = "/data/Cbm_Root/misalignment_correction/run_sim/PMT_Mapping/Multi_el_per_event/multi_el_per_evt_phi[80-175]_theta[3-24pt5]/Sim_RichGeo_jordan.root";
+    TString parFile = "Sim_Outputs/TrackExtrapolation/Parameters_RichGeo_jordan_NewGeo.root";
+    TString geoFile = "Sim_Outputs/TrackExtrapolation/OutPutGeo_RichGeo_jordan_NewGeo.root";
+    TString outFile = "Sim_Outputs/TrackExtrapolation/Sim_RichGeo_jordan_NewGeo.root";
+
+    // -------------------- EVENT DISPLAY -------------------- //
+    TString parFile = "/data/misalignment_correction/event_display/test/Parameters_RichGeo_jordan.root";
+    TString geoFile = "/data/misalignment_correction/event_display/test/OutPutGeo_RichGeo_jordan.root";
+    TString outFile = "/data/misalignment_correction/event_display/test/Sim_RichGeo_jordan.root";
+
+    TString caveGeom = "cave.geo";
+    //TString pipeGeom = "pipe/pipe_v14h.root";
+    TString pipeGeom = "pipe/pipe_v14y.geo.root";
+    //TString magnetGeom = "magnet/magnet_v12a.geo";
+    TString magnetGeom = "magnet/magnet_v15a.geo.root";
+    TString mvdGeom = "";
+    //TString stsGeom = "sts/sts_v13d.geo.root";
+    TString stsGeom = "sts/sts_v15b.geo.root";
+//    TString richGeom = "rich/alignment/v15_rot/Rich_dec_2015.root";
+//    TString richGeom = "rich/alignment/misalignment_correction/PMTMapping/rich_v14b_misaligned_pmtRot.root";
+//    TString richGeom = "rich/alignment/misalignment_correction/PMTMapping/rich_v14b_Mirr_mis_-1Y_216.root";
+    TString richGeom = "rich/alignment/misalignment_correction/v15_rot/Rich_dec_2015_misalign.gdml";
+    TString trdGeom = "";
+    TString tofGeom = "";
+    TString ecalGeom = "";
+    TString fieldMap = "field_v12a";
+
+    TString electrons = "yes"; // If "yes" than primary electrons will be generated
+    Int_t NELECTRONS = 1; // number of e- to be generated
+    TString urqmd = "no"; // If "yes" UrQMD will be used as background
+    /*Int_t NPOSITRONS = 5; // number of e+ to be generated
+     TString pluto = "no"; // If "yes" PLUTO particles will be embedded
+     TString plutoFile = "";
+     TString plutoParticle = "";*/
+    Double_t fieldZ = 50.; // field center z position
+    Double_t fieldScale =  1.0; // field scaling factor
+
+    /*if (script == "yes") {
+     outFile = TString(gSystem->Getenv("MC_FILE"));
+     parFile = TString(gSystem->Getenv("PAR_FILE"));
+     inFile = TString(gSystem->Getenv("IN_FILE"));
+     caveGeom = TString(gSystem->Getenv("CAVE_GEOM"));
+     pipeGeom = TString(gSystem->Getenv("PIPE_GEOM"));
+     mvdGeom = TString(gSystem->Getenv("MVD_GEOM"));
+     stsGeom = TString(gSystem->Getenv("STS_GEOM"));
+     richGeom = TString(gSystem->Getenv("RICH_GEOM"));
+     trdGeom = TString(gSystem->Getenv("TRD_GEOM"));
+     tofGeom = TString(gSystem->Getenv("TOF_GEOM"));
+     ecalGeom = TString(gSystem->Getenv("ECAL_GEOM"));
+     fieldMap = TString(gSystem->Getenv("FIELD_MAP"));
+     magnetGeom = TString(gSystem->Getenv("MAGNET_GEOM"));
+
+     NELECTRONS = TString(gSystem->Getenv("NELECTRONS")).Atoi();
+     NPOSITRONS = TString(gSystem->Getenv("NPOSITRONS")).Atoi();
+     electrons = TString(gSystem->Getenv("ELECTRONS"));
+		urqmd = TString(gSystem->Getenv("URQMD"));
+		pluto = TString(gSystem->Getenv("PLUTO"));
+		plutoFile = TString(gSystem->Getenv("PLUTO_FILE"));
+		plutoParticle = TString(gSystem->Getenv("PLUTO_PARTICLE"));
+		fieldScale = TString(gSystem->Getenv("FIELD_MAP_SCALE")).Atof();
+		}*/
+
+    gDebug = 0;
+    TStopwatch timer;
+    timer.Start();
+
+    gROOT->LoadMacro("$VMCWORKDIR/macro/littrack/loadlibs.C");
+    loadlibs();
+
+    FairRunSim* fRun = new FairRunSim();
+    fRun->SetName("TGeant3"); // Transport engine
+    fRun->SetOutputFile(outFile);
+    FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
+    //fRun->SetStoreTraj(kTRUE);
+
+    fRun->SetMaterials("media.geo"); // Materials
+
+    if ( caveGeom != "" ) {
+	FairModule* cave = new CbmCave("CAVE");
+	cave->SetGeometryFileName(caveGeom);
+	fRun->AddModule(cave);
+    }
+
+    if ( pipeGeom != "" ) {
+	FairModule* pipe = new CbmPipe("PIPE");
+	pipe->SetGeometryFileName(pipeGeom);
+	fRun->AddModule(pipe);
+    }
+
+    CbmTarget* target = new CbmTarget("Gold", 0.025); // 250 mum
+    fRun->AddModule(target);
+
+    if ( magnetGeom != "" ) {
+	FairModule* magnet = new CbmMagnet("MAGNET");
+	magnet->SetGeometryFileName(magnetGeom);
+	fRun->AddModule(magnet);
+    }
+
+    if ( mvdGeom != "" ) {
+	FairDetector* mvd = new CbmMvd("MVD", kTRUE);
+	mvd->SetGeometryFileName(mvdGeom);
+	fRun->AddModule(mvd);
+    }
+
+    if ( stsGeom != "" ) {
+	FairDetector* sts = new CbmStsMC(kTRUE);
+	sts->SetGeometryFileName(stsGeom);
+	fRun->AddModule(sts);
+    }
+
+    if ( richGeom != "" ) {
+	FairDetector* rich = new CbmRich("RICH", kTRUE);
+	rich->SetGeometryFileName(richGeom);
+	fRun->AddModule(rich);
+    }
+
+    if ( trdGeom != "" ) {
+	FairDetector* trd = new CbmTrd("TRD",kTRUE );
+	trd->SetGeometryFileName(trdGeom);
+	fRun->AddModule(trd);
+    }
+
+    if ( tofGeom != "" ) {
+	FairDetector* tof = new CbmTof("TOF", kTRUE);
+	tof->SetGeometryFileName(tofGeom);
+	fRun->AddModule(tof);
+    }
+
+    // -----   Create magnetic field   ----------------------------------------
+    CbmFieldMap* magField = NULL;
+    magField = new CbmFieldMapSym2(fieldMap);
+    magField->SetPosition(0., 0., fieldZ);
+    magField->SetScale(fieldScale);
+    fRun->SetField(magField);
+
+    // -----   Create PrimaryGenerator   --------------------------------------
+    FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
+
+    if (urqmd == "yes"){
+	//CbmUrqmdGenerator*  urqmdGen = new CbmUrqmdGenerator(inFile);
+	CbmUnigenGenerator*  urqmdGen = new CbmUnigenGenerator(inFile);
+	urqmdGen->SetEventPlane(0., 360.);
+	primGen->AddGenerator(urqmdGen);
+    }
+
+/*
+	// Old calculation of phi & theta, assuming only sphere center and tile ID (did not work ...)
+   Double_t A=542.672262, B=1325.94, radius=3000., buffer=0., alpha1=0., alpha2=0., phi1=0., phi2=0., PHI=8.5+4.25;
+   Double_t TgOmega = (radius*TMath::Sin( PHI*TMath::DegToRad() )) / (B-radius*TMath::Sin( 13.75625*TMath::DegToRad() ));
+   phi1 = 90 + TMath::ATan(TgOmega) * TMath::RadToDeg();
+   phi2 = phi1 + 0.01;
+   buffer = (B + radius*TMath::Sin(-13.75625*TMath::DegToRad()))/(radius*TMath::Cos(-13.75625*TMath::DegToRad()) + A);
+   alpha1 = TMath::ATan(buffer)*TMath::RadToDeg();
+   alpha2 = alpha1 + 0.01;
+   cout << "Phi and alpha angles = " << phi1 << " and " << alpha1 << endl;
+*/
+
+//   New calculation, with (Xi, Yi, Zi) = coodinates of the tile center
+//   Double_t Xi = 64.310094, Yi = 61.256446, Zi = 338.476947;
+//   Measurement done on CATIA from tile center to edge: (209.690586; -1.092312; 43.663151)
+   Double_t Xi = -64.310094 + 20.9690586, Yi = 61.256446 - 0.1092312, Zi = 338.476947 + 4.3663151;
+   Double_t omega = TMath::ATan(-1*Xi/Yi);
+   Double_t phi1 = 90 + omega*TMath::RadToDeg();
+   Double_t phi2 = phi1 + 0.1;
+   Double_t oc = TMath::Sqrt(Xi*Xi + Yi*Yi);
+   Double_t theta1 = TMath::ATan(oc/Zi)*TMath::RadToDeg();
+   Double_t theta2 = theta1 + 0.1;
+
+    //add electrons
+    if (electrons == "yes"){
+	FairBoxGenerator* boxGen1 = new FairBoxGenerator(-11, NELECTRONS); // PDG neutrons = 2112
+	boxGen1->SetPtRange(9.9,9.95);
+	boxGen1->SetPhiRange(phi1, phi2);    // Beam between 9 mirrors (1/2_27-28-29-51-52-53-75-76-77): Phi[110., 175.]; Theta[2.5, 27.5]
+	boxGen1->SetThetaRange(theta1, theta2);   // Beam between two mirrors: Phi[125., 143.]; Theta[13., 18.3]
+	boxGen1->SetCosTheta();             // Beam on Mirr_1_2: Phi[118., 128.]; Theta[13., 15.]
+	boxGen1->Init();                    // Beam on Mirr_3_2: Phi[130., 152.]; Theta[19., 19.8]
+	primGen->AddGenerator(boxGen1);
+
+	/*FairBoxGenerator* boxGen2 = new FairBoxGenerator(11, NPOSITRONS);
+	boxGen2->SetPtRange(0.,3.);
+	boxGen2->SetPhiRange(0.,360.);
+	boxGen2->SetThetaRange(2.5,25.);
+	boxGen2->SetCosTheta();
+	boxGen2->Init();
+	primGen->AddGenerator(boxGen2);*/
+
+	//      CbmLitPolarizedGenerator *polGen;
+	//      polGen = new CbmLitPolarizedGenerator(443, NELECTRONS);
+	//      polGen->SetDistributionPt(0.176);        // 25 GeV
+	//      polGen->SetDistributionY(1.9875,0.228);  // 25 GeV
+	//      polGen->SetRangePt(0.,3.);
+	//      polGen->SetRangeY(1.,3.);
+	//      polGen->SetBox(0);
+	//      polGen->SetRefFrame(CbmLitPolarizedGenerator::kHelicity);
+	//      polGen->SetDecayMode(CbmLitPolarizedGenerator::kDiElectron);
+	//      polGen->SetAlpha(0);
+	//      polGen->Init();
+	//      primGen->AddGenerator(polGen);
+    }
+
+    /*if (pluto == "yes") {
+	FairPlutoGenerator *plutoGen= new FairPlutoGenerator(plutoFile);
+	primGen->AddGenerator(plutoGen);
+    }*/
+
+    fRun->SetGenerator(primGen);
+    fRun->SetStoreTraj(kTRUE);
+    fRun->Init();
+
+    // -----   Runtime database   ---------------------------------------------
+    CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
+    fieldPar->SetParameters(magField);
+    fieldPar->setChanged();
+    fieldPar->setInputVersion(fRun->GetRunId(),1);
+    Bool_t kParameterMerged = kTRUE;
+    FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
+    parOut->open(parFile.Data());
+    rtdb->setOutput(parOut);
+    rtdb->saveOutput();
+    rtdb->print();
+
+    fRun->Run(nEvents);
+
+    fRun->CreateGeometryFile(geoFile);
+
+    timer.Stop();
+    Double_t rtime = timer.RealTime();
+    Double_t ctime = timer.CpuTime();
+    cout << endl << endl;
+    cout << "Macro finished succesfully." << endl;
+    cout << "Output file is "    << outFile << endl;
+    cout << "Parameter file is " << parFile << endl;
+    cout << "Real time " << rtime << " s, CPU time " << ctime << "s." << endl << endl;
+    cout << "Simulation of " << nEvents << " events." << endl;
+
+    cout << " Test passed" << endl;
+    cout << " All ok " << endl;
+
+    gGeoManager->CheckOverlaps();
+    gGeoManager->PrintOverlaps();
+    TObjArray *list = gGeoManager->GetListOfOverlaps();
+    Int_t NofOverlaps = list->GetEntries();
+    cout << "Number of overlaps = " << NofOverlaps << endl;
+}
+

@@ -1,0 +1,2545 @@
+
+Processing run_reco.C...
+Error in <TUnixSystem::DynamicPathName>: libFairDB[.so | .dll | .dylib | .sl | .dl | .a] does not exist in /data/Cbm_Root/CbmRoot/build/lib:/data/Cbm_Root/External_Packages/Fairsoft_jul15p2_Install/lib:/data/Cbm_Root/FairRoot/FairRoot_v-15.07-Fairsoft_jul15p2_Install/lib:/data/Cbm_Root/External_Packages/Fairsoft_jul15p2_Install/lib/root:.:/data/Cbm_Root/External_Packages/Fairsoft_jul15p2_Install/lib/root::/data/Cbm_Root/External_Packages/Fairsoft_jul15p2_Install/lib/root/cint/cint/stl
+[INFO   ] FairRootManager::OpenOutFile("Sim_Outputs/Rec_RichGeo_jordan.root")
+In CheckDetectorPresence for detector trd
+Info in <TGeoManager::CloseGeometry>: Geometry loaded from file...
+Info in <TGeoManager::SetTopVolume>: Top volume is cave. Master volume is cave
+Info in <TGeoNavigator::BuildCache>: --- Maximum geometry depth set to 100
+Info in <TGeoManager::Voxelize>: Voxelizing...
+Info in <TGeoManager::CountLevels>: max level = 7, max placements = 32
+Info in <TGeoManager::CloseGeometry>: 4638 nodes/ 316 volume UID's in FAIR geometry
+Info in <TGeoManager::CloseGeometry>: ----------------modeler ready----------------
+After getting the geomanager trd
+Node: PIPE_v14h_0
+Node: magnet1_1
+Node: magnet1_2
+Node: magnet2_1
+Node: magnet2_2
+Node: STS_v13d_0
+Node: rich1_0
+In CheckDetectorPresence for detector rich
+After getting the geomanager rich
+Node: PIPE_v14h_0
+Node: magnet1_1
+Node: magnet1_2
+Node: magnet2_1
+Node: magnet2_2
+Node: STS_v13d_0
+Node: rich1_0
+[INFO   ] The input consists out of the following trees and files: 
+[INFO   ]  - cbmsim
+[INFO   ]     - Sim_Outputs/Sim_RichGeo_jordan.root
+[INFO   ] Parameter and input file are available, Assure that basic info is there for the run!
+[INFO   ] The number of entries in the tree is 3
+[INFO   ] FairRootManager::ReadEvent(0): The tree has 3 entries
+[INFO   ]  Branch: EventHeader. not found in Tree.
+[INFO   ]  Branch: EventHeader. not found in Tree.
+[INFO   ] No event Header was found!!!
+[INFO   ]  Branch: EventHeader. not found in Tree.
+[INFO   ]  Branch: EventHeader. not found in Tree.
+
+************************************************************* 
+     initialisation for run id 1444125307
+************************************************************* 
+-I- FairRunTimeDB::InitContainer() FairGeoParSet
+Warning in <TGeoManager::Init>: Deleting previous geometry: FAIRGeom/FAIR geometry
+Info in <TGeoManager::CloseGeometry>: Geometry loaded from file...
+Info in <TGeoManager::SetTopVolume>: Top volume is cave. Master volume is cave
+Info in <TGeoManager::Voxelize>: Voxelizing...
+Info in <TGeoManager::CountLevels>: max level = 7, max placements = 32
+Info in <TGeoManager::CloseGeometry>: 4638 nodes/ 316 volume UID's in FAIR geometry
+Info in <TGeoManager::CloseGeometry>: ----------------modeler ready----------------
+Container FairGeoParSet initialized from ROOT file.
+-I- FairRunTimeDB::InitContainer() FairBaseParSet
+Container FairBaseParSet initialized from ROOT file.
+ -I container name CbmGeoMuchPar
+ -I container name CbmGeoTofPar
+Error in <FairRuntimeDb::getContainer(Text_t*)>: Container CbmGeoSttPar not created!
+[INFO   ] create CbmFieldPar container CbmFieldPar
+Error in <FairRuntimeDb::getContainer(Text_t*)>: Container CbmGeoStsPar not created!
+Error in <FairRuntimeDb::getContainer(Text_t*)>: Container CbmGeoStsPar not created!
+Error in <FairRuntimeDb::getContainer(Text_t*)>: Container CbmStsDigiPar not created!
+
+************************************************************* 
+     initialisation for run id 1444125307
+************************************************************* 
+-I- FairRunTimeDB::InitContainer() FairGeoParSet
+-I- FairRunTimeDB::InitContainer() FairBaseParSet
+-I- FairRunTimeDB::InitContainer() CbmGeoPassivePar
+Container CbmGeoPassivePar initialized from ROOT file.
+-I- FairRunTimeDB::InitContainer() CbmMvdGeoPar
+[ERROR  ] init() CbmMvdGeoPar  not initialized 
+-I- FairRunTimeDB::InitContainer() CbmGeoTrdPar
+[ERROR  ] init() CbmGeoTrdPar  not initialized 
+-I- FairRunTimeDB::InitContainer() CbmGeoRichPar
+[ERROR  ] init() CbmGeoRichPar  not initialized 
+-I- FairRunTimeDB::InitContainer() CbmGeoMuchPar
+[ERROR  ] init() CbmGeoMuchPar  not initialized 
+-I- FairRunTimeDB::InitContainer() CbmGeoTofPar
+[ERROR  ] init() CbmGeoTofPar  not initialized 
+-I- FairRunTimeDB::InitContainer() CbmFieldPar
+Container CbmFieldPar initialized from ROOT file.
+Error in <FairRuntimeDb::initContainers()>: Error occured during initialization
+New field at 0x395ad20, type 2
+[INFO   ] CbmFieldMap: Reading field map from ROOT file /data/Cbm_Root/CbmRoot/trunk/input/field_v12a.root
+
+[INFO   ] ==========================================================
+[INFO   ] StsDigitize: Initialisation
+[INFO   ] 
+
+[INFO   ] ==========================================================
+[INFO   ] Initialising STS Setup
+[INFO   ] STS: Reading geometry from TGeoManager FAIRGeom
+[INFO   ] STS: STS top node is STS_v13d_0
+[INFO   ] STS: Elements in setup: 
+[INFO   ]      stations        8
+[INFO   ]      ladders       106
+[INFO   ]      halfladders   212
+[INFO   ]      modules       896
+[INFO   ]      sensors      1220
+[INFO   ] STS: 7 sensor types in database
+[INFO   ] STS: Set types for 1220 sensors
+[INFO   ] ==========================================================
+
+[INFO   ] StsDigitize: Detector response model SIMPLE
+[INFO   ] StsDigitize: Sensor operation conditions :
+[INFO   ] 	 Depletion voltage               70 V
+[INFO   ] 	 Bias voltage                   140 V
+[INFO   ] 	 Temperature                    268
+[INFO   ] 	 Coupling capacitance          17.5 pF
+[INFO   ] 	 Inter-strip capacitance          1 pF
+[INFO   ] StsDigitize: Set conditions for 1220 sensors 
+[INFO   ] StsDigitize: Digitisation parameters :
+[INFO   ] 	 Dynamic range        40960 e
+[INFO   ] 	 Threshold             4000 e
+[INFO   ] 	 ADC channels          4096
+[INFO   ] 	 Time resolution          5 ns
+[INFO   ] 	 Dead time            1e+07 ns
+[INFO   ] 	 ENC                      0 e
+[INFO   ] 	 Dead channel fraction          0 %
+[INFO   ] StsDigitize: Set parameters for 896 modules 
+[INFO   ] Instantiating STS Physics... 
+[INFO   ] StsPhysics:    87 values read from /data/Cbm_Root/CbmRoot/trunk/sts/digitize/dEdx_Si_e.txt
+[INFO   ] StsPhysics:   138 values read from /data/Cbm_Root/CbmRoot/trunk/sts/digitize/dEdx_Si_p.txt
+[INFO   ] StsDigitize: Using event mode.
+[INFO   ] StsDigitize: Initialisation successful
+[INFO   ] ==========================================================
+
+[INFO   ] StsFindClusters: Initialisation successful
+[INFO   ] StsFindHits: Initialisation successful
+KALMAN FILTER : === INIT MAGNETIC FIELD ===
+Magnetic field done
+[INFO   ]  Branch: MvdPoint not found in Tree.
+[INFO   ]  Branch: MvdPoint not found in Tree.
+KALMAN FILTER : === READ STS MATERIAL ===
+ Sts material ( id, z, dz, r, R, RadL )= ( 1000, 30, 0.03, 0, 23.7468, 9.34953 )
+ Sts material ( id, z, dz, r, R, RadL )= ( 1001, 40, 0.03, 0, 35.5452, 9.34953 )
+ Sts material ( id, z, dz, r, R, RadL )= ( 1002, 50, 0.03, 0, 35.5452, 9.34953 )
+ Sts material ( id, z, dz, r, R, RadL )= ( 1003, 60, 0.03, 0, 41.4444, 9.34953 )
+ Sts material ( id, z, dz, r, R, RadL )= ( 1004, 70, 0.03, 0, 41.4444, 9.34953 )
+ Sts material ( id, z, dz, r, R, RadL )= ( 1005, 80, 0.03, 0, 41.4444, 9.34953 )
+ Sts material ( id, z, dz, r, R, RadL )= ( 1006, 90, 0.03, 0, 47.3436, 9.34953 )
+ Sts material ( id, z, dz, r, R, RadL )= ( 1007, 100, 0.03, 0, 47.3436, 9.34953 )
+KALMAN FILTER : === READ RICH MATERIAL ===
+KALMAN FILTER : === READ TRD PASSIVE MATERIAL ===
+printout skipped for Verbose mode 1
+KALMAN FILTER : === READ TRD DETECTORS ===
+KALMAN FILTER : === READ MUCH PASSIVE MATERIAL ===
+KALMAN FILTER : === READ MUCH DETECTORS ===
+KALMAN FILTER : === READ TOF PASSIVE MATERIAL ===
+printout skipped for Verbose mode 1
+KALMAN FILTER : === READ TOF DETECTORS ===
+KALMAN FILTER : === READ BEAM PIPE MATERIAL ===
+KALMAN FILTER : === READ TARGET MATERIAL ===
+[INFO   ]  Branch: MvdHit not found in Tree.
+[INFO   ]  Branch: MvdHit not found in Tree.
+L1Algo Input Magnetic field:0 0 -8.34485 0
+L1Algo Input Magnetic field:2.5 0 -8.57669 -2.46004e-17
+L1Algo Input Magnetic field:5 0 -8.80321 -1.53177e-17
+L1Algo Input 8 Stations:
+    30 0.03 9.34953, 21 field coeff.
+       3.14159 0.00167432 3.27249 0.00167432
+    40 0.03 9.34953, 21 field coeff.
+       3.14159 0.00167432 3.27249 0.00167432
+    50 0.03 9.34953, 21 field coeff.
+       3.14159 0.00167432 3.27249 0.00167432
+    60 0.03 9.34953, 21 field coeff.
+       0 0.00167432 0.1309 0.00167432
+    70 0.03 9.34953, 21 field coeff.
+       0 0.00167432 0.1309 0.00167432
+    80 0.03 9.34953, 21 field coeff.
+       0 0.00167432 0.1309 0.00167432
+    90 0.03 9.34953, 21 field coeff.
+       3.14159 0.00167432 3.27249 0.00167432
+    100 0.03 9.34953, 21 field coeff.
+       3.14159 0.00167432 3.27249 0.00167432
+L1Algo initialized
+No MVD material budget file is found. Homogenious budget will be used
+STS Material budget file is /data/Cbm_Root/CbmRoot/trunk/parameters/sts/sts_matbudget_v13d.root.
+
+---------------------------------------------
+-I- Initialising STSFindTracks ....
+[INFO   ]  Branch: MvdHit not found in Tree.
+[INFO   ]  Branch: MvdHit not found in Tree.
+-W- STSFindTracks::Init: No MVD hits available!
+     Running track finding without MVD hits
+-I- Track finder engine STS Track Finder L1 selected
+-I- STSFindTracks intialised 
+---------------------------------------------
+-I- CBM detector setup information: 
+   Electron setup detected 
+   Detectors found in setup: STS RICH 
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51  135.197  207.021
+Tilted PMT position in (x,y,z) [cm]: 32.7629  151.273  199.449
+PMT size in x and y [cm]: 50  30
+PMT was tilted around x by 4.48937 degrees
+PMT was tilted around y by -5 degrees
+Refractive index for lowest photon energies: 1.00045, (n-1)*10000: 4.46242
+Mirror center (x,y,z): 0 98.1556 49.6359
+Mirror radius: 300
+Mirror tilting angle: -1.5578 degrees
+
+CbmRichReconstruction::Init
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51  135.197  207.021
+Tilted PMT position in (x,y,z) [cm]: 32.7629  151.273  199.449
+PMT size in x and y [cm]: 50  30
+PMT was tilted around x by 4.48937 degrees
+PMT was tilted around y by -5 degrees
+Refractive index for lowest photon energies: 1.00045, (n-1)*10000: 4.46242
+Mirror center (x,y,z): 0 98.1556 49.6359
+Mirror radius: 300
+Mirror tilting angle: -1.5578 degrees
+
+   use tracks in imaginary plane for projection to photodetector plane
+-I- CbmRichRingSelectNeuralNet: get NeuralNet weight parameters from: /data/Cbm_Root/CbmRoot/trunk/parameters/rich/rich_select_ann_weights.txt
+[INFO   ]  Branch: TrdTrack not found in Tree.
+[INFO   ]  Branch: TrdTrack not found in Tree.
+InitBranch: MCTrack 0x134499d0
+InitBranch: StsPoint 0x13449ac0
+[INFO   ]  Branch: TrdPoint not found in Tree.
+[INFO   ]  Branch: TrdPoint not found in Tree.
+[INFO   ]  Branch: TrdDigi not found in Tree.
+[INFO   ]  Branch: TrdDigi not found in Tree.
+[INFO   ]  Branch: TrdCluster not found in Tree.
+[INFO   ]  Branch: TrdCluster not found in Tree.
+[INFO   ]  Branch: TrdHit not found in Tree.
+[INFO   ]  Branch: TrdHit not found in Tree.
+[INFO   ]  Branch: TrdTrack not found in Tree.
+[INFO   ]  Branch: TrdTrack not found in Tree.
+[INFO   ]  Branch: TrdDigiMatch not found in Tree.
+[INFO   ]  Branch: TrdDigiMatch not found in Tree.
+[INFO   ]  Branch: MuchPoint not found in Tree.
+[INFO   ]  Branch: MuchPoint not found in Tree.
+[INFO   ]  Branch: MuchDigi not found in Tree.
+[INFO   ]  Branch: MuchDigi not found in Tree.
+[INFO   ]  Branch: MuchStrawDigi not found in Tree.
+[INFO   ]  Branch: MuchStrawDigi not found in Tree.
+[INFO   ]  Branch: MuchCluster not found in Tree.
+[INFO   ]  Branch: MuchCluster not found in Tree.
+[INFO   ]  Branch: MuchPixelHit not found in Tree.
+[INFO   ]  Branch: MuchPixelHit not found in Tree.
+[INFO   ]  Branch: MuchStrawHit not found in Tree.
+[INFO   ]  Branch: MuchStrawHit not found in Tree.
+[INFO   ]  Branch: MuchTrack not found in Tree.
+[INFO   ]  Branch: MuchTrack not found in Tree.
+[INFO   ]  Branch: MuchDigiMatch not found in Tree.
+[INFO   ]  Branch: MuchDigiMatch not found in Tree.
+[INFO   ]  Branch: MuchStrawDigiMatch not found in Tree.
+[INFO   ]  Branch: MuchStrawDigiMatch not found in Tree.
+[INFO   ]  Branch: MvdPoint not found in Tree.
+[INFO   ]  Branch: MvdPoint not found in Tree.
+[INFO   ]  Branch: MvdHit not found in Tree.
+[INFO   ]  Branch: MvdHit not found in Tree.
+[INFO   ]  Branch: MvdCluster not found in Tree.
+[INFO   ]  Branch: MvdCluster not found in Tree.
+[INFO   ]  Branch: MvdDigiMatch not found in Tree.
+[INFO   ]  Branch: MvdDigiMatch not found in Tree.
+Starting run
+-------------------Warning---------------------------
+ -W FairRunAna : File has less events than requested!!
+ File contains : 3 Events
+ Requested number of events = 100 Events
+ The number of events is set to 3 Events
+-----------------------------------------------------
+[INFO   ] The number of entries in the tree is 3
+[INFO   ] FairRootManager::ReadEvent(0): The tree has 3 entries
+[INFO   ] + StsDigitize         : step       0, time 0.066001 s, points: 8, signals: 17 / 17, digis: 31
+[INFO   ] + StsFindClusters     : Event      0, time 0.000207 s, digis: 31, clusters: 16
+[INFO   ] + StsFindHits         : Event      0, time 0.000057 s, clusters: 16, hits: 8
+-I- CbmLitFindGlobalTracks: Number of STS tracks: 1
+-I- CbmLitFindGlobalTracks: Number of hits: 0
+CbmLitFindGlobalTracks::Exec event: 0
+
+-------------------------------------------------------
+-I-             Primary Vertex Finder               -I-
+Vertex coord. (-0.000507,0.011468,-0.000354) cm, chi2/ndf = 0.511912, 1 tracks used
+-------------------------------------------------------
+-I- CbmRichHitProducer, event no 1
+SetPhotoDetPar routine called for PMT type 4
+Nof hits: 5
+Fraction of double hits: 0.000000
+Nof crosstalk hits: 0.000000
+CbmRichProjectionProducer: event 1
+CbmRichRingFinderHough. Number of found rings 0
+
+//---------------------------------------- EXEC Function ----------------------------------------//
+CbmRichPMTMapping : Event #1
+Nb of rings in evt = 0, nb of mirror points = 1, nb of hits in evt = 5, nb of Monte-Carlo points = 38 and nb of Monte-Carlo tracks = 39
+
+//----------------------------------------------------------------------------------------------------------//
+//------------------------------ Mapping for mirror - PMT relations ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------//
+
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51.000000  135.196678  207.021121
+Tilted PMT position in (x,y,z) [cm]: 32.762850  151.272550  199.449486
+PMT size in x and y [cm]: 50.000000  30.000000
+PMT was tilted around x by 4.489373 degrees
+PMT was tilted around y by -5.000000 degrees
+Refractive index for lowest photon energies: 1.000446, (n-1)*10000: 4.462420
+Mirror center (x,y,z): 0.000000 98.155617 49.635877
+Mirror radius: 300.000000
+Mirror tilting angle: -1.557800 degrees
+
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+[INFO   ] CbmMatchRecoToMC::Exec eventNo=0
+FinishEvent
+[INFO   ] The number of entries in the tree is 3
+[INFO   ] FairRootManager::ReadEvent(1): The tree has 3 entries
+[INFO   ] + StsDigitize         : step       1, time 0.061653 s, points: 13, signals: 9 / 11, digis: 20
+[INFO   ] + StsFindClusters     : Event      1, time 0.000229 s, digis: 20, clusters: 18
+[INFO   ] + StsFindHits         : Event      1, time 0.000033 s, clusters: 18, hits: 9
+-I- CbmLitFindGlobalTracks: Number of STS tracks: 1
+-I- CbmLitFindGlobalTracks: Number of hits: 0
+CbmLitFindGlobalTracks::Exec event: 1
+
+-------------------------------------------------------
+-I-             Primary Vertex Finder               -I-
+Vertex coord. (0.000000,0.000000,0.000000) cm, chi2/ndf = -0.000000, 0 tracks used
+-------------------------------------------------------
+-I- CbmRichHitProducer, event no 2
+SetPhotoDetPar routine called for PMT type 4
+Nof hits: 26
+Fraction of double hits: 0.153846
+Nof crosstalk hits: 0.000000
+CbmRichProjectionProducer: event 2
+CbmRichRingFinderHough. Number of found rings 1
+
+//---------------------------------------- EXEC Function ----------------------------------------//
+CbmRichPMTMapping : Event #2
+Nb of rings in evt = 1, nb of mirror points = 1, nb of hits in evt = 26, nb of Monte-Carlo points = 238 and nb of Monte-Carlo tracks = 241
+
+//----------------------------------------------------------------------------------------------------------//
+//------------------------------ Mapping for mirror - PMT relations ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------//
+
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51.000000  135.196678  207.021121
+Tilted PMT position in (x,y,z) [cm]: 32.762850  151.272550  199.449486
+PMT size in x and y [cm]: 50.000000  30.000000
+PMT was tilted around x by 4.489373 degrees
+PMT was tilted around y by -5.000000 degrees
+Refractive index for lowest photon energies: 1.000446, (n-1)*10000: 4.462420
+Mirror center (x,y,z): 0.000000 98.155617 49.635877
+Mirror radius: 300.000000
+Mirror tilting angle: -1.557800 degrees
+
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+[INFO   ] CbmMatchRecoToMC::Exec eventNo=1
+FinishEvent
+[INFO   ] + StsDigitize         : step       2, time 0.065218 s, points: 8, signals: 16 / 19, digis: 30
+[INFO   ] + StsFindClusters     : Event      2, time 0.000194 s, digis: 30, clusters: 16
+[INFO   ] + StsFindHits         : Event      2, time 0.000030 s, clusters: 16, hits: 8
+-I- CbmLitFindGlobalTracks: Number of STS tracks: 1
+-I- CbmLitFindGlobalTracks: Number of hits: 0
+CbmLitFindGlobalTracks::Exec event: 2
+
+-------------------------------------------------------
+-I-             Primary Vertex Finder               -I-
+Vertex coord. (-0.003700,0.005483,-0.002291) cm, chi2/ndf = 0.417432, 1 tracks used
+-------------------------------------------------------
+-I- CbmRichHitProducer, event no 3
+SetPhotoDetPar routine called for PMT type 4
+Nof hits: 23
+Fraction of double hits: 0.304348
+Nof crosstalk hits: 0.000000
+CbmRichProjectionProducer: event 3
+CbmRichRingFinderHough. Number of found rings 1
+
+//---------------------------------------- EXEC Function ----------------------------------------//
+CbmRichPMTMapping : Event #3
+Nb of rings in evt = 1, nb of mirror points = 1, nb of hits in evt = 23, nb of Monte-Carlo points = 247 and nb of Monte-Carlo tracks = 248
+
+//----------------------------------------------------------------------------------------------------------//
+//------------------------------ Mapping for mirror - PMT relations ----------------------------------------//
+//----------------------------------------------------------------------------------------------------------//
+
+-I- CbmRichHitProducer::InitRootGeometry
+
+-I- RICH geometry parameters
+PMT position in (x,y,z) [cm]: 51.000000  135.196678  207.021121
+Tilted PMT position in (x,y,z) [cm]: 32.762850  151.272550  199.449486
+PMT size in x and y [cm]: 50.000000  30.000000
+PMT was tilted around x by 4.489373 degrees
+PMT was tilted around y by -5.000000 degrees
+Refractive index for lowest photon energies: 1.000446, (n-1)*10000: 4.462420
+Mirror center (x,y,z): 0.000000 98.155617 49.635877
+Mirror radius: 300.000000
+Mirror tilting angle: -1.557800 degrees
+
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+
+   !!! HERE 1 !!!   
+Translation matrix = 0.000000
+Rotation matrix = 1.000000
+[INFO   ] CbmMatchRecoToMC::Exec eventNo=2
+FinishEvent
+
+[INFO   ] =====================================
+[INFO   ] StsDigitize: Run summary
+[INFO   ] Steps processed  : 3
+[INFO   ] StsPoint / step  : 9.7
+[INFO   ] Signals / step   : 14.0 / 15.7
+[INFO   ] StsDigi / step   : 27.0
+[INFO   ] Digis per point  : 2.793103
+[INFO   ] Digis per signal : 0.910112
+[INFO   ] Time per step    : 0.064291 s
+[INFO   ] =====================================
+
+[INFO   ] =====================================
+[INFO   ] StsFindClusters: Run summary
+[INFO   ] Events processed   : 3
+[INFO   ] Digis / event      : 27.000000
+[INFO   ] Clusters / event   : 16.666667
+[INFO   ] ClustersWithGap / e: 0.000000
+[INFO   ] Digis per cluster  : 1.620000
+[INFO   ] Time per event     : 0.000210 s 
+[INFO   ] =====================================
+
+[INFO   ] =====================================
+[INFO   ] StsFindHits: Run summary
+[INFO   ] Events processed  : 3
+[INFO   ] Clusters / event  : 16.666667
+[INFO   ] Hits / event      : 8.333333
+[INFO   ] Hits per cluster  : 0.500000
+[INFO   ] Time per event    : 0.000040 
+[INFO   ] =====================================
+
+============================================================
+=====   STSFindTracks: Run summary 
+===== 
+===== Good events   : 3     
+===== Failed events : 0     
+===== Average time  :   0.0002 s
+===== 
+===== Found tracks per event  : 1
+============================================================
+Stopwatch: 
+tracking: counts=1, real=0/0 s, cpu=0/0
+fitter: real=1, real=0/0 s, cpu=0/0
+Mirror counter = 0
+
+
+Macro finished successfully.
+Output file is Sim_Outputs/Rec_RichGeo_jordan.root
+Parameter file is Sim_Outputs/Parameters_RichGeo_jordan.root
+Real time 3 s, CPU time 3 s
+
+ Test passed
+ All ok 

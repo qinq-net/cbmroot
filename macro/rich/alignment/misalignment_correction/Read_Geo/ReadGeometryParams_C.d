@@ -1,0 +1,49 @@
+
+# DO NOT DELETE
+
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TGeoManager.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TObjArray.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TSeqCollection.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TCollection.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TObject.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/Rtypes.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/RConfig.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/RVersion.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/DllImport.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/Rtypeinfo.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/snprintf.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/strlcpy.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TGenericClassInfo.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TSchemaHelper.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TStorage.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TVersionCheck.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/Riosfwd.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TBuffer.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TIterator.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TString.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TMathBase.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TGeoNavigator.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TGeoCache.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TGeoNode.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TGeoAtt.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TNamed.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TGeoVolume.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TAttLine.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TAttFill.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TAtt3D.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TGeoMedium.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TGeoMaterial.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TGeoElement.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TAttMarker.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TGeoShape.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TGeoPatternFinder.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TGeoStateInfo.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TGeoMatrix.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TGDMLParse.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TXMLEngine.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TFormula.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TBits.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TMath.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/TError.h
+./ReadGeometryParams_C.so: /data/cbm/FairSoft_build_nov15/include/root/cintdictversion.h /data/cbm/FairSoft_build_nov15/include/root/RVersion.h
+ReadGeometryParams_C__ROOTBUILDVERSION= 5.34/34
