@@ -399,7 +399,8 @@ void CbmRichCorrectionVector::ProjectionProducer(TClonesArray* projectedPoint)
 
 						if (fIsMeanCenter) {
 							GetMirrorIntersection(ptM, ptR1, momR1, ptC, sphereRadius);
-							//From ptM: how to retrieve tile ID ???
+							// From ptM: how to retrieve tile ID ???
+							// => Compare distance of ptM to tile centers
 						}
 
 						ComputeR2(ptR2Center, ptR2Mirr, ptC, ptM, ptR1);
