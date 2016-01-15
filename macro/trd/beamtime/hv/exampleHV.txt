@@ -1,7 +1,7 @@
 2015-10-28-13:53:07:229
 WIENER-CRATE-MIB::outputMeasurementCurrent.u000 = Opaque: Float: 0.0000000000 A
 WIENER-CRATE-MIB::outputMeasurementCurrent.u001 = Opaque: Float: 0.2551269531 A
-WIENER-CRATE-MIB::outputMeasurementCurrent.u002 = Opaque: Float: -0.0014038086 A
+WIENER-CRATE-MIB::outputMeasurementCurrent.u002 = Opaque: Float: -0.0014038084 A
 WIENER-CRATE-MIB::outputMeasurementCurrent.u003 = Opaque: Float: 0.0000000000 A
 WIENER-CRATE-MIB::outputMeasurementCurrent.u004 = Opaque: Float: 0.0000000000 A
 WIENER-CRATE-MIB::outputMeasurementCurrent.u005 = Opaque: Float: 0.0000000000 A
