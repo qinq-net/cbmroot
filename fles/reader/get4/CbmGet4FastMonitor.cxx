@@ -199,6 +199,23 @@ CbmGet4FastMonitor::CbmGet4FastMonitor()
   fhPulserFeeTotInl(NULL),
   fhPulserFeeRisCtWideBins(NULL),
   fhPulserFeeFalCtWideBins(NULL),
+  fbEnableMissingEdgeCheck(kFALSE),
+  fvuLastTotInFtBins(),
+  fhPulserFeeFtRecoMissRis(NULL),
+  fhPulserFeeFtRecoMissFal(NULL),
+  fvuNbRisEdgeEpoch(),
+  fvuNbFalEdgeEpoch(),
+  fhPulserFeeExtraRisEp(NULL),
+  fhPulserFeeExtraFalEp(NULL),
+  fhPulserFeeExtraEdgesEp(NULL),
+  fvuFeePrevRisEp(),
+  fvmFeePrevRis(),
+  fvuFeePrevFalEp(),
+  fvmFeePrevFal(),
+  fhPulserFeeFtExtraEdgeRisA(NULL),
+  fhPulserFeeFtExtraEdgeFalA(NULL),
+  fhPulserFeeFtExtraEdgeRisB(NULL),
+  fhPulserFeeFtExtraEdgeFalB(NULL),
   fhPulserFeeTotDistCT(),
   fvuPrevOldTotEp(),
   fvmPrevOldTot(),
@@ -1174,6 +1191,64 @@ void CbmGet4FastMonitor::InitMonitorHistograms()
             kuNbChanFee, -0.5, kuNbChanFee - 0.5,
             get4v1x::kuCoarseCounterSize/10 + 1,  -5, get4v1x::kuCoarseCounterSize + 5);
 
+      if( kTRUE == fbEnableMissingEdgeCheck)
+      {
+         fvuLastTotInFtBins.resize( kuNbChanFee );
+         fvuNbRisEdgeEpoch.resize( kuNbChanFee );
+         fvuNbFalEdgeEpoch.resize( kuNbChanFee );
+         fvuFeePrevRisEp.resize( kuNbChanFee );
+         fvmFeePrevRis.resize( kuNbChanFee );
+         fvuFeePrevFalEp.resize( kuNbChanFee );
+         fvmFeePrevFal.resize( kuNbChanFee );
+         for( UInt_t uChan = 0; uChan < kuNbChanFee; uChan ++)
+         {
+            fvuLastTotInFtBins[uChan] = 0;
+            fvuNbRisEdgeEpoch[uChan] = 0;
+            fvuNbFalEdgeEpoch[uChan] = 0;
+            fvuFeePrevRisEp[uChan] = 0;
+            fvuFeePrevFalEp[uChan] = 0;
+         }
+         fhPulserFeeFtRecoMissRis = new TH2D( "hPulserFeeFtRecoMissRis",
+               "Reconstructed FT of missing rising edges in chosen FEE board; Chan # ; FT Bin; Counts []",
+               kuNbChanFee, -0.5, kuNbChanFee - 0.5,
+               get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+         fhPulserFeeFtRecoMissFal = new TH2D( "hPulserFeeFtRecoMissFal",
+               "Reconstructed FT of missing rising edges in chosen FEE board; Chan # ; FT Bin; Counts []",
+               kuNbChanFee, -0.5, kuNbChanFee - 0.5,
+               get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+
+         fhPulserFeeExtraRisEp = new TH2D( "hPulserFeeExtraRisEp",
+               "Number of extra rising edges per epoch in chosen FEE board; Chan # ; Nb Rising edge; Counts []",
+               kuNbChanFee, -0.5, kuNbChanFee - 0.5,
+               10 ,  1.5, 11.5);
+         fhPulserFeeExtraFalEp = new TH2D( "hPulserFeeExtraFalEp",
+               "Number of extra falling edges per epoch in chosen FEE board; Chan # ; Nb Falling edge; Counts []",
+               kuNbChanFee, -0.5, kuNbChanFee - 0.5,
+               10 ,  1.5, 11.5);
+         fhPulserFeeExtraEdgesEp = new TH2D( "hPulserFeeExtraEdgesEp",
+               "Number of extra edges per epoch in chosen FEE board; Chan (R, F)# ; Nb edges; Counts []",
+               2*kuNbChanFee, -0.5, kuNbChanFee - 0.5,
+               10 ,  1.5, 11.5);
+
+         fhPulserFeeFtExtraEdgeRisA = new TH2D( "hPulserFeeFtExtraEdgeRisA",
+               "When extra edge message, FT of first rising edge message in chosen FEE board; Chan # ; FT Bin; Counts []",
+               kuNbChanFee, -0.5, kuNbChanFee - 0.5,
+               get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+         fhPulserFeeFtExtraEdgeFalA = new TH2D( "hPulserFeeFtExtraEdgeFalA",
+               "When extra edge message, FT of first falling edge message in chosen FEE board; Chan # ; FT Bin; Counts []",
+               kuNbChanFee, -0.5, kuNbChanFee - 0.5,
+               get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+         fhPulserFeeFtExtraEdgeRisB = new TH2D( "hPulserFeeFtExtraEdgeRisB",
+               "When extra edge message, FT of second rising edge message in chosen FEE board; Chan # ; FT Bin; Counts []",
+               kuNbChanFee, -0.5, kuNbChanFee - 0.5,
+               get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+         fhPulserFeeFtExtraEdgeFalB = new TH2D( "hPulserFeeFtExtraEdgeFalB",
+               "When extra edge message, FT of second falling edge message in chosen FEE board; Chan # ; FT Bin; Counts []",
+               kuNbChanFee, -0.5, kuNbChanFee - 0.5,
+               get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+
+      } // if( kTRUE == fbEnableMissingEdgeCheck)
+
       fhPulserFeeTotDistCT.resize( kuNbChipFee );
       for( UInt_t uChip = 0; uChip < kuNbChipFee; uChip ++)
          fhPulserFeeTotDistCT[uChip] = new TH2D( Form("fhPulserFeeTotDistCT_chip%03u", uChip),
@@ -1771,6 +1846,20 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
          fhPulserFeeRisCtWideBins->Write();
          fhPulserFeeFalCtWideBins->Write();
 
+         // Write the missing message counts per FT bin histograms to file
+         if( kTRUE == fbEnableMissingEdgeCheck)
+         {
+            fhPulserFeeFtRecoMissRis->Write();
+            fhPulserFeeFtRecoMissFal->Write();
+            fhPulserFeeExtraRisEp->Write();
+            fhPulserFeeExtraFalEp->Write();
+            fhPulserFeeExtraEdgesEp->Write();
+
+            fhPulserFeeFtExtraEdgeRisA->Write();
+            fhPulserFeeFtExtraEdgeFalA->Write();
+            fhPulserFeeFtExtraEdgeRisB->Write();
+            fhPulserFeeFtExtraEdgeFalB->Write();
+         } // if( kTRUE == fbEnableMissingEdgeCheck)
 
          // Compute the DNL from the bins occupancy
          for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
@@ -2386,6 +2475,173 @@ void CbmGet4FastMonitor::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
       } // for( UInt_t uChanA = 0; uChanA < kuNbChanTest; uChanA++)
 
    } // if( kTRUE == fbPulserMode && 0 == uChipFullId && kTRUE == fbOldReadoutOk )
+
+   // Check for missing edges in 24b mode with pulser
+   if( kTRUE == fbPulserMode && kTRUE == fbOldReadoutOk
+         && fuPulserFee == (uChipFullId/kuNbChipFee) &&
+         kTRUE == fbEnableMissingEdgeCheck )
+   {
+      UInt_t uChipInFee = uChipFullId%kuNbChipFee;
+      UInt_t uChInFee   = get4v1x::kuChanPerGet4 * uChipInFee;
+      UInt_t uFullChId  = get4v1x::kuChanPerGet4*( uChipFullId );
+
+      for( uChInFee   = get4v1x::kuChanPerGet4 * uChipInFee;
+           uChInFee   < get4v1x::kuChanPerGet4 * (uChipInFee+1);
+           uChInFee ++, uFullChId++ )
+      {
+         // Try to find missing edges
+         if( ( ( 20 < fvmLastHit[uFullChId ].getGet4CoarseTs() ) &&
+               ( fvmLastHit[uFullChId ].getGet4CoarseTs() < (get4v1x::kuCoarseCounterSize - 20) ) ) &&
+             ( ( 20 < fvmLastOldTot[uFullChId ].getGet4CoarseTs() ) &&
+               ( fvmLastOldTot[uFullChId ].getGet4CoarseTs() < (get4v1x::kuCoarseCounterSize - 20) ) ) )
+         {
+            if( fvuLastOldTotEp[uFullChId] == fvuLastHitEp[uFullChId] )
+            {
+               // Should be a good pulse away from the epoch edges and with matching edge messages
+               // (same epoch, middle range of CT, ok as long as no more than 1 pulse/epoch)
+               Double_t dTot = fvmLastOldTot[  uFullChId ].CalcGet4V10R24HitTimeDiff(
+                                 fvuLastOldTotEp[uFullChId],
+                                 fvuLastHitEp[ uFullChId],
+                                 fvmLastHit[   uFullChId ] )/1000.0;
+               if( 0.0 < dTot && dTot < 100.0 )
+               {
+                  // Good TOT => save its FT
+                  if( fvmLastHit[ uFullChId ].getGet4FineTs() < fvmLastOldTot[ uFullChId ].getGet4FineTs() )
+                     fvuLastTotInFtBins[uChInFee] =  fvmLastOldTot[ uFullChId ].getGet4FineTs()
+                                                  - fvmLastHit[ uFullChId ].getGet4FineTs();
+                     else fvuLastTotInFtBins[uChInFee] = get4v1x::kuFineTime + 1
+                                                       + fvmLastHit[ uFullChId ].getGet4FineTs()
+                                                       - fvmLastOldTot[ uFullChId ].getGet4FineTs();
+               } // if( 0.0 < dTot && dTot < 100.0 )
+               else
+                  LOG(INFO)<<"Bad TOT "
+                              <<uChInFee<<", FT(R) "
+                              <<fvmLastHit[ uFullChId ].getGet4FineTs()<<", FT(F) "
+                              <<fvmLastOldTot[ uFullChId ].getGet4FineTs()<<", CT(R) "
+                              <<fvmLastHit[uFullChId ].getGet4CoarseTs()<<", CT(F) "
+                              <<fvmLastOldTot[uFullChId ].getGet4CoarseTs()<<", Ep(R) "
+                              <<fvuLastHitEp[uFullChId]<<", Ep(F) "
+                              <<fvuLastOldTotEp[uFullChId]<<", TOT "
+                              <<dTot
+                              <<FairLogger::endl;
+            } // Same epoch => both edges there
+               else // one edge is missing, assume its the one with old epoch index
+               {
+                  UInt_t uRecoFt = 0;
+                  if( fvuLastOldTotEp[uFullChId] < fvuLastHitEp[uFullChId])
+                  {
+                     // Falling edge is missing
+                     uRecoFt =  fvmLastHit[ uFullChId ].getGet4FineTs()
+                               + fvuLastTotInFtBins[uChInFee];
+                     if( get4v1x::kuFineTime < uRecoFt )
+                        uRecoFt -= get4v1x::kuFineTime + 1;
+                     fhPulserFeeFtRecoMissFal->Fill( uChInFee, uRecoFt);
+
+                     LOG(INFO)<<"Missing edge: F, ch "
+                                 <<uChInFee<<", FT(R) "
+                                 <<fvmLastHit[ uFullChId ].getGet4FineTs()<<", FT(F) "
+                                 <<uRecoFt<<", CT(R) "
+                                 <<fvmLastHit[uFullChId ].getGet4CoarseTs()<<", CT(F) "
+                                 <<fvmLastOldTot[uFullChId ].getGet4CoarseTs()<<", Ep(R) "
+                                 <<fvuLastHitEp[uFullChId]<<", Ep(F) "
+                                 <<fvuLastOldTotEp[uFullChId]
+                                 <<FairLogger::endl;
+                  } // if( fvuLastOldTotEp[uChipInFee] < fvuLastHitEp[uChipInFee])
+                     else
+                     {
+                        // Rising edge is missing
+                        if( fvmLastOldTot[ uFullChId ].getGet4FineTs() < fvuLastTotInFtBins[uChInFee])
+                           uRecoFt =   get4v1x::kuFineTime + 1
+                                     + fvmLastOldTot[ uFullChId ].getGet4FineTs()
+                                     - fvuLastTotInFtBins[uChInFee];
+                           else uRecoFt =  fvmLastOldTot[ uFullChId ].getGet4FineTs()
+                                         - fvuLastTotInFtBins[uChInFee];
+                        fhPulserFeeFtRecoMissRis->Fill( uChInFee, uRecoFt);
+
+                        LOG(INFO)<<"Missing edge: R, ch "
+                                    <<uChInFee<<", FT(R) "
+                                    <<uRecoFt<<", FT(F) "
+                                    <<fvmLastOldTot[ uFullChId ].getGet4FineTs()<<", CT(R) "
+                                    <<fvmLastHit[uFullChId ].getGet4CoarseTs()<<", CT(F) "
+                                    <<fvmLastOldTot[uFullChId ].getGet4CoarseTs()<<", Ep(R) "
+                                    <<fvuLastHitEp[uFullChId]<<", Ep(F) "
+                                    <<fvuLastOldTotEp[uFullChId]
+                                    <<FairLogger::endl;
+                     } // else of if( fvuLastOldTotEp[uChipInFee] < fvuLastHitEp[uChipInFee])
+               } // else of if( fvuLastOldTotEp[uChipInFee] == fvuLastHitEp[uChipInFee] )
+         } // if both edges in safe CT range to avoid epoch edges crossing
+
+         // Check if extra edges
+         if( (1 < fvuNbRisEdgeEpoch[uChInFee] || 1 < fvuNbFalEdgeEpoch[uChInFee]) &&
+               ( fvuNbRisEdgeEpoch[uChInFee] != fvuNbFalEdgeEpoch[uChInFee] ))
+         {
+            if( (2 == fvuNbRisEdgeEpoch[uChInFee] && 2 >= fvuNbFalEdgeEpoch[uChInFee]) ||
+                (2 >= fvuNbRisEdgeEpoch[uChInFee] && 2 == fvuNbFalEdgeEpoch[uChInFee]) )
+            {
+               LOG(INFO)<< "Extra edges and edges nb missmatch: ch " << uChInFee
+                        << " Nb Ris " <<fvuNbRisEdgeEpoch[uChInFee]
+                        << " Nb Fal " <<fvuNbFalEdgeEpoch[uChInFee]
+                        << Form(" TS #%12llu", fulTsNb)
+                        << FairLogger::endl
+                        <<"      Previous messages            "
+                        <<Form("  FT(R) %3u, CT(R) %4u, Ep(R) %6u",
+                              fvmFeePrevRis[  uChInFee ].getGet4FineTs(),
+                              fvmFeePrevRis[  uChInFee ].getGet4CoarseTs(),
+                              fvuFeePrevRisEp[uChInFee] )
+                        <<Form("  FT(F) %3u, CT(F) %4u, Ep(F) %6u",
+                              fvmFeePrevFal[  uChInFee ].getGet4FineTs(),
+                              fvmFeePrevFal[  uChInFee ].getGet4CoarseTs(),
+                              fvuFeePrevFalEp[uChInFee] )
+                        << FairLogger::endl
+                        <<"      Last messages                "
+                        <<Form("  FT(R) %3u, CT(R) %4u, Ep(R) %6u",
+                              fvmLastHit[  uFullChId ].getGet4FineTs(),
+                              fvmLastHit[  uFullChId ].getGet4CoarseTs(),
+                              fvuLastHitEp[uFullChId] )
+                        <<Form("  FT(F) %3u, CT(F) %4u, Ep(F) %6u",
+                              fvmLastOldTot[  uFullChId ].getGet4FineTs(),
+                              fvmLastOldTot[  uFullChId ].getGet4CoarseTs(),
+                              fvuLastOldTotEp[uFullChId] )
+                        <<FairLogger::endl;
+
+               if( 2 == fvuNbRisEdgeEpoch[uChInFee] )
+                  fhPulserFeeFtExtraEdgeRisA->Fill( uChInFee, fvmFeePrevRis[  uChInFee ].getGet4FineTs());
+               if( 2 == fvuNbFalEdgeEpoch[uChInFee] )
+                  fhPulserFeeFtExtraEdgeFalA->Fill( uChInFee, fvmFeePrevFal[  uChInFee ].getGet4FineTs());
+               fhPulserFeeFtExtraEdgeRisB->Fill( uChInFee, fvmLastHit[  uFullChId ].getGet4FineTs());
+               fhPulserFeeFtExtraEdgeFalB->Fill( uChInFee, fvmLastOldTot[  uFullChId ].getGet4FineTs());
+            } // if only one extra message or less per edge
+            else LOG(INFO)<<"Extra edges and edges nb missmatch: ch " << uChInFee
+                        << " Nb Ris " <<fvuNbRisEdgeEpoch[uChInFee]
+                        << " Nb Fal " <<fvuNbFalEdgeEpoch[uChInFee]
+                        << Form(" TS #%12llu", fulTsNb)
+                        << FairLogger::endl
+                        <<"                                   "
+                        <<Form("  FT(R) %3u, CT(R) %4u, Ep(R) %6u",
+                              fvmLastHit[  uFullChId ].getGet4FineTs(),
+                              fvmLastHit[  uFullChId ].getGet4CoarseTs(),
+                              fvuLastHitEp[uFullChId] )
+                        <<Form("  FT(F) %3u, CT(F) %4u, Ep(F) %6u",
+                              fvmLastOldTot[  uFullChId ].getGet4FineTs(),
+                              fvmLastOldTot[  uFullChId ].getGet4CoarseTs(),
+                              fvuLastOldTotEp[uFullChId] )
+                        <<FairLogger::endl;
+         }
+         if( 1 < fvuNbRisEdgeEpoch[uChInFee] )
+         {
+            fhPulserFeeExtraRisEp->Fill( uChInFee, fvuNbRisEdgeEpoch[uChInFee]);
+            fhPulserFeeExtraEdgesEp->Fill( uChInFee - 0.25, fvuNbRisEdgeEpoch[uChInFee]);
+         }
+         fvuNbRisEdgeEpoch[uChInFee] = 0;
+         if( 1 < fvuNbFalEdgeEpoch[uChInFee] )
+         {
+            fhPulserFeeExtraFalEp->Fill( uChInFee, fvuNbFalEdgeEpoch[uChInFee]);
+            fhPulserFeeExtraEdgesEp->Fill( uChInFee + 0.25, fvuNbFalEdgeEpoch[uChInFee]);
+         }
+         fvuNbFalEdgeEpoch[uChInFee] = 0;
+      } // Loop over channels in this GET4 chip
+   } //    if( kTRUE == fbPulserMode && kTRUE == fbOldReadoutOk && fuPulserFee == (uChipFullId/kuNbChipFee))
+
    // for channel readout order in case of epoch jumps
    if( kTRUE == fbPulserMode && kTRUE == fbOldReadoutOk
          && fuPulserFee == (uChipFullId/kuNbChipFee))
@@ -2488,6 +2744,14 @@ void CbmGet4FastMonitor::MonitorMessage_get4(   get4v1x::Message mess, uint16_t 
             // Fill the CT histo
             fhPulserFeeFalCtWideBins->Fill( uFullChId%kuNbChanFee, mess.getGet4CoarseTs() );
             fhPulserFeeTotDistCT[ uChipFullId%kuNbChipFee ]->Fill( mess.getGet4CoarseTs(), mess.getGet4ChNum());
+
+            if( kTRUE == fbEnableMissingEdgeCheck )
+            {
+               fvuFeePrevFalEp[uFullChId%kuNbChanFee] = fvuLastOldTotEp[ uFullChId ];
+               fvmFeePrevFal[  uFullChId%kuNbChanFee] = fvmLastOldTot[   uFullChId ];
+               // count edges per epoch
+               fvuNbFalEdgeEpoch[uFullChId%kuNbChanFee] ++;
+            } // if( kTRUE == fbEnableMissingEdgeCheck )
          } // if( fuPulserFee == (uFullChId/kuNbChanFee) )
       } // if( 1 == mess.getGet4Edge() )
       else
@@ -2534,6 +2798,14 @@ void CbmGet4FastMonitor::MonitorMessage_get4(   get4v1x::Message mess, uint16_t 
                // Fill the CT histo
                fhPulserFeeRisCtWideBins->Fill( uFullChId%kuNbChanFee, mess.getGet4CoarseTs() );
                fhPulserFeeDistCT[ uChipFullId%kuNbChipFee ]->Fill( mess.getGet4CoarseTs(), mess.getGet4ChNum());
+
+               if( kTRUE == fbEnableMissingEdgeCheck )
+               {
+                  fvuFeePrevRisEp[uFullChId%kuNbChanFee] = fvuLastHitEp[ uFullChId ];
+                  fvmFeePrevRis[  uFullChId%kuNbChanFee] = fvmLastHit[   uFullChId ];
+                  // count edges per epoch
+                  fvuNbRisEdgeEpoch[uFullChId%kuNbChanFee] ++;
+               } // if( kTRUE == fbEnableMissingEdgeCheck )
             } // if( fuPulserFee == (uFullChId/kuNbChanFee) )
          } // else of if( 1 == mess.getGet4Edge() )
    } // if( kTRUE == fbPulserMode && kTRUE == fbOldReadoutOk )

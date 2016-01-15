@@ -75,6 +75,8 @@ public:
         UInt_t inPulserChanM = 12, UInt_t inPulserChanN = 13, UInt_t inPulserChanO = 14,
         UInt_t inPulserChanP = 15 );
   inline void SetOldReadoutSupp( Bool_t inReadoutAllowed = kTRUE ) { fbOldReadoutOk = inReadoutAllowed; }
+  inline void SetMissEdgeCheck( Bool_t inMissCheckAllowed = kTRUE )
+     { fbOldReadoutOk = inMissCheckAllowed; fbEnableMissingEdgeCheck = inMissCheckAllowed; }
 
   inline void SetMaxCoincDist( Double_t dMaxDistIn) { fdMaxCoincDist = dMaxDistIn;}
 
@@ -239,6 +241,23 @@ private:
   TH2 * fhPulserFeeTotInl;
   TH2 * fhPulserFeeRisCtWideBins;
   TH2 * fhPulserFeeFalCtWideBins;
+  Bool_t fbEnableMissingEdgeCheck;
+  std::vector< UInt_t >           fvuLastTotInFtBins;
+  TH2 * fhPulserFeeFtRecoMissRis;
+  TH2 * fhPulserFeeFtRecoMissFal;
+  std::vector< UInt_t >           fvuNbRisEdgeEpoch;
+  std::vector< UInt_t >           fvuNbFalEdgeEpoch;
+  TH2 * fhPulserFeeExtraRisEp;
+  TH2 * fhPulserFeeExtraFalEp;
+  TH2 * fhPulserFeeExtraEdgesEp;
+  std::vector< UInt_t >           fvuFeePrevRisEp; //! Epoch of previous to last Rising edge message (one per GET4 channel in Fee)
+  std::vector< get4v1x::Message > fvmFeePrevRis;   //! Previous to last Rising edge message (one per GET4 channel in fee)
+  std::vector< UInt_t >           fvuFeePrevFalEp; //! Epoch of previous to last Falling edge message (one per GET4 channel in Fee)
+  std::vector< get4v1x::Message > fvmFeePrevFal;   //! Previous to last Falling edge message (one per GET4 channel in fee)
+  TH2 * fhPulserFeeFtExtraEdgeRisA;
+  TH2 * fhPulserFeeFtExtraEdgeFalA;
+  TH2 * fhPulserFeeFtExtraEdgeRisB;
+  TH2 * fhPulserFeeFtExtraEdgeFalB;
   std::vector<TH2 *> fhPulserFeeTotDistCT;
   //--------------------------------------------------------------//
   std::vector< UInt_t >           fvuPrevOldTotEp; //! Epoch of previous TOT message (one per GET4 chip & channel)

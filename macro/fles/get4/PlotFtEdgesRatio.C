@@ -72,9 +72,16 @@ Bool_t PlotFtEdgesRatio( UInt_t uChannel = 0 )
    projRisingEdge->SetLineColor( kBlack);
    projFallingEdge->SetLineColor( kRed);
    stackFt->Add(hEdgesDiff);
-   stackFt->Add(projFallingEdge);
    stackFt->Add(projRisingEdge);
+   stackFt->Add(projFallingEdge);
    stackFt->Draw("nostack,h");
+
+   TLegend * legFt = new TLegend(0.6,0.7,0.98,0.9);
+//   legFt->SetHeader("title");
+   legFt->AddEntry(hEdgesDiff,      "Diff F - R","l");
+   legFt->AddEntry(projRisingEdge,  "R per FT bin","l");
+   legFt->AddEntry(projFallingEdge, "F per FT bin","l");
+   legFt->Draw();
 
    /* counts per CT bin Rising/Falling comparison */
    TH2* hInputRisCt = hPulserFeeRisCtWideBins;
@@ -142,6 +149,55 @@ Bool_t PlotFtEdgesRatio( UInt_t uChannel = 0 )
    stackCt->Add(projFallingEdgeCt);
    stackCt->Add(projRisingEdgeCt);
    stackCt->Draw("nostack,h");
+
+   TLegend * legCt = new TLegend(0.6,0.7,0.98,0.9);
+//   legCt->SetHeader("title");
+   legCt->AddEntry(hEdgesDiffCt,      "Diff F - R","l");
+   legCt->AddEntry(projFallingEdgeCt,  "R per FT bin","l");
+   legCt->AddEntry(projRisingEdgeCt, "F per FT bin","l");
+   legCt->Draw();
+
+   // Extra edges
+   TH1* projExtraEdgeRisA  = hPulserFeeFtExtraEdgeRisA->ProjectionY(
+                                 Form("projExtraEdgeRisA_ch%02u", uChannel),
+                                 1+uChannel, 1+uChannel);
+   TH1* projExtraEdgeFalA  = hPulserFeeFtExtraEdgeFalA->ProjectionY(
+                                 Form("projExtraEdgeFalA_ch%02u", uChannel),
+                                 1+uChannel, 1+uChannel);
+   TH1* projExtraEdgeRisB  = hPulserFeeFtExtraEdgeRisB->ProjectionY(
+                                 Form("projExtraEdgeRisB_ch%02u", uChannel),
+                                 1+uChannel, 1+uChannel);
+   TH1* projExtraEdgeFalB  = hPulserFeeFtExtraEdgeFalB->ProjectionY(
+                                 Form("projExtraEdgeFalB_ch%02u", uChannel),
+                                 1+uChannel, 1+uChannel);
+
+
+   TCanvas *cExtraEdges= new TCanvas("cExtraEdges", "Monitoring extra edges (assume 1 pulse per epoch)");
+   cExtraEdges->Divide(2);
+
+   cExtraEdges->cd(1);
+   gPad->SetLogz();
+   hPulserFeeExtraEdgesEp->Draw("colz");
+
+   cExtraEdges->cd(2);
+   THStack * stackExtraFt = new THStack();
+   projExtraEdgeRisA->SetLineColor( kBlack  );
+   projExtraEdgeFalA->SetLineColor( kGreen  );
+   projExtraEdgeRisB->SetLineColor( kRed    );
+   projExtraEdgeFalB->SetLineColor( kViolet );
+   stackExtraFt->Add(projExtraEdgeRisA);
+   stackExtraFt->Add(projExtraEdgeFalA);
+   stackExtraFt->Add(projExtraEdgeRisB);
+   stackExtraFt->Add(projExtraEdgeFalB);
+   stackExtraFt->Draw("nostack,h");
+
+   TLegend * legExtraFt = new TLegend(0.6,0.7,0.98,0.9);
+//   legExtraFt->SetHeader("title");
+   legExtraFt->AddEntry(projExtraEdgeRisA, "FT first R","l");
+   legExtraFt->AddEntry(projExtraEdgeFalA, "FT first F","l");
+   legExtraFt->AddEntry(projExtraEdgeRisB, "FT Sec R","l");
+   legExtraFt->AddEntry(projExtraEdgeFalB, "FT Sec F","l");
+   legExtraFt->Draw();
 
 
    return kTRUE;

@@ -515,8 +515,8 @@ void get4v1x::Message::printData(unsigned outType, unsigned kind, uint32_t epoch
                      getEpoch2DataLost(), getEpoch2EpochLost(), getEpoch2EpochMissmatch());
             break;
          case MSG_GET4:
-            snprintf(buf, sizeof(buf), "Get4:0x%02x Chn:%1x Edge:%1x Ts:0x%05x CRC8:0x%02x",
-                         getGet4Number(), getGet4ChNum(), getGet4Edge(), getGet4Ts(), getGet4CRC() );
+            snprintf(buf, sizeof(buf), "Get4:0x%02x Chn:%1x Edge:%1x Ts:0x%05x CRC8:0x%02x (CT:%5u FT:%3u)",
+                         getGet4Number(), getGet4ChNum(), getGet4Edge(), getGet4Ts(), getGet4CRC(), getGet4CoarseTs(), getGet4FineTs() );
             break;
          case MSG_SYS: {
             char sysbuf[256];
