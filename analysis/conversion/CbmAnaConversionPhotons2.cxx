@@ -72,6 +72,7 @@ CbmAnaConversionPhotons2::CbmAnaConversionPhotons2()
 	fh2Electrons_angle_CUTcomparison_chi(NULL),
 	fh2Electrons_angle_CUTcomparison_withRICH(NULL),
 	fh2Electrons_angle_CUTcomparison_withRICH_chi(NULL),
+        fh2Electrons_angle_CUTcomparison_withRICH_withChi(NULL),
 	fh2Electrons_invmass_all(NULL),
 	fh2Electrons_invmass_combBack(NULL),
 	fh2Electrons_invmass_allSameG(NULL),
