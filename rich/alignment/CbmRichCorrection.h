@@ -13,7 +13,6 @@
 #include <map>
 #include "TString.h"
 #include "CbmRichRecGeoPar.h"
-#include "TGeoNavigator.h"
 
 using namespace std;
 
@@ -84,11 +83,6 @@ public:
      */
     void GetPmtNormal(Int_t NofPMTPoints, Double_t &normalX, Double_t &normalY, Double_t &normalZ, Double_t &normalCste);
 
-    /*
-     * Calculate mean sphere center coordinates from all the mirror tiles (to be used for the reconstruction step).
-     */
-    void GetMeanSphereCenter(TGeoNavigator *navi, Double_t &sphereX, Double_t &sphereY, Double_t &sphereZ);
-
     void RotateAndCopyHitsToRingLight(const CbmRichRing* ring1, CbmRichRingLight* ring2);
 
     /*
@@ -132,6 +126,7 @@ private:
     CbmRichRecGeoPar fGP;
 
     UInt_t fEventNum; // Event counter
+    UInt_t fCounterMapping;
     UInt_t fMirrCounter;
     Bool_t fDrawHist;
     Double_t fArray[3];

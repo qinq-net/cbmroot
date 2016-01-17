@@ -67,6 +67,7 @@ CbmRichCorrection::CbmRichCorrection() :
 		fPathsMap(),
 		fPathsMapEllipse()
 {
+	fCounterMapping = 0.;
 	fMirrCounter = 0.;
 	for (int i=0;i<3;i++) {
 		fArray[i]=0.;
@@ -375,7 +376,6 @@ void CbmRichCorrection::ProjectionProducer(TClonesArray* projectedPoint)
 				navi = gGeoManager->GetCurrentNavigator();
 				cout << "Navigator path: " << navi->GetPath() << endl;
 				cout << "Coordinates of sphere center: " << endl;
-				//GetMeanSphereCenter(navi, ptC[0], ptC[1], ptC[2]);	//IF NO INFORMATION ON MIRRORS ARE KNOWN (TO BE USED IN RECONSTRUCTION STEP) !!!
 				navi->GetCurrentMatrix()->Print();
 				ptC[0] = navi->GetCurrentMatrix()->GetTranslation()[0];
 				ptC[1] = navi->GetCurrentMatrix()->GetTranslation()[1];
@@ -452,8 +452,8 @@ void CbmRichCorrection::ProjectionProducer(TClonesArray* projectedPoint)
 								//cout << "Identical mirror track ID and PMT mother ID !!!" << endl;
 								//cout << "PMT Point coordinates; x = " << pmtPoint->GetX() << ", y = " << pmtPoint->GetY() << " and z = " << pmtPoint->GetZ() << endl;
 							}
-						}
-						cout << "Looking for PMT hits: end." << endl << endl;*/
+					}
+					cout << "Looking for PMT hits: end." << endl << endl;*/
 						if (ptPMirr[0] > (-fGP.fPmtXOrig-fGP.fPmtWidthX) && ptPMirr[0] < (fGP.fPmtXOrig+fGP.fPmtWidthX)) {
 							if (TMath::Abs(ptPMirr[1]) > (fGP.fPmtY-fGP.fPmtWidthY) && TMath::Abs(ptPMirr[1]) < (fGP.fPmtY+fGP.fPmtWidthY)) {
 								FairTrackParam richtrack(ptPMirr[0], ptPMirr[1], ptPMirr[2], 0., 0., 0., covMat);
@@ -479,7 +479,7 @@ void CbmRichCorrection::ProjectionProducer(TClonesArray* projectedPoint)
 					CbmGlobalTrack* gTrack  = (CbmGlobalTrack*) fGlobalTracks->At(iGlobalTrack);
 					if(NULL == gTrack) continue;
 					Int_t richInd = gTrack->GetRichRingIndex();
-					//cout << "Rich index = " << richInd << endl;
+				//cout << "Rich index = " << richInd << endl;
 					if (richInd < 0) { continue; }
 					CbmRichRing* ring = static_cast<CbmRichRing*>(fRichRings->At(richInd));
 					if (NULL == ring) { continue; }
@@ -587,62 +587,6 @@ void CbmRichCorrection::GetPmtNormal(Int_t NofPMTPoints, Double_t &normalX, Doub
 	CbmRichPoint *pmtPoint3 = (CbmRichPoint*) fRichPoints->At(25);
 	scalarProd = normalX*(pmtPoint3->GetX()-a[0]) + normalY*(pmtPoint3->GetY()-a[1]) + normalZ*(pmtPoint3->GetZ()-a[2]);
 	//cout << "3nd scalar product between vectAM and normale = " << scalarProd << endl;
-}
-
-void CbmRichCorrection::GetMeanSphereCenter(TGeoNavigator *navi, Double_t &sphereX, Double_t &sphereY, Double_t &sphereZ)
-{
-	const Char_t *topNodePath;
-	topNodePath = gGeoManager->GetTopNode()->GetName();
-	cout << "Top node path: " << topNodePath << endl;
-	TGeoVolume *rootTop;
-	rootTop = gGeoManager->GetTopVolume();
-	rootTop->Print();
-
-	TGeoIterator nextNode(rootTop);
-	TGeoNode *curNode;
-	const TGeoMatrix *curMatrix;
-	const Double_t* curNodeTranslation; // 3 components - pointers to some memory which is provided by ROOT
-	const Double_t* curNodeRotationM; // 9 components - pointers to some memory which is provided by ROOT
-	TString filterName0("mirror_tile_type0");
-	TString filterName1("mirror_tile_type1");
-	TString filterName2("mirror_tile_type2");
-	TString filterName3("mirror_tile_type3");
-	TString filterName4("mirror_tile_type4");
-	TString filterName5("mirror_tile_type5");
-	Int_t counter = 0;
-	Double_t sphereXTot=0.,sphereYTot=0., sphereZTot=0.;
-
-	while ((curNode=nextNode())) {
-		TString nodeName(curNode->GetName());
-		TString nodePath;
-
-		// Filter using volume name, not node name
-		// But you can do 'if (nodeName.Contains("filter"))'
-		if (curNode->GetVolume()->GetName() == filterName0 || curNode->GetVolume()->GetName() == filterName1 ||	curNode->GetVolume()->GetName() == filterName2 || curNode->GetVolume()->GetName() == filterName3 ||	curNode->GetVolume()->GetName() == filterName4 || curNode->GetVolume()->GetName() == filterName5 ) {
-			if (curNode->GetNdaughters() == 0) {
-				// All deepest nodes of mirror tiles here (leaves)
-				// Thus we get spherical surface centers
-				nextNode.GetPath(nodePath);
-	            curMatrix = nextNode.GetCurrentMatrix();
-	            curNodeTranslation = curMatrix->GetTranslation();
-	            curNodeRotationM = curMatrix->GetRotationMatrix();
-	            printf ("%s tr:\t", nodePath.Data());
-	            printf ("%08f\t%08f\t%08f\t\n", curNodeTranslation[0], curNodeTranslation[1], curNodeTranslation[2]);
-	            if (curNodeTranslation[1] > 0) {			// CONDITION FOR UPPER MIRROR WALL STUDY
-	            	sphereXTot+=curNodeTranslation[0];
-		            sphereYTot+=curNodeTranslation[1];
-		            sphereZTot+=curNodeTranslation[2];
-		            counter++;
-	            }
-			}
-		}
-	}
-	sphereX = sphereXTot/counter;
-	sphereY = sphereYTot/counter;
-	sphereZ = sphereZTot/counter;
-
-	counter = 0;
-	nextNode.Reset();
 }
 
 void CbmRichCorrection::RotateAndCopyHitsToRingLight(const CbmRichRing* ring1, CbmRichRingLight* ring2)

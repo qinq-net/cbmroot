@@ -55,9 +55,29 @@ public:
     virtual void Finish();
 
     /*
-     * Histogram initialization.
+     * Histogram initialization for projection producer method.
      */
-    void InitHist();
+    void InitHistProjection();
+
+    /*
+     * Histogram initialization for alignment method.
+     */
+    void InitHistAlignment();
+
+    /*
+     *
+     */
+    void CalculateAnglesAndDrawDistrib();
+
+    /*
+     *
+     */
+    void GetTrackPosition(Double_t &x, Double_t &y);
+
+    /*
+     *
+     */
+    std::vector<Float_t> DrawFit();
 
     /*
      * Fill the PMT plane with hits, ONLY for event with SEVERAL particles.
@@ -111,9 +131,19 @@ public:
     void RotateAndCopyHitsToRingLight(const CbmRichRing* ring1, CbmRichRingLight* ring2);
 
     /*
-     * Draw histograms.
+     * Draw histograms for alignment method.
      */
-    void DrawHist();
+    void DrawHistAlignment();
+
+    /*
+     * Draw histograms for mapping.
+     */
+    void DrawHistMapping();
+
+    /*
+     * Draw histograms projection producer method.
+     */
+    void DrawHistProjection();
 
     /*
      * Draw histograms from root file.
@@ -133,7 +163,11 @@ public:
     /*
      * Set to TRUE if you want to draw histograms.
      */
-    void SetDrawHist(Bool_t b) {fDrawHist = b;}
+    void SetDrawAlignment(Bool_t b) {fAlignment = b;}
+
+    void SetDrawMapping(Bool_t b) {fMapping = b;}
+
+    void SetDrawProjection(Bool_t b) {fProjection = b;}
 
 
 private:
@@ -148,19 +182,24 @@ private:
     TClonesArray* fRichPoints;
     TClonesArray* fGlobalTracks;
     CbmHistManager* fHM;
+    CbmHistManager* fHM2;
     CbmRichRecGeoPar fGP;
+    vector<Float_t> fPhi;
 
     UInt_t fEventNum; // Event counter
     UInt_t fMirrCounter;
-    Bool_t fDrawHist;
+    Bool_t fAlignment;
+    Bool_t fMapping;
+    Bool_t fProjection;
     Bool_t fIsMeanCenter;
     Double_t fArray[3];
 
     std::map<string,string> fPathsMap;
     std::map<string,string> fPathsMapEllipse;
 
-    TString fOutputDir; // Output directory to store figures
-    TString fRunTitle; // Title of the run
+    TString fOutputDir;		// Output directory to store figures.
+    TString fRunTitle;		// Title of the run.
+    TString fAxisRotTitle;	// Rotation around which axis.
 
     CbmRichRingFitterCOP* fCopFit;
     CbmRichRingFitterEllipseTau* fTauFit;
