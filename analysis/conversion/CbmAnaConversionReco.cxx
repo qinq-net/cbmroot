@@ -225,9 +225,9 @@ void CbmAnaConversionReco::InitHistos()
 
 
 
-	fhPi0_pt_vs_rap_gg			= new TH2D("fhPi0_pt_vs_rap_gg", "fhPi0_pt_vs_rap_gg;pt [GeV]; rap [GeV]", 240, -2., 10., 300, 0., 10.);
-	fhPi0_pt_vs_rap_gee			= new TH2D("fhPi0_pt_vs_rap_gee", "fhPi0_pt_vs_rap_gee;pt [GeV]; rap [GeV]", 240, -2., 10., 300, 0., 10.);
-	fhPi0_pt_vs_rap_all			= new TH2D("fhPi0_pt_vs_rap_all", "fhPi0_pt_vs_rap_all;pt [GeV]; rap [GeV]", 240, -2., 10., 300, 0., 10.);
+	fhPi0_pt_vs_rap_gg			= new TH2D("fhPi0_pt_vs_rap_gg", "fhPi0_pt_vs_rap_gg;pt [GeV]; rap [GeV]", 240, -2., 10., 270, -2., 7.);
+	fhPi0_pt_vs_rap_gee			= new TH2D("fhPi0_pt_vs_rap_gee", "fhPi0_pt_vs_rap_gee;pt [GeV]; rap [GeV]", 240, -2., 10., 270, -2., 7.);
+	fhPi0_pt_vs_rap_all			= new TH2D("fhPi0_pt_vs_rap_all", "fhPi0_pt_vs_rap_all;pt [GeV]; rap [GeV]", 240, -2., 10., 270, -2., 7.);
 	fHistoList_gg.push_back(fhPi0_pt_vs_rap_gg);
 	fHistoList_gee.push_back(fhPi0_pt_vs_rap_gee);
 	fHistoList_all.push_back(fhPi0_pt_vs_rap_all);
@@ -310,13 +310,13 @@ void CbmAnaConversionReco::InitHistos()
 	fhPi0_startvertex = new TH1D("fhPi0_startvertex","fhPi0_startvertex;z[cm];#", 210, -5., 100.);
 	fHistoList_reco.push_back(fhPi0_startvertex);
 	
-	fhPi0_startvertexElectrons_all = new TH1D("fhPi0_startvertexElectrons_all","fhPi0_startvertexElectrons_all;z[cm];#", 410, -5., 200.);
+	fhPi0_startvertexElectrons_all = new TH1D("fhPi0_startvertexElectrons_all","fhPi0_startvertexElectrons_all;z[cm];#", 411, -5.25, 200.25);
 	fHistoList_reco.push_back(fhPi0_startvertexElectrons_all);
 	
-	fhPi0_startvertexElectrons_gg = new TH1D("fhPi0_startvertexElectrons_gg","fhPi0_startvertexElectrons_gg;z[cm];#", 410, -5., 200.);
+	fhPi0_startvertexElectrons_gg = new TH1D("fhPi0_startvertexElectrons_gg","fhPi0_startvertexElectrons_gg;z[cm];#", 411, -5.25, 200.25);
 	fHistoList_reco.push_back(fhPi0_startvertexElectrons_gg);
 	
-	fhPi0_startvertexElectrons_gee = new TH1D("fhPi0_startvertexElectrons_gee","fhPi0_startvertexElectrons_gee;z[cm];#", 410, -5., 200.);
+	fhPi0_startvertexElectrons_gee = new TH1D("fhPi0_startvertexElectrons_gee","fhPi0_startvertexElectrons_gee;z[cm];#", 411, -5.25, 200.25);
 	fHistoList_reco.push_back(fhPi0_startvertexElectrons_gee);
 	
 	fhPi0_startvertex_vs_chi = new TH2D("fhPi0_startvertex_vs_chi","fhPi0_startvertex_vs_chi;z[cm];chi", 210, -5., 100., 1000, 0., 100.);

@@ -149,6 +149,8 @@ private:
    TH1D * fhEta_pt;					// 
    TH1D * fhElectronsFromPi0_z;		//
    
+   TH1D * fhNofTracks_mctrack;
+   TH1D * fhNofTracks_globaltrack;
    
    TH1D * fhInvariantMass_test;
    TH1D * fhInvariantMass_test2;

@@ -91,6 +91,8 @@ CbmAnaConversion::CbmAnaConversion()
     fhPi0_pt_vs_rap(NULL),
     fhEta_pt(NULL),
     fhElectronsFromPi0_z(NULL),
+    fhNofTracks_mctrack(NULL),
+   	fhNofTracks_globaltrack(NULL),
     fhInvariantMass_test(NULL),
     fhInvariantMass_test2(NULL),
     fhInvariantMass_test3(NULL),
@@ -363,6 +365,11 @@ void CbmAnaConversion::InitHistograms()
 	fhElectronSources->GetXaxis()->SetBinLabel(6, "gamma from eta");
 	
 	
+
+	fhNofTracks_mctrack = new TH1D("fhNofTracks_mctrack", "fhNofTracks_mctrack;nof;#", 1000., 0., 1000.);
+	fHistoList.push_back(fhNofTracks_mctrack);
+	fhNofTracks_globaltrack = new TH1D("fhNofTracks_globaltrack", "fhNofTracks_globaltrack;nof;#", 1000., 0., 1000.);
+	fHistoList.push_back(fhNofTracks_globaltrack);
 
 	
 	// for UrQMD events (invariant mass from pi0 -> gamma + gamma
@@ -681,6 +688,7 @@ void CbmAnaConversion::Exec(Option_t*)
 	timer_mc.Start();
 
 	Int_t nofMcTracks = fMcTracks->GetEntriesFast();
+	fhNofTracks_mctrack->Fill(nofMcTracks);
 	for (int i = 0; i < nofMcTracks; i++) {
 		CbmMCTrack* mctrack = (CbmMCTrack*)fMcTracks->At(i);
 		if (mctrack == NULL) continue;   
@@ -787,6 +795,7 @@ void CbmAnaConversion::Exec(Option_t*)
 	Int_t nofElectrons4epem = 0;
 
 	Int_t ngTracks = fGlobalTracks->GetEntriesFast();
+	fhNofTracks_globaltrack->Fill(ngTracks);
 	for (Int_t i = 0; i < ngTracks; i++) {
 		CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(i);
 		if(NULL == gTrack) continue;

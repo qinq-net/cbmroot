@@ -95,13 +95,13 @@ void CbmAnaConversionTomography::InitHistos()
 	//fHistoList_tomography.push_back(fhTomography_XZ_cut);
 	//fHistoList_tomography.push_back(fhTomography_YZ_cut);
 	
-	fhTomography_uptoRICH			= new TH2D("fhTomography_uptoRICH", "fhTomography_uptoRICH;X [cm];Y [cm]", 400, -200., 200., 400, -200., 200.);
-	fhTomography_RICH_complete		= new TH2D("fhTomography_RICH_complete", "fhTomography_RICH_complete;X [cm];Y [cm]", 400, -200., 200., 400, -200., 200.);
+	fhTomography_uptoRICH			= new TH2D("fhTomography_uptoRICH", "fhTomography_uptoRICH;X [cm];Y [cm]", 600, -300., 300., 400, -200., 200.);
+	fhTomography_RICH_complete		= new TH2D("fhTomography_RICH_complete", "fhTomography_RICH_complete;X [cm];Y [cm]", 600, -300., 300., 500, -250., 250.);
 	fhTomography_RICH_beampipe		= new TH2D("fhTomography_RICH_beampipe", "fhTomography_RICH_beampipe;X [cm];Y [cm]", 400, -100., 100., 200, -50., 50.);
-	fhTomography_STS_end			= new TH2D("fhTomography_STS_end", "fhTomography_STS_end;X [cm];Y [cm]", 400, -200., 200., 200, -100., 100.);
+	fhTomography_STS_end			= new TH2D("fhTomography_STS_end", "fhTomography_STS_end;X [cm];Y [cm]", 400, -200., 200., 400, -200., 200.);
 	fhTomography_STS_lastStation	= new TH2D("fhTomography_STS_lastStation", "fhTomography_STS_lastStation;X [cm];Y [cm]", 200, -100., 100., 200, -100., 100.);
-	fhTomography_RICH_frontplate	= new TH2D("fhTomography_RICH_frontplate", "fhTomography_RICH_frontplate;X [cm];Y [cm]", 400, -200., 200., 400, -200., 200.);
-	fhTomography_RICH_backplate		= new TH2D("fhTomography_RICH_backplate", "fhTomography_RICH_backplate;X [cm];Y [cm]", 400, -200., 200., 400, -200., 200.);
+	fhTomography_RICH_frontplate	= new TH2D("fhTomography_RICH_frontplate", "fhTomography_RICH_frontplate;X [cm];Y [cm]", 600, -300., 300., 500, -250., 250.);
+	fhTomography_RICH_backplate		= new TH2D("fhTomography_RICH_backplate", "fhTomography_RICH_backplate;X [cm];Y [cm]", 600, -300., 300., 500, -250., 250.);
 	fHistoList_tomography.push_back(fhTomography_uptoRICH);
 	fHistoList_tomography.push_back(fhTomography_RICH_complete);
 	fHistoList_tomography.push_back(fhTomography_RICH_beampipe);
@@ -365,17 +365,19 @@ void CbmAnaConversionTomography::TomographyMC(int electronID)
 	}
 	
 	
-	if(v.z() >= 170 && v.Z() <= 400) { // only in region of the RICH detector
+	if(v.z() >= 170 && v.Z() <= 380) { // only in region of the RICH detector
 		conversionsInDetector[2]++;
 		fhConversionsPerDetector->Fill(2);
 		//if(GetNPoints(mctrack)) { conversionsInDetector_cut[2]++; }
 	}
-	if(v.z() >= 405 && v.Z() <= 870) { // only in region of the TRD detector
+	//if(v.z() >= 405 && v.Z() <= 870) { // only in region of the TRD detector, SIS300
+	if(v.z() >= 405 && v.Z() <= 595) { // only in region of the TRD detector
 		conversionsInDetector[3]++;
 		fhConversionsPerDetector->Fill(3);
 		//if(GetNPoints(mctrack)) { conversionsInDetector_cut[3]++; }
 	}
-	if(v.z() > 870 && v.Z() <= 1010) { // only in region of the TOF detector
+	//if(v.z() > 870 && v.Z() <= 1010) { // only in region of the TOF detector, SIS300
+	if(v.z() > 598 && v.Z() <= 730) { // only in region of the TOF detector
 		conversionsInDetector[4]++;
 		fhConversionsPerDetector->Fill(4);
 		//if(GetNPoints(mctrack)) { conversionsInDetector_cut[4]++; }
