@@ -108,6 +108,11 @@ CbmTofHitFinderQa::CbmTofHitFinderQa()
     fhPointMapYZ(NULL),
     fhPointMapAng(NULL),
     fhPointMapSph(NULL),
+    fhRealPointMapXY(NULL),
+    fhRealPointMapXZ(NULL),
+    fhRealPointMapYZ(NULL),
+    fhRealPointMapAng(NULL),
+    fhRealPointMapSph(NULL),
     fhDigiMapXY(NULL),
     fhDigiMapXZ(NULL),
     fhDigiMapYZ(NULL),
@@ -353,6 +358,11 @@ CbmTofHitFinderQa::CbmTofHitFinderQa(const char* name, Int_t verbose)
     fhPointMapYZ(NULL),
     fhPointMapAng(NULL),
     fhPointMapSph(NULL),
+    fhRealPointMapXY(NULL),
+    fhRealPointMapXZ(NULL),
+    fhRealPointMapYZ(NULL),
+    fhRealPointMapAng(NULL),
+    fhRealPointMapSph(NULL),
     fhDigiMapXY(NULL),
     fhDigiMapXZ(NULL),
     fhDigiMapYZ(NULL),
@@ -864,6 +874,19 @@ Bool_t CbmTofHitFinderQa::CreateHistos()
                               iNbBinThetaX, dThetaXMin, dThetaXMax,
                               iNbBinThetaY, dThetaYMin, dThetaYMax);
    fhPointMapSph    = new TH2D("TofTests_PointsMapSph",  "Position of the Tof Points; #theta[rad.]; #phi[rad.]; # [Points]",
+                              iNbBinTheta, dThetaMin, dThetaMax,
+                              iNbBinPhi,   dPhiMin,   dPhiMax);
+      // real (mean over all gaps) points
+   fhRealPointMapXY     = new TH2D("TofTests_RealPointsMapXY",  "Position of the Tof Points (mean o/ gaps); X[cm]; Y[cm]; # [Points]",
+                              nbinx,-xrange,xrange,nbiny,-yrange,yrange);
+   fhRealPointMapXZ     = new TH2D("TofTests_RealPointsMapXZ",  "Position of the Tof Points (mean o/ gaps); X[cm]; Z[cm]; # [Points]",
+                              nbinx,-xrange,xrange,nbinz,zmin,zmax);
+   fhRealPointMapYZ     = new TH2D("TofTests_RealPointsMapYZ",  "Position of the Tof Points (mean o/ gaps); Y[cm]; Z[cm]; # [Points]",
+                              nbiny,-yrange,yrange,nbinz,zmin,zmax);
+   fhRealPointMapAng    = new TH2D("TofTests_RealPointsMapAng",  "Position of the Tof Points (mean o/ gaps); #theta_{x}[Deg.]; #theta_{y}[Deg.]; # [Points]",
+                              iNbBinThetaX, dThetaXMin, dThetaXMax,
+                              iNbBinThetaY, dThetaYMin, dThetaYMax);
+   fhRealPointMapSph    = new TH2D("TofTests_RealPointsMapSph",  "Position of the Tof Points (mean o/ gaps); #theta[rad.]; #phi[rad.]; # [Points]",
                               iNbBinTheta, dThetaMin, dThetaMax,
                               iNbBinPhi,   dPhiMin,   dPhiMax);
       // Digis
@@ -1669,11 +1692,14 @@ Bool_t CbmTofHitFinderQa::FillHistos()
    CbmMatch    * pMatchHitDigi;
    CbmMatch    * pMatchHitPnt;
 
-   Int_t iNbTracks, iNbTofPts, iNbTofDigis, 
+   Int_t iNbTracks, iNbTofPts, iNbTofRealPts, iNbTofDigis, 
          iNbTofDigisMatch, iNbTofHits, iNbTofHitsMatch;
 
    iNbTracks        = fMcTracksColl->GetEntriesFast();
    iNbTofPts        = fTofPointsColl->GetEntriesFast();
+   if( kTRUE == fbRealPointAvail )
+      iNbTofRealPts = fRealTofPointsColl->GetEntriesFast();
+      else iNbTofRealPts = 0;
    iNbTofHits       = fTofHitsColl->GetEntriesFast();
    if( kFALSE == fbHitProducerSource )
    {
@@ -1896,6 +1922,41 @@ Bool_t CbmTofHitFinderQa::FillHistos()
             fvhPlabSecTofPnt[iPartIdx]->Fill( pMcTrk->GetP() );
          } // else of if( -1 == pMcTrk->GetMotherId() )
    } // for (Int_t iPntInd = 0; iPntInd < nTofPoint; iPntInd++ )
+ 
+    // Loop over Real Points and map them, only in case of protons
+   if( kTRUE == fbRealPointAvail )
+      for (Int_t iPntInd = 0; iPntInd < iNbTofRealPts; iPntInd++ )
+   {
+      // Get a pointer to the TOF point
+      pTofPoint = (CbmTofPoint*) fRealTofPointsColl->At( iPntInd );
+      // Get a pointer to the corresponding MC Track
+      pMcTrk = (CbmMCTrack*) fMcTracksColl->At( pTofPoint->GetTrackID() );
+      
+         // Physics coord mapping, 1 per particle type
+	   Int_t iPdgCode = pMcTrk->GetPdgCode();
+//      if( 2212 == iPdgCode ) // Protons cut, comment to get all
+      {
+         // Obtain position
+         TVector3 vPntPos;
+         pTofPoint->Position( vPntPos );
+
+         Double_t dX = vPntPos.X();
+         Double_t dY = vPntPos.Y();
+         Double_t dZ = vPntPos.Z();
+
+         fhRealPointMapXY->Fill( dX, dY );
+         fhRealPointMapXZ->Fill( dX, dZ );
+         fhRealPointMapYZ->Fill( dY, dZ );
+
+         Double_t dThetaX = TMath::ATan2( dX, dZ )*180.0/TMath::Pi();
+         Double_t dThetaY = TMath::ATan2( dY, dZ )*180.0/TMath::Pi();
+         fhRealPointMapAng->Fill( dThetaX, dThetaY );
+
+         Double_t dTheta  = TMath::ATan2( TMath::Sqrt( dX*dX + dY*dY ), dZ );// *180.0/TMath::Pi();
+         Double_t dPhi    = TMath::ATan2( dY, dX );// *180.0/TMath::Pi();
+         fhRealPointMapSph->Fill( dTheta, dPhi );
+      } // if( 2212 == iPdgCode )
+   } // for (Int_t iPntInd = 0; iPntInd < iNbTofRealPts; iPntInd++ )
  
    // Loop over Digis and map them?
    if( kFALSE == fbHitProducerSource )
@@ -3232,6 +3293,11 @@ Bool_t CbmTofHitFinderQa::WriteHistos()
    fhPointMapYZ->Write();
    fhPointMapAng->Write();
    fhPointMapSph->Write();
+   fhRealPointMapXY->Write();
+   fhRealPointMapXZ->Write();
+   fhRealPointMapYZ->Write();
+   fhRealPointMapAng->Write();
+   fhRealPointMapSph->Write();
    fhDigiMapXY->Write();
    fhDigiMapXZ->Write();
    fhDigiMapYZ->Write();
@@ -3492,6 +3558,11 @@ Bool_t   CbmTofHitFinderQa::DeleteHistos()
    delete fhPointMapYZ;
    delete fhPointMapAng;
    delete fhPointMapSph;
+   delete fhRealPointMapXY;
+   delete fhRealPointMapXZ;
+   delete fhRealPointMapYZ;
+   delete fhRealPointMapAng;
+   delete fhRealPointMapSph;
    delete fhDigiMapXY;
    delete fhDigiMapXZ;
    delete fhDigiMapYZ;

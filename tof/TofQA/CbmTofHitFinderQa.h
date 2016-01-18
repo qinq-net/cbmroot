@@ -124,6 +124,11 @@ class CbmTofHitFinderQa : public FairTask {
       TH2 * fhPointMapYZ;
       TH2 * fhPointMapAng;
       TH2 * fhPointMapSph;
+      TH2 * fhRealPointMapXY;
+      TH2 * fhRealPointMapXZ;
+      TH2 * fhRealPointMapYZ;
+      TH2 * fhRealPointMapAng;
+      TH2 * fhRealPointMapSph;
       TH2 * fhDigiMapXY;
       TH2 * fhDigiMapXZ;
       TH2 * fhDigiMapYZ;
