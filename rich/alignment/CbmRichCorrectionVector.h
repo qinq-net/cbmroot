@@ -77,7 +77,7 @@ public:
     /*
      *
      */
-    std::vector<Float_t> DrawFit();
+    void DrawFit(vector<Double_t> &outputFit);
 
     /*
      * Fill the PMT plane with hits, ONLY for event with SEVERAL particles.
@@ -163,11 +163,11 @@ public:
     /*
      * Set to TRUE if you want to draw histograms.
      */
-    void SetDrawAlignment(Bool_t b) {fAlignment = b;}
+    void SetDrawAlignment(Bool_t b) {fDrawAlignment = b;}
 
-    void SetDrawMapping(Bool_t b) {fMapping = b;}
+    void SetDrawMapping(Bool_t b) {fDrawMapping = b;}
 
-    void SetDrawProjection(Bool_t b) {fProjection = b;}
+    void SetDrawProjection(Bool_t b) {fDrawProjection = b;}
 
 
 private:
@@ -188,9 +188,9 @@ private:
 
     UInt_t fEventNum; // Event counter
     UInt_t fMirrCounter;
-    Bool_t fAlignment;
-    Bool_t fMapping;
-    Bool_t fProjection;
+    Bool_t fDrawAlignment;
+    Bool_t fDrawMapping;
+    Bool_t fDrawProjection;
     Bool_t fIsMeanCenter;
     Double_t fArray[3];
 
