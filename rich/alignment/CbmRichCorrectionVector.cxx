@@ -63,9 +63,9 @@ CbmRichCorrectionVector::CbmRichCorrectionVector() :
 		fOutputDir(""),
 		fRunTitle(""),
 		fAxisRotTitle(""),
-		fAlignment(kTRUE),
-		fMapping(kFALSE),
-		fProjection(kTRUE),
+		fDrawAlignment(kTRUE),
+		fDrawMapping(kFALSE),
+		fDrawProjection(kTRUE),
 		fIsMeanCenter(kFALSE),
 		fCopFit(NULL),
 		fTauFit(NULL),
@@ -206,10 +206,13 @@ void CbmRichCorrectionVector::Exec(Option_t* option)
 	cout << "//------------------------------ Mapping for mirror - PMT relations ----------------------------------------//" << endl;
 	cout << "//----------------------------------------------------------------------------------------------------------//" << endl << endl;
 
+	vector<Double_t> outputFit;
 	TClonesArray* projectedPoint;
+
 	if (nofRingsInEvent == 0) { cout << "Error no rings registered in event." << endl << endl; }
 	else {
 		CalculateAnglesAndDrawDistrib();
+		DrawFit(outputFit);
 		//MatchFinder();
 		fGP = CbmRichHitProducer::InitGeometry();
 		fGP.Print();
@@ -292,10 +295,10 @@ void CbmRichCorrectionVector::GetTrackPosition(Double_t &x, Double_t &y)
     }
 }
 
-std::vector<Float_t> CbmRichCorrectionVector::DrawFit()
+void CbmRichCorrectionVector::DrawFit(vector<Double_t> &outputFit)
 {
-	std::vector<Float_t> param_vector;
-	param_vector.reserve(5);
+	vector<Double_t> paramVect;
+	paramVect.reserve(5);
 
 	TCanvas* c3 = new TCanvas(fRunTitle + "_Fit_Slices_" + fAxisRotTitle, fRunTitle + "_Fit_Slices_" + fAxisRotTitle, 1100, 600);
 	c3->SetFillColor(42);
@@ -368,25 +371,24 @@ std::vector<Float_t> CbmRichCorrectionVector::DrawFit()
 	histo_chi2->Draw();
 
 	c3->cd(7);
-	//Float_t Pi = 3.14159265;
 	TF1 *f1 = new TF1("f1", "[2]+[0]*cos(x)+[1]*sin(x)", -3.5, 3.5);
 	f1->SetParameters(0,0,0);
 	f1->SetParNames("Delta_phi", "Delta_lambda", "Offset");
 	histo_1->Fit("f1","","");
 	TF1 *fit = histo_1->GetFunction("f1");
-	Float_t p1 = fit->GetParameter("Delta_phi");
-	Float_t p2 = fit->GetParameter("Delta_lambda");
-	Float_t p3 = fit->GetParameter("Offset");
-	Float_t chi2 = fit->GetChisquare();
+	Double_t p1 = fit->GetParameter("Delta_phi");
+	Double_t p2 = fit->GetParameter("Delta_lambda");
+	Double_t p3 = fit->GetParameter("Offset");
+	Double_t chi2 = fit->GetChisquare();
 	//cout << setprecision(6) << "Delta_phi = " << fit->GetParameter(0) << " and delta_lambda = " << fit->GetParameter(1) << endl;
 	//cout << "Delta_phi error = " << fit->GetParError(0) << " and delta_lambda error = " << fit->GetParError(1) << endl;
 	//cout << endl << "Chi2: " << chi2 << endl;
 
-	param_vector.push_back(fit->GetParameter("Delta_phi"));
-	param_vector.push_back(fit->GetParameter("Delta_lambda"));
-	param_vector.push_back(fit->GetParameter("Offset"));
-	param_vector.push_back(fit->GetChisquare());
-	//cout << "Vectors: Delta_phi = " << param_vector[0] << ", Delta_lambda = " << param_vector[1] << ", Offset = " << param_vector[2] << endl;
+	paramVect.push_back(fit->GetParameter("Delta_phi"));
+	paramVect.push_back(fit->GetParameter("Delta_lambda"));
+	paramVect.push_back(fit->GetParameter("Offset"));
+	paramVect.push_back(fit->GetChisquare());
+	//cout << "Vectors: Delta_phi = " << paramVect[0] << ", Delta_lambda = " << paramVect[1] << ", Offset = " << paramVect[2] << endl;
 
 	f1->SetParameters(fit->GetParameter(0), fit->GetParameter(1));
 	char leg[128];
@@ -394,16 +396,16 @@ std::vector<Float_t> CbmRichCorrectionVector::DrawFit()
 	f1->Draw();
 
 	// ------------------------------ CALCULATION OF MISALIGNMENT ANGLE ------------------------------ //
-	Float_t Focal_length = 150;
-	Float_t q = TMath::ATan(fit->GetParameter(0)/fit->GetParameter(1));
+	Double_t Focal_length = 150., q=0., A=0., Alpha=0., mis_x=0., mis_y=0.;
+	q = TMath::ATan(fit->GetParameter(0)/fit->GetParameter(1));
 	//cout << endl << "fit_1 = " << fit->GetParameter(0) << " and fit_2 = " << fit->GetParameter(1) << endl;
 	//cout << "q = " << q << endl;
-	Float_t A = fit->GetParameter(1)/TMath::Cos(q);
+	A = fit->GetParameter(1)/TMath::Cos(q);
 	//cout << "Parameter a = " << A << endl;
-	Float_t Alpha = TMath::ATan(A/1.5)*0.5*TMath::Power(10,3);                                  // *0.5, because a mirror rotation of alpha implies a rotation in the particle trajectory of 2*alpha ; 1.5 meters = Focal length = Radius_of_curvature/2
+	Alpha = TMath::ATan(A/1.5)*0.5*TMath::Power(10,3);                                  // *0.5, because a mirror rotation of alpha implies a rotation in the particle trajectory of 2*alpha ; 1.5 meters = Focal length = Radius_of_curvature/2
 	//cout << setprecision(6) << "Total angle of misalignment alpha = " << Alpha << endl;       // setprecision(#) gives the number of digits in the cout.
-	Float_t mis_x = TMath::ATan(fit->GetParameter(0)/Focal_length)*0.5*TMath::Power(10,3);
-	Float_t mis_y = TMath::ATan(fit->GetParameter(1)/Focal_length)*0.5*TMath::Power(10,3);
+	mis_x = TMath::ATan(fit->GetParameter(0)/Focal_length)*0.5*TMath::Power(10,3);
+	mis_y = TMath::ATan(fit->GetParameter(1)/Focal_length)*0.5*TMath::Power(10,3);
 
 	TLegend* LEG= new TLegend(0.30,0.7,0.72,0.85); // Set legend position
 	LEG->SetBorderSize(1);
@@ -419,7 +421,6 @@ std::vector<Float_t> CbmRichCorrectionVector::DrawFit()
 	sprintf(leg, "Offset = %f", fit->GetParameter(2));
 	LEG->AddEntry("", leg, "l");
 	LEG->Draw();
-
 	Cbm::SaveCanvasAsImage(c3, string(fOutputDir.Data()), "png");
 
 	// ------------------------------ APPLY SECOND FIT USING LOG-LIKELIHOOD METHOD ------------------------------ //
@@ -433,15 +434,15 @@ std::vector<Float_t> CbmRichCorrectionVector::DrawFit()
 	f1->SetParameters(fit2->GetParameter(0), fit2->GetParameter(1), fit2->GetParameter(2));
 	f1->Draw();
 
-	Float_t q_2 = TMath::ATan(fit2->GetParameter(0)/fit2->GetParameter(1));
+	Double_t q_2 = TMath::ATan(fit2->GetParameter(0)/fit2->GetParameter(1));
 	//cout << endl << "fit2_1 = " << fit2->GetParameter(0) << " and fit2_2 = " << fit2->GetParameter(1) << endl;
 	//cout << "q_2 = " << q_2 << endl;
-	Float_t A_2 = fit2->GetParameter(1)/TMath::Cos(q_2);
+	Double_t A_2 = fit2->GetParameter(1)/TMath::Cos(q_2);
 	//cout << "Parameter a_2 = " << A_2 << endl;
-	Float_t Alpha_2 = TMath::ATan(A_2/1.5)*0.5*TMath::Power(10,3);
+	Double_t Alpha_2 = TMath::ATan(A_2/1.5)*0.5*TMath::Power(10,3);
 	//cout << setprecision(6) << "Total angle of misalignment alpha_2 = " << Alpha_2 << endl;
-	Float_t mis_x_2 = TMath::ATan(fit2->GetParameter(0)/Focal_length)*0.5*TMath::Power(10,3);
-	Float_t mis_y_2 = TMath::ATan(fit2->GetParameter(1)/Focal_length)*0.5*TMath::Power(10,3);
+	Double_t mis_x_2 = TMath::ATan(fit2->GetParameter(0)/Focal_length)*0.5*TMath::Power(10,3);
+	Double_t mis_y_2 = TMath::ATan(fit2->GetParameter(1)/Focal_length)*0.5*TMath::Power(10,3);
 
 	TLegend* LEG2= new TLegend(0.31,0.7,0.72,0.85); // Set legend position
 	LEG2->SetBorderSize(1);
@@ -457,12 +458,10 @@ std::vector<Float_t> CbmRichCorrectionVector::DrawFit()
 	sprintf(leg, "Offset = %f", fit2->GetParameter(2));
 	LEG2->AddEntry("", leg, "l");
 	LEG2->Draw();
-
 	Cbm::SaveCanvasAsImage(c4, string(fOutputDir.Data()), "png");
 
-	//param_vector.push_back(1);
-	//param_vector.push_back(1);
-	return param_vector;
+	outputFit.at(0) = mis_x;
+	outputFit.at(1) = mis_y;
 }
 
 void CbmRichCorrectionVector::MatchFinder()
@@ -1116,25 +1115,26 @@ void CbmRichCorrectionVector::Finish()
 	// -------------------------------------------------- Mapping for mirror - PMT relations -------------------------------------------------- //
 	// ---------------------------------------------------------------------------------------------------------------------------------------- //
 
-	if (fAlignment) {
+	if (fDrawAlignment) {
 		DrawHistAlignment();
-		std::vector<Float_t> vector = DrawFit();
-		Float_t Focal_length = 150;
-		Float_t q = TMath::ATan(vector[0]/vector[1]);
+		vector<Double_t> outputFit;
+		DrawFit(outputFit);
+		Double_t Focal_length = 150;
+		Double_t q = TMath::ATan(outputFit[0]/outputFit[1]);
 		//cout << endl << "fit_1 = " << fit->GetParameter(0) << " and fit_2 = " << fit->GetParameter(1) << endl;
 		//cout << "q = " << q << endl;
-		Float_t A = vector[1]/TMath::Cos(q);
+		Double_t A = outputFit[1]/TMath::Cos(q);
 		//cout << "Parameter a = " << A << endl;
-		Float_t Alpha = TMath::ATan(A/Focal_length)*0.5*TMath::Power(10,3);                                // *0.5, because a mirror rotation of alpha implies a rotation in the particle trajectory of 2*alpha ; 1.5 meters = Focal length = Radius_of_curvature/2
+		Double_t Alpha = TMath::ATan(A/Focal_length)*0.5*TMath::Power(10,3);                                // *0.5, because a mirror rotation of alpha implies a rotation in the particle trajectory of 2*alpha ; 1.5 meters = Focal length = Radius_of_curvature/2
 		cout << endl << setprecision(6) << "Angle of misalignment alpha [mrad] = " << Alpha << endl;       // setprecision(#) gives the number of digits in the cout.
-		Float_t mis_x = TMath::ATan(vector[0]/Focal_length)*0.5*TMath::Power(10,3);
-		Float_t mis_y = TMath::ATan(vector[1]/Focal_length)*0.5*TMath::Power(10,3);
+		Double_t mis_x = TMath::ATan(outputFit[0]/Focal_length)*0.5*TMath::Power(10,3);
+		Double_t mis_y = TMath::ATan(outputFit[1]/Focal_length)*0.5*TMath::Power(10,3);
 		cout << "Misalignment in X [mrad] = " << mis_x << " and misalignment in Y [mrad] = " << mis_y << endl;
 	}
 
-	if (fMapping) {DrawHistMapping();}
+	if (fDrawMapping) {DrawHistMapping();}
 
-	if (fProjection) {DrawHistProjection();}
+	if (fDrawProjection) {DrawHistProjection();}
 
 	cout << endl << "Mirror counter = " << fMirrCounter << endl;
 	//cout << setprecision(6) << endl;
