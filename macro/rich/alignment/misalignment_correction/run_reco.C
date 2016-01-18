@@ -226,13 +226,22 @@ void run_reco(Int_t nEvents = 10000)
 	richAlign->SetDrawHist(true);
 	richAlign->SetIsSimulationAna(true);
 	richAlign->SetIsMeanPosition(false);
-	run->AddTask(richAlign);*/
-
+	run->AddTask(richAlign);
 	CbmRichPMTMapping* PMTMapping = new CbmRichPMTMapping();
 	PMTMapping->SetOutputDir(dir);
 	PMTMapping->SetRunTitle(runTitle);
 	PMTMapping->SetDrawHist(false);
-	run->AddTask(PMTMapping);
+	run->AddTask(PMTMapping);*/
+
+	CbmRichCorrectionVector* correction = new CbmRichCorrectionVector();
+	correction->SetOutputDir(dir);
+	correction->SetRunTitle(runTitle);
+	correction->SetAxisRotTitle(AxisRotTitle);
+	correction->SetDrawAlignment(true);
+	correction->SetDrawMapping(false);
+	correction->SetDrawProjection(true);
+	run->AddTask(correction);
+
     }//isRich
 
 
