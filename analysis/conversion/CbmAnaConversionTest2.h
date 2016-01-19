@@ -94,9 +94,9 @@ private:
 	TH2D * fhTest2_pt_vs_rap_gg;
 	TH2D * fhTest2_pt_vs_rap_all;
 
-	TH1D * fhPi0_startvertexElectrons_gee;
-	TH1D * fhPi0_startvertexElectrons_gg;
-	TH1D * fhPi0_startvertexElectrons_all;
+	TH1D * fhTest2_startvertexElectrons_gee;
+	TH1D * fhTest2_startvertexElectrons_gg;
+	TH1D * fhTest2_startvertexElectrons_all;
 
 
 	CbmAnaConversionTest2(const CbmAnaConversionTest2&);

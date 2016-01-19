@@ -112,6 +112,7 @@ conversion/CbmAnaConversionReco.cxx
 conversion/CbmAnaConversionPhotons.cxx
 conversion/CbmAnaConversionPhotons2.cxx
 conversion/CbmAnaConversionRecoFull.cxx
+conversion/CbmAnaConversionTest.cxx
 conversion/CbmAnaConversionTest2.cxx
 
 #photon/CbmTrdPhotonAnalysis.cxx

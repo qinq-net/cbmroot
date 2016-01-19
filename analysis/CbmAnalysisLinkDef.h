@@ -58,6 +58,7 @@
 #pragma link C++ class CbmAnaConversionPhotons+;
 #pragma link C++ class CbmAnaConversionPhotons2+;
 #pragma link C++ class CbmAnaConversionRecoFull+;
+#pragma link C++ class CbmAnaConversionTest+;
 #pragma link C++ class CbmAnaConversionTest2+;
 
 //#pragma link C++ class CbmTrdPhotonAnalysis+;
