@@ -27,6 +27,7 @@
 #include "CbmAnaConversionPhotons2.h"
 #include "CbmAnaConversionRecoFull.h"
 #include "CbmAnaConversionTest.h"
+#include "CbmAnaConversionTest2.h"
 
 class TH1;
 class TH2;
@@ -319,6 +320,7 @@ private:
    CbmAnaConversionPhotons2		*fAnaPhotons2;
    CbmAnaConversionRecoFull		*fAnaRecoFull;
    CbmAnaConversionTest			*fAnaTest;
+   CbmAnaConversionTest2		*fAnaTest2;
    
    
    

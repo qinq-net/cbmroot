@@ -57,6 +57,7 @@
 #include "CbmAnaConversionPhotons2.h"
 #include "CbmAnaConversionRecoFull.h"
 #include "CbmAnaConversionTest.h"
+#include "CbmAnaConversionTest2.h"
 
 
 #define M2E 2.6112004954086e-7
@@ -216,7 +217,8 @@ CbmAnaConversion::CbmAnaConversion()
     fAnaPhotons(NULL),
     fAnaPhotons2(NULL),
     fAnaRecoFull(NULL), 
-    fAnaTest(NULL)  
+    fAnaTest(NULL),
+    fAnaTest2(NULL)  
 {
 }
 
@@ -310,6 +312,8 @@ InitStatus CbmAnaConversion::Init()
 	if(DoTest) {
 		fAnaTest = new CbmAnaConversionTest();
 		fAnaTest->Init();
+		fAnaTest2 = new CbmAnaConversionTest2();
+		fAnaTest2->Init();
 	}
 
 	timer_all.Stop();
@@ -681,6 +685,7 @@ void CbmAnaConversion::Exec(Option_t*)
 
 	if(DoTest) {
 		fAnaTest->Exec();
+		fAnaTest2->Exec();
 	}
 
 	// ========================================================================================
@@ -997,6 +1002,7 @@ void CbmAnaConversion::Finish()
 	if(DoPhotons)			{ fAnaPhotons->Finish(); }
 	if(DoPhotons2)			{ fAnaPhotons2->Finish(); }
 	if(DoTest)				{ fAnaTest->Finish(); }
+	if(DoTest)				{ fAnaTest2->Finish(); }
 
 
 	gDirectory->mkdir("further analyses");
