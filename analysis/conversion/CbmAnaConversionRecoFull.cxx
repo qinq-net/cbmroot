@@ -267,6 +267,11 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fHistoList_recofull_new[i].clear();
 	}
 
+	Double_t invmassSpectra_nof = 1001;
+	Double_t invmassSpectra_start = -0.001;
+	Double_t invmassSpectra_end = 2.001;
+
+
 	fhElectrons = new TH1I("fhElectrons", "fhElectrons;; #", 8, 0., 8.);
 	fHistoList_recofull.push_back(fhElectrons);
 	fhElectrons->GetXaxis()->SetBinLabel(1, "electrons rich");
@@ -287,8 +292,8 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fHistoList_recofull.push_back(fhMomentumFits_pi0reco);
 
 
-	fhElectrons_invmass = new TH1D("fhElectrons_invmass", "fhElectrons_invmass; invariant mass; #", 600, -0.0025, 2.9975);
-	fhElectrons_invmass_cut = new TH1D("fhElectrons_invmass_cut", "fhElectrons_invmass_cut; invariant mass; #", 600, -0.0025, 2.9975);
+	fhElectrons_invmass = new TH1D("fhElectrons_invmass", "fhElectrons_invmass; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhElectrons_invmass_cut = new TH1D("fhElectrons_invmass_cut", "fhElectrons_invmass_cut; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhElectrons_invmass);
 	fHistoList_recofull.push_back(fhElectrons_invmass_cut);
 	
@@ -297,19 +302,19 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fhPhotons_nofPerEvent = new TH1D("fhPhotons_nofPerEvent", "fhPhotons_nofPerEvent; nof photons per event; #", 101, -0.5, 100.5);
 	fHistoList_recofull.push_back(fhPhotons_nofPerEvent);
 	
-	fhPhotons_invmass = new TH1D("fhPhotons_invmass", "fhPhotons_invmass; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass = new TH1D("fhPhotons_invmass", "fhPhotons_invmass; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass);
-	fhPhotons_invmass_cut = new TH1D("fhPhotons_invmass_cut", "fhPhotons_invmass_cut; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_cut = new TH1D("fhPhotons_invmass_cut", "fhPhotons_invmass_cut; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_cut);
 	
 	
-	fhPhotons_invmass_cut_ptBin1 = new TH1D("fhPhotons_invmass_cut_ptBin1", "fhPhotons_invmass_cut_ptBin1; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_cut_ptBin1 = new TH1D("fhPhotons_invmass_cut_ptBin1", "fhPhotons_invmass_cut_ptBin1; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_cut_ptBin1);
-	fhPhotons_invmass_cut_ptBin2 = new TH1D("fhPhotons_invmass_cut_ptBin2", "fhPhotons_invmass_cut_ptBin2; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_cut_ptBin2 = new TH1D("fhPhotons_invmass_cut_ptBin2", "fhPhotons_invmass_cut_ptBin2; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_cut_ptBin2);
-	fhPhotons_invmass_cut_ptBin3 = new TH1D("fhPhotons_invmass_cut_ptBin3", "fhPhotons_invmass_cut_ptBin3; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_cut_ptBin3 = new TH1D("fhPhotons_invmass_cut_ptBin3", "fhPhotons_invmass_cut_ptBin3; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_cut_ptBin3);
-	fhPhotons_invmass_cut_ptBin4 = new TH1D("fhPhotons_invmass_cut_ptBin4", "fhPhotons_invmass_cut_ptBin4; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_cut_ptBin4 = new TH1D("fhPhotons_invmass_cut_ptBin4", "fhPhotons_invmass_cut_ptBin4; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_cut_ptBin4);
 	
 	
@@ -318,21 +323,21 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fHistoList_recofull.push_back(fhPhotons_angleBetween);
 
 
-	fhPhotons_invmass_cut_chi1 = new TH1D("fhPhotons_invmass_cut_chi1", "fhPhotons_invmass_cut_chi1; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_cut_chi1 = new TH1D("fhPhotons_invmass_cut_chi1", "fhPhotons_invmass_cut_chi1; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_cut_chi1);
-	fhPhotons_invmass_cut_chi3 = new TH1D("fhPhotons_invmass_cut_chi3", "fhPhotons_invmass_cut_chi3; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_cut_chi3 = new TH1D("fhPhotons_invmass_cut_chi3", "fhPhotons_invmass_cut_chi3; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_cut_chi3);
-	fhPhotons_invmass_cut_chi5 = new TH1D("fhPhotons_invmass_cut_chi5", "fhPhotons_invmass_cut_chi5; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_cut_chi5 = new TH1D("fhPhotons_invmass_cut_chi5", "fhPhotons_invmass_cut_chi5; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_cut_chi5);
-	fhPhotons_invmass_cut_chi10 = new TH1D("fhPhotons_invmass_cut_chi10", "fhPhotons_invmass_cut_chi10; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_cut_chi10 = new TH1D("fhPhotons_invmass_cut_chi10", "fhPhotons_invmass_cut_chi10; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_cut_chi10);
-	fhPhotons_invmass_cut_chi25 = new TH1D("fhPhotons_invmass_cut_chi25", "fhPhotons_invmass_cut_chi25; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_cut_chi25 = new TH1D("fhPhotons_invmass_cut_chi25", "fhPhotons_invmass_cut_chi25; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_cut_chi25);
-	fhPhotons_invmass_cut_chi40 = new TH1D("fhPhotons_invmass_cut_chi40", "fhPhotons_invmass_cut_chi40; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_cut_chi40 = new TH1D("fhPhotons_invmass_cut_chi40", "fhPhotons_invmass_cut_chi40; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_cut_chi40);
-	fhPhotons_invmass_cut_chi65 = new TH1D("fhPhotons_invmass_cut_chi65", "fhPhotons_invmass_cut_chi65; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_cut_chi65 = new TH1D("fhPhotons_invmass_cut_chi65", "fhPhotons_invmass_cut_chi65; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_cut_chi65);
-	fhPhotons_invmass_cut_chi80 = new TH1D("fhPhotons_invmass_cut_chi80", "fhPhotons_invmass_cut_chi80; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_cut_chi80 = new TH1D("fhPhotons_invmass_cut_chi80", "fhPhotons_invmass_cut_chi80; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_cut_chi80);
 	
 	fhPhotons_invmass_vs_chi = new TH2D("fhPhotons_invmass_vs_chi", "fhPhotons_invmass_vs_chi; invariant mass; chi", 600, -0.0025, 2.9975, 1000, 0., 100.);
@@ -353,19 +358,19 @@ void CbmAnaConversionRecoFull::InitHistos()
 
 	fhPhotons_MC_motherpdg = new TH1D("fhPhotons_MC_motherpdg", "fhPhotons_MC_motherpdg; pdg; #", 1000, 0., 1000.);
 	fHistoList_recofull.push_back(fhPhotons_MC_motherpdg);
-	fhPhotons_MC_invmass1 = new TH1D("fhPhotons_MC_invmass1", "fhPhotons_MC_minvmass1 (MC-true cut: at least gamma correct reconstructed); invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_MC_invmass1 = new TH1D("fhPhotons_MC_invmass1", "fhPhotons_MC_minvmass1 (MC-true cut: at least gamma correct reconstructed); invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_MC_invmass1);
-	fhPhotons_MC_invmass2 = new TH1D("fhPhotons_MC_invmass2", "fhPhotons_MC_minvmass2 (MC-true cut: gamma from same mother); invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_MC_invmass2 = new TH1D("fhPhotons_MC_invmass2", "fhPhotons_MC_minvmass2 (MC-true cut: gamma from same mother); invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_MC_invmass2);
-	fhPhotons_MC_invmass3 = new TH1D("fhPhotons_MC_invmass3", "fhPhotons_MC_minvmass3 (MC-true cut: gamma from different mother); invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_MC_invmass3 = new TH1D("fhPhotons_MC_invmass3", "fhPhotons_MC_minvmass3 (MC-true cut: gamma from different mother); invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_MC_invmass3);
-	fhPhotons_MC_invmass4 = new TH1D("fhPhotons_MC_invmass4", "fhPhotons_MC_minvmass4 (MC-true cut: wrong combination of electrons); invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_MC_invmass4 = new TH1D("fhPhotons_MC_invmass4", "fhPhotons_MC_minvmass4 (MC-true cut: wrong combination of electrons); invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_MC_invmass4);
 
 	fhPhotons_MC_startvertexZ = new TH1D("fhPhotons_MC_startvertexZ", "fhPhotons_MC_startvertexZ; startvertexZ [cm]; #", 1000, -5., 95.);
 	fHistoList_recofull.push_back(fhPhotons_MC_startvertexZ);
 	
-	fhPhotons_MC_motherIdCut = new TH1D("fhPhotons_MC_motherIdCut", "fhPhotons_MC_motherIdCut; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_MC_motherIdCut = new TH1D("fhPhotons_MC_motherIdCut", "fhPhotons_MC_motherIdCut; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_MC_motherIdCut);
 
 	fhPhotons_Refit_chiDiff = new TH1D("fhPhotons_Refit_chiDiff", "fhPhotons_Refit_chiDiff; difference of chi; #", 1000, -0.1, 99.9);
@@ -380,16 +385,16 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fhPhotons_RefitPion_chiDistribution = new TH1D("fhPhotons_RefitPion_chiDistribution", "fhPhotons_RefitPion_chiDistribution; chi value; #", 10000, 0., 1000.);
 	fHistoList_recofull.push_back(fhPhotons_RefitPion_chiDistribution);
 
-	fhPhotons_invmass_refit = new TH1D("fhPhotons_invmass_refit", "fhPhotons_invmass_refit; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_refit = new TH1D("fhPhotons_invmass_refit", "fhPhotons_invmass_refit; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_refit);
-	fhPhotons_invmass_refit_cut = new TH1D("fhPhotons_invmass_refit_cut", "fhPhotons_invmass_refit_cut; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_refit_cut = new TH1D("fhPhotons_invmass_refit_cut", "fhPhotons_invmass_refit_cut; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_refit_cut);
 	
 	
 
-	fhPhotons_invmass_direction = new TH1D("fhPhotons_invmass_direction", "fhPhotons_invmass_direction; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_direction = new TH1D("fhPhotons_invmass_direction", "fhPhotons_invmass_direction; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_direction);
-	fhPhotons_invmass_direction_cut = new TH1D("fhPhotons_invmass_direction_cut", "fhPhotons_invmass_direction_cut; invariant mass; #", 600, -0.0025, 2.9975);
+	fhPhotons_invmass_direction_cut = new TH1D("fhPhotons_invmass_direction_cut", "fhPhotons_invmass_direction_cut; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull.push_back(fhPhotons_invmass_direction_cut);
 	fhPhotons_boostAngle = new TH1D("fhPhotons_boostAngle", "fhPhotons_boostAngle; boostAngle; #", 7400, -370., 370.);
 	fHistoList_recofull.push_back(fhPhotons_boostAngle);
@@ -512,34 +517,34 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fhPi0_nofPerEvent_new[i] = new TH1D(Form("fhPi0_nofPerEvent_new_%i",i), Form("fhPi0_nofPerEvent_new_%i; nof pi0 per event; #",i), 31, -0.5, 30.5);
 		fHistoList_recofull_new[i].push_back(fhPi0_nofPerEvent_new[i]);
 
-		fhPhotons_invmass_new[i] = new TH1D(Form("fhPhotons_invmass_new_%i",i), Form("fhPhotons_invmass_new_%i; invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhPhotons_invmass_new[i] = new TH1D(Form("fhPhotons_invmass_new_%i",i), Form("fhPhotons_invmass_new_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_new[i]);
 
-		fhPhotons_invmass_ptBin1_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin1_new_%i",i), Form("fhPhotons_invmass_ptBin1_new_%i; invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhPhotons_invmass_ptBin1_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin1_new_%i",i), Form("fhPhotons_invmass_ptBin1_new_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin1_new[i]);
-		fhPhotons_invmass_ptBin2_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin2_new_%i",i), Form("fhPhotons_invmass_ptBin2_new_%i; invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhPhotons_invmass_ptBin2_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin2_new_%i",i), Form("fhPhotons_invmass_ptBin2_new_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin2_new[i]);
-		fhPhotons_invmass_ptBin3_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin3_new_%i",i), Form("fhPhotons_invmass_ptBin3_new_%i; invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhPhotons_invmass_ptBin3_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin3_new_%i",i), Form("fhPhotons_invmass_ptBin3_new_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin3_new[i]);
-		fhPhotons_invmass_ptBin4_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin4_new_%i",i), Form("fhPhotons_invmass_ptBin4_new_%i; invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhPhotons_invmass_ptBin4_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin4_new_%i",i), Form("fhPhotons_invmass_ptBin4_new_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin4_new[i]);
-		fhPhotons_invmass_ptBin5_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin5_new_%i",i), Form("fhPhotons_invmass_ptBin5_new_%i; invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhPhotons_invmass_ptBin5_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin5_new_%i",i), Form("fhPhotons_invmass_ptBin5_new_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin5_new[i]);
-		fhPhotons_invmass_ptBin6_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin6_new_%i",i), Form("fhPhotons_invmass_ptBin6_new_%i; invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhPhotons_invmass_ptBin6_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin6_new_%i",i), Form("fhPhotons_invmass_ptBin6_new_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin6_new[i]);
 	
-		fhElectrons_invmass_new[i] = new TH1D(Form("fhElectrons_invmass_new_%i",i), Form("fhElectrons_invmass_new_%i; invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhElectrons_invmass_new[i] = new TH1D(Form("fhElectrons_invmass_new_%i",i), Form("fhElectrons_invmass_new_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhElectrons_invmass_new[i]);
 		fhPhotons_invmass_vs_pt_new[i] = new TH2D(Form("fhPhotons_invmass_vs_pt_new_%i",i), Form("fhPhotons_invmass_vs_pt_new_%i; invmass; pt",i), 600, -0.0025, 2.9975, 100, 0., 10.);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_vs_pt_new[i]);
 
-		fhPhotons_invmass_MCcut1_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut1_new_%i",i), Form("fhPhotons_invmass_MCcut1_new_%i (MC-true cut: at least gamma correct reconstructed); invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhPhotons_invmass_MCcut1_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut1_new_%i",i), Form("fhPhotons_invmass_MCcut1_new_%i (MC-true cut: at least gamma correct reconstructed); invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut1_new[i]);
-		fhPhotons_invmass_MCcut2_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut2_new_%i",i), Form("fhPhotons_invmass_MCcut2_new_%i (MC-true cut: gamma from same mother); invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhPhotons_invmass_MCcut2_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut2_new_%i",i), Form("fhPhotons_invmass_MCcut2_new_%i (MC-true cut: gamma from same mother); invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut2_new[i]);
-		fhPhotons_invmass_MCcut3_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut3_new_%i",i), Form("fhPhotons_invmass_MCcut3_new_%i (MC-true cut: gamma from different mother); invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhPhotons_invmass_MCcut3_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut3_new_%i",i), Form("fhPhotons_invmass_MCcut3_new_%i (MC-true cut: gamma from different mother); invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut3_new[i]);
-		fhPhotons_invmass_MCcut4_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut4_new_%i",i), Form("fhPhotons_invmass_MCcut4_new_%i (MC-true cut: wrong combination of electrons); invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhPhotons_invmass_MCcut4_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut4_new_%i",i), Form("fhPhotons_invmass_MCcut4_new_%i (MC-true cut: wrong combination of electrons); invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut4_new[i]);
 		
 		fhPhotons_pt_vs_rap_new[i] = new TH2D(Form("fhPhotons_pt_vs_rap_new_%i",i), Form("fhPhotons_pt_vs_rap_new_%i; pt; rapidity",i), 240, -2., 10., 270, -2., 7.);
@@ -549,15 +554,15 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fHistoList_recofull_new[i].push_back(fhElectrons_openingAngle_sameSign_new[i]);
 	
 		
-		fhMixedEventsTest_invmass[i] = new TH1D(Form("fhMixedEventsTest_invmass_%i",i), Form("fhMixedEventsTest_invmass_%i; invariant mass; #",i), 600, -0.0025, 2.9975);
+		fhMixedEventsTest_invmass[i] = new TH1D(Form("fhMixedEventsTest_invmass_%i",i), Form("fhMixedEventsTest_invmass_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhMixedEventsTest_invmass[i]);
 	}
 
-	fhMixedEventsTest2_invmass = new TH1D(Form("fhMixedEventsTest2_invmass_%i",4), Form("fhMixedEventsTest2_invmass_%i; invariant mass; #",4), 600, -0.0025, 2.9975);
+	fhMixedEventsTest2_invmass = new TH1D(Form("fhMixedEventsTest2_invmass_%i",4), Form("fhMixedEventsTest2_invmass_%i; invariant mass; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull_new[4].push_back(fhMixedEventsTest2_invmass);
-	fhMixedEventsTest3_invmass = new TH1D(Form("fhMixedEventsTest3_invmass_%i",4), Form("fhMixedEventsTest3_invmass_%i; invariant mass; #",4), 600, -0.0025, 2.9975);
+	fhMixedEventsTest3_invmass = new TH1D(Form("fhMixedEventsTest3_invmass_%i",4), Form("fhMixedEventsTest3_invmass_%i; invariant mass; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull_new[4].push_back(fhMixedEventsTest3_invmass);
-	fhMixedEventsTest4_invmass = new TH1D(Form("fhMixedEventsTest4_invmass_%i",4), Form("fhMixedEventsTest4_invmass_%i; invariant mass; #",4), 600, -0.0025, 2.9975);
+	fhMixedEventsTest4_invmass = new TH1D(Form("fhMixedEventsTest4_invmass_%i",4), Form("fhMixedEventsTest4_invmass_%i; invariant mass; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull_new[4].push_back(fhMixedEventsTest4_invmass);
 }
 
