@@ -361,15 +361,15 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
     Int_t time = raw->GetTime();
     TString syscore="";
     switch (eqID) {
-    case kMuenster:  // Muenster
+    case kFlesMuenster:  // Muenster
       syscore="SysCore0_";
       SysId = 0;
       break;
-    case kFrankfurt: // Frankfurt
+    case kFlesFrankfurt: // Frankfurt
       syscore="SysCore1_";
       SysId = 1;
       break;
-    case kBucarest: // Bucarest
+    case kFlesBucarest: // Bucarest
       syscore="SysCore2_";
       SysId = 2;
       break;
@@ -703,7 +703,7 @@ void CbmTrdRawBeamProfile::Exec(Option_t*)
 	  fHM->H2(histName.Data())->Fill(bin,raw->GetSamples()[bin]);
 	  if (stopType == 0)
 	    if (triggerType == 1 || triggerType == 3){
-	      if (kMuenster){
+	      if (kFlesMuenster){
 		if (maxADC > -200 && maxADC <= -190 && maxTimeBin < 5) {
 		  fHM->H2("MeanPulseShape_maxAdcLarger-200")->Fill(bin,raw->GetSamples()[bin]);
 		} else if (maxADC > -190 && maxADC <= -180 && maxTimeBin < 5) {
@@ -1258,11 +1258,11 @@ void CbmTrdRawBeamProfile::TimeClustering2015CernSPS()
   Int_t CbmTrdRawBeamProfile::GetSysCoreID(CbmSpadicRawMessage* raw)
   {
     Int_t eqID = raw->GetEquipmentID();
-    if (eqID == (Int_t)kMuenster) {  
+    if (eqID == (Int_t)kFlesMuenster) {
       return 0;
-    }  else if (eqID == (Int_t)kFrankfurt){
+    }  else if (eqID == (Int_t)kFlesFrankfurt){
       return 1;
-    }  else if (eqID == (Int_t)kBucarest){  
+    }  else if (eqID == (Int_t)kFlesBucarest){
       return 2;
     } else
       LOG(ERROR) << "Container " << fContainerCounter << " Message " << fSpadicMessageCounter <<  " EquipmentID " << eqID << "not known." << FairLogger::endl;   

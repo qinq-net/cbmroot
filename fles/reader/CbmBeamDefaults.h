@@ -4,12 +4,12 @@
 #include <map>
 
 /**  DetectorID enumerator  **/
-enum Exp_Group {kRich=0xE000,
-                kMuenster=0xE001,
-                kFrankfurt=0xE002,
-                kBucarest=0xE003,
-		kHodo1=0xE004,
-		kHodo2=0xE005};
+enum Exp_Group {kFlesRich=0xE000,
+                kFlesMuenster=0xE001,
+                kFlesFrankfurt=0xE002,
+                kFlesBucarest=0xE003,
+		kFlesHodo1=0xE004,
+		kFlesHodo2=0xE005};
 
 /** Maximum number of Syscores which could be in the system **/
 static const Int_t NrOfSyscores = 3;
@@ -32,9 +32,9 @@ static const std::map<Int_t, Int_t> groupToExpMap
 */
 #ifndef __CINT__
 static const std::map<Int_t, Int_t> groupToExpMap = {
-  {kMuenster,0},
-  {kFrankfurt,1},
-  {kBucarest,2}
+  {kFlesMuenster,0},
+  {kFlesFrankfurt,1},
+  {kFlesBucarest,2}
 };
 #endif
 

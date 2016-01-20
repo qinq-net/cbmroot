@@ -921,15 +921,15 @@ TString CbmTrdTestBeamAnalysis::GetSysCore(Int_t eqID)
   TString syscore="";
   //  Int_t SysId=-1;
   switch (eqID) {
-  case kMuenster:  // Muenster
+  case kFlesMuenster:  // Muenster
     syscore="SysCore0_";
     //SysId = 0;
     break;
-  case kFrankfurt: // Frankfurt
+  case kFlesFrankfurt: // Frankfurt
     syscore="SysCore1_";
     //SysId = 1;
     break;
-  case kBucarest: // Bucarest
+  case kFlesBucarest: // Bucarest
     syscore="SysCore2_";
     //SysId = 2;
     break;
@@ -945,15 +945,15 @@ Int_t   CbmTrdTestBeamAnalysis::GetSysCoreID(Int_t eqID)
   //TString syscore="";
   Int_t SysId=-1;
   switch (eqID) {
-  case kMuenster:  // Muenster
+  case kFlesMuenster:  // Muenster
     //syscore="SysCore0_";
     SysId = 0;
     break;
-  case kFrankfurt: // Frankfurt
+  case kFlesFrankfurt: // Frankfurt
     //syscore="SysCore1_";
     SysId = 1;
     break;
-  case kBucarest: // Bucarest
+  case kFlesBucarest: // Bucarest
     //syscore="SysCore2_";
     SysId = 2;
     break;

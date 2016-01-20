@@ -42,7 +42,7 @@ Bool_t CbmFiberHodoMapping::Map(Int_t eqId, Int_t /*febId*/, Int_t channel,
 				Int_t& iStation, Int_t& iSector, 
 				Int_t& iSide, Int_t& iChannel) {
 
-  iStation = eqId - kHodo1;
+  iStation = eqId - kFlesHodo1;
   iSector = 0;
   iSide = fFiberHodoPlane[channel];
   iChannel = fFiberHodoFiber[channel];
