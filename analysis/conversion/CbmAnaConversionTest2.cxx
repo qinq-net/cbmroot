@@ -48,7 +48,6 @@ CbmAnaConversionTest2::CbmAnaConversionTest2()
 	fVector_gt(),
 	fVector_momenta(),
 	fVector_mctrack(),
-	fVector_chi(),
 	fVector_gtIndex(),
 	fVector_richIndex(),
 	fhTest2_invmass_gee_mc(NULL),
@@ -108,9 +107,9 @@ void CbmAnaConversionTest2::InitHistos()
 {
 	fHistoList_test2.clear();
 
-	Double_t invmassSpectra_nof = 1001;
-	Double_t invmassSpectra_start = -0.001;
-	Double_t invmassSpectra_end = 2.001;
+	Double_t invmassSpectra_nof = 801;
+	Double_t invmassSpectra_start = -0.00125;
+	Double_t invmassSpectra_end = 2.00125;
 	
 	fhTest2_invmass_RICHindex0 = new TH1D("fhTest2_invmass_RICHindex0", "fhTest2_invmass_RICHindex0; invariant mass; #", 600, -0.0025, 2.9975);
 	fHistoList_test2.push_back(fhTest2_invmass_RICHindex0);
@@ -176,7 +175,7 @@ void CbmAnaConversionTest2::Exec()
 {
 	fVector_gt.clear();
 	fVector_momenta.clear();
-	fVector_chi.clear();
+	fVector_mctrack.clear();
 	fVector_gtIndex.clear();
 	fVector_richIndex.clear();
 
@@ -245,7 +244,6 @@ void CbmAnaConversionTest2::Exec()
 			fVector_mctrack.push_back(mcTrack1);
 			fVector_gtIndex.push_back(i);
 			fVector_gt.push_back(gTrack);
-			fVector_richIndex.push_back(richInd);
 
 			if (richInd < 0) {
 				fVector_richIndex.push_back(0);
@@ -270,6 +268,8 @@ void CbmAnaConversionTest2::Exec()
 			fVector_richIndex.push_back(richInd);
 		}
 	}
+	
+	InvariantMassTest_3RICH();
 }
 
 

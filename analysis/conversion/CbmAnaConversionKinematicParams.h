@@ -20,6 +20,8 @@ public:
    Double_t fRapidity = 0;		// Rapidity
    Double_t fMinv = 0;			// Invariant mass
    Double_t fAngle = 0;			// Opening angle
+   Double_t fRap2 = 0;
+   Double_t fPseudoRap2 = 0;
 
    /*
     * Calculate kinematic parameters for MC tracks.
@@ -67,6 +69,8 @@ public:
 		params.fPt = perp;
 		params.fRapidity = yPair;
 		params.fMinv = invmass;
+		params.fRap2 = sum.Rapidity();
+		params.fPseudoRap2 = sum.PseudoRapidity();
 		return params;
 	}
 
@@ -108,6 +112,8 @@ public:
 		params.fPt = perp;
 		params.fRapidity = yPair;
 		params.fMinv = invmass;
+		params.fRap2 = sum.Rapidity();
+		params.fPseudoRap2 = sum.PseudoRapidity();
 		return params;
 	}
 	

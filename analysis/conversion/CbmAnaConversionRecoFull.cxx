@@ -267,9 +267,9 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fHistoList_recofull_new[i].clear();
 	}
 
-	Double_t invmassSpectra_nof = 1001;
-	Double_t invmassSpectra_start = -0.001;
-	Double_t invmassSpectra_end = 2.001;
+	Double_t invmassSpectra_nof = 801;
+	Double_t invmassSpectra_start = -0.00125;
+	Double_t invmassSpectra_end = 2.00125;
 
 
 	fhElectrons = new TH1I("fhElectrons", "fhElectrons;; #", 8, 0., 8.);

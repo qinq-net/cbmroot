@@ -161,9 +161,9 @@ void CbmAnaConversionReco::InitHistos()
 	fHistoList_all.clear();
 
 
-	Double_t invmassSpectra_nof = 1001;
-	Double_t invmassSpectra_start = -0.001;
-	Double_t invmassSpectra_end = 2.001;
+	Double_t invmassSpectra_nof = 801;
+	Double_t invmassSpectra_start = -0.00125;
+	Double_t invmassSpectra_end = 2.00125;
 	
 
 	fhInvariantMass_MC_all			= new TH1D("fhInvariantMass_MC_all", "fhInvariantMass_MC_all;mass [GeV/c^2];#", 2001, -0.0005, 2.0005);

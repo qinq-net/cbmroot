@@ -77,7 +77,6 @@ private:
 	vector<CbmGlobalTrack*>	fVector_gt;
 	vector<TVector3>		fVector_momenta;
 	vector<CbmMCTrack*>		fVector_mctrack;
-	vector<double>			fVector_chi;
 	vector<int>				fVector_gtIndex;
 	vector<int>				fVector_richIndex;
 
