@@ -29,6 +29,7 @@ class CbmMCTrack;
 class CbmTrackMatchNew;
 class CbmKFVertex;
 
+class TParticle;
 //class TObjArray;
 //class TProcessID;
 //class FairRootManager;
@@ -43,6 +44,7 @@ public:
 		    CbmMCTrack *mctrk,
 		    CbmTrackMatchNew *stsmatch, CbmTrackMatchNew *muchmatch, CbmTrackMatchNew *trdMatch, CbmTrackMatchNew *richMatch,
 		    FairTrackParam *richproj);
+  PairAnalysisTrack(TParticle *fastTrk, CbmMCTrack *mctrk );
 
   virtual ~PairAnalysisTrack();
   PairAnalysisTrack(const PairAnalysisTrack& track);

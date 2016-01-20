@@ -282,9 +282,10 @@ Bool_t PairAnalysis::Process(PairAnalysisEvent *ev1)
   // Process the events
   //
 
-  //at least first event is needed!
-  if (!ev1->GetPrimaryVertex()){
-    Fatal("PairAnalysis::Process","At least first event/vertex must be set!");
+  // event vertex is needed!
+  if (!ev1->GetPrimaryVertex() ){
+    Fatal("PairAnalysis::Process","No vertex found!");
+    //Error("PairAnalysis::Process","No vertex found!");
     return kFALSE;
   }
 
@@ -1023,7 +1024,6 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
   Double_t *values=PairAnalysisVarManager::GetData();
 
   Int_t ntracks=ev->GetNumberOfTracks();
-
   UInt_t selectedMask=(1<<fTrackFilter.GetCuts()->GetEntries())-1;
   for (Int_t itrack=0; itrack<ntracks; ++itrack){
 

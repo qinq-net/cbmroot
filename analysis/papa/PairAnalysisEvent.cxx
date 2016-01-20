@@ -12,6 +12,8 @@ Add Detailed description
 #include <Rtypes.h>
 #include <TObjArray.h>
 #include <TArrayS.h>
+#include <TParticle.h>
+#include <TMatrixFSym.h>
 
 
 #include "FairRootManager.h"
@@ -73,6 +75,7 @@ PairAnalysisEvent::PairAnalysisEvent() :
   fTrdCluster(0x0),      //TRD cluster
   fPrimVertex(0x0),     //primary vertices
   fTracks(new TObjArray(1)), // array of papa tracks
+  fFastTracks(0x0), // array of fast(sim) tracks
   fMultiMatch(0)
 {
   //
@@ -119,6 +122,7 @@ PairAnalysisEvent::PairAnalysisEvent(const char* name, const char* title) :
   fTrdCluster(0x0),      //TRD cluster
   fPrimVertex(0x0),     //primary vertices
   fTracks(new TObjArray(1)), // array of papa tracks
+  fFastTracks(0x0), // array of fast(sim) tracks
   fMultiMatch(0)
 {
   //
@@ -174,6 +178,8 @@ PairAnalysisEvent::~PairAnalysisEvent()
   fRichHitMatches->Delete();      //RICH hits
   fTrdHitMatches->Delete();      //TRD hits
   fTofHitMatches->Delete();      //TOF hits
+
+  fFastTracks->Delete();
 }
 
 //______________________________________________
@@ -221,6 +227,9 @@ void PairAnalysisEvent::SetInput(FairRootManager *man)
   fTrdCluster   = (TClonesArray*) man->GetObject("TrdCluster");
 
   fRichProjection = (TClonesArray*) man->GetObject("RichProjection");
+  // fast track
+  fFastTracks   = (TClonesArray*) man->GetObject("FastTrack");
+
   //  if(fMCTracks)   printf("PairAnalysisEvent::SetInput: size of mc array: %04d \n",fMCTracks->GetSize());
 }
 
@@ -231,16 +240,28 @@ void PairAnalysisEvent::Init()
   // initialization of track arrays
   //
   fTracks->Clear("C");
-  if(!fGlobalTracks) return;
+  if(!fGlobalTracks && !fFastTracks) return;
 
-  // get primary kf vertex
-  CbmKFVertex *vtx = new CbmKFVertex(*fPrimVertex);
+  // get primary kf vertex or create one from mc header
+  CbmKFVertex *vtx = 0x0;
+  if(!fPrimVertex && fMCHeader) {
+    TMatrixFSym cov(3);
+    fPrimVertex = new CbmVertex("mcvtx","mc vtx",
+				fMCHeader->GetX(),
+				fMCHeader->GetY(), 
+				fMCHeader->GetZ(),
+				1.0,
+				1,
+				fMCHeader->GetNPrim(),
+				cov );
+  }
+  if(fPrimVertex)     vtx = new CbmKFVertex(*fPrimVertex);
 
   TArrayS matches;
   if(fMCTracks) matches.Set(fMCTracks->GetEntriesFast());
 
   // loop over all glbl tracks
-  for (Int_t i=0; i<fGlobalTracks->GetEntriesFast(); i++) {
+  for (Int_t i=0; i<(fGlobalTracks?fGlobalTracks->GetEntriesFast():0); i++) {
     // global track
     CbmGlobalTrack *gtrk=static_cast<CbmGlobalTrack*>(fGlobalTracks->UncheckedAt(i));
     if(!gtrk) continue;
@@ -313,8 +334,24 @@ void PairAnalysisEvent::Init()
     
   }
 
+ // loop over all fast tracks
+  for (Int_t i=0; i<(fFastTracks?fFastTracks->GetEntriesFast():0); i++) {
+    // fast(sim) track
+    TParticle *ftrk=static_cast<TParticle*>(fFastTracks->UncheckedAt(i));
+    if(!ftrk) continue;
+
+    // monte carlo track
+    Int_t iMC = ftrk->GetFirstMother();
+    CbmMCTrack *mcTrack=0x0;
+    if(fMCTracks && iMC>=0) mcTrack=static_cast<CbmMCTrack*>(fMCTracks->At(iMC));
+    // increment position in matching array
+    if(mcTrack && fMCTracks) matches[iMC]++;
+    // build papa track
+    fTracks->AddAtAndExpand(new PairAnalysisTrack(ftrk, mcTrack),  i);
+  }
+
   // clean up
-  delete vtx;
+  if(vtx) delete vtx;
 
   // number of multiple matched tracks
   for(Int_t i=0; i<matches.GetSize(); i++)

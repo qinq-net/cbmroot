@@ -9,6 +9,8 @@
 
 #include <TDatabasePDG.h>
 #include <TLorentzVector.h>
+#include <TParticle.h>
+#include <TParticlePDG.h>
 
 #include "FairTrackParam.h"
 #include "CbmDetectorList.h"
@@ -80,7 +82,7 @@ PairAnalysisTrack::PairAnalysisTrack(const char* name, const char* title) :
   fMomentum(),
   fPosition(),
   fCharge(0),
-  fChi2Vtx(0.),
+  fChi2Vtx(-1.),
   fPdgCode(0),
   fLabel(-1),
   fWeight(1.),
@@ -90,6 +92,42 @@ PairAnalysisTrack::PairAnalysisTrack(const char* name, const char* title) :
   // Named Constructor
   //
 
+}
+
+//______________________________________________
+PairAnalysisTrack::PairAnalysisTrack(TParticle *fastTrk,
+				     CbmMCTrack *mctrk ) :
+  TNamed(),
+  fPrimVertex(0x0),
+  fGlblTrack(0x0),
+  fStsTrack(0x0),
+  fMuchTrack(0x0),
+  fTrdTrack(0x0),
+  fRichRing(0x0),
+  fTofHit(0x0),
+  fMCTrack(mctrk),
+  fStsTrackMatch(0x0),
+  fMuchTrackMatch(0x0),
+  fTrdTrackMatch(0x0),
+  fRichRingMatch(0x0),
+  fRichProj(0x0),
+  fMomentum(),
+  fPosition(),
+  fCharge(0),
+  fChi2Vtx(-1.),
+  fPdgCode(fastTrk->GetPdgCode()),
+  fLabel(fastTrk->GetFirstMother()),
+  fWeight(1.),
+  fMultiMatch(0)
+{
+  //
+  // Constructor
+  //
+  fastTrk->Momentum(fMomentum);
+  fastTrk->ProductionVertex(fPosition);
+
+  TParticlePDG *mcPart = fastTrk->GetPDG(0);
+  if(mcPart) fCharge  = mcPart->Charge()/3;
 }
 
 //______________________________________________
@@ -108,8 +146,8 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
 				     FairTrackParam *richproj
 				     ) :
   TNamed(),
-  fPrimVertex(vtx),
-  fGlblTrack(gtrk),
+  fPrimVertex(0x0),
+  fGlblTrack(),
   fStsTrack(ststrk),
   fMuchTrack(muchtrk),
   fTrdTrack(trdtrk),
@@ -123,7 +161,7 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
   fRichProj(richproj),
   fMomentum(),
   fPosition(),
-  fChi2Vtx(0.),
+  fChi2Vtx(-1.),
   fCharge(0),
   fPdgCode(0),
   fLabel(-1),

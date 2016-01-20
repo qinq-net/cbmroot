@@ -36,7 +36,7 @@ public:
   // getters
   FairMCEventHeader *GetMCHeader()     const { return fMCHeader; }
   CbmVertex *GetPrimaryVertex()       const { return fPrimVertex; }
-  Int_t      GetNumberOfTracks()      const { return (fGlobalTracks ? fGlobalTracks->GetEntriesFast() : -1); }
+  Int_t      GetNumberOfTracks()      const { return (fTracks ? fTracks->GetEntriesFast() : -1); }
   Int_t      GetNumberOfMCTracks()    const { return (fMCTracks ? fMCTracks->GetEntriesFast() : -1); }
   Int_t      GetNumberOfVageMatches() const { return fMultiMatch; }
   Int_t      GetNumberOfMatches(DetectorId det) const;
@@ -99,13 +99,14 @@ private:
 
  CbmVertex    *fPrimVertex;     //primary vertex
  TObjArray    *fTracks;         //papa tracks
+ TClonesArray *fFastTracks;     //fast(sim) tracks
 
  Int_t         fMultiMatch;     // number of mutiple matched tracks 
 
  PairAnalysisEvent(const PairAnalysisEvent& event);
  PairAnalysisEvent &operator=(const PairAnalysisEvent &c);
 
- ClassDef(PairAnalysisEvent,6)         // PairAnalysis Event
+ ClassDef(PairAnalysisEvent,7)         // PairAnalysis Event
 };
 
 
