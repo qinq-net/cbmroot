@@ -61,7 +61,16 @@ CbmAnaConversionTest2::CbmAnaConversionTest2()
 	fhTest2_pt_vs_rap_all(NULL),
 	fhTest2_startvertexElectrons_gee(NULL),
 	fhTest2_startvertexElectrons_gg(NULL),
-	fhTest2_startvertexElectrons_all(NULL)
+	fhTest2_startvertexElectrons_all(NULL),
+	fhTest2_2rich_invmass_gee_mc(NULL),
+	fhTest2_2rich_invmass_gee_refitted(NULL),
+	fhTest2_2rich_invmass_gg_mc(NULL),
+	fhTest2_2rich_invmass_gg_refitted(NULL),
+	fhTest2_2rich_invmass_all_mc(NULL),
+	fhTest2_2rich_invmass_all_refitted(NULL),
+	fhTest2_2rich_pt_vs_rap_gee(NULL),
+	fhTest2_2rich_pt_vs_rap_gg(NULL),
+	fhTest2_2rich_pt_vs_rap_all(NULL)
 {
 }
 
@@ -149,6 +158,30 @@ void CbmAnaConversionTest2::InitHistos()
 	fHistoList_test2.push_back(fhTest2_startvertexElectrons_gee);
 	fHistoList_test2.push_back(fhTest2_startvertexElectrons_gg);
 	fHistoList_test2.push_back(fhTest2_startvertexElectrons_all);
+
+
+
+	// 2 leptons in RICH
+	fhTest2_2rich_invmass_gee_mc		= new TH1D("fhTest2_2rich_invmass_gee_mc","fhTest2_2rich_invmass_gee_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_2rich_invmass_gee_refitted	= new TH1D("fhTest2_2rich_invmass_gee_refitted","fhTest2_2rich_invmass_gee_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_2rich_invmass_gg_mc			= new TH1D("fhTest2_2rich_invmass_gg_mc","fhTest2_2rich_invmass_gg_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_2rich_invmass_gg_refitted	= new TH1D("fhTest2_2rich_invmass_gg_refitted","fhTest2_2rich_invmass_gg_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_2rich_invmass_all_mc		= new TH1D("fhTest2_2rich_invmass_all_mc","fhTest2_2rich_invmass_all_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_2rich_invmass_all_refitted	= new TH1D("fhTest2_2rich_invmass_all_refitted","fhTest2_2rich_invmass_all_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_test2.push_back(fhTest2_2rich_invmass_gee_mc);
+	fHistoList_test2.push_back(fhTest2_2rich_invmass_gee_refitted);
+	fHistoList_test2.push_back(fhTest2_2rich_invmass_gg_mc);
+	fHistoList_test2.push_back(fhTest2_2rich_invmass_gg_refitted);
+	fHistoList_test2.push_back(fhTest2_2rich_invmass_all_mc);
+	fHistoList_test2.push_back(fhTest2_2rich_invmass_all_refitted);
+
+
+	fhTest2_2rich_pt_vs_rap_gee	= new TH2D("fhTest2_2rich_pt_vs_rap_gee", "fhTest2_2rich_pt_vs_rap_gee;pt [GeV]; rap [GeV]", 240, -2., 10., 270, -2., 7.);
+	fhTest2_2rich_pt_vs_rap_gg	= new TH2D("fhTest2_2rich_pt_vs_rap_gg", "fhTest2_2rich_pt_vs_rap_gg;pt [GeV]; rap [GeV]", 240, -2., 10., 270, -2., 7.);
+	fhTest2_2rich_pt_vs_rap_all	= new TH2D("fhTest2_2rich_pt_vs_rap_all", "fhTest2_2rich_pt_vs_rap_all;pt [GeV]; rap [GeV]", 240, -2., 10., 270, -2., 7.);
+	fHistoList_test2.push_back(fhTest2_2rich_pt_vs_rap_gee);
+	fHistoList_test2.push_back(fhTest2_2rich_pt_vs_rap_gg);
+	fHistoList_test2.push_back(fhTest2_2rich_pt_vs_rap_all);
 }
 
 
@@ -232,9 +265,9 @@ void CbmAnaConversionTest2::Exec()
 		TVector3 refittedMomentum_electron;
 		const FairTrackParam* vtxTrack_electron = stsTracks_electron[0].GetParamFirst();
 		vtxTrack_electron->Momentum(refittedMomentum_electron);
-		float result_chi_electron = chiPrim_electron[0];
+		//float result_chi_electron = chiPrim_electron[0];
 		//float result_ndf_electron = stsTracks_electron[0].GetNDF();
-		Double_t stsHits = stsTrack->GetNofHits();
+		//Double_t stsHits = stsTrack->GetNofHits();
 		
 		
 		Int_t pdg = mcTrack1->GetPdgCode();
@@ -270,6 +303,7 @@ void CbmAnaConversionTest2::Exec()
 	}
 	
 	InvariantMassTest_3RICH();
+	InvariantMassTest_2RICH();
 }
 
 
@@ -514,6 +548,265 @@ void CbmAnaConversionTest2::InvariantMassTest_3RICH()
 								
 						fhTest2_pt_vs_rap_gg->Fill(params_reco.fPt, params_reco.fRapidity);
 						fhTest2_pt_vs_rap_all->Fill(params_reco.fPt, params_reco.fRapidity);
+
+						cout << "######################################################################" << endl;
+
+						fill++;
+					}
+					}
+				}
+			}
+		}
+	}
+}
+
+
+
+
+
+
+void CbmAnaConversionTest2::InvariantMassTest_2RICH()
+// Calculating invariant mass of 4 ep/em, using MC data AND reconstructed momentum
+{
+	cout << "CbmAnaConversionTest2: InvariantMassTest_4epem - Start..." << endl;
+	cout << "CbmAnaConversionTest2: InvariantMassTest_4epem - " << fVector_mctrack.size() << endl;
+	int fill = 0;
+	if(fVector_mctrack.size() < 4) return;
+	for(unsigned int i=0; i<fVector_mctrack.size()-3; i++) {
+		for(unsigned int j=i+1; j<fVector_mctrack.size()-2; j++) {
+			for(unsigned int k=j+1; k<fVector_mctrack.size()-1; k++) {
+				for(unsigned int l=k+1; l<fVector_mctrack.size(); l++) {
+					if(fVector_mctrack[i]->GetPdgCode() + fVector_mctrack[j]->GetPdgCode() + fVector_mctrack[k]->GetPdgCode() + fVector_mctrack[l]->GetPdgCode() != 0) continue;
+					
+					if(fVector_mctrack.size() != fVector_richIndex.size() ) {
+						cout << "CbmAnaConversionTest2: InvariantMassTest_4epem - not matching number of entries!" << endl;
+						continue;
+					}
+					
+					
+					
+					// starting points of each electron (-> i.e. conversion points of gamma OR decay points of pi0, depending on decay channel)
+					TVector3 pi0start_i;
+					fVector_mctrack[i]->GetStartVertex(pi0start_i);
+					TVector3 pi0start_j;
+					fVector_mctrack[j]->GetStartVertex(pi0start_j);
+					TVector3 pi0start_k;
+					fVector_mctrack[k]->GetStartVertex(pi0start_k);
+					TVector3 pi0start_l;
+					fVector_mctrack[l]->GetStartVertex(pi0start_l);
+					
+					
+					Int_t richIndex1 = (fVector_richIndex[i] > 0);
+					Int_t richIndex2 = (fVector_richIndex[j] > 0);
+					Int_t richIndex3 = (fVector_richIndex[k] > 0);
+					Int_t richIndex4 = (fVector_richIndex[l] > 0);
+					
+					if(richIndex1 + richIndex2 + richIndex3 + richIndex4 != 2) continue;
+					
+					int motherId1 = fVector_mctrack[i]->GetMotherId();
+					int motherId2 = fVector_mctrack[j]->GetMotherId();
+					int motherId3 = fVector_mctrack[k]->GetMotherId();
+					int motherId4 = fVector_mctrack[l]->GetMotherId();
+					
+					
+					if( (motherId1 == motherId2 && motherId3 == motherId4) ||
+						(motherId1 == motherId3 && motherId2 == motherId4) ||
+						(motherId1 == motherId4 && motherId2 == motherId3) ) {
+
+
+						int grandmotherId1 = -1;
+						int grandmotherId2 = -1;
+						int grandmotherId3 = -1;
+						int grandmotherId4 = -1;
+
+						int mcMotherPdg1  = -1;
+						int mcMotherPdg2  = -1;
+						int mcMotherPdg3  = -1;
+						int mcMotherPdg4  = -1;
+						int mcGrandmotherPdg1  = -1;
+//						int mcGrandmotherPdg2  = -1;
+//						int mcGrandmotherPdg3  = -1;
+//						int mcGrandmotherPdg4  = -1;
+
+						CbmMCTrack* grandmother1;
+
+						if (motherId1 != -1) {
+							CbmMCTrack* mother1 = (CbmMCTrack*) fMcTracks->At(motherId1);
+							if (NULL != mother1) mcMotherPdg1 = mother1->GetPdgCode();
+							grandmotherId1 = mother1->GetMotherId();
+							if(grandmotherId1 != -1) {
+								grandmother1 = (CbmMCTrack*) fMcTracks->At(grandmotherId1);
+								if (NULL != grandmother1) mcGrandmotherPdg1 = grandmother1->GetPdgCode();
+							}
+						}
+						if (motherId2 != -1) {
+							CbmMCTrack* mother2 = (CbmMCTrack*) fMcTracks->At(motherId2);
+							if (NULL != mother2) mcMotherPdg2 = mother2->GetPdgCode();
+							grandmotherId2 = mother2->GetMotherId();
+							if(grandmotherId2 != -1) {
+//								CbmMCTrack* grandmother2 = (CbmMCTrack*) fMcTracks->At(grandmotherId2);
+//								if (NULL != grandmother2) mcGrandmotherPdg2 = grandmother2->GetPdgCode();
+							}
+						}
+						if (motherId3 != -1) {
+							CbmMCTrack* mother3 = (CbmMCTrack*) fMcTracks->At(motherId3);
+							if (NULL != mother3) mcMotherPdg3 = mother3->GetPdgCode();
+							grandmotherId3 = mother3->GetMotherId();
+							if(grandmotherId3 != -1) {
+//								CbmMCTrack* grandmother3 = (CbmMCTrack*) fMcTracks->At(grandmotherId3);
+//								if (NULL != grandmother3) mcGrandmotherPdg3 = grandmother3->GetPdgCode();
+							}
+						}
+						if (motherId4 != -1) {
+							CbmMCTrack* mother4 = (CbmMCTrack*) fMcTracks->At(motherId4);
+							if (NULL != mother4) mcMotherPdg4 = mother4->GetPdgCode();
+							grandmotherId4 = mother4->GetMotherId();
+							if(grandmotherId4 != -1) {
+//								CbmMCTrack* grandmother4 = (CbmMCTrack*) fMcTracks->At(grandmotherId4);
+//								if (NULL != grandmother4) mcGrandmotherPdg4 = grandmother4->GetPdgCode();
+							}
+						}
+
+						if(grandmotherId1 == -1) continue;
+
+						if(motherId1 == motherId2 && motherId3 == motherId4) {
+							if(NofDaughters(motherId1) != 2 || NofDaughters(motherId3) != 2) continue;
+							if( (grandmotherId1 == motherId3 && mcGrandmotherPdg1 == 111) || (motherId1 == grandmotherId3 && mcMotherPdg1 == 111)) {
+							/*
+								fhTest2_startvertexElectrons_gee->Fill(pi0start_i.Z());
+								fhTest2_startvertexElectrons_gee->Fill(pi0start_j.Z());
+								fhTest2_startvertexElectrons_gee->Fill(pi0start_k.Z());
+								fhTest2_startvertexElectrons_gee->Fill(pi0start_l.Z());
+								fhTest2_startvertexElectrons_all->Fill(pi0start_i.Z());
+								fhTest2_startvertexElectrons_all->Fill(pi0start_j.Z());
+								fhTest2_startvertexElectrons_all->Fill(pi0start_k.Z());
+								fhTest2_startvertexElectrons_all->Fill(pi0start_l.Z());
+								*/
+								// consider only electrons from the target (only then the momenta are correctly refitted/reconstructed)
+								if(pi0start_i.Z() > 1 || pi0start_j.Z() > 1 || pi0start_k.Z() > 1 || pi0start_l.Z() > 1) continue;
+						
+						
+								Double_t invmass_mc = 0;
+								Double_t invmass_reco = 0;
+								CbmAnaConversionKinematicParams params_mc = CbmAnaConversionKinematicParams::KinematicParams_4particles_MC(fVector_mctrack[i], fVector_mctrack[j], fVector_mctrack[k], fVector_mctrack[l]);
+								CbmAnaConversionKinematicParams params_reco = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(fVector_momenta[i], fVector_momenta[j], fVector_momenta[k], fVector_momenta[l]);
+								invmass_mc = params_mc.fMinv;
+								invmass_reco = params_reco.fMinv;
+								
+								fhTest2_2rich_invmass_gee_mc->Fill(invmass_mc);
+								fhTest2_2rich_invmass_gee_refitted->Fill(invmass_reco);
+								fhTest2_2rich_invmass_all_mc->Fill(invmass_mc);
+								fhTest2_2rich_invmass_all_refitted->Fill(invmass_reco);
+								
+								fhTest2_2rich_pt_vs_rap_gee->Fill(params_reco.fPt, params_reco.fRapidity);
+								fhTest2_2rich_pt_vs_rap_all->Fill(params_reco.fPt, params_reco.fRapidity);
+							}
+						}
+						if(motherId1 == motherId3 && motherId2 == motherId4) {
+							if(NofDaughters(motherId1) != 2 || NofDaughters(motherId2) != 2) continue;
+							if( (grandmotherId1 == motherId2 && mcGrandmotherPdg1 == 111) || (motherId1 == grandmotherId2 && mcMotherPdg1 == 111)) {
+							/*
+								fhTest2_startvertexElectrons_gee->Fill(pi0start_i.Z());
+								fhTest2_startvertexElectrons_gee->Fill(pi0start_j.Z());
+								fhTest2_startvertexElectrons_gee->Fill(pi0start_k.Z());
+								fhTest2_startvertexElectrons_gee->Fill(pi0start_l.Z());
+								fhTest2_startvertexElectrons_all->Fill(pi0start_i.Z());
+								fhTest2_startvertexElectrons_all->Fill(pi0start_j.Z());
+								fhTest2_startvertexElectrons_all->Fill(pi0start_k.Z());
+								fhTest2_startvertexElectrons_all->Fill(pi0start_l.Z());
+								*/
+								// consider only electrons from the target (only then the momenta are correctly refitted/reconstructed)
+								if(pi0start_i.Z() > 1 || pi0start_j.Z() > 1 || pi0start_k.Z() > 1 || pi0start_l.Z() > 1) continue;
+						
+						
+								Double_t invmass_mc = 0;
+								Double_t invmass_reco = 0;
+								CbmAnaConversionKinematicParams params_mc = CbmAnaConversionKinematicParams::KinematicParams_4particles_MC(fVector_mctrack[i], fVector_mctrack[j], fVector_mctrack[k], fVector_mctrack[l]);
+								CbmAnaConversionKinematicParams params_reco = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(fVector_momenta[i], fVector_momenta[j], fVector_momenta[k], fVector_momenta[l]);
+								invmass_mc = params_mc.fMinv;
+								invmass_reco = params_reco.fMinv;
+								
+								fhTest2_2rich_invmass_gee_mc->Fill(invmass_mc);
+								fhTest2_2rich_invmass_gee_refitted->Fill(invmass_reco);
+								fhTest2_2rich_invmass_all_mc->Fill(invmass_mc);
+								fhTest2_2rich_invmass_all_refitted->Fill(invmass_reco);
+								
+								fhTest2_2rich_pt_vs_rap_gee->Fill(params_reco.fPt, params_reco.fRapidity);
+								fhTest2_2rich_pt_vs_rap_all->Fill(params_reco.fPt, params_reco.fRapidity);
+							}
+						}
+						if(motherId1 == motherId4 && motherId2 == motherId3) {
+							if(NofDaughters(motherId1) != 2 || NofDaughters(motherId2) != 2) continue;
+							if( (grandmotherId1 == motherId2 && mcGrandmotherPdg1 == 111) || (motherId1 == grandmotherId2 && mcMotherPdg1 == 111)) {
+							/*
+								fhTest2_startvertexElectrons_gee->Fill(pi0start_i.Z());
+								fhTest2_startvertexElectrons_gee->Fill(pi0start_j.Z());
+								fhTest2_startvertexElectrons_gee->Fill(pi0start_k.Z());
+								fhTest2_startvertexElectrons_gee->Fill(pi0start_l.Z());
+								fhTest2_startvertexElectrons_all->Fill(pi0start_i.Z());
+								fhTest2_startvertexElectrons_all->Fill(pi0start_j.Z());
+								fhTest2_startvertexElectrons_all->Fill(pi0start_k.Z());
+								fhTest2_startvertexElectrons_all->Fill(pi0start_l.Z());
+								*/
+								// consider only electrons from the target (only then the momenta are correctly refitted/reconstructed)
+								if(pi0start_i.Z() > 1 || pi0start_j.Z() > 1 || pi0start_k.Z() > 1 || pi0start_l.Z() > 1) continue;
+						
+						
+								Double_t invmass_mc = 0;
+								Double_t invmass_reco = 0;
+								CbmAnaConversionKinematicParams params_mc = CbmAnaConversionKinematicParams::KinematicParams_4particles_MC(fVector_mctrack[i], fVector_mctrack[j], fVector_mctrack[k], fVector_mctrack[l]);
+								CbmAnaConversionKinematicParams params_reco = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(fVector_momenta[i], fVector_momenta[j], fVector_momenta[k], fVector_momenta[l]);
+								invmass_mc = params_mc.fMinv;
+								invmass_reco = params_reco.fMinv;
+								
+								fhTest2_2rich_invmass_gee_mc->Fill(invmass_mc);
+								fhTest2_2rich_invmass_gee_refitted->Fill(invmass_reco);
+								fhTest2_2rich_invmass_all_mc->Fill(invmass_mc);
+								fhTest2_2rich_invmass_all_refitted->Fill(invmass_reco);
+								
+								fhTest2_2rich_pt_vs_rap_gee->Fill(params_reco.fPt, params_reco.fRapidity);
+								fhTest2_2rich_pt_vs_rap_all->Fill(params_reco.fPt, params_reco.fRapidity);
+							}
+						}
+
+
+
+
+					// ===================================================================================================
+					// HERE DECAY pi0 -> gamma gamma -> e+e- e+e-
+					if(grandmotherId1 == grandmotherId2 && grandmotherId1 == grandmotherId3 && grandmotherId1 == grandmotherId4) {
+						if(mcGrandmotherPdg1 != 111) continue; // 111 = pi0, 221 = eta
+
+						TVector3 pi0start;
+						grandmother1->GetStartVertex(pi0start);
+						/*
+						fhTest2_startvertexElectrons_gg->Fill(pi0start_i.Z());
+						fhTest2_startvertexElectrons_gg->Fill(pi0start_j.Z());
+						fhTest2_startvertexElectrons_gg->Fill(pi0start_k.Z());
+						fhTest2_startvertexElectrons_gg->Fill(pi0start_l.Z());
+						fhTest2_startvertexElectrons_all->Fill(pi0start_i.Z());
+						fhTest2_startvertexElectrons_all->Fill(pi0start_j.Z());
+						fhTest2_startvertexElectrons_all->Fill(pi0start_k.Z());
+						fhTest2_startvertexElectrons_all->Fill(pi0start_l.Z());
+						*/
+						
+						// consider only electrons from the target (only then the momenta are correctly refitted/reconstructed)
+						if(pi0start_i.Z() > 1 || pi0start_j.Z() > 1 || pi0start_k.Z() > 1 || pi0start_l.Z() > 1) continue;
+
+						Double_t invmass_mc = 0;
+						Double_t invmass_reco = 0;
+						CbmAnaConversionKinematicParams params_mc = CbmAnaConversionKinematicParams::KinematicParams_4particles_MC(fVector_mctrack[i], fVector_mctrack[j], fVector_mctrack[k], fVector_mctrack[l]);
+						CbmAnaConversionKinematicParams params_reco = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(fVector_momenta[i], fVector_momenta[j], fVector_momenta[k], fVector_momenta[l]);
+						invmass_mc = params_mc.fMinv;
+						invmass_reco = params_reco.fMinv;
+								
+						fhTest2_2rich_invmass_gg_mc->Fill(invmass_mc);
+						fhTest2_2rich_invmass_gg_refitted->Fill(invmass_reco);
+						fhTest2_2rich_invmass_all_mc->Fill(invmass_mc);
+						fhTest2_2rich_invmass_all_refitted->Fill(invmass_reco);
+						
+						fhTest2_2rich_pt_vs_rap_gg->Fill(params_reco.fPt, params_reco.fRapidity);
+						fhTest2_2rich_pt_vs_rap_all->Fill(params_reco.fPt, params_reco.fRapidity);
 
 						cout << "######################################################################" << endl;
 

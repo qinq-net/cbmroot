@@ -44,6 +44,7 @@ public:
 	void Exec();
 
 	void InvariantMassTest_3RICH();
+	void InvariantMassTest_2RICH();
 	Int_t NofDaughters(Int_t motherId);
 
 
@@ -96,6 +97,18 @@ private:
 	TH1D * fhTest2_startvertexElectrons_gee;
 	TH1D * fhTest2_startvertexElectrons_gg;
 	TH1D * fhTest2_startvertexElectrons_all;
+
+
+	TH1D * fhTest2_2rich_invmass_gee_mc;
+	TH1D * fhTest2_2rich_invmass_gee_refitted;
+	TH1D * fhTest2_2rich_invmass_gg_mc;
+	TH1D * fhTest2_2rich_invmass_gg_refitted;
+	TH1D * fhTest2_2rich_invmass_all_mc;
+	TH1D * fhTest2_2rich_invmass_all_refitted;
+
+	TH2D * fhTest2_2rich_pt_vs_rap_gee;
+	TH2D * fhTest2_2rich_pt_vs_rap_gg;
+	TH2D * fhTest2_2rich_pt_vs_rap_all;
 
 
 	CbmAnaConversionTest2(const CbmAnaConversionTest2&);
