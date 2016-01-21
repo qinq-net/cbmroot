@@ -90,6 +90,7 @@ CbmAnaConversion::CbmAnaConversion()
     fhPi0_z_cut(NULL),
     fhPi0_pt(NULL),
     fhPi0_pt_vs_rap(NULL),
+    fhPi0_theta(NULL),
     fhEta_pt(NULL),
     fhElectronsFromPi0_z(NULL),
     fhNofTracks_mctrack(NULL),
@@ -358,6 +359,7 @@ void CbmAnaConversion::InitHistograms()
 	fHistoList.push_back(fhPi0_z_cut);
 	fHistoList.push_back(fhPi0_pt);
 	fHistoList.push_back(fhPi0_pt_vs_rap);
+	fHistoList.push_back(fhPi0_theta);
 	fHistoList.push_back(fhEta_pt);
 	fHistoList.push_back(fhElectronSources);
 	fHistoList.push_back(fhElectronsFromPi0_z);

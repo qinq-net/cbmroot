@@ -70,7 +70,10 @@ CbmAnaConversionTest2::CbmAnaConversionTest2()
 	fhTest2_2rich_invmass_all_refitted(NULL),
 	fhTest2_2rich_pt_vs_rap_gee(NULL),
 	fhTest2_2rich_pt_vs_rap_gg(NULL),
-	fhTest2_2rich_pt_vs_rap_all(NULL)
+	fhTest2_2rich_pt_vs_rap_all(NULL),
+	fhTest2_electrons_pt_vs_p(NULL),
+	fhTest2_3rich_electrons_theta_included(NULL),
+	fhTest2_3rich_electrons_theta_missing(NULL)
 {
 }
 
@@ -342,7 +345,7 @@ void CbmAnaConversionTest2::InvariantMassTest_3RICH()
 						continue;
 					}
 					
-					
+					Bool_t IsPi0 = false;
 					
 					// starting points of each electron (-> i.e. conversion points of gamma OR decay points of pi0, depending on decay channel)
 					TVector3 pi0start_i;
@@ -362,30 +365,6 @@ void CbmAnaConversionTest2::InvariantMassTest_3RICH()
 					
 					if(richIndex1 + richIndex2 + richIndex3 + richIndex4 != 3) continue;
 					
-					if(richIndex1 <= 0) {
-						fhTest2_3rich_electrons_theta_missing->Fill(fVector_momenta[i].Theta() * 180 / TMath::Pi() );
-						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[j].Theta() * 180 / TMath::Pi() );
-						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[k].Theta() * 180 / TMath::Pi() );
-						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[l].Theta() * 180 / TMath::Pi() );
-					}
-					if(richIndex2 <= 0) {
-						fhTest2_3rich_electrons_theta_missing->Fill(fVector_momenta[j].Theta() * 180 / TMath::Pi() );
-						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[i].Theta() * 180 / TMath::Pi() );
-						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[k].Theta() * 180 / TMath::Pi() );
-						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[l].Theta() * 180 / TMath::Pi() );
-					}
-					if(richIndex3 <= 0) {
-						fhTest2_3rich_electrons_theta_missing->Fill(fVector_momenta[k].Theta() * 180 / TMath::Pi() );
-						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[i].Theta() * 180 / TMath::Pi() );
-						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[j].Theta() * 180 / TMath::Pi() );
-						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[l].Theta() * 180 / TMath::Pi() );
-					}
-					if(richIndex4 <= 0) {
-						fhTest2_3rich_electrons_theta_missing->Fill(fVector_momenta[l].Theta() * 180 / TMath::Pi() );
-						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[i].Theta() * 180 / TMath::Pi() );
-						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[j].Theta() * 180 / TMath::Pi() );
-						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[k].Theta() * 180 / TMath::Pi() );
-					}
 					
 					int motherId1 = fVector_mctrack[i]->GetMotherId();
 					int motherId2 = fVector_mctrack[j]->GetMotherId();
@@ -395,7 +374,7 @@ void CbmAnaConversionTest2::InvariantMassTest_3RICH()
 					
 					if( (motherId1 == motherId2 && motherId3 == motherId4) ||
 						(motherId1 == motherId3 && motherId2 == motherId4) ||
-						(motherId1 == motherId4 && motherId2 == motherId3) ) {
+						(motherId1 == motherId4 && motherId2 == motherId3) ) {	// start 1
 
 
 						int grandmotherId1 = -1;
@@ -483,6 +462,8 @@ void CbmAnaConversionTest2::InvariantMassTest_3RICH()
 								
 								fhTest2_pt_vs_rap_gee->Fill(params_reco.fPt, params_reco.fRapidity);
 								fhTest2_pt_vs_rap_all->Fill(params_reco.fPt, params_reco.fRapidity);
+								
+								IsPi0 = true;
 							}
 						}
 						if(motherId1 == motherId3 && motherId2 == motherId4) {
@@ -515,6 +496,8 @@ void CbmAnaConversionTest2::InvariantMassTest_3RICH()
 								
 								fhTest2_pt_vs_rap_gee->Fill(params_reco.fPt, params_reco.fRapidity);
 								fhTest2_pt_vs_rap_all->Fill(params_reco.fPt, params_reco.fRapidity);
+								
+								IsPi0 = true;
 							}
 						}
 						if(motherId1 == motherId4 && motherId2 == motherId3) {
@@ -547,6 +530,8 @@ void CbmAnaConversionTest2::InvariantMassTest_3RICH()
 								
 								fhTest2_pt_vs_rap_gee->Fill(params_reco.fPt, params_reco.fRapidity);
 								fhTest2_pt_vs_rap_all->Fill(params_reco.fPt, params_reco.fRapidity);
+								
+								IsPi0 = true;
 							}
 						}
 
@@ -588,12 +573,41 @@ void CbmAnaConversionTest2::InvariantMassTest_3RICH()
 								
 						fhTest2_pt_vs_rap_gg->Fill(params_reco.fPt, params_reco.fRapidity);
 						fhTest2_pt_vs_rap_all->Fill(params_reco.fPt, params_reco.fRapidity);
+								
+						IsPi0 = true;
 
 						cout << "######################################################################" << endl;
 
 						fill++;
 					}
+					
+					
+					if(richIndex1 <= 0 && IsPi0) {
+						fhTest2_3rich_electrons_theta_missing->Fill(fVector_momenta[i].Theta() * 180 / TMath::Pi() );
+						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[j].Theta() * 180 / TMath::Pi() );
+						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[k].Theta() * 180 / TMath::Pi() );
+						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[l].Theta() * 180 / TMath::Pi() );
 					}
+					if(richIndex2 <= 0 && IsPi0) {
+						fhTest2_3rich_electrons_theta_missing->Fill(fVector_momenta[j].Theta() * 180 / TMath::Pi() );
+						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[i].Theta() * 180 / TMath::Pi() );
+						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[k].Theta() * 180 / TMath::Pi() );
+						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[l].Theta() * 180 / TMath::Pi() );
+					}
+					if(richIndex3 <= 0 && IsPi0) {
+						fhTest2_3rich_electrons_theta_missing->Fill(fVector_momenta[k].Theta() * 180 / TMath::Pi() );
+						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[i].Theta() * 180 / TMath::Pi() );
+						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[j].Theta() * 180 / TMath::Pi() );
+						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[l].Theta() * 180 / TMath::Pi() );
+					}
+					if(richIndex4 <= 0 && IsPi0) {
+						fhTest2_3rich_electrons_theta_missing->Fill(fVector_momenta[l].Theta() * 180 / TMath::Pi() );
+						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[i].Theta() * 180 / TMath::Pi() );
+						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[j].Theta() * 180 / TMath::Pi() );
+						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[k].Theta() * 180 / TMath::Pi() );
+					}
+					
+					} // end 1
 				}
 			}
 		}
