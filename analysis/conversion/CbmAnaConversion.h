@@ -147,6 +147,7 @@ private:
    TH1D * fhPi0_z_cut;				// number of pi0 per z-bin with cut on acceptance (25° via x^2 + y^2 <= r^2 with r = z*tan 25°)
    TH1D * fhPi0_pt;					// 
    TH2D * fhPi0_pt_vs_rap;			// 
+   TH1D * fhPi0_theta;				// 
    TH1D * fhEta_pt;					// 
    TH1D * fhElectronsFromPi0_z;		//
    
