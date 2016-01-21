@@ -115,6 +115,8 @@ private:
 	TH2D * fhTest2_electrons_pt_vs_p;
 	TH1D * fhTest2_3rich_electrons_theta_included;
 	TH1D * fhTest2_3rich_electrons_theta_missing;
+	TH2D * fhTest2_3rich_electrons_thetaVSp_included;
+	TH2D * fhTest2_3rich_electrons_thetaVSp_missing;
 
 
 	CbmAnaConversionTest2(const CbmAnaConversionTest2&);

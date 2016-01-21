@@ -73,7 +73,9 @@ CbmAnaConversionTest2::CbmAnaConversionTest2()
 	fhTest2_2rich_pt_vs_rap_all(NULL),
 	fhTest2_electrons_pt_vs_p(NULL),
 	fhTest2_3rich_electrons_theta_included(NULL),
-	fhTest2_3rich_electrons_theta_missing(NULL)
+	fhTest2_3rich_electrons_theta_missing(NULL),
+	fhTest2_3rich_electrons_thetaVSp_included(NULL),
+	fhTest2_3rich_electrons_thetaVSp_missing(NULL)
 {
 }
 
@@ -587,24 +589,40 @@ void CbmAnaConversionTest2::InvariantMassTest_3RICH()
 						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[j].Theta() * 180 / TMath::Pi() );
 						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[k].Theta() * 180 / TMath::Pi() );
 						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[l].Theta() * 180 / TMath::Pi() );
+						fhTest2_3rich_electrons_thetaVSp_missing->Fill(fVector_momenta[i].Theta() * 180 / TMath::Pi(), fVector_momenta[i].Mag() );
+						fhTest2_3rich_electrons_thetaVSp_included->Fill(fVector_momenta[j].Theta() * 180 / TMath::Pi(), fVector_momenta[j].Mag() );
+						fhTest2_3rich_electrons_thetaVSp_included->Fill(fVector_momenta[k].Theta() * 180 / TMath::Pi(), fVector_momenta[k].Mag() );
+						fhTest2_3rich_electrons_thetaVSp_included->Fill(fVector_momenta[l].Theta() * 180 / TMath::Pi(), fVector_momenta[l].Mag() );
 					}
 					if(richIndex2 <= 0 && IsPi0) {
 						fhTest2_3rich_electrons_theta_missing->Fill(fVector_momenta[j].Theta() * 180 / TMath::Pi() );
 						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[i].Theta() * 180 / TMath::Pi() );
 						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[k].Theta() * 180 / TMath::Pi() );
 						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[l].Theta() * 180 / TMath::Pi() );
+						fhTest2_3rich_electrons_thetaVSp_missing->Fill(fVector_momenta[j].Theta() * 180 / TMath::Pi(), fVector_momenta[j].Mag() );
+						fhTest2_3rich_electrons_thetaVSp_included->Fill(fVector_momenta[i].Theta() * 180 / TMath::Pi(), fVector_momenta[i].Mag() );
+						fhTest2_3rich_electrons_thetaVSp_included->Fill(fVector_momenta[k].Theta() * 180 / TMath::Pi(), fVector_momenta[k].Mag() );
+						fhTest2_3rich_electrons_thetaVSp_included->Fill(fVector_momenta[l].Theta() * 180 / TMath::Pi(), fVector_momenta[l].Mag() );
 					}
 					if(richIndex3 <= 0 && IsPi0) {
 						fhTest2_3rich_electrons_theta_missing->Fill(fVector_momenta[k].Theta() * 180 / TMath::Pi() );
 						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[i].Theta() * 180 / TMath::Pi() );
 						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[j].Theta() * 180 / TMath::Pi() );
 						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[l].Theta() * 180 / TMath::Pi() );
+						fhTest2_3rich_electrons_thetaVSp_missing->Fill(fVector_momenta[k].Theta() * 180 / TMath::Pi(), fVector_momenta[k].Mag() );
+						fhTest2_3rich_electrons_thetaVSp_included->Fill(fVector_momenta[i].Theta() * 180 / TMath::Pi(), fVector_momenta[i].Mag() );
+						fhTest2_3rich_electrons_thetaVSp_included->Fill(fVector_momenta[j].Theta() * 180 / TMath::Pi(), fVector_momenta[j].Mag() );
+						fhTest2_3rich_electrons_thetaVSp_included->Fill(fVector_momenta[l].Theta() * 180 / TMath::Pi(), fVector_momenta[l].Mag() );
 					}
 					if(richIndex4 <= 0 && IsPi0) {
 						fhTest2_3rich_electrons_theta_missing->Fill(fVector_momenta[l].Theta() * 180 / TMath::Pi() );
 						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[i].Theta() * 180 / TMath::Pi() );
 						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[j].Theta() * 180 / TMath::Pi() );
 						fhTest2_3rich_electrons_theta_included->Fill(fVector_momenta[k].Theta() * 180 / TMath::Pi() );
+						fhTest2_3rich_electrons_thetaVSp_missing->Fill(fVector_momenta[l].Theta() * 180 / TMath::Pi(), fVector_momenta[l].Mag() );
+						fhTest2_3rich_electrons_thetaVSp_included->Fill(fVector_momenta[i].Theta() * 180 / TMath::Pi(), fVector_momenta[i].Mag() );
+						fhTest2_3rich_electrons_thetaVSp_included->Fill(fVector_momenta[j].Theta() * 180 / TMath::Pi(), fVector_momenta[j].Mag() );
+						fhTest2_3rich_electrons_thetaVSp_included->Fill(fVector_momenta[k].Theta() * 180 / TMath::Pi(), fVector_momenta[k].Mag() );
 					}
 					
 					} // end 1
