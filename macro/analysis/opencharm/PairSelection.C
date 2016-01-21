@@ -48,8 +48,10 @@ void PairSelection(Int_t nEvents = 100, Int_t ProcID = 1, bool PileUp = false, I
 {
 // -------------------------------------------------------------------------
 
-gROOT->LoadMacro("CharmSetup.C");
-gInterpreter->ProcessLine("CharmSetup()");
+  TString curDir = gSystem->Getenv("VMCWORKDIR");
+  TString setupDir = curDir + "/macro/analysis/opencharm/CharmSetup.C";
+  gROOT->LoadMacro(setupDir);
+  gInterpreter->ProcessLine("CharmSetup()");
 
 switch (PidTyp)
 {

@@ -43,14 +43,15 @@ TString setup;
 bool littrack;
 Bool_t useMC;
 
-
-void HistogramProduction(Int_t nEvents = 100, Int_t ProcID = 1, bool PileUp = false, Int_t PidTyp = 0)
+void HistogramProduction(Int_t nEvents = 100, Int_t ProcID = 1, bool PileUp = false, Int_t PidTyp = 0, bool superEvent = 0)
 {
 // -------------------------------------------------------------------------
 TString version = "version1.trunkRef";
 
-gROOT->LoadMacro("CharmSetup.C");
-gInterpreter->ProcessLine("CharmSetup()");
+  TString curDir = gSystem->Getenv("VMCWORKDIR");
+  TString setupDir = curDir + "/macro/analysis/opencharm/CharmSetup.C";
+  gROOT->LoadMacro(setupDir);
+  gInterpreter->ProcessLine("CharmSetup()");
 
 switch (PidTyp)
 {
@@ -86,7 +87,9 @@ if(!PileUp)
      TString rcFileName = rcSystem + ".PileUp.l1.root";
 
   // Pair file
-  TString pairSystem = Form("/hera/cbm/users/psitzmann/data/ana/opencharm.pairs.urqmd.%s.%s.%i.%i.%s.%s.pidMode_%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), pidMode.Data());
+if(!superEvent)TString pairSystem = Form("/hera/cbm/users/psitzmann/data/ana/opencharm.pairs.urqmd.%s.%s.%i.%i.%s.%s.pidMode_%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), pidMode.Data());
+else
+  TString pairSystem = Form("/hera/cbm/users/psitzmann/data/ana/opencharm.pairs.superEvent.urqmd.%s.%s.%i.%i.%s.%s.pidMode_%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), pidMode.Data());
   if(useMC) pairSystem += ".mcMode";
   if(!PileUp)
     {
@@ -115,11 +118,13 @@ if(!PileUp)
     else 
 	TString trackFileName = trackSystem + ".PileUp.l1.root";
 
-  TString outFileName = Form("/hera/cbm/users/psitzmann/data/ana/histo/opencharm.histo.%s.%s.%i.%i.%s.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), version.Data());
+ if(!superEvent)TString outFileName = Form("/hera/cbm/users/psitzmann/data/ana/histo/opencharm.histo.%s.%s.%i.%i.%s.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), version.Data());
+ else
+ TString outFileName = Form("/hera/cbm/users/psitzmann/data/ana/histo/opencharm.histo.superEvent.%s.%s.%i.%i.%s.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), version.Data());
 
   TFile* outFile = new TFile(outFileName, "RECREATE");
   TFile* mcFile = new TFile(mcFileName, "READ");
- // TFile* pairFile = new TFile(pairFileName);
+  TFile* pairFile = new TFile(pairFileName, "READ");
  // TFile* rcFile = new TFile(rcFileName);
  // TFile* trackFile = new TFile(trackFileName);
 
@@ -131,13 +136,13 @@ if(!PileUp)
     // -------------------------------------------------------------------------
 
 
-    const char* group = "MCQA";
+    const char* group = "PAIR";
 
     CbmD0HistogramManager* D0histo  = new CbmD0HistogramManager(group, 1, 0.04,  0.01);
     D0histo->SetOutFile(outFile);
     D0histo->SetMCFile(mcFile);
    // D0histo->SetRecoFile(rcFile);
-  //  D0histo->SetPairFile(pairFile);
+    D0histo->SetPairFile(pairFile);
   //  D0histo->SetTrackFile(trackFile);
 
     D0histo->Init();

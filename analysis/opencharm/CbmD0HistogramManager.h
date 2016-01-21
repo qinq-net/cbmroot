@@ -51,7 +51,7 @@ private:
     void InitMc();
     void InitAll();
     void ExecSingel(){};
-    void ExecPair(){};
+    void ExecPair();
     void ExecMc();
     void ExecAll(){};
 
@@ -61,6 +61,9 @@ private:
     HistoGroup fChois;
 
     Int_t fnrMcEvents;
+    Int_t fnrPairEvents;
+    Int_t fnrRecoEvents;
+    Int_t fnrTrackEvents;
 
     TFile* fwriteOutFile;
     TFile* fMCFile;
@@ -72,6 +75,8 @@ private:
     TBranch* fmvdPointBranch;
     TBranch* fStsPointBranch;
 
+    TBranch* fpairBranch;
+
 
     TClonesArray* fListMCTracks;
     TClonesArray* fListMCPointsMvd;
@@ -79,6 +84,8 @@ private:
     TClonesArray* fListMCPointsRich;
     TClonesArray* fListMCPointsTrd;
     TClonesArray* fListMCPointsTof;
+
+    TClonesArray* fListPairs;
 
 ClassDef(CbmD0HistogramManager,1);
 

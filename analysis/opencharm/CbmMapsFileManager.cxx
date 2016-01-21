@@ -124,9 +124,8 @@ if (((entry>=fEventsInFile) || (entry<0)))
 TClonesArray* CbmMapsFileManager::GetEntry (UInt_t eventNumber){
 
 // Reads Entry from disk (independant from framework)
-
-LoadEntryIntoRam (eventNumber);
-return fListOfStsPoints;
+ LoadEntryIntoRam (eventNumber);
+ return fListOfStsPoints;
 
 };
 

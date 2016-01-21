@@ -148,11 +148,12 @@ void CbmD0CandidateSelection::Exec(Option_t* option){
 
 for( Int_t itr1=0; itr1<nKaonTracks; itr1++)
    {
-       KFParticle* kaon = (KFParticle*)fKaonParticleArray->At(itr1);
+       KFParticle kaon = *((KFParticle*)fKaonParticleArray->At(itr1));
+
 
    for( Int_t itr2=0; itr2<nPionTracks; itr2++)
       {
-	  KFParticle* pion = (KFParticle*)fPionParticleArray->At(itr2);
+	  KFParticle pion = *((KFParticle*)fPionParticleArray->At(itr2));
 
       if(bTestMode)
         {
@@ -161,23 +162,24 @@ for( Int_t itr1=0; itr1<nKaonTracks; itr1++)
 
       crossCheck++;
 
-      KFParticle* D0_KF = new KFParticle(*kaon, *pion);
+      const KFParticle* daughters[2] = {&kaon, &pion};
+      KFParticle d0;
+      d0.Construct(daughters, 2);
 
-      D0_KF->TransportToDecayVertex();
-      Double_t SvZ     = D0_KF->GetZ();
-      Double_t IPD0    = GetPairImpactParameterR(D0_KF);
-
+      Double_t SvZ     = d0.GetZ();
+      Double_t IPD0    = GetPairImpactParameterR(&d0);
+    
       if( SvZ != SvZ || IPD0 != IPD0 ){cout << "NaN detected!! " << endl;  continue;}         // one of the parameter is NaN
 
       //--- Apply cuts ---
-      if( IPD0 > fcutIPD0 || SvZ < fcutSVZ) continue;    // parameter didn't pass the cuts or
+      if( IPD0 > fcutIPD0 || SvZ < fcutSVZ)continue;   // parameter didn't pass the cuts or
     
       nAcceptedD0 ++;
 
       TClonesArray& clrefD0 = *fD0Candidates;
       Int_t sizeD0 = clrefD0.GetEntriesFast();
-      new (clrefD0[sizeD0]) KFParticle(*D0_KF);
-
+      new (clrefD0[sizeD0]) KFParticle(d0);
+        
       }// second for loop
 
     }// first for loop

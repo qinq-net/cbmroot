@@ -5,7 +5,7 @@
 #include "CbmD0HistogramManager.h"
 
 // Includes from KF
-
+#include "KFParticle.h"
 
 // Includes from Cbm
 #include "CbmMCTrack.h"
@@ -71,9 +71,13 @@ CbmD0HistogramManager::~CbmD0HistogramManager()
 // -------------------------------------------------------------------------
 void CbmD0HistogramManager::SetHistogramChois(const char* group)
 {
-    if(group == "MCQA") fChois = MCQA;
+    if(strcmp(group,"MCQA")== 0) fChois = MCQA;
+    if(strcmp(group,"PAIR") == 0) fChois = PAIR;
     else
-        fChois = MCQA;
+    {
+	LOG(INFO)<<"Use backup chois MCQA"<< FairLogger::endl;
+	fChois = MCQA;
+    }
 }
 // -------------------------------------------------------------------------
 
@@ -98,6 +102,7 @@ void CbmD0HistogramManager::Init()
 // -------------------------------------------------------------------------
 void CbmD0HistogramManager::InitSingel()
 {
+      LOG(INFO)<<"Init SingelTrack Histogramms"<< FairLogger::endl;
 ;
 }
 // -------------------------------------------------------------------------
@@ -105,20 +110,39 @@ void CbmD0HistogramManager::InitSingel()
 // -------------------------------------------------------------------------
 void CbmD0HistogramManager::InitPair()
 {
-;
+    LOG(INFO)<<"Init Pair Histogramms"<< FairLogger::endl;
+
+    TTree* pairTree = (TTree*)fPairFile->Get("cbmsim");
+    fnrPairEvents = pairTree->GetEntries();
+
+    fListPairs = new TClonesArray("KFParticle", 100);
+    fpairBranch = pairTree->GetBranch("CbmD0Candidate");
+    fpairBranch->SetAddress(&fListPairs);
+
+    Create1<TH1F>("PairMomentumDist", "Momentumdistribution Reconstructed D0", 100, 0, 30);
+    Create1<TH1F>("MassSpectraD0","Reconstructed Mass D0", 100, 0, 3);
 }
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
 void CbmD0HistogramManager::InitMc()
 {
+     LOG(INFO)<<"Init MC Histogramms"<< FairLogger::endl;
+
+    TTree* mcTree = (TTree*)fMCFile->Get("cbmsim");
+    fnrMcEvents = mcTree->GetEntries();
+
+    fListMCTracks = new TClonesArray("CbmMCTrack", 1000);
+    fmcTrackBranch = mcTree->GetBranch("MCTrack");
+    fmcTrackBranch->SetAddress( &fListMCTracks);
+
     /*  Create1<TH1F>("name", "title", 100, 0, 100)     */
 
     Create1<TH1F>("MCPointMomentumDist", "Momentumdistribution MC Tracks", 100, 0, 30);        // all mc points
 
     Create1<TH1F>("MCPointMomentumDistMvd", "Momentumdistribution MC Track in MVD acceptance", 100 , 0, 30);   // MVD-MCPoints > 0
     Create1<TH1F>("MCPointMomentumDistMvdTrackable", "Momentumdistribution MC Track in MVD trackable", 100 , 0, 30);   // MVD-Points >= 3
-    Create1<TH1F>("MCPointMomentumDistMvdStsTrackable", "Momentumdistribution MC Track in MVD and STS trackable", 100 , 0, 30);          // MVD + STS MC Points >= 3 but MVD MC Points < 3 & STS MC Points < 3
+    Create1<TH1F>("MCPointMomentumDistMvdStsTrackable", "Momentumdistribution MC Track in MVD and STS trackable", 100 , 0, 30);          // MVD + STS MC Points >= 3 
     Create1<TH1F>("MCPointMomentumDistStsTrackMvdVertex", "Momentumdistribution MC Track in STS trackable with Vertex information from MVD", 100 , 0, 30); // STS MC Points >= 3 MVD MC Points >= 2
    /*
     Create1<TH1F>("MCPointMomentumDistMvdStsRich", "Momentumdistribution MC Points in MVD, STS, RICH acceptance", 100 , 0, 30);  // trackable + Rich MC Point
@@ -142,12 +166,7 @@ void CbmD0HistogramManager::InitMc()
     Create1<TH1F>("MCSignalMomentumDistTrackable", "Momentumdistribution of embedted Signal trackable ", 100, 0, 15);
     Create1<TH1F>("MCSignalMomentumDistTrackablePID", "Momentumdistribution of embedted Signal trackable and PID", 100, 0, 15);
 
-    TTree* mcTree = (TTree*)fMCFile->Get("cbmsim");
-    fnrMcEvents = mcTree->GetEntries();
 
-    fListMCTracks = new TClonesArray("CbmMCTrack", 1000);
-    fmcTrackBranch = mcTree->GetBranch("MCTrack");
-    fmcTrackBranch->SetAddress( &fListMCTracks);
 
    // fListMCPointsMvd = new TClonesArray("CbmMvdPoint", 1000);
    // fmvdPointBranch = mcTree->GetBranch("MvdPoint");
@@ -282,13 +301,41 @@ void CbmD0HistogramManager::ExecMc()
     }
     
     }
+    delete kaon;
+    delete pion1;
+    delete mcTrack;
+
 }
 // -------------------------------------------------------------------------
 
+// -------------------------------------------------------------------------
+void CbmD0HistogramManager::ExecPair()
+{
+    LOG(INFO) << "Starting Pair Branch of CbmD0HistogramManager" << FairLogger::endl;
 
+    TH1* pairMomentum = H1("PairMomentumDist");
+    TH1* massSpectra = H1("MassSpectraD0");
 
+    for(Int_t iPairEvent = 0; iPairEvent < fnrPairEvents; iPairEvent++ )
+    {
+         KFParticle openCharm;
+	if(iPairEvent%100 == 0)cout << endl << "Processing event " << iPairEvent << endl;
 
+	fpairBranch->GetEntry(iPairEvent);
+	int nrOfPairs = fListPairs->GetEntriesFast();
 
+	for(Int_t i = 0; i < nrOfPairs; i++)
+	{
+	    openCharm = *((KFParticle*)fListPairs->At(i));
+
+	    pairMomentum->Fill(openCharm.GetP());
+            massSpectra->Fill(openCharm.GetMass());
+	}
+
+    }
+
+}
+ClassImp(CbmD0HistogramManager)
 
 
 

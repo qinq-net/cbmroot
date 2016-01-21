@@ -60,13 +60,15 @@ void opencharm_reco(Int_t nEvents = 100, Int_t ProcID = 1, bool PileUp = false)
   // ========================================================================
   //          Adjust this part according to your requirements
 
-gROOT->LoadMacro("CharmSetup.C");
-gInterpreter->ProcessLine("CharmSetup()");
+  TString curDir = gSystem->Getenv("VMCWORKDIR");
+  TString setupDir = curDir + "/macro/analysis/opencharm/CharmSetup.C";
+  gROOT->LoadMacro(setupDir);
+  gInterpreter->ProcessLine("CharmSetup()");
 
 
   // Input file (MC events)
   TString inFile = Form("/hera/cbm/users/psitzmann/data/mc/opencharm.mc.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
-  TString deltaFile = Form("/hera/cbm/users/psitzmann/data/mc/delta/opencharm.mc.delta.ni.%i.root", ProcID);
+  TString deltaFile = Form("/hera/cbm/users/psitzmann/data/mc/delta/opencharm.mc.delta.%i.root", ProcID);
   TString bgFile = Form("/hera/cbm/users/psitzmann/data/mc/opencharm.mc.urqmd.bg.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
 
   // Output file

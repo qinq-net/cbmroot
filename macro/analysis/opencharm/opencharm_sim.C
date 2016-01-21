@@ -56,8 +56,10 @@ void opencharm_sim(Int_t nEvents = 100,Int_t ProcID=1, bool backgroundProduction
 {
   // ========================================================================
   //          Adjust this part according to your requirements
-gROOT->LoadMacro("CharmSetup.C");
-gInterpreter->ProcessLine("CharmSetup()");
+  TString curDir = gSystem->Getenv("VMCWORKDIR");
+  TString setupDir = curDir + "/macro/analysis/opencharm/CharmSetup.C";
+  gROOT->LoadMacro(setupDir);
+  gInterpreter->ProcessLine("CharmSetup()");
  
  // Input file
   

@@ -30,74 +30,25 @@
 
 class TClonesArray;
 class TObjArray;
-class CbmStsKFSecondaryVertexFinder;
-class CbmStsKFTrackFitter;
+class KFParticle;
 class CbmStsTrack;
 class CbmVertex;
-class FairTrackParam;
-class CbmKFParticleInterface;
+
 
 
 class CbmD0CandidatesSE : public FairTask
 {
  public:
   CbmD0CandidatesSE();
-  CbmD0CandidatesSE(char* name, Int_t iVerbose, Bool_t SuperEventMode, Double_t cutIPD0max, Double_t cutSVZmin, Double_t cutSVZmax);
+  CbmD0CandidatesSE(char* name, Int_t iVerbose, Double_t cutIPD0, Double_t cutSVZ);
   virtual ~CbmD0CandidatesSE();
   virtual InitStatus Init();
   virtual void Exec(Option_t* option);
-  
-  /*
-  virtual void KminusReFit(CbmStsTrack* track);
-  Double_t GetImpactParameterRadius(CbmTrackParam *etrack);
-  Double_t GetImpactParameterX(CbmTrackParam *etrack);
-  Double_t GetImpactParameterY(CbmTrackParam *etrack);
-  Double_t GetTransverseMom(CbmTrackParam *etrack);
-  Double_t GetMom(CbmTrackParam *etrack);
-  //void SetParContainers() {; };
-  */
-  void SetHistoFileName( TString name ){ fHistoFileName = name;  };
+
   void SetNegativeFileName( TString filename ){ fNegativeFileName = filename;  };
+  void SetCuts( Double_t ipD0max, Double_t SVZmin, Double_t SVZmax);
 
 private:
-    Int_t fEventNumber;
-    TClonesArray* fListRCD0;
-
-    TClonesArray* fListMCTracks;
-    TClonesArray* fPosMCTrackArray;
-    TClonesArray* fNegMCTrackArray;
-
-    TClonesArray* fListD0TrackCandidate;
-    TClonesArray* fAllD0TrackArray;
-
-    TClonesArray* fStsTrackArray;
-    TClonesArray* fPosStsTrackArray;
-    TClonesArray* fNegStsTrackArray;
-    TClonesArray* fD0TrackArray;
-    TClonesArray* fPosD0TrackArray;
-    TClonesArray* fNegD0TrackArray;
-    TClonesArray* fKFParticles;
-
-    TClonesArray* fInfoArray;
-    TClonesArray* fStsTrackMatches;
-    TClonesArray* fPairs;
-
-    TObjArray* fBufferStsTrackArraysN;
-    TObjArray* fBufferMCTrackArraysN;
-    TObjArray* fBufferD0TrackArraysN;
-    TObjArray* fKFParticleBuffer;
-
-    CbmStsKFTrackFitter* fFit;
-    CbmStsKFSecondaryVertexFinder* fSVF;
-    CbmVertex* fPrimVtx;
-    CbmVertex* fSecVtx;
-    FairField* fMF;
-    CbmKFParticleInterface* kfpInterface;
-    TString fHistoFileName;
-    TString fNegativeFileName;
-
-    Int_t  fFrameWorkEvent;
-    Bool_t fSuperEventMode;
 
     Double_t GetPairTx( TVector3& mom1, TVector3& mom2 );
     Double_t GetPairTy( TVector3& mom1, TVector3& mom2 );
@@ -108,7 +59,7 @@ private:
     Double_t GetMomentum( TVector3& mom1 );
     Double_t GetPairMomentum( TVector3& mom1, TVector3& mom2);
 
-    Double_t GetPairImpactParameterR( Double_t Pair_Tx, Double_t Pair_Ty, Double_t SvX, Double_t SvY, Double_t SvZ, Double_t PvZ );
+    Double_t GetPairImpactParameterR(KFParticle* particle );
     Double_t GetEnergy1(CbmD0TrackCandidate* tr1);
     Double_t GetEnergy2(CbmD0TrackCandidate* tr1);
     Double_t GetPairEnergy( CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2 );
@@ -120,17 +71,33 @@ private:
     void     GetAP( TVector3 &mom1, TVector3 &mom2, Double_t Qp, Double_t &alpha, Double_t &ptt );
     void     FillBuffer( CbmMapsFileManager* BackgroundFile, TObjArray* BackgroundArray );
     Double_t BoostMomentum( TVector3& mom1, TVector3& mom2, CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2 );
-    TNtuple* fTrackPairNtuple;
-
-    TH1F* testN;
-    TH1F* testP;
-
-    Double_t fcutIPD0max,  fcutSVZmin,  fcutSVZmax;
-    void SetCuts( Double_t ipD0max, Double_t SVZmin, Double_t SVZmax);
 
     /** Register the output arrays to the IOManager **/
     void Register();
     void Finish();
+
+    Int_t fEventNumber;
+        Double_t fcutIPD0,  fcutSVZmin,  fcutSVZ;
+
+    TClonesArray* fStsTrackMatches;
+    TClonesArray* fListMCTracks;
+    TClonesArray* fKaonParticleArray;
+    TClonesArray* fPionParticleArray;
+    TClonesArray* fListMCTracksPos;
+    TClonesArray* fListMCTracksNeg;
+
+    TClonesArray* fD0Candidates;
+    TClonesArray* fKaonParticles;
+
+    TObjArray* fKaonBuffer;
+    CbmVertex* fPrimVtx;
+
+    float fvtx[3];
+
+    Int_t  fFrameWorkEvent;
+
+    TString fNegativeFileName;
+    Bool_t bTestMode;
 
     ClassDef(CbmD0CandidatesSE,1);
 };

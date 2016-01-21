@@ -1,8 +1,8 @@
 void CharmSetup()
 {
 // Input Parameter
-input = "pni";
-inputGEV = "15gev";
+input = "auau";
+inputGEV = "30gev";
 system = "centr";
 signal = "d0"; // "dminus" "dplus" "d0_4B"
 iVerbose = 0;
