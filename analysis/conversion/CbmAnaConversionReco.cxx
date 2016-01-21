@@ -115,6 +115,12 @@ CbmAnaConversionReco::CbmAnaConversionReco()
     fhPi0_startvertex_vs_chi(NULL),
     fhPi0_startvertex_vs_momentum(NULL),
     fhInvMassWithFullRecoCuts(NULL),
+	fhEPEM_InDetector_invmass_gg_mc(NULL),
+	fhEPEM_InDetector_invmass_gg_refitted(NULL),
+	fhEPEM_InDetector_invmass_gee_mc(NULL),
+	fhEPEM_InDetector_invmass_gee_refitted(NULL),
+	fhEPEM_InDetector_invmass_all_mc(NULL),
+	fhEPEM_InDetector_invmass_all_refitted(NULL),
     timer(),
     fTime(0.)
 {
@@ -333,6 +339,20 @@ void CbmAnaConversionReco::InitHistos()
 	fhInvMassWithFullRecoCuts = new TH1D("fhInvMassWithFullRecoCuts","fhInvMassWithFullRecoCuts;mass [GeV/c^2];#", 800, 0., 2.);
 	fHistoList_reco.push_back(fhInvMassWithFullRecoCuts);
 
+
+
+	fhEPEM_InDetector_invmass_gg_mc			= new TH1D("fhEPEM_InDetector_invmass_gg_mc","fhEPEM_InDetector_invmass_gg_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhEPEM_InDetector_invmass_gg_refitted	= new TH1D("fhEPEM_InDetector_invmass_gg_refitted","fhEPEM_InDetector_invmass_gg_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhEPEM_InDetector_invmass_gee_mc		= new TH1D("fhEPEM_InDetector_invmass_gee_mc","fhEPEM_InDetector_invmass_gee_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhEPEM_InDetector_invmass_gee_refitted	= new TH1D("fhEPEM_InDetector_invmass_gee_refitted","fhEPEM_InDetector_invmass_gee_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhEPEM_InDetector_invmass_all_mc		= new TH1D("fhEPEM_InDetector_invmass_all_mc","fhEPEM_InDetector_invmass_all_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhEPEM_InDetector_invmass_all_refitted	= new TH1D("fhEPEM_InDetector_invmass_all_refitted","fhEPEM_InDetector_invmass_all_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_gg.push_back(fhEPEM_InDetector_invmass_gg_mc);
+	fHistoList_gg.push_back(fhEPEM_InDetector_invmass_gg_refitted);
+	fHistoList_gee.push_back(fhEPEM_InDetector_invmass_gee_mc);
+	fHistoList_gee.push_back(fhEPEM_InDetector_invmass_gee_refitted);
+	fHistoList_all.push_back(fhEPEM_InDetector_invmass_all_mc);
+	fHistoList_all.push_back(fhEPEM_InDetector_invmass_all_refitted);
 }
 
 
@@ -844,15 +864,23 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 								fhPi0_startvertexElectrons_all->Fill(pi0start_j.Z());
 								fhPi0_startvertexElectrons_all->Fill(pi0start_k.Z());
 								fhPi0_startvertexElectrons_all->Fill(pi0start_l.Z());
-								// consider only electrons from the target (only then the momenta are correctly refitted/reconstructed)
-								if(pi0start_i.Z() > 1 || pi0start_j.Z() > 1 || pi0start_k.Z() > 1 || pi0start_l.Z() > 1) continue;
-						
-						
-								cout << "HURRAY! .-.-.-.-.-.-..-.-.-.-.-.-.-.-.-.-.-.-." << endl;
+								
 								Double_t invmass1 = 0;
 								Double_t invmass3 = 0;
 								invmass1 = Invmass_4particles(fRecoTracklistEPEM[i], fRecoTracklistEPEM[j], fRecoTracklistEPEM[k], fRecoTracklistEPEM[l]);	// true MC values
 								invmass3 = Invmass_4particlesRECO(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
+								
+								// consider only electrons from the target (only then the momenta are correctly refitted/reconstructed)
+								if(pi0start_i.Z() > 1 || pi0start_j.Z() > 1 || pi0start_k.Z() > 1 || pi0start_l.Z() > 1) {
+									fhEPEM_InDetector_invmass_gee_mc->Fill(invmass1);
+									fhEPEM_InDetector_invmass_gee_refitted->Fill(invmass3);
+									fhEPEM_InDetector_invmass_all_mc->Fill(invmass1);
+									fhEPEM_InDetector_invmass_all_refitted->Fill(invmass3);
+									continue;
+								}
+						
+						
+								cout << "HURRAY! .-.-.-.-.-.-..-.-.-.-.-.-.-.-.-.-.-.-." << endl;
 								fhInvariantMass_pi0epem->Fill(invmass1);
 								
 								fhEPEM_invmass_gee_mc->Fill(invmass1);
@@ -911,15 +939,23 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 								fhPi0_startvertexElectrons_all->Fill(pi0start_j.Z());
 								fhPi0_startvertexElectrons_all->Fill(pi0start_k.Z());
 								fhPi0_startvertexElectrons_all->Fill(pi0start_l.Z());
-								// consider only electrons from the target (only then the momenta are correctly refitted/reconstructed)
-								if(pi0start_i.Z() > 1 || pi0start_j.Z() > 1 || pi0start_k.Z() > 1 || pi0start_l.Z() > 1) continue;
-						
-						
-								cout << "HURRAY! .-.-.-.-.-.-..-.-.-.-.-.-.-.-.-.-.-.-." << endl;
+								
 								Double_t invmass1 = 0;
 								Double_t invmass3 = 0;
 								invmass1 = Invmass_4particles(fRecoTracklistEPEM[i], fRecoTracklistEPEM[j], fRecoTracklistEPEM[k], fRecoTracklistEPEM[l]);	// true MC values
 								invmass3 = Invmass_4particlesRECO(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
+								
+								// consider only electrons from the target (only then the momenta are correctly refitted/reconstructed)
+								if(pi0start_i.Z() > 1 || pi0start_j.Z() > 1 || pi0start_k.Z() > 1 || pi0start_l.Z() > 1) {
+									fhEPEM_InDetector_invmass_gee_mc->Fill(invmass1);
+									fhEPEM_InDetector_invmass_gee_refitted->Fill(invmass3);
+									fhEPEM_InDetector_invmass_all_mc->Fill(invmass1);
+									fhEPEM_InDetector_invmass_all_refitted->Fill(invmass3);
+									continue;
+								}
+						
+						
+								cout << "HURRAY! .-.-.-.-.-.-..-.-.-.-.-.-.-.-.-.-.-.-." << endl;
 								fhInvariantMass_pi0epem->Fill(invmass1);
 								
 								fhEPEM_invmass_gee_mc->Fill(invmass1);
@@ -978,15 +1014,23 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 								fhPi0_startvertexElectrons_all->Fill(pi0start_j.Z());
 								fhPi0_startvertexElectrons_all->Fill(pi0start_k.Z());
 								fhPi0_startvertexElectrons_all->Fill(pi0start_l.Z());
-								// consider only electrons from the target (only then the momenta are correctly refitted/reconstructed)
-								if(pi0start_i.Z() > 1 || pi0start_j.Z() > 1 || pi0start_k.Z() > 1 || pi0start_l.Z() > 1) continue;
-						
-						
-								cout << "HURRAY! .-.-.-.-.-.-..-.-.-.-.-.-.-.-.-.-.-.-." << endl;
+								
 								Double_t invmass1 = 0;
 								Double_t invmass3 = 0;
 								invmass1 = Invmass_4particles(fRecoTracklistEPEM[i], fRecoTracklistEPEM[j], fRecoTracklistEPEM[k], fRecoTracklistEPEM[l]);	// true MC values
 								invmass3 = Invmass_4particlesRECO(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
+								
+								// consider only electrons from the target (only then the momenta are correctly refitted/reconstructed)
+								if(pi0start_i.Z() > 1 || pi0start_j.Z() > 1 || pi0start_k.Z() > 1 || pi0start_l.Z() > 1) {
+									fhEPEM_InDetector_invmass_gee_mc->Fill(invmass1);
+									fhEPEM_InDetector_invmass_gee_refitted->Fill(invmass3);
+									fhEPEM_InDetector_invmass_all_mc->Fill(invmass1);
+									fhEPEM_InDetector_invmass_all_refitted->Fill(invmass3);
+									continue;
+								}
+						
+						
+								cout << "HURRAY! .-.-.-.-.-.-..-.-.-.-.-.-.-.-.-.-.-.-." << endl;
 								fhInvariantMass_pi0epem->Fill(invmass1);
 								
 								fhEPEM_invmass_gee_mc->Fill(invmass1);
@@ -1065,9 +1109,6 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						fhPi0_startvertex_vs_momentum->Fill(pi0start_j.Z(), fRecoTracklistEPEM[j]->GetP());
 						fhPi0_startvertex_vs_momentum->Fill(pi0start_k.Z(), fRecoTracklistEPEM[k]->GetP());
 						fhPi0_startvertex_vs_momentum->Fill(pi0start_l.Z(), fRecoTracklistEPEM[l]->GetP());
-						
-						// consider only electrons from the target (only then the momenta are correctly refitted/reconstructed)
-						if(pi0start_i.Z() > 1 || pi0start_j.Z() > 1 || pi0start_k.Z() > 1 || pi0start_l.Z() > 1) continue;
 
 						Double_t invmass1 = 0;	// true MC values
 						invmass1 = Invmass_4particles(fRecoTracklistEPEM[i], fRecoTracklistEPEM[j], fRecoTracklistEPEM[k], fRecoTracklistEPEM[l]);
@@ -1075,6 +1116,15 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 						invmass2 = Invmass_4particlesRECO(fRecoMomentum[i], fRecoMomentum[j], fRecoMomentum[k], fRecoMomentum[l]);
 						Double_t invmass3 = 0;	// momenta from refitted at primary vertex
 						invmass3 = Invmass_4particlesRECO(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
+						
+						// consider only electrons from the target (only then the momenta are correctly refitted/reconstructed)
+						if(pi0start_i.Z() > 1 || pi0start_j.Z() > 1 || pi0start_k.Z() > 1 || pi0start_l.Z() > 1) {
+							fhEPEM_InDetector_invmass_gg_mc->Fill(invmass1);
+							fhEPEM_InDetector_invmass_gg_refitted->Fill(invmass3);
+							fhEPEM_InDetector_invmass_all_mc->Fill(invmass1);
+							fhEPEM_InDetector_invmass_all_refitted->Fill(invmass3);
+							continue;
+						}
 
 						cout << "######################################################################" << endl;
 						cout << fRecoMomentum[i].X() << "\t" << fRecoRefittedMomentum[i].X() << endl;
