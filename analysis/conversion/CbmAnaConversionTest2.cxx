@@ -197,6 +197,10 @@ void CbmAnaConversionTest2::InitHistos()
 	fHistoList_test2.push_back(fhTest2_3rich_electrons_theta_included);
 	fhTest2_3rich_electrons_theta_missing	= new TH1D("fhTest2_3rich_electrons_theta_missing","fhTest2_3rich_electrons_theta_missing;theta angle [deg];#", 90, 0, 90);
 	fHistoList_test2.push_back(fhTest2_3rich_electrons_theta_missing);
+	fhTest2_3rich_electrons_thetaVSp_included	= new TH2D("fhTest2_3rich_electrons_thetaVSp_included","fhTest2_3rich_electrons_thetaVSp_included;theta angle [deg];p [GeV]", 90, 0, 90, 540, -2., 16.);
+	fHistoList_test2.push_back(fhTest2_3rich_electrons_thetaVSp_included);
+	fhTest2_3rich_electrons_thetaVSp_missing	= new TH2D("fhTest2_3rich_electrons_thetaVSp_missing","fhTest2_3rich_electrons_thetaVSp_missing;theta angle [deg];p [GeV]", 90, 0, 90, 540, -2., 16.);
+	fHistoList_test2.push_back(fhTest2_3rich_electrons_thetaVSp_missing);
 
 }
 

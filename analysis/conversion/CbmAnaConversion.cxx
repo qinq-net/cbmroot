@@ -344,7 +344,7 @@ void CbmAnaConversion::InitHistograms()
 	fhPi0_z					= new TH1D("fhPi0_z", "fhPi0_z;z [cm];Entries", 600., -0.5, 599.5);
 	fhPi0_z_cut				= new TH1D("fhPi0_z_cut", "fhPi0_z_cut;z [cm];Entries", 600., -0.5, 599.5);
 	fhPi0_pt				= new TH1D("fhPi0_pt", "fhPi0_pt;pt [GeV];Entries", 200., 0., 10.);
-	fhPi0_pt_vs_rap			= new TH2D("fhPi0_pt_vs_rap", "fhPi0_pt_vs_rap;pt [GeV]; rap [GeV]", 240, -2., 10., 270, -2., 7.);
+	fhPi0_pt_vs_rap			= new TH2D("fhPi0_pt_vs_rap", "fhPi0_pt_vs_rap;pt [GeV]; rapidity", 240, -2., 10., 270, -2., 7.);
 	fhPi0_theta				= new TH1D("fhPi0_theta", "fhPi0_theta;theta [deg];Entries", 90., 0., 90.);
 	fhPi0_theta_vs_rap		= new TH2D("fhPi0_theta_vs_rap", "fhPi0_theta_vs_rap;theta [deg];rapidity", 90., 0., 90., 270, -2., 7.);
 	fhEta_pt				= new TH1D("fhEta_pt", "fhEta_pt;pt [GeV];Entries", 200., 0., 10.);
