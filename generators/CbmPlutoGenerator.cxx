@@ -130,13 +130,13 @@ Bool_t CbmPlutoGenerator::ReadEvent(FairPrimaryGenerator* primGen)
     // set PDG by hand for pluto dilepton pairs and other not defined codes in pluto
     Int_t dielectron=99009911;
     Int_t dimuon    =99009913;
-    if(part->ID()==51)      pdgType=&dielectron;
-    else if(part->ID()==50) pdgType=&dimuon;
-    else if(fPDGmanual && *pdgType==0) {
+    if(fPDGmanual && *pdgType==0) {
       pdgType=&fPDGmanual;
-      Printf(" \t PDG changed to %d",*pdgType);
+      Printf(" \t PDG changed by user defintion to %d",*pdgType);
       //      Printf(" \t PDG changed to %d -> %s",*pdgType,dataBase->GetParticle(*pdgType)->GetName());
     }
+    else if(part->ID()==51) pdgType=&dielectron;
+    else if(part->ID()==50) pdgType=&dimuon;
 
     // get the mother
     Int_t parIdx = part->GetParentIndex();
