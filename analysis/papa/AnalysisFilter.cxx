@@ -73,7 +73,8 @@ UInt_t AnalysisFilter::IsSelected(TObject* obj)
 	
 
     //Fill values - fill only once the variables
-    // TODO: check carefully the cas of pairlegcuts
+    // TODO: check carefully the case of pairlegcuts, 
+    //       before switching to IsSelected(values)
     // Double_t values[PairAnalysisVarManager::kNMaxValuesMC];
     // PairAnalysisVarManager::Fill(obj,values);
 

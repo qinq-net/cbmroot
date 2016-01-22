@@ -148,66 +148,65 @@ public:
 
 
 protected:
-  TObjArray *fArrHists;              // array of input histograms
-  TObjArray *fArrCocktail;           // array of cocktail histograms
-  TH1 *fHistSignal;                  // histogram of pure signal
-  TH1 *fHistSB;                      // histogram of signal to bgrd
-  TH1 *fHistSign;                    // histogram of significance
-  TH1 *fHistBackground;              // histogram of background (fitted=0, like-sign=1, event mixing=2)
-  TH1 *fHistCocktail;                // histogram of cocktail
-  TH1 *fHistDataPM;                  // histogram of selected +- pair candidates
-  TH1 *fHistDataPP;                  // histogram of selected ++ pair candidates
-  TH1 *fHistDataMM;                  // histogram of selected -- pair candidates
-  TH1 *fHistDataME;                  // histogram of selected +- pair candidates from mixed event
-  TH1 *fHistRfactor;                 // histogram of R factors
-  TH1 *fHistSignalMC;                // histogram of signal MC shape
+  TObjArray *fArrHists    = NULL; // array of input histograms
+  TObjArray *fArrCocktail = NULL; // array of cocktail histograms
+  TH1 *fHistSignal        = NULL; // histogram of pure signal
+  TH1 *fHistSB            = NULL; // histogram of signal to bgrd
+  TH1 *fHistSign          = NULL; // histogram of significance
+  TH1 *fHistBackground    = NULL; // histogram of background (fitted=0, like-sign=1, event mixing=2)
+  TH1 *fHistCocktail      = NULL; // histogram of cocktail
+  TH1 *fHistDataPM        = NULL; // histogram of selected +- pair candidates
+  TH1 *fHistDataPP        = NULL; // histogram of selected ++ pair candidates
+  TH1 *fHistDataMM        = NULL; // histogram of selected -- pair candidates
+  TH1 *fHistDataME        = NULL; // histogram of selected +- pair candidates from mixed event
+  TH1 *fHistRfactor       = NULL; // histogram of R factors
+  TH1 *fHistSignalMC      = NULL; // histogram of signal MC shape
 
-  TH1 *fHistMixPM;                  // histogram of selected +- pair candidates
-  TH1 *fHistMixPP;                  // histogram of selected ++ pair candidates
-  TH1 *fHistMixMM;                  // histogram of selected -- pair candidates
-  TH1 *fHistMixMP;                  // histogram of selected +- pair candidates
-  TH1 *fHistDataTR;                  // histogram of selected +- pair candidates
+  TH1 *fHistMixPM         = NULL; // histogram of selected +- pair candidates
+  TH1 *fHistMixPP         = NULL; // histogram of selected ++ pair candidates
+  TH1 *fHistMixMM         = NULL; // histogram of selected -- pair candidates
+  TH1 *fHistMixMP         = NULL; // histogram of selected +- pair candidates
+  TH1 *fHistDataTR        = NULL; // histogram of selected +- pair candidates
 
-  TVectorD fValues;                  // values
-  TVectorD fErrors;                  // value errors
+  TVectorD fValues;               // values
+  TVectorD fErrors;               // value errors
 
-  Double_t fIntMin;                  // signal extraction range min
-  Double_t fIntMax;                  // signal extraction range max
-  /* Double_t fFitMin;                  // fit range lowest inv. mass */
-  /* Double_t fFitMax;                  // fit range highest inv. mass */
-  Double_t fPlotMin;                  // plot range lowest inv. mass
-  Double_t fPlotMax;                  // plot range highest inv. mass
+  Double_t fIntMin        = 0.;   // signal extraction range min
+  Double_t fIntMax        = 0.;   // signal extraction range max
+  Double_t fPlotMin       = 0.;   // plot range lowest inv. mass
+  Double_t fPlotMax       = 0.;   // plot range highest inv. mass
 
-  Int_t fRebin;                      // histogram rebin factor
-  Double_t fRebinStat;               // rebin until bins have max. stat. error
-  TArrayD *fBinLimits;               // bin limits from stat. rebinning
+  Int_t fRebin            = 1;    // histogram rebin factor
+  Double_t fRebinStat     = 1.;   // rebin until bins have max. stat. error
+  TArrayD *fBinLimits     = NULL; // bin limits from stat. rebinning
 
-  EBackgroundMethod fMethod;         // method for background substraction
-  Double_t fScaleMin;                // min for scaling of raw and background histogram
-  Double_t fScaleMax;                // max for scaling of raw and background histogram
-  Double_t fScaleMin2;               // min for scaling of raw and background histogram
-  Double_t fScaleMax2;               // max for scaling of raw and background histogram
-  Int_t    fNiterTR;                 // track rotation scale factor according to number of rotations
-  Double_t fScaleFactor;             // scale factor of raw to background histogram scaling
-  Bool_t fMixingCorr;                // switch for bin by bin correction with R factor
-  Bool_t fCocktailSubtr;             // switch for cocktail subtraction
+  EBackgroundMethod fMethod = kLikeSign; // method for background substraction
+  Double_t fScaleMin      = 0.;   // min for scaling of raw and background histogram
+  Double_t fScaleMax      = 0.;   // max for scaling of raw and background histogram
+  Double_t fScaleMin2     = 0.;   // min for scaling of raw and background histogram
+  Double_t fScaleMax2     = 0.;   // max for scaling of raw and background histogram
+  Int_t    fNiterTR       = 1;    // track rotation scale factor according to number of rotations
+  Double_t fScaleFactor   = 1.;   // scale factor of raw to background histogram scaling
+  Bool_t fMixingCorr      = kFALSE; // switch for bin by bin correction with R factor
+  Bool_t fCocktailSubtr   = kFALSE; // switch for cocktail subtraction
 
-  ESignalExtractionMethod fPeakMethod; // method for peak description and signal extraction
-  static TObject *fgPeakShape;       // histogram or function used to describe the extracted signal
-  Bool_t fPeakIsTF1;                 // flag
+  PairAnalysisFunction *fExtrFunc     = NULL; // signal extraction function
+  ESignalExtractionMethod fPeakMethod = kBinCounting; // method for peak description and signal extraction
+  static TObject *fgPeakShape;      // histogram or function used to describe the extracted signal
+  Bool_t fPeakIsTF1       = kFALSE; // flag
 
-  Bool_t fProcessed;                 // flag
-  Int_t  fPOIpdg;                    // pdg code particle of interest
-  static TH1F* fgHistSimPM;          // simulated peak shape
+  Bool_t fProcessed       = kFALSE; // flag
+  Int_t  fPOIpdg          = 443;    // pdg code particle of interest
+  static TH1F* fgHistSimPM;         // simulated peak shape
 
   void SetSignificanceAndSOB();      // calculate the significance and S/B
   void SetFWHM();                    // calculate the fwhm
-  static const char* fgkValueNames[7]; //value names
+
+  static const char* fgkValueNames[7];             //value names
   static const char* fgkBackgroundMethodNames[11]; // background estimator names
+
   TObject* FindObject(TObjArray *arrhist, PairAnalysis::EPairType type);
   TObject* FindObjectByTitle(TObjArray *arrhist, TString ref);
-
-  PairAnalysisFunction *fExtrFunc; // signal extraction function
 
   PairAnalysisSignalExt(const PairAnalysisSignalExt &c);
   PairAnalysisSignalExt &operator=(const PairAnalysisSignalExt &c);

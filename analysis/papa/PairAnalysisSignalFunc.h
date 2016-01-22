@@ -60,21 +60,21 @@ protected:
 
   Double_t PeakBgndFun(const Double_t *x, const Double_t *par); // combine any bgrd and any peak function
 
-  TF1 *fFuncSignal;                // Function for the signal description
-  TF1 *fFuncBackground;            // Function for the background description
-  TF1 *fFuncSigBack;               // Combined function signal plus background
+  TF1 *fFuncSignal        = NULL;    // Function for the signal description
+  TF1 *fFuncBackground    = NULL;    // Function for the background description
+  TF1 *fFuncSigBack       = NULL;    // Combined function signal plus background
 
-  Int_t fParMass;                  // the index of the parameter corresponding to the resonance mass
-  Int_t fParMassWidth;             // the index of the parameter corresponding to the resonance mass width
+  Int_t fParMass          = 1;       // the index of the parameter corresponding to the resonance mass
+  Int_t fParMassWidth     = 2;       // the index of the parameter corresponding to the resonance mass width
 
-  TString fFitOpt;             // fit option used
-  Bool_t fUseIntegral;         // use the integral of the fitted functions to extract signal and background
+  TString fFitOpt         = "SMNQE"; // fit option used
+  Bool_t fUseIntegral     = kFALSE;  // use the integral of the fitted functions to extract signal and background
 
-  Int_t    fDof;                   // degrees of freedom
-  Double_t fChi2Dof;               // chi2/dof of the fitted inv mass spectra
+  Int_t    fDof           = 0;       // degrees of freedom
+  Double_t fChi2Dof       = 0;       // chi2/dof of the fitted inv mass spectra
 
-  Int_t    fNparPeak;              // number of parameters for peak function
-  Int_t    fNparBgnd;              // number of parameters for background function
+  Int_t    fNparPeak      = 0;       // number of parameters for peak function
+  Int_t    fNparBgnd      = 0;       // number of parameters for background function
 
   ClassDef(PairAnalysisFunction,1)         // class for signal extraction using a combined bgrd+signal fit
 };

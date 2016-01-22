@@ -53,55 +53,57 @@ public:
   PairAnalysisTrack *GetTrack(UInt_t pos);
 
   virtual void Clear(Option_t *opt="C");
-protected:
 
+
+protected:
   Int_t GetMvdMatchingIndex(CbmStsTrack *track) const;
 
+
 private:
- FairMCEventHeader *fMCHeader;       //mc header
- TClonesArray *fMCTracks;       //mc tracks
- TClonesArray *fStsMatches;     //STS matches
- TClonesArray *fMuchMatches;     //MUCH matches
- TClonesArray *fTrdMatches;     //TRD matches
- TClonesArray *fRichMatches;    //RICH matches
+ FairMCEventHeader *fMCHeader  = NULL; // mc header
+ TClonesArray *fMCTracks       = NULL; // mc tracks
+ TClonesArray *fStsMatches     = NULL; // STS matches
+ TClonesArray *fMuchMatches    = NULL; // MUCH matches
+ TClonesArray *fTrdMatches     = NULL; // TRD matches
+ TClonesArray *fRichMatches    = NULL; // RICH matches
 
- TClonesArray *fMvdPoints;        //MVD points
- TClonesArray *fStsPoints;        //STS points
- TClonesArray *fMuchPoints;      //MUCH points
- TClonesArray *fRichPoints;      //RICH points
- TClonesArray *fTrdPoints;        //TRD points
- TClonesArray *fTofPoints;      //TOF points
+ TClonesArray *fMvdPoints      = NULL; // MVD points
+ TClonesArray *fStsPoints      = NULL; // STS points
+ TClonesArray *fMuchPoints     = NULL; // MUCH points
+ TClonesArray *fRichPoints     = NULL; // RICH points
+ TClonesArray *fTrdPoints      = NULL; // TRD points
+ TClonesArray *fTofPoints      = NULL; // TOF points
 
- TClonesArray *fGlobalTracks;   //global tracks
- TClonesArray *fTrdTracks;      //TRD tracks
- TClonesArray *fStsTracks;      //STS tracks
- TClonesArray *fMuchTracks;      //MUCH tracks
- TClonesArray *fRichRings;     //RICH rings
+ TClonesArray *fGlobalTracks   = NULL; // global tracks
+ TClonesArray *fTrdTracks      = NULL; // TRD tracks
+ TClonesArray *fStsTracks      = NULL; // STS tracks
+ TClonesArray *fMuchTracks     = NULL; // MUCH tracks
+ TClonesArray *fRichRings      = NULL; // RICH rings
 
- TClonesArray *fMvdHits;        //MVD hits
- TClonesArray *fStsHits;        //STS hits
- TClonesArray *fMuchHits;       //MUCH pixel hits
- TClonesArray *fMuchHitsStraw;  //MUCH straw hits
- TClonesArray *fTrdHits;        //TRD hits
- TClonesArray *fRichHits;       //RICH hits
- TClonesArray *fTofHits ;       //TOF hits
+ TClonesArray *fMvdHits        = NULL; // MVD hits
+ TClonesArray *fStsHits        = NULL; // STS hits
+ TClonesArray *fMuchHits       = NULL; // MUCH pixel hits
+ TClonesArray *fMuchHitsStraw  = NULL; // MUCH straw hits
+ TClonesArray *fTrdHits        = NULL; // TRD hits
+ TClonesArray *fRichHits       = NULL; // RICH hits
+ TClonesArray *fTofHits        = NULL; // TOF hits
 
- TClonesArray *fRichProjection;       //RICH projection
- 
- TClonesArray *fMvdHitMatches;    // hit matches
- TClonesArray *fStsHitMatches;    // hit matches
- TClonesArray *fRichHitMatches;    // hit matches
- TClonesArray *fMuchHitMatches;    // hit matches
- TClonesArray *fTrdHitMatches;    // hit matches
- TClonesArray *fTofHitMatches;    // hit matches
+ TClonesArray *fRichProjection = NULL; // RICH projection
 
- TClonesArray *fTrdCluster;        //TRD cluster
+ TClonesArray *fMvdHitMatches  = NULL; // hit matches
+ TClonesArray *fStsHitMatches  = NULL; // hit matches
+ TClonesArray *fRichHitMatches = NULL; // hit matches
+ TClonesArray *fMuchHitMatches = NULL; // hit matches
+ TClonesArray *fTrdHitMatches  = NULL; // hit matches
+ TClonesArray *fTofHitMatches  = NULL; // hit matches
 
- CbmVertex    *fPrimVertex;     //primary vertex
- TObjArray    *fTracks;         //papa tracks
- TClonesArray *fFastTracks;     //fast(sim) tracks
+ TClonesArray *fTrdCluster     = NULL; // TRD cluster
 
- Int_t         fMultiMatch;     // number of mutiple matched tracks 
+ CbmVertex    *fPrimVertex     = NULL; // primary vertex
+ TClonesArray *fFastTracks     = NULL; // fast(sim) tracks
+ TObjArray    *fTracks;                // papa tracks
+
+ Int_t         fMultiMatch     = 0;    // number of mutiple matched tracks
 
  PairAnalysisEvent(const PairAnalysisEvent& event);
  PairAnalysisEvent &operator=(const PairAnalysisEvent &c);

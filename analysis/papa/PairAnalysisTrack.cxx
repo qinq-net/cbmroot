@@ -35,27 +35,8 @@ ClassImp(PairAnalysisTrack)
 
 PairAnalysisTrack::PairAnalysisTrack() :
   TNamed(),
-  fPrimVertex(0x0),
-  fGlblTrack(0x0),
-  fStsTrack(0x0),
-  fMuchTrack(0x0),
-  fTrdTrack(0x0),
-  fRichRing(0x0),
-  fTofHit(0x0),
-  fMCTrack(0x0),
-  fStsTrackMatch(0x0),
-  fMuchTrackMatch(0x0),
-  fTrdTrackMatch(0x0),
-  fRichRingMatch(0x0),
-  fRichProj(0x0),
   fMomentum(),
-  fPosition(),
-  fChi2Vtx(),
-  fCharge(0),
-  fPdgCode(0),
-  fLabel(-1),
-  fWeight(1.),
-  fMultiMatch(0)
+  fPosition()
 {
   //
   // Default Constructor
@@ -66,27 +47,8 @@ PairAnalysisTrack::PairAnalysisTrack() :
 //______________________________________________
 PairAnalysisTrack::PairAnalysisTrack(const char* name, const char* title) :
   TNamed(name, title),
-  fPrimVertex(0x0),
-  fGlblTrack(0x0),
-  fStsTrack(0x0),
-  fMuchTrack(0x0),
-  fTrdTrack(0x0),
-  fRichRing(0x0),
-  fTofHit(0x0),
-  fMCTrack(0x0),
-  fStsTrackMatch(0x0),
-  fMuchTrackMatch(0x0),
-  fTrdTrackMatch(0x0),
-  fRichRingMatch(0x0),
-  fRichProj(0x0),
   fMomentum(),
-  fPosition(),
-  fCharge(0),
-  fChi2Vtx(-1.),
-  fPdgCode(0),
-  fLabel(-1),
-  fWeight(1.),
-  fMultiMatch(0)
+  fPosition()
 {
   //
   // Named Constructor
@@ -98,27 +60,11 @@ PairAnalysisTrack::PairAnalysisTrack(const char* name, const char* title) :
 PairAnalysisTrack::PairAnalysisTrack(TParticle *fastTrk,
 				     CbmMCTrack *mctrk ) :
   TNamed(),
-  fPrimVertex(0x0),
-  fGlblTrack(0x0),
-  fStsTrack(0x0),
-  fMuchTrack(0x0),
-  fTrdTrack(0x0),
-  fRichRing(0x0),
-  fTofHit(0x0),
   fMCTrack(mctrk),
-  fStsTrackMatch(0x0),
-  fMuchTrackMatch(0x0),
-  fTrdTrackMatch(0x0),
-  fRichRingMatch(0x0),
-  fRichProj(0x0),
   fMomentum(),
   fPosition(),
-  fCharge(0),
-  fChi2Vtx(-1.),
   fPdgCode(fastTrk->GetPdgCode()),
-  fLabel(fastTrk->GetFirstMother()),
-  fWeight(1.),
-  fMultiMatch(0)
+  fLabel(fastTrk->GetFirstMother())
 {
   //
   // Constructor
@@ -146,8 +92,8 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
 				     FairTrackParam *richproj
 				     ) :
   TNamed(),
-  fPrimVertex(0x0),
-  fGlblTrack(),
+  fPrimVertex(vtx),
+  fGlblTrack(gtrk),
   fStsTrack(ststrk),
   fMuchTrack(muchtrk),
   fTrdTrack(trdtrk),
@@ -160,13 +106,7 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
   fRichRingMatch(richmatch),
   fRichProj(richproj),
   fMomentum(),
-  fPosition(),
-  fChi2Vtx(-1.),
-  fCharge(0),
-  fPdgCode(0),
-  fLabel(-1),
-  fWeight(1.),
-  fMultiMatch(0)
+  fPosition()
 {
   //
   // Constructor
@@ -201,7 +141,6 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
 //______________________________________________
 PairAnalysisTrack::PairAnalysisTrack(const PairAnalysisTrack& track) :
   TNamed(track.GetName(), track.GetTitle()),
-  fPrimVertex(0),
   fGlblTrack(track.GetGlobalTrack()),
   fStsTrack(track.GetStsTrack()),
   fMuchTrack(track.GetMuchTrack()),
@@ -220,8 +159,7 @@ PairAnalysisTrack::PairAnalysisTrack(const PairAnalysisTrack& track) :
   fCharge(track.Charge()),
   fPdgCode(track.PdgCode()),
   fLabel(track.GetLabel()),
-  fWeight(track.GetWeight()),
-  fMultiMatch(0)
+  fWeight(track.GetWeight())
 {
   //
   // Copy Constructor

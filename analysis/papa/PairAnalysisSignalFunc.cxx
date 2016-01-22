@@ -53,17 +53,6 @@ ClassImp(PairAnalysisFunction)
 
 PairAnalysisFunction::PairAnalysisFunction() :
   TNamed("function","function")
-  fFuncSignal(0x0),
-  fFuncBackground(0x0),
-  fFuncSigBack(0x0),
-  fParMass(1),
-  fParMassWidth(2),
-  fFitOpt("SMNQE"),
-  fUseIntegral(kFALSE),
-  fDof(0),
-  fChi2Dof(0.0),
-  fNparPeak(0),
-  fNparBgnd(0)
 {
   //
   // Default Constructor
@@ -73,18 +62,7 @@ PairAnalysisFunction::PairAnalysisFunction() :
 
 //______________________________________________
 PairAnalysisFunction::PairAnalysisFunction(const char* name, const char* title) :
-  TNamed(name, title),
-  fFuncSignal(0x0),
-  fFuncBackground(0x0),
-  fFuncSigBack(0x0),
-  fParMass(1),
-  fParMassWidth(2),
-  fFitOpt("SMNQE"),
-  fUseIntegral(kFALSE),
-  fDof(0),
-  fChi2Dof(0.0),
-  fNparPeak(0),
-  fNparBgnd(0)
+  TNamed(name, title)
 {
   //
   // Named Constructor

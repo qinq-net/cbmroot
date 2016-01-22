@@ -41,42 +41,7 @@ ClassImp(PairAnalysisEvent)
 
 PairAnalysisEvent::PairAnalysisEvent() :
   TNamed(),
-  fMCHeader(0x0),       //mc header
-  fMCTracks(0x0),       //mc tracks
-  fStsMatches(0x0),     //STS matches
-  fMuchMatches(0x0),     //MUCH matches
-  fTrdMatches(0x0),     //TRD matches
-  fRichMatches(0x0),     //RICH matches
-  fMvdPoints(0x0),      //MVD points
-  fStsPoints(0x0),      //STS points
-  fMuchPoints(0x0),      //MUCH points
-  fRichPoints(0x0),      //RICH points
-  fTrdPoints(0x0),      //TRD points
-  fTofPoints(0x0),     //TOF points
-  fGlobalTracks(0x0),   //global tracks
-  fTrdTracks(0x0),      //TRD tracks
-  fStsTracks(0x0),      //STS tracks
-  fMuchTracks(0x0),      //MUCH tracks
-  fRichRings(0x0),      //RICH rings
-  fMvdHits(0x0),      //MVD hits
-  fStsHits(0x0),      //STS hits
-  fMuchHits(0x0),      //MUCH hits
-  fMuchHitsStraw(0x0),   //MUCH hits
-  fTrdHits(0x0),      //TRD hits
-  fRichHits(0x0),      //RICH hits
-  fTofHits(0x0),      //TOF hits
-  fRichProjection(0x0),
-  fMvdHitMatches(0x0),      //MVD hits
-  fStsHitMatches(0x0),      //STS hits
-  fRichHitMatches(0x0),      //RICH hits
-  fMuchHitMatches(0x0),      //MUCH hits
-  fTrdHitMatches(0x0),      //TRD hits
-  fTofHitMatches(0x0),      //TOF hits
-  fTrdCluster(0x0),      //TRD cluster
-  fPrimVertex(0x0),     //primary vertices
-  fTracks(new TObjArray(1)), // array of papa tracks
-  fFastTracks(0x0), // array of fast(sim) tracks
-  fMultiMatch(0)
+  fTracks(new TObjArray(1)) // array of papa tracks
 {
   //
   // Default Constructor
@@ -88,42 +53,7 @@ PairAnalysisEvent::PairAnalysisEvent() :
 //______________________________________________
 PairAnalysisEvent::PairAnalysisEvent(const char* name, const char* title) :
   TNamed(name, title),
-  fMCHeader(0x0),       //mc header
-  fMCTracks(0x0),       //mc tracks
-  fStsMatches(0x0),     //STS matches
-  fMuchMatches(0x0),     //MUCH matches
-  fTrdMatches(0x0),     //TRD matches
-  fRichMatches(0x0),     //RICH matches
-  fMvdPoints(0x0),      //MVD points
-  fStsPoints(0x0),      //STS points
-  fMuchPoints(0x0),      //MUCH points
-  fRichPoints(0x0),      //RICH points
-  fTrdPoints(0x0),      //TRD points
-  fTofPoints(0x0),     //TOF points
-  fGlobalTracks(0x0),   //global tracks
-  fTrdTracks(0x0),      //TRD tracks
-  fStsTracks(0x0),      //STS tracks
-  fMuchTracks(0x0),      //MUCH tracks
-  fRichRings(0x0),      //RICH rings
-  fMvdHits(0x0),      //MVD hits
-  fStsHits(0x0),      //STS hits
-  fMuchHits(0x0),      //MUCH hits
-  fMuchHitsStraw(0x0),   //MUCH hits
-  fTrdHits(0x0),      //TRD hits
-  fRichHits(0x0),      //RICH hits
-  fTofHits(0x0),      //TOF hits
-  fRichProjection(0x0),
-  fMvdHitMatches(0x0),      //MVD hits
-  fStsHitMatches(0x0),      //STS hits
-  fRichHitMatches(0x0),      //RICH hits
-  fMuchHitMatches(0x0),      //MUCH hits
-  fTrdHitMatches(0x0),      //TRD hits
-  fTofHitMatches(0x0),      //TOF hits
-  fTrdCluster(0x0),      //TRD cluster
-  fPrimVertex(0x0),     //primary vertices
-  fTracks(new TObjArray(1)), // array of papa tracks
-  fFastTracks(0x0), // array of fast(sim) tracks
-  fMultiMatch(0)
+  fTracks(new TObjArray(1)) // array of papa tracks
 {
   //
   // Named Constructor

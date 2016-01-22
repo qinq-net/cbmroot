@@ -17,16 +17,8 @@ ClassImp(PairAnalysisPair)
 Double_t PairAnalysisPair::fBeamEnergy=-1.;
 
 PairAnalysisPair::PairAnalysisPair() :
-  fType(-1),
-  fCharge(-1),
-  fLabel(-1),
-  fWeight(1.),
-  fPdgCode(0),
   fRefD1(),
-  fRefD2(),
-  fPid1(0),
-  fPid2(0),
-  fKFUsage(kTRUE)
+  fRefD2()
 {
   //
   // Default Constructor
@@ -56,15 +48,8 @@ PairAnalysisPair::PairAnalysisPair(const PairAnalysisPair& pair) :
 //______________________________________________
 PairAnalysisPair::PairAnalysisPair(Char_t type) :
   fType(type),
-  fCharge(-1),
-  fLabel(-1),
-  fWeight(1.),
-  fPdgCode(0),
   fRefD1(),
-  fRefD2(),
-  fPid1(0),
-  fPid2(0),
-  fKFUsage(kTRUE)
+  fRefD2()
 {
   //
   // Constructor with type

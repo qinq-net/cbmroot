@@ -98,30 +98,30 @@ public:
   Double_t GetWeight()  const { return fWeight;  }
 
 private:
-  CbmKFVertex      *fPrimVertex;      // primary vertex
-  CbmGlobalTrack   *fGlblTrack;       // global track
-  CbmStsTrack      *fStsTrack;        // sts track
-  CbmMuchTrack     *fMuchTrack;       // much track
-  CbmTrdTrack      *fTrdTrack;        // trd track
-  CbmRichRing      *fRichRing;        // rich ring
-  CbmTofHit        *fTofHit;          // tof hit
+  CbmKFVertex      *fPrimVertex      = NULL; // primary vertex
+  CbmGlobalTrack   *fGlblTrack       = NULL; // global track
+  CbmStsTrack      *fStsTrack        = NULL; // sts track
+  CbmMuchTrack     *fMuchTrack       = NULL; // much track
+  CbmTrdTrack      *fTrdTrack        = NULL; // trd track
+  CbmRichRing      *fRichRing        = NULL; // rich ring
+  CbmTofHit        *fTofHit          = NULL; // tof hit
 
-  CbmMCTrack       *fMCTrack;         // matched mc track
-  CbmTrackMatchNew *fStsTrackMatch;   // sts track match
-  CbmTrackMatchNew *fMuchTrackMatch;  // much track match
-  CbmTrackMatchNew *fTrdTrackMatch;   // trd track match
-  CbmTrackMatchNew *fRichRingMatch;   // rich ring match
+  CbmMCTrack       *fMCTrack         = NULL; // matched mc track
+  CbmTrackMatchNew *fStsTrackMatch   = NULL; // sts track match
+  CbmTrackMatchNew *fMuchTrackMatch  = NULL; // much track match
+  CbmTrackMatchNew *fTrdTrackMatch   = NULL; // trd track match
+  CbmTrackMatchNew *fRichRingMatch   = NULL; // rich ring match
 
-  FairTrackParam   *fRichProj;        // rich ring projection
+  FairTrackParam   *fRichProj        = NULL; // rich ring projection
 
-  TLorentzVector fMomentum;           // momentum vector
-  TLorentzVector fPosition;           // position vector
-  Double_t       fChi2Vtx;            // chi2 to vertex in sigma
-  Short_t        fCharge;             // charge
-  Int_t          fPdgCode;            // pdg code
-  Int_t          fLabel;              // MC label
-  Double_t       fWeight;             // weighting
-  Int_t          fMultiMatch;         // MC label for n-times matched tracks
+  TLorentzVector fMomentum;                  // momentum vector
+  TLorentzVector fPosition;                  // position vector
+  Double_t       fChi2Vtx            = -1.;  // chi2 to vertex in sigma
+  Short_t        fCharge             = 0;    // charge
+  Int_t          fPdgCode            = 0;    // pdg code
+  Int_t          fLabel              = -1;   // MC label
+  Double_t       fWeight             = 1.;   // weighting
+  Int_t          fMultiMatch         = 0;    // MC label for n-times matched tracks
 
   PairAnalysisTrack &operator=(const PairAnalysisTrack &c);
   ClassDef(PairAnalysisTrack,4)         // PairAnalysis Track

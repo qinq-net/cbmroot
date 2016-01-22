@@ -144,20 +144,19 @@ public:
   Bool_t GetKFUsage() const {return fKFUsage;}
 
 protected:
-  Char_t   fType;         // type of the pair e.g. like sign SE, unlike sign SE, ... see PairAnalysis
-  Short_t  fCharge;       // charge
-  Int_t    fLabel;        // MC label
-  Double_t fWeight;       // weighting factor
-  Int_t    fPdgCode;      // pdg code in case it is a MC particle
-  static Double_t fBeamEnergy; //!beam energy
+  Char_t   fType          = -1; // type of the pair e.g. like sign SE, unlike sign SE, ... see PairAnalysis
+  Short_t  fCharge        = -1; // charge
+  Int_t    fLabel         = -1; // MC label
+  Double_t fWeight        = 1.; // weighting factor
+  Int_t    fPdgCode       = 0;  // pdg code in case it is a MC particle
+  static Double_t fBeamEnergy;  //!beam energy
 
   TRef fRefD1;           // Reference to first daughter
   TRef fRefD2;           // Reference to second daughter
+  Int_t fPid1             = 0; // reference to first daughter pid
+  Int_t fPid2             = 0; // reference to second daughter pid
 
-  Int_t fPid1;           // reference to first daughter pid
-  Int_t fPid2;           // reference to second daughter pid
-
-  Bool_t fKFUsage;       // Use KF for vertexing
+  Bool_t fKFUsage         = kFALSE; // Use KF for vertexing
 
   ClassDef(PairAnalysisPair,1)
 };

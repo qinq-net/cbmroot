@@ -1329,6 +1329,7 @@ inline void PairAnalysisVarManager::FillVarTrdHit(const CbmTrdHit *hit, Double_t
   if(cluster->GetEntriesFast()>0) {
     CbmCluster *cls = static_cast<CbmCluster*>( cluster->At(hit->GetRefId()) );
     if(cls) values[kTRDPads]  = cls->GetNofDigis();
+    //    if(cls) std::cout << (cls->ToString()).data();
   }
 
   // Set

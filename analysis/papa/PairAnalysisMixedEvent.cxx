@@ -29,14 +29,13 @@ PairAnalysisMixedEvent::PairAnalysisMixedEvent() :
   fArrPairs("PairAnalysisPair",0),
   fNTracksP(0),
   fNTracksN(0),
-  fEventData(),
   fPID(0x0),
   fPIDIndex(0)
 {
   //
   // Default Constructor
   //
-
+  for (Int_t i=0; i<PairAnalysisVarManager::kNMaxValuesMC;++i) fEventData[i]=0.;
 }
 
 //______________________________________________
@@ -48,13 +47,13 @@ PairAnalysisMixedEvent::PairAnalysisMixedEvent(const char* name, const char* tit
   fArrPairs("PairAnalysisPair",0),
   fNTracksP(0),
   fNTracksN(0),
-  fEventData(),
   fPID(0x0),
   fPIDIndex(0)
 {
   //
   // Named Constructor
   //
+  for (Int_t i=0; i<PairAnalysisVarManager::kNMaxValuesMC;++i) fEventData[i]=0.;
 }
 
 //______________________________________________
