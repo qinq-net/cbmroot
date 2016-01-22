@@ -4,6 +4,7 @@ add_subdirectory (much)
 add_subdirectory (flow)
 add_subdirectory(opencharm)
 add_subdirectory(conversion)
+add_subdirectory(jpsiana)
 #add_subdirectory (hyperon)
 
 Set(INCLUDE_DIRECTORIES
@@ -99,12 +100,12 @@ dielectron/CbmAnaDielectronStudyReportAll.cxx
 dielectron/CbmAnaDielectronReports.cxx
 dielectron/CbmHaddBase.cxx
 
-jpsiana/CbmAnaJpsiTask.cxx
-jpsiana/CbmAnaJpsiReport.cxx
-jpsiana/CbmAnaJpsiHist.cxx
-jpsiana/CbmAnaJpsiCandidate.cxx
-jpsiana/CbmAnaJpsiSuperEvent.cxx
-jpsiana/CbmAnaJpsiSuperEventReport.cxx
+#jpsiana/CbmAnaJpsiTask.cxx
+#jpsiana/CbmAnaJpsiReport.cxx
+#jpsiana/CbmAnaJpsiHist.cxx
+#jpsiana/CbmAnaJpsiCandidate.cxx
+#jpsiana/CbmAnaJpsiSuperEvent.cxx
+#jpsiana/CbmAnaJpsiSuperEventReport.cxx
 
 #photon/CbmTrdPhotonAnalysis.cxx
 )

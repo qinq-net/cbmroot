@@ -44,12 +44,6 @@
 #pragma link C++ class CbmAnaDielectronReports+;
 #pragma link C++ class CbmHaddBase+;
 
-#pragma link C++ class CbmAnaJpsiTask+;
-#pragma link C++ class CbmAnaJpsiReport+;
-#pragma link C++ class CbmAnaJpsiCandidate+;
-#pragma link C++ class CbmAnaJpsiSuperEvent+;
-#pragma link C++ class CbmAnaJpsiSuperEventReport+;
-
 //#pragma link C++ class CbmTrdPhotonAnalysis+;
 
 #endif
