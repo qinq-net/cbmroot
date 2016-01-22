@@ -2,6 +2,7 @@
 add_subdirectory (papa)
 add_subdirectory (much)
 add_subdirectory (flow)
+add_subdirectory(opencharm)
 #add_subdirectory (hyperon)
 
 Set(INCLUDE_DIRECTORIES
