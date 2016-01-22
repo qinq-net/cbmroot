@@ -1618,6 +1618,7 @@ void PairAnalysisHistos::FillValues(TH1 *obj, const Double_t *values)
   if(wform) fvals[3] = PairAnalysisHelper::EvalFormula(wform, values);
   if(pform) fvals[3] = PairAnalysisHelper::EvalFormula(pform, values); // weighting overwriting for Profile3D
 
+  /*
   // ask for inclusive trigger map variables
   if(value1!=PairAnalysisVarManager::kTriggerInclONL && value1!=PairAnalysisVarManager::kTriggerInclOFF &&
      value2!=PairAnalysisVarManager::kTriggerInclONL && value2!=PairAnalysisVarManager::kTriggerInclOFF &&
@@ -1678,7 +1679,7 @@ void PairAnalysisHistos::FillValues(TH1 *obj, const Double_t *values)
     }
 
   } //end: trigger filling
-
+  */
 
   return;
 }

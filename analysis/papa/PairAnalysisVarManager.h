@@ -164,7 +164,6 @@ public:
     kSTSXv,                  // STS point: x-coordinate
     kSTSYv,                  // STS point: y-coordinate
     kSTSZv,                  // STS point: z-coordinate
-    kSTSChi2NDFtoVtx,           // chi2/ndf impact parameter STS(+MVD) track to primary vertex in (sigmas) TODO:OBOSOLETE!
     kSTSFirstHitPosZ,        // position of the first hit in the STS (cm)
     // rich ring information
     kRICHPidANN,             // PID value Artificial Neural Network (ANN-method)
@@ -217,17 +216,12 @@ public:
 	
     kLegDist,                // distance of the legs
     kLegDistXY,              // distance of the legs in XY
-    kDeltaEta,         // Absolute value of Delta Eta for the legs
-    kDeltaPhi,           // Absolute value of Delta Phi for the legs
+    kDeltaEta,               // Absolute value of Delta Eta for the legs
+    kDeltaPhi,               // Absolute value of Delta Phi for the legs
     kLegsP,                  // sqrt of p_leg1*p_leg2
     kMerr,                   // error of mass calculation
     kDCA,                    // distance of closest approach TODO: not implemented yet
     kPairType,               // type of the pair, like like sign ++ unlikesign ...
-    kPseudoProperTime,       // pseudo proper time
-    kPseudoProperTimeErr,    // pseudo proper time error
-    kPseudoProperTimeResolution,     // resolution for pseudo proper decay time (reconstructed - MC truth)
-    kPseudoProperTimePull,   // normalizd resolution for pseudo proper time = (reco - MC truth)/dReco
-    kTRDpidEffPair,          // TRD pid efficieny from conversion electrons
     kMomAsymDau1,            // momentum fraction of daughter1
     kMomAsymDau2,            // momentum fraction of daughter2
     kPairEff,                // pair efficiency
@@ -246,25 +240,14 @@ public:
     kXRes,                   // primary vertex x-resolution
     kYRes,                   // primary vertex y-resolution
     kZRes,                   // primary vertex z-resolution
-    kPhiMaxPt,               // phi angle of the track with maximum pt
     kMaxPt,                  // track with maximum pt
 
     kRndmRej,                // random rejection probability by the pair pre filter
-    kNTrk,                   // number of tracks (or tracklets) TODO: ambiguous
+    kNTrk,                   // number of tracks
     kTracks,                 // track after all cuts
     kNVtxContrib,            /// number of primary vertex contibutors
 
-    kRefMult,                // reference multiplicity (only in AODs) should be Ntrk w/o double counts
-    kRefMultTPConly,         // TPC only Reference Multiplicty (AliESDtrackCuts::GetReferenceMultiplicity(&esd, kTRUE))
-
-    kNch,                    // MC true number of charged particles in |eta|<1.6
-    kNch05,                  // MC true number of charged particles in |eta|<0.5
-    kNch10,                  // MC true number of charged particles in |eta|<1.0
-
-    kCentrality,             // event centrality fraction V0M
-    kTriggerInclONL,         // online trigger bits fired (inclusive)
-    kTriggerInclOFF,         // offline trigger bits fired (inclusive)
-    kTriggerExclOFF,         // offline only this trigger bit fired (exclusive)
+    kCentrality,             // event centrality fraction
     kNevents,                // event counter
     kRunNumber,              // run number
     kYbeam,                  // beam rapdity
@@ -917,23 +900,6 @@ inline void PairAnalysisVarManager::FillVarStsTrack(const CbmStsTrack *track, Do
   values[kSTSPout]        = mom.Mag();
   values[kSTSPtout]       = mom.Pt();
   //  values[kSTSCharge]      = (track->GetParamFirst()->GetQp()>0. ? +1. : -1. );
-
-  // should become default
-  //  values[kSTSChi2NDFtoVtx] = GetChiToVertex(const_cast<CbmStsTrack*>(track), fgEvent->GetPrimaryVertex());
-
-  // using CbmL1PFFitter
-  /* vector<CbmStsTrack> stsTracks; */
-  /* stsTracks.resize(1); */
-  /* stsTracks[0] = *track; */
-  /* vector<L1FieldRegion> vField; */
-  /* vector<float> chiPrim; */
-  /* fgL1Fitter->GetChiToVertex(stsTracks, vField, chiPrim, fgKFVertex, 3.e+6); */
-  /* values[kSTSChi2NDFtoVtx]  = chiPrim[0]; */
-  /* printf("L1fitter: %f\n", values[kSTSChi2NDFtoVtx]); */
-  // using KFFitter
-  //  values[kChi2NDFtoVtx]  = fgKFFitter->GetChiToVertex(const_cast<CbmStsTrack*>(track),fgEvent->GetPrimaryVertex());
-  //printf("KFfitter: %f\n", values[kSTSChi2NDFtoVtx]);
-  //  values[kChi2NDFtoVtx]  = track->GetChiToVertex();
 
   values[kMVDFirstHitPosZ]= minMvd;
   values[kSTSFirstHitPosZ]= minSts;
