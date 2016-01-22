@@ -56,6 +56,9 @@ CbmAnaConversionReco::CbmAnaConversionReco()
     fhInvariantMass_MC_pi0_gg(NULL),
     fhInvariantMass_MC_eta(NULL),
     fhInvariantMass_MC_etaPrime(NULL),
+    fhMC_electrons_theta(NULL),
+	fhMC_electrons_p(NULL),
+	fhMC_electrons_theta_vs_p(NULL),
     fhInvariantMassReco_pi0(NULL),
     fhMCtest(NULL),
     fhEPEM_invmass_gg_mc(NULL),
@@ -187,6 +190,14 @@ void CbmAnaConversionReco::InitHistos()
 	fHistoList_MC.push_back(fhInvariantMass_MC_eta);
 	fHistoList_MC.push_back(fhInvariantMass_MC_etaPrime);
 	
+	
+	
+	fhMC_electrons_theta		= new TH1D("fhMC_electrons_theta", "fhMC_electrons_theta;theta [deg];#", 90, 0., 90.);
+	fhMC_electrons_p			= new TH1D("fhMC_electrons_p", "fhMC_electrons_p;p [GeV/c];#", 100, 0., 10.);
+	fhMC_electrons_theta_vs_p	= new TH2D("fhMC_electrons_theta_vs_p", "fhMC_electrons_theta_vs_p;theta [deg];p [GeV/c]", 90, 0., 90., 100, 0., 10.);
+	fHistoList_MC.push_back(fhMC_electrons_theta);
+	fHistoList_MC.push_back(fhMC_electrons_p);
+	fHistoList_MC.push_back(fhMC_electrons_theta_vs_p);
 	
 	fhMCtest	= new TH1D("fhMCtest", "fhMCtest;mass [GeV/c^2];#", 2000, 0., 2.);
 	fHistoList_MC.push_back(fhMCtest);
@@ -463,6 +474,13 @@ void CbmAnaConversionReco::InvariantMassMC_all()
 						int motherId3 = fMCTracklist_all[k]->GetMotherId();
 						int motherId4 = fMCTracklist_all[l]->GetMotherId();
 						
+						TVector3 momentum1, momentum2, momentum3, momentum4;
+						fMCTracklist_all[i]->GetMomentum(momentum1);
+						fMCTracklist_all[j]->GetMomentum(momentum2);
+						fMCTracklist_all[k]->GetMomentum(momentum3);
+						fMCTracklist_all[l]->GetMomentum(momentum4);
+						
+						
 						// decay pi0 -> e+ e- e+ e-
 						if(motherId1 == motherId2 && motherId1 == motherId3 && motherId1 == motherId4) {
 							cout << "testxyz" << endl;
@@ -561,6 +579,18 @@ void CbmAnaConversionReco::InvariantMassMC_all()
 							if(mcGrandmotherPdg1 == 111) {
 								fhInvariantMass_MC_pi0->Fill(invmass);
 								fhInvariantMass_MC_pi0_gg->Fill(invmass);
+								fhMC_electrons_theta->Fill(momentum1.Theta() );
+								fhMC_electrons_theta->Fill(momentum2.Theta() );
+								fhMC_electrons_theta->Fill(momentum3.Theta() );
+								fhMC_electrons_theta->Fill(momentum4.Theta() );
+								fhMC_electrons_p->Fill(momentum1.Mag() );
+								fhMC_electrons_p->Fill(momentum2.Mag() );
+								fhMC_electrons_p->Fill(momentum3.Mag() );
+								fhMC_electrons_p->Fill(momentum4.Mag() );
+								fhMC_electrons_theta_vs_p->Fill(momentum1.Theta(), momentum1.Mag() );
+								fhMC_electrons_theta_vs_p->Fill(momentum2.Theta(), momentum2.Mag() );
+								fhMC_electrons_theta_vs_p->Fill(momentum3.Theta(), momentum3.Mag() );
+								fhMC_electrons_theta_vs_p->Fill(momentum4.Theta(), momentum4.Mag() );
 							}
 							if(mcGrandmotherPdg1 == 221) {
 								fhInvariantMass_MC_eta->Fill(invmass);
@@ -581,6 +611,19 @@ void CbmAnaConversionReco::InvariantMassMC_all()
 							Double_t invmass = Invmass_4particles(fMCTracklist_all[i], fMCTracklist_all[j], fMCTracklist_all[k], fMCTracklist_all[l]);
 							fhInvariantMass_MC_pi0_gepem->Fill(invmass);
 							fhInvariantMass_MC_pi0->Fill(invmass);
+							
+							fhMC_electrons_theta->Fill(momentum1.Theta() );
+							fhMC_electrons_theta->Fill(momentum2.Theta() );
+							fhMC_electrons_theta->Fill(momentum3.Theta() );
+							fhMC_electrons_theta->Fill(momentum4.Theta() );
+							fhMC_electrons_p->Fill(momentum1.Mag() );
+							fhMC_electrons_p->Fill(momentum2.Mag() );
+							fhMC_electrons_p->Fill(momentum3.Mag() );
+							fhMC_electrons_p->Fill(momentum4.Mag() );
+							fhMC_electrons_theta_vs_p->Fill(momentum1.Theta(), momentum1.Mag() );
+							fhMC_electrons_theta_vs_p->Fill(momentum2.Theta(), momentum2.Mag() );
+							fhMC_electrons_theta_vs_p->Fill(momentum3.Theta(), momentum3.Mag() );
+							fhMC_electrons_theta_vs_p->Fill(momentum4.Theta(), momentum4.Mag() );
 						}
 						// decay eta -> g e+ e- -> e+ e- e+ e-
 						if(  ((motherId1 == motherId2 && motherId3 == motherId4) && (mcMotherPdg1 == 22) && (mcMotherPdg3 == 221) && grandmotherId1 == motherId3)
@@ -591,6 +634,19 @@ void CbmAnaConversionReco::InvariantMassMC_all()
 						  || ((motherId1 == motherId4 && motherId2 == motherId3) && (mcMotherPdg1 == 221) && (mcMotherPdg2 == 22) && grandmotherId2 == motherId1)) {
 							Double_t invmass = Invmass_4particles(fMCTracklist_all[i], fMCTracklist_all[j], fMCTracklist_all[k], fMCTracklist_all[l]);
 							fhInvariantMass_MC_eta->Fill(invmass);
+							
+							fhMC_electrons_theta->Fill(momentum1.Theta() );
+							fhMC_electrons_theta->Fill(momentum2.Theta() );
+							fhMC_electrons_theta->Fill(momentum3.Theta() );
+							fhMC_electrons_theta->Fill(momentum4.Theta() );
+							fhMC_electrons_p->Fill(momentum1.Mag() );
+							fhMC_electrons_p->Fill(momentum2.Mag() );
+							fhMC_electrons_p->Fill(momentum3.Mag() );
+							fhMC_electrons_p->Fill(momentum4.Mag() );
+							fhMC_electrons_theta_vs_p->Fill(momentum1.Theta(), momentum1.Mag() );
+							fhMC_electrons_theta_vs_p->Fill(momentum2.Theta(), momentum2.Mag() );
+							fhMC_electrons_theta_vs_p->Fill(momentum3.Theta(), momentum3.Mag() );
+							fhMC_electrons_theta_vs_p->Fill(momentum4.Theta(), momentum4.Mag() );
 						}
 					}
 				}

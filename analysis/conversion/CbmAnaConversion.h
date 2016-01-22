@@ -150,6 +150,17 @@ private:
    TH1D * fhPi0_theta;				// 
    TH2D * fhPi0_theta_vs_rap;		// 
    TH1D * fhEta_pt;					// 
+   TH2D * fhEta_pt_vs_rap;			// 
+   TH1D * fhEta_theta;				// 
+   TH2D * fhEta_theta_vs_rap;		// 
+   TH1D * fhRho_pt;					// 
+   TH2D * fhRho_pt_vs_rap;			// 
+   TH1D * fhRho_theta;				// 
+   TH2D * fhRho_theta_vs_rap;		// 
+   TH1D * fhOmega_pt;				// 
+   TH2D * fhOmega_pt_vs_rap;		// 
+   TH1D * fhOmega_theta;			// 
+   TH2D * fhOmega_theta_vs_rap;		// 
    TH1D * fhElectronsFromPi0_z;		//
    
    TH1D * fhNofTracks_mctrack;

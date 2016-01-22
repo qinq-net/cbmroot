@@ -99,6 +99,10 @@ private:
 	TH1D * fhInvariantMass_MC_pi0_gg;
 	TH1D * fhInvariantMass_MC_eta;
 	TH1D * fhInvariantMass_MC_etaPrime;
+
+	TH1D * fhMC_electrons_theta;
+	TH1D * fhMC_electrons_p;
+	TH2D * fhMC_electrons_theta_vs_p;
    
 	TH1D * fhInvariantMassReco_pi0;
 

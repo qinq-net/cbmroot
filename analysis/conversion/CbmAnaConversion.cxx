@@ -93,6 +93,17 @@ CbmAnaConversion::CbmAnaConversion()
     fhPi0_theta(NULL),
     fhPi0_theta_vs_rap(NULL),
     fhEta_pt(NULL),
+    fhEta_pt_vs_rap(NULL),
+    fhEta_theta(NULL),
+    fhEta_theta_vs_rap(NULL),
+    fhRho_pt(NULL),
+    fhRho_pt_vs_rap(NULL),
+    fhRho_theta(NULL),
+    fhRho_theta_vs_rap(NULL),
+    fhOmega_pt(NULL),
+    fhOmega_pt_vs_rap(NULL),
+    fhOmega_theta(NULL),
+    fhOmega_theta_vs_rap(NULL),
     fhElectronsFromPi0_z(NULL),
     fhNofTracks_mctrack(NULL),
    	fhNofTracks_globaltrack(NULL),
@@ -345,9 +356,22 @@ void CbmAnaConversion::InitHistograms()
 	fhPi0_z_cut				= new TH1D("fhPi0_z_cut", "fhPi0_z_cut;z [cm];Entries", 600., -0.5, 599.5);
 	fhPi0_pt				= new TH1D("fhPi0_pt", "fhPi0_pt;pt [GeV];Entries", 200., 0., 10.);
 	fhPi0_pt_vs_rap			= new TH2D("fhPi0_pt_vs_rap", "fhPi0_pt_vs_rap;pt [GeV]; rapidity", 240, -2., 10., 270, -2., 7.);
-	fhPi0_theta				= new TH1D("fhPi0_theta", "fhPi0_theta;theta [deg];Entries", 90., 0., 90.);
-	fhPi0_theta_vs_rap		= new TH2D("fhPi0_theta_vs_rap", "fhPi0_theta_vs_rap;theta [deg];rapidity", 90., 0., 90., 270, -2., 7.);
+	fhPi0_theta				= new TH1D("fhPi0_theta", "fhPi0_theta;theta [deg];Entries", 180., 0., 180.);
+	fhPi0_theta_vs_rap		= new TH2D("fhPi0_theta_vs_rap", "fhPi0_theta_vs_rap;theta [deg];rapidity", 180., 0., 180., 270, -2., 7.);
 	fhEta_pt				= new TH1D("fhEta_pt", "fhEta_pt;pt [GeV];Entries", 200., 0., 10.);
+	fhEta_pt_vs_rap			= new TH2D("fhEta_pt_vs_rap", "fhEta_pt_vs_rap;pt [GeV]; rapidity", 240, -2., 10., 270, -2., 7.);
+	fhEta_theta				= new TH1D("fhEta_theta", "fhEta_theta;theta [deg];Entries", 180., 0., 180.);
+	fhEta_theta_vs_rap		= new TH2D("fhEta_theta_vs_rap", "fhEta_theta_vs_rap;theta [deg];rapidity", 180., 0., 180., 270, -2., 7.);
+	fhRho_pt				= new TH1D("fhRho_pt", "fhRho_pt;pt [GeV];Entries", 200., 0., 10.);
+	fhRho_pt_vs_rap			= new TH2D("fhRho_pt_vs_rap", "fhRho_pt_vs_rap;pt [GeV]; rapidity", 240, -2., 10., 270, -2., 7.);
+	fhRho_theta				= new TH1D("fhRho_theta", "fhRho_theta;theta [deg];Entries", 180., 0., 180.);
+	fhRho_theta_vs_rap		= new TH2D("fhRho_theta_vs_rap", "fhRho_theta_vs_rap;theta [deg];rapidity", 180., 0., 180., 270, -2., 7.);
+	fhOmega_pt				= new TH1D("fhOmega_pt", "fhOmega_pt;pt [GeV];Entries", 200., 0., 10.);
+	fhOmega_pt_vs_rap		= new TH2D("fhOmega_pt_vs_rap", "fhOmega_pt_vs_rap;pt [GeV]; rapidity", 240, -2., 10., 270, -2., 7.);
+	fhOmega_theta			= new TH1D("fhOmega_theta", "fhOmega_theta;theta [deg];Entries", 180., 0., 180.);
+	fhOmega_theta_vs_rap	= new TH2D("fhOmega_theta_vs_rap", "fhOmega_theta_vs_rap;theta [deg];rapidity", 180., 0., 180., 270, -2., 7.);
+	
+	
 	fhElectronSources		= new TH1D("fhElectronSources", "fhElectronSources;Source;Entries", 6., 0., 6.);
 	fhElectronsFromPi0_z	= new TH1D("fhElectronsFromPi0_z", "fhElectronsFromPi0_z (= pos. of gamma conversion);z [cm];Entries", 600., -0.5, 599.5);
 	fHistoList.push_back(fhNofPi0_perEvent);
@@ -364,6 +388,17 @@ void CbmAnaConversion::InitHistograms()
 	fHistoList.push_back(fhPi0_theta);
 	fHistoList.push_back(fhPi0_theta_vs_rap);
 	fHistoList.push_back(fhEta_pt);
+	fHistoList.push_back(fhEta_pt_vs_rap);
+	fHistoList.push_back(fhEta_theta);
+	fHistoList.push_back(fhEta_theta_vs_rap);
+	fHistoList.push_back(fhRho_pt);
+	fHistoList.push_back(fhRho_pt_vs_rap);
+	fHistoList.push_back(fhRho_theta);
+	fHistoList.push_back(fhRho_theta_vs_rap);
+	fHistoList.push_back(fhOmega_pt);
+	fHistoList.push_back(fhOmega_pt_vs_rap);
+	fHistoList.push_back(fhOmega_theta);
+	fHistoList.push_back(fhOmega_theta_vs_rap);
 	fHistoList.push_back(fhElectronSources);
 	fHistoList.push_back(fhElectronsFromPi0_z);
 	
@@ -748,8 +783,10 @@ void CbmAnaConversion::Exec(Option_t*)
 
 		if (mctrack->GetPdgCode() == 221) { // particle is eta
 			countEtaMC++;
-			TVector3 v;
+			TVector3 v, momentum;
 			mctrack->GetStartVertex(v);
+			mctrack->GetMomentum(momentum);
+			
 			if(v.Z() <= 4) {
 				countEtaMC_cut++;
 			}
@@ -757,6 +794,39 @@ void CbmAnaConversion::Exec(Option_t*)
 			if (motherId == -1) {
 				countEtaMC_fromPrimary++;
 				fhEta_pt->Fill(mctrack->GetPt() );
+				fhEta_pt_vs_rap->Fill(mctrack->GetPt(), mctrack->GetRapidity() );
+				fhEta_theta->Fill(momentum.Theta() * 180 / TMath::Pi() );
+				fhEta_theta_vs_rap->Fill(momentum.Theta() * 180 / TMath::Pi(), mctrack->GetRapidity() );
+			}
+		}
+
+
+		if (mctrack->GetPdgCode() == 113) { // particle is rho(770)^0
+			TVector3 v, momentum;
+			mctrack->GetStartVertex(v);
+			mctrack->GetMomentum(momentum);
+			
+			int motherId = mctrack->GetMotherId();
+			if (motherId == -1) {
+				fhRho_pt->Fill(mctrack->GetPt() );
+				fhRho_pt_vs_rap->Fill(mctrack->GetPt(), mctrack->GetRapidity() );
+				fhRho_theta->Fill(momentum.Theta() * 180 / TMath::Pi() );
+				fhRho_theta_vs_rap->Fill(momentum.Theta() * 180 / TMath::Pi(), mctrack->GetRapidity() );
+			}
+		}
+
+
+		if (mctrack->GetPdgCode() == 223) { // particle is omega(782)^0
+			TVector3 v, momentum;
+			mctrack->GetStartVertex(v);
+			mctrack->GetMomentum(momentum);
+			
+			int motherId = mctrack->GetMotherId();
+			if (motherId == -1) {
+				fhOmega_pt->Fill(mctrack->GetPt() );
+				fhOmega_pt_vs_rap->Fill(mctrack->GetPt(), mctrack->GetRapidity() );
+				fhOmega_theta->Fill(momentum.Theta() * 180 / TMath::Pi() );
+				fhOmega_theta_vs_rap->Fill(momentum.Theta() * 180 / TMath::Pi(), mctrack->GetRapidity() );
 			}
 		}
 
