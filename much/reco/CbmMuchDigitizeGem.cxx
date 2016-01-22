@@ -76,28 +76,9 @@ CbmMuchDigitizeGem::CbmMuchDigitizeGem(const char* digiFileName)
     fTimeBinWidth(1),
     fNTimeBins(200),
     fNdigis(0),
-    fTOT(0),
-  fTotalDriftTime(0.4/fDriftVelocity*10000), // 40 ns
-  fSigma(),
-  fMPV() 
+  fTOT(0),
+    fTotalDriftTime(0.4/fDriftVelocity*10000) // 40 ns
 {
-  fSigma[0] = new TF1("sigma_e","pol6",-5,10);
-  fSigma[0]->SetParameters(sigma_e);
-
-  fSigma[1] = new TF1("sigma_mu","pol6",-5,10);
-  fSigma[1]->SetParameters(sigma_mu);
-
-  fSigma[2] = new TF1("sigma_p","pol6",-5,10);
-  fSigma[2]->SetParameters(sigma_p);
-
-  fMPV[0]   = new TF1("mpv_e","pol6",-5,10);
-  fMPV[0]->SetParameters(mpv_e);
-
-  fMPV[1]   = new TF1("mpv_mu","pol6",-5,10);
-  fMPV[1]->SetParameters(mpv_mu);
-
-  fMPV[2]   = new TF1("mpv_p","pol6",-5,10);
-  fMPV[2]->SetParameters(mpv_p);
 }
 // -------------------------------------------------------------------------
 
@@ -176,9 +157,10 @@ InitStatus CbmMuchDigitizeGem::Init() {
 
 
 // -----   Public method Exec   --------------------------------------------
-void CbmMuchDigitizeGem::Exec(Option_t*) {
+void CbmMuchDigitizeGem::Exec(Option_t* opt) {
   // get current event to revert back at the end of exec
   Int_t currentEvent = FairRootManager::Instance()->GetInTree()->GetBranch("MCTrack")->GetReadEntry();
+  cout << "Event Number is "<< currentEvent << endl;
   fTimer.Start();
   fNdigis = 0;
   Int_t nPoints=0;
@@ -209,20 +191,31 @@ void CbmMuchDigitizeGem::Exec(Option_t*) {
     // Timur >
   }
 
+  // --- Loop over all MuchPoints and execute the ExecPoint method added by Vikas for Event by event digitization
+  if(!fDaq){
+  for (Int_t iPoint=0; iPoint<fPoints->GetEntriesFast(); iPoint++) {
+	const CbmMuchPoint* point = (const CbmMuchPoint*) fPoints->At(iPoint);
+  	nPoints++;
+	ExecPoint(point, iPoint);
+	}  // StsPoint loop
+  //
+  } // For time based digitization according to CbmMCBuffer based on Volker's Approch. Vikas
+	else {
   const CbmMuchPoint* point = dynamic_cast<const CbmMuchPoint*>(CbmMCBuffer::Instance()->GetNextPoint(kMUCH));
   while (point) {
     nPoints++;
-    ExecPoint(point);
+    //Index of the point will be taken in the ExecPoint Funcution.
+	ExecPoint(point,0);
     point = dynamic_cast<const CbmMuchPoint*>(CbmMCBuffer::Instance()->GetNextPoint(kMUCH));
   }
-
+  }
   // Add remaining digis
   vector<CbmMuchModule*> modules = fGeoScheme->GetModules();
-  for (UInt_t im=0;im<modules.size();im++){
+  for (Int_t im=0;im<modules.size();im++){
     if (modules[im]->GetDetectorType()!=1 && modules[im]->GetDetectorType()!=3) continue;
     CbmMuchModuleGem* module = (CbmMuchModuleGem*) modules[im];
     vector<CbmMuchPad*> pads = module->GetPads();
-    for (UInt_t ip=0;ip<pads.size();ip++) AddDigi(pads[ip]);
+    for (Int_t ip=0;ip<pads.size();ip++) AddDigi(pads[ip]);
   }
 
   fTimer.Stop();
@@ -242,9 +235,11 @@ void CbmMuchDigitizeGem::Finish(){
 
 
 // ------- Private method ExecAdvanced -------------------------------------
-Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point) {
+Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point, Int_t iPoint) {
   // TODO workaround to extract point index - to be reconsidered
-  Int_t iPoint = point->GetLink(0).GetIndex();
+  
+  //Added if in the beginning of the below line for getting correct iPoint number.
+  if(fDaq)iPoint = (point->GetLink(0)).GetIndex();
   TVector3 v1,v2,dv;
   point->PositionIn(v1);
   point->PositionOut(v2);
@@ -268,7 +263,7 @@ Bool_t CbmMuchDigitizeGem::ExecPoint(const CbmMuchPoint* point) {
     AddCharge(pad,fQMax,iPoint,point->GetTime(),0);
     return kTRUE;
   }
-
+  
   // Start of advanced digitization
   Int_t nElectrons = Int_t(GetNPrimaryElectronsPerCm(point)*dv.Mag());
   if (nElectrons<0) return kFALSE;
@@ -372,21 +367,22 @@ Int_t CbmMuchDigitizeGem::GasGain() {
 // -------------------------------------------------------------------------
 Double_t CbmMuchDigitizeGem::Sigma_n_e(Double_t Tkin, Double_t mass) {
   Double_t logT;
+  TF1 fPol6("fPol6","pol6",-5,10);
   if (mass < 0.1) {
     logT = log(Tkin * 0.511 / mass);
     if (logT > 9.21034)    logT = 9.21034;
     if (logT < min_logT_e) logT = min_logT_e;
-    return fSigma[0]->Eval(logT);
+    return fPol6.EvalPar(&logT,sigma_e);
   } else if (mass >= 0.1 && mass < 0.2) {
     logT = log(Tkin * 105.658 / mass);
     if (logT > 9.21034)    logT = 9.21034;
     if (logT < min_logT_mu) logT = min_logT_mu;
-    return fSigma[1]->Eval(logT);
+    return fPol6.EvalPar(&logT,sigma_mu);
   } else {
     logT = log(Tkin * 938.272 / mass);
     if (logT > 9.21034)    logT = 9.21034;
     if (logT < min_logT_p) logT = min_logT_p;
-    return fSigma[2]->Eval(logT);
+    return fPol6.EvalPar(&logT,sigma_p);
   }
 }
 // -------------------------------------------------------------------------
@@ -394,21 +390,22 @@ Double_t CbmMuchDigitizeGem::Sigma_n_e(Double_t Tkin, Double_t mass) {
 // -------------------------------------------------------------------------
 Double_t CbmMuchDigitizeGem::MPV_n_e(Double_t Tkin, Double_t mass) {
   Double_t logT;
+  TF1 fPol6("fPol6","pol6",-5,10);
   if (mass < 0.1) {
     logT = log(Tkin * 0.511 / mass);
     if (logT > 9.21034)    logT = 9.21034;
     if (logT < min_logT_e) logT = min_logT_e;
-    return fMPV[0]->Eval(logT);
+    return fPol6.EvalPar(&logT,mpv_e);
   } else if (mass >= 0.1 && mass < 0.2) {
     logT = log(Tkin * 105.658 / mass);
     if (logT > 9.21034)    logT = 9.21034;
     if (logT < min_logT_mu) logT = min_logT_mu;
-    return fMPV[1]->Eval(logT);
+    return fPol6.EvalPar(&logT,mpv_mu);
   } else {
     logT = log(Tkin * 938.272 / mass);
     if (logT > 9.21034)    logT = 9.21034;
     if (logT < min_logT_p) logT = min_logT_p;
-    return fMPV[2]->Eval(logT);
+    return fPol6.EvalPar(&logT,mpv_p);
   }
 }
 // -------------------------------------------------------------------------
@@ -417,7 +414,7 @@ Double_t CbmMuchDigitizeGem::MPV_n_e(Double_t Tkin, Double_t mass) {
 // -------------------------------------------------------------------------
 Double_t CbmMuchDigitizeGem::GetNPrimaryElectronsPerCm(const CbmMuchPoint* point){
   Int_t trackId = point->GetTrackID();
-//  Int_t eventId = point->GetEventID();
+  Int_t eventId = point->GetEventID();
   if (trackId < 0) return -1;
 
 
@@ -513,8 +510,6 @@ Bool_t CbmMuchDigitizeGem::AddDigi(CbmMuchPad* pad) {
   digi->SetTime(t1);
   gLogger->Debug1(MESSAGE_ORIGIN,"Pad: sector=%i channel=%i",pad->GetSectorIndex(),pad->GetChannelIndex());
   gLogger->Debug1(MESSAGE_ORIGIN,"New digi: sector=%i channel=%i",CbmMuchAddress::GetSectorIndex(digi->GetAddress()),CbmMuchAddress::GetChannelIndex(digi->GetAddress()));
-
-  match->Reset();
   
   if (fDaq){
     CbmMuchDigi* digLight = new CbmMuchDigi(digi,match);
@@ -523,7 +518,7 @@ Bool_t CbmMuchDigitizeGem::AddDigi(CbmMuchPad* pad) {
     new ((*fDigis)[fDigis->GetEntriesFast()]) CbmMuchDigi(digi);
     new ((*fDigiMatches)[fDigiMatches->GetEntriesFast()]) CbmMuchDigiMatch(match);
   }
-  match->Reset();
+  //match->Reset();
   fNdigis++;
   return kTRUE;
 }
