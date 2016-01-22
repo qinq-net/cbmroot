@@ -144,7 +144,7 @@ private:
    TH1D * fhNofEta_perEvent_cut;	// number of pi0 with cut on z-axis (z <= 10cm, i.e. generated before 10cm)
    TH1D * fhNofEta_perEvent_cut2;	// number of pi0 with cut motherId = -1
    TH1D * fhPi0_z;					// number of pi0 per z-bin
-   TH1D * fhPi0_z_cut;				// number of pi0 per z-bin with cut on acceptance (25° via x^2 + y^2 <= r^2 with r = z*tan 25°)
+   TH1D * fhPi0_z_cut;				// number of pi0 per z-bin with cut on acceptance (via x^2 + y^2 <= r^2 with r = z*tan)
    TH1D * fhPi0_pt;					// 
    TH2D * fhPi0_pt_vs_rap;			// 
    TH1D * fhPi0_theta;				// 

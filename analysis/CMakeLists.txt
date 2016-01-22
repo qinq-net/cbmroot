@@ -3,6 +3,7 @@ add_subdirectory (papa)
 add_subdirectory (much)
 add_subdirectory (flow)
 add_subdirectory(opencharm)
+add_subdirectory(conversion)
 #add_subdirectory (hyperon)
 
 Set(INCLUDE_DIRECTORIES
@@ -104,17 +105,6 @@ jpsiana/CbmAnaJpsiHist.cxx
 jpsiana/CbmAnaJpsiCandidate.cxx
 jpsiana/CbmAnaJpsiSuperEvent.cxx
 jpsiana/CbmAnaJpsiSuperEventReport.cxx
-
-conversion/CbmAnaConversion.cxx
-conversion/CbmAnaConversionTomography.cxx
-conversion/CbmAnaConversionRich.cxx
-#conversion/CbmAnaConversionKF.cxx
-conversion/CbmAnaConversionReco.cxx
-conversion/CbmAnaConversionPhotons.cxx
-conversion/CbmAnaConversionPhotons2.cxx
-conversion/CbmAnaConversionRecoFull.cxx
-conversion/CbmAnaConversionTest.cxx
-conversion/CbmAnaConversionTest2.cxx
 
 #photon/CbmTrdPhotonAnalysis.cxx
 )
