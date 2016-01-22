@@ -771,8 +771,8 @@ void CbmAnaConversion::Exec(Option_t*)
 				countPi0MC_fromPrimary++;
 				fhPi0_pt->Fill(mctrack->GetPt() );
 				fhPi0_pt_vs_rap->Fill(mctrack->GetPt(), mctrack->GetRapidity() );
-				fhPi0_theta->Fill(momentum.Theta() * 180 / TMath::Pi() );
-				fhPi0_theta_vs_rap->Fill(momentum.Theta() * 180 / TMath::Pi(), mctrack->GetRapidity() );
+				fhPi0_theta->Fill(momentum.Theta() * 180. / TMath::Pi() );
+				fhPi0_theta_vs_rap->Fill(momentum.Theta() * 180. / TMath::Pi(), mctrack->GetRapidity() );
 				fhPi0_z_cut->Fill(v.Z());
 			}
 			
@@ -795,8 +795,8 @@ void CbmAnaConversion::Exec(Option_t*)
 				countEtaMC_fromPrimary++;
 				fhEta_pt->Fill(mctrack->GetPt() );
 				fhEta_pt_vs_rap->Fill(mctrack->GetPt(), mctrack->GetRapidity() );
-				fhEta_theta->Fill(momentum.Theta() * 180 / TMath::Pi() );
-				fhEta_theta_vs_rap->Fill(momentum.Theta() * 180 / TMath::Pi(), mctrack->GetRapidity() );
+				fhEta_theta->Fill(momentum.Theta() * 180. / TMath::Pi() );
+				fhEta_theta_vs_rap->Fill(momentum.Theta() * 180. / TMath::Pi(), mctrack->GetRapidity() );
 			}
 		}
 
@@ -810,8 +810,8 @@ void CbmAnaConversion::Exec(Option_t*)
 			if (motherId == -1) {
 				fhRho_pt->Fill(mctrack->GetPt() );
 				fhRho_pt_vs_rap->Fill(mctrack->GetPt(), mctrack->GetRapidity() );
-				fhRho_theta->Fill(momentum.Theta() * 180 / TMath::Pi() );
-				fhRho_theta_vs_rap->Fill(momentum.Theta() * 180 / TMath::Pi(), mctrack->GetRapidity() );
+				fhRho_theta->Fill(momentum.Theta() * 180. / TMath::Pi() );
+				fhRho_theta_vs_rap->Fill(momentum.Theta() * 180. / TMath::Pi(), mctrack->GetRapidity() );
 			}
 		}
 
@@ -825,8 +825,8 @@ void CbmAnaConversion::Exec(Option_t*)
 			if (motherId == -1) {
 				fhOmega_pt->Fill(mctrack->GetPt() );
 				fhOmega_pt_vs_rap->Fill(mctrack->GetPt(), mctrack->GetRapidity() );
-				fhOmega_theta->Fill(momentum.Theta() * 180 / TMath::Pi() );
-				fhOmega_theta_vs_rap->Fill(momentum.Theta() * 180 / TMath::Pi(), mctrack->GetRapidity() );
+				fhOmega_theta->Fill(momentum.Theta() * 180. / TMath::Pi() );
+				fhOmega_theta_vs_rap->Fill(momentum.Theta() * 180. / TMath::Pi(), mctrack->GetRapidity() );
 			}
 		}
 

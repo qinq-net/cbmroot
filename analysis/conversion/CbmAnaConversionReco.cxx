@@ -579,18 +579,18 @@ void CbmAnaConversionReco::InvariantMassMC_all()
 							if(mcGrandmotherPdg1 == 111) {
 								fhInvariantMass_MC_pi0->Fill(invmass);
 								fhInvariantMass_MC_pi0_gg->Fill(invmass);
-								fhMC_electrons_theta->Fill(momentum1.Theta() );
-								fhMC_electrons_theta->Fill(momentum2.Theta() );
-								fhMC_electrons_theta->Fill(momentum3.Theta() );
-								fhMC_electrons_theta->Fill(momentum4.Theta() );
+								fhMC_electrons_theta->Fill(momentum1.Theta() * 180. / TMath::Pi() );
+								fhMC_electrons_theta->Fill(momentum2.Theta() * 180. / TMath::Pi() );
+								fhMC_electrons_theta->Fill(momentum3.Theta() * 180. / TMath::Pi() );
+								fhMC_electrons_theta->Fill(momentum4.Theta() * 180. / TMath::Pi() );
 								fhMC_electrons_p->Fill(momentum1.Mag() );
 								fhMC_electrons_p->Fill(momentum2.Mag() );
 								fhMC_electrons_p->Fill(momentum3.Mag() );
 								fhMC_electrons_p->Fill(momentum4.Mag() );
-								fhMC_electrons_theta_vs_p->Fill(momentum1.Theta(), momentum1.Mag() );
-								fhMC_electrons_theta_vs_p->Fill(momentum2.Theta(), momentum2.Mag() );
-								fhMC_electrons_theta_vs_p->Fill(momentum3.Theta(), momentum3.Mag() );
-								fhMC_electrons_theta_vs_p->Fill(momentum4.Theta(), momentum4.Mag() );
+								fhMC_electrons_theta_vs_p->Fill(momentum1.Theta() * 180. / TMath::Pi(), momentum1.Mag() );
+								fhMC_electrons_theta_vs_p->Fill(momentum2.Theta() * 180. / TMath::Pi(), momentum2.Mag() );
+								fhMC_electrons_theta_vs_p->Fill(momentum3.Theta() * 180. / TMath::Pi(), momentum3.Mag() );
+								fhMC_electrons_theta_vs_p->Fill(momentum4.Theta() * 180. / TMath::Pi(), momentum4.Mag() );
 							}
 							if(mcGrandmotherPdg1 == 221) {
 								fhInvariantMass_MC_eta->Fill(invmass);
@@ -612,18 +612,18 @@ void CbmAnaConversionReco::InvariantMassMC_all()
 							fhInvariantMass_MC_pi0_gepem->Fill(invmass);
 							fhInvariantMass_MC_pi0->Fill(invmass);
 							
-							fhMC_electrons_theta->Fill(momentum1.Theta() );
-							fhMC_electrons_theta->Fill(momentum2.Theta() );
-							fhMC_electrons_theta->Fill(momentum3.Theta() );
-							fhMC_electrons_theta->Fill(momentum4.Theta() );
+							fhMC_electrons_theta->Fill(momentum1.Theta() * 180. / TMath::Pi() );
+							fhMC_electrons_theta->Fill(momentum2.Theta() * 180. / TMath::Pi() );
+							fhMC_electrons_theta->Fill(momentum3.Theta() * 180. / TMath::Pi() );
+							fhMC_electrons_theta->Fill(momentum4.Theta() * 180. / TMath::Pi() );
 							fhMC_electrons_p->Fill(momentum1.Mag() );
 							fhMC_electrons_p->Fill(momentum2.Mag() );
 							fhMC_electrons_p->Fill(momentum3.Mag() );
 							fhMC_electrons_p->Fill(momentum4.Mag() );
-							fhMC_electrons_theta_vs_p->Fill(momentum1.Theta(), momentum1.Mag() );
-							fhMC_electrons_theta_vs_p->Fill(momentum2.Theta(), momentum2.Mag() );
-							fhMC_electrons_theta_vs_p->Fill(momentum3.Theta(), momentum3.Mag() );
-							fhMC_electrons_theta_vs_p->Fill(momentum4.Theta(), momentum4.Mag() );
+							fhMC_electrons_theta_vs_p->Fill(momentum1.Theta() * 180. / TMath::Pi(), momentum1.Mag() );
+							fhMC_electrons_theta_vs_p->Fill(momentum2.Theta() * 180. / TMath::Pi(), momentum2.Mag() );
+							fhMC_electrons_theta_vs_p->Fill(momentum3.Theta() * 180. / TMath::Pi(), momentum3.Mag() );
+							fhMC_electrons_theta_vs_p->Fill(momentum4.Theta() * 180. / TMath::Pi(), momentum4.Mag() );
 						}
 						// decay eta -> g e+ e- -> e+ e- e+ e-
 						if(  ((motherId1 == motherId2 && motherId3 == motherId4) && (mcMotherPdg1 == 22) && (mcMotherPdg3 == 221) && grandmotherId1 == motherId3)
@@ -634,19 +634,6 @@ void CbmAnaConversionReco::InvariantMassMC_all()
 						  || ((motherId1 == motherId4 && motherId2 == motherId3) && (mcMotherPdg1 == 221) && (mcMotherPdg2 == 22) && grandmotherId2 == motherId1)) {
 							Double_t invmass = Invmass_4particles(fMCTracklist_all[i], fMCTracklist_all[j], fMCTracklist_all[k], fMCTracklist_all[l]);
 							fhInvariantMass_MC_eta->Fill(invmass);
-							
-							fhMC_electrons_theta->Fill(momentum1.Theta() );
-							fhMC_electrons_theta->Fill(momentum2.Theta() );
-							fhMC_electrons_theta->Fill(momentum3.Theta() );
-							fhMC_electrons_theta->Fill(momentum4.Theta() );
-							fhMC_electrons_p->Fill(momentum1.Mag() );
-							fhMC_electrons_p->Fill(momentum2.Mag() );
-							fhMC_electrons_p->Fill(momentum3.Mag() );
-							fhMC_electrons_p->Fill(momentum4.Mag() );
-							fhMC_electrons_theta_vs_p->Fill(momentum1.Theta(), momentum1.Mag() );
-							fhMC_electrons_theta_vs_p->Fill(momentum2.Theta(), momentum2.Mag() );
-							fhMC_electrons_theta_vs_p->Fill(momentum3.Theta(), momentum3.Mag() );
-							fhMC_electrons_theta_vs_p->Fill(momentum4.Theta(), momentum4.Mag() );
 						}
 					}
 				}
