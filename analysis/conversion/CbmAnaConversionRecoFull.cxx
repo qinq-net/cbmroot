@@ -1921,6 +1921,12 @@ void CbmAnaConversionRecoFull::CombinePhotons()
 				Int_t electron12 = fVector_photons_pairs[a][1];
 				Int_t electron21 = fVector_photons_pairs[b][0];
 				Int_t electron22 = fVector_photons_pairs[b][1];
+				
+				
+				if(electron11 == electron12 || electron11 == electron21 || electron11 == electron22 || electron12 == electron21 || electron12 == electron22 || electron21 == electron22) {
+					cout << "CbmAnaConversionRecoFull: RecoFull_CombinePhotons()_DoubleIndex!" << endl;
+					continue;
+				}
 			
 				Double_t invmass = Invmass_4particlesRECO(fElectrons_momenta[electron11], fElectrons_momenta[electron12], fElectrons_momenta[electron21], fElectrons_momenta[electron22]);
 				fhPhotons_invmass->Fill(invmass);

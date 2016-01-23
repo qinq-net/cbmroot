@@ -806,8 +806,7 @@ void CbmAnaConversion::Exec(Option_t*)
 			mctrack->GetStartVertex(v);
 			mctrack->GetMomentum(momentum);
 			
-			int motherId = mctrack->GetMotherId();
-			if (motherId == -1) {
+			if (v.Z() <= 1) {
 				fhRho_pt->Fill(mctrack->GetPt() );
 				fhRho_pt_vs_rap->Fill(mctrack->GetPt(), mctrack->GetRapidity() );
 				fhRho_theta->Fill(momentum.Theta() * 180. / TMath::Pi() );
@@ -821,8 +820,7 @@ void CbmAnaConversion::Exec(Option_t*)
 			mctrack->GetStartVertex(v);
 			mctrack->GetMomentum(momentum);
 			
-			int motherId = mctrack->GetMotherId();
-			if (motherId == -1) {
+			if (v.Z() <= 1) {
 				fhOmega_pt->Fill(mctrack->GetPt() );
 				fhOmega_pt_vs_rap->Fill(mctrack->GetPt(), mctrack->GetRapidity() );
 				fhOmega_theta->Fill(momentum.Theta() * 180. / TMath::Pi() );
