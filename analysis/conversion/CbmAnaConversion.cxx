@@ -75,6 +75,7 @@ CbmAnaConversion::CbmAnaConversion()
     DoPhotons2(0),
     DoRecoFull(0),
     DoTest(0),
+    fhPdgCodes(NULL),
     fhNofElPrim(NULL),
     fhNofElSec(NULL),
     fhNofElAll(NULL),
@@ -342,6 +343,7 @@ void CbmAnaConversion::InitHistograms()
 	fHistoList_furtherAnalyses.clear();
 	
 	
+	fhPdgCodes				= new TH1D("fhPdfCodes", "fhPdgCodes;pdg code;#", 1000, 0, 1000);
 	fhNofElPrim				= new TH1D("fhNofElPrim", "fhNofElPrim;Nof prim El;Entries", 10., -0.5, 9.5);
 	fhNofElSec				= new TH1D("fhNofElSec", "fhNofElSec;Nof Sec El;Entries", 20., -0.5, 19.5);
 	fhNofElAll				= new TH1D("fhNofElAll", "fhNofElAll;Nof All El;Entries", 30., -0.5, 29.5);
@@ -374,6 +376,7 @@ void CbmAnaConversion::InitHistograms()
 	
 	fhElectronSources		= new TH1D("fhElectronSources", "fhElectronSources;Source;Entries", 6., 0., 6.);
 	fhElectronsFromPi0_z	= new TH1D("fhElectronsFromPi0_z", "fhElectronsFromPi0_z (= pos. of gamma conversion);z [cm];Entries", 600., -0.5, 599.5);
+	fHistoList.push_back(fhPdgCodes);
 	fHistoList.push_back(fhNofPi0_perEvent);
 	fHistoList.push_back(fhNofPi0_perEvent_cut);
 	fHistoList.push_back(fhNofPi0_perEvent_cut2);
@@ -741,7 +744,7 @@ void CbmAnaConversion::Exec(Option_t*)
    
 		FillMCTracklists(mctrack, i);	// fill tracklists for further analyses
 
-
+		fhPdgCodes->Fill(TMath::Abs(mctrack->GetPdgCode()) );
 
 		if (mctrack->GetMotherId() == -1) { countPrimPart++; }   
 		if (mctrack->GetMotherId() == -1 && TMath::Abs( mctrack->GetPdgCode()) == 11) { countPrimEl++; }   
@@ -781,7 +784,7 @@ void CbmAnaConversion::Exec(Option_t*)
 		}
 
 
-		if (mctrack->GetPdgCode() == 221) { // particle is eta
+		if (TMath::Abs(mctrack->GetPdgCode() ) == 221) { // particle is eta
 			countEtaMC++;
 			TVector3 v, momentum;
 			mctrack->GetStartVertex(v);
@@ -801,7 +804,7 @@ void CbmAnaConversion::Exec(Option_t*)
 		}
 
 
-		if (mctrack->GetPdgCode() == 113) { // particle is rho(770)^0
+		if (TMath::Abs(mctrack->GetPdgCode() ) == 113) { // particle is rho(770)^0
 			TVector3 v, momentum;
 			mctrack->GetStartVertex(v);
 			mctrack->GetMomentum(momentum);
@@ -815,7 +818,7 @@ void CbmAnaConversion::Exec(Option_t*)
 		}
 
 
-		if (mctrack->GetPdgCode() == 223) { // particle is omega(782)^0
+		if (TMath::Abs(mctrack->GetPdgCode() ) == 223) { // particle is omega(782)^0
 			TVector3 v, momentum;
 			mctrack->GetStartVertex(v);
 			mctrack->GetMomentum(momentum);

@@ -132,6 +132,7 @@ private:
 	Int_t DoRecoFull;
 	Int_t DoTest;
    
+   TH1D * fhPdgCodes;
    TH1D * fhNofElPrim;
    TH1D * fhNofElSec;
    TH1D * fhNofElAll;
