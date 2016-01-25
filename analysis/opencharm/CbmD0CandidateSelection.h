@@ -52,7 +52,7 @@ class CbmD0CandidateSelection : public FairTask
   void Exec(Option_t* option);
   
   void SetHistoFileName( TString name ){ fHistoFileName = name;  };
-  Double_t SetKFParticle(Bool_t useKFparticle) { fUseKF = useKFparticle;};
+//  Double_t SetKFParticle(Bool_t useKFparticle) { fUseKF = useKFparticle;};
   void SetTestMode ( Bool_t testMode ) { bTestMode = testMode; };
 
 
