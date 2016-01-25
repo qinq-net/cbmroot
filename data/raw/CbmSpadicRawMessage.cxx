@@ -9,15 +9,18 @@
 
 // -----   Default constructor   -------------------------------------------
 CbmSpadicRawMessage::CbmSpadicRawMessage() 
- : CbmRawMessage(), 
-   fSuperEpoch(-1),  
-   fTriggerType(-1),
-   fInfoType(-1),
-   fStopType(-1),
-   fGroupId(-1),
-   fBufferOverflowCount(-1),
-   fNrSamples(-1),
-   fSamples()
+  : CbmRawMessage(), 
+    fIsHit(false),
+    fIsInfo(false),
+    fIsEpoch(false),
+    fSuperEpoch(-1),  
+    fTriggerType(-1),
+    fInfoType(-1),
+    fStopType(-1),
+    fGroupId(-1),
+    fBufferOverflowCount(-1),
+    fNrSamples(-1),
+    fSamples()
 {
 }
 
@@ -27,22 +30,49 @@ CbmSpadicRawMessage::CbmSpadicRawMessage(Int_t EquipmentID, Int_t SourceAddress,
 					 Int_t InfoType, Int_t StopType, 
 					 Int_t GroupId, Int_t BufferOverflowCounter, 
 					 Int_t NrSamples, Int_t* Samples)
- : CbmRawMessage(EquipmentID, SourceAddress, ChannelId, EpochMarker, Time),
-   fSuperEpoch(SuperEpoch),
-   fTriggerType(TriggerType),
-   fInfoType(InfoType),
-   fStopType(StopType),
-   fGroupId(GroupId),
-   fBufferOverflowCount(BufferOverflowCounter),
-   fNrSamples(NrSamples),
-   fSamples()
+  : CbmRawMessage(EquipmentID, SourceAddress, ChannelId, EpochMarker, Time),
+    fIsHit(false),
+    fIsInfo(false),
+    fIsEpoch(false),
+    fSuperEpoch(SuperEpoch),
+    fTriggerType(TriggerType),
+    fInfoType(InfoType),
+    fStopType(StopType),
+    fGroupId(GroupId),
+    fBufferOverflowCount(BufferOverflowCounter),
+    fNrSamples(NrSamples),
+    fSamples()
 {
   for (Int_t i = 0; i < NrSamples; ++i) {
     fSamples[i] = Samples[i];
   }
 
 }
+CbmSpadicRawMessage::CbmSpadicRawMessage(Int_t EquipmentID, Int_t SourceAddress, Int_t ChannelId,
+					 Int_t EpochMarker, Int_t Time, 
+					 Int_t SuperEpoch, Int_t TriggerType,
+					 Int_t InfoType, Int_t StopType, 
+					 Int_t GroupId, Int_t BufferOverflowCounter, 
+					 Int_t NrSamples, Int_t* Samples,
+					 Bool_t isHit, Bool_t isInfo, Bool_t isEpoch)
+  : CbmRawMessage(EquipmentID, SourceAddress, ChannelId, EpochMarker, Time),
+    fIsHit(isHit),
+    fIsInfo(isInfo),
+    fIsEpoch(isEpoch)
+    fSuperEpoch(SuperEpoch),
+    fTriggerType(TriggerType),
+    fInfoType(InfoType),
+    fStopType(StopType),
+    fGroupId(GroupId),
+    fBufferOverflowCount(BufferOverflowCounter),
+    fNrSamples(NrSamples),
+    fSamples()
+{
+  for (Int_t i = 0; i < NrSamples; ++i) {
+    fSamples[i] = Samples[i];
+  }
 
+}
 // -------------------------------------------------------------------------
 
 ULong_t CbmSpadicRawMessage::GetFullTime() 

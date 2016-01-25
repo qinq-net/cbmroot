@@ -36,6 +36,10 @@ class CbmSpadicRawMessage : public CbmRawMessage
 		      Int_t InfoType, Int_t StopType, Int_t GroupId, Int_t BufferOverflowCounter, 
 		      Int_t NrSamples, Int_t* Samples);
 
+  CbmSpadicRawMessage(Int_t EquipmentID, Int_t SourceAddress, Int_t ChannelId,
+		      Int_t EpochMarker, Int_t Time, Int_t SuperEpoch, Int_t TriggerType,
+		      Int_t InfoType, Int_t StopType, Int_t GroupId, Int_t BufferOverflowCounter, 
+		      Int_t NrSamples, Int_t* Samples, Bool_t isHit, Bool_t isInfo, Bool_t isEpoch);
 	
   /** Destructor  **/
   virtual ~CbmSpadicRawMessage() { };
@@ -50,7 +54,20 @@ class CbmSpadicRawMessage : public CbmRawMessage
   ULong_t GetFullTime();
   Int_t GetSuperEpoch() { return fSuperEpoch; }
   Int_t GetBufferOverflowCount() {return fBufferOverflowCount; }
+  /*
+  void SetHit(Bool_t stat) {fIsHit = stat; }
+  void SetInfo(Bool_t stat) {fIsInfo = stat; }
+  void SetEpoch(Bool_t stat) {fIsEpoch = stat; }
+  */
+  Bool_t GetHit() { fIsHit; }
+  Bool_t GetInfo() { fIsInfo; }
+  Bool_t GetEpoch() { fIsEpoch; }
+
  private:
+
+  Bool_t fIsHit;
+  Bool_t fIsInfo;
+  Bool_t fIsEpoch;
 
   Int_t fSuperEpoch;
   Int_t fTriggerType;
@@ -61,7 +78,7 @@ class CbmSpadicRawMessage : public CbmRawMessage
   Int_t fNrSamples;
   Int_t fSamples[32];
 
-  ClassDef(CbmSpadicRawMessage,4);
+  ClassDef(CbmSpadicRawMessage,5);
 
 };
 
