@@ -60,6 +60,9 @@ void CbmLitTofQaReport::Draw()
 	DrawH1ByPattern("hmp_Tof_Time_FirstTrack");
 
 	DrawH1ByPattern("hmp_TofTrack_All_.+");
+        
+        DrawH1ByPattern("hmp_Tof_Residual_.+");
+        DrawH1ByPattern("hmp_Tof_Track_Chi2_.+");
 
 	FitHistograms();
 }

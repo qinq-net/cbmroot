@@ -19,7 +19,10 @@ class CbmLitGlobalElectronId;
 
 using std::string;
 using std::vector;
+using std::list;
 using std::multimap;
+
+class FairMCPoint;
 
 
 /**
@@ -175,7 +178,7 @@ private:
          const string& detName);
 
    vector<string> CreateGlobalTrackingHistogramNames(
-         const vector<string>& detectors);
+         const vector<string>& detectors, const vector<list<string> >& stats);
 
    vector<string> CreateGlobalTrackingHistogramNames();
 
@@ -194,6 +197,13 @@ private:
     * multimap <MC track index, reconstructed track index>.
     */
    void ProcessGlobalTracks();
+
+   /**
+    * \brief Loop over the TOF hits
+    * Check which MC tracks it can be attributed to.
+    * *TofGenHit* are filled there.
+    */
+   void ProcessTof();
 
    /**
     * \brief Loop over the reconstructed RICH rings.
@@ -325,6 +335,15 @@ private:
    TClonesArray* fTrdMatches; // CbmTrackMatchNew array
    TClonesArray* fTofPoints; // CbmTofPoint array
    TClonesArray* fTofHits; // CbmTofHit array
+   TClonesArray* fTofDigiMatches; // CbmMatch array
+   TClonesArray* fTofDigiMatchPoints;// CbmMatch array
+
+   enum
+   {
+	   TofGenHit, TofGenHitRobust, TofBoundAll, TofBoundRight, TofBoundRobust
+   };
+
+   vector<string> fTofBindingStats;
 
    // Global track segment name maps to multimap <MC track index, reconstructed track index>
    map<string, multimap<Int_t, Int_t> > fMcToRecoMap;

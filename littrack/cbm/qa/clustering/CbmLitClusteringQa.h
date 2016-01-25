@@ -184,6 +184,11 @@ private:
 
     TClonesArray* fTofPoints; // CbmTofPoint array
     TClonesArray* fTofHits; // CbmTofHit array
+    TClonesArray* fTofHitMatches;// CbmMatch array
+    TClonesArray* fTofDigiMatches;// CbmMatch array
+    TClonesArray* fTofDigiMatchPoints; // CbmMatch array
+    TClonesArray* fTofRealPoints;// CbmTofPoint array
+    TClonesArray* fTofMatchRealPoints;// CbmMatch array
 
     string fMuchDigiFileName;
 

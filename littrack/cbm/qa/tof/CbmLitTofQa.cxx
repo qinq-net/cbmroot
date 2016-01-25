@@ -23,11 +23,15 @@
 #include <boost/assign/list_of.hpp>
 #include <vector>
 #include <cmath>
+#include "utils/CbmLitConverter.h"
+#include "data/CbmLitPixelHit.h"
 using std::vector;
 using std::pair;
 using boost::assign::list_of;
 using std::min;
 using std::sqrt;
+using std::map;
+using std::list;
 
 CbmLitTofQa::CbmLitTofQa():
    fIsFixedBounds(true),
@@ -40,6 +44,8 @@ CbmLitTofQa::CbmLitTofQa():
    fStsTracks(NULL),
    fStsTrackMatches(NULL),
    fTofHits(NULL),
+   fTofDigiMatches(NULL),
+   fTofDigiMatchPoints(NULL),
    fTofPoints(NULL),
    fTofTracks(NULL),
    fMCTracks(NULL),
@@ -64,6 +70,10 @@ InitStatus CbmLitTofQa::Init()
    CreateHistograms();
    ReadDataBranches();
    fKFFitter.Init();
+   CbmLitToolFactory* factory = CbmLitToolFactory::Instance();
+   fFieldPropagator = factory->CreateTrackPropagator("lit");
+   fLinePropagator = factory->CreateTrackPropagator("line");
+   fFilter = factory->CreateTrackUpdate("kalman");
    return kSUCCESS;
 }
 
@@ -87,6 +97,8 @@ void CbmLitTofQa::Finish()
    delete report;
 }
 
+static TClonesArray* globalTofMatches = 0;
+
 void CbmLitTofQa::ReadDataBranches()
 {
    FairRootManager* ioman = FairRootManager::Instance();
@@ -96,10 +108,14 @@ void CbmLitTofQa::ReadDataBranches()
    fStsTracks = (TClonesArray*) ioman->GetObject("StsTrack");
    fStsTrackMatches = (TClonesArray*) ioman->GetObject("StsTrackMatch");
    fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
+   fTofDigiMatches = (TClonesArray*) ioman->GetObject("TofDigiMatch");
+   fTofDigiMatchPoints = (TClonesArray*) ioman->GetObject("TofDigiMatchPoints");
    fTofPoints = (TClonesArray*) ioman->GetObject("TofPoint");
    fTofTracks = (TClonesArray*) ioman->GetObject("TofTrack");
    fMCTracks = (TClonesArray*) ioman->GetObject("MCTrack");
    fPrimVertex = (CbmVertex*) ioman->GetObject("PrimaryVertex");
+   
+   globalTofMatches = (TClonesArray*) ioman->GetObject("TofHitMatch");
 }
 
 void CbmLitTofQa::FillTrackCategoriesAndAcceptanceFunctions()
@@ -158,6 +174,14 @@ void CbmLitTofQa::CreateHistograms()
    fHM->Add(name, new TH1F(name.c_str(), string(name + ";Number of tracks;Counter").c_str(), 100, 0., 100.));
    name = "hmp_Tof_Time_FirstTrack";
    fHM->Add(name, new TH1F(name.c_str(), string(name + ";Time [ns];Counter").c_str(), 2000, 0., 36.));
+   name = "hmp_Tof_Residual_X";
+   fHM->Add(name, new TH1F(name.c_str(), string(name + ";Distance [cm]").c_str(), 200, -10., 10.));
+   name = "hmp_Tof_Residual_Y";
+   fHM->Add(name, new TH1F(name.c_str(), string(name + ";Distance [cm]").c_str(), 200, -10., 10.));
+   name = "hmp_Tof_Track_Chi2_MC";
+   fHM->Add(name, new TH1F(name.c_str(), string(name + ";Units").c_str(), 500, 0., 500.));
+   name = "hmp_Tof_Track_Chi2_Hit";
+   fHM->Add(name, new TH1F(name.c_str(), string(name + ";Units").c_str(), 500, 0., 500.));
 }
 
 void CbmLitTofQa::ProcessMC()
@@ -179,6 +203,14 @@ void CbmLitTofQa::ProcessMC()
    }
 }
 
+struct TofPointInfo
+{
+    Double_t x;
+    Double_t y;
+    Double_t z;
+    set<const CbmTofHit*> genHits;
+};
+
 void CbmLitTofQa::ProcessGlobalTracks()
 {
    Double_t timeZeroReco = 0.0;
@@ -186,17 +218,140 @@ void CbmLitTofQa::ProcessGlobalTracks()
    Double_t timeFirstTrack = 100.; // ns
    Double_t timeZeroA = 0.; // ns
    Int_t nofTracksForTimeZero = 0;
+   
+   Int_t fPDG = 211;
+   
+   map<Int_t, list<const CbmTofHit*> > mcTofPointHits;
+   Double_t minTofHitZ = std::numeric_limits<Double_t>::max();
+   Int_t nofTofHits = fTofHits->GetEntriesFast();
+   
+   for (Int_t iHit = 0; iHit < nofTofHits; ++iHit)
+   {
+       const CbmTofHit* tofHit = static_cast<const CbmTofHit*>(fTofHits->At(iHit));
+       
+       if (tofHit->GetZ() < minTofHitZ)
+           minTofHitZ = tofHit->GetZ();
+       
+       const CbmMatch* tofDigiMatch = static_cast<const CbmMatch*>(fTofDigiMatches->At(iHit));
+       const vector<CbmLink>& tofDigiLinks = tofDigiMatch->GetLinks();
+       
+       for (vector<CbmLink>::const_iterator digiIt = tofDigiLinks.begin(); digiIt != tofDigiLinks.end(); ++digiIt)
+       {
+           const CbmMatch* tofPointMatch = static_cast<const CbmMatch*>(fTofDigiMatchPoints->At(digiIt->GetIndex()));
+           const vector<CbmLink>& tofPointLinks = tofPointMatch->GetLinks();
+           
+           for (vector<CbmLink>::const_iterator ptIt = tofPointLinks.begin(); ptIt != tofPointLinks.end(); ++ptIt)
+               mcTofPointHits[ptIt->GetIndex()].push_back(tofHit);
+       }
+   }
+   
+   map<Int_t, map<Int_t, list<Int_t> > > mcTrackTofPoints;// Grouped by track Id and then detector Id
+   Int_t nofTofPoints = fTofPoints->GetEntriesFast();
+   
+   for (Int_t iPoint = 0; iPoint < nofTofPoints; ++iPoint)
+   {
+       const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*> (fTofPoints->At(iPoint));
+       mcTrackTofPoints[tofPoint->GetTrackID()][tofPoint->GetDetectorID()].push_back(iPoint);
+   }
+   
+   map<Int_t, list<TofPointInfo> > mcTrackAvgTofInfos;
+   
+   for (map<Int_t, map<Int_t, list<Int_t> > >::const_iterator i = mcTrackTofPoints.begin(); i != mcTrackTofPoints.end(); ++i)
+   {       
+       for (map<Int_t, list<Int_t> >::const_iterator j = i->second.begin(); j != i->second.end(); ++j)
+       {
+            TofPointInfo avgInfo;
+            Double_t avgX = 0;
+            Double_t avgY = 0;
+            Double_t avgZ = 0;
+            Int_t ptCount = 0;
+            
+            for (list<Int_t>::const_iterator k = j->second.begin(); k != j->second.end(); ++k)
+            {
+                const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*> (fTofPoints->At(*k));
+                avgX += tofPoint->GetX();
+                avgY += tofPoint->GetY();
+                avgZ += tofPoint->GetZ();
+                ++ptCount;
+                map<Int_t, list<const CbmTofHit*> >::const_iterator hitIt = mcTofPointHits.find(*k);
+                
+                if (hitIt != mcTofPointHits.end())
+                    avgInfo.genHits.insert(hitIt->second.begin(), hitIt->second.end());
+            }
+            
+            avgX /= ptCount;
+            avgY /= ptCount;
+            avgZ /= ptCount;
+            avgInfo.x = avgX;
+            avgInfo.y = avgY;
+            avgInfo.z = avgZ;
+            
+            mcTrackAvgTofInfos[i->first].push_back(avgInfo);
+       }
+   }
 
    Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
    for (Int_t iTrack = 0; iTrack < nofGlobalTracks; iTrack++) {
       const CbmGlobalTrack* globalTrack = static_cast<const CbmGlobalTrack*>(fGlobalTracks->At(iTrack));
       Int_t stsId = globalTrack->GetStsTrackIndex();
       Int_t tofId = globalTrack->GetTofHitIndex();
-      if (stsId < 0 || tofId < 0) continue; // We need both STS track and TOF hit
+      
+      if (stsId < 0) continue; // We need both STS track further
 
       CbmStsTrack* stsTrack = static_cast<CbmStsTrack*>(fStsTracks->At(stsId));
       const CbmTrackMatchNew* stsMatch = static_cast<const CbmTrackMatchNew*>(fStsTrackMatches->At(stsId));
       Int_t stsMCTrackId = stsMatch->GetMatchedLink().GetIndex();
+      
+      map<Int_t, list<TofPointInfo> >::const_iterator mcTofIter = mcTrackAvgTofInfos.find(stsMCTrackId);
+      
+      if (mcTofIter != mcTrackAvgTofInfos.end() && !mcTofIter->second.empty())
+      {
+          for (list<TofPointInfo>::const_iterator i = mcTofIter->second.begin(); i != mcTofIter->second.end(); ++i)
+          {
+                TofPointInfo tofInfo = *i;
+                FairTrackParam parSts = FairTrackParam(*stsTrack->GetParamLast());
+                CbmLitTrackParam par;
+                CbmLitConverter::FairTrackParamToCbmLitTrackParam(&parSts, &par);
+          
+                if (fFieldPropagator->Propagate(&par, minTofHitZ, fPDG) != kLITERROR)
+                {
+                    fLinePropagator->Propagate(&par, tofInfo.z, fPDG);
+                    Double_t dx = par.GetX() - tofInfo.x;
+                    Double_t dy = par.GetY() - tofInfo.y;
+                    fHM->H1("hmp_Tof_Residual_X")->Fill(dx);
+                    fHM->H1("hmp_Tof_Residual_Y")->Fill(dy);
+                    
+                    for (set<const CbmTofHit*>::const_iterator j = tofInfo.genHits.begin(); j != tofInfo.genHits.end(); ++j)
+                    {
+                        Double_t chi = 0;
+                        CbmLitTrackParam tpar(par);
+                        CbmLitPixelHit hit;
+                        CbmLitConverter::CbmPixelHitToCbmLitPixelHit(*j, 0, &hit);
+                        hit.SetX(tofInfo.x);
+                        hit.SetY(tofInfo.y);
+                        hit.SetZ(tofInfo.z);
+                        fFilter->Update(&tpar, &hit, chi);
+                        fHM->H1("hmp_Tof_Track_Chi2_MC")->Fill(chi);
+                        
+                        CbmLitTrackParam par2;
+                        CbmLitConverter::FairTrackParamToCbmLitTrackParam(&parSts, &par2);
+                        
+                        if (fFieldPropagator->Propagate(&par2, minTofHitZ, fPDG) != kLITERROR)
+                        {
+                            fLinePropagator->Propagate(&par2, (*j)->GetZ(), fPDG);
+                            chi = 0;
+                            CbmLitTrackParam tpar2(par2);
+                            CbmLitPixelHit hit2;
+                            CbmLitConverter::CbmPixelHitToCbmLitPixelHit(*j, 0, &hit2);
+                            fFilter->Update(&tpar2, &hit2, chi);
+                            fHM->H1("hmp_Tof_Track_Chi2_Hit")->Fill(chi);
+                        }
+                    }
+                }
+          }
+      }
+      
+      if (tofId < 0) continue; // Starting from here we need both STS track and TOF hit
 
       const CbmTofHit* tofHit = static_cast<const CbmTofHit*>(fTofHits->At(tofId));
       Int_t tofMCPointId = tofHit->GetRefId();
@@ -275,6 +430,16 @@ void CbmLitTofQa::ProcessTofHits()
       Int_t tofMCTrackId = tofPoint->GetTrackID();
 
       fHM->H1("hmp_Tof_dTime")->Fill(1000*(tofPoint->GetTime() - tofHit->GetTime()));
+      
+      /*const CbmMatch* hitMatch = static_cast<const CbmMatch*> (globalTofMatches->At(iHit));
+      const vector<CbmLink>& mcLinks = hitMatch->GetLinks();
+      std::cout << "TOF hit x = " << tofHit->GetX() << ", y = " << tofHit->GetY() << ", z = " << tofHit->GetZ() << std::endl;
+      
+      for (vector<CbmLink>::const_iterator itMC = mcLinks.begin(); itMC != mcLinks.end(); ++itMC)
+      {
+          const CbmTofPoint* tofPoint = static_cast<const CbmTofPoint*>(fTofPoints->At(itMC->GetIndex()));
+          std::cout << "TOF MC point x = " << tofPoint->GetX() << ", y = " << tofPoint->GetY() << ", z = " << tofPoint->GetZ() << std::endl;
+      }*/
    }
 }
 
