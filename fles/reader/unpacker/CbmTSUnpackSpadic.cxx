@@ -69,13 +69,14 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
       
       Int_t link = ts.descriptor(component, 0).eq_id;
       Int_t address = addr;
-
+      Bool_t isInfo(false), isHit(false), isEpoch(false);
       if ( mp->is_epoch_marker() ) { 
+	isEpoch = true;
         FillEpochInfo(link, addr, mp->epoch_count());
       } 
       if ( mp->is_info() ){
 	//std::cout << "InfoMessage found" << std::endl;
-
+	isInfo = true;
 	GetEpochInfo(link, addr);
 
         Int_t triggerType = -1;
@@ -91,12 +92,13 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	new( (*fSpadicRaw)[fSpadicRaw->GetEntriesFast()] )
 	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
 			      fSuperEpoch, triggerType, infoType, stopType, groupId,
-			      bufferOverflowCounter, samples, sample_values);
+			      bufferOverflowCounter, samples, sample_values,
+			      isHit, isInfo, isEpoch);
 	delete[] sample_values;
       }
 
       if ( mp->is_hit() ) { 
-
+	isHit = true;
 	GetEpochInfo(link, addr);
 	Int_t triggerType = -1;
 	Int_t stopType = -1;
@@ -128,7 +130,8 @@ Bool_t CbmTSUnpackSpadic::DoUnpack(const fles::Timeslice& ts, size_t component)
 	new( (*fSpadicRaw)[fSpadicRaw->GetEntriesFast()] )
 	  CbmSpadicRawMessage(link, address, channel, fEpochMarker, time, 
 			      fSuperEpoch, triggerType, infoType, stopType, groupId,
-			      bufferOverflowCounter, samples, sample_values);
+			      bufferOverflowCounter, samples, sample_values,
+			      isHit, isInfo, isEpoch);
 	++counter;
 	delete[] sample_values;
       }
