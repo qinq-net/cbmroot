@@ -53,7 +53,7 @@ class CbmTSUnpackSpadic : public CbmTSUnpack
   CbmTSUnpackSpadic(const CbmTSUnpackSpadic&);
   CbmTSUnpackSpadic operator=(const CbmTSUnpackSpadic&);
 
-  ClassDef(CbmTSUnpackSpadic, 1)
+  ClassDef(CbmTSUnpackSpadic, 2)
 };
 
 #endif
