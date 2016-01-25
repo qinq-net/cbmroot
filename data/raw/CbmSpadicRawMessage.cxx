@@ -58,7 +58,7 @@ CbmSpadicRawMessage::CbmSpadicRawMessage(Int_t EquipmentID, Int_t SourceAddress,
   : CbmRawMessage(EquipmentID, SourceAddress, ChannelId, EpochMarker, Time),
     fIsHit(isHit),
     fIsInfo(isInfo),
-    fIsEpoch(isEpoch)
+    fIsEpoch(isEpoch),
     fSuperEpoch(SuperEpoch),
     fTriggerType(TriggerType),
     fInfoType(InfoType),
