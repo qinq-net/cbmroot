@@ -333,12 +333,12 @@ Double_t  CbmD0CandidatesSE::GetPairMomentum( TVector3& mom1, TVector3& mom2 ){
     return PairMomentum;
 }
 // -------------------------------------------------------------------------
-
+ /*
 
 //-----------------------------------------------------------------------------------------
 
 Double_t  CbmD0CandidatesSE::GetEnergy1( CbmD0TrackCandidate* tr1){
- /*
+
     TVector3 mom;
     tr1->Momentum(mom);
     CbmStsTrack* stsTr;
@@ -346,8 +346,8 @@ Double_t  CbmD0CandidatesSE::GetEnergy1( CbmD0TrackCandidate* tr1){
     Double_t Mass     = TDatabasePDG::Instance()->GetParticle( stsTr->GetPidHypo() )->Mass();
     Double_t Momentum = mom.Mag();
     Double_t Energy   = sqrt(Mass*Mass + Momentum*Momentum);
-     */
-    return 0;
+
+    return Energy;
 }
 // -------------------------------------------------------------------------
 
@@ -355,7 +355,7 @@ Double_t  CbmD0CandidatesSE::GetEnergy1( CbmD0TrackCandidate* tr1){
 //-----------------------------------------------------------------------------------------
 
 Double_t  CbmD0CandidatesSE::GetEnergy2( CbmD0TrackCandidate* tr1){
- /*
+
     TVector3 mom;
     tr1->Momentum(mom);
     CbmStsTrack* stsTr;
@@ -363,8 +363,8 @@ Double_t  CbmD0CandidatesSE::GetEnergy2( CbmD0TrackCandidate* tr1){
     Double_t Mass     = TDatabasePDG::Instance()->GetParticle( stsTr->GetPidHypo() )->Mass();
     Double_t Momentum = mom.Mag();
     Double_t Energy   = sqrt(Mass*Mass + Momentum*Momentum);
-    */
-    return 0;
+
+    return Energy;
 }
 // -------------------------------------------------------------------------
 
@@ -386,7 +386,7 @@ Double_t  CbmD0CandidatesSE::GetPairEnergy( CbmD0TrackCandidate* tr1, CbmD0Track
 //-----------------------------------------------------------------------------------------
 
 Double_t  CbmD0CandidatesSE::GetIM( CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2){
- /*
+
     TVector3 mom1;
     TVector3 mom2;
     tr1->Momentum(mom1);
@@ -415,8 +415,8 @@ Double_t  CbmD0CandidatesSE::GetIM( CbmD0TrackCandidate* tr1, CbmD0TrackCandidat
 
     Double_t p1p2 = Px1*Px2 + Py1*Py2 + Pz1*Pz2;
     Double_t IM   = sqrt( Mass1*Mass1 + Mass2*Mass2 + 2*( Energy1*Energy2 - p1p2 ) );
-     */
-    return 0;
+
+    return IM;
 }
 // -------------------------------------------------------------------------
 
@@ -568,6 +568,6 @@ Double_t CbmD0CandidatesSE::BoostMomentum( TVector3& mom1, TVector3& mom2, CbmD0
 
     return cosA;
 }
-
+*/
 //-----------------------------------------------------------------------------------------
 ClassImp(CbmD0CandidatesSE)

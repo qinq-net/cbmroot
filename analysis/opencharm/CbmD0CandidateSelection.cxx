@@ -3,47 +3,30 @@
 //includes from cbm
 #include "CbmStsTrack.h"
 #include "CbmVertex.h"
-#include "CbmStsKFTrackFitter.h"
 #include "CbmMCTrack.h"
 #include "CbmKFTrack.h"
 #include "CbmTrackMatch.h"
-#include "CbmD0CandidateSelection.h"
-#include "CbmD0Candidate.h"
-#include "CbmD0TrackCandidate.h"
+#include "CbmD0CandidateSelection.h" 
 #include "CbmD0Tools.h"
 
-
 //includes from ROOT
-#include "TNtuple.h"
 #include "TClonesArray.h"
 #include "TVector3.h"
-#include "TH1F.h"
-#include "TH2F.h"
-
 
 //includes from Fair
 #include "FairRootManager.h"
 
-
 //includes from KF
 #include "CbmKF.h"
-#include "CbmKFMath.h"
-#include "CbmKFHit.h"
 #include "CbmKFTrack.h"
 #include "CbmKFVertex.h"
 #include "KFParticle.h"
 #include "KFPVertex.h"
-#include "CbmKFFieldMath.h"
-#include "CbmKFTrackInterface.h"
-#include "CbmKFSecondaryVertexFinder.h"
-#include "CbmKFParticleInterface.h"
-
 
 // Includes from C++
 #include <iostream>
 #include <iomanip>
 #include <vector>
-
 
 using std::cout;
 using std::endl;
@@ -59,25 +42,63 @@ using std::vector;
 
 
 // -------------------------------------------------------------------------
-    CbmD0CandidateSelection::CbmD0CandidateSelection(){
+CbmD0CandidateSelection::CbmD0CandidateSelection()
+:FairTask(),
+fEventNumber(),
+fKaonParticleArray(),
+ fPionParticleArray(),
+ fD0Candidates(),
+fListMCTracksPos(),
+ fListMCTracksNeg(),
+ fListMCTracks(),
+fListD0TrackCandidate(),
+fD0TrackArray(),
+ fInfoArray(),
+ fStsTrackMatches(),
+ fPosStsTracks(),
+ fNegStsTracks(),
+ fPrimVtx(),
+ fvtx(),
+ tools(),
+ fMF(),
+ bTestMode(),
+ f_particleIsMCD0()
+
+{
     
-    Fatal( "CbmD0Candidates: Do not use the standard constructor","");
+Fatal( "CbmD0Candidates: Do not use the standard constructor","");
     
-    }
+}
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-CbmD0CandidateSelection::CbmD0CandidateSelection(char* name, Int_t iVerbose, Double_t cutIPD0, Double_t cutSVZ):FairTask(name,iVerbose){
+CbmD0CandidateSelection::CbmD0CandidateSelection(char* name, Int_t iVerbose, Double_t cutIPD0, Double_t cutSVZ)
+:FairTask(name,iVerbose),
+fEventNumber(),
+fKaonParticleArray(),
+ fPionParticleArray(),
+ fD0Candidates(),
+fListMCTracksPos(),
+ fListMCTracksNeg(),
+ fListMCTracks(),
+fListD0TrackCandidate(),
+fD0TrackArray(),
+ fInfoArray(),
+ fStsTrackMatches(),
+ fPosStsTracks(),
+ fNegStsTracks(),
+ fPrimVtx(),
+ fvtx(),
+ tools(),
+ fMF(),
+ bTestMode(),
+ f_particleIsMCD0()
 
-
-    fEventNumber = 0;
-    fHistoFileName = "Histo.root";
-    fcutIPD0 = cutIPD0;
-    fcutSVZ  = cutSVZ;
-    fUseKF   = kTRUE;
-    bTestMode = kFALSE;
-
-
+{
+fEventNumber = 0;
+fcutIPD0 = cutIPD0;
+fcutSVZ  = cutSVZ;
+bTestMode = kFALSE;
 }
 // -------------------------------------------------------------------------
 
@@ -118,7 +139,6 @@ InitStatus CbmD0CandidateSelection::Init() {
     fvtx[0] = fPrimVtx->GetX();
     fvtx[1] = fPrimVtx->GetY();
     fvtx[2] = fPrimVtx->GetZ();
-    kfpInterface = new CbmKFParticleInterface();
 
     return kSUCCESS;
 }
@@ -251,9 +271,21 @@ void CbmD0CandidateSelection::Register() {
 // -------------------------------------------------------------------------  
 
 
+//-----------------------------------------------------------------------------------------
+Double_t  CbmD0CandidateSelection::GetPairImpactParameterR(KFParticle* particle)
+{
+ particle->TransportToPoint(&*fvtx);
+ Double_t Pair_IP  = sqrt((particle->GetX()*particle->GetX()) + (particle->GetY()*particle->GetY()) );
+ particle->TransportToDecayVertex();
+ return  Pair_IP;
+}
+
 
 //-----------------------------------------------------------------------------------------
 
+
+//-----------------------------------------------------------------------------------------
+/*
 //-----------------------------------------------------------------------------------------
 Double_t  CbmD0CandidateSelection::GetPairTx(CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2){
 
@@ -301,18 +333,6 @@ Double_t  CbmD0CandidateSelection::GetPairTy(CbmD0TrackCandidate* tr1, CbmD0Trac
 
     return Pair_Ty;
 }
-
-//-----------------------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------------------
-Double_t  CbmD0CandidateSelection::GetPairImpactParameterR(KFParticle* particle)
-{
- particle->TransportToPoint(&*fvtx);
- Double_t Pair_IP  = sqrt((particle->GetX()*particle->GetX()) + (particle->GetY()*particle->GetY()) );
- particle->TransportToDecayVertex();
- return  Pair_IP;
-}
-
 
 //-----------------------------------------------------------------------------------------
 
@@ -571,6 +591,6 @@ Double_t CbmD0CandidateSelection::GetAPptt(CbmD0TrackCandidate* tr1, CbmD0TrackC
 	return ptt;
 }
 //-----------------------------------------------------------------------------------------
-
+   */
 
 ClassImp(CbmD0CandidateSelection)

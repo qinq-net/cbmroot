@@ -9,14 +9,11 @@
 #include "CbmRichRing.h"
 #include "CbmStsTrack.h"
 #include "CbmVertex.h"
-
-#include "CbmStsKFSecondaryVertexFinder.h"
 #include "CbmL1PFFitter.h"
 #include "CbmMCTrack.h"
 #include "CbmMvdPoint.h"
 #include "CbmKF.h"
 #include "CbmTrackMatchNew.h"
-#include "CbmD0TrackCandidate.h"
 #include "CbmKFParticleInterface.h"
 
 
@@ -64,7 +61,6 @@ CbmD0TrackSelection::CbmD0TrackSelection()
    fStsTrackArrayN(),
    fMCTrackArrayP(),
    fMCTrackArrayN(),
-   fInfoArray(),
    fStsTrackMatches(),
    fKaonParticleArray(),
    fPionParticleArray(),
@@ -75,17 +71,14 @@ CbmD0TrackSelection::CbmD0TrackSelection()
     fFit(),
    fPrimVtx(),
    fSecVtx(),
-   fHistoFileName(),
    bUseMCInfo(),
-   fadi(),
-   logfile(),
    fPVCutPassed(),
    fPVCutNotPassed(),
    fNoHPassed(),
    fNoHNotPassed(),
     fCutPt(),
     fCutP(),
-    fCutPV(),
+    fCutChi2(),
     fCutIP(),
     fField()
 {
@@ -95,69 +88,51 @@ CbmD0TrackSelection::CbmD0TrackSelection()
 // -------------------------------------------------------------------------
 
 // -------------------------------------------------------------------------
-CbmD0TrackSelection::CbmD0TrackSelection(char* name, Int_t iVerbose, Double_t cutP, Double_t cutPt, Double_t cutPV, Double_t cutIP)
+CbmD0TrackSelection::CbmD0TrackSelection(char* name, Int_t iVerbose, Double_t cutP, Double_t cutPt, Double_t cutChi2, Double_t cutIP)
 : FairTask(name, iVerbose),
   fNHitsOfLongTracks(),
   fEventNumber(),
-   fMcPoints(),
-   fStsTrackArray(),
-   fGlobalTracks(),
-   fTrdTracks(),
-   fTofHits(),
-   fRichRings(),
-   fStsTrackArrayP(),
-   fStsTrackArrayN(),
-   fMCTrackArrayP(),
-   fMCTrackArrayN(),
-   fInfoArray(),
-   fStsTrackMatches(),
-      fKaonParticleArray(),
-      fPionParticleArray(),
-   fMvdHitMatchArray(),
-   fKFParticleArray(),
-   kfpInterface(),
-   fPidMode(),
-    fFit(),
-   fPrimVtx(),
-   fSecVtx(),
-   fHistoFileName(),
-   bUseMCInfo(),
-   fadi(),
-   logfile(),
-   fPVCutPassed(),
-   fPVCutNotPassed(),
-   fNoHPassed(),
-   fNoHNotPassed(),
-    fCutPt(),
-    fCutP(),
-    fCutPV(),
-      fCutIP(),
-      fField()
-  {
-
-    CbmKF* kalman = CbmKF::Instance();
-    fEventNumber = 0;
-    fPVCutPassed = 0;
-    fPVCutNotPassed = 0;
-    fCutP  = cutP;
-    fCutPt = cutPt;
-    fCutPV = cutPV;
-    fCutIP = cutIP;
-    fNHitsOfLongTracks=1;
-
-	//added by c.tragser
-  
-	fadi = kFALSE;
-	fNoHPassed=0;
-    fNoHNotPassed=0;
-    logfile = "./CutEff_D0TrackSelection.log";
-  
-    bUseMCInfo = kFALSE;
-    fPidMode = "MC"; // TOF, NONE, GLOBAL
-
-
-
-
+  fMcPoints(),
+  fStsTrackArray(),
+  fGlobalTracks(),
+  fTrdTracks(),
+  fTofHits(),
+  fRichRings(),
+  fStsTrackArrayP(),
+  fStsTrackArrayN(),
+  fMCTrackArrayP(),
+  fMCTrackArrayN(),
+  fStsTrackMatches(),
+  fKaonParticleArray(),
+  fPionParticleArray(),
+  fMvdHitMatchArray(),
+  fKFParticleArray(),
+  kfpInterface(),
+  fPidMode(),
+  fFit(),
+  fPrimVtx(),
+  fSecVtx(),
+  bUseMCInfo(),
+  fPVCutPassed(),
+  fPVCutNotPassed(),
+  fNoHPassed(),
+  fNoHNotPassed(),
+  fCutPt(),
+  fCutP(),
+  fCutChi2(),
+  fCutIP(),
+  fField()
+{
+fEventNumber = 0;
+fPVCutPassed = 0;
+fPVCutNotPassed = 0;
+fCutP  = cutP;
+fCutPt = cutPt;
+fCutChi2 = cutChi2;
+fCutIP = cutIP;
+fNHitsOfLongTracks=1;
+fNoHPassed=0;
+fNoHNotPassed=0;
 }
 // -------------------------------------------------------------------------
 
@@ -180,8 +155,10 @@ void CbmD0TrackSelection::SetPIDMode(TString pidMode) {
     if(pidMode == "MC" || pidMode == "TOF" || pidMode == "NONE" || pidMode == "GLOBAL")
       fPidMode = pidMode;
     else
-	LOG(WARNING) << "not supported PID mode, PID modes are: MC, TOF, NONE, GLOBAL. PID mode set to NONE" << FairLogger::endl;
-
+      {
+      LOG(WARNING) << "not supported PID mode, PID modes are: MC, TOF, NONE, GLOBAL. PID mode set to NONE" << FairLogger::endl;
+      fPidMode = "NONE";
+      }
 }
 // -------------------------------------------------------------------------
 
@@ -212,17 +189,22 @@ InitStatus CbmD0TrackSelection::Init() {
     fListMCTracks    = (TClonesArray*) ioman->GetObject("MCTrack");
     fPrimVtx         = (CbmVertex*) ioman->GetObject("PrimaryVertex");
 
+    fvtx[0] = fPrimVtx->GetX();
+    fvtx[1] = fPrimVtx->GetY();
+    fvtx[2] = fPrimVtx->GetZ();
+
     if(! fStsTrackArray) {Fatal("CbmD0TrackSelection: StsTrackArray not found (!)"," That's bad. ");}
     if(! fMvdHitMatchArray) {Fatal("CbmD0TrackSelection: MVDHitMatchArray not found","Good bye");}
 
-
-    fFit             = new CbmL1PFFitter();
-    fField           = new L1FieldRegion();
-    kfpInterface     = new CbmKFParticleInterface();
-   
+    CbmKF* kalman = CbmKF::Instance();
+    fFit          = new CbmL1PFFitter();
+   // if(kalman)fField = kalman->GetMagneticField();
+   // else LOG(FATAL)<<"KF Instance is missing"<<FairLogger::endl;
+    kfpInterface  = new CbmKFParticleInterface();
 
     return kSUCCESS;
 }
+
 // -------------------------------------------------------------------------
 
 
@@ -258,12 +240,13 @@ Float_t   ipx;
 Float_t   ipy;   
 Float_t   pt;    
 Float_t   p;     
-Float_t   PVsigma;
+Float_t   Chi2 = 0;
 
 ClearArrays();
 
 fEventNumber++;
-LOG(INFO) << "||---------------  Event: " << fEventNumber << "  ---------------||" << FairLogger::endl;
+cout << endl;
+LOG(INFO) << "||--------------------------  Event: " << fEventNumber << " --------------------------||" << FairLogger::endl;
 
 Int_t nTracks = fGlobalTracks->GetEntriesFast();
 
@@ -278,7 +261,6 @@ if(nTracks==0)
 // --- Loop over reconstructed tracks ---
 for ( Int_t itr=0; itr<nTracks; itr++ )
 {
-
 globalTrack = (CbmGlobalTrack*) fGlobalTracks->At(itr);
 
 if(globalTrack->GetStsTrackIndex()!= -1)
@@ -288,33 +270,23 @@ pidHypo = GetPid(globalTrack);
 
 if(pidHypo != -321 && pidHypo != 211) continue;
 
-KFParticle* newParticle = new KFParticle();
-kfpInterface->SetKFParticleFromStsTrack(&*stsTrack, newParticle, pidHypo);
-newParticle->TransportToProductionVertex();
-                                 
-   ip        = GetImpactParameterRadius( newParticle);
-   ipx       = GetImpactParameterX( newParticle );
-   ipy       = GetImpactParameterY( newParticle );
-   pt        = newParticle->GetPt();
-   p         = newParticle->GetP();
-   PVsigma;
+FairTrackParam *param = new FairTrackParam();
+kfpInterface->ExtrapolateTrackToPV(stsTrack, fPrimVtx, param, Chi2);
+	if ( Chi2 > fCutChi2 ) continue;
 
-FairTrackParam *param;
-if (fPrimVtx)
-   {
-   PVsigma = 10;// kfpInterface->ExtrapolateTrackToPV(stsTrack, fPrimVtx, param, PVsigma);
-   }
-else
-   {
-   PVsigma=10;
-   LOG(INFO) << "No PrimaryVtx" << FairLogger::endl;
-   }
+KFParticle newParticle;
+kfpInterface->SetKFParticleFromStsTrack(&*stsTrack,&newParticle, pidHypo);
+   ip        = GetImpactParameterRadius( &newParticle);
+   ipx       = GetImpactParameterX( &newParticle );
+   ipy       = GetImpactParameterY( &newParticle );
+   pt        = newParticle.GetPt();
+   p         = newParticle.GetP();
 
 const FairTrackParam *e_track = stsTrack->GetParamFirst();
 Double_t       	      qp   = e_track->GetQp();
 
 	// --- single track pre-selection ---
-	if ( PVsigma < fCutPV ) continue;
+
 	if ( p  < fCutP       ) continue;
 	if ( pt < fCutPt      ) continue;
 	if ( ip > fCutIP      ) continue;
@@ -349,7 +321,7 @@ Double_t       	      qp   = e_track->GetQp();
 	    // --- Save Kaon to  ParicleArray from Track ---
 	    TClonesArray& clrefKaon = *fKaonParticleArray;
 	    Int_t sizeKaon = clrefKaon.GetEntriesFast();
-	    new (clrefKaon[sizeKaon]) KFParticle(*newParticle);
+	    new (clrefKaon[sizeKaon]) KFParticle(newParticle);
 	}
 
 	if(qp > 0)
@@ -357,11 +329,11 @@ Double_t       	      qp   = e_track->GetQp();
 	    // --- Save Pion to  ParicleArray from Track ---
 	    TClonesArray& clrefPion = *fPionParticleArray;
 	    Int_t sizePion = clrefPion.GetEntriesFast();
-	    new (clrefPion[sizePion]) KFParticle(*newParticle);
+	    new (clrefPion[sizePion]) KFParticle(newParticle);
 	}
 
 	}// for loop track1
-
+LOG(INFO) << "Found " << fKaonParticleArray->GetEntriesFast() << " Kaon candidates and " << fPionParticleArray->GetEntriesFast() << " Pion candidates" << FairLogger::endl;
 LOG(INFO) << "|| ------------------------  End of event  ------------------------|| " << FairLogger::endl;
 }
 // -----------------------------------------------------------------------------------------
@@ -453,7 +425,6 @@ Double_t       	      qp   = par1->GetQp();
  vector<int> vPID(1);
  vPID[0] = -321;
 
-//fFit->CalculateFieldRegion(&stsTrack, &fField);
 if(qp < 0.0)
     fFit->Fit(vRTracks, vPID);
 
@@ -545,10 +516,10 @@ Double_t  CbmD0TrackSelection::GetImpactParameterY( KFParticle* particle ){
 //-----------------------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------------------
-void CbmD0TrackSelection::SetCuts(Double_t p, Double_t pt, Double_t PVsigma, Double_t IP){
+void CbmD0TrackSelection::SetCuts(Double_t p, Double_t pt, Double_t Chi2, Double_t IP){
     fCutP  = p;
     fCutPt = pt;
-    fCutPV = PVsigma;
+    fCutChi2 = Chi2;
     fCutIP = IP;
 }
 //-----------------------------------------------------------------------------------------
@@ -559,13 +530,6 @@ void CbmD0TrackSelection::Finish(){
 
 	//cout << endl << endl << " * * * * * \t strack - information \t * * * * * ";
   
-}
-// -------------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------------
-void CbmD0TrackSelection::SaveCutEff(void)
-{
-
 }
 // -------------------------------------------------------------------------------
 

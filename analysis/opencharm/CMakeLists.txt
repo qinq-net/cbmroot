@@ -46,10 +46,12 @@ ${Boost_LIBRARY_DIRS}
 link_directories( ${LINK_DIRECTORIES})
 
 set(SRCS
-CbmD0Candidate.cxx
+#CbmD0Candidate.cxx
+#CbmD0TrackCandidate.cxx
+
 CbmD0Tools.cxx
 CbmD0CandidateSelection.cxx
-CbmD0TrackCandidate.cxx
+
 CbmD0CandidatesSE.cxx
 CbmD0TrackSelection.cxx
 CbmD0HistogramManager.cxx

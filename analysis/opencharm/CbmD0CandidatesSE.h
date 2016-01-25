@@ -1,29 +1,23 @@
 // -------------------------------------------------------------------------
-// -----                CbmD0Candidates  header file                   -----
+// -----                CbmD0CandidatesSE  header file                 -----
 // -----               Created 09/02/07  by C. Dritsa                  -----
 // -------------------------------------------------------------------------
 
 
 /**  CbmD0Candidates.h
- *@authors C.Dritsa <c.dritsa@gsi.de>
- *acknowledgements to M.Deveaux
- *  Selection of candidate pairs
+ *  @authors C.Dritsa <c.dritsa@gsi.de>
+ *  update 2015/16 P.Sitzmann <p.sitzmann@gsi.de>
+ *  acknowledgements to M.Deveaux
+ *  Selection of candidate pairs in SuperEvent Mode
  *  for D0 reconstruction
  *
  **/
-
-
-
 
 #ifndef CBMD0CANDIDATESSE_H
 #define CBMD0CANDIDATESSE_H
 
 #include "FairTask.h"
-#include "TH1F.h"
-#include "TH2F.h"
 #include "TString.h"
-#include "CbmD0TrackCandidate.h"
-#include "TNtuple.h"
 #include "CbmMapsFileManager.h"
 #include "TLorentzVector.h"
 #include "FairField.h"
@@ -33,8 +27,6 @@ class TObjArray;
 class KFParticle;
 class CbmStsTrack;
 class CbmVertex;
-
-
 
 class CbmD0CandidatesSE : public FairTask
 {
@@ -50,34 +42,8 @@ class CbmD0CandidatesSE : public FairTask
 
 private:
 
-    Double_t GetPairTx( TVector3& mom1, TVector3& mom2 );
-    Double_t GetPairTy( TVector3& mom1, TVector3& mom2 );
-
-    Double_t GetPairPt( TVector3& mom1, TVector3& mom2 );
-    Double_t GetPairPz( TVector3& mom1, TVector3& mom2 );
-
-    Double_t GetMomentum( TVector3& mom1 );
-    Double_t GetPairMomentum( TVector3& mom1, TVector3& mom2);
-
-    Double_t GetPairImpactParameterR(KFParticle* particle );
-    Double_t GetEnergy1(CbmD0TrackCandidate* tr1);
-    Double_t GetEnergy2(CbmD0TrackCandidate* tr1);
-    Double_t GetPairEnergy( CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2 );
-    Double_t GetIM(CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2);
-
-    Double_t GetCos12( TVector3& mom1, TVector3& mom2 );
-    Double_t GetIPAngle( TVector3& mom1, TVector3& mom2 );
-    Double_t GetChi2Topo( TVector3& mom1, TVector3& mom2 );
-    void     GetAP( TVector3 &mom1, TVector3 &mom2, Double_t Qp, Double_t &alpha, Double_t &ptt );
-    void     FillBuffer( CbmMapsFileManager* BackgroundFile, TObjArray* BackgroundArray );
-    Double_t BoostMomentum( TVector3& mom1, TVector3& mom2, CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2 );
-
-    /** Register the output arrays to the IOManager **/
-    void Register();
-    void Finish();
-
     Int_t fEventNumber;
-        Double_t fcutIPD0,  fcutSVZmin,  fcutSVZ;
+    Double_t fcutIPD0,  fcutSVZmin,  fcutSVZ;
 
     TClonesArray* fStsTrackMatches;
     TClonesArray* fListMCTracks;
@@ -98,6 +64,35 @@ private:
 
     TString fNegativeFileName;
     Bool_t bTestMode;
+
+    /** Register the output arrays to the IOManager **/
+    void Register();
+    void Finish();
+
+    Double_t GetPairTx( TVector3& mom1, TVector3& mom2 );
+    Double_t GetPairTy( TVector3& mom1, TVector3& mom2 );
+
+    Double_t GetPairPt( TVector3& mom1, TVector3& mom2 );
+    Double_t GetPairPz( TVector3& mom1, TVector3& mom2 );
+
+    Double_t GetMomentum( TVector3& mom1 );
+    Double_t GetPairMomentum( TVector3& mom1, TVector3& mom2);
+
+    Double_t GetPairImpactParameterR(KFParticle* particle );
+
+    Double_t GetCos12( TVector3& mom1, TVector3& mom2 );
+    Double_t GetIPAngle( TVector3& mom1, TVector3& mom2 );
+    Double_t GetChi2Topo( TVector3& mom1, TVector3& mom2 );
+    void     GetAP( TVector3 &mom1, TVector3 &mom2, Double_t Qp, Double_t &alpha, Double_t &ptt );
+    void     FillBuffer( CbmMapsFileManager* BackgroundFile, TObjArray* BackgroundArray );
+
+
+    //Double_t BoostMomentum( TVector3& mom1, TVector3& mom2, CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2 );
+    //Double_t GetEnergy1(CbmD0TrackCandidate* tr1);
+    //Double_t GetEnergy2(CbmD0TrackCandidate* tr1);
+    //Double_t GetPairEnergy( CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2 );
+    //Double_t GetIM(CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2);
+
 
     ClassDef(CbmD0CandidatesSE,1);
 };
