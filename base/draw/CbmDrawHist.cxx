@@ -16,6 +16,9 @@
 #include "TMath.h"
 #include "TGaxis.h"
 #include "TLegend.h"
+#include "TF1.h"
+#include "utils/CbmUtils.h"
+#include "TLatex.h"
 
 #include <string>
 #include <limits>
@@ -255,4 +258,33 @@ void DrawTextOnPad(
    leg->SetFillStyle(0);
    leg->SetBorderSize(0);
    leg->Draw();
+}
+
+void DrawH1andFitGauss(
+                       TH1* hist,
+                       Bool_t drawResults,
+                       Bool_t doScale,
+                       Double_t userRangeMin,
+                       Double_t userRangeMax)
+{
+    if (hist == NULL) return;
+    
+    hist->GetYaxis()->SetTitle("Yield");
+    DrawH1(hist);
+    if (doScale) hist->Scale(1./ hist->Integral());
+    if (!(userRangeMin == 0. && userRangeMax == 0.)) hist->GetXaxis()->SetRangeUser(userRangeMin, userRangeMax);
+    hist->Fit("gaus", "Q");
+    TF1* func = hist->GetFunction("gaus");
+    if (func == NULL) return;
+    func->SetLineColor(kBlack);
+    
+    if (drawResults) {
+        double m = func->GetParameter(1);
+        double s = func->GetParameter(2);
+        string txt1 = Cbm::NumberToString<Double_t>(m, 2) + " / " + Cbm::NumberToString<Double_t>(s, 2);
+        TLatex text;
+        text.SetTextAlign(21);
+        text.SetTextSize(0.06);
+        text.DrawTextNDC(0.5, 0.92, txt1.c_str());
+    }
 }

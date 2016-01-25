@@ -223,4 +223,21 @@ void DrawTextOnPad(
 	Double_t x2,
 	Double_t y2);
 
+
+/**
+ * \fn DrawH1andFitGauss
+ * \brief Draw TH1 and fit with gauss. Draw fit results on top of the histogramm.
+ * \param[in] hist Histogram to be drawn and fitted.
+ * \param[in] drawResults If true - mean/sigma will be drawn.
+ * \param[in] doScale If true - histogramm is scaled to Integral 1.
+ * \param[in] userRangeMin SetRangeUser minimum.
+ * \param[in] userRangeMax SetRangeUser maximum.
+ */
+void DrawH1andFitGauss(
+    TH1* hist,
+    Bool_t drawResults = true,
+    Bool_t doScale = true,
+    Double_t userRangeMin = 0.,
+    Double_t userRangeMax = 0.);
+
 #endif
