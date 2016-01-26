@@ -80,13 +80,13 @@ void CbmAnaConversionTomography::InitHistos()
 {
 	fHistoList_tomography.clear();
 
-	fhGammaZ = new TH1D("fhGammaZ", "fhGammaZ;Z [cm];Entries", 300, 0.0, 300.);
+	fhGammaZ = new TH1D("fhGammaZ", "fhGammaZ;Z in cm;Entries", 300, 0.0, 300.);
 	fHistoList_tomography.push_back(fhGammaZ);
 	
 	// for all events including gammas and gamma-conversion
-	fhTomography		= new TH3D("fhTomography", "Tomography/fhTomography;X [cm];Y [cm];Z [cm]", 200, -200., 200., 200, -200., 200., 500, 0., 1000.);
-	fhTomography_XZ		= new TH2D("fhTomography_XZ", "fhTomography_XZ;X [cm];Z [cm]", 2800, -700., 700., 2200, 0., 1100.);
-	fhTomography_YZ		= new TH2D("fhTomography_YZ", "fhTomography_YZ;Y [cm];Z [cm]", 2000, -500., 500., 2200, 0., 1100.);
+	fhTomography		= new TH3D("fhTomography", "Tomography/fhTomography;X in cm;Y in cm;Z in cm", 200, -200., 200., 200, -200., 200., 500, 0., 1000.);
+	fhTomography_XZ		= new TH2D("fhTomography_XZ", "fhTomography_XZ;X in cm;Z in cm", 3200, -800., 800., 2200, 0., 1100.);
+	fhTomography_YZ		= new TH2D("fhTomography_YZ", "fhTomography_YZ;Y in cm;Z in cm", 2000, -500., 500., 2200, 0., 1100.);
 	//fhTomography_XZ_cut	= new TH2D("fhTomography_XZ_cut", "fhTomography_XZ_cut;X [cm];Z [cm]", 2800, -700., 700., 2200, 0., 1100.);
 	//fhTomography_YZ_cut	= new TH2D("fhTomography_YZ_cut", "fhTomography_YZ_cut;Y [cm];Z [cm]", 2000, -500., 500., 2200, 0., 1100.);
 	fHistoList_tomography.push_back(fhTomography);
@@ -95,13 +95,13 @@ void CbmAnaConversionTomography::InitHistos()
 	//fHistoList_tomography.push_back(fhTomography_XZ_cut);
 	//fHistoList_tomography.push_back(fhTomography_YZ_cut);
 	
-	fhTomography_uptoRICH			= new TH2D("fhTomography_uptoRICH", "fhTomography_uptoRICH;X [cm];Y [cm]", 600, -300., 300., 400, -200., 200.);
-	fhTomography_RICH_complete		= new TH2D("fhTomography_RICH_complete", "fhTomography_RICH_complete;X [cm];Y [cm]", 600, -300., 300., 500, -250., 250.);
-	fhTomography_RICH_beampipe		= new TH2D("fhTomography_RICH_beampipe", "fhTomography_RICH_beampipe;X [cm];Y [cm]", 400, -100., 100., 200, -50., 50.);
-	fhTomography_STS_end			= new TH2D("fhTomography_STS_end", "fhTomography_STS_end;X [cm];Y [cm]", 400, -200., 200., 400, -200., 200.);
-	fhTomography_STS_lastStation	= new TH2D("fhTomography_STS_lastStation", "fhTomography_STS_lastStation;X [cm];Y [cm]", 200, -100., 100., 200, -100., 100.);
-	fhTomography_RICH_frontplate	= new TH2D("fhTomography_RICH_frontplate", "fhTomography_RICH_frontplate;X [cm];Y [cm]", 600, -300., 300., 500, -250., 250.);
-	fhTomography_RICH_backplate		= new TH2D("fhTomography_RICH_backplate", "fhTomography_RICH_backplate;X [cm];Y [cm]", 600, -300., 300., 500, -250., 250.);
+	fhTomography_uptoRICH			= new TH2D("fhTomography_uptoRICH", "fhTomography_uptoRICH;X in cm;Y in cm", 600, -300., 300., 400, -200., 200.);
+	fhTomography_RICH_complete		= new TH2D("fhTomography_RICH_complete", "fhTomography_RICH_complete;X in cm;Y in cm", 600, -300., 300., 500, -250., 250.);
+	fhTomography_RICH_beampipe		= new TH2D("fhTomography_RICH_beampipe", "fhTomography_RICH_beampipe;X in cm;Y in cm", 400, -100., 100., 200, -50., 50.);
+	fhTomography_STS_end			= new TH2D("fhTomography_STS_end", "fhTomography_STS_end;X in cm;Y in cm", 400, -200., 200., 400, -200., 200.);
+	fhTomography_STS_lastStation	= new TH2D("fhTomography_STS_lastStation", "fhTomography_STS_lastStation;X in cm;Y in cm", 200, -100., 100., 200, -100., 100.);
+	fhTomography_RICH_frontplate	= new TH2D("fhTomography_RICH_frontplate", "fhTomography_RICH_frontplate;X in cm;Y in cm", 600, -300., 300., 500, -250., 250.);
+	fhTomography_RICH_backplate		= new TH2D("fhTomography_RICH_backplate", "fhTomography_RICH_backplate;X in cm;Y in cm", 600, -300., 300., 500, -250., 250.);
 	fHistoList_tomography.push_back(fhTomography_uptoRICH);
 	fHistoList_tomography.push_back(fhTomography_RICH_complete);
 	fHistoList_tomography.push_back(fhTomography_RICH_beampipe);
@@ -112,10 +112,10 @@ void CbmAnaConversionTomography::InitHistos()
 	
 	
 	
-	fhConversion		= new TH1D("fhConversion", "fhConversion;Z [cm];# conversions", 4800, -0.5, 1199.5);
-	fhConversion_cut	= new TH1D("fhConversion_cut", "fhConversion_cut;Z [cm];# conversions", 4800, -0.5, 1199.5);
-	fhConversion_inSTS	= new TH1D("fhConversion_inSTS", "fhConversion in STS;Z [cm];# conversions", 800, -0.5, 199.5);
-	fhConversion_prob	= new TH1D("fhConversion_prob", "fhConversion_prob;Z [cm];# conversions", 1200, -0.5, 1199.5);
+	fhConversion		= new TH1D("fhConversion", "fhConversion;Z in cm;# conversions", 4800, -0.5, 1199.5);
+	fhConversion_cut	= new TH1D("fhConversion_cut", "fhConversion_cut;Z in cm;# conversions", 4800, -0.5, 1199.5);
+	fhConversion_inSTS	= new TH1D("fhConversion_inSTS", "fhConversion in STS;Z in cm;# conversions", 800, -0.5, 199.5);
+	fhConversion_prob	= new TH1D("fhConversion_prob", "fhConversion_prob;Z in cm;# conversions", 1200, -0.5, 1199.5);
 	fHistoList_tomography.push_back(fhConversion);
 	fHistoList_tomography.push_back(fhConversion_cut);
 	fHistoList_tomography.push_back(fhConversion_inSTS);
@@ -126,7 +126,7 @@ void CbmAnaConversionTomography::InitHistos()
 	fHistoList_tomography.push_back(fhConversion_energy);
 	fHistoList_tomography.push_back(fhConversion_p);
 	
-	fhConversion_vs_momentum	= new TH2D("fhConversion_vs_momentum", "fhConversion_vs_momentum;Z [cm];momentum [GeV]", 4800, -0.5, 1199.5, 1000, 0., 10.);
+	fhConversion_vs_momentum	= new TH2D("fhConversion_vs_momentum", "fhConversion_vs_momentum;Z in cm;momentum in GeV/c", 4800, -0.5, 1199.5, 1000, 0., 10.);
 	fHistoList_tomography.push_back(fhConversion_vs_momentum);
 	
 	fhConversionsPerDetector	= new TH1I("fhConversionsPerDetector", "fhConversionsPerDetector;;#", 5, 0, 5);
@@ -154,10 +154,10 @@ void CbmAnaConversionTomography::InitHistos()
 	//fhConversionsPerDetectorPE_cut->GetXaxis()->SetBinLabel(5, "TOF");
 	
 	// tomography from reconstructed tracks
-	fhTomography_reco		= new TH3D("fhTomography_reco", "fhTomography_reco;X [cm];Y [cm];Z [cm]", 200, -200., 200., 200, -200., 200., 500, 0., 1000.);
-	fhTomography_reco_XZ	= new TH2D("fhTomography_reco_XZ", "fhTomography_reco_XZ;X [cm];Z [cm]", 1600, -400., 400., 2400, 0., 1200.);
-	fhTomography_reco_YZ	= new TH2D("fhTomography_reco_YZ", "fhTomography_reco_YZ;Y [cm];Z [cm]", 1600, -400., 400., 2400, 0., 1200.);
-	fhConversion_reco		= new TH1D("fhConversion_reco", "fhConversion_reco;Z [cm];# conversions", 4800, -0.5, 1199.5);
+	fhTomography_reco		= new TH3D("fhTomography_reco", "fhTomography_reco;X in cm;Y in cm;Z in cm", 200, -200., 200., 200, -200., 200., 500, 0., 1000.);
+	fhTomography_reco_XZ	= new TH2D("fhTomography_reco_XZ", "fhTomography_reco_XZ;X in cm;Z in cm", 1600, -400., 400., 2400, 0., 1200.);
+	fhTomography_reco_YZ	= new TH2D("fhTomography_reco_YZ", "fhTomography_reco_YZ;Y in cm;Z in cm", 1600, -400., 400., 2400, 0., 1200.);
+	fhConversion_reco		= new TH1D("fhConversion_reco", "fhConversion_reco;Z in cm;# conversions", 4800, -0.5, 1199.5);
 	fHistoList_tomography.push_back(fhTomography_reco);
 	fHistoList_tomography.push_back(fhTomography_reco_XZ);
 	fHistoList_tomography.push_back(fhTomography_reco_YZ);

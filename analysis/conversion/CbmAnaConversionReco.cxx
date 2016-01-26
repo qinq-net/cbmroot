@@ -124,6 +124,8 @@ CbmAnaConversionReco::CbmAnaConversionReco()
 	fhEPEM_InDetector_invmass_gee_refitted(NULL),
 	fhEPEM_InDetector_invmass_all_mc(NULL),
 	fhEPEM_InDetector_invmass_all_refitted(NULL),
+	fhEPEM_pt_vs_p_all_mc(NULL),
+	fhEPEM_pt_vs_p_all_refitted(NULL),
     timer(),
     fTime(0.)
 {
@@ -175,13 +177,13 @@ void CbmAnaConversionReco::InitHistos()
 	Double_t invmassSpectra_end = 2.00125;
 	
 
-	fhInvariantMass_MC_all			= new TH1D("fhInvariantMass_MC_all", "fhInvariantMass_MC_all;mass [GeV/c^2];#", 2001, -0.0005, 2.0005);
-	fhInvariantMass_MC_pi0			= new TH1D("fhInvariantMass_MC_pi0", "fhInvariantMass_MC_pi0;mass [GeV/c^2];#", 2001, -0.0005, 2.0005);
-	fhInvariantMass_MC_pi0_epem		= new TH1D("fhInvariantMass_MC_pi0_epem", "fhInvariantMass_MC_pi0_epem;mass [GeV/c^2];#", 2001, -0.0005, 2.0005);
-	fhInvariantMass_MC_pi0_gepem	= new TH1D("fhInvariantMass_MC_pi0_gepem", "fhInvariantMass_MC_pi0_gepem;mass [GeV/c^2];#", 2001, -0.0005, 2.0005);
-	fhInvariantMass_MC_pi0_gg		= new TH1D("fhInvariantMass_MC_pi0_gg", "fhInvariantMass_MC_pi0_gg;mass [GeV/c^2];#", 2001, -0.0005, 2.0005);
-	fhInvariantMass_MC_eta			= new TH1D("fhInvariantMass_MC_eta", "fhInvariantMass_MC_eta;mass [GeV/c^2];#", 2001, -0.0005, 2.0005);
-	fhInvariantMass_MC_etaPrime		= new TH1D("fhInvariantMass_MC_etaPrime", "fhInvariantMass_MC_etaPrime;mass [GeV/c^2];#", 2001, -0.0005, 2.0005);
+	fhInvariantMass_MC_all			= new TH1D("fhInvariantMass_MC_all", "fhInvariantMass_MC_all;invariant mass in GeV/c^{2};#", 2001, -0.0005, 2.0005);
+	fhInvariantMass_MC_pi0			= new TH1D("fhInvariantMass_MC_pi0", "fhInvariantMass_MC_pi0;invariant mass in GeV/c^{2};#", 2001, -0.0005, 2.0005);
+	fhInvariantMass_MC_pi0_epem		= new TH1D("fhInvariantMass_MC_pi0_epem", "fhInvariantMass_MC_pi0_epem;invariant mass in GeV/c^{2};#", 2001, -0.0005, 2.0005);
+	fhInvariantMass_MC_pi0_gepem	= new TH1D("fhInvariantMass_MC_pi0_gepem", "fhInvariantMass_MC_pi0_gepem;invariant mass in GeV/c^{2};#", 2001, -0.0005, 2.0005);
+	fhInvariantMass_MC_pi0_gg		= new TH1D("fhInvariantMass_MC_pi0_gg", "fhInvariantMass_MC_pi0_gg;invariant mass in GeV/c^{2};#", 2001, -0.0005, 2.0005);
+	fhInvariantMass_MC_eta			= new TH1D("fhInvariantMass_MC_eta", "fhInvariantMass_MC_eta;invariant mass in GeV/c^{2};#", 2001, -0.0005, 2.0005);
+	fhInvariantMass_MC_etaPrime		= new TH1D("fhInvariantMass_MC_etaPrime", "fhInvariantMass_MC_etaPrime;invariant mass in GeV/c^{2};#", 2001, -0.0005, 2.0005);
 	fHistoList_MC.push_back(fhInvariantMass_MC_all);
 	fHistoList_MC.push_back(fhInvariantMass_MC_pi0);
 	fHistoList_MC.push_back(fhInvariantMass_MC_pi0_epem);
@@ -192,27 +194,27 @@ void CbmAnaConversionReco::InitHistos()
 	
 	
 	
-	fhMC_electrons_theta		= new TH1D("fhMC_electrons_theta", "fhMC_electrons_theta;theta [deg];#", 90, 0., 90.);
-	fhMC_electrons_p			= new TH1D("fhMC_electrons_p", "fhMC_electrons_p;p [GeV/c];#", 100, 0., 10.);
-	fhMC_electrons_theta_vs_p	= new TH2D("fhMC_electrons_theta_vs_p", "fhMC_electrons_theta_vs_p;theta [deg];p [GeV/c]", 90, 0., 90., 100, 0., 10.);
+	fhMC_electrons_theta		= new TH1D("fhMC_electrons_theta", "fhMC_electrons_theta;theta in deg;#", 90, 0., 90.);
+	fhMC_electrons_p			= new TH1D("fhMC_electrons_p", "fhMC_electrons_p;momentum p in GeV/c;#", 100, 0., 10.);
+	fhMC_electrons_theta_vs_p	= new TH2D("fhMC_electrons_theta_vs_p", "fhMC_electrons_theta_vs_p;theta in deg;momentum p in GeV/c", 90, 0., 90., 100, 0., 10.);
 	fHistoList_MC.push_back(fhMC_electrons_theta);
 	fHistoList_MC.push_back(fhMC_electrons_p);
 	fHistoList_MC.push_back(fhMC_electrons_theta_vs_p);
 	
-	fhMCtest	= new TH1D("fhMCtest", "fhMCtest;mass [GeV/c^2];#", 2000, 0., 2.);
+	fhMCtest	= new TH1D("fhMCtest", "fhMCtest;invariant mass in GeV/c^{2};#", 2000, 0., 2.);
 	fHistoList_MC.push_back(fhMCtest);
 
 
 
 
-	fhEPEM_invmass_gg_mc			= new TH1D("fhEPEM_invmass_gg_mc","fhEPEM_invmass_gg_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhEPEM_invmass_gg_refitted		= new TH1D("fhEPEM_invmass_gg_refitted","fhEPEM_invmass_gg_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhEPEM_invmass_gee_mc			= new TH1D("fhEPEM_invmass_gee_mc","fhEPEM_invmass_gee_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhEPEM_invmass_gee_refitted		= new TH1D("fhEPEM_invmass_gee_refitted","fhEPEM_invmass_gee_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhEPEM_invmass_eeee_mc			= new TH1D("fhEPEM_invmass_eeee_mc","fhEPEM_invmass_eeee_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhEPEM_invmass_eeee_refitted	= new TH1D("fhEPEM_invmass_eeee_refitted","fhEPEM_invmass_eeee_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhEPEM_invmass_all_mc			= new TH1D("fhEPEM_invmass_all_mc","fhEPEM_invmass_all_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhEPEM_invmass_all_refitted		= new TH1D("fhEPEM_invmass_all_refitted","fhEPEM_invmass_all_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhEPEM_invmass_gg_mc			= new TH1D("fhEPEM_invmass_gg_mc","fhEPEM_invmass_gg_mc;invariant mass in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhEPEM_invmass_gg_refitted		= new TH1D("fhEPEM_invmass_gg_refitted","fhEPEM_invmass_gg_refitted;invariant mass in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhEPEM_invmass_gee_mc			= new TH1D("fhEPEM_invmass_gee_mc","fhEPEM_invmass_gee_mc;invariant mass in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhEPEM_invmass_gee_refitted		= new TH1D("fhEPEM_invmass_gee_refitted","fhEPEM_invmass_gee_refitted;invariant mass in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhEPEM_invmass_eeee_mc			= new TH1D("fhEPEM_invmass_eeee_mc","fhEPEM_invmass_eeee_mc;invariant mass in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhEPEM_invmass_eeee_refitted	= new TH1D("fhEPEM_invmass_eeee_refitted","fhEPEM_invmass_eeee_refitted;invariant mass in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhEPEM_invmass_all_mc			= new TH1D("fhEPEM_invmass_all_mc","fhEPEM_invmass_all_mc;invariant mass in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhEPEM_invmass_all_refitted		= new TH1D("fhEPEM_invmass_all_refitted","fhEPEM_invmass_all_refitted;invariant mass in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_gg.push_back(fhEPEM_invmass_gg_mc);
 	fHistoList_gg.push_back(fhEPEM_invmass_gg_refitted);
 	fHistoList_gee.push_back(fhEPEM_invmass_gee_mc);
@@ -364,6 +366,14 @@ void CbmAnaConversionReco::InitHistos()
 	fHistoList_gee.push_back(fhEPEM_InDetector_invmass_gee_refitted);
 	fHistoList_all.push_back(fhEPEM_InDetector_invmass_all_mc);
 	fHistoList_all.push_back(fhEPEM_InDetector_invmass_all_refitted);
+
+
+
+	fhEPEM_pt_vs_p_all_mc	= new TH2D("fhEPEM_pt_vs_p_all_mc", "fhEPEM_pt_vs_p_all_mc;p_{t} in GeV/c; p in GeV/c", 240, -2., 10., 360, -2., 16.);
+	fHistoList_all.push_back(fhEPEM_pt_vs_p_all_mc);
+	fhEPEM_pt_vs_p_all_refitted	= new TH2D("fhEPEM_pt_vs_p_all_refitted", "fhTest2_electrons_pt_vs_p;p_{t} in GeV/c; p in GeV/c", 240, -2., 10., 360, -2., 16.);
+	fHistoList_all.push_back(fhEPEM_pt_vs_p_all_refitted);
+
 }
 
 
@@ -930,6 +940,15 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 								fhEPEM_invmass_gee_refitted->Fill(invmass3);
 								fhEPEM_invmass_all_mc->Fill(invmass1);
 								fhEPEM_invmass_all_refitted->Fill(invmass3);
+									
+								fhEPEM_pt_vs_p_all_mc->Fill(fRecoTracklistEPEM[i]->GetPt(), fRecoTracklistEPEM[i]->GetP() );
+								fhEPEM_pt_vs_p_all_mc->Fill(fRecoTracklistEPEM[j]->GetPt(), fRecoTracklistEPEM[j]->GetP() );
+								fhEPEM_pt_vs_p_all_mc->Fill(fRecoTracklistEPEM[k]->GetPt(), fRecoTracklistEPEM[k]->GetP() );
+								fhEPEM_pt_vs_p_all_mc->Fill(fRecoTracklistEPEM[l]->GetPt(), fRecoTracklistEPEM[l]->GetP() );
+								fhEPEM_pt_vs_p_all_refitted->Fill(fRecoRefittedMomentum[i].Perp(), fRecoRefittedMomentum[i].Mag() );
+								fhEPEM_pt_vs_p_all_refitted->Fill(fRecoRefittedMomentum[j].Perp(), fRecoRefittedMomentum[j].Mag() );
+								fhEPEM_pt_vs_p_all_refitted->Fill(fRecoRefittedMomentum[k].Perp(), fRecoRefittedMomentum[k].Mag() );
+								fhEPEM_pt_vs_p_all_refitted->Fill(fRecoRefittedMomentum[l].Perp(), fRecoRefittedMomentum[l].Mag() );
 								
 								CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
 								fhPi0_pt_vs_rap_gee->Fill(params1.fPt, params1.fRapidity);
@@ -1005,6 +1024,15 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 								fhEPEM_invmass_gee_refitted->Fill(invmass3);
 								fhEPEM_invmass_all_mc->Fill(invmass1);
 								fhEPEM_invmass_all_refitted->Fill(invmass3);
+									
+								fhEPEM_pt_vs_p_all_mc->Fill(fRecoTracklistEPEM[i]->GetPt(), fRecoTracklistEPEM[i]->GetP() );
+								fhEPEM_pt_vs_p_all_mc->Fill(fRecoTracklistEPEM[j]->GetPt(), fRecoTracklistEPEM[j]->GetP() );
+								fhEPEM_pt_vs_p_all_mc->Fill(fRecoTracklistEPEM[k]->GetPt(), fRecoTracklistEPEM[k]->GetP() );
+								fhEPEM_pt_vs_p_all_mc->Fill(fRecoTracklistEPEM[l]->GetPt(), fRecoTracklistEPEM[l]->GetP() );
+								fhEPEM_pt_vs_p_all_refitted->Fill(fRecoRefittedMomentum[i].Perp(), fRecoRefittedMomentum[i].Mag() );
+								fhEPEM_pt_vs_p_all_refitted->Fill(fRecoRefittedMomentum[j].Perp(), fRecoRefittedMomentum[j].Mag() );
+								fhEPEM_pt_vs_p_all_refitted->Fill(fRecoRefittedMomentum[k].Perp(), fRecoRefittedMomentum[k].Mag() );
+								fhEPEM_pt_vs_p_all_refitted->Fill(fRecoRefittedMomentum[l].Perp(), fRecoRefittedMomentum[l].Mag() );
 								
 								CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
 								fhPi0_pt_vs_rap_gee->Fill(params1.fPt, params1.fRapidity);
@@ -1080,6 +1108,15 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 								fhEPEM_invmass_gee_refitted->Fill(invmass3);
 								fhEPEM_invmass_all_mc->Fill(invmass1);
 								fhEPEM_invmass_all_refitted->Fill(invmass3);
+									
+								fhEPEM_pt_vs_p_all_mc->Fill(fRecoTracklistEPEM[i]->GetPt(), fRecoTracklistEPEM[i]->GetP() );
+								fhEPEM_pt_vs_p_all_mc->Fill(fRecoTracklistEPEM[j]->GetPt(), fRecoTracklistEPEM[j]->GetP() );
+								fhEPEM_pt_vs_p_all_mc->Fill(fRecoTracklistEPEM[k]->GetPt(), fRecoTracklistEPEM[k]->GetP() );
+								fhEPEM_pt_vs_p_all_mc->Fill(fRecoTracklistEPEM[l]->GetPt(), fRecoTracklistEPEM[l]->GetP() );
+								fhEPEM_pt_vs_p_all_refitted->Fill(fRecoRefittedMomentum[i].Perp(), fRecoRefittedMomentum[i].Mag() );
+								fhEPEM_pt_vs_p_all_refitted->Fill(fRecoRefittedMomentum[j].Perp(), fRecoRefittedMomentum[j].Mag() );
+								fhEPEM_pt_vs_p_all_refitted->Fill(fRecoRefittedMomentum[k].Perp(), fRecoRefittedMomentum[k].Mag() );
+								fhEPEM_pt_vs_p_all_refitted->Fill(fRecoRefittedMomentum[l].Perp(), fRecoRefittedMomentum[l].Mag() );
 								
 								CbmLmvmKinematicParams params1 = CalculateKinematicParams_4particles(fRecoRefittedMomentum[i], fRecoRefittedMomentum[j], fRecoRefittedMomentum[k], fRecoRefittedMomentum[l]);
 								fhPi0_pt_vs_rap_gee->Fill(params1.fPt, params1.fRapidity);
@@ -1168,6 +1205,15 @@ void CbmAnaConversionReco::InvariantMassTest_4epem()
 							fhEPEM_InDetector_invmass_all_refitted->Fill(invmass3);
 							continue;
 						}
+									
+						fhEPEM_pt_vs_p_all_mc->Fill(fRecoTracklistEPEM[i]->GetPt(), fRecoTracklistEPEM[i]->GetP() );
+						fhEPEM_pt_vs_p_all_mc->Fill(fRecoTracklistEPEM[j]->GetPt(), fRecoTracklistEPEM[j]->GetP() );
+						fhEPEM_pt_vs_p_all_mc->Fill(fRecoTracklistEPEM[k]->GetPt(), fRecoTracklistEPEM[k]->GetP() );
+						fhEPEM_pt_vs_p_all_mc->Fill(fRecoTracklistEPEM[l]->GetPt(), fRecoTracklistEPEM[l]->GetP() );
+						fhEPEM_pt_vs_p_all_refitted->Fill(fRecoRefittedMomentum[i].Perp(), fRecoRefittedMomentum[i].Mag() );
+						fhEPEM_pt_vs_p_all_refitted->Fill(fRecoRefittedMomentum[j].Perp(), fRecoRefittedMomentum[j].Mag() );
+						fhEPEM_pt_vs_p_all_refitted->Fill(fRecoRefittedMomentum[k].Perp(), fRecoRefittedMomentum[k].Mag() );
+						fhEPEM_pt_vs_p_all_refitted->Fill(fRecoRefittedMomentum[l].Perp(), fRecoRefittedMomentum[l].Mag() );
 
 						cout << "######################################################################" << endl;
 						cout << fRecoMomentum[i].X() << "\t" << fRecoRefittedMomentum[i].X() << endl;

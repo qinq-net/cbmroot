@@ -191,7 +191,7 @@ void CbmAnaConversionTest2::InitHistos()
 
 
 	// further tests
-	fhTest2_electrons_pt_vs_p	= new TH2D("fhTest2_electrons_pt_vs_p", "fhTest2_electrons_pt_vs_p;pt [GeV]; p [GeV]", 240, -2., 10., 540, -2., 16.);
+	fhTest2_electrons_pt_vs_p	= new TH2D("fhTest2_electrons_pt_vs_p", "fhTest2_electrons_pt_vs_p;pt [GeV]; p [GeV]", 240, -2., 10., 360, -2., 16.);
 	fHistoList_test2.push_back(fhTest2_electrons_pt_vs_p);
 	fhTest2_3rich_electrons_theta_included	= new TH1D("fhTest2_3rich_electrons_theta_included","fhTest2_3rich_electrons_theta_included;theta angle [deg];#", 90, 0, 90);
 	fHistoList_test2.push_back(fhTest2_3rich_electrons_theta_included);

@@ -343,35 +343,35 @@ void CbmAnaConversion::InitHistograms()
 	fHistoList_furtherAnalyses.clear();
 	
 	
-	fhPdgCodes				= new TH1D("fhPdfCodes", "fhPdgCodes;pdg code;#", 1000, 0, 1000);
-	fhNofElPrim				= new TH1D("fhNofElPrim", "fhNofElPrim;Nof prim El;Entries", 10., -0.5, 9.5);
-	fhNofElSec				= new TH1D("fhNofElSec", "fhNofElSec;Nof Sec El;Entries", 20., -0.5, 19.5);
-	fhNofElAll				= new TH1D("fhNofElAll", "fhNofElAll;Nof All El;Entries", 30., -0.5, 29.5);
-	fhNofPi0_perEvent		= new TH1D("fhNofPi0_perEvent", "fhNofPi0_perEvent;Nof pi0;Entries", 1000., -0.5, 999.5);
-	fhNofPi0_perEvent_cut	= new TH1D("fhNofPi0_perEvent_cut", "fhNofPi0_perEvent_cut (Z<10cm);Nof pi0;Entries", 800., -0.5, 799.5);
-	fhNofPi0_perEvent_cut2	= new TH1D("fhNofPi0_perEvent_cut2", "fhNofPi0_perEvent_cut2 (motherId = -1);Nof pi0;Entries", 800., -0.5, 799.5);
-	fhNofPi0_perEvent_cut3	= new TH1D("fhNofPi0_perEvent_cut3", "fhNofPi0_perEvent_cut3 (conversion before 70cm);Nof pi0;Entries", 100., -0.5, 99.5);
-	fhNofEta_perEvent		= new TH1D("fhNofEta_perEvent", "fhNofEta_perEvent;Nof eta;Entries", 100., -0.5, 99.5);
-	fhNofEta_perEvent_cut	= new TH1D("fhNofEta_perEvent_cut", "fhNofEta_perEvent_cut (Z<4cm);Nof eta;Entries", 100., -0.5, 99.5);
-	fhNofEta_perEvent_cut2	= new TH1D("fhNofEta_perEvent_cut2", "fhNofEta_perEvent_cut2 (motherId = -1);Nof eta;Entries", 100., -0.5, 99.5);
-	fhPi0_z					= new TH1D("fhPi0_z", "fhPi0_z;z [cm];Entries", 600., -0.5, 599.5);
-	fhPi0_z_cut				= new TH1D("fhPi0_z_cut", "fhPi0_z_cut;z [cm];Entries", 600., -0.5, 599.5);
-	fhPi0_pt				= new TH1D("fhPi0_pt", "fhPi0_pt;pt [GeV];Entries", 200., 0., 10.);
-	fhPi0_pt_vs_rap			= new TH2D("fhPi0_pt_vs_rap", "fhPi0_pt_vs_rap;pt [GeV]; rapidity", 240, -2., 10., 270, -2., 7.);
-	fhPi0_theta				= new TH1D("fhPi0_theta", "fhPi0_theta;theta [deg];Entries", 180., 0., 180.);
-	fhPi0_theta_vs_rap		= new TH2D("fhPi0_theta_vs_rap", "fhPi0_theta_vs_rap;theta [deg];rapidity", 180., 0., 180., 270, -2., 7.);
-	fhEta_pt				= new TH1D("fhEta_pt", "fhEta_pt;pt [GeV];Entries", 200., 0., 10.);
-	fhEta_pt_vs_rap			= new TH2D("fhEta_pt_vs_rap", "fhEta_pt_vs_rap;pt [GeV]; rapidity", 240, -2., 10., 270, -2., 7.);
-	fhEta_theta				= new TH1D("fhEta_theta", "fhEta_theta;theta [deg];Entries", 180., 0., 180.);
-	fhEta_theta_vs_rap		= new TH2D("fhEta_theta_vs_rap", "fhEta_theta_vs_rap;theta [deg];rapidity", 180., 0., 180., 270, -2., 7.);
-	fhRho_pt				= new TH1D("fhRho_pt", "fhRho_pt;pt [GeV];Entries", 200., 0., 10.);
-	fhRho_pt_vs_rap			= new TH2D("fhRho_pt_vs_rap", "fhRho_pt_vs_rap;pt [GeV]; rapidity", 240, -2., 10., 270, -2., 7.);
-	fhRho_theta				= new TH1D("fhRho_theta", "fhRho_theta;theta [deg];Entries", 180., 0., 180.);
-	fhRho_theta_vs_rap		= new TH2D("fhRho_theta_vs_rap", "fhRho_theta_vs_rap;theta [deg];rapidity", 180., 0., 180., 270, -2., 7.);
-	fhOmega_pt				= new TH1D("fhOmega_pt", "fhOmega_pt;pt [GeV];Entries", 200., 0., 10.);
-	fhOmega_pt_vs_rap		= new TH2D("fhOmega_pt_vs_rap", "fhOmega_pt_vs_rap;pt [GeV]; rapidity", 240, -2., 10., 270, -2., 7.);
-	fhOmega_theta			= new TH1D("fhOmega_theta", "fhOmega_theta;theta [deg];Entries", 180., 0., 180.);
-	fhOmega_theta_vs_rap	= new TH2D("fhOmega_theta_vs_rap", "fhOmega_theta_vs_rap;theta [deg];rapidity", 180., 0., 180., 270, -2., 7.);
+	fhPdgCodes				= new TH1D("fhPdfCodes",	"fhPdgCodes;pdg code;#", 1000, 0, 1000);
+	fhNofElPrim				= new TH1D("fhNofElPrim",	"fhNofElPrim;Nof prim El;Entries", 10., -0.5, 9.5);
+	fhNofElSec				= new TH1D("fhNofElSec",	"fhNofElSec;Nof Sec El;Entries", 20., -0.5, 19.5);
+	fhNofElAll				= new TH1D("fhNofElAll",	"fhNofElAll;Nof All El;Entries", 30., -0.5, 29.5);
+	fhNofPi0_perEvent		= new TH1D("fhNofPi0_perEvent",			"fhNofPi0_perEvent;Nof pi0;Entries", 1000., -0.5, 999.5);
+	fhNofPi0_perEvent_cut	= new TH1D("fhNofPi0_perEvent_cut",		"fhNofPi0_perEvent_cut (Z<10cm);Nof pi0;Entries", 800., -0.5, 799.5);
+	fhNofPi0_perEvent_cut2	= new TH1D("fhNofPi0_perEvent_cut2",	"fhNofPi0_perEvent_cut2 (motherId = -1);Nof pi0;Entries", 800., -0.5, 799.5);
+	fhNofPi0_perEvent_cut3	= new TH1D("fhNofPi0_perEvent_cut3",	"fhNofPi0_perEvent_cut3 (conversion before 70cm);Nof pi0;Entries", 100., -0.5, 99.5);
+	fhNofEta_perEvent		= new TH1D("fhNofEta_perEvent",		"fhNofEta_perEvent;Nof eta;Entries", 100., -0.5, 99.5);
+	fhNofEta_perEvent_cut	= new TH1D("fhNofEta_perEvent_cut",	"fhNofEta_perEvent_cut (Z<4cm);Nof eta;Entries", 100., -0.5, 99.5);
+	fhNofEta_perEvent_cut2	= new TH1D("fhNofEta_perEvent_cut2",	"fhNofEta_perEvent_cut2 (motherId = -1);Nof eta;Entries", 100., -0.5, 99.5);
+	fhPi0_z					= new TH1D("fhPi0_z",		"fhPi0_z;z in cm;Entries", 600., -0.5, 599.5);
+	fhPi0_z_cut				= new TH1D("fhPi0_z_cut",	"fhPi0_z_cut;z in cm;Entries", 600., -0.5, 599.5);
+	fhPi0_pt				= new TH1D("fhPi0_pt",		"fhPi0_pt;p_{t} in GeV/c;Entries", 200., 0., 10.);
+	fhPi0_pt_vs_rap			= new TH2D("fhPi0_pt_vs_rap",	"fhPi0_pt_vs_rap;p_{t} in GeV/c; rapidity y", 240, -2., 10., 270, -2., 7.);
+	fhPi0_theta				= new TH1D("fhPi0_theta",		"fhPi0_theta;emission angle #theta in deg;Entries", 180., 0., 180.);
+	fhPi0_theta_vs_rap		= new TH2D("fhPi0_theta_vs_rap","fhPi0_theta_vs_rap;theta in deg;rapidity y", 180., 0., 180., 270, -2., 7.);
+	fhEta_pt				= new TH1D("fhEta_pt",			"fhEta_pt;p_{t} in GeV;Entries", 200., 0., 10.);
+	fhEta_pt_vs_rap			= new TH2D("fhEta_pt_vs_rap",	"fhEta_pt_vs_rap;p_{t} in GeV; rapidity y", 240, -2., 10., 270, -2., 7.);
+	fhEta_theta				= new TH1D("fhEta_theta",		"fhEta_theta;emission angle #theta in deg;Entries", 180., 0., 180.);
+	fhEta_theta_vs_rap		= new TH2D("fhEta_theta_vs_rap","fhEta_theta_vs_rap;emission angle #theta in deg;rapidity y", 180., 0., 180., 270, -2., 7.);
+	fhRho_pt				= new TH1D("fhRho_pt",			"fhRho_pt;p_{t} in GeV/c;Entries", 200., 0., 10.);
+	fhRho_pt_vs_rap			= new TH2D("fhRho_pt_vs_rap",	"fhRho_pt_vs_rap;p_{t} in GeV/c; rapidity y", 240, -2., 10., 270, -2., 7.);
+	fhRho_theta				= new TH1D("fhRho_theta",		"fhRho_theta;emission angle #theta in deg;Entries", 180., 0., 180.);
+	fhRho_theta_vs_rap		= new TH2D("fhRho_theta_vs_rap","fhRho_theta_vs_rap;emission angle #theta in deg;rapidity y", 180., 0., 180., 270, -2., 7.);
+	fhOmega_pt				= new TH1D("fhOmega_pt",		"fhOmega_pt;p_{t} in GeV/c;Entries", 200., 0., 10.);
+	fhOmega_pt_vs_rap		= new TH2D("fhOmega_pt_vs_rap",	"fhOmega_pt_vs_rap;p_{t} in GeV; rapidity y", 240, -2., 10., 270, -2., 7.);
+	fhOmega_theta			= new TH1D("fhOmega_theta",		"fhOmega_theta;emission angle #theta in deg;Entries", 180., 0., 180.);
+	fhOmega_theta_vs_rap	= new TH2D("fhOmega_theta_vs_rap","fhOmega_theta_vs_rap;emission angle #theta in deg;rapidity y", 180., 0., 180., 270, -2., 7.);
 	
 	
 	fhElectronSources		= new TH1D("fhElectronSources", "fhElectronSources;Source;Entries", 6., 0., 6.);
@@ -421,9 +421,9 @@ void CbmAnaConversion::InitHistograms()
 
 	
 	// for UrQMD events (invariant mass from pi0 -> gamma + gamma
-	fhInvariantMass_test	= new TH1D("fhInvariant", "fhInvariant;mass [GeV/c^2];#", 2000, 0., 2.);
-	fhInvariantMass_test2	= new TH1D("fhInvariant2", "fhInvariant2;mass [GeV/c^2];#", 2000, 0., 2.);
-	fhInvariantMass_test3	= new TH1D("fhInvariant3", "fhInvariant3;mass [GeV/c^2];#", 2000, 0., 2.);
+	fhInvariantMass_test	= new TH1D("fhInvariant", "fhInvariant;mass in GeV/c^{2}];#", 2000, 0., 2.);
+	fhInvariantMass_test2	= new TH1D("fhInvariant2", "fhInvariant2;mass in GeV/c^{2}];#", 2000, 0., 2.);
+	fhInvariantMass_test3	= new TH1D("fhInvariant3", "fhInvariant3;mass in GeV/c^{2}];#", 2000, 0., 2.);
 	fHistoList.push_back(fhInvariantMass_test);
 	fHistoList.push_back(fhInvariantMass_test2);
 	fHistoList.push_back(fhInvariantMass_test3);
@@ -562,7 +562,7 @@ void CbmAnaConversion::InitHistograms()
 	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(4, "only cuts");
 	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(5, "both");
 	fhPi0_Reco_invmass_cases->GetXaxis()->SetBinLabel(6, "mc-true");
-	fhPi0_Reco_noRichInd_invmass_cases = new TH2D("fhPi0_Reco_noRichInd_invmass_cases", "fhPi0_Reco_noRichInd_invmass_cases;cases;invmass [GeV]", 11, 0, 11, 300, 0, 3);
+	fhPi0_Reco_noRichInd_invmass_cases = new TH2D("fhPi0_Reco_noRichInd_invmass_cases", "fhPi0_Reco_noRichInd_invmass_cases;cases;invmass in GeV^{2}", 11, 0, 11, 300, 0, 3);
 	fHistoList_furtherAnalyses.push_back(fhPi0_Reco_noRichInd_invmass_cases);
 	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(1, "..");
 	fhPi0_Reco_noRichInd_invmass_cases->GetXaxis()->SetBinLabel(2, "no cuts");
@@ -804,31 +804,31 @@ void CbmAnaConversion::Exec(Option_t*)
 		}
 
 
-		if (TMath::Abs(mctrack->GetPdgCode() ) == 113) { // particle is rho(770)^0
+		if (TMath::Abs(mctrack->GetPdgCode() ) == 113 || TMath::Abs(mctrack->GetPdgCode() ) == 213) { // particle is rho(770)^0 or rho^+/-
 			TVector3 v, momentum;
 			mctrack->GetStartVertex(v);
 			mctrack->GetMomentum(momentum);
 			
-			if (v.Z() <= 1) {
+			//if (v.Z() <= 1) {
 				fhRho_pt->Fill(mctrack->GetPt() );
 				fhRho_pt_vs_rap->Fill(mctrack->GetPt(), mctrack->GetRapidity() );
 				fhRho_theta->Fill(momentum.Theta() * 180. / TMath::Pi() );
 				fhRho_theta_vs_rap->Fill(momentum.Theta() * 180. / TMath::Pi(), mctrack->GetRapidity() );
-			}
+			//}
 		}
 
 
-		if (TMath::Abs(mctrack->GetPdgCode() ) == 223) { // particle is omega(782)^0
+		if (TMath::Abs(mctrack->GetPdgCode() ) == 223 || TMath::Abs(mctrack->GetPdgCode() ) == 3334) { // particle is omega(782)^0 or omega^+/-
 			TVector3 v, momentum;
 			mctrack->GetStartVertex(v);
 			mctrack->GetMomentum(momentum);
 			
-			if (v.Z() <= 1) {
+			//if (v.Z() <= 1) {
 				fhOmega_pt->Fill(mctrack->GetPt() );
 				fhOmega_pt_vs_rap->Fill(mctrack->GetPt(), mctrack->GetRapidity() );
 				fhOmega_theta->Fill(momentum.Theta() * 180. / TMath::Pi() );
 				fhOmega_theta_vs_rap->Fill(momentum.Theta() * 180. / TMath::Pi(), mctrack->GetRapidity() );
-			}
+			//}
 		}
 
 		if (TMath::Abs( mctrack->GetPdgCode())  == 11) { // particle is electron

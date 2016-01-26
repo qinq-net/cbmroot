@@ -723,7 +723,7 @@ void CbmAnaConversionRecoFull::Exec()
 		CbmStsTrack* stsTrack = (CbmStsTrack*) fStsTracks->At(stsInd);
 		if (stsTrack == NULL) continue;
 
-		CbmTrackMatchNew* stsMatch  = (CbmTrackMatchNew*)fStsTrackMatches->At(stsInd);
+/*		CbmTrackMatchNew* stsMatch  = (CbmTrackMatchNew*)fStsTrackMatches->At(stsInd);
 		if (stsMatch == NULL) continue;
 		int stsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
 		if (stsMcTrackId < 0) continue;
@@ -736,6 +736,28 @@ void CbmAnaConversionRecoFull::Exec()
 		if (richMcTrackId < 0) continue;
 		CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
 		if (mcTrack2 == NULL) continue;
+*/
+		CbmTrackMatchNew* stsMatch  = (CbmTrackMatchNew*)fStsTrackMatches->At(stsInd);
+		int stsMcTrackId = 0;
+		CbmMCTrack* mcTrack1;
+		if (stsMatch != NULL) {
+			stsMcTrackId = stsMatch->GetMatchedLink().GetIndex();
+			if (stsMcTrackId >= 0) {
+				mcTrack1 = (CbmMCTrack*) fMcTracks->At(stsMcTrackId);
+				if (mcTrack1 == NULL) stsMcTrackId = 0;
+			}
+		}
+
+		CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(richInd);
+		int richMcTrackId = 0;
+		CbmMCTrack* mcTrack2;
+		if (richMatch != NULL) {
+			richMcTrackId = richMatch->GetMatchedLink().GetIndex();
+			if (richMcTrackId >= 0) {
+				mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
+				if (mcTrack2 == NULL) richMcTrackId = 0;
+			}
+		}
 
 		//if(stsMcTrackId != richMcTrackId) continue;
 		nofGT_richsts++;

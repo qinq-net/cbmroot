@@ -186,6 +186,8 @@ private:
 	TH1D * fhEPEM_InDetector_invmass_all_mc;
 	TH1D * fhEPEM_InDetector_invmass_all_refitted;
 
+	TH2D * fhEPEM_pt_vs_p_all_mc;
+	TH2D * fhEPEM_pt_vs_p_all_refitted;
 
 	// timer
 	TStopwatch timer;
