@@ -1491,6 +1491,8 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 					*/
 					
 					
+					if(fElectrons_mctrackID_new[index][electron11] == 0 || fElectrons_mctrackID_new[index][electron12] == 0 || fElectrons_mctrackID_new[index][electron21] == 0 || fElectrons_mctrackID_new[index][electron22] == 0) continue;
+					
 					// CROSSCHECK WITH MC-TRUE DATA!
 					CbmMCTrack* mctrack11 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID_new[index][electron11]);
 					CbmMCTrack* mctrack12 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID_new[index][electron12]);
@@ -2048,6 +2050,7 @@ void CbmAnaConversionRecoFull::CombinePhotons()
 					
 					
 					
+					if(fElectrons_mctrackID[electron11] == 0 || fElectrons_mctrackID[electron12] == 0 || fElectrons_mctrackID[electron21] == 0 || fElectrons_mctrackID[electron22] == 0) continue;
 					// CROSSCHECK WITH MC-TRUE DATA!
 					CbmMCTrack* mctrack11 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID[electron11]);
 					CbmMCTrack* mctrack12 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID[electron12]);
