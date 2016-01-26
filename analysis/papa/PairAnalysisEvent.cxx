@@ -145,7 +145,7 @@ void PairAnalysisEvent::SetInput(FairRootManager *man)
   fRichHitMatches=(TClonesArray*) man->GetObject("RichHitMatch");
   fTrdHitMatches= (TClonesArray*) man->GetObject("TrdHitMatch");
   fTofHitMatches= (TClonesArray*) man->GetObject("TofHitMatch");
-  fMuchHitMatche= (TClonesArray*) man->GetObject("MuchPixelHitMatch");
+  fMuchHitMatches=(TClonesArray*) man->GetObject("MuchPixelHitMatch");
   //  fMuchHitStrawMatches = (TClonesArray*) man->GetObject("MuchStrawHitMatch");
   // mc points
   fMvdPoints    = (TClonesArray*) man->GetObject("MvdPoint");
