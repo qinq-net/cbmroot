@@ -23,6 +23,7 @@ TString tofTag="";
 TString stsDigi="";
 TString trdDigi="";
 TString tofDigi="";
+TString muchDigi="";
 
 TString mvdMatBudget="";
 TString stsMatBudget="";
@@ -32,26 +33,20 @@ Double_t fieldZ=0.;
 Double_t fieldScale=0.;
 Int_t    fieldSymType=0;
 
+// Input Parameter
+TString input="pau";
+TString inputGEV="10gev";
+TString system="centr";
+TString signal="d0";
+Int_t  iVerbose=0;
+TString setup="sis100_electron";
+bool littrack=false;
+Bool_t useMC=kFALSE;
 
-TString input;
-TString inputGEV;
-TString system;
-TString signal; // "dminus" "dplus" "d0_4B"
-Int_t  iVerbose;
-TString setup;
 
-bool littrack;
-Bool_t useMC;
-
-
-void PairSelectionSE(Int_t nEvents = 100, Int_t ProcID = 1, bool PileUp = false, Int_t PidTyp = 0)
+void PairSelectionSE(Int_t nEvents = 10, Int_t ProcID = 1, bool PileUp = false, Int_t PidTyp = 0)
 {
 // -------------------------------------------------------------------------
-
-  TString curDir = gSystem->Getenv("VMCWORKDIR");
-  TString setupDir = curDir + "/macro/analysis/opencharm/CharmSetup.C";
-  gROOT->LoadMacro(setupDir);
-  gInterpreter->ProcessLine("CharmSetup()");
 
 switch (PidTyp)
 {
@@ -70,15 +65,15 @@ default:
 }
 
 // Input file (MC events)
- TString mcFile = Form("/hera/cbm/users/psitzmann/data/mc/opencharm.mc.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+ TString mcFile = Form("data/opencharm.mc.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
 
 
 
   // Parameter file
-  TString parFile = Form("/hera/cbm/users/psitzmann/data/params/paramsunigen.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+  TString parFile = Form("data/paramsunigen.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
 
     // Reco file
-    TString rcSystem = Form("/hera/cbm/users/psitzmann/data/reco/opencharm.reco.urqmd.%s.%s.%i.%i.%s.%s", input.Data(), inputGEV.Data(), nEvents, ProcID,  signal.Data(), setup.Data());
+    TString rcSystem = Form("data/opencharm.reco.urqmd.%s.%s.%i.%i.%s.%s", input.Data(), inputGEV.Data(), nEvents, ProcID,  signal.Data(), setup.Data());
     if(!PileUp)
       {
       if(littrack)
@@ -92,7 +87,7 @@ default:
          TString rcFile = rcSystem + ".PileUp.l1.root";
 
   // Output file
-  TString outSystem = Form("/hera/cbm/users/psitzmann/data/ana/opencharm.pairs.superEvent.urqmd.%s.%s.%i.%i.%s.%s.pidMode_%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), pidMode.Data());
+  TString outSystem = Form("data/opencharm.pairs.superEvent.urqmd.%s.%s.%i.%i.%s.%s.pidMode_%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), pidMode.Data());
   if(useMC) outSystem += ".mcMode";
   if(!PileUp)
     {
@@ -108,7 +103,7 @@ default:
     
 
     // Track file
-  TString trackSystem = Form("/hera/cbm/users/psitzmann/data/ana/opencharm.tracks.urqmd.%s.%s.%i.%i.%s.%s.pidMode_%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), pidMode.Data());
+  TString trackSystem = Form("data/opencharm.tracks.urqmd.%s.%s.%i.%i.%s.%s.pidMode_%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), pidMode.Data());
   if(!PileUp)
     {
     if(littrack)

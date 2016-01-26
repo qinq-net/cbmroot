@@ -33,6 +33,8 @@ TString tofTag="";
 TString stsDigi="";
 TString trdDigi="";
 TString tofDigi="";
+TString muchDigi="";
+
 
 TString mvdMatBudget="";
 TString stsMatBudget="";
@@ -45,34 +47,28 @@ Int_t    fieldSymType=0;
 TString defaultInputFile="";
 
 // Input Parameter
-TString input;
-TString inputGEV;
-TString system;
-TString signal;
-Int_t  iVerbose;
-TString setup;
-bool littrack;
-Bool_t useMC;
+TString input="pau";
+TString inputGEV="10gev";
+TString system="centr";
+TString signal="d0";
+Int_t  iVerbose=0;
+TString setup="sis100_electron";
+bool littrack=false;
+Bool_t useMC=kFALSE;
 
-void opencharm_reco(Int_t nEvents = 100, Int_t ProcID = 1, bool PileUp = false)
+void opencharm_reco(Int_t nEvents = 10, Int_t ProcID = 1, bool PileUp = false)
 {
 
   // ========================================================================
   //          Adjust this part according to your requirements
 
-  TString curDir = gSystem->Getenv("VMCWORKDIR");
-  TString setupDir = curDir + "/macro/analysis/opencharm/CharmSetup.C";
-  gROOT->LoadMacro(setupDir);
-  gInterpreter->ProcessLine("CharmSetup()");
-
-
   // Input file (MC events)
-  TString inFile = Form("/hera/cbm/users/psitzmann/data/mc/opencharm.mc.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
-  TString deltaFile = Form("/hera/cbm/users/psitzmann/data/mc/delta/opencharm.mc.delta.%i.root", ProcID);
-  TString bgFile = Form("/hera/cbm/users/psitzmann/data/mc/opencharm.mc.urqmd.bg.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+  TString inFile = Form("data/opencharm.mc.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+  TString deltaFile = Form("data/opencharm.mc.delta.%i.root", ProcID);
+  TString bgFile = Form("data/opencharm.mc.urqmd.bg.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
 
   // Output file
-  TString outSystem = Form("/hera/cbm/users/psitzmann/data/reco/opencharm.reco.urqmd.%s.%s.%i.%i.%s.%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+  TString outSystem = Form("data/opencharm.reco.urqmd.%s.%s.%i.%i.%s.%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
 
 if(!PileUp)
 {
@@ -88,7 +84,7 @@ else
 
 
   // Parameter file
-TString parFile = Form("/hera/cbm/users/psitzmann/data/params/paramsunigen.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+TString parFile = Form("data/paramsunigen.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
 
   //  Digitisation files.
   // Add TObjectString containing the different file names to

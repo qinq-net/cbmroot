@@ -41,32 +41,27 @@ Int_t    fieldSymType=0;
 
 TString defaultInputFile="";
 
-
 // Input Parameter
-TString input;
-TString inputGEV;
-TString system;
-TString signal;
-Int_t  iVerbose;
-TString setup;
-bool littrack;
-Bool_t useMC;
+TString input="nini";
+TString inputGEV="15gev";
+TString system="centr";
+TString signal="d0";
+Int_t  iVerbose=0;
+TString setup="sis100_electron";
+bool littrack=false;
+Bool_t useMC=kFALSE;
 
 void opencharm_delta(Int_t nEvents = 100,Int_t ProcID=1)
 {
   // ========================================================================
   //          Adjust this part according to your requirements
-  TString curDir = gSystem->Getenv("VMCWORKDIR");
-  TString setupDir = curDir + "/macro/analysis/opencharm/CharmSetup.C";
-  gROOT->LoadMacro(setupDir);
-  gInterpreter->ProcessLine("CharmSetup()");
- 
+
   // Output file
-  TString outFile = Form("/hera/cbm/users/psitzmann/data/mc/delta/opencharm.mc.delta..%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+  TString outFile = Form("data/opencharm.mc.delta..%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
   // ------------------------------------------------------------------------
 
   // Parameter file name
-  TString parFile = Form("/hera/cbm/users/psitzmann/data/params/paramsunigen.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+  TString parFile = Form("data/paramsunigen.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
   // ------------------------------------------------------------------------
 
   TString inDir = gSystem->Getenv("VMCWORKDIR");                                       

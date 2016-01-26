@@ -30,7 +30,7 @@ TString tofTag="";
 TString stsDigi="";
 TString trdDigi="";
 TString tofDigi="";
-
+TString muchDigi="";
 TString mvdMatBudget="";
 TString stsMatBudget="";
 
@@ -43,47 +43,43 @@ TString defaultInputFile="";
 
 
 // Input Parameter
-TString input;
-TString inputGEV;
-TString system;
-TString signal;
-Int_t  iVerbose;
-TString setup;
-bool littrack;
-Bool_t useMC;
+TString input="pau";
+TString inputGEV="10gev";
+TString system="centr";
+TString signal="d0";
+Int_t  iVerbose=0;
+TString setup="sis100_electron";
+bool littrack=false;
+Bool_t useMC=kFALSE;
 
-void opencharm_sim(Int_t nEvents = 100,Int_t ProcID=1, bool backgroundProduction = false)
+void opencharm_sim(Int_t nEvents = 10,Int_t ProcID=1, bool backgroundProduction = false)
 {
   // ========================================================================
   //          Adjust this part according to your requirements
-  TString curDir = gSystem->Getenv("VMCWORKDIR");
-  TString setupDir = curDir + "/macro/analysis/opencharm/CharmSetup.C";
-  gROOT->LoadMacro(setupDir);
-  gInterpreter->ProcessLine("CharmSetup()");
- 
+ TString inDir = gSystem->Getenv("VMCWORKDIR");
+
+
  // Input file
   
-  TString inFile = Form("/hera/cbm/prod/gen/urqmd/%s/%s/%s/urqmd.%s.%s.%s.%05i.root", input.Data(), inputGEV.Data(), system.Data(), input.Data(), inputGEV.Data(), system.Data(), ProcID);
+  TString inFile = Form("%s/input/urqmd.%s.%s.%s.root",inDir.Data(), input.Data(), inputGEV.Data(), system.Data(), input.Data(), inputGEV.Data(), system.Data());
   // ------------------------------------------------------------------------
 
   if(!backgroundProduction)
   {
   // Output file
-  TString outFile = Form("/hera/cbm/users/psitzmann/data/mc/opencharm.mc.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+  TString outFile = Form("data/opencharm.mc.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
   // ------------------------------------------------------------------------
   }
   else
   {
     // Output file
-  TString outFile = Form("/hera/cbm/users/psitzmann/data/mc/opencharm.mc.urqmd.bg.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+  TString outFile = Form("data/opencharm.mc.urqmd.bg.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
   // ------------------------------------------------------------------------
   }
 
   // Parameter file name
-  TString parFile = Form("/hera/cbm/users/psitzmann/data/params/paramsunigen.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+  TString parFile = Form("data/paramsunigen.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
   // ------------------------------------------------------------------------
-
-  TString inDir = gSystem->Getenv("VMCWORKDIR");                                       
 
   TString setupFile = inDir + "/geometry/setup/" + setup + "_setup.C";
   TString setupFunct = setup;

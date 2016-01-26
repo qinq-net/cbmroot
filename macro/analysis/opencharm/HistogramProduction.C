@@ -32,26 +32,21 @@ Double_t fieldZ=0.;
 Double_t fieldScale=0.;
 Int_t    fieldSymType=0;
 
+// Input Parameter
+TString input="nini";
+TString inputGEV="15";
+TString system="centr";
+TString signal="d0";
+Int_t  iVerbose=0;
+TString setup="sis100_electron";
+bool littrack=false;
+Bool_t useMC=kFALSE;
 
-TString input;
-TString inputGEV;
-TString system;
-TString signal; // "dminus" "dplus" "d0_4B"
-Int_t  iVerbose;
-TString setup;
-
-bool littrack;
-Bool_t useMC;
+TString version = "trunk.Refxx";
 
 void HistogramProduction(Int_t nEvents = 100, Int_t ProcID = 1, bool PileUp = false, Int_t PidTyp = 0, bool superEvent = 0)
 {
 // -------------------------------------------------------------------------
-TString version = "version1.trunkRef";
-
-  TString curDir = gSystem->Getenv("VMCWORKDIR");
-  TString setupDir = curDir + "/macro/analysis/opencharm/CharmSetup.C";
-  gROOT->LoadMacro(setupDir);
-  gInterpreter->ProcessLine("CharmSetup()");
 
 switch (PidTyp)
 {
@@ -70,10 +65,10 @@ default:
 }
 
 // Input file (MC events)
-TString mcFileName = Form("/hera/cbm/users/psitzmann/data/mc/opencharm.mc.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
+TString mcFileName = Form("data/opencharm.mc.urqmd.%s.%s.%i.%i.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data());
 
 // Reco file
-TString rcSystem = Form("/hera/cbm/users/psitzmann/data/reco/opencharm.reco.urqmd.%s.%s.%i.%i.%s.%s", input.Data(), inputGEV.Data(), nEvents, ProcID,  signal.Data(), setup.Data());
+TString rcSystem = Form("data/opencharm.reco.urqmd.%s.%s.%i.%i.%s.%s", input.Data(), inputGEV.Data(), nEvents, ProcID,  signal.Data(), setup.Data());
 if(!PileUp)
   {
   if(littrack)
@@ -87,9 +82,9 @@ if(!PileUp)
      TString rcFileName = rcSystem + ".PileUp.l1.root";
 
   // Pair file
-if(!superEvent)TString pairSystem = Form("/hera/cbm/users/psitzmann/data/ana/opencharm.pairs.urqmd.%s.%s.%i.%i.%s.%s.pidMode_%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), pidMode.Data());
+if(!superEvent)TString pairSystem = Form("data/opencharm.pairs.urqmd.%s.%s.%i.%i.%s.%s.pidMode_%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), pidMode.Data());
 else
-  TString pairSystem = Form("/hera/cbm/users/psitzmann/data/ana/opencharm.pairs.superEvent.urqmd.%s.%s.%i.%i.%s.%s.pidMode_%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), pidMode.Data());
+  TString pairSystem = Form("data/opencharm.pairs.superEvent.urqmd.%s.%s.%i.%i.%s.%s.pidMode_%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), pidMode.Data());
   if(useMC) pairSystem += ".mcMode";
   if(!PileUp)
     {
@@ -105,7 +100,7 @@ else
     
 
     // Track file
-  TString trackSystem = Form("/hera/cbm/users/psitzmann/data/ana/opencharm.tracks.urqmd.%s.%s.%i.%i.%s.%s.pidMode_%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), pidMode.Data());
+  TString trackSystem = Form("data/opencharm.tracks.urqmd.%s.%s.%i.%i.%s.%s.pidMode_%s", input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), pidMode.Data());
   if(!PileUp)
     {
     if(littrack)
@@ -118,9 +113,9 @@ else
     else 
 	TString trackFileName = trackSystem + ".PileUp.l1.root";
 
- if(!superEvent)TString outFileName = Form("/hera/cbm/users/psitzmann/data/ana/histo/opencharm.histo.%s.%s.%i.%i.%s.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), version.Data());
+ if(!superEvent)TString outFileName = Form("data/opencharm.histo.%s.%s.%i.%i.%s.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), version.Data());
  else
- TString outFileName = Form("/hera/cbm/users/psitzmann/data/ana/histo/opencharm.histo.superEvent.%s.%s.%i.%i.%s.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), version.Data());
+ TString outFileName = Form("data/opencharm.histo.superEvent.%s.%s.%i.%i.%s.%s.%s.root",input.Data(), inputGEV.Data(), nEvents, ProcID, signal.Data(), setup.Data(), version.Data());
 
   TFile* outFile = new TFile(outFileName, "RECREATE");
   TFile* mcFile = new TFile(mcFileName, "READ");
