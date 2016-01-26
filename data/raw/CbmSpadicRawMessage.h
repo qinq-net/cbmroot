@@ -59,9 +59,9 @@ class CbmSpadicRawMessage : public CbmRawMessage
   void SetInfo(Bool_t stat) {fIsInfo = stat; }
   void SetEpoch(Bool_t stat) {fIsEpoch = stat; }
   */
-  Bool_t GetHit() { fIsHit; }
-  Bool_t GetInfo() { fIsInfo; }
-  Bool_t GetEpoch() { fIsEpoch; }
+  Bool_t GetHit() { return fIsHit; }
+  Bool_t GetInfo() { return fIsInfo; }
+  Bool_t GetEpoch() { return fIsEpoch; }
 
  private:
 
