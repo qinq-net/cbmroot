@@ -137,7 +137,7 @@ EndIf()
 Set(LINKDEF CbmPapaLinkDef.h)
 Set(LIBRARY_NAME CbmPapa)
 Set(DEPENDENCIES
-    L1 KF CbmSts CbmBase CbmData CbmGenerators Base Vc.a)
+    L1 KF CbmSts CbmRich CbmBase CbmData CbmGenerators Base Vc.a)
 
 GENERATE_LIBRARY()
 

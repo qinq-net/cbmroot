@@ -139,13 +139,14 @@ void PairAnalysisEvent::SetInput(FairRootManager *man)
   fTrdHits      = (TClonesArray*) man->GetObject("TrdHit");
   fRichHits     = (TClonesArray*) man->GetObject("RichHit");
   fTofHits      = (TClonesArray*) man->GetObject("TofHit");
-  // hit matches
-  fMvdHitMatches = (TClonesArray*) man->GetObject("MvdHitMatch");
-  fStsHitMatches = (TClonesArray*) man->GetObject("StsHitMatch");
-  fRichHitMatches = 0x0;//(TClonesArray*) man->GetObject("RichHitMatch");
-  fMuchHitMatches = (TClonesArray*) man->GetObject("MuchHitMatch");
-  fTrdHitMatches = (TClonesArray*) man->GetObject("TrdHitMatch");
-  fTofHitMatches = 0x0;//(TClonesArray*) man->GetObject("TofHitMatch");
+  // hit matches (matches are accessed directly via CbmHit::GetMatch)
+  fMvdHitMatches= (TClonesArray*) man->GetObject("MvdHitMatch"); //needed for mvd matching
+  fStsHitMatches= (TClonesArray*) man->GetObject("StsHitMatch");
+  fRichHitMatches=(TClonesArray*) man->GetObject("RichHitMatch");
+  fTrdHitMatches= (TClonesArray*) man->GetObject("TrdHitMatch");
+  fTofHitMatches= (TClonesArray*) man->GetObject("TofHitMatch");
+  fMuchHitMatche= (TClonesArray*) man->GetObject("MuchPixelHitMatch");
+  //  fMuchHitStrawMatches = (TClonesArray*) man->GetObject("MuchStrawHitMatch");
   // mc points
   fMvdPoints    = (TClonesArray*) man->GetObject("MvdPoint");
   fStsPoints    = (TClonesArray*) man->GetObject("StsPoint");
@@ -156,7 +157,7 @@ void PairAnalysisEvent::SetInput(FairRootManager *man)
   // cluster
   fTrdCluster   = (TClonesArray*) man->GetObject("TrdCluster");
 
-  fRichProjection = (TClonesArray*) man->GetObject("RichProjection");
+  fRichProjection=(TClonesArray*) man->GetObject("RichProjection");
   // fast track
   fFastTracks   = (TClonesArray*) man->GetObject("FastTrack");
 
@@ -178,7 +179,7 @@ void PairAnalysisEvent::Init()
     TMatrixFSym cov(3);
     fPrimVertex = new CbmVertex("mcvtx","mc vtx",
 				fMCHeader->GetX(),
-				fMCHeader->GetY(), 
+				fMCHeader->GetY(),
 				fMCHeader->GetZ(),
 				1.0,
 				1,
@@ -190,7 +191,7 @@ void PairAnalysisEvent::Init()
   TArrayS matches;
   if(fMCTracks) matches.Set(fMCTracks->GetEntriesFast());
 
-  // loop over all glbl tracks
+  /// loop over all glbl tracks
   for (Int_t i=0; i<(fGlobalTracks?fGlobalTracks->GetEntriesFast():0); i++) {
     // global track
     CbmGlobalTrack *gtrk=static_cast<CbmGlobalTrack*>(fGlobalTracks->UncheckedAt(i));
@@ -243,6 +244,7 @@ void PairAnalysisEvent::Init()
     if(fMCTracks && iMC>=0) mcTrack=static_cast<CbmMCTrack*>(fMCTracks->At(iMC));
     // increment position in matching array
     if(mcTrack && fMCTracks) matches[istsMC]++;
+
     // build papa track
     fTracks->AddAtAndExpand(new PairAnalysisTrack(vtx,
 						  gtrk, stsTrack,muchTrack,trdTrack,richRing,tofHit,

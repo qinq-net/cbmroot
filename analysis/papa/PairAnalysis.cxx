@@ -726,7 +726,7 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	  case kSTS:  if(trkl) nhits = static_cast<CbmStsTrack*>(trkl)->GetNofStsHits(); break;
 	  case kMUCH:
 	  case kTRD:  if(trkl) nhits = trkl->GetNofHits();    break;
-	  case kTOF:  nhits = 1; /* can be 1 in maximum */    break;
+	  case kTOF:  nhits = 1; /* one is maximum */         break;
 	  case kRICH: if(ring) nhits = ring->GetNofHits();    break;
 	  default:
 	    continue;
