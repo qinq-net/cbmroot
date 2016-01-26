@@ -1625,6 +1625,7 @@ void PairAnalysisHistos::FillValues(TH1 *obj, const Double_t *values)
      value3!=PairAnalysisVarManager::kTriggerInclONL && value3!=PairAnalysisVarManager::kTriggerInclOFF &&
      value4!=PairAnalysisVarManager::kTriggerInclONL && value4!=PairAnalysisVarManager::kTriggerInclOFF ) {
     // no trigger map variable selected
+    */
     switch ( dim ) {
     case 1:
       if(!bprf && !weight)     obj->Fill(fvals[0]);                 // histograms
@@ -1645,7 +1646,7 @@ void PairAnalysisHistos::FillValues(TH1 *obj, const Double_t *values)
       else                     Printf(" WARNING: weighting NOT yet possible for TProfile3Ds !");
       break;
     }
-  }
+    /*  }
   else {
     // fill inclusive trigger map variables
     if(weight) return;
