@@ -267,9 +267,9 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fHistoList_recofull_new[i].clear();
 	}
 
-	Double_t invmassSpectra_nof = 801;
+	Double_t invmassSpectra_nof = 800;
 	Double_t invmassSpectra_start = -0.00125;
-	Double_t invmassSpectra_end = 2.00125;
+	Double_t invmassSpectra_end = 1.99875;
 
 
 	fhElectrons = new TH1I("fhElectrons", "fhElectrons;; #", 8, 0., 8.);
@@ -517,52 +517,52 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fhPi0_nofPerEvent_new[i] = new TH1D(Form("fhPi0_nofPerEvent_new_%i",i), Form("fhPi0_nofPerEvent_new_%i; nof pi0 per event; #",i), 31, -0.5, 30.5);
 		fHistoList_recofull_new[i].push_back(fhPi0_nofPerEvent_new[i]);
 
-		fhPhotons_invmass_new[i] = new TH1D(Form("fhPhotons_invmass_new_%i",i), Form("fhPhotons_invmass_new_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fhPhotons_invmass_new[i] = new TH1D(Form("fhPhotons_invmass_new_%i",i), Form("fhPhotons_invmass_new_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_new[i]);
 
-		fhPhotons_invmass_ptBin1_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin1_new_%i",i), Form("fhPhotons_invmass_ptBin1_new_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fhPhotons_invmass_ptBin1_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin1_new_%i",i), Form("fhPhotons_invmass_ptBin1_new_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin1_new[i]);
-		fhPhotons_invmass_ptBin2_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin2_new_%i",i), Form("fhPhotons_invmass_ptBin2_new_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fhPhotons_invmass_ptBin2_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin2_new_%i",i), Form("fhPhotons_invmass_ptBin2_new_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin2_new[i]);
-		fhPhotons_invmass_ptBin3_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin3_new_%i",i), Form("fhPhotons_invmass_ptBin3_new_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fhPhotons_invmass_ptBin3_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin3_new_%i",i), Form("fhPhotons_invmass_ptBin3_new_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin3_new[i]);
-		fhPhotons_invmass_ptBin4_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin4_new_%i",i), Form("fhPhotons_invmass_ptBin4_new_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fhPhotons_invmass_ptBin4_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin4_new_%i",i), Form("fhPhotons_invmass_ptBin4_new_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin4_new[i]);
-		fhPhotons_invmass_ptBin5_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin5_new_%i",i), Form("fhPhotons_invmass_ptBin5_new_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fhPhotons_invmass_ptBin5_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin5_new_%i",i), Form("fhPhotons_invmass_ptBin5_new_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin5_new[i]);
-		fhPhotons_invmass_ptBin6_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin6_new_%i",i), Form("fhPhotons_invmass_ptBin6_new_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fhPhotons_invmass_ptBin6_new[i] = new TH1D(Form("fhPhotons_invmass_ptBin6_new_%i",i), Form("fhPhotons_invmass_ptBin6_new_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_ptBin6_new[i]);
 	
-		fhElectrons_invmass_new[i] = new TH1D(Form("fhElectrons_invmass_new_%i",i), Form("fhElectrons_invmass_new_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fhElectrons_invmass_new[i] = new TH1D(Form("fhElectrons_invmass_new_%i",i), Form("fhElectrons_invmass_new_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhElectrons_invmass_new[i]);
-		fhPhotons_invmass_vs_pt_new[i] = new TH2D(Form("fhPhotons_invmass_vs_pt_new_%i",i), Form("fhPhotons_invmass_vs_pt_new_%i; invmass; pt",i), 600, -0.0025, 2.9975, 100, 0., 10.);
+		fhPhotons_invmass_vs_pt_new[i] = new TH2D(Form("fhPhotons_invmass_vs_pt_new_%i",i), Form("fhPhotons_invmass_vs_pt_new_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; pt",i), 600, -0.0025, 2.9975, 100, 0., 10.);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_vs_pt_new[i]);
 
-		fhPhotons_invmass_MCcut1_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut1_new_%i",i), Form("fhPhotons_invmass_MCcut1_new_%i (MC-true cut: at least gamma correct reconstructed); invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fhPhotons_invmass_MCcut1_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut1_new_%i",i), Form("fhPhotons_invmass_MCcut1_new_%i (MC-true cut: at least gamma correct reconstructed); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut1_new[i]);
-		fhPhotons_invmass_MCcut2_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut2_new_%i",i), Form("fhPhotons_invmass_MCcut2_new_%i (MC-true cut: gamma from same mother); invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fhPhotons_invmass_MCcut2_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut2_new_%i",i), Form("fhPhotons_invmass_MCcut2_new_%i (MC-true cut: gamma from same mother); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut2_new[i]);
-		fhPhotons_invmass_MCcut3_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut3_new_%i",i), Form("fhPhotons_invmass_MCcut3_new_%i (MC-true cut: gamma from different mother); invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fhPhotons_invmass_MCcut3_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut3_new_%i",i), Form("fhPhotons_invmass_MCcut3_new_%i (MC-true cut: gamma from different mother); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut3_new[i]);
-		fhPhotons_invmass_MCcut4_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut4_new_%i",i), Form("fhPhotons_invmass_MCcut4_new_%i (MC-true cut: wrong combination of electrons); invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fhPhotons_invmass_MCcut4_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut4_new_%i",i), Form("fhPhotons_invmass_MCcut4_new_%i (MC-true cut: wrong combination of electrons); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut4_new[i]);
 		
-		fhPhotons_pt_vs_rap_new[i] = new TH2D(Form("fhPhotons_pt_vs_rap_new_%i",i), Form("fhPhotons_pt_vs_rap_new_%i; pt; rapidity",i), 240, -2., 10., 270, -2., 7.);
+		fhPhotons_pt_vs_rap_new[i] = new TH2D(Form("fhPhotons_pt_vs_rap_new_%i",i), Form("fhPhotons_pt_vs_rap_new_%i; p_{t} in GeV/c; rapidity y",i), 240, -2., 10., 270, -2., 7.);
 		fHistoList_recofull_new[i].push_back(fhPhotons_pt_vs_rap_new[i]);
 	
 		fhElectrons_openingAngle_sameSign_new[i] = new TH1D(Form("fhElectrons_openingAngle_sameSign_new_%i",i), Form("fhElectrons_openingAngle_sameSign_new_%i; opening angle; #",i), 101, -0.5, 100.5);
 		fHistoList_recofull_new[i].push_back(fhElectrons_openingAngle_sameSign_new[i]);
 	
 		
-		fhMixedEventsTest_invmass[i] = new TH1D(Form("fhMixedEventsTest_invmass_%i",i), Form("fhMixedEventsTest_invmass_%i; invariant mass; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fhMixedEventsTest_invmass[i] = new TH1D(Form("fhMixedEventsTest_invmass_%i",i), Form("fhMixedEventsTest_invmass_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhMixedEventsTest_invmass[i]);
 	}
 
-	fhMixedEventsTest2_invmass = new TH1D(Form("fhMixedEventsTest2_invmass_%i",4), Form("fhMixedEventsTest2_invmass_%i; invariant mass; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhMixedEventsTest2_invmass = new TH1D(Form("fhMixedEventsTest2_invmass_%i",4), Form("fhMixedEventsTest2_invmass_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull_new[4].push_back(fhMixedEventsTest2_invmass);
-	fhMixedEventsTest3_invmass = new TH1D(Form("fhMixedEventsTest3_invmass_%i",4), Form("fhMixedEventsTest3_invmass_%i; invariant mass; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhMixedEventsTest3_invmass = new TH1D(Form("fhMixedEventsTest3_invmass_%i",4), Form("fhMixedEventsTest3_invmass_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull_new[4].push_back(fhMixedEventsTest3_invmass);
-	fhMixedEventsTest4_invmass = new TH1D(Form("fhMixedEventsTest4_invmass_%i",4), Form("fhMixedEventsTest4_invmass_%i; invariant mass; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhMixedEventsTest4_invmass = new TH1D(Form("fhMixedEventsTest4_invmass_%i",4), Form("fhMixedEventsTest4_invmass_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull_new[4].push_back(fhMixedEventsTest4_invmass);
 }
 

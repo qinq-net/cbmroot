@@ -963,6 +963,26 @@ void CbmAnaConversion::Exec(Option_t*)
 		fTestTracklist_noRichInd_nofhits.push_back(nofhits_sts);
 
 
+		TVector3 stsMomentumVec;	// momenta as measured by STS
+		stsTrack->GetParamFirst()->Momentum(stsMomentumVec);
+		Double_t stsMomentum = stsMomentumVec.Mag();
+       
+		TVector3 mcMomentumVec;		// momenta from true-MC data
+		mcTrack1->GetMomentum(mcMomentumVec);
+		Double_t mcMomentum = mcMomentumVec.Mag();
+		fhMomentum_MCvsReco->Fill(mcMomentum, stsMomentum);
+		fhMomentum_MCvsReco_diff->Fill(TMath::Abs(mcMomentum-stsMomentum)/mcMomentum);
+       
+		TVector3 bothtogether;		// combination of measured (STS) momenta and MC momenta
+		bothtogether.SetX(mcMomentumVec.X());
+		bothtogether.SetY(stsMomentumVec.Y());
+		bothtogether.SetZ(stsMomentumVec.Z());
+       
+
+		// Fill tracklists containing momenta from mc-true, measured in sts, refitted at primary
+		Bool_t isFilled = FillRecoTracklistEPEM(mcTrack1, stsMomentumVec, refittedMomentum, stsMcTrackId, result_chi, i);
+		if(isFilled) nofElectrons4epem++;
+
 		
 		if (richInd < 0) continue;
 		CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(richInd);
@@ -988,27 +1008,7 @@ void CbmAnaConversion::Exec(Option_t*)
 		FillRecoTracklist(mcTrack1);
 		
        
-		TVector3 stsMomentumVec;	// momenta as measured by STS
-		stsTrack->GetParamFirst()->Momentum(stsMomentumVec);
-		Double_t stsMomentum = stsMomentumVec.Mag();
        
-		TVector3 mcMomentumVec;		// momenta from true-MC data
-		mcTrack1->GetMomentum(mcMomentumVec);
-		Double_t mcMomentum = mcMomentumVec.Mag();
-		fhMomentum_MCvsReco->Fill(mcMomentum, stsMomentum);
-		fhMomentum_MCvsReco_diff->Fill(TMath::Abs(mcMomentum-stsMomentum)/mcMomentum);
-       
-		TVector3 bothtogether;		// combination of measured (STS) momenta and MC momenta
-		bothtogether.SetX(mcMomentumVec.X());
-		bothtogether.SetY(stsMomentumVec.Y());
-		bothtogether.SetZ(stsMomentumVec.Z());
-       
-
-       
-
-		// Fill tracklists containing momenta from mc-true, measured in sts, refitted at primary
-		Bool_t isFilled = FillRecoTracklistEPEM(mcTrack1, stsMomentumVec, refittedMomentum, stsMcTrackId, result_chi, i);
-		if(isFilled) nofElectrons4epem++;
 
 
 		fTestTracklist.push_back(mcTrack1);

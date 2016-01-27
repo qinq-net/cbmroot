@@ -119,9 +119,9 @@ void CbmAnaConversionTest::InitHistos()
 {
 	fHistoList_test.clear();
 
-	Double_t invmassSpectra_nof = 801;
+	Double_t invmassSpectra_nof = 800;
 	Double_t invmassSpectra_start = -0.00125;
-	Double_t invmassSpectra_end = 2.00125;
+	Double_t invmassSpectra_end = 1.99875;
 
 
 	fElectrons_nofPerPi0 = new TH1I("fElectrons_nofPerPi0", "fElectrons_nofPerPi0; nof; #", 7, -0.5, 6.5);
@@ -129,7 +129,7 @@ void CbmAnaConversionTest::InitHistos()
 	fElectrons_nofPerPi0_withRichInd = new TH1I("fElectrons_nofPerPi0_withRichInd", "fElectrons_nofPerPi0_withRichInd; nof; #", 7, -0.5, 6.5);
 	fHistoList_test.push_back(fElectrons_nofPerPi0_withRichInd);
 
-	fhElectronsTest_invmass = new TH1D("fhElectronsTest_invmass", "fhElectronsTest_invmass; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhElectronsTest_invmass = new TH1D("fhElectronsTest_invmass", "fhElectronsTest_invmass; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhElectronsTest_invmass);
 
 
@@ -143,19 +143,19 @@ void CbmAnaConversionTest::InitHistos()
 	fHistoList_test.push_back(fhTest_ReconstructedPi0PerEvent);
 	fhTest_RICHelectronsPerEvent = new TH1I("fhTest_RICHelectronsPerEvent", "fhTest_RICHelectronsPerEvent; nof; #", 501, -0.5, 500.5);
 	fHistoList_test.push_back(fhTest_RICHelectronsPerEvent);
-	fhTest_invmass = new TH1D("fhTest_invmass", "fhTest_invmass; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest_invmass = new TH1D("fhTest_invmass", "fhTest_invmass; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_invmass);
 	
 	
-	fhTest_invmass_RICHindex0 = new TH1D("fhTest_invmass_RICHindex0", "fhTest_invmass_RICHindex0; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest_invmass_RICHindex0 = new TH1D("fhTest_invmass_RICHindex0", "fhTest_invmass_RICHindex0; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_invmass_RICHindex0);
-	fhTest_invmass_RICHindex1 = new TH1D("fhTest_invmass_RICHindex1", "fhTest_invmass_RICHindex1; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest_invmass_RICHindex1 = new TH1D("fhTest_invmass_RICHindex1", "fhTest_invmass_RICHindex1; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_invmass_RICHindex1);
-	fhTest_invmass_RICHindex2 = new TH1D("fhTest_invmass_RICHindex2", "fhTest_invmass_RICHindex2; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest_invmass_RICHindex2 = new TH1D("fhTest_invmass_RICHindex2", "fhTest_invmass_RICHindex2; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_invmass_RICHindex2);
-	fhTest_invmass_RICHindex3 = new TH1D("fhTest_invmass_RICHindex3", "fhTest_invmass_RICHindex3; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest_invmass_RICHindex3 = new TH1D("fhTest_invmass_RICHindex3", "fhTest_invmass_RICHindex3; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_invmass_RICHindex3);
-	fhTest_invmass_RICHindex4 = new TH1D("fhTest_invmass_RICHindex4", "fhTest_invmass_RICHindex4; invariant mass; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest_invmass_RICHindex4 = new TH1D("fhTest_invmass_RICHindex4", "fhTest_invmass_RICHindex4; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_invmass_RICHindex4);
 }
 

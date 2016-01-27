@@ -121,28 +121,29 @@ void CbmAnaConversionTest2::InitHistos()
 {
 	fHistoList_test2.clear();
 
-	Double_t invmassSpectra_nof = 801;
+	Double_t invmassSpectra_nof = 800;
 	Double_t invmassSpectra_start = -0.00125;
-	Double_t invmassSpectra_end = 2.00125;
+	Double_t invmassSpectra_end = 1.99875;
 	
-	fhTest2_invmass_RICHindex0 = new TH1D("fhTest2_invmass_RICHindex0", "fhTest2_invmass_RICHindex0; invariant mass; #", 600, -0.0025, 2.9975);
+	
+	fhTest2_invmass_RICHindex0 = new TH1D("fhTest2_invmass_RICHindex0", "fhTest2_invmass_RICHindex0; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", 600, -0.0025, 2.9975);
 	fHistoList_test2.push_back(fhTest2_invmass_RICHindex0);
-	fhTest2_invmass_RICHindex1 = new TH1D("fhTest2_invmass_RICHindex1", "fhTest2_invmass_RICHindex1; invariant mass; #", 600, -0.0025, 2.9975);
+	fhTest2_invmass_RICHindex1 = new TH1D("fhTest2_invmass_RICHindex1", "fhTest2_invmass_RICHindex1; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", 600, -0.0025, 2.9975);
 	fHistoList_test2.push_back(fhTest2_invmass_RICHindex1);
-	fhTest2_invmass_RICHindex2 = new TH1D("fhTest2_invmass_RICHindex2", "fhTest2_invmass_RICHindex2; invariant mass; #", 600, -0.0025, 2.9975);
+	fhTest2_invmass_RICHindex2 = new TH1D("fhTest2_invmass_RICHindex2", "fhTest2_invmass_RICHindex2; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", 600, -0.0025, 2.9975);
 	fHistoList_test2.push_back(fhTest2_invmass_RICHindex2);
-	fhTest2_invmass_RICHindex3 = new TH1D("fhTest2_invmass_RICHindex3", "fhTest2_invmass_RICHindex3; invariant mass; #", 600, -0.0025, 2.9975);
+	fhTest2_invmass_RICHindex3 = new TH1D("fhTest2_invmass_RICHindex3", "fhTest2_invmass_RICHindex3; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", 600, -0.0025, 2.9975);
 	fHistoList_test2.push_back(fhTest2_invmass_RICHindex3);
-	fhTest2_invmass_RICHindex4 = new TH1D("fhTest2_invmass_RICHindex4", "fhTest2_invmass_RICHindex4; invariant mass; #", 600, -0.0025, 2.9975);
+	fhTest2_invmass_RICHindex4 = new TH1D("fhTest2_invmass_RICHindex4", "fhTest2_invmass_RICHindex4; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", 600, -0.0025, 2.9975);
 	fHistoList_test2.push_back(fhTest2_invmass_RICHindex4);
 	
 	
-	fhTest2_invmass_gee_mc			= new TH1D("fhTest2_invmass_gee_mc","fhTest2_invmass_gee_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhTest2_invmass_gee_refitted	= new TH1D("fhTest2_invmass_gee_refitted","fhTest2_invmass_gee_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhTest2_invmass_gg_mc			= new TH1D("fhTest2_invmass_gg_mc","fhTest2_invmass_gg_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhTest2_invmass_gg_refitted		= new TH1D("fhTest2_invmass_gg_refitted","fhTest2_invmass_gg_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhTest2_invmass_all_mc			= new TH1D("fhTest2_invmass_all_mc","fhTest2_invmass_all_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhTest2_invmass_all_refitted	= new TH1D("fhTest2_invmass_all_refitted","fhTest2_invmass_all_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_invmass_gee_mc			= new TH1D("fhTest2_invmass_gee_mc","fhTest2_invmass_gee_mc;invariant mass of 4 e^{#pm} in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_invmass_gee_refitted	= new TH1D("fhTest2_invmass_gee_refitted","fhTest2_invmass_gee_refitted;invariant mass of 4 e^{#pm} in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_invmass_gg_mc			= new TH1D("fhTest2_invmass_gg_mc","fhTest2_invmass_gg_mc;invariant mass of 4 e^{#pm} in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_invmass_gg_refitted		= new TH1D("fhTest2_invmass_gg_refitted","fhTest2_invmass_gg_refitted;invariant mass of 4 e^{#pm} in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_invmass_all_mc			= new TH1D("fhTest2_invmass_all_mc","fhTest2_invmass_all_mc;invariant mass of 4 e^{#pm} in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_invmass_all_refitted	= new TH1D("fhTest2_invmass_all_refitted","fhTest2_invmass_all_refitted;invariant mass of 4 e^{#pm} in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test2.push_back(fhTest2_invmass_gee_mc);
 	fHistoList_test2.push_back(fhTest2_invmass_gee_refitted);
 	fHistoList_test2.push_back(fhTest2_invmass_gg_mc);
@@ -150,16 +151,16 @@ void CbmAnaConversionTest2::InitHistos()
 	fHistoList_test2.push_back(fhTest2_invmass_all_mc);
 	fHistoList_test2.push_back(fhTest2_invmass_all_refitted);
 
-	fhTest2_pt_vs_rap_gee	= new TH2D("fhTest2_pt_vs_rap_gee", "fhTest2_pt_vs_rap_gee;pt [GeV]; rap [GeV]", 240, -2., 10., 270, -2., 7.);
-	fhTest2_pt_vs_rap_gg	= new TH2D("fhTest2_pt_vs_rap_gg", "fhTest2_pt_vs_rap_gg;pt [GeV]; rap [GeV]", 240, -2., 10., 270, -2., 7.);
-	fhTest2_pt_vs_rap_all	= new TH2D("fhTest2_pt_vs_rap_all", "fhTest2_pt_vs_rap_all;pt [GeV]; rap [GeV]", 240, -2., 10., 270, -2., 7.);
+	fhTest2_pt_vs_rap_gee	= new TH2D("fhTest2_pt_vs_rap_gee", "fhTest2_pt_vs_rap_gee;p_{t} in GeV/c; rapidity y", 240, -2., 10., 270, -2., 7.);
+	fhTest2_pt_vs_rap_gg	= new TH2D("fhTest2_pt_vs_rap_gg", "fhTest2_pt_vs_rap_gg;p_{t} in GeV/c; rapidity y", 240, -2., 10., 270, -2., 7.);
+	fhTest2_pt_vs_rap_all	= new TH2D("fhTest2_pt_vs_rap_all", "fhTest2_pt_vs_rap_all;p_{t} in GeV/c; rapidity y", 240, -2., 10., 270, -2., 7.);
 	fHistoList_test2.push_back(fhTest2_pt_vs_rap_gee);
 	fHistoList_test2.push_back(fhTest2_pt_vs_rap_gg);
 	fHistoList_test2.push_back(fhTest2_pt_vs_rap_all);
 
-	fhTest2_startvertexElectrons_gee	= new TH1D("fhTest2_startvertexElectrons_gee","fhTest2_startvertexElectrons_gee;z[cm];#", 411, -5.25, 200.25);
-	fhTest2_startvertexElectrons_gg		= new TH1D("fhTest2_startvertexElectrons_gg","fhTest2_startvertexElectrons_gg;z[cm];#", 411, -5.25, 200.25);
-	fhTest2_startvertexElectrons_all	= new TH1D("fhTest2_startvertexElectrons_all","fhTest2_startvertexElectrons_all;z[cm];#", 411, -5.25, 200.25);
+	fhTest2_startvertexElectrons_gee	= new TH1D("fhTest2_startvertexElectrons_gee","fhTest2_startvertexElectrons_gee;z in cm;#", 411, -5.25, 200.25);
+	fhTest2_startvertexElectrons_gg		= new TH1D("fhTest2_startvertexElectrons_gg","fhTest2_startvertexElectrons_gg;z in cm;#", 411, -5.25, 200.25);
+	fhTest2_startvertexElectrons_all	= new TH1D("fhTest2_startvertexElectrons_all","fhTest2_startvertexElectrons_all;z in cm;#", 411, -5.25, 200.25);
 	fHistoList_test2.push_back(fhTest2_startvertexElectrons_gee);
 	fHistoList_test2.push_back(fhTest2_startvertexElectrons_gg);
 	fHistoList_test2.push_back(fhTest2_startvertexElectrons_all);
@@ -167,12 +168,12 @@ void CbmAnaConversionTest2::InitHistos()
 
 
 	// 2 leptons in RICH
-	fhTest2_2rich_invmass_gee_mc		= new TH1D("fhTest2_2rich_invmass_gee_mc","fhTest2_2rich_invmass_gee_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhTest2_2rich_invmass_gee_refitted	= new TH1D("fhTest2_2rich_invmass_gee_refitted","fhTest2_2rich_invmass_gee_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhTest2_2rich_invmass_gg_mc			= new TH1D("fhTest2_2rich_invmass_gg_mc","fhTest2_2rich_invmass_gg_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhTest2_2rich_invmass_gg_refitted	= new TH1D("fhTest2_2rich_invmass_gg_refitted","fhTest2_2rich_invmass_gg_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhTest2_2rich_invmass_all_mc		= new TH1D("fhTest2_2rich_invmass_all_mc","fhTest2_2rich_invmass_all_mc;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fhTest2_2rich_invmass_all_refitted	= new TH1D("fhTest2_2rich_invmass_all_refitted","fhTest2_2rich_invmass_all_refitted;mass [GeV/c^2];#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_2rich_invmass_gee_mc		= new TH1D("fhTest2_2rich_invmass_gee_mc","fhTest2_2rich_invmass_gee_mc;invariant mass of 4 e^{#pm} in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_2rich_invmass_gee_refitted	= new TH1D("fhTest2_2rich_invmass_gee_refitted","fhTest2_2rich_invmass_gee_refitted;invariant mass of 4 e^{#pm} in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_2rich_invmass_gg_mc			= new TH1D("fhTest2_2rich_invmass_gg_mc","fhTest2_2rich_invmass_gg_mc;invariant mass of 4 e^{#pm} in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_2rich_invmass_gg_refitted	= new TH1D("fhTest2_2rich_invmass_gg_refitted","fhTest2_2rich_invmass_gg_refitted;invariant mass of 4 e^{#pm} in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_2rich_invmass_all_mc		= new TH1D("fhTest2_2rich_invmass_all_mc","fhTest2_2rich_invmass_all_mc;invariant mass of 4 e^{#pm} in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fhTest2_2rich_invmass_all_refitted	= new TH1D("fhTest2_2rich_invmass_all_refitted","fhTest2_2rich_invmass_all_refitted;invariant mass of 4 e^{#pm} in GeV/c^{2};#", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test2.push_back(fhTest2_2rich_invmass_gee_mc);
 	fHistoList_test2.push_back(fhTest2_2rich_invmass_gee_refitted);
 	fHistoList_test2.push_back(fhTest2_2rich_invmass_gg_mc);
@@ -181,9 +182,9 @@ void CbmAnaConversionTest2::InitHistos()
 	fHistoList_test2.push_back(fhTest2_2rich_invmass_all_refitted);
 
 
-	fhTest2_2rich_pt_vs_rap_gee	= new TH2D("fhTest2_2rich_pt_vs_rap_gee", "fhTest2_2rich_pt_vs_rap_gee;pt [GeV]; rap [GeV]", 240, -2., 10., 270, -2., 7.);
-	fhTest2_2rich_pt_vs_rap_gg	= new TH2D("fhTest2_2rich_pt_vs_rap_gg", "fhTest2_2rich_pt_vs_rap_gg;pt [GeV]; rap [GeV]", 240, -2., 10., 270, -2., 7.);
-	fhTest2_2rich_pt_vs_rap_all	= new TH2D("fhTest2_2rich_pt_vs_rap_all", "fhTest2_2rich_pt_vs_rap_all;pt [GeV]; rap [GeV]", 240, -2., 10., 270, -2., 7.);
+	fhTest2_2rich_pt_vs_rap_gee	= new TH2D("fhTest2_2rich_pt_vs_rap_gee", "fhTest2_2rich_pt_vs_rap_gee;p_{t} in GeV/c; rapidity y", 240, -2., 10., 270, -2., 7.);
+	fhTest2_2rich_pt_vs_rap_gg	= new TH2D("fhTest2_2rich_pt_vs_rap_gg", "fhTest2_2rich_pt_vs_rap_gg;p_{t} in GeV/c; rapidity y", 240, -2., 10., 270, -2., 7.);
+	fhTest2_2rich_pt_vs_rap_all	= new TH2D("fhTest2_2rich_pt_vs_rap_all", "fhTest2_2rich_pt_vs_rap_all;p_{t} in GeV/c; rapidity y", 240, -2., 10., 270, -2., 7.);
 	fHistoList_test2.push_back(fhTest2_2rich_pt_vs_rap_gee);
 	fHistoList_test2.push_back(fhTest2_2rich_pt_vs_rap_gg);
 	fHistoList_test2.push_back(fhTest2_2rich_pt_vs_rap_all);
@@ -191,15 +192,15 @@ void CbmAnaConversionTest2::InitHistos()
 
 
 	// further tests
-	fhTest2_electrons_pt_vs_p	= new TH2D("fhTest2_electrons_pt_vs_p", "fhTest2_electrons_pt_vs_p;pt [GeV]; p [GeV]", 240, -2., 10., 360, -2., 16.);
+	fhTest2_electrons_pt_vs_p	= new TH2D("fhTest2_electrons_pt_vs_p", "fhTest2_electrons_pt_vs_p;p_{t} in GeV/c; p in GeV/c", 240, -2., 10., 360, -2., 16.);
 	fHistoList_test2.push_back(fhTest2_electrons_pt_vs_p);
 	fhTest2_3rich_electrons_theta_included	= new TH1D("fhTest2_3rich_electrons_theta_included","fhTest2_3rich_electrons_theta_included;theta angle [deg];#", 90, 0, 90);
 	fHistoList_test2.push_back(fhTest2_3rich_electrons_theta_included);
 	fhTest2_3rich_electrons_theta_missing	= new TH1D("fhTest2_3rich_electrons_theta_missing","fhTest2_3rich_electrons_theta_missing;theta angle [deg];#", 90, 0, 90);
 	fHistoList_test2.push_back(fhTest2_3rich_electrons_theta_missing);
-	fhTest2_3rich_electrons_thetaVSp_included	= new TH2D("fhTest2_3rich_electrons_thetaVSp_included","fhTest2_3rich_electrons_thetaVSp_included;theta angle [deg];p [GeV]", 90, 0, 90, 540, -2., 16.);
+	fhTest2_3rich_electrons_thetaVSp_included	= new TH2D("fhTest2_3rich_electrons_thetaVSp_included","fhTest2_3rich_electrons_thetaVSp_included;theta angle [deg];p in GeV/c", 90, 0, 90, 540, -2., 16.);
 	fHistoList_test2.push_back(fhTest2_3rich_electrons_thetaVSp_included);
-	fhTest2_3rich_electrons_thetaVSp_missing	= new TH2D("fhTest2_3rich_electrons_thetaVSp_missing","fhTest2_3rich_electrons_thetaVSp_missing;theta angle [deg];p [GeV]", 90, 0, 90, 540, -2., 16.);
+	fhTest2_3rich_electrons_thetaVSp_missing	= new TH2D("fhTest2_3rich_electrons_thetaVSp_missing","fhTest2_3rich_electrons_thetaVSp_missing;theta angle [deg];p in GeV/c", 90, 0, 90, 540, -2., 16.);
 	fHistoList_test2.push_back(fhTest2_3rich_electrons_thetaVSp_missing);
 
 }
