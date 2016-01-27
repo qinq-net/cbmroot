@@ -58,7 +58,7 @@ public:
 	
 	Bool_t HasRichInd(Int_t gtIndex);
 
-
+	void MixedEventTest_3p1();
 
 
 
@@ -126,6 +126,23 @@ private:
 	// additional arrays, for CombineElectrons_STSonly() and CombinePhotons_STSonly()
 	vector< vector<int> >	fVector_reconstructedPhotons_STSonly;
 	
+
+
+	// EVENT MIXING 
+	Int_t	globalEventNo;
+//	for STS only mixed events creation
+//	TH1D * fhTest_eventMixing_RICHindex0;
+//	TH1D * fhTest_eventMixing_RICHindex1;
+//	TH1D * fhTest_eventMixing_RICHindex2;
+//	TH1D * fhTest_eventMixing_RICHindex3;
+//	TH1D * fhTest_eventMixing_RICHindex4;
+//	vector< vector<TVector3> >	fMixedTest_STSonly_photons;
+//	vector<int>					fMixedTest_STSonly_eventno;
+
+//	for other event mixing (3 + 1)
+	vector< vector<TVector3> >	fMixedTest_3p1_photons;
+	vector<int>					fMixedTest_3p1_eventno;
+	TH1D * 						fhTest_eventMixing_3p1;
 
 
 	CbmAnaConversionTest(const CbmAnaConversionTest&);

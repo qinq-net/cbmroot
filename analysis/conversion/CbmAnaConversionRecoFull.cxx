@@ -1133,6 +1133,7 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 						pairmomenta.push_back(momenta[a]);
 						pairmomenta.push_back(momenta[b]);
 						fMixedTest4_photons.push_back(pairmomenta);
+						fMixedTest4_eventno.push_back(globalEventNo);
 					}
 				}
 			}
@@ -2343,6 +2344,8 @@ void CbmAnaConversionRecoFull::MixedEventTest4()
 	cout << "CbmAnaConversionRecoFull: MixedEventTest4 - nof entries " << nof << endl;
 	for(Int_t a = 0; a < nof-1; a++) {
 		for(Int_t b = a+1; b < nof; b++) {
+			if(fMixedTest4_eventno[a] == fMixedTest4_eventno[b]) continue;
+		
 			TVector3 e11 = fMixedTest4_photons[a][0];
 			TVector3 e12 = fMixedTest4_photons[a][1];
 			TVector3 e21 = fMixedTest4_photons[b][0];

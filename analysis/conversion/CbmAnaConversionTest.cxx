@@ -71,7 +71,11 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fVector_electronRICH_gtIndex(),
 	fVector_electronRICH_momenta(),
 	fVector_electronRICH_reconstructedPhotons(),
-	fVector_reconstructedPhotons_STSonly()
+	fVector_reconstructedPhotons_STSonly(),
+	globalEventNo(0),
+	fMixedTest_3p1_photons(),
+	fMixedTest_3p1_eventno(),
+	fhTest_eventMixing_3p1(NULL)
 {
 }
 
@@ -112,6 +116,8 @@ void CbmAnaConversionTest::Init()
 	InitHistos();
 	electronidentifier = new CbmLitGlobalElectronId();
 	electronidentifier->Init();
+
+	globalEventNo = 0;
 }
 
 
@@ -157,6 +163,10 @@ void CbmAnaConversionTest::InitHistos()
 	fHistoList_test.push_back(fhTest_invmass_RICHindex3);
 	fhTest_invmass_RICHindex4 = new TH1D("fhTest_invmass_RICHindex4", "fhTest_invmass_RICHindex4; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_invmass_RICHindex4);
+
+
+	fhTest_eventMixing_3p1 = new TH1D("fhTest_eventMixing_3p1", "fhTest_eventMixing_3p1; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_test.push_back(fhTest_eventMixing_3p1);
 }
 
 
@@ -182,6 +192,8 @@ void CbmAnaConversionTest::Finish()
 void CbmAnaConversionTest::Exec()
 {
 	cout << "CbmAnaConversionTest: Exec()" << endl;
+
+	globalEventNo++;
 
 	if (fPrimVertex != NULL){
 		fKFVertex = CbmKFVertex(*fPrimVertex);
@@ -352,6 +364,18 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 	
 	fVector_reconstructedPhotons_STSonly.clear();
 
+
+
+	if(globalEventNo%200 == 0) {
+		MixedEventTest_3p1();
+		fMixedTest_3p1_photons.clear();
+		fMixedTest_3p1_eventno.clear();
+	}
+
+
+
+
+
 	Int_t nofRICHelectrons = 0;
 
 	Int_t ngTracks = fGlobalTracks->GetEntriesFast();
@@ -488,8 +512,8 @@ void CbmAnaConversionTest::CombineElectrons_FromSTSandRICH()
 				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(fVector_momenta[a], fVector_electronRICH_momenta[b]);
 				
 				// opening angle cut depending on pt of e+e- pair
-				//Double_t openingAngleCut = 1.8 - 0.6 * params1.fPt;
-				Double_t openingAngleCut = 1.5 - 0.5 * paramsTest.fPt;
+				Double_t openingAngleCut = 1.8 - 0.6 * paramsTest.fPt;
+				//Double_t openingAngleCut = 1.5 - 0.5 * paramsTest.fPt;
 				
 				Double_t invMassCut = 0.03;
 				
@@ -504,6 +528,12 @@ void CbmAnaConversionTest::CombineElectrons_FromSTSandRICH()
 					pair.push_back(b);
 					fVector_reconstructedPhotons_FromSTSandRICH.push_back(pair);
 					//fhElectrons_invmass_cut->Fill(params1.fMinv);
+					
+					vector<TVector3> pairmomenta;
+					pairmomenta.push_back(fVector_momenta[a]);
+					pairmomenta.push_back(fVector_electronRICH_momenta[b]);
+					fMixedTest_3p1_photons.push_back(pairmomenta);
+					fMixedTest_3p1_eventno.push_back(globalEventNo);
 				}
 			}
 		}
@@ -535,8 +565,8 @@ void CbmAnaConversionTest::CombineElectrons_FromRICH()
 				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(fVector_electronRICH_momenta[a], fVector_electronRICH_momenta[b]);
 				
 				// opening angle cut depending on pt of e+e- pair
-				//Double_t openingAngleCut = 1.8 - 0.6 * params1.fPt;
-				Double_t openingAngleCut = 1.5 - 0.5 * paramsTest.fPt;
+				Double_t openingAngleCut = 1.8 - 0.6 * paramsTest.fPt;
+				//Double_t openingAngleCut = 1.5 - 0.5 * paramsTest.fPt;
 				
 				Double_t invMassCut = 0.03;
 				
@@ -551,6 +581,12 @@ void CbmAnaConversionTest::CombineElectrons_FromRICH()
 					pair.push_back(b);
 					fVector_electronRICH_reconstructedPhotons.push_back(pair);
 					//fhElectrons_invmass_cut->Fill(params1.fMinv);
+					
+					vector<TVector3> pairmomenta;
+					pairmomenta.push_back(fVector_electronRICH_momenta[a]);
+					pairmomenta.push_back(fVector_electronRICH_momenta[b]);
+					fMixedTest_3p1_photons.push_back(pairmomenta);
+					fMixedTest_3p1_eventno.push_back(globalEventNo);
 				}
 			}
 		}
@@ -697,8 +733,8 @@ void CbmAnaConversionTest::CombineElectrons_STSonly()
 				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(fVector_momenta[a], fVector_momenta[b]);
 				
 				// opening angle cut depending on pt of e+e- pair
-				//Double_t openingAngleCut = 1.8 - 0.6 * params1.fPt;
-				Double_t openingAngleCut = 1.5 - 0.5 * paramsTest.fPt;
+				Double_t openingAngleCut = 1.8 - 0.6 * paramsTest.fPt;
+				//Double_t openingAngleCut = 1.5 - 0.5 * paramsTest.fPt;
 				
 				Double_t invMassCut = 0.03;
 				
@@ -713,6 +749,12 @@ void CbmAnaConversionTest::CombineElectrons_STSonly()
 					pair.push_back(b);
 					fVector_reconstructedPhotons_STSonly.push_back(pair);
 					//fhElectrons_invmass_cut->Fill(params1.fMinv);
+					
+				//	vector<TVector3> pairmomenta;
+				//	pairmomenta.push_back(fVector_momenta[a]);
+				//	pairmomenta.push_back(fVector_momenta[b]);
+				//	fMixedTest_STSonly_photons.push_back(pairmomenta);
+				//	fMixedTest_STSonly_eventno.push_back(globalEventNo);
 				}
 			}
 		}
@@ -862,4 +904,31 @@ Bool_t CbmAnaConversionTest::HasRichInd(Int_t gtIndex)
 	return electron_rich;
 	
 	//return true;
+}
+
+
+
+
+
+
+void CbmAnaConversionTest::MixedEventTest_3p1()
+// combines photons from two different events, taken from each time 200 events
+{
+	Int_t nof = fMixedTest_3p1_photons.size();
+	//cout << "CbmAnaConversionRecoFull: MixedEventTest4 - nof entries " << nof << endl;
+	for(Int_t a = 0; a < nof-1; a++) {
+		for(Int_t b = a+1; b < nof; b++) {
+			if(fMixedTest_3p1_eventno[a] == fMixedTest_3p1_eventno[b]) continue;
+		
+			TVector3 e11 = fMixedTest_3p1_photons[a][0];
+			TVector3 e12 = fMixedTest_3p1_photons[a][1];
+			TVector3 e21 = fMixedTest_3p1_photons[b][0];
+			TVector3 e22 = fMixedTest_3p1_photons[b][1];
+			
+			
+			CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e11, e12, e21, e22);
+			fhTest_eventMixing_3p1->Fill(params.fMinv);
+			//cout << "CbmAnaConversionRecoFull: MixedEventTest4(), event filled!, part" << endl;
+		}
+	}
 }
