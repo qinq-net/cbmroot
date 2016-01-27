@@ -30,6 +30,12 @@ CbmKFParticleFinderPID::CbmKFParticleFinderPID(const char* name, Int_t iVerbose)
   fMuchMode(0),
   fPID(0)
 {
+  //MuCh cuts
+  fMuchCutsInt[0]   =    7; // N sts hits
+  fMuchCutsInt[1]   =   14; // N MuCh hits for LMVM
+  fMuchCutsInt[2]   =   17; // N MuCh hits for J/Psi
+  fMuchCutsFloat[0] = 1.e6; // STS  Chi2/NDF for muons
+  fMuchCutsFloat[1] =  1.5; // MuSh Chi2/NDF for muons
 }
 
 CbmKFParticleFinderPID::~CbmKFParticleFinderPID()
@@ -333,10 +339,12 @@ void CbmKFParticleFinderPID::SetRecoPID()
         CbmMuchTrack* muchTrack = (CbmMuchTrack*)fMuchTrackArray->At(muchIndex);
         if(muchTrack)
         {
-          if((muchTrack->GetChiSq()/muchTrack->GetNDF())<1.5 && cbmStsTrack->GetNofHits() >= 7 )
+          if((cbmStsTrack->GetChiSq()/cbmStsTrack->GetNDF())<fMuchCutsFloat[0] && 
+             (muchTrack->GetChiSq()/muchTrack->GetNDF())<fMuchCutsFloat[1] && 
+             cbmStsTrack->GetNofHits() >= fMuchCutsInt[0] )
           {
-            if(muchTrack->GetNofHits()>=14) isMuon=2;
-            if(muchTrack->GetNofHits()>=17) isMuon=1;
+            if(muchTrack->GetNofHits()>=fMuchCutsInt[1]) isMuon=2;
+            if(muchTrack->GetNofHits()>=fMuchCutsInt[2]) isMuon=1;
           }
         }
       }

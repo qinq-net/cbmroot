@@ -49,6 +49,12 @@ class CbmKFParticleFinderPID : public FairTask {
   void DoNotUseMuch() { fMuchMode = 0; }
   void UseMuch() { fMuchMode = 1; }
  
+  //setters for MuCh cuts
+  void SetNMinStsHitsForMuon( int cut ) { fMuchCutsInt[0] = cut; }
+  void SetNMinMuchHitsForLMVM( int cut ) { fMuchCutsInt[1] = cut; }
+  void SetNMinMuchHitsForJPsi( int cut ) { fMuchCutsInt[2] = cut; }
+  void SetMaxChi2ForStsMuonTrack( float cut ) { fMuchCutsFloat[0] = cut; }
+  void SetMaxChi2ForMuchMuonTrack( float cut ) { fMuchCutsFloat[1] = cut; }
   
   const std::vector<int>& GetPID() const { return fPID; }
   
@@ -86,6 +92,10 @@ class CbmKFParticleFinderPID : public FairTask {
   Int_t fTrdPIDMode;
   Int_t fRichPIDMode;
   Int_t fMuchMode;
+  
+  //MuCh cuts
+  float fMuchCutsFloat[2];
+  int   fMuchCutsInt[3];
   
   std::vector<int> fPID;
   
