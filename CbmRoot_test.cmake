@@ -62,14 +62,30 @@ Configure_File(${CTEST_SOURCE_DIRECTORY}/CTestCustom.cmake
 Ctest_Read_Custom_Files("${CTEST_BINARY_DIRECTORY}")
 
 Ctest_Start($ENV{ctest_model})
+
 If(NOT $ENV{ctest_model} MATCHES Experimental)
   Ctest_Update(SOURCE "${CTEST_SOURCE_DIRECTORY}")
 EndIf()
+
 Ctest_Configure(BUILD "${CTEST_BINARY_DIRECTORY}")
 Ctest_Build(BUILD "${CTEST_BINARY_DIRECTORY}")
+If($ENV{ctest_model} MATCHES Continuous)
+  CTest_Submit(PARTS Update Configure Build)
+EndIf()
+
 Ctest_Test(BUILD "${CTEST_BINARY_DIRECTORY}" PARALLEL_LEVEL $ENV{number_of_processors})
+If($ENV{ctest_model} MATCHES Continuous)
+  CTest_Submit(PARTS Test)
+EndIf()
+
 If(GCOV_COMMAND)
   Ctest_Coverage(BUILD "${CTEST_BINARY_DIRECTORY}")
+  If($ENV{ctest_model} MATCHES Continuous)
+    CTest_Submit(PARTS Coverage)
+  EndIf()
 EndIf()
+
 Ctest_Upload(FILES ${CTEST_NOTES_FILES})
-Ctest_Submit()
+If(NOT $ENV{ctest_model} MATCHES Continuous)
+  Ctest_Submit()
+EndIf()
