@@ -4,7 +4,7 @@
 // -------------------------------------------------------------------------
 
 
-/**  CbmD0Candidates.h
+/**  CbmD0CandidatesSE.h
  *  @authors C.Dritsa <c.dritsa@gsi.de>
  *  update 2015/16 P.Sitzmann <p.sitzmann@gsi.de>
  *  acknowledgements to M.Deveaux
@@ -38,12 +38,12 @@ class CbmD0CandidatesSE : public FairTask
   virtual void Exec(Option_t* option);
 
   void SetNegativeFileName( TString filename ){ fNegativeFileName = filename;  };
-  void SetCuts( Double_t ipD0max, Double_t SVZmin, Double_t SVZmax);
+  void SetCuts( Double_t cutIPD0, Double_t cutSVZ){fcutIPD0 = cutIPD0; fcutSVZ = cutSVZ;};
 
 private:
 
     Int_t fEventNumber;
-    Double_t fcutIPD0,  fcutSVZmin,  fcutSVZ;
+    Double_t fcutIPD0, fcutSVZ;
 
     TClonesArray* fStsTrackMatches;
     TClonesArray* fListMCTracks;
@@ -93,6 +93,9 @@ private:
     //Double_t GetPairEnergy( CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2 );
     //Double_t GetIM(CbmD0TrackCandidate* tr1, CbmD0TrackCandidate* tr2);
 
+
+    CbmD0CandidatesSE(const CbmD0CandidatesSE&);
+    CbmD0CandidatesSE& operator=(const CbmD0CandidatesSE&);
 
     ClassDef(CbmD0CandidatesSE,1);
 };

@@ -45,7 +45,6 @@ class CbmD0TrackSelection : public FairTask
   virtual void Exec(Option_t* option);
 
   void SetNHitsOfLongTracks(Int_t N) {fNHitsOfLongTracks=N;};
-  void ShowADI(void) {fadi = kTRUE;};
   void SetPIDMode(TString pidMode);
 
   void SetUseMcInfo(Bool_t useMC) { bUseMCInfo = useMC;};
@@ -83,16 +82,10 @@ private:
   TString fPidMode;
 
   CbmL1PFFitter* fFit;
-  CbmVertex* fPrimVtx;
-  CbmVertex* fSecVtx;
-
-  KFPVertex* fPrimVtxKF;
-
+  CbmVertex* fPrimVtx;   
   L1FieldRegion* fField;
 
   Bool_t bUseMCInfo;
-  Bool_t fadi;
-
   Int_t fPVCutPassed;
   Int_t fPVCutNotPassed;
   Int_t fNoHPassed;
@@ -110,6 +103,8 @@ private:
   Double_t GetImpactParameterY( KFParticle *particle);
    void CheckMvdMatch(CbmStsTrack* stsTrack,Int_t mcTrackIndex,Int_t&  goodMatch, Int_t&  badMatch);
 
+   CbmD0TrackSelection(const CbmD0TrackSelection&);
+   CbmD0TrackSelection& operator=(const CbmD0TrackSelection&);
 
 
   ClassDef(CbmD0TrackSelection,1);

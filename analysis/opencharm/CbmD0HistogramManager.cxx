@@ -25,17 +25,30 @@ using namespace std;
 // -------------------------------------------------------------------------
 CbmD0HistogramManager::CbmD0HistogramManager()
     :CbmHistManager(),
-    fChois(ALL),
-    fcutPT(),
-    fcutSvZ(),
-    fcutPZ(),
-    fListMCTracks(),
-    fListMCPointsMvd(),
-    fListMCPointsSts(),
-    fListMCPointsRich(),
-    fListMCPointsTrd(),
-    fListMCPointsTof(),
-    fwriteOutFile()
+     fcutPT(),
+     fcutSvZ(),
+     fcutPZ(),
+     fChois(),
+     fnrMcEvents(),
+     fnrPairEvents(),
+     fnrRecoEvents(),
+     fnrTrackEvents(),
+     fwriteOutFile(),
+     fMCFile(),
+     fRecoFile(),
+     fPairFile(),
+     fTrackFile(),
+     fmcTrackBranch(),
+     fmvdPointBranch(),
+     fStsPointBranch(),
+     fpairBranch(),
+     fListMCTracks(),
+     fListMCPointsMvd(),
+     fListMCPointsSts(),
+     fListMCPointsRich(),
+     fListMCPointsTrd(),
+     fListMCPointsTof(),
+     fListPairs()
 {
 
 }
@@ -45,17 +58,30 @@ CbmD0HistogramManager::CbmD0HistogramManager()
 CbmD0HistogramManager::CbmD0HistogramManager(const char* group,Float_t PTCut,
 					     Float_t SvZCut, Float_t PZCut)
     :CbmHistManager(),
-    fChois(),
-    fcutPT(PTCut),
-    fcutSvZ(SvZCut),
-    fcutPZ(PZCut),
-    fListMCTracks(),
-    fListMCPointsMvd(),
-    fListMCPointsSts(),
-    fListMCPointsRich(),
-    fListMCPointsTrd(),
-    fListMCPointsTof(),
-    fwriteOutFile()
+     fcutPT(),
+     fcutSvZ(),
+     fcutPZ(),
+     fChois(),
+     fnrMcEvents(),
+     fnrPairEvents(),
+     fnrRecoEvents(),
+     fnrTrackEvents(),
+     fwriteOutFile(),
+     fMCFile(),
+     fRecoFile(),
+     fPairFile(),
+     fTrackFile(),
+     fmcTrackBranch(),
+     fmvdPointBranch(),
+     fStsPointBranch(),
+     fpairBranch(),
+     fListMCTracks(),
+     fListMCPointsMvd(),
+     fListMCPointsSts(),
+     fListMCPointsRich(),
+     fListMCPointsTrd(),
+     fListMCPointsTof(),
+     fListPairs()
 {
 SetHistogramChois(group);
 }
@@ -71,8 +97,11 @@ CbmD0HistogramManager::~CbmD0HistogramManager()
 // -------------------------------------------------------------------------
 void CbmD0HistogramManager::SetHistogramChois(const char* group)
 {
-    if(strcmp(group,"MCQA")== 0) fChois = MCQA;
-    if(strcmp(group,"PAIR") == 0) fChois = PAIR;
+         if(strcmp(group,"MCQA")   == 0) fChois = MCQA;
+    else if(strcmp(group,"PAIR")   == 0) fChois = PAIR;
+    else if(strcmp(group,"SINGLE") == 0) fChois = SINGELTRACK;
+    else if(strcmp(group,"RECO")   == 0) fChois = RECO;
+    else if(strcmp(group,"ALL")    == 0) fChois = ALL;
     else
     {
 	LOG(INFO)<<"Use backup chois MCQA"<< FairLogger::endl;
@@ -93,6 +122,7 @@ void CbmD0HistogramManager::SetCuts(Float_t PTCut, Float_t SvZCut, Float_t PZCut
 // -------------------------------------------------------------------------
 void CbmD0HistogramManager::Init()
 {
+    if(fChois == RECO) InitReco();
     if(fChois == SINGELTRACK) InitSingel();
     if(fChois == PAIR) InitPair();
     if(fChois == MCQA) InitMc();
@@ -100,10 +130,47 @@ void CbmD0HistogramManager::Init()
     return;
 }
 // -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
+void CbmD0HistogramManager::InitAll()
+{
+    InitSingel();
+    InitReco();
+    InitPair();
+    InitMc();
+}
+// -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
+void CbmD0HistogramManager::InitReco()
+{
+ ;
+}
+
+// -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
 void CbmD0HistogramManager::InitSingel()
 {
-      LOG(INFO)<<"Init SingelTrack Histogramms"<< FairLogger::endl;
-;
+    LOG(INFO)<<"Init SingelTrack Histogramms"<< FairLogger::endl;
+
+    TTree* trackTree = (TTree*)fTrackFile->Get("cbmsim");
+    fnrSingelEvents = trackTree->GetEntries();
+
+    fListKaons = new TClonesArray("KFParticle", 100);
+    fKaonBranch = trackTree->GetBranch("CbmD0KaonParticles");
+    fKaonBranch->SetAddress(&fListKaons);
+
+    fListPions = new TClonesArray("KFParticle", 100);
+    fPionBranch = trackTree->GetBranch("CbmD0PionParticles");
+    fPionBranch->SetAddress(&fListPions);
+
+    Create1<TH1F>("KaonMomentumDist", "Momentumdistribution Reconstructed Kaons", 100, 0, 30);
+    Create1<TH1F>("PionMomentumDist", "Momentumdistribution Reconstructed Pions", 100, 0, 30);
+
+    Create2<TH2F>("PtYDistKaon", "Pt vs Rapidity reconstructed Kaons",1000, -3, 3, 1000, 0, 3);
+    Create2<TH2F>("PtYDistPion", "Pt vs Rapidity reconstructed Pions",1000, -3, 3, 1000, 0, 3);
+
 }
 // -------------------------------------------------------------------------
 
@@ -121,6 +188,8 @@ void CbmD0HistogramManager::InitPair()
 
     Create1<TH1F>("PairMomentumDist", "Momentumdistribution Reconstructed D0", 100, 0, 30);
     Create1<TH1F>("MassSpectraD0","Reconstructed Mass D0", 100, 0, 3);
+
+    Create2<TH2F>("PtYDistD0", "Pt vs Rapidity reconstructed D0",1000, -3, 3, 1000, 0, 3);
 }
 // -------------------------------------------------------------------------
 
@@ -175,18 +244,6 @@ void CbmD0HistogramManager::InitMc()
    // fListMCPointsSts = new TClonesArray("CbmMCPoint", 1000);
    // fStsPointBranch = mcTree->GetBranch("StsPoint");
    // fmcTrackBranch->SetAddress( &fListMCPointsSts);
-
-
-    //fListMCPointsRich   = (TClonesArray*) ioman->GetObject("RichPoint");
-    //fListMCPointsTrd    = (TClonesArray*) ioman->GetObject("TrdPoint");
-    //fListMCPointsTof    = (TClonesArray*) ioman->GetObject("TofPoint");
-}
-// -------------------------------------------------------------------------
-
-// -------------------------------------------------------------------------
-void CbmD0HistogramManager::InitAll()
-{
-;
 }
 // -------------------------------------------------------------------------
 
@@ -201,6 +258,7 @@ void CbmD0HistogramManager::Register()
 void CbmD0HistogramManager::Exec(Option_t* option = "")
 {
     if(fChois == SINGELTRACK) ExecSingel();
+    if(fChois == RECO) ExecReco();
     if(fChois == PAIR) ExecPair();
     if(fChois == MCQA) ExecMc();
     if(fChois == ALL) ExecAll();
@@ -210,6 +268,18 @@ void CbmD0HistogramManager::Exec(Option_t* option = "")
     return;
 }
 // -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
+void CbmD0HistogramManager::ExecAll()
+{
+    ExecSingel();
+    ExecReco();
+    ExecPair();
+    ExecMc();
+
+}
+// -------------------------------------------------------------------------
+
 
 // -------------------------------------------------------------------------
 void CbmD0HistogramManager::ExecMc()
@@ -315,26 +385,50 @@ void CbmD0HistogramManager::ExecPair()
 
     TH1* pairMomentum = H1("PairMomentumDist");
     TH1* massSpectra = H1("MassSpectraD0");
+    TH2* ptY = H2("PtYDistD0");
 
     for(Int_t iPairEvent = 0; iPairEvent < fnrPairEvents; iPairEvent++ )
     {
          KFParticle openCharm;
-	if(iPairEvent%100 == 0)cout << endl << "Processing event " << iPairEvent << endl;
-
+       
 	fpairBranch->GetEntry(iPairEvent);
 	int nrOfPairs = fListPairs->GetEntriesFast();
+
+	if(iPairEvent%100 == 0)
+	{
+	    cout << endl << "Processing event " << iPairEvent << endl;
+	    cout << "Number of entries in this event: "<< nrOfPairs << endl;
+	}
 
 	for(Int_t i = 0; i < nrOfPairs; i++)
 	{
 	    openCharm = *((KFParticle*)fListPairs->At(i));
 
 	    pairMomentum->Fill(openCharm.GetP());
-            massSpectra->Fill(openCharm.GetMass());
+	    massSpectra->Fill(openCharm.GetMass());
+            ptY->Fill(openCharm.GetY(), openCharm.GetPt());
 	}
 
     }
 
 }
+// -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
+void CbmD0HistogramManager::ExecReco()
+{
+  LOG(INFO) << "Starting Reco Branch of CbmD0HistogramManager" << FairLogger::endl;
+}
+// -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
+void CbmD0HistogramManager::ExecSingel()
+{
+  LOG(INFO) << "Starting Singel Branch of CbmD0HistogramManager" << FairLogger::endl;
+}
+// -------------------------------------------------------------------------
+
+// -------------------------------------------------------------------------
 ClassImp(CbmD0HistogramManager)
 
 

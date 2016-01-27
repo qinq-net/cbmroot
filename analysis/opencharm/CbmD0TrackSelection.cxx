@@ -48,15 +48,16 @@ using namespace std;
 
 // -------------------------------------------------------------------------
 CbmD0TrackSelection::CbmD0TrackSelection()
-  : FairTask(),
-    fNHitsOfLongTracks(),
-    fEventNumber(),
+ : FairTask(),
+   fNHitsOfLongTracks(),
+   fEventNumber(),
    fMcPoints(),
    fStsTrackArray(),
    fGlobalTracks(),
    fTrdTracks(),
    fTofHits(),
    fRichRings(),
+   fListMCTracks(),
    fStsTrackArrayP(),
    fStsTrackArrayN(),
    fMCTrackArrayP(),
@@ -70,7 +71,6 @@ CbmD0TrackSelection::CbmD0TrackSelection()
    fPidMode(),
     fFit(),
    fPrimVtx(),
-   fSecVtx(),
    bUseMCInfo(),
    fPVCutPassed(),
    fPVCutNotPassed(),
@@ -82,7 +82,7 @@ CbmD0TrackSelection::CbmD0TrackSelection()
     fCutIP(),
     fField()
 {
-    Fatal( "CbmD0TrackSelection: Do not use the standard constructor","");
+    Fatal( "CbmD0TrackSelection: Do not use the standard constructor","Wrong constructor");
     
     }
 // -------------------------------------------------------------------------
@@ -98,6 +98,7 @@ CbmD0TrackSelection::CbmD0TrackSelection(char* name, Int_t iVerbose, Double_t cu
   fTrdTracks(),
   fTofHits(),
   fRichRings(),
+  fListMCTracks(),
   fStsTrackArrayP(),
   fStsTrackArrayN(),
   fMCTrackArrayP(),
@@ -111,7 +112,6 @@ CbmD0TrackSelection::CbmD0TrackSelection(char* name, Int_t iVerbose, Double_t cu
   fPidMode(),
   fFit(),
   fPrimVtx(),
-  fSecVtx(),
   bUseMCInfo(),
   fPVCutPassed(),
   fPVCutNotPassed(),
@@ -198,8 +198,6 @@ InitStatus CbmD0TrackSelection::Init() {
 
     CbmKF* kalman = CbmKF::Instance();
     fFit          = new CbmL1PFFitter();
-   // if(kalman)fField = kalman->GetMagneticField();
-   // else LOG(FATAL)<<"KF Instance is missing"<<FairLogger::endl;
     kfpInterface  = new CbmKFParticleInterface();
 
     return kSUCCESS;
@@ -250,7 +248,7 @@ LOG(INFO) << "||--------------------------  Event: " << fEventNumber << " ------
 
 Int_t nTracks = fGlobalTracks->GetEntriesFast();
 
-if (fVerbose>0) LOG(INFO) <<" CbmD0TrackSelection: Entries: " << nTracks << FairLogger::endl;
+LOG(INFO) <<"CbmD0TrackSelection: Entries: " << nTracks << FairLogger::endl;
 
 if(nTracks==0)
   {
@@ -313,9 +311,6 @@ Double_t       	      qp   = e_track->GetQp();
 
 
     } 	
-        Int_t nMvdHits = stsTrack->GetNofMvdHits();
-        Int_t nStsHits = stsTrack->GetNofStsHits();
-
 	if(qp < 0)
 	{
 	    // --- Save Kaon to  ParicleArray from Track ---
@@ -367,23 +362,27 @@ if(fPidMode == "NONE")
     return 211;
   }
 
-else
-  {
-  if(fPidMode == "MC")
+else if(fPidMode == "MC")
     {
-     mcTrack = GetMCTrackFromTrackID(globalTrack->GetStsTrackIndex());// (CbmMCTrack*) fListMCTracks->At(mcTrackIndex);
+     mcTrack = GetMCTrackFromTrackID(globalTrack->GetStsTrackIndex());
      return mcTrack->GetPdgCode();
     }
 
-else
-  {
-      if(fPidMode == "GLOBAL")
+else if(fPidMode == "TOF")
+   {
+       if(tofHit)
+       {
+        return 1;
+       }
+       else return 0;
+   }
+
+else if(fPidMode == "GLOBAL")
       {
           return 0;
       }
-  }
-  }
-return -1;
+else return -1;
+
 }
 // -----------------------------------------------------------------------------------------
 
@@ -431,6 +430,7 @@ if(qp < 0.0)
 return;
 }
 // -----------------------------------------------------------------------------------------
+
 // -----------------------------------------------------------------------------------------
 void CbmD0TrackSelection::CheckMvdMatch(CbmStsTrack* stsTrack, Int_t mcTrackIndex,Int_t& goodMatch, Int_t& badMatch)
 {

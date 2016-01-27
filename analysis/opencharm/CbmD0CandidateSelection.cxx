@@ -62,11 +62,13 @@ fD0TrackArray(),
  tools(),
  fMF(),
  bTestMode(),
- f_particleIsMCD0()
+    f_particleIsMCD0(),
+    fcutSVZ(),
+    fcutIPD0()
 
 {
     
-Fatal( "CbmD0Candidates: Do not use the standard constructor","");
+Fatal( "CbmD0Candidates: Do not use the standard constructor","Wrong constructor");
     
 }
 // -------------------------------------------------------------------------
@@ -92,7 +94,9 @@ fD0TrackArray(),
  tools(),
  fMF(),
  bTestMode(),
- f_particleIsMCD0()
+ f_particleIsMCD0(),
+    fcutSVZ(),
+    fcutIPD0()
 
 {
 fEventNumber = 0;

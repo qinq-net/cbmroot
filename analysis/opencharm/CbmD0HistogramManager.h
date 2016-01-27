@@ -14,7 +14,7 @@
 #include "TBranch.h"
 
 
-enum HistoGroup {SINGELTRACK, PAIR, MCQA,  ALL};
+enum HistoGroup {SINGELTRACK, PAIR, MCQA, RECO, ALL};
 
 class CbmD0HistogramManager : public CbmHistManager
 {
@@ -44,17 +44,6 @@ void Exec(Option_t* option);
 void Finish();
 
 private:
-
-    void Register();
-    void InitSingel();
-    void InitPair();
-    void InitMc();
-    void InitAll();
-    void ExecSingel(){};
-    void ExecPair();
-    void ExecMc();
-    void ExecAll(){};
-
     Float_t fcutPT;
     Float_t fcutSvZ;
     Float_t fcutPZ;
@@ -64,6 +53,7 @@ private:
     Int_t fnrPairEvents;
     Int_t fnrRecoEvents;
     Int_t fnrTrackEvents;
+    Int_t fnrSingelEvents;
 
     TFile* fwriteOutFile;
     TFile* fMCFile;
@@ -76,7 +66,8 @@ private:
     TBranch* fStsPointBranch;
 
     TBranch* fpairBranch;
-
+    TBranch* fKaonBranch;
+    TBranch* fPionBranch;
 
     TClonesArray* fListMCTracks;
     TClonesArray* fListMCPointsMvd;
@@ -86,10 +77,27 @@ private:
     TClonesArray* fListMCPointsTof;
 
     TClonesArray* fListPairs;
+    TClonesArray* fListKaons;
+    TClonesArray* fListPions;
+
+    void Register();
+
+    void InitSingel();
+    void InitPair();
+    void InitMc();
+    void InitReco();
+    void InitAll();
+
+    void ExecSingel();
+    void ExecReco();
+    void ExecPair();
+    void ExecMc();
+    void ExecAll();
+
+    CbmD0HistogramManager(const CbmD0HistogramManager&);
+    CbmD0HistogramManager& operator=(const CbmD0HistogramManager&);
 
 ClassDef(CbmD0HistogramManager,1);
 
 };
-
-
 #endif

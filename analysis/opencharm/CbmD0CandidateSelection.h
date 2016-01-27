@@ -91,6 +91,9 @@ private:
     void SetCuts(Double_t ipD0, Double_t SVZ);
 
 
+    CbmD0CandidateSelection(const CbmD0CandidateSelection&);
+    CbmD0CandidateSelection& operator=(const CbmD0CandidateSelection&);
+
   ClassDef(CbmD0CandidateSelection,1);
 };
 

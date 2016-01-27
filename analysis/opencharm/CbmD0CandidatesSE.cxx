@@ -32,9 +32,28 @@ using namespace std;
 
 
 // -------------------------------------------------------------------------
-CbmD0CandidatesSE::CbmD0CandidatesSE(){
+CbmD0CandidatesSE::CbmD0CandidatesSE()
+    :FairTask(),
+    fEventNumber(),
+    fcutIPD0(),
+    fcutSVZ(),
+    fStsTrackMatches(),
+    fListMCTracks(),
+    fKaonParticleArray(),
+    fPionParticleArray(),
+    fListMCTracksPos(),
+    fListMCTracksNeg(),
+    fD0Candidates(),
+    fKaonParticles(),
+    fKaonBuffer(),
+    fPrimVtx(),
+    fvtx(),
+    fFrameWorkEvent(),
+    fNegativeFileName(),
+    bTestMode()
+{
 
-    Fatal( "CbmD0CandidatesSE: Do not use the standard constructor","");
+    Fatal( "CbmD0CandidatesSE: Do not use the standard constructor","Wrong constructor");
 }
 // -------------------------------------------------------------------------
 
@@ -43,7 +62,6 @@ CbmD0CandidatesSE::CbmD0CandidatesSE(char* name, Int_t iVerbose, Double_t cutIPD
 :FairTask(name,iVerbose),
 fEventNumber(),
 fcutIPD0(),
-fcutSVZmin(),
 fcutSVZ(),
 fStsTrackMatches(),
 fListMCTracks(),
@@ -60,7 +78,6 @@ fFrameWorkEvent(),
 fNegativeFileName(),
 bTestMode()
 {
-
     fEventNumber = 0;
     fcutIPD0 = cutIPD0;
     fcutSVZ  = cutSVZ;
