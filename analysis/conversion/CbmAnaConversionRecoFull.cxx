@@ -707,7 +707,7 @@ void CbmAnaConversionRecoFull::Exec()
 	Int_t nofElectrons_4 = 0;
 
 
-	Int_t FilledMixedEventElectron = 0;
+	Int_t FilledMixedEventElectron = 0;		// just one variable for test1 here, because only the first identified electron of each event should be taken (therefore the check below for variable < 5)
 
 	// everything related to reconstructed data
 	Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
@@ -2152,6 +2152,7 @@ void CbmAnaConversionRecoFull::CombinePhotons()
 
 
 void CbmAnaConversionRecoFull::MixedEventTest()
+// takes all first identified electrons from all events and combines them afterwards
 {
 	for(int i=1; i<5; i++) {
 		if(fMixedEventsElectrons[i].size() < 4) continue;
@@ -2213,6 +2214,7 @@ void CbmAnaConversionRecoFull::MixedEventTest()
 
 
 void CbmAnaConversionRecoFull::MixedEventTest2()
+// takes all identified electron from the last 4 events
 {
 	if(fMixedEventsElectrons_list1.size() == 0 || fMixedEventsElectrons_list2.size() == 0 || fMixedEventsElectrons_list3.size() == 0 || fMixedEventsElectrons_list4.size() == 0) return;
 	for(UInt_t a = 0; a < fMixedEventsElectrons_list1.size(); a++) {
@@ -2273,6 +2275,7 @@ void CbmAnaConversionRecoFull::MixedEventTest2()
 
 
 void CbmAnaConversionRecoFull::MixedEventTest3()
+// takes all electrons from the last 20 events and combines them
 {
 	Int_t nof = fMixedTest3_momenta.size();
 	cout << "CbmAnaConversionRecoFull: MixedEventTest3 - nof entries " << nof << endl;
@@ -2334,6 +2337,7 @@ void CbmAnaConversionRecoFull::MixedEventTest3()
 
 
 void CbmAnaConversionRecoFull::MixedEventTest4()
+// combines photons from two different events, taken from each time 200 events
 {
 	Int_t nof = fMixedTest4_photons.size();
 	cout << "CbmAnaConversionRecoFull: MixedEventTest4 - nof entries " << nof << endl;

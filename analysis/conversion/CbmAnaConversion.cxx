@@ -963,6 +963,9 @@ void CbmAnaConversion::Exec(Option_t*)
 		fTestTracklist_noRichInd_nofhits.push_back(nofhits_sts);
 
 
+		if (richInd < 0) continue;
+
+
 		TVector3 stsMomentumVec;	// momenta as measured by STS
 		stsTrack->GetParamFirst()->Momentum(stsMomentumVec);
 		Double_t stsMomentum = stsMomentumVec.Mag();
@@ -984,7 +987,6 @@ void CbmAnaConversion::Exec(Option_t*)
 		if(isFilled) nofElectrons4epem++;
 
 		
-		if (richInd < 0) continue;
 		CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(richInd);
 		if (richMatch == NULL) continue;
 		int richMcTrackId = richMatch->GetMatchedLink().GetIndex();
