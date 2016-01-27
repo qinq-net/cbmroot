@@ -10,7 +10,6 @@
 
 #include "FairTask.h"
 #include "CbmStsKFTrackFitter.h"
-#include "base/CbmLitToolFactory.h"
 #include <string>
 #include <map>
 #include <vector>
@@ -116,8 +115,6 @@ private:
    TClonesArray* fStsTracks; // CbmStsTrack array
    TClonesArray* fStsTrackMatches; // CbmTrackMatchNew array
    TClonesArray* fTofHits; // CbmTofHit array
-   TClonesArray* fTofDigiMatches;// CbmMatch array
-   TClonesArray* fTofDigiMatchPoints;// CbmMatch array
    TClonesArray* fTofPoints; // CbmTofPoint array
    TClonesArray* fTofTracks; // CbmTofTrack array
    TClonesArray* fMCTracks; // CbmMCTrack array
@@ -135,10 +132,6 @@ private:
 
    set<Int_t> fMCTrackIdForTofHits; // Set of MC track IDs for all existing TOF hits
    set<Int_t> fMCTrackIdForTofPoints; // Set of MC track IDs for all existing TOF points
-   
-   TrackPropagatorPtr fFieldPropagator;
-   TrackPropagatorPtr fLinePropagator;
-   TrackUpdatePtr fFilter;
 
    ClassDef(CbmLitTofQa, 1)
 };

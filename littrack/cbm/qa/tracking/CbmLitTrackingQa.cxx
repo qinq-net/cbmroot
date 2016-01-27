@@ -77,8 +77,6 @@ CbmLitTrackingQa::CbmLitTrackingQa():
    fTrdMatches(NULL),
    fTofPoints(NULL),
    fTofHits(NULL),
-   fTofDigiMatches(NULL),
-   fTofDigiMatchPoints(NULL),
    fElectronId(NULL),
    fRichAnnCut(0.0),
    fTrdAnnCut(0.85)
@@ -102,12 +100,6 @@ InitStatus CbmLitTrackingQa::Init()
    FillDefaultRingPIDCategories();
    FillDefaultPiSuppCategories();
    FillTrackAndRingAcceptanceFunctions();
-
-   fTofBindingStats.push_back("GenHit");
-   fTofBindingStats.push_back("GenHitRobust");
-   fTofBindingStats.push_back("BoundAll");
-   fTofBindingStats.push_back("BoundRight");
-   fTofBindingStats.push_back("BoundRobust");
 
    CreateHistograms();
 
@@ -139,7 +131,6 @@ void CbmLitTrackingQa::Exec(
    fMCTrackCreator->Create();
 
    ProcessGlobalTracks();
-   ProcessTof();
    ProcessMcTracks();
    PionSuppression();
    IncreaseCounters();
@@ -202,10 +193,6 @@ void CbmLitTrackingQa::ReadDataBranches()
       if (NULL == fTofPoints) { Fatal("Init", "No TofPoint array!"); }
       fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
       if (NULL == fTofHits) { Fatal("Init", "No TofHit array!"); }
-      fTofDigiMatches = (TClonesArray*) ioman->GetObject("TofDigiMatch");
-      if (NULL == fTofDigiMatches) { Fatal("Init", "No TofDigiMatch array!"); }
-      fTofDigiMatchPoints = (TClonesArray*) ioman->GetObject("TofDigiMatchPoints");
-      if (NULL == fTofDigiMatchPoints) { Fatal("Init", "No TofDigiMatchPoints array!"); }
    }
 }
 
@@ -390,7 +377,7 @@ void CbmLitTrackingQa::CreateTrackHitsHistogram(
 }
 
 vector<string> CbmLitTrackingQa::CreateGlobalTrackingHistogramNames(
-      const vector<string>& detectors, const vector<list<string> >& stats)
+      const vector<string>& detectors)
 {
    vector<string> histos;
    Int_t nofDetectors = detectors.size();
@@ -398,15 +385,10 @@ vector<string> CbmLitTrackingQa::CreateGlobalTrackingHistogramNames(
       string histEff;
       for (Int_t i = 0; i <= iDet; i++) { histEff += detectors[i]; }
       string histNorm = histEff;
-
-      for (list<string>::const_iterator j = stats[iDet].begin(); j != stats[iDet].end(); ++j)
-    	  histos.push_back("hte_" + histEff + *j + "_" + histNorm);
-
+      histos.push_back("hte_" + histEff + "_" + histNorm);
       for (Int_t i = iDet + 1; i < nofDetectors; i++) {
          histNorm += detectors[i];
-
-         for (list<string>::const_iterator j = stats[iDet].begin(); j != stats[iDet].end(); ++j)
-        	 histos.push_back("hte_" + histEff + *j + "_" + histNorm);
+         histos.push_back("hte_" + histEff + "_" + histNorm);
       }
    }
    return histos;
@@ -416,44 +398,11 @@ vector<string> CbmLitTrackingQa::CreateGlobalTrackingHistogramNames()
 {
    // Histograms w/o RICH detector
    vector<string> detectors;
-   vector<list<string> > stats;
-
-   if (fDet.GetDet(kSTS))
-   {
-	   detectors.push_back("Sts");
-	   list<string> stat;
-	   stat.push_back("");
-	   stats.push_back(stat);
-   }
-
-   if (fDet.GetDet(kMUCH))
-   {
-	   detectors.push_back("Much");
-	   list<string> stat;
-	   stat.push_back("");
-	   stats.push_back(stat);
-   }
-
-   if (fDet.GetDet(kTRD))
-   {
-	   detectors.push_back("Trd");
-	   list<string> stat;
-	   stat.push_back("");
-	   stats.push_back(stat);
-   }
-
-   if (fDet.GetDet(kTOF))
-   {
-	   detectors.push_back("Tof");
-	   list<string> stat;
-
-	   for (vector<string>::const_iterator i = fTofBindingStats.begin(); i != fTofBindingStats.end(); ++i)
-		   stat.push_back(*i);
-
-	   stats.push_back(stat);
-   }
-
-   vector<string> names1 = CreateGlobalTrackingHistogramNames(detectors, stats);
+   if (fDet.GetDet(kSTS)) detectors.push_back("Sts");
+   if (fDet.GetDet(kMUCH)) detectors.push_back("Much");
+   if (fDet.GetDet(kTRD)) detectors.push_back("Trd");
+   if (fDet.GetDet(kTOF)) detectors.push_back("Tof");
+   vector<string> names1 = CreateGlobalTrackingHistogramNames(detectors);
 
    // Histograms with RICH detector
    vector<string> names2;
@@ -462,11 +411,8 @@ vector<string> CbmLitTrackingQa::CreateGlobalTrackingHistogramNames()
       if (fDet.GetDet(kSTS)) detectors.push_back("Sts");
       if (fDet.GetDet(kRICH)) detectors.push_back("Rich");
       if (fDet.GetDet(kTRD)) detectors.push_back("Trd");
-
-      if (fDet.GetDet(kTOF))
-   	   detectors.push_back("Tof");
-
-      names2 = CreateGlobalTrackingHistogramNames(detectors, stats);
+      if (fDet.GetDet(kTOF)) detectors.push_back("Tof");
+      names2 = CreateGlobalTrackingHistogramNames(detectors);
    }
 
    set<string> names;
@@ -484,25 +430,11 @@ vector<string> CbmLitTrackingQa::GlobalTrackVariants()
    if (fDet.GetDet(kSTS)) detectors.push_back("Sts");
    if (fDet.GetDet(kMUCH)) detectors.push_back("Much");
    if (fDet.GetDet(kTRD)) detectors.push_back("Trd");
-
-   if (fDet.GetDet(kTOF))
-	   detectors.push_back("Tof");
-
+   if (fDet.GetDet(kTOF)) detectors.push_back("Tof");
    string name("");
    for (Int_t i = 0; i < detectors.size(); i++) {
       name += detectors[i];
-
-      if (detectors[i] == "Tof")
-      {
-    	  for (vector<string>::const_iterator j = fTofBindingStats.begin(); j != fTofBindingStats.end(); ++j)
-    	  {
-    		  string name1 = name;
-    		  name1 += *j;
-    		  trackVariants.insert(name1);
-    	  }
-      }
-      else
-    	  trackVariants.insert(name);
+      trackVariants.insert(name);
    }
 
    // Histograms with RICH detector
@@ -511,10 +443,7 @@ vector<string> CbmLitTrackingQa::GlobalTrackVariants()
       if (fDet.GetDet(kSTS)) detectors.push_back("Sts");
       if (fDet.GetDet(kRICH)) detectors.push_back("Rich");
       if (fDet.GetDet(kTRD)) detectors.push_back("Trd");
-
-      if (fDet.GetDet(kTOF))
-   	   detectors.push_back("Tof");
-
+      if (fDet.GetDet(kTOF)) detectors.push_back("Tof");
       name = "";
       for (Int_t i = 0; i < detectors.size(); i++) {
           name += detectors[i];
@@ -566,10 +495,7 @@ string CbmLitTrackingQa::LocalEfficiencyNormalization(
    if (fDet.GetDet(kSTS)) detectors.push_back("Sts");
    if (fDet.GetDet(kMUCH)) detectors.push_back("Much");
    if (fDet.GetDet(kTRD)) detectors.push_back("Trd");
-
-   if (fDet.GetDet(kTOF))
-	   detectors.push_back("Tof");
-
+   if (fDet.GetDet(kTOF)) detectors.push_back("Tof");
    string name("");
    for (Int_t i = 0; i < detectors.size(); i++) {
       name += detectors[i];
@@ -729,6 +655,8 @@ void CbmLitTrackingQa::CreateHistograms()
    cout << fHM->ToString();
 }
 
+
+
 void CbmLitTrackingQa::ProcessGlobalTracks()
 {
    // Clear all maps for MC to reco matching
@@ -842,12 +770,11 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
       if (isStsOk) { stsMCId = stsTrackMatch->GetMatchedLink().GetIndex(); }
       if (isTrdOk) { trdMCId = trdTrackMatch->GetMatchedLink().GetIndex(); }
       if (isMuchOk) { muchMCId = muchTrackMatch->GetMatchedLink().GetIndex(); }
-      //if (isTofOk) {
-         //const CbmHit* tofHit = static_cast<const CbmHit*>(fTofHits->At(tofId));
-         //const FairMCPoint* tofPoint = static_cast<const FairMCPoint*>(fTofPoints->At(tofHit->GetRefId()));
-         //const FairMCPoint* tofPoint = static_cast<const FairMCPoint*>(fTofPoints->At(static_cast<const CbmMatch*>(fTofHitMatches->At(tofId))->GetLink(0).GetIndex()));
-         //if (tofPoint != NULL) tofMCId = tofPoint->GetTrackID();
-      //}
+      if (isTofOk) {
+         const CbmHit* tofHit = static_cast<const CbmHit*>(fTofHits->At(tofId));
+         const FairMCPoint* tofPoint = static_cast<const FairMCPoint*>(fTofPoints->At(tofHit->GetRefId()));
+         if (tofPoint != NULL) tofMCId = tofPoint->GetTrackID();
+      }
       if (isRichOk) { richMCId = richRingMatch->GetMatchedLink().GetIndex(); }
 
       map<string, multimap<Int_t, Int_t> >::iterator it;
@@ -857,55 +784,8 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
         Bool_t sts = (name.find("Sts") != string::npos) ? isStsOk && stsMCId != -1 : true;
         Bool_t trd = (name.find("Trd") != string::npos) ? isTrdOk && stsMCId == trdMCId : true;
         Bool_t much = (name.find("Much") != string::npos) ? isMuchOk && stsMCId == muchMCId : true;
-        //Bool_t tof = (name.find("Tof") != string::npos) ? isTofOk && stsMCId == tofMCId : true;
+        Bool_t tof = (name.find("Tof") != string::npos) ? isTofOk && stsMCId == tofMCId : true;
         Bool_t rich = (name.find("Rich") != string::npos) ? isRichOk && stsMCId == richMCId : true;
-        Bool_t tof = false;
-
-        if (name.find("Tof") == string::npos)
-        	tof = true;
-        else if (isTofOk)
-        {
-        	string tofStat = "Tof";
-        	tofStat += fTofBindingStats[TofGenHit];
-
-        	if (name.find(tofStat) == string::npos)
-        	{
-        		tofStat = "Tof";
-        		tofStat += fTofBindingStats[TofBoundAll];
-
-        		if (name.find(tofStat) != string::npos)
-        			tof = true;
-        		else
-        		{
-        			tofStat = "Tof";
-        			tofStat += fTofBindingStats[TofBoundRobust];
-        			bool doFull = name.find(tofStat) != string::npos;
-
-        			const CbmMatch* tofDigiMatch = static_cast<const CbmMatch*>(fTofDigiMatches->At(tofId));
-        			const vector<CbmLink>& tofDigiLinks = tofDigiMatch->GetLinks();
-
-        			for (vector<CbmLink>::const_iterator digiIt = tofDigiLinks.begin(); digiIt != tofDigiLinks.end(); ++digiIt)
-        			{
-        				const CbmMatch* tofPointMatch = static_cast<const CbmMatch*>(fTofDigiMatchPoints->At(digiIt->GetIndex()));
-        				const vector<CbmLink>& tofPointLinks = tofPointMatch->GetLinks();
-
-        				for (vector<CbmLink>::const_iterator ptIt = tofPointLinks.begin(); ptIt != tofPointLinks.end(); ++ptIt)
-        				{
-        					const FairMCPoint* tofPoint = static_cast<const FairMCPoint*>(fTofPoints->At(ptIt->GetIndex()));
-
-        					if ((tofPoint->GetTrackID() == stsMCId) && (!doFull || ptIt->GetWeight() != 0))
-        					{
-        						tof = true;
-        						break;
-        					}
-        				}
-
-        				if (tof)
-        					break;
-        			}
-        		}
-        	}
-        }
 
         if (sts && trd && much && tof && rich) {
            pair<Int_t, Int_t> tmp = make_pair(stsMCId, iTrack);
@@ -913,107 +793,6 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
         }
       }
    }
-}
-
-struct MCRecoPair
-{
-    MCRecoPair(Int_t m, Int_t r) : mc(m), reco(r) {}
-    Int_t mc;
-    Int_t reco;
-};
-
-struct MCRecoLess
-{
-  bool operator() (const MCRecoPair& x, const MCRecoPair& y) const
-  {
-      if (x.mc < y.mc)
-          return true;
-      
-      return x.reco < y.reco;
-  }
-};
-
-void CbmLitTrackingQa::ProcessTof()
-{
-    for (map<string, multimap<Int_t, Int_t> >::iterator it = fMcToRecoMap.begin(); it != fMcToRecoMap.end(); ++it)
-    {
-    	string name = (*it).first;
-    	string tofStat = "Tof";
-    	tofStat += fTofBindingStats[TofGenHit];
-
-    	if (name.find(tofStat) == string::npos)
-    		continue;
-
-    	string tofStat2 = tofStat;
-    	tofStat2 += "Robust";
-    	bool doRobust = true;
-
-    	if (name.find(tofStat2) == string::npos)
-    	{
-    		tofStat2 = tofStat;
-    		doRobust = false;
-    	}
-
-    	string stsName = FindAndReplace(name, tofStat2, "");
-    	map<string, multimap<Int_t, Int_t> >::iterator it1 = fMcToRecoMap.find(stsName);
-
-    	if (it1 == fMcToRecoMap.end())
-    		continue;
-
-    	multimap<Int_t, Int_t>& stsMcRecoMap = it1->second;
-    	multimap<Int_t, Int_t>& mcRecoMap = it->second;
-    	set<MCRecoPair, MCRecoLess> hitMcRecoSet;
-    	Int_t nofTofHits = fTofHits->GetEntriesFast();
-
-    	for(Int_t iHit = 0; iHit < nofTofHits; ++iHit)
-    	{
-    		const CbmMatch* tofDigiMatch = static_cast<const CbmMatch*>(fTofDigiMatches->At(iHit));
-    		const vector<CbmLink>& tofDigiLinks = tofDigiMatch->GetLinks();
-
-    		for (vector<CbmLink>::const_iterator digiIt = tofDigiLinks.begin(); digiIt != tofDigiLinks.end(); ++digiIt)
-    		{
-    			const CbmMatch* tofPointMatch = static_cast<const CbmMatch*>(fTofDigiMatchPoints->At(digiIt->GetIndex()));
-    			const vector<CbmLink>& tofPointLinks = tofPointMatch->GetLinks();
-
-    			for (vector<CbmLink>::const_iterator ptIt = tofPointLinks.begin(); ptIt != tofPointLinks.end(); ++ptIt)
-    			{
-    				if (doRobust && ptIt->GetWeight() == 0)
-    					continue;
-
-    				const FairMCPoint* tofPoint = static_cast<const FairMCPoint*>(fTofPoints->At(ptIt->GetIndex()));
-    				Int_t trackId = tofPoint->GetTrackID();
-    				/*const CbmLitMCTrack& litMCTrack = fMCTrackCreator->GetTrack(trackId);
-    				Int_t nofPointsSts = litMCTrack.GetNofPointsInDifferentStations(kSTS);
-    				Int_t nofPointsTof = litMCTrack.GetNofPoints(kTOF);
-    				Bool_t stsConsecutive = (fUseConsecutivePointsInSts) ? litMCTrack.GetNofConsecutivePoints(kSTS) >= fMinNofPointsSts : true;
-    				Bool_t isStsOk = nofPointsSts >= fMinNofPointsSts && fDet.GetDet(kSTS) && stsConsecutive;
-    				Bool_t isTofOk = nofPointsTof >= fMinNofPointsTof && fDet.GetDet(kTOF);
-
-    				if (!isStsOk || !isTofOk)
-    					continue;*/
-
-    				multimap<Int_t, Int_t>::const_iterator stsIt = stsMcRecoMap.find(trackId);
-
-    				if (stsIt == stsMcRecoMap.end())
-    					continue;
-                                
-                                const CbmTrackMatchNew* stsTrackMatch = static_cast<const CbmTrackMatchNew*>(fStsMatches->At(stsIt->second));
-                                
-                                if (stsTrackMatch->GetTrueOverAllHitsRatio() < fQuota)
-                                    continue;
-
-                                MCRecoPair tmp(trackId, stsIt->second);
-    				hitMcRecoSet.insert(tmp);
-    			}
-    		}
-    	}
-
-	for (set<MCRecoPair, MCRecoLess>::const_iterator it2 = hitMcRecoSet.begin(); it2 != hitMcRecoSet.end(); ++it2)
-	{
-            pair<Int_t, Int_t> tmp = make_pair(it2->mc, it2->reco);
-            mcRecoMap.insert(tmp);
-	}
-    }
 }
 
 void CbmLitTrackingQa::ProcessRichRings()
@@ -1176,7 +955,7 @@ void CbmLitTrackingQa::ProcessMcTracks()
          Bool_t rich = (normName.find("Rich") != string::npos) ? isRichOk : true;
 
          if (effName == "Trd" || effName == "Much" || effName == "Tof") {
-             string prevRecName = FindAndReplace(normName, effName, "");
+            string prevRecName = FindAndReplace(normName, effName, "");
             Bool_t isPrevRec = fMcToRecoMap[prevRecName].find(iMCTrack) != fMcToRecoMap[prevRecName].end();
             Bool_t accOk = isPrevRec && sts && trd && much && tof && rich;
             if (accOk) {
@@ -1210,29 +989,14 @@ void CbmLitTrackingQa::FillGlobalReconstructionHistos(
    LitTrackAcceptanceFunction function = fTrackAcceptanceFunctions.find(catName)->second;
    Bool_t accOk = function(fMCTracks, mcId);
    Bool_t recOk = (histTypeName == "hte") ? (mcMap.find(mcId) != mcMap.end() && accOk) : (ElectronId(mcId, mcMap, effName) && accOk);
-   
    Int_t nofParams = par.size();
    assert(nofParams < 3 && nofParams > 0);
    if (nofParams == 1) {
-      if (accOk)
-      {
-          fHM->H1(accHistName)->Fill(par[0]);
-      }
-      
-      if (recOk)
-      {
-          fHM->H1(recHistName)->Fill(par[0]);
-      }
+      if (accOk) { fHM->H1(accHistName)->Fill(par[0]); }
+      if (recOk) { fHM->H1(recHistName)->Fill(par[0]); }
    } else if (nofParams == 2) {
-      if (accOk)
-      {
-          fHM->H1(accHistName)->Fill(par[0], par[1]);
-      }
-      
-      if (recOk)
-      {
-          fHM->H1(recHistName)->Fill(par[0], par[1]);
-      }
+      if (accOk) { fHM->H1(accHistName)->Fill(par[0], par[1]); }
+      if (recOk) { fHM->H1(recHistName)->Fill(par[0], par[1]); }
    }
 }
 
@@ -1276,10 +1040,6 @@ Bool_t CbmLitTrackingQa::ElectronId(
    Bool_t isRichElectron = (fDet.GetDet(kRICH) && (effName.find("Rich") != string::npos)) ? fElectronId->IsRichElectron(globalTrackIndex, mom.Mag()) : true;
    Bool_t isTrdElectron = (fDet.GetDet(kTRD) && (effName.find("Trd") != string::npos)) ? fElectronId->IsRichElectron(globalTrackIndex, mom.Mag()) : true;
    Bool_t isTofElectron = (fDet.GetDet(kTOF) && (effName.find("Tof") != string::npos)) ? fElectronId->IsRichElectron(globalTrackIndex, mom.Mag()) : true;
-   
-   if (effName == "")
-       ;
-   
    return isRichElectron && isTrdElectron && isTofElectron;
 }
 

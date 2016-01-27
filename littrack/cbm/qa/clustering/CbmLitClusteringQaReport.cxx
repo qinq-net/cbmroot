@@ -105,16 +105,12 @@ void CbmLitClusteringQaReport::Draw()
    DrawH1ByPattern("hpa_.*(Digi|Cluster|Hit)_NofPointsIn(Digi|Cluster|Hit)_H1");
    DrawH2ByPattern("hpa_.*(Digi|Cluster|Hit)_NofPointsIn(Digi|Cluster|Hit)_H2", kLinear, kLinear, kLinear, "colz");
 
-   //DrawH1ByPattern("hpa_.*Hit_Sigma.*_H1");
-   //DrawH2ByPattern("hpa_.*Hit_Sigma.*_H2", kLinear, kLinear, kLinear, "colz");
-   //DrawH1ByPattern("hpa_(Sts|Trd|Much)Hit_Sigma.*_H1");
-   //DrawH2ByPattern("hpa_(Sts|Trd|Much)Hit_Sigma.*_H2", kLinear, kLinear, kLinear, "colz");
-   DrawH1ByPattern("hpa_(?!Tof).*Hit_Sigma.*_H1");
-   DrawH2ByPattern("hpa_(?!Tof).*Hit_Sigma.*_H2", kLinear, kLinear, kLinear, "colz");
+   DrawH1ByPattern("hpa_.*Hit_Sigma.*_H1");
+   DrawH2ByPattern("hpa_.*Hit_Sigma.*_H2", kLinear, kLinear, kLinear, "colz");
 
    DrawResidualsAndPulls("Trd");
    DrawResidualsAndPulls("Much");
-   DrawResidualsAndPulls("Tof");
+
 
    DrawH1ByPattern("hhe_Trd_All_(Acc|Rec|Clone)_Station", DefaultAccAndRecLabelFormatter);
    DrawH1ByPattern("hhe_Much_All_(Acc|Rec|Clone)_Station", DefaultAccAndRecLabelFormatter);
@@ -173,7 +169,6 @@ void CbmLitClusteringQaReport::DrawResidualsAndPulls(
       }
    }
    DrawH2ByPattern("hrp_" + detName + "_.*_H2", kLinear, kLinear, kLinear, "colz");
-   DrawH1ByPattern("hrp_Tof_ResidualZ_H1");
 }
 
 Double_t CbmLitClusteringQaReport::CalcEfficiency(

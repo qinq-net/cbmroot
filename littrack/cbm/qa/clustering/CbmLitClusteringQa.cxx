@@ -88,11 +88,6 @@ CbmLitClusteringQa::CbmLitClusteringQa():
    fTrdHitMatches(NULL),
    fTofPoints(NULL),
    fTofHits(NULL),
-   fTofHitMatches(NULL),
-   fTofDigiMatches(NULL),
-   fTofDigiMatchPoints(NULL),
-   fTofRealPoints(NULL),
-   fTofMatchRealPoints(NULL),
    fMuchDigiFileName("")
 {
 
@@ -141,7 +136,6 @@ void CbmLitClusteringQa::Exec(
    FillResidualAndPullHistograms(fStsPoints, fStsHits, fStsHitMatches, "Sts", kSTS);
    FillResidualAndPullHistograms(fTrdPoints, fTrdHits, fTrdHitMatches, "Trd", kTRD);
    FillResidualAndPullHistograms(fMuchPoints, fMuchPixelHits, fMuchPixelHitMatches, "Much", kMUCH);
-   FillResidualAndPullHistograms(fTofPoints, fTofHits, fTofHitMatches, "Tof", kTOF);
 
    FillHitEfficiencyHistograms(fStsPoints, fStsHits, fStsHitMatches, "Sts", kSTS);
    FillHitEfficiencyHistograms(fTrdPoints, fTrdHits, fTrdHitMatches, "Trd", kTRD);
@@ -215,18 +209,13 @@ void CbmLitClusteringQa::ReadDataBranches()
 
    fTofPoints = (TClonesArray*) ioman->GetObject("TofPoint");
    fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
-   fTofHitMatches = (TClonesArray*) ioman->GetObject("TofHitMatch");
-   fTofDigiMatches = (TClonesArray*) ioman->GetObject("TofDigiMatch");
-   fTofDigiMatchPoints = (TClonesArray*) ioman->GetObject("TofDigiMatchPoints");
-   fTofRealPoints = (TClonesArray*) ioman->GetObject("RealisticTofPoint");
-   fTofMatchRealPoints = (TClonesArray*) ioman->GetObject("TofRealPntMatch");
 }
 
 Int_t CbmLitClusteringQa::GetStationId(
       Int_t address,
       DetectorId detId)
 {
-   assert(detId == kSTS || detId == kTRD || detId == kMUCH || detId == kTOF);
+   assert(detId == kSTS || detId == kTRD || detId == kMUCH);
    if (detId == kSTS) return CbmStsAddress::GetElementId(address, kStsStation);
    else if (detId == kTRD) return CbmTrdAddress::GetLayerId(address);
    else if (detId == kMUCH) return (CbmMuchGeoScheme::Instance()->GetLayerSideNr(address) - 1) / 2;
@@ -350,108 +339,23 @@ void CbmLitClusteringQa::FillResidualAndPullHistograms(
    if (!fHM->Exists(nameResidualX) || !fHM->Exists(nameResidualY)
          || !fHM->Exists(namePullX) || !fHM->Exists(namePullY)) return;
 
-	map<Int_t, list<Int_t> > trackTofPoints;
-	FairMCPoint avgTofPoint;
-
-	if (kTOF == detId)
-	{
-		Int_t nofTofPoints = fTofPoints->GetEntriesFast();
-
-		for (Int_t i = 0; i < nofTofPoints; ++i)
-		{
-			const FairMCPoint* point = static_cast<const FairMCPoint*> (points->At(i));
-			trackTofPoints[point->GetTrackID()].push_back(i);
-		}
-	}
-
-	Int_t nofHits = hits->GetEntriesFast();
-
+   Int_t nofHits = hits->GetEntriesFast();
 	for (Int_t iHit = 0; iHit < nofHits; iHit++) {
-		const CbmPixelHit* hit = static_cast<const CbmPixelHit*>(hits->At(iHit));
-		const CbmMatch* match = static_cast<const CbmMatch*>(hitMatches->At(iHit));
-
-		if (isnan(static_cast<Float_t>(hit->GetX())) || (isnan(static_cast<Float_t>(hit->GetY())))) continue;
-		const FairMCPoint* point;
-
-		if (kTOF == detId)
-		{
-			//point = static_cast<const FairMCPoint*>(fTofRealPoints->At(static_cast<const CbmMatch*>(fTofMatchRealPoints->At(match->GetLink(0).GetIndex()))->GetLink(0).GetIndex()));
-			point = &avgTofPoint;
-			set<Int_t> hitTracks;
-			Int_t nofPts = 0;
-			Float_t ptX = 0;
-			Float_t ptY = 0;
-			Float_t ptZ = 0;
-			Int_t did = -1;
-
-			const CbmMatch* tofDigiMatch = static_cast<const CbmMatch*> (fTofDigiMatches->At(iHit));
-			const vector<CbmLink>& tofDigiLinks = tofDigiMatch->GetLinks();
-
-			for (vector<CbmLink>::const_iterator digiIt = tofDigiLinks.begin(); digiIt != tofDigiLinks.end(); ++digiIt)
-			{
-				const CbmMatch* tofPointMatch = static_cast<const CbmMatch*>(fTofDigiMatchPoints->At(digiIt->GetIndex()));
-				const vector<CbmLink>& tofPointLinks = tofPointMatch->GetLinks();
-
-				for (vector<CbmLink>::const_iterator ptIt = tofPointLinks.begin(); ptIt != tofPointLinks.end(); ++ptIt)
-				{
-					const FairMCPoint* tofPoint = static_cast<const FairMCPoint*>(fTofPoints->At(ptIt->GetIndex()));
-					hitTracks.insert(tofPoint->GetTrackID());
-
-					//if (ptIt->GetWeight() != 0)
-						did = tofPoint->GetDetectorID();
-				}
-			}
-
-			if (-1 == did)
-				continue;
-
-			for (set<Int_t>::const_iterator trackIt = hitTracks.begin(); trackIt != hitTracks.end(); ++trackIt)
-			{
-				map<Int_t, list<Int_t> >::const_iterator ptListIt = trackTofPoints.find(*trackIt);
-
-				if (ptListIt == trackTofPoints.end())
-					continue;
-
-				for (list<Int_t>::const_iterator ptIt = ptListIt->second.begin(); ptIt != ptListIt->second.end(); ++ptIt)
-				{
-					const FairMCPoint* pt = static_cast<const FairMCPoint*> (points->At(*ptIt));
-
-					if (pt->GetDetectorID() != did)
-						continue;
-
-					++nofPts;
-					ptX += pt->GetX();
-					ptY += pt->GetY();
-					ptZ += pt->GetZ();
-				}
-			}
-
-			if (0 == nofPts)
-				continue;
-
-			ptX /= nofPts;
-			ptY /= nofPts;
-			ptZ /= nofPts;
-			avgTofPoint.SetX(ptX);
-			avgTofPoint.SetY(ptY);
-			fHM->H1("hrp_Tof_ResidualZ_H1")->Fill(ptZ - hit->GetZ());
-		}
-		else
-			point = static_cast<const FairMCPoint*>(points->At(match->GetMatchedLink().GetIndex()));
-
-		if (point == NULL) continue;
-		//Float_t xPoint = (muchPoint->GetXIn() + muchPoint->GetXOut()) / 2;
-		//Float_t yPoint = (muchPoint->GetYIn() + muchPoint->GetYOut()) / 2;
-		Float_t residualX =  point->GetX() - hit->GetX();
-		Float_t residualY =  point->GetY() - hit->GetY();
-		Int_t stationId = GetStationId(hit->GetAddress(), detId);
-		fHM->H2(nameResidualX)->Fill(stationId, residualX);
-		fHM->H2(nameResidualY)->Fill(stationId, residualY);
-		Float_t pullX = residualX / hit->GetDx();
-		Float_t pullY = residualY / hit->GetDy();
-		fHM->H2(namePullX)->Fill(stationId, residualX / hit->GetDx());
-		fHM->H2(namePullY)->Fill(stationId, residualY / hit->GetDy());
-	}
+      const CbmPixelHit* hit = static_cast<const CbmPixelHit*>(hits->At(iHit));
+      const CbmMatch* match = static_cast<const CbmMatch*>(hitMatches->At(iHit));
+      if (isnan(static_cast<Float_t>(hit->GetX())) || (isnan(static_cast<Float_t>(hit->GetY())))) continue;
+      const FairMCPoint* point = static_cast<const FairMCPoint*>(points->At(match->GetMatchedLink().GetIndex()));
+      if (point == NULL) continue;
+      //Float_t xPoint = (muchPoint->GetXIn() + muchPoint->GetXOut()) / 2;
+      //Float_t yPoint = (muchPoint->GetYIn() + muchPoint->GetYOut()) / 2;
+      Float_t residualX =  point->GetX() - hit->GetX();
+      Float_t residualY =  point->GetY() - hit->GetY();
+      Int_t stationId = GetStationId(hit->GetAddress(), detId);
+      fHM->H2(nameResidualX)->Fill(stationId, residualX);
+      fHM->H2(nameResidualY)->Fill(stationId, residualY);
+      fHM->H2(namePullX)->Fill(stationId, residualX / hit->GetDx());
+      fHM->H2(namePullY)->Fill(stationId, residualY / hit->GetDy());
+   }
 }
 
 void CbmLitClusteringQa::FillHitEfficiencyHistograms(
@@ -502,7 +406,6 @@ void CbmLitClusteringQa::CreateHistograms()
    CreateClusterParametersHistograms(kSTS, "Sts");
    CreateClusterParametersHistograms(kTRD, "Trd");
    CreateClusterParametersHistograms(kMUCH, "Much");
-   CreateClusterParametersHistograms(kTOF, "Tof");
 
    CreateHitEfficiencyHistograms(kSTS, "Sts", "Station", "Station number", 100, -0.5, 99.5);
    CreateHitEfficiencyHistograms(kMUCH, "Much", "Station", "Station number", 100, -0.5, 99.5);
@@ -510,10 +413,6 @@ void CbmLitClusteringQa::CreateHistograms()
 
    // Histogram stores number of events
    fHM->Create1<TH1F>("hen_EventNo_ClusteringQa", "hen_EventNo_ClusteringQa", 1, 0, 1.);
-
-   // Histogram stores |Z_avg_mc - Z_hit|. Z_hit is considered as the right Z position because it is "hardwired" to the MRPC center.
-   fHM->Create1<TH1F>("hrp_Tof_ResidualZ_H1", "hrp_Tof_ResidualZ_H1;[cm];Yield", 100, -1.0, 1.0);
-   fHM->H1("hrp_Tof_ResidualZ_H1")->StatOverflows();
 }
 
 void CbmLitClusteringQa::CreateNofObjectsHistograms(
