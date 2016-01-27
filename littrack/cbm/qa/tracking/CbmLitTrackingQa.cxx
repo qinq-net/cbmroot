@@ -739,19 +739,6 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
       //(*it).second.clear();
    }
 
-   /*map<Int_t, list<Int_t> > mcTrackTofPoints;
-
-   if (fDet.GetDet(kTOF))
-   {
-	   Int_t nofTofPoints = fTofPoints->GetEntriesFast();
-
-	   for (Int_t i = 0; i < nofTofPoints; ++i)
-	   {
-		   const FairMCPoint* point = static_cast<const FairMCPoint*> (fTofPoints->At(i));
-		   mcTrackTofPoints[point->GetTrackID()].push_back(i);
-	   }
-   }*/
-
    ProcessRichRings();
 
    Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
@@ -872,7 +859,6 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
         Bool_t much = (name.find("Much") != string::npos) ? isMuchOk && stsMCId == muchMCId : true;
         //Bool_t tof = (name.find("Tof") != string::npos) ? isTofOk && stsMCId == tofMCId : true;
         Bool_t rich = (name.find("Rich") != string::npos) ? isRichOk && stsMCId == richMCId : true;
-
         Bool_t tof = false;
 
         if (name.find("Tof") == string::npos)
@@ -929,6 +915,24 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
    }
 }
 
+struct MCRecoPair
+{
+    MCRecoPair(Int_t m, Int_t r) : mc(m), reco(r) {}
+    Int_t mc;
+    Int_t reco;
+};
+
+struct MCRecoLess
+{
+  bool operator() (const MCRecoPair& x, const MCRecoPair& y) const
+  {
+      if (x.mc < y.mc)
+          return true;
+      
+      return x.reco < y.reco;
+  }
+};
+
 void CbmLitTrackingQa::ProcessTof()
 {
     for (map<string, multimap<Int_t, Int_t> >::iterator it = fMcToRecoMap.begin(); it != fMcToRecoMap.end(); ++it)
@@ -958,7 +962,7 @@ void CbmLitTrackingQa::ProcessTof()
 
     	multimap<Int_t, Int_t>& stsMcRecoMap = it1->second;
     	multimap<Int_t, Int_t>& mcRecoMap = it->second;
-    	set<Int_t> hitMCTracks;
+    	set<MCRecoPair, MCRecoLess> hitMcRecoSet;
     	Int_t nofTofHits = fTofHits->GetEntriesFast();
 
     	for(Int_t iHit = 0; iHit < nofTofHits; ++iHit)
@@ -992,15 +996,21 @@ void CbmLitTrackingQa::ProcessTof()
 
     				if (stsIt == stsMcRecoMap.end())
     					continue;
+                                
+                                const CbmTrackMatchNew* stsTrackMatch = static_cast<const CbmTrackMatchNew*>(fStsMatches->At(stsIt->second));
+                                
+                                if (stsTrackMatch->GetTrueOverAllHitsRatio() < fQuota)
+                                    continue;
 
-    				hitMCTracks.insert(trackId);
+                                MCRecoPair tmp(trackId, stsIt->second);
+    				hitMcRecoSet.insert(tmp);
     			}
     		}
     	}
 
-	for (set<Int_t>::const_iterator it2 = hitMCTracks.begin(); it2 != hitMCTracks.end(); ++it2)
+	for (set<MCRecoPair, MCRecoLess>::const_iterator it2 = hitMcRecoSet.begin(); it2 != hitMcRecoSet.end(); ++it2)
 	{
-            pair<Int_t, Int_t> tmp = make_pair(*it2, 1);
+            pair<Int_t, Int_t> tmp = make_pair(it2->mc, it2->reco);
             mcRecoMap.insert(tmp);
 	}
     }
@@ -1166,7 +1176,7 @@ void CbmLitTrackingQa::ProcessMcTracks()
          Bool_t rich = (normName.find("Rich") != string::npos) ? isRichOk : true;
 
          if (effName == "Trd" || effName == "Much" || effName == "Tof") {
-            string prevRecName = FindAndReplace(normName, effName, "");
+             string prevRecName = FindAndReplace(normName, effName, "");
             Bool_t isPrevRec = fMcToRecoMap[prevRecName].find(iMCTrack) != fMcToRecoMap[prevRecName].end();
             Bool_t accOk = isPrevRec && sts && trd && much && tof && rich;
             if (accOk) {
@@ -1200,6 +1210,7 @@ void CbmLitTrackingQa::FillGlobalReconstructionHistos(
    LitTrackAcceptanceFunction function = fTrackAcceptanceFunctions.find(catName)->second;
    Bool_t accOk = function(fMCTracks, mcId);
    Bool_t recOk = (histTypeName == "hte") ? (mcMap.find(mcId) != mcMap.end() && accOk) : (ElectronId(mcId, mcMap, effName) && accOk);
+   
    Int_t nofParams = par.size();
    assert(nofParams < 3 && nofParams > 0);
    if (nofParams == 1) {
@@ -1265,6 +1276,10 @@ Bool_t CbmLitTrackingQa::ElectronId(
    Bool_t isRichElectron = (fDet.GetDet(kRICH) && (effName.find("Rich") != string::npos)) ? fElectronId->IsRichElectron(globalTrackIndex, mom.Mag()) : true;
    Bool_t isTrdElectron = (fDet.GetDet(kTRD) && (effName.find("Trd") != string::npos)) ? fElectronId->IsRichElectron(globalTrackIndex, mom.Mag()) : true;
    Bool_t isTofElectron = (fDet.GetDet(kTOF) && (effName.find("Tof") != string::npos)) ? fElectronId->IsRichElectron(globalTrackIndex, mom.Mag()) : true;
+   
+   if (effName == "")
+       ;
+   
    return isRichElectron && isTrdElectron && isTofElectron;
 }
 

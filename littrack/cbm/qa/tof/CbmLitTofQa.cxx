@@ -182,6 +182,12 @@ void CbmLitTofQa::CreateHistograms()
    fHM->Add(name, new TH1F(name.c_str(), string(name + ";Units").c_str(), 500, 0., 500.));
    name = "hmp_Tof_Track_Chi2_Hit";
    fHM->Add(name, new TH1F(name.c_str(), string(name + ";Units").c_str(), 500, 0., 500.));
+   name = "hmp_Tof_Track_Good_Chi2_MC";
+   fHM->Add(name, new TH1F(name.c_str(), string(name + ";Units").c_str(), 100, 0., 10.));
+   name = "hmp_Tof_Track_Good_Chi2_Hit";
+   fHM->Add(name, new TH1F(name.c_str(), string(name + ";Units").c_str(), 100, 0., 10.));
+   name = "hmp_Tof_Track_Good_Chi2_Norm";
+   fHM->Add(name, new TH1F(name.c_str(), string(name + ";Units").c_str(), 100, 0., 10.));
 }
 
 void CbmLitTofQa::ProcessMC()
@@ -220,6 +226,7 @@ void CbmLitTofQa::ProcessGlobalTracks()
    Int_t nofTracksForTimeZero = 0;
    
    Int_t fPDG = 211;
+   Double_t goodChi2Limit = 50.;
    
    map<Int_t, list<const CbmTofHit*> > mcTofPointHits;
    Double_t minTofHitZ = std::numeric_limits<Double_t>::max();
@@ -245,7 +252,7 @@ void CbmLitTofQa::ProcessGlobalTracks()
        }
    }
    
-   map<Int_t, map<Int_t, list<Int_t> > > mcTrackTofPoints;// Grouped by track Id and then detector Id
+   map<Int_t, map<Int_t, list<Int_t> > > mcTrackTofPoints;// TOF MC points grouped by track Id and then detector Id
    Int_t nofTofPoints = fTofPoints->GetEntriesFast();
    
    for (Int_t iPoint = 0; iPoint < nofTofPoints; ++iPoint)
@@ -254,7 +261,7 @@ void CbmLitTofQa::ProcessGlobalTracks()
        mcTrackTofPoints[tofPoint->GetTrackID()][tofPoint->GetDetectorID()].push_back(iPoint);
    }
    
-   map<Int_t, list<TofPointInfo> > mcTrackAvgTofInfos;
+   map<Int_t, list<TofPointInfo> > mcTrackAvgTofInfos;// Averaged by MRPC TOF MC points grouped by track Id
    
    for (map<Int_t, map<Int_t, list<Int_t> > >::const_iterator i = mcTrackTofPoints.begin(); i != mcTrackTofPoints.end(); ++i)
    {       
@@ -302,6 +309,8 @@ void CbmLitTofQa::ProcessGlobalTracks()
       const CbmTrackMatchNew* stsMatch = static_cast<const CbmTrackMatchNew*>(fStsTrackMatches->At(stsId));
       Int_t stsMCTrackId = stsMatch->GetMatchedLink().GetIndex();
       
+      bool goodChi2MC = false;
+      bool goodChi2Hit = false;
       map<Int_t, list<TofPointInfo> >::const_iterator mcTofIter = mcTrackAvgTofInfos.find(stsMCTrackId);
       
       if (mcTofIter != mcTrackAvgTofInfos.end() && !mcTofIter->second.empty())
@@ -333,6 +342,9 @@ void CbmLitTofQa::ProcessGlobalTracks()
                         fFilter->Update(&tpar, &hit, chi);
                         fHM->H1("hmp_Tof_Track_Chi2_MC")->Fill(chi);
                         
+                        if (chi < goodChi2Limit)
+                            goodChi2MC = true;
+                        
                         CbmLitTrackParam par2;
                         CbmLitConverter::FairTrackParamToCbmLitTrackParam(&parSts, &par2);
                         
@@ -345,10 +357,22 @@ void CbmLitTofQa::ProcessGlobalTracks()
                             CbmLitConverter::CbmPixelHitToCbmLitPixelHit(*j, 0, &hit2);
                             fFilter->Update(&tpar2, &hit2, chi);
                             fHM->H1("hmp_Tof_Track_Chi2_Hit")->Fill(chi);
+                            
+                            if (chi < goodChi2Limit)
+                                goodChi2Hit = true;
                         }
                     }
                 }
           }
+          
+          const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*> (fMCTracks->At(stsMCTrackId));
+          fHM->H1("hmp_Tof_Track_Good_Chi2_Norm")->Fill(mcTrack->GetP());
+          
+          if (goodChi2MC)
+              fHM->H1("hmp_Tof_Track_Good_Chi2_MC")->Fill(mcTrack->GetP());
+          
+          if (goodChi2Hit)
+              fHM->H1("hmp_Tof_Track_Good_Chi2_Hit")->Fill(mcTrack->GetP());
       }
       
       if (tofId < 0) continue; // Starting from here we need both STS track and TOF hit
