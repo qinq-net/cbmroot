@@ -240,7 +240,7 @@ void CbmMvdGeoHandler::NavigateTo(
      	if(fGlobalMax[0] > fGlobalMin[0]){fWidth = fGlobalMax[0]; fBeamwidth = fGlobalMin[0];}else {fWidth = fGlobalMin[0]; fBeamwidth = fGlobalMax[0];}
   	if(fGlobalMax[1] > fGlobalMin[1]){fHeight = fGlobalMax[1]; fBeamheight = fGlobalMin[1];}else {fHeight = fGlobalMin[1]; fBeamheight = fGlobalMax[1];}
 
-	// TODO: hard coded numbers, find other way only for Mvd_v14a / v14b
+	// TODO: hard coded numbers, find other way only for Mvd_v14a / v14b / v15a
  	if(fStationNumber == 0) fRadLength = 0.24; 
 	else if(fStationNumber == 1) fRadLength = 0.31;
 	else if(fStationNumber == 2) fRadLength = 0.47; 
@@ -255,28 +255,30 @@ void CbmMvdGeoHandler::NavigateTo(
 //--------------------------------------------------------------------------
 void CbmMvdGeoHandler::GetPipe()
 {
-TString pipeName = "pipevac1";
+TString pipeName = "pipe";
 Int_t pipeID;
 TGeoNode* pipeNode;
 TString motherName;
+Bool_t fail = kTRUE;
 
-fMother = "cave_1/pipevac1_0";
+TObjArray* nodes = gGeoManager->GetTopNode()->GetNodes();
 
-	if (!gGeoManager->CheckPath(fMother.Data()))
-	         {
-		pipeID = gGeoManager->GetUID(pipeName);
-	 	pipeNode = gGeoManager->GetNode(pipeID);
-	        gGeoManager->CdTop();
-		gGeoManager->CdDown(0);
-		motherName=gGeoManager->GetPath();
-		fMother = motherName;
-		fMother += "/";
-		fMother += pipeName;
-		fMother += "_0";
-		gGeoManager->CdTop();
-		}
-      else
-		fMother = "cave_1/pipevac1_0";
+for (Int_t iNode = 0; iNode < nodes->GetEntriesFast(); iNode++)
+    {
+    TGeoNode* node = (TGeoNode*) nodes->At(iNode);
+    if (TString(node->GetName()).Contains(pipeName))
+       {
+	   motherName = node->GetName();
+	   fMother = Form("cave_1/%s/pipevac1_0", motherName.Data());
+	   LOG(DEBUG) << "MvdGeoHandler found Mother: " << fMother << FairLogger::endl;
+	   fail = kFALSE;
+           break;
+       }
+    else continue;
+    }
+if(fail)
+    LOG(FATAL)<<"MVD Geometry included, but pipe not found please check your setup" << FairLogger::endl;
+
 }
 //--------------------------------------------------------------------------
 
@@ -291,30 +293,30 @@ if ( gGeoManager->CheckPath(fMother + "/Beamtimeosetupoobgnum_0"))
 	}
 else if (gGeoManager->CheckPath(fMother + "/MVDoMistraloquero012oStationo150umodigi_0"))
 	{
-	LOG(INFO) << "Found MVD with 3 Stations" << FairLogger::endl;
+	LOG(DEBUG) << "Found MVD with 3 Stations" << FairLogger::endl;
 	fGeoTyp = ThreeStation;
 	}
 else if (gGeoManager->CheckPath(fMother + "/MVDo0123ohoFPCoextoHSoSo0123_0"))
 	{
-	LOG(INFO) << "Found MVD with 4 Stations" << FairLogger::endl;
+	LOG(DEBUG) << "Found MVD with 4 Stations" << FairLogger::endl;
 	fGeoTyp = FourStation;
 	fDetectorName = "/MVDo0123ohoFPCoextoHSoSo0123_0";
 	}
 else if (gGeoManager->CheckPath(fMother + "/MVDo1123ohoFPCoextoHSoSo1123_0"))
 	{
-	LOG(INFO) << "Found shifted MVD with 4 Stations" << FairLogger::endl;
+	LOG(DEBUG) << "Found shifted MVD with 4 Stations" << FairLogger::endl;
 	fGeoTyp = FourStationShift;
 	fDetectorName = "/MVDo1123ohoFPCoextoHSoSo1123_0";
 	}
 else if (gGeoManager->CheckPath(fMother + "/MVDomCBM_0"))
 	{
-	LOG(INFO) << "Found mCBM MVD configuration" << FairLogger::endl;
+	LOG(DEBUG) << "Found mCBM MVD configuration" << FairLogger::endl;
 	fDetectorName = "/MVDomCBM_0";
 	fGeoTyp = MiniCbm;
 	}
 else if (gGeoManager->CheckPath(fMother + "/MVDomCBMorotated_0"))
         {
-        LOG(INFO) << "Found mCBM MVD rotated configuration" << FairLogger::endl;
+        LOG(DEBUG) << "Found mCBM MVD rotated configuration" << FairLogger::endl;
         fDetectorName = "/MVDomCBMorotated_0";
         fGeoTyp = MiniCbm;
         }

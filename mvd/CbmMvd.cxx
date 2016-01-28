@@ -309,7 +309,9 @@ CbmMvdGeoHandler* mvdHandler = new CbmMvdGeoHandler();
 mvdHandler->Init(kTRUE);
 mvdHandler->Fill();
 fStationMap = mvdHandler->GetMap();
-LOG(INFO) << "filled mvd StationMap with: " << fStationMap.size() << " new Sensors" << FairLogger::endl;
+if (fStationMap.size() == 0 )
+    LOG(FATAL) << "Tried to load MVD Geometry, but didn't succeed to load Sensors" << FairLogger::endl;
+LOG(DEBUG) << "filled mvd StationMap with: " << fStationMap.size() << " new Sensors" << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
