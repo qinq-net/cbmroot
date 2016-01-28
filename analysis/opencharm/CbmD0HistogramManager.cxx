@@ -48,7 +48,12 @@ CbmD0HistogramManager::CbmD0HistogramManager()
      fListMCPointsRich(),
      fListMCPointsTrd(),
      fListMCPointsTof(),
-     fListPairs()
+    fListPairs(),
+    fnrSingelEvents(),
+    fKaonBranch(),
+    fPionBranch(),
+    fListKaons(),
+    fListPions()
 {
 
 }
@@ -81,7 +86,12 @@ CbmD0HistogramManager::CbmD0HistogramManager(const char* group,Float_t PTCut,
      fListMCPointsRich(),
      fListMCPointsTrd(),
      fListMCPointsTof(),
-     fListPairs()
+     fListPairs(),
+    fnrSingelEvents(),
+    fKaonBranch(),
+    fPionBranch(),
+    fListKaons(),
+    fListPions()
 {
 SetHistogramChois(group);
 }

@@ -106,7 +106,7 @@ delete fInputFile;
 // -------------------------------------------------------------------------
 void CbmMapsFileManager::LoadEntryIntoRam (UInt_t entry) {
 
-if ( ( entry >= fEventsInFile ) || ( entry <0 ) )
+if ( ( entry >= fEventsInFile ))
     LOG(FATAL) << "CbmMapsFileManager::GetStsPoint: Error, event " << entry
 	<< " doesn't exist." << FairLogger::endl;
     

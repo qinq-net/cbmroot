@@ -54,7 +54,6 @@ private:
     TClonesArray* fListMCTracks;
     TClonesArray* fListD0TrackCandidate;
     TClonesArray* fD0TrackArray;
-    TClonesArray* fInfoArray;
     TClonesArray* fStsTrackMatches;
     TClonesArray* fPosStsTracks;
     TClonesArray* fNegStsTracks;
