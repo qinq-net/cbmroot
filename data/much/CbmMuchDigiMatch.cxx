@@ -206,9 +206,12 @@ void CbmMuchDigiMatch::AddCharge(Int_t iPoint, UInt_t charge, Double_t t, TArray
     printf("Warning t=%f < fT0=%f\n",t,fT0);
     printf("=====\n");
   }
-  Int_t nbins = bin0+shape.GetSize();
+	// Placed below code under Else by VIKAS
+  else  
+  {Int_t nbins = bin0+shape.GetSize();
   if (fSignalShape.GetSize()<nbins) fSignalShape.Set(nbins);
   for (Int_t j=0;j<shape.GetSize();j++)  fSignalShape[bin0 + j]+=charge*shape[j];
+ }
 }
 // -------------------------------------------------------------------------
 
