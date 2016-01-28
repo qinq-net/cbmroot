@@ -37,6 +37,7 @@ TString trdTag="";
 TString tofTag="";  
 
 TString stsDigi="";
+TString muchDigi="";
 TString trdDigi="";
 TString tofDigi="";
 
@@ -77,6 +78,8 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 //  // Function needed for CTest runtime dependency
 //  TString depFile = Remove_CTest_Dependency_File(outDir, "run_sim" , setup);
 
+//  Bool_t hasFairMonitor = Has_Fair_Monitor();
+
   // --- Logger settings ----------------------------------------------------
   TString logLevel = "INFO";   // "DEBUG";
   TString logVerbosity = "LOW";
@@ -94,12 +97,13 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // created by the placement of the target.
   //
   TString  targetElement   = "Gold";
-  Double_t targetThickness = 0.25;   // full thickness in cm
+  Double_t targetThickness = 0.25;  // full thickness in cm
   Double_t targetDiameter  = 2.5;    // diameter in cm
   Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
   Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
   Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
-  Double_t beamRotY      = -30.;   // beam rotation angle around the y axis [deg]                  
+  Double_t targetRotY      = 0.;     // target rotation angle around the y axis [deg]
+  Double_t beamRotY      = -30.;   // beam rotation angle around the y axis [deg]
   // ------------------------------------------------------------------------
 
 
@@ -135,11 +139,11 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 
   
   // -----   Create simulation run   ----------------------------------------
-  FairRunSim* fRun = new FairRunSim();
-  fRun->SetName("TGeant3");              // Transport engine
-  fRun->SetOutputFile(outFile);          // Output file
-  fRun->SetGenerateRunInfo(kTRUE);       // Create FairRunInfo file
-  FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
+  FairRunSim* run = new FairRunSim();
+  run->SetName("TGeant3");              // Transport engine
+  run->SetOutputFile(outFile);          // Output file
+  run->SetGenerateRunInfo(kTRUE);       // Create FairRunInfo file
+  FairRuntimeDb* rtdb = run->GetRuntimeDb();
   // ------------------------------------------------------------------------
 
 
@@ -150,7 +154,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 
 
   // -----   Create media   -------------------------------------------------
-  fRun->SetMaterials("media.geo");       // Materials
+  run->SetMaterials("media.geo");       // Materials
   // ------------------------------------------------------------------------
 
 
@@ -158,13 +162,13 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   if ( caveGeom != "" ) {
     FairModule* cave = new CbmCave("CAVE");
     cave->SetGeometryFileName(caveGeom);
-    fRun->AddModule(cave);
+    run->AddModule(cave);
   }
 
   if ( pipeGeom != "" ) {
     FairModule* pipe = new CbmPipe("PIPE");
     pipe->SetGeometryFileName(pipeGeom);
-    fRun->AddModule(pipe);
+    run->AddModule(pipe);
   }
   
   // --- Target
@@ -172,67 +176,67 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   		                              targetThickness,
   		                              targetDiameter);
   target->SetPosition(targetPosX, targetPosY, targetPosZ);
-  //  target->SetRotation(beamRotY);
-  fRun->AddModule(target);
+  //  target->SetRotation(targetRotY);
+  run->AddModule(target);
 
   if ( magnetGeom != "" ) {
     FairModule* magnet = new CbmMagnet("MAGNET");
     magnet->SetGeometryFileName(magnetGeom);
-    fRun->AddModule(magnet);
+    run->AddModule(magnet);
   }
   
   if ( platformGeom != "" ) {
     FairModule* platform = new CbmPlatform("PLATFORM");
     platform->SetGeometryFileName(platformGeom);
-    fRun->AddModule(platform);
+    run->AddModule(platform);
   }
 
   if ( mvdGeom != "" ) {
     FairDetector* mvd = new CbmMvd("MVD", kTRUE);
     mvd->SetGeometryFileName(mvdGeom);
     mvd->SetMotherVolume("pipevac1");
-    fRun->AddModule(mvd);
+    run->AddModule(mvd);
   }
 
   if ( stsGeom != "" ) {
     FairDetector* sts = new CbmStsMC(kTRUE);
     sts->SetGeometryFileName(stsGeom);
-    fRun->AddModule(sts);
+    run->AddModule(sts);
   }
 
   if ( richGeom != "" ) {
     FairDetector* rich = new CbmRich("RICH", kTRUE);
     rich->SetGeometryFileName(richGeom);
-    fRun->AddModule(rich);
+    run->AddModule(rich);
   }
   
   if ( muchGeom != "" ) {
     FairDetector* much = new CbmMuch("MUCH", kTRUE);
     much->SetGeometryFileName(muchGeom);
-    fRun->AddModule(much);
+    run->AddModule(much);
   }
   
   if ( shieldGeom != "" ) {
   	FairModule* shield = new CbmShield("SHIELD");
   	shield->SetGeometryFileName(shieldGeom);
-  	fRun->AddModule(shield);
+  	run->AddModule(shield);
   }
 
   if ( trdGeom != "" ) {
     FairDetector* trd = new CbmTrd("TRD",kTRUE );
     trd->SetGeometryFileName(trdGeom);
-    fRun->AddModule(trd);
+    run->AddModule(trd);
   }
 
   if ( tofGeom != "" ) {
     FairDetector* tof = new CbmTof("TOF", kTRUE);
     tof->SetGeometryFileName(tofGeom);
-    fRun->AddModule(tof);
+    run->AddModule(tof);
   }
   
   if ( ecalGeom != "" ) {
     FairDetector* ecal = new CbmEcal("ECAL", kTRUE, ecalGeom.Data()); 
-    fRun->AddModule(ecal);
+    run->AddModule(ecal);
   }
   
   if ( psdGeom != "" ) {
@@ -241,7 +245,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
  	psd->SetZposition(psdZpos); // in cm
  	psd->SetXshift(psdXpos);  // in cm    
  	psd->SetGeoFile(psdGeom);  
-	fRun->AddModule(psd);
+	run->AddModule(psd);
   }
   
   // ------------------------------------------------------------------------
@@ -256,16 +260,14 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 //  magField->SetPosition(0., 0., fieldZ);
 //  magField->SetScale(fieldScale);
   FairConstField* magField = new FairConstField();
-  fRun->SetField(magField);
+  run->SetField(magField);
   // ------------------------------------------------------------------------
 
-  // Use the experiment specific MC Event header instead of the default one
-  // This one stores additional information about the reaction plane
-  CbmMCEventHeader* mcHeader = new CbmMCEventHeader();
-  fRun->SetMCEventHeader(mcHeader);
 
   // -----   Create PrimaryGenerator   --------------------------------------
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
+  // --- Uniform distribution of event plane angle
+  primGen->SetEventPlane(0., 2. * TMath::Pi());
   // --- Get target parameters
   Double_t tX = 0.;
   Double_t tY = 0.;
@@ -287,46 +289,44 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // in the FairPrimaryGenerator class.
   // ------------------------------------------------------------------------
 
-  // Use the CbmUnigenGenrator which calculates a reaction plane and
-  // rotate all particles accordingly
+  // Use the CbmUnigenGenrator for the input
   CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
   uniGen->SetEventPlane(0. , 360.);
   primGen->AddGenerator(uniGen);
-  primGen->SetBeamAngle(beamRotY * TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees                  
-  fRun->SetGenerator(primGen);       
+  primGen->SetBeamAngle(beamRotY * TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees
+  run->SetGenerator(primGen);
   // ------------------------------------------------------------------------
 
-//  // -----   Create Electron gun as alternative -----------------------------                   
-//  FairPrimaryGenerator* primGen = new FairPrimaryGenerator();                                   
-//  // Use the FairBoxGenerator which generates a soingle electron                                
-//  FairBoxGenerator *eminus = new FairBoxGenerator();                                            
-//  eminus->SetPDGType(11);                                                                       
-//  eminus->SetMultiplicity(1000);                                                                
-//  //  eminus->SetBoxXYZ(32.,-32.,32.,-32.,0.);  // shoot at corner of diagonal modules          
-//  //  eminus->SetBoxXYZ(0., 0., 0., 0., 0.);  // shoot at corner of diagonal modules            
-//  //  eminus->SetBoxXYZ(57.,-57., 0., 0.,0.);  // shoot at corner of diagonal modules           
-//  //  eminus->SetBoxXYZ(-57.,-57., 57., 57.,0.);  // shoot at corner of diagonal modules        
-//  eminus->SetBoxXYZ(-180.,-15.,-150.,15.,0.);  // shoot at corner of diagonal modules           
-//  eminus->SetPRange(2.,2.);                                                                     
-//  eminus->SetPhiRange(0.,360.);                                                                 
-//  eminus->SetThetaRange(0.,0.);                                                                 
-//  primGen->AddGenerator(eminus);                                                                
-//                                                                                                
-//  //  primGen->SetBeamAngle(30*TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees 
-//                                                                                                
-//  fRun->SetGenerator(primGen);                                                                  
-//  // ------------------------------------------------------------------------                   
+  //  // -----   Create Electron gun as alternative -----------------------------                  
+  //  FairPrimaryGenerator* primGen = new FairPrimaryGenerator();                                  
+  //  // Use the FairBoxGenerator which generates a soingle electron                               
+  //  FairBoxGenerator *eminus = new FairBoxGenerator();                                           
+  //  eminus->SetPDGType(11);                                                                      
+  //  eminus->SetMultiplicity(1000);                                                               
+  //  //  eminus->SetBoxXYZ(32.,-32.,32.,-32.,0.);  // shoot at corner of diagonal modules         
+  //  //  eminus->SetBoxXYZ(0., 0., 0., 0., 0.);  // shoot at corner of diagonal modules           
+  //  //  eminus->SetBoxXYZ(57.,-57., 0., 0.,0.);  // shoot at corner of diagonal modules          
+  //  //  eminus->SetBoxXYZ(-57.,-57., 57., 57.,0.);  // shoot at corner of diagonal modules       
+  //  eminus->SetBoxXYZ(-180.,-15.,-150.,15.,0.);  // shoot at corner of diagonal modules          
+  //  eminus->SetPRange(2.,2.);                                                                    
+  //  eminus->SetPhiRange(0.,360.);                                                                
+  //  eminus->SetThetaRange(0.,0.);                                                                
+  //  primGen->AddGenerator(eminus);                                                               
+  //                                                                                               
+  //  //  primGen->SetBeamAngle(30*TMath::Pi()/180.,0,0,0);  // set direction of beam to 30 degrees
+  //                                                                                               
+  //  fRun->SetGenerator(primGen);                                                                 
+  //  // ------------------------------------------------------------------------                  
 
- 
-  // Trajectories Visualization (TGeoManager Only)
-  // Switch this on if you want to visualize tracks in the
-  // eventdisplay.
+
+   // Visualisation of trajectories (TGeoManager Only)
+  // Switch this on if you want to visualise tracks in the event display.
   // This is normally switch off, because of the huge files created
   // when it is switched on. 
-  fRun->SetStoreTraj(kTRUE);
+  run->SetStoreTraj(kFALSE);
 
   // -----   Run initialisation   -------------------------------------------
-  fRun->Init();
+  run->Init();
   // ------------------------------------------------------------------------
   
 //  // Set cuts for storing the trajectories.
@@ -335,18 +335,20 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 //  // that the file size of the output file depends on these cuts
 //
 //   FairTrajFilter* trajFilter = FairTrajFilter::Instance();
-//   trajFilter->SetStepSizeCut(0.01); // 1 cm
-//   trajFilter->SetVertexCut(-2000., -2000., 4., 2000., 2000., 100.);
-//   trajFilter->SetMomentumCutP(10e-3); // p_lab > 10 MeV
-//   trajFilter->SetEnergyCut(0., 1.02); // 0 < Etot < 1.04 GeV
-//   trajFilter->SetStorePrimaries(kTRUE);
-//   trajFilter->SetStoreSecondaries(kTRUE);
+//   if ( trajFilter ) {
+//  	 trajFilter->SetStepSizeCut(0.01); // 1 cm
+//  	 trajFilter->SetVertexCut(-2000., -2000., 4., 2000., 2000., 100.);
+//  	 trajFilter->SetMomentumCutP(10e-3); // p_lab > 10 MeV
+//  	 trajFilter->SetEnergyCut(0., 1.02); // 0 < Etot < 1.04 GeV
+//  	 trajFilter->SetStorePrimaries(kTRUE);
+//  	 trajFilter->SetStoreSecondaries(kTRUE);
+//   }
 
   // -----   Runtime database   ---------------------------------------------
   CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
   fieldPar->SetParameters(magField);
   fieldPar->setChanged();
-  fieldPar->setInputVersion(fRun->GetRunId(),1);
+  fieldPar->setInputVersion(run->GetRunId(),1);
   Bool_t kParameterMerged = kTRUE;
   FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
   parOut->open(parFile.Data());
@@ -357,24 +359,39 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
 
  
   // -----   Start run   ----------------------------------------------------
-  fRun->Run(nEvents);
+  run->Run(nEvents);
   // ------------------------------------------------------------------------
-  fRun->CreateGeometryFile(geoFile);
+  run->CreateGeometryFile(geoFile);
 
   // -----   Finish   -------------------------------------------------------
   timer.Stop();
   Double_t rtime = timer.RealTime();
   Double_t ctime = timer.CpuTime();
-  cout << endl << endl;
-  cout << "Macro finished succesfully." << endl;
-  cout << "Output file is "    << outFile << endl;
-  cout << "Parameter file is " << parFile << endl;
-  cout << "Real time " << rtime << " s, CPU time " << ctime 
-       << "s" << endl << endl;
+  std::cout << std::endl << std::endl;
+  std::cout << "Macro finished successfully." << std::endl;
+  std::cout << "Output file is "    << outFile << std::endl;
+  std::cout << "Parameter file is " << parFile << std::endl;
+  std::cout << "Real time " << rtime << " s, CPU time " << ctime
+       << "s" << std::endl << std::endl;
   // ------------------------------------------------------------------------
 
-  cout << " Test passed" << endl;
-  cout << " All ok " << endl;
+//  if (hasFairMonitor) {
+//    // Extract the maximal used memory an add is as Dart measurement
+//    // This line is filtered by CTest and the value send to CDash
+//    FairSystemInfo sysInfo;
+//    Float_t maxMemory=sysInfo.GetMaxMemory();
+//    cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
+//    cout << maxMemory;
+//    cout << "</DartMeasurement>" << endl;
+//
+//    Float_t cpuUsage=ctime/rtime;
+//    cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
+//    cout << cpuUsage;
+//    cout << "</DartMeasurement>" << endl;
+//  }
+
+  std::cout << " Test passed" << std::endl;
+  std::cout << " All ok " << std::endl;
 
 //  // Function needed for CTest runtime dependency
 //  Generate_CTest_Dependency_File(depFile);
