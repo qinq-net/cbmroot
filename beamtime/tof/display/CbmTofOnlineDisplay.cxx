@@ -132,8 +132,8 @@ InitStatus CbmTofOnlineDisplay::Init()
   
   if( fbMonitorCts )
   {
-    fCtsTriggerMonitor = new TCanvas("tCanvasTrigger","TRB CTS trigger monitor",1080,0,500,200);
-    fCtsTriggerMonitor->Divide(2,1);
+    fCtsTriggerMonitor = new TCanvas("tCanvasTrigger","TRB CTS trigger monitor",1080,0,1000,750);
+    fCtsTriggerMonitor->Divide(4,3);
 
     fCtsTriggerMonitor->cd(1);
     gROOT->cd();
@@ -158,6 +158,120 @@ InitStatus CbmTofOnlineDisplay::Init()
     {
       h1->Draw("");
     }
+
+    fCtsTriggerMonitor->cd(3);
+    gROOT->cd();
+    gPad->SetFillColor(0);
+    gStyle->SetPalette(1);
+    gStyle->SetLabelSize(lsize);
+    gPad->SetLogy();
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_cts_busy"));
+    if( h1 )
+    {
+      h1->Draw("");
+    }
+
+    fCtsTriggerMonitor->cd(4);
+    gROOT->cd();
+    gPad->SetFillColor(0);
+    gStyle->SetPalette(1);
+    gStyle->SetLabelSize(lsize);
+    gPad->SetLogy();
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_cts_idle"));
+    if( h1 )
+    {
+      h1->Draw("");
+    }
+
+    fCtsTriggerMonitor->cd(5);
+    gROOT->cd();
+    gPad->SetFillColor(0);
+    gStyle->SetPalette(1);
+    gStyle->SetLabelSize(lsize);
+    gPad->SetLogy();
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_cts_idle_spill"));
+    if( h1 )
+    {
+      h1->Draw("");
+    }
+
+    fCtsTriggerMonitor->cd(6);
+    gROOT->cd();
+    gPad->SetFillColor(0);
+    gStyle->SetPalette(1);
+    gStyle->SetLabelSize(lsize);
+    gPad->SetLogy();
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_itc_assert"));
+    if( h1 )
+    {
+      h1->Draw("");
+    }
+
+    fCtsTriggerMonitor->cd(7);
+    gROOT->cd();
+    gPad->SetFillColor(0);
+    gStyle->SetPalette(1);
+    gStyle->SetLabelSize(lsize);
+    gPad->SetLogy();
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_cts_events"));
+    if( h1 )
+    {
+      h1->Draw("");
+    }
+
+    fCtsTriggerMonitor->cd(9);
+    gROOT->cd();
+    gPad->SetFillColor(0);
+    gStyle->SetPalette(1);
+    gStyle->SetLabelSize(lsize);
+    gPad->SetLogy();
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_hadaq_time"));
+    if( h1 )
+    {
+      h1->Draw("");
+    }
+
+    fCtsTriggerMonitor->cd(10);
+    gROOT->cd();
+    gPad->SetFillColor(0);
+    gStyle->SetPalette(1);
+    gStyle->SetLabelSize(lsize);
+    gPad->SetLogy();
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_trigger_rate"));
+    if( h1 )
+    {
+      h1->Draw("LP");
+    }
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_trb_event_rate"));
+    if( h1 )
+    {
+      h1->Draw("LPSAME");
+    }
+
+    fCtsTriggerMonitor->cd(11);
+    gROOT->cd();
+    gPad->SetFillColor(0);
+    gStyle->SetPalette(1);
+    gStyle->SetLabelSize(lsize);
+    gPad->SetLogy();
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_hadaq_time_spill"));
+    if( h1 )
+    {
+      h1->Draw("");
+    }
+
+    fCtsTriggerMonitor->cd(12);
+    gROOT->cd();
+    gPad->SetFillColor(0);
+    gStyle->SetPalette(1);
+    gStyle->SetLabelSize(lsize);
+    gPad->SetLogy();
+    h1 = ((TH1 *)gROOT->FindObjectAny("tof_cts_time_spill"));
+    if( h1 )
+    {
+      h1->Draw("");
+    }
+
   }
 
   if( fbMonitorSebStatus )
@@ -479,6 +593,46 @@ void CbmTofOnlineDisplay::Exec(Option_t* /*option*/)
        gPad->Update();
 
        fCtsTriggerMonitor->cd(2);
+       gPad->Modified();
+       gPad->Update();
+
+       fCtsTriggerMonitor->cd(3);
+       gPad->Modified();
+       gPad->Update();
+
+       fCtsTriggerMonitor->cd(4);
+       gPad->Modified();
+       gPad->Update();
+
+       fCtsTriggerMonitor->cd(5);
+       gPad->Modified();
+       gPad->Update();
+
+       fCtsTriggerMonitor->cd(6);
+       gPad->Modified();
+       gPad->Update();
+
+       fCtsTriggerMonitor->cd(7);
+       gPad->Modified();
+       gPad->Update();
+
+       fCtsTriggerMonitor->cd(8);
+       gPad->Modified();
+       gPad->Update();
+
+       fCtsTriggerMonitor->cd(9);
+       gPad->Modified();
+       gPad->Update();
+
+       fCtsTriggerMonitor->cd(10);
+       gPad->Modified();
+       gPad->Update();
+
+       fCtsTriggerMonitor->cd(11);
+       gPad->Modified();
+       gPad->Update();
+
+       fCtsTriggerMonitor->cd(12);
        gPad->Modified();
        gPad->Update();
 

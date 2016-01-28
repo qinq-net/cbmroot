@@ -67,6 +67,8 @@ class TTrbUnpackTof : public FairUnpack
       Bool_t RegisterOutput();
       Bool_t ClearOutput();
 
+      void SetFineSpillTiming(Bool_t bFineTiming = kTRUE) {fbFineSpillTiming = bFineTiming;}
+
       void DataErrorHandling(UInt_t uSubeventId, UInt_t uErrorPattern);
 
       // Parameters
@@ -75,6 +77,8 @@ class TTrbUnpackTof : public FairUnpack
       Int_t fiNbEvents;
       UInt_t fiCurrentEventNumber;
       UInt_t fiPreviousEventNumber;
+
+      Bool_t fbFineSpillTiming;
 
       // Iterator
       hadaq::TrbIterator * fTrbIterator;
@@ -101,12 +105,42 @@ class TTrbUnpackTof : public FairUnpack
       // Histograms
       TH1* fTrbTriggerPattern;
       TH1* fTrbTriggerType;
+      TH1* fCtsBusyTime;
+      TH1* fCtsIdleTime;
+      TH1* fCtsIdleTimeSpill;
+      TH1* fItcAssertions;
+      TH1* fItcEvents;
+      TH1* fHadaqEventTime;
       TH1* fTrbEventNumberJump;
+      TH1* fCtsTriggerCycles;
+      TH1* fCtsTriggerAccepted;
+      TH1* fHadaqTimeInSpill;
+      TH1* fCtsTimeInSpill;
       TTrbHeader* fTrbHeader;
       std::vector<TH1*> fTrbSubeventSize;
       std::vector<TH1*> fTrbSubeventStatus;
       std::vector<TH1*> fTrbTdcWords;
       std::vector<TH1*> fTrbTdcProcessStatus;
+
+      // CTS counters
+      UInt_t* fuTrigChanEdgeCounter;
+      UInt_t* fuTrigChanClockCounter;
+      UInt_t* fuTrigInputEdgeCounter;
+      UInt_t* fuTrigInputClockCounter;
+      Long64_t fiAllPossibleTriggers;
+      Long64_t fiAcceptedTriggers;
+
+      // HADAQ event timestamp
+      Int_t fiHadaqLastEventTime;
+      Int_t fiHadaqFirstEventTime;
+      Int_t fiHadaqSpillStartTime;
+      Int_t fiHadaqCoarseSpillStartTime;
+
+      // CTS trigger timestamp
+      Long64_t fiCtsLastEventTime;
+      Long64_t fiCtsFirstEventTime;
+      Bool_t fbNextSpillToStart;
+      Bool_t fbHadaqBufferDelay;
 
       ClassDef(TTrbUnpackTof,1)
 };

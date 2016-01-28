@@ -45,6 +45,7 @@ TTrbUnpackTof::TTrbUnpackTof( Short_t type, Short_t subType, Short_t procId, Sho
    fiNbEvents(0),
    fiCurrentEventNumber(0),
    fiPreviousEventNumber(0),
+   fbFineSpillTiming(kTRUE),
    fTrbIterator(NULL),
    fTrbTdcUnpacker(NULL),
    fTrbTdcBoardCollection(NULL),
@@ -54,12 +55,36 @@ TTrbUnpackTof::TTrbUnpackTof( Short_t type, Short_t subType, Short_t procId, Sho
    fuActiveTrbTdcNb(0),
    fTrbTriggerPattern(NULL),
    fTrbTriggerType(NULL),
+   fCtsBusyTime(NULL),
+   fCtsIdleTime(NULL),
+   fCtsIdleTimeSpill(NULL),
+   fItcAssertions(NULL),
+   fItcEvents(NULL),
+   fHadaqEventTime(NULL),
    fTrbEventNumberJump(NULL),
+   fCtsTriggerCycles(NULL),
+   fCtsTriggerAccepted(NULL),
+   fHadaqTimeInSpill(NULL),
+   fCtsTimeInSpill(NULL),
    fTrbHeader(NULL),
    fTrbSubeventSize(),
    fTrbSubeventStatus(),
    fTrbTdcWords(),
-   fTrbTdcProcessStatus()
+   fTrbTdcProcessStatus(),
+   fuTrigChanEdgeCounter(new UInt_t[16]),
+   fuTrigChanClockCounter(new UInt_t[16]),
+   fuTrigInputEdgeCounter(new UInt_t[16]),
+   fuTrigInputClockCounter(new UInt_t[16]),
+   fiAllPossibleTriggers(0),
+   fiAcceptedTriggers(0),
+   fiHadaqLastEventTime(0),
+   fiHadaqFirstEventTime(0),
+   fiHadaqSpillStartTime(0),
+   fiHadaqCoarseSpillStartTime(0),
+   fiCtsLastEventTime(0),
+   fiCtsFirstEventTime(0),
+   fbNextSpillToStart(kFALSE),
+   fbHadaqBufferDelay(kFALSE)
 {
    LOG(INFO)<<"**** TTrbUnpackTof: Call TTrbUnpackTof()..."<<FairLogger::endl;
 }
@@ -74,6 +99,11 @@ TTrbUnpackTof::~TTrbUnpackTof()
       delete fTrbTdcUnpacker;
 
    fTdcUnpackMap.clear();
+
+   delete[] fuTrigChanEdgeCounter;
+   delete[] fuTrigChanClockCounter;
+   delete[] fuTrigInputEdgeCounter;
+   delete[] fuTrigInputClockCounter;
 
 //   DeleteHistograms();
 }
@@ -166,6 +196,7 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
    if( 32 == uNb1ByteWords )
    {
      LOG(ERROR)<<"Empty HADAQ raw event. Skip it."<<FairLogger::endl;
+     LOG(ERROR)<<"event number: "<<tCurrentEvent->GetSeqNr()<<FairLogger::endl;
      return kFALSE;
    }
 
@@ -209,6 +240,34 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
                         (Float_t)(tCurrentEvent->GetPaddedSize())/(Float_t)uNb1ByteWords, size )
                  <<FairLogger::endl;
    }
+
+   Int_t iHadaqCurrentEventTime = (tCurrentEvent->GetTime()&0xff)
+                                 +60*((tCurrentEvent->GetTime()&0xff00)>>8)
+                                 +3600*(tCurrentEvent->GetTime()>>16);
+
+   // time offset of the first valid event in a run
+   if( 0 == fiNbEvents )
+   {
+     fiHadaqFirstEventTime = iHadaqCurrentEventTime;
+   }
+
+   // allow for up to 24h of data taking per run (1 overflow from 23:59:59 to 00:00:00)
+   if( 0 > (iHadaqCurrentEventTime - fiHadaqLastEventTime) )
+   {
+     iHadaqCurrentEventTime += 86400;
+   }
+
+   fHadaqEventTime->Fill(iHadaqCurrentEventTime - fiHadaqFirstEventTime);
+
+   // start of a new HADAQ spill: at least 2 seconds time difference to the preceding event
+   if( 1 < (iHadaqCurrentEventTime - fiHadaqLastEventTime) )
+   {
+     fiHadaqCoarseSpillStartTime = iHadaqCurrentEventTime;
+   }
+
+   fTrbHeader->SetTimeInSpill((UInt_t)(iHadaqCurrentEventTime-fiHadaqCoarseSpillStartTime));
+
+   fHadaqTimeInSpill->Fill(fTrbHeader->GetTimeInSpill());
 
    hadaq::RawSubevent* tCurrentSubevent;
    UInt_t uNbSubevents = 0;
@@ -582,9 +641,9 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
 
          fTrbTriggerType->Fill(uTriggerType);
 
-	 fTrbHeader->SetTriggerPattern(uTriggerPattern);
-	 fTrbHeader->SetTriggerType(uTriggerType);
-	 fTrbHeader->SetTimeInSpill((UInt_t)1);  // FIXME, TBD
+	       fTrbHeader->SetTriggerPattern(uTriggerPattern);
+	       fTrbHeader->SetTriggerType(uTriggerType);
+	       fTrbHeader->SetTimeInSpill((UInt_t)1);  // FIXME, TBD
 
          UInt_t uNbInputCh = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 16) & 0xf;
          UInt_t uNbTrigCh = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 20) & 0x1f;
@@ -602,6 +661,250 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
                              +bIncludeLastIdle*2
                              +bIncludeCounters*3
                              +bIncludeTimestamp*1;
+
+         UInt_t uBusyIdleOffset = uSubsubeventDataIndex + 2 + uNbInputCh*2 + uNbTrigCh*2;
+         UInt_t uStatsOffset = uBusyIdleOffset + bIncludeLastIdle*2;
+         UInt_t uTimeStampOffset = uStatsOffset + bIncludeCounters*3;
+
+
+         if( bIncludeLastIdle )
+         {
+           // time to complete the TrbNet trigger process in the last event
+           fCtsBusyTime->Fill( tCurrentSubevent->Data(uBusyIdleOffset+1)/100. );
+
+           UInt_t uIdleTime = tCurrentSubevent->Data(uBusyIdleOffset);
+
+           // time passed since the last trigger procession
+           fCtsIdleTime->Fill( uIdleTime/100. );
+
+           if( 1. < uIdleTime/100000000. )
+           {
+             // time passed since the last trigger procession on inter-spill scales
+             fCtsIdleTimeSpill->Fill( uIdleTime/100000000. );
+
+             LOG(INFO)<<Form("CTS idle time of %.2f s observed in event %u.",uIdleTime/100000000.,fiNbEvents)<<FairLogger::endl;
+           }
+         }
+
+         Long64_t iAllTriggersDiff(0);
+         Long64_t iAllEventsDiff(0);
+
+         if( bIncludeCounters )
+         {
+           Long64_t iAllTriggersCounter = (Long64_t)tCurrentSubevent->Data(uStatsOffset+1);
+           Long64_t iAllEventsCounter = (Long64_t)tCurrentSubevent->Data(uStatsOffset+2);
+
+           iAllTriggersDiff = iAllTriggersCounter - fiAllPossibleTriggers;
+           if( 0 > iAllTriggersDiff )
+           {
+             iAllTriggersDiff += 4294967296;
+           }
+
+           iAllEventsDiff = iAllEventsCounter - fiAcceptedTriggers;
+           if( 0 > iAllEventsDiff )
+           {
+             iAllEventsDiff += 4294967296;
+           }
+
+           LOG(DEBUG)<<Form("In total, %lld trigger opportunities (10 ns sampling) have been counted since the last event.", iAllTriggersDiff)<<FairLogger::endl;
+           LOG(DEBUG)<<Form("In total, %lld events have been triggered since the last event.", iAllEventsDiff)<<FairLogger::endl;
+           LOG(DEBUG)<<FairLogger::endl;
+
+           fItcAssertions->Fill(iAllTriggersDiff);
+           fItcEvents->Fill(iAllEventsDiff);
+
+           fiAllPossibleTriggers = iAllTriggersCounter;
+           fiAcceptedTriggers = iAllEventsCounter;
+         }
+
+         if( bIncludeTimestamp )
+         {
+           Long64_t iCurrentTimeStamp = (Long64_t)tCurrentSubevent->Data(uTimeStampOffset);
+
+/* #############################################################################
+// works reliably only for nov15 data
+// more robust than the version covering both feb15 and nov15
+
+           if( fbNextSpillToStart || (0 == fiNbEvents) )
+           {
+             fiCtsFirstEventTime = iCurrentTimeStamp;
+             fiCtsLastEventTime = 0;
+             fiHadaqSpillStartTime = iHadaqCurrentEventTime - fiHadaqFirstEventTime;
+             iAllTriggersDiff = 0;
+             iAllEventsDiff = 0;
+
+             fbNextSpillToStart = kFALSE;
+           }
+
+           if( 10 < (iHadaqCurrentEventTime - fiHadaqLastEventTime) )
+           {
+             fbNextSpillToStart = kTRUE;
+           }
+  ########################################################################### */
+// seems to work for both feb15 and nov15 data
+// more assumptions necessary, less robust
+
+           if( 0 == fiNbEvents )
+           {
+             fiCtsFirstEventTime = iCurrentTimeStamp;
+             fiCtsLastEventTime = 0;
+             fiHadaqSpillStartTime = iHadaqCurrentEventTime - fiHadaqFirstEventTime;
+             iAllTriggersDiff = 0;
+             iAllEventsDiff = 0;
+
+             // seemingly a HADAQ buffer delay can already exist at the beginning of a run!
+             fbHadaqBufferDelay = kTRUE;
+           }
+           else
+           {
+             // start of a new HADAQ spill: at least 2 seconds time difference to the preceding one
+             if( 1 < (iHadaqCurrentEventTime - fiHadaqLastEventTime) )
+             {
+               // no HADAQ buffer delay has been observed
+               if( !fbHadaqBufferDelay )
+               {
+                 // compare the current CTS time to the value in the previous event
+                 Long64_t iTimeInSpill = iCurrentTimeStamp - fiCtsFirstEventTime;
+
+                 if( 0 > iTimeInSpill )
+                 {
+                   iTimeInSpill += 4294967296;
+                 }
+
+                 // event most probably belongs to the preceding spill
+                 if( 1000*100000 > (iTimeInSpill-fiCtsLastEventTime) )
+                 {
+                   fbHadaqBufferDelay = kTRUE;
+                 }
+                 // event most probably starts a new spill
+                 else
+                 {
+                   fiCtsFirstEventTime = iCurrentTimeStamp;
+                   fiCtsLastEventTime = 0;
+                   fiHadaqSpillStartTime = iHadaqCurrentEventTime - fiHadaqFirstEventTime;
+                   iAllTriggersDiff = 0;
+                   iAllEventsDiff = 0;
+                 }
+               }
+               // a HADAQ buffer delay is propagating
+               else
+               {
+                 fiCtsFirstEventTime = iCurrentTimeStamp;
+                 fiCtsLastEventTime = 0;
+                 fiHadaqSpillStartTime = fiHadaqLastEventTime - fiHadaqFirstEventTime;
+                 iAllTriggersDiff = 0;
+                 iAllEventsDiff = 0;
+               }
+             }
+             // somewhere inside a HADAQ spill
+             else
+             {
+               // first event following a series of delayed HADAQ buffers
+               if( fbHadaqBufferDelay )
+               {
+                 fiCtsFirstEventTime = iCurrentTimeStamp;
+                 fiCtsLastEventTime = 0;
+                 // correct spill start time w.r.t. the HADAQ buffer delay
+                 fiHadaqSpillStartTime = fiHadaqLastEventTime - fiHadaqFirstEventTime;
+                 iAllTriggersDiff = 0;
+                 iAllEventsDiff = 0;
+
+                 // HADAQ buffer delay propagation should stop here
+                 fbHadaqBufferDelay = kFALSE;
+               }
+             }
+           }
+// #############################################################################
+
+           Long64_t iTimeInSpill = iCurrentTimeStamp - fiCtsFirstEventTime;
+
+           if( 0 > iTimeInSpill )
+           {
+             iTimeInSpill += 4294967296;
+           }
+
+           if( bIncludeCounters )
+           {
+             if( 0 == fiCtsLastEventTime )
+             {
+               LOG(DEBUG)<<Form("time to origin: %f. event: %u",fiHadaqSpillStartTime*1. + (Double_t)(fiCtsLastEventTime + iTimeInSpill)/2./100000000.,fiNbEvents)<<FairLogger::endl;
+               LOG(DEBUG)<<Form("timestamp value: %lld",iCurrentTimeStamp)<<FairLogger::endl;
+               LOG(DEBUG)<<Form("idle time: %u",tCurrentSubevent->Data(uBusyIdleOffset))<<FairLogger::endl; 
+             }
+
+             fCtsTriggerCycles->Fill(fiHadaqSpillStartTime*1. + (Double_t)(fiCtsLastEventTime + iTimeInSpill)/2./100000000., iAllTriggersDiff);
+             fCtsTriggerAccepted->Fill(fiHadaqSpillStartTime*1. + (Double_t)(fiCtsLastEventTime + iTimeInSpill)/2./100000000., iAllEventsDiff);
+           }
+
+           if(fbFineSpillTiming)
+           {
+             fTrbHeader->SetTimeInSpill((UInt_t)iTimeInSpill);
+             fCtsTimeInSpill->Fill((Double_t)iTimeInSpill/100000.);
+           }
+
+           fiCtsLastEventTime = iTimeInSpill;
+         }
+
+
+         /* Uncomment the following block of code to display [DEBUG2] the difference of assertion cycle and rising edge
+            counters of the trigger input modules (IM) and the iternal trigger channels (ITC) compared to the previous event.
+            As of 2016-01-22, most counter values written into the CTS subsubevent are not meaningful due to a firmware bug.
+            In the CTS GUI, the counter values are correct (polled via the slow-control channel of TrbNet).
+          */
+
+/*
+         UInt_t uTrigInpOffset = uSubsubeventDataIndex + 2;
+         UInt_t uTrigCntOffset = uTrigInpOffset + uNbInputCh*2;
+
+         UInt_t uTrigInpEdgeDiffsSum(0);
+         UInt_t uTrigInpClockDiffsSum(0);
+
+         for( UInt_t uInput = 0; uInput < uNbInputCh; uInput++ )
+         {
+
+           UInt_t uTrigInpClockDiff = tCurrentSubevent->Data( uTrigInpOffset + 2*uInput ) - fuTrigInputClockCounter[uInput];
+           uTrigInpClockDiffsSum += uTrigInpClockDiff;
+           fuTrigInputClockCounter[uInput] = tCurrentSubevent->Data( uTrigInpOffset + 2*uInput );
+
+           LOG(DEBUG2)<<Form("Input Module %u: %u clock cycles since the last event.",uInput,uTrigInpClockDiff)<<FairLogger::endl;
+           
+         }
+
+         for( UInt_t uInput = 0; uInput < uNbInputCh; uInput++ )
+         {
+           UInt_t uTrigInpEdgeDiff = tCurrentSubevent->Data( uTrigInpOffset + 1 + 2*uInput ) - fuTrigInputEdgeCounter[uInput];
+           uTrigInpEdgeDiffsSum += uTrigInpEdgeDiff;
+           fuTrigInputEdgeCounter[uInput] = tCurrentSubevent->Data( uTrigInpOffset + 1 + 2*uInput );
+
+           LOG(DEBUG2)<<Form("Input Module %u: %u rising edges since the last event.",uInput,uTrigInpEdgeDiff)<<FairLogger::endl;
+
+         }
+
+         UInt_t uTrigChanEdgeDiffsSum(0);
+         UInt_t uTrigChanClockDiffsSum(0);
+
+         for( UInt_t uChannel = 0; uChannel < uNbTrigCh; uChannel++ )
+         {
+
+           UInt_t uTrigChanClockDiff = tCurrentSubevent->Data( uTrigCntOffset + 2*uChannel ) - fuTrigChanClockCounter[uChannel];
+           uTrigChanClockDiffsSum += uTrigChanClockDiff;
+           fuTrigChanClockCounter[uChannel] = tCurrentSubevent->Data( uTrigCntOffset + 2*uChannel );
+
+           LOG(DEBUG2)<<Form("ITC %u: %u clock cycles since the last event.",uChannel,uTrigChanClockDiff)<<FairLogger::endl;
+           
+         }
+
+         for( UInt_t uChannel = 0; uChannel < uNbTrigCh; uChannel++ )
+         {
+           UInt_t uTrigChanEdgeDiff = tCurrentSubevent->Data( uTrigCntOffset + 1 + 2*uChannel ) - fuTrigChanEdgeCounter[uChannel];
+           uTrigChanEdgeDiffsSum += uTrigChanEdgeDiff;
+           fuTrigChanEdgeCounter[uChannel] = tCurrentSubevent->Data( uTrigCntOffset + 1 + 2*uChannel );
+
+           LOG(DEBUG2)<<Form("ITC %u: %u rising edges since the last event.",uChannel,uTrigChanEdgeDiff)<<FairLogger::endl;
+
+         }
+
+*/
 
          if( 0x1 == uExtTrigFlag )
          {
@@ -729,6 +1032,8 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
    fiNbEvents++;
    fiPreviousEventNumber = fiCurrentEventNumber;
    
+   fiHadaqLastEventTime = iHadaqCurrentEventTime;
+
    delete fTrbIterator;
 
    return kTRUE;
@@ -840,6 +1145,35 @@ void TTrbUnpackTof::CreateHistograms()
    fTrbTriggerPattern = new TH1I("tof_trb_trigger_pattern", "CTS trigger pattern", 16, 0, 16);
    fTrbTriggerType = new TH1I("tof_trb_trigger_types", "CTS trigger types", 16, 0, 16);
    fTrbEventNumberJump = new TH1I("tof_trb_event_jump", "CTS event number jumps", 2500, 0, 2500);
+   fCtsBusyTime = new TH1I("tof_trb_cts_busy", "CTS busy time", 100, 0, 100);
+   fCtsBusyTime->GetXaxis()->SetTitle("#mus");
+   fCtsIdleTime = new TH1I("tof_trb_cts_idle", "CTS idle time", 200, 0, 200);
+   fCtsIdleTime->GetXaxis()->SetTitle("#mus");
+   fCtsIdleTimeSpill = new TH1I("tof_trb_cts_idle_spill", "CTS inter-spill idle time", 50, 0, 50);
+   fCtsIdleTimeSpill->GetXaxis()->SetTitle("s");
+   fItcAssertions = new TH1I("tof_trb_itc_assert", "All trigger cycles since last event", 50, 0, 50);
+   fItcEvents = new TH1I("tof_trb_cts_events", "Accepted cycles since last event", 50, 0, 50);
+
+   fHadaqEventTime = new TH1I("tof_trb_hadaq_time", "HADAQ/DABC event time", 300, 0, 300);
+   fHadaqEventTime->GetXaxis()->SetTitle("s");
+
+   fCtsTriggerCycles = new TH1I("tof_trb_trigger_rate", "CTS trigger/event rate", 300, 0, 300);
+   fCtsTriggerCycles->GetXaxis()->SetTitle("s");
+   fCtsTriggerCycles->SetMarkerStyle(34);
+   fCtsTriggerCycles->SetMarkerColor(kRed);
+   fCtsTriggerCycles->SetLineColor(kRed);
+
+   fCtsTriggerAccepted = new TH1I("tof_trb_event_rate", "CTS trigger/event rate", 300, 0, 300);
+   fCtsTriggerAccepted->GetXaxis()->SetTitle("ms");
+   fCtsTriggerAccepted->SetMarkerStyle(34);
+   fCtsTriggerAccepted->SetMarkerColor(kGreen);
+   fCtsTriggerAccepted->SetLineColor(kGreen);
+
+   fHadaqTimeInSpill = new TH1I("tof_hadaq_time_spill", "HADAQ coarse time in spill", 20, 0, 20);
+   fHadaqTimeInSpill->GetXaxis()->SetTitle("s");
+
+   fCtsTimeInSpill = new TH1I("tof_cts_time_spill", "CTS fine time in spill", 20000, 0, 20000);
+   fCtsTimeInSpill->GetXaxis()->SetTitle("ms");
 
    TH1* hTemp = 0;
 
@@ -892,6 +1226,16 @@ void TTrbUnpackTof::WriteHistograms()
    fTrbTriggerPattern->Write();
    fTrbTriggerType->Write();
    fTrbEventNumberJump->Write();
+   fCtsBusyTime->Write();
+   fCtsIdleTime->Write();
+   fCtsIdleTimeSpill->Write();
+   fItcAssertions->Write();
+   fItcEvents->Write();
+   fHadaqEventTime->Write();
+   fCtsTriggerCycles->Write();
+   fCtsTriggerAccepted->Write();
+   fHadaqTimeInSpill->Write();
+   fCtsTimeInSpill->Write();
 
    for( UInt_t uTrbSeb = 0; uTrbSeb < fuInDataTrbSebNb; uTrbSeb++ )
    {
