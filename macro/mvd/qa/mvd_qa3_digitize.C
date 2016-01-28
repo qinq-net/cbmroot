@@ -9,8 +9,44 @@
 //
 // --------------------------------------------------------------------------
 
+TString caveGeom="";
+TString pipeGeom="";
+TString magnetGeom="";
+TString mvdGeom="";
+TString stsGeom="";
+TString richGeom="";
+TString muchGeom="";
+TString shieldGeom="";
+TString trdGeom="";
+TString tofGeom="";
+TString ecalGeom="";
+TString platformGeom="";
+TString psdGeom="";
+Double_t psdZpos=0.;
+Double_t psdXpos=0.;
 
-void mvd_qa3_digitize()
+TString mvdTag="";
+TString stsTag="";
+TString trdTag="";
+TString tofTag="";
+
+TString stsDigi="";
+TString muchDigi="";
+TString trdDigi="";
+TString tofDigi="";
+
+TString mvdMatBudget="";
+TString stsMatBudget="";
+
+TString  fieldMap="";
+Double_t fieldZ=0.;
+Double_t fieldScale=0.;
+Int_t    fieldSymType=0;
+
+TString defaultInputFile="";
+
+
+void mvd_qa3_digitize( const char* setup = "sis100_electron")
 {
 
     // ========================================================================
@@ -18,15 +54,15 @@ void mvd_qa3_digitize()
 
     TString inDir   = gSystem->Getenv("VMCWORKDIR");
 
-    TString outDir="./data/";   
+    TString outDir="data/";
     // Input file (MC events)
-    TString inFile = outDir+ "mvd.mcCentral.root";
+    TString inFile = outDir+ "mvd.mcQA.root";
 
     // Parameter file name
     TString parFile =outDir+ "params.root";
 
     // Output file
-    TString outFile =outDir+ "mvd.reco.root";
+    TString outFile =outDir+ "mvd.recoQA.root";
 
     // Background file (MC events, for pile-up)
     TString bgFile = inFile;
@@ -39,6 +75,10 @@ void mvd_qa3_digitize()
 
     // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug)
     Int_t iVerbose = 0;
+
+     FairLogger* logger = FairLogger::GetLogger();
+  logger->SetLogScreenLevel("INFO");
+  logger->SetLogVerbosityLevel("LOW");
 
     // In general, the following parts need not be touched
     // ========================================================================
@@ -58,13 +98,14 @@ void mvd_qa3_digitize()
     FairRunAna *fRun= new FairRunAna();
     fRun->SetInputFile(inFile);
     fRun->SetOutputFile(outFile);
-    Bool_t hasFairMonitor = Has_Fair_Monitor();
-    if (hasFairMonitor) {
-      FairMonitor::GetMonitor()->EnableMonitor(kTRUE);
-    }
     // ------------------------------------------------------------------------
 
-
+      // ----- Mc Data Manager   ------------------------------------------------
+  CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+  mcManager->AddFile(inFile);
+  fRun->AddTask(mcManager);
+  // ------------------------------------------------------------------------
+  
 
     // -------   MVD Digitiser   ----------------------------------------------
     CbmMvdDigitizer* digi = new CbmMvdDigitizer("MVDDigitiser", 0, iVerbose);
@@ -90,18 +131,14 @@ void mvd_qa3_digitize()
     //digi->ShowDebugHistograms();
     
 
-    //----------------------------------------------------------------------------
-    // -----   MVD Cluster Finder   ----------------------------------------------
+  // -----   MVD Clusterfinder   ---------------------------------------------
+  CbmMvdClusterfinder* mvdCluster = new CbmMvdClusterfinder("MVD Clusterfinder", 0, iVerbose);
+  fRun->AddTask(mvdCluster);
+  // -------------------------------------------------------------------------
 
     
     CbmMvdHitfinder* mvd_hit   = new CbmMvdHitfinder("MVDFindHits", 0, iVerbose);
-   // mvd_hit->SetSigmaNoise(15,kTRUE);  // kTRUE = add noise to digis, kFALSE = ideal detector
-   // mvd_hit->SetSeedThreshold(50); //in electrons!
-   // mvd_hit->SetNeighbourThreshold(30);
-   // mvd_hit->SetAdcBits(12);
-   // mvd_hit->SetHitPosErrX(0.0005);
-   // mvd_hit->SetHitPosErrY(0.0005);
-    //mvd_hit->ShowDebugHistograms();
+    mvd_hit->UseClusterfinder(kTRUE);
     fRun->AddTask(mvd_hit);
 
     //----------------------------------------------------------------------------
@@ -141,25 +178,7 @@ void mvd_qa3_digitize()
     cout << "Real time " << rtime << " s, CPU time " << ctime << " s" << endl;
     cout << endl;
     // ---------------------------------------------------------------------------
-  if (hasFairMonitor) {
-    // Extract the maximal used memory an add is as Dart measurement
-    // This line is filtered by CTest and the value send to CDash
-    FairSystemInfo sysInfo;
-    Float_t maxMemory=sysInfo.GetMaxMemory();
-    cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
-    cout << maxMemory;
-    cout << "</DartMeasurement>" << endl;
-
-    Float_t cpuUsage=ctime/rtime;
-    cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
-    cout << cpuUsage;
-    cout << "</DartMeasurement>" << endl;
-
-    FairMonitor* tempMon = FairMonitor::GetMonitor();
-    tempMon->Print();
-  }
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
-
 }
