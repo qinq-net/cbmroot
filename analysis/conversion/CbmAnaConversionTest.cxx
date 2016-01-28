@@ -508,6 +508,8 @@ void CbmAnaConversionTest::CombineElectrons_FromSTSandRICH()
 				Int_t test = check1 + check2;
 				if(test != 1) continue;		// need one electron and one positron
 				
+				if(fVector_gtIndex[a] == fVector_electronRICH_gtIndex[b]) continue;
+				
 				//CbmLmvmKinematicParams params1 = CalculateKinematicParamsReco(fVector_momenta[a], fVector_electronRICH_momenta[b]);
 				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(fVector_momenta[a], fVector_electronRICH_momenta[b]);
 				
