@@ -1,5 +1,5 @@
-*** ../run/run_sim.C	2016-01-28 11:34:43.149468091 +0100
---- mcbm_sim.C	2016-01-28 11:33:52.536928562 +0100
+*** ../run/run_sim.C	2016-01-28 05:10:08.999692489 +0100
+--- mcbm_sim.C	2016-01-28 12:12:14.765276179 +0100
 ***************
 *** 51,57 ****
   
@@ -147,7 +147,7 @@
     primGen->SmearGausVertexXY(smearVertexXY);
     primGen->SmearVertexZ(smearVertexZ);
 ***************
-*** 288,299 ****
+*** 288,322 ****
   
     // Use the CbmUnigenGenrator for the input
     CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
@@ -160,7 +160,30 @@
     // Switch this on if you want to visualise tracks in the event display.
     // This is normally switch off, because of the huge files created
     // when it is switched on. 
---- 291,325 ----
+!   run->SetStoreTraj(kFALSE);
+  
+    // -----   Run initialisation   -------------------------------------------
+    run->Init();
+    // ------------------------------------------------------------------------
+    
+!   // Set cuts for storing the trajectories.
+!   // Switch this on only if trajectories are stored.
+!   // Choose this cuts according to your needs, but be aware
+!   // that the file size of the output file depends on these cuts
+! 
+!    FairTrajFilter* trajFilter = FairTrajFilter::Instance();
+!    if ( trajFilter ) {
+!   	 trajFilter->SetStepSizeCut(0.01); // 1 cm
+!   	 trajFilter->SetVertexCut(-2000., -2000., 4., 2000., 2000., 100.);
+!   	 trajFilter->SetMomentumCutP(10e-3); // p_lab > 10 MeV
+!   	 trajFilter->SetEnergyCut(0., 1.02); // 0 < Etot < 1.04 GeV
+!   	 trajFilter->SetStorePrimaries(kTRUE);
+!   	 trajFilter->SetStoreSecondaries(kTRUE);
+!    }
+  
+    // -----   Runtime database   ---------------------------------------------
+    CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
+--- 291,348 ----
   
     // Use the CbmUnigenGenrator for the input
     CbmUnigenGenerator*  uniGen = new CbmUnigenGenerator(inFile);
@@ -196,29 +219,9 @@
     // Switch this on if you want to visualise tracks in the event display.
     // This is normally switch off, because of the huge files created
     // when it is switched on. 
-***************
-*** 303,322 ****
-    run->Init();
-    // ------------------------------------------------------------------------
-    
-!   // Set cuts for storing the trajectories.
-!   // Switch this on only if trajectories are stored.
-!   // Choose this cuts according to your needs, but be aware
-!   // that the file size of the output file depends on these cuts
-! 
-!    FairTrajFilter* trajFilter = FairTrajFilter::Instance();
-!    if ( trajFilter ) {
-!   	 trajFilter->SetStepSizeCut(0.01); // 1 cm
-!   	 trajFilter->SetVertexCut(-2000., -2000., 4., 2000., 2000., 100.);
-!   	 trajFilter->SetMomentumCutP(10e-3); // p_lab > 10 MeV
-!   	 trajFilter->SetEnergyCut(0., 1.02); // 0 < Etot < 1.04 GeV
-!   	 trajFilter->SetStorePrimaries(kTRUE);
-!   	 trajFilter->SetStoreSecondaries(kTRUE);
-!    }
+!   run->SetStoreTraj(kTRUE);
   
-    // -----   Runtime database   ---------------------------------------------
-    CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
---- 329,348 ----
+    // -----   Run initialisation   -------------------------------------------
     run->Init();
     // ------------------------------------------------------------------------
     

@@ -323,7 +323,7 @@ void mcbm_sim(Int_t nEvents = 1, const char* setup = "sis18_mcbm")
   // Switch this on if you want to visualise tracks in the event display.
   // This is normally switch off, because of the huge files created
   // when it is switched on. 
-  run->SetStoreTraj(kFALSE);
+  run->SetStoreTraj(kTRUE);
 
   // -----   Run initialisation   -------------------------------------------
   run->Init();
