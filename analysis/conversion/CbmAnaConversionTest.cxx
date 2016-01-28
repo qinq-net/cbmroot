@@ -75,6 +75,7 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	globalEventNo(0),
 	fMixedTest_3p1_photons(),
 	fMixedTest_3p1_eventno(),
+	fMixedTest_3p1_combined(),
 	fhTest_eventMixing_3p1(NULL)
 {
 }
@@ -370,6 +371,7 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 		MixedEventTest_3p1();
 		fMixedTest_3p1_photons.clear();
 		fMixedTest_3p1_eventno.clear();
+		fMixedTest_3p1_combined.clear();
 	}
 
 
@@ -536,6 +538,7 @@ void CbmAnaConversionTest::CombineElectrons_FromSTSandRICH()
 					pairmomenta.push_back(fVector_electronRICH_momenta[b]);
 					fMixedTest_3p1_photons.push_back(pairmomenta);
 					fMixedTest_3p1_eventno.push_back(globalEventNo);
+					fMixedTest_3p1_combined.push_back(1);
 				}
 			}
 		}
@@ -589,6 +592,7 @@ void CbmAnaConversionTest::CombineElectrons_FromRICH()
 					pairmomenta.push_back(fVector_electronRICH_momenta[b]);
 					fMixedTest_3p1_photons.push_back(pairmomenta);
 					fMixedTest_3p1_eventno.push_back(globalEventNo);
+					fMixedTest_3p1_combined.push_back(0);
 				}
 			}
 		}
@@ -920,7 +924,8 @@ void CbmAnaConversionTest::MixedEventTest_3p1()
 	//cout << "CbmAnaConversionRecoFull: MixedEventTest4 - nof entries " << nof << endl;
 	for(Int_t a = 0; a < nof-1; a++) {
 		for(Int_t b = a+1; b < nof; b++) {
-			if(fMixedTest_3p1_eventno[a] == fMixedTest_3p1_eventno[b]) continue;
+			if(fMixedTest_3p1_eventno[a] == fMixedTest_3p1_eventno[b]) continue;		// to make sure that the photons are from two different events
+			if(fMixedTest_3p1_combined[a] + fMixedTest_3p1_combined[b] != 1) continue;	// to make sure, that the combination 3+1 is used
 		
 			TVector3 e11 = fMixedTest_3p1_photons[a][0];
 			TVector3 e12 = fMixedTest_3p1_photons[a][1];

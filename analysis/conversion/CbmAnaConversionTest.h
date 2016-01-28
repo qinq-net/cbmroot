@@ -142,6 +142,7 @@ private:
 //	for other event mixing (3 + 1)
 	vector< vector<TVector3> >	fMixedTest_3p1_photons;
 	vector<int>					fMixedTest_3p1_eventno;
+	vector<int>					fMixedTest_3p1_combined;
 	TH1D * 						fhTest_eventMixing_3p1;
 
 
