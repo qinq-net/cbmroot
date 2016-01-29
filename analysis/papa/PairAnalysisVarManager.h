@@ -1268,7 +1268,7 @@ inline void PairAnalysisVarManager::FillVarRichHit(const CbmRichHit *hit, Double
   FillVarPixelHit(hit, values);
 
   // Set
-  values[kNPhotons] = hit->GetNPhotons();
+    values[kNPhotons] = 1;//hit->GetNPhotons();
   values[kPmtId]    = hit->GetPmtId();
 
 
