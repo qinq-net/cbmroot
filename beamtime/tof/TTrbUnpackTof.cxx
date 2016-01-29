@@ -265,9 +265,9 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
      fiHadaqCoarseSpillStartTime = iHadaqCurrentEventTime;
    }
 
-   fTrbHeader->SetTimeInSpill((UInt_t)(iHadaqCurrentEventTime-fiHadaqCoarseSpillStartTime));
+   fTrbHeader->SetTimeInSpill(((UInt_t)(iHadaqCurrentEventTime-fiHadaqCoarseSpillStartTime))*100000000);
 
-   fHadaqTimeInSpill->Fill(fTrbHeader->GetTimeInSpill());
+   fHadaqTimeInSpill->Fill(fTrbHeader->GetTimeInSpill()/100000000);
 
    hadaq::RawSubevent* tCurrentSubevent;
    UInt_t uNbSubevents = 0;
@@ -839,8 +839,9 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
            if(fbFineSpillTiming)
            {
              fTrbHeader->SetTimeInSpill((UInt_t)iTimeInSpill);
-             fCtsTimeInSpill->Fill((Double_t)iTimeInSpill/100000.);
            }
+           
+           fCtsTimeInSpill->Fill((Double_t)iTimeInSpill/100000.);
 
            fiCtsLastEventTime = iTimeInSpill;
          }
