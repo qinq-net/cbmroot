@@ -14,6 +14,7 @@ Set(INCLUDE_DIRECTORIES
   ${CBMROOT_SOURCE_DIR}/data
   ${CBMROOT_SOURCE_DIR}/data/sts
   ${CBMROOT_SOURCE_DIR}/data/tof
+  ${CBMROOT_SOURCE_DIR}/data/rich
   # needed by rootcling
   ${CBMROOT_SOURCE_DIR}/base/report
 )

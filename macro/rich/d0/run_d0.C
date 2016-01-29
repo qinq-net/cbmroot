@@ -13,14 +13,14 @@ void findXYCenter(TH2* h, double &maxX, double &maxY, double threshold);
 void runD0ForFile(const string& fileName, bool doDraw);
 
 void run_d0() {
-	//string file = "/Users/slebedev/Development/cbm/data/d0/test_03_09_15/mirror2/29mm.asc";
-	//double d0 = runD0ForFile(file, true);
+	string file = "/Users/slebedev/Development/cbm/data/d0/test_03_09_15/mirror3/2mm.asc";
+	double d0 = runD0ForFile(file, true);
 
-	//return;
+	return;
 
 	string dir = "/Users/slebedev/Development/cbm/data/d0/test_03_09_15/mirror2/";
 
-	const int N = 10;
+	const int N = 50;
 	double d0Array[N];
 	double x[N];
 
@@ -36,7 +36,7 @@ void run_d0() {
 	TCanvas* can = new TCanvas("rich_d0_final", "rich_d0_final", 700, 700);
 	TGraph* graph = new TGraph(N, x, d0Array);
 	graph->GetXaxis()->SetTitle("distance [mm]");
-	graph->GetYaxis()->SetTitle("D0 [cm]");
+	graph->GetYaxis()->SetTitle("D0 [mm]");
 	drawGraph(graph);
 
 }

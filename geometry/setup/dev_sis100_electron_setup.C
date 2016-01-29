@@ -49,7 +49,7 @@ void dev_sis100_electron_setup()
   magnetGeom   = "magnet/magnet_v15a.geo.root";
   mvdGeom      = "mvd/mvd_" + mvdTag + ".geo.root";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
-  richGeom     = "rich/rich_v14a_1e.root";
+  richGeom     = "rich/rich_v16a_1e.root";
   muchGeom     = "";
   shieldGeom   = "";
   platformGeom = ""; // "passive/platform_v13a.geo";

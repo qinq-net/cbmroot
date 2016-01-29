@@ -314,7 +314,7 @@ void CbmRichPrototypeQa::HitsAndPoints(
       CbmRichHit *hit = (CbmRichHit*) fRichHits->At(iH);
       if ( hit == NULL ) continue;
 
-      fhNofPhotonsPerHit[hIndex]->Fill(hit->GetNPhotons());
+     // fhNofPhotonsPerHit[hIndex]->Fill(hit->GetNPhotons());
       fhHitsXY[hIndex]->Fill(hit->GetX(), hit->GetY());
    }
 

@@ -382,24 +382,15 @@ void run_reco(Int_t nEvents = 2, const char* setup = "sis100_electron")
   // =========================================================================
 
   if (richGeom.Length() != 0)  // if RICH is defined
-    {
-  // ---------------------RICH Hit Producer ----------------------------------
-  CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
-  richHitProd->SetDetectorType(4);
-  richHitProd->SetNofNoiseHits(220);
-  richHitProd->SetCollectionEfficiency(1.0);
-  richHitProd->SetSigmaMirror(0.06);
-  run->AddTask(richHitProd);
-  //--------------------------------------------------------------------------
-
-  //--------------------- RICH Reconstruction ----------------------------------
-  CbmRichReconstruction* richReco = new CbmRichReconstruction();
-  run->AddTask(richReco);
-
-  // ------------------- RICH Ring matching  ---------------------------------
-  CbmRichMatchRings* matchRings = new CbmRichMatchRings();
-  run->AddTask(matchRings);
-  // -------------------------------------------------------------------------
+    {        
+        CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
+        run->AddTask(richDigitizer);
+        
+        CbmRichHitProducer* richHitProd	= new CbmRichHitProducer();
+        run->AddTask(richHitProd);
+        
+        CbmRichReconstruction* richReco = new CbmRichReconstruction();
+        run->AddTask(richReco);
     }
   // ===                 End of RICH local reconstruction                  ===
   // =========================================================================

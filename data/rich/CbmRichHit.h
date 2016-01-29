@@ -47,23 +47,23 @@ public:
 
   /** Modifiers **/
   virtual void SetPmtId (Int_t det) { fPmtId = det; }
-  virtual void SetNPhotons (Int_t n) { fNPhotons = n; }
-  virtual void SetAmplitude(Double_t amp) { fAmplitude = amp; }
+  //virtual void SetNPhotons (Int_t n) { fNPhotons = n; }
+  //virtual void SetAmplitude(Double_t amp) { fAmplitude = amp; }
   void SetTimestamp(Double_t ts) { fTimestamp = ts; }
   void SetToT(Double_t tot) { fToT = tot; }
 
   /** Accessors **/
   virtual Int_t GetPmtId() const { return fPmtId; }
-  virtual Int_t GetNPhotons() const { return fNPhotons; }
-  virtual Double_t GetAmplitude() const { return fAmplitude; }
+  //virtual Int_t GetNPhotons() const { return fNPhotons; }
+  //virtual Double_t GetAmplitude() const { return fAmplitude; }
   Double_t GetTimestamp() const { return fTimestamp; }
   Double_t GetToT() const { return fToT; }
 
 private:
 
   Int_t fPmtId; // photomultiplier number
-  Int_t fNPhotons; // number of photons in this hit
-  Double32_t fAmplitude; // hit amplitude
+  //Int_t fNPhotons; // number of photons in this hit
+  //Double32_t fAmplitude; // hit amplitude
 
   Double_t fTimestamp; // hit timestamp
   Double_t fToT;       // hit time-over-threshold

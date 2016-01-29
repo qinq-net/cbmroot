@@ -16,7 +16,6 @@ static TString stsTag;
 static TString trdTag;
 static TString tofTag;
 
-static TString stsDigi;
 static TString trdDigi;
 static TString tofDigi;
 
@@ -50,12 +49,11 @@ void init_geo_setup()
 
   // -----  Tags  -----------------------------------------------------------
   mvdTag       = "";
-  stsTag       = "v13y";
+  stsTag       = "v15a";
   trdTag       = "v15a_3e";
-  tofTag       = "v13-5d";
+  tofTag       = "v16a_3e";
 
   // -----  DigiFiles  ------------------------------------------------------
-  stsDigi      = "sts/sts_" + stsTag + "_std.digi.par";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
 
@@ -72,9 +70,9 @@ void init_geo_setup()
   magnetGeom   = "magnet/magnet_v15a.geo.root";
   mvdGeom      = "";
   stsGeom      = "sts/sts_" + stsTag + ".geo.root";
-  richGeom     = "rich/rich_v14a_3e.root";
-  trdGeom      = "";//"trd/trd_" + trdTag + ".geo.root";
-  tofGeom      = "";//"tof/tof_" + tofTag + ".geo.root";
+  richGeom     = "rich/rich_v14a_3e.root";//"rich/rich_v14a_3e.root";
+  trdGeom      = "trd/trd_" + trdTag + ".geo.root";
+  tofGeom      =  "tof/tof_" + tofTag + ".geo.root";
 
   // rich parameters
   nofNoiseHitsInRich = 220;

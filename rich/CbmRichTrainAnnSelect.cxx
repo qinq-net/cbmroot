@@ -346,6 +346,9 @@ void CbmRichTrainAnnSelect::FinishTask()
 {
    TrainAndTestAnn();
    Draw();
+    for (int i = 0; i < fHists.size(); i++ ){
+        fHists[i]->Scale(1./fHists[i]->Integral());
+    }
 
    TDirectory *current = gDirectory;
    TDirectory *rich = current->mkdir("CbmRichTrainAnnSelect");

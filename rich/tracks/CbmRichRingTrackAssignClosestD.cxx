@@ -55,7 +55,7 @@ void CbmRichRingTrackAssignClosestD::DoAssign(
       TClonesArray* rings,
       TClonesArray* richProj)
 {
-   Int_t nofTracks = richProj->GetEntriesFast();
+    Int_t nofTracks = richProj->GetEntriesFast();
 	Int_t nofRings = rings->GetEntriesFast();
 
 	vector<Int_t> trackIndex;
@@ -125,6 +125,7 @@ void CbmRichRingTrackAssignClosestD::DoAssign(
 		CbmRichRing* pRing = (CbmRichRing*)rings->At(i);
 		pRing->SetTrackID(trackIndex[i]);
 		pRing->SetDistance(trackDist[i]);
+       // cout << "trackIndex[i]:" << trackIndex[i] << " trackDist[i]:" << trackDist[i] << " r:" << pRing->GetRadius() << " x:" << pRing->GetCenterX() << " y:" << pRing->GetCenterY()<< endl;
 		if (trackIndex[i] == -1) continue;
 		CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(trackIndex[i]);
 		gTrack->SetRichRingIndex(i);

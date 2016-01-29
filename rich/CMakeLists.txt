@@ -9,6 +9,8 @@ ${CBMROOT_SOURCE_DIR}/rich/finder
 #${CBMROOT_SOURCE_DIR}/rich/qa
 ${CBMROOT_SOURCE_DIR}/rich/tracks
 ${CBMROOT_SOURCE_DIR}/rich/selection
+${CBMROOT_SOURCE_DIR}/rich/detector
+${CBMROOT_SOURCE_DIR}/rich/utils
 # needed by rootcling
 ${CBMROOT_SOURCE_DIR}/rich/prototype/beamtime
 
@@ -25,6 +27,7 @@ ${CBMROOT_SOURCE_DIR}/data/sts
 ${CBMROOT_SOURCE_DIR}/data/global
 
 ${CBMROOT_SOURCE_DIR}/littrack
+${CBMROOT_SOURCE_DIR}/littrack/std
 
 ${CBMROOT_SOURCE_DIR}/KF
 ${CBMROOT_SOURCE_DIR}/KF/Interface
@@ -67,16 +70,19 @@ link_directories( ${LINK_DIRECTORIES})
 set(SRCS
 CbmGeoRich.cxx 
 CbmRich.cxx 
-CbmRichHitProducer.cxx   
 CbmRichEventDisplay.cxx   
 CbmGeoRichPar.cxx 
 CbmRichContFact.cxx
-CbmRichMatchRings.cxx
 CbmRichElectronIdAnn.cxx
 CbmRichTrainAnnSelect.cxx
 CbmRichTrainAnnElectrons.cxx
 CbmRichReconstruction.cxx
 CbmRichConverter.cxx
+detector/CbmRichHitProducer.cxx   
+detector/CbmRichDigitizer.cxx
+detector/CbmRichDigiMapManager.cxx
+detector/CbmRichPmt.cxx
+detector/CbmRichGeoManager.cxx
 finder/CbmRichRingFinderIdeal.cxx 
 #finder/CbmRichRingFinderHough.cxx
 finder/CbmRichRingFinderHoughImpl.cxx
@@ -86,11 +92,13 @@ fitter/CbmRichRingFitterRobustCOP.cxx
 fitter/CbmRichRingFitterTAU.cxx 
 fitter/CbmRichRingFitterEllipseMinuit.cxx
 fitter/CbmRichRingFitterEllipseTau.cxx
-tracks/CbmRichProjectionProducer.cxx 
+tracks/CbmRichProjectionProducerAnalytical.cxx
+tracks/CbmRichProjectionProducerTGeo.cxx
 tracks/CbmRichRingTrackAssignClosestD.cxx
 tracks/CbmRichRingTrackAssignIdeal.cxx  
 tracks/CbmRichTrackExtrapolationIdeal.cxx
 tracks/CbmRichTrackExtrapolationKF.cxx
+tracks/CbmRichTrackExtrapolationLittrack.cxx
 tracks/CbmRichTrackExtrapolationMirrorIdeal.cxx
 qa/CbmRichTestSim.cxx  
 qa/CbmRichTestHits.cxx 
@@ -133,14 +141,14 @@ EndIf(TBB_FOUND)
 set(HEADERS
 CbmGeoRich.h
 CbmRich.h
-CbmRichHitProducer.h  
 CbmRichEventDisplay.h  
 CbmGeoRichPar.h
 CbmRichContFact.h
-CbmRichMatchRings.h
 CbmRichTrainAnnSelect.h
 CbmRichTrainAnnElectrons.h
 CbmRichReconstruction.h
+detector/CbmRichHitProducer.h 
+detector/CbmRichDigitizer.h 
 qa/CbmRichTestSim.h 
 qa/CbmRichTestHits.h 
 qa/CbmRichRingFitterQa.h 

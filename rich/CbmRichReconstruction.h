@@ -44,10 +44,6 @@ public:
     */
    virtual ~CbmRichReconstruction();
 
-   /**
-    * \brief Inherited from FairTask.
-    */
-   void SetParContainers();
 
    /**
     * \brief Inherited from FairTask.
@@ -83,12 +79,6 @@ public:
     */
    void SetZTrackExtrapolation(Double_t z){fZTrackExtrapolation = z;}
 
-   /**
-    * \brief Set minimum number of STS hits.
-    * \param[in] minNofStsHits minimum number of STS hits.
-    */
-   void SetMinNofStsHits(Int_t minNofStsHits){fMinNofStsHits = minNofStsHits;}
-
 private:
    TClonesArray* fRichHits;
    TClonesArray* fRichRings;
@@ -117,7 +107,6 @@ private:
    string fTrackAssignName; // name of track-ring matching algorithm
 
    Double_t fZTrackExtrapolation; // Z coordinate to which one wants to extrapolate STS tracks
-   Int_t fMinNofStsHits; // minimum number of Sts hits for extrapolation to RICH detector
 
    /**
     * \brief

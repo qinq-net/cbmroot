@@ -1,19 +1,19 @@
-void run_reco(Int_t nEvents = 2)
+void run_reco(Int_t nEvents = 1000)
 {
    TTree::SetMaxTreeSize(90000000000);
 
 	Int_t iVerbose = 0;
 
 	TString script = TString(gSystem->Getenv("SCRIPT"));
-	TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
+	TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters/");
 
 	gRandom->SetSeed(10);
 
-	TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.00090.root";
-	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.00090.root";
-	TString recoFile ="/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.00090.root";
+	TString mcFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/mc.00000.root";
+	TString parFile = "/Users/slebedev/Development/cbm/data/simulations/rich/richreco/param.00000.root";
+	TString recoFile ="/Users/slebedev/Development/cbm/data/simulations/rich/richreco/reco.00000.root";
 
-	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev.C";
+	TString geoSetupFile = TString(gSystem->Getenv("VMCWORKDIR")) + "/macro/rich/run/geosetup/geosetup_25gev_newrich.C";
 
 	std::string resultDir = "recqa_0001/";
 
@@ -34,10 +34,8 @@ void run_reco(Int_t nEvents = 2)
 
 	// digi parameters
 	TList *parFileList = new TList();
-	TObjString stsDigiFile = parDir + "/" + stsDigi;
 	TObjString trdDigiFile = parDir + "/" + trdDigi;
 	TObjString tofDigiFile = parDir + "/" + tofDigi;
-	parFileList->Add(&stsDigiFile);
 	if (trdDigiFile.GetString() != "") parFileList->Add(&trdDigiFile);
 	parFileList->Add(&tofDigiFile);
 
@@ -64,37 +62,52 @@ void run_reco(Int_t nEvents = 2)
 	CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
 	mcManager->AddFile(mcFile);
 	run->AddTask(mcManager);
-
+    
+    Bool_t isMvd = IsMvd(parFile);
+    Bool_t isTrd = IsTrd(parFile);
+    Bool_t isRich = IsRich(parFile);
+    Bool_t isTof = IsTof(parFile);
+    
 	Bool_t useMvdInTracking = kFALSE;
-	if (IsMvd(parFile)) {
-		  CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("CbmMvdDigitizer", 0, 0);
-		  run->AddTask(mvdDigitise);
+	if (isMvd) {
+        CbmMvdDigitizer* mvdDigitise = new CbmMvdDigitizer("MVD Digitiser", 0, iVerbose);
+        run->AddTask(mvdDigitise);
 
-		  CbmMvdClusterfinder* mvdCluster = new CbmMvdClusterfinder("CbmMvdClusterfinder", 0, 0);
-		  run->AddTask(mvdCluster);
+        CbmMvdClusterfinder* mvdCluster = new CbmMvdClusterfinder("MVD Clusterfinder", 0, iVerbose);
+        run->AddTask(mvdCluster);
+        
 
-		  CbmMvdHitfinder* mvdHitfinder = new CbmMvdHitfinder("CbmMvdHitfinder", 0, 0);
-		  mvdHitfinder->UseClusterfinder(kTRUE);
-		  run->AddTask(mvdHitfinder);
+        CbmMvdHitfinder* mvdHitfinder = new CbmMvdHitfinder("MVD Hit Finder", 0, iVerbose);
+        mvdHitfinder->UseClusterfinder(kTRUE);
+        run->AddTask(mvdHitfinder);
 
-		  useMvdInTracking = kTRUE;
-		  mvdMatBudgetFileName = parDir + "/" + mvdMatBudget;
+        useMvdInTracking = kTRUE;
+        mvdMatBudgetFileName = parDir + "/" + mvdMatBudget;
 	}
 
 	// =========================================================================
 	// ===                      STS local reconstruction                     ===
 	// =========================================================================
-	Double_t dynRange = 40960.;  // Dynamic range [e]
-	Double_t threshold = 4000.;  // Digitisation threshold [e]
-	Int_t nAdc = 4096;   // Number of ADC channels (12 bit)
-	Double_t timeResolution = 5.;  // time resolution [ns]
-	Double_t deadTime = 9999999.;  // infinite dead time (integrate entire event)
-	Double_t noise = 0.;  // ENC [e]
-	Int_t digiModel = 1;   // Model: 1 = uniform charge distribution along track
+    Double_t dynRange       =   40960.;  // Dynamic range [e]
+    Double_t threshold      =    4000.;  // Digitisation threshold [e]
+    Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
+    Double_t timeResolution =       5.;  // time resolution [ns]
+    Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
+    Double_t noise          =       0.;  // ENC [e]
+    Int_t digiModel         =       1;   // User sensor type DSSD
+    
+    // The following settings correspond to a validated implementation.
+    // Changing them is on your own risk.
+    Int_t  eLossModel       = 1;         // Energy loss model: uniform
+    Bool_t useLorentzShift  = kFALSE;    // Deactivate Lorentz shift
+    Bool_t useDiffusion     = kFALSE;    // Deactivate diffusion
+    Bool_t useCrossTalk     = kFALSE;    // Deactivate cross talk
+    
+    CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
+    stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
+    stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
+    run->AddTask(stsDigi);
 
-	CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
-	stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
-	run->AddTask(stsDigi);
 
 	FairTask* stsClusterFinder = new CbmStsFindClusters();
 	run->AddTask(stsClusterFinder);
@@ -116,7 +129,7 @@ void run_reco(Int_t nEvents = 2)
 	// =========================================================================
 	// ===                     TRD local reconstruction                      ===
 	// =========================================================================
-	if (IsTrd(parFile)) {
+	if (isTrd) {
 		Bool_t simpleTR = kTRUE; // use fast and simple version for TR production
 		CbmTrdRadiator *radiator = new CbmTrdRadiator(simpleTR , "K++");
 
@@ -158,7 +171,7 @@ void run_reco(Int_t nEvents = 2)
 	// =========================================================================
 	// ===                     TOF local reconstruction                      ===
 	// =========================================================================
-	if (IsTof(parFile)) {
+	if (isTof) {
 		CbmTofHitProducerNew* tofHitProd = new CbmTofHitProducerNew("CbmTofHitProducer", 1);
 		tofHitProd->SetInitFromAscii(kFALSE);
 		run->AddTask(tofHitProd);
@@ -178,7 +191,7 @@ void run_reco(Int_t nEvents = 2)
 	run->AddTask(findVertex);
 
 
-	if (IsTrd(parFile)) {
+	if (isTrd) {
 		CbmTrdSetTracksPidANN* trdSetTracksPidAnnTask = new CbmTrdSetTracksPidANN("CbmTrdSetTracksPidANN","CbmTrdSetTracksPidANN");
 		trdSetTracksPidAnnTask->SetTRDGeometryType("h++");
 		run->AddTask(trdSetTracksPidAnnTask);
@@ -187,20 +200,22 @@ void run_reco(Int_t nEvents = 2)
     // =========================================================================
     // ===                        RICH reconstruction                        ===
     // =========================================================================
-	if (IsRich(parFile)){
+	if (isRich){
+		CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
+        //richDigitizer->SetNofNoiseHits(0);
+		run->AddTask(richDigitizer);
+
 		CbmRichHitProducer* richHitProd	= new CbmRichHitProducer();
-		richHitProd->SetDetectorType(4);
-		richHitProd->SetNofNoiseHits(nofNoiseHitsInRich);
-		richHitProd->SetCollectionEfficiency(collectionEff);
-		richHitProd->SetSigmaMirror(sigmaErrorRich);
-		richHitProd->SetCrossTalkHitProb(crosstalkRich);
 		run->AddTask(richHitProd);
 
 		CbmRichReconstruction* richReco = new CbmRichReconstruction();
+        richReco->SetRunExtrapolation(true);
+        richReco->SetRunProjection(true);
+        richReco->SetRunTrackAssign(true);
+        //richReco->SetFinderName("ideal");
+        //richReco->SetProjectionName("tgeo");
+       // richReco->SetFitterName("circle_cop");;
 		run->AddTask(richReco);
-
-		CbmRichMatchRings* matchRings = new CbmRichMatchRings();
-		run->AddTask(matchRings);
 	}//isRich
 
 
@@ -238,12 +253,15 @@ void run_reco(Int_t nEvents = 2)
 	fitQa->SetMuchMinNofHits(10);
 	fitQa->SetTrdMinNofHits(minNofPointsTrd);
 	fitQa->SetOutputDir(resultDir);
-	// run->AddTask(fitQa);
+	//run->AddTask(fitQa);
 
 	CbmLitClusteringQa* clusteringQa = new CbmLitClusteringQa();
 	clusteringQa->SetOutputDir(resultDir);
-	run->AddTask(clusteringQa);
+	//run->AddTask(clusteringQa);
 
+	CbmLitTofQa* tofQa = new CbmLitTofQa();
+	tofQa->SetOutputDir(std::string(resultDir));
+	//run->AddTask(tofQa);
 
 	// -----  Parameter database   --------------------------------------------
 	FairRuntimeDb* rtdb = run->GetRuntimeDb();

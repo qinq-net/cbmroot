@@ -7,14 +7,16 @@
 #pragma link off all functions;
 
 #pragma link C++ class CbmRich+;
-#pragma link C++ class CbmRichHitProducer+;
 #pragma link C++ class CbmGeoRich+;
-#pragma link C++ class CbmRichMatchRings+;
 #pragma link C++ class CbmRichContFact;
 #pragma link C++ class CbmGeoRichPar;
 #pragma link C++ class CbmRichTrainAnnSelect;
 #pragma link C++ class CbmRichTrainAnnElectrons;
 #pragma link C++ class CbmRichEventDisplay+;
+
+//detector
+#pragma link C++ class CbmRichHitProducer+;
+#pragma link C++ class CbmRichDigitizer+;
 
 //reconstruction
 #pragma link C++ class CbmRichReconstruction+;

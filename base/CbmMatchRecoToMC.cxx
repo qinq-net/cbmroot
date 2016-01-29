@@ -28,10 +28,16 @@
 #include "CbmMCTrack.h"////
 #include "CbmStsAddress.h"////
 
+#include "CbmRichRing.h"
+#include "CbmRichHit.h"
+#include "CbmRichDigi.h"
+#include "CbmRichPoint.h"
+
 CbmMatchRecoToMC::CbmMatchRecoToMC() :
    FairTask(),
    fIncludeMvdHitsInStsTrack(kFALSE),
    fMCTracks(NULL),
+   fMCTracksArray(NULL),
    fStsPoints(NULL),
    fStsDigis(NULL),
    fStsClusters(NULL),
@@ -41,6 +47,11 @@ CbmMatchRecoToMC::CbmMatchRecoToMC() :
    fStsClusterMatches(NULL),
    fStsHitMatches(NULL),
    fStsTrackMatches(NULL),
+   fRichDigis(NULL),
+   fRichHits(NULL),
+   fRichRings(NULL),
+   fRichMcPoints(NULL),
+   fRichTrackMatches(NULL),
    fTrdPoints(NULL),
    fTrdDigis(NULL),
    fTrdClusters(NULL),
@@ -93,6 +104,11 @@ CbmMatchRecoToMC::~CbmMatchRecoToMC()
    if (fStsTrackMatches) {
       fStsTrackMatches->Delete();
       delete fStsTrackMatches;
+   }
+    
+   if (fRichTrackMatches) {
+      fRichTrackMatches->Delete();
+      delete fRichTrackMatches;
    }
 
    if (fTrdClusterMatches != NULL) {
@@ -159,6 +175,7 @@ void CbmMatchRecoToMC::Exec(
    if (fStsClusterMatches != NULL) fStsClusterMatches->Delete();
    if (fStsHitMatches != NULL) fStsHitMatches->Delete();
    if (fStsTrackMatches != NULL) fStsTrackMatches->Delete();
+   if (fRichTrackMatches != NULL) fRichTrackMatches->Delete();
    if (fTrdClusterMatches != NULL) fTrdClusterMatches->Delete();
    if (fTrdHitMatches != NULL) fTrdHitMatches->Delete();
    if (fTrdTrackMatches != NULL) fTrdTrackMatches->Delete();
@@ -186,6 +203,11 @@ void CbmMatchRecoToMC::Exec(
          MatchStsClusters(fStsDigis, fStsClusters, fStsClusterMatches);
       MatchHitsSts(fStsClusterMatches, fStsHits, fStsHitMatches);
       MatchStsTracks(fMvdHitMatches, fStsHitMatches, fMvdPoints, fStsPoints, fStsTracks, fStsTrackMatches);
+   }
+    
+   //RICH
+   if (fRichDigis && fRichHits && fRichMcPoints && fRichRings && fRichTrackMatches) {
+       MatchRichRings(fRichRings, fRichHits, fRichDigis, fRichMcPoints, fMCTracksArray, fRichTrackMatches);
    }
 
    // TRD
@@ -232,6 +254,9 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
   
    CbmMCDataManager* mcManager=(CbmMCDataManager*)ioman->GetObject("MCDataManager");
    fMCTracks=mcManager->InitBranch("MCTrack");
+    
+    fMCTracksArray= (TClonesArray*) ioman->GetObject("MCTrack");
+    
 
    // STS
    fStsPoints=mcManager->InitBranch("StsPoint");
@@ -251,6 +276,16 @@ void CbmMatchRecoToMC::ReadAndCreateDataBranches()
    if (fStsTracks != NULL) {
       fStsTrackMatches = new TClonesArray("CbmTrackMatchNew", 100);
       ioman->Register("StsTrackMatch", "STS", fStsTrackMatches, kTRUE);
+   }
+    
+   //RICH
+   fRichDigis = (TClonesArray*) ioman->GetObject("RichDigi");
+   fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
+   fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
+   fRichMcPoints = (TClonesArray*) ioman->GetObject("RichPoint");
+   if (fRichRings != NULL) {
+      fRichTrackMatches = new TClonesArray("CbmTrackMatchNew", 100);
+      ioman->Register("RichRingMatch", "RICH", fRichTrackMatches, kTRUE);
    }
 
    // TRD
@@ -576,7 +611,7 @@ void CbmMatchRecoToMC::MatchTracks(
 			////fix low energy cut case on STS
 			if (CbmStsAddress::GetSystemId(point->GetDetectorID()) == kSTS ){
 				Int_t mcTrackId = point->GetTrackID();
-				CbmMCTrack *mcTrack = (CbmMCTrack*) fMCTracks->Get(mcTrackId, hitMatch->GetLink(iLink).GetEntry(), hitMatch->GetLink(iLink).GetFile());
+				CbmMCTrack *mcTrack = (CbmMCTrack*) fMCTracks->Get(hitMatch->GetLink(iLink).GetFile(), hitMatch->GetLink(iLink).GetEntry(), mcTrackId);
 				if(mcTrack->GetNPoints(kSTS) < 2)
 					continue;
 			}
@@ -703,6 +738,96 @@ void CbmMatchRecoToMC::MatchStsTracks(
       trackMatch->SetNofWrongHits(wrongCounter);
      // std::cout << iTrack << " "; track->Print(); std::cout << " " << trackMatch->ToString();
    }
+}
+
+
+void CbmMatchRecoToMC::MatchRichRings(
+    const TClonesArray* richRings,
+    const TClonesArray* richHits,
+    const TClonesArray* richDigis,
+    const TClonesArray* richMcPoints,
+    const TClonesArray* mcTracks,
+    TClonesArray* ringMatches)
+{
+    // Loop over RichRings
+    Int_t nRings = richRings->GetEntriesFast();
+    for (Int_t iRing = 0; iRing < nRings; iRing++) {
+        const CbmRichRing* ring = static_cast<const CbmRichRing*>(richRings->At(iRing));
+        if (NULL == ring) continue;
+        
+        CbmTrackMatchNew* ringMatch = new ((*ringMatches)[iRing]) CbmTrackMatchNew();
+        
+        Int_t nofHits = ring->GetNofHits();
+        for (Int_t iHit=0; iHit < nofHits; iHit++) {
+            const CbmRichHit* hit = static_cast<const CbmRichHit*>(richHits->At(ring->GetHit(iHit)));
+            if ( NULL == hit ) continue;
+            
+            vector<Int_t> motherIds = GetMcTrackMotherIdsForRichHit(hit, richDigis, richMcPoints, mcTracks);
+            for (Int_t i = 0; i < motherIds.size(); i++) {
+                ringMatch->AddLink(1., motherIds[i]);
+            }
+        }
+        
+        Int_t bestTrackId = ringMatch->GetMatchedLink().GetIndex();
+        
+        Int_t trueCounter = 0;
+        Int_t wrongCounter = 0;
+        for (Int_t iHit = 0; iHit < nofHits; iHit++) {
+            const CbmRichHit* hit = static_cast<const CbmRichHit*>(richHits->At(ring->GetHit(iHit)));
+            if ( NULL == hit ) continue;
+            vector<Int_t> motherIds = GetMcTrackMotherIdsForRichHit(hit, richDigis, richMcPoints, mcTracks);
+            if(std::find(motherIds.begin(), motherIds.end(), bestTrackId) != motherIds.end()) {
+                trueCounter++;
+            } else {
+                wrongCounter++;
+            }
+            
+        }
+        
+        ringMatch->SetNofTrueHits(trueCounter);
+        ringMatch->SetNofWrongHits(wrongCounter);
+        
+    }// Ring loop
+}
+
+
+vector<Int_t> CbmMatchRecoToMC::GetMcTrackMotherIdsForRichHit(
+        const CbmRichHit* hit,
+        const TClonesArray* richDigis,
+        const TClonesArray* richPoints,
+        const TClonesArray* mcTracks)
+{
+    vector<Int_t> result;
+    if ( NULL == hit ) return result;
+    Int_t digiIndex = hit->GetRefId();
+    if (digiIndex < 0) return result;
+    const CbmRichDigi* digi = static_cast<const CbmRichDigi*>(richDigis->At(digiIndex));
+    if (NULL == digi) return result;
+    CbmMatch* digiMatch = digi->GetMatch();
+    
+    vector<CbmLink> links = digiMatch->GetLinks();
+    for (Int_t i = 0; i < links.size(); i++) {
+        Int_t pointId = links[i].GetIndex();
+        if (pointId < 0) continue; // noise hit
+        
+        const CbmRichPoint* pMCpt = static_cast<const CbmRichPoint*>(richPoints->At(pointId));
+        if ( NULL == pMCpt ) continue;
+        Int_t mcTrackIndex = pMCpt->GetTrackID();
+        if ( mcTrackIndex < 0 ) continue;
+        //TODO: Currently we support only legacy mode of CbmMCDataArray
+        const CbmMCTrack *mcTrack = static_cast<const CbmMCTrack*>(mcTracks->At(mcTrackIndex));
+       // CbmMCTrack* pMCtr = (CbmMCTrack*) mcTracks->At(mcTrackIndex);
+        if ( NULL == mcTrack ) continue;
+        if ( mcTrack->GetPdgCode() != 50000050) continue; // select only Cherenkov photons
+        Int_t motherId = mcTrack->GetMotherId();
+        // several photons can have same mother track
+        // count only unique motherIds
+        if(std::find(result.begin(), result.end(), motherId) == result.end()) {
+            result.push_back(motherId);
+        }
+    }
+    
+    return result;
 }
 
 ClassImp(CbmMatchRecoToMC);

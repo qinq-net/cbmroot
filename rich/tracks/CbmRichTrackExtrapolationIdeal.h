@@ -51,8 +51,7 @@ public:
    virtual void DoExtrapolation(
          TClonesArray* globalTracks,
          TClonesArray* extrapolatedTrackParams,
-         double z,
-         int minNofStsHits);
+         double z);
 
 private:
    TClonesArray* fRefPlanePoints;

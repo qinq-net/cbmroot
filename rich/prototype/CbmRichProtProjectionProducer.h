@@ -5,13 +5,13 @@
 #ifndef CBM_RICH_PROTPROJECTION_PRODUCER
 #define CBM_RICH_PROTPROJECTION_PRODUCER
 
-#include "CbmRichProjectionProducerBase.h"
+//#include "CbmRichProjectionProducerBase.h"
 
 class TClonesArray;
 class CbmGeoRichPar;
 class TObjArray;
 
-class CbmRichProtProjectionProducer : public CbmRichProjectionProducerBase{
+class CbmRichProtProjectionProducer{
 
 public:
    /**

@@ -7,24 +7,12 @@ void run_reco_urqmdtest(Int_t nEvents = 200)
 	TString parDir = TString(gSystem->Getenv("VMCWORKDIR")) + TString("/parameters");
 
 	TString inFile = "/Users/slebedev/Development/cbm/data/urqmd/auau/25gev/centr/urqmd.auau.25gev.centr.00001.root";
-	TString outDir = "/Users/slebedev/Development/cbm/data/simulations/rich/urqmdtest/al/";
-	TString parFile =  outDir + "25gev.centr.param.al_2.root";
-	TString mcFile = outDir + "25gev.centr.mc.al_2.root";
-	TString recoFile = outDir + "25gev.centr.reco.al_2.root";
+	TString outDir = "/Users/slebedev/Development/cbm/data/simulations/rich/urqmdtest/";
+	TString parFile =  outDir + "25gev.centr.param.root";
+	TString mcFile = outDir + "25gev.centr.mc.root";
+	TString recoFile = outDir + "25gev.centr.reco.root";
 
-	TString caveGeom = "cave.geo";
-	TString pipeGeom   = "pipe/pipe_standard.geo";
-	TString magnetGeom = "magnet/magnet_v12a.geo";
-	TString stsGeom = "sts/sts_v12b.geo.root";
-	TString richGeom= "rich/rich_v13c.root";
-	TString fieldMap = "field_v12a";
-	Double_t fieldZ = 50.; // field center z position
-	Double_t fieldScale =  1.0; // field scaling factor
-
-	TObjString stsDigiFile = parDir + "/sts/sts_v13d_std.digi.par"; // STS digi file
-	TObjString trdDigiFile = parDir + "/trd/trd_v13p_3e.digi.par";
-
-	TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v12b.root"; // Material budget file for L1 STS tracking
+	TString stsMatBudgetFileName = parDir + "/sts/sts_matbudget_v15c.root"; // Material budget file for L1 STS tracking
 	std::string resultDir = "results_urqmd_25gev_centr_al_1/";
 
 	if (script == "yes") {
@@ -39,15 +27,15 @@ void run_reco_urqmdtest(Int_t nEvents = 200)
 		magnetGeom = TString(gSystem->Getenv("MAGNET_GEOM"));
 		fieldScale = TString(gSystem->Getenv("FIELD_MAP_SCALE")).Atof();
 		stsMatBudgetFileName =  parDir + TString(gSystem->Getenv("STS_MATERIAL_BUDGET_FILE_NAME"));
-		stsDigiFile =  parDir + TString(gSystem->Getenv("STS_DIGI_FILE"));
 		resultDir = std::string(gSystem->Getenv("RESULT_DIR"));
 	}
+    remove(recoFile.Data());
 
 	gRandom->SetSeed(10);
 
    TList *parFileList = new TList();
-   parFileList->Add(&stsDigiFile);
-   parFileList->Add(&trdDigiFile);
+   //parFileList->Add(&stsDigiFile);
+   //parFileList->Add(&trdDigiFile);
 
    gDebug = 0;
    TStopwatch timer;
@@ -59,65 +47,76 @@ void run_reco_urqmdtest(Int_t nEvents = 200)
    FairRunAna *run= new FairRunAna();
    run->SetInputFile(mcFile);
    run->SetOutputFile(recoFile);
+    
+    CbmMCDataManager* mcManager=new CbmMCDataManager("MCManager", 1);
+    mcManager->AddFile(mcFile);
+    run->AddTask(mcManager);
 
-   Double_t threshold  =  4;
-   Double_t noiseWidth =  0.01;
-   Int_t    nofBits    = 12;
-   Double_t electronsPerAdc    =  10;
-   Double_t StripDeadTime = 0.1;
-   CbmStsDigitize* stsDigitize = new CbmStsDigitize();
-   stsDigitize->SetRealisticResponse();
-   stsDigitize->SetFrontThreshold (threshold);
-   stsDigitize->SetBackThreshold  (threshold);
-   stsDigitize->SetFrontNoiseWidth(noiseWidth);
-   stsDigitize->SetBackNoiseWidth (noiseWidth);
-   stsDigitize->SetFrontNofBits   (nofBits);
-   stsDigitize->SetBackNofBits    (nofBits);
-   stsDigitize->SetFrontNofElPerAdc(electronsPerAdc);
-   stsDigitize->SetBackNofElPerAdc(electronsPerAdc);
-   stsDigitize->SetStripDeadTime  (StripDeadTime);
-   run->AddTask(stsDigitize);
-
-   FairTask* stsClusterFinder = new CbmStsClusterFinder();
-   run->AddTask(stsClusterFinder);
-
-   FairTask* stsFindHits = new CbmStsFindHits();
-   run->AddTask(stsFindHits);
-
-   CbmKF* kalman = new CbmKF();
-   run->AddTask(kalman);
-   CbmL1* l1 = new CbmL1();
-   l1->SetMaterialBudgetFileName(stsMatBudgetFileName);
-   run->AddTask(l1);
-
-   CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
-   Bool_t useMvd = false;
-   FairTask* stsFindTracks = new CbmStsFindTracks(0, stsTrackFinder, useMvd);
-   run->AddTask(stsFindTracks);
-
-   CbmStsTrackFitter* stsTrackFitter = new CbmStsKFTrackFitter();
-   FairTask* stsFitTracks = new CbmStsFitTracks(stsTrackFitter, 0);
-   run->AddTask(stsFitTracks);
+    // =========================================================================
+    // ===                      STS local reconstruction                     ===
+    // =========================================================================
+    Double_t dynRange       =   40960.;  // Dynamic range [e]
+    Double_t threshold      =    4000.;  // Digitisation threshold [e]
+    Int_t nAdc              =    4096;   // Number of ADC channels (12 bit)
+    Double_t timeResolution =       5.;  // time resolution [ns]
+    Double_t deadTime       = 9999999.;  // infinite dead time (integrate entire event)
+    Double_t noise          =       0.;  // ENC [e]
+    Int_t digiModel         =       1;   // User sensor type DSSD
+    
+    // The following settings correspond to a validated implementation.
+    // Changing them is on your own risk.
+    Int_t  eLossModel       = 1;         // Energy loss model: uniform
+    Bool_t useLorentzShift  = kFALSE;    // Deactivate Lorentz shift
+    Bool_t useDiffusion     = kFALSE;    // Deactivate diffusion
+    Bool_t useCrossTalk     = kFALSE;    // Deactivate cross talk
+    
+    CbmStsDigitize* stsDigi = new CbmStsDigitize(digiModel);
+    stsDigi->SetProcesses(eLossModel, useLorentzShift, useDiffusion, useCrossTalk);
+    stsDigi->SetParameters(dynRange, threshold, nAdc, timeResolution, deadTime, noise);
+    run->AddTask(stsDigi);
+    
+    
+    FairTask* stsClusterFinder = new CbmStsFindClusters();
+    run->AddTask(stsClusterFinder);
+    
+    FairTask* stsFindHits = new CbmStsFindHits();
+    run->AddTask(stsFindHits);
+    
+    CbmKF* kalman = new CbmKF();
+    run->AddTask(kalman);
+    CbmL1* l1 = new CbmL1();
+    l1->SetStsMaterialBudgetFileName(stsMatBudgetFileName.Data());
+   // if (mvdMatBudgetFileName != "") l1->SetMvdMaterialBudgetFileName(mvdMatBudgetFileName.Data());
+    run->AddTask(l1);
+    
+    CbmStsTrackFinder* stsTrackFinder = new CbmL1StsTrackFinder();
+    FairTask* stsFindTracks = new CbmStsFindTracks(1, stsTrackFinder);
+    run->AddTask(stsFindTracks);
 
    // =========================================================================
    	// ===                     TRD local reconstruction                      ===
    	// =========================================================================
-	Bool_t simpleTR = kTRUE; // use fast and simple version for TR production
-	CbmTrdRadiator *radiator = new CbmTrdRadiator(simpleTR , "H++");
-	CbmTrdHitProducerSmearing* trdHitProd = new CbmTrdHitProducerSmearing(radiator);
-	trdHitProd->SetUseDigiPar(false);
+	//Bool_t simpleTR = kTRUE; // use fast and simple version for TR production
+	//CbmTrdRadiator *radiator = new CbmTrdRadiator(simpleTR , "H++");
+	//CbmTrdHitProducerSmearing* trdHitProd = new CbmTrdHitProducerSmearing(radiator);
+	//trdHitProd->SetUseDigiPar(false);
 	//run->AddTask(trdHitProd);
 
-	CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
-	finder->SetTrackingType("branch");
-	finder->SetMergerType("nearest_hit");
-	run->AddTask(finder);
+    
+    CbmLitFindGlobalTracks* finder = new CbmLitFindGlobalTracks();
+    finder->SetTrackingType(std::string("branch"));
+    finder->SetMergerType("nearest_hit");
+    run->AddTask(finder);
+    
+    //CbmPrimaryVertexFinder* pvFinder = new CbmPVFinderKF();
+    //CbmFindPrimaryVertex* findVertex = new CbmFindPrimaryVertex(pvFinder);
+    //run->AddTask(findVertex);
 
+    CbmRichDigitizer* richDigi  = new CbmRichDigitizer();
+    richDigi->SetNofNoiseHits(0); // We do not need noise hits for UrqmdTest
+    run->AddTask(richDigi);
+    
    CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
-   richHitProd->SetDetectorType(4);
-   richHitProd->SetNofNoiseHits(220);
-   richHitProd->SetCollectionEfficiency(1.0);
-   richHitProd->SetSigmaMirror(0.06);
    run->AddTask(richHitProd);
 
    CbmRichReconstruction* richReco = new CbmRichReconstruction();
@@ -127,9 +126,6 @@ void run_reco_urqmdtest(Int_t nEvents = 200)
    richReco->SetFinderName("ideal");
   // richReco->SetExtrapolationName("ideal");
    run->AddTask(richReco);
-
-   CbmRichMatchRings* matchRings = new CbmRichMatchRings();
-   run->AddTask(matchRings);
 
    CbmMatchRecoToMC* match = new CbmMatchRecoToMC();
    run->AddTask(match);
@@ -143,7 +139,7 @@ void run_reco_urqmdtest(Int_t nEvents = 200)
    FairParRootFileIo* parIo1 = new FairParRootFileIo();
    FairParAsciiFileIo* parIo2 = new FairParAsciiFileIo();
    parIo1->open(parFile.Data());
-   parIo2->open(parFileList, "in");
+  // parIo2->open(parFileList, "in");
    rtdb->setFirstInput(parIo1);
    rtdb->setSecondInput(parIo2);
    rtdb->setOutput(parIo1);

@@ -482,13 +482,13 @@ void CbmRichProtHitProducer::AddHit(
    // Check if there was any hit in the same PMT
    for (Int_t iHit=0; iHit<fNHits; iHit++) {
       hit = (CbmRichHit*) fRichHits->At(iHit);
-      if (pmtID == hit->GetPmtId() && address==hit->GetAddress()) {
+    /*  if (pmtID == hit->GetPmtId() && address==hit->GetAddress()) {
          hit->SetNPhotons(hit->GetNPhotons()+1);
          hit->SetAmplitude(GetAmplitude()+ampl);
          hitMerged = kTRUE;
          fNDoubleHits++;
          break;
-      }
+      }*/
    }
 
    // If no hits found in this PMT, add a new one
@@ -498,9 +498,9 @@ void CbmRichProtHitProducer::AddHit(
       hit->SetPosition(posHit);
       hit->SetPositionError(posHitErr);
       hit->SetAddress(address);
-      hit->SetPmtId(pmtID);
-      hit->SetNPhotons(1);
-      hit->SetAmplitude(GetAmplitude());
+    //  hit->SetPmtId(pmtID);
+    //  hit->SetNPhotons(1);
+    //  hit->SetAmplitude(GetAmplitude());
       hit->SetRefId(index);
       fNHits++;
    }

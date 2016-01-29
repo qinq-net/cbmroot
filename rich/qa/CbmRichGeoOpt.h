@@ -11,7 +11,6 @@
 #define CBM_RICH_GEO_OPT
 
 #include "FairTask.h"
-#include "CbmRichRecGeoPar.h"
 #include "CbmRichPoint.h"
 #include <sstream>
 #include <fstream>     
@@ -80,7 +79,6 @@ private:
    TClonesArray* fMcTracks;
    TClonesArray* fRefPoints;
    TClonesArray* fRichHits;
-   CbmRichRecGeoPar fGP; // RICH geometry parameters
    TClonesArray* fRichRings;
    TClonesArray* fRichRingMatches; 
 

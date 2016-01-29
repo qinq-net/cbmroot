@@ -29,7 +29,6 @@ using std::endl;
 
 CbmRichProtProjectionProducer::CbmRichProtProjectionProducer(
       Int_t zflag):
-   CbmRichProjectionProducerBase(zflag),
    fListRICHImPlanePoint(NULL),
 
    fNHits(0),
@@ -197,7 +196,7 @@ void CbmRichProtProjectionProducer::DoProjection(
       normP2 = RxP = dist = 0.;
 
       TVector3 startP, momP, crossP, centerP;
-
+       Int_t fZflag = 1;
       if (fZflag ==1) {
          Double_t p = 1./TMath::Abs(point->GetQp());
          Double_t pz;

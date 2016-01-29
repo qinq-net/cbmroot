@@ -5,4 +5,4 @@ cd -
 
 root -l -q "./run_sim_urqmdtest.C($NEVENTS)"
 
-root  -l -q "./run_reco_urqmdtest.C($NEVENTS)"
+root  -l -b "./run_reco_urqmdtest.C($NEVENTS)"

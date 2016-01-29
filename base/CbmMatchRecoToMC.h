@@ -9,8 +9,11 @@
 #define CBMMATCHRECOTOMC_H_
 
 #include "FairTask.h"
+#include <vector>
+
 class TClonesArray;
 class CbmMCDataArray;
+class CbmRichHit;
 
 class CbmMatchRecoToMC : public FairTask
 {
@@ -107,13 +110,35 @@ private:
           CbmMCDataArray* stsPoints,
           const TClonesArray* tracks,
           TClonesArray* trackMatches);
+    
+    void MatchRichRings(
+          const TClonesArray* richRings,
+          const TClonesArray* richHits,
+          const TClonesArray* richDigis,
+          const TClonesArray* richMcPoints,
+          const TClonesArray* mcTracks,
+          TClonesArray* ringMatches);
 
+public:
+    /**
+     * \brief Return McTrack Ids for RICH hit
+     * C++11 efficient way to return vector
+     */
+    static std::vector<Int_t> GetMcTrackMotherIdsForRichHit(
+            const CbmRichHit* hit,
+            const TClonesArray* richDigis,
+            const TClonesArray* richPoints,
+            const TClonesArray* mcTracks);
+    
+private:
     // If MVD hits has to be included in STS track
     Bool_t fIncludeMvdHitsInStsTrack;
 
     // Pointers to data arrays
     CbmMCDataArray* fMCTracks;  // Monte-Carlo tracks
-
+    
+    TClonesArray* fMCTracksArray;  // Array of MCTracks
+    
     // STS
     CbmMCDataArray* fStsPoints; // CbmStsPoint array
     TClonesArray* fStsDigis; // CbmStsDigi array
@@ -124,6 +149,14 @@ private:
     TClonesArray* fStsClusterMatches; // Output CbmMatch array
     TClonesArray* fStsHitMatches; // Output CbmMatch array
     TClonesArray* fStsTrackMatches; // Output CbmTrackMatchNew array
+    
+    //RICH
+    TClonesArray* fRichDigis; // CbmRichDigi array
+    TClonesArray* fRichHits; // CbmRichHit array
+    TClonesArray* fRichRings; // CbmRichRing array
+    TClonesArray* fRichMcPoints; // CbmRichRing array
+    TClonesArray* fRichTrackMatches; // Output CbmTrackMatchNew array
+        
 
     // TRD
     TClonesArray* fTrdPoints; // CbmTrdPoint array

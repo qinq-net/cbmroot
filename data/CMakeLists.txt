@@ -71,6 +71,7 @@ rich/CbmRichRing.cxx
 rich/CbmRichHit.cxx 
 rich/CbmRichPoint.cxx
 rich/CbmRichTrbDigi.cxx
+rich/CbmRichDigi.cxx
 
 much/CbmMuchPixelHit.cxx 
 much/CbmMuchPoint.cxx

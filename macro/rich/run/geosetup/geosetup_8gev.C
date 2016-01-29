@@ -16,7 +16,6 @@ static TString stsTag;
 static TString trdTag;
 static TString tofTag;
 
-static TString stsDigi;
 static TString trdDigi;
 static TString tofDigi;
 
@@ -51,10 +50,9 @@ void init_geo_setup()
   mvdTag       = "";
   stsTag       = "v13y";
   trdTag       = "v15a_1e";
-  tofTag       = "v13-5d";
+  tofTag       = "v13-5b";
 
   // -----  DigiFiles  ------------------------------------------------------
-  stsDigi      = "sts/sts_" + stsTag + "_std.digi.par";
   trdDigi      = "trd/trd_" + trdTag + ".digi.par";
   tofDigi      = "tof/tof_" + tofTag + ".digi.par";
 
@@ -82,8 +80,8 @@ void init_geo_setup()
   crosstalkRich = 0.02;
 
   //some other parameters
-  trdAnnCut = 0.85;
-  minNofPointsTrd = 6;
+  trdAnnCut = -0.1;
+  minNofPointsTrd = 2;
 
   cout << "Reading geometry setup and magnetic field settings from "
        << gSystem->UnixPathName(gInterpreter->GetCurrentMacroName())

@@ -18,12 +18,11 @@
 #include "CbmTrackMatchNew.h"
 #include "CbmRichRing.h"
 #include "CbmRichHit.h"
+#include "detector/CbmRichGeoManager.h"
 
 #include <iostream>
 #include <string>
 #include <boost/assign/list_of.hpp>
-//++++++++++++++++++++++++++++++++++++++++++
-#include "CbmRichHitProducer.h"
 #include "CbmRichRingLight.h"
 
 using namespace std;
@@ -35,7 +34,6 @@ CbmRichGeoOpt::CbmRichGeoOpt()
     fMcTracks(NULL),
     fRefPoints(NULL),
     fRichHits(NULL),
-    fGP(),
     fRichRings(NULL), 
     fRichRingMatches(NULL),
     fEventNum(0),
@@ -185,8 +183,6 @@ InitStatus CbmRichGeoOpt::Init()
 
    fRichHits = (TClonesArray*) ioman->GetObject("RichHit");
    if ( NULL == fRichHits) { Fatal("CbmRichGeoTest::Init","No RichHit array!"); }
-
-   fGP = CbmRichHitProducer::InitRootGeometry();
    
    ///////////////////////////////////////////
    fRichRings = (TClonesArray*) ioman->GetObject("RichRing");
@@ -203,10 +199,11 @@ InitStatus CbmRichGeoOpt::Init()
      PMTPlanePoints[p].SetX(-1000.);PMTPlanePoints[p].SetY(-1000.);PMTPlanePoints[p].SetZ(-1000.);
      SensPlanePoints[p].SetX(-1000.);SensPlanePoints[p].SetY(-1000.);SensPlanePoints[p].SetZ(-1000.);
    }
-   PMTPlaneCenterX =-1.*fGP.fPmtWidthX/2.; 
-   PMTPlaneCenterY =-1.*fGP.fPmtWidthY/2.;
-   PMTPlaneThirdX =-1.*fGP.fPmtWidthX/3.; 
-   cout<<"fGP.fPmtWidthX = "<< fGP.fPmtWidthX<<",  PMTPlaneCenterX = "<< PMTPlaneCenterX<<",  PMTPlaneThirdX = "<< PMTPlaneThirdX<<endl;
+   CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
+    PMTPlaneCenterX = 0.;//-1.*gp->fPmtWidthX/2.;
+    PMTPlaneCenterY = 0.;//-1.*gp->fPmtWidthY/2.;
+    PMTPlaneThirdX =0.;//-1.*gp->fPmtWidthX/3.;
+   //cout<<"fGP.fPmtWidthX = "<< gp->fPmtWidthX<<",  PMTPlaneCenterX = "<< PMTPlaneCenterX<<",  PMTPlaneThirdX = "<< PMTPlaneThirdX<<endl;
  
    InitHistograms();
    return kSUCCESS;
@@ -236,8 +233,8 @@ void CbmRichGeoOpt::Exec(Option_t* option)
  
   //cout << "#################### CbmRichGeoOpt, event No. " <<  fEventNum << endl;
   //Fill the coordinates of the three points on the PMT plane 
-  
-  PMTPlaneCenter.SetX(fGP.fPmtX); PMTPlaneCenter.SetY(fGP.fPmtY); PMTPlaneCenter.SetZ(fGP.fPmtZ);
+  CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
+  PMTPlaneCenter.SetX(gp->fPmtX); PMTPlaneCenter.SetY(gp->fPmtY); PMTPlaneCenter.SetZ(gp->fPmtZ);
   /////////////////////////////////////////
   // if(PMTPointsFilled==1 && SensPointsFilled==1 ){cout<<" Both are filled."<<endl;}
   // else if(PMTPointsFilled==1 && SensPointsFilled==0){cout<<" PMTPointsFilled==1 && SensPointsFilled==0."<<endl;}
@@ -253,7 +250,7 @@ void CbmRichGeoOpt::Exec(Option_t* option)
       PMT_r1=PMTPlanePoints[1]-PMTPlanePoints[0]; 
       PMT_r2=PMTPlanePoints[2]-PMTPlanePoints[0]; 
       PMT_norm=PMT_r1.Cross(PMT_r2);
-      MirrorCenter.SetX(fGP.fMirrorX);MirrorCenter.SetY(fGP.fMirrorY);MirrorCenter.SetZ(fGP.fMirrorZ);
+      MirrorCenter.SetX(gp->fMirrorX);MirrorCenter.SetY(gp->fMirrorY);MirrorCenter.SetZ(gp->fMirrorZ);
       cout<<"MirrorCenter=("<<MirrorCenter.X()<<","<<MirrorCenter.Y()<<","<<MirrorCenter.Z()<<")"<<endl;
       cout<<"PMT_r1=("<<PMT_r1.X()<<","<<PMT_r1.Y()<<","<<PMT_r1.Z()<<")"<<endl;
       cout<<"PMT_r2=("<<PMT_r2.X()<<","<<PMT_r2.Y()<<","<<PMT_r2.Z()<<")"<<endl;
@@ -290,7 +287,7 @@ void CbmRichGeoOpt::HitsAndPoints(){
     if(PosAtDetIn.X() <= PMTPlaneThirdX){ H_PointsIn_XY_Left2Thirds->Fill(PosAtDetIn.X(),PosAtDetIn.Y()); }
     if(PosAtDetIn.X() > PMTPlaneThirdX){  H_PointsIn_XY_RightThird->Fill(PosAtDetIn.X(),PosAtDetIn.Y()); }    
     
-    CbmRichHitProducer::TiltPoint(&PosAtDetIn, &PosAtDetOut, fGP.fPmtPhi, fGP.fPmtTheta, fGP.fPmtZOrig);
+    CbmRichGeoManager::GetInstance().RotatePoint(&PosAtDetIn, &PosAtDetOut);
     H_PointsOut_XY->Fill(PosAtDetOut.X(),PosAtDetOut.Y());
     
     /////////
@@ -345,11 +342,11 @@ void CbmRichGeoOpt::HitsAndPoints(){
     Int_t pointInd =  hit->GetRefId(); if (pointInd < 0) continue;
     CbmRichPoint *point = (CbmRichPoint*) fRichPoints->At(pointInd); if ( point == NULL ) continue;
     
-    H_NofPhotonsPerHit->Fill(hit->GetNPhotons());
+  //  H_NofPhotonsPerHit->Fill(hit->GetNPhotons());
     
     TVector3 inPos(point->GetX(), point->GetY(), point->GetZ());
     TVector3 outPos;
-    CbmRichHitProducer::TiltPoint(&inPos, &outPos, fGP.fPmtPhi, fGP.fPmtTheta, fGP.fPmtZOrig);
+    CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
     H_Hits_XY->Fill(hit->GetX(), hit->GetY());
 
     if(hit->GetX() <= PMTPlaneCenterX){H_Hits_XY_LeftHalf->Fill(hit->GetX(), hit->GetY()); }
@@ -460,11 +457,11 @@ void CbmRichGeoOpt::HitsAndPointsWithRef(){
     Int_t pointInd =  hit->GetRefId(); if (pointInd < 0) continue;
     CbmRichPoint *point = (CbmRichPoint*) fRichPoints->At(pointInd); if ( point == NULL ) continue;
     
-    H_NofPhotonsPerHit->Fill(hit->GetNPhotons());
+  //  H_NofPhotonsPerHit->Fill(hit->GetNPhotons());
     
     TVector3 inPos(point->GetX(), point->GetY(), point->GetZ());
     TVector3 outPos;
-    CbmRichHitProducer::TiltPoint(&inPos, &outPos, fGP.fPmtPhi, fGP.fPmtTheta, fGP.fPmtZOrig);
+    CbmRichGeoManager::GetInstance().RotatePoint(&inPos, &outPos);
     H_Hits_XY->Fill(hit->GetX(), hit->GetY());
 
     if(hit->GetX() <= PMTPlaneCenterX){H_Hits_XY_LeftHalf->Fill(hit->GetX(), hit->GetY()); }
@@ -955,7 +952,8 @@ bool  CbmRichGeoOpt::CheckPointLiesOnPlane(TVector3 Point,TVector3 p0,TVector3 n
 //////////////////////////////////////////////////////
 void CbmRichGeoOpt::GetPMTRotAngels()
 {
-  RotX=fGP.fPmtTheta; RotY=fGP.fPmtPhi;
+	CbmRichRecGeoPar* gp = CbmRichGeoManager::GetInstance().fGP;
+  RotX=gp->fPmtTheta; RotY=gp->fPmtPhi;
 }
 
 //////////////////////////////////////////////////////

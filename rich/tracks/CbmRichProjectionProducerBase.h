@@ -26,22 +26,13 @@ public:
    /**
     * brief Default constructor.
     */
-   CbmRichProjectionProducerBase() : fZflag(300.) { }
-
-   /**
-    * brief Standard constructor.
-    */
-   CbmRichProjectionProducerBase(int flag) : fZflag(flag) { }
+   CbmRichProjectionProducerBase() { }
 
    /**
     * \brief Destructor.
     */
    virtual ~CbmRichProjectionProducerBase() { }
 
-   /**
-    * \brief Initialization of parameter container.
-    */
-   virtual void SetParContainers() { }
 
    /**
     * \brief Initialization in case one needs to initialize some TCloneArrays.
@@ -54,17 +45,6 @@ public:
     **/
    virtual void DoProjection(
          TClonesArray* richProj) = 0;
-
-   /**
-    * \brief Set flag whether to use point in imaginary plane (zflag=1)
-    * or mirror point (zflag=2) for extrapolation.
-    * \param[in] flag Flag.
-    */
-   void SetZFlag(int flag) {fZflag = flag;}
-
-protected:
-   int fZflag; // Flag whether to use point in imaginary plane (zflag=1) or
-               // mirror point (zflag=2) for extrapolation.
 
 private:
    /**

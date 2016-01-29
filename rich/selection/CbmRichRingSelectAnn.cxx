@@ -77,6 +77,17 @@ void CbmRichRingSelectAnn::DoSelect(
     params[5] = (ring->GetChi2() / ring->GetNofHits()) / 0.4;
 
     float nnEval = fNN->Evaluate(0, params);
+    
+  /*  float nofHitsEval = ring->GetNofHits() / 35.;
+    if (nofHitsEval > 1) nofHitsEval = 1.;
+    float angleEval = 1. - ring->GetAngle() / 6.29;
+    if (angleEval > 1.) angleEval = 1.;
+    if (angleEval < 0.) angleEval = 0.;
+    float radialPosEval = ring->GetRadialPosition() / 100;
+    if (radialPosEval > 1.) radialPosEval = 1.;
+    
+    
+    nnEval = nofHitsEval * angleEval * radialPosEval;*/
 
     ring->SetSelectionNN(nnEval);
 }

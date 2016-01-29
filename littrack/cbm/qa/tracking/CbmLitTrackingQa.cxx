@@ -78,7 +78,7 @@ CbmLitTrackingQa::CbmLitTrackingQa():
    fTofPoints(NULL),
    fTofHits(NULL),
    fElectronId(NULL),
-   fRichAnnCut(0.0),
+   fRichAnnCut(0.25),
    fTrdAnnCut(0.85)
 {
 }

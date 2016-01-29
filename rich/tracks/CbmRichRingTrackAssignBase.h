@@ -27,7 +27,7 @@ public:
     * brief Standard constructor.
     */
    CbmRichRingTrackAssignBase():
-      fMaxDistance(100.),
+      fMaxDistance(999.),
       fMinNofHitsInRing(5)
    {
 
