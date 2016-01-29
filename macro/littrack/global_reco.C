@@ -286,14 +286,14 @@ void global_reco(Int_t nEvents = 10, // number of events
 	run->AddTask(l1);
       }
       
-      CbmRichHitProducer* richHitProd  = new CbmRichHitProducer();
-      run->AddTask(richHitProd);
-      
-      CbmRichReconstruction* richReco = new CbmRichReconstruction();
-      run->AddTask(richReco);
-      
-      CbmRichMatchRings* matchRings = new CbmRichMatchRings();
-      run->AddTask(matchRings);
+        CbmRichDigitizer* richDigitizer = new CbmRichDigitizer();
+        run->AddTask(richDigitizer);
+        
+        CbmRichHitProducer* richHitProd	= new CbmRichHitProducer();
+        run->AddTask(richHitProd);
+        
+        CbmRichReconstruction* richReco = new CbmRichReconstruction();
+        run->AddTask(richReco);
     }
   }
   
