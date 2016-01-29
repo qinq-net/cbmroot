@@ -50,7 +50,8 @@ void sis18_mcbm_setup()
 
   defaultInputFile = "/input/urqmd.agag.1.65gev.centr.00001.root";
   //  defaultInputFile = "/input/urqmd.agag.1.65gev.mbias.00001.root";
-  //  defaultInputFile = "/input/urqmd.nini.1.93gev.centr.00001.root";
+  //  defaultInputFile = "/input/urqmd.niau.1.93gev.centr.00001.root";
+  //  defaultInputFile = "/input/urqmd.niau.1.93gev.mbias.00001.root";
   //  defaultInputFile = "/input/urqmd.nini.1.93gev.mbias.00001.root";
   //  defaultInputFile = "/input/urqmd.pau.4.5gev.mbias.00001.root";
 
