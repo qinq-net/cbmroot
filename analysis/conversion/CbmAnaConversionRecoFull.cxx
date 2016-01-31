@@ -205,6 +205,10 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fMixedTest4_photons(),
 	fMixedTest4_eventno(),
 	fhMixedEventsTest4_invmass(NULL),
+	fhMixedEventsTest4_invmass_ptBin1(NULL),
+	fhMixedEventsTest4_invmass_ptBin2(NULL),
+	fhMixedEventsTest4_invmass_ptBin3(NULL),
+	fhMixedEventsTest4_invmass_ptBin4(NULL),
 	timer(),
 	fTime(0.)
 {
@@ -562,8 +566,17 @@ void CbmAnaConversionRecoFull::InitHistos()
 	fHistoList_recofull_new[4].push_back(fhMixedEventsTest2_invmass);
 	fhMixedEventsTest3_invmass = new TH1D(Form("fhMixedEventsTest3_invmass_%i",4), Form("fhMixedEventsTest3_invmass_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull_new[4].push_back(fhMixedEventsTest3_invmass);
+	
 	fhMixedEventsTest4_invmass = new TH1D(Form("fhMixedEventsTest4_invmass_%i",4), Form("fhMixedEventsTest4_invmass_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull_new[4].push_back(fhMixedEventsTest4_invmass);
+	fhMixedEventsTest4_invmass_ptBin1 = new TH1D(Form("fhMixedEventsTest4_invmass_%i_ptBin1",4), Form("fhMixedEventsTest4_invmass_%i_ptBin1; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_recofull_new[4].push_back(fhMixedEventsTest4_invmass_ptBin1);
+	fhMixedEventsTest4_invmass_ptBin2 = new TH1D(Form("fhMixedEventsTest4_invmass_%i_ptBin2",4), Form("fhMixedEventsTest4_invmass_%i_ptBin2; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_recofull_new[4].push_back(fhMixedEventsTest4_invmass_ptBin2);
+	fhMixedEventsTest4_invmass_ptBin3 = new TH1D(Form("fhMixedEventsTest4_invmass_%i_ptBin3",4), Form("fhMixedEventsTest4_invmass_%i_ptBin3; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_recofull_new[4].push_back(fhMixedEventsTest4_invmass_ptBin3);
+	fhMixedEventsTest4_invmass_ptBin4 = new TH1D(Form("fhMixedEventsTest4_invmass_%i_ptBin4",4), Form("fhMixedEventsTest4_invmass_%i_ptBin4; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_recofull_new[4].push_back(fhMixedEventsTest4_invmass_ptBin4);
 }
 
 
@@ -2355,6 +2368,11 @@ void CbmAnaConversionRecoFull::MixedEventTest4()
 			CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e11, e12, e21, e22);
 			fhMixedEventsTest4_invmass->Fill(params.fMinv);
 			cout << "CbmAnaConversionRecoFull: MixedEventTest4(), event filled!, part" << endl;
+			
+			if(params.fPt <= 0.5) fhMixedEventsTest4_invmass_ptBin1->Fill(params.fMinv);
+			if(params.fPt > 0.5 && params.fPt <= 1) fhMixedEventsTest4_invmass_ptBin2->Fill(params.fMinv);
+			if(params.fPt > 1 && params.fPt <= 1.5) fhMixedEventsTest4_invmass_ptBin3->Fill(params.fMinv);
+			if(params.fPt > 1.5 && params.fPt <= 2) fhMixedEventsTest4_invmass_ptBin4->Fill(params.fMinv);
 		}
 	}
 }

@@ -290,6 +290,10 @@ private:
 	vector< vector<TVector3> >	fMixedTest4_photons;
 	vector<int>					fMixedTest4_eventno;
 	TH1D *						fhMixedEventsTest4_invmass;
+	TH1D *						fhMixedEventsTest4_invmass_ptBin1;
+	TH1D *						fhMixedEventsTest4_invmass_ptBin2;
+	TH1D *						fhMixedEventsTest4_invmass_ptBin3;
+	TH1D *						fhMixedEventsTest4_invmass_ptBin4;
 
 	// timer
 	TStopwatch timer;

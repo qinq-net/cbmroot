@@ -443,13 +443,6 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 		fVector_AllMomenta.push_back(refittedMomentum_electron);
 		
 		Double_t chiCut = 0;
-		//if(refittedMomentum_electron.Perp() < 0.4) {
-		//	chiCut = 31. - 70.*refittedMomentum_electron.Perp();
-		//}
-		//if(refittedMomentum_electron.Perp() >= 0.4) {
-		//	chiCut = 3;
-		//}
-		
 		chiCut = CbmAnaConversionCutSettings::CalcChiCut(refittedMomentum_electron.Perp() );
 		
 		if(result_chi_electron > chiCut) continue;
