@@ -188,6 +188,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhPhotons_invmass_MCcut2_new(),
 	fhPhotons_invmass_MCcut3_new(),
 	fhPhotons_invmass_MCcut4_new(),
+	fhPhotons_invmass_MCcutTest_new(),
 	fMixedEventsElectrons_list1(),
 	fMixedEventsElectrons_list2(),
 	fMixedEventsElectrons_list3(),
@@ -550,6 +551,9 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut3_new[i]);
 		fhPhotons_invmass_MCcut4_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut4_new_%i",i), Form("fhPhotons_invmass_MCcut4_new_%i (MC-true cut: wrong combination of electrons); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut4_new[i]);
+		
+		fhPhotons_invmass_MCcutTest_new[i] = new TH1D(Form("fhPhotons_invmass_MCcutTest_new_%i",i), Form("fhPhotons_invmass_MCcutTest_new_%i (MC-true cut: test); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcutTest_new[i]);
 		
 		fhPhotons_pt_vs_rap_new[i] = new TH2D(Form("fhPhotons_pt_vs_rap_new_%i",i), Form("fhPhotons_pt_vs_rap_new_%i; p_{t} in GeV/c; rapidity y",i), 240, -2., 10., 270, -2., 7.);
 		fHistoList_recofull_new[i].push_back(fhPhotons_pt_vs_rap_new[i]);
@@ -1452,6 +1456,16 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 						if(pt > 2 && pt <= 3)	fhPhotons_invmass_ptBin3_4->Fill(invmass);
 						if(pt > 3 && pt <= 4)	fhPhotons_invmass_ptBin4_4->Fill(invmass);
 						fhPhotons_invmass_vs_pt_4->Fill(invmass, pt);
+						
+						if( !(fElectrons_mctrackID_new[index][electron11] == fElectrons_mctrackID_new[index][electron12] ||
+						    fElectrons_mctrackID_new[index][electron11] == fElectrons_mctrackID_new[index][electron21] ||
+						    fElectrons_mctrackID_new[index][electron11] == fElectrons_mctrackID_new[index][electron22] ||
+						    fElectrons_mctrackID_new[index][electron12] == fElectrons_mctrackID_new[index][electron21] ||
+						    fElectrons_mctrackID_new[index][electron12] == fElectrons_mctrackID_new[index][electron22] ||
+						    fElectrons_mctrackID_new[index][electron21] == fElectrons_mctrackID_new[index][electron22] ) ) {
+						    	fhPhotons_invmass_MCcutTest_new[index]->Fill(invmass);
+						    
+						    }
 					}
 					
 					if(pt <= 0.5) 			fhPhotons_invmass_ptBin1_new[index]->Fill(invmass);
