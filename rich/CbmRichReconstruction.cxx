@@ -237,15 +237,6 @@ void CbmRichReconstruction::RunFitter()
 
 void CbmRichReconstruction::RunTrackAssign()
 {
-    //LOG(INFO) << "RunTrackAssign" << FairLogger::endl;
-    // check whether track were assigned to rings.
-    /*  Int_t nTracks = fGlobalTracks->GetEntriesFast();
-     for (Int_t iTrack = 0; iTrack < nTracks; iTrack++){
-     CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(iTrack);
-     Int_t iRing = gTrack->GetRichRingIndex();
-     if (iRing != -1) return;
-     }*/
-    
     fRingTrackAssign->DoAssign(fRichRings, fRichProjections);
 }
 

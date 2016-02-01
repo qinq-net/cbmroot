@@ -73,9 +73,12 @@ void CbmRichProjectionProducerAnalytical::DoProjection(
     double mirrorR = gp->fMirrorR;
     double pmtPhi = gp->fPmtPhi;
     double pmtTheta = gp->fPmtTheta;
-    double pmtXOrig = gp->fPmtPlaneX;
-    double pmtYOrig = gp->fPmtPlaneY;
-    double pmtZOrig = gp->fPmtPlaneZ;
+    double pmtPlaneX = gp->fPmtPlaneX;
+    double pmtPlaneY = gp->fPmtPlaneY;
+    double pmtPlaneZ = gp->fPmtPlaneZ;
+    double pmtWidth = gp->fPmtWidth;
+    double pmtHeight = gp->fPmtHeight;
+    
     
     richProj->Delete();
     TMatrixFSym covMat(5);
@@ -190,15 +193,15 @@ void CbmRichProjectionProducerAnalytical::DoProjection(
         //        -> first calculate for case x>0, then check
         if (refZ!=0.) {
             if (centerP.y() > 0){
-                rho2 = (-TMath::Sin(pmtPhi)*(pmtXOrig-crossP.x())
-                        -TMath::Sin(pmtTheta)*TMath::Cos(pmtPhi)*(pmtYOrig-crossP.y())
-                        + TMath::Cos(pmtTheta)*TMath::Cos(pmtPhi)*(pmtZOrig-crossP.z()))/
+                rho2 = (-TMath::Sin(pmtPhi)*(pmtPlaneX-crossP.x())
+                        -TMath::Sin(pmtTheta)*TMath::Cos(pmtPhi)*(pmtPlaneY-crossP.y())
+                        + TMath::Cos(pmtTheta)*TMath::Cos(pmtPhi)*(pmtPlaneZ-crossP.z()))/
                 (-TMath::Sin(pmtPhi)*refX-TMath::Sin(pmtTheta)*TMath::Cos(pmtPhi)*refY + TMath::Cos(pmtTheta)*TMath::Cos(pmtPhi)*refZ);
             }
             if (centerP.y() < 0){
-                rho2 = (-TMath::Sin(pmtPhi)*(pmtXOrig-crossP.x())
-                        -TMath::Sin(-pmtTheta)*TMath::Cos(pmtPhi)*(-pmtYOrig-crossP.y())
-                        + TMath::Cos(-pmtTheta)*TMath::Cos(pmtPhi)*(pmtZOrig-crossP.z()))/
+                rho2 = (-TMath::Sin(pmtPhi)*(pmtPlaneX-crossP.x())
+                        -TMath::Sin(-pmtTheta)*TMath::Cos(pmtPhi)*(-pmtPlaneY-crossP.y())
+                        + TMath::Cos(-pmtTheta)*TMath::Cos(pmtPhi)*(pmtPlaneZ-crossP.z()))/
                 (-TMath::Sin(pmtPhi)*refX-TMath::Sin(-pmtTheta)*TMath::Cos(pmtPhi)*refY + TMath::Cos(-pmtTheta)*TMath::Cos(pmtPhi)*refZ);
             }
             
@@ -209,15 +212,15 @@ void CbmRichProjectionProducerAnalytical::DoProjection(
             
             if (xX < 0) {
                 if (centerP.y() > 0){
-                    rho2 = (-TMath::Sin(-pmtPhi)*(-pmtXOrig-crossP.x())
-                            -TMath::Sin(pmtTheta)*TMath::Cos(-pmtPhi)*(pmtYOrig-crossP.y())
-                            + TMath::Cos(pmtTheta)*TMath::Cos(-pmtPhi)*(pmtZOrig-crossP.z()))/
+                    rho2 = (-TMath::Sin(-pmtPhi)*(-pmtPlaneX-crossP.x())
+                            -TMath::Sin(pmtTheta)*TMath::Cos(-pmtPhi)*(pmtPlaneY-crossP.y())
+                            + TMath::Cos(pmtTheta)*TMath::Cos(-pmtPhi)*(pmtPlaneZ-crossP.z()))/
                     (-TMath::Sin(-pmtPhi)*refX-TMath::Sin(pmtTheta)*TMath::Cos(-pmtPhi)*refY + TMath::Cos(pmtTheta)*TMath::Cos(-pmtPhi)*refZ);
                 }
                 if (centerP.y() < 0){
-                    rho2 = (-TMath::Sin(-pmtPhi)*(-pmtXOrig-crossP.x())
-                            -TMath::Sin(-pmtTheta)*TMath::Cos(-pmtPhi)*(-pmtYOrig-crossP.y())
-                            + TMath::Cos(-pmtTheta)*TMath::Cos(-pmtPhi)*(pmtZOrig-crossP.z()))/
+                    rho2 = (-TMath::Sin(-pmtPhi)*(-pmtPlaneX-crossP.x())
+                            -TMath::Sin(-pmtTheta)*TMath::Cos(-pmtPhi)*(-pmtPlaneY-crossP.y())
+                            + TMath::Cos(-pmtTheta)*TMath::Cos(-pmtPhi)*(pmtPlaneZ-crossP.z()))/
                     (-TMath::Sin(-pmtPhi)*refX-TMath::Sin(-pmtTheta)*TMath::Cos(-pmtPhi)*refY + TMath::Cos(-pmtTheta)*TMath::Cos(-pmtPhi)*refZ);
                 }
                 
@@ -235,13 +238,25 @@ void CbmRichProjectionProducerAnalytical::DoProjection(
             Double_t yDet = outPos.Y();
             Double_t zDet = outPos.Z();
             
+            
             //check that crosspoint inside the plane
-            // if( xDet > (-pmtXOrig-pmtWidthX) && xDet < (pmtXOrig+pmtWidthX)){
-            //     if(TMath::Abs(yDet) > (pmtYOrig-pmtWidthY) && TMath::Abs(yDet) < (pmtYOrig+pmtWidthY)){
-            FairTrackParam richtrack(xDet,yDet,zDet,0.,0.,0.,covMat);
-            * (FairTrackParam*)(richProj->At(j)) = richtrack;
-            //     }
-            // }
+            Double_t marginX = 2.; // [cm]
+            Double_t marginY = 2.; // [cm]
+            // upper pmt planes
+            Double_t pmtYTop = TMath::Abs(pmtPlaneY) + pmtHeight + marginY;
+            Double_t pmtYBottom = TMath::Abs(pmtPlaneY) - pmtHeight - marginY;
+            Double_t absYDet = TMath::Abs(yDet);
+            Bool_t isYOk = (absYDet <= pmtYTop && absYDet >= pmtYBottom);
+            
+            Double_t pmtXMin = -TMath::Abs(pmtPlaneX) - pmtWidth - marginX;
+            Double_t pmtXMax = TMath::Abs(pmtPlaneX) + pmtWidth + marginX;
+            ///cout << pmtXMin << " " << pmtXMax << " " <<  pmtYBottom << "  " << pmtYTop <<  endl;
+            Bool_t isXOk = (xDet >= pmtXMin && xDet <= pmtXMax);
+        
+            if ( isYOk && isXOk) {
+                FairTrackParam richtrack(xDet,yDet,zDet,0.,0.,0.,covMat);
+                * (FairTrackParam*)(richProj->At(j)) = richtrack;
+            }
         }// if (refZ!=0.)
     }// j
 }

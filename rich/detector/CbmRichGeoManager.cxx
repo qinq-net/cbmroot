@@ -91,12 +91,15 @@ void CbmRichGeoManager::InitGeometry() {
             const Double_t* curNodeTr = curMatrix->GetTranslation();
             //const Double_t* curNodeRot = curMatrix->GetRotationMatrix();
             
+            
             double pmtX = curNodeTr[0];
             double pmtY = curNodeTr[1];
             double pmtZ = curNodeTr[2];
             
             if (pmtX > 0. && pmtY > 0) {
-                cout << "camera_quarter_xyz:" << pmtX << " " << pmtY << " " << pmtZ << endl;
+                const TGeoBBox* shape = (const TGeoBBox*)(curNode->GetVolume()->GetShape());
+                fGP->fPmtWidth = shape->GetDX();
+                fGP->fPmtHeight = shape->GetDY();
                 fGP->fPmtZ = pmtZ;
                 fGP->fPmtX = pmtX;
                 fGP->fPmtY = pmtY;

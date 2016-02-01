@@ -42,6 +42,8 @@ public:
     fPmtPlaneX(0.),
     fPmtPlaneY(0.),
     fPmtPlaneZ(0.),
+    fPmtWidth(0.),
+    fPmtHeight(0.),
     fNRefrac(0.),
     fMirrorX(0.),
     fMirrorY(0.),
@@ -62,6 +64,7 @@ public:
         cout << endl << "-I- RICH geometry parameters" << endl;
         cout << "PMT position in (x,y,z) [cm]: " << fPmtX << "  " << fPmtY << "  " << fPmtZ << endl;
         cout << "PMT plane position in (x,y,z) [cm]: " << fPmtPlaneX << "  " << fPmtPlaneY << "  " << fPmtPlaneZ << endl;
+        cout << "PMT width and height [cm]: " << fPmtWidth << "  " << fPmtHeight << endl;
         cout << "PMT was rotated around x by " << fPmtTheta*180./TMath::Pi() << " degrees" << endl;
         cout << "PMT was rotated around y by " << fPmtPhi*180./TMath::Pi() << " degrees" << endl;
         cout << "Refractive index for lowest photon energies: "<< fNRefrac << ", (n-1)*10000: " << (fNRefrac-1.0)*10000.0 << endl;
@@ -84,6 +87,9 @@ public:
     Double_t fPmtPlaneX; // X-coordinate of photodetector plane
     Double_t fPmtPlaneY; // Y-coordinate of photodetector plane
     Double_t fPmtPlaneZ; // Z-coordinate of photodetector plane
+    
+    Double_t fPmtWidth; // TGeoBBox->GetDX(), half of the camera quater
+    Double_t fPmtHeight; // TGeoBBox->GetDY(), half of the camera quater
     
     Double_t fNRefrac; // refraction index
     
