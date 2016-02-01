@@ -28,6 +28,8 @@ ${CBMROOT_SOURCE_DIR}/data/global
 
 ${CBMROOT_SOURCE_DIR}/littrack
 ${CBMROOT_SOURCE_DIR}/littrack/std
+${CBMROOT_SOURCE_DIR}/littrack/cbm
+${CBMROOT_SOURCE_DIR}/littrack/cbm/utils
 
 ${CBMROOT_SOURCE_DIR}/KF
 ${CBMROOT_SOURCE_DIR}/KF/Interface
