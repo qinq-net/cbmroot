@@ -56,9 +56,10 @@ public:
 	void CombineElectrons_STSonly();
 	void CombinePhotons_STSonly();
 	
-	Bool_t HasRichInd(Int_t gtIndex);
+	Bool_t HasRichInd(Int_t gtIndex, Int_t arrayIndex);
 
 	void MixedEventTest_3p1();
+	void MixedEventTest_STSonly();
 
 
 
@@ -115,6 +116,7 @@ private:
 	vector<double>			fVector_chi;
 	vector<int>				fVector_gtIndex;
 	vector<int>				fVector_richIndex;
+	vector<bool>			fVector_withRichSignal;
 	vector< vector<int> >	fVector_reconstructedPhotons_FromSTSandRICH;
 
 	// arrays for electrons, that have been identified in RICH as electrons
@@ -136,8 +138,10 @@ private:
 //	TH1D * fhTest_eventMixing_RICHindex2;
 //	TH1D * fhTest_eventMixing_RICHindex3;
 //	TH1D * fhTest_eventMixing_RICHindex4;
-//	vector< vector<TVector3> >	fMixedTest_STSonly_photons;
-//	vector<int>					fMixedTest_STSonly_eventno;
+	vector< vector<TVector3> >	fMixedTest_STSonly_photons;
+	vector<int>					fMixedTest_STSonly_eventno;
+	vector< vector<bool> >		fMixedTest_STSonly_hasRichInd;
+	TH1D * 						fhTest_eventMixing_STSonly;
 
 //	for other event mixing (3 + 1)
 	vector< vector<TVector3> >	fMixedTest_3p1_photons;

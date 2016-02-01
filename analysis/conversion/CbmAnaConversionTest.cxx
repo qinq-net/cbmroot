@@ -66,6 +66,7 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fVector_chi(),
 	fVector_gtIndex(),
 	fVector_richIndex(),
+	fVector_withRichSignal(),
 	fVector_reconstructedPhotons_FromSTSandRICH(),
 	fVector_electronRICH_gt(),
 	fVector_electronRICH_gtIndex(),
@@ -73,6 +74,10 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fVector_electronRICH_reconstructedPhotons(),
 	fVector_reconstructedPhotons_STSonly(),
 	globalEventNo(0),
+	fMixedTest_STSonly_photons(),
+	fMixedTest_STSonly_eventno(),
+	fMixedTest_STSonly_hasRichInd(),
+	fhTest_eventMixing_STSonly(NULL),
 	fMixedTest_3p1_photons(),
 	fMixedTest_3p1_eventno(),
 	fMixedTest_3p1_combined(),
@@ -166,6 +171,8 @@ void CbmAnaConversionTest::InitHistos()
 	fHistoList_test.push_back(fhTest_invmass_RICHindex4);
 
 
+	fhTest_eventMixing_STSonly = new TH1D("fhTest_eventMixing_STSonly", "fhTest_eventMixing_STSonly; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_test.push_back(fhTest_eventMixing_STSonly);
 	fhTest_eventMixing_3p1 = new TH1D("fhTest_eventMixing_3p1", "fhTest_eventMixing_3p1; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_eventMixing_3p1);
 }
@@ -356,6 +363,7 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 	fVector_chi.clear();
 	fVector_gtIndex.clear();
 	fVector_richIndex.clear();
+	fVector_withRichSignal.clear();
 	fVector_reconstructedPhotons_FromSTSandRICH.clear();
 	
 	fVector_electronRICH_momenta.clear();
@@ -374,6 +382,12 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 		fMixedTest_3p1_combined.clear();
 	}
 
+	if(globalEventNo%20 == 0) {
+		MixedEventTest_STSonly();
+		fMixedTest_STSonly_photons.clear();
+		fMixedTest_STSonly_eventno.clear();
+		fMixedTest_STSonly_hasRichInd.clear();
+	}
 
 
 
@@ -456,22 +470,47 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 			fVector_richIndex.push_back(richInd);
 		//}
 
+		Bool_t WithRichSignal = false;
 
-		if (richInd < 0) continue;
+/*		if (richInd < 0) continue;
 		CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(richInd);
 		if (richMatch == NULL) continue;
 		int richMcTrackId = richMatch->GetMatchedLink().GetIndex();
 		if (richMcTrackId < 0) continue;
 		CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
 		if (mcTrack2 == NULL) continue;
-
+		
 		Bool_t electron_rich = electronidentifier->IsRichElectron(i, refittedMomentum_electron.Mag());
 		if(electron_rich) {
 			fVector_electronRICH_momenta.push_back(refittedMomentum_electron);
 			fVector_electronRICH_gt.push_back(gTrack);
 			fVector_electronRICH_gtIndex.push_back(i);
 			nofRICHelectrons++;
+			WithRichSignal = true;
 		}
+*/
+		if (richInd >= 0) {
+			CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(richInd);
+			if (richMatch != NULL) {
+				int richMcTrackId = richMatch->GetMatchedLink().GetIndex();
+				if (richMcTrackId >= 0) {
+					CbmMCTrack* mcTrack2 = (CbmMCTrack*) fMcTracks->At(richMcTrackId);
+					if (mcTrack2 != NULL) {
+		
+		
+						Bool_t electron_rich = electronidentifier->IsRichElectron(i, refittedMomentum_electron.Mag());
+						if(electron_rich) {
+							fVector_electronRICH_momenta.push_back(refittedMomentum_electron);
+							fVector_electronRICH_gt.push_back(gTrack);
+							fVector_electronRICH_gtIndex.push_back(i);
+							nofRICHelectrons++;
+							WithRichSignal = true;
+						}
+					}
+				}
+			}
+		}
+		fVector_withRichSignal.push_back(WithRichSignal);
 
 	}
 
@@ -502,7 +541,6 @@ void CbmAnaConversionTest::CombineElectrons_FromSTSandRICH()
 				Int_t check2 = (fVector_electronRICH_gt[b]->GetParamLast()->GetQp() > 0);
 				Int_t test = check1 + check2;
 				if(test != 1) continue;		// need one electron and one positron
-				
 				if(fVector_gtIndex[a] == fVector_electronRICH_gtIndex[b]) continue;
 				
 				//CbmLmvmKinematicParams params1 = CalculateKinematicParamsReco(fVector_momenta[a], fVector_electronRICH_momenta[b]);
@@ -558,6 +596,7 @@ void CbmAnaConversionTest::CombineElectrons_FromRICH()
 				Int_t check2 = (fVector_electronRICH_gt[b]->GetParamLast()->GetQp() > 0);
 				Int_t test = check1 + check2;
 				if(test != 1) continue;		// need one electron and one positron
+				if(fVector_electronRICH_gtIndex[a] == fVector_electronRICH_gtIndex[b]) continue;
 				
 				//CbmLmvmKinematicParams params1 = CalculateKinematicParamsReco(fVector_electronRICH_momenta[a], fVector_electronRICH_momenta[b]);
 				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(fVector_electronRICH_momenta[a], fVector_electronRICH_momenta[b]);
@@ -727,14 +766,13 @@ void CbmAnaConversionTest::CombineElectrons_STSonly()
 				Int_t check2 = (fVector_gt[b]->GetParamLast()->GetQp() > 0);
 				Int_t test = check1 + check2;
 				if(test != 1) continue;		// need one electron and one positron
+				if(fVector_gtIndex[a] == fVector_gtIndex[b]) continue;
 				
 				//CbmLmvmKinematicParams params1 = CalculateKinematicParamsReco(fVector_electronRICH_momenta[a], fVector_electronRICH_momenta[b]);
 				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(fVector_momenta[a], fVector_momenta[b]);
 				
 				// opening angle cut depending on pt of e+e- pair
 				Double_t openingAngleCut = 1.8 - 0.6 * paramsTest.fPt;
-				//Double_t openingAngleCut = 1.5 - 0.5 * paramsTest.fPt;
-				
 				Double_t invMassCut = 0.03;
 				
 				Int_t IsPhoton_openingAngle1	= (paramsTest.fAngle < openingAngleCut);
@@ -749,11 +787,16 @@ void CbmAnaConversionTest::CombineElectrons_STSonly()
 					fVector_reconstructedPhotons_STSonly.push_back(pair);
 					//fhElectrons_invmass_cut->Fill(params1.fMinv);
 					
-				//	vector<TVector3> pairmomenta;
-				//	pairmomenta.push_back(fVector_momenta[a]);
-				//	pairmomenta.push_back(fVector_momenta[b]);
-				//	fMixedTest_STSonly_photons.push_back(pairmomenta);
-				//	fMixedTest_STSonly_eventno.push_back(globalEventNo);
+					// event mixing arrays
+					vector<TVector3> pairmomenta;
+					pairmomenta.push_back(fVector_momenta[a]);
+					pairmomenta.push_back(fVector_momenta[b]);
+					fMixedTest_STSonly_photons.push_back(pairmomenta);
+					fMixedTest_STSonly_eventno.push_back(globalEventNo);
+					vector<bool> pair_hasRichInd;
+					pair_hasRichInd.push_back(HasRichInd(fVector_gtIndex[a], a) );
+					pair_hasRichInd.push_back(HasRichInd(fVector_gtIndex[b], b) );
+					fMixedTest_STSonly_hasRichInd.push_back(pair_hasRichInd);
 				}
 			}
 		}
@@ -804,7 +847,7 @@ void CbmAnaConversionTest::CombinePhotons_STSonly()
 				Double_t invmass = paramsTest.fMinv;
 				
 				
-				Int_t nofRICHindices = (HasRichInd(gtIndex11)) + (HasRichInd(gtIndex12)) + (HasRichInd(gtIndex21)) + (HasRichInd(gtIndex22));
+				Int_t nofRICHindices = (HasRichInd(gtIndex11, electron11)) + (HasRichInd(gtIndex12, electron12)) + (HasRichInd(gtIndex21, electron21)) + (HasRichInd(gtIndex22, electron22));
 				
 				if(nofRICHindices == 0) {
 					fhTest_invmass_RICHindex0->Fill(invmass);
@@ -821,7 +864,7 @@ void CbmAnaConversionTest::CombinePhotons_STSonly()
 				if(nofRICHindices == 3) {
 					fhTest_invmass_RICHindex3->Fill(invmass);
 					nofPi0_3++;
-					cout << "CbmAnaConversionTest: CombinePhotons_STSonly, photon combined! " << invmass << "/" << gtIndex11 << "/" << gtIndex12 << "/" << gtIndex21 << "/" << gtIndex22 << endl;
+					//cout << "CbmAnaConversionTest: CombinePhotons_STSonly, photon combined! " << invmass << "/" << gtIndex11 << "/" << gtIndex12 << "/" << gtIndex21 << "/" << gtIndex22 << endl;
 				}
 				if(nofRICHindices == 4) {
 					fhTest_invmass_RICHindex4->Fill(invmass);
@@ -837,7 +880,7 @@ void CbmAnaConversionTest::CombinePhotons_STSonly()
 
 
 
-Bool_t CbmAnaConversionTest::HasRichInd(Int_t gtIndex)
+Bool_t CbmAnaConversionTest::HasRichInd(Int_t gtIndex, Int_t arrayIndex)
 {
 	CbmGlobalTrack* gTrack = (CbmGlobalTrack*) fGlobalTracks->At(gtIndex);
 	if(NULL == gTrack) return false;
@@ -899,7 +942,7 @@ Bool_t CbmAnaConversionTest::HasRichInd(Int_t gtIndex)
 */
 
 
-	Bool_t electron_rich = electronidentifier->IsRichElectron(gtIndex, fVector_AllMomenta[gtIndex].Mag() );
+	Bool_t electron_rich = electronidentifier->IsRichElectron(gtIndex, fVector_momenta[arrayIndex].Mag() );
 	return electron_rich;
 	
 	//return true;
@@ -931,4 +974,36 @@ void CbmAnaConversionTest::MixedEventTest_3p1()
 			//cout << "CbmAnaConversionRecoFull: MixedEventTest4(), event filled!, part" << endl;
 		}
 	}
+}
+
+
+
+void CbmAnaConversionTest::MixedEventTest_STSonly()
+{
+	Int_t nof = fMixedTest_STSonly_photons.size();
+	for(Int_t a = 0; a < nof-1; a++) {
+		for(Int_t b = a+1; b < nof; b++) {
+			if(fMixedTest_STSonly_eventno[a] == fMixedTest_STSonly_eventno[b]) continue;
+
+			TVector3 e11 = fMixedTest_STSonly_photons[a][0];
+			TVector3 e12 = fMixedTest_STSonly_photons[a][1];
+			TVector3 e21 = fMixedTest_STSonly_photons[b][0];
+			TVector3 e22 = fMixedTest_STSonly_photons[b][1];
+			
+			Bool_t IsRich11 = fMixedTest_STSonly_hasRichInd[a][0];
+			Bool_t IsRich12 = fMixedTest_STSonly_hasRichInd[a][1];
+			Bool_t IsRich21 = fMixedTest_STSonly_hasRichInd[b][0];
+			Bool_t IsRich22 = fMixedTest_STSonly_hasRichInd[b][1];
+			Int_t IsRichSum = IsRich11 + IsRich12 + IsRich21 + IsRich22;
+			
+			
+			CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e11, e12, e21, e22);
+		
+			if(IsRichSum == 2) {
+				fhTest_eventMixing_STSonly->Fill(params.fMinv);
+			}
+		}
+	}
+
+
 }

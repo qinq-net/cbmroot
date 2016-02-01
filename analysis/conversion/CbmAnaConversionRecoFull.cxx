@@ -1030,7 +1030,7 @@ void CbmAnaConversionRecoFull::Exec()
 
 
 //void CbmAnaConversionRecoFull::CombineElectrons(	vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int> mctrackID)
-void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float>, vector<int>, vector< vector<int> > reconstructedPhotons, Int_t index)
+void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, vector<TVector3> momenta, vector<float> momentaChi, vector<int> mctrackID, vector< vector<int> > reconstructedPhotons, Int_t index)
 {
 	Int_t nof = momenta.size();
 	fhElectrons_nofPerEvent_new[index]->Fill(nof);
@@ -1049,13 +1049,7 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 				
 				CbmAnaConversionKinematicParams paramsTest = CbmAnaConversionKinematicParams::KinematicParams_2particles_Reco(momenta[a], momenta[b]);
 				
-				// standard fixed opening angle cut
-				//Double_t openingAngleCut = 1;
-				
-				// opening angle cut depending on pt of e+e- pair
-				//Double_t openingAngleCut = 1.5 - 0.5 * params1.fPt;
 				Double_t openingAngleCut = 1.8 - 0.6 * params1.fPt;
-				
 				Double_t invMassCut = 0.03;
 				
 				Int_t IsPhoton_openingAngle1	= (params1.fAngle < openingAngleCut);
@@ -1074,7 +1068,6 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 					pair.push_back(a);
 					pair.push_back(b);
 					reconstructedPhotons.push_back(pair);
-					//fhElectrons_invmass_cut->Fill(params1.fMinv);
 					
 					if(index == 1) {
 						fhElectrons_invmass_1->Fill(params1.fMinv);
