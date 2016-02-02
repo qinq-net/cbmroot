@@ -27,6 +27,7 @@ class CbmTofFindTracks;
 
 class TMbsMappingTofPar;
 class TTofCalibData;
+class TTrbHeader;
 
 // FAIR classes and includes
 #include "FairTask.h"
@@ -109,6 +110,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       inline void SetBeamRefId  (Int_t Id)              { fiBeamRefType      = Id;}
       inline void SetBeamRefSm     (Int_t Id)           { fiBeamRefSm        = Id;}
       inline void SetBeamRefDet    (Int_t Id)           { fiBeamRefDet       = Id;}
+      inline void SetBeamRefMulMax (Int_t Id)           { fiBeamRefMulMax    = Id;}
       inline void SetBeamAddRefMul (Int_t ival)         { fiBeamAddRefMul  = ival;}
       inline void SetTRefDifMax (Double_t val)          { fTRefDifMax  = val;}
       inline void SetdTRefMax   (Double_t val)          { fdTRefMax    = val;}
@@ -183,6 +185,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       CbmTofDigiBdfPar      * fDigiBdfPar;
 
       TMbsMappingTofPar     *fMbsMappingPar;
+      TTrbHeader            *fTrbHeader;
 
       // Input variables 
       TClonesArray          * fTofPointsColl; // TOF MC points
@@ -313,6 +316,7 @@ class CbmTofTestBeamClusterizer : public FairTask
       Int_t    fiBeamRefType;
       Int_t    fiBeamRefSm;
       Int_t    fiBeamRefDet;
+      Int_t    fiBeamRefMulMax;
       Int_t    fiBeamAddRefMul;
       Int_t    fSel2Id;
       Int_t    fSel2Sm;

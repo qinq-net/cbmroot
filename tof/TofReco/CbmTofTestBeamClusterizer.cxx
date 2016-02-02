@@ -22,6 +22,7 @@
 #include "CbmTofAddress.h"    // in cbmdata/tof
 #include "CbmMatch.h"
 
+#include "TTrbHeader.h"
 //#include "TMbsMappingTof.h"   // in unpack/tof/mapping
 #include "TMbsMappingTofPar.h"
 
@@ -62,6 +63,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer():
    fChannelInfo(NULL),
    fDigiBdfPar(NULL),
    fMbsMappingPar(NULL),
+   fTrbHeader(NULL),
    fTofPointsColl(NULL),
    fMcTracksColl(NULL),
    fTofDigisColl(NULL),
@@ -161,6 +163,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer():
    fiBeamRefType(0),
    fiBeamRefSm(0),
    fiBeamRefDet(0),
+   fiBeamRefMulMax(1),
    fiBeamAddRefMul(0),
    fSel2Id(0),
    fSel2Sm(0),
@@ -197,6 +200,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer(const char *name, Int_t ver
    fChannelInfo(NULL),
    fDigiBdfPar(NULL),
    fMbsMappingPar(NULL),
+   fTrbHeader(NULL),
    fTofPointsColl(NULL),
    fMcTracksColl(NULL),
    fTofDigisColl(NULL),
@@ -296,6 +300,7 @@ CbmTofTestBeamClusterizer::CbmTofTestBeamClusterizer(const char *name, Int_t ver
    fiBeamRefType(0),
    fiBeamRefSm(0),
    fiBeamRefDet(0),
+   fiBeamRefMulMax(1),
    fiBeamAddRefMul(0),
    fSel2Id(0),
    fSel2Sm(0),
@@ -449,6 +454,12 @@ Bool_t   CbmTofTestBeamClusterizer::RegisterInputs()
       LOG(ERROR)<<"CbmTofTestBeamClusterizer::RegisterInputs => Could not get the CbmTofDigi TClonesArray!!!"<<FairLogger::endl;
       return kFALSE;
    } // if( NULL == fTofDigisColl)
+
+   fTrbHeader = (TTrbHeader *)  fManager->GetObject("TofTrbHeader");
+   if( NULL == fTrbHeader)
+   {
+      LOG(INFO)<<"CbmTofTestBeamClusterizer::RegisterInputs => Could not get the TofTrbHeader Object"<<FairLogger::endl;
+   }
 
    return kTRUE;
 }
@@ -631,7 +642,7 @@ Bool_t   CbmTofTestBeamClusterizer::InitCalibParameter()
 
     fCalParFile = new TFile(fCalParFileName,"");
     if(NULL == fCalParFile) {
-      LOG(ERROR) << "CbmTofTestBeamClusterizer::InitCalibParameter: "
+      LOG(FATAL) << "CbmTofTestBeamClusterizer::InitCalibParameter: "
                  << "file " << fCalParFileName << " does not exist!" << FairLogger::endl;
       return kTRUE;
     }
@@ -1061,7 +1072,8 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
                  <<FairLogger::endl;
 
        // check access to all channel infos 
-       for (Int_t iCh=0; iCh<fMbsMappingPar->GetSmTypeNbCh(iSmType); iCh++){
+       //       for (Int_t iCh=0; iCh<fMbsMappingPar->GetSmTypeNbCh(iSmType); iCh++){
+       for (Int_t iCh=0; iCh<fDigiBdfPar->GetNbChan( iSmType, 0 ); iCh++){
 	 Int_t iCCellId  = CbmTofAddress::GetUniqueAddress(iSmId,iRpcId,iCh,0,iSmType);
 	 fChannelInfo = fDigiPar->GetCell(iCCellId);
 	 if(NULL == fChannelInfo)
@@ -1201,9 +1213,10 @@ Bool_t   CbmTofTestBeamClusterizer::CreateHistos()
    
    fhSeldT.resize( iNSel );
    for (Int_t iSel=0; iSel<iNSel; iSel++){
-       fhSeldT[iSel] =  new TH1F(  Form("cl_dt_Sel%02d", iSel ),
+       fhSeldT[iSel] =  new TH2F(  Form("cl_dt_Sel%02d", iSel ),
                                    Form("Selector time %02d; dT [ps]",iSel ),
-                                   99, -DelTofMax*10., DelTofMax*10.); 
+                                   99, -DelTofMax*10., DelTofMax*10.,
+				   16, -0.5, 15.5 ); 
    }
  
    fhTRpcCluMul.resize( iNbDet  );
@@ -1422,6 +1435,7 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
       if( fiBeamRefType == CbmTofAddress::GetSmType( iDetId )){
        if(fiBeamRefSm < 0 || fiBeamRefSm   == CbmTofAddress::GetSmId( iDetId ))
        {
+	 if(fviClusterMul[fiBeamRefType][fiBeamRefSm][fiBeamRefDet]>fiBeamRefMulMax) continue;
 	 // Check Tot
          CbmMatch* digiMatch=(CbmMatch *)fTofDigiMatchColl->At(pHit->GetRefId());
          Double_t TotSum=0.;
@@ -1589,9 +1603,19 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
       }
     }
 */
+    UInt_t uTriggerPattern=1;
+    if(NULL != fTrbHeader) uTriggerPattern=fTrbHeader->GetTriggerPattern();
     for (Int_t iSel=0; iSel<iNSel; iSel++){
       if(BSel[iSel]){
-        if (dTRef!=0. && fTRefHits>0) fhSeldT[iSel]->Fill(dTTrig[iSel]-dTRef);    
+        if (dTRef!=0. && fTRefHits>0) {
+	  for(UInt_t uChannel = 0; uChannel < 16; uChannel++)
+	    {
+	      if( uTriggerPattern & (0x1 << uChannel) )
+		{	  
+		  fhSeldT[iSel]->Fill(dTTrig[iSel]-dTRef,uChannel);   
+		}
+	    } 
+	}
       }
     }
   } // 0<iNSel end 
@@ -1795,13 +1819,22 @@ Bool_t   CbmTofTestBeamClusterizer::FillHistos()
              {
               if (dTRef !=0.  && TMath::Abs(dTRef-dTTrig[iSel])<DelTofMax) {  // correct times for DelTof - velocity spread 
 
-                if(iLink==0){   // do calculations only once (at 1. digi entry)
-                 Int_t iBx = (dTRef-dTTrig[iSel]+DelTofMax)/2./DelTofMax*nbClDelTofBinX;
+                if(iLink==0){   // do calculations only once (at 1. digi entry) // interpolate! FIXME!
+		 Double_t dTentry=dTRef-dTTrig[iSel]+DelTofMax;
+                 Int_t iBx = dTentry/2./DelTofMax*nbClDelTofBinX;
                  if(iBx<0) iBx=0;
                  if(iBx>nbClDelTofBinX-1) iBx=nbClDelTofBinX-1;
-                 dDelTof=fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx][iSel];
-                 LOG(DEBUG1)<<Form(" DelTof for SmT %d, Sm %d, R %d, T %d, dTRef %f, iBx %d -> DelT %f",
-                               iSmType, iSm, iRpc, iSel, dTRef-dTTrig[iSel], iBx, dDelTof)
+		 Double_t dBinWidth=2.*DelTofMax/nbClDelTofBinX;
+		 Double_t dDTentry=dTentry-((Double_t)iBx)*dBinWidth;
+		 Int_t iBx1=0;
+		 dTentry < 0 ? iBx1=iBx-1 : iBx1=iBx+1;
+		 Double_t w0=1.-TMath::Abs(dDTentry)/dBinWidth;
+		 Double_t w1=1.-w0;
+                 if(iBx1<0) iBx1=0;
+                 if(iBx1>nbClDelTofBinX-1) iBx1=nbClDelTofBinX-1;
+                 dDelTof=fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx][iSel]*w0 + fvCPDelTof[iSmType][iSm*iNbRpc+iRpc][iBx1][iSel]*w1;
+                 LOG(DEBUG1)<<Form(" DelTof for SmT %d, Sm %d, R %d, T %d, dTRef %6.1f, Bx %d, Bx1 %d, DTe %6.1f -> DelT %6.1f",
+				  iSmType, iSm, iRpc, iSel, dTRef-dTTrig[iSel], iBx, iBx1, dDTentry, dDelTof)
                             <<FairLogger::endl;
                  dTcor=pHit->GetTime()-dDelTof-dTTrig[iSel];  // corrected CbmTofHit time
                  if(fCalSel == iSel) dTTcor=dDelTof;
@@ -2412,7 +2445,7 @@ Bool_t   CbmTofTestBeamClusterizer::WriteHistos()
 
           if(htempTOff_px->GetBinContent(iCh+1)>WalkNHmin){
             fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][0] += -dTYOff + TMean;
-           fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean;
+            fvCPTOff[iSmType][iSm*iNbRpc+iRpc][iCh][1] += +dTYOff + TMean;
           }
           /*
            Double_t TotMean=((TProfile *)htempTot_pfx)->GetBinContent(iCh+1);  //nh +1 empirical(!)

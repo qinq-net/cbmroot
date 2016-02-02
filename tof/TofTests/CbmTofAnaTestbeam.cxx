@@ -92,6 +92,10 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fhTriggerPattern(NULL),
     fhTriggerType(NULL),
     fhTimeInSpill(NULL),
+    fhTIS_all(NULL),
+    fhTIS_sel(NULL),
+    fhTIS_sel1(NULL),
+    fhTIS_sel2(NULL),
     fhDT2(NULL),
     fhXX2(NULL),
     fhYY2(NULL),
@@ -120,7 +124,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fhChiDT04best(NULL),
     fhDT24DT04best(NULL),
     fhDTD4DT04best(NULL),
-    fhX0DT04best(NULL),
+    fhX0DT04best(NULL), 
     fhY0DT04best(NULL),
     fhNMatchD4sel(NULL),
     fhChi04D4best(NULL),
@@ -143,6 +147,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fhDTD4DT04D4best(NULL),
     fhX0DT04D4best(NULL),
     fhY0DT04D4best(NULL),
+    fhTISDT04D4best(NULL),
     fhDTMul4D4best(NULL),
     fhDTX4D4best(NULL),
     fhDTY4D4best(NULL),
@@ -283,7 +288,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam()
     fiBeamRefSmType(0),
     fiBeamRefSmId(0),
     fiDutNch(0),
-    fiReqTrg(0),
+    fiReqTrg(-1),
     fSIGLIM(3.),
     fSIGT(100.),
     fSIGX(1.),
@@ -327,6 +332,10 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhTriggerPattern(NULL),
     fhTriggerType(NULL),
     fhTimeInSpill(NULL),
+    fhTIS_all(NULL),
+    fhTIS_sel(NULL),
+    fhTIS_sel1(NULL),
+    fhTIS_sel2(NULL),
     fhDT2(NULL),
     fhXX2(NULL),
     fhYY2(NULL),
@@ -378,6 +387,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fhDTD4DT04D4best(NULL),
     fhX0DT04D4best(NULL),
     fhY0DT04D4best(NULL),
+    fhTISDT04D4best(NULL),
     fhDTMul4D4best(NULL),
     fhDTX4D4best(NULL),
     fhDTY4D4best(NULL),
@@ -518,7 +528,7 @@ CbmTofAnaTestbeam::CbmTofAnaTestbeam(const char* name, Int_t verbose)
     fiBeamRefSmType(0),
     fiBeamRefSmId(0),
     fiDutNch(0),
-    fiReqTrg(0),
+    fiReqTrg(-1),
     fSIGLIM(3.),
     fSIGT(100.),
     fSIGX(1.),
@@ -597,7 +607,7 @@ Bool_t   CbmTofAnaTestbeam::LoadGeometry()
      Int_t smodule  = CbmTofAddress::GetSmId( cellId );
      Int_t module   = CbmTofAddress::GetRpcId( cellId );
 
-     LOG(DEBUG) <<Form(" Id 0x%08x ",cellId) 
+     LOG(DEBUG1) <<Form(" Id 0x%08x ",cellId) 
 		<< "  got cell " << smtype << ", " << smodule << ", " << module 
 		<< ", x-size "<< fChannelInfo->GetSizex() 
 		<< ", y-size "<< fChannelInfo->GetSizey()
@@ -607,6 +617,12 @@ Bool_t   CbmTofAnaTestbeam::LoadGeometry()
        if(fChannelInfo->GetX() > dDutXmax) dDutXmax=fChannelInfo->GetX();
        if(fChannelInfo->GetX() < dDutXmin) dDutXmin=fChannelInfo->GetX();
        if(fiDutNch == 1) fChannelInfoDut = fChannelInfo; 
+       LOG(DEBUG) <<Form(" DutId 0x%08x ",cellId) 
+		  << "  got cell " << smtype << ", " << smodule << ", " << module 
+		  << ", x-size "<< fChannelInfo->GetSizex() 
+		  << ", y-size "<< fChannelInfo->GetSizey()
+		  <<", # "<<fiDutNch<<", Xmin "<<dDutXmin<<", Xmax "<<dDutXmax
+		  << FairLogger::endl;
      }
    }
    if (fiDutNch > 0){
@@ -813,9 +829,9 @@ Bool_t   CbmTofAnaTestbeam::LoadCalParameter()
 Bool_t CbmTofAnaTestbeam::CreateHistos()
 {
   // Create histogramms
-   Double_t XDMAX=100.;
-   Double_t YDMAX=100.;
-   Double_t TDMAX=100000.;
+   Double_t XDMAX=10.;
+   Double_t YDMAX=80.;
+   Double_t TDMAX=1000000.;
    Double_t DTMAX=1000.;
    Double_t DXMAX=10.;
    Double_t DYMAX=10.;
@@ -826,10 +842,15 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
    gROOT->cd(); // <= To prevent histos from being sucked in by the param file of the TRootManager !
 
    // define histos here
-
+   Double_t TISmax = 1.E9;
+   Double_t TISnbins = 50.;
    fhTriggerPattern = new TH1I("tof_trb_trigger_pattern", "CTS trigger pattern", 16, 0, 16);
    fhTriggerType = new TH1I("tof_trb_trigger_types", "CTS trigger types", 16, 0, 16);
-   fhTimeInSpill = new TH1I("tof_trb_time_in_spill", "Time in Spill", 1000, 0, 5.E12);
+   fhTimeInSpill = new TH1I("tof_trb_time_in_spill", "Time in Spill", TISnbins, 0, TISmax);
+   fhTIS_all  = new TH1F("TIS_all", "Time in Spill (all)", TISnbins, 0, TISmax);
+   fhTIS_sel  = new TH1F("TIS_sel", "Time in Spill (sel)", TISnbins, 0, TISmax);
+   fhTIS_sel1 = new TH1F("TIS_sel1", "Time in Spill (sel1)", TISnbins, 0, TISmax);
+   fhTIS_sel2 = new TH1F("TIS_sel2", "Time in Spill (sel2)", TISnbins, 0, TISmax);
 
    fhBRefMul =  new TH1F( Form("hBRefMul"),Form("Multiplicity in Beam Reference counter ; Mul ()"),
 			  50, 0., 50.); 
@@ -844,7 +865,7 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			       100, -YDMAX, YDMAX, 100, -YDMAX, YDMAX);       
    }
 
-   /*
+   
     fhXX2 =  new TH2F( 
           Form("hXX2"),
           Form("Plastic position correlation; XPla0; XPla1"),
@@ -865,18 +886,18 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhYY02[iDet] =  new TH2F( Form("hYY02_%d",iDet),Form("Y Position correlation; Y0; Y2"),
 			       100, -YDMAX, YDMAX, 100, -YDMAX, YDMAX); 
    }
-   */
+   
 
      fhXX04 =  new TH2F( Form("hXX04"),Form("X Position correlation; X0 [cm]; X4 [cm]"),
-			       200, -YDMAX, YDMAX, 200, -YDMAX, YDMAX);      
+			       500, -YDMAX, YDMAX, 500, -YDMAX, YDMAX);      
      fhYY04 =  new TH2F( Form("hYY04"),Form("Y Position correlation; Y0 [cm]; Y4 [cm]"),
-			       200, -YDMAX, YDMAX, 200, -YDMAX, YDMAX); 
+			       500, -YDMAX, YDMAX, 500, -YDMAX, YDMAX); 
      fhXY04 =  new TH2F( Form("hXY04"),Form("X Position correlation; X0 [cm]; Y4 [cm]"),
-			       200, -YDMAX, YDMAX, 200, -YDMAX, YDMAX);      
+			       500, -YDMAX, YDMAX, 500, -YDMAX, YDMAX);      
      fhYX04 =  new TH2F( Form("hYX04"),Form("Y Position correlation; Y0 [cm]; X4 [cm]"),
-			       200, -YDMAX, YDMAX, 200, -YDMAX, YDMAX); 
-     fhTT04 =  new TH2F( Form("hTT04"),Form("Time  correlation; T0 [ps]; T4 [ps]"),
-			       100, -TDMAX, TDMAX, 100, -TDMAX, TDMAX); 
+			       500, -YDMAX, YDMAX, 500, -YDMAX, YDMAX); 
+     fhTT04 =  new TH2F( Form("hTT04"),Form("Time  correlation; T0 [ps]; T0 - T4 [ps]"),
+			       100, -TDMAX, TDMAX, 100, -1000., 1000.); 
      fhDXDY04 = new TH2F( Form("hDXDY04"),Form("position correlation; #Delta x [cm]; #DeltaY [cm]"),
 			       100, -DXMAX, DXMAX, 100, -DYMAX, DYMAX); 
      fhDXDT04 = new TH2F( Form("hDXDT04"),Form("Time - position correlation; #Delta x [cm]; #DeltaT [ps]"),
@@ -955,6 +976,9 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
      fhY0DT04D4best = new TH2F( Form("hY0DT04D4best"),Form("time - position correlation; #Delta y [cm]; #DeltaT [ps]"),
 			       100, -50., 50., 100, -DTMAX, DTMAX); 
 
+     fhTISDT04D4best = new TH2F( Form("hTISDT04D4best"),Form("time - TIS; time in spill  [ns]; #DeltaT [ps]"),
+			       TISnbins, 0., TISmax, 100, -DTMAX, DTMAX); 
+
      fhChi04D4best  =  new TH1F( Form("hChi04D4best"),Form("matching chi2; #chi; Nhits"),
 			  100, 0., fdChi2Lim); 
      fhTofD4best  =  new TH1F( Form("hTofD4best"),Form("tof D4; t [ps]; Counts"),
@@ -984,19 +1008,19 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			    20, 0., 20., 100, -DTMAX, DTMAX);
      fhDTX4D4best = new TH2F( Form("hDTX4D4best"),
 			    Form("Time - position correlation; X4 [cm]; #DeltaT04 [ps]"),
-			    50, -15., 15., 100, -DTMAX, DTMAX); 
+			    50, -17., 17., 100, -DTMAX, DTMAX); 
      fhDTY4D4best = new TH2F( Form("hDTY4D4best"),
 			    Form("Time - position correlation; Y4 [cm]; #DeltaT04 [ps]"),
 			    50, -15., 15., 100, -DTMAX, DTMAX); 
      fhDXX4D4best = new TH2F( Form("hDXX4D4best"),
 			    Form("DX - position correlation; X4 [cm]; #DeltaX04 [cm]"),
-			    50, -15., 15., 50, -10., 10.); 
+			    50, -17., 17., 50, -10., 10.); 
      fhDXY4D4best = new TH2F( Form("hDXY4D4best"),
 			    Form("DX - position correlation; Y4 [cm]; #DeltaX04 [cm]"),
 			    50, -15., 15., 50, -10., 10.); 
      fhDYX4D4best = new TH2F( Form("hDYX4D4best"),
 			    Form("DY - position correlation; X4 [cm]; #DeltaY04 [cm]"),
-			    50, -15., 15., 50, -10., 10.); 
+			    50, -17., 17., 50, -10., 10.); 
      fhDYY4D4best = new TH2F( Form("hDYY4D4best"),
 			    Form("DY - position correlation; Y4 [cm]; #DeltaY04 [cm]"),
 			    50, -15., 15., 50, -10., 10.); 
@@ -1006,22 +1030,22 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			    20, 0., 20., 100, -DTMAX, DTMAX);
      fhDTX0D4best = new TH2F( Form("hDTX0D4best"),
 			    Form("Time - position correlation; X0 [cm]; #DeltaT04 [ps]"),
-			    50, -25., 25., 100, -DTMAX, DTMAX); 
+			    50, -17., 17., 100, -DTMAX, DTMAX); 
      fhDTY0D4best = new TH2F( Form("hDTY0D4best"),
 			    Form("Time - position correlation; Y0 [cm]; #DeltaT04 [ps]"),
-			    50, -25., 25., 100, -DTMAX, DTMAX); 
+			    50, -15., 15., 100, -DTMAX, DTMAX); 
      fhDXX0D4best = new TH2F( Form("hDXX0D4best"),
 			    Form("DX - position correlation; X0 [cm]; #DeltaX04 [cm]"),
-			    50, -25., 25., 50, -15., 15.); 
+			    50, -17., 17., 50, -15., 15.); 
      fhDXY0D4best = new TH2F( Form("hDXY0D4best"),
 			    Form("DX - position correlation; Y0 [cm]; #DeltaX04 [cm]"),
-			    50, -25., 25., 50, -15., 15.); 
+			    50, -15., 15., 50, -15., 15.); 
      fhDYX0D4best = new TH2F( Form("hDYX0D4best"),
 			    Form("DY - position correlation; X0 [cm]; #DeltaY04 [cm]"),
-			    50, -25., 25., 50, -15., 15.); 
+			    50, -17., 17., 50, -15., 15.); 
      fhDYY0D4best = new TH2F( Form("hDYY0D4best"),
 			    Form("DY - position correlation; Y0 [cm]; #DeltaY04 [cm]"),
-			    50, -25., 25., 50, -15., 15.); 
+			    50, -15., 15., 50, -15., 15.); 
 
 
      fhX0DT04D4sbest = new TH2F( Form("hX0DT04D4sbest"),Form("time - position correlation; #Delta x [cm]; #DeltaT [ps]"),
@@ -1100,22 +1124,22 @@ Bool_t CbmTofAnaTestbeam::CreateHistos()
 			    10, 0., 10., 100, -DTMAX, DTMAX);
      fhDTX0D4sbest = new TH2F( Form("hDTX0D4sbest"),
 			    Form("Time - position correlation; X0 [cm]; #DeltaT04 [ps]"),
-			    50, -25., 25., 100, -DTMAX, DTMAX); 
+			    50, -17., 17., 100, -DTMAX, DTMAX); 
      fhDTY0D4sbest = new TH2F( Form("hDTY0D4sbest"),
 			    Form("Time - position correlation; Y0 [cm]; #DeltaT04 [ps]"),
-			    50, -25., 25., 100, -DTMAX, DTMAX); 
+			    50, -15., 15., 100, -DTMAX, DTMAX); 
      fhDXX0D4sbest = new TH2F( Form("hDXX0D4sbest"),
 			    Form("DX - position correlation; X0 [cm]; #DeltaX04 [cm]"),
-			    50, -25., 25., 50, -15., 15.); 
+			    50, -17., 17., 50, -15., 15.); 
      fhDXY0D4sbest = new TH2F( Form("hDXY0D4sbest"),
 			    Form("DX - position correlation; Y0 [cm]; #DeltaX04 [cm]"),
-			    50, -25., 25., 50, -15., 15.); 
+			    50, -15., 15., 50, -15., 15.); 
      fhDYX0D4sbest = new TH2F( Form("hDYX0D4sbest"),
 			    Form("DY - position correlation; X0 [cm]; #DeltaY04 [cm]"),
-			    50, -25., 25., 50, -15., 15.); 
+			    50, -17., 17., 50, -15., 15.); 
      fhDYY0D4sbest = new TH2F( Form("hDYY0D4sbest"),
 			    Form("DY - position correlation; Y0 [cm]; #DeltaY04 [cm]"),
-			    50, -25., 25., 50, -15., 15.); 
+			    50, -15., 15., 50, -15., 15.); 
 
      fhNMatch04 =  new TH1F( Form("hNMatch04"),Form("Number of Matched Hit pairs 0-4; NMatched"),
 			  50, 0., 50.); 
@@ -1240,7 +1264,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
 
    // Trb System 
    if (NULL != fTrbHeader) { 
-     if(fiReqTrg>0) if(!fTrbHeader->TriggerFired( fiReqTrg )) return kFALSE;
+     if(fiReqTrg>-1) if(!fTrbHeader->TriggerFired( fiReqTrg )) return kFALSE;
      UInt_t uTriggerPattern=fTrbHeader->GetTriggerPattern();
      for(UInt_t uChannel = 0; uChannel < 16; uChannel++)
      {
@@ -1250,6 +1274,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
        }
      }
      fhTriggerType->Fill(fTrbHeader->GetTriggerType());
+     fhTimeInSpill->Fill(fTrbHeader->GetTimeInSpill());
    }
 
 /*   Int_t iNbTofDigis;*/
@@ -1644,6 +1669,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    }
    //  normalisation distributions 
    fhNMatch04->Fill(iNbMatchedHits);
+   if(fTrbHeader != NULL) fhTIS_all->Fill(fTrbHeader->GetTimeInSpill());
+
    LOG(DEBUG)<<Form(" Matches: %d with first chi2s = %12.1f, %12.1f, %12.1f, %12.1f",iNbMatchedHits,
 		    Chi2List[0],Chi2List[1],Chi2List[2],Chi2List[3])
 	     <<Form(", Muls %4.0f, %4.0f, %4.0f",dMulD, dMul0, dMul4)
@@ -1651,6 +1678,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
    // selector 0 distributions 
    if(BSel[0]){
     fhNMatchD4sel->Fill(iNbMatchedHits);  // use as normalisation
+    if(fTrbHeader != NULL) fhTIS_sel->Fill(fTrbHeader->GetTimeInSpill());
     fhTofD4sel->Fill(pHitRef->GetTime()-pDia->GetTime());           //  general normalisation
     fhDTD4sel->Fill(dDTD4Min);           //  general normalisation
     
@@ -1693,6 +1721,8 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
       /*TGeoNode* cNode3=*/ gGeoManager->GetCurrentNode();
       gGeoManager->MasterToLocal(hitpos3, hitpos3_local);
       fhXYSel2D4sel->Fill(hitpos3_local[0],hitpos3_local[1]);
+
+      if(fTrbHeader != NULL) fhTIS_sel2->Fill(fTrbHeader->GetTimeInSpill());
     }
 
     if(iNbMatchedHits>0){
@@ -1747,11 +1777,12 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      Double_t yPos2=Zref/pHit2->GetZ()*pHit2->GetY();
      Double_t tof2=pHit2->GetTime();
 
+     if(fTrbHeader != NULL) fhTIS_sel1->Fill(fTrbHeader->GetTimeInSpill());
      fhXX04->Fill(xPos1,xPos2);
      fhYY04->Fill(yPos1,yPos2);
      fhXY04->Fill(xPos1,yPos2);
      fhYX04->Fill(yPos1,xPos2);
-     fhTT04->Fill(tof1,tof2);
+     fhTT04->Fill(tof1,tof1-tof2);
 
      Double_t dDist=TMath::Sqrt(
 				TMath::Power(pHit1->GetX()-pHit2->GetX(),2)
@@ -1872,6 +1903,7 @@ Bool_t CbmTofAnaTestbeam::FillHistos()
      fhTexpDT04D4best->Fill(dDTexp,tof1-tof2-dTcor);
      fhX0DT04D4best->Fill(hitpos1_local[0],tof1-tof2-dTcor);
      fhY0DT04D4best->Fill(hitpos1_local[1],tof1-tof2-dTcor);
+     if(fTrbHeader != NULL) fhTISDT04D4best->Fill(fTrbHeader->GetTimeInSpill(),tof1-tof2-dTcor);
 
      if(iNbMatchedHits>1){
        LOG(DEBUG)<<Form(" Matches>1: %d with first chi2s = %12.1f, %12.1f, %12.1f, %12.1f",iNbMatchedHits,

@@ -223,6 +223,10 @@ class CbmTofAnaTestbeam : public FairTask {
       TH1 *fhTriggerPattern;
       TH1 *fhTriggerType;
       TH1 *fhTimeInSpill;
+      TH1 *fhTIS_all;
+      TH1 *fhTIS_sel;
+      TH1 *fhTIS_sel1;
+      TH1 *fhTIS_sel2;
       TH1 *fhDT2;
       TH2 *fhXX2;
       TH2 *fhYY2;
@@ -277,6 +281,7 @@ class CbmTofAnaTestbeam : public FairTask {
       TH2 *fhDTD4DT04D4best;
       TH2 *fhX0DT04D4best;
       TH2 *fhY0DT04D4best;
+      TH2 *fhTISDT04D4best;
       TH2 *fhDTMul4D4best;
       TH2 *fhDTX4D4best;
       TH2 *fhDTY4D4best;
