@@ -242,6 +242,7 @@ void CbmTrdCreatePidLike::PrepareHistograms() {
 void CbmTrdCreatePidLike::WriteHistograms() {
     // write the output histograms to a file
 
+  FairRootManager::Instance()->GetOutFile()->cd();
 
     for (Int_t imom = 0; imom < kNMom; imom++) {
         h1dEdxPI[imom]->Write();
