@@ -141,7 +141,9 @@ private:
 	vector< vector<TVector3> >	fMixedTest_STSonly_photons;
 	vector<int>					fMixedTest_STSonly_eventno;
 	vector< vector<bool> >		fMixedTest_STSonly_hasRichInd;
-	TH1D * 						fhTest_eventMixing_STSonly;
+	TH1D * 						fhTest_eventMixing_STSonly_2p2;
+	TH1D * 						fhTest_eventMixing_STSonly_3p1;
+	TH1D * 						fhTest_eventMixing_STSonly_4p0;
 
 //	for other event mixing (3 + 1)
 	vector< vector<TVector3> >	fMixedTest_3p1_photons;

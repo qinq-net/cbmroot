@@ -189,6 +189,8 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhPhotons_invmass_MCcut3_new(),
 	fhPhotons_invmass_MCcut4_new(),
 	fhPhotons_invmass_MCcutTest_new(),
+	fhPhotons_invmass_MCcutTest2_new(),
+	fhPhotons_invmass_MCcutTest3_new(),
 	fMixedEventsElectrons_list1(),
 	fMixedEventsElectrons_list2(),
 	fMixedEventsElectrons_list3(),
@@ -554,6 +556,10 @@ void CbmAnaConversionRecoFull::InitHistos()
 		
 		fhPhotons_invmass_MCcutTest_new[i] = new TH1D(Form("fhPhotons_invmass_MCcutTest_new_%i",i), Form("fhPhotons_invmass_MCcutTest_new_%i (MC-true cut: test); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcutTest_new[i]);
+		fhPhotons_invmass_MCcutTest2_new[i] = new TH1D(Form("fhPhotons_invmass_MCcutTest2_new_%i",i), Form("fhPhotons_invmass_MCcutTest2_new_%i (MC-true cut: test); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcutTest2_new[i]);
+		fhPhotons_invmass_MCcutTest3_new[i] = new TH1D(Form("fhPhotons_invmass_MCcutTest3_new_%i",i), Form("fhPhotons_invmass_MCcutTest3_new_%i (MC-true cut: test); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcutTest3_new[i]);
 		
 		fhPhotons_pt_vs_rap_new[i] = new TH2D(Form("fhPhotons_pt_vs_rap_new_%i",i), Form("fhPhotons_pt_vs_rap_new_%i; p_{t} in GeV/c; rapidity y",i), 240, -2., 10., 270, -2., 7.);
 		fHistoList_recofull_new[i].push_back(fhPhotons_pt_vs_rap_new[i]);
@@ -1458,14 +1464,14 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 						fhPhotons_invmass_vs_pt_4->Fill(invmass, pt);
 						
 						if( !(fElectrons_mctrackID_new[index][electron11] == fElectrons_mctrackID_new[index][electron12] ||
-						    fElectrons_mctrackID_new[index][electron11] == fElectrons_mctrackID_new[index][electron21] ||
-						    fElectrons_mctrackID_new[index][electron11] == fElectrons_mctrackID_new[index][electron22] ||
-						    fElectrons_mctrackID_new[index][electron12] == fElectrons_mctrackID_new[index][electron21] ||
-						    fElectrons_mctrackID_new[index][electron12] == fElectrons_mctrackID_new[index][electron22] ||
-						    fElectrons_mctrackID_new[index][electron21] == fElectrons_mctrackID_new[index][electron22] ) ) {
+						      fElectrons_mctrackID_new[index][electron11] == fElectrons_mctrackID_new[index][electron21] ||
+						      fElectrons_mctrackID_new[index][electron11] == fElectrons_mctrackID_new[index][electron22] ||
+						      fElectrons_mctrackID_new[index][electron12] == fElectrons_mctrackID_new[index][electron21] ||
+						      fElectrons_mctrackID_new[index][electron12] == fElectrons_mctrackID_new[index][electron22] ||
+						      fElectrons_mctrackID_new[index][electron21] == fElectrons_mctrackID_new[index][electron22] ) ) {
 						    	fhPhotons_invmass_MCcutTest_new[index]->Fill(invmass);
 						    
-						    }
+						}
 					}
 					
 					if(pt <= 0.5) 			fhPhotons_invmass_ptBin1_new[index]->Fill(invmass);
@@ -1519,6 +1525,19 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 					CbmMCTrack* mctrack12 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID_new[index][electron12]);
 					CbmMCTrack* mctrack21 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID_new[index][electron21]);
 					CbmMCTrack* mctrack22 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID_new[index][electron22]);
+					
+					Int_t pdg11 = mctrack11->GetPdgCode();
+					Int_t pdg12 = mctrack12->GetPdgCode();
+					Int_t pdg21 = mctrack21->GetPdgCode();
+					Int_t pdg22 = mctrack22->GetPdgCode();
+					
+					if(index == 4 && TMath::Abs(pdg11) == 11 && TMath::Abs(pdg12) == 11 && TMath::Abs(pdg21) == 11 && TMath::Abs(pdg22) == 11) {
+						fhPhotons_invmass_MCcutTest2_new[index]->Fill(invmass);
+					}
+					if(index == 4 && (pdg11 + pdg12 + pdg21 + pdg22) == 0) {
+						fhPhotons_invmass_MCcutTest3_new[index]->Fill(invmass);
+					}
+					
 					
 					Int_t motherId11 = mctrack11->GetMotherId();
 					Int_t motherId12 = mctrack12->GetMotherId();

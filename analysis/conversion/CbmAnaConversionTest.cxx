@@ -77,7 +77,9 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fMixedTest_STSonly_photons(),
 	fMixedTest_STSonly_eventno(),
 	fMixedTest_STSonly_hasRichInd(),
-	fhTest_eventMixing_STSonly(NULL),
+	fhTest_eventMixing_STSonly_2p2(NULL),
+	fhTest_eventMixing_STSonly_3p1(NULL),
+	fhTest_eventMixing_STSonly_4p0(NULL),
 	fMixedTest_3p1_photons(),
 	fMixedTest_3p1_eventno(),
 	fMixedTest_3p1_combined(),
@@ -171,8 +173,12 @@ void CbmAnaConversionTest::InitHistos()
 	fHistoList_test.push_back(fhTest_invmass_RICHindex4);
 
 
-	fhTest_eventMixing_STSonly = new TH1D("fhTest_eventMixing_STSonly", "fhTest_eventMixing_STSonly; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
-	fHistoList_test.push_back(fhTest_eventMixing_STSonly);
+	fhTest_eventMixing_STSonly_2p2 = new TH1D("fhTest_eventMixing_STSonly_2p2", "fhTest_eventMixing_STSonly_2p2; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_test.push_back(fhTest_eventMixing_STSonly_2p2);
+	fhTest_eventMixing_STSonly_3p1 = new TH1D("fhTest_eventMixing_STSonly_3p1", "fhTest_eventMixing_STSonly_3p1; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_test.push_back(fhTest_eventMixing_STSonly_3p1);
+	fhTest_eventMixing_STSonly_4p0 = new TH1D("fhTest_eventMixing_STSonly_4p0", "fhTest_eventMixing_STSonly_4p0; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_test.push_back(fhTest_eventMixing_STSonly_4p0);
 	fhTest_eventMixing_3p1 = new TH1D("fhTest_eventMixing_3p1", "fhTest_eventMixing_3p1; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_eventMixing_3p1);
 }
@@ -1000,7 +1006,13 @@ void CbmAnaConversionTest::MixedEventTest_STSonly()
 			CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e11, e12, e21, e22);
 		
 			if(IsRichSum == 2) {
-				fhTest_eventMixing_STSonly->Fill(params.fMinv);
+				fhTest_eventMixing_STSonly_2p2->Fill(params.fMinv);
+			}
+			if(IsRichSum == 3) {
+				fhTest_eventMixing_STSonly_3p1->Fill(params.fMinv);
+			}
+			if(IsRichSum == 4) {
+				fhTest_eventMixing_STSonly_4p0->Fill(params.fMinv);
 			}
 		}
 	}
