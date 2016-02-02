@@ -14,6 +14,7 @@
 #include "TClonesArray.h"
 #include "TH1F.h"
 #include "TVector3.h"
+#include "TMCProcess.h"
 
 #include <iostream>
 using std::cout;
@@ -109,6 +110,7 @@ void CbmTrdCreatePidLike::Exec(Option_t*) {
     CbmTrdHit* trdHit = NULL;
     CbmTrdPoint* trdPoint = NULL;
 
+    UInt_t      geantID   = kPPrimary;
     Int_t       partID    = 0;
     Int_t       motherID  = 0;
     Int_t       momBin    = 0;
@@ -132,10 +134,11 @@ void CbmTrdCreatePidLike::Exec(Option_t*) {
         if(NULL == trdPoint)
             continue;
 
-        motherID = (((CbmMCTrack*)fMCTrackArray->At(trdPoint->GetTrackID()))->GetMotherId());
+        // motherID = (((CbmMCTrack*)fMCTrackArray->At(trdPoint->GetTrackID()))->GetMotherId());
+        // if (motherID == -1) {
 
-        if (motherID == -1) {
-
+	geantID = ((CbmMCTrack*)fMCTrackArray->At(trdPoint->GetTrackID()))->GetGeantProcessId();
+	if(geantID == kPPrimary) {
 
            TVector3 mom_det;
            trdPoint->Momentum(mom_det);
@@ -174,7 +177,7 @@ void CbmTrdCreatePidLike::Exec(Option_t*) {
             else if ((9.99 < momentum) && (momentum  < 10.01) )
                 momBin=12;
             else {
-                cout << "Momentum: " << momentum << endl;
+	      //                cout << "Momentum: " << momentum << endl;
                 continue;
             }
 
