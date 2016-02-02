@@ -31,7 +31,7 @@ void sis18_mcbm_setup()
 
   // -----  Geometries  -----------------------------------------------------
   caveGeom     = "mcbm/cave_mcbm.geo";
-  pipeGeom     = "mcbm/pipe_v18b.root";
+  pipeGeom     = "mcbm/pipe_v18c.root";
   magnetGeom   = ""; // magnet/magnet_v15a.geo.root";
   mvdGeom      = "mcbm/mvd_" + mvdTag + ".geo.root";
   stsGeom      = "mcbm/sts_" + stsTag + ".geo.root";
