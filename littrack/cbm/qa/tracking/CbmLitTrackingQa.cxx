@@ -76,7 +76,7 @@ CbmLitTrackingQa::CbmLitTrackingQa():
    fMuchMatches(NULL),
    fTrdMatches(NULL),
    fTofPoints(NULL),
-   fTofHits(NULL),
+   fTofMatches(NULL),
    fElectronId(NULL),
    fRichAnnCut(0.25),
    fTrdAnnCut(0.85)
@@ -191,8 +191,8 @@ void CbmLitTrackingQa::ReadDataBranches()
    if (fDet.GetDet(kTOF)) {
       fTofPoints = (TClonesArray*) ioman->GetObject("TofPoint");
       if (NULL == fTofPoints) { Fatal("Init", "No TofPoint array!"); }
-      fTofHits = (TClonesArray*) ioman->GetObject("TofHit");
-      if (NULL == fTofHits) { Fatal("Init", "No TofHit array!"); }
+      fTofMatches = (TClonesArray*) ioman->GetObject("TofHitMatch");
+      if (NULL == fTofMatches) { Fatal("Init", "No TofHitMatch array!"); }
    }
 }
 
@@ -766,14 +766,22 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
       }
 
       // Get MC indices of track segments
-      Int_t stsMCId = -1, trdMCId = -1, muchMCId = -1, tofMCId = -1, richMCId = -1;
+      Int_t stsMCId = -1, trdMCId = -1, muchMCId = -1, richMCId = -1;
+      list<Int_t> tofMCIds;
       if (isStsOk) { stsMCId = stsTrackMatch->GetMatchedLink().GetIndex(); }
       if (isTrdOk) { trdMCId = trdTrackMatch->GetMatchedLink().GetIndex(); }
       if (isMuchOk) { muchMCId = muchTrackMatch->GetMatchedLink().GetIndex(); }
       if (isTofOk) {
-         const CbmHit* tofHit = static_cast<const CbmHit*>(fTofHits->At(tofId));
-         const FairMCPoint* tofPoint = static_cast<const FairMCPoint*>(fTofPoints->At(tofHit->GetRefId()));
-         if (tofPoint != NULL) tofMCId = tofPoint->GetTrackID();
+         const CbmMatch* tofMatch = static_cast<const CbmMatch*>(fTofMatches->At(tofId));
+         const vector<CbmLink>& tofMCLinks = tofMatch->GetLinks();
+         
+         for (vector<CbmLink>::const_iterator tofMCIt = tofMCLinks.begin(); tofMCIt != tofMCLinks.end(); ++tofMCIt)
+         {
+             const FairMCPoint* tofPoint = static_cast<const FairMCPoint*>(fTofPoints->At(tofMCIt->GetIndex()));
+             
+             if (tofPoint != NULL)
+                 tofMCIds.push_back(tofPoint->GetTrackID());
+         }
       }
       if (isRichOk) { richMCId = richRingMatch->GetMatchedLink().GetIndex(); }
 
@@ -784,7 +792,7 @@ void CbmLitTrackingQa::ProcessGlobalTracks()
         Bool_t sts = (name.find("Sts") != string::npos) ? isStsOk && stsMCId != -1 : true;
         Bool_t trd = (name.find("Trd") != string::npos) ? isTrdOk && stsMCId == trdMCId : true;
         Bool_t much = (name.find("Much") != string::npos) ? isMuchOk && stsMCId == muchMCId : true;
-        Bool_t tof = (name.find("Tof") != string::npos) ? isTofOk && stsMCId == tofMCId : true;
+        Bool_t tof = (name.find("Tof") != string::npos) ? isTofOk && find(tofMCIds.begin(), tofMCIds.end(), stsMCId) != tofMCIds.end() : true;
         Bool_t rich = (name.find("Rich") != string::npos) ? isRichOk && stsMCId == richMCId : true;
 
         if (sts && trd && much && tof && rich) {

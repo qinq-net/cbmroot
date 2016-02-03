@@ -324,7 +324,7 @@ private:
    TClonesArray* fMuchMatches; // CbmTrackMatchNew array
    TClonesArray* fTrdMatches; // CbmTrackMatchNew array
    TClonesArray* fTofPoints; // CbmTofPoint array
-   TClonesArray* fTofHits; // CbmTofHit array
+   TClonesArray* fTofMatches;// CbmMatch array
 
    // Global track segment name maps to multimap <MC track index, reconstructed track index>
    map<string, multimap<Int_t, Int_t> > fMcToRecoMap;
