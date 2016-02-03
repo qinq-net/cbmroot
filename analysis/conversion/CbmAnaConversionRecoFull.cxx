@@ -206,6 +206,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	globalEventNo(),
 	fhMixedEventsTest3_invmass(NULL),
 	fMixedTest4_photons(),
+	fMixedTest4_mctracks(),
 	fMixedTest4_eventno(),
 	fhMixedEventsTest4_invmass(NULL),
 	fhMixedEventsTest4_invmass_ptBin1(NULL),
@@ -553,6 +554,10 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut3_new[i]);
 		fhPhotons_invmass_MCcut4_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut4_new_%i",i), Form("fhPhotons_invmass_MCcut4_new_%i (MC-true cut: wrong combination of electrons); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut4_new[i]);
+		fhPhotons_invmass_MCcut5_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut5_new_%i",i), Form("fhPhotons_invmass_MCcut5_new_%i (MC-true cut: wrong combination of electrons); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut5_new[i]);
+		fhPhotons_invmass_MCcut6_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut6_new_%i",i), Form("fhPhotons_invmass_MCcut6_new_%i (MC-true cut: wrong combination of electrons); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut6_new[i]);
 		
 		fhPhotons_invmass_MCcutTest_new[i] = new TH1D(Form("fhPhotons_invmass_MCcutTest_new_%i",i), Form("fhPhotons_invmass_MCcutTest_new_%i (MC-true cut: test); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcutTest_new[i]);
@@ -570,7 +575,30 @@ void CbmAnaConversionRecoFull::InitHistos()
 		
 		fhMixedEventsTest_invmass[i] = new TH1D(Form("fhMixedEventsTest_invmass_%i",i), Form("fhMixedEventsTest_invmass_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhMixedEventsTest_invmass[i]);
+
+		fhPhotons_stats[i] = new TH1D(Form("fhPhotons_stats_%i",i), Form("fhPhotons_stats_%i; ; #",i), 10, 0, 10);
+		fHistoList_recofull_new[i].push_back(fhPhotons_stats[i]);
+		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(1, "fullrec_allCombs");
+		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(2, "fullrec_cut1");
+		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(3, "fullrec_cut2");
+		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(4, "fullrec_cut3");
+		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(5, "fullrec_cut4");
+		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(6, "fullrec_cut5");
+		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(7, "fullrec_cut6");
+		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(8, "");
+		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(9, "mix_allCombs");
+		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(10, "mix_cut1");
+		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(11, "mix_cut2");
+		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(12, "mix_cut3");
+		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(13, "mix_cut4");
+		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(14, "mix_cut5");
+		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(15, "mix_cut6");
+
+
 	}
+
+
+
 
 	fhMixedEventsTest2_invmass = new TH1D(Form("fhMixedEventsTest2_invmass_%i",4), Form("fhMixedEventsTest2_invmass_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_recofull_new[4].push_back(fhMixedEventsTest2_invmass);
@@ -712,6 +740,7 @@ void CbmAnaConversionRecoFull::Exec()
 	if(globalEventNo%200 == 0) {
 		MixedEventTest4();
 		fMixedTest4_photons.clear();
+		fMixedTest4_mctracks.clear();
 		fMixedTest4_eventno.clear();
 	}
 
@@ -1148,8 +1177,12 @@ void CbmAnaConversionRecoFull::CombineElectrons(vector<CbmGlobalTrack*> gtrack, 
 						vector<TVector3> pairmomenta;
 						pairmomenta.push_back(momenta[a]);
 						pairmomenta.push_back(momenta[b]);
+						vector<CbmMCTrack*> pair_mctracks;
+						pair_mctracks.push_back( (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID_new[index][a]) );
+						pair_mctracks.push_back( (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID_new[index][b]) );
 						fMixedTest4_photons.push_back(pairmomenta);
 						fMixedTest4_eventno.push_back(globalEventNo);
+						fMixedTest4_mctracks.push_back(pair_mctracks);
 					}
 				}
 			}
@@ -1558,8 +1591,11 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 					//fhPhotons_MC_startvertexZ->Fill(startvertex21.Z());
 					//fhPhotons_MC_startvertexZ->Fill(startvertex22.Z());
 					
+					fhPhotons_stats[index]->Fill(0);	// all combinations
+					
 					if(motherId11 == motherId12 && motherId21 == motherId22) {
 						fhPhotons_invmass_MCcut1_new[index]->Fill(invmass);
+						fhPhotons_stats[index]->Fill(1);
 						if(motherId11 != -1 && motherId21 != -1) {
 							CbmMCTrack* mothermctrack11 = (CbmMCTrack*)fMcTracks->At(motherId11);
 							CbmMCTrack* mothermctrack21 = (CbmMCTrack*)fMcTracks->At(motherId21);
@@ -1569,6 +1605,7 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 							
 							if(grandmotherId11 == grandmotherId21) {
 								fhPhotons_invmass_MCcut2_new[index]->Fill(invmass);
+								fhPhotons_stats[index]->Fill(2);
 								if(grandmotherId11 == -1) continue;
 								CbmMCTrack* pi0mctrack11 = (CbmMCTrack*)fMcTracks->At(grandmotherId11);
 								if(pi0mctrack11->GetMotherId() == -1) {
@@ -1577,12 +1614,22 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 							}
 							if(grandmotherId11 != grandmotherId21) {
 								fhPhotons_invmass_MCcut3_new[index]->Fill(invmass);
+								fhPhotons_stats[index]->Fill(3);
 							}
 						}
 					}
 					
 					if(motherId11 != motherId12 || motherId21 != motherId22) {
 						fhPhotons_invmass_MCcut4_new[index]->Fill(invmass);
+						fhPhotons_stats[index]->Fill(4);
+					}
+					if( (motherId11 != motherId12 && motherId21 == motherId22) || (motherId11 == motherId12 && motherId21 != motherId22) ) {
+						fhPhotons_invmass_MCcut5_new[index]->Fill(invmass);
+						fhPhotons_stats[index]->Fill(5);
+					}
+					if(motherId11 != motherId12 && motherId21 != motherId22) {
+						fhPhotons_invmass_MCcut6_new[index]->Fill(invmass);
+						fhPhotons_stats[index]->Fill(6);
 					}
 					
 					
@@ -2390,10 +2437,36 @@ void CbmAnaConversionRecoFull::MixedEventTest4()
 			TVector3 e21 = fMixedTest4_photons[b][0];
 			TVector3 e22 = fMixedTest4_photons[b][1];
 			
+			CbmMCTrack* mctrack11 = fMixedTest4_mctracks[a][0];
+			CbmMCTrack* mctrack12 = fMixedTest4_mctracks[a][1];
+			CbmMCTrack* mctrack21 = fMixedTest4_mctracks[b][0];
+			CbmMCTrack* mctrack22 = fMixedTest4_mctracks[b][1];
+			
+			Int_t motherId11 = mctrack11->GetMotherId();
+			Int_t motherId12 = mctrack12->GetMotherId();
+			Int_t motherId21 = mctrack21->GetMotherId();
+			Int_t motherId22 = mctrack22->GetMotherId();
+			
 			
 			CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e11, e12, e21, e22);
 			fhMixedEventsTest4_invmass->Fill(params.fMinv);
 			cout << "CbmAnaConversionRecoFull: MixedEventTest4(), event filled!, part" << endl;
+			
+			fhPhotons_stats[4]->Fill(8);	// all combinations
+			if(motherId11 == motherId12 && motherId21 == motherId22 ) {
+				fhPhotons_stats[4]->Fill(9);
+			}
+			if(motherId11 != motherId12 || motherId21 != motherId22) {
+				fhPhotons_stats[4]->Fill(12);
+			}
+			if( (motherId11 != motherId12 && motherId21 == motherId22) || (motherId11 == motherId12 && motherId21 != motherId22) ) {
+				fhPhotons_stats[4]->Fill(13);
+			}
+			if(motherId11 != motherId12 && motherId21 != motherId22) {
+				fhPhotons_stats[4]->Fill(14);
+			}
+			
+			
 			
 			if(params.fPt <= 0.5) fhMixedEventsTest4_invmass_ptBin1->Fill(params.fMinv);
 			if(params.fPt > 0.5 && params.fPt <= 1) fhMixedEventsTest4_invmass_ptBin2->Fill(params.fMinv);

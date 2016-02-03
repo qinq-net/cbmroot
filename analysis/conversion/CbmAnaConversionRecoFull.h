@@ -257,11 +257,14 @@ private:
 	TH1D * fhPhotons_invmass_MCcut2_new[5];
 	TH1D * fhPhotons_invmass_MCcut3_new[5];
 	TH1D * fhPhotons_invmass_MCcut4_new[5];
+	TH1D * fhPhotons_invmass_MCcut5_new[5];
+	TH1D * fhPhotons_invmass_MCcut6_new[5];
 	TH1D * fhPhotons_invmass_MCcutTest_new[5];
 	TH1D * fhPhotons_invmass_MCcutTest2_new[5];
 	TH1D * fhPhotons_invmass_MCcutTest3_new[5];
 	TH2D * fhPhotons_pt_vs_rap_new[5];
 	TH1D * fhElectrons_openingAngle_sameSign_new[5];
+	TH1D * fhPhotons_stats[5];
 
 
 
@@ -291,6 +294,7 @@ private:
 	
 		// test4
 	vector< vector<TVector3> >	fMixedTest4_photons;
+	vector< vector<CbmMCTrack*> >	fMixedTest4_mctracks;
 	vector<int>					fMixedTest4_eventno;
 	TH1D *						fhMixedEventsTest4_invmass;
 	TH1D *						fhMixedEventsTest4_invmass_ptBin1;
