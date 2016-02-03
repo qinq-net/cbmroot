@@ -576,7 +576,7 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fhMixedEventsTest_invmass[i] = new TH1D(Form("fhMixedEventsTest_invmass_%i",i), Form("fhMixedEventsTest_invmass_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhMixedEventsTest_invmass[i]);
 
-		fhPhotons_stats[i] = new TH1D(Form("fhPhotons_stats_%i",i), Form("fhPhotons_stats_%i; ; #",i), 10, 0, 10);
+		fhPhotons_stats[i] = new TH1D(Form("fhPhotons_stats_%i",i), Form("fhPhotons_stats_%i; ; #",i), 16, 0, 16);
 		fHistoList_recofull_new[i].push_back(fhPhotons_stats[i]);
 		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(1, "fullrec_allCombs");
 		fhPhotons_stats[i]->GetXaxis()->SetBinLabel(2, "fullrec_cut1");
