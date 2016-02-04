@@ -97,7 +97,7 @@ function set_default_electron_geometry() {
     export LIT_STS_MAT_BUDGET_FILE=${VMCWORKDIR}/parameters/sts/sts_matbudget_v13d.root
     export LIT_MUCH_GEOM=
     export LIT_MUCH_DIGI=
-    export LIT_RICH_GEOM=rich/rich_v14a.root
+    export LIT_RICH_GEOM=rich/rich_v16a_3e.root
     export LIT_TRD_GEOM=trd/trd_v15a_3e.geo.root
     export LIT_TRD_DIGI=${VMCWORKDIR}/parameters/trd/trd_v15a_3e.digi.par
     export LIT_TOF_GEOM=tof/tof_v13-5d.geo.root

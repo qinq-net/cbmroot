@@ -12,13 +12,12 @@ void run()
   // -----  Geometries  -----------------------------------------------------
   TString caveGeom   = "cave.geo";
   CbmTarget* target = new CbmTarget("Gold", 0.025);
-  TString pipeGeom   = "pipe/pipe_standard.geo";
-  TString magnetGeom = "magnet/magnet_v09e.geo";
-  TString stsGeom    = "sts/sts_v13d.geo.root";
-  TString richGeom   = "rich/rich_v08a.geo";
-  TString trdGeom    = "trd/trd_v13g.geo.root";
-  TString tofGeom    = "tof/tof_v07a.geo";
-//  TString ecalGeom   = "ecal/ecal_v08a.geo";
+  TString pipeGeom   = "pipe/pipe_v14l.root";
+  TString magnetGeom = "magnet/magnet_v15a.geo.root";
+  TString stsGeom    = "sts/sts_v15c.geo.root";
+  TString richGeom   = "rich/rich_v16a_1e.root";
+  TString trdGeom    = "trd/trd_v15a_1e.geo.root";
+  TString tofGeom    = "tof/tof_v16a_1e.geo.root";
 
 
   FairLogger *logger = FairLogger::GetLogger();
@@ -153,7 +152,5 @@ void run()
 
   cout << " Test passed" << endl;
   cout << " All ok " << endl;
-
-  exit(1);
 }  
   
