@@ -507,8 +507,8 @@ void Create_TRD_Geometry_v18c_1e() {
     create_mag_field_vector();
   
   gGeoMan->CloseGeometry();
-//  gGeoMan->CheckOverlaps(0.001);
-//  gGeoMan->PrintOverlaps();
+  gGeoMan->CheckOverlaps(0.001);
+  gGeoMan->PrintOverlaps();
   gGeoMan->Test();
 
   //  top->Export(FileNameSim);   // an alternative way of writing the top volume
