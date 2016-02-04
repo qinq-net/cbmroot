@@ -36,6 +36,7 @@ class TTofTrbTdcUnpacker;
 // ROOT
 class TClonesArray;
 class TH1;
+class TH2;
 
 class TTrbUnpackTof : public FairUnpack
 {
@@ -116,6 +117,7 @@ class TTrbUnpackTof : public FairUnpack
       TH1* fCtsTriggerAccepted;
       TH1* fHadaqTimeInSpill;
       TH1* fCtsTimeInSpill;
+      TH2* fEventSkipsInSpill;
       TTrbHeader* fTrbHeader;
       std::vector<TH1*> fTrbSubeventSize;
       std::vector<TH1*> fTrbSubeventStatus;

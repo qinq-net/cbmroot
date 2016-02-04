@@ -358,8 +358,8 @@ InitStatus CbmTofOnlineDisplay::Init()
 
   if( fbMonitorFSMockup )
   {
-	fFSMockupMonitor = new TCanvas("tCanvasMockup","TRB free-running mock-up monitor",1080,0,500,200);
-	fFSMockupMonitor->Divide(2,1);
+	fFSMockupMonitor = new TCanvas("tCanvasMockup","TRB free-running mock-up monitor",1080,0,500,400);
+	fFSMockupMonitor->Divide(2,2);
 
 	fFSMockupMonitor->cd(1);
     gROOT->cd();
@@ -388,6 +388,18 @@ InitStatus CbmTofOnlineDisplay::Init()
     {
       h1->Draw("");
     }
+
+    fFSMockupMonitor->cd(3);
+    gROOT->cd();
+    gPad->SetFillColor(0);
+    gStyle->SetPalette(1);
+    gStyle->SetLabelSize(lsize);
+    h1 = ((TH2 *)gROOT->FindObjectAny("tof_trb_skips_spill"));
+    if( h1 )
+    {
+      h1->Draw("colz");
+    }
+
   }
 
 //  fbMonitorDigiStatus=kTRUE;
@@ -689,6 +701,10 @@ void CbmTofOnlineDisplay::Exec(Option_t* /*option*/)
        gPad->Update();
 
        fFSMockupMonitor->cd(2);
+       gPad->Modified();
+       gPad->Update();
+
+       fFSMockupMonitor->cd(3);
        gPad->Modified();
        gPad->Update();
 

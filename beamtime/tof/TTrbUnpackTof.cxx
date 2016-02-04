@@ -30,6 +30,7 @@
 #include "TClonesArray.h"
 #include "TROOT.h"
 #include "TH1.h"
+#include "TH2.h"
 #include "TMath.h"
 
 // FairRoot headers
@@ -66,6 +67,7 @@ TTrbUnpackTof::TTrbUnpackTof( Short_t type, Short_t subType, Short_t procId, Sho
    fCtsTriggerAccepted(NULL),
    fHadaqTimeInSpill(NULL),
    fCtsTimeInSpill(NULL),
+   fEventSkipsInSpill(NULL),
    fTrbHeader(NULL),
    fTrbSubeventSize(),
    fTrbSubeventStatus(),
@@ -207,6 +209,12 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
 
    UInt_t uTriggerPattern = 0;
    UInt_t uTriggerType    = tCurrentEvent->GetTrigType();
+
+   if( !fTrbTdcUnpacker )
+   {
+     LOG(ERROR)<<"TTrbUnpackTof not properly initialized! Cannot unpack any events."<<FairLogger::endl;
+     return kFALSE;
+   }
    fTrbTdcUnpacker->SetCalibTrigger(uTriggerType);
 
    LOG(DEBUG)<<FairLogger::endl;
@@ -627,7 +635,7 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
 
          if( !fMbsUnpackPar->IsTrbEventUnpacked(uTriggerPattern) )
          {
-           LOG(DEBUG)<<"HADAQ raw event does not meet the trigger selection criteria. Skip it."<<FairLogger::endl;
+           LOG(INFO)<<"HADAQ raw event does not meet the trigger selection criteria. Skip it."<<FairLogger::endl;
            return kFALSE;
          }
 
@@ -643,7 +651,6 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
 
 	       fTrbHeader->SetTriggerPattern(uTriggerPattern);
 	       fTrbHeader->SetTriggerType(uTriggerType);
-	       fTrbHeader->SetTimeInSpill((UInt_t)1);  // FIXME, TBD
 
          UInt_t uNbInputCh = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 16) & 0xf;
          UInt_t uNbTrigCh = (tCurrentSubevent->Data(uSubsubeventDataIndex+1) >> 20) & 0x1f;
@@ -842,6 +849,7 @@ Bool_t TTrbUnpackTof::DoUnpack(Int_t* data, Int_t size)
            }
            
            fCtsTimeInSpill->Fill((Double_t)iTimeInSpill/100000.);
+           fEventSkipsInSpill->Fill((Double_t)iTimeInSpill/100000000., fiCurrentEventNumber - fiPreviousEventNumber);
 
            fiCtsLastEventTime = iTimeInSpill;
          }
@@ -1145,7 +1153,7 @@ void TTrbUnpackTof::CreateHistograms()
 
    fTrbTriggerPattern = new TH1I("tof_trb_trigger_pattern", "CTS trigger pattern", 16, 0, 16);
    fTrbTriggerType = new TH1I("tof_trb_trigger_types", "CTS trigger types", 16, 0, 16);
-   fTrbEventNumberJump = new TH1I("tof_trb_event_jump", "CTS event number jumps", 2500, 0, 2500);
+   fTrbEventNumberJump = new TH1I("tof_trb_event_jump", "CTS event number jumps", 30, 0, 30);
    fCtsBusyTime = new TH1I("tof_trb_cts_busy", "CTS busy time", 100, 0, 100);
    fCtsBusyTime->GetXaxis()->SetTitle("#mus");
    fCtsIdleTime = new TH1I("tof_trb_cts_idle", "CTS idle time", 200, 0, 200);
@@ -1175,6 +1183,10 @@ void TTrbUnpackTof::CreateHistograms()
 
    fCtsTimeInSpill = new TH1I("tof_cts_time_spill", "CTS fine time in spill", 20000, 0, 20000);
    fCtsTimeInSpill->GetXaxis()->SetTitle("ms");
+
+   fEventSkipsInSpill = new TH2I("tof_trb_skips_spill", "CTS events skipped in spill", 20, 0, 20, 20, 0, 20);
+   fEventSkipsInSpill->GetXaxis()->SetTitle("CTS event time in spill [s]");
+   fEventSkipsInSpill->GetYaxis()->SetTitle("CTS events skipped");
 
    TH1* hTemp = 0;
 
@@ -1237,6 +1249,7 @@ void TTrbUnpackTof::WriteHistograms()
    fCtsTriggerAccepted->Write();
    fHadaqTimeInSpill->Write();
    fCtsTimeInSpill->Write();
+   fEventSkipsInSpill->Write();
 
    for( UInt_t uTrbSeb = 0; uTrbSeb < fuInDataTrbSebNb; uTrbSeb++ )
    {

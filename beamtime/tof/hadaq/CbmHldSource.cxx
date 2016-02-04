@@ -312,15 +312,16 @@ Int_t CbmHldSource::ReadEvent(UInt_t /*iev*/)
         // with FairRoot MBS sources
         if(!tUnpacker->DoUnpack(iEvtStart, iEvtSize/4))
         {
-          gLogger->Warning(MESSAGE_ORIGIN,
-                           TString::Format("\nFairUnpack instance indexed %u "
-                                           "of type %s could not handle the "
-                                           "raw data. Skip FairTask execution "
-                                           "for this event.",
-                                           i,
-                                           tUnpacker->ClassName()
-                                          ).Data()
-                          );
+          gLogger->Info(MESSAGE_ORIGIN,
+                        TString::Format("\nFairUnpack instance indexed %u "
+                                        "of type %s did not unpack HADAQ raw "
+                                        "event %u (see log message above). "
+                                        "Fully ignore this event.",
+                                        i,
+                                        tUnpacker->ClassName(),
+                                        tRawEventHeader->GetSeqNr()
+                                       ).Data()
+                       );
           return 2;
         }
       }
