@@ -682,7 +682,7 @@ void CbmAnaConversionTest::CombinePhotons()
 				
 				fhTest_invmass->Fill(invmass);
 				
-				if(fVector_momenta[electron11].Mag() < 0.4) {
+				if(fVector_momenta[electron11].Mag() < 0.6) {
 					fhTest_invmass_pCut->Fill(invmass);
 				}
 				
@@ -988,7 +988,7 @@ void CbmAnaConversionTest::MixedEventTest_3p1()
 			fhTest_eventMixing_3p1->Fill(params.fMinv);
 			//cout << "CbmAnaConversionRecoFull: MixedEventTest4(), event filled!, part" << endl;
 			
-			if( (fMixedTest_3p1_combined[a] == 1 && e11.Mag() < 0.4) || (fMixedTest_3p1_combined[b] == 1 && e21.Mag() < 0.4) ) {
+			if( (fMixedTest_3p1_combined[a] == 1 && e11.Mag() < 0.6) || (fMixedTest_3p1_combined[b] == 1 && e21.Mag() < 0.6) ) {
 				fhTest_eventMixing_3p1_pCut->Fill(params.fMinv);
 			}
 		}

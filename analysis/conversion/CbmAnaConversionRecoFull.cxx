@@ -607,6 +607,8 @@ void CbmAnaConversionRecoFull::InitHistos()
 	}
 
 
+	fhPhotons_MCtrue_pdgCodes = new TH1D(Form("fhPhotons_MCtrue_pdgCodes_%i",4), Form("fhPhotons_MCtrue_pdgCodes_%i; pdg code; #",4), 1000, 0, 1000);
+	fHistoList_recofull_new[4].push_back(fhPhotons_MCtrue_pdgCodes);
 
 
 	fhMixedEventsTest2_invmass = new TH1D(Form("fhMixedEventsTest2_invmass_%i",4), Form("fhMixedEventsTest2_invmass_%i; invariant mass of 4 e^{#pm} in GeV/c^{2}; #",4), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
