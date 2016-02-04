@@ -2733,9 +2733,10 @@ void create_box_supports()
   Double_t PilPosX;
   Double_t PilPosZ[6];  // PilPosZ
 
-  PilPosZ[0] = LayerPosition[0] + I_width/2.;
-  //  PilPosZ[1] = LayerPosition[3] - I_width/2. + LayerThickness;
-  PilPosZ[1] = LayerPosition[1] - I_width/2. + LayerThickness;
+//  PilPosZ[0] = LayerPosition[0] + I_width/2.;
+//  PilPosZ[1] = LayerPosition[3] - I_width/2. + LayerThickness;
+  PilPosZ[0] = LayerPosition[0];
+  PilPosZ[1] = LayerPosition[3];
   PilPosZ[2] = LayerPosition[4] + I_width/2.;		      
   PilPosZ[3] = LayerPosition[7] - I_width/2. + LayerThickness;
   PilPosZ[4] = LayerPosition[8] + I_width/2.;		      
