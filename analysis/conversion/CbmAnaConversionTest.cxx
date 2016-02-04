@@ -54,7 +54,8 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fhTest_PhotonsPerEvent_RICHonly(NULL),
 	fhTest_PhotonsPerEvent_STSandRICH(NULL),
 	fhTest_ReconstructedPi0PerEvent(NULL),
-	fhTest_invmass(NULL),	
+	fhTest_invmass(NULL),
+	fhTest_invmass_pCut(NULL),
 	fhTest_invmass_RICHindex0(NULL),
 	fhTest_invmass_RICHindex1(NULL),
 	fhTest_invmass_RICHindex2(NULL),
@@ -83,7 +84,8 @@ CbmAnaConversionTest::CbmAnaConversionTest()
 	fMixedTest_3p1_photons(),
 	fMixedTest_3p1_eventno(),
 	fMixedTest_3p1_combined(),
-	fhTest_eventMixing_3p1(NULL)
+	fhTest_eventMixing_3p1(NULL),
+	fhTest_eventMixing_3p1_pCut(NULL)
 {
 }
 
@@ -159,6 +161,8 @@ void CbmAnaConversionTest::InitHistos()
 	fHistoList_test.push_back(fhTest_RICHelectronsPerEvent);
 	fhTest_invmass = new TH1D("fhTest_invmass", "fhTest_invmass; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_invmass);
+	fhTest_invmass_pCut = new TH1D("fhTest_invmass_pCut", "fhTest_invmass_pCut; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_test.push_back(fhTest_invmass_pCut);
 	
 	
 	fhTest_invmass_RICHindex0 = new TH1D("fhTest_invmass_RICHindex0", "fhTest_invmass_RICHindex0; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
@@ -181,6 +185,8 @@ void CbmAnaConversionTest::InitHistos()
 	fHistoList_test.push_back(fhTest_eventMixing_STSonly_4p0);
 	fhTest_eventMixing_3p1 = new TH1D("fhTest_eventMixing_3p1", "fhTest_eventMixing_3p1; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 	fHistoList_test.push_back(fhTest_eventMixing_3p1);
+	fhTest_eventMixing_3p1_pCut = new TH1D("fhTest_eventMixing_3p1_pCut", "fhTest_eventMixing_3p1_pCut; invariant mass of 4 e^{#pm} in GeV/c^{2}; #", invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+	fHistoList_test.push_back(fhTest_eventMixing_3p1_pCut);
 }
 
 
@@ -517,7 +523,6 @@ void CbmAnaConversionTest::DoSTSonlyAnalysis()
 			}
 		}
 		fVector_withRichSignal.push_back(WithRichSignal);
-
 	}
 
 	fhTest_RICHelectronsPerEvent->Fill(nofRICHelectrons);
@@ -676,6 +681,10 @@ void CbmAnaConversionTest::CombinePhotons()
 				Double_t invmass = paramsTest.fMinv;
 				
 				fhTest_invmass->Fill(invmass);
+				
+				if(fVector_momenta[electron11].Mag() < 0.4) {
+					fhTest_invmass_pCut->Fill(invmass);
+				}
 				
 				//Double_t pt = Pt_4particlesRECO(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
 				//Double_t rap = Rap_4particlesRECO(momenta[electron11], momenta[electron12], momenta[electron21], momenta[electron22]);
@@ -978,6 +987,10 @@ void CbmAnaConversionTest::MixedEventTest_3p1()
 			CbmAnaConversionKinematicParams params = CbmAnaConversionKinematicParams::KinematicParams_4particles_Reco(e11, e12, e21, e22);
 			fhTest_eventMixing_3p1->Fill(params.fMinv);
 			//cout << "CbmAnaConversionRecoFull: MixedEventTest4(), event filled!, part" << endl;
+			
+			if( (fMixedTest_3p1_combined[a] == 1 && e11.Mag() < 0.4) || (fMixedTest_3p1_combined[b] == 1 && e21.Mag() < 0.4) ) {
+				fhTest_eventMixing_3p1_pCut->Fill(params.fMinv);
+			}
 		}
 	}
 }

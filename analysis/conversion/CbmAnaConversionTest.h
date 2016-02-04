@@ -97,6 +97,7 @@ private:
 	TH1I * fhTest_PhotonsPerEvent_STSandRICH;
 	TH1I * fhTest_ReconstructedPi0PerEvent;
 	TH1D * fhTest_invmass;
+	TH1D * fhTest_invmass_pCut;
 
 	// arrays for CombinePhotons_STSonly()
 	TH1D * fhTest_invmass_RICHindex0;
@@ -150,6 +151,7 @@ private:
 	vector<int>					fMixedTest_3p1_eventno;
 	vector<int>					fMixedTest_3p1_combined;
 	TH1D * 						fhTest_eventMixing_3p1;
+	TH1D * 						fhTest_eventMixing_3p1_pCut;
 
 
 	CbmAnaConversionTest(const CbmAnaConversionTest&);
