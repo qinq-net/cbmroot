@@ -344,8 +344,11 @@ TString PairAnalysisHistos::UserHistogram(const char* histClass, TObject* hist)
   TString hclass=histClass;
   if(hclass.Contains("MCtruth")) {
     for(Int_t i=0;i<2;i++) {
-      //      Printf("SWITCH TO MC: before: %d %s ---->",valType[i],PairAnalysisVarManager::GetValueName(valType[i]));
-      // TODO: protect for changes of variable enum --> use axisttitle instead
+      /// protection for changes of variable enum (in the postprocessing) --> use axistname indentification
+      //      UInt_t valTypeFromTitle = 0;
+      if(!i)  valType[i] = PairAnalysisVarManager::GetValueType(((TH1*)hist)->GetXaxis()->GetName());
+      else    valType[i] = PairAnalysisVarManager::GetValueType(((TH1*)hist)->GetYaxis()->GetName());
+      //  Printf("SWITCH TO MC: before: %d %s, (via axis name %d) ---->",valType[i],PairAnalysisVarManager::GetValueName(valType[i]),valTypeFromTitle);
       valType[i] = PairAnalysisVarManager::GetValueTypeMC(valType[i]);
       // if theres no corresponding MCtruth variable, skip adding this histogram
       //      if(valType[i] < PairAnalysisVarManager::kNMaxValues && valType[i]>0) return hist->GetName();
@@ -1017,9 +1020,9 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   // option dependencies
   if(optLegFull) optLeg=kTRUE;
 
-  // selction string
+  // selection string
   TString select("");
-  if(optSel) select=histClassDenom;
+  if(optSel) { select=histClassDenom; histClassDenom=""; }
 
   // output array
   TObjArray *arr=0x0;
@@ -1096,7 +1099,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
     TString histClass=classTable->GetName();
 
     Int_t ndel = histClass.CountChar('_');
-    Info("DrawSame","Check plot hist: '%s' class-denom: '%s' select: '%s' \t ndel: %d \t for class: '%s'",
+    Info("DrawSame","Search for hist: '%s' class-denom: '%s' select: '%s' \t ndel: %d \t for class: '%s'",
 	 histName.Data(), histClassDenom.Data(), select.Data(), ndel, histClass.Data() );
 
     // check MC options
@@ -1110,32 +1113,29 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
     //    if( optSel && (!histClass.Contains(histClassDenom))^optExclSel ) continue;
     
     // find the histogram in the class table
-    if ( TH1 *h=(TH1*)classTable->FindObject(histName.Data()) ){
+    if ( TH1 *h=(TH1*)classTable->FindObject(histName.Data()) ) {
 
       // check if efficiency caluclation is possible
       if(optEff && !histClass.Contains("_MCtruth")) histClassDenom = histClass + "_MCtruth";
       //      if(optEff && (!fHistoList.FindObject( histClassName.Data() ) || histClass.Contains("_MCtruth")) ) continue;
       //      if(optEff && (!fHistoList.FindObject( Form("%s_MCtruth",histClass.Data()) ) || histClass.Contains("_MCtruth")) ) continue;
+      Info("DrawSame"," Hist found in histClass '%s' (search for denom '%s') ",histClass.Data(),histClassDenom.Data());
 
       // check if ratio should be build
       if( (optEff || optRatio) && !optTask && (histClass.EqualTo(histClassDenom) || !fHistoList.FindObject(histClassDenom.Data())) ) continue;
-      Info("DrawSame","histClass %s (denom %s) ",histClass.Data(),histClassDenom.Data());
-      if (i==0) hFirst=h;
+      else if(!histClassDenom.IsNull()) Info("DrawSame"," Denom histClass '%s' found ",histClassDenom.Data());
 
-      // style
-      h->SetTitle("");
-      if(h->GetLineColor()==kBlack && !optString.Contains("col")) {
-	h->UseCurrentStyle();
-	PairAnalysisStyler::Style(h,i); // avoid color updates
-      }
-      if(optString.Contains("scat")) h->SetMarkerStyle(kDot);
-      if(optString.Contains("e"))    h->SetLineStyle(kSolid);
-      if(optString.Contains("text")) { h->SetLineColor(1); h->SetMarkerColor(1); }
+      // set first histogram
+      if (i==0) hFirst=h;
 
       // set geant process labels
       // if(!histName.CompareTo("GeantId")) PairAnalysisHelper::SetGEANTBinLabels(h);
 
       // normalisation
+      if(optRbn||optRbnStat)        Info("DrawSame"," Rebin by %d, to <%.1f%% stat. uncertainty per bin",(optRbn?rbn:0),(optRbnStat?0.8*100:0));
+      if(optNormY||optNorm||optEvt) Info("DrawSame"," Normalize in y-axis,2D's only(%d), by int.(%d), by #events(%d)",optNormY,optNorm,optEvt);
+      if(optSclMax)                 Info("DrawSame"," Scale to maximum(%d)",optSclMax);
+
       h->Sumw2();
       if(optRbn)                    h->Rebin(rbn);
       if(optNormY && h->GetDimension()==2 && !(h->GetSumOfWeights()==0)) {
@@ -1191,23 +1191,25 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 
       // ratio and drawing
       if( (optEff || optRatio) && !optNorm && !optEvt && !optTask)  {
+	Info("DrawSame"," Calculate '%s' w/o normalisation and within the same task",(optEff?"efficiency":"ratio"));
 	//	TString    clMC     = histClass+"_MCtruth";
 	THashList *clDenom  = (THashList*)fHistoList.FindObject( histClassDenom.Data() );
 	TH1 *hMC = (TH1*) h->Clone(); // needed to preserve the labeling of non-mc histogram
-	TH1 *hdenom         = (TH1*) clDenom->FindObject( UserHistogram(histClassDenom.Data(),hMC).Data() );
-	//	TH1 *hdenom         = (TH1*) clDenom->FindObject( UserHistogram(clMC.Data(),hMC).Data() );
-	delete hMC; //delete the surplus object
+	TString histdenomMC = UserHistogram(histClassDenom.Data(),hMC);
+	TH1 *hdenom         = (TH1*) clDenom->FindObject( histdenomMC.Data() );
 	if(!hdenom) { Error("DrawSame","Denominator object not found"); continue; }
+	Info("DrawSame"," Divide %s(#=%.3e) by %s(#=%.3e)",h->GetName(),h->GetEntries(),hdenom->GetName(),hdenom->GetEntries());
+	delete hMC; //delete the surplus object
 	// normalize and rebin only once
-	hdenom->Sumw2();
+	hdenom->Sumw2(); //why is it crashing here
 	if(optRbn && (optEff || !(i%10)) )       hdenom->Rebin(rbn);
 	if(optEvt && (optEff || !(i%10)) )       hdenom->Scale(1./events);
-	//	Printf("h %p %f hdenom %p %f",h,h->GetEntries(),hdenom,hdenom->GetEntries());
 	if(!hdenom || !h->Divide(hdenom))  { Warning("DrawSame(eff/ratio)","Division failed!!!!"); continue; }
       }
       else if( optTask && (optDiv || optEff || optRatio)) {
+	Info("DrawSame"," Calculate '%s' using different tasks",(optEff?"efficiency":(optRatio?"ratio":"divison")));
 	// denominators
-	TH1* hdenom=0x0;
+	TH1* hdenom=0x0; 
 	TH1* htden =0x0;
 	if(optEff || optRatio) {
 	  THashList *clDenom  = (THashList*)fHistoList.FindObject( histClassDenom.Data() );
@@ -1238,6 +1240,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	// task ratio
 	TH1 *htnom=0x0;
 	if(optDiv && !optEff) {
+	  Info("DrawSame"," Search for '%s' in task '%s'",histClass.Data(),listDenom->GetName());
 	  THashList *clTaskNom = (THashList*)listDenom->FindObject( histClass.Data() );
 	  if(!clTaskNom) continue;
 	  htnom=(TH1*)clTaskNom->FindObject(histName.Data());
@@ -1262,9 +1265,12 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	  if(htnom)  htnom->Scale(1./events);
 	}
 
-	Info("DrawSame"," Entries: h %p %e,  hDenom %p %e,  htden %p %e ",
-	     h,h->GetEntries(),hdenom,(hdenom?hdenom->GetEntries():0),
-	     htden,(htden?htden->GetEntries():0));
+	Info("DrawSame","  Use nominator (%p,#=%.3e) and denominator 'same task & different class'(%p,#=%.3e), 'certain task & different class'(%p,#=%.3e), 'certain task & same class'(%p,#=%.3e)",
+	     h,h->GetEntries(),
+	     hdenom,(hdenom?hdenom->GetEntries():0),
+	     htden,(htden?htden->GetEntries():0),
+	     htnom,(htnom?htnom->GetEntries():0)
+	     );
 	// Printf("h %p (bins%d) \t hdenom %p (bins%d) \t htdenom %p (bins%d) \t htnom %p (bins%d)",
 	//        h,h->GetNbinsX(),hdenom,(hdenom?hdenom->GetNbinsX():0),
 	//        htden,(htden?htden->GetNbinsX():0),htnom,(htnom?htnom->GetNbinsX():0));
@@ -1278,6 +1284,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 
       // flip content values
       if(optOneOver){
+	Info("DrawSame"," Scale by 1/content");
 	TH1 *hOne = (TH1*) h->Clone("one");
 	hOne->Reset("ICSE");
 	for(Int_t ib=0;ib<(h->GetNbinsX()+2)*(h->GetNbinsY()+2)*(h->GetNbinsZ()+2);ib++)
@@ -1286,7 +1293,19 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
       }
 
       // geant labels
-      if(optGeant) PairAnalysisHelper::SetGEANTBinLabels(h);
+      if(optGeant) {
+	Info("DrawSame"," Set GEANT bin labels");
+	PairAnalysisHelper::SetGEANTBinLabels(h);
+      }
+
+      // style
+      if(h->GetLineColor()==kBlack && !optString.Contains("col")) { // avoid color updates
+	h->UseCurrentStyle();
+	PairAnalysisStyler::Style(h,i);
+      }
+      if(optString.Contains("scat")) h->SetMarkerStyle(kDot);
+      if(optString.Contains("e"))    h->SetLineStyle(kSolid);
+      if(optString.Contains("text")) { h->SetLineColor(1); h->SetMarkerColor(1); }
 
       // change name
       //      h->SetName(histClass.Data());
@@ -1296,7 +1315,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
       // draw prepared histogram
       if(!optGoff) {
 	optString.ReplaceAll(" ","");
-	Info("DrawSame","draw object with draw options: '%s'",optString.Data());
+	Info("DrawSame"," Draw object with options: '%s'",optString.Data());
 	h->Draw(i>0?(optString+"same").Data():optString.Data());
       }
 
