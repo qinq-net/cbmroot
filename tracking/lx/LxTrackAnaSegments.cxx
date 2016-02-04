@@ -48,8 +48,18 @@ static TH1F* muchClusterYDispHisto[LXSTATIONS - 1];
 static TH1F* muchClusterTxDispHisto[LXSTATIONS - 1];
 static TH1F* muchClusterTyDispHisto[LXSTATIONS - 1];
 
-LxTrackAnaSegments::LxTrackAnaSegments(LxTrackAna& o) : owner(o)
+LxTrackAnaSegments::LxTrackAnaSegments(LxTrackAna& o) : owner(o), stationsInAlgo(LXSTATIONS)
 {
+}
+
+static TString particleType("jpsi");
+
+void LxTrackAnaSegments::SetParticleType(TString v)
+{
+  particleType = v;
+
+  if (v == "omega")
+    stationsInAlgo = 5;
 }
 
 void LxTrackAnaSegments::Init()
@@ -212,15 +222,17 @@ void LxTrackAnaSegments::Init()
 
 static void SaveHisto(TH1* histo)
 {
-  DIR* dir = opendir("configuration");
+  char dir_name[256];
+  sprintf(dir_name, "configuration.%s", particleType.Data());
+  DIR* dir = opendir(dir_name);
 
   if (dir)
     closedir(dir);
   else
-    mkdir("configuration", 0700);
+    mkdir(dir_name, 0700);
 
   char name[256];
-  sprintf(name, "configuration/%s.root", histo->GetName());
+  sprintf(name, "%s/%s.root", dir_name, histo->GetName());
   TFile fh(name, "RECREATE");
   histo->Write();
   fh.Close();
@@ -295,8 +307,8 @@ struct LxSimpleSegment
 {
   LxSimplePoint source;
   LxSimplePoint end;
-  Double_t tx;
-  Double_t ty;
+  scaltype tx;
+  scaltype ty;
 
   LxSimpleSegment() : tx(0), ty(0) {}
   LxSimpleSegment(LxSimplePoint s, LxSimplePoint e) : source(s), end(e), tx((e.x - s.x) / (e.z - s.z)), ty((e.y - s.y) / (e.z - s.z)) {}
@@ -304,11 +316,11 @@ struct LxSimpleSegment
 
 void LxTrackAnaSegments::StatForTrack(LxSimpleTrack* track)
 {
-  for (Int_t i = 0; i < LXSTATIONS; ++i)
+  for (Int_t i = 0; i < stationsInAlgo; ++i)
   {
     for (Int_t j = 0; j < LXLAYERS; ++j)
     {
-      if (track->muchPoints[i][j].size() < 1)
+      if (track->muchPoints[i][j].empty())
         return;
     }
   }
@@ -316,27 +328,30 @@ void LxTrackAnaSegments::StatForTrack(LxSimpleTrack* track)
   LxSimplePoint p1;
   LxSimplePoint p2;
   LxSimplePoint p3;
-  Double_t deltaZ;
-  Double_t deltaZ2;
-  Double_t tx;
-  Double_t tx2;
-  Double_t ty;
-  Double_t ty2;
-  Double_t stTx;
-  Double_t stTy;
-  Double_t stTxP;
-  Double_t stTyP;
+  scaltype deltaZ;
+  scaltype deltaZ2;
+  scaltype tx;
+  scaltype tx2;
+  scaltype ty;
+  scaltype ty2;
+  scaltype stTx;
+  scaltype stTy;
+  scaltype stTxP;
+  scaltype stTyP;
 
   for (Int_t i = 0; i < LXSTATIONS; ++i)
   {
+    if (track->muchPoints[i][0].empty() || track->muchPoints[i][1].empty() || track->muchPoints[i][2].empty())
+      continue;
+
     p1 = track->muchPoints[i][1].front();
-    Double_t txEst = p1.x / p1.z;
-    Double_t tyEst = p1.y / p1.z;
+    scaltype txEst = p1.x / p1.z;
+    scaltype tyEst = p1.y / p1.z;
 
     p2 = track->muchPoints[i][0].front();
     deltaZ = p2.z - p1.z;
-    Double_t xEst = p1.x + txEst * deltaZ;
-    Double_t yEst = p1.y + tyEst * deltaZ;
+    scaltype xEst = p1.x + txEst * deltaZ;
+    scaltype yEst = p1.y + tyEst * deltaZ;
     muchInStationXDispLeft[i]->Fill(p2.x - xEst);
     muchInStationYDispLeft[i]->Fill(p2.y - yEst);
     tx = (p2.x - p1.x) / deltaZ;
@@ -387,10 +402,10 @@ void LxTrackAnaSegments::StatForTrack(LxSimpleTrack* track)
       muchOutStationYDispByVertex[i - 1]->Fill(p1.y - p2.y + (p2.y / p2.z) * deltaZ);
 
       // Rather complex part for implementation: calculate the dispersion characteristics for segment clusters.
-      Double_t maxXdisp = 0;
-      Double_t maxYdisp = 0;
-      Double_t maxTxdisp = 0;
-      Double_t maxTydisp = 0;
+      scaltype maxXdisp = 0;
+      scaltype maxYdisp = 0;
+      scaltype maxTxdisp = 0;
+      scaltype maxTydisp = 0;
 
       for (list<LxSimplePoint>::iterator l0 = track->muchPoints[i - 1][0].begin(); l0 != track->muchPoints[i - 1][0].end(); ++l0)
       {
@@ -421,11 +436,11 @@ void LxTrackAnaSegments::StatForTrack(LxSimpleTrack* track)
                     for (Int_t k = j + 1; k < LXLAYERS * LXLAYERS; ++k)
                     {
                       LxSimpleSegment s2 = segments[k];
-                      Double_t diffZ = s1.source.z - s2.source.z;
-                      Double_t dtx = abs(s2.tx - s1.tx);
-                      Double_t dty = abs(s2.ty - s1.ty);
-                      Double_t dx = abs(s2.source.x + s2.tx * diffZ - s1.source.x);
-                      Double_t dy = abs(s2.source.y + s2.ty * diffZ - s1.source.y);
+                      scaltype diffZ = s1.source.z - s2.source.z;
+                      scaltype dtx = abs(s2.tx - s1.tx);
+                      scaltype dty = abs(s2.ty - s1.ty);
+                      scaltype dx = abs(s2.source.x + s2.tx * diffZ - s1.source.x);
+                      scaltype dy = abs(s2.source.y + s2.ty * diffZ - s1.source.y);
 
                       if (maxXdisp < dx)
                         maxXdisp = dx;
@@ -493,10 +508,10 @@ void LxTrackAnaSegments::StatForTrack(LxSimpleTrack* track)
       p1 = track->muchPoints[i + 1][LXMIDDLE].front();
       p2 = track->muchPoints[i][LXMIDDLE].front();
       deltaZ = p2.z - p1.z;
-      Double_t deltaX = p2.x - p1.x - p1.tx * deltaZ;
-      Double_t deltaY = p2.y - p1.y - p1.ty * deltaZ;
-      Double_t deltaTx = p2.tx - p1.tx;
-      Double_t deltaTy = p2.ty - p1.ty;
+      scaltype deltaX = p2.x - p1.x - p1.tx * deltaZ;
+      scaltype deltaY = p2.y - p1.y - p1.ty * deltaZ;
+      scaltype deltaTx = p2.tx - p1.tx;
+      scaltype deltaTy = p2.ty - p1.ty;
       muchXTxCovHisto[i]->Fill(deltaX, deltaTx);
       muchYTyCovHisto[i]->Fill(deltaY, deltaTy);
     }

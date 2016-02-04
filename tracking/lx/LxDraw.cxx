@@ -17,6 +17,7 @@
 #include "TPolyMarker.h"
 #include "CbmKF.h"
 #include "TMCProcess.h"
+#include "TMarker.h"
 
 #ifdef CLUSTER_MODE
 #include "kdtree++/kdtree.hpp"
@@ -74,7 +75,7 @@ void LxDraw::Ask()
         ask = false;
 
       if (symbol == 'q')
-        exit(42);
+        exit;
     } while (symbol != '\n');
 
     cout << endl;
@@ -83,7 +84,7 @@ void LxDraw::Ask()
 
 void LxDraw::DrawMCTracks()
 {
-//  char buf[128];
+  char buf[128];
   int NRegMCTracks = 0;
   LxFinder* finder = LxFinder::Instance();
   TPolyLine pline;
@@ -97,26 +98,26 @@ void LxDraw::DrawMCTracks()
     //if ((13 != T.pdg && -13 != T.pdg) || T.mother_ID >= 0)
       //continue;
 
-//    bool mcPointOnSta[18] = { true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
+    bool mcPointOnSta[18] = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
     int mcpCount = 0;
 
     for (vector<LxMCPoint*>::iterator j = T.Points.begin(); j != T.Points.end(); ++j)
     {
-//      LxMCPoint* pMCPoint = *j;
-//      mcPointOnSta[pMCPoint->stationNumber * 3 + pMCPoint->layerNumber] = true;
+      LxMCPoint* pMCPoint = *j;
+      mcPointOnSta[pMCPoint->stationNumber * 3 + pMCPoint->layerNumber] = true;
       ++mcpCount;
     }
 
-//    bool isRefTrack = true;
+    bool isRefTrack = true;
 
-    for (int j = 0; j < 18; ++j)
+    for (int j = 0; j < 15; ++j)
     {
-//      if (!mcPointOnSta[j])
-//        isRefTrack = false;
+      if (!mcPointOnSta[j])
+        isRefTrack = false;
     }
 
-    //if (!isRefTrack)
-    if (mcpCount < 15)
+    if (!isRefTrack)
+    //if (mcpCount < 15)
       continue;
 
     pline.SetLineColor(kRed);
@@ -129,6 +130,12 @@ void LxDraw::DrawMCTracks()
 
     if ((T.mother_ID != -1) && (T.p < 0.5))
       pline.SetLineColor(12);
+
+    Double_t z00 = finder->caSpace.stations[0]->zCoord;
+    Double_t x0 = 0;
+    Double_t y0 = 0;
+    Double_t z0 = 0;
+    Double_t dz0 = 1000;
 
     double par[6];
     par[0] = T.x;
@@ -147,7 +154,7 @@ void LxDraw::DrawMCTracks()
     lz.push_back(par[5]);
 
     bool ok = true;
-    cout << "LxDraw: drawing MC track with " << T.stationsWithHits << " hitted stations and " << T.layersWithHits << " hitted layers";
+    /*cout << "LxDraw: drawing MC track with " << T.stationsWithHits << " hitted stations and " << T.layersWithHits << " hitted layers";
 
     if (T.layersWithHits < LXSTATIONS * LXLAYERS)
     {
@@ -169,7 +176,7 @@ void LxDraw::DrawMCTracks()
       }
     }
 
-    cout << endl;
+    cout << endl;*/
 
     for(std::vector<LxMCPoint*>::iterator ip = T.Points.begin(); ip != T.Points.end(); ++ip)
     {
@@ -208,7 +215,15 @@ void LxDraw::DrawMCTracks()
 
         float xl = ( w1*par[0] + w*par1[0])/(w+w1);
         float yl = ( w1*par[1] + w*par1[1])/(w+w1);
-//        float zl = ( w1*par[5] + w*par1[5])/(w+w1);
+        float zl = ( w1*par[5] + w*par1[5])/(w+w1);
+
+        if (fabs(zl - z00) < dz0)
+        {
+          x0 = xl;
+          y0 = yl;
+          z0 = zl;
+          dz0 = fabs(zl - z00);
+        }
 
         if ((fabs(xl) > 400.0)||(fabs(yl) > 400.0)){
           //cout << "*** track " << NRegMCTracks+1 << " xl = " << xl << ", zl = " << zl << endl;
@@ -269,10 +284,19 @@ void LxDraw::DrawMCTracks()
       NRegMCTracks++;
       YZ.cd(); 
       pline.DrawPolyLine(lx.size(), &(lz[0]), &(ly[0]) );
+      TMarker* xMarker = new TMarker(z0, y0, 30);
+      xMarker->SetMarkerColor(kRed);
+      xMarker->Draw();
       XZ.cd(); 
       pline.DrawPolyLine(lx.size(), &(lz[0]), &(lx[0]) );
+      TMarker* yMarker = new TMarker(z0, x0, 30);
+      yMarker->SetMarkerColor(kRed);
+      yMarker->Draw();
       YX.cd(); 
       pline.DrawPolyLine(lx.size(), &(lx[0]), &(ly[0]) );
+      TMarker* zMarker = new TMarker(x0, y0, 30);
+      zMarker->SetMarkerColor(kRed);
+      zMarker->Draw();
     }
   }
 
@@ -312,21 +336,21 @@ void LxDraw::DrawInputHits()
     }
   }
 
-  Double_t x_poly[nhits], y_poly[nhits], z_poly[nhits];
-  Double_t x_poly2[nhits], y_poly2[nhits], z_poly2[nhits];// Removed.
-  Double_t x_poly3[nhits], y_poly3[nhits], z_poly3[nhits];// Restored.
+  scaltype x_poly[nhits], y_poly[nhits], z_poly[nhits];
+  scaltype x_poly2[nhits], y_poly2[nhits], z_poly2[nhits];// Removed.
+  scaltype x_poly3[nhits], y_poly3[nhits], z_poly3[nhits];// Restored.
   TVector3 pos, err;
   int n_poly = 0;
   int n_poly2 = 0;
   int n_poly3 = 0;
 
-  //for (int i = 5; i >= 0; --i)
-  for (int i = 0; i >= 0; --i)
+  for (int i = 5; i >= 0; --i)
+  //for (int i = 0; i >= 0; --i)
   {
     LxStation* pSt = lxSpace.stations[i];
 
-    //for (int j = 2; j >= 0; --j)
-    for (int j = 1; j >= 1; --j)
+    for (int j = 2; j >= 0; --j)
+    //for (int j = 1; j >= 1; --j)
     {
       LxLayer* pLa = pSt->layers[j];
 
@@ -437,10 +461,10 @@ void LxDraw::DrawMuch(TGeoNode* node)
 
       if (trap)
       {
-        Double_t minY = 0, maxY = 0, minX = 0, maxX = 0, Z = 0;
+        scaltype minY = 0, maxY = 0, minX = 0, maxX = 0, Z = 0;
         Double_t* xy = trap->GetVertices();
-        Double_t trapX[5];
-        Double_t trapY[5];
+        scaltype trapX[5];
+        scaltype trapY[5];
 
         for (int i = 0; i < 4; ++i)
         {
@@ -498,13 +522,13 @@ void LxDraw::DrawMuch(TGeoNode* node)
 
   while (childO)
   {
-//    TGeoNode* child = dynamic_cast<TGeoNode*> (childO);
+    TGeoNode* child = dynamic_cast<TGeoNode*> (childO);
 
-    //if (child) Commented because this version on CdDown() is not supported in older versions on ROOT. Possibly should be fixed.
-    //{
-      //gGeoManager->GetCurrentNavigator()->CdDown(child);
-      //DrawMuch(child);
-    //}
+    if (child)// Commented because this version on CdDown() is not supported in older versions on ROOT. Possibly should be fixed.
+    {
+      gGeoManager->GetCurrentNavigator()->CdDown(child);
+      DrawMuch(child);
+    }
 
     childO = children->After(childO);
   }
@@ -553,13 +577,13 @@ void LxDraw::DrawMuch()
     TGeoShape* muchAbsShape = muchAbsVol->GetShape();
     TGeoCone* muchAbsCone = dynamic_cast<TGeoCone*> (muchAbsShape);
 
-    Double_t fRmax1 = muchAbsCone->GetRmax1();
-    Double_t fRmax2 = muchAbsCone->GetRmax2();
-    Double_t fDz = muchAbsCone->GetDz();
-    Double_t fZ = globalCoords[2];
+    scaltype fRmax1 = muchAbsCone->GetRmax1();
+    scaltype fRmax2 = muchAbsCone->GetRmax2();
+    scaltype fDz = muchAbsCone->GetDz();
+    scaltype fZ = globalCoords[2];
 
-    Double_t maXs[5] = { fZ - fDz, fZ - fDz, fZ + fDz, fZ + fDz, fZ - fDz };
-    Double_t maYs[5] = { -fRmax1, fRmax1, fRmax2, -fRmax2, -fRmax1 };
+    scaltype maXs[5] = { fZ - fDz, fZ - fDz, fZ + fDz, fZ + fDz, fZ - fDz };
+    scaltype maYs[5] = { -fRmax1, fRmax1, fRmax2, -fRmax2, -fRmax1 };
     TPolyLine* muchAbsorber = new TPolyLine(5, maXs, maYs);
     muchAbsorber->SetFillColor(kYellow);
     muchAbsorber->SetLineColor(kYellow);
@@ -593,10 +617,10 @@ void LxDraw::DrawMuch()
 struct KDRayWrap
 {
   LxRay* ray;
-  Double_t data[4];
+  scaltype data[4];
   static bool destroyRays;
 
-  KDRayWrap(Double_t x, Double_t y, LxRay* r) : ray(r)
+  KDRayWrap(scaltype x, scaltype y, LxRay* r) : ray(r)
   {
     data[0] = x;
     data[1] = y;
@@ -604,7 +628,7 @@ struct KDRayWrap
     data[3] = ray->ty;
   }
 
-  KDRayWrap(Double_t x, Double_t y, Double_t tx, Double_t ty) : ray(0)// This constructor is used when setting search-range bounds.
+  KDRayWrap(scaltype x, scaltype y, scaltype tx, scaltype ty) : ray(0)// This constructor is used when setting search-range bounds.
   {
     data[0] = x;
     data[1] = y;
@@ -619,7 +643,7 @@ struct KDRayWrap
   }
 
   // Stuff required by libkdtree++
-  typedef Double_t value_type;
+  typedef scaltype value_type;
 
   value_type operator[] (size_t n) const
   {
@@ -643,16 +667,16 @@ void LxDraw::DrawRays()
     LxStation* rSt = caSpace.stations[i];
 #ifdef CLUSTER_MODE
     KDRaysStorageType* rays = static_cast<KDRaysStorageType*> (rSt->clusteredRaysHandle);
-    Double_t lZ = caSpace.stations[i - 1]->zCoord;
+    scaltype lZ = caSpace.stations[i - 1]->zCoord;
 
     for (KDRaysStorageType::iterator j = rays->begin(); j != rays->end(); ++j)
     {
       KDRayWrap& wrap = const_cast<KDRayWrap&> (*j);
       LxRay* ray = wrap.ray;
       LxPoint* rPo = ray->source;
-      Double_t deltaZ = lZ - rPo->z;
-      Double_t lX = rPo->x + ray->tx * deltaZ;
-      Double_t lY = rPo->y + ray->ty * deltaZ;
+      scaltype deltaZ = lZ - rPo->z;
+      scaltype lX = rPo->x + ray->tx * deltaZ;
+      scaltype lY = rPo->y + ray->ty * deltaZ;
 
       YZ.cd();
       TLine* yzLine = new TLine(rPo->z, rPo->y, lZ, lY);
@@ -678,19 +702,19 @@ void LxDraw::DrawRays()
     if (rLa->points.size() == 0 || lLa->points.size() == 0)
       continue;
 
-    Double_t lZ = (*lLa->points.begin())->z;
+    scaltype lZ = (*lLa->points.begin())->z;
 
     for (list<LxPoint*>::iterator j = rLa->points.begin(); j != rLa->points.end(); ++j)
     {
       LxPoint* rPo = *j;
-      Double_t deltaZ = lZ - rPo->z;
+      scaltype deltaZ = lZ - rPo->z;
 
       for (list<LxRay*>::iterator k = rPo->rays.begin(); k != rPo->rays.end(); ++k)
       {
         LxRay* ray = *k;
 
-        Double_t lX = rPo->x + ray->tx * deltaZ;
-        Double_t lY = rPo->y + ray->ty * deltaZ;
+        scaltype lX = rPo->x + ray->tx * deltaZ;
+        scaltype lY = rPo->y + ray->ty * deltaZ;
 
         YZ.cd();
         TLine* yzLine = new TLine(rPo->z, rPo->y, lZ, lY);
@@ -723,7 +747,7 @@ void LxDraw::DrawRecoTracks()
 {
   LxFinder* finder = LxFinder::Instance();
   LxSpace& caSpace = finder->caSpace;
-//  int stationsNumber = caSpace.stations.size();
+  int stationsNumber = caSpace.stations.size();
 
   for (list<LxTrack*>::iterator i = caSpace.tracks.begin(); i != caSpace.tracks.end(); ++i)
   {
@@ -740,22 +764,22 @@ void LxDraw::DrawRecoTracks()
       if (0 == ray)
         break;
 
-      Double_t rX = ray->source->x;
-      Double_t rY = ray->source->y;
-      Double_t rZ = ray->source->z;
+      scaltype rX = ray->source->x;
+      scaltype rY = ray->source->y;
+      scaltype rZ = ray->source->z;
 
-      Double_t lZ = caSpace.stations[ray->station->stationNumber - 1]->zCoord;
-      Double_t deltaZ = lZ - rZ;
-      Double_t lX = rX + ray->tx * deltaZ;
-      Double_t lY = rY + ray->ty * deltaZ;
+      scaltype lZ = caSpace.stations[ray->station->stationNumber - 1]->zCoord;
+      scaltype deltaZ = lZ - rZ;
+      scaltype lX = rX + ray->tx * deltaZ;
+      scaltype lY = rY + ray->ty * deltaZ;
 
 #ifdef USE_KALMAN_FIT
-      Double_t kalmanZl = track->z;
-      Double_t kalmanXl = track->x;
-      Double_t kalmanYl = track->y;
-      Double_t kalmanZr = ray->source->z;
-      Double_t kalmanXr = kalmanXl + track->tx * (kalmanZr - kalmanZl);
-      Double_t kalmanYr = kalmanYl + track->ty * (kalmanZr - kalmanZl);
+      scaltype kalmanZl = track->z;
+      scaltype kalmanXl = track->x;
+      scaltype kalmanYl = track->y;
+      scaltype kalmanZr = ray->source->z;
+      scaltype kalmanXr = kalmanXl + track->tx * (kalmanZr - kalmanZl);
+      scaltype kalmanYr = kalmanYl + track->ty * (kalmanZr - kalmanZl);
 #endif//USE_KALMAN_FIT
 
       YZ.cd();
@@ -810,15 +834,15 @@ void LxDraw::DrawRecoTracks()
     //if (track->externalTrack)
     if (false)
     {
-      Double_t rZ = caSpace.stations[0]->layers[0]->zCoord;
+      scaltype rZ = caSpace.stations[0]->layers[0]->zCoord;
       const FairTrackParam* param = track->externalTrack->track->GetParamLast();
 
-      Double_t lX = param->GetX();
-      Double_t lY = param->GetY();
-      Double_t lZ = param->GetZ();
-      Double_t deltaZ = rZ - lZ;
-      Double_t rX = lX + param->GetTx() * deltaZ;
-      Double_t rY = lY + param->GetTy() * deltaZ;
+      scaltype lX = param->GetX();
+      scaltype lY = param->GetY();
+      scaltype lZ = param->GetZ();
+      scaltype deltaZ = rZ - lZ;
+      scaltype rX = lX + param->GetTx() * deltaZ;
+      scaltype rY = lY + param->GetTy() * deltaZ;
 
       YZ.cd();
       TLine* yzLine = new TLine(lZ, lY, rZ, rY);
@@ -853,7 +877,7 @@ void LxDraw::DrawMCPoints()
   LxFinder* finder = LxFinder::Instance();
 
   int nhits = finder->MCPoints.size();
-  Double_t x_poly[nhits], y_poly[nhits], z_poly[nhits];
+  scaltype x_poly[nhits], y_poly[nhits], z_poly[nhits];
   TVector3 pos;
   int n_poly = 0;
 
@@ -900,19 +924,19 @@ void LxDraw::DrawExtTracks()
 {
   LxFinder* finder = LxFinder::Instance();
   LxSpace& caSpace = finder->caSpace;
-  Double_t rZ = caSpace.stations[0]->layers[0]->zCoord;
+  scaltype rZ = caSpace.stations[0]->layers[0]->zCoord;
 
   for (list<LxExtTrack>::iterator i = caSpace.extTracks.begin(); i != caSpace.extTracks.end(); ++i)
   {
     LxExtTrack& extTrack = *i;
     const FairTrackParam* param = extTrack.track->GetParamLast();
 
-    Double_t lX = param->GetX();
-    Double_t lY = param->GetY();
-    Double_t lZ = param->GetZ();
-    Double_t deltaZ = rZ - lZ;
-    Double_t rX = lX + param->GetTx() * deltaZ;
-    Double_t rY = lY + param->GetTy() * deltaZ;
+    scaltype lX = param->GetX();
+    scaltype lY = param->GetY();
+    scaltype lZ = param->GetZ();
+    scaltype deltaZ = rZ - lZ;
+    scaltype rX = lX + param->GetTx() * deltaZ;
+    scaltype rY = lY + param->GetTy() * deltaZ;
 
     YZ.cd();
     TLine* yzLine = new TLine(lZ, lY, rZ, rY);

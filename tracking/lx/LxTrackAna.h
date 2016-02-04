@@ -13,33 +13,33 @@
 
 struct LxSimplePoint
 {
-  Double_t x;
-  Double_t y;
-  Double_t z;
-  Double_t tx;
-  Double_t ty;
+  scaltype x;
+  scaltype y;
+  scaltype z;
+  scaltype tx;
+  scaltype ty;
   LxSimplePoint() : x(0), y(0), z(0), tx(0), ty(0) {}
-  LxSimplePoint(Double_t X, Double_t Y, Double_t Z, Double_t Tx, Double_t Ty) : x(X), y(Y), z(Z), tx(Tx), ty(Ty) {}
+  LxSimplePoint(scaltype X, scaltype Y, scaltype Z, scaltype Tx, scaltype Ty) : x(X), y(Y), z(Z), tx(Tx), ty(Ty) {}
 };
 
 struct LxSimpleTrack
 {
   Int_t pdgCode;
   Int_t motherId;
-  Double_t p;
-  Double_t pt;
-  Double_t px;
-  Double_t py;
-  Double_t pz;
-  Double_t e;
-  Double_t charge;
-  LxSimpleTrack(Int_t pdgc, Int_t mid, Double_t P, Double_t Pt, Double_t Px, Double_t Py, Double_t Pz, Double_t E) : pdgCode(pdgc),
-      motherId(mid), p(P), pt(Pt), px(Px), py(Py), pz(Pz), e(E), charge(0), linkedMuchTrack(0, 0), linkedStsTrack(0) {}
+  scaltype p;
+  scaltype pt;
+  scaltype px;
+  scaltype py;
+  scaltype pz;
+  scaltype e;
+  scaltype charge;
+  LxSimpleTrack(Int_t pdgc, Int_t mid, scaltype P, scaltype Pt, scaltype Px, scaltype Py, scaltype Pz, scaltype E) : pdgCode(pdgc),
+      motherId(mid), p(P), pt(Pt), px(Px), py(Px), pz(Pz), e(E), charge(0), linkedMuchTrack(0, 0), linkedStsTrack(0) {}
   std::list<LxSimplePoint> stsPoints[LXSTSSTATIONS];
   std::list<LxSimplePoint> muchPoints[LXSTATIONS][LXLAYERS];
   std::list<LxSimplePoint> muchMCPts[LXSTATIONS][LXLAYERS];// These array is used for storing MUCH MC points when the 'main' array contains hits.
-  std::pair<LxSimpleTrack*, Double_t> linkedMuchTrack;
-  std::list<std::pair<LxSimpleTrack*, Double_t> > linkedStsTracks;// The front() contains STS track with the minimal chi2.
+  std::pair<LxSimpleTrack*, scaltype> linkedMuchTrack;
+  std::list<std::pair<LxSimpleTrack*, scaltype> > linkedStsTracks;// The front() contains STS track with the minimal chi2.
   LxSimpleTrack* linkedStsTrack;
   void RebindMuchTrack();
 };
@@ -74,13 +74,19 @@ public:
   void SetCropHits(bool v) { cropHits = v; }
   bool GetBuildSegmentsStat() const { return buildSegmentsStat; }
   void SetBuildSegmentsStat(bool v) { buildSegmentsStat = v; }
+  TString GetParticleType() const { return particleType; }
+  void SetParticleType(TString v)
+  {
+    particleType = v;
+    segmentsAnalyzer.SetParticleType(v);
+  }
 
 private:
   void Clean();
   void AveragePoints();
   void BuildStatistics();
   void Connect(bool useCuts);
-  void Connect(LxSimpleTrack* muchTrack, LxSimplePoint muchPt0, Double_t txMuch, Double_t tyMuch,
+  void Connect(LxSimpleTrack* muchTrack, LxSimplePoint muchPt0, scaltype txMuch, scaltype tyMuch,
       bool useCuts);
 
   TClonesArray* listMCTracks;
@@ -105,6 +111,7 @@ private:
   bool buildNearestHitDist;
   bool cropHits;
   bool buildSegmentsStat;
+  TString particleType;
   LxTrackAnaSegments segmentsAnalyzer;
 
   friend class LxTrackAnaSegments;

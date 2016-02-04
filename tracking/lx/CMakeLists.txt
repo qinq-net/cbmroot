@@ -4,6 +4,7 @@
 # here.
 
 Set(INCLUDE_DIRECTORIES
+  ${BASE_INCLUDE_DIRECTORIES} 
   ${CBMROOT_SOURCE_DIR}/tracking/lx
   ${CBMROOT_SOURCE_DIR}/base 
   ${CBMROOT_SOURCE_DIR}/data 
@@ -21,7 +22,6 @@ Set(INCLUDE_DIRECTORIES
 Include_Directories( ${INCLUDE_DIRECTORIES})
 
 Set(SYSTEM_INCLUDE_DIRECTORIES
-  ${BASE_INCLUDE_DIRECTORIES} 
   ${Boost_INCLUDE_DIRS}
 )
 
@@ -37,6 +37,7 @@ Link_Directories( ${LINK_DIRECTORIES})
 
 Set(SRCS
   Lx.cxx
+  LxParall.cxx
   LxTrackAna.cxx
 )
 
@@ -46,8 +47,11 @@ Set(NO_DICT_SRCS
   LxEff.cxx
   LxMC.cxx
   LxTrackAnaSegments.cxx
+  LxTrigger.cxx
   LxUtils.cxx
 )
+
+Set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -mavx -fopenmp" )
 
 set(LINKDEF LxLinkDef.h)
 Set(LIBRARY_NAME LxTrack)

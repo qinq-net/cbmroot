@@ -22,19 +22,19 @@ ClassImp(LxTrackAna)
 
 using namespace std;
 
-//static Double_t xRms = 1.005;// Averaged MC
-static Double_t xRms = 1.202;// Nearest hit
-static Double_t xRms2 = xRms * xRms;
-//static Double_t yRms = 0.9467;// Averaged MC
-static Double_t yRms = 1.061;// Nearest hit
-static Double_t yRms2 = yRms * yRms;
-//static Double_t txRms = 0.02727;// Averaged MC
-static Double_t txRms = 0.02426;// Nearest hit
-static Double_t txRms2 = txRms * txRms;
-//static Double_t tyRms = 0.01116;// Averaged MC
-static Double_t tyRms = 0.01082;// Nearest hit
-static Double_t tyRms2 = tyRms * tyRms;
-static Double_t cutCoeff = 3.0;
+//static scaltype xRms = 1.005;// Averaged MC
+static scaltype xRms = 1.202;// Nearest hit
+static scaltype xRms2 = xRms * xRms;
+//static scaltype yRms = 0.9467;// Averaged MC
+static scaltype yRms = 1.061;// Nearest hit
+static scaltype yRms2 = yRms * yRms;
+//static scaltype txRms = 0.02727;// Averaged MC
+static scaltype txRms = 0.02426;// Nearest hit
+static scaltype txRms2 = txRms * txRms;
+//static scaltype tyRms = 0.01116;// Averaged MC
+static scaltype tyRms = 0.01082;// Nearest hit
+static scaltype tyRms2 = tyRms * tyRms;
+static scaltype cutCoeff = 3.0;
 
 static TH1F* muchStsBreakX = 0;
 static TH1F* muchStsBreakY = 0;
@@ -69,19 +69,22 @@ static TH1F* deltaPhiPi = 0;
 
 static TH1F* jPsiMuonsMomsHisto = 0;
 
-static Double_t magnetCenterZ = 0;
+static scaltype magnetCenterZ = 0;
 
 static TH1F* dtxMomProductHisto = 0;
 
+static TH1F* stsEndTrackCount = 0;
+static TH1F* muchBeginTrackCount = 0;
+
 struct MomVsTxRange
 {
-  Double_t momLow;
-  Double_t momHigh;
-  Double_t txLow;
-  Double_t txHigh;
+  scaltype momLow;
+  scaltype momHigh;
+  scaltype txLow;
+  scaltype txHigh;
 };
 
-static bool momFitTxBreak(Double_t mom, Double_t txBreak)
+static bool momFitTxBreak(scaltype mom, scaltype txBreak)
 {
   if (mom < 3.0)
     return false;
@@ -89,7 +92,7 @@ static bool momFitTxBreak(Double_t mom, Double_t txBreak)
   if (txBreak < 0)
     txBreak = -txBreak;
 
-  Double_t inv = mom * txBreak;
+  scaltype inv = mom * txBreak;
   return inv > 0.18 && inv < 0.52;
 }
 
@@ -99,7 +102,7 @@ void LxSimpleTrack::RebindMuchTrack()
 
   while (!linkedStsTracks.empty())
   {
-    pair<LxSimpleTrack*, Double_t> trackDesc = linkedStsTracks.front();
+    pair<LxSimpleTrack*, scaltype> trackDesc = linkedStsTracks.front();
     linkedStsTracks.pop_front();
     LxSimpleTrack* anotherMuchTrack = trackDesc.first->linkedMuchTrack.first;
 
@@ -118,10 +121,10 @@ void LxSimpleTrack::RebindMuchTrack()
 }
 
 LxTrackAna::LxTrackAna() : listMCTracks(0), listStsPts(0), listMuchPts(0), listMuchPixelHits(0), listMuchClusters(0),
-    listMuchPixelDigiMatches(0), allTracks(), posTracks(), negTracks(), superEventTracks(0),
-    superEventBrachTrack(0, 0, 0, 0, 0, 0, 0, 0), useHitsInStat(false), averagePoints(false), dontTouchNonPrimary(true),
-    useChargeSignInCuts(false), buildConnectStat(false), buildBgrInvMass(false), buildSigInvMass(false), joinData(false),
-    buildNearestHitDist(false), cropHits(false), buildSegmentsStat(true), segmentsAnalyzer(*this)
+    listMuchPixelDigiMatches(0), buildConnectStat(false), useHitsInStat(false), averagePoints(false), dontTouchNonPrimary(true),
+    useChargeSignInCuts(false), buildBgrInvMass(false), buildSigInvMass(false), joinData(false), superEventTracks(0),
+    superEventBrachTrack(0, 0, 0, 0, 0, 0, 0, 0), buildNearestHitDist(false), cropHits(false), segmentsAnalyzer(*this),
+    buildSegmentsStat(true), particleType("jpsi")
 {
 }
 
@@ -271,22 +274,29 @@ InitStatus LxTrackAna::Init()
   dtxMomProductHisto = new TH1F("dtxMomProductHisto", "Dtx x Momentum distribution", 100, -0.5, 2.5);
   dtxMomProductHisto->StatOverflows();
 
+  stsEndTrackCount = new TH1F("stsEndTrackCountHisto", "stsEndTrackCountHisto", 200, 0, 2000.0);
+  stsEndTrackCount->StatOverflows();
+  muchBeginTrackCount = new TH1F("muchBeginTrackCountHisto", "muchBeginTrackCountHisto", 200, 0, 3000.0);
+  muchBeginTrackCount->StatOverflows();
+
   segmentsAnalyzer.Init();
 
   return kSUCCESS;
 }
 
-static void SaveHisto(TH1* histo, const char* name)
+static void SaveHisto(TH1* histo, const char* particleType, const char* name)
 {
-  DIR* dir = opendir("configuration");
+  char dir_name[256];
+  sprintf(dir_name, "configuration.%s", particleType);
+  DIR* dir = opendir(dir_name);
 
   if (dir)
     closedir(dir);
   else
-    mkdir("configuration", 0700);
+    mkdir(dir_name, 0700);
 
   char file_name[256];
-  sprintf(file_name, "configuration/%s", name);
+  sprintf(file_name, "%s/%s", dir_name, name);
   TFile fh(file_name, "RECREATE");
   histo->Write();
   fh.Close();
@@ -302,29 +312,29 @@ static void BuildInvMass(list<LxSimpleTrack*>& pTracks, list<LxSimpleTrack*>& nT
     for (list<LxSimpleTrack*>::iterator j = nTracks.begin(); j != nTracks.end(); ++j)
     {
       LxSimpleTrack* negTrack = *j;
-      Double_t E12 = posTrack->e + negTrack->e;
-      Double_t px12 = posTrack->px + negTrack->px;
-      Double_t py12 = posTrack->py + negTrack->py;
-      Double_t pz12 = posTrack->pz + negTrack->pz;
-      Double_t m122 = E12 * E12 - px12 * px12 - py12 * py12 - pz12 * pz12;
-      Double_t m12 = m122 > 1.e-20 ? sqrt(m122) : 0.;
+      scaltype E12 = posTrack->e + negTrack->e;
+      scaltype px12 = posTrack->px + negTrack->px;
+      scaltype py12 = posTrack->py + negTrack->py;
+      scaltype pz12 = posTrack->pz + negTrack->pz;
+      scaltype m122 = E12 * E12 - px12 * px12 - py12 * py12 - pz12 * pz12;
+      scaltype m12 = m122 > 1.e-20 ? sqrt(m122) : 0.;
       histo->Fill(m12);
     }
   }
 }
 
-static void BuildInvMass2(list<CbmStsTrack*>& stsTracks, TH1*)
+static void BuildInvMass2(list<CbmStsTrack*>& stsTracks, TH1* histo)
 {
   for (list<CbmStsTrack*>::iterator i = stsTracks.begin(); i != stsTracks.end(); ++i)
   {
     CbmStsTrack* posTrack = *i;
     //CbmStsTrack t1(*posTrack);
     //extFitter.DoFit(&t1, 13);
-    //Double_t chi2Prim = extFitter.GetChiToVertex(&t1, fPrimVtx);
+    //scaltype chi2Prim = extFitter.GetChiToVertex(&t1, fPrimVtx);
     const FairTrackParam* t1param = posTrack->GetParamFirst();
     //extFitter.Extrapolate(&t1, fPrimVtx->GetZ(), &t1param);
     CbmKFTrack muPlus(*posTrack);
-    Double_t t1Qp = t1param->GetQp();
+    scaltype t1Qp = t1param->GetQp();
     list<CbmStsTrack*>::iterator j = i;
     ++j;
 
@@ -336,7 +346,7 @@ static void BuildInvMass2(list<CbmStsTrack*>& stsTracks, TH1*)
       //chi2Prim = extFitter.GetChiToVertex(&t2, fPrimVtx);
       const FairTrackParam* t2param = negTrack->GetParamLast();
       //extFitter.Extrapolate(&t2, fPrimVtx->GetZ(), &t2param);
-      Double_t t2Qp = t2param->GetQp();
+      scaltype t2Qp = t2param->GetQp();
 
       if (t1Qp * t2Qp >= 0)
         continue;
@@ -358,7 +368,7 @@ static void BuildInvMass2(list<CbmStsTrack*>& stsTracks, TH1*)
       //CbmKFParticle DiMu;
       //DiMu.Construct(kfData, 0);
       //DiMu.TransportToDecayVertex();
-      //Double_t m, merr;
+      //scaltype m, merr;
       //DiMu.GetMass(m, merr);
       //histo->Fill(m);
     }
@@ -371,16 +381,16 @@ void LxTrackAna::FinishTask()
 
   if (buildConnectStat)
   {
-    SaveHisto(muchStsBreakX, "muchStsBreakX.root");
-    SaveHisto(muchStsBreakY, "muchStsBreakY.root");
-    SaveHisto(muchStsBreakTx, "muchStsBreakTx.root");
-    SaveHisto(muchStsBreakTy, "muchStsBreakTy.root");
+    SaveHisto(muchStsBreakX, particleType.Data(), "muchStsBreakX.root");
+    SaveHisto(muchStsBreakY, particleType.Data(), "muchStsBreakY.root");
+    SaveHisto(muchStsBreakTx, particleType.Data(), "muchStsBreakTx.root");
+    SaveHisto(muchStsBreakTy, particleType.Data(), "muchStsBreakTy.root");
 
-    SaveHisto(stsMuchBreakX, "stsMuchBreakX.root");
-    SaveHisto(stsMuchBreakY, "stsMuchBreakY.root");
+    SaveHisto(stsMuchBreakX, particleType.Data(), "stsMuchBreakX.root");
+    SaveHisto(stsMuchBreakY, particleType.Data(), "stsMuchBreakY.root");
 
-    SaveHisto(signalChi2, "signalChi2.root");
-    SaveHisto(bgrChi2, "bgrChi2.root");
+    SaveHisto(signalChi2, particleType.Data(), "signalChi2.root");
+    SaveHisto(bgrChi2, particleType.Data(), "bgrChi2.root");
   }// if (buildConnectStat)
 
   if (buildBgrInvMass)
@@ -406,7 +416,7 @@ void LxTrackAna::FinishTask()
       }
 
       BuildInvMass2(stsTracks, bgrInvMass);
-      SaveHisto(bgrInvMass, "bgrInvMass.root");
+      SaveHisto(bgrInvMass, particleType.Data(), "bgrInvMass.root");
 
       for (list<CbmStsTrack*>::iterator i = stsTracks.begin(); i != stsTracks.end(); ++i)
         delete *i;
@@ -421,7 +431,7 @@ void LxTrackAna::FinishTask()
   }// if (buildBgrInvMass)
 
   if (buildSigInvMass)
-    SaveHisto(sigInvMass, "sigInvMass.root");
+    SaveHisto(sigInvMass, particleType.Data(), "sigInvMass.root");
 
   if (buildNearestHitDist && useHitsInStat)
   {
@@ -430,26 +440,29 @@ void LxTrackAna::FinishTask()
     for (Int_t i = 0; i < LXSTATIONS; ++i)
     {
       sprintf(fileName, "%s.root", nearestHitDist[i]->GetName());
-      SaveHisto(nearestHitDist[i], fileName);
+      SaveHisto(nearestHitDist[i], particleType.Data(), fileName);
       sprintf(fileName, "%s.root", hitsDist[i]->GetName());
-      SaveHisto(hitsDist[i], fileName);
+      SaveHisto(hitsDist[i], particleType.Data(), fileName);
     }
   }
 
-  SaveHisto(muPlusStsTxDiff, "muPlusStsTxDiff.root");
-  SaveHisto(muMinusStsTxDiff, "muMinusStsTxDiff.root");
-  SaveHisto(muPlusStsXDiff, "muPlusStsXDiff.root");
-  SaveHisto(muMinusStsXDiff, "muMinusStsXDiff.root");
-  SaveHisto(muPlusVertexTxDiff, "muPlusVertexTxDiff.root");
-  SaveHisto(muMinusVertexTxDiff, "muMinusVertexTxDiff.root");
+  SaveHisto(muPlusStsTxDiff, particleType.Data(), "muPlusStsTxDiff.root");
+  SaveHisto(muMinusStsTxDiff, particleType.Data(), "muMinusStsTxDiff.root");
+  SaveHisto(muPlusStsXDiff, particleType.Data(), "muPlusStsXDiff.root");
+  SaveHisto(muMinusStsXDiff, particleType.Data(), "muMinusStsXDiff.root");
+  SaveHisto(muPlusVertexTxDiff, particleType.Data(), "muPlusVertexTxDiff.root");
+  SaveHisto(muMinusVertexTxDiff, particleType.Data(), "muMinusVertexTxDiff.root");
 
-  SaveHisto(muPlusStsBeginTxDiff2D, "muPlusStsBeginTxDiff2D.root");
-  SaveHisto(muMinusStsBeginTxDiff2D, "muMinusStsBeginTxDiff2D.root");
+  SaveHisto(muPlusStsBeginTxDiff2D, particleType.Data(), "muPlusStsBeginTxDiff2D.root");
+  SaveHisto(muMinusStsBeginTxDiff2D, particleType.Data(), "muMinusStsBeginTxDiff2D.root");
 
-  SaveHisto(deltaPhiPi, "deltaPhiPi.root");
+  SaveHisto(deltaPhiPi, particleType.Data(), "deltaPhiPi.root");
 
-  SaveHisto(jPsiMuonsMomsHisto, "jPsiMuonsMomsHisto.root");
-  SaveHisto(dtxMomProductHisto, "dtxMomProductHisto.root");
+  SaveHisto(jPsiMuonsMomsHisto, particleType.Data(), "jPsiMuonsMomsHisto.root");
+  SaveHisto(dtxMomProductHisto, particleType.Data(), "dtxMomProductHisto.root");
+
+  SaveHisto(stsEndTrackCount, particleType.Data(), "stsEndTrackCountHisto.root");
+  SaveHisto(muchBeginTrackCount, particleType.Data(), "muchBeginTrackCountHisto.root");
 
   segmentsAnalyzer.Finish();
 
@@ -460,7 +473,7 @@ void LxTrackAna::FinishTask()
 // Our goal here is to investigate various properties of Monte Carlo tracks derivable from points of there intersections
 // with detector stations. At the same time in MUCH we use not the Monte Carlo points but hits corresponding to them.
 // -- This is done to make the statistical properties more realistic.
-void LxTrackAna::Exec(Option_t*)
+void LxTrackAna::Exec(Option_t* opt)
 {
   Clean();
 
@@ -531,14 +544,14 @@ void LxTrackAna::Exec(Option_t*)
     {
       CbmMuchPixelHit* mh = static_cast<CbmMuchPixelHit*> (listMuchPixelHits->At(i));
 
-//      Int_t stationNumber = CbmMuchGeoScheme::GetStationIndex(mh->GetAddress());
-//      Int_t layerNumber = CbmMuchGeoScheme::GetLayerIndex(mh->GetAddress());
+      Int_t stationNumber = CbmMuchGeoScheme::GetStationIndex(mh->GetAddress());
+      Int_t layerNumber = CbmMuchGeoScheme::GetLayerIndex(mh->GetAddress());
       TVector3 pos, err;
       mh->Position(pos);
       mh->PositionError(err);
-      Double_t x = pos.X();
-      Double_t y = pos.Y();
-      Double_t z = pos.Z();
+      scaltype x = pos.X();
+      scaltype y = pos.Y();
+      scaltype z = pos.Z();
 
       if (x != x || y != y || z != z)// Test for NaN
         continue;
@@ -595,11 +608,11 @@ static inline void AveragePoints(list<LxSimplePoint>& points)
   if (points.empty() || points.size() == 1)
     return;
 
-  Double_t x = 0;
-  Double_t y = 0;
-  Double_t z = 0;
-  Double_t tx = 0;
-  Double_t ty = 0;
+  scaltype x = 0;
+  scaltype y = 0;
+  scaltype z = 0;
+  scaltype tx = 0;
+  scaltype ty = 0;
 
   for (list<LxSimplePoint>::iterator i = points.begin(); i != points.end(); ++i)
   {
@@ -651,11 +664,11 @@ void LxTrackAna::AveragePoints()
     ::AveragePoints(*i, useHitsInStat);
 }
 
-static UInt_t maxTracks = 0;
-static UInt_t maxMuchPts1 = 0;
-static UInt_t maxMuchPts0 = 0;
-static UInt_t maxStsPts7 = 0;
-static UInt_t maxStsPts6 = 0;
+static Int_t maxTracks = 0;
+static Int_t maxMuchPts1 = 0;
+static Int_t maxMuchPts0 = 0;
+static Int_t maxStsPts7 = 0;
+static Int_t maxStsPts6 = 0;
 
 static inline void BuildStatistics(LxSimpleTrack* track)
 {
@@ -680,14 +693,14 @@ static inline void BuildStatistics(LxSimpleTrack* track)
     for (list<LxSimplePoint>::iterator k = track->muchPoints[0][LXMIDDLE].begin(); k != track->muchPoints[0][LXMIDDLE].end(); ++k)
     {
       LxSimplePoint muchPt0 = *k;
-      Double_t diffZMuch = muchPt0.z - muchPt1.z;
-      Double_t txMuch = (muchPt0.x - muchPt1.x) / diffZMuch;
-      Double_t tyMuch = (muchPt0.y - muchPt1.y) / diffZMuch;
+      scaltype diffZMuch = muchPt0.z - muchPt1.z;
+      scaltype txMuch = (muchPt0.x - muchPt1.x) / diffZMuch;
+      scaltype tyMuch = (muchPt0.y - muchPt1.y) / diffZMuch;
 
-      Double_t diffZMag = magnetCenterZ - muchPt0.z;
-      Double_t magX = muchPt0.x + txMuch * diffZMag;
-      Double_t magTx = magX / magnetCenterZ;
-      Double_t diffMagTx = txMuch - magTx;
+      scaltype diffZMag = magnetCenterZ - muchPt0.z;
+      scaltype magX = muchPt0.x + txMuch * diffZMag;
+      scaltype magTx = magX / magnetCenterZ;
+      scaltype diffMagTx = txMuch - magTx;
 
       if (-13 == track->pdgCode)
         dtxMomProductHisto->Fill(diffMagTx * track->p);
@@ -696,7 +709,7 @@ static inline void BuildStatistics(LxSimpleTrack* track)
 
       if (-13 == track->pdgCode)
       {
-        Double_t txDiff = txMuch - muchPt0.x / muchPt0.z;
+        scaltype txDiff = txMuch - muchPt0.x / muchPt0.z;
         muPlusVertexTxDiff->Fill(txDiff);
 
         if (!track->stsPoints[0].empty() && !track->stsPoints[1].empty())
@@ -710,7 +723,7 @@ static inline void BuildStatistics(LxSimpleTrack* track)
       }
       else if (13 == track->pdgCode)
       {
-        Double_t txDiff = txMuch - muchPt0.x / muchPt0.z;
+        scaltype txDiff = txMuch - muchPt0.x / muchPt0.z;
         muMinusVertexTxDiff->Fill(txDiff);
 
         if (!track->stsPoints[0].empty() && !track->stsPoints[1].empty())
@@ -726,35 +739,35 @@ static inline void BuildStatistics(LxSimpleTrack* track)
       for (list<LxSimplePoint>::iterator l = track->stsPoints[7].begin(); l != track->stsPoints[7].end(); ++l)
       {
         LxSimplePoint stsPt7 = *l;
-        Double_t diffZ = stsPt7.z - muchPt0.z;
-        Double_t extX = muchPt0.x + txMuch * diffZ;
-        Double_t extY = muchPt0.y + tyMuch * diffZ;
-        Double_t dx = stsPt7.x - extX;
-        Double_t dy = stsPt7.y - extY;
+        scaltype diffZ = stsPt7.z - muchPt0.z;
+        scaltype extX = muchPt0.x + txMuch * diffZ;
+        scaltype extY = muchPt0.y + tyMuch * diffZ;
+        scaltype dx = stsPt7.x - extX;
+        scaltype dy = stsPt7.y - extY;
         muchStsBreakX->Fill(dx);
         muchStsBreakY->Fill(dy);
 
         if (-13 == track->pdgCode)
         {
-          Double_t extXmu = muchPt0.x + (txMuch - 0.00671) * diffZ;
+          scaltype extXmu = muchPt0.x + (txMuch - 0.00671) * diffZ;
           muPlusStsXDiff->Fill(stsPt7.x - extXmu);
         }
         else if (13 == track->pdgCode)
         {
-          Double_t extXmu = muchPt0.x + (txMuch + 0.00691) * diffZ;
+          scaltype extXmu = muchPt0.x + (txMuch + 0.00691) * diffZ;
           muMinusStsXDiff->Fill(stsPt7.x - extXmu);
         }
 
         for (list<LxSimplePoint>::iterator m = track->stsPoints[6].begin(); m != track->stsPoints[6].end(); ++m)
         {
           LxSimplePoint stsPt6 = *m;
-          Double_t diffZSts = stsPt6.z - stsPt7.z;
-          Double_t txSts = (stsPt6.x - stsPt7.x) / diffZSts;
-          Double_t tySts = (stsPt6.y - stsPt7.y) / diffZSts;
+          scaltype diffZSts = stsPt6.z - stsPt7.z;
+          scaltype txSts = (stsPt6.x - stsPt7.x) / diffZSts;
+          scaltype tySts = (stsPt6.y - stsPt7.y) / diffZSts;
           //muchStsBreakX->Fill(dx);
           //muchStsBreakY->Fill(dy);
-          Double_t dtx = txSts - txMuch;
-          Double_t dty = tySts - tyMuch;
+          scaltype dtx = txSts - txMuch;
+          scaltype dty = tySts - tyMuch;
           muchStsBreakTx->Fill(dtx);
           muchStsBreakTy->Fill(dty);
 
@@ -763,7 +776,7 @@ static inline void BuildStatistics(LxSimpleTrack* track)
           else if (13 == track->pdgCode)
             muMinusStsTxDiff->Fill(dtx);
 
-          Double_t chi2 = dx * dx / xRms2 + dy * dy / yRms2 + dtx * dtx / txRms2 + dty * dty / tyRms2;
+          scaltype chi2 = dx * dx / xRms2 + dy * dy / yRms2 + dtx * dtx / txRms2 + dty * dty / tyRms2;
 
           if (0 > track->motherId && (13 == track->pdgCode || -13 == track->pdgCode))// JPsi
             signalChi2->Fill(chi2);
@@ -785,17 +798,17 @@ static inline void BuildStatistics(LxSimpleTrack* track)
 
 static inline void BuildNearestHitStat(LxSimpleTrack* track, bool cropHits)
 {
-  static Double_t maxDist = 0;
-  static Double_t mcX = 0;
-  static Double_t hitX = 0;
-  static Double_t mcY = 0;
-  static Double_t hitY = 0;
+  static scaltype maxDist = 0;
+  static scaltype mcX = 0;
+  static scaltype hitX = 0;
+  static scaltype mcY = 0;
+  static scaltype hitY = 0;
 
-  static Double_t maxMinDist = 0;
-  static Double_t mcMinX = 0;
-  static Double_t hitMinX = 0;
-  static Double_t mcMinY = 0;
-  static Double_t hitMinY = 0;
+  static scaltype maxMinDist = 0;
+  static scaltype mcMinX = 0;
+  static scaltype hitMinX = 0;
+  static scaltype mcMinY = 0;
+  static scaltype hitMinY = 0;
   static Int_t nMinHits = 0;
 
   for (Int_t i = 0; i < LXSTATIONS; ++i)
@@ -804,20 +817,20 @@ static inline void BuildNearestHitStat(LxSimpleTrack* track, bool cropHits)
       continue;
 
     LxSimplePoint mcPoint = track->muchMCPts[i][LXMIDDLE].front();// We assume the MC points were averaged and there can be at most one point.
-    Double_t minDist = -1;
-    Double_t mcMinX0 = 0;
-    Double_t hitMinX0 = 0;
-    Double_t mcMinY0 = 0;
-    Double_t hitMinY0 = 0;
-    Double_t hitMinZ0 = 0;
+    scaltype minDist = -1;
+    scaltype mcMinX0 = 0;
+    scaltype hitMinX0 = 0;
+    scaltype mcMinY0 = 0;
+    scaltype hitMinY0 = 0;
+    scaltype hitMinZ0 = 0;
     Int_t nMinHits0 = 0;
 
     for (list<LxSimplePoint>::iterator j = track->muchPoints[i][LXMIDDLE].begin(); j != track->muchPoints[i][LXMIDDLE].end(); ++j)
     {
       LxSimplePoint hitPoint = *j;
-      Double_t dx = hitPoint.x - mcPoint.x;
-      Double_t dy = hitPoint.y - mcPoint.y;
-      Double_t dist = sqrt(dx * dx + dy * dy);
+      scaltype dx = hitPoint.x - mcPoint.x;
+      scaltype dy = hitPoint.y - mcPoint.y;
+      scaltype dist = sqrt(dx * dx + dy * dy);
 
       if (track->motherId < 0 && (13 == track->pdgCode || -13 == track->pdgCode))
         hitsDist[i]->Fill(dist);
@@ -879,9 +892,18 @@ void LxTrackAna::BuildStatistics()
   if (allTracks.size() > maxTracks)
     maxTracks = allTracks.size();
 
+  Int_t stsEndTracks = 0;
+  Int_t muchBeginTracks = 0;
+
   for (vector<LxSimpleTrack*>::iterator i = allTracks.begin(); i != allTracks.end(); ++i)
   {
     LxSimpleTrack* track = *i;
+
+    if (!track->stsPoints[7].empty())
+      ++stsEndTracks;
+
+    if (!track->muchPoints[0][0].empty() || !track->muchPoints[0][1].empty() || !track->muchPoints[0][2].empty())
+      ++muchBeginTracks;
 
     if (track->muchPoints[0][LXMIDDLE].empty() ||  track->muchPoints[1][LXMIDDLE].empty() || track->muchPoints[5][LXMIDDLE].empty())
       continue;
@@ -894,6 +916,9 @@ void LxTrackAna::BuildStatistics()
 
     ::BuildStatistics(track);
   }
+
+  stsEndTrackCount->Fill(stsEndTracks);
+  muchBeginTrackCount->Fill(muchBeginTracks);
 
   cout << "Statistics is built maxTracks=" << maxTracks << " maxMuchPts1=" << maxMuchPts1 << " maxMuchPts0=" << maxMuchPts0
       << " maxStsPts7=" << maxStsPts7 << " maxStsPts6=" << maxStsPts6 << endl;
@@ -925,10 +950,10 @@ void LxTrackAna::Connect(bool useCuts)
       for (list<LxSimplePoint>::iterator k = muchTrack->muchPoints[0][LXMIDDLE].begin(); k != muchTrack->muchPoints[0][LXMIDDLE].end(); ++k)
       {
         LxSimplePoint muchPt0 = *k;
-        Double_t diffZMuch = muchPt0.z - muchPt1.z;
-        Double_t txMuch = (muchPt0.x - muchPt1.x) / diffZMuch;
-//        Double_t txMuchVertex = muchPt0.x / muchPt0.z;
-        Double_t tyMuch = (muchPt0.y - muchPt1.y) / diffZMuch;
+        scaltype diffZMuch = muchPt0.z - muchPt1.z;
+        scaltype txMuch = (muchPt0.x - muchPt1.x) / diffZMuch;
+        scaltype txMuchVertex = muchPt0.x / muchPt0.z;
+        scaltype tyMuch = (muchPt0.y - muchPt1.y) / diffZMuch;
         Connect(muchTrack, muchPt0, txMuch, tyMuch, useCuts);
       }// for (list<LxSimplePoint>::iterator k = muchTrack->muchPoints[0].begin(); k != muchTrack->muchPoints[0].end(); ++k)
     }// for (list<LxSimplePoint>::iterator j = muchTrack->muchPoints[1].begin(); j != muchTrack->muchPoints[1].end(); ++j)
@@ -989,7 +1014,7 @@ void LxTrackAna::Connect(bool useCuts)
 
   if (useCuts)
   {
-    Double_t efficiency = jpsiMatchedCountCutted * 100;
+    scaltype efficiency = jpsiMatchedCountCutted * 100;
     efficiency /= jpsiTrackCountCutted;
     cout << "J/psi (with cuts) connection efficiency = " << efficiency << "% ( " << jpsiMatchedCountCutted << " / " << jpsiTrackCountCutted << " )" << endl;
     efficiency = otherMatchedCountCutted * 100;
@@ -998,7 +1023,7 @@ void LxTrackAna::Connect(bool useCuts)
   }
   else
   {
-    Double_t efficiency = jpsiMatchedCount * 100;
+    scaltype efficiency = jpsiMatchedCount * 100;
     efficiency /= jpsiTrackCount;
     cout << "J/psi (without cuts) connection efficiency = " << efficiency << "% ( " << jpsiMatchedCount << " / " << jpsiTrackCount << " )" << endl;
     efficiency = otherMatchedCount * 100;
@@ -1007,7 +1032,7 @@ void LxTrackAna::Connect(bool useCuts)
   }
 }
 
-void LxTrackAna::Connect(LxSimpleTrack* muchTrack, LxSimplePoint muchPt0, Double_t txMuch, Double_t tyMuch,
+void LxTrackAna::Connect(LxSimpleTrack* muchTrack, LxSimplePoint muchPt0, scaltype txMuch, scaltype tyMuch,
     bool useCuts)
 {
   for (vector<LxSimpleTrack*>::iterator l = allTracks.begin(); l != allTracks.end(); ++l)
@@ -1067,16 +1092,16 @@ void LxTrackAna::Connect(LxSimpleTrack* muchTrack, LxSimplePoint muchPt0, Double
 
       LxSimplePoint stsPtM0 = stsTrack->stsPoints[m0].front();
       LxSimplePoint stsPtN0 = stsTrack->stsPoints[n0].front();
-      Double_t txSts0 = (stsPtN0.x - stsPtM0.x) / (stsPtN0.z - stsPtM0.z);
+      scaltype txSts0 = (stsPtN0.x - stsPtM0.x) / (stsPtN0.z - stsPtM0.z);
 
       for (list<LxSimplePoint>::iterator o = stsTrack->stsPoints[m].begin(); o != stsTrack->stsPoints[m].end(); ++o)
       {
         LxSimplePoint stsPtM = *o;
-        Double_t deltaZ = stsPtM.z - muchPt0.z;
-        Double_t extX = muchPt0.x + txMuch * deltaZ;
-        Double_t extY = muchPt0.y + tyMuch * deltaZ;
-        Double_t dx = stsPtM.x - extX;
-        Double_t dy = stsPtM.y - extY;
+        scaltype deltaZ = stsPtM.z - muchPt0.z;
+        scaltype extX = muchPt0.x + txMuch * deltaZ;
+        scaltype extY = muchPt0.y + tyMuch * deltaZ;
+        scaltype dx = stsPtM.x - extX;
+        scaltype dy = stsPtM.y - extY;
 
         if (dx < 0)
           dx = -dx;
@@ -1090,14 +1115,14 @@ void LxTrackAna::Connect(LxSimpleTrack* muchTrack, LxSimplePoint muchPt0, Double
         for (list<LxSimplePoint>::iterator p = stsTrack->stsPoints[n].begin(); p != stsTrack->stsPoints[n].end(); ++p)
         {
           LxSimplePoint stsPtN = *p;
-          Double_t diffZSts = stsPtN.z - stsPtM.z;
-          Double_t txSts = (stsPtN.x - stsPtM.x) / diffZSts;
-          Double_t tySts = (stsPtN.y - stsPtM.y) / diffZSts;
-          Double_t dtx = txSts - txMuch;
-          Double_t dty = tySts - tyMuch;
+          scaltype diffZSts = stsPtN.z - stsPtM.z;
+          scaltype txSts = (stsPtN.x - stsPtM.x) / diffZSts;
+          scaltype tySts = (stsPtN.y - stsPtM.y) / diffZSts;
+          scaltype dtx = txSts - txMuch;
+          scaltype dty = tySts - tyMuch;
 
-          Double_t stsCharge = TDatabasePDG::Instance()->GetParticle(stsTrack->pdgCode)->Charge();
-          Double_t muchCharge = txMuch - txSts0;
+          scaltype stsCharge = TDatabasePDG::Instance()->GetParticle(stsTrack->pdgCode)->Charge();
+          scaltype muchCharge = txMuch - txSts0;
           bool chargesSignsTheSame = (stsCharge > 0 && muchCharge > 0) || (stsCharge < 0 && muchCharge < 0);
 
           if (dtx < 0)
@@ -1109,17 +1134,17 @@ void LxTrackAna::Connect(LxSimpleTrack* muchTrack, LxSimplePoint muchPt0, Double
           if (useCuts && ((useChargeSignInCuts && (!chargesSignsTheSame || !momFitTxBreak(stsTrack->p, muchCharge))) || dtx > txRms * cutCoeff || dty > tyRms * cutCoeff))
             continue;
 
-          Double_t chi2 = dx * dx / xRms2 + dy * dy / yRms2 + dtx * dtx / txRms2 + dty * dty / tyRms2;
+          scaltype chi2 = dx * dx / xRms2 + dy * dy / yRms2 + dtx * dtx / txRms2 + dty * dty / tyRms2;
           stsTrack->charge = stsCharge;
 
           if (0 == stsTrack->linkedMuchTrack.first || chi2 < stsTrack->linkedMuchTrack.second)
           {
-            list<pair<LxSimpleTrack*, Double_t> >::iterator r = muchTrack->linkedStsTracks.begin();
+            list<pair<LxSimpleTrack*, scaltype> >::iterator r = muchTrack->linkedStsTracks.begin();
 
             for (; r != muchTrack->linkedStsTracks.end() && r->second <= chi2; ++r)
               ;
 
-            pair<LxSimpleTrack*, Double_t> trackDesc(stsTrack, chi2);
+            pair<LxSimpleTrack*, scaltype> trackDesc(stsTrack, chi2);
             muchTrack->linkedStsTracks.insert(r, trackDesc);
           }
         }
@@ -1129,7 +1154,7 @@ void LxTrackAna::Connect(LxSimpleTrack* muchTrack, LxSimplePoint muchPt0, Double
 
   if (!muchTrack->linkedStsTracks.empty())
   {
-    pair<LxSimpleTrack*, Double_t> trackDesc = muchTrack->linkedStsTracks.front();
+    pair<LxSimpleTrack*, scaltype> trackDesc = muchTrack->linkedStsTracks.front();
     muchTrack->linkedStsTracks.pop_front();
     LxSimpleTrack* anotherMuchTrack = trackDesc.first->linkedMuchTrack.first;
     trackDesc.first->linkedMuchTrack.first = muchTrack;

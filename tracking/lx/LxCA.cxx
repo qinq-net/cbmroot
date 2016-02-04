@@ -18,31 +18,392 @@
 
 using namespace std;
 
+scaltype tx_limits[LXSTATIONS];
+scaltype tx_limits_sq[LXSTATIONS];
+scaltype ty_limits[LXSTATIONS];
+scaltype ty_limits_sq[LXSTATIONS];
+scaltype x_disp_left_limits[LXSTATIONS];
+scaltype x_disp_left_limits_sq[LXSTATIONS];
+scaltype y_disp_left_limits[LXSTATIONS];
+scaltype y_disp_left_limits_sq[LXSTATIONS];
+scaltype x_disp_right_limits[LXSTATIONS];
+scaltype x_disp_right_limits_sq[LXSTATIONS];
+scaltype y_disp_right_limits[LXSTATIONS];
+scaltype y_disp_right_limits_sq[LXSTATIONS];
+scaltype x_coords[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
+scaltype tx_vals[LXSTATIONS - 1][LXMAXPOINTSONSTATION];
+scaltype x_errs[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
+scaltype y_coords[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
+scaltype ty_vals[LXSTATIONS][LXMAXPOINTSONSTATION];
+scaltype y_errs[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
+scaltype z_coords[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
+LxPoint* point_refs[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
+bool use_points[LXSTATIONS - 1][LXMAXPOINTSONSTATION];
+int points_counts[LXSTATIONS][LXLAYERS];
+
+void LxSpace::InitGlobalCAArrays()
+{
+  memset(x_coords, 0, sizeof(x_coords));
+  memset(tx_vals, 0, sizeof(tx_vals));
+  memset(x_errs, 0, sizeof(x_errs));
+  memset(y_coords, 0, sizeof(y_coords));
+  memset(ty_vals, 0, sizeof(ty_vals));
+  memset(y_errs, 0, sizeof(y_errs));
+  memset(z_coords, 0, sizeof(z_coords));
+  memset(point_refs, 0, sizeof(point_refs));
+  memset(points_counts, 0, sizeof(points_counts));
+
+  for (int i = 0; i < stationsInAlgo - 2; ++i)
+    memset(&use_points[i][0], 0, sizeof(use_points[i]));
+
+  for (int i = stationsInAlgo - 2; i < LXSTATIONS - 1; ++i)
+    memset(&use_points[i][0], 1, sizeof(use_points[LXSTATIONS - 2]));
+}
+
+//#define LXSIMDIZE
+
+#ifdef LXSIMDIZE
+
+#include "immintrin.h"
+
+#define vectype __m256
+#define veclen 8
+#define vec_load_ps _mm256_load_ps
+#define vec_store_ps _mm256_store_ps
+#define vec_set1_ps _mm256_set1_ps
+#define vec_add_ps _mm256_add_ps
+#define vec_sub_ps _mm256_sub_ps
+#define vec_mul_ps _mm256_mul_ps
+#define vec_div_ps _mm256_div_ps
+#define vec_cmp_ps _mm256_cmp_ps
+#define vec_or_ps _mm256_or_ps
+#define vec_sqrt_ps _mm256_sqrt_ps
+
+void LxSpace::RefineMiddlePoints()
+{
+  for (int station_number = LXSTATIONS - 1; station_number >= stationsInAlgo - 1; --station_number)
+  {
+    for (int i = 0; i < points_counts[station_number][1]; ++i)
+    {
+      scaltype xC = x_coords[station_number][1][i];
+      scaltype yC = y_coords[station_number][1][i];
+      scaltype zC = z_coords[station_number][1][i];
+      scaltype tx = xC / zC;
+      scaltype ty = yC / zC;
+      scaltype xErrCSq = x_errs[station_number][1][i] * x_errs[station_number][1][i];
+      scaltype yErrCSq = y_errs[station_number][1][i] * y_errs[station_number][1][i];
+      bool validC = false;
+
+      for (int j = 0; j < points_counts[station_number][2]; ++j)
+      {
+        scaltype zR = z_coords[station_number][2][j];
+        scaltype deltaZ = zR - zC;
+        scaltype xR = x_coords[station_number][2][j];
+        scaltype xErrRSq = x_errs[station_number][2][j] * x_errs[station_number][2][j];
+        scaltype x = xC + tx * deltaZ;
+        scaltype deltaX = x - xR;
+        scaltype deltaXSq = deltaX * deltaX;
+
+        if (deltaXSq > 16 * (xErrCSq + xErrRSq) + x_disp_right_limits_sq[station_number])
+          continue;
+
+        scaltype yR = y_coords[station_number][2][j];
+        scaltype yErrRSq = y_errs[station_number][2][j] * y_errs[station_number][2][j];
+        scaltype y = yC + ty * deltaZ;
+        scaltype deltaY = y - yR;
+        scaltype deltaYSq = deltaY * deltaY;
+
+        if (deltaYSq > 16 * (yErrCSq + yErrRSq) + y_disp_right_limits_sq[station_number])
+          continue;
+
+        validC = true;
+        break;
+      }
+
+      if (validC)
+        continue;
+
+      for (int j = 0; j < points_counts[station_number][0]; ++j)
+      {
+        scaltype zL = z_coords[station_number][0][j];
+        scaltype deltaZ = zL - zC;
+        scaltype xL = x_coords[station_number][0][j];
+        scaltype xErrLSq = x_errs[station_number][0][j] * x_errs[station_number][0][j];
+        scaltype x = xC + tx * deltaZ;
+        scaltype deltaX = x - xL;
+        scaltype deltaXSq = deltaX * deltaX;
+
+        if (deltaXSq > 16 * (xErrCSq + xErrLSq) + x_disp_left_limits_sq[station_number])
+          continue;
+
+        scaltype yL = y_coords[station_number][0][j];
+        scaltype yErrLSq = y_errs[station_number][0][j] * y_errs[station_number][0][j];
+        scaltype y = yC + ty * deltaZ;
+        scaltype deltaY = y - yL;
+        scaltype deltaYSq = deltaY * deltaY;
+
+        if (deltaYSq > 16 * (yErrCSq + yErrLSq) + y_disp_left_limits_sq[station_number])
+          continue;
+
+        validC = true;
+        break;
+      }
+
+      if (!validC)
+      {
+        use_points[station_number - 1][i] = 0;
+        point_refs[station_number][1][i]->valid = false;
+      }
+    }
+  }
+}
+
+//#include <omp.h>
+
+void LxSpace::CalcTangents(int station_number)
+{
+  int l_station_number = station_number - 1;
+
+  if (points_counts[station_number][1] > 200)
+  {
+    //omp_set_num_threads(4);
+//#pragma omp parallel for
+  for (int i = 0; i < points_counts[station_number][1]; i += veclen)
+  {
+    if (!*reinterpret_cast<unsigned long long*> (&use_points[l_station_number][i]))
+      continue;
+
+    vectype x = vec_load_ps(&x_coords[station_number][1][i]);
+    vectype y = vec_load_ps(&y_coords[station_number][1][i]);
+    vectype z = vec_load_ps(&z_coords[station_number][1][i]);
+    vectype tx = vec_div_ps(x, z);
+    vectype ty = vec_div_ps(y, z);
+    vec_store_ps(&tx_vals[l_station_number][i], tx);
+    vec_store_ps(&ty_vals[l_station_number][i], ty);
+  }
+  }
+  else
+  {
+    for (int i = 0; i < points_counts[station_number][1]; i += veclen)
+    {
+      if (!*reinterpret_cast<unsigned long long*> (&use_points[l_station_number][i]))
+        continue;
+
+      vectype x = vec_load_ps(&x_coords[station_number][1][i]);
+      vectype y = vec_load_ps(&y_coords[station_number][1][i]);
+      vectype z = vec_load_ps(&z_coords[station_number][1][i]);
+      vectype tx = vec_div_ps(x, z);
+      vectype ty = vec_div_ps(y, z);
+      vec_store_ps(&tx_vals[l_station_number][i], tx);
+      vec_store_ps(&ty_vals[l_station_number][i], ty);
+    }
+  }
+}
+
+void LxSpace::BuildRaysGlobal()
+{
+  vectype tx_coeff_sq = vec_set1_ps(errorTxCoeffSq);
+  vectype ty_coeff_sq = vec_set1_ps(errorTyCoeffSq);
+  scaltype res_buf[veclen];
+  scaltype tx_buf[veclen];
+  scaltype ty_buf[veclen];
+  scaltype dtx_buf[veclen];
+  scaltype dty_buf[veclen];
+  int iter;
+
+//#pragma omp parallel for
+  for (int i = LXSTATIONS - 1; i > 0; --i)
+  {
+    vectype tx_limit_sq = vec_set1_ps(tx_limits_sq[i]);
+    vectype ty_limit_sq = vec_set1_ps(ty_limits_sq[i]);
+    CalcTangents(i);
+    int i2 = i - 1;
+    int i3 = i2 - 1;
+
+    for (int j = 0; j < points_counts[i][1]; ++j)
+    {
+      if (!use_points[i2][j])
+        continue;
+
+      vectype r_x = vec_set1_ps(x_coords[i][1][j]);
+      vectype r_dx = vec_set1_ps(x_errs[i][1][j]);
+      vectype r_y = vec_set1_ps(y_coords[i][1][j]);
+      vectype r_dy = vec_set1_ps(y_errs[i][1][j]);
+      vectype r_z = vec_set1_ps(z_coords[i][1][j]);
+      vectype tx0 = vec_set1_ps(tx_vals[i2][j]);
+      vectype ty0 = vec_set1_ps(ty_vals[i2][j]);
+
+      vectype r_dx_sq = vec_mul_ps(r_dx, r_dx);
+      vectype r_dy_sq = vec_mul_ps(r_dy, r_dy);
+
+//#pragma omp parallel for
+      for (int k = 0; k < points_counts[i2][1]; k += veclen)
+      {
+        vectype l_x = vec_load_ps(&x_coords[i2][1][k]);
+        vectype l_dx = vec_load_ps(&x_errs[i2][1][k]);
+        vectype l_y = vec_load_ps(&y_coords[i2][1][k]);
+        vectype l_dy = vec_load_ps(&y_errs[i2][1][k]);
+        vectype l_z = vec_load_ps(&z_coords[i2][1][k]);
+
+        vectype delta_x = vec_sub_ps(l_x, r_x);
+        vectype delta_y = vec_sub_ps(l_y, r_y);
+        vectype delta_z = vec_sub_ps(l_z, r_z);
+        vectype delta_z_sq = vec_mul_ps(delta_z, delta_z);
+
+        vectype tx = vec_div_ps(delta_x, delta_z);
+        vectype ty = vec_div_ps(delta_y, delta_z);
+        vectype l_dx_sq = vec_mul_ps(l_dx, l_dx);
+        vectype l_dy_sq = vec_mul_ps(l_dy, l_dy);
+
+        vectype dtx_sq = vec_add_ps(r_dx_sq, l_dx_sq);
+        dtx_sq = vec_div_ps(dtx_sq, delta_z_sq);
+        vectype dtx = vec_sqrt_ps(dtx_sq);
+        dtx_sq = vec_mul_ps(dtx_sq, tx_coeff_sq);
+        dtx_sq = vec_add_ps(dtx_sq, tx_limit_sq);
+        vectype dty_sq = vec_add_ps(r_dy_sq, l_dy_sq);
+        dty_sq = vec_div_ps(dty_sq, delta_z_sq);
+        vectype dty = vec_sqrt_ps(dty_sq);
+        dty_sq = vec_mul_ps(dty_sq, ty_coeff_sq);
+        dty_sq = vec_add_ps(dtx_sq, ty_limit_sq);
+
+        vectype diff_tx = vec_sub_ps(tx, tx0);
+        vectype diff_ty = vec_sub_ps(ty, ty0);
+        vectype diff_tx_sq = vec_mul_ps(diff_tx, diff_tx);
+        vectype diff_ty_sq = vec_mul_ps(diff_ty, diff_ty);
+
+        vectype res_tx = vec_cmp_ps(diff_tx_sq, dtx_sq, _CMP_GT_OS);
+        vectype res_ty = vec_cmp_ps(diff_ty_sq, dty_sq, _CMP_GT_OS);
+        vectype res = vec_or_ps(res_tx, res_ty);
+        vec_store_ps(res_buf, res);
+        vec_store_ps(tx_buf, tx);
+        vec_store_ps(ty_buf, ty);
+        vec_store_ps(dtx_buf, dtx);
+        vec_store_ps(dty_buf, dty);
+        iter = k;
+
+        for (int l = 0; l < veclen; ++l)
+        {
+          if (res_buf[l])
+          {
+            ++iter;
+            continue;
+          }
+
+          if (iter >= points_counts[i2][1])
+            break;
+
+          point_refs[i][1][j]->CreateRay(point_refs[i2][1][iter], tx_buf[l], ty_buf[l], dtx_buf[l], dty_buf[l]);
+
+          if (i3 > -1)
+            use_points[i3][iter] = true;
+
+          ++iter;
+        }
+      }
+    }
+  }
+}
+
+#else//LXSIMDIZE
+
+static void CalcTangents(int station_number)
+{
+  int l_station_number = station_number - 1;
+
+  for (int i = 0; i < points_counts[station_number][1]; ++i)
+  {
+    if (!use_points[l_station_number][i])
+      continue;
+
+    tx_vals[l_station_number][i] = x_coords[station_number][1][i] / z_coords[station_number][1][i];
+    ty_vals[l_station_number][i] = y_coords[station_number][1][i] / z_coords[station_number][1][i];
+  }
+}
+
+void BuildRaysGlobal()
+{
+  for (int i = LXSTATIONS - 1; i > 0; --i)
+  {
+    scaltype tx_limit_sq = tx_limits[i] * tx_limits[i];
+    scaltype ty_limit_sq = ty_limits[i] * ty_limits[i];
+    CalcTangents(i);
+    int i2 = i - 1;
+    int i3 = i2 - 1;
+
+    for (int j = 0; j < points_counts[i][1]; ++j)
+    {
+      if (!use_points[i2][j])
+        continue;
+
+      scaltype r_x = x_coords[i][1][j];
+      scaltype r_y = y_coords[i][1][j];
+      scaltype r_z = z_coords[i][1][j];
+      scaltype r_dx_sq = x_errs[i][1][j] * x_errs[i][1][j];
+      scaltype r_dy_sq = y_errs[i][1][j] * y_errs[i][1][j];
+
+      for (int k = 0; k < points_counts[i2][1]; ++k)
+      {
+        scaltype delta_x = x_coords[i2][1][k] - r_x;
+        scaltype delta_y = y_coords[i2][1][k] - r_y;
+        scaltype delta_z = z_coords[i2][1][k] - r_z;
+        scaltype delta_z_sq = delta_z * delta_z;
+
+        scaltype tx = delta_x / delta_z;
+        scaltype ty = delta_y / delta_z;
+        scaltype l_dx_sq = x_errs[i2][1][k] * x_errs[i2][1][k];
+        scaltype l_dy_sq = y_errs[i2][1][k] * y_errs[i2][1][k];
+
+        scaltype dtx_sq = (r_dx_sq + l_dx_sq) / delta_z_sq;
+        scaltype dtx = sqrt(dtx_sq);
+        dtx_sq *= errorTxCoeffSq;
+        dtx_sq += tx_limit_sq;
+        scaltype dty_sq = (r_dy_sq + l_dy_sq) / delta_z_sq;
+        scaltype dty = sqrt(dty_sq);
+        dty_sq *= errorTyCoeffSq;
+        dty_sq += ty_limit_sq;
+
+        scaltype diff_tx = tx - tx_vals[i2][j];
+        scaltype diff_ty = ty - ty_vals[i2][j];
+        scaltype diff_tx_sq = diff_tx * diff_tx;
+        scaltype diff_ty_sq = diff_ty * diff_ty;
+
+        if ((diff_tx_sq > dtx_sq) || (diff_ty_sq > dty_sq))
+          continue;
+
+        point_refs[i][1][j]->CreateRay(point_refs[i2][1][k], tx, ty, dtx, dty);
+
+        if (i3 > -1)
+          use_points[i3][k] = true;
+      }
+    }
+  }
+}
+
+#endif//LXSIMDIZE
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Global declarations
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef CLUSTER_MODE
-static Double_t squareRoot2 = sqrt(2.0);
-static Double_t errorXcoeff = 4.0;
-static Double_t errorYcoeff = 4.0;
-static Double_t errorTxCoeff = 4.0;
-static Double_t errorTyCoeff = 4.0;
+static scaltype squareRoot2 = sqrt(2.0);
+static scaltype errorXcoeff = 4.0;
+static scaltype errorYcoeff = 4.0;
+static scaltype errorTxCoeff = 4.0;
+static scaltype errorTyCoeff = 4.0;
 #else//CLUSTER_MODE
-static Double_t errorXcoeff = 8.0;
-static Double_t errorYcoeff = 8.0;
-static Double_t errorTxCoeff = 4.0;
-static Double_t errorTyCoeff = 4.0;
+static scaltype errorXcoeff = 4.0;
+static scaltype errorYcoeff = 4.0;
 #endif//CLUSTER_MODE
 
-static Double_t errorTxBreakCoeff = 4.0;
-static Double_t errorTyBreakCoeff = 4.0;
+static scaltype errorTxBreakCoeff = 4.0;
+static scaltype errorTyBreakCoeff = 4.0;
 
 // These ..Ext.. coefficients are applied to squares of uncertainties. So they can be bigger than the previous.
-//static Double_t errorExtXcoeff = 16;
-//static Double_t errorExtYcoeff = 16;
-//static Double_t errorExtTxCoeff = 16;
-//static Double_t errorExtTyCoeff = 16;
+//static scaltype errorExtXcoeff = 16;
+//static scaltype errorExtYcoeff = 16;
+//static scaltype errorExtTxCoeff = 16;
+//static scaltype errorExtTyCoeff = 16;
 
 //static LxFinder* finderInstance = 0;
 
@@ -52,16 +413,16 @@ static Double_t errorTyBreakCoeff = 4.0;
 
 struct LxTrackCandidate
 {
-  LxRay* rays[LXSTATIONS - LXFIRSTSTATION - 1];// Rays are stored left to right.
+  LxRay* rays[LXSTATIONS - 1];// Rays are stored left to right.
   Int_t length;
-  Double_t chi2;
+  scaltype chi2;
 
-  LxTrackCandidate(LxRay** rr, Int_t len, Double_t c2) : length(len), chi2(c2)
+  LxTrackCandidate(LxRay** rr, Int_t len, scaltype c2) : length(len), chi2(c2)
   {
     for (int i = 0; i < len; ++i)
       rays[i] = rr[i];
 
-    for (int i = len; i < LXSTATIONS - LXFIRSTSTATION - 1; ++i)
+    for (int i = len; i < LXSTATIONS - 1; ++i)
       rays[i] = 0;
   }
 };
@@ -71,8 +432,8 @@ struct LxTrackCandidate
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef CLUSTER_MODE
-LxTrack::LxTrack(LxTrackCandidate* tc) : externalTrack(0), matched(false), mcTrack(0), length(tc->length),chi2(tc->chi2),
-    aX(0), bX(0), aY(0), bY(0), restoredPoints(0)
+LxTrack::LxTrack(LxTrackCandidate* tc) : matched(false), length(tc->length), chi2(tc->chi2), mcTrack(0),
+    aX(0), bX(0), aY(0), bY(0), restoredPoints(0), externalTrack(0)
 #ifdef USE_KALMAN_FIT
     , x(0), y(0), z(0), dx(0), dy(0), tx(0), ty(0), dtx(0), dty(0)
 #endif//USE_KALMAN_FIT
@@ -101,16 +462,15 @@ LxTrack::LxTrack(LxTrackCandidate* tc) : externalTrack(0), matched(false), mcTra
   point->track = this;
 }
 #else//CLUSTER_MODE
-LxTrack::LxTrack(LxTrackCandidate* tc) : externalTrack(0)
+LxTrack::LxTrack(LxTrackCandidate* tc) : matched(false), length(tc->length), chi2(tc->chi2), mcTrack(0),
+    aX(0), bX(0), aY(0), bY(0), restoredPoints(0), externalTrack(0)
 #ifndef LX_EXT_LINK_SOPH
   , extLinkChi2(0)
 #endif//LX_EXT_LINK_SOPH
-   , matched(false), mcTrack(0), length(tc->length),chi2(tc->chi2),
-    aX(0), bX(0), aY(0), bY(0), restoredPoints(0)
 #ifdef USE_KALMAN_FIT
     , x(0), y(0), z(0), dx(0), dy(0), tx(0), ty(0), dtx(0), dty(0)
 #endif//USE_KALMAN_FIT
-  , clone(false), triggering(false)
+  , clone(false), distanceOk(false), oppCharged(false), triggering(false)
 {
   memset(rays, 0, sizeof(rays));
   memset(points, 0, sizeof(points));
@@ -155,7 +515,7 @@ LxTrack::LxTrack(LxTrackCandidate* tc) : externalTrack(0)
   if (point->artificial)
     ++restoredPoints;
 
-  LxStation* station = ray->station;
+  LxStation* station = ray->station->space->stations[0];
 
   for (int i = 0; i < LXLAYERS; ++i)
   {
@@ -163,7 +523,10 @@ LxTrack::LxTrack(LxTrackCandidate* tc) : externalTrack(0)
       continue;
 
     LxLayer* layer = station->layers[i];
-    LxPoint* p = layer->PickNearestPoint(ray);
+    scaltype diffZ = layer->zCoord - ray->end->z;
+    scaltype x = ray->end->x + ray->tx * diffZ;
+    scaltype y = ray->end->y + ray->ty * diffZ;
+    LxPoint* p = layer->PickNearestPoint(x, y);
 
     if (0 != p && !p->used)
     {
@@ -194,7 +557,7 @@ static inline void Ask()
 #ifdef USE_KALMAN_FIT
 struct KFParams
 {
-  Double_t coord, tg, C11, C12, C21, C22;
+  scaltype coord, tg, C11, C12, C21, C22;
 };
 
 void LxTrack::Fit()
@@ -207,18 +570,18 @@ void LxTrack::Fit()
   };
 
   LxPoint* prevPoint = firstPoint;
-  Double_t aChi2 = 0;
+  scaltype aChi2 = 0;
 
   for (Int_t i = LXSTATIONS - LXFIRSTSTATION - 2; i >= 0; --i)
   {
     LxRay* ray = rays[i];
     LxPoint* point = ray->end;
     LxStation* station = point->layer->station;
-    Double_t m[2] = { point->x, point->y };
-    Double_t V[2] = { point->dx * point->dx, point->dy * point->dy };
+    scaltype m[2] = { point->x, point->y };
+    scaltype V[2] = { point->dx * point->dx, point->dy * point->dy };
     KFParams pPrev[2] = { params[0], params[1] };
-    Double_t deltaZ = point->z - prevPoint->z;
-    Double_t deltaZ2 = deltaZ * deltaZ;
+    scaltype deltaZ = point->z - prevPoint->z;
+    scaltype deltaZ2 = deltaZ * deltaZ;
 
     for (Int_t k = 0; k <= 1; ++k)
     {
@@ -231,10 +594,10 @@ void LxTrack::Fit()
       params[k].C21 += pPrev[k].C22 * deltaZ + station->MSNoise[k][1][0];
       params[k].C22 += station->MSNoise[k][1][1];
 
-      Double_t S = 1.0 / (V[k] + params[k].C11);
-      Double_t Kcoord = params[k].C11 * S;
-      Double_t Ktg = params[k].C21 * S;
-      Double_t dzeta = m[k] - params[k].coord;
+      scaltype S = 1.0 / (V[k] + params[k].C11);
+      scaltype Kcoord = params[k].C11 * S;
+      scaltype Ktg = params[k].C21 * S;
+      scaltype dzeta = m[k] - params[k].coord;
       params[k].coord += Kcoord * dzeta;
       params[k].tg += Ktg * dzeta;
       params[k].C21 -= params[k].C11 * Ktg;
@@ -260,19 +623,19 @@ void LxTrack::Fit()
 #else//USE_KALMAN_FIT
 void LxTrack::Fit()
 {
-  Double_t sumZ = 0;
-  Double_t sumZ2 = 0;
-  Double_t sumX = 0;
-  Double_t sumZX = 0;
-  Double_t sumY = 0;
-  Double_t sumZY = 0;
+  scaltype sumZ = 0;
+  scaltype sumZ2 = 0;
+  scaltype sumX = 0;
+  scaltype sumZX = 0;
+  scaltype sumY = 0;
+  scaltype sumZY = 0;
 
   for (int i = 0; i < LXSTATIONS - LXFIRSTSTATION; ++i)
   {
     LxPoint* point = points[LXLAYERS * i + LXMIDDLE];
-    Double_t z = point->z;
-    Double_t x = point->x;
-    Double_t y = point->y;
+    scaltype z = point->z;
+    scaltype x = point->x;
+    scaltype y = point->y;
 
     sumZ += z;
     sumZ2 += z * z;
@@ -299,10 +662,10 @@ void LxTrack::Rebind()
 {
   externalTrack = 0;
 
-  for (list<pair<LxExtTrack*, Double_t> >::iterator i = extTrackCandidates.begin(); i != extTrackCandidates.end(); ++i)
+  for (list<pair<LxExtTrack*, scaltype> >::iterator i = extTrackCandidates.begin(); i != extTrackCandidates.end(); ++i)
   {
     LxExtTrack* extTrack = i->first;
-    Double_t aChi2 = i->second;
+    scaltype aChi2 = i->second;
 
     if (0 == extTrack->recoTrack.first)
     {
@@ -334,7 +697,7 @@ LxPoint::~LxPoint()
     delete *i;
 }
 
-void LxPoint::CreateRay(LxPoint* lPoint, Double_t tx, Double_t ty, Double_t dtx, Double_t dty)
+void LxPoint::CreateRay(LxPoint* lPoint, scaltype tx, scaltype ty, scaltype dtx, scaltype dty)
 {
   rays.push_back(new LxRay(this, lPoint, tx, ty, dtx, dty
 #ifdef CLUSTER_MODE
@@ -352,22 +715,21 @@ LxRay::LxRay(LxPoint* s, LxPoint* e
     , Int_t l
 #endif//CLUSTER_MODE
     ) :
-      tx( (e->x - s->x) / (e->z - s->z) ), 
-      ty( (e->y - s->y) / (e->z - s->z) ),
-      dtx( sqrt(e->dx * e->dx + s->dx * s->dx) / (s->z - e->z) ),
-      dty( sqrt(e->dy * e->dy + s->dy * s->dy) / (s->z - e->z) ),
-      source(s), end(e),       station(s->layer->station)
+      source(s), end(e), tx((e->x - s->x) / (e->z - s->z)), ty((e->y - s->y) / (e->z - s->z)),
+      dtx(sqrt(e->dx * e->dx + s->dx * s->dx) / (s->z - e->z)),
+      dty(sqrt(e->dy * e->dy + s->dy * s->dy) / (s->z - e->z)),
+      station(s->layer->station)
 #ifdef CLUSTER_MODE
       , level(l), used(false)
 #endif//CLUSTER_MODE
 {
 }
 
-LxRay::LxRay(LxPoint* s, LxPoint* e, Double_t Tx, Double_t Ty, Double_t Dtx, Double_t Dty
+LxRay::LxRay(LxPoint* s, LxPoint* e, scaltype Tx, scaltype Ty, scaltype Dtx, scaltype Dty
 #ifdef CLUSTER_MODE
     , Int_t l
 #endif//CLUSTER_MODE
-    ) : tx(Tx), ty(Ty), dtx(Dtx), dty(Dty), source(s), end(e), station(s->layer->station)
+    ) : source(s), end(e), tx(Tx), ty(Ty), dtx(Dtx), dty(Dty), station(s->layer->station)
 #ifdef CLUSTER_MODE
       , level(l), used(false)
 #endif//CLUSTER_MODE
@@ -396,10 +758,10 @@ void LxLayer::Clear()
   points.clear();
 }
 
-LxPoint* LxLayer::PickNearestPoint(Double_t x, Double_t y)
+LxPoint* LxLayer::PickNearestPoint(scaltype x, scaltype y)
 {
   LxPoint* result = 0;
-  Double_t minR2 = 0;
+  scaltype minR2 = 0;
 
   for (list<LxPoint*>::iterator i = points.begin(); i != points.end(); ++i)
   {
@@ -408,8 +770,8 @@ LxPoint* LxLayer::PickNearestPoint(Double_t x, Double_t y)
     if (point->used)
       continue;
 
-    Double_t diffX = point->x - x;
-    Double_t diffY = point->y - y;
+    scaltype diffX = point->x - x;
+    scaltype diffY = point->y - y;
 
     if (diffX < 0)
       diffX = -diffX;
@@ -423,7 +785,7 @@ LxPoint* LxLayer::PickNearestPoint(Double_t x, Double_t y)
     if (diffY > errorYcoeff * point->dy)
       continue;
 
-    Double_t r2 = diffX * diffX + diffY * diffY;
+    scaltype r2 = diffX * diffX + diffY * diffY;
 
     if (0 == result || r2 < minR2)
     {
@@ -438,20 +800,20 @@ LxPoint* LxLayer::PickNearestPoint(Double_t x, Double_t y)
 LxPoint* LxLayer::PickNearestPoint(LxRay* ray)
 {
   LxPoint* point = ray->source;
-  Double_t diffZ = zCoord - point->z;
-  Double_t x = point->x + ray->tx * diffZ;
-  Double_t y = point->y + ray->ty * diffZ;
+  scaltype diffZ = zCoord - point->z;
+  scaltype x = point->x + ray->tx * diffZ;
+  scaltype y = point->y + ray->ty * diffZ;
   return PickNearestPoint(x, y);
 }
 
-LxPoint* LxLayer::PickNearestPoint(Double_t x, Double_t y, Double_t deltaX, Double_t deltaY)
+LxPoint* LxLayer::PickNearestPoint(scaltype x, scaltype y, scaltype deltaX, scaltype deltaY)
 {
   LxPoint* result = 0;
-  Double_t minR2 = 0;
-  Double_t xLBound = x - deltaX;
-  Double_t xUBound = x + deltaX;
-  Double_t yLBound = y - deltaY;
-  Double_t yUBound = y + deltaY;
+  scaltype minR2 = 0;
+  scaltype xLBound = x - deltaX;
+  scaltype xUBound = x + deltaX;
+  scaltype yLBound = y - deltaY;
+  scaltype yUBound = y + deltaY;
 
   for (list<LxPoint*>::iterator i = points.begin(); i != points.end(); ++i)
   {
@@ -460,9 +822,9 @@ LxPoint* LxLayer::PickNearestPoint(Double_t x, Double_t y, Double_t deltaX, Doub
     if (point->x < xLBound || point->x > xUBound || point->y < yLBound || point->y > yUBound)
       continue;
 
-    Double_t diffX = point->x - x;
-    Double_t diffY = point->y - y;
-    Double_t r2 = diffX * diffX + diffY * diffY;
+    scaltype diffX = point->x - x;
+    scaltype diffY = point->y - y;
+    scaltype r2 = diffX * diffX + diffY * diffY;
 
     if (0 == result || r2 < minR2)
     {
@@ -474,12 +836,12 @@ LxPoint* LxLayer::PickNearestPoint(Double_t x, Double_t y, Double_t deltaX, Doub
   return result;
 }
 
-bool LxLayer::HasPointInRange(Double_t x, Double_t y, Double_t deltaX, Double_t deltaY)
+bool LxLayer::HasPointInRange(scaltype x, scaltype y, scaltype deltaX, scaltype deltaY)
 {
-  Double_t xLBound = x - deltaX;
-  Double_t xUBound = x + deltaX;
-  Double_t yLBound = y - deltaY;
-  Double_t yUBound = y + deltaY;
+  scaltype xLBound = x - deltaX;
+  scaltype xUBound = x + deltaX;
+  scaltype yLBound = y - deltaY;
+  scaltype yUBound = y + deltaY;
 
   for (list<LxPoint*>::iterator i = points.begin(); i != points.end(); ++i)
   {
@@ -497,33 +859,33 @@ bool LxLayer::HasPointInRange(Double_t x, Double_t y, Double_t deltaX, Double_t 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // These arrays are filled with data obtained during Monte Carlo simulations.
-//static Double_t txLimits[] = { 0., 0.13, 0.11, 0.11, 0.125, 0.17 };
-//static Double_t tyLimits[] = { 0., 0.125, 0.07, 0.07, 0.1, 0.21 };
+//static scaltype txLimits[] = { 0., 0.13, 0.11, 0.11, 0.125, 0.17 };
+//static scaltype tyLimits[] = { 0., 0.125, 0.07, 0.07, 0.1, 0.21 };
 
-//static Double_t txBreakLimits[] = { 0., 0.085, 0.09, 0.13, 0.21, 0. };
-//static Double_t tyBreakLimits[] = { 0., 0.07, 0.085, 0.11, 0.23, 0. };
+//static scaltype txBreakLimits[] = { 0., 0.085, 0.09, 0.13, 0.21, 0. };
+//static scaltype tyBreakLimits[] = { 0., 0.07, 0.085, 0.11, 0.23, 0. };
 
-//static Double_t txBreakSigmas[] = { 0., 0.01242, 0.0115, 0.0134, 0.02955, 0. };
-//static Double_t tyBreakSigmas[] = { 0., 0.01473, 0.01174, 0.0136, 0.02827, 0. };
+//static scaltype txBreakSigmas[] = { 0., 0.01242, 0.0115, 0.0134, 0.02955, 0. };
+//static scaltype tyBreakSigmas[] = { 0., 0.01473, 0.01174, 0.0136, 0.02827, 0. };
 
-static Double_t dispersions01XSmall[] = { 0.6, 1.0, 0.8, 0.8, 1.2, 1.2 };
-static Double_t dispersions01XBig[] = { 1.9, 1.8, 1.6, 1.6, 1.9, 2.9 };
-static Double_t dispersions01YSmall[] = { 0.4, 0.5, 0.7, 0.7, 1.0, 1.0 };
-static Double_t dispersions01YBig[] = { 1.2, 1.3, 1.3, 1.3, 1.6, 2.9 };
+static scaltype dispersions01XSmall[] = { 0.6, 1.0, 0.8, 0.8, 1.2, 1.2 };
+static scaltype dispersions01XBig[] = { 1.9, 1.8, 1.6, 1.6, 1.9, 2.9 };
+static scaltype dispersions01YSmall[] = { 0.4, 0.5, 0.7, 0.7, 1.0, 1.0 };
+static scaltype dispersions01YBig[] = { 1.2, 1.3, 1.3, 1.3, 1.6, 2.9 };
 
-static Double_t dispersions02XSmall[] = { 0.7, 1.2, 1.2, 1.2, 1.1, 1.4 };
-static Double_t dispersions02XBig[] = { 2.0, 1.9, 1.6, 1.7, 1.8, 2.3 };
-static Double_t dispersions02YSmall[] = { 0.2, 0.6, 1.0, 0.9, 0.9, 1.4 };
-static Double_t dispersions02YBig[] = { 1.5, 1.3, 1.3, 1.4, 1.7, 2.2 };
+static scaltype dispersions02XSmall[] = { 0.7, 1.2, 1.2, 1.2, 1.1, 1.4 };
+static scaltype dispersions02XBig[] = { 2.0, 1.9, 1.6, 1.7, 1.8, 2.3 };
+static scaltype dispersions02YSmall[] = { 0.2, 0.6, 1.0, 0.9, 0.9, 1.4 };
+static scaltype dispersions02YBig[] = { 1.5, 1.3, 1.3, 1.4, 1.7, 2.2 };
 
 #ifdef CLUSTER_MODE
 struct KDRayWrap
 {
   LxRay* ray;
-  Double_t data[4];
+  scaltype data[4];
   static bool destroyRays;
 
-  KDRayWrap(Double_t x, Double_t y, LxRay* r) : ray(r)
+  KDRayWrap(scaltype x, scaltype y, LxRay* r) : ray(r)
   {
     data[0] = x;
     data[1] = y;
@@ -531,7 +893,7 @@ struct KDRayWrap
     data[3] = ray->ty;
   }
 
-  KDRayWrap(Double_t x, Double_t y, Double_t tx, Double_t ty) : ray(0)// This constructor is used when setting search-range bounds.
+  KDRayWrap(scaltype x, scaltype y, scaltype tx, scaltype ty) : ray(0)// This constructor is used when setting search-range bounds.
   {
     data[0] = x;
     data[1] = y;
@@ -546,7 +908,7 @@ struct KDRayWrap
   }
 
   // Stuff required by libkdtree++
-  typedef Double_t value_type;
+  typedef scaltype value_type;
 
   value_type operator[] (size_t n) const
   {
@@ -629,11 +991,11 @@ void LxStation::RestoreMiddlePoints()
   for (list<LxPoint*>::iterator i = mPoints.begin(); i != mPoints.end(); ++i)
   {
     LxPoint* point = *i;
-    Double_t tx = point->x / point->z;
-    Double_t ty = point->y / point->z;
-    Double_t diffZ = lLayer->zCoord - point->z;
-    Double_t x = point->x + tx * diffZ;
-    Double_t y = point->y + ty * diffZ;
+    scaltype tx = point->x / point->z;
+    scaltype ty = point->y / point->z;
+    scaltype diffZ = lLayer->zCoord - point->z;
+    scaltype x = point->x + tx * diffZ;
+    scaltype y = point->y + ty * diffZ;
 
     if (!lLayer->HasPointInRange(x, y, disp01XBig, disp01YBig))
     {
@@ -653,11 +1015,11 @@ void LxStation::RestoreMiddlePoints()
   for (list<LxPoint*>::iterator i = rPoints.begin(); i != rPoints.end(); ++i)
   {
     LxPoint* rPoint = *i;
-    Double_t tx = rPoint->x / rPoint->z;
-    Double_t ty = rPoint->y / rPoint->z;
-    Double_t diffZ = mLayer->zCoord - rPoint->z;
-    Double_t x = rPoint->x + tx * diffZ;
-    Double_t y = rPoint->y + ty * diffZ;
+    scaltype tx = rPoint->x / rPoint->z;
+    scaltype ty = rPoint->y / rPoint->z;
+    scaltype diffZ = mLayer->zCoord - rPoint->z;
+    scaltype x = rPoint->x + tx * diffZ;
+    scaltype y = rPoint->y + ty * diffZ;
 
     if (mLayer->HasPointInRange(x, y, disp01XBig, disp01YBig))
       continue;
@@ -693,8 +1055,8 @@ void LxStation::BuildRays()
     if (!rPoint->valid)
       continue;
 
-    Double_t tx1 = rPoint->x / rPoint->z;
-    Double_t ty1 = rPoint->y / rPoint->z;
+    scaltype tx1 = rPoint->x / rPoint->z;
+    scaltype ty1 = rPoint->y / rPoint->z;
 
     for (list<LxPoint*>::iterator lIter = lLayer->points.begin(); lIter != lLayer->points.end(); ++lIter)
     {
@@ -703,13 +1065,13 @@ void LxStation::BuildRays()
       if (!lPoint->valid)
         continue;
 
-      Double_t diffZ = lPoint->z - rPoint->z;
-      Double_t tx = (lPoint->x - rPoint->x) / diffZ;
-      Double_t ty = (lPoint->y - rPoint->y) / diffZ;
-      Double_t dtx = -sqrt(lPoint->dx * lPoint->dx + rPoint->dx * rPoint->dx) / diffZ;
-      Double_t dty = -sqrt(lPoint->dy * lPoint->dy + rPoint->dy * rPoint->dy) / diffZ;
-      Double_t diffTx = tx - tx1;
-      Double_t diffTy = ty - ty1;
+      scaltype diffZ = lPoint->z - rPoint->z;
+      scaltype tx = (lPoint->x - rPoint->x) / diffZ;
+      scaltype ty = (lPoint->y - rPoint->y) / diffZ;
+      scaltype dtx = -sqrt(lPoint->dx * lPoint->dx + rPoint->dx * rPoint->dx) / diffZ;
+      scaltype dty = -sqrt(lPoint->dy * lPoint->dy + rPoint->dy * rPoint->dy) / diffZ;
+      scaltype diffTx = tx - tx1;
+      scaltype diffTy = ty - ty1;
 
       if (diffTx < 0)
         diffTx = -diffTx;
@@ -726,11 +1088,11 @@ void LxStation::BuildRays()
 }
 
 #ifdef CLUSTER_MODE
-static void AddRayData(LxRay* ray, Double_t& lX, Double_t& lY, Double_t& lDx2, Double_t& lDy2,
-    Double_t& rX, Double_t& rY, Double_t& rDx2, Double_t& rDy2)
+static void AddRayData(LxRay* ray, scaltype& lX, scaltype& lY, scaltype& lDx2, scaltype& lDy2,
+    scaltype& rX, scaltype& rY, scaltype& rDx2, scaltype& rDy2)
 {
   LxPoint* lPoint = ray->end;
-  Double_t deltaZ = lPoint->layer->station->zCoord - lPoint->z;
+  scaltype deltaZ = lPoint->layer->station->zCoord - lPoint->z;
   lX += lPoint->x + ray->tx * deltaZ;
   lY += lPoint->y + ray->ty * deltaZ;
   lDx2 += lPoint->dx * lPoint->dx;
@@ -772,7 +1134,7 @@ struct LxLess
 struct LxRaysCandidates
 {
   LxRay* data[LXLAYERS * LXLAYERS];
-  Double_t chi2;
+  scaltype chi2;
 
   LxRaysCandidates() : chi2(-1.0)
   {
@@ -800,26 +1162,26 @@ void LxStation::BuildRays2()
       for (list<LxPoint*>::iterator rIter = rLayer->points.begin(); rIter != rLayer->points.end(); ++rIter)
       {
         LxPoint* rPoint = *rIter;
-        Double_t tx1 = rPoint->x / rPoint->z;
-        Double_t ty1 = rPoint->y / rPoint->z;
-        Double_t zShift = zCoord - rPoint->z;
+        scaltype tx1 = rPoint->x / rPoint->z;
+        scaltype ty1 = rPoint->y / rPoint->z;
+        scaltype zShift = zCoord - rPoint->z;
 
         for (list<LxPoint*>::iterator lIter = lLayer->points.begin(); lIter != lLayer->points.end(); ++lIter)
         {
           LxPoint* lPoint = *lIter;
-          Double_t diffZ = lPoint->z - rPoint->z;
-          Double_t tx = (lPoint->x - rPoint->x) / diffZ;
-          Double_t ty = (lPoint->y - rPoint->y) / diffZ;
-          Double_t dtx = -sqrt(lPoint->dx * lPoint->dx + rPoint->dx * rPoint->dx) / diffZ;
-          Double_t dty = -sqrt(lPoint->dy * lPoint->dy + rPoint->dy * rPoint->dy) / diffZ;
-          Double_t diffTx = abs(tx - tx1);
-          Double_t diffTy = abs(ty - ty1);
+          scaltype diffZ = lPoint->z - rPoint->z;
+          scaltype tx = (lPoint->x - rPoint->x) / diffZ;
+          scaltype ty = (lPoint->y - rPoint->y) / diffZ;
+          scaltype dtx = -sqrt(lPoint->dx * lPoint->dx + rPoint->dx * rPoint->dx) / diffZ;
+          scaltype dty = -sqrt(lPoint->dy * lPoint->dy + rPoint->dy * rPoint->dy) / diffZ;
+          scaltype diffTx = abs(tx - tx1);
+          scaltype diffTy = abs(ty - ty1);
 
           if (diffTx > txLimit + dtx * errorTxCoeff || diffTy > tyLimit + dty * errorTyCoeff)
             continue;
 
-          Double_t x = rPoint->x + tx * zShift;
-          Double_t y = rPoint->y + ty * zShift;
+          scaltype x = rPoint->x + tx * zShift;
+          scaltype y = rPoint->y + ty * zShift;
           LxRay* ray = new LxRay(rPoint, lPoint, LXLAYERS * i + j);
           KDRayWrap rayWrap(x, y, ray);
           rays->insert(rayWrap);
@@ -839,11 +1201,11 @@ void LxStation::BuildRays2()
   {
     KDRayWrap& wrap = const_cast<KDRayWrap&> (*i);
     LxRay* ray = wrap.ray;
-    KDTree::_Region<4, KDRayWrap, Double_t, KDTree::_Bracket_accessor<KDRayWrap>, std::less<KDTree::_Bracket_accessor<KDRayWrap>::result_type> > range(wrap);
-    Double_t limitX = errorXcoeff * sqrt(clusterXLimit2 + 2.0 * ray->source->dx * ray->source->dx);
-    Double_t limitY = errorYcoeff * sqrt(clusterYLimit2 + 2.0 * ray->source->dy * ray->source->dy);
-    Double_t limitTx = errorTxCoeff * sqrt(clusterTxLimit2 + 2.0 * ray->dtx * ray->dtx);
-    Double_t limitTy = errorTyCoeff * sqrt(clusterTyLimit2 + 2.0 * ray->dty * ray->dty);
+    KDTree::_Region<4, KDRayWrap, scaltype, KDTree::_Bracket_accessor<KDRayWrap>, std::less<KDTree::_Bracket_accessor<KDRayWrap>::result_type> > range(wrap);
+    scaltype limitX = errorXcoeff * sqrt(clusterXLimit2 + 2.0 * ray->source->dx * ray->source->dx);
+    scaltype limitY = errorYcoeff * sqrt(clusterYLimit2 + 2.0 * ray->source->dy * ray->source->dy);
+    scaltype limitTx = errorTxCoeff * sqrt(clusterTxLimit2 + 2.0 * ray->dtx * ray->dtx);
+    scaltype limitTy = errorTyCoeff * sqrt(clusterTyLimit2 + 2.0 * ray->dty * ray->dty);
     KDRayWrap boundsWrap(wrap.data[0] - limitX, wrap.data[1] - limitY, wrap.data[2] - limitTx, wrap.data[3] - limitTy);
     range.set_low_bound(boundsWrap, 0);
     range.set_low_bound(boundsWrap, 1);
@@ -909,23 +1271,23 @@ void LxStation::BuildRays2()
 
         Int_t levels = 0;
         Int_t level_occupancy[LXLAYERS * LXLAYERS] = {};
-        Double_t lX = 0;
-        Double_t lY = 0;
-        Double_t lDx2 = 0;
-        Double_t lDy2 = 0;
-        Double_t lZ = ray->end->layer->station->zCoord;
-        Double_t rX = 0;
-        Double_t rY = 0;
-        Double_t rDx2 = 0;
-        Double_t rDy2 = 0;
-        Double_t rZ = ray->source->layer->station->zCoord;
-        Double_t deltaZ = rZ - lZ;
+        scaltype lX = 0;
+        scaltype lY = 0;
+        scaltype lDx2 = 0;
+        scaltype lDy2 = 0;
+        scaltype lZ = ray->end->layer->station->zCoord;
+        scaltype rX = 0;
+        scaltype rY = 0;
+        scaltype rDx2 = 0;
+        scaltype rDy2 = 0;
+        scaltype rZ = ray->source->layer->station->zCoord;
+        scaltype deltaZ = rZ - lZ;
         AddRayData(ray, lX, lY, lDx2, lDy2, rX, rY, rDx2, rDy2);
         level_occupancy[ray->level] = 1;
         Int_t numRays = 1;
 
 #ifdef BEST_RAYS_ONLY
-        pair<LxRay*, Double_t> bestNeighbours[LXLAYERS * LXLAYERS];// Neigbours and chi2 to the cluster owner.
+        pair<LxRay*, scaltype> bestNeighbours[LXLAYERS * LXLAYERS];// Neigbours and chi2 to the cluster owner.
 
         for (Int_t l = 0; l < LXLAYERS * LXLAYERS; ++l)
         {
@@ -1054,11 +1416,11 @@ void LxStation::BuildRays2()
 
                       ++candLevels;
                       LxRay* r = cand.data[l];
-                      Double_t diffTx = r->tx - ray->tx;
-                      Double_t diffTy = r->ty - ray->ty;
-                      Double_t diffZ = ray->source->z - r->source->z;
-                      Double_t diffX = r->source->x + r->tx * diffZ - ray->source->x;
-                      Double_t diffY = r->source->y + r->ty * diffZ - ray->source->y;
+                      scaltype diffTx = r->tx - ray->tx;
+                      scaltype diffTy = r->ty - ray->ty;
+                      scaltype diffZ = ray->source->z - r->source->z;
+                      scaltype diffX = r->source->x + r->tx * diffZ - ray->source->x;
+                      scaltype diffY = r->source->y + r->ty * diffZ - ray->source->y;
                       cand.chi2 += diffTx * diffTx / (ray->dtx * ray->dtx) + diffTy * diffTy / (ray->dty * ray->dty) +
                           diffX * diffX / (ray->source->dx * ray->source->dx) + diffY * diffY / (ray->source->dy * ray->source->dy);
                     }
@@ -1099,12 +1461,12 @@ void LxStation::BuildRays2()
             continue;
 #endif//BEST_RAYS_ONLY
 
-          Double_t diffTx = r->tx - ray->tx;
-          Double_t diffTy = r->ty - ray->ty;
-          Double_t diffZ = ray->source->z - r->source->z;
-          Double_t diffX = r->source->x + r->tx * diffZ - ray->source->x;
-          Double_t diffY = r->source->y + r->ty * diffZ - ray->source->y;
-          Double_t aChi2 = diffTx * diffTx / (ray->dtx * ray->dtx) + diffTy * diffTy / (ray->dty * ray->dty) +
+          scaltype diffTx = r->tx - ray->tx;
+          scaltype diffTy = r->ty - ray->ty;
+          scaltype diffZ = ray->source->z - r->source->z;
+          scaltype diffX = r->source->x + r->tx * diffZ - ray->source->x;
+          scaltype diffY = r->source->y + r->ty * diffZ - ray->source->y;
+          scaltype aChi2 = diffTx * diffTx / (ray->dtx * ray->dtx) + diffTy * diffTy / (ray->dty * ray->dty) +
               diffX * diffX / (ray->source->dx * ray->source->dx) + diffY * diffY / (ray->source->dy * ray->source->dy);
 
 #ifdef BEST_RAYS_ONLY
@@ -1160,12 +1522,12 @@ void LxStation::BuildRays2()
 
         lX /= numRays;
         lY /= numRays;
-        Double_t lDx = ray->end->dx;//sqrt(lDx2) / numRays;
-        Double_t lDy = ray->end->dy;//sqrt(lDy2) / numRays;
+        scaltype lDx = ray->end->dx;//sqrt(lDx2) / numRays;
+        scaltype lDy = ray->end->dy;//sqrt(lDy2) / numRays;
         rX /= numRays;
         rY /= numRays;
-        Double_t rDx = ray->source->dx;//sqrt(rDx2) / numRays;
-        Double_t rDy = ray->source->dy;//sqrt(rDy2) / numRays;
+        scaltype rDx = ray->source->dx;//sqrt(rDx2) / numRays;
+        scaltype rDy = ray->source->dy;//sqrt(rDy2) / numRays;
 
         LxPoint* lPoint = new LxPoint(lX, lY, lZ, lDx, lDy, 0, ray->end->layer, -1);
         clusteredPoints.push_back(lPoint);
@@ -1215,7 +1577,7 @@ void LxStation::BuildRays2()
             continue;
 #endif//BEST_SIX_POINTS
 
-          /*Double_t diffTx = r->tx - ray->tx;
+          /*scaltype diffTx = r->tx - ray->tx;
 
           if (diffTx < 0)
             diffTx = -diffTx;
@@ -1223,7 +1585,7 @@ void LxStation::BuildRays2()
           if (diffTx > errorTxCoeff * ray->dtx * 2)
             continue;
 
-          Double_t diffTy = r->ty - ray->ty;
+          scaltype diffTy = r->ty - ray->ty;
 
           if (diffTy < 0)
             diffTy = -diffTy;
@@ -1231,8 +1593,8 @@ void LxStation::BuildRays2()
           if (diffTy > errorTyCoeff * ray->dty * 2)
             continue;
 
-          Double_t diffZ = ray->source->z - r->source->z;
-          Double_t diffX = ray->source->x - r->source->x - r->tx * diffZ;
+          scaltype diffZ = ray->source->z - r->source->z;
+          scaltype diffX = ray->source->x - r->source->x - r->tx * diffZ;
 
           if (diffX < 0)
             diffX = -diffX;
@@ -1240,7 +1602,7 @@ void LxStation::BuildRays2()
           if (diffX > errorXcoeff * ray->source->dx * 2)
             continue;
 
-          Double_t diffY = ray->source->y - r->source->y - r->ty * diffZ;
+          scaltype diffY = ray->source->y - r->source->y - r->ty * diffZ;
 
           if (diffY < 0)
             diffY = -diffY;
@@ -1301,16 +1663,22 @@ void LxStation::ConnectNeighbours()
   {
     LxPoint* rPoint = *i;
 
+    if (!rPoint->valid)
+      continue;
+
     for (list<LxRay*>::iterator j = rPoint->rays.begin(); j != rPoint->rays.end(); ++j)
     {
       LxRay* rRay = *j;
       LxPoint* ePoint = rRay->end;
 
+      if (!ePoint->valid)
+        continue;
+
       for (list<LxRay*>::iterator k = ePoint->rays.begin(); k != ePoint->rays.end(); ++k)
       {
         LxRay* lRay = *k;
-        Double_t diffTx = lRay->tx - rRay->tx;
-        Double_t diffTy = lRay->ty - rRay->ty;
+        scaltype diffTx = lRay->tx - rRay->tx;
+        scaltype diffTy = lRay->ty - rRay->ty;
 
         if (diffTx < 0)
           diffTx = -diffTx;
@@ -1318,8 +1686,8 @@ void LxStation::ConnectNeighbours()
         if (diffTy < 0)
           diffTy = -diffTy;
 
-        Double_t dtxb = sqrt(lRay->dtx * lRay->dtx + rRay->dtx * rRay->dtx);
-        Double_t dtyb = sqrt(lRay->dty * lRay->dty + rRay->dty * rRay->dty);
+        scaltype dtxb = sqrt(lRay->dtx * lRay->dtx + rRay->dtx * rRay->dtx);
+        scaltype dtyb = sqrt(lRay->dty * lRay->dty + rRay->dty * rRay->dty);
 
         if (diffTx > lStation->txBreakLimit + dtxb * errorTxBreakCoeff ||
             diffTy > lStation->tyBreakLimit + dtyb * errorTyBreakCoeff)
@@ -1335,10 +1703,29 @@ void LxStation::ConnectNeighbours()
 // LxSpace
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-LxSpace::LxSpace() : muchStsBreakX(0), muchStsBreakY(0), muchStsBreakTx(0), muchStsBreakTy(0)
+LxSpace::LxSpace() : muchStsBreakX(0), muchStsBreakY(0), muchStsBreakTx(0), muchStsBreakTy(0), stationsInAlgo(LXSTATIONS)
 {
   for (int i = 0; i < LXSTATIONS; ++i)
     stations.push_back(new LxStation(this, i));
+
+  x_coords = reinterpret_cast<scal_coords*> (_mm_malloc(sizeof(scaltype) * LXSTATIONS * LXLAYERS * LXMAXPOINTSONSTATION, 32));
+  tx_vals = reinterpret_cast<scal_tans*> (_mm_malloc(sizeof(scaltype) * (LXSTATIONS - 1) * LXMAXPOINTSONSTATION, 32));
+  x_errs = reinterpret_cast<scal_coords*> (_mm_malloc(sizeof(scaltype) * LXSTATIONS * LXLAYERS * LXMAXPOINTSONSTATION, 32));
+  y_coords = reinterpret_cast<scal_coords*> (_mm_malloc(sizeof(scaltype) * LXSTATIONS * LXLAYERS * LXMAXPOINTSONSTATION, 32));
+  ty_vals = reinterpret_cast<scal_tans*> (_mm_malloc(sizeof(scaltype) * (LXSTATIONS - 1) * LXMAXPOINTSONSTATION, 32));
+  y_errs = reinterpret_cast<scal_coords*> (_mm_malloc(sizeof(scaltype) * LXSTATIONS * LXLAYERS * LXMAXPOINTSONSTATION, 32));
+  z_coords = reinterpret_cast<scal_coords*> (_mm_malloc(sizeof(scaltype) * LXSTATIONS * LXLAYERS * LXMAXPOINTSONSTATION, 32));
+}
+
+LxSpace::~LxSpace()
+{
+  _mm_free(x_coords);
+  _mm_free(tx_vals);
+  _mm_free(x_errs);
+  _mm_free(y_coords);
+  _mm_free(ty_vals);
+  _mm_free(y_errs);
+  _mm_free(z_coords);
 }
 
 void LxSpace::Clear()
@@ -1394,29 +1781,29 @@ void LxSpace::ConnectNeighbours2()
   {
     KDRaysStorageType* leftRays = static_cast<KDRaysStorageType*> (stations[i - 1]->clusteredRaysHandle);
     KDRaysStorageType* rightRays = static_cast<KDRaysStorageType*> (stations[i]->clusteredRaysHandle);
-    Double_t txSigma = stations[i - 1]->txBreakSigma;
-    Double_t txSigma2 = txSigma * txSigma;
-    Double_t tySigma = stations[i - 1]->tyBreakSigma;
-    Double_t tySigma2 = tySigma * tySigma;
-    Double_t deltaZ = stations[i - 1]->zCoord - stations[i]->zCoord;
-    Double_t deltaZ2 = deltaZ * deltaZ;
-    Double_t deltaZ23 = 1.0;//deltaZ2 / 3.0;
+    scaltype txSigma = stations[i - 1]->txBreakSigma;
+    scaltype txSigma2 = txSigma * txSigma;
+    scaltype tySigma = stations[i - 1]->tyBreakSigma;
+    scaltype tySigma2 = tySigma * tySigma;
+    scaltype deltaZ = stations[i - 1]->zCoord - stations[i]->zCoord;
+    scaltype deltaZ2 = deltaZ * deltaZ;
+    scaltype deltaZ23 = 1.0;//deltaZ2 / 3.0;
 
     for (KDRaysStorageType::iterator j = rightRays->begin(); j != rightRays->end(); ++j)
     {
       KDRayWrap& wrap = const_cast<KDRayWrap&> (*j);
       LxRay* ray = wrap.ray;
-      KDTree::_Region<4, KDRayWrap, Double_t, KDTree::_Bracket_accessor<KDRayWrap>,
+      KDTree::_Region<4, KDRayWrap, scaltype, KDTree::_Bracket_accessor<KDRayWrap>,
         std::less<KDTree::_Bracket_accessor<KDRayWrap>::result_type> > range(wrap);
       LxPoint* point = ray->end;
-      Double_t x = wrap.data[0] + wrap.data[2] * deltaZ;
-      Double_t y = wrap.data[1] + wrap.data[3] * deltaZ;
-      Double_t tx = wrap.data[2];
-      Double_t ty = wrap.data[3];
-      Double_t xRange = 4 * sqrt(2 * point->dx * point->dx + txSigma2 * deltaZ23);
-      Double_t yRange = 4 * sqrt(2 * point->dy * point->dy + tySigma2 * deltaZ23);
-      Double_t txRange = 4 * sqrt(2 * ray->dtx * ray->dtx + txSigma2);
-      Double_t tyRange = 4 * sqrt(2 * ray->dty * ray->dty + tySigma2);
+      scaltype x = wrap.data[0] + wrap.data[2] * deltaZ;
+      scaltype y = wrap.data[1] + wrap.data[3] * deltaZ;
+      scaltype tx = wrap.data[2];
+      scaltype ty = wrap.data[3];
+      scaltype xRange = 4 * sqrt(2 * point->dx * point->dx + txSigma2 * deltaZ23);
+      scaltype yRange = 4 * sqrt(2 * point->dy * point->dy + tySigma2 * deltaZ23);
+      scaltype txRange = 4 * sqrt(2 * ray->dtx * ray->dtx + txSigma2);
+      scaltype tyRange = 4 * sqrt(2 * ray->dty * ray->dty + tySigma2);
       KDRayWrap boundsWrap(x - xRange, y - yRange, tx - txRange, ty - tyRange);
       range.set_low_bound(boundsWrap, 0);
       range.set_low_bound(boundsWrap, 1);
@@ -1443,7 +1830,7 @@ void LxSpace::ConnectNeighbours2()
   }
 }
 
-void LxSpace::BuildCandidates2(LxRay* ray, LxRay** rays, list<LxTrackCandidate*>& candidates, Double_t chi2)
+void LxSpace::BuildCandidates2(LxRay* ray, LxRay** rays, list<LxTrackCandidate*>& candidates, scaltype chi2)
 {
   int level = ray->station->stationNumber - LXFIRSTSTATION - 1;
   rays[level] = ray;
@@ -1466,18 +1853,18 @@ void LxSpace::BuildCandidates2(LxRay* ray, LxRay** rays, list<LxTrackCandidate*>
 
     LxPoint* lPoint = lRay->source;
     LxStation* station = lRay->station;
-    Double_t dx = point->x - lPoint->x;
-    Double_t dx2 = dx * dx;
-    Double_t sigmaX2 = point->dx * point->dx + lPoint->dx * lPoint->dx;
-    Double_t dy = point->y - lPoint->y;
-    Double_t dy2 = dy * dy;
-    Double_t sigmaY2 = point->dy * point->dy + lPoint->dy * lPoint->dy;
-    Double_t dtx = ray->tx - lRay->tx;
-    Double_t dtx2 = dtx * dtx;
-    Double_t sigmaTx2 = ray->dtx * ray->dtx + lRay->dtx * lRay->dtx + station->txBreakSigma * station->txBreakSigma;
-    Double_t dty = ray->ty - lRay->ty;
-    Double_t dty2 = dty * dty;
-    Double_t sigmaTy2 = ray->dty * ray->dty + lRay->dty * lRay->dty + station->tyBreakSigma * station->tyBreakSigma;
+    scaltype dx = point->x - lPoint->x;
+    scaltype dx2 = dx * dx;
+    scaltype sigmaX2 = point->dx * point->dx + lPoint->dx * lPoint->dx;
+    scaltype dy = point->y - lPoint->y;
+    scaltype dy2 = dy * dy;
+    scaltype sigmaY2 = point->dy * point->dy + lPoint->dy * lPoint->dy;
+    scaltype dtx = ray->tx - lRay->tx;
+    scaltype dtx2 = dtx * dtx;
+    scaltype sigmaTx2 = ray->dtx * ray->dtx + lRay->dtx * lRay->dtx + station->txBreakSigma * station->txBreakSigma;
+    scaltype dty = ray->ty - lRay->ty;
+    scaltype dty2 = dty * dty;
+    scaltype sigmaTy2 = ray->dty * ray->dty + lRay->dty * lRay->dty + station->tyBreakSigma * station->tyBreakSigma;
 
     // Continue process of track building.
     BuildCandidates2(lRay, rays, candidates, chi2 + dx2 / sigmaX2 + dy2 / sigmaY2 + dtx2 / sigmaTx2 + dty2 / sigmaTy2);
@@ -1495,7 +1882,7 @@ void LxSpace::Reconstruct2()
     LxRay* ray = wrap.ray;
     LxRay* rays[LXSTATIONS - LXFIRSTSTATION - 1];
     list<LxTrackCandidate*> candidates;
-    Double_t chi2 = 0;
+    scaltype chi2 = 0;
     BuildCandidates2(ray, rays, candidates, chi2);
     LxTrackCandidate* bestCandidate = 0;
 
@@ -1527,17 +1914,17 @@ void LxSpace::ConnectNeighbours()
     stations[i]->ConnectNeighbours();
 }
 
-void LxSpace::BuildCandidates(LxRay* ray, LxRay** rays, list<LxTrackCandidate*>& candidates, Double_t chi2)
+void LxSpace::BuildCandidates(int endStNum, LxRay* ray, LxRay** rays, list<LxTrackCandidate*>& candidates, scaltype chi2)
 {
-  int level = ray->station->stationNumber - LXFIRSTSTATION - 1;
+  int level = ray->station->stationNumber - 1;
   rays[level] = ray;
 
   if (0 == level)
   {
 #ifdef USE_KALMAN
-    LxTrackCandidate* tc = new LxTrackCandidate(rays, LXSTATIONS - LXFIRSTSTATION - 1, ray->kalman.chi2);
+    LxTrackCandidate* tc = new LxTrackCandidate(rays, LXSTATIONS - 1, ray->kalman.chi2);
 #else// USE_KALMAN
-    LxTrackCandidate* tc = new LxTrackCandidate(rays, LXSTATIONS - LXFIRSTSTATION - 1, chi2);
+    LxTrackCandidate* tc = new LxTrackCandidate(rays, endStNum, chi2);
 #endif//USE_KALMAN
     candidates.push_back(tc);
     return;
@@ -1551,17 +1938,17 @@ void LxSpace::BuildCandidates(LxRay* ray, LxRay** rays, list<LxTrackCandidate*>&
       continue;
 
     LxStation* station = lRay->station;
-    //Double_t dtx = ray->tx - lRay->tx;
+    //scaltype dtx = ray->tx - lRay->tx;
     //dtx /= station->txBreakSigma;
-    //Double_t dty = ray->ty - lRay->ty;
+    //scaltype dty = ray->ty - lRay->ty;
     //dty /= station->tyBreakSigma;
 
-    Double_t dtx = ray->tx - lRay->tx;
-    Double_t dtx2 = dtx * dtx;
-    Double_t sigmaTx2 = ray->dtx * ray->dtx + lRay->dtx * lRay->dtx + station->txBreakSigma * station->txBreakSigma;
-    Double_t dty = ray->ty - lRay->ty;
-    Double_t dty2 = dty * dty;
-    Double_t sigmaTy2 = ray->dty * ray->dty + lRay->dty * lRay->dty + station->tyBreakSigma * station->tyBreakSigma;
+    scaltype dtx = ray->tx - lRay->tx;
+    scaltype dtx2 = dtx * dtx;
+    scaltype sigmaTx2 = ray->dtx * ray->dtx + lRay->dtx * lRay->dtx + station->txBreakSigma * station->txBreakSigma;
+    scaltype dty = ray->ty - lRay->ty;
+    scaltype dty2 = dty * dty;
+    scaltype sigmaTy2 = ray->dty * ray->dty + lRay->dty * lRay->dty + station->tyBreakSigma * station->tyBreakSigma;
 
 #ifdef USE_KALMAN
     LxKalmanParams& kPrev = ray->kalman;
@@ -1570,12 +1957,12 @@ void LxSpace::BuildCandidates(LxRay* ray, LxRay** rays, list<LxTrackCandidate*>&
     kalman.ty = kPrev.ty;
     kalman.C11 = kPrev.C11 + station->txBreakSigma * station->txBreakSigma;
     kalman.C22 = kPrev.C22 + station->tyBreakSigma * station->tyBreakSigma;
-    Double_t S11 = 1 / (kalman.C11 + lRay->dtx * lRay->dtx);
-    Double_t S22 = 1 / (kalman.C22 + lRay->dty * lRay->dty);
-    Double_t K11 = kalman.C11 * S11;
-    Double_t K22 = kalman.C22 * S22;
-    Double_t zetaTx = lRay->tx - kalman.tx;
-    Double_t zetaTy = lRay->ty - kalman.ty;
+    scaltype S11 = 1 / (kalman.C11 + lRay->dtx * lRay->dtx);
+    scaltype S22 = 1 / (kalman.C22 + lRay->dty * lRay->dty);
+    scaltype K11 = kalman.C11 * S11;
+    scaltype K22 = kalman.C22 * S22;
+    scaltype zetaTx = lRay->tx - kalman.tx;
+    scaltype zetaTy = lRay->ty - kalman.ty;
     kalman.tx += K11 * zetaTx;
     kalman.ty += K22 * zetaTy;
     kalman.C11 = (1.0 - K11) * kalman.C11;
@@ -1585,62 +1972,86 @@ void LxSpace::BuildCandidates(LxRay* ray, LxRay** rays, list<LxTrackCandidate*>&
 
     // Continue process of track building.
     //BuildCandidates(lRay, rays, candidates, chi2 + dtx * dtx + dty * dty);
-    BuildCandidates(lRay, rays, candidates, chi2 + dtx2 / sigmaTx2 + dty2 / sigmaTy2);
+    BuildCandidates(endStNum, lRay, rays, candidates, chi2 + dtx2 / sigmaTx2 + dty2 / sigmaTy2);
   }
 }
 
 void LxSpace::Reconstruct()
 {
-  LxStation* startStation = stations[LXSTATIONS - 1];
-  LxLayer* startLayer = startStation->layers[LXMIDDLE];
-  list<LxPoint*>& startPoints = startLayer->points;
-
-  for (list<LxPoint*>::iterator i = startPoints.begin(); i != startPoints.end(); ++i)
+  for (int endStNum = LXSTATIONS - 1; endStNum >= stationsInAlgo - 1; --endStNum)
   {
-    LxPoint* point = *i;
+    LxStation* startStation = stations[endStNum];
+    LxLayer* startLayer = startStation->layers[LXMIDDLE];
+    list<LxPoint*>& startPoints = startLayer->points;
 
-    if (point->used)
-      continue;
-
-    LxRay* rays[LXSTATIONS - LXFIRSTSTATION - 1];
-    list<LxTrackCandidate*> candidates;
-    list<LxRay*>& startRays = point->rays;
-
-    for (list<LxRay*>::iterator j = startRays.begin(); j != startRays.end(); ++j)
+    for (list<LxPoint*>::iterator i = startPoints.begin(); i != startPoints.end(); ++i)
     {
-      LxRay* ray = *j;
-      Double_t chi2 = 0;
+      LxPoint* point = *i;
+
+      if (point->used)
+        continue;
+
+      if (!point->valid)
+        continue;
+
+      LxRay* rays[endStNum];
+      list<LxTrackCandidate*> candidates;
+      list<LxRay*>& startRays = point->rays;
+
+      for (list<LxRay*>::iterator j = startRays.begin(); j != startRays.end(); ++j)
+      {
+        LxRay* ray = *j;
+        scaltype chi2 = 0;
 
 #ifdef USE_KALMAN
-      LxKalmanParams& kalman = ray->kalman;
-      kalman.tx = ray->tx;
-      kalman.ty = ray->ty;
-      kalman.C11 = ray->dtx * ray->dtx;
-      kalman.C22 = ray->dty * ray->dty;
-      kalman.chi2 = 0;
+        LxKalmanParams& kalman = ray->kalman;
+        kalman.tx = ray->tx;
+        kalman.ty = ray->ty;
+        kalman.C11 = ray->dtx * ray->dtx;
+        kalman.C22 = ray->dty * ray->dty;
+        kalman.chi2 = 0;
 #endif//USE_KALMAN
 
-      BuildCandidates(ray, rays, candidates, chi2);
+        BuildCandidates(endStNum, ray, rays, candidates, chi2);
+      }
+
+      LxTrackCandidate* bestCandidate = 0;
+
+      for (list<LxTrackCandidate*>::iterator j = candidates.begin(); j != candidates.end(); ++j)
+      {
+        LxTrackCandidate* candidate = *j;
+
+        if (0 == bestCandidate || candidate->chi2 < bestCandidate->chi2)
+          bestCandidate = candidate;
+      }
+
+      if (0 != bestCandidate)
+      {
+        LxTrack* track = new LxTrack(bestCandidate);
+        tracks.push_back(track);
+      }
+
+      for (list<LxTrackCandidate*>::iterator j = candidates.begin(); j != candidates.end(); ++j)
+        delete *j;
     }
+  }// for (int stNum = LXSTATIONS - 1; stNum >= stationsInAlgo - 1; --stNum)
 
-    LxTrackCandidate* bestCandidate = 0;
+  for (list<LxTrack*>::iterator i = tracks.begin(); i != tracks.end(); ++i)
+  {
+    LxTrack* track = *i;
+    //cout << "LxSpace::Reconstruct(): found track with length = " << track->length << endl << "With points:";
 
-    for (list<LxTrackCandidate*>::iterator j = candidates.begin(); j != candidates.end(); ++j)
+    for (int j = 0; j < track->length * LXLAYERS; ++j)
     {
-      LxTrackCandidate* candidate = *j;
+      LxPoint* point = track->points[j];
 
-      if (0 == bestCandidate || candidate->chi2 < bestCandidate->chi2)
-        bestCandidate = candidate;
+      //if (point)
+        //cout << " " << point->z;
+      //else
+        //cout << " *";
     }
 
-    if (0 != bestCandidate)
-    {
-      LxTrack* track = new LxTrack(bestCandidate);
-      tracks.push_back(track);
-    }
-
-    for (list<LxTrackCandidate*>::iterator j = candidates.begin(); j != candidates.end(); ++j)
-      delete *j;
+    //cout << endl;
   }
 
   RemoveClones();
@@ -1659,8 +2070,9 @@ void LxSpace::RemoveClones()
 
     LxTrack* secondTrack = *i2;
     Int_t neighbourPoints = 0;
+    int minLength = firstTrack->length < secondTrack->length ? firstTrack->length : secondTrack->length;
 
-    for (Int_t j = 0; j < LXSTATIONS * LXLAYERS; ++j)
+    for (Int_t j = 0; j < minLength * LXLAYERS; ++j)
     {
       LxPoint* point1 = firstTrack->points[j];
       LxPoint* point2 = secondTrack->points[j];
@@ -1668,17 +2080,21 @@ void LxSpace::RemoveClones()
       if (0 == point1 || 0 == point2)
         continue;
 
-      Double_t dx = point1->dx > point2->dx ? point1->dx : point2->dx;
-      Double_t dy = point1->dy > point2->dy ? point1->dy : point2->dy;
+      scaltype dx = point1->dx > point2->dx ? point1->dx : point2->dx;
+      scaltype dy = point1->dy > point2->dy ? point1->dy : point2->dy;
 
       if (abs(point2->x - point1->x) < 5.0 * dx && abs(point2->y - point1->y) < 5.0 * dy)
         ++neighbourPoints;
     }
 
-    if (neighbourPoints < LXSTATIONS * LXLAYERS / 2)
+    if (neighbourPoints < minLength * LXLAYERS / 2)
       continue;
 
-    if (firstTrack->chi2 < secondTrack->chi2)
+    if (firstTrack->length > secondTrack->length)
+      secondTrack->clone = true;
+    else if (secondTrack->length > firstTrack->length)
+      firstTrack->clone = true;
+    else if (firstTrack->chi2 < secondTrack->chi2)
       secondTrack->clone = true;
     else
       firstTrack->clone = true;
@@ -1693,28 +2109,28 @@ void LxSpace::FitTracks()
 
 void LxSpace::JoinExtTracks()
 {
-  /*Double_t sigmaX = 0.8548;//0.89;//1.202;
-  Double_t sigmaX2 = sigmaX * sigmaX;
-  Double_t sigmaY = 0.6233;//1.061;
-  Double_t sigmaY2 = sigmaY * sigmaY;
-  Double_t sigmaTx = 0.02349;//0.02426;
-  Double_t sigmaTx2 = sigmaTx * sigmaTx;
-  Double_t sigmaTy = 0.007941;//0.01082;
-  Double_t sigmaTy2 = sigmaTy * sigmaTy;
-  Double_t deltaMuPlus = -0.01883;
-  Double_t sigmaTxMuPlus = 0.01105;
-  Double_t sigmaTxMuPlus2 = sigmaTxMuPlus * sigmaTxMuPlus;
-  Double_t deltaMuMinus = 0.020;
-  Double_t sigmaTxMuMinus = 0.0118;
-  Double_t sigmaTxMuMinus2 = sigmaTxMuMinus * sigmaTxMuMinus;
-  Double_t covXTx = 0.155612;
-  Double_t covYTy = 0.157198;*/
-  //Double_t cutCoeff = 5.0;
+  /*scaltype sigmaX = 0.8548;//0.89;//1.202;
+  scaltype sigmaX2 = sigmaX * sigmaX;
+  scaltype sigmaY = 0.6233;//1.061;
+  scaltype sigmaY2 = sigmaY * sigmaY;
+  scaltype sigmaTx = 0.02349;//0.02426;
+  scaltype sigmaTx2 = sigmaTx * sigmaTx;
+  scaltype sigmaTy = 0.007941;//0.01082;
+  scaltype sigmaTy2 = sigmaTy * sigmaTy;
+  scaltype deltaMuPlus = -0.01883;
+  scaltype sigmaTxMuPlus = 0.01105;
+  scaltype sigmaTxMuPlus2 = sigmaTxMuPlus * sigmaTxMuPlus;
+  scaltype deltaMuMinus = 0.020;
+  scaltype sigmaTxMuMinus = 0.0118;
+  scaltype sigmaTxMuMinus2 = sigmaTxMuMinus * sigmaTxMuMinus;
+  scaltype covXTx = 0.155612;
+  scaltype covYTy = 0.157198;*/
+  //scaltype cutCoeff = 5.0;
 #ifdef USE_OLD_STS_LINKING_RULE
-  Double_t sigmaX2 = muchStsBreakX * muchStsBreakX;
-  Double_t sigmaY2 = muchStsBreakY * muchStsBreakY;
-  Double_t sigmaTx2 = muchStsBreakTx * muchStsBreakTx;
-  Double_t sigmaTy2 = muchStsBreakTy * muchStsBreakTy;
+  scaltype sigmaX2 = muchStsBreakX * muchStsBreakX;
+  scaltype sigmaY2 = muchStsBreakY * muchStsBreakY;
+  scaltype sigmaTx2 = muchStsBreakTx * muchStsBreakTx;
+  scaltype sigmaTy2 = muchStsBreakTy * muchStsBreakTy;
 #endif//USE_OLD_STS_LINKING_RULE
 
   CbmLitToolFactory* factory = CbmLitToolFactory::Instance();
@@ -1728,35 +2144,35 @@ void LxSpace::JoinExtTracks()
       continue;
 
 #ifdef USE_KALMAN_FIT
-    Double_t x = track->x;
-    Double_t y = track->y;
-    Double_t z = track->z;
-    Double_t tx0 = track->tx;
-    Double_t ty = track->ty;
-    Double_t dxMuch = track->dx;
-    Double_t dyMuch = track->dy;
-    Double_t dtxMuch = track->dtx;
-    Double_t dtyMuch = track->dty;
+    scaltype x = track->x;
+    scaltype y = track->y;
+    scaltype z = track->z;
+    scaltype tx0 = track->tx;
+    scaltype ty = track->ty;
+    scaltype dxMuch = track->dx;
+    scaltype dyMuch = track->dy;
+    scaltype dtxMuch = track->dtx;
+    scaltype dtyMuch = track->dty;
 #else//USE_KALMAN_FIT
     LxRay* ray = track->rays[0];
     LxPoint* point = ray->end;
-    Double_t x = point->x;
-    Double_t y = point->y;
-    Double_t z = point->z;
-    //Double_t tx0 = ray->tx;
-    Double_t tx = ray->tx;
-    Double_t ty = ray->ty;
-    Double_t dxMuch = point->dx;
-    Double_t dyMuch = point->dy;
-    Double_t dtxMuch = ray->dtx;
-    Double_t dtyMuch = ray->dty;
+    scaltype x = point->x;
+    scaltype y = point->y;
+    scaltype z = point->z;
+    //scaltype tx0 = ray->tx;
+    scaltype tx = ray->tx;
+    scaltype ty = ray->ty;
+    scaltype dxMuch = point->dx;
+    scaltype dyMuch = point->dy;
+    scaltype dtxMuch = ray->dtx;
+    scaltype dtyMuch = ray->dty;
 #endif//USE_KALMAN_FIT
 
     // External track are already filtered by P and Pt.
     for (list<LxExtTrack>::iterator j = extTracks.begin(); j != extTracks.end(); ++j)
     {
       LxExtTrack* extTrack = &(*j);
-//      const FairTrackParam* firstParam = extTrack->track->GetParamFirst();
+      const FairTrackParam* firstParam = extTrack->track->GetParamFirst();
       const FairTrackParam* lastParam = extTrack->track->GetParamLast();
 
 #ifndef USE_OLD_STS_LINKING_RULE
@@ -1766,18 +2182,18 @@ void LxSpace::JoinExtTracks()
       if (kLITERROR == fPropagator->Propagate(&litLastParam, stations[0]->zCoord, 13))
         continue;
 
-      Double_t deltaX = abs(litLastParam.GetX() - x);
-      Double_t deltaY = abs(litLastParam.GetY() - y);
-      Double_t deltaTx = abs(litLastParam.GetTx() - tx0);
-      Double_t deltaTy = abs(litLastParam.GetTy() - ty);
-      Double_t sigmaX2 = dxMuch * dxMuch + litLastParam.GetCovariance(0);
-      Double_t sigmaX = sqrt(sigmaX2);
-      Double_t sigmaY2 = dyMuch * dyMuch + litLastParam.GetCovariance(5);
-      Double_t sigmaY = sqrt(sigmaY2);
-      Double_t sigmaTx2 = dtxMuch * dtxMuch + litLastParam.GetCovariance(9);
-      Double_t sigmaTx = sqrt(sigmaTx2);
-      Double_t sigmaTy2 = dtyMuch * dtyMuch + litLastParam.GetCovariance(12);
-      Double_t sigmaTy = sqrt(sigmaTy2);
+      scaltype deltaX = abs(litLastParam.GetX() - x);
+      scaltype deltaY = abs(litLastParam.GetY() - y);
+      scaltype deltaTx = abs(litLastParam.GetTx() - tx0);
+      scaltype deltaTy = abs(litLastParam.GetTy() - ty);
+      scaltype sigmaX2 = dxMuch * dxMuch + litLastParam.GetCovariance(0);
+      scaltype sigmaX = sqrt(sigmaX2);
+      scaltype sigmaY2 = dyMuch * dyMuch + litLastParam.GetCovariance(5);
+      scaltype sigmaY = sqrt(sigmaY2);
+      scaltype sigmaTx2 = dtxMuch * dtxMuch + litLastParam.GetCovariance(9);
+      scaltype sigmaTx = sqrt(sigmaTx2);
+      scaltype sigmaTy2 = dtyMuch * dtyMuch + litLastParam.GetCovariance(12);
+      scaltype sigmaTy = sqrt(sigmaTy2);
 
       //if (deltaX > cutCoeff * sigmaX || deltaY > cutCoeff * sigmaY ||
           //deltaTx > cutCoeff * sigmaTx || deltaTy > cutCoeff * sigmaTy)
@@ -1785,15 +2201,15 @@ void LxSpace::JoinExtTracks()
         //continue;
       //}
 
-      Double_t chi2 = deltaX * deltaX / sigmaX2 + deltaY * deltaY / sigmaY2 +
+      scaltype chi2 = deltaX * deltaX / sigmaX2 + deltaY * deltaY / sigmaY2 +
           deltaTx * deltaTx / sigmaTx2 + deltaTy * deltaTy / sigmaTy2;
 #else//USE_OLD_STS_LINKING_RULE
 
       //if ((tx0 - lastParam->GetTx()) * (lastParam->GetTx() - firstParam->GetTx()) < 0)
         //continue;
 
-      /*Double_t muchCharge = tx0 - firstParam->GetTx();
-      Double_t tx = muchCharge > 0 ? tx0 + deltaMuPlus : tx0 + deltaMuMinus;
+      /*scaltype muchCharge = tx0 - firstParam->GetTx();
+      scaltype tx = muchCharge > 0 ? tx0 + deltaMuPlus : tx0 + deltaMuMinus;
 
       if (muchCharge > 0)
       {
@@ -1806,62 +2222,62 @@ void LxSpace::JoinExtTracks()
         sigmaTx2 = sigmaTxMuMinus2;
       }*/
 
-      Double_t deltaZ = lastParam->GetZ() - z;
-      Double_t deltaX = abs(lastParam->GetX() - x - tx * deltaZ);
-      Double_t dxSts2 = lastParam->GetCovariance(0, 0);
-      Double_t dySts2 = lastParam->GetCovariance(1, 1);
-      Double_t dtxSts2 = lastParam->GetCovariance(2, 2);
-      Double_t dtySts2 = lastParam->GetCovariance(3, 3);
-      //Double_t sigmaXMeas2 = dxMuch * dxMuch + dxSts2 - covXTx * deltaZ;// deltaZ is negative.
-      Double_t sigmaXMeas2 = dxMuch * dxMuch + dxSts2 + dtxMuch * dtxMuch * deltaZ * deltaZ;
-      //Double_t sigmaXMeas = sqrt(sigmaXMeas2);
-      //Double_t sigmaYMeas2 = dyMuch * dyMuch + dySts2 - covYTy * deltaZ;// deltaZ is negative.
-      Double_t sigmaYMeas2 = dyMuch * dyMuch + dySts2 + dtyMuch * dtyMuch * deltaZ * deltaZ;
-      //Double_t sigmaYMeas = sqrt(sigmaYMeas2);
-      Double_t sigmaTxMeas2 = dtxMuch * dtxMuch + dtxSts2;
-      //Double_t sigmaTxMeas = sqrt(sigmaTxMeas2);
-      Double_t sigmaTyMeas2 = dtyMuch * dtyMuch + dtySts2;
-      //Double_t sigmaTyMeas = sqrt(sigmaTyMeas2);
+      scaltype deltaZ = lastParam->GetZ() - z;
+      scaltype deltaX = abs(lastParam->GetX() - x - tx * deltaZ);
+      scaltype dxSts2 = lastParam->GetCovariance(0, 0);
+      scaltype dySts2 = lastParam->GetCovariance(1, 1);
+      scaltype dtxSts2 = lastParam->GetCovariance(2, 2);
+      scaltype dtySts2 = lastParam->GetCovariance(3, 3);
+      //scaltype sigmaXMeas2 = dxMuch * dxMuch + dxSts2 - covXTx * deltaZ;// deltaZ is negative.
+      scaltype sigmaXMeas2 = dxMuch * dxMuch + dxSts2 + dtxMuch * dtxMuch * deltaZ * deltaZ;
+      //scaltype sigmaXMeas = sqrt(sigmaXMeas2);
+      //scaltype sigmaYMeas2 = dyMuch * dyMuch + dySts2 - covYTy * deltaZ;// deltaZ is negative.
+      scaltype sigmaYMeas2 = dyMuch * dyMuch + dySts2 + dtyMuch * dtyMuch * deltaZ * deltaZ;
+      //scaltype sigmaYMeas = sqrt(sigmaYMeas2);
+      scaltype sigmaTxMeas2 = dtxMuch * dtxMuch + dtxSts2;
+      //scaltype sigmaTxMeas = sqrt(sigmaTxMeas2);
+      scaltype sigmaTyMeas2 = dtyMuch * dtyMuch + dtySts2;
+      //scaltype sigmaTyMeas = sqrt(sigmaTyMeas2);
 
       //if (deltaX > cutCoeff * sqrt(sigmaX2 + sigmaXMeas2))
         //continue;
 
-      Double_t deltaY = abs(lastParam->GetY() - y - ty * deltaZ);
+      scaltype deltaY = abs(lastParam->GetY() - y - ty * deltaZ);
 
       //if (deltaY > cutCoeff * sqrt(sigmaY2 + sigmaYMeas2))
         //continue;
 
-      Double_t deltaTx = abs(lastParam->GetTx() - tx);
+      scaltype deltaTx = abs(lastParam->GetTx() - tx);
 
       //if (deltaTx > cutCoeff * sqrt(sigmaTx2 + sigmaTxMeas2))
         //continue;
 
-      Double_t deltaTy = abs(lastParam->GetTy() - ty);
+      scaltype deltaTy = abs(lastParam->GetTy() - ty);
 
       //if (deltaTy > cutCoeff * sqrt(sigmaTy2 + sigmaTyMeas2))
         //continue;
 
       // Take the charge sign into account.
-      //Double_t stsCharge = firstParam->GetQp();
-      //Double_t angMomInv =  muchCharge / stsCharge;
-      //Double_t dAmi = abs(sqrt(dtxMuch * dtxMuch + firstParam->GetCovariance(2, 2)) / stsCharge);
+      //scaltype stsCharge = firstParam->GetQp();
+      //scaltype angMomInv =  muchCharge / stsCharge;
+      //scaltype dAmi = abs(sqrt(dtxMuch * dtxMuch + firstParam->GetCovariance(2, 2)) / stsCharge);
 
       // Check if the MUCH track projection to XZ plane angle fit the STS track momentum.
       //if (0.18 - dAmi > angMomInv || 0.52 + dAmi < angMomInv)
       //if (0.26 - dAmi > angMomInv || 0.44 + dAmi < angMomInv)
         //continue;
 
-      Double_t chi2 = deltaX * deltaX / (sigmaX2 + sigmaXMeas2) + deltaY * deltaY / (sigmaY2 + sigmaYMeas2) +
+      scaltype chi2 = deltaX * deltaX / (sigmaX2 + sigmaXMeas2) + deltaY * deltaY / (sigmaY2 + sigmaYMeas2) +
           deltaTx * deltaTx / (sigmaTx2 + sigmaTxMeas2) + deltaTy * deltaTy / (sigmaTy2 + sigmaTyMeas2);
 #endif//USE_OLD_STS_LINKING_RULE
 
 #ifdef LX_EXT_LINK_SOPH
-      list<pair<LxExtTrack*, Double_t> >::iterator k = track->extTrackCandidates.begin();
+      list<pair<LxExtTrack*, scaltype> >::iterator k = track->extTrackCandidates.begin();
 
       for (; k != track->extTrackCandidates.end() && chi2 >= k->second; ++k)
         ;
 
-      pair<LxExtTrack*, Double_t> linkDesc(extTrack, chi2);
+      pair<LxExtTrack*, scaltype> linkDesc(extTrack, chi2);
       track->extTrackCandidates.insert(k, linkDesc);
 #else//LX_EXT_LINK_SOPH
       if (0 == track->externalTrack || track->extLinkChi2 > chi2)
@@ -1873,11 +2289,11 @@ void LxSpace::JoinExtTracks()
     }// for (list<LxExtTrack>::iterator j = extTracks.begin(); j != extTracks.end(); ++j)
 
 #ifdef LX_EXT_LINK_SOPH
-    for (list<pair<LxExtTrack*, Double_t> >::iterator j = track->extTrackCandidates.begin();
+    for (list<pair<LxExtTrack*, scaltype> >::iterator j = track->extTrackCandidates.begin();
         j != track->extTrackCandidates.end(); ++j)
     {
       LxExtTrack* extTrack = j->first;
-      Double_t chi2 = j->second;
+      scaltype chi2 = j->second;
 
       if (0 == extTrack->recoTrack.first)
       {
@@ -1900,18 +2316,18 @@ void LxSpace::JoinExtTracks()
   }// for (list<LxTrack*>::iterator i = tracks.begin(); i != tracks.end(); ++i)
 }
 
-void LxSpace::CheckArray(Double_t xs[LXSTATIONS][LXLAYERS], Double_t ys[LXSTATIONS][LXLAYERS],
-    Double_t zs[LXSTATIONS][LXLAYERS],
-    Double_t xDisp2Limits[LXSTATIONS], Double_t yDisp2Limits[LXSTATIONS], Double_t tx2Limits[LXSTATIONS],
-      Double_t ty2Limits[LXSTATIONS], Double_t txBreak2Limits[LXSTATIONS], Double_t tyBreak2Limits[LXSTATIONS])
+void LxSpace::CheckArray(scaltype xs[LXSTATIONS][LXLAYERS], scaltype ys[LXSTATIONS][LXLAYERS],
+    scaltype zs[LXSTATIONS][LXLAYERS],
+    scaltype xDisp2Limits[LXSTATIONS], scaltype yDisp2Limits[LXSTATIONS], scaltype tx2Limits[LXSTATIONS],
+      scaltype ty2Limits[LXSTATIONS], scaltype txBreak2Limits[LXSTATIONS], scaltype tyBreak2Limits[LXSTATIONS])
 {
   for (int i = 0; i < LXSTATIONS; ++i)
   {
-    Double_t diffZ = zs[i][0] - zs[i][1];
-    Double_t tx = xs[i][1] / zs[i][1];
-    Double_t ty = ys[i][1] / zs[i][1];
-    Double_t dispXL = xs[i][0] - tx * diffZ - xs[i][1];
-    Double_t dispYL = ys[i][0] - ty * diffZ - ys[i][1];
+    scaltype diffZ = zs[i][0] - zs[i][1];
+    scaltype tx = xs[i][1] / zs[i][1];
+    scaltype ty = ys[i][1] / zs[i][1];
+    scaltype dispXL = xs[i][0] - tx * diffZ - xs[i][1];
+    scaltype dispYL = ys[i][0] - ty * diffZ - ys[i][1];
 
     if (dispXL < 0)
       dispXL = -dispXL;
@@ -1920,8 +2336,8 @@ void LxSpace::CheckArray(Double_t xs[LXSTATIONS][LXLAYERS], Double_t ys[LXSTATIO
       dispYL = -dispYL;
 
     diffZ = zs[i][2] - zs[i][1];
-    Double_t dispXR = xs[i][2] - tx * diffZ - xs[i][1];
-    Double_t dispYR = ys[i][2] - ty * diffZ - ys[i][1];
+    scaltype dispXR = xs[i][2] - tx * diffZ - xs[i][1];
+    scaltype dispYR = ys[i][2] - ty * diffZ - ys[i][1];
 
     if (dispXR < 0)
       dispXR = -dispXR;
@@ -1929,8 +2345,8 @@ void LxSpace::CheckArray(Double_t xs[LXSTATIONS][LXLAYERS], Double_t ys[LXSTATIO
     if (dispYR < 0)
       dispYR = -dispYR;
 
-    Double_t dispX = dispXL < dispXR ? dispXL : dispXR;
-    Double_t dispY = dispYL < dispYR ? dispYL : dispYR;
+    scaltype dispX = dispXL < dispXR ? dispXL : dispXR;
+    scaltype dispY = dispYL < dispYR ? dispYL : dispYR;
 
     if (stations[i]->disp01XBig - dispX < xDisp2Limits[i])
       xDisp2Limits[i] = stations[i]->disp01XBig - dispX;
@@ -1941,16 +2357,16 @@ void LxSpace::CheckArray(Double_t xs[LXSTATIONS][LXLAYERS], Double_t ys[LXSTATIO
     if (i > 0)
     {
       diffZ = zs[i][1] - zs[i - 1][1];
-      Double_t tx1 = xs[i][1] / zs[i][1];
+      scaltype tx1 = xs[i][1] / zs[i][1];
       tx = (xs[i][1] - xs[i - 1][1]) / diffZ;
-      Double_t dtx = tx - tx1;
+      scaltype dtx = tx - tx1;
 
       if (dtx < 0)
         dtx = -dtx;
 
-      Double_t ty1 = ys[i][1] / zs[i][1];
+      scaltype ty1 = ys[i][1] / zs[i][1];
       ty = (ys[i][1] - ys[i - 1][1]) / diffZ;
-      Double_t dty = ty - ty1;
+      scaltype dty = ty - ty1;
 
       if (dty < 0)
         dty = -dty;
@@ -1964,10 +2380,10 @@ void LxSpace::CheckArray(Double_t xs[LXSTATIONS][LXLAYERS], Double_t ys[LXSTATIO
       if (i < LXSTATIONS - 1)
       {
         diffZ = zs[i + 1][1] - zs[i][1];
-        Double_t tx2 = (xs[i + 1][1] - xs[i][1]) / diffZ;
-        Double_t ty2 = (ys[i + 1][1] - ys[i][1]) / diffZ;
-        Double_t txBreak = tx2 - tx;
-        Double_t tyBreak = ty2 - ty;
+        scaltype tx2 = (xs[i + 1][1] - xs[i][1]) / diffZ;
+        scaltype ty2 = (ys[i + 1][1] - ys[i][1]) / diffZ;
+        scaltype txBreak = tx2 - tx;
+        scaltype tyBreak = ty2 - ty;
 
         if (txBreak < 0)
           txBreak = -txBreak;
@@ -1985,10 +2401,10 @@ void LxSpace::CheckArray(Double_t xs[LXSTATIONS][LXLAYERS], Double_t ys[LXSTATIO
   }
 }
 
-void LxSpace::CheckArray(Double_t xs[LXSTATIONS][LXLAYERS], Double_t ys[LXSTATIONS][LXLAYERS],
-    Double_t zs[LXSTATIONS][LXLAYERS], list<LxPoint*> pts[LXSTATIONS][LXLAYERS], int level,
-    Double_t xDisp2Limits[LXSTATIONS], Double_t yDisp2Limits[LXSTATIONS], Double_t tx2Limits[LXSTATIONS],
-      Double_t ty2Limits[LXSTATIONS], Double_t txBreak2Limits[LXSTATIONS], Double_t tyBreak2Limits[LXSTATIONS])
+void LxSpace::CheckArray(scaltype xs[LXSTATIONS][LXLAYERS], scaltype ys[LXSTATIONS][LXLAYERS],
+    scaltype zs[LXSTATIONS][LXLAYERS], list<LxPoint*> pts[LXSTATIONS][LXLAYERS], int level,
+    scaltype xDisp2Limits[LXSTATIONS], scaltype yDisp2Limits[LXSTATIONS], scaltype tx2Limits[LXSTATIONS],
+      scaltype ty2Limits[LXSTATIONS], scaltype txBreak2Limits[LXSTATIONS], scaltype tyBreak2Limits[LXSTATIONS])
 {
   if (LXSTATIONS * LXLAYERS == level)
   {
@@ -2015,17 +2431,17 @@ void LxSpace::CheckArray(Double_t xs[LXSTATIONS][LXLAYERS], Double_t ys[LXSTATIO
 
 void LxSpace::CheckArray(ostream& out, LxMCTrack& track)
 {
-  Double_t xs[LXSTATIONS][LXLAYERS];
-  Double_t ys[LXSTATIONS][LXLAYERS];
-  Double_t zs[LXSTATIONS][LXLAYERS];
+  scaltype xs[LXSTATIONS][LXLAYERS];
+  scaltype ys[LXSTATIONS][LXLAYERS];
+  scaltype zs[LXSTATIONS][LXLAYERS];
   list<LxPoint*> pts[LXSTATIONS][LXLAYERS];
   int inits[LXSTATIONS][LXLAYERS];
-  Double_t xDisp2Limits[LXSTATIONS];
-  Double_t yDisp2Limits[LXSTATIONS];
-  Double_t tx2Limits[LXSTATIONS];
-  Double_t ty2Limits[LXSTATIONS];
-  Double_t txBreak2Limits[LXSTATIONS];
-  Double_t tyBreak2Limits[LXSTATIONS];
+  scaltype xDisp2Limits[LXSTATIONS];
+  scaltype yDisp2Limits[LXSTATIONS];
+  scaltype tx2Limits[LXSTATIONS];
+  scaltype ty2Limits[LXSTATIONS];
+  scaltype txBreak2Limits[LXSTATIONS];
+  scaltype tyBreak2Limits[LXSTATIONS];
   bool busyHits[LXSTATIONS];
 
   for (int i = 0; i < LXSTATIONS; ++i)

@@ -3,6 +3,8 @@
 
 #pragma GCC diagnostic ignored "-Weffc++"
 
+#include "TString.h"
+
 struct LxSimpleTrack;
 class LxTrackAna;
 
@@ -13,10 +15,12 @@ public:
   void Init();
   void Finish();
   void BuildStatistics();
+  void SetParticleType(TString v);
 
 private:
   void StatForTrack(LxSimpleTrack* track);
   LxTrackAna& owner;
+  Int_t stationsInAlgo;
 };
 
 #endif//LXTRACKANASEGMENTS_INCLUDED

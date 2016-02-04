@@ -5,6 +5,7 @@ using namespace std;
 // Used for building of the background on an invariant mass.
 void LxFinder::SaveEventTracks()
 {
+#ifdef MAKE_HISTOS
   for (list<LxTrack*>::iterator i = caSpace.tracks.begin(); i != caSpace.tracks.end(); ++i)
   {
     LxTrack* firstTrack = *i;
@@ -19,19 +20,19 @@ void LxFinder::SaveEventTracks()
     else
       extFitter.DoFit(&t, 13);
 
-    Double_t chi2Prim = extFitter.GetChiToVertex(&t, fPrimVtx);
+    scaltype chi2Prim = extFitter.GetChiToVertex(&t, fPrimVtx);
     FairTrackParam params;
     extFitter.Extrapolate(&t, fPrimVtx->GetZ(), &params);
 
-    Double_t p = 1 / params.GetQp();
-    Double_t p2 = p * p;
+    scaltype p = 1 / params.GetQp();
+    scaltype p2 = p * p;
 
     if (p2 < 9)
       continue;
 
-    Double_t tx2 = params.GetTx() * params.GetTx();
-    Double_t ty2 = params.GetTy() * params.GetTy();
-    Double_t pt2 = p2 * (tx2 + ty2) / (1 + tx2 + ty2);
+    scaltype tx2 = params.GetTx() * params.GetTx();
+    scaltype ty2 = params.GetTy() * params.GetTy();
+    scaltype pt2 = p2 * (tx2 + ty2) / (1 + tx2 + ty2);
 
     if (pt2 < 1)
       continue;
@@ -40,4 +41,5 @@ void LxFinder::SaveEventTracks()
     *superEventData = t;
     superEventTracks->Fill();
   }
+#endif//MAKE_HISTOS
 }
