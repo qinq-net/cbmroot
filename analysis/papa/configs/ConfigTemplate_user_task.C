@@ -174,7 +174,7 @@ void SetupTrackCuts(PairAnalysis *papa, Int_t cutDefinition)
   PairAnalysisVarCuts   *recSTS = new PairAnalysisVarCuts("recSTS","recSTS");
   recSTS->SetCutType(PairAnalysisVarCuts::kAll);
   recSTS->AddCut(PairAnalysisVarManager::kSTSHits,         4.,   10.);        /// min+max requieremnt for hits
-  recSTS->AddCut(PairAnalysisVarManager::kSTSChi2NDFtoVtx, 0.,    3.);        /// keep tracks pointing to the primary vertex
+  recSTS->AddCut(PairAnalysisVarManager::kChi2NDFtoVtx, 0.,    3.);        /// keep tracks pointing to the primary vertex
   recSTS->AddCut(PairAnalysisVarManager::kSTSFirstHitPosZ, 0.,   35.);        /// require a hit in first STS layer
   recSTS->AddCut("STSPin-STSPout",                         0.1, 100., kTRUE); /// exclude momentum large differences
 
@@ -457,6 +457,7 @@ void InitHistograms(PairAnalysis *papa, Int_t cutDefinition)
   histos->AddProfile(  "Track", PairAnalysisHelper::MakeLogBinning(23,1.,500.), PairAnalysisVarManager::kNTrk, PairAnalysisVarManager::kSTSisMC,"I");
   /// Reconstuction Quality
   histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(100,0.,50.), PairAnalysisVarManager::kTrackChi2NDF);
+  histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(101,-0.05,10.05),  PairAnalysisVarManager::kChi2NDFtoVtx);
   /// Kinematics
   /// checkout http://root.cern.ch/root/html/TFormula.html#TFormula:Analyze for formula function strings
   histos->AddHistogram("Track", PairAnalysisHelper::MakeLogBinning(400,1.e-3.,4.),  "sqrt(Xv*Xv+Yv*Yv+Zv*Zv)");
@@ -476,7 +477,6 @@ void InitHistograms(PairAnalysis *papa, Int_t cutDefinition)
   /// STS
   histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(16,-0.5, 15.5), PairAnalysisVarManager::kSTSHits);
   histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(101,-0.5, 50.5), PairAnalysisVarManager::kSTSChi2NDF);
-  histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(101,-0.05,10.05),  PairAnalysisVarManager::kSTSChi2NDFtoVtx);
   /// MVD
   histos->AddHistogram("Track", PairAnalysisHelper::MakeLinBinning(101,-0.5, 5.5), PairAnalysisVarManager::kMVDHits);
   /// RICH
