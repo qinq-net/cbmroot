@@ -5,7 +5,7 @@
 
 Set(INCLUDE_DIRECTORIES
   ${BASE_INCLUDE_DIRECTORIES} 
-  ${CBMROOT_SOURCE_DIR}/tracking/lx
+  ${CBMROOT_SOURCE_DIR}/tracking/lxTripplet
   ${CBMROOT_SOURCE_DIR}/base 
   ${CBMROOT_SOURCE_DIR}/data 
   ${CBMROOT_SOURCE_DIR}/data/much 
@@ -40,31 +40,20 @@ Set(SRCS
   LxTrackAna.cxx
 )
 
-find_package(OpenMP)
-
-If (OPENMP_FOUND)
-  Set(SRCS ${SRCS} LxParall.cxx)
-EndIf (OPENMP_FOUND)
-
 Set(NO_DICT_SRCS
-  LxCA.cxx
-  LxDraw.cxx
+  LxCATriplets.cxx
   LxEff.cxx
   LxMC.cxx
   LxTrackAnaSegments.cxx
-  LxTrigger.cxx
   LxUtils.cxx
 )
 
-If (OPENMP_FOUND)
-  Set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -mavx -fopenmp -DLXPARALL" )
-EndIf (OPENMP_FOUND)
+Set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -mavx -fopenmp" )
 
 set(LINKDEF LxLinkDef.h)
-Set(LIBRARY_NAME LxTrack)
+Set(LIBRARY_NAME LxTrackTripplet)
 Set(DEPENDENCIES
     CbmBase CbmData Base boost_regex
 )
 
 GENERATE_LIBRARY()
-

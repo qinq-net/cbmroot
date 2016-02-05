@@ -9,8 +9,9 @@
 #pragma link C++ class  LxFinder+;
 #pragma link C++ class  LxTrackAna+;
 
-#ifdef LXPARALL
-#pragma link C++ class  LxParallFinder+;
 #endif
 
-#endif
+
+
+
+
