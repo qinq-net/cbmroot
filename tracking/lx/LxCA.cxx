@@ -30,7 +30,7 @@ scaltype x_disp_right_limits[LXSTATIONS];
 scaltype x_disp_right_limits_sq[LXSTATIONS];
 scaltype y_disp_right_limits[LXSTATIONS];
 scaltype y_disp_right_limits_sq[LXSTATIONS];
-scaltype x_coords[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
+/*scaltype x_coords[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
 scaltype tx_vals[LXSTATIONS - 1][LXMAXPOINTSONSTATION];
 scaltype x_errs[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
 scaltype y_coords[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
@@ -39,7 +39,7 @@ scaltype y_errs[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
 scaltype z_coords[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
 LxPoint* point_refs[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
 bool use_points[LXSTATIONS - 1][LXMAXPOINTSONSTATION];
-int points_counts[LXSTATIONS][LXLAYERS];
+int points_counts[LXSTATIONS][LXLAYERS];*/
 
 void LxSpace::InitGlobalCAArrays()
 {
@@ -305,6 +305,20 @@ void LxSpace::BuildRaysGlobal()
 }
 
 #else//LXSIMDIZE
+
+#define _mm_malloc(X, Y) malloc((X))
+#define _mm_free free
+
+scaltype x_coords[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
+scaltype tx_vals[LXSTATIONS - 1][LXMAXPOINTSONSTATION];
+scaltype x_errs[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
+scaltype y_coords[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
+scaltype ty_vals[LXSTATIONS][LXMAXPOINTSONSTATION];
+scaltype y_errs[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
+scaltype z_coords[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
+LxPoint* point_refs[LXSTATIONS][LXLAYERS][LXMAXPOINTSONSTATION];
+bool use_points[LXSTATIONS - 1][LXMAXPOINTSONSTATION];
+int points_counts[LXSTATIONS][LXLAYERS];
 
 static void CalcTangents(int station_number)
 {
