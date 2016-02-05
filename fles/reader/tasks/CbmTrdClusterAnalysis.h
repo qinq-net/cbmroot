@@ -27,6 +27,10 @@ class CbmTrdClusterAnalysis : public FairTask
  CbmHistManager *fHM;
 
  void CreateHistograms();
+ void DrawHistograms();
+
+ const Float_t W = 1.0;//7.125; //(mm)
+ const Float_t H = 1.0;//75.0;
 
  CbmTrdClusterAnalysis(const CbmTrdClusterAnalysis&);
  CbmTrdClusterAnalysis operator=(const CbmTrdClusterAnalysis&);
