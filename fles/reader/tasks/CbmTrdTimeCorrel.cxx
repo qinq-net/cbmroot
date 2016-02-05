@@ -53,6 +53,13 @@ InitStatus CbmTrdTimeCorrel::ReInit()
 void CbmTrdTimeCorrel::Exec(Option_t* option)
 {
   // Analysis based on single SPADIC data streams can be done here!!!
+
+  if(fNrTimeSlices==0){
+    if(TsaContainerCounter->GetN()!=0){
+      LOG(INFO ) << "Expected empty TsaContainerCounter before first TimeSlice, but found " << " entries."  << TsaContainerCounter->GetN() << FairLogger::endl;
+    }
+  }
+  
   std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > > timeBuffer;
   LOG(INFO) << "CbmTrdTimeCorrel: Number of found TimeSlices: " << fNrTimeSlices << FairLogger::endl;
   Int_t nSpadicMessages = fRawSpadic->GetEntriesFast();//SPADIC messages per TimeSlice
@@ -95,6 +102,11 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 }
 void CbmTrdTimeCorrel::Finish()
 {
+  if(fNrTimeSlices==0){
+    if(TsaContainerCounter->GetN()==0){
+      LOG(INFO ) << "Expected entries TsaContainerCounter after first TimeSlice, but found none." << FairLogger::endl;
+    }
+  }
   //Buffer (map) or multi SPADIC data streams based analyis have to be done here!!
   LOG(DEBUG) << "Finish of CbmTrdTimeCorrel" << FairLogger::endl;
   LOG(INFO) << "Write histo list to " << FairRootManager::Instance()->GetOutFile()->GetName() << FairLogger::endl;
@@ -131,12 +143,15 @@ void CbmTrdTimeCorrel::CreateHistograms()
 			  "Empty word", 
 			  "Epoch out of sync", 
 			  "infoType out of array"}; //not official type, just to monitor overflows
+
   fHM->Add("Trigger", new TH1F("Trigger", "Trigger", 9,0,9));
   for(Int_t syscore = 0; syscore < 3; ++syscore) {
     for(Int_t spadic = 0; spadic < 3; ++spadic) {
       fHM->H1("Trigger")->GetXaxis()->SetBinLabel(3*syscore+spadic+1,TString(syscoreName[syscore]+"_"+spadicName[spadic]));
     }
   }
+  fHM->Add("TsaContainerCounter", new TGraph(500));
+  fHM->G1("TsaContainerCounter")->GetXaxis()->SetTitle("TSA number")
 }
 TString CbmTrdTimeCorrel::GetSysCore(Int_t eqID)
 {
