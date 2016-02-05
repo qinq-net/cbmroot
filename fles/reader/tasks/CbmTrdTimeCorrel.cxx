@@ -55,8 +55,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   // Analysis based on single SPADIC data streams can be done here!!!
 
   if(fNrTimeSlices==0){
-    if(TsaContainerCounter->GetN()!=0){
-      LOG(INFO ) << "Expected empty TsaContainerCounter before first TimeSlice, but found " << TsaContainerCounter->GetN() << " entries." << FairLogger::endl;
+    if(fHM->G1("TsaContainerCounter")->GetN()!=0){
+      LOG(INFO ) << "Expected empty TsaContainerCounter before first TimeSlice, but found " << fHM->G1("TsaContainerCounter")->GetN() << " entries." << FairLogger::endl;
     }
   }
   
@@ -99,7 +99,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     }
   }
   if(fNrTimeSlices==0){
-    if(TsaContainerCounter->GetN()==0){
+    if(fHM->G1("TsaContainerCounter")->GetN()==0){
       LOG(INFO ) << "Expected entries TsaContainerCounter after first TimeSlice, but found none." << FairLogger::endl;
     }
   }
