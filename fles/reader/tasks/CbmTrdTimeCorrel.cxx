@@ -4,7 +4,7 @@
 #include "CbmBeamDefaults.h"
 
 #include "FairLogger.h"
-
+#include "TCanvas.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
@@ -56,7 +56,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 
   if(fNrTimeSlices==0){
     if(TsaContainerCounter->GetN()!=0){
-      LOG(INFO ) << "Expected empty TsaContainerCounter before first TimeSlice, but found " << " entries."  << TsaContainerCounter->GetN() << FairLogger::endl;
+      LOG(INFO ) << "Expected empty TsaContainerCounter before first TimeSlice, but found " << TsaContainerCounter->GetN() << " entries." << FairLogger::endl;
     }
   }
   
@@ -98,20 +98,26 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       }
     }
   }
-  fNrTimeSlices++;
-}
-void CbmTrdTimeCorrel::Finish()
-{
   if(fNrTimeSlices==0){
     if(TsaContainerCounter->GetN()==0){
       LOG(INFO ) << "Expected entries TsaContainerCounter after first TimeSlice, but found none." << FairLogger::endl;
     }
   }
+  fNrTimeSlices++;
+}
+void CbmTrdTimeCorrel::Finish()
+{
+  TCanvas *c1 = new TCanvas("c1","c1",4*400,4*300);
+  c1->cd();
+  fHM->G1("TsaContainerCounter")->Draw("AL");
+  fHM->G1("TsaContainerCounter")->GetXaxis()->SetTitle("TSA number");
+  c1->SaveAs("pics/TsaContainerCounter.png");
   //Buffer (map) or multi SPADIC data streams based analyis have to be done here!!
   LOG(DEBUG) << "Finish of CbmTrdTimeCorrel" << FairLogger::endl;
   LOG(INFO) << "Write histo list to " << FairRootManager::Instance()->GetOutFile()->GetName() << FairLogger::endl;
   FairRootManager::Instance()->GetOutFile()->cd();
   fHM->WriteToFile();
+  //delete c1;
 }
 void CbmTrdTimeCorrel::FinishEvent()
 {
@@ -151,7 +157,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
     }
   }
   fHM->Add("TsaContainerCounter", new TGraph(500));
-  fHM->G1("TsaContainerCounter")->GetXaxis()->SetTitle("TSA number")
+  
 }
 TString CbmTrdTimeCorrel::GetSysCore(Int_t eqID)
 {
