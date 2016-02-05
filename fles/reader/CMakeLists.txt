@@ -92,6 +92,7 @@ Set(SRCS
   tasks/CbmTrdDaqBuffer.cxx
   tasks/CbmTrdClusterAnalysis.cxx
   tasks/CbmTrdTestBeamAnalysis.cxx
+  tasks/CbmTrdTimeCorrel.cxx
 
   ${FLES_TOF_BEAM_SOURCES}
 )

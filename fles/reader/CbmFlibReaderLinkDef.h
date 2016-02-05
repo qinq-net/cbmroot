@@ -39,5 +39,6 @@
 #pragma link C++ class CbmTrdClusterAnalysis;
 //#pragma link C++ class CbmTrdDaqBuffer;
 #pragma link C++ class CbmTrdTestBeamAnalysis;
+#pragma link C++ class CbmTrdTimeCorrel;
 
 #endif
