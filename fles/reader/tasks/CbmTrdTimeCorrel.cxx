@@ -19,7 +19,7 @@ CbmTrdTimeCorrel::CbmTrdTimeCorrel()
   : FairTask("CbmTrdTimeCorrel"),
     fRawSpadic(NULL),
     fHM(new CbmHistManager()),
-    fNrTimeSlices(0)  
+    fNrTimeSlices(0)
 {
  LOG(DEBUG) << "Default constructor of CbmTrdTimeCorrel" << FairLogger::endl;
 }
@@ -55,8 +55,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   // Analysis based on single SPADIC data streams can be done here!!!
 
   if(fNrTimeSlices==0){
-    if(fHM->G1("TsaContainerCounter")->GetN()!=0){
-      LOG(INFO ) << "Expected empty TsaContainerCounter before first TimeSlice, but found " << fHM->G1("TsaContainerCounter")->GetN() << " entries." << FairLogger::endl;
+    if(fHM->G1("TsCounter")->GetN()!=0){
+      LOG(INFO ) << "Expected empty TsCounter before first TimeSlice, but found " << fHM->G1("TsCounter")->GetN() << " entries." << FairLogger::endl;
     }
   }
   
@@ -98,9 +98,14 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       }
     }
   }
+
+  //fill number of spadic-messages in tscounter-graph
+  //length of one timeslice: m * n * 8 ns, with e.g. n=1250 length of microslice and m=100 microslices in one timeslice at SPS2015
+  fHM->G1("TsCounter")->SetPoint(fNrTimeSlices+1,fNrTimeSlices+1,nSpadicMessages);
+
   if(fNrTimeSlices==0){
-    if(fHM->G1("TsaContainerCounter")->GetN()==0){
-      LOG(INFO ) << "Expected entries TsaContainerCounter after first TimeSlice, but found none." << FairLogger::endl;
+    if(fHM->G1("TsCounter")->GetN()==0){
+      LOG(INFO ) << "Expected entries in TsCounter after finishinig first TimeSlice, but found none." << FairLogger::endl;
     }
   }
   fNrTimeSlices++;
@@ -109,9 +114,9 @@ void CbmTrdTimeCorrel::Finish()
 {
   TCanvas *c1 = new TCanvas("c1","c1",4*400,4*300);
   c1->cd();
-  fHM->G1("TsaContainerCounter")->Draw("AL");
-  fHM->G1("TsaContainerCounter")->GetXaxis()->SetTitle("TSA number");
-  c1->SaveAs("pics/TsaContainerCounter.png");
+  fHM->G1("TsCounter")->Draw("AL");
+  fHM->G1("TsCounter")->GetXaxis()->SetTitle("TS number");
+  c1->SaveAs("pics/TsCounter.png");
   //Buffer (map) or multi SPADIC data streams based analyis have to be done here!!
   LOG(DEBUG) << "Finish of CbmTrdTimeCorrel" << FairLogger::endl;
   LOG(INFO) << "Write histo list to " << FairRootManager::Instance()->GetOutFile()->GetName() << FairLogger::endl;
@@ -156,7 +161,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
       fHM->H1("Trigger")->GetXaxis()->SetBinLabel(3*syscore+spadic+1,TString(syscoreName[syscore]+"_"+spadicName[spadic]));
     }
   }
-  fHM->Add("TsaContainerCounter", new TGraph(500));
+  fHM->Add("TsCounter", new TGraph(500));
   
 }
 TString CbmTrdTimeCorrel::GetSysCore(Int_t eqID)
