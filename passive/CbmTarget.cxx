@@ -168,8 +168,8 @@ void CbmTarget::ConstructGeometry() {
                << FairLogger::endl;
     return;
   }
-  LOG(DEBUG) << GetName() << ": Mother node is " << motherNode->GetName()
-             << FairLogger::endl;
+  LOG(INFO) << GetName() << ": Mother node is " << motherNode->GetName()
+            << FairLogger::endl;
 
 
   // Construct the transformation matrix for positioning of the target
@@ -203,15 +203,24 @@ void CbmTarget::ConstructGeometry() {
 
 
 
-// -----   Output to stdout   -----------------------------------------------
+// -----   Output to screen   -----------------------------------------------
 void CbmTarget::Print(Option_t*) {
-  if ( fBuildFromFile ) LOG(INFO) << GetName() << ": geometry file "
+  if ( fBuildFromFile ) LOG(INFO) << GetName() << ": Geometry file "
                                   << fgeoName << FairLogger::endl;
   else {
-  LOG(INFO) << GetName() << ": material " << fMaterial << ", density "
-            << fDensity << " g/cm^3, thickness " << fThickness * 10000.
-            << " mum, diameter " << fDiameter << " cm " << FairLogger::endl;
-  LOG(INFO) << GetName() << ": position (" << fPosX << ", " << fPosY
+  	if ( fDensity >= 0. ) {
+  		LOG(INFO) << GetName() << ": Material " << fMaterial << ", density "
+  							<< fDensity << " g/cm^3, thickness " << fThickness * 10000.
+  							<< " mum, diameter " << fDiameter << " cm "
+  							<< FairLogger::endl;
+  	}
+  	else {
+  		LOG(INFO) << GetName() << ": Material " << fMaterial
+  				      << ", standard density, thickness " << fThickness * 10000.
+  							<< " mum, diameter " << fDiameter << " cm "
+  							<< FairLogger::endl;
+  	}
+  LOG(INFO) << GetName() << ": Position (" << fPosX << ", " << fPosY
             << ", " << fPosZ << ") cm" << FairLogger::endl;
   }
 }

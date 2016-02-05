@@ -22,23 +22,32 @@
 #include "CbmFieldMapSym2.h"
 #include "CbmFieldMapSym3.h"
 
-#include "CbmMvd.h"
-#include "CbmStsMC.h"
-#include "CbmRich.h"
-#include "CbmMuch.h"
-#include "CbmTrd.h"
-#include "CbmTof.h"
-#include "CbmEcal.h"
-#include "CbmPsd.h"
-#include "CbmMagnet.h"
-#include "CbmTarget.h"
-#include "CbmPipe.h"
 #include "CbmFieldMapData.h"
 
+
+// -----   Initialise static instance   ------------------------------------
+CbmSetup* CbmSetup::fgInstance = NULL;
+// -------------------------------------------------------------------------
+
+
+// -----   Clear the setup   -----------------------------------------------
+void CbmSetup::Clear(Option_t* opt) {
+	fGeoTags.clear();
+	fGeoFileNames.clear();
+	fActive.clear();
+	fFieldTag.Clear();
+	fFieldScale = 1.;
+	fFieldPosition.Clear();
+	fPsdPositionX = 0.;
+	fPsdPositionZ = 0.;
+}
+// -------------------------------------------------------------------------
 
 
 // -----   Instantiate module   --------------------------------------------
 FairModule* CbmSetup::CreateModule(Int_t moduleId, Bool_t active) {
+
+	/* This does not work for the time being, due to missing linking
 
   switch (moduleId) {
 
@@ -61,7 +70,7 @@ FairModule* CbmSetup::CreateModule(Int_t moduleId, Bool_t active) {
     default: return NULL; break;
 
   }
-
+  */
   return NULL;
 }
 // -------------------------------------------------------------------------
@@ -103,6 +112,14 @@ CbmFieldMap* CbmSetup::CreateFieldMap() {
                         << FairLogger::endl; break;
   }
 
+  // --- Set scale and position of field map
+  if ( field ) {
+  	field->SetScale(fFieldScale);
+  	field->SetPosition(fFieldPosition.X(),
+  			               fFieldPosition.Y(),
+  			               fFieldPosition.Z());
+  }
+
   return field;
 }
 // -------------------------------------------------------------------------
@@ -122,11 +139,10 @@ Bool_t CbmSetup::GetFile(Int_t moduleId, TString& fileName) {
   TString path = gSystem->Getenv("VMCWORKDIR");
   path += "/geometry/";
   TString dir = moduleName;
-  if ( moduleId >= kNofSystems ) dir = "passive";
 
   // --- First try with ROOT file
   fileName = dir + "/" + moduleName + "_" + fGeoTags[moduleId]
-           + ".root";
+           + ".geo.root";
   TString fullPath = path + fileName;
   LOG(DEBUG1) << "Trying " << fullPath << FairLogger::endl;
   FileStat_t dummy;
@@ -148,7 +164,38 @@ Bool_t CbmSetup::GetFile(Int_t moduleId, TString& fileName) {
   // --- Neither ROOT nor ASCII.
   LOG(DEBUG) << "No geometry file for " << moduleName << " found"
             << FairLogger::endl;
+  fileName = "";
   return kFALSE;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----  Get a geometry file name   ---------------------------------------
+Bool_t CbmSetup::GetGeoFileName(Int_t moduleId, TString& fileName) {
+
+	if ( fGeoTags.find(moduleId) == fGeoTags.end() ) {
+		fileName = "";
+		return kFALSE;
+	}
+	fileName = fGeoFileNames[moduleId];
+	return kTRUE;
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----  Get a geometry tag   ---------------------------------------------
+Bool_t CbmSetup::GetGeoTag(Int_t moduleId, TString& tag) {
+
+	if ( fGeoTags.find(moduleId) == fGeoTags.end() ) {
+		tag = "";
+		return kFALSE;
+	}
+	tag = fGeoTags[moduleId];
+	return kTRUE;
+
 }
 // -------------------------------------------------------------------------
 
@@ -201,6 +248,26 @@ Bool_t CbmSetup::GetMagnetPosition(const char* geoTag,
 // -----   Intialisation    ------------------------------------------------
 void CbmSetup::Init(FairRunSim* run) {
 
+	/* Does not work for the time being due to missing linking
+
+	// --- Create the cave
+	LOG(INFO) << GetName() << ": Registering CAVE " << FairLogger::endl;
+  FairModule* cave = new CbmCave("CAVE");
+  //cave->SetGeometryFileName("cave.geo");
+  //run->AddModule(cave);
+
+  // --- Create the beam pipe
+  if ( fGeoTags.find(kPipe) != fGeoTags.end() ) {
+  	LOG(INFO) << GetName() << ": Registering PIPE " << fGeoTags[kPipe]
+  	          << " with " << fGeoFileNames[kPipe] << FairLogger::endl;
+    FairModule* pipe = new CbmPipe("PIPE");
+    pipe->SetGeometryFileName(fGeoFileNames[kPipe].Data());
+    run->AddModule(pipe);
+  }
+
+  return;
+
+
   // --- Create and register modules with proper geometries
   map<Int_t, TString>::iterator it;
   for (it = fGeoTags.begin(); it != fGeoTags.end(); it++) {
@@ -241,7 +308,28 @@ void CbmSetup::Init(FairRunSim* run) {
             << z << ") cm" << FairLogger::endl;
   if ( run ) run->SetField(fieldMap);
 
+  */
 
+
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----   Instance   ------------------------------------------------------
+CbmSetup* CbmSetup::Instance() {
+  if ( ! fgInstance ) fgInstance = new CbmSetup();
+  return fgInstance;
+}
+// -------------------------------------------------------------------------
+
+
+
+// -----  Get activity flag   ----------------------------------------------
+Bool_t CbmSetup::IsActive(Int_t moduleId) {
+
+	if ( fActive.find(moduleId) == fActive.end() ) return kFALSE;
+	return fActive[moduleId];
 }
 // -------------------------------------------------------------------------
 
@@ -250,13 +338,26 @@ void CbmSetup::Init(FairRunSim* run) {
 // -----   Print setup   ---------------------------------------------------
 void CbmSetup::Print(Option_t*) {
   map<Int_t, TString>::iterator it;
-  LOG(INFO) << "CBM setup: " << FairLogger::endl;
+  LOG(INFO) << "CBM setup: " << GetTitle() << ", " << GetNofModules()
+  		      << " modules " << FairLogger::endl;
   for ( it = fGeoTags.begin(); it != fGeoTags.end(); it++ ) {
-    LOG(INFO) << setw(8) << CbmModuleList::GetModuleName(it->first) << "  "
-              << it->second;
-    if ( fActive[it->first] ) LOG(INFO) << "  *ACTIVE* ";
+    LOG(INFO) << "  " << setw(8)
+    		      << CbmModuleList::GetModuleNameCaps(it->first)
+              << ":  " << setw(8) << it->second;
+    if ( fActive[it->first] ) LOG(INFO) << "  *ACTIVE*  ";
+    else                      LOG(INFO) << "            ";
+    LOG(INFO) << " using " << fGeoFileNames[it->first];
     LOG(INFO) << FairLogger::endl;
   }
+  if ( fGeoFileNames.find(kPsd) != fGeoFileNames.end() ) {
+  	LOG(INFO) << "  PSD     :  " << fGeoFileNames[kPsd] << ", z = "
+  			      << fPsdPositionZ << " cm, x = " << fPsdPositionX << " cm"
+  			      << FairLogger::endl;
+  }
+  LOG(INFO) << "  Field   :  " << fFieldTag << ", Position ( "
+  		      << fFieldPosition.X() << ", " << fFieldPosition.Y()
+  		      << ", " << fFieldPosition.Z() << " ), scaling "
+  		      << fFieldScale << FairLogger::endl;
 }
 // -------------------------------------------------------------------------
 
@@ -365,17 +466,19 @@ void CbmSetup::SetActive(Int_t moduleId, Bool_t active) {
 
 
 // -----   Set the field map   ---------------------------------------------
-void CbmSetup::SetField(const char* tag, Double_t scale) {
+void CbmSetup::SetField(const char* tag, Double_t scale, Double_t xPos,
+		                    Double_t yPos, Double_t zPos) {
 
   if ( fGeoTags.find(kMagnet) != fGeoTags.end() ) {
-    LOG(WARNING) << "Overriding field map  "
+    LOG(WARNING) << GetName() << ": Overriding field map  "
                  << fGeoTags.find(kMagnet)->second
                  << " (according to magnet geometry) with field map "
                  << tag << FairLogger::endl;
   }
 
-  fFieldTag = tag;
+  fFieldTag   = tag;
   fFieldScale = scale;
+  fFieldPosition.SetXYZ(xPos, yPos, zPos);
 
 }
 // -------------------------------------------------------------------------
@@ -386,30 +489,42 @@ void CbmSetup::SetField(const char* tag, Double_t scale) {
 void CbmSetup::SetModule(Int_t moduleId, const char* geoTag,
                          Bool_t active) {
 
+	// Success flag
+	Bool_t success = kTRUE;
+
   // Check validity of module Id
   if ( moduleId < 0 || moduleId > kNofSystems ) {
-    if ( moduleId < kMagnet || moduleId > kTarget ) {
-      LOG(ERROR) << "Illegal module Id " << moduleId << FairLogger::endl;
+    if ( moduleId < kMagnet || moduleId > kPipe ) {
+      LOG(ERROR) << GetName() << ": Illegal module Id " << moduleId
+      		       << FairLogger::endl;
       return;
     }
   }
 
   // Check presence of module in current setup
   if ( fGeoTags.find(moduleId) != fGeoTags.end() )
-    LOG(DEBUG) << "Changing module " << moduleId << ": "
+    LOG(DEBUG) << GetName() << ": Changing module " << moduleId << ": "
                << fGeoTags.find(moduleId)->second << " -> " << geoTag
                << FairLogger::endl;
 
-  // Set tags
+  // Set geometry tag
   fGeoTags[moduleId] = geoTag;
   if ( moduleId > kNofSystems ) fActive[moduleId] = kFALSE;
   else                          fActive[moduleId] = active;
 
   // In case of magnet, set field tag accordingly
-  if ( moduleId == kMagnet ) {
-    fFieldTag   = geoTag;
-    fFieldScale = 1.;
+  if ( moduleId == kMagnet ) fFieldTag   = geoTag;
+
+  // Check existence of geometry files
+  TString fileName;
+  Bool_t fileFound = GetFile(moduleId, fileName);
+  if ( ! fileFound ) {
+  	LOG(FATAL) << GetName() << ": could not find geometry file for module "
+  			       << CbmModuleList::GetModuleNameCaps(moduleId) << ", tag "
+  			       << geoTag << FairLogger::endl;
+  	success = kFALSE;
   }
+  fGeoFileNames[moduleId] = fileName;
 
 }
 // -------------------------------------------------------------------------

@@ -38,7 +38,7 @@ CbmTrdDigitizerPRF::CbmTrdDigitizerPRF(CbmTrdRadiator *radiator)
    fDebug(false),
    fTrianglePads(false),
    fCbmLinkWeightDistance(false),
-   fSigma_noise_keV(0.0),
+   fSigma_noise_keV(0.1),
    fNoise(NULL),
    fMinimumChargeTH(1.0e-06),
    fTime(-1.),

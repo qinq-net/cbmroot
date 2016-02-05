@@ -113,6 +113,7 @@ CbmFieldMap::CbmFieldMap(const char* mapName, const char* fileType)
   // There is no appropriate constructor of the base
   // class.
   fName = mapName;
+  fTitle = "CbmFieldMap";
   TString dir = getenv("VMCWORKDIR");
   fFileName = dir + "/input/" + mapName;
   if ( fileType[0] == 'R' ) {
@@ -272,6 +273,7 @@ void CbmFieldMap::Init() {
 	 << fFileName << ")" << endl;
     Fatal("Init", "No proper file name");
   }
+  Print();
 }
 // ------------------------------------------------------------------------
 

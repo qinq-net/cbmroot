@@ -168,9 +168,13 @@ void CbmPsdv1::CreateMaterial() {
 }
 // -----   Public method ConstructGeometry   -------------------------------
 void CbmPsdv1::ConstructGeometry() {
-  // Create materials, media and volume
 
-// Create materials, media and volume
+  LOG(INFO) << "Constructing " << GetName() << "  geometry at z = "
+  		      << fZposition << " cm, x shift = " << fXshift << " cm"
+  		      << FairLogger::endl;
+
+
+  // Create materials, media and volume
   //-----------List of Materials and Mixtures--------------
   
   TGeoMaterial *mat10 = new TGeoMaterial("IRON",55.85,26,7.87);
@@ -299,20 +303,24 @@ void CbmPsdv1::ConstructGeometry() {
       iMod++;
       if(iMod==1 || iMod==7 || iMod==43 || iMod==25 || iMod==49) 
       {
-      	gGeoManager->Node("VHLL", iMod, "VETO", xCur,yCur,0,  0,kTRUE, buf, 0); 
-	cout <<"HOLE::::iMod,xxxx,yyyy " <<iMod <<" " <<xCur <<" " <<yCur <<endl;
+      	gGeoManager->Node("VHLL", iMod, "VETO", xCur,yCur,0,  0,kTRUE, buf, 0);
+      	LOG(DEBUG) << GetName() << ": Hole module " << iMod << ", x = "
+      			       << xCur << " cm, y = " << yCur << " cm "
+      			       << FairLogger::endl;
       }
       else
       {
 	iModNoHole++;
 	gGeoManager->Node("VMDL", iModNoHole, "VETO", xCur,yCur,0, 0, kTRUE, buf, 0); 
-	cout <<"MODULE :::::iMod,xxxx,yyyy " <<iModNoHole <<" " <<xCur <<" " <<yCur <<endl;
+	LOG(DEBUG) << GetName() << ": Module " << iModNoHole << ", x = "
+			       << xCur << " cm, y = " << yCur << " cm "
+			       << FairLogger::endl;
 	
 	xi[iModNoHole-1] = xCur + xPSD;
 	yi[iModNoHole-1] = yCur;         // change: put fxzpos << etc here
 	
 	fxypos << xi[iModNoHole-1]<< " " << yi[iModNoHole-1] << endl;
-	cout << xi[iModNoHole-1] << " " << yi[iModNoHole-1] << endl;
+	LOG(DEBUG1) << xi[iModNoHole-1] << " " << yi[iModNoHole-1] << endl;
       }
 
       fNbOfSensitiveVol++;	

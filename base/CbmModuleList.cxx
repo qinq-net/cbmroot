@@ -4,7 +4,7 @@
  **/
 
 #include "FairLogger.h"
-
+#include <boost/algorithm/string.hpp>
 #include "CbmModuleList.h"
 
 
@@ -60,7 +60,8 @@ Int_t CbmModuleList::GetModuleId(const char* moduleName) {
 // ------   Get module name from module Id   --------------------------------
 TString CbmModuleList::GetModuleName(Int_t moduleId) {
   if ( fModules.find(moduleId) == fModules.end() ) {
-    LOG(ERROR) << "Illegal module Id " << moduleId << FairLogger::endl;
+    LOG(ERROR) << "Module List: Illegal module Id " << moduleId
+    		       << FairLogger::endl;
     return "";
   }
   return fModules.find(moduleId)->second;
@@ -68,5 +69,13 @@ TString CbmModuleList::GetModuleName(Int_t moduleId) {
 // -------------------------------------------------------------------------
 
 
+
+// ------   Get module name in capitals from module Id   -------------------
+TString CbmModuleList::GetModuleNameCaps(Int_t moduleId) {
+	TString name = GetModuleName(moduleId);
+	name.ToUpper();
+	return name;
+}
+// -------------------------------------------------------------------------
 
 

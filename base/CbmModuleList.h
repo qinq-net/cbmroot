@@ -66,12 +66,19 @@ class CbmModuleList
 
     /** Get module name from module Id
      ** @param moduleId  Unique module identifier (SystemId or kMagnet/kTarget/kPipe)
-     ** @return Name of module (in capitals)
+     ** @return Name of module
      **/
     static TString GetModuleName(Int_t moduleId);
 
 
-    /** Get module Id from module name
+    /** Get module name in capitals from module Id
+     ** @param moduleId  Unique module identifier (SystemId or kMagnet/kTarget/kPipe)
+     ** @return Name of module (in capitals)
+     **/
+    static TString GetModuleNameCaps(Int_t moduleId);
+
+
+   /** Get module Id from module name
      ** @param moduleName Name of module (case insensitive)
      ** @return Unique module Id
      */
