@@ -5,7 +5,7 @@
 
 Set(INCLUDE_DIRECTORIES
   ${BASE_INCLUDE_DIRECTORIES} 
-  ${CBMROOT_SOURCE_DIR}/tracking/lxTripplet
+  ${CBMROOT_SOURCE_DIR}/tracking/lxTriplet
   ${CBMROOT_SOURCE_DIR}/base 
   ${CBMROOT_SOURCE_DIR}/data 
   ${CBMROOT_SOURCE_DIR}/data/much 
