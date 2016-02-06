@@ -14,6 +14,7 @@
 #include <cmath>
 #include <map>
 #include <vector>
+#include <iostream>
 
 CbmTrdTimeCorrel::CbmTrdTimeCorrel()
   : FairTask("CbmTrdTimeCorrel"),
@@ -61,7 +62,7 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   }
   
   std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > > timeBuffer;
-  LOG(INFO) << "CbmTrdTimeCorrel: Number of found TimeSlices: " << fNrTimeSlices << FairLogger::endl;
+  LOG(INFO) << "CbmTrdTimeCorrel: Number of current TimeSlice: " << fNrTimeSlices << FairLogger::endl;
   Int_t nSpadicMessages = fRawSpadic->GetEntriesFast();//SPADIC messages per TimeSlice
   LOG(INFO) << "nSpadicMessages: " << nSpadicMessages << FairLogger::endl;
   for (Int_t iSpadicMessages=0; iSpadicMessages < nSpadicMessages; ++iSpadicMessages) {
@@ -89,22 +90,29 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     TString channelId=Form("_Ch%02d", chID);
     // add raw message to map sorted by timestamps, syscore and spadic
     timeBuffer[TString(syscore+spadic)][time].push_back(raw);
+
+    //Fill trigger-type histogram
+    fHM->H1("Trigger")->Fill(TString(syscore+spadic),1);
   }
  // complicated loop over sorted map of timestamps
   for(std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > >::iterator it = timeBuffer.begin() ; it != timeBuffer.end(); it++){
     // complicated loop over sorted map of raw messages
     for (std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > ::iterator it2 = it->second.begin() ; it2 != it->second.end(); it2++) {
-      LOG(INFO) <<  "ClusterSize:" << Int_t(it2->second.size()) << FairLogger::endl;
+      //      LOG(INFO) <<  "ClusterSize:" << Int_t(it2->second.size()) << FairLogger::endl;
       //for (std::vector<CbmSpadicRawMessage*>::iterator it3 = it2->second.begin(); it3 != it2->second.end(); it3++) {
       for(Int_t i = 0; i < Int_t(it2->second.size()); i++){
-	delete it2->second[i];//it3->second;
+	//delete it2->second[i];//it3->second;
+	// here: looping through the vector
       }
+      it2->second.clear();
     }
+    it->second.clear();
   }
+  timeBuffer.clear();
 
   //fill number of spadic-messages in tscounter-graph
   //length of one timeslice: m * n * 8 ns, with e.g. n=1250 length of microslice and m=100 microslices in one timeslice at SPS2015
-  fHM->G1("TsCounter")->SetPoint(fNrTimeSlices+1,fNrTimeSlices+1,nSpadicMessages);
+    fHM->G1("TsCounter")->SetPoint(fHM->G1("TsCounter")->GetN(),fNrTimeSlices+1,nSpadicMessages);
 
   if(fNrTimeSlices==0){
     if(fHM->G1("TsCounter")->GetN()==0){
@@ -164,7 +172,7 @@ void CbmTrdTimeCorrel::CreateHistograms()
       fHM->H1("Trigger")->GetXaxis()->SetBinLabel(3*syscore+spadic+1,TString(syscoreName[syscore]+"_"+spadicName[spadic]));
     }
   }
-  fHM->Add("TsCounter", new TGraph(500));
+  fHM->Add("TsCounter", new TGraph());
   
 }
 TString CbmTrdTimeCorrel::GetSysCore(Int_t eqID)
