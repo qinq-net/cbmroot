@@ -77,7 +77,7 @@ can->cd(5);
     }else{
       h1->Draw("same");
     }
-    if(iCol == 5) iCol++;
+    if(iCol == 5 || iCol ==10) iCol++;
     h1->SetLineColor(iCol++);
   }else 
    {
@@ -99,7 +99,7 @@ can->cd(6);
     }else{
       h1->Draw("same");
     }
-    if(iCol == 5) iCol++;
+    if(iCol == 5 || iCol ==10) iCol++;
     h1->SetLineColor(iCol++);
   }else 
    {
@@ -121,7 +121,7 @@ can->cd(7);
     }else{
       h1->Draw("same");
     }
-    if(iCol == 5) iCol++;
+    if(iCol == 5 || iCol ==10) iCol++;
     h1->SetLineColor(iCol++);
   }else 
    {
@@ -143,7 +143,7 @@ can->cd(8);
     }else{
       h1->Draw("same");
     }
-    if(iCol == 5) iCol++;
+    if(iCol == 5 || iCol ==10) iCol++;
     h1->SetLineColor(iCol++);
   }else 
    {
