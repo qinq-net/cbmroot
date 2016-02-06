@@ -76,7 +76,10 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     if (infoType > 6) infoType = 7;
     Int_t groupId=raw->GetGroupId();
     ULong_t time = raw->GetFullTime();
-
+    Int_t timeStamp = raw->GetTime();
+    Int_t epoch = raw->GetEpochMarker();
+    Int_t superEpoch = raw->GetSuperEpoch();
+    
     // get syscore, spadic and channel
     TString syscore = GetSysCore(eqID);
     Int_t sysID     = GetSysCoreID(eqID);
