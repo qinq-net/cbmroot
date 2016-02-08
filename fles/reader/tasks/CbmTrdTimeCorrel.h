@@ -34,6 +34,8 @@ class CbmTrdTimeCorrel : public FairTask
   TString GetSpadic(Int_t sourceA);
   Int_t   GetSpadicID(Int_t sourceA);
 
+  TString GetStopName(Int_t stopType);
+
   TClonesArray* fRawSpadic;
 
   CbmHistManager* fHM;

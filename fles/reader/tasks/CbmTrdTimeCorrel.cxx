@@ -88,11 +88,17 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     Int_t spaID     = GetSpadicID(sourceA);
     if(spaID%2) chID+=16;
     TString channelId=Form("_Ch%02d", chID);
+    TString stopName = GetStopName(stopType);
     // add raw message to map sorted by timestamps, syscore and spadic
     timeBuffer[TString(syscore+spadic)][time].push_back(raw);
 
+    // print single spadic message coordinates .. hey, use this for a fancy fast-running output
+    //    if(stopType == 0) LOG(INFO) << "SpadicMessage: " << iSpadicMessages << " sourceA: " << sourceA << " chID: " << chID << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << FairLogger::endl;
+    
     //Fill trigger-type histogram
     fHM->H1("Trigger")->Fill(TString(syscore+spadic),1);
+    fHM->H1("MessageCount")->Fill(TString(spadic+"_"+stopName),1);
+    if(stopType==-1) fHM->H1("MessageCount")->Fill(TString(spadic+"_"+stopName+" n-fold"),1); // replace weight 1 with number of lost messages
   }
  // complicated loop over sorted map of timestamps
   for(std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > >::iterator it = timeBuffer.begin() ; it != timeBuffer.end(); it++){
@@ -171,6 +177,14 @@ void CbmTrdTimeCorrel::CreateHistograms()
     for(Int_t spadic = 0; spadic < 3; ++spadic) {
       fHM->H1("Trigger")->GetXaxis()->SetBinLabel(3*syscore+spadic+1,TString(syscoreName[syscore]+"_"+spadicName[spadic]));
     }
+  }
+  fHM->Add("MessageCount", new TH1F("MessageCount","MessageCount",16,0,16));
+  for(Int_t spadic = 0; spadic < 2; ++spadic) {
+    for(Int_t stopType = 0; stopType < 6; ++stopType) {
+      fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(8*spadic+stopType+1,TString(spadicName[spadic]+"_"+stopTypes[stopType]));
+    }
+    fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(8*spadic+6+1,TString(spadicName[spadic]+"_Info mess"));
+    fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(8*spadic+7+1,TString(spadicName[spadic]+"_Info mess n-fold"));
   }
   fHM->Add("TsCounter", new TGraph());
   
@@ -293,4 +307,36 @@ Int_t CbmTrdTimeCorrel::GetSpadicID(Int_t sourceA)
     break;
   }
   return SpaId;
+}
+
+TString CbmTrdTimeCorrel::GetStopName(Int_t stopType)
+{
+  TString stopName="";
+  switch (stopType) {
+  case (-1):
+    stopName="Info mess";
+    break;
+  case (0):
+    stopName="Normal end of message";
+    break;
+  case (1):
+    stopName="Channel buffer full";
+    break;
+  case (2):
+    stopName="Ordering FIFO full";
+    break;
+  case (3):
+    stopName="Multi hit";
+    break;
+  case (4):
+    stopName="Multi hit and channel buffer full";
+    break;
+  case (5):
+    stopName="Multi hit and ordering FIFO full";
+    break;
+  default:
+    LOG(ERROR) << "stopType " << stopType << "not known." << FairLogger::endl;
+    break;
+  }
+  return stopName;
 }
