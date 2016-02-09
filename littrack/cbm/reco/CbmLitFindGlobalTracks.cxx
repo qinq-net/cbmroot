@@ -27,6 +27,7 @@
 #include "FairRunAna.h"
 #include "FairRuntimeDb.h"
 #include "CbmStsHit.h"
+#include "CbmKFParticleInterface.h"
 
 #include "TClonesArray.h"
 
@@ -107,6 +108,8 @@ void CbmLitFindGlobalTracks::Exec(
    ConvertOutputData();
 
    CalculateLength();
+   
+   CalculatePrimaryVertexParameters();
 
    ClearArrays();
 
@@ -387,6 +390,25 @@ void CbmLitFindGlobalTracks::CalculateLength()
 //	}
 //	for_each(litTracks.begin(), litTracks.end(), DeleteObject());
 //}
+
+void CbmLitFindGlobalTracks::CalculatePrimaryVertexParameters()
+{
+    if (0 == fGlobalTracks || 0 == fPrimVertex)
+        return;
+    
+    Int_t nofGlobalTracks = fGlobalTracks->GetEntriesFast();
+    
+    for (Int_t i = 0; i < nofGlobalTracks; ++i)
+    {
+      CbmGlobalTrack* globalTrack = static_cast<CbmGlobalTrack*> (fGlobalTracks->At(i));
+      Int_t stsId = globalTrack->GetStsTrackIndex();
+      CbmStsTrack* stsTrack = static_cast<CbmStsTrack*>(fStsTracks->At(stsId));
+      FairTrackParam vtxTrackParam;
+      float chiSqPrimary = 0.f;
+      CbmKFParticleInterface::ExtrapolateTrackToPV(stsTrack, fPrimVertex, &vtxTrackParam, chiSqPrimary);
+      globalTrack->SetParamPrimaryVertex(&vtxTrackParam);
+    }
+}
 
 void CbmLitFindGlobalTracks::ClearArrays()
 {

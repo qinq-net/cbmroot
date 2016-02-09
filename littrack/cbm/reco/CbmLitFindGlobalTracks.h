@@ -100,6 +100,11 @@ private:
     * \brief Calculate length of the global track
     */
    void CalculateLength();
+   
+   /*
+    * \brief Calculate and set the parameter set in the primary vertex of the global track
+    */
+   void CalculatePrimaryVertexParameters();
 
    /**
     * \brief Clear arrays and frees the memory.
