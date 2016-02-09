@@ -65,19 +65,23 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   LOG(INFO) << "CbmTrdTimeCorrel: Number of current TimeSlice: " << fNrTimeSlices << FairLogger::endl;
   Int_t nSpadicMessages = fRawSpadic->GetEntriesFast();//SPADIC messages per TimeSlice
   Int_t nSpadicMessages0(0),nSpadicMessages1(0); //SPADIC messages per TimeSlice for single SPADICS
+  Int_t nSpadicMessagesInfo0(0), nSpadicMessagesInfo1(0), nSpadicMessagesEpoch0(0), nSpadicMessagesEpoch1(0); // SPADIC message types per TimeSlice for single SPADICS 
   Bool_t isHit = false;
   Bool_t isInfo = false;
   Bool_t isEpoch = false;
   LOG(INFO) << "nSpadicMessages: " << nSpadicMessages << FairLogger::endl;
   for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage) {
     CbmSpadicRawMessage* raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(iSpadicMessage));
-    // if: set only variables which exist for current message type / initialize before to "unique" value
     isHit = raw->GetHit();
     isInfo = raw->GetInfo();
     isEpoch = raw->GetEpoch();
-
     if(Int_t(isHit+isInfo+isEpoch)>1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be more than one message type: HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / EPOCH " << (Int_t)isEpoch << FairLogger::endl;
     if(Int_t(isHit+isInfo+isEpoch)<1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be none of the defined types HIT 0 / INFO 0 / EPOCH 0" << FairLogger::endl;
+
+
+    // if: set only variables which exist for current message type / initialize before to "unique" value
+
+
     Int_t eqID = raw->GetEquipmentID();
     Int_t sourceA = raw->GetSourceAddress();
     Int_t chID = raw->GetChannelID();
@@ -106,8 +110,16 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     // print single spadic message coordinates .. hey, use this for a fancy fast-running output
     //    if(stopType == 0) LOG(INFO) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << chID << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << FairLogger::endl;
 
-    if(spadic=="Spadic0") nSpadicMessages0++;
-    if(spadic=="Spadic1") nSpadicMessages1++;
+    if(spadic=="Spadic0") {
+      nSpadicMessages0++;
+      if(isInfo) nSpadicMessagesInfo0++;
+      if(isEpoch) nSpadicMessagesEpoch0++;
+    }
+      if(spadic=="Spadic1") {
+	nSpadicMessages1++;
+      if(isInfo) nSpadicMessagesInfo1++;
+      if(isEpoch) nSpadicMessagesEpoch1++;
+      }
 
     //Fill trigger-type histogram
     fHM->H1("Trigger")->Fill(TString(syscore+spadic),1);
@@ -135,6 +147,10 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     fHM->G1("TsCounter")->SetPoint(fHM->G1("TsCounter")->GetN(),fNrTimeSlices+1,nSpadicMessages);
     fHM->G1("TsCounter0")->SetPoint(fHM->G1("TsCounter0")->GetN(),fNrTimeSlices+1,nSpadicMessages0);
     fHM->G1("TsCounter1")->SetPoint(fHM->G1("TsCounter1")->GetN(),fNrTimeSlices+1,nSpadicMessages1);
+    fHM->G1("TsCounterInfo0")->SetPoint(fHM->G1("TsCounterInfo0")->GetN(),fNrTimeSlices+1,nSpadicMessagesInfo0);
+    fHM->G1("TsCounterInfo1")->SetPoint(fHM->G1("TsCounterInfo1")->GetN(),fNrTimeSlices+1,nSpadicMessagesInfo1);
+    fHM->G1("TsCounterEpoch0")->SetPoint(fHM->G1("TsCounterEpoch0")->GetN(),fNrTimeSlices+1,nSpadicMessagesEpoch0);
+    fHM->G1("TsCounterEpoch1")->SetPoint(fHM->G1("TsCounterEpoch1")->GetN(),fNrTimeSlices+1,nSpadicMessagesEpoch1);
 
   if(fNrTimeSlices==0){
     if(fHM->G1("TsCounter")->GetN()==0){
@@ -145,22 +161,42 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 }
 void CbmTrdTimeCorrel::Finish()
 {
-  TCanvas *c1 = new TCanvas("c1","c1",4*400,4*300);
-  c1->Divide(2,2);
+  TCanvas *c1 = new TCanvas("c1","c1",3*400,3*300);
+  c1->Divide(3,3);
   c1->cd(1);
   fHM->G1("TsCounter")->Draw("AL");
   fHM->G1("TsCounter")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounter")->GetYaxis()->SetTitle("total SPADIC messages");
-  c1->cd(3);
+  fHM->G1("TsCounter")->GetYaxis()->SetTitle("total SPADIC(all) messages");
+  c1->cd(4);
   fHM->G1("TsCounter0")->Draw("AL");
   fHM->G1("TsCounter0")->SetLineColor(kRed);
   fHM->G1("TsCounter0")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounter0")->GetYaxis()->SetTitle("SPADIC0 messages");
-  c1->cd(4);
+  fHM->G1("TsCounter0")->GetYaxis()->SetTitle("total SPADIC0 messages");
+  c1->cd(5);
+  fHM->G1("TsCounterInfo0")->Draw("AL");
+  fHM->G1("TsCounterInfo0")->SetLineColor(kRed);
+  fHM->G1("TsCounterInfo0")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsCounterInfo0")->GetYaxis()->SetTitle("SPADIC0 info messages");
+  c1->cd(6);
+  fHM->G1("TsCounterEpoch0")->Draw("AL");
+  fHM->G1("TsCounterEpoch0")->SetLineColor(kRed);
+  fHM->G1("TsCounterEpoch0")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsCounterEpoch0")->GetYaxis()->SetTitle("SPADIC0 epoch messages");
+  c1->cd(7);
   fHM->G1("TsCounter1")->Draw("AL");
   fHM->G1("TsCounter1")->SetLineColor(kBlue);
   fHM->G1("TsCounter1")->GetXaxis()->SetTitle("TS number");
-  fHM->G1("TsCounter1")->GetYaxis()->SetTitle("SPADIC1 messages");
+  fHM->G1("TsCounter1")->GetYaxis()->SetTitle("total SPADIC1 messages");
+  c1->cd(8);
+  fHM->G1("TsCounterInfo1")->Draw("AL");
+  fHM->G1("TsCounterInfo1")->SetLineColor(kBlue);
+  fHM->G1("TsCounterInfo1")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsCounterInfo1")->GetYaxis()->SetTitle("SPADIC1 info messages");
+  c1->cd(9);
+  fHM->G1("TsCounterEpoch1")->Draw("AL");
+  fHM->G1("TsCounterEpoch1")->SetLineColor(kBlue);
+  fHM->G1("TsCounterEpoch1")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsCounterEpoch1")->GetYaxis()->SetTitle("SPADIC1 epoch messages");
   c1->SaveAs("pics/TsCounter.png");
   //Buffer (map) or multi SPADIC data streams based analyis have to be done here!!
   LOG(DEBUG) << "Finish of CbmTrdTimeCorrel" << FairLogger::endl;
@@ -217,7 +253,11 @@ void CbmTrdTimeCorrel::CreateHistograms()
   fHM->Add("TsCounter", new TGraph());
   fHM->Add("TsCounter0", new TGraph());
   fHM->Add("TsCounter1", new TGraph());
-  
+  fHM->Add("TsCounterInfo0", new TGraph());
+  fHM->Add("TsCounterInfo1", new TGraph());
+  fHM->Add("TsCounterEpoch0", new TGraph());
+  fHM->Add("TsCounterEpoch1", new TGraph());
+
 }
 TString CbmTrdTimeCorrel::GetSysCore(Int_t eqID)
 {
