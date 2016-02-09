@@ -15,7 +15,7 @@
 #ifndef CBMGLOBALTRACK_H_
 #define CBMGLOBALTRACK_H_ 1
 
-#include "FairTrackParam.h"
+#include "CbmTrackParam.h"
 
 #include "TObject.h"
 
@@ -40,6 +40,7 @@ class CbmGlobalTrack : public TObject
   Int_t GetTofHitIndex()    const { return fTofHit;   }
   const FairTrackParam* GetParamFirst() const { return &fParamFirst;   }
   const FairTrackParam* GetParamLast() const { return &fParamLast;   }
+  const CbmTrackParam* GetParamVertex() const { return &fParamPrimaryVertex; }
   Int_t GetPidHypo()        const { return fPidHypo;  }
   Double_t GetChi2()        const { return fChi2;     }
   Int_t GetNDF()            const { return fNDF;      }
@@ -55,6 +56,7 @@ class CbmGlobalTrack : public TObject
   void SetTofHitIndex(Int_t iTofHit) { fTofHit = iTofHit; }
   void SetParamFirst(const FairTrackParam* parFirst) { fParamFirst = *parFirst;}
   void SetParamLast(const FairTrackParam* parLast) { fParamLast = *parLast;}
+  void SetParamPrimaryVertex(const FairTrackParam* parPV) { fParamPrimaryVertex.Set(*parPV);}
   void SetPidHypo(Int_t iPid)        { fPidHypo  = iPid;  }
   void SetChi2(Double_t chi2)        { fChi2     = chi2;  }
   void SetNDF(Int_t ndf)             { fNDF      = ndf;   }
@@ -78,6 +80,7 @@ class CbmGlobalTrack : public TObject
   /** Global track parameters at first and last plane **/
   FairTrackParam fParamFirst;
   FairTrackParam fParamLast;
+  CbmTrackParam fParamPrimaryVertex;
 
   /** PID hypothesis used for global track fit **/
   Int_t fPidHypo;
@@ -95,7 +98,7 @@ class CbmGlobalTrack : public TObject
   Double32_t fLength;
 
 
-  ClassDef(CbmGlobalTrack, 2);
+  ClassDef(CbmGlobalTrack, 3);
 
 };
 

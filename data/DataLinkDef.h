@@ -11,6 +11,7 @@
 #pragma link C++ class CbmStack+;
 #pragma link C++ class CbmStripHit+;
 #pragma link C++ class CbmTrack+;
+#pragma link C++ class CbmTrackParam;
 #pragma link C++ class CbmTrackMatch+;
 #pragma link C++ class CbmCluster+;
 #pragma link C++ class CbmDetectorList+;

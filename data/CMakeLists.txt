@@ -121,6 +121,7 @@ psd/CbmPsdEventData.cxx
 global/CbmGlobalTrack.cxx
 global/CbmVertex.cxx
 global/CbmTofTrack.cxx
+global/CbmTrackParam.cxx
 
 beamtime/CbmAuxDigi.cxx
 beamtime/CbmTbEvent.cxx

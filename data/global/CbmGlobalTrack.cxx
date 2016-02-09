@@ -22,6 +22,7 @@ CbmGlobalTrack::CbmGlobalTrack()
     fTofHit(-1),
     fParamFirst(),
     fParamLast(),
+    fParamPrimaryVertex(),
     fPidHypo(0),
     fChi2(0.),
     fNDF(0),
