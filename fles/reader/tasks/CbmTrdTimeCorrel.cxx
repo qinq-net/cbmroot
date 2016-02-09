@@ -64,9 +64,20 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   std::map<TString, std::map<ULong_t, std::vector<CbmSpadicRawMessage*> > > timeBuffer;
   LOG(INFO) << "CbmTrdTimeCorrel: Number of current TimeSlice: " << fNrTimeSlices << FairLogger::endl;
   Int_t nSpadicMessages = fRawSpadic->GetEntriesFast();//SPADIC messages per TimeSlice
+  Int_t nSpadicMessages0(0),nSpadicMessages1(0); //SPADIC messages per TimeSlice for single SPADICS
+  Bool_t isHit = false;
+  Bool_t isInfo = false;
+  Bool_t isEpoch = false;
   LOG(INFO) << "nSpadicMessages: " << nSpadicMessages << FairLogger::endl;
-  for (Int_t iSpadicMessages=0; iSpadicMessages < nSpadicMessages; ++iSpadicMessages) {
-    CbmSpadicRawMessage* raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(iSpadicMessages));
+  for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage) {
+    CbmSpadicRawMessage* raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(iSpadicMessage));
+    // if: set only variables which exist for current message type / initialize before to "unique" value
+    isHit = raw->GetHit();
+    isInfo = raw->GetInfo();
+    isEpoch = raw->GetEpoch();
+
+    if(Int_t(isHit+isInfo+isEpoch)>1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be more than one message type: HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / EPOCH " << (Int_t)isEpoch << FairLogger::endl;
+    if(Int_t(isHit+isInfo+isEpoch)<1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be none of the defined types HIT 0 / INFO 0 / EPOCH 0" << FairLogger::endl;
     Int_t eqID = raw->GetEquipmentID();
     Int_t sourceA = raw->GetSourceAddress();
     Int_t chID = raw->GetChannelID();
@@ -93,8 +104,11 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     timeBuffer[TString(syscore+spadic)][time].push_back(raw);
 
     // print single spadic message coordinates .. hey, use this for a fancy fast-running output
-    //    if(stopType == 0) LOG(INFO) << "SpadicMessage: " << iSpadicMessages << " sourceA: " << sourceA << " chID: " << chID << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << FairLogger::endl;
-    
+    //    if(stopType == 0) LOG(INFO) << "SpadicMessage: " << iSpadicMessage << " sourceA: " << sourceA << " chID: " << chID << " groupID: " << groupId << " spaID: " << spaID << " stopType: " << stopType << " infoType: " << infoType << " triggerType: " << triggerType << FairLogger::endl;
+
+    if(spadic=="Spadic0") nSpadicMessages0++;
+    if(spadic=="Spadic1") nSpadicMessages1++;
+
     //Fill trigger-type histogram
     fHM->H1("Trigger")->Fill(TString(syscore+spadic),1);
     fHM->H1("MessageCount")->Fill(TString(spadic+"_"+stopName),1);
@@ -119,6 +133,8 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   //fill number of spadic-messages in tscounter-graph
   //length of one timeslice: m * n * 8 ns, with e.g. n=1250 length of microslice and m=100 microslices in one timeslice at SPS2015
     fHM->G1("TsCounter")->SetPoint(fHM->G1("TsCounter")->GetN(),fNrTimeSlices+1,nSpadicMessages);
+    fHM->G1("TsCounter0")->SetPoint(fHM->G1("TsCounter0")->GetN(),fNrTimeSlices+1,nSpadicMessages0);
+    fHM->G1("TsCounter1")->SetPoint(fHM->G1("TsCounter1")->GetN(),fNrTimeSlices+1,nSpadicMessages1);
 
   if(fNrTimeSlices==0){
     if(fHM->G1("TsCounter")->GetN()==0){
@@ -130,9 +146,21 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 void CbmTrdTimeCorrel::Finish()
 {
   TCanvas *c1 = new TCanvas("c1","c1",4*400,4*300);
-  c1->cd();
+  c1->Divide(2,2);
+  c1->cd(1);
   fHM->G1("TsCounter")->Draw("AL");
   fHM->G1("TsCounter")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsCounter")->GetYaxis()->SetTitle("total SPADIC messages");
+  c1->cd(3);
+  fHM->G1("TsCounter0")->Draw("AL");
+  fHM->G1("TsCounter0")->SetLineColor(kRed);
+  fHM->G1("TsCounter0")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsCounter0")->GetYaxis()->SetTitle("SPADIC0 messages");
+  c1->cd(4);
+  fHM->G1("TsCounter1")->Draw("AL");
+  fHM->G1("TsCounter1")->SetLineColor(kBlue);
+  fHM->G1("TsCounter1")->GetXaxis()->SetTitle("TS number");
+  fHM->G1("TsCounter1")->GetYaxis()->SetTitle("SPADIC1 messages");
   c1->SaveAs("pics/TsCounter.png");
   //Buffer (map) or multi SPADIC data streams based analyis have to be done here!!
   LOG(DEBUG) << "Finish of CbmTrdTimeCorrel" << FairLogger::endl;
@@ -187,6 +215,8 @@ void CbmTrdTimeCorrel::CreateHistograms()
     fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(8*spadic+7+1,TString(spadicName[spadic]+"_Info mess n-fold"));
   }
   fHM->Add("TsCounter", new TGraph());
+  fHM->Add("TsCounter0", new TGraph());
+  fHM->Add("TsCounter1", new TGraph());
   
 }
 TString CbmTrdTimeCorrel::GetSysCore(Int_t eqID)
