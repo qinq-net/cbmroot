@@ -1136,8 +1136,11 @@ void LxFinder::Exec(Option_t* opt)
     {
       CbmStsTrack* stsTrack = LX_DYNAMIC_CAST<CbmStsTrack*> (listStsTracks->At(i));
 
-      scaltype lpa[5] = { stsTrack->GetParamLast()->GetX(), stsTrack->GetParamLast()->GetY(),
-        stsTrack->GetParamLast()->GetTx(), stsTrack->GetParamLast()->GetTy(), stsTrack->GetParamLast()->GetQp() };
+      scaltype lpa[5] = { static_cast<Float_t>(stsTrack->GetParamLast()->GetX()), 
+                          static_cast<Float_t>(stsTrack->GetParamLast()->GetY()),
+                          static_cast<Float_t>(stsTrack->GetParamLast()->GetTx()), 
+                          static_cast<Float_t>(stsTrack->GetParamLast()->GetTy()), 
+                          static_cast<Float_t>(stsTrack->GetParamLast()->GetQp()) };
 
       if (lpa[0] != lpa[0] || lpa[1] != lpa[1] || lpa[2] != lpa[2] || lpa[3] != lpa[3] || lpa[4] != lpa[4])
         continue;
