@@ -326,9 +326,9 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	 tofAnaTestbeam->SetMrpcRef(6);       // Reference RPC     
 	 tofAnaTestbeam->SetPlaSelect(2);     // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
 	 tofAnaTestbeam->SetCh4Sel(26.5);     // Center of channel selection window
-	 tofAnaTestbeam->SetDCh4Sel(12.);     // Width  of channel selection window
+	 tofAnaTestbeam->SetDCh4Sel(10.);     // Width  of channel selection window
 	 tofAnaTestbeam->SetTShift(2000.);    // Shift DTD4 to 0
-	 tofAnaTestbeam->SetSel2TOff(-120.);  // Shift Sel2 time peak to 0 
+	 tofAnaTestbeam->SetSel2TOff(-90.);  // Shift Sel2 time peak to 0 
 	 tofAnaTestbeam->SetTOffD4(11000.);   // Shift DTD4 to physical value 	 
 	 tofAnaTestbeam->SetPosY4Sel(0.1);    // Y Position selection in fraction of strip length
 	 tofAnaTestbeam->SetChS2Sel(4.);      // Center of channel selection window
@@ -360,12 +360,28 @@ void ana_hits(Int_t nEvents=10, Int_t iSel=1, Int_t iGenCor=1, char *cFileId="Ce
 	 tofAnaTestbeam->SetDCh4Sel(1.1);     // Width  of channel selection window
 	 tofAnaTestbeam->SetPosY4Sel(0.1);    // Y Position selection in fraction of strip length
 	 tofAnaTestbeam->SetTShift(2000.);    // Shift DTD4 to 0
-	 tofAnaTestbeam->SetSel2TOff(80.);  // Shift Sel2 time peak to 0 
+	 tofAnaTestbeam->SetSel2TOff(80.);    // Shift Sel2 time peak to 0 
 	 tofAnaTestbeam->SetTOffD4(11000.);   // Shift DTD4 to physical value 	 
-	 tofAnaTestbeam->SetChS2Sel(26.);      // Center of channel selection window
-	 tofAnaTestbeam->SetDChS2Sel(12.);    // Width  of channel selection window
-	 tofAnaTestbeam->SetPosYS2Sel(0.5);    // Y Position selection in fraction of strip length
-	 tofAnaTestbeam->SetChi2Lim(5.);      // initialization of Chi2 selection limit  
+	 tofAnaTestbeam->SetChS2Sel(28.);      // Center of channel selection window
+	 tofAnaTestbeam->SetDChS2Sel(12.);     // Width  of channel selection window
+	 tofAnaTestbeam->SetPosYS2Sel(0.1);    // Y Position selection in fraction of strip length
+	 tofAnaTestbeam->SetChi2Lim(5.);       // initialization of Chi2 selection limit  
+	 break;
+
+   case 68:
+	 tofAnaTestbeam->SetDut(6);           // Device under test   
+	 tofAnaTestbeam->SetMrpcRef(8);       // Reference RPC     
+	 tofAnaTestbeam->SetPlaSelect(2);     // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
+	 tofAnaTestbeam->SetCh4Sel(4.0);     // Center of channel selection window
+	 tofAnaTestbeam->SetDCh4Sel(1.1);     // Width  of channel selection window
+	 tofAnaTestbeam->SetPosY4Sel(0.1);    // Y Position selection in fraction of strip length
+	 tofAnaTestbeam->SetTShift(2000.);    // Shift DTD4 to 0
+	 tofAnaTestbeam->SetSel2TOff(-20.);    // Shift Sel2 time peak to 0 
+	 tofAnaTestbeam->SetTOffD4(11000.);   // Shift DTD4 to physical value 	 
+	 tofAnaTestbeam->SetChS2Sel(30.);     // Center of channel selection window
+	 tofAnaTestbeam->SetDChS2Sel(15.1);   // Width  of channel selection window
+	 tofAnaTestbeam->SetPosYS2Sel(0.5);   // Y Position selection in fraction of strip length	   
+	 tofAnaTestbeam->SetChi2Lim(5.);       // initialization of Chi2 selection limit  
 	 break;
 
    case 3:                                 // upper part of setup: P2 - P5

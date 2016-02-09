@@ -6,7 +6,7 @@
 // -----------------------------------------------------------------------------
 
 // Max nEvents: 198999999999
-void setup_unpack(Int_t nEvents = 10, Int_t start_run=0, Int_t end_run=11, Int_t calMode=1, char *cFileId="Trb23Feb0930", Int_t iSet=0) 
+void setup_unpack(Int_t calMode=1, char *cFileId="Trb23Feb0930", Int_t iSet=0) 
 {
    // Verbosity level (0=quiet, 1=event level, 2=track level, 3=debug, 4=raw debug)
   Int_t iVerbose = 2;
@@ -41,7 +41,7 @@ void setup_unpack(Int_t nEvents = 10, Int_t start_run=0, Int_t end_run=11, Int_t
 
    switch(iSet){
    case 0: 
-     calParFile = paramDir + "/parCalib_basic.txt";
+     calParFile = paramDir + "/parCalib_batch.txt";										
      cOutfileId = Form("%s",cFileId);
      mapParFile = paramDir + "/parMapCernFeb2015.txt";
      break;
@@ -75,10 +75,10 @@ void setup_unpack(Int_t nEvents = 10, Int_t start_run=0, Int_t end_run=11, Int_t
    //parFileList->Add(&convParFile);
 
    TObjString tofDigiFile = workDir + "/parameters/tof/tof_" + TofGeo + ".digi.par"; // TOF digi file
-   parFileList->Add(&tofDigiFile);   
+   //   parFileList->Add(&tofDigiFile);   
 
    TObjString tofDigiBdfFile =  paramDir + "/tof.digibdf.par";
-   parFileList->Add(&tofDigiBdfFile);
+   //parFileList->Add(&tofDigiBdfFile);
 
    TString geoDir  = gSystem->Getenv("VMCWORKDIR");
    TString geoFile = geoDir + "/geometry/tof/geofile_tof_" + TofGeo + ".root";
@@ -87,7 +87,7 @@ void setup_unpack(Int_t nEvents = 10, Int_t start_run=0, Int_t end_run=11, Int_t
    TGeoManager *geoMan = (TGeoManager*) fgeo->Get("FAIRGeom");
    if (NULL == geoMan){
      cout << "<E> FAIRGeom not found in geoFile"<<endl;
-     return;
+     //     return;
    }
    if(0){
    TGeoVolume* master=geoMan->GetTopVolume();
@@ -112,14 +112,16 @@ void setup_unpack(Int_t nEvents = 10, Int_t start_run=0, Int_t end_run=11, Int_t
    // ===                           Unpacker                                ===
    // =========================================================================
    FairLmdSource* source = new FairLmdSource();
-
+   //source->AddPath("/hera/cbm/users/tofGsiApr14/cernfeb15/",Form("%s*.lmd",cFileId));
+   Int_t start_run=0;
+   Int_t end_run=100;
    for (Int_t irun=start_run; irun<end_run; irun++)
    {   
-     TString lmdfile = Form("./LMD/%s_%04d.lmd",cFileId,irun);   
+     TString lmdfile = Form("/hera/cbm/users/tofGsiApr14/cernfeb15/%s/%s_%04d.lmd",cFileId,cFileId,irun);   
      cout << "<I> Inputdata file(s) " << lmdfile << endl;
      source->AddFile(lmdfile); 
    }
-
+   
    /*   
    TTriglogUnpackTof* tofTriglogUnpacker = new TTriglogUnpackTof();
    //   tofTriglogUnpacker->SetSaveTriglog(kTRUE);
@@ -158,6 +160,8 @@ void setup_unpack(Int_t nEvents = 10, Int_t start_run=0, Int_t end_run=11, Int_t
    // =========================================================================
    
    TMbsCalibTof* tofCalibration = new TMbsCalibTof("Tof Calibration", iVerbose);
+   tofCalibration->SetTdcCalibOutFoldername("./");
+   tofCalibration->SetTdcCalibFilename("Tof_calib_batch");
    run->AddTask(tofCalibration);
    // ===                      End of Calibration                           ===
    // =========================================================================
@@ -172,7 +176,7 @@ void setup_unpack(Int_t nEvents = 10, Int_t start_run=0, Int_t end_run=11, Int_t
    }
    // ===                      End of Mapping                               ===
    // =========================================================================
-   if(0){  
+   if(0){  // activation leads to crash in FairRootManager !? 
    CbmTofTestBeamClusterizer* tofTestBeamClust = new CbmTofTestBeamClusterizer("TOF TestBeam Clusterizer",iVerbose, kFALSE);
    //tofTestBeamClust->SetCalParFileName("MbsTrbBeamtofTestBeamClust.hst.root");
    Int_t calTrg=-1;
@@ -239,7 +243,7 @@ void setup_unpack(Int_t nEvents = 10, Int_t start_run=0, Int_t end_run=11, Int_t
    // ===                  End of output conversion                         ===
    // =========================================================================
    CbmTofOnlineDisplay* display = new CbmTofOnlineDisplay();
-   display->SetUpdateInterval(1000);
+   display->SetUpdateInterval(1000000);
    run->AddTask(display);   
 
    // -----  Parameter database   --------------------------------------------

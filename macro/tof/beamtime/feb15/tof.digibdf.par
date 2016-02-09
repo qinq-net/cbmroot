@@ -132,9 +132,9 @@ SigVel004: Double_t \
 SigVel005: Double_t \                                                                                                              
  0.01 0.01 0.01 
 SigVel006: Double_t \                                                                                                              
- 0.016 0.018
+ 0.016 0.016
 SigVel007: Double_t \                                                                                                              
- 0.018 0.018
+ 0.022
 SigVel008: Double_t \                                                                                                                 
  0.01 0.01 0.01 0.01 0.01 0.01
 SigVel009: Double_t \                                                                                                                 

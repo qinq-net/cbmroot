@@ -21,15 +21,17 @@ CalibScalRefClk: Int_t       0
 //...   4000 gives rough idea of time spectra (10cnt/bin)
 //...  40000 is the minimum for timing validity (100cnt/bin)
 //... 400000 to 1M is recommended! (>1000cnt/bin)
-//MinNbHitsCalib: Int_t        0
-MinNbHitsCalib: Int_t    5000
+MinNbHitsCalib: Int_t        0
+//MinNbHitsCalib: Int_t    50000
 //... Number of times the minimal number of hits after which corrections use only new data
 //... 0 desactivates it and uses always addition initial calibration + new data when it is available 
 FactMinNbOnlyNewCalib: Int_t 0
 //... Calibration loading
 //------ If not empty or -, use the bin to ns calibration  histograms from this file as initial calibration
-InitialCalibFilename: Text_t -
+//InitialCalibFilename: Text_t -
 //InitialCalibFilename: Text_t   ./TofTdcCalibHistos_20140928_192207.root
+//InitialCalibFilename: Text_t   ./TofTdcCalibHistos_CernSps02Mar2227.root
+InitialCalibFilename: Text_t   ./TofTdcCalibHistos_CernSps05Mar0041.root
 //------ Nb of boards for which the calibration where measured, per TDC type (1)
 NbVftxCalib: Int_t           0
 NbCaenCalib: Int_t           0

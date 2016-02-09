@@ -11,12 +11,15 @@ cRun='CernSps05Mar0041'
 #cRun='CernSps02Mar2024_hdref_200_hdp2_220_thupad_170_thustrip_23c_bucref_160_buc2013_160_ustc_220_diam_000_nb_up'
 #cRun='CernSps01Mar1031_hdref_3ff_hdp2_220_thupad_170_thustrip_23c_bucref_0C0_buc2013_140_ustc_220_diam_0c0_nb'
 
+iSel=39; iSet=397; iSel2=7
 #iSel=94; iSet=943; iSel2=3
 #iSel=16; iSet=168; iSel2=8
 #iSel=86; iSet=168; iSel2=1
-iSel=61; iSet=168; iSel2=8
+#iSel=61; iSet=168; iSel2=8
 #iSel=81; iSet=168; iSel2=6
 #iSel=18; iSet=168; iSel2=6
+#iSel=68; iSet=168; iSel2=1
+#iSel=81; iSet=168; iSel2=6
 
 dDTres=1000000
 

@@ -1,4 +1,4 @@
-void ana_digi_ini(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int_t calSmType=2, Int_t RefSel=1, char *cFileId="MbsTrbThu1715", Int_t iSet=0, Int_t iBRef=5) 
+void ana_digi_ini(Int_t nEvents = 10000, Int_t calMode=0, Int_t calSel=-1, Int_t calSm=200, Int_t RefSel=1, char *cFileId="CernSps05Mar0041", Int_t iSet=0, Int_t iBRef=500) 
 {
   Int_t iVerbose = 1;
   // Specify log level (INFO, DEBUG, DEBUG1, ...)
@@ -78,7 +78,7 @@ void ana_digi_ini(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
    tofTestBeamClust->SetCalSel(calSel);
    tofTestBeamClust->SetCaldXdYMax(3.);         // geometrical matching window in cm 
    tofTestBeamClust->SetCalCluMulMax(20.);       // Max Counter Cluster Multiplicity for filling calib histos  
-   tofTestBeamClust->SetCalSmType(calSmType);    // select detectors for walk correction 
+   tofTestBeamClust->SetCalRpc(calSm);           // select detector for calibration update  
    tofTestBeamClust->SetTRefId(RefSel);          // reference trigger for offset calculation 
    tofTestBeamClust->SetTotMax(10000.);          // Tot upper limit for walk corection
    tofTestBeamClust->SetTotMin(1.); //(12000.);  // Tot lower limit for walk correction
@@ -87,21 +87,14 @@ void ana_digi_ini(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
    tofTestBeamClust->SetMaxTimeDist(500.);       // default cluster range in ps 
    //tofTestBeamClust->SetMaxTimeDist(0.);       //Deb// default cluster range in ps 
 
-   tofTestBeamClust->SetBeamRefType(iBRef);      // Beam Reference -> Diamond  
-   tofTestBeamClust->SetBeamRefSm(0);
-   tofTestBeamClust->SetBeamRefDet(0);
-   tofTestBeamClust->SetBeamAddRefMul(-1);
-
-   if(iBRef==8) tofTestBeamClust->SetBeamRefDet(3); //pick center pad counter
-
    Int_t calSelRead = calSel;
    if (calSel<0) calSelRead=0;
-   TString cFname=Form("%s_set%1d_%02d_%01dtofTestBeamClust.hst.root",cFileId,iSet,calMode,calSelRead);
+   TString cFname=Form("%s_set%06d_%02d_%01dtofTestBeamClust.hst.root",cFileId,iSet,calMode,calSelRead);
    tofTestBeamClust->SetCalParFileName(cFname);
-   TString cOutFname=Form("tofTestBeamClust_%s_set%1d.hst.root",cFileId,iSet);
+   TString cOutFname=Form("tofTestBeamClust_%s_set%06d.hst.root",cFileId,iSet);
    tofTestBeamClust->SetOutHstFileName(cOutFname);
 
-   TString cAnaFile=Form("%s_%1d_tofAnaTestBeam.hst.root",cFileId,iSet);
+   TString cAnaFile=Form("%s_%06d_tofAnaTestBeam.hst.root",cFileId,iSet);
 
    switch (calMode) {
    case 0:                                      // initial calibration 
@@ -252,130 +245,88 @@ void ana_digi_ini(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
    tofAnaTestbeam->SetMul4Max(5);    // Max Multiplicity in HDRef - RPC 
    tofAnaTestbeam->SetMulDMax(5);    // Max Multiplicity in Diamond    
    tofAnaTestbeam->SetHitDistMin(30.);  // initialization
-   tofAnaTestbeam->SetTOffD4(15000.);   // initialization
-   tofAnaTestbeam->SetChi2Lim(20.);    // initialization of Chi2 selection limit  
-   tofAnaTestbeam->SetBeamRefSmType(iBRef); // P2
-   tofAnaTestbeam->SetBeamRefSmId(0);
+
+   tofAnaTestbeam->SetPosYS2Sel(0.5);   // Y Position selection in fraction of strip length
+   tofAnaTestbeam->SetChS2Sel(0.);      // Center of channel selection window
+   tofAnaTestbeam->SetDChS2Sel(100.);   // Width  of channel selection window
+   tofAnaTestbeam->SetTShift(0.);       // Shift DTD4 to 0
+   tofAnaTestbeam->SetSel2TOff(0.);     // Shift Sel2 time peak to 0 
+   tofAnaTestbeam->SetTOffD4(13000.);   // Shift DTD4 to physical value
+
+   Int_t iRSel=iBRef;
+   Int_t iRSelRpc = iRSel%10;
+   iRSel = (iRSel - iRSelRpc)/10;
+   Int_t iRSelSm = iRSel%10;
+   iRSel = (iRSel - iRSelSm)/10;
+   tofTestBeamClust->SetBeamRefId(iRSel);    // define Beam reference counter 
+   tofTestBeamClust->SetBeamRefSm(iRSelSm);
+   tofTestBeamClust->SetBeamRefDet(iRSelRpc);
+   tofTestBeamClust->SetBeamAddRefMul(-1);
+
+   Int_t iRef = iSet %1000;
+
+   Int_t iDut = (iSet - iRef)/1000;
+   Int_t iDutRpc = iDut%10;
+   iDut = (iDut - iDutRpc)/10;
+   Int_t iDutSm = iDut%10;
+   iDut = (iDut - iDutSm)/10;
+
+   tofTestBeamClust->SetDutId(iDut);
+   tofTestBeamClust->SetDutSm(iDutSm);
+   tofTestBeamClust->SetDutRpc(iDutRpc);
+
+   Int_t iRefRpc = iRef%10;
+   iRef = (iRef - iRefRpc)/10;
+   Int_t iRefSm = iRef%10;
+   iRef = (iRef - iRefSm)/10;
+
+   tofTestBeamClust->SetSelId(iRef);
+   tofTestBeamClust->SetSelSm(iRefSm);
+   tofTestBeamClust->SetSelRpc(iRefRpc);
+
+   tofAnaTestbeam->SetDut(iDut);              // Device under test   
+   tofAnaTestbeam->SetDutSm(iDutSm);          // Device under test   
+   tofAnaTestbeam->SetDutRpc(iDutRpc);        // Device under test   
+   tofAnaTestbeam->SetMrpcRef(iRef);          // Reference RPC     
+   tofAnaTestbeam->SetMrpcRefSm(iRefSm);      // Reference RPC     
+   tofAnaTestbeam->SetMrpcRefRpc(iRefRpc);    // Reference RPC     
+
+   tofAnaTestbeam->SetChi2Lim(100.);             // initialization of Chi2 selection limit  
 
    switch (iSet) {
-   case 0:                               // upper part of setup: P2 - P5
-	 tofTestBeamClust->SetDutId(9);
-	 tofTestBeamClust->SetSelId(4);
-
-	 tofAnaTestbeam->SetDut(9);        // Device under test   
-	 tofAnaTestbeam->SetMrpcRef(4);    // Reference RPC     
-	 tofAnaTestbeam->SetPlaSelect(0);  // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
-	 tofAnaTestbeam->SetCh4Sel(8.5);   // Center of channel selection window
-	 tofAnaTestbeam->SetDCh4Sel(7.);   // Width  of channel selection window
-
-	 break;
-
+   case 0:                                 // upper part of setup: P2 - P5
    case 3:                                 // upper part of setup: P2 - P5
-   case 34:                                 // upper part of setup: P2 - P5
-	 tofTestBeamClust->SetDutId(3);
-	 tofTestBeamClust->SetSelId(4);
+   case 34:                                // upper part of setup: P2 - P5
+   case 400300:
+   case 300400:
+   case 921920:
+   case 921300:
+   case 920300:
+   case 100600:
+   case 600100:
 
-	 tofAnaTestbeam->SetDut(3);        // Device under test   
-	 tofAnaTestbeam->SetMrpcRef(4);    // Reference RPC     
-	 tofAnaTestbeam->SetPlaSelect(0);  // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
-	 tofAnaTestbeam->SetCh4Sel(8.5);   // Center of channel selection window
-	 tofAnaTestbeam->SetDCh4Sel(7.);   // Width  of channel selection window
-
+         tofAnaTestbeam->SetTOffD4(13000.);   // Shift DTD4 to physical value
+         tofAnaTestbeam->SetSel2TOff(-230.);  // Shift Sel2 time peak to 0
+	 tofAnaTestbeam->SetCh4Sel(16.);      // Center of channel selection window
+	 tofAnaTestbeam->SetDCh4Sel(20.);     // Width  of channel selection window
 	 break;
 
-     case 1:                             // upper part of setup: Buc2013 - BucRef
-     case 61:
-	 tofTestBeamClust->SetDutId(6);
-	 tofTestBeamClust->SetSelId(1);
-
-	 tofAnaTestbeam->SetDut(6);        // Device under test   
-	 tofAnaTestbeam->SetMrpcRef(1);    // Reference RPC     
-
-	 tofAnaTestbeam->SetPlaSelect(2);  // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
-	 tofAnaTestbeam->SetCh4Sel(38.5);  // Center of channel selection window
-	 tofAnaTestbeam->SetDCh4Sel(35.);  // Width  of channel selection window
-	 break;
-
-     case 6:                             // lower part of setup: Buc2013 - BucRef
-     case 16:
-	 tofTestBeamClust->SetDutId(1);
-	 tofTestBeamClust->SetSelId(6);
-
-	 tofAnaTestbeam->SetDut(1);        // Device under test   
-	 tofAnaTestbeam->SetMrpcRef(6);    // Reference RPC     
-
-	 tofAnaTestbeam->SetPlaSelect(2);  // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
-	 tofAnaTestbeam->SetCh4Sel(38.5);  // Center of channel selection window
-	 tofAnaTestbeam->SetDCh4Sel(45.);  // Width  of channel selection window
-	 break;
-
-   case 7:                                 // upper part of setup: USTC - P5
-   case 74:
-	 tofTestBeamClust->SetDutId(7);
-	 tofTestBeamClust->SetSelId(4);
-
-	 tofAnaTestbeam->SetDut(7);        // Device under test   
-	 tofAnaTestbeam->SetMrpcRef(4);    // Reference RPC     
-
-	 tofAnaTestbeam->SetPlaSelect(0);   // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
-	 tofAnaTestbeam->SetCh4Sel(12.5);   // Center of channel selection window
-	 tofAnaTestbeam->SetDCh4Sel(11.);   // Width  of channel selection window
-	 break;
-
-   case 9:                                 // upper part of setup: THUstrip - P5
-   case 94:                                 // upper part of setup: THUstrip - P5
-	 tofTestBeamClust->SetDutId(9);
-	 tofTestBeamClust->SetSelId(4);
-
-	 tofAnaTestbeam->SetDut(9);        // Device under test   
-	 tofAnaTestbeam->SetMrpcRef(4);    // Reference RPC     
-
-	 tofAnaTestbeam->SetPlaSelect(0);   // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
-	 tofAnaTestbeam->SetCh4Sel(12.5);   // Center of channel selection window
-	 tofAnaTestbeam->SetDCh4Sel(11.);   // Width  of channel selection window
-	 break;
-
-   case 37:                                 // upper part of setup: P2 - USTC
-	 tofTestBeamClust->SetDutId(3);
-	 tofTestBeamClust->SetSelId(7);
-
-	 tofAnaTestbeam->SetDut(3);        // Device under test   
-	 tofAnaTestbeam->SetMrpcRef(7);    // Reference RPC     
-
-	 tofAnaTestbeam->SetPlaSelect(0);  // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
-	 tofAnaTestbeam->SetCh4Sel(8.5);   // Center of channel selection window
-	 tofAnaTestbeam->SetDCh4Sel(7.);   // Width  of channel selection window
-	 break;
-
-   case 97:                                 // upper part of setup: P2 - USTC
-	 tofTestBeamClust->SetDutId(9);
-	 tofTestBeamClust->SetSelId(7);
-
-	 tofAnaTestbeam->SetDut(9);        // Device under test   
-	 tofAnaTestbeam->SetMrpcRef(7);    // Reference RPC     
+   case 900700:
+   case 97:                                 // upper part of setup: P2 - USTC  
 	 tofAnaTestbeam->SetPlaSelect(0);  // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
 	 tofAnaTestbeam->SetCh4Sel(8.5);   // Center of channel selection window
 	 tofAnaTestbeam->SetDCh4Sel(7.);   // Width  of channel selection window
 	 break;
 
    case 39:                                 // upper part of setup: P2 - THUstrip
-	 tofTestBeamClust->SetDutId(3);
-	 tofTestBeamClust->SetSelId(9);
-
-	 tofAnaTestbeam->SetDut(3);        // Device under test   
-	 tofAnaTestbeam->SetMrpcRef(9);    // Reference RPC     
-
+   case 300900:
 	 tofAnaTestbeam->SetPlaSelect(0);   // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
 	 tofAnaTestbeam->SetCh4Sel(12.5);   // Center of channel selection window
 	 tofAnaTestbeam->SetDCh4Sel(11.);   // Width  of channel selection window
 	 break;
 
+   case 400900:
    case 49:                                 // upper part of setup: P2 - THUstrip
-	 tofTestBeamClust->SetDutId(4);
-	 tofTestBeamClust->SetSelId(9);
-
-	 tofAnaTestbeam->SetDut(4);        // Device under test   
-	 tofAnaTestbeam->SetMrpcRef(9);    // Reference RPC     
 
 	 tofAnaTestbeam->SetPlaSelect(0);   // Select attached plastics (0 - HD-P2, 2 - Buc2013) 
 	 tofAnaTestbeam->SetCh4Sel(12.5);   // Center of channel selection window
@@ -383,13 +334,16 @@ void ana_digi_ini(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
 	 break;
 
          default:
+	   cout<<"<E> detector setup "<<iSet<<" unknown, stop!"<<endl;
+	   return;
 	 ;
    }  // end of different subsets
 
    switch(cFileId){
-     case "CernSps01Mar2203_hdref_200_hdp2_220_thupad_170_thustrip_23c_bucref_160_buc2013_160_ustc_220_diam_0c0_nb":
+     case " ":
 
 	 break;
+
      default:
 	 ;
    }
@@ -434,53 +388,109 @@ void ana_digi_ini(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
   gROOT->LoadMacro("pl_over_cluSel.C");
   gROOT->LoadMacro("pl_over_clu.C");
   gROOT->LoadMacro("pl_all_dTSel.C");
+
   switch(iSet){
   case 0:
   case 3:
-  case 9:
+  case 49:
+  case 79:
+  case 34:
+  case 94:
   case 37:
   case 97:
   case 39:
-  case 49:
-  case 94:
+  case 99:
+  case 93:
+  case 300400:
+  case 400300:
+  case 921920:
+  case 920921:
+  case 920300:
+  case 921300:
+  case 300900:
     gInterpreter->ProcessLine("pl_over_clu(3)");
     gInterpreter->ProcessLine("pl_over_clu(4)");
-    gInterpreter->ProcessLine("pl_over_clu(5)");
-    gInterpreter->ProcessLine("pl_over_clu(7)");
-    gInterpreter->ProcessLine("pl_over_clu(9)");
-    gInterpreter->ProcessLine("pl_over_cluSel(1,3)");
-    gInterpreter->ProcessLine("pl_over_cluSel(1,5)");
-    gInterpreter->ProcessLine("pl_over_cluSel(1,7)");
-    gInterpreter->ProcessLine("pl_over_cluSel(1,9)");
+    gInterpreter->ProcessLine("pl_over_clu(5,0)");
+    gInterpreter->ProcessLine("pl_over_clu(5,1)");
+    gInterpreter->ProcessLine("pl_over_clu(5,2)");
+    gInterpreter->ProcessLine("pl_over_clu(9,0,0)");
+    gInterpreter->ProcessLine("pl_over_clu(9,0,1)");
+    gInterpreter->ProcessLine("pl_over_clu(9,1,0)");
+    gInterpreter->ProcessLine("pl_over_clu(9,1,1)");
+    gInterpreter->ProcessLine("pl_over_clu(9,2,0)");
+    gInterpreter->ProcessLine("pl_over_clu(9,2,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,3)");
     gInterpreter->ProcessLine("pl_over_cluSel(0,4)");
-    gInterpreter->ProcessLine("pl_over_cluSel(0,5)");
-    gInterpreter->ProcessLine("pl_over_cluSel(0,7)");
-    gInterpreter->ProcessLine("pl_over_cluSel(0,9)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,5,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,5,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,5,2)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,9,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,9,0,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,9,1,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,9,1,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,9,2,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,9,2,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,3)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,4)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,5,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,5,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,5,2)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,9,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,9,0,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,9,1,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,9,1,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,9,2,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,9,2,1)");
+    gInterpreter->ProcessLine("pl_all_dTSel()");
     break;
 
   case 1:
-  case 61:
-  case 81:
-  case 16:
-  case 86:
-  case 18:
-  case 68:
+  case 600100:
+  case 800100:
+  case 100600:
+  case 800600:
+  case 100800:
+  case 600800:
     gInterpreter->ProcessLine("pl_over_clu(1)");
-    gInterpreter->ProcessLine("pl_over_clu(6)");
-    gInterpreter->ProcessLine("pl_over_clu(8)");
+    gInterpreter->ProcessLine("pl_over_clu(6,0,0)");
+    gInterpreter->ProcessLine("pl_over_clu(6,0,1)");
+    gInterpreter->ProcessLine("pl_over_clu(7,0,0)");
+    gInterpreter->ProcessLine("pl_over_clu(7,0,1)");
+    gInterpreter->ProcessLine("pl_over_clu(7,0,2)");
+    gInterpreter->ProcessLine("pl_over_clu(7,0,3)");
+    gInterpreter->ProcessLine("pl_over_clu(8,0,0)");
     gInterpreter->ProcessLine("pl_over_clu(8,0,1)");
     gInterpreter->ProcessLine("pl_over_clu(8,0,2)");
     gInterpreter->ProcessLine("pl_over_clu(8,0,3)");
     gInterpreter->ProcessLine("pl_over_clu(8,0,4)");
     gInterpreter->ProcessLine("pl_over_clu(8,0,5)");
-    gInterpreter->ProcessLine("pl_over_cluSel(1,8)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,6,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,6,0,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,7,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,7,0,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,7,0,2)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,7,0,3)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,8,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,8,0,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,8,0,2)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,8,0,3)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,8,0,4)");
+    gInterpreter->ProcessLine("pl_over_cluSel(0,8,0,5)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,6,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,6,0,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,7,0,0)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,7,0,1)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,7,0,2)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,7,0,3)");
+    gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,0)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,1)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,2)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,3)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,4)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,5)");
-    gInterpreter->ProcessLine("pl_over_cluSel(1,6)");
-    gInterpreter->ProcessLine("pl_over_cluSel(0,1)");
+    gInterpreter->ProcessLine("pl_all_dTSel()");
     break;
 
   default:

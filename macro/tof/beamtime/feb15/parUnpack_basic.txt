@@ -12,9 +12,9 @@
 // GETEVT__TRANS    3 <- Transport client
 // GETEVT__EVENT    4 <- Event client
 // GETEVT__REVSERV  5 <- Remote event client
-MbsSourceMode: Int_t 2
+MbsSourceMode: Int_t 1
 // Switch ON/OFF the writing of data in the output root file of cbmroot analysis
-WriteDataInCbmOut: Int_t 1
+WriteDataInCbmOut: Int_t 0
 // Switch ON/OFF debug tests in VFTX unpacker
 VftxDebug: Int_t     0 
 // Number of possible VME boards in the MBS event
