@@ -83,6 +83,7 @@ void CbmLitFitQa::Exec(
    fMCTrackCreator->Create();
    ProcessGlobalTracks();
    ProcessTrackParamsAtVertex();
+   ProcessTrackMomentumAtVertex();
 }
 
 void CbmLitFitQa::Finish()
@@ -379,6 +380,48 @@ void CbmLitFitQa::ProcessTrackParamsAtVertex()
    }
 }
 
+void CbmLitFitQa::ProcessTrackMomentumAtVertex()
+{
+    Int_t nofTracks = fGlobalTracks->GetEntriesFast();
+    
+    for (int i = 0; i < nofTracks; ++i)
+    {
+        CbmGlobalTrack* globalTrack = static_cast<CbmGlobalTrack*>(fGlobalTracks->At(i));
+        Int_t stsId = globalTrack->GetStsTrackIndex();
+        CbmStsTrack* stsTrack = static_cast<CbmStsTrack*>(fStsTracks->At(stsId));
+        CbmTrackMatchNew* match = static_cast<CbmTrackMatchNew*>(fStsTrackMatches->At(stsId));
+        
+        if (match->GetNofLinks() < 1)
+            continue;
+        
+        Int_t mcId = match->GetMatchedLink().GetIndex();
+        
+        if (mcId < 0)
+            continue; // Ghost or fake track
+
+        const CbmMCTrack* mcTrack = static_cast<const CbmMCTrack*>(fMCTracks->At(mcId));
+        
+        if (mcTrack->GetMotherId() != -1)
+            continue; // only for primaries
+
+        // Check correctness of reconstructed track
+        if (match->GetTrueOverAllHitsRatio() < fQuota)
+            continue;
+        
+        const CbmTrackParam* vtxParam = globalTrack->GetParamVertex();
+        TVector3 momMC;
+        mcTrack->GetMomentum(momMC);
+        
+        fHM->H1("htp_PrimaryVertexResidualPx")->Fill(vtxParam->GetPx() - momMC.x());
+        fHM->H1("htp_PrimaryVertexResidualPy")->Fill(vtxParam->GetPy() - momMC.y());
+        fHM->H1("htp_PrimaryVertexResidualPz")->Fill(vtxParam->GetPz() - momMC.z());
+        
+        fHM->H1("htp_PrimaryVertexPullPx")->Fill((vtxParam->GetPx() - momMC.x()) / vtxParam->GetDpx());
+        fHM->H1("htp_PrimaryVertexPullPy")->Fill((vtxParam->GetPy() - momMC.y()) / vtxParam->GetDpy());
+        fHM->H1("htp_PrimaryVertexPullPz")->Fill((vtxParam->GetPz() - momMC.z()) / vtxParam->GetDpz());
+    }
+}
+
 void CbmLitFitQa::CreateHistograms()
 {
    CreateResidualAndPullHistograms(kSTS, "Sts");
@@ -393,6 +436,12 @@ void CbmLitFitQa::CreateHistograms()
    // Momentum resolution vs momwntum
    fHM->Add("htf_MomRes_Mom", new TH2F("htf_MomRes_Mom", "htf_MomRes_Mom;P [GeV/c];dP/P [%]", fPRangeBins, fPRangeMin, fPRangeMax, 100, -3., 3.));
    fHM->Add("htf_ChiPrimary", new TH1F("htf_ChiPrimary", "htf_ChiPrimary;#chi_{primary}", 100, 0, 10));
+   fHM->Add("htp_PrimaryVertexResidualPx", new TH1F("htp_PrimaryVertexResidualPx", "htp_PrimaryVertexResidualPx;[cm]", 200, -1., 1.));
+   fHM->Add("htp_PrimaryVertexResidualPy", new TH1F("htp_PrimaryVertexResidualPy", "htp_PrimaryVertexResidualPy;[cm]", 200, -1., 1.));
+   fHM->Add("htp_PrimaryVertexResidualPz", new TH1F("htp_PrimaryVertexResidualPz", "htp_PrimaryVertexResidualPz;[cm]", 200, -1., 1.));
+   fHM->Add("htp_PrimaryVertexPullPx", new TH1F("htp_PrimaryVertexPullPx", "htp_PrimaryVertexPullPx;[cm]", 200, -5., 5.));
+   fHM->Add("htp_PrimaryVertexPullPy", new TH1F("htp_PrimaryVertexPullPy", "htp_PrimaryVertexPullPy;[cm]", 200, -5., 5.));
+   fHM->Add("htp_PrimaryVertexPullPz", new TH1F("htp_PrimaryVertexPullPz", "htp_PrimaryVertexPullPz;[cm]", 200, -5., 5.));
 }
 
 void CbmLitFitQa::CreateResidualAndPullHistograms(

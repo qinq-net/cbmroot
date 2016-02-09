@@ -62,6 +62,8 @@ protected:
 	   Double_t rms);
 
 	void DrawTrackParamsAtVertex();
+        
+        void DrawTrackMomentumAtVertex();
 
 	ClassDef(CbmLitFitQaReport, 1);
 };

@@ -14,6 +14,7 @@
 #include "TDirectory.h"
 #include "TLatex.h"
 #include "TCanvas.h"
+#include "TStyle.h"
 #include <boost/assign/list_of.hpp>
 #include <map>
 
@@ -113,6 +114,7 @@ void CbmLitFitQaReport::Draw()
 	DrawTrackParams("Much");
 
 	DrawTrackParamsAtVertex();
+        DrawTrackMomentumAtVertex();
 }
 
 void CbmLitFitQaReport::DrawHistSigmaRMS(
@@ -242,6 +244,28 @@ void CbmLitFitQaReport::DrawTrackParamsAtVertex()
    DrawH1(hChiprim, kLinear, kLog);
    gPad->SetGridx(true);
    gPad->SetGridy(true);
+}
+
+void CbmLitFitQaReport::DrawTrackMomentumAtVertex()
+{
+    const char* histNames[] = { "htp_PrimaryVertexResidualPx", "htp_PrimaryVertexResidualPy", "htp_PrimaryVertexResidualPz",
+        "htp_PrimaryVertexPullPx", "htp_PrimaryVertexPullPy", "htp_PrimaryVertexPullPz"};
+    TCanvas* canvas = CreateCanvas("Momentum at primary vertex residuals and pulls", "Momentum at primary vertex residuals and pulls", 900, 600);
+    canvas->Divide(3, 2);
+    
+    for (Int_t i = 0; i < 2; ++i)
+    {
+        for (Int_t j = 0; j < 3; ++j)
+        {
+            Int_t histId = i * 3 + j;
+            canvas->cd(histId + 1);
+            TH1* hist = HM()->H1(histNames[histId]);
+            DrawH1(hist, kLinear, kLinear);
+            hist->SetStats(true);
+            hist->Fit("gaus");
+            gStyle->SetOptFit(1);
+        }
+    }
 }
 
 ClassImp(CbmLitFitQaReport)

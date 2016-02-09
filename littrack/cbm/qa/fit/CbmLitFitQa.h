@@ -105,6 +105,8 @@ private:
          const FairTrackParam* par);
 
    void ProcessTrackParamsAtVertex();
+   
+   void ProcessTrackMomentumAtVertex();
 
    void CreateHistograms();
 
