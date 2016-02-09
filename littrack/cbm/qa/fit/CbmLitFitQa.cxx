@@ -419,6 +419,16 @@ void CbmLitFitQa::ProcessTrackMomentumAtVertex()
         fHM->H1("htp_PrimaryVertexPullPx")->Fill((vtxParam->GetPx() - momMC.x()) / vtxParam->GetDpx());
         fHM->H1("htp_PrimaryVertexPullPy")->Fill((vtxParam->GetPy() - momMC.y()) / vtxParam->GetDpy());
         fHM->H1("htp_PrimaryVertexPullPz")->Fill((vtxParam->GetPz() - momMC.z()) / vtxParam->GetDpz());
+        
+        fHM->H1("htp_PrimaryVertexResidualTx")->Fill(vtxParam->GetTx() - mcTrack->GetPx() / mcTrack->GetPz());
+        fHM->H1("htp_PrimaryVertexResidualTy")->Fill(vtxParam->GetTy() - mcTrack->GetPy() / mcTrack->GetPz());
+        fHM->H1("htp_PrimaryVertexResidualQp")->Fill(vtxParam->GetQp() - 1 / mcTrack->GetP());
+        
+        Double_t cov[15];
+        vtxParam->CovMatrix(cov);
+        fHM->H1("htp_PrimaryVertexPullTx")->Fill((vtxParam->GetTx() - mcTrack->GetPx() / mcTrack->GetPz()) / TMath::Sqrt(cov[9]));
+        fHM->H1("htp_PrimaryVertexPullTy")->Fill((vtxParam->GetTy() - mcTrack->GetPy() / mcTrack->GetPz()) / TMath::Sqrt(cov[12]));
+        fHM->H1("htp_PrimaryVertexPullQp")->Fill((vtxParam->GetQp() - 1 / mcTrack->GetP()) / TMath::Sqrt(cov[14]));
     }
 }
 
@@ -442,6 +452,13 @@ void CbmLitFitQa::CreateHistograms()
    fHM->Add("htp_PrimaryVertexPullPx", new TH1F("htp_PrimaryVertexPullPx", "htp_PrimaryVertexPullPx;[cm]", 200, -5., 5.));
    fHM->Add("htp_PrimaryVertexPullPy", new TH1F("htp_PrimaryVertexPullPy", "htp_PrimaryVertexPullPy;[cm]", 200, -5., 5.));
    fHM->Add("htp_PrimaryVertexPullPz", new TH1F("htp_PrimaryVertexPullPz", "htp_PrimaryVertexPullPz;[cm]", 200, -5., 5.));
+   
+   fHM->Add("htp_PrimaryVertexResidualTx", new TH1F("htp_PrimaryVertexResidualTx", "htp_PrimaryVertexResidualTx;[cm]", 200, -1., 1.));
+   fHM->Add("htp_PrimaryVertexResidualTy", new TH1F("htp_PrimaryVertexResidualTy", "htp_PrimaryVertexResidualTy;[cm]", 200, -1., 1.));
+   fHM->Add("htp_PrimaryVertexResidualQp", new TH1F("htp_PrimaryVertexResidualQ[", "htp_PrimaryVertexResidualQp;[cm]", 200, -1., 1.));
+   fHM->Add("htp_PrimaryVertexPullTx", new TH1F("htp_PrimaryVertexPullTx", "htp_PrimaryVertexPullTx;[cm]", 200, -5., 5.));
+   fHM->Add("htp_PrimaryVertexPullTy", new TH1F("htp_PrimaryVertexPullTy", "htp_PrimaryVertexPullTy;[cm]", 200, -5., 5.));
+   fHM->Add("htp_PrimaryVertexPullQp", new TH1F("htp_PrimaryVertexPullQp", "htp_PrimaryVertexPullQp;[cm]", 200, -5., 5.));
 }
 
 void CbmLitFitQa::CreateResidualAndPullHistograms(

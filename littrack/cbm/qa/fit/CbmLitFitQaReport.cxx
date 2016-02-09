@@ -266,6 +266,25 @@ void CbmLitFitQaReport::DrawTrackMomentumAtVertex()
             gStyle->SetOptFit(1);
         }
     }
+    
+    const char* histNames2[] = { "htp_PrimaryVertexResidualTx", "htp_PrimaryVertexResidualTy", "htp_PrimaryVertexResidualQp",
+        "htp_PrimaryVertexPullTx", "htp_PrimaryVertexPullTy", "htp_PrimaryVertexPullQp"};
+    TCanvas* canvas2 = CreateCanvas("Tangents and Qp at primary vertex residuals and pulls", "Tangents and Qp at primary vertex residuals and pulls", 900, 600);
+    canvas2->Divide(3, 2);
+    
+    for (Int_t i = 0; i < 2; ++i)
+    {
+        for (Int_t j = 0; j < 3; ++j)
+        {
+            Int_t histId = i * 3 + j;
+            canvas2->cd(histId + 1);
+            TH1* hist = HM()->H1(histNames2[histId]);
+            DrawH1(hist, kLinear, kLinear);
+            hist->SetStats(true);
+            hist->Fit("gaus");
+            gStyle->SetOptFit(1);
+        }
+    }
 }
 
 ClassImp(CbmLitFitQaReport)
