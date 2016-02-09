@@ -12,7 +12,7 @@
 // --------------------------------------------------------------------------
 
 //void matbudget_mc(const char* stsGeo, Int_t nEvents = 10)
-void matbudget_mc(const char* stsGeo, Int_t nEvents = 10000000)
+void matbudget_mc(const char* stsGeo = "v15c", Int_t nEvents = 10000000)
 {
 
   // ========================================================================
@@ -41,8 +41,10 @@ void matbudget_mc(const char* stsGeo, Int_t nEvents = 10000000)
   // In general, the following parts need not be touched
   // ========================================================================
 
-
-
+  // --- Logger settings ----------------------------------------------------
+  TString logLevel     = "ERROR";  // "INFO";
+  TString logVerbosity = "LOW";
+  // ------------------------------------------------------------------------
 
   // ----    Debug option   -------------------------------------------------
   gDebug = 0;
@@ -63,6 +65,10 @@ void matbudget_mc(const char* stsGeo, Int_t nEvents = 10000000)
   FairRuntimeDb* rtdb = run->GetRuntimeDb();
   // ------------------------------------------------------------------------
 
+  // -----   Logger settings   ----------------------------------------------
+  gLogger->SetLogScreenLevel(logLevel.Data());
+  gLogger->SetLogVerbosityLevel(logVerbosity.Data());
+  // ------------------------------------------------------------------------
 
   // -----   Create media   -------------------------------------------------
   run->SetMaterials("media.geo");       // Materials
