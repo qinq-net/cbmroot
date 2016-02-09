@@ -13,6 +13,7 @@ ${CBMROOT_SOURCE_DIR}/data/much
 ${CBMROOT_SOURCE_DIR}/data/trd
 ${CBMROOT_SOURCE_DIR}/data/tof
 ${CBMROOT_SOURCE_DIR}/data/ecal
+${CBMROOT_SOURCE_DIR}/data/global
 )
 Include_Directories( ${INCLUDE_DIRECTORIES})
 
