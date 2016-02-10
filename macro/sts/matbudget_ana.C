@@ -26,7 +26,8 @@ using std::vector;
 //.include $FAIRROOTPATH/include
 
 //Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10)
-Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10000000)
+//Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10000000)
+Int_t matbudget_ana(const char* stsGeo = "v15c", Int_t nEvents=1000000)
 {
 	
   // Input file (MC)

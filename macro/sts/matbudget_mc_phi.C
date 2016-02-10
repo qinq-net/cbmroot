@@ -152,6 +152,7 @@ void matbudget_mc_phi(const char* stsGeo = "v15c", Int_t nEvents = 10000000)
   // The starting points in x and y are chosen such as to illuminate the STS.
   FairBoxGenerator* boxGen = new FairBoxGenerator(0, 1);
   boxGen->SetBoxXYZ(-50.,-50.,50.,50.,0.);
+  //  boxGen->SetXYZ(0.,0.,0.);
   boxGen->SetPRange(0.1,0.5);
   boxGen->SetThetaRange(2.5,25);
   //  boxGen->SetThetaRange(0.,0.);
