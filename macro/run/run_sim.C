@@ -137,12 +137,14 @@ void run_sim(Int_t nEvents = 2,
   // -----   Input file   ---------------------------------------------------
   std::cout << std::endl;
   TString defaultInputFile = srcDir + "/input/urqmd.auau.10gev.centr.root";
+  std::cout << "defaultInputFile: " << defaultInputFile << std::endl;
   if ( inFile.IsNull() ) {  // Not defined in the macro explicitly
-  	if ( inputFile == "" ) {  // not given as argument to the macro
+  	if ( strcmp(inputFile, "") == 0 ) {  // not given as argument to the macro
   		inFile = defaultInputFile;
   	}
   	else inFile = inputFile;
   }
+  std::cout << "inFile: " << inFile << std::endl;
   std::cout << "-I- " << myName << ": Using input file " << inFile << std::endl;
   // ------------------------------------------------------------------------
 
