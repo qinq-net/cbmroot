@@ -125,6 +125,7 @@ Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10000000)
 
 
   // Plotting the results
+//single  TCanvas* can1 = new TCanvas("c","c",800,800);
   TCanvas* can1 = new TCanvas("c","c",1600,800);
   can1->Divide(nStations/2,2);
   gStyle->SetPalette(1);
@@ -136,6 +137,7 @@ Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10000000)
   
   for ( int iStation = 0; iStation < nStations; iStation++) {
     can1->cd(iStation+1);
+//single    int iStation = 7;
     hStaRadLen[iStation]->GetXaxis()->SetTitle("x [cm]");
     hStaRadLen[iStation]->GetYaxis()->SetTitle("y [cm]");
     //hStaRadLen[iStation]->GetZaxis()->SetTitle("x/X_{0} [%]");
