@@ -54,8 +54,8 @@ Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10000000)
   const int rMax      = 55;      // maximal radius for histograms (for both x and y)
   TProfile2D* hStaRadLen[nStations];
   for ( int i = 0; i < nStations; ++i ) {
-    TString name = "Radiation Thickness [%],";
-    name += " Station";
+    TString name = "Material Budget x/X_{0} [%],";
+    name += " Station ";
     name += i+1;
     hStaRadLen[i] = new TProfile2D(name, name, nBins,-rMax, rMax, nBins,-rMax, rMax);
   }
@@ -125,7 +125,7 @@ Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10000000)
 
 
   // Plotting the results
-  TCanvas* can1 = new TCanvas();
+  TCanvas* can1 = new TCanvas("c","c",1600,800);
   can1->Divide(nStations/2,2);
   gStyle->SetPalette(1);
   gStyle->SetOptStat(0);
@@ -138,6 +138,7 @@ Int_t matbudget_ana(const char* stsGeo, Int_t nEvents=10000000)
     can1->cd(iStation+1);
     hStaRadLen[iStation]->GetXaxis()->SetTitle("x [cm]");
     hStaRadLen[iStation]->GetYaxis()->SetTitle("y [cm]");
+    //hStaRadLen[iStation]->GetZaxis()->SetTitle("x/X_{0} [%]");
     //hStaRadLen[i]->GetZaxis()->SetTitle("radiation thickness [%]");
     hStaRadLen[iStation]->SetAxisRange(0, 2, "Z");
     hStaRadLen[iStation]->Draw("colz");
