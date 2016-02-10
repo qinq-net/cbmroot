@@ -49,7 +49,7 @@ Int_t    fieldSymType=0;
 
 TString defaultInputFile="";
 
-void run_digi(Int_t nEvents = 2, const char* setup = "sis100_electron")
+void run_digi_tb(Int_t nEvents = 2, const char* setup = "sis100_electron")
 {
   // ========================================================================
   //          Adjust this part according to your requirements
