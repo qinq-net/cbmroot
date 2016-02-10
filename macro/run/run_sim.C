@@ -32,7 +32,7 @@ void run_sim(Int_t nEvents = 2,
   //          Adjust this part according to your requirements
 
   // -----   Environment   --------------------------------------------------
-  TString myName = "run_sim_new";  // this macro's name for screen output
+  TString myName = "run_sim";  // this macro's name for screen output
   TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
   // ------------------------------------------------------------------------
 
@@ -43,12 +43,6 @@ void run_sim(Int_t nEvents = 2,
   TString outFile = outDir + setupName + "_test.mc.root";
   TString parFile = outDir + setupName + "_params.root";
   TString geoFile = outDir + setupName + "_geofile_full.root";
-  // ------------------------------------------------------------------------
-
-
-  // -----   Functions needed for CTest runtime dependency   ----------------
-  TString depFile = Remove_CTest_Dependency_File(outDir, "run_sim" , setupName);
-  Bool_t hasFairMonitor = Has_Fair_Monitor();
   // ------------------------------------------------------------------------
 
 
@@ -108,12 +102,17 @@ void run_sim(Int_t nEvents = 2,
   // ------------------------------------------------------------------------
 
   
+  // -----   Remove old CTest runtime dependency file   ---------------------
+  TString depFile = Remove_CTest_Dependency_File(outDir, "run_sim" , setupName);
+  // ------------------------------------------------------------------------
+
+
+
   // -----   Create simulation run   ----------------------------------------
   FairRunSim* run = new FairRunSim();
   run->SetName("TGeant3");              // Transport engine
   run->SetOutputFile(outFile);          // Output file
   run->SetGenerateRunInfo(kTRUE);       // Create FairRunInfo file
-  FairRuntimeDb* rtdb = run->GetRuntimeDb();
   // ------------------------------------------------------------------------
 
 
@@ -137,14 +136,12 @@ void run_sim(Int_t nEvents = 2,
   // -----   Input file   ---------------------------------------------------
   std::cout << std::endl;
   TString defaultInputFile = srcDir + "/input/urqmd.auau.10gev.centr.root";
-  std::cout << "defaultInputFile: " << defaultInputFile << std::endl;
   if ( inFile.IsNull() ) {  // Not defined in the macro explicitly
   	if ( strcmp(inputFile, "") == 0 ) {  // not given as argument to the macro
   		inFile = defaultInputFile;
   	}
   	else inFile = inputFile;
   }
-  std::cout << "inFile: " << inFile << std::endl;
   std::cout << "-I- " << myName << ": Using input file " << inFile << std::endl;
   // ------------------------------------------------------------------------
 
@@ -159,7 +156,7 @@ void run_sim(Int_t nEvents = 2,
   // -----   Create and register modules   ----------------------------------
   std::cout << std::endl;
   TString macroName = gSystem->Getenv("VMCWORKDIR");
-  macroName += "/macro/run/registerSetup.C";
+  macroName += "/macro/run/modules/registerSetup.C";
   std::cout << "Loading macro " << macroName << std::endl;
   gROOT->LoadMacro(macroName);
   gROOT->ProcessLine("registerSetup()");
@@ -234,6 +231,7 @@ void run_sim(Int_t nEvents = 2,
   // -----   Runtime database   ---------------------------------------------
   std::cout << std::endl << std::endl;
   std::cout << "-I- " << myName << ": Set runtime DB" << std::endl;
+  FairRuntimeDb* rtdb = run->GetRuntimeDb();
   CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
   fieldPar->SetParameters(magField);
   fieldPar->setChanged();
@@ -265,12 +263,12 @@ void run_sim(Int_t nEvents = 2,
   std::cout << "Parameter file is " << parFile << std::endl;
   std::cout << "Geometry file is "  << geoFile << std::endl;
   std::cout << "Real time " << rtime << " s, CPU time " << ctime
-       << "s" << std::endl << std::endl;
+            << "s" << std::endl << std::endl;
   // ------------------------------------------------------------------------
 
 
-  // -----   Job monitoring   -----------------------------------------------
-  if (hasFairMonitor) {
+  // -----   Resource monitoring   ------------------------------------------
+  if ( Has_Fair_Monitor() ) {      // FairRoot Version >= 15.11
     // Extract the maximal used memory an add is as Dart measurement
     // This line is filtered by CTest and the value send to CDash
     FairSystemInfo sysInfo;
