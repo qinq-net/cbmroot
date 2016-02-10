@@ -1072,7 +1072,7 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
     if (cutmask!=selectedMask) continue;
 
     // store signal weights in the tracks - ATTENTION later signals should be more specific
-    /*
+    //    /*
     if(fHasMC && fSignalsMC) {
       //      PairAnalysisMC* papaMC = PairAnalysisMC::Instance();
       for(Int_t isig=0; isig<fSignalsMC->GetEntriesFast(); isig++) {
@@ -1084,7 +1084,7 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
 	}
       }
     }
-    */
+    //    */
 
     //fill selected particle into the corresponding track arrays
     Short_t charge=particle->Charge();
