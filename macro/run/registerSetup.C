@@ -86,7 +86,7 @@ void registerSetup()
 					psd->SetZposition(setup->GetPsdPositionZ());
 					psd->SetXshift(setup->GetPsdPositionX());
 					psd->SetGeoFile(fileName);
-					module = (FairModule)* psd;
+					module = (FairModule*) psd;
 					break;
 				}
 				default: std::cout << "-E- registerSetup: Unknown module ID "
