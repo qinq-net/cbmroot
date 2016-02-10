@@ -10,6 +10,9 @@ void CbmTrackParam::Set(const FairTrackParam& ftp)
     SetX(ftp.GetX());
     SetY(ftp.GetY());
     SetZ(ftp.GetZ());
+    SetTx(ftp.GetTx());
+    SetTy(ftp.GetTy());
+    SetQp(ftp.GetQp());
     Double_t cov[15];
     ftp.CovMatrix(cov);
     SetCovMatrix(cov);
