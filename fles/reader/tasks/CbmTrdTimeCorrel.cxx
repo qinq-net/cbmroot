@@ -69,6 +69,10 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
   Bool_t isHit = false;
   Bool_t isInfo = false;
   Bool_t isEpoch = false;
+  Int_t eqID(-1), sourceA(-1), chID(0), triggerType(-1), stopType(-1), infoType(-1), groupId(-1), sysID(-1), spaID(-1);
+  ULong_t time = 0;
+  Int_t timeStamp(0), epoch(0), superEpoch(0);
+
   LOG(INFO) << "nSpadicMessages: " << nSpadicMessages << FairLogger::endl;
   for (Int_t iSpadicMessage=0; iSpadicMessage < nSpadicMessages; ++iSpadicMessage) {
     CbmSpadicRawMessage* raw = static_cast<CbmSpadicRawMessage*>(fRawSpadic->At(iSpadicMessage));
@@ -78,29 +82,32 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
     if(Int_t(isHit+isInfo+isEpoch)>1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be more than one message type: HIT " << Int_t(isHit) << " / INFO " << (Int_t)isInfo << " / EPOCH " << (Int_t)isEpoch << FairLogger::endl;
     if(Int_t(isHit+isInfo+isEpoch)<1) LOG(ERROR) << "SpadicMessage " << iSpadicMessage << " is classified from CbmSpadicRawMessage to be none of the defined types HIT 0 / INFO 0 / EPOCH 0" << FairLogger::endl;
 
+    if(isHit) {
+      stopType=raw->GetStopType();
+      triggerType=raw->GetTriggerType();
+      groupId=raw->GetGroupId();
 
-    // if: set only variables which exist for current message type / initialize before to "unique" value
-
-
-    Int_t eqID = raw->GetEquipmentID();
-    Int_t sourceA = raw->GetSourceAddress();
-    Int_t chID = raw->GetChannelID();
+    }
+    else if(isInfo) {
+      infoType=raw->GetInfoType();
+      if (infoType > 6) infoType = 7;
+    }
+    else if(isEpoch) {
+      epoch = raw->GetEpochMarker();
+      superEpoch = raw->GetSuperEpoch();
+    }
+    eqID = raw->GetEquipmentID();
+    sourceA = raw->GetSourceAddress();
+    chID = raw->GetChannelID();
     //    Int_t nrSamples=raw->GetNrSamples();
-    Int_t triggerType=raw->GetTriggerType();
-    Int_t stopType=raw->GetStopType();
-    Int_t infoType=raw->GetInfoType();
-    if (infoType > 6) infoType = 7;
-    Int_t groupId=raw->GetGroupId();
-    ULong_t time = raw->GetFullTime();
-    Int_t timeStamp = raw->GetTime();
-    Int_t epoch = raw->GetEpochMarker();
-    Int_t superEpoch = raw->GetSuperEpoch();
+    time = raw->GetFullTime();
+    timeStamp = raw->GetTime();
     
     // get syscore, spadic and channel
     TString syscore = GetSysCore(eqID);
-    Int_t sysID     = GetSysCoreID(eqID);
+    sysID     = GetSysCoreID(eqID);
     TString spadic  = GetSpadic(sourceA);
-    Int_t spaID     = GetSpadicID(sourceA);
+    spaID     = GetSpadicID(sourceA);
     if(spaID%2) chID+=16;
     TString channelId=Form("_Ch%02d", chID);
     TString stopName = GetStopName(stopType);
@@ -115,11 +122,14 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
       if(isInfo) nSpadicMessagesInfo0++;
       if(isEpoch) nSpadicMessagesEpoch0++;
     }
-      if(spadic=="Spadic1") {
+    else if(spadic=="Spadic1") {
 	nSpadicMessages1++;
       if(isInfo) nSpadicMessagesInfo1++;
       if(isEpoch) nSpadicMessagesEpoch1++;
       }
+    else {
+      LOG(INFO) << "SapdicMessage " << iSpadicMessage << " claims to be from " << spadic << " with spadicID " << spaID << FairLogger::endl;
+    }
 
     //Fill trigger-type histogram
     fHM->H1("Trigger")->Fill(TString(syscore+spadic),1);
@@ -144,13 +154,14 @@ void CbmTrdTimeCorrel::Exec(Option_t* option)
 
   //fill number of spadic-messages in tscounter-graph
   //length of one timeslice: m * n * 8 ns, with e.g. n=1250 length of microslice and m=100 microslices in one timeslice at SPS2015
-    fHM->G1("TsCounter")->SetPoint(fHM->G1("TsCounter")->GetN(),fNrTimeSlices+1,nSpadicMessages);
-    fHM->G1("TsCounter0")->SetPoint(fHM->G1("TsCounter0")->GetN(),fNrTimeSlices+1,nSpadicMessages0);
-    fHM->G1("TsCounter1")->SetPoint(fHM->G1("TsCounter1")->GetN(),fNrTimeSlices+1,nSpadicMessages1);
-    fHM->G1("TsCounterInfo0")->SetPoint(fHM->G1("TsCounterInfo0")->GetN(),fNrTimeSlices+1,nSpadicMessagesInfo0);
-    fHM->G1("TsCounterInfo1")->SetPoint(fHM->G1("TsCounterInfo1")->GetN(),fNrTimeSlices+1,nSpadicMessagesInfo1);
-    fHM->G1("TsCounterEpoch0")->SetPoint(fHM->G1("TsCounterEpoch0")->GetN(),fNrTimeSlices+1,nSpadicMessagesEpoch0);
-    fHM->G1("TsCounterEpoch1")->SetPoint(fHM->G1("TsCounterEpoch1")->GetN(),fNrTimeSlices+1,nSpadicMessagesEpoch1);
+
+  fHM->G1("TsCounter")->SetPoint(fHM->G1("TsCounter")->GetN(),fNrTimeSlices+1,nSpadicMessages);
+  fHM->G1("TsCounter0")->SetPoint(fHM->G1("TsCounter0")->GetN(),fNrTimeSlices+1,nSpadicMessages0);
+  fHM->G1("TsCounter1")->SetPoint(fHM->G1("TsCounter1")->GetN(),fNrTimeSlices+1,nSpadicMessages1);
+  fHM->G1("TsCounterInfo0")->SetPoint(fHM->G1("TsCounterInfo0")->GetN(),fNrTimeSlices+1,nSpadicMessagesInfo0);
+  fHM->G1("TsCounterInfo1")->SetPoint(fHM->G1("TsCounterInfo1")->GetN(),fNrTimeSlices+1,nSpadicMessagesInfo1);
+  fHM->G1("TsCounterEpoch0")->SetPoint(fHM->G1("TsCounterEpoch0")->GetN(),fNrTimeSlices+1,nSpadicMessagesEpoch0);
+  fHM->G1("TsCounterEpoch1")->SetPoint(fHM->G1("TsCounterEpoch1")->GetN(),fNrTimeSlices+1,nSpadicMessagesEpoch1);
 
   if(fNrTimeSlices==0){
     if(fHM->G1("TsCounter")->GetN()==0){
@@ -247,8 +258,8 @@ void CbmTrdTimeCorrel::CreateHistograms()
     for(Int_t stopType = 0; stopType < 6; ++stopType) {
       fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(8*spadic+stopType+1,TString(spadicName[spadic]+"_"+stopTypes[stopType]));
     }
-    fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(8*spadic+6+1,TString(spadicName[spadic]+"_Info mess"));
-    fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(8*spadic+7+1,TString(spadicName[spadic]+"_Info mess n-fold"));
+    fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(8*spadic+6+1,TString(spadicName[spadic]+"_Info or epoch mess"));
+    fHM->H1("MessageCount")->GetXaxis()->SetBinLabel(8*spadic+7+1,TString(spadicName[spadic]+"_Info or epoch mess n-fold"));
   }
   fHM->Add("TsCounter", new TGraph());
   fHM->Add("TsCounter0", new TGraph());
@@ -384,7 +395,7 @@ TString CbmTrdTimeCorrel::GetStopName(Int_t stopType)
   TString stopName="";
   switch (stopType) {
   case (-1):
-    stopName="Info mess";
+    stopName="Info or epoch mess";
     break;
   case (0):
     stopName="Normal end of message";
