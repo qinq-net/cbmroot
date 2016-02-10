@@ -103,6 +103,7 @@ PairAnalysis::PairAnalysis() :
   fNoPairing(kFALSE),
   fProcessLS(kTRUE),
   fUseKF(kTRUE),
+  fCutStepHistos(0x0),
   fHistoArray(0x0),
   fHistos(0x0),
   fUsedVars(new TBits(PairAnalysisVarManager::kNMaxValuesMC)),
@@ -147,6 +148,7 @@ PairAnalysis::PairAnalysis(const char* name, const char* title) :
   fNoPairing(kFALSE),
   fProcessLS(kTRUE),
   fUseKF(kTRUE),
+  fCutStepHistos(0x0),
   fHistoArray(0x0),
   fHistos(0x0),
   fUsedVars(new TBits(PairAnalysisVarManager::kNMaxValuesMC)),
@@ -185,6 +187,8 @@ PairAnalysis::~PairAnalysis()
   if (fSignalsMC) delete fSignalsMC;
   //  if (fCfManagerPair) delete fCfManagerPair;
   if (fHistoArray) delete fHistoArray;
+  if (fCutStepHistos) delete fCutStepHistos;
+
 }
 
 //________________________________________________________________
@@ -250,6 +254,12 @@ void PairAnalysis::Init()
     (*fUsedVars)|= (*fHistos->GetUsedVars());
   }
 
+  if(fTrackFilter.GetHistogramList() || fFinalTrackFilter.GetHistogramList()) {
+    fCutStepHistos       = fTrackFilter.     GetHistogramList();
+    fCutStepHistos->AddAll(fFinalTrackFilter.GetHistogramList());
+    fCutStepHistos->SetName(Form("CutSteps_%s",GetName()));
+
+  }
 
 
 }
@@ -1020,9 +1030,13 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
   // use track arrays 0 and 1
   //
 
+  /// mc instance
+  PairAnalysisMC* papaMC=0x0;
+  if(fHasMC && fSignalsMC) papaMC = PairAnalysisMC::Instance();
+
   // get event data
   Double_t *values=PairAnalysisVarManager::GetData();
-
+  
   Int_t ntracks=ev->GetNumberOfTracks();
   UInt_t selectedMask=(1<<fTrackFilter.GetCuts()->GetEntries())-1;
   for (Int_t itrack=0; itrack<ntracks; ++itrack){
@@ -1033,8 +1047,12 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
     // adapt mass hypothesis accordingly (they were initialized with PDG11)
     particle->SetMassHypo(fPdgLeg1,fPdgLeg2);
 
+    // fill variables
+    PairAnalysisVarManager::Fill(particle, values);
+
     //apply track cuts
-    UInt_t cutmask=fTrackFilter.IsSelected(particle);
+    UInt_t cutmask=fTrackFilter.IsSelected(values);
+    //UInt_t cutmask=fTrackFilter.IsSelected(particle);
     //fill cut QA
     if(fCutQA) fQAmonitor->FillAll(particle);
     if(fCutQA) fQAmonitor->Fill(cutmask,particle);
@@ -1042,16 +1060,21 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
     // if raw spectra before any cuts are requested then fill
     if(fHistos && fHistos->HasHistClass("Track.noCuts")) {
       PairAnalysisVarManager::SetFillMap(fUsedVars);
-      PairAnalysisVarManager::Fill(particle, values);
+      //      PairAnalysisVarManager::Fill(particle, values);
       fHistos    ->FillClass("Track.noCuts", values);
     }
+
+    /// fill detailed cut histograms
+    if(fTrackFilter.GetHistogramList()->GetSize())
+      FillCutStepHistograms( &fTrackFilter, cutmask, particle, values);
 
     // rejection
     if (cutmask!=selectedMask) continue;
 
     // store signal weights in the tracks - ATTENTION later signals should be more specific
+    /*
     if(fHasMC && fSignalsMC) {
-      PairAnalysisMC* papaMC = PairAnalysisMC::Instance();
+      //      PairAnalysisMC* papaMC = PairAnalysisMC::Instance();
       for(Int_t isig=0; isig<fSignalsMC->GetEntriesFast(); isig++) {
 	PairAnalysisSignalMC *sig=(PairAnalysisSignalMC*)fSignalsMC->At(isig);
 	if( papaMC->IsMCTruth(particle,sig,1) || papaMC->IsMCTruth(particle,sig,2) ) {
@@ -1061,12 +1084,12 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
 	}
       }
     }
+    */
 
     //fill selected particle into the corresponding track arrays
     Short_t charge=particle->Charge();
     if (charge>0)      fTracks[0].Add(particle); // positive tracks
     else if (charge<0) fTracks[1].Add(particle); // negative tracks
-
   }
 }
 
@@ -1267,6 +1290,9 @@ void PairAnalysis::FilterTrackArrays(TObjArray &arrTracks1, TObjArray &arrTracks
   // second and final track selection
   //
 
+  // get event data
+  Double_t *values=PairAnalysisVarManager::GetData();
+
   //apply leg cuts after the pre filter
   if ( fFinalTrackFilter.GetCuts()->GetEntries()<1 ) return;
 
@@ -1274,11 +1300,22 @@ void PairAnalysis::FilterTrackArrays(TObjArray &arrTracks1, TObjArray &arrTracks
   //loop over tracks from array 1
   for (Int_t itrack=0; itrack<arrTracks1.GetEntriesFast();++itrack){
 
+    //get particle
+    PairAnalysisTrack *particle= static_cast<PairAnalysisTrack*>(arrTracks1.UncheckedAt(itrack));
+
+    // fill variables
+    PairAnalysisVarManager::Fill(particle, values);
+
     //apply cuts
-    UInt_t cutmask=fFinalTrackFilter.IsSelected(arrTracks1.UncheckedAt(itrack));
+    UInt_t cutmask=fFinalTrackFilter.IsSelected(values);
+    //    UInt_t cutmask=fFinalTrackFilter.IsSelected(particle);
     //fill cut QA
-    if(fCutQA) fQAmonitor->FillAll(arrTracks1.UncheckedAt(itrack),     1);
-    if(fCutQA) fQAmonitor->Fill(cutmask,arrTracks1.UncheckedAt(itrack),1);
+    if(fCutQA) fQAmonitor->FillAll(particle,     1);
+    if(fCutQA) fQAmonitor->Fill(cutmask,particle,1);
+
+    /// fill detailed cut histograms
+    if(fFinalTrackFilter.GetHistogramList()->GetSize())
+      FillCutStepHistograms( &fFinalTrackFilter, cutmask, particle, values);
 
     // rejection
     if (cutmask!=selectedMask) arrTracks1.AddAt(0x0,itrack);
@@ -1289,12 +1326,23 @@ void PairAnalysis::FilterTrackArrays(TObjArray &arrTracks1, TObjArray &arrTracks
   //loop over tracks from array 2
   for (Int_t itrack=0; itrack<arrTracks2.GetEntriesFast();++itrack){
 
+    //get particle
+    PairAnalysisTrack *particle= static_cast<PairAnalysisTrack*>(arrTracks2.UncheckedAt(itrack));
+
+    // fill variables
+    PairAnalysisVarManager::Fill(particle, values);
+
     //apply cuts
-    UInt_t cutmask=fFinalTrackFilter.IsSelected(arrTracks2.UncheckedAt(itrack));
+    UInt_t cutmask=fFinalTrackFilter.IsSelected(values);
+    //    UInt_t cutmask=fFinalTrackFilter.IsSelected(particle);
 
     //fill cut QA
-    if(fCutQA) fQAmonitor->FillAll(arrTracks2.UncheckedAt(itrack),     1);
-    if(fCutQA) fQAmonitor->Fill(cutmask,arrTracks2.UncheckedAt(itrack),1);
+    if(fCutQA) fQAmonitor->FillAll(particle,     1);
+    if(fCutQA) fQAmonitor->Fill(cutmask,particle,1);
+
+    /// fill detailed cut histograms
+    if(fFinalTrackFilter.GetHistogramList()->GetSize())
+      FillCutStepHistograms( &fFinalTrackFilter, cutmask, particle, values);
 
     // rejection
     if (cutmask!=selectedMask) arrTracks2.AddAt(0x0,itrack);
@@ -1621,4 +1669,73 @@ void PairAnalysis::FillHistogramsFromPairArray(Bool_t pairInfoOnly/*=kFALSE*/)
   }
 
 }
+
+void  PairAnalysis::FillCutStepHistograms(AnalysisFilter *filter, UInt_t cutmask, PairAnalysisTrack *trk, const Double_t * values)
+{
+
+  /// mc instance
+  PairAnalysisMC* papaMC=0x0;
+  if(fHasMC && fSignalsMC) papaMC = PairAnalysisMC::Instance();
+
+  /// hist classes
+  TString className;
+  TString classNameMC;
+  TString classNamePM=Form("Track.%s",fgkPairClassNames[1]);
+
+  PairAnalysisHistos histo;
+  AnalysisCuts *cuts;
+  TIter next(filter->GetCuts());
+  Int_t iCut=0;
+
+  /// loop over mc signals
+  Int_t nsig = (fSignalsMC ? fSignalsMC->GetEntriesFast() : 1);
+  PairAnalysisSignalMC *sigMC;
+  for(Int_t isig=0; isig<nsig; isig++) {
+    if(fSignalsMC) {
+      sigMC = (PairAnalysisSignalMC*)fSignalsMC->At(isig);
+      classNameMC = classNamePM + "_" + sigMC->GetName();
+      //	  printf("fill cut details for %s \n",classNameMC.Data());
+    }
+    // check if machtes mc signal
+    Bool_t isMCtruth = fSignalsMC && (papaMC->IsMCTruth(trk, sigMC, 1) || papaMC->IsMCTruth(trk, sigMC, 2) );
+    if(isig && !isMCtruth) continue;
+
+    /// store mc signal weights in track - ATTENTION later signals should be more specific
+    //    if(sigMC->GetWeight(values) != 1.0) trk->SetWeight( sigMC->GetWeight(values) );
+
+    /// reset iterator
+    next.Reset();
+    iCut=0;
+
+    /// loop over cuts
+    while((cuts = (AnalysisCuts*)next())) {
+      ///    UInt_t cutMask=1<<iCut;         // for each cut
+      UInt_t cutRef=(1<<(iCut+1))-1; // increasing cut match
+      // printf("      fill cut %s for track %p in hist details \n",cuts->GetName(),trk);
+
+      /// passed cut
+      if ((cutmask&cutRef)==cutRef) {
+
+	//	    printf("    track %p passed cut \n",trk);
+	/// find histogram list of current track
+	histo.SetHistogramList( *(THashList*)filter->GetHistogramList()->FindObject( cuts->GetName() ),
+				kFALSE );
+
+	/// fill track histos only once
+	if(!isig)	{
+	  histo.FillClass(classNamePM, values);
+	  for (Int_t i=0; i<kLegTypes; ++i){
+	    className.Form("Track.%s",fgkTrackClassNames[i]);
+	    histo.FillClass(className, values);
+	  }
+	}
+	/// fill mc
+	if(isMCtruth)  histo.FillClass(classNameMC, values);
+      } ///end passed cut
+      iCut++;
+    } ///end cuts
+  } ///end mc signals
+
+}
+
 

@@ -84,6 +84,8 @@ public:
   // outputs - debug tree
   //  void SetDebugTree(PairAnalysisDebugTree * const tree) { fDebugTree=tree; }
   void SaveDebugTree();
+  // outputs - cut detailed histos
+  THashList * GetCutStepHistogramList()     const { return fCutStepHistos; }
 
 
   Bool_t HasCandidates()   const { return GetPairArray( 1)?GetPairArray( 1)->GetEntriesFast()>0:0; }
@@ -152,6 +154,7 @@ private:
   Bool_t fProcessLS; // do the like-sign pairing (default kTRUE)
   Bool_t fUseKF;    // if to skip pairing, can be used for track QA only
 
+  THashList *fCutStepHistos;  // list of histogram managers
   PairAnalysisHF *fHistoArray;   // Histogram framework
   PairAnalysisHistos *fHistos;   // Histogram manager
                                   //  Streaming and merging should be handled
@@ -206,6 +209,7 @@ private:
   void  FillHistogramsMC(const PairAnalysisEvent *ev,  PairAnalysisEvent *ev1);
   void  FillHistogramsPair(PairAnalysisPair *pair,Bool_t fromPreFilter=kFALSE);
   void  FillHistogramsTracks(TObjArray **tracks);
+  void  FillCutStepHistograms(AnalysisFilter *filter, UInt_t cutmask, PairAnalysisTrack *trk, const Double_t * values);
 
   void  FillDebugTree();
 
