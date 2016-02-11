@@ -785,8 +785,10 @@ void PairAnalysisHistos::SetHistogramList(THashList &list, Bool_t setOwner/*=kTR
   if (setOwner){
     list.SetOwner(kFALSE);
     fHistoList.SetOwner(kTRUE);
+    fHistoList.SetName(list.GetName());
   } else {
     fHistoList.SetOwner(kFALSE);
+    fHistoList.SetName(list.GetName());
   }
 }
 
@@ -873,13 +875,21 @@ void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString his
 
   TString optString(opt);
   optString.ToLower();
-  Bool_t optEff =optString.Contains("eff");
+  Bool_t optEff     = optString.Contains("eff");
+  Bool_t optCutStep = optString.Contains("cutstep"); opt.ReplaceAll("cutstep","");
   //  fList->Print();
   //  fHistoList.Print();
   fHistoList.SetOwner(kFALSE);
 
   TString legendname = GetName();
   printf("DrawTaskSame: legendname %s\n",legendname.Data());
+
+  if(optCutStep) {
+    TString cutstepTask = fHistoList.GetName();
+    printf("cutstepTask: -%s- \n",cutstepTask.Data());
+    THashList *listCutStep=dynamic_cast<THashList*>(fList->FindObject(cutstepTask));
+    if(listCutStep) fList=listCutStep;
+  }
 
   THashList *listDenom = dynamic_cast<THashList*>(fList->FindObject(taskDenom.Data()));
   if(listDenom) opt+="div";
@@ -1331,6 +1341,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	// remove reserved words
 	TObjArray *reservedWords = fReservedWords->Tokenize(":;");
 	for(Int_t ir=0; ir<reservedWords->GetEntriesFast(); ir++) {
+	  //	  printf("histClass %s \t search for %s \n",histClass.Data(),((TObjString*)reservedWords->At(ir))->GetString().Data());
 	  histClass.ReplaceAll( ((TObjString*)reservedWords->At(ir))->GetString(), "");
 	  ratioName.ReplaceAll( ((TObjString*)reservedWords->At(ir))->GetString(), "");
 	  divName.ReplaceAll( ((TObjString*)reservedWords->At(ir))->GetString(), "");
@@ -1345,6 +1356,8 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	  ratioName.ReplaceAll(src,rpl);
 	  divName.ReplaceAll(src,rpl);
 	}
+	//	printf("histClass %s \n",histClass.Data());
+
 	// change MCtruth to MC
 	for(Int_t isig=0; isig<PairAnalysisSignalMC::kNSignals; isig++) {
 	  histClass.ReplaceAll("MCtruth","MC");
