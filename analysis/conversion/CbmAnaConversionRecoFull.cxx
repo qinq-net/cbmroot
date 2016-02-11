@@ -194,6 +194,7 @@ CbmAnaConversionRecoFull::CbmAnaConversionRecoFull()
 	fhPhotons_invmass_MCcutTest_new(),
 	fhPhotons_invmass_MCcutTest2_new(),
 	fhPhotons_invmass_MCcutTest3_new(),
+	fhPhotons_invmass_MCcutAll_new(),
 	fhPhotons_pt_vs_rap_new(),
 	fhElectrons_openingAngle_sameSign_new(),
 	fhPhotons_stats(),
@@ -568,6 +569,9 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fhPhotons_invmass_MCcut7_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut7_new_%i",i), Form("fhPhotons_invmass_MCcut7_new_%i (MC-true cut: wrong combination of electrons); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut7_new[i]);
 		
+		fhPhotons_invmass_MCcutAll_new[i] = new TH2D(Form("fhPhotons_invmass_MCcutAll_new_%i",i), Form("fhPhotons_invmass_MCcutAll_new_%i; case; invmass",i), 10, 0., 10., invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcutAll_new[i]);
+		
 		fhPhotons_invmass_MCcutTest_new[i] = new TH1D(Form("fhPhotons_invmass_MCcutTest_new_%i",i), Form("fhPhotons_invmass_MCcutTest_new_%i (MC-true cut: test); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcutTest_new[i]);
 		fhPhotons_invmass_MCcutTest2_new[i] = new TH1D(Form("fhPhotons_invmass_MCcutTest2_new_%i",i), Form("fhPhotons_invmass_MCcutTest2_new_%i (MC-true cut: test); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
@@ -813,7 +817,7 @@ void CbmAnaConversionRecoFull::Exec()
 
 		CbmTrackMatchNew* richMatch  = (CbmTrackMatchNew*)fRichRingMatches->At(richInd);
 		int richMcTrackId = 0;
-		CbmMCTrack* mcTrack2;
+		CbmMCTrack* mcTrack2 = NULL;
 		if (richMatch != NULL) {
 			richMcTrackId = richMatch->GetMatchedLink().GetIndex();
 			if (richMcTrackId >= 0) {
@@ -1565,16 +1569,78 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 					if(fElectrons_mctrackID_new[index][electron11] == 0 || fElectrons_mctrackID_new[index][electron12] == 0 || fElectrons_mctrackID_new[index][electron21] == 0 || fElectrons_mctrackID_new[index][electron22] == 0) continue;
 					
 					// CROSSCHECK WITH MC-TRUE DATA!
-					CbmMCTrack* mctrack11 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID_new[index][electron11]);
+					CbmMCTrack* mctrack11 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID_new[index][electron11]);	// mctracks of four leptons
 					CbmMCTrack* mctrack12 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID_new[index][electron12]);
 					CbmMCTrack* mctrack21 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID_new[index][electron21]);
 					CbmMCTrack* mctrack22 = (CbmMCTrack*)fMcTracks->At(fElectrons_mctrackID_new[index][electron22]);
 					
-					Int_t pdg11 = mctrack11->GetPdgCode();
+					Int_t pdg11 = mctrack11->GetPdgCode();	// pdg codes of four leptons
 					Int_t pdg12 = mctrack12->GetPdgCode();
 					Int_t pdg21 = mctrack21->GetPdgCode();
 					Int_t pdg22 = mctrack22->GetPdgCode();
 					
+					Int_t motherId11 = mctrack11->GetMotherId();	// motherIDs of four leptons
+					Int_t motherId12 = mctrack12->GetMotherId();
+					Int_t motherId21 = mctrack21->GetMotherId();
+					Int_t motherId22 = mctrack22->GetMotherId();
+					
+					CbmMCTrack* mothermctrack11 = NULL;	// mctracks of mother particles of the four leptons
+					CbmMCTrack* mothermctrack12 = NULL;
+					CbmMCTrack* mothermctrack21 = NULL;
+					CbmMCTrack* mothermctrack22 = NULL;
+					if(motherId11 > 0) mothermctrack11 = (CbmMCTrack*)fMcTracks->At(motherId11);
+					if(motherId11 > 0) mothermctrack12 = (CbmMCTrack*)fMcTracks->At(motherId12);
+					if(motherId11 > 0) mothermctrack21 = (CbmMCTrack*)fMcTracks->At(motherId21);
+					if(motherId11 > 0) mothermctrack22 = (CbmMCTrack*)fMcTracks->At(motherId22);
+					
+					Int_t motherpdg11 = -2;		// pdg codes of the mother particles
+				//	Int_t motherpdg12 = -2;
+					Int_t motherpdg21 = -2;
+				//	Int_t motherpdg22 = -2;
+					if(mothermctrack11 != NULL) motherpdg11 = mothermctrack11->GetPdgCode();
+				//	if(mothermctrack12 != NULL) motherpdg12 = mothermctrack12->GetPdgCode();
+					if(mothermctrack21 != NULL) motherpdg21 = mothermctrack21->GetPdgCode();
+				//	if(mothermctrack22 != NULL) motherpdg22 = mothermctrack22->GetPdgCode();
+					
+				/*	Int_t grandmotherId11 = -2;		// grandmotherIDs of four leptons
+					Int_t grandmotherId12 = -2;
+					Int_t grandmotherId21 = -2;
+					Int_t grandmotherId22 = -2;
+					if(mothermctrack11 != NULL) grandmotherId11 = mothermctrack11->GetMotherId();
+					if(mothermctrack12 != NULL) grandmotherId12 = mothermctrack12->GetMotherId();
+					if(mothermctrack21 != NULL) grandmotherId21 = mothermctrack21->GetMotherId();
+					if(mothermctrack22 != NULL) grandmotherId22 = mothermctrack22->GetMotherId();
+				*/	
+					
+					
+					if(motherId11 == motherId12 && motherId21 == motherId22) {		// both combined e+e- pairs come from the same mother (which can be gamma, pi0, or whatever)
+						fhPhotons_invmass_MCcutAll_new[index]->Fill(1, invmass);
+						if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22) {
+							fhPhotons_invmass_MCcutAll_new[index]->Fill(1, invmass);
+						}
+						if( (TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 111) || (TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 22) ) {
+							fhPhotons_invmass_MCcutAll_new[index]->Fill(2, invmass);
+						}
+						if(TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 111) {
+							fhPhotons_invmass_MCcutAll_new[index]->Fill(3, invmass);
+						}
+						if( (TMath::Abs(motherpdg11) != 22 && TMath::Abs(motherpdg11) != 111) || (TMath::Abs(motherpdg21) != 22 && TMath::Abs(motherpdg21) != 111) ) {
+							fhPhotons_invmass_MCcutAll_new[index]->Fill(4, invmass);
+						}
+						if(TMath::Abs(motherpdg11) != 22 && TMath::Abs(motherpdg11) != 111 && TMath::Abs(motherpdg21) != 22 && TMath::Abs(motherpdg21) != 111) {
+							fhPhotons_invmass_MCcutAll_new[index]->Fill(5, invmass);
+						}
+					}
+					if( (motherId11 == motherId12 && motherId21 != motherId22) || (motherId11 != motherId12 && motherId21 == motherId22) ) {
+						fhPhotons_invmass_MCcutAll_new[index]->Fill(6, invmass);
+					}
+					if(motherId11 != motherId12 && motherId21 != motherId22) {
+						fhPhotons_invmass_MCcutAll_new[index]->Fill(7, invmass);
+					}
+					
+					
+					
+					// ################################################
 					if(index == 4 && TMath::Abs(pdg11) == 11 && TMath::Abs(pdg12) == 11 && TMath::Abs(pdg21) == 11 && TMath::Abs(pdg22) == 11) {
 						fhPhotons_invmass_MCcutTest2_new[index]->Fill(invmass);
 					}
@@ -1590,10 +1656,6 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 					}
 					
 					
-					Int_t motherId11 = mctrack11->GetMotherId();
-					Int_t motherId12 = mctrack12->GetMotherId();
-					Int_t motherId21 = mctrack21->GetMotherId();
-					Int_t motherId22 = mctrack22->GetMotherId();
 					
 					TVector3 startvertex11;
 					mctrack11->GetStartVertex(startvertex11);
@@ -1615,22 +1677,22 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 						fhPhotons_invmass_MCcut1_new[index]->Fill(invmass);
 						fhPhotons_stats[index]->Fill(1);
 						if(motherId11 != -1 && motherId21 != -1) {
-							CbmMCTrack* mothermctrack11 = (CbmMCTrack*)fMcTracks->At(motherId11);
-							CbmMCTrack* mothermctrack21 = (CbmMCTrack*)fMcTracks->At(motherId21);
+							CbmMCTrack* mothermctrack11n = (CbmMCTrack*)fMcTracks->At(motherId11);
+							CbmMCTrack* mothermctrack21n = (CbmMCTrack*)fMcTracks->At(motherId21);
 							
-							Int_t grandmotherId11 = mothermctrack11->GetMotherId();
-							Int_t grandmotherId21 = mothermctrack21->GetMotherId();
+							Int_t grandmotherId11n = mothermctrack11n->GetMotherId();
+							Int_t grandmotherId21n = mothermctrack21n->GetMotherId();
 							
-							if(grandmotherId11 == grandmotherId21) {
+							if(grandmotherId11n == grandmotherId21n) {
 								fhPhotons_invmass_MCcut2_new[index]->Fill(invmass);
 								fhPhotons_stats[index]->Fill(2);
-								if(grandmotherId11 == -1) continue;
-								CbmMCTrack* pi0mctrack11 = (CbmMCTrack*)fMcTracks->At(grandmotherId11);
+								if(grandmotherId11n == -1) continue;
+								CbmMCTrack* pi0mctrack11 = (CbmMCTrack*)fMcTracks->At(grandmotherId11n);
 								if(pi0mctrack11->GetMotherId() == -1) {
 									//fhPhotons_MC_motherIdCut->Fill(invmass);
 								}
 							}
-							if(grandmotherId11 != grandmotherId21) {
+							if(grandmotherId11n != grandmotherId21n) {
 								fhPhotons_invmass_MCcut3_new[index]->Fill(invmass);
 								fhPhotons_stats[index]->Fill(3);
 							}
