@@ -157,7 +157,7 @@ void matbudget_mc_phi(Int_t nEvents = 10000000, const char* stsGeo = "v15c")
   //  boxGen->SetBoxXYZ(-50.,-50.,50.,50.,0.);
   boxGen->SetXYZ(0.,0.,0.);
   boxGen->SetPRange(0.1,0.5);
-  boxGen->SetThetaRange(0.,25.);
+  boxGen->SetThetaRange(0.,40.);
   //  boxGen->SetThetaRange(2.5,25.);
   //  boxGen->SetThetaRange(0.,0.);
   boxGen->SetPhiRange(0.,360.);
