@@ -2,7 +2,7 @@
 #include "kdtree++/kdtree.hpp"
 #include <iostream>
 #include "base/CbmLitToolFactory.h"
-#include "utils/CbmLitConverter.h"
+#include "utils/CbmLitConverterFairTrackParam.h"
 
 using namespace std;
 
@@ -783,7 +783,7 @@ void LxSpace::JoinExtTracks()
       LxExtTrack* extTrack = &(*j);
       const FairTrackParam* lastL1Param = extTrack->track->GetParamLast();
       CbmLitTrackParam lastParam;
-      CbmLitConverter::FairTrackParamToCbmLitTrackParam(lastL1Param, &lastParam);
+      CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam(lastL1Param, &lastParam);
 
       if (kLITERROR == fPropagator->Propagate(&lastParam, stations[0]->zCoord, 13))
         continue;

@@ -79,7 +79,6 @@ set(SRCS
    cbm/reco/CbmLitFindGlobalTracks.cxx 
    cbm/reco/CbmLitFindGlobalTracksIdeal.cxx 
    cbm/reco/CbmLitFindGlobalTracksParallel.cxx
-   cbm/utils/CbmLitConverter.cxx
    cbm/utils/CbmLitConverterParallel.cxx
    cbm/qa/tracking/CbmLitTrackingQa.cxx
    cbm/qa/tracking/CbmLitTrackingQaStudyReport.cxx            

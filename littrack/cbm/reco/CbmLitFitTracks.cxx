@@ -6,6 +6,7 @@
 
 #include "CbmLitFitTracks.h"
 #include "base/CbmLitToolFactory.h"
+#include "cbm/utils/CbmLitConverterFairTrackParam.h"
 #include "cbm/utils/CbmLitConverter.h"
 #include "std/utils/CbmLitMemoryManagment.h"
 #include "base/CbmLitPtrTypes.h"
@@ -108,7 +109,7 @@ void CbmLitFitTracks::DoFit()
       Int_t stsTrackId = track->GetPreviousTrackId();
       CbmStsTrack* stsTrack = static_cast<CbmStsTrack*>(fStsTracks->At(stsTrackId));
       CbmLitTrackParam lpar;
-      CbmLitConverter::FairTrackParamToCbmLitTrackParam(stsTrack->GetParamLast(), &lpar);
+      CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam(stsTrack->GetParamLast(), &lpar);
       track->SetParamFirst(&lpar);
       track->SetPDG(211);
    }
@@ -125,8 +126,8 @@ void CbmLitFitTracks::DoFit()
       CbmLitTrack* track = ltracks[iTrack];
       CbmTrack* trdTrack = static_cast<CbmTrack*>(fTrdTracks->At(iTrack));
       FairTrackParam firstParam, lastParam;
-      CbmLitConverter::CbmLitTrackParamToFairTrackParam(track->GetParamFirst(), &firstParam);
-      CbmLitConverter::CbmLitTrackParamToFairTrackParam(track->GetParamLast(), &lastParam);
+      CbmLitConverterFairTrackParam::CbmLitTrackParamToFairTrackParam(track->GetParamFirst(), &firstParam);
+      CbmLitConverterFairTrackParam::CbmLitTrackParamToFairTrackParam(track->GetParamLast(), &lastParam);
       trdTrack->SetParamFirst(&firstParam);
       trdTrack->SetParamLast(&lastParam);
    }

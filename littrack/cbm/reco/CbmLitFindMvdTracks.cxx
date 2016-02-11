@@ -12,6 +12,7 @@
 #include "data/CbmLitTrack.h"
 #include "data/CbmLitTrackParam.h"
 #include "finder/CbmLitTrackFinderNN.h"
+#include "utils/CbmLitConverterFairTrackParam.h"
 #include "utils/CbmLitConverter.h"
 #include "utils/CbmLitMemoryManagment.h"
 
@@ -125,7 +126,7 @@ void CbmLitFindMvdTracks::ConvertOutputData()
       //track->SortMvdHits();
 
       FairTrackParam parFirst;
-      CbmLitConverter::CbmLitTrackParamToFairTrackParam(litTrack->GetParamLast(), &parFirst);
+      CbmLitConverterFairTrackParam::CbmLitTrackParamToFairTrackParam(litTrack->GetParamLast(), &parFirst);
       track->SetParamFirst(&parFirst);
    }
 }

@@ -14,7 +14,7 @@
 
 #include <cmath>
 #include "base/CbmLitToolFactory.h"
-#include "utils/CbmLitConverter.h"
+#include "utils/CbmLitConverterFairTrackParam.h"
 
 using namespace std;
 
@@ -2191,7 +2191,7 @@ void LxSpace::JoinExtTracks()
 
 #ifndef USE_OLD_STS_LINKING_RULE
       CbmLitTrackParam litLastParam;
-      CbmLitConverter::FairTrackParamToCbmLitTrackParam(lastParam, &litLastParam);
+      CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam(lastParam, &litLastParam);
 
       if (kLITERROR == fPropagator->Propagate(&litLastParam, stations[0]->zCoord, 13))
         continue;

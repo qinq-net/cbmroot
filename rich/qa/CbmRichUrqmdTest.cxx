@@ -142,7 +142,10 @@ void CbmRichUrqmdTest::InitHistograms()
     fHM->Create2<TH2D>("fh_hits_xy", "fh_hits_xy;x [cm];y [cm];Number of hits/cm^{2}/event", 240, -120, 120, 420, -210, 210);
     
     // bin size is set to 1.2 cm in order to cover 4 pixels, before drawing must be normalized by 1/4
-    fHM->Create2<TH2D>("fh_hitrate_xy", "fh_hitrate_xy;x [cm];y [cm];Number of hits/pixel/s", 200, -120, 120, 350, -210, 210);
+   // fHM->Create2<TH2D>("fh_hitrate_xy", "fh_hitrate_xy;x [cm];y [cm];Number of hits/pixel/s", 200, -120, 120, 350, -210, 210);
+    
+    // bin size is set to 2.4 cm in order to cover 16 pixels, before drawing must be normalized by 1/16
+     fHM->Create2<TH2D>("fh_hitrate_xy", "fh_hitrate_xy;x [cm];y [cm];Number of hits/pixel/s", 100, -120, 120, 175, -210, 210);
     
     fHM->Create1<TH1D>("fh_nof_proj_per_event", "fh_nof_proj_per_event;Number of tracks per event;Yield", 50, 0, 1000);
     fHM->Create2<TH2D>("fh_proj_xy", "fh_proj_xy;x [cm];y [cm];Number of tracks/cm^{2}/event", 240, -120, 120, 420, -210, 210);
@@ -509,7 +512,7 @@ void CbmRichUrqmdTest::DrawHist()
     
     {
         TCanvas *c = CreateCanvas("rich_urqmd_hitrate_xy", "rich_urqmd_hitrate_xy", 800, 800);
-        fHM->H2("fh_hitrate_xy")->Scale(1e7/(fEventNum * 4.));
+        fHM->H2("fh_hitrate_xy")->Scale(1e7/(fEventNum * 16.));
         CbmRichDraw::DrawPmtH2(fHM->H2("fh_hitrate_xy"), c);
     }
     

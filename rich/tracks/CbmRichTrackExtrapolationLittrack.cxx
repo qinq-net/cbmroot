@@ -7,7 +7,7 @@
 #include "CbmRichTrackExtrapolationLittrack.h"
 
 #include "propagation/CbmLitTGeoTrackPropagator.h"
-#include "cbm/utils/CbmLitConverter.h"
+#include "cbm/utils/CbmLitConverterFairTrackParam.h"
 #include "cbm/base/CbmLitToolFactory.h"
 
 #include "FairTrackParam.h"
@@ -69,14 +69,14 @@ void CbmRichTrackExtrapolationLittrack::DoExtrapolation(
         if ( NULL == pSTStr ) continue;
         
         CbmLitTrackParam litInParam, litOutParam;
-        CbmLitConverter::FairTrackParamToCbmLitTrackParam(pSTStr->GetParamLast(), &litInParam);
+        CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam(pSTStr->GetParamLast(), &litInParam);
         std::vector<litfloat> F(25);
         litfloat length = 0;
         
         fLitPropagator->Propagate(&litInParam, &litOutParam, z, 11, &F, &length);
         
         FairTrackParam outParam;
-        CbmLitConverter::CbmLitTrackParamToFairTrackParam(&litOutParam, &outParam);
+        CbmLitConverterFairTrackParam::CbmLitTrackParamToFairTrackParam(&litOutParam, &outParam);
         
         *(FairTrackParam*)(extrapolatedTrackParams->At(iTrack)) = outParam;
     }
