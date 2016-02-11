@@ -56,6 +56,10 @@ Int_t matbudget_ana_phi(Int_t nEvents=10000000, const char* stsGeo = "v15c")
   const int phiMax    = 180;      // maximal phi range for histograms
   const int thetaMax  = 50;       // maximal theta range for histograms
   //  const int radiusMax = 75;       // maximal radius for histograms
+  double phiSta[nStations];
+  double thetaSta[nStations];
+
+
   TProfile2D* hStaRadLen[nStations];
   for ( int i = 0; i < nStations; ++i ) {
     TString name = "Material Budget x/X_{0} [%],";
@@ -142,20 +146,26 @@ Int_t matbudget_ana_phi(Int_t nEvents=10000000, const char* stsGeo = "v15c")
       if ( iStationOut != iStation) continue;
       if ( iStation >= nStations || iStation < 0 ) continue;
 
-//      RadThick[iStation] += radThick;
-//      cout << " ->" << iStation << endl;
+      RadThick[iStation] += radThick;
+      phiSta[iStation]   = phi;
+      //      thetaSta[iStation] = theta;
+      thetaSta[iStation] = atan (radius / (iStation *10 + 30)) * 180 / acos(-1.);
 
-      hStaRadLen[iStation]->Fill( phi, theta, radThick*100 );
+//      cout << "i: " << iStation << " phi: " << phi << " z: " << z << " theta: " << theta
+//           << " correct: " << atan (radius / (iStation *10 + 30)) * 180 / acos(-1.) 
+//	   << " RadThick: " << RadThick[iStation]*100 << endl;
     }
     
-//    // Fill material budget map for each station
-//    for ( int i = 0; i < nStations; ++i )
-//    {
-//      //      hStaRadLen[i]->Fill( x, y, RadThick[i]*100 );
-//      hStaRadLen[i]->Fill( phi, theta, RadThick[i]*100 );
-//      //      hStaRadLen[i]->Fill( phi, radius, RadThick[i]*100 );
-//      cout << "AA phi: " << phi << " theta: " << theta << endl;
-//    }
+    // Fill material budget map for each station
+    for ( int i = 0; i < nStations; ++i )
+    {
+      //      hStaRadLen[i]->Fill( x, y, RadThick[i]*100 );
+      //      hStaRadLen[i]->Fill( phi, theta, RadThick[i]*100 );
+      hStaRadLen[i]->Fill( phiSta[i], thetaSta[i], RadThick[i]*100 );
+      //      hStaRadLen[i]->Fill( phi, radius, RadThick[i]*100 );
+
+      //      cout << "AA phi: " << phi << " theta: " << theta << endl;
+    }
     
     for (int k = 0; k < RadLengthOnTrack.size(); k++)
       if (RadLengthOnTrack[k] > 0)
@@ -182,11 +192,12 @@ Int_t matbudget_ana_phi(Int_t nEvents=10000000, const char* stsGeo = "v15c")
 //    hStaRadLen[iStation]->GetXaxis()->SetTitle("x [cm]");
 //    hStaRadLen[iStation]->GetYaxis()->SetTitle("y [cm]");
     hStaRadLen[iStation]->GetXaxis()->SetTitle("phi [deg]");
-    //    hStaRadLen[iStation]->GetYaxis()->SetTitle("theta [deg]");
-    hStaRadLen[iStation]->GetYaxis()->SetTitle("radius [cm]");
+    hStaRadLen[iStation]->GetYaxis()->SetTitle("theta [deg]");
+    //    hStaRadLen[iStation]->GetYaxis()->SetTitle("radius [cm]");
     //hStaRadLen[iStation]->GetZaxis()->SetTitle("x/X_{0} [%]");
     //hStaRadLen[i]->GetZaxis()->SetTitle("radiation thickness [%]");
-    hStaRadLen[iStation]->SetAxisRange(0, 2, "Z");
+    hStaRadLen[iStation]->SetAxisRange(0, 1.2, "Z");
+    //    hStaRadLen[iStation]->SetAxisRange(0, 2, "Z");
     hStaRadLen[iStation]->Draw("colz");
     hStaRadLen[iStation]->Write();
   }
