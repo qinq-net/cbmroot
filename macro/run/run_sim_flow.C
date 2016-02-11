@@ -11,10 +11,74 @@
 
 // TO CHECK in the code: IMPORTANT NOTE
 
-void run_sim_flow(Int_t nEvents = 2, Int_t En=25, const char* setup = "sis300_electron")
+void run_sim_flow(Int_t nEvents = 2, Int_t En=25, const char* setupName = "sis300_electron_flow", const char* inputFile ="")
 {
+  // The energy is needed in the setup file to define the field scale
+  // and the psd position
+  TString energy = Form("%i", En);
+  gSystem->Setenv("BEAM_ENERGY",energy);
   // ========================================================================
   //          Adjust this part according to your requirements
+
+  // -----   Environment   --------------------------------------------------
+  TString myName = "run_sim";  // this macro's name for screen output
+  TString srcDir = gSystem->Getenv("VMCWORKDIR");  // top source directory
+  // ------------------------------------------------------------------------
+
+
+  // -----   In- and output file names   ------------------------------------
+  TString inFile = ""; // give here or as argument; otherwise default is taken
+  TString outDir  = "data/";
+  TString outFile = outDir + setupName + "_mc_evt.root";
+  TString parFile = outDir + setupName + "_params_evt.root";
+  TString geoFile = outDir + setupName + "_geofile_full_evt.root";
+  // ------------------------------------------------------------------------
+
+
+  // --- Logger settings ----------------------------------------------------
+  TString logLevel     = "INFO";  
+  TString logVerbosity = "LOW";
+  // ------------------------------------------------------------------------
+
+
+  // --- Define the target geometry -----------------------------------------
+  //
+  // The target is not part of the setup, since one and the same setup can
+  // and will be used with different targets.
+  // The target is constructed as a tube in z direction with the specified
+  // diameter (in x and y) and thickness (in z). It will be placed at the
+  // specified position as daughter volume of the volume present there. It is
+  // in the responsibility of the user that no overlaps or extrusions are
+  // created by the placement of the target.
+  //
+  TString  targetElement   = "Gold";
+  Double_t targetThickness = 0.025;  // full thickness in cm
+  Double_t targetDiameter  = 2.5;    // diameter in cm
+  Double_t targetPosX      = 0.;     // target x position in global c.s. [cm]
+  Double_t targetPosY      = 0.;     // target y position in global c.s. [cm]
+  Double_t targetPosZ      = 0.;     // target z position in global c.s. [cm]
+  Double_t targetRotY      = 0.;     // target rotation angle around the y axis [deg]
+  // ------------------------------------------------------------------------
+
+
+  // --- Define the creation of the primary vertex   ------------------------
+  //
+  // By default, the primary vertex point is sampled from a Gaussian
+  // distribution in both x and y with the specified beam profile width,
+  // and from a flat distribution in z over the extension of the target.
+  // By setting the respective flags to kFALSE, the primary vertex will always
+  // at the (0., 0.) in x and y and in the z centre of the target, respectively.
+  //
+  Bool_t smearVertexXY = kTRUE;
+  Bool_t smearVertexZ  = kTRUE;
+  Double_t beamWidthX   = 1.;  // Gaussian sigma of the beam profile in x [cm]
+  Double_t beamWidthY   = 1.;  // Gaussian sigma of the beam profile in y [cm]
+  // ------------------------------------------------------------------------
+
+
+  // In general, the following parts need not be touched
+  // ========================================================================
+
 
   // if kbeam==kTRUE, transport the beam for estimating required PSD x-shift
   // if kbeam==kFALSE, transport particles from input models, 
@@ -22,214 +86,106 @@ void run_sim_flow(Int_t nEvents = 2, Int_t En=25, const char* setup = "sis300_el
   bool kbeam = kFALSE;
   Int_t gen = 0;
 
-  cout << "gen = " << gen << endl;
-
-//  Float_t psdZpos = 800.;   // (in cm); default: 8m at SIS100, 15m at SIS300
-
-  TString numEvt = "";
-  numEvt.Form("%04i", nEvents);
-
-  // ----- Paths and file names  --------------------------------------------
-
-  TString inputDir = gSystem->Getenv("VMCWORKDIR");
-
-  TString outDir = "./data/";
-  TString outFile = outDir + "mc_" + numEvt +  "evt.root";
-  TString parFile = outDir + "params_" + numEvt +  "evt.root";
-
-  TString setupFile = inputDir + "/geometry/setup/" + setup + "_setup.C";
-  TString setupFunct = setup;
-  setupFunct += "_setup()";
-  
-  gROOT->LoadMacro(setupFile);
-  gInterpreter->ProcessLine(setupFunct);
-
-  // UNIGEN data format for UrQMD
-  TString inFile;
-  inFile.Form("%s/input/urqmd.auau.%igev.mbias.root", inputDir.Data(), En);
-
-  cout << "inFile: " << inFile << endl;
-  cout << "outFile: " << outFile << endl;
-
-  // -----  Overwrite geometries defined in setup ----------------------
-  pipeGeom   = "pipe/pipe_v14c.root";
-  mvdGeom    = "";
-  richGeom   = "";
-  trdGeom    = "";
-  tofGeom    = "";
-
-  CbmTarget* target = new CbmTarget("Gold", 0.025);
-
-  cout << "STS geo : " << stsGeom << endl;
-
-  // -----   Magnetic field   -----------------------------------------------
-  // field scaling factor
-  if (En == 35) fieldScale = 1.;
-  if (En == 25) fieldScale = 1.;
-  if (En == 15) fieldScale = 1.;
-  if (En == 10) fieldScale = 1.;             
-  if (En == 8)  fieldScale = 0.818;
-  if (En == 6)  fieldScale = 0.632;
-  if (En == 4)  fieldScale = 0.632;    
-  if (En == 2)  fieldScale = 0.5; 
-
-  cout << "Field scaling factor: " << fieldScale << endl;
-
-  // In general, the following parts need not be touched
-  // ========================================================================
-
-  // ----    Debug option   -------------------------------------------------
-  gDebug = 0;
-  // ------------------------------------------------------------------------
-
   // -----   Timer   --------------------------------------------------------
   TStopwatch timer;
   timer.Start();
   // ------------------------------------------------------------------------
 
+
+  // ----    Debug option   -------------------------------------------------
+  gDebug = 0;
+  // ------------------------------------------------------------------------
+
+  
+  // -----   Remove old CTest runtime dependency file   ---------------------
+  TString depFile = Remove_CTest_Dependency_File(outDir, "run_sim" , setupName);
+  // ------------------------------------------------------------------------
+
+
+
   // -----   Create simulation run   ----------------------------------------
-  FairRunSim* fRun = new FairRunSim();
-  fRun->SetName("TGeant4");              // Transport engine
+  FairRunSim* run = new FairRunSim();
+  run->SetName("TGeant4");              // Transport engine
                                          // IMPORTANT NOTE: need G4 for hadronic calorimetry in PSD including projectile fragments (produced in SHIELD)
                                          // IMPORTANT NOTE: change physics list (in gconfig/g4Config.C) to either FTFP_BERT or QGSP_BIC_HP (both tested)
-  fRun->SetOutputFile(outFile);          // Output file
-  fRun->SetGenerateRunInfo(kTRUE);       // Create FairRunInfo file
-  FairRuntimeDb* rtdb = fRun->GetRuntimeDb();
+  run->SetOutputFile(outFile);          // Output file
+  run->SetGenerateRunInfo(kTRUE);       // Create FairRunInfo file
+  // ------------------------------------------------------------------------
+
+
+  // -----   Logger settings   ----------------------------------------------
+  gLogger->SetLogScreenLevel(logLevel.Data());
+  gLogger->SetLogVerbosityLevel(logVerbosity.Data());
+  // ------------------------------------------------------------------------
+
+
+  // -----   Load the geometry setup   -------------------------------------
+  std::cout << std::endl;
+  TString setupFile = srcDir + "/geometry/setup/setup_" + setupName + ".C";
+  TString setupFunct = "setup_";
+  setupFunct = setupFunct + setupName + "()";
+  std::cout << "-I- " << myName << ": Loading macro " << setupFile << std::endl;
+  gROOT->LoadMacro(setupFile);
+  gROOT->ProcessLine(setupFunct);
+  // ------------------------------------------------------------------------
+
+
+  // -----   Input file   ---------------------------------------------------
+  std::cout << std::endl;
+  TString defaultInputFile = srcDir + "/input/urqmd.auau.25gev.centr.root";
+  if ( inFile.IsNull() ) {  // Not defined in the macro explicitly
+  	if ( strcmp(inputFile, "") == 0 ) {  // not given as argument to the macro
+  		inFile = defaultInputFile;
+  	}
+  	else inFile = inputFile;
+  }
+  std::cout << "-I- " << myName << ": Using input file " << inFile << std::endl;
   // ------------------------------------------------------------------------
 
 
   // -----   Create media   -------------------------------------------------
-  fRun->SetMaterials("media.geo");       // Materials
+  std::cout << std::endl;
+  std::cout << "-I- " << myName << ": Setting media file" << std::endl;
+  run->SetMaterials("media.geo");       // Materials
   // ------------------------------------------------------------------------
 
 
-  // -----   Create detectors and passive volumes   -------------------------
-  if ( caveGeom != "" ) {
-    FairModule* cave = new CbmCave("CAVE");
-    cave->SetGeometryFileName(caveGeom);
-    fRun->AddModule(cave);
+  // -----   Create and register modules   ----------------------------------
+  std::cout << std::endl;
+  TString macroName = gSystem->Getenv("VMCWORKDIR");
+  macroName += "/macro/run/modules/registerSetup.C";
+  std::cout << "Loading macro " << macroName << std::endl;
+  gROOT->LoadMacro(macroName);
+  gROOT->ProcessLine("registerSetup()");
+  // ------------------------------------------------------------------------
+
+
+  // -----   Create and register the target   -------------------------------
+  std::cout << std::endl;
+  std::cout << "-I- " << myName << ": Registering target" << std::endl;
+  CbmTarget* target = new CbmTarget(targetElement.Data(),
+  		                              targetThickness,
+  		                              targetDiameter);
+  target->SetPosition(targetPosX, targetPosY, targetPosZ);
+  target->SetRotation(targetRotY);
+  target->Print();
+  run->AddModule(target);
+  // ------------------------------------------------------------------------
+
+
+  // -----   Create magnetic field   ----------------------------------------
+  std::cout << std::endl;
+  std::cout << "-I- " << myName << ": Registering magnetic field" << std::endl;
+  CbmFieldMap* magField = CbmSetup::Instance()->CreateFieldMap();
+  if ( ! magField ) {
+  	std::cout << "-E- run_sim_new: No valid field!";
+  	return;
   }
+  run->SetField(magField);
+  // ------------------------------------------------------------------------
 
-  if ( pipeGeom != "" ) {
-    FairModule* pipe = new CbmPipe("PIPE");
-    pipe->SetGeometryFileName(pipeGeom);
-    fRun->AddModule(pipe);      
-  }
-  
-  if ( target ) fRun->AddModule(target);
 
-  if ( magnetGeom != "" ) {
-    FairModule* magnet = new CbmMagnet("MAGNET");
-    magnet->SetGeometryFileName(magnetGeom);
-    fRun->AddModule(magnet);
-  }
-  
-  if ( mvdGeom != "" ) {
-    FairDetector* mvd = new CbmMvd("MVD", kTRUE);
-    mvd->SetGeometryFileName(mvdGeom);
-    mvd->SetMotherVolume("pipevac1");
-    fRun->AddModule(mvd);
-  }
-
-  if ( stsGeom != "" ) {
-    FairDetector* sts = new CbmStsMC(kTRUE);
-    sts->SetGeometryFileName(stsGeom);
-    fRun->AddModule(sts);
-  }
-
-  if ( richGeom != "" ) {
-    FairDetector* rich = new CbmRich("RICH", kTRUE);
-    rich->SetGeometryFileName(richGeom);
-    fRun->AddModule(rich);
-  }
-  
-
-  if ( trdGeom != "" ) {
-    FairDetector* trd = new CbmTrd("TRD",kTRUE );
-    trd->SetGeometryFileName(trdGeom);
-    fRun->AddModule(trd);
-  }
-
-  if ( tofGeom != "" ) {
-    FairDetector* tof = new CbmTof("TOF", kTRUE);
-    tof->SetGeometryFileName(tofGeom);
-    fRun->AddModule(tof);
-  }
-  
-  if ( ecalGeom != "" ) {
-    FairDetector* ecal = new CbmEcal("ECAL", kTRUE, ecalGeom.Data()); 
-    fRun->AddModule(ecal);
-  }
-
-  // ======== PSD part
-
-  // PSD X-shift (in cm) vs evergy (2, 4, 6, 10, 15, 25, 35) AGeV vs Z-position (6, 8, 10, 15)m
-  Float_t psdXshiftvsZ[7][4];
-  Float_t psdXshift;
-  int energy_ind;
-  int distance_ind;
-
-  // WARNING: PSD X-shift below given for field v10e !!
-
-  // 2 agev
-  psdXshiftvsZ[0][0] = 21.4;   // 8m
-  psdXshiftvsZ[0][1] = 27.3;   // 10m
-  psdXshiftvsZ[0][2] = 33.1;   // 12m
-  psdXshiftvsZ[0][3] = 41.9;   // 15m
-
-  // 4 agev
-  psdXshiftvsZ[1][0] = 15.5;
-  psdXshiftvsZ[1][1] = 19.8;
-  psdXshiftvsZ[1][2] = 24;
-  psdXshiftvsZ[1][3] = 30.4;
-
-  // 6 agev
-  psdXshiftvsZ[2][0] = 10.9;
-  psdXshiftvsZ[2][1] = 13.9;
-  psdXshiftvsZ[2][2] = 16.9;
-  psdXshiftvsZ[2][3] = 21.4;
-
-  // 10 agev
-  psdXshiftvsZ[3][0] = 10.9;
-  psdXshiftvsZ[3][1] = 13.9;
-  psdXshiftvsZ[3][2] = 16.9;
-  psdXshiftvsZ[3][3] = 21.4;
-
-  // 15 agev
-  psdXshiftvsZ[4][0] = 7.5;
-  psdXshiftvsZ[4][1] = 9.5;
-  psdXshiftvsZ[4][2] = 11.6;
-  psdXshiftvsZ[4][3] = 14.7;
-
-  // 25 agev
-  psdXshiftvsZ[5][0] = 4.6;
-  psdXshiftvsZ[5][1] = 5.8;
-  psdXshiftvsZ[5][2] = 7.1;
-  psdXshiftvsZ[5][3] = 9;
-
-  // 35 agev
-  psdXshiftvsZ[6][0] = 3.3;
-  psdXshiftvsZ[6][1] = 4.2;
-  psdXshiftvsZ[6][2] = 5.1;
-  psdXshiftvsZ[6][3] = 6.5;
-
-  
-
-  if (En == 2) energy_ind = 0;
-  if (En == 4) energy_ind = 1;
-  if (En == 6) energy_ind = 2;
-  if (En == 10) energy_ind = 3;
-  if (En == 15) energy_ind = 4;
-  if (En == 25) energy_ind = 5;
-  if (En == 35) energy_ind = 6;
-
-  if (psdZpos == 800.) distance_ind = 0;
-  if (psdZpos == 1000.) distance_ind = 1;
-  if (psdZpos == 1200.) distance_ind = 2;
-  if (psdZpos == 1500.) distance_ind = 3;
-
-  psdXshift = psdXshiftvsZ[energy_ind][distance_ind];
-
+  /*
   CbmPsdv1_44mods_hole6cm* psd= new CbmPsdv1_44mods_hole6cm("PSD", kTRUE);
 
   // ========= Acceptance PSD & FD method
@@ -241,31 +197,46 @@ void run_sim_flow(Int_t nEvents = 2, Int_t En=25, const char* setup = "sis300_el
   TString geoFileNamePsd = outDir + "psd_geo_xy_" + numEvt + "evt.txt";
   psd->SetGeoFile(geoFileNamePsd);
   fRun->AddModule(psd);
-
+  */
   // ------------------------------------------------------------------------
 
-  // -----   Create magnetic field   ----------------------------------------
-  CbmFieldMap* magField = new CbmFieldMapSym3(fieldMap);
-  magField->SetPosition(0., 0., fieldZ);
-  magField->SetScale(fieldScale);
-  fRun->SetField(magField);
-  // ------------------------------------------------------------------------
-
-  // Use theexperiment specific MC Event header instead of the default one
-  // This one stores additional information about the reaction plane
-  CbmMCEventHeader* mcHeader = new CbmMCEventHeader();
-  fRun->SetMCEventHeader(mcHeader);
 
   // -----   Create PrimaryGenerator   --------------------------------------
+  std::cout << std::endl;
+  std::cout << "-I- " << myName << ": Registering event generators" << std::endl;
   FairPrimaryGenerator* primGen = new FairPrimaryGenerator();
+  // --- Uniform distribution of event plane angle
+  primGen->SetEventPlane(-TMath::Pi(), TMath::Pi());
+  // --- Get target parameters
+  Double_t tX = 0.;
+  Double_t tY = 0.;
+  Double_t tZ = 0.;
+  Double_t tDz = 0.;
+  if ( target ) {
+  	target->GetPosition(tX, tY, tZ);
+  	tDz = target->GetThickness();
+  }
+  primGen->SetTarget(tZ, tDz);
+  primGen->SetBeam(0., 0., beamWidthX, beamWidthY);
+  primGen->SmearGausVertexXY(smearVertexXY);
+  primGen->SmearVertexZ(smearVertexZ);
+   // Include beam emittance
+   //primGen->SmearVertexZ(kTRUE);
+   //primGen->SmearVertexXY(kTRUE);
+   //primGen->SetBeam(0., 0., 0.15, 0.06, 2.2e-3, 2e-3); // emittance (SIS100) @ 10 AGeV ~ 2.2 mm.mrad (X) -> deltaX = +/- 1 mm && thetaX = +/- 2.2 mrad
+
+  //
+  // TODO: Currently, there is no guaranteed consistency of the beam profile
+  // and the transversal target dimension, i.e., that the sampled primary
+  // vertex falls into the target volume. This would require changes
+  // in the FairPrimaryGenerator class.
+  // ------------------------------------------------------------------------
 
   if (kbeam == kFALSE) {
     
     CbmUnigenGenerator*  urqmdGen = new CbmUnigenGenerator(inFile);
-    urqmdGen->SetEventPlane(-TMath::Pi(), TMath::Pi());
     // IMPORTANT NOTE: event plane angle in [-pi, pi] by convention
-    // TO DO: rotation should be done in FairPrimaryGenerator, not from UnigenGenerator -> same for all event generators
-    
+    // rotation is done in FairPrimaryGenerator    
     primGen->AddGenerator(urqmdGen);
   } else {
     
@@ -289,23 +260,21 @@ void run_sim_flow(Int_t nEvents = 2, Int_t En=25, const char* setup = "sis300_el
     nEvents = 1;
   }
 
-   // Include beam emittance
-   //primGen->SmearVertexZ(kTRUE);
-   //primGen->SmearVertexXY(kTRUE);
-   //primGen->SetBeam(0., 0., 0.15, 0.06, 2.2e-3, 2e-3); // emittance (SIS100) @ 10 AGeV ~ 2.2 mm.mrad (X) -> deltaX = +/- 1 mm && thetaX = +/- 2.2 mrad
-
-  fRun->SetGenerator(primGen);
+  run->SetGenerator(primGen);
   // ------------------------------------------------------------------------
+
  
   // -Trajectories Visualization (TGeoManager Only )
   // Switch this on if you want to visualize tracks in the
   // eventdisplay.
   // This is normally switch off, because of the huge files created
   // when it is switched on. 
-  // fRun->SetStoreTraj(kTRUE);
+  // run->SetStoreTraj(kTRUE);
 
   // -----   Run initialisation   -------------------------------------------
-  fRun->Init();
+  std::cout << std::endl;
+  std::cout << "-I- " << myName << ": Initialise run" << std::endl;
+  run->Init();
   // ------------------------------------------------------------------------
   
   // Set cuts for storing the trajectories.
@@ -322,14 +291,17 @@ void run_sim_flow(Int_t nEvents = 2, Int_t En=25, const char* setup = "sis300_el
   // trajFilter->SetStoreSecondaries(kTRUE);
 
   CbmStack* stack = (CbmStack*) FairMCApplication::Instance()->GetStack();
-  //stack->SetMinPoints(0);                                                    //======== BTW, ask Volker if SetMinPoints & StoreSecondaries can be set indep. for diff. detector
+  //stack->SetMinPoints(0);
   //stack->StoreSecondaries(kFALSE);
 
   // -----   Runtime database   ---------------------------------------------
+  std::cout << std::endl << std::endl;
+  std::cout << "-I- " << myName << ": Set runtime DB" << std::endl;
+  FairRuntimeDb* rtdb = run->GetRuntimeDb();
   CbmFieldPar* fieldPar = (CbmFieldPar*) rtdb->getContainer("CbmFieldPar");
   fieldPar->SetParameters(magField);
   fieldPar->setChanged();
-  fieldPar->setInputVersion(fRun->GetRunId(),1);
+  fieldPar->setInputVersion(run->GetRunId(),1);
   Bool_t kParameterMerged = kTRUE;
   FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
   parOut->open(parFile.Data());
@@ -340,27 +312,49 @@ void run_sim_flow(Int_t nEvents = 2, Int_t En=25, const char* setup = "sis300_el
 
  
   // -----   Start run   ----------------------------------------------------
-  fRun->Run(nEvents);
-  
+  std::cout << std::endl << std::endl;
+  std::cout << "-I- " << myName << ": Starting run" << std::endl;
+  run->Run(nEvents);
   // ------------------------------------------------------------------------
-  //TString geoFileName = outDir + "geo/geofile_" + numEvt + "evt_" + sfileNum + ".root"; 
-  //fRun->CreateGeometryFile(geoFileName);
 
+  
   // -----   Finish   -------------------------------------------------------
+  run->CreateGeometryFile(geoFile);
   timer.Stop();
   Double_t rtime = timer.RealTime();
   Double_t ctime = timer.CpuTime();
-  cout << endl << endl;
-  cout << "Macro finished succesfully." << endl;
-  cout << "Output file is "    << outFile << endl;
-  cout << "Parameter file is " << parFile << endl;
-  cout << "Real time " << rtime << " s, CPU time " << ctime 
-       << "s" << endl << endl;
+  std::cout << std::endl << std::endl;
+  std::cout << "Macro finished successfully." << std::endl;
+  std::cout << "Output file is "    << outFile << std::endl;
+  std::cout << "Parameter file is " << parFile << std::endl;
+  std::cout << "Geometry file is "  << geoFile << std::endl;
+  std::cout << "Real time " << rtime << " s, CPU time " << ctime 
+	    << "s" << std::endl << std::endl;
   // ------------------------------------------------------------------------
 
-  cout << " Test passed" << endl;
-  cout << " All ok " << endl;
 
-  //gApplication->Terminate();
+  // -----   Resource monitoring   ------------------------------------------
+  if ( Has_Fair_Monitor() ) {      // FairRoot Version >= 15.11
+    // Extract the maximal used memory an add is as Dart measurement
+    // This line is filtered by CTest and the value send to CDash
+    FairSystemInfo sysInfo;
+    Float_t maxMemory=sysInfo.GetMaxMemory();
+    std::cout << "<DartMeasurement name=\"MaxMemory\" type=\"numeric/double\">";
+    std::cout << maxMemory;
+    std::cout << "</DartMeasurement>" << std::endl;
+
+    Float_t cpuUsage=ctime/rtime;
+    std::cout << "<DartMeasurement name=\"CpuLoad\" type=\"numeric/double\">";
+    std::cout << cpuUsage;
+    std::cout << "</DartMeasurement>" << std::endl;
+  }
+
+  std::cout << " Test passed" << std::endl;
+  std::cout << " All ok " << std::endl;
+
+  // Function needed for CTest runtime dependency
+  Generate_CTest_Dependency_File(depFile);
+  // ------------------------------------------------------------------------
+
 }
 
