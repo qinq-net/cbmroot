@@ -174,7 +174,7 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v15c")
   can2->cd();
   hStsRadLen->GetXaxis()->SetTitle("x [cm]");
   hStsRadLen->GetYaxis()->SetTitle("y [cm]");
-  hStsRadLen->SetAxisRange(0, zRange * 8, "Z");
+  hStsRadLen->SetAxisRange(0, 10, "Z");
   hStsRadLen->Draw("colz");
 
   // Plot file
