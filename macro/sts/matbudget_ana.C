@@ -56,6 +56,7 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v15c")
   const double zRange = 1.4;
   TProfile2D* hStaRadLen[nStations];
   TProfile2D* hStsRadLen;
+  double StsRadThick = 0;
   
   TString stsname = "Material Budget x/X_{0} [%], STS";
     hStsRadLen = new TProfile2D(stsname, stsname, nBins,-rMax, rMax, nBins,-rMax, rMax);
@@ -118,12 +119,15 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v15c")
       RadThick[iStation] += radThick;
     }
     
+    StsRadThick = 0;
     // Fill material budget map for each station
     for ( int i = 0; i < nStations; ++i )
     {
       hStaRadLen[i]->Fill( x, y, RadThick[i]*100 );
-      hStsRadLen->Fill( x, y, RadThick[i]*100 );
+      StsRadThick += RadThick[i];
     }
+
+    hStsRadLen->Fill( x, y, StsRadThick*100 );
     
     for (int k = 0; k < RadLengthOnTrack.size(); k++)
       if (RadLengthOnTrack[k] > 0)
@@ -170,7 +174,7 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v15c")
   can2->cd();
   hStsRadLen->GetXaxis()->SetTitle("x [cm]");
   hStsRadLen->GetYaxis()->SetTitle("y [cm]");
-  hStsRadLen->SetAxisRange(0, zRange, "Z");
+  hStsRadLen->SetAxisRange(0, zRange * 8, "Z");
   hStsRadLen->Draw("colz");
 
   // Plot file
@@ -184,7 +188,7 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v15c")
   for ( int iStation = 0; iStation < nStations; iStation++) {
     hStaRadLen[iStation]->Draw("colz");
     // Plot file
-    thisStation.Form("%d",iStation);
+    thisStation.Form("%d",iStation+1);
     plotFile = "sts_" + stsVersion + "_station_" + thisStation + "_matbudget.png";
     can2->SaveAs(plotFile);
   }
