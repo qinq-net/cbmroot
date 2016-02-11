@@ -241,7 +241,7 @@ void CbmTrdSetTracksPidLike::Exec(Option_t*) {
 
   Int_t nTracks = fglobalTrackArray->GetEntriesFast();
   //Int_t nTracks = fTrackArray->GetEntriesFast();
-  cout << nTracks <<" global tracks" << endl;
+  //  cout << nTracks <<" global tracks" << endl;
 
   for (Int_t iTrack=0; iTrack<nTracks; iTrack++) {
 
@@ -283,10 +283,10 @@ void CbmTrdSetTracksPidLike::Exec(Option_t*) {
     //    cout <<"Trd Hits: "<< pTrack->GetNofTrdHits() << endl;
 
     // Up to now only for tracks with twelve hits the Like can be calculated
-    if (pTrack->GetNofHits() < 12 ) {
-      fNofTracks++;
-      continue;
-    }
+    // if (pTrack->GetNofHits() < 12 ) {
+    //   fNofTracks++;
+    //   continue;
+    // }
 
 
 
