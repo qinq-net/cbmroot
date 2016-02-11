@@ -11,9 +11,9 @@
 //
 // --------------------------------------------------------------------------
 
-//void matbudget_mc(const char* stsGeo, Int_t nEvents = 10)
-//void matbudget_mc_phi(const char* stsGeo, Int_t nEvents = 10000000)
-void matbudget_mc_phi(const char* stsGeo = "v15c", Int_t nEvents = 10000000)
+//void matbudget_mc_phi(Int_t nEvents = 10      , const char* stsGeo = "v15c")
+//void matbudget_mc_phi(Int_t nEvents = 1000000 , const char* stsGeo = "v15c")
+void matbudget_mc_phi(Int_t nEvents = 10000000, const char* stsGeo = "v15c")
 {
 
   // ========================================================================
@@ -150,11 +150,15 @@ void matbudget_mc_phi(const char* stsGeo = "v15c", Int_t nEvents = 10000000)
   // Generated are ROOTinos (PDG=0) in z direction (one per event),
   // starting at z = 0.
   // The starting points in x and y are chosen such as to illuminate the STS.
-  FairBoxGenerator* boxGen = new FairBoxGenerator(0, 1);
-  boxGen->SetBoxXYZ(-50.,-50.,50.,50.,0.);
-  //  boxGen->SetXYZ(0.,0.,0.);
+  Int_t    pdgId        = 0;    // ROOTinos
+  Int_t    multiplicity = 1;    // particles per event
+  FairBoxGenerator* boxGen = new FairBoxGenerator(pdgId, multiplicity);
+
+  //  boxGen->SetBoxXYZ(-50.,-50.,50.,50.,0.);
+  boxGen->SetXYZ(0.,0.,0.);
   boxGen->SetPRange(0.1,0.5);
-  boxGen->SetThetaRange(2.5,25);
+  boxGen->SetThetaRange(0.,25.);
+  //  boxGen->SetThetaRange(2.5,25.);
   //  boxGen->SetThetaRange(0.,0.);
   boxGen->SetPhiRange(0.,360.);
   
