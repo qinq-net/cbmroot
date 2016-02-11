@@ -569,7 +569,7 @@ void CbmAnaConversionRecoFull::InitHistos()
 		fhPhotons_invmass_MCcut7_new[i] = new TH1D(Form("fhPhotons_invmass_MCcut7_new_%i",i), Form("fhPhotons_invmass_MCcut7_new_%i (MC-true cut: wrong combination of electrons); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcut7_new[i]);
 		
-		fhPhotons_invmass_MCcutAll_new[i] = new TH2D(Form("fhPhotons_invmass_MCcutAll_new_%i",i), Form("fhPhotons_invmass_MCcutAll_new_%i; case; invmass",i), 10, 0., 10., invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
+		fhPhotons_invmass_MCcutAll_new[i] = new TH2D(Form("fhPhotons_invmass_MCcutAll_new_%i",i), Form("fhPhotons_invmass_MCcutAll_new_%i; case; invmass",i), 15, 0., 15., invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
 		fHistoList_recofull_new[i].push_back(fhPhotons_invmass_MCcutAll_new[i]);
 		
 		fhPhotons_invmass_MCcutTest_new[i] = new TH1D(Form("fhPhotons_invmass_MCcutTest_new_%i",i), Form("fhPhotons_invmass_MCcutTest_new_%i (MC-true cut: test); invariant mass of 4 e^{#pm} in GeV/c^{2}; #",i), invmassSpectra_nof, invmassSpectra_start, invmassSpectra_end);
@@ -1602,7 +1602,7 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 					if(mothermctrack21 != NULL) motherpdg21 = mothermctrack21->GetPdgCode();
 				//	if(mothermctrack22 != NULL) motherpdg22 = mothermctrack22->GetPdgCode();
 					
-				/*	Int_t grandmotherId11 = -2;		// grandmotherIDs of four leptons
+					Int_t grandmotherId11 = -2;		// grandmotherIDs of four leptons
 					Int_t grandmotherId12 = -2;
 					Int_t grandmotherId21 = -2;
 					Int_t grandmotherId22 = -2;
@@ -1610,32 +1610,38 @@ void CbmAnaConversionRecoFull::CombinePhotons(vector<CbmGlobalTrack*> gtrack, ve
 					if(mothermctrack12 != NULL) grandmotherId12 = mothermctrack12->GetMotherId();
 					if(mothermctrack21 != NULL) grandmotherId21 = mothermctrack21->GetMotherId();
 					if(mothermctrack22 != NULL) grandmotherId22 = mothermctrack22->GetMotherId();
-				*/	
+					
 					
 					
 					if(motherId11 == motherId12 && motherId21 == motherId22) {		// both combined e+e- pairs come from the same mother (which can be gamma, pi0, or whatever)
 						fhPhotons_invmass_MCcutAll_new[index]->Fill(1, invmass);
 						if(TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22) {
-							fhPhotons_invmass_MCcutAll_new[index]->Fill(1, invmass);
-						}
-						if( (TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 111) || (TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 22) ) {
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(2, invmass);
 						}
-						if(TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 111) {
+						if( (TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 111) || (TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 22) ) {
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(3, invmass);
 						}
-						if( (TMath::Abs(motherpdg11) != 22 && TMath::Abs(motherpdg11) != 111) || (TMath::Abs(motherpdg21) != 22 && TMath::Abs(motherpdg21) != 111) ) {
+						if(TMath::Abs(motherpdg11) == 111 && TMath::Abs(motherpdg21) == 111) {
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(4, invmass);
 						}
-						if(TMath::Abs(motherpdg11) != 22 && TMath::Abs(motherpdg11) != 111 && TMath::Abs(motherpdg21) != 22 && TMath::Abs(motherpdg21) != 111) {
+						if( (TMath::Abs(motherpdg11) != 22 && TMath::Abs(motherpdg11) != 111) || (TMath::Abs(motherpdg21) != 22 && TMath::Abs(motherpdg21) != 111) ) {
 							fhPhotons_invmass_MCcutAll_new[index]->Fill(5, invmass);
+						}
+						if(TMath::Abs(motherpdg11) != 22 && TMath::Abs(motherpdg11) != 111 && TMath::Abs(motherpdg21) != 22 && TMath::Abs(motherpdg21) != 111) {
+							fhPhotons_invmass_MCcutAll_new[index]->Fill(6, invmass);
+						}
+						if(grandmotherId11 == grandmotherId21) {
+							fhPhotons_invmass_MCcutAll_new[index]->Fill(7, invmass);
+						}
+						if(grandmotherId11 == grandmotherId21 && TMath::Abs(motherpdg11) == 22 && TMath::Abs(motherpdg21) == 22) {
+							fhPhotons_invmass_MCcutAll_new[index]->Fill(8, invmass);
 						}
 					}
 					if( (motherId11 == motherId12 && motherId21 != motherId22) || (motherId11 != motherId12 && motherId21 == motherId22) ) {
-						fhPhotons_invmass_MCcutAll_new[index]->Fill(6, invmass);
+						fhPhotons_invmass_MCcutAll_new[index]->Fill(9, invmass);
 					}
 					if(motherId11 != motherId12 && motherId21 != motherId22) {
-						fhPhotons_invmass_MCcutAll_new[index]->Fill(7, invmass);
+						fhPhotons_invmass_MCcutAll_new[index]->Fill(10, invmass);
 					}
 					
 					
