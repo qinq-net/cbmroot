@@ -423,7 +423,7 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
     gInterpreter->ProcessLine("pl_over_cluSel(1,9,1,1)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,9,2,0)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,9,2,1)");
-    gInterpreter->ProcessLine("pl_all_dTSel()");
+    gInterpreter->ProcessLine("pl_all_dTSel(2)");
     break;
 
   case 1:
@@ -472,7 +472,7 @@ void ana_digi_cal(Int_t nEvents = 1000000, Int_t calMode=0, Int_t calSel=-1, Int
     gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,3)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,4)");
     gInterpreter->ProcessLine("pl_over_cluSel(1,8,0,5)");
-    gInterpreter->ProcessLine("pl_all_dTSel()");
+    gInterpreter->ProcessLine("pl_all_dTSel(2)");
     break;
 
   default:

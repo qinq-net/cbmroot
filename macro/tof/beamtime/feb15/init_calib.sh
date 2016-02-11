@@ -30,7 +30,7 @@ echo 'Initialize clusterizer calibration for run '$cRun, execute $nIter iteratio
 #iDut=6; iMRef=1; iBRef=8;  
 #iDut=6; iMRef=1; iBRef=5;  
 #iDut=1; iMRef=6; iBRef=5;  
-iDut=300; iMRef=400; iBRef=510;  
+#iDut=300; iMRef=400; iBRef=510;  
 #iDut=300; iMRef=900; iBRef=510;  
 iDut=100; iMRef=600; iBRef=510;  
 
