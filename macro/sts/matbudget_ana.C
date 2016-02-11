@@ -53,7 +53,13 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v15c")
   const int nStations = 8;       // number of STS stations
   const int nBins     = 1000;    // number of bins in histograms (in both x and y)
   const int rMax      = 55;      // maximal radius for histograms (for both x and y)
+  const double zRange = 1.4;
   TProfile2D* hStaRadLen[nStations];
+  TProfile2D* hStsRadLen;
+  
+  TString stsname = "Material Budget x/X_{0} [%], STS";
+    hStsRadLen = new TProfile2D(stsname, stsname, nBins,-rMax, rMax, nBins,-rMax, rMax);
+
   for ( int i = 0; i < nStations; ++i ) {
     TString name = "Material Budget x/X_{0} [%],";
     name += " Station ";
@@ -110,12 +116,14 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v15c")
       if ( iStationOut != iStation) continue;
       if ( iStation >= nStations || iStation < 0 ) continue;
       RadThick[iStation] += radThick;
-
     }
     
     // Fill material budget map for each station
     for ( int i = 0; i < nStations; ++i )
+    {
       hStaRadLen[i]->Fill( x, y, RadThick[i]*100 );
+      hStsRadLen->Fill( x, y, RadThick[i]*100 );
+    }
     
     for (int k = 0; k < RadLengthOnTrack.size(); k++)
       if (RadLengthOnTrack[k] > 0)
@@ -143,14 +151,43 @@ Int_t matbudget_ana(Int_t nEvents=10000000, const char* stsGeo = "v15c")
     hStaRadLen[iStation]->GetYaxis()->SetTitle("y [cm]");
     //hStaRadLen[iStation]->GetZaxis()->SetTitle("x/X_{0} [%]");
     //hStaRadLen[i]->GetZaxis()->SetTitle("radiation thickness [%]");
-    hStaRadLen[iStation]->SetAxisRange(0, 2, "Z");
+    hStaRadLen[iStation]->SetAxisRange(0, zRange, "Z");
     hStaRadLen[iStation]->Draw("colz");
     hStaRadLen[iStation]->Write();
   }
-
+  
   // Plot file
   TString plotFile = "sts_" + stsVersion + "_matbudget.png";
   can1->SaveAs(plotFile);
+
+  //================================================================
+  
+  // Plotting the results
+  TCanvas* can2 = new TCanvas("c","c",800,800);
+  gStyle->SetPalette(1);
+  gStyle->SetOptStat(0);
+
+  can2->cd();
+  hStsRadLen->GetXaxis()->SetTitle("x [cm]");
+  hStsRadLen->GetYaxis()->SetTitle("y [cm]");
+  hStsRadLen->SetAxisRange(0, zRange, "Z");
+  hStsRadLen->Draw("colz");
+
+  // Plot file
+  plotFile = "sts_" + stsVersion + "_total_matbudget.png";
+  can2->SaveAs(plotFile);
+
+  //================================================================
+  
+  TString thisStation(0);
+  can2->Clear();
+  for ( int iStation = 0; iStation < nStations; iStation++) {
+    hStaRadLen[iStation]->Draw("colz");
+    // Plot file
+    thisStation.Form("%d",iStation);
+    plotFile = "sts_" + stsVersion + "_station_" + thisStation + "_matbudget.png";
+    can2->SaveAs(plotFile);
+  }
 
   // Close files
   input->Close();
