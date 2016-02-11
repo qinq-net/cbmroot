@@ -13,7 +13,7 @@
 
 using namespace std;
 
-LxEff::LxEff(LxFinder& owner) : finder(owner)
+LxEff::LxEff(LxFinderTriplet& owner) : finder(owner)
 {
 }
 
@@ -1032,7 +1032,7 @@ void LxEff::CalcRecoEff(bool joinExt)
   cout << "LxEff::CalcRecoEff unmatched but have an STS part: " << unmatchedButHaveStsPart << endl;
 }// void LxEff::CalcRecoEff(bool joinExt)
 
-void LxFinder::MatchRecoToMC()
+void LxFinderTriplet::MatchRecoToMC()
 {
   static Int_t recoTracks = 0;
   static Int_t matchedTracks = 0;
@@ -1147,7 +1147,7 @@ void LxFinder::MatchRecoToMC()
 
   Double_t result = 100 * matchedTracks;
   result /= recoTracks;
-  cout << "LxFinder::MatchRecoToMC(): efficiency: " << result << " % ( " << matchedTracks << " / " << recoTracks << " )" << endl;
+  cout << "LxFinderTriplet::MatchRecoToMC(): efficiency: " << result << " % ( " << matchedTracks << " / " << recoTracks << " )" << endl;
 
   if (0 != positiveSignal && 0 != negativeSignal)
   {
@@ -1196,4 +1196,4 @@ void LxFinder::MatchRecoToMC()
     bgrInterTracksDistance->Fill(bgrDist);
     bgrSignDefect->Fill(signDefect);
   }
-}// void LxFinder::MatchRecoToMC()
+}// void LxFinderTriplet::MatchRecoToMC()

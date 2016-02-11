@@ -77,7 +77,7 @@ static bool GetHistoRMS(const char* histoNameBase, Int_t histoNumber, Double_t& 
   return result;
 }
 
-LxTrackAnaSegments::LxTrackAnaSegments(LxTrackAna& o) : owner(o), stationsInAlgo(LXSTATIONS), useBgr(false)
+LxTrackAnaSegments::LxTrackAnaSegments(LxTrackAnaTriplet& o) : owner(o), stationsInAlgo(LXSTATIONS), useBgr(false)
 {
 }
 

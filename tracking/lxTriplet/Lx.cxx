@@ -15,27 +15,27 @@
 #include "CbmKFParticle.h"
 #include "CbmStsAddress.h"
 
-ClassImp(LxFinder)
+ClassImp(LxFinderTriplet)
 
 using namespace std;
 
-LxFinder* LxFinder::fInstance = 0;
-TH1F* LxFinder::massHisto = 0;
-//TH1F* LxFinder::backgroundMassHisto = 0;
-CbmStsTrack* LxFinder::superEventData = 0;
-TTree* LxFinder::superEventTracks = 0;
-TH1F* LxFinder::signalChi2Histo = 0;
-TH1F* LxFinder::backgroundChi2Histo = 0;
-TH1F* LxFinder::unknownChi2Histo = 0;
-TProfile* LxFinder::effByMomentumProfile = 0;
-TH1F* LxFinder::signalInterTracksDistance = 0;
-TH1F* LxFinder::bgrInterTracksDistance = 0;
-TH1F* LxFinder::signalSignDefect = 0;
-TH1F* LxFinder::bgrSignDefect = 0;
-TH1F* LxFinder::signalYAtZ0 = 0;
-TH1F* LxFinder::bgrYAtZ0 = 0;
-TH1F* LxFinder::signalYAtZ0_2 = 0;
-TH1F* LxFinder::bgrYAtZ0_2 = 0;
+LxFinderTriplet* LxFinderTriplet::fInstance = 0;
+TH1F* LxFinderTriplet::massHisto = 0;
+//TH1F* LxFinderTriplet::backgroundMassHisto = 0;
+CbmStsTrack* LxFinderTriplet::superEventData = 0;
+TTree* LxFinderTriplet::superEventTracks = 0;
+TH1F* LxFinderTriplet::signalChi2Histo = 0;
+TH1F* LxFinderTriplet::backgroundChi2Histo = 0;
+TH1F* LxFinderTriplet::unknownChi2Histo = 0;
+TProfile* LxFinderTriplet::effByMomentumProfile = 0;
+TH1F* LxFinderTriplet::signalInterTracksDistance = 0;
+TH1F* LxFinderTriplet::bgrInterTracksDistance = 0;
+TH1F* LxFinderTriplet::signalSignDefect = 0;
+TH1F* LxFinderTriplet::bgrSignDefect = 0;
+TH1F* LxFinderTriplet::signalYAtZ0 = 0;
+TH1F* LxFinderTriplet::bgrYAtZ0 = 0;
+TH1F* LxFinderTriplet::signalYAtZ0_2 = 0;
+TH1F* LxFinderTriplet::bgrYAtZ0_2 = 0;
 
 #ifdef MAKE_DISPERSE_2D_HISTOS
 TProfile2D* disperseLHistos[LXSTATIONS];
@@ -47,12 +47,12 @@ static TH1F* stsTrackChi2 = 0;
 static TH1F* stsTrackX = 0;
 static TH1F* stsTrackY = 0;
 
-LxFinder* LxFinder::Instance()
+LxFinderTriplet* LxFinderTriplet::Instance()
 {
   return fInstance;
 }
 
-LxFinder::LxFinder() : muchPixelHits(0), listMCTracks(0), listMuchPts(0), listMuchClusters(0),
+LxFinderTriplet::LxFinderTriplet() : muchPixelHits(0), listMCTracks(0), listMuchPts(0), listMuchClusters(0),
     listMuchPixelDigiMatches(0), listStsTracks(0), listStsMatches(0), listStsPts(0), listRecoTracks(0),
     effCounter(*this), fPrimVtx(0), generateInvMass(false), generateBackground(false), generateChi2(false),
     eventNumber(0), linkWithSts(true), useMCPInsteadOfHits(false), calcMiddlePoints(true), cutCoeff(4.0), pPtCut(true)
@@ -63,7 +63,7 @@ LxFinder::LxFinder() : muchPixelHits(0), listMCTracks(0), listMuchPts(0), listMu
   fInstance = this;
 }
 
-LxFinder::~LxFinder()
+LxFinderTriplet::~LxFinderTriplet()
 {
 }
 
@@ -113,10 +113,10 @@ static bool GetHistoCOV(const char* histoNameBase, Int_t histoNumber, Int_t axis
   return result;
 }
 
-InitStatus LxFinder::Init()
+InitStatus LxFinderTriplet::Init()
 {
   static Int_t nTimes = 1;
-  cout << "LxFinder::Init() called at " << nTimes++ << " time" << endl;
+  cout << "LxFinderTriplet::Init() called at " << nTimes++ << " time" << endl;
 
   superEventData = new CbmStsTrack;
 
@@ -339,9 +339,9 @@ InitStatus LxFinder::Init()
 
 static Int_t nTimes = 1;
 
-void LxFinder::Exec(Option_t* opt)
+void LxFinderTriplet::Exec(Option_t* opt)
 {
-  cout << "LxFinder::Exec() called at " << nTimes++ << " time" << endl;
+  cout << "LxFinderTriplet::Exec() called at " << nTimes++ << " time" << endl;
   timeval bTime, eTime;
   int exeDuration;
   gettimeofday(&bTime, 0);
@@ -855,7 +855,7 @@ void LxFinder::Exec(Option_t* opt)
   ++eventNumber;
 }
 
-void LxFinder::SaveRecoTracks()
+void LxFinderTriplet::SaveRecoTracks()
 {
   Int_t trackNo = listRecoTracks->GetEntriesFast();
 
@@ -893,7 +893,7 @@ void LxFinder::SaveRecoTracks()
   }
 }
 
-void LxFinder::CalcInvMass()
+void LxFinderTriplet::CalcInvMass()
 {
   for (list<LxTrack*>::iterator i = caSpace.tracks.begin(); i != caSpace.tracks.end(); ++i)
   {
@@ -1015,7 +1015,7 @@ static void SaveHisto(TH1* histo, const char* name)
 }
 //#endif//MAKE_HISTOS
 
-void LxFinder::FinishTask()
+void LxFinderTriplet::FinishTask()
 {
   if (generateInvMass)
     SaveInvMass();
@@ -1093,7 +1093,7 @@ void LxFinder::FinishTask()
   FairTask::FinishTask();
 }
 
-void LxFinder::SaveInvMass()
+void LxFinderTriplet::SaveInvMass()
 {
   TFile* curFile = TFile::CurrentFile();
 
@@ -1105,7 +1105,7 @@ void LxFinder::SaveInvMass()
   TFile::CurrentFile() = curFile;
 }
 
-void LxFinder::SaveBackground()
+void LxFinderTriplet::SaveBackground()
 {
   for (list<CbmStsTrack>::iterator i = positiveTracks.begin(); i != positiveTracks.end(); ++i)
   {

@@ -6,14 +6,14 @@
 #include "TString.h"
 
 struct LxSimpleTrack;
-class LxTrackAna;
+class LxTrackAnaTriplet;
 
 extern bool saveHistos;
 
 class LxTrackAnaSegments
 {
 public:
-  explicit LxTrackAnaSegments(LxTrackAna& o);
+  explicit LxTrackAnaSegments(LxTrackAnaTriplet& o);
   void Init();
   void Finish();
   void BuildStatistics();
@@ -26,7 +26,7 @@ public:
 
 private:
   void StatForTrack(LxSimpleTrack* track);
-  LxTrackAna& owner;
+  LxTrackAnaTriplet& owner;
   Int_t stationsInAlgo;
   bool useBgr;
 };

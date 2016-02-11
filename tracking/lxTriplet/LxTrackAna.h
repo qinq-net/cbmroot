@@ -45,11 +45,11 @@ struct LxSimpleTrack
   void RebindMuchTrack();
 };
 
-class LxTrackAna : public FairTask
+class LxTrackAnaTriplet : public FairTask
 {
 public:
-  LxTrackAna();
-  ~LxTrackAna();
+  LxTrackAnaTriplet();
+  ~LxTrackAnaTriplet();
   InitStatus Init();// Inherited virtual.
   void Exec(Option_t* opt);// Inherited virtual.
   void FinishTask();// Inherited virtual.
@@ -120,7 +120,7 @@ private:
 
   friend class LxTrackAnaSegments;
 
-  ClassDef(LxTrackAna, 1);
+  ClassDef(LxTrackAnaTriplet, 1);
 };
 
 #endif//LXTRACKANA_INCLUDED

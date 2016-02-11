@@ -25,15 +25,15 @@
 
 extern TString lxFinderParticleType;
 
-class LxFinder : public FairTask
+class LxFinderTriplet : public FairTask
 {
   friend struct LxEff;
   friend class LxDraw;
 
 public:
-  static LxFinder* Instance();
-  explicit LxFinder();
-  ~LxFinder();
+  static LxFinderTriplet* Instance();
+  explicit LxFinderTriplet();
+  ~LxFinderTriplet();
   InitStatus Init();// Inherited virtual.
   void Exec(Option_t* opt);// Inherited virtual.
 
@@ -94,7 +94,7 @@ private:
   void SaveInvMass();
   void SaveBackground();
   void MatchRecoToMC();
-  static LxFinder* fInstance;
+  static LxFinderTriplet* fInstance;
   TClonesArray* muchPixelHits;
   TClonesArray* listMCTracks;
   TClonesArray* listMuchPts;
@@ -153,7 +153,7 @@ private:
   Int_t mcPointsTriggered;
 #endif//CALC_MUCH_DETECTORS_EFF
 
-  ClassDef(LxFinder, 1);
+  ClassDef(LxFinderTriplet, 1);
 };
 
 #endif//LX_INCLUDED

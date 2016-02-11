@@ -17,7 +17,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
-ClassImp(LxTrackAna)
+ClassImp(LxTrackAnaTriplet)
 
 using namespace std;
 
@@ -112,7 +112,7 @@ void LxSimpleTrack::RebindMuchTrack()
   }
 }
 
-LxTrackAna::LxTrackAna() : listMCTracks(0), listStsPts(0), listMuchPts(0), listMuchPixelHits(0), listMuchClusters(0),
+LxTrackAnaTriplet::LxTrackAnaTriplet() : listMCTracks(0), listStsPts(0), listMuchPts(0), listMuchPixelHits(0), listMuchClusters(0),
     listMuchPixelDigiMatches(0), buildConnectStat(false), useHitsInStat(false), averagePoints(false), dontTouchNonPrimary(true),
     useChargeSignInCuts(false), buildBgrInvMass(false), buildSigInvMass(false), joinData(false), superEventTracks(0),
     superEventBrachTrack(0, 0, 0, 0, 0, 0, 0, 0), buildNearestHitDist(false), cropHits(false), segmentsAnalyzer(*this),
@@ -120,12 +120,12 @@ LxTrackAna::LxTrackAna() : listMCTracks(0), listStsPts(0), listMuchPts(0), listM
 {
 }
 
-LxTrackAna::~LxTrackAna()
+LxTrackAnaTriplet::~LxTrackAnaTriplet()
 {
   Clean();
 }
 
-void LxTrackAna::Clean()
+void LxTrackAnaTriplet::Clean()
 {
   for (vector<LxSimpleTrack*>::iterator i = allTracks.begin(); i != allTracks.end(); ++i)
     delete *i;
@@ -135,7 +135,7 @@ void LxTrackAna::Clean()
   negTracks.clear();
 }
 
-InitStatus LxTrackAna::Init()
+InitStatus LxTrackAnaTriplet::Init()
 {
   FairRootManager* fManager = FairRootManager::Instance();
   listMCTracks = static_cast<TClonesArray*> (fManager->GetObject("MCTrack"));
@@ -354,7 +354,7 @@ static void BuildInvMass2(list<CbmStsTrack*>& stsTracks, TH1* histo)
   }
 }
 
-void LxTrackAna::FinishTask()
+void LxTrackAnaTriplet::FinishTask()
 {
   TFile* curFile = TFile::CurrentFile();
 
@@ -448,7 +448,7 @@ void LxTrackAna::FinishTask()
 // Our goal here is to investigate various properties of Monte Carlo tracks derivable from points of there intersections
 // with detector stations. At the same time in MUCH we use not the Monte Carlo points but hits corresponding to them.
 // -- This is done to make the statistical properties more realistic.
-void LxTrackAna::Exec(Option_t* opt)
+void LxTrackAnaTriplet::Exec(Option_t* opt)
 {
   Clean();
 
@@ -646,7 +646,7 @@ static inline void AveragePoints(LxSimpleTrack* track, bool useHitsInStat)
   }
 }
 
-void LxTrackAna::AveragePoints()
+void LxTrackAnaTriplet::AveragePoints()
 {
   for (vector<LxSimpleTrack*>::iterator i = allTracks.begin(); i != allTracks.end(); ++i)
     ::AveragePoints(*i, useHitsInStat);
@@ -865,7 +865,7 @@ static inline void BuildNearestHitStat(LxSimpleTrack* track, bool cropHits)
       " MC y=" << mcMinY << " Hit y=" << hitMinY << " n hits=" << nMinHits << endl;
 }
 
-void LxTrackAna::BuildStatistics()
+void LxTrackAnaTriplet::BuildStatistics()
 {
   if (allTracks.size() > maxTracks)
     maxTracks = allTracks.size();
@@ -890,7 +890,7 @@ void LxTrackAna::BuildStatistics()
       << " maxStsPts7=" << maxStsPts7 << " maxStsPts6=" << maxStsPts6 << endl;
 }
 
-void LxTrackAna::Connect(bool useCuts)
+void LxTrackAnaTriplet::Connect(bool useCuts)
 {
   static Int_t jpsiTrackCount = 0;
   static Int_t jpsiTrackCountCutted = 0;
@@ -998,7 +998,7 @@ void LxTrackAna::Connect(bool useCuts)
   }
 }
 
-void LxTrackAna::Connect(LxSimpleTrack* muchTrack, LxSimplePoint muchPt0, Double_t txMuch, Double_t tyMuch,
+void LxTrackAnaTriplet::Connect(LxSimpleTrack* muchTrack, LxSimplePoint muchPt0, Double_t txMuch, Double_t tyMuch,
     bool useCuts)
 {
   for (vector<LxSimpleTrack*>::iterator l = allTracks.begin(); l != allTracks.end(); ++l)

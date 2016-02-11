@@ -3,7 +3,7 @@
 using namespace std;
 
 // Used for building of the background on an invariant mass.
-void LxFinder::SaveEventTracks()
+void LxFinderTriplet::SaveEventTracks()
 {
   for (list<LxTrack*>::iterator i = caSpace.tracks.begin(); i != caSpace.tracks.end(); ++i)
   {

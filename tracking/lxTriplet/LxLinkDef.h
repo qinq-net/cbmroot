@@ -6,8 +6,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
-#pragma link C++ class  LxFinder+;
-#pragma link C++ class  LxTrackAna+;
+#pragma link C++ class  LxFinderTriplet+;
+#pragma link C++ class  LxTrackAnaTriplet+;
 
 #endif
 

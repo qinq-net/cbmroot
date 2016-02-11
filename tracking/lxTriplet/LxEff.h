@@ -9,12 +9,12 @@
 #include <list>
 #include <iostream>
 
-class LxFinder;
+class LxFinderTriplet;
 class LxPoint;
 
 struct LxEff
 {
-  explicit LxEff(LxFinder& owner);
+  explicit LxEff(LxFinderTriplet& owner);
   void CalcRecoEff(bool joinExt);
   void AnalyzeNotMatchedMC(std::ofstream& out, std::list<LxPoint*> hits[LXSTATIONS][LXLAYERS]);
 #ifdef CLUSTER_MODE
@@ -22,7 +22,7 @@ struct LxEff
   void AnalyzeNotMatched2(std::ofstream& out, std::list<LxPoint*> hits[LXSTATIONS][LXLAYERS]);
   void DumpNotMatchedMC(std::list<LxPoint*> hits[LXSTATIONS][LXLAYERS]);
 #endif//CLUSTER_MODE
-  LxFinder& finder;
+  LxFinderTriplet& finder;
 };
 
 struct LxMCTrack;
