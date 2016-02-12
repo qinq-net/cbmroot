@@ -23,8 +23,8 @@
 #include "CbmKFParticleFinderQA.h"
 #include "CbmKFParticle.h"
 #include "KFParticle.h"
-#include "../../KF/KFParticlePerformance/KFPartMatch.h"
-#include "../../KF/KFParticlePerformance/KFTopoPerformance.h"
+#include "KFPartMatch.h"
+#include "KFTopoPerformance.h"
 
 
 

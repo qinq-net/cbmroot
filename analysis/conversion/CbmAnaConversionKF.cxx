@@ -16,7 +16,7 @@
 #include "CbmKFParticleFinder.h"
 #include "CbmKFParticleFinderQA.h"
 #include "KFParticleTopoReconstructor.h"
-#include "../../KF/KFParticlePerformance/KFTopoPerformance.h"
+#include "KFTopoPerformance.h"
 #include "CbmStsTrack.h"
 #include "CbmMCTrack.h"
 #include "CbmTrackMatchNew.h"
