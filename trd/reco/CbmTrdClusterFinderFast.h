@@ -16,6 +16,7 @@
 class CbmTrdDigiPar;
 class CbmTrdModule;
 class CbmTrdGeoHandler;
+class CbmTrdCluster;
 class TClonesArray;
 
 typedef struct MyDigi
@@ -121,6 +122,8 @@ class CbmTrdClusterFinderFast : public FairTask
   void addCluster(std::map<Int_t, ClusterList*> fModClusterMap);
 
   Double_t CenterOfGravity(RowCluster *rowCluster);
+
+  void BuildChannelMap(CbmTrdCluster *cls);
 
   TClonesArray*     fDigis;       /** Input array of CbmTrdDigi **/
   TClonesArray*     fClusters;    /** Output array of CbmTrdCluster **/

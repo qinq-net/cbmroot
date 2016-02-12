@@ -21,6 +21,7 @@
 #include "TImage.h"
 #include "TVector3.h"
 #include "TStopwatch.h"
+#include "TBits.h"
 
 #include <iostream>
 #include <iomanip>
@@ -889,6 +890,7 @@ void CbmTrdClusterFinderFast::addCluster(std::map<Int_t, ClusterList*> fModClust
 	//if (digi->GetAddress() < 0)
 	//printf("DigiAddress:%i ModuleAddress:%i\n",digi->GetAddress(), CbmTrdAddress::GetModuleAddress(digi->GetAddress()));
 	cluster->SetDigis(digiIndices);
+	BuildChannelMap(cluster);
       }
     } // for iCluster
   } // for iModule
@@ -971,6 +973,29 @@ Double_t CbmTrdClusterFinderFast::CenterOfGravity(RowCluster *rowCluster)
   }
 */
   return hit_pos[0];
+}
+
+void CbmTrdClusterFinderFast::BuildChannelMap(CbmTrdCluster *cls) {
+
+  fModuleInfo = fDigiPar->GetModule(CbmTrdAddress::GetModuleAddress(cls->GetAddress()));
+  TBits cols, rows;
+
+  for(Int_t i=0; i<cls->GetNofDigis(); i++) {
+    CbmTrdDigi *digi = (CbmTrdDigi*) fDigis->At( cls->GetDigi(i) );
+
+    Int_t secRow    = CbmTrdAddress::GetRowId(digi->GetAddress());
+    Int_t iSector   = CbmTrdAddress::GetSectorId(digi->GetAddress());
+    Int_t globalRow = fModuleInfo->GetModuleRow(iSector,secRow);
+
+    Int_t colId     = CbmTrdAddress::GetColumnId(digi->GetAddress());
+    Int_t combiId   = globalRow * (fModuleInfo->GetNofColumns() + 1) + colId;
+
+    cols.SetBitNumber(combiId);
+    rows.SetBitNumber(globalRow);
+  }
+  // store information in cluster
+  cls->SetNCols( cols.CountBits() );
+  cls->SetNRows( rows.CountBits() );
 }
 
 ClassImp(CbmTrdClusterFinderFast)
