@@ -196,11 +196,47 @@ void tof_qa_ana(Int_t nEvents = 2, const char* setup = "sis100_electron")
   tofQa->SetHistoFileName( qaOutFile );
   // TODO: add the position for the other versions
   //       or recover it from the geometry?
-  if( "v13-5a" == tofTag || "v14-0a" == tofTag )
+   if( "v16a_1h" == tofTag )
+   {
+      tofQa->SetWallPosZ(  500 );
+      cout << "Setting TOF QA histograms for a TOF wall Z position of  500 cm (v16a_1h)." << endl;
+   }
+   else if( "v16a_1e" == tofTag )
+   {
+      tofQa->SetWallPosZ(  650 );
+      cout << "Setting TOF QA histograms for a TOF wall Z position of  650 cm (v16a_1e)." << endl;
+   }
+   else if( "v16a_1m" == tofTag )
+   {
+      tofQa->SetWallPosZ(  730 );
+      cout << "Setting TOF QA histograms for a TOF wall Z position of  730 cm (v16a_1m)." << endl;
+   }
+   else if( "v16a_3e" == tofTag )
+   {
+      tofQa->SetWallPosZ(  930 );
+      cout << "Setting TOF QA histograms for a TOF wall Z position of  930 cm (v16a_3e)." << endl;
+   }
+   else if( "v16a_3m" == tofTag )
+   {
+      tofQa->SetWallPosZ(  1070 );
+      cout << "Setting TOF QA histograms for a TOF wall Z position of 1070 cm (v16a_3m)." << endl;
+   }
+   else if( "v13-5a" == tofTag || "v14-0a" == tofTag )
+   {
       tofQa->SetWallPosZ(  550 );
-  else if( "v13-5d" == tofTag || "v14-0b" == tofTag)
+      cout << "Setting TOF QA histograms for a TOF wall Z position of  550 cm (v14-0a)." << endl;
+   }
+   else if( "v13-5d" == tofTag  || "v14-0b" == tofTag )
+   {
       tofQa->SetWallPosZ(  900 );
-      else tofQa->SetWallPosZ( 1000 ); // default position of the wall
+      cout << "Setting TOF QA histograms for a TOF wall Z position of  900 cm (v14-0b)." << endl;
+   }
+   else
+   {
+      tofQa->SetWallPosZ( 1000 ); // default position of the wall
+      cout << "Setting TOF QA histograms for a TOF wall Z position of 1000 cm (default). tofTag = "
+           <<  tofTag << endl;
+   }
   run->AddTask(tofQa);
 
   // ===                   End of TOF evaluation                           ===
