@@ -60,6 +60,11 @@ const Int_t   kiTdcDetMap[kuNbTdcMappedDet]    =
       3, 3, 3, 3, 3, 3, 3, 3, // ROC 1 FEE 2
    };
 
+// Defautl value for nb bins in Pulser time difference histos
+const UInt_t kuNbBinsDt    = 5000;
+Double_t dMinDt     = -1.*(kuNbBinsDt*get4v1x::kdBinSize/2.) -get4v1x::kdBinSize/2.;
+Double_t dMaxDt     =  1.*(kuNbBinsDt*get4v1x::kdBinSize/2.) +get4v1x::kdBinSize/2.;
+
 struct DTM_header
 {
    uint8_t packet_length;
@@ -166,6 +171,10 @@ CbmGet4FastMonitor::CbmGet4FastMonitor()
   fhTimeResAllCombi(NULL),
   fhTimeResPairs(),
   fhTimeResCombi(),
+  fhTimeRmsAllCombiEncA(NULL),
+  fhTimeResAllCombiEncA(NULL),
+  fhTimeRmsAllCombiEncB(NULL),
+  fhTimeResAllCombiEncB(NULL),
   fhPulserHitDistNs(NULL),
   fhPulserHitDistUs(NULL),
   fhPulserHitDistMs(NULL),
@@ -216,6 +225,8 @@ CbmGet4FastMonitor::CbmGet4FastMonitor()
   fhPulserFeeFtExtraEdgeFalA(NULL),
   fhPulserFeeFtExtraEdgeRisB(NULL),
   fhPulserFeeFtExtraEdgeFalB(NULL),
+  fhPulserFeeGoodTot(NULL),
+  fhPulserFeeExtraRecoTot(NULL),
   fhPulserFeeTotDistCT(),
   fvuPrevOldTotEp(),
   fvmPrevOldTot(),
@@ -922,10 +933,7 @@ void CbmGet4FastMonitor::InitMonitorHistograms()
    {
       // Full Fee test
       UInt_t uHistoFeeIdx =   0;
-      UInt_t uNbBinsDt    = 500;
-      Double_t dMinDt     = -1.*(uNbBinsDt*get4v1x::kdBinSize/2.) -get4v1x::kdBinSize/2.;
-      Double_t dMaxDt     =  1.*(uNbBinsDt*get4v1x::kdBinSize/2.) +get4v1x::kdBinSize/2.;
-      uNbBinsDt ++; // To account for extra bin due to shift by 1/2 bin of both ranges
+      UInt_t uNbBinsDt = kuNbBinsDt + 1; // To account for extra bin due to shift by 1/2 bin of both ranges
       for( UInt_t uChanFeeA = 0; uChanFeeA < kuNbChanFee; uChanFeeA++)
       {
          for( UInt_t uChanFeeB = uChanFeeA + 1; uChanFeeB < kuNbChanFee; uChanFeeB++)
@@ -1039,9 +1047,38 @@ void CbmGet4FastMonitor::InitMonitorHistograms()
                      fuPulserChan[uChanA], fuPulserChan[uChanB], fuPulserChan[uChanB]),
                uNbBinsDt, dMinDt, dMaxDt,
                get4v1x::kuTotCounterSize, 0, get4v1x::kuTotCounterSize );
+
+            fhTimeResCombiEncA[uHistoCombiIdx]  = new TH1I(
+               Form("hTimeResCombiEncA_%03u_%03u", fuPulserChan[uChanA], fuPulserChan[uChanB]),
+               Form("Time difference for selected channels %03u and %03u; DeltaT [ps]; Counts",
+                     fuPulserChan[uChanA], fuPulserChan[uChanB]),
+               uNbBinsDt, dMinDt, dMaxDt);
+            fhTimeResCombiEncB[uHistoCombiIdx]  = new TH1I(
+               Form("hTimeResCombiEncB_%03u_%03u", fuPulserChan[uChanA], fuPulserChan[uChanB]),
+               Form("Time difference for selected channels %03u and %03u; DeltaT [ps]; Counts",
+                     fuPulserChan[uChanA], fuPulserChan[uChanB]),
+               uNbBinsDt, dMinDt, dMaxDt);
+
             uHistoCombiIdx++;
          } // for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
       } // for( UInt_t uChanA = 0; uChanA < kuNbChanTest; uChanA++)
+
+      fhTimeRmsAllCombiEncA = new TH2D( "hTimeRmsAllCombiEncA",
+            "Time difference RMS for chosen channels pairs, if FT of both in Encoder A; Ch A; Ch B; [ps]",
+            kuNbChanComb - 1, -0.5, kuNbChanComb - 1.5,
+            kuNbChanComb - 1,  0.5, kuNbChanComb - 0.5);
+      fhTimeResAllCombiEncA = new TH2D( "hTimeResAllCombiEncA",
+            "Time resolution for chosen channels combinations (for single channel), if FT of both in Encoder A; Ch A; Ch B; [ps]",
+            kuNbChanComb - 1, -0.5, kuNbChanComb - 1.5,
+            kuNbChanComb - 1,  0.5, kuNbChanComb - 0.5);
+      fhTimeRmsAllCombiEncB = new TH2D( "hTimeRmsAllCombiEncB",
+            "Time difference RMS for chosen channels pairs, if FT of both in Encoder B; Ch A; Ch B; [ps]",
+            kuNbChanComb - 1, -0.5, kuNbChanComb - 1.5,
+            kuNbChanComb - 1,  0.5, kuNbChanComb - 0.5);
+      fhTimeResAllCombiEncB= new TH2D( "hTimeResAllCombiEncB",
+            "Time resolution for chosen channels combinations (for single channel), if FT of both in Encoder B; Ch A; Ch B; [ps]",
+            kuNbChanComb - 1, -0.5, kuNbChanComb - 1.5,
+            kuNbChanComb - 1,  0.5, kuNbChanComb - 0.5);
 
       fhPulserHitDistNs = new TH2D( "hPulserHitDistNs",
             "Time Interval between hits for all channels in chosen Fee; Chan # ; Hits interval [ns]",
@@ -1244,6 +1281,15 @@ void CbmGet4FastMonitor::InitMonitorHistograms()
                get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
          fhPulserFeeFtExtraEdgeFalB = new TH2D( "hPulserFeeFtExtraEdgeFalB",
                "When extra edge message, FT of second falling edge message in chosen FEE board; Chan # ; FT Bin; Counts []",
+               kuNbChanFee, -0.5, kuNbChanFee - 0.5,
+               get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+
+         fhPulserFeeGoodTot = new TH2D( "hPulserFeeGoodTot",
+               "TOT distrib for good pulses in chosen FEE board; Chan # ; Tot [FT Bin]; Counts []",
+               kuNbChanFee, -0.5, kuNbChanFee - 0.5,
+               get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
+         fhPulserFeeExtraRecoTot = new TH2D( "hPulserFeeExtraRecoTot",
+               "When extra edge message, reconstructed TOT, for channels in chosen FEE board; Chan # ; TOT reco [Bin]; Counts []",
                kuNbChanFee, -0.5, kuNbChanFee - 0.5,
                get4v1x::kuFineTime+1 ,  -0.5, get4v1x::kuFineTime + 0.5);
 
@@ -1664,56 +1710,66 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
       fhTimeResAllPairs->Reset();
       fhTimeRmsAllCombi->Reset();
       fhTimeResAllCombi->Reset();
+      fhTimeRmsAllCombiEncA->Reset();
+      fhTimeResAllCombiEncA->Reset();
+      fhTimeRmsAllCombiEncB->Reset();
+      fhTimeResAllCombiEncB->Reset();
 
       // Write the histos for the test on chosen channel pairs
       UInt_t uHistoCombiIdx = 0;
+      UInt_t uHistoCombiIdxEncA = 0;
+      UInt_t uHistoCombiIdxEncB = 0;
       TF1 *fitFuncPairs[kuNbChanTest - 1];
       TF1 *fitFuncCombi[kuNbChanComb*(kuNbChanComb-1)/2];
+      TF1 *fitFuncCombiEncA[kuNbChanComb*(kuNbChanComb-1)/2];
+      TF1 *fitFuncCombiEncB[kuNbChanComb*(kuNbChanComb-1)/2];
       TString sFitCombRes = "\n";
       for( UInt_t uChanA = 0; uChanA < kuNbChanTest-1; uChanA++)
       {
          Double_t dSigPair = 0.0;
          Double_t dResPair = 0.0;
+         Double_t dFitLimit = 0.0;
          // No need to fit if not data in histo
          if( 0 == fhTimeResPairs[uChanA]->Integral() )
          {
 
             LOG(DEBUG)<<" Pair histo empty: "<<uHistoFeeIdx<<" "
                   <<uChanA<<" "<<uChanA+1<<FairLogger::endl;
-            continue;
          } //  if( 0 == fhTimeResFee[uHistoFeeIdx]->Integral() )
+         else
+         {
+            dFitLimit = fhTimeResPairs[uChanA]->GetRMS();
+            if( dFitLimit < get4v1x::kdBinSize )
+               dFitLimit = get4v1x::kdBinSize;
 
-         Double_t dFitLimit = fhTimeResPairs[uChanA]->GetRMS();
-         if( dFitLimit < get4v1x::kdBinSize )
-            dFitLimit = get4v1x::kdBinSize;
+            fitFuncPairs[uChanA] = new TF1( Form("fPair_%03d_%03d",uChanA, uChanA+1), "gaus",
+                  fhTimeResPairs[uChanA]->GetMean() - 5*dFitLimit ,
+                  fhTimeResPairs[uChanA]->GetMean() + 5*dFitLimit);
+            // Fix the Mean fit value around the Histogram Mean
+            fitFuncPairs[uChanA]->SetParameter( 0, fhTimeResPairs[uChanA]->Integral());
+            fitFuncPairs[uChanA]->FixParameter( 1, fhTimeResPairs[uChanA]->GetMean() );
+            fitFuncPairs[uChanA]->SetParameter( 2, 2*dFitLimit );
+   //         fitFuncPairs[uChanA]->SetParLimits(1,
+   //               fhTimeResPairs[uChanA]->GetMean() - 3,
+   //               fhTimeResPairs[uChanA]->GetMean() + 3 );
 
-         fitFuncPairs[uChanA] = new TF1( Form("fPair_%03d_%03d",uChanA, uChanA+1), "gaus",
-               fhTimeResPairs[uChanA]->GetMean() - 5*dFitLimit ,
-               fhTimeResPairs[uChanA]->GetMean() + 5*dFitLimit);
-         // Fix the Mean fit value around the Histogram Mean
-         fitFuncPairs[uChanA]->SetParameter( 0, fhTimeResPairs[uChanA]->Integral());
-         fitFuncPairs[uChanA]->FixParameter( 1, fhTimeResPairs[uChanA]->GetMean() );
-         fitFuncPairs[uChanA]->SetParameter( 2, 2*dFitLimit );
-//         fitFuncPairs[uChanA]->SetParLimits(1,
-//               fhTimeResPairs[uChanA]->GetMean() - 3,
-//               fhTimeResPairs[uChanA]->GetMean() + 3 );
+            // Using integral instead of bin center seems to lead to unrealistic values => no "I"
+   //         fhTimeResPairs[uChanA]->Fit( Form("fPair_%03d_%03d",uChanA,uChanA+1), "IQRM0");
+            fhTimeResPairs[uChanA]->Fit( Form("fPair_%03d_%03d",uChanA,uChanA+1), "QRM0B");
+            dSigPair = fitFuncPairs[uChanA]->GetParameter(2);
+            dResPair = dSigPair/TMath::Sqrt2();
 
-         // Using integral instead of bin center seems to lead to unrealistic values => no "I"
-//         fhTimeResPairs[uChanA]->Fit( Form("fPair_%03d_%03d",uChanA,uChanA+1), "IQRM0");
-         fhTimeResPairs[uChanA]->Fit( Form("fPair_%03d_%03d",uChanA,uChanA+1), "QRM0B");
-         dSigPair = fitFuncPairs[uChanA]->GetParameter(2);
-         dResPair = dSigPair/TMath::Sqrt2();
+            fhTimeResPairs[uChanA]->Write();
+            fhTimeResPairsTot[(2*uChanA)]->Write();
+            fhTimeResPairsTot[(2*uChanA)+1]->Write();
 
-         fhTimeResPairs[uChanA]->Write();
-         fhTimeResPairsTot[2*uChanA]->Write();
-         fhTimeResPairsTot[2*uChanA+1]->Write();
+            delete fitFuncPairs[uChanA];
 
-         delete fitFuncPairs[uChanA];
-
-         fhTimeRmsAllPairs->Fill(uChanA, fhTimeResPairs[uChanA]->GetRMS() );
-         fhTimeResAllPairs->Fill(uChanA, dResPair );
-         LOG(INFO)<<" Pair Fit ch "<<uChanA<<" ch "<<uChanA+1<<" Results: "
-                  <<Form("%4.0f (%4.0f) ", dSigPair, dResPair )<<FairLogger::endl;
+            fhTimeRmsAllPairs->Fill(uChanA, fhTimeResPairs[uChanA]->GetRMS() );
+            fhTimeResAllPairs->Fill(uChanA, dResPair );
+            LOG(INFO)<<" Pair Fit ch "<<uChanA<<" ch "<<uChanA+1<<" Results: "
+                     <<Form("%4.0f (%4.0f) ", dSigPair, dResPair )<<FairLogger::endl;
+         } // els of if( 0 == fhTimeResPairs[uChanA]->Integral() )
 
          for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
          {
@@ -1764,12 +1820,84 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
 
             uHistoCombiIdx++;
          } // for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
+
+         for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
+         {
+            Double_t dSigCombi = 0.0;
+            Double_t dResCombi = 0.0;
+            // Same for signals in FT encoder A
+            dSigCombi = 0.0;
+            dResCombi = 0.0;
+            // No need to fit if not data in histo
+            if( 0 < fhTimeResCombiEncA[uHistoCombiIdxEncA]->Integral() )
+            {
+               dFitLimit = fhTimeResCombiEncA[uHistoCombiIdxEncA]->GetRMS();
+               if( dFitLimit < get4v1x::kdBinSize )
+                  dFitLimit = get4v1x::kdBinSize;
+
+               fitFuncCombiEncA[uHistoCombiIdxEncA] = new TF1( Form("fCombiEncA_%03d_%03d",uChanA, uChanB), "gaus",
+                     fhTimeResCombiEncA[uHistoCombiIdxEncA]->GetMean() - 5*dFitLimit ,
+                     fhTimeResCombiEncA[uHistoCombiIdxEncA]->GetMean() + 5*dFitLimit);
+               // Fix the Mean fit value around the Histogram Mean
+               fitFuncCombiEncA[uHistoCombiIdxEncA]->SetParameter( 0, fhTimeResCombiEncA[uHistoCombiIdxEncA]->Integral());
+               fitFuncCombiEncA[uHistoCombiIdxEncA]->FixParameter( 1, fhTimeResCombiEncA[uHistoCombiIdxEncA]->GetMean() );
+               fitFuncCombiEncA[uHistoCombiIdxEncA]->SetParameter( 2, 2*dFitLimit );
+
+               fhTimeResCombiEncA[uHistoCombiIdxEncA]->Fit( Form("fCombiEncA_%03d_%03d",uChanA,uChanB), "QRM0B");
+               dSigCombi = fitFuncCombiEncA[uHistoCombiIdxEncA]->GetParameter(2);
+               dResCombi = dSigCombi/TMath::Sqrt2();
+
+               fhTimeResCombiEncA[uHistoCombiIdxEncA]->Write();
+
+               delete fitFuncCombiEncA[uHistoCombiIdxEncA];
+
+               fhTimeRmsAllCombiEncA->Fill(uChanA, uChanB, fhTimeResCombiEncA[uHistoCombiIdxEncA]->GetRMS() );
+               fhTimeResAllCombiEncA->Fill(uChanA, uChanB, dResCombi );
+            } //  if( 0 != fhTimeResFee[uHistoFeeIdx]->Integral() )
+            uHistoCombiIdxEncA++;
+
+            // Same for signals in FT encoder B
+            dSigCombi = 0.0;
+            dResCombi = 0.0;
+            // No need to fit if not data in histo
+            if( 0 < fhTimeResCombiEncB[uHistoCombiIdxEncB]->Integral() )
+            {
+               dFitLimit = fhTimeResCombiEncB[uHistoCombiIdxEncB]->GetRMS();
+               if( dFitLimit < get4v1x::kdBinSize )
+                  dFitLimit = get4v1x::kdBinSize;
+
+               fitFuncCombiEncB[uHistoCombiIdxEncB] = new TF1( Form("fCombiEncB_%03d_%03d",uChanA, uChanB), "gaus",
+                     fhTimeResCombiEncB[uHistoCombiIdxEncB]->GetMean() - 5*dFitLimit ,
+                     fhTimeResCombiEncB[uHistoCombiIdxEncB]->GetMean() + 5*dFitLimit);
+               // Fix the Mean fit value around the Histogram Mean
+               fitFuncCombiEncB[uHistoCombiIdxEncB]->SetParameter( 0, fhTimeResCombiEncB[uHistoCombiIdxEncB]->Integral());
+               fitFuncCombiEncB[uHistoCombiIdxEncB]->FixParameter( 1, fhTimeResCombiEncB[uHistoCombiIdxEncB]->GetMean() );
+               fitFuncCombiEncB[uHistoCombiIdxEncB]->SetParameter( 2, 2*dFitLimit );
+
+               fhTimeResCombiEncB[uHistoCombiIdxEncB]->Fit( Form("fCombiEncB_%03d_%03d",uChanA,uChanB), "QRM0B");
+               dSigCombi = fitFuncCombiEncB[uHistoCombiIdxEncB]->GetParameter(2);
+               dResCombi = dSigCombi/TMath::Sqrt2();
+
+               fhTimeResCombiEncB[uHistoCombiIdxEncB]->Write();
+
+               delete fitFuncCombiEncB[uHistoCombiIdxEncB];
+
+               fhTimeRmsAllCombiEncB->Fill(uChanA, uChanB, fhTimeResCombiEncB[uHistoCombiIdxEncB]->GetRMS() );
+               fhTimeResAllCombiEncB->Fill(uChanA, uChanB, dResCombi );
+            } //  if( 0 != fhTimeResFee[uHistoFeeIdx]->Integral() )
+
+            uHistoCombiIdxEncB++;
+         } // for( UInt_t uChanB = uChanA+1; uChanB < kuNbChanComb; uChanB++)
       } // for( UInt_t uChanA = 0; uChanA < kuNbChanTest; uChanA++)
       LOG(INFO)<<sFitCombRes<<FairLogger::endl;
       fhTimeRmsAllPairs->Write();
       fhTimeResAllPairs->Write();
       fhTimeRmsAllCombi->Write();
       fhTimeResAllCombi->Write();
+      fhTimeRmsAllCombiEncA->Write();
+      fhTimeResAllCombiEncA->Write();
+      fhTimeRmsAllCombiEncB->Write();
+      fhTimeResAllCombiEncB->Write();
 
       // Write the hists interval histos
       fhPulserHitDistNs->Write();
@@ -1859,6 +1987,9 @@ void CbmGet4FastMonitor::WriteMonitorHistograms()
             fhPulserFeeFtExtraEdgeFalA->Write();
             fhPulserFeeFtExtraEdgeRisB->Write();
             fhPulserFeeFtExtraEdgeFalB->Write();
+
+            fhPulserFeeGoodTot->Write();
+            fhPulserFeeExtraRecoTot->Write();
          } // if( kTRUE == fbEnableMissingEdgeCheck)
 
          // Compute the DNL from the bins occupancy
@@ -2456,6 +2587,13 @@ void CbmGet4FastMonitor::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
                      fvmLastHit[   fuPulserChan[uChanB] ] );
                fhTimeResCombi[uHistoCombiIdx]->Fill( dTimeDiff );
 
+               if( ( fvmLastHit[ fuPulserChan[uChanA] ].getGet4FineTs() < (get4v1x::kuFineCounterSize/2) ) &&
+                   ( fvmLastHit[ fuPulserChan[uChanB] ].getGet4FineTs() < (get4v1x::kuFineCounterSize/2) ) )
+                  fhTimeResCombiEncA[uHistoCombiIdx]->Fill( dTimeDiff );
+               else if( ( (get4v1x::kuFineCounterSize/2) <= fvmLastHit[ fuPulserChan[uChanA] ].getGet4FineTs() ) &&
+                        ( (get4v1x::kuFineCounterSize/2) <= fvmLastHit[ fuPulserChan[uChanB] ].getGet4FineTs() ) )
+                  fhTimeResCombiEncB[uHistoCombiIdx]->Fill( dTimeDiff );
+
                if( TMath::Abs(dTimeDiff) > 5000  && TMath::Abs(dTimeDiff) < 15000)
                {
                   if( kTRUE == fbDebug )
@@ -2489,6 +2627,7 @@ void CbmGet4FastMonitor::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
            uChInFee   < get4v1x::kuChanPerGet4 * (uChipInFee+1);
            uChInFee ++, uFullChId++ )
       {
+         UInt_t uLastTotValFt = fvuLastTotInFtBins[uChInFee];
          // Try to find missing edges
          if( ( ( 20 < fvmLastHit[uFullChId ].getGet4CoarseTs() ) &&
                ( fvmLastHit[uFullChId ].getGet4CoarseTs() < (get4v1x::kuCoarseCounterSize - 20) ) ) &&
@@ -2508,10 +2647,10 @@ void CbmGet4FastMonitor::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
                   // Good TOT => save its FT
                   if( fvmLastHit[ uFullChId ].getGet4FineTs() < fvmLastOldTot[ uFullChId ].getGet4FineTs() )
                      fvuLastTotInFtBins[uChInFee] =  fvmLastOldTot[ uFullChId ].getGet4FineTs()
-                                                  - fvmLastHit[ uFullChId ].getGet4FineTs();
-                     else fvuLastTotInFtBins[uChInFee] = get4v1x::kuFineTime + 1
-                                                       + fvmLastHit[ uFullChId ].getGet4FineTs()
-                                                       - fvmLastOldTot[ uFullChId ].getGet4FineTs();
+                                                   - fvmLastHit[ uFullChId ].getGet4FineTs();
+                     else fvuLastTotInFtBins[uChInFee] = get4v1x::kuFineCounterSize
+                                                       + fvmLastOldTot[ uFullChId ].getGet4FineTs()
+                                                       - fvmLastHit[ uFullChId ].getGet4FineTs();
                } // if( 0.0 < dTot && dTot < 100.0 )
                else
                   LOG(INFO)<<"Bad TOT "
@@ -2578,20 +2717,49 @@ void CbmGet4FastMonitor::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
             if( (2 == fvuNbRisEdgeEpoch[uChInFee] && 2 >= fvuNbFalEdgeEpoch[uChInFee]) ||
                 (2 >= fvuNbRisEdgeEpoch[uChInFee] && 2 == fvuNbFalEdgeEpoch[uChInFee]) )
             {
-               LOG(INFO)<< "Extra edges and edges nb missmatch: ch " << uChInFee
+               LOG(INFO)<< "Extra edges and edges nb missmatch: ch " << Form("%2u", uChInFee)
                         << " Nb Ris " <<fvuNbRisEdgeEpoch[uChInFee]
                         << " Nb Fal " <<fvuNbFalEdgeEpoch[uChInFee]
                         << Form(" TS #%12llu", fulTsNb)
-                        << FairLogger::endl
+                        << Form(" Last TOT %3u %3u", uLastTotValFt, fvuLastTotInFtBins[uChInFee]);
+               if(2 == fvuNbRisEdgeEpoch[uChInFee] && 1 == fvuNbFalEdgeEpoch[uChInFee])
+               {
+                  UInt_t uTotReco = 0;
+                  if( fvmFeePrevRis[  uChInFee ].getGet4FineTs() < fvmLastOldTot[ uFullChId ].getGet4FineTs() )
+                     uTotReco =  fvmLastOldTot[ uFullChId ].getGet4FineTs()
+                               - fvmFeePrevRis[  uChInFee ].getGet4FineTs();
+                     else uTotReco = get4v1x::kuFineCounterSize
+                                    + fvmLastOldTot[ uFullChId ].getGet4FineTs()
+                                    - fvmFeePrevRis[  uChInFee ].getGet4FineTs();
+                  LOG(INFO)<< Form(" TOT reco %3u", uTotReco);
+                  fhPulserFeeExtraRecoTot->Fill( uChInFee, uTotReco);
+               } // if(2 == fvuNbRisEdgeEpoch[uChInFee] && 1 == fvuNbFalEdgeEpoch[uChInFee])
+               if(1 == fvuNbRisEdgeEpoch[uChInFee] && 2 == fvuNbFalEdgeEpoch[uChInFee])
+               {
+                  UInt_t uTotReco = 0;
+                  if( fvmLastHit[ uFullChId ].getGet4FineTs() < fvmLastOldTot[ uFullChId ].getGet4FineTs() )
+                     uTotReco =  fvmLastOldTot[ uFullChId ].getGet4FineTs()
+                               - fvmLastHit[ uFullChId ].getGet4FineTs();
+                     else uTotReco = get4v1x::kuFineCounterSize
+                                    + fvmLastOldTot[ uFullChId ].getGet4FineTs()
+                                    - fvmLastHit[ uFullChId ].getGet4FineTs();
+                  LOG(INFO)<< Form(" TOT reco %3u", uTotReco);
+                  fhPulserFeeExtraRecoTot->Fill( uChInFee, uTotReco);
+               } // if(1 == fvuNbRisEdgeEpoch[uChInFee] && 2 == fvuNbFalEdgeEpoch[uChInFee])
+               LOG(INFO)<< FairLogger::endl
                         <<"      Previous messages            "
-                        <<Form("  FT(R) %3u, CT(R) %4u, Ep(R) %6u",
+                        << ( fvuFeePrevRisEp[uChInFee] == fvuLastHitEp[uFullChId] ?
+                           Form("  FT(R) %3u, CT(R) %4u, Ep(R) %6u",
                               fvmFeePrevRis[  uChInFee ].getGet4FineTs(),
                               fvmFeePrevRis[  uChInFee ].getGet4CoarseTs(),
-                              fvuFeePrevRisEp[uChInFee] )
-                        <<Form("  FT(F) %3u, CT(F) %4u, Ep(F) %6u",
+                              fvuFeePrevRisEp[uChInFee] ) :
+                           "                                     ")
+                        << ( fvuFeePrevFalEp[uChInFee] == fvuLastOldTotEp[uFullChId] ?
+                           Form("  FT(F) %3u, CT(F) %4u, Ep(F) %6u",
                               fvmFeePrevFal[  uChInFee ].getGet4FineTs(),
                               fvmFeePrevFal[  uChInFee ].getGet4CoarseTs(),
-                              fvuFeePrevFalEp[uChInFee] )
+                              fvuFeePrevFalEp[uChInFee] ) :
+                           "                                     ")
                         << FairLogger::endl
                         <<"      Last messages                "
                         <<Form("  FT(R) %3u, CT(R) %4u, Ep(R) %6u",
@@ -2611,7 +2779,8 @@ void CbmGet4FastMonitor::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
                fhPulserFeeFtExtraEdgeRisB->Fill( uChInFee, fvmLastHit[  uFullChId ].getGet4FineTs());
                fhPulserFeeFtExtraEdgeFalB->Fill( uChInFee, fvmLastOldTot[  uFullChId ].getGet4FineTs());
             } // if only one extra message or less per edge
-            else LOG(INFO)<<"Extra edges and edges nb missmatch: ch " << uChInFee
+            else
+               LOG(INFO)<<"Extra edges and edges nb missmatch: ch " << uChInFee
                         << " Nb Ris " <<fvuNbRisEdgeEpoch[uChInFee]
                         << " Nb Fal " <<fvuNbFalEdgeEpoch[uChInFee]
                         << Form(" TS #%12llu", fulTsNb)
@@ -2627,6 +2796,7 @@ void CbmGet4FastMonitor::MonitorMessage_epoch2( get4v1x::Message mess, uint16_t 
                               fvuLastOldTotEp[uFullChId] )
                         <<FairLogger::endl;
          }
+            else fhPulserFeeGoodTot->Fill( uChInFee, fvuLastTotInFtBins[uChInFee]);
          if( 1 < fvuNbRisEdgeEpoch[uChInFee] )
          {
             fhPulserFeeExtraRisEp->Fill( uChInFee, fvuNbRisEdgeEpoch[uChInFee]);
@@ -3366,6 +3536,14 @@ void CbmGet4FastMonitor::MonitorMessage_Get4v1( get4v1x::Message mess, uint16_t 
                            fvuLastHitEp[ fuPulserChan[uChanB] ],
                            fvmLastHit[   fuPulserChan[uChanB] ] );
                      fhTimeResCombi[uHistoCombiIdx]->Fill( dTimeDiff );
+
+                     if( ( fvmLastHit[ fuPulserChan[uChanA] ].getGet4V10R32HitFt() < (get4v1x::kuFineCounterSize/2) ) &&
+                         ( fvmLastHit[ fuPulserChan[uChanB] ].getGet4V10R32HitFt() < (get4v1x::kuFineCounterSize/2) ) )
+                        fhTimeResCombiEncA[uHistoCombiIdx]->Fill( dTimeDiff );
+                     else if( ( (get4v1x::kuFineCounterSize/2) <= fvmLastHit[ fuPulserChan[uChanA] ].getGet4V10R32HitFt() ) &&
+                              ( (get4v1x::kuFineCounterSize/2) <= fvmLastHit[ fuPulserChan[uChanB] ].getGet4V10R32HitFt() ) )
+                        fhTimeResCombiEncB[uHistoCombiIdx]->Fill( dTimeDiff );
+
                      Double_t dTotA = fvmLastHit[   fuPulserChan[uChanA] ].getGet4V10R32HitTot();
                      Double_t dTotB = fvmLastHit[   fuPulserChan[uChanB] ].getGet4V10R32HitTot();
                      fhTimeResCombiTot[2*uHistoCombiIdx]->Fill(   dTimeDiff, dTotA );

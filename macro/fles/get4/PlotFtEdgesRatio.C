@@ -199,6 +199,29 @@ Bool_t PlotFtEdgesRatio( UInt_t uChannel = 0 )
    legExtraFt->AddEntry(projExtraEdgeFalB, "FT Sec F","l");
    legExtraFt->Draw();
 
+   TCanvas *cExtraEdgesB= new TCanvas("cExtraEdgesB", "Monitoring extra edges (assume 1 pulse per epoch)");
+
+   TH1* projExtraEdgeTotA  = hPulserFeeGoodTot->ProjectionY(
+                                 Form("projExtraEdgeTotA_ch%02u", uChannel),
+                                 1+uChannel, 1+uChannel);
+   TH1* projExtraEdgeTotB  = hPulserFeeExtraRecoTot->ProjectionY(
+                                 Form("projExtraEdgeTotB_ch%02u", uChannel),
+                                 1+uChannel, 1+uChannel);
+
+   cExtraEdgesB->cd();
+   gPad->SetLogy();
+   THStack * stackExtraTot = new THStack();
+   projExtraEdgeTotA->SetLineColor( kBlack  );
+   projExtraEdgeTotB->SetLineColor( kRed    );
+   stackExtraTot->Add(projExtraEdgeTotA);
+   stackExtraTot->Add(projExtraEdgeTotB);
+   stackExtraTot->Draw("nostack,h");
+
+   TLegend * legExtraTot = new TLegend(0.6,0.7,0.98,0.9);
+//   legExtraFt->SetHeader("title");
+   legExtraTot->AddEntry(projExtraEdgeTotA, "Tot good pulse","l");
+   legExtraTot->AddEntry(projExtraEdgeTotB, "Tot reco extra","l");
+   legExtraTot->Draw();
 
    return kTRUE;
 }

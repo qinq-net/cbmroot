@@ -203,6 +203,12 @@ private:
   TH1 * fhTimeResCombi[kuNbChanComb*(kuNbChanComb-1)/2]; //!
   TH2 * fhTimeResPairsTot[(kuNbChanTest - 1)*2]; //!
   TH2 * fhTimeResCombiTot[(kuNbChanComb*(kuNbChanComb-1)/2)*2]; //!
+  TH1 * fhTimeResCombiEncA[kuNbChanComb*(kuNbChanComb-1)/2]; //!
+  TH1 * fhTimeResCombiEncB[kuNbChanComb*(kuNbChanComb-1)/2]; //!
+  TH2 * fhTimeRmsAllCombiEncA;
+  TH2 * fhTimeResAllCombiEncA;
+  TH2 * fhTimeRmsAllCombiEncB;
+  TH2 * fhTimeResAllCombiEncB;
   TH2 * fhPulserHitDistNs;
   TH2 * fhPulserHitDistUs;
   TH2 * fhPulserHitDistMs;
@@ -258,6 +264,8 @@ private:
   TH2 * fhPulserFeeFtExtraEdgeFalA;
   TH2 * fhPulserFeeFtExtraEdgeRisB;
   TH2 * fhPulserFeeFtExtraEdgeFalB;
+  TH2 * fhPulserFeeGoodTot;
+  TH2 * fhPulserFeeExtraRecoTot;
   std::vector<TH2 *> fhPulserFeeTotDistCT;
   //--------------------------------------------------------------//
   std::vector< UInt_t >           fvuPrevOldTotEp; //! Epoch of previous TOT message (one per GET4 chip & channel)
