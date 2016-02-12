@@ -873,10 +873,10 @@ void PairAnalysisHistos::ReadFromFile(const char* file, const char *task, const 
 void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString histClassDenom, TString taskDenom)
 {
 
+  opt.ToLower();
   TString optString(opt);
-  optString.ToLower();
   Bool_t optEff     = optString.Contains("eff");
-  Bool_t optCutStep = optString.Contains("cutstep"); opt.ReplaceAll("cutstep","");
+  Bool_t optCutStep = optString.Contains("cutstep");
   //  fList->Print();
   //  fHistoList.Print();
   fHistoList.SetOwner(kFALSE);
@@ -886,7 +886,6 @@ void PairAnalysisHistos::DrawTaskSame(TString histName, TString opt, TString his
 
   if(optCutStep) {
     TString cutstepTask = fHistoList.GetName();
-    printf("cutstepTask: -%s- \n",cutstepTask.Data());
     THashList *listCutStep=dynamic_cast<THashList*>(fList->FindObject(cutstepTask));
     if(listCutStep) fList=listCutStep;
   }
@@ -986,6 +985,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
   // Bool_t optEps      =optString.Contains("eps");       optString.ReplaceAll("eps","");
   // Bool_t optPng      =optString.Contains("png");       optString.ReplaceAll("png","");
   Bool_t optTask     =optString.Contains("task");      optString.ReplaceAll("task","");
+  Bool_t optCutStep = optString.Contains("cutstep");   optString.ReplaceAll("cutstep","");
   // options - calulation
   Bool_t optDiv      =optString.Contains("div");       optString.ReplaceAll("div","");
   Bool_t optEff      =optString.Contains("eff");       optString.ReplaceAll("eff","");
@@ -1132,7 +1132,8 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
       Info("DrawSame"," Hist found in histClass '%s' (search for denom '%s') ",histClass.Data(),histClassDenom.Data());
 
       // check if ratio should be build
-      if( (optEff || optRatio) && !optTask && (histClass.EqualTo(histClassDenom) || !fHistoList.FindObject(histClassDenom.Data())) ) continue;
+      /// TODO: why  '!optTask' was needed?
+      if( (optEff || optRatio) /*&& !optTask*/ && (histClass.EqualTo(histClassDenom) || !fHistoList.FindObject(histClassDenom.Data())) ) continue;
       else if(!histClassDenom.IsNull()) Info("DrawSame"," Denom histClass '%s' found ",histClassDenom.Data());
 
       // set first histogram
@@ -1404,6 +1405,7 @@ TObjArray* PairAnalysisHistos::DrawSame(TString histName, const Option_t *opt, T
 	legOpt.ReplaceAll("z","");
 	legOpt.ReplaceAll("e","");
 	if (optTask)                histClass.Prepend(Form("%s ",GetName()));
+	if (optTask && optCutStep && i) histClass.Prepend("+");
 	if (optDiv && !optOneOver)  histClass.ReplaceAll(GetName(),Form("%s/%s",GetName(),divName.Data()));
 	if (optDiv &&  optOneOver)  histClass.Prepend(Form("%s/",divName.Data()));
 	if (optDet) {
