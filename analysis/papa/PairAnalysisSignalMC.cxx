@@ -438,3 +438,16 @@ PairAnalysisSignalMC::~PairAnalysisSignalMC() {
   //  Destructor
   //
 }
+
+Double_t PairAnalysisSignalMC::GetWeight(Double_t *const values) const{
+  // TODO: workaround to avoid zero weights
+  if(fType==0) return fWeight;
+
+  // kind of binary search
+  Int_t knot = fWeights->FindX(values[fType]);
+
+  Double_t x=0.;
+  Double_t y=0.;
+  fWeights->GetKnot(knot,x,y);
+  return y;
+}

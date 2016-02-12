@@ -918,8 +918,12 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	    if(!isMCtruth) continue;
 	    sigName =  Form("Pair_%s",sigMC->GetName());
 	    //	  Printf("fill %s: %d ",sigName.Data(),pairClassMC.TestBitNumber(isig));
-	    if(TMath::Abs(sigMC->GetWeight(values)-1.)>1e-8) // weight is set, don't use track weights
-	      PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight(values));
+	    Double_t wght = sigMC->GetWeight(values);
+	    if(wght>1e-10) // weight is set, don't use track weights
+	      //	    if(TMath::Abs(wght-1.)>1e-8) // weight is set, don't use track weights
+	      PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, wght);
+	    else
+	      Error("FillHistograms","weight is zero!!!");
 	    if(pairClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
 	    if(pairClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
 	  }
@@ -940,8 +944,11 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	      if(!fillMC.TestBitNumber(isig)) continue;
 	      sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
 	      sigName = Form("Track.Legs_%s",sigMC->GetName());
-	      if(TMath::Abs(sigMC->GetWeight(values)-1.)>1e-8) // weight is set, don't use track weights
-		PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight(values));
+	      Double_t wght = sigMC->GetWeight(values);
+	      if(wght>1e-10) // weight is set, don't use track weights
+		PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, wght);
+	      else
+		Error("FillHistograms","weight is zero!!!");
 	      if(legClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
 	      if(legClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
 	    }
@@ -958,8 +965,11 @@ void PairAnalysis::FillHistograms(const PairAnalysisEvent *ev, Bool_t pairInfoOn
 	      if(!fillMC.TestBitNumber(isig)) continue;
 	      sigMC = (PairAnalysisSignalMC*) fSignalsMC->At(isig);
 	      sigName = Form("Track.Legs_%s",sigMC->GetName());
-	      if(TMath::Abs(sigMC->GetWeight(values)-1.)>1e-8) // weight is set, don't use track weights
-		PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, sigMC->GetWeight(values));
+	      Double_t wght = sigMC->GetWeight(values);
+	      if(wght>1e-10) // weight is set, don't use track weights
+		PairAnalysisVarManager::SetValue(PairAnalysisVarManager::kWeight, wght);
+	      else
+		Error("FillHistograms","weight is zero!!!");
 	      if(legClassMC.TestBitNumber(isig))   fHistos     ->FillClass(sigName, values);
 	      if(legClassMChf.TestBitNumber(isig)) fHistoArray ->FillClass(sigName, values);
 	    }
@@ -1076,11 +1086,15 @@ void PairAnalysis::FillTrackArrays(PairAnalysisEvent * const ev)
     if(fHasMC && fSignalsMC) {
       //      PairAnalysisMC* papaMC = PairAnalysisMC::Instance();
       for(Int_t isig=0; isig<fSignalsMC->GetEntriesFast(); isig++) {
-	PairAnalysisSignalMC *sig=(PairAnalysisSignalMC*)fSignalsMC->At(isig);
-	if( papaMC->IsMCTruth(particle,sig,1) || papaMC->IsMCTruth(particle,sig,2) ) {
+	PairAnalysisSignalMC *sigMC=(PairAnalysisSignalMC*)fSignalsMC->At(isig);
+	if( papaMC->IsMCTruth(particle,sigMC,1) || papaMC->IsMCTruth(particle,sigMC,2) ) {
 	  //   printf("signal weight for %s is %f \n",sig->GetName(),sig->GetWeight());
 	  //	  if(sig->GetWeight(values) != 1.0) particle->SetWeight( sig->GetWeight(values) );
-	  if(sig->GetWeight(values) != 1.0) particle->SetWeight( sig->GetWeight(values) );
+	  Double_t wght = sigMC->GetWeight(values);
+	  if(wght>1e-10) {
+	    if(wght != 1.0) particle->SetWeight( wght );
+	  } else
+	    Error("FillTrackArrays","weight is zero for %s!!!",sigMC->GetName());
 	}
       }
     }

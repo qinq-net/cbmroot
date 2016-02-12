@@ -33,6 +33,7 @@
 #include <CbmMvdHit.h>
 #include <CbmMuchPixelHit.h>
 #include <CbmMuchStrawHit.h>
+#include <CbmTrdCluster.h>
 
 #include <FairTrackParam.h>
 #include <FairMCPoint.h>
@@ -86,6 +87,8 @@ public:
     kLinksMC,                // number of matched MC links
     kTRDLayer,               // plane/layer id
     kTRDPads,                // number of pads contributing to cluster/hit
+    kTRDCols,                // number of pads columns contributing to cluster/hit
+    kTRDRows,                // number of pads rows contributing to cluster/hit
     kEloss,                  // TRD energy loss dEdx+TR
     kElossdEdx,              // TRD energy loss dEdx only
     kElossTR,                // TRD energy loss TR only
@@ -409,6 +412,7 @@ private:
   static void FillVarRichHit(           const CbmRichHit *hit,           Double_t * const values);
   static void FillVarTofHit(            const CbmTofHit *hit,            Double_t * const values);
   static void FillVarPixelHit(          const CbmPixelHit *hit,          Double_t * const values);
+  static void FillVarTrdCluster(        const CbmTrdCluster *cluster,    Double_t * const values);
   static void FillVarMCPoint(           const FairMCPoint *hit,          Double_t * const values);
   static void FillSumVarMCPoint(        const FairMCPoint *hit,          Double_t * const values);
   static void FillVarMCHeader(          const FairMCEventHeader *header, Double_t * const values);
@@ -618,10 +622,11 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
 
   // acceptance defintions
   FairTrackParam *param=NULL;
-  if( (param = track->GetRichProj()) ) {
+  if( (param = track->GetRichProj()) ) {   // RICH
+
     values[kRICHhasProj] = (TMath::Abs(param->GetX() + param->GetY()) > 0.);
   }
-  if( (param = track->GetMvdEntrance()) ) {
+  if( (param = track->GetMvdEntrance()) ) {  // MVD
     Double_t innerLimit=0.5; //cm
     Double_t outerLimit=2.5; //cm
     values[kMVDhasEntr] = ( (TMath::Abs(param->GetX()) > innerLimit && TMath::Abs(param->GetX()) < outerLimit && TMath::Abs(param->GetY()) < outerLimit)
@@ -1303,12 +1308,11 @@ inline void PairAnalysisVarManager::FillVarTrdHit(const CbmTrdHit *hit, Double_t
   // accessors via CbmPixelHit & CbmHit
   FillVarPixelHit(hit, values);
 
-  // accessors via CbmCluster
-  Int_t clusterId        = hit->GetRefId();
+  // accessors via CbmCluster & CbmTrdCluster
   TClonesArray *cluster  = fgEvent->GetCluster(kTRD);
   if(cluster->GetEntriesFast()>0) {
-    CbmCluster *cls = static_cast<CbmCluster*>( cluster->At(hit->GetRefId()) );
-    if(cls) values[kTRDPads]  = cls->GetNofDigis();
+    const CbmTrdCluster *cls = static_cast<const CbmTrdCluster*>( cluster->At(hit->GetRefId()) );
+    FillVarTrdCluster(cls, values);
     //    if(cls) std::cout << (cls->ToString()).data();
   }
 
@@ -1349,6 +1353,27 @@ inline void PairAnalysisVarManager::FillVarTofHit(const CbmTofHit *hit, Double_t
 
   //  Printf("track length: %f beta: %f",values[kTrackLength],values[kBeta]);
   //  Double_t mass2 = TMath::Power(momentum, 2.) * (TMath::Power(time/ trackLength, 2) - 1);
+}
+
+inline void PairAnalysisVarManager::FillVarTrdCluster(const CbmTrdCluster *cluster, Double_t * const values)
+{
+  //
+  // Fill cluster information for the trd cluster into array
+  //
+
+  // Reset array
+  //  ResetArrayDataMC(  kHitMaxMC,   values);
+
+  // Protect
+  if(!cluster) return;
+
+  // accessors via CbmCluster
+  values[kTRDPads]  = cluster->GetNofDigis();
+
+  // Set
+  values[kTRDCols]  = cluster->GetNCols();
+  values[kTRDRows]  = cluster->GetNRows();
+
 }
 
 inline void PairAnalysisVarManager::FillVarMCPoint(const FairMCPoint *hit, Double_t * const values)

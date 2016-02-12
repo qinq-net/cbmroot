@@ -150,7 +150,7 @@ void PairAnalysisEvent::SetInput(FairRootManager *man)
   // mc points
   fMvdPoints    = (TClonesArray*) man->GetObject("MvdPoint");
   fStsPoints    = (TClonesArray*) man->GetObject("StsPoint");
-  fRichPoints   = 0x0;//(TClonesArray*) man->GetObject("RichPoint");
+  fRichPoints   = (TClonesArray*) man->GetObject("RichPoint");
   fMuchPoints   = (TClonesArray*) man->GetObject("MuchPoint");
   fTrdPoints    = (TClonesArray*) man->GetObject("TrdPoint");
   fTofPoints    = (TClonesArray*) man->GetObject("TofPoint");

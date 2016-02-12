@@ -132,7 +132,9 @@ class PairAnalysisSignalMC : public TNamed {
   Bool_t GetCheckGEANTProcess()                        const {return fCheckGEANTProcess;}
   Double_t GetWeight()                                 const {return fWeight;}
   //  Double_t GetWeight(Double_t *const values)           const {return (&fWeights ? fWeights.Eval(values[fType]) : fWeight); }
-  Double_t GetWeight(Double_t *const values)           const {return (fType>0 ? fWeights->Eval(values[fType]) : fWeight); }
+  //  Double_t GetWeight(Double_t *const values)           const {return (fType>0 ? fWeights->Eval(values[fType]) : fWeight); }
+  // TODO: workaround
+  Double_t GetWeight(Double_t *const values)           const;// {return (fType>0 ? fWeights->Eval(values[fType]) : fWeight); }
   Bool_t GetFillPureMCStep()                           const {return fFillPureMCStep;}
   Bool_t IsSingleParticle()                            const {return fIsSingleParticle; }
 
