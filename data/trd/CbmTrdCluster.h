@@ -28,6 +28,19 @@ public:
    */
   virtual ~CbmTrdCluster();
 
-  ClassDef(CbmTrdCluster, 2)
+
+  /** Setters **/
+  void SetNCols(UShort_t ncols)  { fNCols=ncols; }
+  void SetNRows(UShort_t nrows)  { fNRows=nrows; }
+
+  /** Accessors **/
+  UShort_t GetNCols() const { return fNCols; }
+  UShort_t GetNRows() const { return fNRows; }
+
+ protected:
+  UShort_t fNCols; // number of columns with charge above threshold
+  UShort_t fNRows; // number of rows with charge above threshold
+
+  ClassDef(CbmTrdCluster, 3)
 };
 #endif

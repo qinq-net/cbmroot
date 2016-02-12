@@ -6,7 +6,9 @@
 #include "CbmTrdCluster.h"
 
 CbmTrdCluster::CbmTrdCluster()
-  : CbmCluster()
+  : CbmCluster(),
+    fNCols(0),
+    fNRows(0)
 {
 }
 
