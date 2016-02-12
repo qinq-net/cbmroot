@@ -91,7 +91,7 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer():
    fvdDifX(),
    fvdDifY(),
    fvdDifCh(),
-   fsHistoOutFilename("./tofSimpClust.hst.root"),
+   fsHistoOutFilename(""),
    fhClustBuildTime(NULL),
    fhHitsPerTracks(NULL),
    fhPtsPerHit(NULL),
@@ -186,7 +186,7 @@ CbmTofSimpClusterizer::CbmTofSimpClusterizer(const char *name, Int_t verbose, Bo
    fvdDifX(),
    fvdDifY(),
    fvdDifCh(),
-   fsHistoOutFilename("./tofSimpClust.hst.root"),
+   fsHistoOutFilename(""),
    fhClustBuildTime(NULL),
    fhHitsPerTracks(NULL),
    fhPtsPerHit(NULL),
@@ -953,6 +953,16 @@ Bool_t   CbmTofSimpClusterizer::FillHistos()
 }
 Bool_t   CbmTofSimpClusterizer::WriteHistos()
 {
+   if( "" == fsHistoOutFilename )
+   {
+      LOG(INFO) << "CbmTofSimpClusterizer::WriteHistos => Control histograms will not be written to disk!" 
+                << FairLogger::endl;
+      LOG(INFO) << "CbmTofSimpClusterizer::WriteHistos => To change this behavior please provide a full path "
+                << "with the SetHistoFileName method"
+                << FairLogger::endl;
+      return kTRUE;
+   } // if( "" == fsHistoOutFilename )
+   
    TDirectory * oldir = gDirectory;
    TFile *fHist = new TFile(fsHistoOutFilename,"RECREATE");
 

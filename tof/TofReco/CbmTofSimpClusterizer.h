@@ -87,7 +87,7 @@ class CbmTofSimpClusterizer : public FairTask
       inline void SetTotMin     (Double_t TOTMin)       { fTotMin      = TOTMin;}
 
       inline void SetCalParFileName(TString CalParFileName) { fCalParFileName = CalParFileName; }
-      Bool_t   SetHistoFileName( TString sFilenameIn );
+      Bool_t   SetHistoFileName( TString sFilenameIn = "./tofSimpClust.hst.root" );
 
    protected:
 

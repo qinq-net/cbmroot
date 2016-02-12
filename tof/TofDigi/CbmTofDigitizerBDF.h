@@ -85,7 +85,7 @@ class CbmTofDigitizerBDF : public FairTask
 
       void SetInputFileName (TString FileName) { fsBeamInputFile = FileName; }
       
-      Bool_t   SetHistoFileName( TString sFilenameIn );
+      Bool_t   SetHistoFileName( TString sFilenameIn = "./tofDigiBdf.hst.root" );
       
    protected:
 

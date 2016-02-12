@@ -101,7 +101,7 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF():
    fTofDigiMatchPointsColl(NULL),
    fiNbDigis(0),
    fVerbose(1),
-   fsHistoOutFilename("./tofDigiBdf.hst.root"),
+   fsHistoOutFilename(""),
    fhTofPointsPerTrack(NULL),
    fhTofPtsInTrkVsGapInd(NULL),
    fhTofPtsInTrkVsGapIndPrm(NULL),
@@ -168,7 +168,7 @@ CbmTofDigitizerBDF::CbmTofDigitizerBDF(const char *name, Int_t verbose, Bool_t w
    fTofDigiMatchPointsColl(NULL),
    fiNbDigis(0),
    fVerbose(verbose),
-   fsHistoOutFilename("./tofDigiBdf.hst.root"),
+   fsHistoOutFilename(""),
    fhTofPointsPerTrack(NULL),
    fhTofPtsInTrkVsGapInd(NULL),
    fhTofPtsInTrkVsGapIndPrm(NULL),
@@ -859,6 +859,16 @@ Bool_t CbmTofDigitizerBDF::SetHistoFileName( TString sFilenameIn )
 }
 Bool_t   CbmTofDigitizerBDF::WriteHistos()
 {
+   if( "" == fsHistoOutFilename )
+   {
+      LOG(INFO) << "CbmTofDigitizerBDF::WriteHistos => Control histograms will not be written to disk!" 
+                << FairLogger::endl;
+      LOG(INFO) << "CbmTofDigitizerBDF::WriteHistos => To change this behavior please provide a full path "
+                << "with the SetHistoFileName method"
+                << FairLogger::endl;
+      return kTRUE;
+   } // if( "" == fsHistoOutFilename )
+   
    TDirectory * oldir = gDirectory;
    TFile *fHist = new TFile(fsHistoOutFilename,"RECREATE");
 
