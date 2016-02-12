@@ -29,10 +29,10 @@
 #include "L1Field.h"
 #include "CbmL1PFFitter.h"
 
-#include "base/CbmLitToolFactory.h"
-#include "data/CbmLitTrackParam.h"
-#include "base/CbmLitPtrTypes.h"
-#include "utils/CbmLitConverter.h"
+#include "CbmLitToolFactory.h"
+#include "CbmLitTrackParam.h"
+#include "CbmLitPtrTypes.h"
+#include "CbmLitConverterFairTrackParam.h"
 
 
 #include "PairAnalysisTrack.h"
@@ -123,10 +123,10 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
   Double_t zMvd = 5.; // z-position of the first mvd station, TODO: how to get that for different geometries
   TrackExtrapolatorPtr fExtrapolator = CbmLitToolFactory::Instance()->CreateTrackExtrapolator("rk4");
   CbmLitTrackParam litParamIn;
-  CbmLitConverter::FairTrackParamToCbmLitTrackParam( ststrk->GetParamFirst(), &litParamIn);
+  CbmLitConverterFairTrackParam::FairTrackParamToCbmLitTrackParam( ststrk->GetParamFirst(), &litParamIn);
   CbmLitTrackParam litParamOut;
   fExtrapolator->Extrapolate(&litParamIn, &litParamOut, zMvd, NULL);
-  CbmLitConverter::CbmLitTrackParamToFairTrackParam(&litParamOut, fMvdEntrance);
+  CbmLitConverterFairTrackParam::CbmLitTrackParamToFairTrackParam(&litParamOut, fMvdEntrance);
 
   /// back extrapolation to vertex using CbmL1PFFitter
   vector<CbmStsTrack> stsTracks;

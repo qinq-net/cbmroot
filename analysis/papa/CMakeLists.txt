@@ -35,7 +35,11 @@ ${CBMROOT_SOURCE_DIR}/L1/L1Algo
 
 ${CBMROOT_SOURCE_DIR}/littrack
 ${CBMROOT_SOURCE_DIR}/littrack/cbm
+${CBMROOT_SOURCE_DIR}/littrack/cbm/base
+${CBMROOT_SOURCE_DIR}/littrack/cbm/utils
 ${CBMROOT_SOURCE_DIR}/littrack/std
+${CBMROOT_SOURCE_DIR}/littrack/std/data
+${CBMROOT_SOURCE_DIR}/littrack/std/base
 
 )
 
