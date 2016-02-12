@@ -140,11 +140,6 @@ public:
     */
    virtual void ConstructGeometry();
 
-   /**
-    * \brief Construct geometry from ASCII file. Supported structure for the mirrors are added on a fly.
-    */
-   void ConstructAsciiGeometry();
-
 
    /**
     * \brief Construct geometry from GDML file.
