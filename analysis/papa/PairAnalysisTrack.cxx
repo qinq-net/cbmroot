@@ -111,6 +111,7 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
   fTrdTrackMatch(trdmatch),
   fRichRingMatch(richmatch),
   fRichProj(richproj),
+  fMvdEntrance(new FairTrackParam()),
   fMomentum(),
   fPosition()
 {
