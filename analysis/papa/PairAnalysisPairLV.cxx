@@ -7,6 +7,11 @@
 
 #include <TDatabasePDG.h>
 
+#include "CbmL1.h"
+#include "L1Algo.h"
+#include "L1Field.h"
+
+
 #include "CbmVertex.h"
 #include "CbmMCTrack.h"
 #include "PairAnalysisTrack.h"
@@ -341,13 +346,26 @@ Double_t PairAnalysisPairLV::GetArmPt() const
 //______________________________________________
 Double_t PairAnalysisPairLV::PhivPair(Double_t MagField) const
 {
-  //Following idea to use opening of colinear pairs in magnetic field from e.g. PHENIX
-  //to ID conversions. Angle between ee plane and magnetic field is calculated.
-
-  Int_t qD1 = dynamic_cast<PairAnalysisTrack*>(fRefD1.GetObject())->Charge()>0;
+  /// Following the idea to use opening of collinear pairs in magnetic field from e.g. PHENIX
+  /// to identify conversions. Angle between ee plane and magnetic field is calculated (0 to pi).
+  /// Due to tracking to the primary vertex, conversions with no intrinsic opening angle 
+  /// always end up as pair in "cowboy" configuration. The function as defined here then 
+  /// returns values close to pi.
+  /// Correlated Like Sign pairs (from double conversion / dalitz + conversion) may show up 
+  /// at pi or at 0 depending on which leg has the higher momentum. (not checked yet)
+  /// This expected ambiguity is not seen due to sorting of track arrays in this framework. 
+  /// To reach the same result as for ULS (~pi), the legs are flipped for LS.
+  /// TODO: VALIDATE OBSERVABLE
+  Int_t qD1 = 0;
+  if(fRefD1.GetObject()) qD1 = dynamic_cast<PairAnalysisTrack*>(fRefD1.GetObject())->Charge()>0;
+  // TODO add mc charge (no fRefD1.GetObject())
   TVector3 p1;
   TVector3 p2;
-  if(MagField>0){
+
+  //  L1FieldValue bfield = CbmL1::Instance()->algo->GetvtxFieldValue();
+  //  printf("l1 field values: %f %f %f \n",bfield.x[0],bfield.y[0],bfield.z[0]);
+  //  if(bfield.y[0]>0){
+  if(MagField<0) {
     p1 = (qD1>0? fD1.Vect() : fD2.Vect());
     p2 = (qD1>0? fD2.Vect() : fD1.Vect());
   }  else {
@@ -358,21 +376,26 @@ Double_t PairAnalysisPairLV::PhivPair(Double_t MagField) const
   //unit vector of (pep+pem)
   TVector3 u = fPair.Vect();
   u.SetMag(1.); // normalize
-  Double_t ax =  u.Py()/u.Perp();
-  Double_t ay = -u.Px()/u.Perp();
 
-  //vector product of pep X pem
+  //vector product of pep X pem (perpendicular to the pair)
   TVector3 vpm  = p1.Cross(p2);
   vpm.SetMag(1.); // normalize
 
   //The third axis defined by vector product (ux,uy,uz)X(vx,vy,vz)
-  TVector3 w  = u.Cross(vpm);
   // by construction, (wx,wy,wz) must be a unit vector. 
+  TVector3 w  = u.Cross(vpm);
+
+  // unit vector in xz-plane (perpendicular to B-field)
+  Double_t ax =  u.Pz()/TMath::Sqrt(u.Px()+u.Px() + u.Pz()+u.Pz()); // =sin(alpha_xz)
+  Double_t ay = 0.; // by defintion
+  Double_t az = u.Pz()/TMath::Sqrt(u.Px()+u.Px() + u.Pz()+u.Pz()); // =cos(alpha_xz+180)
+  TVector3 a(ax,ay,az);
+
   // measure angle between (wx,wy,wz) and (ax,ay,0). The angle between them 
-  // should be small if the pair is conversion 
-  //
-  Double_t cosPhiV = w.Px()*ax + w.Py()*ay;
-  Double_t phiv = TMath::ACos(cosPhiV);
+  // should be small if the pair is conversion
+  // Double_t cosPhiV = w.Px()*ax + w.Py()*ay; // angle btw w and a
+  // Double_t phiv = TMath::ACos(cosPhiV);
+  Double_t phiv = w.Angle(a);
 
   return phiv;
 

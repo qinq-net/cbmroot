@@ -65,7 +65,8 @@ public:
   CbmTofHit      *GetTofHit()       const { return fTofHit;    }
   CbmTrack       *GetTrack(DetectorId det) const;
 
-  FairTrackParam *GetRichProj()     const { return fRichProj;  }
+  FairTrackParam *GetRichProj()     const { return fRichProj;     }
+  FairTrackParam *GetMvdEntrance()  const { return fMvdEntrance;  }
   // mc track
   CbmMCTrack     *GetMCTrack()      const { return fMCTrack;   }
   CbmTrackMatchNew *GetTrackMatch(DetectorId det) const;
@@ -113,6 +114,7 @@ private:
   CbmTrackMatchNew *fRichRingMatch   = NULL; // rich ring match
 
   FairTrackParam   *fRichProj        = NULL; // rich ring projection
+  FairTrackParam   *fMvdEntrance     = NULL; // mvd entrance
 
   TLorentzVector fMomentum;                  // momentum vector
   TLorentzVector fPosition;                  // position vector
@@ -124,7 +126,7 @@ private:
   Int_t          fMultiMatch         = 0;    // MC label for n-times matched tracks
 
   PairAnalysisTrack &operator=(const PairAnalysisTrack &c);
-  ClassDef(PairAnalysisTrack,4)         // PairAnalysis Track
+  ClassDef(PairAnalysisTrack,5)         // PairAnalysis Track
 };
 
 

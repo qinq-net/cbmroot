@@ -93,6 +93,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"TRDThetaCorr",           "#theta_{corr}^{TRD}",                                ""},
   //  {"TRDTrackLength",         "#it{l}_{track}^{TRD}",                               "(cm)"},
   // sts track information
+  {"MVDhasEntr",             "station^{MVD}_{first} entrance status",              ""},
   {"MVDHits",                "N_{hit}^{MVD}",                                      ""},
   {"MVDFirstHitPosZ",        "z_{first hit}^{MVD}",                                "(cm)"},
   //  {"ImpactParZ",             "#it{dca}_{z}/#Delta#it{dca}_{z}",                    "#sigma"},
@@ -107,6 +108,7 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"STSZv",                  "z_{STS}",                                            "(cm)"},
   {"STSFirstHitPosZ",        "z_{first hit}^{STS}",                                "(cm)"},
   //RICH ring specific information
+  {"RICHhasProj",            "projection status RICH",                             ""},
   {"RICHPidANN",             "PID_{e}^{RICH} (ANN)",                               ""},
   {"RICHHitsOnRing",         "N_{hit on Ring}^{RICH}",                             ""},
   {"RICHHits",               "N_{hit}^{RICH}",                                     ""},
@@ -248,10 +250,10 @@ const char* PairAnalysisVarManager::fgkParticleNames[PairAnalysisVarManager::kNM
   {"MUCHisMC",                 "MC status MUCH",                                    ""},
   {"RICHisMC",                 "MC status RICH",                                    ""},
   {"TOFisMC",                  "MC status TOF",                                    ""},
-  {"RICHhasProj",              "projection status RICH",                                    ""},
 
 // Pair specific MC variables
   {"OpeningAngleMC",           "#varphi^{MC}",                                     "(rad.)"},
+  //  {"PhivPairMC",               "#Phi_{v}^{MC}",                                    "(rad.)"},
 
 // Event specific MCvariables
   {"NTrkMC",                   "N_{trk}^{MC}",                                       ""},

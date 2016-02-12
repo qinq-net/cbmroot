@@ -29,6 +29,12 @@
 #include "L1Field.h"
 #include "CbmL1PFFitter.h"
 
+#include "base/CbmLitToolFactory.h"
+#include "data/CbmLitTrackParam.h"
+#include "base/CbmLitPtrTypes.h"
+#include "utils/CbmLitConverter.h"
+
+
 #include "PairAnalysisTrack.h"
 
 ClassImp(PairAnalysisTrack)
@@ -113,7 +119,16 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
   //
   Double_t m2=TMath::Power(TDatabasePDG::Instance()->GetParticle(11)->Mass(), 2);
 
-  // using CbmL1PFFitter
+  /// check mvd entrance
+  Double_t zMvd = 5.; // z-position of the first mvd station, TODO: how to get that for different geometries
+  TrackExtrapolatorPtr fExtrapolator = CbmLitToolFactory::Instance()->CreateTrackExtrapolator("rk4");
+  CbmLitTrackParam litParamIn;
+  CbmLitConverter::FairTrackParamToCbmLitTrackParam( ststrk->GetParamFirst(), &litParamIn);
+  CbmLitTrackParam litParamOut;
+  fExtrapolator->Extrapolate(&litParamIn, &litParamOut, zMvd, NULL);
+  CbmLitConverter::CbmLitTrackParamToFairTrackParam(&litParamOut, fMvdEntrance);
+
+  /// back extrapolation to vertex using CbmL1PFFitter
   vector<CbmStsTrack> stsTracks;
   stsTracks.resize(1);
   stsTracks[0] = *ststrk;
@@ -136,6 +151,7 @@ PairAnalysisTrack::PairAnalysisTrack(CbmKFVertex *vtx,
 
   fCharge  = (vtxTrack->GetQp()>0. ? +1. : -1. );
   if(mctrk) fPdgCode = mctrk->GetPdgCode();
+
 }
 
 //______________________________________________
@@ -153,6 +169,7 @@ PairAnalysisTrack::PairAnalysisTrack(const PairAnalysisTrack& track) :
   fTrdTrackMatch(track.GetTrackMatch(kTRD)),
   fRichRingMatch(track.GetTrackMatch(kRICH)),
   fRichProj(track.GetRichProj()),
+  fMvdEntrance(track.GetMvdEntrance()),
   fMomentum(track.fMomentum),
   fPosition(track.fPosition),
   fChi2Vtx(track.ChiToVertex()),

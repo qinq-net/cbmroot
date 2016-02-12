@@ -152,6 +152,7 @@ public:
     kTRDPhiCorr,             // correction factor for phi track angle
     //    kTRDTrackLength,         // track length in cm of the trd tracklet
     // sts track information
+    kMVDhasEntr,             // weather track enters first MVD station
     kMVDHits,                // number of MVD hits
     kMVDFirstHitPosZ,        // position of the first hit in the MVD (cm)
     //    kImpactParZ,             // Impact parameter of track at target z, in units of its error  
@@ -166,6 +167,7 @@ public:
     kSTSZv,                  // STS point: z-coordinate
     kSTSFirstHitPosZ,        // position of the first hit in the STS (cm)
     // rich ring information
+    kRICHhasProj,            // weather rich ring has a projection onto the pmt plane
     kRICHPidANN,             // PID value Artificial Neural Network (ANN-method)
     kRICHHitsOnRing,         // number of RICH hits on the ring
     kRICHHits,               // number of RICH hits (ANN input)
@@ -314,11 +316,11 @@ public:
     kMUCHisMC,                 // status bit for matching btw. glbl. and local MC track
     kRICHisMC,                 // status bit for matching btw. glbl. and local MC track
     kTOFisMC,                  // status bit for matching btw. glbl. and local MC track
-    kRICHhasProj,              // weather rich ring has a prjection
     kTrackMaxMC,
 
     // Pair specific MC variables
     kOpeningAngleMC=kTrackMaxMC,// opening angle
+    //    kPhivPairMC,                // angle between d1d2 plane and the magnetic field
     kPairMaxMC,
 
     // Event specific MCvariables
@@ -614,6 +616,20 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   Fill(track->GetTrdTrack(),    values);
   Fill(track->GetRichRing(),    values);
 
+  // acceptance defintions
+  FairTrackParam *param=NULL;
+  if( (param = track->GetRichProj()) ) {
+    values[kRICHhasProj] = (TMath::Abs(param->GetX() + param->GetY()) > 0.);
+  }
+  if( (param = track->GetMvdEntrance()) ) {
+    Double_t innerLimit=0.5; //cm
+    Double_t outerLimit=2.5; //cm
+    values[kMVDhasEntr] = ( (TMath::Abs(param->GetX()) > innerLimit && TMath::Abs(param->GetX()) < outerLimit && TMath::Abs(param->GetY()) < outerLimit)
+			    ||
+			    (TMath::Abs(param->GetY()) > innerLimit && TMath::Abs(param->GetY()) < outerLimit && TMath::Abs(param->GetX()) < outerLimit)
+			  );
+  }
+
   // mc
   Fill(track->GetMCTrack(),     values); // this contains particle infos as well
   if(track->GetTrackMatch(kTRD)) {       // track match specific (accessors via CbmTrackMatchNew)
@@ -689,10 +705,6 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisTrack(const PairAnalysisT
   values[kMVDisMC]   = track->TestBit( BIT(14+kMVD) );
   values[kTOFisMC]   = track->TestBit( BIT(14+kTOF) );
   values[kWeight]    = track->GetWeight();
-
-  if(track->GetRichProj()) {
-    values[kRICHhasProj] = (TMath::Abs(track->GetRichProj()->GetX() + track->GetRichProj()->GetY()) > 0.);
-  }
 
   // Reset
   ResetArrayData(  kParticleMax,   values);
@@ -983,7 +995,8 @@ inline void PairAnalysisVarManager::FillVarMCParticle(const CbmMCTrack *p1, cons
     values[kChargeMC]    = p1->GetCharge()*p2->GetCharge();
 
   }
-  values[kOpeningAngleMC]     = pair->OpeningAngle();
+  values[kOpeningAngleMC] = pair->OpeningAngle();
+  //  values[kPhivPairMC]     = pair->PhivPair(1.);
 
   // delete the surplus pair
   delete pair;
@@ -1058,6 +1071,7 @@ inline void PairAnalysisVarManager::FillVarMCTrack(const CbmMCTrack *particle, D
   values[kSTSHitsMC]   = particle->GetNPoints(kSTS);
   values[kTOFHitsMC]   = particle->GetNPoints(kTOF);
   values[kMUCHHitsMC]  = particle->GetNPoints(kMUCH);
+
 }
 
 inline void PairAnalysisVarManager::FillVarPairAnalysisPair(const PairAnalysisPair *pair, Double_t * const values)
@@ -1138,7 +1152,7 @@ inline void PairAnalysisVarManager::FillVarPairAnalysisPair(const PairAnalysisPa
   if(Req(kArmPt))    values[kArmPt]        = pair->GetArmPt();
 
   //if(Req(kPsiPair))  values[kPsiPair]      = fgEvent ? pair->PsiPair(fgEvent->GetMagneticField()) : -5;
-  //if(Req(kPhivPair)) values[kPhivPair]      = fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) : -5;
+  //  if(Req(kPhivPair))  values[kPhivPair]      = pair->PhivPair(1.);
 
   // impact parameter
   Double_t d0z0[2]={-999., -999.};

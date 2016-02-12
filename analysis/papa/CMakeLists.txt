@@ -33,6 +33,10 @@ ${CBMROOT_SOURCE_DIR}/L1/ParticleFinder
 ${CBMROOT_SOURCE_DIR}/L1/L1Algo
 ##${CBMROOT_SOURCE_DIR}/L1/vectors
 
+${CBMROOT_SOURCE_DIR}/littrack
+${CBMROOT_SOURCE_DIR}/littrack/cbm
+${CBMROOT_SOURCE_DIR}/littrack/std
+
 )
 
 Include_Directories( ${INCLUDE_DIRECTORIES})
@@ -94,7 +98,6 @@ PairAnalysisMC.cxx
 
 #PairAnalysisVarCutsCombi.cxx
 PairAnalysisSignalMC.cxx
-#PairAnalysisSpectrum.cxx
 PairAnalysisTrackRotator.cxx
 PairAnalysisMixedEvent.cxx
 PairAnalysisMixingHandler.cxx
@@ -102,7 +105,7 @@ PairAnalysisMixingHandler.cxx
 PairAnalysisFunction.cxx
 PairAnalysisSignalExt.cxx
 #PairAnalysisSignalFit.cxx
-#PairAnalysisSpectrumN.cxx
+#PairAnalysisSpectrum.cxx
 )
 
 
@@ -137,7 +140,7 @@ EndIf()
 Set(LINKDEF CbmPapaLinkDef.h)
 Set(LIBRARY_NAME CbmPapa)
 Set(DEPENDENCIES
-    L1 KF CbmSts CbmRich CbmBase CbmData CbmGenerators Base Vc.a)
+    L1 KF Littrack CbmSts CbmRich CbmBase CbmData CbmGenerators Base Vc.a)
 
 GENERATE_LIBRARY()
 
