@@ -1,19 +1,16 @@
 // --------------------------------------------------------------------------
 //
-// Macro for standard simulation (transport + digitisation)
-// The transport uses UrQMD input and GEANT3.
-// The default digitisation tasks are used.
+// Macro for standard transport simulation using UrQMD input and GEANT3
 //
-// V. Friese   12/02/2016
+// V. Friese   22/02/2007
+//
+// Version 2016-02-05
 //
 // For the setup (geometry and field), predefined setups can be chosen
 // by the second argument. A list of available setups is given below.
 // The input file can be defined explicitly in this macro or by the
 // third argument. If none of these options are chosen, a default
 // input file distributed with the source code is selected.
-//
-// The output file (.raw.root) contains raw data (digis) as well as
-// Monte-Carlo data.
 //
 // 2014-06-30 - DE - available setups from geometry/setup:
 // 2014-06-30 - DE - sis100_hadron
@@ -26,9 +23,9 @@
 
 
 
-void run_sim(Int_t nEvents = 2,
-		         const char* setupName = "sis100_electron",
-		         const char* inputFile = "")
+void run_mc(Int_t nEvents = 2,
+		        const char* setupName = "sis100_electron",
+		        const char* inputFile = "")
 {
 
   // ========================================================================
@@ -43,7 +40,7 @@ void run_sim(Int_t nEvents = 2,
   // -----   In- and output file names   ------------------------------------
   TString inFile = ""; // give here or as argument; otherwise default is taken
   TString outDir  = "data/";
-  TString outFile = outDir + setupName + "_test.raw.root";
+  TString outFile = outDir + setupName + "_test.mc.root";
   TString parFile = outDir + setupName + "_params.root";
   TString geoFile = outDir + setupName + "_geofile_full.root";
   // ------------------------------------------------------------------------
@@ -52,42 +49,6 @@ void run_sim(Int_t nEvents = 2,
   // --- Logger settings ----------------------------------------------------
   TString logLevel     = "INFO";  
   TString logVerbosity = "LOW";
-  // ------------------------------------------------------------------------
-
-
-  // -----   Load the geometry setup   -------------------------------------
-  std::cout << std::endl;
-  TString setupFile = srcDir + "/geometry/setup/setup_" + setupName + ".C";
-  TString setupFunct = "setup_";
-  setupFunct = setupFunct + setupName + "()";
-  std::cout << "-I- " << myName << ": Loading macro " << setupFile << std::endl;
-  gROOT->LoadMacro(setupFile);
-  gROOT->ProcessLine(setupFunct);
-  // ------------------------------------------------------------------------
-
-
-  // -----   Parameter files as input to the runtime database   -------------
-  std::cout << std::endl;
-  std::cout << "-I- " << myName << ": Defining parameter files " << std::endl;
-  TList *parFileList = new TList();
-  TString geoTag;
-  CbmSetup* setup = CbmSetup::Instance();
-
-  // - TRD digitisation parameters
-  if ( setup->GetGeoTag(kTrd, geoTag) ) {
-  	TObjString trdFile(srcDir + "/parameters/trd/trd_" + geoTag + ".digi.par");
-  	parFileList->Add(&trdFile);
-    std::cout << "-I- " << myName << ": Using parameter file "
-    		      << trdFile.GetString() << std::endl;
-  }
-
-  // - TOF digitisation parameters
-  if ( setup->GetGeoTag(kTof, geoTag) ) {
-  	TObjString tofFile(srcDir + "/parameters/tof/tof_" + geoTag + ".digi.par");
-  	//parFileList->Add(&tofFile);
-    std::cout << "-I- " << myName << ": Using parameter file "
-    		      << tofFile.GetString() << std::endl;
-  }
   // ------------------------------------------------------------------------
 
 
@@ -259,16 +220,13 @@ void run_sim(Int_t nEvents = 2,
   run->SetGenerator(primGen);
   // ------------------------------------------------------------------------
 
-
-  // -----   Digitisers   ---------------------------------------------------
+ 
+  // -----   Run initialisation   -------------------------------------------
   std::cout << std::endl;
-  TString macroName = gSystem->Getenv("VMCWORKDIR");
-  macroName += "/macro/run/modules/digitize.C";
-  std::cout << "Loading macro " << macroName << std::endl;
-  gROOT->LoadMacro(macroName);
-  gROOT->ProcessLine("digitize()");
+  std::cout << "-I- " << myName << ": Initialise run" << std::endl;
+  run->Init();
   // ------------------------------------------------------------------------
-
+  
 
   // -----   Runtime database   ---------------------------------------------
   std::cout << std::endl << std::endl;
@@ -278,24 +236,12 @@ void run_sim(Int_t nEvents = 2,
   fieldPar->SetParameters(magField);
   fieldPar->setChanged();
   fieldPar->setInputVersion(run->GetRunId(),1);
-  // ASCII I/O
-  FairParAsciiFileIo* asciiIo = new FairParAsciiFileIo();
-  asciiIo->open(parFileList, "in");
-  rtdb->setFirstInput(asciiIo);
-  // ROOT parameter I/O
   Bool_t kParameterMerged = kTRUE;
-  FairParRootFileIo* rootIo = new FairParRootFileIo(kParameterMerged);
-  rootIo->open(parFile.Data());
-  rtdb->setOutput(rootIo);
+  FairParRootFileIo* parOut = new FairParRootFileIo(kParameterMerged);
+  parOut->open(parFile.Data());
+  rtdb->setOutput(parOut);
   rtdb->saveOutput();
   rtdb->print();
-  // ------------------------------------------------------------------------
-
-
-  // -----   Run initialisation   -------------------------------------------
-  std::cout << std::endl;
-  std::cout << "-I- " << myName << ": Initialise run" << std::endl;
-  run->Init();
   // ------------------------------------------------------------------------
 
  

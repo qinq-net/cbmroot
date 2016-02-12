@@ -144,6 +144,7 @@ void run_digi(Int_t nEvents = 2,
   rtdb->setSecondInput(parIo2);
   rtdb->setOutput(parIo1);
   rtdb->saveOutput();
+  rtdb->print();
   // ------------------------------------------------------------------------
 
 

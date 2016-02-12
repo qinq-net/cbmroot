@@ -85,7 +85,7 @@ void CbmTrdDigitizerPRF::SetPadPlaneScanArea(Int_t column, Int_t row)
 }
 void CbmTrdDigitizerPRF::SetParContainers()
 {
-	fDigiPar = (CbmTrdDigiPar*)(FairRunAna::Instance()->GetRuntimeDb()->getContainer("CbmTrdDigiPar"));
+	fDigiPar = (CbmTrdDigiPar*)(FairRun::Instance()->GetRuntimeDb()->getContainer("CbmTrdDigiPar"));
 }
 void CbmTrdDigitizerPRF::SetTriggerThreshold(Double_t minCharge){
   fMinimumChargeTH = minCharge;//  To be used for test beam data processing
